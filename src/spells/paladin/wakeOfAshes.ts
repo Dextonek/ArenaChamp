@@ -127,24 +127,27 @@ export class WakeOfAshes implements Effect {
       shape: 'sphere', shapeSize: 0.5, speed: 3.5, speedJitter: 0.6, spread: 35, gravity: -2.5, drag: 0.7,
       sizeStart: 0.95, sizeEnd: 0.2, colorStart: '#ffc060', colorEnd: '#b82a00',
       opacityStart: 0.32, opacityEnd: 0, additive: true,
+      colorMid: '#ff7a1a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.holy = new Emitter({
       ...defaultSettings(), maxParticles: 700, rate: 0, lifetime: 1.1, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.4, speed: 3, speedJitter: 0.6, spread: 60, gravity: -1.5, drag: 0.6,
       sizeStart: 0.2, sizeEnd: 0, colorStart: '#fff6d8', colorEnd: '#ffd36b',
       opacityStart: 0.7, opacityEnd: 0, additive: true,
+      colorMid: '#ffe9a8', sizeJitter: 0.3, erosion: 0.4, spin: 0.3,
     });
     this.embers = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 2.6, lifetimeJitter: 0.4,
       shape: 'box', shapeSize: 0.5, speed: 1.4, speedJitter: 0.7, spread: 120, gravity: -0.6, drag: 0.7,
       sizeStart: 0.12, sizeEnd: 0, colorStart: '#ffd080', colorEnd: '#ff4a10',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.ash = new Emitter({
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 3, lifetimeJitter: 0.4,
       shape: 'box', shapeSize: 0.5, speed: 1.2, speedJitter: 0.7, spread: 150, gravity: 0.15, drag: 0.8,
       sizeStart: 0.24, sizeEnd: 0.1, colorStart: '#b8aea2', colorEnd: '#3a3430',
       opacityStart: 0.5, opacityEnd: 0, additive: false,
+      colorMid: '#6a615a', sizeJitter: 0.4, erosion: 0.6, spin: 0.4, groundFade: 0.3,
     });
     this.emitters.push(this.fire, this.holy, this.embers, this.ash);
     for (const e of this.emitters) this.group.add(e.points);
@@ -336,6 +339,7 @@ export class WakeOfAshes implements Effect {
     this.impacted = true;
     this.fire.burst(300, this.impactPos);
     this.embers.burst(200, this.impactPos);
+    this.ash.burst(250, this.impactPos);
   }
 
   private onEnemyHit() {
@@ -352,6 +356,14 @@ export const wakeOfAshesModule: EffectModule = {
   label: 'wake of ashes',
   category: 'paladin',
   create: () => new WakeOfAshes(),
+  telegraphs(effect) {
+    const s = (effect as WakeOfAshes).settings;
+    // Fan from the impact point toward the enemy (-Z), as long as the wave travels.
+    return [{
+      shape: { kind: 'cone', x: 0, z: CASTER_POS.z - 1.9, radius: MAX_DIST, angle: s.fanAngle, dir: Math.PI },
+      start: 0.3, impact: IMPACT, until: IMPACT + MAX_DIST / s.waveSpeed,
+    }];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Impact at z ~ 12, wave runs to the enemy at 0 and beyond.

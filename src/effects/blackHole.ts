@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../emitter';
-import { Enemy, createGround, smoothstep } from './common';
+import { Enemy, GlowSphere, createGround, smoothstep, softDotTexture } from './common';
 import type { Effect, EffectModule } from './types';
 
 /**
@@ -45,6 +45,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const MAX_DISK = 3000;
 const MAX_DEBRIS = 300;
 const DUST_COUNT = 700;
+const GLINTS = 140; // additive glints kept from the old swirl (the dust body is now the dark emitter)
 
 interface Rock {
   r0: number;
@@ -83,11 +84,7 @@ export class BlackHole implements Effect {
   });
   private photonRing = new THREE.Mesh(new THREE.RingGeometry(1.14, 1.2, 64), this.ringMat);
   private tiltRing = new THREE.Mesh(new THREE.RingGeometry(1.38, 1.41, 64), this.ringMat);
-  private flashMat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(1.6, 1.3, 0.9), transparent: true, opacity: 0,
-    blending: THREE.AdditiveBlending, depthWrite: false,
-  });
-  private flashMesh = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), this.flashMat);
+  private flash = new GlowSphere(new THREE.Color(1.6, 1.3, 0.9));
   private shockMat = new THREE.MeshBasicMaterial({
     color: new THREE.Color(1.4, 0.9, 0.6), transparent: true, opacity: 0,
     blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
@@ -99,7 +96,7 @@ export class BlackHole implements Effect {
   // Accretion disk.
   private diskGroup = new THREE.Group();
   private diskMat = new THREE.PointsMaterial({
-    size: 0.17, vertexColors: true, transparent: true, opacity: 0.35,
+    size: 0.17, map: softDotTexture(), vertexColors: true, transparent: true, opacity: 0.35,
     blending: THREE.AdditiveBlending, depthWrite: false,
   });
   private disk: THREE.Points | null = null;
@@ -116,7 +113,7 @@ export class BlackHole implements Effect {
 
   // Ground dust swirl.
   private dustMat = new THREE.PointsMaterial({
-    size: 0.7, vertexColors: true, transparent: true, opacity: 1,
+    size: 0.3, map: softDotTexture(), vertexColors: true, transparent: true, opacity: 1,
     blending: THREE.AdditiveBlending, depthWrite: false,
   });
   private swirl: THREE.Points;
@@ -130,6 +127,8 @@ export class BlackHole implements Effect {
   private enemy = new Enemy();
   private sparks: Emitter;
   private dust: Emitter;
+  private groundDust: Emitter;
+  private groundAcc = 0;
 
   private dummy = new THREE.Object3D();
   private v1 = new THREE.Vector3();
@@ -148,14 +147,14 @@ export class BlackHole implements Effect {
     this.tiltRing.rotation.set(1.1, 0.4, 0);
     this.holeGroup.add(this.horizon, this.halo, this.photonRing, this.tiltRing);
     this.holeGroup.position.copy(HOLE_POS);
-    this.flashMesh.position.copy(HOLE_POS);
+    this.flash.mesh.position.copy(HOLE_POS);
     this.shockAir.position.copy(HOLE_POS);
     this.shockAir.rotation.x = -Math.PI / 2;
     this.shockGround.position.set(0, 0.08, 0);
     this.shockGround.rotation.x = -Math.PI / 2;
     this.diskGroup.position.copy(HOLE_POS);
     this.diskGroup.rotation.set(0.5, 0, 0.22);
-    this.group.add(this.holeGroup, this.flashMesh, this.shockAir, this.shockGround, this.diskGroup);
+    this.group.add(this.holeGroup, this.flash.mesh, this.shockAir, this.shockGround, this.diskGroup);
 
     // Ground dust swirl: each mote loops from the ground edge spiralling in toward the hole.
     const sg = new THREE.BufferGeometry();
@@ -169,6 +168,7 @@ export class BlackHole implements Effect {
     sg.setAttribute('color', new THREE.BufferAttribute(this.swirlCol, 3).setUsage(THREE.DynamicDrawUsage));
     this.swirl = new THREE.Points(sg, this.dustMat);
     this.swirl.frustumCulled = false;
+    sg.setDrawRange(0, GLINTS);
     this.group.add(this.swirl);
 
     this.sparks = new Emitter({
@@ -181,9 +181,18 @@ export class BlackHole implements Effect {
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.6, speed: 6, speedJitter: 0.5, spread: 85, gravity: -0.3, drag: 1.5,
       sizeStart: 0.9, sizeEnd: 3, colorStart: '#5a544c', colorEnd: '#2a2a30',
+      colorMid: '#403b38', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
       opacityStart: 0.2, opacityEnd: 0, additive: false,
     });
-    this.emitters.push(this.sparks, this.dust);
+    // Dark dust lifted off the ground while the hole feeds (normal-blended, eroded) -- replaces the old additive swirl body.
+    this.groundDust = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.4, originY: 0.1, speed: 1.4, speedJitter: 0.6, spread: 80, gravity: -0.4, drag: 1.0,
+      sizeStart: 0.8, sizeEnd: 2.6, colorStart: '#3e3732', colorEnd: '#141416',
+      colorMid: '#2c2724', sizeJitter: 0.45, erosion: 0.6, spin: 0.35,
+      opacityStart: 0.3, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.sparks, this.dust, this.groundDust);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.build();
@@ -263,6 +272,7 @@ export class BlackHole implements Effect {
     this.flashed = false;
     this.spike = 0;
     this.diskPhase = 0;
+    this.groundAcc = 0;
     this.shake = 0;
     this.enemy.reset();
     this.enemy.group.position.set(0, 0, 0);
@@ -285,6 +295,16 @@ export class BlackHole implements Effect {
     // Disk spins up during the collapse.
     const c = THREE.MathUtils.clamp((t - T_COLLAPSE) / COLLAPSE, 0, 1);
     this.diskPhase += dt * (1 + 3.5 * smoothstep(c));
+
+    // Dark dust rises from a ring on the ground while the hole is feeding.
+    const dEnv = smoothstep((t - 1) / 0.8) * (1 - smoothstep((t - T_COLLAPSE) / 0.4));
+    this.groundAcc += 70 * dEnv * dt;
+    const gn = Math.floor(this.groundAcc);
+    this.groundAcc -= gn;
+    for (let i = 0; i < gn; i++) {
+      const a = Math.random() * Math.PI * 2, r = 3 + Math.random() * 11;
+      this.groundDust.burst(1, this.v1.set(HOLE_POS.x + Math.cos(a) * r, 0, HOLE_POS.z + Math.sin(a) * r));
+    }
 
     this.spike *= Math.exp(-dt * 6);
     if (!this.flashed && t >= T_FLASH) {
@@ -382,7 +402,7 @@ export class BlackHole implements Effect {
       this.swirlPos[i * 3] = this.v1.x;
       this.swirlPos[i * 3 + 1] = this.swirlY[i] + HOLE_POS.y * 0.85 * Math.pow(u, 3.5);
       this.swirlPos[i * 3 + 2] = this.v1.z;
-      const f = 0.4 * Math.sin(Math.PI * u) * dustEnv;
+      const f = 0.8 * Math.sin(Math.PI * u) * dustEnv;
       this.swirlCol[i * 3] = 0.5 * f; this.swirlCol[i * 3 + 1] = 0.42 * f; this.swirlCol[i * 3 + 2] = 0.34 * f;
     }
     (this.swirl.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
@@ -415,9 +435,8 @@ export class BlackHole implements Effect {
       fOp = 0.35 * Math.exp(-sh * 9);
       fScale = R * (1.5 + sh * 12);
     }
-    this.flashMat.opacity = fOp;
-    this.flashMesh.visible = fOp > 0.01;
-    this.flashMesh.scale.setScalar(fScale);
+    this.flash.opacity = fOp > 0.01 ? fOp : 0;
+    this.flash.mesh.scale.setScalar(fScale);
 
     // Shockwave rings.
     const sw = sh >= 0 ? sh : 0;
@@ -444,6 +463,14 @@ export class BlackHole implements Effect {
 export const blackHoleModule: EffectModule = {
   label: 'black hole',
   create: () => new BlackHole(),
+  telegraphs(effect) {
+    const s = (effect as BlackHole).settings;
+    return [
+      // Pull zone under the hole while it feeds, then the collapse shockwave ring.
+      { shape: { kind: 'circle', x: 0, z: -1.5, radius: s.diskRadius + 2 }, start: 0.3, impact: 1.5, until: 4.5 },
+      { shape: { kind: 'ring', x: 0, z: -1.5, inner: s.diskRadius, outer: s.diskRadius + 6 }, start: 4.3, impact: 5.15 },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const bh = effect as BlackHole;

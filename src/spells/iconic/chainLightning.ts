@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
-  CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, frameArena, smoothstep,
+  CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -214,6 +214,8 @@ export class ChainLightning implements Effect {
   private flashLight = new THREE.PointLight(0xaac8ff, 0, 60, 1.2);
   private sparks: Emitter;
   private motes: Emitter;
+  private smoke: Emitter;
+  private scorch = Array.from({ length: TARGETS }, () => createRing(0x6a9bff, 0.2, 1, 48)); // ground marks under each target
 
   private v1 = new THREE.Vector3();
   private v2 = new THREE.Vector3();
@@ -236,20 +238,35 @@ export class ChainLightning implements Effect {
       this.hops.push(hop);
     }
     this.group.add(this.handArcs.mesh, this.handGlow.mesh, this.hopGlow.mesh, this.flashLight);
+    this.scorch.forEach((r, i) => {
+      r.mesh.position.set(HOMES[i].x, 0.04, HOMES[i].z);
+      r.mesh.scale.setScalar(1.6);
+      this.group.add(r.mesh);
+    });
 
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 2500, rate: 0, lifetime: 0.7, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.3, speed: 7, speedJitter: 0.6, spread: 180, gravity: 12, drag: 0.8,
       sizeStart: 0.12, sizeEnd: 0.02, colorStart: '#f2f7ff', colorEnd: '#6a9bff',
       opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 1.0, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.7, speed: 1.2, speedJitter: 0.5, spread: 180, gravity: -0.3, drag: 0.6,
       sizeStart: 0.1, sizeEnd: 0.02, colorStart: '#cfe0ff', colorEnd: '#6a9bff',
       opacityStart: 0.5, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
-    this.emitters.push(this.sparks, this.motes);
+    this.smoke = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 1.6, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.4, speed: 1.2, speedJitter: 0.5, spread: 180, gravity: -0.4, drag: 1.3,
+      sizeStart: 0.5, sizeEnd: 1.5, colorStart: '#5a6a8a', colorMid: '#2c3650', colorEnd: '#10141e',
+      opacityStart: 0.28, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+    });
+    // Dark scorch smoke (normal blending) first so the additive sparks draw over it.
+    this.emitters.push(this.smoke, this.sparks, this.motes);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.applyStyle();
@@ -267,6 +284,7 @@ export class ChainLightning implements Effect {
     this.flashLight.color.set(s.glowColor).lerp(new THREE.Color(1, 1, 1), 0.4);
     this.handGlow.color.set(s.glowColor).lerp(new THREE.Color(1, 1, 1), 0.3);
     this.hopGlow.color.set(s.glowColor);
+    for (const r of this.scorch) r.material.color.set(s.glowColor);
     this.sparks.settings.colorStart = s.boltColor;
     this.sparks.settings.colorEnd = s.glowColor;
     this.motes.settings.colorEnd = s.glowColor;
@@ -337,6 +355,7 @@ export class ChainLightning implements Effect {
     this.bodyT = 0;
     this.shake = Math.min(this.shake + 0.12, 0.4);
     this.sparks.burst(150, h.to);
+    this.smoke.burst(30, h.to);
     this.flashLight.position.copy(h.to);
     this.hopGlow.mesh.position.copy(h.to);
   }
@@ -413,6 +432,7 @@ export class ChainLightning implements Effect {
       const e = this.enemies[i];
       const since = t - this.hitAt[i];
       const amt = this.playing && since >= 0 && since < BODY_LIFE ? (1 - since / BODY_LIFE) * closing : 0;
+      this.scorch[i].material.opacity = this.playing && since >= 0 ? 0.3 * Math.exp(-since * 1.2) * closing : 0;
       e.setFlash(Math.min(this.enemyFlash[i], 0.9));
       e.group.position.copy(HOMES[i]);
       if (amt > 0.02) {
@@ -446,6 +466,15 @@ export const chainLightningModule: EffectModule = {
   label: 'chain lightning',
   category: 'iconic',
   create: () => new ChainLightning(),
+  telegraphs(effect) {
+    const s = (effect as ChainLightning).settings;
+    // One small zone per target, landing at its own hop time.
+    return HOMES.map((h, i) => ({
+      shape: { kind: 'circle' as const, x: h.x, z: h.z, radius: 1.6 },
+      start: s.windup * 0.3,
+      impact: s.windup + i * s.hopGap,
+    }));
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.8 },
   frameCamera(camera, controls) {
     // Caster at z = 14; the five targets run from z = 8 down to -7.

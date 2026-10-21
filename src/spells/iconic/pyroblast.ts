@@ -251,41 +251,49 @@ export class Pyroblast implements Effect {
       ...base, maxParticles: 300, rate: 0, lifetime: 1.2, lifetimeJitter: 0.4, shape: 'cone', shapeSize: 2.8,
       speed: 3, speedJitter: 0.5, spread: 15, gravity: -0.5, drag: 0.4, sizeStart: 0.14, sizeEnd: 0.02,
       colorStart: '#ffd080', colorEnd: '#ff4a08', opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.smoke = new Emitter({
       ...base, maxParticles: 700, rate: 0, lifetime: 1.6, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.8,
       speed: 1, speedJitter: 0.5, spread: 180, gravity: -1.2, drag: 0.8, sizeStart: 1, sizeEnd: 3,
       colorStart: '#35302c', colorEnd: '#100d0b', opacityStart: 0.35, opacityEnd: 0, additive: false,
+      colorMid: '#241f1c', sizeJitter: 0.4, erosion: 0.6, spin: 0.4,
     });
     this.plume = new Emitter({
       ...base, maxParticles: 700, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 1.5,
       originY: 0.5, speed: 8, speedJitter: 0.4, spread: 14, gravity: -1, drag: 0.9, sizeStart: 2, sizeEnd: 4.5,
       colorStart: '#2c2623', colorEnd: '#0c0a09', opacityStart: 0.45, opacityEnd: 0, additive: false,
+      colorMid: '#1c1715', sizeJitter: 0.4, erosion: 0.6, spin: 0.4,
     });
     this.capSmoke = new Emitter({
       ...base, maxParticles: 400, rate: 0, lifetime: 2, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 2.5,
       speed: 4, speedJitter: 0.5, spread: 180, gravity: -0.3, drag: 1, sizeStart: 2.5, sizeEnd: 5,
       colorStart: '#3a322d', colorEnd: '#12100e', opacityStart: 0.4, opacityEnd: 0, additive: false,
+      colorMid: '#26201c', sizeJitter: 0.4, erosion: 0.65, spin: 0.4,
     });
     this.trailFire = new Emitter({
       ...base, maxParticles: 700, rate: 0, lifetime: 0.7, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 1.1,
       speed: 1.5, speedJitter: 0.5, spread: 180, gravity: -2, drag: 1, sizeStart: 1.5, sizeEnd: 0.2,
       colorStart: '#ffc050', colorEnd: '#e02a00', opacityStart: 0.45, opacityEnd: 0, additive: true,
+      colorMid: '#ff7a14', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.wakeFire = new Emitter({
       ...base, maxParticles: 800, rate: 0, lifetime: 1.3, lifetimeJitter: 0.5, shape: 'sphere', shapeSize: 0.4,
       speed: 1.2, speedJitter: 0.6, spread: 40, gravity: -1.5, drag: 0.8, sizeStart: 0.9, sizeEnd: 0.15,
       colorStart: '#ff9a30', colorEnd: '#c01a00', opacityStart: 0.45, opacityEnd: 0, additive: true,
+      colorMid: '#e65a10', sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
     });
     this.blastFire = new Emitter({
       ...base, maxParticles: 800, rate: 0, lifetime: 1.1, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 1,
       speed: 12, speedJitter: 0.6, spread: 180, gravity: -1, drag: 1.8, sizeStart: 2, sizeEnd: 0.3,
       colorStart: '#ffc050', colorEnd: '#d82400', opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#ff7010', sizeJitter: 0.4, erosion: 0.5, spin: 0.5,
     });
     this.ringFire = new Emitter({
       ...base, maxParticles: 600, rate: 0, lifetime: 1.2, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.5,
       speed: 5, speedJitter: 0.5, spread: 40, gravity: -1.5, drag: 0.8, sizeStart: 1.2, sizeEnd: 0.3,
       colorStart: '#ff9a30', colorEnd: '#c01a00', opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#e65a10', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     // Smoke (normal blending) first so the additive fire draws over it.
     this.emitters.push(this.smoke, this.plume, this.capSmoke, this.trailFire, this.wakeFire, this.castEmbers,
@@ -454,16 +462,16 @@ export class Pyroblast implements Effect {
       const hStem = 0.5 + 8 * smoothstep(after / 1.1);
       this.stem.mesh.position.set(0, hStem, 0);
       this.stem.mesh.scale.set(1.5 + after * 0.5, hStem, 1.5 + after * 0.5);
-      this.stem.opacity = 0.45 * Math.exp(-after * 1.1);
+      this.stem.opacity = 0.45 * Math.exp(-after * 1.7);
       const capR = 1 + 5.5 * smoothstep(after / 1.4);
       this.cap.mesh.position.set(0, hStem * 1.85, 0);
       this.cap.mesh.scale.set(capR, capR * 0.6, capR);
       this.cap.opacity = 0.4 * smoothstep(after / 0.3) * Math.exp(-after * 0.9);
 
       this.shock.mesh.scale.setScalar(1 + after * 30);
-      this.shock.material.opacity = Math.max(0, 0.7 * (1 - after / 1.0));
+      this.shock.material.opacity = Math.max(0, 0.7 * (1 - after / 0.55));
       this.fireRing.mesh.scale.setScalar(1 + 6 * smoothstep(after / 0.7));
-      this.fireRing.material.opacity = 0.5 * Math.exp(-after * 1.1) * fade;
+      this.fireRing.material.opacity = 0.5 * Math.exp(-after * 0.8) * fade;
       this.scorch.scale.setScalar(7.5);
       (this.scorch.material as THREE.MeshBasicMaterial).opacity = 0.6 * smoothstep(after / 0.3) * fade;
 
@@ -500,6 +508,19 @@ export const pyroblastModule: EffectModule = {
   label: 'pyroblast',
   category: 'iconic',
   create: () => new Pyroblast(),
+  telegraphs(effect) {
+    const s = (effect as Pyroblast).settings;
+    const impact = s.castTime + s.flightTime;
+    return [
+      // Burning wake from the caster to the enemy: dangerous from the moment the ball passes until it burns out.
+      {
+        shape: { kind: 'line', x1: CASTER_POS.x, z1: CASTER_POS.z - 1, x2: ENEMY_POS.x, z2: ENEMY_POS.z, width: 3.4 },
+        start: Math.min(0.4, s.castTime * 0.3), impact, until: impact + 1.8,
+      },
+      // Mushroom explosion and ground fire ring.
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 7 }, start: s.castTime * 0.4, impact },
+    ];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.55, threshold: 0.85 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 4, 7), 13);

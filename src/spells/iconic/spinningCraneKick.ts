@@ -327,7 +327,7 @@ export class SpinningCraneKick implements Effect {
 
     // Light: jade glow around the whirl.
     this.light.position.set(0, rise + 1.5, 0);
-    this.light.intensity = 220 * spinAmt * fade + (t >= burstT ? 600 * Math.exp(-after * 8) : 0);
+    this.light.intensity = 110 * spinAmt * fade + (t >= burstT ? 300 * Math.exp(-after * 8) : 0);
 
     // Enemies: flash, knockback away from the monk, always facing it.
     for (let i = 0; i < ENEMIES; i++) {
@@ -339,7 +339,7 @@ export class SpinningCraneKick implements Effect {
       const dir = this.tmp.set(h.x, 0, h.z).normalize();
       e.group.position.set(h.x + dir.x * kb, p > 1 && age >= 0 ? 0.4 * Math.sin(Math.min(1, age * 3) * Math.PI) : 0, h.z + dir.z * kb);
       e.group.rotation.set(-0.25 * kb, Math.atan2(-h.x, -h.z), 0);
-      e.setFlash(age >= 0 ? 1.1 * Math.exp(-age * 9) : 0);
+      e.setFlash(age >= 0 ? 0.5 * Math.exp(-age * 9) : 0);
     }
 
     if (t < burstT) this.shake *= 0.9;
@@ -351,6 +351,16 @@ export const spinningCraneKickModule: EffectModule = {
   label: 'spinning crane kick',
   category: 'iconic',
   create: () => new SpinningCraneKick(),
+  telegraphs(effect) {
+    const s = (effect as SpinningCraneKick).settings;
+    const burstT = GATHER + s.spinTime;
+    return [
+      // The whirl: kick reach around the monk (covers the enemy ring), dangerous for the whole spin.
+      { shape: { kind: 'circle', x: MONK_POS.x, z: MONK_POS.z, radius: s.radius + 1.2 }, start: 0.1, impact: GATHER, until: burstT },
+      // The final outward wind burst.
+      { shape: { kind: 'ring', x: MONK_POS.x, z: MONK_POS.z, inner: s.radius + 1.2, outer: s.radius + 4.5 }, start: burstT - 0.6, impact: burstT },
+    ];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const s = (effect as SpinningCraneKick).settings;

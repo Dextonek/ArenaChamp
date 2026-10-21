@@ -4,6 +4,7 @@ import {
   ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
+import type { TelegraphSpec } from '../../effects/telegraph';
 
 /**
  * Army of the Dead (reworked): the death knight channels, frost runes spin under him and the ground cracks with
@@ -33,6 +34,11 @@ const CRACKS = 18;
 const FADE = 0.9;
 const SCALE = 0.7;
 const ARC_CENTER = new THREE.Vector3(0, 0, 8.5);
+
+/** Time minion i breaks the surface. */
+function riseTime(castTime: number, i: number, count: number) {
+  return castTime + 0.1 + (i / count) * 1.9 + Math.sin(i * 5.1) * 0.12;
+}
 
 interface Minion {
   enemy: Enemy;
@@ -109,13 +115,14 @@ export class ArmyOfTheDead implements Effect {
       shape: 'sphere', shapeSize: 0.4, speed: 4.5, speedJitter: 0.6, spread: 65, gravity: 11, drag: 0.5,
       sizeStart: 0.28, sizeEnd: 0.1, colorStart: '#3a2c22', colorEnd: '#1c1612',
       opacityStart: 0.9, opacityEnd: 0, additive: false,
+      colorMid: '#2a2018', sizeJitter: 0.4, erosion: 0.4, spin: 0.4,
     });
     this.mist = new Emitter({
       ...defaultSettings(), maxParticles: 700, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.5, speed: 0.7, speedJitter: 0.6, spread: 100, gravity: -0.05, drag: 0.8,
       // Dark, eroded mist: a pale non-additive mist piled up into a white wall that hid the minions.
       sizeStart: 1.2, sizeEnd: 2.6, colorStart: '#5a6c70', colorEnd: '#2c383c',
-      opacityStart: 0.2, opacityEnd: 0, additive: false, sizeJitter: 0.5, erosion: 0.6, spin: 0.3,
+      opacityStart: 0.2, opacityEnd: 0, additive: false, sizeJitter: 0.5, erosion: 0.6, spin: 0.3, colorMid: '#43545a', groundFade: 0.3,
     });
     this.emitters.push(this.dirt, this.mist);
     for (const e of this.emitters) this.group.add(e.points);
@@ -128,6 +135,11 @@ export class ArmyOfTheDead implements Effect {
     this.crackMat.color.set(c);
     this.chestGlow.color.set(c);
     for (const m of this.minions) { m.glow.color.set(c); m.ring.material.color.set(c); }
+  }
+
+  /** Ground position where minion i rises. */
+  minionBase(i: number) {
+    return this.minions[i].base;
   }
 
   get duration() {
@@ -166,7 +178,7 @@ export class ArmyOfTheDead implements Effect {
     // Dirt bursts as each minion breaks the surface.
     for (let i = 0; i < this.count; i++) {
       const m = this.minions[i];
-      const riseT = s.castTime + 0.1 + (i / this.count) * 1.9 + Math.sin(i * 5.1) * 0.12;
+      const riseT = riseTime(s.castTime, i, this.count);
       m.riseT = riseT;
       if (!m.burst && t >= riseT + 0.05) {
         m.burst = true;
@@ -221,7 +233,7 @@ export class ArmyOfTheDead implements Effect {
     for (let i = 0; i < MAX_MINIONS; i++) {
       const m = this.minions[i];
       const active = i < this.count;
-      const riseT = s.castTime + 0.1 + (i / this.count) * 1.9 + Math.sin(i * 5.1) * 0.12;
+      const riseT = riseTime(s.castTime, i, this.count);
       const u = active ? (t - riseT) / RISE : -1;
       const g = m.enemy.group;
       if (u < 0) {
@@ -253,7 +265,8 @@ export class ArmyOfTheDead implements Effect {
       // Hunched, facing the enemy; lurches while walking, claws upright-ish while rising.
       g.rotation.set(m.lean + 0.12 * (1 - e) + 0.05 * bob, Math.PI - toEnemy.x * 0.3, 0.1 * bob + 0.15 * Math.sin(u * 14) * (1 - e));
       const lit = Math.exp(-Math.max(0, u - 0.2) * 2.5);
-      m.enemy.material.emissive.setRGB(0.02, 0.35 * lit, 0.25 * lit);
+      // Keeps a faint floor of glow so the minions read against the dark mist.
+      m.enemy.material.emissive.setRGB(0.02, 0.14 + 0.4 * lit, 0.1 + 0.3 * lit);
       // Green glow at the spot.
       m.glow.mesh.position.set(m.base.x, 0.4, m.base.z);
       m.glow.mesh.scale.setScalar(1.3 + 0.6 * e);
@@ -270,6 +283,22 @@ export const armyOfTheDeadModule: EffectModule = {
   label: 'army of the dead',
   category: 'iconic',
   create: () => new ArmyOfTheDead(),
+  telegraphs(effect) {
+    const a = effect as ArmyOfTheDead;
+    const s = a.settings;
+    const n = THREE.MathUtils.clamp(Math.round(s.minions), 1, MAX_MINIONS);
+    const zones: TelegraphSpec[] = [];
+    // One small circle per grave, from the warning glow until the dirt burst has settled.
+    for (let i = 0; i < n; i++) {
+      const base = a.minionBase(i);
+      const rise = riseTime(s.castTime, i, n);
+      zones.push({
+        shape: { kind: 'circle', x: base.x, z: base.z, radius: 1.3 },
+        start: Math.max(0, rise - 0.8), impact: rise + 0.05, until: rise + 0.5,
+      });
+    }
+    return zones;
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 1.5, 7), 11);

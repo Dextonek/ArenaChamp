@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../emitter';
-import { Enemy, createGround, createSwordGeometry, smoothstep } from './common';
+import { Enemy, LightPillar, createGround, createSwordGeometry, smoothstep } from './common';
 import type { Effect, EffectModule } from './types';
 
 /**
@@ -88,8 +88,7 @@ export class DivineSword implements Effect {
   private swarm!: THREE.InstancedMesh;
   private swarmMat: THREE.MeshStandardMaterial;
   private swords: SwarmSword[] = [];
-  private pillar: THREE.Mesh;
-  private pillarMat: THREE.ShaderMaterial;
+  private pillar: LightPillar;
   private shockwave: THREE.Mesh;
   private shockMat: THREE.MeshBasicMaterial;
   private crater: THREE.Mesh;
@@ -125,28 +124,8 @@ export class DivineSword implements Effect {
     this.buildSwarm();
 
     // Light pillar from the sky along the fall path.
-    this.pillarMat = new THREE.ShaderMaterial({
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
-      uniforms: { uColor: { value: new THREE.Color(s.glowColor) }, uOpacity: { value: 0 } },
-      vertexShader: /* glsl */ `
-        varying vec2 vUv; varying vec3 vN; varying vec3 vView;
-        void main() {
-          vUv = uv;
-          vec4 mv = modelViewMatrix * vec4(position, 1.0);
-          vN = normalize(normalMatrix * normal); vView = normalize(-mv.xyz);
-          gl_Position = projectionMatrix * mv;
-        }`,
-      fragmentShader: /* glsl */ `
-        uniform vec3 uColor; uniform float uOpacity;
-        varying vec2 vUv; varying vec3 vN; varying vec3 vView;
-        void main() {
-          float facing = abs(dot(vN, vView));          // bright core, soft edges
-          float ends = smoothstep(0.0, 0.08, vUv.y) * smoothstep(1.0, 0.6, vUv.y);
-          gl_FragColor = vec4(uColor * 1.5, pow(facing, 2.5) * ends * uOpacity);
-        }`,
-    });
-    this.pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 1, 32, 1, true), this.pillarMat);
-    this.group.add(this.pillar);
+    this.pillar = new LightPillar(s.glowColor);
+    this.group.add(this.pillar.mesh);
 
     // Shockwave ring and glowing crater on the ground.
     this.shockMat = new THREE.MeshBasicMaterial({
@@ -177,20 +156,20 @@ export class DivineSword implements Effect {
     this.trail = new Emitter({
       ...defaultSettings(), maxParticles: 3000, rate: 0, lifetime: 0.9, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 1.2, speed: 1.5, speedJitter: 0.8, spread: 180, gravity: -2, drag: 1,
-      sizeStart: 0.3, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: s.glowColor,
-      opacityStart: 0.45, opacityEnd: 0, additive: true,
+      sizeStart: 0.3, sizeEnd: 0, colorStart: '#fff2c4', colorMid: '#ffc94a', colorEnd: s.glowColor,
+      opacityStart: 0.45, opacityEnd: 0, additive: true, sizeJitter: 0.4, erosion: 0.4, spin: 0.4,
     });
     this.sparks = new Emitter({
-      ...defaultSettings(), maxParticles: 3000, rate: 0, lifetime: 1.6, lifetimeJitter: 0.5,
+      ...defaultSettings(), maxParticles: 3000, rate: 0, lifetime: 1.0, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.6, originY: 0.3, speed: 16, speedJitter: 0.6, spread: 80,
       gravity: 18, drag: 0.6, sizeStart: 0.22, sizeEnd: 0.04, colorStart: '#fff8e0', colorEnd: '#ff8a20',
-      opacityStart: 1, opacityEnd: 0, additive: true,
+      opacityStart: 1, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.dust = new Emitter({
       ...defaultSettings(), maxParticles: 600, rate: 0, lifetime: 3.5, lifetimeJitter: 0.3,
       shape: 'cone', shapeSize: 2, originY: 0.3, speed: 9, speedJitter: 0.4, spread: 85,
-      gravity: -0.3, drag: 1.8, sizeStart: 2, sizeEnd: 7, colorStart: '#8a7f70', colorEnd: '#3a3a40',
-      opacityStart: 0.4, opacityEnd: 0, additive: false,
+      gravity: -0.3, drag: 1.8, sizeStart: 2, sizeEnd: 7, colorStart: '#6a6258', colorMid: '#3e3a38', colorEnd: '#222226',
+      opacityStart: 0.5, opacityEnd: 0, additive: false, sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
     });
     this.emitters.push(this.trail, this.sparks, this.dust);
     for (const e of this.emitters) this.group.add(e.points);
@@ -243,7 +222,7 @@ export class DivineSword implements Effect {
     const s = this.settings;
     this.giantMat.emissive.set(s.glowColor);
     this.swarmMat.emissive.set(s.swarmColor);
-    (this.pillarMat.uniforms.uColor.value as THREE.Color).set(s.glowColor);
+    this.pillar.color.set(s.glowColor);
     this.shockMat.color.set(s.glowColor).multiplyScalar(2);
     this.trail.settings.colorEnd = s.glowColor;
     this.trail.applyStyle();
@@ -269,7 +248,7 @@ export class DivineSword implements Effect {
     this.giantMat.emissiveIntensity = 0.6;
     this.shockMat.opacity = 0;
     this.craterMat.opacity = 0;
-    this.pillarMat.uniforms.uOpacity.value = 0;
+    this.pillar.set(0, 0, 0, 1, 0);
     this.flashLight.intensity = 0;
     this.layout(0);
   }
@@ -342,10 +321,8 @@ export class DivineSword implements Effect {
     // Light pillar.
     const pillarTop = s.fallHeight + s.giantScale + 10;
     const pillarBottom = Math.max(0, this.tipY);
-    this.pillar.scale.set(1, pillarTop - pillarBottom, 1);
-    this.pillar.position.y = (pillarTop + pillarBottom) / 2;
-    const pillarOn = this.impacted ? 0.6 * Math.exp(-(t - impactTime) * 1.5) : appear * (0.15 + 0.3 * fall);
-    this.pillarMat.uniforms.uOpacity.value = pillarOn * fadeOut;
+    const pillarOn = this.impacted ? 0.6 * Math.exp(-(t - impactTime) * 3.5) : appear * (0.15 + 0.3 * fall);
+    this.pillar.set(0, 0, pillarBottom, pillarTop, pillarOn * fadeOut);
 
     // Trail motes follow the tip during the fall.
     if (!this.impacted && t >= s.summonTime) {
@@ -409,7 +386,7 @@ export class DivineSword implements Effect {
     // --- Impact aftermath ----------------------------------------------------
     if (this.impacted) {
       const after = t - impactTime;
-      const wave = after / 0.9;
+      const wave = after / 0.5;
       this.shockwave.scale.setScalar(1 + wave * 26);
       this.shockMat.opacity = Math.max(0, 1 - wave) * 0.9;
       this.craterMat.opacity = Math.exp(-after * 0.8) * 0.9 * fadeOut;
@@ -474,6 +451,12 @@ export class DivineSword implements Effect {
 export const divineSwordModule: EffectModule = {
   label: 'divine sword',
   create: () => new DivineSword(),
+  telegraphs(effect) {
+    const s = (effect as DivineSword).settings;
+    const impact = s.summonTime + s.fallTime;
+    // Crater + the scattering swarm.
+    return [{ shape: { kind: 'circle', x: 0, z: 0, radius: 7 }, start: 0.4, impact }];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.45, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const ds = (effect as DivineSword).settings;

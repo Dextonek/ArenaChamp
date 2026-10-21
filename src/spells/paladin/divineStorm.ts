@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
   CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, createSwordGeometry,
-  frameArena, smoothstep,
+  frameArena, smoothstep, softDotTexture,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -67,7 +67,7 @@ export class DivineStorm implements Effect {
   private finalRing = createRing(0xffe2a0, 0.9, 1, 96);
   private moteGeo = new THREE.BufferGeometry();
   private moteMat = new THREE.PointsMaterial({
-    color: 0xffd98a, size: 0.22, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+    color: 0xffd98a, size: 0.22, map: softDotTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
   });
   private motes: THREE.Points;
   private moteAngle = new Float32Array(MOTES);
@@ -77,6 +77,7 @@ export class DivineStorm implements Effect {
   private moteRad = new Float32Array(MOTES);
   private sparks: Emitter;
   private embers: Emitter;
+  private dust: Emitter;
 
   constructor(settings: DivineStormSettings = defaultDivineStorm()) {
     this.settings = settings;
@@ -115,15 +116,24 @@ export class DivineStorm implements Effect {
       ...defaultSettings(), maxParticles: 2500, rate: 0, lifetime: 0.9, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.5, speed: 9, speedJitter: 0.6, spread: 180, gravity: 9, drag: 0.8,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.embers = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 1.2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 1.8, speed: 1.2, speedJitter: 0.5, spread: 180, gravity: -1.2, drag: 0.5,
       sizeStart: 0.18, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
       opacityStart: 0.45, opacityEnd: 0, additive: true,
+      colorMid: '#ffd36b', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
-    this.emitters.push(this.sparks, this.embers);
+    // Dark tertiary layer: dust whipped up by the storm and the final burst.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 1.2, speed: 3, speedJitter: 0.6, spread: 80, gravity: -0.2, drag: 1.2,
+      sizeStart: 0.7, sizeEnd: 1.6, colorStart: '#8a7556', colorEnd: '#2a241e',
+      opacityStart: 0.3, opacityEnd: 0, additive: false,
+      colorMid: '#5a4a38', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
+    });
+    this.emitters.push(this.sparks, this.embers, this.dust);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -202,6 +212,7 @@ export class DivineStorm implements Effect {
       if (idx !== this.lastHit) {
         this.lastHit = idx;
         this.sparks.burst(120, CHEST);
+        if (idx % 3 === 0) this.dust.burst(24, new THREE.Vector3(0, 0.1, 0));
         this.shake = 0.3;
       }
     }
@@ -298,6 +309,7 @@ export class DivineStorm implements Effect {
     this.finalDone = true;
     this.sparks.burst(900, new THREE.Vector3(CASTER_POS.x, 1.5, CASTER_POS.z));
     this.embers.burst(300, new THREE.Vector3(CASTER_POS.x, 1.5, CASTER_POS.z));
+    this.dust.burst(260, new THREE.Vector3(CASTER_POS.x, 0.1, CASTER_POS.z));
   }
 }
 
@@ -305,6 +317,16 @@ export const divineStormModule: EffectModule = {
   label: 'divine storm',
   category: 'paladin',
   create: () => new DivineStorm(),
+  telegraphs() {
+    return [
+      // The whirlwind's path from the caster to where it rages.
+      { shape: { kind: 'line', x1: CASTER_POS.x, z1: CASTER_POS.z, x2: CASTER_POS.x, z2: STORM_END_Z, width: 4 }, start: SPIN_UP * 0.5, impact: OUT[1] },
+      // Repeated hits on the enemy while the storm rages there.
+      { shape: { kind: 'circle', x: CASTER_POS.x, z: STORM_END_Z, radius: 4.5 }, start: OUT[0], impact: HIT[0], until: HIT[1] },
+      // Final radial burst at the caster's home.
+      { shape: { kind: 'circle', x: CASTER_POS.x, z: CASTER_POS.z, radius: 7 }, start: FINAL - 0.5, impact: FINAL },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Caster at z = 14, storm travels to z = 3.4, enemy at 0.

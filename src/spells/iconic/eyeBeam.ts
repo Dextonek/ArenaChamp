@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
-  CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, frameArena, smoothstep,
+  CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, frameArena, smoothstep, softDotTexture,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -126,7 +126,7 @@ export class EyeBeam implements Effect {
     this.gather = new THREE.Points(
       new THREE.BufferGeometry().setFromPoints(this.gatherDirs.map(() => new THREE.Vector3())),
       new THREE.PointsMaterial({
-        color: 0x5aff80, size: 0.14, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false,
+        map: softDotTexture(), color: 0x5aff80, size: 0.14, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false,
       }),
     );
     this.gather.frustumCulled = false;
@@ -386,6 +386,17 @@ export const eyeBeamModule: EffectModule = {
   label: 'eye beam',
   category: 'iconic',
   create: () => new EyeBeam(),
+  telegraphs(effect) {
+    const s = (effect as EyeBeam).settings;
+    // From the eyes to the farthest point the sweep (and the push-back) can reach; wide enough for the sideways wobble.
+    const farZ = ENEMY_POS.z - s.pushBack - s.sweepWidth - 1;
+    return [
+      {
+        shape: { kind: 'line', x1: 0, z1: EYE_Z, x2: 0, z2: farZ, width: 1.8 + 1.6 * s.beamWidth },
+        start: 0.1, impact: s.chargeTime, until: s.chargeTime + s.sweepTime + 0.15,
+      },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 1.5, 7), 11);

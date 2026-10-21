@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../emitter';
-import { Enemy, createGround, smoothstep } from './common';
+import { Enemy, GlowSphere, createGround, smoothstep, softDotTexture } from './common';
 import type { Effect, EffectModule } from './types';
 
 /**
@@ -41,20 +41,7 @@ const SPIRAL_POINTS = 500;
 const ARC_COUNT = 6;
 const ARC_SEGMENTS = 8;
 const SHOCK_RINGS = 3;
-
-/** Soft round sprite so the hand-made Points don't render as squares. */
-function createDotTexture(): THREE.CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(255,255,255,1)');
-  grad.addColorStop(0.4, 'rgba(255,255,255,0.5)');
-  grad.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
-}
+const SMOKE_RISE = 1.6; // seconds of rising smoke after the beam ends
 
 const additive = {
   transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
@@ -72,21 +59,19 @@ export class EnergyBeam implements Effect {
   private time = 0;
   private fired = false;
   private impacted = false;
-  private acc = [0, 0, 0, 0];
+  private acc = [0, 0, 0, 0, 0];
   private arcTimer = 0;
 
   private enemy = new Enemy();
   private flashLight = new THREE.PointLight(0xffe2a0, 0, 60, 1.5);
   private ballLight = new THREE.PointLight(0x7fc8ff, 0, 30, 1.5);
-  private dotTex = createDotTexture();
   private sphereGeo = new THREE.SphereGeometry(1, 24, 16);
 
   // Ball of light at the caster.
   private ball = new THREE.Group();
   private ballMat: THREE.MeshBasicMaterial;
-  private haloMat: THREE.MeshBasicMaterial;
   private ballCore: THREE.Mesh;
-  private halo: THREE.Mesh;
+  private halo = new GlowSphere(0xffffff);
 
   // Charge stream (inward-moving points) and arcs.
   private chargePts: THREE.Points;
@@ -123,16 +108,15 @@ export class EnergyBeam implements Effect {
   // Contact.
   private scar: THREE.Mesh;
   private scarMat: THREE.MeshBasicMaterial;
-  private expl: THREE.Mesh;
-  private explMat: THREE.MeshBasicMaterial;
-  private explCore: THREE.Mesh;
-  private explCoreMat: THREE.MeshBasicMaterial;
+  private expl = new GlowSphere(0xffffff);
+  private explCore = new GlowSphere(0xffffff, { rim: false });
   private shocks: THREE.Mesh[] = [];
   private shockMat: THREE.MeshBasicMaterial;
 
   private sparks: Emitter;
   private dust: Emitter;
   private muzzle: Emitter;
+  private smoke: Emitter;
 
   private caster = new THREE.Vector3();
   private target = new THREE.Vector3(0, CASTER_Y, 0);
@@ -147,10 +131,9 @@ export class EnergyBeam implements Effect {
 
     // Ball of light.
     this.ballMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    this.haloMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.25, ...additive });
     this.ballCore = new THREE.Mesh(this.sphereGeo, this.ballMat);
-    this.halo = new THREE.Mesh(this.sphereGeo, this.haloMat);
-    this.ball.add(this.ballCore, this.halo, this.ballLight);
+    this.halo.opacity = 0.3;
+    this.ball.add(this.ballCore, this.halo.mesh, this.ballLight);
     this.group.add(this.ball);
 
     // Charge stream: points on a sphere around the ball that fly inward.
@@ -165,7 +148,7 @@ export class EnergyBeam implements Effect {
     const chargeGeo = new THREE.BufferGeometry();
     chargeGeo.setAttribute('position', new THREE.BufferAttribute(this.chargePos, 3).setUsage(THREE.DynamicDrawUsage));
     this.chargeMat = new THREE.PointsMaterial({
-      color: 0xffffff, size: 0.28, map: this.dotTex, opacity: 0.45, ...additive,
+      color: 0xffffff, size: 0.28, map: softDotTexture(), opacity: 0.45, ...additive,
     });
     this.chargePts = new THREE.Points(chargeGeo, this.chargeMat);
     this.chargePts.frustumCulled = false;
@@ -209,7 +192,7 @@ export class EnergyBeam implements Effect {
     const spiralGeo = new THREE.BufferGeometry();
     spiralGeo.setAttribute('position', new THREE.BufferAttribute(this.spiralPos, 3).setUsage(THREE.DynamicDrawUsage));
     this.spiralMat = new THREE.PointsMaterial({
-      color: 0xffffff, size: 0.22, map: this.dotTex, opacity: 0.45, ...additive,
+      color: 0xffffff, size: 0.22, map: softDotTexture(), opacity: 0.45, ...additive,
     });
     this.spiralPts = new THREE.Points(spiralGeo, this.spiralMat);
     this.spiralPts.frustumCulled = false;
@@ -225,13 +208,9 @@ export class EnergyBeam implements Effect {
     this.group.add(this.scar);
 
     // Explosion dome + hot core, ground shockwaves.
-    this.explMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0, ...additive });
-    this.expl = new THREE.Mesh(this.sphereGeo, this.explMat);
-    this.expl.position.set(0, 1.2, 0);
-    this.explCoreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0, ...additive });
-    this.explCore = new THREE.Mesh(this.sphereGeo, this.explCoreMat);
-    this.explCore.position.set(0, 1.4, 0);
-    this.group.add(this.expl, this.explCore);
+    this.expl.mesh.position.set(0, 1.2, 0);
+    this.explCore.mesh.position.set(0, 1.4, 0);
+    this.group.add(this.expl.mesh, this.explCore.mesh);
 
     this.shockMat = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0, side: THREE.DoubleSide, ...additive });
     const shockGeo = new THREE.RingGeometry(0.85, 1, 96);
@@ -258,7 +237,16 @@ export class EnergyBeam implements Effect {
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 3, lifetimeJitter: 0.3,
       shape: 'cone', shapeSize: 3, speed: 6, speedJitter: 0.4, spread: 85,
       gravity: -0.2, drag: 1.6, sizeStart: 1.6, sizeEnd: 6, colorStart: '#8a7f70', colorEnd: '#3a3a40',
+      colorMid: '#6a6258', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.35, opacityEnd: 0, additive: false,
+    });
+    // Dark smoke column rising from the impact once the beam is gone.
+    this.smoke = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 3, lifetimeJitter: 0.35,
+      shape: 'sphere', shapeSize: 0.8, originY: 0.3, speed: 2.8, speedJitter: 0.5, spread: 22,
+      gravity: -0.6, drag: 1.0, sizeStart: 1.0, sizeEnd: 4.5, colorStart: '#3a3633', colorEnd: '#0e0e10',
+      colorMid: '#24211f', sizeJitter: 0.45, erosion: 0.6, spin: 0.4,
+      opacityStart: 0.4, opacityEnd: 0, additive: false,
     });
     this.muzzle = new Emitter({
       ...defaultSettings(), maxParticles: 500, rate: 0, lifetime: 0.6, lifetimeJitter: 0.4,
@@ -266,7 +254,7 @@ export class EnergyBeam implements Effect {
       sizeStart: 0.3, sizeEnd: 0, colorStart: '#ffffff', colorEnd: '#4fb4ff',
       opacityStart: 0.45, opacityEnd: 0, additive: true,
     });
-    this.emitters.push(this.sparks, this.dust, this.muzzle);
+    this.emitters.push(this.sparks, this.dust, this.muzzle, this.smoke);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.applyStyle();
@@ -296,14 +284,14 @@ export class EnergyBeam implements Effect {
     this.capMat.color.copy(core);
     this.midMat.color.copy(beam);
     this.outerMat.color.copy(beam);
-    this.haloMat.color.copy(beam);
+    this.halo.color.copy(beam);
     this.ringMat.color.copy(beam).lerp(new THREE.Color(1, 1, 1), 0.3);
     this.chargeMat.color.copy(beam).lerp(new THREE.Color(1, 1, 1), 0.45);
     this.spiralMat.color.copy(beam).lerp(new THREE.Color(1, 1, 1), 0.35);
     this.arcMat.color.copy(beam).lerp(new THREE.Color(1, 1, 1), 0.5);
     this.ballLight.color.copy(beam).lerp(new THREE.Color(1, 1, 1), 0.3);
-    this.explMat.color.copy(blast);
-    this.explCoreMat.color.copy(blast).lerp(new THREE.Color(1, 1, 1), 0.5);
+    this.expl.color.copy(blast);
+    this.explCore.color.copy(blast).lerp(new THREE.Color(1, 1, 1), 0.5);
     for (const m of this.shocks) (m.material as THREE.MeshBasicMaterial).color.copy(blast).multiplyScalar(1.4);
     this.sparks.settings.colorEnd = s.blastColor;
     this.sparks.applyStyle();
@@ -326,8 +314,8 @@ export class EnergyBeam implements Effect {
     for (const e of this.emitters) e.clear();
     this.enemy.reset();
     this.flashLight.intensity = 0;
-    this.explMat.opacity = 0;
-    this.explCoreMat.opacity = 0;
+    this.expl.opacity = 0;
+    this.explCore.opacity = 0;
     this.scarMat.opacity = 0;
     for (const m of this.shocks) (m.material as THREE.MeshBasicMaterial).opacity = 0;
     this.layout(0);
@@ -405,7 +393,7 @@ export class EnergyBeam implements Effect {
     this.ball.position.copy(this.caster);
     this.ball.visible = t < beamEnd;
     this.ballCore.scale.setScalar(ballR);
-    this.halo.scale.setScalar(ballR * (1.8 + 0.25 * Math.sin(t * 31)));
+    this.halo.mesh.scale.setScalar(ballR * (1.8 + 0.25 * Math.sin(t * 31)));
     this.ballLight.intensity = t < fire ? 30 * c * c : 45 * w;
 
     // --- Charge stream + arcs --------------------------------------------------
@@ -499,13 +487,11 @@ export class EnergyBeam implements Effect {
       const rise = smoothstep(after / 0.1);
       const linger = 1 - smoothstep((t - beamEnd) / (AFTERMATH * 0.8));
       const flick = 1 + 0.08 * Math.sin(t * 37);
-      this.expl.scale.setScalar((explR * (1 - Math.exp(-after * 4)) + after * 0.3) * flick * (0.85 + 0.15 * linger));
-      // Uniform additive spheres look like solid walls when large: keep the dome faint and let it fade early.
-      this.explMat.opacity = 0.16 * rise * linger * (0.4 + 0.6 * Math.exp(-after * 0.8));
-      this.expl.visible = this.explMat.opacity > 0.002;
-      this.explCore.scale.setScalar(explR * 0.55 * (1 - Math.exp(-after * 6)) * flick);
-      this.explCoreMat.opacity = 0.4 * rise * Math.exp(-after * 1.2) * linger;
-      this.explCore.visible = this.explCoreMat.opacity > 0.002;
+      this.expl.mesh.scale.setScalar((explR * (1 - Math.exp(-after * 4)) + after * 0.3) * flick * (0.85 + 0.15 * linger));
+      // Rim-lit shell keeps the dome from reading as a solid wall; it still fades early.
+      this.expl.opacity = 0.28 * rise * linger * (0.4 + 0.6 * Math.exp(-after * 0.8));
+      this.explCore.mesh.scale.setScalar(explR * 0.55 * (1 - Math.exp(-after * 6)) * flick);
+      this.explCore.opacity = 0.4 * rise * Math.exp(-after * 1.2) * linger;
 
       for (let i = 0; i < SHOCK_RINGS; i++) {
         const wave = (after - i * 0.18) / 1.1;
@@ -527,6 +513,11 @@ export class EnergyBeam implements Effect {
         this.stream(3, this.dust, 20 * w, dt, this.groundHit);
       }
 
+      // Dark smoke rises from the impact after the beam ends.
+      if (this.playing && t >= beamEnd && t < beamEnd + SMOKE_RISE) {
+        this.stream(4, this.smoke, 90 * (1 - (t - beamEnd) / SMOKE_RISE), dt, this.groundHit);
+      }
+
       // Enemy: white-hot flash under the beam, crushed once it ends.
       const flash = t < beamEnd
         ? 0.15 + 0.85 * Math.exp(-after * 5) + 0.05 * Math.random()
@@ -534,8 +525,8 @@ export class EnergyBeam implements Effect {
       this.enemy.setFlash(flash);
       this.enemy.setCrush(smoothstep((t - beamEnd) / 0.35));
     } else {
-      this.expl.visible = false;
-      this.explCore.visible = false;
+      this.expl.opacity = 0;
+      this.explCore.opacity = 0;
       for (const m of this.shocks) m.visible = false;
     }
   }
@@ -568,7 +559,6 @@ export class EnergyBeam implements Effect {
   dispose() {
     this.sphereGeo.dispose();
     this.ringGeo.dispose();
-    this.dotTex.dispose();
     for (const e of this.emitters) e.dispose();
   }
 }
@@ -576,6 +566,14 @@ export class EnergyBeam implements Effect {
 export const energyBeamModule: EffectModule = {
   label: 'energy beam',
   create: () => new EnergyBeam(),
+  telegraphs(effect) {
+    const s = (effect as EnergyBeam).settings;
+    const fire = s.chargeTime + 0.25;
+    return [
+      { shape: { kind: 'line', x1: 0, z1: s.distance, x2: 0, z2: -1, width: s.beamRadius * 3.5 }, start: 0.3, impact: fire, until: fire + s.beamDuration },
+      { shape: { kind: 'circle', x: 0, z: 0, radius: 2.5 + 2.5 * s.beamRadius }, start: 0.3, impact: fire, until: fire + s.beamDuration },
+    ];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.4, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const d = (effect as EnergyBeam).settings.distance;

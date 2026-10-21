@@ -88,6 +88,7 @@ export class DivineToll implements Effect {
   private marks = TARGETS.map(() => createRing(0xffe2a0, 0.7, 0.8, 4));
   private sparks: Emitter;
   private motes: Emitter;
+  private dust: Emitter;
 
   constructor(settings: DivineTollSettings = defaultDivineToll()) {
     this.settings = settings;
@@ -112,15 +113,25 @@ export class DivineToll implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.9, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.5, speed: 7, speedJitter: 0.6, spread: 180, gravity: 8, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 2.0, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: 0.9, speed: 1.6, speedJitter: 0.5, spread: 25, gravity: -0.6, drag: 0.6,
       sizeStart: 0.18, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
       opacityStart: 0.4, opacityEnd: 0, additive: true,
+      colorMid: '#ffd98a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
-    this.emitters.push(this.sparks, this.motes);
+    // Dark dust kicked up under each beam hit (normal blending) for contrast behind the bright layers.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 2.0, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.5, originY: 0.3, speed: 2.2, speedJitter: 0.5, spread: 70, gravity: -0.3, drag: 1,
+      sizeStart: 0.7, sizeEnd: 1.8, colorStart: '#6a5a44', colorEnd: '#2a241d',
+      opacityStart: 0.3, opacityEnd: 0, additive: false,
+      colorMid: '#4a3f31', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
+    });
+    // Dust (normal blending) first so the additive layers draw over it.
+    this.emitters.push(this.dust, this.sparks, this.motes);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -256,6 +267,7 @@ export class DivineToll implements Effect {
     const p = TARGETS[i];
     this.sparks.burst(180, new THREE.Vector3(p.x, 1.3, p.z));
     this.motes.burst(70, new THREE.Vector3(p.x, 0.2, p.z));
+    this.dust.burst(40, new THREE.Vector3(p.x, 0, p.z));
   }
 }
 
@@ -263,6 +275,11 @@ export const divineTollModule: EffectModule = {
   label: 'divine toll',
   category: 'paladin',
   create: () => new DivineToll(),
+  telegraphs: () => TARGETS.map((p) => ({
+    shape: { kind: 'circle' as const, x: p.x, z: p.z, radius: 2 },
+    start: 0.4,
+    impact: BEAMS + 0.12,
+  })),
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Caster and bell at z = 14 (bell up to ~y 10), enemy arc around z = -2..2.

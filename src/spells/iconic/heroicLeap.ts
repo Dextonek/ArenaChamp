@@ -152,25 +152,27 @@ export class HeroicLeap implements Effect {
       ...defaultSettings(), maxParticles: 500, rate: 0, lifetime: 0.6, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.4, speed: 0.6, speedJitter: 0.5, spread: 180, gravity: 0, drag: 1,
       sizeStart: 0.35, sizeEnd: 0.05, colorStart: '#e8e0d8', colorEnd: '#a09890',
-      opacityStart: 0.25, opacityEnd: 0, additive: true,
+      opacityStart: 0.25, opacityEnd: 0, additive: true, colorMid: '#c8beb4', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.dome = new Emitter({
       ...defaultSettings(), maxParticles: 1300, rate: 0, lifetime: 2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 1.2, speed: 10, speedJitter: 0.5, spread: 80, gravity: 1, drag: 1.4,
       sizeStart: 0.8, sizeEnd: 3.2, colorStart: '#7a6f63', colorEnd: '#3b3631',
       opacityStart: 0.85, opacityEnd: 0, additive: false,
+      colorMid: '#5f564d', sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
     });
     this.groundDust = new Emitter({
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 1.6, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.8, speed: 13, speedJitter: 0.5, spread: 88, gravity: 0.5, drag: 1.5,
       sizeStart: 0.7, sizeEnd: 2.4, colorStart: '#6b6157', colorEnd: '#34302b',
       opacityStart: 0.7, opacityEnd: 0, additive: false,
+      colorMid: '#50483f', sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
     });
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 1, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.5, speed: 12, speedJitter: 0.6, spread: 75, gravity: 14, drag: 0.5,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff0d0', colorEnd: '#ff5a1a',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, erosion: 0, sizeJitter: 0.3,
     });
     this.emitters.push(this.wind, this.dome, this.groundDust, this.sparks);
     for (const e of this.emitters) this.group.add(e.points);
@@ -413,6 +415,15 @@ export const heroicLeapModule: EffectModule = {
   label: 'heroic leap',
   category: 'iconic',
   create: () => new HeroicLeap(),
+  telegraphs(effect) {
+    const h = effect as HeroicLeap;
+    const s = h.settings;
+    // Landing circle (crater + rim) shows as soon as the warrior leaves the ground, well before the dive ends.
+    const impact = LAUNCH + ASCENT + s.hangTime + FALL;
+    return [
+      { shape: { kind: 'circle', x: 0, z: ENEMY_POS.z + s.landZ, radius: 3.8 }, start: LAUNCH, impact },
+    ];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const s = (effect as HeroicLeap).settings;

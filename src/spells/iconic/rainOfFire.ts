@@ -84,6 +84,7 @@ export class RainOfFire implements Effect {
   private sparks: Emitter;
   private fieldG: Emitter;
   private fieldO: Emitter;
+  private smoke: Emitter;
 
   constructor(settings: RainOfFireSettings = defaultRainOfFire()) {
     this.settings = settings;
@@ -113,33 +114,44 @@ export class RainOfFire implements Effect {
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 0.35, lifetimeJitter: 0.3,
       shape: 'sphere', shapeSize: 0.1, speed: 0.5, speedJitter: 0.5, spread: 180, gravity: 0, drag: 1,
       sizeStart: 0.4, sizeEnd: 0.04, colorStart: a, colorEnd: b, opacityStart: 0.45, opacityEnd: 0, additive: true,
+      sizeJitter: 0.4, erosion: 0.4, spin: 0.4,
     });
     this.trailG = trail('#c8ff80', '#1a8a10');
     this.trailO = trail('#ffc060', '#d02800');
 
-    const splash = (a: string, b: string): Emitter => new Emitter({
+    const splash = (a: string, mid: string, b: string): Emitter => new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 0.7, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.25, speed: 4.5, speedJitter: 0.6, spread: 70, gravity: 4, drag: 1.2,
       sizeStart: 0.5, sizeEnd: 0.05, colorStart: a, colorEnd: b, opacityStart: 0.45, opacityEnd: 0, additive: true,
+      colorMid: mid, sizeJitter: 0.4, erosion: 0.45, spin: 0.4,
     });
-    this.splashG = splash('#c8ff80', '#1a8a10');
-    this.splashO = splash('#ffc060', '#d02800');
+    this.splashG = splash('#c8ff80', '#4ae020', '#0e5a0a');
+    this.splashO = splash('#ffc060', '#ff6a10', '#8a1800');
 
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.2, speed: 8, speedJitter: 0.6, spread: 60, gravity: 14, drag: 0.7,
-      sizeStart: 0.12, sizeEnd: 0.02, colorStart: '#fff0b0', colorEnd: '#ff7a10', opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeStart: 0.12, sizeEnd: 0.02, colorStart: '#fff0b0', colorEnd: '#ff7a10', opacityStart: 0.9, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
 
-    const field = (a: string, b: string): Emitter => new Emitter({
+    const field = (a: string, mid: string, b: string): Emitter => new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 0.9, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: settings.areaRadius, speed: 1.6, speedJitter: 0.6, spread: 15, gravity: -1.5, drag: 0.8,
       sizeStart: 0.55, sizeEnd: 0.05, colorStart: a, colorEnd: b, opacityStart: 0.3, opacityEnd: 0, additive: true,
+      colorMid: mid, sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
     });
-    this.fieldG = field('#b0ff70', '#1a8a10');
-    this.fieldO = field('#ffb040', '#c82400');
+    this.fieldG = field('#b0ff70', '#3ad018', '#0e5a0a');
+    this.fieldO = field('#ffb040', '#ff5a10', '#8a1800');
 
-    this.emitters.push(this.trailG, this.trailO, this.splashG, this.splashO, this.sparks, this.fieldG, this.fieldO);
+    // Dark tertiary layer: ash and smoke behind the bright splashes, lingering longest.
+    this.smoke = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.3, speed: 1.6, speedJitter: 0.6, spread: 60, gravity: -0.6, drag: 0.9,
+      sizeStart: 0.8, sizeEnd: 1.8, colorStart: '#2a2420', colorEnd: '#0a0806', opacityStart: 0.4, opacityEnd: 0,
+      additive: false, sizeJitter: 0.45, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+    });
+
+    this.emitters.push(this.smoke, this.trailG, this.trailO, this.splashG, this.splashO, this.sparks, this.fieldG, this.fieldO);
     for (const e of this.emitters) this.group.add(e.points);
     this.reset();
   }
@@ -211,6 +223,7 @@ export class RainOfFire implements Effect {
         (m.green ? this.splashG : this.splashO).burst(26, at);
         (m.green ? this.splashO : this.splashG).burst(8, at);
         this.sparks.burst(14, at);
+        this.smoke.burst(5, at);
       }
     });
     const landed = this.meteors.reduce((n, m) => n + (m.landed ? 1 : 0), 0);
@@ -302,6 +315,14 @@ export const rainOfFireModule: EffectModule = {
   label: 'rain of fire',
   category: 'iconic',
   create: () => new RainOfFire(),
+  telegraphs(effect) {
+    const s = (effect as RainOfFire).settings;
+    const first = OPEN * 0.7 + 0.6; // earliest landing
+    // The whole meteor area is dangerous from the first landing until the rain stops.
+    return [
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: s.areaRadius }, start: 0.1, impact: first, until: Math.max(first + 0.2, s.rainTime) },
+    ];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls, effect) {
     const s = (effect as RainOfFire).settings;

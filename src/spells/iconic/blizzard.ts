@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
-  ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
+  ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep, softDotTexture,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -40,21 +40,6 @@ const ENEMY_BASE = new THREE.Color(0x5a1820);
 const ENEMY_ICE = new THREE.Color(0x4a90c8);
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
-
-function dotTexture(): THREE.Texture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(255,255,255,1)');
-  grad.addColorStop(0.4, 'rgba(255,255,255,0.6)');
-  grad.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 64, 64);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
 
 interface Puff {
   mesh: THREE.Mesh;
@@ -132,6 +117,7 @@ export class Blizzard implements Effect {
   private frost: Emitter; // impact puffs
   private glitter: Emitter; // ice glints
   private mist: Emitter; // low drifting mist
+  private slush: Emitter; // dark cold dust kicked up by the spikes
 
   private dummy = new THREE.Object3D();
   private v = new THREE.Vector3();
@@ -163,7 +149,7 @@ export class Blizzard implements Effect {
     // Snow.
     this.snowGeo.setAttribute('position', new THREE.BufferAttribute(this.snowPos, 3).setUsage(THREE.DynamicDrawUsage));
     this.snowMat = new THREE.PointsMaterial({
-      size: 0.24, map: dotTexture(), color: 0xe8f6ff, transparent: true, opacity: 0, depthWrite: false,
+      size: 0.24, map: softDotTexture(), color: 0xe8f6ff, transparent: true, opacity: 0, depthWrite: false,
       blending: THREE.AdditiveBlending, sizeAttenuation: true,
     });
     this.snow = new THREE.Points(this.snowGeo, this.snowMat);
@@ -203,22 +189,33 @@ export class Blizzard implements Effect {
     this.frost = new Emitter({
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.8, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.15, speed: 2.4, speedJitter: 0.5, spread: 75, gravity: -0.3, drag: 1.5,
-      sizeStart: 0.5, sizeEnd: 1.3, colorStart: '#e6f8ff', colorEnd: '#8fc8e8',
+      sizeStart: 0.5, sizeEnd: 1.3, colorStart: '#e6f8ff', colorMid: '#a8d8f0', colorEnd: '#5a98c0',
       opacityStart: 0.35, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
+    });
+    this.slush = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 1.6, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.2, speed: 1.6, speedJitter: 0.5, spread: 80, gravity: -0.2, drag: 1.4,
+      sizeStart: 0.6, sizeEnd: 1.6, colorStart: '#6f8fae', colorMid: '#3e5878', colorEnd: '#1a283c',
+      opacityStart: 0.28, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
     });
     this.glitter = new Emitter({
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.6, lifetimeJitter: 0.5,
       shape: 'point', shapeSize: 0, speed: 5, speedJitter: 0.6, spread: 70, gravity: 9, drag: 0.8,
       sizeStart: 0.12, sizeEnd: 0.02, colorStart: '#ffffff', colorEnd: '#6fc8ff',
       opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.mist = new Emitter({
       ...defaultSettings(), maxParticles: 600, rate: 0, lifetime: 2, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: 5, originY: 0.2, speed: 0.6, speedJitter: 0.5, spread: 90, gravity: -0.1, drag: 0.8,
-      sizeStart: 1.2, sizeEnd: 2.6, colorStart: '#b6d8ec', colorEnd: '#7aa8c8',
+      sizeStart: 1.2, sizeEnd: 2.6, colorStart: '#b6d8ec', colorMid: '#8ebcdc', colorEnd: '#5a88aa',
       opacityStart: 0.12, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.5, spin: 0.3, groundFade: 0.3,
     });
-    this.emitters.push(this.frost, this.glitter, this.mist);
+    // Normal-blended layers first so the additive glitter draws over them.
+    this.emitters.push(this.slush, this.mist, this.frost, this.glitter);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.applyStyle();
@@ -371,6 +368,7 @@ export class Blizzard implements Effect {
 
   private impact(x: number, z: number) {
     this.v.set(x, 0.1, z);
+    this.slush.burst(1, this.v);
     this.frost.burst(3, this.v);
     this.glitter.burst(4, this.v);
     const k = this.spikeCursor;
@@ -451,6 +449,14 @@ export const blizzardModule: EffectModule = {
   label: 'blizzard',
   category: 'iconic',
   create: () => new Blizzard(),
+  telegraphs(effect) {
+    const s = (effect as Blizzard).settings;
+    // The storm area: shards start landing once the cloud has formed and keep falling for the whole channel.
+    const impact = GROW + 0.4;
+    return [
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: s.radius }, start: 0.3, impact, until: Math.max(impact, s.channelTime) },
+    ];
+  },
   bloom: { enabled: true, strength: 0.45, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const s = (effect as Blizzard).settings;

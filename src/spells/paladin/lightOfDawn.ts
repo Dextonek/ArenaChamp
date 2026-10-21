@@ -119,12 +119,13 @@ export class LightOfDawn implements Effect {
       shape: 'cone', shapeSize: 0.8, speed: 1.8, speedJitter: 0.5, spread: 25, gravity: -0.8, drag: 0.6,
       sizeStart: 0.18, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
       opacityStart: 0.45, opacityEnd: 0, additive: true,
+      colorMid: '#ffd98a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 600, rate: 0, lifetime: 0.7, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.4, speed: 4, speedJitter: 0.6, spread: 180, gravity: 3, drag: 0.8,
       sizeStart: 0.1, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.emitters.push(this.motes, this.sparks);
     for (const e of this.emitters) this.group.add(e.points);
@@ -183,13 +184,13 @@ export class LightOfDawn implements Effect {
 
     // Sunrise behind the allies: rises during the raise, hangs low, fades out.
     const rise = smoothstep(t / (RAISE + 0.6));
-    this.sun.mesh.position.set(0, -1.5 + 4 * rise, -8);
-    this.sun.mesh.scale.setScalar(4.5);
-    this.sun.opacity = 0.35 * rise * fade;
-    this.halo.mesh.position.set(0, 0.5 + 2 * rise, -4);
+    this.sun.mesh.position.set(0, -1.2 + 2.6 * rise, -8);
+    this.sun.mesh.scale.setScalar(2.6);
+    this.sun.opacity = 0.2 * rise * fade;
+    this.halo.mesh.position.set(0, 0.3 + 1.4 * rise, -4);
     // A 14-unit halo filled the whole backdrop with an orange dome; keep it a modest sunrise glow.
-    this.halo.mesh.scale.setScalar(7);
-    this.halo.opacity = 0.06 * rise * fade;
+    this.halo.mesh.scale.setScalar(4.2);
+    this.halo.opacity = 0.035 * rise * fade;
 
     // Caster raises the weapon, then sweeps it forward on release.
     const raise = smoothstep(t / RAISE);

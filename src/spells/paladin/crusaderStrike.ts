@@ -57,6 +57,10 @@ export class CrusaderStrike implements Effect {
     color: 0xfff0c8, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
   });
   private arc = new THREE.Mesh(new THREE.RingGeometry(2.75, 3.35, 48, 1, 0, 1.3), this.arcMat);
+  private arcTrailMat = new THREE.MeshBasicMaterial({
+    color: 0xffd27a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
+  });
+  private arcTrail = new THREE.Mesh(new THREE.RingGeometry(2.75, 3.35, 48, 1, 0, 1.3), this.arcTrailMat);
   private arcCore = new THREE.Mesh(new THREE.RingGeometry(3.0, 3.2, 48, 1, 0.05, 1.2), this.arcCoreMat);
   private crossMat = new THREE.MeshBasicMaterial({
     color: new THREE.Color(1.5, 1.1, 0.45), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
@@ -66,6 +70,7 @@ export class CrusaderStrike implements Effect {
   private shock = createRing(0xffd27a, 0.85, 1, 64);
   private sparks: Emitter;
   private trail: Emitter;
+  private dust: Emitter;
 
   constructor(settings: CrusaderStrikeSettings = defaultCrusaderStrike()) {
     this.settings = settings;
@@ -85,7 +90,7 @@ export class CrusaderStrike implements Effect {
 
     this.arcPivot.position.copy(PIVOT);
     this.arcPivot.rotation.y = Math.PI / 2; // ring plane faces the +X camera
-    this.arcPivot.add(this.arc, this.arcCore);
+    this.arcPivot.add(this.arcTrail, this.arc, this.arcCore);
     this.group.add(this.arcPivot);
 
     const vBar = new THREE.Mesh(new THREE.BoxGeometry(0.1, 3.6, 0.32), this.crossMat);
@@ -98,15 +103,24 @@ export class CrusaderStrike implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.4, speed: 10, speedJitter: 0.6, spread: 180, gravity: 9, drag: 0.8,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.trail = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 0.6, lifetimeJitter: 0.4,
       shape: 'box', shapeSize: 0.6, speed: 0.8, speedJitter: 0.5, spread: 180, gravity: -0.5, drag: 0.5,
       sizeStart: 0.16, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
       opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#ffd36b', sizeJitter: 0.4, erosion: 0.45, spin: 0.4,
     });
-    this.emitters.push(this.sparks, this.trail);
+    // Dark tertiary layer: dust puff at the enemy's feet behind the bright hit.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 1.8, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.8, speed: 3, speedJitter: 0.6, spread: 80, gravity: -0.2, drag: 1.2,
+      sizeStart: 0.6, sizeEnd: 1.3, colorStart: '#8a7556', colorEnd: '#2a241e',
+      opacityStart: 0.35, opacityEnd: 0, additive: false,
+      colorMid: '#5a4a38', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
+    });
+    this.emitters.push(this.sparks, this.trail, this.dust);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -216,12 +230,18 @@ export class CrusaderStrike implements Effect {
 
     // Crescent: sweeps through the enemy's chest, then fades.
     const p = THREE.MathUtils.clamp((t - this.slashStart) / SLASH_TIME, 0, 1);
-    const arcOp = t < this.slashStart ? 0 : 0.7 * smoothstep(p * 4) * (1 - smoothstep((t - this.slashStart - 0.12) / 0.3));
+    const arcAt = (tt: number) => tt < this.slashStart ? 0
+      : 0.7 * smoothstep(THREE.MathUtils.clamp((tt - this.slashStart) / SLASH_TIME, 0, 1) * 4) * (1 - smoothstep((tt - this.slashStart - 0.16) / 0.4));
+    const arcOp = arcAt(t);
     this.arc.rotation.z = 0.4 - 2.2 * p;
     this.arcCore.rotation.z = this.arc.rotation.z;
+    // Faint afterimage: a dimmer copy lagging behind the sweep.
+    const pLag = THREE.MathUtils.clamp((t - 0.05 - this.slashStart) / SLASH_TIME, 0, 1);
+    this.arcTrail.rotation.z = 0.4 - 2.2 * pLag + 0.12;
+    this.arcTrailMat.opacity = 0.4 * arcAt(t - 0.05);
     this.arcMat.opacity = arcOp;
     this.arcCoreMat.opacity = arcOp * 0.8;
-    this.arcPivot.visible = arcOp > 0.01;
+    this.arcPivot.visible = arcOp > 0.01 || this.arcTrailMat.opacity > 0.01;
 
     // Cross + impact flare at the hit point.
     if (this.hit) {
@@ -232,13 +252,13 @@ export class CrusaderStrike implements Effect {
       this.cross.visible = this.crossMat.opacity > 0.01;
       this.flare.mesh.position.copy(CHEST);
       this.flare.mesh.scale.setScalar(1.2 + after * 5);
-      this.flare.opacity = 0.5 * Math.exp(-after * 8);
+      this.flare.opacity = 0.38 * Math.exp(-after * 8);
       this.shock.mesh.position.set(0, 0.04, 0);
       this.shock.mesh.scale.setScalar(1 + after * 16);
       this.shock.material.opacity = Math.max(0, 0.6 * (1 - after / 0.6));
       this.shake = 0.35 * Math.exp(-after * 8);
       // Enemy flash and stagger: knocked back, leaning away, then recovers.
-      this.enemy.setFlash(1.4 * Math.exp(-after * 5));
+      this.enemy.setFlash(0.9 * Math.exp(-after * 5));
       const stag = smoothstep(after / 0.12) * Math.exp(-Math.max(0, after - 0.12) * 2.2);
       this.enemy.group.position.set(ENEMY_POS.x, 0, ENEMY_POS.z - 0.9 * stag);
       this.enemy.group.rotation.x = -0.3 * stag;
@@ -252,6 +272,7 @@ export class CrusaderStrike implements Effect {
   private onHit() {
     this.hit = true;
     this.sparks.burst(600, CHEST);
+    this.dust.burst(180, new THREE.Vector3(0, 0.1, 0));
   }
 }
 
@@ -259,6 +280,15 @@ export const crusaderStrikeModule: EffectModule = {
   label: 'crusader strike',
   category: 'paladin',
   create: () => new CrusaderStrike(),
+  telegraphs(effect) {
+    const s = (effect as CrusaderStrike).settings;
+    // The hit lands at slashStart + 0.14 = WIND + dashTime - 0.1 + 0.14.
+    const impact = WIND + s.dashTime + 0.04;
+    return [
+      { shape: { kind: 'line', x1: 0, z1: STRIKE_Z + 4, x2: 0, z2: 0, width: 2.4 }, start: 0.15, impact },
+      { shape: { kind: 'circle', x: 0, z: 0, radius: 2.2 }, start: 0.15, impact },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Caster at z = 14 dashes to z = 2.4, enemy at 0.

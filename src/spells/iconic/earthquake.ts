@@ -182,12 +182,13 @@ export class Earthquake implements Effect {
       shape: 'cone', shapeSize: 0.45, speed: 3.5, speedJitter: 0.4, spread: 10, gravity: -0.4, drag: 0.8,
       sizeStart: 0.7, sizeEnd: 1.8, colorStart: '#8a7358', colorEnd: '#5a4a3a',
       opacityStart: 0.5, opacityEnd: 0, additive: false,
+      colorMid: '#6e5a42', sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
     });
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 0.9, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.3, speed: 6, speedJitter: 0.6, spread: 40, gravity: 9, drag: 0.6,
       sizeStart: 0.12, sizeEnd: 0.02, colorStart: '#e9ff9a', colorEnd: '#ff7a1a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, erosion: 0, sizeJitter: 0.3,
     });
     this.emitters.push(this.dust, this.sparks);
     for (const e of this.emitters) this.group.add(e.points);
@@ -428,6 +429,13 @@ export const earthquakeModule: EffectModule = {
   label: 'earthquake',
   category: 'iconic',
   create: () => new Earthquake(),
+  telegraphs(effect) {
+    const s = (effect as Earthquake).settings;
+    // The whole ruptured circle around the enemy hurts from the first hit until the quake dies down.
+    return [
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: s.radius }, start: 0.2, impact: HIT, until: HIT + s.quakeTime },
+    ];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const s = (effect as Earthquake).settings;

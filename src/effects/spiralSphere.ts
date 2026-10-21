@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../emitter';
-import { Enemy, createGround, smoothstep } from './common';
+import { Enemy, GlowSphere, createGround, smoothstep, softDotTexture } from './common';
 import type { Effect, EffectModule } from './types';
 
 /**
@@ -76,19 +76,6 @@ class PointCloud {
   }
 }
 
-function makeDotTexture(): THREE.CanvasTexture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(255,255,255,1)');
-  grad.addColorStop(0.4, 'rgba(255,255,255,0.45)');
-  grad.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
-}
-
 interface Orbit {
   holder: THREE.Object3D;
   mat: THREE.MeshBasicMaterial;
@@ -109,10 +96,9 @@ export class SpiralSphere implements Effect {
   private released = false;
   private ringPulse = 0;
 
-  private dot = makeDotTexture();
   private sphere = new THREE.Group();
   private coreMat: THREE.MeshBasicMaterial;
-  private haloMat: THREE.MeshBasicMaterial;
+  private halo = new GlowSphere(0xffffff);
   private orbits: Orbit[] = [];
   private shells: { mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; spin: THREE.Vector3 }[] = [];
   private streams: PointCloud;
@@ -130,6 +116,7 @@ export class SpiralSphere implements Effect {
   private flashLight = new THREE.PointLight(0xffc27a, 0, 50, 1.5);
   private sparks: Emitter;
   private dust: Emitter;
+  private darkDust: Emitter;
 
   // Stream / wind / spark state.
   private sAz = new Float32Array(STREAMS);
@@ -163,11 +150,8 @@ export class SpiralSphere implements Effect {
     // Core, halo.
     this.coreMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true });
     this.sphere.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 24), this.coreMat));
-    this.haloMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending,
-      depthWrite: false, side: THREE.BackSide,
-    });
-    this.sphere.add(new THREE.Mesh(new THREE.SphereGeometry(1.25, 32, 24), this.haloMat));
+    this.halo.mesh.scale.setScalar(1.25);
+    this.sphere.add(this.halo.mesh);
 
     // Orbit rings, each tilted and tumbling about its own axis, with a bead to make the spin readable.
     const ringGeo = new THREE.TorusGeometry(1, 0.022, 8, 96);
@@ -206,9 +190,9 @@ export class SpiralSphere implements Effect {
     this.group.add(this.sphere);
 
     // Particle clouds.
-    this.streams = new PointCloud(STREAMS, 0.16, 0.5, this.dot);
-    this.wind = new PointCloud(WIND, 0.14, 0.5, this.dot);
-    this.sparkCloud = new PointCloud(SPARKS, 0.12, 0.9, this.dot);
+    this.streams = new PointCloud(STREAMS, 0.16, 0.5, softDotTexture());
+    this.wind = new PointCloud(WIND, 0.14, 0.5, softDotTexture());
+    this.sparkCloud = new PointCloud(SPARKS, 0.12, 0.9, softDotTexture());
     this.group.add(this.streams.points, this.wind.points, this.sparkCloud.points);
     this.seed();
 
@@ -258,9 +242,18 @@ export class SpiralSphere implements Effect {
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 2.5, lifetimeJitter: 0.3,
       shape: 'cone', shapeSize: 0.6, originY: 0.15, speed: 5, speedJitter: 0.5, spread: 82,
       gravity: -0.2, drag: 1.5, sizeStart: 1.1, sizeEnd: 4, colorStart: '#8a7f70', colorEnd: '#3a3a40',
+      colorMid: '#6a6258', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.35, opacityEnd: 0, additive: false,
     });
-    this.emitters.push(this.sparks, this.dust);
+    // Darker, denser smoke behind the bright burst for contrast (normal-blended).
+    this.darkDust = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.4, lifetimeJitter: 0.3,
+      shape: 'sphere', shapeSize: 0.8, originY: 0.2, speed: 3.5, speedJitter: 0.5, spread: 70,
+      gravity: -0.3, drag: 1.3, sizeStart: 1.2, sizeEnd: 4.5, colorStart: '#2e2924', colorEnd: '#0e0e11',
+      colorMid: '#1c1a1a', sizeJitter: 0.45, erosion: 0.6, spin: 0.35,
+      opacityStart: 0.4, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.sparks, this.dust, this.darkDust);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.applyStyle();
@@ -292,7 +285,7 @@ export class SpiralSphere implements Effect {
     this.baseRing.set(s.ringColor);
     this.baseAccent.set(s.accentColor);
     this.coreMat.color.copy(this.baseCore).multiplyScalar(1.2);
-    this.haloMat.color.copy(this.baseRing);
+    this.halo.color.copy(this.baseRing);
     this.orbits.forEach((o, i) => o.mat.color.copy(i % 2 ? this.baseCore : this.baseRing).multiplyScalar(1.3));
     this.shells.forEach((sh, i) => sh.mat.color.copy(i ? this.baseCore : this.baseRing).multiplyScalar(1.3));
     for (const sh of this.shocks) sh.mat.color.copy(this.baseAccent).multiplyScalar(1.3);
@@ -476,7 +469,7 @@ export class SpiralSphere implements Effect {
     });
     this.coreMat.color.copy(this.baseCore).multiplyScalar(1.15 + 0.1 * Math.sin(t * 28));
     this.coreMat.opacity = smoothstep(formP * 4) * vis;
-    this.haloMat.opacity = (0.1 + 0.06 * chargeP) * formIn * vis;
+    this.halo.opacity = (0.13 + 0.08 * chargeP) * formIn * vis;
 
     this.light.position.copy(this.spherePos);
     this.light.intensity = 40 * R * formIn * vis;
@@ -604,6 +597,7 @@ export class SpiralSphere implements Effect {
     const pw = this.settings.power;
     this.sparks.burst(Math.round(900 * pw), this.tmp.set(0, START.y, 0.6));
     this.dust.burst(Math.round(600 * pw), this.tmp.set(0, 0, 0.5));
+    this.darkDust.burst(Math.round(300 * pw), this.tmp.set(0, 0.3, 0.5));
     this.spraySpiral(Math.round(350 * pw), 14 * pw, this.settings.sphereSize * 1.2);
     // Launch the enemy backwards (away from the caster, toward -Z) with a tumble.
     this.evel.set((Math.random() - 0.5) * 2, 9 * pw, -19 * pw);
@@ -646,7 +640,6 @@ export class SpiralSphere implements Effect {
     this.streams.dispose();
     this.wind.dispose();
     this.sparkCloud.dispose();
-    this.dot.dispose();
     for (const e of this.emitters) e.dispose();
   }
 }
@@ -654,6 +647,15 @@ export class SpiralSphere implements Effect {
 export const spiralSphereModule: EffectModule = {
   label: 'spiral sphere',
   create: () => new SpiralSphere(),
+  telegraphs(effect) {
+    const s = (effect as SpiralSphere).settings;
+    const contact = s.formTime + 0.6 + 0.35;
+    return [
+      // The thrust path, then the grinding burst at the enemy.
+      { shape: { kind: 'line', x1: 0, z1: 7, x2: 0, z2: -1, width: 2.4 * s.sphereSize }, start: s.formTime * 0.5, impact: contact - 0.3 },
+      { shape: { kind: 'circle', x: 0, z: 0, radius: 3.5 * s.sphereSize }, start: s.formTime, impact: contact, until: contact + 0.8 },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.45, threshold: 0.85 },
   frameCamera(camera, controls) {
     // Side view from +X: the sphere starts on screen-left (z = +7) and the knockback runs to the right (-Z).

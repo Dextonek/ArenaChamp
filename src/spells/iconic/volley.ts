@@ -324,6 +324,16 @@ export const volleyModule: EffectModule = {
   label: 'volley',
   category: 'iconic',
   create: () => new Volley(),
+  telegraphs(effect) {
+    const s = (effect as Volley).settings;
+    // The arrow rain: first arrows land 1.3 s after release, the last ones LAUNCH_SPREAD + 1.9 s after it.
+    return [
+      {
+        shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: s.radius },
+        start: Math.max(0.1, s.drawTime - 0.3), impact: s.drawTime + 1.3, until: s.drawTime + LAUNCH_SPREAD + 1.9,
+      },
+    ];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const s = (effect as Volley).settings;

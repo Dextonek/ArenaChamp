@@ -109,6 +109,7 @@ export class MeteorShower implements Effect {
 
   private dummy = new THREE.Object3D();
   private v1 = new THREE.Vector3();
+  private v2 = new THREE.Vector3();
   private col = new THREE.Color();
   private fire = new THREE.Color();
   private warn = new THREE.Color(1, 0.18, 0.08);
@@ -125,26 +126,26 @@ export class MeteorShower implements Effect {
     this.trail = new Emitter({
       ...defaultSettings(), maxParticles: 3000, rate: 0, lifetime: 0.55, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.25, speed: 0.8, speedJitter: 0.5, spread: 180, gravity: -1, drag: 1.5,
-      sizeStart: 0.9, sizeEnd: 0.1, colorStart: '#ffc060', colorEnd: '#ff3a10',
-      opacityStart: 0.4, opacityEnd: 0, additive: true,
+      sizeStart: 0.9, sizeEnd: 0.1, colorStart: '#fff0b0', colorMid: '#ff8a2a', colorEnd: '#7a1408',
+      opacityStart: 0.4, opacityEnd: 0, additive: true, sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.smoke = new Emitter({
       ...defaultSettings(), maxParticles: 2500, rate: 0, lifetime: 1.4, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.3, speed: 0.6, speedJitter: 0.5, spread: 180, gravity: -0.3, drag: 1.2,
-      sizeStart: 0.7, sizeEnd: 2.2, colorStart: '#4a3a34', colorEnd: '#1c1c22',
-      opacityStart: 0.28, opacityEnd: 0, additive: false,
+      sizeStart: 0.7, sizeEnd: 2.2, colorStart: '#4a3a34', colorMid: '#2e2826', colorEnd: '#1c1c22',
+      opacityStart: 0.28, opacityEnd: 0, additive: false, sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
     });
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 3000, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'point', shapeSize: 0, speed: 9, speedJitter: 0.6, spread: 70, gravity: 16, drag: 0.8,
       sizeStart: 0.16, sizeEnd: 0.02, colorStart: '#fff0c0', colorEnd: '#ff8a2a',
-      opacityStart: 0.9, opacityEnd: 0, additive: true,
+      opacityStart: 0.9, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.dust = new Emitter({
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.5, speed: 2.8, speedJitter: 0.5, spread: 75, gravity: -0.2, drag: 1.5,
-      sizeStart: 1.0, sizeEnd: 3.4, colorStart: '#7a6a5a', colorEnd: '#30303a',
-      opacityStart: 0.32, opacityEnd: 0, additive: false,
+      sizeStart: 1.0, sizeEnd: 3.4, colorStart: '#6a5c50', colorMid: '#46403c', colorEnd: '#26262e',
+      opacityStart: 0.32, opacityEnd: 0, additive: false, sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.15,
     });
     this.emitters.push(this.trail, this.smoke, this.sparks, this.dust);
     for (const e of this.emitters) this.group.add(e.points);
@@ -225,7 +226,7 @@ export class MeteorShower implements Effect {
     this.glowMat.color.copy(this.fire).multiplyScalar(1.4);
     this.rockMat.emissive.copy(this.fire).multiplyScalar(0.7);
     this.impactLight.color.copy(this.fire);
-    this.trail.settings.colorEnd = s.fireColor;
+    this.trail.settings.colorMid = s.fireColor;
     this.sparks.settings.colorEnd = s.fireColor;
     this.trail.applyStyle();
     this.sparks.applyStyle();
@@ -307,7 +308,9 @@ export class MeteorShower implements Effect {
         if (dt > 0) {
           const rate = m.big ? 260 : 110;
           this.trail.burst(Math.floor(rate * dt + Math.random()), pos);
-          this.smoke.burst(Math.floor(rate * 0.4 * dt + Math.random()), pos);
+          // Smoke is laid down a little behind the fire so it reads as a dark wake.
+          this.v2.copy(pos).addScaledVector(m.dir, -m.size * 1.6);
+          this.smoke.burst(Math.floor(rate * 0.4 * dt + Math.random()), this.v2);
         }
       } else if (sinceImpact >= 0 && closing > 0.001) {
         this.dummy.position.copy(m.target);
@@ -414,6 +417,16 @@ function createRockGeometry(): THREE.BufferGeometry {
 export const meteorShowerModule: EffectModule = {
   label: 'meteor shower',
   create: () => new MeteorShower(),
+  telegraphs(effect) {
+    const s = (effect as MeteorShower).settings;
+    const end = s.anticipation + s.barrageTime;
+    return [
+      // The whole bombardment area stays dangerous through the barrage…
+      { shape: { kind: 'circle', x: 0, z: 0, radius: s.areaRadius + 1.5 }, start: 0.1, impact: s.anticipation, until: end },
+      // …and the final giant meteor gets its own tighter warning.
+      { shape: { kind: 'circle', x: 0, z: 0, radius: 4.5 }, start: end - 1.2, impact: end + 0.5 },
+    ];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.8 },
   frameCamera(camera, controls, effect) {
     const s = (effect as MeteorShower).settings;

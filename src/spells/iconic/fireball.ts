@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
-  ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
+  CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
+  softDotTexture,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -48,7 +49,7 @@ export class Fireball implements Effect {
   private spiralPos = new Float32Array(SPIRAL_N * 3);
   private spiralSeed = new Float32Array(SPIRAL_N * 4); // angle, radius, height, speed
   private spiralMat = new THREE.PointsMaterial({
-    color: 0xffa030, size: 0.16, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+    color: 0xffa030, size: 0.16, map: softDotTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
   });
   private spiral: THREE.Points;
 
@@ -116,31 +117,37 @@ export class Fireball implements Effect {
       ...base, maxParticles: 900, rate: 0, lifetime: 0.5, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.4,
       speed: 1.2, speedJitter: 0.5, spread: 180, gravity: -2, drag: 1, sizeStart: 0.9, sizeEnd: 0.1,
       colorStart: '#ffd060', colorEnd: '#ff3000', opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#ff8a1a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.trailSmoke = new Emitter({
       ...base, maxParticles: 700, rate: 0, lifetime: 1.2, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.4,
       speed: 0.8, speedJitter: 0.5, spread: 180, gravity: -1.2, drag: 0.8, sizeStart: 0.5, sizeEnd: 1.6,
       colorStart: '#3a3430', colorEnd: '#15110f', opacityStart: 0.35, opacityEnd: 0, additive: false,
+      colorMid: '#2a2623', sizeJitter: 0.4, erosion: 0.6, spin: 0.4,
     });
     this.embers = new Emitter({
       ...base, maxParticles: 600, rate: 0, lifetime: 0.9, lifetimeJitter: 0.5, shape: 'sphere', shapeSize: 0.5,
       speed: 2.5, speedJitter: 0.6, spread: 180, gravity: -0.8, drag: 0.8, sizeStart: 0.1, sizeEnd: 0.02,
       colorStart: '#ffe0a0', colorEnd: '#ff6a10', opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.blastFire = new Emitter({
       ...base, maxParticles: 1000, rate: 0, lifetime: 0.9, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.5,
       speed: 9, speedJitter: 0.6, spread: 180, gravity: -1, drag: 1.6, sizeStart: 1.2, sizeEnd: 0.2,
       colorStart: '#ffc050', colorEnd: '#e02a00', opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#ff7a10', sizeJitter: 0.4, erosion: 0.5, spin: 0.5,
     });
     this.plume = new Emitter({
       ...base, maxParticles: 600, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.8,
       speed: 3.5, speedJitter: 0.5, spread: 35, gravity: -0.8, drag: 0.8, sizeStart: 1.2, sizeEnd: 3,
       colorStart: '#2a2522', colorEnd: '#0e0c0b', opacityStart: 0.45, opacityEnd: 0, additive: false,
+      colorMid: '#1c1815', sizeJitter: 0.4, erosion: 0.6, spin: 0.4,
     });
     this.flames = new Emitter({
       ...base, maxParticles: 300, rate: 0, lifetime: 0.5, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.45,
       originY: 1.0, speed: 1.5, speedJitter: 0.5, spread: 30, gravity: -3, drag: 0.6, sizeStart: 0.45, sizeEnd: 0.05,
       colorStart: '#ffcf50', colorEnd: '#ff2a00', opacityStart: 0.6, opacityEnd: 0, additive: true,
+      colorMid: '#ff8a1a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     // Smoke (normal blending) first so the additive fire draws over it.
     this.emitters.push(this.trailSmoke, this.plume, this.trailFire, this.embers, this.blastFire, this.flames);
@@ -258,7 +265,7 @@ export class Fireball implements Effect {
       this.flash.mesh.scale.setScalar(1.2 + after * 5);
       this.flash.opacity = 0.6 * Math.exp(-after * 9);
       this.shock.mesh.scale.setScalar(0.5 + after * 18);
-      this.shock.material.opacity = Math.max(0, 0.7 * (1 - after / 0.8));
+      this.shock.material.opacity = Math.max(0, 0.7 * (1 - after / 0.5));
       this.ember.mesh.scale.setScalar(3.2);
       this.ember.material.opacity = 0.3 * Math.exp(-after * 1.2) * (1 - smoothstep((t - (this.duration - 0.8)) / 0.8));
       const sc = 1 - smoothstep((t - (this.duration - 1)) / 1);
@@ -294,6 +301,22 @@ export const fireballModule: EffectModule = {
   label: 'fireball',
   category: 'iconic',
   create: () => new Fireball(),
+  telegraphs(effect) {
+    const s = (effect as Fireball).settings;
+    const impact = s.castTime + s.flightTime;
+    const start = Math.min(0.3, s.castTime * 0.4);
+    return [
+      // Flight path from the mage's hand to the enemy.
+      {
+        shape: {
+          kind: 'line', x1: CASTER_POS.x + HAND.x, z1: CASTER_POS.z + HAND.z, x2: ENEMY_POS.x, z2: ENEMY_POS.z, width: 1.2,
+        },
+        start, impact,
+      },
+      // Explosion at the enemy.
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 3.5 }, start, impact },
+    ];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 2, 7), 11);

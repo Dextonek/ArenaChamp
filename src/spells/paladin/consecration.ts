@@ -108,6 +108,7 @@ export class Consecration implements Effect {
   private flames: Emitter;
   private edgeFlames: Emitter;
   private motes: Emitter;
+  private smoke: Emitter;
   private sparks: Emitter;
 
   private dummy = new THREE.Object3D();
@@ -134,26 +135,37 @@ export class Consecration implements Effect {
       shape: 'cone', shapeSize: 6, originY: 0.05, speed: 2.2, speedJitter: 0.6, spread: 12, gravity: -1.2, drag: 0.5,
       sizeStart: 0.45, sizeEnd: 0.05, colorStart: '#ffe08a', colorEnd: '#ff8a1a',
       opacityStart: 0.45, opacityEnd: 0, additive: true,
+      colorMid: '#ffb83a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.edgeFlames = new Emitter({
       ...defaultSettings(), maxParticles: 700, rate: 0, lifetime: 0.9, lifetimeJitter: 0.4,
       shape: 'point', speed: 3.2, speedJitter: 0.5, spread: 14, gravity: -1.5, drag: 0.6,
       sizeStart: 0.6, sizeEnd: 0.05, colorStart: '#fff0b0', colorEnd: '#ff9a20',
       opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#ffc040', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 700, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: 6, originY: 0.2, speed: 1.2, speedJitter: 0.5, spread: 14, gravity: -0.35, drag: 0.4,
       sizeStart: 0.17, sizeEnd: 0, colorStart: '#fff4cc', colorEnd: settings.color,
       opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#ffd36b', sizeJitter: 0.4, erosion: 0.45, spin: 0.4,
+    });
+    // Dark tertiary layer: smoke drifting up from the scorched ground behind the flames.
+    this.smoke = new Emitter({
+      ...defaultSettings(), maxParticles: 500, rate: 0, lifetime: 2.5, lifetimeJitter: 0.4,
+      shape: 'cone', shapeSize: 6, originY: 0.1, speed: 0.9, speedJitter: 0.5, spread: 14, gravity: -0.3, drag: 0.6,
+      sizeStart: 0.8, sizeEnd: 1.8, colorStart: '#6a5a46', colorEnd: '#2a241e',
+      opacityStart: 0.22, opacityEnd: 0, additive: false,
+      colorMid: '#4a3e32', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
     });
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.5, speed: 8, speedJitter: 0.6, spread: 90, gravity: 8, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
-    this.emitters.push(this.flames, this.edgeFlames, this.motes, this.sparks);
+    this.emitters.push(this.flames, this.edgeFlames, this.motes, this.smoke, this.sparks);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -303,6 +315,8 @@ export class Consecration implements Effect {
     this.flames.settings.shapeSize = area;
     this.flames.settings.rate = 80 * R * this.ignite;
     this.motes.settings.shapeSize = area;
+    this.smoke.settings.shapeSize = area;
+    this.smoke.settings.rate = 6 * R * this.ignite;
     this.motes.settings.rate = 14 * R * this.ignite;
   }
 }
@@ -311,6 +325,14 @@ export const consecrationModule: EffectModule = {
   label: 'consecration',
   category: 'paladin',
   create: () => new Consecration(),
+  telegraphs(effect) {
+    const s = (effect as Consecration).settings;
+    // The consecrated circle burns from the plant until the flames die down.
+    return [{
+      shape: { kind: 'circle', x: 0, z: 0, radius: s.radius },
+      start: 0.1, impact: PLANT, until: PLANT + s.burnTime,
+    }];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls, effect) {
     const s = (effect as Consecration).settings;

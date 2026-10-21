@@ -415,6 +415,14 @@ export const metamorphosisModule: EffectModule = {
   label: 'metamorphosis',
   category: 'iconic',
   create: () => new Metamorphosis(),
+  telegraphs(effect) {
+    const s = (effect as Metamorphosis).settings;
+    // Landing circle, readable from take-off (like a leap telegraph) until the demon crashes down.
+    return [{
+      shape: { kind: 'circle', x: LAND.x, z: LAND.z, radius: 3.6 },
+      start: s.windup, impact: s.windup + s.flight,
+    }];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls, effect) {
     const s = (effect as Metamorphosis).settings;

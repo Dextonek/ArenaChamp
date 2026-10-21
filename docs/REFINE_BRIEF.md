@@ -22,7 +22,15 @@ You cannot see the result, so apply **concrete, mechanical transformations** —
 7. **Value ladder:** the hottest part should be small and near-white; bodies saturated; edges darker. If a large
    area is near-white, reduce opacity or saturate it.
 8. **Ground anchoring:** something must touch the ground near every impact (decal, dust ring, light, scorch).
-9. Per-file items listed in your assignment.
+9. **Danger zones (required):** if the module has no `telegraphs`, add one to the module object, right after
+   `create`. Read `src/effects/telegraph.ts` for the shapes (`circle`, `ring`, `cone`, `line`) and the
+   direction convention (`dir` yaw, 0 = +Z, π = toward -Z). Each zone covers where the effect actually deals
+   damage; `start` = when the danger is first readable (cast start / anticipation), `impact` = when damage lands
+   (read it from the timeline in `layout`/`update`), `until` = end of a lingering damage phase. Compute times
+   from the effect's settings so they stay right when sliders change. Healing/buff-only spells: add zones only
+   for parts that hurt enemies (if none, omit `telegraphs`). Examples: `src/effects/meteorShower.ts`,
+   `src/effects/energyBeam.ts`, `src/spells/paladin/judgment.ts`.
+10. Per-file items listed in your assignment.
 
 ## Hard constraints
 - Edit only the files you were assigned. Do not touch `common.ts`, `emitter.ts`, `types.ts`, `main.ts`,

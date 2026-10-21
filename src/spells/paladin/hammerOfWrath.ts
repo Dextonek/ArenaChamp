@@ -69,6 +69,8 @@ export class HammerOfWrath implements Effect {
   private fire: Emitter;
   private trail: Emitter;
   private motes: Emitter;
+  private dust: Emitter;
+  private scorch = createRing(0xff9a30, 0.55, 1, 48);
 
   constructor(settings: HammerOfWrathSettings = defaultHammerOfWrath()) {
     this.settings = settings;
@@ -78,33 +80,46 @@ export class HammerOfWrath implements Effect {
     this.echo.scale.setScalar(ECHO_SIZE);
     this.group.add(createGround(), this.caster.group, this.enemy.group);
     this.group.add(this.handGlow.mesh, this.pivot, this.cometHead.mesh, this.echo, this.burst.mesh);
-    this.group.add(this.shock.mesh, this.shock2.mesh);
+    this.group.add(this.shock.mesh, this.shock2.mesh, this.scorch.mesh);
+    this.scorch.mesh.position.set(ENEMY_POS.x, 0.04, ENEMY_POS.z);
+    this.scorch.mesh.scale.setScalar(3);
 
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.9, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.6, speed: 10, speedJitter: 0.6, spread: 180, gravity: 9, drag: 0.8,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.fire = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 1.1, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.9, speed: 7, speedJitter: 0.5, spread: 24, gravity: -2, drag: 0.7,
       sizeStart: 0.5, sizeEnd: 0.1, colorStart: '#ffd070', colorEnd: '#ff7a10',
+      colorMid: '#ffa23a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.35, opacityEnd: 0, additive: true,
     });
     this.trail = new Emitter({
       ...defaultSettings(), maxParticles: 1800, rate: 0, lifetime: 0.55, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.25, speed: 1.2, speedJitter: 0.6, spread: 180, gravity: 0, drag: 1.2,
       sizeStart: 0.28, sizeEnd: 0.02, colorStart: '#fff2c4', colorEnd: settings.color,
+      colorMid: '#ffd77a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.5, opacityEnd: 0, additive: true,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 0.9, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.9, speed: 0.6, speedJitter: 0.5, spread: 180, gravity: -0.4, drag: 0.8,
       sizeStart: 0.16, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
+      colorMid: '#ffd77a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.5, opacityEnd: 0, additive: true,
     });
-    this.emitters.push(this.sparks, this.fire, this.trail, this.motes);
+    // Dark dust and smoke behind the bright burst; outlives every other layer.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 1.2, speed: 4.5, speedJitter: 0.5, spread: 80, gravity: -0.3, drag: 1.2,
+      sizeStart: 0.8, sizeEnd: 1.8, colorStart: '#8a7656', colorMid: '#5a4a34', colorEnd: '#2a2218',
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+      opacityStart: 0.3, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.dust, this.sparks, this.fire, this.trail, this.motes);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -209,6 +224,7 @@ export class HammerOfWrath implements Effect {
       this.burst.opacity = 0.6 * Math.exp(-after * 4);
       this.shock.mesh.scale.setScalar(1 + after * 22);
       this.shock.material.opacity = Math.max(0, 0.8 * (1 - after / 0.7));
+      this.scorch.material.opacity = 0.28 * smoothstep(after / 0.15) * Math.exp(-after * 0.7); // longest-lived layer
       const a2 = after - 0.3;
       this.shock2.mesh.scale.setScalar(1 + Math.max(0, a2) * 26);
       this.shock2.material.opacity = a2 > 0 ? Math.max(0, 0.7 * (1 - a2 / 0.6)) : 0;
@@ -228,6 +244,7 @@ export class HammerOfWrath implements Effect {
       this.burst.opacity = 0;
       this.shock.material.opacity = 0;
       this.shock2.material.opacity = 0;
+      this.scorch.material.opacity = 0;
       this.echoMat.opacity = 0;
       this.echo.visible = false;
     }
@@ -238,6 +255,7 @@ export class HammerOfWrath implements Effect {
     this.sparks.burst(800, new THREE.Vector3(ENEMY_POS.x, 1.2, ENEMY_POS.z));
     this.fire.burst(500, new THREE.Vector3(ENEMY_POS.x, 0.3, ENEMY_POS.z));
     this.motes.burst(300, new THREE.Vector3(ENEMY_POS.x, 1.2, ENEMY_POS.z));
+    this.dust.burst(260, new THREE.Vector3(ENEMY_POS.x, 0.2, ENEMY_POS.z));
   }
 }
 
@@ -245,6 +263,19 @@ export const hammerOfWrathModule: EffectModule = {
   label: 'hammer of wrath',
   category: 'paladin',
   create: () => new HammerOfWrath(),
+  telegraphs(effect) {
+    const s = (effect as HammerOfWrath).settings;
+    const impact = s.castTime + s.flightTime;
+    return [
+      // The thrown hammer detonates on the enemy.
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 3.2 }, start: Math.min(0.3, s.castTime * 0.5), impact },
+      // The spectral echo hammer slams down on the same spot a split second later.
+      {
+        shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: ECHO_SIZE * 0.5 },
+        start: impact, impact: impact + ECHO_DELAY + ECHO_FALL,
+      },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Caster at z = 14, enemy at 0, arc and echo hammer reach up to ~20.

@@ -35,6 +35,8 @@ original visuals. Spell names as labels are fine. Do not copy Blizzard icon art,
   playing, `layout()` positions everything from `time`, module object with `label`, `category`, `create`,
   `bloom`, `frameCamera` (via `frameArena`), `buildGui` (always include `loop`).
 - Bigger references: `src/effects/divineSword.ts`, `src/effects/gateOfBabylon.ts`.
+- **Danger zones:** every damaging spell declares `telegraphs(effect)` on its module (red ground zones the
+  player must leave; see `src/effects/telegraph.ts` and the examples in `meteorShower.ts` / `energyBeam.ts`).
 
 ## Hard rules
 - Write only the files you were assigned. Do not edit `main.ts`, any `index.ts`, `common.ts`, `types.ts`,

@@ -7,8 +7,9 @@ import {
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Avenging Wrath (reworked): a column of light slams down on the caster, who rises into the air while two huge
- * wings of light unfold behind them feather by feather (three fanned rows each), then beat gently. A halo
+ * Avenging Wrath (reworked): a column of light slams down on the caster, who rises into the air while two distinct
+ * wings of light (left and right of the back, each a swept fan hanging off an arm bone) unfold feather by feather
+ * (three fanned rows each), then beat gently. A halo
  * ignites above the head, a golden aura shell wraps the caster and feathers of light drift down. The enemy is
  * not hit - it only recoils from the shockwave of light.
  */
@@ -28,16 +29,19 @@ export const defaultAvengingWrath = (): AvengingWrathSettings => ({
   loop: false,
 });
 
-const SLAM = 0.3;
-const WING_START = 0.7;
-const WING_SWEEP = 40 * Math.PI / 180; // how far back the wing plane is swept from the sideways axis
+const SLAM = 0.5;
+const WING_START = 0.9;
+const WING_SWEEP = 25 * Math.PI / 180; // how far back the wing plane is swept from the sideways axis
+const ARM_ELEV = 62 * Math.PI / 180; // wing arm: shoulder to wrist, up and outward
 const FADE = 0.9;
 
+// a0 / a1: feather elevation in degrees above the sideways axis at the shoulder end / the wrist end of the arm
+// (negative = hanging down-back). The feathers hang off the arm and fan from down at the body to up-out at the tip.
 interface Row { n: number; a0: number; a1: number; len: number; wid: number; rootUp: number; delay: number }
 const ROWS: Row[] = [
-  { n: 16, a0: 8, a1: 118, len: 1, wid: 0.34, rootUp: 0, delay: 0 },
-  { n: 14, a0: 2, a1: 104, len: 0.66, wid: 0.4, rootUp: 0.1, delay: 0.12 },
-  { n: 10, a0: -4, a1: 86, len: 0.4, wid: 0.5, rootUp: 0.2, delay: 0.24 },
+  { n: 16, a0: -78, a1: 34, len: 1, wid: 0.3, rootUp: 0, delay: 0 },
+  { n: 14, a0: -70, a1: 26, len: 0.62, wid: 0.38, rootUp: 0.1, delay: 0.12 },
+  { n: 10, a0: -55, a1: 16, len: 0.38, wid: 0.5, rootUp: 0.2, delay: 0.24 },
 ];
 const FEATHERS_PER_WING = ROWS.reduce((n, r) => n + r.n, 0);
 const FALLERS = 28;
@@ -90,6 +94,7 @@ export class AvengingWrath implements Effect {
   private fallers: THREE.InstancedMesh;
   private sparks: Emitter;
   private motes: Emitter;
+  private dust: Emitter;
 
   private dummy = new THREE.Object3D();
   private m = new THREE.Matrix4();
@@ -115,15 +120,24 @@ export class AvengingWrath implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.9, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.6, speed: 10, speedJitter: 0.6, spread: 85, gravity: 8, drag: 0.8,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 2.6, speed: 0.5, speedJitter: 0.5, spread: 180, gravity: -0.5, drag: 0.5,
       sizeStart: 0.17, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
+      colorMid: '#ffd77a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.45, opacityEnd: 0, additive: true,
     });
-    this.emitters.push(this.sparks, this.motes);
+    // Dark dust kicked up by the slam, behind the bright layers.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 1.2, speed: 4, speedJitter: 0.5, spread: 85, gravity: -0.3, drag: 1.2,
+      sizeStart: 0.7, sizeEnd: 1.6, colorStart: '#8a7656', colorMid: '#5a4a34', colorEnd: '#2a2218',
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+      opacityStart: 0.3, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.dust, this.sparks, this.motes);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -169,6 +183,7 @@ export class AvengingWrath implements Effect {
     if (!this.slammed && this.time >= SLAM) {
       this.slammed = true;
       this.sparks.burst(700, CASTER_POS);
+      this.dust.burst(260, new THREE.Vector3(CASTER_POS.x, 0.2, CASTER_POS.z));
       this.shake = 0.5;
     }
     this.shake *= Math.exp(-dt * 7);
@@ -183,7 +198,7 @@ export class AvengingWrath implements Effect {
     const after = Math.max(0, t - SLAM);
 
     // Caster is lifted and hovers; settles back down at the end.
-    const rise = smoothstep((t - 0.25) / 1.0) * (1 - smoothstep((t - (dur - 1.2)) / 1.0));
+    const rise = smoothstep((t - (SLAM - 0.05)) / 1.0) * (1 - smoothstep((t - (dur - 1.2)) / 1.0));
     const hover = rise * (s.riseHeight + 0.12 * Math.sin(t * 2.2));
     this.caster.group.position.y = hover;
     this.caster.setFlash(t >= SLAM ? 0.7 * Math.exp(-after * 5) : 0);
@@ -197,7 +212,7 @@ export class AvengingWrath implements Effect {
     this.pillar.set(cx, cz, bottom, top, pillarOp);
 
     // Shockwave on the ground; the enemy recoils when it arrives.
-    const shockT = after / 0.9;
+    const shockT = after / 0.7;
     this.shock.mesh.position.set(cx, 0.04, cz);
     this.shock.mesh.scale.setScalar(Math.max(0.001, 1 + after * 22));
     this.shock.material.opacity = t >= SLAM && shockT < 1 ? 0.7 * (1 - shockT) : 0;
@@ -211,7 +226,7 @@ export class AvengingWrath implements Effect {
     this.ground.mesh.position.set(cx, 0.05, cz);
     this.ground.mesh.scale.setScalar(2.4 + 0.4 * rise);
     this.ground.mesh.rotation.z = t * 0.7;
-    this.ground.material.opacity = 0.5 * smoothstep((t - SLAM) / 0.4) * fade;
+    this.ground.material.opacity = 0.5 * smoothstep(t / (SLAM + 0.4)) * fade; // rune ignites before the slam
 
     // Aura shell and soft core.
     const auraIn = smoothstep((t - SLAM) / 0.5) * fade;
@@ -221,9 +236,10 @@ export class AvengingWrath implements Effect {
     this.core.mesh.position.set(cx, 1.3 + hover, cz);
     this.core.mesh.scale.setScalar(1.6);
     this.core.opacity = (0.12 + 0.5 * Math.exp(-after * 6)) * auraIn;
+    if (t < SLAM) this.core.opacity = 0.3 * smoothstep(t / SLAM); // anticipation glow gathers before the slam
 
     // Halo over the head.
-    const haloIn = smoothstep((t - 0.55) / 0.5) * fade;
+    const haloIn = smoothstep((t - 0.75) / 0.5) * fade;
     this.halo.mesh.position.set(cx, 3.0 + hover + 0.06 * Math.sin(t * 3), cz);
     this.halo.mesh.rotation.set(-Math.PI / 2 + 0.22, 0, t * 1.2);
     this.halo.mesh.scale.setScalar(0.7 * (0.6 + 0.4 * haloIn));
@@ -238,7 +254,7 @@ export class AvengingWrath implements Effect {
 
   private layoutWings(t: number, hover: number, fade: number) {
     const s = this.settings;
-        const m = this.m;
+    const m = this.m;
     const beatT = Math.max(0, t - (WING_START + 1.6));
     const beat = Math.sin(beatT * 3.2) * smoothstep(beatT / 0.6);
     const up = new THREE.Vector3(0, 1, 0);
@@ -247,23 +263,29 @@ export class AvengingWrath implements Effect {
     const d = new THREE.Vector3();
     const x = new THREE.Vector3();
     const root = new THREE.Vector3();
+    const arm = new THREE.Vector3();
+    // The arm bone (shoulder to wrist) unfolds from straight up to up-and-out; the feathers hang off it.
+    const uArm = smoothstep((t - WING_START) / 1.0);
+    const armElev = THREE.MathUtils.lerp(80 * Math.PI / 180, ARM_ELEV, uArm) + beat * 0.08;
+    const armLen = s.wingSize * 0.5 * (0.3 + 0.7 * uArm);
     let idx = 0;
     for (let side = -1; side <= 1; side += 2) {
-      h.set(side * Math.sin(WING_SWEEP), 0, Math.cos(WING_SWEEP));
+      // Wing plane: sideways, swept back (+Z, behind the caster); nrm is its normal.
+      h.set(side * Math.cos(WING_SWEEP), 0, Math.sin(WING_SWEEP));
       nrm.set(-h.z, 0, h.x);
+      arm.copy(h).multiplyScalar(Math.cos(armElev)).addScaledVector(up, Math.sin(armElev));
       const shoulder = new THREE.Vector3(side * 0.25, 1.85 + hover, CASTER_POS.z + 0.4);
       for (const row of ROWS) {
         for (let i = 0; i < row.n; i++, idx++) {
           const f = i / (row.n - 1);
           const u = smoothstep((t - WING_START - row.delay - f * 0.6) / 0.9);
-          const aOpen = THREE.MathUtils.degToRad(row.a0 + (row.a1 - row.a0) * f);
-          const aClosed = THREE.MathUtils.degToRad(row.a0 * 0.1);
+          const eOpen = THREE.MathUtils.degToRad(row.a0 + (row.a1 - row.a0) * f);
+          const eClosed = THREE.MathUtils.degToRad(88);
           // Beat lifts and lowers the whole fan, strongest at the tips of the wing.
-          const a = aClosed + (aOpen - aClosed) * u + beat * 0.14 * (0.4 + f);
-          d.copy(h).multiplyScalar(Math.sin(a)).addScaledVector(up, Math.cos(a));
-          const shape = 0.7 + 0.3 * Math.sin(Math.PI * (0.15 + 0.7 * f));
-          const len = s.wingSize * row.len * shape * (0.15 + 0.85 * u) * fade;
-          root.copy(shoulder).addScaledVector(up, row.rootUp * s.wingSize * 0.3);
+          const e = eClosed + (eOpen - eClosed) * u + beat * 0.12 * (0.3 + f);
+          d.copy(h).multiplyScalar(Math.cos(e)).addScaledVector(up, Math.sin(e));
+          const len = s.wingSize * row.len * (0.55 + 0.45 * f) * (0.15 + 0.85 * u) * fade;
+          root.copy(shoulder).addScaledVector(arm, armLen * f).addScaledVector(up, row.rootUp * s.wingSize * 0.3);
           x.crossVectors(d, nrm).normalize();
           const wid = len * row.wid;
           m.makeBasis(x.clone().multiplyScalar(wid), d.clone().multiplyScalar(Math.max(0.0001, len)), nrm);

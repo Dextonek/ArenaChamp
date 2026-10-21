@@ -141,12 +141,13 @@ export class Bladestorm implements Effect {
       shape: 'sphere', shapeSize: 0.25, speed: 2.2, speedJitter: 0.5, spread: 70, gravity: -0.3, drag: 1,
       sizeStart: 0.6, sizeEnd: 1.5, colorStart: '#8b7f72', colorEnd: '#4f4943',
       opacityStart: 0.55, opacityEnd: 0, additive: false,
+      colorMid: '#6f655b', sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
     });
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.7, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.2, speed: 8, speedJitter: 0.6, spread: 110, gravity: 10, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fff0d0', colorEnd: '#ff4a20',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, erosion: 0, sizeJitter: 0.3,
     });
     this.emitters.push(this.dust, this.sparks);
     for (const e of this.emitters) this.group.add(e.points);
@@ -324,6 +325,17 @@ export const bladestormModule: EffectModule = {
   label: 'bladestorm',
   category: 'iconic',
   create: () => new Bladestorm(),
+  telegraphs(effect) {
+    const b = effect as Bladestorm;
+    const s = b.settings;
+    // The blades reach ~2.5 out from the warrior, who circles the enemy at circleRadius: that disc is the danger.
+    return [
+      {
+        shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: s.circleRadius + 2.5 },
+        start: 0.3, impact: APPROACH_END, until: APPROACH_END + s.circleTime,
+      },
+    ];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls) {
     // Caster at z = 14 spinning up, then everything happens around the enemy at the origin.

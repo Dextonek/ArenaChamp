@@ -4,6 +4,7 @@ import {
   CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
+import type { TelegraphSpec } from '../../effects/telegraph';
 
 /**
  * Penance (reworked): a priest in white robes channels three volleys of holy light bolts. A halo hovers over the
@@ -90,13 +91,14 @@ export class Penance implements Effect {
       ...defaultSettings(), maxParticles: 1800, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.15, speed: 6, speedJitter: 0.6, spread: 90, gravity: 6, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fff6d8', colorEnd: '#ffb83a',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.shimmer = new Emitter({
       ...defaultSettings(), maxParticles: 600, rate: 0, lifetime: 1.8, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 1.2, speed: 0.7, speedJitter: 0.5, spread: 25, gravity: -0.4, drag: 0.6,
       sizeStart: 0.16, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: '#ffcf6a',
       opacityStart: 0.4, opacityEnd: 0, additive: true,
+      colorMid: '#ffe08a', sizeJitter: 0.4, erosion: 0.4, spin: 0.3,
     });
     this.emitters.push(this.sparks, this.shimmer);
     for (const e of this.emitters) this.group.add(e.points);
@@ -286,6 +288,22 @@ export const penanceModule: EffectModule = {
   label: 'penance',
   category: 'iconic',
   create: () => new Penance(),
+  telegraphs(effect) {
+    const s = (effect as Penance).settings;
+    const n = THREE.MathUtils.clamp(Math.round(s.volleys), 1, MAX_VOLLEYS);
+    const zones: TelegraphSpec[] = [];
+    // Each volley: three narrow lanes from the caster's hands to the enemy, readable during the charge.
+    for (let k = 0; k < n; k++) {
+      const tv = FIRST + k * s.volleyGap;
+      for (let j = 0; j < PER_VOLLEY; j++) {
+        zones.push({
+          shape: { kind: 'line', x1: HANDS.x, z1: HANDS.z, x2: (j - 1) * 0.55, z2: ENEMY_POS.z, width: 0.8 },
+          start: Math.max(0, tv - 0.5), impact: tv + j * BOLT_STAGGER + s.boltSpeed,
+        });
+      }
+    }
+    return zones;
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 2.5, 9), 12);

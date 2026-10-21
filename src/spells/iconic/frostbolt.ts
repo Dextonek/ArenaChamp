@@ -148,6 +148,7 @@ export class Frostbolt implements Effect {
   private shellMats: THREE.MeshStandardMaterial[] = [];
   private shards: Debris;
 
+  private chill: Emitter; // dark cold haze behind the bright layers
   private mist: Emitter;
   private snow: Emitter;
   private sparkle: Emitter;
@@ -224,23 +225,32 @@ export class Frostbolt implements Effect {
     this.group.add(this.shards.mesh);
 
     const base = defaultSettings();
+    this.chill = new Emitter({
+      ...base, maxParticles: 400, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.6,
+      speed: 1.2, speedJitter: 0.5, spread: 180, gravity: -0.1, drag: 1.2, sizeStart: 0.8, sizeEnd: 2.2,
+      colorStart: '#6f90b0', colorMid: '#3a5878', colorEnd: '#18283c', opacityStart: 0.3, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+    });
     this.mist = new Emitter({
       ...base, maxParticles: 1400, rate: 0, lifetime: 1, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.3,
       speed: 0.7, speedJitter: 0.5, spread: 180, gravity: -0.2, drag: 0.8, sizeStart: 0.45, sizeEnd: 1.2,
-      colorStart: '#d8f2ff', colorEnd: '#6fb4e0', opacityStart: 0.25, opacityEnd: 0, additive: false,
+      colorStart: '#d8f2ff', colorMid: '#8fd0f0', colorEnd: '#4a88b8', opacityStart: 0.25, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
     });
     this.snow = new Emitter({
       ...base, maxParticles: 1200, rate: 0, lifetime: 1.4, lifetimeJitter: 0.5, shape: 'sphere', shapeSize: 0.4,
       speed: 1.6, speedJitter: 0.6, spread: 180, gravity: 0.8, drag: 0.7, sizeStart: 0.13, sizeEnd: 0.05,
       colorStart: '#ffffff', colorEnd: '#9fe0ff', opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.sparkle = new Emitter({
       ...base, maxParticles: 800, rate: 0, lifetime: 0.9, lifetimeJitter: 0.4, shape: 'sphere', shapeSize: 0.6,
       speed: 7, speedJitter: 0.6, spread: 180, gravity: 6, drag: 1.2, sizeStart: 0.16, sizeEnd: 0.03,
       colorStart: '#eaffff', colorEnd: '#4cc8ff', opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
-    // Mist (normal blending) first so the additive flakes draw over it.
-    this.emitters.push(this.mist, this.snow, this.sparkle);
+    // Dark haze and mist (normal blending) first so the additive flakes draw over them.
+    this.emitters.push(this.chill, this.mist, this.snow, this.sparkle);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -366,7 +376,7 @@ export class Frostbolt implements Effect {
       this.frostLineMat.opacity = 0.55 * spread * fade;
       this.frostLines.visible = this.frostLineMat.opacity > 0.005;
       this.frostRing.mesh.scale.setScalar(0.5 + 6.2 * spread);
-      this.frostRing.material.opacity = 0.5 * smoothstep(after / 0.1) * fade;
+      this.frostRing.material.opacity = 0.5 * smoothstep(after / 0.1) * (1 - smoothstep((after - 0.4) / 0.9)) * fade;
       this.frostDisc.mesh.scale.setScalar(0.5 + 6 * spread);
       this.frostDisc.material.opacity = 0.14 * spread * fade;
 
@@ -411,6 +421,7 @@ export class Frostbolt implements Effect {
     this.sparkle.burst(350, at);
     this.snow.burst(250, at);
     this.mist.burst(180, at);
+    this.chill.burst(70, at);
   }
 
   private onShatter() {
@@ -419,6 +430,7 @@ export class Frostbolt implements Effect {
     this.shards.spawn(at, 48, 4.5, 7, 0.55, 1.2);
     this.sparkle.burst(250, at);
     this.mist.burst(160, at);
+    this.chill.burst(60, at);
   }
 }
 
@@ -426,6 +438,16 @@ export const frostboltModule: EffectModule = {
   label: 'frostbolt',
   category: 'iconic',
   create: () => new Frostbolt(),
+  telegraphs(effect) {
+    const s = (effect as Frostbolt).settings;
+    const impact = s.castTime + s.flightTime;
+    return [
+      // The bolt's flight path.
+      { shape: { kind: 'line', x1: ORIGIN.x, z1: ORIGIN.z, x2: ENEMY_POS.x, z2: ENEMY_POS.z, width: 1.2 }, start: 0.3, impact },
+      // Shatter + spreading frost around the enemy, dangerous until the shell cracks.
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 6.5 }, start: 0.3, impact, until: impact + FREEZE_DELAY + s.freezeTime },
+    ];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 1.5, 7), 10);

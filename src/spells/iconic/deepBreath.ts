@@ -408,6 +408,16 @@ export const deepBreathModule: EffectModule = {
   label: 'deep breath',
   category: 'iconic',
   create: () => new DeepBreath(),
+  telegraphs(effect) {
+    const s = (effect as DeepBreath).settings;
+    // The fire lands about altitude / tan(jet angle) + mouth offset ahead of the dragon (toward -Z).
+    const ahead = s.altitude / Math.tan(JET_ANGLE) + 5;
+    // One strip along the burning ground: appears before the dragon enters, stays dangerous while it burns.
+    return [{
+      shape: { kind: 'line', x1: 0, z1: s.halfPath - ahead, x2: 0, z2: -s.halfPath - ahead, width: STRIP_W },
+      start: 0.05, impact: PRE + 0.3, until: PRE + s.flyTime + 1,
+    }];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.55, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const s = (effect as DeepBreath).settings;

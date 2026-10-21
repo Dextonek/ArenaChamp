@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
   CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
+  softDotTexture,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -66,6 +67,7 @@ export class DeathCoil implements Effect {
   private gatherPos = new Float32Array(GATHER * 3);
   private gatherMat = new THREE.PointsMaterial({
     color: NECRO, size: 0.22, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+    map: softDotTexture(),
   });
   private handGlow = new GlowSphere(NECRO, { rim: false });
   private beads: GlowSphere[] = [];
@@ -157,21 +159,25 @@ export class DeathCoil implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 1.2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.15, speed: 0.6, speedJitter: 0.6, spread: 180, gravity: -0.4, drag: 1,
       sizeStart: 0.5, sizeEnd: 0.9, colorStart: '#1c2418', colorEnd: '#06080a', opacityStart: 0.5, opacityEnd: 0, additive: false,
+      colorMid: '#2e3a28', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 1000, rate: 0, lifetime: 0.8, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.12, speed: 0.5, speedJitter: 0.6, spread: 180, gravity: -0.8, drag: 1,
       sizeStart: 0.2, sizeEnd: 0.02, colorStart: '#d8ff6a', colorEnd: '#2a9a10', opacityStart: 0.5, opacityEnd: 0, additive: true,
+      colorMid: '#7be024', sizeJitter: 0.4, erosion: 0.45, spin: 0.4,
     });
     this.impactSmoke = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.6, speed: 3.5, speedJitter: 0.6, spread: 180, gravity: -0.5, drag: 1.4,
       sizeStart: 0.9, sizeEnd: 2, colorStart: '#222c1c', colorEnd: '#06080a', opacityStart: 0.55, opacityEnd: 0, additive: false,
+      colorMid: '#2e3a28', sizeJitter: 0.4, erosion: 0.6, spin: 0.4, groundFade: 0.3,
     });
     this.impactMotes = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 1.6, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.7, speed: 5, speedJitter: 0.6, spread: 180, gravity: -1, drag: 1.2,
       sizeStart: 0.25, sizeEnd: 0.02, colorStart: '#e4ff70', colorEnd: '#2aa010', opacityStart: 0.6, opacityEnd: 0, additive: true,
+      colorMid: '#7be024', sizeJitter: 0.4, erosion: 0.45, spin: 0.4,
     });
     this.emitters.push(this.smoke, this.motes, this.impactSmoke, this.impactMotes);
     for (const e of this.emitters) this.group.add(e.points);
@@ -280,10 +286,10 @@ export class DeathCoil implements Effect {
     if (this.impacted) {
       this.burstA.mesh.position.set(ENEMY_POS.x, 1.3, ENEMY_POS.z);
       this.burstA.mesh.scale.setScalar(0.8 + after * 8);
-      this.burstA.opacity = 0.55 * Math.exp(-after * 4.5);
+      this.burstA.opacity = 0.55 * Math.exp(-after * 9);
       this.burstB.mesh.position.set(ENEMY_POS.x, 1.3, ENEMY_POS.z);
       this.burstB.mesh.scale.setScalar(0.5 + Math.max(0, after - 0.08) * 12);
-      this.burstB.opacity = after > 0.08 ? 0.4 * Math.exp(-(after - 0.08) * 4) : 0;
+      this.burstB.opacity = after > 0.08 ? 0.4 * Math.exp(-(after - 0.08) * 6) : 0;
       this.ring.mesh.scale.setScalar(1 + after * 14);
       this.ring.material.opacity = Math.max(0, 0.6 * (1 - after / 0.8));
       this.shake = 0.45 * Math.exp(-after * 8);
@@ -321,6 +327,16 @@ export const deathCoilModule: EffectModule = {
   label: 'death coil',
   category: 'iconic',
   create: () => new DeathCoil(),
+  telegraphs(effect) {
+    const s = (effect as DeathCoil).settings;
+    const hit = s.castTime + s.flightTime;
+    return [
+      // The coil's path from the caster's hand to the enemy...
+      { shape: { kind: 'line', x1: 0.45, z1: CASTER_POS.z - 0.5, x2: ENEMY_POS.x, z2: ENEMY_POS.z + 0.2, width: 1.6 }, start: 0.2, impact: hit, until: hit },
+      // ...and the necrotic burst around the target.
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 2.2 }, start: s.castTime * 0.6, impact: hit, until: hit + 0.4 },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 2.5, 7), 11);

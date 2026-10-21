@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../emitter';
-import { Enemy, createGround, smoothstep } from './common';
+import { Enemy, GlowSphere, createGround, smoothstep } from './common';
 import type { Effect, EffectModule } from './types';
 
 /**
@@ -237,12 +237,7 @@ export class LightningStrike implements Effect {
       depthWrite: false, side: THREE.BackSide,
     }),
   );
-  private glowSphere = new THREE.Mesh(
-    this.sphereGeo,
-    new THREE.MeshBasicMaterial({
-      color: new THREE.Color(1, 1.3, 2), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
-    }),
-  );
+  private glowSphere = new GlowSphere(new THREE.Color(1, 1.3, 2), { rim: false });
   private scorchDisc = new THREE.Mesh(
     new THREE.CircleGeometry(1.8, 40),
     new THREE.MeshBasicMaterial({ color: 0x050505, transparent: true, opacity: 0, depthWrite: false }),
@@ -255,6 +250,7 @@ export class LightningStrike implements Effect {
   private staticFx: Emitter;
   private sparks: Emitter;
   private smoke: Emitter;
+  private mist: Emitter;
 
   private v1 = new THREE.Vector3();
 
@@ -300,8 +296,7 @@ export class LightningStrike implements Effect {
 
     this.flashLight.position.set(0, 4, 0);
     this.flashDome.visible = false;
-    this.glowSphere.visible = false;
-    this.group.add(this.flashLight, this.flashDome, this.glowSphere);
+    this.group.add(this.flashLight, this.flashDome, this.glowSphere.mesh);
 
     this.staticFx = new Emitter({
       ...defaultSettings(), maxParticles: 700, rate: 0, lifetime: 1.2, lifetimeJitter: 0.4,
@@ -317,8 +312,17 @@ export class LightningStrike implements Effect {
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.6, originY: 0.3, speed: 1.4, speedJitter: 0.5, spread: 25, gravity: -0.5, drag: 1.2,
       sizeStart: 0.8, sizeEnd: 3, colorStart: '#55565c', colorEnd: '#1c1c20', opacityStart: 0.3, opacityEnd: 0, additive: false,
+      colorMid: '#3a3b42', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
     });
-    this.emitters.push(this.staticFx, this.sparks, this.smoke);
+    // Dark eroded mist wrapped around the storm cloud puffs for depth (normal-blended, behind the arcs).
+    this.mist = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 3.5, originY: defaultLightning().cloudHeight, speed: 0.5, speedJitter: 0.5, spread: 180,
+      gravity: 0, drag: 0.8, sizeStart: 2.2, sizeEnd: 4.5, colorStart: '#2b3040', colorEnd: '#0b0c12',
+      colorMid: '#1a1d29', sizeJitter: 0.45, erosion: 0.6, spin: 0.3,
+      opacityStart: 0.28, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.staticFx, this.sparks, this.smoke, this.mist);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.applyStyle();
@@ -494,6 +498,8 @@ export class LightningStrike implements Effect {
     } else {
       this.ringArcs.hide();
     }
+    this.mist.settings.originY = s.cloudHeight;
+    this.mist.settings.rate = this.playing && grow > 0.3 && closing > 0.05 ? 20 + 40 * charge : 0;
     this.staticFx.settings.rate = this.playing && !striking ? 30 + 170 * charge : 0;
 
     // Bolts: regenerate the shape every REGEN seconds while alive, fading quickly.
@@ -551,10 +557,9 @@ export class LightningStrike implements Effect {
     this.flashLight.intensity = this.flash * 1200;
     this.flashDome.visible = this.flash > 0.01;
     (this.flashDome.material as THREE.MeshBasicMaterial).opacity = this.flash * 0.16;
-    this.glowSphere.visible = this.glowAmt > 0.01;
-    this.glowSphere.position.set(0, 1.1, 0);
-    this.glowSphere.scale.setScalar(1.4 + 2.2 * (1 - this.glowAmt));
-    (this.glowSphere.material as THREE.MeshBasicMaterial).opacity = this.glowAmt * 0.6;
+    this.glowSphere.mesh.position.set(0, 1.1, 0);
+    this.glowSphere.mesh.scale.setScalar(1.4 + 2.2 * (1 - this.glowAmt));
+    this.glowSphere.opacity = this.glowAmt > 0.01 ? this.glowAmt * 0.6 : 0;
 
     // Scorch decal grows and darkens with each hit and fades with the effect.
     const scorch = this.playing ? this.hits / n : 0;
@@ -581,6 +586,13 @@ export class LightningStrike implements Effect {
 export const lightningStrikeModule: EffectModule = {
   label: 'lightning strike',
   create: () => new LightningStrike(),
+  telegraphs(effect) {
+    const s = (effect as LightningStrike).settings;
+    return [{
+      shape: { kind: 'circle', x: 0, z: 0, radius: 3 },
+      start: 0.2, impact: s.chargeTime, until: s.chargeTime + 0.14 * s.boltCount,
+    }];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.8 },
   frameCamera(camera, controls, effect) {
     const h = (effect as LightningStrike).settings.cloudHeight;

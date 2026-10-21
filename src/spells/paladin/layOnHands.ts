@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
   CASTER_POS, Enemy, GlowSphere, LightPillar, createCaster, createGround, createRing, frameArena, smoothstep,
+  softDotTexture,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -82,7 +83,7 @@ export class LayOnHands implements Effect {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(this.spiralPos, 3));
     this.spiralMat = new THREE.PointsMaterial({
-      color: 0xffe9b0, size: 0.17, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
+      color: 0xffe9b0, size: 0.17, map: softDotTexture(), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false,
     });
     this.spiral = new THREE.Points(geo, this.spiralMat);
     this.spiral.frustumCulled = false;
@@ -92,13 +93,14 @@ export class LayOnHands implements Effect {
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 1.0, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.6, speed: 8, speedJitter: 0.6, spread: 180, gravity: 4, drag: 0.8,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: 2.2, speed: 1.8, speedJitter: 0.5, spread: 25, gravity: -0.7, drag: 0.6,
       sizeStart: 0.2, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
       opacityStart: 0.4, opacityEnd: 0, additive: true,
+      colorMid: '#ffd98a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.emitters.push(this.sparks, this.motes);
     for (const e of this.emitters) this.group.add(e.points);

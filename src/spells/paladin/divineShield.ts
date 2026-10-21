@@ -4,6 +4,7 @@ import {
   CASTER_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
+import type { TelegraphSpec } from '../../effects/telegraph';
 
 /**
  * Divine Shield (reworked): a golden dome of hexagonal panels lights up around the caster in a wave from the
@@ -72,6 +73,7 @@ export class DivineShield implements Effect {
   private sparks: Emitter;
   private trail: Emitter;
   private debris: Emitter;
+  private dust: Emitter;
 
   private dummy = new THREE.Object3D();
   private tmpColor = new THREE.Color();
@@ -113,21 +115,30 @@ export class DivineShield implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.7, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.2, speed: 7, speedJitter: 0.6, spread: 130, gravity: 7, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fff0c0', colorEnd: '#ff8a2a',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.trail = new Emitter({
       ...defaultSettings(), maxParticles: 600, rate: 0, lifetime: 0.35, lifetimeJitter: 0.3,
       shape: 'point', speed: 0.3, speedJitter: 0.5, spread: 180, gravity: 0, drag: 1,
       sizeStart: 0.32, sizeEnd: 0.02, colorStart: '#ff4a2a', colorEnd: '#5a0505',
+      colorMid: '#c01a10', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.5, opacityEnd: 0, additive: true,
     });
     this.debris = new Emitter({
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 1.2, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 2.8, speed: 4, speedJitter: 0.6, spread: 180, gravity: 3, drag: 0.8,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: settings.color,
-      opacityStart: 0.7, opacityEnd: 0, additive: true,
+      opacityStart: 0.7, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
-    this.emitters.push(this.sparks, this.trail, this.debris);
+    // Dark dust thrown out along the ground when the bubble shatters.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 2.2, speed: 3.5, speedJitter: 0.5, spread: 80, gravity: -0.2, drag: 1.2,
+      sizeStart: 0.7, sizeEnd: 1.5, colorStart: '#8a7656', colorMid: '#5a4a34', colorEnd: '#2a2218',
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+      opacityStart: 0.28, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.dust, this.sparks, this.trail, this.debris);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -149,6 +160,15 @@ export class DivineShield implements Effect {
   private fireTime(k: number) { return FIRE0 + k * GAP; }
   private hitTime(k: number) { return this.fireTime(k) + FLIGHT; }
   private get shatterTime() { return this.hitTime(this.nBolts - 1) + 0.7; }
+
+  /** Times (seconds after play) the bolts land on the shield and the bubble shatters, for the danger zones. */
+  dangerTimes() {
+    return {
+      fires: Array.from({ length: this.nBolts }, (_, k) => this.fireTime(k)),
+      hits: Array.from({ length: this.nBolts }, (_, k) => this.hitTime(k)),
+      shatter: this.shatterTime,
+    };
+  }
 
   get duration() {
     return this.shatterTime + 1.2;
@@ -203,6 +223,7 @@ export class DivineShield implements Effect {
       this.shattered = true;
       this.debris.burst(500, c);
       this.sparks.burst(300, c);
+      this.dust.burst(220, new THREE.Vector3(c.x, 0.2, c.z));
       this.shake = 0.6;
     }
     // Short dark red trails behind bolts in flight.
@@ -348,6 +369,22 @@ export const divineShieldModule: EffectModule = {
   label: 'divine shield',
   category: 'paladin',
   create: () => new DivineShield(),
+  telegraphs(effect) {
+    const d = effect as DivineShield;
+    const R = d.settings.radius;
+    const { fires, hits, shatter } = d.dangerTimes();
+    // Each enemy bolt strikes the caster's shield: a small zone at the caster per impact time.
+    const zones: TelegraphSpec[] = hits.map((h, k) => ({
+      shape: { kind: 'circle', x: CASTER_POS.x, z: CASTER_POS.z, radius: 1.6 },
+      start: fires[k], impact: h,
+    }));
+    // The shatter pushes outward: a ring just outside the bubble.
+    zones.push({
+      shape: { kind: 'ring', x: CASTER_POS.x, z: CASTER_POS.z, inner: R * 0.9, outer: R + 2 },
+      start: shatter - 0.5, impact: shatter,
+    });
+    return zones;
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Caster at z = 14 with the dome, enemy at the origin.

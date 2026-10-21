@@ -10,6 +10,8 @@ import { Emitter, type EmitterSettings } from './emitter';
 import { presets, presetNames, presetSettings, type BloomSettings } from './presets';
 import { effectModules } from './effects';
 import { FinishPass } from './post';
+import { TelegraphLayer, type TelegraphSpec } from './effects/telegraph';
+import { PlayerDummy } from './player';
 import type { Effect, EffectModule } from './effects/types';
 
 const container = document.getElementById('app')!;
@@ -76,6 +78,22 @@ interface EffectSlot {
 const slots = new Map<string, EffectSlot>(effectModules.map((m) => [m.label, { module: m }]));
 let active: EffectSlot | undefined;
 
+// Danger zones + the player dummy that has to dodge them. The clock restarts whenever the active effect plays.
+const telegraphs = new TelegraphLayer();
+scene.add(telegraphs.group);
+const player = new PlayerDummy(camera);
+scene.add(player.group);
+let effectClock = 0;
+let zones: TelegraphSpec[] = [];
+
+function onEffectPlay(slot: EffectSlot) {
+  if (slot !== active || !slot.effect) return;
+  effectClock = 0;
+  zones = slot.module.telegraphs?.(slot.effect) ?? [];
+  telegraphs.set(zones);
+  player.onPlay();
+}
+
 function pixelScale(e: Emitter) {
   e.setPixelScale(window.innerHeight * renderer.getPixelRatio(), camera.fov);
 }
@@ -133,6 +151,9 @@ fView.add(view, 'paused');
 fView.add(view, 'timeScale', 0, 3, 0.01).name('time scale');
 fView.add(view, 'showGrid').name('grid').onChange((v: boolean) => (grid.visible = v && mode.name === 'particles'));
 fView.add(view, 'restart');
+const gameplay = { zones: true, player: false };
+fView.add(gameplay, 'zones').name('danger zones').onChange((v: boolean) => (telegraphs.group.visible = v));
+fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => player.setEnabled(v));
 
 const fBloom = gui.addFolder('Bloom');
 fBloom.add(bloom, 'enabled').onChange(applyBloom);
@@ -171,6 +192,12 @@ function ensureEffect(slot: EffectSlot): Effect | undefined {
   if (slot.effect || slot.error) return slot.effect;
   try {
     const effect = slot.module.create();
+    // Route every play() — including an effect's own loop restart — through the zone/player reset.
+    const play = effect.play.bind(effect);
+    effect.play = () => {
+      play();
+      onEffectPlay(slot);
+    };
     effect.group.visible = false;
     scene.add(effect.group);
     effect.emitters.forEach(pixelScale);
@@ -194,6 +221,8 @@ function setMode() {
     slot.folder?.show(false);
   }
   active = next;
+  zones = [];
+  telegraphs.set(zones);
   const isParticles = !next;
   emitter.points.visible = isParticles;
   grid.visible = isParticles && view.showGrid;
@@ -240,6 +269,9 @@ const shakeOffset = new THREE.Vector3();
 function step(dt: number) {
   if (!active) emitter.update(dt);
   else active.effect?.update(dt);
+  effectClock += dt;
+  telegraphs.update(effectClock);
+  player.update(dt, effectClock, zones);
 }
 
 function render() {
@@ -268,13 +300,14 @@ renderer.setAnimationLoop(() => {
       ? `${fps} fps · ${emitter.aliveCount} particles`
       : active.error
         ? `${active.module.label} failed to build: ${active.error}`
-        : `${fps} fps · ${active.module.label} · space = replay`;
+        : `${fps} fps · ${active.module.label} · space = replay` +
+          (player.enabled ? ` · WASD to move · hits ${player.hits} · dodges ${player.dodges}` : '');
   }
 });
 
 // Debug hook for checking effects from the console / automated browser:
 // vfx.mode.name = '<label>'; vfx.setMode(); then vfx.step(1/60) + vfx.render() to scrub.
 (window as unknown as { vfx: unknown }).vfx = {
-  emitter, mode, setMode, step, render, controls, bloom, slots,
+  emitter, mode, setMode, step, render, controls, bloom, slots, player, telegraphs,
   get effect() { return active?.effect; },
 };

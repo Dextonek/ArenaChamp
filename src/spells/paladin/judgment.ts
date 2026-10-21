@@ -57,6 +57,7 @@ export class Judgment implements Effect {
   private sigil = createRing(0xffe2a0, 0.7, 0.8, 4); // diamond sigil above the head
   private sparks: Emitter;
   private motes: Emitter;
+  private dust: Emitter;
 
   constructor(settings: JudgmentSettings = defaultJudgment()) {
     this.settings = settings;
@@ -69,15 +70,24 @@ export class Judgment implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.9, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.6, speed: 9, speedJitter: 0.6, spread: 80, gravity: 9, drag: 0.8,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: 2.5, speed: 1.6, speedJitter: 0.5, spread: 20, gravity: -0.6, drag: 0.6,
       sizeStart: 0.2, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
       opacityStart: 0.4, opacityEnd: 0, additive: true,
+      colorMid: '#ffd36b', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
-    this.emitters.push(this.sparks, this.motes);
+    // Dark tertiary layer: dust kicked up behind the bright burst.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 1.6, speed: 3.5, speedJitter: 0.6, spread: 80, gravity: -0.2, drag: 1.2,
+      sizeStart: 0.9, sizeEnd: 1.8, colorStart: '#8a7556', colorEnd: '#2a241e',
+      opacityStart: 0.4, opacityEnd: 0, additive: false,
+      colorMid: '#5a4a38', sizeJitter: 0.4, erosion: 0.55, spin: 0.4,
+    });
+    this.emitters.push(this.sparks, this.motes, this.dust);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -197,6 +207,7 @@ export class Judgment implements Effect {
     this.impacted = true;
     this.sparks.burst(700, ENEMY_POS);
     this.motes.burst(400, ENEMY_POS);
+    this.dust.burst(260, ENEMY_POS);
   }
 }
 
@@ -204,6 +215,10 @@ export const judgmentModule: EffectModule = {
   label: 'judgment',
   category: 'paladin',
   create: () => new Judgment(),
+  telegraphs(effect) {
+    const s = (effect as Judgment).settings;
+    return [{ shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 3 }, start: 0.1, impact: s.castTime + s.fallTime }];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls, effect) {
     const s = (effect as Judgment).settings;

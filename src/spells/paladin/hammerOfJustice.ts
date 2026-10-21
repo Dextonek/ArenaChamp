@@ -72,6 +72,7 @@ export class HammerOfJustice implements Effect {
   private stunRing = createRing(0xffe2a0, 0.9, 1, 64);
   private sparks: Emitter;
   private motes: Emitter;
+  private dust: Emitter;
 
   constructor(settings: HammerOfJusticeSettings = defaultHammerOfJustice()) {
     this.settings = settings;
@@ -85,15 +86,24 @@ export class HammerOfJustice implements Effect {
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.5, speed: 8, speedJitter: 0.6, spread: 180, gravity: 9, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.motes = new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 1.2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 1.4, speed: 0.8, speedJitter: 0.5, spread: 180, gravity: -0.4, drag: 0.8,
       sizeStart: 0.16, sizeEnd: 0, colorStart: '#fff2c4', colorEnd: settings.color,
+      colorMid: '#ffd77a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.4, opacityEnd: 0, additive: true,
     });
-    this.emitters.push(this.sparks, this.motes);
+    // Dark dust thrown up by the gavel strike, behind the bright layers.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 2.4, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 1.0, speed: 4, speedJitter: 0.5, spread: 80, gravity: -0.3, drag: 1.2,
+      sizeStart: 0.7, sizeEnd: 1.6, colorStart: '#8a7656', colorMid: '#5a4a34', colorEnd: '#2a2218',
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+      opacityStart: 0.3, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.dust, this.sparks, this.motes);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -247,6 +257,7 @@ export class HammerOfJustice implements Effect {
     this.impacted = true;
     this.sparks.burst(450, new THREE.Vector3(ENEMY_POS.x, 2.3, ENEMY_POS.z));
     this.motes.burst(200, new THREE.Vector3(ENEMY_POS.x, 2.6, ENEMY_POS.z));
+    this.dust.burst(240, new THREE.Vector3(ENEMY_POS.x, 0.2, ENEMY_POS.z));
   }
 }
 
@@ -254,6 +265,14 @@ export const hammerOfJusticeModule: EffectModule = {
   label: 'hammer of justice',
   category: 'paladin',
   create: () => new HammerOfJustice(),
+  telegraphs(effect) {
+    const s = (effect as HammerOfJustice).settings;
+    // The gavel strikes the ground under the enemy's head.
+    return [{
+      shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 2.6 },
+      start: Math.min(0.3, s.castTime * 0.4), impact: s.castTime + s.swingTime,
+    }];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const s = (effect as HammerOfJustice).settings;

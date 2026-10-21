@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import {
-  CASTER_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep,
+  CASTER_POS, ENEMY_POS, Enemy, GlowSphere, createCaster, createGround, createRing, frameArena, smoothstep, softDotTexture,
 } from '../../effects/common';
 import type { Effect, EffectModule } from '../../effects/types';
 
@@ -37,21 +37,6 @@ const SIGIL = new THREE.Vector3(0, 2.1, CASTER_POS.z - 1.7); // centre of the si
 const CHEST = new THREE.Vector3(0, 1.3, 0);
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
-
-function dotTexture(): THREE.Texture {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d')!;
-  const grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(255,255,255,1)');
-  grad.addColorStop(0.4, 'rgba(255,255,255,0.6)');
-  grad.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 64, 64);
-  const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
 
 interface Missile {
   halo: GlowSphere;
@@ -90,6 +75,7 @@ export class ArcaneMissiles implements Effect {
   private enemy = new Enemy();
   private handGlow = new GlowSphere(0xd9a8ff, { rim: false });
   private burst = new GlowSphere(0xb36bff);
+  private mark = createRing(0xb36bff, 0.2, 1, 48); // arcane scorch on the ground under the enemy
   private rings: SigilRing[] = [];
   private missiles: Missile[] = [];
 
@@ -103,13 +89,14 @@ export class ArcaneMissiles implements Effect {
   private glints: Emitter;
   private sparks: Emitter;
   private puff: Emitter;
+  private smoke: Emitter; // dark violet smoke behind the bright hits
 
   private v = new THREE.Vector3();
 
   constructor(settings: ArcaneMissilesSettings = defaultArcaneMissiles()) {
     this.settings = settings;
     this.group.add(createGround(), this.caster.group, this.enemy.group);
-    this.group.add(this.handGlow.mesh, this.burst.mesh);
+    this.group.add(this.handGlow.mesh, this.burst.mesh, this.mark.mesh);
 
     // Nested sigil: circle, pentagon, hexagram (two triangles), inner circle. Upright, facing the enemy (-Z).
     const defs: [number, number, number, number, number, number, boolean][] = [
@@ -145,7 +132,7 @@ export class ArcaneMissiles implements Effect {
     }
     this.moteGeo.setAttribute('position', new THREE.BufferAttribute(this.motePos, 3).setUsage(THREE.DynamicDrawUsage));
     this.moteMat = new THREE.PointsMaterial({
-      size: 0.24, map: dotTexture(), color: 0xff9be8, transparent: true, opacity: 0, depthWrite: false,
+      size: 0.24, map: softDotTexture(), color: 0xff9be8, transparent: true, opacity: 0, depthWrite: false,
       blending: THREE.AdditiveBlending, sizeAttenuation: true,
     });
     this.motes = new THREE.Points(this.moteGeo, this.moteMat);
@@ -155,28 +142,40 @@ export class ArcaneMissiles implements Effect {
     this.trail = new Emitter({
       ...defaultSettings(), maxParticles: 2500, rate: 0, lifetime: 0.5, lifetimeJitter: 0.3,
       shape: 'sphere', shapeSize: 0.08, speed: 0.5, speedJitter: 0.6, spread: 180, gravity: 0, drag: 1.5,
-      sizeStart: 0.3, sizeEnd: 0.02, colorStart: '#ff9be8', colorEnd: '#7a3cff',
+      sizeStart: 0.3, sizeEnd: 0.02, colorStart: '#ffd0f4', colorMid: '#ff9be8', colorEnd: '#7a3cff',
       opacityStart: 0.45, opacityEnd: 0, additive: true,
+      sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
     this.glints = new Emitter({
       ...defaultSettings(), maxParticles: 800, rate: 0, lifetime: 0.7, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.15, speed: 1.6, speedJitter: 0.6, spread: 180, gravity: 1.5, drag: 1,
       sizeStart: 0.1, sizeEnd: 0.02, colorStart: '#ffffff', colorEnd: '#c77dff',
       opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.sparks = new Emitter({
       ...defaultSettings(), maxParticles: 1200, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.1, speed: 8, speedJitter: 0.6, spread: 180, gravity: 8, drag: 0.9,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fbe6ff', colorEnd: '#a45cff',
       opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.puff = new Emitter({
       ...defaultSettings(), maxParticles: 600, rate: 0, lifetime: 0.7, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.2, speed: 3, speedJitter: 0.5, spread: 180, gravity: -0.5, drag: 1.6,
-      sizeStart: 0.4, sizeEnd: 1.3, colorStart: '#d79bff', colorEnd: '#5a2a9e',
+      sizeStart: 0.4, sizeEnd: 1.3, colorStart: '#f0d0ff', colorMid: '#d79bff', colorEnd: '#5a2a9e',
       opacityStart: 0.35, opacityEnd: 0, additive: true,
+      sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
-    this.emitters.push(this.trail, this.glints, this.sparks, this.puff);
+    this.smoke = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 1.6, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.3, speed: 1.4, speedJitter: 0.5, spread: 180, gravity: -0.3, drag: 1.4,
+      sizeStart: 0.5, sizeEnd: 1.6, colorStart: '#6a4a9a', colorMid: '#3a2468', colorEnd: '#150c28',
+      opacityStart: 0.3, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+    });
+    // Dark smoke (normal blending) first so the additive layers draw over it.
+    this.emitters.push(this.smoke, this.trail, this.glints, this.sparks, this.puff);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.applyStyle();
@@ -187,12 +186,16 @@ export class ArcaneMissiles implements Effect {
     const s = this.settings;
     for (const r of this.rings) r.material.color.set(r.accent ? s.accent : s.color);
     this.burst.color.set(s.color);
+    this.mark.material.color.set(s.color);
     this.handGlow.color.set(s.color).lerp(new THREE.Color(0xffffff), 0.4);
     for (const m of this.missiles) m.halo.color.set(s.color);
     this.moteMat.color.set(s.accent);
-    this.trail.settings.colorStart = s.accent;
+    const hot = (hex: string) => '#' + new THREE.Color(hex).lerp(new THREE.Color(0xffffff), 0.5).getHexString();
+    this.trail.settings.colorStart = hot(s.accent);
+    this.trail.settings.colorMid = s.accent;
     this.trail.settings.colorEnd = s.color;
-    this.puff.settings.colorStart = s.accent;
+    this.puff.settings.colorStart = hot(s.accent);
+    this.puff.settings.colorMid = s.accent;
     this.puff.settings.colorEnd = s.color;
     this.trail.applyStyle();
     this.puff.applyStyle();
@@ -270,6 +273,7 @@ export class ArcaneMissiles implements Effect {
     this.shake = Math.min(this.shake + 0.15, 0.35);
     this.sparks.burst(110, m.hitPos);
     this.puff.burst(40, m.hitPos);
+    this.smoke.burst(14, m.hitPos);
     this.glints.burst(30, m.hitPos);
   }
 
@@ -336,6 +340,9 @@ export class ArcaneMissiles implements Effect {
     this.burst.mesh.position.set(CHEST.x, CHEST.y, CHEST.z);
     this.burst.mesh.scale.setScalar(0.7 + this.burstT * 9);
     this.burst.opacity = this.burstT < 1 ? 0.55 * Math.exp(-this.burstT * 9) : 0;
+    this.mark.mesh.position.set(ENEMY_POS.x, 0.04, ENEMY_POS.z);
+    this.mark.mesh.scale.setScalar(2.2);
+    this.mark.material.opacity = this.burstT < 4 ? 0.3 * Math.exp(-this.burstT * 1.1) : 0;
     this.enemy.setFlash(Math.min(this.enemyFlash, 0.9));
     this.enemy.group.position.z = -0.25 * this.hitPulse;
   }
@@ -345,6 +352,17 @@ export const arcaneMissilesModule: EffectModule = {
   label: 'arcane missiles',
   category: 'iconic',
   create: () => new ArcaneMissiles(),
+  telegraphs(effect) {
+    const s = (effect as ArcaneMissiles).settings;
+    const count = THREE.MathUtils.clamp(Math.round(s.missileCount), 1, MAX_MISSILES);
+    const first = s.castTime + s.flightTime;
+    const last = s.castTime + (count - 1) * s.interval + s.flightTime;
+    return [
+      // The volley's path from the caster to the enemy (the missiles arc sideways, hence the width).
+      { shape: { kind: 'line', x1: CASTER_POS.x, z1: CASTER_POS.z, x2: ENEMY_POS.x, z2: ENEMY_POS.z, width: 3 }, start: 0.2, impact: first, until: last },
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 1.5 }, start: 0.2, impact: first, until: last },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Caster at z = 14, enemy at the origin; the missiles arc through the gap.

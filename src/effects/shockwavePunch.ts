@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../emitter';
-import { Enemy, createGround, smoothstep } from './common';
+import { Enemy, GlowSphere, createGround, smoothstep } from './common';
 import type { Effect, EffectModule } from './types';
 
 /**
@@ -28,7 +28,7 @@ export const defaultShockwavePunch = (): ShockwavePunchSettings => ({
   debrisCount: 220,
   dustAmount: 1,
   blastColor: '#9fd8ff',
-  dustColor: '#a0937f',
+  dustColor: '#8a7d6a',
   loop: false,
 });
 
@@ -87,8 +87,7 @@ export class ShockwavePunch implements Effect {
   private fist: THREE.Mesh;
   private fistMat: THREE.MeshStandardMaterial;
   private arm: THREE.Mesh;
-  private glow: THREE.Mesh;
-  private glowMat: THREE.MeshBasicMaterial;
+  private glow: GlowSphere;
   private motes: THREE.InstancedMesh;
   private moteMat: THREE.MeshBasicMaterial;
   private moteData: Mote[] = [];
@@ -134,12 +133,8 @@ export class ShockwavePunch implements Effect {
     this.group.add(this.arm);
 
     // Energy glow around the fist and the inflowing motes.
-    this.glowMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(s.blastColor).multiplyScalar(1.3), transparent: true, opacity: 0,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-    });
-    this.glow = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 16), this.glowMat);
-    this.group.add(this.glow);
+    this.glow = new GlowSphere(s.blastColor, { rim: false });
+    this.group.add(this.glow.mesh);
 
     this.moteMat = new THREE.MeshBasicMaterial({
       color: new THREE.Color(s.blastColor).multiplyScalar(1.3), transparent: true, opacity: 0.6,
@@ -192,13 +187,13 @@ export class ShockwavePunch implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 1.2, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.4, speed: 18, speedJitter: 0.6, spread: 85,
       gravity: 14, drag: 0.5, sizeStart: 0.2, sizeEnd: 0.03, colorStart: '#fff4d0', colorEnd: '#ff9a30',
-      opacityStart: 0.9, opacityEnd: 0, additive: true,
+      opacityStart: 0.9, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.dust = new Emitter({
       ...defaultSettings(), maxParticles: 1800, rate: 0, lifetime: 2.6, lifetimeJitter: 0.3,
       shape: 'cone', shapeSize: 1.2, originY: 0.2, speed: 6, speedJitter: 0.5, spread: 88,
-      gravity: -0.2, drag: 1.5, sizeStart: 1.6, sizeEnd: 5.5, colorStart: s.dustColor, colorEnd: '#4a4a50',
-      opacityStart: 0.35, opacityEnd: 0, additive: false,
+      gravity: -0.2, drag: 1.5, sizeStart: 1.6, sizeEnd: 5.5, colorStart: s.dustColor, colorMid: '#6e665c', colorEnd: '#44444a',
+      opacityStart: 0.35, opacityEnd: 0, additive: false, sizeJitter: 0.5, erosion: 0.5, spin: 0.4, groundFade: 0.15,
     });
     this.emitters.push(this.sparks, this.dust);
     for (const e of this.emitters) this.group.add(e.points);
@@ -239,7 +234,7 @@ export class ShockwavePunch implements Effect {
   applyStyle() {
     const s = this.settings;
     const c = new THREE.Color(s.blastColor).multiplyScalar(1.3);
-    this.glowMat.color.copy(c);
+    this.glow.color.set(s.blastColor);
     this.moteMat.color.copy(c);
     this.coneOuterMat.color.copy(c);
     this.coneInnerMat.color.copy(c);
@@ -269,7 +264,7 @@ export class ShockwavePunch implements Effect {
     this.enemy.reset();
     this.enemy.group.position.set(0, 0, 0);
     this.enemy.group.rotation.set(0, Math.PI, 0); // face the puncher
-    this.glowMat.opacity = 0;
+    this.glow.opacity = 0;
     this.coneOuterMat.opacity = this.coneInnerMat.opacity = 0;
     this.coneOuter.visible = this.coneInner.visible = false;
     for (const r of this.rings) r.visible = false;
@@ -321,19 +316,18 @@ export class ShockwavePunch implements Effect {
     this.fistMat.emissiveIntensity = this.punched ? 0.3 + 2.2 * Math.exp(-after * 8) : 0.3 + 0.7 * wp;
 
     // Energy glow: swells during the wind-up, flares and vanishes on release.
-    this.glow.position.copy(this.fist.position);
+    this.glow.mesh.position.copy(this.fist.position);
     if (!this.punched) {
       const gs = 0.12 + 0.5 * wp + 0.04 * wp * Math.sin(t * 40);
-      this.glow.scale.setScalar(gs);
-      this.glowMat.opacity = 0.15 + 0.3 * wp;
+      this.glow.mesh.scale.setScalar(gs);
+      this.glow.opacity = 0.15 + 0.3 * wp;
       this.flashLight.position.set(0, 2.5, fistZ);
       this.flashLight.intensity = 25 * wp;
     } else {
       const g = Math.min(1, after / 0.35);
-      this.glow.scale.setScalar(0.62 + 1.6 * g);
-      this.glowMat.opacity = 0.5 * (1 - g);
+      this.glow.mesh.scale.setScalar(0.62 + 1.6 * g);
+      this.glow.opacity = 0.5 * (1 - g);
     }
-    this.glow.visible = this.glowMat.opacity > 0.002;
 
     // Motes streaming into the fist.
     const gather = !this.punched ? smoothstep(t / 0.2) : 0;
@@ -528,6 +522,14 @@ export class ShockwavePunch implements Effect {
 export const shockwavePunchModule: EffectModule = {
   label: 'shockwave punch',
   create: () => new ShockwavePunch(),
+  telegraphs(effect) {
+    const s = (effect as ShockwavePunch).settings;
+    // The air blast fans forward from the fist along +Z.
+    return [{
+      shape: { kind: 'cone', x: 0, z: -7.6, radius: s.blastLength, angle: 50, dir: 0 },
+      start: 0.05, impact: s.windupTime + 0.08,
+    }];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.5, threshold: 0.85 },
   frameCamera(camera, controls, effect) {
     const sp = (effect as ShockwavePunch).settings;

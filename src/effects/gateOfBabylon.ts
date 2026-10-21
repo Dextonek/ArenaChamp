@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../emitter';
-import { Enemy, createGround, createSpearGeometry, createSwordGeometry, smoothstep } from './common';
+import { Enemy, GlowSphere, createGround, createSpearGeometry, createSwordGeometry, smoothstep } from './common';
 import type { Effect, EffectModule } from './types';
 
 /**
@@ -118,6 +118,8 @@ export class GateOfBabylon implements Effect {
   private portalMat: THREE.ShaderMaterial;
   private portalPos: THREE.Vector3[] = [];
   private portalDelay: number[] = [];
+  private portalSizes: number[] = [];
+  private glints: GlowSphere[] = []; // short anticipation flash at each portal centre as it opens
 
   private weaponMat = new THREE.MeshStandardMaterial({
     // Matte-ish metal: hundreds of mirror-like blades piled together reflect the environment into a white blob.
@@ -141,6 +143,7 @@ export class GateOfBabylon implements Effect {
   private wallLight = new THREE.PointLight(0xffc56a, 0, 45, 2);
   private sparks: Emitter;
   private dust: Emitter;
+  private haze: Emitter;
 
   private dummy = new THREE.Object3D();
   private v1 = new THREE.Vector3();
@@ -173,10 +176,17 @@ export class GateOfBabylon implements Effect {
     this.dust = new Emitter({
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.4, speed: 2.2, speedJitter: 0.5, spread: 70, gravity: -0.2, drag: 1.6,
-      sizeStart: 0.9, sizeEnd: 3, colorStart: '#5a544c', colorEnd: '#2a2a30',
-      opacityStart: 0.2, opacityEnd: 0, additive: false,
+      sizeStart: 0.9, sizeEnd: 3, colorStart: '#6a645a', colorMid: '#4a4640', colorEnd: '#2a2a30',
+      opacityStart: 0.2, opacityEnd: 0, additive: false, sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
     });
-    this.emitters.push(this.sparks, this.dust);
+    // Subtle dark haze hanging around the enemy during the barrage, for depth behind the bright weapons.
+    this.haze = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 3, lifetimeJitter: 0.3,
+      shape: 'sphere', shapeSize: 4, originY: 1.5, speed: 0.5, speedJitter: 0.5, spread: 180, gravity: 0, drag: 1,
+      sizeStart: 3, sizeEnd: 5, colorStart: '#4a4640', colorMid: '#38363a', colorEnd: '#24242a',
+      opacityStart: 0.1, opacityEnd: 0, additive: false, sizeJitter: 0.4, erosion: 0.5, spin: 0.3, groundFade: 0.3,
+    });
+    this.emitters.push(this.sparks, this.dust, this.haze);
     for (const e of this.emitters) this.group.add(e.points);
 
     this.build();
@@ -205,6 +215,9 @@ export class GateOfBabylon implements Effect {
     const rows = Math.ceil(n / cols);
     this.portalPos = [];
     this.portalDelay = [];
+    this.portalSizes = [];
+    for (const g of this.glints) { this.group.remove(g.mesh); g.mesh.geometry.dispose(); }
+    this.glints = [];
     for (let i = 0; i < n; i++) {
       const cx = ((i % cols) + 0.15 + Math.random() * 0.7) / cols;
       const cy = (Math.floor(i / cols) + 0.15 + Math.random() * 0.7) / rows;
@@ -216,6 +229,11 @@ export class GateOfBabylon implements Effect {
       // Open from the centre outward.
       this.portalDelay.push((Math.abs(cx - 0.5) * 1.4 + Math.random() * 0.3) * s.openTime * 0.7);
       const size = s.portalSize * (0.75 + Math.random() * 0.5);
+      this.portalSizes.push(size);
+      const glint = new GlowSphere(s.portalColor, { rim: false });
+      glint.mesh.position.copy(this.portalPos[i]);
+      this.group.add(glint.mesh);
+      this.glints.push(glint);
       this.dummy.position.copy(this.portalPos[i]);
       this.dummy.lookAt(ENEMY_POS);
       this.dummy.scale.setScalar(size);
@@ -278,6 +296,7 @@ export class GateOfBabylon implements Effect {
 
   applyStyle() {
     (this.portalMat.uniforms.uColor.value as THREE.Color).set(this.settings.portalColor);
+    for (const g of this.glints) g.color.set(this.settings.portalColor);
   }
 
   get duration() {
@@ -292,6 +311,7 @@ export class GateOfBabylon implements Effect {
     this.shake = 0;
     this.enemy.reset();
     for (const e of this.emitters) e.clear();
+    this.haze.settings.rate = 0;
     this.playing = true;
     this.layout();
   }
@@ -305,6 +325,8 @@ export class GateOfBabylon implements Effect {
       this.playing = false;
     }
 
+    // Dark haze around the enemy only while the barrage is running.
+    this.haze.settings.rate = this.time > this.settings.openTime * 0.6 && this.time < this.endTime ? 70 : 0;
     this.shake *= Math.exp(-dt * 8);
     this.enemyFlash *= Math.exp(-dt * 7);
     for (const w of this.weapons) {
@@ -334,6 +356,11 @@ export class GateOfBabylon implements Effect {
       const v = Math.min(overshoot, 1.1) * closing;
       this.portalOpen.setX(i, v);
       openSum += v;
+      // Anticipation glint: a quick bloom of light just as the portal starts to open.
+      const gl = (t - this.portalDelay[i] + 0.1) / 0.4;
+      const gv = gl > 0 && gl < 1 ? Math.sin(gl * Math.PI) : 0;
+      this.glints[i].opacity = gv * 0.45 * closing;
+      this.glints[i].mesh.scale.setScalar(this.portalSizes[i] * (0.25 + 0.3 * gl));
     }
     this.portalOpen.needsUpdate = true;
     this.wallLight.intensity = (openSum / Math.max(1, this.portalPos.length)) * 120;
@@ -415,6 +442,14 @@ export class GateOfBabylon implements Effect {
 export const gateOfBabylonModule: EffectModule = {
   label: 'gate of babylon',
   create: () => new GateOfBabylon(),
+  telegraphs(effect) {
+    const s = (effect as GateOfBabylon).settings;
+    // The barrage carpets the aim area until the final volley lands.
+    return [{
+      shape: { kind: 'circle', x: 0, z: 0, radius: s.aimSpread + 1 },
+      start: s.openTime * 0.4, impact: s.openTime + 0.2, until: s.openTime + s.barrageTime + 0.9,
+    }];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.8 },
   frameCamera(camera, controls, effect) {
     const s = (effect as GateOfBabylon).settings;

@@ -28,6 +28,7 @@ const AFTERMATH = 2.4;
 const GREEN = 0x5bff3a;
 const ORANGE = 0xff7a1a;
 const SHARDS = 7;
+const BURN = 1.6; // seconds the fel fire keeps burning after the impact
 
 /** Emits `rate` particles per second as a whole number of particles for this frame. */
 function emit(e: Emitter, rate: number, dt: number, at: THREE.Vector3) {
@@ -113,6 +114,7 @@ export class ChaosBolt implements Effect {
   private trailO: Emitter;
   private fireG: Emitter;
   private fireO: Emitter;
+  private smoke: Emitter;
   private sparksG: Emitter;
   private sparksO: Emitter;
 
@@ -140,40 +142,53 @@ export class ChaosBolt implements Effect {
       this.group.add(sphere.mesh);
     });
 
-    const flame = (a: string, b: string): Emitter => new Emitter({
+    const flame = (a: string, m: string, b: string): Emitter => new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 0.7, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.12, speed: 1.2, speedJitter: 0.5, spread: 180, gravity: -2.5, drag: 1,
-      sizeStart: 0.35, sizeEnd: 0.02, colorStart: a, colorEnd: b, opacityStart: 0.5, opacityEnd: 0, additive: true,
+      sizeStart: 0.35, sizeEnd: 0.02, colorStart: a, colorMid: m, colorEnd: b, opacityStart: 0.5, opacityEnd: 0, additive: true,
+      sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
     });
-    this.handFlameG = flame('#b8ff7a', '#1f9a10');
-    this.handFlameO = flame('#ffd070', '#ff3a00');
+    this.handFlameG = flame('#b8ff7a', '#3ad020', '#1f9a10');
+    this.handFlameO = flame('#ffd070', '#ff7a1a', '#ff3a00');
 
-    const trail = (a: string, b: string): Emitter => new Emitter({
+    const trail = (a: string, m: string, b: string): Emitter => new Emitter({
       ...defaultSettings(), maxParticles: 2000, rate: 0, lifetime: 0.6, lifetimeJitter: 0.3,
       shape: 'sphere', shapeSize: 0.08, speed: 0.4, speedJitter: 0.5, spread: 180, gravity: 0, drag: 1,
-      sizeStart: 0.4, sizeEnd: 0.04, colorStart: a, colorEnd: b, opacityStart: 0.5, opacityEnd: 0, additive: true,
+      sizeStart: 0.4, sizeEnd: 0.04, colorStart: a, colorMid: m, colorEnd: b, opacityStart: 0.5, opacityEnd: 0, additive: true,
+      sizeJitter: 0.4, erosion: 0.4, spin: 0.3,
     });
-    this.trailG = trail('#c8ff80', '#1a8a10');
-    this.trailO = trail('#ffc060', '#d02800');
+    this.trailG = trail('#c8ff80', '#4ad828', '#1a8a10');
+    this.trailO = trail('#ffc060', '#ff7a1a', '#d02800');
 
-    const fire = (a: string, b: string): Emitter => new Emitter({
+    const fire = (a: string, m: string, b: string): Emitter => new Emitter({
       ...defaultSettings(), maxParticles: 1000, rate: 0, lifetime: 1, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: 3, speed: 3, speedJitter: 0.6, spread: 35, gravity: -2, drag: 0.8,
-      sizeStart: 0.7, sizeEnd: 0.05, colorStart: a, colorEnd: b, opacityStart: 0.4, opacityEnd: 0, additive: true,
+      sizeStart: 0.7, sizeEnd: 0.05, colorStart: a, colorMid: m, colorEnd: b, opacityStart: 0.4, opacityEnd: 0, additive: true,
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
     });
-    this.fireG = fire('#b0ff70', '#1a8a10');
-    this.fireO = fire('#ffb040', '#c82400');
+    this.fireG = fire('#b0ff70', '#3ad020', '#1a8a10');
+    this.fireO = fire('#ffb040', '#ff6a10', '#c82400');
 
     const sparks = (a: string, b: string): Emitter => new Emitter({
       ...defaultSettings(), maxParticles: 900, rate: 0, lifetime: 1, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.5, speed: 13, speedJitter: 0.6, spread: 180, gravity: 12, drag: 0.7,
       sizeStart: 0.14, sizeEnd: 0.02, colorStart: a, colorEnd: b, opacityStart: 0.9, opacityEnd: 0, additive: true,
+      sizeJitter: 0.3, erosion: 0,
     });
     this.sparksG = sparks('#e8ffb0', '#3acc20');
     this.sparksO = sparks('#fff0b0', '#ff7a10');
 
+    // Dark fel smoke behind the bright explosion (normal blending, so it comes first).
+    this.smoke = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.6, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 1.2, speed: 3, speedJitter: 0.5, spread: 180, gravity: -0.4, drag: 1.2,
+      sizeStart: 1.0, sizeEnd: 3.2, colorStart: '#4a5a3a', colorMid: '#2a3220', colorEnd: '#0e100a',
+      opacityStart: 0.35, opacityEnd: 0, additive: false,
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+    });
+
     this.emitters.push(
-      this.handFlameG, this.handFlameO, this.trailG, this.trailO, this.fireG, this.fireO, this.sparksG, this.sparksO,
+      this.smoke, this.handFlameG, this.handFlameO, this.trailG, this.trailO, this.fireG, this.fireO, this.sparksG, this.sparksO,
     );
     for (const e of this.emitters) this.group.add(e.points);
     this.reset();
@@ -239,8 +254,8 @@ export class ChaosBolt implements Effect {
       emit(this.trailG, 260, dt, gOff);
       emit(this.trailO, 260, dt, oOff);
     }
-    if (this.impacted && t - (s.castTime + s.flightTime) < 1.6) {
-      const k = 1 - (t - (s.castTime + s.flightTime)) / 1.6;
+    if (this.impacted && t - (s.castTime + s.flightTime) < BURN) {
+      const k = 1 - (t - (s.castTime + s.flightTime)) / BURN;
       this.fireG.settings.rate = 140 * k;
       this.fireO.settings.rate = 140 * k;
     } else {
@@ -329,6 +344,7 @@ export class ChaosBolt implements Effect {
     this.sparksO.burst(450, at);
     this.fireG.burst(220, at);
     this.fireO.burst(220, at);
+    this.smoke.burst(300, at);
   }
 }
 
@@ -336,6 +352,18 @@ export const chaosBoltModule: EffectModule = {
   label: 'chaos bolt',
   category: 'iconic',
   create: () => new ChaosBolt(),
+  telegraphs(effect) {
+    const s = (effect as ChaosBolt).settings;
+    const impact = s.castTime + s.flightTime;
+    return [
+      // The bolt's flight path.
+      { shape: { kind: 'line', x1: 0, z1: CASTER_POS.z - 0.8, x2: ENEMY_POS.x, z2: ENEMY_POS.z, width: 1.2 * s.boltSize }, start: 0.3, impact },
+      // The explosion.
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 7 }, start: 0.3, impact },
+      // The fel fire keeps burning on the ground.
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: 3.2 }, start: 0.3, impact, until: impact + BURN },
+    ];
+  },
   bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     frameArena(camera, controls, new THREE.Vector3(0, 2.5, 7), 11);

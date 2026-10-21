@@ -60,6 +60,7 @@ export class AvengersShield implements Effect {
   private markDiamonds = TARGET_HOMES.map(() => createRing(0xffe2a0, 0.5, 0.58, 4));
   private sparks: Emitter;
   private trail: Emitter;
+  private dust: Emitter;
 
   constructor(settings: AvengersShieldSettings = defaultAvengersShield()) {
     this.settings = settings;
@@ -78,15 +79,24 @@ export class AvengersShield implements Effect {
       ...defaultSettings(), maxParticles: 1500, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.4, speed: 9, speedJitter: 0.6, spread: 180, gravity: 9, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#fff4d0', colorEnd: '#ffb02a',
-      opacityStart: 0.8, opacityEnd: 0, additive: true,
+      opacityStart: 0.8, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.trail = new Emitter({
       ...defaultSettings(), maxParticles: 2400, rate: 0, lifetime: 0.6, lifetimeJitter: 0.4,
       shape: 'sphere', shapeSize: 0.25, speed: 0.8, speedJitter: 0.6, spread: 180, gravity: 0, drag: 1.2,
       sizeStart: 0.24, sizeEnd: 0.02, colorStart: '#fff2c4', colorEnd: settings.color,
+      colorMid: '#ffd77a', sizeJitter: 0.4, erosion: 0.5, spin: 0.4,
       opacityStart: 0.45, opacityEnd: 0, additive: true,
     });
-    this.emitters.push(this.sparks, this.trail);
+    // Dark dust kicked up under each hit, behind the bright sparks.
+    this.dust = new Emitter({
+      ...defaultSettings(), maxParticles: 300, rate: 0, lifetime: 2, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.8, speed: 3, speedJitter: 0.5, spread: 80, gravity: -0.3, drag: 1.2,
+      sizeStart: 0.5, sizeEnd: 1.2, colorStart: '#8a7656', colorMid: '#5a4a34', colorEnd: '#2a2218',
+      sizeJitter: 0.4, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+      opacityStart: 0.28, opacityEnd: 0, additive: false,
+    });
+    this.emitters.push(this.dust, this.sparks, this.trail);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -108,6 +118,11 @@ export class AvengersShield implements Effect {
     const starts = [s.windup];
     for (let i = 0; i < pts.length - 1; i++) starts.push(starts[i] + pts[i].distanceTo(pts[i + 1]) / s.speed);
     return { pts, starts };
+  }
+
+  /** Times (seconds after play) the shield reaches each of the three targets, for the danger zones. */
+  hitTimes() {
+    return this.route().starts.slice(1, 4);
   }
 
   get duration() {
@@ -145,6 +160,7 @@ export class AvengersShield implements Effect {
     while (this.hits < 3 && this.time >= starts[this.hits + 1]) {
       const p = pts[this.hits + 1];
       this.sparks.burst(450, p);
+      this.dust.burst(90, new THREE.Vector3(p.x, 0.2, p.z));
       this.shake = 0.35;
       this.hits++;
     }
@@ -224,6 +240,14 @@ export const avengersShieldModule: EffectModule = {
   label: "avenger's shield",
   category: 'paladin',
   create: () => new AvengersShield(),
+  telegraphs(effect) {
+    const hits = (effect as AvengersShield).hitTimes();
+    // A small zone under each enemy, filling up until the shield reaches it.
+    return TARGET_HOMES.map((h, i) => ({
+      shape: { kind: 'circle' as const, x: h.x, z: h.z, radius: 2.2 },
+      start: Math.max(0, hits[i] - 0.7), impact: hits[i],
+    }));
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls) {
     // Caster at z = 14, targets at z = 0, -4, -6, x within +-5.

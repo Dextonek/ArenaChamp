@@ -3,6 +3,7 @@ import type { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import type GUI from 'three/addons/libs/lil-gui.module.min.js';
 import type { Emitter } from '../emitter';
 import type { BloomSettings } from '../presets';
+import type { TelegraphSpec } from './telegraph';
 
 /** A timed set piece (sword fall, meteor shower, ...) that main.ts can play, step and render. */
 export interface Effect {
@@ -33,4 +34,9 @@ export interface EffectModule {
   frameCamera(camera: THREE.PerspectiveCamera, controls: OrbitControls, effect: Effect): void;
   /** Adds the effect's controls to its own folder (play button and camera framing are added by main). */
   buildGui(folder: GUI, effect: Effect): void;
+  /**
+   * Red ground danger zones ("don't stand in the red"), read on every play from the current settings.
+   * Times are seconds after play(). main.ts draws them and tests the player dummy against them.
+   */
+  telegraphs?(effect: Effect): TelegraphSpec[];
 }

@@ -102,6 +102,7 @@ export class Starfall implements Effect {
   private flashGlow = new GlowSphere(0xe6dcff);
   private sparks: Emitter;
   private dust: Emitter;
+  private smoke: Emitter;
   private tmp = new THREE.Object3D();
   private tmpV = new THREE.Vector3();
   private tmpC = new THREE.Color();
@@ -160,15 +161,23 @@ export class Starfall implements Effect {
       ...defaultSettings(), maxParticles: 2400, rate: 0, lifetime: 0.8, lifetimeJitter: 0.5,
       shape: 'sphere', shapeSize: 0.15, speed: 5, speedJitter: 0.6, spread: 90, gravity: 6, drag: 0.8,
       sizeStart: 0.13, sizeEnd: 0.02, colorStart: '#ffffff', colorEnd: '#a46bff',
-      opacityStart: 0.85, opacityEnd: 0, additive: true,
+      opacityStart: 0.85, opacityEnd: 0, additive: true, sizeJitter: 0.3, erosion: 0,
     });
     this.dust = new Emitter({
       ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2, lifetimeJitter: 0.4,
       shape: 'cone', shapeSize: 3, speed: 1.2, speedJitter: 0.5, spread: 25, gravity: -0.3, drag: 0.7,
       sizeStart: 0.18, sizeEnd: 0, colorStart: '#efe6ff', colorEnd: '#b48cff',
       opacityStart: 0.4, opacityEnd: 0, additive: true,
+      colorMid: '#c7a4ff', sizeJitter: 0.4, erosion: 0.5, spin: 0.4, groundFade: 0.3,
     });
-    this.emitters.push(this.sparks, this.dust);
+    // Dark tertiary layer: violet dust kicked up behind each starburst.
+    this.smoke = new Emitter({
+      ...defaultSettings(), maxParticles: 400, rate: 0, lifetime: 2.2, lifetimeJitter: 0.4,
+      shape: 'sphere', shapeSize: 0.3, speed: 1.4, speedJitter: 0.6, spread: 70, gravity: -0.3, drag: 0.9,
+      sizeStart: 0.7, sizeEnd: 1.6, colorStart: '#2a1c44', colorEnd: '#0c0818', opacityStart: 0.35, opacityEnd: 0,
+      additive: false, sizeJitter: 0.45, erosion: 0.55, spin: 0.4, groundFade: 0.3,
+    });
+    this.emitters.push(this.smoke, this.sparks, this.dust);
     for (const e of this.emitters) this.group.add(e.points);
     this.applyStyle();
     this.reset();
@@ -238,6 +247,7 @@ export class Starfall implements Effect {
       if (!st.fired && this.time >= st.start + FLIGHT) {
         st.fired = true;
         this.sparks.burst(st.hitsEnemy ? 40 : 22, st.target);
+        if (!st.hitsEnemy) this.smoke.burst(4, st.target);
         if (st.hitsEnemy) this.shake = Math.max(this.shake, 0.08);
       }
     }
@@ -346,6 +356,14 @@ export const starfallModule: EffectModule = {
   label: 'starfall',
   category: 'iconic',
   create: () => new Starfall(),
+  telegraphs(effect) {
+    const s = (effect as Starfall).settings;
+    const first = 0.9 + FLIGHT; // first star lands
+    // Stars land across the whole disc around the enemy until the barrage ends.
+    return [
+      { shape: { kind: 'circle', x: ENEMY_POS.x, z: ENEMY_POS.z, radius: s.radius + 0.5 }, start: 0.2, impact: first, until: Math.max(first + 0.2, s.duration - 1.2) },
+    ];
+  },
   bloom: { enabled: true, strength: 0.55, radius: 0.5, threshold: 0.82 },
   frameCamera(camera, controls, effect) {
     const s = (effect as Starfall).settings;
