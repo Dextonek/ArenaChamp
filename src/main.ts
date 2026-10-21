@@ -8,7 +8,8 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import GUI from 'three/addons/libs/lil-gui.module.min.js';
 import { Emitter, type EmitterSettings } from './emitter';
 import { presets, presetNames, presetSettings, type BloomSettings } from './presets';
-import { DivineSword } from './effects/divineSword';
+import { effectModules } from './effects';
+import type { Effect, EffectModule } from './effects/types';
 
 const container = document.getElementById('app')!;
 
@@ -46,10 +47,6 @@ const initialPreset = 'fire';
 const emitter = new Emitter(presetSettings(initialPreset));
 scene.add(emitter.points);
 
-const sword = new DivineSword();
-sword.group.visible = false;
-scene.add(sword.group);
-
 // --- Post-processing --------------------------------------------------------
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
@@ -58,7 +55,6 @@ composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 
 const bloom: BloomSettings = { ...presets[initialPreset].bloom };
-const swordBloom: BloomSettings = { enabled: true, strength: 0.55, radius: 0.45, threshold: 0.85 };
 function applyBloom() {
   bloomPass.enabled = bloom.enabled;
   bloomPass.strength = bloom.strength;
@@ -67,6 +63,20 @@ function applyBloom() {
 }
 applyBloom();
 
+// --- Set-piece effects (created lazily so one broken effect can't take down the app) ---
+interface EffectSlot {
+  module: EffectModule;
+  effect?: Effect;
+  folder?: GUI;
+  error?: string;
+}
+const slots = new Map<string, EffectSlot>(effectModules.map((m) => [m.label, { module: m }]));
+let active: EffectSlot | undefined;
+
+function pixelScale(e: Emitter) {
+  e.setPixelScale(window.innerHeight * renderer.getPixelRatio(), camera.fov);
+}
+
 function resize() {
   const w = window.innerWidth, h = window.innerHeight;
   renderer.setSize(w, h);
@@ -74,7 +84,8 @@ function resize() {
   composer.setSize(w, h);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
-  for (const e of [emitter, ...sword.emitters]) e.setPixelScale(h * renderer.getPixelRatio(), camera.fov);
+  pixelScale(emitter);
+  for (const slot of slots.values()) slot.effect?.emitters.forEach(pixelScale);
 }
 window.addEventListener('resize', resize);
 resize();
@@ -85,10 +96,10 @@ const s: EmitterSettings = emitter.settings;
 const gui = new GUI({ title: 'VFX Tool' });
 const refreshPanel = () => gui.controllersRecursive().forEach((c) => c.updateDisplay());
 
-const mode = { name: 'particles' as 'particles' | 'divine sword' };
+const mode = { name: 'particles' };
 const preset = { name: initialPreset };
 
-gui.add(mode, 'name', ['particles', 'divine sword']).name('mode').onChange(() => setMode());
+gui.add(mode, 'name', ['particles', ...slots.keys()]).name('mode').onChange(() => setMode());
 const presetCtrl = gui.add(preset, 'name', presetNames).name('preset').onChange((name: string) => {
   Object.assign(s, presetSettings(name));
   Object.assign(bloom, presets[name].bloom);
@@ -109,33 +120,6 @@ fBloom.add(bloom, 'enabled').onChange(applyBloom);
 fBloom.add(bloom, 'strength', 0, 3, 0.01).onChange(applyBloom);
 fBloom.add(bloom, 'radius', 0, 1, 0.01).onChange(applyBloom);
 fBloom.add(bloom, 'threshold', 0, 1, 0.01).onChange(applyBloom);
-
-// Divine sword set piece.
-const ds = sword.settings;
-const swordActions = {
-  play: () => sword.play(),
-  frameCamera: () => frameSword(),
-};
-const fSword = gui.addFolder('Divine Sword');
-fSword.add(swordActions, 'play').name('▶ play');
-fSword.add(swordActions, 'frameCamera').name('frame camera');
-fSword.add(ds, 'loop');
-fSword.add(ds, 'swordCount', 50, 4000, 50).name('sword count').onFinishChange(() => sword.buildSwarm());
-fSword.add(ds, 'drillFraction', 0, 1, 0.01).name('drill share').onFinishChange(() => sword.buildSwarm());
-fSword.add(ds, 'giantScale', 4, 30, 0.1).name('giant size');
-fSword.add(ds, 'smallScale', 0.2, 3, 0.01).name('small size');
-fSword.add(ds, 'fallHeight', 10, 80, 0.5).name('fall height');
-fSword.add(ds, 'summonTime', 0.3, 5, 0.05).name('summon time');
-fSword.add(ds, 'fallTime', 0.3, 5, 0.05).name('fall time');
-fSword.add(ds, 'drillLength', 1, 25, 0.1).name('drill length');
-fSword.add(ds, 'drillRadius', 0.5, 10, 0.05).name('drill radius');
-fSword.add(ds, 'drillArms', 1, 16, 1).name('drill arms').onFinishChange(() => sword.buildSwarm());
-fSword.add(ds, 'drillTwist', 0, 4, 0.05).name('drill twist');
-fSword.add(ds, 'drillSpin', 0, 40, 0.1).name('drill spin');
-fSword.add(ds, 'orbitRadius', 0.5, 10, 0.05).name('orbit radius');
-fSword.add(ds, 'orbitSpin', -15, 15, 0.1).name('orbit spin');
-fSword.addColor(ds, 'glowColor').name('glow color').onChange(() => sword.applyStyle());
-fSword.addColor(ds, 'swarmColor').name('swarm color').onChange(() => sword.applyStyle());
 
 const style = () => emitter.applyStyle();
 const fEmit = gui.addFolder('Emission');
@@ -163,40 +147,64 @@ fLook.add(s, 'opacityStart', 0, 1, 0.01).name('opacity start').onChange(style);
 fLook.add(s, 'opacityEnd', 0, 1, 0.01).name('opacity end').onChange(style);
 fLook.add(s, 'additive').onChange(style);
 
-/** Frames the whole fall: from the summon height down to the impact point. */
-function frameSword() {
-  const top = ds.fallHeight + ds.giantScale;
-  const dist = top * 1.25;
-  camera.position.set(dist * 0.55, top * 0.2, dist * 0.85);
-  controls.target.set(0, top * 0.42, 0);
+/** Builds an effect, its scene objects and its panel folder on first use. */
+function ensureEffect(slot: EffectSlot): Effect | undefined {
+  if (slot.effect || slot.error) return slot.effect;
+  try {
+    const effect = slot.module.create();
+    effect.group.visible = false;
+    scene.add(effect.group);
+    effect.emitters.forEach(pixelScale);
+    const folder = gui.addFolder(slot.module.label);
+    folder.add({ play: () => effect.play() }, 'play').name('▶ play');
+    folder.add({ frame: () => slot.module.frameCamera(camera, controls, effect) }, 'frame').name('frame camera');
+    slot.module.buildGui(folder, effect);
+    slot.effect = effect;
+    slot.folder = folder;
+  } catch (err) {
+    slot.error = err instanceof Error ? err.message : String(err);
+    console.error(`Effect "${slot.module.label}" failed to build`, err);
+  }
+  return slot.effect;
 }
 
 function setMode() {
-  const isSword = mode.name === 'divine sword';
-  sword.group.visible = isSword;
-  emitter.points.visible = !isSword;
-  grid.visible = !isSword && view.showGrid;
-  presetCtrl.show(!isSword);
-  fSword.show(isSword);
-  for (const f of [fEmit, fMotion, fLook]) f.show(!isSword);
-  Object.assign(bloom, isSword ? swordBloom : presets[preset.name].bloom);
-  applyBloom();
-  if (isSword) {
-    frameSword();
-    sword.play();
+  const next = slots.get(mode.name);
+  for (const slot of slots.values()) {
+    if (slot.effect) slot.effect.group.visible = false;
+    slot.folder?.show(false);
+  }
+  active = next;
+  const isParticles = !next;
+  emitter.points.visible = isParticles;
+  grid.visible = isParticles && view.showGrid;
+  presetCtrl.show(isParticles);
+  for (const f of [fEmit, fMotion, fLook]) f.show(isParticles);
+
+  if (next) {
+    const effect = ensureEffect(next);
+    Object.assign(bloom, next.module.bloom);
+    if (effect) {
+      effect.group.visible = true;
+      next.folder?.show(true);
+      next.module.frameCamera(camera, controls, effect);
+      effect.play();
+    }
   } else {
+    Object.assign(bloom, presets[preset.name].bloom);
     camera.position.set(4, 3, 6);
     controls.target.set(0, 1, 0);
   }
+  applyBloom();
   refreshPanel();
 }
 setMode();
 
-// Space replays the sword.
+// Space replays the active effect.
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && mode.name === 'divine sword' && !(e.target instanceof HTMLInputElement)) {
+  if (e.code === 'Space' && active?.effect && !(e.target instanceof HTMLInputElement)) {
     e.preventDefault();
-    sword.play();
+    active.effect.play();
   }
 });
 
@@ -211,13 +219,14 @@ let fpsFrames = 0, fpsTime = 0, fps = 0;
 const shakeOffset = new THREE.Vector3();
 
 function step(dt: number) {
-  if (mode.name === 'particles') emitter.update(dt);
-  else sword.update(dt);
+  if (!active) emitter.update(dt);
+  else active.effect?.update(dt);
 }
 
 function render() {
   // Camera shake: offset only for this frame so OrbitControls keeps the real position.
-  shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(sword.shake * 2);
+  const shake = active?.effect?.shake ?? 0;
+  shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
   camera.position.add(shakeOffset);
   composer.render();
   camera.position.sub(shakeOffset);
@@ -234,11 +243,18 @@ renderer.setAnimationLoop(() => {
   if (fpsTime >= 0.5) {
     fps = Math.round(fpsFrames / fpsTime);
     fpsFrames = 0; fpsTime = 0;
-    stats.textContent = mode.name === 'particles'
+    stats.style.color = active?.error ? '#ff7a6b' : '#8b93a7';
+    stats.textContent = !active
       ? `${fps} fps · ${emitter.aliveCount} particles`
-      : `${fps} fps · ${ds.swordCount} swords · space = replay`;
+      : active.error
+        ? `${active.module.label} failed to build: ${active.error}`
+        : `${fps} fps · ${active.module.label} · space = replay`;
   }
 });
 
-// Debug hook for checking effects from the console / automated browser.
-(window as unknown as { vfx: unknown }).vfx = { emitter, sword, mode, setMode, step, render, controls, bloom };
+// Debug hook for checking effects from the console / automated browser:
+// vfx.mode.name = '<label>'; vfx.setMode(); then vfx.step(1/60) + vfx.render() to scrub.
+(window as unknown as { vfx: unknown }).vfx = {
+  emitter, mode, setMode, step, render, controls, bloom, slots,
+  get effect() { return active?.effect; },
+};

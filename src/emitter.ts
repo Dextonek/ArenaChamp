@@ -91,6 +91,7 @@ export class Emitter {
   private spawnAccumulator = 0;
   private cursor = 0;
   private tmp = new THREE.Vector3();
+  private offset = new THREE.Vector3();
 
   constructor(settings: EmitterSettings = defaultSettings()) {
     this.settings = settings;
@@ -188,10 +189,15 @@ export class Emitter {
     this.geometry.attributes.aAlive.needsUpdate = true;
   }
 
-  /** Spawns `count` particles at once (used for one-shot explosions; set rate to 0). */
-  burst(count: number) {
+  /**
+   * Spawns `count` particles at once (used for one-shot explosions; set rate to 0).
+   * `at` offsets the spawn point in world space (added to originY's position).
+   */
+  burst(count: number, at?: THREE.Vector3) {
+    if (at) this.offset.copy(at);
     const n = Math.min(Math.floor(count), this.capacity);
     for (let i = 0; i < n; i++) this.spawn();
+    this.offset.set(0, 0, 0);
   }
 
   get aliveCount() {
@@ -208,7 +214,8 @@ export class Emitter {
     const j = i * 3;
 
     const pos = this.samplePosition(this.tmp);
-    this.positions[j] = pos.x; this.positions[j + 1] = pos.y + s.originY; this.positions[j + 2] = pos.z;
+    const o = this.offset;
+    this.positions[j] = pos.x + o.x; this.positions[j + 1] = pos.y + s.originY + o.y; this.positions[j + 2] = pos.z + o.z;
 
     const dir = randomDirectionInCone(THREE.MathUtils.degToRad(s.spread), this.tmp);
     const speed = s.speed * (1 + (Math.random() * 2 - 1) * s.speedJitter);

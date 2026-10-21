@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Emitter, defaultSettings } from '../emitter';
+import { Enemy, createGround, createSwordGeometry, smoothstep } from './common';
+import type { Effect, EffectModule } from './types';
 
 /**
  * "Divine sword" set piece: a giant sword falls from the sky onto an enemy while a swarm of
@@ -52,41 +53,6 @@ const FADE = 1.2; // final fade-out length inside the aftermath
 const GRAVITY = 28;
 const DOWN = new THREE.Vector3(0, -1, 0);
 
-/** A unit sword (about 1 long) with its tip at the origin, pointing down -Y. */
-function createSwordGeometry(): THREE.BufferGeometry {
-  const bladeLen = 0.72, tipLen = 0.14, w = 0.09;
-  const profile = new THREE.Shape();
-  profile.moveTo(0, 0);
-  profile.lineTo(w / 2, tipLen);
-  profile.lineTo(w / 2, bladeLen);
-  profile.lineTo(-w / 2, bladeLen);
-  profile.lineTo(-w / 2, tipLen);
-  profile.closePath();
-  const blade = new THREE.ExtrudeGeometry(profile, {
-    depth: 0.012, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.012, bevelSegments: 1,
-  });
-  blade.translate(0, 0, -0.006);
-
-  const guard = new THREE.BoxGeometry(0.3, 0.035, 0.05).translate(0, bladeLen + 0.02, 0);
-  const grip = new THREE.CylinderGeometry(0.018, 0.022, 0.2, 8).translate(0, bladeLen + 0.14, 0);
-  const pommel = new THREE.SphereGeometry(0.035, 10, 8).translate(0, bladeLen + 0.26, 0);
-
-  // mergeGeometries needs all-indexed or all-non-indexed input, with matching attributes.
-  const parts = [blade, guard, grip, pommel].map((g) => {
-    const ng = g.index ? g.toNonIndexed() : g;
-    ng.clearGroups();
-    return ng;
-  });
-  const merged = mergeGeometries(parts, false)!;
-  merged.computeVertexNormals();
-  return merged;
-}
-
-const smoothstep = (x: number) => {
-  const t = THREE.MathUtils.clamp(x, 0, 1);
-  return t * t * (3 - 2 * t);
-};
-
 interface SwarmSword {
   start: THREE.Vector3; // where it appears in the sky
   delay: number; // when it starts flying into formation
@@ -101,7 +67,7 @@ interface SwarmSword {
   stuck: boolean;
 }
 
-export class DivineSword {
+export class DivineSword implements Effect {
   readonly group = new THREE.Group();
   readonly settings: DivineSwordSettings;
   /** Particle emitters owned by the effect (main needs them for pixel-scale updates). */
@@ -128,8 +94,7 @@ export class DivineSword {
   private shockMat: THREE.MeshBasicMaterial;
   private crater: THREE.Mesh;
   private craterMat: THREE.MeshBasicMaterial;
-  private enemy: THREE.Group;
-  private enemyMat: THREE.MeshStandardMaterial;
+  private enemy = new Enemy();
   private flashLight = new THREE.PointLight(0xffe2a0, 0, 60, 1.5);
   private trail: Emitter;
   private sparks: Emitter;
@@ -202,32 +167,8 @@ export class DivineSword {
     this.crater.position.y = 0.03;
     this.group.add(this.crater);
 
-    const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(40, 64),
-      new THREE.MeshStandardMaterial({ color: 0x23262d, roughness: 0.95, metalness: 0 }),
-    );
-    ground.rotation.x = -Math.PI / 2;
-    this.group.add(ground);
-
-    // Enemy: a simple horned figure at the impact point.
-    this.enemyMat = new THREE.MeshStandardMaterial({ color: 0x5a1820, roughness: 0.6, emissive: 0x000000 });
-    this.enemy = new THREE.Group();
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.55, 1.1, 6, 16), this.enemyMat);
-    body.position.y = 1.1;
-    const hornGeo = new THREE.ConeGeometry(0.12, 0.5, 8);
-    const hornL = new THREE.Mesh(hornGeo, this.enemyMat);
-    hornL.position.set(-0.3, 2.05, 0); hornL.rotation.z = 0.4;
-    const hornR = new THREE.Mesh(hornGeo, this.enemyMat);
-    hornR.position.set(0.3, 2.05, 0); hornR.rotation.z = -0.4;
-    const eyeMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(4, 0.3, 0.2) });
-    const eyeGeo = new THREE.SphereGeometry(0.07, 8, 6);
-    for (const x of [-0.18, 0.18]) {
-      const eye = new THREE.Mesh(eyeGeo, eyeMat);
-      eye.position.set(x, 1.55, 0.5);
-      this.enemy.add(eye);
-    }
-    this.enemy.add(body, hornL, hornR);
-    this.group.add(this.enemy);
+    this.group.add(createGround());
+    this.group.add(this.enemy.group);
 
     this.group.add(this.flashLight);
     this.flashLight.position.set(0, 2, 0);
@@ -323,9 +264,7 @@ export class DivineSword {
     this.tipY = this.settings.fallHeight;
     for (const e of this.emitters) e.clear();
     for (const sw of this.swords) sw.stuck = false;
-    this.enemy.visible = true;
-    this.enemy.scale.setScalar(1);
-    this.enemyMat.emissive.setRGB(0, 0, 0);
+    this.enemy.reset();
     this.giantMat.opacity = 0;
     this.giantMat.emissiveIntensity = 0.6;
     this.shockMat.opacity = 0;
@@ -478,11 +417,8 @@ export class DivineSword {
       this.shake = 0.9 * Math.exp(-after * 5);
 
       // Enemy: white-hot flash, then crushed.
-      const hit = Math.exp(-after * 5);
-      this.enemyMat.emissive.setRGB(6 * hit, 5 * hit, 4 * hit);
-      const squash = 1 - smoothstep(after / 0.25);
-      this.enemy.scale.set(1 + (1 - squash) * 0.6, Math.max(squash, 0.001), 1 + (1 - squash) * 0.6);
-      this.enemy.visible = squash > 0.01;
+      this.enemy.setFlash(Math.exp(-after * 5));
+      this.enemy.setCrush(smoothstep(after / 0.25));
     }
   }
 
@@ -534,3 +470,38 @@ export class DivineSword {
     for (const e of this.emitters) e.dispose();
   }
 }
+
+export const divineSwordModule: EffectModule = {
+  label: 'divine sword',
+  create: () => new DivineSword(),
+  bloom: { enabled: true, strength: 0.55, radius: 0.45, threshold: 0.85 },
+  frameCamera(camera, controls, effect) {
+    const ds = (effect as DivineSword).settings;
+    // Frames the whole fall: from the summon height down to the impact point.
+    const top = ds.fallHeight + ds.giantScale;
+    const dist = top * 1.25;
+    camera.position.set(dist * 0.55, top * 0.2, dist * 0.85);
+    controls.target.set(0, top * 0.42, 0);
+  },
+  buildGui(f, effect) {
+    const sword = effect as DivineSword;
+    const ds = sword.settings;
+    f.add(ds, 'loop');
+    f.add(ds, 'swordCount', 50, 4000, 50).name('sword count').onFinishChange(() => sword.buildSwarm());
+    f.add(ds, 'drillFraction', 0, 1, 0.01).name('drill share').onFinishChange(() => sword.buildSwarm());
+    f.add(ds, 'giantScale', 4, 30, 0.1).name('giant size');
+    f.add(ds, 'smallScale', 0.2, 3, 0.01).name('small size');
+    f.add(ds, 'fallHeight', 10, 80, 0.5).name('fall height');
+    f.add(ds, 'summonTime', 0.3, 5, 0.05).name('summon time');
+    f.add(ds, 'fallTime', 0.3, 5, 0.05).name('fall time');
+    f.add(ds, 'drillLength', 1, 25, 0.1).name('drill length');
+    f.add(ds, 'drillRadius', 0.5, 10, 0.05).name('drill radius');
+    f.add(ds, 'drillArms', 1, 16, 1).name('drill arms').onFinishChange(() => sword.buildSwarm());
+    f.add(ds, 'drillTwist', 0, 4, 0.05).name('drill twist');
+    f.add(ds, 'drillSpin', 0, 40, 0.1).name('drill spin');
+    f.add(ds, 'orbitRadius', 0.5, 10, 0.05).name('orbit radius');
+    f.add(ds, 'orbitSpin', -15, 15, 0.1).name('orbit spin');
+    f.addColor(ds, 'glowColor').name('glow color').onChange(() => sword.applyStyle());
+    f.addColor(ds, 'swarmColor').name('swarm color').onChange(() => sword.applyStyle());
+  },
+};
