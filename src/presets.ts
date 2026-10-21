@@ -22,10 +22,10 @@ export const presets: Record<string, Preset> = {
       shape: 'cone', shapeSize: 0.35, originY: 0,
       speed: 2.2, speedJitter: 0.4, spread: 14, gravity: -1.6, drag: 0.8,
       sizeStart: 0.45, sizeEnd: 0.06,
-      colorStart: '#ffb347', colorEnd: '#d81c00', opacityStart: 0.3, opacityEnd: 0,
-      additive: true,
+      colorStart: '#ffc870', colorMid: '#ff7a1a', colorEnd: '#a01000', opacityStart: 0.22, opacityEnd: 0,
+      additive: true, sizeJitter: 0.4, erosion: 0.55, spin: 0.6,
     },
-    bloom: { enabled: true, strength: 0.8, radius: 0.5, threshold: 0.35 },
+    bloom: { enabled: true, strength: 0.6, radius: 0.5, threshold: 0.55 },
   },
   smoke: {
     emitter: {
@@ -33,8 +33,8 @@ export const presets: Record<string, Preset> = {
       shape: 'cone', shapeSize: 0.3, originY: 0,
       speed: 0.5, speedJitter: 0.4, spread: 12, gravity: -0.25, drag: 0.4,
       sizeStart: 0.6, sizeEnd: 3,
-      colorStart: '#6d6a66', colorEnd: '#2b2c30', opacityStart: 0.35, opacityEnd: 0,
-      additive: false,
+      colorStart: '#6d6a66', colorEnd: '#2b2c30', opacityStart: 0.4, opacityEnd: 0,
+      additive: false, sizeJitter: 0.5, erosion: 0.6, spin: 0.4,
     },
     // High threshold so the grey smoke doesn't glow.
     bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.85 },

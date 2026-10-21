@@ -9,6 +9,7 @@ import GUI from 'three/addons/libs/lil-gui.module.min.js';
 import { Emitter, type EmitterSettings } from './emitter';
 import { presets, presetNames, presetSettings, type BloomSettings } from './presets';
 import { effectModules } from './effects';
+import { FinishPass } from './post';
 import type { Effect, EffectModule } from './effects/types';
 
 const container = document.getElementById('app')!;
@@ -53,6 +54,8 @@ composer.addPass(new RenderPass(scene, camera));
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 0.5, 0.2);
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
+const finish = new FinishPass();
+composer.addPass(finish.pass);
 
 const bloom: BloomSettings = { ...presets[initialPreset].bloom };
 function applyBloom() {
@@ -99,7 +102,23 @@ const refreshPanel = () => gui.controllersRecursive().forEach((c) => c.updateDis
 const mode = { name: 'particles' };
 const preset = { name: initialPreset };
 
-gui.add(mode, 'name', ['particles', ...slots.keys()]).name('mode').onChange(() => setMode());
+// Category → modes. 'particles' lives with the set pieces.
+const DEFAULT_CATEGORY = 'set pieces';
+const categories = new Map<string, string[]>([[DEFAULT_CATEGORY, ['particles']]]);
+for (const m of effectModules) {
+  const c = m.category ?? DEFAULT_CATEGORY;
+  if (!categories.has(c)) categories.set(c, []);
+  categories.get(c)!.push(m.label);
+}
+const category = { name: DEFAULT_CATEGORY };
+gui.add(category, 'name', [...categories.keys()]).name('category').onChange((c: string) => {
+  const modes = categories.get(c)!;
+  // options() replaces the controller with a new one.
+  modeCtrl = modeCtrl.options(modes).name('mode').onChange(() => setMode());
+  mode.name = modes[0];
+  setMode();
+});
+let modeCtrl: { options(o: string[]): typeof modeCtrl; name(n: string): typeof modeCtrl; onChange(f: () => void): typeof modeCtrl } = gui.add(mode, 'name', categories.get(DEFAULT_CATEGORY)!).name('mode').onChange(() => setMode());
 const presetCtrl = gui.add(preset, 'name', presetNames).name('preset').onChange((name: string) => {
   Object.assign(s, presetSettings(name));
   Object.assign(bloom, presets[name].bloom);
@@ -228,6 +247,7 @@ function render() {
   const shake = active?.effect?.shake ?? 0;
   shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
   camera.position.add(shakeOffset);
+  finish.update(shake);
   composer.render();
   camera.position.sub(shakeOffset);
 }

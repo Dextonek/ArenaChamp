@@ -23,6 +23,23 @@ export interface EmitterSettings {
   opacityStart: number;
   opacityEnd: number;
   additive: boolean;
+  // --- Optional look refinements (omit for the plain soft dot) ---------------------------------
+  /** Middle colour stop at half life: hot core → saturated mid → cool end reads far richer than two stops. */
+  colorMid?: string;
+  /** 0..1: per-particle size variance, so a cloud has big and small puffs instead of identical dots. */
+  sizeJitter?: number;
+  /**
+   * 0..1: alpha erosion. Each particle gets a noise mask that eats it away as it ages, so smoke and fire break
+   * into wisps instead of fading as uniform discs. ~0.5 for smoke/fire, 0 for sparks.
+   */
+  erosion?: number;
+  /**
+   * World-space height over which particles fade out toward the ground (fake soft particles). Default 0 (off):
+   * many effects spawn dust exactly at y = 0 and would vanish at birth. Use ~0.3 for things that settle or fall.
+   */
+  groundFade?: number;
+  /** 0..1: spin of the sprite over its life (only visible with erosion). */
+  spin?: number;
 }
 
 export const defaultSettings = (): EmitterSettings => ({
@@ -50,25 +67,54 @@ export const defaultSettings = (): EmitterSettings => ({
 const vertexShader = /* glsl */ `
   attribute float aLife;   // 0 = just born, 1 = dead
   attribute float aAlive;  // 1 alive, 0 free slot
-  uniform float uSizeStart, uSizeEnd, uOpacityStart, uOpacityEnd, uPixelScale;
-  uniform vec3 uColorStart, uColorEnd;
+  attribute float aSeed;   // per-particle random 0..1
+  uniform float uSizeStart, uSizeEnd, uOpacityStart, uOpacityEnd, uPixelScale, uSizeJitter, uUseMid, uGroundFade;
+  uniform vec3 uColorStart, uColorEnd, uColorMid;
   varying vec4 vColor;
+  varying float vLife;
+  varying float vSeed;
   void main() {
-    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vec4 world = modelMatrix * vec4(position, 1.0);
+    vec4 mv = viewMatrix * world;
     gl_Position = projectionMatrix * mv;
-    float size = mix(uSizeStart, uSizeEnd, aLife);
+    float size = mix(uSizeStart, uSizeEnd, aLife) * (1.0 + (aSeed - 0.5) * 2.0 * uSizeJitter);
     gl_PointSize = aAlive * size * uPixelScale / -mv.z;
-    vColor = vec4(mix(uColorStart, uColorEnd, aLife), mix(uOpacityStart, uOpacityEnd, aLife) * aAlive);
+    vec3 col = uUseMid > 0.5
+      ? (aLife < 0.5 ? mix(uColorStart, uColorMid, aLife * 2.0) : mix(uColorMid, uColorEnd, aLife * 2.0 - 1.0))
+      : mix(uColorStart, uColorEnd, aLife);
+    // Fake soft particles: fade as the sprite's centre nears the (flat) ground instead of clipping hard.
+    float ground = uGroundFade > 0.0 ? smoothstep(0.0, uGroundFade + size * 0.35, world.y) : 1.0;
+    vColor = vec4(col, mix(uOpacityStart, uOpacityEnd, aLife) * aAlive * ground);
+    vLife = aLife;
+    vSeed = aSeed;
   }
 `;
 
 const fragmentShader = /* glsl */ `
+  uniform float uErosion, uSpin;
   varying vec4 vColor;
+  varying float vLife;
+  varying float vSeed;
+  float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  float noise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1, 0)), u.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), u.x), u.y);
+  }
   void main() {
     vec2 c = gl_PointCoord - 0.5;
     float d = length(c) * 2.0;
     float a = smoothstep(1.0, 0.0, d);
     a *= a;
+    if (uErosion > 0.0) {
+      // Rotate the mask per particle, then erode: the threshold rises with age so wisps thin out and break up.
+      float ang = vSeed * 6.2832 + vLife * uSpin * 3.0;
+      vec2 r = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * c;
+      vec2 o = vec2(vSeed * 31.7, vSeed * 17.3);
+      float n = 0.65 * noise(r * 4.0 + o) + 0.35 * noise(r * 9.0 + o * 1.7);
+      float thr = uErosion * (0.15 + 0.75 * vLife);
+      a *= smoothstep(thr, thr + 0.22, n * (0.6 + 0.4 * a));
+    }
     if (vColor.a * a < 0.003) discard;
     gl_FragColor = vec4(vColor.rgb, vColor.a * a);
   }
@@ -88,6 +134,7 @@ export class Emitter {
   private lifetimes!: Float32Array;
   private life!: Float32Array;
   private alive!: Float32Array;
+  private seeds!: Float32Array;
   private spawnAccumulator = 0;
   private cursor = 0;
   private tmp = new THREE.Vector3();
@@ -107,6 +154,12 @@ export class Emitter {
         uOpacityEnd: { value: 0 },
         uColorStart: { value: new THREE.Color() },
         uColorEnd: { value: new THREE.Color() },
+        uColorMid: { value: new THREE.Color() },
+        uUseMid: { value: 0 },
+        uSizeJitter: { value: 0 },
+        uErosion: { value: 0 },
+        uGroundFade: { value: 0 },
+        uSpin: { value: 0 },
         uPixelScale: { value: 600 },
       },
     });
@@ -126,6 +179,8 @@ export class Emitter {
     this.lifetimes = new Float32Array(n);
     this.life = new Float32Array(n).fill(1);
     this.alive = new Float32Array(n);
+    this.seeds = new Float32Array(n).map(() => Math.random());
+    this.geometry.setAttribute('aSeed', new THREE.BufferAttribute(this.seeds, 1));
     this.geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3).setUsage(THREE.DynamicDrawUsage));
     this.geometry.setAttribute('aLife', new THREE.BufferAttribute(this.life, 1).setUsage(THREE.DynamicDrawUsage));
     this.geometry.setAttribute('aAlive', new THREE.BufferAttribute(this.alive, 1).setUsage(THREE.DynamicDrawUsage));
@@ -143,6 +198,12 @@ export class Emitter {
     u.uOpacityEnd.value = s.opacityEnd;
     (u.uColorStart.value as THREE.Color).set(s.colorStart);
     (u.uColorEnd.value as THREE.Color).set(s.colorEnd);
+    u.uUseMid.value = s.colorMid ? 1 : 0;
+    if (s.colorMid) (u.uColorMid.value as THREE.Color).set(s.colorMid);
+    u.uSizeJitter.value = s.sizeJitter ?? 0;
+    u.uErosion.value = s.erosion ?? 0;
+    u.uGroundFade.value = s.groundFade ?? 0;
+    u.uSpin.value = s.spin ?? 0;
     this.material.blending = s.additive ? THREE.AdditiveBlending : THREE.NormalBlending;
     this.material.needsUpdate = true;
     if (s.maxParticles !== this.capacity) this.allocate(s.maxParticles);

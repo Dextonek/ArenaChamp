@@ -22,12 +22,36 @@ _Last updated: 2026-10-21_
 
 ## In progress
 - WoW ability rework (user picked: Paladin first + top 20 iconic spells, own reworked style, no Blizzard assets).
+  - Kit added to `common.ts`: `CASTER_POS`/`ENEMY_POS`, `createCaster`, hammer/shield geometry, `GlowSphere`,
+    `LightPillar`, `createRing`, `frameArena`. Category dropdown in the panel (`EffectModule.category`).
+  - Agent brief: `docs/SPELL_BRIEF.md`. Reference spell: `src/spells/paladin/judgment.ts` (verified).
+  - **Paladin done (13, all verified in browser):** judgment, crusader strike, divine storm, wake of ashes,
+    consecration, avenging wrath, divine shield, hammer of wrath, avenger's shield, hammer of justice,
+    lay on hands, light of dawn, divine toll.
+  - **Iconic done (20, verified):** fireball, pyroblast, frostbolt, blizzard, arcane missiles, chain lightning,
+    chaos bolt, rain of fire, death coil, army of the dead, starfall, penance, earthquake, bladestorm, heroic leap,
+    volley, eye beam, metamorphosis, spinning crane kick, deep breath.
+- Original moves from the user's names (category 'original', `src/spells/original/`), agents running:
+  corpse finger gravity pull, illusionist rain of doom / solar verdict, crown of the final star.
+- Refinement work (user asked: refine, multi-layer depth, research VFX):
+  - Research distilled into `docs/VFX_PRINCIPLES.md`.
+  - Emitter look options: `colorMid`, `sizeJitter`, `erosion`, `spin`, `groundFade` (opt-in). Fire/smoke presets use them.
+  - `src/post.ts` FinishPass: vignette, grain, chromatic aberration ∝ shake, impact-frame flash on shake jumps
+    (note: also fires on every earthquake pulse — acceptable).
+  - `softDotTexture()` in common; `setHSL`/`setRGB` are linear (documented in SPELL_BRIEF).
+  - Next: commit, then refinement pass with `docs/REFINE_BRIEF.md` — pilot on divine sword, gate of babylon,
+    meteor shower, shockwave punch; verify; then 4–5 effects per agent, 3 at a time.
+  - Later (not now): a shared `Debris` class (duplicated in ~5 spell files).
+  - `Enemy.setFlash` capped (was blowing hits out to white).
+  - Known look issues to revisit: avenging wrath wings read as a radial fan; light of dawn sun glow is large.
+  - Spells are added to `src/spells/*/index.ts` only after a browser check.
 
 ## Blocked
 - Nothing.
 
 ## Waiting on you
-- Commit of this round (last commit: 67c19e3 on `feat/particle-editor`; no remote).
+- Confirm or edit the proposed WoW spell lists before agents start. Work is committed up to 719a56e on
+  `feat/particle-editor` (no remote).
 
 ## Notes
 - The browser pane only animates while visible; checks pause the loop (View → paused) and step with

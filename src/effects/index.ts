@@ -7,6 +7,9 @@ import { lightningStrikeModule } from './lightningStrike';
 import { spiralSphereModule } from './spiralSphere';
 import { energyBeamModule } from './energyBeam';
 import { blackHoleModule } from './blackHole';
+import { paladinModules } from '../spells/paladin';
+import { iconicModules } from '../spells/iconic';
+import { originalModules } from '../spells/original';
 
 /** Every set-piece effect, in dropdown order. Add one import + entry per new effect. */
 export const effectModules: EffectModule[] = [
@@ -18,4 +21,7 @@ export const effectModules: EffectModule[] = [
   spiralSphereModule,
   energyBeamModule,
   blackHoleModule,
+  ...paladinModules,
+  ...iconicModules,
+  ...originalModules,
 ];

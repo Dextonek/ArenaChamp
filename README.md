@@ -11,7 +11,8 @@ npm run dev
 
 Open http://localhost:5173. Drag to orbit, scroll to zoom, tweak the emitter in the right-hand panel.
 
-Pick a **mode** at the top of the panel. In any effect mode press **Space** or **▶ play** to replay; the
+Pick a **category** (set pieces / paladin / iconic) and then a **mode** at the top of the panel. The
+paladin and iconic categories hold WoW-inspired spells reworked in our own style (no Blizzard assets). In any effect mode press **Space** or **▶ play** to replay; the
 effect's own folder holds its timings, sizes and colours.
 
 - **particles** — one emitter with presets (fire, smoke, sparks, magic, snow) and bloom.
@@ -32,6 +33,10 @@ effect's own folder holds its timings, sizes and colours.
 - `src/effects/common.ts` — shared pieces: sword/spear geometry, `Enemy`, ground, `smoothstep`.
 - `src/effects/index.ts` — registry; add one import + entry per effect.
 - `src/effects/*.ts` — one file per effect.
+- `src/spells/paladin/*.ts`, `src/spells/iconic/*.ts` — one file per spell, registered in each folder's `index.ts`.
+- `src/post.ts` — final screen pass: vignette, grain, shake-driven chromatic aberration and impact frames.
+- `docs/VFX_PRINCIPLES.md` — layering/timing checklist; `docs/SPELL_BRIEF.md`, `docs/REFINE_BRIEF.md` — briefs
+  for writing and refining effects.
 - `src/main.ts` — scene, lighting, bloom, camera, lil-gui panel, render loop. Effects are built lazily; a broken
   one shows its error in the bottom-left overlay.
 

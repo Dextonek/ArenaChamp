@@ -24,6 +24,8 @@ export interface Effect {
 export interface EffectModule {
   /** Shown in the mode dropdown. */
   label: string;
+  /** Groups modes in the category dropdown (e.g. 'set pieces', 'paladin', 'iconic'). Default 'set pieces'. */
+  category?: string;
   create(): Effect;
   /** Bloom applied when this mode is selected. */
   bloom: BloomSettings;
