@@ -269,9 +269,193 @@
       "emitters": 3
     }
   },
-  { "label": "azure dragon slash", "file": "src/spells/weapons/strikes/dragonSlash.ts", "mode": "enemy", "weapon": "wp-sword-dragon", "recipes": ["f-spiderlily-scythe-ribbon", "a-ow-genji-dragonblade"], "date": "2026-10-26", "note": "weapon attack: rigged hero wields the weapon (design pipeline/designs/weapon-attacks.md)", "selfTest": { "ok": true, "zones": 1, "arenaHits": 1, "singularFrames": 0, "nanFrames": 0 } },
-  { "label": "frost lily thrust", "file": "src/spells/weapons/strikes/frostThrust.ts", "mode": "enemy", "weapon": "wp-sword-ice", "recipes": ["c-ice-spikes-eruption", "f-spiderlily-gauntlet-ignition"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 1, "singularFrames": 0, "nanFrames": 0 } },
-  { "label": "green dragon sweep", "file": "src/spells/weapons/strikes/crescentSweep.ts", "mode": "enemies", "weapon": "wp-glaive-guandao", "recipes": ["f-spiderlily-scythe-ribbon"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 2, "singularFrames": 0, "nanFrames": 0 } },
-  { "label": "thunder drum slam", "file": "src/spells/weapons/strikes/thunderSlam.ts", "mode": "enemy", "weapon": "wp-hammer-thunder", "recipes": ["d-kler-3-lightning-chain-cage"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 1, "singularFrames": 0, "nanFrames": 0 } },
-  { "label": "phoenix gale", "file": "src/spells/weapons/strikes/phoenixGale.ts", "mode": "enemies", "weapon": "wp-fan-fire", "recipes": ["f-spiderlily-fan-tufts", "f-spiderlily-gauntlet-ignition"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 4, "singularFrames": 0, "nanFrames": 0 } }
+  {
+    "label": "azure dragon slash",
+    "file": "src/spells/weapons/strikes/dragonSlash.ts",
+    "mode": "enemy",
+    "weapon": "wp-sword-dragon",
+    "recipes": [
+      "f-spiderlily-scythe-ribbon",
+      "a-ow-genji-dragonblade"
+    ],
+    "date": "2026-10-26",
+    "note": "weapon attack: rigged hero wields the weapon (design pipeline/designs/weapon-attacks.md)",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "frost lily thrust",
+    "file": "src/spells/weapons/strikes/frostThrust.ts",
+    "mode": "enemy",
+    "weapon": "wp-sword-ice",
+    "recipes": [
+      "c-ice-spikes-eruption",
+      "f-spiderlily-gauntlet-ignition"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "green dragon sweep",
+    "file": "src/spells/weapons/strikes/crescentSweep.ts",
+    "mode": "enemies",
+    "weapon": "wp-glaive-guandao",
+    "recipes": [
+      "f-spiderlily-scythe-ribbon"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "thunder drum slam",
+    "file": "src/spells/weapons/strikes/thunderSlam.ts",
+    "mode": "enemy",
+    "weapon": "wp-hammer-thunder",
+    "recipes": [
+      "d-kler-3-lightning-chain-cage"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "phoenix gale",
+    "file": "src/spells/weapons/strikes/phoenixGale.ts",
+    "mode": "enemies",
+    "weapon": "wp-fan-fire",
+    "recipes": [
+      "f-spiderlily-fan-tufts",
+      "f-spiderlily-gauntlet-ignition"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 4,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "jade dragon ascension",
+    "file": "src/spells/targeted/jadeDragonAscension.ts",
+    "mode": "ground",
+    "recipes": [
+      "c-unity-summon-circle",
+      "e-geodraws-crimson-pillar",
+      "g-castorice-dragon-rise-cutscene"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "hundred lily frost",
+    "file": "src/spells/targeted/hundredLilyFrost.ts",
+    "mode": "enemies",
+    "recipes": [
+      "c-ice-spikes-eruption",
+      "h-onetupthree-frost-blade-slash",
+      "f-spiderlily-staff-orb"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 6,
+      "arenaHits": 12,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "taiji thunder seal",
+    "file": "src/spells/targeted/taijiThunderSeal.ts",
+    "mode": "enemy",
+    "recipes": [
+      "b-genshin-yae-tenko-kenshin",
+      "f-moa-thunder-dive-discharge",
+      "a-dota-zeus-thundergods-wrath"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "crimson requiem",
+    "file": "src/spells/targeted/crimsonRequiem.ts",
+    "mode": "enemies",
+    "recipes": [
+      "i-acheron-petal-wipe-monochrome-slashes",
+      "i-acheron-crack-web-shatter-finisher"
+    ],
+    "date": "2026-10-26",
+    "note": "uses the new screen parts (crack/shatter, desaturate, flashBeat, chroma, X-ray cards)",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 10,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "prism overture",
+    "file": "src/spells/targeted/prismOverture.ts",
+    "mode": "ground",
+    "recipes": [
+      "i-chromatic-ink-charge-prism-burst"
+    ],
+    "date": "2026-10-26",
+    "note": "uses the new screen parts (crack/shatter, desaturate, flashBeat, chroma, X-ray cards)",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "neon fracture jab",
+    "file": "src/spells/targeted/neonFractureJab.ts",
+    "mode": "enemy",
+    "recipes": [
+      "i-xray-cyan-punch-impact-cards"
+    ],
+    "date": "2026-10-26",
+    "note": "uses the new screen parts (crack/shatter, desaturate, flashBeat, chroma, X-ray cards)",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 2,
+      "singularFrames": 0
+    }
+  }
 ]

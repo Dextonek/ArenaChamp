@@ -21,6 +21,14 @@ Usage example for every part: `src/spells/targeted/partsShowcase.ts` (browser-ve
   - `impact = impactFrameAt(t, hitTime, [1, 2])` (dark frame → light frame, 3 frames each), `impactColor`,
     `silhouettes = [ctx.caster.group, ...ctx.targets.map(e => e.group)]` (set in cast());
   - `speedLines` 0..1 + `focus` (world point) + `speedLineColor` for implode / dash / impact.
+  - `impact` modes 3 = X-ray card (black, silhouettes as an `impactColor` outline with ribs) and 4 = outline card
+    (`impactColor` screen, thin black outlines). Mix them into `impactFrameAt` patterns, e.g. `[1, 3, 2]`.
+  - `exposure` / `whiteout` / `whiteColor`: use `Object.assign(screen, flashBeat(t, flashTime))` for the
+    anti-flash (one darker frame) → whiteout beat (VFX_PRINCIPLES §12).
+  - `chroma` 0..1 + `edgeTint`: RGB split and tinted screen edges. `chroma = chromaPulse(t, hitTime)` per hit.
+  - `desaturate` 0..1 + `keepHue`: drains the colour from everything except one hue (Acheron-style monochrome).
+  - `crack` 0..1 (a crack web grows from `focus`) then `shatter` 0..1 (the shards slide out and fall, with dark
+    gaps). Hold the crack still ~1 s before shattering.
   Main renders all of it; you only set numbers.
 - **StarBurst** (`points`, `inner`, `jitter`, `color`, `core`, `additive`): hard-edged camera-facing star.
   `star.set(pos, size, opacity, spin)` with `StarBurst.pop(age)` for the 2-frame pop → hold → shrink. Use

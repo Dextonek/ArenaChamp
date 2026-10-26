@@ -201,6 +201,31 @@ hit moment, a clean resolution (no leftover clutter in the frame after ~2 s).
   edge colours from one texture. Hide the floor intersection with small spinning "wave" meshes. On mobile/VR use
   alpha clip instead of transparency to avoid overdraw (Le Lu tornado).
 
+## 12. Frame-by-frame lessons from YouTube showcases (`batch-i.json`, frame logs per video)
+- **Anti-flash.** One frame 10–15% darker than normal, or a soft black blob for 1–2 frames, right before a
+  whiteout. Dark-to-white reads much stronger than normal-to-white.
+- **Collapse the flash onto the ground.** The blowout is a sphere for one frame, then a flat radial spray plus a floor
+  ring. One empty frame between contact and blowout.
+- **Chromatic aberration can be the only colour.** A black/grey/white move whose only hue is a 2–3 px RGB-split
+  fringe plus pink/teal screen edges, pulsed on each hit.
+- **Drain the colour, keep one hue.** Desaturate the character, then the world, keeping only the move's colour.
+  Put a calm static prop (a white crescent mirrored in a wet floor) behind the target.
+- **Impact cards can carry meaning.** An X-ray card (skeleton fill on black, or outline on white). A slash shown as
+  its cut path: a white-rimmed black band that rotates and thins on a dark screen after 1+ s with no effects.
+- **Crack, freeze, shatter.** A full-screen crack web in one frame, everything holds ~1.3 s, then rays, two
+  focus-line frames and a screen shatter.
+- **Darkness can be the aftermath.** After a distant whiteout, dim the world to ~35% for 3–4 s while one flickering
+  element carries the frame, then end with a second whiteout. A giant ring wall rolling through the camera sells a
+  horizon hit.
+- **Toon explosions are shape, not light.** Average brightness barely changes. Pop at ~70% of final size in one
+  frame, add the dark core 2 frames later, ramp through pastels, and let the fill vanish before the outline. Spikes
+  last ~0.15 s; rings are scribbles.
+- **Hot for 2 frames, dark for the rest, and the floor remembers.** A gold flash for 2–3 frames that lights the whole
+  floor, then dark thorns carry the shape. Glossy dark splats from every hit stay 5–8 s.
+- **Auras: one spin direction, speed near zero, brightness by transparency.** The rotation-speed range stays on one
+  side of zero; speed ~0, spread 0–1°. Floor rings spin both ways. Fix over-brightness by raising transparency
+  (0.3–0.9), not by darkening colours. One static ring anchors the moving layers.
+
 ## Sources
 - Shape/timing/colour, value before colour, anticipation, restraint: practitioner "vfx-realtime" framework
   (playbooks.com/skills/omer-metin/skills-for-antigravity/vfx-realtime).

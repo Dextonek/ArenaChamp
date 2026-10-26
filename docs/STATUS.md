@@ -72,6 +72,12 @@ _Last updated: 2026-10-26_
   also after shuffle. One fix round: white only in the hottest centre, beam width 0.5, under-beam 2.1× core.
 - The world-darken curve keeps bright mids (fire, glows) bright: `smoothstep(0.22, 0.6, lum)` in `src/post.ts`.
 - `selfTest` now also renders during the timeline and reports shader compile errors.
+- **YouTube study (batch i):** 14 videos studied frame by frame in the browser (view only) → 28 recipes, frame
+  logs in `pipeline/frame-logs/youtube-i/`, rules in VFX_PRINCIPLES §12. The library has 144 recipes.
+- **New screen parts** (ScreenFx): `flashBeat` (anti-flash → whiteout), `chromaPulse` + `edgeTint`,
+  `desaturate` + `keepHue`, `crack` → `shatter`, impact modes 3 (X-ray card) and 4 (outline card).
+- **Forged from batch i (browser-verified):** crimson requiem (Acheron), prism overture (Chromatic Opus), neon
+  fracture jab (righteous X-ray punch). The sweep of all 71 effects passes.
 - Fixed the zero-scale lit instances in 8 older effects (gate of babylon, meteor shower, black hole, pyroblast,
   frostbolt, earthquake, volley, metamorphosis): hidden instances use scale 1e-4. The sweep of all 54 effects passes.
 - `npm run build` passes (only the >500 kB chunk warning).
@@ -99,6 +105,18 @@ _Last updated: 2026-10-26_
   self-critique list, and the taste calls made (§6, waiting on the user's yes/no). Linked from the forge-vfx skill,
   both briefs and the README. **Read it first in a new session.**
 
+- **First art-bible batch (3 targeted spells, browser-verified, 1 art-review fix round each)**, designs in
+  `pipeline/designs/`, review frames in `docs/spells/`:
+  - **jade dragon ascension** (ground, jade qi row): a gold spark draws a sigil, a silk-ribbon dragon coils up to
+    11 m, holds, dives head-first through the sigil; jade impact frames, ground plates, dust vortex. Second pass:
+    the head is a drawn eastern-dragon profile (canvas texture: open jaw, fangs, gold eye that flares at the top,
+    antlers, mane, beard, black outline, white brow edge); the body turns over for the dive.
+  - **hundred lily frost** (enemies, frost row): crystal lily buds close round each enemy in order, bloom into
+    cups, snap shut, then all shatter at once into petal-shaped shards.
+  - **taiji thunder seal** (enemy, thunder row): a 7 m taiji seal tilted toward the caster spins up, freezes, drops
+    one bolt with a black under-copy; ground discharge and toon smoke.
+  - selfTest ok for all three (also after shuffle and with 10 enemies).
+
 ## In progress
 - Nothing.
 
@@ -110,6 +128,13 @@ _Last updated: 2026-10-26_
   d89f0b7 weapons (models, auras, hero, weapon attacks).
 
 ## Known look issues (small)
+- Jade dragon ascension: a faint glow remains where the body coil turns edge-on near the neck, and the hold glint
+  briefly sits over the snout. The impact centre is still near white. The head is a camera-facing drawing, so it
+  shows the same profile from every side.
+- Taiji thunder seal: the strike frame still blooms white round the target for ~2 frames (partly the arena's hit
+  flash, see weapon attacks). The design's nova hit on nearby enemies is not possible in `enemy` mode, so it is
+  visual only.
+- The red danger-zone rings dominate the ground sigils of every targeted spell (global telegraph look).
 - Weapon auras: the ice sword's frost ring reads a bit heavy from the low front camera; hammer eye/bell flares are
   depth-test-off sprites and show through the head from behind (turntable). Kit wish: a `reveal` / travelling-band
   uniform on `FlowRibbon` (the dragon sword and guandao fake it with group scaling and overlapping pieces).

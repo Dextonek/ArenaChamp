@@ -117,6 +117,9 @@ When something new is made and is better than these, swap it in here.
 | darken the world for a big move | raise the brightness of everything |
 | gold on joints and edges | gold all over the surface |
 | a dead beat before the real hit | a constant stream of effects |
+| tilt a sky sigil ~55° toward the caster | a flat sky disc (an edge-on ellipse from the play camera) |
+| open a bloom to ≤ 40°, a cup | open petals to 70° (they lie flat and vanish) |
+| one tapered body ribbon for a creature | several equal strands (reads as a DNA helix) |
 
 ## 6. Taste calls I made (tell me if any is wrong)
 - **How anime:** impact frames and focus lines only on finishers and big hits; everyday moves stay clean.

@@ -9,6 +9,12 @@ import { galeBulletModule } from './galeBullet';
 import { cinderBowModule } from './cinderBow';
 import { emberCometModule } from './emberComet';
 import { violetSeveranceModule } from './violetSeverance';
+import { jadeDragonAscensionModule } from './jadeDragonAscension';
+import { hundredLilyFrostModule } from './hundredLilyFrost';
+import { taijiThunderSealModule } from './taijiThunderSeal';
+import { neonFractureJabModule } from './neonFractureJab';
+import { prismOvertureModule } from './prismOverture';
+import { crimsonRequiemModule } from './crimsonRequiem';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -25,4 +31,10 @@ export const targetedModules: EffectModule[] = [
   cinderBowModule,
   emberCometModule,
   violetSeveranceModule,
+  jadeDragonAscensionModule,
+  hundredLilyFrostModule,
+  taijiThunderSealModule,
+  neonFractureJabModule,
+  prismOvertureModule,
+  crimsonRequiemModule,
 ];
