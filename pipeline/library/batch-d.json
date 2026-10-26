@@ -1,0 +1,431 @@
+[
+  {
+    "id": "d-kler-1-singularity-summon",
+    "name": "Singularity summon: ground sigil, rising seed orb, ring-and-bolt birth of a black sphere",
+    "source": {
+      "title": "John Kler (user reference video)",
+      "url": "http://user-reference.local/John_Kler_-_The_VFX_are_back_._and_I_think_they_ve_improved_a_bit._Made_in_arou_FTAhQI.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/John_Kler_-_The_VFX_are_back_._and_I_think_they_ve_improved_a_bit._Made_in_arou_FTAhQI.mp4",
+      "kind": "video"
+    },
+    "archetype": "summon",
+    "targeting": "ground",
+    "element": "void",
+    "durationSec": 3.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.7, "what": "video 0:00.4-0:03.3. Two thin violet ground rings snap open under the caster (0:00.5), shrink to a tight disc while the caster sparks with short magenta streaks at hand height (0:00.7-0:01.2)" },
+      { "name": "release", "start": 0.7, "end": 1.15, "what": "a tiny black seed orb with a pink glow tail shoots straight up to ~8 m and stops dead (0:01.2-0:01.6)" },
+      { "name": "impact", "start": 1.15, "end": 1.5, "what": "the seed pops: a huge thick violet ring flashes around it (screen-filling), a white-blue lightning bolt strikes down into it from the sky, the whole frame tints violet for ~3 frames, white glint star on the sphere" },
+      { "name": "aftermath", "start": 1.5, "end": 3.0, "what": "the ring fades while expanding; the black sphere grows from 0.5 m to ~4 m with a ragged magenta-orange rim flame; violet ground haze stays under the caster" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "anticipation", "blend": "additive", "colors": ["#f4e6ff", "#b46cff", "#6a2bd8"], "motion": "two concentric thin rings appear at full size in 1 frame, then shrink to 40% over 0.3 s", "notes": "hard thin lines, no soft glow; the snap-open is what telegraphs the cast" },
+      { "part": "emitter-sparks", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ff7cf0", "#b13cff"], "motion": "short stretched streaks flicking outward from the hands, life 0.1 s, high drag", "notes": "streak sparks, not dots; they read like crackling energy at the hand" },
+      { "part": "mesh-projectile", "phase": "release", "blend": "normal", "colors": ["#05010a", "#ff6ad8"], "motion": "black sphere 0.3 m rises fast with ease-out, 3 fading pink ghost copies trail below it", "notes": "the seed is BLACK with a pink glow, not a bright orb: dark-core look starts here" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#e8d4ff", "#8a3cff", "#3a1080"], "motion": "vertical billboard ring, 0 -> 10 m in 2 frames, then expands slowly and thins to transparent over 0.6 s", "notes": "very thick hard-edged band with a darker inner edge; screen-sized, so it reads as a big beat" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fd0ff", "#5a7cff"], "motion": "jagged bolt from sky straight down into the sphere, flickers on 3 frames out of 4 for 0.5 s", "notes": "white core with blue edge, thin and jagged" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#3b1a7a"], "motion": "full-screen violet multiply tint, 3 frames, then back to normal", "notes": "colour-grade punch rather than a white flash: the sky turns purple for a moment" },
+      { "part": "glow-sphere", "phase": "aftermath", "blend": "normal", "colors": ["#000000", "#ff5a9a", "#ff9a3a"], "motion": "black core scales 0.5 -> 4 m over 1.5 s ease-out; a ragged flame rim (magenta to orange) licks around one side", "notes": "pure black sphere with a hot rim: maximum value contrast against the blue sky" },
+      { "part": "emitter-embers", "phase": "aftermath", "blend": "additive", "colors": ["#ff8cf5", "#b043ff"], "motion": "small motes drift outward from the sphere, gravity 0, life 1 s", "notes": "fills the space around the ring with sparkle" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "additive", "colors": ["#a64cff", "#401a80"], "motion": "soft violet haze disc under caster, fades over 2 s", "notes": "anchors the cast point on the ground while the action moves up" }
+    ],
+    "palette": ["#000000", "#8a3cff", "#ff6ad8", "#ff9a3a", "#e8d4ff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "The 'bright' thing is black: a void sphere with a hot rim reads instantly against any background and feels heavy",
+      "The ring is huge, hard-edged and fills the screen for 2 frames, so the birth of the sphere has a clear single beat",
+      "Small cast (thin rings, hand sparks) -> big result: the scale jump from 0.3 m seed to a 10 m ring sells power",
+      "The violet screen tint for ~3 frames grades the whole world at the impact instead of just adding light"
+    ],
+    "buildNotes": "Video 0:00.4-0:03.3. Rune: two createRing calls at caster feet, scale-tween down. Seed: small black sphere mesh (MeshBasicMaterial black, depthWrite on) with an additive pink GlowSphere child; tween y 1 -> 8 m in 0.35 s with ease-out, leave 3 fading clone sprites as a trail. Birth: camera-facing createRing (thick, hard alpha), scale 0 -> 10 in 0.04 s then 10 -> 13 over 0.6 s with opacity to 0; LightPillar-style thin bolt from y=30 to the sphere using a jagged polyline ribbon that re-randomises every 2 frames. Screen tint: FinishPass impact flash with a violet colour, 0.05 s. Then grow the black sphere to 4 m and add a flame rim (additive ribbon/flipbook ring, magenta->orange, noise-scrolled). Exaggerate: make the ring thicker than feels right and keep the black sphere perfectly black."
+  },
+  {
+    "id": "d-kler-1-singularity-accretion-pull",
+    "name": "Black hole with accretion disc that pulls enemies and debris in",
+    "source": {
+      "title": "John Kler (user reference video)",
+      "url": "http://user-reference.local/John_Kler_-_The_VFX_are_back_._and_I_think_they_ve_improved_a_bit._Made_in_arou_FTAhQI.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/John_Kler_-_The_VFX_are_back_._and_I_think_they_ve_improved_a_bit._Made_in_arou_FTAhQI.mp4",
+      "kind": "video"
+    },
+    "archetype": "channel",
+    "targeting": "enemies",
+    "element": "void",
+    "durationSec": 6.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.7, "what": "video 0:03.3-0:09.2. A thin orange-blue streak orbits the sphere and starts painting the disc (0:03.3-0:04.0); violet root tendrils crawl over the ground under the sphere, dark orbs appear at each enemy" },
+      { "name": "release", "start": 0.7, "end": 1.5, "what": "the accretion disc forms fully: tilted, flat, layered bands of orange/yellow inside, magenta/violet outside, blue streaks on the leading edge, black smoke trailing off one side (0:04.0-0:04.8)" },
+      { "name": "impact", "start": 1.5, "end": 4.6, "what": "enemies and dark crystal shards are lifted and dragged up toward the disc, white blocky debris flies, short lightning arcs jump off the sphere every ~0.3 s; at 0:08.2 a second thin violet ring passes and white speed lines stream inward from the screen edges" },
+      { "name": "aftermath", "start": 4.6, "end": 6.0, "what": "disc thins and turns more blue-violet, dark rocks orbit the sphere, speed lines keep pulling in until the collapse starts at 0:09.2" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "release", "blend": "normal", "colors": ["#000000", "#6a3cff", "#ff4a8a"], "motion": "static black sphere ~5 m, thin blue-violet fresnel rim, slight breathing scale", "notes": "core stays pure black the whole time; the rim is the only light on it" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#fff3b0", "#ffa040", "#ff3d9a", "#7a3cff", "#3a8cff"], "motion": "flat tilted disc of 6-10 concentric ribbon bands spinning at different speeds, noise-scrolled flame texture, radius 4-12 m", "notes": "hot yellow inner bands -> magenta -> violet -> blue outer edge: a full temperature ramp in one shape" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "normal", "colors": ["#0a0814", "#1c1430"], "motion": "black wisps peel off the disc's trailing edge, drag 2, erode as they fade, life 1.2 s", "notes": "dark smoke behind the bright disc is what gives it depth and a sense of rotation" },
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#d08cff", "#7a2bd8"], "motion": "branching root/vein lines grow outward from under the sphere over 0.6 s, glow pulses", "notes": "thin crack-like tendrils tie the floating sphere to the ground and the enemies" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#2a1450", "#8a5cff", "#e8e8f0"], "motion": "dark violet crystal shards burst up from the ground around enemies; white block chunks; all accelerate toward the sphere on a spiral, gravity negative", "notes": "two debris types: dark crystals (normal blend, violet rim) and bright white chunks, so it reads in greyscale" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fc8ff"], "motion": "short 1-2 m jagged arcs on the sphere rim, 2-3 frames each, random every 0.2-0.4 s", "notes": "tiny and fast, they keep the hold alive without adding glow" },
+      { "part": "distortion", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "white speed lines streaming from the screen edges toward the sphere (0:08.2-0:09.0), with one faint violet ring passing", "notes": "anime pull-in lines: thin, straight, white, low alpha; they read as suction" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#ff8cf5", "#a64cff"], "motion": "small motes spiral inward toward the sphere, drag 0, tangential velocity", "notes": "the spiral motion is what makes the pull readable" },
+      { "part": "light", "phase": "release", "blend": "additive", "colors": ["#ff8a40"], "motion": "warm point light at the disc, steady with slow flicker", "notes": "lights the ground and lifted enemies orange from above" }
+    ],
+    "palette": ["#000000", "#ffa040", "#ff3d9a", "#7a3cff", "#3a8cff"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Pure black core against a fully saturated warm-to-cool ramp: the highest-contrast thing on screen is the centre of the effect",
+      "Black smoke trailing off the disc edge gives a normal-blended dark layer behind the additive disc, so it never washes out",
+      "The disc is flat and tilted: one very clear silhouette (planet-with-ring) that stays readable from any distance",
+      "Things being pulled in (enemies, crystals, white blocks, motes on spirals, inward speed lines) make the force visible instead of just glowing",
+      "Small lightning flicks on 2-3 frames keep the long hold alive without blowing it out"
+    ],
+    "buildNotes": "Video 0:03.3-0:09.2. Sphere: black MeshBasicMaterial sphere plus an additive fresnel shell. Disc: 8 RingGeometry bands on a tilted group (rot x ~70 deg), each additive with a scrolling noise texture and its own rotation speed; inner bands yellow/orange, outer magenta/violet, outermost blue; alpha mask with ragged noise edge. Smoke: normal-blend Emitter at the disc rim with drag 2 and erosion 0.6, drawn before the disc. Ground: crack/vein decal (custom line mesh) under the sphere. Pull: instanced debris that spawns at enemy positions and is pulled toward the sphere with a tangential+radial force; lift enemy dummies with a sine bob. Speed lines: screen-space thin quads converging to the sphere's screen position in the last 1 s. Exaggerate the speed of the inner disc bands vs outer and keep the black smoke dense."
+  },
+  {
+    "id": "d-kler-1-singularity-collapse-detonation",
+    "name": "Singularity collapse: shrink to a point, double inverted impact frame, magenta shard explosion",
+    "source": {
+      "title": "John Kler (user reference video)",
+      "url": "http://user-reference.local/John_Kler_-_The_VFX_are_back_._and_I_think_they_ve_improved_a_bit._Made_in_arou_FTAhQI.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/John_Kler_-_The_VFX_are_back_._and_I_think_they_ve_improved_a_bit._Made_in_arou_FTAhQI.mp4",
+      "kind": "video"
+    },
+    "archetype": "nova",
+    "targeting": "enemies",
+    "element": "void",
+    "durationSec": 1.6,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.25, "what": "video 0:09.0-0:10.6. The whole disc and sphere shrink fast toward the centre (0:09.0-0:09.25), ending as a small white-hot star with a thin orange ring" },
+      { "name": "release", "start": 0.25, "end": 0.45, "what": "impact frames: 0:09.30-0:09.35 the screen goes BLACK with white speed lines radiating from the point (caster as a white silhouette); 0:09.40 it inverts to WHITE with black speed lines and a black silhouette" },
+      { "name": "impact", "start": 0.45, "end": 0.9, "what": "magenta explosion: dozens of hard-edged pink/white shards burst outward, white-blue lightning arcs whip horizontally, a big vertical violet ring and stacked dark-and-violet flat disc rings expand, black spike shards fly, a radial magenta splash decal blooms on the ground" },
+      { "name": "aftermath", "start": 0.9, "end": 1.6, "what": "small white-violet ring spins and shrinks in the sky, dark rocks rain and scatter, ground splash fades from magenta to violet to nothing by 0:10.5" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ffd27a", "#ff7a3a"], "motion": "the disc+sphere group scales 1 -> 0.05 over 0.25 s with ease-in; ends as a small white star", "notes": "implosion before explosion: the suck-in is the anticipation" },
+      { "part": "screen-flash", "phase": "release", "blend": "normal", "colors": ["#000000", "#ffffff"], "motion": "frame A (3 frames @60fps, 0.05 s): screen black, white radial speed lines, white silhouettes. Frame B (2-3 frames): screen white, black speed lines, black silhouettes", "notes": "the signature Roblox impact frame: a two-step value inversion, black first then white" },
+      { "part": "distortion", "phase": "release", "blend": "normal", "colors": ["#ffffff", "#000000"], "motion": "15-20 long straight lines radiating from the impact point to off-screen, drawn only during the impact frames", "notes": "thick tapered lines, like manga focus lines; random lengths and angles" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff7af0", "#c03cff"], "motion": "60-80 long thin diamond shards burst radially, speed 25, drag 4, life 0.35 s, aligned to velocity", "notes": "hard-edged stretched shards, not soft particles: this is the 'stylised' look" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#bfe0ff", "#6a8cff"], "motion": "4-6 long horizontal bolts whip out from the centre, re-randomised every 2 frames, life 0.25 s", "notes": "white core lightning laid over the magenta adds a second hue and a lot of energy" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "normal", "colors": ["#1a0a2a", "#7a2bd8", "#c46cff"], "motion": "3 stacked flat rings (dark, violet, light violet) expand at different speeds 0 -> 20 m over 0.4 s; plus one vertical violet ring", "notes": "the DARK flat ring under the bright ones gives the explosion a solid shape and depth" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#0a0610", "#3a2a3a"], "motion": "black spike shards and dark rocks fly out then rain down with gravity 15", "notes": "black solid shards cut through the bright magenta: dark-on-bright contrast" },
+      { "part": "ground-decal", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff4af0", "#7a2bd8"], "motion": "radial spiky splash decal, scale 0 -> 12 m in 0.1 s, fades over 1 s, colour cools from white to violet", "notes": "star-shaped burst on the floor with a soft magenta haze in the centre" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "heavy shake 0.4 s, visible frame jitter during the burst", "notes": "starts the same frame the colour returns after the impact frames" },
+      { "part": "light", "phase": "impact", "blend": "additive", "colors": ["#ff5af0"], "motion": "magenta point light spike then 0.6 s decay", "notes": "tints the ground and dummies magenta" }
+    ],
+    "palette": ["#000000", "#ffffff", "#ff4af0", "#7a2bd8", "#6a8cff"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "Two-step impact frame (black with white lines, then white with black lines) gives a 0.1 s hit-stop that the eye reads as a huge hit",
+      "Implode then explode: shrinking everything to a point for 0.25 s makes the release feel bigger",
+      "Every burst shape is hard-edged (shards, spike shards, star decal, solid rings) so it looks drawn, not simulated",
+      "Magenta body + white-blue lightning + black shards: three values and two hues, nothing muddy",
+      "Fast clear-out: the frame is almost clean 1 s after the hit, so the hit stays the memory"
+    ],
+    "buildNotes": "Video 0:09.0-0:10.6. Anticipation: tween the singularity group to scale 0.05 with ease-in over 0.25 s. Impact frames: extend FinishPass impact flash with an 'inverted' mode: frame A paints black with white silhouettes (render scene meshes as a white mask) plus a screen-space radial line overlay, frame B swaps to white/black; each 0.05 s. Burst: Emitter with velocity-stretched diamond quads (additive), drag 4; lightning as jagged ribbons. Rings: three flat createRing calls with offsets 0, 0.03, 0.06 s; the darkest one normal-blended. Debris: instanced black spike meshes with gravity. Ground: star-burst decal (custom spiky texture or radial triangles). Add heavy camera shake starting at the end of frame B. Exaggerate: the impact frames must be full-screen and fully opaque."
+  },
+  {
+    "id": "d-maxmdp-2-pumpkin-flame-aura",
+    "name": "Jack-o'-lantern flame aura (emote loop with periodic flare)",
+    "source": {
+      "title": "maxmdp (user reference video)",
+      "url": "http://user-reference.local/maxmdp______-_vfx_for_the_emotes_i_made_4_forsaken_gulp_Roblox_RobloxDev_VFX_KBRA2r.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/maxmdp______-_vfx_for_the_emotes_i_made_4_forsaken_gulp_Roblox_RobloxDev_VFX_KBRA2r.mp4",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "fire",
+    "durationSec": 2.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.4, "what": "video, left character, loops through 0:00-0:21 (clear cycle 0:15.9-0:17.9). Idle: glowing pumpkin head floats above the character, pink-orange flame licks at the feet, small orange motes drift" },
+      { "name": "release", "start": 0.4, "end": 0.9, "what": "a bright white-violet charge builds on the body (0:16.2-0:16.5), the pumpkin's eyes and mouth flare brighter" },
+      { "name": "impact", "start": 0.9, "end": 1.3, "what": "two violet crescent wings sweep out to the sides from the waist (0:16.6-0:16.9) and a white-hot flame burst kicks up at the feet" },
+      { "name": "aftermath", "start": 1.3, "end": 2.0, "what": "wings fade, flames drop back to the idle lick; loops" }
+    ],
+    "layers": [
+      { "part": "mesh-projectile", "phase": "anticipation", "blend": "normal", "colors": ["#ff9a2a", "#ffcf5a", "#7a2a08"], "motion": "pumpkin mesh floating 1.5 m above the head, slow bob, carved face emissive", "notes": "a solid, lit prop as the hero of the aura; the emissive face carries the glow" },
+      { "part": "emitter-embers", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ffb070", "#ff3d7a"], "motion": "flame tongues at the feet, upward velocity 2, life 0.5 s, size grows then shrinks, noise distortion", "notes": "white-hot base going pink at the tips, not orange: ties it to the purple world" },
+      { "part": "emitter-wisps", "phase": "anticipation", "blend": "additive", "colors": ["#ff8a3a", "#ff4a8a"], "motion": "sparse round motes drifting up and outward, life 2 s", "notes": "a few big soft dots spread the colour into the scene" },
+      { "part": "emitter-smoke", "phase": "anticipation", "blend": "normal", "colors": ["#8a4a9a", "#4a2060"], "motion": "stylised flat cloud puffs behind the pumpkin, slow drift", "notes": "cartoon cloud shapes set the Halloween mood and give a mid-value backdrop" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#c88cff", "#7a3cff"], "motion": "two crescent ribbons sweep from the waist out and up to each side over 0.25 s, then fade", "notes": "wing shape gives the loop a readable 'pose' beat" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#e0b0ff"], "motion": "glow on the body pulses up for 0.3 s before the wings", "notes": "small anticipation pop that leads into the wing sweep" },
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#ff5aa0", "#8a2bd8"], "motion": "soft pink-violet glow disc with a thin spinning ring under the feet", "notes": "anchors the aura on the floor" },
+      { "part": "light", "phase": "anticipation", "blend": "additive", "colors": ["#ff7a4a"], "motion": "warm point light flickering", "notes": "casts orange onto the character and ground" }
+    ],
+    "palette": ["#ff9a2a", "#ff4a8a", "#8a2bd8", "#ffffff", "#2a103a"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "A solid hero prop (the pumpkin) with an emissive face gives one strong silhouette above all the soft fire",
+      "Fire is pushed toward pink/magenta to match the purple backdrop: complementary orange-vs-violet with a shared pink bridge",
+      "The loop has a beat (charge -> wing sweep -> burst) so it doesn't feel like a static particle fountain",
+      "Dark environment and a vignette make the additive fire glow without washing out"
+    ],
+    "buildNotes": "Video left character, cycle ~0:15.9-0:17.9 (loops for the whole clip). Pumpkin: simple sphere mesh squashed in y with a carved-face emissive texture (or a GlowSphere behind a dark mesh with face cut-outs). Fire: Emitter at feet, additive, colour white -> #ffb070 -> #ff3d7a, upward velocity, erosion 0.4. Wings: two crescent ribbon meshes animated with a sweep (scale x 0 -> 1, opacity 1 -> 0). Loop every 2 s with a short body GlowSphere pulse before the wings. Exaggerate the pink in the flames and keep the pumpkin solid (normal blend)."
+  },
+  {
+    "id": "d-maxmdp-2-ghost-moon-sigil-aura",
+    "name": "Ghost and bat moon-sigil aura with candle ring (emote loop)",
+    "source": {
+      "title": "maxmdp (user reference video)",
+      "url": "http://user-reference.local/maxmdp______-_vfx_for_the_emotes_i_made_4_forsaken_gulp_Roblox_RobloxDev_VFX_KBRA2r.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/maxmdp______-_vfx_for_the_emotes_i_made_4_forsaken_gulp_Roblox_RobloxDev_VFX_KBRA2r.mp4",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "shadow",
+    "durationSec": 3.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.5, "what": "video, middle character, continuous loop 0:00-0:21. Ground pentagram circle glows violet, candles stand around it" },
+      { "name": "release", "start": 0.5, "end": 1.5, "what": "a vertical rune circle with a crescent moon in its centre spins slowly behind the character's shoulder" },
+      { "name": "impact", "start": 1.5, "end": 2.5, "what": "5-6 cartoon ghosts and a flock of bats orbit around the character in a big loose ring, bobbing; tiny star glints pop" },
+      { "name": "aftermath", "start": 2.5, "end": 3.0, "what": "ghosts drift on, loop continues; no hard end" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#d08cff", "#8a3cff"], "motion": "vertical circle of glyphs with an inner crescent moon, 2 m, slow spin, gentle pulse", "notes": "thin bright line work with a soft violet fill; the moon is the focal point" },
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#e0b0ff", "#8a3cff"], "motion": "pentagram rune circle on the floor, slow counter-rotation", "notes": "repeats the rune language on the ground" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#f4e0ff", "#b46cff", "#6a2bd8"], "motion": "ghost sprites (rounded body, wavy tail, simple face) orbit at radius 2-3 m with a sine bob, 5-6 at once", "notes": "flat stylised sprites with a bright outline and darker fill: reads as cartoon, not realistic" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#e0c0ff", "#9a5cff"], "motion": "bat silhouettes flapping (2-frame flipbook) along the same orbit, slightly faster", "notes": "small angular shapes contrast the round ghosts" },
+      { "part": "mesh-projectile", "phase": "anticipation", "blend": "normal", "colors": ["#ffb060", "#ff6a2a", "#5a2a10"], "motion": "6-8 candle meshes on the ground ring, each with a tiny flickering flame", "notes": "warm orange points against the violet: small complementary accents" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffd27a"], "motion": "4-point star glints pop in and out randomly, life 0.3 s", "notes": "tiny sparkle adds life between the big shapes" },
+      { "part": "light", "phase": "anticipation", "blend": "additive", "colors": ["#a64cff"], "motion": "steady violet point light", "notes": "tints the character and floor" }
+    ],
+    "palette": ["#f4e0ff", "#b46cff", "#6a2bd8", "#ffb060", "#1a0a30"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "Built from readable icons (ghost, bat, moon, pentagram, candle) instead of abstract particles: you know the theme in one glance",
+      "All violet with tiny orange candle accents: one dominant hue plus a small complementary accent",
+      "Bright outline + darker fill on every sprite keeps shapes crisp even when overlapping",
+      "Slow, floaty motion fits an idle emote; nothing competes for attention"
+    ],
+    "buildNotes": "Video middle character, loops 0:00-0:21. Ghosts/bats: camera-facing sprites (CanvasTexture drawn shapes: ghost body with wavy tail, bat silhouette) on an orbit group, each with phase-offset sine bob. Rune circle: createRing plus glyph ring texture on a vertical plane behind the character, with a crescent sprite in the middle. Ground: rune-circle decal. Candles: tiny cylinder meshes with small additive flame sprites flickering. Star glints: additive 4-point star sprites. Exaggerate the outline brightness of the sprites so they read from distance."
+  },
+  {
+    "id": "d-maxmdp-2-grave-hands-portal-aura",
+    "name": "Teal necro portal: ground ring, light curtain and grasping shadow hands (emote loop)",
+    "source": {
+      "title": "maxmdp (user reference video)",
+      "url": "http://user-reference.local/maxmdp______-_vfx_for_the_emotes_i_made_4_forsaken_gulp_Roblox_RobloxDev_VFX_KBRA2r.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/maxmdp______-_vfx_for_the_emotes_i_made_4_forsaken_gulp_Roblox_RobloxDev_VFX_KBRA2r.mp4",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "shadow",
+    "durationSec": 2.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.5, "what": "video, right character, continuous loop 0:00-0:21. A bright teal ring sits on the ground, the inside is a dark pool" },
+      { "name": "release", "start": 0.5, "end": 1.2, "what": "vertical teal light streaks rise from the ring edge like a curtain, fading at the top" },
+      { "name": "impact", "start": 1.2, "end": 2.0, "what": "black hand silhouettes reach up out of the pool around the character's legs, flexing, while small red motes float" },
+      { "name": "aftermath", "start": 2.0, "end": 2.5, "what": "hands sink back, new ones rise in other spots; loop" }
+    ],
+    "layers": [
+      { "part": "ring-shockwave", "phase": "anticipation", "blend": "additive", "colors": ["#e0fff8", "#3cf0c8", "#0a8a7a"], "motion": "static flat ring 3 m, thin bright edge with soft falloff, slow pulse", "notes": "a crisp border makes the pool read as a portal" },
+      { "part": "ground-decal", "phase": "anticipation", "blend": "normal", "colors": ["#05100e", "#0a2a26"], "motion": "dark pool disc inside the ring", "notes": "dark inside, bright edge: strong value contrast" },
+      { "part": "light-pillar", "phase": "release", "blend": "additive", "colors": ["#8affe8", "#1ad0b0", "#0a5a50"], "motion": "open cylinder of vertical streaks, 3 m tall, scrolling up, top faded out, random streak brightness", "notes": "streaky curtain rather than a solid pillar keeps the character visible" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#000000", "#0a1a18"], "motion": "black hand silhouettes rise 0.5-1 m from the pool, open and close, then sink, 4-6 at once, staggered", "notes": "solid black shapes in front of a bright teal curtain: the creepiest part, pure silhouette" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "additive", "colors": ["#ff4a5a", "#a01a2a"], "motion": "sparse small red motes drifting up and around, life 2 s", "notes": "a hint of complementary red against the teal" },
+      { "part": "light", "phase": "anticipation", "blend": "additive", "colors": ["#3cf0c8"], "motion": "teal point light at ground level", "notes": "uplights the character from below" }
+    ],
+    "palette": ["#e0fff8", "#3cf0c8", "#0a8a7a", "#000000", "#ff4a5a"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "Black silhouettes (hands) in front of a glowing teal curtain: the dark shapes are the subject, the light is the backdrop",
+      "Bright thin ring + dark pool gives a strong ground read with very little geometry",
+      "Teal vs the red motes is a clean complementary pair",
+      "Staggered hands rising and sinking make the loop feel alive without any big beat"
+    ],
+    "buildNotes": "Video right character, loops 0:00-0:21. Ring: createRing flat at ground, additive teal. Pool: dark disc mesh (normal blend) just above ground. Curtain: LightPillar as an open cylinder with a vertical-streak texture scrolling up, alpha fading at top. Hands: flat black hand-shaped planes (or simple low-poly hand meshes) that rise/sink with staggered timing and a slight finger flex (scale y). Red motes: sparse Emitter. Exaggerate the blackness of the hands."
+  },
+  {
+    "id": "d-kler-3-lightning-chain-cage",
+    "name": "Lightning chain that branches from the caster to every enemy and locks them in a crackling cage",
+    "source": {
+      "title": "John Kler (user reference video)",
+      "url": "http://user-reference.local/John_Kler_-_Opus_5.5_made_this_in_30_minutes_._again_claude_robloxvfx_c6c6SR.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/John_Kler_-_Opus_5.5_made_this_in_30_minutes_._again_claude_robloxvfx_c6c6SR.mp4",
+      "kind": "video"
+    },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 4.7,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.25, "what": "video 0:00.3-0:05.3. Scene darkens (global light dims and grades blue over 0:00.3-0:00.6), a blue glow gathers on the caster, black flecks spit off (0:00.6-0:00.85)" },
+      { "name": "release", "start": 0.25, "end": 1.3, "what": "a bolt runs from the caster to the front row, then branches sideways in a T (0:01.0), then down to the side columns (0:01.5) and across the back row (0:01.8): each enemy is hit in order and flashes blue" },
+      { "name": "impact", "start": 1.3, "end": 1.7, "what": "the lattice closes into a full rectangle cage; a thin white ring pulses once around the caster (0:02.0)" },
+      { "name": "aftermath", "start": 1.7, "end": 4.7, "what": "hold 0:02.0-0:05.3: every edge crackles (re-randomised zigzags in blue, violet and white), sparks spit at the corners, small dark scorch marks appear under the lines, enemies stay tinted blue" }
+    ],
+    "layers": [
+      { "part": "screen-flash", "phase": "anticipation", "blend": "normal", "colors": ["#1a2230", "#2a3a5a"], "motion": "scene grade darkens and cools over 0.3 s and stays dark for the whole hold", "notes": "dimming the world first is what makes the blue lightning pop" },
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#7ab0ff", "#3a5aff"], "motion": "glow wraps the caster, grows 0.3 s", "notes": "small and bright, tells you where the chain starts" },
+      { "part": "lightning-arc", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#8ac8ff", "#5a6cff", "#b46cff"], "motion": "segments draw from node to node in sequence (one hop per ~0.15 s), each segment a jagged polyline re-randomised every 2-3 frames; 2-3 overlaid strands per edge in white, blue and violet", "notes": "the sequential hop order is the readable part; overlapping strands of different colours make it look rich" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#6aa0ff"], "motion": "blue flash and electrified tint on each enemy as the chain reaches it, 0.1 s pop then steady blue overlay", "notes": "confirms each hit" },
+      { "part": "emitter-sparks", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff", "#9ad0ff", "#c08cff"], "motion": "short bursts of tiny sparks at the corner nodes and random points on edges, gravity 8, life 0.3 s", "notes": "keeps the hold busy at the nodes" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "normal", "colors": ["#05070a", "#141a24"], "motion": "small dark scorch blotches under the edges and black flecks", "notes": "dark marks under bright lines add contrast and anchor the cage to the floor" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#c0d8ff"], "motion": "thin white ring around the caster pulses out once when the cage closes", "notes": "a small 'lock' beat" },
+      { "part": "light", "phase": "release", "blend": "additive", "colors": ["#5a8cff"], "motion": "blue point lights at the nodes flickering with the arcs", "notes": "makes the dark floor react" }
+    ],
+    "palette": ["#ffffff", "#8ac8ff", "#5a6cff", "#b46cff", "#141a24"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "The world grade drops to a dark blue before anything happens, so the lightning is the brightest thing by far",
+      "The chain travels hop by hop in a clear order (front, sides, back), so the player can follow it",
+      "Each edge is 2-3 overlapping strands in white/blue/violet that re-randomise every few frames: lightning that flickers rather than glows",
+      "A rectangular cage is a strong, simple silhouette that sets up the payoff"
+    ],
+    "buildNotes": "Video 0:00.3-0:05.3. Sort enemies into a path (nearest-first from caster, then neighbours) and draw edges in order with 0.15 s per hop. Each edge: 3 jagged polyline ribbons (additive) regenerated every 2-3 frames, plus a thin white core. Node hit: GlowSphere pop + blue emissive tint on the dummy. Darken the scene: lower ambient/hemisphere light and add a blue colour grade via FinishPass for the duration. Hold: random spark bursts at nodes (Emitter, gravity 8), dark scorch decals under edges. Exaggerate the flicker (drop the arc for a frame now and then) and keep the cage edges thin."
+  },
+  {
+    "id": "d-kler-3-cage-detonation-impact-frame",
+    "name": "Lightning cage detonation: implode, silhouette impact frames, starburst per enemy, smoke clear-out",
+    "source": {
+      "title": "John Kler (user reference video)",
+      "url": "http://user-reference.local/John_Kler_-_Opus_5.5_made_this_in_30_minutes_._again_claude_robloxvfx_c6c6SR.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/John_Kler_-_Opus_5.5_made_this_in_30_minutes_._again_claude_robloxvfx_c6c6SR.mp4",
+      "kind": "video"
+    },
+    "archetype": "nova",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 2.3,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.4, "what": "video 0:05.3-0:07.6. Inside the cage, lines pull inward toward the caster across the floor and a ground spiral of thin white rings appears; edges thin out and turn violet (0:05.3-0:05.75)" },
+      { "name": "release", "start": 0.4, "end": 0.6, "what": "impact frames: 0:05.80-0:05.85 the screen goes BLACK with only blue enemy silhouettes; 0:05.85-0:05.90 it flips to flat CYAN with black silhouettes; then 0:05.90-0:06.0 a blue-tinted frame with black silhouettes over a bright cage" },
+      { "name": "impact", "start": 0.6, "end": 1.0, "what": "a white-cyan spiky starburst pops on every enemy at once, blue lightning links them, a dark blue ground disc with a bright blue rim and a thick white smoke shockwave ring expand outward; blue streak shards and violet motes scatter" },
+      { "name": "aftermath", "start": 1.0, "end": 2.3, "what": "each enemy is wrapped in a big black smoke ball (0:06.3-0:06.6) that breaks into black flakes and blows away (to 0:07.3); scene light returns to normal at 0:07.5" }
+    ],
+    "layers": [
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#a0b8ff"], "motion": "thin concentric spiral rings appear under the caster and tighten", "notes": "a quiet charge-up shape, thin lines only" },
+      { "part": "screen-flash", "phase": "release", "blend": "normal", "colors": ["#000000", "#3a7aff", "#4af0ff"], "motion": "frame A (3 frames @60fps): black screen, enemies drawn as flat blue silhouettes. Frame B (3 frames): flat cyan screen, enemies drawn black. Frame C (6 frames): scene back but heavily blue-tinted with enemies still black", "notes": "three-step silhouette impact frame: it freezes time and shows exactly who got hit" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8af4ff", "#2a8aff"], "motion": "spiky 10-12 point star sprite on each enemy, scale 0 -> 2.5 m in 2 frames, holds 0.15 s, shrinks", "notes": "hard-edged star shapes instead of a soft glow: very Roblox/anime" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#6ab0ff"], "motion": "short arcs jumping between stars for 0.2 s", "notes": "keeps the cage logic visible during the burst" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "normal", "colors": ["#e8eef8", "#9aa8c0"], "motion": "thick white smoke torus expands from the centre 0 -> 16 m over 0.5 s, eroding at the edge", "notes": "normal-blended white smoke ring, not additive: it has volume and shading" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#3a8aff", "#0a1a5a"], "motion": "flat dark-blue disc with a bright blue rim, expands with the smoke ring", "notes": "dark disc + bright rim under the bursts gives them a stage" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#4ab0ff", "#c04aff"], "motion": "long blue streak shards fly radially, drag 3, life 0.3 s; plus violet dots", "notes": "velocity-stretched streaks for speed" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#1a1e26", "#0a0c10", "#3a4050"], "motion": "one large dark smoke ball per enemy, grows fast then holds, erosion high so it breaks into flakes", "notes": "a dark clear-out after the bright burst: bright -> dark -> clean" },
+      { "part": "mesh-debris", "phase": "aftermath", "blend": "normal", "colors": ["#000000"], "motion": "black flakes spill from the smoke balls, drift and fall, gravity 4", "notes": "small black chunks keep the dissolve readable" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "heavy 0.35 s shake starting on the first normal frame after the impact frames, camera also pushes in", "notes": "the camera move (push-in toward the burst) is visible in frames 0:06.0-0:06.2" }
+    ],
+    "palette": ["#000000", "#4af0ff", "#3a8aff", "#ffffff", "#1a1e26"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "Silhouette impact frames (black + blue shapes, then cyan + black shapes) stop time for 0.1 s and highlight every target",
+      "Spiky star bursts are flat and hard-edged: they look drawn, punchy and readable at any distance",
+      "White smoke ring (normal blend, shaded) plus dark-blue disc gives the burst real volume instead of just light",
+      "The aftermath swaps to black smoke and flakes, so the effect goes bright -> dark -> gone and the screen is clean 1.5 s later"
+    ],
+    "buildNotes": "Video 0:05.3-0:07.6. Needs the cage recipe first (d-kler-3-lightning-chain-cage). Anticipation: tween cage edges toward the caster and spawn concentric thin createRing calls that shrink. Impact frames: FinishPass impact flash in a 'silhouette' mode: render enemies into a mask, then composite (black bg + blue mask), then (cyan bg + black mask), then normal scene with blue tint + black mask; 0.05 s, 0.05 s, 0.1 s. Bursts: additive spiky-star sprite (CanvasTexture star) per enemy. Smoke ring: normal-blend Emitter on a ring (radial velocity, drag 3, erosion 0.5) or a torus mesh with noise alpha. Disc: flat dark ring with bright createRing edge. Aftermath: normal-blend dark Emitter per enemy with high erosion plus instanced black flakes. Heavy shake + small camera push-in. Exaggerate the star size and the three impact-frame colours."
+  },
+  {
+    "id": "d-wolf-4-violet-crystal-crown-sphere",
+    "name": "Chrome-violet crystal sphere with a crown of four-point stars (shield/orb loop)",
+    "source": {
+      "title": "WOLFGAMES (user reference video)",
+      "url": "http://user-reference.local/WOLFGAMES_-_TmhFQS.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/WOLFGAMES_-_TmhFQS.mp4",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "arcane",
+    "durationSec": 1.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.3, "what": "video, left orb, continuous loop 0:00-0:05.1. Dark sphere shell with a red core glint sits on a pile of jagged crystal shards" },
+      { "name": "release", "start": 0.3, "end": 0.8, "what": "white-violet brush-stroke streaks swirl across the sphere surface, a crown of 6 four-point stars sits on top" },
+      { "name": "impact", "start": 0.8, "end": 1.2, "what": "thin white-blue lightning crackles up the shards and around the crown, shards flicker" },
+      { "name": "aftermath", "start": 1.2, "end": 1.5, "what": "streak pattern scrolls on; loop" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "normal", "colors": ["#1a1030", "#4a2a7a", "#ff3a5a"], "motion": "dark sphere shell 2 m, red glint in the centre, slow spin", "notes": "dark sphere body: the bright marks sit on top of it" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#d0c0ff", "#7a6cff"], "motion": "chunky white brush-stroke streaks on a sphere shell, scrolling around fast, hard edges", "notes": "painted streaks, not smooth gradients: the brush-stroke look" },
+      { "part": "mesh-debris", "phase": "anticipation", "blend": "normal", "colors": ["#2a1a5a", "#8a7cff", "#e0e0ff"], "motion": "ring of jagged crystal shards around the base, static, chrome-like highlights", "notes": "spiky silhouette at the base, dark with bright edge highlights" },
+      { "part": "rune-circle", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#b46cff", "#ff3a7a"], "motion": "6 four-point star shapes in a row arched over the top like a crown, gentle pulse", "notes": "sharp outlined stars with a red-pink fill: iconic shape language" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9ac8ff"], "motion": "thin crackle along the shards and crown, 2-3 frames on, random", "notes": "adds sparkle to the chrome look" },
+      { "part": "light", "phase": "anticipation", "blend": "additive", "colors": ["#6a5aff"], "motion": "steady violet light, reflected in the glossy floor", "notes": "the reflective floor doubles the effect" }
+    ],
+    "palette": ["#ffffff", "#b46cff", "#4a2a7a", "#ff3a5a", "#1a1030"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "Dark sphere body with bright painted streaks on top: strong value contrast inside one shape",
+      "Hard spiky shapes everywhere (stars, crystals, streaks) give a stylised, illustrated feel",
+      "A tiny red core inside a cool violet orb is a small warm accent that draws the eye to the centre",
+      "Glossy reflective floor mirrors the orb and doubles the visual weight"
+    ],
+    "buildNotes": "Video left orb, loops 0:00-0:05.1. Sphere: dark normal-blend sphere + an additive outer shell with a hard-edged brush-stroke texture (alpha-clipped) scrolling in UV. Crystal base: instanced cone/shard meshes in a ring with metallic look (high env reflection or bright edge colour). Crown: 6 additive four-point star sprites arranged in an arc above. Lightning: short jagged ribbons flickering on the shards. Exaggerate the hardness of the streak edges (alphaTest, no soft falloff)."
+  },
+  {
+    "id": "d-wolf-4-pink-plasma-slash-orb",
+    "name": "Pink-violet plasma orb wrapped in flame wisps, blue arcs and dark slash strokes (shield/orb loop)",
+    "source": {
+      "title": "WOLFGAMES (user reference video)",
+      "url": "http://user-reference.local/WOLFGAMES_-_TmhFQS.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/WOLFGAMES_-_TmhFQS.mp4",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "arcane",
+    "durationSec": 1.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.2, "what": "video, middle orb, continuous loop 0:00-0:05.1 (detail 0:01.0-0:01.5). Bright pink sphere with a white-violet glow at its base and a dark red core blot" },
+      { "name": "release", "start": 0.2, "end": 0.5, "what": "dark violet crescent slash strokes sweep diagonally across the sphere, coral flame wisps lick out from its silhouette" },
+      { "name": "impact", "start": 0.5, "end": 0.8, "what": "blue-white lightning curls and small hollow circles pop above and around the orb, four-point sparkles flash on the surface" },
+      { "name": "aftermath", "start": 0.8, "end": 1.0, "what": "pattern keeps cycling; loop" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ff8ac8", "#a05aff"], "motion": "2 m sphere, brightest at the bottom (white-violet), pink body, slow pulse", "notes": "gradient from a hot bottom to a pink top gives it volume" },
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "normal", "colors": ["#5a0a2a", "#a01a4a"], "motion": "dark red blotchy core visible through the shell, noise-animated", "notes": "dark inside the bright shell gives depth" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "normal", "colors": ["#3a1a6a", "#6a3cff"], "motion": "dark violet crescent strokes sweep diagonally across the front of the sphere, 0.2 s each, staggered", "notes": "DARK strokes over the bright orb: slash marks drawn on top, very stylised" },
+      { "part": "emitter-wisps", "phase": "release", "blend": "additive", "colors": ["#ffb0a0", "#ff6a6a", "#c03a5a"], "motion": "coral flame tongues flick out from the rim and curl, life 0.3 s", "notes": "hard-edged flame shapes, like painted flames" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9ac0ff"], "motion": "curly thin arcs above the orb, 2-3 frames each", "notes": "cool blue against the warm pink" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#c0d8ff"], "motion": "four-point star sparkles and small hollow ring sprites pop on and around the orb, life 0.2 s", "notes": "tiny graphic shapes (stars, circles) give an anime sparkle" },
+      { "part": "mesh-debris", "phase": "anticipation", "blend": "normal", "colors": ["#1a0a14", "#3a1a2a"], "motion": "dark rubble/smoke mound at the base, static", "notes": "dark base for the bright orb to sit on" }
+    ],
+    "palette": ["#ffffff", "#ff8ac8", "#a05aff", "#3a1a6a", "#9ac0ff"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "Dark slash strokes painted over a bright orb: dark-on-bright marks read stronger than more glow",
+      "Warm pink body with cool blue arcs and sparkles: a clear warm/cool split",
+      "Graphic shapes (four-point stars, hollow circles, crescents) give a 2D anime language on a 3D object",
+      "Fast stroke timing (0.2 s per slash) keeps a static orb looking aggressive"
+    ],
+    "buildNotes": "Video middle orb, loops 0:00-0:05.1. Sphere: additive GlowSphere with a vertical gradient (white bottom, pink top) plus an inner normal-blend dark-red noise sphere. Slashes: crescent ribbon meshes (normal blend, dark violet) that sweep across the front with a wipe (UV reveal), one every 0.25 s at random angles. Flames: additive hard-edged flame sprites at the rim. Arcs: jagged ribbons. Sparkles: four-point star and hollow-ring sprites. Exaggerate the darkness of the slash strokes."
+  },
+  {
+    "id": "d-wolf-4-coral-flame-slash-sphere",
+    "name": "Coral flame-slash sphere with cyan core streaks and ember spray (shield/orb loop)",
+    "source": {
+      "title": "WOLFGAMES (user reference video)",
+      "url": "http://user-reference.local/WOLFGAMES_-_TmhFQS.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/WOLFGAMES_-_TmhFQS.mp4",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "fire",
+    "durationSec": 1.2,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.3, "what": "video, right orb, continuous loop 0:00-0:05.1. A faint transparent bubble shell with a cyan-white streak core" },
+      { "name": "release", "start": 0.3, "end": 0.7, "what": "coral-red brush-stroke flames swirl around the shell in a spiral, black slash strokes cut through them" },
+      { "name": "impact", "start": 0.7, "end": 1.0, "what": "orange ember sparks spray out sideways along the ground from the base" },
+      { "name": "aftermath", "start": 1.0, "end": 1.2, "what": "swirl continues; loop" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#e0ffff", "#6af0f0", "#2a8a9a"], "motion": "faint fresnel bubble 2.5 m with cyan-white streaks inside, slow spin", "notes": "cool core inside a hot swirl: complementary contrast" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffd0b0", "#ff7a5a", "#d03a3a"], "motion": "many short curved brush-stroke ribbons orbiting the sphere in a tilted spiral, hard edges, fast", "notes": "painted strokes on a spiral make the sphere look like it is spinning hard" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "normal", "colors": ["#1a0a10", "#3a1a20"], "motion": "a few black slash strokes cutting through the coral swirl", "notes": "dark strokes give the swirl depth and a slash read" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffb050", "#ff5a2a"], "motion": "dense small sparks sprayed sideways and down from the base, gravity 10, drag 1, life 0.4 s", "notes": "ember spray along the ground grounds the orb and adds sparkle" },
+      { "part": "mesh-debris", "phase": "anticipation", "blend": "normal", "colors": ["#2a1010", "#5a2a20"], "motion": "dark rock rubble mound at the base, lit orange from above", "notes": "dark base under the bright orb" },
+      { "part": "light", "phase": "release", "blend": "additive", "colors": ["#ff6a4a"], "motion": "coral light with flicker, reflected in the floor", "notes": "glossy floor reflection doubles the colour" }
+    ],
+    "palette": ["#ffd0b0", "#ff7a5a", "#d03a3a", "#6af0f0", "#1a0a10"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "Coral/red swirl with a cyan core: hot outside, cool inside, an unusual and very readable complement",
+      "Stroke-based flames (painted ribbons) instead of smoky fire give a crisp, illustrated look",
+      "Black slashes inside the bright swirl give depth and keep the additive layers from merging into a blob",
+      "Ember spray at the base and the reflective floor tie the floating orb to the ground"
+    ],
+    "buildNotes": "Video right orb, loops 0:00-0:05.1. Shell: additive fresnel sphere with a cyan streak texture inside. Swirl: 20-30 short curved ribbon strips (additive, hard-edged brush texture) on a tilted spinning group at different radii and speeds; 3-4 black normal-blend strips mixed in. Embers: Emitter at the base with sideways velocity and gravity. Rubble: a few dark low-poly rocks. Exaggerate the spin speed and the hardness of the stroke edges."
+  }
+]

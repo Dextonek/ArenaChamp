@@ -148,7 +148,7 @@ export class GateOfBabylon implements Effect {
   private dummy = new THREE.Object3D();
   private v1 = new THREE.Vector3();
   private q = new THREE.Quaternion();
-  private hidden = new THREE.Matrix4().makeScale(0, 0, 0);
+  private hidden = new THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4); // never 0: a singular instance matrix gives NaN normals → black bloomed frame
 
   constructor(settings: GateSettings = defaultGate()) {
     this.settings = settings;
@@ -384,12 +384,12 @@ export class GateOfBabylon implements Effect {
         this.dummy.scale.setScalar(s.weaponScale * Math.max(e, 0.05) * weaponFade);
       } else if (!w.impacted) {
         pos.copy(w.launch).addScaledVector(w.dir, s.weaponSpeed * local);
-        this.dummy.scale.setScalar(s.weaponScale * weaponFade);
+        this.dummy.scale.setScalar(Math.max(1e-4, s.weaponScale * weaponFade));
         streakLen = Math.min(s.weaponSpeed * local, s.weaponScale * 3.5);
       } else {
         // Stuck in the ground, tip buried.
         pos.copy(w.target).addScaledVector(w.dir, s.weaponScale * 0.18);
-        this.dummy.scale.setScalar(s.weaponScale * weaponFade);
+        this.dummy.scale.setScalar(Math.max(1e-4, s.weaponScale * weaponFade));
       }
 
       if (visible && weaponFade > 0.001) {

@@ -402,7 +402,7 @@ export class Earthquake implements Effect {
     d.rotation.order = 'XYZ';
     for (let i = 0; i < PEBBLES; i++) {
       const j = i * 3;
-      if (!this.pebLive[i]) d.scale.setScalar(0);
+      if (!this.pebLive[i]) d.scale.setScalar(1e-4); // never 0: a singular instance matrix gives NaN normals → black bloomed frame
       else d.scale.setScalar(this.pebSize[i] * Math.max(0.001, fade));
       d.position.set(this.pebPos[j], this.pebPos[j + 1], this.pebPos[j + 2]);
       d.rotation.set(this.pebRot[j], this.pebRot[j + 1], this.pebRot[j + 2]);

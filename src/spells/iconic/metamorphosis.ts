@@ -403,7 +403,7 @@ export class Metamorphosis implements Effect {
       const sz = this.rockSize[i] * fade;
       this.dummy.position.set(this.rockPos[i * 3], this.rockPos[i * 3 + 1], this.rockPos[i * 3 + 2]);
       this.dummy.rotation.set(this.rockRot[i * 3], this.rockRot[i * 3 + 1], this.rockRot[i * 3 + 2]);
-      this.dummy.scale.setScalar(sz);
+      this.dummy.scale.setScalar(Math.max(1e-4, sz)); // never 0: a singular instance matrix gives NaN normals → black bloomed frame
       this.dummy.updateMatrix();
       this.rocks.setMatrixAt(i, this.dummy.matrix);
     }

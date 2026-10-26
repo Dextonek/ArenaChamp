@@ -41,6 +41,111 @@ into rules for this project. Every effect should pass this list.
 Cast → travel → hit → resolve must each be readable on its own: a clear cast, a readable travel path, a strong
 hit moment, a clean resolution (no leftover clutter in the frame after ~2 s).
 
+## 6. Pro polish (from the recipe library research, `pipeline/library/`)
+- **Stagger layers by 2–3 frames, each with its own lifetime.** Flash 2–3 frames, sparks end just after the ring,
+  smoke starts early and outlives everything. Everything at t = 0 reads as one sprite.
+- **Dark behind, bright in front.** A normal-blended dark core/smoke under the additive layers gives contrast.
+  Check the effect in greyscale; it must still read.
+- **Drag makes particles brake.** High-drag bursts decelerate hard, hang and fade before stopping: heavy gas.
+  Linear drift reads floaty.
+- **One noise for distortion and dissolve; size-over-life small → large → small**, randomise lifetime, size and
+  rotation per particle.
+- **Fade parts at different times.** Small fragments first, the main body a few frames later; flicker lightning
+  by dropping frames. Uniform fades and beats look robotic.
+- **Linger the readability.** Keep the telegraph a beat longer than feels necessary, leave a cooling scorch/crack,
+  and sell the hit with a 2–3 frame over-bright pulse.
+- **Channels match at both ends.** The hand effect and the target impact share a look, so caster and target
+  feel linked.
+
+## 7. Stylised "Roblox / anime" look (from the user's reference videos, `pipeline/library/batch-d.json`)
+- **Impact frames on finishers.** Stop time for 0.1–0.2 s at the big hit with 2–3 fully opaque full-screen value
+  inversions (black + white silhouettes / focus lines, then the inverse), 2–3 frames each, then heavy shake on the
+  first normal frame.
+- **Implode before you explode.** 0.2–0.4 s of visible contraction toward the impact point (shrink to a point,
+  lines pulled in over a tightening ground spiral) right before the release.
+- **Darken the world first.** Big spells dim and tint the scene for their duration, so additive layers glow
+  without blowing out. Restore it at the end.
+- **Black is a colour.** Every effect has at least one solid, normal-blended black or near-black shape on or in
+  front of its brightest layer: black cores, spike shards, slash strokes, smoke balls.
+- **Hard edges over soft glow.** Main shapes are hard-alpha spiky stars, stretched diamond shards, crescent
+  slashes, crisp thin rings and brush strokes. Soft glow is only a thin, small halo.
+- **Anime graphic vocabulary.** 1–2 flat 2D elements per effect: radial focus/speed lines, four-point star glints,
+  hollow circle pops, crescents.
+- **One hue + complementary accent + white core + black.** White only for the hottest ~5%. Push fire toward
+  pink/magenta in a purple scene.
+- **Scale jumps.** The key beat is 3–5× bigger than its cause and briefly fills most of the screen.
+- **Readable order on many targets.** Hit them in a clear spatial order (front → sides → back, ~0.15 s apart),
+  then pay it off with one simultaneous hit.
+- **Sustain with flicker, not more light.** Holds stay alive through arcs redrawn every 2–3 frames and small spark
+  spits. Total brightness stays flat.
+- **Bright → dark → clean exit.** Aftermath is dark and normal-blended. The frame is clean ~1–1.5 s after the hit,
+  except a fading ground mark.
+- **Loops need a hero shape and a beat.** A looping aura gets one iconic silhouette plus a 1–3 s rhythmic pulse.
+
+## 8. Wind, auras and shape language (user reference videos, `batch-e.json`)
+- **Wind is shape, not colour.** Tapered crescent ribbons with a bright leading edge and a ragged or hooked tail,
+  revealed by an alpha-erosion mask. Never round soft particles alone.
+- **Pick one wind dialect per layer.** Soft: translucent white sheets at 0.3–0.5 opacity that build up where they
+  overlap. Toon: opaque flat bands (light inner edge, saturated middle, dark outer edge) with thorn or sawtooth
+  outer edges and no glow.
+- **Spread arcs over many tilted planes**, so flat strips read as a 3D sphere or tornado from any camera. One
+  horizontal ring reads as a decal.
+- **Drawn shapes, procedural motion.** Author the silhouette (claw spikes, brush strokes, white edge highlight)
+  as a custom mesh or mask, then animate it with UV scroll, erosion threshold, rotation and overshoot scale, not
+  flipbooks.
+- **Telegraph thin, pay off wide.** A star glint plus a needle-thin line on the same axis and in the same colour
+  as the payoff makes the big shape feel huge.
+- **Hold, then reveal.** A short low-energy hold (the caster hidden in dust, a pale cloud dome) before the release.
+- **Fade by changing state, not by lowering alpha.** Arcs darken into ghosts, blades break into shards, pillars
+  collapse to a line and a star, beams break into a sparkle trail, embers land and twinkle out.
+- **Auras are compositions.** A ground anchor, a vertical element that keeps the silhouette readable, and one
+  signature shape (a sun, seeds, a sigil).
+- **One detailed focal element per beat.** A detailed rune at the beam source, the beam itself simple. Theme
+  props are few and tiny.
+
+## 9. Weapons, telegraphs, cinematic (user reference videos, `batch-f.json`)
+- **Weapon trails are multi-strand silk.** 5–7 thin bright parallel strands inside one ribbon with stringy, eroded
+  ends, hot at the blade and cooler at the tail. The idle weapon already wears the trail; the swing stretches it.
+- **A slash can be smoke.** A soft, semi-opaque, normal-blended grey-white smoke crescent drifting with the swing,
+  plus a faint ghost arc lingering ~0.4 s, reads as speed. A hard additive blade reads as a laser.
+- **Monochrome effects mark beats with a grade frame**: one sepia frame or one pink-white blowout with black
+  silhouettes (a gentler impact frame).
+- **Strobe the flash.** Flash / normal / flash / normal / flash at ~12 fps for ~0.4 s beats one long white-out.
+- **The telegraph carries the theme**: the meteor's own shadow sliding and growing, or a glyph that collapses one
+  beat before the strike, instead of a plain ring.
+- **Big flat shapes for ground breakage.** 6–8 large dark triangular plates tilting up and sinking, or a crater
+  "flower" of bright molten petals alternating with dark wedges. Not lots of tiny rocks.
+- **A weapon set shares one icon** (the same burst on every item) and follows each object's structure. Idle loops
+  use opposing motion (up and down), not more brightness.
+- **Cool on warm only at the exact hit, for 2–3 frames.** A blue-white star at the base of a fire pillar works like
+  a small local impact frame.
+- **Cinematic quality is camera and time.** Fog lit from inside by off-screen flashes, exposure blowouts that
+  recover over ~0.3 s, a time ramp into slow motion for the payoff, and lightning in three thicknesses on separate
+  clocks. In gameplay keep the slow hold to ~2–3 s, with no shake during it and dark debris in front of the bright
+  beam.
+
+## 10. Finishers and cutscene language (user reference videos, `batch-g.json`)
+- **Charge in a void, hit in the world.** Finishers stage the charge in a black or starry space with no ground,
+  then hard-cut back to the arena for the hit. Leaving and returning is itself an impact.
+- **Shot grammar: close → wide → ground-level → reveal (held).** Lead-in shots last 0.15–0.3 s each and alternate
+  size. Only the reveal or the charge is held 1–1.6 s, with a slow 10–15% push-in. Stillness is the anticipation.
+- **Transitions are VFX.** A 0.3–0.6 s full-screen diagonal speed smear (with themed particles flying through) or
+  1-frame flat-colour graphic cards between angles.
+- **Escalate long channels in colour stages** (blue → magenta → gold), each switch marked by one inverted frame.
+  The hit keeps growing instead of just lasting.
+- **Exit through a hold.** Cinematics end on a held whiteout or a hard cut to a calm wide shot. Gameplay moves end
+  with a grey, normal-blended dust vortex that keeps spinning after the colour has drained.
+- **A dead beat between two hits.** 0.1–0.15 s with no VFX at all (a frozen crouch) between the wind-up and the
+  real hit. Repeat the world tint on both beats.
+- **Turn the axis at the impact.** A horizontal charge and shot ending in a vertical pillar reads as a new event.
+  Give the release one perfect clean shape (a thin golden ring) inside the noisy charge.
+- **Draw the telegraph with a moving point.** A spark runs around and draws the rune circle, then a cold white
+  glint with a long horizontal flare. Cold cue, warm payoff.
+- **Show where it comes from ~0.3 s early.** A rift tears in the sky before the blades rain. Blades have dark
+  bodies and hot thin edges, and hang ~1 s as scars.
+- **Themed particles give identity.** Butterflies or petals instead of sparks; glitch cubes and red digits for a
+  corrupted slash; a tiny graphic full stop (a dotted line with a diamond tip) to end a combo.
+
 ## 11. From video tutorials (watched 2026-10-26, `pipeline/library/batch-h.json`)
 - **Design from the source.** Ask what the weapon/spell *is* (lore, material, element, strength) before shaping it:
   a beginner sword gets a slash that only says "an attack happened" (onetupthree).

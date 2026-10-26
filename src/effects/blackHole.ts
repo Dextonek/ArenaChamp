@@ -136,7 +136,7 @@ export class BlackHole implements Effect {
   private cA = new THREE.Color();
   private cB = new THREE.Color();
   private cC = new THREE.Color();
-  private hidden = new THREE.Matrix4().makeScale(0, 0, 0);
+  private hidden = new THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4); // never 0: a singular instance matrix gives NaN normals → black bloomed frame
 
   constructor(settings: BlackHoleSettings = defaultBlackHole()) {
     this.settings = settings;

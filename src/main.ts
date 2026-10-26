@@ -12,6 +12,9 @@ import { effectModules } from './effects';
 import { FinishPass } from './post';
 import { TelegraphLayer, type TelegraphSpec } from './effects/telegraph';
 import { PlayerDummy } from './player';
+import { Arena } from './arena';
+import { Hotbar } from './hotbar';
+import { CASTER_POS } from './effects/common';
 import type { Effect, EffectModule } from './effects/types';
 
 const container = document.getElementById('app')!;
@@ -86,6 +89,11 @@ scene.add(player.group);
 let effectClock = 0;
 let zones: TelegraphSpec[] = [];
 
+// Shared caster + clickable enemy pack for targeted effects. A pick replays the active effect at the new target.
+const arena = new Arena(camera, renderer.domElement);
+scene.add(arena.group);
+arena.onPick = () => active?.effect?.play();
+
 function onEffectPlay(slot: EffectSlot) {
   if (slot !== active || !slot.effect) return;
   effectClock = 0;
@@ -129,14 +137,20 @@ for (const m of effectModules) {
   categories.get(c)!.push(m.label);
 }
 const category = { name: DEFAULT_CATEGORY };
-gui.add(category, 'name', [...categories.keys()]).name('category').onChange((c: string) => {
+const categoryCtrl = gui.add(category, 'name', [...categories.keys()]).name('category').onChange((c: string) => {
   const modes = categories.get(c)!;
   // options() replaces the controller with a new one.
-  modeCtrl = modeCtrl.options(modes).name('mode').onChange(() => setMode());
+  setModeOptions(modes);
   mode.name = modes[0];
   setMode();
 });
-let modeCtrl: { options(o: string[]): typeof modeCtrl; name(n: string): typeof modeCtrl; onChange(f: () => void): typeof modeCtrl } = gui.add(mode, 'name', categories.get(DEFAULT_CATEGORY)!).name('mode').onChange(() => setMode());
+type ModeCtrl = { options(o: string[]): ModeCtrl; name(n: string): ModeCtrl; onChange(f: () => void): ModeCtrl; domElement: HTMLElement };
+let modeCtrl: ModeCtrl = gui.add(mode, 'name', categories.get(DEFAULT_CATEGORY)!).name('mode').onChange(() => setMode());
+/** Swaps the mode list. options() rebuilds the controller at the end of the panel, so move it back under category. */
+function setModeOptions(modes: string[]) {
+  modeCtrl = modeCtrl.options(modes).name('mode').onChange(() => setMode());
+  categoryCtrl.domElement.after(modeCtrl.domElement);
+}
 const presetCtrl = gui.add(preset, 'name', presetNames).name('preset').onChange((name: string) => {
   Object.assign(s, presetSettings(name));
   Object.assign(bloom, presets[name].bloom);
@@ -152,8 +166,20 @@ fView.add(view, 'timeScale', 0, 3, 0.01).name('time scale');
 fView.add(view, 'showGrid').name('grid').onChange((v: boolean) => (grid.visible = v && mode.name === 'particles'));
 fView.add(view, 'restart');
 const gameplay = { zones: true, player: false };
+const playMode = { on: false };
+fView.add(playMode, 'on').name('play mode (P)').onChange((v: boolean) => setPlayMode(v));
 fView.add(gameplay, 'zones').name('danger zones').onChange((v: boolean) => (telegraphs.group.visible = v));
-fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => player.setEnabled(v));
+fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => {
+  if (v && playMode.on) setPlayMode(false);
+  player.setEnabled(v);
+});
+
+const fArena = gui.addFolder('Targets');
+const arenaOpts = { count: arena.count };
+fArena.add(arenaOpts, 'count', 1, 10, 1).name('enemies').onFinishChange((n: number) => { arena.setCount(n); active?.effect?.play(); });
+fArena.add({ shuffle: () => { arena.shuffle(); active?.effect?.play(); } }, 'shuffle');
+fArena.add({ clear: () => { arena.clearSelection(); active?.effect?.play(); } }, 'clear').name('clear selection');
+fArena.show(false);
 
 const fBloom = gui.addFolder('Bloom');
 fBloom.add(bloom, 'enabled').onChange(applyBloom);
@@ -194,7 +220,10 @@ function ensureEffect(slot: EffectSlot): Effect | undefined {
     const effect = slot.module.create();
     // Route every play() — including an effect's own loop restart — through the zone/player reset.
     const play = effect.play.bind(effect);
+    const targeting = slot.module.targeting;
     effect.play = () => {
+      if (targeting && effect.cast) effect.cast(arena.context(targeting));
+      placeEffect(effect, !targeting && playMode.on);
       play();
       onEffectPlay(slot);
     };
@@ -228,6 +257,9 @@ function setMode() {
   grid.visible = isParticles && view.showGrid;
   presetCtrl.show(isParticles);
   for (const f of [fEmit, fMotion, fLook]) f.show(isParticles);
+  const targeted = !!next?.module.targeting;
+  arena.setVisible(targeted || playMode.on);
+  fArena.show(targeted || playMode.on);
 
   if (next) {
     const effect = ensureEffect(next);
@@ -235,10 +267,13 @@ function setMode() {
     if (effect) {
       effect.group.visible = true;
       next.folder?.show(true);
-      next.module.frameCamera(camera, controls, effect);
-      effect.play();
+      // Targeted effects learn their targets in play(), and frame the camera around them.
+      // In play mode the camera stays with the caster.
+      if (targeted) effect.play();
+      if (!playMode.on) next.module.frameCamera(camera, controls, effect);
+      if (!targeted) effect.play();
     }
-  } else {
+  } else if (!playMode.on) {
     Object.assign(bloom, presets[preset.name].bloom);
     camera.position.set(4, 3, 6);
     controls.target.set(0, 1, 0);
@@ -248,13 +283,110 @@ function setMode() {
 }
 setMode();
 
-// Space replays the active effect.
+// Space replays the active effect; 1–5 cast the hotbar slots; P toggles play mode.
 window.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && active?.effect && !(e.target instanceof HTMLInputElement)) {
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+  if (e.code === 'Space' && active?.effect) {
     e.preventDefault();
     active.effect.play();
   }
+  const digit = /^Digit([1-5])$/.exec(e.code);
+  if (digit && !e.repeat) hotbar.cast(Number(digit[1]) - 1);
+  if (e.code === 'KeyP' && !e.repeat) setPlayMode(!playMode.on);
 });
+
+/**
+ * Selects an effect by label from any category (keeps the category / mode dropdowns in sync) and plays it.
+ * Re-casting the effect that is already active just replays it.
+ */
+function selectMode(label: string) {
+  const slot = slots.get(label);
+  if (!slot) throw new Error(`unknown effect "${label}"`);
+  if (active === slot && slot.effect) { slot.effect.play(); return; }
+  category.name = slot.module.category ?? DEFAULT_CATEGORY;
+  setModeOptions(categories.get(category.name)!);
+  mode.name = label;
+  setMode();
+}
+
+// --- Play mode: walk the caster with WASD, orbit with mouse drag, cast from the hotbar ---------------------
+const hotbar = new Hotbar(
+  [...categories.entries()].map(([c, labels]) => ({ category: c, labels: labels.filter((l) => l !== 'particles') })),
+  ['tempest lattice', 'gale bullet', 'cinder bow', 'ember comet', 'starbreaker lance'],
+  (label) => {
+    if (!playMode.on) setPlayMode(true);
+    selectMode(label);
+  },
+);
+hotbar.setVisible(false);
+const walkKeys = new Set<string>();
+const WALK_KEYS = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
+window.addEventListener('keydown', (e) => {
+  if (!playMode.on || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+  const k = e.key.toLowerCase();
+  if (WALK_KEYS.includes(k)) { walkKeys.add(k); e.preventDefault(); }
+});
+window.addEventListener('keyup', (e) => walkKeys.delete(e.key.toLowerCase()));
+window.addEventListener('blur', () => walkKeys.clear());
+
+function setPlayMode(on: boolean) {
+  playMode.on = on;
+  hotbar.setVisible(on);
+  walkKeys.clear();
+  if (on) {
+    // The blue dodge dummy also listens to WASD; one walker at a time.
+    gameplay.player = false;
+    player.setEnabled(false);
+    arena.homeCaster();
+    const c = arena.caster.group.position;
+    controls.target.set(c.x, 1.6, c.z - 4);
+    camera.position.set(c.x + 7, 8, c.z + 11);
+  } else if (active?.effect) {
+    placeEffect(active.effect, false);
+    arena.homeCaster();
+  }
+  lastCaster.copy(arena.caster.group.position);
+  setMode();
+}
+
+const lastCaster = new THREE.Vector3();
+const walkSpeed = 9;
+function walk(dt: number) {
+  const fwd = new THREE.Vector3();
+  camera.getWorldDirection(fwd);
+  fwd.y = 0;
+  fwd.normalize();
+  const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
+  const move = new THREE.Vector3();
+  if (walkKeys.has('w') || walkKeys.has('arrowup')) move.add(fwd);
+  if (walkKeys.has('s') || walkKeys.has('arrowdown')) move.sub(fwd);
+  if (walkKeys.has('d') || walkKeys.has('arrowright')) move.add(right);
+  if (walkKeys.has('a') || walkKeys.has('arrowleft')) move.sub(right);
+  if (move.lengthSq() > 0) arena.walk(move.normalize().multiplyScalar(walkSpeed * dt));
+  // Camera follows the caster; mouse drag still orbits around it.
+  const c = arena.caster.group.position;
+  const d = new THREE.Vector3(c.x - lastCaster.x, 0, c.z - lastCaster.z);
+  camera.position.add(d);
+  controls.target.add(d);
+  lastCaster.set(c.x, 0, c.z);
+}
+
+/**
+ * Non-targeted effects are authored around a caster at CASTER_POS facing -Z. In play mode they are moved and
+ * turned so that caster stands where the player's caster is, facing the current target; their own ground is
+ * hidden in favour of the arena's. The danger-zone layer gets the same transform.
+ */
+function placeEffect(effect: Effect, onCaster: boolean) {
+  const rot = onCaster ? arena.aimYaw() - Math.PI : 0;
+  const pos = onCaster
+    ? arena.caster.group.position.clone().setY(0).sub(CASTER_POS.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), rot))
+    : new THREE.Vector3();
+  for (const g of [effect.group, telegraphs.group]) {
+    g.position.copy(pos);
+    g.rotation.set(0, rot, 0);
+  }
+  for (const child of effect.group.children) if (child.name === 'ground') child.visible = !onCaster;
+}
 
 // --- Stats overlay ----------------------------------------------------------
 const stats = document.createElement('div');
@@ -271,7 +403,33 @@ function step(dt: number) {
   else active.effect?.update(dt);
   effectClock += dt;
   telegraphs.update(effectClock);
+  if (playMode.on) walk(dt);
+  if (arena.group.visible) arena.update(dt);
   player.update(dt, effectClock, zones);
+}
+
+// Impact-frame silhouettes: the listed objects are drawn flat white into this mask (layer 7 only).
+const SILHOUETTE_LAYER = 7;
+const maskTarget = new THREE.WebGLRenderTarget(1, 1);
+const maskMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const focusUv = new THREE.Vector2();
+const _focus = new THREE.Vector3();
+
+function renderSilhouetteMask(objects: THREE.Object3D[]) {
+  const w = Math.max(1, Math.floor(renderer.domElement.width / 2)), h = Math.max(1, Math.floor(renderer.domElement.height / 2));
+  if (maskTarget.width !== w || maskTarget.height !== h) maskTarget.setSize(w, h);
+  for (const o of objects) o.traverse((c) => c.layers.enable(SILHOUETTE_LAYER));
+  const bg = scene.background, override = scene.overrideMaterial, layers = camera.layers.mask;
+  scene.background = new THREE.Color(0x000000);
+  scene.overrideMaterial = maskMaterial;
+  camera.layers.set(SILHOUETTE_LAYER);
+  renderer.setRenderTarget(maskTarget);
+  renderer.clear();
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+  scene.background = bg;
+  scene.overrideMaterial = override;
+  camera.layers.mask = layers;
 }
 
 function render() {
@@ -280,6 +438,14 @@ function render() {
   shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
   camera.position.add(shakeOffset);
   finish.update(shake);
+  const fx = active?.effect?.group.visible ? active.effect.screen : undefined;
+  if (fx) {
+    _focus.copy(fx.focus).project(camera);
+    focusUv.set(_focus.x * 0.5 + 0.5, _focus.y * 0.5 + 0.5);
+  } else focusUv.set(0.5, 0.5);
+  const impact = !!fx && fx.impact > 0;
+  if (impact) renderSilhouetteMask(fx.silhouettes);
+  finish.setScreen(fx, focusUv, impact ? maskTarget.texture : null, camera.aspect);
   composer.render();
   camera.position.sub(shakeOffset);
 }
@@ -290,6 +456,8 @@ renderer.setAnimationLoop(() => {
   if (!view.paused) step(rawDt * view.timeScale);
   controls.update();
   render();
+  const dur = (active?.effect as { duration?: number } | undefined)?.duration;
+  hotbar.setProgress(playMode.on && dur && active?.effect?.playing ? effectClock / dur : null);
 
   fpsFrames++; fpsTime += rawDt;
   if (fpsTime >= 0.5) {
@@ -300,14 +468,93 @@ renderer.setAnimationLoop(() => {
       ? `${fps} fps · ${emitter.aliveCount} particles`
       : active.error
         ? `${active.module.label} failed to build: ${active.error}`
-        : `${fps} fps · ${active.module.label} · space = replay` +
+        : playMode.on
+          ? `${fps} fps · ${active.module.label} · WASD walk · drag = camera · 1–5 cast · click enemy / ground to target · P exit · hits ${arena.hits} · kills ${arena.kills}`
+          : `${fps} fps · ${active.module.label} · space = replay · P = play mode` +
+          (active.module.targeting ? ` · click enemy / ground to target (shift = add) · hits ${arena.hits} · kills ${arena.kills}` : '') +
           (player.enabled ? ` · WASD to move · hits ${player.hits} · dodges ${player.dodges}` : '');
   }
 });
 
 // Debug hook for checking effects from the console / automated browser:
 // vfx.mode.name = '<label>'; vfx.setMode(); then vfx.step(1/60) + vfx.render() to scrub.
+const _m = new THREE.Matrix4();
+/**
+ * True when a visible lit mesh (or one of its instances) has a zero-scale matrix. Its normals become NaN, and
+ * bloom spreads that NaN over the whole frame, which turns black.
+ */
+function hasSingularLitMatrix(root: THREE.Object3D): boolean {
+  let found = false;
+  root.traverseVisible((o) => {
+    if (found || !(o instanceof THREE.Mesh)) return;
+    const mat = o.material as THREE.Material;
+    if (!(mat instanceof THREE.MeshStandardMaterial || mat instanceof THREE.MeshPhongMaterial || mat instanceof THREE.MeshLambertMaterial)) return;
+    if (Math.abs(o.matrixWorld.determinant()) < 1e-15) { found = true; return; }
+    if (o instanceof THREE.InstancedMesh) {
+      for (let i = 0; i < o.count && !found; i++) {
+        o.getMatrixAt(i, _m);
+        if (Math.abs(_m.determinant()) < 1e-15) found = true;
+      }
+    }
+  });
+  return found;
+}
+
+/** Restarts the active effect and steps it to `t` seconds at 60 fps, then renders (for screenshots). */
+function scrub(t: number) {
+  view.paused = true;
+  active?.effect?.play();
+  for (let i = 0; i < Math.round(t * 60); i++) step(1 / 60);
+  render();
+}
+
+/**
+ * Automated check used by the forge-vfx pipeline: plays `label` paused at 60 fps for `seconds`, and reports
+ * build/runtime errors, frames with non-finite transforms, peak shake, zones and arena hits.
+ */
+function selfTest(label: string, seconds = 6) {
+  const errors: string[] = [];
+  // Shader compile errors only reach the console; collect them while this test renders.
+  const prevShaderError = renderer.debug.onShaderError;
+  renderer.debug.onShaderError = (gl, _program, vs, fs) => {
+    const log = `${gl.getShaderInfoLog(fs) ?? ''}\n${gl.getShaderInfoLog(vs) ?? ''}`;
+    errors.push(`shader compile error: ${log.split('\n').find((l) => l.includes('ERROR')) ?? log.trim()}`);
+  };
+  let nanFrames = 0, maxShake = 0, frames = 0, singularFrames = 0;
+  const hits0 = arena.hits;
+  try { selectMode(label); } catch (e) { errors.push(String(e)); }
+  if (active?.error) errors.push(active.error);
+  const effect = active?.effect;
+  if (effect) {
+    view.paused = true;
+    try {
+      effect.play();
+      for (; frames < seconds * 60; frames++) {
+        step(1 / 60);
+        maxShake = Math.max(maxShake, effect.shake);
+        let bad = !Number.isFinite(effect.shake);
+        effect.group.traverse((o) => {
+          if (!bad && o.visible && ![o.position.x, o.position.y, o.position.z, o.scale.x, o.scale.y, o.scale.z].every(Number.isFinite)) bad = true;
+        });
+        if (bad) nanFrames++;
+        effect.group.updateMatrixWorld(true);
+        if (hasSingularLitMatrix(effect.group)) singularFrames++;
+        if (frames % 15 === 0) render(); // compiles every material that shows up during the timeline
+      }
+      render();
+    } catch (e) {
+      errors.push(`frame ${frames}: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
+    }
+  }
+  renderer.debug.onShaderError = prevShaderError;
+  return {
+    label, ok: errors.length === 0 && nanFrames === 0 && singularFrames === 0, errors, nanFrames, singularFrames, frames,
+    maxShake: +maxShake.toFixed(3), zones: zones.length, targeted: !!active?.module.targeting,
+    arenaHits: arena.hits - hits0, emitters: effect?.emitters.length ?? 0,
+  };
+}
+
 (window as unknown as { vfx: unknown }).vfx = {
-  emitter, mode, setMode, step, render, controls, bloom, slots, player, telegraphs,
+  emitter, mode, setMode, selectMode, setPlayMode, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
   get effect() { return active?.effect; },
 };

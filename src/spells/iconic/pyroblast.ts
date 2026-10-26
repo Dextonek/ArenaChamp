@@ -62,7 +62,7 @@ class Debris {
   clear() {
     this.age.fill(1);
     this.life.fill(0.5);
-    this.dummy.scale.setScalar(0);
+    this.dummy.scale.setScalar(1e-4); // never 0: a singular instance matrix gives NaN normals → black bloomed frame
     this.dummy.updateMatrix();
     for (let i = 0; i < this.n; i++) this.mesh.setMatrixAt(i, this.dummy.matrix);
     this.mesh.instanceMatrix.needsUpdate = true;
@@ -103,7 +103,7 @@ class Debris {
       const alive = this.age[i] < this.life[i];
       d.position.set(this.pos[j], this.pos[j + 1], this.pos[j + 2]);
       d.rotation.set(this.rot[j], this.rot[j + 1], this.rot[j + 2]);
-      d.scale.setScalar(alive ? this.size[i] * (1 - smoothstep((this.age[i] / this.life[i] - 0.7) / 0.3)) : 0);
+      d.scale.setScalar(Math.max(1e-4, alive ? this.size[i] * (1 - smoothstep((this.age[i] / this.life[i] - 0.7) / 0.3)) : 0));
       d.updateMatrix();
       this.mesh.setMatrixAt(i, d.matrix);
     }
@@ -426,7 +426,7 @@ export class Pyroblast implements Effect {
           this.ball.position.z + Math.sin(a) * rad,
         );
         this.dummy.rotation.set(t * 2 + i, t * 1.5, i);
-        this.dummy.scale.setScalar(grow * (0.6 + 0.08 * (i % 5)));
+        this.dummy.scale.setScalar(Math.max(1e-4, grow * (0.6 + 0.08 * (i % 5))));
         this.dummy.updateMatrix();
         this.chunks.setMatrixAt(i, this.dummy.matrix);
       }

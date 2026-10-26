@@ -4,6 +4,10 @@ import type GUI from 'three/addons/libs/lil-gui.module.min.js';
 import type { Emitter } from '../emitter';
 import type { BloomSettings } from '../presets';
 import type { TelegraphSpec } from './telegraph';
+import type { CastContext, TargetingSpec } from './targeting';
+import type { ScreenFx } from './parts/screen';
+
+export type { CastContext, TargetingSpec };
 
 /** A timed set piece (sword fall, meteor shower, ...) that main.ts can play, step and render. */
 export interface Effect {
@@ -13,12 +17,19 @@ export interface Effect {
   readonly emitters: Emitter[];
   /** Camera shake for the current frame, in world units (0 = none). */
   shake: number;
+  /** Optional full-screen feedback (darken, impact frames, focus lines), read every frame like `shake`. */
+  screen?: ScreenFx;
   /** True while the timeline runs. */
   playing: boolean;
   /** Restarts the timeline from the beginning. */
   play(): void;
   /** Advances by `dt` seconds. Must keep emitters updating even when not playing. */
   update(dt: number): void;
+  /**
+   * Targeted effects only: called right before every play() with who and where to hit (see `targeting.ts`).
+   * Store what you need; positions must be read from the context, never from ENEMY_POS / CASTER_POS.
+   */
+  cast?(ctx: CastContext): void;
 }
 
 /** Registry entry for an effect: how to build it, light it, frame it and expose its settings. */
@@ -39,4 +50,9 @@ export interface EffectModule {
    * Times are seconds after play(). main.ts draws them and tests the player dummy against them.
    */
   telegraphs?(effect: Effect): TelegraphSpec[];
+  /**
+   * Set on targeted effects: main.ts then shows the shared arena (caster + clickable enemies) and calls
+   * `effect.cast()` before every play. The effect must not create its own caster or enemies.
+   */
+  targeting?: TargetingSpec;
 }

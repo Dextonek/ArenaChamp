@@ -1,0 +1,2356 @@
+[
+  {
+    "id": "b-d4-sorcerer-meteor",
+    "name": "Sorcerer Meteor strike",
+    "source": {
+      "title": "Diablo IV - Sorcerer Meteor (upgrade page)",
+      "url": "https://diablo4.wiki.fextralife.com/Wizard's+Meteor",
+      "kind": "game"
+    },
+    "archetype": "meteor",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 2.4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.9,
+        "what": "orange danger disc fades in on the ground, ember motes rise, sky darkens slightly"
+      },
+      {
+        "name": "release",
+        "start": 0.9,
+        "end": 1.4,
+        "what": "fire rock streaks down at a steep angle with a long tail"
+      },
+      {
+        "name": "impact",
+        "start": 1.4,
+        "end": 1.7,
+        "what": "white flash, ring blast, debris and fire geyser"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.7,
+        "end": 2.4,
+        "what": "burning crater glows, smoke column and embers drift"
+      }
+    ],
+    "layers": [
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffb347",
+          "#ff5a14",
+          "#3a0f05"
+        ],
+        "motion": "radius grows 0.6 to 1 over 0.9s, pulsing edge",
+        "notes": "sharp bright rim so the safe edge reads instantly"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#3a2a24",
+          "#ff7a1f"
+        ],
+        "motion": "diagonal fall, accelerate (ease-in), spin slowly",
+        "notes": "dark rock body with emissive cracks so it reads against fire"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#fff1c0",
+          "#ff8a1e",
+          "#5a1a08"
+        ],
+        "motion": "ribbon follows rock, width tapers over 0.5s",
+        "notes": "long tail sells speed and shows the approach angle"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffd27a"
+        ],
+        "motion": "scale 0 to 3 in 0.06s, gone by 0.25s",
+        "notes": "one or two frame white hit"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#fff0c8",
+          "#ff8a1e"
+        ],
+        "motion": "flat ring expands to danger radius in 0.4s",
+        "notes": "matches the telegraph radius so damage feels honest"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#2a1c18",
+          "#7a3a1a"
+        ],
+        "motion": "radial burst upward, gravity 14, tumble, 30 pieces",
+        "notes": "dark chunks give contrast to the glowing fire"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#2b2320",
+          "#120d0b"
+        ],
+        "motion": "rising, drag 1.5, erosion on, 1.5s",
+        "notes": "dark smoke behind bright layers adds depth"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#ffcf70",
+          "#ff5a14"
+        ],
+        "motion": "gravity -1.5, drag 0.8, 1.5s",
+        "notes": "long lived embers carry the afterglow"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "0.35s decay",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#fff1c0",
+      "#ff8a1e",
+      "#5a1a08",
+      "#2b2320"
+    ],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "telegraph first, then a long streak lets the eye follow the fall",
+      "white-hot flash to dark smoke gives a strong value ladder",
+      "ring radius equals the danger disc"
+    ],
+    "buildNotes": "Build the danger disc as a flat ring plus filled additive disc with a pulsing rim. Fall the rock from 40 units up with ease-in over 0.5s. Exaggerate: double the debris count, add a light pillar of fire for 0.3s, leave a glowing crater decal with groundFade for 4s."
+  },
+  {
+    "id": "b-elden-ring-radahn-meteor-impact",
+    "name": "Radahn gravity leap impact",
+    "source": {
+      "title": "Elden Ring - Starscourge Radahn (wiki)",
+      "url": "https://eldenring.wiki.gg/wiki/Starscourge_Radahn",
+      "kind": "game"
+    },
+    "archetype": "meteor",
+    "targeting": "ground",
+    "element": "other",
+    "durationSec": 3,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 1,
+        "what": "swords stabbed into ground, purple-blue gravity sparks crawl over him, ground darkens"
+      },
+      {
+        "name": "release",
+        "start": 1,
+        "end": 1.8,
+        "what": "he launches out of sight, only a rising streak and light remain"
+      },
+      {
+        "name": "impact",
+        "start": 1.8,
+        "end": 2.1,
+        "what": "he falls back, huge blast and shockwave"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.1,
+        "end": 3,
+        "what": "dust cloud and gravity motes settle"
+      }
+    ],
+    "layers": [
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#b9a6ff",
+          "#5a3ad8"
+        ],
+        "motion": "slow rotation, scales up as he charges",
+        "notes": "arcane circle at the landing point warns of the strike"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#e6dcff",
+          "#7a5cff"
+        ],
+        "motion": "inward pull, drag 2, thin streaks",
+        "notes": "pulled inward motes read as gravity"
+      },
+      {
+        "part": "light-pillar",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#d9ccff",
+          "#6a46ff"
+        ],
+        "motion": "thin beam skyward, 0.2s fade",
+        "notes": "marks the launch point"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#1a0f2a",
+          "#000000"
+        ],
+        "motion": "dark circle grows to landing radius",
+        "notes": "darker disc shows landing area"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#c9b8ff"
+        ],
+        "motion": "scale burst 0.1s",
+        "notes": "white then violet"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#e8e0ff",
+          "#7a5cff"
+        ],
+        "motion": "two rings, 0.6s and 0.9s, fast then slow",
+        "notes": "double ring reads as heavy mass"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#3a3028",
+          "#6b5a48"
+        ],
+        "motion": "radial upward, gravity 18, 40 pieces",
+        "notes": "chunks lift slowly then slam down"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#6b5f66",
+          "#2a2430"
+        ],
+        "motion": "radial dust ring then drift, erosion",
+        "notes": "dust ring low to the floor"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "0.5s decay",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#e6dcff",
+      "#7a5cff",
+      "#1a0f2a",
+      "#6b5f66"
+    ],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "the vanishing beat builds dread before the landing",
+      "dark landing disc is a clear danger zone",
+      "violet energy against brown dust gives hue contrast"
+    ],
+    "buildNotes": "Hide the character during the gap and keep a small rising light so the player knows where to look. On the way down scale a violet glow sphere at the target point. Exaggerate: add a second delayed ring and a vertical violet pillar on impact."
+  },
+  {
+    "id": "b-gw2-meteor-shower",
+    "name": "Elementalist Meteor Shower",
+    "source": {
+      "title": "Guild Wars 2 - Meteor Shower (wiki)",
+      "url": "https://wiki.guildwars2.com/wiki/Meteor_Shower",
+      "kind": "game"
+    },
+    "archetype": "meteor",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 9,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.8,
+        "what": "fire sigil circle draws on the ground, red glow"
+      },
+      {
+        "name": "release",
+        "start": 0.8,
+        "end": 8,
+        "what": "many small meteors fall at random spots in the circle"
+      },
+      {
+        "name": "impact",
+        "start": 0.8,
+        "end": 8,
+        "what": "each meteor makes a small blast and scorch"
+      },
+      {
+        "name": "aftermath",
+        "start": 8,
+        "end": 9,
+        "what": "last embers and smoke fade"
+      }
+    ],
+    "layers": [
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffcf6a",
+          "#ff4a10"
+        ],
+        "motion": "rotating sigil, fixed radius",
+        "notes": "circle stays for the whole duration so the zone stays readable"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ff6a20",
+          "#3a0e04"
+        ],
+        "motion": "soft red fill, slow pulse",
+        "notes": "keep low alpha so impacts show on top"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#2d1d16",
+          "#ff7a22"
+        ],
+        "motion": "steep fall, 0.3s each, spawn every 0.15s",
+        "notes": "small rocks, vary size 0.5 to 1.5"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#fff0b0",
+          "#ff6a1a"
+        ],
+        "motion": "short tail 0.2s",
+        "notes": "tail shows fall direction"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffe0a0",
+          "#ff7a1f"
+        ],
+        "motion": "small ring 0.25s per hit",
+        "notes": "scale small so many hits stay legible"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#fff3c4",
+          "#ff9a2a"
+        ],
+        "motion": "burst 12, gravity 8",
+        "notes": "sparks on each hit"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#3a2a24",
+          "#14100e"
+        ],
+        "motion": "continuous low smoke, erosion",
+        "notes": "builds up depth over time"
+      }
+    ],
+    "palette": [
+      "#fff0b0",
+      "#ff6a1a",
+      "#3a0e04",
+      "#2d1d16"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "persistent circle gives a clear area while chaos happens inside",
+      "many small hits give rhythm",
+      "dark rocks against fire keep each hit visible"
+    ],
+    "buildNotes": "Use instanced meshes for rocks and a single emitter for hit sparks. Randomise impact positions with a slight bias to the centre. Exaggerate: raise count to 40, add point light flashes per hit and short camera shake pulses."
+  },
+  {
+    "id": "b-ffxiv-titan-weight-of-the-land",
+    "name": "Titan Weight of the Land circles",
+    "source": {
+      "title": "FFXIV - The Navel Extreme (Titan, mechanic page)",
+      "url": "https://ffxiv.consolegameswiki.com/wiki/The_Navel_(Extreme)",
+      "kind": "game"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "earth",
+    "durationSec": 3.2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 2,
+        "what": "orange circle telegraphs appear under players and fill from the edge"
+      },
+      {
+        "name": "release",
+        "start": 2,
+        "end": 2.3,
+        "what": "ground cracks and rock spikes surge up"
+      },
+      {
+        "name": "impact",
+        "start": 2.3,
+        "end": 2.7,
+        "what": "dust and rock burst, hit flash"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.7,
+        "end": 3.2,
+        "what": "dust falls, cracked decal remains"
+      }
+    ],
+    "layers": [
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffb04a",
+          "#ff7a1a"
+        ],
+        "motion": "outline first, inner fill grows from edge to centre over 2s",
+        "notes": "fill progress tells timing; this is the key readable part"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "normal",
+        "colors": [
+          "#2b1a10"
+        ],
+        "motion": "dark underlay 60% alpha",
+        "notes": "keeps telegraph visible on any floor"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#5a4636",
+          "#8a6c4c"
+        ],
+        "motion": "spikes shoot up 0.15s, 8 per circle, then fall",
+        "notes": "spiky rocks give a silhouette"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#a8946c",
+          "#4a3a28"
+        ],
+        "motion": "radial dust, drag 2, erosion",
+        "notes": "dust colour matches earth theme"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#fff2d0",
+          "#ffb04a"
+        ],
+        "motion": "0.1s flash at ground",
+        "notes": "tiny, avoid wash out"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffe0a0"
+        ],
+        "motion": "ring to circle radius in 0.25s",
+        "notes": "stops exactly at telegraph edge"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "light 0.2s",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#ffb04a",
+      "#ff7a1a",
+      "#5a4636",
+      "#a8946c"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "clear fill timing during telegraph",
+      "impact ends exactly at the circle edge",
+      "earth colours separate it from fire spells"
+    ],
+    "buildNotes": "Build the telegraph as a ring plus a filled disc whose radius is animated with a shader uniform or a scaled disc. Use a normal-blend dark underlay. Exaggerate: add more rock spikes, a bright rim at completion, and lingering cracks with groundFade."
+  },
+  {
+    "id": "b-ffxiv-bahamut-megaflare",
+    "name": "Bahamut Megaflare circles",
+    "source": {
+      "title": "FFXIV - Bahamut raid guide (Megaflare)",
+      "url": "https://icy-veins.com/ffxiv/blue-mage-bahamut-raid-guide",
+      "kind": "breakdown"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 2.2,
+        "what": "big red circles mark the ground, fiery orbs gather above"
+      },
+      {
+        "name": "release",
+        "start": 2.2,
+        "end": 2.6,
+        "what": "orbs fall as columns"
+      },
+      {
+        "name": "impact",
+        "start": 2.6,
+        "end": 3,
+        "what": "huge white-orange explosions"
+      },
+      {
+        "name": "aftermath",
+        "start": 3,
+        "end": 4,
+        "what": "fire pools and smoke"
+      }
+    ],
+    "layers": [
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ff5a30",
+          "#a0140a"
+        ],
+        "motion": "large circles, edge pulse faster as time runs out",
+        "notes": "pulse speed encodes remaining time"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#fff0c0",
+          "#ff6a20"
+        ],
+        "motion": "orb above each circle grows 0.2 to 1.2",
+        "notes": "pre-reads the strike location"
+      },
+      {
+        "part": "light-pillar",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ff8a2a"
+        ],
+        "motion": "column drops in 0.15s, width = circle radius 0.5",
+        "notes": "column shows exact area"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "full circle flash 0.1s",
+        "notes": "strong flash"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff4a18"
+        ],
+        "motion": "expanding to circle radius",
+        "notes": "matches the danger zone"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#ffcf70",
+          "#ff5a14"
+        ],
+        "motion": "rise, drag 0.6, 1.5s",
+        "notes": "embers show heat"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#3a2018",
+          "#120a08"
+        ],
+        "motion": "dense low smoke, erosion",
+        "notes": "dark base for contrast"
+      }
+    ],
+    "palette": [
+      "#fff0c0",
+      "#ff5a30",
+      "#a0140a",
+      "#3a2018"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "stack of circles reads as pattern puzzle",
+      "pulse speed gives timing without UI",
+      "white column vs dark red ground gives high contrast"
+    ],
+    "buildNotes": "Instance circle decals from a small pool. Drive the pulse with sin(time*rate) where rate rises. Exaggerate: overlap three waves of circles, a ground shake on each, and a huge sky glow."
+  },
+  {
+    "id": "b-lost-ark-sorceress-doomsday",
+    "name": "Sorceress Doomsday meteor",
+    "source": {
+      "title": "Lost Ark - Doomsday (wiki)",
+      "url": "https://lostark.wiki.fextralife.com/Doomsday",
+      "kind": "game"
+    },
+    "archetype": "meteor",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 2.8,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 1,
+        "what": "sorceress raises staff, magic circle on target and red glow in sky"
+      },
+      {
+        "name": "release",
+        "start": 1,
+        "end": 1.6,
+        "what": "giant meteor descends with trailing flame"
+      },
+      {
+        "name": "impact",
+        "start": 1.6,
+        "end": 2,
+        "what": "explosion with fire ring"
+      },
+      {
+        "name": "aftermath",
+        "start": 2,
+        "end": 2.8,
+        "what": "flames and smoke on ground"
+      }
+    ],
+    "layers": [
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffd27a",
+          "#ff4a14"
+        ],
+        "motion": "rotating sigil shrinking toward centre",
+        "notes": "shrinking sigil implies countdown"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffe3a0",
+          "#ff5a14"
+        ],
+        "motion": "sky glow spawns at 20 units up",
+        "notes": "shows origin of fall"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#2a1810",
+          "#ff7020"
+        ],
+        "motion": "fall 0.6s ease-in, big (radius 2)",
+        "notes": "scale sells the ultimate feel"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#fff0b8",
+          "#ff7a20",
+          "#5a1608"
+        ],
+        "motion": "long tail",
+        "notes": "tail adds directionality"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "big flash 0.12s",
+        "notes": "hit frame"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffe4a8",
+          "#ff6a1a"
+        ],
+        "motion": "ring 0.5s",
+        "notes": "shows blast radius"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#2e2420",
+          "#0f0b0a"
+        ],
+        "motion": "rising mushroom, erosion",
+        "notes": "dark top end"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "0.4s",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#fff0b8",
+      "#ff7a20",
+      "#5a1608",
+      "#2e2420"
+    ],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "sigil + sky glow warns the area",
+      "big meteor scale in relation to caster",
+      "smoke contrasts with bright blast"
+    ],
+    "buildNotes": "Use a large additive glow sphere inside a rock mesh to make the meteor. Add a mushroom smoke emitter with upward velocity. Exaggerate: add a screen flash and slow-mo hit-stop for 80 ms."
+  },
+  {
+    "id": "b-genshin-raiden-musou-isshin",
+    "name": "Raiden Musou no Hitotachi",
+    "source": {
+      "title": "Genshin Impact - Secret Art: Musou Shinsetsu (wiki)",
+      "url": "https://genshinimpact.wiki.fextralife.com/Secret+Art:+Musou+Shinsetsu",
+      "kind": "game"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 1.8,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.5,
+        "what": "purple lightning gathers around her, background dims"
+      },
+      {
+        "name": "release",
+        "start": 0.5,
+        "end": 0.8,
+        "what": "wide horizontal slash from her sword"
+      },
+      {
+        "name": "impact",
+        "start": 0.8,
+        "end": 1.1,
+        "what": "purple arc flash on enemies"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.1,
+        "end": 1.8,
+        "what": "lightning motes and a purple afterimage"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#f2e0ff",
+          "#9a4cff"
+        ],
+        "motion": "sphere around sword grows",
+        "notes": "gather beat"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#b070ff"
+        ],
+        "motion": "arcs flicker around body, 12 fps jitter",
+        "notes": "jitter sells electricity"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#c88cff",
+          "#4a1a8a"
+        ],
+        "motion": "wide crescent sweep 0.2s, width 3, fades quickly",
+        "notes": "crescent shape is the signature of a slash"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#d0a0ff"
+        ],
+        "motion": "flash on each hit 0.08s",
+        "notes": "hit confirm"
+      },
+      {
+        "part": "distortion",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "short radial warp",
+        "notes": "adds impact"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#e8d0ff",
+          "#9a4cff"
+        ],
+        "motion": "drift upward, drag 1.5",
+        "notes": "lingering charge"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#c88cff",
+      "#9a4cff",
+      "#4a1a8a"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "crescent trail = clear silhouette",
+      "dim background boosts glow",
+      "thin white core with purple halo is a strong value ladder"
+    ],
+    "buildNotes": "Build the slash as a curved ribbon driven by sword tip positions, and add 2-3 delayed echoes. Exaggerate: triple the trail width, add vertical lightning columns on each enemy, and a quick background darken."
+  },
+  {
+    "id": "b-zzz-ellen-joe-ultimate",
+    "name": "Ellen Joe ice ultimate",
+    "source": {
+      "title": "Zenless Zone Zero - Ellen Joe (guide)",
+      "url": "https://primagames.com/gaming/zenless-zone-zero-zzz-ellen-joe-guide-best-builds-w-engines-drive-discs-combos-and-more",
+      "kind": "breakdown"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemies",
+    "element": "water",
+    "durationSec": 2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.4,
+        "what": "time slows, cold mist and dark vignette"
+      },
+      {
+        "name": "release",
+        "start": 0.4,
+        "end": 1,
+        "what": "rapid multi-slashes with cyan streaks"
+      },
+      {
+        "name": "impact",
+        "start": 1,
+        "end": 1.3,
+        "what": "ice burst with shards"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.3,
+        "end": 2,
+        "what": "frost shards drift down, ground frosted"
+      }
+    ],
+    "layers": [
+      {
+        "part": "screen-flash",
+        "phase": "anticipation",
+        "blend": "normal",
+        "colors": [
+          "#0a1020"
+        ],
+        "motion": "vignette in 0.2s",
+        "notes": "darkens scene to push glow"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fe8ff",
+          "#1a5aa8"
+        ],
+        "motion": "6 quick slashes crossed at random angles",
+        "notes": "many straight cuts = anime style"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#e8ffff",
+          "#6adfff"
+        ],
+        "motion": "burst from each cut, drag 3",
+        "notes": "sparks fan off the cuts"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a0f0ff"
+        ],
+        "motion": "0.1s",
+        "notes": "hit frame"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#d8f6ff",
+          "#6adfff"
+        ],
+        "motion": "shards radial, gravity 8, 30 pieces",
+        "notes": "crystal shards"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fe8ff"
+        ],
+        "motion": "flat ring on ground",
+        "notes": "ground anchor"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#c8f4ff",
+          "#5ab8e8"
+        ],
+        "motion": "cold mist low to ground, erosion",
+        "notes": "frost aftermath"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#7fe8ff",
+      "#1a5aa8",
+      "#0a1020"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "crossed straight cuts give a sharp shape",
+      "dark vignette boosts cyan",
+      "shards give a satisfying end beat"
+    ],
+    "buildNotes": "Animate several thin ribbons in quick succession with random angles. Use a brief timeScale dip for hit-stop. Element is ice, mapped to water as the nearest allowed value. Exaggerate: add a final screen-wide cut line and a glass-shatter shard burst."
+  },
+  {
+    "id": "b-wuwa-jiyan-tactical-strike",
+    "name": "Jiyan aerial thrust",
+    "source": {
+      "title": "Wuthering Waves - Jiyan (guide)",
+      "url": "https://www.pockettactics.com/wuthering-waves/jiyan",
+      "kind": "breakdown"
+    },
+    "archetype": "dash",
+    "targeting": "enemy",
+    "element": "wind",
+    "durationSec": 1.2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.25,
+        "what": "green wind swirls around the spear"
+      },
+      {
+        "name": "release",
+        "start": 0.25,
+        "end": 0.55,
+        "what": "fast dive along a straight line with a long green streak"
+      },
+      {
+        "name": "impact",
+        "start": 0.55,
+        "end": 0.8,
+        "what": "wind burst on target"
+      },
+      {
+        "name": "aftermath",
+        "start": 0.8,
+        "end": 1.2,
+        "what": "leaves and wind rings dissipate"
+      }
+    ],
+    "layers": [
+      {
+        "part": "emitter-wisps",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#d8ffe8",
+          "#5fe0a0"
+        ],
+        "motion": "spiral inward around body",
+        "notes": "spiral shows wind"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fffc0",
+          "#1a8a5a"
+        ],
+        "motion": "straight line from start to target, tapering",
+        "notes": "line is the entire read of a dash"
+      },
+      {
+        "part": "distortion",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "tube of warp along path",
+        "notes": "wind feel"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#e0fff0",
+          "#5fe0a0"
+        ],
+        "motion": "vertical ring facing the line",
+        "notes": "shows direction of force"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fffc0"
+        ],
+        "motion": "burst forward along direction",
+        "notes": "follow-through"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "light",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#7fffc0",
+      "#1a8a5a"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "straight ribbon with a clear start and end",
+      "ring in the movement plane",
+      "cool colour reads as speed"
+    ],
+    "buildNotes": "Move the caster mesh with ease-out-quart over 0.3s and leave a ribbon. Exaggerate: add afterimages every 0.04s and longer trail."
+  },
+  {
+    "id": "b-elden-ring-transient-moonlight",
+    "name": "Moonveil Transient Moonlight",
+    "source": {
+      "title": "Elden Ring - Transient Moonlight (wiki)",
+      "url": "https://eldenring.wiki.gg/wiki/Transient_Moonlight",
+      "kind": "game"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "arcane",
+    "durationSec": 1.6,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.4,
+        "what": "sheathed stance, blue glow at the blade"
+      },
+      {
+        "name": "release",
+        "start": 0.4,
+        "end": 0.6,
+        "what": "fast draw slash"
+      },
+      {
+        "name": "impact",
+        "start": 0.6,
+        "end": 1,
+        "what": "crescent wave travels forward"
+      },
+      {
+        "name": "aftermath",
+        "start": 1,
+        "end": 1.6,
+        "what": "blue motes and mist remain"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#e8f0ff",
+          "#6a8aff"
+        ],
+        "motion": "small glow at the blade tip",
+        "notes": "teaser"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#9ab8ff",
+          "#2a3aa8"
+        ],
+        "motion": "thin quick arc, 0.15s",
+        "notes": "thin and sharp vs the heavy blast"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7a98ff"
+        ],
+        "motion": "crescent flat wave, speed 25, 0.5s lifetime",
+        "notes": "crescent shape is the iconic read"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#dce6ff",
+          "#6a8aff"
+        ],
+        "motion": "trailing sparks behind wave",
+        "notes": "wave tail"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#9ab8ff",
+          "#2a3aa8"
+        ],
+        "motion": "slow drift, erosion",
+        "notes": "soft end"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#9ab8ff",
+      "#2a3aa8"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "contrast between thin slash and wide wave",
+      "cool blue with white core",
+      "simple but strong crescent silhouette"
+    ],
+    "buildNotes": "Make the crescent by clipping a ring geometry to 90 degrees. Exaggerate: double the wave size and let it leave light trails on the floor."
+  },
+  {
+    "id": "b-poe2-arc-chain-lightning",
+    "name": "Arc lightning chain",
+    "source": {
+      "title": "Path of Exile 2 - Arc (wiki)",
+      "url": "https://www.poe2wiki.net/wiki/Arc",
+      "kind": "game"
+    },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 1.4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.25,
+        "what": "blue sparks at the hand"
+      },
+      {
+        "name": "release",
+        "start": 0.25,
+        "end": 0.5,
+        "what": "bolt leaves hand to first target"
+      },
+      {
+        "name": "impact",
+        "start": 0.5,
+        "end": 1.1,
+        "what": "bolt hops between enemies with small flashes"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.1,
+        "end": 1.4,
+        "what": "residual sparks"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7ab8ff"
+        ],
+        "motion": "small orb at the hand",
+        "notes": "charge beat"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#8ad0ff",
+          "#2a5aff"
+        ],
+        "motion": "jagged line, re-roll every 2 frames, 5-9 segments",
+        "notes": "re-rolling shape = life"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#8ad0ff"
+        ],
+        "motion": "hop to next target every 0.1s",
+        "notes": "delay gives readable order"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "tiny flash at each target",
+        "notes": "hit confirm"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#dcf0ff",
+          "#6ab0ff"
+        ],
+        "motion": "burst 8 per hit",
+        "notes": "spray"
+      },
+      {
+        "part": "light",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#8ad0ff"
+        ],
+        "motion": "spike 0.1s",
+        "notes": "lights the floor"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "very light",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#8ad0ff",
+      "#2a5aff"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "hop delay gives readable order",
+      "jagged bolts re-randomized read as electricity",
+      "flash on each target confirms hit"
+    ],
+    "buildNotes": "Create bolts with midpoint displacement. Pick targets by distance and cap hops to chain range. Exaggerate: forks at each hop and a thick glow bolt under the thin white core."
+  },
+  {
+    "id": "b-hsr-kafka-twilight-trill",
+    "name": "Kafka Twilight Trill",
+    "source": {
+      "title": "Honkai Star Rail - Kafka (overview)",
+      "url": "https://en.wikipedia.org/wiki/Kafka_(Honkai:_Star_Rail)",
+      "kind": "breakdown"
+    },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 3,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.8,
+        "what": "camera cut, purple threads draw across the scene"
+      },
+      {
+        "name": "release",
+        "start": 0.8,
+        "end": 1.4,
+        "what": "threads lash to every enemy"
+      },
+      {
+        "name": "impact",
+        "start": 1.4,
+        "end": 2,
+        "what": "purple-pink electric blast on all enemies"
+      },
+      {
+        "name": "aftermath",
+        "start": 2,
+        "end": 3,
+        "what": "shock status sparks remain on enemies"
+      }
+    ],
+    "layers": [
+      {
+        "part": "screen-flash",
+        "phase": "anticipation",
+        "blend": "normal",
+        "colors": [
+          "#14061f"
+        ],
+        "motion": "dark purple vignette",
+        "notes": "strong mood"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffe0ff",
+          "#e048ff",
+          "#4a0a78"
+        ],
+        "motion": "thin curved strands to each enemy",
+        "notes": "curves are the elegant signature"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#f060ff"
+        ],
+        "motion": "strong arcs over each enemy",
+        "notes": "status read"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#f8c0ff"
+        ],
+        "motion": "0.1s per enemy",
+        "notes": "hit confirm"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#f8c0ff",
+          "#a020e0"
+        ],
+        "motion": "ground rings under enemies",
+        "notes": "ground anchor"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#f8c0ff",
+          "#a020e0"
+        ],
+        "motion": "persistent small sparks on each enemy",
+        "notes": "shows DoT"
+      }
+    ],
+    "palette": [
+      "#ffe0ff",
+      "#e048ff",
+      "#4a0a78",
+      "#14061f"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "dark scene lifts purple glow",
+      "many curved lines = multi-target at a glance",
+      "persistent sparks communicate shock status"
+    ],
+    "buildNotes": "Make curved strands with Catmull-Rom curves and animated draw-in. Exaggerate: add a full-screen sweep of strands and heavier lightning on each hit."
+  },
+  {
+    "id": "b-genshin-yae-tenko-kenshin",
+    "name": "Yae Miko Tenko Thunderbolts",
+    "source": {
+      "title": "Genshin Impact - Great Secret Art: Tenko Kenshin (wiki)",
+      "url": "https://genshinimpact.wiki.fextralife.com/Great+Secret+Art:+Tenko+Kenshin",
+      "kind": "game"
+    },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 2.4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.6,
+        "what": "pink-purple sigil around Yae, sakura totems glow"
+      },
+      {
+        "name": "release",
+        "start": 0.6,
+        "end": 0.9,
+        "what": "totems turn into lightning rods"
+      },
+      {
+        "name": "impact",
+        "start": 0.9,
+        "end": 1.6,
+        "what": "huge lightning bolts strike enemies near each totem"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.6,
+        "end": 2.4,
+        "what": "sparks and petals fade"
+      }
+    ],
+    "layers": [
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffd0f0",
+          "#c04aff"
+        ],
+        "motion": "sigil expands 1 to 4 in 0.6s",
+        "notes": "sets the pink-purple look"
+      },
+      {
+        "part": "light-pillar",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#e08aff"
+        ],
+        "motion": "thin vertical glow on totems",
+        "notes": "marks the strike point"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#e08aff",
+          "#7a1ad0"
+        ],
+        "motion": "vertical bolts from the sky, thick, fork",
+        "notes": "thick bolts are the payoff"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "0.08s",
+        "notes": "hit frame"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#f0c0ff",
+          "#a030f0"
+        ],
+        "motion": "small flat ring",
+        "notes": "ground anchor"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#ffd0f0",
+          "#c04aff"
+        ],
+        "motion": "petals falling, slow",
+        "notes": "pink petals add style"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "light",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#e08aff",
+      "#7a1ad0",
+      "#ffd0f0"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "pink petals + purple bolts is distinctive",
+      "vertical bolts give clear vertical read",
+      "repeated strikes make a rhythm"
+    ],
+    "buildNotes": "Spawn bolts with offsets of 0.05-0.1s between strikes. Exaggerate: wider bolts, bolt afterglow line for 0.5s, and a falling petal emitter."
+  },
+  {
+    "id": "b-d4-frozen-orb",
+    "name": "Frozen Orb",
+    "source": {
+      "title": "Diablo IV - Frozen Orb (wiki)",
+      "url": "https://www.purediablo.com/diablo4/Frozen_Orb",
+      "kind": "game"
+    },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "water",
+    "durationSec": 2.5,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.3,
+        "what": "frost gathers at hand"
+      },
+      {
+        "name": "release",
+        "start": 0.3,
+        "end": 1.8,
+        "what": "slow orb travels forward, spraying shards"
+      },
+      {
+        "name": "impact",
+        "start": 1.8,
+        "end": 2.1,
+        "what": "orb bursts into ice explosion"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.1,
+        "end": 2.5,
+        "what": "frost mist and shards fall"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#9fe8ff",
+          "#2a78d0"
+        ],
+        "motion": "radius 0.7, speed 6, slow rotate",
+        "notes": "large slow orb is readable"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#d8f6ff",
+          "#6adfff"
+        ],
+        "motion": "crystal shell, rotates",
+        "notes": "shell gives structure"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fe0ff"
+        ],
+        "motion": "shards fire sideways, short lifetime",
+        "notes": "spray shows piercing"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#bff4ff",
+          "#2a78d0"
+        ],
+        "motion": "short tail",
+        "notes": "direction"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a0f0ff"
+        ],
+        "motion": "0.1s",
+        "notes": "hit frame"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fe0ff"
+        ],
+        "motion": "ring",
+        "notes": "radius"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#d8f6ff",
+          "#6adfff"
+        ],
+        "motion": "shards radial, gravity 8",
+        "notes": "ice chunks"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#c8f4ff",
+          "#5ab8e8"
+        ],
+        "motion": "mist low",
+        "notes": "frost"
+      },
+      {
+        "part": "light",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#7fe0ff"
+        ],
+        "motion": "orb light follows",
+        "notes": "lights floor"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#9fe8ff",
+      "#2a78d0"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "orb silhouette plus shards is simple and bold",
+      "cool white to deep blue ladder",
+      "shard spray shows what it hits"
+    ],
+    "buildNotes": "Fire shard particles at random side angles every 0.05s. Element is ice, mapped to water. Exaggerate: orb 2x size, ice trail decal on the floor."
+  },
+  {
+    "id": "b-poe2-fireball",
+    "name": "Fireball",
+    "source": {
+      "title": "Path of Exile 2 - Fireball (database)",
+      "url": "https://outof.games/realms/poe2/skills/fireball/",
+      "kind": "game"
+    },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "fire",
+    "durationSec": 1.8,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.3,
+        "what": "fire swirls at the hand"
+      },
+      {
+        "name": "release",
+        "start": 0.3,
+        "end": 1,
+        "what": "fireball flies with a flame tail"
+      },
+      {
+        "name": "impact",
+        "start": 1,
+        "end": 1.3,
+        "what": "explosion with ring of small firebolts"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.3,
+        "end": 1.8,
+        "what": "smoke and embers"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffc050",
+          "#ff4a10"
+        ],
+        "motion": "radius 0.5, flicker scale 0.9-1.1",
+        "notes": "flicker for life"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#3a2418",
+          "#120a08"
+        ],
+        "motion": "trail smoke, erosion",
+        "notes": "dark smoke trail adds depth"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#fff0b0",
+          "#ff7a20"
+        ],
+        "motion": "tail",
+        "notes": "direction"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "0.1s",
+        "notes": "hit frame"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffe0a0",
+          "#ff6a1a"
+        ],
+        "motion": "ring 0.3s",
+        "notes": "radius"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffc050",
+          "#ff4a10"
+        ],
+        "motion": "12 small firebolts radial, 0.4s",
+        "notes": "spawn on explosion"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#ffcf70",
+          "#ff5a14"
+        ],
+        "motion": "gravity -1, 1s",
+        "notes": "afterglow"
+      }
+    ],
+    "palette": [
+      "#fff0b0",
+      "#ffc050",
+      "#ff4a10",
+      "#3a2418"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "classic hot to dark ladder",
+      "ring of bolts adds secondary shape",
+      "smoke trail separates from background"
+    ],
+    "buildNotes": "Radial burst of 12 small firebolts matches the on-hit behaviour. Exaggerate: double the bolt count, add burn decal and camera kick."
+  },
+  {
+    "id": "b-elden-ring-founding-rain-of-stars",
+    "name": "Founding Rain of Stars",
+    "source": {
+      "title": "Elden Ring - Founding Rain of Stars (wiki)",
+      "url": "https://eldenring.wiki.gg/wiki/Founding_Rain_of_Stars",
+      "kind": "game"
+    },
+    "archetype": "projectile",
+    "targeting": "ground",
+    "element": "arcane",
+    "durationSec": 4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 1,
+        "what": "dark cloud forms above target, stars glint"
+      },
+      {
+        "name": "release",
+        "start": 1,
+        "end": 3,
+        "what": "many star bolts rain down"
+      },
+      {
+        "name": "impact",
+        "start": 1,
+        "end": 3,
+        "what": "each star pops with small flash"
+      },
+      {
+        "name": "aftermath",
+        "start": 3,
+        "end": 4,
+        "what": "cloud dissipates, motes fall"
+      }
+    ],
+    "layers": [
+      {
+        "part": "emitter-smoke",
+        "phase": "anticipation",
+        "blend": "normal",
+        "colors": [
+          "#1a1230",
+          "#05030a"
+        ],
+        "motion": "cloud swells, slow rotation, erosion",
+        "notes": "dark cloud gives backdrop for glow"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a0b0ff"
+        ],
+        "motion": "twinkle inside cloud",
+        "notes": "hint of what comes"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#9ab0ff"
+        ],
+        "motion": "small stars, speed 30, spawn 20 per s",
+        "notes": "dense but thin"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#6a80ff"
+        ],
+        "motion": "thin tails",
+        "notes": "rain read"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#b0c0ff"
+        ],
+        "motion": "tiny pops",
+        "notes": "hit confirm"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#6a80ff"
+        ],
+        "motion": "soft glowing dots fading 0.5s",
+        "notes": "ground anchor"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#9ab0ff",
+          "#2a3aa8"
+        ],
+        "motion": "slow fall",
+        "notes": "soft end"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#9ab0ff",
+      "#6a80ff",
+      "#1a1230"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "dark cloud + bright points = value contrast",
+      "many thin tails = rain read",
+      "small pops keep layering clean"
+    ],
+    "buildNotes": "Instance star meshes and emit with random xz inside radius. Exaggerate: wider cloud, longer tails, a final bigger star."
+  },
+  {
+    "id": "b-elden-ring-comet-azur",
+    "name": "Comet Azur beam",
+    "source": {
+      "title": "Elden Ring - Comet Azur (wiki)",
+      "url": "https://eldenring.wiki.fextralife.com/Comet+Azur",
+      "kind": "game"
+    },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "arcane",
+    "durationSec": 5,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 1,
+        "what": "long wind-up, blue magic circle and orbs gather in front of the staff"
+      },
+      {
+        "name": "release",
+        "start": 1,
+        "end": 4,
+        "what": "continuous thick beam of blue energy"
+      },
+      {
+        "name": "impact",
+        "start": 1,
+        "end": 4,
+        "what": "impact point glows, ground burns"
+      },
+      {
+        "name": "aftermath",
+        "start": 4,
+        "end": 5,
+        "what": "beam thins and fades, motes"
+      }
+    ],
+    "layers": [
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#d0e0ff",
+          "#4a78ff"
+        ],
+        "motion": "circle before the staff, slow rotation",
+        "notes": "cast anchor"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7aa0ff"
+        ],
+        "motion": "grows 0.2 to 1.5",
+        "notes": "charge"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7aa8ff",
+          "#1a3ad0"
+        ],
+        "motion": "thick core with wide glow shell, noise scroll",
+        "notes": "scrolling noise gives energy"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7aa8ff"
+        ],
+        "motion": "spray along beam, drag 2",
+        "notes": "energy shedding"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "impact glow pulses",
+        "notes": "hit point"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#2a2a3a",
+          "#0a0a14"
+        ],
+        "motion": "burned dust at hit point",
+        "notes": "contrast"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "continuous light shake",
+        "notes": ""
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#7aa8ff",
+      "#1a3ad0"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "long wind-up sells the power",
+      "thick bright core with soft shell",
+      "continuous impact glow"
+    ],
+    "buildNotes": "Beam is stretched cylinder with additive shader and scrolling noise. Exaggerate: width pulse, screen-edge glow and floor scorch line."
+  },
+  {
+    "id": "b-bdo-sorceress-reapers-scythe",
+    "name": "Sorceress Reaper scythe sweeps",
+    "source": {
+      "title": "Black Desert - Sorceress awakening (news)",
+      "url": "https://www.siliconera.com/?p=522700",
+      "kind": "video"
+    },
+    "archetype": "other",
+    "targeting": "enemies",
+    "element": "shadow",
+    "durationSec": 2.2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.5,
+        "what": "dark violet energy swirls around the scythe"
+      },
+      {
+        "name": "release",
+        "start": 0.5,
+        "end": 1.2,
+        "what": "wide scythe sweeps with trailing arcs"
+      },
+      {
+        "name": "impact",
+        "start": 1.2,
+        "end": 1.6,
+        "what": "dark burst on enemies"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.6,
+        "end": 2.2,
+        "what": "violet smoke lingers"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#f0d0ff",
+          "#9040e0"
+        ],
+        "motion": "around blade",
+        "notes": "charge"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#c070ff",
+          "#3a0a6a"
+        ],
+        "motion": "wide crescent, two layers",
+        "notes": "wide arcs are key"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#2a1038",
+          "#0a0410"
+        ],
+        "motion": "dark smoke along the sweep",
+        "notes": "dark smoke lets violet pop"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#d0a0ff"
+        ],
+        "motion": "0.1s",
+        "notes": "hit frame"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#e0b0ff",
+          "#9040e0"
+        ],
+        "motion": "burst",
+        "notes": "spray"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#d0a0ff"
+        ],
+        "motion": "ground ring",
+        "notes": "ground anchor"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#c070ff",
+      "#3a0a6a",
+      "#2a1038"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "wide crescent silhouette",
+      "dark smoke vs bright violet",
+      "simple but readable"
+    ],
+    "buildNotes": "Use two stacked ribbons with different widths. Source is weak: details inferred from a short news post. Exaggerate: add bone-white scythe afterimages."
+  }
+]

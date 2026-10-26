@@ -1,0 +1,568 @@
+[
+  {
+    "id": "c-frag-launcher-stylized-explosion",
+    "name": "Stylized frag launcher explosion (18-layer stack)",
+    "source": { "title": "Stylized Frag Launcher Explosion, Overwatch inspiration (realtimevfx forum breakdown)", "url": "https://realtimevfx.com/t/stylized-frag-launcher-explosion-overwatch-inspiration-breakdown-posted/1894?page=2", "kind": "forum" },
+    "archetype": "nova",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 1.6,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.05, "what": "nothing but the projectile arriving; the hit is instant so the first frame is the flash" },
+      { "name": "release", "start": 0.05, "end": 0.15, "what": "flash lasting 2-3 frames, shockwave light fill and burst core fire in the same instant, each offset by only 2-3 frames" },
+      { "name": "impact", "start": 0.15, "end": 0.7, "what": "core gas pushes out and brakes to a halt, thin ring races outward and dissolves, sparks fly" },
+      { "name": "aftermath", "start": 0.7, "end": 1.6, "what": "dark brown smoke is the only thing left and lingers longest" }
+    ],
+    "layers": [
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffe9a0", "#ff9a2a"], "motion": "scale pop 0.3 to 1.6 over 3 frames then cut", "notes": "very short on purpose; the artist stresses that the 2-3 frame life is what makes it punchy" },
+      { "part": "ring-shockwave", "phase": "release", "blend": "additive", "colors": ["#fff2c8", "#ff8a1f"], "motion": "flat disc, fast expand, soft-edged mask, dissolves while growing", "notes": "reads as the first background fill of light; no flipbook needed, a radial gradient mask is enough" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "additive", "colors": ["#ffd27a", "#ff6a14", "#7a2208"], "motion": "radial burst from centre, drag 4-6, gravity 0, fade before fully stopped", "notes": "the burst core: high drag so particles decelerate hard and hang in the air" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#fff0b0", "#ffa030"], "motion": "radial burst, stretched along velocity, drag 1.5, gravity 5", "notes": "two flavours spawned together: trailed ones and stretched ones; lifetime ends just after the ring is gone" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#4a2c1c", "#2a1a12", "#120c09"], "motion": "slow rise, drag 2, growing, long fade", "notes": "starts almost at once but outlives everything; sits behind the bright layers" },
+      { "part": "light", "phase": "release", "blend": "additive", "colors": ["#ffb050"], "motion": "intensity spike then exponential decay over 0.5s", "notes": "a point light flash makes the ground react" },
+      { "part": "camera-shake", "phase": "release", "blend": "normal", "colors": ["#ffffff"], "motion": "0.25s decaying shake", "notes": "short and sharp, matches the flash length" }
+    ],
+    "palette": ["#fff2c8", "#ff8a1f", "#4a2c1c"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "Layers start only a few frames apart, so the blast feels layered in time rather than a single sprite",
+      "Fast layers are short, the dull smoke is long, so the eye gets bright then settles",
+      "Drag on the core makes the gas feel heavy instead of drifting away"
+    ],
+    "buildNotes": "Build as six groups with explicit start offsets of 0, 0.03, 0.06 s. Flash = additive glow sphere that scales up and dies in 0.05 s. Ring = flat ground ring with a soft radial mask that grows and thins. Core and sparks from one Emitter burst, core with drag ~5, sparks with gravity and velocity-stretched quads. Smoke is a normal-blend emitter drawn first (render order behind). Exaggerate: hold the flash a frame longer, double the spark count, add a second thin ring 0.08 s later, add instanced debris chunks, and a 1-frame white screen flash."
+  },
+  {
+    "id": "c-arcane-style-purple-blast",
+    "name": "Arcane-style purple 2D/3D hybrid blast",
+    "source": { "title": "Arcane-inspired effect breakdown (80.lv, Chris Sayers)", "url": "https://80.lv/articles/breakdown-creating-an-arcane-inspired-effect", "kind": "breakdown" },
+    "archetype": "nova",
+    "targeting": "ground",
+    "element": "arcane",
+    "durationSec": 2.2,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.3, "what": "small pulse that sucks in, hand-drawn style shapes rotate" },
+      { "name": "release", "start": 0.3, "end": 0.5, "what": "painted flash plus the first rotating shell snaps outward" },
+      { "name": "impact", "start": 0.5, "end": 1.3, "what": "stacked rotating 3D shells and flat painterly sprites expand and distort" },
+      { "name": "aftermath", "start": 1.3, "end": 2.2, "what": "violet wisps and dim embers dissipate" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#f3dcff", "#a54bff"], "motion": "pulse in, radius 0.3 to 0.15 then pop", "notes": "tiny compression before release sells the force" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#e6b3ff"], "motion": "2-frame hold then shrink", "notes": "hard-edged, painterly shape rather than a soft blob, helps the 2D-in-3D feel" },
+      { "part": "mesh-projectile", "phase": "impact", "blend": "additive", "colors": ["#d08cff", "#7a2cff", "#2a0a55"], "motion": "open shell mesh rotating on two axes, scale up with ease-out, dissolve via noise threshold", "notes": "the artist explicitly set up rotation as its own step; give each shell a different spin speed" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#e6b3ff", "#7a2cff"], "motion": "flat ring, ease-out growth", "notes": "ties the blast to the ground" },
+      { "part": "emitter-wisps", "phase": "aftermath", "blend": "additive", "colors": ["#c07bff", "#4b1a99"], "motion": "outward drift with swirl noise, drag 2, low gravity -0.5", "notes": "stepped-looking sprite animation (low framerate) keeps the hand-drawn look" },
+      { "part": "distortion", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "expanding refraction ring", "notes": "subtle, helps the shell read as volume" }
+    ],
+    "palette": ["#e6b3ff", "#a54bff", "#2a0a55"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "Mixing flat painted shapes with 3D shells gives a unique, non-generic silhouette",
+      "A single saturated hue with only a white-hot core keeps it iconic",
+      "Rotation on several axes makes simple shapes feel complex"
+    ],
+    "buildNotes": "Use 2-3 additive hemisphere/open-cylinder meshes with a noise-threshold dissolve shader, each rotating at a different rate and scaling with easeOutCubic. Draw sprites at 12 fps stepping for the hand-drawn feel. Stay in one hue, white only in the core. Exaggerate: add a second contrasting shell in pink, longer dissolve trails, bigger chromatic offset on distortion, and a brief full-screen violet tint."
+  },
+  {
+    "id": "c-ground-slam-shockwave-ring",
+    "name": "Ground slam shockwave with lingering range ring",
+    "source": { "title": "DuranPhysics sketch, ground ring feedback (realtimevfx forum)", "url": "https://realtimevfx.com/t/duranphysics-sketch-50/19474", "kind": "forum" },
+    "archetype": "nova",
+    "targeting": "self",
+    "element": "earth",
+    "durationSec": 1.8,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.35, "what": "dust drawn in, ground telegraph circle brightens" },
+      { "name": "release", "start": 0.35, "end": 0.45, "what": "HDR flash on impact point, ring born" },
+      { "name": "impact", "start": 0.45, "end": 1.0, "what": "shockwave ring expands to full range, dust and rocks thrown out" },
+      { "name": "aftermath", "start": 1.0, "end": 1.8, "what": "ring lingers to show the radius, cracks and dust settle" }
+    ],
+    "layers": [
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#ffcf80", "#a8641c"], "motion": "range circle fades in, pulses once", "notes": "forum advice: let the ring stay a moment so the spell range is readable" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffd27a"], "motion": "brief HDR boost (intensity x3) for 3 frames", "notes": "the short over-bright pulse on impact was a specific recommended fix" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#fff0c0", "#d9922e", "#6a3a10"], "motion": "ease-out expand to the damage radius, thickness shrinking", "notes": "ring edge should match the true hit radius" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "normal", "colors": ["#8a7458", "#4a3d2e"], "motion": "radial low ring, drag 3, slight rise", "notes": "dust hugging the ground, tinted to the surface" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#5a4a38", "#2e261d"], "motion": "instanced rocks, velocity up and out, gravity 14, random spin", "notes": "contextual debris and cracks add weight" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "normal", "colors": ["#1a120c"], "motion": "crack decal stays, fades over 1s", "notes": "scar sells the aftermath" },
+      { "part": "camera-shake", "phase": "release", "blend": "normal", "colors": ["#ffffff"], "motion": "0.3s decaying", "notes": "pair with the flash" }
+    ],
+    "palette": ["#fff0c0", "#d9922e", "#4a3d2e"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "The lingering ring turns a pretty effect into readable gameplay information",
+      "An over-bright first frame creates impact before anything else is visible",
+      "Ground cracks give an aftermath beat"
+    ],
+    "buildNotes": "Flat ring mesh with radial mask shader whose radius uniform equals gameplay radius. Hold at full radius for 0.4 s before fading. Flash = glow sphere intensity 3x for 3 frames. Instanced debris with gravity, dust emitter with high drag at ground level. Exaggerate: double ring (a fast thin one and a slow thick one), taller dust curtain, longer shake, and rocks that bounce."
+  },
+  {
+    "id": "c-ue5-niagara-fireball-projectile",
+    "name": "Layered fireball projectile with rock core and flame shell",
+    "source": { "title": "How to design and animate a fireball VFX in Unreal Engine 5 (80.lv)", "url": "https://80.lv/articles/how-to-design-and-animate-a-fireball-vfx-in-unreal-engine-5", "kind": "breakdown" },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "fire",
+    "durationSec": 2.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.3, "what": "small burst at the caster, fireball spawns" },
+      { "name": "release", "start": 0.3, "end": 1.4, "what": "fireball travels with a fire tail, sparks and a shell around a core" },
+      { "name": "impact", "start": 1.4, "end": 1.7, "what": "collision triggers a separate burst system" },
+      { "name": "aftermath", "start": 1.7, "end": 2.0, "what": "trail particles finish their lifetimes" }
+    ],
+    "layers": [
+      { "part": "mesh-projectile", "phase": "release", "blend": "normal", "colors": ["#2a1a14", "#6a3012"], "motion": "slowly rotating rock sphere at the centre", "notes": "dark core gives contrast so the fire reads bright" },
+      { "part": "mesh-projectile", "phase": "release", "blend": "additive", "colors": ["#ffb43c", "#ff5a10", "#7a1a05"], "motion": "outer shell mesh with scrolling distorted noise and dissolve, counter-rotating", "notes": "shell is the main fire read; use two opposing meshes so the texture shows from both sides" },
+      { "part": "emitter-embers", "phase": "release", "blend": "additive", "colors": ["#ffd27a", "#ff7a1a", "#8a2206"], "motion": "flame sprites trailing behind, small at birth and death, large at mid-life, drag 1", "notes": "size and alpha curves are what make the tail billow rather than pop" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#fff0b0", "#ffa030"], "motion": "short-lived front sparks with strong curl-noise swirl, plus a trail of sparks with random sizes", "notes": "two separate sets: one jittery at the head, one left behind" },
+      { "part": "glow-sphere", "phase": "release", "blend": "additive", "colors": ["#ff9a2a", "#ff4a08"], "motion": "constant halo, 1.5x core size", "notes": "high emissive value (about 8x) so bloom picks it up" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffc060"], "motion": "pop and shrink in 0.1s", "notes": "separate impact system on collision" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#3a2418", "#1a110c"], "motion": "slow expansion, drag 2", "notes": "leave a trail of darkness behind the fire" }
+    ],
+    "palette": ["#ffd27a", "#ff7a1a", "#2a1a14"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Dark rock core contrasts with the additive flame shell",
+      "Randomized lifetime, size and rotation prevents visible repetition",
+      "Distortion plus dissolve on the same noise gives flowing fire without a flipbook",
+      "Dark and ice variants were made by only recolouring and slowing, so the structure is reusable"
+    ],
+    "buildNotes": "Core: dark icosphere. Shell: slightly larger icosphere with a shader that offsets UVs by noise and thresholds the same noise for dissolve; add a second copy rotating the other way. Tail: Emitter with drag 1, spawn rate 80/s, size curve 0.3 to 1 to 0, alpha in/out. Sparks: two emitters, one orbiting the head, one dropped on the path. Halo: glow sphere with emissive 8. For variants swap palette (violet/black for dark, cyan for ice with slower speed). Exaggerate: longer tail, double sparks, ground light that travels with the ball."
+  },
+  {
+    "id": "c-jangafx-seeking-arc-fireball",
+    "name": "Realistic seeking fireball with ribbon tail and random arcs",
+    "source": { "title": "VFX for Games Tutorial 03: Realistic Fireball Projectiles (JangaFX, realtimevfx)", "url": "https://realtimevfx.com/t/vfx-for-games-tutorial-03-realistic-fireball-projectiles-3-part-series/6545", "kind": "forum" },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "fire",
+    "durationSec": 1.8,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.2, "what": "ball ignites at spawner" },
+      { "name": "release", "start": 0.2, "end": 1.2, "what": "ball curves toward the target on a randomized arc, leaving ribbon fire, smoke and sparks" },
+      { "name": "impact", "start": 1.2, "end": 1.4, "what": "hit on target" },
+      { "name": "aftermath", "start": 1.4, "end": 1.8, "what": "tail smoke dissipates" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "release", "blend": "additive", "colors": ["#fff0b8", "#ff9a2a"], "motion": "leading hot core", "notes": "the leading projectile element is the brightest, smaller than the tail" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffcf70", "#ff6a14", "#5a1a08"], "motion": "ribbon following the ball, width tapering to zero, UV scroll with dissolve", "notes": "fire trail built as a ribbon, not as particles" },
+      { "part": "emitter-smoke", "phase": "release", "blend": "normal", "colors": ["#4a2e20", "#1a1210"], "motion": "left behind, expanding, drag 2, slight rise", "notes": "smoke is a separate emitter with its own dissolve; the author found dissolve preview with a levels adjustment useful for finding stuck bright patches" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#fff0b0", "#ff9a2a"], "motion": "small, shed from head with random velocity, gravity 3", "notes": "adds speed cues" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffb050"], "motion": "short pop", "notes": "keep impact fast" }
+    ],
+    "palette": ["#fff0b8", "#ff6a14", "#4a2e20"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Randomized arc paths mean multiple casts never look identical",
+      "Arc offset grows then shrinks over the first second, so it homes in on the target in a natural curve",
+      "Ribbon trail connects the ball to its path"
+    ],
+    "buildNotes": "Position = lerp(start, target, ease(t)) + perpendicular offset * sin(PI * t) * randomAmplitude (axis chosen randomly per cast, offset only during the first second). Feed the head position to a trail-ribbon with tapering width. Add smoke emitter at 40/s. Seed amplitude per cast. Exaggerate: wider arcs, add a second ball in the volley with different amplitude, make the ribbon longer than seems reasonable, and hot-white core."
+  },
+  {
+    "id": "c-electric-orb-projectile",
+    "name": "Procedural electric orb projectile",
+    "source": { "title": "Tutorial: Creating Electric Orbs in Unity (80.lv, Gabriel Aguiar)", "url": "https://80.lv/articles/tutorial-creating-electric-orbs-in-unity/?amp=1", "kind": "breakdown" },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "lightning",
+    "durationSec": 1.6,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.25, "what": "orb crackles into existence" },
+      { "name": "release", "start": 0.25, "end": 1.1, "what": "orb flies with arcing strands that flicker" },
+      { "name": "impact", "start": 1.1, "end": 1.25, "what": "burst of branching arcs" },
+      { "name": "aftermath", "start": 1.25, "end": 1.6, "what": "sparks and afterglow" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#8fd8ff", "#2a6bff"], "motion": "core with fresnel rim, pulsing 12Hz", "notes": "the orb is built with a procedural shader on a 3D mesh, so it needs no texture painting" },
+      { "part": "lightning-arc", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#9fe0ff"], "motion": "shell of noise-driven strands wrapping the sphere, reseeded every 2-3 frames", "notes": "the step-seeded flicker is what makes it feel electric" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#7fd0ff"], "motion": "shed from the surface, short life, drag 1, no gravity", "notes": "tiny and fast" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#9fe0ff", "#2a6bff"], "motion": "thin jagged ribbon behind", "notes": "jitter vertices each frame" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fd8ff"], "motion": "pop and 3-4 radiating arcs", "notes": "arcs reuse the same strand shader" }
+    ],
+    "palette": ["#ffffff", "#8fd8ff", "#2a6bff"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "A shader-built orb stays crisp at any scale",
+      "Flicker at low update rate (not smooth) reads as electricity",
+      "White core with a cool rim keeps contrast"
+    ],
+    "buildNotes": "Sphere mesh with fresnel shader; animate strands by noise on view-angle and reseed time in steps of 1/20 s. Generate lightning-arc segments on a sphere (random great-circle arcs with jitter) and regenerate every 3 frames. Sparks emitter small. Exaggerate: bigger rim glow, more strands, brief bloom spike when changing seeds, and blue-violet afterimage at impact. Note: the source page was thin, so details are the standard approach to a procedural orb, not verified numbers."
+  },
+  {
+    "id": "c-rookies-meteor-strike",
+    "name": "Niagara meteor strike (shell, flash, burst, scorch)",
+    "source": { "title": "Real-time meteor strike, UE 5.6 Niagara (The Rookies project)", "url": "https://www.therookies.co/projects/92115", "kind": "artstation" },
+    "archetype": "meteor",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 3.2,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1.2, "what": "meteor descends wrapped in a burning shell" },
+      { "name": "release", "start": 1.2, "end": 1.3, "what": "contact flash" },
+      { "name": "impact", "start": 1.3, "end": 2.0, "what": "sparks, dust shockwave and rocks burst out" },
+      { "name": "aftermath", "start": 2.0, "end": 3.2, "what": "scorch mark and debris stay on the ground" }
+    ],
+    "layers": [
+      { "part": "mesh-projectile", "phase": "anticipation", "blend": "normal", "colors": ["#3a2a22", "#1a120e"], "motion": "rock mesh, tumbling, falling on a diagonal", "notes": "main meteor body" },
+      { "part": "emitter-embers", "phase": "anticipation", "blend": "additive", "colors": ["#fff0b0", "#ff7a1a", "#7a2008"], "motion": "three emitters: hot flame skin, ember shed, trailing fire; drag 1, velocity opposite travel", "notes": "the shell is three emitters, not one" },
+      { "part": "emitter-smoke", "phase": "anticipation", "blend": "normal", "colors": ["#3a2418", "#120c09"], "motion": "long trail along the path, expanding", "notes": "visible trajectory helps the player read where it lands" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffd27a"], "motion": "pop on contact", "notes": "separate from the burst" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#fff0b0", "#ff9a2a"], "motion": "radial burst, gravity 8, stretched", "notes": "one of three burst emitters" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "normal", "colors": ["#8a7458", "#4a3d2e"], "motion": "low expanding dust ring", "notes": "dust shockwave emitter" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#4a3a2c", "#2a1f17"], "motion": "scattered rocks, collide with ground, gravity 14", "notes": "only these need collision; everything else is non-colliding to save cost" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "normal", "colors": ["#0e0a08", "#3a1a08"], "motion": "scorch fades in, embers glow in it for 1s", "notes": "two ground-mark emitters: scorch and debris" },
+      { "part": "camera-shake", "phase": "release", "blend": "normal", "colors": ["#ffffff"], "motion": "0.5s decaying", "notes": "heavy" }
+    ],
+    "palette": ["#fff0b0", "#ff7a1a", "#3a2418"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "Clear sequence: fall, flash, burst, scar",
+      "Several small emitters for one part gives richer shell than one big sprite",
+      "Aftermath stays in the world, so impact has weight"
+    ],
+    "buildNotes": "Spawn the rock 40 units up and 25 sideways, falling over 1.2 s with ease-in. Shell = 3 emitters attached to the rock. On y=0 contact: flash (0.1 s), burst (sparks, dust ring, instanced rocks), scorch decal that fades over 4 s, shake 0.5 s. Show a ground telegraph during the fall. Exaggerate: bigger rock, a double flash, a low-frequency shake, rocks that bounce, and a column of dust that rises."
+  },
+  {
+    "id": "c-wow-flamestrike-ground",
+    "name": "Flamestrike ground fire with circle and cracks",
+    "source": { "title": "Sarah Carmody, World of Warcraft Legion reel 2016 (realtimevfx forum thread)", "url": "https://realtimevfx.com/t/sarah-carmody-world-of-warcraft-legion-reel-2016/866", "kind": "forum" },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 3.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.25, "what": "arcane circle appears; commenters wished for a pulse or ground glow here" },
+      { "name": "release", "start": 0.25, "end": 0.4, "what": "fire erupts instantly, because damage lands on frame 0" },
+      { "name": "impact", "start": 0.4, "end": 1.6, "what": "columns of flame roil across the circle" },
+      { "name": "aftermath", "start": 1.6, "end": 3.0, "what": "cracked, glowing ground and embers remain" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "anticipation", "blend": "additive", "colors": ["#ffd27a", "#ff7a1a"], "motion": "draws in and rotates slowly, brightens on trigger", "notes": "the circle shape tells the damage area" },
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#ff9a2a", "#7a2008"], "motion": "ground pulse 0.2s before eruption", "notes": "the forum's suggestion to restore anticipation" },
+      { "part": "light-pillar", "phase": "impact", "blend": "additive", "colors": ["#fff0b0", "#ff7a1a", "#7a2008"], "motion": "tall flame columns rising, scrolling noise, dissolve at top; many at random positions inside the radius", "notes": "bright inside, darker edges" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "additive", "colors": ["#ffd27a", "#ff6a14"], "motion": "rise with turbulence, gravity -3, drag 1", "notes": "embers add height" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#2a1a12", "#0c0806"], "motion": "slow rise", "notes": "keeps the scene dark and the fire contrasty" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "normal", "colors": ["#ff5a10", "#1a0e08"], "motion": "cracks glow orange then cool to black over 1.5s", "notes": "praised in the thread: cracks make the aftermath feel strong" },
+      { "part": "light", "phase": "impact", "blend": "additive", "colors": ["#ff8a30"], "motion": "flickering orange point light", "notes": "shifts at random 10Hz" }
+    ],
+    "palette": ["#fff0b0", "#ff7a1a", "#1a0e08"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "Immediate impact respects gameplay but a ground pulse still gives the eye a tell",
+      "The cracks glowing then cooling gives time-based storytelling",
+      "Several flame columns at random heights vary silhouette"
+    ],
+    "buildNotes": "Rune circle ring mesh + a pulse (scale 1.0 to 1.05, bright) 0.15 s before the columns. Spawn 12-20 light-pillar columns with random height 2-5 and 0.1 s stagger. Scrolling-noise shader with vertical gradient. Cracks: radial crack decal with emissive that interpolates orange to black. Exaggerate: taller columns, white-hot core, big ember count, a short screen vignette of orange."
+  },
+  {
+    "id": "c-ice-spikes-eruption",
+    "name": "Ice spike eruption with fog, snow and ground frost",
+    "source": { "title": "Ice Spikes VFX production tips and tricks (80.lv)", "url": "https://80.lv/articles/ice-spikes-vfx-production-tips-and-tricks", "kind": "breakdown" },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "ice",
+    "durationSec": 3.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.3, "what": "tiny snow burst and frost starts to spread" },
+      { "name": "release", "start": 0.3, "end": 0.6, "what": "main spikes thrust up in a wave, floor lifts slightly after them" },
+      { "name": "impact", "start": 0.6, "end": 1.5, "what": "floor breaks apart, shards and fog burst, camera shake" },
+      { "name": "aftermath", "start": 1.5, "end": 3.0, "what": "spikes stay, cold fog lingers, frost decal grows" }
+    ],
+    "layers": [
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#d8f4ff", "#6fc6ff"], "motion": "frost grows outward from the centre via sphere mask", "notes": "decal radius driven by a growing sphere mask" },
+      { "part": "mesh-projectile", "phase": "release", "blend": "normal", "colors": ["#e8fbff", "#7fd0ff", "#2a6fc0"], "motion": "modular spike meshes, wave-like rise with per-group offset so they do not move in unison, ease-out overshoot", "notes": "icy shader with a bright rim and a second large normal-like detail layer" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#cfeeff", "#4a8ac0"], "motion": "floor chunks and shards, gravity 12, spin", "notes": "floor delays slightly so it rises with the spikes' main motion" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "normal", "colors": ["#e8f6ff", "#9ccbe8"], "motion": "chill fog puffs, expand, drag 2, vary per sprite", "notes": "each puff has random offset so they differ" },
+      { "part": "emitter-embers", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff", "#bfe8ff"], "motion": "snow and shards drifting down with swirl, gravity 0.5", "notes": "snow burst accents the start and a light emitter lingers after" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "0.4s", "notes": "built around the core explosion beat" }
+    ],
+    "palette": ["#e8fbff", "#7fd0ff", "#2a6fc0"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "Core beat first, then everything else is timed around it",
+      "Offsets between spike groups make a travelling wave instead of one pop",
+      "Lingering cold fog and growing decal give a clear aftermath"
+    ],
+    "buildNotes": "Cone/prism meshes with a rim-light + fresnel material; stagger spawn by distance from centre (0.03 s per unit), each scaling y from 0 with easeOutBack. Floor shards as instanced debris. Fog as 20 big low-alpha sprites. Frost decal as ring mask growing to radius. Exaggerate: taller central spike, spikes in 2-3 sizes, white flash at the base, glittering sparkles on the spike tips."
+  },
+  {
+    "id": "c-ue4-lightning-strike-beam",
+    "name": "Lightning strike beam with endpoint-driven impact",
+    "source": { "title": "VFX breakdown: fire and lightning spell in UE4 (80.lv)", "url": "https://80.lv/articles/vfx-breakdown-fire-lightning-spell-in-ue4", "kind": "breakdown" },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "lightning",
+    "durationSec": 0.9,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.1, "what": "tiny spark at start" },
+      { "name": "release", "start": 0.1, "end": 0.2, "what": "all layers fire on the same delay value" },
+      { "name": "impact", "start": 0.2, "end": 0.5, "what": "beam flickers, smoke and embers burst at the endpoint" },
+      { "name": "aftermath", "start": 0.5, "end": 0.9, "what": "glow mark and debris settle" }
+    ],
+    "layers": [
+      { "part": "beam-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fe0ff", "#4a6bff"], "motion": "ribbon between points, colour shifts along its length, width varies", "notes": "driven by a user-set endpoint" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fd8ff"], "motion": "jagged re-seeded path every 2 frames, thin branches", "notes": "adds crackle on top of the beam" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "normal", "colors": ["#505560", "#20242c"], "motion": "puffs at the endpoint, sprite warped by noise driven by age", "notes": "smoke warping with age avoids static puffs" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "additive", "colors": ["#ffe9a0", "#ff9a2a"], "motion": "burst from endpoint, gravity 6, drag 1", "notes": "embers start where the endpoint lands" },
+      { "part": "glow-sphere", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fd8ff"], "motion": "hit mark flash then fade", "notes": "glowing hit mark" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#4a4038"], "motion": "small ground chunks, gravity 12", "notes": "ground debris" },
+      { "part": "screen-flash", "phase": "release", "blend": "additive", "colors": ["#e6f6ff"], "motion": "1-2 frames", "notes": "lightning is instantaneous" }
+    ],
+    "palette": ["#ffffff", "#9fe0ff", "#4a6bff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "Everything fires on one delay, which is how lightning feels (instant)",
+      "Colour changes along the beam length keep it interesting",
+      "Endpoint-driven emitters tie the sky to the ground"
+    ],
+    "buildNotes": "Beam = ribbon of 12-20 jittered points; regenerate jitter every 0.03 s, 3 frames. Drive impact emitters from the endpoint vector. Flash on frame 0, hold for 0.15 s with flicker, then fade parts at different rates. Exaggerate: wider white core, extra branching, 2-frame screen flash, scorch decal and a small shockwave ring."
+  },
+  {
+    "id": "c-wow-channeled-beam",
+    "name": "Channeled beam with matched hand and target effects",
+    "source": { "title": "World of Warcraft VFX overview from Luis Aguas (80.lv)", "url": "https://80.lv/articles/world-of-warcraft-vfx-overview-from-luis-aguas/", "kind": "breakdown" },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "shadow",
+    "durationSec": 3.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.4, "what": "hand effect begins on the caster" },
+      { "name": "release", "start": 0.4, "end": 0.6, "what": "beam connects" },
+      { "name": "impact", "start": 0.6, "end": 2.6, "what": "sustained beam with target-side impact" },
+      { "name": "aftermath", "start": 2.6, "end": 3.0, "what": "beam retracts, residual wisps" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#cfa8ff", "#5a2ca8"], "motion": "pulsing orb in the hand", "notes": "hand effect mirrors the target effect to visually connect them" },
+      { "part": "beam-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fe8ff", "#5a2ca8"], "motion": "scrolling noise along length, slight sine wobble", "notes": "dark base colour with cyan accents is the style used in the Drustvar witch magic" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#3a1a6a", "#8fe8ff"], "motion": "thin twisting ribbons orbiting the main beam", "notes": "gives the beam body" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#8fe8ff", "#5a2ca8"], "motion": "particles streaming along the beam, drag 0.5", "notes": "shows direction of flow" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fe8ff"], "motion": "impact sprite mirroring the hand glow, flicker", "notes": "matching hand and impact makes caster and target feel linked" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#8fe8ff"], "motion": "sprays from the impact", "notes": "keeps the endpoint busy" }
+    ],
+    "palette": ["#ffffff", "#8fe8ff", "#5a2ca8"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Three linked parts: hand, beam, impact, with matching look",
+      "Dark base layer with cyan accents makes brighter parts pop",
+      "Darker elements sit behind brighter ones"
+    ],
+    "buildNotes": "Beam = camera-facing ribbon from hand to target, recomputed each frame. Render order: dark wide ribbon (normal blend), then bright narrow additive core, then orbiting ribbons. Hand glow and impact glow share the same sprite and colour. Exaggerate: pulse the width at 6 Hz, add a lens-flare sprite at the hand, add small shake while channelling, and sparks that fly along the beam."
+  },
+  {
+    "id": "c-gnomon-charged-energy-beam",
+    "name": "Charged energy beam: charge, launch, blast and dispersal",
+    "source": { "title": "Creating a Charged Energy Beam in Unreal Engine (Gnomon Workshop, Raul Ruiz)", "url": "https://bmc.thegnomonworkshop.com/workshops/creating-a-charged-energy-beam-in-unreal-engine", "kind": "talk" },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "tech",
+    "durationSec": 3.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1.2, "what": "energy gathers into a growing orb at the muzzle" },
+      { "name": "release", "start": 1.2, "end": 1.4, "what": "beam launches" },
+      { "name": "impact", "start": 1.4, "end": 2.6, "what": "beam holds, blast at the target" },
+      { "name": "aftermath", "start": 2.6, "end": 3.5, "what": "dispersal and glow fade" }
+    ],
+    "layers": [
+      { "part": "emitter-wisps", "phase": "anticipation", "blend": "additive", "colors": ["#bfe8ff", "#2a8cff"], "motion": "particles pulled inward to the muzzle, accelerating, negative drag", "notes": "inward motion before outward is the classic charge tell" },
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#5ab4ff"], "motion": "grows with ease-in until launch", "notes": "growth speed is the build-up" },
+      { "part": "beam-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#5ab4ff", "#1a3cc0"], "motion": "fast scroll, mask falloff at both ends, noise breakup", "notes": "course covers masks, falloffs, breakup and noise shaping" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff"], "motion": "muzzle flash 0.1s", "notes": "marks the launch" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#bfe8ff", "#2a8cff"], "motion": "ring expands at target", "notes": "blast phase" },
+      { "part": "emitter-sparks", "phase": "aftermath", "blend": "additive", "colors": ["#bfe8ff"], "motion": "dispersal, drag 1.5, gravity 2", "notes": "particles outlast the beam" },
+      { "part": "screen-flash", "phase": "release", "blend": "additive", "colors": ["#e6f6ff"], "motion": "2 frames", "notes": "optional" }
+    ],
+    "palette": ["#ffffff", "#5ab4ff", "#1a3cc0"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "Long charge builds expectation, short release gives payoff",
+      "Falloff mask at beam ends avoids hard geometry edges",
+      "Dispersal beat gives the effect a soft end"
+    ],
+    "buildNotes": "Charge: emitter with particles spawned on a sphere shell with velocity toward the centre; the glow sphere radius from 0.1 to 0.8 with easeInQuad. Launch: cylinder/ribbon with scrolling noise texture, alpha mask smoothstep at both ends. Blast: ring + sparks + glow at the target. Exaggerate: longer charge with rising pitch cue, camera zoom/pull during the launch, a beam that is 3x too thick for 0.15 s then thins. Only the course overview page was readable, so phase timings are estimates."
+  },
+  {
+    "id": "c-flipbook-lightning-bolt-spell",
+    "name": "Flipbook lightning bolt with staged fade",
+    "source": { "title": "Elemental effects thread (realtimevfx forum)", "url": "https://realtimevfx.com/t/elemental-effects/5094", "kind": "forum" },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 0.8,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.15, "what": "swirl and tiny particles around the caster sphere" },
+      { "name": "release", "start": 0.15, "end": 0.25, "what": "initial bright flash of the full bolt" },
+      { "name": "impact", "start": 0.25, "end": 0.55, "what": "bolt flickers, pieces drop out" },
+      { "name": "aftermath", "start": 0.55, "end": 0.8, "what": "a frame or two of sparse leftover fragments" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#9fe0ff"], "motion": "source orb with a visible connection to the bolt", "notes": "feedback: the bolt needs a visible link to where it starts" },
+      { "part": "lightning-arc", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#9fe0ff", "#4a6bff"], "motion": "flipbook-like frames: reroll every 2 frames; start segment straighter, more distortion toward the far end", "notes": "also remove in-between frames to force flicker with high contrast shapes" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#cfeeff"], "motion": "chain jump to the next target, 80ms stagger", "notes": "small fragments fade first, main bolt lasts a few frames longer" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fe0ff"], "motion": "burst of dots with strong motion, drag 2", "notes": "dot motion was praised" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff"], "motion": "flash at each hit", "notes": "randomize spawn timing: uniform waves look robotic" }
+    ],
+    "palette": ["#ffffff", "#9fe0ff", "#4a6bff"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Fragments fade at different times instead of the whole bolt fading as one",
+      "Randomized flash timing breaks mechanical rhythm",
+      "A last sparse frame makes the ending feel analog"
+    ],
+    "buildNotes": "Segment the bolt into pieces (each with its own life 0.1-0.25 s); fade smaller branches first, trunk lasts 2-3 frames longer. Chain: after the first hit wait 0.08 s +/- 0.03 and spawn the next arc to the nearest enemy. Reroll jitter every 2 frames. Keep the first segment near-straight. Exaggerate: wider bloom, 1-frame white screen flash per jump, thicker trunk for the first 3 frames."
+  },
+  {
+    "id": "c-electric-blast-branching-ground",
+    "name": "Electric blast with volumetric bolts and glowing ground furrows",
+    "source": { "title": "Electric Blast, Houdini and Niagara (realtimevfx forum)", "url": "https://realtimevfx.com/t/electric-blast-houdini-and-niagara-forever/29422", "kind": "forum" },
+    "archetype": "chain",
+    "targeting": "ground",
+    "element": "lightning",
+    "durationSec": 1.8,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.1, "what": "none, the strike is near instant" },
+      { "name": "release", "start": 0.1, "end": 0.2, "what": "main bolt volume appears" },
+      { "name": "impact", "start": 0.2, "end": 0.9, "what": "residual bolts spread and central wave expands, furrows glow" },
+      { "name": "aftermath", "start": 0.9, "end": 1.8, "what": "floor furrows and sparks fade" }
+    ],
+    "layers": [
+      { "part": "lightning-arc", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#9fe0ff", "#6a4bff"], "motion": "volumetric main bolt, random rotation per cast so it reads from every angle", "notes": "overall shape matters more than fine detail" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#cfeeff", "#6a4bff"], "motion": "residual branches spreading outward from the base", "notes": "second mesh adds volume, sprites add detail" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fe0ff"], "motion": "small masked particles, drag 1", "notes": "masked, not alpha composite" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#cfeeff", "#4a6bff"], "motion": "central wave with large-scale noise", "notes": "ground wave" },
+      { "part": "ground-decal", "phase": "impact", "blend": "additive", "colors": ["#9fe0ff", "#2a3cc0"], "motion": "furrows radiating from the centre glow from within and fade", "notes": "author said glow on small floor elements made an immediate improvement" },
+      { "part": "light", "phase": "impact", "blend": "additive", "colors": ["#9fe0ff"], "motion": "flicker", "notes": "grounding" }
+    ],
+    "palette": ["#ffffff", "#9fe0ff", "#6a4bff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "Strong silhouette first, detail second",
+      "Floor interaction (glowing furrows) anchors the effect in the world",
+      "Randomized rotation avoids a single flat view"
+    ],
+    "buildNotes": "Generate a branching bolt (recursive midpoint displacement, 3 levels) as thin ribbons, rotate randomly around the vertical axis per cast. Spawn 6-8 ground branch ribbons radiating on the floor, each with an emissive glow that fades over 1 s. Keep ribbon count low (the author hit 200-500 particles with 10 ribbon tracks). Exaggerate: double the number of ground furrows, add a white-blue flash, glow on all small elements, and floor sparks."
+  },
+  {
+    "id": "c-mesh-sweep-weapon-slash",
+    "name": "Mesh sweep slash with panning texture and lag",
+    "source": { "title": "UE4 weapon slash: meshes vs AnimTrail data (realtimevfx forum)", "url": "https://realtimevfx.com/t/ue4-weapon-slash-meshes-vs-animtrail-data/5628", "kind": "forum" },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "other",
+    "durationSec": 0.6,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.12, "what": "wind-up, faint trail only" },
+      { "name": "release", "start": 0.12, "end": 0.2, "what": "sweep mesh snaps in and swings" },
+      { "name": "impact", "start": 0.2, "end": 0.3, "what": "hit sparks and flash at the contact point" },
+      { "name": "aftermath", "start": 0.3, "end": 0.6, "what": "slash arc dissolves from tail to head" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "anticipation", "blend": "additive", "colors": ["#cfeeff", "#6fa8ff"], "motion": "thin ribbon off the blade tip", "notes": "animation trail data gives sections only per animation frame, so keep it a minor layer" },
+      { "part": "mesh-projectile", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#bfe0ff", "#4a7bff"], "motion": "flat curved sweep mesh with panning texture, head bright, tail dissolving, lags slightly behind the blade", "notes": "full control over look at every point; remade if the animation changes" },
+      { "part": "distortion", "phase": "release", "blend": "normal", "colors": ["#ffffff"], "motion": "refraction on the same sweep shape", "notes": "warps the background, adds sharpness" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffd27a"], "motion": "stretched sparks along the slash tangent, drag 2, gravity 4", "notes": "tangent-direction spray" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff"], "motion": "short flash with a thin line streak", "notes": "line-shaped flash instead of a round one" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "0.12s", "notes": "tiny hit-stop style kick" }
+    ],
+    "palette": ["#ffffff", "#bfe0ff", "#4a7bff"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Hand-shaped sweep gives clean arcs instead of jagged anim trails",
+      "Fast bright head and long dissolving tail suggest speed",
+      "Line-shaped hit flash matches the slash direction"
+    ],
+    "buildNotes": "Build a crescent ring segment mesh (inner/outer radius with taper), UV.x along the arc. Shader: pan texture, alpha = smoothstep along UV.x moving with time so the head leads and the tail erodes. Rotate it from -70 to +70 degrees with easeOutExpo in 0.12 s. Hit: streak flash plus 20 stretched sparks. Exaggerate: double arc with an offset second slash, bigger arc radius, hit-stop freeze of 2 frames, chromatic distortion."
+  },
+  {
+    "id": "c-unity-summon-circle",
+    "name": "Summon circle with idle embers and spiralling burst",
+    "source": { "title": "Summon Circle, Unity VFX Graph (The Rookies project)", "url": "https://www.therookies.co/projects/101617", "kind": "artstation" },
+    "archetype": "summon",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 3.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1.0, "what": "idle: circle rotating slowly with a low rate of embers" },
+      { "name": "release", "start": 1.0, "end": 1.2, "what": "trigger: burst begins at the centre" },
+      { "name": "impact", "start": 1.2, "end": 2.2, "what": "particles rise and spiral around the vertical axis, trails behind them" },
+      { "name": "aftermath", "start": 2.2, "end": 3.0, "what": "circle dims, embers die back" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "anticipation", "blend": "additive", "colors": ["#ffd27a", "#ff7a1a", "#7a2008"], "motion": "slow rotation about y, brightness pulses at trigger", "notes": "kept readable by keeping ember count low" },
+      { "part": "emitter-embers", "phase": "anticipation", "blend": "additive", "colors": ["#ffb43c", "#ff5a10"], "motion": "low rate, rise, gravity -1.5, drag 0.8", "notes": "idle life without clutter" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#fff0b0", "#ff7a1a"], "motion": "large burst from centre, spiral around the y axis with turbulence, rising speed 4", "notes": "turbulence gives irregular motion; spiral shows energy released" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffd27a", "#7a2008"], "motion": "trails on particles", "notes": "trails make the spiral visible" },
+      { "part": "light-pillar", "phase": "impact", "blend": "additive", "colors": ["#ffe9a0", "#ff7a1a"], "motion": "vertical column fading at the top", "notes": "my addition to make the burst more readable" },
+      { "part": "light", "phase": "impact", "blend": "additive", "colors": ["#ff8a30"], "motion": "rises with the burst", "notes": "ground reacts" }
+    ],
+    "palette": ["#fff0b0", "#ff7a1a", "#7a2008"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Idle versus triggered states give the effect a clear before and after",
+      "Four independent systems layered keep each simple",
+      "Low idle density leaves the circle legible"
+    ],
+    "buildNotes": "Four independent groups: circle mesh/decal, idle Emitter, burst Emitter with a tangential velocity (cross(up, radial)) plus upward speed and curl noise, and a trail renderer. Trigger at t=1.0. Exaggerate: circle flares to 3x brightness on trigger, a second counter-spinning circle, an outward ring pulse, and a flash on the central point."
+  },
+  {
+    "id": "c-ue5-triangle-portal",
+    "name": "Triangular fire portal with absorbed debris",
+    "source": { "title": "UE5 Niagara portal (The Rookies project)", "url": "https://www.therookies.co/projects/92286", "kind": "artstation" },
+    "archetype": "summon",
+    "targeting": "ground",
+    "element": "void",
+    "durationSec": 3.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.6, "what": "frame outline draws in from particles" },
+      { "name": "release", "start": 0.6, "end": 0.9, "what": "centre core opens" },
+      { "name": "impact", "start": 0.9, "end": 3.0, "what": "rotating fire ring, inward-moving pattern, rocks pulled into the core" },
+      { "name": "aftermath", "start": 3.0, "end": 3.5, "what": "closing and fade" }
+    ],
+    "layers": [
+      { "part": "emitter-wisps", "phase": "anticipation", "blend": "additive", "colors": ["#e8c8ff", "#a04bff"], "motion": "particles spawned on the triangle frame edge, held in place, flaring", "notes": "a custom spawn on a mesh surface kept the outline clean; spawn on the shape perimeter" },
+      { "part": "rune-circle", "phase": "impact", "blend": "additive", "colors": ["#ff9a4a", "#a04bff", "#2a0a55"], "motion": "rotating ring planes with main texture + distortion + dissolve blended, params exposed live", "notes": "two stacked planes counter-rotating" },
+      { "part": "glow-sphere", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#c88cff"], "motion": "minimal soft core, blurred triangle shape", "notes": "a minimal centre that opens at release" },
+      { "part": "distortion", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "rotating pattern pulling inward", "notes": "suggests matter being pulled in" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#4a3a4a", "#2a1f2a"], "motion": "rocks spiral inward and shrink to zero near the core", "notes": "absorbed debris is the final emitter" },
+      { "part": "light", "phase": "impact", "blend": "additive", "colors": ["#a04bff"], "motion": "pulsing", "notes": "tint the surroundings" }
+    ],
+    "palette": ["#e8c8ff", "#a04bff", "#2a0a55"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Build order starts with the shape, then adds detail layers outward",
+      "A non-circular frame gives a unique silhouette",
+      "Inward-moving matter shows the portal is active"
+    ],
+    "buildNotes": "Triangle frame = tube/ribbon along the three edges with scrolling flame noise; particles spawned along edges. Ring planes with the dissolve/distortion shader rotating +/-30 deg/s. Debris as instanced rocks with position = lerp(start, centre, t^2), scale -> 0. Exaggerate: bigger debris count, light spill on the ground, a flare when the portal opens, and a camera pull-in."
+  },
+  {
+    "id": "c-ue4-energy-shield-dome",
+    "name": "Energy shield with panning panels, shards and attracted crystals",
+    "source": { "title": "VFX breakdown: fire and lightning spell in UE4, shield layer (80.lv)", "url": "https://80.lv/articles/vfx-breakdown-fire-lightning-spell-in-ue4", "kind": "breakdown" },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "arcane",
+    "durationSec": 4.0,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.3, "what": "ring and crystals gather around the caster" },
+      { "name": "release", "start": 0.3, "end": 0.6, "what": "dome pops open with a flash" },
+      { "name": "impact", "start": 0.6, "end": 3.4, "what": "steady shield with panels scrolling and crystals drifting up" },
+      { "name": "aftermath", "start": 3.4, "end": 4.0, "what": "panels break into debris, crystals fall back" }
+    ],
+    "layers": [
+      { "part": "mesh-projectile", "phase": "impact", "blend": "additive", "colors": ["#bfe8ff", "#4a8cff", "#1a2a80"], "motion": "hemisphere with four panel variants at different panning speeds, one ambient and others more aggressive, each its own colour and intensity", "notes": "scrolling noise textures create the energy look" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fd8ff"], "motion": "particles spawn on the hemisphere surface, drift and fade", "notes": "hemisphere-shaped spawn matches the dome" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "additive", "colors": ["#e8fbff", "#7fd0ff"], "motion": "crystal sprites rise, fade, and are pulled toward the caster by an attractor", "notes": "floating crystals add depth" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#8fd8ff"], "motion": "pop as dome opens", "notes": "marks activation" },
+      { "part": "mesh-debris", "phase": "aftermath", "blend": "additive", "colors": ["#8fd8ff", "#1a2a80"], "motion": "panel pieces break off, gravity 6, fade", "notes": "debris breaking off" },
+      { "part": "ring-shockwave", "phase": "release", "blend": "additive", "colors": ["#bfe8ff"], "motion": "ring at the ground expanding to the dome radius", "notes": "gives the base" },
+      { "part": "light", "phase": "impact", "blend": "additive", "colors": ["#6fb0ff"], "motion": "constant soft", "notes": "bloom and a slightly reflective ground made the effect stand out" }
+    ],
+    "palette": ["#bfe8ff", "#4a8cff", "#1a2a80"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "Several scroll speeds of the same texture give depth without extra textures",
+      "Attracted crystals tie the dome to the caster",
+      "Break-up debris at the end gives a clear off-state"
+    ],
+    "buildNotes": "Hemisphere with fresnel plus 4 stacked shells (scale 1.00, 1.01, 1.02, 1.03) each scrolling a hex/noise texture at different speed and tint. Particle spawn on dome surface; crystals use a spring toward the caster. Ground ring at base. Exaggerate: brighter fresnel rim, ripples that hit when something strikes, shatter into 30 shards on expiry, and a stronger bloom."
+  }
+]

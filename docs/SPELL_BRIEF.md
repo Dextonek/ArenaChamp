@@ -29,6 +29,7 @@ original visuals. Spell names as labels are fine. Do not copy Blizzard icon art,
   `THREE.Points` or `InstancedMesh`. **Use the optional look settings:** `colorMid` (3-stop hot → saturated →
   cool), `sizeJitter` (0.3–0.5), `erosion` (0.4–0.65 for fire/smoke/dust/magic wisps; 0 for sparks), `spin`,
   `groundFade` (~0.3 for particles that settle on the ground).
+- `docs/ART_BIBLE.md` — our look and palettes; read it before anything else.
 - `docs/VFX_PRINCIPLES.md` — the layering checklist every spell should satisfy.
 - **Reference spell: `src/spells/paladin/judgment.ts`.** Copy its structure exactly: settings interface +
   `defaultX()`, `time`-driven timeline, `play()` → `reset()`, `update(dt)` always updates emitters even when not

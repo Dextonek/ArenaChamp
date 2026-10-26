@@ -57,6 +57,7 @@ export function createGround(radius = 60): THREE.Mesh {
     new THREE.MeshStandardMaterial({ color: 0x23262d, roughness: 0.95, metalness: 0 }),
   );
   ground.rotation.x = -Math.PI / 2;
+  ground.name = 'ground'; // play mode hides an effect's own ground and uses the arena's
   return ground;
 }
 

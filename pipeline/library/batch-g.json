@@ -1,0 +1,441 @@
+[
+  {
+    "id": "g-hiyuki-frost-slash-flurry",
+    "name": "Frost slash flurry: 2D cut-in panel, then a wide shot of crescent slashes over a frost-splatter floor with a dark shard dome",
+    "source": {
+      "title": "Thonato (user reference video)",
+      "url": "http://user-reference.local/Thonato_-_Hiyuki_sound_design_aka_modernized_ps2_ass_sounds_xd_VFX_PeidyDev_j4vXHs.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/Thonato_-_Hiyuki_sound_design_aka_modernized_ps2_ass_sounds_xd_VFX_PeidyDev_j4vXHs.mp4",
+      "kind": "video"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "ice",
+    "durationSec": 2.4,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.25, "what": "video 0:00.0-0:02.4. Wide, low shot of the swordsman in a dark blue night arena, one thin white blade glint along the sword; nothing else on screen" },
+      { "name": "release", "start": 0.25, "end": 0.6, "what": "hard cut to a flat full-screen cut-in panel: saturated cyan/teal field with one huge diagonal white-cream blade stroke (0:00.25), then the panel shatters into jagged white and blue 2D shards that fly past camera (0:00.4-0:00.6)" },
+      { "name": "impact", "start": 0.6, "end": 1.9, "what": "cut back to the 3D wide shot: 6-8 fast thin white slash lines and crescent arcs criss-cross the character, the floor is covered in a white frost-splatter decal with radial streaks, a half-dome of dark broken shards snaps up behind the character on two beats (0:01.1 and 0:01.75), and on each beat the character flashes to a flat saturated-blue silhouette" },
+      { "name": "aftermath", "start": 1.9, "end": 2.4, "what": "flakes keep drifting, the splatter fades, the whole frame fades to black over 0.4 s (scene transition into the next cutscene)" }
+    ],
+    "layers": [
+      { "part": "screen-flash", "phase": "release", "blend": "normal", "colors": ["#2fa4e8", "#0b6fb0", "#fff4d8"], "motion": "full-screen flat colour panel for 2 frames with one diagonal cream blade shape, then broken into 10-15 shards that scale up and fly toward camera over 0.25 s", "notes": "a 2D cut-in card instead of a 3D flash: flat colours, no gradients, hard polygon edges" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#bfe4ff", "#5a8cff"], "motion": "6-8 thin slash lines and crescent arcs at random angles around the target, each drawn in 2 frames and erased in 3, staggered ~0.12 s", "notes": "very thin and long (3-5 m) so they read as cuts, never as glows" },
+      { "part": "ground-decal", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fc8ff", "#2a4fa8"], "motion": "frost-splatter disc ~8 m with radial brush streaks, appears at full size in 1 frame, opacity flickers on each slash beat, fades over 0.6 s", "notes": "the floor lights up white so the dark character pops against it; radial streaks point at the target" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#0a1430", "#1c2c5a"], "motion": "half-dome of 12-16 tall dark shard slabs arranged on a 5 m arc behind the target, pop up in 2 frames on each beat and sink back in 0.2 s", "notes": "dark shapes frame the bright floor and character from behind like a stage set" },
+      { "part": "core-flash", "phase": "impact", "blend": "normal", "colors": ["#1f2fff", "#ffffff"], "motion": "target turns into a flat saturated-blue silhouette with a white rim for 2 frames on each big beat", "notes": "colour-swap of the target instead of a white flash: the hit reads without blowing out the frame" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#cfe6ff"], "motion": "flat white ice flakes, random rotation, slow fall with gravity 1, drag 2, life 1.2 s", "notes": "flakes, not streaks: snow-like flecks keep the air busy between slashes" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "small sharp shakes on each slash beat, one bigger shake on the two dome beats", "notes": "" },
+      { "part": "screen-flash", "phase": "aftermath", "blend": "normal", "colors": ["#000000"], "motion": "fade to black over 0.4 s", "notes": "clean exit that doubles as the cut into the finisher cutscene" }
+    ],
+    "palette": ["#0a1430", "#2a4fa8", "#2fa4e8", "#bfe4ff", "#ffffff", "#1f2fff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "The 0.35 s flat cyan cut-in panel tells the viewer 'special move' before any 3D effect plays: it works like a manga panel inserted between gameplay frames",
+      "The floor, not the air, is the brightest surface: a white frost splatter under a dark character gives a strong silhouette without any glow",
+      "The dark shard dome behind the target frames the action and only appears on the two heavy beats, so the flurry has a rhythm (many light cuts, two heavy)",
+      "The target flashing flat saturated blue instead of white keeps the whole effect inside one hue family"
+    ],
+    "buildNotes": "Video 0:00.0-0:02.4. Camera: start on a low wide shot; at 0.25 s overlay a full-screen orthographic quad (flat cyan with one cream diagonal blade polygon) for 0.15 s, then split that card into ~12 triangle shards that scale 1 -> 1.6 and fly outward over 0.2 s (a screen-space shard pass, or a camera-attached plane of instanced triangles). Back in world: slash lines are thin quads with an alpha-erosion shader (erode from tail to tip over 3 frames), spawn 6-8 at random yaw/roll around the target 0.12 s apart. Floor: one ground-decal sprite with a radial streak texture, additive white/blue, flicker opacity on each beat. Dome: instanced debris of 14 tall thin dark boxes on a 160 degree arc behind the target (relative to camera), tween scale-y 0 -> 1 in 2 frames on beats at 0.5 s and 1.15 s, then sink. Target colour swap: swap the dummy material to flat #1f2fff for 2 frames. Emitter: flat flakes with spin, gravity 1, drag 2. Fade to black via FinishPass at the end. Exaggerate the cut-in: make the blade stroke cover half the screen."
+  },
+  {
+    "id": "g-hiyuki-frozen-orb-shatter-finisher",
+    "name": "Frozen orb finisher cutscene: black-void orb close-up, ink impact frames, giant crystal shatter and whiteout",
+    "source": {
+      "title": "Thonato (user reference video)",
+      "url": "http://user-reference.local/Thonato_-_Hiyuki_sound_design_aka_modernized_ps2_ass_sounds_xd_VFX_PeidyDev_j4vXHs.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/Thonato_-_Hiyuki_sound_design_aka_modernized_ps2_ass_sounds_xd_VFX_PeidyDev_j4vXHs.mp4",
+      "kind": "video"
+    },
+    "archetype": "other",
+    "targeting": "enemy",
+    "element": "ice",
+    "durationSec": 6.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 2.0, "what": "video 0:02.4-0:08.9 (white hold until ~0:11.5 trimmed). 0.4 s of pure black, then a cut to a pure-black void: a white-blue orb at screen centre inside 4-5 concentric thin rings, a red ribbon and a rainbow arc sweep around it, a horizontal lens streak and 2-3 white capsule bars slide in; the camera holds and slowly pushes in for 1.6 s while flecks drift" },
+      { "name": "release", "start": 2.0, "end": 2.75, "what": "cut to a close-up of the character drawing the sword (0.25 s), then 2-3 frames of pure black-and-white ink impact frames (jagged black shapes on white), then one thin white slash line across a black screen with crystal shards bursting from it" },
+      { "name": "impact", "start": 2.75, "end": 5.5, "what": "low-angle shot of the target encased in dark blue crystal slabs with a white sun-burst behind; at 3.5 s a giant ice crystal spire, white vertical capsule bars flying in from both sides, red streaks and a central white star; at 4.25 s a second set of B/W ink frames (black brush streaks on white, a thin crosshair line), then the crystal shatters into shards with a growing white glare" },
+      { "name": "aftermath", "start": 5.5, "end": 6.5, "what": "the glare fills the screen: full white with a soft grey vignette, held, then (in the video) a fade to black" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#c8d8ff", "#4a5cc0"], "motion": "orb fixed at screen centre, slow pulse 0.9-1.0 scale, 4-5 thin concentric rings rotating at different speeds", "notes": "set on a pure black background so the orb is the only value in frame" },
+      { "part": "trail-ribbon", "phase": "anticipation", "blend": "additive", "colors": ["#ff2a3a", "#ff8a30", "#2a6aff", "#3aff9a"], "motion": "one red smoke-like ribbon and one rainbow arc sweep in a wide circle around the orb over 0.6 s, then fade", "notes": "the only non-blue colours in the shot; a complementary accent sweeping past" },
+      { "part": "light", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#9ab8ff"], "motion": "horizontal anamorphic lens streak through the orb plus 2-3 rounded white capsule bars that slide in from the edges and stop", "notes": "graphic UI-like bars make the shot feel designed, like a title card" },
+      { "part": "screen-flash", "phase": "release", "blend": "normal", "colors": ["#000000", "#ffffff"], "motion": "2-3 frames of pure black/white ink frames: jagged black polygons on white, then inverted", "notes": "zero colour for 3 frames resets the eye before the blue crystal shot" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#1a2a8a", "#3a5cff", "#dfe8ff"], "motion": "tall angular crystal slabs around the target, then shatter outward toward camera with spin, drag 1.5", "notes": "dark saturated blue crystals with white edge highlights; hard faceted shapes" },
+      { "part": "light-pillar", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#c8d4ff"], "motion": "6 white rounded capsule bars fly in vertically from both sides of the frame and lock in place around the target for 0.7 s", "notes": "reads like a cage closing; strong vertical rhythm" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff3a5a"], "motion": "white four-point star at the target with thin red streaks crossing it, then grows into full glare", "notes": "" },
+      { "part": "screen-flash", "phase": "aftermath", "blend": "normal", "colors": ["#ffffff", "#9a9a9a"], "motion": "white fills the screen with a soft grey vignette, held ~1 s, then fade to black", "notes": "whiteout as the exit: the kill happens off-screen inside the white" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "heavy shake on the first frame after each ink-frame pair", "notes": "" }
+    ],
+    "palette": ["#000000", "#1a2a8a", "#3a5cff", "#c8d8ff", "#ffffff", "#ff2a3a"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "The orb shot happens in a black void, not in the arena: removing the environment for 1.6 s makes the next return to 3D feel like a hit",
+      "The camera holds still on the orb far longer than gameplay would allow; the stillness is the anticipation",
+      "Two ink-frame pairs split the finisher into 'cut' and 'shatter' beats, so a 6 s sequence reads as two clear hits",
+      "White capsule bars are a non-diegetic graphic that cages the target; they make the shot look composed rather than simulated",
+      "Ending on a held white screen means the effect never has to show its own clean-up"
+    ],
+    "buildNotes": "Video 0:02.4-0:08.9 (then white hold). This needs a scripted camera and a 'void' set. 0-0.4 s: FinishPass fade to black. 0.4-2.0 s: hide the arena (or render a camera-facing black backdrop plane behind a separate group) and place the orb GlowSphere 3 m in front of the camera; 5 createRing rings at different radii, each spinning on z at its own speed; one red trail-ribbon and one rainbow-gradient ribbon on a circular path; a horizontal stretched additive quad as lens streak; 3 rounded-rect white quads sliding in with ease-out. Push the camera in 15% over 1.6 s. 2.0 s: cut to a close-up of the caster (camera 1.5 m from the chest, low angle). 2.25 s: three FinishPass frames: black/white posterised ink frame (threshold the scene to 2 values plus a jagged black polygon overlay), then the inverse. 2.5 s: black screen with a single thin white slash quad across it and a shard burst from its centre. 2.75 s: restore the arena, camera low behind the target looking up; spawn instanced crystal slabs (dark blue MeshStandard with white rim) around the target. 3.5 s: tall crystal spire mesh, 6 white capsule quads fly in from screen edges and lock. 4.25 s: second ink-frame pair with brush-streak overlay and a thin crosshair line. 4.6 s: shatter the crystals (debris emitter with spin and drag) and ramp FinishPass white to 100% by 5.5 s, hold, fade to black. Exaggerate the void: no ground, no sky, nothing but the orb."
+  },
+  {
+    "id": "g-fuga-fire-arrow-pillar",
+    "name": "Fuga-style fire arrow: swirling flame charge, fire bow ring, black-ribbon release and a towering fire pillar at the target",
+    "source": {
+      "title": "A (user reference video)",
+      "url": "http://user-reference.local/A_-_Fuga_Vfx_robloxvfx_vfx_ROBLOX_robloxdev_FRONTPAGE_JujutsuKaisen_NlXqK7.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/A_-_Fuga_Vfx_robloxvfx_vfx_ROBLOX_robloxdev_FRONTPAGE_JujutsuKaisen_NlXqK7.mp4",
+      "kind": "video"
+    },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "fire",
+    "durationSec": 5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 2.25, "what": "video 0:07.0-0:12.0 (same effect also at 0:00.7, 0:15.3 and 0:20.0). A flat, horizontal disc of swirling flame whips around the caster at waist height with white wind streaks trailing it; short vertical flame spikes flick up from it every ~0.3 s, black scrap-like curls and embers spit outward, a dark smoke wisp rises" },
+      { "name": "release", "start": 2.25, "end": 2.85, "what": "a bright thin golden circle (the 'bow') snaps open in front of the caster facing the target (2.25-2.6), then the arrow fires: a fan-shaped fire blast with large black-red ribbon curls bursting toward the target (2.6-2.85)" },
+      { "name": "impact", "start": 2.85, "end": 4.5, "what": "at the target (6-10 m away) a tall, narrow white-yellow fire pillar erupts to ~4x character height; around its base big flame petals and black-red ribbon curls whip outward and up; the pillar flickers in width every few frames" },
+      { "name": "aftermath", "start": 4.5, "end": 5.0, "what": "the pillar collapses into a few licking flame tongues and is gone in ~0.3 s, leaving a faint dark scorch on the ground" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "anticipation", "blend": "additive", "colors": ["#fff2b0", "#ff9a20", "#ff4a10"], "motion": "flat disc of 3-4 flame ribbons orbiting the caster at 1 m radius, 2 rev/s, slightly tilted toward camera", "notes": "a flat horizontal swirl, not a sphere: reads as winding up" },
+      { "part": "emitter-wisps", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#e0e8ff"], "motion": "white wind streaks trailing the flame disc, stretched along velocity, life 0.25 s", "notes": "white air streaks give the spin speed" },
+      { "part": "emitter-embers", "phase": "anticipation", "blend": "normal", "colors": ["#1a0505", "#7a1a0a", "#ff6a1a"], "motion": "black curled scraps spat outward from the disc, spin 6, drag 2, gravity 3, life 0.5 s", "notes": "dark curls like burnt paper make the fire look dangerous, not cosy" },
+      { "part": "rune-circle", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffd060", "#ff8a20"], "motion": "thin golden circle 1.5 m, vertical, facing the target, snaps open in 1 frame, holds 0.3 s, then the arrow punches through it", "notes": "the bow ring is the readable cue that a shot is coming and from where" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "normal", "colors": ["#0a0303", "#8a1a0a", "#ff5a1a"], "motion": "4-6 large black-red ribbon curls fan outward toward the target in 0.2 s, then curl and fade", "notes": "normal-blended dark ribbons with a hot edge; they carry the direction of the shot" },
+      { "part": "light-pillar", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffe070", "#ff7a10"], "motion": "narrow pillar 0.8 m wide x 10 m tall, rises in 2 frames, width flickers 0.8-1.2 every 3 frames, holds 1.5 s", "notes": "white core with yellow-orange edges; its height is the payoff" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#fff4c0", "#ff9a20", "#e03a10"], "motion": "large flame-petal sprites around the pillar base whipping outward and upward, spin, life 0.4 s", "notes": "hand-drawn-looking flame tongues, not smoke" },
+      { "part": "emitter-embers", "phase": "impact", "blend": "normal", "colors": ["#1a0505", "#a02010"], "motion": "black-red ribbon curls thrown out from the base, gravity 4", "notes": "repeat of the release darks so caster and target share a look" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "normal", "colors": ["#2a1a14", "#5a2a14"], "motion": "dark scorch ~3 m under the pillar, fades over 1 s", "notes": "" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "medium shake when the pillar rises", "notes": "" }
+    ],
+    "palette": ["#0a0303", "#8a1a0a", "#ff4a10", "#ff9a20", "#ffe070", "#ffffff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "The motion turns 90 degrees: a flat horizontal swirl and a horizontal shot become a vertical pillar at the target, so the impact reads as a new event and not just 'the projectile arrived'",
+      "The thin golden bow ring is a single clean shape inside a busy fire swirl; it is the only perfect circle in the effect, so the eye locks on it right before the shot",
+      "Black-red ribbon curls appear both at the release and at the pillar base, linking caster and target",
+      "The charge is long (2.25 s) and noisy, the shot is 0.25 s and clean: a strong timing contrast"
+    ],
+    "buildNotes": "Video 0:07.0-0:12.0. Charge: 3-4 flame trail-ribbons (scrolling-UV flame texture) on circular paths at 1 m radius around the caster, waist height, 2 rev/s; add an Emitter of stretched white wind streaks (velocity-aligned) and an Emitter of dark curl sprites (normal blend, spin 6, drag 2, gravity 3). Every 0.3 s spawn a short vertical flame spike billboard. Bow: createRing, vertical, oriented toward the target, thin and golden, snap scale 0 -> 1 in 1 frame. Release: 5 dark ribbon meshes (alpha-erosion shader, hot orange edge) that sweep out in a fan toward the target over 0.2 s; a fast small fireball streak (mesh-projectile, 0.15 s flight). Impact: LightPillar 0.8 x 10 m with flickering width; Emitter of large flame petal sprites at the base (spin, up-velocity 6, drag 1.5); dark curl emitter again; GlowSphere at the base. Camera shake medium on pillar birth. Exaggerate the pillar height and keep it narrow."
+  },
+  {
+    "id": "g-castorice-dragon-rise-cutscene",
+    "name": "Dragon summon cutscene: spear crackle close-up, twin sky beams, dragon silhouette rising between them, whip-pan into a claw close-up",
+    "source": {
+      "title": "mug (user reference video)",
+      "url": "http://user-reference.local/mug_-_castorice_inspired_cutscenes_i_worked_on_for_vanguards_anniversary_R_YhXnSb.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/mug_-_castorice_inspired_cutscenes_i_worked_on_for_vanguards_anniversary_R_YhXnSb.mp4",
+      "kind": "video"
+    },
+    "archetype": "summon",
+    "targeting": "self",
+    "element": "shadow",
+    "durationSec": 4.3,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.65, "what": "video 0:00.3-0:04.6. Slow close-up pan across the caster's flowered armour (0.25 s), then the spear crackles with white-violet lightning (0.25 s), cut to a wide shot of the caster on a violet flower field raising the spear (0.15 s)" },
+      { "name": "release", "start": 0.65, "end": 1.5, "what": "low ground-level shot: a cluster of pink crystal spikes bursts from the ground, then two parallel violet-white beams slam down diagonally from the sky into the field, flowers and pink motes blasting up" },
+      { "name": "impact", "start": 1.5, "end": 2.4, "what": "between the beams a huge dark dragon silhouette rises: two spiked arms/wings lined with glowing pink quills frame a black void, a single red glowing eye slit appears at its centre, butterflies and petals swirl; held 0.9 s with a slow push-in" },
+      { "name": "aftermath", "start": 2.4, "end": 4.3, "what": "a 1-frame dark close-up, then a 0.4 s diagonal violet speed-smear whip-pan, landing on a slow low-angle drift along the dragon's spiked neck with pink flame-like quills and a dripping moon in the starry sky, petals falling (1.3 s), then a short close-up of the caster's face to close" }
+    ],
+    "layers": [
+      { "part": "lightning-arc", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#d8c8ff", "#8a5aff"], "motion": "short jagged arcs crawling along the spear, redrawn every 2 frames", "notes": "small and close: the power is shown on the weapon before anything big happens" },
+      { "part": "mesh-debris", "phase": "release", "blend": "additive", "colors": ["#ffd0f0", "#ff6ad8", "#9a3aff"], "motion": "cluster of 8-12 crystal spikes bursting up from one point, scale 0 -> 1 in 3 frames", "notes": "pink faceted spikes; first beat of the summon" },
+      { "part": "light-pillar", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#b8a8ff", "#5a3aff"], "motion": "two parallel slanted beams (20 degrees off vertical) slam from sky to ground in 2 frames, hold 0.8 s with scrolling streaks inside", "notes": "parallel twin beams act as the doorway the dragon rises through" },
+      { "part": "mesh-projectile", "phase": "impact", "blend": "normal", "colors": ["#05020c", "#2a0a4a", "#ff4ad8"], "motion": "giant dark silhouette (two spiked arms forming a U) rises from below frame over 0.6 s; pink quill spikes along its edges flicker", "notes": "the dragon is mostly black; only its quills and eye are bright" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff2a4a"], "motion": "thin horizontal red eye slit opens at the centre of the black shape, with a short horizontal lens streak", "notes": "the smallest element in the shot is the focal point" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#ffb0f0", "#7af0ff", "#b06aff"], "motion": "butterfly and petal sprites fluttering upward, sine wobble, life 1.5 s", "notes": "a themed particle (butterflies) instead of generic sparks" },
+      { "part": "distortion", "phase": "aftermath", "blend": "normal", "colors": ["#2a0a5a", "#9a5aff", "#ffffff"], "motion": "full-screen diagonal speed-smear (motion blur streaks) for 0.4 s as the camera whip-pans", "notes": "the transition itself is a VFX layer" },
+      { "part": "emitter-embers", "phase": "aftermath", "blend": "additive", "colors": ["#ff8ae8", "#c06aff"], "motion": "petals falling slowly across the claw close-up, gravity 0.5", "notes": "" }
+    ],
+    "palette": ["#05020c", "#2a0a4a", "#5a3aff", "#b06aff", "#ff4ad8", "#ff2a4a", "#ffffff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "Shot sizes alternate on purpose: close-up (detail) -> wide (context) -> ground-level (scale) -> silhouette (reveal); each cut is under 0.3 s until the reveal, which is held",
+      "The twin beams create a frame-within-the-frame; the dragon appears inside that doorway so its arrival is staged, not spawned",
+      "The dragon is a black shape with a red slit eye: maximum mystery, cheap to build, and the single red accent in a violet scene is impossible to miss",
+      "The whip-pan smear hides the cut between two very different angles and keeps momentum"
+    ],
+    "buildNotes": "Video 0:00.3-0:04.6. Camera script: (1) 0-0.25 s close-up 1.5 m from caster chest, slow lateral dolly; (2) 0.25-0.5 s close on spear with lightning-arc ribbons; (3) 0.5-0.65 s wide shot; (4) 0.65-1.5 s camera at 0.3 m height looking up past the summon point; (5) 1.5-2.4 s same angle, slow push-in 10%; (6) 2.4-2.8 s whip-pan (rotate camera 60 degrees in 0.3 s plus a full-screen diagonal streak overlay); (7) 2.8-4.1 s low-angle drift along the dragon body toward a moon sprite; (8) 4.1-4.3 s caster face close-up. Darken the world to violet for the whole sequence. Crystal spikes: instanced debris of stretched octahedra, additive pink. Beams: two LightPillar meshes tilted 20 degrees. Dragon: a custom black silhouette mesh (two spiked arcs) with an additive pink quill strip along the edges; a tiny red additive quad as the eye. Butterflies: Emitter with a butterfly sprite, sine wobble, upward drift. Exaggerate the size of the silhouette (fills 70% of the frame) and keep it unlit black."
+  },
+  {
+    "id": "g-castorice-wing-nova-finisher",
+    "name": "Wing nova finisher: butterfly whip-pans, spiked wings opening with orbiting ribbons, ring-core charge, ink frame and a giant pink sphere blast on the field",
+    "source": {
+      "title": "mug (user reference video)",
+      "url": "http://user-reference.local/mug_-_castorice_inspired_cutscenes_i_worked_on_for_vanguards_anniversary_R_YhXnSb.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/mug_-_castorice_inspired_cutscenes_i_worked_on_for_vanguards_anniversary_R_YhXnSb.mp4",
+      "kind": "video"
+    },
+    "archetype": "nova",
+    "targeting": "enemies",
+    "element": "shadow",
+    "durationSec": 4.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1.6, "what": "video 0:05.1-0:09.6. Wide shot: the caster with a white flower-petal shock burst along the ground and the dragon behind (0.6 s); 0.6 s diagonal violet smear with butterflies flying through (whip-pan); 1 frame flat cream flash; 1 frame of big flat pink/yellow graphic shapes; a short ground-level shot with a lightning crack" },
+      { "name": "release", "start": 1.6, "end": 2.95, "what": "front-on shot of the dragon in a starry void with a dripping moon: spiked dark wings spread, magenta curved ribbons orbit it, red ribbons cross behind; at 2.6 s a white hollow ring with a bright core forms at its chest, then a red spike starburst and a white ray starburst (1 frame each)" },
+      { "name": "impact", "start": 2.95, "end": 3.25, "what": "a dithered white flash frame, then one ink impact frame (white screen, black silhouettes of the field edge), then the result shot" },
+      { "name": "aftermath", "start": 3.25, "end": 4.5, "what": "back on the flower field: a huge glowing pink-white sphere sits on the ground filling half the screen, a dark butterfly/eye silhouette inside it, violet flames licking its base, dark rock chunks flying out and slowly falling; held ~1.2 s" }
+    ],
+    "layers": [
+      { "part": "emitter-wisps", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ffd0f0", "#b06aff"], "motion": "white flower-petal shards burst along the ground in a fan, drag 2", "notes": "" },
+      { "part": "distortion", "phase": "anticipation", "blend": "normal", "colors": ["#3a1a8a", "#c08aff", "#ffffff"], "motion": "full-screen diagonal smear with butterfly sprites flying through it, 0.6 s", "notes": "whip-pan used as a breather between shots" },
+      { "part": "mesh-projectile", "phase": "release", "blend": "normal", "colors": ["#0a0414", "#3a1a5a", "#e0d0ff"], "motion": "spiked dark wing shapes unfold from the centre outward over 0.4 s", "notes": "dark wings with white-lilac edge highlights" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ff4ae0", "#c03aff", "#ff3a3a"], "motion": "8-10 thin curved ribbons orbit the dragon on tilted circular paths, fast, with long tails", "notes": "thin magenta loops make a 'charging' cage around the dark shape" },
+      { "part": "ring-shockwave", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffb0e8"], "motion": "white hollow ring 3 m around a bright core at the chest, appears in 1 frame, then pinches in", "notes": "implode cue before the blast" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ff2a4a"], "motion": "red spike starburst for 1 frame, then a white ray starburst for 1 frame", "notes": "two starbursts in two colours read as a double strike" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#ffffff", "#000000"], "motion": "1 frame dithered white (visible dot pattern), 1 frame pure white with black silhouettes", "notes": "a dither pattern on the flash frame gives a retro print texture" },
+      { "part": "glow-sphere", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff", "#ffb0f0", "#c03aff"], "motion": "giant sphere half-buried in the ground, 10 m, appears at full size and slowly breathes; a dark silhouette symbol floats inside", "notes": "the result is a big static shape held for a beat, like a key art frame" },
+      { "part": "mesh-debris", "phase": "aftermath", "blend": "normal", "colors": ["#1a0a2a", "#3a2050"], "motion": "dark rock chunks flung outward and up, slow fall, spin", "notes": "dark debris in front of the bright sphere gives depth" },
+      { "part": "camera-shake", "phase": "aftermath", "blend": "normal", "colors": ["#ffffff"], "motion": "heavy shake for 0.3 s on the first result frame, then still", "notes": "" }
+    ],
+    "palette": ["#0a0414", "#3a1a5a", "#c03aff", "#ff4ae0", "#ffb0f0", "#ff2a4a", "#ffffff"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "The charge shot is staged in a separate starry void with the moon, so it reads as a 'special move' space; the result cuts back to the real field to show consequence",
+      "Orbiting thin magenta ribbons around a dark wing shape keep the charge alive without adding brightness",
+      "The result is shown as one huge held shape (a sphere with a symbol inside) rather than a chaotic explosion: it reads in a single glance",
+      "Flat 1-frame graphic cards (cream flash, pink/yellow shapes) between shots add punch without costing screen time"
+    ],
+    "buildNotes": "Video 0:05.1-0:09.6. Camera script: (1) wide shot of caster, 0.6 s; (2) whip-pan smear 0.6 s (rotate camera fast plus diagonal streak overlay with butterfly sprites); (3) two single-frame FinishPass cards (flat cream, then big flat pink/yellow polygons); (4) 0.2 s ground-level shot; (5) front-on shot of the summon on a void backdrop (black plane with star sprites and a moon sprite with a drip texture), slow push-in; (6) flash frames; (7) cut to a wide low shot of the arena for the sphere. Build: wings as a custom spiked mesh unfolding by scale/rotation tween; 8-10 trail-ribbons on tilted circular paths; createRing white hollow ring that scales 1 -> 0.2 over 0.25 s (implode); two 1-frame starburst sprites (red, white); FinishPass: dithered white frame (ordered-dither shader on the flash) then pure white with the scene thresholded to black silhouettes. Result: a 10 m GlowSphere half under the ground at the target cluster centre, a dark butterfly sprite inside, instanced dark debris with gravity 4 and spin. Exaggerate the sphere size and hold it still."
+  },
+  {
+    "id": "g-castorice-dragon-breath-crater",
+    "name": "Dragon breath over-the-shoulder cutscene: thin beam into a crater, three escalating impact stages split by inverted frames",
+    "source": {
+      "title": "mug (user reference video)",
+      "url": "http://user-reference.local/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "kind": "video"
+    },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "shadow",
+    "durationSec": 6,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.7, "what": "video 0:00.0-0:14.7, compressed (each impact stage loops for several seconds in the video). Over-the-shoulder shot from behind the dragon's head: a pale pink-white flame mane on the left of frame, a thin glowing magenta scythe line across it, a magenta glow building in the mouth; the target crater sits small in the upper right" },
+      { "name": "release", "start": 0.7, "end": 1.0, "what": "a thin straight beam (white core, cyan and magenta edges) shoots from the mouth into the crater" },
+      { "name": "impact", "start": 1.0, "end": 2.0, "what": "stage 1 (video 0:02.4-0:04.4): blue-white splash at the crater with dark violet smoke boiling up around its rim, the camera re-frames with a small shake" },
+      { "name": "impact", "start": 2.0, "end": 3.0, "what": "stage 2 (video 0:04.4-0:06.6): the hit turns into a magenta-white spiky starburst with radial cracks in the ground" },
+      { "name": "impact", "start": 3.0, "end": 5.5, "what": "1 frame inverted/posterised frame (black with white and acid-green shapes, video 0:06.7), then stage 3: an orange-gold fire explosion with spiky rays and square ground slabs lifting and tilting out of the crater; a second inverted frame at video 0:09.0 restarts the explosion; it sustains with flicker" },
+      { "name": "aftermath", "start": 5.5, "end": 6.0, "what": "hard cut to a calm wide gameplay shot of the field (no fade)" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ff6ae8", "#9a2aff"], "motion": "mouth glow grows 0.2 -> 0.8 m with flicker", "notes": "" },
+      { "part": "beam-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#7af0ff", "#ff4ae0"], "motion": "thin beam 0.2 m, scrolling UV, appears from mouth to target in 2 frames, width wobbles", "notes": "thin and long: the scale contrast with the huge impact sells the power" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "normal", "colors": ["#1a0a3a", "#3a1a6a"], "motion": "dark violet smoke boiling up around the crater rim, drag 2, slow rise", "notes": "dark ring framing the bright splash" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9ad8ff", "#ff6ae8"], "motion": "stage 1 blue-white splash; stage 2 magenta spiky starburst re-randomised every 3 frames", "notes": "the same hit changes colour as it escalates" },
+      { "part": "ground-decal", "phase": "impact", "blend": "additive", "colors": ["#ff9af0", "#6a2aaa"], "motion": "radial crack lines spreading out from the hit point over 0.5 s", "notes": "" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#000000", "#ffffff", "#7aff3a"], "motion": "1 frame posterised inversion: black background, white highlights, acid-green mid-tones", "notes": "an inverted frame with an off-palette green is the stage switch" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffd040", "#ff6a10"], "motion": "stage 3: radial spiky ray sprites and sparks, short life 0.15 s, re-spawned continuously", "notes": "gold fire against a violet world: complementary colour on the final stage" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#3a1a2a", "#ff9a3a"], "motion": "8-12 square ground slabs lift 0.5-1.5 m and tilt out of the crater, hover, glowing orange edges underneath", "notes": "big flat slabs, not small rocks: the ground itself breaks" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "constant small shake during the stages, heavy shake after each inverted frame", "notes": "" }
+    ],
+    "palette": ["#1a0a3a", "#9a2aff", "#ff4ae0", "#7af0ff", "#ffd040", "#ff6a10", "#ffffff"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "Over-the-shoulder framing with the dragon's huge pale mane filling a third of the frame makes the target small and the attacker enormous",
+      "The impact escalates in three colour stages (blue -> magenta -> gold), each switch marked by a single inverted frame, so a long channel keeps getting bigger instead of just lasting",
+      "A thin beam into a huge explosion: the cause is tiny, the result is massive",
+      "Lifting square ground slabs read as the floor breaking, which feels heavier than any particle"
+    ],
+    "buildNotes": "Video 0:00.0-0:14.7 (compress each stage to ~1 s in game). Camera: place the camera behind and slightly above the caster's head, offset to one side, looking at the target; put a large pale foreground shape (custom flame-mane mesh or a big billboard) at the left edge to create the over-the-shoulder frame. Beam: beam-ribbon with scrolling-UV shader, white core with cyan/magenta edges. Stage 1: GlowSphere blue-white at the target plus normal-blended dark violet smoke Emitter on a ring (drag 2). Stage 2: swap to a magenta starburst sprite (re-randomise rotation every 3 frames) and an additive crack decal. Stage switch: one FinishPass frame that inverts and posterises (black / white / #7aff3a). Stage 3: gold ray-burst sprites, spark Emitter, instanced square slabs that tween up and tilt with an emissive orange bottom face; second invert frame halfway. End on a hard cut to the gameplay camera. Exaggerate the size jump of each stage."
+  },
+  {
+    "id": "g-castorice-void-moon-wedge-sweep",
+    "name": "Void moon wedge sweep: pink hand sigil, horizontal flare, then a giant black wedge with a dark moon slashing across the field inside a magenta swirl",
+    "source": {
+      "title": "mug (user reference video)",
+      "url": "http://user-reference.local/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "kind": "video"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemies",
+    "element": "shadow",
+    "durationSec": 1.8,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.45, "what": "video 0:15.9-0:17.7. A small pink ring sigil with a bright core appears at the caster's raised hand (0.15-0.35), then collapses into a flat horizontal pink flare line (0.35-0.45)" },
+      { "name": "release", "start": 0.45, "end": 0.6, "what": "a giant magenta crescent swirl wraps around the caster and a huge black wedge shape slashes diagonally across the whole field toward the target" },
+      { "name": "impact", "start": 0.6, "end": 1.3, "what": "the wedge holds: a dark moon sphere with a shadow figure inside sits in the black band, several pink-white streaks run along the wedge edges, butterflies and petal confetti scatter, the swirl fades" },
+      { "name": "aftermath", "start": 1.3, "end": 1.8, "what": "the wedge thins into a few streaks and vanishes; a low violet dust cloud and floating pink motes remain around the caster and target" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ff6ae8", "#c03aff"], "motion": "0.6 m ring with bright core at the hand, appears in 1 frame, then squashes vertically into a line", "notes": "tiny and precise: the whole move is cued by one small shape" },
+      { "part": "light", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ff5ae0"], "motion": "horizontal flare streak 3 m wide, 2 frames", "notes": "" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ff3ae0", "#8a2aff"], "motion": "thick crescent swirl, 1.5 turns around the caster, 0.15 s, then erodes", "notes": "" },
+      { "part": "mesh-projectile", "phase": "release", "blend": "normal", "colors": ["#05020c", "#1a0a2a"], "motion": "huge black wedge (25 m long, 4 m tall at its thick end) slides diagonally across the field in 2 frames, holds, then thins", "notes": "the main shape is black; it crosses the sky line so it reads at any distance" },
+      { "part": "glow-sphere", "phase": "impact", "blend": "normal", "colors": ["#2a1a4a", "#8a7ab0", "#ffffff"], "motion": "dark grey-violet moon sphere inside the wedge with a dark figure silhouette, rim lit", "notes": "a quiet symbolic shape inside the slash" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff8af0", "#b04aff"], "motion": "4-5 parallel thin streaks along the wedge edges, scroll forward fast", "notes": "bright edges on a dark body" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#7af0ff", "#ff6ae8", "#b06aff"], "motion": "butterfly/petal confetti scattered along the wedge, drag 2, slow fall", "notes": "" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#4a3a6a", "#7a6a9a"], "motion": "low dust cloud along the ground, drag 3, life 1.2 s", "notes": "" },
+      { "part": "camera-shake", "phase": "release", "blend": "normal", "colors": ["#ffffff"], "motion": "medium shake on wedge arrival", "notes": "" }
+    ],
+    "palette": ["#05020c", "#2a1a4a", "#8a2aff", "#ff3ae0", "#ff8af0", "#7af0ff", "#ffffff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "A small precise cue (ring at the hand, then a flat line) contrasts with the screen-crossing black wedge that follows",
+      "The wedge is a single black graphic shape crossing the horizon; it reads even from a far gameplay camera",
+      "Bright thin streaks only on the wedge edges: dark body, hot outline",
+      "The moon-and-figure inside the slash adds a story element without extra motion"
+    ],
+    "buildNotes": "Video 0:15.9-0:17.7 (gameplay camera, no cuts). Hand sigil: createRing 0.6 m with a small GlowSphere core, then tween scale-y to 0.05 while scale-x grows to 5 (becomes the flare line). Release: a custom long wedge mesh (normal blend, unlit black, alpha-erosion along its length for the exit) placed diagonally from above the caster down toward the target; a crescent trail-ribbon swirl around the caster. Inside the wedge: a GlowSphere-sized dark sphere with a rim-light shader and a silhouette sprite. 4-5 additive thin ribbons along the wedge edges with fast scrolling UV. Emitter of butterfly sprites. Dust: normal-blended grey-violet smoke, drag 3. Exaggerate the wedge length so it spans the arena."
+  },
+  {
+    "id": "g-castorice-dash-crescent-spike",
+    "name": "Dash crescent and spike: dash to target, magenta crescent slash, second crescent with a white ground spike, rising dotted pillar with a black diamond tip",
+    "source": {
+      "title": "mug (user reference video)",
+      "url": "http://user-reference.local/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "kind": "video"
+    },
+    "archetype": "dash",
+    "targeting": "enemy",
+    "element": "shadow",
+    "durationSec": 2.2,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.85, "what": "video 0:18.8-0:21.0. The caster crouches and dashes across the field to the target with no VFX trail at all" },
+      { "name": "release", "start": 0.85, "end": 1.4, "what": "on arrival a vertical magenta crescent slash flashes over the target with a pink glow pool on the ground (0.9), fades over 0.3 s with a few sparks rising" },
+      { "name": "impact", "start": 1.4, "end": 1.6, "what": "a second, bigger crescent arcs over the target and a sharp white spike stabs up from the ground beside it" },
+      { "name": "aftermath", "start": 1.6, "end": 2.2, "what": "a thin vertical line of pink dots rises 6-8 m above the target with a small black diamond at its tip, then fades; the pink ground pool fades last" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ff4ae0", "#8a1aff"], "motion": "vertical crescent 2.5 m, drawn in 2 frames, erodes over 0.3 s", "notes": "thick at the middle, thin tips" },
+      { "part": "ground-decal", "phase": "release", "blend": "additive", "colors": ["#ff4ae0", "#6a1aaa"], "motion": "pink glow pool 2 m under the target, fades over 1.2 s", "notes": "anchors the hit to the ground" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff6ae8", "#c03aff"], "motion": "bigger crescent 3.5 m arc, 2 frames, erodes over 0.3 s", "notes": "second hit is bigger than the first" },
+      { "part": "mesh-projectile", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffd0f8"], "motion": "thin white spike 2 m stabs up from the ground in 1 frame, shrinks over 0.2 s", "notes": "" },
+      { "part": "light-pillar", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff", "#ff5ae0"], "motion": "column of evenly spaced pink dots rising to 6-8 m over 0.4 s, then fades", "notes": "a dotted line instead of a solid beam: light, graphic, readable" },
+      { "part": "mesh-debris", "phase": "aftermath", "blend": "normal", "colors": ["#05020c"], "motion": "one small black diamond riding the top of the dotted column", "notes": "black tip = the full stop of the combo" }
+    ],
+    "palette": ["#05020c", "#6a1aaa", "#c03aff", "#ff4ae0", "#ffffff"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "The dash has no trail, so all the attention goes to the two crescents at the target",
+      "Two hits with a size step-up (2.5 m then 3.5 m plus a spike) give a clear 'one, TWO' rhythm",
+      "The rising dotted line with a black diamond is a small graphic punctuation mark that tells you the combo ended"
+    ],
+    "buildNotes": "Video 0:18.8-0:21.0 (gameplay camera). Move the caster to the target over 0.6 s. Crescents: half-ring meshes with an alpha-erosion shader, additive, oriented vertically and facing the camera, the second one 40% bigger and rotated 30 degrees. Ground pool: additive ground-decal. Spike: a thin cone mesh scaling y 0 -> 1 in 1 frame. Dotted pillar: 12 small additive dot sprites spaced 0.5 m that appear bottom to top over 0.4 s, plus a small black octahedron at the top (normal blend). Light shake on the second crescent."
+  },
+  {
+    "id": "g-castorice-sky-rift-blade-rain",
+    "name": "Sky rift blade rain: pink shard cluster tears open above, then six long black-violet blades rake diagonally down across the field",
+    "source": {
+      "title": "mug (user reference video)",
+      "url": "http://user-reference.local/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/mug_-_yo_castorice_calm_down_bro_hes_already_dead_Roblox_RobloxDev_HSR_X4LZXD.mp4",
+      "kind": "video"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "shadow",
+    "durationSec": 2.4,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.6, "what": "video 0:23.4-0:25.8. A flat horizontal pink flare at the caster's hand (0.1 s), the caster raises one arm, small pink motes rise from it" },
+      { "name": "release", "start": 0.6, "end": 0.9, "what": "above and behind the caster a jagged cluster of pink-white crystal shards and lightning-like cracks tears open in the sky and grows for 0.3 s" },
+      { "name": "impact", "start": 0.9, "end": 1.2, "what": "six long parallel black-violet blades with bright pink-white edges rake diagonally down from the rift across the field, a magenta swirl whips around the caster" },
+      { "name": "aftermath", "start": 1.2, "end": 2.4, "what": "the blades hang in place as long dark streaks and slowly fade, a low violet dust cloud rolls on the ground, purple petal motes drift" }
+    ],
+    "layers": [
+      { "part": "light", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#ff5ae0"], "motion": "flat horizontal flare line at hand, 2 frames", "notes": "" },
+      { "part": "lightning-arc", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffb0f0", "#ff4ae0"], "motion": "jagged crack lines plus a cluster of small crystal shards spreading outward in the sky over 0.3 s, flicker every 2 frames", "notes": "the rift is drawn as cracks in the air, which sets up where the blades come from" },
+      { "part": "mesh-projectile", "phase": "impact", "blend": "normal", "colors": ["#0a0418", "#2a0a4a", "#ffd0f8"], "motion": "6 long thin blade wedges (15-20 m), parallel, offset 0.8 m, arrive 1 frame apart from the rift down to the ground", "notes": "dark bodies with hot pink-white edges; parallel lines read like a claw rake" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff3ae0", "#8a2aff"], "motion": "thick magenta swirl around the caster, 1 turn in 0.2 s", "notes": "" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#4a3a6a", "#8a7ab0"], "motion": "ground dust rolling out from the blade landing line, drag 3, life 1.2 s", "notes": "" },
+      { "part": "emitter-embers", "phase": "aftermath", "blend": "additive", "colors": ["#ff8af0", "#7af0ff"], "motion": "petal motes drifting down slowly, life 1.5 s", "notes": "" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "medium shake when the blades land", "notes": "" }
+    ],
+    "palette": ["#0a0418", "#2a0a4a", "#8a2aff", "#ff3ae0", "#ffd0f8", "#ffffff"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "The source of the attack (the sky rift) appears 0.3 s before the blades, so the viewer looks up and then follows the blades down",
+      "Six parallel dark blades arriving one frame apart read as a single rake but with texture",
+      "The blades hang and fade slowly (1.2 s) instead of vanishing, so the aftermath reads as scars in the air"
+    ],
+    "buildNotes": "Video 0:23.4-0:25.8 (gameplay camera). Rift: a cluster of 15 small additive pink shard quads plus 3-4 jagged lightning-arc polylines at a point 6 m above and behind the caster, growing outward over 0.3 s. Blades: 6 custom thin wedge meshes (normal blend, near-black violet) each with an additive edge ribbon, spawned 1 frame apart along parallel diagonals from the rift to a line through the target point; hold, then alpha-erode over 1.2 s. Swirl: trail-ribbon around the caster. Dust: normal Emitter along the landing line. Medium camera shake on landing."
+  },
+  {
+    "id": "g-laggy-fireball-summon",
+    "name": "Rune fireball summon: spark-drawn pentagram, white glint flare, starburst ignition and a sustained bonfire orb that collapses into smoke",
+    "source": {
+      "title": "JUSTALAGGYMAN (user reference video)",
+      "url": "http://user-reference.local/JUSTALAGGYMAN_-_fireball_summon_old_VFX_RobloxStudio_Roblox_RidMR8.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/JUSTALAGGYMAN_-_fireball_summon_old_VFX_RobloxStudio_Roblox_RidMR8.mp4",
+      "kind": "video"
+    },
+    "archetype": "summon",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 6,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.42, "what": "video 0:00.0-0:06.0 (repeats at 0:06.0, 0:12.6 and 0:19.3). A small bright spark runs around the ground and draws a thin pink-red circle with a pentagram inside (0-0.25), then a white four-point glint with a long horizontal flare line flashes 1.5 m above the circle centre (0.25-0.42)" },
+      { "name": "release", "start": 0.42, "end": 0.55, "what": "a huge orange-white starburst flash with long spike rays explodes over the circle (fills ~40% of the frame for 2 frames)" },
+      { "name": "impact", "start": 0.55, "end": 0.9, "what": "a fireball forms 1 m above the circle; 2 white hollow ring pops and a star glint at its centre; the rune circle turns to a thick glowing orange ring on the ground" },
+      { "name": "sustain", "start": 0.9, "end": 4.6, "what": "a 2 m flickering fire orb (white-yellow core, orange-red flame tongues) burns over a dark scorched ring, constant ember spray and thin dark smoke wisps" },
+      { "name": "aftermath", "start": 4.6, "end": 6.0, "what": "the orb breaks up inside a swirling dark smoke shell (0.4 s), then only grey smoke wisps, a dark arc swirl and a few embers remain; clean at ~6.0" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "anticipation", "blend": "additive", "colors": ["#ffd0c0", "#ff5a5a", "#c02a2a"], "motion": "thin circle and pentagram drawn progressively by a moving spark over 0.25 s (reveal by angle)", "notes": "drawing the circle on screen is the telegraph; it is faster and more readable than a fade-in" },
+      { "part": "core-flash", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#e0e8ff"], "motion": "four-point star glint with a long horizontal flare streak (4 m), 2-3 frames, above the circle centre", "notes": "a cold white glint before the warm fire: temperature contrast on the cue" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffd090", "#ff7a3a"], "motion": "spiky starburst sprite 4-5 m, 2 frames, random ray lengths", "notes": "" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffe0b0"], "motion": "2 thin white hollow rings pop around the forming fireball, 0.5 -> 1.5 m in 0.15 s", "notes": "" },
+      { "part": "glow-sphere", "phase": "sustain", "blend": "additive", "colors": ["#ffffff", "#ffd040", "#ff5a10"], "motion": "fire orb 2 m, flipbook flame sprites stacked, flicker scale 0.9-1.1", "notes": "flame tongues with ragged dark-red edges" },
+      { "part": "emitter-embers", "phase": "sustain", "blend": "additive", "colors": ["#fff0b0", "#ff8a20"], "motion": "embers sprayed outward and up, gravity -1, drag 1, life 0.8 s, stretched", "notes": "" },
+      { "part": "emitter-smoke", "phase": "sustain", "blend": "normal", "colors": ["#1a1414", "#3a3030"], "motion": "thin dark wisps rising from the top of the flame, slow", "notes": "" },
+      { "part": "ground-decal", "phase": "sustain", "blend": "normal", "colors": ["#2a1a14", "#ff6a20"], "motion": "dark scorched ring with glowing orange cracks at the rune edge", "notes": "" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#2a2626", "#5a5252"], "motion": "smoke shell swirls around the dying fire (spin), then rises and thins, life 1.2 s", "notes": "the collapse is shown, not cut" }
+    ],
+    "palette": ["#1a1414", "#c02a2a", "#ff5a10", "#ffd040", "#ffffff", "#ff5a5a"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "The telegraph is drawn by a moving spark, so the viewer's eye follows a point around the circle and is already looking at the spot when it ignites",
+      "A cold white glint with a long horizontal flare right before the warm starburst gives a crisp 'tick' that the fire then answers",
+      "The sustained orb has a dark smoke and dark scorch frame, so it stays readable on a grey floor for 4 s",
+      "The exit is a smoke collapse with a swirl, so the effect ends with motion rather than a fade"
+    ],
+    "buildNotes": "Video 0:00.0-0:06.0. Rune: a ground-plane circle plus pentagram texture with a shader uniform revealing it by polar angle (0 -> 360 in 0.25 s), plus a tiny GlowSphere spark moving along the circle edge. Glint: an additive four-point star sprite with a long horizontal streak quad, 3 frames. Ignition: big starburst sprite 2 frames plus FinishPass impact flash at low strength; 2 createRing hollow rings popping. Orb: GlowSphere core plus 6-8 flame flipbook billboards around it with random rotation and flicker; ember Emitter (gravity -1, drag 1); normal-blended smoke wisps; scorch decal with emissive orange cracks. Collapse at 4.6 s: shrink the flames, spawn a spinning smoke-shell Emitter (spin 3, drag 2) and a dark arc ribbon, then let embers die out. For targeting: place the circle at the clicked ground point; the orb can then damage enemies in a 3 m radius per tick."
+  },
+  {
+    "id": "g-dark-lord-slash",
+    "name": "Dark lord slash: red-tinted wind-up burst, a crouch hold, then a full-screen red hit with glitch cubes and damage digits that leaves a grey dust vortex",
+    "source": {
+      "title": "blooper (user reference video)",
+      "url": "http://user-reference.local/blooper_-_dark_lord_slash_ROBLOX_RobloxDev_robloxvfx_VFX_realtimeVFX_alan_wkNRi1.mp4",
+      "localUrl": "file:///C:/Users/adus/Downloads/blooper_-_dark_lord_slash_ROBLOX_RobloxDev_robloxvfx_VFX_realtimeVFX_alan_wkNRi1.mp4",
+      "kind": "video"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "blood",
+    "durationSec": 1.9,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.45, "what": "video 0:06.1-0:08.0 (same move at 0:00.65, 0:03.65 and 0:08.4). The world tints pink-red in 1 frame; a red crescent wind-up slash with black spikes flashes around the character, then a red sphere with a black core bursts and a white wind ring spins around it; the tint fades" },
+      { "name": "release", "start": 0.45, "end": 0.6, "what": "the character holds a crouched pose with no effect at all for ~0.13 s (a deliberate dead beat)" },
+      { "name": "impact", "start": 0.6, "end": 0.8, "what": "full-screen red tint again, an orange-white starburst at the target, black cubes and long red speed streaks blast outward, red glitch digits flash, a red smear disc spins on the ground" },
+      { "name": "aftermath", "start": 0.8, "end": 1.9, "what": "the disc becomes a ragged red-black ring with a grey wind spiral, orange sparks skid along the ground away from it; then only a grey normal-blended dust vortex spins and fades over ~0.8 s" }
+    ],
+    "layers": [
+      { "part": "screen-flash", "phase": "anticipation", "blend": "normal", "colors": ["#ff8a9a", "#ff3a4a"], "motion": "full-screen pink-red multiply tint, on in 1 frame, fades over 0.3 s; again on the impact", "notes": "the world goes red twice, once per beat" },
+      { "part": "trail-ribbon", "phase": "anticipation", "blend": "normal", "colors": ["#ff1a2a", "#000000", "#ffffff"], "motion": "red crescent slash with black spike fringe around the character, 2 frames", "notes": "" },
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "normal", "colors": ["#000000", "#ff1a2a", "#ffffff"], "motion": "red sphere with black core 1.5 m, pops 0 -> 1 in 2 frames, a white wind ring spins around it", "notes": "" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffd0a0", "#ff6a3a"], "motion": "big spiky starburst at the target, 2 frames", "notes": "" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#000000"], "motion": "15-25 small black cubes flung outward and slightly up, spin, drag 2, life 0.4 s", "notes": "flat black cubes read as glitch/void fragments, not rocks" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ff2a3a", "#ff8a8a"], "motion": "long horizontal red speed streaks shooting out sideways, life 0.15 s", "notes": "" },
+      { "part": "emitter-wisps", "phase": "impact", "blend": "additive", "colors": ["#ff3a4a", "#ffffff"], "motion": "red digit sprites (random numbers) flashing in the smear for 3-4 frames", "notes": "damage-number glyphs used as texture, a glitch/digital flavour" },
+      { "part": "ground-decal", "phase": "impact", "blend": "normal", "colors": ["#ff1a2a", "#000000", "#ffffff"], "motion": "spinning red smear disc 6 m, then a ragged red ring with a black inner edge", "notes": "" },
+      { "part": "emitter-sparks", "phase": "aftermath", "blend": "additive", "colors": ["#ffd060", "#ff7a1a"], "motion": "3-5 orange sparks skidding along the ground away from the ring, drag 1", "notes": "" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#3a3a3a", "#7a7a7a"], "motion": "grey dust vortex disc spinning on the ground, 5 m, fades over 0.8 s", "notes": "grey, not red: the colour leaves first, the motion stays" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "heavy shake on the impact, a camera lurch toward the hit on the wind-up", "notes": "" }
+    ],
+    "palette": ["#000000", "#ff1a2a", "#ff3a4a", "#ff8a9a", "#ffd060", "#7a7a7a", "#ffffff"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "Two beats with a dead hold between them: the 0.13 s crouch with no VFX makes the second hit land much harder than the first",
+      "The whole world tinting red on both beats does the work of a flash without white, and the red-black-white palette stays strict",
+      "Glitch cubes and red digits give the slash a 'corrupted' identity that ordinary sparks would not",
+      "The colour drains before the motion: the grey dust vortex keeps spinning after the red is gone, which is a clean, calm exit"
+    ],
+    "buildNotes": "Video 0:06.1-0:08.0. Wind-up: FinishPass colour tint (#ff3a4a multiply) for 0.3 s; crescent ribbon with black spike fringe (normal blend) around the caster; GlowSphere with a black core and red rim, plus a white wind ring (createRing with a streaky texture, spinning). Hold: 0.13 s with nothing (keep the caster in a crouch pose). Impact: second tint; starburst sprite; instanced black cube debris (normal blend, spin, drag 2); stretched red streak Emitter shooting sideways; a few sprites with digit textures (canvas-generated numbers) flashing for 3-4 frames; spinning red ground decal that becomes a ragged ring (alpha-erosion). Aftermath: ground spark skid Emitter; normal-blended grey dust ring that spins (rotate the decal or a smoke Emitter with tangential velocity) and fades over 0.8 s. Heavy shake on the impact frame. Exaggerate the hold; it must feel like a pause."
+  }
+]

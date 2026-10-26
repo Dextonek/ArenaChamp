@@ -256,7 +256,7 @@ export class Volley implements Effect {
       const p = this.params[i];
       const u = (t - s.drawTime - p.delay) / p.flight;
       if (i >= s.arrowCount || u < 0) {
-        d.position.set(0, -50, 0); d.scale.setScalar(0); d.updateMatrix();
+        d.position.set(0, -50, 0); d.scale.setScalar(1e-4); d.updateMatrix(); // never 0: a singular instance matrix gives NaN normals → black bloomed frame
         this.arrows.setMatrixAt(i, d.matrix);
         this.trails.setMatrixAt(i, d.matrix);
         continue;
@@ -278,7 +278,7 @@ export class Volley implements Effect {
         d.position.copy(land).addScaledVector(dir, -0.15);
       }
       d.quaternion.setFromUnitVectors(UP, dir);
-      d.scale.setScalar(u > 1 ? sink : 1);
+      d.scale.setScalar(Math.max(1e-4, u > 1 ? sink : 1));
       d.updateMatrix();
       this.arrows.setMatrixAt(i, d.matrix);
 
@@ -286,9 +286,9 @@ export class Volley implements Effect {
       if (u < 1) {
         const tail = d.position.clone().addScaledVector(dir, -1.5);
         d.position.copy(tail);
-        d.scale.set(1, 3.5 * smoothstep(u / 0.08), 1);
+        d.scale.set(1, Math.max(1e-4, 3.5 * smoothstep(u / 0.08)), 1);
       } else {
-        d.scale.setScalar(0);
+        d.scale.setScalar(1e-4);
       }
       d.updateMatrix();
       this.trails.setMatrixAt(i, d.matrix);

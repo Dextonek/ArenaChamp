@@ -113,7 +113,7 @@ export class MeteorShower implements Effect {
   private col = new THREE.Color();
   private fire = new THREE.Color();
   private warn = new THREE.Color(1, 0.18, 0.08);
-  private hidden = new THREE.Matrix4().makeScale(0, 0, 0);
+  private hidden = new THREE.Matrix4().makeScale(1e-4, 1e-4, 1e-4); // never 0: a singular instance matrix gives NaN normals → black bloomed frame
 
   constructor(settings: MeteorSettings = defaultMeteor()) {
     this.settings = settings;

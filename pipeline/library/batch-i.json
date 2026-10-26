@@ -1,0 +1,299 @@
+[
+  {
+    "id": "i-frigid-rush-ice-kick-combo",
+    "name": "Ice kick combo: stacked crescent arcs per kick, a rainbow-edged light streak and a one-frame spike burst, with empty rest beats between hits",
+    "source": { "title": "Hazaze – Frigid Rush | Roblox Animation and VFX Showcase", "url": "https://www.youtube.com/watch?v=2fwT64lFtao&t=1s", "kind": "video" },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "ice",
+    "durationSec": 3.4,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.33, "what": "video 0:01.4-0:04.8. Spin kick wind-up: 3-4 thin concentric vertical crescent arcs wrap the kicker (white leading edge, cyan body, grey tail), a faint grey dust swirl on the floor" },
+      { "name": "release", "start": 0.33, "end": 0.55, "what": "1.73-1.95: the arcs close into a near-full vertical circle, then jump to 2x size in one frame (1.80), detach and drift up-back while fading to grey ghosts" },
+      { "name": "impact", "start": 0.83, "end": 2.73, "what": "hit 1 at 2.23: small cyan-white puff + a long thin diagonal light streak (~5 m) with a rainbow fringe; new arc set on the next spin (2.37-2.6); rest beat 3.8; hit 2 at 3.87: one-frame spiky white-cyan starburst, then long white needle lines radiating at a low angle and a flat cyan ground ring (4.0-4.13)" },
+      { "name": "aftermath", "start": 2.73, "end": 3.4, "what": "4.13-4.8: needles thin out, the ring turns into a cyan spiral with grey dust, clean ~0.9 s after the last hit" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#8fdcff", "#9aa6b8"], "motion": "3-4 crescent ribbons at radii 1.0/1.3/1.6 m on slightly different tilts around the kicker, rotate with the leg over 0.3 s, scale x2 in one frame at the end of the swing, then drift 1 m up-back and fade over 0.15 s", "notes": "a stack of arcs, not one: reads as a sphere of motion; grey at the tail so the fade is a colour change" },
+      { "part": "emitter-smoke", "phase": "anticipation", "blend": "normal", "colors": ["#c8d0dc", "#8a94a4"], "motion": "low ground swirl of 6-8 soft puffs orbiting the feet, life 0.5 s", "notes": "grounds the spin" },
+      { "part": "beam-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#7fe4ff", "#ff7af0"], "motion": "one thin streak 5 m long shot along the kick direction, full length in 2 frames, fades over 0.2 s; RGB-split edge (pink on one side, cyan on the other)", "notes": "a light streak instead of a burst for normal hits; the rainbow edge is the only extra colour" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#bff0ff", "#3fb8ff"], "motion": "hit 2: spiky starburst 2 m with thin needle rays for exactly 1 frame, then a 0.4 m core for 1 frame", "notes": "StarBurst with 10-14 spikes, hard alpha" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fe0ff"], "motion": "8-12 long needle streaks radiating within 20 degrees of the ground plane, 4-6 m, velocity-stretched, life 0.2 s, drag 4", "notes": "needles keep the hit flat and wide instead of a round puff" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#cfefff", "#3fa8ff"], "motion": "flat ground ring 0.5 -> 3 m in 0.25 s, spinning, then breaks into a spiral swirl", "notes": "" },
+      { "part": "emitter-smoke", "phase": "aftermath", "blend": "normal", "colors": ["#b8c2d0", "#7c8698"], "motion": "grey dust ring spreading along the floor, life 0.7 s", "notes": "the exit is grey dust, no lingering colour" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "tiny shake on hit 1, short medium shake on hit 2", "notes": "" }
+    ],
+    "palette": ["#ffffff", "#d8f2ff", "#6fd0ff", "#2f8ae0", "#10203a"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Each kick gets a stack of 3-4 arcs at different radii and tilts, which reads as a 3D sweep from any camera instead of a flat ribbon",
+      "The arcs double in size in a single frame at the end of the swing: the scale jump is the impact of the swing itself",
+      "Hits alternate shapes (a long rainbow-edged streak, then a one-frame spike burst), so a combo never repeats the same sprite",
+      "0.15-0.3 s rest beats with no VFX separate the hits so each one reads on its own"
+    ],
+    "buildNotes": "Video 0:01.4-0:04.8. Per kick: 3-4 CrescentArc instances (soft dialect, white edge, cyan body) parented to the attacker with yaw following the leg, radii 1.0-1.6 m and tilt offsets of 10-20 degrees; tween scale 1 -> 2 in one frame at the end of the swing, then translate 1 m up-back and fade to grey over 0.15 s. Hit 1: a thin beam-ribbon quad (5 m) along the kick direction with a chromatic shader (offset R and B copies 2-3 px apart) fading over 0.2 s. Hit 2: StarBurst (hard spikes) for 1 frame, Emitter of 10 velocity-stretched needles in a flat fan (drag 4), createRing on the floor with spin, then a SmokeBall dust ring in grey. Leave 0.15-0.3 s of nothing between hits."
+  },
+  {
+    "id": "i-frigid-rush-dive-snowflake-slam",
+    "name": "Dive slam: star glint on the falling attacker, one dead frame, a sphere blowout that collapses onto the floor, snowflake decal with light pillar and rising crystals",
+    "source": { "title": "Hazaze – Frigid Rush | Roblox Animation and VFX Showcase", "url": "https://www.youtube.com/watch?v=2fwT64lFtao&t=5s", "kind": "video" },
+    "archetype": "meteor",
+    "targeting": "enemy",
+    "element": "ice",
+    "durationSec": 2.6,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1.17, "what": "video 0:05.6-0:08.2. 5.6 dash ring, 5.85-6.35 the attacker hangs high above the target (shadow on the floor), 6.45 first 4-point white glint at the target, 6.7 big 4-point glint on the diving attacker" },
+      { "name": "release", "start": 1.17, "end": 1.23, "what": "6.77: the attacker touches the target and nothing happens for one frame" },
+      { "name": "impact", "start": 1.23, "end": 1.6, "what": "6.83: white starburst blowout covering half the frame (1 frame), 6.87 it collapses into a flat radial spray and a crisp ring on the floor, 6.9 thin vertical light pillar over a frost decal with a rune band, 6.93-7.13 six-fold snowflake decal at full size, blue ice block on the target, crystals and sparkles float up" },
+      { "name": "aftermath", "start": 1.6, "end": 2.6, "what": "7.2-8.2: pillar gone, decal fades from the rim inward to a soft blue ring, a thin horizontal ring hangs at chest height, sparkles twinkle out" }
+    ],
+    "layers": [
+      { "part": "core-flash", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#cfefff"], "motion": "4-point star glint, long horizontal and vertical points (~1.5 m), on the falling attacker 0.13 s before landing; pops in 1 frame, shrinks over 0.1 s", "notes": "the telegraph rides on the attacker, so the eye follows the fall" },
+      { "part": "screen-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#e0f4ff"], "motion": "1-frame white starburst with radial spikes covering ~50 % of the frame, centred on the impact", "notes": "comes one frame AFTER contact (dead frame first)" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#bfe8ff"], "motion": "on the next frame: 30-40 flat radial streaks sliding along the floor out to 5 m, life 0.25 s, drag 5", "notes": "the flash is visibly flattened onto the ground: sphere -> ground spray in one frame" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fd6ff"], "motion": "crisp thin floor ring 0.5 -> 4 m in 0.2 s", "notes": "" },
+      { "part": "light-pillar", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#bfe8ff"], "motion": "thin pillar 0.4 m wide, 8 m tall, 0.25 s, width shrinks to a line before fading", "notes": "" },
+      { "part": "ground-decal", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fd8ff", "#2f7fd8"], "motion": "six-fold snowflake/frost-crystal decal 6 m with a rune tick band near the rim, full size in 1 frame, holds 0.4 s, fades from the rim inward over 0.6 s", "notes": "the ice theme lives in the decal pattern" },
+      { "part": "mesh-projectile", "phase": "impact", "blend": "normal", "colors": ["#e8f8ff", "#5ab4ff"], "motion": "translucent blue ice block (box) encasing the target, scale 0 -> 1 in 2 frames, holds 0.4 s", "notes": "the target gets frozen, a clear result state" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#7fd0ff"], "motion": "8-12 small crystal shards float upward 1-3 m with slow spin, life 1 s", "notes": "upward drift instead of falling debris keeps it magical" },
+      { "part": "emitter-sparks", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff", "#cfefff"], "motion": "twinkling sparkles in a 4 m column, size pulse, life 1.2 s", "notes": "" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "one medium shake on the blowout frame", "notes": "" }
+    ],
+    "palette": ["#ffffff", "#d8f2ff", "#8fd6ff", "#2f7fd8", "#10203a"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "The glint rides on the falling attacker, so the telegraph and the body arrive together",
+      "One empty frame between contact and blowout makes the blowout land harder",
+      "The blowout is a sphere for one frame and a flat floor spray on the next: the energy visibly hits the ground",
+      "The snowflake decal keeps the ice identity after the white flash is gone, and crystals float up instead of falling"
+    ],
+    "buildNotes": "Video 0:05.6-0:08.2. Attacker hang 0.5 s; spawn a 4-point StarBurst glint parented to the attacker 0.13 s before landing. On landing frame do nothing; next frame: ScreenFx white burst (or a large camera-facing StarBurst at the impact) for 1 frame, then replace it with an Emitter of flat radial streaks (velocity in the ground plane) + createRing. Same frame: LightPillar thin, ground-decal sprite with a six-fold snowflake texture (NEW texture) and a rune band, fade rim-first via a radial alpha threshold. Freeze the target: a translucent box mesh with fresnel. Instanced crystal shards with upward velocity 2 m/s and spin. Sparkle Emitter to finish."
+  },
+  {
+    "id": "i-xray-cyan-punch-impact-cards",
+    "name": "Cyan punch with an X-ray impact card: energy ball arrives on the face first, neon speed bars, split card / skeleton card / inverted split card, then a frozen splash",
+    "source": { "title": "righteous – vfx practice | Roblox animation", "url": "https://www.youtube.com/watch?v=cL3SOjXcMlU&t=0s", "kind": "video" },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "other",
+    "durationSec": 2.1,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.43, "what": "video 0:00.4-0:02.5. Face close-up, big translucent cyan wisps cross the frame (0.4), a cyan glowing ball appears on the target's forehead (0.5), hard cyan brush strokes shoot in from the side (0.57-0.63), the ball turns into radial shards and the face is tinted cyan (0.7-0.77)" },
+      { "name": "release", "start": 0.43, "end": 0.57, "what": "0.83-0.97: dark frame with black and cyan speed lines, then straight parallel neon cyan bars on navy" },
+      { "name": "impact", "start": 0.57, "end": 0.83, "what": "0.97 diagonal black/white split card, 1.03 X-ray: flat cyan skeleton silhouette on pure black, 1.10 inverted split card, 1.17 back to 3D with a white skull drawn over the head and horizontal smear streaks, 1.23 contact shot with thin black speed lines" },
+      { "name": "aftermath", "start": 0.83, "end": 2.1, "what": "1.3-2.4: thin curved splash strokes fan out and hang almost frozen for ~1 s while the camera holds (hit-stop)" }
+    ],
+    "layers": [
+      { "part": "emitter-wisps", "phase": "anticipation", "blend": "additive", "colors": ["#bff4ff", "#3fd6ff"], "motion": "2-3 huge translucent sheets sweeping across the camera, 30 % opacity, 0.2 s", "notes": "colour arrives before the fist" },
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#6fe0ff", "#1a8fd0"], "motion": "ball on the target's face 0.2 -> 0.6 m over 0.2 s, then bursts into radial slivers", "notes": "the energy hits before the body does" },
+      { "part": "trail-ribbon", "phase": "anticipation", "blend": "normal", "colors": ["#3fd6ff", "#0a5a8a"], "motion": "3 opaque flat brush strokes streak in from the side at eye level in 2 frames", "notes": "toon strokes, hard edges, no glow" },
+      { "part": "screen-flash", "phase": "release", "blend": "normal", "colors": ["#0a1428", "#3fd6ff", "#ffffff"], "motion": "2 frames of black/cyan diagonal speed lines, then 2 frames of straight neon bars (white core, cyan glow) on navy", "notes": "the world disappears into graphics before the hit" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#000000", "#ffffff", "#2fb8ff"], "motion": "3 cards, 2 frames each: diagonal half-black/half-white split; flat cyan skeleton silhouette of the target on black; the split card inverted", "notes": "the X-ray card says 'through the bone' in one image" },
+      { "part": "distortion", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "1 frame back in 3D: horizontal smear streaks across the frame and a white skull overlay on the head", "notes": "a transition frame that blends card and world" },
+      { "part": "trail-ribbon", "phase": "aftermath", "blend": "normal", "colors": ["#d01020", "#8a0010"], "motion": "8-12 thin curved splash strokes fanning back from the contact point, 0.15 s to full length, then nearly frozen for 1 s, slow fade", "notes": "the frozen splash IS the hit-stop; use the element colour if gore is not wanted" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "none during the cards, one heavy jolt on the first 3D frame, then a held still camera", "notes": "" }
+    ],
+    "palette": ["#000000", "#0a1428", "#3fd6ff", "#2fb8ff", "#ffffff", "#d01020"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "The X-ray skeleton card in the middle of the impact sequence explains the force of the hit instantly",
+      "The energy ball lands on the face before the fist, so the hit is anticipated by its own colour",
+      "Speed bars and neon strips remove the world for 0.15 s, making the return to 3D feel like a cut",
+      "The splash hangs in the air while the camera holds: a visible hit-stop instead of a time-scale trick"
+    ],
+    "buildNotes": "Video 0:00.4-0:02.5. Use ScreenFx for the release and impact: (1) diagonal speed-line card (black + cyan), (2) neon bar card, (3) split card, (4) skeleton card: a NEW silhouette card that renders the target's mesh with a flat cyan skeleton texture (or a pre-made skeleton sprite) on black, (5) inverted split. 2 frames each. Before that, a GlowSphere on the target's head and 3 opaque cyan brush quads. After: return to the world with one frame of horizontal smear (distortion), then 8-12 thin ribbon strokes from the contact point with time-scale 0.05 for 1 s (they barely move), heavy shake on the first real frame."
+  },
+  {
+    "id": "i-void-cut-rotating-band-slash",
+    "name": "Invisible slash told on a black screen: a white-rimmed black band rotates and thins to a hairline, white frame, inverted X-ray card, then the wound line appears",
+    "source": { "title": "righteous – vfx practice | Roblox animation", "url": "https://www.youtube.com/watch?v=cL3SOjXcMlU&t=8s", "kind": "video" },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "other",
+    "durationSec": 2.7,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1.27, "what": "video 0:08.6-0:11.3. 8.6-9.83 slow close-ups of the hands and body with no VFX at all (held tension)" },
+      { "name": "release", "start": 1.27, "end": 1.6, "what": "9.87-10.2: cut to a dark navy screen; a thick black band with glowing white edges rotates from vertical to almost horizontal and thins to a hairline over 0.25 s, then a full white frame (10.2)" },
+      { "name": "impact", "start": 1.6, "end": 1.87, "what": "10.27 white card with a black outline skeleton of the target and a black diagonal band, 10.33 black card with a white diagonal wedge, 10.4 back in 3D: a thin white line still across the frame, 10.47 the target shows a diagonal red line across the torso" },
+      { "name": "aftermath", "start": 1.87, "end": 2.7, "what": "10.5-11.3: red specks drift slowly, the line holds" }
+    ],
+    "layers": [
+      { "part": "screen-flash", "phase": "release", "blend": "normal", "colors": ["#0a0f1c", "#000000", "#ffffff"], "motion": "camera-facing band quad 30 % of screen width, black fill with a 2-3 px white glow rim, rotates 90 -> 10 degrees and thins to 1 px over 0.25 s on a dark navy background", "notes": "the blade's swept plane seen edge-on: the cut 'closes'" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#ffffff", "#000000"], "motion": "1 white frame; 2 frames white card with a black-outline skeleton and a black band; 2 frames black card with a white diagonal wedge", "notes": "inverted X-ray: outline on white instead of fill on black" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#d8e8ff"], "motion": "back in 3D, a hairline white slash line across the whole frame, fades over 0.2 s", "notes": "the same line as the card, now in the world" },
+      { "part": "ground-decal", "phase": "impact", "blend": "normal", "colors": ["#c01020", "#5a0010"], "motion": "a thin diagonal line on the target's body (a decal on the dummy), appears in 1 frame", "notes": "result state; swap colour per element" },
+      { "part": "emitter-sparks", "phase": "aftermath", "blend": "normal", "colors": ["#d01020", "#6a0010"], "motion": "15-20 small flecks drifting slowly sideways, gravity 0.5, life 0.8 s", "notes": "" }
+    ],
+    "palette": ["#0a0f1c", "#000000", "#ffffff", "#c01020"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "1.2 s of quiet close-ups with no VFX makes the sudden graphic sequence feel violent",
+      "Showing only the cut path (a rotating, thinning band) is clearer than showing a blade: you see the motion, not the object",
+      "The X-ray card is inverted compared with the punch move, so the same video has two distinct impact signatures",
+      "The 3D result is tiny (a line on the body), which makes the cards feel like the real event"
+    ],
+    "buildNotes": "Video 0:08.6-0:11.3. Hold the camera on the caster 1.2 s (no effects). ScreenFx: full-screen dark navy (#0a0f1c) with a camera-facing quad (black fill, white rim shader), tween rotation 90->10 deg and width 30%->0.2% over 0.25 s with ease-in. Then 1 white frame, 2 frames inverted skeleton card (NEW silhouette card, outline mode), 2 frames black card with a white wedge polygon. Back in world: a thin white line quad across the target at the same angle, a decal line on the dummy, a slow fleck Emitter. Medium shake only on the return to 3D."
+  },
+  {
+    "id": "i-ice-spiral-comma-sweep",
+    "name": "Spiral ice sweep: many small comma streaks burst in one rotation direction, then two big ground crescents",
+    "source": { "title": "Pew – Ice Moveset Showcase | Roblox Studio VFX", "url": "https://www.youtube.com/watch?v=HOeAQEvFDNA&t=56s", "kind": "video" },
+    "archetype": "nova",
+    "targeting": "self",
+    "element": "ice",
+    "durationSec": 1.1,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.43, "what": "video 0:56.9-0:58.0. Caster still among dark rubble, one blue glint at the hand (57.2), two empty crouch frames" },
+      { "name": "release", "start": 0.43, "end": 0.6, "what": "57.4-57.5: ~20 thin white comma-shaped streaks burst out around the waist, all bent the same way (spiral), blue slivers and a small white flash" },
+      { "name": "impact", "start": 0.6, "end": 0.9, "what": "57.6-57.8: two big flat crescent arcs sweep around on the floor (radius 5 -> 7 m), thick white leading edge, thin cyan tail, ends breaking into fragments" },
+      { "name": "aftermath", "start": 0.9, "end": 1.1, "what": "58.0: clean; a tighter double-spiral variant plays at 60.4-61.2" }
+    ],
+    "layers": [
+      { "part": "core-flash", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#6fb8ff"], "motion": "tiny blue glint at the hand for 1 frame", "notes": "the only cue" },
+      { "part": "emitter-wisps", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#bfe4ff", "#3f8fe0"], "motion": "20 comma-shaped curved streaks spawned on a ring of radius 1 m at waist height, tangential + outward velocity 8 m/s, all curving clockwise, drag 3, life 0.3 s", "notes": "many small shapes with one shared spin direction read as a vortex" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#cfe8ff", "#4f9fe8"], "motion": "30 small blue ice slivers sprayed outward, life 0.25 s", "notes": "" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#8fd0ff", "#2f6fc0"], "motion": "2 flat crescents on the floor, 180 degrees apart, sweeping 120 degrees around while radius grows 5 -> 7 m over 0.3 s; tips erode into dashes", "notes": "many small -> two big: the second beat is a scale jump" },
+      { "part": "light", "phase": "release", "blend": "additive", "colors": ["#bfe4ff"], "motion": "point light spike 0.1 s", "notes": "" }
+    ],
+    "palette": ["#ffffff", "#bfe4ff", "#6fb8ff", "#2f6fc0", "#3a3020"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Every streak bends the same way, so a burst of particles reads as one spinning motion",
+      "The move goes from many small marks to two big ground crescents in 0.2 s: a clear scale jump",
+      "Total length is only 0.6 s of visible effect, which keeps a utility move snappy"
+    ],
+    "buildNotes": "Video 0:56.9-0:58.0. Emitter with a curved comma sprite (or short CrescentArc segments) spawned on a 1 m ring, velocity = tangent*6 + radial*4, add a constant angular term so all curve the same way; drag 3. Then 2 CrescentArc on the floor plane (toon dialect: white leading edge, cyan tail) sweeping 120 degrees with radius growth and tip erosion. Keep the caster's surroundings dark so the white reads."
+  },
+  {
+    "id": "i-frost-pillar-snow-dome-rubble",
+    "name": "Frost strike from the sky: light-shaft cue, warm spiky flash, ice column collapses into a snow dome, dark rubble bursts out of the dome and outlives it",
+    "source": { "title": "Pew – Ice Moveset Showcase | Roblox Studio VFX", "url": "https://www.youtube.com/watch?v=HOeAQEvFDNA&t=62s", "kind": "video" },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "ice",
+    "durationSec": 1.8,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.6, "what": "video 1:02.4-1:04.2. Pale light shafts through the clouds above the spot (62.4-62.7), then calm" },
+      { "name": "release", "start": 0.6, "end": 0.73, "what": "63.0-63.07: warm cream-white spiky starburst, spikes stretching upward" },
+      { "name": "impact", "start": 0.73, "end": 1.15, "what": "63.13 collapses to a white column with a blue swirl at the base; 63.2-63.27 a white-blue snow dome (~4 m) with one crisp white arc outline hugging its top; 63.4 dark rubble cubes emerge from the dome surface; 63.55 dome breaks up" },
+      { "name": "aftermath", "start": 1.15, "end": 1.8, "what": "63.75-64.2: only dark cubes arcing away and falling; the bright layer is gone first" }
+    ],
+    "layers": [
+      { "part": "light-pillar", "phase": "anticipation", "blend": "additive", "colors": ["#fff8e8", "#d8d0b8"], "motion": "2-3 soft pale light shafts from the sky onto the spot, 30 % opacity, 0.4 s", "notes": "telegraph from above, very soft" },
+      { "part": "core-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#fff2c8", "#ffd890"], "motion": "spiky starburst 4 m, 2 frames, spikes stretched upward on the 2nd frame", "notes": "warm white for the flash, cold for everything after" },
+      { "part": "light-pillar", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fd0ff"], "motion": "short white column with a blue swirl at the base, 2 frames", "notes": "" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "normal", "colors": ["#ffffff", "#cfe4ff", "#6f9fd0"], "motion": "hemisphere of 15-20 opaque toon snow puffs (r 4 m), pop in 1 frame, expand 10 %, break up after 0.35 s", "notes": "a solid snow volume, normal-blended, so it occludes" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#ffffff"], "motion": "one thin crisp arc outline hugging the top of the dome, 0.15 s", "notes": "one clean line on the noisy dome" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#2a2018", "#4a3a2a"], "motion": "14-20 dark cubes spawned on the dome surface 0.2 s after the dome, velocity outward 6-9 m/s, gravity 12, spin by speed, life 1 s", "notes": "debris comes out of the bright volume and outlives it" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "medium shake on the flash", "notes": "" }
+    ],
+    "palette": ["#fff2c8", "#ffffff", "#cfe4ff", "#6f9fd0", "#2a2018"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "The flash is warm white and the body cold blue-white: the temperature switch separates the hit from the result",
+      "The dark rubble appears from inside the snow and keeps flying after the snow is gone, so the effect ends dark and heavy",
+      "A single crisp outline over the puffy dome gives the soft volume a readable edge"
+    ],
+    "buildNotes": "Video 1:02.4-1:04.2. Telegraph: 2-3 thin LightPillar quads with low opacity tilted from the sky. Flash: StarBurst in cream for 2 frames. Dome: a cluster of SmokeBall puffs (normal blend, white with blue shading) placed on a hemisphere, plus one createRing arc on the dome top. At +0.2 s spawn instanced dark cubes on the dome surface with outward velocity and gravity; dome puffs erode away 0.15 s later. Debris lasts 0.6 s longer than the dome."
+  },
+  {
+    "id": "i-ice-cathedral-line-cone-eruption",
+    "name": "Ice cathedral: an inverted cone of thin light lines widens, narrows (implode), then a mound of cream-white crystal spikes erupts with frost puffs at the rim",
+    "source": { "title": "Pew – Ice Moveset Showcase | Roblox Studio VFX", "url": "https://www.youtube.com/watch?v=HOeAQEvFDNA&t=74s", "kind": "video" },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "ice",
+    "durationSec": 3.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.85, "what": "video 1:14.5-1:18.0. 74.8 an inverted cone of thin vertical blue light lines appears over the caster (top ~6 m wide), 75.0-75.2 widens and the white top rim brightens" },
+      { "name": "release", "start": 0.85, "end": 0.97, "what": "75.35-75.43: the cone narrows to ~3 m (implode)" },
+      { "name": "impact", "start": 0.97, "end": 1.7, "what": "75.47 cream-white crystal spikes burst outward 3-4 m with a cyan base, 75.5-75.6 they thicken into a dense mound ~6 m wide with frost cloud puffs at the rim, 75.7-76.2 full size, small shards still spraying" },
+      { "name": "aftermath", "start": 1.7, "end": 3.5, "what": "76.6-78: the cluster shimmers, shrinks slightly and fades while the camera orbits; dark rubble passes in the foreground" }
+    ],
+    "layers": [
+      { "part": "light-pillar", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#6fb8ff", "#2f6fc0"], "motion": "20 thin vertical line quads on an inverted cone (bottom at the caster, top radius 3 m at 4 m height) + a white ring at the top; radius grows 10 % over 0.4 s, then shrinks to 50 % in 0.1 s", "notes": "a lampshade of rays: readable from any angle and cheap" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#fffaf0", "#d8f0ff", "#4fb0f0"], "motion": "30-40 crystal spikes (thin prisms) growing from the centre at random outward tilts, scale 0 -> 1 in 3 frames with overshoot, hold 1 s, shrink 20 % and fade over 1.5 s", "notes": "hard solid shapes, cream-white with a cyan fresnel edge" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "normal", "colors": ["#ffffff", "#bfe0ff", "#7fb0e0"], "motion": "frost puffs only at the rim of the mound, rolling outward, life 1.2 s", "notes": "soft only at the edge, so the middle stays solid ice" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#9fd8ff"], "motion": "small shards spraying up and out for 0.6 s", "notes": "" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#cfefff"], "motion": "1-frame flash at the cone tip as it turns into spikes", "notes": "" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "medium shake on the eruption", "notes": "" }
+    ],
+    "palette": ["#fffaf0", "#ffffff", "#d8f0ff", "#6fb8ff", "#2f6fc0", "#2a2018"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "The line cone is a clear 'it will come out here' marker that also tells the size of the area",
+      "It widens, then narrows for 0.1 s before the eruption: a tiny implode that times the hit",
+      "Solid spikes in the middle, soft puffs only at the rim: the ice reads as hard",
+      "The mound holds for over a second, giving a strong readable result shape"
+    ],
+    "buildNotes": "Video 1:14.5-1:18.0. NEW part idea: line-cone telegraph (N thin additive quads on a cone surface + a ring at the top), animate top radius. Then instanced crystal prisms (ConeGeometry with 4-6 sides) with random outward tilt, overshoot scale tween, normal-blended with a cyan fresnel. SmokeBall puffs spawned on a 3 m ring only. Sparks Emitter. Fade the mound by shrinking and alpha-eroding rather than a uniform fade."
+  },
+  {
+    "id": "i-acheron-petal-wipe-monochrome-slashes",
+    "name": "Crimson ultimate opener: the character drains to grey, giant petals wipe the screen into a black void with a white crescent moon, red laser slashes and flower-star hits",
+    "source": { "title": "Divergent Vfx – Acheron Ultimate | Roblox VFX", "url": "https://www.youtube.com/watch?v=3KIzXAukn5I&t=0s", "kind": "video" },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "blood",
+    "durationSec": 6.2,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 2.2, "what": "video 0:00.5-0:06.7. 0.5-1.3 the caster's colours drain to grey (only red accents stay), 2.0 a long red blade is drawn with a thin red trail, 2.4 red petals orbit and a grey spiral vortex forms on the floor" },
+      { "name": "release", "start": 2.2, "end": 2.8, "what": "2.55-3.1: a red spiral ring and petals rushing at the camera; giant glossy red petals fill the whole frame (wipe); 3.3 the petals clear onto a black starry void with a wet reflective floor" },
+      { "name": "impact", "start": 2.8, "end": 5.8, "what": "3.5 a big white crescent-moon arc stands behind the target; 3.8 thin red laser streak from the blade to the target; 4.4 a red six-petal flower-star hit; 5.1-5.3 more horizontal laser streaks; 5.45-5.55 a red starburst with black needle spikes inside and a white arc sweep; 5.9-6.3 pink-white slash streak, orange sparks, another flower star" },
+      { "name": "aftermath", "start": 5.8, "end": 6.2, "what": "6.5-6.7: calm void, petals falling" }
+    ],
+    "layers": [
+      { "part": "screen-flash", "phase": "anticipation", "blend": "normal", "colors": ["#808080", "#e01830"], "motion": "desaturate the caster first (0.4 s), then the whole world after the wipe; keep only red", "notes": "the colour drain is the 'ultimate starts' signal" },
+      { "part": "emitter-wisps", "phase": "release", "blend": "normal", "colors": ["#ff8c9a", "#e8283a", "#6a0010"], "motion": "petal meshes orbit the caster, then 20-30 giant petals fly at the camera and cover it for 0.4 s", "notes": "a wipe made from the theme particle" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#e8e8f0"], "motion": "3/4 circle arc 6 m tall standing behind the target, static for the whole move, mirrored in the floor", "notes": "one calm clean shape behind all the busy hits" },
+      { "part": "beam-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff2a3a", "#a00018"], "motion": "very thin laser streaks crossing the whole screen in 2-3 frames at different heights, fade over 0.15 s", "notes": "slashes drawn as lasers" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff3040"], "motion": "six thin pointed petals (flower-star) 1 m, 3 frames per hit", "notes": "the theme shape used as a hit spark" },
+      { "part": "core-flash", "phase": "impact", "blend": "normal", "colors": ["#ff2030", "#000000", "#ffffff"], "motion": "jagged red starburst 2 m with black needle spikes inside, 3 frames", "notes": "black inside the bright layer" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#ffd0a0", "#ff6a30"], "motion": "small orange sparks on the last hit, life 0.3 s", "notes": "" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "light shakes per hit", "notes": "" }
+    ],
+    "palette": ["#000000", "#808080", "#ffffff", "#ff2030", "#e8283a", "#6a0010"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "Draining the colour first (character, then world) makes red the only hue, so every red element reads instantly",
+      "The transition into the void uses the theme's own petals as a wipe instead of a white flash",
+      "A static white crescent moon behind the target gives the busy hits a calm frame and is doubled by the wet floor",
+      "Hit sparks are flower shapes and red stars with black spikes inside, not generic bursts"
+    ],
+    "buildNotes": "Video 0:00.5-0:06.7. ScreenFx: a saturation uniform tweened to 0 for the world (keep the effect layers outside the grade) and a black void/star backdrop for the impact stage (see §10 'charge in a void'). Petals: Emitter with a petal mesh (NEW small mesh), normal blend, then a camera-attached burst of large petals for the wipe. Moon arc: a torus segment or ring quad with soft glow, placed behind the target relative to the camera; a reflective floor is optional (a flipped copy at 30 % opacity). Slashes: 1-px beam-ribbons spanning 20 m, 2-3 frames each. Hit sparks: StarBurst with 6 petal-shaped spikes; a second StarBurst variant with black spikes drawn under the red."
+  },
+  {
+    "id": "i-acheron-crack-web-shatter-finisher",
+    "name": "Crack-web finisher: a full-screen web of glowing red cracks appears in one frame and holds still, then light rays, two speed-line impact frames and the screen shatters into a pink whiteout",
+    "source": { "title": "Divergent Vfx – Acheron Ultimate | Roblox VFX", "url": "https://www.youtube.com/watch?v=3KIzXAukn5I&t=6s", "kind": "video" },
+    "archetype": "other",
+    "targeting": "enemies",
+    "element": "blood",
+    "durationSec": 3.5,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.55, "what": "video 0:06.9-0:10.4. Slow close-up of the caster's face and raised blade, red petals floating (6.9-7.35), then one full-screen pink-red card with a thin horizontal cut line (7.45)" },
+      { "name": "release", "start": 0.55, "end": 2.15, "what": "7.55: a web of glowing red polygon crack lines covers the screen and the floor around the target in one frame; 7.62-8.9 it holds completely still for 1.35 s over the grey world and the white moon arc" },
+      { "name": "impact", "start": 2.15, "end": 2.75, "what": "9.05 white light rays burst from the crack centre, 9.25 full-screen radial speed lines red on black, 9.45 the same white on black, 9.65 the screen breaks into red/black glass shards falling away" },
+      { "name": "aftermath", "start": 2.75, "end": 3.5, "what": "9.9 pink-red wash, 10.2 cream-white whiteout (end)" }
+    ],
+    "layers": [
+      { "part": "screen-flash", "phase": "anticipation", "blend": "normal", "colors": ["#ff8090", "#ffffff"], "motion": "1 flat pink-red card with a 1-px white horizontal line, 2 frames", "notes": "the cut happens off-screen; the card stands for it" },
+      { "part": "screen-flash", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ff1a2a", "#8a0010"], "motion": "full-screen crack-web overlay (20-30 polygon cells radiating from the target's screen position), appears at full size in 1 frame, holds still 1.35 s", "notes": "the stillness after a sudden crack is the anticipation" },
+      { "part": "ground-decal", "phase": "release", "blend": "additive", "colors": ["#ff2a3a", "#6a0010"], "motion": "matching red crack lines on the floor around the target, same timing", "notes": "ties the screen crack to the world" },
+      { "part": "light-pillar", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffd8d8"], "motion": "fan of 8-10 white rays from the crack centre, 3 frames", "notes": "" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#ff2030", "#000000", "#ffffff"], "motion": "2 frames radial speed lines red on black, 2 frames white on black", "notes": "impact frames as focus lines" },
+      { "part": "mesh-debris", "phase": "impact", "blend": "normal", "colors": ["#ff2030", "#000000"], "motion": "the screen image split into ~20 triangles that fall and rotate away over 0.25 s", "notes": "a screen-space shatter, revealing the wash behind" },
+      { "part": "screen-flash", "phase": "aftermath", "blend": "normal", "colors": ["#ff6a7a", "#fde8dc"], "motion": "pink-red wash 0.25 s, then a cream-white hold", "notes": "exit through a warm white" },
+      { "part": "camera-shake", "phase": "impact", "blend": "normal", "colors": ["#ffffff"], "motion": "no shake during the hold; one heavy shake on the shatter", "notes": "" }
+    ],
+    "palette": ["#000000", "#808080", "#ffffff", "#ff1a2a", "#8a0010", "#fde8dc"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "The crack web appears all at once and then nothing moves for 1.35 s: the frozen frame builds more tension than any charge-up",
+      "Screen-space cracks plus matching floor cracks make it feel like reality itself broke",
+      "The payoff escalates in three different graphic forms in 0.6 s (rays, two speed-line cards, shatter)",
+      "Ending in a cream whiteout instead of pure white keeps the red theme warm to the end"
+    ],
+    "buildNotes": "Video 0:06.9-0:10.4. NEW ScreenFx passes: (1) crack-web overlay: generate Voronoi edges around the target's screen position (or a hand-made polyline texture), draw thick red lines with a white core, additive; (2) shatter: copy the frame into a texture and split it into ~20 triangles that fall with gravity and spin. Sequence: 2-frame pink card, crack (hold 1.35 s, no shake), 3-frame ray fan (LightPillar quads in screen space), 2+2 frames focus-line cards (existing ScreenFx focus lines in red/black, then white/black), shatter 0.25 s, pink wash, cream hold. Heavy shake only with the shatter."
+  }
+]

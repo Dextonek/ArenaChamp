@@ -1,0 +1,2598 @@
+[
+  {
+    "id": "a-lol-ashe-enchanted-crystal-arrow",
+    "name": "Giant frost arrow with shatter stun",
+    "source": {
+      "title": "League of Legends: Ashe, Enchanted Crystal Arrow",
+      "url": "https://wiki.leagueoflegends.com/en-us/Template:Data_Ashe/Enchanted_Crystal_Arrow",
+      "kind": "game"
+    },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "ice",
+    "durationSec": 2.6,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.3,
+        "what": "bow draws, small frost flash at the nock"
+      },
+      {
+        "name": "release",
+        "start": 0.3,
+        "end": 1.8,
+        "what": "oversized arrow flies a long straight line with a long icy wake"
+      },
+      {
+        "name": "impact",
+        "start": 1.8,
+        "end": 2.2,
+        "what": "arrow shatters into crystal shards, ice burst on the victim"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.2,
+        "end": 2.6,
+        "what": "frost mist and snow motes settle"
+      }
+    ],
+    "layers": [
+      {
+        "part": "core-flash",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#bfeaff"
+        ],
+        "motion": "quick scale pop at the bow",
+        "notes": "sells the shot start"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#e8fbff",
+          "#6cc8ff"
+        ],
+        "motion": "long thin crystal spear, 40 u/s",
+        "notes": "fat head, thin tail; spin the shaft slightly"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fd4ff",
+          "#1c6bd6"
+        ],
+        "motion": "follows arrow, pulses 0.1s",
+        "notes": "bright head makes it readable at distance"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#d8f6ff",
+          "#4aa8ff",
+          "#0a2f7a"
+        ],
+        "motion": "long ribbon, 1.0s life, taper to zero",
+        "notes": "ribbon length is the signature"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#9fe0ff"
+        ],
+        "motion": "shed from tail, drag 2, tiny gravity",
+        "notes": "ice glitter"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#8fd8ff"
+        ],
+        "motion": "fast expand 0.3s, flat",
+        "notes": "crisp frost ring"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#dff6ff",
+          "#58b8f0"
+        ],
+        "motion": "radial shards, gravity 8, spin",
+        "notes": "sharp triangular crystals"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#cfeaff",
+          "#6a8fb8"
+        ],
+        "motion": "slow rise, drag 3",
+        "notes": "cold mist"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.2s short sharp",
+        "notes": "light kick"
+      }
+    ],
+    "palette": [
+      "#e8fbff",
+      "#6cc8ff",
+      "#1c6bd6"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "one clean line gives a strong read over a long distance",
+      "white-hot head against blue tail gives temperature gradient",
+      "impact shatter pays off the long flight"
+    ],
+    "buildNotes": "Spawn an additive glow sphere head plus a trail ribbon that is 3x longer than the head is wide. Keep arrow speed constant, no wobble. On hit fire a flat ring, 12-20 instanced shard meshes with gravity, and a frost mist emitter. Exaggerate: a 3x oversized head, a ground frost line left along the whole flight path, and a freeze-frame of 0.06s at impact."
+  },
+  {
+    "id": "a-dota-windranger-powershot",
+    "name": "Channelled wide power arrow",
+    "source": {
+      "title": "Dota 2: Windranger, Powershot",
+      "url": "https://dota2.fandom.com/wiki/Windranger",
+      "kind": "game"
+    },
+    "archetype": "projectile",
+    "targeting": "ground",
+    "element": "wind",
+    "durationSec": 2.4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.9,
+        "what": "bow draws, wind spirals gather, aim line on ground"
+      },
+      {
+        "name": "release",
+        "start": 0.9,
+        "end": 1.9,
+        "what": "wide arrow with pressure wave travels, damage falloff along it"
+      },
+      {
+        "name": "impact",
+        "start": 1.9,
+        "end": 2.1,
+        "what": "arrow fades into spray of leaves and air"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.1,
+        "end": 2.4,
+        "what": "wind wisps drift off"
+      }
+    ],
+    "layers": [
+      {
+        "part": "emitter-wisps",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#d6ffe0",
+          "#7ad98a"
+        ],
+        "motion": "inward spiral to bow, drag 1.5",
+        "notes": "charge reads as pull-in"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#9bffb0",
+          "#2f8a45"
+        ],
+        "motion": "thin line along aim path, fades in",
+        "notes": "telegraph the lane"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#f4fff4",
+          "#7ad98a"
+        ],
+        "motion": "long arrow, speed 50 u/s",
+        "notes": "long shaft with fletching shape"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#8cf0a0",
+          "#1d8a3a"
+        ],
+        "motion": "oval, stretched along motion",
+        "notes": "stretch gives speed"
+      },
+      {
+        "part": "distortion",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "cone ahead of head, short life",
+        "notes": "air push look"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#e0ffe8",
+          "#58d078"
+        ],
+        "motion": "wide ribbon 0.8s",
+        "notes": "ribbon wide as the hit lane"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a8ffb8"
+        ],
+        "motion": "radial burst, drag 2",
+        "notes": "small end burst"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "subtle",
+        "notes": "light"
+      }
+    ],
+    "palette": [
+      "#f4fff4",
+      "#7ad98a",
+      "#1d8a3a"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "wide ground telegraph and wide projectile match, so hit area is honest",
+      "wind distortion adds speed without extra geometry",
+      "long charge then fast release makes a clear beat"
+    ],
+    "buildNotes": "Build a long arrow mesh scaled wide in X, a stretched additive glow sphere, and a thick trail ribbon. Use inward-spiral wisps for the charge and a ground line decal. Exaggerate: screen-edge wind streaks during the charge, a 2x wider arrow, and leaves instanced along the path."
+  },
+  {
+    "id": "a-ow-hanzo-dragonstrike",
+    "name": "Spirit dragons pair released from an arrow",
+    "source": {
+      "title": "Overwatch: Hanzo, Dragonstrike",
+      "url": "https://overwatch.fandom.com/wiki/Hanzo",
+      "kind": "game"
+    },
+    "archetype": "projectile",
+    "targeting": "ground",
+    "element": "water",
+    "durationSec": 3.2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.9,
+        "what": "Hanzo draws, blue-and-teal spirit energy coils round the arrow"
+      },
+      {
+        "name": "release",
+        "start": 0.9,
+        "end": 1.3,
+        "what": "arrow bursts, two dragons spawn out of it"
+      },
+      {
+        "name": "impact",
+        "start": 1.3,
+        "end": 2.6,
+        "what": "dragons weave forward in a long line, damaging everything"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.6,
+        "end": 3.2,
+        "what": "dragons dissolve into glowing petals and mist"
+      }
+    ],
+    "layers": [
+      {
+        "part": "emitter-wisps",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#bff6ff",
+          "#2fa8d8"
+        ],
+        "motion": "spiral onto the arrow, drag 1",
+        "notes": "gathering"
+      },
+      {
+        "part": "core-flash",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fe8ff"
+        ],
+        "motion": "quick pop 0.15s",
+        "notes": "spawn punctuation"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#eaffff",
+          "#3fd0e0",
+          "#145a9a"
+        ],
+        "motion": "two thick ribbons weaving sine path, 1.2s life",
+        "notes": "ribbon body is the dragon"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#bff6ff",
+          "#1fa0c8"
+        ],
+        "motion": "head mesh with horns/jaw at ribbon tip",
+        "notes": "simple head sells creature"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#5fe0f0"
+        ],
+        "motion": "head glow, eyes",
+        "notes": "bright eyes read"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fe8ff"
+        ],
+        "motion": "shed from body, drag 2",
+        "notes": "spirit sparks"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#c8f6ff",
+          "#2f9ac8"
+        ],
+        "motion": "rise, drag 3",
+        "notes": "dissolve"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "low rumble 1.2s",
+        "notes": "medium"
+      }
+    ],
+    "palette": [
+      "#eaffff",
+      "#3fd0e0",
+      "#145a9a"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "two interwoven bodies give a spiral that reads as dragon with low cost",
+      "cyan with warm white head keeps contrast on any map",
+      "a long hold makes the line feel dangerous"
+    ],
+    "buildNotes": "Move two ribbon heads along a sine path with phase offset PI (amplitude 1.5, freq 2 Hz) and place head meshes at the tips. Add scale fins as small instanced quads along the body. Exaggerate: 3x wider bodies, a dragon roar flash (screen-flash) at spawn, and a ground scorch along the path."
+  },
+  {
+    "id": "a-val-raze-showstopper",
+    "name": "Rocket launcher round with fat explosion",
+    "source": {
+      "title": "Valorant: Raze, Showstopper",
+      "url": "https://valorant.fandom.com/wiki/Raze",
+      "kind": "game"
+    },
+    "archetype": "projectile",
+    "targeting": "enemy",
+    "element": "fire",
+    "durationSec": 1.8,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.2,
+        "what": "muzzle flash and backblast"
+      },
+      {
+        "name": "release",
+        "start": 0.2,
+        "end": 0.9,
+        "what": "rocket flies, smoke trail with flame tail"
+      },
+      {
+        "name": "impact",
+        "start": 0.9,
+        "end": 1.2,
+        "what": "big orange fireball and debris"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.2,
+        "end": 1.8,
+        "what": "smoke column and lingering sparks"
+      }
+    ],
+    "layers": [
+      {
+        "part": "core-flash",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffd070"
+        ],
+        "motion": "0.1s, forward cone",
+        "notes": "muzzle pop"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#444444",
+          "#ff8a30"
+        ],
+        "motion": "small rocket, speed 35 u/s",
+        "notes": "tiny body, big trail"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#888888",
+          "#333333"
+        ],
+        "motion": "drag 2, slow rise",
+        "notes": "thick smoke trail"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#fff0b0",
+          "#ff7a20"
+        ],
+        "motion": "shed behind, gravity 3",
+        "notes": "sparks"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffc060",
+          "#ff5a10"
+        ],
+        "motion": "scale 0 to 6 in 0.2s",
+        "notes": "overexposed fireball"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb060"
+        ],
+        "motion": "fast flat ring",
+        "notes": "blast reading"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#555555",
+          "#ffb060"
+        ],
+        "motion": "radial chunks, gravity 9",
+        "notes": "dirt"
+      },
+      {
+        "part": "screen-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#fff0d0"
+        ],
+        "motion": "0.1s",
+        "notes": "near-hit only"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.35s sharp decay",
+        "notes": "medium"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#ffc060",
+      "#ff5a10",
+      "#333333"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "small clean projectile vs huge explosion gives scale contrast",
+      "dark smoke on bright fire gives value separation",
+      "short anticipation keeps it snappy"
+    ],
+    "buildNotes": "Rocket mesh plus smoke emitter dense at the tail and ember emitter. Explosion: stack white core flash, orange glow sphere, flat ring, debris, smoke column rising. Exaggerate: double the fireball size, add a second delayed pop at 0.1s, and a lingering heat distortion."
+  },
+  {
+    "id": "a-lol-lux-final-spark",
+    "name": "Huge piercing prismatic laser",
+    "source": {
+      "title": "League of Legends: Lux, Final Spark",
+      "url": "https://wiki.leagueoflegends.com/Lux",
+      "kind": "game"
+    },
+    "archetype": "beam",
+    "targeting": "ground",
+    "element": "arcane",
+    "durationSec": 2.2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.9,
+        "what": "red telegraph line, rainbow energy converges at the staff"
+      },
+      {
+        "name": "release",
+        "start": 0.9,
+        "end": 1.1,
+        "what": "beam snaps out to full length"
+      },
+      {
+        "name": "impact",
+        "start": 1.1,
+        "end": 1.8,
+        "what": "beam holds, width pulses, ground burned along it"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.8,
+        "end": 2.2,
+        "what": "beam thins out, sparkles linger"
+      }
+    ],
+    "layers": [
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ff5a5a",
+          "#7a1010"
+        ],
+        "motion": "thin line, pulsing alpha",
+        "notes": "telegraph"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#b8a0ff",
+          "#ff9ad8"
+        ],
+        "motion": "inward converge, drag 1.5",
+        "notes": "charge ball"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#c8b0ff"
+        ],
+        "motion": "grows 0 to 3",
+        "notes": "orb at staff"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#d0b8ff",
+          "#7a4af0"
+        ],
+        "motion": "width 6, 1.5 Hz pulse of 10 percent",
+        "notes": "white core, coloured edge"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ff9ad8",
+          "#7aa0ff"
+        ],
+        "motion": "outer sheath width 10, scrolling noise",
+        "notes": "prismatic halo"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#e0d0ff"
+        ],
+        "motion": "burst from beam edge outward",
+        "notes": "spray"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#b8a0ff"
+        ],
+        "motion": "sphere at origin, flicker",
+        "notes": "muzzle source"
+      },
+      {
+        "part": "distortion",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "around the origin",
+        "notes": "heat feel"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.7s steady low",
+        "notes": "medium"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#d0b8ff",
+      "#7a4af0",
+      "#ff9ad8"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "white-hot core against soft coloured halo is the classic beam look",
+      "a red telegraph then sudden full length gives a fast reveal",
+      "source flare anchors the beam to the caster"
+    ],
+    "buildNotes": "Beam is a stretched additive quad or cylinder with scrolling noise texture along its length, 2 layers at different widths. Snap length in 3-4 frames with an ease-out, then a slight width pulse. Exaggerate: width 2x, a rainbow gradient shift along length, ground cracks along the path."
+  },
+  {
+    "id": "a-dota-lina-laguna-blade",
+    "name": "Instant fire-lightning bolt on one target",
+    "source": {
+      "title": "Dota 2: Lina, Laguna Blade",
+      "url": "https://liquipedia.net/dota2/Lina",
+      "kind": "game"
+    },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "lightning",
+    "durationSec": 1.4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.25,
+        "what": "hand raised, spark gathers at palm"
+      },
+      {
+        "name": "release",
+        "start": 0.25,
+        "end": 0.4,
+        "what": "bolt strikes the target instantly"
+      },
+      {
+        "name": "impact",
+        "start": 0.4,
+        "end": 0.9,
+        "what": "bright white-blue bolt flickers, red fire at target"
+      },
+      {
+        "name": "aftermath",
+        "start": 0.9,
+        "end": 1.4,
+        "what": "sparks and embers fall"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#aac8ff"
+        ],
+        "motion": "grows at hand",
+        "notes": "charge"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#9ac0ff",
+          "#4a6aff"
+        ],
+        "motion": "jagged, 8 segments, re-roll every 0.05s",
+        "notes": "multiple strands"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#c0d8ff"
+        ],
+        "motion": "straight core width 1.5",
+        "notes": "solid core"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb080"
+        ],
+        "motion": "at target, 0.2s",
+        "notes": "hit flash"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff5a20"
+        ],
+        "motion": "burst up, gravity 4",
+        "notes": "fire"
+      },
+      {
+        "part": "screen-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#e8f0ff"
+        ],
+        "motion": "0.08s",
+        "notes": "pop"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.25s",
+        "notes": "light"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#9ac0ff",
+      "#ff5a20"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "very fast release against short build-up makes it feel like a snap",
+      "blue-white bolt plus orange fire at hit gives hot/cold split",
+      "jitter keeps it alive"
+    ],
+    "buildNotes": "Lightning arc between hand and target with jitter re-rolled at 20 Hz; add a straight white core so it never goes thin. Exaggerate: forked branches, a fire pillar at the target, one frame of full-screen white."
+  },
+  {
+    "id": "a-val-sova-hunters-fury",
+    "name": "Three wall-piercing energy bolts in a line",
+    "source": {
+      "title": "Valorant: Sova, Hunter's Fury",
+      "url": "https://valorant.fandom.com/wiki/Hunter%27s_Fury",
+      "kind": "game"
+    },
+    "archetype": "beam",
+    "targeting": "ground",
+    "element": "tech",
+    "durationSec": 2.6,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.8,
+        "what": "bow equips, charge glow builds, aim marker"
+      },
+      {
+        "name": "release",
+        "start": 0.8,
+        "end": 1,
+        "what": "first bolt fires, instant long beam"
+      },
+      {
+        "name": "impact",
+        "start": 1,
+        "end": 2,
+        "what": "up to three bolts with short gaps"
+      },
+      {
+        "name": "aftermath",
+        "start": 2,
+        "end": 2.6,
+        "what": "beam afterimage fades, hit enemies marked"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#7fc8ff"
+        ],
+        "motion": "grows on bow",
+        "notes": "charge"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#4a9aff"
+        ],
+        "motion": "inward, drag 2",
+        "notes": "charge"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#8fd0ff",
+          "#2a5ae0"
+        ],
+        "motion": "width 1.5, fade 0.35s",
+        "notes": "thin clean blue"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#bfe4ff",
+          "#1a3aa0"
+        ],
+        "motion": "wider halo 3, alpha 0.4",
+        "notes": "halo"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#6ab8ff"
+        ],
+        "motion": "at hit, 0.25s",
+        "notes": "impact"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "muzzle",
+        "notes": "flash"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "per bolt 0.15s",
+        "notes": "light"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#8fd0ff",
+      "#2a5ae0"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "thin hard lines read as a rifle, not a wall of light",
+      "three beats give rhythm",
+      "rapid fade leaves a clear after-image"
+    ],
+    "buildNotes": "Use a thin beam ribbon (width 1.2) with a wider low-alpha halo, firing 3 times 0.4s apart. Fade alpha quickly with ease-out. Exaggerate: width 3x, ground scorch lines, screen flash per bolt."
+  },
+  {
+    "id": "a-dota-lich-chain-frost",
+    "name": "Bouncing frost orb across targets",
+    "source": {
+      "title": "Dota 2: Lich, Chain Frost",
+      "url": "https://dota2.fandom.com/wiki/Chain_Frost",
+      "kind": "game"
+    },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "ice",
+    "durationSec": 3,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.4,
+        "what": "Lich hands gather frost, cold mist"
+      },
+      {
+        "name": "release",
+        "start": 0.4,
+        "end": 0.6,
+        "what": "frost orb launches"
+      },
+      {
+        "name": "impact",
+        "start": 0.6,
+        "end": 2.4,
+        "what": "orb bounces from target to target, burst at each"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.4,
+        "end": 3,
+        "what": "frost clings, snow drifts"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#9ae0ff"
+        ],
+        "motion": "grows at hands",
+        "notes": "charge"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "anticipation",
+        "blend": "normal",
+        "colors": [
+          "#cfeaff",
+          "#6a8fb8"
+        ],
+        "motion": "swirl, drag 2",
+        "notes": "cold mist"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#e0f8ff",
+          "#58b8f0"
+        ],
+        "motion": "jagged ice orb, spin 4 rev/s",
+        "notes": "spiky ball"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#6ad0ff",
+          "#1a5ac0"
+        ],
+        "motion": "follows orb, pulse",
+        "notes": "orb glow"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#68c8ff"
+        ],
+        "motion": "0.5s life",
+        "notes": "bounce path"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#8fd8ff"
+        ],
+        "motion": "at each hit, 0.3s",
+        "notes": "repeat"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#dff6ff",
+          "#58b8f0"
+        ],
+        "motion": "shards radial, gravity 8",
+        "notes": "ice"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#d0f0ff",
+          "#4a8ad0"
+        ],
+        "motion": "slow rise",
+        "notes": "frost"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "light per hit",
+        "notes": "light"
+      }
+    ],
+    "palette": [
+      "#e0f8ff",
+      "#6ad0ff",
+      "#1a5ac0"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "each bounce repeats the same strong beat so the chain has a rhythm",
+      "a spiky orb reads as ice by silhouette alone",
+      "speed rises slightly with every bounce"
+    ],
+    "buildNotes": "Orb is a spinning icosahedron mesh with a glow sphere. Move target to target with ease-in (0.35s per hop, shorter each time); at each hop trigger a ring, shards and a frost burst. Exaggerate: 8 bounces, orbs splitting off, frost decals on the ground at each target."
+  },
+  {
+    "id": "a-smite-zeus-chain-lightning",
+    "name": "Arcing lightning between enemies",
+    "source": {
+      "title": "Smite: Zeus, Chain Lightning",
+      "url": "https://breezewiki.discard.no/smite/wiki/Zeus",
+      "kind": "game"
+    },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 1.8,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.2,
+        "what": "hand sparks"
+      },
+      {
+        "name": "release",
+        "start": 0.2,
+        "end": 0.5,
+        "what": "bolt leaves hand to the first target"
+      },
+      {
+        "name": "impact",
+        "start": 0.5,
+        "end": 1.5,
+        "what": "arcs jump to nearby targets with a delay"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.5,
+        "end": 1.8,
+        "what": "sparks fade"
+      }
+    ],
+    "layers": [
+      {
+        "part": "core-flash",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#b0d0ff"
+        ],
+        "motion": "at hand",
+        "notes": "flash"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a8c8ff",
+          "#4a60ff"
+        ],
+        "motion": "jagged, re-roll 20 Hz",
+        "notes": "main bolt"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#80a0ff"
+        ],
+        "motion": "thin branches 3 per hop",
+        "notes": "forks"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#80a0ff"
+        ],
+        "motion": "at each target, 0.15s",
+        "notes": "node"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a0c0ff"
+        ],
+        "motion": "burst, drag 2",
+        "notes": "sparks"
+      },
+      {
+        "part": "light",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#9ab8ff"
+        ],
+        "motion": "flash at each node",
+        "notes": "scene light"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "tiny per hop",
+        "notes": "light"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#a8c8ff",
+      "#4a60ff"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "the delay between hops lets the eye follow the chain",
+      "fork branches give richness at low cost",
+      "a node flash at each target shows the hit"
+    ],
+    "buildNotes": "Compute target list, draw a lightning arc per hop with a 0.3s delay. Each arc: jagged polyline plus a straight white core. Exaggerate: branches that extend beyond targets, a thunder clap flash, scorch marks."
+  },
+  {
+    "id": "a-dota-zeus-thundergods-wrath",
+    "name": "Global multi-strike from the sky",
+    "source": {
+      "title": "Dota 2: Zeus, Thundergod's Wrath",
+      "url": "https://strategywiki.org/wiki/Dota_2/Zeus_the_Lord_of_Heaven",
+      "kind": "game"
+    },
+    "archetype": "chain",
+    "targeting": "enemies",
+    "element": "lightning",
+    "durationSec": 2.5,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.4,
+        "what": "sky flashes, Zeus raises hand"
+      },
+      {
+        "name": "release",
+        "start": 0.4,
+        "end": 0.7,
+        "what": "screen flash across map"
+      },
+      {
+        "name": "impact",
+        "start": 0.7,
+        "end": 1.6,
+        "what": "a bolt falls from the sky onto each enemy"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.6,
+        "end": 2.5,
+        "what": "ground scorch and smoke on each hit"
+      }
+    ],
+    "layers": [
+      {
+        "part": "screen-flash",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#c0d8ff"
+        ],
+        "motion": "0.15s",
+        "notes": "global flash"
+      },
+      {
+        "part": "light-pillar",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a8c8ff",
+          "#4a60ff"
+        ],
+        "motion": "strikes top to bottom in 0.08s, thick 1.5",
+        "notes": "sky bolt"
+      },
+      {
+        "part": "lightning-arc",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#80a0ff"
+        ],
+        "motion": "forks off the main bolt",
+        "notes": "richness"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "at ground",
+        "notes": "impact"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#a0c0ff"
+        ],
+        "motion": "flat fast",
+        "notes": "ground"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#1a1a28",
+          "#000000"
+        ],
+        "motion": "scorch star, fades 1.5s",
+        "notes": "burn mark"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#555566",
+          "#222233"
+        ],
+        "motion": "rise, drag 3",
+        "notes": "wisps"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.6s",
+        "notes": "medium"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#a8c8ff",
+      "#4a60ff"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "flashing the whole screen before the strikes sells global scale",
+      "instant, thick bolts feel like authority",
+      "scorch marks keep the hit visible"
+    ],
+    "buildNotes": "For each enemy, spawn a tall thick additive light pillar with a crooked mesh variation, ring, flash, scorch decal. Stagger by 0.05-0.12s. Exaggerate: clouds as dark smoke layer above, 2 bolts per target, thunder flashes lighting the whole arena."
+  },
+  {
+    "id": "a-dota-invoker-chaos-meteor",
+    "name": "Rolling flaming meteor",
+    "source": {
+      "title": "Dota 2: Invoker, Chaos Meteor",
+      "url": "https://dota2.fandom.com/wiki/Invoker/Changelogs",
+      "kind": "game"
+    },
+    "archetype": "meteor",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 3.8,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.4,
+        "what": "cast, fiery glow on the staff, sky glows"
+      },
+      {
+        "name": "release",
+        "start": 0.4,
+        "end": 1.3,
+        "what": "meteor falls from above at an angle"
+      },
+      {
+        "name": "impact",
+        "start": 1.3,
+        "end": 1.7,
+        "what": "crash with fire burst"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.7,
+        "end": 3.8,
+        "what": "meteor rolls along the ground, leaving burn trail"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff6a20"
+        ],
+        "motion": "orb at staff",
+        "notes": "charge"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#2a1a14",
+          "#ff6a20"
+        ],
+        "motion": "rock with emissive cracks, scale 2.5",
+        "notes": "rock"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffa040",
+          "#c02a00"
+        ],
+        "motion": "around rock",
+        "notes": "glow"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#fff0a0",
+          "#ff6a20",
+          "#601000"
+        ],
+        "motion": "long diagonal, 1.2s",
+        "notes": "fire tail"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb060"
+        ],
+        "motion": "fast flat",
+        "notes": "crash"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#3a2a20",
+          "#ff7a30"
+        ],
+        "motion": "radial chunks, gravity 8",
+        "notes": "rocks"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff5a10"
+        ],
+        "motion": "behind the roller, gravity 2",
+        "notes": "embers"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#6a5a50",
+          "#2a2220"
+        ],
+        "motion": "rise, drag 2",
+        "notes": "smoke"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#1a0a00",
+          "#401000"
+        ],
+        "motion": "scorch line along path",
+        "notes": "burn"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.5s plus low while rolling",
+        "notes": "heavy"
+      }
+    ],
+    "palette": [
+      "#ffd890",
+      "#ff6a20",
+      "#601000"
+    ],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "dark rock body with bright cracks keeps a silhouette in the fire",
+      "the roll after impact extends the effect to a lane",
+      "a diagonal fall is more dynamic than vertical"
+    ],
+    "buildNotes": "Rock mesh with additive glow sphere and long ribbon. After impact, move along a straight line with ember and smoke emitters, a scorch decal following. Exaggerate: 2x meteor size, impact crater with lava ring, light flicker."
+  },
+  {
+    "id": "a-dota-invoker-sun-strike",
+    "name": "Delayed global sunbeam column",
+    "source": {
+      "title": "Dota 2: Invoker, Sun Strike",
+      "url": "https://dota.fandom.com/wiki/Invoker_(DotA)",
+      "kind": "game"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 2.6,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 1.7,
+        "what": "ring marker and sun glyph burn into the ground"
+      },
+      {
+        "name": "release",
+        "start": 1.7,
+        "end": 1.8,
+        "what": "column slams down"
+      },
+      {
+        "name": "impact",
+        "start": 1.8,
+        "end": 2.3,
+        "what": "column holds, scorched ground, blast ring"
+      },
+      {
+        "name": "aftermath",
+        "start": 2.3,
+        "end": 2.6,
+        "what": "column fades up, embers fall"
+      }
+    ],
+    "layers": [
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffe0a0",
+          "#ff8a20"
+        ],
+        "motion": "ring pulses faster, glyph rotates",
+        "notes": "telegraph"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ff8a20",
+          "#601000"
+        ],
+        "motion": "warming disc",
+        "notes": "heat"
+      },
+      {
+        "part": "light-pillar",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffd070",
+          "#ff5a10"
+        ],
+        "motion": "fall in 0.06s, width 4",
+        "notes": "column"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb060"
+        ],
+        "motion": "expand 0.4s",
+        "notes": "blast"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "base",
+        "notes": "pop"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "aftermath",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff5a10"
+        ],
+        "motion": "rise then fall, gravity 3",
+        "notes": "embers"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#555555",
+          "#222222"
+        ],
+        "motion": "rise, drag 3",
+        "notes": "smoke"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.4s",
+        "notes": "medium"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#ffd070",
+      "#ff5a10"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "long telegraph with a pulse that speeds up builds tension",
+      "instant slam beats the telegraph",
+      "the column defines the area in height"
+    ],
+    "buildNotes": "Rune circle ground ring pulses, then a light pillar mesh with additive gradient drops in 4 frames. Exaggerate: pillar twice as tall, a second inner column, ground cracks with orange glow."
+  },
+  {
+    "id": "a-val-brimstone-orbital-strike",
+    "name": "Lingering orbital laser",
+    "source": {
+      "title": "Valorant: Brimstone, Orbital Strike",
+      "url": "https://liquipedia.net/valorant/Brimstone",
+      "kind": "game"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 4.5,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 1.5,
+        "what": "red ring on ground, targeting laser lines in sky"
+      },
+      {
+        "name": "release",
+        "start": 1.5,
+        "end": 1.8,
+        "what": "beam arrives from above"
+      },
+      {
+        "name": "impact",
+        "start": 1.8,
+        "end": 4,
+        "what": "thick red-orange beam sustained, ground burning"
+      },
+      {
+        "name": "aftermath",
+        "start": 4,
+        "end": 4.5,
+        "what": "beam collapses, smoke"
+      }
+    ],
+    "layers": [
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ff6a3a",
+          "#701010"
+        ],
+        "motion": "pulse ring, rotating chevrons",
+        "notes": "telegraph"
+      },
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ff9a60",
+          "#a02010"
+        ],
+        "motion": "rotating",
+        "notes": "tech glyph"
+      },
+      {
+        "part": "light-pillar",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ff8a50",
+          "#c02020"
+        ],
+        "motion": "width 5, flicker 8 Hz",
+        "notes": "sustained"
+      },
+      {
+        "part": "beam-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb090"
+        ],
+        "motion": "inner width 1.5",
+        "notes": "hot core"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ff9a60"
+        ],
+        "motion": "once",
+        "notes": "arrival"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff4a10"
+        ],
+        "motion": "spiral up, gravity -1",
+        "notes": "embers"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#555555",
+          "#222222"
+        ],
+        "motion": "rise, drag 2",
+        "notes": "smoke"
+      },
+      {
+        "part": "distortion",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "rings round beam",
+        "notes": "heat"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "1.0s low",
+        "notes": "medium"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#ff8a50",
+      "#c02020"
+    ],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "red telegraph clearly marks danger",
+      "sustained column signals area denial",
+      "tech glyph differentiates from magic"
+    ],
+    "buildNotes": "Ground ring decal + rotating chevron rune + tall light pillar with slight flicker. Add embers spiralling up. Exaggerate: orbital muzzle flashes in the sky, twin inner beam, scorched crater increasing in size."
+  },
+  {
+    "id": "a-apex-bangalore-rolling-thunder",
+    "name": "Missile carpet barrage",
+    "source": {
+      "title": "Apex Legends: Bangalore, Rolling Thunder",
+      "url": "https://apex--legends-archive.fandom.com/wiki/Bangalore",
+      "kind": "game"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 5,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 1.5,
+        "what": "smoke flare lights the target area, jets scream above"
+      },
+      {
+        "name": "release",
+        "start": 1.5,
+        "end": 2,
+        "what": "missiles dive in a line"
+      },
+      {
+        "name": "impact",
+        "start": 2,
+        "end": 4,
+        "what": "wave of explosions advances along a line"
+      },
+      {
+        "name": "aftermath",
+        "start": 4,
+        "end": 5,
+        "what": "dust, smoke and fire remain"
+      }
+    ],
+    "layers": [
+      {
+        "part": "emitter-smoke",
+        "phase": "anticipation",
+        "blend": "normal",
+        "colors": [
+          "#ff5050",
+          "#802020"
+        ],
+        "motion": "red smoke column from flare, drag 2",
+        "notes": "marker"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ff6a3a",
+          "#701010"
+        ],
+        "motion": "line telegraph",
+        "notes": "path"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#555555",
+          "#ff8030"
+        ],
+        "motion": "missiles at an angle, fast",
+        "notes": "missiles"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#fff0b0",
+          "#ff6a20"
+        ],
+        "motion": "short tail",
+        "notes": "tail"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb060",
+          "#ff5a10"
+        ],
+        "motion": "explosions step along a line every 0.1s",
+        "notes": "blasts"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb060"
+        ],
+        "motion": "per blast",
+        "notes": "ring"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#444444",
+          "#ff8030"
+        ],
+        "motion": "chunks, gravity 9",
+        "notes": "dirt"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#666666",
+          "#222222"
+        ],
+        "motion": "slow rise",
+        "notes": "smoke"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "1.5s rumble",
+        "notes": "heavy"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#ffb060",
+      "#ff5a10",
+      "#802020"
+    ],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "staggered blasts walking along a line give directed motion",
+      "red marker smoke identifies zone before it hits",
+      "dust and smoke after build mass"
+    ],
+    "buildNotes": "Spawn 12-20 missiles on timed offsets along the line. Each blast: glow sphere, ring, debris, smoke. Exaggerate: double the number of blasts, add secondary cookoff pops and burning wrecks."
+  },
+  {
+    "id": "a-ow-genji-dragonblade",
+    "name": "Spectral dragon sword slashes",
+    "source": {
+      "title": "Overwatch: Genji, Dragonblade",
+      "url": "https://overwatch.blizzard.com/en-us/heroes/genji",
+      "kind": "game"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "other",
+    "durationSec": 2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.4,
+        "what": "sword unsheathed, green glow wraps blade, dragon spirit swirls"
+      },
+      {
+        "name": "release",
+        "start": 0.4,
+        "end": 0.6,
+        "what": "wide slash"
+      },
+      {
+        "name": "impact",
+        "start": 0.6,
+        "end": 1.4,
+        "what": "repeated slashes with green trails and dragon head"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.4,
+        "end": 2,
+        "what": "green mist dissipates"
+      }
+    ],
+    "layers": [
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#d0ffe0",
+          "#30e070"
+        ],
+        "motion": "on blade",
+        "notes": "blade glow"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#d0ffe0",
+          "#20a050"
+        ],
+        "motion": "spiral up body",
+        "notes": "dragon hint"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#80ffb0",
+          "#10a050"
+        ],
+        "motion": "arc 180 degrees, 0.3s life",
+        "notes": "slash arc"
+      },
+      {
+        "part": "mesh-projectile",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#d0ffe0",
+          "#30e070"
+        ],
+        "motion": "dragon head ghost, fast, 0.3s",
+        "notes": "spirit"
+      },
+      {
+        "part": "emitter-sparks",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#80ffb0"
+        ],
+        "motion": "burst along slash",
+        "notes": "sparks"
+      },
+      {
+        "part": "core-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "hit frame",
+        "notes": "flash"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "per slash",
+        "notes": "light"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#80ffb0",
+      "#10a050"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "bright green is unique in the scene",
+      "one big arc per hit makes combat readable",
+      "dragon ghost adds mythic feel"
+    ],
+    "buildNotes": "Ribbon arc swept by a rotating pivot (0.12s, ease-out), with a crescent mesh. Stretch the glow. Exaggerate: wider arcs, 2 dragon heads at the end of each slash, afterimage, 0.05s hit stop."
+  },
+  {
+    "id": "a-ow-doomfist-meteor-strike",
+    "name": "Leap and crash-landing slam",
+    "source": {
+      "title": "Overwatch: Doomfist, Meteor Strike",
+      "url": "https://overwatch.blizzard.com/en-gb/heroes/doomfist",
+      "kind": "game"
+    },
+    "archetype": "meteor",
+    "targeting": "ground",
+    "element": "other",
+    "durationSec": 4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.4,
+        "what": "crouch, ground cracks, dust"
+      },
+      {
+        "name": "release",
+        "start": 0.4,
+        "end": 1.4,
+        "what": "leaps up, vanishes into sky, big reticle on ground"
+      },
+      {
+        "name": "impact",
+        "start": 1.4,
+        "end": 1.8,
+        "what": "drops in a fireball and slams"
+      },
+      {
+        "name": "aftermath",
+        "start": 1.8,
+        "end": 4,
+        "what": "shockwave, crater, dust, orange-yellow glow"
+      }
+    ],
+    "layers": [
+      {
+        "part": "ring-shockwave",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffd070",
+          "#a06020"
+        ],
+        "motion": "small ring on ground",
+        "notes": "launch"
+      },
+      {
+        "part": "ground-decal",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ff8a30",
+          "#701010"
+        ],
+        "motion": "large reticle ring, pulses",
+        "notes": "telegraph"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffc060",
+          "#ff6a20"
+        ],
+        "motion": "falling fireball scale 3",
+        "notes": "fireball"
+      },
+      {
+        "part": "trail-ribbon",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#fff0a0",
+          "#ff6a20"
+        ],
+        "motion": "vertical streak",
+        "notes": "fall trail"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffc060"
+        ],
+        "motion": "huge, 0.5s",
+        "notes": "slam"
+      },
+      {
+        "part": "mesh-debris",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#555555",
+          "#ffa040"
+        ],
+        "motion": "radial chunks, gravity 8",
+        "notes": "debris"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#8a7a6a",
+          "#3a3028"
+        ],
+        "motion": "dust cloud, drag 2",
+        "notes": "dust"
+      },
+      {
+        "part": "screen-flash",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#fff0d0"
+        ],
+        "motion": "0.1s",
+        "notes": "flash"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.8s",
+        "notes": "heavy"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#ffc060",
+      "#ff6a20"
+    ],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "a long telegraph then a short drop is satisfying",
+      "huge ring is readable for allies",
+      "dust gives weight"
+    ],
+    "buildNotes": "Hide the character at the top, move a fireball with a trail down ease-in 0.35s, then ring, debris, dust, a crater decal. Exaggerate: ring radius 2x, a second delayed ring, rocks flung high."
+  },
+  {
+    "id": "a-deadlock-infernus-concussive-combustion",
+    "name": "Living bomb countdown and blast",
+    "source": {
+      "title": "Deadlock: Infernus, Concussive Combustion",
+      "url": "https://deadlock.wiki/Concussive_Combustion",
+      "kind": "game"
+    },
+    "archetype": "nova",
+    "targeting": "self",
+    "element": "fire",
+    "durationSec": 4.2,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 3.2,
+        "what": "character glows hotter, burning ring on ground shows radius"
+      },
+      {
+        "name": "release",
+        "start": 3.2,
+        "end": 3.4,
+        "what": "detonation"
+      },
+      {
+        "name": "impact",
+        "start": 3.4,
+        "end": 3.8,
+        "what": "blast expands, stun ring"
+      },
+      {
+        "name": "aftermath",
+        "start": 3.8,
+        "end": 4.2,
+        "what": "embers and smoke settle"
+      }
+    ],
+    "layers": [
+      {
+        "part": "ground-decal",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ff8a30",
+          "#802010"
+        ],
+        "motion": "ring at radius, pulses faster",
+        "notes": "telegraph"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff5a20"
+        ],
+        "motion": "body glow grows, flicker",
+        "notes": "heat"
+      },
+      {
+        "part": "emitter-embers",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#ffd890",
+          "#ff5a10"
+        ],
+        "motion": "rise, rate climbs",
+        "notes": "embers"
+      },
+      {
+        "part": "core-flash",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffd070"
+        ],
+        "motion": "0.1s",
+        "notes": "flash"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffb060",
+          "#ff4a10"
+        ],
+        "motion": "fireball scale 0 to 12",
+        "notes": "blast"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#ffc080"
+        ],
+        "motion": "at ground radius",
+        "notes": "wave"
+      },
+      {
+        "part": "distortion",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "expanding",
+        "notes": "shock"
+      },
+      {
+        "part": "emitter-smoke",
+        "phase": "aftermath",
+        "blend": "normal",
+        "colors": [
+          "#555555",
+          "#222222"
+        ],
+        "motion": "rise",
+        "notes": "smoke"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "impact",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.5s",
+        "notes": "heavy"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#ffb060",
+      "#ff4a10"
+    ],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "a long visible fuse is fair and tense",
+      "the ring is the exact area",
+      "hot flicker scales with time"
+    ],
+    "buildNotes": "Animate the ring decal pulse rate and glow sphere scale with t^2. Blast: white flash, fireball, ring, distortion, embers. Exaggerate: character body shaking, 2x radius, a dome shell."
+  },
+  {
+    "id": "a-marvel-rivals-doctor-strange-eye-of-agamotto",
+    "name": "Mystic eye sphere that stuns enemies",
+    "source": {
+      "title": "Marvel Rivals: Doctor Strange, Eye of Agamotto",
+      "url": "https://liquipedia.net/marvelrivals/Doctor_Strange",
+      "kind": "game"
+    },
+    "archetype": "other",
+    "targeting": "self",
+    "element": "arcane",
+    "durationSec": 4,
+    "phases": [
+      {
+        "name": "anticipation",
+        "start": 0,
+        "end": 0.6,
+        "what": "runes ignite, arms spread, green glow grows"
+      },
+      {
+        "name": "release",
+        "start": 0.6,
+        "end": 1,
+        "what": "the great eye opens overhead"
+      },
+      {
+        "name": "impact",
+        "start": 1,
+        "end": 3,
+        "what": "green energy sphere expands, enemies frozen in place, runes spin"
+      },
+      {
+        "name": "aftermath",
+        "start": 3,
+        "end": 4,
+        "what": "sphere collapses into particles"
+      }
+    ],
+    "layers": [
+      {
+        "part": "rune-circle",
+        "phase": "anticipation",
+        "blend": "additive",
+        "colors": [
+          "#d8ffd0",
+          "#40d070"
+        ],
+        "motion": "rotating, scale up",
+        "notes": "mystic"
+      },
+      {
+        "part": "glow-sphere",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff",
+          "#80ff90",
+          "#10a050"
+        ],
+        "motion": "sphere expands 0 to 14",
+        "notes": "dome"
+      },
+      {
+        "part": "core-flash",
+        "phase": "release",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "eye flash",
+        "notes": "flash"
+      },
+      {
+        "part": "rune-circle",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#a0ffb0",
+          "#208050"
+        ],
+        "motion": "counter-rotating rings",
+        "notes": "layers"
+      },
+      {
+        "part": "ring-shockwave",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#d8ffd0",
+          "#40d070"
+        ],
+        "motion": "wave",
+        "notes": "wave"
+      },
+      {
+        "part": "emitter-wisps",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#c0ffd0",
+          "#20a050"
+        ],
+        "motion": "orbit inward",
+        "notes": "soul"
+      },
+      {
+        "part": "distortion",
+        "phase": "impact",
+        "blend": "additive",
+        "colors": [
+          "#ffffff"
+        ],
+        "motion": "dome edge",
+        "notes": "shimmer"
+      },
+      {
+        "part": "camera-shake",
+        "phase": "release",
+        "blend": "normal",
+        "colors": [
+          "#000000"
+        ],
+        "motion": "0.4s",
+        "notes": "light"
+      }
+    ],
+    "palette": [
+      "#ffffff",
+      "#80ff90",
+      "#10a050"
+    ],
+    "shake": "light",
+    "whyItLooksGood": [
+      "counter-rotating rings give layered magic",
+      "dome silhouette marks the area",
+      "green is distinct in the scene"
+    ],
+    "buildNotes": "Stack a transparent additive sphere (fresnel rim) with 2-3 rotating rune rings at different tilts. Wisps pulled inward. Exaggerate: a giant eye mesh above, time-freeze desaturation, chains of runes."
+  }
+]
