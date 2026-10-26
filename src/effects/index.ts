@@ -11,6 +11,7 @@ import { paladinModules } from '../spells/paladin';
 import { iconicModules } from '../spells/iconic';
 import { originalModules } from '../spells/original';
 import { targetedModules } from '../spells/targeted';
+import { weaponModules } from '../spells/weapons';
 
 /** Every set-piece effect, in dropdown order. Add one import + entry per new effect. */
 export const effectModules: EffectModule[] = [
@@ -26,4 +27,5 @@ export const effectModules: EffectModule[] = [
   ...iconicModules,
   ...originalModules,
   ...targetedModules,
+  ...weaponModules,
 ];

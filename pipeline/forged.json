@@ -1,0 +1,277 @@
+[
+  {
+    "label": "starbreaker lance",
+    "file": "src/spells/targeted/starbreakerLance.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-26",
+    "note": "hand-written reference spell for the pipeline",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0.637,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "glacial ricochet",
+    "file": "src/spells/targeted/glacialRicochet.ts",
+    "mode": "enemies",
+    "recipes": [
+      "a-dota-lich-chain-frost",
+      "c-flipbook-lightning-bolt-spell",
+      "c-ice-spikes-eruption"
+    ],
+    "date": "2026-10-26",
+    "note": "fixed by orchestrator: zero-scale lit spike/shard instances blacked out the frame",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0.465,
+      "zones": 6,
+      "arenaHits": 6,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "cataclysm sigil",
+    "file": "src/spells/targeted/cataclysmSigil.ts",
+    "mode": "ground",
+    "recipes": [
+      "b-ffxiv-bahamut-megaflare",
+      "c-rookies-meteor-strike",
+      "a-dota-invoker-sun-strike"
+    ],
+    "date": "2026-10-26",
+    "note": "fixed by orchestrator: zero-scale rock instances at fade-out",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0.828,
+      "zones": 5,
+      "arenaHits": 1,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "abyssal gaze",
+    "file": "src/spells/targeted/abyssalGaze.ts",
+    "mode": "enemy",
+    "recipes": [
+      "c-wow-channeled-beam",
+      "a-dota-lina-laguna-blade",
+      "c-gnomon-charged-energy-beam"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0.633,
+      "zones": 2,
+      "arenaHits": 9,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "parts showcase",
+    "file": "src/spells/targeted/partsShowcase.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-26",
+    "note": "hand-written usage example for src/effects/parts",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 4,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "tempest lattice",
+    "file": "src/spells/targeted/tempestLattice.ts",
+    "mode": "enemies",
+    "recipes": [
+      "d-kler-3-lightning-chain-cage",
+      "d-kler-3-cage-detonation-impact-frame"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "maxShake": 0.801,
+      "zones": 7,
+      "arenaHits": 12,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "gale bullet",
+    "file": "src/spells/targeted/galeBullet.ts",
+    "mode": "enemy",
+    "recipes": [
+      "e-seo-wind-bullet",
+      "e-yordin-soft-wind-swirl"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "maxShake": 0.769,
+      "zones": 2,
+      "arenaHits": 4,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "cinder bow",
+    "file": "src/spells/targeted/cinderBow.ts",
+    "mode": "enemy",
+    "recipes": [
+      "g-fuga-fire-arrow-pillar"
+    ],
+    "date": "2026-10-26",
+    "note": "orchestrator enlarged the charge disc",
+    "selfTest": {
+      "ok": true,
+      "maxShake": 0.538,
+      "zones": 2,
+      "arenaHits": 5,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "ember comet",
+    "file": "src/spells/targeted/emberComet.ts",
+    "mode": "ground",
+    "recipes": [
+      "f-html-meteor-slam",
+      "f-html-meteor-volley"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "maxShake": 0.9,
+      "zones": 3,
+      "arenaHits": 1,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "phoenix fan",
+    "file": "src/spells/weapons/phoenixFan.ts",
+    "mode": "idle",
+    "weapon": "wp-fan-fire",
+    "recipes": [
+      "f-spiderlily-fan-tufts",
+      "f-spiderlily-gauntlet-ignition"
+    ],
+    "date": "2026-10-26",
+    "note": "hand-written reference weapon aura; seam checked (t 2.9 vs 6.9)",
+    "selfTest": {
+      "ok": true,
+      "frames": 600,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "frost lily sword",
+    "file": "src/spells/weapons/frostLilySword.ts",
+    "mode": "idle",
+    "weapon": "wp-sword-ice",
+    "recipes": [
+      "a-lol-ashe-enchanted-crystal-arrow",
+      "c-ice-spikes-eruption",
+      "f-spiderlily-gauntlet-ignition"
+    ],
+    "date": "2026-10-26",
+    "note": "orchestrator toned down the edge-frost ribbons and the frost ring",
+    "selfTest": {
+      "ok": true,
+      "frames": 600,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "azure dragon sword",
+    "file": "src/spells/weapons/azureDragonSword.ts",
+    "mode": "idle",
+    "weapon": "wp-sword-dragon",
+    "recipes": [
+      "a-ow-genji-dragonblade",
+      "f-spiderlily-scythe-ribbon",
+      "f-spiderlily-gauntlet-ignition"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "frames": 600,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "thunder drum hammer",
+    "file": "src/spells/weapons/thunderDrumHammer.ts",
+    "mode": "idle",
+    "weapon": "wp-hammer-thunder",
+    "recipes": [
+      "d-kler-3-lightning-chain-cage",
+      "f-moa-arm-lightning-lash",
+      "d-wolf-4-pink-plasma-slash-orb"
+    ],
+    "date": "2026-10-26",
+    "note": "orchestrator thickened the arcs (11-16 mm) and thinned the rim",
+    "selfTest": {
+      "ok": true,
+      "frames": 480,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "green dragon crescent",
+    "file": "src/spells/weapons/greenDragonCrescent.ts",
+    "mode": "idle",
+    "weapon": "wp-glaive-guandao",
+    "recipes": [
+      "f-spiderlily-scythe-ribbon",
+      "e-geodraws-crimson-pillar",
+      "f-spiderlily-bow-crest"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "frames": 600,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "violet severance",
+    "file": "src/spells/targeted/violetSeverance.ts",
+    "mode": "enemy",
+    "recipes": [
+      "j-aguiar-layered-laser-beam",
+      "j-cghow-outlined-stylized-bolt",
+      "c-wow-channeled-beam"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "errors": [],
+      "nanFrames": 0,
+      "singularFrames": 0,
+      "frames": 312,
+      "maxShake": 0.452,
+      "zones": 1,
+      "arenaHits": 11,
+      "emitters": 3
+    }
+  },
+  { "label": "azure dragon slash", "file": "src/spells/weapons/strikes/dragonSlash.ts", "mode": "enemy", "weapon": "wp-sword-dragon", "recipes": ["f-spiderlily-scythe-ribbon", "a-ow-genji-dragonblade"], "date": "2026-10-26", "note": "weapon attack: rigged hero wields the weapon (design pipeline/designs/weapon-attacks.md)", "selfTest": { "ok": true, "zones": 1, "arenaHits": 1, "singularFrames": 0, "nanFrames": 0 } },
+  { "label": "frost lily thrust", "file": "src/spells/weapons/strikes/frostThrust.ts", "mode": "enemy", "weapon": "wp-sword-ice", "recipes": ["c-ice-spikes-eruption", "f-spiderlily-gauntlet-ignition"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 1, "singularFrames": 0, "nanFrames": 0 } },
+  { "label": "green dragon sweep", "file": "src/spells/weapons/strikes/crescentSweep.ts", "mode": "enemies", "weapon": "wp-glaive-guandao", "recipes": ["f-spiderlily-scythe-ribbon"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 2, "singularFrames": 0, "nanFrames": 0 } },
+  { "label": "thunder drum slam", "file": "src/spells/weapons/strikes/thunderSlam.ts", "mode": "enemy", "weapon": "wp-hammer-thunder", "recipes": ["d-kler-3-lightning-chain-cage"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 1, "singularFrames": 0, "nanFrames": 0 } },
+  { "label": "phoenix gale", "file": "src/spells/weapons/strikes/phoenixGale.ts", "mode": "enemies", "weapon": "wp-fan-fire", "recipes": ["f-spiderlily-fan-tufts", "f-spiderlily-gauntlet-ignition"], "date": "2026-10-26", "selfTest": { "ok": true, "zones": 1, "arenaHits": 4, "singularFrames": 0, "nanFrames": 0 } }
+]
