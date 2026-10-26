@@ -1,0 +1,195 @@
+[
+  {
+    "id": "j-danroot-frame-lightning-strike",
+    "name": "Hand-timed lightning strike: thick bolt, thin line, mirrored bolt, black afterimage frame, evaporating segments",
+    "source": {
+      "title": "Dan Root, How to Animate a Lightning Strike (2D animation, YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=TRyhaBmEvSA",
+      "kind": "video"
+    },
+    "archetype": "meteor",
+    "targeting": "enemy",
+    "element": "lightning",
+    "durationSec": 1.2,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.35, "what": "hold, then one frame of only the jagged start at the top plus a small spark ON THE GROUND where it will hit (the ground conducts first)" },
+      { "name": "impact", "start": 0.35, "end": 0.6, "what": "24 fps, 1-2 frames each: thick filled S-bolt (held 2 frames) -> the same bolt in BLACK (afterimage) -> a thin line on the same path -> the bolt MIRRORED (curves flipped) thick -> thin line" },
+      { "name": "aftermath", "start": 0.6, "end": 1.2, "what": "the line breaks into short segments, then only tiny end bits remain = energy evaporating down the path; then empty frames" }
+    ],
+    "layers": [
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#bfe0ff"], "motion": "one loose S from sky to target, two outlines with alternating thickness and sharp elbows, a few sparky side bits; regenerate as the MIRRORED path every other frame", "notes": "thick/thin alternation and sharp elbows read as dangerous" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#000000"], "motion": "the bolt silhouette drawn black for exactly one frame right after a white frame", "notes": "black after white burns an afterimage; use one frame, small area (photosensitivity)" },
+      { "part": "glow-sphere", "phase": "impact", "blend": "additive", "colors": ["#4aa8ff", "#1a4aa0"], "motion": "blue glow around every bolt frame", "notes": "glow filter on all frames" },
+      { "part": "emitter-sparks", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#9ad0ff"], "motion": "small spark shape at the ground contact one frame before the bolt", "notes": "anticipation tells where it will land" },
+      { "part": "lightning-arc", "phase": "aftermath", "blend": "additive", "colors": ["#dfefff", "#6aa8e8"], "motion": "path split into dashes, then only the dash ends, then gone (2 frames each)", "notes": "fade by changing state, not by lowering alpha" }
+    ],
+    "palette": ["#ffffff", "#4aa8ff", "#000000"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "frame-level timing: lightning lives on 1-2 frame holds, never a smooth tween",
+      "mirroring the shape between frames gives flicker and drama without new art",
+      "a mid-grey background makes the white bolt and the black frame both read"
+    ],
+    "buildNotes": "Use LightningArc (parts kit) with a fixed seed per beat: frame list [thick A x2, black A, thin A, thick mirror(A), thin mirror(A), dashes, dash-ends]; step on a 1/24 s clock, not dt-smooth. Ground spark: StarBurst at the hit point one frame early."
+  },
+  {
+    "id": "j-cghow-outlined-stylized-bolt",
+    "name": "Stylised bolt from a concept image: crisp + glow channels, pinched ends, and a black outline ribbon behind it",
+    "source": {
+      "title": "CGHOW (Ashif Ali), From Concept to VFX: Stylized Lightning in UE5 Niagara (YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=NwdUdaotzNA",
+      "kind": "video"
+    },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "lightning",
+    "durationSec": 1,
+    "phases": [
+      { "name": "impact", "start": 0, "end": 0.15, "what": "a blue bolt crawls from sky to target, both ends pinched to a point; a dark outline hugs it" },
+      { "name": "release", "start": 0.15, "end": 0.7, "what": "re-spawns with random axis and very short life (~0.12 s) so it flickers; purple glowing disc of hex cells on the ground (from the concept)" },
+      { "name": "aftermath", "start": 0.7, "end": 1, "what": "last bolt fades, ground disc dims" }
+    ],
+    "layers": [
+      { "part": "lightning-arc", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#6ab8ff"], "motion": "ribbon/beam with a tileable bolt texture scrolling along it; R channel = crisp bolt (white core), G channel = blurred glow (tinted); ends pinched by a sine mask along the length", "notes": "one texture, two channels: core and glow" },
+      { "part": "lightning-arc", "phase": "impact", "blend": "normal", "colors": ["#05060a"], "motion": "duplicate of the same ribbon (same random path), black, a bit wider/more alpha, drawn BEHIND the blue one", "notes": "the black outline makes the bolt pop on any background — black is a colour" },
+      { "part": "ground-decal", "phase": "release", "blend": "additive", "colors": ["#c060ff", "#401a70"], "motion": "glowing disc of hex/cell shapes at the strike point", "notes": "taken from the concept image" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#9ad0ff"], "motion": "colour noise + jitter on the bolt, short life 0.12 s, random axis per spawn", "notes": "flicker comes from re-spawning, not from blinking alpha" }
+    ],
+    "palette": ["#ffffff", "#6ab8ff", "#05060a"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "concept first: an image fixes colour and shape before any tech",
+      "dark outline + white core + tinted glow = a full value ladder on a thin shape",
+      "pinched ends stop the bolt looking like a pasted strip"
+    ],
+    "buildNotes": "Two LightningArc meshes sharing one path: back one black, normal blend, width x1.4; front one additive white core + blue glow. Pinch width with sin(pi*t) along the path. Re-roll the path every 0.12 s."
+  },
+  {
+    "id": "j-aguiar-layered-laser-beam",
+    "name": "Layered stylised laser: dark under-beam, scrolling eroded core, electric tendrils, stretched sparks and a source flare",
+    "source": {
+      "title": "Gabriel Aguiar Prod., Unity VFX Graph Stylized Laser Beam (YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=_SaBXY-Ejqo",
+      "kind": "video"
+    },
+    "archetype": "beam",
+    "targeting": "enemy",
+    "element": "arcane",
+    "durationSec": 3,
+    "phases": [
+      { "name": "release", "start": 0, "end": 0.3, "what": "the beam LENGTH shoots out from the source in 10% of life (pivot at the source), width pops in" },
+      { "name": "channel", "start": 0.3, "end": 2.7, "what": "video 0:30 hero: violet beam with a dark core underneath, streaky texture scrolling toward the target, distortion wobble, blue electric tendrils crawling, sparks streaking along it, flashes popping at the source" },
+      { "name": "aftermath", "start": 2.7, "end": 3, "what": "width shrinks to 0 over the last 10% of life" }
+    ],
+    "layers": [
+      { "part": "beam-ribbon", "phase": "channel", "blend": "normal", "colors": ["#2a0608", "#120204"], "motion": "very dark red copy, 1.5x wider, drawn FIRST", "notes": "dark under-beam gives contrast; same scale curves as the core" },
+      { "part": "beam-ribbon", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#c070ff", "#6a20c0"], "motion": "seamless streak texture scrolling at speed 2 toward the target, x end-fade mask (0 -> 100% -> 60% -> 0 along the length), UV distortion = lerp(uv, noise, 0.15) with noise scrolling faster (3)", "notes": "texture: one big wrap-mode stroke with the inside erased at 40% and smudged tendrils" },
+      { "part": "lightning-arc", "phase": "channel", "blend": "additive", "colors": ["#e0f0ff", "#4a9aff"], "motion": "copy of the core in blue with a high alpha clip (eroded to tendrils) and more distortion (0.2-0.3)", "notes": "electric layer for almost no extra work" },
+      { "part": "emitter-sparks", "phase": "channel", "blend": "additive", "colors": ["#fff0ff", "#c070ff"], "motion": "spawn 40/s in a small circle at the source, velocity along the beam 20-40, life 0.2-0.45 s, stretched along velocity, size big -> small", "notes": "fast streaks sell speed" },
+      { "part": "core-flash", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#e0a0ff"], "motion": "soft flashes at the source, life 0.1-0.2 s, size 2.5-5 big -> small, repeated through the duration", "notes": "pulsing source keeps the hold alive" }
+    ],
+    "palette": ["#ffffff", "#c070ff", "#120204"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "a single DURATION drives every layer, so they all start and end together",
+      "grow length fast, shrink width slow at the end: the beam feels shot, then spent",
+      "dark under-layer + bright core + eroded electric copy = depth from three copies of one shape"
+    ],
+    "buildNotes": "Plane mesh with its pivot at the source, billboarded around the beam axis; scale.y curve 0->1 by 10% life, scale.x 0->1 fast and 1->0 from 90%. Three copies (dark normal, core additive, electric eroded) + Emitter streaks along the axis + GlowSphere pulses at the source."
+  },
+  {
+    "id": "j-abitofgamedev-refraction-bubble",
+    "name": "Refraction bubble shield: twirl-distorted screen behind it, fresnel + intersection rim, hit dimple and edge dissolve",
+    "source": {
+      "title": "A Bit Of Game Dev, Unity Shader Graph Bubble Shield (YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=jdAbVkre8cw",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "self",
+    "element": "water",
+    "durationSec": 4,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.5, "what": "bubble materialises: edge-glow dissolve sweeping bottom -> top" },
+      { "name": "channel", "start": 0.5, "end": 3.2, "what": "video 0:04: blue fresnel rim, the world behind seen through a slow twirl distortion (clear in the centre, swirling toward the rim), bright line where it cuts the ground; each hit pushes a dimple in at the hit point and magnifies there" },
+      { "name": "aftermath", "start": 3.2, "end": 4, "what": "dissolves away with a glowing edge" }
+    ],
+    "layers": [
+      { "part": "distortion", "phase": "channel", "blend": "normal", "colors": ["#ffffff"], "motion": "screen texture sampled at screenPos + twirled rotating Voronoi offset, masked by distance from the disc centre (clear middle)", "notes": "refraction sells 'glass' more than colour does" },
+      { "part": "glow-sphere", "phase": "channel", "blend": "additive", "colors": ["#a0e8ff", "#2a8ad8"], "motion": "fresnel rim (power), front faces only", "notes": "rim carries the silhouette" },
+      { "part": "ring-shockwave", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#7fd0ff"], "motion": "bright intersection line where the sphere meets the ground/objects (depth difference smoothstep)", "notes": "grounds the bubble" },
+      { "part": "core-flash", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#a0e8ff"], "motion": "on hit: sphere-mask at the hit point drives a vertex push inward (curve: in fast, wobble back) and a local magnify", "notes": "localised feedback instead of a whole-shell flash" },
+      { "part": "emitter-wisps", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff", "#5ab8ff"], "motion": "height-gradient + noise dissolve with a second offset threshold = glowing edge band, bottom -> top", "notes": "fade by changing state" }
+    ],
+    "palette": ["#ffffff", "#a0e8ff", "#2a8ad8"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "the shield changes what is BEHIND it (refraction), not just adds light",
+      "hits are local (dimple at the impact point) so the shield feels physical",
+      "intersection line ties it to the floor"
+    ],
+    "buildNotes": "three.js: render the scene to a target first (or use the composer's previous buffer) and sample it in the bubble material with a twirl offset; fresnel term for alpha/emissive; on hit set a uniform hitPos and animate a displacement amount; dissolve with a world-Y gradient + noise threshold and an edge band. Cheaper fallback: GlowSphere rim + a rotating swirl texture."
+  },
+  {
+    "id": "j-flexunit-swirl-portal",
+    "name": "Swirl portal disc: polar-spun noise x twirled Voronoi over a soft circular mask",
+    "source": {
+      "title": "Flex Unit, Stylized Portal VFX in Unity, Shader Graph (YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=Jwy3JOhMmdc",
+      "kind": "video"
+    },
+    "archetype": "summon",
+    "targeting": "ground",
+    "element": "arcane",
+    "durationSec": 4,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.6, "what": "disc scales open from a point with overshoot" },
+      { "name": "channel", "start": 0.6, "end": 3.4, "what": "video 9:05: pale blue-white disc, darker spiral streaks rotating inward, soft feathered rim" },
+      { "name": "aftermath", "start": 3.4, "end": 4, "what": "spins faster and shrinks shut" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#a8d8ff", "#2a4a8a"], "motion": "noise in polar UVs rotating over time, multiplied by a twirled Voronoi; blended with a soft circular base texture; alpha from the base texture", "notes": "spin + twirl gives the inward pull" },
+      { "part": "glow-sphere", "phase": "channel", "blend": "additive", "colors": ["#c0e8ff"], "motion": "faint glow halo around the rim", "notes": "keeps the edge soft" },
+      { "part": "emitter-wisps", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#7ab8ff"], "motion": "optional: motes spiralling into the centre", "notes": "not in the video; adds the inward read in 3D" }
+    ],
+    "palette": ["#ffffff", "#a8d8ff", "#2a4a8a"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "two noises in different coordinate systems (polar spin, twirled cells) never repeat visibly",
+      "the dark spiral streaks give the bright disc depth"
+    ],
+    "buildNotes": "One plane with a small ShaderMaterial: polar uv (r, a + t*speed), noise(r*k, a*n) * twirledVoronoi, times a smoothstep circle mask; scale-in with overshoot. Pairs with the summon archetype (something steps out)."
+  },
+  {
+    "id": "j-lelu-twisted-wind-tornado",
+    "name": "Wind tornado from a twisted, off-centre funnel mesh with scrolling texture, colour ramp and spinning ground waves",
+    "source": {
+      "title": "Le Lu, Godot 3D VFX Tornado Effect (Wind) (YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=thOuxupumtI",
+      "kind": "video"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "wind",
+    "durationSec": 4,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.6, "what": "ground waves spin up and opacity of the funnel ramps in" },
+      { "name": "channel", "start": 0.6, "end": 3.4, "what": "video 0:12: blue-white twisted funnel spinning (-360 deg per 0.8 s) with the texture scrolling the opposite way; lightning arcs around it; ground swirl of waves and sparks" },
+      { "name": "aftermath", "start": 3.4, "end": 4, "what": "opacity / alpha-clip threshold fades the funnel out; waves die" }
+    ],
+    "layers": [
+      { "part": "beam-ribbon", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#a8d0ff", "#3a6ab8"], "motion": "hollow 24-sided funnel, flared top and bottom, BASE pushed off-centre (curvature), top twisted hard; texture scroll (-1.2, 2); minus a clamped vertical gradient to kill the ends; colour/alpha from a 1D ramp sampled by the texture value", "notes": "the twist makes any scrolled texture follow the spiral" },
+      { "part": "emitter-wisps", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#5a8ad8"], "motion": "small twisted-cylinder 'wave' meshes at the base: zero gravity, up 0-3, random angle, life 0.5 s, scale small -> big, angular velocity, alpha-clip dissolve; duplicate at the top in local space", "notes": "hides the hard floor intersection, which players see up close" },
+      { "part": "lightning-arc", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#9ad0ff"], "motion": "a few arcs flicking around the funnel", "notes": "storm flavour (seen in the hero shot)" },
+      { "part": "emitter-sparks", "phase": "channel", "blend": "additive", "colors": ["#ffffff", "#bfe0ff"], "motion": "sparks swirling on the ground ring", "notes": "secondary" }
+    ],
+    "palette": ["#ffffff", "#a8d0ff", "#3a6ab8"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "an off-centre base and a twisted top make a static mesh look alive when it spins",
+      "colour comes from a ramp driven by the texture, so one texture gives core and edge colours",
+      "for mobile/VR: alpha-clip instead of transparency avoids overdraw and still looks like wind"
+    ],
+    "buildNotes": "Build the funnel as a LatheGeometry with a twist applied per ring (rotate each ring by k*height) and the bottom ring offset in x; ShaderMaterial with scrolling noise, end-fade gradient and a ramp; spin the mesh, scroll UVs the other way. Ground waves: InstancedMesh of short twisted rings with scale/alpha curves."
+  }
+]

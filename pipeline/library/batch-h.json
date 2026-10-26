@@ -1,0 +1,297 @@
+[
+  {
+    "id": "h-onetupthree-basic-sword-slash",
+    "name": "Readable sword slash built as base + highlight + support + impact",
+    "source": {
+      "title": "onetupthree, Anatomy Of A Slash (Godot, YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=QyI8ZS-G9nw",
+      "kind": "video"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "other",
+    "durationSec": 0.9,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.1, "what": "blade wind-up; nothing glows yet (a basic weapon gets no charge beat)" },
+      { "name": "release", "start": 0.1, "end": 0.35, "what": "the base crescent sweeps along the swing (UV offset over life), the narrower highlight rides on its leading half" },
+      { "name": "impact", "start": 0.3, "end": 0.5, "what": "white star-burst spikes at the arc end plus one thin diamond flying along the slash tangent; specks fly backwards" },
+      { "name": "aftermath", "start": 0.5, "end": 0.9, "what": "base and highlight erode away from the tail first; specks and faint wind fade a beat later" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#d8dde8", "#8a92a6"], "motion": "arc mesh with mirrored UVs per side, texture scrolls along the swing, tapers toward the tail; alpha-erosion dissolve at end of life", "notes": "BASE: sets the whole silhouette; built as a mesh so it can be shaped and tuned in isolation, not attached to the weapon" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#f4f7ff"], "motion": "same motion as the base, ~40% of its width, offset to the leading edge, erodes too", "notes": "HIGHLIGHT: smaller area but the most visual weight; its taper tells the weapon (dagger = thin ripping line, longsword = aggressive taper)" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#ff6a7a", "#c02040"], "motion": "8-14 small diamond specks spawned along the arc, drifting outward, life 0.4 s", "notes": "SUPPORT: free to leave the arc's bounds; contrasting colour; must never outshine the highlight" },
+      { "part": "emitter-wisps", "phase": "release", "blend": "additive", "colors": ["#e8eef8", "#9aa4b8"], "motion": "2-3 faint wind streaks following the arc, opacity 0.15", "notes": "SUPPORT: low-opacity wind adds speed without adding brightness" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffe6ea"], "motion": "4-6 hard star spikes, scale pop 0.6 -> 1.2 in 0.06 s, fade 0.12 s", "notes": "IMPACT reuses the slash's specks and colours so it feels like the same attack" },
+      { "part": "mesh-projectile", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ff8090"], "motion": "one long thin diamond along the slash tangent at the hit point, flies 0.6 m and shrinks", "notes": "a long thin element reinforces the blade shape and the swing direction" }
+    ],
+    "palette": ["#ffffff", "#d8dde8", "#ff6a7a"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "start from the weapon's 'lore': a beginner sword gets a simple slash that only says 'an attack happened'",
+      "four jobs, four layers: base = shape, highlight = focus, support = character, impact = payoff",
+      "impact moves along the slash direction (specks fly back, diamond along the tangent), so the hit continues the motion"
+    ],
+    "buildNotes": "Two partial RingGeometry crescents (base wide, highlight narrow on the outer edge) under one pivot; animate thetaLength/rotation for the sweep and fade with a per-vertex erosion (or opacity ramp from tail to tip). Specks = small diamond (createRing segments 4) instances; impact = star spikes + one stretched diamond aligned with the tangent."
+  },
+  {
+    "id": "h-onetupthree-ember-blade-slash",
+    "name": "Magma blade slash: dark red eroding base under a bright orange-to-yellow distorted highlight",
+    "source": {
+      "title": "onetupthree, Anatomy Of A Slash, compilation segment (YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=QyI8ZS-G9nw",
+      "kind": "video"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "fire",
+    "durationSec": 1.1,
+    "phases": [
+      { "name": "release", "start": 0, "end": 0.3, "what": "video ~7:40: a wide DARK RED crescent sweeps out; it is the base and stays dark" },
+      { "name": "impact", "start": 0.25, "end": 0.5, "what": "~7:46: a bright orange -> yellow highlight band rides the outer edge with heat-wobble distortion" },
+      { "name": "aftermath", "start": 0.5, "end": 1.1, "what": "the dark base erodes into ragged red strands, the highlight burns out first, a few embers linger" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "release", "blend": "normal", "colors": ["#7a0a14", "#4a0610", "#200206"], "motion": "wide crescent, erosion dissolve from the tail, opacity 0.85", "notes": "the author's note: 'Base: dark red colour, erosion' — a dark base makes the hot highlight pop" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#fff2a0", "#ffb030", "#ff5a10"], "motion": "narrow band on the outer edge of the base, slight UV distortion wobble, erodes 0.1 s before the base", "notes": "'Highlight: bright orange to yellow, distortion'" },
+      { "part": "emitter-embers", "phase": "aftermath", "blend": "additive", "colors": ["#ffd070", "#ff6a1a"], "motion": "12-20 embers shed from the arc, slight upward drift, life 0.6-1 s", "notes": "keeps the fire alive after the stroke without more glow" },
+      { "part": "distortion", "phase": "impact", "blend": "additive", "colors": ["#ffffff"], "motion": "faint heat shimmer along the highlight", "notes": "optional: fake it with a wobble on the highlight's UVs" }
+    ],
+    "palette": ["#4a0610", "#ff8a20", "#fff2a0"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "value ladder inside one stroke: near-black red under a near-white yellow edge",
+      "the dark base reads even on a bright background, the highlight carries the heat"
+    ],
+    "buildNotes": "Same rig as g-onetupthree-basic-sword-slash, but the base is a normal-blended dark red crescent and the highlight is additive with a sin-wobble on its vertices. Erode highlight before base. Embers via Emitter colorMid orange, erosion 0."
+  },
+  {
+    "id": "h-onetupthree-frost-blade-slash",
+    "name": "Frost blade slash with wide wind sheet, snowflakes and blizzard curves that echo the slash on impact",
+    "source": {
+      "title": "onetupthree, Anatomy Of A Slash, compilation segment (YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=QyI8ZS-G9nw",
+      "kind": "video"
+    },
+    "archetype": "melee-slash",
+    "targeting": "enemy",
+    "element": "ice",
+    "durationSec": 1.3,
+    "phases": [
+      { "name": "release", "start": 0, "end": 0.35, "what": "video ~8:48: icy cyan-white crescent with a WIDE pale wind sheet around it; snow and snowflakes stream along the arc" },
+      { "name": "impact", "start": 0.3, "end": 0.6, "what": "~9:00: 'blizzard curves' — smaller crescents that mirror the slash shape — spin around the hit point; a quick pulsing flare; orbital snow and snowflakes" },
+      { "name": "aftermath", "start": 0.6, "end": 1.3, "what": "curves and wind erode, snowflakes keep orbiting a moment, then fall and twinkle out" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#9ae4ff", "#2a7ab8"], "motion": "crescent base + white highlight, erosion", "notes": "core stroke" },
+      { "part": "emitter-wisps", "phase": "release", "blend": "additive", "colors": ["#e8f6ff", "#8acfff"], "motion": "one wide translucent wind sheet, 1.4x the arc radius, opacity 0.25", "notes": "'Support: wide wind' — a soft volume around the hard stroke" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#bfe8ff"], "motion": "snow dots + a few six-point snowflake glints along the arc", "notes": "'snow + snowflakes'" },
+      { "part": "trail-ribbon", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#7fd0ff"], "motion": "3-4 small crescents (same shape as the slash, 0.3x size) spinning around the hit point, 0.3 s", "notes": "'Curves mirror slash shape' — the impact repeats the attack's own silhouette" },
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#c8f0ff"], "motion": "2 quick pulses 0.06 s apart", "notes": "'quick pulsing impact flare'" },
+      { "part": "emitter-embers", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff", "#a0dcff"], "motion": "orbiting snowflakes around the target, then fall, life 0.8 s", "notes": "'orbital snow + snowflakes' linger after the stroke" }
+    ],
+    "palette": ["#ffffff", "#9ae4ff", "#2a7ab8"],
+    "shake": "light",
+    "whyItLooksGood": [
+      "impact shapes are smaller copies of the slash shape, so cause and effect read as one move",
+      "a soft wide wind sheet frames the thin hard stroke"
+    ],
+    "buildNotes": "Reuse the crescent rig; add a wide low-opacity crescent behind it; on hit, spawn 3-4 mini crescents rotating around the target; snowflakes as createRing(segments 6) glints."
+  },
+  {
+    "id": "h-stylizedstation-igni-cone-burst",
+    "name": "Stylised fire-sign cone: range-wipe telegraph, charging fireball, fire-wave burst and ignite ticks",
+    "source": {
+      "title": "Stylized Station / Nicolas Trevisan, stylised Witcher Igni sign redesign (Unity + Amplify, YouTube breakdown)",
+      "url": "https://www.youtube.com/watch?v=IHAEL6g7ZnI",
+      "kind": "video"
+    },
+    "archetype": "ground-aoe",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 3.8,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1, "what": "concept sheet: range indicator ramps up (cone wipes in from the caster), fire ball gains energy, ethereal waves SHRINK TO THE CENTRE, flash when ready" },
+      { "name": "release", "start": 1, "end": 1.75, "what": "climax ~0.75 s: fire-wave burst mesh sweeps through the cone (wipe mask), small DARK smoke puffs follow the waves, burning ashes, hit on target" },
+      { "name": "aftermath", "start": 1.75, "end": 3.8, "what": "ignite ~2 s: targets burn with flames + fresnel; 3 damage ticks, each a burst of flames/ash/dust; burnt ground with faked heat distortion" }
+    ],
+    "layers": [
+      { "part": "ground-decal", "phase": "anticipation", "blend": "additive", "colors": ["#ff9a3a", "#5a1a08"], "motion": "cone-shaped range indicator revealed by a noisy gradient wipe (smoothstep threshold) from the caster outward; can also wipe back from the far end", "notes": "readable range + time to dodge; low values so it reads as soft compared with the damage" },
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ffe0a0", "#ff7a1a"], "motion": "fire ball at the hand grows over 1 s; a ring of ethereal waves contracts into it; flash when ready", "notes": "implode before you explode" },
+      { "part": "beam-ribbon", "phase": "release", "blend": "additive", "colors": ["#fff0c0", "#ff8a20", "#a01a00"], "motion": "flat fan-shaped burst mesh with linear UVs, painted fire texture scrolling along it, panned-noise opacity mask × the range wipe = the burst sweeping out", "notes": "HIGH VALUES are reserved for the damage moment" },
+      { "part": "emitter-smoke", "phase": "release", "blend": "normal", "colors": ["#3a2a22", "#141010"], "motion": "small dark puffs trailing the fire waves, erosion 0.6", "notes": "'small dark smokes after the fire waves' — contrast behind the bright burst" },
+      { "part": "emitter-embers", "phase": "release", "blend": "additive", "colors": ["#ffd070", "#ff5a10"], "motion": "burning ashes thrown along the cone, drag, slight gravity", "notes": "secondary detail" },
+      { "part": "emitter-wisps", "phase": "aftermath", "blend": "additive", "colors": ["#ffb050", "#e04010"], "motion": "flame wisps on each target, burst of flames/ash/dust at each of 3 ticks (~0.6 s apart)", "notes": "ignite feedback: the player sees every damage tick" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "normal", "colors": ["#1a0e08", "#3a1a0a"], "motion": "burnt cone on the ground with a UV-wobble heat shimmer, fades over 2 s", "notes": "longest-lived layer" }
+    ],
+    "palette": ["#fff0c0", "#ff8a20", "#3a2a22"],
+    "shake": "medium",
+    "whyItLooksGood": [
+      "deconstruct first: primary (fire blast), secondary (ignite), tertiary (smoke, distortion)",
+      "value budget: high values only for damage; indicators and particles stay mid/low",
+      "lots of dark colour for contrast"
+    ],
+    "buildNotes": "Telegraph: our cone zone + an additive cone fan whose fill grows from the caster. Burst: CircleGeometry wedge with a scrolling shader and a radial reveal; dark eroded puffs behind it; ignite: per-target flame emitter bursting at 3 tick times plus GlowSphere fresnel on the target."
+  },
+  {
+    "id": "h-beyondfx-botw-bomb-explosion",
+    "name": "Zelda-style stylised bomb explosion: lit eroding smoke ball, shock rings, debris with smoke-ribbon trails",
+    "source": {
+      "title": "Beyond-FX, Nathan Huang, Zelda BotW-inspired explosion breakdown (UE Niagara, YouTube)",
+      "url": "https://www.youtube.com/watch?v=LzZ_9tmWPS8",
+      "kind": "video"
+    },
+    "archetype": "nova",
+    "targeting": "ground",
+    "element": "fire",
+    "durationSec": 2.6,
+    "phases": [
+      { "name": "impact", "start": 0, "end": 0.15, "what": "flare + point light spike, velocity-aligned streaks, camera-facing and ground shock rings" },
+      { "name": "release", "start": 0.1, "end": 0.9, "what": "video ~0:23: a dark grey LIT smoke ball bulges outward; its emissive core burns away before the smoke; debris arcs out leaving orange ember trails and dark smoke ribbons" },
+      { "name": "aftermath", "start": 0.9, "end": 2.6, "what": "~0:24: smoke erodes into ragged wisps from black outward, debris lands, bounces and stops spinning, embers collide with the floor" }
+    ],
+    "layers": [
+      { "part": "core-flash", "phase": "impact", "blend": "additive", "colors": ["#ffffff", "#ffd27a"], "motion": "flare sprite, 2-3 frames", "notes": "first beat" },
+      { "part": "light", "phase": "impact", "blend": "additive", "colors": ["#ffb050"], "motion": "point light intensity driven by the flare's alpha", "notes": "lights the floor and the smoke for one beat" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#fff2c0", "#ff9a3a"], "motion": "sphere spawn, outward velocity, velocity-aligned stretched streaks, random sprite variant", "notes": "radial speed read" },
+      { "part": "ring-shockwave", "phase": "impact", "blend": "additive", "colors": ["#ffe0a0", "#ff8a3a"], "motion": "flattened-cylinder ring whose texture pans outer->inner so it expands; one camera-facing, one flat on the ground; alpha-threshold fade", "notes": "two rings in two planes sell 3D" },
+      { "part": "emitter-smoke", "phase": "release", "blend": "normal", "colors": ["#ff9a3a", "#4a4440", "#26221f"], "motion": "big lit spheres, outward + extra up velocity, scale up, slight gravity, drag; UV bulge makes them look expanding; erosion from black outward; emissive threshold burns the hot core away first; normals flatten near end of life", "notes": "'the meat': dark grey lit smoke with an orange core that cools first" },
+      { "part": "mesh-debris", "phase": "release", "blend": "normal", "colors": ["#3a3430", "#ff7a2a"], "motion": "6 random small meshes, out + up, gravity, collision with friction/bounce, spin rate proportional to speed, scale down at end", "notes": "hot emissive edge cut by a texture; stops spinning when it stops moving" },
+      { "part": "trail-ribbon", "phase": "release", "blend": "normal", "colors": ["#5a5450", "#1e1b19"], "motion": "smoke ribbon per big debris piece, UV tiled by distance (no stretching), random width/lifetime PER RIBBON (not per segment)", "notes": "per-segment randomness makes spazzy ribbons" },
+      { "part": "emitter-embers", "phase": "release", "blend": "additive", "colors": ["#ffd070", "#ff5a10"], "motion": "embers spawned at each debris position with the debris velocity pushed back; curl noise; floor collision; size by speed", "notes": "ember trails arcing off the debris = the orange arcs in the frame" }
+    ],
+    "palette": ["#ffffff", "#ff9a3a", "#4a4440"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "the body is DARK lit smoke; the colour lives in small bright accents (core, streaks, ember arcs)",
+      "every layer fades with an alpha-threshold erosion instead of a uniform opacity fade",
+      "secondary motion: trails and embers are spawned from the debris, so the whole thing moves together"
+    ],
+    "buildNotes": "Smoke: Emitter normal-blended, colorMid orange -> dark grey, erosion 0.6, sizeJitter, drag 1.5, plus a GlowSphere(rim:false) core that fades in 0.25 s. Rings: createRing flat + one billboarded. Debris: InstancedMesh with gravity/bounce, angular speed ∝ |v|; ember Emitter.burst at each debris position every frame for 0.6 s."
+  },
+  {
+    "id": "h-aguiar-stylized-mesh-smoke",
+    "name": "Stylised mesh smoke: lumpy cloud meshes with a hard Voronoi erosion and a light-to-dark value ramp",
+    "source": {
+      "title": "Gabriel Aguiar Prod., Stylized Smoke VFX (UE5 Niagara, YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=HRagD5L-WF8",
+      "kind": "video"
+    },
+    "archetype": "other",
+    "targeting": "ground",
+    "element": "other",
+    "durationSec": 2.5,
+    "phases": [
+      { "name": "release", "start": 0, "end": 0.6, "what": "lumpy puffs spawn in a small disc and shoot up in a cone, growing from 0.1 to 1.5 scale with random orientation" },
+      { "name": "aftermath", "start": 0.6, "end": 2.5, "what": "video ~9:38: puffs darken from light grey to near-black and erode with a hard edge from ~30% of life; wind pushes them sideways" }
+    ],
+    "layers": [
+      { "part": "emitter-smoke", "phase": "release", "blend": "normal", "colors": ["#e8e6e2", "#8a8884", "#202020"], "motion": "spawn rate ~20/s, life 1.2-1.6 s, cone velocity up, scale curve 0.1 -> 1.5 (smooth), random rotation, wind + drag sideways, no turbulence", "notes": "MESH particles: 3-4 overlapped icospheres joined and remeshed; the lumpy silhouette is what makes it stylised" },
+      { "part": "distortion", "phase": "aftermath", "blend": "normal", "colors": ["#ffffff"], "motion": "masked (hard) erosion: opacity = erosion param x Voronoi noise, erosion goes 15 -> 0 from 30% of life", "notes": "hard-edged dissolve, no soft alpha: reads clean and cartoony" }
+    ],
+    "palette": ["#e8e6e2", "#8a8884", "#202020"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "silhouette comes from geometry, not a texture, so it holds up at any angle",
+      "colour over life is a VALUE ramp (light -> mid -> near-black), not a hue change",
+      "hard masked erosion instead of transparency keeps the toon look"
+    ],
+    "buildNotes": "Build a lumpy puff by merging 3-4 offset IcosahedronGeometry(1,1) into one geometry; InstancedMesh with per-instance colour (light -> dark) and scale curve; erode with a shader discard on a Voronoi-ish noise vs threshold, or approximate with Emitter erosion 0.7 + high opacity, normal blend."
+  },
+  {
+    "id": "h-onetupthree-mech-self-destruct",
+    "name": "Mini mech self-destruct: eased red charge-up, then a low ground-hugging blast that goes bright -> red -> dark",
+    "source": {
+      "title": "onetupthree, Mini Mech Explosion VFX breakdown (Godot, YouTube)",
+      "url": "https://www.youtube.com/watch?v=eLzQ9eX3flI",
+      "kind": "video"
+    },
+    "archetype": "nova",
+    "targeting": "enemy",
+    "element": "fire",
+    "durationSec": 3,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 1.6, "what": "video ~0:04-0:07: the mech glows red with an INTENSE EASE-IN (very slow, then ramps fast); a billboard shine scales up ease-out, then ease-in, with a little rotation" },
+      { "name": "impact", "start": 1.6, "end": 1.75, "what": "~0:07.1: pale yellow-white ground clouds burst outward hugging the floor, tall orange velocity-aligned spikes, one thin pale ring; impact frame (silhouette) for a couple of frames" },
+      { "name": "release", "start": 1.75, "end": 2.2, "what": "~0:07.4: clouds turn red with orange edges, dark thin ground rings keep expanding slowly, embers burst in a hemisphere" },
+      { "name": "aftermath", "start": 2.2, "end": 3, "what": "~0:07.9: only a dark smoke dome lingers and erodes; a dark shadow decal fades under it" }
+    ],
+    "layers": [
+      { "part": "glow-sphere", "phase": "anticipation", "blend": "additive", "colors": ["#ff3a2a", "#a00a0a"], "motion": "emission and colour follow an ease-in curve; shine billboard scales in two parts", "notes": "the ease-in makes the last 0.3 s feel dangerous" },
+      { "part": "emitter-smoke", "phase": "impact", "blend": "additive", "colors": ["#fff6d0", "#ffd060"], "motion": "BRIGHT ground clouds: burst outward, flattened, y-aligned to velocity, damping, tangential velocity at the end; dissipate fast", "notes": "every cloud layer has a bright and a dark version; bright ones die much sooner" },
+      { "part": "emitter-smoke", "phase": "release", "blend": "normal", "colors": ["#c02010", "#3a1410", "#141010"], "motion": "DARK ground clouds and upward clouds, same motion, lit with a toon ramp (dark/bright lerp through a softened step), erosion + Y offset over life", "notes": "the dark versions carry the shape after the flash" },
+      { "part": "ring-shockwave", "phase": "release", "blend": "normal", "colors": ["#2a2020", "#5a3020"], "motion": "rings scale very fast first, then keep growing slowly; float up, rotate and erode", "notes": "two-speed scale = punch then drift" },
+      { "part": "emitter-sparks", "phase": "impact", "blend": "additive", "colors": ["#fff0b0", "#ff8a20"], "motion": "velocity-aligned spikes spawned on a ground circle, slight out + up velocity, scale up fast", "notes": "silly alone, but they add the explosive read" },
+      { "part": "emitter-embers", "phase": "release", "blend": "additive", "colors": ["#ffd070", "#ff4a10"], "motion": "random flipbook frame, hemisphere burst, slow down, more turbulence later", "notes": "secondary detail" },
+      { "part": "ground-decal", "phase": "aftermath", "blend": "normal", "colors": ["#0a0808"], "motion": "shadow blot spawned at impact, fades over 1.5 s", "notes": "'ties the effect together'" },
+      { "part": "screen-flash", "phase": "impact", "blend": "normal", "colors": ["#000000", "#ffffff"], "motion": "impact frame: grayscale the frame, step(1 - gray) so bright = black, rest = white, hold a few frames", "notes": "we have this as ScreenFx impact" }
+    ],
+    "palette": ["#fff6d0", "#c02010", "#141010"],
+    "shake": "heavy",
+    "whyItLooksGood": [
+      "eased charge-up: slow, slow, FAST",
+      "bright and dark twins for each cloud layer: the bright twin is the flash, the dark twin is the body",
+      "low and wide (ground-hugging) reads as a powerful blast for a small unit"
+    ],
+    "buildNotes": "Charge: GlowSphere on the target with intensity = t^4 over 1.6 s, plus a shine billboard. Blast: two Emitters per cloud layer (additive bright, life 0.3 s; normal dark, life 1.2 s), flat spread (spread 85, low speed up, high drag). Rings: createRing scale with ease-out-expo then linear. ScreenFx impact for 2 frames."
+  },
+  {
+    "id": "h-noggi-anime-wind-streaks",
+    "name": "Anime wind streaks and speed lines: thresholded gradient ribbons along curves",
+    "source": {
+      "title": "Noggi, How to Create ANY Stylized VFX in 3D (Blender anime, YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=oogSjfL1jpY",
+      "kind": "video"
+    },
+    "archetype": "dash",
+    "targeting": "self",
+    "element": "wind",
+    "durationSec": 1,
+    "phases": [
+      { "name": "release", "start": 0, "end": 0.4, "what": "video ~16:43: tapered wind ribbons follow a curve around the character, texture scrolling along the curve, gaps between segments" },
+      { "name": "aftermath", "start": 0.4, "end": 1, "what": "the threshold rises so streaks thin from their ends and break apart; directional speed lines flicker on a ring around the focus" }
+    ],
+    "layers": [
+      { "part": "trail-ribbon", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#ffc0d0"], "motion": "ribbon along a curve; gradient across the width centred by a ramp, x Voronoi/colour-burn breakup, step threshold; UV scrolls along the curve; params line scale (jaggedness), waviness", "notes": "hard thresholded edges, not soft glow" },
+      { "part": "emitter-wisps", "phase": "aftermath", "blend": "additive", "colors": ["#ffffff"], "motion": "speed lines: annulus mesh, noise stretched along the circle (tiny UV scale on one axis) x gradient, step threshold, reseed every few frames", "notes": "individual streaks black at both ends" }
+    ],
+    "palette": ["#ffffff", "#ffc0d0", "#8a5a70"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "everything starts from a 0..1 gradient and a threshold: one parameter animates growth and dissolve",
+      "author the shapes (curves, rings) instead of simulating"
+    ],
+    "buildNotes": "TubeGeometry/flat ribbon along a CatmullRom curve with a small ShaderMaterial: alpha = step(thr, gradientAcross * noise(uv.x*k - time)). Animate thr 0.2 -> 0.9 to thin and break the streaks. Speed lines can reuse post.ts focusLines or a RingGeometry with the same shader."
+  },
+  {
+    "id": "h-lelu-symmetry-magic-circle",
+    "name": "Hand-made magic circle: radial-symmetry strokes, petal centre and a blurred-duplicate glow",
+    "source": {
+      "title": "Le Lu, VFX Texture Creation: The ULTIMATE guide (Krita, YouTube tutorial)",
+      "url": "https://www.youtube.com/watch?v=dMthnzpR-eU",
+      "kind": "video"
+    },
+    "archetype": "buff-aura",
+    "targeting": "ground",
+    "element": "arcane",
+    "durationSec": 3,
+    "phases": [
+      { "name": "anticipation", "start": 0, "end": 0.8, "what": "video ~14:40: concentric rings draw in, then the glyph band; the 8-fold petal centre blooms last" },
+      { "name": "release", "start": 0.8, "end": 2.2, "what": "the circle holds and rotates (rings in opposite directions), glow pulses" },
+      { "name": "aftermath", "start": 2.2, "end": 3, "what": "erodes from the outer glyphs inward; the centre fades last" }
+    ],
+    "layers": [
+      { "part": "rune-circle", "phase": "anticipation", "blend": "additive", "colors": ["#ffffff", "#c8a0ff"], "motion": "2-3 crisp rings + a band of repeated glyph strokes (8-fold radial symmetry) + an 8-petal centre; counter-rotating rings", "notes": "multibrush radial symmetry turns a few strokes into an ornate circle" },
+      { "part": "glow-sphere", "phase": "release", "blend": "additive", "colors": ["#b080ff", "#5a2aa0"], "motion": "a blurred copy of the same circle under the crisp one, opacity pulse 0.3 -> 0.5", "notes": "glow trick: duplicate the layer and blur it; stack copies for more glow" },
+      { "part": "emitter-sparks", "phase": "release", "blend": "additive", "colors": ["#ffffff", "#d0b0ff"], "motion": "scatter-brush sparkle points around the rim, twinkle", "notes": "a few glints, not a cloud" }
+    ],
+    "palette": ["#ffffff", "#c8a0ff", "#5a2aa0"],
+    "shake": "none",
+    "whyItLooksGood": [
+      "symmetry multiplies a little hand work into a lot of ornament",
+      "crisp line art on top of its own blurred copy = glow without losing the shape",
+      "use free texture packs for common effects; hand-make only the signature shapes"
+    ],
+    "buildNotes": "Draw the circle procedurally to a CanvasTexture once (rings + an 8x repeated glyph path rotated around the centre + petals), use it on a ground plane; add a second plane with a pre-blurred copy (ctx.filter = 'blur(6px)') at lower opacity. Rotate the planes in opposite directions; erode with a radial threshold."
+  }
+]

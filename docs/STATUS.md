@@ -30,6 +30,24 @@ _Last updated: 2026-10-21_
   - `src/player.ts`: blue player dummy (View → player dummy, WASD/arrows, camera-relative). Inside a zone at
     impact → HIT (flash + knockback), near but outside → DODGED; counts in the stats line.
 - `npm run build` passes (only the >500 kB chunk warning).
+- **Video tutorials → batch h** (`pipeline/library/batch-h.json`, 9 recipes, ids `h-…`): watched 7 YouTube
+  tutorials in the built-in browser (full transcripts from the caption track + paused frames): onetupthree slash
+  anatomy (basic/ember/frost variants) and mech explosion, Stylized Station Igni cone, Beyond-FX Zelda explosion,
+  Gabriel Aguiar mesh smoke, Noggi anime wind streaks, Le Lu magic-circle textures. Techniques in
+  `docs/VFX_PRINCIPLES.md` §11.
+  - Incident: this batch was first written to `batch-g.json` and overwrote the other session's batch g (user
+    reference videos). Moved to batch-h; the other session was asked to re-write its batch-g.json and re-run
+    `build-index`.
+- **Video tutorials, round 2 → batch j** (`pipeline/library/batch-j.json`, 6 recipes, ids `j-…`): Dan Root 2D
+  lightning timing, CGHOW outlined stylised bolt, Gabriel Aguiar layered laser beam, A Bit Of Game Dev refraction
+  bubble shield, Flex Unit swirl portal, Le Lu twisted wind tornado. Techniques in `docs/VFX_PRINCIPLES.md` §11b.
+  `build-index` validates (116 recipes with a–h + j; the other session's batch i is not on disk yet).
+- **Violet severance** (targeted, `enemy`, `src/spells/targeted/violetSeverance.ts`, design
+  `pipeline/designs/violet-severance.md`), forged from `j-aguiar-layered-laser-beam` + `j-cghow-outlined-stylized-bolt`:
+  a 3 s laser whose look is all shader layers (dark wide under-beam as an outline, scrolling streak core with
+  end-fade + pinch + UV distortion, alpha-clipped electric copy). The beam cuts through the target and scorches
+  the ground behind it; 10 ticks + a cut with impact frames. selfTest ok (11 hits, 1 zone, 0 NaN / singular),
+  also after shuffle. One fix round: white only in the hottest centre, beam width 0.5, under-beam 2.1× core.
 
 ## In progress
 - Nothing.
@@ -41,6 +59,8 @@ _Last updated: 2026-10-21_
 - Commit of the refinement + zones + original moves work (last commit 7bd4aaa on `feat/particle-editor`; no remote).
 
 ## Known look issues (small)
+- Violet severance: from the default side camera the beam is still fairly thin, and the dark outline only shows
+  up close; the beam runs flat at hand height, so it passes the target at 1.5 m instead of chest height.
 - Spinning crane kick: surrounding enemies still look pale under the jade light.
 - Starfall's `dust` emitter is never burst (harmless).
 - FinishPass impact-frame also fires on every earthquake pulse.
