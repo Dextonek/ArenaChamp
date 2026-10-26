@@ -106,7 +106,8 @@ _Last updated: 2026-10-26_
 - Nothing.
 
 ## Waiting on you
-- Commit of the targeting / play mode / pipeline work (last commit 452e0fc on `feat/particle-editor`; no remote).
+- Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
+  d89f0b7 weapons (models, auras, hero, weapon attacks).
 
 ## Known look issues (small)
 - Weapon auras: the ice sword's frost ring reads a bit heavy from the low front camera; hammer eye/bell flares are
