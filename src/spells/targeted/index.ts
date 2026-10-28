@@ -55,6 +55,9 @@ import { auroraVeilModule } from './auroraVeil';
 import { eventHorizonModule } from './eventHorizon';
 import { hyperionRailgunModule } from './hyperionRailgun';
 import { leviathanBreachModule } from './leviathanBreach';
+import { ghostGalleonBroadsideModule } from './ghostGalleonBroadside';
+import { calderaAwakeningModule } from './calderaAwakening';
+import { ophanimDescentModule } from './ophanimDescent';
 import { neonFractureJabModule } from './neonFractureJab';
 import { prismOvertureModule } from './prismOverture';
 import { crimsonRequiemModule } from './crimsonRequiem';
@@ -120,6 +123,9 @@ export const targetedModules: EffectModule[] = [
   eventHorizonModule,
   hyperionRailgunModule,
   leviathanBreachModule,
+  ghostGalleonBroadsideModule,
+  calderaAwakeningModule,
+  ophanimDescentModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

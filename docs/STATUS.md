@@ -174,6 +174,15 @@ _Last updated: 2026-10-28_
   arena, a head close-up, a dive into a water crown splash). Designs in `pipeline/designs/event-horizon.md`,
   `hyperion-railgun.md`, `leviathan-breach.md`; sheets in `docs/spells/<slug>_sheet.jpg`. 114 effects registered;
   the full `selfTest` sweep passes except the known corpse-finger item below.
+- **Cinematic hero batch (2026-10-28):** three fully cinematic hero effects (every second a placed shot,
+  letterbox, explicit cameras), each through 2-3 contact-sheet review rounds: **ghost galleon broadside**
+  (~24 s: a spectral galleon sails out of a fog bank, two rippling broadsides of ghost-fire cannonballs, sinks into
+  the stone like water), **ophanim descent** (~22 s: three bronze wheels covered in eyes descend through a cloud
+  hole, all eyes open, wings unfold, a cascade of eye beams and a converged final beam) and **caldera awakening**
+  (~22 s: a stamp, a racing crack, a basalt volcano grows from the floor, a lava fountain, lava bombs, lava rivers
+  and an ash cloud). Designs in `pipeline/designs/ghost-galleon-broadside.md`, `ophanim-descent.md`,
+  `caldera-awakening.md`; sheets `docs/spells/ghost-galleon_sheet.jpg`, `ophanim_sheet.jpg`, `caldera_sheet.jpg`.
+  117 effects registered; the full `selfTest` sweep passes.
 
 ## In progress
 - Nothing.
@@ -182,12 +191,13 @@ _Last updated: 2026-10-28_
 - Nothing.
 
 ## Waiting on you
-- Uncommitted on `feat/particle-editor`: the distortion pass, 15 spells with distortion, the 3 hero effects,
-  `index.ts`, `forged.json`, designs and sheets (commit when you want).
+- Uncommitted on `feat/particle-editor`: the three cinematic heroes (galleon, ophanim, caldera), `index.ts`,
+  `forged.json`, designs and sheets (commit when you want).
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
 
 ## Known look issues (small)
+- Ophanim descent: the opening omen shot (0-3 s) is sparse: dark sky, small clouds, the caster's head at the frame edge.
 - `corpse finger gravity pull` (old set piece, untouched): `selfTest` reports 19 singular frames only when run
   longer than its own length (7 s); it passes at 6.5 s. Something scales to 0 after the effect ends.
 - Event horizon: the lens bends the disk's tips into two small leaf shapes at the disk ends (likely the lens bending the disk tips; kept).

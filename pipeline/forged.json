@@ -1200,5 +1200,47 @@
       "singularFrames": 0,
       "nanFrames": 0
     }
+  },
+  {
+    "label": "ghost galleon broadside",
+    "file": "src/spells/targeted/ghostGalleonBroadside.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 12,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "caldera awakening",
+    "file": "src/spells/targeted/calderaAwakening.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 9,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "ophanim descent",
+    "file": "src/spells/targeted/ophanimDescent.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 8,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
   }
 ]
