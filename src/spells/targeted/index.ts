@@ -58,6 +58,13 @@ import { leviathanBreachModule } from './leviathanBreach';
 import { ghostGalleonBroadsideModule } from './ghostGalleonBroadside';
 import { calderaAwakeningModule } from './calderaAwakening';
 import { ophanimDescentModule } from './ophanimDescent';
+import { thousandCutIaidoModule } from './thousandCutIaido';
+import { lunarTideModule } from './lunarTide';
+import { abyssalAnglerModule } from './abyssalAngler';
+import { supercellModule } from './supercell';
+import { worldTreeRisingModule } from './worldTreeRising';
+import { hourglassOfAgesModule } from './hourglassOfAges';
+import { midnightCircusModule } from './midnightCircus';
 import { neonFractureJabModule } from './neonFractureJab';
 import { prismOvertureModule } from './prismOverture';
 import { crimsonRequiemModule } from './crimsonRequiem';
@@ -126,6 +133,13 @@ export const targetedModules: EffectModule[] = [
   ghostGalleonBroadsideModule,
   calderaAwakeningModule,
   ophanimDescentModule,
+  thousandCutIaidoModule,
+  lunarTideModule,
+  abyssalAnglerModule,
+  supercellModule,
+  worldTreeRisingModule,
+  hourglassOfAgesModule,
+  midnightCircusModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

@@ -183,6 +183,17 @@ _Last updated: 2026-10-28_
   and an ash cloud). Designs in `pipeline/designs/ghost-galleon-broadside.md`, `ophanim-descent.md`,
   `caldera-awakening.md`; sheets `docs/spells/ghost-galleon_sheet.jpg`, `ophanim_sheet.jpg`, `caldera_sheet.jpg`.
   117 effects registered; the full `selfTest` sweep passes.
+- **Seven more cinematic heroes (2026-10-28):** **lunar tide** (the moon rises huge, lifts the enemies, cracks and
+  drops a shard), **thousand-cut iaido** (time-stop to greyscale, a dash between enemies with afterimages, the
+  sheath click, then every cut appears at once), **abyssal angler** (the arena sinks into the deep sea, a lure, a
+  silhouette reveal, the jaws snap), **world tree rising** (a colossal tree grows from a seed, roots coil the enemies,
+  fruit falls, autumn), **supercell** (a wall cloud, a tornado lifts the enemies, a bolt down the funnel, hail),
+  **hourglass of ages** (a brass hourglass traps the enemies in sand, time reverses, the glass shatters) and
+  **midnight circus** (a big top rises, the lights go down, spotlights, a jack-in-the-box lunges, confetti and a
+  curtain). Each went through 2-4 contact-sheet review rounds. Designs in `pipeline/designs/<slug>.md`, sheets in
+  `docs/spells/` (lunar-tide, iaido, angler, world-tree, supercell, hourglass, midnight-circus). 124 effects
+  registered; the full `selfTest` sweep passes. One real bug found and fixed on the way: a GLSL variable named
+  `flat` (reserved) broke Lunar Tide's moon-glow shader on first compile.
 
 ## In progress
 - Nothing.
@@ -191,12 +202,15 @@ _Last updated: 2026-10-28_
 - Nothing.
 
 ## Waiting on you
-- Nothing uncommitted. Latest commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion,
-  43 spells; 60ec4cb three cinematic heroes.
+- Uncommitted on `feat/particle-editor`: the seven cinematic heroes, `index.ts`, `forged.json`, designs and sheets
+  (commit when you want). Earlier: 108ce68 art bible, stage, distortion, 43 spells; 60ec4cb three cinematic heroes.
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
 
 ## Known look issues (small)
+- World tree rising: the 6.2-8 s canopy shot frames only the upper tree (the 17-21.8 s wide shot shows the full scale).
+- Supercell: the enemies take a light violet tint from the arena hit flash during the vortex ticks.
+- Thousand-cut iaido: the 2.8 s blade glint star is still a bit large.
 - Ophanim descent: the opening omen shot (0-3 s) is sparse: dark sky, small clouds, the caster's head at the frame edge.
 - `corpse finger gravity pull` (old set piece, untouched): `selfTest` reports 19 singular frames only when run
   longer than its own length (7 s); it passes at 6.5 s. Something scales to 0 after the effect ends.

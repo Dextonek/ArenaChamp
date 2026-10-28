@@ -1242,5 +1242,103 @@
       "singularFrames": 0,
       "nanFrames": 0
     }
+  },
+  {
+    "label": "thousand-cut iaido",
+    "file": "src/spells/targeted/thousandCutIaido.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 6,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "lunar tide",
+    "file": "src/spells/targeted/lunarTide.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 6,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "abyssal angler",
+    "file": "src/spells/targeted/abyssalAngler.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "world tree rising",
+    "file": "src/spells/targeted/worldTreeRising.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 9,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "supercell",
+    "file": "src/spells/targeted/supercell.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 12,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "hourglass of ages",
+    "file": "src/spells/targeted/hourglassOfAges.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 5,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "midnight circus",
+    "file": "src/spells/targeted/midnightCircus.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero-cinematic",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 12,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
   }
 ]

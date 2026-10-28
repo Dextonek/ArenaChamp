@@ -132,6 +132,11 @@ When something new is made and is better than these, swap it in here.
 | charge glow on a thin inner band of a coil or ring | a glowing full torus (it blooms into a blob) |
 | at the payoff, frame the line and the target with the prop as a small silhouette | a camera inside or right behind the prop when it fires |
 | distortion as the hero (a lens, a refraction tunnel) at 0.04-0.07, haze at 0.01-0.02 | distortion so faint it only shows in a pixel diff |
+| a creature reveal as a black silhouette on a light impact card (the shape does the work) | lighting a dark creature with a rim or key light (it turns into a glowing blob) |
+| "lights down" means a dark interior plus ONE narrow low-opacity cone per subject | many wide cream cones (they wash the scene back to bright) |
+| huge sky objects (moon, tree, hourglass): an establishing shot that shows the whole object and tiny enemies for scale | cameras that only ever frame part of the big object |
+| water and translucent sheets small and around the subject, faded near the camera | sheets big enough to become walls between the camera and the subject |
+| cloud sprites with transparent margins and lumpy edges, 2-3 soft value bands | textures that fill the quad (straight rectangle edges) or many even stripes |
 
 ## 6. Taste calls I made (tell me if any is wrong)
 - **How anime:** impact frames and focus lines only on finishers and big hits; everyday moves stay clean.
