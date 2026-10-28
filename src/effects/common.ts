@@ -50,12 +50,99 @@ export function createSpearGeometry(): THREE.BufferGeometry {
   return mergeParts([head, collar, shaft, butt]);
 }
 
-/** A large dark ground disc. */
+let slabTexture: THREE.CanvasTexture | null = null;
+
+/**
+ * Stylised stone-slab floor (drawn once, shared): mid-dark slate slabs of varied value with dark grout, worn edges
+ * and a few cracks. Kept dark enough that additive layers still pop and black smoke still reads.
+ */
+function groundSlabTexture(): THREE.CanvasTexture {
+  if (slabTexture) return slabTexture;
+  const S = 1024;
+  const cv = document.createElement('canvas');
+  cv.width = S; cv.height = S;
+  const g = cv.getContext('2d')!;
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  g.fillStyle = '#0b0c0f';
+  g.fillRect(0, 0, S, S);
+  // Running-bond rows of slabs; the pattern tiles because rows and columns wrap at S.
+  const rows = 4;
+  const rowH = S / rows;
+  for (let r = 0; r < rows; r++) {
+    const cols = 3 + (r % 2);
+    const colW = S / cols;
+    const shift = (r % 2) * colW * 0.5;
+    for (let c = -1; c < cols; c++) {
+      const x0 = c * colW + shift + 5, y0 = r * rowH + 5, w = colW - 10, h = rowH - 10;
+      const v = 0.82 + rnd() * 0.3;
+      const base = [27 * v, 28 * v, 34 * v].map(Math.round);
+      const grad = g.createLinearGradient(x0, y0, x0 + w, y0 + h);
+      grad.addColorStop(0, `rgb(${base[0] + 5},${base[1] + 5},${base[2] + 6})`);
+      grad.addColorStop(1, `rgb(${base[0] - 5},${base[1] - 5},${base[2] - 4})`);
+      g.fillStyle = grad;
+      g.beginPath();
+      g.roundRect(x0, y0, w, h, 10);
+      g.fill();
+      // Worn lighter top edge and a darker bottom edge give the slabs a little bevel.
+      g.strokeStyle = 'rgba(110,114,130,0.12)';
+      g.lineWidth = 3;
+      g.beginPath(); g.moveTo(x0 + 10, y0 + 2); g.lineTo(x0 + w - 10, y0 + 2); g.stroke();
+      g.strokeStyle = 'rgba(0,0,0,0.35)';
+      g.beginPath(); g.moveTo(x0 + 10, y0 + h - 2); g.lineTo(x0 + w - 10, y0 + h - 2); g.stroke();
+    }
+  }
+  // Speckle and stains.
+  for (let i = 0; i < 9000; i++) {
+    const a = rnd() * 0.05;
+    g.fillStyle = rnd() < 0.5 ? `rgba(255,255,255,${a})` : `rgba(0,0,0,${a * 1.6})`;
+    g.fillRect(rnd() * S, rnd() * S, 1 + rnd() * 2, 1 + rnd() * 2);
+  }
+  for (let i = 0; i < 18; i++) {
+    const x = rnd() * S, y = rnd() * S, r = 30 + rnd() * 90;
+    const st = g.createRadialGradient(x, y, 0, x, y, r);
+    st.addColorStop(0, 'rgba(0,0,0,0.16)');
+    st.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = st;
+    g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  // Hairline cracks.
+  g.strokeStyle = 'rgba(8,8,10,0.55)';
+  g.lineWidth = 1.5;
+  for (let i = 0; i < 14; i++) {
+    let x = rnd() * S, y = rnd() * S;
+    g.beginPath(); g.moveTo(x, y);
+    for (let k = 0; k < 6; k++) { x += (rnd() - 0.5) * 70; y += (rnd() - 0.5) * 70; g.lineTo(x, y); }
+    g.stroke();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.anisotropy = 8;
+  slabTexture = tex;
+  return tex;
+}
+
+/** A large ground disc: stone slabs that darken toward the rim (the scene fog takes over beyond it). */
 export function createGround(radius = 60): THREE.Mesh {
+  const geo = new THREE.CircleGeometry(radius, 96);
+  // Radial darkening as vertex colours: centre 1, rim 0.35 (CircleGeometry interpolates centre → rim linearly).
+  const pos = geo.attributes.position;
+  const col = new Float32Array(pos.count * 3);
+  for (let i = 0; i < pos.count; i++) {
+    const d = Math.hypot(pos.getX(i), pos.getY(i)) / radius;
+    const k = 1 - 0.65 * d;
+    col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = k;
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const map = groundSlabTexture().clone();
+  map.needsUpdate = true;
+  map.repeat.set(radius / 4, radius / 4); // ~8 m texture tile → slabs of ~2-2.7 m
   const ground = new THREE.Mesh(
-    new THREE.CircleGeometry(radius, 64),
-    new THREE.MeshStandardMaterial({ color: 0x23262d, roughness: 0.95, metalness: 0 }),
+    geo,
+    new THREE.MeshStandardMaterial({ map, vertexColors: true, roughness: 0.92, metalness: 0 }),
   );
+  ground.receiveShadow = true;
   ground.rotation.x = -Math.PI / 2;
   ground.name = 'ground'; // play mode hides an effect's own ground and uses the arena's
   return ground;
@@ -74,7 +161,9 @@ export interface FigureOptions {
 }
 
 /**
- * A simple capsule figure standing at its group's origin (about 2.3 tall), eyes toward +Z by default.
+ * A hooded figure standing at its group's origin (robe ~1.75, head top ~2.25, horns to ~2.6), eyes toward +Z by
+ * default, with the old capsule's footprint (hem radius 0.6). `material` is the robe/body (the hit flash and older
+ * spells drive it), `trim` the horns, mask, belt and cuffs.
  * `new Enemy()` is the horned red target; `createCaster()` gives the golden caster.
  */
 export class Enemy {
@@ -83,25 +172,76 @@ export class Enemy {
   private facing: number;
   private home = new THREE.Vector3();
 
+  /** Secondary material (horns, mask, belt, cuffs); `setFlash` drives it together with `material`. */
+  readonly trim: THREE.MeshStandardMaterial;
+
   constructor(opts: FigureOptions = {}) {
-    this.material = new THREE.MeshStandardMaterial({ color: opts.color ?? 0x5a1820, roughness: 0.6, emissive: 0x000000 });
+    const horned = opts.horns ?? true;
+    this.material = new THREE.MeshStandardMaterial({ color: opts.color ?? 0x5a1820, roughness: 0.62, emissive: 0x000000, flatShading: false });
+    this.trim = new THREE.MeshStandardMaterial({
+      // Bone / pale gold kept mid-tone: lit near-white trim bloomed into glowing horns under low bloom thresholds.
+      color: horned ? 0x6f6656 : 0x9c8a5e, roughness: horned ? 0.85 : 0.45, metalness: horned ? 0 : 0.4, emissive: 0x000000,
+    });
     this.facing = opts.facing ?? 0;
-    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.55, 1.1, 6, 16), this.material);
-    body.position.y = 1.1;
-    this.group.add(body);
-    if (opts.horns ?? true) {
-      const hornGeo = new THREE.ConeGeometry(0.12, 0.5, 8);
-      const hornL = new THREE.Mesh(hornGeo, this.material);
-      hornL.position.set(-0.3, 2.05, 0); hornL.rotation.z = 0.4;
-      const hornR = new THREE.Mesh(hornGeo, this.material);
-      hornR.position.set(0.3, 2.05, 0); hornR.rotation.z = -0.4;
-      this.group.add(hornL, hornR);
+    const add = (geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0) => {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, y, z);
+      m.castShadow = true;
+      this.group.add(m);
+      return m;
+    };
+
+    // Robe + torso as one lathe: wide hem (r 0.6) at the ground, waist, broad shoulders, neck. Same footprint and
+    // ~2.3 m height as the old capsule, so spells sized around the figure still fit.
+    const robe = new THREE.LatheGeometry([
+      new THREE.Vector2(0.001, 0), new THREE.Vector2(0.6, 0), new THREE.Vector2(0.58, 0.08), new THREE.Vector2(0.48, 0.55),
+      new THREE.Vector2(0.38, 0.95), new THREE.Vector2(0.36, 1.12), new THREE.Vector2(0.46, 1.42), new THREE.Vector2(0.52, 1.56),
+      new THREE.Vector2(0.44, 1.66), new THREE.Vector2(0.2, 1.74), new THREE.Vector2(0.001, 1.76),
+    ], 18);
+    add(robe, this.material);
+    // Head (a slightly tall egg) and hood rim.
+    add(new THREE.SphereGeometry(0.27, 18, 14).scale(1, 1.12, 1), this.material, 0, 1.97, 0);
+    add(new THREE.TorusGeometry(0.29, 0.05, 6, 20).rotateX(Math.PI / 2).rotateX(0.35), this.trim, 0, 1.92, -0.04);
+    // Belt and two arms hanging at the sides, with cuffs.
+    add(new THREE.CylinderGeometry(0.385, 0.385, 0.09, 18), this.trim, 0, 1.06, 0);
+    const armGeo = new THREE.CylinderGeometry(0.1, 0.13, 0.82, 10);
+    const cuffGeo = new THREE.CylinderGeometry(0.135, 0.135, 0.08, 10);
+    for (const s of [-1, 1]) {
+      const arm = add(armGeo, this.material, s * 0.5, 1.2, 0.02);
+      arm.rotation.z = s * 0.14;
+      add(cuffGeo, this.trim, s * 0.555, 0.82, 0.02).rotation.z = s * 0.14;
     }
+    if (horned) {
+      // Curved horns from a tapered tube, sweeping up and back; a bone mask plate over the face.
+      for (const s of [-1, 1]) {
+        const curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(s * 0.16, 2.12, 0.02), new THREE.Vector3(s * 0.34, 2.32, -0.04),
+          new THREE.Vector3(s * 0.38, 2.52, -0.16), new THREE.Vector3(s * 0.3, 2.62, -0.3),
+        ]);
+        const horn = new THREE.TubeGeometry(curve, 12, 0.07, 8);
+        // Taper the tube toward its tip.
+        const p = horn.attributes.position, n = 9;
+        for (let i = 0; i < p.count; i++) {
+          const ring = Math.floor(i / n), k = 1 - 0.85 * (ring / 12);
+          const c = curve.getPoint(ring / 12);
+          p.setXYZ(i, c.x + (p.getX(i) - c.x) * k, c.y + (p.getY(i) - c.y) * k, c.z + (p.getZ(i) - c.z) * k);
+        }
+        horn.computeVertexNormals();
+        add(horn, this.trim);
+      }
+      add(new THREE.SphereGeometry(0.2, 14, 8, -Math.PI / 2, Math.PI, 0.9, 1.1).scale(1.15, 1, 0.7), this.trim, 0, 1.96, 0.14);
+    } else {
+      // Caster: a shoulder mantle and a thin halo-like circlet.
+      add(new THREE.CylinderGeometry(0.42, 0.56, 0.22, 18, 1, true), this.trim, 0, 1.5, 0);
+      add(new THREE.TorusGeometry(0.24, 0.025, 6, 24).rotateX(Math.PI / 2), this.trim, 0, 2.13, 0);
+    }
+    // Glowing eye slits on the face (+Z).
     const eyeMat = new THREE.MeshBasicMaterial({ color: opts.eyeColor ?? new THREE.Color(2, 0.2, 0.15) });
-    const eyeGeo = new THREE.SphereGeometry(0.07, 8, 6);
-    for (const x of [-0.18, 0.18]) {
+    const eyeGeo = new THREE.BoxGeometry(0.11, 0.035, 0.03);
+    for (const s of [-1, 1]) {
       const eye = new THREE.Mesh(eyeGeo, eyeMat);
-      eye.position.set(x, 1.55, 0.5);
+      eye.position.set(s * 0.1, 1.99, 0.27);
+      eye.rotation.z = s * -0.18;
       this.group.add(eye);
     }
     this.group.rotation.y = this.facing;
@@ -121,13 +261,25 @@ export class Enemy {
     this.group.scale.setScalar(1);
     this.group.rotation.set(0, this.facing, 0);
     this.material.emissive.setRGB(0, 0, 0);
+    this.trim.emissive.setRGB(0, 0, 0);
   }
 
-  /** White-hot hit flash, 0 = none, 1 = full. Callers often pass > 1, so the peak is capped. */
-  setFlash(v: number) {
+  /**
+   * Hit flash, 0 = none, 1 = full. Without `tint` it is the old white-hot flash (callers often pass > 1, so the
+   * peak is capped). With `tint` it is a tinted flash that stays below the bloom threshold, so the hit VFX on top
+   * still reads (the arena uses this for every `ctx.hit`).
+   */
+  setFlash(v: number, tint?: THREE.Color) {
+    if (tint) {
+      const f = Math.min(Math.max(0, v), 1);
+      this.material.emissive.copy(tint).multiplyScalar(0.45 * f);
+      this.trim.emissive.copy(this.material.emissive);
+      return;
+    }
     // Kept modest: at 6x the figure became a bloom-blown white blob that hid the hit effect itself.
     const f = Math.min(Math.max(0, v), 1.2);
     this.material.emissive.setRGB(2.4 * f, 2 * f, 1.6 * f);
+    this.trim.emissive.copy(this.material.emissive);
   }
 
   /** 0 = standing, 1 = flattened and hidden. */

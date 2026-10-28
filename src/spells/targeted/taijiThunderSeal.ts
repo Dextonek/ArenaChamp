@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Emitter, defaultSettings } from '../../emitter';
 import { GlowSphere, createRing, smoothstep } from '../../effects/common';
 import {
-  LightningArc, SmokeBall, StarBurst, clearScreenFx, createScreenFx, impactFrameAt,
+  LightningArc, ShockRefraction, SmokeBall, StarBurst, clearScreenFx, createScreenFx, impactFrameAt,
 } from '../../effects/parts';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
@@ -170,6 +170,7 @@ export class TaijiThunderSeal implements Effect {
   private flash = new GlowSphere(0xe6dcff, { rim: false });
   private lockRing = createRing(0x9b6bff, 0.93, 1, 96);
   private shock = createRing(0x9b6bff, 0.9, 1, 128);
+  private refract = new ShockRefraction({ facing: 'ground' });
   private scorchMat = new THREE.MeshBasicMaterial({ color: 0x05040a, transparent: true, opacity: 0, depthWrite: false });
   private scorch = new THREE.Mesh(new THREE.CircleGeometry(1, 48), this.scorchMat);
   private smoke = new SmokeBall({ color: 0x1a1626, rim: 0x4a3f66, flake: '#2a2236', maxBalls: 4 });
@@ -229,7 +230,7 @@ export class TaijiThunderSeal implements Effect {
     this.scorch.rotation.x = -Math.PI / 2;
     this.scorch.position.y = 0.03;
     this.scorch.visible = false;
-    this.group.add(this.spark.mesh, this.star.mesh, this.flash.mesh, this.lockRing.mesh, this.shock.mesh, this.scorch, this.smoke.mesh);
+    this.group.add(this.spark.mesh, this.star.mesh, this.flash.mesh, this.lockRing.mesh, this.shock.mesh, this.scorch, this.smoke.mesh, this.refract.mesh);
 
     // Storm haze: dark, normal-blended, eroded, gathering over the target.
     this.haze = new Emitter({
@@ -477,6 +478,9 @@ export class TaijiThunderSeal implements Effect {
     this.shock.mesh.position.set(g.x, 0.06, g.z);
     this.shock.mesh.scale.setScalar(Math.max(1e-4, Math.min(8, 0.5 + Math.max(0, after) * 16)));
     this.shock.material.opacity = struck && hasCtx ? Math.max(0, 0.7 * (1 - after / 0.7)) : 0;
+    // Screen distortion on the nova ring (same radius as the shock ring), decays over 0.5 s.
+    const rp = after / 0.5;
+    this.refract.set(g, Math.min(8, 0.5 + Math.max(0, after) * 16), struck && hasCtx && rp < 1 ? 0.045 * (1 - rp) * (1 - rp) : 0);
     this.scorch.position.set(g.x, 0.03, g.z);
     this.scorch.scale.setScalar(2.4);
     this.scorchMat.opacity = struck && hasCtx ? 0.85 * (1 - smoothstep((after - 1.2) / 0.6)) : 0;

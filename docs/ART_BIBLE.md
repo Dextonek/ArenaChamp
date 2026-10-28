@@ -8,8 +8,10 @@ one says **which look is ours** and **how the artist works**. Anything here wins
 **Lacquer, gold and jade, lit by hard anime light.** Objects are dark and precious: black lacquer, gold filigree,
 jade and cream-bone inlays, with one glowing gem per object (the five Blender weapons, `docs/weapons/weapons_sheet.png`).
 Energy is stylised and graphic: hard-edged shapes, black as a colour, white only in the hottest few percent, impact
-frames and focus lines on the big beats. Motion is eastern-fantasy: silk ribbons, qi spirals, dragons, petals,
-drifting motes, not sci-fi beams. The tone is **mythic and elegant**, never cartoon-goofy and never gritty-realistic.
+frames and focus lines on the big beats. The tone is **mythic and elegant**, never cartoon-goofy and never
+gritty-realistic. **The theme is open** (user, 2026-10-26: not only xianxia): cosmic, mechanical, nature, abyssal,
+ancient-world myths, abstract. What stays is the craft: drawn hard shapes, black as a colour, value ladders, one
+focal shape per beat. The eastern-myth set (silk ribbons, qi, dragons, petals) is one theme among many.
 
 Where it comes from: the user's own reference videos (batches d–g: Roblox/anime finishers, Genshin/HSR-style
 cutscene beats, the Spiderlily weapon set) and the weapon concepts. The WoW-style paladin and iconic spells are
@@ -54,7 +56,7 @@ linear: pass `THREE.SRGBColorSpace` with them.
 - Main shapes are hard-alpha: four-point stars, crescents, diamond shards, thin crisp rings, thick bent lightning,
   toon smoke balls. Soft glow is only a small halo under a crisp shape.
 - Every effect has a black or near-black, normal-blended shape on or behind its brightest layer.
-- Themed particles over generic sparks: petals, scales, snowflakes, qi motes, gold leaf.
+- Themed particles over generic sparks: petals, scales, snowflakes, gold leaf, gears, glyphs, feathers, shards.
 - Loops (auras) breathe once per period, phases travel over the object, sparse motes (5–20 on screen).
 - Big moves: darken the world, implode, impact frame, one scale jump, clean frame ~1.5 s after the hit.
 
@@ -120,10 +122,20 @@ When something new is made and is better than these, swap it in here.
 | tilt a sky sigil ~55° toward the caster | a flat sky disc (an edge-on ellipse from the play camera) |
 | open a bloom to ≤ 40°, a cup | open petals to 70° (they lie flat and vanish) |
 | one tapered body ribbon for a creature | several equal strands (reads as a DNA helix) |
+| paper, leaves, bronze are materials: keep them below the bloom threshold | white/near-white fills (they read as lights) |
+| black ink against a pale shape (a moon disc, a paper screen) | black on a black, darkened sky (it vanishes) |
+| short impact frames, `[1, 2]` at 0.04 s, so the payoff shows right after | long impact frames that hide the burst |
+| objects: dark body, gold trim, one glowing part (drums, bell, seal, mask) | glowing gold rims that read as rings of light |
+| few damage ticks while enemies are on screen | rapid ticks (the arena flashes them white each time) |
+| place hero cutscene shots explicitly and clamp the distance to the look-at | auto-fitting a camera to a whole serpent or body (it backs off 40-60 units) |
+| water: smooth normals, unlit or rough material, foam as a soft gradient band on the tips | faceted glossy `MeshStandard` sheets (they read as ice crystals) |
+| charge glow on a thin inner band of a coil or ring | a glowing full torus (it blooms into a blob) |
+| at the payoff, frame the line and the target with the prop as a small silhouette | a camera inside or right behind the prop when it fires |
+| distortion as the hero (a lens, a refraction tunnel) at 0.04-0.07, haze at 0.01-0.02 | distortion so faint it only shows in a pixel diff |
 
 ## 6. Taste calls I made (tell me if any is wrong)
 - **How anime:** impact frames and focus lines only on finishers and big hits; everyday moves stay clean.
 - **How dark:** objects dark (lacquer) and the world darkened during big moves; energy is the only bright thing.
 - **Saturation:** rich but not neon. Body colours are saturated mid-tones; neon is only the 2–3 frame accent.
 - **Realism:** none. Stylised shapes over simulation; smoke is toon smoke.
-- **Theme:** eastern myth (dragons, phoenix, lilies, qi, taiji) is the default flavour for new pieces.
+- **Theme:** open. Pick the theme that serves the move; avoid repeating the eastern/xianxia set unless asked.

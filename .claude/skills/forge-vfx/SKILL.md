@@ -61,6 +61,8 @@ Spawn one `worker` agent per spell (run them in parallel, at most 3 at a time; q
 - Look at it: `vfx.selectMode('<label>'); vfx.scrub(t)` for the anticipation, impact and aftermath times, and take
   a screenshot of each. Run the self-critique list in `docs/ART_BIBLE.md` §5 and check against the brightness rules: no white-out blobs, readable silhouettes, dark layer
   present. Fix it yourself or send it back to the worker. At most 2 fix rounds per spell, then report what's off.
+- If `tabs_context` says the browser pane is hidden, screenshots show stale frames: use the contact-sheet capture
+  instead (`pipeline/tools/contact-sheet.js` in the page, `pipeline/tools/decode-sheets.py` on the saved result).
 - `vfx.view.paused = false` when done.
 
 ## 5. Record

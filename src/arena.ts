@@ -14,6 +14,8 @@ interface Foe {
   home: THREE.Vector3;
   hp: number;
   flash: number;
+  /** Tint of the hit flash: the hit's colour, kept below the bloom threshold by `setFlash`. */
+  flashTint: THREE.Color;
   knock: THREE.Vector3;
   offset: THREE.Vector3;
   displaced: THREE.Vector3;
@@ -192,6 +194,9 @@ export class Arena {
     const dmg = Math.round(opts.damage ?? THREE.MathUtils.randFloat(10, 20));
     f.hp = Math.max(0, f.hp - dmg);
     f.flash = 1;
+    const big = dmg >= 40;
+    // A tinted flash (the hit's colour, else warm orange), not white: white bloomed figures swallowed the hit VFX.
+    f.flashTint.set(opts.color ?? (big ? '#ffb347' : '#ff8a4a'));
     this.hits++;
     const knock = opts.knock ?? 4;
     if (knock > 0) {
@@ -199,7 +204,6 @@ export class Arena {
       if (away.lengthSq() < 1e-4) away.set(0, 0, -1);
       f.knock.add(away.normalize().multiplyScalar(knock));
     }
-    const big = dmg >= 40;
     this.say(String(dmg), opts.color ?? (big ? '#ffd24a' : '#fff1dc'), target.group.position, big ? 1.5 : 1);
     if (f.hp <= 0) {
       f.dead = 0;
@@ -213,7 +217,7 @@ export class Arena {
       f.knock.multiplyScalar(Math.exp(-dt * 7));
       f.figure.group.position.copy(f.home).add(f.offset).add(f.displaced);
       f.flash *= Math.exp(-dt * 7);
-      if (f.flash > 0.002) f.figure.setFlash(f.flash);
+      if (f.flash > 0.002) f.figure.setFlash(f.flash, f.flashTint);
       else if (f.flash > 0) { f.flash = 0; f.figure.setFlash(0); }
       // Death: topple back and sink into the ground.
       if (f.dead >= 0) {
@@ -284,7 +288,7 @@ export class Arena {
     bar.add(bg, barFill);
     this.group.add(figure.group, ring, bar);
     return {
-      figure, home: home.clone(), hp: MAX_HP, flash: 0, knock: new THREE.Vector3(), offset: new THREE.Vector3(),
+      figure, home: home.clone(), hp: MAX_HP, flash: 0, flashTint: new THREE.Color(), knock: new THREE.Vector3(), offset: new THREE.Vector3(),
       displaced: new THREE.Vector3(), dead: -1, ring, bar, barFill,
     };
   }

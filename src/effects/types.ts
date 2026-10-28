@@ -6,6 +6,7 @@ import type { BloomSettings } from '../presets';
 import type { TelegraphSpec } from './telegraph';
 import type { CastContext, TargetingSpec } from './targeting';
 import type { ScreenFx } from './parts/screen';
+import type { Cinematic } from './parts/cinematic';
 
 export type { CastContext, TargetingSpec };
 
@@ -19,6 +20,11 @@ export interface Effect {
   shake: number;
   /** Optional full-screen feedback (darken, impact frames, focus lines), read every frame like `shake`. */
   screen?: ScreenFx;
+  /**
+   * Optional scripted camera for cutscene moves (see `parts/cinematic.ts`): while `cinematic.active`, main.ts
+   * renders through it and draws letterbox bars; the orbit camera is restored afterwards.
+   */
+  cinematic?: Cinematic;
   /** True while the timeline runs. */
   playing: boolean;
   /** Restarts the timeline from the beginning. */

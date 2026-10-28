@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-10-26_
+_Last updated: 2026-10-28_
 
 ## Done
 - Vite + TypeScript + Three.js scaffold, exact versions pinned (three 0.186.1, vite 8.3.5, typescript 7.0.2).
@@ -117,6 +117,64 @@ _Last updated: 2026-10-26_
     one bolt with a black under-copy; ground discharge and toon smoke.
   - selfTest ok for all three (also after shuffle and with 10 enemies).
 
+- **Art-bible batches 2 + 3 (18 targeted spells, all browser-verified, 0-2 art-review fix rounds each)**, designs in
+  `pipeline/designs/`, one contact sheet per spell in `docs/spells/<slug>_sheet.jpg`:
+  golden bell sutra (self), ink moon severance, vermilion phoenix dive, red lotus inferno, nine tail foxfire,
+  paper crane blizzard, mirror ice prison, flying sword formation, thunder god drums, bamboo leaf gale,
+  jade imperial seal, cloud step cyclone (self), heavenly buddha palm, golden halberd comet,
+  ghost lantern procession, shadow puppet execution, spider lily soul field, taotie bronze maw.
+  selfTest ok for all (0 NaN / singular frames, hits land; self-mode spells need enemies within the radius, so
+  test them with the caster moved into the pack, e.g. `vfx.arena.caster.group.position.set(0,0,-1)`).
+- **Reliable frame capture when the browser pane is hidden:** screenshots of a hidden pane show stale frames. Render
+  frames inside the page and copy the WebGL canvas into a 2D contact sheet in the same task (paste
+  `pipeline/tools/contact-sheet.js` into the page, return `'NAME:<slug>|' + _sheet(times, cam)`; the tool saves the
+  large result to a file; decode it with `python pipeline/tools/decode-sheets.py <result.txt> docs/spells`).
+
+- **Tinted arena hit flash** (2026-10-26): `ctx.hit` no longer flashes enemies bloomed white. `Enemy.setFlash(v, tint)`
+  in `src/effects/common.ts` takes an optional tint (peak 0.45 x the colour, below the bloom threshold); the arena
+  passes the hit's `color` (else warm orange, gold for big hits). Calls without a tint (older set pieces) keep the
+  old white flash. Before/after check: `docs/spells/hit-flash-after_sheet.jpg`.
+
+- **Open-theme batch (11 targeted spells incl. a 60 s cutscene, browser-verified via contact sheets, 0-2 fix rounds
+  each)** after the user asked for "not xianxia, anything, even a 2 min cutscene" (art bible theme opened, §1/§6):
+  clockwork judgement, supernova seed, kraken grasp, bifrost strike (Norse), sun disk of ra (Egypt), glitch purge,
+  thornwood bloom, titan fist, jellyfish bloom, checkmate, and **genesis collapse** (~60 s cinematic ultimate:
+  ascend → orbit → forge a star → hurl it → impact seen from orbit → aftermath). Sheets in
+  `docs/spells/<slug>_sheet.jpg`; designs in `pipeline/designs/`.
+- **Cinematic camera part** `src/effects/parts/cinematic.ts` (`createCinematic`, `sampleShots` with keyed shots, cuts,
+  easing, fov, roll; letterbox bars drawn into the canvas): optional `Effect.cinematic`; main.ts renders through it
+  while `active` and restores the orbit camera after each frame.
+
+- **Open-theme batch 2 (11 targeted spells incl. a 45 s cutscene, browser-verified via contact sheets, 0-1 fix
+  rounds each):** orbital lance (sci-fi), stained glass sanctum (gothic), hellfire chains (infernal), murder of crows
+  (gothic horror), great wave (woodblock print), tarot judgement (occult), mammoth stampede (ice age), tesla coil
+  field (steampunk), sandstorm djinn (desert, self), aurora veil (polar), and **colossus drop** (~45 s mecha
+  cutscene: drop from orbit, landing, cannon charge, beam sweep, exit). Sheets in `docs/spells/<slug>_sheet.jpg`.
+
+- **Stage upgrade (2026-10-28)** lifting every effect at once: canvas-drawn stone-slab ground with radial
+  darkening (`createGround` in `src/effects/common.ts`), a gradient night-sky dome with stars and a horizon glow,
+  distance fog (both off while an effect's cinematic camera runs), soft shadows from the sun on figures, a cool rim
+  light, FXAA at the end of the post chain, grid off by default. Figures (`Enemy`) are now hooded robed figures with
+  curved horns, a bone mask and glowing eye slits (caster: gold robe, mantle, circlet), same footprint and API
+  (`material` + new `trim`, both driven by `setFlash`). All 111 registered effects pass `selfTest`; both cutscenes
+  re-checked. Before/after: `docs/spells/stage/before-after_sheet.jpg`.
+
+- **Screen distortion (2026-10-28):** `src/effects/parts/distortion.ts` (`HeatHaze`, `ShockRefraction`, `DISTORT_LAYER`)
+  plus a distortion pass in `src/main.ts` (a half-res float buffer of UV offsets, bent before bloom, with a slight
+  RGB split; skipped when nothing is on the layer). Fix found on the way: `ShaderPass` clones uniforms, so the buffer
+  texture is re-linked after construction. Added to 15 big spells (red lotus, titan fist, phoenix dive, supernova,
+  hellfire chains, colossus, clockwork, orbital lance, halberd comet, genesis, tesla, thunder drums, golden bell,
+  jade seal, taiji seal); all 15 pass `selfTest`. Before/after: `docs/spells/stage/distort-before-after_sheet.jpg`.
+
+- **Hero batch (2026-10-28), a higher bar:** three new effects, each through 2-3 contact-sheet review rounds:
+  **event horizon** (a black hole with a live gravitational lens, an accretion disk, enemies dragged in and
+  stretched, a freeze, then a collapse), **hyperion railgun** (an ~8.5 s cutscene: a rail cannon assembles,
+  copper coils charge with heat haze, one hypersonic shot with a refraction tunnel and a muzzle shock, then it
+  disassembles) and **leviathan breach** (an ~11 s cutscene: a sea dragon erupts from a whirlpool, arcs over the
+  arena, a head close-up, a dive into a water crown splash). Designs in `pipeline/designs/event-horizon.md`,
+  `hyperion-railgun.md`, `leviathan-breach.md`; sheets in `docs/spells/<slug>_sheet.jpg`. 114 effects registered;
+  the full `selfTest` sweep passes except the known corpse-finger item below.
+
 ## In progress
 - Nothing.
 
@@ -124,10 +182,23 @@ _Last updated: 2026-10-26_
 - Nothing.
 
 ## Waiting on you
+- Uncommitted on `feat/particle-editor`: the distortion pass, 15 spells with distortion, the 3 hero effects,
+  `index.ts`, `forged.json`, designs and sheets (commit when you want).
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
 
 ## Known look issues (small)
+- `corpse finger gravity pull` (old set piece, untouched): `selfTest` reports 19 singular frames only when run
+  longer than its own length (7 s); it passes at 6.5 s. Something scales to 0 after the effect ends.
+- Event horizon: the lens bends the disk's tips into two small leaf shapes at the disk ends (likely the lens bending the disk tips; kept).
+- Hyperion railgun: the arena telegraph line shows as a red slab in the low cutscene shots (arena owned).
+- Batch 2: mammoth spirits cover the caster at the start; the djinn could be bigger; murder of crows leaves
+  heavy dark smoke at the targets; colossus drop's 12 s falling shot is a fireball more than a mech.
+- Open-theme batch: glitch purge reads small at gameplay distance; jellyfish chain lightning is faint; checkmate's
+  ivory tile edges catch white specular highlights; genesis collapse's orbit-impact ring blooms bright (intended
+  whiteout beat) and the 43-47 s orbit shot was not re-framed after the planet grew.
+- Nine tail foxfire: the cream tail tips bloom a little. Flying swords: the giant sword reads thin. Heavenly palm:
+  the hand is cartoonish. Thunder drums: the converging strike is white-heavy at D.
 - Jade dragon ascension: a faint glow remains where the body coil turns edge-on near the neck, and the hold glint
   briefly sits over the snout. The impact centre is still near white. The head is a camera-facing drawing, so it
   shows the same profile from every side.

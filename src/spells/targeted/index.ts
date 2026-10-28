@@ -12,6 +12,49 @@ import { violetSeveranceModule } from './violetSeverance';
 import { jadeDragonAscensionModule } from './jadeDragonAscension';
 import { hundredLilyFrostModule } from './hundredLilyFrost';
 import { taijiThunderSealModule } from './taijiThunderSeal';
+import { goldenBellSutraModule } from './goldenBellSutra';
+import { inkMoonSeveranceModule } from './inkMoonSeverance';
+import { vermilionPhoenixDiveModule } from './vermilionPhoenixDive';
+import { redLotusInfernoModule } from './redLotusInferno';
+import { nineTailFoxfireModule } from './nineTailFoxfire';
+import { paperCraneBlizzardModule } from './paperCraneBlizzard';
+import { mirrorIcePrisonModule } from './mirrorIcePrison';
+import { flyingSwordFormationModule } from './flyingSwordFormation';
+import { thunderGodDrumsModule } from './thunderGodDrums';
+import { bambooLeafGaleModule } from './bambooLeafGale';
+import { jadeImperialSealModule } from './jadeImperialSeal';
+import { cloudStepCycloneModule } from './cloudStepCyclone';
+import { heavenlyBuddhaPalmModule } from './heavenlyBuddhaPalm';
+import { goldenHalberdCometModule } from './goldenHalberdComet';
+import { ghostLanternProcessionModule } from './ghostLanternProcession';
+import { shadowPuppetExecutionModule } from './shadowPuppetExecution';
+import { spiderLilySoulFieldModule } from './spiderLilySoulField';
+import { taotieBronzeMawModule } from './taotieBronzeMaw';
+import { supernovaSeedModule } from './supernovaSeed';
+import { clockworkJudgementModule } from './clockworkJudgement';
+import { krakenGraspModule } from './krakenGrasp';
+import { bifrostStrikeModule } from './bifrostStrike';
+import { glitchPurgeModule } from './glitchPurge';
+import { sunDiskOfRaModule } from './sunDiskOfRa';
+import { genesisCollapseModule } from './genesisCollapse';
+import { thornwoodBloomModule } from './thornwoodBloom';
+import { titanFistModule } from './titanFist';
+import { jellyfishBloomModule } from './jellyfishBloom';
+import { checkmateModule } from './checkmate';
+import { orbitalLanceModule } from './orbitalLance';
+import { stainedGlassSanctumModule } from './stainedGlassSanctum';
+import { murderOfCrowsModule } from './murderOfCrows';
+import { hellfireChainsModule } from './hellfireChains';
+import { colossusDropModule } from './colossusDrop';
+import { tarotJudgementModule } from './tarotJudgement';
+import { greatWaveModule } from './greatWave';
+import { teslaCoilFieldModule } from './teslaCoilField';
+import { mammothStampedeModule } from './mammothStampede';
+import { sandstormDjinnModule } from './sandstormDjinn';
+import { auroraVeilModule } from './auroraVeil';
+import { eventHorizonModule } from './eventHorizon';
+import { hyperionRailgunModule } from './hyperionRailgun';
+import { leviathanBreachModule } from './leviathanBreach';
 import { neonFractureJabModule } from './neonFractureJab';
 import { prismOvertureModule } from './prismOverture';
 import { crimsonRequiemModule } from './crimsonRequiem';
@@ -34,6 +77,49 @@ export const targetedModules: EffectModule[] = [
   jadeDragonAscensionModule,
   hundredLilyFrostModule,
   taijiThunderSealModule,
+  goldenBellSutraModule,
+  inkMoonSeveranceModule,
+  vermilionPhoenixDiveModule,
+  redLotusInfernoModule,
+  nineTailFoxfireModule,
+  paperCraneBlizzardModule,
+  mirrorIcePrisonModule,
+  flyingSwordFormationModule,
+  thunderGodDrumsModule,
+  bambooLeafGaleModule,
+  jadeImperialSealModule,
+  cloudStepCycloneModule,
+  heavenlyBuddhaPalmModule,
+  goldenHalberdCometModule,
+  ghostLanternProcessionModule,
+  shadowPuppetExecutionModule,
+  spiderLilySoulFieldModule,
+  taotieBronzeMawModule,
+  supernovaSeedModule,
+  clockworkJudgementModule,
+  krakenGraspModule,
+  bifrostStrikeModule,
+  glitchPurgeModule,
+  sunDiskOfRaModule,
+  genesisCollapseModule,
+  thornwoodBloomModule,
+  titanFistModule,
+  jellyfishBloomModule,
+  checkmateModule,
+  orbitalLanceModule,
+  stainedGlassSanctumModule,
+  murderOfCrowsModule,
+  hellfireChainsModule,
+  colossusDropModule,
+  tarotJudgementModule,
+  greatWaveModule,
+  teslaCoilFieldModule,
+  mammothStampedeModule,
+  sandstormDjinnModule,
+  auroraVeilModule,
+  eventHorizonModule,
+  hyperionRailgunModule,
+  leviathanBreachModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

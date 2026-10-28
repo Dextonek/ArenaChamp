@@ -457,5 +457,748 @@
       "arenaHits": 2,
       "singularFrames": 0
     }
+  },
+  {
+    "label": "golden bell sutra",
+    "file": "src/spells/targeted/goldenBellSutra.ts",
+    "mode": "self",
+    "recipes": [
+      "c-ue4-energy-shield-dome",
+      "f-beyondfx-sunrise-pillar-strike",
+      "e-seo-wind-bullet"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 3,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "ink moon severance",
+    "file": "src/spells/targeted/inkMoonSeverance.ts",
+    "mode": "enemies",
+    "recipes": [
+      "g-castorice-void-moon-wedge-sweep",
+      "i-acheron-petal-wipe-monochrome-slashes",
+      "b-elden-ring-transient-moonlight"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 5,
+      "arenaHits": 10,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "vermilion phoenix dive",
+    "file": "src/spells/targeted/vermilionPhoenixDive.ts",
+    "mode": "enemy",
+    "recipes": [
+      "g-castorice-wing-nova-finisher",
+      "f-spiderlily-tome-wings",
+      "f-html-meteor-slam"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "red lotus inferno",
+    "file": "src/spells/targeted/redLotusInferno.ts",
+    "mode": "ground",
+    "recipes": [
+      "i-fire-rune-burn-in-eruption",
+      "h-stylizedstation-igni-cone-burst",
+      "h-beyondfx-botw-bomb-explosion"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 3,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "nine tail foxfire",
+    "file": "src/spells/targeted/nineTailFoxfire.ts",
+    "mode": "enemies",
+    "recipes": [
+      "c-jangafx-seeking-arc-fireball",
+      "f-html-meteor-volley",
+      "d-wolf-4-coral-flame-slash-sphere"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 6,
+      "arenaHits": 14,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "paper crane blizzard",
+    "file": "src/spells/targeted/paperCraneBlizzard.ts",
+    "mode": "enemies",
+    "recipes": [
+      "a-dota-lich-chain-frost",
+      "i-frigid-rush-dive-snowflake-slam",
+      "e-yordin-soft-wind-swirl"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 5,
+      "arenaHits": 13,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "mirror ice prison",
+    "file": "src/spells/targeted/mirrorIcePrison.ts",
+    "mode": "enemy",
+    "recipes": [
+      "i-frost-pillar-snow-dome-rubble",
+      "g-hiyuki-frozen-orb-shatter-finisher",
+      "j-abitofgamedev-refraction-bubble"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "flying sword formation",
+    "file": "src/spells/targeted/flyingSwordFormation.ts",
+    "mode": "ground",
+    "recipes": [
+      "g-castorice-sky-rift-blade-rain",
+      "b-elden-ring-founding-rain-of-stars",
+      "c-ue5-triangle-portal"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 4,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "thunder god drums",
+    "file": "src/spells/targeted/thunderGodDrums.ts",
+    "mode": "ground",
+    "recipes": [
+      "a-dota-zeus-thundergods-wrath",
+      "c-electric-blast-branching-ground",
+      "f-moa-storm-call"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "bamboo leaf gale",
+    "file": "src/spells/targeted/bambooLeafGale.ts",
+    "mode": "enemy",
+    "recipes": [
+      "f-swipe-smoke-crescent-slash",
+      "h-noggi-anime-wind-streaks",
+      "e-yordin-toon-color-cyclone"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "jade imperial seal",
+    "file": "src/spells/targeted/jadeImperialSeal.ts",
+    "mode": "enemy",
+    "recipes": [
+      "a-ow-doomfist-meteor-strike",
+      "c-ground-slam-shockwave-ring",
+      "b-ffxiv-titan-weight-of-the-land"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "cloud step cyclone",
+    "file": "src/spells/targeted/cloudStepCyclone.ts",
+    "mode": "self",
+    "recipes": [
+      "j-lelu-twisted-wind-tornado",
+      "i-guide-swirl-slice-tornado",
+      "e-seo-wind-bullet"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 15,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "heavenly buddha palm",
+    "file": "src/spells/targeted/heavenlyBuddhaPalm.ts",
+    "mode": "ground",
+    "recipes": [
+      "a-val-brimstone-orbital-strike",
+      "f-beyondfx-sunrise-pillar-strike",
+      "b-elden-ring-radahn-meteor-impact"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "golden halberd comet",
+    "file": "src/spells/targeted/goldenHalberdComet.ts",
+    "mode": "enemy",
+    "recipes": [
+      "a-lol-ashe-enchanted-crystal-arrow",
+      "g-fuga-fire-arrow-pillar",
+      "i-lanza-leaf-burst-needle-throw"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "ghost lantern procession",
+    "file": "src/spells/targeted/ghostLanternProcession.ts",
+    "mode": "enemies",
+    "recipes": [
+      "e-yougelly-starfall-comets",
+      "d-maxmdp-2-ghost-moon-sigil-aura",
+      "i-chromatic-black-blob-finisher"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 5,
+      "arenaHits": 11,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "shadow puppet execution",
+    "file": "src/spells/targeted/shadowPuppetExecution.ts",
+    "mode": "enemy",
+    "recipes": [
+      "i-acheron-petal-wipe-monochrome-slashes",
+      "g-castorice-dash-crescent-spike",
+      "d-maxmdp-2-grave-hands-portal-aura"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "spider lily soul field",
+    "file": "src/spells/targeted/spiderLilySoulField.ts",
+    "mode": "ground",
+    "recipes": [
+      "f-spiderlily-staff-orb",
+      "i-blood-splat-crescent-kit",
+      "e-onlyxyz-sunset-cloud-aura"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 4,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "taotie bronze maw",
+    "file": "src/spells/targeted/taotieBronzeMaw.ts",
+    "mode": "ground",
+    "recipes": [
+      "d-kler-1-singularity-accretion-pull",
+      "i-violet-void-pillar-crystal-skirt",
+      "b-bdo-sorceress-reapers-scythe"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "zones": 1,
+      "arenaHits": 3,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "clockwork judgement",
+    "file": "src/spells/targeted/clockworkJudgement.ts",
+    "mode": "ground",
+    "recipes": [
+      "h-lelu-symmetry-magic-circle",
+      "c-unity-summon-circle",
+      "b-ffxiv-titan-weight-of-the-land"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 3,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "supernova seed",
+    "file": "src/spells/targeted/supernovaSeed.ts",
+    "mode": "enemy",
+    "recipes": [
+      "i-astral-star-compass-portal-charge",
+      "d-kler-1-singularity-collapse-detonation",
+      "e-yougelly-clef-ring-nova"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "kraken grasp",
+    "file": "src/spells/targeted/krakenGrasp.ts",
+    "mode": "enemies",
+    "recipes": [
+      "d-maxmdp-2-grave-hands-portal-aura",
+      "d-kler-1-singularity-accretion-pull",
+      "j-flexunit-swirl-portal"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 10,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "bifrost strike",
+    "file": "src/spells/targeted/bifrostStrike.ts",
+    "mode": "ground",
+    "recipes": [
+      "e-yougelly-twin-sky-beams",
+      "f-beyondfx-sunrise-pillar-strike",
+      "a-lol-lux-final-spark"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "sun disk of ra",
+    "file": "src/spells/targeted/sunDiskOfRa.ts",
+    "mode": "enemy",
+    "recipes": [
+      "e-yougelly-rune-portal-beam",
+      "j-aguiar-layered-laser-beam",
+      "a-dota-invoker-sun-strike"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "glitch purge",
+    "file": "src/spells/targeted/glitchPurge.ts",
+    "mode": "enemies",
+    "recipes": [
+      "i-xray-cyan-punch-impact-cards",
+      "i-chromatic-ink-charge-prism-burst",
+      "i-void-cut-rotating-band-slash"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 10,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "thornwood bloom",
+    "file": "src/spells/targeted/thornwoodBloom.ts",
+    "mode": "ground",
+    "recipes": [
+      "c-ice-spikes-eruption",
+      "i-ice-cathedral-line-cone-eruption",
+      "e-geodraws-crimson-pillar"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 3,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "titan fist",
+    "file": "src/spells/targeted/titanFist.ts",
+    "mode": "enemy",
+    "recipes": [
+      "c-ground-slam-shockwave-ring",
+      "h-beyondfx-botw-bomb-explosion",
+      "f-swipe-launch-slam"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "jellyfish bloom",
+    "file": "src/spells/targeted/jellyfishBloom.ts",
+    "mode": "enemies",
+    "recipes": [
+      "e-yougelly-starfall-comets",
+      "j-abitofgamedev-refraction-bubble",
+      "a-smite-zeus-chain-lightning"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 5,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "checkmate",
+    "file": "src/spells/targeted/checkmate.ts",
+    "mode": "enemy",
+    "recipes": [
+      "a-ow-doomfist-meteor-strike",
+      "g-castorice-dash-crescent-spike",
+      "i-toon-spiked-scribble-ring-pop"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 4,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "genesis collapse",
+    "file": "src/spells/targeted/genesisCollapse.ts",
+    "mode": "enemies",
+    "recipes": [
+      "g-castorice-dragon-rise-cutscene",
+      "g-castorice-wing-nova-finisher",
+      "b-lost-ark-sorceress-doomsday"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 8,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "orbital lance",
+    "file": "src/spells/targeted/orbitalLance.ts",
+    "mode": "enemy",
+    "recipes": [
+      "a-val-sova-hunters-fury",
+      "c-gnomon-charged-energy-beam",
+      "a-dota-invoker-sun-strike"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "stained glass sanctum",
+    "file": "src/spells/targeted/stainedGlassSanctum.ts",
+    "mode": "ground",
+    "recipes": [
+      "f-beyondfx-sunrise-pillar-strike",
+      "i-acheron-crack-web-shatter-finisher",
+      "c-ue4-energy-shield-dome"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 3,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "hellfire chains",
+    "file": "src/spells/targeted/hellfireChains.ts",
+    "mode": "enemies",
+    "recipes": [
+      "d-maxmdp-2-grave-hands-portal-aura",
+      "f-moa-arm-lightning-lash",
+      "c-wow-flamestrike-ground"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 10,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "murder of crows",
+    "file": "src/spells/targeted/murderOfCrows.ts",
+    "mode": "enemies",
+    "recipes": [
+      "e-yougelly-starfall-comets",
+      "i-blood-splat-crescent-kit",
+      "g-castorice-wing-nova-finisher"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 10,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "great wave",
+    "file": "src/spells/targeted/greatWave.ts",
+    "mode": "ground",
+    "recipes": [
+      "a-ow-hanzo-dragonstrike",
+      "b-zzz-ellen-joe-ultimate",
+      "e-yordin-toon-color-cyclone"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "tarot judgement",
+    "file": "src/spells/targeted/tarotJudgement.ts",
+    "mode": "enemies",
+    "recipes": [
+      "i-chromatic-comet-ring-stack",
+      "i-toon-spiked-scribble-ring-pop",
+      "e-yougelly-clef-ring-nova"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 10,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "mammoth stampede",
+    "file": "src/spells/targeted/mammothStampede.ts",
+    "mode": "enemy",
+    "recipes": [
+      "a-dota-windranger-powershot",
+      "f-swipe-spiral-rush",
+      "b-wuwa-jiyan-tactical-strike"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "tesla coil field",
+    "file": "src/spells/targeted/teslaCoilField.ts",
+    "mode": "ground",
+    "recipes": [
+      "c-electric-blast-branching-ground",
+      "a-smite-zeus-chain-lightning",
+      "j-cghow-outlined-stylized-bolt"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 3,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "sandstorm djinn",
+    "file": "src/spells/targeted/sandstormDjinn.ts",
+    "mode": "self",
+    "recipes": [
+      "j-lelu-twisted-wind-tornado",
+      "e-yordin-soft-wind-swirl",
+      "a-marvel-rivals-doctor-strange-eye-of-agamotto"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 12,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "aurora veil",
+    "file": "src/spells/targeted/auroraVeil.ts",
+    "mode": "ground",
+    "recipes": [
+      "e-onlyxyz-sunset-cloud-aura",
+      "i-ice-spiral-comma-sweep",
+      "i-frost-pillar-snow-dome-rubble"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "colossus drop",
+    "file": "src/spells/targeted/colossusDrop.ts",
+    "mode": "enemies",
+    "recipes": [
+      "a-ow-doomfist-meteor-strike",
+      "a-val-brimstone-orbital-strike",
+      "g-castorice-dragon-breath-crater",
+      "a-lol-lux-final-spark"
+    ],
+    "date": "2026-10-26",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 16,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "event horizon",
+    "file": "src/spells/targeted/eventHorizon.ts",
+    "mode": "ground",
+    "recipes": [
+      "c-gnomon-charged-energy-beam"
+    ],
+    "date": "2026-10-28",
+    "tier": "hero",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 4,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "hyperion railgun",
+    "file": "src/spells/targeted/hyperionRailgun.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 1,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
+  },
+  {
+    "label": "leviathan breach",
+    "file": "src/spells/targeted/leviathanBreach.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-28",
+    "tier": "hero",
+    "selfTest": {
+      "ok": true,
+      "arenaHits": 2,
+      "singularFrames": 0,
+      "nanFrames": 0
+    }
   }
 ]

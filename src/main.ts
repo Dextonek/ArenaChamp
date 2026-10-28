@@ -4,6 +4,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import GUI from 'three/addons/libs/lil-gui.module.min.js';
 import { Emitter, type EmitterSettings } from './emitter';
@@ -16,6 +18,7 @@ import { Arena } from './arena';
 import { Hotbar } from './hotbar';
 import { CASTER_POS } from './effects/common';
 import type { Effect, EffectModule } from './effects/types';
+import { DISTORT_LAYER } from './effects/parts/distortion';
 
 const container = document.getElementById('app')!;
 
@@ -24,6 +27,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 // Applied by OutputPass; keeps overlapping additive particles from clipping to flat white.
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
+// Soft contact shadows under the figures and big objects (only meshes that opt in with castShadow).
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 container.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
@@ -37,7 +43,57 @@ scene.environmentIntensity = 0.6;
 scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x20160f, 0.6));
 const sun = new THREE.DirectionalLight(0xfff0d8, 1.5);
 sun.position.set(10, 30, 15);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -32, right: 32, top: 32, bottom: -32, near: 1, far: 90 });
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.03;
+sun.shadow.radius = 3;
 scene.add(sun);
+// A cool rim light from behind the arena so figures and objects separate from the dark sky.
+const rim = new THREE.DirectionalLight(0x8fa8ff, 0.9);
+rim.position.set(-8, 12, -30);
+scene.add(rim);
+
+// --- Stage: sky dome + distance fog -------------------------------------------
+// A gradient night sky (deep zenith, muted horizon band with a faint warm glow, sparse stars) instead of a flat
+// colour, and fog that only eats the far ground. Both are switched off while an effect runs its own cinematic
+// camera (the cutscenes build their own space sets far away).
+const SKY_HORIZON = new THREE.Color(0x232a40);
+const skyDome = new THREE.Mesh(
+  new THREE.SphereGeometry(320, 48, 24),
+  new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    depthWrite: false,
+    fog: false,
+    uniforms: { uHorizon: { value: SKY_HORIZON }, uZenith: { value: new THREE.Color(0x05070f) }, uGlow: { value: new THREE.Color(0x4a3a4a) } },
+    vertexShader: /* glsl */ `
+      varying vec3 vDir;
+      void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uHorizon, uZenith, uGlow;
+      varying vec3 vDir;
+      float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
+      void main() {
+        float h = clamp(vDir.y, -1.0, 1.0);
+        vec3 col = mix(uHorizon, uZenith, smoothstep(0.0, 0.55, h));
+        col += uGlow * exp(-abs(h) * 14.0) * 0.6;                 // thin warm band at the horizon
+        col = mix(col, uHorizon * 0.6, smoothstep(0.0, -0.2, h));  // below the horizon: dim
+        vec3 q = floor(vDir * 260.0);
+        float star = step(0.9965, hash(q)) * smoothstep(0.08, 0.4, h);
+        col += vec3(0.85, 0.9, 1.0) * star * (0.35 + 0.65 * hash(q + 3.1));
+        gl_FragColor = vec4(col, 1.0);
+        #include <colorspace_fragment>
+      }
+    `,
+  }),
+);
+skyDome.renderOrder = -10;
+skyDome.frustumCulled = false;
+scene.add(skyDome);
+const fog = new THREE.Fog(SKY_HORIZON, 48, 150);
+scene.fog = fog;
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.05, 400);
 camera.position.set(4, 3, 6);
@@ -56,11 +112,36 @@ scene.add(emitter.points);
 // --- Post-processing --------------------------------------------------------
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
+// Screen distortion: distortion meshes (layer DISTORT_LAYER) are rendered into a half-res float target as signed
+// UV offsets; this pass bends the rendered frame by them (with a slight per-channel split) before bloom.
+const distortTarget = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+const distortPass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, tDistort: { value: distortTarget.texture }, uOn: { value: 0 } },
+  vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse, tDistort;
+    uniform float uOn;
+    varying vec2 vUv;
+    void main() {
+      vec2 o = texture2D(tDistort, vUv).rg * uOn;
+      float r = texture2D(tDiffuse, vUv + o * 1.06).r;
+      vec4 c = texture2D(tDiffuse, vUv + o);
+      float b = texture2D(tDiffuse, vUv + o * 0.94).b;
+      gl_FragColor = vec4(r, c.g, b, c.a);
+    }
+  `,
+});
+// ShaderPass clones its uniforms, and a cloned render-target texture no longer points at the target: re-link it.
+distortPass.uniforms.tDistort.value = distortTarget.texture;
+composer.addPass(distortPass);
 const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 0.5, 0.2);
 composer.addPass(bloomPass);
 composer.addPass(new OutputPass());
 const finish = new FinishPass();
 composer.addPass(finish.pass);
+// Antialiasing last: the composer renders into targets without MSAA, so hard drawn edges were jagged.
+const fxaa = new ShaderPass(FXAAShader);
+composer.addPass(fxaa);
 
 const bloom: BloomSettings = { ...presets[initialPreset].bloom };
 function applyBloom() {
@@ -113,6 +194,9 @@ function resize() {
   composer.setSize(w, h);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
+  const pr = renderer.getPixelRatio();
+  fxaa.material.uniforms.resolution.value.set(1 / (w * pr), 1 / (h * pr));
+  distortTarget.setSize(Math.max(1, Math.floor(w * pr / 2)), Math.max(1, Math.floor(h * pr / 2)));
   pixelScale(emitter);
   for (const slot of slots.values()) slot.effect?.emitters.forEach(pixelScale);
 }
@@ -120,7 +204,7 @@ window.addEventListener('resize', resize);
 resize();
 
 // --- Controls panel ---------------------------------------------------------
-const view = { paused: false, timeScale: 1, showGrid: true, restart: () => emitter.clear() };
+const view = { paused: false, timeScale: 1, showGrid: false, restart: () => emitter.clear() };
 const s: EmitterSettings = emitter.settings;
 const gui = new GUI({ title: 'VFX Tool' });
 const refreshPanel = () => gui.controllersRecursive().forEach((c) => c.updateDisplay());
@@ -415,6 +499,33 @@ const maskMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
 const focusUv = new THREE.Vector2();
 const _focus = new THREE.Vector3();
 
+const _clear = new THREE.Color();
+let distortActive = false;
+/** Renders the distortion layer into its target; skipped (and the pass bypassed) when nothing is on that layer. */
+function renderDistortion() {
+  let any = false;
+  const root = active?.effect?.group;
+  if (root?.visible) root.traverseVisible((o) => { if (!any && o.layers.mask === 1 << DISTORT_LAYER) any = true; });
+  distortPass.uniforms.uOn.value = any ? 1 : 0;
+  if (!any && !distortActive) return;
+  distortActive = any;
+  const bg = scene.background, fogRef = scene.fog, layers = camera.layers.mask;
+  const prevAlpha = renderer.getClearAlpha();
+  renderer.getClearColor(_clear);
+  scene.background = null;
+  scene.fog = null;
+  camera.layers.set(DISTORT_LAYER);
+  renderer.setRenderTarget(distortTarget);
+  renderer.setClearColor(0x000000, 0);
+  renderer.clear();
+  if (any) renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+  renderer.setClearColor(_clear, prevAlpha);
+  camera.layers.mask = layers;
+  scene.background = bg;
+  scene.fog = fogRef;
+}
+
 function renderSilhouetteMask(objects: THREE.Object3D[]) {
   const w = Math.max(1, Math.floor(renderer.domElement.width / 2)), h = Math.max(1, Math.floor(renderer.domElement.height / 2));
   if (maskTarget.width !== w || maskTarget.height !== h) maskTarget.setSize(w, h);
@@ -432,7 +543,24 @@ function renderSilhouetteMask(objects: THREE.Object3D[]) {
   camera.layers.mask = layers;
 }
 
+const _camSave = { pos: new THREE.Vector3(), quat: new THREE.Quaternion(), fov: 50 };
+
 function render() {
+  // Cutscene camera: render this frame through the effect's scripted camera, then restore the orbit camera.
+  const cine = active?.effect?.group.visible ? active.effect.cinematic : undefined;
+  const cineOn = !!cine?.active;
+  skyDome.visible = !cineOn;
+  scene.fog = cineOn ? null : fog;
+  if (cineOn) {
+    _camSave.pos.copy(camera.position);
+    _camSave.quat.copy(camera.quaternion);
+    _camSave.fov = camera.fov;
+    camera.position.copy(cine.position);
+    camera.lookAt(cine.target);
+    camera.rotateZ(cine.roll);
+    camera.fov = cine.fov;
+    camera.updateProjectionMatrix();
+  }
   // Camera shake: offset only for this frame so OrbitControls keeps the real position.
   const shake = active?.effect?.shake ?? 0;
   shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
@@ -443,11 +571,40 @@ function render() {
     _focus.copy(fx.focus).project(camera);
     focusUv.set(_focus.x * 0.5 + 0.5, _focus.y * 0.5 + 0.5);
   } else focusUv.set(0.5, 0.5);
+  renderDistortion();
   const impact = !!fx && fx.impact > 0;
   if (impact) renderSilhouetteMask(fx.silhouettes);
   finish.setScreen(fx, focusUv, impact ? maskTarget.texture : null, camera.aspect);
   composer.render();
   camera.position.sub(shakeOffset);
+  if (cineOn) {
+    drawLetterbox(cine.letterbox);
+    camera.position.copy(_camSave.pos);
+    camera.quaternion.copy(_camSave.quat);
+    camera.fov = _camSave.fov;
+    camera.updateProjectionMatrix();
+  }
+}
+
+/** Black cinema bars (2.39:1 at amount 1) drawn straight into the canvas, so frame captures include them. */
+function drawLetterbox(amount: number) {
+  if (amount <= 0) return;
+  const w = renderer.domElement.width, h = renderer.domElement.height;
+  const bar = Math.round(Math.max(0, (h - w / 2.39) / 2) * Math.min(1, amount));
+  if (bar <= 0) return;
+  const prev = renderer.getClearColor(new THREE.Color()), prevAlpha = renderer.getClearAlpha();
+  renderer.setRenderTarget(null);
+  renderer.setScissorTest(true);
+  renderer.setClearColor(0x000000, 1);
+  const pr = renderer.getPixelRatio();
+  for (const y of [0, h - bar]) {
+    renderer.setScissor(0, y / pr, w / pr, bar / pr);
+    renderer.setViewport(0, y / pr, w / pr, bar / pr);
+    renderer.clear(true, true, false);
+  }
+  renderer.setScissorTest(false);
+  renderer.setViewport(0, 0, w / pr, h / pr);
+  renderer.setClearColor(prev, prevAlpha);
 }
 
 renderer.setAnimationLoop(() => {

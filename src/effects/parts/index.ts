@@ -9,9 +9,14 @@
  * - CrescentArc: crescent / wind / slash stroke along an arc, soft or toon style, with erosion.
  * - LightningArc: thick camera-facing jagged bolt with forks and flicker.
  * - SmokeBall: toon black smoke balls that break into flakes.
+ * - Distortion (`distortion.ts`): `HeatHaze` (rising shimmer) and `ShockRefraction` (expanding refraction ring),
+ *   drawn only into the distortion buffer that main.ts uses to bend the frame.
+ * - Cinematic (`cinematic.ts`): a scripted camera with keyed shots, cuts, roll and letterbox bars for cutscene moves.
  */
 export { createScreenFx, clearScreenFx, impactFrameAt, flashBeat, chromaPulse, type ScreenFx } from './screen';
 export { StarBurst, type StarBurstOptions } from './starBurst';
 export { CrescentArc, type CrescentArcOptions } from './crescentArc';
 export { LightningArc, type LightningArcOptions } from './lightningArc';
 export { SmokeBall, type SmokeBallOptions } from './smokeBall';
+export { createCinematic, clearCinematic, sampleShots, type Cinematic, type ShotKey } from './cinematic';
+export { HeatHaze, ShockRefraction, DISTORT_LAYER, type HeatHazeOptions, type ShockRefractionOptions } from './distortion';
