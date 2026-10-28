@@ -191,8 +191,8 @@ _Last updated: 2026-10-28_
 - Nothing.
 
 ## Waiting on you
-- Uncommitted on `feat/particle-editor`: the three cinematic heroes (galleon, ophanim, caldera), `index.ts`,
-  `forged.json`, designs and sheets (commit when you want).
+- Nothing uncommitted. Latest commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion,
+  43 spells; 60ec4cb three cinematic heroes.
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
 
