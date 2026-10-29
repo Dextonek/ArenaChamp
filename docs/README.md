@@ -7,7 +7,7 @@ updated: 2026-10-29
 # VFX Tool documentation
 
 The knowledge base for VFX Tool, a browser-based real-time VFX editor (Three.js 0.186, Vite, TypeScript). It holds
-180 effects (plus 13 test spells for the combat mechanics): particle presets, set pieces, cinematic hero spells and fourteen playable MOBA hero kits with rigged hero
+192 effects (plus 13 test spells for the combat mechanics): particle presets, set pieces, cinematic hero spells and seventeen playable MOBA hero kits with rigged hero
 models. Start with the guide if you want to use the tool, the architecture section if you want to change it, and
 the art direction and pipeline sections if you want to make new effects the way the existing ones were made.
 
@@ -50,7 +50,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | Page | What it answers |
 |---|---|
 | [Effects](catalog/effects.md) | Every registered effect by category, with links to source, design note and contact sheet |
-| [Heroes](catalog/heroes/README.md) | The fourteen heroes and their kits: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vex (alchemy), Kaia (storm), Sefu (sand), Nyx (shadow), Fenna (grove), Auriel (dawn), Marin (tide), Zephyr (sky), Mortis (bone), Ada (clockwork) |
+| [Heroes](catalog/heroes/README.md) | The seventeen heroes and their kits: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vex (alchemy), Kaia (storm), Sefu (sand), Nyx (shadow), Fenna (grove), Auriel (dawn), Marin (tide), Zephyr (sky), Mortis (bone), Ada (clockwork), Opaline (prism), Sirix (hive), Cantor (bard) |
 
 ### Knowledge (what we learned)
 | Page | What it answers |

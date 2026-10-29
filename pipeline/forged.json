@@ -2144,5 +2144,173 @@
     "selfTest": {
       "ok": true
     }
+  },
+  {
+    "label": "prism bolt",
+    "file": "src/spells/targeted/prismBolt.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "prism",
+    "slot": "Q",
+    "note": "prism hero kit (wave 4, combat mechanics), design pipeline/designs/kit-prism.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "refraction field",
+    "file": "src/spells/targeted/refractionField.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "prism",
+    "slot": "W",
+    "note": "prism hero kit (wave 4, combat mechanics), design pipeline/designs/kit-prism.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "mirror shell",
+    "file": "src/spells/targeted/mirrorShell.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "prism",
+    "slot": "E",
+    "note": "prism hero kit (wave 4, combat mechanics), design pipeline/designs/kit-prism.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "spectrum lance",
+    "file": "src/spells/targeted/spectrumLance.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "prism",
+    "slot": "R",
+    "note": "prism hero kit (wave 4, combat mechanics), design pipeline/designs/kit-prism.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "mandible rend",
+    "file": "src/spells/targeted/mandibleRend.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "hive",
+    "slot": "Q",
+    "note": "hive hero kit (wave 4, combat mechanics), design pipeline/designs/kit-hive.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "swarm leap",
+    "file": "src/spells/targeted/swarmLeap.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "hive",
+    "slot": "W",
+    "note": "hive hero kit (wave 4, combat mechanics), design pipeline/designs/kit-hive.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "chitin carapace",
+    "file": "src/spells/targeted/chitinCarapace.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "hive",
+    "slot": "E",
+    "note": "hive hero kit (wave 4, combat mechanics), design pipeline/designs/kit-hive.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "queen's descent",
+    "file": "src/spells/targeted/queensDescent.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "hive",
+    "slot": "R",
+    "note": "hive hero kit (wave 4, combat mechanics), design pipeline/designs/kit-hive.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "discordant note",
+    "file": "src/spells/targeted/discordantNote.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bard",
+    "slot": "Q",
+    "note": "bard hero kit (wave 4, combat mechanics), design pipeline/designs/kit-bard.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "silencing refrain",
+    "file": "src/spells/targeted/silencingRefrain.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bard",
+    "slot": "W",
+    "note": "bard hero kit (wave 4, combat mechanics), design pipeline/designs/kit-bard.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "ballad of valor",
+    "file": "src/spells/targeted/balladOfValor.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bard",
+    "slot": "E",
+    "note": "bard hero kit (wave 4, combat mechanics), design pipeline/designs/kit-bard.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "crescendo",
+    "file": "src/spells/targeted/crescendo.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bard",
+    "slot": "R",
+    "note": "bard hero kit (wave 4, combat mechanics), design pipeline/designs/kit-bard.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
   }
 ]

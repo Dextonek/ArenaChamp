@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Effect catalog
 
-Every effect registered in the Three.js VFX editor: **180 effects in 22 categories**, plus 13 test spells in a 23rd (`test: mechanics`, 193 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
+Every effect registered in the Three.js VFX editor: **192 effects in 25 categories**, plus 13 test spells in a 26th (`test: mechanics`, 205 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
 
 ## Counts
 
@@ -32,16 +32,19 @@ Every effect registered in the Three.js VFX editor: **180 effects in 22 categori
 | [hero: sky](#hero-sky) | 4 |
 | [hero: bone](#hero-bone) | 4 |
 | [hero: clockwork](#hero-clockwork) | 4 |
+| [hero: prism](#hero-prism) | 4 |
+| [hero: bard](#hero-bard) | 4 |
+| [hero: hive](#hero-hive) | 4 |
 | [weapons](#weapons) | 5 |
 | [weapon attacks](#weapon-attacks) | 5 |
 | [test: mechanics](#test-mechanics) | 13 (test spells, not counted below) |
-| **Total** | **180** (+ 13 test spells = 193 slots) |
+| **Total** | **192** (+ 13 test spells = 205 slots) |
 
 ## How to read the tables
 
 - **Targeting** is the `targeting` spec of the module: `enemy` (one target), `enemies` (shift-clicked or a nearest-neighbour chain, capped), `ground` (a spot, radius decides who is hit), `self` (centred on the caster). `fixed scene` effects have no targeting and play on the fixed demo scene.
 - **Length** is the constant `DURATION` (or `TOTAL`, or a stated "~N s") in the source. `settings-driven` means the length is the `duration` getter, computed from other constants or from the effect's settings (cast time, flight time and so on), so there is no single literal number. `loop` is an idle aura.
-- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the fourteen hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
+- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the seventeen hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
 - Sheets in `docs/spells/` are contact sheets (frames over time) made by `pipeline/tools/contact-sheet.js`. A few effects also have per-frame images (`<name>_1-....jpg`) next to the sheet.
 - Descriptions are shortened from the source header; the header and the design note have the full timeline.
 
@@ -120,7 +123,7 @@ Every effect registered in the Three.js VFX editor: **180 effects in 22 categori
 
 ## targeted
 
-68 effects. Targeted spells (`src/spells/targeted/`): they aim at the enemies or ground spot picked in the shared arena (see `src/effects/targeting.ts`). Most were written by the forge-vfx pipeline; `pipeline/forged.json` records mode, tier and recipes. Registered in `src/spells/targeted/index.ts` (the eight hero kits are registered in the same array but use their own categories, below).
+68 effects. Targeted spells (`src/spells/targeted/`): they aim at the enemies or ground spot picked in the shared arena (see `src/effects/targeting.ts`). Most were written by the forge-vfx pipeline; `pipeline/forged.json` records mode, tier and recipes. Registered in `src/spells/targeted/index.ts` (the hero kits are registered in the same array but use their own categories, below).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -355,6 +358,39 @@ Every effect registered in the Three.js VFX editor: **180 effects in 22 categori
 | gear field | Three nested gears unfold round her; twice they lurch and an electric ring races out, hitting and slowing every enemy inside. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/gearField.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
 | gearfall | The world darkens to a warm iron dark and a colossal gear is lowered on chains, hangs for a dead beat and drops on the zone, rooting everything in it. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/gearfall.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
 
+## hero: prism
+
+4 effects. Opaline, the Lightbreaker. Hero kit, see [Prism](heroes/prism.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| prism bolt | A crystal forms at her wand tip and is fired down a line (skillshot); on the first enemy it bursts into three spectral beams that fan out and hit again. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/prismBolt.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
+| refraction field | A ring of six crystals feeds a prism over the zone; it bursts in spectral light, hitting and blinding everyone inside. | ground (r 4) | 2.2 s · hero kit W | [source](../../src/spells/targeted/refractionField.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
+| mirror shell | Six crystal mirrors circle her with a 40 point shield; twice they throw spectral beams outward that hit everything near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/mirrorShell.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
+| spectrum lance | The world darkens to violet-black and a giant prism assembles over the zone; a beam from the sky strikes it, hangs for a dead beat and splits into seven lances that slam down and sweep the zone. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/spectrumLance.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
+
+## hero: bard
+
+4 effects. Cantor, the Last Verse. Hero kit, see [Bard](heroes/bard.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| discordant note | A big dark note is thrown down a line (skillshot); each hit bursts into small notes and a sound ring, and it bounces on to the nearest other enemy. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/discordantNote.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
+| silencing refrain | A stave coils round the zone while notes ride it inward; at the hush every note freezes and a dark sound ring snaps in, hitting and silencing everyone inside. | ground (r 4) | 2.2 s · hero kit W | [source](../../src/spells/targeted/silencingRefrain.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
+| ballad of valor | Two staves circle him with a 30 point shield; twice a sound ring races out, hitting and shoving back everything near, and at the second he heals. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/balladOfValor.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
+| crescendo | The world darkens to plum-black and a giant golden lyre rises over the zone carrying hundreds of notes; they freeze, the strings snap and one deafening chord hits and stuns everything below. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/crescendo.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
+
+## hero: hive
+
+4 effects. Sirix, the Swarm Warden. Hero kit, see [Hive](heroes/hive.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| mandible rend | Two crossing serrated claw arcs sweep a cone in front of him with honey splashes; everything inside is hit and slowed. | enemies (cone, r 3.2) | 1.2 s · hero kit Q | [source](../../src/spells/targeted/mandibleRend.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
+| swarm leap | The swarm lifts off his back and streams behind him as he leaps to the point; a honeycomb bursts at the landing, hitting everything near, and two wasp soldiers peel off to fight for 6 s (dash, summon). | ground (r 2.5) | 1.6 s · hero kit W | [source](../../src/spells/targeted/swarmLeap.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
+| chitin carapace | Black chitin plates snap round him with a 40 point shield while the swarm circles; twice the swarm bursts outward, hitting and slowing everything near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/chitinCarapace.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
+| queen's descent | The world darkens to amber-black, a honeycomb wall rises round the zone and hundreds of wasps form a giant queen wasp that folds, hangs for a dead beat and dives into the centre, hitting and stunning everything inside. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/queensDescent.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
+
 ## test: mechanics
 
 13 effects. Tools for the combat mechanics engine, not hero spells: they live in `src/spells/targeted/`, are registered at the end of `targetedModules`, and are used by the hidden test kits (see [Combat mechanics](../architecture/mechanics.md#testing)). They have no design note, contact sheet or `forged.json` entry.
@@ -402,7 +438,7 @@ Every effect registered in the Three.js VFX editor: **180 effects in 22 categori
 ## See also
 
 - [Heroes: roster and shared structure](heroes/README.md)
-- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md), [Storm](heroes/storm.md), [Sand](heroes/sand.md), [Shadow](heroes/shadow.md), [Grove](heroes/grove.md), [Dawn](heroes/dawn.md), [Tide](heroes/tide.md), [Sky](heroes/sky.md), [Bone](heroes/bone.md), [Clockwork](heroes/clockwork.md)
+- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md), [Storm](heroes/storm.md), [Sand](heroes/sand.md), [Shadow](heroes/shadow.md), [Grove](heroes/grove.md), [Dawn](heroes/dawn.md), [Tide](heroes/tide.md), [Sky](heroes/sky.md), [Bone](heroes/bone.md), [Clockwork](heroes/clockwork.md), [Prism](heroes/prism.md), [Bard](heroes/bard.md), [Hive](heroes/hive.md)
 - [Docs home](../README.md)
 - [Art bible](../ART_BIBLE.md)
 - [VFX principles](../VFX_PRINCIPLES.md)

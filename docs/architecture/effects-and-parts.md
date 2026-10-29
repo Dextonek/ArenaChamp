@@ -43,7 +43,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Core parts (`src/effects/parts/*.ts`)
 
-[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral, alchemy, grove, dawn, tide, sky, bone and clockwork files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
+[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral, alchemy, grove, dawn, tide, sky, bone, clockwork, prism, hive and bard files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
 
 | Part | File | What it is | Main methods / fields |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Hero-kit parts
 
-Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` / `GROVE` / `DAWN` / `TIDE` / `SKY` / `BONE` / `CLOCKWORK` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`, `kit-grove.md`, `kit-dawn.md`, `kit-tide.md`, `kit-sky.md`, `kit-bone.md`, `kit-clockwork.md`).
+Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` / `GROVE` / `DAWN` / `TIDE` / `SKY` / `BONE` / `CLOCKWORK` / `PRISM` / `HIVE` / `BARD` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`, `kit-grove.md`, `kit-dawn.md`, `kit-tide.md`, `kit-sky.md`, `kit-bone.md`, `kit-clockwork.md`, `kit-prism.md`, `kit-hive.md`, `kit-bard.md`).
 
 ### Blood: [blood.ts](../../src/effects/parts/blood.ts)
 
@@ -212,6 +212,41 @@ Machined copper and brass gears, springs and chains with cyan sparks (steel as t
 | `Chain` | hanging chain between two points | `set(a, b)`, `hide()` |
 | `Rivet` | the spinning copper rivet | `place(pos, dir, spin)`, `hide()` |
 | `turretLook` | a `MinionLook` ([mechanics](mechanics.md#the-look-pluggable-partsminionts)): a brass tripod, a spinning gear body, a short barrel and a cyan lens; other unit kinds fall back to the default look | pass as `look` in `SummonOptions` |
+
+### Prism: [prism.ts](../../src/effects/parts/prism.ts)
+
+Faceted clear crystals and thin spectrum beams (clear glass as the pale foil). Exports `PRISM` / `PRISM_CSS`, `SPECTRUM` (red, gold, green, blue in beam order) and the `CrystalOptions` type.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Crystal` | pooled hexagonal crystal shards, flat-shaded with a lighter top face and a dark outline hull | `place(pos, dir, length, width, opts)`, `move`, `setSize`, `setScale`, `setRoll`, `setSpin`, `hide(i)`, `shatter(speed, life, origin)`; `frozen` holds time |
+| `SpectrumBeam` | camera-facing beams with a white core and thin red / gold / green / blue bands (or one tint) | `set(a, b, width, opacity, tint, tailTaper, slot)`, `split(fanDeg, count, length, width, opacity, tints)`, `fan(origin, dir, axis, ...)`, `hide(slot)` |
+| `Glitter` | small flat diamond facets that flash once and fall | `burst(pos, count, speed, size)` |
+| `PrismRing` | a ring of small floating prisms | `set(center, radius, count, spin, size)`, `scale(k)`, `shatter(speed, life)`, `hide()` |
+
+### Hive: [hive.ts](../../src/effects/parts/hive.ts)
+
+Honeycomb cells, black chitin and swarms of small wasps (wax as the pale foil). Exports `HIVE` / `HIVE_CSS`, the `HoneyStyle` and `ClawOptions` types, and `waspLook`.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Swarm` | an instanced cloud of wasps (many modes) | `set(center, radius, count, spawner)`, `stream(from, to, seconds, trail)`, `dive(point, seconds)`, `scatter(seconds, flat, speed)`, `form(fn, count, stiffness)`; `size`, `frozen` |
+| `Honeycomb` | hexagonal cells that grow in and crumble (styles `'wax'`, `'chitin'`) | `grow(center, radius, seconds, inner, cell)`, `wall(center, radius, height, seconds, cell, thick)`, `dome(center, radius, height, seconds, count, cell)`, `setCenter(c)`, `crumble(seconds)` |
+| `HoneySplash` | amber blobs that land as flat puddles | `burst(pos, count, speed, size, up)` |
+| `ClawSlash` | pooled serrated claw crescents with an amber rim | `slash(center, dir, radius, arcDeg, tilt, seconds, opts)`; `frozen` holds time |
+| `QueenBody` | the solid core of the swarm-queen of the ultimate: striped abdomen, thorax, head, stinger and four translucent wings (about 5.5 long) | `set(center, axis, wing, normal, fold, flap, k)`, `hide()` |
+| `waspLook` | a `MinionLook` ([mechanics](mechanics.md#the-look-pluggable-partsminionts)): a giant hovering wasp about 0.9 m long with green eyes, mandibles and flickering wings; every unit kind gets the same wasp | pass as `look` in `SummonOptions` |
+
+### Bard: [bard.ts](../../src/effects/parts/bard.ts)
+
+Five-line staves, ink note glyphs, sound rings and a golden lyre (parchment as the pale foil). Exports `BARD` / `BARD_CSS`, the `GLYPH` atlas indices (`quarter`, `eighth`, `beamed`, `clef`, `rest`) and the `NoteOptions`, `RideOptions` and `RingOptions` types.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Stave` | a five-line music stave along a path, gently waving | `setPath(points, width, head, tail)`, `setRange(head, tail)`, `wave(amplitude)`, `at(u, out)`; `alpha` |
+| `Notes` | pooled note glyphs in dark ink with a rose rim (gold for heals), one instanced mesh | `emit(pos, vel, count, life, opts)`, `ride(stave, u, glyph, opts)`, `hold(pos, glyph, size, gold)`, `move`, `resize`, `kill`, `fall(gravity, life)`, `scatter(origin, speed, life, gravity)`; `frozen` holds time |
+| `SoundRings` | quick thin sound rings, a white leading edge and a rose body | `pulse(center, radius, seconds, normal, opts)` |
+| `Lyre` | the golden lyre (about 1 m tall at scale 1, seven strings) | `show(pos, scale, yaw)`, `place`, `strum(strength)`, `pull(k)`, `shimmer(rate)`, `hide()` |
 
 ## Shared helpers: [common.ts](../../src/effects/common.ts)
 

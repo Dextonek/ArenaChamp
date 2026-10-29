@@ -295,7 +295,16 @@ _Last updated: 2026-10-29_
     First tournament Zephyr 92%, Mortis 82%, Ada 26%; after the mechanics budget (kit-common.md) 60 / 60 / 56%
     (each × 13 opponents × 3 × both sides). Sweep 193/193 (known quirk only). Q of Ada is `clockwork rivet shot`
     (forge owns `rivet shot`).
-  - Wave 4: prism (Opaline), hive (Sirix), bard (Cantor) · Wave 5: void (Oblivion), ink (Shiori), chrono (Tempo)
+  - Wave 4 DONE: prism (Opaline, mage: splitting skillshot, blind field, mirror shield, spectrum-lance ultimate),
+    hive (Sirix, melee: claw cone + slow, swarm leap with wasp summons, chitin shield, queen-wasp dive + stun),
+    bard (Cantor, support: bouncing note skillshot, silence, shield + heal, giant-lyre crescendo + stun). Reviewed
+    1-2 rounds (bard passed first sheet; prism crystals rendered white, hive swarm read as confetti); concept
+    `docs/heroes/wave4_concept.svg/.jpg`; models `prism/hive/bard.glb` (load checked in game,
+    `docs/heroes/wave4-ingame_sheet.jpg`). Tournament with the mechanics budget on the first try: Opaline 63% → 53%
+    after Refraction Field 45 → 40, Sirix 45%, Cantor 46% (each × 16 opponents × 3 × both sides). Sweep 205/205
+    (known quirk only). Contact sheets need a wide canvas: the pane once shrank to 510×846 and zoomed every frame;
+    set the viewport to 1400×850 before `_multi`.
+  - Wave 5: void (Oblivion), ink (Shiori), chrono (Tempo)
 - **Combat mechanics** (user 2026-10-29; plan `pipeline/designs/mechanics.md`; used by waves 3-5 only, the 11 existing
   heroes stay as they are). Engine built in 4 steps, uncommitted:
   1. Statuses: `HitOptions.status` (stun, root, slow, silence, blind, knockup), `src/effects/status.ts`, markers

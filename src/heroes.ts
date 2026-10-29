@@ -11,6 +11,9 @@ import { dawnKit } from './kits/dawn';
 import { skyKit } from './kits/sky';
 import { clockworkKit } from './kits/clockwork';
 import { boneKit } from './kits/bone';
+import { hiveKit } from './kits/hive';
+import { bardKit } from './kits/bard';
+import { prismKit } from './kits/prism';
 import { stormKit } from './kits/storm';
 import { astralKit } from './kits/astral';
 import { forgeKit } from './kits/forge';
@@ -228,6 +231,9 @@ const MODELS: Record<string, string> = {
   Zephyr: 'models/heroes/sky.glb',
   Mortis: 'models/heroes/bone.glb',
   Ada: 'models/heroes/clockwork.glb',
+  Opaline: 'models/heroes/prism.glb',
+  Sirix: 'models/heroes/hive.glb',
+  Cantor: 'models/heroes/bard.glb',
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

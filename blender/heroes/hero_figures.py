@@ -144,6 +144,25 @@ LOOKS = {
                       female=True, slim=True, hair="loose", hair_color="#8a3a1a", headwear=False, skin="#e6c4a2",
                       eye_glow="#6affea", sleeve="rolled", over_gap=0.3, pendant=False,
                       props={"goggles": {}, "gear_backpack": {}, "wrist_launcher": {}}),
+    # Opaline, the Lightbreaker: a long pale lavender robe over white, platinum hair, crystal epaulettes, a ring of
+    # small floating prisms behind her head and a crystal-tipped wand; thin spectral bands on the sash.
+    "prism": dict(robe="#b8acf0", inner="#f0f4ff", trim=("#b8b0ff", "#14102a"), sash="#14102a", over="#c8bef6",
+                  female=True, slim=True, hair="loose", hair_color="#e8e4f4", brow_color="#c8c4d8", headwear=False,
+                  skin="#ecd6c6", eye_glow="#b8b0ff", sleeve="narrow", over_gap=0.3, pendant=False,
+                  props={"prism_ring": {}, "crystal_epaulettes": {}, "crystal_wand": {}, "spectral_sash": {}}),
+    # Sirix, the Swarm Warden: broad black chitin plate with amber stripes, a crested insect helm with amber eye
+    # lenses, hexagonal pauldrons, serrated claw gauntlets and a translucent wing cloak.
+    "hive": dict(robe="#1c1608", inner="#120e06", trim=("#f0b020", "#120e06"), sash="#f0b020",
+                 coarse=True, hair="shaved", headwear=False, pendant=False, skin="#8a6a4a", eye_glow="#ffd24a",
+                 sleeve="bracer", bracer="#2a2010",
+                 extras={"armour": dict(plate="#2a2010", cord="#f0b020", rivet="gold", rows=3, apron=False)},
+                 props={"insect_helm": {}, "hex_pauldrons": {}, "claw_gauntlets": {}, "wing_cloak": {}}),
+    # Cantor, the Last Verse: a rose and plum long coat over a cream shirt, dark hair, a wide plum hat with a rose
+    # feather, a parchment scarf printed with notes and a golden lyre in his left hand.
+    "bard": dict(robe="#5a1a4a", inner="#f2e6d0", trim=("#ffd24a", "#1e0a1a"), sash="#ffd24a", over="#c03a8a",
+                 slim=True, leg_wraps=True, hair="loose", hair_color="#2a1410", headwear=False, skin="#c8946c",
+                 eye_glow="#ffd24a", sleeve="narrow", over_gap=0.3, pendant=False,
+                 props={"feathered_hat": {}, "note_scarf": {}, "golden_lyre": {}}),
 }
 
 
@@ -731,6 +750,125 @@ class HeroFigure(figure_kit.Figure):
         self.add(kit.blob("LauncherLens", c + Vector((0, -0.05, 0)), (0.022, 0.008, 0.022), lens, (10, 6)), FORE["L"])
         coil = [c + Vector((0.045 + 0.02 * math.cos(t * 10), 0.02 * math.sin(t * 10), -0.03 - 0.1 * t)) for t in [i / 24 for i in range(25)]]
         self.add(kit.chain("LauncherSpring", coil, [0.005] * len(coil), steel, seg=5), FORE["L"])
+
+
+    # ---- prism ------------------------------------------------------------------------------------------
+    def _crystal(self, name, c, d, length, width, mat, bone):
+        """An elongated octahedron crystal centred at c along direction d."""
+        d = d.normalized()
+        self.add(kit.tube(name, c - d * length * 0.5, c + d * length * 0.5,
+                          [(0, 0.001, 0.001), (0.45, width, width), (1, 0.001, 0.001)], mat, seg=4, smooth=False), bone)
+
+    def prism_ring(self):
+        glass = self._mat("prismglass", "#b8b0ff", roughness=0.15, emission="#b8b0ff", strength=0.6)
+        c = Vector((0, 0.1, 1.68))
+        for k in range(7):
+            ang = math.pi * (0.1 + 0.8 * k / 6)
+            p = c + Vector((math.cos(ang) * 0.24, 0, math.sin(ang) * 0.24))
+            self._crystal(f"HaloPrism{k}", p, Vector((math.cos(ang), 0, math.sin(ang))), 0.09, 0.022, glass, HEAD)
+
+    def crystal_epaulettes(self):
+        glass = self._mat("prismglass", "#b8b0ff", roughness=0.15, emission="#b8b0ff", strength=0.6)
+        for side, sx in SIDES:
+            base = Vector((0.2 * sx, 0.0, 1.5))
+            for k, (out, up, ln) in enumerate([(0.9, 0.4, 0.16), (0.6, 0.8, 0.13), (1.0, 0.0, 0.11)]):
+                d = Vector((out * sx, 0.05 * (k - 1), up))
+                self._crystal(f"Epaulette{side}{k}", base + d.normalized() * ln * 0.5, d, ln, 0.03, glass, ARM[side])
+
+    def crystal_wand(self):
+        dark = self._mat("wand", "#14102a", roughness=0.5)
+        glass = self._mat("wandtip", "#f0f4ff", roughness=0.1, emission="#d8d0ff", strength=1.6)
+        a, b = Vector((-0.3, -0.1, 0.86)), Vector((-0.34, -0.2, 1.3))
+        self.add(kit.tube("Wand", a, b, [(0, 0.012, 0.012), (1, 0.008, 0.008)], dark, seg=6), HAND["R"])
+        self._crystal("WandTip", b + (b - a).normalized() * 0.06, b - a, 0.14, 0.03, glass, HAND["R"])
+
+    def spectral_sash(self):
+        for k, col in enumerate(("#ff5a6a", "#ffd24a", "#5ab8ff")):
+            m = self._mat(f"band{k}", col, roughness=0.4, emission=col, strength=0.5)
+            self.add(kit.torus(f"SpectrumBand{k}", Vector((0, 0.0, 1.06 - 0.022 * k)), 0.17, 0.006, m, seg=(32, 5)), PELVIS)
+
+    # ---- hive -------------------------------------------------------------------------------------------
+    def insect_helm(self):
+        chitin = self._mat("chitin", "#1c1608", roughness=0.35, metallic=0.3)
+        amber = self._mat("amber", "#f0b020", roughness=0.3, metallic=0.4)
+        lens = self._mat("lens", "#ffd24a", roughness=0.1, emission="#ffb020", strength=1.6)
+        top = Vector((0, 0.0, 1.66))
+        face = lambda co: not (co.y < -0.06 and abs(co.x) < 0.05 and co.z < -0.04)  # noqa: E731
+        self.add(kit.blob("Helm", top + Vector((0, 0.005, 0.01)), (0.115, 0.125, 0.13), chitin, (24, 16), keep=face), HEAD)
+        for sx in (-1, 1):
+            self.add(kit.blob(f"HelmEye{sx}", top + Vector((0.05 * sx, -0.1, 0.0)), (0.035, 0.02, 0.026), lens, (12, 8)), HEAD)
+            crest = [top + Vector(v) for v in [(0.03 * sx, -0.02, 0.11), (0.08 * sx, 0.0, 0.2), (0.14 * sx, 0.03, 0.25)]]
+            self.add(kit.chain(f"HelmCrest{sx}", crest, [0.018, 0.012, 0.004], amber, seg=6), HEAD)
+            mand = [top + Vector(v) for v in [(0.04 * sx, -0.09, -0.09), (0.03 * sx, -0.12, -0.13), (0.008 * sx, -0.12, -0.15)]]
+            self.add(kit.chain(f"Mandible{sx}", mand, [0.012, 0.009, 0.003], amber, seg=5), HEAD)
+
+    def hex_pauldrons(self):
+        chitin = self._mat("chitin", "#1c1608", roughness=0.35, metallic=0.3)
+        amber = self._mat("amber", "#f0b020", roughness=0.3, metallic=0.4)
+        for side, sx in SIDES:
+            c = Vector((0.22 * sx, 0.0, 1.49))
+            self.add(kit.blob(f"Pauldron{side}", c, (0.1, 0.1, 0.06), chitin, (6, 6), smooth=False), ARM[side])
+            self.add(kit.torus(f"PauldronRim{side}", c + Vector((0, 0, 0.01)), 0.1, 0.012, amber, seg=(6, 4)), ARM[side])
+
+    def claw_gauntlets(self):
+        chitin = self._mat("chitin", "#1c1608", roughness=0.35, metallic=0.3)
+        amber = self._mat("amber", "#f0b020", roughness=0.3, metallic=0.4)
+        for side, sx in SIDES:
+            w = Vector((0.3 * sx, -0.06, 0.86))
+            self.add(kit.blob(f"Gauntlet{side}", w + Vector((0, 0, 0.06)), (0.05, 0.05, 0.08), chitin, (10, 8)), HAND[side])
+            for k, (dx, ln) in enumerate([(-0.025, 0.2), (0.0, 0.26), (0.025, 0.2)]):
+                pts = [w + Vector((dx * sx, -0.01, 0)), w + Vector((dx * sx * 1.4, -0.06, -ln * 0.6)), w + Vector((dx * sx * 1.2, -0.04, -ln))]
+                self.add(kit.chain(f"Claw{side}{k}", pts, [0.016, 0.011, 0.002], amber, seg=5), HAND[side])
+
+    def wing_cloak(self):
+        wing = self._mat("wing", "#f6e6b0", roughness=0.3, alpha=0.35, double_sided=True)
+        vein = self._mat("wingvein", "#2a2010", roughness=0.6)
+        for side, sx in SIDES:
+            c = Vector((0.2 * sx, 0.16, 1.05))
+            self.add(kit.blob(f"Wing{side}", c, (0.17, 0.012, 0.42), wing, (12, 8), rotation=Euler((0, 0.22 * sx, 0))), CHEST)
+            self.add(kit.tube(f"WingVein{side}", Vector((0.06 * sx, 0.15, 1.42)), Vector((0.3 * sx, 0.16, 0.7)),
+                              [(0, 0.006, 0.006), (1, 0.003, 0.003)], vein, seg=4), CHEST)
+
+    def amber_stripes(self):
+        amber = self._mat("amber", "#f0b020", roughness=0.3, metallic=0.4)
+        for k, (z, r) in enumerate([(0.62, 0.25), (0.46, 0.28), (0.3, 0.31)]):
+            self.add(kit.torus(f"Stripe{k}", Vector((0, 0.01, z)), r, 0.018, amber, seg=(32, 6)), PELVIS)
+
+    # ---- bard -------------------------------------------------------------------------------------------
+    def feathered_hat(self):
+        plum = self._mat("hat", "#5a1a4a", roughness=0.7, double_sided=True)
+        rose = self._mat("feather", "#e04aa8", roughness=0.6, double_sided=True)
+        gold = self._mat("hatband", "#ffd24a", metallic=0.6, roughness=0.35)
+        top = Vector((0, 0.01, 1.74))
+        self.add(kit.torus("HatBrim", top, 0.15, 0.02, plum, seg=(32, 6)), HEAD)
+        self.add(kit.blob("HatBrimFill", top, (0.15, 0.15, 0.008), plum, (24, 6)), HEAD)
+        self.add(kit.blob("HatCrown", top + Vector((0, 0, 0.05)), (0.09, 0.09, 0.07), plum, (16, 10)), HEAD)
+        self.add(kit.torus("HatBand", top + Vector((0, 0, 0.02)), 0.088, 0.008, gold, seg=(24, 5)), HEAD)
+        pts = [top + Vector(v) for v in [(0.06, 0.02, 0.06), (0.12, 0.05, 0.13), (0.2, 0.09, 0.17), (0.27, 0.13, 0.16)]]
+        self.add(kit.chain("Feather", pts, [(0.012, 0.004), (0.03, 0.005), (0.026, 0.004), (0.004, 0.002)], rose, seg=6), HEAD)
+
+    def note_scarf(self):
+        parch = self._mat("scarf", "#f2e6d0", roughness=0.7, double_sided=True)
+        ink = self._mat("ink", "#1e0a1a", roughness=0.6)
+        self.add(kit.torus("ScarfWrap", Vector((0, 0.0, 1.5)), 0.085, 0.028, parch, seg=(24, 8)), CHEST)
+        pts = [Vector((0.05 + 0.5 * t, 0.05 + 0.18 * t, 1.5 - 0.1 * t + 0.05 * math.sin(t * 6))) for t in [i / 11 for i in range(12)]]
+        self.add(kit.chain("ScarfTail", pts, [(0.045, 0.01)] * 12, parch, seg=6), CHEST)
+        for k in (3, 6, 9):
+            p = pts[k] + Vector((0, -0.012, 0))
+            self.add(kit.blob(f"ScarfNote{k}", p, (0.012, 0.004, 0.009), ink, (8, 4)), CHEST)
+
+    def golden_lyre(self):
+        gold = self._mat("lyre", "#ffd24a", metallic=0.7, roughness=0.3)
+        string = self._mat("lyrestring", "#f2e6d0", roughness=0.4, emission="#ffd24a", strength=0.6)
+        c = Vector((0.33, -0.14, 0.98))
+        for sx in (-1, 1):
+            arm = [c + Vector(v) for v in [(0.03 * sx, 0, -0.1), (0.07 * sx, 0, 0.0), (0.06 * sx, 0, 0.1), (0.035 * sx, 0, 0.16)]]
+            self.add(kit.chain(f"LyreArm{sx}", arm, [0.012, 0.012, 0.01, 0.008], gold, seg=6), HAND["L"])
+        self.add(kit.tube("LyreBar", c + Vector((-0.045, 0, 0.14)), c + Vector((0.045, 0, 0.14)), [(0, 0.008, 0.008), (1, 0.008, 0.008)], gold, seg=6), HAND["L"])
+        self.add(kit.tube("LyreBase", c + Vector((-0.035, 0, -0.1)), c + Vector((0.035, 0, -0.1)), [(0, 0.012, 0.012), (1, 0.012, 0.012)], gold, seg=6), HAND["L"])
+        for k in range(4):
+            x = -0.024 + 0.016 * k
+            self.add(kit.tube(f"LyreString{k}", c + Vector((x, 0, -0.1)), c + Vector((x, 0, 0.14)), [(0, 0.0025, 0.0025), (1, 0.0025, 0.0025)], string, seg=4), HAND["L"])
 
 
 def _reload():

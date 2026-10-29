@@ -131,6 +131,18 @@ import { boneSpearModule } from './boneSpear';
 import { graveCallModule } from './graveCall';
 import { ossuaryWardModule } from './ossuaryWard';
 import { legionOfTheOssuaryModule } from './legionOfTheOssuary';
+import { prismBoltModule } from './prismBolt';
+import { refractionFieldModule } from './refractionField';
+import { mirrorShellModule } from './mirrorShell';
+import { spectrumLanceModule } from './spectrumLance';
+import { discordantNoteModule } from './discordantNote';
+import { silencingRefrainModule } from './silencingRefrain';
+import { balladOfValorModule } from './balladOfValor';
+import { crescendoModule } from './crescendo';
+import { mandibleRendModule } from './mandibleRend';
+import { swarmLeapModule } from './swarmLeap';
+import { chitinCarapaceModule } from './chitinCarapace';
+import { queensDescentModule } from './queensDescent';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -259,6 +271,18 @@ export const targetedModules: EffectModule[] = [
   graveCallModule,
   ossuaryWardModule,
   legionOfTheOssuaryModule,
+  prismBoltModule,
+  refractionFieldModule,
+  mirrorShellModule,
+  spectrumLanceModule,
+  discordantNoteModule,
+  silencingRefrainModule,
+  balladOfValorModule,
+  crescendoModule,
+  mandibleRendModule,
+  swarmLeapModule,
+  chitinCarapaceModule,
+  queensDescentModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

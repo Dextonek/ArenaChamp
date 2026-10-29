@@ -60,6 +60,9 @@ in small details.
 | Sky (foil: cloud `#eef3f6`) | `#ffffff` | `#e6fff6` | `#7fe6c8` | `#ff8fb0` | `#0d2a2a` |
 | Bone (foil: bone `#ece4d0`) | `#f4fffb` | `#b8fff0` | `#3fd8b8` | `#ff5a3a` | `#0a1412` |
 | Clockwork (foil: steel `#d8dde2`) | `#ffffff` | `#ffd08a` | `#d9773a` | `#6affea` | `#1a0f08` |
+| Prism (foil: glass `#f0f4ff`) | `#ffffff` | `#f2eeff` | `#b8b0ff` | spectrum `#ff5a6a` `#ffd24a` `#5aff9a` `#5ab8ff` | `#14102a` |
+| Hive (foil: wax `#f6e6b0`) | `#fffbe0` | `#ffe08a` | `#f0b020` | `#7aff5a` | `#120e06` |
+| Bard (foil: parchment `#f2e6d0`) | `#ffffff` | `#ffb8e6` | `#e04aa8` | `#ffd24a` | `#1e0a1a` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.
