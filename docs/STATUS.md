@@ -290,6 +290,27 @@ _Last updated: 2026-10-29_
     A run longer than 45 s must be started without awaiting it (push results to a window array, read it later).
   - Wave 3: sky (Zephyr), bone (Mortis), clockwork (Ada)
   - Wave 4: prism (Opaline), hive (Sirix), bard (Cantor) · Wave 5: void (Oblivion), ink (Shiori), chrono (Tempo)
+- **Combat mechanics** (user 2026-10-29; plan `pipeline/designs/mechanics.md`; used by waves 3-5 only, the 11 existing
+  heroes stay as they are). Engine built in 4 steps, uncommitted:
+  1. Statuses: `HitOptions.status` (stun, root, slow, silence, blind, knockup), `src/effects/status.ts`, markers
+     `parts/status.ts`; AI obeys them and prefers `cc` spells. Zone-hit fix in 6 spells.
+  2. Shield / heal / dash (`ctx.shieldSelf`, `healSelf`, `moveCaster`, `parts/shield.ts`), melee support
+     (`HeroKit.maxHp`, `melee`, `HeroSpell.dash`). Duel side-bias fix: `opponentHit` checks the hit's own cast.
+  3. Skillshots: `ctx.projectile` (pierce, bounce, split; `src/effects/projectile.ts`, `parts/bolt.ts`); duel filters
+     accept projectile hits; AI dodges ~65%.
+  4. Summons: `ctx.summon` (melee, ranged, turret; `src/effects/summon.ts`, `parts/minion.ts` with a pluggable look);
+     AI shoots the hero first; hero-mode line aim (`HeroSpell.aim: 'line'`); hero-mode recast keeps the old instance.
+  Test kits (not in the roster): `vfx.testKits.melee` / `ranged` / `summon`; test spells in category
+  `test: mechanics`. Duel recipe for kit objects: comment above `Duel.start()`. Results: melee 59%, ranged 59%,
+  summoner 48%. Budgets: `kit-common.md` (Summon budget). Network duels ignore shields, dashes, projectiles and
+  summons for now (phantom units on the player side): the sync goes to the multiplayer session, which holds off
+  `arena.ts`, `heroMode.ts`, `duel.ts` and `targeting.ts` until told.
+  Melee heroes: Zephyr, Sirix and Oblivion (mechanics.md 2b).
+  After the engine (new AI targeting, per-cast dodge rule): 11-hero tournament `_tourney(3)` = 330 fights, 0 timeouts,
+  wins out of 60: Vesper 45 (75%, outlier), Kaia 35, Nyx 33, Auriel 32, Marin 32, Brannoc 29, Lyra 29, Vex 27,
+  Fenna 24, Isolde 23, Sefu 21 (35%). Vesper checked: dodges against her casts are normal on both sides, so it is
+  balance, not a filter leak. Left for the planned balance pass after waves 3-5. Sweep 181/181 (known
+  corpse-finger quirk only).
 
 ## Blocked
 - Nothing.

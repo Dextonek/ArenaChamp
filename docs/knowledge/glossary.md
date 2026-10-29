@@ -36,6 +36,12 @@ The words this project uses, with what they mean here and where the thing lives 
 | **Self-test / sweep** | Stepping an effect frame by frame for errors; the sweep does it for every effect | `vfx.selfTest` in `main.ts` |
 | **Design note** | The written spec of an effect or kit, written before it is built | `pipeline/designs/` |
 | **Forge** (`/forge-vfx`) | The skill that turns ideas or library recipes into targeted spells | `.claude/skills/forge-vfx/` |
+| **Status effect / crowd control** | A timed condition a hit can add: stun, knock-up, root, slow, silence, blind. Capped, refreshed not stacked, with 0.5 s stun immunity after | `src/effects/status.ts` |
+| **Shield** | HP that absorbs damage before the real HP, for a few seconds (`ctx.shieldSelf`) | `Arena.shieldFigure` |
+| **Skillshot** | A projectile that flies along a line and hits the first enemy it touches; dodged by stepping off the line (`ctx.projectile`; options pierce, bounce, split) | `src/effects/projectile.ts` |
+| **Summon** | Small AI units (melee, ranged or turret) a spell makes for the caster's side, with their own HP and lifetime; at most 6 per side | `src/effects/summon.ts` |
+| **Melee kit** | A hero kit with `melee: true` and more HP: the duel AI closes to about 2 m and chases; usually has a dash | `HeroKit` in `src/heroes.ts` |
+| **Test kit** | A hidden kit for the mechanics (melee, ranged, summon), not in the roster, at `vfx.testKits` | `src/kits/test.ts` |
 | **Library / recipe** | Breakdowns of reference VFX into the layers our kit builds | `pipeline/library/` |
 
 ## See also

@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Effect catalog
 
-Every effect registered in the Three.js VFX editor: **168 effects in 19 categories**, listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
+Every effect registered in the Three.js VFX editor: **168 effects in 19 categories**, plus 13 test spells in a 20th (`test: mechanics`, 181 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
 
 ## Counts
 
@@ -31,7 +31,8 @@ Every effect registered in the Three.js VFX editor: **168 effects in 19 categori
 | [hero: tide](#hero-tide) | 4 |
 | [weapons](#weapons) | 5 |
 | [weapon attacks](#weapon-attacks) | 5 |
-| **Total** | **168** |
+| [test: mechanics](#test-mechanics) | 13 (test spells, not counted below) |
+| **Total** | **168** (+ 13 test spells = 181 slots) |
 
 ## How to read the tables
 
@@ -317,6 +318,26 @@ Every effect registered in the Three.js VFX editor: **168 effects in 19 categori
 | whirlpool | A pool spreads and three water ribbons spiral up, drawing the enemies in before a water column bursts. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/whirlpool.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
 | undertow dance | Water sashes circle Marin as she spins; twice they flare into a flat ring of water that splashes everything near. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/undertowDance.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
 | leviathan's waltz | The world darkens to a deep sea blue and a water serpent made of ribbons coils over the zone, rears up and dives through it in a crown of foam. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/leviathansWaltz.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
+
+## test: mechanics
+
+13 effects. Tools for the combat mechanics engine, not hero spells: they live in `src/spells/targeted/`, are registered at the end of `targetedModules`, and are used by the hidden test kits (see [Combat mechanics](../architecture/mechanics.md#testing)). They have no design note, contact sheet or `forged.json` entry.
+
+| Label | Description | Targeting | Links |
+|---|---|---|---|
+| status test | Ring flash, then 10 damage plus the chosen status kind and seconds to everyone inside the zone (`HitOptions.status`) | ground | [source](../../src/spells/targeted/statusTest.ts) |
+| shield test | `shieldSelf(60, 4)` on the caster | self | [source](../../src/spells/targeted/shieldTest.ts) |
+| heal test | `healSelf` on the caster | self | [source](../../src/spells/targeted/healTest.ts) |
+| dash test | `moveCaster` rush to a spot in a quarter second, 20 damage where it lands | ground | [source](../../src/spells/targeted/dashTest.ts) |
+| cleave test | Cone swing in front of the caster, 45 damage, range 3 (melee kit Q) | enemies | [source](../../src/spells/targeted/cleaveTest.ts) |
+| bolt test | Plain skillshot, 45 damage (`ctx.projectile`) | ground | [source](../../src/spells/targeted/boltTests.ts) |
+| summoner bolt test | The same plain bolt, for the summon test kit | ground | [source](../../src/spells/targeted/boltTests.ts) |
+| split bolt test | Bolt that splits into 3 children over 25 degrees on its first hit | ground | [source](../../src/spells/targeted/boltTests.ts) |
+| bounce bolt test | Bolt that bounces twice to the nearest other enemy | ground | [source](../../src/spells/targeted/boltTests.ts) |
+| pierce bolt test | Fast piercing lance that hits every enemy on its line | ground | [source](../../src/spells/targeted/boltTests.ts) |
+| summon melee test | 2 melee units, 40 HP, 6 s (`ctx.summon`) | ground | [source](../../src/spells/targeted/summonTests.ts) |
+| summon ranged test | 2 ranged units that shoot dodgeable bolts, 35 HP, 6 s | ground | [source](../../src/spells/targeted/summonTests.ts) |
+| turret test | 1 stationary turret, 80 HP, 6 s, range 8 | ground | [source](../../src/spells/targeted/summonTests.ts) |
 
 ## weapons
 

@@ -158,6 +158,8 @@ export interface FigureOptions {
   horns?: boolean;
   /** Y rotation applied on reset (the caster uses Math.PI to face -Z). */
   facing?: number;
+  /** Only the materials and the flash/reset API, no robe: a subclass builds its own meshes (`parts/minion.ts`). */
+  bare?: boolean;
 }
 
 /**
@@ -183,6 +185,10 @@ export class Enemy {
       color: horned ? 0x6f6656 : 0x9c8a5e, roughness: horned ? 0.85 : 0.45, metalness: horned ? 0 : 0.4, emissive: 0x000000,
     });
     this.facing = opts.facing ?? 0;
+    if (opts.bare) {
+      this.group.rotation.y = this.facing;
+      return;
+    }
     const add = (geo: THREE.BufferGeometry, mat: THREE.Material, x = 0, y = 0, z = 0) => {
       const m = new THREE.Mesh(geo, mat);
       m.position.set(x, y, z);

@@ -18,6 +18,7 @@ import { Arena } from './arena';
 import { Hotbar } from './hotbar';
 import { HeroMode } from './heroMode';
 import { HERO_KITS } from './heroes';
+import { meleeTestKit, rangedTestKit, summonTestKit } from './kits/test';
 import { Duel } from './duel';
 import { CASTER_POS } from './effects/common';
 import type { CastContext, Effect, EffectModule } from './effects/types';
@@ -164,6 +165,8 @@ interface EffectSlot {
   effect?: Effect;
   folder?: GUI;
   error?: string;
+  /** A finished-soon copy of a spell's effect that was cast again (hero mode): it plays out in `lingering`, then is dropped. */
+  detached?: true;
 }
 const slots = new Map<string, EffectSlot>(effectModules.map((m) => [m.label, { module: m }]));
 let active: EffectSlot | undefined;
@@ -447,7 +450,14 @@ window.addEventListener('keydown', (e) => {
 function selectMode(label: string) {
   const slot = slots.get(label);
   if (!slot) throw new Error(`unknown effect "${label}"`);
-  if (active === slot && slot.effect) { slot.effect.play(); return; }
+  if (active === slot && slot.effect) {
+    if (!(keepLingering && slot.effect.playing)) { slot.effect.play(); return; }
+    // Hero mode: a recast while the last one still plays (a bolt in flight) keeps that instance alive and casts on a fresh one.
+    lingering.add({ module: slot.module, effect: slot.effect, detached: true });
+    slot.folder?.destroy();
+    slot.effect = undefined;
+    slot.folder = undefined;
+  }
   category.name = slot.module.category ?? DEFAULT_CATEGORY;
   setModeOptions(categories.get(category.name)!);
   mode.name = label;
@@ -566,8 +576,15 @@ function setHeroMode(on: boolean) {
 }
 
 function dropLingering() {
-  for (const slot of lingering) if (slot.effect) slot.effect.group.visible = false;
+  for (const slot of lingering) if (slot.effect) retire(slot);
   lingering.clear();
+}
+
+/** A lingering effect is over: hide it (a detached copy leaves the scene for good). */
+function retire(slot: EffectSlot) {
+  if (!slot.effect) return;
+  slot.effect.group.visible = false;
+  if (slot.detached) scene.remove(slot.effect.group);
 }
 
 /** The active effect plus the lingering ones that are still on screen. */
@@ -649,7 +666,7 @@ function step(dt: number) {
   for (const slot of lingering) {
     slot.effect?.update(dt);
     if (!slot.effect?.playing) {
-      if (slot.effect) slot.effect.group.visible = false;
+      if (slot.effect) retire(slot);
       lingering.delete(slot);
     }
   }
@@ -908,7 +925,7 @@ function selfTest(label: string, seconds = 6) {
 }
 
 (window as unknown as { vfx: unknown }).vfx = {
-  emitter, mode, setMode, selectMode, setPlayMode, setHeroMode, heroMode, heroPickCtrl, setDuel, duel, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
+  emitter, mode, setMode, selectMode, setPlayMode, setHeroMode, heroMode, heroPickCtrl, setDuel, duel, testKits: { melee: meleeTestKit, ranged: rangedTestKit, summon: summonTestKit }, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
   get effect() { return active?.effect; },
 };
 

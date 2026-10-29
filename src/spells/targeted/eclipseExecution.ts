@@ -106,6 +106,12 @@ export class EclipseExecution implements Effect {
     return HIT_T;
   }
 
+  /** True while `e` stands inside the zone right now (enemies who walked out before the impact are spared). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
+  }
+
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.from.copy(ctx.from).setY(0);
@@ -184,7 +190,7 @@ export class EclipseExecution implements Effect {
       this.shake = 0.75;
       this.longCut.cut(this.v1.copy(this.point).setY(1.3), this.right, 6.8);
       if (ctx) {
-        for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: SHADOW_CSS.hot });
+        for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: SHADOW_CSS.hot });
       }
     }
     if (!f.shatter && t >= SHATTER_T) {

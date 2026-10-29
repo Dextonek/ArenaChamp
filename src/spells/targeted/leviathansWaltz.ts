@@ -104,6 +104,12 @@ export class LeviathansWaltz implements Effect {
     return HIT_T;
   }
 
+  /** True while `e` stands inside the zone right now (enemies who walked out before the impact are spared). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
+  }
+
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.point.copy(ctx.point).setY(0);
@@ -251,7 +257,7 @@ export class LeviathansWaltz implements Effect {
       }
       this.pool.ripple(this.point);
       this.rain.spray(this.v1.set(this.point.x, 1.2, this.point.z), this.v2.set(0, 1, 0), 24, 9);
-      if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 6, from: this.point, color: TIDE_CSS.body });
+      if (ctx) for (const v of this.victims) if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 6, from: this.point, color: TIDE_CSS.body });
     }
     if (f.hit && !f.drained && t >= DRAIN_T) {
       f.drained = true;

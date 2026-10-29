@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import type { Enemy } from './common';
 import { frameArena } from './common';
+import type { StatusKind } from './status';
+import type { Projectile, ProjectileOptions } from './projectile';
+import type { Summon, SummonOptions } from './summon';
 
 /**
  * Targeting for effects that aim at enemies the user picks in the shared arena (`src/arena.ts`).
@@ -31,6 +34,16 @@ export interface HitOptions {
   from?: THREE.Vector3;
   /** Damage-number colour (default warm white). */
   color?: string;
+  /**
+   * A status effect on top of the damage (stun, root, slow, silence, blind, knock-up). Capped, refreshed and
+   * stun-immune as in `status.ts`; a dodged or filtered hit gives none. Network duels ignore it.
+   */
+  status?: { kind: StatusKind; seconds: number };
+  /**
+   * Set by the engine on a skillshot's hit (`CastContext.projectile`): the bolt physically touched the target, which
+   * is already the dodge check, so the duel's zone filters let it through. Spells do not set it.
+   */
+  projectile?: true;
 }
 
 /** Everything a targeted effect gets before each play(). Snapshot positions; the figures may move during play. */
@@ -54,6 +67,34 @@ export interface CastContext {
   hit(target: Enemy, opts?: HitOptions): void;
   /** Extra offset the arena adds to an enemy's position (lift, pull, ...). Reset on every cast. */
   displace(target: Enemy, offset: THREE.Vector3): void;
+  /**
+   * Gives the caster a shield of `amount` HP for `seconds` (the player hero, a duel opponent or an arena foe): it
+   * absorbs damage before HP, then breaks ("SHIELD BROKEN") or expires. Casting again keeps the larger one.
+   * `color` (css, optional) tints the bubble and the bar segment. Network duels ignore it.
+   */
+  shieldSelf?(amount: number, seconds: number, color?: string): void;
+  /** Heals the caster by `amount` (capped at max HP) with a green floating number. */
+  healSelf?(amount: number): void;
+  /**
+   * Slides the caster to `to` over `seconds` with an ease-out; nothing else moves it meanwhile (hero mode ignores
+   * click-move, the duel AI holds still). `to` is clamped to the duel ring; returns the spot it will really reach.
+   * Call it at the cast moment; re-check enemy positions against the returned spot when the dash lands.
+   */
+  moveCaster?(to: THREE.Vector3, seconds: number): THREE.Vector3;
+  /**
+   * Fires a skillshot (see `projectile.ts`): a bolt that flies from `from` along `dir` and hits the first enemy it
+   * touches, dodged by stepping off the line. The arena ticks it; follow the returned handle (`pos`, `dir`, `alive`,
+   * `children`, `onHit`) to draw it. Call it at the cast moment. Network duels leave it undefined (no bolt flies).
+   */
+  projectile?(opts: ProjectileOptions): Projectile;
+  /**
+   * Summons small units for the caster's side (see `summon.ts`): `melee` ones walk up and hit, `ranged` ones keep their
+   * distance and shoot dodgeable bolts, a `turret` stands and shoots. The arena owns and ticks them; follow the returned
+   * handle (`units`, `alive`, `onDeath`) for extra visuals. Units can be hit by spells and bolts (they are in `targets`,
+   * and `liveFoes()` lists them) but never count as the duel's enemy hero. At most 6 per side. Call it at the cast
+   * moment. Network duels leave it undefined.
+   */
+  summon?(opts: SummonOptions): Summon;
 }
 
 /** Yaw (telegraph `dir`) from a to b on the ground plane: 0 = toward +Z. */

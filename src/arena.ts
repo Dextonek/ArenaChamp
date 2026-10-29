@@ -3,12 +3,40 @@ import { CASTER_POS, Enemy, createCaster, createGround } from './effects/common'
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { yawTo } from './effects/targeting';
 import { blocksSight, pushOut, steer, type Obstacle } from './obstacles';
+import { StatusSet, STATUS_COLOR, STATUS_WORD, BLIND_RADIUS, type StatusKind } from './effects/status';
+import { StatusFx, StatusFxPool } from './effects/parts/status';
+import { ShieldFx, ShieldFxPool } from './effects/parts/shield';
+import { ProjectileSystem, type Projectile, type ProjectileOptions } from './effects/projectile';
+import { SummonSystem, type SummonWorld } from './effects/summon';
 
 /** Default enemy spots: a loose pack on the -Z side of the caster. */
 const LAYOUT: [number, number][] = [
   [0, 0], [-5, -3], [5, -2], [-2.5, -8], [3.5, -9], [-7.5, 2.5], [7.5, 3], [0, -14], [-6, -12], [6.5, -13],
 ];
 const MAX_HP = 100;
+
+/** A figure's status effects and the visuals that show them (held only while something is running or fading). */
+interface StatusSlot {
+  set: StatusSet;
+  fx: StatusFx | null;
+  /** Colour of the last hit that gave a status (tints the root clamps). */
+  tint: string;
+  /** The figure was lifted by a knock-up last frame (so the lift is put back to 0 once). */
+  lifted: boolean;
+  /** A shield that absorbs damage before HP (`shieldFigure`), and its bubble (held while it is up or fading). */
+  shield: { amount: number; max: number; left: number; color: string } | null;
+  sfx: ShieldFx | null;
+  /** A dash in progress (`moveFigure`): nothing else moves the figure until it lands. */
+  dash: { from: THREE.Vector3; to: THREE.Vector3; t: number; dur: number } | null;
+}
+
+const newSlot = (): StatusSlot => ({ set: new StatusSet(), fx: null, tint: '', lifted: false, shield: null, sfx: null, dash: null });
+
+/** Something a spell can pick as a target: an enemy figure and where it stands (`home` follows a unit live). */
+interface Body {
+  figure: Enemy;
+  home: THREE.Vector3;
+}
 
 interface Foe {
   figure: Enemy;
@@ -26,6 +54,7 @@ interface Foe {
   ring: THREE.Mesh;
   bar: THREE.Group;
   barFill: THREE.Mesh;
+  st: StatusSlot;
 }
 
 /**
@@ -51,14 +80,26 @@ export class Arena {
   /** Enemy HP (100; a duel opponent has more). */
   maxHp = MAX_HP;
   /** Optional veto on hits (a duel: the opponent dodges by leaving the zone). Return false to drop the hit. */
-  hitFilter: ((target: Enemy, opts: HitOptions) => boolean) | null = null;
+  hitFilter: ((target: Enemy, opts: HitOptions, cast?: number) => boolean) | null = null;
+  /** Counts the casts `context()` has built; a hit from that context carries its number to `hitFilter`. */
+  castSeq = 0;
   /** A round play area (a duel ring): the caster and the enemies are kept inside it. Null = the open floor. */
   bounds: { x: number; z: number; r: number } | null = null;
   /** Solid pillars and walls (the duel ring): nobody walks through them, and they block line of sight. */
   obstacles: Obstacle[] | null = null;
+  /**
+   * A blinded caster's miss: the next `context()` moves the aim point (and, for single-target spells, the target
+   * positions) by this offset on the ground plane. Hero mode sets it around a cast and clears it again.
+   */
+  aimOffset: THREE.Vector3 | null = null;
+  /**
+   * The player hero has no HP of its own here (the duel keeps it): this adds `amount` to it and returns what was
+   * really healed. Null outside a duel (a heal then only shows its number).
+   */
+  casterHeal: ((amount: number) => number) | null = null;
 
   private foes: Foe[] = [];
-  private selected: Foe[] = [];
+  private selected: Body[] = [];
   private groundPoint?: THREE.Vector3;
   private groundMarker: THREE.Mesh;
   private ground = createGround();
@@ -66,8 +107,30 @@ export class Arena {
   private v = new THREE.Vector3();
   private overlay: HTMLDivElement;
   private labels: { el: HTMLDivElement; t: number; pos: THREE.Vector3 }[] = [];
+  private fxPool = new StatusFxPool(this.group);
+  private shieldPool = new ShieldFxPool(this.group);
+  private casterSt = newSlot();
+  /** Skillshots in flight: ticked in `update`, cleared with the pack. */
+  readonly projectiles = new ProjectileSystem();
+  /** Summoned units of both sides (hero mode and the duel): ticked in `update`, cleared with the pack. */
+  readonly summons: SummonSystem;
+  /** The hero's side: its units fight the foes and the duel opponent's units. */
+  private heroWorld: SummonWorld;
 
   constructor(private camera: THREE.Camera, private dom: HTMLElement, count = 6) {
+    this.summons = new SummonSystem(this.group, {
+      camera,
+      say: (text, color, at, scale) => this.say(text, color, at, scale),
+      place: (p) => { this.keepInside(p, 0.5); },
+      slide: (from, dir) => (this.obstacles ? steer(from, dir, this.obstacles) : dir),
+      sees: (a, b) => this.lineOfSight(a, b),
+    });
+    this.heroWorld = {
+      side: 'hero',
+      victims: () => this.liveFoes(),
+      hit: (t, h) => this.hit(t, h),
+      fire: (po) => this.fire(po, 'hero-unit', () => this.liveFoes(), (t, h) => this.hit(t, h)),
+    };
     this.group.add(this.ground, this.caster.group);
     this.groundMarker = new THREE.Mesh(
       new THREE.RingGeometry(0.5, 0.75, 4),
@@ -100,7 +163,12 @@ export class Arena {
 
   /** Rebuilds the pack with `n` enemies at the default spots. */
   setCount(n: number) {
-    for (const f of this.foes) this.group.remove(f.figure.group, f.ring, f.bar);
+    this.projectiles.clear();
+    this.summons.clear();
+    for (const f of this.foes) {
+      this.group.remove(f.figure.group, f.ring, f.bar);
+      this.clearSlot(f.st);
+    }
     this.foes = [];
     this.selected = [];
     const n2 = THREE.MathUtils.clamp(Math.round(n), 1, LAYOUT.length);
@@ -131,7 +199,7 @@ export class Arena {
 
   /** Makes `target` the only selected enemy (null clears the selection). */
   setTarget(target: Enemy | null) {
-    const f = target ? this.foes.find((x) => x.figure === target) : undefined;
+    const f: Body | undefined = target ? this.foes.find((x) => x.figure === target) ?? this.summons.unitOf(target)?.body : undefined;
     this.selected = f ? [f] : [];
     if (f) this.groundPoint = undefined;
   }
@@ -142,14 +210,20 @@ export class Arena {
     if (p) this.selected = [];
   }
 
-  /** The enemies that are alive, with where they stand right now. */
+  /** The enemies that are alive, with where they stand right now: the pack, then the duel opponent's summoned units. */
   liveFoes(): { figure: Enemy; pos: THREE.Vector3 }[] {
-    return this.foes.filter((f) => f.dead < 0).map((f) => ({ figure: f.figure, pos: f.figure.group.position }));
+    return [
+      ...this.foes.filter((f) => f.dead < 0).map((f) => ({ figure: f.figure, pos: f.figure.group.position })),
+      ...this.summons.alive('opponent').map((u) => ({ figure: u.figure, pos: u.pos })),
+    ];
   }
 
   /** Everyone back to full HP, standing at home, no knockback or displacement. Selection stays. */
   reset() {
+    this.projectiles.clear();
+    this.summons.clear();
     this.caster.reset();
+    this.clearSlot(this.casterSt);
     for (const f of this.foes) {
       f.figure.reset();
       f.hp = this.maxHp;
@@ -158,6 +232,7 @@ export class Arena {
       f.knock.set(0, 0, 0);
       f.offset.set(0, 0, 0);
       f.displaced.set(0, 0, 0);
+      this.clearSlot(f.st);
     }
   }
 
@@ -176,17 +251,21 @@ export class Arena {
         f.figure.setHome(f.home);
       }
     } else this.reset();
-    const pool = this.persist ? this.foes.filter((f) => f.dead < 0) : this.foes;
+    // The duel opponent's summoned units are enemies too: a spell sees them in `targets` like the pack.
+    const pool: Body[] = [...(this.persist ? this.foes.filter((f) => f.dead < 0) : this.foes), ...this.summons.alive('opponent').map((u) => u.body)];
     const byDist = (p: THREE.Vector3) => [...pool].sort((a, b) => a.home.distanceTo(p) - b.home.distanceTo(p));
     // No enemy clicked: the one nearest the clicked ground spot, else the one nearest the caster.
     const primary = this.selected.find((f) => pool.includes(f)) ?? byDist(this.groundPoint ?? from)[0];
-    let targets: Foe[] = [];
+    let targets: Body[] = [];
     let point: THREE.Vector3;
+    // A blinded caster (`aimOffset`): the spell lands off the aim point. Self spells are not aimed, so they stay put.
+    const miss = spec.mode === 'self' ? null : this.aimOffset;
 
     switch (spec.mode) {
       case 'enemy':
         targets = primary ? [primary] : [];
         point = primary ? primary.home.clone() : from.clone().add(new THREE.Vector3(0, 0, -6));
+        if (miss) point.add(miss);
         break;
       case 'enemies': {
         const max = spec.maxTargets ?? 5;
@@ -202,10 +281,12 @@ export class Arena {
           }
         }
         point = targets[0] ? targets[0].home.clone() : from.clone().add(new THREE.Vector3(0, 0, -6));
+        if (miss) point.add(miss);
         break;
       }
       case 'ground': {
         point = (this.groundPoint ?? primary?.home ?? from.clone().add(new THREE.Vector3(0, 0, -6))).clone();
+        if (miss) point.add(miss);
         const r = spec.radius ?? 5;
         targets = byDist(point).filter((f) => f.home.distanceTo(point) <= r);
         break;
@@ -221,32 +302,48 @@ export class Arena {
     const aimAt = spec.mode === 'self' ? primary?.home ?? point.clone().add(new THREE.Vector3(0, 0, -1)) : point;
     this.caster.group.rotation.y = yawTo(from, aimAt);
 
+    const cast = ++this.castSeq;
     return {
       caster: this.caster,
       from,
       aim: yawTo(from, aimAt),
       targets: targets.map((f) => f.figure),
-      targetPos: targets.map((f) => f.home.clone()),
+      // Single-target spells aim at the target's spot: a blind caster's miss moves it too (the enemy stays the target).
+      targetPos: targets.map((f) => (miss && spec.mode !== 'ground' ? f.home.clone().add(miss) : f.home.clone())),
       point,
-      hit: (target, opts) => this.hit(target, opts),
+      hit: (target, opts) => this.hit(target, opts, cast),
       displace: (target, offset) => {
         const f = this.foes.find((x) => x.figure === target);
         if (f) f.displaced.copy(offset);
       },
+      ...this.selfFx(this.caster),
+      projectile: (po) => this.fire(po, 'hero', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
+      summon: (so) => this.summons.spawn(this.heroWorld, so),
     };
   }
 
   /** Hit reaction: flash, knockback, damage number, HP; dies at 0 HP. */
-  hit(target: Enemy, opts: HitOptions = {}) {
+  hit(target: Enemy, opts: HitOptions = {}, cast?: number) {
     const f = this.foes.find((x) => x.figure === target);
-    if (!f || f.dead >= 0) return;
-    if (this.hitFilter && !this.hitFilter(target, opts)) return;
+    if (!f) {
+      // A summoned unit: the same filter, then its own hit reaction (no statuses).
+      const u = this.summons.unitOf(target);
+      if (!u?.alive || (this.hitFilter && !this.hitFilter(target, opts, cast))) return;
+      this.hits++;
+      this.summons.hurt(u, opts);
+      return;
+    }
+    if (f.dead >= 0) return;
+    if (this.hitFilter && !this.hitFilter(target, opts, cast)) return;
     const dmg = Math.round(opts.damage ?? THREE.MathUtils.randFloat(10, 20));
-    f.hp = Math.max(0, f.hp - dmg);
-    f.flash = 1;
-    const big = dmg >= 40;
+    // A shield takes the damage first; only what is left comes off HP.
+    const soaked = this.soak(f.st, target, dmg);
+    const dealt = dmg - soaked;
+    f.hp = Math.max(0, f.hp - dealt);
+    f.flash = dealt > 0 ? 1 : 0.35;
+    const big = dealt >= 40;
     // A tinted flash (the hit's colour, else warm orange), not white: white bloomed figures swallowed the hit VFX.
-    f.flashTint.set(opts.color ?? (big ? '#ffb347' : '#ff8a4a'));
+    f.flashTint.set(dealt > 0 ? opts.color ?? (big ? '#ffb347' : '#ff8a4a') : '#9cc4ec');
     this.hits++;
     const knock = opts.knock ?? 4;
     if (knock > 0) {
@@ -254,15 +351,127 @@ export class Arena {
       if (away.lengthSq() < 1e-4) away.set(0, 0, -1);
       f.knock.add(away.normalize().multiplyScalar(knock));
     }
-    this.say(String(dmg), opts.color ?? (big ? '#ffd24a' : '#fff1dc'), target.group.position, big ? 1.5 : 1);
+    if (soaked > 0) this.say(String(soaked), '#cfe6ff', target.group.position, 0.9);
+    if (dealt > 0) this.say(String(dealt), opts.color ?? (big ? '#ffd24a' : '#fff1dc'), target.group.position, big ? 1.5 : 1);
+    if (opts.status && f.hp > 0) this.applyStatus(target, opts.status.kind, opts.status.seconds, opts.color);
     if (f.hp <= 0) {
       f.dead = 0;
       this.kills++;
     }
   }
 
+  /**
+   * Gives a status to a foe or to the caster figure (caps, refresh and stun immunity: `StatusSet`). Shows the
+   * floating word when it starts. Returns false when the target is unknown or immune.
+   */
+  applyStatus(target: Enemy, kind: StatusKind, seconds: number, color = ''): boolean {
+    const st = this.slotOf(target);
+    if (!st) return false;
+    const r = st.set.apply(kind, seconds);
+    const at = target.group.position.clone().add(new THREE.Vector3(0, 0.5, 0));
+    if (r === 'immune') this.say('IMMUNE', '#9a93a6', at, 0.8);
+    else {
+      st.tint = color;
+      if (r === 'applied') this.say(STATUS_WORD[kind], STATUS_COLOR[kind], at, 1.1);
+    }
+    return r !== 'immune';
+  }
+
+  /** The status effects running on a foe or on the caster figure (the AI and hero mode obey them). */
+  statusOf(target: Enemy): StatusSet | undefined {
+    return this.slotOf(target)?.set;
+  }
+
+  /** Ends every status on one figure, or on all of them. */
+  clearStatuses(target?: Enemy) {
+    if (target) {
+      const st = this.slotOf(target);
+      if (st) this.clearSlot(st);
+    } else {
+      this.clearSlot(this.casterSt);
+      for (const f of this.foes) this.clearSlot(f.st);
+    }
+  }
+
+  /**
+   * Gives a figure (a foe, the duel opponent or the caster) a shield of `amount` HP for `seconds`. It absorbs damage
+   * before HP, breaks with "SHIELD BROKEN" and a shard pop, or expires. A second shield keeps the larger amount and
+   * restarts the clock.
+   */
+  shieldFigure(target: Enemy, amount: number, seconds: number, color = '') {
+    const st = this.slotOf(target);
+    if (!st || !(amount > 0) || !(seconds > 0)) return;
+    const keep = st.shield && st.shield.amount > amount ? st.shield.amount : amount;
+    st.shield = { amount: keep, max: keep, left: seconds, color: color || st.shield?.color || '' };
+  }
+
+  /** The shield on a figure now (`amount` left of `max`, css `color`), or null. */
+  shieldOf(target: Enemy) {
+    const sh = this.slotOf(target)?.shield;
+    return sh ? { amount: sh.amount, max: sh.max, color: sh.color } : null;
+  }
+
+  /**
+   * Lets a shield on `target` take `damage` first (the duel's hits on the player hero). Returns the damage left for
+   * HP and shows the absorbed part as a pale number.
+   */
+  absorb(target: Enemy, damage: number): number {
+    const st = this.slotOf(target);
+    const soaked = st ? this.soak(st, target, damage) : 0;
+    if (soaked > 0) this.say(String(soaked), '#cfe6ff', target.group.position, 0.9);
+    return damage - soaked;
+  }
+
+  /** Heals a figure by `amount` (capped at max HP) with a green number. Returns what was really healed. */
+  healFigure(target: Enemy, amount: number): number {
+    let healed = 0;
+    if (target === this.caster) healed = this.casterHeal ? this.casterHeal(amount) : amount;
+    else {
+      const f = this.foes.find((x) => x.figure === target);
+      if (!f || f.dead >= 0) return 0;
+      healed = Math.max(0, Math.min(amount, this.maxHp - f.hp));
+      f.hp += healed;
+    }
+    this.say(`+${Math.round(healed)}`, '#6aff9a', target.group.position, 1.1);
+    return healed;
+  }
+
+  /**
+   * Slides a figure to `to` (clamped into the bounds) over `seconds`, easing out. Until it lands nothing else moves
+   * it: `walk` and knockback do nothing, and `isDashing` is true for the AI and hero mode. Returns the real spot.
+   */
+  moveFigure(target: Enemy, to: THREE.Vector3, seconds: number): THREE.Vector3 {
+    const end = to.clone().setY(0);
+    this.keepInside(end);
+    const st = this.slotOf(target);
+    if (!st) return end;
+    st.dash = { from: target.group.position.clone().setY(0), to: end, t: 0, dur: Math.max(0.05, seconds) };
+    return end.clone();
+  }
+
+  /** True while a figure is mid-dash. */
+  isDashing(target: Enemy) {
+    return !!this.slotOf(target)?.dash;
+  }
+
+  /** A random spot inside a circle of radius `BLIND_RADIUS` (a blind caster's miss), on the ground plane. */
+  blindOffset() {
+    const a = Math.random() * Math.PI * 2, r = BLIND_RADIUS * Math.sqrt(Math.random());
+    return new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r);
+  }
+
   update(dt: number) {
+    this.projectiles.update(dt);
+    this.summons.update(dt);
+    this.tickStatus(this.casterSt, this.caster, dt);
+    if (this.stepDash(this.casterSt, dt, this.v)) this.caster.group.position.set(this.v.x, this.caster.group.position.y, this.v.z);
+    this.tickShield(this.casterSt, this.caster, dt);
     for (const f of this.foes) {
+      if (f.dead < 0 && this.stepDash(f.st, dt, f.home)) {
+        f.offset.set(0, 0, 0);
+        f.knock.set(0, 0, 0);
+        f.figure.setHome(f.home);
+      }
       f.offset.addScaledVector(f.knock, dt);
       f.knock.multiplyScalar(Math.exp(-dt * 7));
       if (this.bounds) {
@@ -272,6 +481,12 @@ export class Arena {
         f.offset.copy(p).sub(f.home);
       }
       f.figure.group.position.copy(f.home).add(f.offset).add(f.displaced);
+      if (f.dead >= 0) this.clearSlot(f.st);
+      else {
+        this.tickStatus(f.st, f.figure, dt);
+        f.figure.group.position.y += f.st.set.lift;
+        this.tickShield(f.st, f.figure, dt);
+      }
       f.flash *= Math.exp(-dt * 7);
       if (f.flash > 0.002) f.figure.setFlash(f.flash, f.flashTint);
       else if (f.flash > 0) { f.flash = 0; f.figure.setFlash(0); }
@@ -303,7 +518,7 @@ export class Arena {
 
   /** Play mode: walks the caster by `move` (world units, ground plane) and turns it to face the way it goes. */
   walk(move: THREE.Vector3) {
-    if (move.lengthSq() < 1e-8) return;
+    if (move.lengthSq() < 1e-8 || this.casterSt.dash) return;
     if (this.obstacles) {
       // Slide round a pillar or wall in the way instead of walking into it.
       const len = move.length();
@@ -399,10 +614,20 @@ export class Arena {
     point: THREE.Vector3;
     targets: Enemy[];
     targetPos: THREE.Vector3[];
+    /** The enemy hero the caster's bolts and units fight (default: the first target). */
+    enemy?: Enemy;
+    /** Delivers a hit on the hero or on one of the hero side's summoned units (`isUnit`). */
     hit: (target: Enemy, opts?: HitOptions) => void;
     displace?: (target: Enemy, offset: THREE.Vector3) => void;
   }): CastContext {
     const from = o.from.clone().setY(0), point = o.point.clone().setY(0);
+    const enemy = o.enemy ?? o.targets[0];
+    // What the caster's bolts and units can hit: the enemy hero, and the units the hero summoned.
+    const victims = () => [
+      ...(enemy ? [{ figure: enemy, pos: enemy.group.position }] : []),
+      ...this.summons.alive('hero').map((u) => ({ figure: u.figure, pos: u.pos })),
+    ];
+    const deliver = (t: Enemy, h: HitOptions) => o.hit(t, h);
     return {
       caster: o.caster,
       from,
@@ -412,10 +637,114 @@ export class Arena {
       point,
       hit: o.hit,
       displace: o.displace ?? (() => {}),
+      ...this.selfFx(o.caster),
+      // The bolt flies at this cast's targets (the player hero), and its hits go the same way the spell's own do.
+      projectile: (po) => this.fire(po, 'opponent', victims, deliver),
+      summon: (so) => this.summons.spawn({
+        side: 'opponent', victims, hit: deliver, fire: (po) => this.fire(po, 'opponent-unit', victims, deliver),
+      }, so),
     };
   }
 
+  /** True when `figure` is a summoned unit (alive or fading). */
+  isUnit(figure: Enemy) {
+    return !!this.summons.unitOf(figure);
+  }
+
+  /** Starts a bolt for a cast context: `victims` are what it can hit, `hit` delivers it. */
+  private fire(
+    po: ProjectileOptions,
+    tag: string,
+    victims: () => { figure: Enemy; pos: THREE.Vector3 }[],
+    hit: (target: Enemy, opts: HitOptions) => void,
+  ): Projectile {
+    return this.projectiles.spawn({
+      tag, victims, hit,
+      blocked: (a, b) => !!this.obstacles && blocksSight(a, b, this.obstacles),
+    }, po);
+  }
+
+  /** The caster-side mechanics of a cast context, bound to the figure that casts (the hero, or a duel opponent). */
+  private selfFx(who: Enemy): Pick<CastContext, 'shieldSelf' | 'healSelf' | 'moveCaster'> {
+    return {
+      shieldSelf: (amount, seconds, color) => this.shieldFigure(who, amount, seconds, color),
+      healSelf: (amount) => { this.healFigure(who, amount); },
+      moveCaster: (to, seconds) => this.moveFigure(who, to, seconds),
+    };
+  }
+
+  /** Takes up to `damage` off a figure's shield; returns the amount absorbed. Breaks the shield at 0. */
+  private soak(st: StatusSlot, figure: Enemy, damage: number): number {
+    const sh = st.shield;
+    if (!sh || !(damage > 0)) return 0;
+    const soaked = Math.min(sh.amount, damage);
+    sh.amount -= soaked;
+    if (!st.sfx) st.sfx = this.shieldPool.acquire();
+    if (sh.amount <= 0) {
+      st.sfx.burst(figure.group.position);
+      st.shield = null;
+      this.say('SHIELD BROKEN', '#e6f0ff', figure.group.position.clone().add(new THREE.Vector3(0, 0.5, 0)), 1.1);
+    } else st.sfx.flare();
+    return soaked;
+  }
+
+  /** Counts a shield down and keeps its bubble on the figure (and fades it out after). */
+  private tickShield(st: StatusSlot, figure: Enemy, dt: number) {
+    if (st.shield) {
+      st.shield.left -= dt;
+      if (st.shield.left <= 0) st.shield = null;
+    }
+    if (!st.shield && !st.sfx) return;
+    if (!st.sfx) st.sfx = this.shieldPool.acquire();
+    const sh = st.shield;
+    st.sfx.update(dt, !!sh, sh ? sh.amount / sh.max : 0, sh ? sh.left : 9, figure.group.position, sh?.color);
+    st.sfx.group.visible = figure.group.visible;
+    if (!sh && st.sfx.settled) { this.shieldPool.release(st.sfx); st.sfx = null; }
+  }
+
+  /** Moves a dash on: writes where the figure is now into `out` (y = 0) and returns true; false when none runs. */
+  private stepDash(st: StatusSlot, dt: number, out: THREE.Vector3): boolean {
+    const d = st.dash;
+    if (!d) return false;
+    d.t = Math.min(d.dur, d.t + dt);
+    const k = d.t / d.dur;
+    out.lerpVectors(d.from, d.to, 1 - (1 - k) ** 3).setY(0);
+    this.keepInside(out);
+    if (d.t >= d.dur) st.dash = null;
+    return true;
+  }
+
+  private slotOf(target: Enemy): StatusSlot | undefined {
+    if (target === this.caster) return this.casterSt;
+    return this.foes.find((x) => x.figure === target)?.st;
+  }
+
+  private clearSlot(st: StatusSlot) {
+    st.set.clear();
+    st.shield = null;
+    st.dash = null;
+    if (st.fx) { this.fxPool.release(st.fx); st.fx = null; }
+    if (st.sfx) { this.shieldPool.release(st.sfx); st.sfx = null; }
+  }
+
+  /** Ticks one figure's statuses, keeps its visuals on it (and fades them out after), and lifts the caster for a knock-up. */
+  private tickStatus(st: StatusSlot, figure: Enemy, dt: number) {
+    const s = st.set;
+    s.update(dt);
+    if (figure === this.caster) {
+      // Foes get their lift where their position is rebuilt; the caster's y is only touched while it is lifted.
+      if (s.lift > 0 || st.lifted) figure.group.position.y = s.lift;
+      st.lifted = s.lift > 0;
+    }
+    if (!s.any && !st.fx) return;
+    if (!st.fx) st.fx = this.fxPool.acquire();
+    st.fx.update(dt, s, figure.group.position, figure.group.rotation.y, this.camera, st.tint);
+    st.fx.group.visible = figure.group.visible;
+    if (!s.any && st.fx.settled) { this.fxPool.release(st.fx); st.fx = null; }
+  }
+
   private respawn(f: Foe) {
+    this.clearSlot(f.st);
     f.home.copy(f.spawn);
     f.figure.setHome(f.spawn);
     f.figure.reset();
@@ -445,7 +774,7 @@ export class Arena {
     this.group.add(figure.group, ring, bar);
     return {
       figure, home: home.clone(), hp: this.maxHp, flash: 0, flashTint: new THREE.Color(), knock: new THREE.Vector3(), offset: new THREE.Vector3(),
-      displaced: new THREE.Vector3(), dead: -1, spawn: home.clone(), ring, bar, barFill,
+      displaced: new THREE.Vector3(), dead: -1, spawn: home.clone(), ring, bar, barFill, st: newSlot(),
     };
   }
 

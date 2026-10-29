@@ -67,6 +67,13 @@ import { hourglassOfAgesModule } from './hourglassOfAges';
 import { midnightCircusModule } from './midnightCircus';
 import { neonFractureJabModule } from './neonFractureJab';
 import { prismOvertureModule } from './prismOverture';
+import { statusTestModule } from './statusTest';
+import { shieldTestModule } from './shieldTest';
+import { boltTestModule, splitBoltTestModule, bounceBoltTestModule, pierceBoltTestModule, summonerBoltTestModule } from './boltTests';
+import { healTestModule } from './healTest';
+import { dashTestModule } from './dashTest';
+import { cleaveTestModule } from './cleaveTest';
+import { summonMeleeTestModule, summonRangedTestModule, turretTestModule } from './summonTests';
 import { crimsonRequiemModule } from './crimsonRequiem';
 import { hemolanceModule } from './hemolance';
 import { thornGardenModule } from './thornGarden';
@@ -231,4 +238,17 @@ export const targetedModules: EffectModule[] = [
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,
+  statusTestModule,
+  shieldTestModule,
+  healTestModule,
+  dashTestModule,
+  cleaveTestModule,
+  boltTestModule,
+  splitBoltTestModule,
+  bounceBoltTestModule,
+  pierceBoltTestModule,
+  summonerBoltTestModule,
+  summonMeleeTestModule,
+  summonRangedTestModule,
+  turretTestModule,
 ];

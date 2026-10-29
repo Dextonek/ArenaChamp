@@ -43,7 +43,22 @@ Rules:
 | Heal / lifesteal | `ctx.healSelf(amount)` | Vesper Q heals 30% of its damage |
 | AoE / single target | exist today (ground / enemy modes) | |
 
-## 3. Existing heroes: one mechanic each (retrofit, small)
+## 2b. Melee heroes (user, 2026-10-29: "there should also be melee heroes")
+A melee kit trades range for toughness and sticking power:
+- **HP:** `HeroKit.maxHp` (default 600; melee 750–800).
+- **Spells:** short-range swings (Q range 2.5–3.5) with a `cone` telegraph (the shape exists), so they can be
+  side-stepped like everything else; one gap closer (dash) to reach a ranged hero; a hard status on contact (stun,
+  knock-up or root) so it can make a hit stick.
+- **Damage:** the same per-slot budget, but Q cooldown 2.5 s.
+- **AI** (`HeroKit.melee: true`): it closes to about 2 m instead of keeping 70% of Q range, dashes in when out of
+  range and the dash is ready, and keeps chasing a target that kites.
+- **Look:** the hits come from the hero's weapon. The swing arcs are big readable crescents (the `CrescentArc` part),
+  with impacts at the weapon tip.
+
+Roster for waves 3–5 (3 of 9 melee): Zephyr (sky, wind-blade skirmisher, dash + knock-up), Sirix (hive, a brawler
+with insect claws plus a swarm summon), Oblivion (void, a juggernaut with a pull + silence). The rest stay ranged.
+
+## 3. Existing heroes: one mechanic each (retrofit, small; NOT doing this, the user chose waves 3–5 only)
 | Hero | Spell | New mechanic |
 |---|---|---|
 | Vesper (blood) | Q | lifesteal 30% |
@@ -62,9 +77,9 @@ The visuals mostly stay; some get a small cue (Isolde's root: ice at the feet). 
 little where a strong status is added: a stun or root takes ~10 off the slot. The tournament checks the result.
 
 ## 4. Waves 3–5 designed around archetypes
-- Wave 3: sky Zephyr (dash + knock-up), bone Mortis (summon skeletons), clockwork Ada (turret summon + slow).
-- Wave 4: prism Opaline (split beams), hive Sirix (swarm summon), bard Cantor (silence + team shield).
-- Wave 5: void Oblivion (pull + silence), ink Shiori (blind), chrono Tempo (stun + rewind = heal back to HP 2 s ago).
+- Wave 3: sky Zephyr (melee: dash + knock-up), bone Mortis (summon skeletons), clockwork Ada (turret summon + slow).
+- Wave 4: prism Opaline (split beams), hive Sirix (melee brawler + swarm summon), bard Cantor (silence + team shield).
+- Wave 5: void Oblivion (melee juggernaut: pull + silence), ink Shiori (blind), chrono Tempo (stun + rewind = heal back to HP 2 s ago).
 
 ## 5. AI and multiplayer
 - **AI** (`duel.ts`):
@@ -82,7 +97,7 @@ little where a strong status is added: a stun or root takes ~10 off the slot. Th
 1. Engine, one piece at a time, by risk, each with a test spell and a quick tournament check:
    - statuses (built on `rooted`), plus the zone-hit fix from the STATUS known issues;
    - shield;
-   - dash and heal;
+   - dash and heal, plus melee support (`maxHp`, the `melee` AI, a cone-swing test spell);
    - skillshot projectile with split, bounce and pierce;
    - summons (a new unit type with HP and AI targeting, the biggest piece).
 

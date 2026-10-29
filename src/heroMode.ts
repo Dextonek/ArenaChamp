@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { Arena } from './arena';
 import type { Enemy } from './effects/common';
 import type { TargetingSpec } from './effects/targeting';
+import type { StatusKind, StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
 import { HeroFigure } from './heroFigure';
 
@@ -19,6 +20,7 @@ export interface HeroModeHost {
 }
 
 const HERO_SPEED = 8;
+const GREY_SLOT = 'grayscale(1) brightness(0.5)';
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
 const HOVER_PICK = 2.2; // how close to the cursor an enemy counts as hovered
 
@@ -53,6 +55,8 @@ export class HeroMode {
   private areaRing: THREE.Mesh;
   private areaFill: THREE.Mesh;
   private aimLine: THREE.Mesh;
+  /** The arrow head at the end of a skillshot's aim strip (`HeroSpell.aim: 'line'`). */
+  private aimTip: THREE.Mesh;
   private hoverRing: THREE.Mesh;
   private moveMarker: THREE.Mesh;
   private moveMarkerT = 1;
@@ -80,6 +84,9 @@ export class HeroMode {
   private tip: HTMLDivElement;
   private toast: HTMLDivElement;
   private toastT = 0;
+  /** Blind: a dark screen vignette, faded in and out with the status. */
+  private vignette: HTMLDivElement;
+  private vignetteA = 0;
 
   constructor(private host: HeroModeHost, kit: HeroKit) {
     this.kit = kit;
@@ -96,6 +103,8 @@ export class HeroMode {
     this.areaFill = flat(new THREE.CircleGeometry(1, 72), kit.accent, 0.12);
     // Unit-length strip along +Y in the ring plane; after the flat rotation it points along -Z, scaled per frame.
     this.aimLine = flat(new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), kit.accent, 0.28);
+    // A triangle with its base on the origin and its tip at +Y 1 (same plane trick as the strip).
+    this.aimTip = flat(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-0.5, 0), new THREE.Vector2(0.5, 0), new THREE.Vector2(0, 1)])), kit.accent, 0.5);
     this.hoverRing = flat(new THREE.RingGeometry(0.95, 1.2, 48), kit.accent, 0.95);
     this.moveMarker = flat(new THREE.RingGeometry(0.3, 0.42, 32), kit.foil, 0.9);
     this.group.add(this.figure.group);
@@ -110,7 +119,11 @@ export class HeroMode {
     this.toast.style.cssText =
       'position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:7;pointer-events:none;opacity:0;' +
       'font:700 14px ui-sans-serif,system-ui;color:#ffb0b8;text-shadow:0 2px 6px #000;';
-    document.body.append(this.tip, this.toast);
+    this.vignette = document.createElement('div');
+    this.vignette.style.cssText =
+      'position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;display:none;' +
+      'background:radial-gradient(ellipse at center,rgba(4,2,8,0) 22%,rgba(4,2,8,0.55) 52%,rgba(4,2,8,0.96) 88%);';
+    document.body.append(this.tip, this.toast, this.vignette);
 
     const dom = host.dom;
     dom.addEventListener('pointermove', (e) => this.setMouse(e));
@@ -148,10 +161,25 @@ export class HeroMode {
     return this.kit;
   }
 
+  /** The hero's status effects (stun, root, slow, silence, blind, knock-up), kept by the arena on the caster figure. */
+  get status(): StatusSet {
+    return this.host.arena.statusOf(this.host.arena.caster)!;
+  }
+
+  /**
+   * A status on the hero (the duel: an enemy hit landed). Same rules as everywhere: caps, refresh, stun immunity.
+   * Stun / knock-up / root stop walking, stun / knock-up / silence stop casting, slow walks at x0.6, blind makes the
+   * next casts land off the aim point. Returns false when the hero is immune.
+   */
+  applyStatus(kind: StatusKind, seconds: number, color?: string) {
+    return this.host.arena.applyStatus(this.host.arena.caster, kind, seconds, color);
+  }
+
   /** Clears cooldowns, aim and orders (a new duel round). */
   resetRound() {
     this.cooldowns.fill(0);
     this.rooted = 0;
+    this.host.arena.clearStatuses(this.host.arena.caster);
     this.pending = null;
     this.moveTo = null;
     this.cancelAim();
@@ -174,7 +202,7 @@ export class HeroMode {
     const color = (m: THREE.Mesh, c: string) => (m.material as THREE.MeshBasicMaterial).color.set(c);
     color(this.rangeRing, kit.foil);
     color(this.moveMarker, kit.foil);
-    for (const m of [this.areaRing, this.areaFill, this.aimLine, this.hoverRing]) color(m, kit.accent);
+    for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.hoverRing]) color(m, kit.accent);
     const shown = this.hud.style.display;
     this.hud.remove();
     this.slotEls = [];
@@ -199,6 +227,8 @@ export class HeroMode {
     this.pending = null;
     this.cooldowns.fill(0);
     this.rooted = 0;
+    this.host.arena.clearStatuses(this.host.arena.caster);
+    if (!on) { this.vignetteA = 0; this.vignette.style.display = 'none'; }
     if (on) { this.host.arena.clearSelection(); this.snapCamera = true; }
     this.showFigure();
   }
@@ -225,11 +255,12 @@ export class HeroMode {
         this.castNow(p.slot, p.target);
       } else this.moveTo = at.clone();
     }
-    if (this.moveTo && this.rooted <= 0) {
+    const status = this.status;
+    if (this.moveTo && this.rooted <= 0 && !status.cannotMove && !arena.isDashing(arena.caster)) {
       const d = new THREE.Vector3(this.moveTo.x - hero.x, 0, this.moveTo.z - hero.z);
       const len = d.length();
       if (len < 0.05) this.moveTo = null;
-      else arena.walk(d.multiplyScalar(Math.min(1, (HERO_SPEED * dt) / len)));
+      else arena.walk(d.multiplyScalar(Math.min(1, (HERO_SPEED * status.speedMul * dt) / len)));
     }
 
     this.updateIndicators(dt, hero);
@@ -266,7 +297,7 @@ export class HeroMode {
 
   /** Click on the ground (not aiming): walk there, and forget a pending cast. */
   private order() {
-    if (this.locked || this.spectate) return;
+    if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
     this.pending = null;
     this.moveTo = this.cursor.clone();
     this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
@@ -276,6 +307,7 @@ export class HeroMode {
   private beginAim(i: number) {
     if (this.locked || this.spectate) return;
     const spell = this.kit.spells[i];
+    if (this.status.cannotCast) { this.say(this.status.stunned ? 'Stunned' : 'Silenced'); return; }
     if (this.cooldowns[i] > 0) { this.say(`${spell.name} is on cooldown`); return; }
     const spec = this.host.targeting(spell.label);
     if (!spec) { this.say(`${spell.label}: not a targeted effect`); return; }
@@ -320,12 +352,15 @@ export class HeroMode {
 
   private castNow(i: number, target: Target) {
     const spell = this.kit.spells[i];
-    if (this.cooldowns[i] > 0) return;
+    if (this.cooldowns[i] > 0 || this.status.cannotCast) return;
     const arena = this.host.arena;
     if ('enemy' in target) arena.setTarget(target.enemy);
     else arena.setGroundPoint(target.point);
     this.moveTo = null;
+    // Blind: the cast point is rolled now and the effect (its danger zones too) is played at the offset spot.
+    arena.aimOffset = this.status.blind ? arena.blindOffset() : null;
     this.rooted = this.host.cast(spell.label);
+    arena.aimOffset = null;
     this.cooldowns[i] = spell.cooldown;
     this.onCast?.(spell.label, i, target);
     this.flashSlot(i);
@@ -340,9 +375,14 @@ export class HeroMode {
     return this.rooted > 0;
   }
 
+  /** Autopilot: the hero cannot walk (rooted by a cast, or a stun / root / knock-up). */
+  get cannotMove() {
+    return this.rooted > 0 || this.status.cannotMove;
+  }
+
   /** Autopilot: casts slot `i` at an enemy or a ground point if it is off cooldown (no range check). */
   autoCast(i: number, target: { enemy: Enemy } | { point: THREE.Vector3 }) {
-    if (this.locked || this.cooldowns[i] > 0) return false;
+    if (this.locked || this.cooldowns[i] > 0 || this.status.cannotCast) return false;
     this.castNow(i, target);
     return this.cooldowns[i] > 0;
   }
@@ -381,6 +421,8 @@ export class HeroMode {
     const spell = aiming ? this.kit.spells[this.aiming] : null;
     const spec = spell ? this.host.targeting(spell.label) : undefined;
     const single = spec?.mode === 'enemy' || spec?.mode === 'enemies';
+    // A skillshot (`aim: 'line'`): a strip and an arrow of the spell's range and width toward the cursor, no ground circle.
+    const line = aiming && !single && spell?.aim === 'line';
 
     this.rangeRing.visible = aiming;
     if (spell) {
@@ -399,8 +441,22 @@ export class HeroMode {
     }
 
     // Single target: a strip from the hero to the hovered enemy (else toward the cursor), clamped to range.
-    this.aimLine.visible = aiming && single;
-    if (this.aimLine.visible && spell) {
+    this.aimLine.visible = aiming && (single || line);
+    this.aimTip.visible = line;
+    if (line && spell) {
+      const d = new THREE.Vector3(this.cursor.x - hero.x, 0, this.cursor.z - hero.z);
+      if (d.lengthSq() < 1e-4) d.set(Math.sin(this.host.arena.caster.group.rotation.y), 0, Math.cos(this.host.arena.caster.group.rotation.y));
+      d.normalize();
+      const width = Math.max(0.3, (spec?.radius ?? 0.4) * 2);
+      const tip = Math.min(1.4, width * 1.5 + 0.5);
+      const turn = Math.atan2(-d.x, -d.z);
+      this.aimLine.position.set(hero.x, 0.055, hero.z);
+      this.aimLine.rotation.set(-Math.PI / 2, 0, turn);
+      this.aimLine.scale.set(width, Math.max(0.01, spell.range - tip), 1);
+      this.aimTip.position.set(hero.x + d.x * (spell.range - tip), 0.056, hero.z + d.z * (spell.range - tip));
+      this.aimTip.rotation.set(-Math.PI / 2, 0, turn);
+      this.aimTip.scale.set(width + 0.7, tip, 1);
+    } else if (this.aimLine.visible && spell) {
       const to = this.hovered ? this.hovered.group.position : this.cursor;
       const end = clampToRange(hero, to, spell.range);
       const len = Math.max(0.01, flatDist(hero, end));
@@ -411,7 +467,7 @@ export class HeroMode {
     }
 
     // Ground spell: its area circle at the cursor, clamped to range.
-    const area = aiming && !single;
+    const area = aiming && !single && !line;
     this.areaRing.visible = this.areaFill.visible = area;
     if (area && spell) {
       const c = clampToRange(hero, this.cursor, spell.range);
@@ -531,6 +587,12 @@ export class HeroMode {
     });
     this.toastT = Math.max(0, this.toastT - dt);
     this.toast.style.opacity = String(Math.min(1, this.toastT * 3));
+    // Silence and stun grey out the QWER bar; blind darkens the screen edges.
+    const grey = this.status.cannotCast;
+    for (const { box } of this.slotEls) box.style.filter = grey ? GREY_SLOT : '';
+    this.vignetteA += ((this.status.blind ? 1 : 0) - this.vignetteA) * (1 - Math.exp(-dt * 8));
+    this.vignette.style.display = this.vignetteA > 0.01 ? '' : 'none';
+    this.vignette.style.opacity = this.vignetteA.toFixed(3);
   }
 
   private say(text: string) {

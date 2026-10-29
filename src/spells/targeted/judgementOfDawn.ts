@@ -133,6 +133,12 @@ export class JudgementOfDawn implements Effect {
     return HIT_T;
   }
 
+  /** True while `e` stands inside the zone right now (enemies who walked out before the impact are spared). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
+  }
+
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.point.copy(ctx.point).setY(0);
@@ -198,7 +204,7 @@ export class JudgementOfDawn implements Effect {
       this.shake = 0.75;
       this.burstShards();
       if (ctx) {
-        for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: DAWN_CSS.body });
+        for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: DAWN_CSS.body });
       }
     }
     if (!f.shatter && t >= SHATTER_T) {

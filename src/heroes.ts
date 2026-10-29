@@ -27,6 +27,14 @@ export interface HeroSpell {
   cooldown: number;
   /** One-line tooltip. */
   blurb: string;
+  /** The spell stuns or roots: the duel AI casts it first when the enemy is in range. */
+  cc?: true;
+  /** A gap closer (a dash toward the target): the duel AI casts it when the enemy is out of Q's range, not otherwise. */
+  dash?: true;
+  /** The spell summons units (`ctx.summon`): the duel AI casts it when ready and the enemy is within about 10 m, at a spot in front of itself. */
+  summon?: true;
+  /** `line`: a skillshot. Hero mode shows a strip of the spell's range and width from the hero toward the cursor, not the ground circle. */
+  aim?: 'line';
   /** Draws the slot icon into a `size` × `size` canvas. */
   icon: (g: CanvasRenderingContext2D, size: number) => void;
 }
@@ -42,6 +50,10 @@ export interface HeroKit {
   portrait: (g: CanvasRenderingContext2D, size: number) => void;
   /** Rigged hero figure (Dao rig, built by blender/heroes/hero_figures.py), path under public/. */
   model?: string;
+  /** Start HP and the duel bar's full length (default 600). Melee heroes carry more. */
+  maxHp?: number;
+  /** A melee hero: the duel AI closes to about 2 m (not 70% of Q's range) and chases a target that backs off. */
+  melee?: true;
   spells: [HeroSpell, HeroSpell, HeroSpell, HeroSpell];
 }
 

@@ -90,6 +90,12 @@ export class GraspOfTheDeep implements Effect {
     return HIT_T;
   }
 
+  /** True while `e` stands inside the zone right now (enemies who walked out before the impact are spared). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
+  }
+
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.point.copy(ctx.point).setY(0);
@@ -154,7 +160,7 @@ export class GraspOfTheDeep implements Effect {
       this.shake = 0.35;
       if (ctx) {
         ctx.targets.forEach((e, i) => {
-          ctx.hit(e, { damage: this.settings.damage, knock: 0, color: SHADOW_CSS.hot });
+          if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: SHADOW_CSS.hot });
           const p = ctx.targetPos[i];
           if (p && i < this.cuts.length) this.cuts[i].cut(this.v1.set(p.x, 1.2, p.z), this.v2.set(Math.cos(0.5 + i), Math.sin(0.5 + i), 0), 1.9);
         });
@@ -162,7 +168,7 @@ export class GraspOfTheDeep implements Effect {
     }
     if (!f.tick && t >= TICK_T) {
       f.tick = true;
-      if (ctx) for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.tick, knock: 0, color: SHADOW_CSS.hot });
+      if (ctx) for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.tick, knock: 0, color: SHADOW_CSS.hot });
     }
 
     this.layout();

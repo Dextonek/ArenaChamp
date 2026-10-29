@@ -87,6 +87,12 @@ export class Whirlpool implements Effect {
     return HIT_T;
   }
 
+  /** True while `e` stands inside the zone right now (enemies who walked out before the impact are spared). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
+  }
+
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.point.copy(ctx.point).setY(0);
@@ -169,14 +175,14 @@ export class Whirlpool implements Effect {
       this.pool.ripple(this.point);
       this.drops.spray(this.v1.set(this.point.x, 1.0, this.point.z), this.v2.set(0, 1, 0), 16, 7);
       this.shake = 0.35;
-      if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 0, from: this.point, color: TIDE_CSS.body });
+      if (ctx) for (const v of this.victims) if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 0, from: this.point, color: TIDE_CSS.body });
     }
     if (f.hit && !f.tick && t >= TICK_T) {
       f.tick = true;
       this.drops.spray(this.v1.set(this.point.x, 1.6, this.point.z), this.v2.set(0, 1, 0), 10, 4.5);
       this.pool.ripple(this.v1.set(this.point.x + 0.8, 0, this.point.z - 0.5));
       this.shake = Math.max(this.shake, 0.12);
-      if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.tick, knock: 0, from: this.point, color: TIDE_CSS.body });
+      if (ctx) for (const v of this.victims) if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.tick, knock: 0, from: this.point, color: TIDE_CSS.body });
     }
     if (!f.drained && t >= RELEASE_T + 0.1) {
       f.drained = true;

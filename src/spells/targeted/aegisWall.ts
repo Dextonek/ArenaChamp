@@ -89,6 +89,12 @@ export class AegisWall implements Effect {
     return HIT_T;
   }
 
+  /** True while `e` stands inside the zone right now (enemies who walked out before the impact are spared). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
+  }
+
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.point.copy(ctx.point).setY(0);
@@ -148,11 +154,11 @@ export class AegisWall implements Effect {
       this.shake = 0.35;
       this.cap.place(0, this.v1.copy(this.point).setY(LENGTH * Math.cos(THETA_1) + 0.1), dawnOrient(UP, this.nrm, this.q1), 1.5, 'hex', 1, DAWN.hot);
       this.cap.assemble(0.1, 0, 2.5);
-      if (ctx) for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: DAWN_CSS.body });
+      if (ctx) for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: DAWN_CSS.body });
     }
     if (!f.tick && t >= TICK_T) {
       f.tick = true;
-      if (ctx) for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.tick, knock: 0, color: DAWN_CSS.body });
+      if (ctx) for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.tick, knock: 0, color: DAWN_CSS.body });
     }
     if (!f.shatter && t >= SHATTER_T) {
       f.shatter = true;

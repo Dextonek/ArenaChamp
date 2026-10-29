@@ -7,7 +7,7 @@ updated: 2026-10-29
 # VFX Tool documentation
 
 The knowledge base for VFX Tool, a browser-based real-time VFX editor (Three.js 0.186, Vite, TypeScript). It holds
-168 effects: particle presets, set pieces, cinematic hero spells and eleven playable MOBA hero kits with rigged hero
+168 effects (plus 13 test spells for the combat mechanics): particle presets, set pieces, cinematic hero spells and eleven playable MOBA hero kits with rigged hero
 models. Start with the guide if you want to use the tool, the architecture section if you want to change it, and
 the art direction and pipeline sections if you want to make new effects the way the existing ones were made.
 
@@ -27,6 +27,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | [Effects and parts](architecture/effects-and-parts.md) | The `Effect` / `EffectModule` contract and every shared part (core kit and the hero-kit parts files) |
 | [Targeting and arena](architecture/targeting-and-arena.md) | `CastContext`, targeting modes, the arena (caster, enemies, HP, hits), danger zones |
 | [Hero mode](architecture/hero-mode.md) | The MOBA test mode: input, aim, cooldowns, HUD, hero switching, overlapping spells, hero figures |
+| [Combat mechanics](architecture/mechanics.md) | Statuses, shield / heal / dash, skillshots, summons, melee kits, the duel AI rules, the test kits and the tournament tool |
 | [Models](architecture/models.md) | The Blender pipelines for weapons and hero figures, and how the game loads and poses them |
 | [Multiplayer duel game](architecture/multiplayer.md) | `/game.html`: the game server (accounts, lobbies, queue, referee), the protocol, network matches, the ring's pillars and walls, line of sight |
 

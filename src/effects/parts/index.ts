@@ -24,5 +24,8 @@ export {
   BLOOD, BLOOD_CSS, BloodTendril, BloodDrops, BloodSplats, BloodPool, BloodThorns, BloodSigil,
   type BloodTendrilOptions, type BloodDropsOptions, type BloodThornsOptions, type BloodSigilOptions,
 } from './blood';
+export { StatusFx, StatusFxPool } from './status';
+export { ShieldFx, ShieldFxPool } from './shield';
+export { MinionFx, MinionPool, defaultLook, type MinionLook, type MinionRig, type MinionPalette, type MinionPose } from './minion';
 export { createCinematic, clearCinematic, sampleShots, type Cinematic, type ShotKey } from './cinematic';
 export { HeatHaze, ShockRefraction, DISTORT_LAYER, type HeatHazeOptions, type ShockRefractionOptions } from './distortion';

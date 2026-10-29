@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import type { Arena } from './arena';
 import type { Enemy } from './effects/common';
 import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from './effects/telegraph';
+import { BODY_RADIUS } from './effects/projectile';
+import { MAX_UNITS, type SummonSide, type SummonStats } from './effects/summon';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import type { HeroKit } from './heroes';
 import { HeroFigure } from './heroFigure';
@@ -47,9 +49,24 @@ export interface PeerCast {
 const RING = { x: 0, z: 7, r: 12 };
 const PLAYER_START = new THREE.Vector3(0, 0, 13);
 const OPPONENT_START = new THREE.Vector3(0, 0, 1);
-const HP = 600;
+const HP = 600; // default max HP (`HeroKit.maxHp` overrides it per side)
 const AI_SPEED = 6;
+const MELEE_GAP = 2; // a melee AI closes to about this distance (m)
 const DODGE_RADIUS = 1.6; // a hit still lands within this distance of where the cast aimed
+const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
+const BOLT_DODGE_CHANCE = 0.65; // how often it really steps aside (a skillshot must still land sometimes)
+const BOLT_REACTION = 0.12; // seconds between seeing the bolt and moving
+const SUMMON_REACH = 10; // the AI casts a summon spell when the enemy is within this distance (m)
+const UNIT_BLOCK = 2.5; // an enemy unit this close is shot at when nothing can be cast at the hero (m)
+
+interface BoltDodge {
+  /** The roll came up: this side steps off the bolt's line. */
+  react: boolean;
+  /** Which side of the line to step to (+1 / -1 along the line's left normal). */
+  side: number;
+  /** Duel time when it starts to move. */
+  at: number;
+}
 
 interface EnemyCast {
   /** The remote caster's cast id (network duel). */
@@ -71,8 +88,8 @@ interface EnemyCast {
 export class Duel {
   on = false;
   readonly group = new THREE.Group();
-  /** 'random' or a hero name. */
-  opponentChoice = 'random';
+  /** 'random', a hero name, or a kit object (a hidden test kit that is not in `host.kits`). */
+  opponentChoice: string | HeroKit = 'random';
 
   private opponentKit!: HeroKit;
   private foe: Enemy | null = null;
@@ -80,18 +97,23 @@ export class Duel {
   private zones = new TelegraphLayer();
   private zoneClock = 0;
   private playerHp = HP;
+  private playerMax = HP;
+  private foeMax = HP;
   private cooldowns = [0, 0, 0, 0];
   private rooted = 0;
   private think = 0;
   private opponentAi = { strafe: 1, strafeT: 0 };
   private playerAi = { strafe: -1, strafeT: 0 };
   private playerThink = 0;
+  /** Skillshot dodges: bolt id -> whether this side reacts, which way, and when it starts moving. */
+  private opponentDodge = new Map<number, BoltDodge>();
+  private playerDodge = new Map<number, BoltDodge>();
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
   autopilot = false;
   /** 'play': the player against the AI. 'run': AI against AI to watch (the autopilot drives the player's hero). */
   mode: 'play' | 'run' = 'play';
   /** The last finished round (duel simulations read it). */
-  result: { player: string; opponent: string; winner: string; seconds: number; playerHp: number; opponentHp: number; playerCasts: number; opponentCasts: number; playerDodges: number } | null = null;
+  result: { player: string; opponent: string; winner: string; seconds: number; playerHp: number; opponentHp: number; playerCasts: number; opponentCasts: number; playerDodges: number; units: Record<string, SummonStats> } | null = null;
   private stats = { playerCasts: 0, opponentCasts: 0, playerDodges: 0, opponentDodges: 0 };
   /** The player's recent casts (zones and aim), for the opponent's dodge check. */
   private playerCastsRecent: (EnemyCast & { t: number })[] = [];
@@ -111,7 +133,7 @@ export class Duel {
 
   // HUD.
   private hud: HTMLDivElement;
-  private bars: { fill: HTMLDivElement; text: HTMLDivElement; name: HTMLDivElement; portrait: HTMLCanvasElement }[] = [];
+  private bars: { fill: HTMLDivElement; shield: HTMLDivElement; text: HTMLDivElement; name: HTMLDivElement; portrait: HTMLCanvasElement }[] = [];
   private card: HTMLDivElement;
   private cardTitle: HTMLDivElement;
   private cardText: HTMLDivElement;
@@ -163,6 +185,18 @@ export class Duel {
   /** main.ts: what "Leave duel" does (turns the duel off and syncs the panel). */
   onLeave?: () => void;
 
+  /**
+   * Console recipe, N AI fights with kit objects on either side (`vfx.testKits.melee` is a kit object):
+   *   const v = vfx, K = v.testKits.melee; let w = 0;
+   *   for (let i = 0; i < 10; i++) {
+   *     v.heroMode.setKit(K);               // player side: a kit object (or v.heroPickCtrl.setValue('Lyra') for a hero)
+   *     v.duel.opponentChoice = 'Lyra';     // opponent side: a hero name or a kit object
+   *     v.duel.start('run');                // not v.setDuel(): it overwrites opponentChoice with the panel's string
+   *     while (!v.duel.result) v.step(1 / 60);
+   *     w += v.duel.result.winner === K.name;
+   *   }
+   */
+
   /** Starts (or restarts) a round against `opponentChoice`, never the player's own kit. */
   start(mode: 'play' | 'run' = this.mode) {
     this.mode = mode;
@@ -174,10 +208,12 @@ export class Duel {
     hm.focus = run ? new THREE.Vector3(RING.x, 0, RING.z) : null;
     const player = hm.currentKit;
     const others = this.host.kits.filter((k) => k.name !== player.name);
-    const picked = others.find((k) => k.name === this.opponentChoice);
+    const choice = this.opponentChoice;
+    const picked = typeof choice === 'string' ? others.find((k) => k.name === choice) : choice;
     this.opponentKit = picked ?? others[Math.floor(Math.random() * others.length)];
     this.setup(PLAYER_START, OPPONENT_START);
-    arena.hitFilter = (target, opts) => this.opponentHit(target, opts);
+    arena.hitFilter = (target, opts, cast) => this.opponentHit(target, opts, cast);
+    arena.casterHeal = (amount) => this.healPlayer(amount);
     hm.onCast = () => this.recordPlayerCast();
   }
 
@@ -218,7 +254,9 @@ export class Duel {
     const arena = this.host.arena, hm = this.host.heroMode;
     if (!this.on) this.savedCount = arena.count;
     this.on = true;
-    arena.maxHp = HP;
+    this.playerMax = hm.currentKit.maxHp ?? HP;
+    this.foeMax = this.opponentKit.maxHp ?? HP;
+    arena.maxHp = this.foeMax;
     arena.respawnAfter = Infinity;
     arena.bounds = RING;
     arena.obstacles = DUEL_OBSTACLES;
@@ -238,8 +276,12 @@ export class Duel {
     this.figure.stand();
     hm.locked = false;
     hm.resetRound();
-    this.playerHp = HP;
+    this.playerHp = this.playerMax;
     this.round++;
+    arena.projectiles.clear();
+    arena.summons.resetStats();
+    this.opponentDodge.clear();
+    this.playerDodge.clear();
     this.cooldowns.fill(0);
     this.rooted = 0;
     this.think = 1.2; // a beat before the opponent moves
@@ -264,7 +306,9 @@ export class Duel {
     const arena = this.host.arena;
     this.on = false;
     this.round++;
+    arena.projectiles.clear();
     arena.hitFilter = null;
+    arena.casterHeal = null;
     this.host.heroMode.onCast = undefined;
     arena.maxHp = 100;
     arena.respawnAfter = 4;
@@ -430,18 +474,45 @@ export class Duel {
     for (let i = 0; i < 4; i++) this.cooldowns[i] = Math.max(0, this.cooldowns[i] - dt);
     this.rooted = Math.max(0, this.rooted - dt);
     this.think = Math.max(0, this.think - dt);
+    // Statuses on the opponent: stun / knock-up = no move, no cast; root = no move; slow = x0.6; silence = no cast.
+    const st = this.host.arena.statusOf(foe);
+    if (st?.stunned || this.host.arena.isDashing(foe)) return;
     if (this.rooted > 0 || this.think > 0) {
       this.face(foe, me);
       return;
     }
-    const sees = this.host.arena.lineOfSight(at, me);
-    const pick = this.pickSpell(this.opponentKit, (i) => this.cooldowns[i] > 0, flat(at, me), this.playerHp / HP, sees);
-    if (pick) {
-      this.castSpell(pick.i, foe, at, me, pick.spec);
+    // A skillshot on its way: step off its line before casting or walking on (if the roll says so).
+    const side = st?.cannotMove ? null : this.dodgeBolt(this.opponentDodge, foe, at);
+    if (side) {
+      this.host.arena.moveFoe(foe, side.multiplyScalar(AI_SPEED * (st?.speedMul ?? 1) * dt), true);
+      this.face(foe, me);
       return;
     }
-    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees);
-    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(AI_SPEED * dt), true);
+    const sees = this.host.arena.lineOfSight(at, me);
+    if (!st?.cannotCast) {
+      const mine = this.host.heroMode.status;
+      // A unit of the hero's that stands in the way is shot at first; otherwise the hero.
+      const full = this.host.arena.summons.alive('opponent').length >= MAX_UNITS;
+      const cooling = (i: number) => this.cooldowns[i] > 0;
+      const held = mine.stunned || mine.has('root');
+      // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
+      let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full);
+      let unit: ReturnType<Duel['blocker']> = null;
+      if (!pick && (unit = this.blocker('hero', at, me))) {
+        pick = this.pickSpell(this.opponentKit, cooling, flat(at, unit.pos), this.playerHp / this.playerMax,
+          this.host.arena.lineOfSight(at, unit.pos), held, flat(at, me), full);
+      }
+      if (pick) {
+        this.castSpell(pick.i, foe, at, me, pick.spec, this.opponentKit.spells[pick.i].summon ? this.summonSpot(at, me) : undefined, 0, unit?.figure);
+        return;
+      }
+    }
+    if (st?.cannotMove) {
+      this.face(foe, me);
+      return;
+    }
+    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero');
+    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(AI_SPEED * (st?.speedMul ?? 1) * dt), true);
     this.face(foe, me);
   }
 
@@ -449,36 +520,62 @@ export class Duel {
    * The spell to cast now, if any: the first ready one in the order R, E, W, Q that is in reach. R waits until the
    * other side is under 55% HP or the round is 20 s old; E (self) waits until the other side is inside its radius.
    * Without line of sight (`sees` false: a pillar or wall between them) only self spells can go.
+   * A crowd-control spell (`cc`: stun or root) goes first when it is in reach, unless the other side is held already
+   * (`otherHeld`).
+   * `d` is the distance to what it shoots at (the hero, or a unit in the way); `dHero` the distance to the hero, which a
+   * summon spell goes by (ready and the hero within `SUMMON_REACH`, unless `full`: the side has the most units).
    */
-  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean) {
-    for (const i of [3, 2, 1, 0]) {
-      if (cooling(i)) continue;
+  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean, otherHeld = false, dHero = d, full = false) {
+    const ready = (i: number) => {
+      if (cooling(i)) return null;
       const spell = kit.spells[i];
       const spec = this.host.targeting(spell.label);
-      if (!spec) continue;
+      if (!spec) return null;
+      if (spell.summon) return full || dHero > SUMMON_REACH ? null : { i, spec };
       const reach = spec.mode === 'self' ? (spec.radius ?? 5) - 0.6 : spell.range;
-      if (d > reach || (spec.mode !== 'self' && !sees)) continue;
-      if (i === 3 && otherHp > 0.55 && this.time < 20) continue;
+      if (d > reach || (spec.mode !== 'self' && !sees)) return null;
+      // A gap closer only when the target is out of Q's range (it would waste the dash otherwise).
+      if (spell.dash && d <= kit.spells[0].range + 0.5) return null;
+      if (i === 3 && otherHp > 0.55 && this.time < 20) return null;
       return { i, spec };
+    };
+    if (!otherHeld) {
+      for (const i of [3, 2, 1, 0]) {
+        const pick = kit.spells[i].cc ? ready(i) : null;
+        if (pick) return pick;
+      }
+    }
+    for (const i of [3, 2, 1, 0]) {
+      const pick = ready(i);
+      if (pick) return pick;
     }
     return null;
   }
 
   /**
    * A unit move: hold ~70% of Q's range from `other`, strafe around it, flip the strafe every 1.5–3.5 s. `blocked`
-   * (no line of sight): close in to half that distance, so the strafe comes round the cover.
+   * (no line of sight): close in to half that distance, so the strafe comes round the cover. A melee kit closes to
+   * about 2 m instead, never backs off, strafes only a little, and so keeps chasing a target that retreats.
    */
-  private steer(st: { strafe: number; strafeT: number }, kit: HeroKit, at: THREE.Vector3, other: THREE.Vector3, dt: number, blocked = false) {
+  private steer(st: { strafe: number; strafeT: number }, kit: HeroKit, at: THREE.Vector3, other: THREE.Vector3, dt: number, blocked = false, foeSide?: SummonSide) {
     const d = flat(at, other);
-    const want = kit.spells[0].range * (blocked ? 0.35 : 0.7);
+    const melee = !!kit.melee;
+    const want = melee ? MELEE_GAP : kit.spells[0].range * (blocked ? 0.35 : 0.7);
     const to = new THREE.Vector3(other.x - at.x, 0, other.z - at.z);
     to.divideScalar(Math.max(to.length(), 1e-3));
     st.strafeT -= dt;
     if (st.strafeT <= 0) { st.strafe = -st.strafe; st.strafeT = 1.5 + Math.random() * 2; }
     const move = new THREE.Vector3();
-    if (d > want + 1) move.add(to);
-    else if (d < want - 2) move.sub(to);
-    move.addScaledVector(new THREE.Vector3(-to.z, 0, to.x), 0.8 * st.strafe);
+    if (d > want + (melee ? 0.3 : 1)) move.add(to);
+    else if (!melee && d < want - 2) move.sub(to);
+    move.addScaledVector(new THREE.Vector3(-to.z, 0, to.x), (melee ? 0.3 : 0.8) * st.strafe);
+    // Step away from enemy melee units in contact, so they do not hit for free.
+    if (foeSide && !melee) {
+      for (const u of this.host.arena.summons.alive(foeSide)) {
+        const ud = flat(u.pos, at);
+        if (u.kind === 'melee' && ud < 2.4) move.add(new THREE.Vector3(at.x - u.pos.x, 0, at.z - u.pos.z).divideScalar(Math.max(ud, 0.2)).multiplyScalar(1.6));
+      }
+    }
     return move.lengthSq() > 0 ? move.normalize() : move;
   }
 
@@ -486,42 +583,123 @@ export class Duel {
   private pilot(dt: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3) {
     const hm = this.host.heroMode;
     this.playerThink = Math.max(0, this.playerThink - dt);
-    if (hm.isRooted || this.playerThink > 0) return;
+    // The autopilot obeys the player's statuses like the opponent's AI does.
+    const st = hm.status;
+    if (hm.isRooted || this.playerThink > 0 || st.stunned || this.host.arena.isDashing(this.host.arena.caster)) return;
     const kit = hm.currentKit;
-    const sees = this.host.arena.lineOfSight(me, at);
-    const pick = this.pickSpell(kit, (i) => hm.cooldownOf(i) > 0, flat(me, at), this.host.arena.hpOf(foe) / HP, sees);
-    if (pick) {
-      const target = pick.spec.mode === 'enemy' || pick.spec.mode === 'enemies' ? { enemy: foe } : { point: pick.spec.mode === 'self' ? me.clone() : at.clone() };
-      if (hm.autoCast(pick.i, target)) { this.stats.playerCasts++; return; }
+    const side = st.cannotMove ? null : this.dodgeBolt(this.playerDodge, this.host.arena.caster, me);
+    if (side) {
+      this.host.arena.walk(side.multiplyScalar(AI_SPEED * st.speedMul * dt));
+      return;
     }
-    const move = this.steer(this.playerAi, kit, me, at, dt, !sees);
-    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(AI_SPEED * dt));
+    const sees = this.host.arena.lineOfSight(me, at);
+    const theirs = this.host.arena.statusOf(foe);
+    if (!st.cannotCast) {
+      const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
+      const cooling = (i: number) => hm.cooldownOf(i) > 0;
+      const held = !!theirs && (theirs.stunned || theirs.has('root'));
+      const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
+      // The hero first; a unit only when nothing can be cast at the hero and a unit is within 2.5 m.
+      let pick = this.pickSpell(kit, cooling, flat(me, at), foeHp, sees, held, flat(me, at), full);
+      let unit: ReturnType<Duel['blocker']> = null;
+      if (!pick && (unit = this.blocker('opponent', me, at))) {
+        pick = this.pickSpell(kit, cooling, flat(me, unit.pos), foeHp, this.host.arena.lineOfSight(me, unit.pos), held, flat(me, at), full);
+      }
+      const tpos = unit ? unit.pos : at;
+      if (pick) {
+        const spell = kit.spells[pick.i];
+        const target = pick.spec.mode === 'enemy' || pick.spec.mode === 'enemies' ? { enemy: unit?.figure ?? foe }
+          : {
+            point: pick.spec.mode === 'self' ? me.clone() : spell.summon ? this.summonSpot(me, at) : spell.dash ? dashAim(me, at, spell.range)
+              : unit ? tpos.clone() : bestSpot(at, pick.spec.radius ?? 5, this.host.arena.summons.alive('opponent').map((u) => u.pos)),
+          };
+        if (hm.autoCast(pick.i, target)) { this.stats.playerCasts++; return; }
+      }
+    }
+    if (st.cannotMove) return;
+    const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent');
+    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(AI_SPEED * st.speedMul * dt));
   }
 
-  /** The opponent casts slot `i` from `at` at the player (`aim`: a network duel's aim point, else the player's feet). */
-  private castSpell(i: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3, spec: TargetingSpec, aim?: THREE.Vector3, id = 0) {
+  /**
+   * Skillshot dodge for an AI-driven figure `who` standing at `at`: returns a unit step across the line of the first
+   * bolt that will cross its position within `BOLT_WINDOW`, or null. Each bolt is rolled once (`BOLT_DODGE_CHANCE`) when
+   * it first threatens, and a successful roll starts moving `BOLT_REACTION` later, so a dodge is imperfect.
+   */
+  private dodgeBolt(memory: Map<number, BoltDodge>, who: Enemy, at: THREE.Vector3): THREE.Vector3 | null {
+    const threats = this.host.arena.projectiles.threats(who);
+    const ids = new Set(threats.map((t) => t.id));
+    for (const id of memory.keys()) if (!ids.has(id)) memory.delete(id);
+    let step: THREE.Vector3 | null = null;
+    for (const t of threats) {
+      const rx = at.x - t.pos.x, rz = at.z - t.pos.z;
+      const ahead = rx * t.dir.x + rz * t.dir.z;
+      const lateral = -rx * t.dir.z + rz * t.dir.x;
+      const need = t.radius + BODY_RADIUS + 0.15;
+      if (ahead < -need || ahead > t.rangeLeft + need || ahead / t.speed > BOLT_WINDOW || Math.abs(lateral) > need) {
+        // Not a threat (yet): a decided dodge stays decided while it is still ahead and close to the line.
+        if (ahead < -need) memory.delete(t.id);
+        continue;
+      }
+      let m = memory.get(t.id);
+      if (!m) {
+        m = { react: Math.random() < BOLT_DODGE_CHANCE, side: lateral >= 0 ? 1 : -1, at: this.time + BOLT_REACTION };
+        memory.set(t.id, m);
+      }
+      if (m.react && this.time >= m.at && !step) step = new THREE.Vector3(-t.dir.z * m.side, 0, t.dir.x * m.side);
+    }
+    return step;
+  }
+
+  /**
+   * The opponent casts slot `i` from `at` at the player (`aim`: a network duel's aim point or a summon's spot, else the
+   * player's feet). `unit`: a unit of the hero's it shoots at instead (one in the way). The hero's units inside an area
+   * (or next in a chain) are targets too; the zones decide at impact who is hit.
+   */
+  private castSpell(i: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3, spec: TargetingSpec, aim?: THREE.Vector3, id = 0, unit?: Enemy) {
     const arena = this.host.arena;
     const spell = this.opponentKit.spells[i];
     const player = arena.caster;
+    const focus = unit ? unit.group.position : me;
     const inside = (p: THREE.Vector3, r: number) => flat(p, me) <= r;
+    const minions = arena.summons.alive('hero');
     let point: THREE.Vector3, targets: Enemy[] = [];
+    // Blind: the aim point is rolled off the player now, so the telegraph is drawn at the offset spot (self spells aren't aimed).
+    const miss = spec.mode !== 'self' && arena.statusOf(foe)?.blind ? arena.blindOffset() : null;
     if (spec.mode === 'self') {
       point = at.clone();
       if (inside(at, spec.radius ?? 5)) targets = [player];
+      for (const u of minions) if (flat(u.pos, at) <= (spec.radius ?? 5)) targets.push(u.figure);
     } else {
-      point = (aim ?? me).clone();
-      targets = [player];
+      // An area spell picks the spot that also catches the most of the hero's units while still covering the hero.
+      point = (aim ?? (spell.dash ? dashAim(at, focus, spell.range)
+        : spec.mode === 'ground' && !unit ? bestSpot(me, spec.radius ?? 5, minions.map((u) => u.pos)) : focus)).clone();
+      if (miss) point.add(miss);
+      targets = [unit ?? player];
+      const extra = minions.filter((u) => u.figure !== unit);
+      if (spec.mode === 'ground') for (const u of extra) if (flat(u.pos, point) <= (spec.radius ?? 5)) targets.push(u.figure);
+      if (spec.mode === 'enemies') {
+        for (const u of extra.sort((a, b) => flat(a.pos, focus) - flat(b.pos, focus))) {
+          if (targets.length < (spec.maxTargets ?? 5) && flat(u.pos, focus) <= 8) targets.push(u.figure);
+        }
+      }
     }
-    this.face(foe, me);
+    this.face(foe, focus);
     const record: EnemyCast = { id, round: this.round, zones: [], aimed: point.clone(), dodgedShown: false };
     const ctx = arena.contextFor({
       caster: foe,
       from: at,
       point,
       targets,
-      targetPos: targets.map(() => me.clone()),
-      hit: (_target, opts) => this.hitPlayer(record, opts),
+      enemy: player,
+      targetPos: targets.map((t) => {
+        const p = t === player ? me.clone() : t.group.position.clone();
+        return miss && spec.mode !== 'ground' ? p.add(miss) : p;
+      }),
+      hit: (target, opts) => (target === player ? this.hitPlayer(record, opts) : this.hitUnit(record, target, opts)),
     });
+    // A network duel ignores shields, heals, dashes, skillshots and summons (the server and the peer's own movement decide).
+    if (this.net) ctx.shieldSelf = ctx.healSelf = ctx.moveCaster = ctx.projectile = ctx.summon = undefined;
     record.zones = this.host.castAs(spell.label, ctx);
     this.zones.set(record.zones);
     this.zoneClock = 0;
@@ -536,7 +714,8 @@ export class Duel {
     if (this.over || c.round !== this.round || !this.on) return;
     const arena = this.host.arena;
     const me = arena.caster.group.position;
-    const inZone = c.zones.some((z) => insideTelegraph(z.shape, me.x, me.z));
+    // A skillshot already touched the hero: that was the dodge check, so the zones do not decide.
+    const inZone = opts.projectile || c.zones.some((z) => insideTelegraph(z.shape, me.x, me.z));
     if (!inZone && flat(me, c.aimed) > DODGE_RADIUS) {
       if (!c.dodgedShown) {
         c.dodgedShown = true;
@@ -548,9 +727,13 @@ export class Duel {
     }
     const dmg = Math.round(opts.damage ?? 15);
     this.net?.tookHit(c.id, dmg, opts.color);
-    this.playerHp = Math.max(0, this.playerHp - dmg);
-    arena.say(String(dmg), opts.color ?? '#ff6a6a', me, dmg >= 40 ? 1.5 : 1);
-    this.flash.style.opacity = String(Math.min(1, 0.35 + dmg / 120));
+    // A shield on the hero takes the damage first (a network duel ignores shields: the server counts HP alone).
+    const left = this.net ? dmg : arena.absorb(arena.caster, dmg);
+    this.playerHp = Math.max(0, this.playerHp - left);
+    if (left > 0) {
+      arena.say(String(left), opts.color ?? '#ff6a6a', me, left >= 40 ? 1.5 : 1);
+      this.flash.style.opacity = String(Math.min(1, 0.35 + left / 120));
+    }
     const knock = Math.min(opts.knock ?? 0, 8);
     if (knock > 0) {
       const from = opts.from ?? this.foe?.group.position ?? me;
@@ -559,24 +742,66 @@ export class Duel {
       me.addScaledVector(away.normalize(), knock * 0.18);
       arena.keepInside(me);
     }
+    // A network duel ignores statuses: the server does not carry them yet.
+    if (opts.status && !this.net) this.host.heroMode.applyStatus(opts.status.kind, opts.status.seconds, opts.color);
+  }
+
+  /**
+   * An enemy spell's hit on one of the hero's summoned units: lands inside the cast's zones or near where it aimed
+   * (units do not dodge), or at once for a bolt or a unit's own attack (`opts.projectile`: the touch was the check).
+   */
+  private hitUnit(c: EnemyCast, target: Enemy, opts: HitOptions = {}) {
+    if (this.over || c.round !== this.round || !this.on) return;
+    const p = target.group.position;
+    if (opts.projectile || c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS) this.host.arena.hit(target, opts);
+  }
+
+  /** The nearest alive unit of `side` within `UNIT_BLOCK` of `from` and closer than the hero at `other`, if any. */
+  private blocker(side: SummonSide, from: THREE.Vector3, other: THREE.Vector3) {
+    const limit = Math.min(UNIT_BLOCK, flat(from, other));
+    let best: ReturnType<Arena['summons']['alive']>[number] | null = null, bd = limit;
+    for (const u of this.host.arena.summons.alive(side)) {
+      const d = flat(u.pos, from);
+      if (d < bd) { bd = d; best = u; }
+    }
+    return best;
+  }
+
+  /** Where a summon spell puts its units: 3 m from `from` toward `toward`. */
+  private summonSpot(from: THREE.Vector3, toward: THREE.Vector3) {
+    const d = new THREE.Vector3(toward.x - from.x, 0, toward.z - from.z);
+    d.divideScalar(Math.max(d.length(), 1e-3));
+    return this.host.arena.keepInside(from.clone().setY(0).addScaledVector(d, 3), 0.8);
+  }
+
+  /** A heal on the player hero (`arena.casterHeal`): HP up to the cap; returns what was added. */
+  private healPlayer(amount: number) {
+    const healed = Math.max(0, Math.min(amount, this.playerMax - this.playerHp));
+    this.playerHp += healed;
+    return healed;
   }
 
   /** The player just cast: remember its zones and where it aimed (the opponent's position at the cast). */
   private recordPlayerCast() {
     if (!this.foe) return;
-    this.playerCastsRecent.push({ id: 0, round: this.round, zones: this.host.playerZones(), aimed: this.foe.group.position.clone(), dodgedShown: false, t: this.time });
+    // `id` is the arena's cast number: the hits of that cast carry it to `opponentHit`.
+    this.playerCastsRecent.push({ id: this.host.arena.castSeq, round: this.round, zones: this.host.playerZones(), aimed: this.foe.group.position.clone(), dodgedShown: false, t: this.time });
     this.playerCastsRecent = this.playerCastsRecent.filter((c) => this.time - c.t < 4.5);
   }
 
-  /** The player's hit on the opponent lands only if it is still in one of the recent casts' zones (or near their aim). */
-  private opponentHit(target: Enemy, _opts: HitOptions) {
-    if (!this.on || target !== this.foe) return true;
+  /**
+   * The player's hit on the opponent lands only if the opponent is still inside THAT cast's zones (or near where it
+   * aimed), as `hitPlayer` does for the opponent's casts. `cast` is the arena's cast number from the hit's context.
+   */
+  private opponentHit(target: Enemy, opts: HitOptions, cast?: number) {
+    if (!this.on || opts.projectile) return true;
+    // The opponent's summoned units are checked against the zones like the opponent is (the hero's own units are not).
+    if (target !== this.foe && this.host.arena.summons.unitOf(target)?.side !== 'opponent') return true;
     const p = target.group.position;
-    const recent = this.playerCastsRecent.filter((c) => this.time - c.t < 4.5);
-    if (!recent.length) return true;
-    const lands = recent.some((c) => c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS);
-    if (!lands) {
-      const c = recent[recent.length - 1];
+    const c = this.playerCastsRecent.find((r) => r.id === cast && this.time - r.t < 4.5);
+    if (!c) return true;
+    const lands = c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS;
+    if (!lands && target === this.foe) {
       if (!c.dodgedShown) {
         c.dodgedShown = true;
         this.stats.opponentDodges++;
@@ -597,6 +822,7 @@ export class Duel {
       winner: result === 'win' ? this.host.heroMode.currentKit.name : this.opponentKit.name,
       seconds: +this.time.toFixed(1), playerHp: this.playerHp, opponentHp: this.foe ? this.host.arena.hpOf(this.foe) : 0,
       ...this.stats,
+      units: structuredClone(this.host.arena.summons.stats),
     };
     this.over = result;
     this.overT = 0;
@@ -666,12 +892,14 @@ export class Duel {
       barBg.style.cssText = 'position:relative;width:220px;height:12px;border-radius:6px;background:#2a1a1e;overflow:hidden;';
       const fill = document.createElement('div');
       fill.style.cssText = `position:absolute;top:0;bottom:0;${right ? 'right' : 'left'}:0;width:100%;border-radius:6px;transition:width 0.15s;`;
+      const shield = document.createElement('div');
+      shield.style.cssText = 'position:absolute;top:0;bottom:0;display:none;border-radius:6px;opacity:0.85;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.7);';
       const text = document.createElement('div');
       text.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px ui-sans-serif,system-ui;color:#fff;text-shadow:0 1px 2px #000;';
-      barBg.append(fill, text);
+      barBg.append(fill, shield, text);
       col.append(name, barBg);
       box.append(portrait, col);
-      this.bars.push({ fill, text, name, portrait });
+      this.bars.push({ fill, shield, text, name, portrait });
       return box;
     };
     const vs = document.createElement('div');
@@ -685,8 +913,12 @@ export class Duel {
   private renderHud() {
     const me = this.host.heroMode.currentKit, them = this.opponentKit;
     const foeHp = this.foe ? this.host.arena.hpOf(this.foe) : 0;
-    const rows: [HeroKit, number][] = [[me, this.playerHp], [them, foeHp]];
-    rows.forEach(([kit, hp], i) => {
+    const arena = this.host.arena;
+    const rows: [HeroKit, number, number, ReturnType<Arena['shieldOf']>][] = [
+      [me, this.playerHp, this.playerMax, arena.shieldOf(arena.caster)],
+      [them, foeHp, this.foeMax, this.foe ? arena.shieldOf(this.foe) : null],
+    ];
+    rows.forEach(([kit, hp, max, shield], i) => {
       const b = this.bars[i];
       const label = this.net ? `${kit.name} · ${this.names[i]}` : this.mode === 'run' || i === 1 ? `${kit.name} · AI` : `${kit.name} · you`;
       if (b.name.textContent !== label) {
@@ -696,10 +928,44 @@ export class Duel {
         kit.portrait(g, 64);
         b.fill.style.background = `linear-gradient(180deg, ${kit.accent}, color-mix(in srgb, ${kit.accent} 55%, #000))`;
       }
-      b.fill.style.width = `${Math.max(0, (hp / HP) * 100)}%`;
-      b.text.textContent = `${Math.ceil(hp)} / ${HP}`;
+      b.fill.style.width = `${Math.max(0, (hp / max) * 100)}%`;
+      // A shield is a pale segment after the HP (a strong one is pushed back inside the bar).
+      const sh = shield ? Math.min(1, shield.amount / max) : 0;
+      b.shield.style.display = sh > 0 ? '' : 'none';
+      if (sh > 0) {
+        b.shield.style[i === 1 ? 'right' : 'left'] = `${Math.min(Math.max(0, hp / max), 1 - sh) * 100}%`;
+        b.shield.style.width = `${sh * 100}%`;
+        b.shield.style.background = `color-mix(in srgb, ${shield!.color || '#ffffff'} 30%, #eef6ff)`;
+      }
+      b.text.textContent = `${Math.ceil(hp)} / ${max}` + (shield ? `  +${Math.ceil(shield.amount)}` : '');
     });
   }
+}
+
+/** Where a dash from `from` toward `to` should end: about 1.8 m short of the target, within the spell's range. */
+function dashAim(from: THREE.Vector3, to: THREE.Vector3, range: number) {
+  const d = Math.max(0, flat(from, to) - 1.8);
+  const dir = new THREE.Vector3(to.x - from.x, 0, to.z - from.z).normalize();
+  return from.clone().setY(0).addScaledVector(dir, Math.min(d, range));
+}
+
+/**
+ * Where to aim an area of radius `r` at a hero standing at `hero`: the hero's own spot, or a spot between the hero and
+ * one of the `units` that still covers the hero and catches more of them.
+ */
+function bestSpot(hero: THREE.Vector3, r: number, units: THREE.Vector3[]) {
+  const count = (p: THREE.Vector3) => units.filter((u) => flat(u, p) <= r).length;
+  let best = hero.clone().setY(0), bestN = count(best);
+  if (r < 1.5) return best;
+  for (const u of units) {
+    for (const c of [hero.clone().lerp(u, 0.5), u.clone()]) {
+      c.y = 0;
+      if (flat(c, hero) > r - 1) continue;
+      const n = count(c);
+      if (n > bestN) { best = c.clone(); bestN = n; }
+    }
+  }
+  return best;
 }
 
 function flat(a: THREE.Vector3, b: THREE.Vector3) {

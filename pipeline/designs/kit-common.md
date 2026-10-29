@@ -57,5 +57,12 @@ the kit data.
 Area spells re-check each enemy's position at the impact moment (see `overgrowth.ts` `eachInside`); never loop the
 cast-time `ctx.targets` or a victim list frozen at cast, or enemies who walked out of the zone still get hit.
 
+## Summon budget
+Summon kits (wave 3-5) stay inside the numbers the summon test kit was tuned to (600 HP hero, 40-60% in the tournament):
+a melee summon is 2 units of 40 HP for 6 s at 6 damage per 1 s; a ranged summon is 2 units of 35 HP for 6 s at 8 per 1.5 s;
+a turret is 1 unit of 80 HP for 6 s at 10 per 1.4 s, range 8. Cooldowns 9 s (melee), 12 s (turret), 20 s (ranged ultimate).
+At most 6 units per side. The AI shoots the hero first, and a unit only when nothing can be cast at the hero and the unit is
+within 2.5 m.
+
 ## Verify
 `npx tsc --noEmit` clean for your files. No browser: the reviewer renders contact sheets and sends notes.
