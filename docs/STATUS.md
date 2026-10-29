@@ -265,6 +265,10 @@ _Last updated: 2026-10-29_
     queue match (22.6 s), lobby match in the ring with cover (24.5 s), dodges on both screens, knockback replicated,
     disconnect = forfeit, session resume, Back to menu, profile. `tsc --noEmit` clean; selfTest sweep 156/156 ok.
   - Background tabs keep simulating in game mode (a timer steps the scene when no frame came for 250 ms).
+- **Cloudflare deployment ready (2026-10-29, not deployed yet):** the server core is runtime-free (`server/hub.mjs`,
+  accounts with a pluggable store and PBKDF2), hosted by Node (`server/game-server.mjs`) or by a Cloudflare Worker +
+  SQLite Durable Object (`worker/index.mjs`, `wrangler.jsonc`, wrangler 4.150.0 pinned). `npm run cf:dev` (local,
+  8788) passed the smoke test, a two-tab match and a restart. Deploy: see Waiting on you.
 - **Duel ring cover + line of sight (2026-10-29, user request):** centre wall, four pillars, two side walls
   (`src/obstacles.ts`, `DUEL_OBSTACLES`) in both the AI duel and the network duel. They block walking (push-out +
   sliding round edges) and sight; targeted spells need sight of their target (hero mode: toast "No line of sight",
@@ -285,6 +289,8 @@ _Last updated: 2026-10-29_
 ## Waiting on you
 - Committed (not pushed, no remote): the multiplayer game and the ring cover ("Add the Arena of Kits multiplayer
   duel game and ring cover").
+- Publish to Cloudflare: create a free Cloudflare account, then `npx wrangler login` and `npm run cf:deploy`
+  (docs/architecture/multiplayer.md#cloudflare). Pushing to a git remote: none is set up.
 - Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
 - Uncommitted: play/run duel, balance pass. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
   commits 6329099 four hero kits, models, switcher; fa60c09 blood kit, hero mode; earlier a7f26de, 60ec4cb,

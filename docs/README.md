@@ -68,6 +68,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | `src/` | The app: `main.ts`, `arena.ts`, `heroMode.ts`, `heroes.ts`, `duel.ts`, `obstacles.ts`, `kits/`, `effects/` (framework, parts, weapons), `spells/` (effects by family), `game/` + `net/` (the duel game page) |
 | `server/` | The duel game's Node server (`game-server.mjs`, `accounts.mjs`, `standalone.mjs`, `smoke-test.mjs`); accounts in `server/data/` (git-ignored) |
 | `game.html` | The duel game's page (the editor is `index.html`) |
+| `worker/`, `wrangler.jsonc` | The Cloudflare deployment (Worker + Durable Object running `server/hub.mjs`) |
 | `public/models/` | Exported models: `weapons/`, `figures/`, `heroes/` |
 | `blender/` | Blender scripts that build the models (`weapons/`, `heroes/`) |
 | `pipeline/` | The effect pipeline: `designs/` (one note per effect or kit), `library/` (reference breakdowns), `forged.json` (record of forged effects), `tools/` (review tools) |

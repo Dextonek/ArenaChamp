@@ -1,7 +1,8 @@
 // End-to-end check of the game server without a browser: two socket clients register, one opens a lobby and the
 // other joins it (same hero refused, then a different one), a second pair meets through the queue, and both
 // matches are played to a result (a KO by reported hits, a forfeit). Exits non-zero on the first failed check.
-//   node server/smoke-test.mjs
+//   node server/smoke-test.mjs                         (its own Node server on a temporary data file)
+//   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server, e.g. `npm run cf:dev`; unique names per run)
 import { createServer } from 'node:http';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -9,11 +10,18 @@ import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
 
+const target = process.argv[2];
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
 const http = createServer();
-attachGameServer(http, { dataFile: join(dir, 'accounts.json'), log: () => {} });
-await new Promise((r) => http.listen(0, () => r(undefined)));
-const port = /** @type {import('node:net').AddressInfo} */ (http.address()).port;
+let url = target;
+if (!target) {
+  attachGameServer(http, { dataFile: join(dir, 'accounts.json'), log: () => {} });
+  await new Promise((r) => http.listen(0, () => r(undefined)));
+  url = `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (http.address()).port}/ws`;
+}
+// Against a server with saved accounts the names must be new each run.
+const tag = target ? `_${Math.random().toString(36).slice(2, 6)}` : '';
+const [ALICE, BOB, CAROL, DAVE] = ['alice', 'bob', 'carol', 'dave'].map((n) => n + tag);
 let failed = false;
 
 /** @param {boolean} ok @param {string} what */
@@ -24,7 +32,7 @@ function check(ok, what) {
 
 /** A test client: `next(type)` waits for the next message of that type. */
 async function client() {
-  const ws = new WebSocket(`ws://localhost:${port}/ws`);
+  const ws = new WebSocket(/** @type {string} */ (url));
   /** @type {any[]} */
   const inbox = [];
   /** @type {{ t: string, resolve: (m: any) => void }[]} */
@@ -55,15 +63,15 @@ async function client() {
 try {
   // Accounts.
   const a = await client(), b = await client();
-  a.send({ t: 'register', name: 'alice', password: 'pw1234' });
+  a.send({ t: 'register', name: ALICE, password: 'pw1234' });
   const sa = await a.next('session');
-  check(!!sa.token && sa.profile.name === 'alice', 'register alice');
-  b.send({ t: 'register', name: 'alice', password: 'x1234' });
+  check(!!sa.token && sa.profile.name === ALICE, 'register alice');
+  b.send({ t: 'register', name: ALICE, password: 'x1234' });
   check((await b.next('auth_error')).error.includes('taken'), 'duplicate name refused');
-  b.send({ t: 'register', name: 'bob', password: 'pw1234' });
+  b.send({ t: 'register', name: BOB, password: 'pw1234' });
   check((await b.next('session')).profile.matches === 0, 'register bob');
   const c2 = await client();
-  c2.send({ t: 'login', name: 'bob', password: 'nope' });
+  c2.send({ t: 'login', name: BOB, password: 'nope' });
   check(!!(await c2.next('auth_error')).error, 'wrong password refused');
   c2.close();
 
@@ -105,12 +113,12 @@ try {
   check(hits[5].hp === 0 && hits[0].hp === 500, 'hits relayed with server HP');
   const ea = await a.next('match_end'), eb = await b.next('match_end');
   check(ea.result === 'win' && eb.result === 'loss' && ea.reason === 'ko', 'KO ends the match');
-  check(ea.profile.wins === 1 && ea.profile.favourite === 'Vesper' && eb.profile.losses === 1 && eb.profile.history[0].foe === 'alice', 'stats recorded');
+  check(ea.profile.wins === 1 && ea.profile.favourite === 'Vesper' && eb.profile.losses === 1 && eb.profile.history[0].foe === ALICE, 'stats recorded');
 
   // Queue: carol and dave meet through matchmaking; same hero waits.
   const c = await client(), d = await client();
-  c.send({ t: 'register', name: 'carol', password: 'pw1234' });
-  d.send({ t: 'register', name: 'dave', password: 'pw1234' });
+  c.send({ t: 'register', name: CAROL, password: 'pw1234' });
+  d.send({ t: 'register', name: DAVE, password: 'pw1234' });
   await c.next('session'); await d.next('session');
   c.send({ t: 'queue_join', hero: 'Lyra' });
   check((await c.next('queue')).on === true, 'carol queued');
@@ -121,7 +129,7 @@ try {
   await d.next('queue');
   d.send({ t: 'queue_join', hero: 'Vex' });
   const qc = await c.next('match_start'), qd = await d.next('match_start');
-  check(qc.foe.name === 'dave' && qd.foe.hero === 'Lyra', 'queue pairs two different heroes');
+  check(qc.foe.name === DAVE && qd.foe.hero === 'Lyra', 'queue pairs two different heroes');
   d.send({ t: 'match_leave' });
   const fc = await c.next('match_end');
   check(fc.result === 'win' && fc.reason === 'forfeit', 'forfeit ends the match');

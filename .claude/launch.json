@@ -29,6 +29,15 @@
         "server/standalone.mjs"
       ],
       "port": 8787
+    },
+    {
+      "name": "cf-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "wrangler",
+        "dev"
+      ],
+      "port": 8788
     }
   ]
 }

@@ -19,7 +19,9 @@ the winner, and writes the stats the profile page shows. The editor stays at `/`
 |---|---|
 | `npm run dev` | Vite on 5173: the editor at `/`, the game at `/game.html`, the game server at `ws://…/ws` (attached by a Vite plugin; the plugin also hooks `vite preview`, untested) |
 | `npm run build` then `npm run game:server` | the standalone server on 8787 (`PORT=…` to change): serves `dist/` and `/ws`; open `http://localhost:8787/` |
-| `npm run test:server` | `server/smoke-test.mjs`: two socket clients through register, lobby, queue, fight, KO, forfeit, resume (no browser) |
+| `npm run test:server` | `server/smoke-test.mjs`: two socket clients through register, lobby, queue, fight, KO, forfeit, resume (no browser); `node server/smoke-test.mjs ws://host/ws` tests a running server |
+| `npm run cf:dev` | the Cloudflare version locally (Workers runtime, no account needed): `http://localhost:8788/` |
+| `npm run cf:deploy` | publish to Cloudflare (after `npx wrangler login`), see [Cloudflare](#cloudflare) |
 
 Two players on one machine: open `/game.html` in two windows (or two tabs) and create two accounts. A tab in the
 background keeps simulating (see *Background tabs*). Players on a LAN open the host's address instead.
@@ -42,7 +44,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | Transport | One WebSocket (`ws` 8.18.3, the only new dependency) on the page's own host at `/ws`. The Vite plugin in `vite.config.ts` attaches it to the dev / preview server, filtering upgrades by path so Vite's HMR socket is untouched. |
 | Authority | **Server referee, client-owned heroes.** The server owns sessions, lobbies, pairing, match start (countdown), HP, the winner and the stats. Each client owns its own hero's movement and casts, and decides the hits *its own hero* takes: it replays the other side's cast locally and runs the duel's impact-time dodge check where its hero really stood. That keeps "walk out of the red" fair for the dodger and needs no headless effect simulation on the server. |
 | Trust | Fine for friends on one machine or a LAN, not cheat-proof: a modified client could ignore its hits or skip cooldowns. The server clamps positions into the ring, drops casts before the countdown ends, and caps one reported hit at 250. |
-| Accounts | `server/data/accounts.json` (git-ignored), names 3-16 `[A-Za-z0-9_-]`, passwords 4-64 characters hashed with `crypto.scrypt` and a per-user salt. No e-mail, no external auth, nothing leaves the machine. |
+| Accounts | Names 3-16 `[A-Za-z0-9_-]`, passwords 4-64 characters hashed with PBKDF2-SHA256 (Web Crypto, 100 000 iterations, per-user salt; accounts from before the port used scrypt and are re-hashed at their next login, Node only). Stored in `server/data/accounts.json` (git-ignored) on Node, in the Durable Object's SQLite storage on Cloudflare. No e-mail, no external auth. |
 | Sessions | A random token per sign-in, kept in memory on the server (a server restart means logging in again) and in **`sessionStorage`** on the client: per tab, so two tabs of one browser can be two players. One connection per account: a second sign-in signs the first out. |
 | Same hero | Not allowed in one match (the client has one effect instance per spell label). The lobby greys out the other seat's hero and the server refuses `ready` with it; the queue only pairs different heroes. |
 | Scene reuse | `game.html` has `<body data-mode="game">` and imports `src/main.ts`, which then hides the lil-gui panel and stats line and skips the editor hotkeys. `main.ts` exports `gameApi` (arena, hero mode, duel, kits, `setHeroMode`, `setKit`). No second render pipeline. |
@@ -51,8 +53,10 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 
 | File | Role |
 |---|---|
-| `server/game-server.mjs` | `attachGameServer(httpServer, { path, dataFile, log })`: sessions, lobbies, queue, matches, the message handlers |
-| `server/accounts.mjs` | `Accounts`: register, login, `record` a match, `profile` (stats, favourite hero, history of 20) |
+| `server/hub.mjs` | `createHub({ accounts, log })`: the runtime-free core (sessions, lobbies, queue, matches, the message handlers); `connect(send)` returns `{ message, closed }`; messages of one connection run one at a time |
+| `server/accounts.mjs` | `Accounts(store)`: register, login, `record` a match, `profile` (stats, favourite hero, history of 20); `store` is `{ load(), put(key, account) }` |
+| `server/game-server.mjs` | Node host: `attachGameServer(httpServer, { path, dataFile, log })` (`ws` + `fileStore`: every write re-reads the file and replaces one account, so servers sharing the file don't clobber each other) |
+| `worker/index.mjs`, `wrangler.jsonc` | Cloudflare host: the Worker and the `GameHub` Durable Object (see [Cloudflare](#cloudflare)) |
 | `server/standalone.mjs` | http server for `dist/` plus the game server (port 8787) |
 | `server/smoke-test.mjs` | the socket-level end-to-end test |
 | `game.html` | the second Vite entry (`build.rollupOptions.input` has `editor` and `game`) |
@@ -147,6 +151,33 @@ Every obstacle is a capsule on the ground (segment + radius; a pillar has zero l
   behind a pillar after the cast is not a dodge by itself). In a network match the caster's client checks sight;
   the receiving client trusts the relayed cast.
 
+## Cloudflare
+
+Cloudflare Pages alone only serves static files, so the game is published as a **Worker with static assets and a
+Durable Object** (the same Workers product family; the free plan covers SQLite-backed Durable Objects within its
+daily limits, check Cloudflare's pricing page):
+
+| Piece | What it does |
+|---|---|
+| Worker `arena-of-kits` (`worker/index.mjs`) | `/` redirects to `/game.html` (the game is the front page; the editor stays at `/index.html`); `/ws` goes to the hub; every other path is a file from `dist/` (`assets.run_worker_first: ["/ws", "/"]`) |
+| Durable Object `GameHub` | one instance (`idFromName('main')`) so every player meets in one place; runs `createHub` from `server/hub.mjs`; WebSockets with `accept()` (no hibernation: the object stays in memory while players are connected) |
+| Storage | table `accounts (key, json)` in the object's SQLite storage; loaded once when the object starts, one row written per change |
+| Lost on eviction | sessions (players log in again), open lobbies and the queue; a running match keeps the object alive |
+
+Deploy (once per machine: a free Cloudflare account and `npx wrangler login` in a browser):
+
+```
+npm run cf:deploy
+```
+
+It builds (`tsc` + Vite), uploads `dist/` and the Worker, and prints the address
+(`https://arena-of-kits.<account>.workers.dev`). A custom domain is added in the Cloudflare dashboard.
+`npm run cf:dev` runs the same setup locally on 8788 (state in `.wrangler/`, git-ignored).
+
+Verified locally (2026-10-29, wrangler 4.150.0): the smoke test's 20 checks against `ws://localhost:8788/ws`; a two-tab
+queue match (Isolde vs Brannoc, 24.6 s) with stats on both sides; accounts and stats still there after a restart.
+Not yet deployed.
+
 ## Background tabs
 
 `requestAnimationFrame` stops in a background tab (and in a hidden browser pane), which would freeze that player's
@@ -168,8 +199,8 @@ background timers to about once a second, so a hidden tab catches up in bigger b
 ## Limits and next steps
 
 - Not cheat-proof (see *Trust*); no reconnect into a running match (a reload forfeits).
-- Several servers on one data file (two dev ports, the standalone server) merge accounts on save; the last write
-  wins per account, and sessions and lobbies are per server (both players must use the same one).
+- Several servers on one data file (two dev ports, the standalone server) write one account at a time; the last
+  write wins per account, and sessions and lobbies are per server (both players must use the same one).
 - One match per player at a time; no spectators, no rematch button (back to the menu, queue again).
 - Mirror matches need a second effect instance per spell label (`castAs` in main.ts).
 - Projectiles fly through pillars visually; sight is only checked at the cast.

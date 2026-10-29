@@ -1,69 +1,66 @@
-// Local accounts for the duel game: one JSON file (server/data/accounts.json, git-ignored), scrypt password
-// hashes, and the stats the profile page shows. No external auth, no e-mail, nothing leaves this machine.
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+// Local accounts for the duel game and the stats the profile page shows. Storage is pluggable so the same code runs
+// in Node (a JSON file, `fileStore` in game-server.mjs) and in a Cloudflare Durable Object (its SQLite storage,
+// worker/index.mjs). Passwords: PBKDF2-SHA256 through Web Crypto (in both runtimes), per-user salt. No external auth.
 
 const NAME_RE = /^[A-Za-z0-9_-]{3,16}$/;
 const HISTORY = 20;
+// Workers cap PBKDF2 at 100 000 iterations.
+const ITERATIONS = 100000;
 
 /**
  * @typedef {{ played: number, wins: number }} HeroStats
  * @typedef {{ at: string, hero: string, foe: string, foeHero: string, result: 'win' | 'loss', seconds: number, reason: string }} MatchRecord
- * @typedef {{ name: string, salt: string, hash: string, created: string, wins: number, losses: number, matches: number,
- *   heroes: Record<string, HeroStats>, history: MatchRecord[] }} Account
+ * @typedef {{ name: string, salt: string, hash: string, algo?: 'pbkdf2' | 'scrypt', created: string, wins: number, losses: number,
+ *   matches: number, heroes: Record<string, HeroStats>, history: MatchRecord[] }} Account
+ * @typedef {{ load(): Record<string, Account>, put(key: string, account: Account): void }} AccountStore
  */
 
 export class Accounts {
-  /** @param {string} file */
-  constructor(file) {
-    this.file = file;
+  /** @param {AccountStore} store */
+  constructor(store) {
+    this.store = store;
     /** @type {Record<string, Account>} keyed by lower-case name */
-    this.users = {};
-    if (existsSync(file)) {
-      try { this.users = JSON.parse(readFileSync(file, 'utf8')).users ?? {}; }
-      catch (e) { console.error(`[game] could not read ${file}, starting empty`, e); }
-    }
+    this.users = store.load();
   }
 
-  save() {
-    mkdirSync(dirname(this.file), { recursive: true });
-    // Several servers can share one file (the dev server, a second dev port, the standalone one): keep accounts
-    // another server added since we loaded. Accounts this server knows are written as it has them.
-    if (existsSync(this.file)) {
-      try {
-        const disk = JSON.parse(readFileSync(this.file, 'utf8')).users ?? {};
-        for (const [key, account] of Object.entries(disk)) if (!this.users[key]) this.users[key] = /** @type {Account} */ (account);
-      } catch { /* unreadable: overwrite with what we have */ }
-    }
-    const tmp = `${this.file}.tmp`;
-    writeFileSync(tmp, JSON.stringify({ users: this.users }, null, 2));
-    renameSync(tmp, this.file);
+  /** @param {Account} a */
+  save(a) {
+    this.store.put(a.name.toLowerCase(), a);
   }
 
-  /** @param {string} name @param {string} password @returns {{ account?: Account, error?: string }} */
-  register(name, password) {
+  /** @param {string} name @param {string} password @returns {Promise<{ account?: Account, error?: string }>} */
+  async register(name, password) {
     if (typeof name !== 'string' || !NAME_RE.test(name)) return { error: 'Name: 3-16 letters, digits, _ or -' };
     if (typeof password !== 'string' || password.length < 4 || password.length > 64) return { error: 'Password: 4-64 characters' };
     const key = name.toLowerCase();
     if (this.users[key]) return { error: 'That name is taken' };
-    const salt = randomBytes(16).toString('hex');
+    const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
     /** @type {Account} */
     const account = {
-      name, salt, hash: hash(password, salt), created: new Date().toISOString(),
+      name, salt, hash: await pbkdf2(password, salt), algo: 'pbkdf2', created: new Date().toISOString(),
       wins: 0, losses: 0, matches: 0, heroes: {}, history: [],
     };
+    if (this.users[key]) return { error: 'That name is taken' }; // registered while we hashed
     this.users[key] = account;
-    this.save();
+    this.save(account);
     return { account };
   }
 
-  /** @param {string} name @param {string} password @returns {{ account?: Account, error?: string }} */
-  login(name, password) {
+  /** @param {string} name @param {string} password @returns {Promise<{ account?: Account, error?: string }>} */
+  async login(name, password) {
     const account = typeof name === 'string' ? this.users[name.toLowerCase()] : undefined;
     if (!account || typeof password !== 'string') return { error: 'Wrong name or password' };
-    const a = Buffer.from(account.hash, 'hex'), b = Buffer.from(hash(password, account.salt), 'hex');
-    if (a.length !== b.length || !timingSafeEqual(a, b)) return { error: 'Wrong name or password' };
+    if (account.algo === 'pbkdf2') {
+      if (!same(account.hash, await pbkdf2(password, account.salt))) return { error: 'Wrong name or password' };
+      return { account };
+    }
+    // Accounts made before the Cloudflare port used Node's scrypt: check it (Node only), then re-hash with PBKDF2.
+    const legacy = await scrypt(password, account.salt);
+    if (!legacy || !same(account.hash, legacy)) return { error: legacy ? 'Wrong name or password' : 'This account needs a new password' };
+    account.salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+    account.hash = await pbkdf2(password, account.salt);
+    account.algo = 'pbkdf2';
+    this.save(account);
     return { account };
   }
 
@@ -72,10 +69,7 @@ export class Accounts {
     return this.users[name.toLowerCase()];
   }
 
-  /**
-   * Records one finished match for a player.
-   * @param {string} name @param {MatchRecord} rec
-   */
+  /** Records one finished match for a player and stores the account. @param {string} name @param {MatchRecord} rec */
   record(name, rec) {
     const a = this.get(name);
     if (!a) return;
@@ -86,6 +80,7 @@ export class Accounts {
     if (rec.result === 'win') h.wins++;
     a.history.unshift(rec);
     a.history.length = Math.min(a.history.length, HISTORY);
+    this.save(a);
   }
 
   /** What the client sees (no hash or salt). @param {Account} a */
@@ -101,7 +96,33 @@ export class Accounts {
   }
 }
 
+/** @param {Uint8Array} bytes */
+export function hex(bytes) {
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 /** @param {string} password @param {string} salt */
-function hash(password, salt) {
-  return scryptSync(password, salt, 32).toString('hex');
+async function pbkdf2(password, salt) {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: ITERATIONS }, key, 256);
+  return hex(new Uint8Array(bits));
+}
+
+/** Node's scrypt for accounts from before the port; null where node:crypto has no scrypt. @param {string} password @param {string} salt */
+async function scrypt(password, salt) {
+  try {
+    const { scryptSync } = await import('node:crypto');
+    return scryptSync(password, salt, 32).toString('hex');
+  } catch {
+    return null;
+  }
+}
+
+/** Constant-time compare of two hex strings. @param {string} a @param {string} b */
+function same(a, b) {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return d === 0;
 }
