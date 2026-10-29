@@ -45,6 +45,8 @@ export interface MinionRig {
   animate(dt: number, pose: MinionPose): void;
   /** Frees geometry the look made for itself (not needed for shared geometry). */
   dispose?(): void;
+  /** Height of the HP bar above the feet (default 1.28, a turret 1.1); a taller look sets its own. */
+  barY?: number;
 }
 
 export type MinionLook = (kind: SummonKind, palette: MinionPalette) => MinionRig;
@@ -233,7 +235,7 @@ export class MinionFx extends Enemy {
     (this.barFill.material as THREE.MeshBasicMaterial).color.set(ownSide ? '#5fd46f' : '#e0503a');
     this.rig = look(kind, this.palette);
     this.holder.add(this.rig.root);
-    this.barY = kind === 'turret' ? 1.1 : 1.28;
+    this.barY = this.rig.barY ?? (kind === 'turret' ? 1.1 : 1.28);
     this.age = 0;
     this.dying = -1;
     this.holder.visible = true;

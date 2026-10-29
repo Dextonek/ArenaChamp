@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Hero roster
 
-Eleven hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
+Fourteen hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
 
 ## Roster
 
@@ -23,6 +23,9 @@ Eleven hero kits, each one character with four spells (Q, W, E and the R ultimat
 | Fenna | the Grove Warden | grove (`hero: grove`) | The spiral vine that blooms: thick green vines coil in spirals with leaf pairs, and at the end of every spiral a giant flower bursts open (a cup of cream petals with a pink rim and a pollen core), then sheds petals and pollen. | A living staff topped by a bloom, a cloak of layered leaves with a pale bark collar, and antler-like branches around her head. | [grove](grove.md) |
 | Auriel | the Dawn Paladin | dawn (`hero: dawn`) | Hard-light geometry: flat gold panels with crisp edges (hexagons, kite shields, blade shards) that click together into shapes and shatter into panels, lit by a white core line with a dark amber rim. | A sun disc with crisp rays, a halo ring above a helmed paladin in white and gold plate, and a raised blade. | [dawn](dawn.md) |
 | Marin | the Tide Dancer | tide (`hero: tide`) | The water ribbon: thick, smooth bands of clear blue water with a white foam crest that she swirls like a dancer's sash, throwing spinning droplets off the curls. | Sashes of water sweeping round her, a wave-blue wrap on the shoulders and a coral flower in her hair. | [tide](tide.md) |
+| Zephyr | the Wind Blade | sky (`hero: sky`) | The wind crescent: sharp pale sickle crescents with a hot leading edge and a thin dark inner edge, joined by thin spiral gust ribbons and blown leaves. | A big pale crescent behind her, gust ribbons streaming to the side, a mint scarf and a head with swept white hair and a pink blossom. | [sky](sky.md) |
+| Mortis | the Ossuary Lord | bone (`hero: bone`) | Bone architecture: chunky carved ivory ribs, vertebrae, skull-capped spires and cages with teal soulfire flickering in the joints. | A skull face under a dark hood with teal wisps, rib arcs over the chest and a skull-topped staff. | [bone](bone.md) |
+| Ada | the Artificer | clockwork (`hero: clockwork`) | The toothed gear: machined copper and brass gears, springs, chains and rivets, with cyan sparks jumping where the metal meets and steam from the joints. | A backpack of brass gears behind her shoulders, a cyan zigzag of electricity and a bobbed head with goggles pushed up on a leather cap. | [clockwork](clockwork.md) |
 
 Spell labels per hero:
 
@@ -39,16 +42,20 @@ Spell labels per hero:
 | Fenna | bloom lash | overgrowth | verdant ward | world blossom |
 | Auriel | radiant spear | aegis wall | halo of blades | judgement of dawn |
 | Marin | tide whip | whirlpool | undertow dance | leviathan's waltz |
+| Zephyr | gale edge | tailwind rush | cyclone guard | thousand winds |
+| Mortis | bone spear | grave call | ossuary ward | legion of the ossuary |
+| Ada | clockwork rivet shot | cog turret | gear field | gearfall |
 
 ## How the kits share structure
 
 - **One parts file per kit**: `src/effects/parts/<theme>.ts` exports a palette constant (numbers, plus a `_CSS` string twin such as `BLOOD` / `BLOOD_CSS`) and the kit's pooled parts. The spells import it directly.
-- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone), Shadow (moon grey), Grove (bark cream), Dawn (ivory) and Tide (foam).
+- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone), Shadow (moon grey), Grove (bark cream), Dawn (ivory) and Tide (foam), Sky (cloud), Bone (bone ivory) and Clockwork (steel).
 - **Spells**: `src/spells/targeted/<camelName>.ts`, each exporting `<camelName>Module` with `category: 'hero: <theme>'`, registered in `src/spells/targeted/index.ts`. Every hit passes the kit colour (`color: <PALETTE>_CSS.body`) so the arena hit flash matches.
 - **Kit data**: `HeroKit` has name, title, accent and foil colours, a canvas-drawn portrait, an optional model path, and a tuple of four `HeroSpell` (`key`, `label`, `name`, `range`, `cooldown`, `blurb`, canvas icon). The blood kit is inline in `src/heroes.ts`; the others are `src/kits/<theme>.ts`.
 - **Q, W, E are normal MOBA abilities** under the gameplay camera: the hit lands 0.4-0.8 s after the cast and the frame is clean by about 2 s (an E aura may run about 3 s). Q is a single-target or short-chain strike, W a ground zone, E a self aura (range 0, cast at once).
 - **R is the ultimate**: the biggest of the four, still under the gameplay camera (no cinematic, no letterbox), hit around 2.0-2.5 s, clean by 4.5 s, with one dead beat and one short impact frame. Ranges: Q 10-12, W 10-11, R 13-14; cooldowns: Q 2.5-3 s, W 6-8 s, E 9-10 s, R 20 s.
 - **Each kit has a signature shape** and a pale foil near its dark layer; shapes must read at gameplay distance (camera about 12-16 behind and 6-8 above). The shared look lessons are in [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md); the blood kit sheet [`blood-kit.md`](../../../pipeline/designs/blood-kit.md) is the template.
+- **Mechanics fields**: the wave 3 kits use the optional kit fields of the [combat mechanics](../../architecture/mechanics.md): `maxHp` and `melee` on the kit (Zephyr), `dash`, `cc`, `summon` and `aim: 'line'` on a spell, and `ctx.projectile` / `ctx.summon` / `ctx.shieldSelf` / `ctx.moveCaster` and `HitOptions.status` in the spell files.
 - **Models**: rigged figures on the Dao rig in `public/models/heroes/<theme>.glb`, built by [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) (one `LOOKS` entry per hero plus its props) and mapped by hero name in `src/heroes.ts`.
 
 ## Concept lineup
@@ -61,9 +68,13 @@ The concept for the wave 1 heroes (Kaia, Sefu and Nyx; vector source [`wave1_con
 
 ![Wave 1 concept: Kaia, Sefu and Nyx](../../heroes/wave1_concept.jpg)
 
-The concept for the newest three heroes (Fenna, Auriel and Marin; vector source [`wave2_concept.svg`](../../heroes/wave2_concept.svg)):
+The concept for the wave 2 heroes (Fenna, Auriel and Marin; vector source [`wave2_concept.svg`](../../heroes/wave2_concept.svg)):
 
 ![Wave 2 concept: Fenna, Auriel and Marin](../../heroes/wave2_concept.jpg)
+
+The concept for the newest three heroes (Zephyr, Mortis and Ada; vector source [`wave3_concept.svg`](../../heroes/wave3_concept.svg)):
+
+![Wave 3 concept: Zephyr, Mortis and Ada](../../heroes/wave3_concept.jpg)
 
 ## In-game sheet
 
@@ -86,6 +97,9 @@ The turnaround sheet of the same models is [`models_sheet.jpg`](../../heroes/mod
 - [Fenna, the Grove Warden](grove.md)
 - [Auriel, the Dawn Paladin](dawn.md)
 - [Marin, the Tide Dancer](tide.md)
+- [Zephyr, the Wind Blade](sky.md)
+- [Mortis, the Ossuary Lord](bone.md)
+- [Ada, the Artificer](clockwork.md)
 
 ## Balance (duel tournament)
 
@@ -105,10 +119,15 @@ Grand Transmutation twice). Ranges and cooldowns are in each hero's page.
 | Fenna | Bloom Lash 50 | Overgrowth 45 + 10, cd 7 s | Verdant Ward 2 × 15 | World Blossom 125 |
 | Auriel | Radiant Spear 50 | Aegis Wall 45 + 10, cd 7 s | Halo of Blades 2 × 13 | Judgement of Dawn 125 |
 | Marin | Tide Whip 50 | Whirlpool 45 + 10, cd 7 s | Undertow Dance 2 × 13 | Leviathan's Waltz 125 |
+| Zephyr | Gale Edge 40, cd 2.5 s | Tailwind Rush 45, knock-up 0.4 s, cd 7 s | Cyclone Guard 2 × 13 + 50 shield | Thousand Winds 125, knock-up 0.5 s |
+| Mortis | Bone Spear 50 (pierces) | Grave Call 15 + 2 skeletons, cd 9 s | Ossuary Ward 2 × 12 + 30 shield | Legion of the Ossuary 90 + 2 archers |
+| Ada | Rivet Shot 55 + slow (ricochets) | Cog Turret 20 + turret 12 per shot, cd 12 s | Gear Field 2 × 13 + slow | Gearfall 125 + root 1.2 s |
 
 Kaia, Sefu and Nyx were built inside the balance budget in `pipeline/designs/kit-common.md` and needed no tuning: in an
 8-hero tournament (3 fights per ordered pairing, 168 fights) every hero won 38–60% (Lyra 60%, Nyx 60%, Brannoc 55%,
 Kaia 55%, Vesper 52%, Vex 43%, Isolde 38%, Sefu 38%), within the noise of that sample.
+
+Zephyr, Mortis and Ada are the first kits built on the [combat mechanics](../../architecture/mechanics.md) (a melee hero with a dash and knock-ups, a summoner, a ranged control hero with slows, a turret and a root). Crowd control, shields and summons cost damage, so their numbers follow the "Mechanics budget" in `pipeline/designs/kit-common.md` (melee 700 HP and Q about 40; summoner spells with less damage; a ranged control Q of about 55). After those numbers the wave 3 tournament gave Zephyr 60%, Mortis 60% and Ada 56%.
 
 Measured with AI vs AI duels (run duel, every hero against every other, both sides on the same AI, both dodging)
 using [duel-tourney.js](../../../pipeline/tools/duel-tourney.js). Win rates, two runs of 100 fights:
@@ -130,6 +149,7 @@ between runs (the AI's strafing is random); judge balance on the totals of 100+ 
 ## See also
 
 - [Effect catalog](../effects.md)
+- [Combat mechanics](../../architecture/mechanics.md)
 - [Hero mode screenshots](../../spells/hero-mode_aim.jpg) and [ultimate](../../spells/hero-mode_ult.jpg)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

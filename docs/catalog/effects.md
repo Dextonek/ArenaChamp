@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Effect catalog
 
-Every effect registered in the Three.js VFX editor: **168 effects in 19 categories**, plus 13 test spells in a 20th (`test: mechanics`, 181 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
+Every effect registered in the Three.js VFX editor: **180 effects in 22 categories**, plus 13 test spells in a 23rd (`test: mechanics`, 193 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
 
 ## Counts
 
@@ -29,16 +29,19 @@ Every effect registered in the Three.js VFX editor: **168 effects in 19 categori
 | [hero: grove](#hero-grove) | 4 |
 | [hero: dawn](#hero-dawn) | 4 |
 | [hero: tide](#hero-tide) | 4 |
+| [hero: sky](#hero-sky) | 4 |
+| [hero: bone](#hero-bone) | 4 |
+| [hero: clockwork](#hero-clockwork) | 4 |
 | [weapons](#weapons) | 5 |
 | [weapon attacks](#weapon-attacks) | 5 |
 | [test: mechanics](#test-mechanics) | 13 (test spells, not counted below) |
-| **Total** | **168** (+ 13 test spells = 181 slots) |
+| **Total** | **180** (+ 13 test spells = 193 slots) |
 
 ## How to read the tables
 
 - **Targeting** is the `targeting` spec of the module: `enemy` (one target), `enemies` (shift-clicked or a nearest-neighbour chain, capped), `ground` (a spot, radius decides who is hit), `self` (centred on the caster). `fixed scene` effects have no targeting and play on the fixed demo scene.
 - **Length** is the constant `DURATION` (or `TOTAL`, or a stated "~N s") in the source. `settings-driven` means the length is the `duration` getter, computed from other constants or from the effect's settings (cast time, flight time and so on), so there is no single literal number. `loop` is an idle aura.
-- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the eleven hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
+- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the fourteen hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
 - Sheets in `docs/spells/` are contact sheets (frames over time) made by `pipeline/tools/contact-sheet.js`. A few effects also have per-frame images (`<name>_1-....jpg`) next to the sheet.
 - Descriptions are shortened from the source header; the header and the design note have the full timeline.
 
@@ -319,6 +322,39 @@ Every effect registered in the Three.js VFX editor: **168 effects in 19 categori
 | undertow dance | Water sashes circle Marin as she spins; twice they flare into a flat ring of water that splashes everything near. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/undertowDance.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
 | leviathan's waltz | The world darkens to a deep sea blue and a water serpent made of ribbons coils over the zone, rears up and dives through it in a crown of foam. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/leviathansWaltz.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
 
+## hero: sky
+
+4 effects. Zephyr, the Wind Blade. Hero kit, see [Sky](heroes/sky.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| gale edge | Two crossing wind crescents sweep the cone in front of Zephyr and shove everything in it back (melee swing). | enemy (cone r 3.2) | 1.2 s · hero kit Q | [source](../../src/spells/targeted/galeEdge.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
+| tailwind rush | She rides a gust ribbon to the spot (dash) and a spiral wind lifts everyone there off their feet (knock-up). | ground (r 2.5) | 1.6 s · hero kit W | [source](../../src/spells/targeted/tailwindRush.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
+| cyclone guard | A whirl of crescents wraps her in a 50 point shield; twice it flares out as a ring that cuts and shoves enemies near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/cycloneGuard.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
+| thousand winds | The world darkens to a pale storm teal and a cyclone of about 150 crescents closes over the zone; she dashes into its eye and the winds burst out, knocking everything up. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/thousandWinds.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
+
+## hero: bone
+
+4 effects. Mortis, the Ossuary Lord. Hero kit, see [Bone](heroes/bone.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| bone spear | A spear of vertebrae assembles beside Mortis and is thrown down a line as a piercing skillshot; it clatters apart at max range. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/boneSpear.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
+| grave call | The ground cracks open with teal light and two skeletons claw out among bone spires and fight for him for 6 s (summon). | ground (r 3) | 2.0 s · hero kit W | [source](../../src/spells/targeted/graveCall.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
+| ossuary ward | A cage of ribs grows round him with a 30 point shield; twice the ribs flex and fire a ring of bone shards at everything near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/ossuaryWard.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
+| legion of the ossuary | The world darkens to teal-black and a colossal skeletal hand rises, closes and slams the zone in a ring of bone spires; two skeleton archers climb out of the cracks (summon). | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/legionOfTheOssuary.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
+
+## hero: clockwork
+
+4 effects. Ada, the Artificer. Hero kit, see [Clockwork](heroes/clockwork.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| clockwork rivet shot | A spring-loaded launcher fires a spinning copper rivet down a line (skillshot); each hit slows the enemy and the rivet ricochets to the next. | ground (skillshot line, r 0.4) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/clockworkRivetShot.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
+| cog turret | Gears and a spring click together at the point into a brass turret (summon) that shoots whatever comes within 8 for 6 s. | ground (r 2) | 1.6 s · hero kit W | [source](../../src/spells/targeted/cogTurret.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
+| gear field | Three nested gears unfold round her; twice they lurch and an electric ring races out, hitting and slowing every enemy inside. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/gearField.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
+| gearfall | The world darkens to a warm iron dark and a colossal gear is lowered on chains, hangs for a dead beat and drops on the zone, rooting everything in it. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/gearfall.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
+
 ## test: mechanics
 
 13 effects. Tools for the combat mechanics engine, not hero spells: they live in `src/spells/targeted/`, are registered at the end of `targetedModules`, and are used by the hidden test kits (see [Combat mechanics](../architecture/mechanics.md#testing)). They have no design note, contact sheet or `forged.json` entry.
@@ -366,7 +402,7 @@ Every effect registered in the Three.js VFX editor: **168 effects in 19 categori
 ## See also
 
 - [Heroes: roster and shared structure](heroes/README.md)
-- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md), [Storm](heroes/storm.md), [Sand](heroes/sand.md), [Shadow](heroes/shadow.md), [Grove](heroes/grove.md), [Dawn](heroes/dawn.md), [Tide](heroes/tide.md)
+- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md), [Storm](heroes/storm.md), [Sand](heroes/sand.md), [Shadow](heroes/shadow.md), [Grove](heroes/grove.md), [Dawn](heroes/dawn.md), [Tide](heroes/tide.md), [Sky](heroes/sky.md), [Bone](heroes/bone.md), [Clockwork](heroes/clockwork.md)
 - [Docs home](../README.md)
 - [Art bible](../ART_BIBLE.md)
 - [VFX principles](../VFX_PRINCIPLES.md)

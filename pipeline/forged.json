@@ -1976,5 +1976,173 @@
     "selfTest": {
       "ok": true
     }
+  },
+  {
+    "label": "gale edge",
+    "file": "src/spells/targeted/galeEdge.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sky",
+    "slot": "Q",
+    "note": "sky hero kit (wave 3, combat mechanics), design pipeline/designs/kit-sky.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "tailwind rush",
+    "file": "src/spells/targeted/tailwindRush.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sky",
+    "slot": "W",
+    "note": "sky hero kit (wave 3, combat mechanics), design pipeline/designs/kit-sky.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "cyclone guard",
+    "file": "src/spells/targeted/cycloneGuard.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sky",
+    "slot": "E",
+    "note": "sky hero kit (wave 3, combat mechanics), design pipeline/designs/kit-sky.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "thousand winds",
+    "file": "src/spells/targeted/thousandWinds.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sky",
+    "slot": "R",
+    "note": "sky hero kit (wave 3, combat mechanics), design pipeline/designs/kit-sky.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "bone spear",
+    "file": "src/spells/targeted/boneSpear.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bone",
+    "slot": "Q",
+    "note": "bone hero kit (wave 3, combat mechanics), design pipeline/designs/kit-bone.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "grave call",
+    "file": "src/spells/targeted/graveCall.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bone",
+    "slot": "W",
+    "note": "bone hero kit (wave 3, combat mechanics), design pipeline/designs/kit-bone.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "ossuary ward",
+    "file": "src/spells/targeted/ossuaryWard.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bone",
+    "slot": "E",
+    "note": "bone hero kit (wave 3, combat mechanics), design pipeline/designs/kit-bone.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "legion of the ossuary",
+    "file": "src/spells/targeted/legionOfTheOssuary.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "bone",
+    "slot": "R",
+    "note": "bone hero kit (wave 3, combat mechanics), design pipeline/designs/kit-bone.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "clockwork rivet shot",
+    "file": "src/spells/targeted/clockworkRivetShot.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "clockwork",
+    "slot": "Q",
+    "note": "clockwork hero kit (wave 3, combat mechanics), design pipeline/designs/kit-clockwork.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "cog turret",
+    "file": "src/spells/targeted/cogTurret.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "clockwork",
+    "slot": "W",
+    "note": "clockwork hero kit (wave 3, combat mechanics), design pipeline/designs/kit-clockwork.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "gear field",
+    "file": "src/spells/targeted/gearField.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "clockwork",
+    "slot": "E",
+    "note": "clockwork hero kit (wave 3, combat mechanics), design pipeline/designs/kit-clockwork.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "gearfall",
+    "file": "src/spells/targeted/gearfall.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "clockwork",
+    "slot": "R",
+    "note": "clockwork hero kit (wave 3, combat mechanics), design pipeline/designs/kit-clockwork.md; 2-3 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
   }
 ]

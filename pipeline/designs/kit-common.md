@@ -10,6 +10,8 @@ kit follows its structure; what its review taught is written down here so the fi
 - Spells: `src/spells/targeted/<camelName>.ts`, each exporting `<camelName>Module` with `category: 'hero: <theme>'`.
 - Kit data: `src/kits/<theme>.ts` exporting `<theme>Kit: HeroKit` (type from `../heroes`), with canvas-drawn icons
   and a portrait in the kit's palette, like the blood entry in `src/heroes.ts`.
+- Names must be new: before naming a spell, grep `src/spells/targeted/` for the file name and the registered labels
+  (a wave 3 Q `rivetShot.ts` overwrote the forge kit's tracked file of the same name).
 - Do not edit shared files (`parts/index.ts`, `targeted/index.ts`, `heroes.ts`, `main.ts`, `heroMode.ts`,
   `blood.ts`): the reviewer registers and wires everything.
 
@@ -63,6 +65,13 @@ a melee summon is 2 units of 40 HP for 6 s at 6 damage per 1 s; a ranged summon 
 a turret is 1 unit of 80 HP for 6 s at 10 per 1.4 s, range 8. Cooldowns 9 s (melee), 12 s (turret), 20 s (ranged ultimate).
 At most 6 units per side. The AI shoots the hero first, and a unit only when nothing can be cast at the hero and the unit is
 within 2.5 m.
+
+## Mechanics budget (wave 3 tournament, 2026-10-29)
+Crowd control, shields and summons cost damage; a kit that adds them on top of the full damage budget wins 80-90%.
+- Melee: 700 HP (not 780), Q ~40 with cd 2.5; knock-ups ≤ 0.4 s on a W, ≤ 0.5 s on the R.
+- A summoner's own spells carry less damage: summon W hit ~15, E shield ~30, R ~90 (the units make up the rest).
+- A ranged control kit (slows, a root, a turret) needs a stronger Q (~55) and a turret at ~12 per shot.
+Wave 3 after these numbers: Zephyr 60%, Mortis 60%, Ada 56%.
 
 ## Verify
 `npx tsc --noEmit` clean for your files. No browser: the reviewer renders contact sheets and sends notes.

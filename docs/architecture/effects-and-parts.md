@@ -43,7 +43,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Core parts (`src/effects/parts/*.ts`)
 
-[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral, alchemy, grove, dawn and tide files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
+[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral, alchemy, grove, dawn, tide, sky, bone and clockwork files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
 
 | Part | File | What it is | Main methods / fields |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Hero-kit parts
 
-Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` / `GROVE` / `DAWN` / `TIDE` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`, `kit-grove.md`, `kit-dawn.md`, `kit-tide.md`).
+Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` / `GROVE` / `DAWN` / `TIDE` / `SKY` / `BONE` / `CLOCKWORK` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`, `kit-grove.md`, `kit-dawn.md`, `kit-tide.md`, `kit-sky.md`, `kit-bone.md`, `kit-clockwork.md`).
 
 ### Blood: [blood.ts](../../src/effects/parts/blood.ts)
 
@@ -171,6 +171,47 @@ Smooth water ribbons with a foam crest, droplets and crown splashes (foam as the
 | `SplashCrown` | foam crown splash on the floor | `burst(pos, size, life)` |
 | `WaterPool` | shallow ripple pool decal | `spread(center, radius, seconds)`, `ripple(pos)`, `drain(seconds)` |
 | `SerpentHead` | serpent head of the ultimate (foam mane, eye glints) | `place(pos, dir, scale, open)`, `hide()` |
+
+### Sky: [sky.ts](../../src/effects/parts/sky.ts)
+
+Flat wind crescents, thin gust ribbons, speed lines and blown leaves (cloud as the pale foil). Exports `SKY` / `SKY_CSS` and the `SlashOptions` type.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `WindCrescent` | pooled flat unlit sickles with a hot leading edge and needle tips | `slash(center, dir, radius, arcDeg, tilt, seconds, opts)`, `put(pos, yaw, tilt, radius, arcDeg, head, opacity, width, tone)` (immediate mode for swarms, call every frame after `update`); `frozen` holds time for a dead beat |
+| `GustRibbon` | thin spiral gust band with a hot centre line | `spiral(center, radius, height, turns, seconds, width)`, `along(points, width, seconds)`, `setFunction(fn, width, head, tail, time, opacity)`, `hide()` |
+| `SpeedLines` | pale streaks | `burst(pos, dir, count, length)`, `sweep(a, b, count, length, minLife)` |
+| `Leaves` | tumbling two-tone leaves | `spawn(pos, vel, life, size)`, `blow(pos, dir, count, speed)` |
+
+### Bone: [bone.ts](../../src/effects/parts/bone.ts)
+
+Chunky ivory bone architecture with teal soulfire (bone ivory as the pale foil). Exports `BONE` / `BONE_CSS`, the shared `boneChunkGeometry` and `boneMaterial`, and `skeletonLook`.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `BoneSpire` | stack of tapering bone segments, optionally skull-capped | `grow(pos, height, seconds, lean, leanAngle, delay)`, `crumble(seconds, delay)` |
+| `SoulWisps` | small teal teardrop flames | `attach(pos, count, spread, size)`, `puff(pos, count, spread, size)`, `release()` |
+| `BoneDust` | pale dust puffs | `burst(pos, count, speed, size)`, `ring(center, radius, count, size)` |
+| `BoneShards` | flying bone chips | `shoot(pos, vel, life, size, g)`, `burst(pos, count, speed, up, size)`, `ring(center, count, radius, seconds, y, size)` |
+| `GroundCracks` | cracked-floor decal with teal light | `spread(center, radius, seconds)`, `fade(seconds)` |
+| `BoneLance` | the vertebra spear | `assemble(center, dir, k)`, `place(center, dir)`, `hide()` |
+| `RibCage` | the ward's cage of curved ribs | `set(center, radius, height, grow, flex, crumble, spin)`, `pointAt(rib, s, flex, out)`, `hide()` |
+| `BoneHand` | colossal skeletal hand of the ultimate | `place(base, wrist, face, pitch, curl, spread, time, scale)`, `hide()` |
+| `skeletonLook` | a `MinionLook` ([mechanics](mechanics.md#the-look-pluggable-partsminionts)): a small skeleton about 0.9 high; `melee` carries a blade, `ranged` a bow, a `turret` falls back to the default look | pass as `look` in `SummonOptions` |
+
+### Clockwork: [clockwork.ts](../../src/effects/parts/clockwork.ts)
+
+Machined copper and brass gears, springs and chains with cyan sparks (steel as the pale foil). Exports `CLOCKWORK` / `CLOCKWORK_CSS`, `gearGeometry`, `teethFor` and `turretLook`.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Gear` | pooled flat toothed gears (`GearOptions`) | `place(pos, normal, radius, spin, opts)`, `assemble(seconds)`, `move(i, pos, normal)`, `setRate`, `setRadius`, `kick(i, angle)`, `hide(i)`, `fold(seconds)`, `scatter(speed, life, origin)` |
+| `Spring` | coiled spring | `set(from, to, coils, radius)`, `stretch(k)`, `hide()` |
+| `Sparks` | cyan sparks | `arc(a, b, life)`, `burst(pos, count)`, `ring(center, radius, count, y)` |
+| `SteamPuffs` | pale steam | `puff(pos, dir, count)` |
+| `Chain` | hanging chain between two points | `set(a, b)`, `hide()` |
+| `Rivet` | the spinning copper rivet | `place(pos, dir, spin)`, `hide()` |
+| `turretLook` | a `MinionLook` ([mechanics](mechanics.md#the-look-pluggable-partsminionts)): a brass tripod, a spinning gear body, a short barrel and a cyan lens; other unit kinds fall back to the default look | pass as `look` in `SummonOptions` |
 
 ## Shared helpers: [common.ts](../../src/effects/common.ts)
 

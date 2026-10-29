@@ -126,6 +126,24 @@ LOOKS = {
                  female=True, slim=True, qixiong=True, pleats=True, hair="braid", hair_color="#2a8a7a", headwear=False,
                  skin="#c89878", eye_glow="#7fe8ff", sleeve="narrow", pendant=False,
                  props={"coral_clip": {}, "wrist_rings": {}, "water_sashes": {}}),
+    # Zephyr, the Wind Blade (melee): a white and mint wrap coat with a split skirt, wrapped legs, windswept
+    # pale-teal hair under a mint headband; a long mint scarf streaming in the wind and a slim curved sword.
+    "sky": dict(robe="#dff0ea", inner="#eef3f6", trim=("#7fe6c8", "#0d2a2a"), sash="#0d2a2a", over="#9fd8c6",
+                slim=True, short=True, leg_wraps=True, hair="loose", strands=True, hair_color="#bfe8de",
+                headwear="band", skin="#e6c4a2", eye_glow="#7fe6c8", sleeve="narrow", over_gap=0.3, pendant=False,
+                props={"wind_scarf": {}, "curved_sword": {}}),
+    # Mortis, the Ossuary Lord: a tall tattered grave robe in grey and teal, a deep hood with a teal edge, a
+    # ribcage mantle over the chest, skulls on the shoulders and a staff topped with a skull with soulfire eyes.
+    "bone": dict(robe="#5a6664", inner="#2a4a44", trim=("#3fd8b8", "#1c2422"), sash="#1c2422", over="#6a7472",
+                 tattered=True, hair="shaved", headwear=False, pendant=False, skin="#b8b2a4", eye_glow="#3fd8b8",
+                 sleeve="narrow", over_gap=0.3,
+                 props={"bone_hood": {}, "rib_mantle": {}, "shoulder_skulls": {}, "skull_staff": {}}),
+    # Ada, the Artificer: a copper long coat over a dark vest with steel buttons, auburn hair, brass goggles pushed
+    # up on the forehead, a backpack of brass gears and a spring-loaded wrist launcher with a cyan lens.
+    "clockwork": dict(robe="#c06a34", inner="#2a1a10", trim=("#c9a24a", "#1a0f08"), sash="#1a0f08", over="#a85a2a",
+                      female=True, slim=True, hair="loose", hair_color="#8a3a1a", headwear=False, skin="#e6c4a2",
+                      eye_glow="#6affea", sleeve="rolled", over_gap=0.3, pendant=False,
+                      props={"goggles": {}, "gear_backpack": {}, "wrist_launcher": {}}),
 }
 
 
@@ -590,6 +608,129 @@ class HeroFigure(figure_kit.Figure):
                 pts.append(Vector((r * math.cos(a), r * 0.85 * math.sin(a), z)))
             self.add(kit.chain(f"Sash{k}", pts, [(0.032, 0.012)] * len(pts), water, seg=6), PELVIS)
             self.add(kit.blob(f"SashFoam{k}", pts[-1], (0.03, 0.03, 0.02), foam, (8, 6)), PELVIS)
+
+
+    # ---- sky --------------------------------------------------------------------------------------------
+    def wind_scarf(self):
+        """A long mint scarf wrapped at the neck, its tail streaming out to his right and back as if in wind."""
+        mint = self._mat("scarf", "#7fe6c8", roughness=0.6, double_sided=True)
+        self.add(kit.torus("ScarfWrap", Vector((0, 0.0, 1.5)), 0.085, 0.03, mint, seg=(24, 8)), CHEST)
+        pts = []
+        for i in range(14):
+            t = i / 13
+            pts.append(Vector((-0.06 - 0.75 * t, 0.06 + 0.25 * t, 1.5 - 0.08 * t + 0.07 * math.sin(t * 7))))
+        self.add(kit.chain("ScarfTail", pts, [(0.05, 0.012)] * len(pts), mint, seg=6), CHEST)
+
+    def curved_sword(self):
+        """A slim curved sword held low in his right hand, pale steel with a mint edge."""
+        steel = self._mat("blade", "#eef3f6", metallic=0.7, roughness=0.25)
+        edge = self._mat("bladeedge", "#7fe6c8", roughness=0.4, emission="#7fe6c8", strength=1.2)
+        grip = self._mat("swordgrip", "#0d2a2a", roughness=0.6)
+        g = Vector((-0.3, -0.1, 0.84))
+        self.add(kit.tube("SwordGrip", g + Vector((0, 0, 0.1)), g, [(0, 0.014, 0.014), (1, 0.014, 0.014)], grip, seg=6), HAND["R"])
+        self.add(kit.torus("SwordGuard", g, 0.03, 0.008, edge, seg=(16, 6)), HAND["R"])
+        blade = [g + Vector((-0.06 * math.sin(t * 1.3), -0.02 - 0.1 * t * t, -0.72 * t)) for t in [i / 8 for i in range(9)]]
+        self.add(kit.chain("SwordBlade", blade, [(0.022, 0.006)] * 8 + [(0.002, 0.002)], steel, seg=4), HAND["R"])
+        self.add(kit.chain("SwordEdge", [b + Vector((0.012, 0, 0)) for b in blade[1:-1]], [0.004] * 7, edge, seg=4), HAND["R"])
+
+    # ---- bone -------------------------------------------------------------------------------------------
+    def bone_hood(self):
+        """A deep grave hood open at the face, with a thin teal edge."""
+        cloth = self._mat("hood", "#3a4442", roughness=0.9, double_sided=True)
+        edge = self._mat("hoodedge", "#3fd8b8", roughness=0.5, emission="#3fd8b8", strength=0.8)
+        top = Vector((0, 0.02, 1.64))
+        face = lambda co: not (co.y < -0.04 and abs(co.x) < 0.075 and -0.11 < co.z < 0.06)  # noqa: E731
+        self.add(kit.blob("Hood", top + Vector((0, 0.012, 0.015)), (0.115, 0.125, 0.135), cloth, (24, 16), keep=face), HEAD)
+        rim = [top + Vector((0.08 * math.sin(a), -0.12, 0.012 + 0.1 * math.cos(a))) for a in [i * math.pi / 8 - math.pi * 0.65 for i in range(15)]]
+        self.add(kit.chain("HoodEdge", rim, [0.006] * len(rim), edge, seg=5), HEAD)
+        self.add(kit.blob("HoodDrape", Vector((0, 0.06, 1.47)), (0.16, 0.1, 0.07), cloth, (16, 10)), CHEST)
+
+    def rib_mantle(self):
+        """A ribcage worn over the chest: a sternum and three pairs of curved ribs of uneven length."""
+        bone = self._mat("bone", "#ece4d0", roughness=0.75)
+        self.add(kit.tube("Sternum", Vector((0, -0.16, 1.44)), Vector((0, -0.17, 1.2)), [(0, 0.02, 0.012), (1, 0.016, 0.01)], bone, seg=6), CHEST)
+        for k, (z, w, d) in enumerate([(1.42, 0.17, 0.045), (1.34, 0.16, 0.04), (1.26, 0.14, 0.036)]):
+            for side, sx in SIDES:
+                pts = [Vector((0.015 * sx, -0.165, z)), Vector((w * 0.55 * sx, -0.16, z - 0.012)), Vector((w * 1.02 * sx, -0.1, z - 0.045)),
+                       Vector((w * 1.1 * sx, -0.02, z - 0.08))]
+                self.add(kit.chain(f"Rib{side}{k}", pts, [0.018, 0.017, 0.015, 0.01], bone, seg=6), CHEST)
+
+    def shoulder_skulls(self):
+        bone = self._mat("bone", "#ece4d0", roughness=0.75)
+        soul = self._mat("soulfire", "#3fd8b8", roughness=0.4, emission="#3fd8b8", strength=2.0)
+        dark = self._mat("socket", "#1c140c", roughness=0.9)
+        for side, sx in SIDES:
+            c = Vector((0.21 * sx, -0.02, 1.5))
+            self.add(kit.blob(f"ShoulderSkull{side}", c, (0.07, 0.075, 0.065), bone, (14, 10)), ARM[side])
+            self.add(kit.box(f"ShoulderJaw{side}", c + Vector((0, -0.035, -0.045)), (0.06, 0.035, 0.025), bone, bevel=0.006), ARM[side])
+            for ex in (-0.02, 0.02):
+                e = c + Vector((ex, -0.05, 0.005))
+                self.add(kit.blob(f"ShoulderSocket{side}{ex}", e, (0.014, 0.008, 0.014), dark, (8, 6)), ARM[side])
+                self.add(kit.blob(f"ShoulderEye{side}{ex}", e + Vector((0, -0.004, 0)), (0.007, 0.005, 0.007), soul, (6, 4)), ARM[side])
+
+    def skull_staff(self):
+        """A bone staff in his right hand topped with a skull whose eyes burn with teal soulfire."""
+        bone = self._mat("bone", "#ece4d0", roughness=0.75)
+        soul = self._mat("soulfire", "#3fd8b8", roughness=0.4, emission="#3fd8b8", strength=2.0)
+        dark = self._mat("socket", "#1c140c", roughness=0.9)
+        a, b = Vector((-0.31, -0.11, 0.05)), Vector((-0.33, -0.13, 1.84))
+        self.add(kit.tube("Staff", a, b, [(0, 0.016, 0.016), (1, 0.018, 0.018)], bone, seg=8), HAND["R"])
+        for k, z in enumerate((0.6, 1.1, 1.5)):
+            q = a.lerp(b, (z - a.z) / (b.z - a.z))
+            self.add(kit.torus(f"StaffKnuckle{k}", q, 0.022, 0.009, bone, seg=(14, 6)), HAND["R"])
+        sk = b + Vector((0, 0, 0.075))
+        self.add(kit.blob("StaffSkull", sk, (0.07, 0.075, 0.07), bone, (16, 12)), HAND["R"])
+        self.add(kit.box("StaffJaw", sk + Vector((0, -0.035, -0.06)), (0.075, 0.045, 0.03), bone, bevel=0.008), HAND["R"])
+        for ex in (-0.026, 0.026):
+            e = sk + Vector((ex, -0.062, 0.008))
+            self.add(kit.blob(f"StaffSocket{ex}", e, (0.018, 0.01, 0.018), dark, (8, 6)), HAND["R"])
+            self.add(kit.blob(f"StaffEye{ex}", e + Vector((0, -0.005, 0)), (0.01, 0.006, 0.01), soul, (6, 4)), HAND["R"])
+
+    # ---- clockwork --------------------------------------------------------------------------------------
+    def _gear(self, name, c, radius, teeth, thick, body, hub, bone, axis=(0, 1, 0)):
+        self.add(kit.torus(f"{name}Rim", c, radius * 0.82, radius * 0.16, body, seg=(32, 8), axis=axis), bone)
+        self.add(kit.blob(f"{name}Hub", c, (radius * 0.28, radius * 0.28, radius * 0.28), hub, (12, 8)), bone)
+        for k in range(teeth):
+            ang = k * 2 * math.pi / teeth
+            d = Vector((math.cos(ang), 0, math.sin(ang)))
+            self.add(kit.box(f"{name}Tooth{k}", c + d * radius, (radius * 0.22, thick, radius * 0.22), body, bevel=0.002,
+                             rotation=Euler((0, -ang, 0))), bone)
+        for k in range(4):
+            ang = k * math.pi / 2 + 0.4
+            d = Vector((math.cos(ang), 0, math.sin(ang)))
+            self.add(kit.tube(f"{name}Spoke{k}", c + d * radius * 0.25, c + d * radius * 0.72,
+                              [(0, radius * 0.07, radius * 0.07), (1, radius * 0.06, radius * 0.06)], body, seg=5), bone)
+
+    def gear_backpack(self):
+        """A backpack of meshing brass and copper gears on her back."""
+        brass = self._mat("brass", "#c9a24a", metallic=0.7, roughness=0.35)
+        copper = self._mat("copper", "#d9773a", metallic=0.7, roughness=0.35)
+        iron = self._mat("iron", "#1a0f08", metallic=0.5, roughness=0.6)
+        self.add(kit.box("Pack", Vector((0, 0.15, 1.3)), (0.24, 0.08, 0.28), iron, bevel=0.02), CHEST)
+        self._gear("GearBig", Vector((-0.13, 0.2, 1.52)), 0.17, 12, 0.035, brass, iron, CHEST)
+        self._gear("GearSmall", Vector((0.17, 0.2, 1.6)), 0.1, 9, 0.035, copper, iron, CHEST)
+        self._gear("GearLow", Vector((0.08, 0.2, 1.2)), 0.06, 8, 0.03, brass, iron, CHEST)
+
+    def goggles(self):
+        brass = self._mat("brass", "#c9a24a", metallic=0.7, roughness=0.35)
+        lens = self._mat("lens", "#6affea", roughness=0.1, emission="#6affea", strength=1.5)
+        strap = self._mat("strap", "#2a1a10", roughness=0.8)
+        self.add(kit.torus("GoggleStrap", Vector((0, 0.01, 1.72)), 0.1, 0.008, strap, seg=(28, 6)), HEAD)
+        for ex in (-0.04, 0.04):
+            c = Vector((ex, -0.09, 1.74))
+            self.add(kit.torus(f"Goggle{ex}", c, 0.028, 0.009, brass, seg=(16, 6)), HEAD)
+            self.add(kit.blob(f"GoggleLens{ex}", c, (0.022, 0.006, 0.022), lens, (10, 6)), HEAD)
+
+    def wrist_launcher(self):
+        """A spring-loaded launcher on her left forearm: a brass box, a coiled steel spring and a cyan lens."""
+        brass = self._mat("brass", "#c9a24a", metallic=0.7, roughness=0.35)
+        steel = self._mat("steel", "#d8dde2", metallic=0.8, roughness=0.3)
+        lens = self._mat("lens", "#6affea", roughness=0.1, emission="#6affea", strength=1.5)
+        c = Vector((0.28, -0.06, 1.02))
+        self.add(kit.box("Launcher", c, (0.07, 0.09, 0.07), brass, bevel=0.01), FORE["L"])
+        self.add(kit.blob("LauncherLens", c + Vector((0, -0.05, 0)), (0.022, 0.008, 0.022), lens, (10, 6)), FORE["L"])
+        coil = [c + Vector((0.045 + 0.02 * math.cos(t * 10), 0.02 * math.sin(t * 10), -0.03 - 0.1 * t)) for t in [i / 24 for i in range(25)]]
+        self.add(kit.chain("LauncherSpring", coil, [0.005] * len(coil), steel, seg=5), FORE["L"])
 
 
 def _reload():

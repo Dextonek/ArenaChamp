@@ -119,6 +119,18 @@ import { radiantSpearModule } from './radiantSpear';
 import { aegisWallModule } from './aegisWall';
 import { haloOfBladesModule } from './haloOfBlades';
 import { judgementOfDawnModule } from './judgementOfDawn';
+import { galeEdgeModule } from './galeEdge';
+import { tailwindRushModule } from './tailwindRush';
+import { cycloneGuardModule } from './cycloneGuard';
+import { thousandWindsModule } from './thousandWinds';
+import { clockworkRivetShotModule } from './clockworkRivetShot';
+import { cogTurretModule } from './cogTurret';
+import { gearFieldModule } from './gearField';
+import { gearfallModule } from './gearfall';
+import { boneSpearModule } from './boneSpear';
+import { graveCallModule } from './graveCall';
+import { ossuaryWardModule } from './ossuaryWard';
+import { legionOfTheOssuaryModule } from './legionOfTheOssuary';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -235,6 +247,18 @@ export const targetedModules: EffectModule[] = [
   aegisWallModule,
   haloOfBladesModule,
   judgementOfDawnModule,
+  galeEdgeModule,
+  tailwindRushModule,
+  cycloneGuardModule,
+  thousandWindsModule,
+  clockworkRivetShotModule,
+  cogTurretModule,
+  gearFieldModule,
+  gearfallModule,
+  boneSpearModule,
+  graveCallModule,
+  ossuaryWardModule,
+  legionOfTheOssuaryModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

@@ -57,6 +57,9 @@ in small details.
 | Grove (foil: bark cream `#e8dcc0`) | `#fffbe0` | `#ffe36a` | `#4caf50` | `#ff7ab8` | `#14260f` |
 | Dawn (foil: ivory `#efe6d2`) | `#fffdf2` | `#ffe7a0` | `#f2b83c` | `#7fd8ff` | `#3a2408` |
 | Tide (foil: foam `#eaf8fb`) | `#ffffff` | `#bff2ff` | `#1f9fd6` | `#ff9a6a` | `#05253a` |
+| Sky (foil: cloud `#eef3f6`) | `#ffffff` | `#e6fff6` | `#7fe6c8` | `#ff8fb0` | `#0d2a2a` |
+| Bone (foil: bone `#ece4d0`) | `#f4fffb` | `#b8fff0` | `#3fd8b8` | `#ff5a3a` | `#0a1412` |
+| Clockwork (foil: steel `#d8dde2`) | `#ffffff` | `#ffd08a` | `#d9773a` | `#6affea` | `#1a0f08` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

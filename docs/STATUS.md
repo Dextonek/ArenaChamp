@@ -288,7 +288,13 @@ _Last updated: 2026-10-29_
     parts page, art bible palettes, forged.json (123 entries).
     `duel-tourney.js` now yields through a MessageChannel: the hidden pane throttled its `setTimeout` waits to ~1/min.
     A run longer than 45 s must be started without awaiting it (push results to a window array, read it later).
-  - Wave 3: sky (Zephyr), bone (Mortis), clockwork (Ada)
+  - Wave 3 DONE (first kits on the combat mechanics): sky (Zephyr, melee: dash, knock-ups, shield), bone (Mortis,
+    summoner: pierce skillshot, skeletons, archers), clockwork (Ada, ranged control: bouncing skillshot + slow, turret,
+    root). Reviewed 2-3 rounds (sky's giant crescent and bone's hand needed measuring); concept
+    `docs/heroes/wave3_concept.svg/.jpg`; models `sky/bone/clockwork.glb`; `MinionRig.barY` added for tall unit looks.
+    First tournament Zephyr 92%, Mortis 82%, Ada 26%; after the mechanics budget (kit-common.md) 60 / 60 / 56%
+    (each × 13 opponents × 3 × both sides). Sweep 193/193 (known quirk only). Q of Ada is `clockwork rivet shot`
+    (forge owns `rivet shot`).
   - Wave 4: prism (Opaline), hive (Sirix), bard (Cantor) · Wave 5: void (Oblivion), ink (Shiori), chrono (Tempo)
 - **Combat mechanics** (user 2026-10-29; plan `pipeline/designs/mechanics.md`; used by waves 3-5 only, the 11 existing
   heroes stay as they are). Engine built in 4 steps, uncommitted:
