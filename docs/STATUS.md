@@ -251,7 +251,7 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
-- Uncommitted: the documentation knowledge base and the 1v1 duel. Branch `feat/particle-editor` has no remote; latest
+- Nothing uncommitted. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
   commits 6329099 four hero kits, models, switcher; fa60c09 blood kit, hero mode; earlier a7f26de, 60ec4cb,
   108ce68, d89f0b7, a4b9d65.
 
