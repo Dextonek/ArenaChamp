@@ -238,7 +238,7 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
-- Uncommitted: four hero kits (16 spells), hero models, hero switcher. Last commit fa60c09 (blood kit, hero mode). Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
+- Nothing uncommitted. 6329099 four hero kits, hero models, hero switcher; fa60c09 blood kit, hero mode. Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
   60ec4cb three cinematic heroes; a7f26de seven more cinematic heroes.
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
