@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-10-28_
+_Last updated: 2026-10-29_
 
 ## Done
 - Vite + TypeScript + Three.js scaffold, exact versions pinned (three 0.186.1, vite 8.3.5, typescript 7.0.2).
@@ -194,6 +194,32 @@ _Last updated: 2026-10-28_
   `docs/spells/` (lunar-tide, iaido, angler, world-tree, supercell, hourglass, midnight-circus). 124 effects
   registered; the full `selfTest` sweep passes. One real bug found and fixed on the way: a GLSL variable named
   `flat` (reserved) broke Lunar Tide's moon-glow shader on first compile.
+- **Blood hero kit (Vesper, the Crimson Countess)**, the first four-spell hero kit, MOBA style (user: Q/W/E are
+  normal abilities, R is the ultimate, all under the gameplay camera). Kit sheet `pipeline/designs/blood-kit.md`
+  (palette, shapes, materials, timings), new art-bible palette row "Blood" (foil: bone). Shared parts in
+  `src/effects/parts/blood.ts`: `BLOOD`/`BLOOD_CSS`, `BloodTendril`, `BloodDrops` (+`BloodSplats`), `BloodPool`,
+  `BloodThorns` (`shatter(perSpike, speed, life)`), `BloodSigil` (`inner: false` hides the centre marks).
+  Spells (category `hero: blood`): **hemolance** (Q, `enemy`, hit 0.55 s), **thorn garden** (W, `ground` 4.5,
+  hit 0.75 s), **crimson pact** (E, `self` 6, two heartbeats, loopable), **sanguine eclipse** (R, `ground` 7,
+  bleeding moon, blood sphere freezes into a thorn-star, hit 2.4 s, 4.5 s total). 2-3 contact-sheet rounds each;
+  sheets in `docs/spells/` (hemolance, thorn-garden, crimson-pact, sanguine-eclipse). 128 effects registered;
+  the full `selfTest` sweep passes.
+- **Hero mode (H, or View → hero mode)**: a MOBA-style test of a hero kit on top of play mode. Click (or
+  right-click) the ground to walk there; Q/W/E/R aim (range ring at the hero, a strip to the hovered enemy for
+  single-target spells, the area circle at the cursor clamped to range for ground spells), click casts, right-click
+  / Esc / the same key cancels; self spells (Crimson Pact) cast at once. An enemy out of range: the hero walks into
+  range, then casts. Rooted until the spell's impact (from its danger zones). HUD: portrait and name, four slots with
+  canvas icons, key badges, cooldown sweep and seconds, tooltips; R is the gold ultimate slot. Fixed top-down follow
+  camera, wheel zoom. Enemies keep HP between casts and respawn 4 s after dying. Kits are data in `src/heroes.ts`
+  (blood kit: Q hemolance r11 cd2.5, W thorn garden r10 cd6, E crimson pact self cd9, R sanguine eclipse r13 cd20);
+  code in `src/heroMode.ts`, Arena got `setTarget`, `setGroundPoint`, `liveFoes`, `pickEnabled`, `persist`.
+  Verified by driving it in the browser (move, aim, cast each slot, kills and respawn); screenshots
+  `docs/spells/hero-mode_aim.jpg`, `docs/spells/hero-mode_ult.jpg`. Sweep still 128/128.
+  Spells overlap: in hero mode an earlier cast that is still playing when a new spell is cast keeps updating and
+  drawing until it ends (`lingering` in `main.ts`); shake is the max over live effects, distortion covers all of
+  them, and one screen-feedback state is picked per frame (`pickScreen`). Editor and play mode still play one
+  effect at a time. Verified W then Q 0.3 s apart: both visible, both hit (50 and 60), Thorn Garden dropped when it
+  ended. Fresh sweep 128/128.
 
 ## In progress
 - Nothing.
@@ -202,12 +228,21 @@ _Last updated: 2026-10-28_
 - Nothing.
 
 ## Waiting on you
-- Nothing uncommitted. Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion,
-  43 spells; 60ec4cb three cinematic heroes; a7f26de seven more cinematic heroes.
+- Uncommitted: the blood hero kit (four spells, `blood.ts`, designs, sheets, forged entries) and hero mode. Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
+  60ec4cb three cinematic heroes; a7f26de seven more cinematic heroes.
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
 
 ## Known look issues (small)
+- Hero mode: a hero who walks during Crimson Pact leaves the heart behind; the follow camera centres on the hero, so
+  the ultimate's moon sits at the top edge unless you zoom out with the wheel. With overlapping spells, only the
+  newest one's danger zones are drawn, and one screen-feedback state wins per frame (an impact frame, else the
+  strongest darken/whiteout).
+- Sweep flake (2026-10-29, not reproduced): one sweep run reported errors for abyssal angler, supercell, world tree
+  rising, hourglass of ages and midnight circus; the error text was not captured. Each passed alone, the same chunk
+  passed when re-run, and a fresh full sweep passed 128/128. If it comes back, capture `r.errors[0]`.
+- Thorn garden: the thicket thorns still read a little thin from far away.
+- Sanguine eclipse: the blood sphere keeps a small specular highlight.
 - World tree rising: the 6.2-8 s canopy shot frames only the upper tree (the 17-21.8 s wide shot shows the full scale).
 - Supercell: the enemies take a light violet tint from the arena hit flash during the vortex ticks.
 - Thousand-cut iaido: the 2.8 s blade glint star is still a bit large.

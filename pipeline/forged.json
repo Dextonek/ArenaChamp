@@ -1340,5 +1340,81 @@
       "singularFrames": 0,
       "nanFrames": 0
     }
+  },
+  {
+    "label": "hemolance",
+    "file": "src/spells/targeted/hemolance.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "blood",
+    "slot": "Q",
+    "note": "blood hero kit (Vesper), design pipeline/designs/blood-kit.md; reviewed with contact sheets",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0.35,
+      "zones": 1,
+      "arenaHits": 1,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "thorn garden",
+    "file": "src/spells/targeted/thornGarden.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "blood",
+    "slot": "W",
+    "note": "blood hero kit (Vesper), design pipeline/designs/blood-kit.md; reviewed with contact sheets",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0.45,
+      "zones": 1,
+      "arenaHits": 2,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "crimson pact",
+    "file": "src/spells/targeted/crimsonPact.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "blood",
+    "slot": "E",
+    "note": "blood hero kit (Vesper), design pipeline/designs/blood-kit.md; reviewed with contact sheets",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0,
+      "zones": 1,
+      "arenaHits": 4,
+      "singularFrames": 0
+    }
+  },
+  {
+    "label": "sanguine eclipse",
+    "file": "src/spells/targeted/sanguineEclipse.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "blood",
+    "slot": "R",
+    "note": "blood hero kit (Vesper), design pipeline/designs/blood-kit.md; reviewed with contact sheets",
+    "selfTest": {
+      "ok": true,
+      "frames": 390,
+      "maxShake": 0.602,
+      "zones": 1,
+      "arenaHits": 4,
+      "singularFrames": 0
+    }
   }
 ]

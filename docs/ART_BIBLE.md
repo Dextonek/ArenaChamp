@@ -46,6 +46,7 @@ in small details.
 | Solar / holy | `#fffbe8` | `#ffe39a` | `#f2b53c` | `#6fe0ff` | `#2a1a06` |
 | Void / shadow | `#f0d8ff` | `#d68cff` | `#8a2ee0` | `#ff3fa0` | `#07030c` |
 | Spiderlily (phoenix fan) | `#fff4d6` | `#ffb547` | `#ff5fa8` | `#7a2a8c` | `#2a0f2e` |
+| Blood (foil: bone `#e9dcc6`) | `#fff1e6` | `#ff3b4e` | `#8c0f22` | `#bff4ff` | `#140306` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.
@@ -137,6 +138,9 @@ When something new is made and is better than these, swap it in here.
 | huge sky objects (moon, tree, hourglass): an establishing shot that shows the whole object and tiny enemies for scale | cameras that only ever frame part of the big object |
 | water and translucent sheets small and around the subject, faded near the camera | sheets big enough to become walls between the camera and the subject |
 | cloud sprites with transparent margins and lumpy edges, 2-3 soft value bands | textures that fill the quad (straight rectangle edges) or many even stripes |
+| liquid blood: dark crimson body, dark fresnel rim, one thin hot rim line, a pinpoint specular, a pale foil (bone sigil, moon) near it | a big white highlight on a smooth red sphere (it reads as a billiard ball or a cherry) |
+| drips and runs with uneven widths and lengths, rounded tips with a bead | a regular comb of identical drips (it reads as teeth or a saw blade) |
+| a hero kit: one shared parts file, one palette row, one signature shape in every spell, a scale ladder Q → R | four spells built from prose alone (four different bloods) |
 
 ## 6. Taste calls I made (tell me if any is wrong)
 - **How anime:** impact frames and focus lines only on finishers and big hits; everyday moves stay clean.

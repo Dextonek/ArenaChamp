@@ -16,9 +16,12 @@ import { TelegraphLayer, type TelegraphSpec } from './effects/telegraph';
 import { PlayerDummy } from './player';
 import { Arena } from './arena';
 import { Hotbar } from './hotbar';
+import { HeroMode } from './heroMode';
+import { HERO_KITS } from './heroes';
 import { CASTER_POS } from './effects/common';
 import type { Effect, EffectModule } from './effects/types';
 import { DISTORT_LAYER } from './effects/parts/distortion';
+import type { ScreenFx } from './effects/parts/screen';
 
 const container = document.getElementById('app')!;
 
@@ -161,6 +164,12 @@ interface EffectSlot {
 }
 const slots = new Map<string, EffectSlot>(effectModules.map((m) => [m.label, { module: m }]));
 let active: EffectSlot | undefined;
+/**
+ * Hero mode only: earlier casts that are still playing when a new spell becomes `active`. They keep updating and
+ * drawing until they finish, so spells overlap like in a MOBA. Everywhere else one effect plays at a time.
+ */
+const lingering = new Set<EffectSlot>();
+let keepLingering = false;
 
 // Danger zones + the player dummy that has to dodge them. The clock restarts whenever the active effect plays.
 const telegraphs = new TelegraphLayer();
@@ -251,7 +260,12 @@ fView.add(view, 'showGrid').name('grid').onChange((v: boolean) => (grid.visible 
 fView.add(view, 'restart');
 const gameplay = { zones: true, player: false };
 const playMode = { on: false };
-fView.add(playMode, 'on').name('play mode (P)').onChange((v: boolean) => setPlayMode(v));
+fView.add(playMode, 'on').name('play mode (P)').onChange((v: boolean) => {
+  if (!v && heroMode.enabled) setHeroMode(false);
+  else setPlayMode(v);
+});
+const heroState = { on: false };
+const heroCtrl = fView.add(heroState, 'on').name('hero mode (H)').onChange((v: boolean) => setHeroMode(v));
 fView.add(gameplay, 'zones').name('danger zones').onChange((v: boolean) => (telegraphs.group.visible = v));
 fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => {
   if (v && playMode.on) setPlayMode(false);
@@ -329,8 +343,10 @@ function ensureEffect(slot: EffectSlot): Effect | undefined {
 
 function setMode() {
   const next = slots.get(mode.name);
+  if (keepLingering && active && active !== next && active.effect?.playing) lingering.add(active);
+  if (next) lingering.delete(next);
   for (const slot of slots.values()) {
-    if (slot.effect) slot.effect.group.visible = false;
+    if (slot.effect && !lingering.has(slot)) slot.effect.group.visible = false;
     slot.folder?.show(false);
   }
   active = next;
@@ -375,8 +391,12 @@ window.addEventListener('keydown', (e) => {
     active.effect.play();
   }
   const digit = /^Digit([1-5])$/.exec(e.code);
-  if (digit && !e.repeat) hotbar.cast(Number(digit[1]) - 1);
-  if (e.code === 'KeyP' && !e.repeat) setPlayMode(!playMode.on);
+  if (digit && !e.repeat && !heroMode.enabled) hotbar.cast(Number(digit[1]) - 1);
+  if (e.code === 'KeyP' && !e.repeat) {
+    if (heroMode.enabled) setHeroMode(false);
+    else setPlayMode(!playMode.on);
+  }
+  if (e.code === 'KeyH' && !e.repeat) setHeroMode(!heroMode.enabled);
 });
 
 /**
@@ -406,7 +426,7 @@ hotbar.setVisible(false);
 const walkKeys = new Set<string>();
 const WALK_KEYS = ['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'];
 window.addEventListener('keydown', (e) => {
-  if (!playMode.on || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+  if (!playMode.on || heroMode.enabled || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
   const k = e.key.toLowerCase();
   if (WALK_KEYS.includes(k)) { walkKeys.add(k); e.preventDefault(); }
 });
@@ -431,6 +451,73 @@ function setPlayMode(on: boolean) {
   }
   lastCaster.copy(arena.caster.group.position);
   setMode();
+}
+
+// --- Hero mode: a MOBA-style test of one hero kit (click to move, Q/W/E/R aim and cast in range) -----------
+// It runs on top of play mode (no auto-framing, effects follow the caster) with its own camera and HUD.
+const heroMode = new HeroMode(
+  {
+    arena,
+    camera,
+    dom: renderer.domElement,
+    targeting: (label) => slots.get(label)?.module.targeting,
+    cast: (label) => {
+      selectMode(label);
+      // Rooted until the spell lands: the latest danger-zone impact, else a short default.
+      const impact = zones.length ? Math.max(...zones.map((z) => z.impact)) : 0.4;
+      return Math.min(impact, 2.5);
+    },
+  },
+  HERO_KITS[0],
+);
+scene.add(heroMode.group);
+
+function setHeroMode(on: boolean) {
+  if (on === heroMode.enabled) return;
+  heroState.on = on;
+  heroCtrl.updateDisplay();
+  keepLingering = on;
+  if (!on) dropLingering();
+  if (on) {
+    setPlayMode(true);
+    hotbar.setVisible(false);
+    arena.reset();
+    controls.enabled = false;
+    heroMode.setEnabled(true);
+  } else {
+    heroMode.setEnabled(false);
+    controls.enabled = true;
+    setPlayMode(false);
+    arena.reset();
+  }
+}
+
+function dropLingering() {
+  for (const slot of lingering) if (slot.effect) slot.effect.group.visible = false;
+  lingering.clear();
+}
+
+/** The active effect plus the lingering ones that are still on screen. */
+function liveEffects(): Effect[] {
+  const out: Effect[] = [];
+  if (active?.effect?.group.visible) out.push(active.effect);
+  for (const slot of lingering) if (slot.effect?.group.visible) out.push(slot.effect);
+  return out;
+}
+
+/**
+ * One screen-feedback state for the frame when several effects overlap: an impact frame wins, else the one doing
+ * the most (darken, whiteout, focus lines, ...).
+ */
+function pickScreen(effects: Effect[]): ScreenFx | undefined {
+  let best: ScreenFx | undefined, bestScore = -1;
+  for (const e of effects) {
+    const fx = e.screen;
+    if (!fx) continue;
+    const score = (fx.impact > 0 ? 10 : 0) + fx.darken + fx.whiteout + fx.speedLines + fx.desaturate + fx.chroma + fx.crack;
+    if (score > bestScore) { best = fx; bestScore = score; }
+  }
+  return best;
 }
 
 const lastCaster = new THREE.Vector3();
@@ -485,10 +572,18 @@ const shakeOffset = new THREE.Vector3();
 function step(dt: number) {
   if (!active) emitter.update(dt);
   else active.effect?.update(dt);
+  for (const slot of lingering) {
+    slot.effect?.update(dt);
+    if (!slot.effect?.playing) {
+      if (slot.effect) slot.effect.group.visible = false;
+      lingering.delete(slot);
+    }
+  }
   effectClock += dt;
   telegraphs.update(effectClock);
-  if (playMode.on) walk(dt);
+  if (playMode.on && !heroMode.enabled) walk(dt);
   if (arena.group.visible) arena.update(dt);
+  heroMode.update(dt);
   player.update(dt, effectClock, zones);
 }
 
@@ -504,8 +599,7 @@ let distortActive = false;
 /** Renders the distortion layer into its target; skipped (and the pass bypassed) when nothing is on that layer. */
 function renderDistortion() {
   let any = false;
-  const root = active?.effect?.group;
-  if (root?.visible) root.traverseVisible((o) => { if (!any && o.layers.mask === 1 << DISTORT_LAYER) any = true; });
+  for (const e of liveEffects()) e.group.traverseVisible((o) => { if (!any && o.layers.mask === 1 << DISTORT_LAYER) any = true; });
   distortPass.uniforms.uOn.value = any ? 1 : 0;
   if (!any && !distortActive) return;
   distortActive = any;
@@ -562,11 +656,12 @@ function render() {
     camera.updateProjectionMatrix();
   }
   // Camera shake: offset only for this frame so OrbitControls keeps the real position.
-  const shake = active?.effect?.shake ?? 0;
+  const live = liveEffects();
+  const shake = live.reduce((m, e) => Math.max(m, e.shake), 0);
   shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
   camera.position.add(shakeOffset);
   finish.update(shake);
-  const fx = active?.effect?.group.visible ? active.effect.screen : undefined;
+  const fx = pickScreen(live);
   if (fx) {
     _focus.copy(fx.focus).project(camera);
     focusUv.set(_focus.x * 0.5 + 0.5, _focus.y * 0.5 + 0.5);
@@ -611,7 +706,7 @@ renderer.setAnimationLoop(() => {
   // Clamp so a backgrounded tab doesn't dump one huge step on return.
   const rawDt = Math.min(clock.getDelta(), 0.1);
   if (!view.paused) step(rawDt * view.timeScale);
-  controls.update();
+  if (!heroMode.enabled) controls.update();
   render();
   const dur = (active?.effect as { duration?: number } | undefined)?.duration;
   hotbar.setProgress(playMode.on && dur && active?.effect?.playing ? effectClock / dur : null);
@@ -625,6 +720,8 @@ renderer.setAnimationLoop(() => {
       ? `${fps} fps · ${emitter.aliveCount} particles`
       : active.error
         ? `${active.module.label} failed to build: ${active.error}`
+        : heroMode.enabled
+          ? `${fps} fps · hero mode · ${active.module.label} · click ground = move · Q W E R = aim, click = cast · wheel = zoom · H exit · hits ${arena.hits} · kills ${arena.kills}`
         : playMode.on
           ? `${fps} fps · ${active.module.label} · WASD walk · drag = camera · 1–5 cast · click enemy / ground to target · P exit · hits ${arena.hits} · kills ${arena.kills}`
           : `${fps} fps · ${active.module.label} · space = replay · P = play mode` +

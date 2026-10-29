@@ -68,6 +68,10 @@ import { midnightCircusModule } from './midnightCircus';
 import { neonFractureJabModule } from './neonFractureJab';
 import { prismOvertureModule } from './prismOverture';
 import { crimsonRequiemModule } from './crimsonRequiem';
+import { hemolanceModule } from './hemolance';
+import { thornGardenModule } from './thornGarden';
+import { crimsonPactModule } from './crimsonPact';
+import { sanguineEclipseModule } from './sanguineEclipse';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -140,6 +144,10 @@ export const targetedModules: EffectModule[] = [
   worldTreeRisingModule,
   hourglassOfAgesModule,
   midnightCircusModule,
+  hemolanceModule,
+  thornGardenModule,
+  crimsonPactModule,
+  sanguineEclipseModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

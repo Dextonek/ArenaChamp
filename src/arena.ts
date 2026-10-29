@@ -20,6 +20,8 @@ interface Foe {
   offset: THREE.Vector3;
   displaced: THREE.Vector3;
   dead: number; // seconds since death, -1 = alive
+  /** Where it stood when the pack was built (hero mode respawns it here). */
+  spawn: THREE.Vector3;
   ring: THREE.Mesh;
   bar: THREE.Group;
   barFill: THREE.Mesh;
@@ -37,6 +39,14 @@ export class Arena {
   kills = 0;
   /** Called after a click changed the selection (main replays the effect). */
   onPick?: () => void;
+  /** Clicks pick targets. Hero mode turns this off and sets targets through `setTarget` / `setGroundPoint`. */
+  pickEnabled = true;
+  /**
+   * Hero mode: HP, deaths and knockback carry over from cast to cast (no reset in `context`), and dead enemies
+   * respawn at their spawn spot after `respawnAfter` seconds.
+   */
+  persist = false;
+  respawnAfter = 4;
 
   private foes: Foe[] = [];
   private selected: Foe[] = [];
@@ -67,7 +77,7 @@ export class Arena {
     let down: { x: number; y: number } | undefined;
     dom.addEventListener('pointerdown', (e) => { down = e.button === 0 ? { x: e.clientX, y: e.clientY } : undefined; });
     dom.addEventListener('pointerup', (e) => {
-      if (!down || !this.group.visible) return;
+      if (!down || !this.group.visible || !this.pickEnabled) return;
       const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
       down = undefined;
       if (moved < 5) this.pick(e.clientX, e.clientY, e.shiftKey);
@@ -98,6 +108,7 @@ export class Arena {
       }
       placed.push(p);
       f.home.copy(p);
+      f.spawn.copy(p);
       f.figure.setHome(p);
     }
     this.reset();
@@ -106,6 +117,24 @@ export class Arena {
   clearSelection() {
     this.selected = [];
     this.groundPoint = undefined;
+  }
+
+  /** Makes `target` the only selected enemy (null clears the selection). */
+  setTarget(target: Enemy | null) {
+    const f = target ? this.foes.find((x) => x.figure === target) : undefined;
+    this.selected = f ? [f] : [];
+    if (f) this.groundPoint = undefined;
+  }
+
+  /** Aims at a ground spot (null clears it). Clears the enemy selection. */
+  setGroundPoint(p: THREE.Vector3 | null) {
+    this.groundPoint = p ? p.clone().setY(0) : undefined;
+    if (p) this.selected = [];
+  }
+
+  /** The enemies that are alive, with where they stand right now. */
+  liveFoes(): { figure: Enemy; pos: THREE.Vector3 }[] {
+    return this.foes.filter((f) => f.dead < 0).map((f) => ({ figure: f.figure, pos: f.figure.group.position }));
   }
 
   /** Everyone back to full HP, standing at home, no knockback or displacement. Selection stays. */
@@ -127,36 +156,46 @@ export class Arena {
     // Cast from wherever the caster stands now (it can be walked around in play mode).
     const from = this.caster.group.position.clone().setY(0);
     this.caster.setHome(from);
-    this.reset();
-    const byDist = (p: THREE.Vector3) => [...this.foes].sort((a, b) => a.home.distanceTo(p) - b.home.distanceTo(p));
+    if (this.persist) {
+      // Keep HP and deaths; fold the knockback into the home spot so `targetPos` is where they stand now.
+      this.caster.reset();
+      for (const f of this.foes) {
+        f.home.add(f.offset).setY(0);
+        f.offset.set(0, 0, 0);
+        f.displaced.set(0, 0, 0);
+        f.figure.setHome(f.home);
+      }
+    } else this.reset();
+    const pool = this.persist ? this.foes.filter((f) => f.dead < 0) : this.foes;
+    const byDist = (p: THREE.Vector3) => [...pool].sort((a, b) => a.home.distanceTo(p) - b.home.distanceTo(p));
     // No enemy clicked: the one nearest the clicked ground spot, else the one nearest the caster.
-    const primary = this.selected[0] ?? byDist(this.groundPoint ?? from)[0];
+    const primary = this.selected.find((f) => pool.includes(f)) ?? byDist(this.groundPoint ?? from)[0];
     let targets: Foe[] = [];
     let point: THREE.Vector3;
 
     switch (spec.mode) {
       case 'enemy':
-        targets = [primary];
-        point = primary.home.clone();
+        targets = primary ? [primary] : [];
+        point = primary ? primary.home.clone() : from.clone().add(new THREE.Vector3(0, 0, -6));
         break;
       case 'enemies': {
         const max = spec.maxTargets ?? 5;
         if (this.selected.length > 1) targets = this.selected.slice(0, max);
         else {
           // Nearest-neighbour chain from the primary target.
-          targets = [primary];
-          const rest = this.foes.filter((f) => f !== primary);
+          targets = primary ? [primary] : [];
+          const rest = pool.filter((f) => f !== primary);
           while (targets.length < max && rest.length) {
             const last = targets[targets.length - 1].home;
             rest.sort((a, b) => a.home.distanceTo(last) - b.home.distanceTo(last));
             targets.push(rest.shift()!);
           }
         }
-        point = targets[0].home.clone();
+        point = targets[0] ? targets[0].home.clone() : from.clone().add(new THREE.Vector3(0, 0, -6));
         break;
       }
       case 'ground': {
-        point = (this.groundPoint ?? primary.home).clone();
+        point = (this.groundPoint ?? primary?.home ?? from.clone().add(new THREE.Vector3(0, 0, -6))).clone();
         const r = spec.radius ?? 5;
         targets = byDist(point).filter((f) => f.home.distanceTo(point) <= r);
         break;
@@ -169,7 +208,7 @@ export class Arena {
       }
     }
     point.y = 0;
-    const aimAt = spec.mode === 'self' ? primary.home : point;
+    const aimAt = spec.mode === 'self' ? primary?.home ?? point.clone().add(new THREE.Vector3(0, 0, -1)) : point;
     this.caster.group.rotation.y = yawTo(from, aimAt);
 
     return {
@@ -226,6 +265,7 @@ export class Arena {
         f.figure.group.rotation.x = -k * 1.4;
         f.figure.group.position.y -= Math.max(0, f.dead - 0.5) * 1.5;
         f.figure.group.visible = f.dead < 1.8;
+        if (this.persist && f.dead > this.respawnAfter) this.respawn(f);
       }
       f.ring.position.set(f.figure.group.position.x, 0.05, f.figure.group.position.z);
       f.ring.visible = this.selected.includes(f) && f.figure.group.visible;
@@ -240,7 +280,7 @@ export class Arena {
       this.groundMarker.position.set(this.groundPoint.x, 0.05, this.groundPoint.z);
       this.groundMarker.rotation.z += dt;
     }
-    this.groundMarker.visible = !!this.groundPoint;
+    this.groundMarker.visible = !!this.groundPoint && this.pickEnabled;
     this.updateLabels(dt);
   }
 
@@ -272,6 +312,19 @@ export class Arena {
     this.overlay.style.display = on ? '' : 'none';
   }
 
+  private respawn(f: Foe) {
+    f.home.copy(f.spawn);
+    f.figure.setHome(f.spawn);
+    f.figure.reset();
+    f.hp = MAX_HP;
+    f.flash = 0;
+    f.dead = -1;
+    f.knock.set(0, 0, 0);
+    f.offset.set(0, 0, 0);
+    f.displaced.set(0, 0, 0);
+    this.selected = this.selected.filter((x) => x !== f);
+  }
+
   private makeFoe(home: THREE.Vector3): Foe {
     const figure = new Enemy().setHome(home);
     const ring = new THREE.Mesh(
@@ -289,7 +342,7 @@ export class Arena {
     this.group.add(figure.group, ring, bar);
     return {
       figure, home: home.clone(), hp: MAX_HP, flash: 0, flashTint: new THREE.Color(), knock: new THREE.Vector3(), offset: new THREE.Vector3(),
-      displaced: new THREE.Vector3(), dead: -1, ring, bar, barFill,
+      displaced: new THREE.Vector3(), dead: -1, spawn: home.clone(), ring, bar, barFill,
     };
   }
 

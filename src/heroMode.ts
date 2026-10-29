@@ -1,0 +1,437 @@
+import * as THREE from 'three';
+import type { Arena } from './arena';
+import type { Enemy } from './effects/common';
+import type { TargetingSpec } from './effects/targeting';
+import type { HeroKit, HeroSpell } from './heroes';
+
+/** What hero mode needs from main.ts. */
+export interface HeroModeHost {
+  arena: Arena;
+  camera: THREE.PerspectiveCamera;
+  dom: HTMLElement;
+  /** Targeting of a registered effect, undefined if the label is unknown or not targeted. */
+  targeting(label: string): TargetingSpec | undefined;
+  /** Casts the effect with the arena's current target; returns the seconds the hero is rooted (to the impact). */
+  cast(label: string): number;
+}
+
+const HERO_SPEED = 8;
+const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
+const HOVER_PICK = 2.2; // how close to the cursor an enemy counts as hovered
+
+type Target = { enemy: Enemy } | { point: THREE.Vector3 };
+
+/**
+ * A MOBA-style test mode for a hero kit: click the ground to walk there, Q/W/E/R to aim a spell (a range ring at
+ * the hero, a line for single-target spells, the area circle for ground spells), click to cast, right-click or Esc
+ * to cancel. Self-cast spells go off at once. Out-of-range targets: the hero walks into range, then casts. A fixed
+ * top-down camera follows the hero (wheel zooms). Enemies keep their HP between casts and respawn.
+ */
+export class HeroMode {
+  enabled = false;
+  readonly group = new THREE.Group();
+
+  private kit: HeroKit;
+  private cooldowns = [0, 0, 0, 0];
+  private rooted = 0;
+  private aiming = -1;
+  private moveTo: THREE.Vector3 | null = null;
+  private pending: { slot: number; target: Target } | null = null;
+  private zoom = 1.25;
+  private snapCamera = false;
+  private mouse = new THREE.Vector2(2, 2);
+  private cursor = new THREE.Vector3();
+  private hovered: Enemy | null = null;
+  private raycaster = new THREE.Raycaster();
+  private plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+  // Indicators.
+  private rangeRing: THREE.Mesh;
+  private areaRing: THREE.Mesh;
+  private areaFill: THREE.Mesh;
+  private aimLine: THREE.Mesh;
+  private hoverRing: THREE.Mesh;
+  private moveMarker: THREE.Mesh;
+  private moveMarkerT = 1;
+
+  // HUD.
+  private hud: HTMLDivElement;
+  private slotEls: { box: HTMLDivElement; shade: HTMLDivElement; secs: HTMLDivElement }[] = [];
+  private tip: HTMLDivElement;
+  private toast: HTMLDivElement;
+  private toastT = 0;
+
+  constructor(private host: HeroModeHost, kit: HeroKit) {
+    this.kit = kit;
+    const flat = (geo: THREE.BufferGeometry, color: string, opacity: number) => {
+      const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }));
+      m.rotation.x = -Math.PI / 2;
+      m.renderOrder = 5;
+      m.visible = false;
+      this.group.add(m);
+      return m;
+    };
+    this.rangeRing = flat(new THREE.RingGeometry(0.985, 1, 96), kit.foil, 0.45);
+    this.areaRing = flat(new THREE.RingGeometry(0.95, 1, 72), kit.accent, 0.85);
+    this.areaFill = flat(new THREE.CircleGeometry(1, 72), kit.accent, 0.12);
+    // Unit-length strip along +Y in the ring plane; after the flat rotation it points along -Z, scaled per frame.
+    this.aimLine = flat(new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), kit.accent, 0.28);
+    this.hoverRing = flat(new THREE.RingGeometry(0.95, 1.2, 48), kit.accent, 0.95);
+    this.moveMarker = flat(new THREE.RingGeometry(0.3, 0.42, 32), kit.foil, 0.9);
+    this.group.visible = false;
+
+    this.hud = this.buildHud();
+    this.tip = document.createElement('div');
+    this.tip.style.cssText =
+      'position:fixed;z-index:7;max-width:260px;padding:8px 10px;border-radius:6px;display:none;pointer-events:none;' +
+      `background:rgba(12,6,8,0.94);border:1px solid #4a1a22;color:#e9dcc6;font:12px/1.35 ui-sans-serif,system-ui;`;
+    this.toast = document.createElement('div');
+    this.toast.style.cssText =
+      'position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:7;pointer-events:none;opacity:0;' +
+      'font:700 14px ui-sans-serif,system-ui;color:#ffb0b8;text-shadow:0 2px 6px #000;';
+    document.body.append(this.tip, this.toast);
+
+    const dom = host.dom;
+    dom.addEventListener('pointermove', (e) => this.setMouse(e));
+    dom.addEventListener('pointerdown', (e) => {
+      if (!this.enabled) return;
+      // The click itself says where the cursor is (a click can come without a move before it).
+      this.setMouse(e);
+      this.updateCursor();
+      if (e.button === 0) {
+        if (this.aiming >= 0) this.confirm();
+        else this.order();
+      } else if (e.button === 2) {
+        if (this.aiming >= 0) this.cancelAim();
+        else this.order();
+      }
+    });
+    dom.addEventListener('contextmenu', (e) => { if (this.enabled) e.preventDefault(); });
+    dom.addEventListener('wheel', (e) => {
+      if (!this.enabled) return;
+      this.zoom = THREE.MathUtils.clamp(this.zoom * Math.exp(e.deltaY * 0.001), 0.55, 1.7);
+    }, { passive: true });
+    window.addEventListener('keydown', (e) => {
+      if (!this.enabled || e.repeat || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      const i = ['KeyQ', 'KeyW', 'KeyE', 'KeyR'].indexOf(e.code);
+      if (i >= 0) { e.preventDefault(); this.beginAim(i); }
+      if (e.code === 'Escape') this.cancelAim();
+    });
+  }
+
+  setEnabled(on: boolean) {
+    this.enabled = on;
+    this.group.visible = on;
+    this.hud.style.display = on ? 'flex' : 'none';
+    this.host.arena.pickEnabled = !on;
+    this.host.arena.persist = on;
+    this.host.dom.style.cursor = '';
+    this.aiming = -1;
+    this.moveTo = null;
+    this.pending = null;
+    this.cooldowns.fill(0);
+    this.rooted = 0;
+    if (on) { this.host.arena.clearSelection(); this.snapCamera = true; }
+  }
+
+  update(dt: number) {
+    if (!this.enabled) return;
+    const arena = this.host.arena;
+    const hero = arena.caster.group.position;
+    for (let i = 0; i < 4; i++) this.cooldowns[i] = Math.max(0, this.cooldowns[i] - dt);
+    this.rooted = Math.max(0, this.rooted - dt);
+
+    this.followCamera(hero, dt);
+    this.updateCursor();
+
+    // Walk toward the order (or into range of a pending cast).
+    if (this.pending) {
+      const spell = this.kit.spells[this.pending.slot];
+      const at = this.targetPos(this.pending.target);
+      if (!at) this.pending = null;
+      else if (flatDist(hero, at) <= spell.range) {
+        const p = this.pending;
+        this.pending = null;
+        this.castNow(p.slot, p.target);
+      } else this.moveTo = at.clone();
+    }
+    if (this.moveTo && this.rooted <= 0) {
+      const d = new THREE.Vector3(this.moveTo.x - hero.x, 0, this.moveTo.z - hero.z);
+      const len = d.length();
+      if (len < 0.05) this.moveTo = null;
+      else arena.walk(d.multiplyScalar(Math.min(1, (HERO_SPEED * dt) / len)));
+    }
+
+    this.updateIndicators(dt, hero);
+    this.updateHud(dt);
+  }
+
+  private setMouse(e: PointerEvent) {
+    const r = this.host.dom.getBoundingClientRect();
+    this.mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  }
+
+  /** Ground point under the mouse (the hero's feet if the ray misses the ground). */
+  private updateCursor() {
+    const cam = this.host.camera;
+    cam.updateMatrixWorld();
+    this.raycaster.setFromCamera(this.mouse, cam);
+    if (!this.raycaster.ray.intersectPlane(this.plane, this.cursor)) this.cursor.copy(this.host.arena.caster.group.position);
+    this.cursor.y = 0;
+  }
+
+  // --- orders -------------------------------------------------------------------------------------------
+
+  /** Click on the ground (not aiming): walk there, and forget a pending cast. */
+  private order() {
+    this.pending = null;
+    this.moveTo = this.cursor.clone();
+    this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
+    this.moveMarkerT = 0;
+  }
+
+  private beginAim(i: number) {
+    const spell = this.kit.spells[i];
+    if (this.cooldowns[i] > 0) { this.say(`${spell.name} is on cooldown`); return; }
+    const spec = this.host.targeting(spell.label);
+    if (!spec) { this.say(`${spell.label}: not a targeted effect`); return; }
+    if (spec.mode === 'self') {
+      this.aiming = -1;
+      this.castNow(i, { point: this.host.arena.caster.group.position.clone() });
+      return;
+    }
+    this.aiming = this.aiming === i ? -1 : i; // pressing the key again cancels
+    this.host.dom.style.cursor = this.aiming >= 0 ? 'crosshair' : '';
+  }
+
+  private cancelAim() {
+    this.aiming = -1;
+    this.host.dom.style.cursor = '';
+  }
+
+  private confirm() {
+    const i = this.aiming;
+    const spell = this.kit.spells[i];
+    const spec = this.host.targeting(spell.label)!;
+    const hero = this.host.arena.caster.group.position;
+    let target: Target;
+    if (spec.mode === 'enemy' || spec.mode === 'enemies') {
+      const enemy = this.enemyNearCursor();
+      if (!enemy) { this.say('No enemy there'); return; }
+      target = { enemy };
+    } else {
+      target = { point: clampToRange(hero, this.cursor, spell.range) };
+    }
+    this.cancelAim();
+    const at = this.targetPos(target)!;
+    if (flatDist(hero, at) <= spell.range + 1e-3) this.castNow(i, target);
+    else { this.pending = { slot: i, target }; this.moveTo = at.clone(); }
+  }
+
+  private castNow(i: number, target: Target) {
+    const spell = this.kit.spells[i];
+    if (this.cooldowns[i] > 0) return;
+    const arena = this.host.arena;
+    if ('enemy' in target) arena.setTarget(target.enemy);
+    else arena.setGroundPoint(target.point);
+    this.moveTo = null;
+    this.rooted = this.host.cast(spell.label);
+    this.cooldowns[i] = spell.cooldown;
+    this.flashSlot(i);
+  }
+
+  /** The live enemy nearest the cursor, if one is within reach of it. */
+  private enemyNearCursor(): Enemy | null {
+    let best = HOVER_PICK, found: Enemy | null = null;
+    for (const f of this.host.arena.liveFoes()) {
+      const d = flatDist(f.pos, this.cursor);
+      if (d < best) { best = d; found = f.figure; }
+    }
+    return found;
+  }
+
+  private targetPos(t: Target): THREE.Vector3 | null {
+    if ('point' in t) return t.point;
+    const live = this.host.arena.liveFoes().find((f) => f.figure === t.enemy);
+    return live ? live.pos : null;
+  }
+
+  // --- camera and indicators ----------------------------------------------------------------------------
+
+  private followCamera(hero: THREE.Vector3, dt: number) {
+    const cam = this.host.camera;
+    const want = hero.clone().setY(0).addScaledVector(CAM_OFFSET, this.zoom);
+    cam.position.lerp(want, this.snapCamera ? 1 : 1 - Math.exp(-12 * dt));
+    this.snapCamera = false;
+    cam.lookAt(hero.x, 0.5, hero.z - 1.5);
+  }
+
+  private updateIndicators(dt: number, hero: THREE.Vector3) {
+    const aiming = this.aiming >= 0;
+    const spell = aiming ? this.kit.spells[this.aiming] : null;
+    const spec = spell ? this.host.targeting(spell.label) : undefined;
+    const single = spec?.mode === 'enemy' || spec?.mode === 'enemies';
+
+    this.rangeRing.visible = aiming;
+    if (spell) {
+      this.rangeRing.position.set(hero.x, 0.05, hero.z);
+      this.rangeRing.scale.setScalar(spell.range);
+    }
+
+    this.hovered = aiming && single ? this.enemyNearCursor() : null;
+    this.hoverRing.visible = !!this.hovered;
+    if (this.hovered) {
+      const p = this.hovered.group.position;
+      this.hoverRing.position.set(p.x, 0.07, p.z);
+      const inRange = spell ? flatDist(hero, p) <= spell.range : true;
+      (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(inRange ? this.kit.accent : this.kit.foil);
+    }
+
+    // Single target: a strip from the hero to the hovered enemy (else toward the cursor), clamped to range.
+    this.aimLine.visible = aiming && single;
+    if (this.aimLine.visible && spell) {
+      const to = this.hovered ? this.hovered.group.position : this.cursor;
+      const end = clampToRange(hero, to, spell.range);
+      const len = Math.max(0.01, flatDist(hero, end));
+      this.aimLine.position.set(hero.x, 0.055, hero.z);
+      // Rx(-90°)·Rz(θ) takes local +Y to (-sin θ, 0, -cos θ): solve for the direction to `end`.
+      this.aimLine.rotation.set(-Math.PI / 2, 0, Math.atan2(-(end.x - hero.x), -(end.z - hero.z)));
+      this.aimLine.scale.set(0.8, len, 1);
+    }
+
+    // Ground spell: its area circle at the cursor, clamped to range.
+    const area = aiming && !single;
+    this.areaRing.visible = this.areaFill.visible = area;
+    if (area && spell) {
+      const c = clampToRange(hero, this.cursor, spell.range);
+      const r = spec?.radius ?? 5;
+      for (const m of [this.areaRing, this.areaFill]) {
+        m.position.set(c.x, 0.06, c.z);
+        m.scale.setScalar(r);
+      }
+    }
+
+    // Move order marker: shrinks and fades.
+    this.moveMarkerT = Math.min(1, this.moveMarkerT + dt / 0.45);
+    this.moveMarker.visible = this.moveMarkerT < 1;
+    this.moveMarker.scale.setScalar(1.4 - this.moveMarkerT * 0.8);
+    (this.moveMarker.material as THREE.MeshBasicMaterial).opacity = 0.9 * (1 - this.moveMarkerT);
+  }
+
+  // --- HUD ----------------------------------------------------------------------------------------------
+
+  private buildHud() {
+    const kit = this.kit;
+    const root = document.createElement('div');
+    root.style.cssText =
+      'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:6;display:none;align-items:flex-end;' +
+      'gap:14px;padding:10px 16px 12px;border-radius:14px;user-select:none;' +
+      'background:linear-gradient(180deg,rgba(26,8,12,0.88),rgba(10,3,5,0.94));border:1px solid #4a1a22;' +
+      'box-shadow:0 8px 28px rgba(0,0,0,0.6);font:600 12px ui-sans-serif,system-ui;color:' + kit.foil + ';';
+
+    // Portrait and name plate.
+    const plate = document.createElement('div');
+    plate.style.cssText = 'display:flex;align-items:center;gap:10px;padding-right:6px;';
+    const portrait = canvasIcon(64, kit.portrait);
+    portrait.style.cssText = `width:64px;height:64px;border-radius:50%;border:2px solid ${kit.foil};box-shadow:0 0 0 2px #2a0a10;`;
+    const names = document.createElement('div');
+    names.innerHTML = `<div style="font:700 16px ui-serif,Georgia,serif;letter-spacing:0.5px">${kit.name}</div>` +
+      `<div style="font:500 11px ui-sans-serif,system-ui;opacity:0.7">${kit.title}</div>` +
+      `<div style="margin-top:6px;font:500 10px ui-sans-serif,system-ui;opacity:0.55;line-height:1.4">click: move · Q W E R: aim<br>click: cast · right-click / Esc: cancel</div>`;
+    plate.append(portrait, names);
+    root.appendChild(plate);
+
+    kit.spells.forEach((spell, i) => {
+      const ult = spell.key === 'R';
+      const size = ult ? 74 : 60;
+      const col = document.createElement('div');
+      col.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;';
+      const box = document.createElement('div');
+      box.style.cssText =
+        `position:relative;width:${size}px;height:${size}px;border-radius:${ult ? 12 : 9}px;overflow:hidden;cursor:pointer;` +
+        `border:2px solid ${ult ? '#c9a24a' : '#5a2430'};` +
+        (ult ? 'box-shadow:0 0 0 1px #2a1a06,0 0 14px rgba(201,162,74,0.35);' : 'box-shadow:0 0 0 1px #1a0508;');
+      const icon = canvasIcon(128, spell.icon);
+      icon.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+      const shade = document.createElement('div');
+      shade.style.cssText = 'position:absolute;inset:0;';
+      const secs = document.createElement('div');
+      secs.style.cssText =
+        `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 ${ult ? 22 : 18}px ` +
+        'ui-sans-serif,system-ui;color:#fff1e6;text-shadow:0 1px 4px #000;';
+      const key = document.createElement('div');
+      key.textContent = spell.key;
+      key.style.cssText =
+        'position:absolute;left:3px;bottom:3px;min-width:16px;height:16px;padding:0 3px;border-radius:4px;' +
+        `background:rgba(10,3,5,0.85);border:1px solid ${ult ? '#c9a24a' : '#7a3040'};color:${ult ? '#ffd27a' : kit.foil};` +
+        'font:800 11px ui-sans-serif,system-ui;display:flex;align-items:center;justify-content:center;';
+      box.append(icon, shade, secs, key);
+      box.addEventListener('click', () => this.beginAim(i));
+      box.addEventListener('mouseenter', () => this.showTip(box, spell));
+      box.addEventListener('mouseleave', () => (this.tip.style.display = 'none'));
+      const label = document.createElement('div');
+      label.textContent = ult ? `${spell.name} · ULT` : spell.name;
+      label.style.cssText = `font:600 10px ui-sans-serif,system-ui;color:${ult ? '#e8c66a' : kit.foil};opacity:0.85;white-space:nowrap;`;
+      col.append(box, label);
+      root.appendChild(col);
+      this.slotEls.push({ box, shade, secs });
+    });
+    document.body.appendChild(root);
+    return root;
+  }
+
+  private showTip(box: HTMLDivElement, spell: HeroSpell) {
+    const r = box.getBoundingClientRect();
+    const range = spell.range > 0 ? `range ${spell.range}` : 'self';
+    this.tip.innerHTML = `<div style="font:700 13px ui-sans-serif,system-ui;margin-bottom:3px">${spell.name} ` +
+      `<span style="opacity:0.6;font-weight:600">[${spell.key}]</span></div>${spell.blurb}` +
+      `<div style="margin-top:5px;opacity:0.6">${range} · cooldown ${spell.cooldown} s</div>`;
+    this.tip.style.display = 'block';
+    this.tip.style.left = `${Math.max(8, r.left + r.width / 2 - 130)}px`;
+    this.tip.style.top = `${r.top - this.tip.offsetHeight - 10}px`;
+  }
+
+  private flashSlot(i: number) {
+    const box = this.slotEls[i].box;
+    box.animate([{ filter: 'brightness(1.8)' }, { filter: 'brightness(1)' }], { duration: 260 });
+  }
+
+  private updateHud(dt: number) {
+    this.kit.spells.forEach((spell, i) => {
+      const { box, shade, secs } = this.slotEls[i];
+      const cd = this.cooldowns[i];
+      const f = cd / spell.cooldown;
+      shade.style.background = cd > 0
+        ? `conic-gradient(rgba(6,2,3,0.78) ${f * 360}deg, rgba(6,2,3,0.25) 0deg)`
+        : '';
+      secs.textContent = cd > 0 ? (cd >= 1 ? String(Math.ceil(cd)) : cd.toFixed(1)) : '';
+      box.style.outline = this.aiming === i ? `2px solid ${this.kit.foil}` : '';
+      box.style.outlineOffset = '2px';
+    });
+    this.toastT = Math.max(0, this.toastT - dt);
+    this.toast.style.opacity = String(Math.min(1, this.toastT * 3));
+  }
+
+  private say(text: string) {
+    this.toast.textContent = text;
+    this.toastT = 1.2;
+  }
+}
+
+function flatDist(a: THREE.Vector3, b: THREE.Vector3) {
+  return Math.hypot(a.x - b.x, a.z - b.z);
+}
+
+/** `to` moved toward `from` so it is at most `range` away on the ground plane (y = 0). */
+function clampToRange(from: THREE.Vector3, to: THREE.Vector3, range: number) {
+  const d = new THREE.Vector3(to.x - from.x, 0, to.z - from.z);
+  if (d.length() > range) d.setLength(range);
+  return new THREE.Vector3(from.x + d.x, 0, from.z + d.z);
+}
+
+function canvasIcon(size: number, draw: (g: CanvasRenderingContext2D, s: number) => void) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  draw(c.getContext('2d')!, size);
+  return c;
+}
