@@ -3,6 +3,9 @@
  * data only; a new hero is a new entry here, its spells are ordinary registered effects (looked up by label).
  */
 import { alchemyKit } from './kits/alchemy';
+import { sandKit } from './kits/sand';
+import { shadowKit } from './kits/shadow';
+import { stormKit } from './kits/storm';
 import { astralKit } from './kits/astral';
 import { forgeKit } from './kits/forge';
 import { frostKit } from './kits/frost';
@@ -198,6 +201,9 @@ const MODELS: Record<string, string> = {
   Isolde: 'models/heroes/frost.glb',
   Lyra: 'models/heroes/astral.glb',
   Vex: 'models/heroes/alchemy.glb',
+  Kaia: 'models/heroes/storm.glb',
+  Sefu: 'models/heroes/sand.glb',
+  Nyx: 'models/heroes/shadow.glb',
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

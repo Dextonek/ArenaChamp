@@ -41,6 +41,7 @@ HEAD = lambda p: {"head": 1.0}  # noqa: E731
 ARM = {"R": lambda p: {"upper_arm.R": 1.0}, "L": lambda p: {"upper_arm.L": 1.0}}
 FORE = {"R": lambda p: {"forearm.R": 1.0}, "L": lambda p: {"forearm.L": 1.0}}
 SIDES = (("R", -1), ("L", 1))  # bone side, sign of x
+HAND = {"R": lambda p: {"hand.R": 1.0}, "L": lambda p: {"hand.L": 1.0}}
 PELVIS = lambda p: {"pelvis": 1.0}  # noqa: E731
 
 # Each look: figure_kit options (see figure_looks.py in the Dao kit) + "props" (HeroFigure methods below).
@@ -86,6 +87,26 @@ LOOKS = {
                     sleeve="narrow", over_gap=0.3,
                     extras={"apron": dict(color="#3a2a1c", length=0.5, width=0.5), "gourd": dict(color="#4fbf2a", x=0.16)},
                     props={"plague_mask": {}, "vial_bandolier": {}, "back_alembic": {}, "held_flask": {}}),
+    # Kaia, the Tempest Caller: a storm-blue rain cloak over a pale tunic, wind-swept silver-blue hair, storm eyes;
+    # a small storm cloud floating over her head, a hooked staff with a blue stone, a bolt emblem on the chest.
+    "storm": dict(robe="#d8e4ee", inner="#eef4f8", trim=("#4aa8ff", "#2a3a52"), sash="#2a3a52", over="#2a3a52",
+                  female=True, slim=True, hair="loose", strands=True, hair_color="#c8e0f0", brow_color="#9ab4c8",
+                  headwear=False, skin="#e2c4b0", eye_glow="#8fd8ff", sleeve="narrow", over_gap=0.35,
+                  extras={"mantle": dict(color="#22324a", name="Yunjian", lobes=4, silk=True, noise=0.0, flare=0.04,
+                                         bottom=1.3, trim="silver")},
+                  props={"cloud_crown": {}, "hooked_staff": {}, "bolt_emblem": {}}),
+    # Sefu, the Dune Sovereign: layered linen, a gold and turquoise nemes headcloth, a broad collar, gold cuffs and a
+    # sandstone crook.
+    "sand": dict(robe="#e6d6b4", inner="#efe2c4", trim=("#c9a24a", "#c8913f"), sash="#c9a24a", over="#d8c49a",
+                 hair="shaved", headwear=False, pendant=False, skin="#a8744c", beard="goatee", sleeve="narrow",
+                 over_sleeves=False, over_hem=0.6, over_gap=0.3,
+                 props={"nemes": {}, "broad_collar": {}, "sand_crook": {}, "gold_cuffs": {}}),
+    # Nyx, the Umbral Stalker: a tattered black cloak with a violet edge, a deep hood, a dark half mask, violet eyes
+    # and twin curved daggers at the hips.
+    "shadow": dict(robe="#120c18", inner="#1e1626", trim=("#c88cff", "#07050a"), sash="#6a2ec0", over="#0c0810",
+                   female=True, slim=True, tattered=True, hair="loose", hair_color="#1a1220", headwear=False,
+                   skin="#cfc0d4", eye_glow="#c88cff", sleeve="narrow", over_gap=0.25, pendant=False,
+                   props={"deep_hood": {}, "twin_daggers": {}}),
 }
 
 
@@ -344,6 +365,104 @@ class HeroFigure(figure_kit.Figure):
         self.add(kit.chain("AlembicCoil", coil, [0.007] * len(coil), copper, seg=6), CHEST)
         for sgn in (-1, 1):
             self.add(kit.chain(f"AlembicStrap{sgn}", [Vector((0.12 * sgn, 0.12, 1.42)), c + Vector((0.1 * sgn, -0.03, -0.06))], [0.01, 0.01], self.m["sash"], seg=6), CHEST)
+
+
+    # ---- storm ------------------------------------------------------------------------------------------
+    def cloud_crown(self):
+        """A small dark storm cloud floating over her head, a pale underside and a short glowing bolt under it."""
+        cloud = self._mat("cloud", "#2a3346", roughness=0.9)
+        under = self._mat("cloudunder", "#c8d4de", roughness=0.9)
+        bolt = self._mat("bolt", "#d6f2ff", roughness=0.4, emission="#8fd8ff", strength=2.0)
+        c = Vector((0, 0.02, 2.02))
+        for k, (x, y, z, r) in enumerate([(-0.11, 0.0, 0.0, 0.085), (0.0, 0.02, 0.03, 0.105), (0.11, -0.01, 0.0, 0.08), (0.05, 0.06, 0.02, 0.07)]):
+            self.add(kit.blob(f"Cloud{k}", c + Vector((x, y, z)), (r, r * 0.8, r * 0.62), cloud, (12, 8)), HEAD)
+        self.add(kit.blob("CloudUnder", c + Vector((0, 0.01, -0.035)), (0.2, 0.09, 0.02), under, (16, 6)), HEAD)
+        pts = [c + Vector(v) for v in [(0.0, -0.01, -0.05), (-0.02, -0.01, -0.09), (0.015, -0.01, -0.1), (-0.01, -0.01, -0.15)]]
+        self.add(kit.chain("CrownBolt", pts, [0.008, 0.007, 0.006, 0.002], bolt, seg=5), HEAD)
+
+    def hooked_staff(self):
+        """A tall dark staff in her left hand with a pale hooked head holding a blue storm stone."""
+        wood = self._mat("staff", "#3a2a1c", roughness=0.7)
+        steel = self._mat("staffhook", "#c9d6e0", metallic=0.8, roughness=0.3)
+        stone = self._mat("stormstone", "#4aa8ff", roughness=0.2, emission="#4aa8ff", strength=1.5)
+        a, b = Vector((0.31, -0.11, 0.05)), Vector((0.33, -0.13, 1.92))
+        self.add(kit.tube("Staff", a, b, [(0, 0.014, 0.014), (1, 0.016, 0.016)], wood, seg=8), HAND["L"])
+        hook = [b + Vector(v) for v in [(0, 0, 0), (0.01, 0, 0.08), (0.06, 0, 0.12), (0.11, 0, 0.09), (0.1, 0, 0.03), (0.06, 0, 0.02)]]
+        self.add(kit.chain("StaffHook", hook, [0.016, 0.015, 0.013, 0.012, 0.01, 0.008], steel, seg=8), HAND["L"])
+        self.add(kit.blob("StormStone", b + Vector((0.065, 0, 0.065)), (0.028, 0.028, 0.028), stone, (10, 8)), HAND["L"])
+
+    def bolt_emblem(self):
+        bolt = self._mat("bolt", "#d6f2ff", roughness=0.4, emission="#8fd8ff", strength=2.0)
+        c = Vector((0, -0.12, 1.3))
+        pts = [c + Vector(v) for v in [(0.02, 0, 0.07), (-0.02, -0.002, 0.01), (0.015, -0.002, 0.005), (-0.025, 0, -0.07)]]
+        self.add(kit.chain("BoltEmblem", pts, [0.012, 0.012, 0.012, 0.004], bolt, seg=4), CHEST)
+
+    # ---- sand -------------------------------------------------------------------------------------------
+    def nemes(self):
+        """The striped royal headcloth: a gold cap over the head and two lappets falling to the chest."""
+        gold = self._mat("nemesgold", "#c9a24a", metallic=0.6, roughness=0.35)
+        blue = self._mat("nemesblue", "#3fd4c8", roughness=0.4)
+        top = Vector((0, 0.01, 1.66))
+        self.add(kit.blob("NemesCap", top + Vector((0, 0.01, 0.04)), (0.105, 0.115, 0.09), gold, (20, 12),
+                          keep=lambda co: co.z > -0.02), HEAD)
+        self.add(kit.torus("NemesBand", top + Vector((0, -0.005, 0.03)), 0.104, 0.008, blue, seg=(32, 6)), HEAD)
+        self.add(kit.blob("Uraeus", top + Vector((0, -0.105, 0.08)), (0.012, 0.012, 0.02), blue, (8, 6)), HEAD)
+        for side, sx in SIDES:
+            # a long flat gold lappet from behind the ear down onto the chest, with three turquoise stripes
+            p0, p1 = Vector((0.095 * sx, -0.015, 1.64)), Vector((0.11 * sx, -0.07, 1.36))
+            self.add(kit.tube(f"Lappet{side}", p0, p1, [(0, 0.04, 0.012), (1, 0.05, 0.012)], gold, seg=6), CHEST)
+            for k, t in enumerate((0.3, 0.55, 0.8)):
+                q = p0.lerp(p1, t) + Vector((0, -0.006, 0))
+                self.add(kit.box(f"LappetStripe{side}{k}", q, (0.1, 0.014, 0.018), blue, bevel=0.002), CHEST)
+
+    def broad_collar(self):
+        gold = self._mat("collargold", "#c9a24a", metallic=0.6, roughness=0.35)
+        blue = self._mat("nemesblue", "#3fd4c8", roughness=0.4)
+        c = Vector((0, -0.01, 1.47))
+        self.add(kit.torus("BroadCollar", c, 0.13, 0.03, gold, seg=(32, 8)), CHEST)
+        self.add(kit.torus("BroadCollarInlay", c + Vector((0, 0, 0.012)), 0.13, 0.012, blue, seg=(32, 6)), CHEST)
+
+    def sand_crook(self):
+        stone = self._mat("sandstone", "#e8d8b4", roughness=0.85)
+        blue = self._mat("nemesblue", "#3fd4c8", roughness=0.4)
+        a, b = Vector((-0.31, -0.11, 0.05)), Vector((-0.33, -0.13, 1.85))
+        self.add(kit.tube("Crook", a, b, [(0, 0.02, 0.02), (1, 0.022, 0.022)], stone, seg=8), HAND["R"])
+        hook = [b + Vector(v) for v in [(0, 0, 0), (0, 0, 0.08), (0.04, 0, 0.14), (0.1, 0, 0.13), (0.12, 0, 0.07)]]
+        self.add(kit.chain("CrookHook", hook, [0.022, 0.022, 0.02, 0.018, 0.016], stone, seg=8), HAND["R"])
+        for k, z in enumerate((0.9, 1.35)):
+            p = a.lerp(b, (z - a.z) / (b.z - a.z))
+            self.add(kit.torus(f"CrookBand{k}", p, 0.024, 0.008, blue, seg=(16, 6)), HAND["R"])
+
+    def gold_cuffs(self):
+        gold = self._mat("collargold", "#c9a24a", metallic=0.6, roughness=0.35)
+        for side, sx in SIDES:
+            p = Vector((0.28 * sx, -0.045, 0.97))
+            self.add(kit.torus(f"Cuff{side}", p, 0.042, 0.014, gold, seg=(20, 6)), FORE[side])
+
+    # ---- shadow -----------------------------------------------------------------------------------------
+    def deep_hood(self):
+        """A deep hood over the head, open at the face, with a thin violet edge around the opening."""
+        cloth = self._mat("hood", "#0c0810", roughness=0.9, double_sided=True)
+        edge = self._mat("hoodedge", "#c88cff", roughness=0.5, emission="#c88cff", strength=0.8)
+        top = Vector((0, 0.02, 1.64))
+        face = lambda co: not (co.y < -0.04 and abs(co.x) < 0.075 and -0.11 < co.z < 0.06)  # noqa: E731
+        self.add(kit.blob("Hood", top + Vector((0, 0.012, 0.02)), (0.12, 0.13, 0.15), cloth, (24, 16), keep=face), HEAD)
+        rim = [top + Vector((0.08 * math.sin(a), -0.115, 0.012 + 0.1 * math.cos(a))) for a in [i * math.pi / 8 - math.pi * 0.65 for i in range(15)]]
+        self.add(kit.chain("HoodEdge", rim, [0.006] * len(rim), edge, seg=5), HEAD)
+        self.add(kit.blob("HoodDrape", Vector((0, 0.06, 1.47)), (0.15, 0.1, 0.07), cloth, (16, 10)), CHEST)
+
+    def twin_daggers(self):
+        """Two curved daggers at the hips, pale steel with a violet edge, black grips."""
+        steel = self._mat("dagger", "#cfcad8", metallic=0.8, roughness=0.25)
+        edge = self._mat("hoodedge", "#c88cff", roughness=0.5, emission="#c88cff", strength=0.8)
+        grip = self._mat("grip", "#2a1e34", roughness=0.6)
+        for side, sx in SIDES:
+            # worn in front of the hips over the cloak, blades curving down and out
+            base = Vector((0.21 * sx, -0.15, 1.0))
+            self.add(kit.tube(f"Grip{side}", base, base + Vector((0, 0, 0.09)), [(0, 0.015, 0.015), (1, 0.015, 0.015)], grip, seg=6), PELVIS)
+            blade = [base + Vector((0.06 * sx * math.sin(t * 1.4), -0.015, -0.03 - 0.3 * t)) for t in [i / 6 for i in range(7)]]
+            self.add(kit.chain(f"Dagger{side}", blade, kit.lerp_list([0.024, 0.02, 0.014, 0.004], 7), steel, seg=6), PELVIS)
+            self.add(kit.chain(f"DaggerEdge{side}", [b + Vector((0.018 * sx, 0, 0)) for b in blade[1:]], [0.004] * 6, edge, seg=4), PELVIS)
 
 
 def _reload():

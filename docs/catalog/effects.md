@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Effect catalog
 
-Every effect registered in the Three.js VFX editor: **144 effects in 13 categories**, listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
+Every effect registered in the Three.js VFX editor: **156 effects in 16 categories**, listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
 
 ## Counts
 
@@ -23,15 +23,18 @@ Every effect registered in the Three.js VFX editor: **144 effects in 13 categori
 | [hero: frost](#hero-frost) | 4 |
 | [hero: astral](#hero-astral) | 4 |
 | [hero: alchemy](#hero-alchemy) | 4 |
+| [hero: storm](#hero-storm) | 4 |
+| [hero: sand](#hero-sand) | 4 |
+| [hero: shadow](#hero-shadow) | 4 |
 | [weapons](#weapons) | 5 |
 | [weapon attacks](#weapon-attacks) | 5 |
-| **Total** | **144** |
+| **Total** | **156** |
 
 ## How to read the tables
 
 - **Targeting** is the `targeting` spec of the module: `enemy` (one target), `enemies` (shift-clicked or a nearest-neighbour chain, capped), `ground` (a spot, radius decides who is hit), `self` (centred on the caster). `fixed scene` effects have no targeting and play on the fixed demo scene.
 - **Length** is the constant `DURATION` (or `TOTAL`, or a stated "~N s") in the source. `settings-driven` means the length is the `duration` getter, computed from other constants or from the effect's settings (cast time, flight time and so on), so there is no single literal number. `loop` is an idle aura.
-- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the five hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
+- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the eight hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
 - Sheets in `docs/spells/` are contact sheets (frames over time) made by `pipeline/tools/contact-sheet.js`. A few effects also have per-frame images (`<name>_1-....jpg`) next to the sheet.
 - Descriptions are shortened from the source header; the header and the design note have the full timeline.
 
@@ -110,7 +113,7 @@ Every effect registered in the Three.js VFX editor: **144 effects in 13 categori
 
 ## targeted
 
-68 effects. Targeted spells (`src/spells/targeted/`): they aim at the enemies or ground spot picked in the shared arena (see `src/effects/targeting.ts`). Most were written by the forge-vfx pipeline; `pipeline/forged.json` records mode, tier and recipes. Registered in `src/spells/targeted/index.ts` (the five hero kits are registered in the same array but use their own categories, below).
+68 effects. Targeted spells (`src/spells/targeted/`): they aim at the enemies or ground spot picked in the shared arena (see `src/effects/targeting.ts`). Most were written by the forge-vfx pipeline; `pipeline/forged.json` records mode, tier and recipes. Registered in `src/spells/targeted/index.ts` (the eight hero kits are registered in the same array but use their own categories, below).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -246,6 +249,39 @@ Every effect registered in the Three.js VFX editor: **144 effects in 13 categori
 | mutagen | She drinks a flask (it tilts up at her head and shatters in her hand), her body takes a pulsing green rim, and four flasks orbit her while fumes curl up around her. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/mutagen.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
 | grand transmutation | She smashes a big flask at her feet, the world darkens and a giant glass-ink alchemical circle draws on at the point. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/grandTransmutation.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
 
+## hero: storm
+
+4 effects. Kaia, the Tempest Caller. Hero kit, see [Storm](heroes/storm.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| arc lance | She points the hooked staff and sparks crackle along it; a horizontal lightning tree jumps from the staff tip to the target and splits into the ground at its feet. | enemy | 1.5 s · hero kit Q | [source](../../src/spells/targeted/arcLance.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
+| downpour | A dark storm cloud gathers high over the point while slanting rain falls inside the circle and ripples spread on the wet floor. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/downpour.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
+| static field | A small storm cloud forms over her head and her rain cloak crackles. A ring of short lightning arcs hops around her at radius 1.5 while light rain falls around her. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/staticField.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
+| eye of the storm | The world darkens blue-black and wind-blown rain starts across the whole zone. A vast ring of dark storm cloud forms high over it and turns, with a clear eye in the middle. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/eyeOfTheStorm.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
+
+## hero: sand
+
+4 effects. Sefu, the Dune Sovereign. Hero kit, see [Sand](heroes/sand.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| sand lash | Sefu sweeps his crook and a thick ribbon of sand pours out of the floor at his side, arcs over and cracks across to the target like a whip. | enemy | 1.6 s · hero kit Q | [source](../../src/spells/targeted/sandLash.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
+| quicksand | A ring of carved glyphs cuts itself into the floor, sand floods inside it and starts to swirl inward, sinking and pulling the enemies in it. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/quicksand.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
+| dune ward | Three sand ribbons rise from the floor and wind around Sefu in a slow spiral above a small glyph ring. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/duneWard.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
+| tomb of kings | The world darkens warm, a big glyph ring carves into the floor, the ground turns to swirling sand and sand ribbons spiral up from the ring and stack a stepped sandstone pyramid layer by layer. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/tombOfKings.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
+
+## hero: shadow
+
+4 effects. Nyx, the Umbral Stalker. Hero kit, see [Shadow](heroes/shadow.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| umbral blink | A black figure cut-out peels off Nyx, blinks to the target in four stepped jumps (a trail of fading figures) and two crossed blade cut-outs slash through the target. | enemy | 1.5 s · hero kit Q | [source](../../src/spells/targeted/umbralBlink.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
+| grasp of the deep | A shadow pool with a pale foil disc spreads at the point; flat black hands rise out of it around and under the enemies with their fingers spread. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/graspOfTheDeep.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
+| night shroud | A shadow pool spreads under Nyx and three figure cut-outs (clones) rise around her and circle her slowly. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/nightShroud.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
+| eclipse execution | Nyx raises a dagger and the world goes dark. A shadow pool covers the whole zone, shadow hands rise across it and hold the enemies while a pale moon rises behind the zone and a black disc slides across it into an eclipse. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/eclipseExecution.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
+
 ## weapons
 
 5 effects. Idle enchant loops for the five Blender weapons in `public/models/weapons` (`src/spells/weapons/`, kit in `src/effects/weapons`, technique in `docs/WEAPON_VFX_GUIDE.md`).
@@ -273,7 +309,7 @@ Every effect registered in the Three.js VFX editor: **144 effects in 13 categori
 ## See also
 
 - [Heroes: roster and shared structure](heroes/README.md)
-- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md)
+- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md), [Storm](heroes/storm.md), [Sand](heroes/sand.md), [Shadow](heroes/shadow.md)
 - [Docs home](../README.md)
 - [Art bible](../ART_BIBLE.md)
 - [VFX principles](../VFX_PRINCIPLES.md)

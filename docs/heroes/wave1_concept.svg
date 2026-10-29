@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 960" width="1080" height="960">
+  <!-- Wave 1 hero concepts: Kaia (storm), Sefu (sand), Nyx (shadow). Front views, one scale. Drawn by hand as SVG;
+       modelling reference for blender/heroes/hero_figures.py. -->
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1a22"/><stop offset="1" stop-color="#0c0b10"/></linearGradient>
+    <linearGradient id="cloak" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a3a52"/><stop offset="1" stop-color="#121a28"/></linearGradient>
+    <linearGradient id="linen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe2c4"/><stop offset="1" stop-color="#c9b48a"/></linearGradient>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1222"/><stop offset="1" stop-color="#07050a"/></linearGradient>
+    <path id="bolt" d="M0,0 L-10,34 L4,34 L-8,72 L22,24 L6,24 L16,0 Z"/>
+  </defs>
+  <rect width="1080" height="960" fill="url(#bg)"/>
+  <text x="540" y="44" fill="#e9dcc6" font-family="Georgia,serif" font-size="28" text-anchor="middle">Wave 1 · concept</text>
+  <line x1="40" y1="860" x2="1040" y2="860" stroke="#2a2833" stroke-width="2"/>
+
+  <!-- ============ KAIA (storm) -->
+  <g transform="translate(180,0)">
+    <ellipse cx="0" cy="858" rx="95" ry="12" fill="#000" opacity="0.5"/>
+    <!-- storm cloud crown floating over her head -->
+    <g fill="#2a3346"><ellipse cx="-30" cy="62" rx="34" ry="18"/><ellipse cx="6" cy="52" rx="38" ry="22"/><ellipse cx="40" cy="64" rx="30" ry="16"/></g>
+    <path d="M-60,70 L66,70" stroke="#c8d4de" stroke-width="3" opacity="0.6"/>
+    <use href="#bolt" transform="translate(-2,72) scale(0.6)" fill="#d6f2ff" filter="url(#glow)"/>
+    <!-- hooked staff in her left hand -->
+    <path d="M96,820 L120,150" stroke="#3a2a1c" stroke-width="10" stroke-linecap="round"/>
+    <path d="M120,150 C124,110 160,100 166,130 C170,150 150,160 140,148" stroke="#c9d6e0" stroke-width="7" fill="none"/>
+    <circle cx="152" cy="132" r="9" fill="#4aa8ff" filter="url(#glow)"/>
+    <!-- rain cloak with a deep hood down her back, slanted rain streaks on it -->
+    <path d="M-70,214 L-104,800 L104,800 L70,214 Z" fill="url(#cloak)"/>
+    <g stroke="#c8d4de" stroke-width="2" opacity="0.45"><path d="M-80,420 L-66,470 M-40,520 L-26,570 M20,460 L34,510 M60,600 L74,650 M-20,680 L-6,730"/></g>
+    <!-- light tunic and storm-blue trims, a bolt emblem -->
+    <path d="M-40,230 L-50,700 L50,700 L40,230 Z" fill="#d8e4ee"/>
+    <path d="M-50,700 L50,700" stroke="#4aa8ff" stroke-width="5"/>
+    <path d="M-44,400 L44,400" stroke="#2a3a52" stroke-width="14"/>
+    <use href="#bolt" transform="translate(-6,300) scale(0.9)" fill="#4aa8ff" filter="url(#glow)"/>
+    <!-- arms: narrow sleeves, bracers, crackle on the right hand -->
+    <path d="M-62,226 L-96,450 L-74,456 L-46,260 Z" fill="#2a3a52"/><path d="M62,226 L96,450 L74,456 L46,260 Z" fill="#2a3a52"/>
+    <circle cx="-86" cy="470" r="11" fill="#e2c4b0"/><circle cx="96" cy="470" r="11" fill="#e2c4b0"/>
+    <path d="M-86,470 L-110,500 L-96,506 L-122,540" stroke="#d6f2ff" stroke-width="3" fill="none" filter="url(#glow)"/>
+    <!-- head: short wind-swept white-blue hair, storm eyes -->
+    <ellipse cx="0" cy="150" rx="29" ry="36" fill="#e2c4b0"/>
+    <path d="M-34,146 C-40,100 30,96 38,130 C46,120 60,128 56,150 C40,130 -10,120 -34,146 Z" fill="#c8e0f0"/>
+    <ellipse cx="-11" cy="152" rx="5" ry="3" fill="#8fd8ff" filter="url(#glow)"/><ellipse cx="11" cy="152" rx="5" ry="3" fill="#8fd8ff" filter="url(#glow)"/>
+  </g>
+  <g transform="translate(180,890)" font-family="sans-serif" text-anchor="middle">
+    <text fill="#e9dcc6" font-size="18" font-family="Georgia,serif">Kaia · storm</text>
+    <g transform="translate(-60,14)"><rect width="22" height="14" fill="#0a1220"/><rect x="24" width="22" height="14" fill="#2a3a52"/><rect x="48" width="22" height="14" fill="#4aa8ff"/><rect x="72" width="22" height="14" fill="#d6f2ff"/><rect x="96" width="22" height="14" fill="#ffe36a"/></g>
+    <text y="48" fill="#8b8698" font-size="11">cloud crown · rain cloak · hooked staff · bolt emblem</text>
+  </g>
+
+  <!-- ============ SEFU (sand) -->
+  <g transform="translate(540,0)">
+    <ellipse cx="0" cy="858" rx="110" ry="12" fill="#000" opacity="0.5"/>
+    <!-- crook of sandstone in his right hand -->
+    <path d="M-110,820 L-128,170" stroke="#e8d8b4" stroke-width="12" stroke-linecap="round"/>
+    <path d="M-128,170 C-132,120 -84,110 -80,150" stroke="#e8d8b4" stroke-width="12" fill="none" stroke-linecap="round"/>
+    <path d="M-128,300 L-128,330 M-127,400 L-127,430" stroke="#3fd4c8" stroke-width="13"/>
+    <!-- linen robes, layered, with a gold and turquoise sash -->
+    <path d="M-76,220 L-112,800 L112,800 L76,220 Z" fill="url(#linen)"/>
+    <path d="M-50,420 L-60,800 L60,800 L50,420 Z" fill="#d8c49a"/>
+    <path d="M-112,800 L112,800" stroke="#c9a24a" stroke-width="6"/>
+    <path d="M-58,420 L58,420" stroke="#c9a24a" stroke-width="16"/><path d="M-10,420 L-14,560 L14,560 L10,420 Z" fill="#3fd4c8"/>
+    <!-- broad collar (usekh): gold with turquoise bands -->
+    <path d="M-86,226 C-70,300 70,300 86,226 C60,250 -60,250 -86,226 Z" fill="#c9a24a"/>
+    <path d="M-74,240 C-56,282 56,282 74,240" stroke="#3fd4c8" stroke-width="6" fill="none"/>
+    <path d="M-80,232 C-60,272 60,272 80,232" stroke="#2a1a0c" stroke-width="2" fill="none"/>
+    <!-- arms: bare forearms with gold cuffs -->
+    <path d="M-76,230 L-112,440 L-88,446 L-56,262 Z" fill="#efe2c4"/><path d="M76,230 L112,440 L88,446 L56,262 Z" fill="#efe2c4"/>
+    <rect x="-118" y="420" width="30" height="16" fill="#c9a24a"/><rect x="88" y="420" width="30" height="16" fill="#c9a24a"/>
+    <circle cx="-104" cy="460" r="12" fill="#a8744c"/><circle cx="104" cy="460" r="12" fill="#a8744c"/>
+    <!-- head: striped nemes headcloth in gold and turquoise, kohl eyes -->
+    <path d="M-50,130 L-70,230 L-36,236 L-30,150 Z" fill="#c9a24a"/><path d="M50,130 L70,230 L36,236 L30,150 Z" fill="#c9a24a"/>
+    <path d="M-60,180 L-38,182 M-64,206 L-36,208 M60,180 L38,182 M64,206 L36,208" stroke="#3fd4c8" stroke-width="7"/>
+    <ellipse cx="0" cy="152" rx="30" ry="36" fill="#a8744c"/>
+    <path d="M-40,140 C-40,90 40,90 40,140 L30,124 C10,112 -10,112 -30,124 Z" fill="#c9a24a"/>
+    <path d="M-34,124 C-12,110 12,110 34,124" stroke="#3fd4c8" stroke-width="6" fill="none"/>
+    <circle cx="0" cy="102" r="7" fill="#3fd4c8" filter="url(#glow)"/>
+    <path d="M-20,152 L-4,152 M4,152 L20,152" stroke="#1a120a" stroke-width="4"/>
+    <path d="M-4,182 L4,182 L2,206 L-2,206 Z" fill="#2a1a0c"/>
+  </g>
+  <g transform="translate(540,890)" font-family="sans-serif" text-anchor="middle">
+    <text fill="#e9dcc6" font-size="18" font-family="Georgia,serif">Sefu · sand</text>
+    <g transform="translate(-60,14)"><rect width="22" height="14" fill="#2a1a0c"/><rect x="24" width="22" height="14" fill="#c8913f"/><rect x="48" width="22" height="14" fill="#ffd27a"/><rect x="72" width="22" height="14" fill="#e8d8b4"/><rect x="96" width="22" height="14" fill="#3fd4c8"/></g>
+    <text y="48" fill="#8b8698" font-size="11">nemes headcloth · broad collar · sandstone crook · linen</text>
+  </g>
+
+  <!-- ============ NYX (shadow) -->
+  <g transform="translate(900,0)">
+    <ellipse cx="0" cy="858" rx="95" ry="12" fill="#000" opacity="0.5"/>
+    <!-- a flat shadow clone peeling off behind her (cut-paper silhouette, violet edge) -->
+    <path d="M60,200 C90,200 100,240 96,260 L130,500 L120,800 L30,800 L40,500 Z" fill="#050308" stroke="#c88cff" stroke-width="3" opacity="0.8"/>
+    <!-- tattered black hooded cloak with a violet edge line -->
+    <path d="M-70,214 L-100,780 L-80,800 L-60,770 L-40,800 L-20,772 L0,800 L20,772 L40,800 L60,770 L80,800 L100,780 L70,214 Z" fill="url(#night)" stroke="#c88cff" stroke-width="2"/>
+    <path d="M-36,240 L-44,700 L44,700 L36,240 Z" fill="#1e1626"/>
+    <path d="M-44,430 L44,430" stroke="#6a2ec0" stroke-width="10"/>
+    <!-- twin curved daggers at her hips -->
+    <path d="M-60,470 C-90,520 -84,580 -60,610 C-74,570 -76,520 -54,476 Z" fill="#cfcad8" stroke="#c88cff" stroke-width="2"/>
+    <path d="M60,470 C90,520 84,580 60,610 C74,570 76,520 54,476 Z" fill="#cfcad8" stroke="#c88cff" stroke-width="2"/>
+    <rect x="-64" y="450" width="10" height="24" fill="#2a1e34"/><rect x="54" y="450" width="10" height="24" fill="#2a1e34"/>
+    <!-- arms: wrapped, dark -->
+    <path d="M-60,226 L-90,440 L-70,446 L-44,260 Z" fill="#1e1626"/><path d="M60,226 L90,440 L70,446 L44,260 Z" fill="#1e1626"/>
+    <circle cx="-80" cy="460" r="10" fill="#cfc0d4"/><circle cx="80" cy="460" r="10" fill="#cfc0d4"/>
+    <!-- deep hood, half mask, violet eyes -->
+    <path d="M-50,170 C-56,100 -20,74 0,74 C20,74 56,100 50,170 L40,214 L-40,214 Z" fill="#0c0810" stroke="#c88cff" stroke-width="2"/>
+    <ellipse cx="0" cy="158" rx="25" ry="31" fill="#cfc0d4"/>
+    <path d="M-25,166 C-12,186 12,186 25,166 L25,190 C10,200 -10,200 -25,190 Z" fill="#1e1626"/>
+    <ellipse cx="-10" cy="152" rx="6" ry="3" fill="#c88cff" filter="url(#glow)"/><ellipse cx="10" cy="152" rx="6" ry="3" fill="#c88cff" filter="url(#glow)"/>
+    <!-- a pale moon crescent behind her head (the foil) -->
+    <path d="M-60,96 A70,70 0 1 1 30,40 A56,56 0 1 0 -60,96 Z" fill="#cfcad8" opacity="0.35"/>
+  </g>
+  <g transform="translate(900,890)" font-family="sans-serif" text-anchor="middle">
+    <text fill="#e9dcc6" font-size="18" font-family="Georgia,serif">Nyx · shadow</text>
+    <g transform="translate(-60,14)"><rect width="22" height="14" fill="#050308"/><rect x="24" width="22" height="14" fill="#6a2ec0"/><rect x="48" width="22" height="14" fill="#c88cff"/><rect x="72" width="22" height="14" fill="#cfcad8"/><rect x="96" width="22" height="14" fill="#5affd2"/></g>
+    <text y="48" fill="#8b8698" font-size="11">deep hood · tattered cloak · twin daggers · clone</text>
+  </g>
+</svg>

@@ -51,6 +51,9 @@ in small details.
 | Frost (foil: rime `#e8f4fa`) | `#f6fcff` | `#c9efff` | `#4fb4e8` | `#ff9ec4` | `#081626` |
 | Astral (foil: chart `#e8e0c8`) | `#fffbe8` | `#ffe08a` | `#5a3fc0` | `#7ff3ff` | `#070414` |
 | Alchemy (foil: glass `#dcefe6`, gold `#e8b84a`) | `#f4ffe0` | `#c8ff4a` | `#4fbf2a` | `#ff5ad8` | `#0c1606` |
+| Storm (foil: rain `#c8d4de`) | `#ffffff` | `#d6f2ff` | `#4aa8ff` | `#ffe36a` | `#0a1220` |
+| Sand (foil: sandstone `#e8d8b4`) | `#fff6dc` | `#ffd27a` | `#c8913f` | `#3fd4c8` | `#2a1a0c` |
+| Shadow (foil: moon `#cfcad8`) | `#f4e8ff` | `#c88cff` | `#6a2ec0` | `#5affd2` | `#050308` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

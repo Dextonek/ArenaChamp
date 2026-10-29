@@ -88,6 +88,18 @@ import { volatileFlaskModule } from './volatileFlask';
 import { causticPoolModule } from './causticPool';
 import { mutagenModule } from './mutagen';
 import { grandTransmutationModule } from './grandTransmutation';
+import { sandLashModule } from './sandLash';
+import { quicksandModule } from './quicksand';
+import { duneWardModule } from './duneWard';
+import { tombOfKingsModule } from './tombOfKings';
+import { arcLanceModule } from './arcLance';
+import { downpourModule } from './downpour';
+import { staticFieldModule } from './staticField';
+import { eyeOfTheStormModule } from './eyeOfTheStorm';
+import { umbralBlinkModule } from './umbralBlink';
+import { graspOfTheDeepModule } from './graspOfTheDeep';
+import { nightShroudModule } from './nightShroud';
+import { eclipseExecutionModule } from './eclipseExecution';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -180,6 +192,18 @@ export const targetedModules: EffectModule[] = [
   causticPoolModule,
   mutagenModule,
   grandTransmutationModule,
+  sandLashModule,
+  quicksandModule,
+  duneWardModule,
+  tombOfKingsModule,
+  arcLanceModule,
+  downpourModule,
+  staticFieldModule,
+  eyeOfTheStormModule,
+  umbralBlinkModule,
+  graspOfTheDeepModule,
+  nightShroudModule,
+  eclipseExecutionModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

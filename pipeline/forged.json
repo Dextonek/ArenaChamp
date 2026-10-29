@@ -1640,5 +1640,173 @@
     "selfTest": {
       "ok": true
     }
+  },
+  {
+    "label": "arc lance",
+    "file": "src/spells/targeted/arcLance.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "storm",
+    "slot": "Q",
+    "note": "storm hero kit (wave 1), design pipeline/designs/kit-storm.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "downpour",
+    "file": "src/spells/targeted/downpour.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "storm",
+    "slot": "W",
+    "note": "storm hero kit (wave 1), design pipeline/designs/kit-storm.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "static field",
+    "file": "src/spells/targeted/staticField.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "storm",
+    "slot": "E",
+    "note": "storm hero kit (wave 1), design pipeline/designs/kit-storm.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "eye of the storm",
+    "file": "src/spells/targeted/eyeOfTheStorm.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "storm",
+    "slot": "R",
+    "note": "storm hero kit (wave 1), design pipeline/designs/kit-storm.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "sand lash",
+    "file": "src/spells/targeted/sandLash.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sand",
+    "slot": "Q",
+    "note": "sand hero kit (wave 1), design pipeline/designs/kit-sand.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "quicksand",
+    "file": "src/spells/targeted/quicksand.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sand",
+    "slot": "W",
+    "note": "sand hero kit (wave 1), design pipeline/designs/kit-sand.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "dune ward",
+    "file": "src/spells/targeted/duneWard.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sand",
+    "slot": "E",
+    "note": "sand hero kit (wave 1), design pipeline/designs/kit-sand.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "tomb of kings",
+    "file": "src/spells/targeted/tombOfKings.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "sand",
+    "slot": "R",
+    "note": "sand hero kit (wave 1), design pipeline/designs/kit-sand.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "umbral blink",
+    "file": "src/spells/targeted/umbralBlink.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "shadow",
+    "slot": "Q",
+    "note": "shadow hero kit (wave 1), design pipeline/designs/kit-shadow.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "grasp of the deep",
+    "file": "src/spells/targeted/graspOfTheDeep.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "shadow",
+    "slot": "W",
+    "note": "shadow hero kit (wave 1), design pipeline/designs/kit-shadow.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "night shroud",
+    "file": "src/spells/targeted/nightShroud.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "shadow",
+    "slot": "E",
+    "note": "shadow hero kit (wave 1), design pipeline/designs/kit-shadow.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "eclipse execution",
+    "file": "src/spells/targeted/eclipseExecution.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "shadow",
+    "slot": "R",
+    "note": "shadow hero kit (wave 1), design pipeline/designs/kit-shadow.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
   }
 ]

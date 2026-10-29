@@ -2,14 +2,16 @@
 // duels (run-duel mode), stepping time itself so it works with the browser pane hidden, and tallies the results:
 //
 //   eval(await (await fetch('/pipeline/tools/duel-tourney.js')).text());
-//   JSON.stringify(await _tourney(5))   // 5 fights per ordered pairing: 5 heroes x 4 opponents x 5 = 100 fights
-//   -> { wins: { Vesper: n, ... } (out of 8 x reps), h2h: { 'A vs B': { A: n, B: m } }, fights, avgSeconds,
+//   JSON.stringify(await _tourney(3))   // 3 fights per ordered pairing, every hero against every other
+//   JSON.stringify(await _tourney(3, ['Vesper', 'Kaia']))   // only these heroes
+//   -> { wins: { Vesper: n, ... } (out of 2 x (heroes - 1) x reps), h2h: { 'A vs B': { A: n, B: m } }, fights, avgSeconds,
 //        avgWinnerHp, timeouts }
 //
 // A fight that is not over after 120 s counts as a timeout. Results vary run to run (the AI's strafe flips are
 // random), so judge balance with 5+ fights per pairing.
-window._tourney = async (reps = 3) => {
-  const H = ['Vesper', 'Brannoc', 'Isolde', 'Lyra', 'Vex'], d = vfx.duel, res = [];
+window._tourney = async (reps = 3, names = null) => {
+  // Every hero in the panel's hero dropdown (HERO_KITS), or the names passed in.
+  const H = names ?? [...vfx.heroPickCtrl.$select.options].map((o) => o.textContent), d = vfx.duel, res = [];
   vfx.view.paused = true;
   if (!d.on) vfx.setDuel(true, 'run');
   for (const p of H) {

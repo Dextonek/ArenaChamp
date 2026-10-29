@@ -254,7 +254,13 @@ _Last updated: 2026-10-29_
   ended. Fresh sweep 128/128.
 
 ## In progress
-- Nothing.
+- **15 more heroes** (user 2026-10-29), five waves of three; same pipeline as the four kits (kit sheet → worker →
+  2 review rounds → model → register → sweep → tournament). Balance budget now in `pipeline/designs/kit-common.md`.
+  - Wave 1 DONE: storm (Kaia), sand (Sefu), shadow (Nyx). Kits built, reviewed (sand 1 round; storm, shadow 2),
+    registered; concept `docs/heroes/wave1_concept.svg/.jpg`; models exported (`storm/sand/shadow.glb`); tournament
+    with 8 heroes × 3 (168 fights): 38–60% each, no outliers (Isolde and Sefu lowest at 38%).
+  - Wave 2: grove (Fenna), dawn (Auriel), tide (Marin) · Wave 3: sky (Zephyr), bone (Mortis), clockwork (Ada)
+  - Wave 4: prism (Opaline), hive (Sirix), bard (Cantor) · Wave 5: void (Oblivion), ink (Shiori), chrono (Tempo)
 
 ## Blocked
 - Nothing.

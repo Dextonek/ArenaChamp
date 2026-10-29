@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Hero roster
 
-Five hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
+Eight hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
 
 ## Roster
 
@@ -17,6 +17,9 @@ Five hero kits, each one character with four spells (Q, W, E and the R ultimate)
 | Isolde | the Winter Warden | frost (`hero: frost`) | Frost ferns: rime creeps across the floor (and up the enemies) as feathery, branching fern patterns that grow from a point outward, white-blue on dark stone, then shatter into angular ice shards. | A frost fern fan behind, a tall crystal, and a hooded face with one pink glint. | [frost](frost.md) |
 | Lyra | the Star Archer | astral (`hero: astral`) | Constellations: bright four-point star points joined by thin, crisp gold lines that draw themselves from star to star into a figure (a net, a bow, a stag), then snap: the lines break and the stars fall as small shooting stars. | A parchment ring with a gold bow-shaped constellation inside it. | [astral](astral.md) |
 | Vex | the Plague Alchemist | alchemy (`hero: alchemy`) | Glass and reaction: thin-walled glass flasks (pale green-white glass, dark liquid inside) that shatter into sharp glass shards, releasing a bubbling caustic liquid (acid green, big round bubbles that swell and pop into rings) and rising fume curls. | A dark hood, a pale glass mask with a long beak-like snout and two round green lenses, and a coat with a bandolier of vials. | [alchemy](alchemy.md) |
+| Kaia | the Tempest Caller | storm (`hero: storm`) | The lightning tree: thick, hard-edged blue-white lightning that branches like a tree with a dark outline, under flat-bottomed dark cloud, with slanting rain streaks at one shared angle. | A dark cloud over slanting rain and a branching bolt, a hooded face in a rain cloak, and the hooked staff with a spark in its hook. | [storm](storm.md) |
+| Sefu | the Dune Sovereign | sand (`hero: sand`) | Sand that flows like a ribbon and sets like stone: thick grainy ochre ribbons that harden into pale carved sandstone with dark incised glyphs, then crumble to dust. | Layered linen shoulders, a gold collar, a bearded face under a striped gold headdress, and the sandstone crook behind. | [sand](sand.md) |
+| Nyx | the Umbral Stalker | shadow (`hero: shadow`) | Flat cut-paper shadow: matte-black blades, hands, a crescent and hooded figures with a thin hard violet edge line, standing as cut-outs that move in stepped jumps. | A pale moon behind her, two crossed daggers and the hooded black figure with a mint slit for the eyes. | [shadow](shadow.md) |
 
 Spell labels per hero:
 
@@ -27,11 +30,14 @@ Spell labels per hero:
 | Isolde | rime spear | frostfern field | glacial mantle | winter's crown |
 | Lyra | starshot | constellation snare | orbit veil | celestial hunt |
 | Vex | volatile flask | caustic pool | mutagen | grand transmutation |
+| Kaia | arc lance | downpour | static field | eye of the storm |
+| Sefu | sand lash | quicksand | dune ward | tomb of kings |
+| Nyx | umbral blink | grasp of the deep | night shroud | eclipse execution |
 
 ## How the kits share structure
 
 - **One parts file per kit**: `src/effects/parts/<theme>.ts` exports a palette constant (numbers, plus a `_CSS` string twin such as `BLOOD` / `BLOOD_CSS`) and the kit's pooled parts. The spells import it directly.
-- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment) and Alchemy (glass, with gold for the transmutation).
+- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone) and Shadow (moon grey).
 - **Spells**: `src/spells/targeted/<camelName>.ts`, each exporting `<camelName>Module` with `category: 'hero: <theme>'`, registered in `src/spells/targeted/index.ts`. Every hit passes the kit colour (`color: <PALETTE>_CSS.body`) so the arena hit flash matches.
 - **Kit data**: `HeroKit` has name, title, accent and foil colours, a canvas-drawn portrait, an optional model path, and a tuple of four `HeroSpell` (`key`, `label`, `name`, `range`, `cooldown`, `blurb`, canvas icon). The blood kit is inline in `src/heroes.ts`; the others are `src/kits/<theme>.ts`.
 - **Q, W, E are normal MOBA abilities** under the gameplay camera: the hit lands 0.4-0.8 s after the cast and the frame is clean by about 2 s (an E aura may run about 3 s). Q is a single-target or short-chain strike, W a ground zone, E a self aura (range 0, cast at once).
@@ -44,6 +50,10 @@ Spell labels per hero:
 The hand-drawn concept lineup (front views, one scale, each hero wearing the look of their spells; vector source [`lineup_concept.svg`](../../heroes/lineup_concept.svg)):
 
 ![Hero kits concept lineup](../../heroes/lineup_concept.png)
+
+The concept for the newest three heroes (Kaia, Sefu and Nyx; vector source [`wave1_concept.svg`](../../heroes/wave1_concept.svg)):
+
+![Wave 1 concept: Kaia, Sefu and Nyx](../../heroes/wave1_concept.jpg)
 
 ## In-game sheet
 
@@ -60,6 +70,9 @@ The turnaround sheet of the same models is [`models_sheet.jpg`](../../heroes/mod
 - [Isolde, the Winter Warden](frost.md)
 - [Lyra, the Star Archer](astral.md)
 - [Vex, the Plague Alchemist](alchemy.md)
+- [Kaia, the Tempest Caller](storm.md)
+- [Sefu, the Dune Sovereign](sand.md)
+- [Nyx, the Umbral Stalker](shadow.md)
 
 ## Balance (duel tournament)
 
@@ -73,6 +86,13 @@ Grand Transmutation twice). Ranges and cooldowns are in each hero's page.
 | Isolde | Rime Spear 50 | Frostfern Field 56 | Glacial Mantle 2 × 12 | Winter's Crown 125 |
 | Lyra | Starshot 52 per target (hits from 0.52 s) | Constellation Snare 60, cd 7 s | Orbit Veil 2 × 12 | Celestial Hunt 135 |
 | Vex | Volatile Flask 45 + 12 | Caustic Pool 30 + 12 + 12, cd 7 s | Mutagen 2 × 12 | Grand Transmutation 80 + 50 |
+| Kaia | Arc Lance 50 | Downpour 40 + 15, cd 7 s | Static Field 2 × 14 | Eye of the Storm 125 |
+| Sefu | Sand Lash 50 | Quicksand 45 + 10, cd 7 s | Dune Ward 2 × 13 | Tomb of Kings 125 |
+| Nyx | Umbral Blink 50 | Grasp of the Deep 45 + 10, cd 7 s | Night Shroud 2 × 13 | Eclipse Execution 125 |
+
+Kaia, Sefu and Nyx were built inside the balance budget in `pipeline/designs/kit-common.md` and needed no tuning: in an
+8-hero tournament (3 fights per ordered pairing, 168 fights) every hero won 38–60% (Lyra 60%, Nyx 60%, Brannoc 55%,
+Kaia 55%, Vesper 52%, Vex 43%, Isolde 38%, Sefu 38%), within the noise of that sample.
 
 Measured with AI vs AI duels (run duel, every hero against every other, both sides on the same AI, both dodging)
 using [duel-tourney.js](../../../pipeline/tools/duel-tourney.js). Win rates, two runs of 100 fights:
