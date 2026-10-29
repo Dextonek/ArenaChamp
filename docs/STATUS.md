@@ -228,7 +228,7 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
-- Uncommitted: the blood hero kit (four spells, `blood.ts`, designs, sheets, forged entries) and hero mode. Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
+- Nothing uncommitted. fa60c09 blood hero kit and hero mode. Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
   60ec4cb three cinematic heroes; a7f26de seven more cinematic heroes.
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
