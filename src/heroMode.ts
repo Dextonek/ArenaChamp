@@ -3,7 +3,7 @@ import type { Arena } from './arena';
 import type { Enemy } from './effects/common';
 import type { TargetingSpec } from './effects/targeting';
 import type { HeroKit, HeroSpell } from './heroes';
-import { Hero } from './effects/weapons/hero';
+import { HeroFigure } from './heroFigure';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -21,8 +21,6 @@ export interface HeroModeHost {
 const HERO_SPEED = 8;
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
 const HOVER_PICK = 2.2; // how close to the cursor an enemy counts as hovered
-const AXIS_X = new THREE.Vector3(1, 0, 0);
-const AXIS_Y = new THREE.Vector3(0, 1, 0);
 
 type Target = { enemy: Enemy } | { point: THREE.Vector3 };
 
@@ -60,13 +58,11 @@ export class HeroMode {
   private moveMarkerT = 1;
 
   // The hero's figure (stands in for the arena's capsule caster while hero mode is on).
-  private figures = new Map<string, Hero>();
-  private figure: Hero | null = null;
-  private walkPhase = 0;
-  private walkAmount = 0;
-  private castAmount = 0;
-  private lastHero = new THREE.Vector3();
-  private clock = 0;
+  private figure = new HeroFigure();
+  /** Duel: no orders or casts (the hero is down, or the round is over). */
+  locked = false;
+  /** Duel: called after every cast the player makes. */
+  onCast?: (label: string) => void;
 
   // HUD.
   private hud: HTMLDivElement;
@@ -92,6 +88,7 @@ export class HeroMode {
     this.aimLine = flat(new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), kit.accent, 0.28);
     this.hoverRing = flat(new THREE.RingGeometry(0.95, 1.2, 48), kit.accent, 0.95);
     this.moveMarker = flat(new THREE.RingGeometry(0.3, 0.42, 32), kit.foil, 0.9);
+    this.group.add(this.figure.group);
     this.group.visible = false;
 
     this.hud = this.buildHud();
@@ -135,6 +132,25 @@ export class HeroMode {
 
   get kitName() {
     return this.kit.name;
+  }
+
+  get currentKit(): HeroKit {
+    return this.kit;
+  }
+
+  /** Clears cooldowns, aim and orders (a new duel round). */
+  resetRound() {
+    this.cooldowns.fill(0);
+    this.rooted = 0;
+    this.pending = null;
+    this.moveTo = null;
+    this.cancelAim();
+    this.figure.stand();
+  }
+
+  /** Tips the hero's figure over (defeat), `t` 0..1. */
+  fallHero(t: number) {
+    this.figure.fall(t);
   }
 
   /** Switches the hero: new bar, indicator colours from the kit, cooldowns and aim cleared. */
@@ -182,6 +198,7 @@ export class HeroMode {
     this.followCamera(hero, dt);
     this.updateCursor();
 
+    if (this.locked) { this.pending = null; this.moveTo = null; if (this.aiming >= 0) this.cancelAim(); }
     // Walk toward the order (or into range of a pending cast).
     if (this.pending) {
       const spell = this.kit.spells[this.pending.slot];
@@ -202,7 +219,8 @@ export class HeroMode {
 
     this.updateIndicators(dt, hero);
     this.updateHud(dt);
-    this.poseFigure(dt, hero);
+    const caster = arena.caster.group;
+    this.figure.follow(dt, hero, caster.rotation.y, this.rooted > 0);
   }
 
   // --- figure -------------------------------------------------------------------------------------------
@@ -210,53 +228,10 @@ export class HeroMode {
   /** Shows the current kit's figure and hides the capsule caster (or restores the capsule when off). */
   private showFigure() {
     const capsule = this.host.arena.caster.group;
-    const url = this.enabled ? this.kit.model : undefined;
-    for (const f of this.figures.values()) f.root.visible = false;
-    this.figure = null;
-    if (url) {
-      let f = this.figures.get(url);
-      if (!f) {
-        f = new Hero({ url, shade: 0.9, maxEmissive: 1, tintSheen: true });
-        this.figures.set(url, f);
-        this.group.add(f.root);
-      }
-      f.root.visible = true;
-      this.figure = f;
-    }
-    for (const c of capsule.children) c.visible = !this.figure;
-    this.lastHero.copy(capsule.position);
+    const shown = this.figure.setModel(this.enabled ? this.kit.model : undefined, capsule.position);
+    for (const c of capsule.children) c.visible = !shown;
   }
 
-  /** Follows the caster: a walk cycle while moving, the casting arm while rooted, a slow breath at rest. */
-  private poseFigure(dt: number, hero: THREE.Vector3) {
-    const f = this.figure;
-    if (!f) return;
-    this.clock += dt;
-    const caster = this.host.arena.caster.group;
-    const speed = Math.hypot(hero.x - this.lastHero.x, hero.z - this.lastHero.z) / Math.max(dt, 1e-4);
-    this.lastHero.copy(hero);
-    const k = 1 - Math.exp(-dt * 12);
-    this.walkAmount += ((speed > 0.5 ? 1 : 0) - this.walkAmount) * k;
-    this.castAmount += ((this.rooted > 0 ? 1 : 0) - this.castAmount) * (1 - Math.exp(-dt * 16));
-    this.walkPhase += dt * 9 * this.walkAmount;
-    f.root.position.set(hero.x, Math.abs(Math.sin(this.walkPhase)) * 0.05 * this.walkAmount, hero.z);
-    f.root.rotation.y = caster.rotation.y;
-    if (!f.loaded) return;
-    f.resetPose();
-    const X = AXIS_X, w = this.walkAmount, s = Math.sin(this.walkPhase);
-    f.rot('thighL', X, -0.55 * s * w);
-    f.rot('thighR', X, 0.55 * s * w);
-    f.rot('shinL', X, 0.7 * Math.max(0, s) * w);
-    f.rot('shinR', X, 0.7 * Math.max(0, -s) * w);
-    f.rot('armL', X, 0.35 * s * w);
-    f.rot('armR', X, -0.35 * s * w * (1 - this.castAmount));
-    f.rot('chest', X, -0.04 * w + 0.015 * Math.sin(this.clock * 1.8));
-    // Casting: the right arm thrown forward toward the target, the chest turning into it.
-    const c = this.castAmount;
-    f.rot('armR', X, -1.35 * c);
-    f.rot('foreR', X, -0.25 * c);
-    f.rot('chest', AXIS_Y, -0.25 * c);
-  }
 
   private setMouse(e: PointerEvent) {
     const r = this.host.dom.getBoundingClientRect();
@@ -276,6 +251,7 @@ export class HeroMode {
 
   /** Click on the ground (not aiming): walk there, and forget a pending cast. */
   private order() {
+    if (this.locked) return;
     this.pending = null;
     this.moveTo = this.cursor.clone();
     this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
@@ -283,6 +259,7 @@ export class HeroMode {
   }
 
   private beginAim(i: number) {
+    if (this.locked) return;
     const spell = this.kit.spells[i];
     if (this.cooldowns[i] > 0) { this.say(`${spell.name} is on cooldown`); return; }
     const spec = this.host.targeting(spell.label);
@@ -329,6 +306,7 @@ export class HeroMode {
     this.moveTo = null;
     this.rooted = this.host.cast(spell.label);
     this.cooldowns[i] = spell.cooldown;
+    this.onCast?.(spell.label);
     this.flashSlot(i);
   }
 

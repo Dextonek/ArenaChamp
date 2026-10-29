@@ -47,6 +47,10 @@ export class Arena {
    */
   persist = false;
   respawnAfter = 4;
+  /** Enemy HP (100; a duel opponent has more). */
+  maxHp = MAX_HP;
+  /** A round play area (a duel ring): the caster and the enemies are kept inside it. Null = the open floor. */
+  bounds: { x: number; z: number; r: number } | null = null;
 
   private foes: Foe[] = [];
   private selected: Foe[] = [];
@@ -54,6 +58,7 @@ export class Arena {
   private groundMarker: THREE.Mesh;
   private ground = createGround();
   private raycaster = new THREE.Raycaster();
+  private v = new THREE.Vector3();
   private overlay: HTMLDivElement;
   private labels: { el: HTMLDivElement; t: number; pos: THREE.Vector3 }[] = [];
 
@@ -142,7 +147,7 @@ export class Arena {
     this.caster.reset();
     for (const f of this.foes) {
       f.figure.reset();
-      f.hp = MAX_HP;
+      f.hp = this.maxHp;
       f.flash = 0;
       f.dead = -1;
       f.knock.set(0, 0, 0);
@@ -254,6 +259,12 @@ export class Arena {
     for (const f of this.foes) {
       f.offset.addScaledVector(f.knock, dt);
       f.knock.multiplyScalar(Math.exp(-dt * 7));
+      if (this.bounds) {
+        // Knockback can't push an enemy out of the ring: fold the overshoot back into the offset.
+        const p = this.v.copy(f.home).add(f.offset);
+        this.keepInside(p, 0.6);
+        f.offset.copy(p).sub(f.home);
+      }
       f.figure.group.position.copy(f.home).add(f.offset).add(f.displaced);
       f.flash *= Math.exp(-dt * 7);
       if (f.flash > 0.002) f.figure.setFlash(f.flash, f.flashTint);
@@ -272,9 +283,9 @@ export class Arena {
       (f.ring.material as THREE.MeshBasicMaterial).opacity = this.selected[0] === f ? 0.9 : 0.55;
       f.bar.position.copy(f.figure.group.position).add(new THREE.Vector3(0, 2.75, 0));
       f.bar.quaternion.copy(this.camera.quaternion);
-      f.bar.visible = f.figure.group.visible && f.hp < MAX_HP;
-      f.barFill.scale.x = Math.max(0.001, f.hp / MAX_HP);
-      f.barFill.position.x = -0.6 * (1 - f.hp / MAX_HP);
+      f.bar.visible = f.figure.group.visible && f.hp < this.maxHp;
+      f.barFill.scale.x = Math.max(0.001, f.hp / this.maxHp);
+      f.barFill.position.x = -0.6 * (1 - f.hp / this.maxHp);
     }
     if (this.groundPoint) {
       this.groundMarker.position.set(this.groundPoint.x, 0.05, this.groundPoint.z);
@@ -290,6 +301,7 @@ export class Arena {
     const p = this.caster.group.position.add(move);
     p.x = THREE.MathUtils.clamp(p.x, -55, 55);
     p.z = THREE.MathUtils.clamp(p.z, -55, 55);
+    this.keepInside(p);
     this.caster.group.rotation.y = Math.atan2(move.x, move.z);
   }
 
@@ -312,11 +324,70 @@ export class Arena {
     this.overlay.style.display = on ? '' : 'none';
   }
 
+  /** Moves `p` (y ignored) back inside `bounds`, `margin` from the edge. */
+  keepInside(p: THREE.Vector3, margin = 0.6) {
+    const b = this.bounds;
+    if (!b) return p;
+    const dx = p.x - b.x, dz = p.z - b.z, d = Math.hypot(dx, dz), r = b.r - margin;
+    if (d > r) { p.x = b.x + (dx / d) * r; p.z = b.z + (dz / d) * r; }
+    return p;
+  }
+
+  /** Walks an enemy by `move` (ground plane), keeps it inside the bounds and turns it to face the way it goes. */
+  moveFoe(target: Enemy, move: THREE.Vector3) {
+    const f = this.foes.find((x) => x.figure === target);
+    if (!f || f.dead >= 0) return;
+    f.home.add(move).setY(0);
+    this.keepInside(f.home);
+    f.figure.setHome(f.home);
+    if (move.lengthSq() > 1e-8) f.figure.group.rotation.y = Math.atan2(move.x, move.z);
+  }
+
+  /** Puts an enemy at `p` (home and spawn), full HP, alive. */
+  placeFoe(target: Enemy, p: THREE.Vector3) {
+    const f = this.foes.find((x) => x.figure === target);
+    if (!f) return;
+    f.spawn.copy(p).setY(0);
+    this.respawn(f);
+  }
+
+  /** HP of an enemy (0 when dead or unknown). */
+  hpOf(target: Enemy) {
+    const f = this.foes.find((x) => x.figure === target);
+    return f && f.dead < 0 ? f.hp : 0;
+  }
+
+  /**
+   * A cast context for any caster (a duel opponent casting at the player): the same shape `context()` builds, with
+   * the caller's own targets, `hit` and `displace`. Nothing in the arena is reset.
+   */
+  contextFor(o: {
+    caster: Enemy;
+    from: THREE.Vector3;
+    point: THREE.Vector3;
+    targets: Enemy[];
+    targetPos: THREE.Vector3[];
+    hit: (target: Enemy, opts?: HitOptions) => void;
+    displace?: (target: Enemy, offset: THREE.Vector3) => void;
+  }): CastContext {
+    const from = o.from.clone().setY(0), point = o.point.clone().setY(0);
+    return {
+      caster: o.caster,
+      from,
+      aim: yawTo(from, point),
+      targets: o.targets,
+      targetPos: o.targetPos.map((p) => p.clone().setY(0)),
+      point,
+      hit: o.hit,
+      displace: o.displace ?? (() => {}),
+    };
+  }
+
   private respawn(f: Foe) {
     f.home.copy(f.spawn);
     f.figure.setHome(f.spawn);
     f.figure.reset();
-    f.hp = MAX_HP;
+    f.hp = this.maxHp;
     f.flash = 0;
     f.dead = -1;
     f.knock.set(0, 0, 0);
@@ -341,7 +412,7 @@ export class Arena {
     bar.add(bg, barFill);
     this.group.add(figure.group, ring, bar);
     return {
-      figure, home: home.clone(), hp: MAX_HP, flash: 0, flashTint: new THREE.Color(), knock: new THREE.Vector3(), offset: new THREE.Vector3(),
+      figure, home: home.clone(), hp: this.maxHp, flash: 0, flashTint: new THREE.Color(), knock: new THREE.Vector3(), offset: new THREE.Vector3(),
       displaced: new THREE.Vector3(), dead: -1, spawn: home.clone(), ring, bar, barFill,
     };
   }
@@ -369,7 +440,8 @@ export class Arena {
     this.onPick?.();
   }
 
-  private say(text: string, color: string, at: THREE.Vector3, scale: number) {
+  /** A floating label over `at` (damage numbers, DODGED...). */
+  say(text: string, color: string, at: THREE.Vector3, scale = 1) {
     const el = document.createElement('div');
     el.textContent = text;
     el.style.cssText = `position:absolute;color:${color};text-shadow:0 2px 6px #000;transform:translate(-50%,-50%) scale(${scale});`;

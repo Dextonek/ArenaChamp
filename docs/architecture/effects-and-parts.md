@@ -1,0 +1,175 @@
+---
+title: Effects and shared parts
+tags: [architecture, effects, parts, kits, weapons]
+updated: 2026-10-29
+---
+
+# Effects and shared parts
+
+The contract every effect implements (`Effect` / `EffectModule` in [types.ts](../../src/effects/types.ts)) and a catalogue of the reusable building blocks: the core parts in `src/effects/parts/`, the five hero-kit parts files, the shared helpers in [common.ts](../../src/effects/common.ts) and the weapons kit in `src/effects/weapons/`. Read it before writing a spell so you reuse a part instead of re-inventing it.
+
+## The `Effect` contract
+
+An `Effect` is one timed set piece that [main.ts](../../src/main.ts) plays, steps and renders.
+
+| Member | Meaning |
+|---|---|
+| `group: THREE.Group` | everything the effect draws; main adds it to the scene and toggles `visible` |
+| `emitters: Emitter[]` | particle emitters inside `group`; main keeps their point-size scale in sync with the viewport (add every emitter, including a part's, e.g. `SmokeBall.emitter`) |
+| `shake: number` | camera shake for this frame in world units, read every frame (0 = none) |
+| `screen?: ScreenFx` | optional full-screen feedback (see [core parts](#core-parts-srceffectspartsts)) |
+| `cinematic?: Cinematic` | optional scripted camera with letterbox |
+| `playing: boolean` | true while the timeline runs; hero mode relies on it to keep an effect alive as a lingering cast |
+| `play()` | restart from the beginning (main wraps it, see [overview](overview.md#effect-slots-lazy-build-setmode-active)) |
+| `update(dt)` | advance; must keep emitters updating even when not playing |
+| `cast?(ctx: CastContext)` | targeted effects only; called right before each `play()`. Read positions from the context, never from `ENEMY_POS` / `CASTER_POS` |
+
+Optionally an effect exposes `duration` (seconds); main reads it (untyped) for the hotbar progress bar.
+
+## The `EffectModule` registry entry
+
+| Field | Meaning |
+|---|---|
+| `label` | name in the mode dropdown and the key for `vfx.selectMode` and hero-kit spells |
+| `category?` | dropdown group (default `'set pieces'`) |
+| `create()` | builds the `Effect` (called lazily on first selection) |
+| `bloom` | `BloomSettings` applied when the mode is selected |
+| `frameCamera(camera, controls, effect)` | puts the camera where the whole effect is visible; helpers `frameArena` ([common.ts](../../src/effects/common.ts)) and `frameCast` ([targeting.ts](../../src/effects/targeting.ts)) |
+| `buildGui(folder, effect)` | adds the effect's controls (main adds `play` and `frame camera`) |
+| `telegraphs?(effect)` | danger zones read on each play, see [targeting-and-arena.md](targeting-and-arena.md#telegraphs-telegraphts) |
+| `targeting?: TargetingSpec` | marks a targeted effect: main shows the shared arena and calls `cast()` before each play; the effect must not create its own caster or enemies |
+
+Registries and categories are described in the [overview](overview.md#registries-and-categories).
+
+## Core parts (`src/effects/parts/*.ts`)
+
+[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral and alchemy files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
+
+| Part | File | What it is | Main methods / fields |
+|---|---|---|---|
+| `ScreenFx` (+ `createScreenFx`, `clearScreenFx`) | [screen.ts](../../src/effects/parts/screen.ts) | state object for full-screen feedback: `darken` + `tint`, `impact` frames 0-4 (dark / light / X-ray / outline cards) with `silhouettes`, `speedLines` at `focus`, `exposure`, `whiteout`, `chroma` + `edgeTint`, `desaturate` + `keepHue`, `crack`, `shatter` | `createScreenFx()`, `clearScreenFx(fx)` (call in `reset()`) |
+| `impactFrameAt`, `flashBeat`, `chromaPulse` | [screen.ts](../../src/effects/parts/screen.ts) | timeline helpers for the above | `impactFrameAt(t, start, pattern, frameTime)` returns the impact mode at `t`; `flashBeat(t, flash, hold, fade, antiDepth)` returns `{ exposure, whiteout }` (anti-flash then whiteout); `chromaPulse(t, hit, peak, decay)` |
+| `StarBurst` | [starBurst.ts](../../src/effects/parts/starBurst.ts) | hard-edged spiky camera-facing star (impact pop, glint); coloured outer star plus rotated white core | `mesh`, `set(pos, size, opacity, spin)`, static `pop(age, hold, shrink)` (scale-in, hold, shrink curve) |
+| `CrescentArc` | [crescentArc.ts](../../src/effects/parts/crescentArc.ts) | crescent / wind / slash stroke along a circular arc in the mesh's local XY plane, soft or toon style, with erosion | `mesh`; setters `head` (0..1 sweep), `length`, `erosion`, `opacity`, `time`; colours `edgeColor`, `midColor`, `outerColor` |
+| `LightningArc` | [lightningArc.ts](../../src/effects/parts/lightningArc.ts) | thick camera-facing jagged bolt with forks and flicker, world-unit width | `mesh`, `opacity`, `setEnds(a, b)`, `reroll()`, `update(dt)` |
+| `SmokeBall` | [smokeBall.ts](../../src/effects/parts/smokeBall.ts) | toon black smoke balls (normal-blended) that bulge then break into flakes; pool of `maxBalls` | `mesh`, `emitter` (add to `emitters`), `trigger(pos, size, life)`, `clear()`, `update(dt)` |
+| `Cinematic` (+ `createCinematic`, `clearCinematic`, `sampleShots`, `ShotKey`) | [cinematic.ts](../../src/effects/parts/cinematic.ts) | scripted camera state (`active`, `position`, `target`, `fov`, `roll`, `letterbox`) and a keyed shot sampler with cuts and easing (`linear`, `in`, `out`, `inOut`) | `sampleShots(keys, t, out)` |
+| `HeatHaze` | [distortion.ts](../../src/effects/parts/distortion.ts) | rising heat shimmer in a camera-facing quad, drawn only into the distortion buffer | `mesh`, `set(pos, strength, time, scale)` (strength in screen UV; good range 0.008-0.02; 0 hides) |
+| `ShockRefraction` | [distortion.ts](../../src/effects/parts/distortion.ts) | expanding refraction ring (shockwave bend), `facing` `'ground'` or `'camera'` | `mesh`, `set(center, radius, strength)` (0.015-0.04 at impact, decaying) |
+| `DISTORT_LAYER` | [distortion.ts](../../src/effects/parts/distortion.ts) | the layer index (6) the distortion buffer renders | constant |
+
+## Hero-kit parts
+
+Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`).
+
+### Blood: [blood.ts](../../src/effects/parts/blood.ts)
+
+Liquid blood that hardens to crystal; bone sigil as the pale foil.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `BloodTendril` | tapered viscous rope with a bead at the tip | `setPoints(points)` or `setFunction(fn)`, `reveal(head, tail)`, `update(t)` |
+| `BloodSplats` | pool of wet ground splats (instanced decals) | `add(pos, size)`, `fadeOutAll(s)` |
+| `BloodPool` | big dark wet pool with a lumpy edge | `place(center)`, `spread(radius, s)`, `dry(dryTime, fadeTime)` |
+| `BloodDrops` | pooled teardrops with gravity; leave splats | `emit`, `spray(pos, dir, count, speed, spread)`, `drain(...)` (drops arc home to a moving target, `onArrive`) |
+| `BloodThorns` | instanced crystal spikes | `spike(base, dir, length, width, grow, delay)` returns a handle, `place(handle, ...)`, `erupt(...)` ring or disc, `shatter(...)`; `glint` / `glintAt` |
+| `BloodSigil` | canvas-drawn bone crest | `set(center, normal, radius, spin)`, `reveal`, `opacity` |
+
+### Forge: [forge.ts](../../src/effects/parts/forge.ts)
+
+Molten slag that cools, heavy iron with hot edges, sparks, steam and ash (pale foil).
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `SlagPool` | molten ground decal; crust grows in as it cools; web mode for the ultimate | `place`, `spread(radius, s)`, `cool(s, delay)`, `fade(s, delay)` |
+| `SlagBlobs` | thrown molten blobs that become small cooling splats on landing (cap about 10) | `throw(pos, vel, size)` |
+| `SlagStreams` | continuous molten ropes along a per-frame path | `set(i, fn, head, tail, radius, cool, time)`, `hide(i)` |
+| `Sparks` | streak sparks, life about 0.4 s | `burst(pos, dir, count, speed, spread)` |
+| `ForgeIron` | builders for heavy meshes (hammer, anvil, rivet) with heat-driven edge lines | `make(geo, scale)`, `heat(mesh, h)` |
+| `IronChunks` | broken iron that bounces, cools and sinks | `burst(center, count, speed, size, heat, life, spreadXZ)` |
+| `ChainRing` | loop of heavy chain links around a vertical axis | `place(center, radius, y, spin, heat, wobble)` (every frame), `linkPos(...)` |
+| `QuenchSteam` | toon steam wisps (ash foil, optional cold accent) | `puff(pos, size, accent)` |
+| `AshFlakes` | falling ash | `fall(center, radius, count, height, life)` |
+| `HotStreak` | short fat comet trail | `set(head, tail, width, alpha)` |
+| `ForgeSigil` | canvas-drawn ground ring with runes | `set(center, radius, spin)`, `reveal`, `opacity`, `glow` |
+| `PulseRing` | expanding ground ring of heat | `set(center, radius, opacity, thickness)` |
+
+### Frost: [frost.ts](../../src/effects/parts/frost.ts)
+
+Rime ferns, clear faceted ice, snow and breath mist.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `IceShards` | small angular shards with gravity and spin | `emit`, `burst(pos, count, speed, life, size)` |
+| `IceCrystals` | instanced hexagonal ice prisms with a pale core line | `spike(base, dir, length, width, grow, delay, fromTip)`, `place`, `cluster(...)`, `shatter(...)`, `flare` |
+| `FrostFerns` | ground decal of branching rime | `grow(center, radius, s, delay)`, `shatter(fadeSeconds)`, `fade(s)` |
+| `RimeSleeves` | rime climbing up figures | `set(i, feet, height, radius, grow, opacity)`, `clear()` |
+| `RimeRing` | rime ring racing across the floor | `set(center, radius, width, opacity)` |
+| `IceStreak` | tapered pale streak (javelin wake) | `set(head, tail, width, opacity)` |
+| `Snow` | snowflake pool | `swirl(...)`, `fall(...)`, `scatter(...)`, `stop()`; `frozen`, `size` |
+| `FrostBreath` | cone of toon mist puffs | `blow(from, dir, length, seconds)` |
+
+### Astral: [astral.ts](../../src/effects/parts/astral.ts)
+
+Constellations: four-point stars, gold lines, light arrows, parchment chart (pale foil), night veil (dark layer).
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `StarPoints` | instanced four-point stars | `add(pos, size, delay)` returns a handle, `drop(...)`, `place`, `position`, `setSize`, `remove`, `fall(i, vel, life)`, `fallAll`; `twinkle` |
+| `ConstellationLines` | gold segments that draw themselves | `connect(a, b, seconds, delay)` returns a handle, `move(i, a, b)`, `snap(s)`, `fadeOut(s)` |
+| `StarArrow` | bright head with a long tapered gold tail | `fly(from, to, seconds)`; `onArrive` callback |
+| `StarChart` | parchment star-chart ring on the ground | `set(center, radius)`, `reveal`, `opacity`, `hole`, `spin` |
+| `NightVeil` | translucent dark-violet night, ground disc or dome | `set(center, radius, height)`, `setPlane(center, normal, rx, ry)`, `opacity` |
+
+### Alchemy: [alchemy.ts](../../src/effects/parts/alchemy.ts)
+
+Glass flasks, bubbling acid, fumes, a glass-ink circle (pale foil), transmutation gold.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Flask` | thin-walled round flask with sloshing acid | `scale`, `slosh(t, amount)`, `lob(from, to, height, u)` |
+| `GlassShards` | instanced flat glass shards (or gold flakes) | `burst(pos, count, speed, opts)` |
+| `Bubbles` | acid bubbles that rise, swell and pop into rings | `emit(pos, size, opts)`, `splash(pos, size)` |
+| `AcidPool` | bubbling acid ground decal | `spread(center, radius, s)`, `drain(s)`, `bubbleAt(x, z, size, life)`; `boil` |
+| `Fumes` | dark toon fume wisps (default cap 8) | `puff(pos, size, drift, rise)` |
+| `Droplets` | acid droplets flying an arc | `fire(from, to, seconds, size, delay)`; `onLand` callback |
+| `TransmuteCircle` | glass-ink alchemical circle | `set(center, radius)`, `reveal`, `opacity`, `lit` (0..6), `hole` |
+| `AcidColumn` | acid blob that morphs from column to sphere | `configure(base, height, radius, sphereCentre, sphereRadius)`, `update(time, morph, wobble)` |
+| `FigureShell` | slightly larger copy of an arena figure's silhouette; `'gold'` statue with `crack` / `flash`, or `'rim'` green fresnel | `follow(source, grow)`, `reset()` |
+
+## Shared helpers: [common.ts](../../src/effects/common.ts)
+
+| Export | What it is |
+|---|---|
+| `Enemy` (+ `FigureOptions`) | the hooded, horned figure used for targets, the caster and the dodge dummy; `group`, `material` (robe), `trim`; `setHome(p)`, `reset()`, `setFlash(v, tint?)`, `setCrush(v)` (0 standing .. 1 flattened). The arena's HP/flash logic owns these on arena figures |
+| `createCaster(color)` | the golden caster (`facing` pi so it looks toward -Z) |
+| `createGround(radius = 60)` | slate-slab ground disc named `ground` (play mode hides an effect's own `ground` child and uses the arena's) |
+| `ENEMY_POS`, `CASTER_POS` | authoring positions for non-targeted set pieces: enemy at the origin, caster at `(0, 0, 14)` facing -Z |
+| `frameArena(camera, controls, center, radius, heightBias)` | standard side-view framing from +X |
+| `GlowSphere` | fresnel-rim additive energy sphere; `mesh`, `opacity`, `color` |
+| `LightPillar` | vertical open-cylinder beam; `set(x, z, bottom, top, opacity)` |
+| `createRing(color, inner, outer, segments)` | flat additive ring for shockwaves, rune circles and auras |
+| `softDotTexture()` | soft round sprite texture |
+| `createSwordGeometry`, `createSpearGeometry`, `createHammerGeometry`, `createShieldGeometry` | unit prop geometries (tip at origin pointing -Y for the sword and spear) |
+| `mergeParts(parts)`, `smoothstep(x)` | geometry merge helper, easing |
+
+## Weapons kit (`src/effects/weapons/`)
+
+Technique: [WEAPON_VFX_GUIDE.md](../WEAPON_VFX_GUIDE.md); briefs: [WEAPON_AURA_BRIEF.md](../WEAPON_AURA_BRIEF.md). Models: [models.md](models.md).
+
+| File | Exports | Purpose |
+|---|---|---|
+| [kit.ts](../../src/effects/weapons/kit.ts) | `WeaponModel`, `FlowRibbon`, `StarFlare`, `LilyBurst`, `PetalSwarm`, `PolylineSpawner`, `BladeTrail`, `alongPolyline`, `petalTexture`, `wave`, `TAU` | the aura building blocks. `WeaponModel`: GLB loaded once, cloned per effect, darkened, with an additive fresnel rim (the effect works before it loads; `rim` is the rim opacity). `FlowRibbon`: scrolling, eroding flame/silk ribbon, `update(loopT, period, cycles)`. `StarFlare`: halo + four-point glint + horizontal lens streak. `LilyBurst`: spider-lily filament burst. `PetalSwarm`: instanced petals, `emit(at, n, speed, up)`. `PolylineSpawner`: feeds a rate-0 emitter along a polyline. `BladeTrail`: swept ribbon, `push(base, tip)` while active. Everything loops on a period P |
+| [aura.ts](../../src/effects/weapons/aura.ts) | `WeaponAura` (abstract), `weaponModule(label, id, create, opts)` | idle "enchant" aura: weapon at the origin of `rig` (grip at 0, head up +Y, face +Z), ignites over `activation` seconds then loops with `period`; `loopT` must drive everything periodic, hide parts with `visible = false`, never zero scale. `weaponModule` builds the registry entry (category `weapons`) |
+| [sockets.ts](../../src/effects/weapons/sockets.ts) | `SOCKETS`, `WeaponId`, `fanPoint(deg, r, z)` | attach points per weapon in the weapon's own space (orb, tip, pommel, blade base, spine points, fan leaves...), taken from the Blender build scripts. Use these, never the loaded geometry (effects are created before models load) |
+| [strike.ts](../../src/effects/weapons/strike.ts) | `WeaponStrike` (abstract), `strikeModule(label, create, opts)`, `Pose`, `samplePose`, `IDLE` | weapon attack: the rigged `Hero` replaces the arena caster, holds the weapon with its aura reparented into the hand (`hero.grip`), dashes to the target, strikes, walks back. Subclasses give `poses`, `duration`, `impact` and `animate()`. The capsule caster is hidden while shown and restored when main hides the effect (the group's `visible` setter is overridden). Category `weapon attacks` |
+| [hero.ts](../../src/effects/weapons/hero.ts) | `Hero`, `HeroOptions`, `HERO_SCALE`, `BoneName` | the rigged wielder, see [models.md](models.md#runtime-srceffectsweaponsherots) |
+
+## See also
+
+- [Architecture overview](overview.md)
+- [Targeting and arena](targeting-and-arena.md)
+- [Hero mode](hero-mode.md)
+- [Models pipeline](models.md)
+- [Docs home](../README.md)
+- [Art bible](../ART_BIBLE.md), [VFX principles](../VFX_PRINCIPLES.md)

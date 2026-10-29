@@ -204,6 +204,19 @@ _Last updated: 2026-10-29_
   bleeding moon, blood sphere freezes into a thorn-star, hit 2.4 s, 4.5 s total). 2-3 contact-sheet rounds each;
   sheets in `docs/spells/` (hemolance, thorn-garden, crimson-pact, sanguine-eclipse). 128 effects registered;
   the full `selfTest` sweep passes.
+- **1v1 duel** (B, or View → duel; `src/duel.ts`, `src/heroFigure.ts`): the hero vs an AI hero of another kit in a
+  ring (radius 12, gold rim). 600 HP each, HUD bars with portraits, the opponent's spells via `castAs` (one-shot
+  context override, lingering) with their own danger zones, impact-time dodge check (DODGED), AI (distance, strafe,
+  R/E/W/Q priority, rooted to impact), VICTORY / DEFEAT card, rematch, opponent picker. Arena gained `maxHp`,
+  `bounds`/`keepInside`, `moveFoe`, `placeFoe`, `hpOf`, `contextFor`, public `say`. Verified by stepping: AI casts
+  and damages, standing still in Anvil Drop costs 65 while walking out shows DODGED and costs 0, defeat after
+  17.6 s idle, victory card, old-round hits ignored. Sweep 144/144. Screenshot `docs/heroes/duel.jpg`.
+- **Documentation knowledge base** (user 2026-10-29: "rewrite the whole thing like docs"): `docs/README.md` (home,
+  map of content), `guide/using-the-tool.md`, `architecture/` (overview, effects-and-parts, targeting-and-arena,
+  hero-mode, models), `pipeline/` (workflow, review-tools), `catalog/` (effects.md: all 144 by category with links;
+  `heroes/` roster + one page per hero), `knowledge/` (lessons, glossary). Existing docs (art bible, principles,
+  briefs, status) stay at their paths (the skill and the design notes link them) and are part of the map. Front
+  matter on every new page, relative links only (784 links checked). Root README rewritten as a short front door.
 - **Four more hero kits + hero models** (user 2026-10-29): forge (Brannoc, the Ashen Smith: rivet shot, anvil drop,
   bellows ward, forgefall), frost (Isolde, the Winter Warden: rime spear, frostfern field, glacial mantle, winter's
   crown), astral (Lyra, the Star Archer: starshot, constellation snare, orbit veil, celestial hunt), alchemy (Vex, the
@@ -238,12 +251,13 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
-- Nothing uncommitted. 6329099 four hero kits, hero models, hero switcher; fa60c09 blood kit, hero mode. Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
-  60ec4cb three cinematic heroes; a7f26de seven more cinematic heroes.
-- Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
-  d89f0b7 weapons (models, auras, hero, weapon attacks).
+- Uncommitted: the documentation knowledge base and the 1v1 duel. Branch `feat/particle-editor` has no remote; latest
+  commits 6329099 four hero kits, models, switcher; fa60c09 blood kit, hero mode; earlier a7f26de, 60ec4cb,
+  108ce68, d89f0b7, a4b9d65.
 
 ## Known look issues (small)
+- Duel v1: the opponent uses one telegraph set at a time (a new cast replaces the old zones); it never dodges; the
+  two heroes can't share a kit. Not watched in real time (the browser pane doesn't animate while hidden).
 - Hero figures: poses are procedural (walk swing, one casting arm); not checked closely from the gameplay camera.
   Isolde's back still glows fairly bright (ice fan emission + pale robe).
 - Volatile flask: a faint stain is still on the floor at 1.75 (gone at 1.8).

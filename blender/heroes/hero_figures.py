@@ -188,7 +188,7 @@ class HeroFigure(figure_kit.Figure):
 
     # ---- frost ------------------------------------------------------------------------------------------
     def ice_crown(self):
-        ice = self._mat("ice", "#9fd4ff", roughness=0.08, coat=1.0, emission="#6fc8ff", strength=0.6)
+        ice = self._mat("ice", "#9fd4ff", roughness=0.08, coat=1.0, emission="#6fc8ff", strength=0.2)
         top = Vector((0, 0.015, 1.74))
         n = 9
         for k in range(n):
@@ -202,7 +202,7 @@ class HeroFigure(figure_kit.Figure):
 
     def ice_mantle(self):
         """A fan of ice shards standing up behind the shoulders, and crystal clusters at the shoulders and wrists."""
-        ice = self._mat("ice", "#9fd4ff", roughness=0.08, coat=1.0, emission="#6fc8ff", strength=0.6)
+        ice = self._mat("ice", "#9fd4ff", roughness=0.08, coat=1.0, emission="#6fc8ff", strength=0.2)
         n = 11
         for k in range(n):
             t = (k - (n - 1) / 2) / ((n - 1) / 2)  # -1..1 across the back

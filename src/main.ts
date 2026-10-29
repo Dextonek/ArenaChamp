@@ -18,8 +18,9 @@ import { Arena } from './arena';
 import { Hotbar } from './hotbar';
 import { HeroMode } from './heroMode';
 import { HERO_KITS } from './heroes';
+import { Duel } from './duel';
 import { CASTER_POS } from './effects/common';
-import type { Effect, EffectModule } from './effects/types';
+import type { CastContext, Effect, EffectModule } from './effects/types';
 import { DISTORT_LAYER } from './effects/parts/distortion';
 import type { ScreenFx } from './effects/parts/screen';
 
@@ -170,6 +171,24 @@ let active: EffectSlot | undefined;
  */
 const lingering = new Set<EffectSlot>();
 let keepLingering = false;
+/** A cast context for the next play() instead of the arena's own (`castAs`: a duel opponent casting). */
+let castOverride: CastContext | null = null;
+
+/**
+ * Plays a targeted effect for another caster (a duel opponent) with its own context. It joins the lingering
+ * effects, so the player's active effect, panel and camera stay as they are. Returns the effect's danger zones.
+ */
+function castAs(label: string, ctx: CastContext): TelegraphSpec[] {
+  const slot = slots.get(label);
+  const effect = slot && ensureEffect(slot);
+  if (!slot || !effect) return [];
+  castOverride = ctx;
+  effect.play();
+  castOverride = null;
+  effect.group.visible = true;
+  if (active !== slot) lingering.add(slot);
+  return slot.module.telegraphs?.(effect) ?? [];
+}
 
 // Danger zones + the player dummy that has to dodge them. The clock restarts whenever the active effect plays.
 const telegraphs = new TelegraphLayer();
@@ -270,6 +289,13 @@ const heroPick = { hero: HERO_KITS[0].name };
 const heroPickCtrl = fView.add(heroPick, 'hero', HERO_KITS.map((k) => k.name)).name('hero').onChange((name: string) => {
   const kit = HERO_KITS.find((k) => k.name === name);
   if (kit) heroMode.setKit(kit);
+  if (duel.on) duel.start(); // a new round with the new hero (and an opponent of another kit)
+});
+const duelState = { on: false, opponent: 'random' };
+const duelCtrl = fView.add(duelState, 'on').name('duel (B)').onChange((v: boolean) => setDuel(v));
+fView.add(duelState, 'opponent', ['random', ...HERO_KITS.map((k) => k.name)]).name('opponent').onChange((n: string) => {
+  duel.opponentChoice = n;
+  if (duel.on) duel.start();
 });
 fView.add(gameplay, 'zones').name('danger zones').onChange((v: boolean) => (telegraphs.group.visible = v));
 fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => {
@@ -325,7 +351,10 @@ function ensureEffect(slot: EffectSlot): Effect | undefined {
     const play = effect.play.bind(effect);
     const targeting = slot.module.targeting;
     effect.play = () => {
-      if (targeting && effect.cast) effect.cast(arena.context(targeting));
+      if (targeting && effect.cast) {
+        effect.cast(castOverride ?? arena.context(targeting));
+        castOverride = null;
+      }
       placeEffect(effect, !targeting && playMode.on);
       play();
       onEffectPlay(slot);
@@ -402,6 +431,7 @@ window.addEventListener('keydown', (e) => {
     else setPlayMode(!playMode.on);
   }
   if (e.code === 'KeyH' && !e.repeat) setHeroMode(!heroMode.enabled);
+  if (e.code === 'KeyB' && !e.repeat) setDuel(!duel.on);
 });
 
 /**
@@ -481,12 +511,36 @@ const heroMode = new HeroMode(
 );
 scene.add(heroMode.group);
 
+// --- Duel: the hero against an AI hero of another kit in a small ring (on top of hero mode) -----------------
+const duel = new Duel({
+  arena,
+  heroMode,
+  kits: HERO_KITS,
+  castAs,
+  targeting: (label) => slots.get(label)?.module.targeting,
+});
+scene.add(duel.group);
+duel.onLeave = () => setDuel(false);
+
+function setDuel(on: boolean) {
+  duelState.on = on;
+  duelCtrl.updateDisplay();
+  if (on) {
+    if (!heroMode.enabled) setHeroMode(true);
+    duel.opponentChoice = duelState.opponent;
+    duel.start();
+  } else duel.stop();
+}
+
 function setHeroMode(on: boolean) {
   if (on === heroMode.enabled) return;
   heroState.on = on;
   heroCtrl.updateDisplay();
   keepLingering = on;
-  if (!on) dropLingering();
+  if (!on) {
+    if (duel.on) setDuel(false);
+    dropLingering();
+  }
   if (on) {
     setPlayMode(true);
     hotbar.setVisible(false);
@@ -496,6 +550,7 @@ function setHeroMode(on: boolean) {
     // The kit spells' bloom (the particle preset's low threshold makes pale costumes glow until the first cast).
     Object.assign(bloom, { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 });
     applyBloom();
+    fBloom.controllers.forEach((c) => c.updateDisplay());
   } else {
     heroMode.setEnabled(false);
     controls.enabled = true;
@@ -596,6 +651,7 @@ function step(dt: number) {
   if (playMode.on && !heroMode.enabled) walk(dt);
   if (arena.group.visible) arena.update(dt);
   heroMode.update(dt);
+  duel.update(dt);
   player.update(dt, effectClock, zones);
 }
 
@@ -732,6 +788,8 @@ renderer.setAnimationLoop(() => {
       ? `${fps} fps · ${emitter.aliveCount} particles`
       : active.error
         ? `${active.module.label} failed to build: ${active.error}`
+        : duel.on
+          ? `${fps} fps · duel · click ground = move · Q W E R = aim, click = cast · walk out of the red zones to dodge · B leave`
         : heroMode.enabled
           ? `${fps} fps · hero mode · ${active.module.label} · click ground = move · Q W E R = aim, click = cast · wheel = zoom · H exit · hits ${arena.hits} · kills ${arena.kills}`
         : playMode.on
@@ -821,6 +879,6 @@ function selfTest(label: string, seconds = 6) {
 }
 
 (window as unknown as { vfx: unknown }).vfx = {
-  emitter, mode, setMode, selectMode, setPlayMode, setHeroMode, heroMode, heroPickCtrl, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
+  emitter, mode, setMode, selectMode, setPlayMode, setHeroMode, heroMode, heroPickCtrl, setDuel, duel, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
   get effect() { return active?.effect; },
 };
