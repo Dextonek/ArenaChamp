@@ -204,6 +204,16 @@ _Last updated: 2026-10-29_
   bleeding moon, blood sphere freezes into a thorn-star, hit 2.4 s, 4.5 s total). 2-3 contact-sheet rounds each;
   sheets in `docs/spells/` (hemolance, thorn-garden, crimson-pact, sanguine-eclipse). 128 effects registered;
   the full `selfTest` sweep passes.
+- **Four more hero kits + hero models** (user 2026-10-29): forge (Brannoc, the Ashen Smith: rivet shot, anvil drop,
+  bellows ward, forgefall), frost (Isolde, the Winter Warden: rime spear, frostfern field, glacial mantle, winter's
+  crown), astral (Lyra, the Star Archer: starshot, constellation snare, orbit veil, celestial hunt), alchemy (Vex, the
+  Plague Alchemist: volatile flask, caustic pool, mutagen, grand transmutation). Shared rules
+  `pipeline/designs/kit-common.md`, sheets `pipeline/designs/kit-<theme>.md`, parts `src/effects/parts/<theme>.ts`,
+  kit data `src/kits/<theme>.ts`, categories `hero: <theme>`. Every spell reviewed in 2 rounds (sheets in
+  `docs/spells/`, incl. the multi-spell `_multi` helper now in `pipeline/tools/contact-sheet.js`). Hero switcher (View
+  → hero, or click the portrait). Hero models: hand-drawn concept `docs/heroes/lineup_concept.svg`, rigged figures from
+  `blender/heroes/hero_figures.py` in `public/models/heroes/`, shown in hero mode with walk / breath / cast poses
+  (`docs/heroes/ingame_sheet.jpg`). 144 effects registered; the full `selfTest` sweep passes (names from `vfx.slots`).
 - **Hero mode (H, or View → hero mode)**: a MOBA-style test of a hero kit on top of play mode. Click (or
   right-click) the ground to walk there; Q/W/E/R aim (range ring at the hero, a strip to the hovered enemy for
   single-target spells, the area circle at the cursor clamped to range for ground spells), click casts, right-click
@@ -228,12 +238,15 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
-- Nothing uncommitted. fa60c09 blood hero kit and hero mode. Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
+- Uncommitted: four hero kits (16 spells), hero models, hero switcher. Last commit fa60c09 (blood kit, hero mode). Commits on `feat/particle-editor` (no remote): 108ce68 art bible, stage, distortion, 43 spells;
   60ec4cb three cinematic heroes; a7f26de seven more cinematic heroes.
 - Nothing. Committed on `feat/particle-editor` (no remote): a4b9d65 targeting / play mode / parts kit / pipeline,
   d89f0b7 weapons (models, auras, hero, weapon attacks).
 
 ## Known look issues (small)
+- Hero figures: poses are procedural (walk swing, one casting arm); not checked closely from the gameplay camera.
+  Isolde's back still glows fairly bright (ice fan emission + pale robe).
+- Volatile flask: a faint stain is still on the floor at 1.75 (gone at 1.8).
 - Hero mode: a hero who walks during Crimson Pact leaves the heart behind; the follow camera centres on the hero, so
   the ultimate's moon sits at the top edge unless you zoom out with the wheel. With overlapping spells, only the
   newest one's danger zones are drawn, and one screen-feedback state wins per frame (an impact frame, else the

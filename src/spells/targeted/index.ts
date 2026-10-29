@@ -72,6 +72,22 @@ import { hemolanceModule } from './hemolance';
 import { thornGardenModule } from './thornGarden';
 import { crimsonPactModule } from './crimsonPact';
 import { sanguineEclipseModule } from './sanguineEclipse';
+import { rivetShotModule } from './rivetShot';
+import { anvilDropModule } from './anvilDrop';
+import { bellowsWardModule } from './bellowsWard';
+import { forgefallModule } from './forgefall';
+import { rimeSpearModule } from './rimeSpear';
+import { frostfernFieldModule } from './frostfernField';
+import { glacialMantleModule } from './glacialMantle';
+import { wintersCrownModule } from './wintersCrown';
+import { starshotModule } from './starshot';
+import { constellationSnareModule } from './constellationSnare';
+import { orbitVeilModule } from './orbitVeil';
+import { celestialHuntModule } from './celestialHunt';
+import { volatileFlaskModule } from './volatileFlask';
+import { causticPoolModule } from './causticPool';
+import { mutagenModule } from './mutagen';
+import { grandTransmutationModule } from './grandTransmutation';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -148,6 +164,22 @@ export const targetedModules: EffectModule[] = [
   thornGardenModule,
   crimsonPactModule,
   sanguineEclipseModule,
+  rivetShotModule,
+  anvilDropModule,
+  bellowsWardModule,
+  forgefallModule,
+  rimeSpearModule,
+  frostfernFieldModule,
+  glacialMantleModule,
+  wintersCrownModule,
+  starshotModule,
+  constellationSnareModule,
+  orbitVeilModule,
+  celestialHuntModule,
+  volatileFlaskModule,
+  causticPoolModule,
+  mutagenModule,
+  grandTransmutationModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

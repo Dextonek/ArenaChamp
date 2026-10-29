@@ -2,6 +2,11 @@
  * Hero kits for hero mode (`src/heroMode.ts`): four spells bound to Q / W / E / R, R being the ultimate. A kit is
  * data only; a new hero is a new entry here, its spells are ordinary registered effects (looked up by label).
  */
+import { alchemyKit } from './kits/alchemy';
+import { astralKit } from './kits/astral';
+import { forgeKit } from './kits/forge';
+import { frostKit } from './kits/frost';
+
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
 export interface HeroSpell {
@@ -29,6 +34,8 @@ export interface HeroKit {
   foil: string;
   /** Draws the portrait into a `size` × `size` canvas. */
   portrait: (g: CanvasRenderingContext2D, size: number) => void;
+  /** Rigged hero figure (Dao rig, built by blender/heroes/hero_figures.py), path under public/. */
+  model?: string;
   spells: [HeroSpell, HeroSpell, HeroSpell, HeroSpell];
 }
 
@@ -184,4 +191,13 @@ const bloodKit: HeroKit = {
   ],
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit];
+/** Each hero's rigged figure (blender/heroes/hero_figures.py exports them; concept: docs/heroes/lineup_concept.svg). */
+const MODELS: Record<string, string> = {
+  Vesper: 'models/heroes/blood.glb',
+  Brannoc: 'models/heroes/forge.glb',
+  Isolde: 'models/heroes/frost.glb',
+  Lyra: 'models/heroes/astral.glb',
+  Vex: 'models/heroes/alchemy.glb',
+};
+
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

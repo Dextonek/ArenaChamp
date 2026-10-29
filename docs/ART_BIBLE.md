@@ -47,6 +47,10 @@ in small details.
 | Void / shadow | `#f0d8ff` | `#d68cff` | `#8a2ee0` | `#ff3fa0` | `#07030c` |
 | Spiderlily (phoenix fan) | `#fff4d6` | `#ffb547` | `#ff5fa8` | `#7a2a8c` | `#2a0f2e` |
 | Blood (foil: bone `#e9dcc6`) | `#fff1e6` | `#ff3b4e` | `#8c0f22` | `#bff4ff` | `#140306` |
+| Forge (foil: ash `#cfc6b8`) | `#fff3d0` | `#ffb03a` | `#ff5a12` | `#6fe0ff` | `#120a08` |
+| Frost (foil: rime `#e8f4fa`) | `#f6fcff` | `#c9efff` | `#4fb4e8` | `#ff9ec4` | `#081626` |
+| Astral (foil: chart `#e8e0c8`) | `#fffbe8` | `#ffe08a` | `#5a3fc0` | `#7ff3ff` | `#070414` |
+| Alchemy (foil: glass `#dcefe6`, gold `#e8b84a`) | `#f4ffe0` | `#c8ff4a` | `#4fbf2a` | `#ff5ad8` | `#0c1606` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.
@@ -141,6 +145,10 @@ When something new is made and is better than these, swap it in here.
 | liquid blood: dark crimson body, dark fresnel rim, one thin hot rim line, a pinpoint specular, a pale foil (bone sigil, moon) near it | a big white highlight on a smooth red sphere (it reads as a billiard ball or a cherry) |
 | drips and runs with uneven widths and lengths, rounded tips with a bead | a regular comb of identical drips (it reads as teeth or a saw blade) |
 | a hero kit: one shared parts file, one palette row, one signature shape in every spell, a scale ladder Q → R | four spells built from prose alone (four different bloods) |
+| big ultimate objects (a hammer, a crown, a stag) built inside the gameplay frame: ~4–9 above the ground near the point | forming them 10+ up, where the gameplay camera only sees their tips |
+| steam, fumes and smoke as small toon wisps with eroding edges | smooth opaque spheres (they read as grey or green balls) |
+| a self-cast aura's telegraph ends at its first pulse | a telegraph disk held for the whole aura (it floods the frame orange) |
+| hero figures: the spell theme on the body (a chest forge, an ice-shard fan, a star halo, vials), the silhouette first | a generic robed figure with the theme only in its colours |
 
 ## 6. Taste calls I made (tell me if any is wrong)
 - **How anime:** impact frames and focus lines only on finishers and big hits; everyday moves stay clean.

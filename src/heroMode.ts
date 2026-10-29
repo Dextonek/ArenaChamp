@@ -3,6 +3,7 @@ import type { Arena } from './arena';
 import type { Enemy } from './effects/common';
 import type { TargetingSpec } from './effects/targeting';
 import type { HeroKit, HeroSpell } from './heroes';
+import { Hero } from './effects/weapons/hero';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -13,11 +14,15 @@ export interface HeroModeHost {
   targeting(label: string): TargetingSpec | undefined;
   /** Casts the effect with the arena's current target; returns the seconds the hero is rooted (to the impact). */
   cast(label: string): number;
+  /** Click on the portrait: switch to the next hero (main owns the kit list). */
+  nextKit?(): void;
 }
 
 const HERO_SPEED = 8;
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
 const HOVER_PICK = 2.2; // how close to the cursor an enemy counts as hovered
+const AXIS_X = new THREE.Vector3(1, 0, 0);
+const AXIS_Y = new THREE.Vector3(0, 1, 0);
 
 type Target = { enemy: Enemy } | { point: THREE.Vector3 };
 
@@ -53,6 +58,15 @@ export class HeroMode {
   private hoverRing: THREE.Mesh;
   private moveMarker: THREE.Mesh;
   private moveMarkerT = 1;
+
+  // The hero's figure (stands in for the arena's capsule caster while hero mode is on).
+  private figures = new Map<string, Hero>();
+  private figure: Hero | null = null;
+  private walkPhase = 0;
+  private walkAmount = 0;
+  private castAmount = 0;
+  private lastHero = new THREE.Vector3();
+  private clock = 0;
 
   // HUD.
   private hud: HTMLDivElement;
@@ -119,6 +133,29 @@ export class HeroMode {
     });
   }
 
+  get kitName() {
+    return this.kit.name;
+  }
+
+  /** Switches the hero: new bar, indicator colours from the kit, cooldowns and aim cleared. */
+  setKit(kit: HeroKit) {
+    this.kit = kit;
+    const color = (m: THREE.Mesh, c: string) => (m.material as THREE.MeshBasicMaterial).color.set(c);
+    color(this.rangeRing, kit.foil);
+    color(this.moveMarker, kit.foil);
+    for (const m of [this.areaRing, this.areaFill, this.aimLine, this.hoverRing]) color(m, kit.accent);
+    const shown = this.hud.style.display;
+    this.hud.remove();
+    this.slotEls = [];
+    this.hud = this.buildHud();
+    this.hud.style.display = shown;
+    this.tip.style.display = 'none';
+    this.cancelAim();
+    this.pending = null;
+    this.cooldowns.fill(0);
+    this.showFigure();
+  }
+
   setEnabled(on: boolean) {
     this.enabled = on;
     this.group.visible = on;
@@ -132,6 +169,7 @@ export class HeroMode {
     this.cooldowns.fill(0);
     this.rooted = 0;
     if (on) { this.host.arena.clearSelection(); this.snapCamera = true; }
+    this.showFigure();
   }
 
   update(dt: number) {
@@ -164,6 +202,60 @@ export class HeroMode {
 
     this.updateIndicators(dt, hero);
     this.updateHud(dt);
+    this.poseFigure(dt, hero);
+  }
+
+  // --- figure -------------------------------------------------------------------------------------------
+
+  /** Shows the current kit's figure and hides the capsule caster (or restores the capsule when off). */
+  private showFigure() {
+    const capsule = this.host.arena.caster.group;
+    const url = this.enabled ? this.kit.model : undefined;
+    for (const f of this.figures.values()) f.root.visible = false;
+    this.figure = null;
+    if (url) {
+      let f = this.figures.get(url);
+      if (!f) {
+        f = new Hero({ url, shade: 0.9, maxEmissive: 1, tintSheen: true });
+        this.figures.set(url, f);
+        this.group.add(f.root);
+      }
+      f.root.visible = true;
+      this.figure = f;
+    }
+    for (const c of capsule.children) c.visible = !this.figure;
+    this.lastHero.copy(capsule.position);
+  }
+
+  /** Follows the caster: a walk cycle while moving, the casting arm while rooted, a slow breath at rest. */
+  private poseFigure(dt: number, hero: THREE.Vector3) {
+    const f = this.figure;
+    if (!f) return;
+    this.clock += dt;
+    const caster = this.host.arena.caster.group;
+    const speed = Math.hypot(hero.x - this.lastHero.x, hero.z - this.lastHero.z) / Math.max(dt, 1e-4);
+    this.lastHero.copy(hero);
+    const k = 1 - Math.exp(-dt * 12);
+    this.walkAmount += ((speed > 0.5 ? 1 : 0) - this.walkAmount) * k;
+    this.castAmount += ((this.rooted > 0 ? 1 : 0) - this.castAmount) * (1 - Math.exp(-dt * 16));
+    this.walkPhase += dt * 9 * this.walkAmount;
+    f.root.position.set(hero.x, Math.abs(Math.sin(this.walkPhase)) * 0.05 * this.walkAmount, hero.z);
+    f.root.rotation.y = caster.rotation.y;
+    if (!f.loaded) return;
+    f.resetPose();
+    const X = AXIS_X, w = this.walkAmount, s = Math.sin(this.walkPhase);
+    f.rot('thighL', X, -0.55 * s * w);
+    f.rot('thighR', X, 0.55 * s * w);
+    f.rot('shinL', X, 0.7 * Math.max(0, s) * w);
+    f.rot('shinR', X, 0.7 * Math.max(0, -s) * w);
+    f.rot('armL', X, 0.35 * s * w);
+    f.rot('armR', X, -0.35 * s * w * (1 - this.castAmount));
+    f.rot('chest', X, -0.04 * w + 0.015 * Math.sin(this.clock * 1.8));
+    // Casting: the right arm thrown forward toward the target, the chest turning into it.
+    const c = this.castAmount;
+    f.rot('armR', X, -1.35 * c);
+    f.rot('foreR', X, -0.25 * c);
+    f.rot('chest', AXIS_Y, -0.25 * c);
   }
 
   private setMouse(e: PointerEvent) {
@@ -322,22 +414,29 @@ export class HeroMode {
 
   private buildHud() {
     const kit = this.kit;
+    // Panel tints come from the kit's accent, so each hero's bar takes its colour.
+    const tint = (pct: number, base = '#060608') => `color-mix(in srgb, ${kit.accent} ${pct}%, ${base})`;
     const root = document.createElement('div');
     root.style.cssText =
       'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:6;display:none;align-items:flex-end;' +
       'gap:14px;padding:10px 16px 12px;border-radius:14px;user-select:none;' +
-      'background:linear-gradient(180deg,rgba(26,8,12,0.88),rgba(10,3,5,0.94));border:1px solid #4a1a22;' +
+      `background:linear-gradient(180deg,${tint(14)},${tint(5)});border:1px solid ${tint(32)};opacity:0.97;` +
       'box-shadow:0 8px 28px rgba(0,0,0,0.6);font:600 12px ui-sans-serif,system-ui;color:' + kit.foil + ';';
 
     // Portrait and name plate.
     const plate = document.createElement('div');
     plate.style.cssText = 'display:flex;align-items:center;gap:10px;padding-right:6px;';
     const portrait = canvasIcon(64, kit.portrait);
-    portrait.style.cssText = `width:64px;height:64px;border-radius:50%;border:2px solid ${kit.foil};box-shadow:0 0 0 2px #2a0a10;`;
+    portrait.style.cssText = `width:64px;height:64px;border-radius:50%;border:2px solid ${kit.foil};box-shadow:0 0 0 2px ${tint(18)};`;
     const names = document.createElement('div');
     names.innerHTML = `<div style="font:700 16px ui-serif,Georgia,serif;letter-spacing:0.5px">${kit.name}</div>` +
       `<div style="font:500 11px ui-sans-serif,system-ui;opacity:0.7">${kit.title}</div>` +
       `<div style="margin-top:6px;font:500 10px ui-sans-serif,system-ui;opacity:0.55;line-height:1.4">click: move · Q W E R: aim<br>click: cast · right-click / Esc: cancel</div>`;
+    if (this.host.nextKit) {
+      portrait.style.cursor = 'pointer';
+      portrait.title = 'next hero';
+      portrait.addEventListener('click', () => this.host.nextKit?.());
+    }
     plate.append(portrait, names);
     root.appendChild(plate);
 
@@ -349,8 +448,8 @@ export class HeroMode {
       const box = document.createElement('div');
       box.style.cssText =
         `position:relative;width:${size}px;height:${size}px;border-radius:${ult ? 12 : 9}px;overflow:hidden;cursor:pointer;` +
-        `border:2px solid ${ult ? '#c9a24a' : '#5a2430'};` +
-        (ult ? 'box-shadow:0 0 0 1px #2a1a06,0 0 14px rgba(201,162,74,0.35);' : 'box-shadow:0 0 0 1px #1a0508;');
+        `border:2px solid ${ult ? '#c9a24a' : tint(40)};` +
+        (ult ? 'box-shadow:0 0 0 1px #2a1a06,0 0 14px rgba(201,162,74,0.35);' : `box-shadow:0 0 0 1px ${tint(10)};`);
       const icon = canvasIcon(128, spell.icon);
       icon.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
       const shade = document.createElement('div');
@@ -363,7 +462,7 @@ export class HeroMode {
       key.textContent = spell.key;
       key.style.cssText =
         'position:absolute;left:3px;bottom:3px;min-width:16px;height:16px;padding:0 3px;border-radius:4px;' +
-        `background:rgba(10,3,5,0.85);border:1px solid ${ult ? '#c9a24a' : '#7a3040'};color:${ult ? '#ffd27a' : kit.foil};` +
+        `background:${tint(8)};border:1px solid ${ult ? '#c9a24a' : tint(55)};color:${ult ? '#ffd27a' : kit.foil};` +
         'font:800 11px ui-sans-serif,system-ui;display:flex;align-items:center;justify-content:center;';
       box.append(icon, shade, secs, key);
       box.addEventListener('click', () => this.beginAim(i));

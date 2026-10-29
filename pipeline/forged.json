@@ -1416,5 +1416,229 @@
       "arenaHits": 4,
       "singularFrames": 0
     }
+  },
+  {
+    "label": "rivet shot",
+    "file": "src/spells/targeted/rivetShot.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "forge",
+    "slot": "Q",
+    "note": "forge hero kit, design pipeline/designs/kit-forge.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "anvil drop",
+    "file": "src/spells/targeted/anvilDrop.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "forge",
+    "slot": "W",
+    "note": "forge hero kit, design pipeline/designs/kit-forge.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "bellows ward",
+    "file": "src/spells/targeted/bellowsWard.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "forge",
+    "slot": "E",
+    "note": "forge hero kit, design pipeline/designs/kit-forge.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "forgefall",
+    "file": "src/spells/targeted/forgefall.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "forge",
+    "slot": "R",
+    "note": "forge hero kit, design pipeline/designs/kit-forge.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "rime spear",
+    "file": "src/spells/targeted/rimeSpear.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "frost",
+    "slot": "Q",
+    "note": "frost hero kit, design pipeline/designs/kit-frost.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "frostfern field",
+    "file": "src/spells/targeted/frostfernField.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "frost",
+    "slot": "W",
+    "note": "frost hero kit, design pipeline/designs/kit-frost.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "glacial mantle",
+    "file": "src/spells/targeted/glacialMantle.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "frost",
+    "slot": "E",
+    "note": "frost hero kit, design pipeline/designs/kit-frost.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "winter's crown",
+    "file": "src/spells/targeted/wintersCrown.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "frost",
+    "slot": "R",
+    "note": "frost hero kit, design pipeline/designs/kit-frost.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "starshot",
+    "file": "src/spells/targeted/starshot.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "astral",
+    "slot": "Q",
+    "note": "astral hero kit, design pipeline/designs/kit-astral.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "constellation snare",
+    "file": "src/spells/targeted/constellationSnare.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "astral",
+    "slot": "W",
+    "note": "astral hero kit, design pipeline/designs/kit-astral.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "orbit veil",
+    "file": "src/spells/targeted/orbitVeil.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "astral",
+    "slot": "E",
+    "note": "astral hero kit, design pipeline/designs/kit-astral.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "celestial hunt",
+    "file": "src/spells/targeted/celestialHunt.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "astral",
+    "slot": "R",
+    "note": "astral hero kit, design pipeline/designs/kit-astral.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "volatile flask",
+    "file": "src/spells/targeted/volatileFlask.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "alchemy",
+    "slot": "Q",
+    "note": "alchemy hero kit, design pipeline/designs/kit-alchemy.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "caustic pool",
+    "file": "src/spells/targeted/causticPool.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "alchemy",
+    "slot": "W",
+    "note": "alchemy hero kit, design pipeline/designs/kit-alchemy.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "mutagen",
+    "file": "src/spells/targeted/mutagen.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "alchemy",
+    "slot": "E",
+    "note": "alchemy hero kit, design pipeline/designs/kit-alchemy.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "grand transmutation",
+    "file": "src/spells/targeted/grandTransmutation.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "alchemy",
+    "slot": "R",
+    "note": "alchemy hero kit, design pipeline/designs/kit-alchemy.md; 2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
   }
 ]

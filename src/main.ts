@@ -266,6 +266,11 @@ fView.add(playMode, 'on').name('play mode (P)').onChange((v: boolean) => {
 });
 const heroState = { on: false };
 const heroCtrl = fView.add(heroState, 'on').name('hero mode (H)').onChange((v: boolean) => setHeroMode(v));
+const heroPick = { hero: HERO_KITS[0].name };
+const heroPickCtrl = fView.add(heroPick, 'hero', HERO_KITS.map((k) => k.name)).name('hero').onChange((name: string) => {
+  const kit = HERO_KITS.find((k) => k.name === name);
+  if (kit) heroMode.setKit(kit);
+});
 fView.add(gameplay, 'zones').name('danger zones').onChange((v: boolean) => (telegraphs.group.visible = v));
 fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => {
   if (v && playMode.on) setPlayMode(false);
@@ -461,6 +466,10 @@ const heroMode = new HeroMode(
     camera,
     dom: renderer.domElement,
     targeting: (label) => slots.get(label)?.module.targeting,
+    nextKit: () => {
+      const i = HERO_KITS.findIndex((k) => k.name === heroPick.hero);
+      heroPickCtrl.setValue(HERO_KITS[(i + 1) % HERO_KITS.length].name);
+    },
     cast: (label) => {
       selectMode(label);
       // Rooted until the spell lands: the latest danger-zone impact, else a short default.
@@ -484,6 +493,9 @@ function setHeroMode(on: boolean) {
     arena.reset();
     controls.enabled = false;
     heroMode.setEnabled(true);
+    // The kit spells' bloom (the particle preset's low threshold makes pale costumes glow until the first cast).
+    Object.assign(bloom, { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 });
+    applyBloom();
   } else {
     heroMode.setEnabled(false);
     controls.enabled = true;
@@ -809,6 +821,6 @@ function selfTest(label: string, seconds = 6) {
 }
 
 (window as unknown as { vfx: unknown }).vfx = {
-  emitter, mode, setMode, selectMode, setPlayMode, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
+  emitter, mode, setMode, selectMode, setPlayMode, setHeroMode, heroMode, heroPickCtrl, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
   get effect() { return active?.effect; },
 };

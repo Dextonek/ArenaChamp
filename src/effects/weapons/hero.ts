@@ -11,7 +11,21 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
  */
 
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
-let heroScene: Promise<THREE.Group> | undefined;
+const scenes = new Map<string, Promise<THREE.Group>>();
+
+export interface HeroOptions {
+  /** Model under `public/` (default the Azure Cloud disciple). Any figure on the Dao rig works. */
+  url?: string;
+  /** Base-colour multiplier (the disciple's white robe needs 0.45 under bloom; dark costumes less). */
+  shade?: number;
+  /** Cap on the material emissive intensity (glowing props). */
+  maxEmissive?: number;
+  /**
+   * Tint the cloth sheen with the cloth's own colour. The kit exports white sheen, which turns dark robes near-white
+   * from the high gameplay camera.
+   */
+  tintSheen?: boolean;
+}
 
 /** The arena capsules are about 2.3 tall; the figure is 1.75 m. Hero and weapon both use this scale. */
 export const HERO_SCALE = 1.3;
@@ -42,11 +56,17 @@ export class Hero {
   private q2 = new THREE.Quaternion();
   private v = new THREE.Vector3();
 
-  constructor() {
+  constructor(opts: HeroOptions = {}) {
     this.root.scale.setScalar(HERO_SCALE);
     this.grip.scale.setScalar(HERO_SCALE);
-    heroScene ??= loader.loadAsync(`${import.meta.env.BASE_URL}models/figures/hero.glb`).then((g) => g.scene);
-    heroScene.then((src) => {
+    const url = opts.url ?? 'models/figures/hero.glb';
+    const shade = opts.shade ?? 0.45, maxEmissive = opts.maxEmissive ?? 0.3;
+    let load = scenes.get(url);
+    if (!load) {
+      load = loader.loadAsync(`${import.meta.env.BASE_URL}${url}`).then((g) => g.scene);
+      scenes.set(url, load);
+    }
+    load.then((src) => {
       // SkeletonUtils.clone: each hero gets its own skeleton
       const scene = cloneSkinned(src);
       scene.traverse((o) => {
@@ -55,8 +75,13 @@ export class Hero {
           // the white robe blows out under the effects' bloom: a mid-tone figure reads better next to the glow
           const mats = (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).map((m) => {
             const c = m.clone() as THREE.MeshStandardMaterial;
-            if (c.color) c.color.multiplyScalar(0.45);
-            if (c.emissiveIntensity !== undefined) c.emissiveIntensity = Math.min(c.emissiveIntensity, 0.3);
+            if (c.color) c.color.multiplyScalar(shade);
+            const phys = c as unknown as THREE.MeshPhysicalMaterial;
+            if (opts.tintSheen && phys.isMeshPhysicalMaterial && phys.sheen > 0) {
+              phys.sheenColor.copy(c.color).multiplyScalar(1.6);
+              phys.sheen = 0.5;
+            }
+            if (c.emissiveIntensity !== undefined) c.emissiveIntensity = Math.min(c.emissiveIntensity, maxEmissive);
             return c;
           });
           mesh.material = Array.isArray(mesh.material) ? mats : mats[0];
