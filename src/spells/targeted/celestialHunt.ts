@@ -24,7 +24,7 @@ export interface CelestialHuntSettings {
   loop: boolean;
 }
 
-export const defaultCelestialHunt = (): CelestialHuntSettings => ({ damage: 125, loop: false });
+export const defaultCelestialHunt = (): CelestialHuntSettings => ({ damage: 135, loop: false });
 
 // Timeline (seconds).
 const SHOT_T = 0.1; // arrow leaves the bow

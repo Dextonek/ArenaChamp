@@ -49,6 +49,8 @@ export class Arena {
   respawnAfter = 4;
   /** Enemy HP (100; a duel opponent has more). */
   maxHp = MAX_HP;
+  /** Optional veto on hits (a duel: the opponent dodges by leaving the zone). Return false to drop the hit. */
+  hitFilter: ((target: Enemy, opts: HitOptions) => boolean) | null = null;
   /** A round play area (a duel ring): the caster and the enemies are kept inside it. Null = the open floor. */
   bounds: { x: number; z: number; r: number } | null = null;
 
@@ -235,6 +237,7 @@ export class Arena {
   hit(target: Enemy, opts: HitOptions = {}) {
     const f = this.foes.find((x) => x.figure === target);
     if (!f || f.dead >= 0) return;
+    if (this.hitFilter && !this.hitFilter(target, opts)) return;
     const dmg = Math.round(opts.damage ?? THREE.MathUtils.randFloat(10, 20));
     f.hp = Math.max(0, f.hp - dmg);
     f.flash = 1;

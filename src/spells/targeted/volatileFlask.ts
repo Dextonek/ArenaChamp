@@ -16,7 +16,7 @@ export interface VolatileFlaskSettings {
   loop: boolean;
 }
 
-export const defaultVolatileFlask = (): VolatileFlaskSettings => ({ damage: 40, burn: 12, loop: false });
+export const defaultVolatileFlask = (): VolatileFlaskSettings => ({ damage: 45, burn: 12, loop: false });
 
 // Timeline (seconds).
 const THROW_T = 0.2;

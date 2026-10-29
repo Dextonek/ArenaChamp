@@ -21,7 +21,7 @@ export interface ForgefallSettings {
   loop: boolean;
 }
 
-export const defaultForgefall = (): ForgefallSettings => ({ damage: 130, loop: false });
+export const defaultForgefall = (): ForgefallSettings => ({ damage: 115, loop: false });
 
 // Timeline (seconds).
 const STREAM_T = 0.3;

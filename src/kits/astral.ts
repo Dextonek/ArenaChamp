@@ -93,7 +93,7 @@ export const astralKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'constellation snare', name: 'Constellation Snare', range: 11, cooldown: 8,
+      key: 'W', label: 'constellation snare', name: 'Constellation Snare', range: 11, cooldown: 7,
       blurb: 'Stars fall around a spot and are joined into a net that snaps tight and drags enemies in.',
       icon(g, s) {
         ground(g, s);

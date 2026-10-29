@@ -81,17 +81,19 @@ The bar shows each spell's icon, key, cooldown sweep and seconds, and a tooltip 
 ultimate (gold frame). The hero is rooted until each spell lands; spells overlap, so a W can still be playing when
 the Q lands. Enemies keep their HP between casts and respawn 4 s after dying.
 
-### Duel (B)
-A 1 vs 1 fight in hero mode: your hero against an AI hero of another kit, in a small ring with a gold rim. Turn it
-on with **B** or **View → duel**; pick the opponent in **View → opponent** (random by default, never your own
-hero). Both have 600 HP (bars at the top).
+### Duel: play (B) or run (N)
+A 1 vs 1 fight in hero mode in a small ring with a gold rim. Both heroes have 600 HP (bars at the top).
 
-- The opponent walks, keeps its distance, strafes and casts its kit on cooldown: Q and W at you, E when you are
-  close, R when you are hurt or the fight runs long.
-- Every enemy spell shows its red danger zone first. A hit only lands if you are still in that zone (or near where
-  it aimed) when it lands: walk out to get **DODGED**.
-- The round ends with **VICTORY** or **DEFEAT**; **Rematch** starts a new round, **Leave duel** (or **B**) ends it.
-  Switching your hero mid-duel starts a new round.
+- **▶ play duel (B)**: you against an AI hero of another kit. Pick the opponent in **View → opponent** (random by
+  default, never your own hero).
+- **▶ run duel, AI vs AI (N)**: both heroes are played by the AI and the camera watches the whole ring; the
+  card names the winner. Your hero (View → hero) is one side, the opponent the other.
+- The AI walks, keeps its distance, strafes and casts its kit on cooldown: Q and W at the other side, E when it is
+  close, R when the other side is hurt or the fight runs long.
+- Every spell shows its red danger zone first. A hit only lands if the target is still in that zone (or near where
+  it aimed) when it lands: walk out to get **DODGED**. This works both ways.
+- The round ends with **VICTORY** / **DEFEAT** (play) or **&lt;HERO&gt; WINS** (run); **Rematch** starts a new
+  round, **leave duel** (or the same key) ends it. Switching your hero mid-duel starts a new round.
 
 ![A duel](../heroes/duel.jpg)
 
@@ -105,7 +107,8 @@ hero). Both have 600 HP (bars at the top).
 | W A S D / arrows | Play mode, player dummy | Walk |
 | Q W E R | Hero mode | Aim a spell |
 | Esc | Hero mode | Cancel the aim |
-| B | Anywhere | Toggle the duel (turns hero mode on) |
+| B | Anywhere | Play duel: you vs the AI (turns hero mode on) |
+| N | Anywhere | Run duel: AI vs AI |
 
 ## See also
 - [Docs home](../README.md)

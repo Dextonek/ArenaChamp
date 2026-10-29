@@ -18,15 +18,15 @@ export interface StarshotSettings {
   loop: boolean;
 }
 
-export const defaultStarshot = (): StarshotSettings => ({ damage: 45, loop: false });
+export const defaultStarshot = (): StarshotSettings => ({ damage: 52, loop: false });
 
 // Timeline (seconds).
-const BOW_END = 0.3;
-const RELEASE_T = 0.35;
-const FLIGHT_1 = 0.4; // hand to the first target
+const BOW_END = 0.22;
+const RELEASE_T = 0.27;
+const FLIGHT_1 = 0.25; // hand to the first target
 const HOP = 0.08;
-const HIT_T = [RELEASE_T + FLIGHT_1, RELEASE_T + FLIGHT_1 + HOP, RELEASE_T + FLIGHT_1 + 2 * HOP]; // 0.75, 0.83, 0.91
-const SNAP_T = 1.0;
+const HIT_T = [RELEASE_T + FLIGHT_1, RELEASE_T + FLIGHT_1 + HOP, RELEASE_T + FLIGHT_1 + 2 * HOP]; // 0.52, 0.60, 0.68
+const SNAP_T = 0.8;
 const DURATION = 1.6;
 const MAX_HITS = 3;
 const STAR_Y = 1.7;

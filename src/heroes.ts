@@ -109,7 +109,7 @@ const bloodKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'hemolance', name: 'Hemolance', range: 11, cooldown: 2.5,
+      key: 'Q', label: 'hemolance', name: 'Hemolance', range: 11, cooldown: 3,
       blurb: 'Hardens her blood into a crystal lance and impales one enemy. The blood comes home.',
       icon(g, s) {
         iconGround(g, s);
@@ -119,7 +119,7 @@ const bloodKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'thorn garden', name: 'Thorn Garden', range: 10, cooldown: 6,
+      key: 'W', label: 'thorn garden', name: 'Thorn Garden', range: 10, cooldown: 7,
       blurb: 'A pool of blood inside a bone sigil freezes upward into a thicket of thorns.',
       icon(g, s) {
         iconGround(g, s);

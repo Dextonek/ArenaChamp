@@ -19,7 +19,7 @@ export interface RimeSpearSettings {
   loop: boolean;
 }
 
-export const defaultRimeSpear = (): RimeSpearSettings => ({ damage: 55, loop: false });
+export const defaultRimeSpear = (): RimeSpearSettings => ({ damage: 50, loop: false });
 
 // Timeline (seconds).
 const GROW_T = 0.05; // the javelin starts to grow in her hand

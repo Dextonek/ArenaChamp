@@ -44,8 +44,8 @@ All four play under the normal gameplay camera (no cinematic, no letterbox). Q, 
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [starshot](../../../src/spells/targeted/starshot.ts) | enemies (up to 3) | 12 | 3 s | 0.75, 0.83 and 0.91 s (one per target) | 1.6 s | She draws a bow of light; a star arrow hops from enemy to enemy and leaves a small constellation behind, which snaps at 1.0 s. Damage 45 per target. |
-| W | [constellation snare](../../../src/spells/targeted/constellationSnare.ts) | ground (r 4) | 11 | 8 s | 0.8 s | 2.1 s | An arrow goes up, stars fall around the spot and are joined into a net that snaps tight at 0.8 s and drags the enemies toward the centre; it breaks apart at 1.4 s. Damage 50. |
+| Q | [starshot](../../../src/spells/targeted/starshot.ts) | enemies (up to 3) | 12 | 3 s | 0.52, 0.60 and 0.68 s (one per target) | 1.6 s | She draws a bow of light; a star arrow hops from enemy to enemy and leaves a small constellation behind, which snaps at 1.0 s. Damage 45 per target. |
+| W | [constellation snare](../../../src/spells/targeted/constellationSnare.ts) | ground (r 4) | 11 | 7 s | 0.8 s | 2.1 s | An arrow goes up, stars fall around the spot and are joined into a net that snaps tight at 0.8 s and drags the enemies toward the centre; it breaks apart at 1.4 s. Damage 50. |
 | E | [orbit veil](../../../src/spells/targeted/orbitVeil.ts) | self (r 5) | 0 (self) | 9 s | 1.0 s and 2.0 s (two strikes) | 3.3 s | A turning constellation of 7 stars circles her under a night veil and fires gold lines at every enemy nearby, twice. Loopable. Damage 12 per strike. |
 | R | [celestial hunt](../../../src/spells/targeted/celestialHunt.ts) | ground (r 7) | 14 | 20 s | 2.35 s | 4.5 s | The ultimate. The world goes to night and a giant constellation stag is drawn in the sky; dead beat at 1.8-1.95 s, then it charges down through the zone (impact frame, star rain). Damage 125. |
 

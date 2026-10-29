@@ -291,8 +291,10 @@ const heroPickCtrl = fView.add(heroPick, 'hero', HERO_KITS.map((k) => k.name)).n
   if (kit) heroMode.setKit(kit);
   if (duel.on) duel.start(); // a new round with the new hero (and an opponent of another kit)
 });
-const duelState = { on: false, opponent: 'random' };
-const duelCtrl = fView.add(duelState, 'on').name('duel (B)').onChange((v: boolean) => setDuel(v));
+const duelState = { opponent: 'random' };
+fView.add({ play: () => setDuel(true, 'play') }, 'play').name('▶ play duel (B)');
+fView.add({ run: () => setDuel(true, 'run') }, 'run').name('▶ run duel, AI vs AI (N)');
+fView.add({ leave: () => setDuel(false) }, 'leave').name('leave duel');
 fView.add(duelState, 'opponent', ['random', ...HERO_KITS.map((k) => k.name)]).name('opponent').onChange((n: string) => {
   duel.opponentChoice = n;
   if (duel.on) duel.start();
@@ -431,7 +433,8 @@ window.addEventListener('keydown', (e) => {
     else setPlayMode(!playMode.on);
   }
   if (e.code === 'KeyH' && !e.repeat) setHeroMode(!heroMode.enabled);
-  if (e.code === 'KeyB' && !e.repeat) setDuel(!duel.on);
+  if (e.code === 'KeyB' && !e.repeat) setDuel(!(duel.on && duel.mode === 'play'), 'play');
+  if (e.code === 'KeyN' && !e.repeat) setDuel(!(duel.on && duel.mode === 'run'), 'run');
 });
 
 /**
@@ -517,18 +520,18 @@ const duel = new Duel({
   heroMode,
   kits: HERO_KITS,
   castAs,
+  playerZones: () => zones,
   targeting: (label) => slots.get(label)?.module.targeting,
 });
 scene.add(duel.group);
 duel.onLeave = () => setDuel(false);
 
-function setDuel(on: boolean) {
-  duelState.on = on;
-  duelCtrl.updateDisplay();
+/** Starts a duel ('play': you vs the AI, 'run': AI vs AI to watch) or ends it. */
+function setDuel(on: boolean, mode: 'play' | 'run' = 'play') {
   if (on) {
     if (!heroMode.enabled) setHeroMode(true);
     duel.opponentChoice = duelState.opponent;
-    duel.start();
+    duel.start(mode);
   } else duel.stop();
 }
 
@@ -788,8 +791,10 @@ renderer.setAnimationLoop(() => {
       ? `${fps} fps · ${emitter.aliveCount} particles`
       : active.error
         ? `${active.module.label} failed to build: ${active.error}`
+        : duel.on && duel.mode === 'run'
+          ? `${fps} fps · run duel (AI vs AI) · ${heroMode.kitName} vs the opponent · N leave · Rematch on the card`
         : duel.on
-          ? `${fps} fps · duel · click ground = move · Q W E R = aim, click = cast · walk out of the red zones to dodge · B leave`
+          ? `${fps} fps · play duel · click ground = move · Q W E R = aim, click = cast · walk out of the red zones to dodge · B leave`
         : heroMode.enabled
           ? `${fps} fps · hero mode · ${active.module.label} · click ground = move · Q W E R = aim, click = cast · wheel = zoom · H exit · hits ${arena.hits} · kills ${arena.kills}`
         : playMode.on

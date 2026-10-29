@@ -61,6 +61,11 @@ export class HeroMode {
   private figure = new HeroFigure();
   /** Duel: no orders or casts (the hero is down, or the round is over). */
   locked = false;
+  /** Run duel (AI vs AI): the mouse and keys don't control the hero; the autopilot does. */
+  spectate = false;
+  /** Run duel: the camera looks here instead of following the hero (the ring's centre), at `focusZoom`. */
+  focus: THREE.Vector3 | null = null;
+  focusZoom = 1.5;
   /** Duel: called after every cast the player makes. */
   onCast?: (label: string) => void;
 
@@ -251,7 +256,7 @@ export class HeroMode {
 
   /** Click on the ground (not aiming): walk there, and forget a pending cast. */
   private order() {
-    if (this.locked) return;
+    if (this.locked || this.spectate) return;
     this.pending = null;
     this.moveTo = this.cursor.clone();
     this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
@@ -259,7 +264,7 @@ export class HeroMode {
   }
 
   private beginAim(i: number) {
-    if (this.locked) return;
+    if (this.locked || this.spectate) return;
     const spell = this.kit.spells[i];
     if (this.cooldowns[i] > 0) { this.say(`${spell.name} is on cooldown`); return; }
     const spec = this.host.targeting(spell.label);
@@ -310,6 +315,22 @@ export class HeroMode {
     this.flashSlot(i);
   }
 
+  /** Autopilot (duel simulations): cooldown left on slot `i`, and whether the hero is rooted by a cast. */
+  cooldownOf(i: number) {
+    return this.cooldowns[i];
+  }
+
+  get isRooted() {
+    return this.rooted > 0;
+  }
+
+  /** Autopilot: casts slot `i` at an enemy or a ground point if it is off cooldown (no range check). */
+  autoCast(i: number, target: { enemy: Enemy } | { point: THREE.Vector3 }) {
+    if (this.locked || this.cooldowns[i] > 0) return false;
+    this.castNow(i, target);
+    return this.cooldowns[i] > 0;
+  }
+
   /** The live enemy nearest the cursor, if one is within reach of it. */
   private enemyNearCursor(): Enemy | null {
     let best = HOVER_PICK, found: Enemy | null = null;
@@ -330,7 +351,8 @@ export class HeroMode {
 
   private followCamera(hero: THREE.Vector3, dt: number) {
     const cam = this.host.camera;
-    const want = hero.clone().setY(0).addScaledVector(CAM_OFFSET, this.zoom);
+    if (this.focus) hero = this.focus;
+    const want = hero.clone().setY(0).addScaledVector(CAM_OFFSET, this.focus ? this.focusZoom : this.zoom);
     cam.position.lerp(want, this.snapCamera ? 1 : 1 - Math.exp(-12 * dt));
     this.snapCamera = false;
     cam.lookAt(hero.x, 0.5, hero.z - 1.5);

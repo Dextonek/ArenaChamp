@@ -44,7 +44,7 @@ All four play under the normal gameplay camera (no cinematic, no letterbox). Q, 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
 | Q | [volatile flask](../../../src/spells/targeted/volatileFlask.ts) | enemy | 10 | 3 s | 0.55 s | 1.8 s | She lobs a flask in a high spinning arc; it shatters on the enemy in glass and caustic splash, and burns for a moment. Damage 40, one burn tick of 12 at 1.2 s. |
-| W | [caustic pool](../../../src/spells/targeted/causticPool.ts) | ground (r 4) | 10 | 8 s | 0.6 s | 2.6 s | Two flasks shatter on the point and an alchemical circle fills with boiling acid that burns everything in it, then drains to a stain. Damage 30, then ticks of 12 (the slow burner of the kits). |
+| W | [caustic pool](../../../src/spells/targeted/causticPool.ts) | ground (r 4) | 10 | 7 s | 0.6 s | 2.6 s | Two flasks shatter on the point and an alchemical circle fills with boiling acid that burns everything in it, then drains to a stain. Damage 30, then ticks of 12 (the slow burner of the kits). |
 | E | [mutagen](../../../src/spells/targeted/mutagen.ts) | self (r 4) | 0 (self) | 9 s | 1.1 s and 2.1 s (two spits) | 3.2 s | She drinks a flask; four flasks orbit her and spit acid at every enemy nearby, twice, then shatter at 2.6 s. Loopable. Damage 12 per spit. |
 | R | [grand transmutation](../../../src/spells/targeted/grandTransmutation.ts) | ground (r 7) | 13 | 20 s | 2.0 s (gold), 2.6 s (shatter) | 4.5 s | The ultimate. A giant circle and a column of acid that coils into a sphere (dead beat 1.85-2.0 s); at 2.0 s everything in the zone turns to gold (80), at 2.6 s the gold shatters (50). |
 

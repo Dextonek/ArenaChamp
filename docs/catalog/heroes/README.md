@@ -61,6 +61,36 @@ The turnaround sheet of the same models is [`models_sheet.jpg`](../../heroes/mod
 - [Lyra, the Star Archer](astral.md)
 - [Vex, the Plague Alchemist](alchemy.md)
 
+## Balance (duel tournament)
+
+Damage per spell after the balance pass (2026-10-29). E auras hit on each pulse; R hits once (Sanguine Eclipse and
+Grand Transmutation twice). Ranges and cooldowns are in each hero's page.
+
+| Hero | Q | W | E | R |
+|---|---|---|---|---|
+| Vesper | Hemolance 53, cd 3 s | Thorn Garden 50 + 10, cd 7 s | Crimson Pact 2 × 9 | Sanguine Eclipse 15 + 120 |
+| Brannoc | Rivet Shot 46 | Anvil Drop 55 | Bellows Ward 2 × 15 | Forgefall 115 |
+| Isolde | Rime Spear 50 | Frostfern Field 56 | Glacial Mantle 2 × 12 | Winter's Crown 125 |
+| Lyra | Starshot 52 per target (hits from 0.52 s) | Constellation Snare 60, cd 7 s | Orbit Veil 2 × 12 | Celestial Hunt 135 |
+| Vex | Volatile Flask 45 + 12 | Caustic Pool 30 + 12 + 12, cd 7 s | Mutagen 2 × 12 | Grand Transmutation 80 + 50 |
+
+Measured with AI vs AI duels (run duel, every hero against every other, both sides on the same AI, both dodging)
+using [duel-tourney.js](../../../pipeline/tools/duel-tourney.js). Win rates, two runs of 100 fights:
+
+| Hero | Before | After |
+|---|---|---|
+| Vesper | 88% | 57% |
+| Brannoc | 67% | 53% |
+| Lyra | 8% | 48% |
+| Isolde | 50% | 46% |
+| Vex | 38% | 46% |
+
+What changed: Hemolance 60 → 53 and cooldown 2.5 → 3 s, Thorn Garden cooldown 6 → 7 s; Rivet Shot 55 → 46, Anvil
+Drop 65 → 55, Forgefall 130 → 115; Rime Spear 55 → 50, Frostfern Field 50 → 56; Starshot 45 → 52 and its first hit
+0.75 → 0.52 s (its late hit was dodged about half the time), Constellation Snare 50 → 60 and cooldown 8 → 7 s,
+Celestial Hunt 125 → 135; Volatile Flask 40 → 45, Caustic Pool cooldown 8 → 7 s. Single matchups still swing a lot
+between runs (the AI's strafing is random); judge balance on the totals of 100+ fights.
+
 ## See also
 
 - [Effect catalog](../effects.md)

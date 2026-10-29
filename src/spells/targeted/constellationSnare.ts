@@ -20,7 +20,7 @@ export interface ConstellationSnareSettings {
   loop: boolean;
 }
 
-export const defaultConstellationSnare = (): ConstellationSnareSettings => ({ damage: 50, loop: false });
+export const defaultConstellationSnare = (): ConstellationSnareSettings => ({ damage: 60, loop: false });
 
 // Timeline (seconds).
 const SHOT_T = 0.2; // arrow is gone, chart and stars begin

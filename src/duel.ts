@@ -12,6 +12,8 @@ export interface DuelHost {
   arena: Arena;
   heroMode: HeroMode;
   kits: HeroKit[];
+  /** The danger zones of the player's spell that was cast last (main.ts `zones`). */
+  playerZones(): TelegraphSpec[];
   /** Plays a targeted effect for another caster (main.ts `castAs`); returns its danger zones. */
   castAs(label: string, ctx: CastContext): TelegraphSpec[];
   targeting(label: string): TargetingSpec | undefined;
@@ -54,14 +56,23 @@ export class Duel {
   private cooldowns = [0, 0, 0, 0];
   private rooted = 0;
   private think = 0;
-  private strafe = 1;
-  private strafeT = 0;
+  private opponentAi = { strafe: 1, strafeT: 0 };
+  private playerAi = { strafe: -1, strafeT: 0 };
+  private playerThink = 0;
+  /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
+  autopilot = false;
+  /** 'play': the player against the AI. 'run': AI against AI to watch (the autopilot drives the player's hero). */
+  mode: 'play' | 'run' = 'play';
+  /** The last finished round (duel simulations read it). */
+  result: { player: string; opponent: string; winner: string; seconds: number; playerHp: number; opponentHp: number; playerCasts: number; opponentCasts: number; playerDodges: number } | null = null;
+  private stats = { playerCasts: 0, opponentCasts: 0, playerDodges: 0, opponentDodges: 0 };
+  /** The player's recent casts (zones and aim), for the opponent's dodge check. */
+  private playerCastsRecent: (EnemyCast & { t: number })[] = [];
   private time = 0;
   private over: 'win' | 'lose' | null = null;
   private overT = 0;
   private savedCount = 6;
   private round = 0;
-  private v = new THREE.Vector3();
 
   // HUD.
   private hud: HTMLDivElement;
@@ -109,8 +120,13 @@ export class Duel {
   onLeave?: () => void;
 
   /** Starts (or restarts) a round against `opponentChoice`, never the player's own kit. */
-  start() {
+  start(mode: 'play' | 'run' = this.mode) {
+    this.mode = mode;
     const arena = this.host.arena, hm = this.host.heroMode;
+    const run = mode === 'run';
+    this.autopilot = run;
+    hm.spectate = run;
+    hm.focus = run ? new THREE.Vector3(RING.x, 0, RING.z) : null;
     const player = hm.currentKit;
     const others = this.host.kits.filter((k) => k.name !== player.name);
     const picked = others.find((k) => k.name === this.opponentChoice);
@@ -141,6 +157,12 @@ export class Duel {
     this.cooldowns.fill(0);
     this.rooted = 0;
     this.think = 1.2; // a beat before the opponent moves
+    this.playerThink = 1.2;
+    this.stats = { playerCasts: 0, opponentCasts: 0, playerDodges: 0, opponentDodges: 0 };
+    this.result = null;
+    this.playerCastsRecent = [];
+    arena.hitFilter = (target, opts) => this.opponentHit(target, opts);
+    hm.onCast = () => this.recordPlayerCast();
     this.time = 0;
     this.over = null;
     this.overT = 0;
@@ -156,6 +178,8 @@ export class Duel {
     const arena = this.host.arena;
     this.on = false;
     this.round++;
+    arena.hitFilter = null;
+    this.host.heroMode.onCast = undefined;
     arena.maxHp = 100;
     arena.respawnAfter = 4;
     arena.bounds = null;
@@ -169,6 +193,9 @@ export class Duel {
     this.hud.style.display = 'none';
     this.card.style.display = 'none';
     this.host.heroMode.locked = false;
+    this.host.heroMode.spectate = false;
+    this.host.heroMode.focus = null;
+    this.autopilot = false;
     this.host.heroMode.resetRound();
   }
 
@@ -195,6 +222,7 @@ export class Duel {
     if (this.playerHp <= 0) return this.finish('lose');
 
     this.ai(dt, foe, foePos, me);
+    if (this.autopilot) this.pilot(dt, foe, foePos, me);
     this.renderHud();
   }
 
@@ -204,41 +232,66 @@ export class Duel {
     for (let i = 0; i < 4; i++) this.cooldowns[i] = Math.max(0, this.cooldowns[i] - dt);
     this.rooted = Math.max(0, this.rooted - dt);
     this.think = Math.max(0, this.think - dt);
-    const d = flat(at, me);
     if (this.rooted > 0 || this.think > 0) {
       this.face(foe, me);
       return;
     }
+    const pick = this.pickSpell(this.opponentKit, (i) => this.cooldowns[i] > 0, flat(at, me), this.playerHp / HP);
+    if (pick) {
+      this.castSpell(pick.i, foe, at, me, pick.spec);
+      return;
+    }
+    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt);
+    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(AI_SPEED * dt));
+    this.face(foe, me);
+  }
 
-    // Cast the best spell that is ready and in reach: R when the player is hurt (or late), E when close, then W, Q.
-    const spells = this.opponentKit.spells;
-    const order = [3, 2, 1, 0];
-    for (const i of order) {
-      if (this.cooldowns[i] > 0) continue;
-      const spell = spells[i];
+  /**
+   * The spell to cast now, if any: the first ready one in the order R, E, W, Q that is in reach. R waits until the
+   * other side is under 55% HP or the round is 20 s old; E (self) waits until the other side is inside its radius.
+   */
+  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number) {
+    for (const i of [3, 2, 1, 0]) {
+      if (cooling(i)) continue;
+      const spell = kit.spells[i];
       const spec = this.host.targeting(spell.label);
       if (!spec) continue;
       const reach = spec.mode === 'self' ? (spec.radius ?? 5) - 0.6 : spell.range;
       if (d > reach) continue;
-      if (i === 3 && this.playerHp > HP * 0.55 && this.time < 20) continue;
-      this.castSpell(i, foe, at, me, spec);
-      return;
+      if (i === 3 && otherHp > 0.55 && this.time < 20) continue;
+      return { i, spec };
     }
+    return null;
+  }
 
-    // Move: hold about 70% of Q's range, strafe around the player, flip the strafe now and then.
-    const want = spells[0].range * 0.7;
-    const toMe = this.v.set(me.x - at.x, 0, me.z - at.z);
-    const len = Math.max(toMe.length(), 1e-3);
-    toMe.divideScalar(len);
-    this.strafeT -= dt;
-    if (this.strafeT <= 0) { this.strafe = -this.strafe; this.strafeT = 1.5 + Math.random() * 2; }
-    const side = new THREE.Vector3(-toMe.z, 0, toMe.x).multiplyScalar(this.strafe);
+  /** A unit move: hold ~70% of Q's range from `other`, strafe around it, flip the strafe every 1.5–3.5 s. */
+  private steer(st: { strafe: number; strafeT: number }, kit: HeroKit, at: THREE.Vector3, other: THREE.Vector3, dt: number) {
+    const d = flat(at, other);
+    const want = kit.spells[0].range * 0.7;
+    const to = new THREE.Vector3(other.x - at.x, 0, other.z - at.z);
+    to.divideScalar(Math.max(to.length(), 1e-3));
+    st.strafeT -= dt;
+    if (st.strafeT <= 0) { st.strafe = -st.strafe; st.strafeT = 1.5 + Math.random() * 2; }
     const move = new THREE.Vector3();
-    if (d > want + 1) move.add(toMe);
-    else if (d < want - 2) move.sub(toMe);
-    move.addScaledVector(side, 0.8);
-    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.normalize().multiplyScalar(AI_SPEED * dt));
-    this.face(foe, me);
+    if (d > want + 1) move.add(to);
+    else if (d < want - 2) move.sub(to);
+    move.addScaledVector(new THREE.Vector3(-to.z, 0, to.x), 0.8 * st.strafe);
+    return move.lengthSq() > 0 ? move.normalize() : move;
+  }
+
+  /** Autopilot: the player's hero fights with the same rules as the opponent (for duel simulations). */
+  private pilot(dt: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3) {
+    const hm = this.host.heroMode;
+    this.playerThink = Math.max(0, this.playerThink - dt);
+    if (hm.isRooted || this.playerThink > 0) return;
+    const kit = hm.currentKit;
+    const pick = this.pickSpell(kit, (i) => hm.cooldownOf(i) > 0, flat(me, at), this.host.arena.hpOf(foe) / HP);
+    if (pick) {
+      const target = pick.spec.mode === 'enemy' || pick.spec.mode === 'enemies' ? { enemy: foe } : { point: pick.spec.mode === 'self' ? me.clone() : at.clone() };
+      if (hm.autoCast(pick.i, target)) { this.stats.playerCasts++; return; }
+    }
+    const move = this.steer(this.playerAi, kit, me, at, dt);
+    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(AI_SPEED * dt));
   }
 
   private castSpell(i: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3, spec: TargetingSpec) {
@@ -273,6 +326,7 @@ export class Duel {
     const impact = record.zones.length ? Math.max(...record.zones.map((z) => z.impact)) : 0.5;
     this.rooted = Math.min(impact, 2.5);
     this.cooldowns[i] = spell.cooldown;
+    this.stats.opponentCasts++;
   }
 
   /** An enemy spell's hit on the player: lands only if the player is still in its zones (or near where it aimed). */
@@ -284,6 +338,7 @@ export class Duel {
     if (!inZone && flat(me, c.aimed) > DODGE_RADIUS) {
       if (!c.dodgedShown) {
         c.dodgedShown = true;
+        this.stats.playerDodges++;
         arena.say('DODGED', '#7dffb0', me, 1.2);
       }
       return;
@@ -302,17 +357,57 @@ export class Duel {
     }
   }
 
+  /** The player just cast: remember its zones and where it aimed (the opponent's position at the cast). */
+  private recordPlayerCast() {
+    if (!this.foe) return;
+    this.playerCastsRecent.push({ round: this.round, zones: this.host.playerZones(), aimed: this.foe.group.position.clone(), dodgedShown: false, t: this.time });
+    this.playerCastsRecent = this.playerCastsRecent.filter((c) => this.time - c.t < 4.5);
+  }
+
+  /** The player's hit on the opponent lands only if it is still in one of the recent casts' zones (or near their aim). */
+  private opponentHit(target: Enemy, _opts: HitOptions) {
+    if (!this.on || target !== this.foe) return true;
+    const p = target.group.position;
+    const recent = this.playerCastsRecent.filter((c) => this.time - c.t < 4.5);
+    if (!recent.length) return true;
+    const lands = recent.some((c) => c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS);
+    if (!lands) {
+      const c = recent[recent.length - 1];
+      if (!c.dodgedShown) {
+        c.dodgedShown = true;
+        this.stats.opponentDodges++;
+        this.host.arena.say('DODGED', '#7dffb0', p, 1.2);
+      }
+    }
+    return lands;
+  }
+
   private face(foe: Enemy, me: THREE.Vector3) {
     const p = foe.group.position;
     foe.group.rotation.y = Math.atan2(me.x - p.x, me.z - p.z);
   }
 
   private finish(result: 'win' | 'lose') {
+    this.result = {
+      player: this.host.heroMode.currentKit.name, opponent: this.opponentKit.name,
+      winner: result === 'win' ? this.host.heroMode.currentKit.name : this.opponentKit.name,
+      seconds: +this.time.toFixed(1), playerHp: this.playerHp, opponentHp: this.foe ? this.host.arena.hpOf(this.foe) : 0,
+      ...this.stats,
+    };
     this.over = result;
     this.overT = 0;
     this.host.heroMode.locked = true;
     this.zones.set([]);
     const me = this.host.heroMode.currentKit, them = this.opponentKit;
+    const winner = result === 'win' ? me : them, loser = result === 'win' ? them : me;
+    if (this.mode === 'run') {
+      this.cardTitle.textContent = `${winner.name.toUpperCase()} WINS`;
+      this.cardTitle.style.color = winner.accent;
+      this.cardText.textContent = `${loser.name} falls after ${this.time.toFixed(1)} s · ${winner.name} keeps ${Math.ceil(result === 'win' ? this.playerHp : this.foe ? this.host.arena.hpOf(this.foe) : 0)} HP.`;
+      this.card.style.display = 'flex';
+      this.renderHud();
+      return;
+    }
     this.cardTitle.textContent = result === 'win' ? 'VICTORY' : 'DEFEAT';
     this.cardTitle.style.color = result === 'win' ? '#ffd27a' : '#ff6a6a';
     this.cardText.textContent = result === 'win' ? `${them.name} falls.` : `${me.name} falls to ${them.name}.`;
@@ -389,8 +484,9 @@ export class Duel {
     const rows: [HeroKit, number][] = [[me, this.playerHp], [them, foeHp]];
     rows.forEach(([kit, hp], i) => {
       const b = this.bars[i];
-      if (b.name.textContent !== kit.name) {
-        b.name.textContent = kit.name;
+      const label = this.mode === 'run' || i === 1 ? `${kit.name} · AI` : `${kit.name} · you`;
+      if (b.name.textContent !== label) {
+        b.name.textContent = label;
         const g = b.portrait.getContext('2d')!;
         g.clearRect(0, 0, 64, 64);
         kit.portrait(g, 64);

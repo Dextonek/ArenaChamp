@@ -204,6 +204,15 @@ _Last updated: 2026-10-29_
   bleeding moon, blood sphere freezes into a thorn-star, hit 2.4 s, 4.5 s total). 2-3 contact-sheet rounds each;
   sheets in `docs/spells/` (hemolance, thorn-garden, crimson-pact, sanguine-eclipse). 128 effects registered;
   the full `selfTest` sweep passes.
+- **Hero balance pass**: spell damage and cooldowns tuned with AI vs AI tournaments (`pipeline/tools/duel-tourney.js`,
+  `_tourney(5)` = 100 fights). Win rates over 200 fights: Vesper 57%, Brannoc 53%, Lyra 48%, Isolde 46%, Vex 46%
+  (before: 88 / 67 / 8 / 50 / 38). Starshot's first hit moved 0.75 → 0.52 s. Numbers in `docs/catalog/heroes/README.md`.
+- **Play / run duel** (user 2026-10-29): **play duel (B)** you vs the AI, **run duel (N)** AI vs AI with a ring
+  camera and a "<HERO> WINS" card. Both sides share the AI (`pickSpell`, `steer`; the player's hero through hero
+  mode's `autoCast` with `spectate` and `focus`), and both sides dodge (arena `hitFilter` checks the opponent
+  against the player's recent cast zones). All 20 matchups × 3 runs (AI vs AI, by stepping): Vesper 21/24 wins,
+  Brannoc 16/24, Isolde 12/24, Vex 9/24, Lyra 2/24; no timeouts; fights 15–43 s. Lyra is far behind (her AI holds
+  ~8.4 away, so Orbit Veil never fires, and Starshot's 45 damage is meant for three targets).
 - **1v1 duel** (B, or View → duel; `src/duel.ts`, `src/heroFigure.ts`): the hero vs an AI hero of another kit in a
   ring (radius 12, gold rim). 600 HP each, HUD bars with portraits, the opponent's spells via `castAs` (one-shot
   context override, lingering) with their own danger zones, impact-time dodge check (DODGED), AI (distance, strafe,
@@ -251,7 +260,7 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
-- Nothing uncommitted. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
+- Uncommitted: play/run duel, balance pass. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
   commits 6329099 four hero kits, models, switcher; fa60c09 blood kit, hero mode; earlier a7f26de, 60ec4cb,
   108ce68, d89f0b7, a4b9d65.
 

@@ -190,7 +190,7 @@ export const alchemyKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'caustic pool', name: 'Caustic Pool', range: 10, cooldown: 8,
+      key: 'W', label: 'caustic pool', name: 'Caustic Pool', range: 10, cooldown: 7,
       blurb: 'Two flasks shatter on the point and an alchemical circle fills with boiling acid that burns everything in it.',
       icon(g, s) {
         ground(g, s);
