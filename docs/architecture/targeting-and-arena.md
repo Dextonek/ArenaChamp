@@ -77,6 +77,14 @@ The caster is turned toward the aim point (toward the primary target for `self`)
 
 `persist` is set by `HeroMode.setEnabled`. In persist mode a dead foe respawns at its `spawn` spot after `respawnAfter` seconds (default 4): full HP, no knockback, removed from the selection. `shuffle()` moves every foe to a random spot (at least 3.2 apart) and updates `home` and `spawn`.
 
+### Obstacles and line of sight
+
+`arena.obstacles` (null by default; the duel ring sets `DUEL_OBSTACLES` from [obstacles.ts](../../src/obstacles.ts))
+are capsules on the ground. `keepInside` pushes positions out of them, `walk` and `moveFoe(target, move, slide = true)`
+slide along their edges, and `lineOfSight(a, b)` is false when one stands between a and b. Hero mode and the duel AI
+use it to refuse casts without sight. `setHp(target, hp)` sets a foe's HP directly (a network duel takes the server's
+number). See [multiplayer.md](multiplayer.md#the-ring-pillars-walls-and-line-of-sight).
+
 ### Caster movement and misc
 
 - `walk(move)`: moves the caster on the ground plane (clamped to +/-55) and turns it to face the movement (used by play mode and hero mode).

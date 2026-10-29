@@ -94,8 +94,22 @@ A 1 vs 1 fight in hero mode in a small ring with a gold rim. Both heroes have 60
   it aimed) when it lands: walk out to get **DODGED**. This works both ways.
 - The round ends with **VICTORY** / **DEFEAT** (play) or **&lt;HERO&gt; WINS** (run); **Rematch** starts a new
   round, **leave duel** (or the same key) ends it. Switching your hero mid-duel starts a new round.
+- The ring has **cover**: a wall across the middle, four pillars and two side walls. Nobody walks through them, and
+  a spell needs **line of sight**: aiming at an enemy or a spot behind cover shows "No line of sight" (the aim ring
+  turns pale), and the hero walks round until it can see the target, then casts. Self spells always go.
 
 ![A duel](../heroes/duel.jpg)
+
+### The duel game (`/game.html`)
+**Arena of Kits**, the multiplayer version: open `http://localhost:5173/game.html` (with `npm run dev`) in two
+windows, create an account in each, then either **Find match** with a hero in each (two different heroes are
+paired) or **Lobbies → Create lobby** in one and **Join** in the other, pick heroes and press **Ready** in both.
+Each window controls its own hero with the same controls as hero mode; **Forfeit** (top right) gives up. After the
+match, **Back to menu**; **Profile** shows wins, losses, matches, the favourite hero, per-hero numbers and recent
+matches; **Heroes** shows every kit with its four spells and a turning model. How it works:
+[multiplayer.md](../architecture/multiplayer.md).
+
+![The heroes page](../spells/stage/game-heroes.jpg)
 
 ## Keys at a glance
 | Key | Where | Action |

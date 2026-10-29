@@ -120,6 +120,17 @@ A 1 vs 1 round on top of hero mode. `Duel` (constructed in main.ts with a `DuelH
 | End | Opponent HP 0 → VICTORY, player HP 0 → DEFEAT: hero mode `locked`, the loser's figure falls, a card with Rematch / Leave duel. |
 | main.ts | `setDuel(on)` (View → duel, key B; turns hero mode on), View → opponent, a new round when the hero changes, the duel ends with hero mode. |
 
+**Cover and line of sight:** the ring has a centre wall, four pillars and two side walls (`DUEL_OBSTACLES` in
+[obstacles.ts](../../src/obstacles.ts), set as `arena.obstacles` while the duel is on). They block walking and line of
+sight; a targeted spell needs sight of its target (hero mode turns an unseen cast into walk-then-cast, the AI only
+picks spells it can see with). Details in [multiplayer.md](multiplayer.md#the-ring-pillars-walls-and-line-of-sight).
+
+**Network duel:** `startNet({ opponent, side, names, net })` runs the same ring against another player
+(`/game.html`): no AI, the opponent moves and casts from `peerMove` / `peerCast`, hits on the remote hero come from
+`peerHit`, this side's hits and dodges go out through `net`, the server ends the round with `netEnd`. `HeroMode`
+gained `onCast(label, slot, target)`, `flipCamera` (side 1 looks from -Z) and `snapCameraNow()`. See
+[multiplayer.md](multiplayer.md).
+
 `HeroFigure` ([heroFigure.ts](../../src/heroFigure.ts)) is the shared model driver for the player's hero and the
 opponent: `setModel(url)`, `follow(dt, pos, yaw, casting)` (walk cycle, breath, casting arm), `fall(t)`, `stand()`.
 

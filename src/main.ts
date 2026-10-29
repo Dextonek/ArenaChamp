@@ -25,6 +25,8 @@ import { DISTORT_LAYER } from './effects/parts/distortion';
 import type { ScreenFx } from './effects/parts/screen';
 
 const container = document.getElementById('app')!;
+/** game.html (`<body data-mode="game">`): the duel game reuses this scene; no editor panel, hotkeys or stats line. */
+const GAME = document.body.dataset.mode === 'game';
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -235,6 +237,7 @@ resize();
 const view = { paused: false, timeScale: 1, showGrid: false, restart: () => emitter.clear() };
 const s: EmitterSettings = emitter.settings;
 const gui = new GUI({ title: 'VFX Tool' });
+if (GAME) gui.hide();
 const refreshPanel = () => gui.controllersRecursive().forEach((c) => c.updateDisplay());
 
 const mode = { name: 'particles' };
@@ -289,7 +292,7 @@ const heroPick = { hero: HERO_KITS[0].name };
 const heroPickCtrl = fView.add(heroPick, 'hero', HERO_KITS.map((k) => k.name)).name('hero').onChange((name: string) => {
   const kit = HERO_KITS.find((k) => k.name === name);
   if (kit) heroMode.setKit(kit);
-  if (duel.on) duel.start(); // a new round with the new hero (and an opponent of another kit)
+  if (duel.on && !duel.net) duel.start(); // a new round with the new hero (and an opponent of another kit)
 });
 const duelState = { opponent: 'random' };
 fView.add({ play: () => setDuel(true, 'play') }, 'play').name('▶ play duel (B)');
@@ -421,7 +424,7 @@ setMode();
 
 // Space replays the active effect; 1–5 cast the hotbar slots; P toggles play mode.
 window.addEventListener('keydown', (e) => {
-  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+  if (GAME || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
   if (e.code === 'Space' && active?.effect) {
     e.preventDefault();
     active.effect.play();
@@ -632,6 +635,7 @@ function placeEffect(effect: Effect, onCaster: boolean) {
 // --- Stats overlay ----------------------------------------------------------
 const stats = document.createElement('div');
 stats.style.cssText = 'position:fixed;left:10px;bottom:10px;font:12px ui-monospace,monospace;color:#8b93a7;pointer-events:none';
+if (GAME) stats.style.display = 'none';
 document.body.appendChild(stats);
 
 // --- Loop -------------------------------------------------------------------
@@ -773,7 +777,9 @@ function drawLetterbox(amount: number) {
   renderer.setClearColor(prev, prevAlpha);
 }
 
+let lastFrameAt = performance.now();
 renderer.setAnimationLoop(() => {
+  lastFrameAt = performance.now();
   // Clamp so a backgrounded tab doesn't dump one huge step on return.
   const rawDt = Math.min(clock.getDelta(), 0.1);
   if (!view.paused) step(rawDt * view.timeScale);
@@ -804,6 +810,24 @@ renderer.setAnimationLoop(() => {
           (player.enabled ? ` · WASD to move · hits ${player.hits} · dodges ${player.dodges}` : '');
   }
 });
+
+// The game in a background tab: requestAnimationFrame stops, but a network duel must keep running (spells reach
+// their impact and this side's hits get reported). When no frame came for 250 ms, step the simulation from a timer
+// in 1/30 s substeps of the real time that passed (browsers slow background timers down to about once a second).
+if (GAME) {
+  let last = performance.now();
+  setInterval(() => {
+    const now = performance.now();
+    let t = Math.min((now - last) / 1000, 2);
+    last = now;
+    if (now - lastFrameAt < 250 || view.paused) return;
+    while (t > 1e-4) {
+      const dt = Math.min(t, 1 / 30);
+      step(dt);
+      t -= dt;
+    }
+  }, 100);
+}
 
 // Debug hook for checking effects from the console / automated browser:
 // vfx.mode.name = '<label>'; vfx.setMode(); then vfx.step(1/60) + vfx.render() to scrub.
@@ -886,4 +910,15 @@ function selfTest(label: string, seconds = 6) {
 (window as unknown as { vfx: unknown }).vfx = {
   emitter, mode, setMode, selectMode, setPlayMode, setHeroMode, heroMode, heroPickCtrl, setDuel, duel, hotbar, step, render, scrub, selfTest, controls, bloom, slots, player, telegraphs, arena, view,
   get effect() { return active?.effect; },
+};
+
+/** What game.html's duel game (src/game/) drives: hero mode, the duel and the hero choice. */
+export const gameApi = {
+  arena,
+  heroMode,
+  duel,
+  kits: HERO_KITS,
+  setHeroMode,
+  /** Selects a hero by name (the same path as View > hero). */
+  setKit: (name: string) => heroPickCtrl.setValue(name),
 };

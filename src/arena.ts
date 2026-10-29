@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CASTER_POS, Enemy, createCaster, createGround } from './effects/common';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { yawTo } from './effects/targeting';
+import { blocksSight, pushOut, steer, type Obstacle } from './obstacles';
 
 /** Default enemy spots: a loose pack on the -Z side of the caster. */
 const LAYOUT: [number, number][] = [
@@ -53,6 +54,8 @@ export class Arena {
   hitFilter: ((target: Enemy, opts: HitOptions) => boolean) | null = null;
   /** A round play area (a duel ring): the caster and the enemies are kept inside it. Null = the open floor. */
   bounds: { x: number; z: number; r: number } | null = null;
+  /** Solid pillars and walls (the duel ring): nobody walks through them, and they block line of sight. */
+  obstacles: Obstacle[] | null = null;
 
   private foes: Foe[] = [];
   private selected: Foe[] = [];
@@ -301,6 +304,11 @@ export class Arena {
   /** Play mode: walks the caster by `move` (world units, ground plane) and turns it to face the way it goes. */
   walk(move: THREE.Vector3) {
     if (move.lengthSq() < 1e-8) return;
+    if (this.obstacles) {
+      // Slide round a pillar or wall in the way instead of walking into it.
+      const len = move.length();
+      move = steer(this.caster.group.position, move.clone().divideScalar(len), this.obstacles).multiplyScalar(len);
+    }
     const p = this.caster.group.position.add(move);
     p.x = THREE.MathUtils.clamp(p.x, -55, 55);
     p.z = THREE.MathUtils.clamp(p.z, -55, 55);
@@ -327,8 +335,9 @@ export class Arena {
     this.overlay.style.display = on ? '' : 'none';
   }
 
-  /** Moves `p` (y ignored) back inside `bounds`, `margin` from the edge. */
+  /** Moves `p` (y ignored) back inside `bounds`, `margin` from the edge, and out of the obstacles. */
   keepInside(p: THREE.Vector3, margin = 0.6) {
+    if (this.obstacles) pushOut(p, this.obstacles);
     const b = this.bounds;
     if (!b) return p;
     const dx = p.x - b.x, dz = p.z - b.z, d = Math.hypot(dx, dz), r = b.r - margin;
@@ -336,10 +345,22 @@ export class Arena {
     return p;
   }
 
-  /** Walks an enemy by `move` (ground plane), keeps it inside the bounds and turns it to face the way it goes. */
-  moveFoe(target: Enemy, move: THREE.Vector3) {
+  /** True when no obstacle stands between `a` and `b` (always true without obstacles). */
+  lineOfSight(a: THREE.Vector3, b: THREE.Vector3) {
+    return !this.obstacles || !blocksSight(a, b, this.obstacles);
+  }
+
+  /**
+   * Walks an enemy by `move` (ground plane), keeps it inside the bounds and turns it to face the way it goes.
+   * `slide`: turn round obstacles in the way (an AI walking); off for a network position update.
+   */
+  moveFoe(target: Enemy, move: THREE.Vector3, slide = false) {
     const f = this.foes.find((x) => x.figure === target);
     if (!f || f.dead >= 0) return;
+    if (slide && this.obstacles && move.lengthSq() > 1e-10) {
+      const len = move.length();
+      move = steer(f.home, move.clone().divideScalar(len), this.obstacles).multiplyScalar(len);
+    }
     f.home.add(move).setY(0);
     this.keepInside(f.home);
     f.figure.setHome(f.home);
@@ -352,6 +373,14 @@ export class Arena {
     if (!f) return;
     f.spawn.copy(p).setY(0);
     this.respawn(f);
+  }
+
+  /** Sets an enemy's HP (a network duel: the server's number wins); 0 starts its death. */
+  setHp(target: Enemy, hp: number) {
+    const f = this.foes.find((x) => x.figure === target);
+    if (!f || f.dead >= 0) return;
+    f.hp = Math.max(0, Math.min(this.maxHp, hp));
+    if (f.hp <= 0) { f.dead = 0; this.kills++; }
   }
 
   /** HP of an enemy (0 when dead or unknown). */

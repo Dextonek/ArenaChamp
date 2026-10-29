@@ -22,7 +22,7 @@ const HERO_SPEED = 8;
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
 const HOVER_PICK = 2.2; // how close to the cursor an enemy counts as hovered
 
-type Target = { enemy: Enemy } | { point: THREE.Vector3 };
+export type Target = { enemy: Enemy } | { point: THREE.Vector3 };
 
 /**
  * A MOBA-style test mode for a hero kit: click the ground to walk there, Q/W/E/R to aim a spell (a range ring at
@@ -66,8 +66,13 @@ export class HeroMode {
   /** Run duel: the camera looks here instead of following the hero (the ring's centre), at `focusZoom`. */
   focus: THREE.Vector3 | null = null;
   focusZoom = 1.5;
-  /** Duel: called after every cast the player makes. */
-  onCast?: (label: string) => void;
+  /** Duel: called after every cast the player makes (slot 0-3 and what it was aimed at). */
+  onCast?: (label: string, slot: number, target: Target) => void;
+  /**
+   * Network duel, the side that starts at the -Z end of the ring: the camera looks from -Z toward +Z, so the
+   * opponent is in front of the camera instead of behind it.
+   */
+  flipCamera = false;
 
   // HUD.
   private hud: HTMLDivElement;
@@ -153,6 +158,11 @@ export class HeroMode {
     this.figure.stand();
   }
 
+  /** Jumps the camera to the hero on the next frame (no lerp). */
+  snapCameraNow() {
+    this.snapCamera = true;
+  }
+
   /** Tips the hero's figure over (defeat), `t` 0..1. */
   fallHero(t: number) {
     this.figure.fall(t);
@@ -209,7 +219,7 @@ export class HeroMode {
       const spell = this.kit.spells[this.pending.slot];
       const at = this.targetPos(this.pending.target);
       if (!at) this.pending = null;
-      else if (flatDist(hero, at) <= spell.range) {
+      else if (flatDist(hero, at) <= spell.range && arena.lineOfSight(hero, at)) {
         const p = this.pending;
         this.pending = null;
         this.castNow(p.slot, p.target);
@@ -298,8 +308,14 @@ export class HeroMode {
     }
     this.cancelAim();
     const at = this.targetPos(target)!;
-    if (flatDist(hero, at) <= spell.range + 1e-3) this.castNow(i, target);
-    else { this.pending = { slot: i, target }; this.moveTo = at.clone(); }
+    const sees = this.host.arena.lineOfSight(hero, at);
+    if (flatDist(hero, at) <= spell.range + 1e-3 && sees) this.castNow(i, target);
+    else {
+      // Out of range or behind a pillar / wall: walk toward the target and cast once it is in range and in sight.
+      if (!sees) this.say('No line of sight');
+      this.pending = { slot: i, target };
+      this.moveTo = at.clone();
+    }
   }
 
   private castNow(i: number, target: Target) {
@@ -311,7 +327,7 @@ export class HeroMode {
     this.moveTo = null;
     this.rooted = this.host.cast(spell.label);
     this.cooldowns[i] = spell.cooldown;
-    this.onCast?.(spell.label);
+    this.onCast?.(spell.label, i, target);
     this.flashSlot(i);
   }
 
@@ -352,10 +368,12 @@ export class HeroMode {
   private followCamera(hero: THREE.Vector3, dt: number) {
     const cam = this.host.camera;
     if (this.focus) hero = this.focus;
-    const want = hero.clone().setY(0).addScaledVector(CAM_OFFSET, this.focus ? this.focusZoom : this.zoom);
+    const flip = this.flipCamera ? -1 : 1;
+    const offset = CAM_OFFSET.clone().setZ(CAM_OFFSET.z * flip);
+    const want = hero.clone().setY(0).addScaledVector(offset, this.focus ? this.focusZoom : this.zoom);
     cam.position.lerp(want, this.snapCamera ? 1 : 1 - Math.exp(-12 * dt));
     this.snapCamera = false;
-    cam.lookAt(hero.x, 0.5, hero.z - 1.5);
+    cam.lookAt(hero.x, 0.5, hero.z - 1.5 * flip);
   }
 
   private updateIndicators(dt: number, hero: THREE.Vector3) {
@@ -376,7 +394,8 @@ export class HeroMode {
       const p = this.hovered.group.position;
       this.hoverRing.position.set(p.x, 0.07, p.z);
       const inRange = spell ? flatDist(hero, p) <= spell.range : true;
-      (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(inRange ? this.kit.accent : this.kit.foil);
+      const castable = inRange && this.host.arena.lineOfSight(hero, p);
+      (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(castable ? this.kit.accent : this.kit.foil);
     }
 
     // Single target: a strip from the hero to the hovered enemy (else toward the cursor), clamped to range.
@@ -397,6 +416,9 @@ export class HeroMode {
     if (area && spell) {
       const c = clampToRange(hero, this.cursor, spell.range);
       const r = spec?.radius ?? 5;
+      // A spot behind a pillar or wall can't be targeted: the area shows in the pale foil colour.
+      const seen = this.host.arena.lineOfSight(hero, c);
+      for (const m of [this.areaRing, this.areaFill]) (m.material as THREE.MeshBasicMaterial).color.set(seen ? this.kit.accent : this.kit.foil);
       for (const m of [this.areaRing, this.areaFill]) {
         m.position.set(c.x, 0.06, c.z);
         m.scale.setScalar(r);

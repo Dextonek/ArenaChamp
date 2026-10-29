@@ -253,6 +253,23 @@ _Last updated: 2026-10-29_
   effect at a time. Verified W then Q 0.3 s apart: both visible, both hit (50 and 60), Thorn Garden dropped when it
   ended. Fresh sweep 128/128.
 
+- **Multiplayer duel game "Arena of Kits" (2026-10-29)** at `/game.html` (editor unchanged at `/`): login /
+  register (local accounts, scrypt, `server/data/accounts.json`, git-ignored), main menu, heroes overview (kits, spells,
+  icons, portraits, turning model), profile (wins, losses, matches, win rate, favourite hero, per-hero table, last 20
+  matches), lobbies (create / join by code or list, pick heroes, the other seat's hero greyed, ready up) and a
+  matchmaking queue that pairs two different heroes. Network matches run in the duel ring (`Duel.startNet`); server
+  referee (HP, winner, stats), each client owns its hero and the hits it takes. Server `server/game-server.mjs` on
+  `/ws`, attached to Vite by a plugin (`npm run dev`) or standalone (`npm run build && npm run game:server`, port
+  8787). New dependency `ws` 8.18.3. Docs: `docs/architecture/multiplayer.md`.
+  - Verified: `npm run test:server` (20 checks); two built-in-browser tabs on the built page with real input events:
+    queue match (22.6 s), lobby match in the ring with cover (24.5 s), dodges on both screens, knockback replicated,
+    disconnect = forfeit, session resume, Back to menu, profile. `tsc --noEmit` clean; selfTest sweep 156/156 ok.
+  - Background tabs keep simulating in game mode (a timer steps the scene when no frame came for 250 ms).
+- **Duel ring cover + line of sight (2026-10-29, user request):** centre wall, four pillars, two side walls
+  (`src/obstacles.ts`, `DUEL_OBSTACLES`) in both the AI duel and the network duel. They block walking (push-out +
+  sliding round edges) and sight; targeted spells need sight of their target (hero mode: toast "No line of sight",
+  walks round, then casts; the AI only picks spells it can see with). AI duels still finish (17-24 s).
+
 ## In progress
 - **15 more heroes** (user 2026-10-29), five waves of three; same pipeline as the four kits (kit sheet → worker →
   2 review rounds → model → register → sweep → tournament). Balance budget now in `pipeline/designs/kit-common.md`.
@@ -266,11 +283,17 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
+- Committed (not pushed, no remote): the multiplayer game and the ring cover ("Add the Arena of Kits multiplayer
+  duel game and ring cover").
+- Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
 - Uncommitted: play/run duel, balance pass. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
   commits 6329099 four hero kits, models, switcher; fa60c09 blood kit, hero mode; earlier a7f26de, 60ec4cb,
   108ce68, d89f0b7, a4b9d65.
 
 ## Known look issues (small)
+- Duel game: not cheat-proof (clients report their own hits); a reload during a match forfeits it; no mirror
+  matches (one effect per spell label); projectiles fly through pillars (sight is checked at the cast); a pillar can
+  hide a hero from the high camera. The kit balance numbers predate the ring's cover: re-run the duel tournament.
 - Duel v1: the opponent uses one telegraph set at a time (a new cast replaces the old zones); it never dodges; the
   two heroes can't share a kit. Not watched in real time (the browser pane doesn't animate while hidden).
 - Hero figures: poses are procedural (walk swing, one casting arm); not checked closely from the gameplay camera.

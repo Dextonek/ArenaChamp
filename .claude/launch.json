@@ -4,8 +4,31 @@
     {
       "name": "vfx-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 5173
+    },
+    {
+      "name": "game-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5174"
+      ],
+      "port": 5174
+    },
+    {
+      "name": "game-server",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "server/standalone.mjs"
+      ],
+      "port": 8787
     }
   ]
 }
