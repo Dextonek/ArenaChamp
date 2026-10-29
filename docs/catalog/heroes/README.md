@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Hero roster
 
-Eight hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
+Eleven hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
 
 ## Roster
 
@@ -20,6 +20,9 @@ Eight hero kits, each one character with four spells (Q, W, E and the R ultimate
 | Kaia | the Tempest Caller | storm (`hero: storm`) | The lightning tree: thick, hard-edged blue-white lightning that branches like a tree with a dark outline, under flat-bottomed dark cloud, with slanting rain streaks at one shared angle. | A dark cloud over slanting rain and a branching bolt, a hooded face in a rain cloak, and the hooked staff with a spark in its hook. | [storm](storm.md) |
 | Sefu | the Dune Sovereign | sand (`hero: sand`) | Sand that flows like a ribbon and sets like stone: thick grainy ochre ribbons that harden into pale carved sandstone with dark incised glyphs, then crumble to dust. | Layered linen shoulders, a gold collar, a bearded face under a striped gold headdress, and the sandstone crook behind. | [sand](sand.md) |
 | Nyx | the Umbral Stalker | shadow (`hero: shadow`) | Flat cut-paper shadow: matte-black blades, hands, a crescent and hooded figures with a thin hard violet edge line, standing as cut-outs that move in stepped jumps. | A pale moon behind her, two crossed daggers and the hooded black figure with a mint slit for the eyes. | [shadow](shadow.md) |
+| Fenna | the Grove Warden | grove (`hero: grove`) | The spiral vine that blooms: thick green vines coil in spirals with leaf pairs, and at the end of every spiral a giant flower bursts open (a cup of cream petals with a pink rim and a pollen core), then sheds petals and pollen. | A living staff topped by a bloom, a cloak of layered leaves with a pale bark collar, and antler-like branches around her head. | [grove](grove.md) |
+| Auriel | the Dawn Paladin | dawn (`hero: dawn`) | Hard-light geometry: flat gold panels with crisp edges (hexagons, kite shields, blade shards) that click together into shapes and shatter into panels, lit by a white core line with a dark amber rim. | A sun disc with crisp rays, a halo ring above a helmed paladin in white and gold plate, and a raised blade. | [dawn](dawn.md) |
+| Marin | the Tide Dancer | tide (`hero: tide`) | The water ribbon: thick, smooth bands of clear blue water with a white foam crest that she swirls like a dancer's sash, throwing spinning droplets off the curls. | Sashes of water sweeping round her, a wave-blue wrap on the shoulders and a coral flower in her hair. | [tide](tide.md) |
 
 Spell labels per hero:
 
@@ -33,11 +36,14 @@ Spell labels per hero:
 | Kaia | arc lance | downpour | static field | eye of the storm |
 | Sefu | sand lash | quicksand | dune ward | tomb of kings |
 | Nyx | umbral blink | grasp of the deep | night shroud | eclipse execution |
+| Fenna | bloom lash | overgrowth | verdant ward | world blossom |
+| Auriel | radiant spear | aegis wall | halo of blades | judgement of dawn |
+| Marin | tide whip | whirlpool | undertow dance | leviathan's waltz |
 
 ## How the kits share structure
 
 - **One parts file per kit**: `src/effects/parts/<theme>.ts` exports a palette constant (numbers, plus a `_CSS` string twin such as `BLOOD` / `BLOOD_CSS`) and the kit's pooled parts. The spells import it directly.
-- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone) and Shadow (moon grey).
+- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone), Shadow (moon grey), Grove (bark cream), Dawn (ivory) and Tide (foam).
 - **Spells**: `src/spells/targeted/<camelName>.ts`, each exporting `<camelName>Module` with `category: 'hero: <theme>'`, registered in `src/spells/targeted/index.ts`. Every hit passes the kit colour (`color: <PALETTE>_CSS.body`) so the arena hit flash matches.
 - **Kit data**: `HeroKit` has name, title, accent and foil colours, a canvas-drawn portrait, an optional model path, and a tuple of four `HeroSpell` (`key`, `label`, `name`, `range`, `cooldown`, `blurb`, canvas icon). The blood kit is inline in `src/heroes.ts`; the others are `src/kits/<theme>.ts`.
 - **Q, W, E are normal MOBA abilities** under the gameplay camera: the hit lands 0.4-0.8 s after the cast and the frame is clean by about 2 s (an E aura may run about 3 s). Q is a single-target or short-chain strike, W a ground zone, E a self aura (range 0, cast at once).
@@ -51,9 +57,13 @@ The hand-drawn concept lineup (front views, one scale, each hero wearing the loo
 
 ![Hero kits concept lineup](../../heroes/lineup_concept.png)
 
-The concept for the newest three heroes (Kaia, Sefu and Nyx; vector source [`wave1_concept.svg`](../../heroes/wave1_concept.svg)):
+The concept for the wave 1 heroes (Kaia, Sefu and Nyx; vector source [`wave1_concept.svg`](../../heroes/wave1_concept.svg)):
 
 ![Wave 1 concept: Kaia, Sefu and Nyx](../../heroes/wave1_concept.jpg)
+
+The concept for the newest three heroes (Fenna, Auriel and Marin; vector source [`wave2_concept.svg`](../../heroes/wave2_concept.svg)):
+
+![Wave 2 concept: Fenna, Auriel and Marin](../../heroes/wave2_concept.jpg)
 
 ## In-game sheet
 
@@ -73,6 +83,9 @@ The turnaround sheet of the same models is [`models_sheet.jpg`](../../heroes/mod
 - [Kaia, the Tempest Caller](storm.md)
 - [Sefu, the Dune Sovereign](sand.md)
 - [Nyx, the Umbral Stalker](shadow.md)
+- [Fenna, the Grove Warden](grove.md)
+- [Auriel, the Dawn Paladin](dawn.md)
+- [Marin, the Tide Dancer](tide.md)
 
 ## Balance (duel tournament)
 
@@ -89,6 +102,9 @@ Grand Transmutation twice). Ranges and cooldowns are in each hero's page.
 | Kaia | Arc Lance 50 | Downpour 40 + 15, cd 7 s | Static Field 2 × 14 | Eye of the Storm 125 |
 | Sefu | Sand Lash 50 | Quicksand 45 + 10, cd 7 s | Dune Ward 2 × 13 | Tomb of Kings 125 |
 | Nyx | Umbral Blink 50 | Grasp of the Deep 45 + 10, cd 7 s | Night Shroud 2 × 13 | Eclipse Execution 125 |
+| Fenna | Bloom Lash 50 | Overgrowth 45 + 10, cd 7 s | Verdant Ward 2 × 15 | World Blossom 125 |
+| Auriel | Radiant Spear 50 | Aegis Wall 45 + 10, cd 7 s | Halo of Blades 2 × 13 | Judgement of Dawn 125 |
+| Marin | Tide Whip 50 | Whirlpool 45 + 10, cd 7 s | Undertow Dance 2 × 13 | Leviathan's Waltz 125 |
 
 Kaia, Sefu and Nyx were built inside the balance budget in `pipeline/designs/kit-common.md` and needed no tuning: in an
 8-hero tournament (3 fights per ordered pairing, 168 fights) every hero won 38–60% (Lyra 60%, Nyx 60%, Brannoc 55%,

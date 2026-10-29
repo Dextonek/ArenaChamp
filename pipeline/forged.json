@@ -1808,5 +1808,173 @@
     "selfTest": {
       "ok": true
     }
+  },
+  {
+    "label": "bloom lash",
+    "file": "src/spells/targeted/bloomLash.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "grove",
+    "slot": "Q",
+    "note": "grove hero kit (wave 2), design pipeline/designs/kit-grove.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "overgrowth",
+    "file": "src/spells/targeted/overgrowth.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "grove",
+    "slot": "W",
+    "note": "grove hero kit (wave 2), design pipeline/designs/kit-grove.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "verdant ward",
+    "file": "src/spells/targeted/verdantWard.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "grove",
+    "slot": "E",
+    "note": "grove hero kit (wave 2), design pipeline/designs/kit-grove.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "world blossom",
+    "file": "src/spells/targeted/worldBlossom.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "grove",
+    "slot": "R",
+    "note": "grove hero kit (wave 2), design pipeline/designs/kit-grove.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "radiant spear",
+    "file": "src/spells/targeted/radiantSpear.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "dawn",
+    "slot": "Q",
+    "note": "dawn hero kit (wave 2), design pipeline/designs/kit-dawn.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "aegis wall",
+    "file": "src/spells/targeted/aegisWall.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "dawn",
+    "slot": "W",
+    "note": "dawn hero kit (wave 2), design pipeline/designs/kit-dawn.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "halo of blades",
+    "file": "src/spells/targeted/haloOfBlades.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "dawn",
+    "slot": "E",
+    "note": "dawn hero kit (wave 2), design pipeline/designs/kit-dawn.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "judgement of dawn",
+    "file": "src/spells/targeted/judgementOfDawn.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "dawn",
+    "slot": "R",
+    "note": "dawn hero kit (wave 2), design pipeline/designs/kit-dawn.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "tide whip",
+    "file": "src/spells/targeted/tideWhip.ts",
+    "mode": "enemy",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "tide",
+    "slot": "Q",
+    "note": "tide hero kit (wave 2), design pipeline/designs/kit-tide.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "whirlpool",
+    "file": "src/spells/targeted/whirlpool.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "tide",
+    "slot": "W",
+    "note": "tide hero kit (wave 2), design pipeline/designs/kit-tide.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "undertow dance",
+    "file": "src/spells/targeted/undertowDance.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "tide",
+    "slot": "E",
+    "note": "tide hero kit (wave 2), design pipeline/designs/kit-tide.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "leviathan's waltz",
+    "file": "src/spells/targeted/leviathansWaltz.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "tide",
+    "slot": "R",
+    "note": "tide hero kit (wave 2), design pipeline/designs/kit-tide.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
   }
 ]

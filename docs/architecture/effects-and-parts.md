@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Effects and shared parts
 
-The contract every effect implements (`Effect` / `EffectModule` in [types.ts](../../src/effects/types.ts)) and a catalogue of the reusable building blocks: the core parts in `src/effects/parts/`, the five hero-kit parts files, the shared helpers in [common.ts](../../src/effects/common.ts) and the weapons kit in `src/effects/weapons/`. Read it before writing a spell so you reuse a part instead of re-inventing it.
+The contract every effect implements (`Effect` / `EffectModule` in [types.ts](../../src/effects/types.ts)) and a catalogue of the reusable building blocks: the core parts in `src/effects/parts/`, the hero-kit parts files, the shared helpers in [common.ts](../../src/effects/common.ts) and the weapons kit in `src/effects/weapons/`. Read it before writing a spell so you reuse a part instead of re-inventing it.
 
 ## The `Effect` contract
 
@@ -43,7 +43,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Core parts (`src/effects/parts/*.ts`)
 
-[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral and alchemy files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
+[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral, alchemy, grove, dawn and tide files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
 
 | Part | File | What it is | Main methods / fields |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Hero-kit parts
 
-Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`).
+Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` / `GROVE` / `DAWN` / `TIDE` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`, `kit-grove.md`, `kit-dawn.md`, `kit-tide.md`).
 
 ### Blood: [blood.ts](../../src/effects/parts/blood.ts)
 
@@ -136,6 +136,41 @@ Glass flasks, bubbling acid, fumes, a glass-ink circle (pale foil), transmutatio
 | `TransmuteCircle` | glass-ink alchemical circle | `set(center, radius)`, `reveal`, `opacity`, `lit` (0..6), `hole` |
 | `AcidColumn` | acid blob that morphs from column to sphere | `configure(base, height, radius, sphereCentre, sphereRadius)`, `update(time, morph, wobble)` |
 | `FigureShell` | slightly larger copy of an arena figure's silhouette; `'gold'` statue with `crack` / `flash`, or `'rim'` green fresnel | `follow(source, grow)`, `reset()` |
+
+### Grove: [grove.ts](../../src/effects/parts/grove.ts)
+
+Spiral vines that end in giant flowers, petals and pollen (bark cream as the pale foil).
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `SpiralVine` | coiling vine with leaf pairs | `grow(base, dir, length, coils, width, seconds, opts)`, `growAlong(fn, width, seconds, delay)`, `wither(seconds, delay)`, `pointAt(u, out)` |
+| `Bloom` | giant flower of broad petals around a pollen core | `open(pos, size, seconds)`, `shed(seconds)`, `close(seconds)`, `aim(yaw, lean)`, `hide()` |
+| `Petals` | instanced falling and spinning petals | `burst(pos, count, speed)`, `rain(center, radius, count, height, life)`, `stream(from, to, count, seconds)` |
+| `Pollen` | soft gold motes | `puff(pos, count)`, `drift(center, radius, count, height, life)` |
+| `RootRing` | ground decal of roots spreading from a point | `spread(center, radius, seconds)`, `fade(seconds, delay)` |
+
+### Dawn: [dawn.ts](../../src/effects/parts/dawn.ts)
+
+Hard-light panels that click together into shields, blades and a great sword (ivory as the pale foil). Also exports the helpers `dawnFacing`, `dawnForward`, `dawnView`, `dawnOrient`, `dawnPanelNormal` and the easing curves `dawnEaseOut`, `dawnEaseOutBack`.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `LightPanels` | instanced hex / shield / shard panels | `assemble(seconds, stagger, scatter, origin)`, `fadeOut(seconds, stagger)`, `fling(i, vel, life, spin)`, `shatter(speed, life, center)`, `hide(i)` |
+| `HaloRing` | crisp gold ring with an ivory inner band and ray ticks | `set(center, normal, radius)`, `spin(dt)`, `opacity` |
+| `SunRays` | a few thin tapered wedges fanning from a point | `fan(origin, dir, count, length, spread, grow, width)`, `fade(k)`, `face(aim)` |
+| `Sigil` | gold ground circle with a sun-wheel pattern | `set(center, radius)` |
+
+### Tide: [tide.ts](../../src/effects/parts/tide.ts)
+
+Smooth water ribbons with a foam crest, droplets and crown splashes (foam as the pale foil).
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `WaterRibbon` | thick smooth water band with a foam crest on the head | `setPath(points, width, head, tail, time)`, `setFunction(fn, width, head, tail, time)`, `hide()` |
+| `Droplets` | instanced spinning teardrops with gravity | `spray(pos, dir, count, speed)`, `drop(pos, vel, life, size)` |
+| `SplashCrown` | foam crown splash on the floor | `burst(pos, size, life)` |
+| `WaterPool` | shallow ripple pool decal | `spread(center, radius, seconds)`, `ripple(pos)`, `drain(seconds)` |
+| `SerpentHead` | serpent head of the ultimate (foam mane, eye glints) | `place(pos, dir, scale, open)`, `hide()` |
 
 ## Shared helpers: [common.ts](../../src/effects/common.ts)
 

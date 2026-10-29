@@ -280,7 +280,15 @@ _Last updated: 2026-10-29_
   - Wave 1 DONE: storm (Kaia), sand (Sefu), shadow (Nyx). Kits built, reviewed (sand 1 round; storm, shadow 2),
     registered; concept `docs/heroes/wave1_concept.svg/.jpg`; models exported (`storm/sand/shadow.glb`); tournament
     with 8 heroes × 3 (168 fights): 38–60% each, no outliers (Isolde and Sefu lowest at 38%).
-  - Wave 2: grove (Fenna), dawn (Auriel), tide (Marin) · Wave 3: sky (Zephyr), bone (Mortis), clockwork (Ada)
+  - Wave 2 DONE: grove (Fenna), dawn (Auriel), tide (Marin). Kits built, reviewed (grove, dawn 2 rounds; tide 4,
+    the serpent ultimate needed framing work), registered; concept `docs/heroes/wave2_concept.svg/.jpg`; models
+    `grove/dawn/tide.glb`; full sweep 168/168 (only the known corpse-finger long-run quirk). Tournament, each new
+    hero × 10 opponents × 5 × both sides: Auriel 58%, Marin 54%, Fenna 47%, after balance tweaks (Auriel and Marin
+    Q range 11 → 10, Fenna Verdant Ward 13 → 15 per pulse, Bloom Lash knock 1 → 3). Docs: hero pages, catalog,
+    parts page, art bible palettes, forged.json (123 entries).
+    `duel-tourney.js` now yields through a MessageChannel: the hidden pane throttled its `setTimeout` waits to ~1/min.
+    A run longer than 45 s must be started without awaiting it (push results to a window array, read it later).
+  - Wave 3: sky (Zephyr), bone (Mortis), clockwork (Ada)
   - Wave 4: prism (Opaline), hive (Sirix), bard (Cantor) · Wave 5: void (Oblivion), ink (Shiori), chrono (Tempo)
 
 ## Blocked
@@ -347,6 +355,12 @@ _Last updated: 2026-10-29_
 - Spinning crane kick: surrounding enemies still look pale under the jade light.
 - Starfall's `dust` emitter is never burst (harmless).
 - FinishPass impact-frame also fires on every earthquake pulse.
+
+- Zone hits that skip a position check at impact: `aegisWall`, `judgementOfDawn` (loop `ctx.targets`, chosen at cast),
+  `whirlpool`, `leviathansWaltz` (`victims`, frozen at cast), `graspOfTheDeep` tick, `eclipseExecution`. An enemy that
+  walks out of the zone before impact is still hit. The duel hides it (`opponentHit` re-checks the telegraph); hero
+  mode does not. Fix: re-check position at impact like `overgrowth.eachInside`. Planned with the status-effect work.
+- `docs/architecture/effects-and-parts.md` has no sections yet for the wave 1 parts files (storm, sand, shadow).
 
 ## Notes
 - The browser pane only animates while visible; checks pause the loop (View → paused) and step with

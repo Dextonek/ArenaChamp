@@ -107,6 +107,25 @@ LOOKS = {
                    female=True, slim=True, tattered=True, hair="loose", hair_color="#1a1220", headwear=False,
                    skin="#cfc0d4", eye_glow="#c88cff", sleeve="narrow", over_gap=0.25, pendant=False,
                    props={"deep_hood": {}, "twin_daggers": {}}),
+    # Fenna, the Grove Warden: a leaf-green robe over bark cream, auburn hair with small branch antlers and blossoms,
+    # a leaf mantle, a vine spiralling up her body and a living staff that blooms at the top.
+    "grove": dict(robe="#3f9a46", inner="#e8dcc0", trim=("#6a4a2a", "#2a5a22"), sash="#6a4a2a", over="#2f6a28",
+                  female=True, slim=True, hair="loose", strands=True, hair_color="#8a4a2a", headwear=False,
+                  skin="#d8b490", eye_glow="#7fe07a", sleeve="narrow", over_gap=0.3, pendant=False,
+                  props={"branch_antlers": {}, "leaf_mantle": {}, "body_vine": {}, "bloom_staff": {}}),
+    # Auriel, the Dawn Paladin: ivory and gold plate over a white tabard, golden hair, a halo of hard-light panels,
+    # a hard-light sword and a gold kite shield.
+    "dawn": dict(robe="#efe6d2", inner="#f6efe0", trim=("#f2b83c", "#c9a24a"), sash="#c9a24a",
+                 hair="crown", hair_color="#e8c46a", headwear=False, skin="#e6c8a8", eye_glow="#7fd8ff",
+                 sleeve="bracer", bracer="#d8cbb0", pendant=False,
+                 extras={"armour": dict(plate="#e6dcc4", cord="#c9a24a", rivet="gold", rows=3, apron=False)},
+                 props={"panel_halo": {}, "light_sword": {}, "kite_shield": {}}),
+    # Marin, the Tide Dancer: a deep teal dancer's dress with sea-glass layers, a sea-green braid with a coral clip,
+    # water rings on her wrists and two water sashes swirling around her.
+    "tide": dict(robe="#0f5f86", inner="#1f9fd6", trim=("#bff2ff", "#05253a"), sash="#ff9a6a", skirt="#1f9fd6",
+                 female=True, slim=True, qixiong=True, pleats=True, hair="braid", hair_color="#2a8a7a", headwear=False,
+                 skin="#c89878", eye_glow="#7fe8ff", sleeve="narrow", pendant=False,
+                 props={"coral_clip": {}, "wrist_rings": {}, "water_sashes": {}}),
 }
 
 
@@ -463,6 +482,114 @@ class HeroFigure(figure_kit.Figure):
             blade = [base + Vector((0.06 * sx * math.sin(t * 1.4), -0.015, -0.03 - 0.3 * t)) for t in [i / 6 for i in range(7)]]
             self.add(kit.chain(f"Dagger{side}", blade, kit.lerp_list([0.024, 0.02, 0.014, 0.004], 7), steel, seg=6), PELVIS)
             self.add(kit.chain(f"DaggerEdge{side}", [b + Vector((0.018 * sx, 0, 0)) for b in blade[1:]], [0.004] * 6, edge, seg=4), PELVIS)
+
+
+    # ---- grove ------------------------------------------------------------------------------------------
+    def branch_antlers(self):
+        bark = self._mat("bark", "#6a4a2a", roughness=0.8)
+        petal = self._mat("petal", "#ff7ab8", roughness=0.5)
+        for side, sx in SIDES:
+            base = Vector((0.05 * sx, 0.0, 1.76))
+            tip = base + Vector((0.09 * sx, 0.01, 0.16))
+            mid = base.lerp(tip, 0.5)
+            self.add(kit.chain(f"Antler{side}", [base, mid + Vector((0.01 * sx, 0, 0.02)), tip], [0.012, 0.009, 0.005], bark, seg=6), HEAD)
+            self.add(kit.tube(f"AntlerTine{side}", mid, mid + Vector((0.07 * sx, 0, 0.03)), [(0, 0.007, 0.007), (1, 0.003, 0.003)], bark, seg=5), HEAD)
+            self.add(kit.blob(f"Blossom{side}", tip, (0.018, 0.018, 0.012), petal, (8, 6)), HEAD)
+
+    def leaf_mantle(self):
+        leaf = self._mat("leaf", "#5cbf55", roughness=0.6, double_sided=True)
+        dark = self._mat("leafdark", "#2f6a28", roughness=0.6, double_sided=True)
+        for k in range(12):
+            a = -math.pi / 2 + (k - 5.5) * 0.26
+            r = 0.2
+            p = Vector((r * math.cos(a), 0.02 + r * 0.8 * math.sin(a), 1.43 - 0.02 * abs(k - 5.5)))
+            rot = Euler((0.4, 0, a + math.pi / 2))
+            self.add(kit.blob(f"MantleLeaf{k}", p, (0.06, 0.012, 0.035), leaf if k % 2 else dark, (10, 6), rotation=rot), CHEST)
+
+    def body_vine(self):
+        vine = self._mat("vine", "#3a8a34", roughness=0.6)
+        leaf = self._mat("leaf", "#5cbf55", roughness=0.6, double_sided=True)
+        pts = []
+        for i in range(30):
+            t = i / 29
+            a = t * math.pi * 4.2
+            z = 0.98 + 0.5 * t
+            r = 0.2 - 0.03 * t
+            pts.append(Vector((r * math.cos(a), 0.01 + r * 0.82 * math.sin(a), z)))
+        self.add(kit.chain("BodyVine", pts, [0.009] * len(pts), vine, seg=6), CHEST)
+        for k in range(0, 30, 5):
+            self.add(kit.blob(f"VineLeaf{k}", pts[k] + Vector((0, -0.01, 0.01)), (0.03, 0.006, 0.016), leaf, (8, 4)), CHEST)
+
+    def bloom_staff(self):
+        bark = self._mat("bark", "#6a4a2a", roughness=0.8)
+        petal = self._mat("petal", "#ff7ab8", roughness=0.5)
+        pollen = self._mat("pollen", "#ffe36a", roughness=0.4, emission="#ffe36a", strength=1.5)
+        a, b = Vector((-0.31, -0.11, 0.05)), Vector((-0.36, -0.13, 1.9))
+        pts = [a.lerp(b, t) + Vector((0.02 * math.sin(t * 9), 0, 0)) for t in [i / 10 for i in range(11)]]
+        self.add(kit.chain("BloomStaff", pts, [0.018] * 11, bark, seg=8), HAND["R"])
+        top = b + Vector((0, 0, 0.04))
+        for k in range(5):
+            ang = k * 2 * math.pi / 5
+            d = Vector((math.cos(ang), 0.0, math.sin(ang)))
+            self.add(kit.blob(f"StaffPetal{k}", top + d * 0.05 + Vector((0, -0.02, 0)), (0.035, 0.01, 0.022), petal, (8, 6),
+                              rotation=Euler((0, -ang, 0))), HAND["R"])
+        self.add(kit.blob("StaffPollen", top + Vector((0, -0.03, 0)), (0.02, 0.012, 0.02), pollen, (8, 6)), HAND["R"])
+
+    # ---- dawn -------------------------------------------------------------------------------------------
+    def panel_halo(self):
+        gold = self._mat("halogold", "#f2b83c", metallic=0.6, roughness=0.3)
+        ivory = self._mat("haloivory", "#efe6d2", roughness=0.4, emission="#fff4d0", strength=0.4)
+        c = Vector((0, 0.13, 1.66))
+        self.add(kit.torus("Halo", c, 0.22, 0.012, gold, seg=(48, 8), axis=(0, 1, 0)), HEAD)
+        self.add(kit.torus("HaloInner", c, 0.2, 0.006, ivory, seg=(48, 6), axis=(0, 1, 0)), HEAD)
+        for k in range(8):
+            ang = k * math.pi / 4
+            p = c + Vector((math.cos(ang) * 0.235, 0, math.sin(ang) * 0.235))
+            self.add(kit.blob(f"HaloPanel{k}", p, (0.022, 0.006, 0.022), gold, (4, 2), rotation=Euler((0, ang, 0))), HEAD)
+
+    def light_sword(self):
+        ivory = self._mat("bladeivory", "#f6efe0", roughness=0.35)
+        core = self._mat("bladecore", "#fffdf2", roughness=0.3, emission="#ffe7a0", strength=2.0)
+        gold = self._mat("halogold", "#f2b83c", metallic=0.6, roughness=0.3)
+        g = Vector((-0.3, -0.09, 0.84))
+        self.add(kit.box("SwordGuard", g, (0.16, 0.03, 0.025), gold, bevel=0.005), HAND["R"])
+        self.add(kit.tube("SwordGrip", g, g - Vector((0, 0, 0.1)), [(0, 0.014, 0.014), (1, 0.014, 0.014)], gold, seg=6), HAND["R"])
+        tip = g + Vector((-0.02, -0.02, 0.85))
+        self.add(kit.tube("SwordBlade", g, tip, [(0, 0.035, 0.008), (0.85, 0.03, 0.008), (1, 0.002, 0.002)], ivory, seg=4), HAND["R"])
+        self.add(kit.tube("SwordCore", g + Vector((0, -0.009, 0.02)), tip + Vector((0, -0.009, -0.06)), [(0, 0.006, 0.003), (1, 0.003, 0.002)], core, seg=4), HAND["R"])
+
+    def kite_shield(self):
+        gold = self._mat("halogold", "#f2b83c", metallic=0.6, roughness=0.3)
+        core = self._mat("bladecore", "#fffdf2", roughness=0.3, emission="#ffe7a0", strength=2.0)
+        c = Vector((0.33, -0.08, 1.05))
+        pts = [c + Vector(v) for v in [(0, 0, 0.17), (0.0, 0, 0.0), (0, 0, -0.2)]]
+        self.add(kit.chain("Shield", pts, [(0.11, 0.025), (0.12, 0.03), (0.01, 0.02)], gold, seg=4), FORE["L"])
+        self.add(kit.tube("ShieldCrossV", c + Vector((0, -0.03, 0.14)), c + Vector((0, -0.03, -0.14)), [(0, 0.008, 0.004), (1, 0.008, 0.004)], core, seg=4), FORE["L"])
+        self.add(kit.tube("ShieldCrossH", c + Vector((-0.07, -0.03, 0.04)), c + Vector((0.07, -0.03, 0.04)), [(0, 0.008, 0.004), (1, 0.008, 0.004)], core, seg=4), FORE["L"])
+
+    # ---- tide -------------------------------------------------------------------------------------------
+    def coral_clip(self):
+        coral = self._mat("coral", "#ff9a6a", roughness=0.5)
+        self.add(kit.blob("CoralClip", Vector((0.08, 0.01, 1.74)), (0.022, 0.018, 0.022), coral, (10, 8)), HEAD)
+
+    def wrist_rings(self):
+        water = self._mat("waterring", "#bff2ff", roughness=0.2, emission="#7fe8ff", strength=0.8)
+        for side, sx in SIDES:
+            p = Vector((0.28 * sx, -0.045, 0.98))
+            self.add(kit.torus(f"WaterRing{side}", p, 0.05, 0.011, water, seg=(24, 8)), FORE[side])
+
+    def water_sashes(self):
+        water = self._mat("watersash", "#1f9fd6", roughness=0.35, alpha=0.85)
+        foam = self._mat("foam", "#eaf8fb", roughness=0.6)
+        for k, (z0, z1, r, turns, ph) in enumerate([(1.2, 0.85, 0.32, 0.9, 0.0), (0.7, 0.35, 0.38, 0.8, 2.6)]):
+            pts = []
+            for i in range(22):
+                t = i / 21
+                a = ph + t * turns * 2 * math.pi
+                z = z0 + (z1 - z0) * t + 0.05 * math.sin(t * 6)
+                pts.append(Vector((r * math.cos(a), r * 0.85 * math.sin(a), z)))
+            self.add(kit.chain(f"Sash{k}", pts, [(0.032, 0.012)] * len(pts), water, seg=6), PELVIS)
+            self.add(kit.blob(f"SashFoam{k}", pts[-1], (0.03, 0.03, 0.02), foam, (8, 6)), PELVIS)
 
 
 def _reload():

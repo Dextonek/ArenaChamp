@@ -7,11 +7,11 @@ updated: 2026-10-29
 # VFX Tool documentation
 
 The knowledge base for VFX Tool, a browser-based real-time VFX editor (Three.js 0.186, Vite, TypeScript). It holds
-144 effects: particle presets, set pieces, cinematic hero spells and five playable MOBA hero kits with rigged hero
+168 effects: particle presets, set pieces, cinematic hero spells and eleven playable MOBA hero kits with rigged hero
 models. Start with the guide if you want to use the tool, the architecture section if you want to change it, and
 the art direction and pipeline sections if you want to make new effects the way the existing ones were made.
 
-![The five heroes in the game](heroes/ingame_sheet.jpg)
+![The first five heroes in the game](heroes/ingame_sheet.jpg)
 
 ## Map of content
 
@@ -24,7 +24,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | Page | What it answers |
 |---|---|
 | [Overview](architecture/overview.md) | How `main.ts` builds, plays, updates and renders effects; post chain; distortion; screen feedback; the `vfx` debug handle |
-| [Effects and parts](architecture/effects-and-parts.md) | The `Effect` / `EffectModule` contract and every shared part (core kit and the five hero-kit parts files) |
+| [Effects and parts](architecture/effects-and-parts.md) | The `Effect` / `EffectModule` contract and every shared part (core kit and the hero-kit parts files) |
 | [Targeting and arena](architecture/targeting-and-arena.md) | `CastContext`, targeting modes, the arena (caster, enemies, HP, hits), danger zones |
 | [Hero mode](architecture/hero-mode.md) | The MOBA test mode: input, aim, cooldowns, HUD, hero switching, overlapping spells, hero figures |
 | [Models](architecture/models.md) | The Blender pipelines for weapons and hero figures, and how the game loads and poses them |
@@ -49,7 +49,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | Page | What it answers |
 |---|---|
 | [Effects](catalog/effects.md) | Every registered effect by category, with links to source, design note and contact sheet |
-| [Heroes](catalog/heroes/README.md) | The five heroes and their kits: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vex (alchemy) |
+| [Heroes](catalog/heroes/README.md) | The eleven heroes and their kits: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vex (alchemy), Kaia (storm), Sefu (sand), Nyx (shadow), Fenna (grove), Auriel (dawn), Marin (tide) |
 
 ### Knowledge (what we learned)
 | Page | What it answers |

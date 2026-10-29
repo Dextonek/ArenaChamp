@@ -100,6 +100,18 @@ import { umbralBlinkModule } from './umbralBlink';
 import { graspOfTheDeepModule } from './graspOfTheDeep';
 import { nightShroudModule } from './nightShroud';
 import { eclipseExecutionModule } from './eclipseExecution';
+import { bloomLashModule } from './bloomLash';
+import { overgrowthModule } from './overgrowth';
+import { verdantWardModule } from './verdantWard';
+import { worldBlossomModule } from './worldBlossom';
+import { tideWhipModule } from './tideWhip';
+import { whirlpoolModule } from './whirlpool';
+import { undertowDanceModule } from './undertowDance';
+import { leviathansWaltzModule } from './leviathansWaltz';
+import { radiantSpearModule } from './radiantSpear';
+import { aegisWallModule } from './aegisWall';
+import { haloOfBladesModule } from './haloOfBlades';
+import { judgementOfDawnModule } from './judgementOfDawn';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -204,6 +216,18 @@ export const targetedModules: EffectModule[] = [
   graspOfTheDeepModule,
   nightShroudModule,
   eclipseExecutionModule,
+  bloomLashModule,
+  overgrowthModule,
+  verdantWardModule,
+  worldBlossomModule,
+  tideWhipModule,
+  whirlpoolModule,
+  undertowDanceModule,
+  leviathansWaltzModule,
+  radiantSpearModule,
+  aegisWallModule,
+  haloOfBladesModule,
+  judgementOfDawnModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

@@ -7,6 +7,7 @@
 //   -> { wins: { Vesper: n, ... } (out of 2 x (heroes - 1) x reps), h2h: { 'A vs B': { A: n, B: m } }, fights, avgSeconds,
 //        avgWinnerHp, timeouts }
 //
+// Waits yield through a MessageChannel, not setTimeout: a hidden pane throttles timers to about one a minute.
 // A fight that is not over after 120 s counts as a timeout. Results vary run to run (the AI's strafe flips are
 // random), so judge balance with 5+ fights per pairing.
 window._tourney = async (reps = 3, names = null) => {
@@ -21,7 +22,7 @@ window._tourney = async (reps = 3, names = null) => {
       for (let r = 0; r < reps; r++) {
         d.opponentChoice = o;
         d.start('run');
-        for (let k = 0; k < 60 && !vfx.heroMode.figure?.figure?.loaded; k++) await new Promise((ok) => setTimeout(ok, 50));
+        for (let k = 0; k < 60 && !vfx.heroMode.figure?.figure?.loaded; k++) await new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
         let f = 0;
         while (!d.result && f < 60 * 120) { vfx.step(1 / 60); f++; }
         const r2 = d.result;

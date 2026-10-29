@@ -53,5 +53,9 @@ the kit data.
   cylinder.
 - Pass the kit's hot or body colour as the hit `color`; a dark violet hit colour tints enemies purple for a long beat.
 
+## Zone hits
+Area spells re-check each enemy's position at the impact moment (see `overgrowth.ts` `eachInside`); never loop the
+cast-time `ctx.targets` or a victim list frozen at cast, or enemies who walked out of the zone still get hit.
+
 ## Verify
 `npx tsc --noEmit` clean for your files. No browser: the reviewer renders contact sheets and sends notes.

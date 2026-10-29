@@ -54,6 +54,9 @@ in small details.
 | Storm (foil: rain `#c8d4de`) | `#ffffff` | `#d6f2ff` | `#4aa8ff` | `#ffe36a` | `#0a1220` |
 | Sand (foil: sandstone `#e8d8b4`) | `#fff6dc` | `#ffd27a` | `#c8913f` | `#3fd4c8` | `#2a1a0c` |
 | Shadow (foil: moon `#cfcad8`) | `#f4e8ff` | `#c88cff` | `#6a2ec0` | `#5affd2` | `#050308` |
+| Grove (foil: bark cream `#e8dcc0`) | `#fffbe0` | `#ffe36a` | `#4caf50` | `#ff7ab8` | `#14260f` |
+| Dawn (foil: ivory `#efe6d2`) | `#fffdf2` | `#ffe7a0` | `#f2b83c` | `#7fd8ff` | `#3a2408` |
+| Tide (foil: foam `#eaf8fb`) | `#ffffff` | `#bff2ff` | `#1f9fd6` | `#ff9a6a` | `#05253a` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

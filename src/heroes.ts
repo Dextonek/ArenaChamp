@@ -5,6 +5,9 @@
 import { alchemyKit } from './kits/alchemy';
 import { sandKit } from './kits/sand';
 import { shadowKit } from './kits/shadow';
+import { groveKit } from './kits/grove';
+import { tideKit } from './kits/tide';
+import { dawnKit } from './kits/dawn';
 import { stormKit } from './kits/storm';
 import { astralKit } from './kits/astral';
 import { forgeKit } from './kits/forge';
@@ -204,6 +207,9 @@ const MODELS: Record<string, string> = {
   Kaia: 'models/heroes/storm.glb',
   Sefu: 'models/heroes/sand.glb',
   Nyx: 'models/heroes/shadow.glb',
+  Fenna: 'models/heroes/grove.glb',
+  Auriel: 'models/heroes/dawn.glb',
+  Marin: 'models/heroes/tide.glb',
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
