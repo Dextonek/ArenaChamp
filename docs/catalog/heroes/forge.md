@@ -43,10 +43,10 @@ All four play under the normal gameplay camera (no cinematic, no letterbox). Q, 
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [rivet shot](../../../src/spells/targeted/rivetShot.ts) | enemy | 10 | 3 s | 0.45 s | 1.7 s | He pulls a white-hot rivet from his chest forge, flicks it and it punches through one enemy in sparks and slag. The slag cools to black. Damage 55. |
-| W | [anvil drop](../../../src/spells/targeted/anvilDrop.ts) | ground (r 3.5) | 10 | 7 s | 0.7 s | 2.3 s | A ring of molten runes marks the ground, then a huge anvil falls on it and splashes slag; it crumbles into iron chunks and the crater cools. Damage 65. |
+| Q | [rivet shot](../../../src/spells/targeted/rivetShot.ts) | enemy | 10 | 3 s | 0.45 s | 1.7 s | He pulls a white-hot rivet from his chest forge, flicks it and it punches through one enemy in sparks and slag. The slag cools to black. Damage 50. |
+| W | [anvil drop](../../../src/spells/targeted/anvilDrop.ts) | ground (r 3.5) | 10 | 7 s | 0.7 s | 2.3 s | A ring of molten runes marks the ground, then a huge anvil falls on it and splashes slag; it crumbles into iron chunks and the crater cools. Damage 55. |
 | E | [bellows ward](../../../src/spells/targeted/bellowsWard.ts) | self (r 5) | 0 (self) | 9 s | 0.9 s and 1.9 s (two pulses) | 3.3 s | Two loops of molten chain whirl around him and burst outward in heat twice, then cool and fall with a clank. Loopable. Damage 15 per pulse. |
-| R | [forgefall](../../../src/spells/targeted/forgefall.ts) | ground (r 7) | 13 | 20 s | 2.3 s | 4.5 s | The ultimate. An anvil sigil draws on, slag streams pour up into the sky and pool into a colossal hammer that cools black while it rises; dead beat at 1.8-1.95 s, then it swings down: impact frame, spark fountain, molten crack web. Damage 130. |
+| R | [forgefall](../../../src/spells/targeted/forgefall.ts) | ground (r 7) | 13 | 20 s | 2.3 s | 4.5 s | The ultimate. An anvil sigil draws on, slag streams pour up into the sky and pool into a colossal hammer that cools black while it rises; dead beat at 1.8-1.95 s, then it swings down: impact frame, spark fountain, molten crack web. Damage 122. |
 
 Spell sources: [`rivetShot.ts`](../../../src/spells/targeted/rivetShot.ts), [`anvilDrop.ts`](../../../src/spells/targeted/anvilDrop.ts), [`bellowsWard.ts`](../../../src/spells/targeted/bellowsWard.ts), [`forgefall.ts`](../../../src/spells/targeted/forgefall.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-forge).
 

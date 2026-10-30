@@ -137,30 +137,30 @@ The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
 
 ## Balance (duel tournament)
 
-Damage per spell after the balance pass (2026-10-29). E auras hit on each pulse; R hits once (Sanguine Eclipse and
+Damage per spell after the final balance pass (2026-10-30). E auras hit on each pulse; R hits once (Sanguine Eclipse and
 Grand Transmutation twice). Ranges and cooldowns are in each hero's page.
 
 | Hero | Q | W | E | R |
 |---|---|---|---|---|
-| Vesper | Hemolance 53, cd 3 s | Thorn Garden 50 + 10, cd 7 s | Crimson Pact 2 × 9 | Sanguine Eclipse 15 + 120 |
-| Brannoc | Rivet Shot 46 | Anvil Drop 55 | Bellows Ward 2 × 15 | Forgefall 115 |
-| Isolde | Rime Spear 50 | Frostfern Field 56 | Glacial Mantle 2 × 12 | Winter's Crown 125 |
-| Lyra | Starshot 52 per target (hits from 0.52 s) | Constellation Snare 60, cd 7 s | Orbit Veil 2 × 12 | Celestial Hunt 135 |
-| Vex | Volatile Flask 45 + 12 | Caustic Pool 30 + 12 + 12, cd 7 s | Mutagen 2 × 12 | Grand Transmutation 80 + 50 |
+| Vesper | Hemolance 47, cd 3 s | Thorn Garden 50 + 10, cd 7 s | Crimson Pact 2 × 9 | Sanguine Eclipse 15 + 110 |
+| Brannoc | Rivet Shot 50 | Anvil Drop 55 | Bellows Ward 2 × 15 | Forgefall 122 |
+| Isolde | Rime Spear 53 | Frostfern Field 58 | Glacial Mantle 2 × 12 | Winter's Crown 130 |
+| Lyra | Starshot 55 per target (hits from 0.52 s) | Constellation Snare 60, cd 7 s | Orbit Veil 2 × 12 | Celestial Hunt 138 |
+| Vex | Volatile Flask 49 + 12 | Caustic Pool 30 + 12 + 12, cd 7 s | Mutagen 2 × 12 | Grand Transmutation 86 + 50 |
 | Kaia | Arc Lance 50 | Downpour 40 + 15, cd 7 s | Static Field 2 × 14 | Eye of the Storm 125 |
-| Sefu | Sand Lash 50 | Quicksand 45 + 10, cd 7 s | Dune Ward 2 × 13 | Tomb of Kings 125 |
+| Sefu | Sand Lash 53 | Quicksand 48 + 10, cd 7 s | Dune Ward 2 × 13 | Tomb of Kings 130 |
 | Nyx | Umbral Blink 50 | Grasp of the Deep 45 + 10, cd 7 s | Night Shroud 2 × 13 | Eclipse Execution 125 |
-| Fenna | Bloom Lash 50 | Overgrowth 45 + 10, cd 7 s | Verdant Ward 2 × 15 | World Blossom 125 |
+| Fenna | Bloom Lash 54 | Overgrowth 45 + 10, cd 7 s | Verdant Ward 2 × 15 | World Blossom 130 |
 | Auriel | Radiant Spear 50 | Aegis Wall 45 + 10, cd 7 s | Halo of Blades 2 × 13 | Judgement of Dawn 125 |
 | Marin | Tide Whip 50 | Whirlpool 45 + 10, cd 7 s | Undertow Dance 2 × 13 | Leviathan's Waltz 125 |
-| Zephyr | Gale Edge 40, cd 2.5 s | Tailwind Rush 45, knock-up 0.4 s, cd 7 s | Cyclone Guard 2 × 13 + 50 shield | Thousand Winds 125, knock-up 0.5 s |
+| Zephyr | Gale Edge 45, cd 2.5 s | Tailwind Rush 45, knock-up 0.4 s, cd 7 s | Cyclone Guard 2 × 13 + 50 shield | Thousand Winds 132, knock-up 0.5 s |
 | Mortis | Bone Spear 50 (pierces) | Grave Call 15 + 2 skeletons, cd 9 s | Ossuary Ward 2 × 12 + 30 shield | Legion of the Ossuary 90 + 2 archers |
-| Ada | Rivet Shot 55 + slow (ricochets) | Cog Turret 20 + turret 12 per shot, cd 12 s | Gear Field 2 × 13 + slow | Gearfall 125 + root 1.2 s |
-| Opaline | Prism Bolt 45 + 3 × 15 (splits), cd 3 s | Refraction Field 40 + blind 1.5 s, cd 7 s | Mirror Shell 2 × 12 + 40 shield | Spectrum Lance 125 |
+| Ada | Rivet Shot 50 + slow (ricochets) | Cog Turret 20 + turret 12 per shot, cd 12 s | Gear Field 2 × 13 + slow | Gearfall 115 + root 1.2 s |
+| Opaline | Prism Bolt 42 + 3 × 15 (splits), cd 3 s | Refraction Field 40 + blind 1.5 s, cd 7 s | Mirror Shell 2 × 12 + 40 shield | Spectrum Lance 118 |
 | Sirix | Mandible Rend 40 + slow, cd 2.5 s | Swarm Leap 30 + 2 wasps, cd 9 s | Chitin Carapace 2 × 12 + 40 shield + slow | Queen's Descent 90 + stun 0.6 s |
-| Cantor | Discordant Note 50 (bounces), cd 3 s | Silencing Refrain 40 + silence 1.5 s, cd 7 s | Ballad of Valor 2 × 10 + 30 shield + heal 40 | Crescendo 100 + stun 0.6 s |
+| Cantor | Discordant Note 47 (bounces), cd 3 s | Silencing Refrain 40 + silence 1.5 s, cd 7 s | Ballad of Valor 2 × 10 + 30 shield + heal 40 | Crescendo 95 + stun 0.6 s |
 | Oblivion | Rift Cleave 46, cd 2.5 s | Null Tether 36 + pull 4 m + slow 1.0 s, cd 8 s | Void Mantle 2 × 12 + 40 shield + silence 1.0 s on the second pulse, cd 10 s | Unmaking 110 + pull 4 m + silence 1.5 s |
-| Shiori | Brushstroke 48 + 3 × 12 (splits at full range), cd 3 s | Ink Snare 35 + root 1.0 s, cd 8 s | Paper Familiars 10 + 2 cranes, cd 14 s | Final Calligraphy 95 + blind 1.5 s |
+| Shiori | Brushstroke 45 + 3 × 12 (splits at full range), cd 3 s | Ink Snare 35 + root 1.0 s, cd 8 s | Paper Familiars 10 + 2 cranes, cd 14 s | Final Calligraphy 95 + blind 1.5 s |
 | Tempo | Second Hand 50 + slow 1.0 s (pierces), cd 3 s | Stopped Moment 35 + stun 0.8 s, cd 8 s | Rewind 15 + 25 shield + heal 45, cd 11 s | Twelfth Hour 100 + stun 0.6 s |
 
 Kaia, Sefu and Nyx were built inside the balance budget in `pipeline/designs/kit-common.md` and needed no tuning: in an
@@ -172,6 +172,8 @@ Zephyr, Mortis and Ada are the first kits built on the [combat mechanics](../../
 Opaline, Sirix and Cantor (wave 4) are built on the same mechanics and budget: a splitting skillshot with a blind (mage), a melee brawler with a leap that summons wasps, and a support with a bouncing skillshot, a silence, a shield with a heal and a stunning ultimate. In the wave 4 tournament (each hero against 16 opponents, 3 fights per ordered pairing, both sides) Opaline first won 63%; Refraction Field was lowered from 45 to 40 damage and she then won 53%. Sirix won 45% and Cantor 46%.
 
 Oblivion, Shiori and Tempo (wave 5) are built on the same mechanics and budget: a melee juggernaut with a pull and silences, a ranged control mage with a splitting skillshot, a root, two crane summons and a blind, and a ranged control hero with a piercing slow, a stun, a rewind with a shield and a heal, and a stunning ultimate. The pull is new this wave. In the wave 5 tournament (each hero against 19 opponents, 3 fights per ordered pairing, both sides) the first run gave Oblivion 26%, Shiori 72% and Tempo 51%; after the changes below Oblivion won 54%, Shiori 58% and Tempo 51%.
+
+Final balance pass (2026-10-30): a full 20-hero tournament, every ordered pairing. The first run (3 fights per pairing) had Vesper 70%, Cantor 68%, Ada 64% and Opaline 61% too high, and Isolde 33%, Sefu 34%, Lyra 35% and Zephyr 37% too low. Three rounds of damage-only changes followed (Hemolance 53 → 47, Sanguine Eclipse slam 120 → 110; Discordant Note 50 → 47, Crescendo 100 → 95; Clockwork Rivet Shot 55 → 50, Gearfall 125 → 115; Prism Bolt 45 → 42, Spectrum Lance 125 → 118; Rime Spear 50 → 53, Frostfern Field 56 → 58, Winter's Crown 125 → 130; Sand Lash 50 → 53, Quicksand 45 → 48, Tomb of Kings 125 → 130; Starshot 52 → 55, Celestial Hunt 135 → 138; Gale Edge 40 → 45, Thousand Winds 125 → 132; Rivet Shot 46 → 50, Forgefall 115 → 122; Volatile Flask 45 → 49, Grand Transmutation gold 80 → 86; Bloom Lash 50 → 54, World Blossom 125 → 130; Brushstroke 48 → 45). The final run (4 fights per pairing, 152 fights per hero, no timeouts) gave Vesper 46%, Brannoc 59%, Isolde 59%, Lyra 52%, Vex 55%, Kaia 49%, Sefu 47%, Nyx 43%, Fenna 55%, Auriel 44%, Marin 51%, Zephyr 53%, Mortis 54%, Ada 41%, Sirix 41%, Cantor 43%, Opaline 43%, Oblivion 61%, Shiori 45% and Tempo 58%. Run-to-run noise is about ±6 points.
 
 Measured with AI vs AI duels (run duel, every hero against every other, both sides on the same AI, both dodging)
 using [duel-tourney.js](../../../pipeline/tools/duel-tourney.js). Win rates, two runs of 100 fights:

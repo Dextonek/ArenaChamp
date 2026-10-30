@@ -21,7 +21,7 @@ export interface HemolanceSettings {
   loop: boolean;
 }
 
-export const defaultHemolance = (): HemolanceSettings => ({ damage: 53, loop: false });
+export const defaultHemolance = (): HemolanceSettings => ({ damage: 47, loop: false });
 
 // Timeline (seconds).
 const DRAW_T = 0.12;

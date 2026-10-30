@@ -23,7 +23,7 @@ export interface GrandTransmutationSettings {
   loop: boolean;
 }
 
-export const defaultGrandTransmutation = (): GrandTransmutationSettings => ({ goldDamage: 80, shatterDamage: 50, loop: false });
+export const defaultGrandTransmutation = (): GrandTransmutationSettings => ({ goldDamage: 86, shatterDamage: 50, loop: false });
 
 // Timeline (seconds).
 const SMASH_T = 0.3;

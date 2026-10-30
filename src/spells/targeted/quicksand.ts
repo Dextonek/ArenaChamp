@@ -19,7 +19,7 @@ export interface QuicksandSettings {
   loop: boolean;
 }
 
-export const defaultQuicksand = (): QuicksandSettings => ({ damage: 45, tick: 10, loop: false });
+export const defaultQuicksand = (): QuicksandSettings => ({ damage: 48, tick: 10, loop: false });
 
 // Timeline (seconds).
 const POOL_T = 0.3;

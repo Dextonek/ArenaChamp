@@ -21,7 +21,7 @@ export interface WintersCrownSettings {
   loop: boolean;
 }
 
-export const defaultWintersCrown = (): WintersCrownSettings => ({ damage: 125, loop: false });
+export const defaultWintersCrown = (): WintersCrownSettings => ({ damage: 130, loop: false });
 
 // Timeline (seconds).
 const LIFT_T = 0.0; // hands go up, the world darkens

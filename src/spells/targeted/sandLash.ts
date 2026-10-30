@@ -16,7 +16,7 @@ export interface SandLashSettings {
   loop: boolean;
 }
 
-export const defaultSandLash = (): SandLashSettings => ({ damage: 50, loop: false });
+export const defaultSandLash = (): SandLashSettings => ({ damage: 53, loop: false });
 
 // Timeline (seconds).
 const POUR_END_T = 0.2;

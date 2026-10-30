@@ -21,7 +21,7 @@ export interface TombOfKingsSettings {
   loop: boolean;
 }
 
-export const defaultTombOfKings = (): TombOfKingsSettings => ({ damage: 125, loop: false });
+export const defaultTombOfKings = (): TombOfKingsSettings => ({ damage: 130, loop: false });
 
 // Timeline (seconds).
 const POOL_T = 0.3;

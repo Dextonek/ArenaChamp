@@ -45,10 +45,10 @@ All four play under the normal gameplay camera (no cinematic, no letterbox). Q, 
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [hemolance](../../../src/spells/targeted/hemolance.ts) | enemy | 11 | 3 s | 0.55 s | 1.6 s | A pale cut on her raised palm sprays blood; a tendril pours up, coils above the shoulder, hardens into a crystal lance and impales one enemy. The blood drains back home. Damage 60. |
+| Q | [hemolance](../../../src/spells/targeted/hemolance.ts) | enemy | 11 | 3 s | 0.55 s | 1.6 s | A pale cut on her raised palm sprays blood; a tendril pours up, coils above the shoulder, hardens into a crystal lance and impales one enemy. The blood drains back home. Damage 47. |
 | W | [thorn garden](../../../src/spells/targeted/thornGarden.ts) | ground (r 4.5) | 10 | 7 s | 0.75 s | 2.3 s | A tendril runs to the point, a bone sigil draws on and a pool of blood spreads inside it, then freezes upward into a thicket of 34 thorns. Damage 50, one tick of 10 at 1.2 s. |
 | E | [crimson pact](../../../src/spells/targeted/crimsonPact.ts) | self (r 6) | 0 (self) | 9 s | 0.6 s (loop 0.6-2.6 s) | 3.2 s | Arms spread, a bone sigil draws on and a heart of blood beats above her head and drains every enemy nearby on each beat. Loopable. Damage 9 per beat. |
-| R | [sanguine eclipse](../../../src/spells/targeted/sanguineEclipse.ts) | ground (r 7) | 13 | 20 s | 2.4 s | 4.5 s | The ultimate. Three blood beads are thrown up and a bone moon appears and bleeds; the zone's blood is harvested (1.0 s tick, 15), freezes into a thorn-star at 2.0 s and falls on the zone at 2.4 s (120). Dead beat, then one impact frame. |
+| R | [sanguine eclipse](../../../src/spells/targeted/sanguineEclipse.ts) | ground (r 7) | 13 | 20 s | 2.4 s | 4.5 s | The ultimate. Three blood beads are thrown up and a bone moon appears and bleeds; the zone's blood is harvested (1.0 s tick, 15), freezes into a thorn-star at 2.0 s and falls on the zone at 2.4 s (110). Dead beat, then one impact frame. |
 
 Spell sources: [`hemolance.ts`](../../../src/spells/targeted/hemolance.ts), [`thornGarden.ts`](../../../src/spells/targeted/thornGarden.ts), [`crimsonPact.ts`](../../../src/spells/targeted/crimsonPact.ts), [`sanguineEclipse.ts`](../../../src/spells/targeted/sanguineEclipse.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-blood).
 

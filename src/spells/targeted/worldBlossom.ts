@@ -19,7 +19,7 @@ export interface WorldBlossomSettings {
   loop: boolean;
 }
 
-export const defaultWorldBlossom = (): WorldBlossomSettings => ({ damage: 125, loop: false });
+export const defaultWorldBlossom = (): WorldBlossomSettings => ({ damage: 130, loop: false });
 
 // Timeline (seconds).
 const TRUNK_T = 0.3; // the trunk starts to grow (up by 1.1)

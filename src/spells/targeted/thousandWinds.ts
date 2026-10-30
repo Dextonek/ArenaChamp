@@ -19,7 +19,7 @@ export interface ThousandWindsSettings {
   loop: boolean;
 }
 
-export const defaultThousandWinds = (): ThousandWindsSettings => ({ damage: 125, loop: false });
+export const defaultThousandWinds = (): ThousandWindsSettings => ({ damage: 132, loop: false });
 
 // Timeline (seconds).
 const RISE_T = 0.3; // the cyclone starts to rise

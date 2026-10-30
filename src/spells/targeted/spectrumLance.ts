@@ -22,7 +22,7 @@ export interface SpectrumLanceSettings {
   loop: boolean;
 }
 
-export const defaultSpectrumLance = (): SpectrumLanceSettings => ({ damage: 125, knock: 4, loop: false });
+export const defaultSpectrumLance = (): SpectrumLanceSettings => ({ damage: 118, knock: 4, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the ring of small crystals up

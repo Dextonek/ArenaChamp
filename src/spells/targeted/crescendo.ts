@@ -22,7 +22,7 @@ export interface CrescendoSettings {
   loop: boolean;
 }
 
-export const defaultCrescendo = (): CrescendoSettings => ({ damage: 100, stunSeconds: 0.6, loop: false });
+export const defaultCrescendo = (): CrescendoSettings => ({ damage: 95, stunSeconds: 0.6, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the ring of staves drawn

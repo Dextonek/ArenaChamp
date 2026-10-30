@@ -16,7 +16,7 @@ export interface BloomLashSettings {
   loop: boolean;
 }
 
-export const defaultBloomLash = (): BloomLashSettings => ({ damage: 50, loop: false });
+export const defaultBloomLash = (): BloomLashSettings => ({ damage: 54, loop: false });
 
 // Timeline (seconds).
 const GROW_T = 0.5; // the vine reaches the top of the target

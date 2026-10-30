@@ -22,7 +22,7 @@ export interface SanguineEclipseSettings {
   loop: boolean;
 }
 
-export const defaultSanguineEclipse = (): SanguineEclipseSettings => ({ harvestDamage: 15, slamDamage: 120, loop: false });
+export const defaultSanguineEclipse = (): SanguineEclipseSettings => ({ harvestDamage: 15, slamDamage: 110, loop: false });
 
 // Timeline (seconds).
 const HARVEST_HIT_T = 1.0;

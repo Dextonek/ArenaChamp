@@ -265,10 +265,12 @@ _Last updated: 2026-10-29_
     queue match (22.6 s), lobby match in the ring with cover (24.5 s), dodges on both screens, knockback replicated,
     disconnect = forfeit, session resume, Back to menu, profile. `tsc --noEmit` clean; selfTest sweep 156/156 ok.
   - Background tabs keep simulating in game mode (a timer steps the scene when no frame came for 250 ms).
-- **Cloudflare deployment ready (2026-10-29, not deployed yet):** the server core is runtime-free (`server/hub.mjs`,
+- **Cloudflare deployment (2026-10-29; live since 2026-10-30 at https://arena-of-kits.arenachamp.workers.dev):** the server core is runtime-free (`server/hub.mjs`,
   accounts with a pluggable store and PBKDF2), hosted by Node (`server/game-server.mjs`) or by a Cloudflare Worker +
   SQLite Durable Object (`worker/index.mjs`, `wrangler.jsonc`, wrangler 4.150.0 pinned). `npm run cf:dev` (local,
-  8788) passed the smoke test, a two-tab match and a restart. Deploy: see Waiting on you.
+  8788) passed the smoke test, a two-tab match and a restart. Deployed with `npm run cf:deploy` (workers.dev
+  subdomain `arenachamp`); page and game socket answer.
+  **Deploy freeze (user, 2026-10-30): do not run `npm run cf:deploy` / `wrangler deploy` until the user says so.**
 - **Duel ring cover + line of sight (2026-10-29, user request):** centre wall, four pillars, two side walls
   (`src/obstacles.ts`, `DUEL_OBSTACLES`) in both the AI duel and the network duel. They block walking (push-out +
   sliding round edges) and sight; targeted spells need sight of their target (hero mode: toast "No line of sight",
@@ -304,7 +306,7 @@ _Last updated: 2026-10-29_
     after Refraction Field 45 → 40, Sirix 45%, Cantor 46% (each × 16 opponents × 3 × both sides). Sweep 205/205
     (known quirk only). Contact sheets need a wide canvas: the pane once shrank to 510×846 and zoomed every frame;
     set the viewport to 1400×850 before `_multi`.
-    Committed `63c23e5`.
+    Committed `3379f3c`.
   - Wave 5 DONE (uncommitted): void (Oblivion, melee juggernaut: rift cleave, null tether pull + slow, void mantle
     shield + silence, unmaking R with pull + silence), ink (Shiori, control mage: brushstroke skillshot that splits at
     the end of its range, ink snare root, paper familiars ranged crane summons, final calligraphy R with blind), chrono
@@ -318,9 +320,21 @@ _Last updated: 2026-10-29_
     Cleave 40 -> 46, Null Tether 30 -> 36 and pull 3 -> 4, Unmaking 100 -> 110, Brushstroke 55 -> 48 (split 15 -> 12),
     Final Calligraphy 105 -> 95 and blind 2.0 -> 1.5 s: Oblivion 54%, Shiori 58%, Tempo 51% (each x 19 opponents x 3
     x both sides). Sweep 217/217 clean.
-  - Next: the final balance pass across all 20 heroes (Vesper was 75%), only when the user asks.
+    Committed `e8e4326`.
+  - Final balance pass (2026-10-30, committed): full 20-hero tournament (`_tourney`, every ordered pairing).
+    Run 1 (3 reps): Vesper 70, Cantor 68, Ada 64, Opaline 61 high; Isolde 33, Sefu 34, Lyra 35, Zephyr 37 low.
+    Three tuning rounds (damage only, in each spell's `default<Name>()`): Hemolance 53 -> 47, Sanguine Eclipse slam
+    120 -> 110, Discordant Note 50 -> 47, Crescendo 100 -> 95, Clockwork Rivet Shot 55 -> 50, Gearfall 125 -> 115,
+    Prism Bolt 45 -> 42, Spectrum Lance 125 -> 118, Rime Spear 50 -> 53, Winter's Crown 125 -> 130, Frostfern Field
+    56 -> 58, Sand Lash 50 -> 53, Quicksand 45 -> 48, Tomb of Kings 125 -> 130, Starshot 52 -> 55, Celestial Hunt
+    135 -> 138, Gale Edge 40 -> 45, Thousand Winds 125 -> 132, Rivet Shot 46 -> 50, Forgefall 115 -> 122, Volatile
+    Flask 45 -> 49, Grand Transmutation gold 80 -> 86, Bloom Lash 50 -> 54, World Blossom 125 -> 130, Brushstroke
+    48 -> 45. Final run (4 reps, 152 fights per hero, no timeouts): Vesper 46, Brannoc 59, Isolde 59, Lyra 52, Vex
+    55, Kaia 49, Sefu 47, Nyx 43, Fenna 55, Auriel 44, Marin 51, Zephyr 53, Mortis 54, Ada 41, Sirix 41, Cantor 43,
+    Opaline 43, Oblivion 61, Shiori 45, Tempo 58. Run-to-run noise is about +-6 points. Hero pages and the heroes README
+    carry the new numbers.
 - **Combat mechanics** (user 2026-10-29; plan `pipeline/designs/mechanics.md`; used by waves 3-5 only, the 11 existing
-  heroes stay as they are). Engine built in 4 steps, committed in `be41f5c`:
+  heroes stay as they are). Engine built in 4 steps, committed in `0cd338d`:
   1. Statuses: `HitOptions.status` (stun, root, slow, silence, blind, knockup), `src/effects/status.ts`, markers
      `parts/status.ts`; AI obeys them and prefers `cc` spells. Zone-hit fix in 6 spells.
   2. Shield / heal / dash (`ctx.shieldSelf`, `healSelf`, `moveCaster`, `parts/shield.ts`), melee support
@@ -345,10 +359,11 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
-- Committed (not pushed, no remote): the multiplayer game and the ring cover ("Add the Arena of Kits multiplayer
-  duel game and ring cover").
-- Publish to Cloudflare: create a free Cloudflare account, then `npx wrangler login` and `npm run cf:deploy`
-  (docs/architecture/multiplayer.md#cloudflare). Pushing to a git remote: none is set up.
+- Push: all commits were rewritten to author Dextonek (old history in `refs/backup/before-dextonek`); remote
+  `origin` = https://github.com/Dextonek/ArenaChamp; pushed as `main` up to e8e4326 (wave 5). Later pushes:
+  `git push origin feat/particle-editor:main`.
+- Cloudflare deploy freeze: no new build goes live until you lift it.
+- Play online: https://arena-of-kits.arenachamp.workers.dev in two browsers (online accounts start empty).
 - Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
 - Uncommitted: play/run duel, balance pass. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
   commits 6329099 four hero kits, models, switcher; fa60c09 blood kit, hero mode; earlier a7f26de, 60ec4cb,

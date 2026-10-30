@@ -43,10 +43,10 @@ All four play under the normal gameplay camera (no cinematic, no letterbox). Q, 
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [rime spear](../../../src/spells/targeted/rimeSpear.ts) | enemy | 11 | 3 s | 0.5 s | 1.7 s | She breathes an ice javelin into her hand and throws it; it pierces the enemy and frost ferns climb the target. Spear and crystals shatter at 0.8 s. Damage 55. |
-| W | [frostfern field](../../../src/spells/targeted/frostfernField.ts) | ground (r 4.5) | 10 | 7 s | 0.8 s | 2.3 s | Frost ferns race across the floor, hold everyone in them, then crack into a field of 22 crystals and shatter at 1.5 s. Damage 50. |
+| Q | [rime spear](../../../src/spells/targeted/rimeSpear.ts) | enemy | 11 | 3 s | 0.5 s | 1.7 s | She breathes an ice javelin into her hand and throws it; it pierces the enemy and frost ferns climb the target. Spear and crystals shatter at 0.8 s. Damage 53. |
+| W | [frostfern field](../../../src/spells/targeted/frostfernField.ts) | ground (r 4.5) | 10 | 7 s | 0.8 s | 2.3 s | Frost ferns race across the floor, hold everyone in them, then crack into a field of 22 crystals and shatter at 1.5 s. Damage 58. |
 | E | [glacial mantle](../../../src/spells/targeted/glacialMantle.ts) | self (r 4) | 0 (self) | 10 s | 1.0 s and 2.0 s (two pulses) | 3.3 s | Ice armour plates grow from her shoulders and hips and a blizzard band circles her; two rime pulses freeze enemies that come close, then the mantle shatters at 2.8 s. Damage 12 per pulse. |
-| R | [winter's crown](../../../src/spells/targeted/wintersCrown.ts) | ground (r 7) | 13 | 20 s | 2.3 s | 4.5 s | The ultimate. Ferns spread over the whole zone as the warning, a colossal inverted crown of ice crystals forms in the sky, dead beat at 1.85-2.0 s, then it drives down into a forest of crystals (impact frame, pink glint). Damage 125. |
+| R | [winter's crown](../../../src/spells/targeted/wintersCrown.ts) | ground (r 7) | 13 | 20 s | 2.3 s | 4.5 s | The ultimate. Ferns spread over the whole zone as the warning, a colossal inverted crown of ice crystals forms in the sky, dead beat at 1.85-2.0 s, then it drives down into a forest of crystals (impact frame, pink glint). Damage 130. |
 
 Spell sources: [`rimeSpear.ts`](../../../src/spells/targeted/rimeSpear.ts), [`frostfernField.ts`](../../../src/spells/targeted/frostfernField.ts), [`glacialMantle.ts`](../../../src/spells/targeted/glacialMantle.ts), [`wintersCrown.ts`](../../../src/spells/targeted/wintersCrown.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-frost).
 

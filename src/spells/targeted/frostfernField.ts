@@ -19,7 +19,7 @@ export interface FrostfernFieldSettings {
   loop: boolean;
 }
 
-export const defaultFrostfernField = (): FrostfernFieldSettings => ({ damage: 56, loop: false });
+export const defaultFrostfernField = (): FrostfernFieldSettings => ({ damage: 58, loop: false });
 
 // Timeline (seconds).
 const SWEEP_T = 0.0;
