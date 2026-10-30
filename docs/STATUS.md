@@ -24,17 +24,18 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   arenas, the hero roles, the new Oblivion, smooth movement and the rounds.
 - Not committed on purpose: the Meshy experiment (`blender/meshy/`, 35 MB GLB; `docs/heroes/void-meshy*`, `void_meshy_*`).
 
-**Online sync of the mechanics (2026-10-30, uncommitted, not deployed)**
+**Online sync of the mechanics (2026-10-30, `24fec40`, live)**
 - Statuses, shields, heals, pulls, skillshots, summons and basic attacks now work in network duels (the victim's
   client decides; new messages `attack`, `heal`, `status`, `shield`, `cast.yaw`, `took_hit.soaked`; see
   `docs/architecture/multiplayer.md#mechanics-online`). Rounds have no time limit any more (user): they end on a KO.
   `npm run test:server` 32/32 (6 new checks); two-player browser test passed (Lyra vs Auriel, Fenna vs Marin).
-- Also uncommitted: two round-start fixes. The side-0 hero turned upside down in round 2
+- Also in `24fec40`: two round-start fixes. The side-0 hero turned upside down in round 2
   (`src/effects/weapons/hero.ts` restored a quaternion; now the Euler angles), and the 3-2-1 counted on frame time
   (`src/duel.ts`, now the wall clock).
 - Known gap: each screen simulates its own copy of the summoned units (positions and unit HP can drift).
   Basic attacks on units stay local.
-- Client and server change together: deploy both (`npm run cf:deploy`).
+- Pushed to GitHub `main` and deployed (Worker version `d4fee4c5-be7f-4753-8c11-4dab08c03d81`); the live page serves
+  `game-DSwok-2F.js`, no console errors, the game WebSocket opens.
 
 **Next step candidates (game)**
 - Hero identity layer (user chose it after the sync): a passive, an own resource or input twist, and an own basic
