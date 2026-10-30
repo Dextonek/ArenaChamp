@@ -17,6 +17,8 @@ export interface MatchRecord {
   result: 'win' | 'loss';
   seconds: number;
   reason: string;
+  /** Rounds won by this player and by the foe (best of three). */
+  rounds?: number[];
 }
 
 export interface Profile {
@@ -46,14 +48,19 @@ export type ServerMsg =
   | { t: 'lobby'; lobby: LobbyState | null; you?: number }
   | { t: 'queue'; on: boolean; since: number; size: number }
   | { t: 'match_start'; id: string; side: 0 | 1; hp: number; you: { name: string; hero: string }; foe: { name: string; hero: string } }
-  | { t: 'match_fight'; countdown: number }
+  | { t: 'match_fight'; countdown: number; round?: number }
+  | {
+    t: 'round_end'; round: number; result: 'win' | 'loss' | 'draw'; reason: string; winner: string | null; score: number[];
+    hp: number[]; next: number;
+  }
+  | { t: 'round_start'; round: number; score: number[] }
   | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number }
   | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean }
   | { t: 'peer_hit'; id: number; damage: number; hp: number; color?: string }
   | { t: 'peer_dodged'; id: number }
   | { t: 'hp'; hp: number }
   | {
-    t: 'match_end'; id: string; result: 'win' | 'loss'; winner: string; reason: string; seconds: number; hp: number[];
+    t: 'match_end'; id: string; result: 'win' | 'loss'; winner: string; reason: string; seconds: number; score?: number[]; hp: number[];
     stats: { casts: number; hits: number; dodges: number }; profile: Profile | null;
   }
   | { t: 'socket'; open: boolean };

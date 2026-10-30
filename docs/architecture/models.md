@@ -14,6 +14,7 @@ How the 3D models in `public/models/` are made and used: the weapons pipeline (`
 |---|---|---|
 | `public/models/weapons/wp-*.glb` (5, plain glTF) | [blender/weapons/](../../blender/weapons/) | `WeaponModel` in [kit.ts](../../src/effects/weapons/kit.ts) (plain `GLTFLoader`) |
 | `public/models/heroes/{blood,forge,frost,astral,alchemy}.glb` (skinned, meshopt) | [blender/heroes/hero_figures.py](../../blender/heroes/hero_figures.py) | `Hero` in [hero.ts](../../src/effects/weapons/hero.ts), via `MODELS` in [heroes.ts](../../src/heroes.ts) |
+| `public/models/heroes/<theme>.glb` from an unrigged Meshy (or other) GLB | [blender/heroes/meshy_rig.py](../../blender/heroes/meshy_rig.py): decimates, scales, fits the hero rig to an A-pose, skins by bone distance, puts the arms down and re-adds hand-held props | same as the hero figures (bone names and rest orientations of the hero rig) |
 | `public/models/figures/hero.glb` (the weapon wielder) | copied from the Dao Archive, not built here | `Hero` default url |
 
 Both pipelines reuse the **Dao Archive** modelling kit at `C:\projectG\xianxia\blender` (`kit`, `dao_blender`, `figure_kit`, `figure_looks`, `_azure_common`, `_treasure_common`, ...) strictly **read-only**: the scripts add that folder to `sys.path` and import from it, and write only into this repository (never into the game's models or manifest). Both need Blender with the MCP add-on connected, and the Dao folder present on the machine.

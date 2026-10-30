@@ -1,6 +1,43 @@
 # Status
 
-_Last updated: 2026-10-29_
+_Last updated: 2026-10-30_
+
+## Current state (2026-10-30, end of day)
+The game ("Arena of Kits") is a 1v1 MOBA-style duel: 20 heroes, each with a role, four spells of its own shapes and a
+basic attack, fought in one of five arenas. Everything below is committed on `feat/particle-editor` unless marked.
+
+**Done today (commits, newest first)**
+- `4f39f41` Rebalance hero kits for basic attacks: every hero wins 42-57% of AI duels (1,520-fight tournament).
+- `68f976c` Give every hero a role and a kit shape of its own (`pipeline/designs/hero-roles.md`, 7 new spell types).
+- `63c232d` MOBA basic attacks: right-click attack, A attack-move, S stop; melee swing / ranged homing bolt
+  (`src/attacks/`, `docs/architecture/attacks.md`). Off in network duels.
+- `cc0ac85` Five duel arenas picked at random (Night Temple, Frostfall Lake, Ember Caldera, Verdant Glade, Sky Ruins;
+  `src/arenas/`, `docs/architecture/arenas.md`) and the heavier Oblivion model (v2; the first is `void_v1`).
+- `955b850` Smooth online opponent movement, MOBA-slow walking (hero 4 m/s, AI 3.5).
+- `68e2d10` Balance pass, `e8e4326` hero wave 5 (Oblivion, Shiori, Tempo).
+
+**Uncommitted (from the multiplayer session)**
+- Best-of-3 rounds online + server checks: `server/hub.mjs`, `server/accounts.mjs`, `server/smoke-test.mjs`,
+  `src/duel.ts` (`netRoundEnd`), `src/game/match.ts` (`beginRound`, an arena per round), `src/net/client.ts`,
+  `docs/architecture/multiplayer.md`, `docs/README.md`; research `docs/research/moba-design.md` and
+  `game-networking.md`. Smoke test 26/26 (details under "Best-of-3 rounds" below). Commit it before more engine work
+  in those files.
+- Not for commit: the Meshy experiment (`blender/meshy/`, 35 MB GLB; `docs/heroes/void-meshy*`, `void_meshy_*`).
+
+**Blocked / held**
+- Cloudflare deploy freeze (user): nothing new goes live. The live site
+  (https://arena-of-kits.arenachamp.workers.dev) still runs the 955b850-era build without arenas, roles or attacks.
+  Rounds change the protocol on both ends: client and server deploy together.
+
+**Online gaps (the next multiplayer work)**
+- Statuses, shields, heals, dashes, pulls, skillshots and summons are not synced online (Stage 1 plan in
+  `docs/architecture/multiplayer.md`); basic attacks need their own message type (they home in, no dodge).
+
+**Next step candidates (game)**
+- Online sync Stage 1 + the basic-attack message, then lift the freeze and deploy.
+- Per-hero basic-attack looks and role traits (crit, every-third-shot, slowing or healing hits).
+- AI: attack summoned units, not only the hero; re-check summon balance at the slower walk speed.
+- Arena refinement round 2 if wanted; more Blender model upgrades like Oblivion v2.
 
 ## Done
 - Vite + TypeScript + Three.js scaffold, exact versions pinned (three 0.186.1, vite 8.3.5, typescript 7.0.2).
@@ -265,6 +302,29 @@ _Last updated: 2026-10-29_
     queue match (22.6 s), lobby match in the ring with cover (24.5 s), dodges on both screens, knockback replicated,
     disconnect = forfeit, session resume, Back to menu, profile. `tsc --noEmit` clean; selfTest sweep 156/156 ok.
   - Background tabs keep simulating in game mode (a timer steps the scene when no frame came for 250 ms).
+- **Best-of-3 rounds online + server checks (2026-10-30, user request, uncommitted, not deployed: freeze):**
+  `server/hub.mjs` runs rounds (first to two; 60 s cap, more HP share wins, a tie replays; 3 s break; `round_end` /
+  `round_start`), per-hero max HP from `match_loaded { maxHp }` (was a flat 600 for everyone), and accepts a hit only
+  for a cast the other side made in the last 12 s, with one cast per slot per 0.8 s (R: 10 s). Client:
+  `MatchController.beginRound` re-runs `startNet` each round (each round in its own arena), `Duel.netRoundEnd`
+  shows the round banner, the card shows "2-1 in rounds". Smoke test 26/26 on Node and on the local Cloudflare runtime (`wrangler dev`, twice; the test's lobby step had an
+  ordering race between two sockets, now fixed) (three rounds 2-1, the 740 HP hero, an
+  unknown cast's hit and a too-fast Q dropped); built page vs a scripted player: a full 2-1 match in 41.9 s with
+  the round banners, the final card and its own arena seed per round (rounds 1 and 3 landed in Sky Ruins and
+  Verdant Glade), no console errors. A time-up tie replayed the round (seen by accident); a time-up win on HP share
+  is not tested yet. `match_start.hp` is now unused (the max comes from `match_loaded`).
+  Commit together with the kit redesign: `src/duel.ts` and `src/game/match.ts` also carry that session's uncommitted work. Research behind it:
+  docs/research/moba-design.md, docs/research/game-networking.md.
+- **Waiting: online sync of statuses, shields, summons and skillshots (Stage 1).** The hero-roles session confirmed
+  (2026-10-30) the sync inputs stay the same (`HitOptions.status/pull`, `ctx.shieldSelf/healSelf/moveCaster/
+  projectile/summon`), now used by all 20 heroes; the peer must also get the caster's yaw (facing-aimed `self`
+  spells), Tempo Q's return to the caster's live spot, Vesper E's tether, and traps/zones that hit up to 4.2 s
+  later. The uncommitted `src/duel.ts`, `src/arena.ts`, `src/main.ts`, `src/game/match.ts` edits besides mine
+  belong to the arena session (five duel arenas), not the hero-roles session.
+  Basic attacks (Project Game Artist, `src/attacks/`, docs/architecture/attacks.md) are off online
+  (`hm.attacksEnabled = false` in `startNet`); the sync needs its own `attack` message (attacker, target, damage;
+  it homes in, no dodge), not a spell slot. Skillshots still show nothing online: a hero whose Q is a line spell (Lyra, Isolde) can't hurt
+  anyone with it in a network duel.
 - **MOBA-slow walking (2026-10-30, user choice):** hero `HERO_SPEED` 8 → 4 m/s (`src/heroMode.ts`), duel AI and
   autopilot `AI_SPEED` 6 → 3.5 (`src/duel.ts`). Six AI duels still finish in 19-25 s (before: 17-24 s). Melee
   summons walk 3.6 m/s, close to a hero now: re-check summon balance. Not deployed (freeze).
@@ -286,6 +346,43 @@ _Last updated: 2026-10-29_
   walks round, then casts; the AI only picks spells it can see with). AI duels still finish (17-24 s).
 
 ## In progress
+- (Nothing running. Side sessions are idle; the multiplayer one left uncommitted rounds work, see "Current state".)
+- **Hero roles, committed `68f976c` + `4f39f41`** (user 2026-10-30: "all heroes seem kinda the same ... should be different, like competitive").
+  Proposal `pipeline/designs/hero-roles.md`: a role and signature per hero (assassin, tank, juggernaut, mage, marksman,
+  support, controller, summoner) and, after the user rejected the old Q/W/E/R template (revision 2), its own kit shape
+  per hero (dash, skillshot, hook, trap, buff, summon, lingering field, execute, line, self-centred ultimate); about
+  32 shape changes (T3) plus ~25 status/shield/heal fields. **Approved 2026-10-30**, plus revision 3 (user: "invent new
+  types of spells"): QUICK no-aim casts, NOVA, ORBIT, BOOMERANG, CHANNEL, GLOBAL, TRAIL. Building with 3 workers (brief:
+  side-session-notes `hero-roles-worker-brief.md`): A assassins + marksmen, B mages + tank/juggernauts, C supports,
+  controllers, summoners. All 20 kits built; tsc clean; selfTest of the 80 hero spells: no errors, no NaN frames;
+  contact sheets checked, fixes done (Nyx R scaled to r 2.5, Opaline channel beam, Kaia nova ring, Fenna blossom
+  turret, Auriel blades). Tournaments run on a static build (`tourney-preview` in launch.json, port 5181, outDir in
+  the session scratchpad) because the arena session's edits reload the dev page. First run (3 reps): Vesper 100%
+  (heal on dodged hits), Fenna 84, Sefu/Auriel/Marin 75 ... Oblivion 13, Brannoc 17, Sirix 22. Balance round 1
+  applied (Vesper heal only on a landed lance, drain heals half; sustain down; melee up). Round 2 (3 reps) 38-63%,
+  round 3 small tweaks, final `_tourney(4)` (1520 fights, 0 timeouts, avg 29 s): Vesper 51, Brannoc 59, Isolde 46,
+  Lyra 48, Vex 55, Kaia 41, Sefu 51, Nyx 55, Fenna 44, Auriel 49, Marin 49, Zephyr 52, Mortis 53, Ada 49, Sirix 45,
+  Cantor 41, Opaline 51, Oblivion 45, Shiori 61, Tempo 55; then Brushstroke 58 -> 54 for Shiori; her
+  re-check (152 fights, both sides, 4 each): 41%. Every hero is inside 40-60%.
+  Balance edits are scripted (session scratchpad `balance.py` + `round*.json`). Docs: hero-roles.md "As built",
+  kit-common.md "Roles and spell shapes" + "Role budget", mechanics.md "Spell shapes", heroes README roles table,
+  20 hero pages, kit sheets' "Role (2026-10-30)" sections (their numbers are the pre-balance ones). Nothing committed.
+  Online duels still ignore the mechanics (multiplayer session is adding the sync; told it what the new shapes need).
+  Final checks: tsc clean; selfTest sweep of all 80 hero spells on the final build passes (0 errors, 0 NaN/singular
+  frames). Player-side QUICK test: `arena.context` turns the caster to the nearest enemy within a self spell's radius,
+  so Nyx E / Opaline R fire at the nearest enemy in reach; with nobody in reach they fire toward -z (one-line fix in
+  arena.ts, owned by the arena session; follow-up). The temporary preview configs were removed from launch.json.
+  **Committed `68f976c`** (my files only; STATUS.md left uncommitted because it carries other sessions' lines).
+  Caveat: basic attacks (`63c232d`, Project Game Artist) reached the duel AI after the final `_tourney(4)` build, so
+  those win rates were measured without them (Shiori's re-check had them). Next: re-run `_tourney(4)` with basic
+  attacks and retune if anyone leaves 40-60%.
+  **Re-checked with basic attacks (2026-10-30):** first run 32-88% (Brannoc 88, Zephyr 65, Tempo 63; Shiori 32,
+  Mortis 36, Lyra/Vex 39; fights 29 s -> 22 s). Three retune rounds (scratchpad `round5-7.json`): final `_tourney(4)`
+  (1520 fights, 0 timeouts): Vesper 51, Brannoc 63 -> 47 after HP 800 -> 780 + Forgefall 98 -> 92 (his re-check, 152
+  fights), Isolde 51, Lyra 49, Vex 48, Kaia 57, Sefu 47, Nyx 43, Fenna 52, Auriel 51, Marin 47, Zephyr 57, Mortis 42,
+  Ada 42, Sirix 53, Cantor 44, Opaline 54, Oblivion 51, Shiori 48, Tempo 50. All 40-60%. **Committed `4f39f41`.**
+  Baseline (`_tourney(4)`, cover + halved walk speed): 21–64%; skillshot heroes fell (Opaline 21, Shiori 24, Sirix 26,
+  Tempo 27, Ada 30), template heroes rose (Brannoc, Marin 64). Numbers in the proposal file.
 - **15 more heroes** (user 2026-10-29), five waves of three; same pipeline as the four kits (kit sheet → worker →
   2 review rounds → model → register → sweep → tournament). Balance budget now in `pipeline/designs/kit-common.md`.
   - Wave 1 DONE: storm (Kaia), sand (Sefu), shadow (Nyx). Kits built, reviewed (sand 1 round; storm, shadow 2),
@@ -390,6 +487,11 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
+1. Commit the multiplayer session's rounds + server checks (uncommitted, listed under "Current state").
+2. Push: `git push origin feat/particle-editor:main` (pushed up to e8e4326 so far).
+3. Lift the deploy freeze when ready, then `npm run cf:deploy` (client and server together).
+- Rounds change the protocol on both ends: server and client must be deployed together, and a deploy drops every
+  live WebSocket (running matches end). Held by the deploy freeze.
 - Smoother online movement (2026-10-30) is ready locally but **not live**: the Cloudflare deploy freeze holds it
   back. When you lift the freeze, `npm run cf:deploy` publishes it (client and server change together).
 - Push: all commits were rewritten to author Dextonek (old history in `refs/backup/before-dextonek`); remote

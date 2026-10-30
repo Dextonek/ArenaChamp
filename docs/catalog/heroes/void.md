@@ -98,8 +98,9 @@ The kit has no unit look: Oblivion summons nothing.
 
 [`public/models/heroes/void.glb`](../../../public/models/heroes/void.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("void")` / `export("void")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Oblivion`).
 
-- Look: A towering, shaven, coarse-built knight in black plate with pink rift trim and a tattered hem, a horned featureless helm with one glowing rift slit for a visor, broad pauldrons with an ash rim, pink rift cracks (with a cyan fringe) across the chest and the skirt, and a greatsword whose blade is a jagged slab of void with glowing pink edges.
-- Props: `void_helm`, `void_pauldrons`, `rift_cracks`, `void_greatsword`.
+- Look (v2, since 2026-10-30; the first model is kept as look `void_v1`): a heavier, broad (x1.1) knight in black plate with a faceted great-helm with a glowing T-slit and swept-back horns, stacked spiked pauldrons on rounded shoulder caps, a rift core set in the breastplate, heavy gauntlets that close round the sword grip, a long tattered cape on a clasp bar, black shards floating round his shoulders, and a wider greatsword of void with pink edges, a cyan core line and fragments breaking off.
+- Props: `void_greathelm`, `void_spiked_pauldrons`, `void_core`, `void_gauntlets`, `void_cape`, `void_shards`, `rift_cracks`, `void_greatsword2`.
+- Before and after in hero mode: [`void-v2-compare_sheet.jpg`](../../heroes/void-v2-compare_sheet.jpg).
 - HUD portrait (canvas-drawn in the kit data): A charcoal ground with ash cracks, a tall tear behind him with shards in the air, a ragged cloak whose hem breaks up into floating shards, black plate with spiked pauldrons cracked with pink rifts, and a horned helm with one rift slit.
 
 ![Oblivion model preview, angle 15](../../heroes/void_15.png)

@@ -9,7 +9,8 @@ const ITERATIONS = 100000;
 
 /**
  * @typedef {{ played: number, wins: number }} HeroStats
- * @typedef {{ at: string, hero: string, foe: string, foeHero: string, result: 'win' | 'loss', seconds: number, reason: string }} MatchRecord
+ * @typedef {{ at: string, hero: string, foe: string, foeHero: string, result: 'win' | 'loss', seconds: number, reason: string,
+ *   rounds?: number[] }} MatchRecord
  * @typedef {{ name: string, salt: string, hash: string, algo?: 'pbkdf2' | 'scrypt', created: string, wins: number, losses: number,
  *   matches: number, heroes: Record<string, HeroStats>, history: MatchRecord[] }} Account
  * @typedef {{ load(): Record<string, Account>, put(key: string, account: Account): void }} AccountStore

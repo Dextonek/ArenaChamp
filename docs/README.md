@@ -27,9 +27,13 @@ the art direction and pipeline sections if you want to make new effects the way 
 | [Effects and parts](architecture/effects-and-parts.md) | The `Effect` / `EffectModule` contract and every shared part (core kit and the hero-kit parts files) |
 | [Targeting and arena](architecture/targeting-and-arena.md) | `CastContext`, targeting modes, the arena (caster, enemies, HP, hits), danger zones |
 | [Hero mode](architecture/hero-mode.md) | The MOBA test mode: input, aim, cooldowns, HUD, hero switching, overlapping spells, hero figures |
+| [Basic attacks](architecture/attacks.md) | Right-click attack, A attack-move, S stop; melee swing and ranged homing bolt; blind, stun and shield rules; the attacker in hero mode and the duel AI |
+| [Duel arenas](architecture/arenas.md) | The five arenas (layouts, looks, stages), how a duel picks one (random, or from the match id online), and the rules for a new arena |
 | [Combat mechanics](architecture/mechanics.md) | Statuses, shield / heal / dash, skillshots, summons, melee kits, the duel AI rules, the test kits and the tournament tool |
 | [Models](architecture/models.md) | The Blender pipelines for weapons and hero figures, and how the game loads and poses them |
 | [Multiplayer duel game](architecture/multiplayer.md) | `/game.html`: the game server (accounts, lobbies, queue, referee), the protocol, network matches, the ring's pillars and walls, line of sight |
+| [Research: MOBA design](research/moba-design.md) | What defines a MOBA, what short formats (HotS, LoL Arena, Battlerite) kept and cut, and seven recommendations for our 1v1 duel |
+| [Research: game networking](research/game-networking.md) | Lockstep, authoritative server + prediction, rollback, lag compensation; real tick rates; a three-stage path for our netcode |
 
 ### Art direction (how it should look)
 | Page | What it answers |

@@ -53,6 +53,9 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 | `Q` `W` `E` `R` or click a HUD slot | start aiming that spell; same key again cancels. On cooldown: toast "is on cooldown". Non-targeted effect: toast "not a targeted effect". **Self-mode spells cast immediately** |
 | Left click while aiming | confirm the cast |
 | Right click or `Esc` while aiming | cancel (right click while not aiming also orders a move) |
+| Right click on an enemy or summoned unit (not aiming) | basic attack: walk into range and keep attacking it until another order ([attacks.md](attacks.md)) |
+| `A`, then left click | attack-move: on an enemy, attack it; on the ground, walk there and attack the first enemy in range |
+| `S` | stop: no walk, no attack, no pending cast |
 | Mouse wheel | zoom (factor clamped 0.55-1.7, default 1.25) |
 
 `enemy` / `enemies` spells need a living enemy within 2.2 units of the cursor (`HOVER_PICK`), else the toast "No enemy there". `ground` spells aim at the cursor point clamped to the spell's range.

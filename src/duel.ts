@@ -457,6 +457,16 @@ export class Duel {
     this.cardText.textContent = text;
   }
 
+  /** The server ended a round but not the match: the hero stops and `text` says who took it; `startNet` runs the next. */
+  netRoundEnd(text: string) {
+    if (!this.on) return;
+    this.countdown = -1;
+    this.host.heroMode.locked = true;
+    this.host.arena.projectiles.clear();
+    this.showBanner(text, 999);
+    this.banner.style.fontSize = '30px';
+  }
+
   private sendCast(slot: number, target: Target) {
     const me = this.host.arena.caster.group.position;
     const p = 'enemy' in target ? target.enemy.group.position : target.point;

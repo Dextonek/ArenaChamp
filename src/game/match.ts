@@ -8,13 +8,15 @@ const MOVE_HZ = 20;
 /**
  * Runs one network match on top of the existing duel: on `match_start` it sets the hero, turns hero mode on and
  * starts `Duel.startNet` against the other player's hero; it streams this side's position, relays casts, hits and
- * dodges, and shows the server's result. `onExit` brings the menu back.
+ * dodges, and shows the server's result. A match is best of three rounds: `round_end` shows the round's winner and
+ * `round_start` runs `startNet` again (each round in its own arena). `onExit` brings the menu back.
  */
 export class MatchController {
   active = false;
   private moveTimer = 0;
   private lastSent = '';
   private names: [string, string] = ['', ''];
+  private current: Extract<ServerMsg, { t: 'match_start' }> | null = null;
   private forfeit: HTMLButtonElement;
 
   constructor(
@@ -43,6 +45,8 @@ export class MatchController {
     net.on('peer_hit', (m) => this.active && api.duel.peerHit(m.damage, m.hp, m.color));
     net.on('peer_dodged', () => this.active && api.duel.peerDodged());
     net.on('hp', (m) => this.active && api.duel.setPlayerHp(m.hp));
+    net.on('round_end', (m) => this.active && api.duel.netRoundEnd(this.roundText(m)));
+    net.on('round_start', (m) => this.active && this.current && this.beginRound(m.round));
     net.on('match_end', (m) => this.end(m));
     net.on('socket', (m) => {
       if (!m.open && this.active) {
@@ -63,32 +67,46 @@ export class MatchController {
       this.net.send({ t: 'match_leave' });
       return;
     }
-    const { api, net } = this;
+    const { api } = this;
     this.active = true;
+    this.current = m;
     this.names = [m.you.name, m.foe.name];
     this.ui.onEnter();
     if (api.duel.on) api.duel.stop();
     api.setKit(mine.name);
     api.setHeroMode(true);
+    this.forfeit.style.display = '';
+    clearInterval(this.moveTimer);
+    this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
+    this.beginRound(1);
+  }
+
+  /** Sets up a round (both heroes at their starts, full HP, cooldowns ready) and tells the server this side is ready. */
+  private beginRound(round: number) {
+    const { api, net } = this, m = this.current!;
+    const mine = this.kit(m.you.hero)!, theirs = this.kit(m.foe.hero)!;
     api.duel.startNet({
       opponent: theirs,
       side: m.side,
       names: this.names,
-      // Both players derive the same arena from the match id (no server field needed).
-      arena: m.id,
+      // Both players derive the same arena from the match id and round (no server field needed).
+      arena: round === 1 ? m.id : `${m.id}-${round}`,
       net: {
         cast: (c) => net.send({ t: 'cast', ...c }),
         tookHit: (id, damage, color) => net.send({ t: 'took_hit', id, damage, color }),
         dodged: (id) => net.send({ t: 'dodged', id }),
       },
     });
-    this.forfeit.style.display = '';
     this.lastSent = '';
-    clearInterval(this.moveTimer);
-    this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
     this.sendMove();
     // The hero figures load asynchronously; the server starts the countdown once both sides are here.
-    net.send({ t: 'match_loaded' });
+    net.send({ t: 'match_loaded', maxHp: mine.maxHp ?? 600 });
+  }
+
+  private roundText(m: Extract<ServerMsg, { t: 'round_end' }>) {
+    const score = `${m.score[0]}-${m.score[1]}`;
+    if (m.result === 'draw') return `Round ${m.round}: time up, a tie · replay · ${score}`;
+    return `Round ${m.round} to ${m.winner}${m.reason === 'time' ? ' (time)' : ''} · ${score}`;
   }
 
   private sendMove() {
@@ -109,7 +127,8 @@ export class MatchController {
     this.forfeit.style.display = 'none';
     const [me, foe] = this.names;
     const why = m.reason === 'ko' ? '' : m.reason === 'forfeit' ? ' (forfeit)' : m.reason === 'disconnect' ? ' (disconnected)' : ` (${m.reason})`;
-    const head = m.result === 'win' ? `${foe} falls after ${m.seconds} s${why}.` : `${me} falls to ${foe} after ${m.seconds} s${why}.`;
+    const score = m.score ? `, ${m.score[0]}-${m.score[1]} in rounds` : '';
+    const head = m.result === 'win' ? `${foe} falls after ${m.seconds} s${score}${why}.` : `${me} falls to ${foe} after ${m.seconds} s${score}${why}.`;
     const p = m.profile;
     const tail = p ? ` Record: ${p.wins} W · ${p.losses} L · ${p.matches} matches.` : '';
     this.api.duel.netEnd(m.result, head + tail);
@@ -119,6 +138,7 @@ export class MatchController {
   exit() {
     const was = this.active;
     this.active = false;
+    this.current = null;
     clearInterval(this.moveTimer);
     this.forfeit.style.display = 'none';
     if (was) this.net.send({ t: 'match_leave' });

@@ -3,15 +3,26 @@
 // Cloudflare Durable Object). Messages are JSON `{ t: type, ...fields }`; the table is in
 // docs/architecture/multiplayer.md and the client is src/net/.
 //
-// Authority: the hub owns sessions, lobbies, pairing, match start, HP, the winner and the stats. Each client owns
-// its own hero's movement and casts and reports the hits it takes (it knows where it stood when a spell landed,
-// which is what makes walking out of the red a dodge). Fine for friends; not cheat-proof.
+// Authority: the hub owns sessions, lobbies, pairing, match start, the rounds, HP, the winner and the stats. Each
+// client owns its own hero's movement and casts and reports the hits it takes (it knows where it stood when a spell
+// landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
+// limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
 
-const HP = 600;
+const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
 const COUNTDOWN = 3;
 const LOAD_TIMEOUT = 15000;
+// Best of three: the first to two round wins takes the match. A round lasts at most ROUND_SECONDS, then the side
+// with more of its HP left wins it (an exact tie replays it); BREAK_MS between rounds.
+const ROUNDS_TO_WIN = 2;
+const ROUND_SECONDS = 60;
+const BREAK_MS = 3000;
+// A hit must come from a cast the other side made at most this long ago; a slot can't be cast faster than SLOT_GAP_MS
+// (R: R_GAP_MS). Lenient on purpose: the real cooldowns live in the kits, which are still changing.
+const HIT_WINDOW_MS = 12000;
+const SLOT_GAP_MS = 800;
+const R_GAP_MS = 10000;
 const HERO_RE = /^[A-Za-z][A-Za-z' -]{0,23}$/;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -19,8 +30,10 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
  * @typedef {{ send: (text: string) => void, name: string | null, lobby: Lobby | null, queued: { hero: string, since: number } | null,
  *   match: Match | null, side: number, chain: Promise<void>, closed: boolean }} Client
  * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[] }} Lobby
- * @typedef {{ client: Client, name: string, hero: string, hp: number, loaded: boolean, casts: number, hits: number, dodges: number }} Player
- * @typedef {{ id: string, players: Player[], state: 'loading' | 'fight' | 'over', created: number, fightAt: number, loadTimer: any }} Match
+ * @typedef {{ client: Client, name: string, hero: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
+ *   dodges: number, recent: Map<number, number>, lastSlot: number[] }} Player
+ * @typedef {{ id: string, players: Player[], state: 'loading' | 'fight' | 'break' | 'over', created: number, startedAt: number,
+ *   fightAt: number, round: number, score: number[], timer: any }} Match
  */
 
 /** @param {number} n */
@@ -164,6 +177,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         const p = player(c);
         if (!p || !c.match || c.match.state !== 'loading') return;
         p.loaded = true;
+        // The client knows its hero's max HP (melee heroes carry more); every round starts full.
+        if (num(m.maxHp)) p.max = Math.max(200, Math.min(2000, Math.round(m.maxHp)));
+        p.hp = p.max;
         if (c.match.players.every((x) => x.loaded)) fight(c.match);
         return;
       }
@@ -176,8 +192,12 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
       case 'cast': {
         const match = c.match;
         if (!match || match.state !== 'fight' || Date.now() < match.fightAt) return;
-        if (![0, 1, 2, 3].includes(m.slot) || !num(m.x) || !num(m.z) || !num(m.fx) || !num(m.fz)) return;
-        match.players[c.side].casts++;
+        if (![0, 1, 2, 3].includes(m.slot) || !num(m.id) || !num(m.x) || !num(m.z) || !num(m.fx) || !num(m.fz)) return;
+        const me = match.players[c.side], now = Date.now();
+        if (now - me.lastSlot[m.slot] < (m.slot === 3 ? R_GAP_MS : SLOT_GAP_MS)) return;
+        me.lastSlot[m.slot] = now;
+        me.recent.set(m.id, now);
+        me.casts++;
         return send(match.players[1 - c.side].client, {
           t: 'peer_cast', id: m.id, slot: m.slot, x: m.x, z: m.z, fx: m.fx, fz: m.fz, enemy: !!m.enemy,
         });
@@ -186,12 +206,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         const match = c.match;
         if (!match || match.state !== 'fight' || !num(m.damage)) return;
         const me = match.players[c.side];
+        // Only a cast the other side really made, not long ago.
+        const castAt = match.players[1 - c.side].recent.get(m.id);
+        if (castAt === undefined || Date.now() - castAt > HIT_WINDOW_MS) return;
         const damage = Math.max(0, Math.min(250, Math.round(m.damage)));
         me.hp = Math.max(0, me.hp - damage);
         match.players[1 - c.side].hits++;
         send(match.players[1 - c.side].client, { t: 'peer_hit', id: m.id, damage, hp: me.hp, color: typeof m.color === 'string' ? m.color.slice(0, 16) : undefined });
         send(c, { t: 'hp', hp: me.hp });
-        if (me.hp <= 0) endMatch(match, 1 - c.side, 'ko');
+        if (me.hp <= 0) endRound(match, 1 - c.side, 'ko');
         return;
       }
       case 'dodged': {
@@ -329,8 +352,11 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
     /** @type {Match} */
     const match = {
       id: randomHex(6),
-      players: seats.map((s) => ({ client: s.client, name: /** @type {string} */ (s.client.name), hero: s.hero, hp: HP, loaded: false, casts: 0, hits: 0, dodges: 0 })),
-      state: 'loading', created: Date.now(), fightAt: 0, loadTimer: null,
+      players: seats.map((s) => ({
+        client: s.client, name: /** @type {string} */ (s.client.name), hero: s.hero, max: HP, hp: HP, loaded: false,
+        casts: 0, hits: 0, dodges: 0, recent: new Map(), lastSlot: [-Infinity, -Infinity, -Infinity, -Infinity],
+      })),
+      state: 'loading', created: Date.now(), startedAt: 0, fightAt: 0, round: 1, score: [0, 0], timer: null,
     };
     match.players.forEach((p, side) => {
       p.client.match = match;
@@ -338,41 +364,86 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
       const foe = match.players[1 - side];
       send(p.client, { t: 'match_start', id: match.id, side, hp: HP, you: { name: p.name, hero: p.hero }, foe: { name: foe.name, hero: foe.hero } });
     });
-    match.loadTimer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
+    match.timer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
     log(`match ${match.id}: ${match.players.map((p) => `${p.name} (${p.hero})`).join(' vs ')}`);
     broadcastLobbies();
   }
 
-  /** @param {Match} match */
+  /** Both sides are loaded (or the wait ran out): the countdown, then the round. @param {Match} match */
   function fight(match) {
-    clearTimeout(match.loadTimer);
+    clearTimeout(match.timer);
     match.state = 'fight';
     match.fightAt = Date.now() + COUNTDOWN * 1000;
-    for (const p of match.players) send(p.client, { t: 'match_fight', countdown: COUNTDOWN });
+    if (!match.startedAt) match.startedAt = match.fightAt;
+    match.timer = setTimeout(() => timeUp(match), (COUNTDOWN + ROUND_SECONDS) * 1000);
+    for (const p of match.players) send(p.client, { t: 'match_fight', countdown: COUNTDOWN, round: match.round });
+  }
+
+  /** The round's time ran out: more HP left (as a share of the max) wins it; an exact tie replays it. @param {Match} match */
+  function timeUp(match) {
+    if (match.state !== 'fight') return;
+    const [a, b] = match.players.map((p) => p.hp / p.max);
+    endRound(match, a === b ? -1 : a > b ? 0 : 1, 'time');
+  }
+
+  /**
+   * A round is over: the winner scores (`winnerSide` -1: a tie, nobody does). Two wins end the match; otherwise
+   * `round_end`, a break, then `round_start` and the same load → countdown as the first round.
+   * @param {Match} match @param {number} winnerSide @param {string} reason
+   */
+  function endRound(match, winnerSide, reason) {
+    if (match.state !== 'fight') return;
+    clearTimeout(match.timer);
+    if (winnerSide >= 0) match.score[winnerSide]++;
+    if (winnerSide >= 0 && match.score[winnerSide] >= ROUNDS_TO_WIN) return endMatch(match, winnerSide, reason);
+    match.state = 'break';
+    match.players.forEach((p, side) => send(p.client, {
+      t: 'round_end', round: match.round, result: winnerSide < 0 ? 'draw' : side === winnerSide ? 'win' : 'loss', reason,
+      winner: winnerSide < 0 ? null : match.players[winnerSide].name, score: [match.score[side], match.score[1 - side]],
+      hp: match.players.map((x) => x.hp), next: BREAK_MS / 1000,
+    }));
+    log(`match ${match.id} round ${match.round}: ${winnerSide < 0 ? 'tie' : match.players[winnerSide].name} (${reason}), ${match.score.join('-')}`);
+    match.timer = setTimeout(() => {
+      if (match.state !== 'break') return;
+      if (winnerSide >= 0) match.round++;
+      match.state = 'loading';
+      for (const p of match.players) {
+        p.loaded = false;
+        p.hp = p.max;
+        p.recent.clear();
+        p.lastSlot.fill(-Infinity);
+        send(p.client, { t: 'round_start', round: match.round, score: [match.score[p.client.side], match.score[1 - p.client.side]] });
+      }
+      match.timer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
+    }, BREAK_MS);
   }
 
   /** @param {Match} match @param {number} winnerSide @param {string} reason */
   function endMatch(match, winnerSide, reason) {
     if (match.state === 'over') return;
-    clearTimeout(match.loadTimer);
+    clearTimeout(match.timer);
     match.state = 'over';
-    const seconds = Math.max(0, Math.round((Date.now() - (match.fightAt || match.created)) / 100) / 10);
+    const seconds = Math.max(0, Math.round((Date.now() - (match.startedAt || match.created)) / 100) / 10);
     const at = new Date().toISOString();
     match.players.forEach((p, side) => {
       const foe = match.players[1 - side];
-      accounts.record(p.name, { at, hero: p.hero, foe: foe.name, foeHero: foe.hero, result: side === winnerSide ? 'win' : 'loss', seconds, reason });
+      accounts.record(p.name, {
+        at, hero: p.hero, foe: foe.name, foeHero: foe.hero, result: side === winnerSide ? 'win' : 'loss', seconds, reason,
+        rounds: [match.score[side], match.score[1 - side]],
+      });
     });
     const winner = match.players[winnerSide];
     match.players.forEach((p, side) => {
       const a = accounts.get(p.name);
       send(p.client, {
         t: 'match_end', id: match.id, result: side === winnerSide ? 'win' : 'loss', winner: winner.name, reason, seconds,
+        score: [match.score[side], match.score[1 - side]],
         hp: match.players.map((x) => x.hp), stats: { casts: p.casts, hits: p.hits, dodges: p.dodges },
         profile: a ? accounts.profile(a) : null,
       });
       p.client.match = null;
     });
-    log(`match ${match.id} over: ${winner.name} wins (${reason}, ${seconds} s)`);
+    log(`match ${match.id} over: ${winner.name} wins ${match.score.join('-')} (${reason}, ${seconds} s)`);
   }
 
   /** @param {Client} c */

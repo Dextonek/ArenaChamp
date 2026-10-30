@@ -43,7 +43,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 |---|---|
 | Transport | One WebSocket (`ws` 8.18.3, the only new dependency) on the page's own host at `/ws`. The Vite plugin in `vite.config.ts` attaches it to the dev / preview server, filtering upgrades by path so Vite's HMR socket is untouched. |
 | Authority | **Server referee, client-owned heroes.** The server owns sessions, lobbies, pairing, match start (countdown), HP, the winner and the stats. Each client owns its own hero's movement and casts, and decides the hits *its own hero* takes: it replays the other side's cast locally and runs the duel's impact-time dodge check where its hero really stood. That keeps "walk out of the red" fair for the dodger and needs no headless effect simulation on the server. |
-| Trust | Fine for friends on one machine or a LAN, not cheat-proof: a modified client could ignore its hits or skip cooldowns. The server clamps positions into the ring, drops casts before the countdown ends, and caps one reported hit at 250. |
+| Trust | Fine for friends on one machine or a LAN, not cheat-proof: a modified client could ignore its hits or skip cooldowns. The server clamps positions into the ring, drops casts before the countdown ends, drops a cast of the same slot within 0.8 s (R: 10 s), accepts a reported hit only for a cast the other side made in the last 12 s, and caps one reported hit at 250. |
 | Accounts | Names 3-16 `[A-Za-z0-9_-]`, passwords 4-64 characters hashed with PBKDF2-SHA256 (Web Crypto, 100 000 iterations, per-user salt; accounts from before the port used scrypt and are re-hashed at their next login, Node only). Stored in `server/data/accounts.json` (git-ignored) on Node, in the Durable Object's SQLite storage on Cloudflare. No e-mail, no external auth. |
 | Sessions | A random token per sign-in, kept in memory on the server (a server restart means logging in again) and in **`sessionStorage`** on the client: per tab, so two tabs of one browser can be two players. One connection per account: a second sign-in signs the first out. |
 | Same hero | Not allowed in one match (the client has one effect instance per spell label). The lobby greys out the other seat's hero and the server refuses `ready` with it; the queue only pairs different heroes. |
@@ -86,9 +86,17 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
    whose client shows the number and flash on the opponent and sets its HP (`Duel.peerHit`, through
    `arena.setHp`). A dodge sends `dodged` → `peer_dodged` (DODGED over the opponent). The attacker's own cast never
    damages the remote hero locally: `arena.hitFilter` drops those hits.
-5. HP 0 (`ko`), `match_leave` (`forfeit`, the Forfeit button) or a closed socket (`disconnect`) ends the match: the
-   server records both players, saves the file, and sends `match_end` with the result and the updated profile.
-   The duel card shows VICTORY / DEFEAT, the time and the new record; **Back to menu** stops the duel and hero mode.
+5. **Best of three rounds.** HP 0 (`ko`) ends the round; after 60 s the side with more of its HP left (as a share of
+   its max) wins it (`time`), and an exact tie replays the round. The server sends `round_end { round, result,
+   reason, winner, score, hp, next }` (score as [this player, the foe]); the duel freezes the hero and shows "Round 1
+   to <name> · 1-0" (`Duel.netRoundEnd`). After a 3 s break, `round_start { round, score }`: each client runs
+   `Duel.startNet` again (fresh HP, cooldowns and start spots, and its own arena: the seed is `<match id>-<round>`)
+   and sends `match_loaded`, then the usual countdown. Every round's HP is the hero's own max (`match_loaded
+   { maxHp }`; melee heroes carry more than 600).
+6. The second round win, `match_leave` (`forfeit`, the Forfeit button) or a closed socket (`disconnect`, also during
+   a break) ends the match: the server records both players with the round score, saves the file, and sends
+   `match_end` with the result, `score` and the updated profile. The duel card shows VICTORY / DEFEAT, the time,
+   "2-1 in rounds" and the new record; **Back to menu** stops the duel and hero mode.
 
 ## Messages
 
@@ -103,7 +111,8 @@ Client → server:
 | `lobby_pick` | `hero` | resets that seat's ready |
 | `lobby_ready` | `ready` | refused without a hero or with the other seat's hero; both ready → match |
 | `queue_join`, `queue_leave` | `hero` (join) | |
-| `match_loaded`, `match_leave` | | |
+| `match_loaded` | `maxHp` | the hero's max HP for this match (200-2000; default 600); sent every round |
+| `match_leave` | | |
 | `move` | `x`, `z`, `yaw` | clamped to the ring, relayed |
 | `cast` | `id`, `slot`, `x`, `z`, `fx`, `fz`, `enemy` | aim point, caster spot, aimed at the enemy; dropped before the countdown ends |
 | `took_hit` | `id`, `damage`, `color` | |
@@ -111,14 +120,14 @@ Client → server:
 
 Server → client: `session { token, profile }`, `auth_error { error }` (empty error = token expired), `logged_out
 { reason }`, `profile`, `error { error }` (shown as a toast), `lobbies { list }`, `lobby { lobby, you }`, `queue
-{ on, since, size }`, `match_start { id, side, hp, you, foe }`, `match_fight { countdown }`, `peer_move`,
+{ on, since, size }`, `match_start { id, side, hp, you, foe }`, `match_fight { countdown, round }`, `round_end`, `round_start`, `peer_move`,
 `peer_cast`, `peer_hit { id, damage, hp, color }`, `peer_dodged`, `hp { hp }`, `match_end { result, winner, reason,
-seconds, hp, stats, profile }`.
+seconds, score, hp, stats, profile }`.
 
 ## Stats
 
 Per account: `wins`, `losses`, `matches`, per-hero `{ played, wins }` and the last 20 matches (hero, opponent and
-their hero, result, seconds, reason). **Favourite hero** = the most played (ties: more wins). A forfeit or a
+their hero, result, seconds, reason, round score `rounds`). **Favourite hero** = the most played (ties: more wins). A forfeit or a
 disconnect counts as a loss for the leaver and a win for the other player.
 
 ## The ring: pillars, walls and line of sight

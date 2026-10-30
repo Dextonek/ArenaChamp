@@ -1,6 +1,7 @@
 // End-to-end check of the game server without a browser: two socket clients register, one opens a lobby and the
 // other joins it (same hero refused, then a different one), a second pair meets through the queue, and both
-// matches are played to a result (a KO by reported hits, a forfeit). Exits non-zero on the first failed check.
+// matches are played to a result (best of three rounds won by reported hits, a forfeit). Also checks that hits from
+// casts the server never saw and too-fast casts are dropped. Takes about 25 s (countdowns and breaks are real).
 //   node server/smoke-test.mjs                         (its own Node server on a temporary data file)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server, e.g. `npm run cf:dev`; unique names per run)
 import { createServer } from 'node:http';
@@ -53,7 +54,7 @@ async function client() {
       if (i >= 0) return Promise.resolve(inbox.splice(i, 1)[0]);
       return new Promise((resolve, reject) => {
         waiting.push({ t, resolve });
-        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), 6000);
+        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), 8000);
       });
     },
     close: () => ws.close(),
@@ -81,10 +82,11 @@ try {
   check(/^[A-Z]{4}$/.test(la.lobby.code), `lobby created (${la.lobby.code})`);
   b.send({ t: 'lobby_join', code: la.lobby.code.toLowerCase() });
   check((await b.next('lobby')).lobby.seats.length === 2, 'bob joined by code');
+  // Alice is ready before Bob picks (two sockets have no shared order: picking first could refuse Alice as well).
   a.send({ t: 'lobby_pick', hero: 'Vesper' });
-  b.send({ t: 'lobby_pick', hero: 'Vesper' });
   a.send({ t: 'lobby_ready', ready: true });
-  await new Promise((r) => setTimeout(r, 100));
+  await new Promise((r) => setTimeout(r, 300));
+  b.send({ t: 'lobby_pick', hero: 'Vesper' });
   b.send({ t: 'lobby_ready', ready: true });
   check((await b.next('error')).error.includes('taken'), 'same hero refused at ready');
   b.send({ t: 'lobby_pick', hero: 'Brannoc' });
@@ -92,28 +94,66 @@ try {
   const ma = await a.next('match_start'), mb = await b.next('match_start');
   check(ma.side === 0 && mb.side === 1 && ma.foe.hero === 'Brannoc' && mb.foe.hero === 'Vesper', 'lobby match starts with both heroes');
 
-  // Fight: loaded → countdown → moves and casts relay → hits to KO.
+  // Round 1: loaded → countdown → moves and casts relay → hits to KO. Bob's hero says it has 740 HP (melee).
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   a.send({ t: 'match_loaded' });
-  b.send({ t: 'match_loaded' });
-  check((await a.next('match_fight')).countdown === 3, 'countdown after both loaded');
+  b.send({ t: 'match_loaded', maxHp: 740 });
+  const f1 = await a.next('match_fight');
+  check(f1.countdown === 3 && f1.round === 1, 'countdown after both loaded (round 1)');
   await b.next('match_fight');
   a.send({ t: 'move', x: 50, z: 7, yaw: 1 });
   const pm = await b.next('peer_move');
   check(Math.abs(pm.x - 11.5) < 1e-6, 'move relayed and clamped to the ring');
   a.send({ t: 'cast', id: 1, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
-  await new Promise((r) => setTimeout(r, 3200));
+  await wait(3200);
   a.send({ t: 'cast', id: 2, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  a.send({ t: 'cast', id: 3, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  await wait(900);
+  a.send({ t: 'cast', id: 4, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
   const pc = await b.next('peer_cast');
   check(pc.id === 2 && pc.enemy === true, 'cast relayed after the countdown (the early one was not)');
+  check((await b.next('peer_cast')).id === 4, 'a second Q within 0.8 s is dropped');
   b.send({ t: 'dodged', id: 2 });
   check((await a.next('peer_dodged')).id === 2, 'dodge relayed');
-  for (let i = 0; i < 6; i++) b.send({ t: 'took_hit', id: 3, damage: 100, color: '#ff3b4e' });
+  b.send({ t: 'took_hit', id: 99, damage: 250 });
+  for (let i = 0; i < 8; i++) b.send({ t: 'took_hit', id: i % 2 ? 2 : 4, damage: 100, color: '#ff3b4e' });
   const hits = [];
-  for (let i = 0; i < 6; i++) hits.push(await a.next('peer_hit'));
-  check(hits[5].hp === 0 && hits[0].hp === 500, 'hits relayed with server HP');
+  for (let i = 0; i < 8; i++) hits.push(await a.next('peer_hit'));
+  check(hits[0].hp === 640 && hits[7].hp === 0, 'hits relayed with server HP from 740 (the hit from an unknown cast was dropped)');
+  const r1a = await a.next('round_end'), r1b = await b.next('round_end');
+  check(r1a.result === 'win' && r1b.result === 'loss' && r1a.score.join() === '1,0' && r1b.score.join() === '0,1', 'KO wins round 1 (1-0)');
+
+  // Round 2: after the break both load again; Bob wins it.
+  const s2 = await a.next('round_start');
+  await b.next('round_start');
+  check(s2.round === 2, 'round 2 starts after the break');
+  a.send({ t: 'match_loaded' });
+  b.send({ t: 'match_loaded', maxHp: 740 });
+  check((await b.next('match_fight')).round === 2, 'round 2 countdown');
+  await a.next('match_fight');
+  await wait(3200);
+  b.send({ t: 'cast', id: 1, slot: 1, x: 0, z: 13, fx: 0, fz: 1, enemy: true });
+  await a.next('peer_cast');
+  for (let i = 0; i < 6; i++) a.send({ t: 'took_hit', id: 1, damage: 100 });
+  for (let i = 0; i < 6; i++) await b.next('peer_hit');
+  check((await a.next('round_end')).score.join() === '1,1', 'Bob wins round 2 (1-1)');
+  await b.next('round_end');
+
+  // Round 3 decides the match.
+  await a.next('round_start'); await b.next('round_start');
+  a.send({ t: 'match_loaded' });
+  b.send({ t: 'match_loaded', maxHp: 740 });
+  check((await a.next('match_fight')).round === 3, 'round 3 countdown');
+  await b.next('match_fight');
+  await wait(3200);
+  a.send({ t: 'cast', id: 1, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  await b.next('peer_cast');
+  for (let i = 0; i < 3; i++) b.send({ t: 'took_hit', id: 1, damage: 250 });
+  for (let i = 0; i < 3; i++) await a.next('peer_hit');
   const ea = await a.next('match_end'), eb = await b.next('match_end');
-  check(ea.result === 'win' && eb.result === 'loss' && ea.reason === 'ko', 'KO ends the match');
-  check(ea.profile.wins === 1 && ea.profile.favourite === 'Vesper' && eb.profile.losses === 1 && eb.profile.history[0].foe === ALICE, 'stats recorded');
+  check(ea.result === 'win' && eb.result === 'loss' && ea.reason === 'ko' && ea.score.join() === '2,1' && eb.score.join() === '1,2', 'round 3 ends the match 2-1');
+  check(ea.profile.wins === 1 && ea.profile.favourite === 'Vesper' && eb.profile.losses === 1 && eb.profile.history[0].foe === ALICE
+    && ea.profile.history[0].rounds.join() === '2,1', 'stats recorded with the round score');
 
   // Queue: carol and dave meet through matchmaking; same hero waits.
   const c = await client(), d = await client();
