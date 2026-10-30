@@ -71,6 +71,8 @@ Crowd control, shields and summons cost damage; a kit that adds them on top of t
 - Melee: 700 HP (not 780), Q ~40 with cd 2.5; knock-ups ≤ 0.4 s on a W, ≤ 0.5 s on the R.
 - A summoner's own spells carry less damage: summon W hit ~15, E shield ~30, R ~90 (the units make up the rest).
 - A ranged control kit (slows, a root, a turret) needs a stronger Q (~55) and a turret at ~12 per shot.
+- A pull (`HitOptions.pull`, see `docs/architecture/mechanics.md` "Pull") is crowd control: a W that pulls carries ~30–35
+  damage, an R that pulls ~100. Pull ≤ 4 m (the engine cap); a melee W may use the full 4 m (wave 5: Oblivion went from 26% to 54% with pull 3 → 4 plus more damage). Always `knock: 0` with it.
 Wave 3 after these numbers: Zephyr 60%, Mortis 60%, Ada 56%.
 
 ## Verify

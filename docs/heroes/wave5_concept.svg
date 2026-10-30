@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 960" width="1080" height="960">
+  <!-- Wave 5 hero concepts: Oblivion (void, melee), Shiori (ink, mage), Tempo (chrono, control). Front views, one scale.
+       Drawn by hand as SVG; modelling reference for blender/heroes/hero_figures.py. -->
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1a22"/><stop offset="1" stop-color="#0c0b10"/></linearGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2830"/><stop offset="1" stop-color="#08070a"/></linearGradient>
+    <linearGradient id="wash" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#efe6d2"/><stop offset="0.55" stop-color="#e6dcc6"/><stop offset="0.8" stop-color="#5a5a66"/><stop offset="1" stop-color="#0b0a0e"/></linearGradient>
+    <linearGradient id="coat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#26302a"/><stop offset="1" stop-color="#0c100a"/></linearGradient>
+  </defs>
+  <rect width="1080" height="960" fill="url(#bg)"/>
+  <text x="540" y="44" fill="#e9dcc6" font-family="Georgia,serif" font-size="28" text-anchor="middle">Wave 5 · concept</text>
+  <line x1="40" y1="860" x2="1040" y2="860" stroke="#2a2833" stroke-width="2"/>
+
+  <!-- ============ OBLIVION (void, melee juggernaut) -->
+  <g transform="translate(180,0)">
+    <ellipse cx="0" cy="858" rx="120" ry="12" fill="#000" opacity="0.5"/>
+    <!-- ragged cloak behind, hem breaking into floating shards -->
+    <path d="M-70,220 L-120,700 L-90,760 L-60,720 L-30,780 L0,730 L30,790 L60,720 L90,770 L120,700 L70,220 Z" fill="#100e14"/>
+    <g fill="#100e14" stroke="#d8d4e0" stroke-width="1.5"><path d="M-100,800 L-88,792 L-84,806 Z"/><path d="M-40,820 L-30,808 L-24,824 Z"/><path d="M50,812 L62,800 L66,816 Z"/><path d="M104,796 L114,786 L118,800 Z"/></g>
+    <!-- heavy black plate, broad -->
+    <path d="M-84,214 L-96,500 L-74,830 L74,830 L96,500 L84,214 Z" fill="url(#plate)"/>
+    <path d="M-90,500 L90,500" stroke="#000" stroke-width="10"/>
+    <!-- glowing rift cracks in the armour: pink edge, cyan fringe -->
+    <g fill="none" stroke-linecap="round" filter="url(#glow)">
+      <path d="M-40,250 L-22,300 L-36,340 L-10,400" stroke="#ff2a55" stroke-width="5"/>
+      <path d="M-37,252 L-19,302 L-33,342 L-7,402" stroke="#7affff" stroke-width="1.5"/>
+      <path d="M30,560 L50,620 L36,680 L56,760" stroke="#ff2a55" stroke-width="5"/>
+      <path d="M33,562 L53,622 L39,682 L59,762" stroke="#7affff" stroke-width="1.5"/>
+    </g>
+    <!-- massive pauldrons -->
+    <g fill="#1a1820" stroke="#d8d4e0" stroke-width="2"><path d="M-84,206 L-130,214 L-140,262 L-104,286 L-74,252 Z"/><path d="M84,206 L130,214 L140,262 L104,286 L74,252 Z"/></g>
+    <!-- arms -->
+    <path d="M-92,262 L-118,460 L-96,466 L-72,290 Z" fill="#141218"/>
+    <path d="M92,262 L118,460 L140,456 L104,280 Z" fill="#141218"/>
+    <!-- greatsword: a jagged slab of void, point down at his right -->
+    <g transform="translate(150,0)">
+      <path d="M-6,330 L-4,450" stroke="#2a2830" stroke-width="12"/>
+      <path d="M-34,450 L30,450" stroke="#2a2830" stroke-width="12" stroke-linecap="round"/>
+      <path d="M-22,460 L-30,540 L-18,600 L-28,680 L-12,760 L0,840 L12,760 L26,690 L16,610 L28,540 L20,460 Z" fill="#000" stroke="#ff2a55" stroke-width="4" filter="url(#glow)"/>
+      <path d="M-26,464 L-34,540 L-22,600 L-32,680" fill="none" stroke="#7affff" stroke-width="1.5"/>
+    </g>
+    <!-- horned featureless helm with one rift slit -->
+    <path d="M-38,214 C-48,130 48,130 38,214 Z" fill="#1a1820"/>
+    <path d="M-30,150 C-60,120 -70,90 -64,60 C-52,96 -40,120 -20,140 Z" fill="#1a1820" stroke="#d8d4e0" stroke-width="1.5"/>
+    <path d="M30,150 C60,120 70,90 64,60 C52,96 40,120 20,140 Z" fill="#1a1820" stroke="#d8d4e0" stroke-width="1.5"/>
+    <path d="M-4,150 L4,176 L-2,196 L4,214" fill="none" stroke="#ff2a55" stroke-width="5" filter="url(#glow)"/>
+    <text x="0" y="900" fill="#ff2a55" font-family="Georgia,serif" font-size="22" text-anchor="middle">Oblivion · void · melee</text>
+  </g>
+
+  <!-- ============ SHIORI (ink, mage) -->
+  <g transform="translate(540,0)">
+    <ellipse cx="0" cy="858" rx="95" ry="12" fill="#000" opacity="0.5"/>
+    <!-- floating paper talismans -->
+    <g fill="#efe6d2" stroke="#0b0a0e" stroke-width="1.5">
+      <path d="M-120,250 L-100,246 L-96,316 L-116,320 Z"/><path d="M110,300 L130,304 L124,372 L104,368 Z"/><path d="M-140,420 L-120,424 L-126,490 L-146,486 Z"/>
+    </g>
+    <g stroke="#0b0a0e" stroke-width="3"><path d="M-110,264 L-106,300"/><path d="M118,316 L114,352"/><path d="M-132,436 L-136,470"/></g>
+    <circle cx="-104" cy="308" r="4" fill="#ff4a2a"/>
+    <!-- long hair behind -->
+    <path d="M-36,170 C-50,260 -46,360 -30,420 L30,420 C46,360 50,260 36,170 Z" fill="#0b0a0e"/>
+    <!-- rice-paper robe with an ink-wash hem bleeding upward -->
+    <path d="M-52,226 L-92,820 L92,820 L52,226 Z" fill="url(#wash)"/>
+    <path d="M-92,820 C-70,760 -50,800 -30,740 C-10,790 10,730 30,770 C50,720 70,790 92,820 Z" fill="#0b0a0e"/>
+    <!-- indigo sash with a vermilion seal tassel -->
+    <path d="M-56,400 L56,400 L58,440 L-58,440 Z" fill="#2a3ab0"/>
+    <rect x="-8" y="440" width="16" height="16" fill="#ff4a2a" stroke="#efe6d2" stroke-width="2"/>
+    <path d="M0,456 L-4,520 M0,456 L4,520" stroke="#ff4a2a" stroke-width="3"/>
+    <!-- wide sleeves -->
+    <path d="M-52,236 L-110,440 L-64,450 L-40,280 Z" fill="#efe6d2" stroke="#0b0a0e" stroke-width="2"/>
+    <path d="M52,236 L110,440 L64,450 L40,280 Z" fill="#efe6d2" stroke="#0b0a0e" stroke-width="2"/>
+    <path d="M-110,440 L-64,450 L-70,436 Z" fill="#0b0a0e"/><path d="M110,440 L64,450 L70,436 Z" fill="#0b0a0e"/>
+    <!-- giant calligraphy brush, as tall as she is -->
+    <g transform="rotate(-8 130 470)">
+      <path d="M130,150 L130,690" stroke="#5a3a20" stroke-width="12" stroke-linecap="round"/>
+      <path d="M124,690 L136,690 L138,700 L122,700 Z" fill="#c8b890"/>
+      <path d="M120,700 C112,760 124,800 130,830 C136,800 148,760 140,700 Z" fill="#0b0a0e" stroke="#3a5ae8" stroke-width="2" filter="url(#glow)"/>
+    </g>
+    <!-- head: pale, black bangs, brush hairpin -->
+    <ellipse cx="0" cy="186" rx="30" ry="37" fill="#f0dcc8"/>
+    <path d="M-34,196 C-40,132 40,132 34,196 L26,164 C8,152 -8,152 -26,164 Z" fill="#0b0a0e"/>
+    <ellipse cx="0" cy="140" rx="18" ry="12" fill="#0b0a0e"/>
+    <path d="M-40,128 L40,148" stroke="#5a3a20" stroke-width="5" stroke-linecap="round"/>
+    <path d="M40,148 L54,154 L46,140 Z" fill="#0b0a0e"/>
+    <circle cx="-11" cy="190" r="3.5" fill="#0b0a0e"/><circle cx="11" cy="190" r="3.5" fill="#0b0a0e"/>
+    <path d="M-6,206 L6,206" stroke="#c03a2a" stroke-width="2"/>
+    <text x="0" y="900" fill="#7a90ff" font-family="Georgia,serif" font-size="22" text-anchor="middle">Shiori · ink · mage</text>
+  </g>
+
+  <!-- ============ TEMPO (chrono, control) -->
+  <g transform="translate(900,0)">
+    <ellipse cx="0" cy="858" rx="95" ry="12" fill="#000" opacity="0.5"/>
+    <!-- glowing clock-dial halo behind the head -->
+    <g filter="url(#glow)">
+      <circle cx="0" cy="180" r="74" fill="#0c100a" stroke="#d4ff5a" stroke-width="3"/>
+      <g stroke="#d4ff5a" stroke-width="4">
+        <path d="M0,112 L0,124"/><path d="M0,236 L0,248"/><path d="M-68,180 L-56,180"/><path d="M56,180 L68,180"/>
+        <path d="M34,121 L30,129"/><path d="M59,146 L51,150"/><path d="M59,214 L51,210"/><path d="M34,239 L30,231"/>
+        <path d="M-34,121 L-30,129"/><path d="M-59,146 L-51,150"/><path d="M-59,214 L-51,210"/><path d="M-34,239 L-30,231"/>
+      </g>
+    </g>
+    <text x="0" y="138" fill="#d4ff5a" font-family="Georgia,serif" font-size="14" text-anchor="middle">XII</text>
+    <!-- long dark coat, ivory dial shoulder plate -->
+    <path d="M-50,228 L-84,820 L-24,830 L-14,440 L14,440 L24,830 L84,820 L50,228 Z" fill="url(#coat)"/>
+    <path d="M-20,236 L-24,500 L24,500 L20,236 Z" fill="#f4ecd8"/>
+    <g stroke="#0c100a" stroke-width="3"><path d="M0,250 L0,490"/></g>
+    <circle cx="0" cy="300" r="5" fill="#d4ff5a"/><circle cx="0" cy="360" r="5" fill="#d4ff5a"/><circle cx="0" cy="420" r="5" fill="#d4ff5a"/>
+    <circle cx="-58" cy="236" r="28" fill="#f4ecd8" stroke="#0c100a" stroke-width="3"/>
+    <g stroke="#0c100a" stroke-width="2"><path d="M-58,212 L-58,218"/><path d="M-58,254 L-58,260"/><path d="M-82,236 L-76,236"/><path d="M-40,236 L-34,236"/></g>
+    <path d="M-58,236 L-58,218 M-58,236 L-46,240" stroke="#0c100a" stroke-width="3"/>
+    <!-- arms -->
+    <path d="M-50,246 L-82,440 L-68,446 L-40,272 Z" fill="#1c241e"/>
+    <path d="M50,246 L82,440 L96,436 L62,256 Z" fill="#1c241e"/>
+    <!-- minute-hand staff with a red second hand at the pivot -->
+    <g transform="translate(96,0)">
+      <path d="M0,120 L-12,200 L-6,820 L6,820 L12,200 Z" fill="#d4ff5a" stroke="#0c100a" stroke-width="3" filter="url(#glow)"/>
+      <circle cx="0" cy="430" r="12" fill="#f4ecd8" stroke="#0c100a" stroke-width="3"/>
+      <path d="M0,430 L-60,350" stroke="#ff4a4a" stroke-width="5" stroke-linecap="round"/>
+      <path d="M0,430 L12,446" stroke="#ff4a4a" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <!-- head: white tied-back hair, monocle -->
+    <ellipse cx="0" cy="190" rx="30" ry="37" fill="#dcc0a4"/>
+    <path d="M-33,192 C-38,144 38,144 33,192 L26,170 C8,160 -8,160 -26,170 Z" fill="#f2f2ee"/>
+    <circle cx="-11" cy="194" r="3.5" fill="#0c100a"/><circle cx="11" cy="194" r="3.5" fill="#0c100a"/>
+    <circle cx="11" cy="194" r="9" fill="none" stroke="#d4ff5a" stroke-width="2.5"/>
+    <path d="M20,196 C30,220 26,250 18,270" fill="none" stroke="#d4ff5a" stroke-width="1.5"/>
+    <text x="0" y="900" fill="#d4ff5a" font-family="Georgia,serif" font-size="22" text-anchor="middle">Tempo · chrono · control</text>
+  </g>
+</svg>

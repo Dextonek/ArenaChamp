@@ -54,6 +54,10 @@ Three optional `CastContext` methods, bound to the casting figure (the player he
 | `healSelf(amount)` | Heals up to max HP with a green "+N" number. For the player hero it goes through `arena.casterHeal`, which the duel sets (the duel keeps the hero's HP); outside a duel it only shows the number |
 | `moveCaster(to, seconds)` | Slides the caster to `to` over `seconds`, ease-out cubic, clamped into the duel ring; returns the spot it will really reach. Meanwhile `arena.isDashing(figure)` is true: `walk` and knockback do nothing, hero mode ignores click-move and casts, the AI holds still. Call it at the cast moment and re-check enemy positions against the returned spot when the dash lands |
 
+### Pull
+
+`HitOptions.pull` (metres) drags the hit target toward `from` (default the caster), stopping 1 m short of it, at most 4 m. Pass `knock: 0` with it, because the default knock of 4 pushes the other way. A zone that drags enemies to its centre passes `from: point`; a hit that drags them to the caster leaves `from` unset. On an arena foe or duel opponent the pull rides the knockback velocity (it decays as exp(-7t), so the pull is added as `7 × metres`); on the player hero in a duel it moves the hero at once and keeps them inside the ring. A pull during a spell's build that only shows the drag uses `ctx.displace` instead and changes nothing in play.
+
 In a duel the opponent's hits on the player go through `arena.absorb(caster, damage)` first, so a player shield works against the AI too. `arena.shieldOf(target)` reads the current shield (the duel HUD uses it).
 
 ## Skillshot projectiles ([projectile.ts](../../src/effects/projectile.ts))
@@ -211,8 +215,8 @@ for (let i = 0; i < 10; i++) {
 
 ## Limits
 
-- **Network duels ignore these mechanics.** `startNet` clears `shieldSelf`, `healSelf`, `moveCaster`, `projectile` and `summon` from the opponent's context, statuses are not applied, and the server and `src/net/` carry none of it yet (phantom units would appear on the player side). The sync is planned for the multiplayer session; see [multiplayer.md](multiplayer.md).
-- **Units take no statuses**. `arena.hit` on a unit does damage, flash and knockback only.
+- **Network duels ignore these mechanics.** `startNet` clears `shieldSelf`, `healSelf`, `moveCaster`, `projectile` and `summon` from the opponent's context, statuses and pulls are not applied, and the server and `src/net/` carry none of it yet (phantom units would appear on the player side). The sync is planned for the multiplayer session; see [multiplayer.md](multiplayer.md).
+- **Units take no statuses and no pull**. `arena.hit` on a unit does damage, flash and knockback only.
 - **Area spells only hit units inside the radius at cast time.** `ground` and `self` targeting builds `ctx.targets` once, so a unit that walks in during the spell is not in the list (a spell that re-checks positions at impact, as the Zone hits rule asks, must use `arena.liveFoes()` to see units that arrived later).
 - **`castAs` reuses one instance per label.** The duel plays an opponent spell on the effect registered under its label, so the two kits in a duel must not share a label, and the opponent casting the same label again while it plays restarts that instance. The player's hero is different: hero mode keeps the old instance playing (in `lingering`) and casts on a fresh one, so a bolt in flight survives a recast.
 - **Blind does not move self spells**, and the hero's blind roll is made per cast, not per target.

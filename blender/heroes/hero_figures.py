@@ -163,6 +163,25 @@ LOOKS = {
                  slim=True, leg_wraps=True, hair="loose", hair_color="#2a1410", headwear=False, skin="#c8946c",
                  eye_glow="#ffd24a", sleeve="narrow", over_gap=0.3, pendant=False,
                  props={"feathered_hat": {}, "note_scarf": {}, "golden_lyre": {}}),
+    # Oblivion, the Unmaker: a towering knight in black plate cracked with glowing pink rifts, a horned featureless
+    # helm with one rift slit, broad pauldrons, a ragged hem and a greatsword whose blade is a jagged slab of void.
+    "void": dict(robe="#141218", inner="#08070a", trim=("#ff2a55", "#000000"), sash="#000000",
+                 coarse=True, hair="shaved", headwear=False, pendant=False, skin="#6a6070", eye_glow="#ff2a55",
+                 sleeve="bracer", bracer="#1a1820", tattered=True,
+                 extras={"armour": dict(plate="#1a1820", cord="#ff2a55", rivet="silver", rows=3, apron=False)},
+                 props={"void_helm": {}, "void_pauldrons": {}, "rift_cracks": {}, "void_greatsword": {}}),
+    # Shiori, the Last Brush: a rice-paper robe whose hem is washed in ink, an indigo sash with a vermilion seal
+    # tassel, long black hair with a brush hairpin, a huge calligraphy brush and floating paper talismans.
+    "ink": dict(robe="#efe6d2", inner="#f6f0e2", trim=("#0b0a0e", "#1a1e3a"), sash="#2a3ab0", over="#e6dcc6",
+                female=True, slim=True, hair="loose", long=True, hair_color="#0b0a0e", headwear=False, skin="#f0dcc8",
+                eye_glow="#3a5ae8", sleeve="bell", over_gap=0.3, pendant=False,
+                props={"ink_hem": {}, "brush_hairpin": {}, "seal_tassel": {}, "giant_brush": {}, "talismans": {}}),
+    # Tempo, the Unwound Hour: a long dark coat over an ivory waistcoat, white hair, a monocle, a glowing clock dial
+    # behind the head, an ivory dial on the left shoulder and a staff shaped like a giant minute hand.
+    "chrono": dict(robe="#1c241e", inner="#f4ecd8", trim=("#d4ff5a", "#0c100a"), sash="#0c100a", over="#26302a",
+                   slim=True, hair="loose", hair_color="#f2f2ee", brow_color="#d8d8d0", headwear=False, skin="#dcc0a4",
+                   eye_glow="#d4ff5a", sleeve="narrow", over_gap=0.3, pendant=False,
+                   props={"dial_halo": {}, "monocle": {}, "dial_pauldron": {}, "hand_staff": {}}),
 }
 
 
@@ -869,6 +888,131 @@ class HeroFigure(figure_kit.Figure):
         for k in range(4):
             x = -0.024 + 0.016 * k
             self.add(kit.tube(f"LyreString{k}", c + Vector((x, 0, -0.1)), c + Vector((x, 0, 0.14)), [(0, 0.0025, 0.0025), (1, 0.0025, 0.0025)], string, seg=4), HAND["L"])
+
+
+    # ---- void -------------------------------------------------------------------------------------------
+    def void_helm(self):
+        plate = self._mat("voidplate", "#1a1820", roughness=0.35, metallic=0.5)
+        ash = self._mat("ash", "#d8d4e0", roughness=0.6)
+        rift = self._mat("rift", "#ff2a55", roughness=0.3, emission="#ff2a55", strength=2.5)
+        top = Vector((0, 0.0, 1.66))
+        self.add(kit.blob("VoidHelm", top + Vector((0, 0.0, 0.01)), (0.12, 0.13, 0.14), plate, (24, 16)), HEAD)
+        for sx in (-1, 1):
+            horn = [top + Vector(v) for v in [(0.07 * sx, -0.02, 0.09), (0.14 * sx, 0.0, 0.17), (0.17 * sx, 0.02, 0.28), (0.15 * sx, 0.03, 0.36)]]
+            self.add(kit.chain(f"Horn{sx}", horn, [0.03, 0.022, 0.012, 0.003], ash, seg=8), HEAD)
+        slit = [top + Vector(v) for v in [(0.0, -0.13, 0.08), (0.008, -0.135, 0.03), (-0.004, -0.135, -0.02), (0.006, -0.13, -0.07)]]
+        self.add(kit.chain("VisorRift", slit, [0.008, 0.01, 0.009, 0.004], rift, seg=6), HEAD)
+
+    def void_pauldrons(self):
+        plate = self._mat("voidplate", "#1a1820", roughness=0.35, metallic=0.5)
+        ash = self._mat("ash", "#d8d4e0", roughness=0.6)
+        for side, sx in SIDES:
+            c = Vector((0.24 * sx, 0.0, 1.5))
+            self.add(kit.blob(f"VoidPauldron{side}", c, (0.13, 0.12, 0.08), plate, (7, 6), smooth=False), ARM[side])
+            self.add(kit.torus(f"VoidPauldronRim{side}", c + Vector((0, 0, -0.02)), 0.125, 0.01, ash, seg=(7, 4)), ARM[side])
+
+    def rift_cracks(self):
+        rift = self._mat("rift", "#ff2a55", roughness=0.3, emission="#ff2a55", strength=2.5)
+        cyan = self._mat("riftfringe", "#7affff", roughness=0.3, emission="#7affff", strength=1.5)
+        for name, pts, bone in [("ChestRift", [(-0.08, -0.17, 1.42), (-0.04, -0.18, 1.34), (-0.07, -0.18, 1.26), (-0.02, -0.17, 1.16)], CHEST),
+                                ("SkirtRift", [(0.06, -0.22, 0.7), (0.1, -0.24, 0.56), (0.07, -0.25, 0.44), (0.11, -0.26, 0.3)], PELVIS)]:
+            v = [Vector(p) for p in pts]
+            self.add(kit.chain(name, v, [0.008, 0.012, 0.01, 0.004], rift, seg=6), bone)
+            self.add(kit.chain(name + "Fringe", [p + Vector((0.012, -0.004, 0)) for p in v], [0.003, 0.004, 0.004, 0.002], cyan, seg=5), bone)
+
+    def void_greatsword(self):
+        grip = self._mat("swordgrip", "#2a2830", roughness=0.5, metallic=0.4)
+        void = self._mat("voidblade", "#000000", roughness=0.9)
+        rift = self._mat("rift", "#ff2a55", roughness=0.3, emission="#ff2a55", strength=2.5)
+        h = Vector((-0.31, -0.1, 0.86))
+        self.add(kit.tube("SwordGrip", h + Vector((0, 0, -0.05)), h + Vector((0, 0, 0.2)), [(0, 0.016, 0.016), (1, 0.016, 0.016)], grip, seg=8), HAND["R"])
+        self.add(kit.tube("SwordGuard", h + Vector((-0.12, 0, -0.06)), h + Vector((0.12, 0, -0.06)), [(0, 0.012, 0.02), (0.5, 0.022, 0.03), (1, 0.012, 0.02)], grip, seg=6), HAND["R"])
+        prof = [(0, 0.06, 0.012), (0.2, 0.075, 0.012), (0.35, 0.055, 0.011), (0.5, 0.07, 0.011), (0.7, 0.05, 0.01), (0.85, 0.045, 0.008), (1, 0.003, 0.003)]
+        a, b = h + Vector((0, 0, -0.08)), h + Vector((0, 0, -0.82))
+        self.add(kit.tube("VoidBlade", a, b, prof, void, seg=4, smooth=False), HAND["R"])
+        for sx in (-1, 1):
+            edge = [a + (b - a) * t + Vector((sx * (r + 0.004), 0, 0)) for t, r, _ in prof]
+            self.add(kit.chain(f"BladeEdge{sx}", edge, [0.006] * (len(edge) - 1) + [0.002], rift, seg=5), HAND["R"])
+
+    # ---- ink --------------------------------------------------------------------------------------------
+    def ink_hem(self):
+        sumi = self._mat("sumi", "#0b0a0e", roughness=0.8, double_sided=True)
+        self.add(kit.tube("InkHem", Vector((0, 0.0, 0.03)), Vector((0, 0.0, 0.3)),
+                          [(0, 0.4, 0.36), (0.6, 0.36, 0.31), (1, 0.33, 0.28)], sumi, seg=24, cap=(False, False)), PELVIS)
+
+    def brush_hairpin(self):
+        wood = self._mat("brushwood", "#5a3a20", roughness=0.6)
+        sumi = self._mat("sumi", "#0b0a0e", roughness=0.8, double_sided=True)
+        a, b = Vector((-0.16, 0.08, 1.78)), Vector((0.16, 0.06, 1.72))
+        self.add(kit.tube("Hairpin", a, b, [(0, 0.008, 0.008), (1, 0.006, 0.006)], wood, seg=6), HEAD)
+        self.add(kit.tube("HairpinTip", b, b + (b - a).normalized() * 0.06, [(0, 0.012, 0.012), (1, 0.001, 0.001)], sumi, seg=6), HEAD)
+
+    def seal_tassel(self):
+        seal = self._mat("seal", "#ff4a2a", roughness=0.5, emission="#ff4a2a", strength=0.4)
+        self.add(kit.box("SealCharm", Vector((0, -0.2, 0.98)), (0.04, 0.012, 0.04), seal, bevel=0.003), PELVIS)
+        for sx in (-1, 1):
+            self.add(kit.chain(f"Tassel{sx}", [Vector((0.006 * sx, -0.2, 0.96)), Vector((0.012 * sx, -0.21, 0.86)), Vector((0.016 * sx, -0.21, 0.8))],
+                               [0.005, 0.004, 0.002], seal, seg=5), PELVIS)
+
+    def giant_brush(self):
+        wood = self._mat("brushwood", "#5a3a20", roughness=0.6)
+        ferrule = self._mat("ferrule", "#c8b890", roughness=0.4, metallic=0.4)
+        sumi = self._mat("brushtip", "#0b0a0e", roughness=0.7, emission="#3a5ae8", strength=0.25)
+        h = Vector((-0.31, -0.1, 0.86))
+        top, low = h + Vector((0.02, 0, 1.0)), h + Vector((-0.04, 0, -0.62))
+        self.add(kit.tube("BrushShaft", low, top, [(0, 0.016, 0.016), (1, 0.013, 0.013)], wood, seg=8), HAND["R"])
+        self.add(kit.tube("BrushFerrule", low + Vector((0, 0, 0.04)), low, [(0, 0.02, 0.02), (1, 0.022, 0.022)], ferrule, seg=8), HAND["R"])
+        self.add(kit.tube("BrushHead", low, low + Vector((-0.01, 0, -0.22)), [(0, 0.03, 0.03), (0.35, 0.04, 0.04), (1, 0.002, 0.002)], sumi, seg=10), HAND["R"])
+
+    def talismans(self):
+        paper = self._mat("talisman", "#efe6d2", roughness=0.8, double_sided=True)
+        sumi = self._mat("sumi", "#0b0a0e", roughness=0.8, double_sided=True)
+        for k, (x, y, z, rz) in enumerate([(-0.36, 0.05, 1.42, 0.2), (0.38, 0.08, 1.3, -0.25), (-0.42, 0.12, 1.05, 0.1)]):
+            rot = Euler((0, 0, rz))
+            self.add(kit.box(f"Talisman{k}", Vector((x, y, z)), (0.05, 0.004, 0.16), paper, rotation=rot), CHEST)
+            self.add(kit.box(f"TalismanInk{k}", Vector((x, y - 0.004, z)), (0.012, 0.002, 0.1), sumi, rotation=rot), CHEST)
+
+    # ---- chrono -----------------------------------------------------------------------------------------
+    def dial_halo(self):
+        glow = self._mat("radium", "#d4ff5a", roughness=0.3, emission="#d4ff5a", strength=0.9)
+        face = self._mat("dialdark", "#0c100a", roughness=0.6, double_sided=True)
+        c = Vector((0, 0.14, 1.68))
+        self.add(kit.torus("DialHalo", c, 0.24, 0.008, glow, seg=(48, 6), axis=(0, 1, 0)), HEAD)
+        self.add(kit.blob("DialFace", c + Vector((0, 0.01, 0)), (0.235, 0.004, 0.235), face, (32, 4)), HEAD)
+        for k in range(12):
+            a = math.tau * k / 12
+            d = Vector((math.sin(a), 0, math.cos(a)))
+            ln = 0.05 if k % 3 == 0 else 0.03
+            self.add(kit.tube(f"DialTick{k}", c + d * 0.215, c + d * (0.215 - ln), [(0, 0.006, 0.006), (1, 0.006, 0.006)], glow, seg=4), HEAD)
+
+    def monocle(self):
+        glow = self._mat("radium", "#d4ff5a", roughness=0.3, emission="#d4ff5a", strength=0.9)
+        c = Vector((0.033, -0.105, 1.655))
+        self.add(kit.torus("Monocle", c, 0.02, 0.003, glow, seg=(24, 4), axis=(0, 1, 0)), HEAD)
+        self.add(kit.chain("MonocleChain", [c + Vector((0.02, 0, -0.005)), Vector((0.07, -0.08, 1.55)), Vector((0.06, -0.14, 1.38))], [0.0015] * 3, glow, seg=4), HEAD)
+
+    def dial_pauldron(self):
+        ivory = self._mat("ivorydial", "#f4ecd8", roughness=0.5)
+        dark = self._mat("dialhand", "#0c100a", roughness=0.6)
+        c = Vector((0.25, -0.04, 1.46))
+        self.add(kit.blob("ShoulderDial", c, (0.09, 0.02, 0.09), ivory, (24, 6), rotation=Euler((0, 0, 0.5))), ARM["L"])
+        self.add(kit.torus("ShoulderDialRim", c, 0.09, 0.008, dark, seg=(24, 4), axis=(-0.48, 0.88, 0)), ARM["L"])
+        f = Vector((-0.48, 0.88, 0)) * -0.022  # just in front of the face
+        self.add(kit.tube("ShoulderHourHand", c + f, c + f + Vector((0.0, 0, 0.05)), [(0, 0.007, 0.004), (1, 0.002, 0.002)], dark, seg=4), ARM["L"])
+        self.add(kit.tube("ShoulderMinuteHand", c + f, c + f + Vector((0.058, 0.032, 0.03)), [(0, 0.006, 0.003), (1, 0.002, 0.002)], dark, seg=4), ARM["L"])
+
+    def hand_staff(self):
+        glow = self._mat("radiumstaff", "#d4ff5a", roughness=0.3, emission="#d4ff5a", strength=0.35)
+        dark = self._mat("dialhand", "#0c100a", roughness=0.6)
+        ivory = self._mat("ivorydial", "#f4ecd8", roughness=0.5)
+        red = self._mat("secondhand", "#ff4a4a", roughness=0.4, emission="#ff4a4a", strength=1.2)
+        h = Vector((-0.31, -0.1, 0.86))
+        low, top = h + Vector((0, 0, -0.8)), h + Vector((0, 0, 1.1))
+        self.add(kit.tube("MinuteHand", low, top, [(0, 0.012, 0.008), (0.75, 0.035, 0.01), (0.85, 0.045, 0.01), (1, 0.002, 0.002)], glow, seg=4, smooth=False), HAND["R"])
+        self.add(kit.tube("StaffCore", low, top - Vector((0, 0, 0.3)), [(0, 0.01, 0.01), (1, 0.01, 0.01)], dark, seg=6), HAND["R"])
+        piv = h + Vector((0, -0.02, 0.32))
+        self.add(kit.blob("StaffPivot", piv, (0.035, 0.02, 0.035), ivory, (16, 8)), HAND["R"])
+        self.add(kit.tube("SecondHand", piv + Vector((0.04, -0.01, -0.04)), piv + Vector((-0.2, -0.01, 0.22)), [(0, 0.006, 0.004), (1, 0.003, 0.002)], red, seg=4), HAND["R"])
 
 
 def _reload():

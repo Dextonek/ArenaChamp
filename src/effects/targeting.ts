@@ -35,6 +35,11 @@ export interface HitOptions {
   /** Damage-number colour (default warm white). */
   color?: string;
   /**
+   * Metres the hit drags the target toward `from` (default the caster), stopping 1 m short of it (at most 4 m).
+   * Use `knock: 0` with it (the default knock is 4). Summoned units and network duels ignore it.
+   */
+  pull?: number;
+  /**
    * A status effect on top of the damage (stun, root, slow, silence, blind, knock-up). Capped, refreshed and
    * stun-immune as in `status.ts`; a dodged or filtered hit gives none. Network duels ignore it.
    */

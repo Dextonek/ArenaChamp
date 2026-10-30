@@ -43,7 +43,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Core parts (`src/effects/parts/*.ts`)
 
-[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral, alchemy, grove, dawn, tide, sky, bone, clockwork, prism, hive and bard files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
+[parts/index.ts](../../src/effects/parts/index.ts) re-exports the core parts and the blood kit. The forge, frost, astral, alchemy, grove, dawn, tide, sky, bone, clockwork, prism, hive, bard, void, ink and chrono files are **not** re-exported there; import them from their own file (e.g. `../../effects/parts/forge`).
 
 | Part | File | What it is | Main methods / fields |
 |---|---|---|---|
@@ -60,7 +60,7 @@ Registries and categories are described in the [overview](overview.md#registries
 
 ## Hero-kit parts
 
-Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` / `GROVE` / `DAWN` / `TIDE` / `SKY` / `BONE` / `CLOCKWORK` / `PRISM` / `HIVE` / `BARD` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`, `kit-grove.md`, `kit-dawn.md`, `kit-tide.md`, `kit-sky.md`, `kit-bone.md`, `kit-clockwork.md`, `kit-prism.md`, `kit-hive.md`, `kit-bard.md`).
+Each kit is a pooled, toon-shaded set of parts with a palette export (`BLOOD` / `FORGE` / `FROST` / `ASTRAL` / `ALCHEMY` / `GROVE` / `DAWN` / `TIDE` / `SKY` / `BONE` / `CLOCKWORK` / `PRISM` / `HIVE` / `BARD` / `VOID` / `INK` / `CHRONO` numbers for `THREE.Color`, plus a `*_CSS` string version). Materials stay below the bloom threshold (about 0.85) except a few tiny dots. Almost everything takes world-space positions, has `reset()` and (when animated) `update(dt)`, and exposes a `mesh` to add to the effect group. Designs live in `pipeline/designs/` (`blood-kit.md`, `kit-forge.md`, `kit-frost.md`, `kit-astral.md`, `kit-alchemy.md`, `kit-grove.md`, `kit-dawn.md`, `kit-tide.md`, `kit-sky.md`, `kit-bone.md`, `kit-clockwork.md`, `kit-prism.md`, `kit-hive.md`, `kit-bard.md`, `kit-void.md`, `kit-ink.md`, `kit-chrono.md`).
 
 ### Blood: [blood.ts](../../src/effects/parts/blood.ts)
 
@@ -247,6 +247,42 @@ Five-line staves, ink note glyphs, sound rings and a golden lyre (parchment as t
 | `Notes` | pooled note glyphs in dark ink with a rose rim (gold for heals), one instanced mesh | `emit(pos, vel, count, life, opts)`, `ride(stave, u, glyph, opts)`, `hold(pos, glyph, size, gold)`, `move`, `resize`, `kill`, `fall(gravity, life)`, `scatter(origin, speed, life, gravity)`; `frozen` holds time |
 | `SoundRings` | quick thin sound rings, a white leading edge and a rose body | `pulse(center, radius, seconds, normal, opts)` |
 | `Lyre` | the golden lyre (about 1 m tall at scale 1, seven strings) | `show(pos, scale, yaw)`, `place`, `strum(strength)`, `pull(k)`, `shimmer(rate)`, `hide()` |
+
+### Void: [void.ts](../../src/effects/parts/void.ts)
+
+Jagged slits of pure black with pink and cyan edges, glass-like ground cracks and drifting shards of the world (ash as the pale foil). Exports `VOID` / `VOID_CSS` and the `RiftOptions` type.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Rift` | pooled jagged tears: unlit black with `depthWrite` on, a pink band on one side and a cyan fringe on the other | `open(center, dir, length, width, seconds, opts)` (on the ground), `openStanding(base, height, facing, width, seconds, opts)`, `openPath(points, facing, width, seconds, opts)`, `place`, `setWide`, `close(seconds, index, delay)`, `flare`, `snap`; `frozen`, `flicker` |
+| `Shards` | pooled flat flakes of the world with a pale ash rim | `drift(from, to, count, seconds, spread, size)`, `burst(pos, count, speed, size)`; `frozen` |
+| `Crackle` | a ground decal of glass cracks, black with pink edges | `grow(center, radius, seconds)`, `ring(center, radius, seconds)`, `fade(seconds)`, `invert(on)`; `width`, `frozen` |
+| `AshMotes` | small pale motes that rise slowly (at most 48) | `emit(center, radius, count)`; `frozen` |
+
+### Ink: [ink.ts](../../src/effects/parts/ink.ts)
+
+Wet brush calligraphy: tapered strokes, splatter, rice paper and vermilion seals (rice paper as the pale foil). Exports `INK` / `INK_CSS`, the `StrokeOptions`, `FlingOptions` and `SpreadOptions` types, and `inkCraneLook`.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Stroke` | a brushstroke ribbon along a path: fat start, dry-brush tail, bristle streaks, indigo rim glow | `paint(points, width, seconds)`, `set(points, width, head)`, `dissolve(seconds)`, `setStand(k, rise)`, `at(u, out)`, `tip(out)`; `alpha` |
+| `Splatter` | pooled ink drops on ballistic arcs that land as a flat splat | `fling(pos, dir, count, speed, opts)` |
+| `InkBleed` | a ground decal where ink spreads into rice paper | `spread(center, radius, seconds, opts)` (`unroll` rolls it out like a scroll), `fade(seconds)` |
+| `Seal` | a vermilion seal flat on the ground | `stamp(center, size)`, `fall(center, size, fromY, seconds)`, `fade(seconds)` |
+| `PaperFold` | sheets of rice paper that unfold and fold themselves into cranes | `show(i, pos, size, yaw)`, `set(i, k)`, `hide(i)` |
+| `inkCraneLook` | a `MinionLook` ([mechanics](mechanics.md#the-look-pluggable-partsminionts)): a folded paper crane about 0.8 m across with ink-brushed wing tips and a vermilion dot; every unit kind gets the same crane | pass as `look` in `SummonOptions` |
+
+### Chrono: [chrono.ts](../../src/effects/parts/chrono.ts)
+
+Radium clock dials, tapered clock hands, pale afterimages and frozen motes (ivory dial as the pale foil). Exports `CHRONO` / `CHRONO_CSS`, the `DialFace`, `DialMarks` and `DialOptions` types.
+
+| Part | What it is | Main methods |
+|---|---|---|
+| `Hand` | a tapered flat clock-hand blade with a dark outline | `set(pivot, angle, length, width)`, `sweep(from, to, seconds, steps, ease)`, `point(pivot, dir, hint, length, width)`, `orient(u, n)`, `setAngle`, `stop`, `hide` |
+| `Dial` | a luminous clock dial (canvas numerals and ticks, unlit) with two hands | `show(center, radius, normal, seconds)`, `place(center, radius)`, `tick(rate)`, `tickBack()`, `freeze()`, `flash(v)`, `crack(k)`, `hide(seconds)`; `hands` |
+| `Afterimage` | two or three pale translucent echoes of a mesh or a figure | `trail(object, count, spacing)`, `replay(points, seconds, stagger)`, `stand(i, pos, yaw, alpha)`, `fade(seconds)` |
+| `FrozenMotes` | a few small pale motes that can stop dead in the air | `drift(center, radius, count)`, `freeze(center, radius, count)`, `release(seconds)` |
+| `Flakes` | small flat flakes of a cracked dial that tumble and fall | `emit(pos, vel, size, life)` |
 
 ## Shared helpers: [common.ts](../../src/effects/common.ts)
 

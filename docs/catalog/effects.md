@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Effect catalog
 
-Every effect registered in the Three.js VFX editor: **192 effects in 25 categories**, plus 13 test spells in a 26th (`test: mechanics`, 205 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
+Every effect registered in the Three.js VFX editor: **204 effects in 28 categories**, plus 13 test spells in a 29th (`test: mechanics`, 217 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
 
 ## Counts
 
@@ -35,16 +35,19 @@ Every effect registered in the Three.js VFX editor: **192 effects in 25 categori
 | [hero: prism](#hero-prism) | 4 |
 | [hero: bard](#hero-bard) | 4 |
 | [hero: hive](#hero-hive) | 4 |
+| [hero: void](#hero-void) | 4 |
+| [hero: chrono](#hero-chrono) | 4 |
+| [hero: ink](#hero-ink) | 4 |
 | [weapons](#weapons) | 5 |
 | [weapon attacks](#weapon-attacks) | 5 |
 | [test: mechanics](#test-mechanics) | 13 (test spells, not counted below) |
-| **Total** | **192** (+ 13 test spells = 205 slots) |
+| **Total** | **204** (+ 13 test spells = 217 slots) |
 
 ## How to read the tables
 
 - **Targeting** is the `targeting` spec of the module: `enemy` (one target), `enemies` (shift-clicked or a nearest-neighbour chain, capped), `ground` (a spot, radius decides who is hit), `self` (centred on the caster). `fixed scene` effects have no targeting and play on the fixed demo scene.
 - **Length** is the constant `DURATION` (or `TOTAL`, or a stated "~N s") in the source. `settings-driven` means the length is the `duration` getter, computed from other constants or from the effect's settings (cast time, flight time and so on), so there is no single literal number. `loop` is an idle aura.
-- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the seventeen hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
+- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the twenty hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
 - Sheets in `docs/spells/` are contact sheets (frames over time) made by `pipeline/tools/contact-sheet.js`. A few effects also have per-frame images (`<name>_1-....jpg`) next to the sheet.
 - Descriptions are shortened from the source header; the header and the design note have the full timeline.
 
@@ -391,6 +394,39 @@ Every effect registered in the Three.js VFX editor: **192 effects in 25 categori
 | chitin carapace | Black chitin plates snap round him with a 40 point shield while the swarm circles; twice the swarm bursts outward, hitting and slowing everything near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/chitinCarapace.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
 | queen's descent | The world darkens to amber-black, a honeycomb wall rises round the zone and hundreds of wasps form a giant queen wasp that folds, hangs for a dead beat and dives into the centre, hitting and stunning everything inside. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/queensDescent.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
 
+## hero: void
+
+4 effects. Oblivion, the Unmaker. Hero kit, see [Void](heroes/void.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| rift cleave | A greatsword sweep leaves a tear standing in the air along the arc; everything inside the cone is hit and knocked back before the rift zips shut. | enemies (cone, r 3.2) | 1.2 s · hero kit Q | [source](../../src/spells/targeted/riftCleave.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-qwe_sheet.jpg), [sheet](../spells/wave5-void-w2_sheet.jpg) |
+| null tether | Cracks spread over the zone and black tendril-rifts race to his feet, then snap taut and drag every enemy inside toward him, slowing them. | ground (r 3.5) | 1.8 s · hero kit W | [source](../../src/spells/targeted/nullTether.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-qwe_sheet.jpg), [sheet](../spells/wave5-void-w2_sheet.jpg) |
+| void mantle | A ring of five standing rifts opens round him with a 40 point shield; twice it pulses outward, hitting everything near, and the second pulse silences. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/voidMantle.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-qwe_sheet.jpg) |
+| unmaking | The world darkens to black and the zone is cut out of it: the ground cracks like glass, a vast rift opens above it and drags everything in, hangs for a dead beat and slams shut, hitting and silencing everything inside. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/unmaking.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-r_sheet.jpg), [sheet](../spells/wave5-void-w2_sheet.jpg) |
+
+## hero: chrono
+
+4 effects. Tempo, the Unwound Hour. Hero kit, see [Chrono](heroes/chrono.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| second hand | A red clock hand snaps off a small dial at his staff tip and is thrown down a line (skillshot) through everything in its path, hitting and slowing each. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/secondHand.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-qwe_sheet.jpg) |
+| stopped moment | A dial draws itself on the ground and its hands snap to twelve; the dial freezes, motes stop in the air and everyone inside is hit and stunned. | ground (r 3.5) | 2.2 s · hero kit W | [source](../../src/spells/targeted/stoppedMoment.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-qwe_sheet.jpg) |
+| rewind | He marks his spot with a dial and a 25 point shield, then rewinds back to it with afterimages replaying his path, healing and bursting the dial outward to hit and shove away everything near. | self (r 3) | 2.8 s · hero kit E | [source](../../src/spells/targeted/rewind.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-qwe_sheet.jpg) |
+| twelfth hour | The world darkens to green-black and a giant clock dial rises over the zone; its hands stop one tick short, hang for a dead beat and the red second hand drives into the centre, hitting and stunning everything inside. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/twelfthHour.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-r_sheet.jpg) |
+
+## hero: ink
+
+4 effects. Shiori, the Last Brush. Hero kit, see [Ink](heroes/ink.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| brushstroke | A wet brushstroke is flung down a line (skillshot) and hits the first enemy; a stroke that flies its full range splits into three small strokes. | ground (skillshot line, r 0.45) | 1.6 s · hero kit Q | [source](../../src/spells/targeted/brushstroke.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-qwe_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
+| ink snare | Ink bleeds into paper on the ground and strokes scribble across it, then grasping strokes rise round every foot, hitting and rooting everyone inside. | ground (r 3.5) | 2.2 s · hero kit W | [source](../../src/spells/targeted/inkSnare.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-qwe_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
+| paper familiars | Two sheets of paper fold themselves into ink cranes that fight for 6 s (summon) while a ring of ink splashes out and hits everything near. | self (r 3) | 1.4 s · hero kit E | [source](../../src/spells/targeted/paperFamiliars.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-qwe_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
+| final calligraphy | The world darkens to sumi black and a giant brush paints one huge character on a sheet of paper over the zone; a giant seal stamps it, the ink erupts and everything inside is hit and blinded. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/finalCalligraphy.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-r_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
+
 ## test: mechanics
 
 13 effects. Tools for the combat mechanics engine, not hero spells: they live in `src/spells/targeted/`, are registered at the end of `targetedModules`, and are used by the hidden test kits (see [Combat mechanics](../architecture/mechanics.md#testing)). They have no design note, contact sheet or `forged.json` entry.
@@ -438,7 +474,7 @@ Every effect registered in the Three.js VFX editor: **192 effects in 25 categori
 ## See also
 
 - [Heroes: roster and shared structure](heroes/README.md)
-- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md), [Storm](heroes/storm.md), [Sand](heroes/sand.md), [Shadow](heroes/shadow.md), [Grove](heroes/grove.md), [Dawn](heroes/dawn.md), [Tide](heroes/tide.md), [Sky](heroes/sky.md), [Bone](heroes/bone.md), [Clockwork](heroes/clockwork.md), [Prism](heroes/prism.md), [Bard](heroes/bard.md), [Hive](heroes/hive.md)
+- [Blood](heroes/blood.md), [Forge](heroes/forge.md), [Frost](heroes/frost.md), [Astral](heroes/astral.md), [Alchemy](heroes/alchemy.md), [Storm](heroes/storm.md), [Sand](heroes/sand.md), [Shadow](heroes/shadow.md), [Grove](heroes/grove.md), [Dawn](heroes/dawn.md), [Tide](heroes/tide.md), [Sky](heroes/sky.md), [Bone](heroes/bone.md), [Clockwork](heroes/clockwork.md), [Prism](heroes/prism.md), [Bard](heroes/bard.md), [Hive](heroes/hive.md), [Void](heroes/void.md), [Chrono](heroes/chrono.md), [Ink](heroes/ink.md)
 - [Docs home](../README.md)
 - [Art bible](../ART_BIBLE.md)
 - [VFX principles](../VFX_PRINCIPLES.md)

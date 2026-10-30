@@ -143,6 +143,18 @@ import { mandibleRendModule } from './mandibleRend';
 import { swarmLeapModule } from './swarmLeap';
 import { chitinCarapaceModule } from './chitinCarapace';
 import { queensDescentModule } from './queensDescent';
+import { riftCleaveModule } from './riftCleave';
+import { nullTetherModule } from './nullTether';
+import { voidMantleModule } from './voidMantle';
+import { unmakingModule } from './unmaking';
+import { secondHandModule } from './secondHand';
+import { stoppedMomentModule } from './stoppedMoment';
+import { rewindModule } from './rewind';
+import { twelfthHourModule } from './twelfthHour';
+import { brushstrokeModule } from './brushstroke';
+import { inkSnareModule } from './inkSnare';
+import { paperFamiliarsModule } from './paperFamiliars';
+import { finalCalligraphyModule } from './finalCalligraphy';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -283,6 +295,18 @@ export const targetedModules: EffectModule[] = [
   swarmLeapModule,
   chitinCarapaceModule,
   queensDescentModule,
+  riftCleaveModule,
+  nullTetherModule,
+  voidMantleModule,
+  unmakingModule,
+  secondHandModule,
+  stoppedMomentModule,
+  rewindModule,
+  twelfthHourModule,
+  brushstrokeModule,
+  inkSnareModule,
+  paperFamiliarsModule,
+  finalCalligraphyModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

@@ -304,9 +304,23 @@ _Last updated: 2026-10-29_
     after Refraction Field 45 → 40, Sirix 45%, Cantor 46% (each × 16 opponents × 3 × both sides). Sweep 205/205
     (known quirk only). Contact sheets need a wide canvas: the pane once shrank to 510×846 and zoomed every frame;
     set the viewport to 1400×850 before `_multi`.
-  - Wave 5: void (Oblivion), ink (Shiori), chrono (Tempo)
+    Committed `63c23e5`.
+  - Wave 5 DONE (uncommitted): void (Oblivion, melee juggernaut: rift cleave, null tether pull + slow, void mantle
+    shield + silence, unmaking R with pull + silence), ink (Shiori, control mage: brushstroke skillshot that splits at
+    the end of its range, ink snare root, paper familiars ranged crane summons, final calligraphy R with blind), chrono
+    (Tempo: piercing second-hand bolt with slow, stopped moment stun, rewind dash back + heal, twelfth hour R stun).
+    Sheets `pipeline/designs/kit-{void,ink,chrono}.md`. New engine option `HitOptions.pull` (arena.ts, duel.ts; docs
+    in mechanics.md "Pull" and the kit-common budget). Review: chrono passed the first sheet; void needed 1 fix (Null
+    Tether's effects were not added to the scene); ink needed 1 round (purple hit tint, thin strokes, R paper flooded
+    the frame). Rewind has no `dash` flag on purpose (the duel AI aims dash spells at the enemy). Concept
+    `docs/heroes/wave5_concept.svg/.jpg`; models `void/ink/chrono.glb` (load checked in game,
+    `docs/heroes/wave5-ingame_sheet.jpg`). Tournament first run: Oblivion 26%, Shiori 72%, Tempo 51%; after Rift
+    Cleave 40 -> 46, Null Tether 30 -> 36 and pull 3 -> 4, Unmaking 100 -> 110, Brushstroke 55 -> 48 (split 15 -> 12),
+    Final Calligraphy 105 -> 95 and blind 2.0 -> 1.5 s: Oblivion 54%, Shiori 58%, Tempo 51% (each x 19 opponents x 3
+    x both sides). Sweep 217/217 clean.
+  - Next: the final balance pass across all 20 heroes (Vesper was 75%), only when the user asks.
 - **Combat mechanics** (user 2026-10-29; plan `pipeline/designs/mechanics.md`; used by waves 3-5 only, the 11 existing
-  heroes stay as they are). Engine built in 4 steps, uncommitted:
+  heroes stay as they are). Engine built in 4 steps, committed in `be41f5c`:
   1. Statuses: `HitOptions.status` (stun, root, slow, silence, blind, knockup), `src/effects/status.ts`, markers
      `parts/status.ts`; AI obeys them and prefers `cc` spells. Zone-hit fix in 6 spells.
   2. Shield / heal / dash (`ctx.shieldSelf`, `healSelf`, `moveCaster`, `parts/shield.ts`), melee support

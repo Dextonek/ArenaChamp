@@ -63,6 +63,9 @@ in small details.
 | Prism (foil: glass `#f0f4ff`) | `#ffffff` | `#f2eeff` | `#b8b0ff` | spectrum `#ff5a6a` `#ffd24a` `#5aff9a` `#5ab8ff` | `#14102a` |
 | Hive (foil: wax `#f6e6b0`) | `#fffbe0` | `#ffe08a` | `#f0b020` | `#7aff5a` | `#120e06` |
 | Bard (foil: parchment `#f2e6d0`) | `#ffffff` | `#ffb8e6` | `#e04aa8` | `#ffd24a` | `#1e0a1a` |
+| Void (foil: ash `#d8d4e0`) | `#ffffff` | `#ffc4d4` | `#ff2a55` | `#7affff` | `#000000` |
+| Ink (foil: rice paper `#efe6d2`) | `#ffffff` | `#c8d4ff` | `#3a5ae8` | `#ff4a2a` | `#0b0a0e` |
+| Chrono (foil: ivory dial `#f4ecd8`) | `#ffffff` | `#f4ffd0` | `#d4ff5a` | `#ff4a4a` | `#0c100a` |
 
 `new THREE.Color(0x…)`, `setHex` and `'#hex'` strings take these codes as they are (sRGB). `setRGB` / `setHSL` are
 linear: pass `THREE.SRGBColorSpace` with them.

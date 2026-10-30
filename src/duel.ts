@@ -742,6 +742,13 @@ export class Duel {
       me.addScaledVector(away.normalize(), knock * 0.18);
       arena.keepInside(me);
     }
+    if (opts.pull && opts.pull > 0 && !this.net) {
+      const from = opts.from ?? this.foe?.group.position ?? me;
+      const to = new THREE.Vector3(from.x - me.x, 0, from.z - me.z);
+      const m = Math.min(opts.pull, 4, Math.max(0, to.length() - 1));
+      if (m > 0) me.addScaledVector(to.normalize(), m);
+      arena.keepInside(me);
+    }
     // A network duel ignores statuses: the server does not carry them yet.
     if (opts.status && !this.net) this.host.heroMode.applyStatus(opts.status.kind, opts.status.seconds, opts.color);
   }

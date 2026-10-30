@@ -2312,5 +2312,173 @@
     "selfTest": {
       "ok": true
     }
+  },
+  {
+    "label": "rift cleave",
+    "file": "src/spells/targeted/riftCleave.ts",
+    "mode": "enemies",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "void",
+    "slot": "Q",
+    "note": "void hero kit (wave 5, combat mechanics), design pipeline/designs/kit-void.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "null tether",
+    "file": "src/spells/targeted/nullTether.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "void",
+    "slot": "W",
+    "note": "void hero kit (wave 5, combat mechanics), design pipeline/designs/kit-void.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "void mantle",
+    "file": "src/spells/targeted/voidMantle.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "void",
+    "slot": "E",
+    "note": "void hero kit (wave 5, combat mechanics), design pipeline/designs/kit-void.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "unmaking",
+    "file": "src/spells/targeted/unmaking.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "void",
+    "slot": "R",
+    "note": "void hero kit (wave 5, combat mechanics), design pipeline/designs/kit-void.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "second hand",
+    "file": "src/spells/targeted/secondHand.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "chrono",
+    "slot": "Q",
+    "note": "chrono hero kit (wave 5, combat mechanics), design pipeline/designs/kit-chrono.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "stopped moment",
+    "file": "src/spells/targeted/stoppedMoment.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "chrono",
+    "slot": "W",
+    "note": "chrono hero kit (wave 5, combat mechanics), design pipeline/designs/kit-chrono.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "rewind",
+    "file": "src/spells/targeted/rewind.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "chrono",
+    "slot": "E",
+    "note": "chrono hero kit (wave 5, combat mechanics), design pipeline/designs/kit-chrono.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "twelfth hour",
+    "file": "src/spells/targeted/twelfthHour.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "chrono",
+    "slot": "R",
+    "note": "chrono hero kit (wave 5, combat mechanics), design pipeline/designs/kit-chrono.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "brushstroke",
+    "file": "src/spells/targeted/brushstroke.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "ink",
+    "slot": "Q",
+    "note": "ink hero kit (wave 5, combat mechanics), design pipeline/designs/kit-ink.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "ink snare",
+    "file": "src/spells/targeted/inkSnare.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "ink",
+    "slot": "W",
+    "note": "ink hero kit (wave 5, combat mechanics), design pipeline/designs/kit-ink.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "paper familiars",
+    "file": "src/spells/targeted/paperFamiliars.ts",
+    "mode": "self",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "ink",
+    "slot": "E",
+    "note": "ink hero kit (wave 5, combat mechanics), design pipeline/designs/kit-ink.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
+  },
+  {
+    "label": "final calligraphy",
+    "file": "src/spells/targeted/finalCalligraphy.ts",
+    "mode": "ground",
+    "recipes": [],
+    "date": "2026-10-29",
+    "tier": "hero-kit",
+    "kit": "ink",
+    "slot": "R",
+    "note": "ink hero kit (wave 5, combat mechanics), design pipeline/designs/kit-ink.md; 1-2 contact-sheet review rounds",
+    "selfTest": {
+      "ok": true
+    }
   }
 ]

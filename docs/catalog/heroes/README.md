@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Hero roster
 
-Seventeen hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
+Twenty hero kits, each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
 
 ## Roster
 
@@ -29,6 +29,9 @@ Seventeen hero kits, each one character with four spells (Q, W, E and the R ulti
 | Opaline | the Lightbreaker | prism (`hero: prism`) | The refracting crystal: faceted clear lavender glass with a dark edge line, and light that enters white and leaves as thin parallel bands of red, gold, green and blue. | A floating ring of small prisms behind her head, a pale lavender robe with crystal epaulettes and a crystal brooch, and a calm face under long pale hair. | [prism](prism.md) |
 | Sirix | the Swarm Warden | hive (`hero: hive`) | The hexagon and the swarm: wax-amber honeycomb cells, black chitin plates with an amber rim, and hundreds of small striped wasps that form into shapes. | Honeycomb cells and pale wings behind black chitin shoulders with hexagonal pauldrons, and an insect head with green eyes. | [hive](hive.md) |
 | Cantor | the Last Verse | bard (`hero: bard`) | The stave and the note: flowing five-line parchment staves with dark ink notes riding them, thin fast sound rings and one golden lyre. | Staves drifting behind him with notes riding them, a rose and plum coat with a lyre strap and a parchment scarf printed with notes. | [bard](bard.md) |
+| Oblivion | the Unmaker | void (`hero: void`) | Torn space: jagged slits of pure black with a hot pink edge on one side and a cyan fringe on the other, glass-like cracks on the ground and flat shards of the world drifting into the tears. | Black plate cracked with glowing pink rifts, spiked pauldrons, a ragged cloak whose hem breaks into floating shards and a horned helm with a single rift slit. | [void](void.md) |
+| Shiori | the Last Brush | ink (`hero: ink`) | The wet brushstroke: tapered strokes with bristle streaks and a dry tail, splatter, rice-paper decals where ink bleeds in and a square vermilion seal. | Floating paper talismans, a huge brush, a rice-paper white robe with the hem washed in ink and an indigo sash, and long black hair with a brush-shaped hairpin. | [ink](ink.md) |
+| Tempo | the Unwound Hour | chrono (`hero: chrono`) | The luminous clock dial: rings of Roman numerals and ticks in radium chartreuse, tapered clock hands, a red second hand and pale afterimages. | A glowing clock dial behind his head like a halo, a staff shaped like a giant minute hand, an ivory dial plate on the shoulder and a monocle. | [chrono](chrono.md) |
 
 Spell labels per hero:
 
@@ -51,17 +54,20 @@ Spell labels per hero:
 | Opaline | prism bolt | refraction field | mirror shell | spectrum lance |
 | Sirix | mandible rend | swarm leap | chitin carapace | queen's descent |
 | Cantor | discordant note | silencing refrain | ballad of valor | crescendo |
+| Oblivion | rift cleave | null tether | void mantle | unmaking |
+| Shiori | brushstroke | ink snare | paper familiars | final calligraphy |
+| Tempo | second hand | stopped moment | rewind | twelfth hour |
 
 ## How the kits share structure
 
 - **One parts file per kit**: `src/effects/parts/<theme>.ts` exports a palette constant (numbers, plus a `_CSS` string twin such as `BLOOD` / `BLOOD_CSS`) and the kit's pooled parts. The spells import it directly.
-- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone), Shadow (moon grey), Grove (bark cream), Dawn (ivory) and Tide (foam), Sky (cloud), Bone (bone ivory), Clockwork (steel), Prism (clear glass), Hive (wax) and Bard (parchment).
+- **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone), Shadow (moon grey), Grove (bark cream), Dawn (ivory) and Tide (foam), Sky (cloud), Bone (bone ivory), Clockwork (steel), Prism (clear glass), Hive (wax), Bard (parchment), Void (ash), Ink (rice paper) and Chrono (ivory dial).
 - **Spells**: `src/spells/targeted/<camelName>.ts`, each exporting `<camelName>Module` with `category: 'hero: <theme>'`, registered in `src/spells/targeted/index.ts`. Every hit passes the kit colour (`color: <PALETTE>_CSS.body`) so the arena hit flash matches.
 - **Kit data**: `HeroKit` has name, title, accent and foil colours, a canvas-drawn portrait, an optional model path, and a tuple of four `HeroSpell` (`key`, `label`, `name`, `range`, `cooldown`, `blurb`, canvas icon). The blood kit is inline in `src/heroes.ts`; the others are `src/kits/<theme>.ts`.
 - **Q, W, E are normal MOBA abilities** under the gameplay camera: the hit lands 0.4-0.8 s after the cast and the frame is clean by about 2 s (an E aura may run about 3 s). Q is a single-target or short-chain strike, W a ground zone, E a self aura (range 0, cast at once).
 - **R is the ultimate**: the biggest of the four, still under the gameplay camera (no cinematic, no letterbox), hit around 2.0-2.5 s, clean by 4.5 s, with one dead beat and one short impact frame. Ranges: Q 10-12, W 10-11, R 13-14; cooldowns: Q 2.5-3 s, W 6-8 s, E 9-10 s, R 20 s.
 - **Each kit has a signature shape** and a pale foil near its dark layer; shapes must read at gameplay distance (camera about 12-16 behind and 6-8 above). The shared look lessons are in [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md); the blood kit sheet [`blood-kit.md`](../../../pipeline/designs/blood-kit.md) is the template.
-- **Mechanics fields**: the wave 3 and wave 4 kits use the optional kit fields of the [combat mechanics](../../architecture/mechanics.md): `maxHp` and `melee` on the kit (Zephyr, Sirix), `dash`, `cc`, `summon` and `aim: 'line'` on a spell, and `ctx.projectile` / `ctx.summon` / `ctx.shieldSelf` / `ctx.moveCaster` and `HitOptions.status` in the spell files.
+- **Mechanics fields**: the wave 3, wave 4 and wave 5 kits use the optional kit fields of the [combat mechanics](../../architecture/mechanics.md): `maxHp` and `melee` on the kit (Zephyr, Sirix, Oblivion), `dash`, `cc`, `summon` and `aim: 'line'` on a spell, and `ctx.projectile` / `ctx.summon` / `ctx.shieldSelf` / `ctx.moveCaster` and `HitOptions.status` in the spell files; the wave 5 kits also use `HitOptions.pull` (Oblivion's Null Tether and Unmaking, see [Pull](../../architecture/mechanics.md#pull)) and `ctx.healSelf` (Tempo's Rewind).
 - **Models**: rigged figures on the Dao rig in `public/models/heroes/<theme>.glb`, built by [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) (one `LOOKS` entry per hero plus its props) and mapped by hero name in `src/heroes.ts`.
 
 ## Concept lineup
@@ -82,9 +88,13 @@ The concept for the wave 3 heroes (Zephyr, Mortis and Ada; vector source [`wave3
 
 ![Wave 3 concept: Zephyr, Mortis and Ada](../../heroes/wave3_concept.jpg)
 
-The concept for the newest three heroes (Opaline, Sirix and Cantor; vector source [`wave4_concept.svg`](../../heroes/wave4_concept.svg)):
+The concept for the wave 4 heroes (Opaline, Sirix and Cantor; vector source [`wave4_concept.svg`](../../heroes/wave4_concept.svg)):
 
 ![Wave 4 concept: Opaline, Sirix and Cantor](../../heroes/wave4_concept.jpg)
+
+The concept for the newest three heroes (Oblivion, Shiori and Tempo; vector source [`wave5_concept.svg`](../../heroes/wave5_concept.svg)):
+
+![Wave 5 concept: Oblivion, Shiori and Tempo](../../heroes/wave5_concept.jpg)
 
 ## In-game sheet
 
@@ -97,6 +107,10 @@ The turnaround sheet of the same models is [`models_sheet.jpg`](../../heroes/mod
 The wave 4 models in hero mode (Opaline, Sirix and Cantor):
 
 ![Wave 4 in-game hero models](../../heroes/wave4-ingame_sheet.jpg)
+
+The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
+
+![Wave 5 in-game hero models](../../heroes/wave5-ingame_sheet.jpg)
 
 ## Hero pages
 
@@ -117,6 +131,9 @@ The wave 4 models in hero mode (Opaline, Sirix and Cantor):
 - [Opaline, the Lightbreaker](prism.md)
 - [Sirix, the Swarm Warden](hive.md)
 - [Cantor, the Last Verse](bard.md)
+- [Oblivion, the Unmaker](void.md)
+- [Shiori, the Last Brush](ink.md)
+- [Tempo, the Unwound Hour](chrono.md)
 
 ## Balance (duel tournament)
 
@@ -142,6 +159,9 @@ Grand Transmutation twice). Ranges and cooldowns are in each hero's page.
 | Opaline | Prism Bolt 45 + 3 × 15 (splits), cd 3 s | Refraction Field 40 + blind 1.5 s, cd 7 s | Mirror Shell 2 × 12 + 40 shield | Spectrum Lance 125 |
 | Sirix | Mandible Rend 40 + slow, cd 2.5 s | Swarm Leap 30 + 2 wasps, cd 9 s | Chitin Carapace 2 × 12 + 40 shield + slow | Queen's Descent 90 + stun 0.6 s |
 | Cantor | Discordant Note 50 (bounces), cd 3 s | Silencing Refrain 40 + silence 1.5 s, cd 7 s | Ballad of Valor 2 × 10 + 30 shield + heal 40 | Crescendo 100 + stun 0.6 s |
+| Oblivion | Rift Cleave 46, cd 2.5 s | Null Tether 36 + pull 4 m + slow 1.0 s, cd 8 s | Void Mantle 2 × 12 + 40 shield + silence 1.0 s on the second pulse, cd 10 s | Unmaking 110 + pull 4 m + silence 1.5 s |
+| Shiori | Brushstroke 48 + 3 × 12 (splits at full range), cd 3 s | Ink Snare 35 + root 1.0 s, cd 8 s | Paper Familiars 10 + 2 cranes, cd 14 s | Final Calligraphy 95 + blind 1.5 s |
+| Tempo | Second Hand 50 + slow 1.0 s (pierces), cd 3 s | Stopped Moment 35 + stun 0.8 s, cd 8 s | Rewind 15 + 25 shield + heal 45, cd 11 s | Twelfth Hour 100 + stun 0.6 s |
 
 Kaia, Sefu and Nyx were built inside the balance budget in `pipeline/designs/kit-common.md` and needed no tuning: in an
 8-hero tournament (3 fights per ordered pairing, 168 fights) every hero won 38–60% (Lyra 60%, Nyx 60%, Brannoc 55%,
@@ -150,6 +170,8 @@ Kaia 55%, Vesper 52%, Vex 43%, Isolde 38%, Sefu 38%), within the noise of that s
 Zephyr, Mortis and Ada are the first kits built on the [combat mechanics](../../architecture/mechanics.md) (a melee hero with a dash and knock-ups, a summoner, a ranged control hero with slows, a turret and a root). Crowd control, shields and summons cost damage, so their numbers follow the "Mechanics budget" in `pipeline/designs/kit-common.md` (melee 700 HP and Q about 40; summoner spells with less damage; a ranged control Q of about 55). After those numbers the wave 3 tournament gave Zephyr 60%, Mortis 60% and Ada 56%.
 
 Opaline, Sirix and Cantor (wave 4) are built on the same mechanics and budget: a splitting skillshot with a blind (mage), a melee brawler with a leap that summons wasps, and a support with a bouncing skillshot, a silence, a shield with a heal and a stunning ultimate. In the wave 4 tournament (each hero against 16 opponents, 3 fights per ordered pairing, both sides) Opaline first won 63%; Refraction Field was lowered from 45 to 40 damage and she then won 53%. Sirix won 45% and Cantor 46%.
+
+Oblivion, Shiori and Tempo (wave 5) are built on the same mechanics and budget: a melee juggernaut with a pull and silences, a ranged control mage with a splitting skillshot, a root, two crane summons and a blind, and a ranged control hero with a piercing slow, a stun, a rewind with a shield and a heal, and a stunning ultimate. The pull is new this wave. In the wave 5 tournament (each hero against 19 opponents, 3 fights per ordered pairing, both sides) the first run gave Oblivion 26%, Shiori 72% and Tempo 51%; after the changes below Oblivion won 54%, Shiori 58% and Tempo 51%.
 
 Measured with AI vs AI duels (run duel, every hero against every other, both sides on the same AI, both dodging)
 using [duel-tourney.js](../../../pipeline/tools/duel-tourney.js). Win rates, two runs of 100 fights:

@@ -351,6 +351,12 @@ export class Arena {
       if (away.lengthSq() < 1e-4) away.set(0, 0, -1);
       f.knock.add(away.normalize().multiplyScalar(knock));
     }
+    if (opts.pull && opts.pull > 0) {
+      // The knock velocity decays as exp(-7t), so a push of v moves the figure v / 7 metres in all.
+      const to = (opts.from ?? this.caster.group.position).clone().sub(target.group.position).setY(0);
+      const m = Math.min(opts.pull, 4, Math.max(0, to.length() - 1));
+      if (m > 0) f.knock.add(to.normalize().multiplyScalar(m * 7));
+    }
     if (soaked > 0) this.say(String(soaked), '#cfe6ff', target.group.position, 0.9);
     if (dealt > 0) this.say(String(dealt), opts.color ?? (big ? '#ffd24a' : '#fff1dc'), target.group.position, big ? 1.5 : 1);
     if (opts.status && f.hp > 0) this.applyStatus(target, opts.status.kind, opts.status.seconds, opts.color);
