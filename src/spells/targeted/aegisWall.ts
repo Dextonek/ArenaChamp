@@ -9,27 +9,30 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Aegis Wall (dawn kit, W: zone). A sun-wheel sigil draws on at the point, ten kite shields fly in and click into a ring
- * standing upright around its edge, then tilt inward over the enemies like a closing dome. At the hit the dome slams
- * shut (a capstone clicks in at the top, the core lines flash), a second pulse ticks at 1.3 s, then the dome shatters
- * outward into panels that shrink away and the sigil fades. See pipeline/designs/kit-dawn.md.
+ * Aegis Wall (dawn kit, W: trap). A sun-wheel sigil draws on at the point, ten kite shields fly in and click into a ring
+ * standing upright around its edge and stand open for a moment (walk out), then tilt inward over the enemies like a
+ * closing dome. At 1.2 s the dome slams shut (a capstone clicks in at the top, the core lines flash): whoever is still
+ * inside is hit and stunned; a second pulse ticks at 1.7 s, then the dome shatters outward into panels that shrink away
+ * and the sigil fades. See pipeline/designs/kit-dawn.md.
  */
 export interface AegisWallSettings {
   damage: number;
   tick: number;
+  /** Stun seconds on the slam (engine cap 1.2). */
+  stun: number;
   loop: boolean;
 }
 
-export const defaultAegisWall = (): AegisWallSettings => ({ damage: 45, tick: 10, loop: false });
+export const defaultAegisWall = (): AegisWallSettings => ({ damage: 45, tick: 10, stun: 0.8, loop: false });
 
 // Timeline (seconds).
 const SIGIL_END = 0.3;
 const ASSEMBLE_T = 0.3;
-const TILT_A = 0.55;
-const HIT_T = 0.75;
-const TICK_T = 1.3;
-const SHATTER_T = 1.4;
-const DURATION = 2.35;
+const TILT_A = 1.0;
+const HIT_T = 1.2;
+const TICK_T = 1.7;
+const SHATTER_T = 1.8;
+const DURATION = 2.75;
 const RADIUS = 4;
 const SHIELDS = 10;
 const RING_R = 3.7;
@@ -154,7 +157,13 @@ export class AegisWall implements Effect {
       this.shake = 0.35;
       this.cap.place(0, this.v1.copy(this.point).setY(LENGTH * Math.cos(THETA_1) + 0.1), dawnOrient(UP, this.nrm, this.q1), 1.5, 'hex', 1, DAWN.hot);
       this.cap.assemble(0.1, 0, 2.5);
-      if (ctx) for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: DAWN_CSS.body });
+      if (ctx) {
+        for (const e of ctx.targets) {
+          if (this.inside(e)) {
+            ctx.hit(e, { damage: this.settings.damage, knock: 0, color: DAWN_CSS.body, status: { kind: 'stun', seconds: this.settings.stun } });
+          }
+        }
+      }
     }
     if (!f.tick && t >= TICK_T) {
       f.tick = true;
@@ -180,7 +189,7 @@ export class AegisWall implements Effect {
     // --- 0..0.3 the sigil draws on; it fades from 1.7 to 2.2. ---
     this.sigil.set(this.point, RADIUS);
     this.sigil.reveal = smoothstep(t / SIGIL_END);
-    this.sigil.opacity = 1 - smoothstep((t - 1.7) / 0.5);
+    this.sigil.opacity = 1 - smoothstep((t - 2.2) / 0.5);
 
     // --- 0.3..0.7 ten kite shields click into a ring, upright; 0.55..0.75 they tilt in and slam shut. ---
     if (t >= ASSEMBLE_T && !f.shatter) {
@@ -235,5 +244,6 @@ export const aegisWallModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
     f.add(s, 'tick', 0, 60, 1);
+    f.add(s, 'stun', 0, 1.2, 0.1);
   },
 };

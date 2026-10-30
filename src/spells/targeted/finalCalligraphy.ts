@@ -21,7 +21,7 @@ export interface FinalCalligraphySettings {
   loop: boolean;
 }
 
-export const defaultFinalCalligraphy = (): FinalCalligraphySettings => ({ damage: 95, blindSeconds: 1.5, loop: false });
+export const defaultFinalCalligraphy = (): FinalCalligraphySettings => ({ damage: 115, blindSeconds: 1.5, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the paper unrolled

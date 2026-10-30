@@ -11,16 +11,21 @@ import type { Effect, EffectModule } from '../../effects/types';
 /**
  * Glacial Mantle (frost kit, E: self aura). Frost ferns grow out from under her and up her coat; six long ice crystals
  * grow at her shoulders and hips like armour plates, pointing outward and down. A blizzard band of snow and thin pale
- * wind arcs circles her; twice the crystals flare, a rime ring races out to the radius and the enemies inside get
- * ferns at their feet and a small hit. Then the mantle shatters and the ferns fade. Loopable between 0.35 and 2.8.
+ * wind arcs circles her and the armour shields her (50, 4 s); twice the crystals flare, a rime ring races out to the
+ * radius and the enemies inside get ferns at their feet, a small hit and a slow. Then the mantle shatters and the ferns
+ * fade. Loopable between 0.35 and 2.8.
  * See pipeline/designs/kit-frost.md.
  */
 export interface GlacialMantleSettings {
   damage: number;
+  /** Shield she gains at the cast (held SHIELD_SECONDS). */
+  shield: number;
+  /** Slow seconds on each pulse hit (engine cap 2.5). */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultGlacialMantle = (): GlacialMantleSettings => ({ damage: 12, loop: false });
+export const defaultGlacialMantle = (): GlacialMantleSettings => ({ damage: 12, shield: 50, slow: 1.0, loop: false });
 
 // Timeline (seconds).
 const FORM_END = 0.35;
@@ -29,6 +34,7 @@ const PULSE_2 = 2.0;
 const SHATTER_T = 2.8;
 const DURATION = 3.3;
 const RADIUS = 4;
+const SHIELD_SECONDS = 4;
 const PLATES = 6;
 const ARCS = 4;
 const MAX_ENEMY_FERNS = 4;
@@ -50,7 +56,7 @@ export class GlacialMantle implements Effect {
   private fwd = new THREE.Vector3(0, 0, -1);
   private chest = new THREE.Vector3(0, 1.25, 14);
 
-  private flags = { breath: false, plates: false, snow: false, pulse1: false, pulse2: false, shattered: false };
+  private flags = { breath: false, shield: false, plates: false, snow: false, pulse1: false, pulse2: false, shattered: false };
   private pulseAt = [-9, -9];
 
   // Parts.
@@ -171,6 +177,10 @@ export class GlacialMantle implements Effect {
       f.plates = true;
       this.growPlates();
     }
+    if (!f.shield) {
+      f.shield = true;
+      ctx?.shieldSelf?.(this.settings.shield, SHIELD_SECONDS, FROST_CSS.body);
+    }
     if (!f.snow && t >= FORM_END) {
       f.snow = true;
       this.snow.swirl(this.from, 3.5, 44, { y: 1.3, ySpread: 1.8, speed: 3.0, band: 0.43 });
@@ -184,7 +194,11 @@ export class GlacialMantle implements Effect {
         if (ctx) {
           const n = Math.min(MAX_ENEMY_FERNS, ctx.targets.length);
           for (let i = 0; i < n; i++) this.enemyFerns[i].grow(this.v1.copy(ctx.targetPos[i]).setY(0), 1.3, 0.25);
-          for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: FROST_CSS.body });
+          for (const e of ctx.targets) {
+            const q = e.group.position;
+            if (Math.hypot(q.x - this.from.x, q.z - this.from.z) > RADIUS + 0.3) continue; // walked out
+            ctx.hit(e, { damage: this.settings.damage, knock: 0, color: FROST_CSS.body, status: { kind: 'slow', seconds: this.settings.slow } });
+          }
         }
       }
     }
@@ -267,5 +281,7 @@ export const glacialMantleModule: EffectModule = {
     const s = (effect as GlacialMantle).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 60, 1);
+    f.add(s, 'shield', 0, 120, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

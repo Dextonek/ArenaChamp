@@ -1,5 +1,16 @@
 # Shadow kit: Nyx, the Umbral Stalker
 
+## Role (2026-10-30)
+
+**Assassin, 560 HP.** Signature: *Shadowstep*. She appears on you, silences you, cuts you down. Design: `pipeline/designs/hero-roles.md`.
+
+| Slot | Spell | New shape and numbers |
+|---|---|---|
+| Q | Umbral Blink | Real dash strike. `enemy` mode, range 7, cd 3. `moveCaster` slides her beside the target (a step short, to her right) in 0.25 s while the shadow blinks along the path; the blades cut at 0.45 s for 55. Telegraph: line plus a 1.8 m circle at the target. |
+| W | Grasp of the Deep | Self burst. `self` mode, radius 3 (was a ground zone r 4), cd 7. Hands rise round her; hit 40 + **silence 1.0** (tick 10 stays). |
+| E | Night Shroud | QUICK, no aim. `self` mode, radius 8 (the AI fires inside 7.4 m), cd 9. Three clones fly out as 3 skillshots (`projectile`) fanned 25 degrees apart along her facing (`caster.group.rotation.y`), range 9, speed 18, 3 x 22. Telegraph: three lines, impact 0.2 s. |
+| R | Eclipse Execution | EXECUTE. Radius 7 -> 2.5, range 10, cd 20, 150. The eclipse and crescent keep their size over a small zone. |
+
 **Signature shape: flat cut-paper shadow.** Shadows are **flat, matte-black shapes** (like cut paper or ink
 silhouettes) with a thin, hard **violet edge line**: blades, hands, a crescent mouth, the hero's own silhouette as a
 clone. They lie flat on the floor or stand upright as cut-outs and move in sharp, stepped motions. Not smoke and not

@@ -1,14 +1,25 @@
 ---
 title: Oblivion, the Unmaker (void kit)
 tags: [catalog, heroes, void, melee, pull, mechanics]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Oblivion, the Unmaker
 
-The void hero kit: Oblivion's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A towering knight in black plate cracked with glowing pink rifts, a horned featureless helm with one rift slit for a visor, a ragged hem and a huge greatsword whose blade is a jagged slab of void. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee juggernaut with extra HP, a pull that drags enemies to him, a slow, a shield and silences.
+The void hero kit: Oblivion's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A towering knight in black plate cracked with glowing pink rifts, a horned featureless helm with one rift slit for a visor, a ragged hem and a huge greatsword whose blade is a jagged slab of void. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee juggernaut with extra HP, a pull that drags enemies to him, a slow and silences.
 
 Tournament (19 opponents, 3 fights per ordered pairing, both sides): 26% at first, 54% after Rift Cleave 40 → 46, Null Tether 30 → 36 with pull 3 → 4 and Unmaking 100 → 110.
+
+## Role
+
+| | |
+|---|---|
+| Role | Juggernaut (melee) |
+| Signature | Into the rift |
+| HP | 780 |
+| Kit shapes | Q CONE · W ZONE pull to him · E AURA silence · R ZONE pull + silence |
+
+He wins a 1v1 by dragging the enemy into melee range with the tether and the ultimate, then silencing them so they cannot cast their way out. His weakness is reach: a kiter outside his pulls (W range 8, R range 13) is hard to catch.
 
 ## At a glance
 
@@ -46,27 +57,26 @@ Oblivion uses these pieces of [the combat mechanics](../../architecture/mechanic
 
 | Mechanic | Where |
 |---|---|
-| Melee kit | `melee: true` and `maxHp: 700` in the kit data (the default is 600; the extra HP pays for having to close in). The duel AI walks up to about 2 m, never backs off and keeps chasing. The Q range is only 3 |
+| Melee kit | `melee: true` and `maxHp: 780` in the kit data (the default is 600; the extra HP pays for having to close in). The duel AI walks up to about 2 m, never backs off and keeps chasing. The Q range is only 3 |
 | Pull | W and R use `HitOptions.pull` (see ["Pull"](../../architecture/mechanics.md#pull)). W has `pull: 4` and `knock: 0` and no `from`, so every enemy it hits is dragged toward Oblivion and stops 1 m short of him; R has `pull: 4`, `knock: 0` and `from` set to the centre of the zone, so enemies are dragged to the middle. A pull is at most 4 m, and units and network duels ignore it |
 | Slow | W slows every enemy it hits for 1.0 s (walking speed x 0.6, cap 2.5 s) |
-| Shield | E gives `ctx.shieldSelf(40, 3)`, a 40 point shield for 3 s |
-| Silence | E's second pulse silences for 1.0 s and R silences for 1.5 s (cap 1.5 s): they can move but not cast |
+| Silence | E's one pulse silences for 1.2 s and R silences for 1.5 s (cap 1.5 s): they can move but not cast. E has no shield |
 | Crowd control flag | R has `cc: true`, so the duel AI casts it first when the enemy is in range |
-| Aura | E pulses twice and hits every enemy inside radius 4 for 12 with knock 1 |
+| Aura | E pulses once (at 1.0 s) and hits every enemy inside radius 4 for 35 with knock 1 |
 | Skillshot, summon, dash, heal | none |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): melee 700 HP and a Q of about 40 (the code has 46). The budget also covers pulls (about 30-35 damage and at most 3 m on a W, about 100 and at most 4 m on an R); the code has W at 36 damage and 4 m and R at 110 damage and 4 m.
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): melee 780 HP and a Q of about 40 (the code has 53). The budget also covers pulls (about 30-35 damage and at most 3 m on a W, about 100 and at most 4 m on an R); the code has W at 48 damage and 4 m and R at 120 damage and 4 m, radius 5.
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (the first damage 0.3-1.0 s after the cast, clean by about 1.8 s; the E aura runs about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/void.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a melee cone (hit at 0.3 s, clean by 1.2 s), W a ground zone that pulls enemies to him (hit at 0.65 s, clean by 1.8 s), E a single silencing burst round him (hit at 1.0 s, clean by 2.6 s), R a pulling, silencing ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/void.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [rift cleave](../../../src/spells/targeted/riftCleave.ts) | enemies (a 110 degree cone, radius 3.2, up to 10 targets) | 3 | 2.5 s | 0.3 s | 1.2 s | The blade draws back with a few ash motes. At the hit one wide crescent sweep leaves a tear standing in the air along the arc (a black slit with a pink edge on top and a cyan fringe below); shards burst and are drawn into it, a cyan star flashes and everyone still inside the cone is hit and knocked back. From 0.5 s the rift zips shut from both ends. Damage 46, knock 2. |
-| W | [null tether](../../../src/spells/targeted/nullTether.ts) | ground (r 3.5) | 8 | 8 s | 0.65 s | 1.8 s | Glass-like cracks spread over the zone (0 to 0.3 s), then four black tendril-rifts race along the ground from the zone to his feet (0.3 to 0.6 s). At 0.65 s the tears snap taut and yank: every enemy still inside the zone is hit, dragged toward him and slowed, and shards stream along the tears toward him. From 0.8 s the tears close and the cracks fade. Damage 36, pull 4, slow 1.0 s. |
-| E | [void mantle](../../../src/spells/targeted/voidMantle.ts) | self (r 4) | 0 (self) | 10 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | A ring of five standing rifts (about 1.4 tall) opens round him at radius 1.4 and turns slowly, and he takes a 40 point shield for 3 s. At 1.0 s and 2.0 s the rifts flare and a crack ring races out to radius 4: every enemy still inside is hit and knocked back, and the second pulse also silences. From 2.6 s the rifts zip shut one by one. The telegraph ends at the first pulse. Damage 12 per pulse, knock 1, shield 40, silence 1.0 s. |
-| R | [unmaking](../../../src/spells/targeted/unmaking.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to black and a crack line traces the zone edge. The ground inside cracks like glass from the centre out, plates of ground lift and drift inward, and a vast standing rift (about 6 tall) opens over the point and widens while shards and ash stream into it and the enemies are drawn in a little (up to 0.6 m, put back at the hit). At 1.6 s the rift goes still and its edges flicker cyan; dead beat 1.85-2.0 s. At 2.0 s the rift slams shut and from 2.1 s the cracked disc inverts for two frames (the floor plates go black with pink edges). At 2.2 s: two impact frames, the plates shatter outward as shards, a cyan star, a ground refraction ring, shake and the hit. The shards fall and fade, the cracks heal and the darkness lifts. Damage 110, pull 4, silence 1.5 s. |
+| Q | [rift cleave](../../../src/spells/targeted/riftCleave.ts) | enemy CONE (a 110 degree cone, radius 3.2, up to 10 targets) | 3 | 2.5 s | 0.3 s | 1.2 s | The blade draws back with a few ash motes. At the hit one wide crescent sweep leaves a tear standing in the air along the arc (a black slit with a pink edge on top and a cyan fringe below); shards burst and are drawn into it, a cyan star flashes and everyone still inside the cone is hit and knocked back. From 0.5 s the rift zips shut from both ends. Damage 53, knock 2. |
+| W | [null tether](../../../src/spells/targeted/nullTether.ts) | ground ZONE (r 3.5) | 8 | 8 s | 0.65 s | 1.8 s | Glass-like cracks spread over the zone (0 to 0.3 s), then four black tendril-rifts race along the ground from the zone to his feet (0.3 to 0.6 s). At 0.65 s the tears snap taut and yank: every enemy still inside the zone is hit, dragged toward him (pull 4 m) and slowed, and shards stream along the tears toward him. From 0.8 s the tears close and the cracks fade. Damage 48, pull 4, slow 1.0 s. |
+| E | [void mantle](../../../src/spells/targeted/voidMantle.ts) | self AURA (r 4) | 0 (self) | 10 s | 1.0 s (one pulse) | 2.6 s | A ring of five standing rifts (about 1.4 tall) opens round him at radius 1.4 and turns slowly. At 1.0 s the rifts flare and a crack ring races out to radius 4: every enemy still inside is hit, knocked back and silenced. From 2.0 s the rifts zip shut one by one. No shield. Damage 35, knock 1, silence 1.2 s. |
+| R | [unmaking](../../../src/spells/targeted/unmaking.ts) | ground ZONE (r 5) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to black and a crack line traces the zone edge. The ground inside cracks like glass from the centre out, plates of ground lift and drift inward, and a vast standing rift (about 6 tall) opens over the point and widens while shards and ash stream into it and the enemies are drawn in a little (up to 0.6 m, put back at the hit). At 1.6 s the rift goes still and its edges flicker cyan; dead beat 1.85-2.0 s. At 2.0 s the rift slams shut and from 2.1 s the cracked disc inverts for two frames (the floor plates go black with pink edges). At 2.2 s: two impact frames, the plates shatter outward as shards, a cyan star, a ground refraction ring, shake and the hit, which drags everyone to the middle. The shards fall and fade, the cracks heal and the darkness lifts. Damage 120, pull 4, silence 1.5 s. |
 
 Spell sources: [`riftCleave.ts`](../../../src/spells/targeted/riftCleave.ts), [`nullTether.ts`](../../../src/spells/targeted/nullTether.ts), [`voidMantle.ts`](../../../src/spells/targeted/voidMantle.ts), [`unmaking.ts`](../../../src/spells/targeted/unmaking.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-void).
 

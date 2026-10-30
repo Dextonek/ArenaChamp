@@ -1,7 +1,7 @@
 ---
 title: Hero roster
 tags: [catalog, heroes, kits]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Hero roster
@@ -32,6 +32,38 @@ Twenty hero kits, each one character with four spells (Q, W, E and the R ultimat
 | Oblivion | the Unmaker | void (`hero: void`) | Torn space: jagged slits of pure black with a hot pink edge on one side and a cyan fringe on the other, glass-like cracks on the ground and flat shards of the world drifting into the tears. | Black plate cracked with glowing pink rifts, spiked pauldrons, a ragged cloak whose hem breaks into floating shards and a horned helm with a single rift slit. | [void](void.md) |
 | Shiori | the Last Brush | ink (`hero: ink`) | The wet brushstroke: tapered strokes with bristle streaks and a dry tail, splatter, rice-paper decals where ink bleeds in and a square vermilion seal. | Floating paper talismans, a huge brush, a rice-paper white robe with the hem washed in ink and an indigo sash, and long black hair with a brush-shaped hairpin. | [ink](ink.md) |
 | Tempo | the Unwound Hour | chrono (`hero: chrono`) | The luminous clock dial: rings of Roman numerals and ticks in radium chartreuse, tapered clock hands, a red second hand and pale afterimages. | A glowing clock dial behind his head like a halo, a staff shaped like a giant minute hand, an ivory dial plate on the shoulder and a monocle. | [chrono](chrono.md) |
+
+## Roles (2026-10-30)
+
+Every hero has a role and a kit shape of its own (design: [`hero-roles.md`](../../../pipeline/designs/hero-roles.md)).
+No two heroes share the same four spell shapes; the old "Q single target, W ground zone, E self aura, R radius-7
+ultimate" template is gone. New spell types: QUICK (no aim: the hero turns to the nearest enemy in reach and fires), NOVA (a ring that grows from
+the caster), ORBIT (blades circle the caster), BOOMERANG (out and back), CHANNEL (a held, sweeping beam), GLOBAL (no
+range limit, long warning), TRAIL (a dash that leaves a slowing strip), plus TRAP, LINGER, FUSE, HOOK, TETHER, CAGE,
+BACKSTEP, BLINK and EXECUTE.
+
+| Hero | Role | Signature | Q | W | E | R |
+|---|---|---|---|---|---|---|
+| Nyx | assassin | Shadowstep | DASH strike | AURA silence | QUICK fan ×3 | EXECUTE |
+| Zephyr | assassin (melee) | Never stands still | CONE | DASH knock-up | BACKSTEP | DASH ultimate |
+| Brannoc | tank (melee) | Anvil lock | CONE slow | LOB stun | BUFF shield + chain pull | SELF-R knock-up |
+| Oblivion | juggernaut (melee) | Into the rift | CONE | ZONE pull to him | AURA silence | ZONE pull + silence |
+| Vesper | juggernaut (drain) | Blood price | TGT drain | ZONE slow | TETHER drain | ZONE heal per hit |
+| Sirix | juggernaut (melee) | The swarm | CONE slow | DASH + wasps | BUFF shield | SUMMON queen ultimate |
+| Kaia | mage (burst) | Unavoidable lightning | TGT chain | ZONE 3 strikes | NOVA stun | ZONE r5 burst |
+| Vex | mage (poison) | Lingering poison | LOB burn | LINGER slow pool | BUFF heal | LINGER gold field |
+| Tempo | mage (chrono) | Rewind | BOOMERANG slow | ZONE stun | BACKSTEP rewind | FUSE |
+| Lyra | marksman | Out-range | BOLT bounce | TRAP root | BACKSTEP | GLOBAL hunt |
+| Opaline | marksman | Refraction | BOLT split | ZONE blind | BLINK + shield | QUICK CHANNEL sweep |
+| Auriel | support | Aegis | BOLT pierce + shield | TRAP stun dome | ORBIT blades + shield | ZONE + big shield |
+| Fenna | support | Regrowth | TGT + heal | TGT root (vines) | TURRET | SELF-R heal + root |
+| Cantor | support | Silence | BOLT bounce | ZONE silence | BUFF heal + shield | SELF-R stun |
+| Isolde | controller | Frostbite, then freeze | BOLT pierce slow | LINE root | AURA slow + armour | SELF-R stun |
+| Sefu | controller | Shackles and teeth | TGT root | LINGER slow, then root | AURA shield + slow | ZONE stun |
+| Marin | controller | Undertow | HOOK | ZONE pull + knock-up | TRAIL dash + heal | LINE knock-up |
+| Mortis | summoner | Raise the dead | BOLT pierce | SUMMON skeletons | CAGE root | ZONE + archers |
+| Ada | summoner | Turret engineer | BOLT bounce slow | TURRET | LINGER gear field | ZONE root |
+| Shiori | summoner | Ink familiars | BOLT split at end | ZONE root | SUMMON cranes | ZONE blind |
 
 Spell labels per hero:
 
@@ -64,7 +96,7 @@ Spell labels per hero:
 - **One palette row per kit** in [ART_BIBLE.md](../../ART_BIBLE.md) section 2: core, hot, body, accent, dark, plus a pale foil colour that keeps dark energy readable on a darkened floor. The art bible rows are Blood (bone foil), Forge (ash), Frost (rime), Astral (chart parchment), Alchemy (glass, with gold for the transmutation), Storm (rain grey), Sand (sandstone), Shadow (moon grey), Grove (bark cream), Dawn (ivory) and Tide (foam), Sky (cloud), Bone (bone ivory), Clockwork (steel), Prism (clear glass), Hive (wax), Bard (parchment), Void (ash), Ink (rice paper) and Chrono (ivory dial).
 - **Spells**: `src/spells/targeted/<camelName>.ts`, each exporting `<camelName>Module` with `category: 'hero: <theme>'`, registered in `src/spells/targeted/index.ts`. Every hit passes the kit colour (`color: <PALETTE>_CSS.body`) so the arena hit flash matches.
 - **Kit data**: `HeroKit` has name, title, accent and foil colours, a canvas-drawn portrait, an optional model path, and a tuple of four `HeroSpell` (`key`, `label`, `name`, `range`, `cooldown`, `blurb`, canvas icon). The blood kit is inline in `src/heroes.ts`; the others are `src/kits/<theme>.ts`.
-- **Q, W, E are normal MOBA abilities** under the gameplay camera: the hit lands 0.4-0.8 s after the cast and the frame is clean by about 2 s (an E aura may run about 3 s). Q is a single-target or short-chain strike, W a ground zone, E a self aura (range 0, cast at once).
+- **Q, W, E are normal MOBA abilities** under the gameplay camera: the hit lands 0.4-0.8 s after the cast and the frame is clean by about 2 s (an E aura may run about 3 s). Since 2026-10-30 each slot's shape depends on the hero (see Roles above); traps, lingering zones and fuses may land up to 4.2 s after the cast.
 - **R is the ultimate**: the biggest of the four, still under the gameplay camera (no cinematic, no letterbox), hit around 2.0-2.5 s, clean by 4.5 s, with one dead beat and one short impact frame. Ranges: Q 10-12, W 10-11, R 13-14; cooldowns: Q 2.5-3 s, W 6-8 s, E 9-10 s, R 20 s.
 - **Each kit has a signature shape** and a pale foil near its dark layer; shapes must read at gameplay distance (camera about 12-16 behind and 6-8 above). The shared look lessons are in [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md); the blood kit sheet [`blood-kit.md`](../../../pipeline/designs/blood-kit.md) is the template.
 - **Mechanics fields**: the wave 3, wave 4 and wave 5 kits use the optional kit fields of the [combat mechanics](../../architecture/mechanics.md): `maxHp` and `melee` on the kit (Zephyr, Sirix, Oblivion), `dash`, `cc`, `summon` and `aim: 'line'` on a spell, and `ctx.projectile` / `ctx.summon` / `ctx.shieldSelf` / `ctx.moveCaster` and `HitOptions.status` in the spell files; the wave 5 kits also use `HitOptions.pull` (Oblivion's Null Tether and Unmaking, see [Pull](../../architecture/mechanics.md#pull)) and `ctx.healSelf` (Tempo's Rewind).
@@ -137,60 +169,32 @@ The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
 
 ## Balance (duel tournament)
 
-Damage per spell after the final balance pass (2026-10-30). E auras hit on each pulse; R hits once (Sanguine Eclipse and
-Grand Transmutation twice). Ranges and cooldowns are in each hero's page.
+The 2026-10-30 hero-roles pass rebalanced every kit at walk speed 4 m/s with duel cover on. Main numbers are damage per hit unless noted; they come from the spell defaults in `src/spells/targeted/`.
 
-| Hero | Q | W | E | R |
-|---|---|---|---|---|
-| Vesper | Hemolance 47, cd 3 s | Thorn Garden 50 + 10, cd 7 s | Crimson Pact 2 × 9 | Sanguine Eclipse 15 + 110 |
-| Brannoc | Rivet Shot 50 | Anvil Drop 55 | Bellows Ward 2 × 15 | Forgefall 122 |
-| Isolde | Rime Spear 53 | Frostfern Field 58 | Glacial Mantle 2 × 12 | Winter's Crown 130 |
-| Lyra | Starshot 55 per target (hits from 0.52 s) | Constellation Snare 60, cd 7 s | Orbit Veil 2 × 12 | Celestial Hunt 138 |
-| Vex | Volatile Flask 49 + 12 | Caustic Pool 30 + 12 + 12, cd 7 s | Mutagen 2 × 12 | Grand Transmutation 86 + 50 |
-| Kaia | Arc Lance 50 | Downpour 40 + 15, cd 7 s | Static Field 2 × 14 | Eye of the Storm 125 |
-| Sefu | Sand Lash 53 | Quicksand 48 + 10, cd 7 s | Dune Ward 2 × 13 | Tomb of Kings 130 |
-| Nyx | Umbral Blink 50 | Grasp of the Deep 45 + 10, cd 7 s | Night Shroud 2 × 13 | Eclipse Execution 125 |
-| Fenna | Bloom Lash 54 | Overgrowth 45 + 10, cd 7 s | Verdant Ward 2 × 15 | World Blossom 130 |
-| Auriel | Radiant Spear 50 | Aegis Wall 45 + 10, cd 7 s | Halo of Blades 2 × 13 | Judgement of Dawn 125 |
-| Marin | Tide Whip 50 | Whirlpool 45 + 10, cd 7 s | Undertow Dance 2 × 13 | Leviathan's Waltz 125 |
-| Zephyr | Gale Edge 45, cd 2.5 s | Tailwind Rush 45, knock-up 0.4 s, cd 7 s | Cyclone Guard 2 × 13 + 50 shield | Thousand Winds 132, knock-up 0.5 s |
-| Mortis | Bone Spear 50 (pierces) | Grave Call 15 + 2 skeletons, cd 9 s | Ossuary Ward 2 × 12 + 30 shield | Legion of the Ossuary 90 + 2 archers |
-| Ada | Rivet Shot 50 + slow (ricochets) | Cog Turret 20 + turret 12 per shot, cd 12 s | Gear Field 2 × 13 + slow | Gearfall 115 + root 1.2 s |
-| Opaline | Prism Bolt 42 + 3 × 15 (splits), cd 3 s | Refraction Field 40 + blind 1.5 s, cd 7 s | Mirror Shell 2 × 12 + 40 shield | Spectrum Lance 118 |
-| Sirix | Mandible Rend 40 + slow, cd 2.5 s | Swarm Leap 30 + 2 wasps, cd 9 s | Chitin Carapace 2 × 12 + 40 shield + slow | Queen's Descent 90 + stun 0.6 s |
-| Cantor | Discordant Note 47 (bounces), cd 3 s | Silencing Refrain 40 + silence 1.5 s, cd 7 s | Ballad of Valor 2 × 10 + 30 shield + heal 40 | Crescendo 95 + stun 0.6 s |
-| Oblivion | Rift Cleave 46, cd 2.5 s | Null Tether 36 + pull 4 m + slow 1.0 s, cd 8 s | Void Mantle 2 × 12 + 40 shield + silence 1.0 s on the second pulse, cd 10 s | Unmaking 110 + pull 4 m + silence 1.5 s |
-| Shiori | Brushstroke 45 + 3 × 12 (splits at full range), cd 3 s | Ink Snare 35 + root 1.0 s, cd 8 s | Paper Familiars 10 + 2 cranes, cd 14 s | Final Calligraphy 95 + blind 1.5 s |
-| Tempo | Second Hand 50 + slow 1.0 s (pierces), cd 3 s | Stopped Moment 35 + stun 0.8 s, cd 8 s | Rewind 15 + 25 shield + heal 45, cd 11 s | Twelfth Hour 100 + stun 0.6 s |
+| Hero | Role | HP | Q / W / E / R main numbers |
+|---|---|---|---|
+| Vesper | juggernaut (drain) | 620 | Q 42 (heals 6); W 50 + slow 1.5 s + tick 10; E 3 x 12 (heals 6 each); R 15 harvest (heals 10) + 100 |
+| Brannoc | tank (melee) | 840 | Q 44, slow 0.8 s; W 50, stun 1.0 s; E shield 100, pull 1.5 m; R 105, knock-up 0.5 s |
+| Isolde | controller | 600 | Q 64, slow 1.5 s; W 62, root 1.2 s; E shield 50, 12 + slow 1.0 s; R 150, stun 1.0 s |
+| Lyra | marksman | 520 | Q 52 (bounces); W 60, root 1.2 s; E 12, slow 1.0 s; R 155 |
+| Vex | mage (poison) | 560 | Q 49 + burn 12; W 30 + 4 x 7, slow 1.0 s; E heal 45; R 75 + 2 x 5 + 50, slow 2.0 s |
+| Kaia | mage (burst) | 560 | Q 50 (chain 25); W 40 + 15, slow 1.0 s; E 20, stun 0.5 s; R 140 |
+| Sefu | controller | 600 | Q 46, root 0.8 s; W 3 x 6 slow 1.2 s + 32 root 1.0 s; E shield 45, 13, slow 1.0 s; R 110, stun 1.0 s |
+| Nyx | assassin | 600 | Q 62; W 40, silence 1.0 s; E 3 x 22; R 160 |
+| Fenna | support | 600 | Q 50 (heals 8); W 45, root 1.2 s; E turret 80 HP, 12 per shot; R 95, heal 45, root 1.0 s |
+| Auriel | support | 600 | Q 55, shield 10; W 45, stun 0.8 s; E 3 x 10, shield 25; R 100, shield 50 |
+| Marin | controller | 620 | Q 50, pull 3 m; W 45, pull 1.5 m, knock-up 0.4 s; E 4 per tick, slow 1.0 s, heal 15; R 92, knock-up 0.5 s |
+| Zephyr | assassin (melee) | 690 | Q 48; W 45, knock-up 0.4 s; E 13, shield 30; R 145, knock-up 0.5 s |
+| Mortis | summoner | 580 | Q 50; W 15 + 2 skeletons; E 2 x 12, root 1.2 s; R 90 + 2 archers |
+| Ada | summoner | 580 | Q 58, slow 1.5 s; W turret 20, 12 per shot; E 3 x 9, slow 1.0 s; R 125, root 1.2 s |
+| Opaline | marksman | 560 | Q 50 (split 18); W 48, blind 1.5 s; E shield 45, blink; R 3 x 50 sweep, 70 degrees |
+| Sirix | juggernaut (melee) | 720 | Q 45, slow 1.0 s; W 40 + 2 wasps; E shield 60; R 85, slow 1.5 s, 3 wasps |
+| Cantor | support | 640 | Q 52; W 40, silence 1.5 s; E 10 per pulse, shield 30, heal 40; R 95, stun 0.8 s |
+| Oblivion | juggernaut (melee) | 780 | Q 53; W 48, pull 4 m, slow 1.0 s; E 35, silence 1.2 s; R 120, pull 4 m, silence 1.5 s |
+| Shiori | summoner | 580 | Q 54 (split 12); W 45, root 1.0 s; E 10 + 2 cranes (8 damage); R 115, blind 1.5 s |
+| Tempo | mage (chrono) | 580 | Q 36 per leg, slow 1.0 s; W 35, stun 0.8 s; E 15, shield 25, heal 45; R 150 (fuse 3.5 s) |
 
-Kaia, Sefu and Nyx were built inside the balance budget in `pipeline/designs/kit-common.md` and needed no tuning: in an
-8-hero tournament (3 fights per ordered pairing, 168 fights) every hero won 38–60% (Lyra 60%, Nyx 60%, Brannoc 55%,
-Kaia 55%, Vesper 52%, Vex 43%, Isolde 38%, Sefu 38%), within the noise of that sample.
-
-Zephyr, Mortis and Ada are the first kits built on the [combat mechanics](../../architecture/mechanics.md) (a melee hero with a dash and knock-ups, a summoner, a ranged control hero with slows, a turret and a root). Crowd control, shields and summons cost damage, so their numbers follow the "Mechanics budget" in `pipeline/designs/kit-common.md` (melee 700 HP and Q about 40; summoner spells with less damage; a ranged control Q of about 55). After those numbers the wave 3 tournament gave Zephyr 60%, Mortis 60% and Ada 56%.
-
-Opaline, Sirix and Cantor (wave 4) are built on the same mechanics and budget: a splitting skillshot with a blind (mage), a melee brawler with a leap that summons wasps, and a support with a bouncing skillshot, a silence, a shield with a heal and a stunning ultimate. In the wave 4 tournament (each hero against 16 opponents, 3 fights per ordered pairing, both sides) Opaline first won 63%; Refraction Field was lowered from 45 to 40 damage and she then won 53%. Sirix won 45% and Cantor 46%.
-
-Oblivion, Shiori and Tempo (wave 5) are built on the same mechanics and budget: a melee juggernaut with a pull and silences, a ranged control mage with a splitting skillshot, a root, two crane summons and a blind, and a ranged control hero with a piercing slow, a stun, a rewind with a shield and a heal, and a stunning ultimate. The pull is new this wave. In the wave 5 tournament (each hero against 19 opponents, 3 fights per ordered pairing, both sides) the first run gave Oblivion 26%, Shiori 72% and Tempo 51%; after the changes below Oblivion won 54%, Shiori 58% and Tempo 51%.
-
-Final balance pass (2026-10-30): a full 20-hero tournament, every ordered pairing. The first run (3 fights per pairing) had Vesper 70%, Cantor 68%, Ada 64% and Opaline 61% too high, and Isolde 33%, Sefu 34%, Lyra 35% and Zephyr 37% too low. Three rounds of damage-only changes followed (Hemolance 53 → 47, Sanguine Eclipse slam 120 → 110; Discordant Note 50 → 47, Crescendo 100 → 95; Clockwork Rivet Shot 55 → 50, Gearfall 125 → 115; Prism Bolt 45 → 42, Spectrum Lance 125 → 118; Rime Spear 50 → 53, Frostfern Field 56 → 58, Winter's Crown 125 → 130; Sand Lash 50 → 53, Quicksand 45 → 48, Tomb of Kings 125 → 130; Starshot 52 → 55, Celestial Hunt 135 → 138; Gale Edge 40 → 45, Thousand Winds 125 → 132; Rivet Shot 46 → 50, Forgefall 115 → 122; Volatile Flask 45 → 49, Grand Transmutation gold 80 → 86; Bloom Lash 50 → 54, World Blossom 125 → 130; Brushstroke 48 → 45). The final run (4 fights per pairing, 152 fights per hero, no timeouts) gave Vesper 46%, Brannoc 59%, Isolde 59%, Lyra 52%, Vex 55%, Kaia 49%, Sefu 47%, Nyx 43%, Fenna 55%, Auriel 44%, Marin 51%, Zephyr 53%, Mortis 54%, Ada 41%, Sirix 41%, Cantor 43%, Opaline 43%, Oblivion 61%, Shiori 45% and Tempo 58%. Run-to-run noise is about ±6 points.
-
-Measured with AI vs AI duels (run duel, every hero against every other, both sides on the same AI, both dodging)
-using [duel-tourney.js](../../../pipeline/tools/duel-tourney.js). Win rates, two runs of 100 fights:
-
-| Hero | Before | After |
-|---|---|---|
-| Vesper | 88% | 57% |
-| Brannoc | 67% | 53% |
-| Lyra | 8% | 48% |
-| Isolde | 50% | 46% |
-| Vex | 38% | 46% |
-
-What changed: Hemolance 60 → 53 and cooldown 2.5 → 3 s, Thorn Garden cooldown 6 → 7 s; Rivet Shot 55 → 46, Anvil
-Drop 65 → 55, Forgefall 130 → 115; Rime Spear 55 → 50, Frostfern Field 50 → 56; Starshot 45 → 52 and its first hit
-0.75 → 0.52 s (its late hit was dodged about half the time), Constellation Snare 50 → 60 and cooldown 8 → 7 s,
-Celestial Hunt 125 → 135; Volatile Flask 40 → 45, Caustic Pool cooldown 8 → 7 s. Single matchups still swing a lot
-between runs (the AI's strafing is random); judge balance on the totals of 100+ fights.
+Final win rates from `_tourney(4)` (1520 fights, 0 timeouts, average fight 29 s, 152 fights per hero): Vesper 51, Brannoc 59, Isolde 46, Lyra 48, Vex 55, Kaia 41, Sefu 51, Nyx 55, Fenna 44, Auriel 49, Marin 49, Zephyr 52, Mortis 53, Ada 49, Sirix 45, Cantor 41, Opaline 51, Oblivion 45, Shiori 61 (then Brushstroke 58 to 54; re-check 63 of 152 fights, 41%), Tempo 55. Noise is about plus or minus 6 points.
 
 ## See also
 

@@ -9,28 +9,33 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Constellation Snare (astral kit, W: zone). Lyra fires an arrow into the sky; a parchment star chart draws itself
+ * Constellation Snare (astral kit, W: trap). Lyra fires an arrow into the sky; a parchment star chart draws itself
  * around the target point over a dark night veil and a handful of stars streak down onto points around and across
- * the circle (the enemies among them). Gold lines draw between them into a triangulated net. Then the net snaps tight
- * toward the centre and drags the enemies in; a moment later it breaks apart and the stars fall. See
- * pipeline/designs/kit-astral.md.
+ * the circle. Gold lines draw between them into a triangulated net, armed at 0.8 s. The net lies for 3 s and snaps
+ * the moment an enemy stands inside (live position): it pulls tight toward the centre, hurts and roots (1.2 s) whoever
+ * is inside and drags them in; 0.6 s later it breaks apart and the stars fall. If nobody walks in by 3 s it fizzles
+ * with no hit. See pipeline/designs/kit-astral.md.
  */
 export interface ConstellationSnareSettings {
   damage: number;
+  root: number;
   loop: boolean;
 }
 
-export const defaultConstellationSnare = (): ConstellationSnareSettings => ({ damage: 60, loop: false });
+export const defaultConstellationSnare = (): ConstellationSnareSettings => ({ damage: 60, root: 1.2, loop: false });
 
 // Timeline (seconds).
 const SHOT_T = 0.2; // arrow is gone, chart and stars begin
 const CHART_END = 0.6;
 const NET_T = 0.6; // lines start drawing
-const HIT_T = 0.8; // the net snaps tight
+const ARM_T = 0.8; // the net is up: it snaps from here on, the moment an enemy stands inside
+const TRAP_END = 3.0; // no one walked in by now: it fizzles
 const PULL_DUR = 0.12;
-const BREAK_T = 1.4;
-const DURATION = 2.1;
+const HOLD = 0.6; // the snapped net holds this long, then breaks
+const DURATION = 4.0;
 const RADIUS = 4;
+/** Targeting radius: wide so `ctx.targets` lists every enemy, not just those inside at cast (the trap checks live). */
+const REACH = 40;
 const STARS = 8;
 const NET_Y = 0.4;
 const PULL = 0.5; // fraction of the way to the centre the net and the enemies are pulled
@@ -71,6 +76,11 @@ export class ConstellationSnare implements Effect {
   private edges: [number, number][] = [];
 
   private flags = { arrow: false, stars: false, net: false, hit: false, broke: false };
+  /** When the net snapped (-1 = not yet) and when it breaks (infinity until known). */
+  private snapAt = -1;
+  private breakAt = Infinity;
+  /** The enemies it caught and where they stood when it snapped. */
+  private caught: { e: CastContext['targets'][number]; at: THREE.Vector3 }[] = [];
   private starIds: number[] = [];
   private lineIds: number[] = [];
 
@@ -110,7 +120,12 @@ export class ConstellationSnare implements Effect {
   }
 
   get impactTime() {
-    return HIT_T;
+    return ARM_T;
+  }
+
+  /** How long the telegraph stays drawn: until the trap has fizzled. */
+  get armedUntil() {
+    return TRAP_END + 0.2;
   }
 
   cast(ctx: CastContext) {
@@ -169,6 +184,9 @@ export class ConstellationSnare implements Effect {
     this.shake = 0;
     const f = this.flags;
     f.arrow = f.stars = f.net = f.hit = f.broke = false;
+    this.snapAt = -1;
+    this.breakAt = Infinity;
+    this.caught = [];
     this.starIds.length = 0;
     this.lineIds.length = 0;
     clearScreenFx(this.screen);
@@ -223,12 +241,27 @@ export class ConstellationSnare implements Effect {
         this.lineIds.push(this.lines.connect(this.base[a], this.base[b], 0.1, (k / this.edges.length) * 0.1));
       });
     }
-    if (!f.hit && t >= HIT_T) {
-      f.hit = true;
-      this.shake = 0.3;
-      if (ctx) for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: ASTRAL_CSS.hot });
+    // The trap: armed at ARM_T, it snaps on the first frame an enemy stands inside (live position, so a walker escapes).
+    if (!f.hit && t >= ARM_T && ctx) {
+      const inside = ctx.targets.filter((e) => Math.hypot(e.group.position.x - this.centre.x, e.group.position.z - this.centre.z) <= RADIUS);
+      if (inside.length > 0) {
+        f.hit = true;
+        this.snapAt = t;
+        this.breakAt = t + HOLD;
+        this.shake = 0.3;
+        for (const e of inside) {
+          this.caught.push({ e, at: e.group.position.clone() });
+          ctx.hit(e, {
+            damage: this.settings.damage, knock: 0, from: this.centre, color: ASTRAL_CSS.hot,
+            status: { kind: 'root', seconds: this.settings.root },
+          });
+        }
+      } else if (t >= TRAP_END) {
+        f.hit = true; // fizzled: the net breaks with no hit
+        this.breakAt = t;
+      }
     }
-    if (!f.broke && t >= BREAK_T) {
+    if (!f.broke && t >= this.breakAt) {
       f.broke = true;
       this.lines.snap(0.55);
       this.stars.fallAll(1, 0.5);
@@ -239,9 +272,10 @@ export class ConstellationSnare implements Effect {
 
   private layout() {
     const t = this.time;
-    const f = this.flags;
     const ctx = this.ctx;
-    const after = t - HIT_T;
+    const snapped = this.snapAt >= 0;
+    const after = snapped ? t - this.snapAt : -1;
+    const BREAK_T = this.breakAt;
 
     // --- Chart draws on while the stars fall; the night veil dims the ground under the gold. ---
     this.chart.reveal = smoothstep((t - SHOT_T) / (CHART_END - SHOT_T));
@@ -257,7 +291,7 @@ export class ConstellationSnare implements Effect {
 
     // --- The net snaps tight toward the centre (stars and lines together), holds, then breaks. ---
     let pull = 0;
-    if (f.hit && t < BREAK_T) pull = 1 - Math.pow(1 - Math.min(1, after / PULL_DUR), 3);
+    if (snapped && t < BREAK_T) pull = 1 - Math.pow(1 - Math.min(1, after / PULL_DUR), 3);
     if (pull > 0) {
       for (let i = 0; i < STARS; i++) {
         this.cur[i].lerpVectors(this.base[i], this.centre, PULL * pull).setY(NET_Y + 0.15 * pull);
@@ -269,19 +303,19 @@ export class ConstellationSnare implements Effect {
     }
 
     // --- Enemies are dragged in with the net and let go when it breaks. ---
-    if (ctx && f.hit) {
+    if (ctx && snapped) {
       const release = smoothstep((t - BREAK_T) / 0.25);
       const k = pull * (1 - release);
       if (t < BREAK_T + 0.3) {
-        ctx.targets.forEach((e, i) => {
-          const p = ctx.targetPos[i];
-          if (p) ctx.displace(e, this.v2.set(this.centre.x - p.x, 0, this.centre.z - p.z).multiplyScalar(PULL * k));
-        });
+        for (const c of this.caught) ctx.displace(c.e, this.v2.set(this.centre.x - c.at.x, 0, this.centre.z - c.at.z).multiplyScalar(PULL * k));
+      } else if (this.caught.length) {
+        for (const c of this.caught) ctx.displace(c.e, this.v2.set(0, 0, 0));
+        this.caught = [];
       }
     }
 
     // --- Hit: cyan star at the centre, ground refraction, shake. ---
-    if (f.hit) {
+    if (snapped) {
       const sp = StarBurst.pop(after, 0.02, 0.04);
       this.hitStar.set(this.v1.copy(this.centre).setY(0.8), 1.1 * sp.scale, sp.opacity, 0.2);
       const gp = THREE.MathUtils.clamp(after / 0.35, 0, 1);
@@ -294,13 +328,13 @@ export class ConstellationSnare implements Effect {
 export const constellationSnareModule: EffectModule = {
   label: 'constellation snare',
   category: 'hero: astral',
-  targeting: { mode: 'ground', radius: RADIUS },
+  targeting: { mode: 'ground', radius: REACH },
   create: () => new ConstellationSnare(),
   telegraphs(effect) {
     const e = effect as ConstellationSnare;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: ARM_T, until: e.armedUntil }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -311,5 +345,6 @@ export const constellationSnareModule: EffectModule = {
     const s = (effect as ConstellationSnare).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
+    f.add(s, 'root', 0, 1.5, 0.1);
   },
 };

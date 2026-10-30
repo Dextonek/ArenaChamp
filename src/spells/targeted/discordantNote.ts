@@ -19,7 +19,7 @@ export interface DiscordantNoteSettings {
   knock: number;
 }
 
-export const defaultDiscordantNote = (): DiscordantNoteSettings => ({ damage: 47, knock: 2 });
+export const defaultDiscordantNote = (): DiscordantNoteSettings => ({ damage: 52, knock: 2 });
 
 const WINDUP = 0.2;
 const SPEED = 20;

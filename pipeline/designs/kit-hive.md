@@ -1,5 +1,11 @@
 # Hive kit: Sirix, the Swarm Warden (melee brawler + summons)
 
+## Role (2026-10-30)
+**Juggernaut (melee, summons), 700 HP.** Signature: the swarm. See hero-roles.md.
+- Q Mandible Rend, W Swarm Leap: unchanged (the leap drops 2 wasps).
+- E Chitin Carapace: pure shield 60 for 3 s; the swarm flare is a show only, no hit, no telegraph. cd 9.
+- R Queen's Descent: no `cc`. The dive hits 75 and slows 1.5 (was stun 0.6) and drops 3 melee wasp soldiers (40 HP, 6 s, 6 per 1 s) at the centre; with the leap's 2 that is at most 5 of the cap of 6. cd 20.
+
 **Signature shape: the hexagon and the swarm.** Everything is **honeycomb hexagons** (wax-amber cells, hexagonal
 chitin plates) and **swarms of small insects** that move as one cloud: dozens of tiny dark wasps with amber
 bodies and a flicker of wings, streaming in ribbons, circling and diving. Hits splash sticky amber honey. Not the

@@ -9,24 +9,29 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Orbit Veil (astral kit, E: self aura). A small star chart draws itself under Lyra and a night veil rises around
- * her. Seven stars orbit her on two tilted rings, linked by gold lines into a turning figure. Twice (1.0 s and 2.0 s)
- * the figure flares and fires a thin gold line from the nearest star to every enemy within 5: a star-strike with a
- * cyan pop on the enemy. Then the orbit breaks and the stars fall. The orbit itself (0.3-2.8 s) is the loopable
- * section. See pipeline/designs/kit-astral.md.
+ * Orbit Veil (astral kit, E: backstep). A small star chart draws itself under Lyra and a night veil rises around
+ * her. Seven stars orbit her on two tilted rings, linked by gold lines into a turning figure. Once (0.6 s) the figure
+ * flares and fires a thin gold line from the nearest star to every enemy within 5 of where she stood (live
+ * positions): a star-strike with a cyan pop that hurts and slows (1.0 s). At 0.65 s the orbit carries her 5 m straight
+ * away from the enemy (`ctx.moveCaster`, 0.35 s) and the chart, veil and figure travel with her. Then the orbit breaks
+ * and the stars fall. See pipeline/designs/kit-astral.md.
  */
 export interface OrbitVeilSettings {
   damage: number;
+  slow: number;
   loop: boolean;
 }
 
-export const defaultOrbitVeil = (): OrbitVeilSettings => ({ damage: 12, loop: false });
+export const defaultOrbitVeil = (): OrbitVeilSettings => ({ damage: 12, slow: 1, loop: false });
 
 // Timeline (seconds).
-const SETUP_END = 0.3;
-const ORBIT_END = 2.8;
-const STRIKE_T = [1.0, 2.0];
-const DURATION = 3.3;
+const SETUP_END = 0.25;
+const ORBIT_END = 1.9;
+const STRIKE_T = [0.6];
+const MOVE_T = 0.65; // the orbit carries her away
+const MOVE_LEN = 0.35;
+const BACKSTEP = 5;
+const DURATION = 2.4;
 const RADIUS = 5;
 const CENTRE_Y = 1.3;
 const NODES = 7;
@@ -49,10 +54,15 @@ export class OrbitVeil implements Effect {
   ctx: CastContext | null = null;
   private time = 0;
 
+  /** Where the chart and orbit are drawn: her feet, following her once the backstep starts. */
   private from = new THREE.Vector3(0, 0, 14);
+  /** Where she cast from (the volley reaches RADIUS round it) and where she is carried to. */
+  readonly start = new THREE.Vector3(0, 0, 14);
+  private land = new THREE.Vector3();
+  private moved = false;
   private centre = new THREE.Vector3(0, CENTRE_Y, 14);
 
-  private flags = { start: false, volley: [false, false], strikeFade: [false, false], broke: false };
+  private flags = { start: false, volley: [false], strikeFade: [false], broke: false };
   private starIds: number[] = [];
   private lineIds: number[] = [];
   private nodePos: THREE.Vector3[] = [];
@@ -96,6 +106,13 @@ export class OrbitVeil implements Effect {
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.from.copy(ctx.from).setY(0);
+    this.start.copy(this.from);
+    // Away from the enemy (the nearest one in the ring); with none in the ring, away from where she faces.
+    const e = ctx.targetPos[0] ?? ctx.point;
+    this.v1.set(this.from.x - e.x, 0, this.from.z - e.z);
+    if (this.v1.lengthSq() < 0.25) this.v1.set(-Math.sin(ctx.caster.group.rotation.y), 0, -Math.cos(ctx.caster.group.rotation.y));
+    this.v1.normalize();
+    this.land.copy(this.start).addScaledVector(this.v1, BACKSTEP);
     this.centre.copy(this.from).setY(CENTRE_Y);
     this.screen.focus.copy(this.centre);
     this.chart.set(this.from, 2);
@@ -112,8 +129,11 @@ export class OrbitVeil implements Effect {
     this.shake = 0;
     const f = this.flags;
     f.start = f.broke = false;
-    f.volley = [false, false];
-    f.strikeFade = [false, false];
+    f.volley = [false];
+    f.strikeFade = [false];
+    this.moved = false;
+    this.from.copy(this.start);
+    this.centre.copy(this.from).setY(CENTRE_Y);
     this.starIds.length = 0;
     this.lineIds.length = 0;
     this.strikeCount = 0;
@@ -170,7 +190,7 @@ export class OrbitVeil implements Effect {
         this.lineIds.push(this.figure.connect(this.nodePos[a], this.nodePos[b], 0.15, 0.12 + k * 0.025));
       });
     }
-    for (let v = 0; v < 2; v++) {
+    for (let v = 0; v < STRIKE_T.length; v++) {
       if (!f.volley[v] && t >= STRIKE_T[v]) {
         f.volley[v] = true;
         this.lastVolley = STRIKE_T[v];
@@ -180,6 +200,18 @@ export class OrbitVeil implements Effect {
         f.strikeFade[v] = true;
         this.strikes.fadeOut(0.12);
       }
+    }
+    if (!this.moved && t >= MOVE_T) {
+      this.moved = true;
+      if (ctx?.moveCaster) this.land.copy(ctx.moveCaster(this.land, MOVE_LEN)).setY(0);
+    }
+    if (this.moved) {
+      const u = THREE.MathUtils.clamp((t - MOVE_T) / MOVE_LEN, 0, 1);
+      this.from.lerpVectors(this.start, this.land, 1 - (1 - u) * (1 - u));
+      this.centre.copy(this.from).setY(CENTRE_Y);
+      this.chart.set(this.from, 2);
+      this.veil.set(this.from, 2.5, 2.7);
+      this.screen.focus.copy(this.centre);
     }
     if (!f.broke && t >= ORBIT_END) {
       f.broke = true;
@@ -204,9 +236,11 @@ export class OrbitVeil implements Effect {
   private volley() {
     const ctx = this.ctx;
     if (!ctx) return;
-    this.strikeCount = Math.min(MAX_STRIKES, ctx.targets.length);
+    // Re-check at the volley: only enemies still within reach of the spot she stood on are struck.
+    const inside = ctx.targets.filter((e) => Math.hypot(e.group.position.x - this.start.x, e.group.position.z - this.start.z) <= RADIUS);
+    this.strikeCount = Math.min(MAX_STRIKES, inside.length);
     for (let i = 0; i < this.strikeCount; i++) {
-      const tp = ctx.targetPos[i];
+      const tp = inside[i].group.position;
       this.strikePts[i].set(tp.x, 1.1, tp.z);
       let best = 0, bd = 1e9;
       for (let k = 0; k < NODES; k++) {
@@ -214,7 +248,7 @@ export class OrbitVeil implements Effect {
         if (d < bd) { bd = d; best = k; }
       }
       this.strikes.connect(this.v1.copy(this.nodePos[best]), this.strikePts[i], 0.08, i * 0.015);
-      ctx.hit(ctx.targets[i], { damage: this.settings.damage, knock: 1, color: ASTRAL_CSS.hot });
+      ctx.hit(inside[i], { damage: this.settings.damage, knock: 1, color: ASTRAL_CSS.hot, status: { kind: 'slow', seconds: this.settings.slow } });
     }
     this.shake = 0.12;
   }
@@ -253,9 +287,8 @@ export const orbitVeilModule: EffectModule = {
   create: () => new OrbitVeil(),
   telegraphs(effect) {
     const e = effect as OrbitVeil;
-    const c = e.ctx?.from;
-    if (!c) return [];
-    return [{ shape: { kind: 'circle' as const, x: c.x, z: c.z, radius: RADIUS }, start: 0, impact: STRIKE_T[0] }];
+    if (!e.ctx) return [];
+    return [{ shape: { kind: 'circle' as const, x: e.start.x, z: e.start.z, radius: RADIUS }, start: 0, impact: STRIKE_T[0] }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -266,5 +299,6 @@ export const orbitVeilModule: EffectModule = {
     const s = (effect as OrbitVeil).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 60, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

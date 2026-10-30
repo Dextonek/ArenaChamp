@@ -203,7 +203,7 @@ export const voidKit: HeroKit = {
   title: 'the Unmaker',
   accent: V.body,
   foil: V.ash,
-  maxHp: 700,
+  maxHp: 780,
   melee: true,
   portrait(g, s) {
     iconGround(g, s);
@@ -332,7 +332,7 @@ export const voidKit: HeroKit = {
     },
     {
       key: 'E', label: 'void mantle', name: 'Void Mantle', range: 0, cooldown: 10,
-      blurb: 'A ring of standing rifts opens round him and shields him; it pulses twice, the second pulse silences everything nearby.',
+      blurb: 'A ring of standing rifts opens round him and pulses once: everything within 4 m is hit and silenced for 1.2 s. No shield.',
       icon(g, s) {
         iconGround(g, s);
         // Five standing slits round a core, an ash ring behind for the shield, cracks racing out.
@@ -359,7 +359,7 @@ export const voidKit: HeroKit = {
     },
     {
       key: 'R', label: 'unmaking', name: 'Unmaking', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. The zone is cut out of the world: the ground cracks like glass, a vast rift opens above it and drags everything in, then slams shut.',
+      blurb: 'Ultimate. A 5 m zone is cut out of the world: the ground cracks like glass, a vast rift opens above it and drags everything in, then slams shut.',
       icon(g, s) {
         iconGround(g, s);
         // A cracked disc on the floor, a vast vertical rift above its centre, shards pouring in, a cyan star at the base.

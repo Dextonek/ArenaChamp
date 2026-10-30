@@ -7,19 +7,21 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Overgrowth (grove kit, W: ground zone): roots spread over the zone, spiral vines grow up out of them and coil around
- * the enemies inside, holding them a little lower. Then every vine bursts into a flower at once, pollen puffs, the
- * ground rings. A small second tick follows; the flowers shed, the vines wither and the roots fade. See
- * pipeline/designs/kit-grove.md.
+ * Overgrowth (grove kit, W: enemy root): roots spread under the chosen enemy, spiral vines grow up out of them and coil
+ * around it, holding it a little lower. Then every vine bursts into a flower at once, pollen puffs, the ground rings,
+ * and the enemy is rooted. If it walked more than 2 m from where it stood at the cast the vines close on nothing. A
+ * small second tick follows; the flowers shed, the vines wither and the roots fade. See pipeline/designs/kit-grove.md.
  */
 export interface OvergrowthSettings {
   damage: number;
   /** One small tick after the hit. */
   tick: number;
+  /** Root seconds on the main hit (engine cap 1.5). */
+  root: number;
   loop: boolean;
 }
 
-export const defaultOvergrowth = (): OvergrowthSettings => ({ damage: 45, tick: 10, loop: false });
+export const defaultOvergrowth = (): OvergrowthSettings => ({ damage: 45, tick: 10, root: 1.2, loop: false });
 
 // Timeline (seconds).
 const ROOT_T = 0;
@@ -29,7 +31,7 @@ const TICK_T = 1.3;
 const SHED_T = 1.4;
 const DURATION = 2.3;
 
-const RADIUS = 4;
+const RADIUS = 2;
 const VINES = 8;
 
 export class Overgrowth implements Effect {
@@ -88,7 +90,7 @@ export class Overgrowth implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.point.copy(ctx.point).setY(0);
+    this.point.copy(ctx.targetPos[0] ?? ctx.point).setY(0);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.point);
   }
@@ -151,7 +153,9 @@ export class Overgrowth implements Effect {
     if (!f.impacted && t >= HIT_T) {
       f.impacted = true;
       this.bloomAll();
-      this.eachInside((e) => ctx?.hit(e, { damage: this.settings.damage, knock: 0, from: this.point, color: GROVE_CSS.body }));
+      this.eachInside((e) => ctx?.hit(e, {
+        damage: this.settings.damage, knock: 0, from: this.point, color: GROVE_CSS.body, status: { kind: 'root', seconds: this.settings.root },
+      }));
     }
     if (!f.ticked && t >= TICK_T) {
       f.ticked = true;
@@ -170,10 +174,13 @@ export class Overgrowth implements Effect {
   private eachInside(fn: (e: CastContext['targets'][number]) => void) {
     const ctx = this.ctx;
     if (!ctx) return;
-    ctx.targets.forEach((e, i) => {
-      const p = ctx.targetPos[i];
-      if (p && Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) fn(e);
-    });
+    for (const e of ctx.targets) if (this.inside(e)) fn(e);
+  }
+
+  /** True while `e` stands within the vines' reach right now (live position, so a walker escapes). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
   }
 
   /** Up to four vines coil around the enemies inside; the rest stand in a ring around the zone. */
@@ -182,8 +189,8 @@ export class Overgrowth implements Effect {
     let n = 0;
     if (ctx) {
       for (let i = 0; i < ctx.targets.length && n < 4; i++) {
-        const p = ctx.targetPos[i];
-        if (!p || Math.hypot(p.x - this.point.x, p.z - this.point.z) > RADIUS) continue;
+        const p = ctx.targets[i].group.position;
+        if (!this.inside(ctx.targets[i])) continue;
         this.v1.set(p.x, 0.05, p.z);
         this.vines[n].grow(this.v1, this.v2.set(0, 1, 0), 2.3, 2.4, 0.3, 0.34, { coilRadius: 0.62, phase: Math.random() * 6, delay: n * 0.02 });
         this.bloomSize[n] = 0.95;
@@ -194,7 +201,7 @@ export class Overgrowth implements Effect {
     const a0 = Math.random() * Math.PI * 2;
     for (let k = 0; k < fill; k++) {
       const a = a0 + (k / fill) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const r = 1.4 + Math.random() * 2.2;
+      const r = 0.9 + Math.random() * 1.1;
       this.v1.set(this.point.x + Math.cos(a) * r, 0.05, this.point.z + Math.sin(a) * r);
       this.vines[n + k].grow(this.v1, this.v2.set(0, 1, 0), 1.8 + Math.random() * 1.2, 2, 0.26, 0.32, {
         coilRadius: 0.32, phase: Math.random() * 6, delay: 0.03 + Math.random() * 0.04,
@@ -225,11 +232,10 @@ export class Overgrowth implements Effect {
     // --- Enemies inside are held 0.1 lower while the vines coil (0.3..), released as they wither. ---
     if (ctx) {
       const k = smoothstep((t - GROW_T) / 0.45) * (1 - smoothstep((t - SHED_T) / 0.3));
-      ctx.targets.forEach((e, i) => {
-        const p = ctx.targetPos[i];
-        if (!p || Math.hypot(p.x - this.point.x, p.z - this.point.z) > RADIUS) { ctx.displace(e, this.v1.set(0, 0, 0)); return; }
+      for (const e of ctx.targets) {
+        if (!this.inside(e)) { ctx.displace(e, this.v1.set(0, 0, 0)); continue; }
         ctx.displace(e, this.v1.set(0, -0.1 * k, 0));
-      });
+      }
     }
 
     // --- Hit: ground refraction, shake. ---
@@ -244,13 +250,15 @@ export class Overgrowth implements Effect {
 export const overgrowthModule: EffectModule = {
   label: 'overgrowth',
   category: 'hero: grove',
-  targeting: { mode: 'ground', radius: RADIUS },
+  // On the enemy: the vines grow where it stands at the cast.
+  targeting: { mode: 'enemy' },
   create: () => new Overgrowth(),
   telegraphs(effect) {
     const e = effect as Overgrowth;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    const c = ctx.targetPos[0] ?? ctx.point;
+    return [{ shape: { kind: 'circle', x: c.x, z: c.z, radius: RADIUS }, start: 0, impact: HIT_T }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -262,5 +270,6 @@ export const overgrowthModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 200, 1);
     f.add(s, 'tick', 0, 60, 1);
+    f.add(s, 'root', 0, 1.5, 0.1);
   },
 };

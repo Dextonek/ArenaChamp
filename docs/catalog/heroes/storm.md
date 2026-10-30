@@ -1,12 +1,23 @@
 ---
 title: Kaia, the Tempest Caller (storm kit)
 tags: [catalog, heroes, storm]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Kaia, the Tempest Caller
 
 The storm hero kit: Kaia's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A young storm caller with a hooked staff and a rain cloak; fast, harassing, lightning from above.
+
+## Role
+
+| | |
+|---|---|
+| Role | Mage (burst) |
+| Signature | Unavoidable lightning: the only instant hits |
+| HP | 560 |
+| Reach | Ranged |
+
+She bursts: her lightning cannot be dodged once it is cast, and the ring and the zones stun and slow. She has little HP and the nova can be out-walked.
 
 ## At a glance
 
@@ -39,14 +50,14 @@ The lightning tree: thick, hard-edged lightning that branches like a tree (a tru
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.45-1.0 s after the cast, clean by about 2.3 s; an E aura may run about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/storm.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is an instant chain, W a rain zone, E a ring that grows from her and R a ground ultimate. Q, W and E hit 0.45-1.4 s after the cast and are clean by about 2.6 s; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/storm.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [arc lance](../../../src/spells/targeted/arcLance.ts) | enemy | 11 | 3 s | 0.45 s | 1.5 s | She points the hooked staff and a horizontal lightning tree jumps from the tip to one enemy and splits into the ground at its feet. A yellow star pops, three small ground forks spread, the bolt flickers out in steps. Damage 50. |
-| W | [downpour](../../../src/spells/targeted/downpour.ts) | ground (r 4) | 10 | 7 s | 0.7 s (centre bolt 1.3 s) | 2.3 s | A storm cloud gathers high over the point and rain falls inside the circle. Three lightning trees strike down out of it at once, then one more hits the centre. The rain thins and the floor dries. Damage 40, then 15. |
-| E | [static field](../../../src/spells/targeted/staticField.ts) | self (r 5) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | A small cloud forms over her head and a ring of short arcs circles her at radius 1.5 in light rain. Twice the cloud flashes and a lightning tree jumps to every enemy in range. Damage 14 per pulse. |
-| R | [eye of the storm](../../../src/spells/targeted/eyeOfTheStorm.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens and a vast ring of storm cloud with a clear eye turns over the zone; the eye narrows, dead beat at 1.85-2.0 s, then one colossal lightning tree slams down through the eye and forks across the floor to every enemy. Impact frames, refraction ring, then the cloud breaks up. Damage 125. |
+| Q | [arc lance](../../../src/spells/targeted/arcLance.ts) | enemy (TGT, chains to a 2nd) | 11 | 3 s | 0.45 s | 1.5 s | She points the hooked staff and a horizontal lightning tree jumps from the tip to one enemy and splits into the ground at its feet. A yellow star pops, three small ground forks spread, the bolt flickers out in steps. Damage 50. The bolt then chains to a second enemy within 6 m for half damage (25). |
+| W | [downpour](../../../src/spells/targeted/downpour.ts) | ground (r 4, ZONE) | 10 | 7 s | 0.7 s (centre bolt 1.3 s) | 2.3 s | A storm cloud gathers high over the point and rain falls inside the circle. Three lightning trees strike down out of it at once, then one more hits the centre. The rain thins and the floor dries. Damage 40 and slow 1.0 s, then 15. Hits check where the enemy stands now. |
+| E | [static field](../../../src/spells/targeted/staticField.ts) | self (r 5, NOVA) | 0 (self) | 9 s | 1.4 s (the ring leaves at 0.9 s) | 2.6 s | A small cloud forms over her head and a ring of short arcs circles her at radius 1.5 in light rain. At 0.9 s a ring of lightning expands from her to 5 m in 0.5 s. It hits once, on the frame its front passes an enemy: damage 20 and stun 0.5 s. Stand far away, or inside before it starts. |
+| R | [eye of the storm](../../../src/spells/targeted/eyeOfTheStorm.ts) | ground (r 5, ZONE) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens and a vast ring of storm cloud with a clear eye turns over the zone; the eye narrows, dead beat at 1.85-2.0 s, then one colossal lightning tree slams down through the eye and forks across the floor to every enemy. Impact frames, refraction ring, then the cloud breaks up. Damage 140. |
 
 Spell sources: [`arcLance.ts`](../../../src/spells/targeted/arcLance.ts), [`downpour.ts`](../../../src/spells/targeted/downpour.ts), [`staticField.ts`](../../../src/spells/targeted/staticField.ts), [`eyeOfTheStorm.ts`](../../../src/spells/targeted/eyeOfTheStorm.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-storm).
 

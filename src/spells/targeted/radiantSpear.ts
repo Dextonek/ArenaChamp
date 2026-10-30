@@ -5,26 +5,34 @@ import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameA
 import {
   DAWN, DAWN_CSS, LightPanels, Sigil, dawnFacing, dawnForward, dawnOrient, dawnPanelNormal, dawnView, type PanelShape,
 } from '../../effects/parts/dawn';
+import { BOLT_HEIGHT, type Projectile } from '../../effects/projectile';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Radiant Spear (dawn kit, Q: single-target pierce). Six gold shards click together into a long spear over Auriel's
- * shoulder, it flies and pierces the target; the shards burst out of its back in a fan with a sky-blue accent, a small
- * sun-wheel sigil flashes under it, one impact frame. The shards tumble and shrink away panel by panel. See
+ * Radiant Spear (dawn kit, Q: piercing skillshot). Six gold shards click together into a long spear over Auriel's
+ * shoulder (0.2 s), then it leaves as a piercing bolt (`ctx.projectile`) and the shards ride the bolt's handle. On a hit
+ * the shards burst out of the target's back in a fan with a sky-blue accent, a small sun-wheel sigil flashes under it,
+ * one impact frame, and Auriel gains a small shield. At max range the spear tumbles apart panel by panel. See
  * pipeline/designs/kit-dawn.md.
  */
 export interface RadiantSpearSettings {
   damage: number;
+  /** Shield Auriel gains when the spear hits (seconds fixed at SHIELD_SECONDS). */
+  shield: number;
   loop: boolean;
 }
 
-export const defaultRadiantSpear = (): RadiantSpearSettings => ({ damage: 50, loop: false });
+export const defaultRadiantSpear = (): RadiantSpearSettings => ({ damage: 55, shield: 10, loop: false });
 
 // Timeline (seconds).
 const ASSEMBLE = 0.2; // the spear is whole and starts to fly
-const HIT_T = 0.45;
-const DURATION = 1.5;
+const DURATION = 1.8;
+const RANGE = 12;
+const SPEED = 24;
+const RADIUS = 0.5;
+const SHIELD_SECONDS = 4;
+const FLIGHT_END = ASSEMBLE + RANGE / SPEED;
 const CHEST_Y = 1.25;
 const SPEAR = 6;
 const SPRAY = 8;
@@ -58,7 +66,11 @@ export class RadiantSpear implements Effect {
   private endC = new THREE.Vector3();
   private ground = new THREE.Vector3();
 
-  private flags = { hit: false };
+  private flags = { fired: false, hit: false, ended: false, shielded: false };
+  private bolt: Projectile | null = null;
+  private hitAge = -1;
+  private hitAt = new THREE.Vector3();
+  private dtLast = 0;
 
   // Parts.
   private panels = new LightPanels(SPEAR + SPRAY + 1, 6);
@@ -85,7 +97,12 @@ export class RadiantSpear implements Effect {
   }
 
   get impactTime() {
-    return HIT_T;
+    return ASSEMBLE;
+  }
+
+  /** Seconds until the bolt has flown its full range (the telegraph's last moment). */
+  get flightEnd() {
+    return FLIGHT_END;
   }
 
   cast(ctx: CastContext) {
@@ -95,13 +112,13 @@ export class RadiantSpear implements Effect {
     dawnFacing(ctx.aim, this.v1);
     this.right.crossVectors(UP, this.v1).normalize();
     dawnView(ctx.aim, this.view);
-    const tp = ctx.targetPos[0] ?? ctx.point;
-    this.chest.set(tp.x, CHEST_Y, tp.z);
-    this.ground.set(tp.x, 0, tp.z);
+    // A skillshot: it flies along the aim line, whoever stands on it.
+    this.dir.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
+    this.chest.copy(this.from).addScaledVector(this.dir, RANGE * 0.5).setY(CHEST_Y);
+    this.ground.set(this.chest.x, 0, this.chest.z);
     this.start.copy(this.from).addScaledVector(this.right, 0.55).addScaledVector(this.fwd, 0.2).setY(2.0);
-    this.dir.subVectors(this.chest, this.start).normalize();
     this.hover.copy(this.start).addScaledVector(this.dir, 1.1);
-    this.endC.copy(this.chest).addScaledVector(this.dir, 0.3);
+    this.endC.copy(this.chest);
     this.screen.focus.copy(this.chest);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group), this.panels.mesh];
     this.groundShock.set(this.ground, 0, 0);
@@ -117,7 +134,9 @@ export class RadiantSpear implements Effect {
   private reset() {
     this.time = 0;
     this.shake = 0;
-    this.flags.hit = false;
+    this.flags.fired = this.flags.hit = this.flags.ended = this.flags.shielded = false;
+    this.bolt = null;
+    this.hitAge = -1;
     clearScreenFx(this.screen);
     this.screen.impactColor.set(DAWN.foil);
     this.panels.reset();
@@ -130,6 +149,7 @@ export class RadiantSpear implements Effect {
     for (const e of this.emitters) e.update(dt);
     if (!this.playing) return;
     this.time += dt;
+    this.dtLast = dt;
     if (this.time >= DURATION) {
       const loop = this.settings.loop;
       this.reset();
@@ -142,12 +162,16 @@ export class RadiantSpear implements Effect {
     const f = this.flags;
     const ctx = this.ctx;
 
-    if (!f.hit && t >= HIT_T) {
-      f.hit = true;
-      this.shake = 0.3;
-      this.burst();
-      if (ctx && ctx.targets[0]) {
-        ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 3, from: ctx.from, color: DAWN_CSS.body });
+    if (!f.fired && t >= ASSEMBLE) {
+      f.fired = true;
+      // A network duel has no bolts (the context leaves `projectile` out): the spear then just tumbles apart.
+      if (ctx?.projectile) {
+        this.v1.copy(this.hover).setY(0);
+        this.bolt = ctx.projectile({
+          from: this.v1.clone(), dir: this.dir.clone(), speed: SPEED, range: RANGE, radius: RADIUS, pierce: true,
+          hit: { damage: this.settings.damage, knock: 3, color: DAWN_CSS.body },
+        });
+        this.bolt.onHit((_target, at) => this.onHit(at));
       }
     }
 
@@ -155,10 +179,27 @@ export class RadiantSpear implements Effect {
     this.panels.update(dt);
   }
 
-  /** The spear shatters out of the target's back: its own six shards plus a spray of smaller panels, in a fan. */
+  /** A hit: the shield, and a spray of small panels fans out of the target's back (the spear flies on). */
+  private onHit(at: THREE.Vector3) {
+    const f = this.flags;
+    if (!f.shielded) {
+      f.shielded = true;
+      this.ctx?.shieldSelf?.(this.settings.shield, SHIELD_SECONDS, DAWN_CSS.body);
+    }
+    if (this.hitAge >= 0) return; // one burst per cast; later targets still take the damage
+    f.hit = true;
+    this.hitAge = 0;
+    this.hitAt.set(at.x, CHEST_Y, at.z);
+    this.ground.set(at.x, 0, at.z);
+    this.screen.focus.copy(this.hitAt);
+    this.shake = 0.3;
+    this.burst();
+  }
+
+  /** The spray: a fan of smaller panels thrown out of the target's back. */
   private burst() {
     const shapes: PanelShape[] = ['shard', 'hex', 'shard', 'shield'];
-    const base = this.v1.copy(this.chest).addScaledVector(this.dir, 0.9);
+    const base = this.v1.copy(this.hitAt).addScaledVector(this.dir, 0.9);
     dawnPanelNormal(this.dir, this.view, this.v2);
     this.v3.crossVectors(this.dir, this.v2).normalize(); // sideways in the panel plane
     for (let k = 0; k < SPRAY; k++) {
@@ -173,6 +214,12 @@ export class RadiantSpear implements Effect {
       this.panels.fling(SPEAR + k, vel, 0.85 + Math.random() * 0.08, 10);
     }
     this.panels.hide(SPEAR + SPRAY);
+  }
+
+  /** The spear itself tumbles apart (max range, a pillar). */
+  private scatterSpear() {
+    this.flags.ended = true;
+    this.v3.set(-this.dir.z, 0, this.dir.x);
     for (let k = 0; k < SPEAR; k++) {
       const spread = (Math.random() - 0.5) * 1.1;
       const vel = new THREE.Vector3()
@@ -186,37 +233,51 @@ export class RadiantSpear implements Effect {
   private layout() {
     const t = this.time;
     const f = this.flags;
-    const after = t - HIT_T;
 
-    // --- 0..0.2 the spear forms over the shoulder; 0.2..0.45 it flies and pierces. ---
-    if (!f.hit) {
-      const u = Math.pow(THREE.MathUtils.clamp((t - ASSEMBLE) / (HIT_T - ASSEMBLE), 0, 1), 1.5);
-      this.v1.lerpVectors(this.hover, this.endC, u);
-      dawnPanelNormal(this.dir, this.view, this.v2);
-      dawnOrient(this.v2, this.dir, this.q1);
-      for (let i = 0; i < SPEAR; i++) {
-        this.v3.copy(this.v1).addScaledVector(this.dir, OFFS[i]);
-        this.panels.place(i, this.v3, this.q1, SIZES[i], 'shard', WIDES[i], i % 2 === 0 ? DAWN.hot : i === SPEAR - 1 ? DAWN.foil : DAWN.body);
-      }
-      // A gold streak trailing behind the flying spear.
-      const trail = this.v1.distanceTo(this.hover);
-      if (trail > 0.4) {
-        this.v3.copy(this.v1).addScaledVector(this.dir, -1.7 - trail * 0.5);
-        this.panels.place(SPEAR + SPRAY, this.v3, this.q1, trail, 'shard', Math.min(0.9 / (0.28 * trail), 3), DAWN.body);
+    // --- 0..0.2 the spear forms over the shoulder; then it rides the bolt. ---
+    if (!f.fired) {
+      this.v1.copy(this.hover);
+      this.placeSpear(this.v1);
+    } else if (!f.ended) {
+      const b = this.bolt;
+      if (b && b.alive) {
+        // The first few hundredths glide down from the shoulder to bolt height.
+        const k = Math.min(1, (t - ASSEMBLE) / 0.1);
+        this.v1.set(b.pos.x, BOLT_HEIGHT + 0.15, b.pos.z);
+        this.v1.lerp(this.hover, (1 - k) * (1 - k));
+        this.placeSpear(this.v1);
+        // A gold streak trailing behind the flying spear.
+        this.v3.copy(this.v1).addScaledVector(this.dir, -3.2);
+        this.panels.place(SPEAR + SPRAY, this.v3, this.q1, 1.4, 'shard', 1.8, DAWN.body);
+      } else {
+        this.panels.hide(SPEAR + SPRAY);
+        this.scatterSpear();
       }
     }
 
     // --- Sun-wheel sigil flash under the target, ground refraction, sky-blue star, impact frame. ---
-    this.screen.impact = impactFrameAt(t, HIT_T, [1], 0.03);
-    if (f.hit) {
+    if (this.hitAge >= 0) {
+      const after = this.hitAge;
+      this.hitAge += this.dtLast;
+      this.screen.impact = impactFrameAt(after, 0, [1], 0.03);
       this.sigil.set(this.ground, 1.9);
       this.sigil.reveal = 1;
       this.sigil.opacity = 1 - smoothstep(after / 0.55);
       const sp = StarBurst.pop(after, 0, 0.03);
-      this.star.set(this.chest, 1.0 * sp.scale + 1e-3, sp.opacity, 0.2);
+      this.star.set(this.hitAt, 1.0 * sp.scale + 1e-3, sp.opacity, 0.2);
       const gp = THREE.MathUtils.clamp(after / 0.3, 0, 1);
       this.groundShock.set(this.ground, 0.5 + 3 * gp, 0.03 * (1 - gp) * (1 - gp));
       this.shake = 0.3 * Math.exp(-after * 10);
+    }
+  }
+
+  /** Six shards along the dir axis centred on `c`. */
+  private placeSpear(c: THREE.Vector3) {
+    dawnPanelNormal(this.dir, this.view, this.v2);
+    dawnOrient(this.v2, this.dir, this.q1);
+    for (let i = 0; i < SPEAR; i++) {
+      this.v3.copy(c).addScaledVector(this.dir, OFFS[i]);
+      this.panels.place(i, this.v3, this.q1, SIZES[i], 'shard', WIDES[i], i % 2 === 0 ? DAWN.hot : i === SPEAR - 1 ? DAWN.foil : DAWN.body);
     }
   }
 }
@@ -224,14 +285,19 @@ export class RadiantSpear implements Effect {
 export const radiantSpearModule: EffectModule = {
   label: 'radiant spear',
   category: 'hero: dawn',
-  targeting: { mode: 'enemy' },
+  // A skillshot is aimed at a spot (the ground point or the target's feet); `radius` only sizes the aim marker.
+  targeting: { mode: 'ground', radius: RADIUS },
   create: () => new RadiantSpear(),
   telegraphs(effect) {
     const e = effect as RadiantSpear;
     const ctx = e.ctx;
     if (!ctx) return [];
-    const c = ctx.targetPos[0] ?? ctx.point;
-    return [{ shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: c.x, z2: c.z, width: 1.0 }, start: 0.05, impact: HIT_T }];
+    const d = { x: Math.sin(ctx.aim), z: Math.cos(ctx.aim) };
+    // Armed at the launch, then shown until the bolt has passed; a bolt's hit is the dodge check, not the zone.
+    return [{
+      shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + d.x * RANGE, z2: ctx.from.z + d.z * RANGE, width: RADIUS * 2 },
+      start: 0, impact: ASSEMBLE, until: e.flightEnd,
+    }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.35, threshold: 0.88 },
   frameCamera(camera, controls, effect) {
@@ -242,5 +308,6 @@ export const radiantSpearModule: EffectModule = {
     const s = (effect as RadiantSpear).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
+    f.add(s, 'shield', 0, 80, 1);
   },
 };

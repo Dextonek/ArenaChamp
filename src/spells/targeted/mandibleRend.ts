@@ -16,7 +16,7 @@ export interface MandibleRendSettings {
   loop: boolean;
 }
 
-export const defaultMandibleRend = (): MandibleRendSettings => ({ damage: 40, loop: false });
+export const defaultMandibleRend = (): MandibleRendSettings => ({ damage: 45, loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.3;

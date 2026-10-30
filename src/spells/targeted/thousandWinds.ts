@@ -19,7 +19,7 @@ export interface ThousandWindsSettings {
   loop: boolean;
 }
 
-export const defaultThousandWinds = (): ThousandWindsSettings => ({ damage: 132, loop: false });
+export const defaultThousandWinds = (): ThousandWindsSettings => ({ damage: 145, loop: false });
 
 // Timeline (seconds).
 const RISE_T = 0.3; // the cyclone starts to rise
@@ -30,7 +30,8 @@ const HIT_T = 2.2;
 const RAIN_END_T = 3.2;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 4;
+const VISUAL = RADIUS / 7; // the cyclone was drawn for a radius of 7; its tightening and burst scale with the zone
 const BEAT_LEN = DIVE_T - BEAT_T;
 const TOP = 7; // height of the cyclone
 const N_CYC = 150; // small crescents in the cyclone
@@ -279,9 +280,9 @@ export class ThousandWinds implements Effect {
     // --- The funnel: its height, its radius (tightening, then bursting outward) and the spin. ---
     const height = TOP * smoothstep((t - RISE_T) / 1.3);
     const tight = smoothstep((t - TIGHT_T) / 0.25);
-    let rb = RADIUS - 4 * tight;
-    if (t >= DIVE_T) rb -= 0.4 * smoothstep((t - DIVE_T) / 0.2);
-    if (after >= 0) rb = 2.6 + 6.2 * easeOut(after / 0.55);
+    let rb = RADIUS - 4 * VISUAL * tight;
+    if (t >= DIVE_T) rb -= 0.4 * VISUAL * smoothstep((t - DIVE_T) / 0.2);
+    if (after >= 0) rb = (2.6 + 6.2 * easeOut(after / 0.55)) * VISUAL;
     const burstFade = after >= 0 ? 1 - sstep(0.4, 2.2, after) : 1;
     const fallK = after >= 0 ? sstep(0, 2.4, after) : 0;
     const e2 = after >= 0 ? smoothstep(after / 0.3) : 0;
@@ -319,7 +320,7 @@ export class ThousandWinds implements Effect {
 
     // --- The ring of crescents the burst throws out across the zone. ---
     if (after >= 0 && after < 1.0) {
-      const rr = 1.2 + (RADIUS - 1.0) * easeOut(after / 0.45);
+      const rr = (1.2 + (7 - 1.0) * easeOut(after / 0.45)) * VISUAL;
       const op = 1 - sstep(0.3, 1.0, after);
       for (let k = 0; k < N_BURST; k++) {
         const a = (k / N_BURST) * Math.PI * 2 + 0.2 * Math.sin(k * 2.7) + after * 0.8;

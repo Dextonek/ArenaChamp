@@ -19,7 +19,7 @@ export interface RefractionFieldSettings {
   loop: boolean;
 }
 
-export const defaultRefractionField = (): RefractionFieldSettings => ({ damage: 40, blindSeconds: 1.5, loop: false });
+export const defaultRefractionField = (): RefractionFieldSettings => ({ damage: 48, blindSeconds: 1.5, loop: false });
 
 // Timeline (seconds).
 const RISE_END = 0.3;

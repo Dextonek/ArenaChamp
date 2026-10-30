@@ -7,18 +7,17 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Chitin Carapace (hive kit, E: self shield + pulses). Black chitin plates with an amber rim snap together round Sirix in
- * a shell (radius 1.2) while the swarm circles it, and he takes a 40 point shield for 3 s. At 1.0 s and 2.0 s the swarm
- * bursts outward to radius 4 and every enemy inside is hit and slowed; from 2.6 s the plates fall and the swarm settles.
+ * Chitin Carapace (hive kit, E: pure shield, no damage). Black chitin plates with an amber rim snap together round Sirix in
+ * a shell (radius 1.2) while the swarm circles it, and he takes a 60 point shield for 3 s. At 1.0 s and 2.0 s the swarm
+ * flares outward to radius 4 (a show only: it hits nothing); from 2.6 s the plates fall and the swarm settles.
  * Clean by 3.2 s. See pipeline/designs/kit-hive.md.
  */
 export interface ChitinCarapaceSettings {
-  damage: number;
   shield: number;
   loop: boolean;
 }
 
-export const defaultChitinCarapace = (): ChitinCarapaceSettings => ({ damage: 12, shield: 40, loop: false });
+export const defaultChitinCarapace = (): ChitinCarapaceSettings => ({ shield: 60, loop: false });
 
 // Timeline (seconds).
 const SNAP_END = 0.3; // the plates are on
@@ -101,19 +100,11 @@ export class ChitinCarapace implements Effect {
   }
 
   private pulse(index: number) {
-    const ctx = this.ctx;
     this.pulseAt[index] = index === 0 ? PULSE_1 : PULSE_2;
     this.shake = 0.15;
     for (let i = 0; i < 2; i++) {
       const a = Math.random() * Math.PI * 2;
       this.honey.burst(this.v1.set(this.center.x + Math.cos(a) * 2.2, 0.4, this.center.z + Math.sin(a) * 2.2), 3, 2.4, 0.14, 2.4);
-    }
-    if (!ctx) return;
-    // Re-check at the pulse: only enemies still inside the radius are hit.
-    for (const e of ctx.targets) {
-      const p = e.group.position;
-      if (Math.hypot(p.x - this.center.x, p.z - this.center.z) > RADIUS) continue;
-      ctx.hit(e, { damage: this.settings.damage, knock: 0, from: this.center, color: HIVE_CSS.body, status: { kind: 'slow', seconds: 0.8 } });
     }
   }
 
@@ -180,12 +171,8 @@ export const chitinCarapaceModule: EffectModule = {
   category: 'hero: hive',
   targeting: { mode: 'self', radius: RADIUS },
   create: () => new ChitinCarapace(),
-  telegraphs(effect) {
-    const e = effect as ChitinCarapace;
-    const ctx = e.ctx;
-    if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: PULSE_1 }];
-  },
+  // No damage, so no telegraph; the radius only tells the duel AI to raise the shield when an enemy is within 3.4 m.
+  telegraphs: () => [],
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
     const e = effect as ChitinCarapace;
@@ -194,7 +181,6 @@ export const chitinCarapaceModule: EffectModule = {
   buildGui(f, effect) {
     const s = (effect as ChitinCarapace).settings;
     f.add(s, 'loop');
-    f.add(s, 'damage', 1, 60, 1);
     f.add(s, 'shield', 0, 150, 5);
   },
 };

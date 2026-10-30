@@ -81,6 +81,7 @@ export const frostKit: HeroKit = {
   title: 'the Winter Warden',
   accent: F.body,
   foil: F.rime,
+  maxHp: 600,
   portrait(g, s) {
     iconGround(g, s);
     // Frost fern fan behind, a tall crystal, and a hooded face with one pink glint.
@@ -119,8 +120,8 @@ export const frostKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'rime spear', name: 'Rime Spear', range: 11, cooldown: 3,
-      blurb: 'Breathes a javelin of ice into her hand and throws it. Frost ferns climb the target.',
+      key: 'Q', label: 'rime spear', name: 'Rime Spear', range: 12, cooldown: 3, aim: 'line',
+      blurb: 'Throws an ice javelin down the aim that pierces everything it meets and slows it for 1.5 s.',
       icon(g, s) {
         iconGround(g, s);
         for (let i = 0; i < 3; i++) fern(g, s * 0.8, s * 0.82, Math.PI + (i - 1) * 0.55, s * 0.28, s * 0.02);
@@ -132,8 +133,8 @@ export const frostKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'frostfern field', name: 'Frostfern Field', range: 10, cooldown: 7,
-      blurb: 'Frost ferns race across the floor, hold everyone in them, then crack into a field of crystals.',
+      key: 'W', label: 'frostfern field', name: 'Frostfern Field', range: 9, cooldown: 7, aim: 'line', cc: true,
+      blurb: 'Frost ferns race 9 m down the aim from her feet, then crack into crystals and root whoever is still in the strip.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = F.rime;
@@ -148,7 +149,7 @@ export const frostKit: HeroKit = {
     },
     {
       key: 'E', label: 'glacial mantle', name: 'Glacial Mantle', range: 0, cooldown: 10,
-      blurb: 'Ice armour grows from her shoulders and a blizzard circles her, freezing enemies that come close.',
+      blurb: 'Ice armour shields her for 50 while a blizzard circles her and slows the enemies that come close.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = F.rime;
@@ -168,8 +169,8 @@ export const frostKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: "winter's crown", name: "Winter's Crown", range: 13, cooldown: 20,
-      blurb: 'Ultimate. A colossal crown of ice forms in the sky and drives down into the zone.',
+      key: 'R', label: "winter's crown", name: "Winter's Crown", range: 0, cooldown: 20, cc: true,
+      blurb: 'Ultimate. A colossal crown of ice forms over her and drives down: everything within 5 m is stunned.',
       icon(g, s) {
         iconGround(g, s);
         // Ground ferns, then an upside-down crown of crystals above them.

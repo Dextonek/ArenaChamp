@@ -9,7 +9,7 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Forgefall (forge kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world darkens, an
+ * Forgefall (forge kit, R: SELF-R, the hammer falls round Brannoc, radius 5, knocks up). Under the normal gameplay camera, no letterbox: the world darkens, an
  * anvil sigil draws on around the zone, slag streams pour up from the ground into the sky and pool into a colossal
  * hammer that cools black from its edges while it rises overhead. A dead beat, then it swings down: impact frame, a
  * fountain of sparks, a web of molten cracks across the zone, slag splashes, a shock ring. The hammer shatters into
@@ -18,10 +18,12 @@ import type { Effect, EffectModule } from '../../effects/types';
  */
 export interface ForgefallSettings {
   damage: number;
+  /** Seconds of knock-up on the hit. */
+  knockUp: number;
   loop: boolean;
 }
 
-export const defaultForgefall = (): ForgefallSettings => ({ damage: 122, loop: false });
+export const defaultForgefall = (): ForgefallSettings => ({ damage: 105, knockUp: 0.5, loop: false });
 
 // Timeline (seconds).
 const STREAM_T = 0.3;
@@ -32,9 +34,9 @@ const HIT_T = 2.3;
 const SHATTER_T = 2.38;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 5;
 const STREAMS = 6;
-const HAMMER_SCALE = 5; // head 1.3 * 5 = 6.5 long
+const HAMMER_SCALE = 4; // head 1.3 * 4 = 5.2 long
 const TOP_Y = 4.5;
 const POOL_Y = 3.5;
 const BLOBS = 10;
@@ -111,7 +113,7 @@ export class Forgefall implements Effect {
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.from.copy(ctx.from);
-    this.point.copy(ctx.point).setY(0);
+    this.point.copy(ctx.from).setY(0); // self mode: the hammer lands on the caster's own spot
     this.aim = ctx.aim;
     this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     this.side.set(this.fwd.z, 0, -this.fwd.x);
@@ -196,12 +198,12 @@ export class Forgefall implements Effect {
       f.impacted = true;
       this.land();
       if (ctx) {
-        ctx.targets.forEach((e, i) => {
-          const p = ctx.targetPos[i];
-          if (p && Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
-            ctx.hit(e, { damage: this.settings.damage, knock: 8, from: this.point, color: FORGE_CSS.body });
+        for (const e of ctx.targets) {
+          const p = e.group.position;
+          if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
+            ctx.hit(e, { damage: this.settings.damage, knock: 3, from: this.point, color: FORGE_CSS.body, status: { kind: 'knockup', seconds: this.settings.knockUp } });
           }
-        });
+        }
       }
     }
     if (!f.shattered && t >= SHATTER_T) {
@@ -300,7 +302,7 @@ export class Forgefall implements Effect {
       const sp = StarBurst.pop(after, 0, 0.05);
       this.pop.set(this.v1.copy(this.point).setY(1.4), 2 * sp.scale, sp.opacity, 0.2);
       const gp = THREE.MathUtils.clamp(after / 0.5, 0, 1);
-      this.groundShock.set(this.point, 1 + 11 * gp, 0.07 * (1 - gp) * (1 - gp));
+      this.groundShock.set(this.point, 1 + 6 * gp, 0.07 * (1 - gp) * (1 - gp));
       const hz = after / 1.0;
       this.haze.set(this.point, hz < 1 ? 0.012 * (1 - hz * hz) : 0, t);
       this.shake = 0.8 * Math.exp(-after * 9) + (f.shattered ? 0.35 * Math.exp(-(t - SHATTER_T) * 10) : 0);
@@ -311,13 +313,13 @@ export class Forgefall implements Effect {
 export const forgefallModule: EffectModule = {
   label: 'forgefall',
   category: 'hero: forge',
-  targeting: { mode: 'ground', radius: RADIUS },
+  targeting: { mode: 'self', radius: RADIUS },
   create: () => new Forgefall(),
   telegraphs(effect) {
     const e = effect as Forgefall;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: HIT_T }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -328,5 +330,6 @@ export const forgefallModule: EffectModule = {
     const s = (effect as Forgefall).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
+    f.add(s, 'knockUp', 0, 0.8, 0.1);
   },
 };

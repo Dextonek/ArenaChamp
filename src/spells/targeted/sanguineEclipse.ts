@@ -19,10 +19,12 @@ import type { Effect, EffectModule } from '../../effects/types';
 export interface SanguineEclipseSettings {
   harvestDamage: number;
   slamDamage: number;
+  /** HP she heals for every enemy the harvest hits. */
+  heal: number;
   loop: boolean;
 }
 
-export const defaultSanguineEclipse = (): SanguineEclipseSettings => ({ harvestDamage: 15, slamDamage: 110, loop: false });
+export const defaultSanguineEclipse = (): SanguineEclipseSettings => ({ harvestDamage: 15, slamDamage: 100, heal: 10, loop: false });
 
 // Timeline (seconds).
 const HARVEST_HIT_T = 1.0;
@@ -33,7 +35,7 @@ const DRAIN_T = 2.55;
 const RELEASE_T = 3.4;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 6;
 const MOON_R = 2.8;
 const MOON_H = 7;
 const SPHERE_H = 4.5;
@@ -512,7 +514,13 @@ export class SanguineEclipse implements Effect {
     // Events.
     if (!f.harvestHit && t >= HARVEST_HIT_T) {
       f.harvestHit = true;
-      if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.harvestDamage, knock: 0, color: BLOOD_CSS.body });
+      if (ctx) {
+        for (const v of this.victims) {
+          if (!this.inside(v.enemy)) continue;
+          ctx.hit(v.enemy, { damage: this.settings.harvestDamage, knock: 0, color: BLOOD_CSS.body });
+          ctx.healSelf?.(this.settings.heal); // the harvest heals her once per enemy hit
+        }
+      }
     }
     // Blood sheds off the streams while they tear up.
     if (t >= 1.05 && t < HARVEST_END_T && this.victims.length) {
@@ -598,7 +606,13 @@ export class SanguineEclipse implements Effect {
     this.drops.spray(this.v1.copy(this.point).setY(0.8), this.v2.set(0, 1, 0), 16, 7, 0.9);
     for (const v of this.victims) this.drops.spray(v.p0, this.v2.set(0, 1, 0), 3, 5, 0.8);
     const ctx = this.ctx;
-    if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.slamDamage, knock: 6, from: this.point, color: BLOOD_CSS.body });
+    if (ctx) for (const v of this.victims) if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.slamDamage, knock: 6, from: this.point, color: BLOOD_CSS.body });
+  }
+
+  /** Still inside the zone right now (live position, re-checked at every hit). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
   }
 
   private finish() {
@@ -705,7 +719,7 @@ export class SanguineEclipse implements Effect {
     const fz = (t - FREEZE_T) / 0.4;
     this.freezeRing.set(this.sphereC, 1 + 5 * c01(fz), fz >= 0 && fz < 1 ? 0.06 * (1 - fz) * (1 - fz) : 0);
     const gp = c01(after / 0.5);
-    this.groundRing.set(this.point, 1 + 11 * gp, f.landed && gp < 1 ? 0.07 * (1 - gp) * (1 - gp) : 0);
+    this.groundRing.set(this.point, 1 + 5 * gp, f.landed && gp < 1 ? 0.07 * (1 - gp) * (1 - gp) : 0);
     const hz = after / 1.0;
     this.haze.set(this.point, hz >= 0 && hz < 1 ? 0.012 * (1 - hz * hz) : 0, t);
 
@@ -761,5 +775,6 @@ export const sanguineEclipseModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'harvestDamage', 1, 100, 1);
     f.add(s, 'slamDamage', 1, 300, 1);
+    f.add(s, 'heal', 0, 60, 1);
   },
 };

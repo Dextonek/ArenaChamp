@@ -1,12 +1,23 @@
 ---
 title: Sefu, the Dune Sovereign (sand kit)
 tags: [catalog, heroes, sand]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Sefu, the Dune Sovereign
 
 The sand hero kit: Sefu's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A desert king in layered linen and a gold headdress with a crook of sandstone; he controls ground and space.
+
+## Role
+
+| | |
+|---|---|
+| Role | Controller |
+| Signature | Shackles and teeth |
+| HP | 600 |
+| Reach | Ranged |
+
+He chains roots, slows and a stun so the enemy cannot leave his zones, and shields himself through the trade. Modest damage; the pillars and the tomb can be walked out of before they close.
 
 ## At a glance
 
@@ -39,14 +50,14 @@ Sand that flows like a ribbon and sets like stone: sand pours in thick grainy ri
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.5-1.0 s after the cast, clean by about 2.3 s; an E aura may run about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/sand.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is an instant root, W a lingering zone that closes, E a shield aura and R a ground ultimate. Q, W and E hit 0.5-2.6 s after the cast and are clean by about 4.1 s; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/sand.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [sand lash](../../../src/spells/targeted/sandLash.ts) | enemy | 10 | 3 s | 0.5 s | 1.6 s | He sweeps the crook and a thick ribbon of sand pours from the floor, arcs over and cracks across to one enemy like a whip. The tip wraps the legs and sets into a shackle of four carved sandstone shards that crumbles to dust. Damage 53. |
-| W | [quicksand](../../../src/spells/targeted/quicksand.ts) | ground (r 4) | 10 | 7 s | 0.75 s | 2.3 s | A ring of carved glyphs cuts into the floor, sand floods inside and swirls inward, sinking and pulling the enemies. The swirl snaps tight and sandstone pillars punch up around the edge, leaning inward like closing teeth; they crumble and the sand settles. Damage 48, then a tick of 10 at 1.3 s. |
-| E | [dune ward](../../../src/spells/targeted/duneWard.ts) | self (r 5) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | Three sand ribbons rise and wind around him in a slow spiral above a small glyph ring. Twice the ribbons flare and a flat ring of flung sand sweeps out to radius 5, then the ribbons set into stone and crumble. Damage 13 per pulse. |
-| R | [tomb of kings](../../../src/spells/targeted/tombOfKings.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens warm, a big glyph ring carves into the floor and sand ribbons stack a stepped sandstone pyramid over the zone; a glyph on its face lights turquoise, dead beat at 1.85-2.0 s, then the pyramid implodes into the vortex: impact frames, a ring of carved shards bursts across the zone, a sand shockwave sweeps out. Damage 130. |
+| Q | [sand lash](../../../src/spells/targeted/sandLash.ts) | enemy (TGT) | 10 | 3 s | 0.5 s | 1.6 s | He sweeps the crook and a thick ribbon of sand pours from the floor, arcs over and cracks across to one enemy like a whip. The tip wraps the legs and sets into a shackle of four carved sandstone shards that crumbles to dust. Damage 46 and root 0.8 s. |
+| W | [quicksand](../../../src/spells/targeted/quicksand.ts) | ground (r 4, LINGER) | 10 | 7 s | 0.8, 1.4 and 2.0 s (slow ticks), 2.6 s (pillars) | 4.1 s | A ring of carved glyphs cuts into the floor, sand floods inside and swirls inward. Three ticks of 6 slow whoever stands inside for 1.2 s each. The swirl snaps tight and sandstone pillars punch up around the edge at 2.6 s, leaning inward like closing teeth: damage 32 and root 1.0 s. They crumble and the sand settles. |
+| E | [dune ward](../../../src/spells/targeted/duneWard.ts) | self (r 5, AURA) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | Three sand ribbons rise and wind around him in a slow spiral above a small glyph ring. He gains a shield of 45 for 4 s. Twice the ribbons flare and a flat ring of flung sand sweeps out to radius 5: damage 13 and slow 1.0 s per pulse. Then the ribbons set into stone and crumble. |
+| R | [tomb of kings](../../../src/spells/targeted/tombOfKings.ts) | ground (r 7, ZONE) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens warm, a big glyph ring carves into the floor and sand ribbons stack a stepped sandstone pyramid over the zone; a glyph on its face lights turquoise, dead beat at 1.85-2.0 s, then the pyramid implodes into the vortex: impact frames, a ring of carved shards bursts across the zone, a sand shockwave sweeps out. Damage 110 and stun 1.0 s. |
 
 Spell sources: [`sandLash.ts`](../../../src/spells/targeted/sandLash.ts), [`quicksand.ts`](../../../src/spells/targeted/quicksand.ts), [`duneWard.ts`](../../../src/spells/targeted/duneWard.ts), [`tombOfKings.ts`](../../../src/spells/targeted/tombOfKings.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-sand).
 

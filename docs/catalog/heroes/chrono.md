@@ -1,14 +1,25 @@
 ---
 title: Tempo, the Unwound Hour (chrono kit)
 tags: [catalog, heroes, chrono, mage, control, heal, mechanics]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Tempo, the Unwound Hour
 
-The chrono hero kit: Tempo's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A slim timekeeper in a long dark coat over an ivory waistcoat, with white hair, a monocle, a glowing clock dial floating behind his head like a halo, an ivory dial on one shoulder and a staff shaped like a giant minute hand with a red second hand pinned at its pivot. He is built on the [combat mechanics](../../architecture/mechanics.md): a piercing skillshot with a slow, a stun, a rewind that shields and heals, and a stunning ultimate.
+The chrono hero kit: Tempo's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A slim timekeeper in a long dark coat over an ivory waistcoat, with white hair, a monocle, a glowing clock dial floating behind his head like a halo, an ivory dial on one shoulder and a staff shaped like a giant minute hand with a red second hand pinned at its pivot. He is built on the [combat mechanics](../../architecture/mechanics.md): a boomerang skillshot with a slow, a stun, a rewind that shields and heals, and a fused ultimate that strikes late and hard.
 
 Tournament (19 opponents, 3 fights per ordered pairing, both sides): 51%, unchanged.
+
+## Role
+
+| | |
+|---|---|
+| Role | Mage (chrono, ranged) |
+| Signature | Rewind |
+| HP | 580 |
+| Kit shapes | Q BOOMERANG slow · W ZONE stun · E BACKSTEP rewind · R FUSE |
+
+He wins a 1v1 by slowing the enemy with the boomerang hand, stunning them in the dial and rewinding out of trouble with a heal. His weakness is that the boomerang and the fuse can both be dodged: the ultimate gives a 3.5 s warning.
 
 ## At a glance
 
@@ -46,26 +57,26 @@ Tempo uses these pieces of [the combat mechanics](../../architecture/mechanics.m
 
 | Mechanic | Where |
 |---|---|
-| Skillshot, pierce | Q is `aim: 'line'`: `ctx.projectile` fires a spinning clock hand (speed 22, range 11, radius 0.45) with `pierce: true`, so it hits every enemy in its line once. Hero mode draws a strip toward the cursor; the AI's bolt dodge can sidestep it |
+| Skillshot, boomerang | Q is `aim: 'line'`: `ctx.projectile` fires a spinning clock hand (speed 22, range 10, radius 0.45) with `pierce: true`. It flies out, hangs 0.15 s and a second piercing bolt brings it back to where he stands, so each enemy in the line is hit at most once per leg (twice in all). Hero mode draws a strip toward the cursor; the AI's bolt dodge can sidestep it |
 | Slow | Q slows every enemy it hits for 1.0 s (walking speed x 0.6, cap 2.5 s) |
-| Stun | W stuns every enemy it hits for 0.8 s and R for 0.6 s (cap 1.2 s). A stun is followed by 0.5 s of stun immunity, so it cannot be chained |
+| Stun | W stuns every enemy it hits for 0.8 s (cap 1.2 s). A stun is followed by 0.5 s of stun immunity, so it cannot be chained. R no longer stuns |
 | Shield, heal | E gives `ctx.shieldSelf(25, 2)`, a 25 point shield for 2 s, and `ctx.healSelf(45)` on arrival back at the mark |
 | Dash back | E calls `ctx.moveCaster(anchor, 0.25)` at 1.8 s into the spell, not at the cast: he slides back to the spot where he stood when he cast it. The spell is not flagged `dash: true`, so the duel AI does not use it as a gap closer |
-| Crowd control flag | W and R have `cc: true`, so the duel AI casts them first when the enemy is in range |
-| Melee, summon, pull | none. `maxHp` is not set, so the default 600 HP applies |
+| Crowd control flag | W has `cc: true`, so the duel AI casts it first when the enemy is in range. R has no `cc` |
+| Melee, summon, pull | none. `maxHp` is 580 |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a ranged control Q of about 55 (the code has 50).
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a ranged control Q of about 55 (the code has 36 per leg, so up to 72 when both legs hit).
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (the first damage 0.5-0.75 s after the cast, E's after 2.05 s; clean by about 2.2 s, E by 2.8 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/chrono.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a boomerang skillshot (first damage 0.2-0.65 s after the cast, the return leg until about 1.3 s, clean by 2.2 s), W a delayed ground zone (hit at 0.75 s, clean by 2.2 s), E a rewind back to the mark (the arrival and heal at 2.05 s, clean by 2.8 s), R a fuse (hit at 3.5 s, clean by 5.8 s, one dead beat). Range and cooldown come from the kit data (`src/kits/chrono.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [second hand](../../../src/spells/targeted/secondHand.ts) | skillshot line (width 0.9) | 11 | 3 s | flies from 0.2 s, about 0.5 s of flight | 1.5 s | A small dial flicks open at his staff tip and the red second hand snaps off it (0 to 0.2 s). At 0.2 s it leaves as a piercing bolt: a spinning red clock hand with a chartreuse counter-hand and two pale afterimages trailing. Every hit slows the target and flashes a tiny dial (radius 0.6) on it that ticks backward once, with a small red star. At full range the hands fade. Damage 50, knock 1, slow 1.0 s. |
-| W | [stopped moment](../../../src/spells/targeted/stoppedMoment.ts) | ground (r 3.5) | 10 | 8 s | 0.75 s | 2.2 s | A clock dial (radius 3.5) draws itself on the ground, the numerals appearing one by one (0 to 0.3 s); both hands sweep toward twelve with the ticking speeding up (0.3 to 0.7 s). At 0.75 s they meet and the dial freezes: the ticks stop, motes stop dead in the air, a small red star flashes and every enemy still inside is hit and stunned; a pale afterimage of up to three victims stays where it was hit. The frozen frame holds to 1.55 s, then the motes release and the dial fades. Damage 35, stun 0.8 s. |
-| E | [rewind](../../../src/spells/targeted/rewind.ts) | self (r 3) | 0 (self) | 11 s | 2.05 s | 2.8 s | He marks the moment: a dial (radius 1.2) opens at his feet, a pale afterimage of him stays standing on it and he takes a 25 point shield for 2 s. He may walk freely; the dial's hands run backward. At 1.8 s he rewinds: he slides back to the mark in 0.25 s while two or three afterimages replay his path backward. On arrival (2.05 s) he heals and the dial flashes outward to radius 3: every enemy inside is hit and shoved away from the mark. The dial fades from 2.2 s. The telegraph is a circle of 3 at the mark from 1.4 s to the arrival. Damage 15, knock 2, shield 25, heal 45. |
-| R | [twelfth hour](../../../src/spells/targeted/twelfthHour.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to green-black and a numeral ring traces the zone edge on the ground, ticking. Behind the point a vast ivory clock dial (7 across, about 4 up, chartreuse numerals) rises facing the camera; its two hands sweep fast toward twelve and slow as they near it, afterimages of the hands trailing, a red second hand ticking, motes drifting and the enemies drawn a little toward the centre. At 1.6 s the minute hand stops one tick short and every mote freezes; dead beat 1.85-2.0 s; the last tick (2.0 to 2.2 s) brings the hands to twelve and the red second hand flies off the dial and drives into the centre. At 2.2 s: two impact frames, the ring flashes, twelve chartreuse shock lines race out along the numerals, a red star, a ground refraction ring, shake, the hit and a short stun. The dial cracks into flakes and fades and the dark lifts. Damage 100, knock 3, stun 0.6 s. |
+| Q | [second hand](../../../src/spells/targeted/secondHand.ts) | ground, BOOMERANG skillshot line (width 0.9) | 10 | 3 s | flies from 0.2 s, out leg about 0.45 s, back leg until about 1.3 s | 2.2 s | A small dial flicks open at his staff tip and the red second hand snaps off it (0 to 0.2 s). At 0.2 s it leaves as a piercing bolt: a spinning red clock hand with a chartreuse counter-hand and two pale afterimages trailing. It flies 10 m, hangs a beat (0.15 s) and spins back along the line to where he stands. Every hit, on either leg, slows the target and flashes a tiny dial (radius 0.6) on it that ticks backward once, with a small red star. Each enemy is hit at most once per leg. At the end the hands fade. Damage 36 per leg, knock 1, slow 1.0 s. |
+| W | [stopped moment](../../../src/spells/targeted/stoppedMoment.ts) | ground ZONE (r 3.5) | 10 | 8 s | 0.75 s | 2.2 s | A clock dial (radius 3.5) draws itself on the ground, the numerals appearing one by one (0 to 0.3 s); both hands sweep toward twelve with the ticking speeding up (0.3 to 0.7 s). At 0.75 s they meet and the dial freezes: the ticks stop, motes stop dead in the air, a small red star flashes and every enemy still inside is hit and stunned; a pale afterimage of up to three victims stays where it was hit. The frozen frame holds to 1.6 s, then the motes release and the dial fades. Damage 35, stun 0.8 s. |
+| E | [rewind](../../../src/spells/targeted/rewind.ts) | self BACKSTEP (r 3) | 0 (self) | 11 s | 2.05 s | 2.8 s | He marks the moment: a dial (radius 1.2) opens at his feet, a pale afterimage of him stays standing on it and he takes a 25 point shield for 2 s. He may walk freely; the dial's hands run backward. At 1.8 s he rewinds: he slides back to the mark in 0.25 s while two or three afterimages replay his path backward. On arrival (2.05 s) he heals and the dial flashes outward to radius 3: every enemy inside is hit and shoved away from the mark. The dial fades from 2.2 s. The telegraph is a circle of 3 at the mark from 1.4 s to the arrival. Damage 15, knock 2, shield 25, heal 45. |
+| R | [twelfth hour](../../../src/spells/targeted/twelfthHour.ts) | ground FUSE (r 7) | 13 | 20 s | 3.5 s | 5.8 s | The ultimate. The world darkens to green-black and a numeral ring traces the zone edge on the ground, ticking. Behind the point a vast ivory clock dial (7 across, about 4 up, chartreuse numerals) rises facing the camera over about 1.3 s, then hangs; its two hands sweep slowly toward twelve, afterimages of the hands trailing, a red second hand ticking and motes drifting. At 2.9 s the minute hand stops one tick short and every mote freezes; dead beat 3.15-3.3 s; the last tick (3.3 to 3.5 s) brings the hands to twelve and the red second hand flies off the dial and drives into the centre. At 3.5 s: two impact frames, the ring flashes, twelve chartreuse shock lines race out along the numerals, a red star, a ground refraction ring, shake and the hit. No stun: the 3.5 s warning is the counter, walk out of the circle. The dial cracks into flakes and fades and the dark lifts. Damage 150, knock 3. |
 
 Spell sources: [`secondHand.ts`](../../../src/spells/targeted/secondHand.ts), [`stoppedMoment.ts`](../../../src/spells/targeted/stoppedMoment.ts), [`rewind.ts`](../../../src/spells/targeted/rewind.ts), [`twelfthHour.ts`](../../../src/spells/targeted/twelfthHour.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-chrono).
 

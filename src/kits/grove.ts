@@ -133,6 +133,7 @@ export const groveKit: HeroKit = {
   title: 'the Grove Warden',
   accent: G.body,
   foil: G.bark,
+  maxHp: 600,
   portrait(g, s) {
     ground(g, s);
     // A living staff behind her on the right, topped by a bloom.
@@ -190,7 +191,7 @@ export const groveKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'bloom lash', name: 'Bloom Lash', range: 10, cooldown: 3,
-      blurb: 'A spiral vine bursts from the floor, coils across to one enemy and up around it, and a flower blooms on top.',
+      blurb: 'A spiral vine coils across to one enemy and a flower blooms on top; the lash heals her for 8.',
       icon(g, s) {
         ground(g, s);
         // A vine spiralling over the ground from the lower left up to a flower at the upper right.
@@ -210,8 +211,8 @@ export const groveKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'overgrowth', name: 'Overgrowth', range: 10, cooldown: 7,
-      blurb: 'Roots spread across the ground and spiral vines coil around the enemies inside, then burst into a ring of flowers.',
+      key: 'W', label: 'overgrowth', name: 'Overgrowth', range: 9, cooldown: 7, cc: true,
+      blurb: 'Vines grow up round the chosen enemy and burst into flowers; unless it steps away it is rooted for 1.2 s.',
       icon(g, s) {
         ground(g, s);
         const cx = s * 0.5, cy = s * 0.74;
@@ -235,8 +236,8 @@ export const groveKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'verdant ward', name: 'Verdant Ward', range: 0, cooldown: 9,
-      blurb: 'Three flowering vines rise around her, turn outward and twice fire petals and pollen at every enemy nearby.',
+      key: 'E', label: 'verdant ward', name: 'Verdant Ward', range: 9, cooldown: 12, summon: true,
+      blurb: 'A flowering vine grows where she points (80 HP, 6 s) and fires petals at whatever comes near.',
       icon(g, s) {
         ground(g, s);
         // The outer range ring, pale at the edge.
@@ -274,8 +275,8 @@ export const groveKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'world blossom', name: 'World Blossom', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A colossal flower grows from a braided trunk, folds shut over the zone and slams down in a burst of blooms.',
+      key: 'R', label: 'world blossom', name: 'World Blossom', range: 0, cooldown: 20, cc: true,
+      blurb: 'Ultimate. A colossal flower closes over her and slams down: she heals 45 and every enemy within 5 m is rooted.',
       icon(g, s) {
         ground(g, s);
         rootRing(g, s * 0.5, s * 0.86, s * 0.46, s * 0.12, s * 0.04);

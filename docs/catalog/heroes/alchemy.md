@@ -1,12 +1,23 @@
 ---
 title: Vex, the Plague Alchemist (alchemy kit)
 tags: [catalog, heroes, alchemy]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Vex, the Plague Alchemist
 
 The alchemy hero kit: Vex's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A masked alchemist in a coat of vials; damage over time, zones, a gamble of an ultimate.
+
+## Role
+
+| | |
+|---|---|
+| Role | Mage (poison) |
+| Signature | Lingering poison |
+| HP | 560 |
+| Reach | Ranged |
+
+She wins by damage over time: pools and fields that slow and keep ticking, plus a heal. Her flask is a small circle that can miss, and she has little burst.
 
 ## At a glance
 
@@ -39,14 +50,14 @@ Glass and reaction: thin-walled glass flasks (pale green-white glass, dark liqui
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.4-0.8 s after the cast, clean by about 2 s; an E aura may run about 3 s); R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/alchemy.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is a lob, W a lingering pool, E a heal and R a lingering gold field. Q hits at 0.55 s and W ticks until 3.6 s; E is clean by about 2.3 s; R is the ultimate (hit around 2.0-2.5 s, clean by 5.0 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/alchemy.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [volatile flask](../../../src/spells/targeted/volatileFlask.ts) | enemy | 10 | 3 s | 0.55 s | 1.8 s | She lobs a flask in a high spinning arc; it shatters on the enemy in glass and caustic splash, and burns for a moment. Damage 49, one burn tick of 12 at 1.2 s. |
-| W | [caustic pool](../../../src/spells/targeted/causticPool.ts) | ground (r 4) | 10 | 7 s | 0.6 s | 2.6 s | Two flasks shatter on the point and an alchemical circle fills with boiling acid that burns everything in it, then drains to a stain. Damage 30, then ticks of 12 (the slow burner of the kits). |
-| E | [mutagen](../../../src/spells/targeted/mutagen.ts) | self (r 4) | 0 (self) | 9 s | 1.1 s and 2.1 s (two spits) | 3.2 s | She drinks a flask; four flasks orbit her and spit acid at every enemy nearby, twice, then shatter at 2.6 s. Loopable. Damage 12 per spit. |
-| R | [grand transmutation](../../../src/spells/targeted/grandTransmutation.ts) | ground (r 7) | 13 | 20 s | 2.0 s (gold), 2.6 s (shatter) | 4.5 s | The ultimate. A giant circle and a column of acid that coils into a sphere (dead beat 1.85-2.0 s); at 2.0 s everything in the zone turns to gold (86), at 2.6 s the gold shatters (50). |
+| Q | [volatile flask](../../../src/spells/targeted/volatileFlask.ts) | ground (r 1.6, LOB) | 10 | 3 s | 0.55 s | 1.8 s | She lobs a flask in a high spinning arc; it shatters on the spot in glass and caustic splash. Whoever stands in the 1.6 m circle takes damage 49, and one burn tick of 12 at 1.2 s. |
+| W | [caustic pool](../../../src/spells/targeted/causticPool.ts) | ground (r 4, LINGER) | 10 | 7 s | 0.6 s, then ticks at 1.2, 2.0, 2.8 and 3.6 s | 4.6 s | Two flasks shatter on the point and an alchemical circle fills with boiling acid that stays 4 s and burns everything in it, then drains to a stain. Damage 30 on the first hit, then four ticks of 7; every hit slows 1.0 s. |
+| E | [mutagen](../../../src/spells/targeted/mutagen.ts) | self (BUFF) | 0 (self) | 9 s | 0.4 s (the drink) | 2.3 s | She drinks a flask and heals 45 HP. No damage and no flasks. Loopable. |
+| R | [grand transmutation](../../../src/spells/targeted/grandTransmutation.ts) | ground (r 7, LINGER) | 13 | 20 s | 2.0 s (gold), ticks at 2.8 and 3.4 s, shatter at 3.8 s | 5.0 s | The ultimate. A giant circle and a column of acid that coils into a sphere (dead beat 1.85-2.0 s); at 2.0 s everything in the zone turns to gold (75, slow 2.0 s). The gold field stands 1.8 s and ticks 5 with slow 2.0 s at 2.8 and 3.4 s, then shatters at 3.8 s (50). |
 
 Spell sources: [`volatileFlask.ts`](../../../src/spells/targeted/volatileFlask.ts), [`causticPool.ts`](../../../src/spells/targeted/causticPool.ts), [`mutagen.ts`](../../../src/spells/targeted/mutagen.ts), [`grandTransmutation.ts`](../../../src/spells/targeted/grandTransmutation.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-alchemy).
 

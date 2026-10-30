@@ -9,21 +9,26 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Grand Transmutation (alchemy kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: she smashes a
+ * Grand Transmutation (alchemy kit, R: LINGER ultimate). Under the normal gameplay camera, no letterbox: she smashes a
  * big flask at her feet, the world darkens and a giant glass-ink alchemical circle draws on at the point. A column of
  * acid rises out of its centre, the glyphs light up one by one and fumes pour out along the floor while the enemies are
  * pulled toward the middle. The column coils into a sphere, everything stops for a dead beat, then the sphere bursts:
  * an impact frame, a wave of gold races over the circle and every enemy inside turns to a gold statue (a gold shell
  * drawn over the figure; the arena materials are never touched). Cracks run over them, then they shatter into gold
- * flakes and glass shards and the gold floor crumbles. Clean by 4.5 s. See pipeline/designs/kit-alchemy.md.
+ * flakes and glass shards and the gold floor crumbles. The gold field stays 1.8 s after the burst: every tick slows
+ * whoever stands in it (2 s), then it shatters. Every hit lands inside 4.2 s of the cast; clean by 5 s. See pipeline/designs/kit-alchemy.md.
  */
 export interface GrandTransmutationSettings {
   goldDamage: number;
   shatterDamage: number;
+  /** Damage of each of the two slow ticks while the gold field stands. */
+  tickDamage: number;
+  /** Seconds of slow on the gold hit and on every tick. */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultGrandTransmutation = (): GrandTransmutationSettings => ({ goldDamage: 86, shatterDamage: 50, loop: false });
+export const defaultGrandTransmutation = (): GrandTransmutationSettings => ({ goldDamage: 75, shatterDamage: 50, tickDamage: 5, slow: 2, loop: false });
 
 // Timeline (seconds).
 const SMASH_T = 0.3;
@@ -31,8 +36,9 @@ const RISE_T = 0.4;
 const COIL_T = 1.5;
 const BEAT_T = 1.85; // dead beat 1.85 .. 2.0
 const BURST_T = 2.0;
-const SHATTER_T = 2.6;
-const DURATION = 4.5;
+const TICKS = [2.8, 3.4]; // slow ticks while the gold field stands
+const SHATTER_T = 3.8; // the field stands 1.8 s after the burst; the shatter still lands inside 4.2 s
+const DURATION = 5.0;
 
 const RADIUS = 7;
 const COL_H = 6;
@@ -122,6 +128,7 @@ export class GrandTransmutation implements Effect {
   private victims: Victim[] = [];
 
   private flags = { smashed: false, drained: false, burst: false, shattered: false };
+  private ticksDone = 0;
   private bubbleTimer = 0;
   private fumeTimer = 0;
 
@@ -220,6 +227,7 @@ export class GrandTransmutation implements Effect {
     this.shake = 0;
     this.bubbleTimer = 0;
     this.fumeTimer = 0;
+    this.ticksDone = 0;
     for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
     clearScreenFx(this.screen);
     this.bigFlask.reset();
@@ -299,6 +307,10 @@ export class GrandTransmutation implements Effect {
       f.burst = true;
       this.burst();
     }
+    while (f.burst && !f.shattered && this.ticksDone < TICKS.length && t >= TICKS[this.ticksDone]) {
+      this.ticksDone++;
+      this.eachInside((e) => this.ctx?.hit(e, { damage: this.settings.tickDamage, knock: 0, from: this.point, color: ALCHEMY_CSS.gold, status: { kind: 'slow', seconds: this.settings.slow } }));
+    }
     if (!f.shattered && t >= SHATTER_T) {
       f.shattered = true;
       this.shatter();
@@ -315,20 +327,28 @@ export class GrandTransmutation implements Effect {
     }
     this.shards.burst(this.sphereC, 24, 7, { size: 0.26, life: 0.6, up: 0 });
     this.shake = 0.7;
+    this.eachInside((e) => this.ctx?.hit(e, { damage: this.settings.goldDamage, knock: 0, from: this.point, color: ALCHEMY_CSS.gold, status: { kind: 'slow', seconds: this.settings.slow } }));
+  }
+
+  /** Whoever stands in the field right now (live positions, re-checked at every hit). */
+  private eachInside(fn: (e: Enemy) => void) {
     const ctx = this.ctx;
-    if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.goldDamage, knock: 0, from: this.point, color: ALCHEMY_CSS.gold });
+    if (!ctx) return;
+    for (const e of ctx.targets) {
+      const p = e.group.position;
+      if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) fn(e);
+    }
   }
 
   /** The statues shatter into gold flakes and glass shards; the enemies are knocked back. */
   private shatter() {
-    const ctx = this.ctx;
     for (const v of this.victims) {
       v.shell.mesh.visible = false;
       this.v1.copy(v.pos).add(this.v2.set(0, 1.1, 0));
       this.flakes.burst(this.v1, 14, 5, { size: 0.2, life: 0.8 });
       this.shards.burst(this.v1, 6, 5, { size: 0.22, life: 0.55 });
-      if (ctx) ctx.hit(v.enemy, { damage: this.settings.shatterDamage, knock: 6, from: this.point, color: ALCHEMY_CSS.gold });
     }
+    this.eachInside((e) => this.ctx?.hit(e, { damage: this.settings.shatterDamage, knock: 6, from: this.point, color: ALCHEMY_CSS.gold }));
     // Flakes off the crumbling floor.
     for (let i = 0; i < 18; i++) {
       const a = Math.random() * Math.PI * 2, d = RADIUS * 0.9 * Math.sqrt(Math.random());
@@ -353,7 +373,7 @@ export class GrandTransmutation implements Effect {
     const after = t - BURST_T;
 
     // --- Screen: hard darken from the smash, lifted after the shatter; the glass impact frame at the burst. ---
-    this.screen.darken = 0.6 * smoothstep(t / 0.4) * (1 - smoothstep((t - 3.1) / 1.3));
+    this.screen.darken = 0.6 * smoothstep(t / 0.4) * (1 - smoothstep((t - SHATTER_T - 0.5) / 0.7));
     this.screen.impact = impactFrameAt(t, BURST_T, [1, 2], 0.04);
 
     // --- 0..0.3 The big flask is plucked and smashed on the floor at her feet. ---
@@ -368,7 +388,7 @@ export class GrandTransmutation implements Effect {
 
     // --- The circle draws on from the smash, lights its glyphs one by one, fades after the shatter. ---
     this.circle.reveal = smoothstep((t - 0.25) / 0.75);
-    this.circle.opacity = 1 - smoothstep((t - 3.0) / 1.0);
+    this.circle.opacity = 1 - smoothstep((t - SHATTER_T) / 1.0);
     this.circle.lit = Math.min(6, Math.max(0, Math.floor((t - 0.4) / 0.18)));
 
     // --- 0.4..1.85 The column rises, coils into a sphere; the dead beat holds it. ---
@@ -402,9 +422,9 @@ export class GrandTransmutation implements Effect {
 
     // --- Gold: the wave races over the floor and the circle; shells turn each enemy gold; cracks run; the floor crumbles. ---
     const gu = (this.goldFloor.material as THREE.ShaderMaterial).uniforms;
-    this.goldFloor.visible = f.burst && t < 3.7;
+    this.goldFloor.visible = f.burst && t < SHATTER_T + 1.1;
     gu.uWave.value = f.burst ? Math.min(1.02, Math.max(0, after / 0.3) * 1.02) : 0;
-    gu.uCrack.value = smoothstep((t - 2.1) / 0.5);
+    gu.uCrack.value = smoothstep((t - 2.1) / (SHATTER_T - 2.4));
     gu.uCrumble.value = f.shattered ? Math.min(1.05, (t - SHATTER_T) / 0.9) : 0;
     this.goldFloor.position.set(this.point.x, 0.035, this.point.z);
     for (const v of this.victims) {
@@ -414,7 +434,7 @@ export class GrandTransmutation implements Effect {
       if (!on) continue;
       v.shown = true;
       sh.follow(v.enemy.group, 1.07);
-      sh.crack = smoothstep((t - v.goldAt - 0.15) / 0.5);
+      sh.crack = smoothstep((t - v.goldAt - 0.15) / (SHATTER_T - v.goldAt - 0.4));
       sh.flash = Math.exp(-(t - v.goldAt) * 18);
     }
   }
@@ -434,7 +454,7 @@ export const grandTransmutationModule: EffectModule = {
     const e = effect as GrandTransmutation;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: BURST_T }];
+    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: BURST_T, until: SHATTER_T + 0.1 }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -446,5 +466,7 @@ export const grandTransmutationModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'goldDamage', 1, 300, 1);
     f.add(s, 'shatterDamage', 1, 200, 1);
+    f.add(s, 'tickDamage', 0, 40, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

@@ -1,7 +1,7 @@
 ---
 title: Combat mechanics
 tags: [architecture, mechanics, status, projectile, summon, duel, ai, testing]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Combat mechanics
@@ -212,6 +212,15 @@ for (let i = 0; i < 10; i++) {
 ### Tournament tool
 
 [pipeline/tools/duel-tourney.js](../../pipeline/tools/duel-tourney.js): paste it into the page (`eval(await (await fetch('/pipeline/tools/duel-tourney.js')).text())`), then `await _tourney(3)` runs every hero in the dropdown against every other, 3 fights per ordered pairing, or `_tourney(3, ['Vesper', 'Kaia'])` for a subset. It returns `wins`, `h2h`, `fights`, `avgSeconds`, `avgWinnerHp` and `timeouts`; a fight over 120 s is a timeout. It steps time itself, so it works with the browser pane hidden. Results vary because the AI's strafe flips are random: judge balance with 5+ fights per pairing. It covers `HERO_KITS` only; use the console recipe for test kits.
+
+## Spell shapes built on these pieces (2026-10-30)
+
+The hero-roles pass ([hero-roles.md](../../pipeline/designs/hero-roles.md)) gave every hero its own kit shape using
+only the pieces above, inside the spells: QUICK no-aim casts (self mode; `arena.context` turns the caster to the nearest enemy in reach first), NOVA rings,
+ORBIT blades, BOOMERANG bolts (two projectiles), held CHANNEL beams (cast root = latest telegraph impact, cap 2.5 s),
+GLOBAL ultimates (range 60), TRAIL dashes, TRAP / LINGER / FUSE zones, HOOK, TETHER and CAGE. The rules a shape must
+keep for the duel (telegraph coverage, every hit within 4.2 s of the cast, heals only on a landed hit) are in
+[kit-common.md](../../pipeline/designs/kit-common.md) "Roles and spell shapes".
 
 ## Limits
 

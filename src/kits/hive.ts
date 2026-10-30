@@ -155,7 +155,7 @@ export const hiveKit: HeroKit = {
   title: 'the Swarm Warden',
   accent: H.body,
   foil: H.wax,
-  maxHp: 700,
+  maxHp: 720,
   melee: true,
   portrait(g, s) {
     iconGround(g, s);
@@ -276,7 +276,7 @@ export const hiveKit: HeroKit = {
     },
     {
       key: 'E', label: 'chitin carapace', name: 'Chitin Carapace', range: 0, cooldown: 9,
-      blurb: 'Black chitin plates snap round him in a shield while the swarm circles; twice the swarm bursts out and slows enemies near.',
+      blurb: 'Black chitin plates snap round him in a pure shield of 60 for 3 s while the swarm circles. No damage.',
       icon(g, s) {
         iconGround(g, s);
         // A shell of chitin hexagons round a core, wasps circling it.
@@ -306,8 +306,8 @@ export const hiveKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: "queen's descent", name: "Queen's Descent", range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A honeycomb tower closes round the zone and the whole swarm, shaped like a giant queen wasp, dives into its centre.',
+      key: 'R', label: "queen's descent", name: "Queen's Descent", range: 13, cooldown: 20,
+      blurb: 'Ultimate. A honeycomb tower closes round the zone and the whole swarm, shaped like a giant queen wasp, dives into its centre: slows, and three wasp soldiers drop where it lands.',
       icon(g, s) {
         iconGround(g, s);
         // A ring wall of cells on the floor, the swarm-queen diving head-first with folded wings, a green star at the centre.

@@ -1,5 +1,12 @@
 # Tide kit: Marin, the Tide Dancer
 
+## Role (2026-10-30)
+**Controller**, 620 HP. Signature: *Undertow*. She moves you where she wants.
+- Q Tide Whip: a HOOK: 50 damage and **pull 3 m** toward her (`knock: 0`).
+- W Whirlpool (`cc`): two draw ticks (0.5 s: 5 damage; 1.3 s: the 10 tick), each **pull 1.5 m** to the centre; the column at 0.75 s hits for 45 and **knocks up 0.4**.
+- E Undertow Dance: a TRAIL dash (ground mode, range 6, `moveCaster` 0.3 s, no `dash` flag): she surfs to the aim, **heals 30** on landing, and the foam pools (3 s, 2.2 m wide strip along the path) **slow 1.0** and cut 4 per tick for whoever stands on them (six ticks, 0.7 s to 3.2 s).
+- R Leviathan's Waltz: a LINE (`aim: 'line'`, `cc`, range 12, strip 12 m x 3.6): the serpent circles the strip and dives at the middle; 125 damage and **knock-up 0.5** to everything on the strip at 2.2 s. The tidal wave runs both ways along the strip.
+
 **Signature shape: the water ribbon.** Water moves as **thick, smooth ribbons** that she swirls like a dancer's
 sash: a curling band of clear blue water with a **white foam crest** on its leading edge, throwing **spinning
 droplets** off the curls. Every spell is a dance move: a whip, a spiral, a fountain, a wave. Not a sea wave wall or

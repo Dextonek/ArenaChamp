@@ -19,10 +19,12 @@ import type { Effect, EffectModule } from '../../effects/types';
  */
 export interface JudgementOfDawnSettings {
   damage: number;
+  /** Shield Auriel gains at the impact (held SHIELD_SECONDS). */
+  shield: number;
   loop: boolean;
 }
 
-export const defaultJudgementOfDawn = (): JudgementOfDawnSettings => ({ damage: 125, loop: false });
+export const defaultJudgementOfDawn = (): JudgementOfDawnSettings => ({ damage: 100, shield: 50, loop: false });
 
 // Timeline (seconds).
 const BUILD_A = 0.3;
@@ -34,7 +36,8 @@ const HIT_T = 2.2;
 const SHATTER_T = 3.0;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 6;
+const SHIELD_SECONDS = 5;
 const HOVER_TIP = 2.2; // height of the sword's tip while it hangs
 const SCALE = 0.7; // the sword is built ~7 long and scaled by this
 const DEBRIS = 28;
@@ -203,6 +206,7 @@ export class JudgementOfDawn implements Effect {
       f.hit = true;
       this.shake = 0.75;
       this.burstShards();
+      ctx?.shieldSelf?.(this.settings.shield, SHIELD_SECONDS, DAWN_CSS.body);
       if (ctx) {
         for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: DAWN_CSS.body });
       }
@@ -322,5 +326,6 @@ export const judgementOfDawnModule: EffectModule = {
     const s = (effect as JudgementOfDawn).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
+    f.add(s, 'shield', 0, 200, 1);
   },
 };

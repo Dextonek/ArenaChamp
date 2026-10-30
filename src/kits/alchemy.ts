@@ -105,6 +105,7 @@ function circleGlyph(g: CanvasRenderingContext2D, cx: number, cy: number, r: num
 export const alchemyKit: HeroKit = {
   name: 'Vex',
   title: 'the Plague Alchemist',
+  maxHp: 560,
   accent: A.body,
   foil: A.glass,
   portrait(g, s) {
@@ -166,7 +167,7 @@ export const alchemyKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'volatile flask', name: 'Volatile Flask', range: 10, cooldown: 3,
-      blurb: 'Lobs a flask in a high arc. It shatters on the enemy in glass and caustic splash, and burns for a moment.',
+      blurb: 'Lobs a flask at the ground in a high arc. It shatters in a small circle (1.6 m): whoever is standing there is splashed and burns for a moment.',
       icon(g, s) {
         ground(g, s);
         // Thrown arc, a flask at the top, and the splash with bubbles and shards below.
@@ -191,7 +192,7 @@ export const alchemyKit: HeroKit = {
     },
     {
       key: 'W', label: 'caustic pool', name: 'Caustic Pool', range: 10, cooldown: 7,
-      blurb: 'Two flasks shatter on the point and an alchemical circle fills with boiling acid that burns everything in it.',
+      blurb: 'Two flasks shatter on the point and the pool boils for 4 s, burning and slowing everything that stays in it.',
       icon(g, s) {
         ground(g, s);
         circleGlyph(g, s * 0.5, s * 0.66, s * 0.44, A.glass, s * 0.018, 0.34);
@@ -209,7 +210,7 @@ export const alchemyKit: HeroKit = {
     },
     {
       key: 'E', label: 'mutagen', name: 'Mutagen', range: 0, cooldown: 9,
-      blurb: 'She drinks a flask. Four flasks orbit her and spit acid at every enemy nearby, twice, then shatter.',
+      blurb: 'She drinks a flask and heals 45 HP. No damage and no flasks.',
       icon(g, s) {
         ground(g, s);
         g.strokeStyle = 'rgba(200,255,74,0.4)';
@@ -231,7 +232,7 @@ export const alchemyKit: HeroKit = {
     },
     {
       key: 'R', label: 'grand transmutation', name: 'Grand Transmutation', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A giant circle turns the whole zone and everything in it to gold, then shatters it.',
+      blurb: 'Ultimate. A giant circle turns the zone to gold; the field slows everything in it for 2 s, then shatters.',
       icon(g, s) {
         ground(g, s);
         circleGlyph(g, s * 0.5, s * 0.5, s * 0.46, A.gold, s * 0.02, 1);

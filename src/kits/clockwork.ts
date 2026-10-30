@@ -101,6 +101,7 @@ export const clockworkKit: HeroKit = {
   title: 'the Artificer',
   accent: S.body,
   foil: S.foil,
+  maxHp: 580,
   portrait(g, s) {
     iconGround(g, s);
     // The brass backpack of gears behind her shoulders and a spring-loaded wrist launcher on the right.
@@ -191,7 +192,7 @@ export const clockworkKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'cog turret', name: 'Cog Turret', range: 9, cooldown: 12, summon: true,
+      key: 'W', label: 'cog turret', name: 'Cog Turret', range: 9, cooldown: 9, summon: true,
       blurb: 'Assembles a brass turret from loose gears; it shoots anything near for six seconds.',
       icon(g, s) {
         iconGround(g, s);
@@ -223,8 +224,8 @@ export const clockworkKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'gear field', name: 'Gear Field', range: 0, cooldown: 9,
-      blurb: 'Three big gears unfold round her and lurch twice; each lurch sends an electric ring that slows enemies inside.',
+      key: 'E', label: 'gear field', name: 'Gear Field', range: 9, cooldown: 9,
+      blurb: 'Three big gears unfold where she points and lurch three times over 3 s; each lurch sends an electric ring that slows enemies inside.',
       icon(g, s) {
         iconGround(g, s);
         // Three nested flat gears seen at an angle round a small figure.

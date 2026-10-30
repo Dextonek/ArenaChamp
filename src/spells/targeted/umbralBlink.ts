@@ -9,8 +9,8 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Umbral Blink (shadow kit, Q: single-target dash strike). A black figure cut-out peels off Nyx, blinks to the target
- * in four stepped jumps (a trail of fading figures) and two crossed blade cut-outs slash through the target: mint cut,
+ * Umbral Blink (shadow kit, Q: dash strike, range 7). A black figure cut-out peels off Nyx, blinks to the target
+ * in four stepped jumps (a trail of fading figures) and Nyx herself slides there (`ctx.moveCaster`) while two crossed blade cut-outs slash through the target: mint cut,
  * a small shadow pool, one impact frame. The cut-outs then shatter into flat black shards and the pool shrinks. See
  * pipeline/designs/kit-shadow.md.
  */
@@ -19,7 +19,7 @@ export interface UmbralBlinkSettings {
   loop: boolean;
 }
 
-export const defaultUmbralBlink = (): UmbralBlinkSettings => ({ damage: 50, loop: false });
+export const defaultUmbralBlink = (): UmbralBlinkSettings => ({ damage: 62, loop: false });
 
 // Timeline (seconds).
 const PEEL_END = 0.15;
@@ -54,7 +54,7 @@ export class UmbralBlink implements Effect {
   private end = new THREE.Vector3();
   private chest = new THREE.Vector3(0, CHEST_Y, -6);
 
-  private flags = { hit: false, shatter: false, shrink: false };
+  private flags = { dash: false, hit: false, shatter: false, shrink: false };
 
   // Parts.
   private clone = new CutShape({ kind: 'figure' });
@@ -97,7 +97,8 @@ export class UmbralBlink implements Effect {
     this.right.crossVectors(new THREE.Vector3(0, 1, 0), this.nrm).normalize();
     const tp = ctx.targetPos[0] ?? ctx.point;
     this.start.copy(this.from).addScaledVector(this.right, 0.9).setY(0.06);
-    this.end.copy(tp).addScaledVector(this.fwd, -1.1).setY(0.06);
+    // She lands beside the target (a step short of it and to her right), where the blades will cut.
+    this.end.copy(tp).addScaledVector(this.fwd, -1.1).addScaledVector(this.right, 0.9).setY(0.06);
     this.chest.set(tp.x, CHEST_Y, tp.z);
     this.trailFx.face(ctx.aim);
     for (const c of this.cuts) c.face(ctx.aim);
@@ -115,7 +116,7 @@ export class UmbralBlink implements Effect {
     this.time = 0;
     this.shake = 0;
     const f = this.flags;
-    f.hit = f.shatter = f.shrink = false;
+    f.dash = f.hit = f.shatter = f.shrink = false;
     clearScreenFx(this.screen);
     this.screen.impactColor.set(SHADOW.foil);
     this.clone.reset();
@@ -147,6 +148,11 @@ export class UmbralBlink implements Effect {
     const ctx = this.ctx;
 
     // Events.
+    if (!f.dash && t >= PEEL_END) {
+      f.dash = true;
+      // The real dash: Nyx slides to the spot beside the target while her shadow blinks along the path.
+      if (ctx?.moveCaster) this.end.copy(ctx.moveCaster(this.end, DASH_END - PEEL_END)).setY(0.06);
+    }
     if (!f.hit && t >= HIT_T) {
       f.hit = true;
       this.shake = 0.25;
@@ -226,7 +232,10 @@ export const umbralBlinkModule: EffectModule = {
     const ctx = e.ctx;
     if (!ctx) return [];
     const c = ctx.targetPos[0] ?? ctx.point;
-    return [{ shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: c.x, z2: c.z, width: 1.0 }, start: 0.05, impact: HIT_T }];
+    return [
+      { shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: c.x, z2: c.z, width: 1.0 }, start: 0.05, impact: HIT_T },
+      { shape: { kind: 'circle', x: c.x, z: c.z, radius: 1.8 }, start: 0.05, impact: HIT_T },
+    ];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.35, threshold: 0.88 },
   frameCamera(camera, controls, effect) {

@@ -65,6 +65,8 @@ function hammer(g: CanvasRenderingContext2D, cx: number, cy: number, w: number, 
 export const forgeKit: HeroKit = {
   name: 'Brannoc',
   title: 'the Ashen Smith',
+  maxHp: 840,
+  melee: true,
   accent: F.body,
   foil: F.ash,
   portrait(g, s) {
@@ -102,8 +104,8 @@ export const forgeKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'rivet shot', name: 'Rivet Shot', range: 10, cooldown: 3,
-      blurb: 'Pulls a white-hot rivet from his chest forge and flicks it through one enemy. The slag cools to black.',
+      key: 'Q', label: 'rivet shot', name: 'Rivet Shot', range: 3, cooldown: 3,
+      blurb: 'Point-blank (3 m): flicks a white-hot rivet into one enemy and slows it.',
       icon(g, s) {
         ground(g, s);
         // A rivet flying up-right on a hot streak.
@@ -129,8 +131,8 @@ export const forgeKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'anvil drop', name: 'Anvil Drop', range: 10, cooldown: 7,
-      blurb: 'A ring of molten runes marks the ground, then a huge anvil falls on it and splashes slag.',
+      key: 'W', label: 'anvil drop', name: 'Anvil Drop', range: 8, cooldown: 7, cc: true,
+      blurb: 'Lobs a small anvil (2 m circle) onto the spot; whoever is under it is stunned for 1 s.',
       icon(g, s) {
         ground(g, s);
         g.strokeStyle = F.ash;
@@ -152,7 +154,7 @@ export const forgeKit: HeroKit = {
     },
     {
       key: 'E', label: 'bellows ward', name: 'Bellows Ward', range: 0, cooldown: 9,
-      blurb: 'Two loops of molten chain whirl around him and burst outward in heat twice, then cool and fall.',
+      blurb: 'Two loops of molten chain whirl around him: a shield of 100 for 3 s, and each burst drags nearby enemies 1.5 m toward him.',
       icon(g, s) {
         ground(g, s);
         const link = (x: number, y: number, rot: number, hot: boolean) => {
@@ -176,8 +178,8 @@ export const forgeKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'forgefall', name: 'Forgefall', range: 13, cooldown: 20,
-      blurb: 'Ultimate. Slag pours into the sky, forms a colossal hammer, and brings it down on the zone.',
+      key: 'R', label: 'forgefall', name: 'Forgefall', range: 0, cooldown: 20, cc: true,
+      blurb: 'Ultimate. Slag forms a colossal hammer over him and brings it down on his own spot (5 m): 105 damage and a short knock-up.',
       icon(g, s) {
         ground(g, s);
         // Molten crack web on the ground, ash ring around it.

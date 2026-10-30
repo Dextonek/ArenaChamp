@@ -57,6 +57,7 @@ function link(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y
 
 export const astralKit: HeroKit = {
   name: 'Lyra',
+  maxHp: 520,
   title: 'the Star Archer',
   accent: A.hot,
   foil: A.foil,
@@ -78,8 +79,8 @@ export const astralKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'starshot', name: 'Starshot', range: 12, cooldown: 3,
-      blurb: 'A star arrow hops from enemy to enemy and leaves a small constellation behind.',
+      key: 'Q', label: 'starshot', name: 'Starshot', range: 14, cooldown: 2, aim: 'line',
+      blurb: 'A skillshot: a star arrow flies along the aim line, bounces once to the nearest other enemy and leaves a small constellation.',
       icon(g, s) {
         ground(g, s);
         const p: [number, number][] = [[0.22, 0.76], [0.5, 0.5], [0.66, 0.3], [0.84, 0.2]];
@@ -93,8 +94,8 @@ export const astralKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'constellation snare', name: 'Constellation Snare', range: 11, cooldown: 7,
-      blurb: 'Stars fall around a spot and are joined into a net that snaps tight and drags enemies in.',
+      key: 'W', label: 'constellation snare', name: 'Constellation Snare', range: 11, cooldown: 7, cc: true,
+      blurb: 'A trap: a star net lies on the spot for 3 s and snaps the moment an enemy stands inside, hurting, rooting and dragging them in.',
       icon(g, s) {
         ground(g, s);
         g.strokeStyle = A.foil;
@@ -108,7 +109,7 @@ export const astralKit: HeroKit = {
     },
     {
       key: 'E', label: 'orbit veil', name: 'Orbit Veil', range: 0, cooldown: 9,
-      blurb: 'A turning constellation circles her and fires gold lines at every enemy nearby.',
+      blurb: 'A backstep: a turning constellation fires gold lines that hurt and slow enemies nearby, then carries her 5 m away from them.',
       icon(g, s) {
         ground(g, s);
         g.strokeStyle = A.foil;
@@ -126,8 +127,8 @@ export const astralKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'celestial hunt', name: 'Celestial Hunt', range: 14, cooldown: 20,
-      blurb: 'Ultimate. A giant constellation stag is drawn in the sky and charges through the zone.',
+      key: 'R', label: 'celestial hunt', name: 'Celestial Hunt', range: 60, cooldown: 20,
+      blurb: 'Ultimate. Global: a giant constellation stag is drawn over the spot you pick anywhere in the ring and charges it 2.5 s later.',
       icon(g, s) {
         ground(g, s);
         // The stag: a simplified outline (body, legs, head and antler) joined by gold lines.

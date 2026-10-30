@@ -7,25 +7,24 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Void Mantle (void kit, E: self shield + two pulses, the second silences). A ring of five standing rifts (about 1.4 tall)
- * opens round Oblivion at radius 1.4 and turns slowly; he takes a 40 point shield for 3 s. At 1.0 s and 2.0 s the rifts
- * flare and a crack ring races out to radius 4: every enemy still inside is hit; the second pulse also silences. From
- * 2.6 s the rifts zip shut one by one. Clean by 3.2 s. See pipeline/designs/kit-void.md.
+ * Void Mantle (void kit, E: self burst that silences, no shield). A ring of five standing rifts (about 1.4 tall)
+ * opens round Oblivion at radius 1.4 and turns slowly. At 1.0 s the rifts flare and one crack ring races out to radius
+ * 4: every enemy still inside is hit and silenced for 1.2 s. From 2.0 s the rifts zip shut one by one. Clean by 2.6 s. See pipeline/designs/kit-void.md.
  */
 export interface VoidMantleSettings {
   damage: number;
-  shield: number;
+  /** Seconds of silence on the pulse. */
+  silence: number;
   loop: boolean;
 }
 
-export const defaultVoidMantle = (): VoidMantleSettings => ({ damage: 12, shield: 40, loop: false });
+export const defaultVoidMantle = (): VoidMantleSettings => ({ damage: 35, silence: 1.2, loop: false });
 
 // Timeline (seconds).
 const OPEN_END = 0.3;
 const PULSE_1 = 1.0;
-const PULSE_2 = 2.0;
-const ZIP_T = 2.6;
-const DURATION = 3.2;
+const ZIP_T = 2.0;
+const DURATION = 2.6;
 const RADIUS = 4;
 const RING_R = 1.4;
 const RIFTS = 5;
@@ -45,9 +44,9 @@ export class VoidMantle implements Effect {
   private from = new THREE.Vector3(0, 0, 14);
   private center = new THREE.Vector3(0, 0, 14);
   private face = new THREE.Vector3(0, 0, -1);
-  private pulseAt = [-9, -9];
-  private fadeAt = [-9, -9];
-  private flags = { open: false, pulse1: false, pulse2: false, zip: false };
+  private pulseAt = [-9];
+  private fadeAt = [-9];
+  private flags = { open: false, pulse1: false, zip: false };
   private slots: number[] = [];
 
   // Parts.
@@ -90,17 +89,15 @@ export class VoidMantle implements Effect {
   play() {
     this.reset();
     this.playing = true;
-    // The shield comes up with the ring.
-    this.ctx?.shieldSelf?.(this.settings.shield, 3, VOID_CSS.body);
   }
 
   private reset() {
     this.time = 0;
     this.shake = 0;
-    this.pulseAt[0] = this.pulseAt[1] = -9;
-    this.fadeAt[0] = this.fadeAt[1] = -9;
+    this.pulseAt[0] = -9;
+    this.fadeAt[0] = -9;
     const f = this.flags;
-    f.open = f.pulse1 = f.pulse2 = f.zip = false;
+    f.open = f.pulse1 = f.zip = false;
     this.slots.length = 0;
     clearScreenFx(this.screen);
     this.screen.tint.set(VOID.dark);
@@ -111,10 +108,10 @@ export class VoidMantle implements Effect {
     this.groundShock.set(this.from, 0, 0);
   }
 
-  private pulse(index: number) {
+  private pulse() {
     const ctx = this.ctx;
-    this.pulseAt[index] = index === 0 ? PULSE_1 : PULSE_2;
-    this.fadeAt[index] = this.pulseAt[index] + 0.3;
+    this.pulseAt[0] = PULSE_1;
+    this.fadeAt[0] = PULSE_1 + 0.3;
     this.shake = 0.15;
     this.rift.flare(1, 0.25);
     this.crackle.width = 0.42;
@@ -122,12 +119,11 @@ export class VoidMantle implements Effect {
     this.shards.burst(this.v1.copy(this.center).setY(0.4), 4, 3.2, 0.2);
     this.motes.emit(this.center, 2.5, 6);
     if (!ctx) return;
-    // Re-check at the pulse: only enemies still inside the radius are hit. The second pulse silences.
+    // Re-check at the pulse: only enemies still inside the radius are hit and silenced.
     for (const e of ctx.targets) {
       const p = e.group.position;
       if (Math.hypot(p.x - this.center.x, p.z - this.center.z) > RADIUS) continue;
-      if (index === 1) ctx.hit(e, { damage: this.settings.damage, knock: 1, color: VOID_CSS.body, status: { kind: 'silence', seconds: 1.0 } });
-      else ctx.hit(e, { damage: this.settings.damage, knock: 1, color: VOID_CSS.body });
+      ctx.hit(e, { damage: this.settings.damage, knock: 1, color: VOID_CSS.body, status: { kind: 'silence', seconds: this.settings.silence } });
     }
   }
 
@@ -161,15 +157,14 @@ export class VoidMantle implements Effect {
       }
       this.motes.emit(this.center, RING_R, 8);
     }
-    if (!f.pulse1 && t >= PULSE_1) { f.pulse1 = true; this.pulse(0); }
-    if (!f.pulse2 && t >= PULSE_2) { f.pulse2 = true; this.pulse(1); }
-    for (let i = 0; i < 2; i++) {
+    if (!f.pulse1 && t >= PULSE_1) { f.pulse1 = true; this.pulse(); }
+    for (let i = 0; i < 1; i++) {
       if (this.fadeAt[i] > 0 && t >= this.fadeAt[i]) {
         this.fadeAt[i] = -9;
         this.crackle.fade(0.5);
       }
     }
-    // 2.6..3.0: the rifts zip shut one by one.
+    // 2.0..2.4: the rifts zip shut one by one.
     if (!f.zip && t >= ZIP_T) {
       f.zip = true;
       this.slots.forEach((s, i) => this.rift.close(0.3, s, 0.025 + i * 0.025));
@@ -220,6 +215,6 @@ export const voidMantleModule: EffectModule = {
     const s = (effect as VoidMantle).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 60, 1);
-    f.add(s, 'shield', 0, 150, 5);
+    f.add(s, 'silence', 0, 1.5, 0.1);
   },
 };

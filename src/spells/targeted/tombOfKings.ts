@@ -18,10 +18,12 @@ import type { Effect, EffectModule } from '../../effects/types';
  */
 export interface TombOfKingsSettings {
   damage: number;
+  /** Stun seconds at the implosion (engine cap 1.2). */
+  stun: number;
   loop: boolean;
 }
 
-export const defaultTombOfKings = (): TombOfKingsSettings => ({ damage: 130, loop: false });
+export const defaultTombOfKings = (): TombOfKingsSettings => ({ damage: 110, stun: 1.0, loop: false });
 
 // Timeline (seconds).
 const POOL_T = 0.3;
@@ -181,12 +183,14 @@ export class TombOfKings implements Effect {
       f.impacted = true;
       this.land();
       if (ctx) {
-        ctx.targets.forEach((e, i) => {
-          const p = ctx.targetPos[i];
-          if (p && Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
-            ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: SAND_CSS.body });
+        for (const e of ctx.targets) {
+          const p = e.group.position; // live position: whoever walked out of the zone is spared
+          if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
+            ctx.hit(e, {
+              damage: this.settings.damage, knock: 6, from: this.point, color: SAND_CSS.body, status: { kind: 'stun', seconds: this.settings.stun },
+            });
           }
-        });
+        }
       }
     }
     [2.4, 2.7, 3.0].forEach((ta, i) => {
@@ -321,5 +325,6 @@ export const tombOfKingsModule: EffectModule = {
     const s = (effect as TombOfKings).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
+    f.add(s, 'stun', 0, 1.2, 0.1);
   },
 };

@@ -21,7 +21,7 @@ export interface EyeOfTheStormSettings {
   loop: boolean;
 }
 
-export const defaultEyeOfTheStorm = (): EyeOfTheStormSettings => ({ damage: 125, loop: false });
+export const defaultEyeOfTheStorm = (): EyeOfTheStormSettings => ({ damage: 140, loop: false });
 
 // Timeline (seconds).
 const LIFT_T = 0.0; // she raises the staff, the world darkens
@@ -35,7 +35,7 @@ const BREAK_T = 3.1;
 const DRY_T = 3.4;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 5;
 const CLOUD_Y = 5.5;
 const CLOUD_R = 5.5;
 const EYE_R0 = 2.0;
@@ -244,7 +244,7 @@ export class EyeOfTheStorm implements Effect {
       }
       this.sparks.burst(this.v1.set(this.point.x, 0.4, this.point.z), 28, 9);
       this.puddles.ripple(this.point, 3.5);
-      if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 6, from: this.point, color: STORM_CSS.body });
+      if (ctx) for (const e of ctx.targets) if (Math.hypot(e.group.position.x - this.point.x, e.group.position.z - this.point.z) <= RADIUS) ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: STORM_CSS.body });
     }
     if (!f.rainStop && t >= RAIN_STOP_T) {
       f.rainStop = true;
@@ -296,7 +296,7 @@ export class EyeOfTheStorm implements Effect {
       const sp = StarBurst.pop(after, 0, 0.05);
       this.pop.set(this.v1.copy(this.point).setY(1.2), 2 * sp.scale, sp.opacity, 0.2);
       const gp = THREE.MathUtils.clamp(after / 0.5, 0, 1);
-      this.groundShock.set(this.point, 1 + 11 * gp, 0.07 * (1 - gp) * (1 - gp));
+      this.groundShock.set(this.point, 1 + 7 * gp, 0.07 * (1 - gp) * (1 - gp));
       this.shake = 0.8 * Math.exp(-after * 9);
     }
   }

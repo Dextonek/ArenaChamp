@@ -1,12 +1,23 @@
 ---
 title: Sirix, the Swarm Warden (hive kit)
 tags: [catalog, heroes, hive, melee, summon, mechanics]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Sirix, the Swarm Warden
 
-The hive hero kit: Sirix's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A broad brawler in black chitin plate with amber stripes, a crested insect helm and serrated claw gauntlets, who fights in the middle of a swarm of wasps. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee kit with extra HP, a slow, a leap that summons two wasp soldiers, a shield and a stunning ultimate.
+The hive hero kit: Sirix's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A broad brawler in black chitin plate with amber stripes, a crested insect helm and serrated claw gauntlets, who fights in the middle of a swarm of wasps. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee kit with extra HP, a slow, a leap that summons two wasp soldiers, a pure shield and a slowing ultimate that drops three more wasps.
+
+## Role
+
+| | |
+|---|---|
+| Role | Juggernaut (melee, summons) |
+| Signature | The swarm |
+| HP | 720 |
+| Kit shapes | Q CONE slow · W DASH + wasps · E BUFF shield · R SUMMON queen ultimate |
+
+He wins a 1v1 by closing in with the leap, then fighting beside his wasps while the shield soaks the trade; the ultimate slows the enemy and adds three more wasps. His weakness is reach: a kiter outruns him, and his wasps die to area damage.
 
 ## At a glance
 
@@ -44,26 +55,26 @@ Sirix uses these pieces of [the combat mechanics](../../architecture/mechanics.m
 
 | Mechanic | Where |
 |---|---|
-| Melee kit | `melee: true` and `maxHp: 700` in the kit data (the default is 600; the extra HP pays for having to close in). The duel AI walks up to about 2 m, never backs off and keeps chasing. The Q range is only 3 |
-| Slow | Q slows every enemy it hits for 1.0 s and E for 0.8 s (walking speed x 0.6, cap 2.5 s) |
+| Melee kit | `melee: true` and `maxHp: 720` in the kit data (the default is 600; the extra HP pays for having to close in). The duel AI walks up to about 2 m, never backs off and keeps chasing. The Q range is only 3 |
+| Slow | Q slows every enemy it hits for 1.0 s and R for 1.5 s (walking speed x 0.6, cap 2.5 s) |
 | Dash, summon | W has `dash: true` and `summon: true`: he leaps to the aimed spot with `ctx.moveCaster(point, 0.25)`, re-checks the enemies at the spot he really reaches, and calls `ctx.summon` for two wasp soldiers (`kind: 'melee'`, 40 HP, 6 s, 6 damage per 1 s) |
-| Shield | E gives `ctx.shieldSelf(40, 3)`, a 40 point shield for 3 s |
-| Stun | R has `cc: true` and stuns every enemy it hits for 0.6 s (cap 1.2 s). A stun is followed by 0.5 s of stun immunity, so it cannot be chained |
+| Shield | E gives `ctx.shieldSelf(60, 3)`, a pure 60 point shield for 3 s. It has no hit and no telegraph; the swarm flare is for show |
+| Summon (ultimate) | R has no `cc` any more. At the hit it calls `ctx.summon` for three wasp soldiers (`kind: 'melee'`, 40 HP, 6 s, 6 damage per 1 s) at the centre. With the leap's two that is at most five of the cap of six |
 | Unit look | the wasp soldiers use `waspLook` (see [Parts file](#parts-file)) |
 | Skillshot, heal | none |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): melee 700 HP, Q about 40 with a 2.5 s cooldown, the summon W at 30 damage with the wasps making up the rest. In the wave 4 duel tournament he won 45%.
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): melee 720 HP, Q about 45 with a 2.5 s cooldown, the summon W at 40 damage with the wasps making up the rest.
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (the first damage 0.3-1.0 s after the cast, clean by about 1.6 s; the E aura runs about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/hive.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a melee cone (hit at 0.3 s, clean by 1.2 s), W a dash that lands a burst and two wasps (hit at 0.4 s, clean by 1.6 s), E a pure shield with no hit (3.2 s), R a slow ultimate that drops three wasps (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/hive.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [mandible rend](../../../src/spells/targeted/mandibleRend.ts) | enemies (a 100 degree cone, radius 3.2) | 3 | 2.5 s | 0.3 s | 1.2 s | The claws spread and a few wasps buzz off them. At the hit two crossing serrated claw arcs sweep the cone in front of him with honey splashes and a green flash; everyone still inside the cone is hit and slowed. Damage 40, knock 2, slow 1.0 s. |
-| W | [swarm leap](../../../src/spells/targeted/swarmLeap.ts) | ground (r 2.5) | 8 | 9 s | 0.4 s | 1.6 s (the wasps live on as units) | The swarm lifts off his back in a cloud. At 0.1 s he leaps to the point in 0.25 s with the swarm streaming behind him as a ribbon. At 0.4 s a honeycomb bursts under him at the spot he really reaches, with honey splashes, and everyone within 2.5 is hit; two wasp soldiers peel off the swarm and fight for 6 s. The honeycomb crumbles and the swarm thins out. Damage 30, knock 3. |
-| E | [chitin carapace](../../../src/spells/targeted/chitinCarapace.ts) | self (r 4) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | Black chitin plates with an amber rim snap together round him in a shell (radius 1.2) while the swarm circles it, and he takes a 40 point shield for 3 s. At 1.0 s and 2.0 s the swarm bursts outward to radius 4 and every enemy inside is hit and slowed; from 2.6 s the plates fall and the swarm settles. Damage 12 per pulse, slow 0.8 s, shield 40. |
-| R | [queen's descent](../../../src/spells/targeted/queensDescent.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to amber-black and honeycomb cells grow over the zone edge, then rise into a ring wall about 2 high. Hundreds of wasps stream in from the rim and form the silhouette of a giant queen wasp (about 8 wide, 6 long, hovering 4 to 7 high, top under 8.5) while the enemies are pulled in. At 1.6 s she folds her wings and points down; dead beat 1.85-2.0 s; at 2.0 s the swarm-queen dives into the centre. At 2.2 s the swarm bursts outward in a ring with honey splashes, a green star, the hit and a short stun. The wasps scatter, the wall crumbles, the darkness lifts. Damage 90, knock 3, stun 0.6 s. |
+| Q | [mandible rend](../../../src/spells/targeted/mandibleRend.ts) | enemy CONE (a 100 degree cone, radius 3.2) | 3 | 2.5 s | 0.3 s | 1.2 s | The claws spread and a few wasps buzz off them. At the hit two crossing serrated claw arcs sweep the cone in front of him with honey splashes and a green flash; everyone still inside the cone is hit and slowed. Damage 45, knock 2, slow 1.0 s. |
+| W | [swarm leap](../../../src/spells/targeted/swarmLeap.ts) | ground DASH (r 2.5) | 8 | 9 s | 0.4 s | 1.6 s (the wasps live on as units) | The swarm lifts off his back in a cloud. At 0.1 s he leaps to the point in 0.25 s with the swarm streaming behind him as a ribbon. At 0.4 s a honeycomb bursts under him at the spot he really reaches, with honey splashes, and everyone within 2.5 is hit; two wasp soldiers peel off the swarm and fight for 6 s. The honeycomb crumbles and the swarm thins out. Damage 40, knock 3. |
+| E | [chitin carapace](../../../src/spells/targeted/chitinCarapace.ts) | self BUFF (r 4) | 0 (self) | 9 s | none (no hit; the swarm flare is at 1.0 s and 2.0 s) | 3.2 s | Black chitin plates with an amber rim snap together round him in a shell (radius 1.2) while the swarm circles it, and he takes a 60 point shield for 3 s. At 1.0 s and 2.0 s the swarm bursts outward as a flare, for show only: no damage, no slow. From 2.6 s the plates fall and the swarm settles. Shield 60, no damage. |
+| R | [queen's descent](../../../src/spells/targeted/queensDescent.ts) | ground SUMMON (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to amber-black and honeycomb cells grow over the zone edge, then rise into a ring wall about 2 high. Hundreds of wasps stream in from the rim and form the silhouette of a giant queen wasp (about 8 wide, 6 long, hovering 4 to 7 high, top under 8.5) while the enemies are pulled in. At 1.6 s she folds her wings and points down; dead beat 1.85-2.0 s; at 2.0 s the swarm-queen dives into the centre. At 2.2 s the swarm bursts outward in a ring with honey splashes, a green star and the hit, and three wasp soldiers drop where she lands and fight for 6 s. The wasps scatter, the wall crumbles, the darkness lifts. Damage 85, knock 3, slow 1.5 s, 3 wasps. |
 
 Spell sources: [`mandibleRend.ts`](../../../src/spells/targeted/mandibleRend.ts), [`swarmLeap.ts`](../../../src/spells/targeted/swarmLeap.ts), [`chitinCarapace.ts`](../../../src/spells/targeted/chitinCarapace.ts), [`queensDescent.ts`](../../../src/spells/targeted/queensDescent.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-hive).
 

@@ -7,19 +7,23 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * World Blossom (grove kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world darkens to
- * a green dusk, roots spread over the whole zone and a trunk of four braided spiral vines grows up from the point. A
- * giant bud on top opens into a flower about 8 wide, then folds shut like a fist. A dead beat, then the petals slam
- * down flat over the zone: impact frames, a ring of smaller flowers bursts open across the radius, petals and pollen
- * explode outward. Petals rain down and fade, the vines wither, the roots fade, the darkness lifts. Clean by 4.5 s.
- * See pipeline/designs/kit-grove.md.
+ * World Blossom (grove kit, R: the MOBA ultimate, self-centred). Under the normal gameplay camera, no letterbox: the
+ * world darkens to a green dusk, roots spread over the zone round Fenna and a trunk of four braided spiral vines grows
+ * up from her feet. A giant bud on top opens into a flower about 8 wide, then folds shut like a fist. A dead beat, then
+ * the petals slam down flat over the zone: impact frames, a ring of smaller flowers bursts open across the radius,
+ * petals and pollen explode outward. At the slam she heals and every enemy within 5 m is hit and rooted. Petals rain
+ * down and fade, the vines wither, the roots fade, the darkness lifts. Clean by 4.5 s. See pipeline/designs/kit-grove.md.
  */
 export interface WorldBlossomSettings {
   damage: number;
+  /** Fenna heals this much at the slam. */
+  heal: number;
+  /** Root seconds on the hit (engine cap 1.5). */
+  root: number;
   loop: boolean;
 }
 
-export const defaultWorldBlossom = (): WorldBlossomSettings => ({ damage: 130, loop: false });
+export const defaultWorldBlossom = (): WorldBlossomSettings => ({ damage: 95, heal: 45, root: 1.0, loop: false });
 
 // Timeline (seconds).
 const TRUNK_T = 0.3; // the trunk starts to grow (up by 1.1)
@@ -30,7 +34,7 @@ const DEAD_B = 2.0; // the slam starts
 const HIT_T = 2.2;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 5;
 const TRUNK = 4;
 const HOLD = 3;
 const RING = 9;
@@ -100,7 +104,7 @@ export class WorldBlossom implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.point.copy(ctx.point).setY(0);
+    this.point.copy(ctx.from).setY(0);
     this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     this.staff.copy(ctx.from).addScaledVector(this.fwd, 0.5).setY(0.4);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
@@ -199,7 +203,7 @@ export class WorldBlossom implements Effect {
         if (!this.ringOpened[i] && t >= this.ringAt[i]) {
           this.ringOpened[i] = true;
           const a = (i / RING) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-          const r = 2.4 + Math.random() * 3.6;
+          const r = 1.8 + Math.random() * 2.8;
           this.v1.set(this.point.x + Math.cos(a) * r, 0.05, this.point.z + Math.sin(a) * r);
           this.ring[i].open(this.v1, 0.9 + Math.random() * 0.5, 0.3);
           this.pollen.puff(this.v1.setY(0.8), 3);
@@ -214,16 +218,21 @@ export class WorldBlossom implements Effect {
       f.impacted = true;
       this.land();
       if (ctx) {
-        ctx.targets.forEach((e, i) => {
-          const p = ctx.targetPos[i];
-          if (p && Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
-            ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: GROVE_CSS.body });
+        ctx.healSelf?.(this.settings.heal);
+        // Live positions: whoever walked out of the ring before the slam is spared.
+        for (const e of ctx.targets) {
+          const p = e.group.position;
+          if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
+            ctx.hit(e, {
+              damage: this.settings.damage, knock: 0, from: this.point, color: GROVE_CSS.body,
+              status: { kind: 'root', seconds: this.settings.root },
+            });
           }
-        });
+        }
       }
     }
     [2.3, 2.6, 2.9].forEach((ta, i) => {
-      if (!f.rain[i] && t >= ta) { f.rain[i] = true; this.petals.rain(this.point, 6.2, 12, 6, 1.4); }
+      if (!f.rain[i] && t >= ta) { f.rain[i] = true; this.petals.rain(this.point, 4.6, 12, 6, 1.4); }
     });
     if (f.impacted && t >= 3.0 && !f.shed) {
       f.shed = true;
@@ -299,13 +308,13 @@ export class WorldBlossom implements Effect {
 export const worldBlossomModule: EffectModule = {
   label: 'world blossom',
   category: 'hero: grove',
-  targeting: { mode: 'ground', radius: RADIUS },
+  targeting: { mode: 'self', radius: RADIUS },
   create: () => new WorldBlossom(),
   telegraphs(effect) {
     const e = effect as WorldBlossom;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: HIT_T }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -316,5 +325,7 @@ export const worldBlossomModule: EffectModule = {
     const s = (effect as WorldBlossom).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
+    f.add(s, 'heal', 0, 200, 1);
+    f.add(s, 'root', 0, 1.5, 0.1);
   },
 };

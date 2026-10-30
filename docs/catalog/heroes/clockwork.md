@@ -1,12 +1,16 @@
 ---
 title: Ada, the Artificer (clockwork kit)
 tags: [catalog, heroes, clockwork, ranged, mechanics]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Ada, the Artificer
 
 The clockwork hero kit: Ada's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. An inventor in a copper long coat with a backpack of brass gears and a spring-loaded wrist launcher; she controls the fight from range with slows, a turret and a root. She is one of the first heroes built on the [combat mechanics](../../architecture/mechanics.md): a ricocheting skillshot, slows, a summoned turret and a root.
+
+## Role
+
+Summoner (turret engineer), 580 HP, ranged. Signature: *Turret engineer*. The turret does the shooting while she slows and roots. She wins a 1v1 by planting the turret, slowing with the rivet and the gear field, and pinning with the gearfall. Her weakness is that her own spells are light and the turret dies to area damage.
 
 ## At a glance
 
@@ -50,18 +54,18 @@ Ada uses these pieces of [the combat mechanics](../../architecture/mechanics.md)
 | Unit look | the turret uses `turretLook` (see [Parts file](#parts-file)) |
 | Melee, dash, knock-up, shield | none. `maxHp` is not set, so the default 600 HP applies |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a ranged control kit needs a stronger Q (55) and a turret at 12 per shot. In the wave 3 duel tournament she won 56%.
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a ranged control kit needs a stronger Q (now 58) and a turret at 12 per shot. After the hero-roles balance pass (2026-10-30) she wins 49% (see the roster README).
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (the first damage 0.2-1.0 s after the cast, clean by about 1.6 s; the E aura runs about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/clockwork.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage. The Q file and label are prefixed (`clockwork rivet shot`, `clockworkRivetShot.ts`) because the forge kit already owns the label `rivet shot`; the kit calls it Rivet Shot.
+All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E each have a shape of their own (see the table: dash, skillshot, trap, orbit, summon and so on), not a fixed strike, zone or aura; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/clockwork.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage. The Q file and label are prefixed (`clockwork rivet shot`, `clockworkRivetShot.ts`) because the forge kit already owns the label `rivet shot`; the kit calls it Rivet Shot.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [clockwork rivet shot](../../../src/spells/targeted/clockworkRivetShot.ts) | skillshot line (width 0.8) | 12 | 3 s | flies from 0.2 s, 0.5 s of flight | 1.5 s | Her wrist launcher's brass spring winds up with a few cyan sparks. At 0.2 s it lets go: a spinning copper rivet flies along the aim line with a cyan spark trail. Each hit throws a few small cogs and a spark burst with a two-frame cyan star, slows the enemy, and the rivet ricochets on to the nearest other enemy. Damage 50, knock 1, slow 1.5 s. |
-| W | [cog turret](../../../src/spells/targeted/cogTurret.ts) | ground (r 2) | 9 | 12 s | 0.5 s | 1.6 s (plays on while the turret lives) | Gears and a spring fly in from her backpack one after another and click together at the point (a big flat base gear, an upright gear and a small one meshing with it, a spring on the base), cyan sparks at every click and steam from the joints. At 0.5 s the turret is summoned and anyone standing on the spot is thrown off; the assembly folds away under it. The turret fires at whatever is within 8 and scatters into cogs when it dies. Landing hit damage 20, knock 3; turret 80 HP for 6 s, 12 per shot every 1.4 s. |
-| E | [gear field](../../../src/spells/targeted/gearField.ts) | self (r 5) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | Three big flat gears unfold around her at ankle height, nested one inside the next (radii 1.5, 2.5 and 3.5), turning against each other with cyan sparks jumping across the gaps. At 1.0 s and 2.0 s the gears lurch a notch and an electric ring races out to radius 5: every enemy inside takes a small hit and is slowed. At 2.6 s the gears fold away with steam. Damage 13 per pulse, slow 1.0 s. |
-| R | [gearfall](../../../src/spells/targeted/gearfall.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a warm iron dark and a ring of small gears marks the zone. A colossal gear (radius 6, chunky teeth, dark hub, copper spokes) is lowered tilted from the sky on two chains from a crossbeam, turning slowly with sparks along its rim and pulling the enemies in a little. It stops and tilts flat with steam from its hub, everything hangs for a dead beat (1.85-2.0 s), then it drops. Impact: two impact frames, a ring of loose cogs and steam bursting outward, a cyan spark ring racing across the zone, the hit and a root. The gear spins down, sinks and breaks into cogs that fade. Damage 115, root 1.2 s. |
+| Q | [clockwork rivet shot](../../../src/spells/targeted/clockworkRivetShot.ts) | skillshot line (BOLT, bounce, width 0.8) | 12 | 3 s | flies from 0.2 s, 0.5 s of flight | 1.5 s | Her wrist launcher's brass spring winds up with a few cyan sparks. At 0.2 s it lets go: a spinning copper rivet flies along the aim line with a cyan spark trail. Each hit throws a few small cogs and a spark burst with a two-frame cyan star, slows the enemy, and the rivet ricochets on to the nearest other enemy. Damage 58, knock 1, slow 1.5 s. |
+| W | [cog turret](../../../src/spells/targeted/cogTurret.ts) | ground (TURRET, r 2) | 9 | 9 s | 0.5 s | 1.6 s (plays on while the turret lives) | Gears and a spring fly in from her backpack one after another and click together at the point (a big flat base gear, an upright gear and a small one meshing with it, a spring on the base), cyan sparks at every click and steam from the joints. At 0.5 s the turret is summoned and anyone standing on the spot is thrown off; the assembly folds away under it. The turret fires at whatever is within 8 and scatters into cogs when it dies. Landing hit damage 20, knock 3; turret 80 HP for 6 s, 12 per shot every 1.4 s. |
+| E | [gear field](../../../src/spells/targeted/gearField.ts) | ground (LINGER, r 3.6) | 9 | 9 s | 0.8 s, 1.8 s and 2.8 s (three lurches) | 4.0 s | Three big flat gears unfold at the aimed spot at ankle height, nested one inside the next (radii 1.5, 2.5 and 3.5), turning against each other with cyan sparks jumping across the gaps. At 0.8, 1.8 and 2.8 s the gears lurch a notch and an electric ring races across the field: every enemy inside takes a small hit and is slowed 1.0 s. At 3.4 s the gears fold away with steam. Damage 9 per lurch, slow 1.0 s. |
+| R | [gearfall](../../../src/spells/targeted/gearfall.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a warm iron dark and a ring of small gears marks the zone. A colossal gear (radius 6, chunky teeth, dark hub, copper spokes) is lowered tilted from the sky on two chains from a crossbeam, turning slowly with sparks along its rim and pulling the enemies in a little. It stops and tilts flat with steam from its hub, everything hangs for a dead beat (1.85-2.0 s), then it drops. Impact: two impact frames, a ring of loose cogs and steam bursting outward, a cyan spark ring racing across the zone, the hit and a root. The gear spins down, sinks and breaks into cogs that fade. Damage 125, root 1.2 s. |
 
 Spell sources: [`clockworkRivetShot.ts`](../../../src/spells/targeted/clockworkRivetShot.ts), [`cogTurret.ts`](../../../src/spells/targeted/cogTurret.ts), [`gearField.ts`](../../../src/spells/targeted/gearField.ts), [`gearfall.ts`](../../../src/spells/targeted/gearfall.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-clockwork).
 

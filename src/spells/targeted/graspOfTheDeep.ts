@@ -9,18 +9,19 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Grasp of the Deep (shadow kit, W: zone). A shadow pool with a pale foil disc spreads at the point; flat black hands
- * rise out of it around and under the enemies with their fingers spread. At the hit they close and pull the enemies
+ * Grasp of the Deep (shadow kit, W: self burst, r 3, silences 1.0 s). A shadow pool with a pale foil disc spreads round
+ * Nyx; flat black hands rise out of it around and under the enemies with their fingers spread. At the hit they close and pull the enemies
  * down a little, a ring of upright blade cut-outs snaps up around the edge and the ground rings. A small tick follows.
  * Then the hands sink, the blades fall flat and fade and the pool shrinks. See pipeline/designs/kit-shadow.md.
  */
 export interface GraspOfTheDeepSettings {
   damage: number;
   tick: number;
+  silence: number;
   loop: boolean;
 }
 
-export const defaultGraspOfTheDeep = (): GraspOfTheDeepSettings => ({ damage: 45, tick: 10, loop: false });
+export const defaultGraspOfTheDeep = (): GraspOfTheDeepSettings => ({ damage: 40, tick: 10, silence: 1, loop: false });
 
 // Timeline (seconds).
 const SPREAD_END = 0.3;
@@ -30,7 +31,7 @@ const TICK_T = 1.3;
 const SINK_A = 1.4;
 const SINK_B = 2.1;
 const DURATION = 2.3;
-const RADIUS = 4;
+const RADIUS = 3;
 const BLADES = 10;
 const HANDS = 7;
 const HAND_H = 3.3;
@@ -98,7 +99,7 @@ export class GraspOfTheDeep implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.point.copy(ctx.point).setY(0);
+    this.point.copy(ctx.from).setY(0); // self mode: the hands rise round Nyx herself
     facing(ctx.aim, this.nrm);
     forward(ctx.aim, this.fwd);
     this.hands.face(ctx.aim);
@@ -160,7 +161,7 @@ export class GraspOfTheDeep implements Effect {
       this.shake = 0.35;
       if (ctx) {
         ctx.targets.forEach((e, i) => {
-          if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: SHADOW_CSS.hot });
+          if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: SHADOW_CSS.hot, status: { kind: 'silence', seconds: this.settings.silence } });
           const p = ctx.targetPos[i];
           if (p && i < this.cuts.length) this.cuts[i].cut(this.v1.set(p.x, 1.2, p.z), this.v2.set(Math.cos(0.5 + i), Math.sin(0.5 + i), 0), 1.9);
         });
@@ -223,13 +224,13 @@ export class GraspOfTheDeep implements Effect {
 export const graspOfTheDeepModule: EffectModule = {
   label: 'grasp of the deep',
   category: 'hero: shadow',
-  targeting: { mode: 'ground', radius: RADIUS },
+  targeting: { mode: 'self', radius: RADIUS },
   create: () => new GraspOfTheDeep(),
   telegraphs(effect) {
     const e = effect as GraspOfTheDeep;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: HIT_T }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.35, threshold: 0.88 },
   frameCamera(camera, controls, effect) {
@@ -241,5 +242,6 @@ export const graspOfTheDeepModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
     f.add(s, 'tick', 0, 60, 1);
+    f.add(s, 'silence', 0, 1.5, 0.1);
   },
 };

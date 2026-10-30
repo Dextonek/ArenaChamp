@@ -119,6 +119,7 @@ function drop(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
 const bloodKit: HeroKit = {
   name: 'Vesper',
   title: 'the Crimson Countess',
+  maxHp: 620,
   accent: B.hot,
   foil: B.bone,
   portrait(g, s) {
@@ -136,8 +137,8 @@ const bloodKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'hemolance', name: 'Hemolance', range: 11, cooldown: 3,
-      blurb: 'Hardens her blood into a crystal lance and impales one enemy. The blood comes home.',
+      key: 'Q', label: 'hemolance', name: 'Hemolance', range: 8, cooldown: 3,
+      blurb: 'Hardens her blood into a crystal lance and impales one enemy; if it lands, the blood comes home and heals her 6.',
       icon(g, s) {
         iconGround(g, s);
         thorn(g, s * 0.2, s * 0.82, s * 0.86, s * 0.16, s * 0.2);
@@ -146,8 +147,8 @@ const bloodKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'thorn garden', name: 'Thorn Garden', range: 10, cooldown: 7,
-      blurb: 'A pool of blood inside a bone sigil freezes upward into a thicket of thorns.',
+      key: 'W', label: 'thorn garden', name: 'Thorn Garden', range: 8, cooldown: 7,
+      blurb: 'A pool of blood inside a bone sigil freezes upward into a thicket of thorns that slows whoever it catches.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = B.bone;
@@ -161,7 +162,7 @@ const bloodKit: HeroKit = {
     },
     {
       key: 'E', label: 'crimson pact', name: 'Crimson Pact', range: 0, cooldown: 9,
-      blurb: 'A heart of blood beats over her and drains every enemy nearby.',
+      blurb: 'A heart of blood beats over her and latches onto the nearest enemy within 6 m: three drains, and she heals half of what they deal.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = B.bone;
@@ -187,8 +188,8 @@ const bloodKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'sanguine eclipse', name: 'Sanguine Eclipse', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A bleeding moon rises; all the blood in the zone freezes into a thorn-star that falls on it.',
+      key: 'R', label: 'sanguine eclipse', name: 'Sanguine Eclipse', range: 8, cooldown: 20,
+      blurb: 'Ultimate. A bleeding moon rises; the blood in a 6 m zone is harvested (heals her 10 per enemy) and freezes into a thorn-star that falls on it.',
       icon(g, s) {
         iconGround(g, s);
         // Bone moon, red running down from the top.

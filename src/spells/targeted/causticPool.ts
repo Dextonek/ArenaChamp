@@ -7,28 +7,29 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Caustic Pool (alchemy kit, W: the slow burner). She throws two flasks at once, one high and one low; both shatter at
+ * Caustic Pool (alchemy kit, W: lingering pool, 4 s). She throws two flasks at once, one high and one low; both shatter at
  * the point, then a glass-ink alchemical circle flashes on and a pool of acid spreads to fill it, bubbling hard with big
- * bubbles under the enemies and fumes curling up. The enemies sink a little and take three ticks. Then the pool drains to
- * a stain and the circle fades. See pipeline/designs/kit-alchemy.md.
+ * bubbles under the enemies and fumes curling up. The enemies sink a little and take an initial hit and four ticks over 4 s, each slowing
+ * them. Then the pool drains to a stain and the circle fades. See pipeline/designs/kit-alchemy.md.
  */
 export interface CausticPoolSettings {
   damage: number;
   tick: number;
+  /** Seconds of slow on the first hit and on every tick. */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultCausticPool = (): CausticPoolSettings => ({ damage: 30, tick: 12, loop: false });
+export const defaultCausticPool = (): CausticPoolSettings => ({ damage: 30, tick: 7, slow: 1, loop: false });
 
 // Timeline (seconds).
 const THROW_T = 0.2;
 const SHATTER_A = 0.4;
 const SHATTER_B = 0.5;
 const HIT_T = 0.6;
-const TICK_1 = 1.2;
-const TICK_2 = 1.8;
-const DRAIN_T = 1.9;
-const DURATION = 2.6;
+const TICKS = [1.2, 2.0, 2.8, 3.6]; // every hit lands inside 4.2 s of the cast
+const DRAIN_T = 3.8;
+const DURATION = 4.6;
 const RADIUS = 4;
 const POOL_R = 3.8;
 const CIRCLE_R = 4.5;
@@ -56,7 +57,8 @@ export class CausticPool implements Effect {
   private landB = new THREE.Vector3();
   private inside: { enemy: CastContext['targets'][number]; pos: THREE.Vector3 }[] = [];
 
-  private flags = { a: false, b: false, hit: false, tick1: false, tick2: false, drain: false, sunk: false };
+  private flags = { a: false, b: false, hit: false, drain: false, sunk: false };
+  private ticksDone = 0;
   private bubbleTimer = 0;
   private fumeTimer = 0;
 
@@ -127,6 +129,7 @@ export class CausticPool implements Effect {
     this.shake = 0;
     this.bubbleTimer = 0;
     this.fumeTimer = 0;
+    this.ticksDone = 0;
     this.cleared = false;
     for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
     clearScreenFx(this.screen);
@@ -151,7 +154,6 @@ export class CausticPool implements Effect {
       return;
     }
     const t = this.time;
-    const ctx = this.ctx;
     const f = this.flags;
 
     // Events.
@@ -163,10 +165,9 @@ export class CausticPool implements Effect {
       this.splashA.drain(0.25);
       this.splashB.drain(0.25);
       this.shake = 0.18;
-      if (ctx) for (const v of this.inside) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 0, from: this.point, color: ALCHEMY_CSS.body });
+      this.eachInside(this.settings.damage);
     }
-    if (!f.tick1 && t >= TICK_1) { f.tick1 = true; this.tick(); }
-    if (!f.tick2 && t >= TICK_2) { f.tick2 = true; this.tick(); }
+    while (this.ticksDone < TICKS.length && t >= TICKS[this.ticksDone]) { this.ticksDone++; this.eachInside(this.settings.tick); }
     if (!f.drain && t >= DRAIN_T) { f.drain = true; this.pool.drain(0.6); }
 
     // Big bubbles under the enemies and fumes curling up out of the pool while it boils.
@@ -185,7 +186,7 @@ export class CausticPool implements Effect {
       }
     }
 
-    if (!this.cleared && t >= 2.2) { this.cleared = true; this.pool.bubbles.reset(); this.fumes.reset(); }
+    if (!this.cleared && t >= DURATION - 0.4) { this.cleared = true; this.pool.bubbles.reset(); this.fumes.reset(); }
 
     this.layout();
   }
@@ -199,9 +200,16 @@ export class CausticPool implements Effect {
     }
   }
 
-  private tick() {
+  /** A hit (damage and slow) on whoever stands in the pool right now: live positions, re-checked every tick. */
+  private eachInside(damage: number) {
     const ctx = this.ctx;
-    if (ctx) for (const v of this.inside) ctx.hit(v.enemy, { damage: this.settings.tick, knock: 0, from: this.point, color: ALCHEMY_CSS.body });
+    if (!ctx) return;
+    for (const e of ctx.targets) {
+      const p = e.group.position;
+      if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
+        ctx.hit(e, { damage, knock: 0, from: this.point, color: ALCHEMY_CSS.body, status: { kind: 'slow', seconds: this.settings.slow } });
+      }
+    }
   }
 
   private finish() {
@@ -257,7 +265,7 @@ export const causticPoolModule: EffectModule = {
     const e = effect as CausticPool;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T, until: TICKS[TICKS.length - 1] + 0.1 }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -269,5 +277,6 @@ export const causticPoolModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
     f.add(s, 'tick', 1, 60, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

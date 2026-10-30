@@ -1,5 +1,12 @@
 # Forge kit: Brannoc, the Ashen Smith
 
+## Role (2026-10-30)
+**Tank (melee), 820 HP**, `melee: true`. Signature: anvil lock, most hard CC, biggest shield, low damage.
+- Q Rivet Shot: range 10 -> 3 (point-blank flick), 35, slow 0.8, cd 3.
+- W Anvil Drop: small LOB, range 8, radius 2 (anvil scaled down), 35, stun 1.0, `cc`, cd 7.
+- E Bellows Ward: shield 80 for 3 s; the two heat pulses (radius 5) pull enemies 1.5 m toward him, no damage and no telegraph hit. cd 9.
+- R Forgefall: SELF-R, `cc`, range 0. The hammer falls on his own spot, radius 5, 90, knock-up 0.5. cd 20.
+
 **Signature shape: molten slag that cools.** Liquid metal glows white-orange, then a black crust grows over it
 from the edges inward, leaving glowing orange cracks that dim to dull red and go out. Every spell ends with
 something cooling. Second shape: hard, heavy smith's iron (a hammer, an anvil, rivets, chain links) with hot edges.

@@ -125,6 +125,7 @@ function mote(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
 export const chronoKit: HeroKit = {
   name: 'Tempo',
   title: 'the Unwound Hour',
+  maxHp: 580,
   accent: S.body,
   foil: S.foil,
   portrait(g, s) {
@@ -199,8 +200,8 @@ export const chronoKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'second hand', name: 'Second Hand', range: 11, cooldown: 3, aim: 'line',
-      blurb: 'Throws a spinning red clock hand that pierces everything in its line, damaging and slowing each.',
+      key: 'Q', label: 'second hand', name: 'Second Hand', range: 10, cooldown: 3, aim: 'line',
+      blurb: 'Throws a red clock hand 10 m; it hangs a beat and spins back to him, damaging and slowing everything it passes on both legs.',
       icon(g, s) {
         iconGround(g, s);
         // A red second hand flying up and right with two pale afterimages behind it, a small dial at its tail.
@@ -275,8 +276,8 @@ export const chronoKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'twelfth hour', name: 'Twelfth Hour', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A giant clock rises over the zone and strikes twelve: its red second hand drives into the ground, damaging and stunning everyone below.',
+      key: 'R', label: 'twelfth hour', name: 'Twelfth Hour', range: 13, cooldown: 20,
+      blurb: 'Ultimate. A giant clock hangs over the zone for 3.5 s, then strikes twelve for 150 damage, no stun: walk out of the circle or take it.',
       icon(g, s) {
         iconGround(g, s);
         // A giant ivory clock over a numeral ring on the floor, the red second hand driving down, shock lines racing out.

@@ -8,22 +8,27 @@ import type { Effect, EffectModule } from '../../effects/types';
 
 /**
  * Whirlpool (tide kit, W: ground zone). A shallow pool spreads at the point; three water ribbons rise out of it and
- * spiral round the centre faster and faster, drawing the enemies in. Then the spiral snaps up into a tall water column
- * with a foam collar that splashes outward (the hit), a last tick as it collapses, and the water falls back into the
- * pool, which drains. See pipeline/designs/kit-tide.md.
+ * spiral round the centre faster and faster, drawing the enemies in (a pull of 1.5 m at 0.5 s). Then the spiral snaps up
+ * into a tall water column with a foam collar that splashes outward (the hit, which knocks up), a last tick as it
+ * collapses that pulls again, and the water falls back into the pool, which drains. See pipeline/designs/kit-tide.md.
  */
 export interface WhirlpoolSettings {
   damage: number;
   /** Second, small tick as the column collapses. */
   tick: number;
+  /** Metres each draw tick drags the enemies toward the centre (engine cap 4). */
+  pull: number;
+  /** Knock-up seconds on the column hit (engine cap 0.8). */
+  knockup: number;
   loop: boolean;
 }
 
-export const defaultWhirlpool = (): WhirlpoolSettings => ({ damage: 45, tick: 10, loop: false });
+export const defaultWhirlpool = (): WhirlpoolSettings => ({ damage: 45, tick: 10, pull: 1.5, knockup: 0.4, loop: false });
 
 // Timeline (seconds).
 const POOL_T = 0.0; // the pool spreads
 const SPIRAL_T = 0.3; // ribbons rise and spiral
+const DRAW_T = 0.5; // the first draw tick: the spiral pulls the enemies in
 const HIT_T = 0.75; // the spiral snaps up into the column
 const TICK_T = 1.3; // the column collapses
 const RELEASE_T = 1.4; // the pull lets go, the water falls back
@@ -51,7 +56,7 @@ export class Whirlpool implements Effect {
   private point = new THREE.Vector3(0, 0, -8);
   private victims: { enemy: Enemy; feet: THREE.Vector3 }[] = [];
 
-  private flags = { pool: false, hit: false, tick: false, drained: false };
+  private flags = { pool: false, draw: false, hit: false, tick: false, drained: false };
   private spinA = 0;
 
   // Parts.
@@ -117,7 +122,7 @@ export class Whirlpool implements Effect {
     this.time = 0;
     this.shake = 0;
     this.spinA = 0;
-    this.flags.pool = this.flags.hit = this.flags.tick = this.flags.drained = false;
+    this.flags.pool = this.flags.draw = this.flags.hit = this.flags.tick = this.flags.drained = false;
     clearScreenFx(this.screen);
     this.screen.tint.set(TIDE.dark);
     this.pool.reset();
@@ -168,6 +173,14 @@ export class Whirlpool implements Effect {
       f.pool = true;
       this.pool.spread(this.point, RADIUS, 0.3);
     }
+    if (!f.draw && t >= DRAW_T) {
+      f.draw = true;
+      if (ctx) {
+        for (const v of this.victims) {
+          if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: 5, knock: 0, pull: this.settings.pull, from: this.point, color: TIDE_CSS.body });
+        }
+      }
+    }
     if (!f.hit && t >= HIT_T) {
       f.hit = true;
       this.crown.burst(this.point, 2.4);
@@ -175,14 +188,26 @@ export class Whirlpool implements Effect {
       this.pool.ripple(this.point);
       this.drops.spray(this.v1.set(this.point.x, 1.0, this.point.z), this.v2.set(0, 1, 0), 16, 7);
       this.shake = 0.35;
-      if (ctx) for (const v of this.victims) if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 0, from: this.point, color: TIDE_CSS.body });
+      if (ctx) {
+        for (const v of this.victims) {
+          if (this.inside(v.enemy)) {
+            ctx.hit(v.enemy, {
+              damage: this.settings.damage, knock: 0, from: this.point, color: TIDE_CSS.body, status: { kind: 'knockup', seconds: this.settings.knockup },
+            });
+          }
+        }
+      }
     }
     if (f.hit && !f.tick && t >= TICK_T) {
       f.tick = true;
       this.drops.spray(this.v1.set(this.point.x, 1.6, this.point.z), this.v2.set(0, 1, 0), 10, 4.5);
       this.pool.ripple(this.v1.set(this.point.x + 0.8, 0, this.point.z - 0.5));
       this.shake = Math.max(this.shake, 0.12);
-      if (ctx) for (const v of this.victims) if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.tick, knock: 0, from: this.point, color: TIDE_CSS.body });
+      if (ctx) {
+        for (const v of this.victims) {
+          if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.tick, knock: 0, pull: this.settings.pull, from: this.point, color: TIDE_CSS.body });
+        }
+      }
     }
     if (!f.drained && t >= RELEASE_T + 0.1) {
       f.drained = true;
@@ -264,5 +289,7 @@ export const whirlpoolModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
     f.add(s, 'tick', 0, 50, 1);
+    f.add(s, 'pull', 0, 4, 0.5);
+    f.add(s, 'knockup', 0, 0.8, 0.1);
   },
 };

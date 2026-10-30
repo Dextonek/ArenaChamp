@@ -1,12 +1,16 @@
 ---
 title: Fenna, the Grove Warden (grove kit)
 tags: [catalog, heroes, grove]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Fenna, the Grove Warden
 
 The grove hero kit: Fenna's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A forest warden with antler-like branches in her hair and a living staff; she roots, binds and blooms.
+
+## Role
+
+Support, 600 HP, ranged. Signature: *Regrowth*. She heals through the trade and roots. She wins a 1v1 by attrition: the Q lash heals her 8, the W vines root the enemy and the R heals 45 and roots again, while the turret shoots. Her weakness is low burst damage.
 
 ## At a glance
 
@@ -39,14 +43,14 @@ The spiral vine that blooms. Thick green vines grow in spirals (a coiling stem w
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.45-1.0 s after the cast, clean by about 2.3 s; an E aura may run about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/grove.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E each have a shape of their own (see the table: dash, skillshot, trap, orbit, summon and so on), not a fixed strike, zone or aura; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/grove.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [bloom lash](../../../src/spells/targeted/bloomLash.ts) | enemy | 10 | 3 s | 0.5 s | 1.6 s | She sweeps the staff and a vine bursts from the ground at her feet. At the hit it spirals across the ground to the enemy and up around it (2 coils) and a flower bursts open on top: pink accent for 2 frames, a petal burst, a small ground refraction ring. Then the flower sheds and the vine withers and sinks. Damage 54, knock 3. |
-| W | [overgrowth](../../../src/spells/targeted/overgrowth.ts) | ground (r 4) | 10 | 7 s | 0.75 s | 2.3 s | Roots spread from the point, then 6-8 spiral vines grow up out of them, coil around the enemies inside and hold them. At the hit every vine bursts into a flower at once (a ring of blooms) with a pollen puff, shake and a ground refraction ring; the flowers shed, the vines wither and the roots fade. Damage 45, then a tick of 10 at 1.3 s. |
-| E | [verdant ward](../../../src/spells/targeted/verdantWard.ts) | self (r 5) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | Three vines rise around her and spiral upward, a flower opens on each and they turn outward. At 1.0 s and 2.0 s each flower fires a jet of pollen and petals at every enemy within 5; then the vines wither. Damage 15 per pulse, knock 1. |
-| R | [world blossom](../../../src/spells/targeted/worldBlossom.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a green dusk and roots spread over the zone. A trunk of braided spiral vines grows about 6 high and a giant bud opens into a flower about 8 wide while vines hold the enemies; the flower then closes its petals over the zone like a fist, dead beat at 1.85-2.0 s, and the petals slam down. Impact frames, a ring of smaller flowers bursts open across the radius, petals and pollen explode outward, pink accent, refraction ring. Then petals rain down, the vines wither and the roots fade. Damage 130, knock 6. |
+| Q | [bloom lash](../../../src/spells/targeted/bloomLash.ts) | enemy | 10 | 3 s | 0.5 s | 1.6 s | She sweeps the staff and a vine bursts from the ground at her feet. At the hit it spirals across the ground to the enemy and up around it (2 coils) and a flower bursts open on top: pink accent for 2 frames, a petal burst, a small ground refraction ring. Then the flower sheds and the vine withers and sinks. Damage 50, knock 3; the lash heals her for 8. |
+| W | [overgrowth](../../../src/spells/targeted/overgrowth.ts) | enemy (zone r 2 round it) | 9 | 7 s | 0.75 s | 2.3 s | Vines grow up round the chosen enemy. Roots spread from where it stands, then 6-8 spiral vines grow up out of them, coil around it and hold it. At the hit every vine bursts into a flower at once (a ring of blooms) with a pollen puff, shake and a ground refraction ring; anyone still inside is rooted for 1.2 s. The flowers shed, the vines wither and the roots fade. Damage 45, then a tick of 10 at 1.3 s. |
+| E | [verdant ward](../../../src/spells/targeted/verdantWard.ts) | ground (TURRET, r 1.5) | 9 | 12 s | 0.5 s (the vine stands) | 1.6 s (plays on while the turret lives) | Three vines rise at the aimed spot and spiral upward, a flower opens on each. At 0.5 s they stand as one flowering vine (green stalk, pink blossom) summoned as a turret: 80 HP for 6 s, it fires petals at whatever comes within 8 for 12 every 1.4 s. The vine withers when the time or its HP runs out. |
+| R | [world blossom](../../../src/spells/targeted/worldBlossom.ts) | self (SELF-R, r 5) | 0 (self) | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a green dusk and roots spread round her. A trunk of braided spiral vines grows and a giant bud opens into a big flower while vines hold the enemies; the flower then closes its petals over her like a fist, dead beat at 1.85-2.0 s, and the petals slam down. Impact frames, a ring of smaller flowers bursts open across the radius, petals and pollen explode outward, pink accent, refraction ring. She heals 45 and every enemy within 5 m is rooted for 1.0 s. Then petals rain down, the vines wither and the roots fade. Damage 95. |
 
 Spell sources: [`bloomLash.ts`](../../../src/spells/targeted/bloomLash.ts), [`overgrowth.ts`](../../../src/spells/targeted/overgrowth.ts), [`verdantWard.ts`](../../../src/spells/targeted/verdantWard.ts), [`worldBlossom.ts`](../../../src/spells/targeted/worldBlossom.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-grove).
 

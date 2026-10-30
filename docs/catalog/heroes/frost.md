@@ -1,12 +1,23 @@
 ---
 title: Isolde, the Winter Warden (frost kit)
 tags: [catalog, heroes, frost]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Isolde, the Winter Warden
 
 The frost hero kit: Isolde's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A calm warden in a long coat whose breath freezes the air; control and slow, then a crushing ultimate.
+
+## Role
+
+| | |
+|---|---|
+| Role | Controller |
+| Signature | Frostbite, then freeze |
+| HP | 600 |
+| Reach | Ranged (Q holds at 12 m) |
+
+She slows with the spear, roots with the fern strip and stuns with the crown, then closes while the enemy is stuck. Modest damage; a skillshot that misses leaves her with nothing.
 
 ## At a glance
 
@@ -39,14 +50,14 @@ Frost ferns: rime creeps across the floor (and up the enemies) as feathery, bran
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.4-0.8 s after the cast, clean by about 2 s; an E aura may run about 3 s); R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/frost.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is a piercing skillshot, W a long strip, E an armour aura and R a crown on her own spot. Q, W and E hit 0.3-1.0 s after the cast and are clean by about 2.4 s; R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/frost.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [rime spear](../../../src/spells/targeted/rimeSpear.ts) | enemy | 11 | 3 s | 0.5 s | 1.7 s | She breathes an ice javelin into her hand and throws it; it pierces the enemy and frost ferns climb the target. Spear and crystals shatter at 0.8 s. Damage 53. |
-| W | [frostfern field](../../../src/spells/targeted/frostfernField.ts) | ground (r 4.5) | 10 | 7 s | 0.8 s | 2.3 s | Frost ferns race across the floor, hold everyone in them, then crack into a field of 22 crystals and shatter at 1.5 s. Damage 58. |
-| E | [glacial mantle](../../../src/spells/targeted/glacialMantle.ts) | self (r 4) | 0 (self) | 10 s | 1.0 s and 2.0 s (two pulses) | 3.3 s | Ice armour plates grow from her shoulders and hips and a blizzard band circles her; two rime pulses freeze enemies that come close, then the mantle shatters at 2.8 s. Damage 12 per pulse. |
-| R | [winter's crown](../../../src/spells/targeted/wintersCrown.ts) | ground (r 7) | 13 | 20 s | 2.3 s | 4.5 s | The ultimate. Ferns spread over the whole zone as the warning, a colossal inverted crown of ice crystals forms in the sky, dead beat at 1.85-2.0 s, then it drives down into a forest of crystals (impact frame, pink glint). Damage 130. |
+| Q | [rime spear](../../../src/spells/targeted/rimeSpear.ts) | ground, aim line (BOLT, pierces) | 12 | 3 s | 0.3 s (launch; flies 24 m/s) | 2.2 s | She breathes an ice javelin into her hand and throws it down the aim line; it pierces every enemy it meets and frost ferns climb each one. The javelin shatters at 12 m. Damage 64 and slow 1.5 s. |
+| W | [frostfern field](../../../src/spells/targeted/frostfernField.ts) | ground, aim line (LINE, 9 x 2.6 m) | 9 | 7 s | 0.9 s | 2.4 s | Frost ferns race 9 m down the aim from her feet, then crack into a field of 22 crystals and shatter at 1.6 s. Whoever is still in the strip at 0.9 s takes damage 62 and root 1.2 s. |
+| E | [glacial mantle](../../../src/spells/targeted/glacialMantle.ts) | self (r 4, AURA) | 0 (self) | 10 s | 1.0 s and 2.0 s (two pulses) | 3.3 s | Ice armour plates grow from her shoulders and hips and a blizzard band circles her. She gains a shield of 50 for 4 s; two rime pulses slow nearby enemies for 1.0 s, then the mantle shatters at 2.8 s. Damage 12 per pulse. |
+| R | [winter's crown](../../../src/spells/targeted/wintersCrown.ts) | self (r 5, SELF-R) | 0 (self) | 20 s | 2.3 s | 4.5 s | The ultimate. Ferns spread over the zone round her as the warning, a colossal inverted crown of ice crystals forms in the sky, dead beat at 1.85-2.0 s, then it drives down into a forest of crystals (impact frame, pink glint). Damage 150 and stun 1.0 s. |
 
 Spell sources: [`rimeSpear.ts`](../../../src/spells/targeted/rimeSpear.ts), [`frostfernField.ts`](../../../src/spells/targeted/frostfernField.ts), [`glacialMantle.ts`](../../../src/spells/targeted/glacialMantle.ts), [`wintersCrown.ts`](../../../src/spells/targeted/wintersCrown.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-frost).
 

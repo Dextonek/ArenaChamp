@@ -19,10 +19,12 @@ export interface DownpourSettings {
   /** Damage of the first volley; the centre bolt does `damage2`. */
   damage: number;
   damage2: number;
+  /** Seconds of slow on the first volley's hit. */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultDownpour = (): DownpourSettings => ({ damage: 40, damage2: 15, loop: false });
+export const defaultDownpour = (): DownpourSettings => ({ damage: 40, damage2: 15, slow: 1, loop: false });
 
 // Timeline (seconds).
 const GATHER_T = 0.0;
@@ -183,10 +185,11 @@ export class Downpour implements Effect {
       for (const s of this.spots) this.bolt(s, 0.25);
       this.shake = 0.35;
       if (ctx) {
-        for (let i = 0; i < ctx.targets.length; i++) {
-          const p = ctx.targetPos[i];
-          if (p && Math.hypot(p.x - this.centre.x, p.z - this.centre.z) <= RADIUS) {
-            ctx.hit(ctx.targets[i], { damage: this.settings.damage, knock: 0, color: STORM_CSS.body });
+        // Re-check at impact: whoever stands in the circle now.
+        for (const e of ctx.targets) {
+          const p = e.group.position;
+          if (Math.hypot(p.x - this.centre.x, p.z - this.centre.z) <= RADIUS) {
+            ctx.hit(e, { damage: this.settings.damage, knock: 0, color: STORM_CSS.body, status: { kind: 'slow', seconds: this.settings.slow } });
           }
         }
       }
@@ -197,10 +200,10 @@ export class Downpour implements Effect {
       this.bolt(this.centre, 0.3);
       this.shake = 0.25;
       if (ctx) {
-        for (let i = 0; i < ctx.targets.length; i++) {
-          const p = ctx.targetPos[i];
-          if (p && Math.hypot(p.x - this.centre.x, p.z - this.centre.z) <= RADIUS) {
-            ctx.hit(ctx.targets[i], { damage: this.settings.damage2, knock: 0, color: STORM_CSS.body });
+        for (const e of ctx.targets) {
+          const p = e.group.position;
+          if (Math.hypot(p.x - this.centre.x, p.z - this.centre.z) <= RADIUS) {
+            ctx.hit(e, { damage: this.settings.damage2, knock: 0, color: STORM_CSS.body });
           }
         }
       }
@@ -256,5 +259,6 @@ export const downpourModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
     f.add(s, 'damage2', 0, 60, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

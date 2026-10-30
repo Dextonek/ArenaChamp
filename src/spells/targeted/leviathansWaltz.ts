@@ -7,19 +7,22 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Leviathan's Waltz (tide kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world
- * darkens to deep sea blue and a pool spreads over the whole zone. A huge water ribbon rises out of it and coils into a
- * serpent (a head with a foam mane and two pale eyes, a long coiling body) that circles the zone 3 to 6 high while
- * droplets stream off it. It rears up over the point, mouth open, everything hangs for a dead beat, then it dives
- * straight down: a huge foam crown, a ring wave racing across the zone, the hit. The water falls as rain, the pool
- * drains and the light lifts. Clean by 4.5 s. See pipeline/designs/kit-tide.md.
+ * Leviathan's Waltz (tide kit, R: the MOBA ultimate, a line). Under the normal gameplay camera, no letterbox: the world
+ * darkens to deep sea blue and pools spread along a 12 m strip that runs from her feet down the aim. A huge water ribbon
+ * rises out of it and coils into a serpent (a head with a foam mane and two pale eyes, a long coiling body) that
+ * circles the strip 3 to 6 high while droplets stream off it. It rears up over the middle of the strip, mouth open,
+ * everything hangs for a dead beat, then it dives straight down: a huge foam crown, a tidal wave racing both ways
+ * along the strip, the hit, which knocks everyone on the strip up. The water falls as rain, the pools drain and the
+ * light lifts. Clean by 4.5 s. See pipeline/designs/kit-tide.md.
  */
 export interface LeviathansWaltzSettings {
   damage: number;
+  /** Knock-up seconds on the hit (engine cap 0.8). */
+  knockup: number;
   loop: boolean;
 }
 
-export const defaultLeviathansWaltz = (): LeviathansWaltzSettings => ({ damage: 125, loop: false });
+export const defaultLeviathansWaltz = (): LeviathansWaltzSettings => ({ damage: 92, knockup: 0.5, loop: false });
 
 // Timeline (seconds).
 const LIFT_T = 0.0; // she lifts both arms, the world darkens, the pool spreads
@@ -32,7 +35,10 @@ const RAIN_END_T = 3.9;
 const DRAIN_T = 3.2;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const LENGTH = 12; // the strip runs this far from her feet along the aim
+const HALF_W = 1.8; // half the strip width (the hit and the telegraph)
+const RADIUS = LENGTH / 2; // reach of the strip from its middle, for the visuals
+const POOLS = 3;
 const BEAT_LEN = DIVE_T - BEAT_T;
 const LAG = 1.25; // seconds of the head's track the body spans
 const TOP_Y = 5.5; // where the head rears
@@ -55,6 +61,8 @@ export class LeviathansWaltz implements Effect {
 
   // Cast geometry.
   private point = new THREE.Vector3(0, 0, -8);
+  private from = new THREE.Vector3(0, 0, 14);
+  private dir = new THREE.Vector3(0, 0, -1);
   private victims: { enemy: Enemy; feet: THREE.Vector3 }[] = [];
   private theta0 = 0;
   /** The cobra strike: unit direction of the rear and the dive (about 60 degrees below horizontal), and the rear spot. */
@@ -65,7 +73,7 @@ export class LeviathansWaltz implements Effect {
   private rainTimer = 0;
 
   // Parts.
-  private pool = new WaterPool();
+  private pools = Array.from({ length: POOLS }, () => new WaterPool());
   private body = new WaterRibbon(60, 10, 30);
   private head = new SerpentHead();
   private rings = [new WaterRibbon(30, 8, 8), new WaterRibbon(30, 8, 8)];
@@ -90,7 +98,7 @@ export class LeviathansWaltz implements Effect {
     this.body.drops.splash = false;
     for (const r of this.rings) { r.shed = 6; r.drops.splash = false; }
     this.group.add(
-      this.pool.mesh, this.body.mesh, ...this.rings.map((r) => r.mesh), this.head.mesh, this.crown.mesh, this.rain.mesh,
+      ...this.pools.map((p) => p.mesh), this.body.mesh, ...this.rings.map((r) => r.mesh), this.head.mesh, this.crown.mesh, this.rain.mesh,
       this.pop.mesh, this.groundShock.mesh,
     );
     this.reset();
@@ -104,15 +112,24 @@ export class LeviathansWaltz implements Effect {
     return HIT_T;
   }
 
-  /** True while `e` stands inside the zone right now (enemies who walked out before the impact are spared). */
+  /** True when ground point p lies inside the strip. */
+  private inStrip(p: THREE.Vector3) {
+    const dx = p.x - this.from.x, dz = p.z - this.from.z;
+    const along = dx * this.dir.x + dz * this.dir.z;
+    const side = dx * this.dir.z - dz * this.dir.x;
+    return along >= -0.5 && along <= LENGTH && Math.abs(side) <= HALF_W + 0.2;
+  }
+
+  /** True while `e` stands on the strip right now (enemies who walked off before the impact are spared). */
   private inside(e: CastContext['targets'][number]) {
-    const p = e.group.position;
-    return Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS;
+    return this.inStrip(e.group.position);
   }
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.point.copy(ctx.point).setY(0);
+    this.from.copy(ctx.from).setY(0);
+    this.dir.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
+    this.point.copy(this.from).addScaledVector(this.dir, LENGTH / 2);
     this.theta0 = Math.atan2(ctx.from.z - this.point.z, ctx.from.x - this.point.x) + 2.4;
     const hx = this.point.x - ctx.from.x, hz = this.point.z - ctx.from.z, hl = Math.max(Math.hypot(hx, hz), 1e-3);
     this.strike.set((hx / hl) * 0.5, -0.87, (hz / hl) * 0.5).normalize();
@@ -122,7 +139,7 @@ export class LeviathansWaltz implements Effect {
     ctx.targets.forEach((e, i) => {
       const p = ctx.targetPos[i];
       if (!p) return;
-      if (Math.hypot(p.x - this.point.x, p.z - this.point.z) > RADIUS) return;
+      if (!this.inStrip(p)) return;
       this.victims.push({ enemy: e, feet: p.clone().setY(0) });
     });
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
@@ -142,7 +159,7 @@ export class LeviathansWaltz implements Effect {
     for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
     clearScreenFx(this.screen);
     this.screen.tint.set(TIDE.dark);
-    this.pool.reset();
+    for (const p of this.pools) p.reset();
     this.body.reset();
     this.head.reset();
     for (const r of this.rings) r.reset();
@@ -158,7 +175,7 @@ export class LeviathansWaltz implements Effect {
     const orbit = (gg: number, o: THREE.Vector3) => {
       const s = Math.max(gg - g0, 0);
       const theta = this.theta0 + 3.8 * (s - 0.25 * (1 - Math.exp(-s / 0.25)));
-      const rad = 5 - 1.0 * smoothstep(s / 1.3);
+      const rad = 3.4 - 0.6 * smoothstep(s / 1.3);
       const y = 0.2 + 4.6 * (1 - Math.exp(-s / 0.45)) + 0.6 * Math.sin(s * 2.6);
       return o.set(this.point.x + Math.cos(theta) * rad, y, this.point.z + Math.sin(theta) * rad);
     };
@@ -197,9 +214,16 @@ export class LeviathansWaltz implements Effect {
   /** The expanding ring wave: half a ring each, racing out from the point. */
   private ringPath = (u: number, out: THREE.Vector3): THREE.Vector3 => {
     const k = this.cur.s;
-    const r = 1.2 + (RADIUS - 0.4) * (1 - Math.pow(1 - k, 3));
-    const a = this.cur.phase + u * Math.PI * 0.95 + k * 1.5;
-    return out.set(this.point.x + Math.cos(a) * r, 0.4 * (1 - k * 0.5), this.point.z + Math.sin(a) * r);
+    // A tidal wave racing both ways along the strip: a curved crest across its width (phase 0 ahead, PI behind).
+    const r = 0.8 + (RADIUS - 0.8) * (1 - Math.pow(1 - k, 3));
+    const sgn = Math.cos(this.cur.phase - this.theta0) >= 0 ? 1 : -1;
+    const lat = (u - 0.5) * 2 * HALF_W * 1.15;
+    const bow = 0.5 * (1 - 4 * (u - 0.5) * (u - 0.5));
+    return out.set(
+      this.point.x + this.dir.x * (sgn * (r + bow)) + this.dir.z * lat,
+      0.4 * (1 - k * 0.5),
+      this.point.z + this.dir.z * (sgn * (r + bow)) - this.dir.x * lat,
+    );
   };
 
   update(dt: number) {
@@ -208,13 +232,13 @@ export class LeviathansWaltz implements Effect {
     const held = this.time >= BEAT_T && this.time < DIVE_T;
     this.body.frozen = held;
     this.rain.frozen = held;
-    this.pool.frozen = held;
+    for (const p of this.pools) p.frozen = held;
     this.crown.frozen = held;
     this.body.update(dt);
     for (const r of this.rings) r.update(dt);
     this.rain.update(dt);
     this.crown.update(dt);
-    this.pool.update(dt);
+    for (const p of this.pools) p.update(dt);
     this.time += dt;
     if (this.time >= DURATION) {
       this.finish();
@@ -227,7 +251,10 @@ export class LeviathansWaltz implements Effect {
 
     if (!f.pool && t >= LIFT_T + 0.02) {
       f.pool = true;
-      this.pool.spread(this.point, RADIUS, 0.4);
+      this.pools.forEach((p, i) => {
+        this.v1.copy(this.from).addScaledVector(this.dir, LENGTH * ((i + 0.5) / POOLS)).setY(0);
+        p.spread(this.v1, LENGTH / POOLS / 2 + 0.4, 0.4);
+      });
     }
     // Rain: the zone fills with falling water after the dive, and a little mist-drop all through the build.
     if (t >= 0.6 && t < BEAT_T && !held) {
@@ -249,19 +276,28 @@ export class LeviathansWaltz implements Effect {
       this.rainTimer = 0;
       this.head.hide();
       this.crown.burst(this.point, 3.4, 1.8);
+      for (const sgn of [-1, 1]) this.crown.burst(this.v1.copy(this.point).addScaledVector(this.dir, sgn * 4), 1.8, 1.2);
       let shown = 0;
       for (const v of this.victims) {
         if (shown >= MAX_VIS) break;
         shown++;
         this.crown.burst(v.feet, 1.1, 1.0);
       }
-      this.pool.ripple(this.point);
+      this.pools[1].ripple(this.point);
       this.rain.spray(this.v1.set(this.point.x, 1.2, this.point.z), this.v2.set(0, 1, 0), 24, 9);
-      if (ctx) for (const v of this.victims) if (this.inside(v.enemy)) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 6, from: this.point, color: TIDE_CSS.body });
+      // Live positions: whoever stepped off the strip before the dive is spared.
+      if (ctx) {
+        for (const e of ctx.targets) {
+          if (!this.inside(e)) continue;
+          ctx.hit(e, {
+            damage: this.settings.damage, knock: 2, from: this.point, color: TIDE_CSS.body, status: { kind: 'knockup', seconds: this.settings.knockup },
+          });
+        }
+      }
     }
     if (f.hit && !f.drained && t >= DRAIN_T) {
       f.drained = true;
-      this.pool.drain(1.0);
+      for (const p of this.pools) p.drain(1.0);
     }
 
     this.layout();
@@ -269,8 +305,8 @@ export class LeviathansWaltz implements Effect {
 
   /** A falling drop at a random spot of the zone (mist in the build, rain after the dive). */
   private dropAt(life: number, speedK: number) {
-    const a = Math.random() * Math.PI * 2, r = RADIUS * 0.95 * Math.sqrt(Math.random());
-    this.v1.set(this.point.x + Math.cos(a) * r, 5.5 + Math.random() * 2.5, this.point.z + Math.sin(a) * r);
+    const along = (Math.random() - 0.5) * LENGTH * 0.95, lat = (Math.random() - 0.5) * 2 * HALF_W * 1.2;
+    this.v1.set(this.point.x + this.dir.x * along + this.dir.z * lat, 5.5 + Math.random() * 2.5, this.point.z + this.dir.z * along - this.dir.x * lat);
     this.v2.set(0, -(5 + Math.random() * 4) * speedK, 0);
     this.rain.drop(this.v1, this.v2, life, 0.09 + Math.random() * 0.06);
   }
@@ -353,13 +389,18 @@ export class LeviathansWaltz implements Effect {
 export const leviathansWaltzModule: EffectModule = {
   label: "leviathan's waltz",
   category: 'hero: tide',
-  targeting: { mode: 'ground', radius: RADIUS },
+  // A line from her along the aim: radius is the strip half width for the aim marker.
+  targeting: { mode: 'ground', radius: HALF_W },
   create: () => new LeviathansWaltz(),
   telegraphs(effect) {
     const e = effect as LeviathansWaltz;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    const d = { x: Math.sin(ctx.aim), z: Math.cos(ctx.aim) };
+    return [{
+      shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + d.x * LENGTH, z2: ctx.from.z + d.z * LENGTH, width: HALF_W * 2 },
+      start: 0, impact: HIT_T,
+    }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -370,5 +411,6 @@ export const leviathansWaltzModule: EffectModule = {
     const s = (effect as LeviathansWaltz).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
+    f.add(s, 'knockup', 0, 0.8, 0.1);
   },
 };

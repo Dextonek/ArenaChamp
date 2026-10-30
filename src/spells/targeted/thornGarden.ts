@@ -18,10 +18,12 @@ import type { Effect, EffectModule } from '../../effects/types';
 export interface ThornGardenSettings {
   damage: number;
   tick: number;
+  /** Seconds of slow on the eruption hit. */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultThornGarden = (): ThornGardenSettings => ({ damage: 50, tick: 10, loop: false });
+export const defaultThornGarden = (): ThornGardenSettings => ({ damage: 50, tick: 10, slow: 1.5, loop: false });
 
 // Timeline (seconds).
 const SIGIL_T = 0.2; // sigil + pool start
@@ -265,6 +267,12 @@ export class ThornGarden implements Effect {
     return LIFT * (1 - u * u);
   }
 
+  /** Still inside the zone right now (live position, re-checked at every hit). */
+  private inside(e: CastContext['targets'][number]) {
+    const p = e.group.position;
+    return Math.hypot(p.x - this.centre.x, p.z - this.centre.z) <= RADIUS;
+  }
+
   update(dt: number) {
     for (const e of this.emitters) if (e !== this.smoke.emitter) e.update(dt);
     this.smoke.update(dt);
@@ -303,7 +311,7 @@ export class ThornGarden implements Effect {
       f.erupted = true;
       this.erupt();
       this.drops.spray(this.v1.copy(this.centre).setY(0.1), this.v2.set(0, 1, 0), 8, 5, 0.9);
-      if (ctx) for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: BLOOD_CSS.body });
+      if (ctx) for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 0, color: BLOOD_CSS.body, status: { kind: 'slow', seconds: this.settings.slow } });
     }
     if (!f.drain && t >= DRAIN_T && ctx) {
       f.drain = true;
@@ -314,7 +322,7 @@ export class ThornGarden implements Effect {
     }
     if (!f.tick && t >= TICK_T) {
       f.tick = true;
-      if (ctx) for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.tick, knock: 0, color: BLOOD_CSS.body });
+      if (ctx) for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.tick, knock: 0, color: BLOOD_CSS.body });
     }
     for (let b = 0; b < 3; b++) {
       if (!f.shattered[b] && t >= SHATTER_T + b * 0.06) {
@@ -443,6 +451,7 @@ export const thornGardenModule: EffectModule = {
   buildGui(f, effect) {
     const s = (effect as ThornGarden).settings;
     f.add(s, 'loop');
+    f.add(s, 'slow', 0, 2.5, 0.1);
     f.add(s, 'damage', 1, 150, 1);
     f.add(s, 'tick', 0, 60, 1);
   },

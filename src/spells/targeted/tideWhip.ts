@@ -7,16 +7,18 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Tide Whip (tide kit, Q: single target). She spins and a thick water ribbon unrolls from her wrist in a curl, then
- * lashes out to the target like a whip, wraps around it once and bursts into a foam crown with a coral pop. The
- * ribbon then falls as droplets and the pool drains. See pipeline/designs/kit-tide.md.
+ * Tide Whip (tide kit, Q: hook). She spins and a thick water ribbon unrolls from her wrist in a curl, then
+ * lashes out to the target like a whip, wraps around it once and drags it 3 m toward her, bursting into a foam crown
+ * with a coral pop. The ribbon then falls as droplets and the pool drains. See pipeline/designs/kit-tide.md.
  */
 export interface TideWhipSettings {
   damage: number;
+  /** Metres the hit drags the target toward her (engine cap 4). */
+  pull: number;
   loop: boolean;
 }
 
-export const defaultTideWhip = (): TideWhipSettings => ({ damage: 50, loop: false });
+export const defaultTideWhip = (): TideWhipSettings => ({ damage: 50, pull: 3, loop: false });
 
 // Timeline (seconds).
 const CAST_T = 0.0;
@@ -168,7 +170,9 @@ export class TideWhip implements Effect {
       this.pool.spread(this.feet, 1.8, 0.25);
       this.drops.spray(this.v1.copy(this.hit), this.v2.set(0, 1, 0), 10, 5.5);
       this.shake = 0.18;
-      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 3, from: ctx.from, color: TIDE_CSS.body });
+      if (ctx && ctx.targets[0]) {
+        ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 0, pull: this.settings.pull, from: ctx.from, color: TIDE_CSS.body });
+      }
     }
     if (f.impacted && !f.ring2 && t >= IMPACT_T + 0.12) {
       f.ring2 = true;
@@ -233,5 +237,6 @@ export const tideWhipModule: EffectModule = {
     const s = (effect as TideWhip).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
+    f.add(s, 'pull', 0, 4, 0.5);
   },
 };

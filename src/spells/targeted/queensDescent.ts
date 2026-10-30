@@ -2,25 +2,27 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
-import { HIVE, HIVE_CSS, Honeycomb, HoneySplash, QueenBody, Swarm } from '../../effects/parts/hive';
+import { HIVE, HIVE_CSS, Honeycomb, HoneySplash, QueenBody, Swarm, waspLook } from '../../effects/parts/hive';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Queen's Descent (hive kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world darkens to
+ * Queen's Descent (hive kit, R: the swarm-queen dive that drops 3 wasp soldiers). Under the normal gameplay camera, no letterbox: the world darkens to
  * amber-black and honeycomb cells grow over the zone edge, then rise into a ring wall (about 2 high). Hundreds of wasps
  * stream in from the rim and form the silhouette of a giant queen wasp (about 8 wide wings, 6 long, hovering 4 to 7 high,
  * its top under 8.5) while the enemies are pulled in. At 1.6 s she folds her wings and points down; dead beat 1.85..2.0;
  * at 2.0 s the swarm-queen dives into the centre. At 2.2 s the swarm bursts outward in a ring with honey splashes, a green
- * star and the hit. The wasps scatter and fade, the wall crumbles, the darkness lifts; clean by 4.5 s.
+ * star and the hit (slows, no stun); three wasp soldiers (melee units) peel off where she lands. The wasps scatter and fade, the wall crumbles, the darkness lifts; clean by 4.5 s.
  * See pipeline/designs/kit-hive.md.
  */
 export interface QueensDescentSettings {
   damage: number;
+  /** Seconds of slow on the hit. */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultQueensDescent = (): QueensDescentSettings => ({ damage: 90, loop: false });
+export const defaultQueensDescent = (): QueensDescentSettings => ({ damage: 85, slow: 1.5, loop: false });
 
 // Timeline (seconds).
 const RISE_T = 0.3; // the wall rises and the swarm gathers
@@ -298,8 +300,12 @@ export class QueensDescent implements Effect {
       if (ctx) {
         for (const v of this.victims) {
           if (!this.inside(v.enemy)) continue;
-          ctx.hit(v.enemy, { damage: this.settings.damage, knock: 3, from: this.point, color: HIVE_CSS.body, status: { kind: 'stun', seconds: 0.6 } });
+          ctx.hit(v.enemy, { damage: this.settings.damage, knock: 3, from: this.point, color: HIVE_CSS.body, status: { kind: 'slow', seconds: this.settings.slow } });
         }
+        // Three wasp soldiers (melee units, inside the cap of 6 together with Swarm Leap's two) drop where she lands.
+        ctx.summon?.({
+          kind: 'melee', at: this.point.clone(), count: 3, hp: 40, seconds: 6, damage: 6, attackEvery: 1, color: HIVE_CSS.body, look: waspLook,
+        });
       }
     }
     if (f.hit && !f.crumble && t >= CRUMBLE_T) {
@@ -364,5 +370,6 @@ export const queensDescentModule: EffectModule = {
     const s = (effect as QueensDescent).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

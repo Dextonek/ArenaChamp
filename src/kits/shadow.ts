@@ -121,6 +121,7 @@ function mintCut(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number
 
 export const shadowKit: HeroKit = {
   name: 'Nyx',
+  maxHp: 600,
   title: 'the Umbral Stalker',
   accent: S.hot,
   foil: S.foil,
@@ -140,8 +141,8 @@ export const shadowKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'umbral blink', name: 'Umbral Blink', range: 10, cooldown: 3,
-      blurb: 'A shadow of her blinks to an enemy in stepped jumps and cuts it with two crossed blades.',
+      key: 'Q', label: 'umbral blink', name: 'Umbral Blink', range: 7, cooldown: 3,
+      blurb: 'A dash strike: she slides in stepped jumps to stand beside the enemy and cuts it with two crossed blades.',
       icon(g, s) {
         ground(g, s);
         ellipse(g, s * 0.5, s * 0.6, s * 0.4, s * 0.18, S.foil, undefined);
@@ -151,8 +152,8 @@ export const shadowKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'grasp of the deep', name: 'Grasp of the Deep', range: 10, cooldown: 7,
-      blurb: 'A shadow pool opens and black hands rise, close on the enemies and pull them down.',
+      key: 'W', label: 'grasp of the deep', name: 'Grasp of the Deep', range: 0, cooldown: 7,
+      blurb: 'A burst round her: a shadow pool opens, black hands rise and close on enemies within 3 m, hurt and silence them.',
       icon(g, s) {
         ground(g, s);
         ellipse(g, s * 0.5, s * 0.8, s * 0.44, s * 0.15, S.foil);
@@ -164,7 +165,7 @@ export const shadowKit: HeroKit = {
     },
     {
       key: 'E', label: 'night shroud', name: 'Night Shroud', range: 0, cooldown: 9,
-      blurb: 'Three shadow clones circle her and lunge at every enemy nearby, twice.',
+      blurb: 'No aim: she turns to the nearest enemy within 8 m and three shadow clones fly out at it as a fan of bolts.',
       icon(g, s) {
         ground(g, s);
         ellipse(g, s * 0.5, s * 0.7, s * 0.42, s * 0.2, S.foil);
@@ -176,8 +177,8 @@ export const shadowKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'eclipse execution', name: 'Eclipse Execution', range: 13, cooldown: 20,
-      blurb: 'Ultimate. An eclipse darkens the zone and a giant crescent blade cuts down through it.',
+      key: 'R', label: 'eclipse execution', name: 'Eclipse Execution', range: 10, cooldown: 20,
+      blurb: 'Ultimate. An eclipse darkens a small zone and a giant crescent blade cuts down through it for huge damage.',
       icon(g, s) {
         ground(g, s);
         disc(g, s * 0.5, s * 0.36, s * 0.27, S.foil);

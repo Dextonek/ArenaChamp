@@ -1,12 +1,23 @@
 ---
 title: Lyra, the Star Archer (astral kit)
 tags: [catalog, heroes, astral]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Lyra, the Star Archer
 
 The astral hero kit: Lyra's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A ranged archer who reads the sky; precise, elegant, multi-target.
+
+## Role
+
+| | |
+|---|---|
+| Role | Marksman |
+| Signature | Out-range |
+| HP | 520 |
+| Reach | Ranged (longest reach: Q 14 m, R global) |
+
+She out-ranges everyone: steady poke from 14 m, a trap, and a backstep to reset the gap. She has the least HP and dies to a dive that closes the distance.
 
 ## At a glance
 
@@ -40,14 +51,14 @@ Constellations: bright four-point star points joined by thin, crisp gold lines t
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.4-0.8 s after the cast, clean by about 2 s; an E aura may run about 3 s); R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/astral.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is a bouncing skillshot, W a trap, E a backstep and R a global strike. Q, W and E are clean by about 2.4-4 s; R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/astral.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [starshot](../../../src/spells/targeted/starshot.ts) | enemies (up to 3) | 12 | 3 s | 0.52, 0.60 and 0.68 s (one per target) | 1.6 s | She draws a bow of light; a star arrow hops from enemy to enemy and leaves a small constellation behind, which snaps at 1.0 s. Damage 55 per target. |
-| W | [constellation snare](../../../src/spells/targeted/constellationSnare.ts) | ground (r 4) | 11 | 7 s | 0.8 s | 2.1 s | An arrow goes up, stars fall around the spot and are joined into a net that snaps tight at 0.8 s and drags the enemies toward the centre; it breaks apart at 1.4 s. Damage 60. |
-| E | [orbit veil](../../../src/spells/targeted/orbitVeil.ts) | self (r 5) | 0 (self) | 9 s | 1.0 s and 2.0 s (two strikes) | 3.3 s | A turning constellation of 7 stars circles her under a night veil and fires gold lines at every enemy nearby, twice. Loopable. Damage 12 per strike. |
-| R | [celestial hunt](../../../src/spells/targeted/celestialHunt.ts) | ground (r 7) | 14 | 20 s | 2.35 s | 4.5 s | The ultimate. The world goes to night and a giant constellation stag is drawn in the sky; dead beat at 1.8-1.95 s, then it charges down through the zone (impact frame, star rain). Damage 138. |
+| Q | [starshot](../../../src/spells/targeted/starshot.ts) | ground, aim line (BOLT, bounces once) | 14 | 2 s | 0.27 s (release; flies 22 m/s) | 3.0 s | She draws a bow of light; a star arrow flies down the aim line, hits the first enemy and bounces once to the nearest other enemy within 6 m, leaving a small constellation that snaps. Damage 52 per hit. |
+| W | [constellation snare](../../../src/spells/targeted/constellationSnare.ts) | ground (r 4 net, TRAP) | 11 | 7 s | armed at 0.8 s, snaps when an enemy is inside; fizzles at 3.0 s | 4.0 s | An arrow goes up, stars fall around the spot and are joined into a net that lies armed until 3.0 s. The moment an enemy stands inside it snaps tight: damage 60, root 1.2 s, and it drags the enemy toward the centre; it breaks apart 0.6 s later. If nobody walks in, it fizzles with no hit. |
+| E | [orbit veil](../../../src/spells/targeted/orbitVeil.ts) | self (r 5, BACKSTEP) | 0 (self) | 9 s | 0.6 s (volley); the step starts at 0.65 s | 2.4 s | A turning constellation of 7 stars circles her under a night veil and fires gold lines at every enemy within 5 m: damage 12 and slow 1.0 s. Then it carries her 5 m away from the enemy in 0.35 s, and the chart and veil travel with her. |
+| R | [celestial hunt](../../../src/spells/targeted/celestialHunt.ts) | ground (r 3, GLOBAL) | 60 (the whole ring) | 20 s | 2.5 s | 4.5 s | The ultimate. The world goes to night and a giant constellation stag is drawn over the spot you pick, anywhere in the ring; dead beat at 1.8-1.95 s, then it charges down (impact frame, star rain). Hits check where the enemy stands now, so a walker escapes. Damage 155. |
 
 Spell sources: [`starshot.ts`](../../../src/spells/targeted/starshot.ts), [`constellationSnare.ts`](../../../src/spells/targeted/constellationSnare.ts), [`orbitVeil.ts`](../../../src/spells/targeted/orbitVeil.ts), [`celestialHunt.ts`](../../../src/spells/targeted/celestialHunt.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-astral).
 

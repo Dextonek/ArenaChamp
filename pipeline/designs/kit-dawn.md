@@ -1,5 +1,12 @@
 # Dawn kit: Auriel, the Dawn Paladin
 
+## Role (2026-10-30)
+**Support**, 640 HP. Signature: *Aegis*. Every spell shields her; the stun dome and the orbit punish whoever stays close. Numbers are first guesses for the tournament.
+- Q Radiant Spear: a piercing skillshot (`aim: 'line'`, range 12, speed 24, radius 0.5, 50 damage); a hit gives a 20 shield for 4 s. The six-shard spear rides the bolt, the spray fans out of the target on the first hit.
+- W Aegis Wall: a trap (`cc`). The shield ring stands open for 1.2 s, then the dome slams: 45 damage and **stun 0.8** to whoever is still inside radius 4 (live position), a 10 tick at 1.7 s.
+- E Halo of Blades: an ORBIT. Six blades circle her at 2.5 m for 3 s (she stands rooted for 2 s) and cut what they touch: 10 each, at most 3 hits, one per 0.7 s per enemy; shield 40 at the cast. Telegraph: the orbit circle (radius 3.6).
+- R Judgement of Dawn: radius 7 to 6, 125 to 95, **shield 80** at the impact.
+
 **Signature shape: hard-light geometry.** Light is solid: **flat gold panels with crisp edges** (hexagons, kite shields,
 long blade shards) that click together into shapes (a shield wall, a halo of blades, a great sword), lit from inside
 with a white core line and a darker amber rim. Things assemble panel by panel and shatter into panels. Not soft holy

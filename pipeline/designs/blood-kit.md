@@ -1,5 +1,12 @@
 # Blood kit: Vesper, the Crimson Countess (a four-spell hero kit)
 
+## Role (2026-10-30)
+**Juggernaut (drain), 740 HP**, short ranges (Q, W, R all 8). Signature: blood price, every spell heals her (code in `src/heroes.ts`).
+- Q Hemolance: range 11 -> 8, 47, heals 15 when the lance lands.
+- W Thorn Garden: range 8, 50 + 10, slows 1.5 on the eruption; hits re-check live positions.
+- E Crimson Pact: TETHER. The heart latches onto the nearest enemy within 6 m (one thread); three drains of 12 at 0.7 s intervals, each healing her 12; the tether breaks if the enemy leaves 6 m. No target, no drain.
+- R Sanguine Eclipse: radius 7 -> 6, range 8, harvest 15 heals 20 per enemy hit, slam 110.
+
 One hero, four spells that read as one character. The cohesion is the deliverable: the same blood, the same
 shapes, the same pale foil and a scale ladder from a quick strike to one cinematic ultimate.
 

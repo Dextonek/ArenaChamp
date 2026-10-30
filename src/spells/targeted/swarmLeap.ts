@@ -17,7 +17,7 @@ export interface SwarmLeapSettings {
   loop: boolean;
 }
 
-export const defaultSwarmLeap = (): SwarmLeapSettings => ({ damage: 30, loop: false });
+export const defaultSwarmLeap = (): SwarmLeapSettings => ({ damage: 40, loop: false });
 
 export const SWARM_LEAP_RANGE = 8;
 

@@ -1,5 +1,12 @@
 # Storm kit: Kaia, the Tempest Caller
 
+## Role (2026-10-30)
+**Mage (burst), 560 HP.** Signature: unavoidable lightning, the only instant hits. See hero-roles.md.
+- Q Arc Lance: enemies mode, max 2 targets; the bolt chains to a second enemy (a unit) within 6 m for half damage (25). Range 11, cd 3, 50.
+- W Downpour: three strikes inside the 4 m zone, the volley slows 1.0; hits re-check live positions. 40 + 15, cd 7.
+- E Static Field: NOVA, `cc`. A ring expands from her to 5 m in 0.5 s (starts 0.9 s after the cast); it hits once, on the frame its front passes an enemy: 20 damage, stun 0.6. One hit instead of two pulses; cd 9.
+- R Eye of the Storm: radius 7 -> 5, 150, cd 20 (storm wheel and cloud art unchanged).
+
 **Signature shape: the lightning tree.** Thick, hard-edged lightning that **branches like a tree** (a trunk that
 forks two or three times, getting thinner, with a dark outline) and **slanting rain sheets**: long thin pale streaks
 at one shared angle, falling in a column. The storm shapes are grounded by dark rolling cloud above and puddle

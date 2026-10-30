@@ -1,5 +1,12 @@
 # Alchemy kit: Vex, the Plague Alchemist
 
+## Role (2026-10-30)
+**Mage (poison), 560 HP.** Signature: lingering poison. See hero-roles.md.
+- Q Volatile Flask: ground LOB, radius 1.6, range 10, cd 3: splash 49 on whoever stands in the circle, one burn tick 12 at 1.2 s.
+- W Caustic Pool: LINGER. The pool stays 4 s (drain at 3.8 s): initial hit 30, then four ticks of 7 at 1.2, 2.0, 2.8, 3.6 s, every hit slows 1.0. All hits inside 4.2 s. cd 7.
+- E Mutagen: BUFF. She drinks and heals 45; no flasks, no damage, no telegraph. cd 9.
+- R Grand Transmutation: LINGER. The gold field (burst at 2.0 s) stands 1.8 s (shorter than the 3 s asked: the 2 s build plus the 4.2 s limit), slows 2.0 on the gold hit (75) and on two ticks (5, at 2.8 and 3.4 s), then shatters at 3.8 s (50). cd 20, clean by 5.0 s.
+
 **Signature shape: glass and reaction.** Thin-walled glass flasks (pale green-white glass with a dark liquid inside)
 that **shatter** into sharp glass shards, releasing a **bubbling caustic liquid** (acid green, big round bubbles
 that swell and pop into rings) and rising **fume curls**. The ultimate's twist: **transmutation to gold** (enemies

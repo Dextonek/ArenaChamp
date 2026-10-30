@@ -7,26 +7,31 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Quicksand (sand kit, W: ground zone): a ring of carved glyphs cuts itself into the floor, sand floods inside it and
- * starts to swirl inward, sinking and pulling the enemies in it. Then the swirl snaps tight and sandstone pillars
- * punch up around the edge, leaning inward like closing teeth. They crumble and the sand settles. See
- * pipeline/designs/kit-sand.md.
+ * Quicksand (sand kit, W: lingering zone): a ring of carved glyphs cuts itself into the floor, sand floods inside it and
+ * swirls inward for about 2 s, sinking the enemies in it: three ticks (at 0.8, 1.4 and 2.0 s) hurt and slow whoever is
+ * inside. Then the swirl snaps tight at 2.6 s and sandstone pillars punch up around the edge, leaning inward like
+ * closing teeth, and root whoever is still inside. They crumble and the sand settles. See pipeline/designs/kit-sand.md.
  */
 export interface QuicksandSettings {
+  /** The pillars closing (with the root). */
   damage: number;
-  /** One small tick after the hit. */
+  /** Each of the three slowing ticks while the sand turns. */
   tick: number;
+  /** Slow seconds on each tick (engine cap 2.5). */
+  slow: number;
+  /** Root seconds when the pillars close (engine cap 1.5). */
+  root: number;
   loop: boolean;
 }
 
-export const defaultQuicksand = (): QuicksandSettings => ({ damage: 48, tick: 10, loop: false });
+export const defaultQuicksand = (): QuicksandSettings => ({ damage: 32, tick: 6, slow: 1.2, root: 1.0, loop: false });
 
 // Timeline (seconds).
 const POOL_T = 0.3;
-const HIT_T = 0.75;
-const TICK_T = 1.3;
-const CRUMBLE_T = 1.45;
-const DURATION = 2.3;
+const TICKS = [0.8, 1.4, 2.0]; // the slowing ticks while the sand turns
+const HIT_T = 2.6; // the pillars close
+const CRUMBLE_T = 3.3;
+const DURATION = 4.1;
 
 const RADIUS = 4;
 const PILLARS = 7;
@@ -47,7 +52,7 @@ export class Quicksand implements Effect {
   private point = new THREE.Vector3(0, 0, -8);
 
   // Event flags.
-  private flags = { pool: false, impacted: false, ticked: false, crumbled: false, dust2: false };
+  private flags = { pool: false, impacted: false, tick: [false, false, false], crumbled: false, dust2: false };
 
   // Parts.
   private ring = new GlyphRing();
@@ -94,7 +99,8 @@ export class Quicksand implements Effect {
   private reset() {
     this.time = 0;
     this.shake = 0;
-    for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
+    for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false as never;
+    this.flags.tick = [false, false, false];
     clearScreenFx(this.screen);
     this.ring.reset();
     this.pool.reset();
@@ -137,11 +143,16 @@ export class Quicksand implements Effect {
     if (!f.impacted && t >= HIT_T) {
       f.impacted = true;
       this.snap();
-      this.eachInside((e) => ctx?.hit(e, { damage: this.settings.damage, knock: 0, from: this.point, color: SAND_CSS.body }));
+      this.eachInside((e) => ctx?.hit(e, {
+        damage: this.settings.damage, knock: 0, from: this.point, color: SAND_CSS.body, status: { kind: 'root', seconds: this.settings.root },
+      }));
     }
-    if (!f.ticked && t >= TICK_T) {
-      f.ticked = true;
-      this.eachInside((e) => ctx?.hit(e, { damage: this.settings.tick, knock: 0, from: this.point, color: SAND_CSS.body }));
+    for (let i = 0; i < TICKS.length; i++) {
+      if (f.tick[i] || t < TICKS[i]) continue;
+      f.tick[i] = true;
+      this.eachInside((e) => ctx?.hit(e, {
+        damage: this.settings.tick, knock: 0, from: this.point, color: SAND_CSS.body, status: { kind: 'slow', seconds: this.settings.slow },
+      }));
     }
     if (!f.crumbled && t >= CRUMBLE_T) {
       f.crumbled = true;
@@ -150,7 +161,7 @@ export class Quicksand implements Effect {
       this.pool.fade(0.4, 0.55);
       this.shake = Math.max(this.shake, 0.12);
     }
-    if (!f.dust2 && t >= 1.7) {
+    if (!f.dust2 && t >= 3.5) {
       f.dust2 = true;
       this.dust.fall(this.v1.copy(this.point), RADIUS * 0.8, 10, 2.5, 0.5);
     }
@@ -161,10 +172,11 @@ export class Quicksand implements Effect {
   private eachInside(fn: (e: CastContext['targets'][number]) => void) {
     const ctx = this.ctx;
     if (!ctx) return;
-    ctx.targets.forEach((e, i) => {
-      const p = ctx.targetPos[i];
-      if (p && Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) fn(e);
-    });
+    // Live positions: whoever walked out of the sand is spared.
+    for (const e of ctx.targets) {
+      const p = e.group.position;
+      if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) fn(e);
+    }
   }
 
   /** The hit: the swirl snaps tight, pillars punch up around the edge, dust, shake. */
@@ -192,7 +204,7 @@ export class Quicksand implements Effect {
 
     // --- 0..0.3 the glyph ring carves itself; it flashes turquoise for a few frames at the hit; fades with the sand. ---
     this.ring.reveal = smoothstep(t / 0.3);
-    this.ring.opacity = 1 - smoothstep((t - 1.75) / 0.45);
+    this.ring.opacity = 1 - smoothstep((t - 3.55) / 0.45);
     this.ring.lit = f.impacted && after < 0.05 ? 1 : 0;
 
     // --- 0.3..0.75 the swirl winds up; 1.4.. it settles. ---
@@ -200,7 +212,7 @@ export class Quicksand implements Effect {
 
     // --- Enemies inside sink 0.15 and are pulled 0.4 toward the middle while the sand turns. ---
     if (ctx) {
-      const k = smoothstep((t - POOL_T) / 0.45) * (1 - smoothstep((t - 1.3) / 0.45));
+      const k = smoothstep((t - POOL_T) / 0.45) * (1 - smoothstep((t - HIT_T) / 0.45));
       ctx.targets.forEach((e, i) => {
         const p = ctx.targetPos[i];
         if (!p) return;
@@ -230,7 +242,8 @@ export const quicksandModule: EffectModule = {
     const e = effect as Quicksand;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    // A lingering zone: armed at its first tick, drawn until the pillars have closed.
+    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: TICKS[0], until: HIT_T + 0.1 }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -242,5 +255,7 @@ export const quicksandModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 200, 1);
     f.add(s, 'tick', 0, 60, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
+    f.add(s, 'root', 0, 1.5, 0.1);
   },
 };

@@ -97,6 +97,7 @@ export const sandKit: HeroKit = {
   title: 'the Dune Sovereign',
   accent: S.body,
   foil: S.stone,
+  maxHp: 600,
   portrait(g, s) {
     ground(g, s);
     // Layered linen shoulders, a gold collar, a bearded face under a striped gold headdress, the crook behind.
@@ -145,8 +146,8 @@ export const sandKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'sand lash', name: 'Sand Lash', range: 10, cooldown: 3,
-      blurb: 'Sand pours from the floor and cracks across to one enemy like a whip, setting into a stone shackle that crumbles.',
+      key: 'Q', label: 'sand lash', name: 'Sand Lash', range: 10, cooldown: 3, cc: true,
+      blurb: 'Sand cracks across to one enemy like a whip and sets into a stone shackle that roots it for 0.8 s.',
       icon(g, s) {
         ground(g, s);
         // A ribbon whipping up from the lower left and over to a stone shackle ring at the lower right.
@@ -164,8 +165,8 @@ export const sandKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'quicksand', name: 'Quicksand', range: 10, cooldown: 7,
-      blurb: 'A glyph ring floods with swirling sand that drags enemies in, then stone pillars close around them like teeth.',
+      key: 'W', label: 'quicksand', name: 'Quicksand', range: 10, cooldown: 7, cc: true,
+      blurb: 'A glyph ring floods with swirling sand that slows whoever stands in it for 2 s, then stone pillars close and root them.',
       icon(g, s) {
         ground(g, s);
         const cx = s * 0.5, cy = s * 0.7;
@@ -193,7 +194,7 @@ export const sandKit: HeroKit = {
     },
     {
       key: 'E', label: 'dune ward', name: 'Dune Ward', range: 0, cooldown: 9,
-      blurb: 'Three sand ribbons wind around him and twice fling a ring of sand outward, then set into stone and crumble.',
+      blurb: 'Three sand ribbons wind around him and shield him for 45; twice they fling a ring of sand that slows enemies near.',
       icon(g, s) {
         ground(g, s);
         // The outer flung-sand ring, pale at the edge.
@@ -222,8 +223,8 @@ export const sandKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'tomb of kings', name: 'Tomb of Kings', range: 13, cooldown: 20,
-      blurb: 'Ultimate. Sand ribbons stack a sandstone pyramid over the zone, then it implodes and bursts into stone shards.',
+      key: 'R', label: 'tomb of kings', name: 'Tomb of Kings', range: 13, cooldown: 20, cc: true,
+      blurb: 'Ultimate. Sand ribbons stack a sandstone pyramid over the zone, then it implodes and stuns everyone inside for 1 s.',
       icon(g, s) {
         ground(g, s);
         ring(g, s * 0.5, s * 0.82, s * 0.46, s * 0.14, s * 0.04);

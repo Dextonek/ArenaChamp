@@ -1,12 +1,16 @@
 ---
 title: Mortis, the Ossuary Lord (bone kit)
 tags: [catalog, heroes, bone, summoner, mechanics]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Mortis, the Ossuary Lord
 
-The bone hero kit: Mortis's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A summoner in a tattered grave robe with a ribcage mantle and a skull-topped staff; he throws bone and raises skeletons to fight for him. He is one of the first heroes built on the [combat mechanics](../../architecture/mechanics.md): a skillshot, summoned units and a shield.
+The bone hero kit: Mortis's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A summoner in a tattered grave robe with a ribcage mantle and a skull-topped staff; he throws bone and raises skeletons to fight for him. He is one of the first heroes built on the [combat mechanics](../../architecture/mechanics.md): a skillshot, summoned units and a cage root.
+
+## Role
+
+Summoner, 580 HP, ranged. Signature: *Raise the dead*. Skeletons fight for him. He wins a 1v1 by keeping two to four units on the enemy while the bone spear pokes and the cage roots it in place. His weakness is that his own spells are light, the units die to area damage and the cap is 6 units.
 
 ## At a glance
 
@@ -49,18 +53,18 @@ Mortis uses these pieces of [the combat mechanics](../../architecture/mechanics.
 | Unit looks | both summons use `skeletonLook` (see [Parts file](#parts-file)) |
 | Melee, dash, knock-up | none. `maxHp` is not set, so the default 600 HP applies |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a summoner's own spells carry less damage (W hit 15, E shield 30, R 90) because the units make up the rest. In the wave 3 duel tournament he won 60%.
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a summoner's own spells carry less damage because the units make up the rest. After the hero-roles balance pass (2026-10-30) he wins 53% (see the roster README).
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (the first damage 0.5-1.0 s after the cast, clean by about 2 s; the E aura runs about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/bone.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E each have a shape of their own (see the table: dash, skillshot, trap, orbit, summon and so on), not a fixed strike, zone or aura; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/bone.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [bone spear](../../../src/spells/targeted/boneSpear.ts) | skillshot line (width 0.9) | 11 | 3 s | flies from 0.2 s, 0.5 s of flight | 1.5 s | A 2.2 m spear of chunky vertebrae assembles from flying bones beside him with soulfire in its joints. At 0.2 s it leaves as a piercing bolt and the spear follows it down the line. Every hit throws bone chips, dust and a small ember accent; at max range the spear clatters apart into bones that fade. Damage 50, knock 2. |
-| W | [grave call](../../../src/spells/targeted/graveCall.ts) | ground (r 3) | 10 | 9 s | 0.6 s | 2.0 s | The ground cracks in a circle with teal light in the cracks and wisps flickering out of them. At the hit two skeletons claw out of the ground in a burst of dust, chips and eight bone spires (two capped with skulls), hurting the enemies inside. The spires sink away; the skeletons live on as units. Damage 15, knock 1, plus 2 melee skeletons. |
-| E | [ossuary ward](../../../src/spells/targeted/ossuaryWard.ts) | self (r 4) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | A cage of curved ribs (radius 1.4, 2.4 high) grows up out of the floor round him with soulfire in its joints, and he takes a 30 point shield for 3 s. At 1.0 s and 2.0 s the ribs flex outward and fire a ring of bone shards to radius 4 that hurts every enemy inside. At 2.6 s the cage crumbles into dust. Damage 12 per pulse, knock 1, shield 30. |
-| R | [legion of the ossuary](../../../src/spells/targeted/legionOfTheOssuary.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a teal-black and cracks with teal light spread over the zone. A colossal skeletal hand (fingers about 5 long, soulfire in every joint) rises out of the ground at the zone's far edge, rears up and opens over the point while the enemies are drawn in, closes into a fist, hangs for a dead beat (1.85-2.0 s), then slams down: a ring of bone spires bursts across the zone, dust, an ember accent, a ground shockwave and the hit. At 2.4 s two skeleton archers climb out of the cracks; the hand crumbles into the ground and the spires sink. Damage 90, knock 5, plus 2 ranged skeletons. |
+| Q | [bone spear](../../../src/spells/targeted/boneSpear.ts) | skillshot line (BOLT, pierce, width 0.9) | 11 | 3 s | flies from 0.2 s, 0.5 s of flight | 1.5 s | A 2.2 m spear of chunky vertebrae assembles from flying bones beside him with soulfire in its joints. At 0.2 s it leaves as a piercing bolt and the spear follows it down the line. Every hit throws bone chips, dust and a small ember accent; at max range the spear clatters apart into bones that fade. Damage 50, knock 2. |
+| W | [grave call](../../../src/spells/targeted/graveCall.ts) | ground (SUMMON, r 3) | 10 | 9 s | 0.6 s | 2.0 s | The ground cracks in a circle with teal light in the cracks and wisps flickering out of them. At the hit two skeletons claw out of the ground in a burst of dust, chips and eight bone spires (two capped with skulls), hurting the enemies inside. The spires sink away; the skeletons live on as units (40 HP, 6 s, 6 damage every 1 s). Damage 15, knock 1, plus 2 melee skeletons. |
+| E | [ossuary ward](../../../src/spells/targeted/ossuaryWard.ts) | enemy (CAGE, r 2) | 9 | 9 s | 0.8 s and 1.9 s (two pulses) | 2.8 s | A cage of curved ribs (radius 1.0, 2.4 high) grows up out of the floor round the chosen enemy with soulfire in its joints. At 0.8 s the ribs close and flex and fire a ring of bone shards to radius 2: damage 12 and root 1.2 s to whoever is still inside (an enemy that walked off is missed). They flex again at 1.9 s for another 12, with no second root. At 2.2 s the cage crumbles into dust. |
+| R | [legion of the ossuary](../../../src/spells/targeted/legionOfTheOssuary.ts) | ground (SUMMON, r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a teal-black and cracks with teal light spread over the zone. A colossal skeletal hand (fingers about 5 long, soulfire in every joint) rises out of the ground at the zone's far edge, rears up and opens over the point while the enemies are drawn in, closes into a fist, hangs for a dead beat (1.85-2.0 s), then slams down: a ring of bone spires bursts across the zone, dust, an ember accent, a ground shockwave and the hit. At 2.4 s two skeleton archers (35 HP, 6 s, 8 damage every 1.5 s) climb out of the cracks; the hand crumbles into the ground and the spires sink. Damage 90, knock 5, plus 2 ranged skeletons. |
 
 Spell sources: [`boneSpear.ts`](../../../src/spells/targeted/boneSpear.ts), [`graveCall.ts`](../../../src/spells/targeted/graveCall.ts), [`ossuaryWard.ts`](../../../src/spells/targeted/ossuaryWard.ts), [`legionOfTheOssuary.ts`](../../../src/spells/targeted/legionOfTheOssuary.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-bone).
 

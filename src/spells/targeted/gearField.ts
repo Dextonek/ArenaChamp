@@ -6,10 +6,11 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Gear Field (clockwork kit, E: self aura). Three big flat gears unfold around her at ankle height, nested one inside
- * the next (radii 1.5, 2.5, 3.5), turning against each other with cyan sparks jumping across the gaps. At 1.0 and 2.0
- * the gears lurch a notch and an electric ring races out to the radius: every enemy inside takes a small hit and is
- * slowed. At 2.6 the gears fold away with steam. Clean by 3.2 s. See pipeline/designs/kit-clockwork.md.
+ * Gear Field (clockwork kit, E: lingering field at the aim). Three big flat gears unfold at the aim point at ankle
+ * height, nested one inside the next (radii 1.5, 2.5, 3.5), turning against each other with cyan sparks jumping across
+ * the gaps. At 0.8, 1.8 and 2.8 s the gears lurch a notch and an electric ring races out to the radius: every enemy
+ * inside takes a small hit and is slowed. At 3.4 the gears fold away with steam. Clean by 4.0 s. See
+ * pipeline/designs/kit-clockwork.md.
  */
 export interface GearFieldSettings {
   damage: number;
@@ -17,15 +18,15 @@ export interface GearFieldSettings {
   loop: boolean;
 }
 
-export const defaultGearField = (): GearFieldSettings => ({ damage: 13, slowSeconds: 1.0, loop: false });
+export const defaultGearField = (): GearFieldSettings => ({ damage: 9, slowSeconds: 1.0, loop: false });
 
 // Timeline (seconds).
 const UNFOLD_END = 0.3;
-const PULSE_1 = 1.0;
-const PULSE_2 = 2.0;
-const FOLD_T = 2.6;
-const DURATION = 3.2;
-const RADIUS = 5;
+const PULSES = [0.8, 1.8, 2.8];
+const PULSE_1 = PULSES[0];
+const FOLD_T = 3.4;
+const DURATION = 4.0;
+const RADIUS = 3.6;
 const MAX_VIS = 3; // enemies that get their own spark burst
 
 /** The three gears: outer radius, ring-hole fraction (0 = solid with spokes), spin speed (rad/s), height. */
@@ -46,8 +47,8 @@ export class GearField implements Effect {
   ctx: CastContext | null = null;
   private time = 0;
   private from = new THREE.Vector3(0, 0, 14);
-  private flags = { gears: false, pulse1: false, pulse2: false, folded: false };
-  private pulseAt = [-9, -9];
+  private flags = { gears: false, pulse: [false, false, false], folded: false };
+  private pulseAt = [-9, -9, -9];
   private sparkT = 0;
   private steamT = 0;
   private idx: number[] = [];
@@ -83,7 +84,8 @@ export class GearField implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.from.copy(ctx.from).setY(0);
+    // Placed at the aim point (ground mode), not round her.
+    this.from.copy(ctx.point).setY(0);
     this.groundShock.set(this.from, 0, 0);
   }
 
@@ -97,8 +99,9 @@ export class GearField implements Effect {
     this.shake = 0;
     this.sparkT = 0;
     this.steamT = 0;
-    this.pulseAt[0] = this.pulseAt[1] = -9;
-    this.flags.gears = this.flags.pulse1 = this.flags.pulse2 = this.flags.folded = false;
+    this.pulseAt.fill(-9);
+    this.flags.gears = this.flags.folded = false;
+    this.flags.pulse.fill(false);
     this.idx.length = 0;
     this.gears.reset();
     this.sparks.reset();
@@ -110,7 +113,7 @@ export class GearField implements Effect {
 
   private pulse(index: number) {
     const ctx = this.ctx;
-    this.pulseAt[index] = index === 0 ? PULSE_1 : PULSE_2;
+    this.pulseAt[index] = PULSES[index];
     this.shake = 0.15;
     // The gears lurch a notch, each in its own direction.
     this.idx.forEach((gi, k) => this.gears.kick(gi, Math.sign(RINGS[k].rate) * 0.5));
@@ -156,10 +159,11 @@ export class GearField implements Effect {
       this.gears.assemble(UNFOLD_END);
       this.shade.visible = true;
       this.shade.position.set(this.from.x, 0.03, this.from.z);
-      this.shade.scale.setScalar(3.9);
+      this.shade.scale.setScalar(RADIUS + 0.3);
     }
-    if (!f.pulse1 && t >= PULSE_1) { f.pulse1 = true; this.pulse(0); }
-    if (!f.pulse2 && t >= PULSE_2) { f.pulse2 = true; this.pulse(1); }
+    for (let i = 0; i < PULSES.length; i++) {
+      if (!f.pulse[i] && t >= PULSES[i]) { f.pulse[i] = true; this.pulse(i); }
+    }
     if (!f.folded && t >= FOLD_T) {
       f.folded = true;
       this.gears.fold(0.4);
@@ -211,13 +215,14 @@ export class GearField implements Effect {
 export const gearFieldModule: EffectModule = {
   label: 'gear field',
   category: 'hero: clockwork',
-  targeting: { mode: 'self', radius: RADIUS },
+  targeting: { mode: 'ground', radius: RADIUS },
   create: () => new GearField(),
   telegraphs(effect) {
     const e = effect as GearField;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: PULSE_1 }];
+    // A lingering field: armed at its first lurch, drawn until the last one has gone off.
+    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: PULSE_1, until: PULSES[2] + 0.1 }];
   },
   bloom: { enabled: true, strength: 0.35, radius: 0.35, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

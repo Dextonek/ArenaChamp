@@ -9,19 +9,21 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Winter's Crown (frost kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world darkens
- * cold and frost ferns spread over the whole zone (the warning). A ring of huge ice crystals forms upside down in the
- * sky over it, growing from the tips, with heavy snow swirling into the ring while the enemies are rimed and held.
- * The crown turns and tightens, everything stops for a dead beat, then it drives down: the crystals stab into the
- * ground in a ring and a forest of crystals erupts across the zone. After a hold everything shatters from the centre
- * outward. Clean by 4.5 s. See pipeline/designs/kit-frost.md.
+ * Winter's Crown (frost kit, R: the MOBA ultimate, self-centred). Under the normal gameplay camera, no letterbox: the
+ * world darkens cold and frost ferns spread over the 5 m zone round her (the warning). A ring of huge ice crystals forms
+ * upside down in the sky over her, growing from the tips, with heavy snow swirling into the ring while the enemies are
+ * rimed and held. The crown turns and tightens, everything stops for a dead beat, then it drives down: the crystals
+ * stab into the ground in a ring and a forest of crystals erupts across the zone, stunning whoever is still inside.
+ * After a hold everything shatters from the centre outward. Clean by 4.5 s. See pipeline/designs/kit-frost.md.
  */
 export interface WintersCrownSettings {
   damage: number;
+  /** Stun seconds on the hit (engine cap 1.2). */
+  stun: number;
   loop: boolean;
 }
 
-export const defaultWintersCrown = (): WintersCrownSettings => ({ damage: 130, loop: false });
+export const defaultWintersCrown = (): WintersCrownSettings => ({ damage: 150, stun: 1.0, loop: false });
 
 // Timeline (seconds).
 const LIFT_T = 0.0; // hands go up, the world darkens
@@ -33,7 +35,7 @@ const HIT_T = 2.3;
 const SHATTER_T = 3.3;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 5;
 const TEETH = 11;
 const TIP_Y = 4; // height of the tooth tips over the point while the crown hangs
 const TILT = 0.22; // how far the teeth lean inward toward their tips
@@ -116,7 +118,7 @@ export class WintersCrown implements Effect {
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.from.copy(ctx.from);
-    this.point.copy(ctx.point).setY(0);
+    this.point.copy(ctx.from).setY(0);
     this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     this.chest.copy(ctx.from).addScaledVector(this.fwd, 0.15).setY(1.25);
     this.victims.length = 0;
@@ -271,7 +273,17 @@ export class WintersCrown implements Effect {
     if (!f.hit && t >= HIT_T) {
       f.hit = true;
       this.buildForest();
-      if (ctx) for (const v of this.victims) ctx.hit(v.enemy, { damage: this.settings.damage, knock: 4, from: this.point, color: FROST_CSS.body });
+      // Live positions: whoever walked out of the ring before the crown fell is spared.
+      if (ctx) {
+        for (const e of ctx.targets) {
+          const q = e.group.position;
+          if (Math.hypot(q.x - this.point.x, q.z - this.point.z) > RADIUS) continue;
+          ctx.hit(e, {
+            damage: this.settings.damage, knock: 4, from: this.point, color: FROST_CSS.body,
+            status: { kind: 'stun', seconds: this.settings.stun },
+          });
+        }
+      }
     }
     if (!f.fernFade && t >= SHATTER_T) {
       f.fernFade = true;
@@ -352,13 +364,13 @@ function teethNear(teeth: Tooth[], centre: THREE.Vector3, x: number, z: number, 
 export const wintersCrownModule: EffectModule = {
   label: "winter's crown",
   category: 'hero: frost',
-  targeting: { mode: 'ground', radius: RADIUS },
+  targeting: { mode: 'self', radius: RADIUS },
   create: () => new WintersCrown(),
   telegraphs(effect) {
     const e = effect as WintersCrown;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: HIT_T }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -369,5 +381,6 @@ export const wintersCrownModule: EffectModule = {
     const s = (effect as WintersCrown).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
+    f.add(s, 'stun', 0, 1.2, 0.1);
   },
 };

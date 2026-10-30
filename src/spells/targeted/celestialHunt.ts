@@ -11,7 +11,7 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Celestial Hunt (astral kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world
+ * Celestial Hunt (astral kit, R: GLOBAL ultimate, range 60, radius 3, lands 2.5 s after the cast). Under the normal gameplay camera, no letterbox: the world
  * darkens to night and Lyra shoots an arrow into the sky. Where it lands, a giant constellation STAG is drawn star by
  * star (antlers, head, back, legs), side-on to the camera, over a dark night patch. The stag lowers its head, holds
  * for a dead beat, then charges down through the zone toward the caster, shedding falling stars. It hits the centre:
@@ -24,7 +24,7 @@ export interface CelestialHuntSettings {
   loop: boolean;
 }
 
-export const defaultCelestialHunt = (): CelestialHuntSettings => ({ damage: 138, loop: false });
+export const defaultCelestialHunt = (): CelestialHuntSettings => ({ damage: 155, loop: false });
 
 // Timeline (seconds).
 const SHOT_T = 0.1; // arrow leaves the bow
@@ -33,10 +33,10 @@ const BUILD_STEP = 0.052; // between stars
 const LOWER_T = 1.6;
 const DEAD_A = 1.8;
 const DEAD_B = 1.95;
-const HIT_T = 2.35;
+const HIT_T = 2.5; // GLOBAL: the stag lands 2.5 s after the cast, on the spot that was aimed
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 3;
 const SC = 1.0; // stag scale: about 11 wide
 const HOME_Y = 6.5;
 const END_Y = 3.9;
@@ -438,7 +438,9 @@ export class CelestialHunt implements Effect {
     this.shake = 0.7;
     const ctx = this.ctx;
     if (ctx) {
+      // Re-check at the landing: only enemies still inside the circle (live position) are hit, so a walker escapes.
       for (const e of ctx.targets) {
+        if (Math.hypot(e.group.position.x - this.point.x, e.group.position.z - this.point.z) > RADIUS) continue;
         ctx.hit(e, { damage: this.settings.damage, knock: 7, from: this.point, color: ASTRAL_CSS.hot });
       }
     }

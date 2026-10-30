@@ -1,7 +1,7 @@
 ---
 title: Shiori, the Last Brush (ink kit)
 tags: [catalog, heroes, ink, mage, summon, mechanics]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Shiori, the Last Brush
@@ -9,6 +9,17 @@ updated: 2026-10-29
 The ink hero kit: Shiori's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A calligrapher-mage in a rice-paper white robe whose hem is washed in ink, with an indigo sash, long black hair held by a brush-shaped hairpin, a huge calligraphy brush as tall as she is and paper talismans floating round her. She is built on the [combat mechanics](../../architecture/mechanics.md): a splitting skillshot, a root, two paper-crane summons and a blinding ultimate.
 
 Tournament (19 opponents, 3 fights per ordered pairing, both sides): 72% at first, 58% after Brushstroke 55 → 48 (split 15 → 12) and Final Calligraphy 105 → 95 with blind 2.0 → 1.5 s.
+
+## Role
+
+| | |
+|---|---|
+| Role | Summoner (ranged) |
+| Signature | Ink familiars |
+| HP | 580 |
+| Kit shapes | Q BOLT split at the end · W ZONE root · E SUMMON cranes · R ZONE blind |
+
+She wins a 1v1 by rooting the enemy under her cranes' fire and blinding them with the ultimate so their spells miss. Her weakness is the cranes: 35 HP each, they die to area damage, and her own spells are light.
 
 ## At a glance
 
@@ -51,20 +62,20 @@ Shiori uses these pieces of [the combat mechanics](../../architecture/mechanics.
 | Summon, unit look | E has `summon: true` and calls `ctx.summon` for two cranes (`kind: 'ranged'`, 35 HP, 6 s, 8 damage every 1.5 s) with `look: inkCraneLook` (see [Parts file](#parts-file)) |
 | Blind | R blinds every enemy it hits for 1.5 s (`status: { kind: 'blind', seconds: 1.5 }`, cap 2 s): their casts land at a random spot within 2.5 m of the aim point. It does not move self spells |
 | Crowd control flag | W and R have `cc: true`, so the duel AI casts them first when the enemy is in range |
-| Melee, dash, shield, heal, pull | none. `maxHp` is not set, so the default 600 HP applies |
+| Melee, dash, shield, heal, pull | none. `maxHp` is 580 |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md).
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md). Her shape is unchanged by the 2026-10-30 role pass; only the cooldown of E changed (14 s to 12 s).
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (the first damage about 0.5-0.7 s after the cast, for Q when the stroke arrives; clean by about 2 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/ink.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a skillshot that splits at the end of its flight (first damage about 0.5-0.8 s after the cast, clean by 1.6 s), W a delayed ground zone (hit at 0.7 s, clean by 2.2 s), E a summon with a small splash (hit at 0.5 s, clean by 1.4 s), R a blinding ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/ink.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [brushstroke](../../../src/spells/targeted/brushstroke.ts) | skillshot line (width 0.9) | 12 | 3 s | flies from 0.2 s, about 0.6 s of flight | 1.6 s | She sweeps the big brush: a fat wet arc paints in at her side over the first 0.2 s, then the stroke is fired along the aim line as a flying stroke head (fat, sumi black, indigo rim) trailing a ribbon that dries out behind it and flings a drop now and then. On a hit it bursts in splatter on a small paper bleed with a tiny seal. A stroke that flies its full range flicks into three splatter drops and the three children fly on as short strokes. Damage 45, knock 2; children 12, knock 1. |
-| W | [ink snare](../../../src/spells/targeted/inkSnare.ts) | ground (r 3.5) | 10 | 8 s | 0.7 s | 2.2 s | Ink bleeds across the zone, rice paper first and then a dark pool soaking into it (0 to 0.35 s), and four quick strokes scribble themselves across the pool (0.35 to 0.65 s). At 0.7 s the ink rises in short grasping strokes round each foot, a seal stamps the centre with a vermilion star and everyone still inside is hit and rooted. From 1.0 s the strokes dry and flake and the pool fades. Damage 35, root 1.0 s. |
-| E | [paper familiars](../../../src/spells/targeted/paperFamiliars.ts) | self (r 3) | 0 (self) | 14 s | 0.5 s | 1.4 s (the cranes live on as units) | Two sheets of rice paper unfold beside her and fold themselves into cranes, a vermilion seal stamping under each (0 to 0.4 s). At 0.5 s the sheets give way to two real ink cranes that fight for 6 s, and a ring of ink splashes out to radius 3: every enemy still inside is hit and shoved. The telegraph circle ends at 0.5 s. Damage 10, knock 1; cranes 35 HP, 8 damage every 1.5 s. |
-| R | [final calligraphy](../../../src/spells/targeted/finalCalligraphy.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to sumi black and a vast sheet of rice paper (radius 7, torn edge) unrolls over the zone. A giant brush (about 5 tall, built from strokes) comes down over the point and paints one huge character across the paper in five strokes, a splatter flying off each stroke end, while the enemies drift toward the centre a little. At 1.6 s the brush lifts away; dead beat 1.85-2.0 s; a giant vermilion seal (3 wide) drops from above onto the middle of the character. At 2.2 s: two impact frames, the ink erupts upward as a wall of splatter and flakes, a vermilion star, a ground refraction ring, shake, the hit and a blind. The flakes drift down, the paper fades and the dark lifts. Damage 95, knock 3, blind 1.5 s. |
+| Q | [brushstroke](../../../src/spells/targeted/brushstroke.ts) | ground, BOLT skillshot line (width 0.9) | 12 | 3 s | flies from 0.2 s, about 0.6 s of flight | 1.6 s | She sweeps the big brush: a fat wet arc paints in at her side over the first 0.2 s, then the stroke is fired along the aim line as a flying stroke head (fat, sumi black, indigo rim) trailing a ribbon that dries out behind it and flings a drop now and then. On a hit it bursts in splatter on a small paper bleed with a tiny seal. A stroke that hits an enemy ends there. A stroke that flies its full range flicks into three splatter drops and the three children fly on as short strokes. Damage 54, knock 2; children 12, knock 1. |
+| W | [ink snare](../../../src/spells/targeted/inkSnare.ts) | ground ZONE (r 3.5) | 10 | 8 s | 0.7 s | 2.2 s | Ink bleeds across the zone, rice paper first and then a dark pool soaking into it (0 to 0.35 s), and four quick strokes scribble themselves across the pool (0.35 to 0.65 s). At 0.7 s the ink rises in short grasping strokes round each foot, a seal stamps the centre with a vermilion star and everyone still inside is hit and rooted. From 1.0 s the strokes dry and flake and the pool fades. Damage 45, root 1.0 s. |
+| E | [paper familiars](../../../src/spells/targeted/paperFamiliars.ts) | self SUMMON (r 3) | 0 (self) | 12 s | 0.5 s | 1.4 s (the cranes live on as units) | Two sheets of rice paper unfold beside her and fold themselves into cranes, a vermilion seal stamping under each (0 to 0.4 s). At 0.5 s the sheets give way to two real ink cranes that fight for 6 s, and a ring of ink splashes out to radius 3: every enemy still inside is hit and shoved. The telegraph circle ends at 0.5 s. Damage 10, knock 1; cranes 35 HP, 8 damage every 1.5 s. |
+| R | [final calligraphy](../../../src/spells/targeted/finalCalligraphy.ts) | ground ZONE (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to sumi black and a vast sheet of rice paper (radius 7, torn edge) unrolls over the zone. A giant brush (about 5 tall, built from strokes) comes down over the point and paints one huge character across the paper in five strokes, a splatter flying off each stroke end, while the enemies drift toward the centre a little. At 1.6 s the brush lifts away; dead beat 1.85-2.0 s; a giant vermilion seal (3 wide) drops from above onto the middle of the character. At 2.2 s: two impact frames, the ink erupts upward as a wall of splatter and flakes, a vermilion star, a ground refraction ring, shake, the hit and a blind. The flakes drift down, the paper fades and the dark lifts. Damage 115, knock 3, blind 1.5 s. |
 
 Spell sources: [`brushstroke.ts`](../../../src/spells/targeted/brushstroke.ts), [`inkSnare.ts`](../../../src/spells/targeted/inkSnare.ts), [`paperFamiliars.ts`](../../../src/spells/targeted/paperFamiliars.ts), [`finalCalligraphy.ts`](../../../src/spells/targeted/finalCalligraphy.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-ink).
 

@@ -9,17 +9,19 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Anvil Drop (forge kit, W: ground zone): a ring of molten runes draws itself on the ground while a huge dark anvil
+ * Anvil Drop (forge kit, W: small lob, radius 2, stuns): a ring of molten runes draws itself on the ground while a huge dark anvil
  * with hot edges falls from the sky onto it. It slams (slag splashes out in a ring, a crater of slag, heavy sparks,
  * a ground shock), holds, then crumbles into iron chunks that sink while the crater cools to black. See
  * pipeline/designs/kit-forge.md.
  */
 export interface AnvilDropSettings {
   damage: number;
+  /** Seconds of stun on the hit. */
+  stun: number;
   loop: boolean;
 }
 
-export const defaultAnvilDrop = (): AnvilDropSettings => ({ damage: 55, loop: false });
+export const defaultAnvilDrop = (): AnvilDropSettings => ({ damage: 50, stun: 1.0, loop: false });
 
 // Timeline (seconds).
 const FALL_T = 0.1; // the anvil starts to fall
@@ -27,8 +29,8 @@ const HIT_T = 0.7;
 const CRUMBLE_T = 1.3;
 const DURATION = 2.3;
 
-const RADIUS = 3.5;
-const ANVIL_SCALE = 2.5;
+const RADIUS = 2;
+const ANVIL_SCALE = 1.6;
 const START_Y = 9;
 const SINK_Y = -0.4;
 const BLOBS = 9;
@@ -141,12 +143,13 @@ export class AnvilDrop implements Effect {
       f.impacted = true;
       this.slam();
       if (ctx) {
-        ctx.targets.forEach((e, i) => {
-          const p = ctx.targetPos[i];
-          if (p && Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
-            ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: FORGE_CSS.body });
+        // Re-check at impact: whoever stands under the anvil now.
+        for (const e of ctx.targets) {
+          const p = e.group.position;
+          if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
+            ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: FORGE_CSS.body, status: { kind: 'stun', seconds: this.settings.stun } });
           }
-        });
+        }
       }
     }
     if (!f.crumbled && t >= CRUMBLE_T) {
@@ -175,7 +178,7 @@ export class AnvilDrop implements Effect {
       this.v2.set(Math.cos(a) * sp, 3 + Math.random() * 0.8, Math.sin(a) * sp);
       this.blobs.throw(this.v1, this.v2, 0.22 + Math.random() * 0.08);
     }
-    this.pool.spread(3, 0.3);
+    this.pool.spread(RADIUS * 0.85, 0.3);
     this.pool.cool(1.1, 0.25);
     this.pool.fade(0.25, 1.35);
     this.sparks.burst(this.v1.copy(this.point).setY(0.8), this.v2.set(0, 1, 0), 40, 11, 1.2);
@@ -236,5 +239,6 @@ export const anvilDropModule: EffectModule = {
     const s = (effect as AnvilDrop).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 200, 1);
+    f.add(s, 'stun', 0, 1.2, 0.1);
   },
 };

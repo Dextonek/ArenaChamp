@@ -7,25 +7,26 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Mirror Shell (prism kit, E: self shield and aura). Six flat crystal mirrors assemble round Opaline (radius 1.3, waist to
- * head), turning slowly, and she gets a 40 HP shield for 3 s (`ctx.shieldSelf`). At 1.0 s and 2.0 s the mirrors flash
- * and throw spectral beams outward to radius 4: every enemy inside takes a small hit. At 2.6 s the mirrors shatter into
- * glitter. Clean by 3.2 s. The telegraph ends at the first pulse. See pipeline/designs/kit-prism.md.
+ * Mirror Shell (prism kit, E: blink and shield, no damage). Six flat crystal mirrors assemble round Opaline (radius 1.3,
+ * waist to head), turning slowly, and she gets a 45 HP shield for 3 s (`ctx.shieldSelf`). At 0.3 s the mirrors flash
+ * and throw spectral beams outward while she blinks 4 m sideways (`ctx.moveCaster`, 0.12 s), perpendicular to the line
+ * to the enemy so a marksman never blinks into it; the shell goes with her. At 1.8 s the mirrors shatter into glitter.
+ * Clean by 2.3 s. See pipeline/designs/kit-prism.md.
  */
 export interface MirrorShellSettings {
-  damage: number;
   shield: number;
   loop: boolean;
 }
 
-export const defaultMirrorShell = (): MirrorShellSettings => ({ damage: 12, shield: 40, loop: false });
+export const defaultMirrorShell = (): MirrorShellSettings => ({ shield: 45, loop: false });
 
 // Timeline (seconds).
 const ASSEMBLE_END = 0.3;
-const PULSE_1 = 1.0;
-const PULSE_2 = 2.0;
-const SHATTER_T = 2.6;
-const DURATION = 3.2;
+const PULSE_1 = 0.3; // the flash and the blink
+const BLINK_LEN = 0.12;
+const BLINK = 4;
+const SHATTER_T = 1.8;
+const DURATION = 2.3;
 
 const RADIUS = 4;
 const SHELL_R = 1.3;
@@ -33,7 +34,6 @@ const COUNT = 6;
 const PANE_LEN = 1.25;
 const PANE_W = 0.8;
 const PANE_Y = 1.25;
-const MAX_VIS = 3; // enemies that get their own glitter
 
 export class MirrorShell implements Effect {
   readonly group = new THREE.Group();
@@ -46,8 +46,15 @@ export class MirrorShell implements Effect {
   ctx: CastContext | null = null;
   private time = 0;
   private from = new THREE.Vector3(0, 0, 14);
-  private flags = { panes: false, pulse1: false, pulse2: false, shattered: false };
-  private pulseAt = [-9, -9];
+  /** Where she cast from and where the blink puts her (sideways of the line to the enemy). */
+  readonly start = new THREE.Vector3();
+  private land = new THREE.Vector3();
+  /** Where the blink is aimed (clamped to the ring when it starts). */
+  get blinkTo() {
+    return this.land;
+  }
+  private flags = { panes: false, pulse1: false, shattered: false };
+  private pulseAt = [-9];
   private idx: number[] = [];
   private angle = 0;
 
@@ -88,6 +95,15 @@ export class MirrorShell implements Effect {
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.from.copy(ctx.from).setY(0);
+    this.start.copy(this.from);
+    // Sideways of the line to the enemy; of the two sides, the one nearer the middle of the ring.
+    const e = ctx.targetPos[0] ?? ctx.point;
+    this.v1.set(e.x - this.from.x, 0, e.z - this.from.z);
+    if (this.v1.lengthSq() < 0.25) this.v1.set(Math.sin(ctx.caster.group.rotation.y), 0, Math.cos(ctx.caster.group.rotation.y));
+    this.v1.normalize();
+    this.v2.set(-this.v1.z, 0, this.v1.x);
+    const a = this.v2.clone().multiplyScalar(BLINK).add(this.from), b = this.v2.clone().multiplyScalar(-BLINK).add(this.from);
+    this.land.copy(a.lengthSq() <= b.lengthSq() ? a : b);
     this.groundShock.set(this.from, 0, 0);
   }
 
@@ -101,8 +117,8 @@ export class MirrorShell implements Effect {
     this.time = 0;
     this.shake = 0;
     this.angle = 0.4;
-    this.pulseAt[0] = this.pulseAt[1] = -9;
-    this.flags.panes = this.flags.pulse1 = this.flags.pulse2 = this.flags.shattered = false;
+    this.pulseAt[0] = -9;
+    this.flags.panes = this.flags.pulse1 = this.flags.shattered = false;
     this.idx.length = 0;
     this.panes.reset();
     this.beams.reset();
@@ -120,7 +136,8 @@ export class MirrorShell implements Effect {
 
   private pulse(index: number) {
     const ctx = this.ctx, P = this.from;
-    this.pulseAt[index] = index === 0 ? PULSE_1 : PULSE_2;
+    this.pulseAt[index] = PULSE_1;
+    void ctx;
     this.shake = 0.15;
     // Each mirror throws a spectral beam straight out and down to the zone edge.
     for (let i = 0; i < COUNT; i++) {
@@ -130,15 +147,8 @@ export class MirrorShell implements Effect {
       this.beams.set(this.v1, this.v2, 0.5, 1, undefined, 0.4, i);
       this.glitter.burst(this.v1, 2, 2);
     }
-    if (!ctx) return;
-    // Re-check where everyone stands now: enemies who walked out of the zone are spared.
-    let shown = 0;
-    for (const e of ctx.targets) {
-      const p = e.group.position;
-      if (Math.hypot(p.x - P.x, p.z - P.z) > RADIUS) continue;
-      if (shown < MAX_VIS) { shown++; this.glitter.burst(this.v1.set(p.x, 1.0, p.z), 4, 2.8); }
-      ctx.hit(e, { damage: this.settings.damage, knock: 1, from: P, color: PRISM_CSS.body });
-    }
+    // The blink: she slides to the spot sideways of the enemy line; the shell below follows her position.
+    if (ctx?.moveCaster) ctx.moveCaster(this.land, BLINK_LEN);
   }
 
   update(dt: number) {
@@ -182,7 +192,6 @@ export class MirrorShell implements Effect {
     }
 
     if (!f.pulse1 && t >= PULSE_1) { f.pulse1 = true; this.pulse(0); }
-    if (!f.pulse2 && t >= PULSE_2) { f.pulse2 = true; this.pulse(1); }
     if (!f.shattered && t >= SHATTER_T) {
       f.shattered = true;
       this.panes.shatter(3.5, 0.5, this.v1.copy(P).setY(PANE_Y));
@@ -233,8 +242,8 @@ export const mirrorShellModule: EffectModule = {
     const e = effect as MirrorShell;
     const ctx = e.ctx;
     if (!ctx) return [];
-    // Ends at the first pulse (no `until`): a long telegraph disk floods the frame.
-    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: PULSE_1 }];
+    // No hit: the line only shows where she blinks to.
+    return [{ shape: { kind: 'line', x1: e.start.x, z1: e.start.z, x2: e.blinkTo.x, z2: e.blinkTo.z, width: 0.8 }, start: 0, impact: PULSE_1 }];
   },
   bloom: { enabled: true, strength: 0.35, radius: 0.35, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -244,7 +253,6 @@ export const mirrorShellModule: EffectModule = {
   buildGui(f, effect) {
     const s = (effect as MirrorShell).settings;
     f.add(s, 'loop');
-    f.add(s, 'damage', 1, 60, 1);
     f.add(s, 'shield', 0, 100, 1);
   },
 };

@@ -147,6 +147,7 @@ export const bardKit: HeroKit = {
   title: 'the Last Verse',
   accent: S.body,
   foil: S.foil,
+  maxHp: 640,
   portrait(g, s) {
     iconGround(g, s);
     // Staves drift behind him with a few notes riding them.
@@ -320,8 +321,8 @@ export const bardKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'crescendo', name: 'Crescendo', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A giant golden lyre rises, the notes freeze, then one deafening chord stuns everyone below.',
+      key: 'R', label: 'crescendo', name: 'Crescendo', range: 0, cooldown: 20, cc: true,
+      blurb: 'Ultimate. A giant golden lyre rises over him, the notes freeze, then one deafening chord stuns everything within 5 m.',
       icon(g, s) {
         iconGround(g, s);
         // A giant golden lyre, staves spiralling up into it and sound rings on the floor.

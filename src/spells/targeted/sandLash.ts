@@ -13,10 +13,12 @@ import type { Effect, EffectModule } from '../../effects/types';
  */
 export interface SandLashSettings {
   damage: number;
+  /** Root seconds on the hit (engine cap 1.5). */
+  root: number;
   loop: boolean;
 }
 
-export const defaultSandLash = (): SandLashSettings => ({ damage: 53, loop: false });
+export const defaultSandLash = (): SandLashSettings => ({ damage: 46, root: 0.8, loop: false });
 
 // Timeline (seconds).
 const POUR_END_T = 0.2;
@@ -158,7 +160,11 @@ export class SandLash implements Effect {
       this.pool.fade(0.3, 0.75);
       this.dust.puff(this.v1.copy(this.feet).setY(0.3), 0.7);
       this.shake = 0.12;
-      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 1, from: ctx.from, color: SAND_CSS.body });
+      if (ctx && ctx.targets[0]) {
+        ctx.hit(ctx.targets[0], {
+          damage: this.settings.damage, knock: 1, from: ctx.from, color: SAND_CSS.body, status: { kind: 'root', seconds: this.settings.root },
+        });
+      }
     }
     if (!f.set && t >= SET_T) {
       f.set = true;
@@ -262,5 +268,6 @@ export const sandLashModule: EffectModule = {
     const s = (effect as SandLash).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
+    f.add(s, 'root', 0, 1.5, 0.1);
   },
 };

@@ -1,5 +1,12 @@
 # Sand kit: Sefu, the Dune Sovereign
 
+## Role (2026-10-30)
+**Controller**, 600 HP. Signature: *Shackles and teeth*.
+- Q Sand Lash: **root 0.8** (`cc`), 53 damage.
+- W Quicksand: a LINGER (`cc`): the sand turns for 2 s, three ticks (6 each) **slow 1.2** whoever is inside radius 4, then at 2.6 s the pillars close: 40 damage and **root 1.0**. The telegraph is armed at the first tick (0.8 s) and drawn until the pillars close.
+- E Dune Ward: **shield 45** (4 s) at the cast; the two sand rings (13) **slow 1.0**.
+- R Tomb of Kings: **stun 1.0** at the implosion (`cc`), 130 damage.
+
 **Signature shape: sand that flows like a ribbon and sets like stone.** Sand pours in thick, grainy **ribbons**
 (a warm ochre band with a darker shadow edge and fine grains streaming off its trailing edge), and wherever it stops
 it **hardens into carved sandstone** with glyphs cut into it (pale stone with dark incised lines). Every spell moves

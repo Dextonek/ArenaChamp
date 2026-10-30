@@ -9,35 +9,38 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Halo of Blades (dawn kit, E: self aura). A solid gold halo ring forms over Auriel's head and six blade shards click
- * together around her at waist height. They orbit her; at 1.0 s and 2.0 s every blade launches at the nearest enemy
- * in range (a straight streak), strikes with a sky-blue spark and snaps back. Then the blades and the halo shatter into
- * panels. See pipeline/designs/kit-dawn.md.
+ * Halo of Blades (dawn kit, E: orbit). A solid gold halo ring forms over Auriel's head and six blade shards click
+ * together around her at waist height, then circle her at 2.5 m for 3 s. They hit only what they touch: an enemy that
+ * stands in the ring takes a cut (with a sky-blue spark) each time a blade passes, at most 3 cuts in all, one per 0.7 s
+ * per enemy. Auriel gains a shield when the halo forms. At 3.3 s the blades and the halo shatter into panels. See
+ * pipeline/designs/kit-dawn.md.
  */
 export interface HaloOfBladesSettings {
   damage: number;
+  /** Shield Auriel gains at the cast (held SHIELD_SECONDS). */
+  shield: number;
   loop: boolean;
 }
 
-export const defaultHaloOfBlades = (): HaloOfBladesSettings => ({ damage: 13, loop: false });
+export const defaultHaloOfBlades = (): HaloOfBladesSettings => ({ damage: 10, shield: 25, loop: false });
 
 // Timeline (seconds).
 const RISE_END = 0.3;
-const PULSE_T = [1.0, 2.0];
-const DASH = 0.16; // the launch runs PULSE_T - DASH .. PULSE_T
-const HOLD = 0.05; // the blade stays in the enemy this long
-const BACK = 0.2; // and snaps back in this long
-const SHATTER_T = 2.6;
-const DURATION = 3.2;
-const RADIUS = 5;
-const ORBIT_R = 1.6;
+const ORBIT_END = 3.3; // the blades circle from RISE_END to here (3 s)
+const SHATTER_T = 3.3;
+const DURATION = 3.9;
+const RADIUS = 3.6; // the telegraph: the orbit circle plus the blades' reach
+const ORBIT_R = 2.5;
+const TOUCH = 0.95; // a blade touches an enemy within this ground distance
+const MAX_HITS = 3;
+const REHIT = 0.7; // seconds before the same enemy can be cut again
+const SHIELD_SECONDS = 4;
 const WAIST = 1.1;
 const BLADES = 6;
-const BLADE_SIZE = 1.5;
-const SPIN = 2.4; // orbit speed, rad/s
+const BLADE_SIZE = 2.2;
+const SPIN = 2.6; // orbit speed, rad/s
+const ROOT_T = 2.0; // she stands rooted this long (the telegraph's impact)
 const UP = new THREE.Vector3(0, 1, 0);
-
-interface Launch { from: THREE.Vector3; to: THREE.Vector3; enemy: number }
 
 export class HaloOfBlades implements Effect {
   readonly group = new THREE.Group();
@@ -58,22 +61,22 @@ export class HaloOfBlades implements Effect {
   private view = new THREE.Vector3(0, 0.45, 0.9);
   private haloN = new THREE.Vector3(0, 1, 0);
 
-  private flags = { pulse: [false, false], shatter: false };
-  /** Per volley and blade: where it flies (null = no enemy in range). */
-  private launch: (Launch | null)[][] = [[], []];
+  private flags = { shield: false, shatter: false };
+  private hits = 0;
+  /** Per target (ctx.targets order): the time of its last cut, -1 = never. */
+  private lastCut: number[] = [];
 
   // Parts.
   private sigil = new Sigil();
   private halo = new HaloRing();
-  private panels = new LightPanels(BLADES * 2, 6);
-  private stars = Array.from({ length: BLADES }, () => new StarBurst({ points: 8, inner: 0.3, color: DAWN.accent, core: DAWN.accent, additive: false }));
-  private starPos = Array.from({ length: BLADES }, () => new THREE.Vector3());
-  private starAt = new Array<number>(BLADES).fill(-1);
+  private panels = new LightPanels(BLADES, 6);
+  private stars = Array.from({ length: MAX_HITS }, () => new StarBurst({ points: 8, inner: 0.3, color: DAWN.accent, core: DAWN.accent, additive: false }));
+  private starPos = Array.from({ length: MAX_HITS }, () => new THREE.Vector3());
+  private starAt = new Array<number>(MAX_HITS).fill(-1);
 
   // Scratch.
   private v1 = new THREE.Vector3();
   private v2 = new THREE.Vector3();
-  private v3 = new THREE.Vector3();
   private v4 = new THREE.Vector3();
   private q1 = new THREE.Quaternion();
 
@@ -89,7 +92,12 @@ export class HaloOfBlades implements Effect {
   }
 
   get impactTime() {
-    return PULSE_T[0];
+    return ROOT_T;
+  }
+
+  /** The telegraph hangs until the blades stop. */
+  get orbitEnd() {
+    return ORBIT_END;
   }
 
   cast(ctx: CastContext) {
@@ -112,9 +120,9 @@ export class HaloOfBlades implements Effect {
   private reset() {
     this.time = 0;
     this.shake = 0;
-    this.flags.pulse = [false, false];
-    this.flags.shatter = false;
-    this.launch = [[], []];
+    this.flags.shield = this.flags.shatter = false;
+    this.hits = 0;
+    this.lastCut = [];
     this.starAt.fill(-1);
     clearScreenFx(this.screen);
     this.sigil.reset();
@@ -123,11 +131,18 @@ export class HaloOfBlades implements Effect {
     for (const s of this.stars) s.set(this.from, 1e-3, 0);
   }
 
+  /** The orbit's centre: she stands rooted, but if she moves the ring goes with her. */
+  private centre(out: THREE.Vector3) {
+    const c = this.ctx?.caster.group.position;
+    return c ? out.set(c.x, 0, c.z) : out.copy(this.from);
+  }
+
   /** Blade i on its circle around Auriel at time t. */
   private orbitAt(i: number, t: number, out: THREE.Vector3) {
     const a = (i / BLADES) * Math.PI * 2 + SPIN * Math.max(0, t - RISE_END) + 0.4;
     const grow = dawnEaseOut(t / RISE_END);
-    return out.set(this.from.x + Math.cos(a) * ORBIT_R * grow, WAIST + 0.12 * Math.sin(a * 2 + i), this.from.z + Math.sin(a) * ORBIT_R * grow);
+    this.centre(this.v4);
+    return out.set(this.v4.x + Math.cos(a) * ORBIT_R * grow, WAIST + 0.12 * Math.sin(a * 2 + i), this.v4.z + Math.sin(a) * ORBIT_R * grow);
   }
 
   update(dt: number) {
@@ -144,26 +159,12 @@ export class HaloOfBlades implements Effect {
     }
     const t = this.time;
     const f = this.flags;
-    const ctx = this.ctx;
 
-    for (let v = 0; v < 2; v++) {
-      if (this.launch[v].length === 0 && t >= PULSE_T[v] - DASH) this.planVolley(v, PULSE_T[v] - DASH);
-      if (!f.pulse[v] && t >= PULSE_T[v]) {
-        f.pulse[v] = true;
-        this.shake = 0.12;
-        const hitEnemies = new Set<number>();
-        for (let i = 0; i < BLADES; i++) {
-          const l = this.launch[v][i];
-          if (!l) continue;
-          this.starAt[i] = t;
-          this.starPos[i].copy(l.to);
-          if (ctx && !hitEnemies.has(l.enemy)) {
-            hitEnemies.add(l.enemy);
-            ctx.hit(ctx.targets[l.enemy], { damage: this.settings.damage, knock: 1, color: DAWN_CSS.body });
-          }
-        }
-      }
+    if (!f.shield) {
+      f.shield = true;
+      this.ctx?.shieldSelf?.(this.settings.shield, SHIELD_SECONDS, DAWN_CSS.body);
     }
+    if (t >= RISE_END && t < ORBIT_END) this.touch(t);
     if (!f.shatter && t >= SHATTER_T) {
       f.shatter = true;
       this.v1.copy(this.from).setY(WAIST);
@@ -175,26 +176,26 @@ export class HaloOfBlades implements Effect {
     this.panels.update(dt);
   }
 
-  private planVolley(v: number, t: number) {
+  /** A blade that reaches an enemy cuts it (live positions): once per pass, at most MAX_HITS in all. */
+  private touch(t: number) {
     const ctx = this.ctx;
-    this.launch[v] = [];
-    for (let i = 0; i < BLADES; i++) {
-      let best = -1, bd = 1e9;
-      this.orbitAt(i, t, this.v1);
-      if (ctx) {
-        ctx.targetPos.forEach((p, k) => {
-          const d = Math.hypot(p.x - this.from.x, p.z - this.from.z);
-          if (d <= RADIUS + 0.5 && d < bd) { bd = d; best = k; }
-        });
+    if (!ctx || this.hits >= MAX_HITS) return;
+    ctx.targets.forEach((e, k) => {
+      if (this.hits >= MAX_HITS) return;
+      if (this.lastCut[k] !== undefined && this.lastCut[k] >= 0 && t - this.lastCut[k] < REHIT) return;
+      const p = e.group.position;
+      for (let i = 0; i < BLADES; i++) {
+        this.orbitAt(i, t, this.v1);
+        if (Math.hypot(this.v1.x - p.x, this.v1.z - p.z) > TOUCH) continue;
+        this.lastCut[k] = t;
+        const s = this.hits++;
+        this.starAt[s] = t;
+        this.starPos[s].set(p.x, WAIST, p.z);
+        this.shake = 0.12;
+        ctx.hit(e, { damage: this.settings.damage, knock: 1, color: DAWN_CSS.body });
+        break;
       }
-      if (best < 0 || !ctx) { this.launch[v].push(null); continue; }
-      const p = ctx.targetPos[best];
-      // Blades that share an enemy spread over its body a little.
-      const side = ((i % 3) - 1) * 0.35;
-      this.v2.set(p.x - this.v1.x, 0, p.z - this.v1.z).normalize();
-      const to = new THREE.Vector3(p.x - this.v2.z * side, WAIST + 0.35 * ((i % 2) - 0.5), p.z + this.v2.x * side).addScaledVector(this.v2, -0.35);
-      this.launch[v].push({ from: this.v1.clone(), to, enemy: best });
-    }
+    });
   }
 
   private layout() {
@@ -202,59 +203,31 @@ export class HaloOfBlades implements Effect {
     const gone = t >= SHATTER_T;
     const rise = dawnEaseOut(t / RISE_END);
     const out = 1 - smoothstep((t - SHATTER_T) / 0.35);
+    this.centre(this.v2);
 
     // --- Halo over her head, bobbing a little; the sigil under her. ---
-    this.v1.copy(this.from).setY(2.75 + 0.06 * Math.sin(t * 3));
+    this.v1.copy(this.v2).setY(2.75 + 0.06 * Math.sin(t * 3));
     this.halo.set(this.v1, this.haloN, 0.72 * Math.max(rise, 0.02) * (1 + 0.1 * (1 - out)));
     this.halo.opacity = smoothstep(t / 0.2) * out;
-    this.sigil.set(this.from, 2.4);
+    this.sigil.set(this.v2, ORBIT_R + 0.3);
     this.sigil.hide = 0.3;
     this.sigil.reveal = smoothstep(t / RISE_END);
     this.sigil.opacity = 1 - smoothstep((t - SHATTER_T) / 0.4);
 
-    // --- Blades: on the circle, or launched at an enemy, striking and snapping back. ---
+    // --- Blades: on the circle, flying along its tangent. ---
     for (let i = 0; i < BLADES; i++) {
       this.orbitAt(i, t, this.v1);
       const a = (i / BLADES) * Math.PI * 2 + SPIN * Math.max(0, t - RISE_END) + 0.4;
-      this.v2.set(-Math.sin(a), 0, Math.cos(a)); // tangent = flying direction on the circle
-      let streakLen = 0;
-      for (let v = 0; v < 2; v++) {
-        const l = this.launch[v][i];
-        const s = t - (PULSE_T[v] - DASH);
-        if (!l || s < 0 || s > DASH + HOLD + BACK) continue;
-        if (s < DASH) {
-          const u = (s / DASH) ** 2;
-          this.v1.lerpVectors(l.from, l.to, u);
-          this.v2.subVectors(l.to, l.from).normalize();
-          this.v3.copy(l.from);
-          streakLen = this.v4.subVectors(this.v1, l.from).length();
-        } else if (s < DASH + HOLD) {
-          this.v1.copy(l.to);
-          this.v2.subVectors(l.to, l.from).normalize();
-          this.v3.copy(l.from);
-          streakLen = this.v4.subVectors(l.to, l.from).length() * (1 - (s - DASH) / HOLD);
-        } else {
-          const k = dawnEaseOut((s - DASH - HOLD) / BACK);
-          this.v4.copy(this.v1);
-          this.v1.lerpVectors(l.to, this.v4, k);
-          this.v2.subVectors(this.v4, l.to).normalize();
-        }
-      }
+      this.v2.set(-Math.sin(a), 0, Math.cos(a));
       if (!gone) {
         dawnPanelNormal(this.v2, this.view, this.v4);
         dawnOrient(this.v4, this.v2, this.q1);
-        this.panels.place(i, this.v1, this.q1, BLADE_SIZE * Math.max(rise, 0.05), 'shard', 1.3, i % 2 === 0 ? DAWN.hot : DAWN.foil);
-        if (streakLen > 0.15) {
-          // A straight, thin streak from the launch point to the blade, shrinking away after the strike.
-          const l2 = streakLen;
-          this.v3.lerp(this.v1, 0.5);
-          this.panels.place(BLADES + i, this.v3, this.q1, l2, 'shard', Math.min(0.34 / (0.28 * l2), 3), DAWN.hot);
-        } else this.panels.hide(BLADES + i);
+        this.panels.place(i, this.v1, this.q1, BLADE_SIZE * Math.max(rise, 0.05), 'shard', 0.9, i % 2 === 0 ? DAWN.hot : DAWN.foil);
       }
     }
 
-    // --- Sky-blue sparks at the strikes (2 frames). ---
-    for (let i = 0; i < BLADES; i++) {
+    // --- Sky-blue sparks at the cuts (2 frames). ---
+    for (let i = 0; i < MAX_HITS; i++) {
       const age = t - this.starAt[i];
       if (this.starAt[i] < 0 || age > 0.2) { this.stars[i].set(this.starPos[i], 1e-3, 0); continue; }
       const sp = StarBurst.pop(age, 0, 0.03);
@@ -273,7 +246,8 @@ export const haloOfBladesModule: EffectModule = {
     const e = effect as HaloOfBlades;
     const c = e.ctx?.from;
     if (!c) return [];
-    return [{ shape: { kind: 'circle' as const, x: c.x, z: c.z, radius: RADIUS }, start: 0, impact: PULSE_T[0] }];
+    // The orbit circle: she stands rooted while it spins; it hangs until the blades stop.
+    return [{ shape: { kind: 'circle' as const, x: c.x, z: c.z, radius: RADIUS }, start: 0, impact: ROOT_T, until: e.orbitEnd }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.35, threshold: 0.88 },
   frameCamera(camera, controls, effect) {
@@ -284,5 +258,6 @@ export const haloOfBladesModule: EffectModule = {
     const s = (effect as HaloOfBlades).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 60, 1);
+    f.add(s, 'shield', 0, 120, 1);
   },
 };

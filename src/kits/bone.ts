@@ -139,6 +139,7 @@ export const boneKit: HeroKit = {
   title: 'the Ossuary Lord',
   accent: S.body,
   foil: S.bone,
+  maxHp: 580,
   portrait(g, s) {
     iconGround(g, s);
     // A staff on the right: a bone shaft with a small skull on top and a soulfire wisp above it.
@@ -294,8 +295,8 @@ export const boneKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'ossuary ward', name: 'Ossuary Ward', range: 0, cooldown: 9,
-      blurb: 'A cage of ribs grows round him and shields him; twice the ribs flex and fire shards at everything near.',
+      key: 'E', label: 'ossuary ward', name: 'Ossuary Ward', range: 9, cooldown: 9, cc: true,
+      blurb: 'A cage of ribs grows round the chosen enemy, closes and roots it for 1.2 s, and flexes again to cut it with bone shards.',
       icon(g, s) {
         iconGround(g, s);
         ring(g, s * 0.5, s * 0.8, s * 0.4, s * 0.12, '#071210', s * 0.1);

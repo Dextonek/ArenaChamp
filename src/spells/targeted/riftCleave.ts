@@ -17,7 +17,7 @@ export interface RiftCleaveSettings {
   loop: boolean;
 }
 
-export const defaultRiftCleave = (): RiftCleaveSettings => ({ damage: 46, loop: false });
+export const defaultRiftCleave = (): RiftCleaveSettings => ({ damage: 53, loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.3;

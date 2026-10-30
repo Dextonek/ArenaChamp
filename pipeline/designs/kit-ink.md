@@ -1,5 +1,9 @@
 # Ink kit: Shiori, the Last Brush (ranged control mage + summons)
 
+## Role (2026-10-30)
+**Summoner**, 580 HP. Signature: *Ink familiars*. Shape unchanged (split bolt, root zone, cranes, blind R).
+- E Paper Familiars: cooldown 14 to 12 (kit data only).
+
 **Signature shape: the wet brushstroke.** Everything is **calligraphy painted in the air and on the ground**:
 tapered strokes that start fat and end in a dry-brush tail (the bristle gaps show as streaks), splatter drops flung
 off the stroke ends, ink that **bleeds** into pale rice-paper decals, and a square vermilion seal stamped where a

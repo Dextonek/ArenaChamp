@@ -1,5 +1,12 @@
 # Frost kit: Isolde, the Winter Warden
 
+## Role (2026-10-30)
+**Controller**, 600 HP. Signature: *Frostbite, then freeze*.
+- Q Rime Spear: a piercing skillshot (`aim: 'line'`, range 12, speed 24, 53 damage), **slow 1.5**; the ferns and crystals grow where the first body is hit, the javelin shatters at max range.
+- W Frostfern Field: a LINE (`aim: 'line'`, `cc`, range 9, strip 9 m x 2.6): three fern patches race out of her feet, at 0.9 s the strip cracks: 58 damage and **root 1.2** to whoever is still in it.
+- E Glacial Mantle: **shield 50** (4 s) at the cast; the two blizzard pulses (12) **slow 1.0**.
+- R Winter's Crown: a SELF-R (`cc`, range 0, radius 7 to 5): the crown drives down round her, 130 damage and **stun 1.0**.
+
 **Signature shape: frost ferns.** Rime creeps across the floor (and up the enemies) as feathery, branching fern
 patterns that grow from a point outward, white-blue on dark stone, then **shatter** into angular ice shards. The
 second shape: clear blue ice crystals with hard facets and a pale inner core line. Not lily petals, not hexagon

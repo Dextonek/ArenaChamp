@@ -7,16 +7,18 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Rivet Shot (forge kit, Q: quick strike): Brannoc pulls a white-hot rivet out of his chest forge (sparks), flicks it,
+ * Rivet Shot (forge kit, Q: point-blank flick, range 3, slows): Brannoc pulls a white-hot rivet out of his chest forge (sparks), flicks it,
  * and it flies as a short hot streak and punches into the target. Sparks burst out of the back, slag splashes under
  * the target and cools, the rivet drops and cools to black, a puff of cold steam. See pipeline/designs/kit-forge.md.
  */
 export interface RivetShotSettings {
   damage: number;
+  /** Seconds of slow on the hit. */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultRivetShot = (): RivetShotSettings => ({ damage: 50, loop: false });
+export const defaultRivetShot = (): RivetShotSettings => ({ damage: 44, slow: 0.8, loop: false });
 
 // Timeline (seconds).
 const PULL_END_T = 0.25;
@@ -165,7 +167,7 @@ export class RivetShot implements Effect {
         this.blobs.throw(this.hit, this.v1, 0.15 + Math.random() * 0.05);
       }
       this.shake = 0.15;
-      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 5, from: ctx.from, color: FORGE_CSS.body });
+      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 5, from: ctx.from, color: FORGE_CSS.body, status: { kind: 'slow', seconds: this.settings.slow } });
     }
     if (!f.steam1 && t >= 0.7) { f.steam1 = true; this.steam.puff(this.v1.copy(this.feet).setY(0.3), 0.45, true); }
     if (!f.steam2 && t >= 0.85) { f.steam2 = true; this.steam.puff(this.v1.copy(this.feet).add(this.v2.set(0.3, 0.3, 0.1)), 0.4); }
@@ -251,5 +253,6 @@ export const rivetShotModule: EffectModule = {
     const s = (effect as RivetShot).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

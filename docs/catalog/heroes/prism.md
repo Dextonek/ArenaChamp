@@ -1,12 +1,23 @@
 ---
 title: Opaline, the Lightbreaker (prism kit)
-tags: [catalog, heroes, prism, mage, mechanics]
-updated: 2026-10-29
+tags: [catalog, heroes, prism, marksman, mechanics]
+updated: 2026-10-30
 ---
 
 # Opaline, the Lightbreaker
 
-The prism hero kit: Opaline's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A mage in a long pale lavender robe with a ring of small prisms floating behind her head and a crystal-tipped wand; she catches light in clear crystal and splits it into a spectrum. She is built on the [combat mechanics](../../architecture/mechanics.md): a splitting skillshot, a blind, a shield and a mirror aura.
+The prism hero kit: Opaline's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A marksman in a long pale lavender robe with a ring of small prisms floating behind her head and a crystal-tipped wand; she catches light in clear crystal and splits it into a spectrum. She is built on the [combat mechanics](../../architecture/mechanics.md): a splitting skillshot, a blind, a shield and a mirror blink.
+
+## Role
+
+| | |
+|---|---|
+| Role | Marksman (ranged) |
+| Signature | Refraction |
+| HP | 560 |
+| Kit shapes | Q BOLT split · W ZONE blind · E BLINK + shield · R QUICK CHANNEL sweep |
+
+She wins a 1v1 by out-ranging the enemy (Q reaches 14 m, cooldown 2 s), blinking out of reach and sweeping a held beam across the space in front of her. Her weakness is low HP: a dive kills her, and the ultimate roots her for 2 s.
 
 ## At a glance
 
@@ -43,25 +54,25 @@ Opaline uses these pieces of [the combat mechanics](../../architecture/mechanics
 
 | Mechanic | Where |
 |---|---|
-| Skillshot, split | Q is `aim: 'line'`: `ctx.projectile` fires a crystal (speed 22, range 12, radius 0.45) with `split: { count: 3, spreadDeg: 25, at: 'hit', range: 6 }`. At the first hit the parent ends and three child bolts fan out over 25 degrees; each child hits for 15 and never hits an enemy its parent hit. Hero mode draws a strip toward the cursor; the AI's bolt dodge can sidestep it |
+| Skillshot, split | Q is `aim: 'line'`: `ctx.projectile` fires a crystal (speed 22, range 14, radius 0.45) with `split: { count: 3, spreadDeg: 25, at: 'hit', range: 6 }`. At the first hit the parent ends and three child bolts fan out over 25 degrees; each child hits for 18 and never hits an enemy its parent hit. Hero mode draws a strip toward the cursor; the AI's bolt dodge can sidestep it |
 | Blind | W blinds every enemy it hits for 1.5 s (`status: { kind: 'blind', seconds: 1.5 }`, cap 2 s): their casts land at a random spot within 2.5 m of the aim point. It does not move self spells |
-| Shield | E gives `ctx.shieldSelf(40, 3)`, a 40 point shield for 3 s |
-| Aura | E pulses twice and hits every enemy inside radius 4 for 12 with knock 1 |
-| Knock | R hits with knock 4 and pulls the enemies in a little while the prism builds (`ctx.displace`) |
-| Melee, dash, heal, summons | none. `maxHp` is not set, so the default 600 HP applies |
+| Shield | E gives `ctx.shieldSelf(45, 3)`, a 45 point shield for 3 s |
+| Blink | E moves her 4 m sideways of the line to the enemy in 0.12 s (`ctx.moveCaster`), toward the side nearer the middle of the ring. No damage |
+| Channel | R is QUICK: no aim, self mode, radius 12. She is rooted for 2 s and a beam sweeps 70 degrees in front of her, hitting whoever is on its line at three ticks (knock 1.5) |
+| Melee, dash, heal, summons | none. `maxHp` is 560 |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md). In the wave 4 duel tournament her first run gave 63%; Refraction Field was rebalanced from 45 to 40 damage and she then won 53%.
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md).
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (the first damage 0.2-1.0 s after the cast, clean by about 2 s; the E aura runs about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/prism.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a splitting skillshot (first damage 0.2-0.85 s after the cast, clean by 1.5 s), W a delayed ground zone (hit at 0.75 s, clean by 2.2 s), E a blink with a shield and no damage (2.3 s), R a no-aim channel that sweeps a beam (three ticks, impact at 2.3 s, clean by 3.2 s). Range and cooldown come from the kit data (`src/kits/prism.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [prism bolt](../../../src/spells/targeted/prismBolt.ts) | skillshot line (width 0.9) | 12 | 3 s | flies from 0.2 s, about 0.55 s of flight | 1.5 s | A faceted crystal (0.8 long) forms at her wand tip over 0.2 s, then is fired along the aim line, spinning, with a short white trail. On the first enemy it bursts: glitter, a small spectrum star for two frames, and three thin tinted beams (red, gold, blue) fan out over 25 degrees, one riding each child bolt. The children hit again and spark a little. A bolt that ends without a hit pops into glitter where it was. Damage 42, knock 2; children 15, knock 1. |
-| W | [refraction field](../../../src/spells/targeted/refractionField.ts) | ground (r 4) | 10 | 7 s | 0.75 s | 2.2 s | A ring of six tilted crystals rises at the zone edge, facing inward. Each fires a white beam to a prism forming over the centre (about 2.5 high), which spins faster and brightens. At 0.75 s the prism bursts: spectral beams flash down across the zone with glitter, a little shake and a ground refraction ring, and every enemy inside is hit and blinded. From 1.0 s the crystals shatter into glitter. Damage 40, blind 1.5 s. |
-| E | [mirror shell](../../../src/spells/targeted/mirrorShell.ts) | self (r 4) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | Six flat crystal mirrors assemble round her (radius 1.3, waist to head), turning slowly, and she takes a 40 point shield for 3 s. At 1.0 s and 2.0 s the mirrors flash and throw spectral beams outward to radius 4: every enemy inside takes a small hit. At 2.6 s the mirrors shatter into glitter. The telegraph ends at the first pulse. Damage 12 per pulse, knock 1, shield 40. |
-| R | [spectrum lance](../../../src/spells/targeted/spectrumLance.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a deep violet-black and a ring of small crystals marks the zone. A huge faceted prism (about 4 tall, top under y 8.5) assembles from shards over the point while eight smaller prisms orbit it and the enemies are pulled in a little. A white beam strikes it from the sky and it glows from inside; everything hangs for a dead beat (1.85-2.0 s). Then it splits the beam into seven spectral lances that slam into the ground in a ring (2.0-2.2 s) and sweep once round the zone. At 2.2 s: two impact frames, glitter along the lances, a spectrum accent, a ground refraction ring, shake and the hit. Damage 118, knock 4. |
+| Q | [prism bolt](../../../src/spells/targeted/prismBolt.ts) | ground, BOLT skillshot line (width 0.9) | 14 | 2 s | flies from 0.2 s, about 0.64 s of flight | 1.5 s | A faceted crystal (0.8 long) forms at her wand tip over 0.2 s, then is fired along the aim line, spinning, with a short white trail. On the first enemy it bursts: glitter, a small spectrum star for two frames, and three thin tinted beams (red, gold, blue) fan out over 25 degrees, one riding each child bolt. The children hit again and spark a little. A bolt that ends without a hit pops into glitter where it was. Damage 50, knock 2; children 18, knock 1. |
+| W | [refraction field](../../../src/spells/targeted/refractionField.ts) | ground ZONE (r 4) | 10 | 7 s | 0.75 s | 2.2 s | A ring of six tilted crystals rises at the zone edge, facing inward. Each fires a white beam to a prism forming over the centre (about 2.5 high), which spins faster and brightens. At 0.75 s the prism bursts: spectral beams flash down across the zone with glitter, a little shake and a ground refraction ring, and every enemy inside is hit and blinded. From 1.0 s the crystals shatter into glitter. Damage 48, blind 1.5 s. |
+| E | [mirror shell](../../../src/spells/targeted/mirrorShell.ts) | self BLINK (r 4) | 0 (self) | 9 s | 0.3 s (the flash and the blink) | 2.3 s | Six flat crystal mirrors assemble round her (radius 1.3, waist to head), turning slowly. At 0.3 s they flash, throw spectral beams outward, and she blinks 4 m sideways of the line to the enemy in 0.12 s (the side nearer the middle of the ring). She takes a 45 point shield for 3 s. At 1.8 s the mirrors shatter into glitter. No damage. The telegraph is the blink line. Shield 45. |
+| R | [spectrum lance](../../../src/spells/targeted/spectrumLance.ts) | self QUICK CHANNEL (r 12) | 0 (self, no aim) | 20 s | 2.3 s (ticks at 0.63, 1.3 and 1.97 s) | 3.2 s | The ultimate. No aim: it fires where she faces. A huge faceted prism (about 2 tall) stands in front of her over 0.3 s and the world darkens. From 0.3 to 2.3 s she holds a rainbow beam where she faces, rooted, and it sweeps 70 degrees across, 12 m long. Three ticks hit whoever is on the beam's line then (live positions, 1.2 m wide), with glitter, a spectrum accent and a little shake. At 2.4 s the prism shatters into glitter. The telegraph is the 84 degree cone. Damage 50 per tick (3 ticks), knock 1.5. |
 
 Spell sources: [`prismBolt.ts`](../../../src/spells/targeted/prismBolt.ts), [`refractionField.ts`](../../../src/spells/targeted/refractionField.ts), [`mirrorShell.ts`](../../../src/spells/targeted/mirrorShell.ts), [`spectrumLance.ts`](../../../src/spells/targeted/spectrumLance.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-prism).
 

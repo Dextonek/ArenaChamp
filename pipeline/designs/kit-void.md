@@ -1,5 +1,11 @@
 # Void kit: Oblivion, the Unmaker (melee juggernaut)
 
+## Role (2026-10-30)
+**Juggernaut (melee), 760 HP.** Signature: into the rift. See hero-roles.md.
+- Q Rift Cleave, W Null Tether: unchanged.
+- E Void Mantle: no shield; one pulse (1.0 s) to radius 4 that hits 20 and silences 1.2. Shortened to 2.6 s. cd 10.
+- R Unmaking: radius 7 -> 5 (110, pull 4, silence 1.5 unchanged), cd 20.
+
 **Signature shape: torn space.** The world **tears like paper or cracks like glass**, and the tears show pure
 black with nothing in it. Every rift is a **jagged slit of black** with a hot rift-pink edge on one side and a thin
 cyan fringe on the other (a chromatic split, like a lens that came apart). Shards of the world (ground-coloured

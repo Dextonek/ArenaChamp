@@ -8,7 +8,7 @@ import type { Effect, EffectModule } from '../../effects/types';
 
 /**
  * Unmaking (void kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world darkens to black
- * and a crack line traces the radius-7 circle; the ground inside cracks like glass from the centre out, plates of ground
+ * and a crack line traces the radius-5 circle; the ground inside cracks like glass from the centre out, plates of ground
  * drift inward and a vast vertical rift (about 6 tall) opens above the point and widens while shards and ash stream into
  * it and the enemies are drawn in. At 1.6 s the rift goes still and its edges flicker cyan; dead beat 1.85..2.0. At 2.0 s
  * the rift slams shut and the cracked disc inverts for two frames (the floor plates go black with pink edges). At 2.2 s
@@ -20,7 +20,7 @@ export interface UnmakingSettings {
   loop: boolean;
 }
 
-export const defaultUnmaking = (): UnmakingSettings => ({ damage: 110, loop: false });
+export const defaultUnmaking = (): UnmakingSettings => ({ damage: 120, loop: false });
 
 // Timeline (seconds).
 const RING_T = 0; // the outline circle is traced 0..0.4
@@ -35,7 +35,7 @@ const HIT_T = 2.2;
 const HEAL_T = 2.5;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 5;
 const RIFT_H = 6;
 const RIFT_BASE = 0.3;
 
@@ -258,7 +258,7 @@ export class Unmaking implements Effect {
       const sp = StarBurst.pop(after, 0, 0.05);
       this.pop.set(this.v1.set(this.point.x, 1.2, this.point.z), 2 * sp.scale, sp.opacity, 0.2);
       const gp = THREE.MathUtils.clamp(after / 0.5, 0, 1);
-      this.groundShock.set(this.point, 1 + 11 * gp, 0.07 * (1 - gp) * (1 - gp));
+      this.groundShock.set(this.point, 1 + 7 * gp, 0.07 * (1 - gp) * (1 - gp));
       this.shake = 0.75 * Math.exp(-after * 9);
     }
   }

@@ -1,12 +1,16 @@
 ---
 title: Auriel, the Dawn Paladin (dawn kit)
 tags: [catalog, heroes, dawn]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Auriel, the Dawn Paladin
 
 The dawn hero kit: Auriel's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A young paladin in white and gold plate with a halo ring; she protects and smites.
+
+## Role
+
+Support, 600 HP, ranged. Signature: *Aegis*. Nearly every spell shields her, and the stun dome and the orbiting blades punish whoever stays close. She wins a 1v1 by trading behind a rolling shield and stunning at the right moment. Her weakness is low burst damage.
 
 ## At a glance
 
@@ -38,14 +42,14 @@ Hard-light geometry. Light is solid: flat gold panels with crisp edges (hexagons
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.45-1.0 s after the cast, clean by about 2.3 s; an E aura may run about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/dawn.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E each have a shape of their own (see the table: dash, skillshot, trap, orbit, summon and so on), not a fixed strike, zone or aura; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/dawn.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [radiant spear](../../../src/spells/targeted/radiantSpear.ts) | enemy | 10 | 3 s | 0.45 s | 1.5 s | A spear of hard-light shards assembles over her shoulder (6 shards clicking into a long blade). At the hit it flies and pierces the enemy: the shards burst out of its back in a fan, a sky-blue accent for 2 frames, a small sun-wheel sigil flashes under it, one impact frame. The shards fade out panel by panel. Damage 50, knock 3. |
-| W | [aegis wall](../../../src/spells/targeted/aegisWall.ts) | ground (r 4) | 10 | 7 s | 0.75 s | 2.35 s | A sun-wheel sigil draws on at the point, then a ring of 10 kite-shield panels assembles around the edge, stands upright and tilts inward over the enemies like a closing dome. At the hit the dome slams shut (panels click together at the top) with a flash of the core lines, shake and a ground refraction ring. It pulses at 1.3 s, then shatters outward into panels that fade. Damage 45, then a tick of 10 at 1.3 s. |
-| E | [halo of blades](../../../src/spells/targeted/haloOfBlades.ts) | self (r 5) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | A halo ring forms over her head and six blade shards assemble and orbit her at waist height. At 1.0 s and 2.0 s each blade launches at the nearest enemy within 5 in a straight streak, strikes and snaps back; then the blades and halo shatter into panels. Damage 13 per pulse, knock 1. |
-| R | [judgement of dawn](../../../src/spells/targeted/judgementOfDawn.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a pre-dawn blue and a big sun-wheel sigil draws on. Above the point a giant sword (about 7 long, point down) assembles from dozens of gold panels, a halo ring forms behind its hilt, sun rays fan from it and the enemies are held. Its core lines brighten to white, dead beat at 1.85-2.0 s, then it drives straight down into the point: impact frames, a ring of panel shards bursts outward, sky-blue accent, sun rays, refraction ring. The sword stands a moment and shatters into panels. Damage 125, knock 6. |
+| Q | [radiant spear](../../../src/spells/targeted/radiantSpear.ts) | ground (BOLT, skillshot line) | 12 | 3 s | fires 0.2 s, then 0.5 s of flight | 1.8 s | A spear of hard-light shards assembles over her shoulder (6 shards clicking into a long blade). At 0.2 s it flies down the aim line (speed 24) and pierces everything it meets. On the first hit the shards burst out of its back in a fan, a sky-blue accent for 2 frames, a small sun-wheel sigil flashes under it, one impact frame. Each hit shields her for 10 for 4 s. The shards fade out panel by panel. Damage 55, knock 3. |
+| W | [aegis wall](../../../src/spells/targeted/aegisWall.ts) | ground (TRAP, r 4) | 10 | 7 s | 1.2 s | 2.75 s | A sun-wheel sigil draws on at the point, then a ring of 10 kite-shield panels assembles around the edge and stands upright, open. At 1.2 s the dome slams shut over whoever is still inside (panels click together at the top) with a flash of the core lines, shake and a ground refraction ring: stun 0.8 s. It ticks at 1.7 s, then shatters outward into panels that fade. Damage 45, then a tick of 10 at 1.7 s. |
+| E | [halo of blades](../../../src/spells/targeted/haloOfBlades.ts) | self (ORBIT, r 3.6) | 0 (self) | 9 s | blades cut from 0.3 s to 3.3 s | 3.9 s | A halo ring forms over her head and six blade shards assemble and circle her at 2.5 m for 3 s. She stands rooted for the first 2 s. Each blade cuts an enemy it touches (once per 0.7 s per enemy, 3 hits at most); then the blades and halo shatter into panels. She takes a 25 shield for 4 s at the cast. Damage 10 per hit, knock 1. |
+| R | [judgement of dawn](../../../src/spells/targeted/judgementOfDawn.ts) | ground (r 6) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a pre-dawn blue and a big sun-wheel sigil draws on. Above the point a giant sword (about 7 long, point down) assembles from dozens of gold panels, a halo ring forms behind its hilt, sun rays fan from it and the enemies are held. Its core lines brighten to white, dead beat at 1.85-2.0 s, then it drives straight down into the point: impact frames, a ring of panel shards bursts outward, sky-blue accent, sun rays, refraction ring. The sword stands a moment and shatters into panels. She takes a 50 shield for 5 s at the impact. Damage 100, knock 6. |
 
 Spell sources: [`radiantSpear.ts`](../../../src/spells/targeted/radiantSpear.ts), [`aegisWall.ts`](../../../src/spells/targeted/aegisWall.ts), [`haloOfBlades.ts`](../../../src/spells/targeted/haloOfBlades.ts), [`judgementOfDawn.ts`](../../../src/spells/targeted/judgementOfDawn.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-dawn).
 

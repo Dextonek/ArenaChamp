@@ -7,29 +7,31 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Ossuary Ward (bone kit, E: self shield and aura). A cage of curved ribs grows up out of the floor round Mortis
- * (radius 1.4), soulfire flickering in its joints, and he gets a 30 HP shield for 3 s (`ctx.shieldSelf`). At 1.0 s and
- * 2.0 s the ribs flex outward and fire a ring of bone shards to radius 4 that hurts every enemy inside. At 2.6 s the
- * cage crumbles into dust. Clean by 3.2 s. See pipeline/designs/kit-bone.md.
+ * Ossuary Ward (bone kit, E: cage). A cage of curved ribs grows up out of the floor round the chosen enemy (enemy
+ * mode, radius 1.0), soulfire flickering in its joints. At 0.8 s the ribs close and flex and fire a ring of bone shards
+ * to radius 2 that hurts and roots whoever is still inside (an enemy that walked away from the spot is missed); at 1.9 s
+ * they flex again and hurt it once more. At 2.2 s the cage crumbles into dust. Clean by 2.8 s. See
+ * pipeline/designs/kit-bone.md.
  */
 export interface OssuaryWardSettings {
   damage: number;
-  shield: number;
+  /** Root seconds on the first flex (engine cap 1.5). */
+  root: number;
   loop: boolean;
 }
 
-export const defaultOssuaryWard = (): OssuaryWardSettings => ({ damage: 12, shield: 30, loop: false });
+export const defaultOssuaryWard = (): OssuaryWardSettings => ({ damage: 12, root: 1.2, loop: false });
 
 // Timeline (seconds).
 const GROW_END = 0.3; // the cage is up
-const PULSE_1 = 1.0;
-const PULSE_2 = 2.0;
-const CRUMBLE_T = 2.6;
-const GONE_T = 3.0;
-const DURATION = 3.2;
+const PULSE_1 = 0.8;
+const PULSE_2 = 1.9;
+const CRUMBLE_T = 2.2;
+const GONE_T = 2.6;
+const DURATION = 2.8;
 
-const RADIUS = 4;
-const CAGE_R = 1.4;
+const RADIUS = 2;
+const CAGE_R = 1.0;
 const CAGE_H = 2.4;
 
 export class OssuaryWard implements Effect {
@@ -72,14 +74,14 @@ export class OssuaryWard implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.from.copy(ctx.from).setY(0);
+    // The cage is built where the chosen enemy stands at the cast.
+    this.from.copy(ctx.targetPos[0] ?? ctx.point).setY(0);
     this.groundShock.set(this.from, 0, 0);
   }
 
   play() {
     this.reset();
     this.playing = true;
-    this.ctx?.shieldSelf?.(this.settings.shield, 3, BONE_CSS.body);
   }
 
   private reset() {
@@ -98,14 +100,17 @@ export class OssuaryWard implements Effect {
     const ctx = this.ctx;
     this.pulseAt[index] = index === 0 ? PULSE_1 : PULSE_2;
     this.shake = 0.15;
-    this.shards.ring(this.from, 16, RADIUS, 0.45, 1.0, 0.4);
+    this.shards.ring(this.from, 10, RADIUS, 0.45, 1.0, 0.4);
     this.dust.ring(this.from, RADIUS, 6, 0.5);
     if (!ctx) return;
     // Re-check where everyone stands now: enemies who walked out of the ring are spared.
     for (const e of ctx.targets) {
       const p = e.group.position;
       if (Math.hypot(p.x - this.from.x, p.z - this.from.z) > RADIUS) continue;
-      ctx.hit(e, { damage: this.settings.damage, knock: 1, from: ctx.from, color: BONE_CSS.body });
+      ctx.hit(e, {
+        damage: this.settings.damage, knock: 0, from: this.from, color: BONE_CSS.body,
+        status: index === 0 ? { kind: 'root', seconds: this.settings.root } : undefined,
+      });
     }
   }
 
@@ -141,7 +146,7 @@ export class OssuaryWard implements Effect {
       f.crumbled = true;
       this.wisps.release();
       this.dust.burst(this.v1.set(this.from.x, 0, this.from.z), 8, 2.2, 0.45);
-      this.shards.ring(this.from, 8, CAGE_R + 0.8, 0.5, 1.2, 0.34);
+      this.shards.ring(this.from, 6, CAGE_R + 0.6, 0.5, 1.2, 0.34);
     }
 
     this.layout();
@@ -178,14 +183,16 @@ export class OssuaryWard implements Effect {
 export const ossuaryWardModule: EffectModule = {
   label: 'ossuary ward',
   category: 'hero: bone',
-  targeting: { mode: 'self', radius: RADIUS },
+  // Built round the enemy: the cage stands where it was at the cast.
+  targeting: { mode: 'enemy' },
   create: () => new OssuaryWard(),
   telegraphs(effect) {
     const e = effect as OssuaryWard;
     const ctx = e.ctx;
     if (!ctx) return [];
-    // Ends at the first pulse (no `until`): a long disk would flood the frame.
-    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: PULSE_1 }];
+    const c = ctx.targetPos[0] ?? ctx.point;
+    // Ends at the first pulse (no `until`).
+    return [{ shape: { kind: 'circle', x: c.x, z: c.z, radius: RADIUS }, start: 0, impact: PULSE_1 }];
   },
   bloom: { enabled: true, strength: 0.35, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -196,6 +203,6 @@ export const ossuaryWardModule: EffectModule = {
     const s = (effect as OssuaryWard).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 60, 1);
-    f.add(s, 'shield', 0, 200, 1);
+    f.add(s, 'root', 0, 1.5, 0.1);
   },
 };

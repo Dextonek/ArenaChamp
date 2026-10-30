@@ -1,5 +1,11 @@
 # Chrono kit: Tempo, the Unwound Hour (ranged control / sustain)
 
+## Role (2026-10-30)
+**Mage (chrono), 580 HP.** Signature: rewind. See hero-roles.md.
+- Q Second Hand: BOOMERANG, range 10, cd 3, `aim: 'line'`. Out as a piercing bolt, hangs 0.15 s, comes back along the line to where he stands (a second piercing bolt aimed at his position at the turn). 35 per leg, slow 1.0, each enemy once per leg.
+- W Stopped Moment, E Rewind: unchanged.
+- R Twelfth Hour: FUSE, no `cc`. The build is stretched so the hand strikes 3.5 s after the cast: 180, no stun, radius 7, knock 3. cd 20, clean by 5.8 s.
+
 **Signature shape: the luminous clock dial.** Time is drawn as **clock dials**: rings of Roman numerals and tick
 marks in glowing radium paint (like an old watch face in the dark), long tapered **clock hands** that sweep, and
 **afterimages**: pale translucent echoes of a figure or an object, two or three steps behind it in time. Moments

@@ -21,7 +21,7 @@ export interface RivetShotSettings {
   slowSeconds: number;
 }
 
-export const defaultClockworkRivetShot = (): RivetShotSettings => ({ damage: 50, knock: 1, slowSeconds: 1.5 });
+export const defaultClockworkRivetShot = (): RivetShotSettings => ({ damage: 58, knock: 1, slowSeconds: 1.5 });
 
 const WINDUP = 0.2;
 const SPEED = 24;

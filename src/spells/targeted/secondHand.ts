@@ -8,10 +8,11 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Second Hand (chrono kit, Q: skillshot). A small dial flicks open at Tempo's staff tip and the red second hand snaps
- * off it (0..0.2). At 0.2 it leaves as a piercing bolt (`ctx.projectile`): a spinning red clock hand with a chartreuse
+ * Second Hand (chrono kit, Q: BOOMERANG). A small dial flicks open at Tempo's staff tip and the red second hand snaps
+ * off it (0..0.2). At 0.2 it leaves as a piercing bolt (`ctx.projectile`) that flies 10 m, hangs a beat and spins back
+ * to where he stands (a second piercing bolt), hitting every enemy once on each leg: a spinning red clock hand with a chartreuse
  * counter-hand, two pale afterimages trailing. Every hit slows the target and flashes a tiny dial (radius 0.6) on it that
- * ticks backward once, with a small red accent. At max range the hands fade. Clean by 1.5 s. See pipeline/designs/kit-chrono.md.
+ * ticks backward once, with a small red accent. When it is back the hands fade. Clean by 2.2 s. See pipeline/designs/kit-chrono.md.
  */
 export interface SecondHandSettings {
   damage: number;
@@ -19,18 +20,20 @@ export interface SecondHandSettings {
   slowSeconds: number;
 }
 
-export const defaultSecondHand = (): SecondHandSettings => ({ damage: 50, knock: 1, slowSeconds: 1.0 });
+/** `damage` is per leg (an enemy hit on both legs takes it twice). */
+export const defaultSecondHand = (): SecondHandSettings => ({ damage: 36, knock: 1, slowSeconds: 1.0 });
 
 // Timeline (seconds).
 const FIRE_T = 0.2; // the second hand leaves
-const DURATION = 1.5;
+const DURATION = 2.2;
+const HANG = 0.15; // the hand hangs at the far end before it turns back
 
-const RANGE = 11;
+const RANGE = 10;
 const SPEED = 22;
 const RADIUS = 0.45;
 /** The bolt starts this far in front of the caster's feet (about his staff). */
 const MUZZLE = 0.8;
-const FLIGHT_END = FIRE_T + RANGE / SPEED;
+const FLIGHT_END = FIRE_T + (2 * RANGE) / SPEED + HANG;
 const SPIN = 14; // rad/s
 const HIT_DIALS = 3;
 
@@ -48,6 +51,10 @@ export class SecondHand implements Effect {
   private time = 0;
   private flags = { opened: false, fired: false, ended: false };
   private bolt: Projectile | null = null;
+  /** Boomerang leg: 0 out, 1 hanging at the far end, 2 back. */
+  private leg: 0 | 1 | 2 = 0;
+  private hangT = 0;
+  private turn = new THREE.Vector3();
   private spin = 0;
   private endT = -1;
 
@@ -122,6 +129,8 @@ export class SecondHand implements Effect {
     this.spin = 0;
     this.endT = -1;
     this.bolt = null;
+    this.leg = 0;
+    this.hangT = 0;
     this.flags.opened = this.flags.fired = this.flags.ended = false;
     this.hitAge.fill(-1);
     this.hitStep.fill(false);
@@ -133,6 +142,27 @@ export class SecondHand implements Effect {
     this.ghosts.reset();
     for (const d of this.hitDials) d.reset();
     for (const s of this.stars) s.set(this.c0, 0, 0);
+  }
+
+  /** Fires one leg of the boomerang from `from` along `dir` for `range` metres, piercing; each enemy is hit once per leg. */
+  private launch(from: THREE.Vector3, dir: THREE.Vector3, range: number): Projectile | null {
+    const ctx = this.ctx;
+    if (!ctx?.projectile) return null;
+    const p = ctx.projectile({
+      from: from.clone().setY(0), dir: dir.clone(), speed: SPEED, range, radius: RADIUS, pierce: true,
+      hit: {
+        damage: this.settings.damage, knock: this.settings.knock, color: CHRONO_CSS.body,
+        status: { kind: 'slow', seconds: this.settings.slowSeconds },
+      },
+    });
+    p.onHit((_target, at) => this.hitFx(at));
+    return p;
+  }
+
+  private finishFlight() {
+    this.flags.ended = true;
+    this.endT = 0;
+    this.ghosts.fade(0.2);
   }
 
   /** A hit: a tiny dial on the target that ticks backward once, and a small red accent. */
@@ -191,21 +221,34 @@ export class SecondHand implements Effect {
       this.ghosts.trail(this.rig, 2, 0.045);
       if (ctx?.projectile) {
         this.v1.copy(ctx.from).addScaledVector(this.dir, MUZZLE);
-        this.bolt = ctx.projectile({
-          from: this.v1.clone(), dir: this.dir.clone(), speed: SPEED, range: RANGE, radius: RADIUS, pierce: true,
-          hit: {
-            damage: this.settings.damage, knock: this.settings.knock, color: CHRONO_CSS.body,
-            status: { kind: 'slow', seconds: this.settings.slowSeconds },
-          },
-        });
-        this.bolt.onHit((_target, at) => this.hitFx(at));
+        this.bolt = this.launch(this.v1, this.dir, RANGE);
       }
     }
 
     if (f.fired && !f.ended) {
       const b = this.bolt;
       this.spin += dt * SPIN;
-      if (b && b.alive) {
+      if (this.leg === 1) {
+        // Hanging at the far end: the hand keeps spinning in place, then the return bolt leaves for the caster.
+        this.hangT += dt;
+        this.v1.copy(this.turn);
+        this.red.set(this.v1, this.spin, 1.3, 0.34);
+        this.lime.set(this.v1, this.spin + 2.4, 0.85, 0.26);
+        if (this.hangT >= HANG) {
+          const home = ctx?.caster.group.position;
+          const dx = home ? home.x - this.turn.x : 0, dz = home ? home.z - this.turn.z : 0;
+          const dist = Math.hypot(dx, dz);
+          if (ctx?.projectile && dist > 1) {
+            this.v2.set(dx / dist, 0, dz / dist);
+            this.bolt = this.launch(this.turn, this.v2, dist);
+            this.leg = 2;
+          } else {
+            this.leg = 2;
+            this.bolt = null;
+            this.finishFlight();
+          }
+        }
+      } else if (b && b.alive) {
         // The hand rides the bolt; the first few hundredths glide in from the staff tip.
         const k = Math.min(1, (t - FIRE_T) / 0.08);
         this.v1.set(b.pos.x, BOLT_HEIGHT, b.pos.z);
@@ -213,11 +256,14 @@ export class SecondHand implements Effect {
         this.red.set(this.v1, this.spin, 1.3, 0.34);
         this.lime.set(this.v1, this.spin + 2.4, 0.85, 0.26);
         this.rig.visible = true;
+      } else if (b && this.leg === 0) {
+        // Max range (or a pillar): the hand turns on the spot after a short hang.
+        this.leg = 1;
+        this.hangT = 0;
+        this.turn.set(b.pos.x, BOLT_HEIGHT, b.pos.z);
       } else if (b || t >= FIRE_T + 0.1) {
-        // Max range (or a pillar): the hands slow, fade and are gone.
-        f.ended = true;
-        this.endT = 0;
-        this.ghosts.fade(0.2);
+        // Back at the caster: the hands slow, fade and are gone.
+        this.finishFlight();
       }
     }
     if (f.ended && this.endT >= 0) {
@@ -262,7 +308,7 @@ export class SecondHand implements Effect {
 export const secondHandModule: EffectModule = {
   label: 'second hand',
   category: 'hero: chrono',
-  // A skillshot is aimed at a spot (the ground point or the target's feet); `radius` only sizes the aim marker.
+  // A boomerang is aimed at a spot (the ground point or the target's feet); `radius` only sizes the aim marker.
   targeting: { mode: 'ground', radius: RADIUS },
   create: () => new SecondHand(),
   telegraphs(effect) {

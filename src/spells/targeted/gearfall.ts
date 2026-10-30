@@ -21,7 +21,7 @@ export interface GearfallSettings {
   loop: boolean;
 }
 
-export const defaultGearfall = (): GearfallSettings => ({ damage: 115, rootSeconds: 1.2, loop: false });
+export const defaultGearfall = (): GearfallSettings => ({ damage: 125, rootSeconds: 1.2, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the ring of small gears unfolded

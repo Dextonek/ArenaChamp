@@ -16,7 +16,7 @@ export interface NullTetherSettings {
   loop: boolean;
 }
 
-export const defaultNullTether = (): NullTetherSettings => ({ damage: 36, loop: false });
+export const defaultNullTether = (): NullTetherSettings => ({ damage: 48, loop: false });
 
 // Timeline (seconds).
 const TENDRIL_T = 0.3;

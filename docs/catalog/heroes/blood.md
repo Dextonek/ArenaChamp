@@ -1,12 +1,23 @@
 ---
 title: Vesper, the Crimson Countess (blood kit)
 tags: [catalog, heroes, blood]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Vesper, the Crimson Countess
 
 The blood hero kit: Vesper's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A gothic hemomancer noble. She bleeds on purpose: a pale cut on her palm, and her blood becomes whips, lances and thorns. What she spills she takes back from her enemies.
+
+## Role
+
+| | |
+|---|---|
+| Role | Juggernaut (drain) |
+| Signature | Blood price: every spell heals her |
+| HP | 620 |
+| Reach | Ranged, short reach (8 m; E 6 m) |
+
+She trades blows and heals through them: every spell gives HP back, so a long fight favours her. A kiter who stays out of her 8 m reach never feeds her.
 
 ## At a glance
 
@@ -41,14 +52,14 @@ The blood tendril: a tapered, viscous rope with a round bead at the tip, that ha
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.4-0.8 s after the cast, clean by about 2 s; an E aura may run about 3 s); R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/heroes.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is an instant hit, W a ground zone, E a tether and R a ground ultimate, and all of them heal her. Q, W and E hit 0.55-1.3 s after the cast and are clean by about 2-3 s; R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/heroes.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [hemolance](../../../src/spells/targeted/hemolance.ts) | enemy | 11 | 3 s | 0.55 s | 1.6 s | A pale cut on her raised palm sprays blood; a tendril pours up, coils above the shoulder, hardens into a crystal lance and impales one enemy. The blood drains back home. Damage 47. |
-| W | [thorn garden](../../../src/spells/targeted/thornGarden.ts) | ground (r 4.5) | 10 | 7 s | 0.75 s | 2.3 s | A tendril runs to the point, a bone sigil draws on and a pool of blood spreads inside it, then freezes upward into a thicket of 34 thorns. Damage 50, one tick of 10 at 1.2 s. |
-| E | [crimson pact](../../../src/spells/targeted/crimsonPact.ts) | self (r 6) | 0 (self) | 9 s | 0.6 s (loop 0.6-2.6 s) | 3.2 s | Arms spread, a bone sigil draws on and a heart of blood beats above her head and drains every enemy nearby on each beat. Loopable. Damage 9 per beat. |
-| R | [sanguine eclipse](../../../src/spells/targeted/sanguineEclipse.ts) | ground (r 7) | 13 | 20 s | 2.4 s | 4.5 s | The ultimate. Three blood beads are thrown up and a bone moon appears and bleeds; the zone's blood is harvested (1.0 s tick, 15), freezes into a thorn-star at 2.0 s and falls on the zone at 2.4 s (110). Dead beat, then one impact frame. |
+| Q | [hemolance](../../../src/spells/targeted/hemolance.ts) | enemy (TGT drain) | 8 | 3 s | 0.55 s | 1.6 s | A pale cut on her raised palm sprays blood; a tendril pours up, coils above the shoulder, hardens into a crystal lance and impales one enemy. The blood drains back home. Damage 42; if the lance lands she heals 6. |
+| W | [thorn garden](../../../src/spells/targeted/thornGarden.ts) | ground (r 4.5, ZONE) | 8 | 7 s | 0.75 s | 2.3 s | A tendril runs to the point, a bone sigil draws on and a pool of blood spreads inside it, then freezes upward into a thicket of 34 thorns. Damage 50 and slow 1.5 s at 0.75 s, then one tick of 10 at 1.2 s. Hits check where the enemy stands now. |
+| E | [crimson pact](../../../src/spells/targeted/crimsonPact.ts) | self (r 6, TETHER) | 0 (self) | 9 s | 0.6 s, 1.3 s and 2.0 s (three drains) | 3.2 s | Arms spread, a bone sigil draws on and a heart of blood beats above her head. It latches onto the nearest enemy within 6 m with one thread and drains it on each beat: 12 damage each, and she heals 6 per drain. The tether breaks if the enemy leaves 6 m; with no enemy in range nothing drains. Loopable. |
+| R | [sanguine eclipse](../../../src/spells/targeted/sanguineEclipse.ts) | ground (r 6, ZONE) | 8 | 20 s | 2.4 s | 4.5 s | The ultimate. Three blood beads are thrown up and a bone moon appears and bleeds; the zone's blood is harvested at 1.0 s (15 per enemy, and she heals 10 per enemy hit), freezes into a thorn-star at 2.0 s and falls on the zone at 2.4 s (100). Dead beat, then one impact frame. |
 
 Spell sources: [`hemolance.ts`](../../../src/spells/targeted/hemolance.ts), [`thornGarden.ts`](../../../src/spells/targeted/thornGarden.ts), [`crimsonPact.ts`](../../../src/spells/targeted/crimsonPact.ts), [`sanguineEclipse.ts`](../../../src/spells/targeted/sanguineEclipse.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-blood).
 

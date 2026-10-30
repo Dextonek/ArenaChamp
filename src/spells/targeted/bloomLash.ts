@@ -13,10 +13,12 @@ import type { Effect, EffectModule } from '../../effects/types';
  */
 export interface BloomLashSettings {
   damage: number;
+  /** Fenna heals this much when the lash lands. */
+  heal: number;
   loop: boolean;
 }
 
-export const defaultBloomLash = (): BloomLashSettings => ({ damage: 54, loop: false });
+export const defaultBloomLash = (): BloomLashSettings => ({ damage: 50, heal: 8, loop: false });
 
 // Timeline (seconds).
 const GROW_T = 0.5; // the vine reaches the top of the target
@@ -143,7 +145,10 @@ export class BloomLash implements Effect {
       this.petals.burst(this.top, 9, 3.6);
       this.pollen.puff(this.top, 8);
       this.shake = 0.12;
-      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 3, from: ctx.from, color: GROVE_CSS.body });
+      if (ctx && ctx.targets[0]) {
+        ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 3, from: ctx.from, color: GROVE_CSS.body });
+        ctx.healSelf?.(this.settings.heal);
+      }
     }
     if (!f.shed && t >= SHED_T) {
       f.shed = true;
@@ -212,5 +217,6 @@ export const bloomLashModule: EffectModule = {
     const s = (effect as BloomLash).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
+    f.add(s, 'heal', 0, 60, 1);
   },
 };

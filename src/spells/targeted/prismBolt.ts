@@ -20,11 +20,11 @@ export interface PrismBoltSettings {
   splitDamage: number;
 }
 
-export const defaultPrismBolt = (): PrismBoltSettings => ({ damage: 42, knock: 2, splitDamage: 15 });
+export const defaultPrismBolt = (): PrismBoltSettings => ({ damage: 50, knock: 2, splitDamage: 18 });
 
 const WINDUP = 0.2;
 const SPEED = 22;
-const RANGE = 12;
+const RANGE = 14;
 const RADIUS = 0.45;
 const MUZZLE = 0.8;
 const CRYSTAL_LEN = 1.04;

@@ -98,6 +98,7 @@ export const dawnKit: HeroKit = {
   title: 'the Dawn Paladin',
   accent: D.body,
   foil: D.foil,
+  maxHp: 600,
   portrait(g, s) {
     ground(g, s);
     // A sun disc with crisp rays behind her, a halo ring, and a helmed paladin in white and gold plate.
@@ -131,8 +132,8 @@ export const dawnKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'radiant spear', name: 'Radiant Spear', range: 10, cooldown: 3,
-      blurb: 'Shards of light click into a spear and pierce an enemy, bursting out of its back.',
+      key: 'Q', label: 'radiant spear', name: 'Radiant Spear', range: 12, cooldown: 3, aim: 'line',
+      blurb: 'Fires a spear of light along the aim that pierces everything it meets; a hit shields her for 10.',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.72, s * 0.8, s * 0.22, s * 0.07, s);
@@ -145,8 +146,8 @@ export const dawnKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'aegis wall', name: 'Aegis Wall', range: 10, cooldown: 7,
-      blurb: 'A ring of kite shields rises around the point and closes into a dome that slams shut.',
+      key: 'W', label: 'aegis wall', name: 'Aegis Wall', range: 10, cooldown: 7, cc: true,
+      blurb: 'A ring of shields stands open for 1.2 s, then closes into a dome that stuns whoever is still inside.',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.5, s * 0.84, s * 0.4, s * 0.1, s);
@@ -161,7 +162,7 @@ export const dawnKit: HeroKit = {
     },
     {
       key: 'E', label: 'halo of blades', name: 'Halo of Blades', range: 0, cooldown: 9,
-      blurb: 'A halo crowns her and six blades circle her, lunging at every enemy nearby, twice.',
+      blurb: 'Shields her for 25 while six blades circle her for 3 s and cut whatever they touch (3 hits at most).',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.5, s * 0.72, s * 0.42, s * 0.14, s);
@@ -179,7 +180,7 @@ export const dawnKit: HeroKit = {
     },
     {
       key: 'R', label: 'judgement of dawn', name: 'Judgement of Dawn', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A colossal sword of hard light is built in the sky and driven into the zone.',
+      blurb: 'Ultimate. A colossal sword of hard light is driven into the zone and shields her for 50.',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.5, s * 0.88, s * 0.44, s * 0.09, s);

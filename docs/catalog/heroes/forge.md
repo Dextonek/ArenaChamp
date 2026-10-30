@@ -1,12 +1,23 @@
 ---
 title: Brannoc, the Ashen Smith (forge kit)
 tags: [catalog, heroes, forge]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Brannoc, the Ashen Smith
 
 The forge hero kit: Brannoc's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A dwarf-sized giant of a blacksmith with a forge in his chest; heavy, slow, every hit lands like a hammer.
+
+## Role
+
+| | |
+|---|---|
+| Role | Tank (melee) |
+| Signature | Anvil lock: most hard CC, biggest shield, low damage |
+| HP | 840 |
+| Reach | Melee (the AI closes to about 2 m) |
+
+He outlasts: shield, stun and knock-up keep the enemy off him while he walks up and hammers. He deals the least damage of any hero and must reach a kiter.
 
 ## At a glance
 
@@ -39,14 +50,14 @@ Molten slag that cools: liquid metal glows white-orange, a black crust grows ove
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.4-0.8 s after the cast, clean by about 2 s; an E aura may run about 3 s); R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/forge.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is a point-blank flick, W a small lob, E a shield with a chain pull and R a hammer on his own spot. Q, W and E hit 0.45-1.9 s after the cast and are clean by about 3.3 s; R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/forge.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [rivet shot](../../../src/spells/targeted/rivetShot.ts) | enemy | 10 | 3 s | 0.45 s | 1.7 s | He pulls a white-hot rivet from his chest forge, flicks it and it punches through one enemy in sparks and slag. The slag cools to black. Damage 50. |
-| W | [anvil drop](../../../src/spells/targeted/anvilDrop.ts) | ground (r 3.5) | 10 | 7 s | 0.7 s | 2.3 s | A ring of molten runes marks the ground, then a huge anvil falls on it and splashes slag; it crumbles into iron chunks and the crater cools. Damage 55. |
-| E | [bellows ward](../../../src/spells/targeted/bellowsWard.ts) | self (r 5) | 0 (self) | 9 s | 0.9 s and 1.9 s (two pulses) | 3.3 s | Two loops of molten chain whirl around him and burst outward in heat twice, then cool and fall with a clank. Loopable. Damage 15 per pulse. |
-| R | [forgefall](../../../src/spells/targeted/forgefall.ts) | ground (r 7) | 13 | 20 s | 2.3 s | 4.5 s | The ultimate. An anvil sigil draws on, slag streams pour up into the sky and pool into a colossal hammer that cools black while it rises; dead beat at 1.8-1.95 s, then it swings down: impact frame, spark fountain, molten crack web. Damage 122. |
+| Q | [rivet shot](../../../src/spells/targeted/rivetShot.ts) | enemy (point-blank) | 3 | 3 s | 0.45 s | 1.7 s | He pulls a white-hot rivet from his chest forge, flicks it and it punches through one enemy in sparks and slag. The slag cools to black. Damage 44 and slow 0.8 s. |
+| W | [anvil drop](../../../src/spells/targeted/anvilDrop.ts) | ground (r 2, LOB) | 8 | 7 s | 0.7 s | 2.3 s | A ring of molten runes marks the ground, then a small anvil falls on it and splashes slag; it crumbles into iron chunks and the crater cools. Damage 50 and stun 1.0 s to whoever stands under it. |
+| E | [bellows ward](../../../src/spells/targeted/bellowsWard.ts) | self (r 5, BUFF) | 0 (self) | 9 s | 0.9 s and 1.9 s (two pulses) | 3.3 s | Two loops of molten chain whirl around him and burst outward in heat twice, then cool and fall with a clank. He gains a shield of 100 for 3 s; each pulse pulls enemies inside 5 m by 1.5 m toward him. No damage. Loopable. |
+| R | [forgefall](../../../src/spells/targeted/forgefall.ts) | self (r 5, SELF-R) | 0 (self) | 20 s | 2.3 s | 4.5 s | The ultimate. An anvil sigil draws on, slag streams pour up into the sky and pool into a colossal hammer that cools black while it rises; dead beat at 1.8-1.95 s, then it swings down on his own spot: impact frame, spark fountain, molten crack web. Damage 105 and knock-up 0.5 s. |
 
 Spell sources: [`rivetShot.ts`](../../../src/spells/targeted/rivetShot.ts), [`anvilDrop.ts`](../../../src/spells/targeted/anvilDrop.ts), [`bellowsWard.ts`](../../../src/spells/targeted/bellowsWard.ts), [`forgefall.ts`](../../../src/spells/targeted/forgefall.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-forge).
 

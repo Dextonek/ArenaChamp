@@ -129,7 +129,7 @@ export const skyKit: HeroKit = {
   title: 'the Wind Blade',
   accent: S.body,
   foil: S.cloud,
-  maxHp: 700,
+  maxHp: 690,
   melee: true,
   portrait(g, s) {
     iconGround(g, s);
@@ -183,7 +183,7 @@ export const skyKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'gale edge', name: 'Gale Edge', range: 3, cooldown: 2.5,
+      key: 'Q', label: 'gale edge', name: 'Gale Edge', range: 3, cooldown: 2,
       blurb: 'A melee swing: two crossing wind crescents cut the cone in front of him and shove everything in it back.',
       icon(g, s) {
         iconGround(g, s);
@@ -212,7 +212,7 @@ export const skyKit: HeroKit = {
     },
     {
       key: 'E', label: 'cyclone guard', name: 'Cyclone Guard', range: 0, cooldown: 9,
-      blurb: 'A whirl of crescents wraps him in a shield; twice it flares out as a ring that cuts and shoves enemies near.',
+      blurb: 'A backstep: a flare of crescents shoves enemies near, then the whirl carries him 5 m away from the enemy with a small shield.',
       icon(g, s) {
         iconGround(g, s);
         // A ring of sickles round a small core with a shield arc over it.
@@ -237,7 +237,7 @@ export const skyKit: HeroKit = {
     },
     {
       key: 'R', label: 'thousand winds', name: 'Thousand Winds', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A sky-high cyclone of blades closes over the zone; he dives into its eye and the winds burst out.',
+      blurb: 'Ultimate. A sky-high cyclone of blades closes over a small zone; he dives into its eye and the winds burst out and knock up.',
       icon(g, s) {
         iconGround(g, s);
         // A funnel of small sickles over a ring of crescents on the floor, a tall crescent through the middle, a pink star.

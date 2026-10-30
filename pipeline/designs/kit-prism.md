@@ -1,5 +1,16 @@
 # Prism kit: Opaline, the Lightbreaker (ranged mage)
 
+## Role (2026-10-30)
+
+**Marksman, 520 HP.** Signature: *Refraction*. Design: `pipeline/designs/hero-roles.md`.
+
+| Slot | Spell | New shape and numbers |
+|---|---|---|
+| Q | Prism Bolt | Range 12 -> 14, cd 3 -> 2. |
+| W | Refraction Field | Unchanged (blind). |
+| E | Mirror Shell | BLINK, no damage. Self mode, radius 4, cd 9. The mirrors flash at 0.3 s and `moveCaster` takes her 4 m sideways in 0.12 s: perpendicular to the line to the enemy (the side nearer the ring's centre), so a marksman never blinks into it. Shield 45 for 3 s. 2.3 s total. |
+| R | Spectrum Lance | QUICK CHANNEL, no aim. Self mode, radius 12, range 0, cd 20. The prism stands in front of her (0..0.3 s); from 0.3 to 2.3 s she holds the beam where she faces (rooted; impact = 2.3 s) and it sweeps 70 degrees, 12 m long. Three ticks (0.63, 1.3, 1.97 s) hit whoever is on the beam's line then (live positions, 1.2 m wide): 3 x 40. Telegraph: the 84 degree cone. |
+
 **Signature shape: the refracting crystal.** Light is **caught in faceted clear crystals and split into a spectrum**:
 sharp crystal shards (pale lavender glass with dark facet edges) and beams that enter as white and leave as **thin
 parallel bands of rainbow colour**. Prisms rotate, catch the light, and burst into glittering facets. Not the frost

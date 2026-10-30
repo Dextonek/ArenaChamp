@@ -168,6 +168,7 @@ export const inkKit: HeroKit = {
   title: 'the Last Brush',
   accent: S.body,
   foil: S.foil,
+  maxHp: 580,
   portrait(g, s) {
     iconGround(g, s);
     // Paper talisman strips floating round her, a vermilion mark on each.
@@ -307,7 +308,7 @@ export const inkKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'paper familiars', name: 'Paper Familiars', range: 0, cooldown: 14, summon: true,
+      key: 'E', label: 'paper familiars', name: 'Paper Familiars', range: 0, cooldown: 12, summon: true,
       blurb: 'Folds two paper cranes that fight for her for six seconds, shooting ink darts; a splash of ink hurts nearby enemies.',
       icon(g, s) {
         iconGround(g, s);

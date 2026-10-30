@@ -1,5 +1,10 @@
 # Clockwork kit: Ada, the Artificer (ranged control)
 
+## Role (2026-10-30)
+**Summoner** (turret engineer), 580 HP. Q, R unchanged.
+- W Cog Turret: cooldown 12 to 9 (kit data only).
+- E Gear Field: a LINGER placed at the aim (`ground` mode, range 9, radius 3.6): the gears lurch three times (0.8, 1.8, 2.8 s), each pulse 9 damage and **slow 1.0** to whoever is inside, and the field folds at 3.4 s.
+
 **Signature shape: gears and springs.** Everything is **machined copper and brass**: toothed gears that spin and mesh,
 coiled springs, rivets and pistons, with **cyan electric sparks** jumping between moving parts and small white steam
 puffs from vents. Mechanisms assemble in clicks and fall apart into loose cogs. Not the forge kit (molten metal,

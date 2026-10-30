@@ -18,10 +18,12 @@ import type { Effect, EffectModule } from '../../effects/types';
  */
 export interface HemolanceSettings {
   damage: number;
+  /** HP she heals when the lance lands. */
+  heal: number;
   loop: boolean;
 }
 
-export const defaultHemolance = (): HemolanceSettings => ({ damage: 47, loop: false });
+export const defaultHemolance = (): HemolanceSettings => ({ damage: 42, heal: 6, loop: false });
 
 // Timeline (seconds).
 const DRAW_T = 0.12;
@@ -253,7 +255,12 @@ export class Hemolance implements Effect {
       this.crown.erupt(this.feet, 1.3, 10, 1.4, { tilt: 0.45, stagger: 0.1, grow: 0.15 });
       this.drops.spray(this.hit, this.v1.set(0, 1, 0), 14, 6, 0.8);
       this.shake = 0.35;
-      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 4, from: ctx.from, color: BLOOD_CSS.body });
+      if (ctx && ctx.targets[0]) {
+        ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 4, from: ctx.from, color: BLOOD_CSS.body });
+        // Blood price: the lance heals her, only when it lands (the target is still where she aimed; a dodge gives nothing).
+        const e = ctx.targets[0], at = ctx.targetPos[0];
+        if (Math.hypot(e.group.position.x - at.x, e.group.position.z - at.z) <= 1.5) ctx.healSelf?.(this.settings.heal);
+      }
     }
     if (!f.pool && t >= 0.6) { f.pool = true; this.pool.spread(1.4, 0.3); }
     if (!f.drain && t >= DRAIN_T) {
@@ -366,5 +373,6 @@ export const hemolanceModule: EffectModule = {
     const s = (effect as Hemolance).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
+    f.add(s, 'heal', 0, 60, 1);
   },
 };

@@ -106,6 +106,7 @@ function glint(g: CanvasRenderingContext2D, x: number, y: number, r: number, c =
 
 export const prismKit: HeroKit = {
   name: 'Opaline',
+  maxHp: 560,
   title: 'the Lightbreaker',
   accent: S.body,
   foil: S.foil,
@@ -185,7 +186,7 @@ export const prismKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'prism bolt', name: 'Prism Bolt', range: 12, cooldown: 3, aim: 'line',
+      key: 'Q', label: 'prism bolt', name: 'Prism Bolt', range: 14, cooldown: 2, aim: 'line',
       blurb: 'Fires a crystal that shatters on the first enemy into three spectral beams that fan out and hit again.',
       icon(g, s) {
         iconGround(g, s);
@@ -228,7 +229,7 @@ export const prismKit: HeroKit = {
     },
     {
       key: 'E', label: 'mirror shell', name: 'Mirror Shell', range: 0, cooldown: 9,
-      blurb: 'Six crystal mirrors circle her (a 40 HP shield) and twice throw spectral beams outward that hurt nearby enemies.',
+      blurb: 'A blink: six crystal mirrors flash and she jumps 4 m sideways of the enemy, wrapped in a 45 HP shield. No damage.',
       icon(g, s) {
         iconGround(g, s);
         // Beams out to the sides, a ring of mirrors seen at an angle round a small figure.
@@ -268,8 +269,8 @@ export const prismKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'spectrum lance', name: 'Spectrum Lance', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A giant prism catches a beam from the sky and splits it into seven rainbow lances that sweep the zone.',
+      key: 'R', label: 'spectrum lance', name: 'Spectrum Lance', range: 0, cooldown: 20,
+      blurb: 'Ultimate. No aim: she turns to the nearest enemy within 12 m and holds a rainbow beam there for 2 s, rooted, and it sweeps 70 degrees, hitting three times.',
       icon(g, s) {
         iconGround(g, s);
         // A ring on the floor, seven lances slamming down from the prism, the sky beam above.

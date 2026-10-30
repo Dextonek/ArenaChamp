@@ -6,8 +6,8 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Volatile Flask (alchemy kit, Q: quick lob). She plucks a flask from her coat, lobs it in a high spinning arc with a
- * thin fume trail and it shatters on the target: glass shards, an acid splash with bubbles, a magenta reaction spark,
+ * Volatile Flask (alchemy kit, Q: ground lob, radius 1.6). She plucks a flask from her coat, lobs it in a high spinning arc with a
+ * thin fume trail and it shatters on the aimed spot (hits whoever stands in the circle then): glass shards, an acid splash with bubbles, a magenta reaction spark,
  * a fume puff. One burn tick, then the splash drains to a stain. See pipeline/designs/kit-alchemy.md.
  */
 export interface VolatileFlaskSettings {
@@ -24,6 +24,7 @@ const HIT_T = 0.55;
 const TICK_T = 1.2;
 const DURATION = 1.8;
 const FLASK_SCALE = 1.6;
+const RADIUS = 1.6;
 
 export class VolatileFlask implements Effect {
   readonly group = new THREE.Group();
@@ -79,7 +80,7 @@ export class VolatileFlask implements Effect {
     this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     this.side.set(this.fwd.z, 0, -this.fwd.x);
     this.hand.copy(ctx.from).addScaledVector(this.fwd, 0.55).addScaledVector(this.side, 0.35).setY(1.35);
-    this.feet.copy(ctx.targetPos[0] ?? ctx.point).setY(0);
+    this.feet.copy(ctx.point).setY(0);
     this.hit.copy(this.feet).setY(1.1);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.hit);
@@ -125,7 +126,7 @@ export class VolatileFlask implements Effect {
       f.hit = true;
       this.flask.mesh.visible = false;
       this.shards.burst(this.hit, 8, 6.5, { size: 0.3, life: 0.6 });
-      this.pool.spread(this.feet, 1.8, 0.2);
+      this.pool.spread(this.feet, RADIUS, 0.2);
       const n = 6;
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2 + Math.random(), d = 0.3 + Math.random() * 0.55;
@@ -133,16 +134,26 @@ export class VolatileFlask implements Effect {
       }
       this.fumes.puff(this.v1.copy(this.feet).setY(0.3), 0.4, undefined, 1.2);
       this.shake = 0.25;
-      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 1, from: ctx.from, color: ALCHEMY_CSS.body });
+      this.eachInside((e) => ctx?.hit(e, { damage: this.settings.damage, knock: 1, from: ctx.from, color: ALCHEMY_CSS.body }));
     }
     if (!f.tick && t >= TICK_T) {
       f.tick = true;
       this.pool.drain(0.6);
       this.fumes.puff(this.v1.copy(this.feet).setY(0.3), 0.3, undefined, 1.2);
-      if (ctx && ctx.targets[0]) ctx.hit(ctx.targets[0], { damage: this.settings.burn, knock: 0, from: ctx.from, color: ALCHEMY_CSS.body });
+      this.eachInside((e) => ctx?.hit(e, { damage: this.settings.burn, knock: 0, from: ctx.from, color: ALCHEMY_CSS.body }));
     }
 
     this.layout(dt);
+  }
+
+  /** Whoever stands in the splash circle right now (live positions, not the cast-time ones). */
+  private eachInside(fn: (e: CastContext['targets'][number]) => void) {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    for (const e of ctx.targets) {
+      const p = e.group.position;
+      if (Math.hypot(p.x - this.feet.x, p.z - this.feet.z) <= RADIUS) fn(e);
+    }
   }
 
   private layout(dt: number) {
@@ -184,14 +195,14 @@ function easeOut(x: number) {
 export const volatileFlaskModule: EffectModule = {
   label: 'volatile flask',
   category: 'hero: alchemy',
-  targeting: { mode: 'enemy' },
+  targeting: { mode: 'ground', radius: RADIUS },
   create: () => new VolatileFlask(),
   telegraphs(effect) {
     const e = effect as VolatileFlask;
     const ctx = e.ctx;
     if (!ctx) return [];
-    const c = ctx.targetPos[0] ?? ctx.point;
-    return [{ shape: { kind: 'circle', x: c.x, z: c.z, radius: 1.8 }, start: 0.1, impact: HIT_T }];
+    const c = ctx.point;
+    return [{ shape: { kind: 'circle', x: c.x, z: c.z, radius: RADIUS }, start: 0.1, impact: TICK_T }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

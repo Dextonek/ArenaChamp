@@ -8,19 +8,21 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Crimson Pact (blood kit, E: self drain aura): arms spread, a bone sigil draws on under the caster and blood rises
+ * Crimson Pact (blood kit, E: TETHER drain): arms spread, a bone sigil draws on under the caster and blood rises
  * from both palms into a heart of liquid blood above her head. The heart beats (lub-dub); on every beat a bone ring
- * pulses across the floor and a thin thread of blood whips out of each nearby enemy into the heart, snaps taut,
- * carries drops home and pulls back in, while four long tendrils orbit the caster as a living cage. The heart then
+ * pulses across the floor and a thin thread of blood whips out of the NEAREST enemy within 6 m (only that one) into
+ * the heart, snaps taut, carries drops home and pulls back in; three beats drain it three times and she heals what
+ * each beat deals (a target that walks beyond 6 m is not drained), while four long tendrils orbit the caster as a living cage. The heart then
  * contracts and splits into three beads that settle into orbit; the cage unravels into drops and the beads fade.
  * With `loop` on, the beat section (0.6..2.6) repeats seamlessly. See pipeline/designs/crimson-pact.md (MOBA timing).
  */
 export interface CrimsonPactSettings {
+  /** Damage of each of the three drains; she heals the same amount. */
   damage: number;
   loop: boolean;
 }
 
-export const defaultCrimsonPact = (): CrimsonPactSettings => ({ damage: 9, loop: false });
+export const defaultCrimsonPact = (): CrimsonPactSettings => ({ damage: 12, loop: false });
 
 // Timeline (seconds). The beat section [LOOP_A, LOOP_B) is one cycle per beat period times two beats.
 const OPEN_END = 0.3;
@@ -31,7 +33,7 @@ const PERIOD = 1.0;
 const SEAL_END = 3.0;
 const DURATION = 3.2;
 const RADIUS = 6;
-const BEATS = [LOOP_A, LOOP_A + PERIOD];
+const BEATS = [LOOP_A, LOOP_A + 0.7, LOOP_A + 1.4]; // three drains
 const HEART_UP = 3.3;
 const HEART_R = 0.55;
 const BEAD_R = 0.12;
@@ -127,8 +129,10 @@ export class CrimsonPact implements Effect {
   private handL = new THREE.Vector3();
   private handR = new THREE.Vector3();
 
-  private beatFired = [false, false];
-  private beatHit = [false, false];
+  private beatFired = [false, false, false];
+  private beatHit = [false, false, false];
+  /** The nearest enemy within RADIUS at the cast, the one the heart latches onto (null = nobody in reach). */
+  private tether: CastContext['targets'][number] | null = null;
   private sealed = false;
   private healed = false;
 
@@ -216,6 +220,13 @@ export class CrimsonPact implements Effect {
     this.handL.copy(this.from).addScaledVector(this.side, -0.75).setY(1.3);
     this.handR.copy(this.from).addScaledVector(this.side, 0.75).setY(1.3);
     this.sigil.set(this.v1.copy(this.from).setY(0.04), this.v2.set(0, 1, 0), 2.2);
+    this.tether = null;
+    let best = RADIUS;
+    ctx.targets.forEach((e, i) => {
+      const p = ctx.targetPos[i];
+      const d = p ? Math.hypot(p.x - ctx.from.x, p.z - ctx.from.z) : Infinity;
+      if (d <= best) { best = d; this.tether = e; }
+    });
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.heartPos);
     // The open tendrils: palm, out and up, to the heart point.
@@ -238,8 +249,8 @@ export class CrimsonPact implements Effect {
   private reset() {
     this.time = 0;
     this.shake = 0;
-    this.beatFired = [false, false];
-    this.beatHit = [false, false];
+    this.beatFired = [false, false, false];
+    this.beatHit = [false, false, false];
     this.sealed = false;
     this.healed = false;
     clearScreenFx(this.screen);
@@ -284,8 +295,8 @@ export class CrimsonPact implements Effect {
     if (this.time >= LOOP_B && this.settings.loop) {
       // Seamless: every beat visual is a pure function of the phase inside the section.
       this.time -= LOOP_B - LOOP_A;
-      this.beatFired = [false, false];
-      this.beatHit = [false, false];
+      this.beatFired = [false, false, false];
+      this.beatHit = [false, false, false];
     }
     if (this.time >= DURATION) {
       this.playing = false;
@@ -304,19 +315,21 @@ export class CrimsonPact implements Effect {
       const tb = BEATS[k];
       if (!this.beatFired[k] && t >= tb && t < LOOP_B) {
         this.beatFired[k] = true;
-        if (ctx) {
-          ctx.targetPos.forEach((p, i) => {
-            if (i >= MAX_THREADS) return;
-            this.threadFrom[i].copy(p).setY(1.1);
-            this.drops.drain(this.threadFrom[i], (out) => out.copy(this.heartPos), 4, {
-              delay: 0.08, stagger: 0.04, duration: 0.35, radius: 0.09, spread: 0.2,
-            });
+        if (this.tether) {
+          this.threadFrom[0].copy(this.tether.group.position).setY(1.1);
+          this.drops.drain(this.threadFrom[0], (out) => out.copy(this.heartPos), 4, {
+            delay: 0.08, stagger: 0.04, duration: 0.35, radius: 0.09, spread: 0.2,
           });
         }
       }
       if (!this.beatHit[k] && t >= tb + 0.08 && t < LOOP_B) {
         this.beatHit[k] = true;
-        if (ctx) for (const e of ctx.targets) ctx.hit(e, { damage: this.settings.damage, knock: 0, from: ctx.from, color: BLOOD_CSS.body });
+        // The tether holds only while the enemy stays within 6 m (live position); the drain heals her.
+        const e = this.tether;
+        if (ctx && e && Math.hypot(e.group.position.x - this.from.x, e.group.position.z - this.from.z) <= RADIUS) {
+          ctx.hit(e, { damage: this.settings.damage, knock: 0, from: ctx.from, color: BLOOD_CSS.body });
+          ctx.healSelf?.(this.settings.damage * 0.5); // the drain returns half of what it takes
+        }
       }
     }
 
@@ -441,7 +454,8 @@ export class CrimsonPact implements Effect {
       this.groundShock.set(this.from, 0, 0);
     }
 
-    const n = this.ctx ? Math.min(MAX_THREADS, this.ctx.targetPos.length) : 0;
+    const n = this.tether ? 1 : 0;
+    if (this.tether) this.threadFrom[0].copy(this.tether.group.position).setY(1.1); // the thread follows the enemy
     for (let i = 0; i < MAX_THREADS; i++) {
       const th = this.threads[i];
       let age = -1;

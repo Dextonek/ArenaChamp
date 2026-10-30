@@ -107,6 +107,7 @@ function spark(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
 export const stormKit: HeroKit = {
   name: 'Kaia',
   title: 'the Tempest Caller',
+  maxHp: 560,
   accent: S.body,
   foil: S.rain,
   portrait(g, s) {
@@ -155,7 +156,7 @@ export const stormKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'arc lance', name: 'Arc Lance', range: 11, cooldown: 3,
-      blurb: 'Points her staff and a branching bolt leaps to one enemy, splitting into the ground at its feet.',
+      blurb: 'Points her staff and a branching bolt leaps to one enemy, then chains to a second one nearby for half damage.',
       icon(g, s) {
         iconGround(g, s);
         // Hooked staff low left, a horizontal bolt tree jumping to the right.
@@ -173,7 +174,7 @@ export const stormKit: HeroKit = {
     },
     {
       key: 'W', label: 'downpour', name: 'Downpour', range: 10, cooldown: 7,
-      blurb: 'Gathers a storm cloud over a spot; rain falls and lightning strikes down three times.',
+      blurb: 'Gathers a storm cloud over a spot; lightning strikes down three times and each strike slows whoever stands in the rain.',
       icon(g, s) {
         iconGround(g, s);
         cloud(g, s * 0.5, s * 0.3, s * 0.78);
@@ -189,8 +190,8 @@ export const stormKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'static field', name: 'Static Field', range: 0, cooldown: 9,
-      blurb: 'A small storm cloud over her head; a ring of arcs circles her and twice lightning jumps to nearby enemies.',
+      key: 'E', label: 'static field', name: 'Static Field', range: 0, cooldown: 9, cc: true,
+      blurb: 'A ring of lightning expands from her out to 5 m and stuns whoever its front passes: stand far, or inside before it starts.',
       icon(g, s) {
         iconGround(g, s);
         cloud(g, s * 0.5, s * 0.3, s * 0.5);
@@ -209,7 +210,7 @@ export const stormKit: HeroKit = {
     },
     {
       key: 'R', label: 'eye of the storm', name: 'Eye of the Storm', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A vast storm wheel turns over the zone and drops one colossal lightning tree through its eye.',
+      blurb: 'Ultimate. A storm wheel turns over a 5 m zone and drops one colossal lightning tree through its eye.',
       icon(g, s) {
         iconGround(g, s);
         // A ring of cloud (the wheel) seen at an angle, with a clear eye.

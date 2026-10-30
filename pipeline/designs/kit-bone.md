@@ -1,5 +1,9 @@
 # Bone kit: Mortis, the Ossuary Lord (summoner)
 
+## Role (2026-10-30)
+**Summoner**, 580 HP. Signature: *Raise the dead*. Q, W and R unchanged (pierce bolt, skeletons, hand and archers).
+- E Ossuary Ward: a CAGE (`enemy` mode, range 9, `cc`): the ribs grow round the chosen enemy (radius 1.0); at 0.8 s they close and cut with shards (radius 2): 12 damage and **root 1.2**, flex again at 1.9 s for another 12. No self shield any more.
+
 **Signature shape: bone architecture.** Bone is **chunky, carved and stacked**: ribs, vertebrae, skull-capped spires
 and bone cages that grow out of the ground in segments, lit from inside by **teal soulfire wisps** that flicker in
 the eye sockets and cracks. Bones are ivory with dark brown crevices (not white blobs). Not the blood kit (red, wet,

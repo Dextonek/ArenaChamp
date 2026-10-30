@@ -1,12 +1,23 @@
 # Sky kit: Zephyr, the Wind Blade (melee)
 
+## Role (2026-10-30)
+
+**Assassin (melee), 680 HP.** Signature: *Never stands still*. Three of his four spells move him. Design: `pipeline/designs/hero-roles.md`.
+
+| Slot | Spell | New shape and numbers |
+|---|---|---|
+| Q | Gale Edge | Cooldown 2.5 -> 2. |
+| W | Tailwind Rush | Unchanged (dash in, knock-up 0.4). |
+| E | Cyclone Guard | BACKSTEP. Self mode, radius 4, cd 9. The whirl wraps him (shield 30, 3 s), one flare at 0.25 s cuts and shoves enemies within 4 (13, knock 3), then at 0.3 s `moveCaster` carries him 5 m straight away from the enemy in 0.35 s and the whirl travels with him. Total 1.5 s (was 3.2 s, two pulses). |
+| R | Thousand Winds | Radius 7 -> 4; the cyclone's tightening and burst scale with it. Still knock-up 0.5, 132. |
+
 **Signature shape: the wind crescent.** Wind is drawn as **sharp pale sickle crescents** and **thin spiral gust
 ribbons**: slash arcs that hang for a few frames, streaming speed lines and small tumbling leaves/feathers to show the
 wind's direction. Never a smoke tornado: it is clean, fast, cutting air. Not the storm kit (clouds, rain, lightning)
 and not the tide kit (water ribbons).
 
 Read `kit-common.md` first (files, timing, budgets, look lessons) and `docs/architecture/mechanics.md` (statuses,
-dash, shield, melee). This is the first **melee** hero: `melee: true`, `maxHp: 780`.
+dash, shield, melee). This is the first **melee** hero: `melee: true`, `maxHp: 680` (was 780).
 
 - **Hero:** a light-footed swordsman in mint and white with a long scarf and a slim curved sword; closes in fast,
   knocks enemies up. **Category:** `hero: sky`. **Parts file:** `src/effects/parts/sky.ts`. **Kit:** `src/kits/sky.ts`

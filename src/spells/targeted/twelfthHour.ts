@@ -7,36 +7,38 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Twelfth Hour (chrono kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world darkens to
+ * Twelfth Hour (chrono kit, R: FUSE). Under the normal gameplay camera, no letterbox: the world darkens to
  * green-black and a numeral ring traces the radius-7 circle on the ground, ticking. Behind the point a vast ivory clock
  * dial (7 across, about 4 up, chartreuse numerals) rises facing the camera; its two hands sweep fast toward twelve and slow
  * as they near it, afterimages of the hands trailing, a red second hand ticking, motes drifting and enemies drawn a little
  * toward the centre. At 1.6 the minute hand stops one tick short and every mote freezes; dead beat 1.85..2.0; the last tick
  * (2.0..2.2) brings the hands to twelve and the red second hand flies off the dial and drives into the centre. At 2.2: two
  * impact frames, the ring flashes, twelve chartreuse shock lines race out along the numerals, a red star, ground
- * refraction, the hit and a short stun. Then the dial cracks into flakes and fades and the dark lifts. Clean by 4.5 s.
+ * refraction and the hit (no stun). FUSE: the whole build is stretched so the hand strikes 3.5 s after the cast; walk
+ * out of the circle or take it. Then the dial cracks into flakes and fades and the dark lifts. Clean by 5.8 s.
  * See pipeline/designs/kit-chrono.md.
  */
 export interface TwelfthHourSettings {
   damage: number;
-  stunSeconds: number;
   loop: boolean;
 }
 
-export const defaultTwelfthHour = (): TwelfthHourSettings => ({ damage: 100, stunSeconds: 0.6, loop: false });
+export const defaultTwelfthHour = (): TwelfthHourSettings => ({ damage: 150, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the numeral ring traced
 const RISE_T = 0.3; // the clock starts to rise
-const FREEZE_T = 1.6; // the minute hand stops one tick short, every mote freezes
-const BEAT_T = 1.85; // dead beat 1.85..2.0
-const LAST_T = 2.0; // the last tick, the second hand flies
-const HIT_T = 2.2;
-const CRACK_T = 2.3;
-const FLAKE_T = 2.5;
-const FLAKE_END = 3.2;
-const FADE_T = 2.8;
-const DURATION = 4.5;
+const FREEZE_T = 2.9; // the minute hand stops one tick short, every mote freezes
+const BEAT_T = 3.15; // dead beat 3.15..3.3
+const LAST_T = 3.3; // the last tick, the second hand flies
+const HIT_T = 3.5; // FUSE: 3.5 s warning, the strike lands inside the duel's 4.2 s window
+const CRACK_T = 3.6;
+const FLAKE_T = 3.8;
+const FLAKE_END = 4.5;
+const FADE_T = 4.1;
+const DURATION = 5.8;
+const RISE_LEN = 1.3; // the dial climbs in 1.3 s, then hangs
+const MORE_MOTES = [1.7, 2.1, 2.5];
 
 const RADIUS = 7;
 const CLOCK_R = 3.5;
@@ -73,6 +75,7 @@ export class TwelfthHour implements Effect {
   };
   private flakeT = 0;
   private ringTickOn = false;
+  private moteMore = 0;
 
   // Parts.
   private ring = new Dial({ face: 'ring', marks: 'band', hands: false, spinFace: true, order: 6 });
@@ -156,6 +159,7 @@ export class TwelfthHour implements Effect {
     this.flakeT = 0;
     this.redAngle = 0;
     this.ringTickOn = false;
+    this.moteMore = 0;
     for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
     clearScreenFx(this.screen);
     this.screen.tint.set(CHRONO.dark);
@@ -174,7 +178,7 @@ export class TwelfthHour implements Effect {
 
   /** The clock's centre height at time `t`. */
   private clockY(t: number) {
-    return CLOCK_Y0 + (CLOCK_Y - CLOCK_Y0) * easeOut((t - RISE_T) / (FREEZE_T - RISE_T));
+    return CLOCK_Y0 + (CLOCK_Y - CLOCK_Y0) * easeOut((t - RISE_T) / RISE_LEN);
   }
 
   update(dt: number) {
@@ -247,6 +251,11 @@ export class TwelfthHour implements Effect {
     if (!f.motes1 && t >= 0.45) { f.motes1 = true; this.motes.drift(this.point, RADIUS - 0.5, 14); }
     if (!f.motes2 && t >= 0.9) { f.motes2 = true; this.motes.drift(this.point, RADIUS - 0.5, 14); }
     if (!f.motes3 && t >= 1.3) { f.motes3 = true; this.motes.drift(this.point, RADIUS - 0.5, 12); }
+    // The fuse is long: more motes drift in while the clock hangs.
+    while (this.moteMore < MORE_MOTES.length && t >= MORE_MOTES[this.moteMore]) {
+      this.moteMore++;
+      this.motes.drift(this.point, RADIUS - 0.5, 10);
+    }
     if (!f.freeze && t >= FREEZE_T) {
       f.freeze = true;
       this.motes.freeze(this.point, RADIUS - 0.5, 4);
@@ -329,7 +338,7 @@ export class TwelfthHour implements Effect {
 
   private hit() {
     const ctx = this.ctx, P = this.point;
-    this.eachInside((e) => ctx?.hit(e, { damage: this.settings.damage, knock: 3, from: P, color: CHRONO_CSS.body, status: { kind: 'stun', seconds: this.settings.stunSeconds } }));
+    this.eachInside((e) => ctx?.hit(e, { damage: this.settings.damage, knock: 3, from: P, color: CHRONO_CSS.body }));
   }
 
   private finish() {
@@ -395,6 +404,5 @@ export const twelfthHourModule: EffectModule = {
     const s = (effect as TwelfthHour).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
-    f.add(s, 'stunSeconds', 0, 1.2, 0.1);
   },
 };

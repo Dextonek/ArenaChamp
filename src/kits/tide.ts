@@ -107,6 +107,7 @@ export const tideKit: HeroKit = {
   title: 'the Tide Dancer',
   accent: S.body,
   foil: S.foam,
+  maxHp: 620,
   portrait(g, s) {
     iconGround(g, s);
     // Sashes of water sweeping round her, behind and in front.
@@ -151,7 +152,7 @@ export const tideKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'tide whip', name: 'Tide Whip', range: 10, cooldown: 3,
-      blurb: 'Spins a water ribbon off her wrist; it lashes one enemy, wraps it once and bursts into foam.',
+      blurb: 'Spins a water ribbon off her wrist; it lashes one enemy, wraps it and hooks it 3 m toward her.',
       icon(g, s) {
         iconGround(g, s);
         // A whip of water from low left curling to the right, wrapping a small post.
@@ -166,8 +167,8 @@ export const tideKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'whirlpool', name: 'Whirlpool', range: 10, cooldown: 7,
-      blurb: 'A pool spreads and three ribbons spiral up, drawing enemies in before a water column bursts.',
+      key: 'W', label: 'whirlpool', name: 'Whirlpool', range: 10, cooldown: 7, cc: true,
+      blurb: 'A pool spreads and three ribbons spiral up, pulling enemies in twice, and a water column knocks them up.',
       icon(g, s) {
         iconGround(g, s);
         // A pool ellipse with three spiral ribbons rising.
@@ -191,8 +192,8 @@ export const tideKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'undertow dance', name: 'Undertow Dance', range: 0, cooldown: 9,
-      blurb: 'Water sashes circle her as she spins; twice they flare into a flat ring that splashes everything near.',
+      key: 'E', label: 'undertow dance', name: 'Undertow Dance', range: 6, cooldown: 9,
+      blurb: 'She surfs up to 6 m to the aim, healing 15 on landing, and leaves a foam strip for 3 s that slows whoever crosses it.',
       icon(g, s) {
         iconGround(g, s);
         // A flat ring of water with a foam rim round a small figure.
@@ -217,8 +218,8 @@ export const tideKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: "leviathan's waltz", name: "Leviathan's Waltz", range: 13, cooldown: 20,
-      blurb: 'Ultimate. A water serpent coils over the zone, rears up and dives through it in a crown of foam.',
+      key: 'R', label: "leviathan's waltz", name: "Leviathan's Waltz", range: 12, cooldown: 20, aim: 'line', cc: true,
+      blurb: "Ultimate. A water serpent coils over a 12 m strip from her, rears up and dives through it: everything on it is knocked up.",
       icon(g, s) {
         iconGround(g, s);
         // The serpent: a coiling ribbon with a head and a foam mane, over a foam crown on the floor.

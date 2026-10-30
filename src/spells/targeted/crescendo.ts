@@ -8,7 +8,7 @@ import type { Effect, EffectModule } from '../../effects/types';
 
 /**
  * Crescendo (bard kit, R: the MOBA ultimate). Under the normal gameplay camera, no letterbox: the world darkens to
- * plum-black and a circle of staves marks radius 7. Behind the point a giant golden lyre (about 6 tall) rises, three
+ * plum-black and a circle of staves marks radius 5 round him. In front of him a giant golden lyre (about 6 tall) rises, three
  * staves spiral up from the zone edge into it carrying hundreds of notes, its strings shimmer faster and enemies are
  * pulled a little toward the centre. At 1.6 every note stops mid-air and the strings draw back; a dead beat at 1.85;
  * at 2.0 the strings snap forward and a wall of sound rings races down onto the point. At 2.2 the chord lands: two
@@ -22,7 +22,7 @@ export interface CrescendoSettings {
   loop: boolean;
 }
 
-export const defaultCrescendo = (): CrescendoSettings => ({ damage: 95, stunSeconds: 0.6, loop: false });
+export const defaultCrescendo = (): CrescendoSettings => ({ damage: 95, stunSeconds: 0.8, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the ring of staves drawn
@@ -35,11 +35,11 @@ const DISSOLVE_T = 2.6;
 const DISSOLVE_END = 3.4;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 5;
 const LYRE_SCALE = 6;
 const LYRE_Y = 0.2; // the lyre's base at rest (its top stays under y 8.5)
 const LYRE_Y0 = -7; // buried below the floor at the start
-const LYRE_BACK = 1.5; // behind the point, away from the caster
+const LYRE_BACK = 1.5; // from the point, away from `lean`: self-centred, so the lyre stands this far in front of him
 const SPIRALS = 3;
 const SPIRAL_PTS = 56;
 const RING_PTS = 64;
@@ -125,10 +125,9 @@ export class Crescendo implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.point.copy(ctx.point).setY(0);
-    this.lean.set(ctx.from.x - this.point.x, 0, ctx.from.z - this.point.z);
-    if (this.lean.lengthSq() < 1e-4) this.lean.set(0, 0, 1);
-    this.lean.normalize();
+    // Self-centred: the chord is round Cantor; the lyre rises in front of him (lean points back at him).
+    this.point.copy(ctx.from).setY(0);
+    this.lean.set(-Math.sin(ctx.aim), 0, -Math.cos(ctx.aim));
     this.yaw = Math.atan2(this.lean.x, this.lean.z);
     this.lyrePos.copy(this.point).addScaledVector(this.lean, -LYRE_BACK);
     this.victims.length = 0;
@@ -369,13 +368,13 @@ const easeIn = (x: number) => Math.pow(Math.min(1, Math.max(0, x)), 2);
 export const crescendoModule: EffectModule = {
   label: 'crescendo',
   category: 'hero: bard',
-  targeting: { mode: 'ground', radius: RADIUS },
+  targeting: { mode: 'self', radius: RADIUS },
   create: () => new Crescendo(),
   telegraphs(effect) {
     const e = effect as Crescendo;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.point.x, z: ctx.point.z, radius: RADIUS }, start: 0, impact: HIT_T }];
+    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: HIT_T }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

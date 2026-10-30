@@ -7,18 +7,21 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Bellows Ward (forge kit, E: self aura): the forge in Brannoc's chest flares and a ring of heat haze rises around
+ * Bellows Ward (forge kit, E: shield + chain pull, no damage): the forge in Brannoc's chest flares and a ring of heat haze rises around
  * him. Two loops of heavy molten chain whirl round his waist in opposite directions, throwing sparks, glowing and
  * slowly crusting. Twice (0.9 s, 1.9 s) the chains flare and a ring of heat (ash line, orange band) pushes out to
- * radius 5, hitting every enemy inside. At the end the chains cool black, drop with a clank and shatter into iron
+ * radius 5; every enemy inside is dragged 1.5 m toward him (no damage) while he wears a shield of 80 for 3 s. At the end the chains cool black, drop with a clank and shatter into iron
  * chunks. See pipeline/designs/kit-forge.md.
  */
 export interface BellowsWardSettings {
-  damage: number;
+  /** Shield amount, held 3 s. */
+  shield: number;
+  /** Metres each heat pulse drags an enemy inside toward him. */
+  pull: number;
   loop: boolean;
 }
 
-export const defaultBellowsWard = (): BellowsWardSettings => ({ damage: 15, loop: false });
+export const defaultBellowsWard = (): BellowsWardSettings => ({ shield: 100, pull: 1.5, loop: false });
 
 // Timeline (seconds).
 const CHAINS_T = 0.3; // the chains whirl up
@@ -51,7 +54,7 @@ export class BellowsWard implements Effect {
   private chest = new THREE.Vector3(0, 1.4, 14);
 
   // Event flags.
-  private flags = { pulse0: false, pulse1: false, clank: false, steam: false };
+  private flags = { pulse0: false, pulse1: false, clank: false, steam: false, shield: false };
   private sparkTimer = 0;
 
   // Parts.
@@ -136,7 +139,12 @@ export class BellowsWard implements Effect {
     const t = this.time;
     const ctx = this.ctx;
 
-    // Events: the two heat pulses hit everything inside the radius.
+    // The forge flares: the shield goes up and stays for the whole whirl.
+    if (!this.flags.shield && t >= CHAINS_T) {
+      this.flags.shield = true;
+      ctx?.shieldSelf?.(this.settings.shield, 3, FORGE_CSS.hot);
+    }
+    // Events: the two heat pulses drag everything inside the radius toward him (live positions).
     for (let i = 0; i < PULSES.length; i++) {
       const key = i === 0 ? 'pulse0' : 'pulse1';
       if (!this.flags[key] && t >= PULSES[i]) {
@@ -144,12 +152,12 @@ export class BellowsWard implements Effect {
         this.sparks.burst(this.chest, this.v1.set(0, 1, 0), 10, 6, 1.1);
         this.shake = 0.2;
         if (ctx) {
-          ctx.targets.forEach((e, k) => {
-            const p = ctx.targetPos[k];
-            if (p && Math.hypot(p.x - this.from.x, p.z - this.from.z) <= RADIUS) {
-              ctx.hit(e, { damage: this.settings.damage, knock: 3, from: ctx.from, color: FORGE_CSS.body });
+          for (const e of ctx.targets) {
+            const p = e.group.position;
+            if (Math.hypot(p.x - this.from.x, p.z - this.from.z) <= RADIUS) {
+              ctx.hit(e, { damage: 0, knock: 0, pull: this.settings.pull, from: ctx.from, color: FORGE_CSS.body });
             }
-          });
+          }
         }
       }
     }
@@ -262,6 +270,7 @@ export const bellowsWardModule: EffectModule = {
   buildGui(f, effect) {
     const s = (effect as BellowsWard).settings;
     f.add(s, 'loop');
-    f.add(s, 'damage', 1, 60, 1);
+    f.add(s, 'shield', 0, 200, 5);
+    f.add(s, 'pull', 0, 4, 0.1);
   },
 };

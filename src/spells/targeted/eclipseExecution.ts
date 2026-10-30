@@ -22,7 +22,7 @@ export interface EclipseExecutionSettings {
   loop: boolean;
 }
 
-export const defaultEclipseExecution = (): EclipseExecutionSettings => ({ damage: 125, loop: false });
+export const defaultEclipseExecution = (): EclipseExecutionSettings => ({ damage: 160, loop: false });
 
 // Timeline (seconds).
 const FORM_A = 1.5;
@@ -34,11 +34,11 @@ const HIT_T = 2.2;
 const SHATTER_T = 2.35;
 const DURATION = 4.5;
 
-const RADIUS = 7;
+const RADIUS = 2.5;
 const MOON_R = 4.0;
 const MOON_Y = 6.6;
 const MOON_BACK = 5; // behind the point, away from the caster
-const BLADE_SIZE = 6.1; // crescent chord = 2 x size ~ 12 wide
+const BLADE_SIZE = 2.8; // crescent chord = 2 x size ~ 5.6 wide, matching the r 2.5 zone
 const READY_Y = 7.4;
 const READY_BACK = 1.5;
 const READY_PITCH = 0.35;
@@ -129,7 +129,7 @@ export class EclipseExecution implements Effect {
     for (let i = 0; i < ctx.targetPos.length && i < 4; i++) this.anchors.push(new THREE.Vector3(ctx.targetPos[i].x, 0, ctx.targetPos[i].z));
     for (let k = 0; k < 6; k++) {
       const a = k * 1.047 + 0.4;
-      this.anchors.push(new THREE.Vector3(this.point.x + Math.cos(a) * 4.6, 0, this.point.z + Math.sin(a) * 4.6));
+      this.anchors.push(new THREE.Vector3(this.point.x + Math.cos(a) * 2.2, 0, this.point.z + Math.sin(a) * 2.2));
     }
     this.screen.focus.copy(this.point).setY(1.5);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group), this.crescent.mesh];
@@ -188,7 +188,7 @@ export class EclipseExecution implements Effect {
     if (!f.hit && t >= HIT_T) {
       f.hit = true;
       this.shake = 0.75;
-      this.longCut.cut(this.v1.copy(this.point).setY(1.3), this.right, 6.8);
+      this.longCut.cut(this.v1.copy(this.point).setY(1.3), this.right, 3.2);
       if (ctx) {
         for (const e of ctx.targets) if (this.inside(e)) ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: SHADOW_CSS.hot });
       }

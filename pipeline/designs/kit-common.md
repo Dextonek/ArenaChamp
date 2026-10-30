@@ -77,3 +77,26 @@ Wave 3 after these numbers: Zephyr 60%, Mortis 60%, Ada 56%.
 
 ## Verify
 `npx tsc --noEmit` clean for your files. No browser: the reviewer renders contact sheets and sends notes.
+
+## Roles and spell shapes (2026-10-30)
+Every hero has a role and a kit shape of its own (`hero-roles.md`); a new kit must not repeat another hero's four
+shapes, and the old "Q single target, W ground zone, E self aura, R radius-7" template is not used any more.
+Shapes the engine already supports, all built inside the spell (no engine or AI change):
+- **QUICK** (no aim): `self` mode; the direction is `caster.group.rotation.y` read at the cast, which
+  `arena.context` has just turned toward the nearest enemy inside the radius (toward -z when nobody is in reach). Set the self radius to the reach you want the AI to use it at.
+- **NOVA / ORBIT / AURA**: `self` mode; hits re-check live positions; the telegraph is the outer circle.
+- **BOOMERANG**: two `ctx.projectile` bolts, the second fired from the turn point back at the caster's live spot.
+- **TRAP / LINGER / FUSE**: `ground` mode; the telegraph's `impact` is the first possible hit, `until` the end.
+- **CHANNEL**: the caster is rooted until the latest telegraph impact (the cast root is capped at 2.5 s).
+- **GLOBAL**: a `ground` spell with range 60.
+- **DASH / BACKSTEP / BLINK / TRAIL**: `ctx.moveCaster`; telegraph where the hit will happen (computed at the cast).
+- **HOOK**: `pull` toward the caster; **TETHER / CAGE**: anchored on the enemy, `enemy` mode.
+Duel rules every shape must keep: a hit lands only inside one of the cast's telegraphs (recorded at the cast) or as a
+`projectile`, and within 4.2 s of the cast (the duel forgets a cast after 4.5 s). Heals tied to a hit must check
+that the hit landed (Hemolance checks the target is still within 1.5 m of where it was aimed).
+
+## Role budget (balance pass 2026-10-30, walk speed 4 m/s, duel cover on)
+HP: assassin 600-720, tank 840, juggernaut 620-780, mage 560-580, marksman 520-560, support 600-640, controller
+600-620, summoner 580. Sustain is the strongest thing in a 1v1 at this walk speed: a heal on every spell took Vesper
+to 100% and a heal on the R took Fenna to 84%; keep heals per spell ≤ 15 and an R heal ≤ 50. Melee kits swing hard:
+at 820 HP with ~35 damage spells they won 13-22%; at 840-900 HP with ~50 damage spells 71-76%.

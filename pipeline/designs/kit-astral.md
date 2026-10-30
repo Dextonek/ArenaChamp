@@ -1,5 +1,16 @@
 # Astral kit: Lyra, the Star Archer
 
+## Role (2026-10-30)
+
+**Marksman, 520 HP.** Signature: *Out-range*. Design: `pipeline/designs/hero-roles.md`.
+
+| Slot | Spell | New shape and numbers |
+|---|---|---|
+| Q | Starshot | Bounce skillshot, `aim: 'line'`, range 14, cd 2, 40, speed 22, radius 0.4, `bounce: 1`. The bow draws, the arrow (a `BoltSet` look in gold) flies the line, bounces once to the nearest other enemy within 6 m; each hit leaves a star and a gold line. |
+| W | Constellation Snare | TRAP, `cc`. Ground mode (targeting radius 40 so every enemy is listed; the net itself is r 4). The net is armed at 0.8 s and lies until 3.0 s; the first frame an enemy's live position is inside it snaps: 60 + **root 1.2** and the old drag-in. No one inside by 3.0 s: it fizzles with no hit. Telegraph drawn 0.. 3.2 s. |
+| E | Orbit Veil | BACKSTEP. Self mode, radius 5, cd 9. One volley at 0.6 s (12 + **slow 1.0**) on enemies within 5 of where she stood; at 0.65 s `moveCaster` carries her 5 m away from the enemy in 0.35 s, the chart, veil and orbit travel with her. 2.4 s total. |
+| R | Celestial Hunt | GLOBAL. Range 60, cd 20, radius 7 -> 3, 140. The stag is drawn over the picked spot anywhere in the ring and lands at 2.5 s; hits re-check live positions, so a walker escapes. |
+
 **Signature shape: constellations.** Bright star points (four-point stars, varied sizes) joined by thin, crisp gold
 lines that **draw themselves** from star to star, forming a figure (a net, a bow, a stag), then **snap**: the lines
 break and the stars fall as small shooting stars. Second shape: arrows of light with a long, thin gold tail.

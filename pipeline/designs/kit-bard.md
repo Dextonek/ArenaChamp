@@ -1,5 +1,9 @@
 # Bard kit: Cantor, the Last Verse (ranged support / control)
 
+## Role (2026-10-30)
+**Support**, 640 HP. Signature: *Silence*. Q, W and E unchanged (bounce bolt, silence zone, shield and heal).
+- R Crescendo: a SELF-R (`cc`, range 0): the lyre rises in front of him, the chord (radius 7 to 5) hits for 95 and **stuns 0.8** (was 0.6) everything within 5 m.
+
 **Signature shape: sound made visible.** Music is drawn as **flowing five-line staves**, **floating notes and clefs**
 riding them, and **concentric sound rings** that ripple out from struck strings. Notes are dark ink shapes with a
 glowing rose edge; staves are thin parallel ribbons; rings are crisp, thin and quick. A golden lyre sounds every

@@ -7,9 +7,10 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Cyclone Guard (sky kit, E: self shield + pulses). A whirl of crescents and gust ribbons wraps him (radius 1.2 to 1.8)
- * and he takes a 50 point shield for 3 s. At 1.0 s and 2.0 s the whirl flares out to radius 4 as a ring of crescents
- * that hits every enemy inside; from 2.6 s it unwinds into leaves. Clean by 3.2 s. See pipeline/designs/kit-sky.md.
+ * Cyclone Guard (sky kit, E: backstep). A whirl of crescents and gust ribbons wraps him (radius 1.2 to 1.8) and he
+ * takes a 30 point shield for 3 s. At 0.25 s the whirl flares out to radius 4 once as a ring of crescents that cuts and
+ * shoves every enemy inside; at 0.3 s it carries him 5 m straight away from the enemy (`ctx.moveCaster`, 0.35 s) and
+ * the whirl travels with him; from 0.9 s it unwinds into leaves. Clean by 1.5 s. See pipeline/designs/kit-sky.md.
  */
 export interface CycloneGuardSettings {
   damage: number;
@@ -17,17 +18,25 @@ export interface CycloneGuardSettings {
   loop: boolean;
 }
 
-export const defaultCycloneGuard = (): CycloneGuardSettings => ({ damage: 13, shield: 50, loop: false });
+export const defaultCycloneGuard = (): CycloneGuardSettings => ({ damage: 13, shield: 30, loop: false });
 
 // Timeline (seconds).
 const WRAP_END = 0.2; // the whirl is up
-const PULSE_1 = 1.0;
-const PULSE_2 = 2.0;
-const UNWIND_T = 2.6;
-const GONE_T = 3.0;
-const DURATION = 3.2;
+const PULSE_1 = 0.25;
+const MOVE_T = 0.3; // the whirl carries him away
+const MOVE_LEN = 0.35;
+const BACKSTEP = 5;
+const UNWIND_T = 0.9;
+const GONE_T = 1.3;
+const DURATION = 1.5;
 const RADIUS = 4;
 const N_CRES = 7;
+
+/** Ease-out over 0..1 (clamped). */
+function easeOut(u: number) {
+  const k = THREE.MathUtils.clamp(u, 0, 1);
+  return 1 - (1 - k) * (1 - k);
+}
 
 export class CycloneGuard implements Effect {
   readonly group = new THREE.Group();
@@ -40,10 +49,14 @@ export class CycloneGuard implements Effect {
   /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
   ctx: CastContext | null = null;
   private time = 0;
+  /** Where the whirl is drawn: his feet, following him once the backstep starts. */
   private from = new THREE.Vector3(0, 0, 14);
+  /** Where he cast from (the flare and its hit happen here), and where he is carried to. */
+  readonly start = new THREE.Vector3(0, 0, 14);
+  private land = new THREE.Vector3();
   private spinA = 0;
-  private pulseAt = [-9, -9];
-  private flags = { pulse1: false, pulse2: false };
+  private pulseAt = [-9];
+  private flags = { pulse1: false, move: false };
   private leafTimer = 0;
 
   // Parts.
@@ -77,9 +90,16 @@ export class CycloneGuard implements Effect {
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.from.copy(ctx.from).setY(0);
+    this.start.copy(this.from);
+    // Away from the enemy (the nearest one in the ring); with none in the ring, away from where he faces.
+    const e = ctx.targetPos[0] ?? ctx.point;
+    this.v1.set(this.from.x - e.x, 0, this.from.z - e.z);
+    if (this.v1.lengthSq() < 0.25) this.v1.set(-Math.sin(ctx.caster.group.rotation.y), 0, -Math.cos(ctx.caster.group.rotation.y));
+    this.v1.normalize();
+    this.land.copy(this.start).addScaledVector(this.v1, BACKSTEP);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.from).setY(1.3);
-    this.groundShock.set(this.from, 0, 0);
+    this.groundShock.set(this.start, 0, 0);
   }
 
   play() {
@@ -94,8 +114,9 @@ export class CycloneGuard implements Effect {
     this.shake = 0;
     this.spinA = 0;
     this.leafTimer = 0;
-    this.pulseAt[0] = this.pulseAt[1] = -9;
-    this.flags.pulse1 = this.flags.pulse2 = false;
+    this.pulseAt[0] = -9;
+    this.flags.pulse1 = this.flags.move = false;
+    this.from.copy(this.start);
     clearScreenFx(this.screen);
     this.screen.tint.set(SKY.dark);
     this.crescents.reset();
@@ -116,20 +137,20 @@ export class CycloneGuard implements Effect {
 
   private pulse(index: number) {
     const ctx = this.ctx;
-    this.pulseAt[index] = index === 0 ? PULSE_1 : PULSE_2;
+    this.pulseAt[index] = PULSE_1;
     this.shake = 0.15;
-    this.lines.burst(this.v1.set(this.from.x, 1.0, this.from.z + 1.2), this.v2.set(0, 0, 1), 6, 1.5);
+    this.lines.burst(this.v1.set(this.start.x, 1.0, this.start.z + 1.2), this.v2.set(0, 0, 1), 6, 1.5);
     for (let i = 0; i < 4; i++) {
       const a = (i / 4) * Math.PI * 2 + Math.random();
-      this.v1.set(this.from.x + Math.cos(a) * 2.5, 0.8, this.from.z + Math.sin(a) * 2.5);
+      this.v1.set(this.start.x + Math.cos(a) * 2.5, 0.8, this.start.z + Math.sin(a) * 2.5);
       this.leaves.blow(this.v1, this.v2.set(Math.cos(a), 0.2, Math.sin(a)), 2, 5);
     }
     if (!ctx) return;
-    // Re-check at the pulse: only enemies still inside the radius are hit.
+    // Re-check at the pulse: only enemies still inside the radius of the spot he cast from are hit.
     for (const e of ctx.targets) {
       const p = e.group.position;
-      if (Math.hypot(p.x - this.from.x, p.z - this.from.z) > RADIUS) continue;
-      ctx.hit(e, { damage: this.settings.damage, knock: 2, from: ctx.from, color: SKY_CSS.body });
+      if (Math.hypot(p.x - this.start.x, p.z - this.start.z) > RADIUS) continue;
+      ctx.hit(e, { damage: this.settings.damage, knock: 3, from: this.start, color: SKY_CSS.body });
     }
   }
 
@@ -152,7 +173,11 @@ export class CycloneGuard implements Effect {
     const f = this.flags;
 
     if (!f.pulse1 && t >= PULSE_1) { f.pulse1 = true; this.pulse(0); }
-    if (!f.pulse2 && t >= PULSE_2) { f.pulse2 = true; this.pulse(1); }
+    if (!f.move && t >= MOVE_T) {
+      f.move = true;
+      if (this.ctx?.moveCaster) this.land.copy(this.ctx.moveCaster(this.land, MOVE_LEN)).setY(0);
+    }
+    if (f.move) this.from.lerpVectors(this.start, this.land, easeOut((t - MOVE_T) / MOVE_LEN));
 
     // 2.6..3.0: the whirl unwinds into leaves.
     if (t >= UNWIND_T && t < GONE_T) {
@@ -189,7 +214,7 @@ export class CycloneGuard implements Effect {
       sh = Math.max(sh, 0.15 * Math.exp(-s * 10));
     }
     this.spinA += dt * (4.5 + 7 * flare);
-    this.groundShock.set(this.from, Math.max(gr, 0.1), gs);
+    this.groundShock.set(this.start, Math.max(gr, 0.1), gs);
     this.shake = sh;
 
     const rise = smoothstep(t / WRAP_END);
@@ -235,7 +260,7 @@ export const cycloneGuardModule: EffectModule = {
     const e = effect as CycloneGuard;
     const ctx = e.ctx;
     if (!ctx) return [];
-    return [{ shape: { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RADIUS }, start: 0, impact: PULSE_1 }];
+    return [{ shape: { kind: 'circle', x: e.start.x, z: e.start.z, radius: RADIUS }, start: 0, impact: PULSE_1 }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

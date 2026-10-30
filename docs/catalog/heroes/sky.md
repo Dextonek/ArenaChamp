@@ -1,12 +1,16 @@
 ---
 title: Zephyr, the Wind Blade (sky kit)
 tags: [catalog, heroes, sky, melee, mechanics]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Zephyr, the Wind Blade
 
 The sky hero kit: Zephyr's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A melee fighter in a white and mint wrap coat with a slim curved sword and a long scarf that always streams in the wind. He is the first hero built on the [combat mechanics](../../architecture/mechanics.md): a melee kit with extra HP, a dash, a knock-up and a shield.
+
+## Role
+
+Assassin (melee), 690 HP. Signature: *Never stands still*. Three of his four spells move him. He wins a 1v1 by gap-closing with the W rush, knocking up and cutting, then backstepping with the E before the answer comes. His weakness is that he must stay close, and the dive spells have long cooldowns.
 
 ## At a glance
 
@@ -49,18 +53,18 @@ Zephyr uses these pieces of [the combat mechanics](../../architecture/mechanics.
 | Shield | E gives `ctx.shieldSelf(50, 3)`, a 50 point shield for 3 s |
 | Skillshot, summons | none |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): melee 700 HP, Q about 40 with a 2.5 s cooldown, knock-ups at most 0.4 s on the W and 0.5 s on the R. In the wave 3 duel tournament he won 60%.
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): knock-ups at most 0.4 s on the W and 0.5 s on the R. After the hero-roles balance pass (2026-10-30, 690 HP, Q 48 with a 2 s cooldown) he wins 52% (see the roster README).
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E are normal MOBA abilities (hit 0.3-1.0 s after the cast, clean by about 1.6 s; the E aura runs about 3 s); R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/sky.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E each have a shape of their own (see the table: dash, skillshot, trap, orbit, summon and so on), not a fixed strike, zone or aura; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/sky.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [gale edge](../../../src/spells/targeted/galeEdge.ts) | enemy (a 100 degree cone, radius 3.2) | 3 | 2.5 s | 0.3 s | 1.2 s | A short spiral of wind gathers round his sword arm. At the hit two crossing pale crescents sweep the cone in front of him with speed lines, a blossom-pink flash and a few leaves blown forward; everyone still inside the cone is hit. Damage 45, knock 2. |
-| W | [tailwind rush](../../../src/spells/targeted/tailwindRush.ts) | ground (r 2.5) | 8 | 7 s | 0.4 s | 1.6 s | A gust ribbon trails from his feet to the point. At 0.1 s he rides it there in 0.25 s behind a streak of speed lines and one long crescent, landing in a burst of leaves. At the hit a spiral gust at the real landing spot lifts everyone within 2.5 off their feet. Damage 45, knock-up 0.4 s. |
-| E | [cyclone guard](../../../src/spells/targeted/cycloneGuard.ts) | self (r 4) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | A whirl of seven crescents and two gust ribbons wraps him (radius 1.2 to 1.8) and he takes a 50 point shield for 3 s. At 1.0 s and 2.0 s the whirl flares out to radius 4 as a ring of crescents that cuts and shoves every enemy inside; from 2.6 s it unwinds into leaves. Damage 13 per pulse, knock 2, shield 50. |
-| R | [thousand winds](../../../src/spells/targeted/thousandWinds.ts) | ground (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a pale storm teal and a ring of crescents marks the zone. A tall spiral of gust ribbons and about 150 small crescents rises round the zone edge to about 7 high, spinning faster while the enemies are pulled in. The cyclone tightens to radius 3 and the blades freeze edge-on pointing at the centre (dead beat 1.85-2.0 s). He dashes into the eye (`moveCaster`, 0.2 s) and a giant vertical crescent splits the centre: the cyclone bursts outward as a ring of crescents, a pink star, the hit. Damage 132, knock-up 0.5 s. |
+| Q | [gale edge](../../../src/spells/targeted/galeEdge.ts) | enemy (cone, 100 degrees, radius 3.2) | 3 | 2 s | 0.3 s | 1.2 s | A short spiral of wind gathers round his sword arm. At the hit two crossing pale crescents sweep the cone in front of him with speed lines, a blossom-pink flash and a few leaves blown forward; everyone still inside the cone is hit. Damage 48, knock 2. |
+| W | [tailwind rush](../../../src/spells/targeted/tailwindRush.ts) | ground (DASH, r 2.5) | 8 | 7 s | 0.4 s | 1.6 s | A gust ribbon trails from his feet to the point. At 0.1 s he rides it there in 0.25 s behind a streak of speed lines and one long crescent, landing in a burst of leaves. At the hit a spiral gust at the real landing spot lifts everyone within 2.5 off their feet. Damage 45, knock-up 0.4 s. |
+| E | [cyclone guard](../../../src/spells/targeted/cycloneGuard.ts) | self (BACKSTEP, r 4) | 0 (self) | 9 s | 0.25 s | 1.5 s | A whirl of seven crescents and two gust ribbons wraps him (radius 1.2 to 1.8) and he takes a 30 point shield for 3 s. At 0.25 s one flare of crescents cuts and shoves every enemy within 4. At 0.3 s the whirl carries him 5 m straight away from the enemy (0.35 s) and travels with him; from 0.9 s it unwinds into leaves. Damage 13, knock 3, shield 30. |
+| R | [thousand winds](../../../src/spells/targeted/thousandWinds.ts) | ground (DASH, r 4) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a pale storm teal and a ring of crescents marks the zone. A tall spiral of gust ribbons and about 150 small crescents rises round the zone edge to about 7 high, spinning faster while the enemies are pulled in. The cyclone (drawn for radius 7, scaled to the radius-4 zone) tightens and the blades freeze edge-on pointing at the centre (dead beat 1.85-2.0 s). He dashes into the eye (`moveCaster`) and a giant vertical crescent splits the centre: the cyclone bursts outward as a ring of crescents, a pink star, the hit. Damage 145, knock-up 0.5 s. |
 
 Spell sources: [`galeEdge.ts`](../../../src/spells/targeted/galeEdge.ts), [`tailwindRush.ts`](../../../src/spells/targeted/tailwindRush.ts), [`cycloneGuard.ts`](../../../src/spells/targeted/cycloneGuard.ts), [`thousandWinds.ts`](../../../src/spells/targeted/thousandWinds.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-sky).
 
