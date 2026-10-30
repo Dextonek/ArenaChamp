@@ -3,7 +3,7 @@ import type { HeroKit } from '../heroes';
 import type { NetClient, Profile, ServerMsg } from '../net/client';
 
 type Api = typeof GameApi;
-const MOVE_HZ = 15;
+const MOVE_HZ = 20;
 
 /**
  * Runs one network match on top of the existing duel: on `match_start` it sets the hero, turns hero mode on and
@@ -32,9 +32,13 @@ export class MatchController {
     document.body.appendChild(this.forfeit);
 
     api.duel.onLeave = () => this.exit();
+    // Browsers slow the timers of a hidden tab to about once a second, so the other player sees this hero jump.
+    document.addEventListener('visibilitychange', () => {
+      if (this.active && document.hidden) this.ui.toast('This tab is hidden: your opponent sees you stutter. Play in two windows, not two tabs.');
+    });
     net.on('match_start', (m) => this.start(m));
     net.on('match_fight', (m) => this.active && api.duel.countdownFrom(m.countdown));
-    net.on('peer_move', (m) => this.active && api.duel.peerMove(m.x, m.z, m.yaw));
+    net.on('peer_move', (m) => this.active && api.duel.peerMove(m.x, m.z, m.yaw, m.ts));
     net.on('peer_cast', (m) => this.active && api.duel.peerCast(m));
     net.on('peer_hit', (m) => this.active && api.duel.peerHit(m.damage, m.hp, m.color));
     net.on('peer_dodged', () => this.active && api.duel.peerDodged());
@@ -92,7 +96,8 @@ export class MatchController {
     const key = `${msg.x},${msg.z},${msg.yaw}`;
     if (key === this.lastSent) return;
     this.lastSent = key;
-    this.net.send(msg);
+    // The sender's clock lets the other side place each position at the moment it was true, not when it arrived.
+    this.net.send({ ...msg, ts: Math.round(performance.now()) });
   }
 
   private end(m: Extract<ServerMsg, { t: 'match_end' }>) {

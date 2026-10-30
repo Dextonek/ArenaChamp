@@ -19,7 +19,7 @@ export interface HeroModeHost {
   nextKit?(): void;
 }
 
-const HERO_SPEED = 8;
+const HERO_SPEED = 4;
 const GREY_SLOT = 'grayscale(1) brightness(0.5)';
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
 const HOVER_PICK = 2.2; // how close to the cursor an enemy counts as hovered

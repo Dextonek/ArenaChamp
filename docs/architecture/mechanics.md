@@ -37,7 +37,7 @@ Rules:
 | Who | Behaviour |
 |---|---|
 | Player hero ([heroMode.ts](../../src/heroMode.ts)) | `HeroMode.status` is the caster's `StatusSet`. Stun, knock-up and root stop click-moves; stun, knock-up and silence stop casting (toast "Stunned" / "Silenced"); slow walks at x0.6; blind rolls `arena.blindOffset()` into `arena.aimOffset` around the cast, so the effect and its danger zones are played at the offset spot. The QWER bar greys while the hero cannot cast and a dark vignette fades in while blind |
-| Duel opponent and autopilot | A stunned or dashing AI does nothing; root or stun stops walking; slow scales `AI_SPEED` (6); silence skips casting; blind rolls an offset into the aim point (self spells are not aimed). A bolt dodge is skipped when it cannot move |
+| Duel opponent and autopilot | A stunned or dashing AI does nothing; root or stun stops walking; slow scales `AI_SPEED` (3.5); silence skips casting; blind rolls an offset into the aim point (self spells are not aimed). A bolt dodge is skipped when it cannot move |
 | Arena foes | `arena.applyStatus(target, kind, seconds, color)` works on any foe and on the caster figure. Foes get the same visuals; a knock-up lifts a foe where its position is rebuilt |
 
 Because blind moves the cast, the telegraph is drawn at the offset spot and the zone dodge checks stay correct.

@@ -68,7 +68,7 @@ All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 
 ### Range, walk-into-range, rooting, cooldowns
 
-- If the target is out of range when you confirm, the cast becomes `pending` and the hero walks toward the target (`HERO_SPEED = 8`); once within `spell.range` it casts. Any new move order drops the pending cast. A pending enemy that dies cancels it.
+- If the target is out of range when you confirm, the cast becomes `pending` and the hero walks toward the target (`HERO_SPEED = 4`, MOBA-slow since 2026-10-30); once within `spell.range` it casts. Any new move order drops the pending cast. A pending enemy that dies cancels it.
 - `castNow` sets the arena target (`setTarget` for an enemy, `setGroundPoint` for a point), calls `host.cast(label)` and stores the returned time as `rooted` (no walking while rooted). main.ts returns the latest danger-zone `impact` of the new cast (capped at 2.5 s), or 0.4 s when the spell has no zones, so the hero stays rooted until the spell lands.
 - Cooldowns count down in `update`; the slot flashes on cast. `setKit` and `setEnabled` clear cooldowns, aim and pending orders.
 

@@ -265,6 +265,15 @@ _Last updated: 2026-10-29_
     queue match (22.6 s), lobby match in the ring with cover (24.5 s), dodges on both screens, knockback replicated,
     disconnect = forfeit, session resume, Back to menu, profile. `tsc --noEmit` clean; selfTest sweep 156/156 ok.
   - Background tabs keep simulating in game mode (a timer steps the scene when no frame came for 250 ms).
+- **MOBA-slow walking (2026-10-30, user choice):** hero `HERO_SPEED` 8 → 4 m/s (`src/heroMode.ts`), duel AI and
+  autopilot `AI_SPEED` 6 → 3.5 (`src/duel.ts`). Six AI duels still finish in 19-25 s (before: 17-24 s). Melee
+  summons walk 3.6 m/s, close to a hero now: re-check summon balance. Not deployed (freeze).
+- **Smooth online movement (2026-10-30, user request, not deployed: freeze):** the opponent is drawn 100 ms behind
+  between timestamped reports instead of chasing the newest one (`Duel.peerMove` / `netFollow`), moves go out at
+  20 Hz with the sender's clock (`move.ts`, relayed in `peer_move`), casts no longer snap the caster, a toast warns
+  when a match tab is hidden, and `game.html?lag=120&jitter=40` simulates lag. Frame-to-frame speed change of a
+  walking opponent 1.42 → 0.54 m/s RMS under 120 ± 40 ms test lag; smoke test 20/20, tsc clean.
+  docs/architecture/multiplayer.md#smooth-movement.
 - **Cloudflare deployment (2026-10-29; live since 2026-10-30 at https://arena-of-kits.arenachamp.workers.dev):** the server core is runtime-free (`server/hub.mjs`,
   accounts with a pluggable store and PBKDF2), hosted by Node (`server/game-server.mjs`) or by a Cloudflare Worker +
   SQLite Durable Object (`worker/index.mjs`, `wrangler.jsonc`, wrangler 4.150.0 pinned). `npm run cf:dev` (local,
@@ -359,6 +368,8 @@ _Last updated: 2026-10-29_
 - Nothing.
 
 ## Waiting on you
+- Smoother online movement (2026-10-30) is ready locally but **not live**: the Cloudflare deploy freeze holds it
+  back. When you lift the freeze, `npm run cf:deploy` publishes it (client and server change together).
 - Push: all commits were rewritten to author Dextonek (old history in `refs/backup/before-dextonek`); remote
   `origin` = https://github.com/Dextonek/ArenaChamp; pushed as `main` up to e8e4326 (wave 5). Later pushes:
   `git push origin feat/particle-editor:main`.

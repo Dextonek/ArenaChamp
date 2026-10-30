@@ -62,7 +62,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | `game.html` | the second Vite entry (`build.rollupOptions.input` has `editor` and `game`) |
 | `src/net/client.ts` | `NetClient` (connect, auto-reconnect with backoff, resume by token, typed `on(type, fn)`), the `ServerMsg` union and the `Profile` type |
 | `src/game/main.ts` | screens: login / register, play (hero choice, find match), lobbies, lobby room, heroes, profile; the queue bar; toasts |
-| `src/game/match.ts` | `MatchController`: `match_start` → set kit, hero mode on, `duel.startNet`; streams moves at 15 Hz; forwards peer events; the result card; forfeit |
+| `src/game/match.ts` | `MatchController`: `match_start` → set kit, hero mode on, `duel.startNet`; streams moves at 20 Hz with the sender's clock; warns when its tab is hidden; forwards peer events; the result card; forfeit |
 | `src/game/heroPreview.ts` | the heroes page turntable (its own small renderer, renders only while shown) |
 | `src/game/game.css` | menu styles (duel HUD palette; hero accent through `--accent`) |
 | `src/obstacles.ts` | the ring's pillars and walls: collision, sliding, line of sight, meshes (see below) |
@@ -76,10 +76,10 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 2. Each client sets its kit, turns hero mode on, calls `Duel.startNet({ opponent, side, names, net })` (hero locked,
    banner "Waiting for opponent") and sends `match_loaded`. When both are loaded (or after 15 s) the server sends
    `match_fight { countdown: 3 }`; the banner counts 3-2-1-FIGHT and unlocks the hero.
-3. During the fight each client sends `move` 15 times a second (only when it changed) and `cast` after every cast
-   (`HeroMode.onCast(label, slot, target)`). The other client eases the opponent's figure toward the reported
-   position (`Duel.netFollow`) and replays casts with `Duel.peerCast`: the foe is snapped to where it cast from, the
-   effect plays through `castAs` with this side's hero as the target (single-target spells), the relayed aim point
+3. During the fight each client sends `move` 20 times a second (only when it changed) and `cast` after every cast
+   (`HeroMode.onCast(label, slot, target)`). The other client draws the opponent's figure from its reports (see
+   *Smooth movement*) and replays casts with `Duel.peerCast`: the effect starts where the foe is drawn (it snaps to
+   the reported spot only when that is more than 3 m off), the effect plays through `castAs` with this side's hero as the target (single-target spells), the relayed aim point
    (ground spells) or the caster's spot (self spells), and the duel's own `hitPlayer` decides hit or dodge.
 4. A hit on this side's hero: local number, red edge flash and knockback, then `took_hit { damage }`. The server
    subtracts it from that player's HP, answers `hp` to the victim and `peer_hit { damage, hp }` to the attacker,
@@ -178,12 +178,35 @@ Verified locally (2026-10-29, wrangler 4.150.0): the smoke test's 20 checks agai
 queue match (Isolde vs Brannoc, 24.6 s) with stats on both sides; accounts and stats still there after a restart.
 Not yet deployed.
 
+## Smooth movement
+
+The round trip to the Cloudflare server is about 35 ms (measured from Vienna, 2026-10-30), so the lag a player
+feels is in how the opponent is drawn, not in the connection. `move` carries `ts`, the sender's
+`performance.now()`, and the server passes it on in `peer_move`. `Duel.peerMove` puts every report on this side's
+clock (the offset is the smallest `now - ts` seen, the quickest delivery) in a short track; `Duel.netFollow` draws
+the figure `PEER_DELAY` = 100 ms in the past, between the two reports around that moment, and turns it by the
+shorter way. Past the newest report it holds still rather than guessing. A sender that stands still sends nothing,
+so a gap over 120 ms is filled with a copy of the old spot just before the new report, and the figure does not
+glide across the pause. Without `ts` (an older server) the arrival time is used instead.
+
+Before this the figure eased toward the newest report at 15 Hz: it moved in small steps and jumped forward on
+every cast. Measured with a scripted opponent walking at up to 4.5 m/s through 120 ms ± 40 ms of test lag each way,
+the frame-to-frame change in its speed dropped from 1.42 to 0.54 m/s (RMS), and a cast moved it by 0.035 m instead of
+snapping it to the cast spot.
+
+Test lag: `game.html?lag=120&jitter=40` holds every message that long in each direction, in order (`NetClient`).
+Off by default.
+
 ## Background tabs
 
 `requestAnimationFrame` stops in a background tab (and in a hidden browser pane), which would freeze that player's
 spells before impact, so they would never report a hit. In game mode `main.ts` steps the simulation from a 100 ms
 timer whenever no frame came for 250 ms, in 1/30 s substeps of the real time that passed (browsers slow
 background timers to about once a second, so a hidden tab catches up in bigger batches).
+
+The same slowdown hits the 20 Hz `move` timer: the other player sees a hidden tab's hero jump about once a second.
+That cannot be fixed from the page, so the match shows a toast when its tab is hidden: play in two windows side by
+side, not two tabs of one window.
 
 ## Verified (2026-10-29)
 

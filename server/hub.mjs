@@ -171,7 +171,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         const match = c.match;
         if (!match || match.state === 'over' || !num(m.x) || !num(m.z)) return;
         const p = clampRing(m.x, m.z);
-        return send(match.players[1 - c.side].client, { t: 'peer_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0 });
+        return send(match.players[1 - c.side].client, { t: 'peer_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined });
       }
       case 'cast': {
         const match = c.match;

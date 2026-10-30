@@ -47,7 +47,7 @@ export type ServerMsg =
   | { t: 'queue'; on: boolean; since: number; size: number }
   | { t: 'match_start'; id: string; side: 0 | 1; hp: number; you: { name: string; hero: string }; foe: { name: string; hero: string } }
   | { t: 'match_fight'; countdown: number }
-  | { t: 'peer_move'; x: number; z: number; yaw: number }
+  | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number }
   | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean }
   | { t: 'peer_hit'; id: number; damage: number; hp: number; color?: string }
   | { t: 'peer_dodged'; id: number }
@@ -60,12 +60,20 @@ export type ServerMsg =
 
 type Handler<T extends ServerMsg['t']> = (msg: Extract<ServerMsg, { t: T }>) => void;
 
+// Test lag, off by default: game.html?lag=120&jitter=40 holds every message that long each way (in order, like TCP),
+// so two local tabs feel like players far from the server.
+const query = new URLSearchParams(location.search);
+const LAG = Math.max(0, Number(query.get('lag')) || 0);
+const JITTER = Math.max(0, Number(query.get('jitter')) || 0);
+
 const TOKEN_KEY = 'duel.token';
 
 export class NetClient {
   private ws: WebSocket | null = null;
   private handlers = new Map<string, Set<(m: ServerMsg) => void>>();
   private retry = 0;
+  private lagIn = 0;
+  private lagOut = 0;
   open = false;
 
   connect() {
@@ -79,13 +87,13 @@ export class NetClient {
       const token = NetClient.token;
       if (token) this.send({ t: 'resume', token });
     });
-    ws.addEventListener('message', (e) => {
+    ws.addEventListener('message', (e) => this.lagged('in', () => {
       let msg: ServerMsg;
       try { msg = JSON.parse(String(e.data)); } catch { return; }
       if (msg.t === 'session') NetClient.token = msg.token;
       if (msg.t === 'logged_out' || (msg.t === 'auth_error' && !msg.error)) NetClient.token = null;
       this.emit(msg);
-    });
+    }));
     ws.addEventListener('close', () => {
       const was = this.open;
       this.open = false;
@@ -97,7 +105,17 @@ export class NetClient {
   }
 
   send(msg: { t: string; [k: string]: unknown }) {
-    if (this.ws?.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify(msg));
+    const ws = this.ws, text = JSON.stringify(msg);
+    this.lagged('out', () => { if (ws?.readyState === WebSocket.OPEN) ws.send(text); });
+  }
+
+  /** Runs `fn` now, or after the test lag (`?lag=` / `?jitter=`) without reordering messages. */
+  private lagged(dir: 'in' | 'out', fn: () => void) {
+    if (!LAG && !JITTER) return fn();
+    const now = performance.now();
+    const at = Math.max(dir === 'in' ? this.lagIn : this.lagOut, now + LAG + Math.random() * JITTER);
+    if (dir === 'in') this.lagIn = at; else this.lagOut = at;
+    setTimeout(fn, at - now);
   }
 
   on<T extends ServerMsg['t']>(t: T, fn: Handler<T>) {

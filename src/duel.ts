@@ -50,7 +50,13 @@ const RING = { x: 0, z: 7, r: 12 };
 const PLAYER_START = new THREE.Vector3(0, 0, 13);
 const OPPONENT_START = new THREE.Vector3(0, 0, 1);
 const HP = 600; // default max HP (`HeroKit.maxHp` overrides it per side)
-const AI_SPEED = 6;
+const AI_SPEED = 3.5;
+// Network duel: the remote hero is drawn this far in the past (ms, two send intervals at 20 Hz) so there is always a
+// next report to move toward; a gap longer than PEER_GAP means it stood still; casts snap it beyond PEER_SNAP (m).
+const PEER_DELAY = 100;
+const PEER_STEP = 50;
+const PEER_GAP = 120;
+const PEER_SNAP = 3;
 const MELEE_GAP = 2; // a melee AI closes to about this distance (m)
 const DODGE_RADIUS = 1.6; // a hit still lands within this distance of where the cast aimed
 const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
@@ -125,7 +131,10 @@ export class Duel {
   /** Network duel: the server link (null in the AI duel), the two player names, and the remote hero's last state. */
   net: DuelNet | null = null;
   private names: [string, string] = ['', ''];
-  private peer: { pos: THREE.Vector3; yaw: number } | null = null;
+  /** The remote hero's reported positions on this side's clock (ms, oldest first); drawn `PEER_DELAY` behind. */
+  private peerTrack: { at: number; x: number; z: number; yaw: number }[] = [];
+  /** This side's clock minus the sender's, from the quickest message so far (null: no sender clock yet). */
+  private peerClock: number | null = null;
   private hitBypass = false;
   private castSeq = 0;
   private countdown = -1;
@@ -233,7 +242,8 @@ export class Duel {
     this.setup(mine, theirs);
     this.net = o.net;
     this.names = o.names;
-    this.peer = null;
+    this.peerTrack = [];
+    this.peerClock = null;
     this.castSeq = 0;
     this.think = Infinity; // no AI: the other player drives the opponent
     hm.flipCamera = o.side === 1;
@@ -344,9 +354,25 @@ export class Duel {
     this.banner.style.fontSize = '';
   }
 
-  /** The remote hero's position and facing (sent ~15 times a second). */
-  peerMove(x: number, z: number, yaw: number) {
-    this.peer = { pos: new THREE.Vector3(x, 0, z), yaw };
+  /**
+   * The remote hero's position and facing (sent 20 times a second while it moves). `ts` is the sender's clock: the
+   * sample is placed at the moment it was true, so uneven delivery does not make the hero stutter.
+   */
+  peerMove(x: number, z: number, yaw: number, ts?: number) {
+    const now = performance.now();
+    let at = now;
+    if (ts !== undefined) {
+      this.peerClock = this.peerClock === null ? now - ts : Math.min(this.peerClock, now - ts);
+      at = ts + this.peerClock;
+    }
+    const track = this.peerTrack, last = track[track.length - 1];
+    if (last) {
+      at = Math.max(at, last.at + 1);
+      // It stood still (nothing is sent then): hold the old spot until just before this sample instead of gliding.
+      if (at - last.at > PEER_GAP) track.push({ ...last, at: at - PEER_STEP });
+    }
+    track.push({ at, x, z, yaw });
+    while (track.length > 2 && track[1].at < now - 1000) track.shift();
   }
 
   /** The remote hero cast a spell: play it here at this side's hero, with this side's dodge check. */
@@ -356,10 +382,14 @@ export class Duel {
     const spec = spell && this.host.targeting(spell.label);
     if (!spec) return;
     const arena = this.host.arena, foe = this.foe;
-    // Cast from where the caster stood on its own screen.
-    const from = new THREE.Vector3(m.fx, 0, m.fz);
-    arena.moveFoe(foe, new THREE.Vector3(from.x - foe.group.position.x, 0, from.z - foe.group.position.z));
-    this.peer = { pos: from.clone(), yaw: this.peer?.yaw ?? foe.group.rotation.y };
+    // Cast from where the hero is drawn (a little behind its own screen, see netFollow) so it does not jump; only the
+    // look depends on it, hits are decided by the side that takes them. Far off (a lost update): snap to its spot.
+    const from = foe.group.position.clone().setY(0);
+    const told = new THREE.Vector3(m.fx, 0, m.fz);
+    if (from.distanceTo(told) > PEER_SNAP) {
+      arena.moveFoe(foe, told.clone().sub(from));
+      from.copy(told);
+    }
     const me = arena.caster.group.position;
     const point = spec.mode === 'self' ? from.clone() : m.enemy ? me.clone() : new THREE.Vector3(m.x, 0, m.z);
     this.castSpell(m.slot, foe, from, me, spec, point, m.id);
@@ -398,15 +428,23 @@ export class Duel {
     this.net?.cast({ id: ++this.castSeq, slot, x: p.x, z: p.z, fx: me.x, fz: me.z, enemy: 'enemy' in target });
   }
 
-  /** The remote hero eases toward its last reported position (snaps when far) and takes its facing. */
+  /**
+   * The remote hero is drawn `PEER_DELAY` ms in the past, between the two reports around that moment, so it moves
+   * smoothly at an even speed; past the newest report it holds still instead of guessing.
+   */
   private netFollow(dt: number, foe: Enemy, at: THREE.Vector3) {
     this.rooted = Math.max(0, this.rooted - dt);
-    const p = this.peer;
-    if (!p) return;
-    const d = new THREE.Vector3(p.pos.x - at.x, 0, p.pos.z - at.z);
-    const k = d.length() > 6 ? 1 : 1 - Math.exp(-14 * dt);
-    if (d.lengthSq() > 1e-8) this.host.arena.moveFoe(foe, d.multiplyScalar(k));
-    foe.group.rotation.y = p.yaw;
+    const track = this.peerTrack;
+    if (!track.length) return;
+    const t = performance.now() - PEER_DELAY;
+    let i = 0;
+    while (i < track.length - 1 && track[i + 1].at <= t) i++;
+    const a = track[i], b = track[Math.min(i + 1, track.length - 1)];
+    const k = b.at > a.at ? THREE.MathUtils.clamp((t - a.at) / (b.at - a.at), 0, 1) : 1;
+    const d = new THREE.Vector3(a.x + (b.x - a.x) * k - at.x, 0, a.z + (b.z - a.z) * k - at.z);
+    if (d.lengthSq() > 1e-8) this.host.arena.moveFoe(foe, d);
+    const turn = Math.atan2(Math.sin(b.yaw - a.yaw), Math.cos(b.yaw - a.yaw));
+    foe.group.rotation.y = a.yaw + turn * k;
   }
 
   private showBanner(text: string, seconds: number) {
