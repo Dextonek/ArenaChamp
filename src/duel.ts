@@ -7,7 +7,7 @@ import { MAX_UNITS, type SummonSide, type SummonStats } from './effects/summon';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import type { HeroKit } from './heroes';
 import { HeroFigure } from './heroFigure';
-import { DUEL_OBSTACLES, buildObstacleMeshes } from './obstacles';
+import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
 import type { HeroMode, Target } from './heroMode';
 
 /** What the duel needs from main.ts. */
@@ -20,6 +20,8 @@ export interface DuelHost {
   /** Plays a targeted effect for another caster (main.ts `castAs`); returns its danger zones. */
   castAs(label: string, ctx: CastContext): TelegraphSpec[];
   targeting(label: string): TargetingSpec | undefined;
+  /** Sets the sky, fog and lights for the duel's arena (null = the tool's default stage). */
+  setStage?(stage: ArenaStage | null): void;
 }
 
 /**
@@ -96,6 +98,11 @@ export class Duel {
   readonly group = new THREE.Group();
   /** 'random', a hero name, or a kit object (a hidden test kit that is not in `host.kits`). */
   opponentChoice: string | HeroKit = 'random';
+  /** 'random' or an arena id (src/arenas): the arena of the next AI duel. A network duel picks by its match id. */
+  arenaChoice = 'random';
+  /** The arena of the current (or last) round. */
+  currentArena: ArenaDef | null = null;
+  private arenaScene: ArenaScene | null = null;
 
   private opponentKit!: HeroKit;
   private foe: Enemy | null = null;
@@ -152,7 +159,7 @@ export class Duel {
   private leaveButton!: HTMLButtonElement;
 
   constructor(private host: DuelHost) {
-    this.group.add(this.buildRing(), this.zones.group, this.figure.group);
+    this.group.add(this.zones.group, this.figure.group);
     this.group.visible = false;
     this.hud = this.buildHud();
     this.card = document.createElement('div');
@@ -220,7 +227,8 @@ export class Duel {
     const choice = this.opponentChoice;
     const picked = typeof choice === 'string' ? others.find((k) => k.name === choice) : choice;
     this.opponentKit = picked ?? others[Math.floor(Math.random() * others.length)];
-    this.setup(PLAYER_START, OPPONENT_START);
+    this.setup(PLAYER_START, OPPONENT_START, arenaById(this.arenaChoice) ?? pickArena());
+    if (!run) this.showBanner(this.currentArena!.name, 1.6);
     arena.hitFilter = (target, opts, cast) => this.opponentHit(target, opts, cast);
     arena.casterHeal = (amount) => this.healPlayer(amount);
     hm.onCast = () => this.recordPlayerCast();
@@ -231,7 +239,7 @@ export class Duel {
    * 0 starts at the +Z end (like the AI duel), side 1 at the -Z end with the camera turned round. The hero stays
    * locked until `countdownFrom` runs out; the remote hero moves and casts from `peerMove` / `peerCast`.
    */
-  startNet(o: { opponent: HeroKit; side: 0 | 1; names: [string, string]; net: DuelNet }) {
+  startNet(o: { opponent: HeroKit; side: 0 | 1; names: [string, string]; net: DuelNet; arena?: string }) {
     const arena = this.host.arena, hm = this.host.heroMode;
     this.mode = 'play';
     this.autopilot = false;
@@ -239,7 +247,7 @@ export class Duel {
     hm.focus = null;
     this.opponentKit = o.opponent;
     const [mine, theirs] = o.side === 0 ? [PLAYER_START, OPPONENT_START] : [OPPONENT_START, PLAYER_START];
-    this.setup(mine, theirs);
+    this.setup(mine, theirs, pickArena(o.arena));
     this.net = o.net;
     this.names = o.names;
     this.peerTrack = [];
@@ -254,14 +262,15 @@ export class Duel {
     hm.onCast = (_label, slot, target) => this.sendCast(slot, target);
     this.rematchButton.style.display = 'none';
     this.leaveButton.textContent = 'Back to menu';
-    this.showBanner('Waiting for opponent', 999);
+    this.showBanner(`Waiting for opponent · ${this.currentArena!.name}`, 999);
     this.banner.style.fontSize = '28px';
     this.renderHud();
   }
 
   /** Common round setup: the ring, one foe at `theirs` under the opponent's figure, the hero at `mine`. */
-  private setup(mine: THREE.Vector3, theirs: THREE.Vector3) {
+  private setup(mine: THREE.Vector3, theirs: THREE.Vector3, def: ArenaDef) {
     const arena = this.host.arena, hm = this.host.heroMode;
+    this.useArena(def);
     if (!this.on) this.savedCount = arena.count;
     this.on = true;
     this.playerMax = hm.currentKit.maxHp ?? HP;
@@ -269,7 +278,7 @@ export class Duel {
     arena.maxHp = this.foeMax;
     arena.respawnAfter = Infinity;
     arena.bounds = RING;
-    arena.obstacles = DUEL_OBSTACLES;
+    arena.obstacles = def.obstacles;
     arena.setCount(1);
     this.foe = arena.liveFoes()[0]?.figure ?? null;
     if (this.foe) arena.placeFoe(this.foe, theirs);
@@ -324,6 +333,8 @@ export class Duel {
     arena.respawnAfter = 4;
     arena.bounds = null;
     arena.obstacles = null;
+    this.host.setStage?.(null);
+    arena.showGround(true);
     arena.setCount(this.savedCount);
     arena.caster.setHome(PLAYER_START.clone().setZ(14));
     arena.caster.reset();
@@ -477,6 +488,7 @@ export class Duel {
     const arena = this.host.arena, hm = this.host.heroMode;
     const me = arena.caster.group.position;
     this.time += dt;
+    this.arenaScene?.update?.(dt, this.time);
     this.zoneClock += dt;
     this.zones.update(this.zoneClock);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
@@ -890,31 +902,21 @@ export class Duel {
     this.renderHud();
   }
 
-  // --- ring and HUD ---------------------------------------------------------------------------------------
+  // --- arena and HUD ---------------------------------------------------------------------------------------
 
-  private buildRing() {
-    const g = new THREE.Group();
-    const disc = new THREE.Mesh(
-      new THREE.CircleGeometry(RING.r, 96),
-      new THREE.MeshStandardMaterial({ color: 0x15131a, roughness: 0.85, metalness: 0.1, transparent: true, opacity: 0.88 }),
-    );
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.set(RING.x, 0.012, RING.z);
-    const flatRing = (inner: number, outer: number, color: number, opacity: number, y: number) => {
-      const m = new THREE.Mesh(
-        new THREE.RingGeometry(inner, outer, 128),
-        new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }),
-      );
-      m.rotation.x = -Math.PI / 2;
-      m.position.set(RING.x, y, RING.z);
-      return m;
-    };
-    // One thin gold rim, one soft glowing band inside it, and a faint centre line between the two starts.
-    const rim = flatRing(RING.r - 0.12, RING.r, 0xc9a24a, 0.95, 0.02);
-    const band = flatRing(RING.r - 0.9, RING.r - 0.2, 0x6a4a9a, 0.22, 0.018);
-    const centre = flatRing(1.1, 1.18, 0xc9a24a, 0.35, 0.02);
-    g.add(disc, band, rim, centre, buildObstacleMeshes(DUEL_OBSTACLES));
-    return g;
+  /** Swaps in an arena: its meshes (the old ones are freed), its sky and lights. The same arena is kept as is. */
+  private useArena(def: ArenaDef) {
+    if (this.currentArena !== def || !this.arenaScene) {
+      if (this.arenaScene) {
+        this.group.remove(this.arenaScene.group);
+        this.arenaScene.dispose?.();
+      }
+      this.arenaScene = def.build();
+      this.group.add(this.arenaScene.group);
+      this.currentArena = def;
+    }
+    this.host.setStage?.(def.stage);
+    this.host.arena.showGround(!def.hideGround);
   }
 
   private buildHud() {

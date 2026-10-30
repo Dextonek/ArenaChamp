@@ -19,6 +19,7 @@ import { Hotbar } from './hotbar';
 import { HeroMode } from './heroMode';
 import { HERO_KITS } from './heroes';
 import { meleeTestKit, rangedTestKit, summonTestKit } from './kits/test';
+import { DEFAULT_STAGE, type ArenaStage } from './arenas';
 import { Duel } from './duel';
 import { CASTER_POS } from './effects/common';
 import type { CastContext, Effect, EffectModule } from './effects/types';
@@ -47,7 +48,8 @@ scene.background = new THREE.Color(0x1a1f2b);
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 scene.environmentIntensity = 0.6;
-scene.add(new THREE.HemisphereLight(0x9fb4ff, 0x20160f, 0.6));
+const hemi = new THREE.HemisphereLight(0x9fb4ff, 0x20160f, 0.6);
+scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff0d8, 1.5);
 sun.position.set(10, 30, 15);
 sun.castShadow = true;
@@ -73,13 +75,19 @@ const skyDome = new THREE.Mesh(
     side: THREE.BackSide,
     depthWrite: false,
     fog: false,
-    uniforms: { uHorizon: { value: SKY_HORIZON }, uZenith: { value: new THREE.Color(0x05070f) }, uGlow: { value: new THREE.Color(0x4a3a4a) } },
+    uniforms: {
+      uHorizon: { value: SKY_HORIZON.clone() },
+      uZenith: { value: new THREE.Color(0x05070f) },
+      uGlow: { value: new THREE.Color(0x4a3a4a) },
+      uStars: { value: 1 },
+    },
     vertexShader: /* glsl */ `
       varying vec3 vDir;
       void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
     `,
     fragmentShader: /* glsl */ `
       uniform vec3 uHorizon, uZenith, uGlow;
+      uniform float uStars;
       varying vec3 vDir;
       float hash(vec3 p) { return fract(sin(dot(p, vec3(12.9898, 78.233, 37.719))) * 43758.5453); }
       void main() {
@@ -89,7 +97,7 @@ const skyDome = new THREE.Mesh(
         col = mix(col, uHorizon * 0.6, smoothstep(0.0, -0.2, h));  // below the horizon: dim
         vec3 q = floor(vDir * 260.0);
         float star = step(0.9965, hash(q)) * smoothstep(0.08, 0.4, h);
-        col += vec3(0.85, 0.9, 1.0) * star * (0.35 + 0.65 * hash(q + 3.1));
+        col += vec3(0.85, 0.9, 1.0) * star * (0.35 + 0.65 * hash(q + 3.1)) * uStars;
         gl_FragColor = vec4(col, 1.0);
         #include <colorspace_fragment>
       }
@@ -101,6 +109,27 @@ skyDome.frustumCulled = false;
 scene.add(skyDome);
 const fog = new THREE.Fog(SKY_HORIZON, 48, 150);
 scene.fog = fog;
+
+/** A duel arena's sky, fog and lights (src/arenas); null puts back the tool's default night. */
+function setStage(stage: ArenaStage | null) {
+  const s = stage ?? DEFAULT_STAGE;
+  const u = (skyDome.material as THREE.ShaderMaterial).uniforms;
+  u.uZenith.value.set(s.zenith);
+  u.uHorizon.value.set(s.horizon);
+  u.uGlow.value.set(s.glow);
+  u.uStars.value = s.stars;
+  (scene.background as THREE.Color).set(s.background);
+  fog.color.set(s.fog);
+  fog.near = s.fogNear;
+  fog.far = s.fogFar;
+  hemi.color.set(s.hemiSky);
+  hemi.groundColor.set(s.hemiGround);
+  hemi.intensity = s.hemiIntensity;
+  sun.color.set(s.sun);
+  sun.intensity = s.sunIntensity;
+  rim.color.set(s.rim);
+  rim.intensity = s.rimIntensity;
+}
 
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.05, 400);
 camera.position.set(4, 3, 6);
@@ -535,6 +564,7 @@ const duel = new Duel({
   castAs,
   playerZones: () => zones,
   targeting: (label) => slots.get(label)?.module.targeting,
+  setStage,
 });
 scene.add(duel.group);
 duel.onLeave = () => setDuel(false);

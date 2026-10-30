@@ -165,11 +165,20 @@ LOOKS = {
                  props={"feathered_hat": {}, "note_scarf": {}, "golden_lyre": {}}),
     # Oblivion, the Unmaker: a towering knight in black plate cracked with glowing pink rifts, a horned featureless
     # helm with one rift slit, broad pauldrons, a ragged hem and a greatsword whose blade is a jagged slab of void.
-    "void": dict(robe="#141218", inner="#08070a", trim=("#ff2a55", "#000000"), sash="#000000",
+    "void_v1": dict(robe="#141218", inner="#08070a", trim=("#ff2a55", "#000000"), sash="#000000",
                  coarse=True, hair="shaved", headwear=False, pendant=False, skin="#6a6070", eye_glow="#ff2a55",
                  sleeve="bracer", bracer="#1a1820", tattered=True,
                  extras={"armour": dict(plate="#1a1820", cord="#ff2a55", rivet="silver", rows=3, apron=False)},
                  props={"void_helm": {}, "void_pauldrons": {}, "rift_cracks": {}, "void_greatsword": {}}),
+    # Oblivion (v2, in the game since 2026-10-30; the first model is `void_v1`): heavier and more angular. Broad build, faceted great-helm with a T-slit, stacked
+    # spiked pauldrons, a rift core in the breastplate, heavy gauntlets, a long tattered cape, shards floating round
+    # him and a wider greatsword breaking into fragments.
+    "void": dict(robe="#121016", inner="#08070a", trim=("#ff2a55", "#000000"), sash="#000000", broad=1.1,
+                  coarse=True, hair="shaved", headwear=False, pendant=False, skin="#6a6070", eye_glow="#ff2a55",
+                  sleeve="bracer", bracer="#16141c", tattered=True,
+                  extras={"armour": dict(plate="#16141c", cord="#ff2a55", rivet="silver", rows=4, apron=False)},
+                  props={"void_greathelm": {}, "void_spiked_pauldrons": {}, "void_core": {}, "void_gauntlets": {},
+                         "void_cape": {}, "void_shards": {}, "rift_cracks": {}, "void_greatsword2": {}}),
     # Shiori, the Last Brush: a rice-paper robe whose hem is washed in ink, an indigo sash with a vermilion seal
     # tassel, long black hair with a brush hairpin, a huge calligraphy brush and floating paper talismans.
     "ink": dict(robe="#efe6d2", inner="#f6f0e2", trim=("#0b0a0e", "#1a1e3a"), sash="#2a3ab0", over="#e6dcc6",
@@ -933,6 +942,135 @@ class HeroFigure(figure_kit.Figure):
         for sx in (-1, 1):
             edge = [a + (b - a) * t + Vector((sx * (r + 0.004), 0, 0)) for t, r, _ in prof]
             self.add(kit.chain(f"BladeEdge{sx}", edge, [0.006] * (len(edge) - 1) + [0.002], rift, seg=5), HAND["R"])
+
+    # ---- void v2 (experiment: a heavier, more angular Oblivion) ----------------------------------------
+    def _void_mats(self):
+        return dict(
+            plate=self._mat("v2plate", "#16141c", roughness=0.3, metallic=0.65),
+            edge=self._mat("v2edge", "#8e889c", roughness=0.6, metallic=0.35),
+            void=self._mat("v2void", "#000000", roughness=0.95),
+            rift=self._mat("rift", "#ff2a55", roughness=0.3, emission="#ff2a55", strength=2.5),
+            cyan=self._mat("riftfringe", "#7affff", roughness=0.3, emission="#7affff", strength=1.5),
+        )
+
+    def void_greathelm(self):
+        """A faceted great-helm (flat facets, no sphere), a blade crest, swept-back horns and a glowing T-slit."""
+        m = self._void_mats()
+        top = Vector((0, 0.0, 1.66))
+        self.add(kit.blob("GreatHelm", top + Vector((0, 0.005, 0.0)), (0.125, 0.14, 0.155), m["plate"], (8, 6), smooth=False), HEAD)
+        self.add(kit.blob("HelmJaw", top + Vector((0, -0.045, -0.09)), (0.105, 0.095, 0.07), m["plate"], (8, 4), smooth=False), HEAD)
+        crest = [(0.0, 0.0), (0.05, 0.02), (0.13, 0.05), (0.2, 0.03), (0.24, -0.02), (0.12, -0.01), (0.0, -0.03)]
+        self.add(kit.extrude_shape("HelmCrest", [(y - 0.12, z) for y, z in crest], 0.014, m["edge"], axis="X",
+                                   centre=top + Vector((0, 0.0, 0.14))), HEAD)
+        for sx in (-1, 1):
+            horn = [top + Vector(v) for v in [(0.09 * sx, -0.02, 0.07), (0.17 * sx, 0.04, 0.12), (0.22 * sx, 0.13, 0.15),
+                                               (0.24 * sx, 0.24, 0.12), (0.22 * sx, 0.31, 0.06)]]
+            self.add(kit.chain(f"V2Horn{sx}", kit.spline(horn, 10), kit.lerp_list([0.034, 0.026, 0.018, 0.01, 0.002], 10), m["edge"], seg=8), HEAD)
+        slit_h = [top + Vector((x, -0.152, 0.02)) for x in (-0.07, -0.03, 0.0, 0.03, 0.07)]
+        self.add(kit.chain("VisorSlitH", slit_h, [0.004, 0.008, 0.009, 0.008, 0.004], m["rift"], seg=6), HEAD)
+        slit_v = [top + Vector((0.002 * k, -0.15 + 0.006 * abs(k), 0.02 - 0.03 * k)) for k in range(4)]
+        self.add(kit.chain("VisorSlitV", slit_v, [0.008, 0.008, 0.006, 0.003], m["rift"], seg=6), HEAD)
+
+    def void_spiked_pauldrons(self):
+        """Three stacked faceted plates per shoulder, ash edges, three swept spikes and a rift seam."""
+        m = self._void_mats()
+        for side, sx in SIDES:
+            base = Vector((0.22 * sx, 0.0, 1.46))
+            tilt = Euler((0, 0.38 * sx, 0))
+            # A rounded shoulder cap fills the gap between the plates and the upper arm.
+            self.add(kit.blob(f"V2ShoulderCap{side}", base + Vector((0.01 * sx, 0, -0.04)), (0.1, 0.1, 0.09), m["plate"], (10, 8)), ARM[side])
+            for k, (dz, r, h) in enumerate([(0.03, 0.125, 0.06), (-0.02, 0.115, 0.05), (-0.065, 0.1, 0.045)]):
+                c = base + Vector((0.035 * k * sx, 0, dz))
+                self.add(kit.blob(f"V2Pauldron{side}{k}", c, (r, r * 0.9, h), m["plate"], (7, 5), rotation=tilt, smooth=False), ARM[side])
+                ax = tilt.to_matrix() @ Vector((0, 0, 1))
+                self.add(kit.torus(f"V2PauldronEdge{side}{k}", c - ax * h * 0.4, r * 0.98, 0.007, m["edge"], seg=(7, 4), axis=tuple(ax)), ARM[side])
+            for k, (fy, up, ln) in enumerate([(-0.08, 0.9, 0.2), (0.0, 1.0, 0.26), (0.08, 0.85, 0.18)]):
+                a = base + Vector((0.06 * sx, fy, 0.07))
+                b = a + Vector((0.35 * sx, fy * 0.6, up)).normalized() * ln
+                self.add(kit.tube(f"V2Spike{side}{k}", a, b, [(0, 0.03, 0.03), (1, 0.002, 0.002)], m["edge"], seg=6, smooth=False), ARM[side])
+            seam = [base + Vector((0.13 * sx * c, -0.12, -0.02 - 0.02 * c)) for c in (0.2, 0.6, 1.0)]
+            self.add(kit.chain(f"V2PauldronRift{side}", seam, [0.006, 0.007, 0.003], m["rift"], seg=5), ARM[side])
+
+    def void_core(self):
+        """A rift core set in the breastplate: a black ring, a glowing crystal, and cracks running out of it."""
+        m = self._void_mats()
+        c = Vector((0, -0.19, 1.3))
+        self.add(kit.torus("CoreRing", c, 0.065, 0.014, m["edge"], seg=(8, 4), axis=(0, 1, 0)), CHEST)
+        self.add(kit.blob("CoreVoid", c + Vector((0, 0.005, 0)), (0.058, 0.012, 0.058), m["void"], (12, 4)), CHEST)
+        self.add(kit.tube("CoreCrystal", c + Vector((0, -0.01, -0.05)), c + Vector((0, -0.01, 0.05)),
+                          [(0, 0.001, 0.001), (0.5, 0.026, 0.016), (1, 0.001, 0.001)], m["rift"], seg=4, smooth=False), CHEST)
+        for k, (dx, dz) in enumerate([(-0.11, 0.1), (0.12, 0.08), (-0.1, -0.13), (0.09, -0.15)]):
+            pts = [c + Vector((0.06 * dx / abs(dx), -0.004, 0.03 * dz / abs(dz))), c + Vector((dx * 0.6, -0.008, dz * 0.5)),
+                   c + Vector((dx, -0.004, dz))]
+            self.add(kit.chain(f"CoreCrack{k}", pts, [0.006, 0.005, 0.002], m["rift"], seg=5), CHEST)
+
+    def void_gauntlets(self):
+        """Heavy faceted gauntlets with ash knuckle plates and short claws."""
+        m = self._void_mats()
+        for side, sx in SIDES:
+            fist = Vector((0.295 * sx, -0.065, 0.845))
+            wrist = Vector((0.283 * sx, -0.048, 0.93))
+            self.add(kit.blob(f"V2Fist{side}", fist, (0.052, 0.058, 0.066), m["plate"], (8, 6), smooth=False), HAND[side])
+            self.add(kit.blob(f"V2Knuckles{side}", fist + Vector((0.004 * sx, -0.045, -0.005)), (0.042, 0.016, 0.04), m["edge"], (6, 4), smooth=False), HAND[side])
+            self.add(kit.tube(f"V2Gauntlet{side}", wrist + Vector((0, 0, 0.1)), wrist - Vector((0, 0, 0.02)),
+                              [(0, 0.048, 0.048), (1, 0.06, 0.058)], m["plate"], seg=7, smooth=False), FORE[side])
+            self.add(kit.torus(f"V2Cuff{side}", wrist + Vector((0, 0, 0.1)), 0.05, 0.009, m["edge"], seg=(7, 4)), FORE[side])
+            for k in range(3):
+                a = fist + Vector(((k - 1) * 0.02 * sx, -0.055, -0.03))
+                self.add(kit.tube(f"V2Claw{side}{k}", a, a + Vector((0, -0.025, -0.05)), [(0, 0.007, 0.007), (1, 0.001, 0.001)], m["edge"], seg=4), HAND[side])
+
+    def void_cape(self):
+        """A long tattered cape: strips of black cloth from the shoulders to the shins, ragged at the ends."""
+        cloth = self._mat("v2cape", "#0b0a0e", roughness=0.9, double_sided=True)
+        lining = self._mat("v2capelining", "#3a0a18", roughness=0.8, double_sided=True)
+        rnd = [0.18, 0.05, 0.27, 0.0, 0.22, 0.09, 0.3, 0.12]
+        edge = self._void_mats()["edge"]
+        self.add(kit.tube("V2CapeBar", Vector((-0.23, 0.12, 1.46)), Vector((0.23, 0.12, 1.46)), [(0, 0.016, 0.016), (1, 0.016, 0.016)], edge, seg=6), CHEST)
+        for sx in (-1, 1):
+            self.add(kit.blob(f"V2CapeClasp{sx}", Vector((0.2 * sx, 0.11, 1.46)), (0.035, 0.02, 0.035), edge, (8, 4), smooth=False), CHEST)
+        for k in range(8):
+            x = -0.24 + 0.48 * k / 7
+            end = 0.12 + rnd[k]
+            pts = [Vector((x * 0.85, 0.125, 1.45)), Vector((x, 0.17, 1.2)), Vector((x * 1.1, 0.22, 0.8)), Vector((x * 1.15, 0.25, end))]
+            pts = kit.spline(pts, 12)
+            w = lambda t: 0.075 * (1 - 0.55 * t * t)  # noqa: E731
+            self.add(kit.ribbon(f"V2Cape{k}", pts, w, cloth if k % 3 else lining, normal=(0, 1, 0)), CHEST)
+
+    def void_shards(self):
+        """Seven black shards with rift edges hanging in the air round his shoulders."""
+        m = self._void_mats()
+        spots = [(-0.42, 0.05, 1.62, 0.12), (0.45, 0.1, 1.55, 0.1), (-0.5, 0.18, 1.25, 0.09), (0.52, 0.0, 1.2, 0.11),
+                 (-0.3, 0.3, 1.78, 0.08), (0.28, 0.32, 1.82, 0.07), (0.0, 0.38, 1.5, 0.1)]
+        for k, (x, y, z, s) in enumerate(spots):
+            c = Vector((x, y, z))
+            d = Vector((0.3 if k % 2 else -0.3, 0.2, 1.0)).normalized()
+            self.add(kit.tube(f"V2Shard{k}", c - d * s * 0.5, c + d * s * 0.5, [(0, 0.001, 0.001), (0.4, s * 0.32, s * 0.12), (1, 0.001, 0.001)],
+                              m["void"], seg=4, smooth=False), CHEST)
+            self.add(kit.tube(f"V2ShardEdge{k}", c - d * s * 0.45 + Vector((0.01, -0.01, 0)), c + d * s * 0.45 + Vector((0.01, -0.01, 0)),
+                              [(0, 0.001, 0.001), (0.4, s * 0.06, s * 0.06), (1, 0.001, 0.001)], m["rift"], seg=4), CHEST)
+
+    def void_greatsword2(self):
+        """A wider, longer greatsword: a jagged slab of void, pink edge and cyan fringe, fragments breaking off."""
+        m = self._void_mats()
+        grip = self._mat("swordgrip", "#2a2830", roughness=0.5, metallic=0.4)
+        h = Vector((-0.295, -0.065, 0.845))  # the centre of the fist (V2FistR)
+        self.add(kit.tube("V2Grip", h + Vector((0, 0, -0.06)), h + Vector((0, 0, 0.17)), [(0, 0.016, 0.016), (1, 0.016, 0.016)], grip, seg=8), HAND["R"])
+        self.add(kit.blob("V2Pommel", h + Vector((0, 0, 0.19)), (0.026, 0.026, 0.026), m["edge"], (6, 4), smooth=False), HAND["R"])
+        guard = [(-0.13, 0.0), (-0.08, 0.025), (-0.03, 0.01), (0.03, 0.01), (0.08, 0.025), (0.13, 0.0), (0.09, -0.03), (-0.09, -0.03)]
+        self.add(kit.extrude_shape("V2Guard", guard, 0.035, m["edge"], axis="Y", centre=h + Vector((0, 0, -0.075))), HAND["R"])
+        a, b = h + Vector((0, 0, -0.1)), Vector((h.x, h.y, 0.03))
+        prof = [(0, 0.08, 0.014), (0.12, 0.1, 0.014), (0.22, 0.075, 0.013), (0.34, 0.095, 0.013), (0.48, 0.07, 0.012),
+                (0.6, 0.085, 0.011), (0.74, 0.06, 0.01), (0.87, 0.05, 0.008), (1, 0.003, 0.003)]
+        self.add(kit.tube("V2Blade", a, b, prof, m["void"], seg=4, smooth=False), HAND["R"])
+        for sx in (-1, 1):
+            edge = [a + (b - a) * t + Vector((sx * (r + 0.004), 0, 0)) for t, r, _ in prof]
+            self.add(kit.chain(f"V2BladeEdge{sx}", edge, [0.008] * (len(edge) - 1) + [0.002], m["rift"], seg=5), HAND["R"])
+        core = [a + (b - a) * t + Vector((0.01 * (1 if k % 2 else -1), -0.016, 0)) for k, t in enumerate((0.05, 0.25, 0.45, 0.65, 0.82))]
+        self.add(kit.chain("V2BladeCore", core, [0.004, 0.005, 0.005, 0.004, 0.002], m["cyan"], seg=4), HAND["R"])
+        for k, (t, dx) in enumerate([(0.3, 0.16), (0.55, -0.15), (0.78, 0.13)]):
+            c = a + (b - a) * t + Vector((dx, 0, 0))
+            self.add(kit.tube(f"V2Fragment{k}", c - Vector((0, 0, 0.035)), c + Vector((0, 0, 0.035)),
+                              [(0, 0.001, 0.001), (0.5, 0.025, 0.008), (1, 0.001, 0.001)], m["void"], seg=4, smooth=False), HAND["R"])
 
     # ---- ink --------------------------------------------------------------------------------------------
     def ink_hem(self):

@@ -74,6 +74,8 @@ export class MatchController {
       opponent: theirs,
       side: m.side,
       names: this.names,
+      // Both players derive the same arena from the match id (no server field needed).
+      arena: m.id,
       net: {
         cast: (c) => net.send({ t: 'cast', ...c }),
         tookHit: (id, damage, color) => net.send({ t: 'took_hit', id, damage, color }),

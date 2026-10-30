@@ -330,6 +330,20 @@ _Last updated: 2026-10-29_
     Final Calligraphy 105 -> 95 and blind 2.0 -> 1.5 s: Oblivion 54%, Shiori 58%, Tempo 51% (each x 19 opponents x 3
     x both sides). Sweep 217/217 clean.
     Committed `e8e4326`.
+  - Duel arenas (2026-10-30): five arenas picked at random per round: Night Temple (the old ring),
+    Frostfall Lake, Ember Caldera, Verdant Glade, Sky Ruins. Registry `src/arenas/` (one file each), design
+    `pipeline/designs/arenas.md`, docs `docs/architecture/arenas.md`, sheet `docs/arenas/arenas-five_sheet.jpg`.
+    Duel wiring: `Duel.arenaChoice`, `useArena`, `host.setStage` (main.ts), `arena.showGround`; network duels pick
+    from a hash of the match id (`match.ts` passes `arena: m.id`), no server change. Each arena ran Sirix vs Opaline
+    AI duels with no timeouts (38-41 s). Live site still has only the temple (deploy freeze).
+    Refinement round 1 (3 workers, notes in the design sheet): every arena got a detailed floor, a specific edge and a
+    backdrop; review fixed temple rubble colours, brazier glow, black silhouettes, bright snow/ice/moss and glare.
+    Re-checked: duels 38-43 s, no timeouts; sheets `docs/arenas/arenas-five_sheet.jpg`, `arenas-gameplay_sheet.jpg`.
+  - Oblivion v2 (2026-10-30): the game's Oblivion is now the heavier model: `hero_figures.py` look `void` (great-helm,
+    spiked pauldrons on shoulder caps, chest rift core, fists round the sword grip, tattered cape on a clasp bar,
+    floating shards, wider sword); the first model is kept as look `void_v1`. Compare sheets
+    `docs/heroes/void-v2-compare_sheet.jpg`, `void-v2-ingame_sheet.jpg`. A Meshy model was tried and dropped; the
+    rig tool `blender/heroes/meshy_rig.py` stays (the Meshy files in `blender/meshy/` are not committed).
   - Final balance pass (2026-10-30, committed): full 20-hero tournament (`_tourney`, every ordered pairing).
     Run 1 (3 reps): Vesper 70, Cantor 68, Ada 64, Opaline 61 high; Isolde 33, Sefu 34, Lyra 35, Zephyr 37 low.
     Three tuning rounds (damage only, in each spell's `default<Name>()`): Hemolance 53 -> 47, Sanguine Eclipse slam

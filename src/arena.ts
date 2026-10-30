@@ -218,6 +218,11 @@ export class Arena {
     ];
   }
 
+  /** Shows or hides the slab floor (a duel arena with its own floor or a floating platform hides it). */
+  showGround(on: boolean) {
+    this.ground.visible = on;
+  }
+
   /** Everyone back to full HP, standing at home, no knockback or displacement. Selection stays. */
   reset() {
     this.projectiles.clear();
