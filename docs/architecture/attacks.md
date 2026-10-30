@@ -52,9 +52,10 @@ In AI duels basic attacks deal about an eighth to a quarter of the damage and ma
 
 ## Limits
 
-- **Off in network duels.** The server relays only the four spell slots (and rate-checks them per slot), so
-  `Duel.startNet` turns basic attacks off on both sides (`heroMode.attacksEnabled = false`) until the sync is
-  designed with the multiplayer work.
+- **Network duels (2026-10-30):** an attack on the other hero is sent at its release (`attack { id }`, through
+  `HeroMode.onAttack` and `AttackOwner.released`); the other client plays it at once (`Attacker.releaseNow`, no
+  wind-up) against its own hero and reports the hit with `took_hit` (the server allows one attack per 0.5 s and at
+  most 40 damage from one). Attacks on summoned units stay on the attacker's screen.
 - The visuals are generic (one bolt and one swipe, in the kit colour); per-hero looks and role traits (crits,
   every-third-shot, slowing hits, healing hits) are not built yet.
 - The AI attacks the hero only, not units.

@@ -115,6 +115,24 @@ try {
   check((await b.next('peer_cast')).id === 4, 'a second Q within 0.8 s is dropped');
   b.send({ t: 'dodged', id: 2 });
   check((await a.next('peer_dodged')).id === 2, 'dodge relayed');
+  // Basic attacks, heals, statuses and shields (each client decides what happens to its own hero; the server caps).
+  a.send({ t: 'attack', id: 10 });
+  a.send({ t: 'attack', id: 11 });
+  check((await b.next('peer_attack')).id === 10, 'basic attack relayed');
+  b.send({ t: 'took_hit', id: 11, damage: 20 });
+  b.send({ t: 'took_hit', id: 10, damage: 200, soaked: 15 });
+  const ah = await a.next('peer_hit');
+  check(ah.id === 10 && ah.damage === 40 && ah.soaked === 15 && ah.hp === 700, 'attack hit capped at 40 with its shield share (the attack within 0.5 s was dropped)');
+  check((await b.next('hp')).hp === 700, 'victim told its HP');
+  b.send({ t: 'heal', amount: 500 });
+  const ph = await a.next('peer_heal');
+  check(ph.amount === 40 && ph.hp === 740 && (await b.next('hp')).hp === 740, 'heal capped at the max HP and relayed');
+  b.send({ t: 'status', kind: 'stun', seconds: 9, color: '#fff' });
+  b.send({ t: 'status', kind: 'nap', seconds: 1 });
+  const ps = await a.next('peer_status');
+  check(ps.kind === 'stun' && ps.seconds === 3, 'status relayed, capped at 3 s (an unknown kind dropped)');
+  b.send({ t: 'shield', amount: 999, seconds: 4 });
+  check((await a.next('peer_shield')).amount === 400, 'shield relayed, capped at 400');
   b.send({ t: 'took_hit', id: 99, damage: 250 });
   for (let i = 0; i < 8; i++) b.send({ t: 'took_hit', id: i % 2 ? 2 : 4, damage: 100, color: '#ff3b4e' });
   const hits = [];

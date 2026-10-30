@@ -82,6 +82,8 @@ export class HeroMode {
   focusZoom = 1.5;
   /** Duel: called after every cast the player makes (slot 0-3 and what it was aimed at). */
   onCast?: (label: string, slot: number, target: Target) => void;
+  /** A basic attack on `target` was released (a network duel tells the other side). */
+  onAttack?: (target: Enemy) => void;
   /**
    * Network duel, the side that starts at the -Z end of the ring: the camera looks from -Z toward +Z, so the
    * opponent is in front of the camera instead of behind it.
@@ -108,6 +110,7 @@ export class HeroMode {
       spec: () => this.attackSpec,
       land: (target, opts) => host.arena.hit(target, opts),
       posOf: (target) => this.targetPos({ enemy: target }),
+      released: (target) => this.onAttack?.(target),
     });
     this.group.add(this.attackFx.group);
     const flat = (geo: THREE.BufferGeometry, color: string, opacity: number) => {

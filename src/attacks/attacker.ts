@@ -16,6 +16,8 @@ export interface AttackOwner {
   land(target: Enemy, opts: HitOptions): void;
   /** Where `target` stands now, or null when it is gone (dead, despawned). */
   posOf(target: Enemy): THREE.Vector3 | null;
+  /** The attack on `target` was just released (a network duel tells the other side). */
+  released?(target: Enemy): void;
 }
 
 /** How far past its range a wind-up survives the target walking away (m). */
@@ -66,6 +68,18 @@ export class Attacker {
     return true;
   }
 
+  /**
+   * Releases an attack on `target` now, without a wind-up or a cooldown check: the other player's attack in a network
+   * duel (its own client already wound it up). Blind comes from the attacker's status here.
+   */
+  releaseNow(target: Enemy) {
+    const st = this.owner.arena.statusOf(this.owner.self());
+    const me = this.owner.self().group.position, at = this.owner.posOf(target);
+    if (at) this.owner.self().group.rotation.y = Math.atan2(at.x - me.x, at.z - me.z);
+    this.pose = 0.18;
+    this.release(target, this.owner.spec(), !!st?.blind);
+  }
+
   /** Drops the current wind-up (no hit); the cooldown stays as it was. */
   cancel() {
     this.wind = -1;
@@ -98,6 +112,7 @@ export class Attacker {
     this.wind = -1;
     this.cd = Math.max(0, s.interval - s.windup);
     this.pose = 0.18;
+    this.owner.released?.(this.target);
     this.release(this.target, s, !!st?.blind);
   }
 

@@ -24,12 +24,21 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   arenas, the hero roles, the new Oblivion, smooth movement and the rounds.
 - Not committed on purpose: the Meshy experiment (`blender/meshy/`, 35 MB GLB; `docs/heroes/void-meshy*`, `void_meshy_*`).
 
-**Online gaps (the next multiplayer work)**
-- Statuses, shields, heals, dashes, pulls, skillshots and summons are not synced online (Stage 1 plan in
-  `docs/architecture/multiplayer.md`); basic attacks need their own message type (they home in, no dodge).
+**Online sync of the mechanics (2026-10-30, uncommitted, not deployed)**
+- Statuses, shields, heals, pulls, skillshots, summons and basic attacks now work in network duels (the victim's
+  client decides; new messages `attack`, `heal`, `status`, `shield`, `cast.yaw`, `took_hit.soaked`; see
+  `docs/architecture/multiplayer.md#mechanics-online`). Rounds have no time limit any more (user): they end on a KO.
+  `npm run test:server` 32/32 (6 new checks); two-player browser test passed (Lyra vs Auriel, Fenna vs Marin).
+- Also uncommitted: two round-start fixes. The side-0 hero turned upside down in round 2
+  (`src/effects/weapons/hero.ts` restored a quaternion; now the Euler angles), and the 3-2-1 counted on frame time
+  (`src/duel.ts`, now the wall clock).
+- Known gap: each screen simulates its own copy of the summoned units (positions and unit HP can drift).
+  Basic attacks on units stay local.
+- Client and server change together: deploy both (`npm run cf:deploy`).
 
 **Next step candidates (game)**
-- Online sync Stage 1 + the basic-attack message, then deploy (`npm run cf:deploy`, client and server together).
+- Hero identity layer (user chose it after the sync): a passive, an own resource or input twist, and an own basic
+  attack per hero; design sheet `pipeline/designs/hero-identity.md`.
 - Per-hero basic-attack looks and role traits (crit, every-third-shot, slowing or healing hits).
 - AI: attack summoned units, not only the hero; re-check summon balance at the slower walk speed.
 - Arena refinement round 2 if wanted; more Blender model upgrades like Oblivion v2.

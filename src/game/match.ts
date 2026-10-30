@@ -42,7 +42,11 @@ export class MatchController {
     net.on('match_fight', (m) => this.active && api.duel.countdownFrom(m.countdown));
     net.on('peer_move', (m) => this.active && api.duel.peerMove(m.x, m.z, m.yaw, m.ts));
     net.on('peer_cast', (m) => this.active && api.duel.peerCast(m));
-    net.on('peer_hit', (m) => this.active && api.duel.peerHit(m.damage, m.hp, m.color));
+    net.on('peer_hit', (m) => this.active && api.duel.peerHit(m.damage, m.hp, m.color, m.soaked));
+    net.on('peer_attack', (m) => this.active && api.duel.peerAttack(m.id));
+    net.on('peer_heal', (m) => this.active && api.duel.peerHeal(m.amount, m.hp));
+    net.on('peer_status', (m) => this.active && api.duel.peerStatus(m.kind, m.seconds, m.color));
+    net.on('peer_shield', (m) => this.active && api.duel.peerShield(m.amount, m.seconds, m.color));
     net.on('peer_dodged', () => this.active && api.duel.peerDodged());
     net.on('hp', (m) => this.active && api.duel.setPlayerHp(m.hp));
     net.on('round_end', (m) => this.active && api.duel.netRoundEnd(this.roundText(m)));
@@ -93,8 +97,12 @@ export class MatchController {
       arena: round === 1 ? m.id : `${m.id}-${round}`,
       net: {
         cast: (c) => net.send({ t: 'cast', ...c }),
-        tookHit: (id, damage, color) => net.send({ t: 'took_hit', id, damage, color }),
+        tookHit: (id, damage, color, soaked) => net.send({ t: 'took_hit', id, damage, color, soaked }),
         dodged: (id) => net.send({ t: 'dodged', id }),
+        attack: (id) => net.send({ t: 'attack', id }),
+        heal: (amount) => net.send({ t: 'heal', amount }),
+        status: (kind, seconds, color) => net.send({ t: 'status', kind, seconds, color }),
+        shield: (amount, seconds, color) => net.send({ t: 'shield', amount, seconds, color }),
       },
     });
     this.lastSent = '';
@@ -105,8 +113,8 @@ export class MatchController {
 
   private roundText(m: Extract<ServerMsg, { t: 'round_end' }>) {
     const score = `${m.score[0]}-${m.score[1]}`;
-    if (m.result === 'draw') return `Round ${m.round}: time up, a tie · replay · ${score}`;
-    return `Round ${m.round} to ${m.winner}${m.reason === 'time' ? ' (time)' : ''} · ${score}`;
+    if (m.result === 'draw') return `Round ${m.round}: a tie · replay · ${score}`;
+    return `Round ${m.round} to ${m.winner} · ${score}`;
   }
 
   private sendMove() {

@@ -40,7 +40,7 @@ the cast (the duel keeps a cast's record 4.5 s).
    70% of it) and each spell's mode, range and radius. `src/duel.ts` is being edited by the arena session, so the AI
    is not changed. Every shape below maps onto those flags. No "execute below X% HP" (spells cannot read the target's
    HP) and no ally support (duels are 1v1).
-2. **Network duels ignore every mechanic** (status, shield, heal, dash, bolts, summons, pull). Online matches keep
+2. *(Synced on 2026-10-30, see docs/architecture/multiplayer.md#mechanics-online.)* **Network duels ignore every mechanic** (status, shield, heal, dash, bolts, summons, pull). Online matches keep
    showing damage-only kits until the multiplayer session syncs them.
 3. Engine caps: stun 1.2 s, knock-up 0.8, root 1.5, slow 2.5 (×0.6), silence 1.5, blind 2; 0.5 s stun immunity; pull
    ≤ 4 m with `knock: 0`; one status per hit; ≤ 6 units per side.

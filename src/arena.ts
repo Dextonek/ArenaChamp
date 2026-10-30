@@ -97,6 +97,8 @@ export class Arena {
    * really healed. Null outside a duel (a heal then only shows its number).
    */
   casterHeal: ((amount: number) => number) | null = null;
+  /** Called when the caster gets a shield (a network duel tells the other side). */
+  casterShield: ((amount: number, seconds: number, color: string) => void) | null = null;
 
   private foes: Foe[] = [];
   private selected: Body[] = [];
@@ -414,6 +416,13 @@ export class Arena {
     if (!st || !(amount > 0) || !(seconds > 0)) return;
     const keep = st.shield && st.shield.amount > amount ? st.shield.amount : amount;
     st.shield = { amount: keep, max: keep, left: seconds, color: color || st.shield?.color || '' };
+    if (target === this.caster) this.casterShield?.(keep, seconds, st.shield.color);
+  }
+
+  /** Drops a figure's shield at once (a network duel: the other client says it broke). */
+  clearShield(target: Enemy) {
+    const st = this.slotOf(target);
+    if (st) st.shield = null;
   }
 
   /** The shield on a figure now (`amount` left of `max`, css `color`), or null. */
@@ -625,6 +634,8 @@ export class Arena {
     point: THREE.Vector3;
     targets: Enemy[];
     targetPos: THREE.Vector3[];
+    /** Which way the cast goes (default: from `from` toward `point`). */
+    aim?: number;
     /** The enemy hero the caster's bolts and units fight (default: the first target). */
     enemy?: Enemy;
     /** Delivers a hit on the hero or on one of the hero side's summoned units (`isUnit`). */
@@ -642,7 +653,7 @@ export class Arena {
     return {
       caster: o.caster,
       from,
-      aim: yawTo(from, point),
+      aim: o.aim ?? yawTo(from, point),
       targets: o.targets,
       targetPos: o.targetPos.map((p) => p.clone().setY(0)),
       point,

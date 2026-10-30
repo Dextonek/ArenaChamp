@@ -1,7 +1,7 @@
 ---
 title: Multiplayer duel game
 tags: [architecture, multiplayer, server, websocket, accounts, lobby, matchmaking, duel, line-of-sight]
-updated: 2026-10-29
+updated: 2026-10-30
 ---
 
 # Multiplayer duel game
@@ -86,8 +86,8 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
    whose client shows the number and flash on the opponent and sets its HP (`Duel.peerHit`, through
    `arena.setHp`). A dodge sends `dodged` → `peer_dodged` (DODGED over the opponent). The attacker's own cast never
    damages the remote hero locally: `arena.hitFilter` drops those hits.
-5. **Best of three rounds.** HP 0 (`ko`) ends the round; after 60 s the side with more of its HP left (as a share of
-   its max) wins it (`time`), and an exact tie replays the round. The server sends `round_end { round, result,
+5. **Best of three rounds.** A round has no time limit (user, 2026-10-30): it ends when a hero's HP reaches 0 (`ko`).
+   The server sends `round_end { round, result,
    reason, winner, score, hp, next }` (score as [this player, the foe]); the duel freezes the hero and shows "Round 1
    to <name> · 1-0" (`Duel.netRoundEnd`). After a 3 s break, `round_start { round, score }`: each client runs
    `Duel.startNet` again (fresh HP, cooldowns and start spots, and its own arena: the seed is `<match id>-<round>`)
@@ -115,13 +115,19 @@ Client → server:
 | `match_leave` | | |
 | `move` | `x`, `z`, `yaw` | clamped to the ring, relayed |
 | `cast` | `id`, `slot`, `x`, `z`, `fx`, `fz`, `enemy` | aim point, caster spot, aimed at the enemy; dropped before the countdown ends |
-| `took_hit` | `id`, `damage`, `color` | |
+| `cast` (since 2026-10-30) | + `yaw` | which way the hero faced (spells fired straight ahead) |
+| `took_hit` | `id`, `damage`, `color`, `soaked` | `damage` got past the hero's own shield, `soaked` is what the shield took; a hit from a basic attack is capped at 40 |
 | `dodged` | `id` | |
+| `attack` | `id` | a basic attack released at the other hero; at most one per 0.5 s |
+| `heal` | `amount` | the hero healed itself; the server adds it (at most 150, at most 300 in 2 s, up to the max HP) |
+| `status` | `kind`, `seconds`, `color` | a status the hero took (shown on the other screen; ≤ 3 s) |
+| `shield` | `amount`, `seconds`, `color` | a shield the hero got (shown on the other screen; ≤ 400, ≤ 10 s) |
 
 Server → client: `session { token, profile }`, `auth_error { error }` (empty error = token expired), `logged_out
 { reason }`, `profile`, `error { error }` (shown as a toast), `lobbies { list }`, `lobby { lobby, you }`, `queue
 { on, since, size }`, `match_start { id, side, hp, you, foe }`, `match_fight { countdown, round }`, `round_end`, `round_start`, `peer_move`,
-`peer_cast`, `peer_hit { id, damage, hp, color }`, `peer_dodged`, `hp { hp }`, `match_end { result, winner, reason,
+`peer_cast` (+ `yaw`), `peer_hit { id, damage, soaked, hp, color }`, `peer_dodged`, `peer_attack { id }`, `peer_heal { amount, hp }`,
+`peer_status { kind, seconds, color }`, `peer_shield { amount, seconds, color }`, `hp { hp }`, `match_end { result, winner, reason,
 seconds, score, hp, stats, profile }`.
 
 ## Stats
@@ -227,6 +233,26 @@ side, not two tabs of one window.
   Back to menu and the profile.
 - Line of sight in the editor's duel: Q at a foe behind the centre wall and behind a pillar is refused with the
   toast, the hero slides round and casts once in sight (wall 1 s, pillar 0.3 s); AI duels still finish (17-24 s).
+
+## Mechanics online
+
+Since 2026-10-30 the kits' mechanics work in network duels, on the same rule as the hits: **the client whose hero
+takes an effect decides it**, and the server records and relays.
+
+| Mechanic | How |
+|---|---|
+| Statuses (stun, root, slow, silence, blind, knock-up) | applied to this side's hero by the hit (`Duel.damagePlayer`), enforced here; `status` → `peer_status` draws the word and tint on the other screen. Blind on the other hero rolls its miss here, from that relayed status. |
+| Knockback, pull | move this side's hero; the move reports carry the new spot. |
+| Shields | the hero's own shield soaks here (`arena.absorb`); `took_hit` sends what got through and what was soaked; `shield` → `peer_shield` draws the bubble on the other screen, which takes `soaked` from it and drops it when damage got through. |
+| Heals | `arena.casterHeal` → `heal`; the server adds it within its caps and answers `hp` / `peer_heal`. |
+| Dashes, blinks | the caster's own client moves it; the other screen sees it through the move reports. |
+| Skillshots | the other player's bolts fly on this screen (`ctx.projectile` stays on in the replay); touching this hero is the hit. |
+| Spells fired where the hero faces (`self` mode) | `cast.yaw` turns the replayed caster before the spell plays. |
+| Summoned units | the other player's units spawn and fight on this screen; their hits on this hero go through `took_hit` with the summoning cast's id. Each screen simulates its own copy, so units can stand in different places or die at different times on the two screens. |
+| Basic attacks | see [attacks.md](attacks.md). |
+
+Tested with two local players (2026-10-30): a Lyra bolt into Auriel's shield (28 through, 25 soaked), Lyra's root
+trap and basic attack, Marin's hook pulling Fenna 3 m, Fenna's heal on hit and her turret hitting Marin 4 times.
 
 ## Limits and next steps
 

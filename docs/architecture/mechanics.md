@@ -46,7 +46,7 @@ Because blind moves the cast, the telegraph is drawn at the offset spot and the 
 
 ## Shield, heal and dash
 
-Three optional `CastContext` methods, bound to the casting figure (the player hero, a duel opponent or an arena foe) by the arena's `selfFx`. The type marks them optional because network duels leave them undefined.
+Three optional `CastContext` methods, bound to the casting figure (the player hero, a duel opponent or an arena foe) by the arena's `selfFx`. The type marks them optional because a network duel's replay of the other player's cast leaves them undefined (that player's own client runs them and reports the result).
 
 | Method | What it does |
 |---|---|
@@ -224,8 +224,7 @@ keep for the duel (telegraph coverage, every hit within 4.2 s of the cast, heals
 
 ## Limits
 
-- **Network duels ignore these mechanics.** `startNet` clears `shieldSelf`, `healSelf`, `moveCaster`, `projectile` and `summon` from the opponent's context, statuses and pulls are not applied, and the server and `src/net/` carry none of it yet (phantom units would appear on the player side). The sync is planned for the multiplayer session; see [multiplayer.md](multiplayer.md).
-- **Basic attacks are off in network duels** (see [attacks.md](attacks.md)): the server relays only the four spell slots.
+- **Network duels (synced 2026-10-30, see [multiplayer.md](multiplayer.md#mechanics-online)):** the client whose hero takes an effect decides it. Statuses, pulls, knockback and shields work on that hero there; heals, shields and statuses are reported so the other screen shows them; bolts and summoned units of the other player are played on the victim's screen. Each screen runs its own copy of the units, so their positions and HP can drift apart.
 - **Units take no statuses and no pull**. `arena.hit` on a unit does damage, flash and knockback only.
 - **Area spells only hit units inside the radius at cast time.** `ground` and `self` targeting builds `ctx.targets` once, so a unit that walks in during the spell is not in the list (a spell that re-checks positions at impact, as the Zone hits rule asks, must use `arena.liveFoes()` to see units that arrived later).
 - **`castAs` reuses one instance per label.** The duel plays an opponent spell on the effect registered under its label, so the two kits in a duel must not share a label, and the opponent casting the same label again while it plays restarts that instance. The player's hero is different: hero mode keeps the old instance playing (in `lingering`) and casts on a fresh one, so a bolt in flight survives a recast.

@@ -103,7 +103,9 @@ export class Hero {
   private calibrate() {
     const hand = this.bones.get('handR');
     if (!hand) return;
-    const saved = { p: this.root.position.clone(), q: this.root.quaternion.clone() };
+    // Keep the Euler angles: restoring the quaternion would rebuild them, and a figure loaded facing -Z comes back as
+    // (π, 0, π), which turns upside down once `rotation.y` / `rotation.x` are set on their own (HeroFigure.follow, fall).
+    const saved = { p: this.root.position.clone(), r: this.root.rotation.clone() };
     this.root.position.set(0, 0, 0);
     this.root.quaternion.identity();
     this.root.updateMatrixWorld(true);
@@ -115,7 +117,7 @@ export class Hero {
     const want = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
     this.gripOffset.copy(handQ).invert().multiply(want);
     this.root.position.copy(saved.p);
-    this.root.quaternion.copy(saved.q);
+    this.root.rotation.copy(saved.r);
   }
 
   bone(name: BoneName) {

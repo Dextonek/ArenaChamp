@@ -13,16 +13,27 @@ const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
 const COUNTDOWN = 3;
 const LOAD_TIMEOUT = 15000;
-// Best of three: the first to two round wins takes the match. A round lasts at most ROUND_SECONDS, then the side
-// with more of its HP left wins it (an exact tie replays it); BREAK_MS between rounds.
+// Best of three: the first to two round wins takes the match. A round has no time limit: it ends when a hero falls
+// (user, 2026-10-30). BREAK_MS between rounds.
 const ROUNDS_TO_WIN = 2;
-const ROUND_SECONDS = 60;
 const BREAK_MS = 3000;
 // A hit must come from a cast the other side made at most this long ago; a slot can't be cast faster than SLOT_GAP_MS
 // (R: R_GAP_MS). Lenient on purpose: the real cooldowns live in the kits, which are still changing.
 const HIT_WINDOW_MS = 12000;
 const SLOT_GAP_MS = 800;
 const R_GAP_MS = 10000;
+// Basic attacks: at most one per ATTACK_GAP_MS, a hit from one at most ATTACK_MAX damage. Heals: one at most HEAL_MAX,
+// at most HEAL_WINDOW_MAX within HEAL_WINDOW_MS. Statuses and shields the clients report are only relayed (for the
+// look on the other screen), clamped to these caps.
+const ATTACK_GAP_MS = 500;
+const ATTACK_MAX = 40;
+const HEAL_MAX = 150;
+const HEAL_WINDOW_MS = 2000;
+const HEAL_WINDOW_MAX = 300;
+const STATUS_KINDS = ['stun', 'root', 'slow', 'silence', 'blind', 'knockup'];
+const STATUS_MAX_S = 3;
+const SHIELD_MAX = 400;
+const SHIELD_MAX_S = 10;
 const HERO_RE = /^[A-Za-z][A-Za-z' -]{0,23}$/;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -31,7 +42,8 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
  *   match: Match | null, side: number, chain: Promise<void>, closed: boolean }} Client
  * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[] }} Lobby
  * @typedef {{ client: Client, name: string, hero: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
- *   dodges: number, recent: Map<number, number>, lastSlot: number[] }} Player
+ *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
+ *   heals: { at: number, amount: number }[] }} Player
  * @typedef {{ id: string, players: Player[], state: 'loading' | 'fight' | 'break' | 'over', created: number, startedAt: number,
  *   fightAt: number, round: number, score: number[], timer: any }} Match
  */
@@ -199,7 +211,46 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         me.recent.set(m.id, now);
         me.casts++;
         return send(match.players[1 - c.side].client, {
-          t: 'peer_cast', id: m.id, slot: m.slot, x: m.x, z: m.z, fx: m.fx, fz: m.fz, enemy: !!m.enemy,
+          t: 'peer_cast', id: m.id, slot: m.slot, x: m.x, z: m.z, fx: m.fx, fz: m.fz, enemy: !!m.enemy, yaw: num(m.yaw) ? m.yaw : undefined,
+        });
+      }
+      case 'attack': {
+        // A basic attack released at the other hero: the other client plays it and reports the hit (`took_hit`).
+        const match = c.match;
+        if (!match || match.state !== 'fight' || Date.now() < match.fightAt || !num(m.id)) return;
+        const me = match.players[c.side], now = Date.now();
+        if (now - me.lastAttack < ATTACK_GAP_MS) return;
+        me.lastAttack = now;
+        me.recent.set(m.id, now);
+        me.attacks.add(m.id);
+        return send(match.players[1 - c.side].client, { t: 'peer_attack', id: m.id });
+      }
+      case 'heal': {
+        const match = c.match;
+        if (!match || match.state !== 'fight' || !num(m.amount) || m.amount <= 0) return;
+        const me = match.players[c.side], now = Date.now();
+        me.heals = me.heals.filter((h) => now - h.at < HEAL_WINDOW_MS);
+        const room = HEAL_WINDOW_MAX - me.heals.reduce((a, h) => a + h.amount, 0);
+        const amount = Math.min(Math.round(m.amount), HEAL_MAX, room, me.max - me.hp);
+        if (amount <= 0) return send(c, { t: 'hp', hp: me.hp });
+        me.heals.push({ at: now, amount });
+        me.hp += amount;
+        send(c, { t: 'hp', hp: me.hp });
+        return send(match.players[1 - c.side].client, { t: 'peer_heal', amount, hp: me.hp });
+      }
+      case 'status': {
+        const match = c.match;
+        if (!match || match.state !== 'fight' || !STATUS_KINDS.includes(m.kind) || !num(m.seconds)) return;
+        return send(match.players[1 - c.side].client, {
+          t: 'peer_status', kind: m.kind, seconds: Math.max(0, Math.min(STATUS_MAX_S, m.seconds)), color: color(m.color),
+        });
+      }
+      case 'shield': {
+        const match = c.match;
+        if (!match || match.state !== 'fight' || !num(m.amount) || !num(m.seconds)) return;
+        return send(match.players[1 - c.side].client, {
+          t: 'peer_shield', amount: Math.max(0, Math.min(SHIELD_MAX, Math.round(m.amount))),
+          seconds: Math.max(0, Math.min(SHIELD_MAX_S, m.seconds)), color: color(m.color),
         });
       }
       case 'took_hit': {
@@ -207,12 +258,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         if (!match || match.state !== 'fight' || !num(m.damage)) return;
         const me = match.players[c.side];
         // Only a cast the other side really made, not long ago.
-        const castAt = match.players[1 - c.side].recent.get(m.id);
+        const foe = match.players[1 - c.side];
+        const castAt = foe.recent.get(m.id);
         if (castAt === undefined || Date.now() - castAt > HIT_WINDOW_MS) return;
-        const damage = Math.max(0, Math.min(250, Math.round(m.damage)));
+        // `damage` is what got past the hero's own shield; `soaked` what the shield took (only shown on the other side).
+        const damage = Math.max(0, Math.min(foe.attacks.has(m.id) ? ATTACK_MAX : 250, Math.round(m.damage)));
+        const soaked = num(m.soaked) ? Math.max(0, Math.min(SHIELD_MAX, Math.round(m.soaked))) : 0;
         me.hp = Math.max(0, me.hp - damage);
-        match.players[1 - c.side].hits++;
-        send(match.players[1 - c.side].client, { t: 'peer_hit', id: m.id, damage, hp: me.hp, color: typeof m.color === 'string' ? m.color.slice(0, 16) : undefined });
+        foe.hits++;
+        send(foe.client, { t: 'peer_hit', id: m.id, damage, soaked, hp: me.hp, color: color(m.color) });
         send(c, { t: 'hp', hp: me.hp });
         if (me.hp <= 0) endRound(match, 1 - c.side, 'ko');
         return;
@@ -355,6 +409,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
       players: seats.map((s) => ({
         client: s.client, name: /** @type {string} */ (s.client.name), hero: s.hero, max: HP, hp: HP, loaded: false,
         casts: 0, hits: 0, dodges: 0, recent: new Map(), lastSlot: [-Infinity, -Infinity, -Infinity, -Infinity],
+        attacks: new Set(), lastAttack: -Infinity, heals: [],
       })),
       state: 'loading', created: Date.now(), startedAt: 0, fightAt: 0, round: 1, score: [0, 0], timer: null,
     };
@@ -375,15 +430,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
     match.state = 'fight';
     match.fightAt = Date.now() + COUNTDOWN * 1000;
     if (!match.startedAt) match.startedAt = match.fightAt;
-    match.timer = setTimeout(() => timeUp(match), (COUNTDOWN + ROUND_SECONDS) * 1000);
     for (const p of match.players) send(p.client, { t: 'match_fight', countdown: COUNTDOWN, round: match.round });
-  }
-
-  /** The round's time ran out: more HP left (as a share of the max) wins it; an exact tie replays it. @param {Match} match */
-  function timeUp(match) {
-    if (match.state !== 'fight') return;
-    const [a, b] = match.players.map((p) => p.hp / p.max);
-    endRound(match, a === b ? -1 : a > b ? 0 : 1, 'time');
   }
 
   /**
@@ -412,6 +459,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         p.hp = p.max;
         p.recent.clear();
         p.lastSlot.fill(-Infinity);
+        p.attacks.clear();
+        p.lastAttack = -Infinity;
+        p.heals = [];
         send(p.client, { t: 'round_start', round: match.round, score: [match.score[p.client.side], match.score[1 - p.client.side]] });
       }
       match.timer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
@@ -456,6 +506,11 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
     /** For tests and the console: what the hub holds right now. */
     state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length }),
   };
+}
+
+/** A css colour from a client, or undefined. @param {unknown} v */
+function color(v) {
+  return typeof v === 'string' ? v.slice(0, 16) : undefined;
 }
 
 /** @param {unknown} v @returns {v is number} */
