@@ -16,25 +16,20 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - `955b850` Smooth online opponent movement, MOBA-slow walking (hero 4 m/s, AI 3.5).
 - `68e2d10` Balance pass, `e8e4326` hero wave 5 (Oblivion, Shiori, Tempo).
 
-**Uncommitted (from the multiplayer session)**
-- Best-of-3 rounds online + server checks: `server/hub.mjs`, `server/accounts.mjs`, `server/smoke-test.mjs`,
-  `src/duel.ts` (`netRoundEnd`), `src/game/match.ts` (`beginRound`, an arena per round), `src/net/client.ts`,
-  `docs/architecture/multiplayer.md`, `docs/README.md`; research `docs/research/moba-design.md` and
-  `game-networking.md`. Smoke test 26/26 (details under "Best-of-3 rounds" below). Commit it before more engine work
-  in those files.
-- Not for commit: the Meshy experiment (`blender/meshy/`, 35 MB GLB; `docs/heroes/void-meshy*`, `void_meshy_*`).
-
-**Blocked / held**
-- Cloudflare deploy freeze (user): nothing new goes live. The live site
-  (https://arena-of-kits.arenachamp.workers.dev) still runs the 955b850-era build without arenas, roles or attacks.
-  Rounds change the protocol on both ends: client and server deploy together.
+**Live (deployed 2026-10-30, freeze lifted by the user)**
+- `484d7fd` Best-of-3 rounds online + server checks committed, pushed to GitHub `main`
+  (https://github.com/Dextonek/ArenaChamp) and deployed to https://arena-of-kits.arenachamp.workers.dev (Worker version
+  `adafbe2c-d0b0-4e1e-b72f-ef7fd527ecb3`). Before the deploy: `npm run build` clean, `npm run test:server` passed. After:
+  the live page serves the new bundle, no console errors, the game WebSocket opens. The live game now has the five
+  arenas, the hero roles, the new Oblivion, smooth movement and the rounds.
+- Not committed on purpose: the Meshy experiment (`blender/meshy/`, 35 MB GLB; `docs/heroes/void-meshy*`, `void_meshy_*`).
 
 **Online gaps (the next multiplayer work)**
 - Statuses, shields, heals, dashes, pulls, skillshots and summons are not synced online (Stage 1 plan in
   `docs/architecture/multiplayer.md`); basic attacks need their own message type (they home in, no dodge).
 
 **Next step candidates (game)**
-- Online sync Stage 1 + the basic-attack message, then lift the freeze and deploy.
+- Online sync Stage 1 + the basic-attack message, then deploy (`npm run cf:deploy`, client and server together).
 - Per-hero basic-attack looks and role traits (crit, every-third-shot, slowing or healing hits).
 - AI: attack summoned units, not only the hero; re-check summon balance at the slower walk speed.
 - Arena refinement round 2 if wanted; more Blender model upgrades like Oblivion v2.
@@ -487,17 +482,11 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Nothing.
 
 ## Waiting on you
-1. Commit the multiplayer session's rounds + server checks (uncommitted, listed under "Current state").
-2. Push: `git push origin feat/particle-editor:main` (pushed up to e8e4326 so far).
-3. Lift the deploy freeze when ready, then `npm run cf:deploy` (client and server together).
-- Rounds change the protocol on both ends: server and client must be deployed together, and a deploy drops every
-  live WebSocket (running matches end). Held by the deploy freeze.
-- Smoother online movement (2026-10-30) is ready locally but **not live**: the Cloudflare deploy freeze holds it
-  back. When you lift the freeze, `npm run cf:deploy` publishes it (client and server change together).
-- Push: all commits were rewritten to author Dextonek (old history in `refs/backup/before-dextonek`); remote
-  `origin` = https://github.com/Dextonek/ArenaChamp; pushed as `main` up to e8e4326 (wave 5). Later pushes:
-  `git push origin feat/particle-editor:main`.
-- Cloudflare deploy freeze: no new build goes live until you lift it.
+- Nothing blocking. Online duels on the live site still ignore statuses, shields, summons, skillshots and basic
+  attacks (all 20 heroes use some of these now), so online play differs from offline until the sync is built.
+- Push: `git push origin feat/particle-editor:main` (pushed up to 484d7fd). All commits are authored as Dextonek (old
+  history in `refs/backup/before-dextonek`).
+- Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end).
 - Play online: https://arena-of-kits.arenachamp.workers.dev in two browsers (online accounts start empty).
 - Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
 - Uncommitted: play/run duel, balance pass. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
