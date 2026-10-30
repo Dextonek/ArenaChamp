@@ -216,6 +216,7 @@ for (let i = 0; i < 10; i++) {
 ## Limits
 
 - **Network duels ignore these mechanics.** `startNet` clears `shieldSelf`, `healSelf`, `moveCaster`, `projectile` and `summon` from the opponent's context, statuses and pulls are not applied, and the server and `src/net/` carry none of it yet (phantom units would appear on the player side). The sync is planned for the multiplayer session; see [multiplayer.md](multiplayer.md).
+- **Basic attacks are off in network duels** (see [attacks.md](attacks.md)): the server relays only the four spell slots.
 - **Units take no statuses and no pull**. `arena.hit` on a unit does damage, flash and knockback only.
 - **Area spells only hit units inside the radius at cast time.** `ground` and `self` targeting builds `ctx.targets` once, so a unit that walks in during the spell is not in the list (a spell that re-checks positions at impact, as the Zone hits rule asks, must use `arena.liveFoes()` to see units that arrived later).
 - **`castAs` reuses one instance per label.** The duel plays an opponent spell on the effect registered under its label, so the two kits in a duel must not share a label, and the opponent casting the same label again while it plays restarts that instance. The player's hero is different: hero mode keeps the old instance playing (in `lingering`) and casts on a fresh one, so a bolt in flight survives a recast.

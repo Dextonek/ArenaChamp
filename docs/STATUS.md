@@ -330,6 +330,14 @@ _Last updated: 2026-10-29_
     Final Calligraphy 105 -> 95 and blind 2.0 -> 1.5 s: Oblivion 54%, Shiori 58%, Tempo 51% (each x 19 opponents x 3
     x both sides). Sweep 217/217 clean.
     Committed `e8e4326`.
+  - Basic attacks (2026-10-30): MOBA controls in hero mode (right-click an enemy or unit to attack it,
+    A + click attack-move, S stop; a cast pauses the attack, moving cancels the wind-up). Melee swing 13 dmg / 1.2 s
+    at 2.6 m, ranged homing bolt 10 / 1.0 s at 6.5 m; blind misses, stun stops, silence/root do not. Code
+    `src/attacks/` (spec per kit by `kit.melee`, `Attacker`, `AttackFx`), wiring in heroMode.ts, duel.ts
+    (`damagePlayer`, AI + autopilot attack when nothing can be cast; ranged AI holds within attack range),
+    `HitOptions.attack`. Off in network duels (server relays only spell slots). Docs `docs/architecture/attacks.md`.
+    Tournament `_tourney(2)` with attacks (melee 16 then 13): avg fight 22 s (was ~40), no timeouts; 38-64% except
+    Brannoc 83, Mortis 29, Kaia 34 (noise about +-8). Retune waits for the kit redesign commit (one joint pass).
   - Duel arenas (2026-10-30): five arenas picked at random per round: Night Temple (the old ring),
     Frostfall Lake, Ember Caldera, Verdant Glade, Sky Ruins. Registry `src/arenas/` (one file each), design
     `pipeline/designs/arenas.md`, docs `docs/architecture/arenas.md`, sheet `docs/arenas/arenas-five_sheet.jpg`.

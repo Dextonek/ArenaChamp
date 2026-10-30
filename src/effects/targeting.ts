@@ -49,6 +49,11 @@ export interface HitOptions {
    * is already the dodge check, so the duel's zone filters let it through. Spells do not set it.
    */
   projectile?: true;
+  /**
+   * Set by a basic attack (src/attacks): it homes in on its target, so like a bolt it skips the duel's zone checks.
+   * Spells do not set it.
+   */
+  attack?: true;
 }
 
 /** Everything a targeted effect gets before each play(). Snapshot positions; the figures may move during play. */

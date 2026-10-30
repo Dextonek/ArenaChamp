@@ -5,6 +5,7 @@ import type { TargetingSpec } from './effects/targeting';
 import type { StatusKind, StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
 import { HeroFigure } from './heroFigure';
+import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -63,6 +64,15 @@ export class HeroMode {
 
   // The hero's figure (stands in for the arena's capsule caster while hero mode is on).
   private figure = new HeroFigure();
+  /** Basic attacks (src/attacks): the enemy being attacked, an attack-move point, and whether A armed attack-move. */
+  private attacker: Attacker;
+  private attackFx = new AttackFx();
+  private attackSpec: AttackSpec;
+  private attackTarget: Enemy | null = null;
+  private attackMove: THREE.Vector3 | null = null;
+  private attackArmed = false;
+  /** Basic attacks on (off in a network duel: the server does not relay them yet). */
+  attacksEnabled = true;
   /** Duel: no orders or casts (the hero is down, or the round is over). */
   locked = false;
   /** Run duel (AI vs AI): the mouse and keys don't control the hero; the autopilot does. */
@@ -90,6 +100,16 @@ export class HeroMode {
 
   constructor(private host: HeroModeHost, kit: HeroKit) {
     this.kit = kit;
+    this.attackSpec = attackFor(kit);
+    this.attacker = new Attacker({
+      arena: host.arena,
+      fx: this.attackFx,
+      self: () => host.arena.caster,
+      spec: () => this.attackSpec,
+      land: (target, opts) => host.arena.hit(target, opts),
+      posOf: (target) => this.targetPos({ enemy: target }),
+    });
+    this.group.add(this.attackFx.group);
     const flat = (geo: THREE.BufferGeometry, color: string, opacity: number) => {
       const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity, depthWrite: false }));
       m.rotation.x = -Math.PI / 2;
@@ -134,10 +154,17 @@ export class HeroMode {
       this.updateCursor();
       if (e.button === 0) {
         if (this.aiming >= 0) this.confirm();
+        else if (this.attackArmed) this.attackClick();
         else this.order();
       } else if (e.button === 2) {
         if (this.aiming >= 0) this.cancelAim();
-        else this.order();
+        else if (this.attackArmed) this.disarm();
+        else {
+          // MOBA right-click: on an enemy, attack it; on the ground, walk there.
+          const enemy = this.enemyNearCursor();
+          if (enemy && this.attacksEnabled) this.attackOrder(enemy);
+          else this.order();
+        }
       }
     });
     dom.addEventListener('contextmenu', (e) => { if (this.enabled) e.preventDefault(); });
@@ -148,8 +175,14 @@ export class HeroMode {
     window.addEventListener('keydown', (e) => {
       if (!this.enabled || e.repeat || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
       const i = ['KeyQ', 'KeyW', 'KeyE', 'KeyR'].indexOf(e.code);
-      if (i >= 0) { e.preventDefault(); this.beginAim(i); }
-      if (e.code === 'Escape') this.cancelAim();
+      if (i >= 0) { e.preventDefault(); this.disarm(); this.beginAim(i); }
+      if (e.code === 'KeyA' && this.attacksEnabled && !this.locked && !this.spectate) {
+        this.cancelAim();
+        this.attackArmed = true;
+        this.host.dom.style.cursor = 'crosshair';
+      }
+      if (e.code === 'KeyS') this.stop();
+      if (e.code === 'Escape') { this.cancelAim(); this.disarm(); }
     });
   }
 
@@ -183,6 +216,9 @@ export class HeroMode {
     this.pending = null;
     this.moveTo = null;
     this.cancelAim();
+    this.clearAttack();
+    this.attacker.reset();
+    this.attackFx.clear();
     this.figure.stand();
   }
 
@@ -199,6 +235,9 @@ export class HeroMode {
   /** Switches the hero: new bar, indicator colours from the kit, cooldowns and aim cleared. */
   setKit(kit: HeroKit) {
     this.kit = kit;
+    this.attackSpec = attackFor(kit);
+    this.clearAttack();
+    this.attacker.reset();
     const color = (m: THREE.Mesh, c: string) => (m.material as THREE.MeshBasicMaterial).color.set(c);
     color(this.rangeRing, kit.foil);
     color(this.moveMarker, kit.foil);
@@ -225,6 +264,9 @@ export class HeroMode {
     this.aiming = -1;
     this.moveTo = null;
     this.pending = null;
+    this.clearAttack();
+    this.attacker.reset();
+    this.attackFx.clear();
     this.cooldowns.fill(0);
     this.rooted = 0;
     this.host.arena.clearStatuses(this.host.arena.caster);
@@ -243,7 +285,10 @@ export class HeroMode {
     this.followCamera(hero, dt);
     this.updateCursor();
 
-    if (this.locked) { this.pending = null; this.moveTo = null; if (this.aiming >= 0) this.cancelAim(); }
+    if (this.locked) { this.pending = null; this.moveTo = null; this.clearAttack(); if (this.aiming >= 0) this.cancelAim(); }
+    this.attacker.update(dt);
+    this.attackFx.update(dt);
+    if (!this.pending && !this.spectate) this.updateAttack(hero);
     // Walk toward the order (or into range of a pending cast).
     if (this.pending) {
       const spell = this.kit.spells[this.pending.slot];
@@ -256,7 +301,7 @@ export class HeroMode {
       } else this.moveTo = at.clone();
     }
     const status = this.status;
-    if (this.moveTo && this.rooted <= 0 && !status.cannotMove && !arena.isDashing(arena.caster)) {
+    if (this.moveTo && this.rooted <= 0 && !this.attacker.winding && !status.cannotMove && !arena.isDashing(arena.caster)) {
       const d = new THREE.Vector3(this.moveTo.x - hero.x, 0, this.moveTo.z - hero.z);
       const len = d.length();
       if (len < 0.05) this.moveTo = null;
@@ -266,7 +311,7 @@ export class HeroMode {
     this.updateIndicators(dt, hero);
     this.updateHud(dt);
     const caster = arena.caster.group;
-    this.figure.follow(dt, hero, caster.rotation.y, this.rooted > 0);
+    this.figure.follow(dt, hero, caster.rotation.y, this.rooted > 0 || this.attacker.posing);
   }
 
   // --- figure -------------------------------------------------------------------------------------------
@@ -299,6 +344,7 @@ export class HeroMode {
   private order() {
     if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
     this.pending = null;
+    this.clearAttack();
     this.moveTo = this.cursor.clone();
     this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
     this.moveMarkerT = 0;
@@ -318,6 +364,90 @@ export class HeroMode {
     }
     this.aiming = this.aiming === i ? -1 : i; // pressing the key again cancels
     this.host.dom.style.cursor = this.aiming >= 0 ? 'crosshair' : '';
+  }
+
+  // --- basic attacks -------------------------------------------------------------------------------------
+
+  /** Right-click on an enemy: walk into range and keep attacking it until another order. */
+  private attackOrder(enemy: Enemy) {
+    if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
+    this.pending = null;
+    this.attackMove = null;
+    this.attackTarget = enemy;
+    this.host.arena.setTarget(enemy);
+  }
+
+  /** A left-click after A: attack the enemy under the cursor, else walk there attacking the first enemy in range. */
+  private attackClick() {
+    const enemy = this.enemyNearCursor();
+    this.disarm();
+    if (enemy) { this.attackOrder(enemy); return; }
+    if (this.locked || this.spectate) return;
+    this.pending = null;
+    this.attackTarget = null;
+    this.attackMove = this.cursor.clone();
+    this.moveTo = this.cursor.clone();
+    this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
+    this.moveMarkerT = 0;
+  }
+
+  /** S: stand still (drops the walk, the attack and a pending cast). */
+  private stop() {
+    if (this.locked || this.spectate) return;
+    this.pending = null;
+    this.moveTo = null;
+    this.clearAttack();
+  }
+
+  private disarm() {
+    if (!this.attackArmed) return;
+    this.attackArmed = false;
+    if (this.aiming < 0) this.host.dom.style.cursor = '';
+  }
+
+  private clearAttack() {
+    this.attackTarget = null;
+    this.attackMove = null;
+    this.attacker.cancel();
+  }
+
+  /** Each frame: chase the attack target and attack it in range; on an attack-move, pick up the first enemy in range. */
+  private updateAttack(hero: THREE.Vector3) {
+    if (!this.attacksEnabled) { this.clearAttack(); return; }
+    if (this.attackMove && !this.attackTarget) {
+      let best: Enemy | null = null, bd = this.attackSpec.range;
+      for (const f of this.host.arena.liveFoes()) {
+        const d = flatDist(hero, f.pos);
+        if (d <= bd && this.attacker.inRange(hero, f.pos)) { bd = d; best = f.figure; }
+      }
+      if (best) { this.attackTarget = best; this.attackMove = null; }
+      else if (!this.moveTo) this.attackMove = null;
+    }
+    if (!this.attackTarget) return;
+    const at = this.targetPos({ enemy: this.attackTarget });
+    if (!at) { this.attackTarget = null; return; }
+    if (this.attacker.inRange(hero, at)) {
+      this.moveTo = null;
+      if (this.rooted <= 0) this.attacker.start(this.attackTarget);
+    } else if (!this.attacker.winding) this.moveTo = at.clone();
+  }
+
+  /** Autopilot: attacks `enemy` now if it is in range and the last attack has recovered. */
+  autoAttack(enemy: Enemy) {
+    if (this.locked || !this.attacksEnabled || this.rooted > 0) return false;
+    const at = this.targetPos({ enemy });
+    if (!at || !this.attacker.inRange(this.host.arena.caster.group.position, at)) return false;
+    return this.attacker.start(enemy);
+  }
+
+  /** The hero is in the middle of an attack's wind-up (the autopilot should not walk). */
+  get attackWinding() {
+    return this.attacker.winding;
+  }
+
+  /** The hero's basic attack (range, damage, timing). */
+  get attack(): AttackSpec {
+    return this.attackSpec;
   }
 
   private cancelAim() {
@@ -357,6 +487,7 @@ export class HeroMode {
     if ('enemy' in target) arena.setTarget(target.enemy);
     else arena.setGroundPoint(target.point);
     this.moveTo = null;
+    this.attacker.cancel();
     // Blind: the cast point is rolled now and the effect (its danger zones too) is played at the offset spot.
     arena.aimOffset = this.status.blind ? arena.blindOffset() : null;
     this.rooted = this.host.cast(spell.label);

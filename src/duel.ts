@@ -8,6 +8,7 @@ import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting
 import type { HeroKit } from './heroes';
 import { HeroFigure } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
+import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 
 /** What the duel needs from main.ts. */
@@ -103,6 +104,10 @@ export class Duel {
   /** The arena of the current (or last) round. */
   currentArena: ArenaDef | null = null;
   private arenaScene: ArenaScene | null = null;
+  /** The opponent's basic attack (src/attacks): at the hero, or at one of the hero's units. */
+  private oppAttack: Attacker;
+  private oppAttackFx = new AttackFx();
+  private oppAttackSpec!: AttackSpec;
 
   private opponentKit!: HeroKit;
   private foe: Enemy | null = null;
@@ -159,7 +164,17 @@ export class Duel {
   private leaveButton!: HTMLButtonElement;
 
   constructor(private host: DuelHost) {
-    this.group.add(this.zones.group, this.figure.group);
+    this.group.add(this.zones.group, this.figure.group, this.oppAttackFx.group);
+    const arena = host.arena;
+    this.oppAttack = new Attacker({
+      arena,
+      fx: this.oppAttackFx,
+      self: () => this.foe!,
+      spec: () => this.oppAttackSpec,
+      land: (target, opts) => (target === arena.caster ? this.damagePlayer(opts) : arena.hit(target, opts)),
+      posOf: (target) => target === arena.caster ? arena.caster.group.position
+        : arena.summons.alive('hero').find((u) => u.figure === target)?.pos ?? null,
+    });
     this.group.visible = false;
     this.hud = this.buildHud();
     this.card = document.createElement('div');
@@ -249,6 +264,8 @@ export class Duel {
     const [mine, theirs] = o.side === 0 ? [PLAYER_START, OPPONENT_START] : [OPPONENT_START, PLAYER_START];
     this.setup(mine, theirs, pickArena(o.arena));
     this.net = o.net;
+    // The server does not relay basic attacks yet: off on both sides of a network duel.
+    hm.attacksEnabled = false;
     this.names = o.names;
     this.peerTrack = [];
     this.peerClock = null;
@@ -271,6 +288,10 @@ export class Duel {
   private setup(mine: THREE.Vector3, theirs: THREE.Vector3, def: ArenaDef) {
     const arena = this.host.arena, hm = this.host.heroMode;
     this.useArena(def);
+    this.oppAttackSpec = attackFor(this.opponentKit);
+    this.oppAttack.reset();
+    this.oppAttackFx.clear();
+    hm.attacksEnabled = true;
     if (!this.on) this.savedCount = arena.count;
     this.on = true;
     this.playerMax = hm.currentKit.maxHp ?? HP;
@@ -339,6 +360,9 @@ export class Duel {
     arena.caster.setHome(PLAYER_START.clone().setZ(14));
     arena.caster.reset();
     this.figure.setModel(undefined);
+    this.oppAttack.reset();
+    this.oppAttackFx.clear();
+    this.host.heroMode.attacksEnabled = true;
     this.foe = null;
     this.zones.set([]);
     this.group.visible = false;
@@ -489,6 +513,8 @@ export class Duel {
     const me = arena.caster.group.position;
     this.time += dt;
     this.arenaScene?.update?.(dt, this.time);
+    if (!this.net) this.oppAttack.update(dt);
+    this.oppAttackFx.update(dt);
     this.zoneClock += dt;
     this.zones.update(this.zoneClock);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
@@ -496,7 +522,7 @@ export class Duel {
 
     const foe = this.foe;
     const foePos = foe ? foe.group.position : OPPONENT_START;
-    if (foe) this.figure.follow(dt, foePos, foe.group.rotation.y, this.rooted > 0);
+    if (foe) this.figure.follow(dt, foePos, foe.group.rotation.y, this.rooted > 0 || this.oppAttack.posing);
 
     if (this.over) {
       this.overT += dt;
@@ -557,11 +583,15 @@ export class Duel {
         return;
       }
     }
+    // Basic attack: nothing to cast, the hero in reach. Stands still through the wind-up.
+    if (this.oppAttack.winding || (this.rooted <= 0 && this.oppAttack.inRange(at, me) && this.oppAttack.start(this.host.arena.caster))) {
+      return;
+    }
     if (st?.cannotMove) {
       this.face(foe, me);
       return;
     }
-    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero');
+    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttackSpec.range);
     if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(AI_SPEED * (st?.speedMul ?? 1) * dt), true);
     this.face(foe, me);
   }
@@ -607,10 +637,11 @@ export class Duel {
    * (no line of sight): close in to half that distance, so the strafe comes round the cover. A melee kit closes to
    * about 2 m instead, never backs off, strafes only a little, and so keeps chasing a target that retreats.
    */
-  private steer(st: { strafe: number; strafeT: number }, kit: HeroKit, at: THREE.Vector3, other: THREE.Vector3, dt: number, blocked = false, foeSide?: SummonSide) {
+  private steer(st: { strafe: number; strafeT: number }, kit: HeroKit, at: THREE.Vector3, other: THREE.Vector3, dt: number, blocked = false, foeSide?: SummonSide, reach = Infinity) {
     const d = flat(at, other);
     const melee = !!kit.melee;
-    const want = melee ? MELEE_GAP : kit.spells[0].range * (blocked ? 0.35 : 0.7);
+    // A ranged kit holds ~70% of Q's range, but no farther than its basic attack reaches (`reach`).
+    const want = melee ? MELEE_GAP : Math.min(kit.spells[0].range * (blocked ? 0.35 : 0.7), reach - 0.6);
     const to = new THREE.Vector3(other.x - at.x, 0, other.z - at.z);
     to.divideScalar(Math.max(to.length(), 1e-3));
     st.strafeT -= dt;
@@ -666,8 +697,10 @@ export class Duel {
         if (hm.autoCast(pick.i, target)) { this.stats.playerCasts++; return; }
       }
     }
+    // Basic attack: nothing to cast, the opponent in reach. Stands still through the wind-up.
+    if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
-    const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent');
+    const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attack.range);
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(AI_SPEED * st.speedMul * dt));
   }
 
@@ -775,8 +808,19 @@ export class Duel {
       }
       return;
     }
+    this.damagePlayer(opts, c.id);
+  }
+
+  /**
+   * Damage, knockback, pull and status on the player hero, after the dodge check (`hitPlayer`), or at once for the
+   * opponent's basic attack (it homes in: no dodge). `castId` tells the server which cast it was (network duel).
+   */
+  private damagePlayer(opts: HitOptions, castId?: number) {
+    if (this.over || !this.on) return;
+    const arena = this.host.arena;
+    const me = arena.caster.group.position;
     const dmg = Math.round(opts.damage ?? 15);
-    this.net?.tookHit(c.id, dmg, opts.color);
+    if (castId !== undefined) this.net?.tookHit(castId, dmg, opts.color);
     // A shield on the hero takes the damage first (a network duel ignores shields: the server counts HP alone).
     const left = this.net ? dmg : arena.absorb(arena.caster, dmg);
     this.playerHp = Math.max(0, this.playerHp - left);
@@ -851,7 +895,7 @@ export class Duel {
    * aimed), as `hitPlayer` does for the opponent's casts. `cast` is the arena's cast number from the hit's context.
    */
   private opponentHit(target: Enemy, opts: HitOptions, cast?: number) {
-    if (!this.on || opts.projectile) return true;
+    if (!this.on || opts.projectile || opts.attack) return true;
     // The opponent's summoned units are checked against the zones like the opponent is (the hero's own units are not).
     if (target !== this.foe && this.host.arena.summons.unitOf(target)?.side !== 'opponent') return true;
     const p = target.group.position;
