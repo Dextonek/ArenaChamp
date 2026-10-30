@@ -21,7 +21,7 @@ export interface SecondHandSettings {
 }
 
 /** `damage` is per leg (an enemy hit on both legs takes it twice). */
-export const defaultSecondHand = (): SecondHandSettings => ({ damage: 36, knock: 1, slowSeconds: 1.0 });
+export const defaultSecondHand = (): SecondHandSettings => ({ damage: 35, knock: 1, slowSeconds: 1.0 });
 
 // Timeline (seconds).
 const FIRE_T = 0.2; // the second hand leaves

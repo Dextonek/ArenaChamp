@@ -18,7 +18,7 @@ export interface RivetShotSettings {
   loop: boolean;
 }
 
-export const defaultRivetShot = (): RivetShotSettings => ({ damage: 44, slow: 0.8, loop: false });
+export const defaultRivetShot = (): RivetShotSettings => ({ damage: 38, slow: 0.8, loop: false });
 
 // Timeline (seconds).
 const PULL_END_T = 0.25;

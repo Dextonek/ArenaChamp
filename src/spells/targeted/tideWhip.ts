@@ -18,7 +18,7 @@ export interface TideWhipSettings {
   loop: boolean;
 }
 
-export const defaultTideWhip = (): TideWhipSettings => ({ damage: 50, pull: 3, loop: false });
+export const defaultTideWhip = (): TideWhipSettings => ({ damage: 55, pull: 3, loop: false });
 
 // Timeline (seconds).
 const CAST_T = 0.0;

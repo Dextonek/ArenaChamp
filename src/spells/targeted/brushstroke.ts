@@ -20,7 +20,7 @@ export interface BrushstrokeSettings {
   splitDamage: number;
 }
 
-export const defaultBrushstroke = (): BrushstrokeSettings => ({ damage: 54, knock: 2, splitDamage: 12 });
+export const defaultBrushstroke = (): BrushstrokeSettings => ({ damage: 56, knock: 2, splitDamage: 12 });
 
 const WINDUP = 0.2;
 const SPEED = 20;

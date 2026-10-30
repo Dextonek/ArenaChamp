@@ -21,7 +21,7 @@ export interface EyeOfTheStormSettings {
   loop: boolean;
 }
 
-export const defaultEyeOfTheStorm = (): EyeOfTheStormSettings => ({ damage: 140, loop: false });
+export const defaultEyeOfTheStorm = (): EyeOfTheStormSettings => ({ damage: 150, loop: false });
 
 // Timeline (seconds).
 const LIFT_T = 0.0; // she raises the staff, the world darkens

@@ -277,7 +277,7 @@ export const chronoKit: HeroKit = {
     },
     {
       key: 'R', label: 'twelfth hour', name: 'Twelfth Hour', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A giant clock hangs over the zone for 3.5 s, then strikes twelve for 150 damage, no stun: walk out of the circle or take it.',
+      blurb: 'Ultimate. A giant clock hangs over the zone for 3.5 s, then strikes twelve for 135 damage, no stun: walk out of the circle or take it.',
       icon(g, s) {
         iconGround(g, s);
         // A giant ivory clock over a numeral ring on the floor, the red second hand driving down, shock lines racing out.

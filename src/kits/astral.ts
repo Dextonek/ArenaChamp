@@ -57,7 +57,7 @@ function link(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y
 
 export const astralKit: HeroKit = {
   name: 'Lyra',
-  maxHp: 520,
+  maxHp: 550,
   title: 'the Star Archer',
   accent: A.hot,
   foil: A.foil,

@@ -23,7 +23,7 @@ export interface ForgefallSettings {
   loop: boolean;
 }
 
-export const defaultForgefall = (): ForgefallSettings => ({ damage: 105, knockUp: 0.5, loop: false });
+export const defaultForgefall = (): ForgefallSettings => ({ damage: 92, knockUp: 0.5, loop: false });
 
 // Timeline (seconds).
 const STREAM_T = 0.3;

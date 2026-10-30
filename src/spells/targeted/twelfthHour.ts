@@ -23,7 +23,7 @@ export interface TwelfthHourSettings {
   loop: boolean;
 }
 
-export const defaultTwelfthHour = (): TwelfthHourSettings => ({ damage: 150, loop: false });
+export const defaultTwelfthHour = (): TwelfthHourSettings => ({ damage: 135, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the numeral ring traced

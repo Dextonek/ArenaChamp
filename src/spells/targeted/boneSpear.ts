@@ -18,7 +18,7 @@ export interface BoneSpearSettings {
   knock: number;
 }
 
-export const defaultBoneSpear = (): BoneSpearSettings => ({ damage: 50, knock: 2 });
+export const defaultBoneSpear = (): BoneSpearSettings => ({ damage: 54, knock: 2 });
 
 // Timeline (seconds).
 const FIRE_T = 0.2; // the spear leaves

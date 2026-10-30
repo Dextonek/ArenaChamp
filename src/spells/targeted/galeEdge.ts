@@ -16,7 +16,7 @@ export interface GaleEdgeSettings {
   loop: boolean;
 }
 
-export const defaultGaleEdge = (): GaleEdgeSettings => ({ damage: 48, loop: false });
+export const defaultGaleEdge = (): GaleEdgeSettings => ({ damage: 44, loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.3;

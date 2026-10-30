@@ -21,7 +21,7 @@ export interface AnvilDropSettings {
   loop: boolean;
 }
 
-export const defaultAnvilDrop = (): AnvilDropSettings => ({ damage: 50, stun: 1.0, loop: false });
+export const defaultAnvilDrop = (): AnvilDropSettings => ({ damage: 42, stun: 1.0, loop: false });
 
 // Timeline (seconds).
 const FALL_T = 0.1; // the anvil starts to fall

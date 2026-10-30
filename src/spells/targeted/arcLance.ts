@@ -21,7 +21,7 @@ export interface ArcLanceSettings {
   loop: boolean;
 }
 
-export const defaultArcLance = (): ArcLanceSettings => ({ damage: 50, chain: 0.5, loop: false });
+export const defaultArcLance = (): ArcLanceSettings => ({ damage: 56, chain: 0.5, loop: false });
 const CHAIN_RANGE = 6;
 
 // Timeline (seconds).

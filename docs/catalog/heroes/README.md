@@ -174,27 +174,27 @@ The 2026-10-30 hero-roles pass rebalanced every kit at walk speed 4 m/s with due
 | Hero | Role | HP | Q / W / E / R main numbers |
 |---|---|---|---|
 | Vesper | juggernaut (drain) | 620 | Q 42 (heals 6); W 50 + slow 1.5 s + tick 10; E 3 x 12 (heals 6 each); R 15 harvest (heals 10) + 100 |
-| Brannoc | tank (melee) | 840 | Q 44, slow 0.8 s; W 50, stun 1.0 s; E shield 100, pull 1.5 m; R 105, knock-up 0.5 s |
+| Brannoc | tank (melee) | 780 | Q 38, slow 0.8 s; W 42, stun 1.0 s; E shield 100, pull 1.5 m; R 92, knock-up 0.5 s |
 | Isolde | controller | 600 | Q 64, slow 1.5 s; W 62, root 1.2 s; E shield 50, 12 + slow 1.0 s; R 150, stun 1.0 s |
-| Lyra | marksman | 520 | Q 52 (bounces); W 60, root 1.2 s; E 12, slow 1.0 s; R 155 |
-| Vex | mage (poison) | 560 | Q 49 + burn 12; W 30 + 4 x 7, slow 1.0 s; E heal 45; R 75 + 2 x 5 + 50, slow 2.0 s |
-| Kaia | mage (burst) | 560 | Q 50 (chain 25); W 40 + 15, slow 1.0 s; E 20, stun 0.5 s; R 140 |
+| Lyra | marksman | 550 | Q 53 (bounces); W 60, root 1.2 s; E 12, slow 1.0 s; R 155 |
+| Vex | mage (poison) | 560 | Q 53 + burn 12; W 34 + 4 x 7, slow 1.0 s; E heal 45; R 75 + 2 x 5 + 50, slow 2.0 s |
+| Kaia | mage (burst) | 560 | Q 56 (chain 28); W 40 + 15, slow 1.0 s; E 20, stun 0.5 s; R 150 |
 | Sefu | controller | 600 | Q 46, root 0.8 s; W 3 x 6 slow 1.2 s + 32 root 1.0 s; E shield 45, 13, slow 1.0 s; R 110, stun 1.0 s |
 | Nyx | assassin | 600 | Q 62; W 40, silence 1.0 s; E 3 x 22; R 160 |
 | Fenna | support | 600 | Q 50 (heals 8); W 45, root 1.2 s; E turret 80 HP, 12 per shot; R 95, heal 45, root 1.0 s |
 | Auriel | support | 600 | Q 55, shield 10; W 45, stun 0.8 s; E 3 x 10, shield 25; R 100, shield 50 |
-| Marin | controller | 620 | Q 50, pull 3 m; W 45, pull 1.5 m, knock-up 0.4 s; E 4 per tick, slow 1.0 s, heal 15; R 92, knock-up 0.5 s |
-| Zephyr | assassin (melee) | 690 | Q 48; W 45, knock-up 0.4 s; E 13, shield 30; R 145, knock-up 0.5 s |
-| Mortis | summoner | 580 | Q 50; W 15 + 2 skeletons; E 2 x 12, root 1.2 s; R 90 + 2 archers |
+| Marin | controller | 620 | Q 55, pull 3 m; W 45, pull 1.5 m, knock-up 0.4 s; E 4 per tick, slow 1.0 s, heal 15; R 100, knock-up 0.5 s |
+| Zephyr | assassin (melee) | 690 | Q 44; W 45, knock-up 0.4 s; E 13, shield 30; R 130, knock-up 0.5 s |
+| Mortis | summoner | 580 | Q 54; W 15 + 2 skeletons; E 2 x 12, root 1.2 s; R 95 + 2 archers |
 | Ada | summoner | 580 | Q 58, slow 1.5 s; W turret 20, 12 per shot; E 3 x 9, slow 1.0 s; R 125, root 1.2 s |
 | Opaline | marksman | 560 | Q 50 (split 18); W 48, blind 1.5 s; E shield 45, blink; R 3 x 50 sweep, 70 degrees |
 | Sirix | juggernaut (melee) | 720 | Q 45, slow 1.0 s; W 40 + 2 wasps; E shield 60; R 85, slow 1.5 s, 3 wasps |
 | Cantor | support | 640 | Q 52; W 40, silence 1.5 s; E 10 per pulse, shield 30, heal 40; R 95, stun 0.8 s |
 | Oblivion | juggernaut (melee) | 780 | Q 53; W 48, pull 4 m, slow 1.0 s; E 35, silence 1.2 s; R 120, pull 4 m, silence 1.5 s |
-| Shiori | summoner | 580 | Q 54 (split 12); W 45, root 1.0 s; E 10 + 2 cranes (8 damage); R 115, blind 1.5 s |
-| Tempo | mage (chrono) | 580 | Q 36 per leg, slow 1.0 s; W 35, stun 0.8 s; E 15, shield 25, heal 45; R 150 (fuse 3.5 s) |
+| Shiori | summoner | 580 | Q 56 (split 12); W 48, root 1.0 s; E 10 + 2 cranes (8 damage); R 115, blind 1.5 s |
+| Tempo | mage (chrono) | 580 | Q 35 per leg, slow 1.0 s; W 35, stun 0.8 s; E 15, shield 25, heal 45; R 135 (fuse 3.5 s) |
 
-Final win rates from `_tourney(4)` (1520 fights, 0 timeouts, average fight 29 s, 152 fights per hero): Vesper 51, Brannoc 59, Isolde 46, Lyra 48, Vex 55, Kaia 41, Sefu 51, Nyx 55, Fenna 44, Auriel 49, Marin 49, Zephyr 52, Mortis 53, Ada 49, Sirix 45, Cantor 41, Opaline 51, Oblivion 45, Shiori 61 (then Brushstroke 58 to 54; re-check 63 of 152 fights, 41%), Tempo 55. Noise is about plus or minus 6 points.
+Basic attacks (melee 13 per 1.2 s at 2.6 m, ranged 10 per 1.0 s at 6.5 m) are on in the AI duels, and the numbers above were rebalanced for them. Final win rates from `_tourney(4)` with basic attacks (1520 fights, 0 timeouts, average fight 22 s, 152 fights per hero): Vesper 51, Brannoc 47 (re-check after his last nerf; 63 before), Isolde 51, Lyra 49, Vex 48, Kaia 57, Sefu 47, Nyx 43, Fenna 52, Auriel 51, Marin 47, Zephyr 57, Mortis 42, Ada 42, Sirix 53, Cantor 44, Opaline 54, Oblivion 51, Shiori 48, Tempo 50. Noise is about plus or minus 6 points.
 
 ## See also
 

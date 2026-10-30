@@ -100,3 +100,6 @@ HP: assassin 600-720, tank 840, juggernaut 620-780, mage 560-580, marksman 520-5
 600-620, summoner 580. Sustain is the strongest thing in a 1v1 at this walk speed: a heal on every spell took Vesper
 to 100% and a heal on the R took Fenna to 84%; keep heals per spell ≤ 15 and an R heal ≤ 50. Melee kits swing hard:
 at 820 HP with ~35 damage spells they won 13-22%; at 840-900 HP with ~50 damage spells 71-76%.
+With basic attacks on (melee 13 per 1.2 s at 2.6 m, ranged 10 per 1.0 s at 6.5 m) fights are ~22 s instead of 29 s;
+a tank swung to 88% at 840 HP and summoners/skillshot mages fell to 32-39%. Final numbers after the re-check are in
+each spell's `default<Name>()` and the heroes README.

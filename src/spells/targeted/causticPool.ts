@@ -20,7 +20,7 @@ export interface CausticPoolSettings {
   loop: boolean;
 }
 
-export const defaultCausticPool = (): CausticPoolSettings => ({ damage: 30, tick: 7, slow: 1, loop: false });
+export const defaultCausticPool = (): CausticPoolSettings => ({ damage: 34, tick: 7, slow: 1, loop: false });
 
 // Timeline (seconds).
 const THROW_T = 0.2;

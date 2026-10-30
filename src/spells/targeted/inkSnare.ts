@@ -17,7 +17,7 @@ export interface InkSnareSettings {
   loop: boolean;
 }
 
-export const defaultInkSnare = (): InkSnareSettings => ({ damage: 45, rootSeconds: 1.0, loop: false });
+export const defaultInkSnare = (): InkSnareSettings => ({ damage: 48, rootSeconds: 1.0, loop: false });
 
 // Timeline (seconds).
 const SPREAD_T = 0.35;

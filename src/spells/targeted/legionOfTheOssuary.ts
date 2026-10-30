@@ -20,7 +20,7 @@ export interface LegionOfTheOssuarySettings {
   loop: boolean;
 }
 
-export const defaultLegionOfTheOssuary = (): LegionOfTheOssuarySettings => ({ damage: 90, loop: false });
+export const defaultLegionOfTheOssuary = (): LegionOfTheOssuarySettings => ({ damage: 95, loop: false });
 
 // Timeline (seconds).
 const DARK_T = 0.4; // the world has darkened, the cracks have spread

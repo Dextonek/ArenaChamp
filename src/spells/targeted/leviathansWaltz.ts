@@ -22,7 +22,7 @@ export interface LeviathansWaltzSettings {
   loop: boolean;
 }
 
-export const defaultLeviathansWaltz = (): LeviathansWaltzSettings => ({ damage: 92, knockup: 0.5, loop: false });
+export const defaultLeviathansWaltz = (): LeviathansWaltzSettings => ({ damage: 100, knockup: 0.5, loop: false });
 
 // Timeline (seconds).
 const LIFT_T = 0.0; // she lifts both arms, the world darkens, the pool spreads

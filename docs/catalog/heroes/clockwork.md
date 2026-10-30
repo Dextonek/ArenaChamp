@@ -54,7 +54,7 @@ Ada uses these pieces of [the combat mechanics](../../architecture/mechanics.md)
 | Unit look | the turret uses `turretLook` (see [Parts file](#parts-file)) |
 | Melee, dash, knock-up, shield | none. `maxHp` is not set, so the default 600 HP applies |
 
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a ranged control kit needs a stronger Q (now 58) and a turret at 12 per shot. After the hero-roles balance pass (2026-10-30) she wins 49% (see the roster README).
+The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a ranged control kit needs a stronger Q (now 58) and a turret at 12 per shot. After the hero-roles balance pass (2026-10-30) she wins 42% with basic attacks on (see the roster README).
 
 ## Spells
 

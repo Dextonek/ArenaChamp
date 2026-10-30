@@ -65,7 +65,7 @@ function hammer(g: CanvasRenderingContext2D, cx: number, cy: number, w: number, 
 export const forgeKit: HeroKit = {
   name: 'Brannoc',
   title: 'the Ashen Smith',
-  maxHp: 840,
+  maxHp: 780,
   melee: true,
   accent: F.body,
   foil: F.ash,
@@ -179,7 +179,7 @@ export const forgeKit: HeroKit = {
     },
     {
       key: 'R', label: 'forgefall', name: 'Forgefall', range: 0, cooldown: 20, cc: true,
-      blurb: 'Ultimate. Slag forms a colossal hammer over him and brings it down on his own spot (5 m): 105 damage and a short knock-up.',
+      blurb: 'Ultimate. Slag forms a colossal hammer over him and brings it down on his own spot (5 m): 92 damage and a short knock-up.',
       icon(g, s) {
         ground(g, s);
         // Molten crack web on the ground, ash ring around it.

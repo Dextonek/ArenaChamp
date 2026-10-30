@@ -14,7 +14,7 @@ The astral hero kit: Lyra's four spells (Q, W, E and the R ultimate), the shared
 |---|---|
 | Role | Marksman |
 | Signature | Out-range |
-| HP | 520 |
+| HP | 550 |
 | Reach | Ranged (longest reach: Q 14 m, R global) |
 
 She out-ranges everyone: steady poke from 14 m, a trap, and a backstep to reset the gap. She has the least HP and dies to a dive that closes the distance.
@@ -55,7 +55,7 @@ All four play under the normal gameplay camera (no cinematic, no letterbox). The
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [starshot](../../../src/spells/targeted/starshot.ts) | ground, aim line (BOLT, bounces once) | 14 | 2 s | 0.27 s (release; flies 22 m/s) | 3.0 s | She draws a bow of light; a star arrow flies down the aim line, hits the first enemy and bounces once to the nearest other enemy within 6 m, leaving a small constellation that snaps. Damage 52 per hit. |
+| Q | [starshot](../../../src/spells/targeted/starshot.ts) | ground, aim line (BOLT, bounces once) | 14 | 2 s | 0.27 s (release; flies 22 m/s) | 3.0 s | She draws a bow of light; a star arrow flies down the aim line, hits the first enemy and bounces once to the nearest other enemy within 6 m, leaving a small constellation that snaps. Damage 53 per hit. |
 | W | [constellation snare](../../../src/spells/targeted/constellationSnare.ts) | ground (r 4 net, TRAP) | 11 | 7 s | armed at 0.8 s, snaps when an enemy is inside; fizzles at 3.0 s | 4.0 s | An arrow goes up, stars fall around the spot and are joined into a net that lies armed until 3.0 s. The moment an enemy stands inside it snaps tight: damage 60, root 1.2 s, and it drags the enemy toward the centre; it breaks apart 0.6 s later. If nobody walks in, it fizzles with no hit. |
 | E | [orbit veil](../../../src/spells/targeted/orbitVeil.ts) | self (r 5, BACKSTEP) | 0 (self) | 9 s | 0.6 s (volley); the step starts at 0.65 s | 2.4 s | A turning constellation of 7 stars circles her under a night veil and fires gold lines at every enemy within 5 m: damage 12 and slow 1.0 s. Then it carries her 5 m away from the enemy in 0.35 s, and the chart and veil travel with her. |
 | R | [celestial hunt](../../../src/spells/targeted/celestialHunt.ts) | ground (r 3, GLOBAL) | 60 (the whole ring) | 20 s | 2.5 s | 4.5 s | The ultimate. The world goes to night and a giant constellation stag is drawn over the spot you pick, anywhere in the ring; dead beat at 1.8-1.95 s, then it charges down (impact frame, star rain). Hits check where the enemy stands now, so a walker escapes. Damage 155. |

@@ -20,7 +20,7 @@ export interface StarshotSettings {
   loop: boolean;
 }
 
-export const defaultStarshot = (): StarshotSettings => ({ damage: 52, loop: false });
+export const defaultStarshot = (): StarshotSettings => ({ damage: 53, loop: false });
 
 // Timeline (seconds).
 const BOW_END = 0.22;
