@@ -2,22 +2,21 @@ import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, clearScreenFx, createScreenFx } from '../../effects/parts';
-import { HIVE, HIVE_CSS, Honeycomb, HoneySplash, Swarm } from '../../effects/parts/hive';
+import { HIVE, Honeycomb, HoneySplash, Swarm } from '../../effects/parts/hive';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Chitin Carapace (hive kit, E: pure shield, no damage). Black chitin plates with an amber rim snap together round Sirix in
- * a shell (radius 1.2) while the swarm circles it, and he takes a 60 point shield for 3 s. At 1.0 s and 2.0 s the swarm
+ * Chitin Carapace (hive kit, E: shell visuals only, no shield and no damage; the kit gives the armor buff). Black chitin plates with an amber rim snap together round Sirix in
+ * a shell (radius 1.2) while the swarm circles it. At 1.0 s and 2.0 s the swarm
  * flares outward to radius 4 (a show only: it hits nothing); from 2.6 s the plates fall and the swarm settles.
  * Clean by 3.2 s. See pipeline/designs/kit-hive.md.
  */
 export interface ChitinCarapaceSettings {
-  shield: number;
   loop: boolean;
 }
 
-export const defaultChitinCarapace = (): ChitinCarapaceSettings => ({ shield: 60, loop: false });
+export const defaultChitinCarapace = (): ChitinCarapaceSettings => ({ loop: false });
 
 // Timeline (seconds).
 const SNAP_END = 0.3; // the plates are on
@@ -81,8 +80,6 @@ export class ChitinCarapace implements Effect {
   play() {
     this.reset();
     this.playing = true;
-    // The shield comes up with the shell.
-    this.ctx?.shieldSelf?.(this.settings.shield, 3, HIVE_CSS.body);
   }
 
   private reset() {
@@ -171,7 +168,7 @@ export const chitinCarapaceModule: EffectModule = {
   category: 'hero: hive',
   targeting: { mode: 'self', radius: RADIUS },
   create: () => new ChitinCarapace(),
-  // No damage, so no telegraph; the radius only tells the duel AI to raise the shield when an enemy is within 3.4 m.
+  // No damage, so no telegraph; the radius only tells the duel AI to cast it when an enemy is within 3.4 m.
   telegraphs: () => [],
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -181,6 +178,5 @@ export const chitinCarapaceModule: EffectModule = {
   buildGui(f, effect) {
     const s = (effect as ChitinCarapace).settings;
     f.add(s, 'loop');
-    f.add(s, 'shield', 0, 150, 5);
   },
 };

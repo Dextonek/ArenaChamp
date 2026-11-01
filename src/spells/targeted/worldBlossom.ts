@@ -11,19 +11,19 @@ import type { Effect, EffectModule } from '../../effects/types';
  * world darkens to a green dusk, roots spread over the zone round Fenna and a trunk of four braided spiral vines grows
  * up from her feet. A giant bud on top opens into a flower about 8 wide, then folds shut like a fist. A dead beat, then
  * the petals slam down flat over the zone: impact frames, a ring of smaller flowers bursts open across the radius,
- * petals and pollen explode outward. At the slam she heals and every enemy within 5 m is hit and rooted. Petals rain
+ * petals and pollen explode outward. At the slam she heals and every enemy within 5 m is hit and slowed for 2 s. Petals rain
  * down and fade, the vines wither, the roots fade, the darkness lifts. Clean by 4.5 s. See pipeline/designs/kit-grove.md.
  */
 export interface WorldBlossomSettings {
   damage: number;
   /** Fenna heals this much at the slam. */
   heal: number;
-  /** Root seconds on the hit (engine cap 1.5). */
-  root: number;
+  /** Slow seconds on the hit (engine cap 2.5). */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultWorldBlossom = (): WorldBlossomSettings => ({ damage: 95, heal: 45, root: 1.0, loop: false });
+export const defaultWorldBlossom = (): WorldBlossomSettings => ({ damage: 95, heal: 45, slow: 2.0, loop: false });
 
 // Timeline (seconds).
 const TRUNK_T = 0.3; // the trunk starts to grow (up by 1.1)
@@ -225,7 +225,7 @@ export class WorldBlossom implements Effect {
           if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
             ctx.hit(e, {
               damage: this.settings.damage, knock: 0, from: this.point, color: GROVE_CSS.body,
-              status: { kind: 'root', seconds: this.settings.root },
+              status: { kind: 'slow', seconds: this.settings.slow },
             });
           }
         }
@@ -326,6 +326,6 @@ export const worldBlossomModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
     f.add(s, 'heal', 0, 200, 1);
-    f.add(s, 'root', 0, 1.5, 0.1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

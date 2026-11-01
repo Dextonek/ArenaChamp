@@ -9,7 +9,8 @@ import type { Effect, EffectModule } from '../../effects/types';
 /**
  * Rift Cleave (void kit, Q: melee greatsword sweep). The blade draws back with a few ash motes; at 0.3 s one wide crescent
  * sweep leaves a tear standing in the air along the arc (a black slit with a pink edge on top and a cyan fringe below),
- * shards burst and are drawn into it, a cyan accent flashes, and everyone still inside the 110 degree cone is hit. From
+ * shards burst and are drawn into it, a cyan accent flashes, and everyone still inside the 110 degree cone is hit and
+ * pulled 1.5 m toward him (no knock-back). From
  * 0.5 s the rift zips shut from both ends. Clean by 1.2 s. See pipeline/designs/kit-void.md.
  */
 export interface RiftCleaveSettings {
@@ -165,7 +166,7 @@ export class RiftCleave implements Effect {
     for (const e of ctx.targets) {
       const p = e.group.position;
       if (!insideTelegraph(this.cone, p.x, p.z)) continue;
-      ctx.hit(e, { damage: this.settings.damage, knock: 2, color: VOID_CSS.body });
+      ctx.hit(e, { damage: this.settings.damage, knock: 0, pull: 1.5, from: ctx.from, color: VOID_CSS.body });
     }
   }
 }

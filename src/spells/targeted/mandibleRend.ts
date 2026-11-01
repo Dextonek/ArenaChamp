@@ -9,7 +9,8 @@ import type { Effect, EffectModule } from '../../effects/types';
 /**
  * Mandible Rend (hive kit, Q: melee double claw swipe). The claws spread and a few wasps buzz off them; at 0.3 s two
  * crossing serrated claw arcs sweep the 100 degree cone in front of Sirix with honey splashes and a green flash, and
- * everyone still inside the cone is hit and slowed. Clean by 1.2 s. See pipeline/designs/kit-hive.md.
+ * everyone still inside the cone is hit and slowed (no shove). At 0.6 s a second, mirrored swipe re-checks the cone and
+ * hits for 50% damage. Clean by 1.2 s. See pipeline/designs/kit-hive.md.
  */
 export interface MandibleRendSettings {
   damage: number;
@@ -20,7 +21,9 @@ export const defaultMandibleRend = (): MandibleRendSettings => ({ damage: 45, lo
 
 // Timeline (seconds).
 const HIT_T = 0.3;
-const SCATTER_T = 0.6;
+const SWIPE2_T = HIT_T + 0.3; // the second swipe
+const SWIPE2_FRAC = 0.35;
+const SCATTER_T = 0.8;
 const DURATION = 1.2;
 const CONE_ANGLE = 100;
 const CONE_RADIUS = 3.2;
@@ -38,7 +41,7 @@ export class MandibleRend implements Effect {
   /** The cone of the last cast (from the caster toward the target). */
   cone: TelegraphShape = { kind: 'cone', x: 0, z: 0, radius: CONE_RADIUS, angle: CONE_ANGLE, dir: 0 };
   private time = 0;
-  private flags = { hit: false, scatter: false };
+  private flags = { hit: false, swipe2: false, scatter: false };
 
   // Cast geometry.
   private from = new THREE.Vector3();
@@ -96,7 +99,7 @@ export class MandibleRend implements Effect {
   private reset() {
     this.time = 0;
     this.shake = 0;
-    this.flags.hit = this.flags.scatter = false;
+    this.flags.hit = this.flags.swipe2 = this.flags.scatter = false;
     clearScreenFx(this.screen);
     this.screen.tint.set(HIVE.dark);
     this.claws.reset();
@@ -126,6 +129,10 @@ export class MandibleRend implements Effect {
       f.hit = true;
       this.swing();
     }
+    if (f.hit && !f.swipe2 && t >= SWIPE2_T) {
+      f.swipe2 = true;
+      this.swing(true);
+    }
     if (f.hit && !f.scatter && t >= SCATTER_T) {
       f.scatter = true;
       this.swarm.scatter(0.5, false, 3);
@@ -141,26 +148,36 @@ export class MandibleRend implements Effect {
     }
   }
 
-  private swing() {
+  private swing(second = false) {
     const ctx = this.ctx;
-    // Two crossing serrated claw arcs sweep the cone from opposite ends.
+    // Two crossing serrated claw arcs sweep the cone from opposite ends; the second swipe comes back mirrored.
     this.v1.copy(this.from).setY(1.15);
-    this.claws.slash(this.v1, this.fwd, 4.2, 110, 0.3, 0.6, { width: 1.0, sweep: 0.12 });
-    this.claws.slash(this.v1, this.fwd, 4.2, 110, -0.3, 0.6, { width: 0.92, reverse: true, sweep: 0.12 });
-    // The wasps follow the claws through the cone.
-    this.swarm.count = 18;
-    this.swarm.radius = 0.7;
-    this.v1.copy(this.from).setY(1.2);
-    this.v2.copy(this.from).addScaledVector(this.fwd, 3.0).setY(1.3);
-    this.swarm.stream(this.v1, this.v2, 0.3);
-    this.v2.copy(this.from).addScaledVector(this.fwd, 2.2).setY(0.9);
-    this.honey.burst(this.v2, 9, 3.6, 0.15, 3.2);
+    if (second) {
+      this.claws.slash(this.v1, this.fwd, 4.2, 110, -0.3, 0.6, { width: 0.92, sweep: 0.12 });
+      this.claws.slash(this.v1, this.fwd, 4.2, 110, 0.3, 0.6, { width: 1.0, reverse: true, sweep: 0.12 });
+      this.v2.copy(this.from).addScaledVector(this.fwd, 2.2).setY(0.9);
+      this.honey.burst(this.v2, 5, 3.0, 0.15, 3.2);
+    } else {
+      this.claws.slash(this.v1, this.fwd, 4.2, 110, 0.3, 0.6, { width: 1.0, sweep: 0.12 });
+      this.claws.slash(this.v1, this.fwd, 4.2, 110, -0.3, 0.6, { width: 0.92, reverse: true, sweep: 0.12 });
+      // The wasps follow the claws through the cone.
+      this.swarm.count = 18;
+      this.swarm.radius = 0.7;
+      this.v1.copy(this.from).setY(1.2);
+      this.v2.copy(this.from).addScaledVector(this.fwd, 3.0).setY(1.3);
+      this.swarm.stream(this.v1, this.v2, 0.3);
+      this.v2.copy(this.from).addScaledVector(this.fwd, 2.2).setY(0.9);
+      this.honey.burst(this.v2, 9, 3.6, 0.15, 3.2);
+    }
     if (!ctx) return;
     // Re-check at the swing: everyone still inside the cone is hit and slowed.
     for (const e of ctx.targets) {
       const p = e.group.position;
       if (!insideTelegraph(this.cone, p.x, p.z)) continue;
-      ctx.hit(e, { damage: this.settings.damage, knock: 2, from: ctx.from, color: HIVE_CSS.body, status: { kind: 'slow', seconds: 1.0 } });
+      ctx.hit(e, {
+        damage: second ? Math.round(this.settings.damage * SWIPE2_FRAC) : this.settings.damage, knock: 0, from: ctx.from, color: HIVE_CSS.body,
+        status: { kind: 'slow', seconds: 1.0 },
+      });
     }
   }
 }

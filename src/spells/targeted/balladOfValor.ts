@@ -6,21 +6,18 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Ballad of Valor (bard kit, E: a self aura). Two stave ribbons circle him (radius 1.3) with notes riding them, and he
- * is shielded at once. At 1.0 and 2.0 he strums and a sound ring races out to radius 4: every enemy inside takes a small
+ * Ballad of Valor (bard kit, E: a self aura). Two stave ribbons circle him (radius 1.3) with notes riding them. At 1.0 and 2.0 he strums and a sound ring races out to radius 4: every enemy inside takes a small
  * hit and is knocked back. At 2.0 golden notes rise around him and he heals. At 2.6 the staves unwind into falling
  * notes. Clean by 3.2 s. The telegraph ends at the first pulse. See pipeline/designs/kit-bard.md.
  */
 export interface BalladOfValorSettings {
-  shield: number;
-  shieldSeconds: number;
   heal: number;
   damage: number;
   knock: number;
   loop: boolean;
 }
 
-export const defaultBalladOfValor = (): BalladOfValorSettings => ({ shield: 30, shieldSeconds: 3, heal: 40, damage: 10, knock: 2, loop: false });
+export const defaultBalladOfValor = (): BalladOfValorSettings => ({ heal: 55, damage: 10, knock: 2, loop: false });
 
 // Timeline (seconds).
 const DRAW_END = 0.3; // the staves have circled in
@@ -88,8 +85,6 @@ export class BalladOfValor implements Effect {
   play() {
     this.reset();
     this.playing = true;
-    // The shield goes up at the cast.
-    this.ctx?.shieldSelf?.(this.settings.shield, this.settings.shieldSeconds, BARD_CSS.body);
   }
 
   private reset() {
@@ -207,7 +202,6 @@ export const balladOfValorModule: EffectModule = {
   buildGui(f, effect) {
     const s = (effect as BalladOfValor).settings;
     f.add(s, 'loop');
-    f.add(s, 'shield', 0, 100, 1);
     f.add(s, 'heal', 0, 100, 1);
     f.add(s, 'damage', 0, 60, 1);
     f.add(s, 'knock', 0, 8, 0.5);

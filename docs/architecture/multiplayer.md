@@ -43,7 +43,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 |---|---|
 | Transport | One WebSocket (`ws` 8.18.3, the only new dependency) on the page's own host at `/ws`. The Vite plugin in `vite.config.ts` attaches it to the dev / preview server, filtering upgrades by path so Vite's HMR socket is untouched. |
 | Authority | **Server referee, client-owned heroes.** The server owns sessions, lobbies, pairing, match start (countdown), HP, the winner and the stats. Each client owns its own hero's movement and casts, and decides the hits *its own hero* takes: it replays the other side's cast locally and runs the duel's impact-time dodge check where its hero really stood. That keeps "walk out of the red" fair for the dodger and needs no headless effect simulation on the server. |
-| Trust | Fine for friends on one machine or a LAN, not cheat-proof: a modified client could ignore its hits or skip cooldowns. The server clamps positions into the ring, drops casts before the countdown ends, drops a cast of the same slot within 0.8 s (R: 10 s), accepts a reported hit only for a cast the other side made in the last 12 s, and caps one reported hit at 250. |
+| Trust | Fine for friends on one machine or a LAN, not cheat-proof: a modified client could ignore its hits or skip cooldowns. The server clamps positions into the ring, drops casts before the countdown ends, drops a cast of the same slot within 0.35 s (R: 10 s, except one free second R within 4 s: a recast), accepts a reported hit only for a cast the other side made in the last 12 s, and caps one reported hit at 250. |
 | Accounts | Names 3-16 `[A-Za-z0-9_-]`, passwords 4-64 characters hashed with PBKDF2-SHA256 (Web Crypto, 100 000 iterations, per-user salt; accounts from before the port used scrypt and are re-hashed at their next login, Node only). Stored in `server/data/accounts.json` (git-ignored) on Node, in the Durable Object's SQLite storage on Cloudflare. No e-mail, no external auth. |
 | Sessions | A random token per sign-in, kept in memory on the server (a server restart means logging in again) and in **`sessionStorage`** on the client: per tab, so two tabs of one browser can be two players. One connection per account: a second sign-in signs the first out. |
 | Same hero | Not allowed in one match (the client has one effect instance per spell label). The lobby greys out the other seat's hero and the server refuses `ready` with it; the queue only pairs different heroes. |
@@ -116,18 +116,23 @@ Client → server:
 | `move` | `x`, `z`, `yaw` | clamped to the ring, relayed |
 | `cast` | `id`, `slot`, `x`, `z`, `fx`, `fz`, `enemy` | aim point, caster spot, aimed at the enemy; dropped before the countdown ends |
 | `cast` (since 2026-10-30) | + `yaw` | which way the hero faced (spells fired straight ahead) |
-| `took_hit` | `id`, `damage`, `color`, `soaked` | `damage` got past the hero's own shield, `soaked` is what the shield took; a hit from a basic attack is capped at 40 |
+| `took_hit` | `id`, `damage`, `color`, `soaked`, `blocked` | `damage` got past the hero's own shield, `soaked` is what the shield took; a hit from a basic attack is capped at 40. `blocked`: the victim's passive swallowed it whole (Isolde's ice block, Oblivion's void maw): no HP is taken, and the attacker's passives do not count it |
 | `dodged` | `id` | |
 | `attack` | `id` | a basic attack released at the other hero; at most one per 0.5 s |
 | `heal` | `amount` | the hero healed itself; the server adds it (at most 150, at most 300 in 2 s, up to the max HP) |
 | `status` | `kind`, `seconds`, `color` | a status the hero took (shown on the other screen; ≤ 3 s) |
 | `shield` | `amount`, `seconds`, `color` | a shield the hero got (shown on the other screen; ≤ 400, ≤ 10 s) |
+| `cast.mods`, `attack.mods` | `power`, `status`, `debuff`, `knock` | the hero identity layer's cast power and extras ([traits.md](traits.md)); power clamped 0.25-3, extras to the status / buff caps; a spell hit may now be up to 400 |
+| `buff` | `kind`, `amount`, `seconds` | a buff or debuff on the hero (shown on the other screen; ≤ 50 %, ≤ 6 s) |
+| `stacks` | `name`, `n` | stacks the other hero's mechanic keeps on this hero, decided here (≤ 20) |
+| `spend` | `amount` | HP the hero paid for a spell (≤ 100, never below 1 HP) |
+| `move.r` | | the hero's resource (0-1000), for the other screen's bar |
 
 Server → client: `session { token, profile }`, `auth_error { error }` (empty error = token expired), `logged_out
 { reason }`, `profile`, `error { error }` (shown as a toast), `lobbies { list }`, `lobby { lobby, you }`, `queue
 { on, since, size }`, `match_start { id, side, hp, you, foe }`, `match_fight { countdown, round }`, `round_end`, `round_start`, `peer_move`,
-`peer_cast` (+ `yaw`), `peer_hit { id, damage, soaked, hp, color }`, `peer_dodged`, `peer_attack { id }`, `peer_heal { amount, hp }`,
-`peer_status { kind, seconds, color }`, `peer_shield { amount, seconds, color }`, `hp { hp }`, `match_end { result, winner, reason,
+`peer_cast` (+ `yaw`), `peer_hit { id, damage, soaked, hp, color, blocked }`, `peer_dodged`, `peer_attack { id }`, `peer_heal { amount, hp }`,
+`peer_status { kind, seconds, color }`, `peer_shield { amount, seconds, color }`, `peer_buff`, `peer_stacks`, `peer_spend { amount, hp }`, `hp { hp }`, `match_end { result, winner, reason,
 seconds, score, hp, stats, profile }`.
 
 ## Stats

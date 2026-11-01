@@ -3,7 +3,7 @@
 ## Role (2026-10-30)
 **Juggernaut (melee, summons), 700 HP.** Signature: the swarm. See hero-roles.md.
 - Q Mandible Rend, W Swarm Leap: unchanged (the leap drops 2 wasps).
-- E Chitin Carapace: pure shield 60 for 3 s; the swarm flare is a show only, no hit, no telegraph. cd 9.
+- E Chitin Carapace: no shield any more (the kit gives an armor buff); the swarm flare is a show only, no hit, no telegraph. cd 9.
 - R Queen's Descent: no `cc`. The dive hits 75 and slows 1.5 (was stun 0.6) and drops 3 melee wasp soldiers (40 HP, 6 s, 6 per 1 s) at the centre; with the leap's 2 that is at most 5 of the cap of 6. cd 20.
 
 **Signature shape: the hexagon and the swarm.** Everything is **honeycomb hexagons** (wax-amber cells, hexagonal
@@ -39,7 +39,7 @@ statuses, shield). Sirix is a **melee brawler** (`melee: true`, `maxHp: 700`) wh
 A melee double claw swipe. Telegraph: a `cone` of 100°, radius 3.2, start 0, impact 0.3. 0–0.15: the claws spread,
 a few wasps buzz off them. **0.3 hit**: two crossing serrated claw arcs (amber-edged dark crescents with
 hexagonal flecks) sweep the cone, honey splashes, a green accent (2 frames): every enemy still in the cone
-`ctx.hit(e, { damage: 40, knock: 2, color: HIVE_CSS.body, status: { kind: 'slow', seconds: 1.0 } })`. Clean by 1.2.
+`ctx.hit(e, { damage: 40, knock: 0, color: HIVE_CSS.body, status: { kind: 'slow', seconds: 1.0 } })` (no shove). **0.6**: a second, mirrored swipe re-checks the cone: 35% damage (14), same slow, no knock, a second mirrored arc. Clean by 1.2.
 
 ## W · Swarm Leap (`swarmLeap.ts`, label `swarm leap`, `ground`, range 8, cd 9, damage 30, `dash`, `summon`)
 A gap closer that brings the swarm. 0–0.1: the swarm lifts off his back in a cloud. 0.1–0.35:
@@ -51,7 +51,7 @@ count: 2, hp: 40, seconds: 6, damage: 6, attackEvery: 1, look: waspLook })`. Tel
 
 ## E · Chitin Carapace (`chitinCarapace.ts`, label `chitin carapace`, `self`, radius 4, cd 9, shield 40 + 2 × 12)
 0–0.3: hexagonal chitin plates snap together around him in a shell (radius 1.2); the swarm circles it;
-`ctx.shieldSelf(40, 3, HIVE_CSS.body)`. At 1.0 and 2.0 the swarm bursts outward to radius 4: every enemy inside
+no shield (the kit's armor buff replaces it). At 1.0 and 2.0 the swarm bursts outward to radius 4: every enemy inside
 `ctx.hit(e, { damage: 12, knock: 0, status: { kind: 'slow', seconds: 0.8 } })`. 2.6–3.0: the plates fall and the
 swarm settles. Clean by 3.2. Telegraph ends at the first pulse.
 

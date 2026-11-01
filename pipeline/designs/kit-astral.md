@@ -6,7 +6,7 @@
 
 | Slot | Spell | New shape and numbers |
 |---|---|---|
-| Q | Starshot | Bounce skillshot, `aim: 'line'`, range 14, cd 2, 40, speed 22, radius 0.4, `bounce: 1`. The bow draws, the arrow (a `BoltSet` look in gold) flies the line, bounces once to the nearest other enemy within 6 m; each hit leaves a star and a gold line. |
+| Q | Starshot | Straight skillshot, `aim: 'line'`, range 14, cd 2, 40, speed 22, radius 0.4, no bounce. The bow draws, the arrow (a `BoltSet` look in gold) flies the line and ends at the first enemy; the hit leaves a star. |
 | W | Constellation Snare | TRAP, `cc`. Ground mode (targeting radius 40 so every enemy is listed; the net itself is r 4). The net is armed at 0.8 s and lies until 3.0 s; the first frame an enemy's live position is inside it snaps: 60 + **root 1.2** and the old drag-in. No one inside by 3.0 s: it fizzles with no hit. Telegraph drawn 0.. 3.2 s. |
 | E | Orbit Veil | BACKSTEP. Self mode, radius 5, cd 9. One volley at 0.6 s (12 + **slow 1.0**) on enemies within 5 of where she stood; at 0.65 s `moveCaster` carries her 5 m away from the enemy in 0.35 s, the chart, veil and orbit travel with her. 2.4 s total. |
 | R | Celestial Hunt | GLOBAL. Range 60, cd 20, radius 7 -> 3, 140. The stag is drawn over the picked spot anywhere in the ring and lands at 2.5 s; hits re-check live positions, so a walker escapes. |
@@ -41,10 +41,9 @@ Read `kit-common.md` first (files, timing, look lessons).
 
 ## Q · Starshot (`starshot.ts`, label `starshot`, `enemies`, maxTargets 3, range 12)
 0–0.25: she draws a bow of light (a gold crescent with a string line). **0.35**: a `StarArrow` flies to the first
-target; on hit it splits and chains to the 2nd and 3rd nearest (0.08 s per hop). At each target a star point
-pops (hit star, cyan accent 2 frames) and a gold `ConstellationLines` segment remains, joining the targets in
-order: the shot leaves a small constellation. `ctx.hit(e, {damage: 45, knock: 2})` per target at its arrival.
-0.9: the lines snap, the stars fall as tiny shooting stars. Clean by 1.6. Telegraph: a line to the first target.
+target and ends there (no bounce or chain). A star point pops over it (hit star, cyan accent 2 frames).
+`ctx.hit(e, {damage: 45, knock: 2})` at its arrival.
+Then the star falls as a tiny shooting star. Clean by 1.6. Telegraph: a line to the first target.
 
 ## W · Constellation Snare (`constellationSnare.ts`, label `constellation snare`, `ground`, radius 4, range 11)
 0–0.2: she fires an arrow up. 0.2–0.6: a `StarChart` ring (radius 4) draws on at the point; 7–9 stars fall onto

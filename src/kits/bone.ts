@@ -295,7 +295,7 @@ export const boneKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'ossuary ward', name: 'Ossuary Ward', range: 9, cooldown: 9, cc: true,
+      key: 'E', label: 'ossuary ward', name: 'Ossuary Ward', range: 9, cooldown: 9, cc: true, debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
       blurb: 'A cage of ribs grows round the chosen enemy, closes and roots it for 1.2 s, and flexes again to cut it with bone shards.',
       icon(g, s) {
         iconGround(g, s);

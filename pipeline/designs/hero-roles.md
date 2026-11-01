@@ -80,6 +80,9 @@ prison built round the enemy · `EXECUTE` tiny radius, huge hit · `SELF-R` ulti
 late, very big, easy to see · `SWEEP` wide cone.
 
 ## The 20 kits at a glance
+> 2026-10-31: some spell types below changed in the uniqueness pass (fewer shields, bounces and self-centred CC
+> ultimates); see [kit-uniqueness.md](kit-uniqueness.md).
+
 | Hero | Role | Signature | Q | W | E | R |
 |---|---|---|---|---|---|---|
 | Nyx | assassin | Shadowstep | DASH strike | AURA silence | QUICK fan ×3 | EXECUTE |

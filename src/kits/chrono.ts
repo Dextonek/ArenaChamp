@@ -244,6 +244,7 @@ export const chronoKit: HeroKit = {
     },
     {
       key: 'E', label: 'rewind', name: 'Rewind', range: 0, cooldown: 11,
+      buff: { kind: 'haste', amount: 0.25, seconds: 2 },
       blurb: 'Marks his spot and shields him. A moment later he rewinds back to it, healing and bursting a dial that shoves enemies away.',
       icon(g, s) {
         iconGround(g, s);

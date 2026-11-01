@@ -8,26 +8,23 @@ import type { Effect, EffectModule } from '../../effects/types';
 
 /**
  * Dune Ward (sand kit, E: self aura): three sand ribbons rise from the floor and wind around Sefu in a slow spiral
- * above a small glyph ring; the sand shields him (45, 4 s). Twice (1.0 s, 2.0 s) the ribbons flare and a flat ring of
+ * above a small glyph ring. Twice (1.0 s, 2.0 s) the ribbons flare and a flat ring of
  * flung sand sweeps out to radius 5, hitting and slowing every enemy inside. Then the ribbons set into sandstone and
  * crumble. See pipeline/designs/kit-sand.md.
  */
 export interface DuneWardSettings {
   damage: number;
-  /** Shield he gains at the cast (held SHIELD_SECONDS). */
-  shield: number;
   /** Slow seconds on each ring hit (engine cap 2.5). */
   slow: number;
   loop: boolean;
 }
 
-export const defaultDuneWard = (): DuneWardSettings => ({ damage: 13, shield: 45, slow: 1.0, loop: false });
+export const defaultDuneWard = (): DuneWardSettings => ({ damage: 13, slow: 1.0, loop: false });
 
 // Timeline (seconds).
 const RISE_T = 0.35;
 const PULSES = [1.0, 2.0];
 const PULSE_LEN = 0.55;
-const SHIELD_SECONDS = 4;
 const SET_T = 2.6; // the ribbons set into stone
 const CRUMBLE_T = 2.8;
 const DURATION = 3.2;
@@ -101,10 +98,7 @@ export class DuneWard implements Effect {
     this.playing = true;
   }
 
-  private shielded = false;
-
   private reset() {
-    this.shielded = false;
     this.time = 0;
     this.shake = 0;
     this.flare = 0;
@@ -138,10 +132,6 @@ export class DuneWard implements Effect {
     const ctx = this.ctx;
     const f = this.flags;
 
-    if (!this.shielded) {
-      this.shielded = true;
-      ctx?.shieldSelf?.(this.settings.shield, SHIELD_SECONDS, SAND_CSS.body);
-    }
     // Events: the two sand pulses hit everything inside the radius; dust blows up at the ring edge a beat later.
     for (let i = 0; i < PULSES.length; i++) {
       if (!f.pulse[i] && t >= PULSES[i]) {
@@ -246,7 +236,6 @@ export const duneWardModule: EffectModule = {
     const s = (effect as DuneWard).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 60, 1);
-    f.add(s, 'shield', 0, 120, 1);
     f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

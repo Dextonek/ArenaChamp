@@ -40,10 +40,17 @@ export class MatchController {
     });
     net.on('match_start', (m) => this.start(m));
     net.on('match_fight', (m) => this.active && api.duel.countdownFrom(m.countdown));
-    net.on('peer_move', (m) => this.active && api.duel.peerMove(m.x, m.z, m.yaw, m.ts));
+    net.on('peer_move', (m) => {
+      if (!this.active) return;
+      api.duel.peerMove(m.x, m.z, m.yaw, m.ts);
+      if (m.r !== undefined) api.duel.peerResource(m.r);
+    });
     net.on('peer_cast', (m) => this.active && api.duel.peerCast(m));
-    net.on('peer_hit', (m) => this.active && api.duel.peerHit(m.damage, m.hp, m.color, m.soaked));
-    net.on('peer_attack', (m) => this.active && api.duel.peerAttack(m.id));
+    net.on('peer_hit', (m) => this.active && api.duel.peerHit(m.damage, m.hp, m.color, m.soaked, m.id, m.blocked));
+    net.on('peer_attack', (m) => this.active && api.duel.peerAttack(m.id, m.mods));
+    net.on('peer_spend', (m) => this.active && api.duel.peerSpend(m.amount, m.hp));
+    net.on('peer_buff', (m) => this.active && api.duel.peerBuff(m.kind, m.amount, m.seconds));
+    net.on('peer_stacks', (m) => this.active && api.duel.peerStacks(m.name, m.n));
     net.on('peer_heal', (m) => this.active && api.duel.peerHeal(m.amount, m.hp));
     net.on('peer_status', (m) => this.active && api.duel.peerStatus(m.kind, m.seconds, m.color));
     net.on('peer_shield', (m) => this.active && api.duel.peerShield(m.amount, m.seconds, m.color));
@@ -97,10 +104,13 @@ export class MatchController {
       arena: round === 1 ? m.id : `${m.id}-${round}`,
       net: {
         cast: (c) => net.send({ t: 'cast', ...c }),
-        tookHit: (id, damage, color, soaked) => net.send({ t: 'took_hit', id, damage, color, soaked }),
+        tookHit: (id, damage, color, soaked, blocked) => net.send({ t: 'took_hit', id, damage, color, soaked, blocked }),
         dodged: (id) => net.send({ t: 'dodged', id }),
-        attack: (id) => net.send({ t: 'attack', id }),
+        attack: (id, mods) => net.send({ t: 'attack', id, mods }),
+        buff: (kind, amount, seconds) => net.send({ t: 'buff', kind, amount, seconds }),
+        stacks: (name, n) => net.send({ t: 'stacks', name, n }),
         heal: (amount) => net.send({ t: 'heal', amount }),
+        spend: (amount) => net.send({ t: 'spend', amount }),
         status: (kind, seconds, color) => net.send({ t: 'status', kind, seconds, color }),
         shield: (amount, seconds, color) => net.send({ t: 'shield', amount, seconds, color }),
       },
@@ -120,8 +130,10 @@ export class MatchController {
   private sendMove() {
     if (!this.active) return;
     const c = this.api.arena.caster.group;
-    const msg = { t: 'move', x: +c.position.x.toFixed(3), z: +c.position.z.toFixed(3), yaw: +c.rotation.y.toFixed(3) };
-    const key = `${msg.x},${msg.z},${msg.yaw}`;
+    // `r`: the hero's resource (src/traits), so the other screen shows its bar.
+    const res = this.api.duel.heroRt?.trait?.resource ? Math.round(this.api.duel.heroRt.res) : undefined;
+    const msg = { t: 'move', x: +c.position.x.toFixed(3), z: +c.position.z.toFixed(3), yaw: +c.rotation.y.toFixed(3), r: res };
+    const key = `${msg.x},${msg.z},${msg.yaw},${res}`;
     if (key === this.lastSent) return;
     this.lastSent = key;
     // The sender's clock lets the other side place each position at the moment it was true, not when it arrived.

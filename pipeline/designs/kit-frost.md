@@ -4,7 +4,7 @@
 **Controller**, 600 HP. Signature: *Frostbite, then freeze*.
 - Q Rime Spear: a piercing skillshot (`aim: 'line'`, range 12, speed 24, 53 damage), **slow 1.5**; the ferns and crystals grow where the first body is hit, the javelin shatters at max range.
 - W Frostfern Field: a LINE (`aim: 'line'`, `cc`, range 9, strip 9 m x 2.6): three fern patches race out of her feet, at 0.9 s the strip cracks: 58 damage and **root 1.2** to whoever is still in it.
-- E Glacial Mantle: **shield 50** (4 s) at the cast; the two blizzard pulses (12) **slow 1.0**.
+- E Glacial Mantle: no shield. She is **encased in an ice block for `hold` 1.5 s** (the trait: untouchable, cannot act), then it shatters and the blizzard's two pulses (12) **slow 1.0**.
 - R Winter's Crown: a SELF-R (`cc`, range 0, radius 7 to 5): the crown drives down round her, 130 damage and **stun 1.0**.
 
 **Signature shape: frost ferns.** Rime creeps across the floor (and up the enemies) as feathery, branching fern
@@ -52,12 +52,13 @@ held); a few snowflakes swirl. **0.8 hit**: the field cracks: 20–26 ice crysta
 outward; the ferns fade by 2.2. Clean by 2.3.
 
 ## E · Glacial Mantle (`glacialMantle.ts`, label `glacial mantle`, `self`, radius 4)
-0–0.35: frost ferns grow out from under her (radius 2.2) and up her coat; 6 long ice crystals grow around her
-shoulders and hips like armour plates, pointing outward and down (a mantle). 0.35–2.8: a ring of snow swirls
-around her at radius 2–3.5 (a blizzard band, not a cloud: flakes and 3–4 thin pale wind arcs); two pulses at 1.0
-and 2.0: the crystals flare pale, a rime ring races out to radius 4, enemies inside get frost ferns at their feet
-and `ctx.hit(e, {damage: 12, knock: 0})`. 2.8–3.2: the mantle shatters into shards, the ferns fade. Clean by 3.3.
-Loopable section 0.35–2.8.
+0–0.15: a faceted block of pale blue translucent ice (6-sided column ~2.7 tall, rime-white edges, soft inner glow,
+slow shimmer) forms round her with 9 crystal spikes and frost ferns (radius 2.2) at its base. It is held for exactly
+`hold` = 1.5 s (a slight strain just before the end). At 1.5 it SHATTERS: 30 shards fly out, a frost ring races over
+the ground, the ferns fade, and the blizzard starts: a ring of snow swirls around her at radius 2–3.5 (flakes and 3–4
+thin pale wind arcs); two pulses at 2.0 and 3.0 (0.5 and 1.5 s after the shatter): a rime ring races out to radius
+4, enemies inside get frost ferns at their feet and `ctx.hit(e, {damage: 12, knock: 0, status: slow 1.0})`. The
+blizzard fades at 3.7, clean by 4.0 (= hold + 2.5). Telegraph (radius 4) starts at the shatter. No shield.
 
 ## R · Winter's Crown (`wintersCrown.ts`, label `winter's crown`, `ground`, radius 7, range 13)
 The ultimate: a **colossal crown of ice** forms in the sky over the zone and drives down into it.

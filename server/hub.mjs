@@ -20,8 +20,10 @@ const BREAK_MS = 3000;
 // A hit must come from a cast the other side made at most this long ago; a slot can't be cast faster than SLOT_GAP_MS
 // (R: R_GAP_MS). Lenient on purpose: the real cooldowns live in the kits, which are still changing.
 const HIT_WINDOW_MS = 12000;
-const SLOT_GAP_MS = 800;
+const SLOT_GAP_MS = 350;
 const R_GAP_MS = 10000;
+// A free second R (a recast such as Oblivion's Collapse) may follow the first within RECAST_MS.
+const RECAST_MS = 4000;
 // Basic attacks: at most one per ATTACK_GAP_MS, a hit from one at most ATTACK_MAX damage. Heals: one at most HEAL_MAX,
 // at most HEAL_WINDOW_MAX within HEAL_WINDOW_MS. Statuses and shields the clients report are only relayed (for the
 // look on the other screen), clamped to these caps.
@@ -34,6 +36,13 @@ const STATUS_KINDS = ['stun', 'root', 'slow', 'silence', 'blind', 'knockup'];
 const STATUS_MAX_S = 3;
 const SHIELD_MAX = 400;
 const SHIELD_MAX_S = 10;
+// The identity layer (src/traits): a cast's power and extras, buffs and debuffs, stacks, the resource.
+const POWER_MIN = 0.25;
+const POWER_MAX = 3;
+const BUFF_KINDS = ['haste', 'might', 'armor', 'vulnerable', 'weaken'];
+const BUFF_MAX = 0.5;
+const BUFF_MAX_S = 6;
+const SPELL_HIT_MAX = 400;
 const HERO_RE = /^[A-Za-z][A-Za-z' -]{0,23}$/;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -43,7 +52,7 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
  * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[] }} Lobby
  * @typedef {{ client: Client, name: string, hero: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
  *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
- *   heals: { at: number, amount: number }[] }} Player
+ *   heals: { at: number, amount: number }[], rRecast?: boolean }} Player
  * @typedef {{ id: string, players: Player[], state: 'loading' | 'fight' | 'break' | 'over', created: number, startedAt: number,
  *   fightAt: number, round: number, score: number[], timer: any }} Match
  */
@@ -199,19 +208,31 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         const match = c.match;
         if (!match || match.state === 'over' || !num(m.x) || !num(m.z)) return;
         const p = clampRing(m.x, m.z);
-        return send(match.players[1 - c.side].client, { t: 'peer_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined });
+        return send(match.players[1 - c.side].client, {
+          t: 'peer_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined,
+          r: num(m.r) ? Math.max(0, Math.min(1000, m.r)) : undefined,
+        });
       }
       case 'cast': {
         const match = c.match;
         if (!match || match.state !== 'fight' || Date.now() < match.fightAt) return;
         if (![0, 1, 2, 3].includes(m.slot) || !num(m.id) || !num(m.x) || !num(m.z) || !num(m.fx) || !num(m.fz)) return;
         const me = match.players[c.side], now = Date.now();
-        if (now - me.lastSlot[m.slot] < (m.slot === 3 ? R_GAP_MS : SLOT_GAP_MS)) return;
-        me.lastSlot[m.slot] = now;
+        const since = now - me.lastSlot[m.slot];
+        if (m.slot === 3 && since < R_GAP_MS) {
+          // Only one quick second R (a recast), and it does not restart the long gap.
+          if (since < SLOT_GAP_MS || since > RECAST_MS || me.rRecast) return;
+          me.rRecast = true;
+        } else {
+          if (since < SLOT_GAP_MS) return;
+          me.lastSlot[m.slot] = now;
+          if (m.slot === 3) me.rRecast = false;
+        }
         me.recent.set(m.id, now);
         me.casts++;
         return send(match.players[1 - c.side].client, {
           t: 'peer_cast', id: m.id, slot: m.slot, x: m.x, z: m.z, fx: m.fx, fz: m.fz, enemy: !!m.enemy, yaw: num(m.yaw) ? m.yaw : undefined,
+          mods: mods(m.mods),
         });
       }
       case 'attack': {
@@ -223,7 +244,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         me.lastAttack = now;
         me.recent.set(m.id, now);
         me.attacks.add(m.id);
-        return send(match.players[1 - c.side].client, { t: 'peer_attack', id: m.id });
+        return send(match.players[1 - c.side].client, { t: 'peer_attack', id: m.id, mods: mods(m.mods) });
       }
       case 'heal': {
         const match = c.match;
@@ -245,6 +266,29 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
           t: 'peer_status', kind: m.kind, seconds: Math.max(0, Math.min(STATUS_MAX_S, m.seconds)), color: color(m.color),
         });
       }
+      case 'spend': {
+        // A hero paid HP for a spell (Vesper): off the HP the server counts, never below 1 (it can't KO itself).
+        const match = c.match;
+        if (!match || match.state !== 'fight' || !num(m.amount) || m.amount <= 0) return;
+        const me = match.players[c.side];
+        const amount = Math.min(Math.round(m.amount), 100, me.hp - 1);
+        if (amount <= 0) return;
+        me.hp -= amount;
+        send(c, { t: 'hp', hp: me.hp });
+        return send(match.players[1 - c.side].client, { t: 'peer_spend', amount, hp: me.hp });
+      }
+      case 'buff': {
+        const match = c.match;
+        if (!match || match.state !== 'fight' || !BUFF_KINDS.includes(m.kind) || !num(m.amount) || !num(m.seconds)) return;
+        return send(match.players[1 - c.side].client, {
+          t: 'peer_buff', kind: m.kind, amount: Math.max(0, Math.min(BUFF_MAX, m.amount)), seconds: Math.max(0, Math.min(BUFF_MAX_S, m.seconds)),
+        });
+      }
+      case 'stacks': {
+        const match = c.match;
+        if (!match || match.state !== 'fight' || typeof m.name !== 'string' || !num(m.n)) return;
+        return send(match.players[1 - c.side].client, { t: 'peer_stacks', name: m.name.slice(0, 16), n: Math.max(0, Math.min(20, Math.round(m.n))) });
+      }
       case 'shield': {
         const match = c.match;
         if (!match || match.state !== 'fight' || !num(m.amount) || !num(m.seconds)) return;
@@ -262,11 +306,13 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         const castAt = foe.recent.get(m.id);
         if (castAt === undefined || Date.now() - castAt > HIT_WINDOW_MS) return;
         // `damage` is what got past the hero's own shield; `soaked` what the shield took (only shown on the other side).
-        const damage = Math.max(0, Math.min(foe.attacks.has(m.id) ? ATTACK_MAX : 250, Math.round(m.damage)));
+        const damage = Math.max(0, Math.min(foe.attacks.has(m.id) ? ATTACK_MAX : SPELL_HIT_MAX, Math.round(m.damage)));
         const soaked = num(m.soaked) ? Math.max(0, Math.min(SHIELD_MAX, Math.round(m.soaked))) : 0;
-        me.hp = Math.max(0, me.hp - damage);
+        // `blocked`: the victim's passive swallowed the hit whole (ice block, void maw): no damage gets through.
+        const blocked = m.blocked === true;
+        if (!blocked) me.hp = Math.max(0, me.hp - damage);
         foe.hits++;
-        send(foe.client, { t: 'peer_hit', id: m.id, damage, soaked, hp: me.hp, color: color(m.color) });
+        send(foe.client, { t: 'peer_hit', id: m.id, damage: blocked ? 0 : damage, soaked, hp: me.hp, color: color(m.color), blocked });
         send(c, { t: 'hp', hp: me.hp });
         if (me.hp <= 0) endRound(match, 1 - c.side, 'ko');
         return;
@@ -459,6 +505,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         p.hp = p.max;
         p.recent.clear();
         p.lastSlot.fill(-Infinity);
+        p.rRecast = false;
         p.attacks.clear();
         p.lastAttack = -Infinity;
         p.heals = [];
@@ -506,6 +553,24 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
     /** For tests and the console: what the hub holds right now. */
     state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length }),
   };
+}
+
+/**
+ * A cast's mods from a client (src/traits `CastMods`), clamped: power, one status, one debuff, extra knock.
+ * @param {any} v
+ */
+function mods(v) {
+  if (!v || typeof v !== 'object') return undefined;
+  /** @type {any} */
+  const out = { power: num(v.power) ? Math.max(POWER_MIN, Math.min(POWER_MAX, v.power)) : 1 };
+  if (v.status && STATUS_KINDS.includes(v.status.kind) && num(v.status.seconds)) {
+    out.status = { kind: v.status.kind, seconds: Math.max(0, Math.min(STATUS_MAX_S, v.status.seconds)) };
+  }
+  if (v.debuff && BUFF_KINDS.includes(v.debuff.kind) && num(v.debuff.amount) && num(v.debuff.seconds)) {
+    out.debuff = { kind: v.debuff.kind, amount: Math.max(0, Math.min(BUFF_MAX, v.debuff.amount)), seconds: Math.max(0, Math.min(BUFF_MAX_S, v.debuff.seconds)) };
+  }
+  if (num(v.knock)) out.knock = Math.max(0, Math.min(6, v.knock));
+  return out;
 }
 
 /** A css colour from a client, or undefined. @param {unknown} v */

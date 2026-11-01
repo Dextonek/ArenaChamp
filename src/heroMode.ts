@@ -4,8 +4,10 @@ import type { Enemy } from './effects/common';
 import type { TargetingSpec } from './effects/targeting';
 import type { StatusKind, StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
-import { HeroFigure } from './heroFigure';
+import { HeroFigure, castStyle } from './heroFigure';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
+import { traitFor, type TraitRuntime } from './traits';
+import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -40,6 +42,8 @@ export class HeroMode {
   private kit: HeroKit;
   private cooldowns = [0, 0, 0, 0];
   private rooted = 0;
+  /** A trait's hold set during the cast's rules (`holdStill`), applied after the spell's own root. */
+  private holdFloor = 0;
   private aiming = -1;
   private moveTo: THREE.Vector3 | null = null;
   private pending: { slot: number; target: Target } | null = null;
@@ -64,6 +68,10 @@ export class HeroMode {
 
   // The hero's figure (stands in for the arena's capsule caster while hero mode is on).
   private figure = new HeroFigure();
+  /** Seconds the hero stays frozen solid (a trait's hold): the figure's pose stops too. */
+  private heldFor = 0;
+  /** Camera shake from hits on the hero (read by the render loop), decays on its own. */
+  hitShake = 0;
   /** Basic attacks (src/attacks): the enemy being attacked, an attack-move point, and whether A armed attack-move. */
   private attacker: Attacker;
   private attackFx = new AttackFx();
@@ -85,6 +93,15 @@ export class HeroMode {
   /** A basic attack on `target` was released (a network duel tells the other side). */
   onAttack?: (target: Enemy) => void;
   /**
+   * The duel's rules for this hero's identity layer (src/traits): ammo, recast, hold charge, cooldown changes, the
+   * resource and the passive's badge. Null outside a duel (plain hero mode plays the kit as is).
+   */
+  traits: TraitRuntime | null = null;
+  /** The duel turns a cast's charge and the trait's rules into the cooldown (and remembers the cast's mods). */
+  castRules?: (slot: number, base: number, charge: number) => number;
+  /** When the current aim started (performance.now()), for hold-to-charge slots. */
+  private aimStart = 0;
+  /**
    * Network duel, the side that starts at the -Z end of the ring: the camera looks from -Z toward +Z, so the
    * opponent is in front of the camera instead of behind it.
    */
@@ -93,6 +110,8 @@ export class HeroMode {
   // HUD.
   private hud: HTMLDivElement;
   private slotEls: { box: HTMLDivElement; shade: HTMLDivElement; secs: HTMLDivElement }[] = [];
+  /** The passive slot (badge), the resource bar and the buff row. */
+  private passiveEls: { badge: HTMLDivElement; resFill: HTMLDivElement; resText: HTMLDivElement; resBox: HTMLDivElement; buffs: HTMLDivElement } | null = null;
   private tip: HTMLDivElement;
   private toast: HTMLDivElement;
   private toastT = 0;
@@ -189,6 +208,16 @@ export class HeroMode {
     });
   }
 
+  /** Walk speed in m/s: the hero's own (its trait), else the default. */
+  get speed() {
+    return traitFor(this.kit.name)?.speed ?? HERO_SPEED;
+  }
+
+  /** Sets a slot's cooldown (a trait refund or reset). */
+  setCooldown(i: number, seconds: number) {
+    this.cooldowns[i] = Math.max(0, seconds);
+  }
+
   get kitName() {
     return this.kit.name;
   }
@@ -211,10 +240,21 @@ export class HeroMode {
     return this.host.arena.applyStatus(this.host.arena.caster, kind, seconds, color);
   }
 
+  /** The hero stands still and does not attack for `seconds` (a trait's self-lock: Isolde's ice block). */
+  holdStill(seconds: number) {
+    this.rooted = Math.max(this.rooted, seconds);
+    // A trait holds inside the cast's rules, before the spell sets its own root: keep the longer of the two then.
+    this.holdFloor = Math.max(this.holdFloor, seconds);
+    this.heldFor = Math.max(this.heldFor, seconds);
+    this.moveTo = null;
+    this.clearAttack();
+  }
+
   /** Clears cooldowns, aim and orders (a new duel round). */
   resetRound() {
     this.cooldowns.fill(0);
     this.rooted = 0;
+    this.heldFor = 0;
     this.host.arena.clearStatuses(this.host.arena.caster);
     this.pending = null;
     this.moveTo = null;
@@ -233,6 +273,16 @@ export class HeroMode {
   /** Tips the hero's figure over (defeat), `t` 0..1. */
   fallHero(t: number) {
     this.figure.fall(t);
+  }
+
+  /**
+   * A hit landed on the hero (the duel): the figure flinches away from `from` and flashes in the hit's colour, and the
+   * camera shakes a little on big hits. `damage` is what got through; a fully shielded hit only flashes.
+   */
+  figureHit(damage: number, color?: string, from?: THREE.Vector3) {
+    const strength = Math.min(1, damage / 60);
+    this.figure.hit(damage > 0 ? 0.25 + 0.75 * strength : 0.1, damage > 0 ? color : '#9cc4ec', from);
+    if (damage >= 25) this.hitShake = Math.max(this.hitShake, 0.04 + 0.1 * strength);
   }
 
   /** Switches the hero: new bar, indicator colours from the kit, cooldowns and aim cleared. */
@@ -284,6 +334,8 @@ export class HeroMode {
     const hero = arena.caster.group.position;
     for (let i = 0; i < 4; i++) this.cooldowns[i] = Math.max(0, this.cooldowns[i] - dt);
     this.rooted = Math.max(0, this.rooted - dt);
+    this.heldFor = Math.max(0, this.heldFor - dt);
+    this.hitShake = Math.max(0, this.hitShake - dt * 0.5);
 
     this.followCamera(hero, dt);
     this.updateCursor();
@@ -308,13 +360,13 @@ export class HeroMode {
       const d = new THREE.Vector3(this.moveTo.x - hero.x, 0, this.moveTo.z - hero.z);
       const len = d.length();
       if (len < 0.05) this.moveTo = null;
-      else arena.walk(d.multiplyScalar(Math.min(1, (HERO_SPEED * status.speedMul * dt) / len)));
+      else arena.walk(d.multiplyScalar(Math.min(1, (this.speed * status.speedMul * dt) / len)));
     }
 
     this.updateIndicators(dt, hero);
     this.updateHud(dt);
     const caster = arena.caster.group;
-    this.figure.follow(dt, hero, caster.rotation.y, this.rooted > 0 || this.attacker.posing);
+    this.figure.follow(dt, hero, caster.rotation.y, { attack: this.attacker.motion, status: this.status, held: this.heldFor > 0 });
   }
 
   // --- figure -------------------------------------------------------------------------------------------
@@ -322,7 +374,7 @@ export class HeroMode {
   /** Shows the current kit's figure and hides the capsule caster (or restores the capsule when off). */
   private showFigure() {
     const capsule = this.host.arena.caster.group;
-    const shown = this.figure.setModel(this.enabled ? this.kit.model : undefined, capsule.position);
+    const shown = this.figure.setModel(this.enabled ? this.kit.model : undefined, capsule.position, this.kit);
     for (const c of capsule.children) c.visible = !shown;
   }
 
@@ -357,7 +409,11 @@ export class HeroMode {
     if (this.locked || this.spectate) return;
     const spell = this.kit.spells[i];
     if (this.status.cannotCast) { this.say(this.status.stunned ? 'Stunned' : 'Silenced'); return; }
-    if (this.cooldowns[i] > 0) { this.say(`${spell.name} is on cooldown`); return; }
+    const recast = !!this.traits?.canRecast(i);
+    if (this.cooldowns[i] > 0 && !recast) { this.say(`${spell.name} is on cooldown`); return; }
+    const why = recast ? null : this.traits?.blocked(i);
+    if (why) { this.say(why); return; }
+    this.aimStart = performance.now();
     const spec = this.host.targeting(spell.label);
     if (!spec) { this.say(`${spell.label}: not a targeted effect`); return; }
     if (spec.mode === 'self') {
@@ -485,7 +541,7 @@ export class HeroMode {
 
   private castNow(i: number, target: Target) {
     const spell = this.kit.spells[i];
-    if (this.cooldowns[i] > 0 || this.status.cannotCast) return;
+    if (this.status.cannotCast || !this.ready(i)) return;
     const arena = this.host.arena;
     if ('enemy' in target) arena.setTarget(target.enemy);
     else arena.setGroundPoint(target.point);
@@ -493,11 +549,23 @@ export class HeroMode {
     this.attacker.cancel();
     // Blind: the cast point is rolled now and the effect (its danger zones too) is played at the offset spot.
     arena.aimOffset = this.status.blind ? arena.blindOffset() : null;
-    this.rooted = this.host.cast(spell.label);
+    const hold = this.traits?.trait?.hold;
+    const charge = hold && hold.slot === i && !this.spectate ? Math.min(1, (performance.now() - this.aimStart) / 1000 / hold.seconds) : 1;
+    // The rules run before the effect plays: the cast's mods must be ready for hits that land at once.
+    const cooldown = this.castRules ? this.castRules(i, spell.cooldown, charge) : spell.cooldown;
+    this.rooted = Math.max(this.host.cast(spell.label), this.holdFloor);
+    this.holdFloor = 0;
+    this.figure.cast(castStyle(spell, i, 'enemy' in target, this.attacker.motion.melee, this.rooted), this.rooted, i === 3);
     arena.aimOffset = null;
-    this.cooldowns[i] = spell.cooldown;
+    if (cooldown >= 0) this.cooldowns[i] = cooldown;
     this.onCast?.(spell.label, i, target);
     this.flashSlot(i);
+  }
+
+  /** Slot `i` can be cast now: off cooldown (or its recast window is open) and not held back by the hero's rules. */
+  ready(i: number) {
+    if (this.traits?.canRecast(i)) return true;
+    return this.cooldowns[i] <= 0 && !this.traits?.blocked(i);
   }
 
   /** Autopilot (duel simulations): cooldown left on slot `i`, and whether the hero is rooted by a cast. */
@@ -516,9 +584,10 @@ export class HeroMode {
 
   /** Autopilot: casts slot `i` at an enemy or a ground point if it is off cooldown (no range check). */
   autoCast(i: number, target: { enemy: Enemy } | { point: THREE.Vector3 }) {
-    if (this.locked || this.cooldowns[i] > 0 || this.status.cannotCast) return false;
+    if (this.locked || this.status.cannotCast || !this.ready(i)) return false;
+    const before = this.host.arena.castSeq;
     this.castNow(i, target);
-    return this.cooldowns[i] > 0;
+    return this.host.arena.castSeq !== before;
   }
 
   /** The live enemy nearest the cursor, if one is within reach of it. */
@@ -651,6 +720,7 @@ export class HeroMode {
     }
     plate.append(portrait, names);
     root.appendChild(plate);
+    this.passiveEls = this.buildPassive(root, tint);
 
     kit.spells.forEach((spell, i) => {
       const ult = spell.key === 'R';
@@ -691,6 +761,54 @@ export class HeroMode {
     return root;
   }
 
+  /** The passive slot (its name and badge, the twist in the tooltip), the resource bar and the buff row. */
+  private buildPassive(root: HTMLDivElement, tint: (pct: number, base?: string) => string) {
+    const trait = traitFor(this.kit.name);
+    if (!trait) return null;
+    const kit = this.kit;
+    const col = document.createElement('div');
+    col.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:4px;';
+    const box = document.createElement('div');
+    box.style.cssText =
+      `position:relative;width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid ${tint(55)};` +
+      `background:radial-gradient(circle at 50% 40%, ${tint(45)}, ${tint(10)});display:flex;align-items:center;justify-content:center;`;
+    const glyph = document.createElement('div');
+    glyph.textContent = trait.passive.name.slice(0, 1);
+    glyph.style.cssText = `font:700 20px ui-serif,Georgia,serif;color:${kit.foil};opacity:0.9;`;
+    const badge = document.createElement('div');
+    badge.style.cssText =
+      'position:absolute;right:1px;bottom:1px;min-width:14px;padding:0 3px;border-radius:7px;background:#000a;' +
+      `color:#fff1e6;font:800 10px ui-sans-serif,system-ui;text-align:center;`;
+    box.append(glyph, badge);
+    box.addEventListener('mouseenter', () => {
+      const r = box.getBoundingClientRect();
+      this.tip.innerHTML = `<div style="font:700 13px ui-sans-serif,system-ui;margin-bottom:3px">${trait.passive.name} ` +
+        `<span style="opacity:0.6;font-weight:600">[passive]</span></div>${trait.passive.blurb}` +
+        (trait.twist ? `<div style="margin-top:6px;font-weight:700">${trait.twist.name}</div>${trait.twist.blurb}` : '');
+      this.tip.style.display = 'block';
+      this.tip.style.left = `${Math.max(8, r.left + r.width / 2 - 130)}px`;
+      this.tip.style.top = `${r.top - this.tip.offsetHeight - 10}px`;
+    });
+    box.addEventListener('mouseleave', () => (this.tip.style.display = 'none'));
+    const label = document.createElement('div');
+    label.textContent = trait.passive.name;
+    label.style.cssText = `font:600 10px ui-sans-serif,system-ui;color:${kit.foil};opacity:0.85;white-space:nowrap;`;
+    // The resource bar and the buff row sit under the passive.
+    const resBox = document.createElement('div');
+    resBox.style.cssText = `position:relative;width:64px;height:8px;border-radius:4px;background:#0008;overflow:hidden;display:${trait.resource ? '' : 'none'};`;
+    const resFill = document.createElement('div');
+    resFill.style.cssText = `position:absolute;left:0;top:0;bottom:0;width:0;background:${trait.resource?.color ?? kit.accent};`;
+    const resText = document.createElement('div');
+    resText.style.cssText = 'font:600 9px ui-sans-serif,system-ui;opacity:0.75;white-space:nowrap;';
+    resText.style.display = trait.resource ? '' : 'none';
+    resBox.appendChild(resFill);
+    const buffs = document.createElement('div');
+    buffs.style.cssText = 'display:flex;gap:3px;min-height:14px;';
+    col.append(box, label, resBox, resText, buffs);
+    root.appendChild(col);
+    return { badge, resFill, resText, resBox, buffs };
+  }
+
   private showTip(box: HTMLDivElement, spell: HeroSpell) {
     const r = box.getBoundingClientRect();
     const range = spell.range > 0 ? `range ${spell.range}` : 'self';
@@ -716,9 +834,30 @@ export class HeroMode {
         ? `conic-gradient(rgba(6,2,3,0.78) ${f * 360}deg, rgba(6,2,3,0.25) 0deg)`
         : '';
       secs.textContent = cd > 0 ? (cd >= 1 ? String(Math.ceil(cd)) : cd.toFixed(1)) : '';
+      const t = this.traits;
+      if (t?.trait?.charges?.slot === i) secs.textContent = `${t.ammo}` + (t.ammo < t.trait.charges.count ? ` · ${Math.ceil(t.ammoWait)}` : '');
+      if (t?.canRecast(i)) { secs.textContent = 'RE'; shade.style.background = 'rgba(255,230,160,0.25)'; }
       box.style.outline = this.aiming === i ? `2px solid ${this.kit.foil}` : '';
       box.style.outlineOffset = '2px';
     });
+    const pe = this.passiveEls, t = this.traits;
+    if (pe) {
+      pe.badge.textContent = t?.badge() ?? '';
+      pe.badge.style.display = pe.badge.textContent ? '' : 'none';
+      const r = t?.trait?.resource;
+      if (r && t) {
+        pe.resFill.style.width = `${(100 * t.res) / r.max}%`;
+        pe.resText.textContent = `${r.name} ${Math.round(t.res)}/${r.max}`;
+      }
+      const list = this.status.activeBuffs();
+      const key = list.map((b) => b.kind + Math.ceil(b.left)).join();
+      if (pe.buffs.dataset.key !== key) {
+        pe.buffs.dataset.key = key;
+        pe.buffs.innerHTML = list.map((b) =>
+          `<div title="${b.kind} ${Math.round(b.amount * 100)}%" style="width:14px;height:14px;border-radius:3px;font:700 10px/14px ui-sans-serif;text-align:center;` +
+          `background:${DEBUFFS.includes(b.kind) ? '#3a0a14' : '#0a2a1e'};color:${BUFF_COLOR[b.kind]};border:1px solid ${BUFF_COLOR[b.kind]}">${BUFF_GLYPH[b.kind]}</div>`).join('');
+      }
+    }
     this.toastT = Math.max(0, this.toastT - dt);
     this.toast.style.opacity = String(Math.min(1, this.toastT * 3));
     // Silence and stun grey out the QWER bar; blind darkens the screen edges.

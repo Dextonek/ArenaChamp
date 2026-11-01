@@ -190,7 +190,7 @@ export const stormKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'static field', name: 'Static Field', range: 0, cooldown: 9, cc: true,
+      key: 'E', label: 'static field', name: 'Static Field', range: 0, cooldown: 9, cc: true, buff: { kind: 'haste', amount: 0.25, seconds: 2 },
       blurb: 'A ring of lightning expands from her out to 5 m and stuns whoever its front passes: stand far, or inside before it starts.',
       icon(g, s) {
         iconGround(g, s);
@@ -209,8 +209,8 @@ export const stormKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'eye of the storm', name: 'Eye of the Storm', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A storm wheel turns over a 5 m zone and drops one colossal lightning tree through its eye.',
+      key: 'R', label: 'eye of the storm', name: 'Eye of the Storm', range: 13, cooldown: 26,
+      blurb: 'Ultimate. A storm wheel turns over a 5 m zone and drops one colossal lightning tree through its eye: 10% harder, and slower to come back.',
       icon(g, s) {
         iconGround(g, s);
         // A ring of cloud (the wheel) seen at an angle, with a clear eye.

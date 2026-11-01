@@ -191,7 +191,7 @@ export const groveKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'bloom lash', name: 'Bloom Lash', range: 10, cooldown: 3,
-      blurb: 'A spiral vine coils across to one enemy and a flower blooms on top; the lash heals her for 8.',
+      blurb: 'A spiral vine coils across to one enemy and a flower blooms on top: it plants two seeds, or blooms the seeds already there.',
       icon(g, s) {
         ground(g, s);
         // A vine spiralling over the ground from the lower left up to a flower at the upper right.
@@ -237,6 +237,7 @@ export const groveKit: HeroKit = {
     },
     {
       key: 'E', label: 'verdant ward', name: 'Verdant Ward', range: 9, cooldown: 12, summon: true,
+      buff: { kind: 'haste', amount: 0.2, seconds: 3 },
       blurb: 'A flowering vine grows where she points (80 HP, 6 s) and fires petals at whatever comes near.',
       icon(g, s) {
         ground(g, s);
@@ -275,8 +276,8 @@ export const groveKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'world blossom', name: 'World Blossom', range: 0, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A colossal flower closes over her and slams down: she heals 45 and every enemy within 5 m is rooted.',
+      key: 'R', label: 'world blossom', name: 'World Blossom', range: 0, cooldown: 20,
+      blurb: 'Ultimate. A colossal flower closes over her and slams down: enemies within 5 m are slowed for 2 s, and she heals 45 at once and 60 more over 3 s.',
       icon(g, s) {
         ground(g, s);
         rootRing(g, s * 0.5, s * 0.86, s * 0.46, s * 0.12, s * 0.04);

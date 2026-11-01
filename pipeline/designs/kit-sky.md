@@ -8,7 +8,7 @@
 |---|---|---|
 | Q | Gale Edge | Cooldown 2.5 -> 2. |
 | W | Tailwind Rush | Unchanged (dash in, knock-up 0.4). |
-| E | Cyclone Guard | BACKSTEP. Self mode, radius 4, cd 9. The whirl wraps him (shield 30, 3 s), one flare at 0.25 s cuts and shoves enemies within 4 (13, knock 3), then at 0.3 s `moveCaster` carries him 5 m straight away from the enemy in 0.35 s and the whirl travels with him. Total 1.5 s (was 3.2 s, two pulses). |
+| E | Cyclone Guard | FORWARD DASH, no shield. Ground mode (targeting radius 40 so every enemy is listed), range 6. The whirl wraps him, at 0.25 s `moveCaster` carries him toward the aim point in 0.3 s, up to 6 m and 2 m past the aim point (so aiming at an enemy goes THROUGH it); every enemy within 1.4 m of the path is cut once (24, knock 2) as the whirl reaches it. Telegraph: the path line. Total 1.5 s. |
 | R | Thousand Winds | Radius 7 -> 4; the cyclone's tightening and burst scale with it. Still knock-up 0.5, 132. |
 
 **Signature shape: the wind crescent.** Wind is drawn as **sharp pale sickle crescents** and **thin spiral gust
@@ -49,8 +49,8 @@ real landing spot (`moveCaster` returns it): a spiral gust lifts everyone within
 `ctx.hit(e, { damage: 45, knock: 0, color: SKY_CSS.body, status: { kind: 'knockup', seconds: 0.6 } })`. Telegraph:
 a `line` along the dash (width 1.4) plus a `circle` of 2.5 at the point, impact 0.4. Clean by 1.6.
 
-## E · Cyclone Guard (`cycloneGuard.ts`, label `cyclone guard`, `self`, radius 4, cd 9, shield 50 + 2 × 13)
-0–0.2: a whirl of crescents and gust ribbons wraps him (radius 1.2–1.8); `ctx.shieldSelf(50, 3, SKY_CSS.body)`.
+## E · Cyclone Guard (`cycloneGuard.ts`, label `cyclone guard`, `ground`, range 6, cd 9; now a forward dash, see the table at the top)
+0–0.2: a whirl of crescents and gust ribbons wraps him (radius 1.2–1.8). Older design below (shield + two flares), superseded:
 At 1.0 and 2.0 the whirl flares out to radius 4 as a ring of crescents: every enemy inside
 `ctx.hit(e, { damage: 13, knock: 2 })`. 2.6–3.0: the whirl unwinds into leaves. Clean by 3.2. Telegraph ends at the
 first pulse.

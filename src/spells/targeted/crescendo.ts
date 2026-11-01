@@ -13,16 +13,19 @@ import type { Effect, EffectModule } from '../../effects/types';
  * pulled a little toward the centre. At 1.6 every note stops mid-air and the strings draw back; a dead beat at 1.85;
  * at 2.0 the strings snap forward and a wall of sound rings races down onto the point. At 2.2 the chord lands: two
  * impact frames, concentric sound rings across the zone, every note scatters, a gold star, ground refraction, the hit
- * and a short stun. The notes drift down and fade, the lyre dissolves into notes, the dark lifts. Clean by 4.5 s.
- * See pipeline/designs/kit-bard.md.
+ * (no stun). The notes drift down and fade, the lyre dissolves into notes, the dark lifts. From the chord on an ENCORE
+ * AURA follows Cantor for `encore` seconds (4): golden notes and staff lines orbit him at waist height and a soft gold
+ * ring on the ground pulses on a beat (2 per second); the duel trait gives his spells no cooldown meanwhile, the aura is
+ * the tell. It fades over the last 0.4 s. Clean by chord + encore + 0.4 s (6.6 s). See pipeline/designs/kit-bard.md.
  */
 export interface CrescendoSettings {
   damage: number;
-  stunSeconds: number;
+  /** Seconds of the encore aura after the chord (his spells have no cooldown meanwhile). */
+  encore: number;
   loop: boolean;
 }
 
-export const defaultCrescendo = (): CrescendoSettings => ({ damage: 95, stunSeconds: 0.8, loop: false });
+export const defaultCrescendo = (): CrescendoSettings => ({ damage: 95, encore: 3, loop: false });
 
 // Timeline (seconds).
 const MARK_END = 0.4; // darkness in, the ring of staves drawn
@@ -33,7 +36,12 @@ const CHORD_T = 2.0;
 const HIT_T = 2.2;
 const DISSOLVE_T = 2.6;
 const DISSOLVE_END = 3.4;
-const DURATION = 4.5;
+const DURATION = 4.5; // the base show; the encore aura can run longer (see `duration`)
+const ENCORE_FADE = 0.4;
+const BEAT_RATE = 2; // aura beats per second
+const AURA_NOTES = 9;
+const AURA_Y = 1.1; // waist height
+const AURA_R = 1.15;
 
 const RADIUS = 5;
 const LYRE_SCALE = 6;
@@ -81,6 +89,16 @@ export class Crescendo implements Effect {
   private shadeMat = new THREE.MeshBasicMaterial({ color: BARD.dark, transparent: true, opacity: 0, depthWrite: false });
   private pop = new StarBurst({ points: 12, inner: 0.3, color: BARD.accent, core: 0xfff6d0, additive: false });
   private groundShock = new ShockRefraction({ facing: 'ground' });
+  // Encore aura: orbiting notes, staff-line rings and a pulsing gold ground ring, all following the caster.
+  private aura = new THREE.Group();
+  private auraNotes: THREE.Group[] = [];
+  private auraLines: THREE.Mesh[] = [];
+  private auraGround!: THREE.Mesh;
+  private auraBeatRing!: THREE.Mesh;
+  private auraMat = new THREE.MeshBasicMaterial({ color: BARD.accent, transparent: true, opacity: 0, depthWrite: false });
+  private auraLineMat = new THREE.MeshBasicMaterial({ color: BARD.accent, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+  private auraGroundMat = new THREE.MeshBasicMaterial({ color: BARD.accent, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+  private auraBeatMat = new THREE.MeshBasicMaterial({ color: BARD.accent, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
   private path: THREE.Vector3[] = [];
   private ringPath: THREE.Vector3[] = [];
 
@@ -102,15 +120,45 @@ export class Crescendo implements Effect {
     this.shade = new THREE.Mesh(new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2), this.shadeMat);
     this.shade.renderOrder = 1;
     this.shade.visible = false;
-    this.group.add(
+    this.buildAura();
+    this.group.add(this.aura, 
       this.shade, this.ringStave.mesh, ...this.spirals.map((s) => s.mesh), this.lyre.mesh, this.notes.mesh, this.rings.mesh,
       this.pop.mesh, this.groundShock.mesh,
     );
     this.reset();
   }
 
+  /** The aura, built once at the origin: notes (flat head + stem + flag), three staff-line rings, a ground ring and a beat ring. */
+  private buildAura() {
+    const head = new THREE.CircleGeometry(0.1, 14).scale(1.25, 1, 1);
+    const stem = new THREE.PlaneGeometry(0.03, 0.34).translate(0.11, 0.17, 0);
+    const flag = new THREE.PlaneGeometry(0.12, 0.05).translate(0.17, 0.3, 0);
+    for (let i = 0; i < AURA_NOTES; i++) {
+      const n = new THREE.Group();
+      n.add(new THREE.Mesh(head, this.auraMat), new THREE.Mesh(stem, this.auraMat), new THREE.Mesh(flag, this.auraMat));
+      n.children.forEach((c) => { c.renderOrder = 8; });
+      this.auraNotes.push(n);
+      this.aura.add(n);
+    }
+    for (let i = 0; i < 3; i++) {
+      const line = new THREE.Mesh(new THREE.TorusGeometry(AURA_R, 0.012, 4, 64).rotateX(Math.PI / 2), this.auraLineMat);
+      line.position.y = AURA_Y - 0.14 + i * 0.14;
+      line.renderOrder = 8;
+      this.auraLines.push(line);
+      this.aura.add(line);
+    }
+    this.auraGround = new THREE.Mesh(new THREE.RingGeometry(0.82, 1, 56).rotateX(-Math.PI / 2), this.auraGroundMat);
+    this.auraGround.position.y = 0.07;
+    this.auraGround.renderOrder = 4;
+    this.auraBeatRing = new THREE.Mesh(new THREE.RingGeometry(0.94, 1, 56).rotateX(-Math.PI / 2), this.auraBeatMat);
+    this.auraBeatRing.position.y = 0.08;
+    this.auraBeatRing.renderOrder = 4;
+    this.aura.add(this.auraGround, this.auraBeatRing);
+    this.aura.visible = false;
+  }
+
   get duration() {
-    return DURATION;
+    return Math.max(DURATION, HIT_T + this.settings.encore + ENCORE_FADE);
   }
 
   get impactTime() {
@@ -164,6 +212,8 @@ export class Crescendo implements Effect {
     this.rings.reset();
     this.shade.visible = false;
     this.shadeMat.opacity = 0;
+    this.aura.visible = false;
+    this.auraMat.opacity = this.auraLineMat.opacity = this.auraGroundMat.opacity = this.auraBeatMat.opacity = 0;
     this.pop.set(this.point, 0, 0);
     this.groundShock.set(this.point, 0, 0);
   }
@@ -196,7 +246,7 @@ export class Crescendo implements Effect {
     this.rings.update(dt);
     if (!this.playing) return;
     this.time += dt;
-    if (this.time >= DURATION) {
+    if (this.time >= this.duration) {
       this.finish();
       if (this.settings.loop) this.play();
       return;
@@ -314,7 +364,7 @@ export class Crescendo implements Effect {
     // Re-check where everyone stands now: enemies who walked out are spared.
     if (ctx) for (const e of ctx.targets) {
       if (this.inside(e)) {
-        ctx.hit(e, { damage: this.settings.damage, knock: 4, from: P, color: BARD_CSS.body, status: { kind: 'stun', seconds: this.settings.stunSeconds } });
+        ctx.hit(e, { damage: this.settings.damage, knock: 4, from: P, color: BARD_CSS.body });
       }
     }
   }
@@ -351,6 +401,33 @@ export class Crescendo implements Effect {
       }
     }
 
+    // --- The encore aura follows the caster from the chord for `encore` seconds, beating twice a second. ---
+    const enc = this.settings.encore;
+    const ak = after >= 0 ? smoothstep(after / 0.3) * (1 - smoothstep((after - enc) / ENCORE_FADE)) : 0;
+    this.aura.visible = ak > 0.001;
+    if (this.aura.visible) {
+      const cp = ctx?.caster.group.position;
+      if (cp) this.aura.position.set(cp.x, 0, cp.z);
+      else this.aura.position.set(this.point.x, 0, this.point.z);
+      const ph = after * BEAT_RATE;
+      const beat = Math.pow(1 - (ph - Math.floor(ph)), 3); // 1 on the beat, easing out
+      this.auraMat.opacity = 0.9 * ak;
+      this.auraLineMat.opacity = (0.5 + 0.2 * beat) * ak;
+      for (let i = 0; i < AURA_NOTES; i++) {
+        const a = after * 1.6 + (i / AURA_NOTES) * Math.PI * 2;
+        const r = AURA_R + 0.06 * Math.sin(after * 3 + i);
+        const n = this.auraNotes[i];
+        n.position.set(Math.cos(a) * r, AURA_Y + (((i % 3) - 1) * 0.14) + 0.05 * Math.sin(after * 4 + i * 1.7) + 0.06 * beat, Math.sin(a) * r);
+        n.rotation.y = -a + Math.PI / 2; // face outward so the glyph reads from the camera side
+        n.scale.setScalar(1 + 0.25 * beat);
+      }
+      this.auraLines.forEach((l, i) => { l.rotation.y = after * (i % 2 ? -0.7 : 0.9); l.scale.setScalar(1 + 0.04 * beat); });
+      this.auraGround.scale.setScalar(1.6 + 0.12 * beat);
+      this.auraGroundMat.opacity = (0.22 + 0.2 * beat) * ak;
+      this.auraBeatRing.scale.setScalar(1.6 + 1.0 * (1 - beat));
+      this.auraBeatMat.opacity = 0.45 * beat * ak;
+    }
+
     // --- The chord: gold star at the centre, ground refraction, shake. ---
     if (f.hit) {
       const sp = StarBurst.pop(after, 0, 0.05);
@@ -385,6 +462,6 @@ export const crescendoModule: EffectModule = {
     const s = (effect as Crescendo).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 300, 1);
-    f.add(s, 'stunSeconds', 0, 1.2, 0.1);
+    f.add(s, 'encore', 0, 8, 0.5);
   },
 };

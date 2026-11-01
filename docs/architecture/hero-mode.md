@@ -56,6 +56,8 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 | Right click on an enemy or summoned unit (not aiming) | basic attack: walk into range and keep attacking it until another order ([attacks.md](attacks.md)) |
 | `A`, then left click | attack-move: on an enemy, attack it; on the ground, walk there and attack the first enemy in range |
 | `S` | stop: no walk, no attack, no pending cast |
+| Q W E R on a hold spell (traits: Kaia Q, Sefu W) | aim as usual; the longer you aim before the click, the stronger the cast (full after the hero's hold time) |
+| Q W E R in a recast window (the slot shows RE) | the same spell once more, free, at 60% damage |
 | Mouse wheel | zoom (factor clamped 0.55-1.7, default 1.25) |
 
 `enemy` / `enemies` spells need a living enemy within 2.2 units of the cursor (`HOVER_PICK`), else the toast "No enemy there". `ground` spells aim at the cursor point clamped to the spell's range.
@@ -135,7 +137,18 @@ gained `onCast(label, slot, target)`, `flipCamera` (side 1 looks from -Z) and `s
 [multiplayer.md](multiplayer.md).
 
 `HeroFigure` ([heroFigure.ts](../../src/heroFigure.ts)) is the shared model driver for the player's hero and the
-opponent: `setModel(url)`, `follow(dt, pos, yaw, casting)` (walk cycle, breath, casting arm), `fall(t)`, `stand()`.
+opponent. All motion is procedural, on the rig every hero GLB shares (pelvis, chest, neck, head, arms, legs, feet,
+plus `sway_*` chains); there are no animation clips.
+
+| Call | What it does |
+|---|---|
+| `setModel(url, at, kit)` | Swaps the model (cached per url). The kit sets the style: heavy (HP above 600) plants wider and sways the chest more; fast (speed above 4.1) leans in and runs with bent arms; melee keeps a guard up. |
+| `follow(dt, pos, yaw, state)` | Every frame. `state` = `{ attack: Attacker.motion, status: StatusSet, held }`. It layers rest (breath, weight shift, look round), a walk scaled to the real speed (hip twist, chest counter-turn, lean into starts and turns), the basic attack (melee slashes alternate arms, hammer and greatsword (attack look `smash`, `cleave`) swing overhead, ranged flicks), the cast pose, stun slump, knock-up flail, root tug, the hit flinch and the sway springs. `held` freezes the pose (ice block). A dt of 0 (paused) only places it. |
+| `cast(style, seconds, big)` | Called right after a cast roots the hero (`HeroMode.castNow`, `Duel.castSpell`, so online peers too): wind-up, a snap into the strike with a little overshoot, then settle. `castStyle(spell, slot, onEnemy, melee, seconds)` picks the style from the spell data: dash = lunge, summon = raise, self-cast = burst (a long one without CC = channel), melee range = swing, skillshot = thrust, clicked enemy = point, other ground spells = slam. Slot R plays 18% bigger. |
+| `hit(strength, tint, from)` | Flinch away from `from` and a tinted flash (`Hero.setFlash`). The player's hero gets it from `Duel.damagePlayer` (`HeroMode.figureHit`, also a small camera shake on 25+ damage); the opponent from its capsule flash jumping (`Arena.flashOf`). Blocked hits never reach it. |
+| `fall(t)`, `stand()` | Knees give, chest folds, tips forward; `stand` drops every running pose. |
+
+`pipeline/tools/pose-sheet.js` renders a contact sheet of every pose for one hero (see its header).
 
 ## See also
 

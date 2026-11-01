@@ -203,6 +203,7 @@ export const prismKit: HeroKit = {
     },
     {
       key: 'W', label: 'refraction field', name: 'Refraction Field', range: 10, cooldown: 7,
+      debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
       blurb: 'A ring of crystals feeds a prism that bursts in spectral light: damage and a blind to everyone inside.',
       icon(g, s) {
         iconGround(g, s);

@@ -9,19 +9,19 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Anvil Drop (forge kit, W: small lob, radius 2, stuns): a ring of molten runes draws itself on the ground while a huge dark anvil
+ * Anvil Drop (forge kit, W: small lob, radius 2, slows): a ring of molten runes draws itself on the ground while a huge dark anvil
  * with hot edges falls from the sky onto it. It slams (slag splashes out in a ring, a crater of slag, heavy sparks,
  * a ground shock), holds, then crumbles into iron chunks that sink while the crater cools to black. See
  * pipeline/designs/kit-forge.md.
  */
 export interface AnvilDropSettings {
   damage: number;
-  /** Seconds of stun on the hit. */
-  stun: number;
+  /** Seconds of slow on the hit. */
+  slow: number;
   loop: boolean;
 }
 
-export const defaultAnvilDrop = (): AnvilDropSettings => ({ damage: 42, stun: 1.0, loop: false });
+export const defaultAnvilDrop = (): AnvilDropSettings => ({ damage: 42, slow: 1.5, loop: false });
 
 // Timeline (seconds).
 const FALL_T = 0.1; // the anvil starts to fall
@@ -147,7 +147,7 @@ export class AnvilDrop implements Effect {
         for (const e of ctx.targets) {
           const p = e.group.position;
           if (Math.hypot(p.x - this.point.x, p.z - this.point.z) <= RADIUS) {
-            ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: FORGE_CSS.body, status: { kind: 'stun', seconds: this.settings.stun } });
+            ctx.hit(e, { damage: this.settings.damage, knock: 6, from: this.point, color: FORGE_CSS.body, status: { kind: 'slow', seconds: this.settings.slow } });
           }
         }
       }
@@ -239,6 +239,6 @@ export const anvilDropModule: EffectModule = {
     const s = (effect as AnvilDrop).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 200, 1);
-    f.add(s, 'stun', 0, 1.2, 0.1);
+    f.add(s, 'slow', 0, 2.5, 0.1);
   },
 };

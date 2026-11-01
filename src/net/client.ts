@@ -4,7 +4,8 @@
  * session token lives in sessionStorage (per tab), so two tabs of one browser can be two different players.
  */
 
-import type { StatusKind } from '../effects/status';
+import type { BuffKind, StatusKind } from '../effects/status';
+import type { CastMods } from '../traits';
 
 export interface HeroStats {
   played: number;
@@ -56,10 +57,13 @@ export type ServerMsg =
     hp: number[]; next: number;
   }
   | { t: 'round_start'; round: number; score: number[] }
-  | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number }
-  | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number }
-  | { t: 'peer_hit'; id: number; damage: number; soaked?: number; hp: number; color?: string }
-  | { t: 'peer_attack'; id: number }
+  | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number; r?: number }
+  | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods }
+  | { t: 'peer_hit'; id: number; damage: number; soaked?: number; hp: number; color?: string; blocked?: boolean }
+  | { t: 'peer_attack'; id: number; mods?: CastMods }
+  | { t: 'peer_spend'; amount: number; hp: number }
+  | { t: 'peer_buff'; kind: BuffKind; amount: number; seconds: number }
+  | { t: 'peer_stacks'; name: string; n: number }
   | { t: 'peer_heal'; amount: number; hp: number }
   | { t: 'peer_status'; kind: StatusKind; seconds: number; color?: string }
   | { t: 'peer_shield'; amount: number; seconds: number; color?: string }

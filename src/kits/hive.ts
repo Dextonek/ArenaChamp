@@ -244,7 +244,8 @@ export const hiveKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'mandible rend', name: 'Mandible Rend', range: 3, cooldown: 2.5,
-      blurb: 'A melee double claw swipe: two crossing serrated arcs rend the cone in front of him, shove and slow everything in it.',
+      debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
+      blurb: 'A melee double claw swipe: two crossing serrated arcs rend the cone in front of him and slow it, and a second swipe follows 0.3 s later.',
       icon(g, s) {
         iconGround(g, s);
         // Two crossing serrated claw arcs, wasps buzzing off them, honey drops.
@@ -275,8 +276,8 @@ export const hiveKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'chitin carapace', name: 'Chitin Carapace', range: 0, cooldown: 9,
-      blurb: 'Black chitin plates snap round him in a pure shield of 60 for 3 s while the swarm circles. No damage.',
+      key: 'E', label: 'chitin carapace', name: 'Chitin Carapace', range: 0, cooldown: 9, buff: { kind: 'armor', amount: 0.1, seconds: 3 },
+      blurb: 'Black chitin plates snap round him: 10% less damage taken for 3 s, and he flips stance (swarm or carapace).',
       icon(g, s) {
         iconGround(g, s);
         // A shell of chitin hexagons round a core, wasps circling it.

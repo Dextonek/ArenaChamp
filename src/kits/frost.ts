@@ -149,7 +149,7 @@ export const frostKit: HeroKit = {
     },
     {
       key: 'E', label: 'glacial mantle', name: 'Glacial Mantle', range: 0, cooldown: 10,
-      blurb: 'Ice armour shields her for 50 while a blizzard circles her and slows the enemies that come close.',
+      blurb: 'Ice block: she freezes herself solid for 1.5 s. Nothing can hurt her, and she cannot act. Then the ice shatters and a blizzard circles her, slowing enemies that come close.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = F.rime;

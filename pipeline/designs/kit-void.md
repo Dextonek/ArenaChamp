@@ -3,7 +3,7 @@
 ## Role (2026-10-30)
 **Juggernaut (melee), 760 HP.** Signature: into the rift. See hero-roles.md.
 - Q Rift Cleave, W Null Tether: unchanged.
-- E Void Mantle: no shield; one pulse (1.0 s) to radius 4 that hits 20 and silences 1.2. Shortened to 2.6 s. cd 10.
+- E Void Mantle: no shield, no silence; one pulse (1.0 s) to radius 4 that hits 25, plus a **void maw shell** round him for `shell` 2.0 s (the trait swallows the next enemy spell). 2.6 s. cd 10.
 - R Unmaking: radius 7 -> 5 (110, pull 4, silence 1.5 unchanged), cd 20.
 
 **Signature shape: torn space.** The world **tears like paper or cracks like glass**, and the tears show pure
@@ -43,7 +43,7 @@ look lessons) and `docs/architecture/mechanics.md` (melee kits, dash, statuses, 
 A melee greatsword sweep that leaves a tear in the air. Telegraph: a `cone` of 110°, radius 3.2, start 0, impact
 0.3. 0–0.15: the blade draws back, a few motes. **0.3 hit**: one wide crescent sweep; behind the blade's path a
 standing `Rift` opens along the arc (black slit, pink/cyan edges), shards burst, a cyan accent (2 frames): every
-enemy still in the cone `ctx.hit(e, { damage: 40, knock: 2, color: VOID_CSS.body })`. 0.5–1.0: the rift zips shut
+enemy still in the cone `ctx.hit(e, { damage: 40, knock: 0, pull: 1.5, from: ctx.from, color: VOID_CSS.body })` (pulled 1.5 m toward him, no knock-back). 0.5–1.0: the rift zips shut
 from both ends. Clean by 1.2.
 
 ## W · Null Tether (`nullTether.ts`, label `null tether`, `ground`, radius 3.5, range 8, cd 8, damage 30 + pull + slow)
@@ -53,11 +53,13 @@ yank: every enemy inside (re-check at impact) `ctx.hit(e, { damage: 30, knock: 0
 status: { kind: 'slow', seconds: 1.0 } })` (no `from`: they are dragged toward him). Shards stream along the tears
 toward him. 0.8–1.6: the tears close, the cracks fade. Clean by 1.8.
 
-## E · Void Mantle (`voidMantle.ts`, label `void mantle`, `self`, radius 4, cd 10, shield 40 + 2 × 12, silence)
-0–0.3: a ring of standing rifts (5, each ~1.4 tall) opens around him (radius 1.4), slowly turning;
-`ctx.shieldSelf(40, 3, VOID_CSS.body)`. At 1.0 and 2.0 the rifts flare and a crack ring races out to radius 4: every
-enemy inside `ctx.hit(e, { damage: 12, knock: 1 })`; the **second** pulse also silences: `status: { kind:
-'silence', seconds: 1.0 }`. 2.6–3.0: the rifts zip shut one by one. Clean by 3.2. Telegraph ends at the first pulse.
+## E · Void Mantle (`voidMantle.ts`, label `void mantle`, `self`, radius 4, cd 10, damage 25, maw shell)
+0–0.3: a ring of standing rifts (5, each ~1.4 tall) opens around him (radius 1.4), slowly turning, and a **maw
+shell** (radius 1.9, faceted sphere of low-opacity dark faces, bright violet rim lines, 7 slit tears with violet
+outlines, an equator band, a counter-turning inner cage) forms and turns slowly, following him. It lasts `shell` =
+2.0 s from the cast and collapses over the last 0.25 s. At 1.0 the rifts flare and a crack ring races out to radius
+4: every enemy inside `ctx.hit(e, { damage: 25, knock: 1 })`. No silence, no shield. 2.0–2.4: the rifts zip shut
+one by one. Clean by 2.6. Telegraph ends at the pulse.
 
 ## R · Unmaking (`unmaking.ts`, label `unmaking`, `ground`, radius 7, range 13, cd 20, damage 100 + pull + silence, `cc`)
 The ultimate: **the zone is cut out of the world.**

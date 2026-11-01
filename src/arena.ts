@@ -3,8 +3,9 @@ import { CASTER_POS, Enemy, createCaster, createGround } from './effects/common'
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { yawTo } from './effects/targeting';
 import { blocksSight, pushOut, steer, type Obstacle } from './obstacles';
-import { StatusSet, STATUS_COLOR, STATUS_WORD, BLIND_RADIUS, type StatusKind } from './effects/status';
+import { StatusSet, STATUS_COLOR, STATUS_WORD, BLIND_RADIUS, BUFF_COLOR, BUFF_WORD, type BuffKind, type StatusKind } from './effects/status';
 import { StatusFx, StatusFxPool } from './effects/parts/status';
+import { BuffFx, BuffFxPool } from './effects/parts/buffs';
 import { ShieldFx, ShieldFxPool } from './effects/parts/shield';
 import { ProjectileSystem, type Projectile, type ProjectileOptions } from './effects/projectile';
 import { SummonSystem, type SummonWorld } from './effects/summon';
@@ -28,9 +29,11 @@ interface StatusSlot {
   sfx: ShieldFx | null;
   /** A dash in progress (`moveFigure`): nothing else moves the figure until it lands. */
   dash: { from: THREE.Vector3; to: THREE.Vector3; t: number; dur: number } | null;
+  /** Buff / debuff visuals (held while any runs or fades). */
+  bfx: BuffFx | null;
 }
 
-const newSlot = (): StatusSlot => ({ set: new StatusSet(), fx: null, tint: '', lifted: false, shield: null, sfx: null, dash: null });
+const newSlot = (): StatusSlot => ({ set: new StatusSet(), fx: null, tint: '', lifted: false, shield: null, sfx: null, dash: null, bfx: null });
 
 /** Something a spell can pick as a target: an enemy figure and where it stands (`home` follows a unit live). */
 interface Body {
@@ -81,6 +84,11 @@ export class Arena {
   maxHp = MAX_HP;
   /** Optional veto on hits (a duel: the opponent dodges by leaving the zone). Return false to drop the hit. */
   hitFilter: ((target: Enemy, opts: HitOptions, cast?: number) => boolean) | null = null;
+  /**
+   * After `hitFilter` passed: returns the options the hit really lands with (the duel's damage modifiers: cast power,
+   * buffs, passives). Must return a copy when it changes something (spells may reuse one options object).
+   */
+  hitMod: ((target: Enemy, opts: HitOptions, cast?: number) => HitOptions) | null = null;
   /** Counts the casts `context()` has built; a hit from that context carries its number to `hitFilter`. */
   castSeq = 0;
   /** A round play area (a duel ring): the caster and the enemies are kept inside it. Null = the open floor. */
@@ -99,6 +107,10 @@ export class Arena {
   casterHeal: ((amount: number) => number) | null = null;
   /** Called when the caster gets a shield (a network duel tells the other side). */
   casterShield: ((amount: number, seconds: number, color: string) => void) | null = null;
+  /** Called when the caster gets a buff or debuff (a network duel shows it on the other screen). */
+  casterBuff: ((kind: BuffKind, amount: number, seconds: number) => void) | null = null;
+  /** Scales every shield a figure makes for itself (the duel: a hero's trait). */
+  shieldScale: ((target: Enemy) => number) | null = null;
 
   private foes: Foe[] = [];
   private selected: Body[] = [];
@@ -110,6 +122,7 @@ export class Arena {
   private overlay: HTMLDivElement;
   private labels: { el: HTMLDivElement; t: number; pos: THREE.Vector3 }[] = [];
   private fxPool = new StatusFxPool(this.group);
+  private buffPool = new BuffFxPool(this.group);
   private shieldPool = new ShieldFxPool(this.group);
   private casterSt = newSlot();
   /** Skillshots in flight: ticked in `update`, cleared with the pack. */
@@ -119,7 +132,7 @@ export class Arena {
   /** The hero's side: its units fight the foes and the duel opponent's units. */
   private heroWorld: SummonWorld;
 
-  constructor(private camera: THREE.Camera, private dom: HTMLElement, count = 6) {
+  constructor(readonly camera: THREE.Camera, private dom: HTMLElement, count = 6) {
     this.summons = new SummonSystem(this.group, {
       camera,
       say: (text, color, at, scale) => this.say(text, color, at, scale),
@@ -325,7 +338,12 @@ export class Arena {
       },
       ...this.selfFx(this.caster),
       projectile: (po) => this.fire(po, 'hero', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
-      summon: (so) => this.summons.spawn(this.heroWorld, so),
+      // The units' hits carry this cast's number, so the duel gives them the cast's power (Mortis's bones, Ada's scrap).
+      summon: (so) => this.summons.spawn({
+        ...this.heroWorld,
+        hit: (t, h) => this.hit(t, h, cast),
+        fire: (po) => this.fire(po, 'hero-unit', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
+      }, so),
     };
   }
 
@@ -336,12 +354,14 @@ export class Arena {
       // A summoned unit: the same filter, then its own hit reaction (no statuses).
       const u = this.summons.unitOf(target);
       if (!u?.alive || (this.hitFilter && !this.hitFilter(target, opts, cast))) return;
+      if (this.hitMod) opts = this.hitMod(target, opts, cast);
       this.hits++;
       this.summons.hurt(u, opts);
       return;
     }
     if (f.dead >= 0) return;
     if (this.hitFilter && !this.hitFilter(target, opts, cast)) return;
+    if (this.hitMod) opts = this.hitMod(target, opts, cast);
     const dmg = Math.round(opts.damage ?? THREE.MathUtils.randFloat(10, 20));
     // A shield takes the damage first; only what is left comes off HP.
     const soaked = this.soak(f.st, target, dmg);
@@ -367,6 +387,7 @@ export class Arena {
     if (soaked > 0) this.say(String(soaked), '#cfe6ff', target.group.position, 0.9);
     if (dealt > 0) this.say(String(dealt), opts.color ?? (big ? '#ffd24a' : '#fff1dc'), target.group.position, big ? 1.5 : 1);
     if (opts.status && f.hp > 0) this.applyStatus(target, opts.status.kind, opts.status.seconds, opts.color);
+    if (opts.debuff && f.hp > 0) this.applyBuff(target, opts.debuff.kind, opts.debuff.amount, opts.debuff.seconds);
     if (f.hp <= 0) {
       f.dead = 0;
       this.kills++;
@@ -377,6 +398,16 @@ export class Arena {
    * Gives a status to a foe or to the caster figure (caps, refresh and stun immunity: `StatusSet`). Shows the
    * floating word when it starts. Returns false when the target is unknown or immune.
    */
+  /** Gives a buff or debuff to a foe or the caster figure, with its floating word when it starts. */
+  applyBuff(target: Enemy, kind: BuffKind, amount: number, seconds: number): boolean {
+    const st = this.slotOf(target);
+    if (!st) return false;
+    const r = st.set.applyBuff(kind, amount, seconds);
+    if (r === 'applied') this.say(BUFF_WORD[kind], BUFF_COLOR[kind], target.group.position.clone().add(new THREE.Vector3(0, 0.8, 0)), 0.95);
+    if (r !== 'immune' && target === this.caster) this.casterBuff?.(kind, amount, seconds);
+    return r !== 'immune';
+  }
+
   applyStatus(target: Enemy, kind: StatusKind, seconds: number, color = ''): boolean {
     const st = this.slotOf(target);
     if (!st) return false;
@@ -388,6 +419,12 @@ export class Arena {
       if (r === 'applied') this.say(STATUS_WORD[kind], STATUS_COLOR[kind], at, 1.1);
     }
     return r !== 'immune';
+  }
+
+  /** A foe's hit flash now (1 just hit, fading to 0) and its tint; null for anything that is not a foe. */
+  flashOf(target: Enemy): { v: number; tint: THREE.Color } | null {
+    const f = this.foes.find((x) => x.figure === target);
+    return f ? { v: f.flash, tint: f.flashTint } : null;
   }
 
   /** The status effects running on a foe or on the caster figure (the AI and hero mode obey them). */
@@ -414,6 +451,7 @@ export class Arena {
   shieldFigure(target: Enemy, amount: number, seconds: number, color = '') {
     const st = this.slotOf(target);
     if (!st || !(amount > 0) || !(seconds > 0)) return;
+    amount *= this.shieldScale?.(target) ?? 1;
     const keep = st.shield && st.shield.amount > amount ? st.shield.amount : amount;
     st.shield = { amount: keep, max: keep, left: seconds, color: color || st.shield?.color || '' };
     if (target === this.caster) this.casterShield?.(keep, seconds, st.shield.color);
@@ -746,6 +784,7 @@ export class Arena {
     st.shield = null;
     st.dash = null;
     if (st.fx) { this.fxPool.release(st.fx); st.fx = null; }
+    if (st.bfx) { this.buffPool.release(st.bfx); st.bfx = null; }
     if (st.sfx) { this.shieldPool.release(st.sfx); st.sfx = null; }
   }
 
@@ -757,6 +796,12 @@ export class Arena {
       // Foes get their lift where their position is rebuilt; the caster's y is only touched while it is lifted.
       if (s.lift > 0 || st.lifted) figure.group.position.y = s.lift;
       st.lifted = s.lift > 0;
+    }
+    if (s.anyBuff || st.bfx) {
+      if (!st.bfx) st.bfx = this.buffPool.acquire();
+      st.bfx.update(dt, s, figure.group.position, this.camera);
+      st.bfx.group.visible = figure.group.visible;
+      if (!s.anyBuff && st.bfx.settled) { this.buffPool.release(st.bfx); st.bfx = null; }
     }
     if (!s.any && !st.fx) return;
     if (!st.fx) st.fx = this.fxPool.acquire();

@@ -56,6 +56,6 @@ In AI duels basic attacks deal about an eighth to a quarter of the damage and ma
   `HeroMode.onAttack` and `AttackOwner.released`); the other client plays it at once (`Attacker.releaseNow`, no
   wind-up) against its own hero and reports the hit with `took_hit` (the server allows one attack per 0.5 s and at
   most 40 damage from one). Attacks on summoned units stay on the attacker's screen.
-- The visuals are generic (one bolt and one swipe, in the kit colour); per-hero looks and role traits (crits,
-  every-third-shot, slowing hits, healing hits) are not built yet.
+- Per-hero looks, ranges, speeds and on-hit rules come from each hero's trait (`AttackSpec.look`, `attackMods`;
+  see [traits.md](traits.md)): 16 missile and 6 swing looks in `src/attacks/fx.ts`.
 - The AI attacks the hero only, not units.

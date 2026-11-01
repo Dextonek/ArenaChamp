@@ -3,7 +3,7 @@ import type { Arena } from '../arena';
 import type { Enemy } from '../effects/common';
 import type { HitOptions } from '../effects/targeting';
 import type { AttackSpec } from './index';
-import type { AttackFx } from './fx';
+import type { AttackFx, MeleeLook, RangedLook } from './fx';
 
 /** What an `Attacker` needs from whoever drives it (hero mode for the player, the duel for the AI opponent). */
 export interface AttackOwner {
@@ -45,6 +45,15 @@ export class Attacker {
   /** Raise the attack arm (wind-up or just released). */
   get posing() {
     return this.wind >= 0 || this.pose > 0;
+  }
+
+  /**
+   * For the figure's swing: wind-up progress 0..1 (-1 when not winding), the release pulse 1..0 after a hit goes out,
+   * and whether it is a melee attack.
+   */
+  get motion() {
+    const s = this.owner.spec();
+    return { wind: this.wind >= 0 ? 1 - this.wind / Math.max(s.windup, 1e-3) : -1, release: this.pose / 0.18, melee: s.kind === 'melee' };
   }
 
   /** The target of the wind-up, if any. */
@@ -122,7 +131,7 @@ export class Attacker {
     const opts: HitOptions = { damage: s.damage, knock: s.kind === 'melee' ? 0.8 : 0.3, color, from: me.group.position.clone(), attack: true };
     const miss = () => this.owner.arena.say('MISS', '#cfc6dc', this.owner.posOf(target) ?? me.group.position, 0.9);
     if (s.kind === 'melee') {
-      this.owner.fx.slash(me.group.position, me.group.rotation.y, color);
+      this.owner.fx.slash(me.group.position, me.group.rotation.y, color, s.look as MeleeLook | undefined);
       if (blind) miss();
       else this.owner.land(target, opts);
       return;
@@ -132,6 +141,6 @@ export class Attacker {
     this.owner.fx.bolt(from, () => this.owner.posOf(target), s.speed, color, () => {
       if (blind) miss();
       else this.owner.land(target, opts);
-    });
+    }, s.look as RangedLook | undefined);
   }
 }

@@ -192,7 +192,7 @@ export const tideKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'undertow dance', name: 'Undertow Dance', range: 6, cooldown: 9,
+      key: 'E', label: 'undertow dance', name: 'Undertow Dance', range: 6, cooldown: 9, buff: { kind: 'haste', amount: 0.25, seconds: 2 },
       blurb: 'She surfs up to 6 m to the aim, healing 15 on landing, and leaves a foam strip for 3 s that slows whoever crosses it.',
       icon(g, s) {
         iconGround(g, s);

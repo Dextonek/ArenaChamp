@@ -35,10 +35,10 @@ Read `kit-common.md` first (files, timing, budgets including the **Summon budget
   barrel and a cyan lens) for `turret` units. Pass it as `look` in `ctx.summon`.
 
 ## Q · Rivet Shot (`clockworkRivetShot.ts`, label `clockwork rivet shot` (forge owns `rivet shot`), `ground`, `aim: 'line'`, range 12, cd 3, damage 45 + slow)
-A skillshot that ricochets. 0–0.2: her wrist launcher's spring winds up with sparks. 0.2:
-`ctx.projectile({ from, dir, speed: 24, range: 12, radius: 0.4, bounce: 1, hit: { damage: 45, knock: 1, color:
+A skillshot whose rivet sticks (no ricochet). 0–0.2: her wrist launcher's spring winds up with sparks. 0.2:
+`ctx.projectile({ from, dir, speed: 24, range: 12, radius: 0.4, hit: { damage: 45, knock: 1, color:
 CLOCKWORK_CSS.body, status: { kind: 'slow', seconds: 1.5 } } })`; the bolt is a spinning copper rivet with a cyan
-spark trail; each hit throws a few small cogs and a spark burst, a cyan accent (2 frames). Clean by 1.5.
+spark trail; each hit throws a few small cogs and a spark burst, a cyan accent (2 frames). The rivet then sticks in the first enemy: a blinking copper light and a spinning gear follow it, and 1.0 s later it pops (sparks) for a second hit of 25% damage, `projectile: true` (cannot be dodged; skipped if the victim is gone). Clean by about 2.5.
 
 ## W · Cog Turret (`cogTurret.ts`, label `cog turret`, `ground`, radius 2, range 9, cd 12, `summon`)
 0–0.5: gears and a spring fly in from her backpack and click together at the point (assemble), steam puffs. At 0.5

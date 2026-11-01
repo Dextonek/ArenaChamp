@@ -104,8 +104,8 @@ export const forgeKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'rivet shot', name: 'Rivet Shot', range: 3, cooldown: 3,
-      blurb: 'Point-blank (3 m): flicks a white-hot rivet into one enemy and slows it.',
+      key: 'Q', label: 'rivet shot', name: 'Slag Flick', range: 3, cooldown: 3,
+      blurb: 'Point-blank (3 m): flicks a gob of white-hot slag into one enemy and slows it.',
       icon(g, s) {
         ground(g, s);
         // A rivet flying up-right on a hot streak.
@@ -131,8 +131,8 @@ export const forgeKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'anvil drop', name: 'Anvil Drop', range: 8, cooldown: 7, cc: true,
-      blurb: 'Lobs a small anvil (2 m circle) onto the spot; whoever is under it is stunned for 1 s.',
+      key: 'W', label: 'anvil drop', name: 'Anvil Drop', range: 8, cooldown: 5,
+      blurb: 'Lobs a small anvil (2 m circle) onto the spot; whoever is under it is knocked aside and slowed for 1.5 s.',
       icon(g, s) {
         ground(g, s);
         g.strokeStyle = F.ash;
@@ -154,6 +154,7 @@ export const forgeKit: HeroKit = {
     },
     {
       key: 'E', label: 'bellows ward', name: 'Bellows Ward', range: 0, cooldown: 9,
+      buff: { kind: 'armor', amount: 0.25, seconds: 3 },
       blurb: 'Two loops of molten chain whirl around him: a shield of 100 for 3 s, and each burst drags nearby enemies 1.5 m toward him.',
       icon(g, s) {
         ground(g, s);

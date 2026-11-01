@@ -2,6 +2,7 @@
  * Hero kits for hero mode (`src/heroMode.ts`): four spells bound to Q / W / E / R, R being the ultimate. A kit is
  * data only; a new hero is a new entry here, its spells are ordinary registered effects (looked up by label).
  */
+import type { BuffKind } from './effects/status';
 import { alchemyKit } from './kits/alchemy';
 import { sandKit } from './kits/sand';
 import { shadowKit } from './kits/shadow';
@@ -44,6 +45,10 @@ export interface HeroSpell {
   summon?: true;
   /** `line`: a skillshot. Hero mode shows a strip of the spell's range and width from the hero toward the cursor, not the ground circle. */
   aim?: 'line';
+  /** A buff the hero gives itself when it casts this (see `BuffKind`). */
+  buff?: { kind: BuffKind; amount: number; seconds: number };
+  /** A debuff every hit of this spell puts on what it hits. */
+  debuff?: { kind: BuffKind; amount: number; seconds: number };
   /** Draws the slot icon into a `size` × `size` canvas. */
   icon: (g: CanvasRenderingContext2D, size: number) => void;
 }
@@ -162,6 +167,7 @@ const bloodKit: HeroKit = {
     },
     {
       key: 'E', label: 'crimson pact', name: 'Crimson Pact', range: 0, cooldown: 9,
+      buff: { kind: 'might', amount: 0.2, seconds: 3 },
       blurb: 'A heart of blood beats over her and latches onto the nearest enemy within 6 m: three drains, and she heals half of what they deal.',
       icon(g, s) {
         iconGround(g, s);

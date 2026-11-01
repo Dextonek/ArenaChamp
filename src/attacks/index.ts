@@ -1,7 +1,9 @@
 import type { HeroKit } from '../heroes';
+import { traitFor } from '../traits';
 
 export { Attacker, type AttackOwner } from './attacker';
-export { AttackFx } from './fx';
+export { AttackFx, type AttackLook, type MeleeLook, type RangedLook } from './fx';
+import type { AttackLook } from './fx';
 
 /**
  * A hero's basic attack (MOBA style): right-click an enemy and the hero walks into range and keeps attacking it until
@@ -23,6 +25,8 @@ export interface AttackSpec {
   speed: number;
   /** Bolt / slash colour (css); default the kit's accent. */
   color?: string;
+  /** The look (fx.ts): a missile shape for ranged, a swing for melee. Default orb / slash. */
+  look?: AttackLook;
 }
 
 /** Melee: a heavier swing at close range. */
@@ -30,11 +34,9 @@ export const MELEE_ATTACK: AttackSpec = { kind: 'melee', range: 2.6, damage: 13,
 /** Ranged: a lighter bolt from a distance. */
 export const RANGED_ATTACK: AttackSpec = { kind: 'ranged', range: 6.5, damage: 10, interval: 1.0, windup: 0.25, speed: 18 };
 
-/** Per-hero changes to the defaults, by kit name (empty until per-kit tuning). */
-const OVERRIDES: Record<string, Partial<AttackSpec>> = {};
-
-/** The basic attack of a kit: the melee or ranged default (by `kit.melee`), the kit's overrides, the kit's colour. */
+/** The basic attack of a kit: the melee or ranged default (by `kit.melee`), the hero's own changes (its trait), its colour. */
 export function attackFor(kit: HeroKit): AttackSpec {
-  const base = kit.melee ? MELEE_ATTACK : RANGED_ATTACK;
-  return { ...base, color: kit.accent, ...OVERRIDES[kit.name] };
+  const own = traitFor(kit.name)?.attack;
+  const base = (own?.kind ?? (kit.melee ? 'melee' : 'ranged')) === 'melee' ? MELEE_ATTACK : RANGED_ATTACK;
+  return { ...base, color: kit.accent, ...own };
 }

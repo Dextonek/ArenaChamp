@@ -6,18 +6,17 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Ink Snare (ink kit, W: a ground root). 0-0.35: ink bleeds across the zone, rice paper first, then a dark pool soaking
+ * Ink Snare (ink kit, W: a ground trap). 0-0.35: ink bleeds across the zone, rice paper first, then a dark pool soaking
  * into it. 0.35-0.65: four quick strokes scribble themselves across the pool. At 0.7 the ink rises in short grasping
- * strokes around each foot, a seal stamps the centre with a vermilion star, and everyone still inside is hit and rooted.
+ * strokes around each foot, a seal stamps the centre with a vermilion star, and everyone still inside is hit.
  * 1.0-2.0: the strokes dry and flake, the pool fades. Clean by 2.2 s. See pipeline/designs/kit-ink.md.
  */
 export interface InkSnareSettings {
   damage: number;
-  rootSeconds: number;
   loop: boolean;
 }
 
-export const defaultInkSnare = (): InkSnareSettings => ({ damage: 48, rootSeconds: 1.0, loop: false });
+export const defaultInkSnare = (): InkSnareSettings => ({ damage: 48, loop: false });
 
 // Timeline (seconds).
 const SPREAD_T = 0.35;
@@ -160,7 +159,7 @@ export class InkSnare implements Effect {
       }
     });
 
-    // --- 0.7: the ink rises in grasping strokes round each foot; the seal stamps; everyone inside is hit and rooted. ---
+    // --- 0.7: the ink rises in grasping strokes round each foot; the seal stamps; everyone inside is hit. ---
     if (!f.hit && t >= HIT_T) {
       f.hit = true;
       this.impact();
@@ -196,7 +195,7 @@ export class InkSnare implements Effect {
       for (const e of ctx.targets) {
         if (!this.inside(e)) continue;
         feet.push(e.group.position.clone());
-        ctx.hit(e, { damage: s.damage, knock: 0, from: P, color: INK_CSS.hot, status: { kind: 'root', seconds: s.rootSeconds } });
+        ctx.hit(e, { damage: s.damage, knock: 0, from: P, color: INK_CSS.hot });
       }
     }
     // Nobody inside: the ink still grabs at the air round the seal.
@@ -242,7 +241,6 @@ export const inkSnareModule: EffectModule = {
     const s = (effect as InkSnare).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 0, 150, 1);
-    f.add(s, 'rootSeconds', 0, 1.5, 0.1);
   },
 };
 

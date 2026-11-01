@@ -141,8 +141,8 @@ export const shadowKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'umbral blink', name: 'Umbral Blink', range: 7, cooldown: 3,
-      blurb: 'A dash strike: she slides in stepped jumps to stand beside the enemy and cuts it with two crossed blades.',
+      key: 'Q', label: 'umbral blink', name: 'Umbral Blink', range: 7, cooldown: 5, debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
+      blurb: 'A heavy dash strike: she slides in stepped jumps to stand beside the enemy and cuts it with two crossed blades (35% more damage).',
       icon(g, s) {
         ground(g, s);
         ellipse(g, s * 0.5, s * 0.6, s * 0.4, s * 0.18, S.foil, undefined);

@@ -165,8 +165,8 @@ export const clockworkKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'clockwork rivet shot', name: 'Rivet Shot', range: 12, cooldown: 3, aim: 'line',
-      blurb: 'Fires a spinning copper rivet that slows what it hits, then ricochets to the nearest other enemy.',
+      key: 'Q', label: 'clockwork rivet shot', name: 'Rivet Shot', range: 12, cooldown: 3, aim: 'line', debuff: { kind: 'weaken', amount: 0.15, seconds: 3 },
+      blurb: 'Fires a spinning copper rivet that slows what it hits and sticks in it; 1 s later the rivet pops for a second hit.',
       icon(g, s) {
         iconGround(g, s);
         // A rivet flying up and to the right with a cyan spark trail and two loose cogs.

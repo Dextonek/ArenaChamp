@@ -9,11 +9,10 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Starshot (astral kit, Q: bouncing skillshot, range 14). Lyra draws a bow of light (a gold crescent and a string) and
- * at 0.27 s the star arrow leaves along the aim line as a skillshot (`ctx.projectile`, bounce 1): it hits the first
- * enemy it touches and turns to the nearest other enemy within 6 m. Each hit pops a star over the enemy (a cyan accent
- * for 2 frames) and a gold line joins the stars in order: the shot leaves a small constellation. Then the lines snap
- * and the stars fall as tiny shooting stars. See pipeline/designs/kit-astral.md.
+ * Starshot (astral kit, Q: straight skillshot, range 14, no bounce). Lyra draws a bow of light (a gold crescent and a
+ * string) and at 0.27 s the star arrow leaves along the aim line as a skillshot (`ctx.projectile`): it hits the first
+ * enemy it touches and ends there. The hit pops a star over the enemy (a cyan accent for 2 frames); then the star
+ * falls as a tiny shooting star. See pipeline/designs/kit-astral.md.
  */
 export interface StarshotSettings {
   damage: number;
@@ -33,7 +32,7 @@ const MUZZLE = 0.8;
 const SETTLE = 0.5;
 const MAX_T = 3;
 const STAR_Y = 1.7;
-const MAX_HITS = 2;
+const MAX_HITS = 1;
 
 const LOOK: BoltLook = { core: ASTRAL_CSS.core, body: ASTRAL_CSS.hot, rim: ASTRAL_CSS.body, size: 0.45, trail: 3.5, hit: ASTRAL_CSS.accent };
 
@@ -76,7 +75,6 @@ export class Starshot implements Effect {
   private muzzle = new StarBurst({ points: 4, inner: 0.2, jitter: 0, color: ASTRAL.hot, core: ASTRAL.core, additive: false });
 
   // Scratch.
-  private v1 = new THREE.Vector3();
   private qa = new THREE.Quaternion();
   private qb = new THREE.Quaternion();
 
@@ -169,7 +167,7 @@ export class Starshot implements Effect {
       if (ctx?.projectile) {
         const bolt = ctx.projectile({
           from: ctx.from.clone().addScaledVector(this.fwd, MUZZLE), dir: this.fwd.clone(), speed: SPEED, range: RANGE - MUZZLE,
-          radius: RADIUS, bounce: 1,
+          radius: RADIUS,
           hit: { damage: this.settings.damage, knock: 2, color: ASTRAL_CSS.hot },
         });
         this.bolts.follow(bolt, LOOK);
@@ -197,20 +195,11 @@ export class Starshot implements Effect {
     }
   }
 
-  /** A hit: a star over the enemy, a gold line to the previous star, a cyan accent for 2 frames. */
+  /** A hit: a star over the enemy and a cyan accent for 2 frames. */
   private onHit(at: THREE.Vector3) {
     const i = Math.min(this.hits, MAX_HITS - 1);
     this.starPts[i].set(at.x, STAR_Y, at.z);
     this.stars.add(this.starPts[i], 0.78);
-    if (this.hits > 0 && this.hits < MAX_HITS) {
-      this.lines.connect(this.starPts[i - 1], this.starPts[i], 0.1);
-      // A small companion star halfway along the new line.
-      this.v1.addVectors(this.starPts[i - 1], this.starPts[i]).multiplyScalar(0.5);
-      this.v1.y += 0.45;
-      this.stars.add(this.v1, 0.34, 0.05);
-      this.lines.connect(this.starPts[i - 1], this.v1, 0.08, 0.04);
-      this.lines.connect(this.v1, this.starPts[i], 0.08, 0.12);
-    }
     this.popAge[i] = 0;
     if (this.hits === 0) this.shake = 0.15;
     this.hits++;

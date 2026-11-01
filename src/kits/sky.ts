@@ -183,8 +183,8 @@ export const skyKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'gale edge', name: 'Gale Edge', range: 3, cooldown: 2,
-      blurb: 'A melee swing: two crossing wind crescents cut the cone in front of him and shove everything in it back.',
+      key: 'Q', label: 'gale edge', name: 'Gale Edge', range: 3, cooldown: 1.5,
+      blurb: 'A quick melee swing: two crossing wind crescents cut the cone in front of him and shove everything in it back.',
       icon(g, s) {
         iconGround(g, s);
         // Two crossing sickles with speed lines behind them.
@@ -211,8 +211,9 @@ export const skyKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'cyclone guard', name: 'Cyclone Guard', range: 0, cooldown: 9,
-      blurb: 'A backstep: a flare of crescents shoves enemies near, then the whirl carries him 5 m away from the enemy with a small shield.',
+      key: 'E', label: 'cyclone guard', name: 'Cyclone Guard', range: 6, cooldown: 9, aim: 'line',
+      buff: { kind: 'haste', amount: 0.2, seconds: 3 },
+      blurb: 'A wind dash of up to 6 m down the aim that carries him through the enemy, cutting everything on the path.',
       icon(g, s) {
         iconGround(g, s);
         // A ring of sickles round a small core with a shield arc over it.

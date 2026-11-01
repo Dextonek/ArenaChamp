@@ -8,10 +8,11 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Discordant Note (bard kit, Q: a skillshot that bounces). Cantor strums his golden lyre; a big dark note glyph forms in
- * front of him with two sound rings, and at 0.2 it flies along the aim line (`ctx.projectile`, bounce 1) trailing a short
- * five-line stave ribbon. Each hit bursts into small notes and a sound ring with a two-frame gold star, and the note
- * bounces on to the nearest other enemy. The visual follows the projectile handle. Clean by about 1.5 s.
+ * Discordant Note (bard kit, Q: a skillshot with an echo). Cantor strums his golden lyre; a big dark note glyph forms in
+ * front of him with two sound rings, and at 0.2 it flies along the aim line (`ctx.projectile`) trailing a short
+ * five-line stave ribbon. Each hit bursts into small notes and a sound ring with a two-frame gold star. A faint ring marks the spot for 0.8 s, then a second, smaller beat lands there:
+ * whoever stands within 1.6 m of it then (a ground check, not homing) takes 60% of the damage. The visual follows the
+ * projectile handle. Clean by about 2.3 s.
  * See pipeline/designs/kit-bard.md.
  */
 export interface DiscordantNoteSettings {
@@ -29,6 +30,10 @@ const RADIUS = 0.45;
 const MUZZLE = 0.8;
 const SETTLE = 0.45;
 const TRAIL_LEN = 2.6;
+/** The echo: it lands this long after the first burst, on the same spot, for this share of the damage. */
+const ECHO_DELAY = 0.8;
+const ECHO_RADIUS = 1.6;
+const ECHO_SHARE = 0.3;
 const BIG = 1.0; // glyph cell size of the flying note (the drawn note is about 0.85 of it)
 
 export class DiscordantNote implements Effect {
@@ -51,6 +56,13 @@ export class DiscordantNote implements Effect {
   private emitT = 0;
   private starAge = 9;
   private fadeFrom = -1;
+  /** When the echo lands (-1: none pending) and where. */
+  private echoAt = -1;
+  private echoPos = new THREE.Vector3();
+  private echoMat = new THREE.MeshBasicMaterial({
+    color: BARD.accent, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide,
+  });
+  private echoRing = new THREE.Mesh(new THREE.RingGeometry(ECHO_RADIUS - 0.08, ECHO_RADIUS, 48), this.echoMat);
 
   private dir = new THREE.Vector3(0, 0, 1);
   private muzzle = new THREE.Vector3();
@@ -70,7 +82,9 @@ export class DiscordantNote implements Effect {
 
   constructor(settings: DiscordantNoteSettings = defaultDiscordantNote()) {
     this.settings = settings;
-    this.group.add(this.stave.mesh, this.lyre.mesh, this.notes.mesh, this.rings.mesh, this.star.mesh);
+    this.echoRing.rotation.x = -Math.PI / 2;
+    this.echoRing.visible = false;
+    this.group.add(this.echoRing, this.stave.mesh, this.lyre.mesh, this.notes.mesh, this.rings.mesh, this.star.mesh);
     this.reset();
   }
 
@@ -110,6 +124,8 @@ export class DiscordantNote implements Effect {
     this.emitT = 0;
     this.starAge = 9;
     this.fadeFrom = -1;
+    this.echoAt = -1;
+    this.echoRing.visible = false;
     this.trail.length = 0;
     for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
     this.lyre.reset();
@@ -152,7 +168,7 @@ export class DiscordantNote implements Effect {
       this.fired = true;
       if (ctx?.projectile) {
         this.bolt = ctx.projectile({
-          from: this.muzzle.clone(), dir: this.dir.clone(), speed: SPEED, range: RANGE, radius: RADIUS, bounce: 1,
+          from: this.muzzle.clone(), dir: this.dir.clone(), speed: SPEED, range: RANGE, radius: RADIUS,
           hit: { damage: s.damage, knock: s.knock, color: BARD_CSS.body },
         });
         this.bolt.onHit((_target, at) => this.onHit(at));
@@ -189,13 +205,23 @@ export class DiscordantNote implements Effect {
       if (k >= 1) this.stave.reset();
     }
 
+    // --- The echo: a faint ring on the spot, then the second beat lands there (live positions, not homing). ---
+    if (this.echoAt >= 0) {
+      const k = (t - (this.echoAt - ECHO_DELAY)) / ECHO_DELAY;
+      if (t < this.echoAt) {
+        this.echoRing.visible = true;
+        this.echoRing.scale.setScalar(1.15 - 0.15 * k);
+        this.echoMat.opacity = 0.15 + 0.2 * k;
+      } else this.land();
+    }
+
     // --- The hit accent: a small gold star for two frames. ---
     this.starAge += dt;
     const sp = StarBurst.pop(this.starAge, 0, 0.03);
     this.star.set(this.starPos, 0.9 * sp.scale, sp.opacity, this.starAge * 4);
     this.shake *= Math.exp(-dt * 12);
 
-    if (this.goneAt >= 0 && t >= this.goneAt + SETTLE && !this.notes.busy && !this.rings.busy) {
+    if (this.goneAt >= 0 && this.echoAt < 0 && t >= this.goneAt + SETTLE && !this.notes.busy && !this.rings.busy) {
       this.playing = false;
       this.reset();
     } else if (t >= 3) {
@@ -221,8 +247,29 @@ export class DiscordantNote implements Effect {
     }
   }
 
-  /** A hit: small notes burst out, a sound ring, a two-frame gold star. */
+  /** The second beat: a smaller burst on the first one's spot; whoever stands within the radius now is hit. */
+  private land() {
+    this.echoAt = -1;
+    this.echoRing.visible = false;
+    this.starPos.copy(this.echoPos).setY(1.15);
+    this.starAge = 0;
+    this.shake = 0.08;
+    this.notes.emit(this.starPos, this.v2.set(0, 2.0, 0), 5, 0.8, { size: 0.5, spread: 2.4, gravity: 5 });
+    this.rings.pulse(this.starPos, 1.5, 0.3, this.v1.set(0, 0.3, 1), { r0: 0.3, width: 0.12 });
+    const ctx = this.ctx;
+    if (!ctx) return;
+    for (const e of ctx.targets) {
+      const p = e.group.position;
+      if (Math.hypot(p.x - this.echoPos.x, p.z - this.echoPos.z) > ECHO_RADIUS) continue;
+      ctx.hit(e, { damage: Math.round(this.settings.damage * ECHO_SHARE), knock: 0, from: this.echoPos, color: BARD_CSS.body });
+    }
+  }
+
+  /** A hit: small notes burst out, a sound ring, a two-frame gold star; the echo is armed on this spot. */
   private onHit(at: THREE.Vector3) {
+    this.echoPos.set(at.x, 0, at.z);
+    this.echoAt = this.time + ECHO_DELAY;
+    this.echoRing.position.set(at.x, 0.06, at.z);
     this.starPos.set(at.x, 1.15, at.z);
     this.starAge = 0;
     this.shake = 0.12;

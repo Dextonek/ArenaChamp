@@ -1,8 +1,8 @@
 # Bard kit: Cantor, the Last Verse (ranged support / control)
 
 ## Role (2026-10-30)
-**Support**, 640 HP. Signature: *Silence*. Q, W and E unchanged (bounce bolt, silence zone, shield and heal).
-- R Crescendo: a SELF-R (`cc`, range 0): the lyre rises in front of him, the chord (radius 7 to 5) hits for 95 and **stuns 0.8** (was 0.6) everything within 5 m.
+**Support**, 640 HP. Signature: *Silence*. Q: bolt with a delayed echo beat (no bounce); W unchanged; E: sound rings and a heal (no shield).
+- R Crescendo: a SELF-R (`cc`, range 0): the lyre rises in front of him, the chord (radius 7 to 5) hits for 95 within 5 m (no stun), then an **encore aura** follows him for `encore` 4 s (golden notes and staff lines orbiting at waist height, a gold ground ring pulsing 2 beats/s); his spells have no cooldown meanwhile.
 
 **Signature shape: sound made visible.** Music is drawn as **flowing five-line staves**, **floating notes and clefs**
 riding them, and **concentric sound rings** that ripple out from struck strings. Notes are dark ink shapes with a
@@ -31,11 +31,12 @@ support**: silences, a shield and a heal, and a stunning crescendo.
 - `SoundRings`: quick expanding rings: `pulse(center, radius, seconds, normal)`.
 - `Lyre`: a golden lyre that appears over a point and strums: `show(pos, scale)`, `strum()`, `hide()`.
 
-## Q · Discordant Note (`discordantNote.ts`, label `discordant note`, `ground`, `aim: 'line'`, range 12, cd 3, damage 50, bounce)
+## Q · Discordant Note (`discordantNote.ts`, label `discordant note`, `ground`, `aim: 'line'`, range 12, cd 3, damage 50, echo beat)
 A skillshot. 0–0.2: he strums; a big dark note glyph (0.5 tall) forms with sound rings. 0.2: `ctx.projectile({ from,
-dir, speed: 20, range: 12, radius: 0.45, bounce: 1, hit: { damage: 50, knock: 2, color: BARD_CSS.body } })`. The note
+dir, speed: 20, range: 12, radius: 0.45, hit: { damage: 50, knock: 2, color: BARD_CSS.body } })`. The note
 rides the bolt trailing a short stave ribbon; each hit bursts into small notes and a sound ring, a gold accent (2
-frames). Clean by 1.5.
+frames). The first hit arms an echo: a faint gold ring marks the burst spot for 0.8 s, then a smaller beat lands there
+and hits whoever stands within 1.6 m at that moment for 30% of the damage (a ground check, not homing). Clean by 2.3.
 
 ## W · Silencing Refrain (`silencingRefrain.ts`, label `silencing refrain`, `ground`, radius 4, range 10, cd 7, damage 40 + silence)
 0–0.3: a stave ribbon spirals in from his lyre and coils around the zone edge (radius 4). 0.3–0.7: notes ride the
@@ -44,13 +45,13 @@ centre, and a dark sound ring snaps inward: every enemy inside `ctx.hit(e, { dam
 BARD_CSS.body, status: { kind: 'silence', seconds: 1.5 } })`. 1.0–2.0: the notes fall and fade, the stave unwinds.
 Clean by 2.2.
 
-## E · Ballad of Valor (`balladOfValor.ts`, label `ballad of valor`, `self`, radius 4, cd 9, shield 30 + heal 40 + 2 × 10)
-0–0.3: two stave ribbons circle him (radius 1.3) with notes riding them; `ctx.shieldSelf(30, 3, BARD_CSS.body)`. At
+## E · Ballad of Valor (`balladOfValor.ts`, label `ballad of valor`, `self`, radius 4, cd 9, heal 55 + 2 × 10)
+0–0.3: two stave ribbons circle him (radius 1.3) with notes riding them. At
 1.0 and 2.0 he strums and a sound ring races out to radius 4: every enemy inside `ctx.hit(e, { damage: 10, knock: 2
-})`. At 2.0 golden notes rise around him: `ctx.healSelf(40)`. 2.6–3.0: the staves unwind into falling notes. Clean by
+})`. At 2.0 golden notes rise around him: `ctx.healSelf(55)`. 2.6–3.0: the staves unwind into falling notes. Clean by
 3.2. Telegraph ends at the first pulse.
 
-## R · Crescendo (`crescendo.ts`, label `crescendo`, `ground`, radius 7, range 13, cd 20, damage 100 + stun, `cc`)
+## R · Crescendo (`crescendo.ts`, label `crescendo`, `ground`, radius 7, range 13, cd 20, damage 100, encore aura, `cc`)
 The ultimate: **a great organ of sound** rises over the zone and plays one deafening chord.
 0–0.4: the world darkens to plum-black (`darken` 0.55, tint `#1e0a1a`); a circle of staves marks radius 7.
 0.3–1.6: behind the point a giant golden lyre (~6 tall) rises, strings glowing; staves spiral up from the zone edge
@@ -59,5 +60,7 @@ into it, carrying hundreds of notes; the lyre's strings shimmer faster; enemies 
 strings snap forward and a wall of sound rings races down onto the point. **2.2 hit**: impact frames `[1, 2]` at
 0.04 s, concentric sound rings burst out across the radius, all the notes scatter outward, a gold accent at the
 centre, ground `ShockRefraction` (1 → 12, 0.07), shake 0.75: every enemy within 7 `ctx.hit(e, { damage: 100, knock:
-4, from: point, status: { kind: 'stun', seconds: 0.6 } })`. 2.2–4.5: the notes drift down and fade, the lyre
-dissolves into notes, the darken lifts. Clean by 4.5.
+4, from: point })` (no stun). 2.2–4.5: the notes drift down and fade, the lyre dissolves into notes, the darken
+lifts. **Encore aura 2.2–5.2** (`encore` = 3 s, fades over 0.4, clean by 5.6): 9 golden notes and 3 staff-line rings
+orbit the caster at waist height (y 1.1, radius ~1.15), a soft gold ground ring and a beat ring pulse 2 times a
+second; it follows the caster figure.

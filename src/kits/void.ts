@@ -298,7 +298,7 @@ export const voidKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'rift cleave', name: 'Rift Cleave', range: 3, cooldown: 2.5,
-      blurb: 'A melee greatsword sweep: the blade leaves a tear in the air that cuts everything in front of him and knocks it back before it zips shut.',
+      blurb: 'A melee greatsword sweep: the blade leaves a tear in the air that cuts everything in front of him and drags it 1.5 m toward him.',
       icon(g, s) {
         iconGround(g, s);
         // A wide crescent tear with a jagged blade cutting through it, shards flying off.
@@ -314,6 +314,7 @@ export const voidKit: HeroKit = {
     },
     {
       key: 'W', label: 'null tether', name: 'Null Tether', range: 8, cooldown: 8,
+      debuff: { kind: 'weaken', amount: 0.2, seconds: 3 },
       blurb: 'Cracks spread over the ground, then black tears snap taut and drag every enemy in the zone toward him, slowing them.',
       icon(g, s) {
         iconGround(g, s);
@@ -331,8 +332,8 @@ export const voidKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'void mantle', name: 'Void Mantle', range: 0, cooldown: 10,
-      blurb: 'A ring of standing rifts opens round him and pulses once: everything within 4 m is hit and silenced for 1.2 s. No shield.',
+      key: 'E', label: 'void mantle', name: 'Void Mantle', range: 0, cooldown: 12,
+      blurb: 'A ring of standing rifts opens round him and pulses once, hurting enemies within 4 m. For 2 s a void maw swallows the next enemy spell whole.',
       icon(g, s) {
         iconGround(g, s);
         // Five standing slits round a core, an ash ring behind for the shield, cracks racing out.

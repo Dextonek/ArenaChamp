@@ -166,8 +166,8 @@ export const alchemyKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'volatile flask', name: 'Volatile Flask', range: 10, cooldown: 3,
-      blurb: 'Lobs a flask at the ground in a high arc. It shatters in a small circle (1.6 m): whoever is standing there is splashed and burns for a moment.',
+      key: 'Q', label: 'volatile flask', name: 'Volatile Flask', range: 10, cooldown: 2,
+      blurb: 'A quick lob: a flask shatters in a small circle (1.6 m); whoever stands there is splashed and burns for a moment.',
       icon(g, s) {
         ground(g, s);
         // Thrown arc, a flask at the top, and the splash with bubbles and shards below.
@@ -210,6 +210,7 @@ export const alchemyKit: HeroKit = {
     },
     {
       key: 'E', label: 'mutagen', name: 'Mutagen', range: 0, cooldown: 9,
+      buff: { kind: 'might', amount: 0.2, seconds: 3 },
       blurb: 'She drinks a flask and heals 45 HP. No damage and no flasks.',
       icon(g, s) {
         ground(g, s);

@@ -162,6 +162,7 @@ export const dawnKit: HeroKit = {
     },
     {
       key: 'E', label: 'halo of blades', name: 'Halo of Blades', range: 0, cooldown: 9,
+      buff: { kind: 'armor', amount: 0.2, seconds: 3 },
       blurb: 'Shields her for 25 while six blades circle her for 3 s and cut whatever they touch (3 hits at most).',
       icon(g, s) {
         ground(g, s);

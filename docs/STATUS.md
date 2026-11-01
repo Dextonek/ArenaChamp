@@ -37,9 +37,77 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Pushed to GitHub `main` and deployed (Worker version `d4fee4c5-be7f-4753-8c11-4dab08c03d81`); the live page serves
   `game-DSwok-2F.js`, no console errors, the game WebSocket opens.
 
+**Hero identity layer (2026-10-30, uncommitted, not deployed)**
+- Every hero has a passive (new passive slot left of Q), a twist (own resource bar, hold-to-charge, free recast,
+  ammo charges or stacks on the enemy), its own basic attack look, range and speed, its own walk speed, and one spell
+  with a buff or debuff. New buffs / debuffs: haste, might, armor, vulnerable, weaken. Engine and rules:
+  `docs/architecture/traits.md`; design and as-built deviations: `pipeline/designs/hero-identity.md`.
+- New VFX (user: "make new ones"): buff / debuff looks on the hero models (`src/effects/parts/buffs.ts`), stack pips
+  and proc bursts (`src/traits/fx.ts`), 16 missile and 6 swing looks for basic attacks (`src/attacks/fx.ts`); sheet
+  `docs/traits/attack-looks_sheet.jpg`.
+- Code: `src/traits/` (types, runtime, fx, index, one file per hero), hooks in `src/duel.ts` (`resolve`, `setupTraits`),
+  `src/heroMode.ts` (passive slot, hold / recast / ammo), `src/arena.ts` (`hitMod`, `applyBuff`, `shieldScale`),
+  `src/effects/status.ts` (buffs). 18 of the 20 trait files were written by three worker agents, then registered and
+  balanced here.
+- Online: casts and attacks carry `mods`; new messages `buff`, `stacks`, `spend`, `move.r`; spell hits capped at 400.
+  Two-player test passed (Nyx vs Vex: power with might, toxin stacks decided on the
+  victim's screen and relayed, combo points counted once per confirmed hit, the ultimate at power 1.3).
+- Balance: six tournament rounds (about 5,200 AI fights, no errors, no timeouts). Last full run (1,140 fights, after the
+  review fixes) out of 114 each: Kaia 70, Opaline 69, Lyra 64, Sirix 64, Nyx 62, Cantor 58, Isolde 55, Mortis 53,
+  Shiori 53, Vesper 53, Brannoc 52, Marin 51, Sefu 51, Oblivion 47, Auriel 47, Ada 46, Fenna 43, Zephyr 42; Vex (91, a
+  bug in her once-per-cast guard) and Tempo (69) were fixed after and re-checked against everyone: Vex 33/76, Tempo
+  40/76. So every hero is about 37-61%. Fights average 21 s (were 29 s).
+- Review fixes (advisor, 2026-10-30): a hook that replaced `hit.opts` lost its change (Sirix's slow); the server's
+  0.8 s slot gap and 10 s R gap dropped Lyra's ammo and Oblivion's recast online (now 0.35 s, plus one free second R
+  within 4 s); once-per-cast rules now key on a cast id (`TraitHit.cast`), not `afterCast` (Vex online); the player's
+  summons now carry the cast's power (Mortis, Ada); Fenna's regen heals in chunks; trait clocks stop while the hero is
+  locked. `npm run test:server` 38/38.
+- Client and server change together: deploy both.
+
+**Kit uniqueness pass (2026-10-31, uncommitted, on top of the identity layer, not deployed)**
+- Review and as-built notes: `pipeline/designs/kit-uniqueness.md` (all three batches done; C won over B for Isolde E
+  and Oblivion E).
+- Fewer copies: 5 of the 9 shield Es lost their shield; no more bounce Qs (Lyra, Cantor, Ada); Cantor and Fenna Rs no
+  longer stun / root; Oblivion Q pulls, Sirix Q swipes twice, Zephyr E dashes forward through the enemy; Brannoc's Q is
+  "Slag Flick"; four "every Nth hit" counters removed.
+- New mechanics: Isolde's ice block (1.5 s, nothing lands, she can't act), Oblivion's void maw (swallows the next enemy
+  spell within 2 s), Cantor's encore (3 s of 1 s cooldowns after Crescendo), Shiori's ink (the only mana hero), Ada's
+  turret Overclock, Sirix's damage per living wasp, Ada's sticking rivet, Cantor's echo beat.
+- New VFX (worker agents): ice block, void maw shell, encore aura, sticky rivet, echo ring, forward wind dash, second
+  Sirix swipe. Ice block toned down under bloom by hand. Sheets `docs/traits/newfx_sheet.jpg` (ice block there is the rejected bright one) and `docs/traits/iceblock_sheet.jpg` (the fixed one).
+- Engine: `TraitHit.blocked` (a victim's passive swallows a hit), `TraitView.units()` and `hold()`; AI holds spells
+  into an ice block and only baits Q into a maw (`Duel.ward`); basic-attack families (fast / standard / long).
+- Online: `took_hit` / `peer_hit` carry `blocked` (no HP taken, attacker's passives don't count it).
+  `npm run test:server` 39/39. Two-player test (local, test accounts in git-ignored `server/data/`): ice block and void
+  maw both swallowed real hits and showed BLOCKED on the attacker's screen.
+- Balance: six tournament rounds (about 5,700 fights, no timeouts). Last 1,140-fight run: 34-65% (Ada 65 highest,
+  Nyx 34 lowest; runs of 760 swing about +-10 points per hero). Fights average 20 s.
+- Isolde's ice block lock is a floor under the spell's cast root and ends at the shatter (free at 1.52 s, checked).
+- Not checked: in the online test Isolde's Rime Spear did not register on Oblivion, but only after I had moved him by
+  script (screens out of sync); offline it hits at 2.7 m and 7 m. Cantor's echo beat online not tested.
+
+**Kit identity v2 design (2026-11-01, design only, nothing built)**
+- `pipeline/designs/kit-identity-v2.md`: every hero gets one owned mechanic; passives, twists and every slot's
+  shape plus rider differ across all 20. `python pipeline/tools/check-kit-v2.py` checks the tables (7 of 7 ok).
+- Build in 5 batches (trait only → spell logic → 4 new debuffs → cleanse / leash → burrow, stealth, mirror with net
+  work), a tournament after each. Waiting on the user: build it, and whether batch 5 is in.
+
+**Hero motion pass (2026-11-01, uncommitted, on top of the uniqueness pass, not deployed)**
+- Procedural animation on the shared hero rig, no clips (`src/heroFigure.ts`, rig additions in
+  `src/effects/weapons/hero.ts`): idle (breath, weight shift, look round), speed-scaled walk with hip / chest
+  counter-turn and leaning, a cast pose per spell type (thrust, point, slam, burst, raise, lunge, swing, channel; R
+  bigger), basic-attack swings, hit flinch plus tinted flash, stun slump, knock-up flail, root tug, ice-block freeze,
+  crumpling death, spring-driven hair / sashes / robes. Small camera shake on big hits to the player.
+- Visual only: 30 AI fights after it averaged 20.8 s, no timeouts, no console errors. tsc, build and
+  `npm run test:server` pass. Cost about 0.15 ms per figure per frame.
+- Pose sheets: `docs/heroes/motion_{brannoc,nyx,lyra,isolde}.jpg` (Nyx's hit frame shows a slightly stronger flash than
+  the final one); tool `pipeline/tools/pose-sheet.js`. Ice block checked in a duel: the pose stays frozen for 1.5 s.
+- Not checked: the online peer's figure (its moves arrive in steps; the speed is smoothed for that).
+
 **Next step candidates (game)**
-- Hero identity layer (user chose it after the sync): a passive, an own resource or input twist, and an own basic
-  attack per hero; design sheet `pipeline/designs/hero-identity.md`.
+- Commit and deploy the identity layer and the uniqueness pass (client and server together).
+- Ada is the most likely to need a nerf (60-65% in every late run).
+- A full tournament after the last Marin / Tempo fix; then per-hero balance passes with real players' feedback.
 - Per-hero basic-attack looks and role traits (crit, every-third-shot, slowing or healing hits).
 - AI: attack summoned units, not only the hero; re-check summon balance at the slower walk speed.
 - Arena refinement round 2 if wanted; more Blender model upgrades like Oblivion v2.

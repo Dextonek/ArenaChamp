@@ -5,12 +5,14 @@ import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from './effects/t
 import { BODY_RADIUS } from './effects/projectile';
 import { MAX_UNITS, type SummonSide, type SummonStats } from './effects/summon';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
-import type { StatusKind } from './effects/status';
+import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS, type BuffKind, type StatusKind } from './effects/status';
 import type { HeroKit } from './heroes';
-import { HeroFigure } from './heroFigure';
+import { HeroFigure, castStyle } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
+import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
+import { TraitFx, stackColor } from './traits/fx';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -31,14 +33,23 @@ export interface DuelHost {
  * dodges this side takes (each side decides the hits on its own hero, where it really stood at impact).
  */
 export interface DuelNet {
-  cast(msg: { id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw: number }): void;
-  /** A hit on this side's hero: `damage` got past its shield, `soaked` is what the shield took. */
-  tookHit(id: number, damage: number, color?: string, soaked?: number): void;
+  cast(msg: { id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw: number; mods?: CastMods }): void;
+  /**
+   * A hit on this side's hero: `damage` got past its shield, `soaked` is what the shield took. `blocked`: a passive
+   * swallowed it whole (ice block, void maw), so the dealer's passives must not count it.
+   */
+  tookHit(id: number, damage: number, color?: string, soaked?: number, blocked?: boolean): void;
   dodged(id: number): void;
-  /** This side's hero released a basic attack at the other hero. */
-  attack(id: number): void;
+  /** This side's hero released a basic attack at the other hero (`mods`: its power and on-hit extras). */
+  attack(id: number, mods?: CastMods): void;
+  /** A buff or debuff on this side's hero (shown on the other screen). */
+  buff(kind: BuffKind, amount: number, seconds: number): void;
+  /** Stacks this side keeps on the other hero changed (the other player's own mechanic, decided here). */
+  stacks(name: string, n: number): void;
   /** This side's hero healed itself (the server adds it to the HP it counts). */
   heal(amount: number): void;
+  /** This side's hero paid HP for a spell (the server takes it off, never below 1). */
+  spend(amount: number): void;
   /** This side's hero took a status / got a shield: only shown on the other screen. */
   status(kind: StatusKind, seconds: number, color?: string): void;
   shield(amount: number, seconds: number, color?: string): void;
@@ -58,6 +69,8 @@ export interface PeerCast {
   enemy: boolean;
   /** Which way the caster faced (spells fired where the hero faces). */
   yaw?: number;
+  /** The cast's power and extras (src/traits). */
+  mods?: CastMods;
 }
 
 const RING = { x: 0, z: 7, r: 12 };
@@ -96,6 +109,11 @@ interface EnemyCast {
   zones: TelegraphSpec[];
   aimed: THREE.Vector3;
   dodgedShown: boolean;
+  /** The spell slot and the cast's mods (power, extras) every hit of it carries. */
+  slot?: number;
+  mods?: CastMods;
+  /** Unique per cast on this screen (the AI's casts all have network id 0). */
+  seq?: number;
 }
 
 /**
@@ -130,6 +148,12 @@ export class Duel {
   private foeMax = HP;
   private cooldowns = [0, 0, 0, 0];
   private rooted = 0;
+  /** The opponent trait's hold set during its cast's rules, applied after the spell's own root (`castSpell`). */
+  private holdFloor = 0;
+  /** Seconds the opponent's figure stays frozen (its ice block); also online, where only the look is affected. */
+  private foeHeld = 0;
+  /** The foe figure's hit flash last frame: a jump means a new hit (flinch). */
+  private foeFlash = 0;
   private think = 0;
   private opponentAi = { strafe: 1, strafeT: 0 };
   private playerAi = { strafe: -1, strafeT: 0 };
@@ -162,6 +186,25 @@ export class Duel {
   private castSeq = 0;
   /** The id of the other player's last basic attack (its hit report names it). */
   private peerAttackId = 0;
+  /** Stack pips over the heroes and passive bursts (src/traits/fx.ts). */
+  private traitFx = new TraitFx();
+  /** Healing not yet sent to the server (network duel), and the clock that sends it. */
+  private pendingHeal = 0;
+  private healClock = 0;
+  /** The identity layer of each side (src/traits); rebuilt every round. */
+  heroRt: TraitRuntime | null = null;
+  oppRt: TraitRuntime | null = null;
+  /** The player's casts by the arena's cast number: slot and mods (the hits look them up). */
+  private heroCasts = new Map<number, { slot: number; mods: CastMods }>();
+  /** The player's last cast (sent with it in a network duel). */
+  private heroLast: { slot: number; mods: CastMods } | null = null;
+  /** Network ids of the player's casts and attacks: the server's hit reports name them. */
+  private netIds = new Map<number, number | 'attack'>();
+  private heroAttackMods: CastMods = NO_MODS;
+  private oppCastSeq = 0;
+  private oppAttackMods: CastMods = NO_MODS;
+  /** Hit options already resolved (the arena's `hitMod` leaves them as they are). */
+  private resolved = new WeakSet<HitOptions>();
   private countdown = -1;
   /** When the countdown ends (performance.now() ms): wall clock, so a client that stalls (a new arena compiling) still
    * unlocks with the other side instead of seconds later. */
@@ -170,7 +213,7 @@ export class Duel {
 
   // HUD.
   private hud: HTMLDivElement;
-  private bars: { fill: HTMLDivElement; shield: HTMLDivElement; text: HTMLDivElement; name: HTMLDivElement; portrait: HTMLCanvasElement }[] = [];
+  private bars: { fill: HTMLDivElement; shield: HTMLDivElement; text: HTMLDivElement; name: HTMLDivElement; portrait: HTMLCanvasElement; extra: HTMLDivElement }[] = [];
   private card: HTMLDivElement;
   private cardTitle: HTMLDivElement;
   private cardText: HTMLDivElement;
@@ -180,16 +223,23 @@ export class Duel {
   private leaveButton!: HTMLButtonElement;
 
   constructor(private host: DuelHost) {
-    this.group.add(this.zones.group, this.figure.group, this.oppAttackFx.group);
+    this.group.add(this.zones.group, this.figure.group, this.oppAttackFx.group, this.traitFx.group);
     const arena = host.arena;
     this.oppAttack = new Attacker({
       arena,
       fx: this.oppAttackFx,
       self: () => this.foe!,
       spec: () => this.oppAttackSpec,
-      land: (target, opts) => (target === arena.caster ? this.damagePlayer(opts, this.net ? this.peerAttackId : undefined) : arena.hit(target, opts)),
+      land: (target, opts) => {
+        const o = this.resolve('opponent', target, opts, this.oppAttackMods, 'attack');
+        if (target === arena.caster) this.damagePlayer(o, this.net ? this.peerAttackId : undefined);
+        else arena.hit(target, o);
+      },
       posOf: (target) => target === arena.caster ? arena.caster.group.position
         : arena.summons.alive('hero').find((u) => u.figure === target)?.pos ?? null,
+      released: () => {
+        if (!this.net && this.oppRt && this.foe) this.oppAttackMods = this.oppRt.attack(arena.statusOf(this.foe)?.dealtMul ?? 1);
+      },
     });
     this.group.visible = false;
     this.hud = this.buildHud();
@@ -264,7 +314,6 @@ export class Duel {
     arena.casterHeal = (amount) => this.healPlayer(amount);
     arena.casterShield = null;
     hm.onCast = () => this.recordPlayerCast();
-    hm.onAttack = undefined;
   }
 
   /**
@@ -293,8 +342,6 @@ export class Duel {
     // Hits on the remote hero only count when its own client reports them (`peerHit`).
     arena.hitFilter = (target) => target !== this.foe || this.hitBypass;
     hm.onCast = (_label, slot, target) => this.sendCast(slot, target);
-    // Basic attacks at the other hero go to its client, which plays them and reports the hit. Attacks on units stay local.
-    hm.onAttack = (target) => { if (target === this.foe) this.net?.attack(++this.castSeq); };
     // Heals and shields on this side's hero: the server counts the heal; the shield is shown on the other screen.
     arena.casterHeal = (amount) => this.healPlayer(amount);
     arena.casterShield = (amount, seconds, color) => this.net?.shield(amount, seconds, color);
@@ -333,8 +380,10 @@ export class Duel {
       for (const c of this.foe.group.children) c.visible = false;
       this.foe.group.rotation.y = Math.atan2(mine.x - theirs.x, mine.z - theirs.z);
     }
-    this.figure.setModel(this.opponentKit.model, theirs);
+    this.figure.setModel(this.opponentKit.model, theirs, this.opponentKit);
+    this.foeHeld = 0;
     this.figure.stand();
+    this.setupTraits();
     hm.locked = false;
     hm.resetRound();
     this.playerHp = this.playerMax;
@@ -362,6 +411,145 @@ export class Duel {
     this.renderHud();
   }
 
+  /** The identity layer for this round: a runtime per side, the hero's cast rules and the hit pipeline. */
+  private setupTraits() {
+    const arena = this.host.arena, hm = this.host.heroMode;
+    const me = hm.currentKit, them = this.opponentKit;
+    this.heroRt = new TraitRuntime('hero', traitFor(me.name), {
+      self: () => arena.caster,
+      enemy: () => this.foe,
+      status: (f) => arena.statusOf(f),
+      hp: () => this.playerHp,
+      maxHp: () => this.playerMax,
+      time: () => this.time,
+      say: (text, color, at) => arena.say(text, color, at, 1),
+      heal: (amount) => { arena.healFigure(arena.caster, amount); },
+      buff: (kind, amount, seconds) => { arena.applyBuff(arena.caster, kind, amount, seconds); },
+      setCooldown: (slot, sec) => hm.setCooldown(slot, sec),
+      cooldownLeft: (slot) => hm.cooldownOf(slot),
+      burst: (at, big, stack) => this.traitFx.burst(at, (stack && stackColor(stack)) || me.accent, big),
+      payHp: (amount) => {
+        const paid = Math.min(amount, this.playerHp - 1);
+        if (paid <= 0) return;
+        this.playerHp -= paid;
+        arena.say(`-${Math.round(paid)}`, '#c0304a', arena.caster.group.position, 0.9);
+        this.net?.spend(Math.round(paid));
+      },
+      shield: (amount, seconds) => arena.shieldFigure(arena.caster, amount, seconds),
+      unitDeaths: () => Object.values(arena.summons.stats).reduce((a, st) => a + st.slain, 0),
+      units: () => arena.summons.alive('hero').map((u) => u.pos),
+      hold: (seconds) => hm.holdStill(seconds),
+    });
+    this.oppRt = new TraitRuntime('opponent', traitFor(them.name), {
+      self: () => this.foe ?? arena.caster,
+      enemy: () => arena.caster,
+      status: (f) => arena.statusOf(f),
+      hp: () => (this.foe ? arena.hpOf(this.foe) : 0),
+      maxHp: () => this.foeMax,
+      time: () => this.time,
+      say: (text, color, at) => arena.say(text, color, at, 1),
+      // Online the other player's own client heals and buffs its hero; here only offline.
+      heal: (amount) => { if (!this.net && this.foe) arena.healFigure(this.foe, amount); },
+      buff: (kind, amount, seconds) => { if (!this.net && this.foe) arena.applyBuff(this.foe, kind, amount, seconds); },
+      setCooldown: (slot, sec) => { this.cooldowns[slot] = Math.max(0, sec); },
+      cooldownLeft: (slot) => this.cooldowns[slot],
+      burst: (at, big, stack) => this.traitFx.burst(at, (stack && stackColor(stack)) || them.accent, big),
+      payHp: (amount) => {
+        if (this.net || !this.foe) return;
+        const hp = arena.hpOf(this.foe);
+        if (hp > 1) arena.setHp(this.foe, Math.max(1, hp - amount));
+      },
+      shield: (amount, seconds) => { if (!this.net && this.foe) arena.shieldFigure(this.foe, amount, seconds); },
+      unitDeaths: () => Object.values(arena.summons.stats).reduce((a, st) => a + st.slain, 0),
+      units: () => arena.summons.alive('opponent').map((u) => u.pos),
+      // Online the other player's own client holds its hero still.
+      hold: (seconds) => {
+        this.foeHeld = Math.max(this.foeHeld, seconds);
+        if (!this.net) this.holdFloor = Math.max(this.holdFloor, seconds);
+      },
+      // Online: the other player's stacks on this hero are decided here; its own screen learns them.
+      stacksChanged: (name, n) => this.net?.stacks(name, n),
+    });
+    this.heroCasts.clear();
+    this.netIds.clear();
+    this.heroLast = null;
+    this.heroAttackMods = this.oppAttackMods = NO_MODS;
+    hm.traits = this.heroRt;
+    hm.castRules = (slot, base, charge) => {
+      const spell = hm.currentKit.spells[slot];
+      const r = this.heroRt!.cast(slot, base, charge, hm.status.dealtMul, spell.debuff);
+      if (spell.buff) arena.applyBuff(arena.caster, spell.buff.kind, spell.buff.amount, spell.buff.seconds);
+      // The arena numbers the cast when the effect plays, right after this.
+      this.heroCasts.set(arena.castSeq + 1, { slot, mods: r.mods });
+      if (this.heroCasts.size > 40) this.heroCasts.delete(this.heroCasts.keys().next().value!);
+      this.heroLast = { slot, mods: r.mods };
+      return r.cooldown;
+    };
+    hm.onAttack = (target) => {
+      this.heroAttackMods = this.heroRt!.attack(hm.status.dealtMul);
+      // Basic attacks at the other hero go to its client, which plays them and reports the hit. Attacks on units stay local.
+      if (this.net && target === this.foe) {
+        const id = ++this.castSeq;
+        this.netIds.set(id, 'attack');
+        this.net.attack(id, this.heroAttackMods);
+      }
+    };
+    // The player's hits (spells, bolts, units, attacks) on the opponent and its units get the cast's power, buffs and
+    // passives here; the opponent's hits are resolved in hitPlayer / hitUnit / its attacker.
+    arena.hitMod = (target, opts, cast) => {
+      // The server's confirmed hit on the other hero (`peerHit`) only draws: the other screen already resolved it.
+      if (this.resolved.has(opts) || this.hitBypass) return opts;
+      if (target !== this.foe && arena.summons.unitOf(target)?.side !== 'opponent') return opts;
+      const rec = cast !== undefined ? this.heroCasts.get(cast) : undefined;
+      if (opts.attack) return this.resolve('hero', target, opts, this.heroAttackMods, 'attack');
+      return this.resolve('hero', target, opts, rec?.mods ?? NO_MODS, rec ? 'spell' : 'unit', rec?.slot, cast);
+    };
+    arena.casterBuff = (kind, amount, seconds) => this.net?.buff(kind, amount, seconds);
+    // Shields a hero makes are scaled by its trait (Auriel's Aegis).
+    arena.shieldScale = (target) => (target === arena.caster ? this.heroRt?.trait?.shieldMul : target === this.foe ? this.oppRt?.trait?.shieldMul : undefined) ?? 1;
+    this.pendingHeal = 0;
+  }
+
+  /**
+   * One hit through the identity layer: the cast's power, the victim's armor / vulnerable, the dealer's and the
+   * victim's passives, the cast's status / debuff / knock extras. Returns a resolved copy. The dealer learns that it
+   * landed (resources, heals) unless it is the other player's side online (its own client counts that).
+   */
+  private resolve(dealer: Side, victim: Enemy, opts: HitOptions, mods: CastMods, kind: 'spell' | 'attack' | 'unit', slot?: number, cast?: number): HitOptions {
+    if (this.resolved.has(opts)) return opts;
+    const arena = this.host.arena;
+    const dRt = dealer === 'hero' ? this.heroRt : this.oppRt;
+    const victimIsHero = victim === this.foe || victim === arena.caster;
+    const vRt = !victimIsHero ? null : dealer === 'hero' ? this.oppRt : this.heroRt;
+    const hit: TraitHit = { kind, slot, cast, mods, damage: (opts.damage ?? 15) * mods.power, opts: { ...opts } as HitOptions, victim, victimIsHero };
+    if (victimIsHero) hit.damage *= arena.statusOf(victim)?.takenMul ?? 1;
+    dRt?.dealt(hit);
+    vRt?.taken(hit);
+    // A hook may replace the options object: read it back.
+    const o = hit.opts;
+    if (hit.blocked) {
+      // Swallowed whole: nothing lands, and the dealer gains nothing from it.
+      const swallowed = Math.round(hit.damage);
+      delete o.status; delete o.debuff; delete o.knock; delete o.pull;
+      o.damage = 0;
+      o.blocked = swallowed;
+      this.resolved.add(o);
+      return o;
+    }
+    if (victimIsHero && mods.status && !o.status) o.status = mods.status;
+    if (mods.debuff && !o.debuff) o.debuff = mods.debuff;
+    if (mods.knock) o.knock = (o.knock ?? 0) + mods.knock;
+    o.damage = Math.round(hit.damage);
+    this.resolved.add(o);
+    if (dealer === 'hero' || !this.net) dRt?.landed({ kind, slot, damage: o.damage, victimIsHero });
+    return o;
+  }
+
+  /** The AI's walk speed for a kit: the hero's own speed scaled to the AI's pace. */
+  private aiSpeed(kit: HeroKit) {
+    return AI_SPEED * (traitFor(kit.name)?.speed ?? 4) / 4;
+  }
+
   stop() {
     if (!this.on) return;
     const arena = this.host.arena;
@@ -369,8 +557,15 @@ export class Duel {
     this.round++;
     arena.projectiles.clear();
     arena.hitFilter = null;
+    arena.hitMod = null;
     arena.casterHeal = null;
     arena.casterShield = null;
+    arena.casterBuff = null;
+    arena.shieldScale = null;
+    this.traitFx.clear();
+    this.host.heroMode.traits = null;
+    this.host.heroMode.castRules = undefined;
+    this.heroRt = this.oppRt = null;
     this.host.heroMode.onCast = undefined;
     this.host.heroMode.onAttack = undefined;
     arena.maxHp = 100;
@@ -451,12 +646,23 @@ export class Duel {
     }
     const me = arena.caster.group.position;
     const point = spec.mode === 'self' ? from.clone() : m.enemy ? me.clone() : new THREE.Vector3(m.x, 0, m.z);
-    this.castSpell(m.slot, foe, from, me, spec, point, m.id, undefined, m.yaw);
+    this.castSpell(m.slot, foe, from, me, spec, point, m.id, undefined, m.yaw, m.mods ?? NO_MODS);
   }
 
   /** The remote side took a hit from this side's spell (its own client decided): number, flash, HP from the server. */
-  peerHit(damage: number, hp: number, color?: string, soaked = 0) {
+  peerHit(damage: number, hp: number, color?: string, soaked = 0, id?: number, blocked = false) {
     if (!this.foe || !this.on) return;
+    if (blocked) {
+      // The other hero's passive swallowed it whole: nothing landed, and this side's trait gains nothing.
+      this.host.arena.say('BLOCKED', '#bfeaff', this.foe.group.position, 1.1);
+      this.host.arena.setHp(this.foe, hp);
+      return;
+    }
+    // This side's hit landed on the other hero: its trait learns it (combo points, heals from damage).
+    const what = id !== undefined ? this.netIds.get(id) : undefined;
+    if (what !== undefined && this.heroRt) {
+      this.heroRt.landed(what === 'attack' ? { kind: 'attack', damage, victimIsHero: true } : { kind: 'spell', slot: what, damage, victimIsHero: true });
+    }
     this.hitBypass = true;
     // The shield drawn here takes `soaked` (it was given by `peerShield`); past it the shield broke on the other side.
     this.host.arena.hit(this.foe, { damage: damage + soaked, knock: 0, color });
@@ -466,10 +672,18 @@ export class Duel {
   }
 
   /** The other player released a basic attack at this side's hero: it flies (or swings) here and lands on this hero. */
-  peerAttack(id: number) {
+  peerAttack(id: number, mods?: CastMods) {
     if (!this.foe || !this.on || this.over) return;
     this.peerAttackId = id;
+    this.oppAttackMods = mods ?? NO_MODS;
     this.oppAttack.releaseNow(this.host.arena.caster);
+  }
+
+  /** The other hero paid HP (its HP as the server counts it). */
+  peerSpend(amount: number, hp: number) {
+    if (!this.foe || !this.on) return;
+    this.host.arena.say(`-${amount}`, '#c0304a', this.foe.group.position, 0.9);
+    this.host.arena.setHp(this.foe, hp);
   }
 
   /** The other hero healed itself (its HP as the server counts it). */
@@ -482,6 +696,21 @@ export class Duel {
   /** The other hero took a status on its own screen: the same word and tint here. */
   peerStatus(kind: StatusKind, seconds: number, color?: string) {
     if (this.foe && this.on) this.host.arena.applyStatus(this.foe, kind, seconds, color);
+  }
+
+  /** A buff or debuff on the other hero (its own screen decided it): the same icon and word here. */
+  peerBuff(kind: BuffKind, amount: number, seconds: number) {
+    if (this.foe && this.on) this.host.arena.applyBuff(this.foe, kind, amount, seconds);
+  }
+
+  /** The other screen decided this side's stacks on the other hero (e.g. Vex's toxin on it). */
+  peerStacks(name: string, n: number) {
+    this.heroRt?.setStacks(name, n);
+  }
+
+  /** The other hero's resource (sent with its moves). */
+  peerResource(value: number) {
+    if (this.oppRt) this.oppRt.res = value;
   }
 
   /** The other hero got a shield: the bubble here (hits on it are counted on that side). */
@@ -521,7 +750,11 @@ export class Duel {
     const me = this.host.arena.caster.group.position;
     const p = 'enemy' in target ? target.enemy.group.position : target.point;
     const yaw = +this.host.arena.caster.group.rotation.y.toFixed(3);
-    this.net?.cast({ id: ++this.castSeq, slot, x: p.x, z: p.z, fx: me.x, fz: me.z, enemy: 'enemy' in target, yaw });
+    const id = ++this.castSeq;
+    this.netIds.set(id, slot);
+    if (this.netIds.size > 60) this.netIds.delete(this.netIds.keys().next().value!);
+    const mods = this.heroLast?.slot === slot ? this.heroLast.mods : undefined;
+    this.net?.cast({ id, slot, x: p.x, z: p.z, fx: me.x, fz: me.z, enemy: 'enemy' in target, yaw, mods });
   }
 
   /**
@@ -576,6 +809,10 @@ export class Duel {
     this.arenaScene?.update?.(dt, this.time);
     this.oppAttack.update(dt);
     this.oppAttackFx.update(dt);
+    this.traitFx.update(dt);
+    const cam = this.host.arena.camera;
+    this.traitFx.pips('foe', this.foe?.group.position ?? null, this.heroRt?.allStacks() ?? [], cam, this.host.heroMode.currentKit.accent);
+    this.traitFx.pips('hero', this.host.arena.caster.group.position, this.oppRt?.allStacks() ?? [], cam, this.opponentKit.accent);
     this.zoneClock += dt;
     this.zones.update(this.zoneClock);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
@@ -583,13 +820,30 @@ export class Duel {
 
     const foe = this.foe;
     const foePos = foe ? foe.group.position : OPPONENT_START;
-    if (foe) this.figure.follow(dt, foePos, foe.group.rotation.y, this.rooted > 0 || this.oppAttack.posing);
+    if (foe) {
+      // A new hit on the opponent (its capsule flash jumped): the figure flinches away from the player and flashes.
+      const fl = this.host.arena.flashOf(foe);
+      if (fl && fl.v > this.foeFlash + 0.2) this.figure.hit(fl.v >= 1 ? 0.7 : 0.15, fl.tint, this.host.arena.caster.group.position);
+      this.foeFlash = fl?.v ?? 0;
+      this.foeHeld = Math.max(0, this.foeHeld - dt);
+      this.figure.follow(dt, foePos, foe.group.rotation.y, { attack: this.oppAttack.motion, status: this.host.arena.statusOf(foe), held: this.foeHeld > 0 });
+    }
 
     if (this.over) {
       this.overT += dt;
       if (this.over === 'lose') hm.fallHero(this.overT / 0.6);
       else this.figure.fall(this.overT / 0.6);
       return;
+    }
+    this.healClock += dt;
+    if (this.healClock >= 0.5) {
+      this.healClock = 0;
+      if (this.pendingHeal >= 1 && this.net) { this.net.heal(Math.round(this.pendingHeal)); this.pendingHeal = 0; }
+    }
+    if (this.countdown < 0 && !this.host.heroMode.locked) {
+      this.heroRt?.tick(dt);
+      if (this.net) this.oppRt?.tickClocks(dt);
+      else this.oppRt?.tick(dt);
     }
     // Network duel: the server declares the winner (`netEnd`); the opponent is the other player.
     if (this.net) {
@@ -621,7 +875,7 @@ export class Duel {
     // A skillshot on its way: step off its line before casting or walking on (if the roll says so).
     const side = st?.cannotMove ? null : this.dodgeBolt(this.opponentDodge, foe, at);
     if (side) {
-      this.host.arena.moveFoe(foe, side.multiplyScalar(AI_SPEED * (st?.speedMul ?? 1) * dt), true);
+      this.host.arena.moveFoe(foe, side.multiplyScalar(this.aiSpeed(this.opponentKit) * (st?.speedMul ?? 1) * dt), true);
       this.face(foe, me);
       return;
     }
@@ -630,7 +884,9 @@ export class Duel {
       const mine = this.host.heroMode.status;
       // A unit of the hero's that stands in the way is shot at first; otherwise the hero.
       const full = this.host.arena.summons.alive('opponent').length >= MAX_UNITS;
-      const cooling = (i: number) => this.cooldowns[i] > 0;
+      // An open recast counts as ready (the AI fires its free second cast when it is in reach).
+      const ward = this.ward(this.heroRt);
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || (!this.oppRt?.canRecast(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
       const held = mine.stunned || mine.has('root');
       // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
       let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full);
@@ -653,7 +909,7 @@ export class Duel {
       return;
     }
     const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttackSpec.range);
-    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(AI_SPEED * (st?.speedMul ?? 1) * dt), true);
+    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit) * (st?.speedMul ?? 1) * dt), true);
     this.face(foe, me);
   }
 
@@ -721,6 +977,16 @@ export class Duel {
     return move.lengthSq() > 0 ? move.normalize() : move;
   }
 
+  /**
+   * What the AI holds its spells for: 2 while the other hero sits in an ice block (nothing lands), 1 while its void maw
+   * is open (only Q goes in, as bait), else 0.
+   */
+  private ward(rt: TraitRuntime | null) {
+    if (!rt) return 0;
+    if (rt.time < (rt.mem.iceUntil ?? 0)) return 2;
+    return rt.mem.mawCast === -1 && rt.time < (rt.mem.mawUntil ?? 0) ? 1 : 0;
+  }
+
   /** Autopilot: the player's hero fights with the same rules as the opponent (for duel simulations). */
   private pilot(dt: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3) {
     const hm = this.host.heroMode;
@@ -731,14 +997,15 @@ export class Duel {
     const kit = hm.currentKit;
     const side = st.cannotMove ? null : this.dodgeBolt(this.playerDodge, this.host.arena.caster, me);
     if (side) {
-      this.host.arena.walk(side.multiplyScalar(AI_SPEED * st.speedMul * dt));
+      this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit) * st.speedMul * dt));
       return;
     }
     const sees = this.host.arena.lineOfSight(me, at);
     const theirs = this.host.arena.statusOf(foe);
     if (!st.cannotCast) {
       const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
-      const cooling = (i: number) => hm.cooldownOf(i) > 0;
+      const ward = this.ward(this.oppRt);
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i);
       const held = !!theirs && (theirs.stunned || theirs.has('root'));
       const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
       // The hero first; a unit only when nothing can be cast at the hero and a unit is within 2.5 m.
@@ -762,7 +1029,7 @@ export class Duel {
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
     const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attack.range);
-    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(AI_SPEED * st.speedMul * dt));
+    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit) * st.speedMul * dt));
   }
 
   /**
@@ -800,7 +1067,7 @@ export class Duel {
    * player's feet). `unit`: a unit of the hero's it shoots at instead (one in the way). The hero's units inside an area
    * (or next in a chain) are targets too; the zones decide at impact who is hit.
    */
-  private castSpell(i: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3, spec: TargetingSpec, aim?: THREE.Vector3, id = 0, unit?: Enemy, yaw?: number) {
+  private castSpell(i: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3, spec: TargetingSpec, aim?: THREE.Vector3, id = 0, unit?: Enemy, yaw?: number, netMods?: CastMods) {
     const arena = this.host.arena;
     const spell = this.opponentKit.spells[i];
     const player = arena.caster;
@@ -831,7 +1098,15 @@ export class Duel {
     this.face(foe, focus);
     // A network cast faces where the other player's hero faced (spells fired straight ahead go that way).
     if (yaw !== undefined && spec.mode === 'self') foe.group.rotation.y = yaw;
-    const record: EnemyCast = { id, round: this.round, zones: [], aimed: point.clone(), dodgedShown: false };
+    // The AI's cast runs the opponent's trait rules here (power, cooldown, spending); a network cast brings its mods.
+    let cooldown = spell.cooldown, mods = netMods ?? NO_MODS;
+    if (!netMods && this.oppRt) {
+      const r = this.oppRt.cast(i, spell.cooldown, 1, arena.statusOf(foe)?.dealtMul ?? 1, spell.debuff);
+      mods = r.mods;
+      cooldown = r.cooldown;
+      if (spell.buff) arena.applyBuff(foe, spell.buff.kind, spell.buff.amount, spell.buff.seconds);
+    }
+    const record: EnemyCast = { id, round: this.round, zones: [], aimed: point.clone(), dodgedShown: false, slot: i, mods, seq: ++this.oppCastSeq };
     const ctx = arena.contextFor({
       caster: foe,
       from: at,
@@ -854,8 +1129,11 @@ export class Duel {
     this.zones.set(record.zones);
     this.zoneClock = 0;
     const impact = record.zones.length ? Math.max(...record.zones.map((z) => z.impact)) : 0.5;
-    this.rooted = Math.min(impact, 2.5);
-    this.cooldowns[i] = spell.cooldown;
+    // A trait's hold (Isolde's ice block) is a floor under the spell's own root.
+    this.rooted = Math.max(Math.min(impact, 2.5), this.holdFloor);
+    this.holdFloor = 0;
+    this.figure.cast(castStyle(spell, i, spec.mode === 'enemy', this.oppAttack.motion.melee, this.rooted), this.rooted, i === 3);
+    if (cooldown >= 0) this.cooldowns[i] = cooldown;
     this.stats.opponentCasts++;
   }
 
@@ -875,7 +1153,7 @@ export class Duel {
       }
       return;
     }
-    this.damagePlayer(opts, c.id);
+    this.damagePlayer(this.resolve('opponent', arena.caster, opts, c.mods ?? NO_MODS, 'spell', c.slot, c.seq), c.id);
   }
 
   /**
@@ -886,11 +1164,17 @@ export class Duel {
     if (this.over || !this.on) return;
     const arena = this.host.arena;
     const me = arena.caster.group.position;
+    if (opts.blocked !== undefined) {
+      // A passive swallowed it (ice block, mantle): the other screen shows it as soaked.
+      if (castId !== undefined) this.net?.tookHit(castId, 0, opts.color, opts.blocked, true);
+      return;
+    }
     const dmg = Math.round(opts.damage ?? 15);
     // A shield on the hero takes the damage first; the server is told what got past it.
     const left = arena.absorb(arena.caster, dmg);
     if (castId !== undefined) this.net?.tookHit(castId, left, opts.color, dmg - left);
     this.playerHp = Math.max(0, this.playerHp - left);
+    this.host.heroMode.figureHit(left, opts.color, opts.from ?? this.foe?.group.position);
     if (left > 0) {
       arena.say(String(left), opts.color ?? '#ff6a6a', me, left >= 40 ? 1.5 : 1);
       this.flash.style.opacity = String(Math.min(1, 0.35 + left / 120));
@@ -910,6 +1194,7 @@ export class Duel {
       if (m > 0) me.addScaledVector(to.normalize(), m);
       arena.keepInside(me);
     }
+    if (opts.debuff) this.host.arena.applyBuff(arena.caster, opts.debuff.kind, opts.debuff.amount, opts.debuff.seconds);
     // A status on this hero is enforced here; the other screen only shows it.
     if (opts.status && this.host.heroMode.applyStatus(opts.status.kind, opts.status.seconds, opts.color)) {
       this.net?.status(opts.status.kind, opts.status.seconds, opts.color);
@@ -923,7 +1208,9 @@ export class Duel {
   private hitUnit(c: EnemyCast, target: Enemy, opts: HitOptions = {}) {
     if (this.over || c.round !== this.round || !this.on) return;
     const p = target.group.position;
-    if (opts.projectile || c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS) this.host.arena.hit(target, opts);
+    if (opts.projectile || c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS) {
+      this.host.arena.hit(target, this.resolve('opponent', target, opts, c.mods ?? NO_MODS, 'spell', c.slot, c.seq));
+    }
   }
 
   /** The nearest alive unit of `side` within `UNIT_BLOCK` of `from` and closer than the hero at `other`, if any. */
@@ -948,8 +1235,8 @@ export class Duel {
   private healPlayer(amount: number) {
     const healed = Math.max(0, Math.min(amount, this.playerMax - this.playerHp));
     this.playerHp += healed;
-    // Online the server counts HP: it adds the heal (within its caps) and answers with the new HP.
-    if (healed > 0) this.net?.heal(healed);
+    // Online the server counts HP: heals are sent in batches (`flushHeal`, twice a second), within its caps.
+    if (healed > 0 && this.net) this.pendingHeal += healed;
     return healed;
   }
 
@@ -1059,9 +1346,12 @@ export class Duel {
       const text = document.createElement('div');
       text.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px ui-sans-serif,system-ui;color:#fff;text-shadow:0 1px 2px #000;';
       barBg.append(fill, shield, text);
-      col.append(name, barBg);
+      // Under the bar: the resource, buffs / debuffs and the stacks the other hero keeps on this one.
+      const extra = document.createElement('div');
+      extra.style.cssText = `display:flex;gap:4px;align-items:center;min-height:14px;flex-direction:${right ? 'row-reverse' : 'row'};font:600 10px ui-sans-serif,system-ui;`;
+      col.append(name, barBg, extra);
       box.append(portrait, col);
-      this.bars.push({ fill, shield, text, name, portrait });
+      this.bars.push({ fill, shield, text, name, portrait, extra });
       return box;
     };
     const vs = document.createElement('div');
@@ -1100,6 +1390,23 @@ export class Duel {
         b.shield.style.background = `color-mix(in srgb, ${shield!.color || '#ffffff'} 30%, #eef6ff)`;
       }
       b.text.textContent = `${Math.ceil(hp)} / ${max}` + (shield ? `  +${Math.ceil(shield.amount)}` : '');
+      const rt = i === 0 ? this.heroRt : this.oppRt, other = i === 0 ? this.oppRt : this.heroRt;
+      const fig = i === 0 ? arena.caster : this.foe;
+      const parts: string[] = [];
+      const res = rt?.trait?.resource;
+      if (res && rt) {
+        parts.push(`<div title="${res.name}" style="position:relative;width:60px;height:7px;border-radius:4px;background:#0009;overflow:hidden">` +
+          `<div style="position:absolute;inset:0 auto 0 0;width:${(100 * rt.res) / res.max}%;background:${res.color}"></div></div>` +
+          `<span style="color:${res.color}">${res.name} ${Math.round(rt.res)}</span>`);
+      }
+      for (const bf of (fig && arena.statusOf(fig)?.activeBuffs()) || []) {
+        const bad = DEBUFFS.includes(bf.kind);
+        parts.push(`<span title="${bf.kind} ${Math.round(bf.amount * 100)}%" style="padding:0 3px;border-radius:3px;border:1px solid ${BUFF_COLOR[bf.kind]};` +
+          `color:${BUFF_COLOR[bf.kind]};background:${bad ? '#3a0a14' : '#0a2a1e'}">${BUFF_GLYPH[bf.kind]} ${Math.ceil(bf.left)}</span>`);
+      }
+      for (const st of other?.allStacks() ?? []) parts.push(`<span style="color:#ffd7a0">${st.name} ×${st.n}</span>`);
+      const html = parts.join('');
+      if (b.extra.dataset.html !== html) { b.extra.dataset.html = html; b.extra.innerHTML = html; }
     });
   }
 }

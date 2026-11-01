@@ -1,4 +1,4 @@
-# Hero identity layer: design (draft 2026-10-30, waiting for approval)
+# Hero identity layer: design (approved 2026-10-30, being built)
 
 The user, after the roles pass: "the skill set is still kinda same". The roles pass gave every hero its own spell
 *shapes* (dash, hook, trap, boomerang, beam), but every hero still runs on the same rules: four spells on cooldowns,
@@ -74,7 +74,52 @@ charge is ready, stance = swarm when close, carapace when low). Balance comes fr
 3. Per-hero basic attack looks (the bolt and slash in each kit's style).
 4. Online test with two players, balance rounds, docs, STATUS, contact sheets.
 
-## Open questions for the user
+## Decisions (2026-10-30)
 
-- Walk speeds: keep the spread small (3.6-4.6) or make it bigger (3.2-5.0)?
-- Should the resource bars show on the enemy too (you can see Brannoc is about to overheat), or only your own?
+- The user approved the sheet ("Yes, build it") and added: **a passive slot for every hero** on the hero bar, and
+  **buffs and debuffs** (spells that debuff the enemy, heroes that buff themselves, slowness).
+- Walk speeds stay in the small spread (3.6-4.6 m/s), as written above (the open question was not answered; the
+  sheet's default was kept).
+- Resource bars show for both heroes (under each duel HP bar), so a player can read the enemy's state.
+- Buffs / debuffs: haste, might, armor (buffs), vulnerable, weaken (debuffs); slow stays a status. Each hero has one
+  spell with a buff or a debuff in its kit data. Engine: [traits.md](../../docs/architecture/traits.md).
+- Hold-to-charge: the charge builds while the spell is aimed (key press to the confirming click), so the control scheme
+  stays "key aims, click casts".
+- Recast: a free second cast of the same spell (at 60% damage) within the window, not a separate action.
+
+## As built (2026-10-30)
+
+**Revised 2026-10-31** by the uniqueness pass ([kit-uniqueness.md](kit-uniqueness.md)): several passives and twists
+below changed (Lyra, Opaline, Oblivion, Sirix, Ada, Shiori, Cantor, Fenna, Isolde, Sefu, Mortis). The trait files and
+that review are the current rules.
+
+Engine: [traits.md](../../docs/architecture/traits.md). Rule that shaped the deviations: a trait never makes hits or
+units of its own (online, each client decides the hits on its own hero), so anything that needed a new hit became a
+change to the hero's existing hits. Changes from the table above:
+
+- **Nyx:** combo points +15% per point (balance; was +25%). Vulnerable 15% on Umbral Blink.
+- **Zephyr:** momentum fills at 20 per second of walking; at full, the next spell knocks back and gets half its cooldown.
+  Tailwind is a 10% haste for 2 s after each spell.
+- **Brannoc:** the 1 s self-slow after venting is dropped (no self-debuff); the empowered cast stuns with every hit.
+- **Oblivion:** the slow aura became a 0.5 s slow on his own hits within 3 m; the third mark (basic attacks only)
+  silences. Recast R "Collapse" is a free second cast at 60%.
+- **Vesper:** spells cost 4/5/6/8% max HP, cooldowns x0.7; under 30% HP free and +20%. Heals 20% of damage dealt.
+- **Sirix:** no wasp summons; every 4th hit slows 1 s. Stance switch on E (8 s cooldown): swarm +10% damage, carapace
+  20% armor.
+- **Kaia:** the charged lance gives up to +50% damage, not range (a trait cannot change a spell's range).
+- **Vex:** each spell adds its stacks once per cast; the burst is +50.
+- **Tempo:** the "ghost 3 s ago" Echo is not buildable; Echo winds his other cooldowns back 0.75 s per cast, and the
+  twist is a free second Rewind (recast E).
+- **Lyra:** Focus gives +5% Starshot damage per second still (max +20%), not range; 3 Starshot charges, one back every
+  3 s; every third arrow slows 0.8 s.
+- **Opaline:** Refraction is +20% on a blinded enemy (no "missed bolt" event); each light gives R +15% (not an extra
+  sweep).
+- **Auriel:** "+20% while shielded" became a 3 s might after each shield spell; Slam is a free second W at 60%.
+- **Fenna:** regen 2.5% max HP per second after 2 s without being hit; bloom roots 0.3 s per seed.
+- **Isolde:** as designed (chill 3 → 0.8 s stun; +15% on slowed).
+- **Sefu:** the charge gives power and a longer root (the radius cannot grow); Sandstorm +30% on rooted, +15% on slowed.
+- **Marin:** tide rises 15 per second; the basic attack's small pull is not built.
+- **Mortis:** starts each round with 3 bones; bones from every slain unit; W and R spend all for +12% each.
+- **Ada:** the turret is her W in the kit (not E), so scrap powers W; Overclock is "+20% after standing still 1 s".
+- **Shiori:** ink weakens 15% for 2 s instead of slowing; Second flight is a free second E at 80%.
+- **Basic attacks:** Auriel and Sefu use ranged attacks (5 m); melee ones pulled their AI into close range.

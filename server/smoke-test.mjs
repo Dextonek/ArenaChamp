@@ -112,7 +112,7 @@ try {
   a.send({ t: 'cast', id: 4, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
   const pc = await b.next('peer_cast');
   check(pc.id === 2 && pc.enemy === true, 'cast relayed after the countdown (the early one was not)');
-  check((await b.next('peer_cast')).id === 4, 'a second Q within 0.8 s is dropped');
+  check((await b.next('peer_cast')).id === 4, 'a second Q within 0.35 s is dropped');
   b.send({ t: 'dodged', id: 2 });
   check((await a.next('peer_dodged')).id === 2, 'dodge relayed');
   // Basic attacks, heals, statuses and shields (each client decides what happens to its own hero; the server caps).
@@ -124,6 +124,11 @@ try {
   const ah = await a.next('peer_hit');
   check(ah.id === 10 && ah.damage === 40 && ah.soaked === 15 && ah.hp === 700, 'attack hit capped at 40 with its shield share (the attack within 0.5 s was dropped)');
   check((await b.next('hp')).hp === 700, 'victim told its HP');
+  a.send({ t: 'cast', id: 12, slot: 1, x: 0, z: 0, fx: 0, fz: 0, enemy: true, yaw: 0 });
+  await b.next('peer_cast');
+  b.send({ t: 'took_hit', id: 12, damage: 90, soaked: 60, blocked: true });
+  const bh = await a.next('peer_hit');
+  check(bh.blocked === true && bh.damage === 0 && bh.hp === 700 && (await b.next('hp')).hp === 700, 'a hit the victim swallowed whole costs no HP');
   b.send({ t: 'heal', amount: 500 });
   const ph = await a.next('peer_heal');
   check(ph.amount === 40 && ph.hp === 740 && (await b.next('hp')).hp === 740, 'heal capped at the max HP and relayed');
@@ -133,6 +138,29 @@ try {
   check(ps.kind === 'stun' && ps.seconds === 3, 'status relayed, capped at 3 s (an unknown kind dropped)');
   b.send({ t: 'shield', amount: 999, seconds: 4 });
   check((await a.next('peer_shield')).amount === 400, 'shield relayed, capped at 400');
+  // The identity layer: a cast's mods, buffs, stacks, HP costs (src/traits).
+  a.send({ t: 'cast', id: 20, slot: 2, x: 0, z: 1, fx: 0, fz: 13, enemy: true, mods: { power: 9, status: { kind: 'stun', seconds: 9 }, debuff: { kind: 'nope', amount: 1, seconds: 1 } } });
+  const mc = await b.next('peer_cast');
+  check(mc.id === 20 && mc.mods.power === 3 && mc.mods.status.seconds === 3 && !mc.mods.debuff, 'cast mods relayed and clamped (power 3, status 3 s, unknown debuff dropped)');
+  // R: one free second cast (a recast) within 4 s, then the long gap.
+  a.send({ t: 'cast', id: 30, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  await wait(450);
+  a.send({ t: 'cast', id: 31, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  await wait(450);
+  a.send({ t: 'cast', id: 32, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  a.send({ t: 'cast', id: 33, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  const rs = [await b.next('peer_cast'), await b.next('peer_cast'), await b.next('peer_cast')].map((c) => c.id);
+  check(rs.join() === '30,31,33', `one R recast allowed within 4 s, a third R dropped (${rs.join()})`);
+  b.send({ t: 'buff', kind: 'armor', amount: 2, seconds: 60 });
+  const pb = await a.next('peer_buff');
+  check(pb.kind === 'armor' && pb.amount === 0.5 && pb.seconds === 6, 'buff relayed, capped at 50% and 6 s');
+  b.send({ t: 'stacks', name: 'Toxin', n: 3 });
+  check((await a.next('peer_stacks')).n === 3, 'stacks relayed');
+  b.send({ t: 'spend', amount: 500 });
+  const sp = await a.next('peer_spend');
+  check(sp.amount === 100 && sp.hp === 640 && (await b.next('hp')).hp === 640, 'HP cost capped at 100 and relayed');
+  b.send({ t: 'heal', amount: 100 });
+  check((await a.next('peer_heal')).hp === 740 && (await b.next('hp')).hp === 740, 'healed back to full');
   b.send({ t: 'took_hit', id: 99, damage: 250 });
   for (let i = 0; i < 8; i++) b.send({ t: 'took_hit', id: i % 2 ? 2 : 4, damage: 100, color: '#ff3b4e' });
   const hits = [];

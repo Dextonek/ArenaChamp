@@ -27,6 +27,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | [Effects and parts](architecture/effects-and-parts.md) | The `Effect` / `EffectModule` contract and every shared part (core kit and the hero-kit parts files) |
 | [Targeting and arena](architecture/targeting-and-arena.md) | `CastContext`, targeting modes, the arena (caster, enemies, HP, hits), danger zones |
 | [Hero mode](architecture/hero-mode.md) | The MOBA test mode: input, aim, cooldowns, HUD, hero switching, overlapping spells, hero figures |
+| [Hero identity layer](architecture/traits.md) | Passives, own resources, hold / recast / ammo inputs, stacks, per-hero attacks and walk speeds, buffs and debuffs; how a duel hit is resolved; online rules |
 | [Basic attacks](architecture/attacks.md) | Right-click attack, A attack-move, S stop; melee swing and ranged homing bolt; blind, stun and shield rules; the attacker in hero mode and the duel AI |
 | [Duel arenas](architecture/arenas.md) | The five arenas (layouts, looks, stages), how a duel picks one (random, or from the match id online), and the rules for a new arena |
 | [Combat mechanics](architecture/mechanics.md) | Statuses, shield / heal / dash, skillshots, summons, melee kits, the duel AI rules, the test kits and the tournament tool |

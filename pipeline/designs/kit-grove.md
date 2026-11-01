@@ -2,10 +2,10 @@
 
 ## Role (2026-10-30)
 **Support**, 640 HP. Signature: *Regrowth*. Heals through the trade and roots.
-- Q Bloom Lash: heals her **12** on a hit (54 damage).
+- Q Bloom Lash: 54 damage (no self-heal).
 - W Overgrowth: now `enemy` mode, range 9 (`cc`): vines grow up round the chosen enemy (zone radius 2 round where it stood), 45 damage and **root 1.2** at 0.75 s if it is still within 2 m; tick 10.
 - E Verdant Ward: a TURRET (`summon`, ground mode, range 9, cd 12): one flowering vine (80 HP, 6 s, 12 per shot every 1.4 s, range 8). The three growing vines are the assembly; the unit has its own blossom look (`blossomLook` in the spell file).
-- R World Blossom: a SELF-R (`cc`, range 0, radius 7 to 5): the flower closes over her, **heal 70** at the slam, 130 damage and **root 1.0** to everything within 5 m.
+- R World Blossom: a SELF-R (`cc`, range 0, radius 7 to 5): the flower closes over her, **heal 70** at the slam, 130 damage and **slow 2.0** to everything within 5 m.
 
 **Signature shape: the spiral vine that blooms.** Thick green vines grow in **spirals** (a coiling stem with leaf
 pairs along it), and at the end of every spiral a **giant flower bursts open** (5–7 broad petals in a cup, a bright

@@ -240,7 +240,7 @@ export const bardKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'discordant note', name: 'Discordant Note', range: 12, cooldown: 3, aim: 'line',
-      blurb: 'Hurls a big dark note that bursts into music on its target, then bounces to the nearest other enemy.',
+      blurb: 'Hurls a big dark note that bursts on the first enemy; 0.8 s later a second beat lands on that spot (1.6 m): step off it.',
       icon(g, s) {
         iconGround(g, s);
         // A stave streaming from the lower left, a big note flying up and right, two sound rings and a gold spark.
@@ -258,6 +258,7 @@ export const bardKit: HeroKit = {
     },
     {
       key: 'W', label: 'silencing refrain', name: 'Silencing Refrain', range: 10, cooldown: 7,
+      debuff: { kind: 'weaken', amount: 0.2, seconds: 3 },
       blurb: 'A stave coils round the ground and the music stops dead: enemies inside take damage and are silenced.',
       icon(g, s) {
         iconGround(g, s);
@@ -287,7 +288,7 @@ export const bardKit: HeroKit = {
     },
     {
       key: 'E', label: 'ballad of valor', name: 'Ballad of Valor', range: 0, cooldown: 9,
-      blurb: 'Two staves circle him: a shield, then two sound rings that shove enemies away and a heal at the second.',
+      blurb: 'Two staves circle him: two sound rings shove enemies away, and the second one heals him 55. No shield.',
       icon(g, s) {
         iconGround(g, s);
         // Two staves circling a small figure, gold notes rising, a ring racing out on the floor.
@@ -321,8 +322,8 @@ export const bardKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'crescendo', name: 'Crescendo', range: 0, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A giant golden lyre rises over him, the notes freeze, then one deafening chord stuns everything within 5 m.',
+      key: 'R', label: 'crescendo', name: 'Crescendo', range: 0, cooldown: 20,
+      blurb: 'Ultimate. A giant golden lyre rises over him and one deafening chord hurts everything within 5 m. Then an encore: for 3 s his other spells come back after 1 s.',
       icon(g, s) {
         iconGround(g, s);
         // A giant golden lyre, staves spiralling up into it and sound rings on the floor.

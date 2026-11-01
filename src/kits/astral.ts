@@ -80,7 +80,7 @@ export const astralKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'starshot', name: 'Starshot', range: 14, cooldown: 2, aim: 'line',
-      blurb: 'A skillshot: a star arrow flies along the aim line, bounces once to the nearest other enemy and leaves a small constellation.',
+      blurb: 'A skillshot: a star arrow flies along the aim line and hits the first enemy; 20% more damage beyond 8 m.',
       icon(g, s) {
         ground(g, s);
         const p: [number, number][] = [[0.22, 0.76], [0.5, 0.5], [0.66, 0.3], [0.84, 0.2]];
@@ -109,6 +109,7 @@ export const astralKit: HeroKit = {
     },
     {
       key: 'E', label: 'orbit veil', name: 'Orbit Veil', range: 0, cooldown: 9,
+      buff: { kind: 'haste', amount: 0.25, seconds: 3 },
       blurb: 'A backstep: a turning constellation fires gold lines that hurt and slow enemies nearby, then carries her 5 m away from them.',
       icon(g, s) {
         ground(g, s);

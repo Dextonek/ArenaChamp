@@ -47,11 +47,11 @@ spreadDeg: 40, at: 'end', hit: { damage: 15, knock: 1, color: INK_CSS.body }, ra
 stroke head trailing a painted ribbon that dries out behind it; on a hit it bursts in splatter on a small paper
 bleed; at max range it flicks into three splatter drops (the child bolts). Clean by 1.6.
 
-## W · Ink Snare (`inkSnare.ts`, label `ink snare`, `ground`, radius 3.5, range 10, cd 8, damage 35 + root)
+## W · Ink Snare (`inkSnare.ts`, label `ink snare`, `ground`, radius 3.5, range 10, cd 8, damage 35)
 0–0.35: an `InkBleed` spreads over the zone on the ground (paper first, then ink bleeding into it). 0.35–0.65: three
 or four strokes paint themselves across the pool in a quick character. **0.7 hit**: the ink rises in short grasping
 strokes around each foot, a seal stamps the centre, a vermilion accent (2 frames): every enemy inside (re-check at
-impact) `ctx.hit(e, { damage: 35, knock: 0, color: INK_CSS.body, status: { kind: 'root', seconds: 1.0 } })`.
+impact) `ctx.hit(e, { damage: 35, knock: 0, color: INK_CSS.body })` (no root; the kit adds a vulnerable debuff).
 1.0–2.0: the strokes dry and flake, the pool fades. Clean by 2.2.
 
 ## E · Paper Familiars (`paperFamiliars.ts`, label `paper familiars`, `self`, cd 14, summon, hit 10)

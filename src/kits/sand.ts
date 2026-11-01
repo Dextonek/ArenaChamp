@@ -193,8 +193,8 @@ export const sandKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'dune ward', name: 'Dune Ward', range: 0, cooldown: 9,
-      blurb: 'Three sand ribbons wind around him and shield him for 45; twice they fling a ring of sand that slows enemies near.',
+      key: 'E', label: 'dune ward', name: 'Dune Ward', range: 0, cooldown: 9, buff: { kind: 'haste', amount: 0.2, seconds: 3 },
+      blurb: 'Three sand ribbons wind around him and speed him up; twice they fling a ring of sand that slows enemies near. No shield.',
       icon(g, s) {
         ground(g, s);
         // The outer flung-sand ring, pale at the edge.

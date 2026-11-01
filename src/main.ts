@@ -779,7 +779,7 @@ function render() {
   }
   // Camera shake: offset only for this frame so OrbitControls keeps the real position.
   const live = liveEffects();
-  const shake = live.reduce((m, e) => Math.max(m, e.shake), 0);
+  const shake = live.reduce((m, e) => Math.max(m, e.shake), heroMode.enabled ? heroMode.hitShake : 0);
   shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
   camera.position.add(shakeOffset);
   finish.update(shake);

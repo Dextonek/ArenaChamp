@@ -31,11 +31,79 @@ export const BLIND_RADIUS = 2.5;
 
 export type ApplyResult = 'applied' | 'refreshed' | 'immune';
 
+/**
+ * Buffs and debuffs: timed modifiers (not crowd control). `amount` is a fraction (0.2 = 20%), at most `BUFF_CAP`; a
+ * new one of the same kind keeps the stronger amount and the longer time. Debuffs are given by hits
+ * (`HitOptions.debuff`), buffs by the hero to itself (`HeroSpell.buff`, traits).
+ * - haste: walks faster (x 1 + amount)        - might: deals more damage (x 1 + amount)
+ * - armor: takes less damage (x 1 - amount)    - vulnerable: takes more damage (x 1 + amount)
+ * - weaken: deals less damage (x 1 - amount)
+ */
+export type BuffKind = 'haste' | 'might' | 'armor' | 'vulnerable' | 'weaken';
+export const BUFF_KINDS: BuffKind[] = ['haste', 'might', 'armor', 'vulnerable', 'weaken'];
+/** Debuffs (bad for whoever has them); the rest are buffs. */
+export const DEBUFFS: BuffKind[] = ['vulnerable', 'weaken'];
+export const BUFF_CAP = 0.5;
+export const BUFF_MAX_SECONDS = 6;
+export const BUFF_WORD: Record<BuffKind, string> = {
+  haste: 'HASTE', might: 'MIGHT', armor: 'ARMOR', vulnerable: 'VULNERABLE', weaken: 'WEAKENED',
+};
+export const BUFF_COLOR: Record<BuffKind, string> = {
+  haste: '#7dffd0', might: '#ff9a4a', armor: '#cfe0ff', vulnerable: '#ff6a8a', weaken: '#a89ab8',
+};
+/** One-letter glyph for the small buff icons on the duel bars. */
+export const BUFF_GLYPH: Record<BuffKind, string> = { haste: '»', might: '⚔', armor: '◆', vulnerable: '✚', weaken: '▼' };
+
 export class StatusSet {
   private left: Record<StatusKind, number> = { stun: 0, root: 0, slow: 0, silence: 0, blind: 0, knockup: 0 };
   private immune = 0;
   private liftAge = 0;
   private liftTotal = 0;
+  private buffs: Record<BuffKind, { amount: number; left: number }> = {
+    haste: { amount: 0, left: 0 }, might: { amount: 0, left: 0 }, armor: { amount: 0, left: 0 },
+    vulnerable: { amount: 0, left: 0 }, weaken: { amount: 0, left: 0 },
+  };
+
+  /** Gives a buff or debuff (see `BuffKind`). Returns 'applied' when it was not running, else 'refreshed'. */
+  applyBuff(kind: BuffKind, amount: number, seconds: number): ApplyResult {
+    const a = Math.min(BUFF_CAP, Math.max(0, amount)), sec = Math.min(BUFF_MAX_SECONDS, seconds);
+    if (!(a > 0) || !(sec > 0)) return 'immune';
+    const b = this.buffs[kind], was = b.left > 0;
+    b.amount = was ? Math.max(b.amount, a) : a;
+    b.left = Math.max(b.left, sec);
+    return was ? 'refreshed' : 'applied';
+  }
+
+  /** The amount of a running buff (0 when none). */
+  buff(kind: BuffKind) {
+    const b = this.buffs[kind];
+    return b.left > 0 ? b.amount : 0;
+  }
+
+  /** Seconds left of a buff. */
+  buffLeft(kind: BuffKind) {
+    return this.buffs[kind].left;
+  }
+
+  /** The running buffs and debuffs, for the bars. */
+  activeBuffs() {
+    return BUFF_KINDS.filter((k) => this.buffs[k].left > 0).map((k) => ({ kind: k, amount: this.buffs[k].amount, left: this.buffs[k].left }));
+  }
+
+  /** Any buff or debuff running. */
+  get anyBuff() {
+    return BUFF_KINDS.some((k) => this.buffs[k].left > 0);
+  }
+
+  /** Damage this figure deals is multiplied by this (might, weaken). */
+  get dealtMul() {
+    return (1 + this.buff('might')) * (1 - this.buff('weaken'));
+  }
+
+  /** Damage this figure takes is multiplied by this (armor, vulnerable). */
+  get takenMul() {
+    return (1 - this.buff('armor')) * (1 + this.buff('vulnerable'));
+  }
 
   /** Gives `kind` for `seconds` (capped). A stun or knock-up inside the 0.5 s immunity is refused. */
   apply(kind: StatusKind, seconds: number): ApplyResult {
@@ -55,6 +123,7 @@ export class StatusSet {
   update(dt: number) {
     const wasStunned = this.stunned;
     for (const k of STATUS_KINDS) this.left[k] = Math.max(0, this.left[k] - dt);
+    for (const k of BUFF_KINDS) this.buffs[k].left = Math.max(0, this.buffs[k].left - dt);
     if (this.left.knockup > 0) this.liftAge += dt;
     if (wasStunned && !this.stunned) this.immune = CC_IMMUNITY;
     else this.immune = Math.max(0, this.immune - dt);
@@ -62,6 +131,7 @@ export class StatusSet {
 
   clear() {
     for (const k of STATUS_KINDS) this.left[k] = 0;
+    for (const k of BUFF_KINDS) this.buffs[k].left = 0;
     this.immune = 0;
     this.liftAge = this.liftTotal = 0;
   }
@@ -97,9 +167,9 @@ export class StatusSet {
     return this.left.blind > 0;
   }
 
-  /** 0.6 while slowed, else 1. */
+  /** 0.6 while slowed, else 1; times 1 + haste. */
   get speedMul() {
-    return this.left.slow > 0 ? SLOW_FACTOR : 1;
+    return (this.left.slow > 0 ? SLOW_FACTOR : 1) * (1 + this.buff('haste'));
   }
 
   /** Height of a knock-up in metres right now (0 when none): up quickly, easing off at the top, then down. */

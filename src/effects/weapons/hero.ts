@@ -31,13 +31,20 @@ export interface HeroOptions {
 export const HERO_SCALE = 1.3;
 
 export type BoneName = 'pelvis' | 'chest' | 'neck' | 'head' | 'armR' | 'foreR' | 'handR' | 'armL' | 'foreL' | 'handL'
-  | 'thighR' | 'shinR' | 'thighL' | 'shinL';
+  | 'thighR' | 'shinR' | 'thighL' | 'shinL' | 'footR' | 'footL';
+
+/** A chain of `sway_*` bones (hair, sash, robe tail), root first, with each link's rest rotation. */
+export interface SwayChain {
+  name: string;
+  links: THREE.Bone[];
+  rest: THREE.Quaternion[];
+}
 
 // glTF names ("upper_arm.R") lose their dots in three (PropertyBinding sanitises them): match loosely.
 const NAMES: Record<BoneName, string> = {
   pelvis: 'pelvis', chest: 'chest', neck: 'neck', head: 'head',
   armR: 'upperarmr', foreR: 'forearmr', handR: 'handr', armL: 'upperarml', foreL: 'forearml', handL: 'handl',
-  thighR: 'thighr', shinR: 'shinr', thighL: 'thighl', shinL: 'shinl',
+  thighR: 'thighr', shinR: 'shinr', thighL: 'thighl', shinL: 'shinl', footR: 'footr', footL: 'footl',
 };
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
@@ -49,6 +56,10 @@ export class Hero {
   loaded = false;
   private bones = new Map<BoneName, THREE.Bone>();
   private rest = new Map<BoneName, THREE.Quaternion>();
+  /** The model's `sway_*` chains (none on a model without them). */
+  readonly sway: SwayChain[] = [];
+  /** Every material with its loaded colour and emissive, for `setFlash`. */
+  private mats: { m: THREE.MeshStandardMaterial; color: THREE.Color; emissive: THREE.Color }[] = [];
   /** Hand-local rotation that turns the hand's frame into the weapon frame (calibrated on load). */
   private gripOffset = new THREE.Quaternion();
   private gripPoint = new THREE.Vector3(0, 0.07, 0);
@@ -82,6 +93,7 @@ export class Hero {
               phys.sheen = 0.5;
             }
             if (c.emissiveIntensity !== undefined) c.emissiveIntensity = Math.min(c.emissiveIntensity, maxEmissive);
+            if (c.color && c.emissive) this.mats.push({ m: c, color: c.color.clone(), emissive: c.emissive.clone() });
             return c;
           });
           mesh.material = Array.isArray(mesh.material) ? mats : mats[0];
@@ -93,6 +105,7 @@ export class Hero {
         }
       });
       for (const [k, b] of this.bones) this.rest.set(k, b.quaternion.clone());
+      this.collectSway(scene);
       this.root.add(scene);
       this.calibrate();
       this.loaded = true;
@@ -120,6 +133,41 @@ export class Hero {
     this.root.rotation.copy(saved.r);
   }
 
+  /** Groups the `sway_<chain>_<n>` bones into chains ordered by `n` (root first). */
+  private collectSway(scene: THREE.Object3D) {
+    const chains = new Map<string, { n: number; b: THREE.Bone }[]>();
+    scene.traverse((o) => {
+      const m = (o as THREE.Bone).isBone ? /^sway_(.+)_(\d+)$/.exec(o.name) : null;
+      if (!m) return;
+      const list = chains.get(m[1]) ?? [];
+      list.push({ n: Number(m[2]), b: o as THREE.Bone });
+      chains.set(m[1], list);
+    });
+    for (const [name, list] of chains) {
+      list.sort((a, b) => a.n - b.n);
+      this.sway.push({ name, links: list.map((x) => x.b), rest: list.map((x) => x.b.quaternion.clone()) });
+    }
+  }
+
+  /**
+   * Hit flash on the model: 0 is the loaded look; up to 1 the colour leans toward `tint` and glows a little (kept
+   * under the bloom threshold, like the capsule figures' flash).
+   */
+  setFlash(v: number, tint?: THREE.Color) {
+    const f = Math.min(Math.max(0, v), 1);
+    for (const { m, color, emissive } of this.mats) {
+      m.color.copy(color);
+      m.emissive.copy(emissive);
+      if (f <= 0) continue;
+      if (tint) {
+        m.color.lerp(tint, 0.08 * f);
+        m.emissive.r += tint.r * 0.1 * f;
+        m.emissive.g += tint.g * 0.1 * f;
+        m.emissive.b += tint.b * 0.1 * f;
+      } else m.emissive.addScalar(0.3 * f);
+    }
+  }
+
   bone(name: BoneName) {
     return this.bones.get(name);
   }
@@ -127,6 +175,19 @@ export class Hero {
   /** Back to the rest pose (call first every frame, then layer rotations). */
   resetPose() {
     for (const [k, b] of this.bones) b.quaternion.copy(this.rest.get(k)!);
+    for (const c of this.sway) c.links.forEach((b, i) => b.quaternion.copy(c.rest[i]));
+  }
+
+  /** Like `rot`, for any bone (a sway link). */
+  rotBone(b: THREE.Bone, axis: THREE.Vector3, angle: number) {
+    if (!b.parent || !angle) return;
+    // parent's rotation relative to the root → the axis in the parent's space
+    b.parent.updateWorldMatrix(true, false);
+    b.parent.getWorldQuaternion(this.q);
+    this.root.getWorldQuaternion(this.q2);
+    this.q.premultiply(this.q2.invert());
+    this.v.copy(axis).applyQuaternion(this.q.invert()).normalize();
+    b.quaternion.premultiply(this.q2.setFromAxisAngle(this.v, angle));
   }
 
   /**
@@ -135,14 +196,7 @@ export class Hero {
    */
   rot(name: BoneName, axis: THREE.Vector3, angle: number) {
     const b = this.bones.get(name);
-    if (!b || !b.parent || !angle) return;
-    // parent's rotation relative to the root → the axis in the parent's space
-    b.parent.updateWorldMatrix(true, false);
-    b.parent.getWorldQuaternion(this.q);
-    this.root.getWorldQuaternion(this.q2);
-    this.q.premultiply(this.q2.invert());
-    this.v.copy(axis).applyQuaternion(this.q.invert()).normalize();
-    b.quaternion.premultiply(this.q2.setFromAxisAngle(this.v, angle));
+    if (b) this.rotBone(b, axis, angle);
   }
 
   /** Moves `grip` to the right hand (world space of the root's parent). Call after posing. */

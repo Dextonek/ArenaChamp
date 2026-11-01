@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Enemy } from './common';
 import { frameArena } from './common';
-import type { StatusKind } from './status';
+import type { BuffKind, StatusKind } from './status';
 import type { Projectile, ProjectileOptions } from './projectile';
 import type { Summon, SummonOptions } from './summon';
 
@@ -44,6 +44,8 @@ export interface HitOptions {
    * stun-immune as in `status.ts`; a dodged or filtered hit gives none. Network duels ignore it.
    */
   status?: { kind: StatusKind; seconds: number };
+  /** A debuff (or buff) on the target on top of the damage (see `BuffKind` in status.ts). A dodged hit gives none. */
+  debuff?: { kind: BuffKind; amount: number; seconds: number };
   /**
    * Set by the engine on a skillshot's hit (`CastContext.projectile`): the bolt physically touched the target, which
    * is already the dodge check, so the duel's zone filters let it through. Spells do not set it.
@@ -54,6 +56,8 @@ export interface HitOptions {
    * Spells do not set it.
    */
   attack?: true;
+  /** Damage the victim's passive swallowed whole (the duel: shown as soaked on the other screen). */
+  blocked?: number;
 }
 
 /** Everything a targeted effect gets before each play(). Snapshot positions; the figures may move during play. */

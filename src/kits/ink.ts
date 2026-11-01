@@ -284,8 +284,8 @@ export const inkKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'ink snare', name: 'Ink Snare', range: 10, cooldown: 8, cc: true,
-      blurb: 'Ink bleeds into paper on the ground, then grasping strokes rise to hurt and root everyone inside.',
+      key: 'W', label: 'ink snare', name: 'Ink Snare', range: 10, cooldown: 8, debuff: { kind: 'vulnerable', amount: 0.25, seconds: 3 },
+      blurb: 'Ink bleeds into paper on the ground, then grasping strokes rise: everyone inside is hurt and takes 25% more damage for 3 s.',
       icon(g, s) {
         iconGround(g, s);
         // A torn paper disc on the floor, a dark pool bleeding into it, grasping strokes rising round a seal.
