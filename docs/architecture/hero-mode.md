@@ -81,9 +81,32 @@ All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 
 `followCamera` keeps a fixed top-down offset `CAM_OFFSET = (0, 15, 10.5)` scaled by the zoom, lerped to the hero (rate 12, snapped on entry), looking at `(hero.x, 0.5, hero.z - 1.5)`. main.ts disables `OrbitControls` while hero mode is on.
 
+A tall screen (aspect below 1.25, a phone held upright) sees little to the sides because the field of view is
+vertical: the offset is scaled by `fit = 1 + (1.25 - aspect) * 0.6` and the look point moves `(fit - 1) * 4` further
+ahead. With touch controls the camera also leads up to 1.6 m toward the joystick's walk direction (rate 3).
+
 ### HUD
 
 A fixed bottom bar built by `buildHud` (rebuilt by `setKit`), tinted from the kit `accent`: a round portrait (click = `nextKit`), name and title with a control hint, and four slots with canvas icon, key badge, spell name and a conic cooldown shade with seconds. The R slot is larger with gold framing and an "ULT" label. Hovering a slot shows a tooltip (name, key, blurb, range or "self", cooldown). A toast line shows short messages.
+
+### Touch controls ([touch.ts](../../src/touch.ts))
+
+`TOUCH` is on when the device's main pointer is coarse (phones, tablets; a touch laptop with a mouse keeps the desktop
+layout); `?touch=1` / `?touch=0` in the URL force it. HeroMode implements `TouchTarget`, and `buildTouchHud` replaces
+the bottom bar:
+
+| Control | What it does |
+|---|---|
+| Joystick (lower-left 48 vw x 62 vh zone) | Appears under the thumb. `steer` turns the screen direction into a ground direction from the camera (so the flipped online seat works) and keeps `moveTo` 1.5 m ahead; it drops the attack like a click, but a cast still walking into range or sight goes first. Release stops. A short tap in the zone is `tapAt`. |
+| Tap on the scene | `tapAt`: an enemy within `HOVER_PICK` (3.2 m on touch) is attacked, else walk there. Two fingers pinch the zoom (`pinchZoom`) and don't order. |
+| Spell buttons (arc around the attack button) | `aimButton`: press = `aimPress` (starts the aim, so hold slots charge from the press) and aims at the nearest enemy (`aimAuto`); dragging past the button aims along the drag, up to the full range at 120 px (`aimDrag`); release casts (`aimEnd`); dragged out and released back on the button cancels. A single-target spell released away from enemies drops the aim. While a button aims, the mouse raycast is skipped so the drag owns `cursor`. |
+| Attack button (⚔, bottom-right) | Attacks the nearest live enemy until another order; hidden when `attacksEnabled` is off. |
+| Portrait plate (top-left) | Portrait, passive badge, resource bar and buffs; a tap on the passive shows its tooltip under it for 4 s. |
+
+Positions use `env(safe-area-inset-*)`. Pointer events are tracked by `pointerId` with pointer capture, so the
+joystick and a spell drag work at the same time. game.html turns off page zoom and `touch-action` on the canvas;
+game.css moves Forfeit under the duel bar and pins the Find match row on narrow screens; the duel bar shrinks its
+portraits and bars (`small` in `Duel.buildHud`).
 
 ### Figures: walk, breath, cast
 
@@ -143,10 +166,25 @@ plus `sway_*` chains); there are no animation clips.
 | Call | What it does |
 |---|---|
 | `setModel(url, at, kit)` | Swaps the model (cached per url). The kit sets the style: heavy (HP above 600) plants wider and sways the chest more; fast (speed above 4.1) leans in and runs with bent arms; melee keeps a guard up. |
-| `follow(dt, pos, yaw, state)` | Every frame. `state` = `{ attack: Attacker.motion, status: StatusSet, held }`. It layers rest (breath, weight shift, look round), a walk scaled to the real speed (hip twist, chest counter-turn, lean into starts and turns), the basic attack (melee slashes alternate arms, hammer and greatsword (attack look `smash`, `cleave`) swing overhead, ranged flicks), the cast pose, stun slump, knock-up flail, root tug, the hit flinch and the sway springs. `held` freezes the pose (ice block). A dt of 0 (paused) only places it. |
+| `follow(dt, pos, yaw, state)` | Every frame. `state` = `{ attack: Attacker.motion, status: StatusSet, held }`. It layers rest (breath, weight on one leg with the other knee eased, a look round, agile heroes bouncing lightly, and every 4-9 s a fidget: a look over the shoulder, a shoulder roll or a shake of one hand), a walk scaled to the real speed (see below), the basic attack (melee slashes alternate arms, hammer and greatsword (attack look `smash`, `cleave`) swing overhead, ranged flicks), the cast pose, stun slump, knock-up flail, root tug, the hit flinch and the sway springs. `held` freezes the pose (ice block). A dt of 0 (paused) only places it. |
 | `cast(style, seconds, big)` | Called right after a cast roots the hero (`HeroMode.castNow`, `Duel.castSpell`, so online peers too): wind-up, a snap into the strike with a little overshoot, then settle. `castStyle(spell, slot, onEnemy, melee, seconds)` picks the style from the spell data: dash = lunge, summon = raise, self-cast = burst (a long one without CC = channel), melee range = swing, skillshot = thrust, clicked enemy = point, other ground spells = slam. Slot R plays 18% bigger. |
 | `hit(strength, tint, from)` | Flinch away from `from` and a tinted flash (`Hero.setFlash`). The player's hero gets it from `Duel.damagePlayer` (`HeroMode.figureHit`, also a small camera shake on 25+ damage); the opponent from its capsule flash jumping (`Arena.flashOf`). Blocked hits never reach it. |
 | `fall(t)`, `stand()` | Knees give, chest folds, tips forward; `stand` drops every running pose. |
+
+**The walk.** One phase drives both legs half a cycle apart: the heel lands with the toes up, the knee bends to take
+the weight, the toes push off, and the knee lifts through the swing. The feet stay near flat (they undo the thigh and
+knee angles) apart from the push-off and heel strike. The root bobs lowest just after each landing. The hips twist and
+drop, the chest turns against them, and the head undoes part of the chest's lean and turn, so it stays level. The arms
+swing against the legs a little behind them, and the elbows fold as each arm comes forward. `run` (speed 2.2 to 4.6
+blends a slowed walk into a jog) lengthens the stride, lifts the knees, bends and pumps the arms and adds lean. The legs
+reach the way the hero moves (forward, backpedal or side-step, each leg stepping out to its own side only), and turning on the spot shuffles the feet. Two damped
+springs add momentum: starting or stopping pitches the chest forward with an overshoot, and a stop swings the arms on
+through. Any arm motion fades under a cast or a basic attack (`armFree`).
+
+**Robes.** `Hero.robe` (0..1, measured on load) is the share of skinned vertices below the knees that mostly follow a
+thigh. A long robe or skirt is skinned that way and tears open on a long, high-kneed step. Robed heroes get a stride
+40% shorter, 55% less knee lift and push-off, and a leading knee that stays bent, so the shin hangs inside the hem. In
+the current roster only Brannoc and Zephyr (trousers) measure 0.
 
 `pipeline/tools/pose-sheet.js` renders a contact sheet of every pose for one hero (see its header).
 

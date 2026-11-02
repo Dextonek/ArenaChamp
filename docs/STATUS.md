@@ -37,7 +37,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Pushed to GitHub `main` and deployed (Worker version `d4fee4c5-be7f-4753-8c11-4dab08c03d81`); the live page serves
   `game-DSwok-2F.js`, no console errors, the game WebSocket opens.
 
-**Hero identity layer (2026-10-30, uncommitted, not deployed)**
+**Hero identity layer (2026-10-30, committed c7f2039, deployed 2026-11-01)**
 - Every hero has a passive (new passive slot left of Q), a twist (own resource bar, hold-to-charge, free recast,
   ammo charges or stacks on the enemy), its own basic attack look, range and speed, its own walk speed, and one spell
   with a buff or debuff. New buffs / debuffs: haste, might, armor, vulnerable, weaken. Engine and rules:
@@ -64,7 +64,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   locked. `npm run test:server` 38/38.
 - Client and server change together: deploy both.
 
-**Kit uniqueness pass (2026-10-31, uncommitted, on top of the identity layer, not deployed)**
+**Kit uniqueness pass (2026-10-31, committed c7f2039, deployed 2026-11-01)**
 - Review and as-built notes: `pipeline/designs/kit-uniqueness.md` (all three batches done; C won over B for Isolde E
   and Oblivion E).
 - Fewer copies: 5 of the 9 shield Es lost their shield; no more bounce Qs (Lyra, Cantor, Ada); Cantor and Fenna Rs no
@@ -92,7 +92,263 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Build in 5 batches (trait only → spell logic → 4 new debuffs → cleanse / leash → burrow, stealth, mirror with net
   work), a tournament after each. Waiting on the user: build it, and whether batch 5 is in.
 
-**Hero motion pass (2026-11-01, uncommitted, on top of the uniqueness pass, not deployed)**
+**Deployed again (2026-11-02, at the user's request "Deploy yes"; nothing committed or pushed to git)**
+- `npm run cf:deploy`, worker version 78e57f31-b6d5-47de-9a4f-4a2a4936d5cb. The live `/game` serves the same
+  bundle hashes as `dist/` (main-zonWtTYw.js).
+- Contents: all five remade arenas (cover, backdrops, breakable temple walls) for every player; the heroes still
+  only behind `/game?figs=v2c` or `?figs=v2`.
+- Not verified live, because the game needs a login. Phone performance and a two-player match with breakable walls
+  are untested.
+- Open risk: there is no game-version check in matchmaking, so a player who doesn't reload can be matched against
+  the new build and see different cover.
+
+**Arena remake, done (2026-11-02, uncommitted, deployed 78e57f31): user asked to "rearrange the arenas and all the objects in arena, make them high quality"**
+- Probe first: Night Temple only, both the new layout and high-quality props, then a before/after sheet for the
+  user's OK. The other four arenas wait for that OK.
+- Style rules:
+  - Cover props get the hero pipeline: Blender `kit` shapes, `sculpt.fuse`, `sculpt.paint`; one meshopt GLB per arena
+    (`public/models/arenas/<id>_props.glb`), loaded in `build()`, cached per arena, and drawn with `InstancedMesh`
+    for repeats.
+  - Budget: cover props about 40–60k triangles per arena.
+  - Floor, backdrop silhouettes and particles stay procedural.
+  - Prop footprints match the capsules: pillar base radius ≥ `o.r`, wall depth = 2·`o.r`.
+  - Floors stay in the `0x15131a` luminance band. Camera rule for the backdrop. Cover on the z axis stays low (the
+    gameplay camera looks along it).
+  - At most ~60 draw calls; `dispose()` frees the loaded props too.
+- Layout rules (docs/architecture/arenas.md):
+  - point-symmetric about (0, 7); starts (0, 1) and (0, 13) clear for 3 m;
+  - nothing within 1.5 m of the rim; gaps ≥ 2 m; pillar r ≤ 1.0, wall half-thickness ≤ 0.4.
+  - Every new layout is checked by a validator script (scratchpad `layout_check.py`; it also passes the old layout).
+- Night Temple done (probe):
+  - New layout `TEMPLE_OBSTACLES` in `src/arenas/temple.ts`: a low sun altar in the middle (r 1.0, 1.45 m), four
+    angled screen walls round it, six columns at the sides. It replaces `DUEL_OBSTACLES` for the temple.
+  - Props: `blender/arenas/temple_props.py` → `public/models/arenas/temple_props.glb` (392 KB): column 6.2k
+    triangles, wall module 5.9k, altar 6.0k, brazier 1.6k. 75k triangles in the arena (over the 60k target), 18
+    instanced draw calls.
+  - In three.js the stone is darkened (×0.58) and the gold and altar glow toned down.
+  - Checked in game: before/after sheet `docs/arenas/temple_remake.jpg`; an AI duel on it ran to a KO.
+  - Not deployed. The user then said "you do it all": the other four follow, one helper at a time (Blender is shared).
+- Frostfall Lake done:
+  - `FROST_OBSTACLES`: a low frozen boulder in the middle, four ice spires, four snow drifts.
+  - Props: `blender/arenas/frost_props.py` → `frost_props.glb` (305 KB), 30.7k triangles placed, 15 draw calls.
+  - Sheet `docs/arenas/frost_remake.jpg`; the AI duel ran to a KO.
+  - Small open points: a spire's fallen shard can touch hero feet; the drift snow is a little grey.
+- Ember Caldera done:
+  - `CALDERA_OBSTACLES`: the centre lava vent stays open; low obsidian ridges beside the middle lane; tall and
+    snapped basalt clusters; bladed ridges on the wings.
+  - Props: `blender/arenas/caldera_props.py` → `caldera_props.glb` (190 KB), 15k triangles placed.
+  - Sheet `docs/arenas/caldera_remake.jpg`; the AI duel ran to a KO.
+  - Open points: the glow cracks barely show; the cover reads smaller than before.
+- Verdant Glade done, cover and backdrop:
+  - `GLADE_OBSTACLES`: a fallen log across the middle (1.1 m), giant stumps, rune stones, mushroom clusters, and
+    fallen trunks with root plates.
+  - Props: `blender/arenas/glade_props.py` → `glade_props.glb` (923 KB, 52.9k triangles placed) and
+    `glade_backdrop.glb` (154 KB, about 79k triangles of trees, bushes, ferns, rocks and rim stones).
+  - Unique placements are merged into one mesh per material: 9 draw calls for all props.
+  - The old trees broke the camera rule; the new ones don't.
+  - Sheet `docs/arenas/glade_remake.jpg`; the AI duel ran to a KO.
+  - Open points: the moss is flat up close; the GLB is the heaviest so far.
+- Sky Ruins done, cover and backdrop:
+  - `SKYRUINS_OBSTACLES`: low drum stacks on the cross axis, low balustrades off the starts, tall intact and
+    broken columns, and broken arch bases on the wings.
+  - Props: `blender/arenas/skyruins_props.py` → `skyruins_props.glb` (843 KB, about 37k triangles placed) and
+    `skyruins_backdrop.glb` (361 KB, about 34k triangles: islands, the far arch, edge balustrades, rocks).
+  - 39 draw calls. Sheet `docs/arenas/skyruins_remake.jpg`; the AI duel ran to a KO.
+  - Open point: the marble reads pale (×0.36).
+- Night Temple backdrop done:
+  - `blender/arenas/temple_backdrop.py` → `temple_backdrop.glb` (367 KB, about 51.7k triangles placed): two ruined
+    gates, colonnades with architraves, guardian statues, obelisks, banner poles, stair fragments, drums, rubble;
+    instanced banners with a wind ripple.
+  - 47 drawables. Sheet `docs/arenas/temple_backdrop.jpg`.
+  - The camera rule is now checked when the backdrop loads (it logs an error and leaves the backdrop out).
+  - temple_backdrop.py imports its shape helpers from skyruins_props.py.
+- Frostfall Lake backdrop done:
+  - `blender/arenas/frost_backdrop.py` → `frost_backdrop.glb` (209 KB, 72.5k triangles placed): shore ice plates and
+    pressure ridges, snow-capped boulders, scrub and snow-laden pines, frozen dead trees, far peaks.
+  - 46 drawables. Sheet `docs/arenas/frost_backdrop.jpg`.
+  - frost.ts now tunes each material once (the old per-mesh factors written as `x ** 5`, the same look).
+- Ember Caldera backdrop done:
+  - `blender/arenas/caldera_backdrop.py` → `caldera_backdrop.glb` (293 KB, 75.5k triangles): an obsidian rim lip,
+    prism clusters, boulders, vents, lava-crusted spires, and crater-wall segments with thin lava falls.
+  - 38 drawables. Sheet `docs/arenas/caldera_backdrop.jpg`.
+  - The `OBSTACLES is not defined` console entry was stale history from a mid-edit hot reload; the browser pane keeps
+    console entries across navigations. It is not a real error.
+- All arenas done (2026-11-02). Final check:
+  - `npm run build` passes.
+  - A fresh load of all five arenas shows no errors; drawables are temple 46, frost 46, caldera 38, glade 22, sky
+    ruins 25.
+  - Overview sheet: `docs/arenas/arenas_remake_all.jpg`. Arena GLBs total 4.2 MB.
+  - Not deployed. Breakable walls are on the temple only, and untested in a live two-player match.
+- Material tuning: GLTFLoader shares one material between props that use it. temple.ts now tunes each material
+  once, with the same resulting look. frost.ts was fixed the same way in its backdrop pass.
+- Backdrops too (user, 2026-11-02: "remake all the outside props and backgrounds of the arena"):
+  - Each arena's surroundings (outside radius 12) get the same Blender sculpt-and-paint treatment, instanced.
+  - Budget: backdrop ≤ 80k triangles extra; the whole arena ≤ 60 draw calls.
+  - Camera rule: anything taller than 2 m is > 26 m from the centre or |x| > 12.
+  - Order: Glade (added to its running helper), Sky Ruins (cover and backdrop together), then backdrop passes for
+    Temple, Frost and Caldera, one at a time.
+- Breakable walls (user idea, approved: "Do it"), prototype on Night Temple:
+  - `ArenaDef.breakable`, `ArenaScene.wallState`; `Duel.blastWalls`, `resetWalls` and `playerBlast` in duel.ts.
+  - Walls take 3 hits; an ultimate counts as 2. Area spells hit walls within their radius, line spells walls on
+    their path; single-target spells never hit walls.
+  - A broken wall leaves `arena.obstacles` (a per-round copy), so heroes walk and see through it. Walls stand again
+    each round.
+  - Online: both screens run it from the cast message (`peerCast` uses the sender's position and aim point, also
+    for spells aimed at the hero), no server change.
+  - Temple: whole, cracked (`WallCracked`) and rubble (`WallRubble`) props in temple_props.glb (now 565 KB), plus
+    flying stone chunks that stay on the floor until the round ends.
+  - Gotcha: an instanced mesh that starts hidden (zero-scale matrices) gets culled forever; the wall sets and
+    chunks use `frustumCulled = false`.
+  - Tuning: `WALL_HP` 5; an area spell hits a wall inside 60 % of its radius (`WALL_BLAST_REACH`).
+  - AI duels on the temple: the first wall falls 7–13 s into a round of 16–25 s, and most walls end the round
+    damaged.
+  - Clip: `docs/arenas/temple_breakable_wall.mp4` (440 KB, git-ignored).
+  - Not tested in a real two-player online match yet.
+
+**Deployed the working tree to Cloudflare (2026-11-02, at the user's request; nothing committed or pushed)**
+- `npm run cf:deploy`, worker version 79de928c-0b0a-442e-8008-fc223f0b1331. This lifts the deploy freeze for this
+  build only.
+- New heroes: https://arena-of-kits.arenachamp.workers.dev/game?figs=v2c (concept Brannoc and Kaia) or `?figs=v2`.
+  Use the `/game` address: the redirect from `/` drops the query.
+- Default play, without `?figs`, still uses the old models. Not checked live, because the live game needs a login.
+
+**Concept-shape variants of Brannoc and Kaia, smoothed (2026-11-02, uncommitted, deployed behind `?figs=v2c`)**
+- Smoothing pass: Brannoc's iron body and helmet, trousers, boots, chimney stacks and smoke, and Kaia's legs and
+  boots, are each fused into one smooth shape (extra `FUSE` groups on the concept classes). Brannoc now has 40.7k
+  triangles (518 KB), Kaia 35.8k (458 KB).
+- The user asked to try the shapes "what they were", which I read as the first concept sheet
+  (`docs/heroes/moba_concept_sheet.png`).
+- Built as variants next to the current models (`CONCEPT = True`; classes `ForgeConcept` and `StormConcept`; builder
+  names `forge_c` and `storm_c`). Files: `forge_c_v2.glb` (40.3k triangles, 494 KB) and `storm_c_v2.glb` (34.4k,
+  437 KB). See them in game with `?figs=v2c`; `?figs=v2` still shows the current shapes.
+  - Brannoc: an inverted-triangle torso; the head sunk between the shoulders; smoking chimney stacks on the
+    shoulders instead of round pauldrons; fists 1.3× bigger; a welding mask with one glowing slit.
+  - Kaia: a bigger head with bigger eyes; a thundercloud of hair fused into one mass instead of spikes; the staff
+    0.45 m taller with three prongs round a bigger orb.
+- Sheet: `docs/heroes/moba_v2_concept_shapes.jpg`. Waiting on the user: keep the concept shapes, the current ones,
+  or a mix.
+
+**Sculpted trial, refine pass on Brannoc and Kaia (2026-11-02, uncommitted, not deployed)**
+- The user's choice: keep the sculpted look on these two only for now and keep experimenting with them.
+- Smoother faces: the head is fused on its own, finer than the body (`FUSE` entries with `("only", ...)` part
+  prefixes). The face is remeshed to even quads with QuadriFlow; where QuadriFlow refuses a mesh, the code falls back
+  to decimate plus a light relax. Decimate alone left visible facets on Kaia's small face.
+- Fused Brannoc's beard and moustache into one mass, and each of Kaia's cloud shoulders into one puff.
+- Kaia's mouth is shrink-wrapped onto the fused face (`WRAP`).
+- Coloured paint (`PAINT` tints in `sculpt.paint`):
+  - shadows lean violet; skin gets warm shadows plus a blush on the nose, cheeks, ears and knuckles;
+  - Kaia's hair turns cyan toward the spike tips;
+  - edge light is averaged over neighbouring vertices.
+- Triangle budget (`CAPS`, collapse decimate on merged meshes): Brannoc 51k → 38.5k (479 KB), Kaia 60k → 33.2k
+  (427 KB). This is about 35k, my own target for phones, not the user's.
+- Checked in the game with `?figs=v2`: face, walk, attack (swing) and cast (raise) poses, with no tearing at the
+  shoulders or elbows. Sheet: `docs/heroes/moba_v2_sculpt2.jpg`.
+
+**Sculpted and painted trial: Brannoc and Kaia (2026-11-02, uncommitted, not deployed)**
+- Code: [blender/heroes/sculpt.py](../blender/heroes/sculpt.py). A figure class with `SCULPT = True` lists `FUSE`
+  groups and `FOLDS`.
+  - `fuse`: melts one material's parts into one surface (voxel remesh, a volume-preserving smooth, decimate) and
+    transfers the bone weights from the original parts. This covers skin plus added muscle and face shapes, and
+    Kaia's coat body.
+  - `folds`: presses cloth folds into open skirts.
+  - `paint`: bakes a painted look into vertex colours (exported as glTF COLOR_0): ambient occlusion, light on edges,
+    darker feet and a lighter head, and light from above.
+- Checked in the game with `?figs=v2`: the painted shading reaches 11/13 and 12/14 meshes (emissive ones are left
+  unpainted), and the walk and game camera look right. Sheet: `docs/heroes/moba_v2_sculpt.jpg`.
+- Heavy: Brannoc 51k triangles (619 KB), Kaia 60k (709 KB). Needs a budget pass before more heroes use it.
+- The other four v2 heroes still use the non-sculpted build.
+
+**MOBA-style redesign trial: six heroes (2026-11-02, uncommitted, not deployed)**
+- Added Vesper (`blood_v2.glb`, 19k triangles), Isolde (`frost_v2.glb`, 17k), Zephyr (`sky_v2.glb`, 19k) and
+  Oblivion (`void_v2.glb`, 24k), each with one signature shape:
+  - Vesper: a collar-blade fan and a crimson cape;
+  - Isolde: an ice-shard halo and an ice spear;
+  - Zephyr: a long scarf and a curved blade;
+  - Oblivion: a horned helm with an eye slit, a void greatsword and a tattered cape.
+- Shared parts (legs, arms, eyes, bell skirts, capes on sway chains) are helpers on `MobaFigure`.
+- All six load with every bone found and `robe` 0. Sheet: `docs/heroes/moba_v2_six.jpg`. Zephyr's scarf was
+  lowered after that sheet was made.
+- When re-exporting, the browser can keep serving the old GLB: reload it with `fetch(url, {cache: 'reload'})`.
+- Refinement pass:
+  - Joints: `joints_fill` adds a neck column and balls at the shoulders, elbows, wrists, hips and knees, each blended
+    between its two bones. Limb skin weights use a softer falloff (`power=3.5`), so a bent joint curves instead of
+    creasing.
+  - Heads: `head_shape` makes one smooth skull with a chin. `face` adds a nose and a curved mouth. `mitten` builds
+    hands with a thumb and knuckles.
+  - Per hero:
+    - Brannoc: moustache curls, cheeks, hair at the back and a topknot, a forge backpack with chimneys, and an apron
+      edge, pocket and tongs.
+    - Kaia: pointed bangs and a bolt on the back.
+    - Vesper: a gold V neckline and lacing.
+    - Isolde: frost flakes on the skirt and the sash tied at the back.
+    - Zephyr: shin wraps that sit tight on the leg, a strap buckle and a coat edge.
+    - Oblivion: lighter plates against dark under-layers, tasset plates and rift veins.
+  - Triangle counts went up: Brannoc 48k, Kaia 40k, Oblivion 37k, the others about 28k (the old models are about
+    26k). Not checked on a phone.
+  - Sheets: `docs/heroes/moba_v2_faces.jpg` and `moba_v2_refined.jpg`.
+- New figures built from scratch in [blender/heroes/moba_figures.py](../blender/heroes/moba_figures.py):
+  - each has its own joint positions on the game's 16 bones;
+  - sway chains: Brannoc's beard braid, Kaia's coat tails.
+- Exports: `public/models/heroes/forge_v2.glb` (30k triangles, 229 KB) and `storm_v2.glb` (31k triangles, 223 KB).
+- Smoothed: the shape wrappers in `moba_figures.py` give large parts about 1.6x the segments round the curve and
+  boxes a four-step bevel, while small parts keep their own resolution. Subdividing every part was tried and dropped:
+  it shrank the thin parts. In-game sheet: `docs/heroes/moba_v2_smooth.jpg`.
+- They show only with `?figs=v2` in the URL (`MODELS_V2` in `src/heroes.ts`). Without it the game is unchanged.
+- Concept and comparison sheets:
+  - `docs/heroes/moba_concept_sheet.png`: follows the silhouette, value and colour rules from the Dota 2 and League
+    art guides;
+  - `docs/heroes/moba_v2_compare.jpg`.
+- Checked in the vfx tool:
+  - all 16 bones are found and `robe` is 0;
+  - the walk, standing pose and high game camera look right;
+  - tsc is clean.
+- Not checked: casts and attacks on the new bodies, a full duel, and the phone.
+- Also uncommitted, from the style experiments:
+  - `blender/heroes/stylize.py` (proportion styles);
+  - the `style` option and prop tagging in `hero_figures.py`;
+  - the live models are not affected.
+
+**Livelier walk and idle (2026-11-02, uncommitted, not deployed)**
+- Changed only `src/heroFigure.ts` and `src/effects/weapons/hero.ts` (`Hero.robe`), plus the walk and robe notes in
+  [hero-mode.md](architecture/hero-mode.md). These are kept separate from the phone files, so the two can be committed apart.
+- Added:
+  - feet that roll (heel strike, toe push-off);
+  - the knee taking the weight;
+  - a walk-to-jog blend by speed;
+  - arms with a bigger swing and the elbows following through;
+  - a head that stays level;
+  - backpedal and side-step legs (side-stepping legs never cross), and shuffling when turning on the spot;
+  - a chest that rocks on start and stop, and arms that swing on through on a stop;
+  - idle weight on one leg, a light bounce for agile heroes, and fidgets every 4-9 s.
+- Robed heroes (18 of 20, measured from the mesh) take shorter, flatter steps with the leading knee bent, so the shin
+  stays inside the hem.
+- Checked in the vfx tool by stepping frames:
+  - contact sheets of Brannoc (trousers) and of Kaia, Isolde and Marin (robes), with the robes compared against the
+    previous walk;
+  - all 20 heroes at two stride points on the final code;
+  - side-steps in a duel (the AI strafes while facing its target; about 12% of walking frames are strongly sideways),
+    where each leg now steps out to its own side and never crosses;
+  - the high game camera;
+  - a stop, a 180° turn and idle fidgets;
+  - a 30 s AI duel with no broken values;
+  - tsc clean.
+- Known: a robe's lining still shows on the long step, and a toe can poke out behind the hem. Both happened with the
+  previous walk too, because the robes are skinned to the thighs.
+
+**Phone play (2026-11-02, uncommitted, not deployed)**
+- Touch controls in `src/touch.ts` + `HeroMode` (`TouchTarget`, `buildTouchHud`): joystick lower-left, tap to walk /
+  attack, spell buttons in an arc (tap = cast at the nearest enemy, drag = aim, drag back = cancel), attack button,
+  pinch zoom. Camera pulls back on tall screens and leads toward the joystick. Duel bar, Forfeit, Find match row and
+  queue bar fit a 375 px phone; game.html blocks page zoom and touch scrolling. Docs: hero-mode.md "Touch controls".
+- Checked in the browser pane (mobile preset, synthetic touch events): joystick walks toward the enemy in a real
+  online match (phone tab vs desktop tab) and the right way with the camera flip toggled by hand (the other seat's
+  view), tap walks, spell tap / drag / cancel, attack button, joystick held while a spell is dragged and cast (two
+  pointer ids; the cast fires, then the stick walks on), defeat card, portrait and landscape layouts, queue bar
+  above the pinned Find match row, desktop layout unchanged. tsc, build and server smoke test pass.
+- Not checked: a real phone (real multi-touch, iOS Safari safe areas, performance on a mid-range phone).
+
+**Hero motion pass (2026-11-01, committed c7f2039, deployed 2026-11-01)**
+- Pushed `c7f2039` to main and ran `npm run cf:deploy` (worker version 9707d9fa-ef2c-4091-80ca-05628e89c2d9), live at https://arena-of-kits.arenachamp.workers.dev. Showcase video `docs/heroes/duel_brannoc_vs_lyra.mp4` (20 MB, untracked): an AI duel stepped frame by frame with a close follow camera, frames posted to a local receiver and stitched with ffmpeg. Online peer figure motion is still not checked.
 - Procedural animation on the shared hero rig, no clips (`src/heroFigure.ts`, rig additions in
   `src/effects/weapons/hero.ts`): idle (breath, weight shift, look round), speed-scaled walk with hip / chest
   counter-turn and leaning, a cast pose per spell type (thrust, point, slam, burst, raise, lunge, swing, channel; R

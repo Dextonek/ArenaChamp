@@ -10,6 +10,7 @@ import type { HeroKit } from '../heroes';
 import { NetClient, type LobbyState, type Profile } from '../net/client';
 import { HeroPreview } from './heroPreview';
 import { MatchController } from './match';
+import { TOUCH } from '../touch';
 
 type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby';
 
@@ -141,7 +142,7 @@ function loginScreen() {
   const tab = (mode: 'login' | 'register', label: string) =>
     el('button', { type: 'button', class: `tab${state.authMode === mode ? ' on' : ''}`, onclick: () => { state.authMode = mode; state.authError = ''; render(); } }, label);
   const form = el('form', { class: 'card login', onsubmit: submit },
-    el('div', { class: 'title' }, el('span', { class: 'sigil big' }, '⚔'), el('h1', {}, 'Arena of Kits'), el('p', { class: 'muted' }, '1v1 hero duels · click to move · Q W E R to cast')),
+    el('div', { class: 'title' }, el('span', { class: 'sigil big' }, '⚔'), el('h1', {}, 'Arena of Kits'), el('p', { class: 'muted' }, TOUCH ? '1v1 hero duels · stick to move · drag a spell to aim' : '1v1 hero duels · click to move · Q W E R to cast')),
     el('div', { class: 'tabs' }, tab('login', 'Log in'), tab('register', 'Create account')),
     name, pass,
     el('button', { class: 'btn primary', type: 'submit', disabled: !state.connected }, state.authMode === 'login' ? 'Log in' : 'Create account'),
@@ -170,7 +171,7 @@ function menuScreen() {
         el('div', {}, el('div', { class: 'kit-name' }, hero.name), el('div', { class: 'muted' }, hero.title),
           el('div', { class: 'spell-row' }, ...hero.spells.map((s) => canvasOf(64, s.icon, 'icon sm'))))),
       heroPicker(hero.name, [], (n) => { setPreferredHero(n); render(); }),
-      el('div', { class: 'row' },
+      el('div', { class: 'row play-actions' },
         queued
           ? el('button', { class: 'btn', onclick: () => net.send({ t: 'queue_leave' }) }, 'Cancel search')
           : el('button', { class: 'btn primary big', disabled: !!state.lobby, onclick: () => net.send({ t: 'queue_join', hero: hero.name }) }, `Find match as ${hero.name}`),
@@ -179,7 +180,13 @@ function menuScreen() {
     ),
     el('section', { class: 'card side' },
       el('h3', {}, 'How to fight'),
-      el('ul', { class: 'how' },
+      TOUCH ? el('ul', { class: 'how' },
+        el('li', {}, 'The ', el('b', {}, 'stick'), ' on the left walks; tap the ground to walk there, tap the enemy to attack.'),
+        el('li', {}, el('b', {}, 'Tap a spell'), ' to cast it at the enemy, or ', el('b', {}, 'drag'), ' it to aim and let go to cast. The big gold one is the ultimate.'),
+        el('li', {}, 'Drag back onto the spell to cancel. The ', el('b', {}, '⚔'), ' button attacks; pinch to zoom.'),
+        el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
+        el('li', {}, 'Both heroes have 600 HP. Last one standing wins.'),
+      ) : el('ul', { class: 'how' },
         el('li', {}, el('b', {}, 'Left click'), ' the ground to walk.'),
         el('li', {}, el('b', {}, 'Q W E R'), ' aim a spell, click to cast. R is the ultimate.'),
         el('li', {}, el('b', {}, 'Right click / Esc'), ' cancels the aim.'),

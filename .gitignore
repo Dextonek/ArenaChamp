@@ -4,3 +4,7 @@ dist/
 __pycache__/
 server/data/
 .wrangler/
+
+# Recorded gameplay videos (large; kept locally)
+docs/heroes/*.mp4
+docs/arenas/*.mp4

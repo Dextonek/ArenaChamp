@@ -1,59 +1,201 @@
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
-import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded, shadowed } from './common';
+import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef } from './types';
 
-/** Bakes a transform into a (non-indexed) copy of `geo`, so many props merge into one draw call. */
-function bake(geo: THREE.BufferGeometry, x: number, y: number, z: number, sx = 1, sy = 1, sz = 1, rx = 0, ry = 0, rz = 0) {
-  const g = geo.index ? geo.toNonIndexed() : geo;
-  if (g !== geo) geo.dispose();
-  g.applyMatrix4(
-    new THREE.Matrix4().compose(
-      new THREE.Vector3(x, y, z),
-      new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz)),
-      new THREE.Vector3(sx, sy, sz),
-    ),
-  );
-  return g;
-}
+/**
+ * Frostfall Lake: a frozen lake in a snowfield at night, ringed by snow-laden pines and mountains under a faint aurora.
+ *
+ * Cover (`FROST_OBSTACLES`): a low frozen boulder in the middle, two long snow drifts guarding the starts, two
+ * short drifts in the far corners, two ice spires flanking the middle and two taller ones on the wings. The cover
+ * is sculpted, painted props from Blender (blender/arenas/frost_props.py → public/models/arenas/frost_props.glb),
+ * instanced onto the obstacles.
+ *
+ * Outside the ring: broken ice plates and pressure ridges at the shore, snow-capped boulders and rocks, low scrub
+ * pines, frozen dead trees and a snow-laden pine forest on the sculpted snowfield (tall ones only beyond 26 m or at
+ * |x| > 12), far chiselled peaks in front of a mountain silhouette. The backdrop props come from
+ * blender/arenas/frost_backdrop.py → public/models/arenas/frost_backdrop.glb (placed below: the unique ones merged
+ * per material, the repeated ones instanced).
+ */
 
-const merged = (list: THREE.BufferGeometry[], mat: THREE.Material) => {
-  const m = shadowed(new THREE.Mesh(mergeGeometries(list)!, mat));
-  list.forEach((g) => g.dispose());
-  return m;
-};
-
-/** A crystal: octahedron with its base at y = 0, `h` tall, leaning outward along angle `a` by `tilt`. */
-function crystal(x: number, z: number, h: number, r: number, a: number, tilt: number) {
-  const o = new THREE.OctahedronGeometry(1, 0);
-  o.translate(0, 1, 0);
-  return bake(o, x, 0, z, r, h / 2, r, tilt * Math.sin(a), a, -tilt * Math.cos(a));
-}
-
-/** A broken crystal stump: a hexagonal prism with a slanted, snapped top, base at y = 0. */
-function stump(x: number, z: number, r: number, h: number, slant: number, yaw: number) {
-  const c = new THREE.CylinderGeometry(r * 0.72, r, h, 6, 1);
-  c.translate(0, h / 2, 0);
-  const p = c.attributes.position;
-  for (let i = 0; i < p.count; i++) if (p.getY(i) > h * 0.6) p.setY(i, p.getY(i) - slant * (0.5 - p.getX(i) / r / 2));
-  return bake(c, x, 0, z, 1, 1, 1, 0, yaw, 0);
-}
-
-/** Turns a geometry built in a wall's local frame (x across, z along) into world space. */
-const place = (g: THREE.BufferGeometry, cx: number, cz: number, yaw: number) => {
-  g.rotateY(yaw);
-  g.translate(cx, 0, cz);
-  return g;
-};
-
-const OBSTACLES: Obstacle[] = [
-  pillar(0, 7, 1.0),
-  pillar(6.5, 6),
-  pillar(-6.5, 8),
-  wall(-7, 3, -3.5, 3),
-  wall(7, 11, 3.5, 11),
+/** Cover layout: point-symmetric about the ring centre (0, 7); checked against the rules in docs/architecture/arenas.md.
+ *  Heights are the props' (they pick the prop): 1.25 boulder, 3.7 / 4.28 the two spires, 1.48 / 1.39 the long and
+ *  short drifts (with their ice shards). */
+export const FROST_OBSTACLES: Obstacle[] = [
+  { ...pillar(0, 7, 0.9), height: 1.25 }, // frozen boulder: low, the gameplay camera looks over it
+  { ...wall(-2.6, 3.8, -5.8, 2.3), r: 0.4, height: 1.48 }, // long drifts guarding the starts
+  { ...wall(2.6, 10.2, 5.8, 11.7), r: 0.4, height: 1.48 },
+  { ...pillar(4.3, 4.7, 0.8), height: 3.7 }, // ice spires flanking the middle
+  { ...pillar(-4.3, 9.3, 0.8), height: 3.7 },
+  { ...pillar(8.2, 7.8, 0.8), height: 4.28 }, // taller spires on the wings
+  { ...pillar(-8.2, 6.2, 0.8), height: 4.28 },
+  { ...wall(6.0, 1.3, 8.0, 3.3), r: 0.4, height: 1.39 }, // short drifts in the far corners
+  { ...wall(-6.0, 12.7, -8.0, 10.7), r: 0.4, height: 1.39 },
 ];
+
+/** The drift module's length in the props file (a 3.4 m segment plus 2 × 0.4 m ends); drifts stretch it along x. */
+const DRIFT_MODULE = 4.2;
+
+// ---- the sculpted props, loaded once and shared by every build ---------------------------------------------------
+
+type PropParts = { geometry: THREE.BufferGeometry; material: THREE.Material; part: string }[];
+let propsPromise: Promise<Record<string, PropParts>> | null = null;
+
+/** Brightness of each painted material at night (the Blender files are lit brighter). The cover's three were once
+ *  multiplied per mesh, five meshes each, so the same look is the factor to the fifth power. */
+const TUNE: Record<string, number> = { ice: 0.75 ** 5, snow: 0.66 ** 5, rock: 0.85 ** 5, bark: 0.55, needle: 0.6, dead: 0.32 };
+
+/** frost_props.glb and frost_backdrop.glb as {prop name: its parts (one per material)}; objects there are named
+ *  "<Prop>__<material>". Both files share material names; the first one loaded of each name (the cover's) is used. */
+function loadProps() {
+  propsPromise ??= (() => {
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+    const base = `${import.meta.env.BASE_URL}models/arenas/`;
+    return Promise.all([loader.loadAsync(`${base}frost_props.glb`), loader.loadAsync(`${base}frost_backdrop.glb`)]).then((files) => {
+      const out: Record<string, PropParts> = {};
+      const byPart = new Map<string, THREE.Material>();
+      const tuned = new Set<THREE.Material>();
+      for (const gltf of files) {
+        gltf.scene.updateMatrixWorld(true);
+        gltf.scene.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          const [prop, part] = m.name.split('__');
+          const geometry = m.geometry.clone().applyMatrix4(m.matrixWorld);
+          if (!byPart.has(part)) byPart.set(part, m.material as THREE.Material);
+          const material = byPart.get(part) as THREE.MeshStandardMaterial;
+          // Night lake: the snow darker than in the Blender file (its painted shadows are already blue), the rock a
+          // little darker, the ice with a faint cold glow. The loader shares one material between the meshes that use
+          // it: tune each once.
+          if (!tuned.has(material)) {
+            tuned.add(material);
+            material.color.multiplyScalar(TUNE[part] ?? 0.6);
+            if (part === 'ice') { material.emissive.setHex(0x1a5a7a); material.emissiveIntensity = 0.3; }
+            if (material instanceof THREE.MeshPhysicalMaterial) material.sheen = 0;
+          }
+          (out[prop] ??= []).push({ geometry, material, part });
+        });
+      }
+      return out;
+    });
+  })();
+  return propsPromise;
+}
+
+/** One instanced mesh per part of `prop`, placed by `matrices` (each build gets its own copies to dispose). */
+function instance(parts: PropParts, matrices: THREE.Matrix4[]) {
+  return parts.map(({ geometry, material }) => {
+    const m = new THREE.InstancedMesh(geometry.clone(), material.clone(), matrices.length);
+    matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
+    m.instanceMatrix.needsUpdate = true;
+    m.castShadow = m.receiveShadow = true;
+    return m;
+  });
+}
+
+// ---- the backdrop: placed props merged per material (the repeated ones instanced) --------------------------------
+
+type Place = Record<string, THREE.Matrix4[]>;
+
+/** How much darker the backdrop is than the cover: the snow out there must not outshine the heroes and spells. */
+const BACK_DIM = 0.72;
+
+/** Only position, normal and colour (as float RGB, white when unpainted), indexed: so all parts of a material merge. */
+function plain(src: THREE.BufferGeometry) {
+  const g = new THREE.BufferGeometry();
+  const pos = src.attributes.position;
+  g.setAttribute('position', new THREE.Float32BufferAttribute(Array.from({ length: pos.count * 3 }, (_, i) => pos.getComponent(Math.floor(i / 3), i % 3)), 3));
+  if (!src.attributes.normal) src.computeVertexNormals();
+  const nrm = src.attributes.normal;
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(Array.from({ length: nrm.count * 3 }, (_, i) => nrm.getComponent(Math.floor(i / 3), i % 3)), 3));
+  const col = src.attributes.color;
+  const c = new Float32Array(pos.count * 3).fill(1);
+  if (col) for (let i = 0; i < pos.count; i++) { c[i * 3] = col.getX(i); c[i * 3 + 1] = col.getY(i); c[i * 3 + 2] = col.getZ(i); }
+  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  g.setIndex(src.index ? Array.from(src.index.array) : Array.from({ length: pos.count }, (_, i) => i));
+  return g;
+}
+
+/** A build's own copy of a material, reading the painted vertex colours, dimmed for the backdrop. */
+function own(material: THREE.Material) {
+  const mat = material.clone() as THREE.MeshStandardMaterial;
+  mat.vertexColors = true;
+  mat.color.multiplyScalar(BACK_DIM);
+  mat.emissiveIntensity *= BACK_DIM;
+  // the shore ice's clearcoat glints round the rim would read as sparks
+  if (mat instanceof THREE.MeshPhysicalMaterial) mat.clearcoat = 0;
+  mat.roughness = Math.max(mat.roughness, 0.45);
+  return mat;
+}
+
+/** Places props (each by its matrices) and merges every placed part into one mesh per material. */
+function mergedBack(props: Record<string, PropParts>, place: Place) {
+  const lists = new Map<string, { material: THREE.Material; geos: THREE.BufferGeometry[] }>();
+  for (const [name, matrices] of Object.entries(place)) {
+    for (const { geometry, material, part } of props[name] ?? []) {
+      const entry = lists.get(part) ?? { material, geos: [] };
+      lists.set(part, entry);
+      const p = plain(geometry);
+      for (const mx of matrices) entry.geos.push(p.clone().applyMatrix4(mx));
+      p.dispose();
+    }
+  }
+  const meshes: THREE.Mesh[] = [];
+  for (const [part, { material, geos }] of lists) {
+    const g = mergeGeometries(geos, false);
+    geos.forEach((x) => x.dispose());
+    if (!g) throw new Error(`frost: merging ${part} failed`);
+    const m = new THREE.Mesh(g, own(material));
+    m.receiveShadow = true;
+    meshes.push(m);
+  }
+  return meshes;
+}
+
+/** The repeated props (pines, rocks, shore plates): one instanced mesh per prop part. */
+function instancedBack(props: Record<string, PropParts>, place: Place) {
+  const meshes: THREE.InstancedMesh[] = [];
+  for (const [name, matrices] of Object.entries(place)) {
+    if (!matrices.length) continue;
+    for (const { geometry, material } of props[name] ?? []) {
+      const m = new THREE.InstancedMesh(plain(geometry), own(material), matrices.length);
+      matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
+      m.instanceMatrix.needsUpdate = true;
+      m.computeBoundingSphere();
+      m.receiveShadow = true;
+      meshes.push(m);
+    }
+  }
+  return meshes;
+}
+
+/** The camera rule: nothing of the backdrop more than 2 m above the snowfield within 26 m of the centre unless
+ *  |x| > 12 (every vertex). Returns the backdrop's triangle count. */
+function checkCameraRule(meshes: THREE.Mesh[]) {
+  const v = new THREE.Vector3();
+  const mx = new THREE.Matrix4();
+  let tris = 0;
+  for (const m of meshes) {
+    const pos = m.geometry.attributes.position;
+    const inst = (m as THREE.InstancedMesh).isInstancedMesh ? (m as THREE.InstancedMesh) : null;
+    const n = inst ? inst.count : 1;
+    tris += ((m.geometry.index?.count ?? pos.count) / 3) * n;
+    for (let k = 0; k < n; k++) {
+      if (inst) inst.getMatrixAt(k, mx);
+      else mx.identity();
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(mx);
+        if (Math.abs(v.x) <= 12 && Math.hypot(v.x - RING.x, v.z - RING.z) <= 26 && v.y - snowH(v.x, v.z) > 2) {
+          throw new Error(`frost: backdrop breaks the camera rule at (${v.x.toFixed(1)}, ${v.y.toFixed(1)}, ${v.z.toFixed(1)})`);
+        }
+      }
+    }
+  }
+  return tris;
+}
 
 // ---- value noise (shapes the snowfield and the mountain ridges) ------------------------------------------------
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -109,7 +251,8 @@ function apronGeometry() {
       uv.set([x / 20, z / 20], v * 2);
       const d = Math.hypot(x - RING.x, z - RING.z);
       const rockiness = smooth(0.58, 0.72, fbm(x * 0.1 + 40, z * 0.1 + 7)) * smooth(14, 20, d);
-      const lit = 0.92 + windRidge(x, z) * 0.2;
+      // kept dim: bright snow on the horizon would outshine the heroes and spells
+      const lit = 0.74 + windRidge(x, z) * 0.16;
       col.set([lerp(lit, 0.46, rockiness), lerp(lit, 0.48, rockiness), lerp(lit, 0.54, rockiness)], v * 3);
       if (i < NR && j < NA) {
         const c = v + NA + 1;
@@ -124,33 +267,6 @@ function apronGeometry() {
   geo.setIndex(idx);
   geo.computeVertexNormals();
   return geo;
-}
-
-/** A wind-sculpted drift in a wall's local frame (x across, z along): long gentle windward slope, sharp crest pushed
- *  to the lee side, with a lower layered ramp. `lee` = +1 or -1 (which local x side is the lee). */
-function driftGeometry(len: number, lee: number, wob: number) {
-  const half = len / 2 + 0.55;
-  const mk = (sx: number, sy: number, sz: number, ox: number, ang: number) => {
-    const s = new THREE.SphereGeometry(1, 28, 14);
-    const p = s.attributes.position;
-    for (let i = 0; i < p.count; i++) {
-      const x = p.getX(i);
-      const y = Math.max(p.getY(i), 0);
-      const z = p.getZ(i);
-      const windward = x * lee < 0;
-      const xs = x * sx * (windward ? 1.5 : 0.75) + lee * 0.22 * y * sx;
-      const ys = y * sy * (1 + 0.12 * Math.sin(z * 4.1 + wob));
-      p.setXYZ(i, xs + ox, ys, z * sz);
-    }
-    s.rotateY(ang);
-    s.computeVertexNormals();
-    return s;
-  };
-  return [
-    mk(0.62, 1.55, half, 0, 0),
-    mk(0.5, 0.65, half * 0.55, -lee * 0.55, 0), // lower windward layer
-    mk(0.4, 0.55, half * 0.32, lee * 0.45, 0.12), // small pile in the lee
-  ];
 }
 
 function iceTexture() {
@@ -384,7 +500,7 @@ function mountainRing(R: number, base: number, amp: number, seedOff: number, dar
 export const frostArena: ArenaDef = {
   id: 'frost',
   name: 'Frostfall Lake',
-  obstacles: OBSTACLES,
+  obstacles: FROST_OBSTACLES,
   stage: {
     background: 0x1a2a3a,
     zenith: 0x0a1a2e,
@@ -430,127 +546,92 @@ export const frostArena: ArenaDef = {
     rimLine.renderOrder = 3;
     g.add(apron, ice, frost, snowBand, rimLine);
 
-    const iceMat = new THREE.MeshStandardMaterial({
-      color: 0x5aa4c0, roughness: 0.35, metalness: 0.1, flatShading: true, emissive: 0x1a5a7a, emissiveIntensity: 0.3,
-    });
-    const plateMat = new THREE.MeshStandardMaterial({
-      color: 0x2e5a72, roughness: 0.4, metalness: 0.1, flatShading: true, emissive: 0x10384c, emissiveIntensity: 0.25,
-    });
-    const snowMat = new THREE.MeshStandardMaterial({ color: 0x46525e, roughness: 0.95 });
-    const rockMat = new THREE.MeshStandardMaterial({ color: 0x2a323c, roughness: 0.9, flatShading: true });
-    const trunkMat = new THREE.MeshStandardMaterial({ color: 0x1c1816, roughness: 1 });
-    const pineMat = new THREE.MeshStandardMaterial({ color: 0x182630, roughness: 0.95, flatShading: true });
+    // Cover: the sculpted props, added when the files have loaded (the first pick waits a moment for them). Drifts
+    // turn their long windward slope away from the centre; point-symmetric twins are turned half round.
+    let disposed = false;
+    const _q = new THREE.Quaternion();
+    const _up = new THREE.Vector3(0, 1, 0);
+    const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), _q.setFromAxisAngle(_up, ry), new THREE.Vector3(sx, 1, 1));
+    void loadProps().then((props) => {
+      if (disposed) return;
+      const place: Record<string, THREE.Matrix4[]> = { Boulder: [], SpireA: [], SpireB: [], DriftA: [], DriftB: [] };
+      FROST_OBSTACLES.forEach((o, i) => {
+        const twin = i % 2 === 0 ? 0 : Math.PI;
+        if (o.kind === 'wall') {
+          const dx = o.bx - o.ax, dz = o.bz - o.az;
+          const cx = (o.ax + o.bx) / 2, cz = (o.az + o.bz) / 2;
+          let ry = Math.atan2(-dz, dx);
+          if (Math.sin(ry) * (RING.x - cx) + Math.cos(ry) * (RING.z - cz) > 0) ry += Math.PI;
+          place[o.height > 1.42 ? 'DriftA' : 'DriftB'].push(at(cx, cz, ry, (Math.hypot(dx, dz) + 2 * o.r) / DRIFT_MODULE));
+        } else if (o.height < 2) place.Boulder.push(at(o.ax, o.az, 0.4));
+        else place[o.height < 4.0 ? 'SpireA' : 'SpireB'].push(at(o.ax, o.az, 0.9 + twin));
+      });
+      for (const [name, list] of Object.entries(place)) if (props[name] && list.length) g.add(...instance(props[name], list));
+    }).catch((e) => console.warn('frost: props failed to load', e));
 
-    const crystals: THREE.BufferGeometry[] = [];
-    const snow: THREE.BufferGeometry[] = [];
-
-    // crystal clusters on the three pillars: a tall spire with satellites, a fan, a thin spire; each with snapped
-    // stumps and a toppled shard so no two read alike
-    const cluster = (o: Obstacle, main: number, count: number, spread: number, rad: number) => {
-      crystals.push(crystal(o.ax, o.az, main, rad * 1.1, 0, 0.04));
-      for (let i = 1; i < count; i++) {
-        const a = (i / (count - 1)) * Math.PI * 2 + rnd() * 0.5;
-        const d = spread * (0.6 + rnd() * 0.4);
-        const h = main * (0.45 + rnd() * 0.4);
-        crystals.push(crystal(o.ax + Math.cos(a) * d, o.az + Math.sin(a) * d, h, rad * (0.7 + rnd() * 0.3), a, 0.16 + rnd() * 0.2));
-      }
-      snow.push(bake(new THREE.SphereGeometry(1, 12, 6), o.ax, 0, o.az, o.r * 1.25, 0.32, o.r * 1.25));
-    };
-    const [spire, fanA, fanB] = OBSTACLES;
-    cluster(spire, 4.2, 6, 0.6, 0.42);
-    crystals.push(crystal(spire.ax + 0.95, spire.az - 0.45, 1.6, 0.26, 2.0, 1.25).translate(0, 0.2, 0)); // toppled shard
-    crystals.push(stump(spire.ax - 0.85, spire.az + 0.55, 0.36, 0.55, 0.25, 0.4), stump(spire.ax + 0.3, spire.az + 0.95, 0.28, 0.35, 0.18, 1.2));
-
-    cluster(fanA, 3.2, 4, 0.5, 0.36);
-    crystals.push(stump(fanA.ax + 0.7, fanA.az + 0.55, 0.4, 0.7, 0.3, 0.9), stump(fanA.ax - 0.75, fanA.az - 0.5, 0.3, 0.4, 0.2, 2.1));
-    crystals.push(crystal(fanA.ax - 0.4, fanA.az + 0.95, 1.2, 0.22, 4.2, 1.2).translate(0, 0.18, 0));
-
-    cluster(fanB, 3.7, 3, 0.5, 0.3);
-    crystals.push(stump(fanB.ax - 0.7, fanB.az + 0.5, 0.34, 0.8, 0.35, 0.2), stump(fanB.ax + 0.6, fanB.az - 0.6, 0.38, 0.45, 0.2, 1.7), stump(fanB.ax + 0.85, fanB.az + 0.35, 0.24, 0.3, 0.15, 2.8));
-
-    // wind-sculpted drift ridges (crest toward the lee, layered ramps) with ice shards poking out of the crest
-    for (const o of OBSTACLES.slice(3)) {
-      const len = Math.hypot(o.bx - o.ax, o.bz - o.az);
-      const yaw = Math.atan2(o.bx - o.ax, o.bz - o.az);
-      const cx = (o.ax + o.bx) / 2;
-      const cz = (o.az + o.bz) / 2;
-      const lee = Math.sign(Math.sin(yaw)) || 1; // the wind blows toward -z
-      for (const d of driftGeometry(len, lee, yaw)) snow.push(place(d.toNonIndexed(), cx, cz, yaw));
-      for (const [t, across, y, h] of [
-        [-0.32, 0.2, 1.4, 0.8], [-0.05, 0.22, 1.45, 0.95], [0.3, 0.2, 1.4, 0.7], [0.12, -0.5, 0.75, 0.5], [-0.4, -0.45, 0.6, 0.45],
-      ] as const) {
-        const sh = crystal(lee * across, t * len + (rnd() - 0.5) * 0.15, h, 0.14, rnd() * 6.28, 0.2).translate(0, y, 0);
-        crystals.push(place(sh, cx, cz, yaw));
-      }
-    }
-
-    // shoreline: broken ice plates pushed up around the rim, with a few standing shards (all < 0.6 m)
-    const plates: THREE.BufferGeometry[] = [];
-    for (let i = 0; i < 54; i++) {
-      const a = (i / 54) * 6.283 + (rnd() - 0.5) * 0.1;
-      const r = 12.3 + rnd() * 1.0;
-      const rad = 0.45 + rnd() * 0.5;
-      const tilt = 0.1 + rnd() * 0.3;
-      const ta = rnd() * 6.283;
-      const p = new THREE.CylinderGeometry(rad * (0.8 + rnd() * 0.2), rad, 0.12, rnd() < 0.5 ? 5 : 6);
-      plates.push(
-        bake(p, RING.x + Math.cos(a) * r, 0.06 + Math.sin(tilt) * rad * 0.7, RING.z + Math.sin(a) * r, 1, 1, 1, tilt * Math.sin(ta), rnd() * 3, -tilt * Math.cos(ta)),
+    // ---- backdrop -------------------------------------------------------------------------------------------
+    // Sculpted props from blender/arenas/frost_backdrop.py, placed (seeded) on the snowfield (sunk a little into
+    // it): broken ice plates all round the shore, pressure ridges along it, snow-capped boulders and rocks, low
+    // scrub pines near the ring, frozen dead trees and the snow-laden forest further out, far pines and chiselled
+    // peaks on the horizon. Taller than 2 m only beyond 26 m from the centre or at |x| > 12 (with the prop's reach
+    // as margin), and none at the overview camera (16, 27); checked on every vertex when the props load.
+    const polar = (r: number, a: number) => [RING.x + Math.cos(a) * r, RING.z + Math.sin(a) * r] as const;
+    const back: Place = {}, reps: Place = {};
+    const put = (into: Place, name: string, x: number, z: number, ry: number, s = 1, sink = 0.1) =>
+      (into[name] ??= []).push(
+        new THREE.Matrix4().compose(new THREE.Vector3(x, snowH(x, z) - sink * s, z), new THREE.Quaternion().setFromAxisAngle(_up, ry), new THREE.Vector3(s, s, s)),
       );
-    }
-    for (let i = 0; i < 18; i++) {
-      const a = rnd() * 6.283;
-      const r = 12.2 + rnd() * 0.9;
-      plates.push(crystal(RING.x + Math.cos(a) * r, RING.z + Math.sin(a) * r, 0.3 + rnd() * 0.25, 0.1 + rnd() * 0.06, a, 0.3 + rnd() * 0.3));
-    }
-
-    // snowfield props: rocks (exposed rock patches), dead pines and a dense forest. Taller than 2 m only beyond 26 m
-    // of the centre or off the z axis (|x| > 12), so the gameplay camera never loses a hero behind them.
-    const rocks: THREE.BufferGeometry[] = [];
-    const trunks: THREE.BufferGeometry[] = [];
-    const pines: THREE.BufferGeometry[] = [];
-    const tallOk = (x: number, z: number) => Math.abs(x - RING.x) > 12 || Math.hypot(x - RING.x, z - RING.z) > 26;
-    for (let i = 0; i < 30; i++) {
-      const a = rnd() * 6.283;
-      const r = 15 + rnd() * 24;
-      const s = 0.4 + rnd() * 0.9 + (r > 28 ? rnd() * 1.4 : 0);
-      const x = RING.x + Math.cos(a) * r;
-      const z = RING.z + Math.sin(a) * r;
-      if (s * 0.6 > 2 && !tallOk(x, z)) continue;
-      rocks.push(bake(new THREE.DodecahedronGeometry(1, 0), x, snowH(x, z) + s * 0.1, z, s, s * 0.6, s * 0.85, 0, rnd() * 3, 0));
-    }
-    const pine = (x: number, z: number, h: number, w: number) => {
-      const gy = snowH(x, z) - 0.15;
-      trunks.push(bake(new THREE.CylinderGeometry(0.08 * w, 0.2 * w, h * 0.5, 5), x, gy + h * 0.25, z));
-      const tiers = h > 6 ? 4 : 3;
-      for (let k = 0; k < tiers; k++) {
-        const rr = (1.05 - k * 0.22) * w * (0.85 + rnd() * 0.25);
-        const hh = h * (0.42 - k * 0.04);
-        pines.push(bake(new THREE.ConeGeometry(rr, hh, 6), x, gy + h * 0.28 + k * hh * 0.5 + hh * 0.5, z, 1, 1, 1, 0, rnd() * 3, 0));
+    const taken: { x: number; z: number; r: number }[] = [];
+    const free = (x: number, z: number, r: number) => taken.every((t) => Math.hypot(t.x - x, t.z - z) > t.r + r);
+    const tallOk = (x: number, z: number, reach: number) =>
+      (Math.abs(x - RING.x) - reach > 12.5 || Math.hypot(x - RING.x, z - RING.z) - reach > 26.5) && Math.hypot(x - 16, z - 27) > 9 + reach;
+    /** `count` props of `names` (in turn) between radii r0 and r1, `room` apart (times the scale); `reach` > 0 marks
+     *  a tall prop (its crown's radius per unit scale). */
+    const scatter = (into: Place, names: string[], count: number, r0: number, r1: number, room: number, s0: number, s1: number, reach = 0, sink = 0.1) => {
+      for (let tries = 0, n = 0; n < count && tries < count * 40; tries++) {
+        const [x, z] = polar(r0 + (r1 - r0) * Math.sqrt(rnd()), rnd() * Math.PI * 2);
+        const s = s0 + (s1 - s0) * rnd();
+        if (reach && !tallOk(x, z, reach * s)) continue;
+        if (!free(x, z, room * s)) continue;
+        put(into, names[n % names.length], x, z, rnd() * Math.PI * 2, s, sink);
+        taken.push({ x, z, r: room * s });
+        n++;
       }
     };
-    for (let i = 0; i < 40; i++) {
-      // low scrub pines near the ring (< 2 m)
-      const a = rnd() * 6.283;
-      const r = 16.5 + rnd() * 9;
-      pine(RING.x + Math.cos(a) * r, RING.z + Math.sin(a) * r, 1.0 + rnd() * 0.9, 0.5 + rnd() * 0.2);
+    // the shore: plate clusters all round, pressure ridges running along it (all under 1 m)
+    for (let i = 0; i < 24; i++) {
+      const [x, z] = polar(12.9 + rnd() * 0.5, (i / 24) * Math.PI * 2 + (rnd() - 0.5) * 0.12);
+      put(reps, 'Plates', x, z, rnd() * Math.PI * 2, 0.85 + rnd() * 0.35, 0.05);
     }
-    for (let i = 0; i < 92; i++) {
-      const a = (i / 92) * 6.283 + rnd() * 0.2;
-      let r = 20 + Math.pow(rnd(), 0.8) * 40;
-      let x = RING.x + Math.cos(a) * r;
-      let z = RING.z + Math.sin(a) * r;
-      if (!tallOk(x, z)) {
-        r = 26.5 + rnd() * 12;
-        x = RING.x + Math.cos(a) * r;
-        z = RING.z + Math.sin(a) * r;
-      }
-      const dead = rnd() < 0.25;
-      pine(x, z, (r > 45 ? 8 : 4.5) + rnd() * 5, dead ? 0.55 : 0.9 + rnd() * 0.4);
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * Math.PI * 2 + rnd() * 0.5;
+      const [x, z] = polar(14.6 + rnd() * 2.5, a);
+      put(back, 'Ridge', x, z, Math.atan2(-Math.cos(a), -Math.sin(a)) + (rnd() - 0.5) * 0.4, 0.9 + rnd() * 0.3, 0.12);
+      taken.push({ x, z, r: 2.4 });
+    }
+    // boulders (BoulderA stays under 2 m: scale <= 1.25), the forest, low scrub and rocks between
+    scatter(back, ['BoulderA', 'BoulderB'], 10, 15.5, 34, 1.8, 0.8, 1.25, 0, 0.15);
+    scatter(back, ['DeadTree'], 7, 19, 40, 2.5, 0.85, 1.2, 2.6, 0.2);
+    scatter(reps, ['PineA', 'PineB', 'PineC'], 36, 19, 46, 2.4, 0.8, 1.25, 2.7, 0.25);
+    scatter(reps, ['PineS'], 26, 15, 26, 1.0, 0.75, 1.1, 0, 0.1);
+    scatter(reps, ['RockS'], 20, 14, 32, 0.6, 0.7, 1.6, 0, 0.08);
+    scatter(reps, ['PineFar'], 24, 46, 62, 3.0, 1.0, 1.5, 2.7, 0.25);
+    // far peaks round the horizon, in front of the mountain silhouette
+    for (let i = 0; i < 10; i++) {
+      const [x, z] = polar(66 + rnd() * 16, (i / 10) * Math.PI * 2 + rnd() * 0.4);
+      put(back, i % 3 ? 'PeakB' : 'PeakA', x, z, rnd() * Math.PI * 2, 0.9 + rnd() * 0.6, 0.1);
     }
 
-    // far backdrop: two mountain ridges (flat silhouettes)
-    const farRidge = mountainRing(105, 12, 22, 1.7, 0x16222e, 0x405468);
-    const nearRidge = mountainRing(80, 5, 12, 4.1, 0x101a24, 0x2c3d4e);
+    void loadProps().then((props) => {
+      if (disposed) return;
+      const meshes = [...mergedBack(props, back), ...instancedBack(props, reps)];
+      const tris = checkCameraRule(meshes);
+      g.add(...meshes);
+      console.info(`frost: backdrop ${Math.round(tris)} triangles in ${meshes.length} meshes`);
+    }).catch((e) => console.error('frost: backdrop failed', e));
+
+    // far backdrop: a mountain silhouette ring behind the peaks
+    const farRidge = mountainRing(105, 12, 22, 1.7, 0x111b26, 0x2c3b4a);
     // faint aurora ribbon, behind everything: additive, low opacity, slow wave
     const NA = 96;
     const aPos = new Float32Array((NA + 1) * 3 * 3);
@@ -591,17 +672,7 @@ export const frostArena: ArenaDef = {
     };
     auroraWave(0);
 
-    g.add(
-      merged(crystals, iceMat),
-      merged(snow, snowMat),
-      merged(plates, plateMat),
-      merged(rocks, rockMat),
-      merged(trunks, trunkMat),
-      merged(pines, pineMat),
-      farRidge,
-      nearRidge,
-      aurora,
-    );
+    g.add(farRidge, aurora);
 
     // ground mist wisps drifting along the rim (instanced flat quads, additive, fade in and out)
     const WISPS = 10;
@@ -689,6 +760,7 @@ export const frostArena: ArenaDef = {
         if (mist.instanceColor) mist.instanceColor.needsUpdate = true;
       },
       dispose() {
+        disposed = true;
         mist.dispose();
         disposeTree(g);
       },

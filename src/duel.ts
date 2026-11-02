@@ -6,13 +6,14 @@ import { BODY_RADIUS } from './effects/projectile';
 import { MAX_UNITS, type SummonSide, type SummonStats } from './effects/summon';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS, type BuffKind, type StatusKind } from './effects/status';
-import type { HeroKit } from './heroes';
+import type { HeroKit, HeroSpell } from './heroes';
 import { HeroFigure, castStyle } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
+import { TOUCH } from './touch';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -84,6 +85,12 @@ const PEER_DELAY = 100;
 const PEER_STEP = 50;
 const PEER_GAP = 120;
 const PEER_SNAP = 3;
+/** Breakable walls: hits a wall takes before it falls; an ultimate counts as two. Walls stand again each round. */
+const WALL_HP = 5;
+/** An area spell hits a wall inside this share of its radius (the edge of a blast only scorches it). */
+const WALL_BLAST_REACH = 0.6;
+/** How close a line spell's path has to pass a wall (besides its thickness) to hit it. */
+const WALL_LINE_PAD = 0.3;
 const MELEE_GAP = 2; // a melee AI closes to about this distance (m)
 const DODGE_RADIUS = 1.6; // a hit still lands within this distance of where the cast aimed
 const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
@@ -133,6 +140,8 @@ export class Duel {
   /** The arena of the current (or last) round. */
   currentArena: ArenaDef | null = null;
   private arenaScene: ArenaScene | null = null;
+  /** Breakable arena: each obstacle's hits left (-1 = not breakable, 0 = broken); null for an arena without. */
+  private wallHp: number[] | null = null;
   /** The opponent's basic attack (src/attacks): at the hero, or at one of the hero's units. */
   private oppAttack: Attacker;
   private oppAttackFx = new AttackFx();
@@ -275,7 +284,8 @@ export class Duel {
     this.banner = document.createElement('div');
     this.banner.style.cssText =
       'position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:none;' +
-      'font:800 54px ui-serif,Georgia,serif;letter-spacing:4px;color:#ffd27a;text-shadow:0 4px 18px #000;';
+      `font:800 ${TOUCH || innerWidth < 760 ? 34 : 54}px ui-serif,Georgia,serif;letter-spacing:4px;color:#ffd27a;text-shadow:0 4px 18px #000;` +
+      'text-align:center;max-width:92vw;';
     document.body.append(this.card, this.flash, this.banner);
   }
 
@@ -313,7 +323,10 @@ export class Duel {
     arena.hitFilter = (target, opts, cast) => this.opponentHit(target, opts, cast);
     arena.casterHeal = (amount) => this.healPlayer(amount);
     arena.casterShield = null;
-    hm.onCast = () => this.recordPlayerCast();
+    hm.onCast = (_label, slot, target) => {
+      this.recordPlayerCast();
+      this.playerBlast(slot, target);
+    };
   }
 
   /**
@@ -341,7 +354,10 @@ export class Duel {
     hm.locked = true;
     // Hits on the remote hero only count when its own client reports them (`peerHit`).
     arena.hitFilter = (target) => target !== this.foe || this.hitBypass;
-    hm.onCast = (_label, slot, target) => this.sendCast(slot, target);
+    hm.onCast = (_label, slot, target) => {
+      this.sendCast(slot, target);
+      this.playerBlast(slot, target);
+    };
     // Heals and shields on this side's hero: the server counts the heal; the shield is shown on the other screen.
     arena.casterHeal = (amount) => this.healPlayer(amount);
     arena.casterShield = (amount, seconds, color) => this.net?.shield(amount, seconds, color);
@@ -368,6 +384,7 @@ export class Duel {
     arena.respawnAfter = Infinity;
     arena.bounds = RING;
     arena.obstacles = def.obstacles;
+    this.resetWalls(def);
     arena.setCount(1);
     this.foe = arena.liveFoes()[0]?.figure ?? null;
     if (this.foe) arena.placeFoe(this.foe, theirs);
@@ -647,6 +664,9 @@ export class Duel {
     const me = arena.caster.group.position;
     const point = spec.mode === 'self' ? from.clone() : m.enemy ? me.clone() : new THREE.Vector3(m.x, 0, m.z);
     this.castSpell(m.slot, foe, from, me, spec, point, m.id, undefined, m.yaw, m.mods ?? NO_MODS);
+    // Walls: from where the other side says it cast (the same numbers it used), so both screens break the same walls.
+    // (the aim point the sender used too: its view of this hero, not where this hero really is)
+    this.blastWalls(told, spec.mode === 'self' ? told.clone() : new THREE.Vector3(m.x, 0, m.z), spec, spell, m.slot);
   }
 
   /** The remote side took a hit from this side's spell (its own client decided): number, flash, HP from the server. */
@@ -1095,6 +1115,8 @@ export class Duel {
         }
       }
     }
+    // The AI's cast breaks walls here; a network cast does it in `peerCast` with the sender's own numbers.
+    if (!this.net) this.blastWalls(at, point, spec, spell, i);
     this.face(foe, focus);
     // A network cast faces where the other player's hero faced (spells fired straight ahead go that way).
     if (yaw !== undefined && spec.mode === 'self') foe.group.rotation.y = yaw;
@@ -1241,6 +1263,53 @@ export class Duel {
   }
 
   /** The player just cast: remember its zones and where it aimed (the opponent's position at the cast). */
+  // --- breakable walls ---------------------------------------------------------------------------------------
+
+  /** Stands every wall of a breakable arena up again (each round). The obstacle list is a copy: broken walls leave it. */
+  private resetWalls(def: ArenaDef) {
+    this.wallHp = def.breakable ? def.obstacles.map((o) => (o.kind === 'wall' ? WALL_HP : -1)) : null;
+    if (!this.wallHp) return;
+    this.host.arena.obstacles = def.obstacles.slice();
+    def.obstacles.forEach((o, i) => { if (o.kind === 'wall') this.arenaScene?.wallState?.(i, 'whole'); });
+  }
+
+  /** This side's hero cast slot `slot` at `target`: the walls it hits take damage. */
+  private playerBlast(slot: number, target: Target) {
+    const spell = this.host.heroMode.currentKit.spells[slot];
+    const spec = spell && this.host.targeting(spell.label);
+    if (!spec) return;
+    const from = this.host.arena.caster.group.position.clone().setY(0);
+    const point = spec.mode === 'self' ? from.clone() : ('enemy' in target ? target.enemy.group.position : target.point).clone().setY(0);
+    this.blastWalls(from, point, spec, spell, slot);
+  }
+
+  /**
+   * A spell cast from `from` at `point` hits the walls inside its area (ground and self spells: the wall within the
+   * radius) or across its path (line spells). Single-target spells need a clear line, so they never hit a wall. Both
+   * players' screens run this with the same numbers (the network cast message), so they break the same walls.
+   */
+  private blastWalls(from: THREE.Vector3, point: THREE.Vector3, spec: TargetingSpec, spell: HeroSpell, slot: number) {
+    const hp = this.wallHp, def = this.currentArena;
+    if (!hp || !def) return;
+    const dmg = slot === 3 ? 2 : 1;
+    const line = spell.aim === 'line';
+    if (!line && spec.mode !== 'ground' && spec.mode !== 'self') return;
+    const r = spec.radius ?? 5;
+    def.obstacles.forEach((o, i) => {
+      if (hp[i] <= 0) return;
+      const near = line ? pathDist(from, point, o) <= o.r + WALL_LINE_PAD : capsuleDist(point.x, point.z, o) <= o.r + r * WALL_BLAST_REACH;
+      if (!near) return;
+      hp[i] = Math.max(0, hp[i] - dmg);
+      if (hp[i] > 0) {
+        this.arenaScene?.wallState?.(i, 'cracked');
+        return;
+      }
+      this.arenaScene?.wallState?.(i, 'broken');
+      const arena = this.host.arena;
+      if (arena.obstacles) arena.obstacles = arena.obstacles.filter((x) => x !== o);
+    });
+  }
+
   private recordPlayerCast() {
     if (!this.foe) return;
     // `id` is the arena's cast number: the hits of that cast carry it to `opponentHit`.
@@ -1323,22 +1392,25 @@ export class Duel {
 
   private buildHud() {
     const root = document.createElement('div');
+    // A phone: smaller portraits and bars that share the screen width (two 220 px bars don't fit 375 px).
+    const small = TOUCH || innerWidth < 760;
     root.style.cssText =
-      'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:6;display:none;align-items:center;gap:18px;' +
-      'padding:8px 14px;border-radius:12px;background:rgba(8,6,10,0.82);border:1px solid #3a3242;' +
+      `position:fixed;left:50%;top:calc(${small ? 6 : 14}px + env(safe-area-inset-top, 0px));transform:translateX(-50%);z-index:6;` +
+      `display:none;align-items:center;gap:${small ? 8 : 18}px;padding:${small ? '5px 8px' : '8px 14px'};` +
+      'border-radius:12px;background:rgba(8,6,10,0.82);border:1px solid #3a3242;max-width:calc(100vw - 12px);box-sizing:border-box;' +
       'font:600 12px ui-sans-serif,system-ui;color:#e9dcc6;user-select:none;';
     const side = (right: boolean) => {
       const box = document.createElement('div');
-      box.style.cssText = `display:flex;align-items:center;gap:10px;flex-direction:${right ? 'row-reverse' : 'row'};`;
+      box.style.cssText = `display:flex;align-items:center;gap:${small ? 6 : 10}px;flex-direction:${right ? 'row-reverse' : 'row'};min-width:0;`;
       const portrait = document.createElement('canvas');
       portrait.width = portrait.height = 64;
-      portrait.style.cssText = 'width:42px;height:42px;border-radius:50%;border:2px solid #8a7a52;';
+      portrait.style.cssText = `width:${small ? 30 : 42}px;height:${small ? 30 : 42}px;border-radius:50%;border:2px solid #8a7a52;flex:none;`;
       const col = document.createElement('div');
-      col.style.cssText = `display:flex;flex-direction:column;gap:4px;align-items:${right ? 'flex-end' : 'flex-start'};`;
+      col.style.cssText = `display:flex;flex-direction:column;gap:${small ? 3 : 4}px;align-items:${right ? 'flex-end' : 'flex-start'};min-width:0;`;
       const name = document.createElement('div');
-      name.style.cssText = 'font:700 13px ui-serif,Georgia,serif;';
+      name.style.cssText = `font:700 ${small ? 11 : 13}px ui-serif,Georgia,serif;max-width:${small ? '28vw' : 'none'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;`;
       const barBg = document.createElement('div');
-      barBg.style.cssText = 'position:relative;width:220px;height:12px;border-radius:6px;background:#2a1a1e;overflow:hidden;';
+      barBg.style.cssText = `position:relative;width:${small ? 'min(220px, 28vw)' : '220px'};height:12px;border-radius:6px;background:#2a1a1e;overflow:hidden;`;
       const fill = document.createElement('div');
       fill.style.cssText = `position:absolute;top:0;bottom:0;${right ? 'right' : 'left'}:0;width:100%;border-radius:6px;transition:width 0.15s;`;
       const shield = document.createElement('div');
@@ -1356,7 +1428,7 @@ export class Duel {
     };
     const vs = document.createElement('div');
     vs.textContent = 'VS';
-    vs.style.cssText = 'font:800 16px ui-serif,Georgia,serif;color:#c9a24a;letter-spacing:2px;';
+    vs.style.cssText = `font:800 ${small ? 12 : 16}px ui-serif,Georgia,serif;color:#c9a24a;letter-spacing:2px;`;
     root.append(side(false), vs, side(true));
     document.body.appendChild(root);
     return root;
@@ -1433,6 +1505,23 @@ function bestSpot(hero: THREE.Vector3, r: number, units: THREE.Vector3[]) {
       const n = count(c);
       if (n > bestN) { best = c.clone(); bestN = n; }
     }
+  }
+  return best;
+}
+
+/** Ground-plane distance from (x, z) to an obstacle's segment. */
+function capsuleDist(x: number, z: number, o: ArenaDef['obstacles'][number]) {
+  const dx = o.bx - o.ax, dz = o.bz - o.az, len2 = dx * dx + dz * dz;
+  const t = len2 > 0 ? Math.min(1, Math.max(0, ((x - o.ax) * dx + (z - o.az) * dz) / len2)) : 0;
+  return Math.hypot(x - (o.ax + dx * t), z - (o.az + dz * t));
+}
+
+/** Closest ground-plane distance between the path from `a` to `b` and an obstacle's segment (sampled along the path). */
+function pathDist(a: THREE.Vector3, b: THREE.Vector3, o: ArenaDef['obstacles'][number]) {
+  let best = Infinity;
+  for (let k = 0; k <= 32; k++) {
+    const t = k / 32;
+    best = Math.min(best, capsuleDist(a.x + (b.x - a.x) * t, a.z + (b.z - a.z) * t, o));
   }
   return best;
 }

@@ -29,10 +29,18 @@ export interface ArenaStage {
   rimIntensity: number;
 }
 
+/** How a breakable wall looks. */
+export type WallState = 'whole' | 'cracked' | 'broken';
+
 /** A built arena: its meshes and an optional per-frame animation (embers, snow, fireflies, drifting clouds). */
 export interface ArenaScene {
   group: THREE.Group;
   update?(dt: number, time: number): void;
+  /**
+   * Breakable cover (`ArenaDef.breakable`): shows wall `index` (into `ArenaDef.obstacles`) whole, cracked or broken
+   * into rubble. Called with 'whole' for every wall at the start of each round.
+   */
+  wallState?(index: number, state: WallState): void;
   dispose?(): void;
 }
 
@@ -48,6 +56,8 @@ export interface ArenaDef {
   name: string;
   obstacles: Obstacle[];
   stage: ArenaStage;
+  /** Walls (`kind: 'wall'`) break under spells: see `Duel.blastWalls`. The scene shows it through `wallState`. */
+  breakable?: boolean;
   /** Hide the tool's slab floor under the arena (a floating platform over clouds builds its own world). */
   hideGround?: boolean;
   /** Builds a fresh copy of the arena's meshes (called each time the arena is picked). */

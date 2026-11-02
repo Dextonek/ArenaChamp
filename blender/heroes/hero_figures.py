@@ -31,6 +31,10 @@ import dao_blender as dao  # noqa: E402
 import figure_kit  # noqa: E402
 import kit  # noqa: E402
 
+if os.path.dirname(os.path.abspath(__file__)) not in sys.path:
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import stylize  # noqa: E402
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 OUT = os.path.join(ROOT, "public", "models", "heroes")
@@ -203,8 +207,13 @@ class HeroFigure(figure_kit.Figure):
 
     # The props are added before the kit merges and skins the parts: hook in after the extras.
     def add_chains(self, rig):
+        n0 = len(self.parts)
         for prop, kw in self.look.get("props", {}).items():
             getattr(self, prop)(**kw)
+        # Tag the props' vertices (survives the merge by material): a proportion style keeps props near their size.
+        for ob, _ in self.parts[n0:]:
+            vg = ob.vertex_groups.new(name=stylize.PROP_GROUP)
+            vg.add(list(range(len(ob.data.vertices))), 1.0, "REPLACE")
         super().add_chains(rig)
 
     def _mat(self, part, color, **kw):
@@ -1158,9 +1167,11 @@ def _reload():
         importlib.reload(mod)
 
 
-def build(name, reload=True):
+def build(name, reload=True, style=None):
+    """Builds hero `name`; `style` (a key of stylize.STYLES, e.g. "chunky") reshapes its proportions."""
     if reload:
         _reload()
+        importlib.reload(stylize)
     dao.setup_scene()
     look = dict(LOOKS[name])
     f = HeroFigure(name, look)
@@ -1170,14 +1181,17 @@ def build(name, reload=True):
         for ob in coll.objects:
             if ob.type in ("MESH", "ARMATURE"):
                 ob.scale = (s, s, 1.0)
+    if style:
+        stylize.apply(coll, style)
+    stylize.drop_prop_group(coll)
     return coll, f
 
 
-def export(name, keep=False, reload=True):
-    """Build a hero and export it to public/models/heroes/<name>.glb (meshopt, skinned)."""
-    coll, f = build(name, reload)
+def export(name, keep=False, reload=True, style=None):
+    """Build a hero and export it to public/models/heroes/<name>.glb (with a style: <name>_<style>.glb)."""
+    coll, f = build(name, reload, style)
     os.makedirs(OUT, exist_ok=True)
-    path = os.path.join(OUT, f"{name}.glb")
+    path = os.path.join(OUT, f"{name}_{style}.glb" if style else f"{name}.glb")
     if bpy.context.object and bpy.context.object.mode != "OBJECT":
         bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="DESELECT")
@@ -1197,8 +1211,9 @@ def export(name, keep=False, reload=True):
     return {"hero": name, "triangles": st["triangles"], "kb": round(os.path.getsize(path) / 1024), "path": path}
 
 
-def preview(name, views=(20, 200), size=640):
-    """Build a hero and render turnaround previews into docs/heroes/."""
-    coll, f = build(name)
-    os.makedirs(PREVIEWS, exist_ok=True)
-    return kit.preview(coll, name=f"{name}", views=views, size=size, out_dir=PREVIEWS)
+def preview(name, views=(20, 200), size=640, style=None, out_dir=None):
+    """Build a hero and render turnaround previews into docs/heroes/ (or `out_dir`)."""
+    coll, f = build(name, style=style)
+    out = out_dir or PREVIEWS
+    os.makedirs(out, exist_ok=True)
+    return kit.preview(coll, name=f"{name}_{style}" if style else name, views=views, size=size, out_dir=out)

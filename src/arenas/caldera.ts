@@ -1,8 +1,25 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded, shadowed } from './common';
 import type { ArenaDef } from './types';
+
+/**
+ * Ember Caldera: a basalt shelf in a lava lake, inside a crater wall with lava falls and smoke columns.
+ *
+ * Cover (`CALDERA_OBSTACLES`): no centre piece (the lava vent stays open); two low obsidian ridges flank the middle
+ * lane, two tall basalt column clusters and two low clusters of snapped stumps stand off the z axis, and two taller
+ * bladed obsidian ridges guard the wings. The cover is sculpted, painted props from Blender
+ * (blender/arenas/caldera_props.py → public/models/arenas/caldera_props.glb), instanced onto the obstacles.
+ *
+ * Outside the ring: a jagged obsidian lip round the ring edge, basalt prism clusters, cooled-lava boulders and small
+ * vents on the apron, lava-crusted rock spires standing in the lava lake, big vents under the smoke columns and a
+ * crater wall of chiselled basalt segments with thin lava falls (tall ones only beyond 26 m or at |x| > 12). The
+ * backdrop props come from blender/arenas/caldera_backdrop.py → public/models/arenas/caldera_backdrop.glb (placed
+ * below: the unique ones merged per material, the repeated ones instanced).
+ */
 
 /** Bakes a transform into a (non-indexed) copy of `geo`, so many props merge into one draw call. */
 function bake(geo: THREE.BufferGeometry, x: number, y: number, z: number, sx = 1, sy = 1, sz = 1, rx = 0, ry = 0, rz = 0) {
@@ -24,27 +41,189 @@ const merged = (list: THREE.BufferGeometry[], mat: THREE.Material) => {
   return m;
 };
 
-/** Like `merged` for flat or emissive things that neither cast nor receive shadows. */
-const mergedFlat = (list: THREE.BufferGeometry[], mat: THREE.Material) => {
-  const m = new THREE.Mesh(mergeGeometries(list)!, mat);
-  list.forEach((g) => g.dispose());
-  return m;
-};
+/** Cover layout: point-symmetric about the ring centre (0, 7); checked against the rules in docs/architecture/arenas.md.
+ *  Heights are the props' (they pick the prop): 1.18 / 2.08 the low and tall obsidian ridges, 3.3 / 1.27 the tall
+ *  basalt cluster and the snapped stumps. Twins follow each other (even index, odd index). */
+export const CALDERA_OBSTACLES: Obstacle[] = [
+  { ...wall(1.6, 5.0, 4.4, 6.2), r: 0.4, height: 1.18 }, // low obsidian ridges flanking the middle lane
+  { ...wall(-1.6, 9.0, -4.4, 7.8), r: 0.4, height: 1.18 },
+  { ...pillar(4.6, 10.4, 0.9), height: 3.3 }, // tall basalt column clusters
+  { ...pillar(-4.6, 3.6, 0.9), height: 3.3 },
+  { ...pillar(4.2, 2.0, 0.8), height: 1.27 }, // low clusters of snapped basalt stumps
+  { ...pillar(-4.2, 12.0, 0.8), height: 1.27 },
+  { ...wall(8.0, 5.0, 7.6, 8.4), r: 0.4, height: 2.08 }, // tall bladed obsidian ridges on the wings
+  { ...wall(-8.0, 9.0, -7.6, 5.6), r: 0.4, height: 2.08 },
+];
 
-const OBSTACLES: Obstacle[] = [wall(-6, 9, -2, 5), wall(6, 5, 2, 9), pillar(8, 7, 0.9), pillar(-8, 7, 0.9)];
+/** The ridge modules' lengths in the props file (wall segment plus 2 × 0.4 m ends); walls stretch them along x. */
+const RIDGE_MODULE = { RidgeA: 3.85, RidgeB: 4.22 };
 
-const hash1 = (n: number) => {
-  const s = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-  return s - Math.floor(s);
-};
+// ---- the sculpted props, loaded once and shared by every build ---------------------------------------------------
 
-/** A basalt column (hexagonal prism, base at y = 0, `h` tall); `slant` snaps its top off at an angle. */
-function hexColumn(x: number, z: number, rt: number, rb: number, h: number, slant: number, yaw: number) {
-  const c = new THREE.CylinderGeometry(rt, rb, h, 6, 1);
-  c.translate(0, h / 2, 0);
-  const p = c.attributes.position;
-  for (let i = 0; i < p.count; i++) if (p.getY(i) > h * 0.6) p.setY(i, p.getY(i) - slant * (0.5 - p.getX(i) / rt / 2));
-  return bake(c, x, 0, z, 1, 1, 1, 0, yaw, 0);
+type PropParts = { geometry: THREE.BufferGeometry; material: THREE.Material; part: string }[];
+let propsPromise: Promise<Record<string, PropParts>> | null = null;
+
+/** caldera_props.glb and caldera_backdrop.glb as {prop name: its parts (one per material)}; objects there are named
+ *  "<Prop>__<material>". Both files share material names; the first one loaded of each name (the cover's) is used. */
+function loadProps() {
+  propsPromise ??= (() => {
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+    const base = `${import.meta.env.BASE_URL}models/arenas/`;
+    return Promise.all([loader.loadAsync(`${base}caldera_props.glb`), loader.loadAsync(`${base}caldera_backdrop.glb`)]).then((files) => {
+      const out: Record<string, PropParts> = {};
+      const byPart = new Map<string, THREE.Material>();
+      const tuned = new Set<THREE.Material>();
+      for (const gltf of files) {
+        gltf.scene.updateMatrixWorld(true);
+        gltf.scene.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          const [prop, part] = m.name.split('__');
+          const geometry = m.geometry.clone().applyMatrix4(m.matrixWorld);
+          if (!byPart.has(part)) byPart.set(part, m.material as THREE.Material);
+          const material = byPart.get(part) as THREE.MeshStandardMaterial;
+          // the loader shares one material between the props: tune each once. Red-lit caldera: the crust and basalt
+          // darker than in the Blender file, the obsidian keeps its gloss, the cracks glow softly under the bloom
+          if (!tuned.has(material)) {
+            tuned.add(material);
+            if (part === 'glow') material.emissiveIntensity = 0.8;
+            else if (part === 'obsidian') {
+              material.color.multiplyScalar(0.8);
+              if (material instanceof THREE.MeshPhysicalMaterial) material.clearcoat *= 0.5;
+            } else if (part === 'basalt') material.color.multiplyScalar(0.3);
+            else material.color.multiplyScalar(0.5);
+            if (material instanceof THREE.MeshPhysicalMaterial) material.sheen = 0;
+          }
+          (out[prop] ??= []).push({ geometry, material, part });
+        });
+      }
+      return out;
+    });
+  })();
+  return propsPromise;
+}
+
+/** One instanced mesh per part of `prop`, placed by `matrices` (each build gets its own copies to dispose). */
+function instance(parts: PropParts, matrices: THREE.Matrix4[]) {
+  return parts.map(({ geometry, material }) => {
+    const m = new THREE.InstancedMesh(geometry.clone(), material.clone(), matrices.length);
+    matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
+    m.instanceMatrix.needsUpdate = true;
+    m.castShadow = m.receiveShadow = true;
+    return m;
+  });
+}
+
+// ---- the backdrop: placed props merged per material (the repeated ones instanced) --------------------------------
+
+type Place = Record<string, THREE.Matrix4[]>;
+
+/** How much darker the backdrop's rock is than the cover's: the far ring must not outshine the heroes and spells;
+ *  its lava seams keep `BACK_GLOW` of the cover's glow. */
+const BACK_DIM = 0.6;
+const BACK_GLOW = 0.9;
+
+/** Only position, normal and colour (as float RGB, white when unpainted), indexed: so all parts of a material merge. */
+function plain(src: THREE.BufferGeometry) {
+  const g = new THREE.BufferGeometry();
+  const pos = src.attributes.position;
+  g.setAttribute('position', new THREE.Float32BufferAttribute(Array.from({ length: pos.count * 3 }, (_, i) => pos.getComponent(Math.floor(i / 3), i % 3)), 3));
+  if (!src.attributes.normal) src.computeVertexNormals();
+  const nrm = src.attributes.normal;
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(Array.from({ length: nrm.count * 3 }, (_, i) => nrm.getComponent(Math.floor(i / 3), i % 3)), 3));
+  const col = src.attributes.color;
+  const c = new Float32Array(pos.count * 3).fill(1);
+  if (col) for (let i = 0; i < pos.count; i++) { c[i * 3] = col.getX(i); c[i * 3 + 1] = col.getY(i); c[i * 3 + 2] = col.getZ(i); }
+  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  g.setIndex(src.index ? Array.from(src.index.array) : Array.from({ length: pos.count }, (_, i) => i));
+  return g;
+}
+
+/** A build's own copy of a material, reading the painted vertex colours, dimmed for the backdrop. */
+function own(material: THREE.Material) {
+  const mat = material.clone() as THREE.MeshStandardMaterial;
+  mat.vertexColors = true;
+  mat.color.multiplyScalar(BACK_DIM);
+  mat.emissiveIntensity *= BACK_GLOW;
+  // the obsidian's clearcoat glints all round the rim would read as sparks
+  if (mat instanceof THREE.MeshPhysicalMaterial) mat.clearcoat = 0;
+  mat.roughness = Math.max(mat.roughness, 0.3);
+  return mat;
+}
+
+/** Places props (each by its matrices) and merges every placed part into one mesh per material. */
+function mergedBack(props: Record<string, PropParts>, place: Place) {
+  const lists = new Map<string, { material: THREE.Material; geos: THREE.BufferGeometry[] }>();
+  for (const [name, matrices] of Object.entries(place)) {
+    for (const { geometry, material, part } of props[name] ?? []) {
+      const entry = lists.get(part) ?? { material, geos: [] };
+      lists.set(part, entry);
+      const p = plain(geometry);
+      for (const mx of matrices) entry.geos.push(p.clone().applyMatrix4(mx));
+      p.dispose();
+    }
+  }
+  const meshes: THREE.Mesh[] = [];
+  for (const [part, { material, geos }] of lists) {
+    const g = mergeGeometries(geos, false);
+    geos.forEach((x) => x.dispose());
+    if (!g) throw new Error(`caldera: merging ${part} failed`);
+    const m = new THREE.Mesh(g, own(material));
+    m.receiveShadow = part !== 'glow';
+    meshes.push(m);
+  }
+  return meshes;
+}
+
+/** The repeated props (rim lip modules, small boulders): one instanced mesh per prop part. */
+function instancedBack(props: Record<string, PropParts>, place: Place) {
+  const meshes: THREE.InstancedMesh[] = [];
+  for (const [name, matrices] of Object.entries(place)) {
+    if (!matrices.length) continue;
+    for (const { geometry, material, part } of props[name] ?? []) {
+      const m = new THREE.InstancedMesh(plain(geometry), own(material), matrices.length);
+      matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
+      m.instanceMatrix.needsUpdate = true;
+      m.computeBoundingSphere();
+      m.receiveShadow = part !== 'glow';
+      meshes.push(m);
+    }
+  }
+  return meshes;
+}
+
+/** The camera rule: nothing of the backdrop more than 2 m above the floor within 26 m of the centre unless |x| > 12
+ *  (every vertex). Returns the backdrop's triangle count. */
+function checkCameraRule(meshes: THREE.Mesh[]) {
+  const v = new THREE.Vector3();
+  const mx = new THREE.Matrix4();
+  let tris = 0;
+  for (const m of meshes) {
+    const pos = m.geometry.attributes.position;
+    const inst = (m as THREE.InstancedMesh).isInstancedMesh ? (m as THREE.InstancedMesh) : null;
+    const n = inst ? inst.count : 1;
+    tris += ((m.geometry.index?.count ?? pos.count) / 3) * n;
+    for (let k = 0; k < n; k++) {
+      if (inst) inst.getMatrixAt(k, mx);
+      else mx.identity();
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(mx);
+        if (Math.abs(v.x) <= 12 && Math.hypot(v.x - RING.x, v.z - RING.z) <= 26 && v.y > 2) {
+          throw new Error(`caldera: backdrop breaks the camera rule at (${v.x.toFixed(1)}, ${v.y.toFixed(1)}, ${v.z.toFixed(1)})`);
+        }
+      }
+    }
+  }
+  return tris;
+}
+
+/** Distance from (x, z) to the surface of obstacle `o`'s capsule. */
+function distToObstacle(o: Obstacle, x: number, z: number) {
+  const dx = o.bx - o.ax;
+  const dz = o.bz - o.az;
+  const l2 = dx * dx + dz * dz;
+  const t = l2 ? Math.max(0, Math.min(1, ((x - o.ax) * dx + (z - o.az) * dz) / l2)) : 0;
+  return Math.hypot(x - o.ax - dx * t, z - o.az - dz * t) - o.r;
 }
 
 /** Basalt floor: hexagonal columns seen from above, ash drifts on top. Returns the colour map and the lava-crack emissive map. */
@@ -200,77 +379,6 @@ function lavaTexture() {
   );
 }
 
-/** Height of the far crater wall's rim at angle `a`. */
-const craterTop = (a: number) => 26 + 9 * Math.sin(2 * a + 1) + 5 * Math.sin(5 * a + 0.4) + 5 * (1 - Math.abs(Math.sin(11 * a))) + hash1(Math.round(a * 40)) * 4;
-const CRATER_R0 = 84;
-const CRATER_R1 = 96;
-
-/** The crater wall: a jagged silhouette ring leaning outward, glowing faintly at its foot. */
-function craterWall() {
-  const NA = 200;
-  const pos = new Float32Array((NA + 1) * 3 * 3);
-  const col = new Float32Array((NA + 1) * 3 * 3);
-  const cFoot = new THREE.Color(0x3a1206);
-  const cMid = new THREE.Color(0x1c0c08);
-  const cTop = new THREE.Color(0x0a0505);
-  const idx: number[] = [];
-  for (let j = 0; j <= NA; j++) {
-    const a = (j / NA) * Math.PI * 2;
-    const T = craterTop(a);
-    const levels = [
-      [CRATER_R0, -2, cFoot],
-      [(CRATER_R0 + CRATER_R1) / 2, (T - 2) / 2, cMid],
-      [CRATER_R1, T, cTop],
-    ] as const;
-    levels.forEach(([r, y, c], k) => {
-      const v = j * 3 + k;
-      pos.set([RING.x + Math.cos(a) * r, y, RING.z + Math.sin(a) * r], v * 3);
-      col.set([c.r, c.g, c.b], v * 3);
-      if (j < NA && k < 2) idx.push(v, v + 3, v + 1, v + 1, v + 3, v + 4);
-    });
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  geo.setIndex(idx);
-  return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
-}
-
-/** Dim lava falls running down the far crater wall (tapered emissive strips). */
-function lavaFalls(rnd: () => number) {
-  const pos: number[] = [];
-  const col: number[] = [];
-  const idx: number[] = [];
-  const top = new THREE.Color(0.28, 0.09, 0.02);
-  const bot = new THREE.Color(0.78, 0.27, 0.07);
-  const n = 9;
-  for (let i = 0; i < n; i++) {
-    const a = ((i + rnd() * 0.7) / n) * Math.PI * 2;
-    const T = craterTop(a);
-    const tx = -Math.sin(a);
-    const tz = Math.cos(a);
-    const base = pos.length / 3;
-    for (let k = 0; k < 4; k++) {
-      const f = k / 3; // 0 = foot, 1 = near the top
-      const y = 1 + f * (T * 0.82);
-      const r = CRATER_R0 + ((y + 2) / (T + 2)) * (CRATER_R1 - CRATER_R0) - 0.9;
-      const wob = (rnd() - 0.5) * 1.6;
-      const hw = (1.5 - f * 0.9) / 2;
-      const c = bot.clone().lerp(top, f);
-      for (const s of [-1, 1]) {
-        pos.push(RING.x + Math.cos(a) * r + tx * (wob + s * hw), y, RING.z + Math.sin(a) * r + tz * (wob + s * hw));
-        col.push(c.r, c.g, c.b);
-      }
-      if (k < 3) idx.push(base + k * 2, base + k * 2 + 1, base + k * 2 + 2, base + k * 2 + 1, base + k * 2 + 3, base + k * 2 + 2);
-    }
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  geo.setIndex(idx);
-  return new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
-}
-
 /** Cooled lava flow ribbons: dark crust strips lying slightly above the floor, with a short skirt. */
 function flowRibbons(paths: [number, number][][]) {
   const pos: number[] = [];
@@ -306,6 +414,10 @@ function flowRibbons(paths: [number, number][][]) {
   return geo;
 }
 
+/** The smoke columns rise from big vents at these angles (degrees), SMOKE_R m from the centre. */
+const SMOKE_AT = [35, 160, 265];
+const SMOKE_R = 62;
+
 const SMOKE_VERT = /* glsl */ `
   attribute float aSize;
   attribute float aAlpha;
@@ -330,7 +442,7 @@ const SMOKE_FRAG = /* glsl */ `
 export const calderaArena: ArenaDef = {
   id: 'caldera',
   name: 'Ember Caldera',
-  obstacles: OBSTACLES,
+  obstacles: CALDERA_OBSTACLES,
   stage: {
     background: 0x2a0e06,
     zenith: 0x120606,
@@ -386,171 +498,135 @@ export const calderaArena: ArenaDef = {
     const paths = [flow(35, 46), flow(215, 226), flow(150, 138), flow(330, 318)];
     g.add(new THREE.Mesh(flowRibbons(paths), new THREE.MeshStandardMaterial({ color: 0x0f0b0a, roughness: 0.55, metalness: 0.15, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 })));
 
-    // obsidian ridges: two rows of faceted blocks of varied size and lean, shards on the crest, glowing fissures,
-    // a lava seam at the base and rubble at the feet
-    const ridge: THREE.BufferGeometry[] = [];
-    const seams: THREE.BufferGeometry[] = [];
-    for (const o of OBSTACLES.slice(0, 2)) {
-      const len = Math.hypot(o.bx - o.ax, o.bz - o.az);
-      const yaw = Math.atan2(o.bx - o.ax, o.bz - o.az);
-      const sx = Math.sin(yaw);
-      const cz = Math.cos(yaw);
-      const mx = (o.ax + o.bx) / 2;
-      const mz = (o.az + o.bz) / 2;
-      const at = (t: number, across: number) => [o.ax + sx * t + cz * across, o.az + cz * t - sx * across] as const;
-      const n = Math.ceil((len + 0.7) / 0.85);
-      for (let i = 0; i < n; i++) {
-        const t = -0.35 + ((len + 0.7) * (i + 0.5)) / n;
-        const hy = 1.2 + rnd() * 1.4;
-        const [x, z] = at(t, (rnd() - 0.5) * 0.25);
-        ridge.push(bake(new THREE.IcosahedronGeometry(1, 0), x, hy * 0.3, z, 0.45 + rnd() * 0.45, hy * 0.7, 0.45 + rnd() * 0.4, (rnd() - 0.5) * 0.8, rnd() * 3, (rnd() - 0.5) * 0.8));
-      }
-      for (let i = 0; i < Math.ceil(n * 0.8); i++) {
-        const t = -0.2 + ((len + 0.4) * (i + 0.5)) / Math.ceil(n * 0.8);
-        const side = i % 2 ? 1 : -1;
-        const hy = 0.5 + rnd() * 0.7;
-        const [x, z] = at(t, side * (0.42 + rnd() * 0.15));
-        ridge.push(bake(new THREE.IcosahedronGeometry(1, 0), x, hy * 0.3, z, 0.3 + rnd() * 0.25, hy * 0.7, 0.3 + rnd() * 0.3, (rnd() - 0.5) * 0.6, rnd() * 3, (rnd() - 0.5) * 0.6));
-      }
-      for (let i = 0; i < 5; i++) {
-        const [x, z] = at(0.4 + (i / 4) * (len - 0.8) + (rnd() - 0.5) * 0.3, (rnd() - 0.5) * 0.2);
-        const h = 2.2 + rnd() * 0.6;
-        const a = rnd() * 6.28;
-        const oct = new THREE.OctahedronGeometry(1, 0);
-        oct.translate(0, 1, 0);
-        ridge.push(bake(oct, x, 0.5, z, 0.2 + rnd() * 0.08, h / 2, 0.2 + rnd() * 0.08, 0.15 * Math.sin(a), a, -0.15 * Math.cos(a)));
-      }
-      for (let i = 0; i < 18; i++) {
-        const side = rnd() < 0.5 ? -1 : 1;
-        const [x, z] = at(-0.6 + rnd() * (len + 1.2), side * (0.75 + rnd() * 0.55));
-        const s = 0.06 + rnd() * 0.16;
-        ridge.push(bake(new THREE.DodecahedronGeometry(1, 0), x, s * 0.4, z, s, s * 0.7, s, 0, rnd() * 3, 0));
-      }
-      // glowing fissures wedged between the blocks
-      for (let i = 0; i < 9; i++) {
-        const side = i % 2 ? 1 : -1;
-        const [x, z] = at(0.3 + rnd() * (len - 0.6), side * (0.52 + rnd() * 0.12));
-        const hf = 0.4 + rnd() * 0.7;
-        seams.push(bake(new THREE.BoxGeometry(0.05, hf, 0.07 + rnd() * 0.06), x, 0.5 + hf / 2 + rnd() * 0.4, z, 1, 1, 1, 0, yaw + (rnd() - 0.5) * 0.5, (rnd() - 0.5) * 0.5));
-      }
-      for (const side of [-1, 1]) {
-        seams.push(bake(new THREE.BoxGeometry(0.1, 0.07, len + 0.9), mx + cz * 1.0 * side, 0.05, mz - sx * 1.0 * side, 1, 1, 1, 0, yaw, 0));
-      }
-    }
-    const obsMat = new THREE.MeshStandardMaterial({ color: 0x0c0a12, roughness: 0.2, metalness: 0.3, flatShading: true });
-    const seamMat = new THREE.MeshBasicMaterial({ color: 0xc84a14 });
+    // Cover: the sculpted props, added when the file has loaded (the first pick waits a moment for them). The props
+    // pick by height: low / tall obsidian ridge, low / tall basalt cluster; point-symmetric twins are turned half round.
+    let disposed = false;
+    const _q = new THREE.Quaternion();
+    const _up = new THREE.Vector3(0, 1, 0);
+    const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), _q.setFromAxisAngle(_up, ry), new THREE.Vector3(sx, 1, 1));
+    void loadProps().then((props) => {
+      if (disposed) return;
+      const place: Record<string, THREE.Matrix4[]> = { RidgeA: [], RidgeB: [], BasaltA: [], BasaltB: [] };
+      CALDERA_OBSTACLES.forEach((o, i) => {
+        const twin = i % 2 === 0 ? 0 : Math.PI;
+        if (o.kind === 'wall') {
+          const dx = o.bx - o.ax, dz = o.bz - o.az;
+          const name = o.height < 1.6 ? 'RidgeA' : 'RidgeB';
+          place[name].push(at((o.ax + o.bx) / 2, (o.az + o.bz) / 2, Math.atan2(-dz, dx) + twin, (Math.hypot(dx, dz) + 2 * o.r) / RIDGE_MODULE[name]));
+        } else place[o.height > 2 ? 'BasaltA' : 'BasaltB'].push(at(o.ax, o.az, 0.6 + twin));
+      });
+      for (const [name, list] of Object.entries(place)) if (props[name] && list.length) g.add(...instance(props[name], list));
+    }).catch((e) => console.warn('caldera: props failed to load', e));
 
-    // obsidian lip round the rim: low jagged blocks with molten seams in the gaps
-    const lip: THREE.BufferGeometry[] = [];
+    // the random draws of the old procedural rim lip, so the floor props below keep their places
     for (let i = 0; i < 100; i++) {
-      const a = (i / 100) * 6.283 + (rnd() - 0.5) * 0.02;
-      const r = RING.r + 0.15 + rnd() * 0.2;
-      const h = 0.15 + rnd() * 0.4;
-      const x = RING.x + Math.cos(a) * r;
-      const z = RING.z + Math.sin(a) * r;
-      if (rnd() < 0.12) {
-        const oct = new THREE.OctahedronGeometry(1, 0);
-        oct.translate(0, 1, 0);
-        lip.push(bake(oct, x, 0.02, z, 0.18, 0.35 + rnd() * 0.3, 0.18, 0, -a, (rnd() - 0.5) * 0.4));
-      } else {
-        lip.push(bake(new THREE.DodecahedronGeometry(1, 0), x, h * 0.35, z, 0.18 + rnd() * 0.12, h, 0.3 + rnd() * 0.3, 0, -a, (rnd() - 0.5) * 0.5));
-      }
+      rnd(); rnd(); rnd();
+      const n = rnd() < 0.12 ? 2 : 3;
+      for (let k = 0; k < n; k++) rnd();
     }
-    const lipSeams: THREE.BufferGeometry[] = [];
-    for (let i = 0; i < 26; i++) {
-      const a0 = rnd() * 6.283;
-      const arc = new THREE.RingGeometry(RING.r - 0.04, RING.r + 0.08, 6, 1, a0, 0.08 + rnd() * 0.18);
-      arc.rotateX(-Math.PI / 2);
-      arc.translate(RING.x, 0.045, RING.z);
-      lipSeams.push(arc);
-    }
+    for (let i = 0; i < 52; i++) rnd();
 
-    // basalt column clusters: dark grey hexagonal prisms, varied heights, some snapped off, ash on top
-    const cols: THREE.BufferGeometry[] = [];
-    const ash: THREE.BufferGeometry[] = [];
-    const column = (x: number, z: number, r: number, h: number, slant: number) => {
-      cols.push(hexColumn(x, z, r * 0.92, r, h, slant, rnd() * 3));
-      if (rnd() < 0.65) ash.push(bake(new THREE.SphereGeometry(1, 6, 3), x, h - slant * 0.05, z, r * 0.95, 0.07 + rnd() * 0.05, r * 0.95, 0, rnd() * 3, 0));
-    };
-    for (const o of OBSTACLES.slice(2)) {
-      column(o.ax, o.az, 0.4, 3.5, 0);
-      for (let k = 0; k < 6; k++) {
-        const a = (k / 6) * Math.PI * 2 + 0.3 + (rnd() - 0.5) * 0.3;
-        const broken = rnd() < 0.4;
-        column(o.ax + Math.cos(a) * 0.62, o.az + Math.sin(a) * 0.62, 0.28 + rnd() * 0.1, 1.2 + rnd() * 2.0, broken ? 0.3 + rnd() * 0.4 : 0);
-      }
-      for (let k = 0; k < 4; k++) {
-        const a = (k / 4) * Math.PI * 2 + 0.8 + rnd() * 0.4;
-        column(o.ax + Math.cos(a) * 0.98, o.az + Math.sin(a) * 0.98, 0.22 + rnd() * 0.06, 0.35 + rnd() * 0.55, rnd() < 0.5 ? 0.2 : 0);
-      }
-    }
-    const colMesh = merged(cols, new THREE.MeshStandardMaterial({ color: 0x2a2522, roughness: 0.9, flatShading: true }));
-    const ashMesh = merged(ash, new THREE.MeshStandardMaterial({ color: 0x3a3532, roughness: 1, flatShading: true }));
-
-    // floor props: small rocks and low ash mounds (all < 0.3 m, clear of both starts)
+    // floor props: small rocks and low ash mounds (all < 0.3 m, clear of both starts and the cover)
     const pebbles: THREE.BufferGeometry[] = [];
     for (let i = 0; i < 70; i++) {
       const a = rnd() * 6.283;
       const r = Math.sqrt(rnd()) * 11.2;
       const x = RING.x + Math.cos(a) * r;
       const z = RING.z + Math.sin(a) * r;
-      if (nearStart(x, z, 2.2)) continue;
+      if (nearStart(x, z, 2.2) || CALDERA_OBSTACLES.some((o) => distToObstacle(o, x, z) < 0.5)) continue;
       const s = 0.06 + rnd() * 0.16;
       pebbles.push(bake(new THREE.DodecahedronGeometry(1, 0), x, s * 0.35, z, s, s * 0.7, s * 0.9, 0, rnd() * 3, 0));
     }
     const mounds: THREE.BufferGeometry[] = [];
     const moundAt = (x: number, z: number) => {
-      if (nearStart(x, z, 2.5)) return;
+      if (nearStart(x, z, 2.5) || CALDERA_OBSTACLES.some((o) => distToObstacle(o, x, z) < 0.6)) return;
       mounds.push(bake(new THREE.SphereGeometry(1, 8, 4), x, 0.02, z, 0.7 + rnd() * 0.9, 0.05 + rnd() * 0.07, 0.5 + rnd() * 0.6, 0, rnd() * 3, 0));
     };
-    for (const o of OBSTACLES) moundAt(o.ax + (rnd() - 0.5) * 2, o.az + 1.2 + rnd() * 0.6), moundAt(o.bx + (rnd() - 0.5) * 2, o.bz - 1.2 - rnd() * 0.6);
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 12; i++) {
       const a = rnd() * 6.283;
       const r = 8.5 + rnd() * 2.8;
       moundAt(RING.x + Math.cos(a) * r, RING.z + Math.sin(a) * r);
     }
 
-    // low basalt blocks on the apron, jagged rock spires far out (tall ones all beyond 36 m)
-    const blocks: THREE.BufferGeometry[] = [];
-    for (let i = 0; i < 14; i++) {
-      const a = rnd() * 6.283;
-      const r = 15 + rnd() * 5;
-      const s = 0.4 + rnd() * 0.7;
-      blocks.push(bake(new THREE.DodecahedronGeometry(1, 0), RING.x + Math.cos(a) * r, s * 0.3, RING.z + Math.sin(a) * r, s, s * 0.7, s * 0.9, 0, rnd() * 3, 0));
-    }
-    const spires: THREE.BufferGeometry[] = [];
-    for (let i = 0; i < 14; i++) {
-      const a = (i / 14) * 6.283 + rnd() * 0.25;
-      const r = 36 + rnd() * 24;
-      const cx = RING.x + Math.cos(a) * r;
-      const cz = RING.z + Math.sin(a) * r;
-      for (let k = 0; k < 3; k++) {
-        const h = (k ? 4 : 8) + rnd() * (k ? 5 : 11);
-        spires.push(
-          bake(new THREE.ConeGeometry(0.9 + rnd() * 1.6, h, 5), cx + (k ? (rnd() - 0.5) * 6 : 0), h / 2 - 1, cz + (k ? (rnd() - 0.5) * 6 : 0), 1, 1, 1, (rnd() - 0.5) * 0.3, rnd() * 3, (rnd() - 0.5) * 0.3),
-        );
-      }
-    }
-    const rockMat = new THREE.MeshStandardMaterial({ color: 0x241a17, roughness: 0.95, flatShading: true });
     g.add(
-      merged(ridge, obsMat),
-      mergedFlat(seams, seamMat),
-      merged(lip, obsMat),
-      mergedFlat(lipSeams, seamMat),
-      colMesh,
-      ashMesh,
       merged(pebbles, new THREE.MeshStandardMaterial({ color: 0x2c2724, roughness: 0.9, flatShading: true })),
       merged(mounds, new THREE.MeshStandardMaterial({ color: 0x2c2826, roughness: 1 })),
-      merged(blocks, rockMat),
-      merged(spires, rockMat),
     );
 
-    // backdrop: crater wall with lava falls, smoke columns with a faint red glow under them
-    g.add(craterWall(), lavaFalls(rnd));
+    // ---- backdrop -------------------------------------------------------------------------------------------
+    // Sculpted props from blender/arenas/caldera_backdrop.py, placed (seeded): a jagged obsidian lip round the ring
+    // edge, basalt prism clusters, cooled-lava boulders and small vents on the apron, lava-crusted spires standing
+    // in the lake, big vents under the smoke columns and the crater wall (segments with thin lava falls) round it
+    // all. Taller than 2 m only beyond 26 m from the centre or at |x| > 12 (with the prop's reach as margin), and none
+    // at the overview camera (16, 27); checked on every vertex when the props load.
+    const brnd = seeded(5151);
+    const polar = (r: number, a: number) => [RING.x + Math.cos(a) * r, RING.z + Math.sin(a) * r] as const;
+    const back: Place = {}, reps: Place = {};
+    const put = (into: Place, name: string, x: number, z: number, ry: number, s = 1, sink = 0.05) =>
+      (into[name] ??= []).push(new THREE.Matrix4().compose(new THREE.Vector3(x, -sink * s, z), new THREE.Quaternion().setFromAxisAngle(_up, ry), new THREE.Vector3(s, s, s)));
+    const taken: { x: number; z: number; r: number }[] = [];
+    const free = (x: number, z: number, r: number) => taken.every((t) => Math.hypot(t.x - x, t.z - z) > t.r + r);
+    const tallOk = (x: number, z: number, reach: number) =>
+      (Math.abs(x - RING.x) - reach > 12.5 || Math.hypot(x - RING.x, z - RING.z) - reach > 26.5) && Math.hypot(x - 16, z - 27) > 9 + reach;
+    /** `count` props of `names` (in turn) between radii r0 and r1, `room` apart (times the scale); `reach` > 0 marks
+     *  a tall prop (its radius per unit scale). */
+    const scatter = (into: Place, names: string[], count: number, r0: number, r1: number, room: number, s0: number, s1: number, reach = 0, sink = 0.05) => {
+      for (let tries = 0, n = 0; n < count && tries < count * 40; tries++) {
+        const [x, z] = polar(r0 + (r1 - r0) * Math.sqrt(brnd()), brnd() * Math.PI * 2);
+        const s = s0 + (s1 - s0) * brnd();
+        if (reach && !tallOk(x, z, reach * s)) continue;
+        if (!free(x, z, room * s)) continue;
+        put(into, names[n % names.length], x, z, brnd() * Math.PI * 2, s, sink);
+        taken.push({ x, z, r: room * s });
+        n++;
+      }
+    };
+    // the rim lip: 30 modules round the ring edge, their shards leaning outward (local +Y in Blender = -z here);
+    // the taller module (1.24 m) stays away from the low check camera at (9, 16)
+    for (let i = 0; i < 30; i++) {
+      const a = (i / 30) * Math.PI * 2 + (brnd() - 0.5) * 0.04;
+      const [x, z] = polar(12.55, a);
+      const tall = i % 3 === 1 && Math.abs(Math.atan2(Math.sin(a - Math.PI / 4), Math.cos(a - Math.PI / 4))) > 0.4;
+      (reps[tall ? 'LipB' : 'LipA'] ??= []).push(
+        new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(_up, Math.atan2(-Math.cos(a), -Math.sin(a))),
+          new THREE.Vector3(0.95 + brnd() * 0.15, 1.0 + brnd() * 0.25, 1)),
+      );
+    }
+    // vents under the three smoke columns (big, in the lake) and three small ones on the apron (under 2 m)
+    for (const d of SMOKE_AT) {
+      const [x, z] = polar(SMOKE_R, (d * Math.PI) / 180);
+      put(back, 'Vent', x, z, brnd() * 6.28, 2.6, 0.1);
+      taken.push({ x, z, r: 5 });
+    }
+    scatter(back, ['Vent'], 3, 16.5, 20.5, 2.0, 0.8, 1.0);
+    // tall prism clusters only on the sides (|x| > 12) or out in the lake, low outcrops and boulders all round
+    scatter(back, ['Prisms'], 2, 15, 21.5, 2.2, 0.9, 1.1, 2.2);
+    scatter(back, ['Prisms'], 1, 27, 34, 2.2, 1.0, 1.3, 2.2);
+    scatter(back, ['PrismsLow'], 6, 14.5, 21.5, 1.8, 0.85, 1.15);
+    scatter(back, ['Boulder'], 9, 14, 22, 1.4, 0.7, 1.5, 0, 0.08);
+    scatter(reps, ['BoulderS'], 14, 13.4, 22, 0.6, 0.7, 1.8, 0, 0.05);
+    // lava-crusted spires standing in the lake
+    scatter(back, ['SpireA', 'SpireB', 'SpireB'], 15, 32, 60, 4.5, 0.8, 1.35, 3.7, 0.1);
+    // the crater wall: 15 segments (39 m wide, scaled up: no gaps at 36 m spacing) facing the ring, front foot near r 80
+    for (let i = 0; i < 15; i++) {
+      const a = (i / 15) * Math.PI * 2 + (brnd() - 0.5) * 0.08;
+      const [x, z] = polar(86 + brnd() * 4, a);
+      put(back, i % 3 === 2 ? 'WallB' : 'WallA', x, z, Math.atan2(-Math.cos(a), -Math.sin(a)), 1.0 + brnd() * 0.3, 0.3);
+    }
+
+    void loadProps().then((props) => {
+      if (disposed) return;
+      const meshes = [...mergedBack(props, back), ...instancedBack(props, reps)];
+      const tris = checkCameraRule(meshes);
+      g.add(...meshes);
+      console.info(`caldera: backdrop ${Math.round(tris)} triangles in ${meshes.length} meshes`);
+    }).catch((e) => console.error('caldera: backdrop failed', e));
+
+    // smoke columns rising from the big vents, with a faint red glow under them
     const COLS = 3;
     const PUFFS = 9;
     const smokeN = COLS * PUFFS;
-    const sBase = [35, 160, 265].map((d) => [RING.x + Math.cos((d * Math.PI) / 180) * 62, RING.z + Math.sin((d * Math.PI) / 180) * 62]);
+    const sBase = SMOKE_AT.map((d) => [RING.x + Math.cos((d * Math.PI) / 180) * SMOKE_R, RING.z + Math.sin((d * Math.PI) / 180) * SMOKE_R]);
     const sPos = new Float32Array(smokeN * 3);
     const sSize = new Float32Array(smokeN);
     const sAlpha = new Float32Array(smokeN);
@@ -704,6 +780,7 @@ export const calderaArena: ArenaDef = {
         if (bubbles.instanceColor) bubbles.instanceColor.needsUpdate = true;
       },
       dispose() {
+        disposed = true;
         bubbles.dispose();
         disposeTree(g);
       },

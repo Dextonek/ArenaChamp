@@ -1,16 +1,25 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { pillar, type Obstacle } from '../obstacles';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { pillar, wall, type Obstacle } from '../obstacles';
 import { RING, canvasTexture, disposeTree, flatRing, seeded } from './common';
 import type { ArenaDef, ArenaStage } from './types';
 
 /**
  * Sky Ruins: a floating slate-marble platform above a sea of clouds at dusk. The tool's slab floor is hidden
  * (`hideGround`), so the platform (top surface at y 0.01, radius ~13, a crumbling edge going down ~5 m) is the only
- * floor. Six fluted columns on a hexagon are the cover (three intact with capitals, three broken, two with ivy);
- * a compass-rose inlay and worn tiles on the floor, a low broken balustrade along part of the edge, a toppled column
- * outside the ring. Clouds drift below, rocky islands with strata and hanging roots carry ruins far away, a broken
- * arch stands off to the west, a few birds circle in the distance.
+ * floor, with a compass-rose inlay and worn tiles.
+ *
+ * Cover (`SKYRUINS_OBSTACLES`): two low broken drum stacks flank the middle on the cross axis, two low balustrade
+ * fragments stand off the starts, two tall intact columns with capitals and two tall broken columns stand off the
+ * z axis, two broken arch bases (a pier with the stub of its arch, a broken pier, a heap of fallen blocks) guard the
+ * wings. Outside the ring: a broken balustrade and crumbling slate blocks along the edge, a toppled column, rock
+ * chunks hanging under the edge, floating islands with ruins on them (a ring of columns, a temple, a great broken
+ * column), the big broken arch on its islet to the west, loose rocks floating by, cloud puffs, birds.
+ * Cover and backdrop are sculpted, painted props from Blender (blender/arenas/skyruins_props.py →
+ * public/models/arenas/skyruins_props.glb and skyruins_backdrop.glb): unique placements merged into one mesh per
+ * material, the repeated edge pieces instanced.
  */
 
 const STAGE: ArenaStage = {
@@ -31,15 +40,25 @@ const STAGE: ArenaStage = {
   rimIntensity: 1.0,
 };
 
-/** Column heights (m), one per angle 0°, 60°, ... 300°. Columns 0, 2, 4 are intact (capital on top), 1, 3, 5 are broken. */
-const HEIGHTS = [4.5, 3.2, 3.8, 2.5, 4.0, 3.0];
-const INTACT = [true, false, true, false, true, false];
-const IVY = [false, true, false, true, false, true];
-const r6 = (v: number) => Math.round(v * 1e6) / 1e6;
-const OBSTACLES: Obstacle[] = HEIGHTS.map((h, i) => {
-  const a = (i * Math.PI) / 3;
-  return { ...pillar(r6(6 * Math.cos(a)), r6(7 + 6 * Math.sin(a)), 0.8), height: h };
-});
+/** Cover layout: point-symmetric about the ring centre (0, 7); checked against the rules in docs/architecture/arenas.md.
+ *  Heights are the props' measured heights (they pick the prop): 1.36 / 1.35 the drum stacks, 1.2 / 1.23 the
+ *  balustrades (both low: they stand near the z axis, where the gameplay camera looks over them), 4.28 / 4.48 the
+ *  intact columns, 3.2 / 2.86 the broken ones, 3.82 / 3.83 the arch bases. Twins follow each other. */
+export const SKYRUINS_OBSTACLES: Obstacle[] = [
+  { ...pillar(2.4, 7.0, 0.7), height: 1.36 }, // low broken drum stacks flanking the middle
+  { ...pillar(-2.4, 7.0, 0.7), height: 1.35 },
+  { ...wall(2.6, 3.8, 4.8, 3.0), height: 1.2 }, // low balustrade fragments off the starts
+  { ...wall(-2.6, 10.2, -4.8, 11.0), height: 1.23 },
+  { ...pillar(4.8, 10.0, 0.85), height: 4.28 }, // tall intact columns with capitals and ivy
+  { ...pillar(-4.8, 4.0, 0.85), height: 4.48 },
+  { ...pillar(6.6, 6.4, 0.85), height: 3.2 }, // tall broken columns
+  { ...pillar(-6.6, 7.6, 0.85), height: 2.86 },
+  { ...wall(8.9, 9.0, 7.9, 11.1), r: 0.4, height: 3.82 }, // broken arch bases on the wings
+  { ...wall(-8.9, 5.0, -7.9, 2.9), r: 0.4, height: 3.83 },
+];
+
+/** The wall modules' lengths in the props file (wall segment plus 2 × the capsule radius); walls stretch them along x. */
+const MODULE = { BalA: 3.04, BalB: 3.04, ArchA: 3.13, ArchB: 3.13 };
 
 const RADIUS_TEX = 13.4; // the platform texture covers this radius
 
@@ -57,40 +76,126 @@ const inBalustrade = (th: number, margin = 0) => {
   return BALUSTRADE.some(([a, b]) => d >= a - margin && d <= b + margin);
 };
 
-// ---- merge helper (same idea as the glade's) -------------------------------------------------------------------
-
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
-const _e = new THREE.Euler();
 const _p = new THREE.Vector3();
 const _s = new THREE.Vector3();
 const _c = new THREE.Color();
+const UP = new THREE.Vector3(0, 1, 0);
 
-interface Xf { rx?: number; ry?: number; rz?: number; sx?: number; sy?: number; sz?: number }
+// ---- the sculpted props, loaded once and shared by every build ---------------------------------------------------
 
-class Bucket {
-  geos: THREE.BufferGeometry[] = [];
-  add(src: THREE.BufferGeometry, x: number, y: number, z: number, color: number, o: Xf = {}) {
-    const g = src.index ? src.toNonIndexed() : src.clone();
-    const n = g.attributes.position.count;
-    const col = new Float32Array(n * 3);
-    _c.setHex(color);
-    for (let i = 0; i < n; i++) { col[i * 3] = _c.r; col[i * 3 + 1] = _c.g; col[i * 3 + 2] = _c.b; }
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    // Euler order YXZ: yaw is applied last, so a tilt (rx / rz) leans in the local frame and the yaw swings it round.
-    _q.setFromEuler(_e.set(o.rx ?? 0, o.ry ?? 0, o.rz ?? 0, 'YXZ'));
-    _m.compose(_p.set(x, y, z), _q, _s.set(o.sx ?? 1, o.sy ?? 1, o.sz ?? 1));
-    g.applyMatrix4(_m);
-    this.geos.push(g);
+type PropParts = { geometry: THREE.BufferGeometry; material: THREE.Material; part: string }[];
+let propsPromise: Promise<Record<string, PropParts>> | null = null;
+
+/** Brightness of each painted material in the dusk light (the Blender files are lit brighter). */
+const TUNE: Record<string, number> = { marble: 0.36, chip: 0.36, gold: 0.6, ivy: 0.45, rock: 0.55, grass: 0.45 };
+
+/** skyruins_props.glb and skyruins_backdrop.glb as {prop name: its parts (one per material)}; objects there are
+ *  named "<Prop>__<material>". Both files share material names; the first one loaded of each name is used for all. */
+function loadProps() {
+  propsPromise ??= (() => {
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+    const base = `${import.meta.env.BASE_URL}models/arenas/`;
+    return Promise.all([loader.loadAsync(`${base}skyruins_props.glb`), loader.loadAsync(`${base}skyruins_backdrop.glb`)]).then((files) => {
+      const out: Record<string, PropParts> = {};
+      const byPart = new Map<string, THREE.Material>();
+      const tuned = new Set<THREE.Material>();
+      for (const gltf of files) {
+        gltf.scene.updateMatrixWorld(true);
+        gltf.scene.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          const [prop, part] = m.name.split('__');
+          const geometry = m.geometry.clone().applyMatrix4(m.matrixWorld);
+          const own = m.material as THREE.MeshStandardMaterial;
+          if (!byPart.has(part)) byPart.set(part, own);
+          const material = byPart.get(part) as THREE.MeshStandardMaterial;
+          // the loader shares one material between the meshes that use it: tune each once
+          if (!tuned.has(material)) {
+            tuned.add(material);
+            material.color.multiplyScalar(TUNE[part] ?? 0.6);
+            // rougher gold: the sun's highlight on the thin bands bloomed into white rings
+            if (part === 'gold') material.roughness = Math.max(material.roughness, 0.5);
+            // a sheen from the Blender file would turn the stone and leaves milky under the dusk rim light
+            if (material instanceof THREE.MeshPhysicalMaterial) material.sheen = 0;
+          }
+          (out[prop] ??= []).push({ geometry, material, part });
+        });
+      }
+      return out;
+    });
+  })();
+  return propsPromise;
+}
+
+/** Only position, normal and colour (as float RGB, white when unpainted), indexed: so all parts of a material merge. */
+function plain(src: THREE.BufferGeometry) {
+  const g = new THREE.BufferGeometry();
+  const pos = src.attributes.position;
+  g.setAttribute('position', new THREE.Float32BufferAttribute(Array.from({ length: pos.count * 3 }, (_, i) => pos.getComponent(Math.floor(i / 3), i % 3)), 3));
+  if (!src.attributes.normal) src.computeVertexNormals();
+  const nrm = src.attributes.normal;
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(Array.from({ length: nrm.count * 3 }, (_, i) => nrm.getComponent(Math.floor(i / 3), i % 3)), 3));
+  const col = src.attributes.color;
+  const c = new Float32Array(pos.count * 3).fill(1);
+  if (col) for (let i = 0; i < pos.count; i++) { c[i * 3] = col.getX(i); c[i * 3 + 1] = col.getY(i); c[i * 3 + 2] = col.getZ(i); }
+  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  g.setIndex(src.index ? Array.from(src.index.array) : Array.from({ length: pos.count }, (_, i) => i));
+  return g;
+}
+
+type Place = Record<string, THREE.Matrix4[]>;
+
+/** A build's own copy of a material, reading the painted vertex colours. */
+function own(material: THREE.Material) {
+  const mat = material.clone() as THREE.MeshStandardMaterial;
+  mat.vertexColors = true;
+  return mat;
+}
+
+/** Places props (each by its matrices) and merges every placed part into one mesh per material: one draw call per
+ *  material for the group (each build gets its own geometry and material copies to dispose). */
+function merged(props: Record<string, PropParts>, place: Place, shadow: boolean) {
+  const lists = new Map<string, { material: THREE.Material; geos: THREE.BufferGeometry[] }>();
+  for (const [name, matrices] of Object.entries(place)) {
+    for (const { geometry, material, part } of props[name] ?? []) {
+      const entry = lists.get(part) ?? { material, geos: [] };
+      lists.set(part, entry);
+      const p = plain(geometry);
+      for (const mx of matrices) entry.geos.push(p.clone().applyMatrix4(mx));
+      p.dispose();
+    }
   }
-  mesh(mat: THREE.Material, shadow: boolean) {
-    const merged = mergeGeometries(this.geos, false);
-    for (const g of this.geos) g.dispose();
-    if (!merged) throw new Error('skyruins: geometry merge failed');
-    const m = new THREE.Mesh(merged, mat);
-    m.castShadow = m.receiveShadow = shadow;
-    return m;
+  const meshes: THREE.Mesh[] = [];
+  for (const [part, { material, geos }] of lists) {
+    const g = mergeGeometries(geos, false);
+    geos.forEach((x) => x.dispose());
+    if (!g) throw new Error(`skyruins: merging ${part} failed`);
+    const m = new THREE.Mesh(g, own(material));
+    m.castShadow = shadow && part !== 'ivy';
+    m.receiveShadow = true;
+    meshes.push(m);
   }
+  return meshes;
+}
+
+/** The repeated small props (edge balustrade, slate blocks, hanging rocks): one instanced mesh per prop part. */
+function instanced(props: Record<string, PropParts>, place: Place, shadow: boolean) {
+  const meshes: THREE.InstancedMesh[] = [];
+  for (const [name, matrices] of Object.entries(place)) {
+    if (!matrices.length) continue;
+    for (const { geometry, material } of props[name] ?? []) {
+      const m = new THREE.InstancedMesh(plain(geometry), own(material), matrices.length);
+      matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
+      m.instanceMatrix.needsUpdate = true;
+      m.computeBoundingSphere();
+      m.castShadow = shadow;
+      m.receiveShadow = true;
+      meshes.push(m);
+    }
+  }
+  return meshes;
 }
 
 // ---- textures --------------------------------------------------------------------------------------------------
@@ -258,7 +363,7 @@ function platformTexture() {
       const a = rnd() * Math.PI * 2, r = 2.6 + rnd() * 8.2;
       const hx = Math.cos(a) * r, hz = Math.sin(a) * r;
       if (Math.hypot(hx, hz - 6) < 3.2 || Math.hypot(hx, hz + 6) < 3.2) continue;
-      if (OBSTACLES.some((o) => Math.hypot(hx - o.ax, hz - (o.az - 7)) < 2.2)) continue;
+      if (SKYRUINS_OBSTACLES.some((o) => Math.hypot(hx - o.ax, hz - (o.az - 7)) < 2.2)) continue;
       const w = (0.5 + rnd() * 0.5) * sc, [x, y] = P(r, a);
       const rot = rnd() * 3;
       const poly: [number, number][] = [];
@@ -399,202 +504,25 @@ function skirtGeometry() {
   return flat;
 }
 
-/**
- * A fluted column shaft from y 0.3 to `h`. A broken one has a tilted, jagged top (functions of the angle: the seam
- * stays closed); an intact one has a flat top, ready for a capital.
- */
-function shaftGeometry(h: number, phase: number, broken: boolean) {
-  const g = new THREE.CylinderGeometry(0.72, 0.8, h - 0.3, 40, 1);
-  const p = g.attributes.position;
-  const half = (h - 0.3) / 2;
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), z = p.getZ(i);
-    let y = p.getY(i);
-    const th = Math.atan2(z, x), rad = Math.hypot(x, z);
-    const k = 1 - 0.05 * (0.5 + 0.5 * Math.cos(12 * th));
-    p.setX(i, x * k);
-    p.setZ(i, z * k);
-    if (broken && y > 0) y -= 0.3 * (0.5 + 0.5 * Math.cos(th - phase)) + 0.12 * (0.5 + 0.5 * Math.sin(5 * th + phase * 2)) * (rad > 1e-4 ? 1 : 0.5);
-    p.setY(i, y + half + 0.3);
-  }
-  g.computeVertexNormals();
-  return g;
-}
+// ---- backdrop layout ---------------------------------------------------------------------------------------------
 
-/** Shaft radius at height y (matches `shaftGeometry`, a little inside the flutes). */
-const shaftRadius = (y: number, hs: number) => 0.8 - 0.08 * Math.min(1, Math.max(0, (y - 0.3) / (hs - 0.3)));
-
-function addColumn(marble: Bucket, gold: Bucket, ivy: Bucket, o: Obstacle, idx: number) {
-  const h = o.height, ph = idx * 1.3 + 0.4;
-  const intact = INTACT[idx];
-  const hs = intact ? h - 0.5 : h; // shaft top; an intact column adds a 0.5 m capital
-  // Base with mouldings: square plinth, a step, a torus ring.
-  marble.add(new THREE.BoxGeometry(2.05, 0.2, 2.05), o.ax, 0.1, o.az, 0x6a6a76, { ry: 0.2 * idx });
-  marble.add(new THREE.CylinderGeometry(1.0, 1.06, 0.12, 24), o.ax, 0.26, o.az, 0x72727e);
-  marble.add(new THREE.TorusGeometry(0.86, 0.08, 6, 24), o.ax, 0.36, o.az, 0x7e7e8a, { rx: Math.PI / 2 });
-  marble.add(shaftGeometry(hs, ph, !intact), o.ax, 0, o.az, 0x8a8a96, { ry: idx * 0.5 });
-  const band = (y: number, w: number) => {
-    const br = shaftRadius(y, hs) + 0.035;
-    gold.add(new THREE.CylinderGeometry(br, br, w, 24), o.ax, y, o.az, 0xffffff);
-  };
-  band(0.3 + (hs - 0.3) * 0.5, 0.14);
-  band(0.62, 0.08);
-  if (intact) {
-    band(hs - 0.28, 0.1);
-    // capital: a flaring echinus under a square abacus
-    marble.add(new THREE.CylinderGeometry(0.98, 0.74, 0.28, 24), o.ax, hs + 0.14, o.az, 0x8e8e9a, { ry: idx });
-    marble.add(new THREE.BoxGeometry(1.9, 0.22, 1.9), o.ax, hs + 0.39, o.az, 0x7e7e8a, { ry: 0.12 * idx });
-  }
-  if (IVY[idx]) {
-    // ivy winding up the shaft, a few strands hanging from the broken top
-    const leaf = new THREE.IcosahedronGeometry(0.1, 0);
-    const greens = [0x2f5a36, 0x3d6a3a, 0x24482c];
-    for (let j = 0; j < 18; j++) {
-      const y = 0.55 + (j / 18) * (hs - 0.9), a = ph + j * 0.85 + (j % 2) * 0.3;
-      const r = shaftRadius(y, hs) + 0.03;
-      ivy.add(leaf, o.ax + Math.cos(a) * r, y, o.az + Math.sin(a) * r, greens[j % 3], { sx: 1.5, sy: 0.35, sz: 1.2, ry: -a, rz: (j % 3 - 1) * 0.4 });
-    }
-    for (let j = 0; j < 3; j++) {
-      const a = ph + 1.7 + j * 2.1, r = shaftRadius(hs - 0.2, hs) + 0.03, len = 0.6 + j * 0.25;
-      ivy.add(new THREE.CylinderGeometry(0.02, 0.012, len, 4), o.ax + Math.cos(a) * r, hs - 0.2 - len / 2, o.az + Math.sin(a) * r, 0x2a4a2a);
-      ivy.add(leaf, o.ax + Math.cos(a) * r, hs - 0.2 - len, o.az + Math.sin(a) * r, 0x3d6a3a, { sx: 1.4, sy: 0.4, sz: 1.2, ry: -a });
-    }
-  }
-  // rubble round the foot, beyond the capsule
-  const rnd = seeded(100 + idx);
-  for (let k = 0; k < 3; k++) {
-    const a = rnd() * Math.PI * 2, d = 1.3 + rnd() * 0.5;
-    marble.add(new THREE.BoxGeometry(0.3 + rnd() * 0.3, 0.2 + rnd() * 0.2, 0.3 + rnd() * 0.3), o.ax + Math.cos(a) * d, 0.12, o.az + Math.sin(a) * d, 0x7a7a86, { ry: rnd() * 3, rz: (rnd() - 0.5) * 0.4 });
-  }
-}
-
-/** A low, broken balustrade along the platform edge (outside the rim at 12): rails, balusters, end posts, gaps. */
-function addBalustrade(marble: Bucket) {
-  const baluster = new THREE.CylinderGeometry(0.06, 0.08, 0.5, 6);
-  const post = new THREE.BoxGeometry(0.24, 0.85, 0.24);
-  const railTop = new THREE.BoxGeometry(0.92, 0.1, 0.16);
-  const railBase = new THREE.BoxGeometry(0.92, 0.14, 0.2);
-  const STEP = 0.07;
-  const rnd = seeded(555);
-  for (const [a0, a1] of BALUSTRADE) {
-    const t0 = (a0 * Math.PI) / 180, t1 = (a1 * Math.PI) / 180;
-    let first = true;
-    for (let th = t0; th <= t1; th += STEP) {
-      if (BAL_R + 0.2 > edgeR(th) - 0.05) { first = true; continue; } // the edge has crumbled here
-      const x = RING.x + Math.cos(th) * BAL_R, z = RING.z + Math.sin(th) * BAL_R;
-      const yaw = tanYaw(th);
-      marble.add(railBase, x, 0.07, z, 0x74747f, { ry: yaw });
-      if (rnd() > 0.2) {
-        for (const k of [-1, 0, 1]) {
-          if (rnd() < 0.12) continue;
-          const tx = -Math.sin(th) * k * 0.28, tz = Math.cos(th) * k * 0.28;
-          marble.add(baluster, x + tx, 0.39, z + tz, 0x8a8a96, { ry: rnd() * 3 });
-        }
-      }
-      if (rnd() > 0.35) marble.add(railTop, x, 0.69, z, 0x7e7e8a, { ry: yaw, rz: (rnd() - 0.5) * 0.05 });
-      if (first || th + STEP > t1) {
-        marble.add(post, x, rnd() < 0.5 ? 0.42 : 0.3, z, 0x8a8a96, { ry: yaw + (rnd() - 0.5) * 0.2, rz: (rnd() - 0.5) * 0.12 });
-        first = false;
-      }
-    }
-  }
-}
-
-// ---- islands ---------------------------------------------------------------------------------------------------
-
-/** Roughens a geometry's vertices with a position hash (duplicate vertices move together, so seams stay closed). */
-function roughen(g: THREE.BufferGeometry, amp: number, seed: number) {
-  const p = g.attributes.position;
-  const hash = (x: number, y: number, z: number, k: number) => {
-    const v = Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + k * 17.3 + seed * 5.1) * 43758.5453;
-    return v - Math.floor(v);
-  };
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    if (Math.abs(x) < 1e-6 && Math.abs(z) < 1e-6) continue;
-    const k = 1 + (hash(x, y, z, 1) - 0.5) * 2 * amp;
-    p.setXYZ(i, x * k, y + (hash(x, y, z, 2) - 0.5) * amp * 1.2, z * k);
-  }
-  g.computeVertexNormals();
-  return g;
-}
-
-const STRATA = [0x3a3c4a, 0x2f3140, 0x4a4438, 0x2a2c3a, 0x4a3e3c, 0x232532, 0x1c1e29];
-
-/** A floating rocky mass: a mossy top, layered strata stepping inward, a hanging tail, roots and vines. */
-function addIsland(rock: Bucket, cx: number, cy: number, cz: number, s: number, seed: number) {
-  const rnd = seeded(900 + seed);
-  rock.add(roughen(new THREE.CylinderGeometry(s, s * 0.96, 0.6, 12, 1), 0.07, seed), cx, cy, cz, 0x34443a, { ry: seed });
-  let y = cy - 0.3;
-  let r = s * 0.96;
-  for (let k = 0; k < 5; k++) {
-    const h = s * (0.26 + rnd() * 0.12);
-    const rb = r * (0.78 - rnd() * 0.12);
-    rock.add(roughen(new THREE.CylinderGeometry(r, rb, h, 11, 1), 0.12, seed + k * 3), cx + (rnd() - 0.5) * s * 0.12, y - h / 2, cz + (rnd() - 0.5) * s * 0.12, STRATA[(k + seed) % STRATA.length], { ry: rnd() * 6 });
-    y -= h;
-    r = rb;
-  }
-  // tail: a jagged chunk hanging below, and a few loose lumps
-  rock.add(roughen(new THREE.IcosahedronGeometry(r * 0.9, 1), 0.22, seed + 9), cx, y - r * 0.5, cz, 0x1c1e29, { sy: 1.5, ry: seed });
-  for (let k = 0; k < 4; k++) {
-    const a = rnd() * 6.28, d = s * (0.5 + rnd() * 0.4);
-    rock.add(new THREE.IcosahedronGeometry(s * (0.12 + rnd() * 0.1), 0), cx + Math.cos(a) * d, cy - 0.6 - rnd() * s * 0.5, cz + Math.sin(a) * d, 0x2a2c3a, { sy: 0.8, ry: rnd() * 6, rx: rnd() * 6 });
-  }
-  // hanging roots and vines under the upper strata
-  for (let k = 0; k < 6; k++) {
-    const a = (k / 6) * Math.PI * 2 + rnd() * 0.6, d = s * (0.5 + rnd() * 0.35), len = s * (0.35 + rnd() * 0.5);
-    rock.add(new THREE.ConeGeometry(0.1 + s * 0.015, len, 4), cx + Math.cos(a) * d, cy - 0.7 - len / 2, cz + Math.sin(a) * d, k % 2 ? 0x4a3a2a : 0x3a5a34, { rx: Math.PI, rz: (rnd() - 0.5) * 0.3 });
-  }
-}
-
-/** A small colonnade with a lintel on top of an island: `n` columns along the tangent, some broken. */
-function addTemple(marble: Bucket, cx: number, topY: number, cz: number, ang: number, s: number) {
-  const yaw = tanYaw(ang);
-  const tx = -Math.sin(ang), tz = Math.cos(ang), nx = -Math.cos(ang), nz = -Math.sin(ang);
-  const n = 5, gap = (s * 1.3) / (n - 1);
-  marble.add(new THREE.BoxGeometry(s * 1.6, 0.3, s * 0.9), cx, topY + 0.15, cz, 0x6a6a76, { ry: yaw });
-  marble.add(new THREE.BoxGeometry(s * 1.7, 0.18, s * 1.0), cx, topY + 0.05, cz, 0x5a5a66, { ry: yaw });
-  for (let k = 0; k < n; k++) {
-    const t = (k - (n - 1) / 2) * gap;
-    const broken = k === 1 || k === 4;
-    const h = broken ? 1.6 + k * 0.2 : 3.4;
-    marble.add(new THREE.CylinderGeometry(0.26, 0.31, h, 10), cx + tx * t, topY + 0.3 + h / 2, cz + tz * t, 0x8a8a96, { rz: broken ? 0.05 : 0 });
-    if (!broken) marble.add(new THREE.BoxGeometry(0.8, 0.18, 0.8), cx + tx * t, topY + 0.3 + h + 0.09, cz + tz * t, 0x7e7e8a, { ry: yaw });
-    else marble.add(new THREE.CylinderGeometry(0.28, 0.28, 0.5, 10), cx + tx * (t + 0.7) + nx * 0.9, topY + 0.55, cz + tz * (t + 0.7) + nz * 0.9, 0x80808c, { rz: Math.PI / 2, ry: yaw + 0.4 });
-  }
-  // lintel across the two neighbouring intact columns
-  marble.add(new THREE.BoxGeometry(gap + 0.9, 0.34, 0.8), cx + tx * gap * 0.5, topY + 0.3 + 3.4 + 0.35, cz + tz * gap * 0.5, 0x7a7a86, { ry: yaw });
-}
-
-/** A broken arch: a full pier, a broken pier and an arc of the arch that stops short of the apex. */
-function addArch(marble: Bucket, cx: number, topY: number, cz: number) {
-  const R = 1.8, spring = topY + 3.0;
-  // the arch plane is x = cx; the piers stand at z = cz -/+ R
-  marble.add(new THREE.BoxGeometry(0.8, 3.0, 0.8), cx, topY + 1.5, cz - R, 0x8a8a96);
-  marble.add(new THREE.BoxGeometry(1.0, 0.24, 1.0), cx, topY + 0.12, cz - R, 0x6a6a76);
-  marble.add(new THREE.BoxGeometry(0.8, 1.9, 0.8), cx, topY + 0.95, cz + R, 0x8a8a96, { rx: 0.03 });
-  marble.add(new THREE.BoxGeometry(1.0, 0.24, 1.0), cx, topY + 0.12, cz + R, 0x6a6a76);
-  marble.add(new THREE.TorusGeometry(R, 0.28, 8, 20, 2.3), cx, spring, cz, 0x8a8a96, { ry: Math.PI / 2 });
-  marble.add(new THREE.BoxGeometry(0.7, 0.5, 0.7), cx - 0.3, topY + 0.3, cz + R + 1.1, 0x7a7a86, { ry: 0.5, rz: 0.3 });
-  marble.add(new THREE.BoxGeometry(0.5, 0.4, 0.9), cx + 0.2, topY + 0.2, cz + 0.8, 0x7a7a86, { ry: 1.2, rz: -0.2 });
-}
-
-interface IslandSpec { rad: number; ang: number; y: number; size: number; ruin: 'columns' | 'temple' | 'arch' }
+/** Floating islands far out (all beyond 26 m): the prop, distance and angle from the centre, top height, scale. */
+interface IslandSpec { prop: 'IslandA' | 'IslandB' | 'IslandC'; rad: number; ang: number; y: number; s: number }
 const ISLANDS: IslandSpec[] = [
-  { rad: 34, ang: 0.3, y: 1, size: 5, ruin: 'columns' },
-  { rad: 44, ang: 2.5, y: -3, size: 7, ruin: 'temple' },
-  { rad: 30, ang: 3.9, y: 3, size: 4, ruin: 'columns' },
-  { rad: 48, ang: 4.7, y: -1, size: 8, ruin: 'arch' },
-  { rad: 38, ang: 5.6, y: 5, size: 5.5, ruin: 'columns' },
+  { prop: 'IslandA', rad: 34, ang: 0.3, y: 1, s: 1.1 },
+  { prop: 'IslandB', rad: 44, ang: 2.5, y: -3, s: 1.15 },
+  { prop: 'IslandC', rad: 30, ang: 3.9, y: 3, s: 1.15 },
+  { prop: 'IslandA', rad: 48, ang: 4.7, y: -1, s: 1.6 },
+  { prop: 'IslandC', rad: 38, ang: 5.6, y: 5, s: 1.5 },
 ];
 
-/** The broken arch off to the west (|x| > 14), on its own small rock. */
-const ARCH_ISLET = { x: -19.5, y: -0.5, z: 8, size: 3.2 };
+/** The big broken arch off to the west (|x| > 12), on its own islet. */
+const ARCH_ISLET = { x: -19.5, y: -0.5, z: 8 };
 
 export const skyruinsArena: ArenaDef = {
   id: 'skyruins',
   name: 'Sky Ruins',
-  obstacles: OBSTACLES,
+  obstacles: SKYRUINS_OBSTACLES,
   stage: STAGE,
   hideGround: true,
   build() {
@@ -608,93 +536,85 @@ export const skyruinsArena: ArenaDef = {
     const top = new THREE.Mesh(topGeometry(), new THREE.MeshStandardMaterial({ map: platformTexture(), roughness: 0.85, metalness: 0.05 }));
     top.receiveShadow = true;
     const rimLine = flatRing(RING.r - 0.1, RING.r + 0.04, 0xc9a24a, 0.85, 0.02);
-    const rockMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.85, flatShading: true });
-    const skirt = new THREE.Mesh(skirtGeometry(), rockMat);
+    const skirt = new THREE.Mesh(skirtGeometry(), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.85, flatShading: true }));
     skirt.castShadow = skirt.receiveShadow = true;
 
-    // Broken edge blocks on the rim (not where the balustrade stands), and rock chunks hanging under the edge.
-    const edge = new Bucket();
-    const box = new THREE.BoxGeometry(1, 1, 1);
-    for (let i = 0; i < 40; i++) {
+    // Cover and backdrop: the sculpted props, added when the files have loaded (the first pick waits a moment for
+    // them). Point-symmetric twins get the A / B variant of their kind and are turned half round.
+    let disposed = false;
+    const at = (x: number, y: number, z: number, ry: number, s = 1, sx = 1, q?: THREE.Quaternion) =>
+      new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), q ?? new THREE.Quaternion().setFromAxisAngle(UP, ry), new THREE.Vector3(sx * s, s, s));
+    const fixed: Place = {}, floating: Place = {}, edge: Place = {}, drift: Place = {};
+    const put = (into: Place, name: string, m: THREE.Matrix4) => (into[name] ??= []).push(m);
+    SKYRUINS_OBSTACLES.forEach((o) => {
+      const a = o.ax + o.bx > 0;
+      const twin = a ? 0 : Math.PI;
+      const v = a ? 'A' : 'B';
+      if (o.kind === 'wall') {
+        const dx = o.bx - o.ax, dz = o.bz - o.az;
+        const name = (o.height < 2 ? 'Bal' : 'Arch') + v as keyof typeof MODULE;
+        // ArchB has its whole pier at -x: turned half round, it lands on the same end as ArchA's
+        const ry = Math.atan2(-dz, dx) + (name === 'ArchB' ? Math.PI : 0);
+        put(fixed, name, at((o.ax + o.bx) / 2, 0, (o.az + o.bz) / 2, ry, 1, (Math.hypot(dx, dz) + 2 * o.r) / MODULE[name]));
+      } else if (o.height > 4) put(fixed, `Column${v}`, at(o.ax, 0, o.az, 0.35 + twin));
+      else if (o.height > 2) put(fixed, `Broken${v}`, at(o.ax, 0, o.az, 1.2 + twin));
+      else put(fixed, `Drum${v}`, at(o.ax, 0, o.az, 0.8 + twin));
+    });
+
+    // Backdrop (seeded). The broken balustrade along the edge (1 m modules on the tangent, posts at the ends of each
+    // run, gaps where it fell); crumbling slate blocks on the rim elsewhere; two toppled columns lying along the
+    // edge; rocks hanging under the edge. Nothing taller than 2 m within 26 m of the centre unless |x| > 12.
+    const step = 1.0 / BAL_R;
+    for (const [a0, a1] of BALUSTRADE) {
+      const t0 = (a0 * Math.PI) / 180, t1 = (a1 * Math.PI) / 180;
+      let run = 0;
+      for (let th = t0; th <= t1; th += step) {
+        const ok = BAL_R + 0.2 < edgeR(th) - 0.05 && rnd() > 0.12; // the edge has crumbled, or a module fell
+        const x = RING.x + Math.cos(th) * BAL_R, z = RING.z + Math.sin(th) * BAL_R;
+        if (ok) put(edge, 'BalSeg', at(x, 0, z, tanYaw(th)));
+        // a post where a run starts or ends
+        const post = ok !== run > 0 ? th - step / 2 : ok && th + step > t1 ? th + step / 2 : null;
+        if (post !== null) put(edge, 'BalPost', at(RING.x + Math.cos(post) * BAL_R, 0, RING.z + Math.sin(post) * BAL_R, tanYaw(post), rr(0.85, 1)));
+        run = ok ? run + 1 : 0;
+      }
+    }
+    for (let i = 0; i < 46; i++) {
       if (i % 7 === 3) continue; // gaps where the edge has crumbled away
-      const th = (i / 40) * Math.PI * 2 + rr(-0.03, 0.03);
+      const th = (i / 46) * Math.PI * 2 + rr(-0.03, 0.03);
       if (inBalustrade(th, 3)) continue;
-      const r = edgeR(th) - 0.3;
-      const h = rr(0.1, 0.55);
-      edge.add(box, RING.x + Math.cos(th) * r, h / 2, RING.z + Math.sin(th) * r, [0x34364a, 0x2c2e3e, 0x3c3e52][i % 3], {
-        sx: rr(0.5, 1.1), sy: h, sz: rr(0.35, 0.6), ry: -th + rr(-0.4, 0.4),
-      });
+      const r = edgeR(th) - 0.35;
+      put(edge, i % 3 ? 'EdgeA' : 'EdgeB', at(RING.x + Math.cos(th) * r, 0, RING.z + Math.sin(th) * r, -th + rr(-0.5, 0.5), rr(0.7, 1.25), rr(0.8, 1.3)));
     }
-    const ico = new THREE.IcosahedronGeometry(1, 0);
-    for (let i = 0; i < 16; i++) {
-      const th = rnd() * Math.PI * 2, s = rr(0.5, 1.3);
-      edge.add(ico, RING.x + Math.cos(th) * edgeR(th) * 0.9, rr(-3.4, -0.7), RING.z + Math.sin(th) * edgeR(th) * 0.9, 0x24262f, { sx: s, sy: s * 0.8, sz: s, ry: rnd() * 6, rx: rnd() * 6 });
+    for (const deg of [256, 112]) {
+      const a = (deg * Math.PI) / 180, r = 12.6;
+      put(fixed, 'Toppled', at(RING.x + Math.cos(a) * r, 0, RING.z + Math.sin(a) * r, tanYaw(a) + 0.1));
     }
-    const edgeMesh = edge.mesh(rockMat, true);
+    for (let i = 0; i < 18; i++) {
+      const th = (i / 18) * Math.PI * 2 + rr(-0.1, 0.1), s = rr(0.9, 1.8);
+      const r = edgeR(th) * rr(0.82, 0.92);
+      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(rr(-0.4, 0.4), rnd() * 6.28, rr(-0.4, 0.4)));
+      put(edge, i % 2 ? 'ChunkA' : 'ChunkB', at(RING.x + Math.cos(th) * r, rr(-3.6, -1.6), RING.z + Math.sin(th) * r, 0, s, 1, q));
+    }
 
-    // Columns, the balustrade, fallen drums and a toppled column outside the ring, the gold bands, the ivy.
-    const marble = new Bucket(), gold = new Bucket(), ivy = new Bucket();
-    OBSTACLES.forEach((o, i) => addColumn(marble, gold, ivy, o, i));
-    addBalustrade(marble);
-    const drum = new THREE.CylinderGeometry(0.5, 0.5, 0.9, 16);
-    [108, 195, 340].forEach((deg, i) => {
-      const a = (deg * Math.PI) / 180, r = 12.55 + (i % 3) * 0.12;
-      marble.add(drum, RING.x + Math.cos(a) * r, 0.5, RING.z + Math.sin(a) * r, 0x80808c, { rz: Math.PI / 2, ry: rr(0, 6) });
-    });
-    // a toppled column: three drums in a line along the edge, a capital and fragments
-    {
-      const a = (256 * Math.PI) / 180, yaw = tanYaw(a), r = 12.65;
-      const tx = -Math.sin(a), tz = Math.cos(a);
-      for (let k = 0; k < 3; k++) {
-        const t = (k - 1) * 1.0 + (k === 2 ? 0.12 : 0);
-        marble.add(drum, RING.x + Math.cos(a) * (r + (k === 2 ? 0.1 : 0)) + tx * t, 0.5, RING.z + Math.sin(a) * (r + (k === 2 ? 0.1 : 0)) + tz * t, 0x80808c, { rz: Math.PI / 2, ry: yaw + (k === 2 ? 0.15 : 0) });
-      }
-      marble.add(new THREE.CylinderGeometry(0.98, 0.74, 0.28, 20), RING.x + Math.cos(a) * (r + 0.15) + tx * 2.0, 0.42, RING.z + Math.sin(a) * (r + 0.15) + tz * 2.0, 0x8e8e9a, { rz: Math.PI / 2, ry: yaw });
-      marble.add(new THREE.BoxGeometry(1.9, 0.22, 1.9), RING.x + Math.cos(a) * (r + 0.1) + tx * 2.8, 0.12, RING.z + Math.sin(a) * (r + 0.1) + tz * 2.8, 0x7e7e8a, { ry: yaw + 0.5, rz: 0.1 });
-      for (let k = 0; k < 5; k++) {
-        const t = rr(-2, 3.4);
-        marble.add(box, RING.x + Math.cos(a) * (r + rr(-0.2, 0.3)) + tx * t, 0.1, RING.z + Math.sin(a) * (r + rr(-0.2, 0.3)) + tz * t, 0x7a7a86, { sx: rr(0.2, 0.45), sy: rr(0.15, 0.3), sz: rr(0.2, 0.4), ry: rr(0, 3) });
-      }
+    // Far floating islands with ruins, the broken arch islet to the west, loose rocks floating nearer (they bob).
+    for (const is of ISLANDS) {
+      put(floating, is.prop, at(RING.x + Math.cos(is.ang) * is.rad, is.y, RING.z + Math.sin(is.ang) * is.rad, is.ang * 2.3, is.s));
     }
-    const marbleMat = new THREE.MeshStandardMaterial({ color: 0x8a8a96, vertexColors: true, roughness: 0.7, metalness: 0.05 });
-    const marbleMesh = marble.mesh(marbleMat, true);
-    const goldMesh = gold.mesh(new THREE.MeshStandardMaterial({ color: 0x8a6a2a, roughness: 0.4, metalness: 0.8, emissive: 0x2a1a04, emissiveIntensity: 0.6 }), true);
-    const ivyMesh = ivy.mesh(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9 }), false);
+    put(floating, 'FarArch', at(ARCH_ISLET.x, ARCH_ISLET.y, ARCH_ISLET.z, 0.15));
+    for (let i = 0; i < 14; i++) {
+      const a = rnd() * Math.PI * 2, d = rr(17, 26), s = rr(0.4, 1.1);
+      const x = RING.x + Math.cos(a) * d, z = RING.z + Math.sin(a) * d;
+      if (Math.hypot(x - ARCH_ISLET.x, z - ARCH_ISLET.z) < 6) continue; // keep the arch islet clear
+      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(rnd() * 6, rnd() * 6, rnd() * 6));
+      put(drift, i % 2 ? 'ChunkA' : 'ChunkB', at(x, rr(-4, 0.5), z, 0, s, 1, q));
+    }
 
-    // Far floating islands (rocky, layered, with ruins), the broken arch off to the west, loose debris near the platform.
     const floaters = new THREE.Group();
-    const islandRock = new Bucket(), islandMarble = new Bucket();
-    ISLANDS.forEach((is, i) => {
-      const cx = RING.x + Math.cos(is.ang) * is.rad, cz = RING.z + Math.sin(is.ang) * is.rad;
-      const s = is.size;
-      addIsland(islandRock, cx, is.y, cz, s, i + 1);
-      const topY = is.y + 0.3;
-      if (is.ruin === 'temple') addTemple(islandMarble, cx, topY, cz, is.ang, s);
-      else if (is.ruin === 'arch') {
-        addArch(islandMarble, cx, topY, cz);
-        const n = 2;
-        for (let k = 0; k < n; k++) {
-          const a = is.ang + Math.PI + k * 2.4, d = s * 0.5, h = rr(1.8, 3);
-          islandMarble.add(new THREE.CylinderGeometry(0.3, 0.36, h, 10), cx + Math.cos(a) * d, topY + h / 2, cz + Math.sin(a) * d, 0x8a8a96, { rz: rr(-0.06, 0.06) });
-        }
-      } else {
-        const n = 3 + Math.floor(rnd() * 3);
-        for (let k = 0; k < n; k++) {
-          const a = (k / n) * Math.PI * 2 + rr(-0.3, 0.3), d = s * 0.5;
-          const h = rr(1.8, 3.6);
-          islandMarble.add(new THREE.CylinderGeometry(0.3, 0.36, h, 10), cx + Math.cos(a) * d, topY + h / 2, cz + Math.sin(a) * d, 0x8a8a96, { rz: rr(-0.06, 0.06) });
-          if (k === 0) islandMarble.add(new THREE.BoxGeometry(d * 1.1, 0.35, 0.6), cx + Math.cos(a) * d * 0.4, topY + h + 0.15, cz + Math.sin(a) * d * 0.4, 0x7a7a86, { ry: -a + Math.PI / 2 });
-        }
-      }
-    });
-    addIsland(islandRock, ARCH_ISLET.x, ARCH_ISLET.y, ARCH_ISLET.z, ARCH_ISLET.size, 7);
-    addArch(islandMarble, ARCH_ISLET.x, ARCH_ISLET.y + 0.3, ARCH_ISLET.z);
-    for (let i = 0; i < 12; i++) {
-      const a = rnd() * Math.PI * 2, d = rr(17, 26), s = rr(0.3, 0.9);
-      if (Math.cos(a) < -0.7 && Math.abs(Math.sin(a) * d) < 6) continue; // keep the arch islet clear
-      islandRock.add(ico, RING.x + Math.cos(a) * d, rr(-4, 0.5), RING.z + Math.sin(a) * d, 0x2b2d3a, { sx: s, sy: s * 0.8, sz: s, ry: rnd() * 6, rx: rnd() * 6 });
-    }
-    floaters.add(islandRock.mesh(rockMat, false), islandMarble.mesh(marbleMat, false));
+    void loadProps().then((props) => {
+      if (disposed) return;
+      g.add(...merged(props, fixed, true), ...instanced(props, edge, true));
+      floaters.add(...merged(props, floating, false), ...instanced(props, drift, false));
+    }).catch((e) => console.warn('skyruins: props failed to load', e));
 
     // Sea of clouds: an opaque layer 6 m below and a wispy layer above it that the platform's underside pokes through.
     const seaTex = keep(cloudTexture(1024, 9, true, 12));
@@ -748,7 +668,7 @@ export const skyruinsArena: ArenaDef = {
       birdSpec.forEach((b, i) => {
         const ang = b.ang + time * b.speed, dir = Math.sign(b.speed);
         _p.set(RING.x + Math.cos(ang) * b.rad, b.y + Math.sin(time * 0.3 + b.ph) * 0.8, RING.z + Math.sin(ang) * b.rad);
-        _q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-Math.sin(ang) * dir, Math.cos(ang) * dir));
+        _q.setFromAxisAngle(UP, Math.atan2(-Math.sin(ang) * dir, Math.cos(ang) * dir));
         _m.compose(_p, _q, _s.set(b.size, Math.sin(time * b.flap + b.ph), b.size));
         birds.setMatrixAt(i, _m);
       });
@@ -756,7 +676,7 @@ export const skyruinsArena: ArenaDef = {
     };
     placeBirds(0);
 
-    g.add(sea, wisps, skirt, top, rimLine, edgeMesh, marbleMesh, goldMesh, ivyMesh, floaters, birds);
+    g.add(sea, wisps, skirt, top, rimLine, floaters, birds);
 
     return {
       group: g,
@@ -768,6 +688,7 @@ export const skyruinsArena: ArenaDef = {
         placeBirds(time);
       },
       dispose() {
+        disposed = true;
         // Sprites are not meshes, so disposeTree skips them.
         for (const m of mats) m.dispose();
         for (const t of textures) t.dispose();

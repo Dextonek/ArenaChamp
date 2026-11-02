@@ -58,6 +58,11 @@ export class Hero {
   private rest = new Map<BoneName, THREE.Quaternion>();
   /** The model's `sway_*` chains (none on a model without them). */
   readonly sway: SwayChain[] = [];
+  /**
+   * 0..1, how much of the figure below the knees hangs from the thighs: a long robe or skirt (1) rather than legs in
+   * trousers (0). A robe tears open on a long stride, so the walk shortens it.
+   */
+  robe = 0;
   /** Every material with its loaded colour and emissive, for `setFlash`. */
   private mats: { m: THREE.MeshStandardMaterial; color: THREE.Color; emissive: THREE.Color }[] = [];
   /** Hand-local rotation that turns the hand's frame into the weapon frame (calibrated on load). */
@@ -106,6 +111,7 @@ export class Hero {
       });
       for (const [k, b] of this.bones) this.rest.set(k, b.quaternion.clone());
       this.collectSway(scene);
+      this.robe = this.measureRobe(scene);
       this.root.add(scene);
       this.calibrate();
       this.loaded = true;
@@ -131,6 +137,32 @@ export class Hero {
     this.gripOffset.copy(handQ).invert().multiply(want);
     this.root.position.copy(saved.p);
     this.root.rotation.copy(saved.r);
+  }
+
+  /** Share of the skinned vertices below the knees that mostly follow a thigh (see `robe`). */
+  private measureRobe(scene: THREE.Object3D) {
+    const thighs = [this.bones.get('thighL'), this.bones.get('thighR')], shin = this.bones.get('shinL');
+    if (!thighs[0] || !thighs[1] || !shin) return 0;
+    scene.updateMatrixWorld(true);
+    const kneeY = shin.getWorldPosition(new THREE.Vector3()).y, v = new THREE.Vector3();
+    let below = 0, onThigh = 0;
+    scene.traverse((o) => {
+      const mesh = o as THREE.SkinnedMesh;
+      if (!mesh.isSkinnedMesh) return;
+      const pos = mesh.geometry.getAttribute('position'), si = mesh.geometry.getAttribute('skinIndex');
+      const sw = mesh.geometry.getAttribute('skinWeight');
+      if (!pos || !si || !sw) return;
+      const ids = thighs.map((b) => mesh.skeleton.bones.indexOf(b!));
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(mesh.matrixWorld);
+        if (v.y > kneeY - 0.05) continue;
+        below++;
+        let w = 0;
+        for (let k = 0; k < 4; k++) if (ids.includes(si.getComponent(i, k))) w += sw.getComponent(i, k);
+        if (w > 0.4) onThigh++;
+      }
+    });
+    return below ? Math.min(1, Math.max(0, (onThigh / below - 0.1) / 0.3)) : 0;
   }
 
   /** Groups the `sway_<chain>_<n>` bones into chains ordered by `n` (root first). */

@@ -102,14 +102,21 @@ const clamp = (v: number, m: number) => Math.max(-m, Math.min(m, v));
 /** Exponential approach factor for a rate per second. */
 const ease = (dt: number, rate: number) => 1 - Math.exp(-dt * rate);
 
+/** A bump of 1 at phase 0 (wrapped round the cycle), falling to 0 at ±`hw` radians. */
+const pulse = (x: number, hw: number) => {
+  const a = Math.atan2(Math.sin(x), Math.cos(x));
+  return Math.abs(a) < hw ? Math.cos((a / hw) * Math.PI / 2) ** 2 : 0;
+};
+
 /** A damped pendulum per sway chain: pitch (swings forward / back) and roll (side to side). */
 interface Spring { p: number; r: number; vp: number; vr: number }
 
 /**
  * A hero's rigged figure standing in for a capsule figure (the player's caster in hero mode, the opponent in a duel).
  * `setModel(url, at, kit)` swaps the model (cached per url); `follow(...)` every frame places it and poses it,
- * procedurally on the shared rig: breathing and weight shift at rest, a speed-scaled walk with hip and chest
- * counter-turn, leaning into turns and starts, the basic attack's swing, a wind-up / strike / settle per cast style
+ * procedurally on the shared rig: breathing, weight shift and fidgets at rest, a speed-scaled walk-to-jog (rolling
+ * feet, hip and chest counter-turn, arms swinging with the elbows following through, a level head, momentum on starts
+ * and stops; robed heroes take shorter steps), the basic attack's swing, a wind-up / strike / settle per cast style
  * (`cast`), a flinch and a tinted flash when hit (`hit`), slumps and flails under stun and knock-up, a frozen pose
  * in an ice block, and spring-driven hair, sashes and robe tails. `fall` crumples it. Add `group` to the scene.
  * Heavy heroes (high HP) plant wider and sway their chest more; fast ones lean in and run with bent arms; hammer and
@@ -137,6 +144,18 @@ export class HeroFigure {
   private moving = false;
   private walk = 0;
   private walkPhase = 0;
+  private run = 0;
+  private dirF = 1;
+  private dirS = 0;
+  private rock = 0;
+  private rockV = 0;
+  private armMo = 0;
+  private armMoV = 0;
+  /** The idle fidget playing (-1 none), its start, and when the next one may start. */
+  private fidget = -1;
+  private fidgetAt = 0;
+  private fidgetNext = 3 + Math.random() * 3;
+  private fidgetSide = 1;
   // Layers.
   private castNow: { style: CastStyle; t: number; dur: number; big: boolean } | null = null;
   private attackW = 0;
@@ -250,12 +269,27 @@ export class HeroFigure {
     this.hitV += (-150 * this.hitA - 15 * this.hitV) * dt;
     this.hitA += this.hitV * dt;
 
-    // Walk: stride rate and size follow the real speed.
+    // Walk: stride rate and size follow the real speed; turning on the spot shuffles the feet. `run` blends a walk
+    // (slowed) into a jog (full speed): longer strides, higher knees, pumping arms, more lean.
     const speed = this.vel.length();
-    this.walk += ((this.moving ? Math.min(1.15, Math.max(0.45, speed / 4)) : 0) - this.walk) * ease(dt, 8);
-    this.walkPhase += dt * (4.4 + 1.15 * speed) * (1 - 0.15 * this.heavy) * (this.walk > 0.02 ? 1 : 0);
-    const w = this.walk, s = Math.sin(this.walkPhase), c = Math.cos(this.walkPhase);
-    const bob = (Math.abs(s) * (0.05 + 0.03 * this.heavy)) * w;
+    const shuffle = this.moving ? 0 : Math.min(0.3, Math.abs(this.yawRate) * 0.1);
+    this.walk += ((this.moving ? Math.min(1.15, Math.max(0.45, speed / 4)) : shuffle) - this.walk) * ease(dt, 8);
+    this.run += (smooth(2.2, 4.6, speed) * (this.moving ? 1 : 0) - this.run) * ease(dt, 5);
+    this.walkPhase += dt * (4.4 + 1.15 * Math.max(speed, shuffle * 8)) * (1 - 0.15 * this.heavy) * (this.walk > 0.02 ? 1 : 0);
+    // Which way the legs reach, in the figure's frame (forward, left): a backpedal or a side-step.
+    const dk = ease(dt, 6), mv = speed > 0.4;
+    this.dirF += ((mv ? this.fwd / speed : 1) - this.dirF) * dk;
+    this.dirS += ((mv ? this.side / speed : 0) - this.dirS) * dk;
+    const w = this.walk, run = this.run, ph = this.walkPhase, s = Math.sin(ph), c = Math.cos(ph);
+    // Lowest just after each foot lands, highest as the body passes over the planted foot.
+    const bob = (0.035 + 0.035 * run + 0.02 * this.heavy) * w * Math.cos(2 * (ph - 0.25));
+    // Momentum springs: the chest rocks when the hero starts or stops, and on a stop the arms swing on through.
+    const sk = 85, sd = 8;
+    // Pushing off and pulling up both pitch the chest forward (a stop overshoots, then settles back).
+    this.rockV += (-sk * (this.rock - clamp(Math.abs(this.accF) * (this.accF > 0 ? 0.016 : 0.022), 0.25)) - sd * this.rockV) * dt;
+    this.rock += this.rockV * dt;
+    this.armMoV += (-sk * (this.armMo - clamp(Math.min(0, this.accF) * 0.035, 0.6)) - sd * this.armMoV) * dt;
+    this.armMo += this.armMoV * dt;
 
     // Cast timeline: wind-up ramps in, the strike snaps over 0.08 s with a little overshoot, then settles out.
     let castW = 0, antic = 0, strike = 0, over = 0, crouch = 0;
@@ -284,15 +318,19 @@ export class HeroFigure {
     f.root.position.set(pos.x, pos.y + bob - crouch - 0.06 * this.stunW, pos.z);
     f.resetPose();
 
-    // Rest: breath, weight shift, a slow look round; melee heroes keep their guard up, heavy ones plant wide.
-    const t = this.clock, breath = Math.sin(t * 1.9), shift = Math.sin(t * 0.55), rest = (1 - 0.75 * w) * (1 - busy);
-    f.rot('pelvis', AZ, 0.035 * shift * rest);
-    f.rot('chest', AX, 0.025 * breath + 0.06 * this.heavy);
-    f.rot('chest', AZ, -0.03 * shift * rest);
+    // Rest: breath, the weight on one leg (the other knee eases), a slow look round and now and then a fidget; melee
+    // heroes keep their guard up, heavy ones plant wide and breathe slow, agile ones stay light on their toes.
+    const t = this.clock, rest = (1 - 0.75 * w) * (1 - busy), still = (1 - Math.min(1, w * 3)) * (1 - busy);
+    const breath = Math.sin(t * (1.9 - 0.4 * this.heavy)), shift = Math.sin(t * 0.55);
+    const hop = 0.6 * this.agile * still * Math.abs(Math.sin(t * 3.2));
+    f.root.position.y += (0.006 * (1 + this.heavy) * breath + 0.014 * hop) * still;
+    f.rot('pelvis', AZ, 0.045 * shift * rest);
+    f.rot('chest', AX, (0.03 + 0.015 * this.heavy) * breath + 0.06 * this.heavy);
+    f.rot('chest', AZ, -0.035 * shift * rest);
     f.rot('head', AY, (0.14 * Math.sin(t * 0.37) + 0.05 * Math.sin(t * 1.13)) * rest);
-    f.rot('head', AX, 0.03 * Math.sin(t * 0.71) * rest);
-    f.rot('armL', AZ, (0.05 + 0.015 * breath) * (1 - busy));
-    f.rot('armR', AZ, (-0.05 - 0.015 * breath) * (1 - busy));
+    f.rot('head', AX, (0.03 * Math.sin(t * 0.71) - 0.015 * breath) * rest);
+    f.rot('armL', AZ, (0.05 + 0.02 * breath) * (1 - busy));
+    f.rot('armR', AZ, (-0.05 - 0.02 * breath) * (1 - busy));
     if (this.melee) {
       const g = (1 - w * 0.6) * (1 - busy);
       f.rot('armR', AX, -0.3 * g);
@@ -302,24 +340,56 @@ export class HeroFigure {
     }
     f.rot('thighL', AZ, 0.05 * this.heavy);
     f.rot('thighR', AZ, -0.05 * this.heavy);
+    const easeL = (Math.max(0, shift) * 0.8 + hop) * still, easeR = (Math.max(0, -shift) * 0.8 + hop) * still;
+    f.rot('thighL', AX, -0.07 * easeL);
+    f.rot('shinL', AX, 0.16 * easeL);
+    f.rot('footL', AX, -0.09 * easeL);
+    f.rot('thighR', AX, -0.07 * easeR);
+    f.rot('shinR', AX, 0.16 * easeR);
+    f.rot('footR', AX, -0.09 * easeR);
+    this.fidgets(f, t, still);
 
-    // Walk: legs, hip twist, chest counter-turn, arm swing; fast heroes lean in and pump bent arms.
-    const stride = 0.55 * (1 + 0.25 * this.agile - 0.1 * this.heavy);
-    f.rot('pelvis', AY, 0.12 * s * w);
-    f.rot('pelvis', AZ, 0.04 * c * w);
-    f.rot('thighL', AX, -stride * s * w);
-    f.rot('thighR', AX, stride * s * w);
-    f.rot('shinL', AX, (0.15 + 0.75 * Math.max(0, Math.sin(this.walkPhase + 0.5))) * w);
-    f.rot('shinR', AX, (0.15 + 0.75 * Math.max(0, -Math.sin(this.walkPhase + 0.5))) * w);
-    f.rot('chest', AY, -(0.14 + 0.08 * this.heavy) * s * w);
-    f.rot('chest', AX, (0.06 + 0.14 * this.agile) * w + clamp(this.accF * 0.025, 0.2));
-    f.rot('chest', AZ, clamp(-this.yawRate * 0.05 * w, 0.22));
-    f.rot('head', AY, 0.1 * s * w);
-    const armFree = 1 - Math.max(castW, this.attackW);
-    f.rot('armL', AX, 0.45 * s * w * (1 - busy * 0.5));
-    f.rot('armR', AX, -0.45 * s * w * armFree);
-    f.rot('foreL', AX, -0.75 * this.agile * w);
-    f.rot('foreR', AX, -0.75 * this.agile * w * armFree);
+    // Walk: the heel lands, the knee takes the weight, the toes push off and the knee lifts through the swing; the hips
+    // twist and drop, the chest turns against them and the head stays level; the arms swing against the legs with the
+    // elbows following through. Legs reach the way the hero moves (a backpedal, a side-step).
+    // A long robe hangs from the thighs and tears open on a long, high-kneed step: robed heroes glide with shorter ones.
+    const robe = f.robe, lift = 1 - 0.55 * robe;
+    const stride = 0.5 * (1 + 0.25 * this.agile - 0.1 * this.heavy) * (1 + 0.35 * run) * (1 - 0.4 * robe);
+    const reachF = stride * this.dirF * w, reachS = 0.5 * stride * this.dirS * w;
+    f.rot('pelvis', AY, (0.1 + 0.06 * run) * s * w * this.dirF);
+    f.rot('pelvis', AZ, 0.05 * c * w);
+    for (const [p, thigh, shin, foot] of [[ph, 'thighL', 'shinL', 'footL'], [ph + Math.PI, 'thighR', 'shinR', 'footR']] as const) {
+      const sp = Math.sin(p);
+      const knee = w * (0.1 + 0.12 * run + (0.6 + 0.55 * run) * (1 - 0.3 * this.heavy) * lift * Math.max(0, Math.cos(p + 0.2)) ** 1.5
+        + (0.14 + 0.1 * run) * lift * pulse(p - Math.PI / 2 - 0.45, 0.5)
+        // Under a robe the leading knee stays bent, so the shin hangs inside the hem instead of poking out in front.
+        + 0.55 * robe * Math.max(0, sp * this.dirF));
+      f.rot(thigh, AX, -reachF * sp);
+      // Side-steps: each leg steps out to its own side but never across the other.
+      const out = reachS * sp;
+      f.rot(thigh, AZ, thigh === 'thighL' ? Math.max(0, out) : Math.min(0, out));
+      f.rot(shin, AX, knee);
+      // Keep the sole near flat, then toes down at push-off and up at the heel strike.
+      f.rot(foot, AX, (reachF * sp - knee) * 0.75 + w * lift * (0.5 * pulse(p + Math.PI / 2 - 0.35, 0.6) - 0.28 * pulse(p - Math.PI / 2 + 0.1, 0.4)));
+    }
+    const twist = -(0.12 + 0.08 * this.heavy + 0.06 * run) * s * w * this.dirF;
+    const lean = (0.05 + 0.12 * run + 0.12 * this.agile) * w * Math.max(0, this.dirF) + this.rock;
+    f.rot('chest', AY, twist);
+    f.rot('chest', AX, lean - 0.035 * (0.5 + run) * w * Math.cos(2 * (ph - 0.25)));
+    f.rot('chest', AZ, clamp(-this.yawRate * 0.05 * w, 0.22) - 0.03 * c * w);
+    f.rot('head', AY, -0.6 * twist);
+    f.rot('head', AX, -0.5 * lean + 0.025 * w * Math.cos(2 * ph));
+    const armFree = 1 - Math.max(castW, this.attackW), freeL = 1 - busy * 0.5;
+    const pa = ph - 0.25, sa = Math.sin(pa), swingA = (0.5 + 0.3 * run + 0.1 * this.agile) * w;
+    const bend = Math.min(1.35, (0.12 + 0.45 * run + 0.6 * this.agile) * w), mo = this.armMo * (1 - busy);
+    f.rot('armL', AX, (swingA * sa + mo) * freeL);
+    f.rot('armR', AX, (-swingA * sa + mo) * armFree);
+    f.rot('armL', AZ, 0.08 * run * w * freeL);
+    f.rot('armR', AZ, -0.08 * run * w * armFree);
+    f.rot('foreL', AX, -(bend + 0.35 * w * Math.max(0, -Math.sin(pa - 0.5)) + 0.4 * Math.max(0, -mo)) * freeL);
+    f.rot('foreR', AX, -(bend + 0.35 * w * Math.max(0, Math.sin(pa - 0.5)) + 0.4 * Math.max(0, -mo)) * armFree);
+    f.rot('handL', AX, 0.18 * w * Math.sin(pa - 1.1) * freeL);
+    f.rot('handR', AX, -0.05 * w * Math.sin(pa - 1.1) * armFree);
 
     // Basic attack: melee slashes alternate arms (heavy heroes swing overhead); ranged ones flick and recoil.
     if (m && this.attackW > 0.01) {
@@ -398,6 +468,45 @@ export class HeroFigure {
     }
 
     this.swing(f, dt, w);
+  }
+
+  /**
+   * Standing still, every few seconds the hero fidgets: a look over the shoulder, a shoulder roll, or a shake of one
+   * hand (a weapon hand turns its weapon). `still` 0..1 fades it out the moment the hero moves or acts.
+   */
+  private fidgets(f: Hero, t: number, still: number) {
+    if (this.fidget < 0) {
+      if (still < 0.95 || t < this.fidgetNext) return;
+      this.fidget = Math.floor(Math.random() * 3);
+      this.fidgetAt = t;
+      this.fidgetSide = Math.random() < 0.5 ? -1 : 1;
+    }
+    const u = (t - this.fidgetAt) / 1.7;
+    if (u >= 1 || still < 0.3) {
+      this.fidget = -1;
+      this.fidgetNext = t + 4 + Math.random() * 5;
+      return;
+    }
+    const e = Math.sin(Math.PI * u) ** 2 * still, sd = this.fidgetSide;
+    if (this.fidget === 0) {
+      f.rot('pelvis', AY, 0.06 * sd * e);
+      f.rot('chest', AY, 0.22 * sd * e);
+      f.rot('head', AY, 0.55 * sd * e);
+      f.rot('head', AX, -0.06 * e);
+    } else if (this.fidget === 1) {
+      const roll = Math.sin(Math.PI * 2 * u);
+      f.rot('chest', AX, -0.1 * e);
+      f.rot('armL', AZ, (0.12 + 0.08 * roll) * e);
+      f.rot('armR', AZ, (-0.12 + 0.08 * roll) * e);
+      f.rot('head', AZ, 0.18 * sd * roll * e);
+    } else {
+      const L = sd > 0;
+      f.rot(L ? 'armL' : 'armR', AX, -0.35 * e);
+      f.rot(L ? 'foreL' : 'foreR', AX, -0.95 * e);
+      f.rot(L ? 'handL' : 'handR', AX, 0.45 * Math.sin(t * 8) * e);
+      f.rot('head', AY, (L ? 0.2 : -0.2) * e);
+      f.rot('head', AX, 0.12 * e);
+    }
   }
 
   /** Hair, sashes and robe tails: each chain a damped pendulum driven by the figure's acceleration and turns. */
@@ -495,7 +604,10 @@ export class HeroFigure {
     this.vel.set(0, 0, 0);
     this.accF = this.accS = this.fwd = this.side = this.yawRate = 0;
     this.moving = false;
-    this.walk = this.walkPhase = 0;
+    this.walk = this.walkPhase = this.run = this.dirS = 0;
+    this.dirF = 1;
+    this.rock = this.rockV = this.armMo = this.armMoV = 0;
+    this.fidget = -1;
     for (const sp of this.springs) sp.p = sp.r = sp.vp = sp.vr = 0;
     this.springs.length = 0;
     if (this.figure) {

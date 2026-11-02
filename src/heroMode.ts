@@ -8,6 +8,7 @@ import { HeroFigure, castStyle } from './heroFigure';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import { traitFor, type TraitRuntime } from './traits';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
+import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -25,7 +26,7 @@ export interface HeroModeHost {
 const HERO_SPEED = 4;
 const GREY_SLOT = 'grayscale(1) brightness(0.5)';
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
-const HOVER_PICK = 2.2; // how close to the cursor an enemy counts as hovered
+const HOVER_PICK = TOUCH ? 3.2 : 2.2; // how close to the cursor an enemy counts as hovered (a fingertip is wider)
 
 export type Target = { enemy: Enemy } | { point: THREE.Vector3 };
 
@@ -35,7 +36,7 @@ export type Target = { enemy: Enemy } | { point: THREE.Vector3 };
  * to cancel. Self-cast spells go off at once. Out-of-range targets: the hero walks into range, then casts. A fixed
  * top-down camera follows the hero (wheel zooms). Enemies keep their HP between casts and respawn.
  */
-export class HeroMode {
+export class HeroMode implements TouchTarget {
   enabled = false;
   readonly group = new THREE.Group();
 
@@ -119,6 +120,16 @@ export class HeroMode {
   private vignette: HTMLDivElement;
   private vignetteA = 0;
 
+  // Touch (src/touch.ts): the joystick's walk direction on the ground, whether a slot button is aiming (the aim
+  // point then comes from the drag, not the mouse), the camera's lead toward the walk, and fingers on the scene.
+  private joystick: Joystick | null = null;
+  private steering: THREE.Vector3 | null = null;
+  private touchAiming = false;
+  private lead = new THREE.Vector3();
+  private fingers: () => number = () => 0;
+  private attackBtn: HTMLDivElement | null = null;
+  private tipTimer = 0;
+
   constructor(private host: HeroModeHost, kit: HeroKit) {
     this.kit = kit;
     this.attackSpec = attackFor(kit);
@@ -159,7 +170,7 @@ export class HeroMode {
       `background:rgba(12,6,8,0.94);border:1px solid #4a1a22;color:#e9dcc6;font:12px/1.35 ui-sans-serif,system-ui;`;
     this.toast = document.createElement('div');
     this.toast.style.cssText =
-      'position:fixed;left:50%;bottom:150px;transform:translateX(-50%);z-index:7;pointer-events:none;opacity:0;' +
+      `position:fixed;left:50%;${TOUCH ? 'top:30%' : 'bottom:150px'};transform:translateX(-50%);z-index:7;pointer-events:none;opacity:0;` +
       'font:700 14px ui-sans-serif,system-ui;color:#ffb0b8;text-shadow:0 2px 6px #000;';
     this.vignette = document.createElement('div');
     this.vignette.style.cssText =
@@ -169,8 +180,10 @@ export class HeroMode {
 
     const dom = host.dom;
     dom.addEventListener('pointermove', (e) => this.setMouse(e));
+    if (TOUCH) this.fingers = pinchZoom(dom, this);
     dom.addEventListener('pointerdown', (e) => {
       if (!this.enabled) return;
+      if (TOUCH) { if (this.fingers() <= 1) this.tapAt(e.clientX, e.clientY); return; }
       // The click itself says where the cursor is (a click can come without a move before it).
       this.setMouse(e);
       this.updateCursor();
@@ -297,6 +310,7 @@ export class HeroMode {
     for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.hoverRing]) color(m, kit.accent);
     const shown = this.hud.style.display;
     this.hud.remove();
+    this.joystick?.el.remove();
     this.slotEls = [];
     this.hud = this.buildHud();
     this.hud.style.display = shown;
@@ -311,6 +325,9 @@ export class HeroMode {
     this.enabled = on;
     this.group.visible = on;
     this.hud.style.display = on ? 'flex' : 'none';
+    if (this.joystick) { this.joystick.release(); this.joystick.el.style.display = on ? '' : 'none'; }
+    this.steering = null;
+    this.touchAiming = false;
     this.host.arena.pickEnabled = !on;
     this.host.arena.persist = on;
     this.host.dom.style.cursor = '';
@@ -338,9 +355,15 @@ export class HeroMode {
     this.hitShake = Math.max(0, this.hitShake - dt * 0.5);
 
     this.followCamera(hero, dt);
-    this.updateCursor();
+    if (!this.touchAiming) this.updateCursor();
 
     if (this.locked) { this.pending = null; this.moveTo = null; this.clearAttack(); if (this.aiming >= 0) this.cancelAim(); }
+    // The joystick: keep a walk order a step ahead in its direction (drops the attack, like a click). A cast that
+    // walks into range or sight first goes on: the stick takes over again once it fires.
+    if (this.steering && !this.pending && !this.locked && !this.spectate && !arena.isDashing(arena.caster)) {
+      this.clearAttack();
+      this.moveTo = hero.clone().addScaledVector(this.steering, 1.5);
+    }
     this.attacker.update(dt);
     this.attackFx.update(dt);
     if (!this.pending && !this.spectate) this.updateAttack(hero);
@@ -367,6 +390,97 @@ export class HeroMode {
     this.updateHud(dt);
     const caster = arena.caster.group;
     this.figure.follow(dt, hero, caster.rotation.y, { attack: this.attacker.motion, status: this.status, held: this.heldFor > 0 });
+  }
+
+  // --- touch (TouchTarget) -----------------------------------------------------------------------------
+
+  /** A screen direction (px right, px down) as a unit ground direction, relative to how the camera looks. */
+  private screenToGround(dx: number, dy: number) {
+    const fwd = this.host.camera.getWorldDirection(new THREE.Vector3()).setY(0).normalize();
+    const right = new THREE.Vector3(-fwd.z, 0, fwd.x);
+    return right.multiplyScalar(dx).addScaledVector(fwd, -dy).normalize();
+  }
+
+  steer(dx: number, dy: number, push: number) {
+    if (!this.enabled || push < 0.15) return;
+    this.steering = this.screenToGround(dx, dy);
+  }
+
+  stopSteer() {
+    if (this.steering) this.moveTo = null;
+    this.steering = null;
+  }
+
+  tapAt(x: number, y: number) {
+    // A tap with another finger mid-aim would move the aim point (the cursor) and drop the cast: ignore it.
+    if (!this.enabled || this.touchAiming) return;
+    const r = this.host.dom.getBoundingClientRect();
+    this.mouse.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1);
+    this.updateCursor();
+    // No right button on a phone: a tap on an enemy attacks it, a tap on the ground walks there.
+    const enemy = this.enemyNearCursor();
+    if (enemy && this.attacksEnabled) this.attackOrder(enemy);
+    else this.order();
+  }
+
+  aimPress(i: number) {
+    if (!this.enabled) return false;
+    this.disarm();
+    this.aiming = -1; // beginAim toggles: start fresh
+    this.beginAim(i);
+    this.touchAiming = this.aiming === i;
+    if (this.touchAiming) this.say(this.kit.spells[i].name);
+    return this.touchAiming;
+  }
+
+  /** Aims at the nearest live enemy (a press without a drag), else a little ahead of the hero. */
+  aimAuto() {
+    if (this.aiming < 0) return;
+    const hero = this.host.arena.caster.group.position;
+    const foe = this.nearestFoe();
+    if (foe) this.cursor.set(foe.pos.x, 0, foe.pos.z);
+    else {
+      const yaw = this.host.arena.caster.group.rotation.y, r = this.kit.spells[this.aiming].range * 0.6;
+      this.cursor.set(hero.x + Math.sin(yaw) * r, 0, hero.z + Math.cos(yaw) * r);
+    }
+  }
+
+  aimDrag(dx: number, dy: number, f: number) {
+    if (this.aiming < 0) return;
+    const hero = this.host.arena.caster.group.position;
+    const d = this.screenToGround(dx, dy).multiplyScalar(Math.max(0.5, this.kit.spells[this.aiming].range * f));
+    this.cursor.set(hero.x + d.x, 0, hero.z + d.z);
+  }
+
+  aimEnd(cancel: boolean) {
+    this.touchAiming = false;
+    if (this.aiming < 0) return;
+    if (cancel) { this.cancelAim(); return; }
+    this.confirm();
+    // A single-target spell released away from any enemy: drop the aim (a finger can't hover to finish it).
+    if (this.aiming >= 0) this.cancelAim();
+  }
+
+  zoomBy(f: number) {
+    this.zoom = THREE.MathUtils.clamp(this.zoom * f, 0.55, 1.7);
+  }
+
+  private nearestFoe() {
+    const hero = this.host.arena.caster.group.position;
+    let best: ReturnType<Arena['liveFoes']>[number] | null = null, bd = Infinity;
+    for (const f of this.host.arena.liveFoes()) {
+      const d = flatDist(hero, f.pos);
+      if (d < bd) { bd = d; best = f; }
+    }
+    return best;
+  }
+
+  /** The attack button: attack the nearest live enemy until another order. */
+  private attackNearest() {
+    if (!this.enabled) return;
+    const foe = this.nearestFoe();
+    if (!foe) { this.say('No enemy'); return; }
+    if (this.attacksEnabled) this.attackOrder(foe.figure);
   }
 
   // --- figure -------------------------------------------------------------------------------------------
@@ -613,10 +727,16 @@ export class HeroMode {
     if (this.focus) hero = this.focus;
     const flip = this.flipCamera ? -1 : 1;
     const offset = CAM_OFFSET.clone().setZ(CAM_OFFSET.z * flip);
-    const want = hero.clone().setY(0).addScaledVector(offset, this.focus ? this.focusZoom : this.zoom);
+    // The field of view is vertical: a tall screen (a phone held upright) sees little to the sides, so pull back,
+    // and look further ahead so more of the ring in front of the hero is in view.
+    const fit = cam.aspect < 1.25 ? 1 + (1.25 - cam.aspect) * 0.6 : 1;
+    // Touch: the camera leads a little toward where the joystick walks.
+    this.lead.lerp(this.steering && !this.focus ? this.steering.clone().multiplyScalar(1.6) : new THREE.Vector3(), 1 - Math.exp(-3 * dt));
+    const at = hero.clone().setY(0).add(this.lead);
+    const want = at.clone().addScaledVector(offset, (this.focus ? this.focusZoom : this.zoom) * fit);
     cam.position.lerp(want, this.snapCamera ? 1 : 1 - Math.exp(-12 * dt));
     this.snapCamera = false;
-    cam.lookAt(hero.x, 0.5, hero.z - 1.5 * flip);
+    cam.lookAt(at.x, 0.5, at.z - (1.5 + (fit - 1) * 4) * flip);
   }
 
   private updateIndicators(dt: number, hero: THREE.Vector3) {
@@ -694,6 +814,7 @@ export class HeroMode {
   // --- HUD ----------------------------------------------------------------------------------------------
 
   private buildHud() {
+    if (TOUCH) return this.buildTouchHud();
     const kit = this.kit;
     // Panel tints come from the kit's accent, so each hero's bar takes its colour.
     const tint = (pct: number, base = '#060608') => `color-mix(in srgb, ${kit.accent} ${pct}%, ${base})`;
@@ -761,6 +882,89 @@ export class HeroMode {
     return root;
   }
 
+  /**
+   * The phone layout: the portrait and passive small in the top-left corner, under the duel bar; the slots in an arc
+   * around a round attack button in the bottom-right (thumb reach); the joystick on the left (src/touch.ts).
+   */
+  private buildTouchHud() {
+    const kit = this.kit;
+    const tint = (pct: number, base = '#060608') => `color-mix(in srgb, ${kit.accent} ${pct}%, ${base})`;
+    const root = document.createElement('div');
+    root.style.cssText =
+      'position:fixed;inset:0;z-index:6;display:none;pointer-events:none;user-select:none;-webkit-user-select:none;' +
+      `-webkit-touch-callout:none;font:600 12px ui-sans-serif,system-ui;color:${kit.foil};`;
+
+    const plate = document.createElement('div');
+    plate.style.cssText =
+      'position:absolute;left:calc(8px + env(safe-area-inset-left, 0px));top:calc(78px + env(safe-area-inset-top, 0px));' +
+      `display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:12px;pointer-events:auto;` +
+      `background:linear-gradient(180deg,${tint(14)}cc,${tint(5)}cc);border:1px solid ${tint(32)};`;
+    const portrait = canvasIcon(64, kit.portrait);
+    portrait.style.cssText = `width:40px;height:40px;border-radius:50%;border:2px solid ${kit.foil};`;
+    if (this.host.nextKit) portrait.addEventListener('click', () => this.host.nextKit?.());
+    plate.appendChild(portrait);
+    this.passiveEls = this.buildPassive(plate, tint);
+    root.appendChild(plate);
+
+    // The cluster's anchor is the attack button's centre.
+    const cluster = document.createElement('div');
+    cluster.style.cssText =
+      'position:absolute;width:0;height:0;right:calc(56px + env(safe-area-inset-right, 0px));' +
+      'bottom:calc(56px + env(safe-area-inset-bottom, 0px));';
+    const at = (el: HTMLElement, dx: number, dy: number, size: number) => {
+      el.style.position = 'absolute';
+      el.style.left = `${dx - size / 2}px`;
+      el.style.top = `${-dy - size / 2}px`;
+    };
+    const attack = document.createElement('div');
+    attack.style.cssText =
+      `width:80px;height:80px;border-radius:50%;pointer-events:auto;touch-action:none;display:flex;align-items:center;` +
+      `justify-content:center;font:700 34px ui-serif,Georgia,serif;color:${kit.foil};` +
+      `background:radial-gradient(circle at 50% 38%, ${tint(55)}, ${tint(18)});border:2px solid ${kit.foil};` +
+      'box-shadow:0 4px 16px rgba(0,0,0,0.6);';
+    attack.textContent = '⚔';
+    at(attack, 0, 0, 80);
+    attack.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      this.attackNearest();
+      attack.animate([{ transform: 'scale(0.9)' }, { transform: 'scale(1)' }], { duration: 160 });
+    });
+    cluster.appendChild(attack);
+    this.attackBtn = attack;
+
+    // Q, W, E on an arc around the attack button, R further out (dx right, dy up from the anchor).
+    const spots = [[-104, -16], [-86, 62], [-18, 104], [-162, 76]];
+    kit.spells.forEach((spell, i) => {
+      const ult = spell.key === 'R';
+      const size = ult ? 64 : 56;
+      const box = document.createElement('div');
+      box.style.cssText =
+        `width:${size}px;height:${size}px;border-radius:50%;overflow:hidden;pointer-events:auto;` +
+        `border:2px solid ${ult ? '#c9a24a' : tint(55)};box-shadow:0 3px 12px rgba(0,0,0,0.55)` +
+        (ult ? ',0 0 14px rgba(201,162,74,0.35);' : ';');
+      at(box, spots[i][0], spots[i][1], size);
+      const icon = canvasIcon(128, spell.icon);
+      icon.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+      const shade = document.createElement('div');
+      shade.style.cssText = 'position:absolute;inset:0;';
+      const secs = document.createElement('div');
+      secs.style.cssText =
+        `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:800 ${ult ? 20 : 17}px ` +
+        'ui-sans-serif,system-ui;color:#fff1e6;text-shadow:0 1px 4px #000;';
+      box.append(icon, shade, secs);
+      aimButton(box, i, this);
+      cluster.appendChild(box);
+      this.slotEls.push({ box, shade, secs });
+    });
+    root.appendChild(cluster);
+    document.body.appendChild(root);
+
+    this.joystick = new Joystick(this, kit.accent);
+    this.joystick.el.style.display = this.enabled ? '' : 'none';
+    document.body.appendChild(this.joystick.el);
+    return root;
+  }
+
   /** The passive slot (its name and badge, the twist in the tooltip), the resource bar and the buff row. */
   private buildPassive(root: HTMLDivElement, tint: (pct: number, base?: string) => string) {
     const trait = traitFor(this.kit.name);
@@ -780,16 +984,18 @@ export class HeroMode {
       'position:absolute;right:1px;bottom:1px;min-width:14px;padding:0 3px;border-radius:7px;background:#000a;' +
       `color:#fff1e6;font:800 10px ui-sans-serif,system-ui;text-align:center;`;
     box.append(glyph, badge);
-    box.addEventListener('mouseenter', () => {
+    // Touch: a tap shows the tooltip under the badge (the phone plate is at the top) for a few seconds.
+    box.addEventListener(TOUCH ? 'click' : 'mouseenter', () => {
       const r = box.getBoundingClientRect();
       this.tip.innerHTML = `<div style="font:700 13px ui-sans-serif,system-ui;margin-bottom:3px">${trait.passive.name} ` +
         `<span style="opacity:0.6;font-weight:600">[passive]</span></div>${trait.passive.blurb}` +
         (trait.twist ? `<div style="margin-top:6px;font-weight:700">${trait.twist.name}</div>${trait.twist.blurb}` : '');
       this.tip.style.display = 'block';
       this.tip.style.left = `${Math.max(8, r.left + r.width / 2 - 130)}px`;
-      this.tip.style.top = `${r.top - this.tip.offsetHeight - 10}px`;
+      this.tip.style.top = TOUCH ? `${r.bottom + 10}px` : `${r.top - this.tip.offsetHeight - 10}px`;
+      if (TOUCH) { clearTimeout(this.tipTimer); this.tipTimer = window.setTimeout(() => (this.tip.style.display = 'none'), 4000); }
     });
-    box.addEventListener('mouseleave', () => (this.tip.style.display = 'none'));
+    if (!TOUCH) box.addEventListener('mouseleave', () => (this.tip.style.display = 'none'));
     const label = document.createElement('div');
     label.textContent = trait.passive.name;
     label.style.cssText = `font:600 10px ui-sans-serif,system-ui;color:${kit.foil};opacity:0.85;white-space:nowrap;`;
@@ -861,6 +1067,7 @@ export class HeroMode {
     this.toastT = Math.max(0, this.toastT - dt);
     this.toast.style.opacity = String(Math.min(1, this.toastT * 3));
     // Silence and stun grey out the QWER bar; blind darkens the screen edges.
+    if (this.attackBtn) this.attackBtn.style.display = this.attacksEnabled ? 'flex' : 'none';
     const grey = this.status.cannotCast;
     for (const { box } of this.slotEls) box.style.filter = grey ? GREY_SLOT : '';
     this.vignetteA += ((this.status.blind ? 1 : 0) - this.vignetteA) * (1 - Math.exp(-dt * 8));

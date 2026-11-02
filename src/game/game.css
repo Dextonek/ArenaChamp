@@ -192,3 +192,27 @@
   .menu, .heroes, .cols, .hero-body { grid-template-columns: 1fr; }
   .top { flex-wrap: wrap; gap: 10px; }
 }
+
+/* Phones and tablets (src/touch.ts): the forfeit button moves under the duel bar, out of the bars' way; the page
+   never scrolls or zooms under a drag, and a long press doesn't open the text / image menu. */
+@media (pointer: coarse), (max-width: 760px) {
+  .forfeit { top: calc(62px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); padding: 5px 10px; font-size: 11px; }
+  .toast { top: calc(110px + env(safe-area-inset-top, 0px)); }
+}
+/* A phone held upright: a tighter menu, a smaller hero grid, and the Find match row pinned to the bottom of the
+   screen so it never scrolls out of reach. */
+@media (max-width: 600px) {
+  .screen { padding: 12px 10px 90px; }
+  .card { padding: 14px 14px; }
+  .top { padding: 8px 12px; gap: 6px; }
+  .nav { padding: 6px 9px; }
+  .picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .pick { min-width: 0; padding: 6px 2px 4px; font-size: 11px; }
+  .play-actions {
+    position: sticky; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 3; padding: 10px; margin: 14px -6px 0;
+    border-radius: 12px; background: rgba(14, 11, 16, 0.96); border: 1px solid var(--line); box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+  }
+  .play-actions .btn.big { flex: 1; padding: 12px 10px; }
+  .queue-bar { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+}
+#app, #app canvas { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }

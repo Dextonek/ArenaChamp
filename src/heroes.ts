@@ -249,4 +249,22 @@ const MODELS: Record<string, string> = {
   Tempo: 'models/heroes/chrono.glb',
 };
 
+/**
+ * The MOBA-style redesign on trial (blender/heroes/moba_figures.py): `?figs=v2` in the URL swaps these heroes'
+ * figures; without it the game keeps the current ones.
+ */
+const MODELS_V2: Record<string, string> = {
+  Brannoc: 'models/heroes/forge_v2.glb',
+  Kaia: 'models/heroes/storm_v2.glb',
+  Vesper: 'models/heroes/blood_v2.glb',
+  Isolde: 'models/heroes/frost_v2.glb',
+  Zephyr: 'models/heroes/sky_v2.glb',
+  Oblivion: 'models/heroes/void_v2.glb',
+};
+// `?figs=v2c`: the v2 heroes, with Brannoc and Kaia in the first concept sheet's shapes (a trial)
+const MODELS_V2C: Record<string, string> = { Brannoc: 'models/heroes/forge_c_v2.glb', Kaia: 'models/heroes/storm_c_v2.glb' };
+const FIGS = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('figs') : null;
+if (FIGS === 'v2' || FIGS === 'v2c') Object.assign(MODELS, MODELS_V2);
+if (FIGS === 'v2c') Object.assign(MODELS, MODELS_V2C);
+
 export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

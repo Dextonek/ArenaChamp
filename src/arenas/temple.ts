@@ -1,142 +1,210 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { DUEL_OBSTACLES, type Obstacle } from '../obstacles';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { pillar, wall, type Obstacle } from '../obstacles';
 import { DEFAULT_STAGE, RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
-import type { ArenaDef } from './types';
+import type { ArenaDef, WallState } from './types';
 
 /**
  * The Night Temple: an old moonlit temple court. A dark engraved-stone disc with a faint sun-wheel mandala and worn
- * slab joints, a low stepped curb with a gold line at the rim, four braziers outside it at the diagonals, fluted
- * columns and carved screen walls as cover (same collision as `DUEL_OBSTACLES`), a flagstone apron, and a backdrop
- * of silhouetted gate, colonnades, banners and a pale moon. Incense motes drift over the ring.
+ * slab joints, a low stepped curb with a gold line at the rim, four braziers outside it at the diagonals, a flagstone
+ * apron, and a backdrop of ruined gates, colonnades, guardian statues, obelisks, banners, rubble and a pale moon.
+ * Incense motes drift over the ring. The backdrop props come from blender/arenas/temple_backdrop.py →
+ * public/models/arenas/temple_backdrop.glb (placed below, merged per material).
+ *
+ * Cover (`TEMPLE_OBSTACLES`): a low sun altar in the middle, four angled carved screen walls round it and six fluted
+ * columns at the sides. The cover and the braziers are sculpted, painted props from Blender
+ * (blender/arenas/temple_props.py → public/models/arenas/temple_props.glb), instanced onto the obstacles.
  */
+
+/** Cover layout: point-symmetric about the ring centre (0, 7); checked against the rules in docs/architecture/arenas.md. */
+export const TEMPLE_OBSTACLES: Obstacle[] = [
+  { ...pillar(0, 7, 1.0), height: 1.45 }, // the sun altar: low, the gameplay camera looks over it
+  wall(-4.2, 3.0, -2.2, 4.4),
+  wall(4.2, 11.0, 2.2, 9.6),
+  wall(4.2, 3.0, 2.2, 4.4),
+  wall(-4.2, 11.0, -2.2, 9.6),
+  pillar(7.5, 7),
+  pillar(-7.5, 7),
+  pillar(8, 3.2),
+  pillar(-8, 10.8),
+  pillar(-8, 3.2),
+  pillar(8, 10.8),
+];
+
+/** The wall module's length in the props file (a 2.44 m segment plus 2 × 0.35 m ends); longer walls stretch it. */
+const WALL_MODULE = 3.14;
+
+// ---- the sculpted props, loaded once and shared by every build ---------------------------------------------------
+
+type PropParts = { geometry: THREE.BufferGeometry; material: THREE.Material; part: string }[];
+let propsPromise: Promise<Record<string, PropParts>> | null = null;
+
+/** temple_props.glb and temple_backdrop.glb as {prop name: its parts (one per material)}; objects there are named
+ *  "<Prop>__<material>". Both files use the same materials; the first one loaded of each name is used for all. */
+function loadProps() {
+  propsPromise ??= (() => {
+    const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+    const base = `${import.meta.env.BASE_URL}models/arenas/`;
+    return Promise.all([loader.loadAsync(`${base}temple_props.glb`), loader.loadAsync(`${base}temple_backdrop.glb`)]).then((files) => {
+      const out: Record<string, PropParts> = {};
+      const byPart = new Map<string, THREE.Material>();
+      const tuned = new Set<THREE.Material>();
+      for (const gltf of files) {
+        gltf.scene.updateMatrixWorld(true);
+        gltf.scene.traverse((o) => {
+          const m = o as THREE.Mesh;
+          if (!m.isMesh) return;
+          const [prop, part] = m.name.split('__');
+          const geometry = m.geometry.clone().applyMatrix4(m.matrixWorld);
+          if (!byPart.has(part)) byPart.set(part, m.material as THREE.Material);
+          const material = byPart.get(part) as THREE.MeshStandardMaterial;
+          // Moonlit night: the stone much darker than in the Blender file, the gold with a faint warm glow, the altar
+          // sun soft. The loader shares one material between the meshes that use it: tune each once.
+          if (!tuned.has(material)) {
+            tuned.add(material);
+            if (part === 'gold') { material.color.multiplyScalar(0.41); material.emissive.setHex(0x5a4210); material.emissiveIntensity = 0.12; }
+            else if (part === 'glow') material.emissiveIntensity = 0.55;
+            else material.color.multiplyScalar(part === 'light' ? 0.195 : 0.113);
+            // a sheen from the Blender file would turn the stone milky under the moonlit rim light
+            if (material instanceof THREE.MeshPhysicalMaterial) material.sheen = 0;
+          }
+          (out[prop] ??= []).push({ geometry, material, part });
+        });
+      }
+      return out;
+    });
+  })();
+  return propsPromise;
+}
+
+/** One instanced mesh per part of `prop`, placed by `matrices` (each build gets its own copies to dispose). */
+function instance(parts: PropParts, matrices: THREE.Matrix4[]) {
+  return parts.map(({ geometry, material }) => {
+    const m = new THREE.InstancedMesh(geometry.clone(), material.clone(), matrices.length);
+    matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
+    m.instanceMatrix.needsUpdate = true;
+    m.castShadow = m.receiveShadow = true;
+    return m;
+  });
+}
 
 const GOLD = 0xc9a24a;
 
-// ---- merge helper: transformed geometry with a vertex colour, merged into one mesh ------------------------------
-
 const _m = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
-const _e = new THREE.Euler();
 const _p = new THREE.Vector3();
 const _s = new THREE.Vector3();
-const _c = new THREE.Color();
 
-interface Xf { rx?: number; ry?: number; rz?: number; sx?: number; sy?: number; sz?: number }
+// ---- the backdrop: placed props merged per material (the repeated rubble instanced) -----------------------------
 
-class Bucket {
-  geos: THREE.BufferGeometry[] = [];
-  add(src: THREE.BufferGeometry, x: number, y: number, z: number, color: number, o: Xf = {}) {
-    const g = src.index ? src.toNonIndexed() : src.clone();
-    const n = g.attributes.position.count;
-    const col = new Float32Array(n * 3);
-    _c.setHex(color);
-    for (let i = 0; i < n; i++) { col[i * 3] = _c.r; col[i * 3 + 1] = _c.g; col[i * 3 + 2] = _c.b; }
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    _q.setFromEuler(_e.set(o.rx ?? 0, o.ry ?? 0, o.rz ?? 0));
-    _m.compose(_p.set(x, y, z), _q, _s.set(o.sx ?? 1, o.sy ?? 1, o.sz ?? 1));
-    g.applyMatrix4(_m);
-    this.geos.push(g);
+type Place = Record<string, THREE.Matrix4[]>;
+
+/** How much darker the backdrop is than the cover (it stands further out of the braziers' and the rim light). */
+const BACK_DIM = 0.7;
+
+/** Only position, normal and colour (as float RGB, white when unpainted), indexed: so all parts of a material merge. */
+function plain(src: THREE.BufferGeometry) {
+  const g = new THREE.BufferGeometry();
+  const pos = src.attributes.position;
+  g.setAttribute('position', new THREE.Float32BufferAttribute(Array.from({ length: pos.count * 3 }, (_, i) => pos.getComponent(Math.floor(i / 3), i % 3)), 3));
+  if (!src.attributes.normal) src.computeVertexNormals();
+  const nrm = src.attributes.normal;
+  g.setAttribute('normal', new THREE.Float32BufferAttribute(Array.from({ length: nrm.count * 3 }, (_, i) => nrm.getComponent(Math.floor(i / 3), i % 3)), 3));
+  const col = src.attributes.color;
+  const c = new Float32Array(pos.count * 3).fill(1);
+  if (col) for (let i = 0; i < pos.count; i++) { c[i * 3] = col.getX(i); c[i * 3 + 1] = col.getY(i); c[i * 3 + 2] = col.getZ(i); }
+  g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  g.setIndex(src.index ? Array.from(src.index.array) : Array.from({ length: pos.count }, (_, i) => i));
+  return g;
+}
+
+/** A build's own copy of a material, reading the painted vertex colours, dimmed for the backdrop. */
+function own(material: THREE.Material) {
+  const mat = material.clone() as THREE.MeshStandardMaterial;
+  mat.vertexColors = true;
+  mat.color.multiplyScalar(BACK_DIM);
+  mat.emissiveIntensity *= BACK_DIM;
+  return mat;
+}
+
+/** Places props (each by its matrices) and merges every placed part into one mesh per material. */
+function merged(props: Record<string, PropParts>, place: Place) {
+  const lists = new Map<string, { material: THREE.Material; geos: THREE.BufferGeometry[] }>();
+  for (const [name, matrices] of Object.entries(place)) {
+    for (const { geometry, material, part } of props[name] ?? []) {
+      const entry = lists.get(part) ?? { material, geos: [] };
+      lists.set(part, entry);
+      const p = plain(geometry);
+      for (const mx of matrices) entry.geos.push(p.clone().applyMatrix4(mx));
+      p.dispose();
+    }
   }
-  /** A box centred at (x, y, z). */
-  box(x: number, y: number, z: number, w: number, h: number, d: number, color: number, ry = 0) {
-    this.add(BOX, x, y, z, color, { sx: w, sy: h, sz: d, ry });
+  const meshes: THREE.Mesh[] = [];
+  for (const [part, { material, geos }] of lists) {
+    const g = mergeGeometries(geos, false);
+    geos.forEach((x) => x.dispose());
+    if (!g) throw new Error(`temple: merging ${part} failed`);
+    const m = new THREE.Mesh(g, own(material));
+    m.receiveShadow = true;
+    meshes.push(m);
   }
-  mesh(mat: THREE.Material, shadow = true) {
-    const merged = mergeGeometries(this.geos, false);
-    for (const g of this.geos) g.dispose();
-    if (!merged) throw new Error('temple: geometry merge failed');
-    const m = new THREE.Mesh(merged, mat);
-    m.castShadow = m.receiveShadow = shadow;
-    return m;
+  return meshes;
+}
+
+/** The repeated small props (rubble heaps): one instanced mesh per prop part. */
+function instanced(props: Record<string, PropParts>, place: Place) {
+  const meshes: THREE.InstancedMesh[] = [];
+  for (const [name, matrices] of Object.entries(place)) {
+    if (!matrices.length) continue;
+    for (const { geometry, material } of props[name] ?? []) {
+      const m = new THREE.InstancedMesh(plain(geometry), own(material), matrices.length);
+      matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
+      m.instanceMatrix.needsUpdate = true;
+      m.computeBoundingSphere();
+      m.receiveShadow = true;
+      meshes.push(m);
+    }
+  }
+  return meshes;
+}
+
+/** The camera rule: nothing of the backdrop above 2 m within 26 m of the centre unless |x| > 12 (every vertex). */
+function checkCameraRule(meshes: THREE.Mesh[]) {
+  const v = new THREE.Vector3();
+  const mx = new THREE.Matrix4();
+  for (const m of meshes) {
+    const pos = m.geometry.attributes.position;
+    const inst = (m as THREE.InstancedMesh).isInstancedMesh ? (m as THREE.InstancedMesh) : null;
+    for (let k = 0; k < (inst ? inst.count : 1); k++) {
+      if (inst) inst.getMatrixAt(k, mx);
+      else mx.identity();
+      for (let i = 0; i < pos.count; i++) {
+        v.fromBufferAttribute(pos, i).applyMatrix4(mx);
+        if (v.y > 2 && Math.abs(v.x) <= 12 && Math.hypot(v.x - RING.x, v.z - RING.z) <= 26) {
+          throw new Error(`temple: backdrop breaks the camera rule at (${v.x.toFixed(1)}, ${v.y.toFixed(1)}, ${v.z.toFixed(1)})`);
+        }
+      }
+    }
   }
 }
 
-const BOX = new THREE.BoxGeometry(1, 1, 1);
-
-/** A fluted shaft: an open cylinder whose odd segments are pulled in, faceted. */
-function flutedShaft(rBot: number, rTop: number, h: number, flutes: number) {
-  const seg = flutes * 2;
-  const g = new THREE.CylinderGeometry(rTop, rBot, h, seg, 1, true);
-  const pos = g.attributes.position;
-  for (let i = 0; i < pos.count; i++) {
-    if ((i % (seg + 1)) % 2 === 1) pos.setXYZ(i, pos.getX(i) * 0.9, pos.getY(i), pos.getZ(i) * 0.9);
-  }
-  const ng = g.toNonIndexed();
-  g.dispose();
-  ng.computeVertexNormals();
-  return ng;
-}
-
-// ---- cover -----------------------------------------------------------------------------------------------------
-
-const STONE = 0x4b4757;
-const STONE_DARK = 0x38343f;
-const STONE_LIGHT = 0x5a5568;
-
-function addColumn(stone: Bucket, gold: Bucket, x: number, z: number, seed: number) {
-  const rnd = seeded(seed);
-  const ry = rnd() * Math.PI;
-  const tone = rnd() * 0.03;
-  const col = (c: number) => _c.setHex(c).offsetHSL(0, 0, tone - 0.015).getHex();
-  // base: plinth 1.8 square, torus moulding
-  stone.box(x, 0.17, z, 1.8, 0.34, 1.8, col(STONE_DARK), ry);
-  stone.add(new THREE.TorusGeometry(0.74, 0.1, 6, 16), x, 0.42, z, col(STONE), { rx: Math.PI / 2 });
-  // fluted shaft 0.47 .. 3.4
-  stone.add(flutedShaft(0.74, 0.62, 2.95, 10), x, 1.94, z, col(STONE_LIGHT));
-  // gold necking band
-  gold.add(new THREE.CylinderGeometry(0.66, 0.66, 0.1, 16), x, 3.38, z, GOLD);
-  // capital: echinus, abacus, carved volutes
-  stone.add(new THREE.CylinderGeometry(0.88, 0.62, 0.34, 16), x, 3.6, z, col(STONE));
-  stone.box(x, 3.9, z, 1.7, 0.26, 1.7, col(STONE_LIGHT), ry);
-  stone.box(x, 4.1, z, 1.5, 0.1, 1.5, col(STONE_DARK), ry);
-  for (let k = 0; k < 4; k++) {
-    const a = ry + k * Math.PI / 2;
-    stone.add(new THREE.CylinderGeometry(0.11, 0.11, 0.3, 8), x + Math.cos(a) * 0.78, 3.62, z - Math.sin(a) * 0.78, col(STONE_LIGHT), { rx: Math.PI / 2, ry: a });
-  }
-}
-
-/** Rotates a local (lx, lz) offset the way a mesh with rotation.y = ry rotates it. */
-const rot = (lx: number, lz: number, ry: number) => [lx * Math.cos(ry) + lz * Math.sin(ry), -lx * Math.sin(ry) + lz * Math.cos(ry)];
-
-/** A ruined screen wall along the obstacle's segment: plinth, panels of varied height, pilasters, gold frieze. */
-function addScreenWall(stone: Bucket, gold: Bucket, o: Obstacle, seed: number) {
-  const rnd = seeded(seed);
-  const dx = o.bx - o.ax, dz = o.bz - o.az;
-  const seg = Math.hypot(dx, dz);
-  const L = seg + 2 * o.r;
-  const ry = Math.atan2(-dz, dx);
-  const cx = (o.ax + o.bx) / 2, cz = (o.az + o.bz) / 2;
-  const at = (lx: number, ly: number, lz: number): [number, number, number] => {
-    const [wx, wz] = rot(lx, lz, ry);
-    return [cx + wx, ly, cz + wz];
-  };
-  const box = (lx: number, ly: number, lz: number, w: number, h: number, d: number, c: number, target = stone) => {
-    const [x, y, z] = at(lx, ly, lz);
-    target.box(x, y, z, w, h, d, c, ry);
-  };
-  box(0, 0.2, 0, L + 0.1, 0.4, 0.86, STONE_DARK);
-  const n = Math.max(3, Math.round(L / 1.1));
-  const pw = L / n;
-  for (let i = 0; i < n; i++) {
-    const lx = -L / 2 + pw * (i + 0.5);
-    const h = i % 2 === 0 ? 1.55 + rnd() * 0.25 : 1.8 + rnd() * 0.5; // ruined: uneven panel heights
-    box(lx, 0.4 + h / 2, 0, pw - 0.04, h, 0.66, STONE);
-    // recessed carved panel, both faces
-    box(lx, 0.4 + h * 0.4, 0.31, pw * 0.6, h * 0.45, 0.06, STONE_DARK);
-    box(lx, 0.4 + h * 0.4, -0.31, pw * 0.6, h * 0.45, 0.06, STONE_DARK);
-    // gold frieze band under the cornice
-    box(lx, 0.4 + h - 0.2, 0, pw - 0.02, 0.14, 0.7, GOLD, gold);
-    box(lx, 0.4 + h + 0.04, 0, pw + 0.02, 0.1, 0.76, STONE_LIGHT);
-  }
-  // pilasters with gold caps, at both ends and between panels
-  for (let i = 0; i <= n; i += 2) {
-    const lx = -L / 2 + pw * i;
-    const lxc = THREE.MathUtils.clamp(lx, -L / 2 + 0.17, L / 2 - 0.17);
-    box(lxc, 1.3, 0, 0.34, 2.1, 0.78, STONE_LIGHT);
-    box(lxc, 2.4, 0, 0.42, 0.1, 0.84, GOLD, gold);
-  }
-}
+/** Colonnade arcs round the court: angles (degrees) and radius from the centre, number of column places. */
+const COLONNADES = [
+  { a0: -172, a1: -112, R: 30, n: 6 },
+  { a0: -70, a1: -8, R: 30, n: 6 },
+  { a0: 12, a1: 72, R: 31, n: 6 },
+  { a0: 110, a1: 168, R: 30, n: 6 },
+  { a0: -22, a1: 22, R: 22, n: 5 }, // off the z axis (|x| > 20)
+  { a0: 158, a1: 202, R: 22, n: 5 },
+];
+/** The colonnade's column height and the architrave module length in temple_backdrop.py. */
+const COL_H = 9.0;
+const ARCH_L = 6.2;
+/** Banner cloth: 1.8 × 5.5 m, hung by its top edge. */
+const BANNER_W = 1.8;
+const BANNER_H = 5.5;
 
 // ---- textures --------------------------------------------------------------------------------------------------
 
@@ -336,7 +404,8 @@ function bannerTexture() {
 export const templeArena: ArenaDef = {
   id: 'temple',
   name: 'Night Temple',
-  obstacles: DUEL_OBSTACLES,
+  obstacles: TEMPLE_OBSTACLES,
+  breakable: true,
   stage: DEFAULT_STAGE,
   build() {
     const g = new THREE.Group();
@@ -371,31 +440,102 @@ export const templeArena: ArenaDef = {
     const curbGold = flatRing(12.02, 12.14, GOLD, 0.9, 0.285);
     g.add(curb, curbGold);
 
-    // Cover
-    const stone = new Bucket();
-    const gold = new Bucket();
-    DUEL_OBSTACLES.forEach((o, i) => {
-      if (o.kind === 'pillar') addColumn(stone, gold, o.ax, o.az, 100 + i);
-      else addScreenWall(stone, gold, o, 200 + i);
-    });
-    const goldMat = new THREE.MeshStandardMaterial({ color: GOLD, vertexColors: true, roughness: 0.5, metalness: 0.5, emissive: 0x5a4210, emissiveIntensity: 0.4 });
-
     // Braziers outside the rim at the diagonals (radius 13.5, 1.15 m high)
     const braziers: { x: number; z: number }[] = [];
-    const bs = new Bucket();
-    const bg = new Bucket();
     for (let k = 0; k < 4; k++) {
       const a = Math.PI / 4 + (k * Math.PI) / 2;
-      const x = RING.x + Math.cos(a) * 13.5, z = RING.z + Math.sin(a) * 13.5;
-      braziers.push({ x, z });
-      bs.add(new THREE.CylinderGeometry(0.34, 0.4, 0.22, 10), x, 0.11, z, STONE_DARK);
-      bs.add(new THREE.CylinderGeometry(0.1, 0.14, 0.62, 8), x, 0.52, z, 0x2e2a36);
-      bs.add(new THREE.CylinderGeometry(0.46, 0.24, 0.3, 12), x, 0.98, z, 0x3a3030);
-      bg.add(new THREE.TorusGeometry(0.46, 0.035, 6, 16), x, 1.13, z, GOLD, { rx: Math.PI / 2 });
+      braziers.push({ x: RING.x + Math.cos(a) * 13.5, z: RING.z + Math.sin(a) * 13.5 });
     }
-    const brazierStone = bs.mesh(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 }));
-    const brazierGold = bg.mesh(goldMat);
-    g.add(stone.mesh(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88, metalness: 0.05 })), gold.mesh(goldMat), brazierStone, brazierGold);
+
+    // Cover and braziers: the sculpted props, added when the file has loaded (the first pick waits a moment for them)
+    let disposed = false;
+    const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(_p.set(x, 0, z), _q.setFromAxisAngle(_s.set(0, 1, 0), ry), new THREE.Vector3(sx, 1, 1));
+    const crnd = seeded(100);
+    // Breakable walls: each wall's matrix, its state, and one instanced set per look (whole, cracked, rubble). A look
+    // without its own prop in the file falls back to the whole wall leant over (cracked) or squashed low (rubble).
+    const wallIdx: number[] = []; // obstacle index -> wall instance
+    const wallBase: THREE.Matrix4[] = [];
+    const wallStates: WallState[] = [];
+    const wallSets: Record<WallState, THREE.InstancedMesh[]> = { whole: [], cracked: [], broken: [] };
+    TEMPLE_OBSTACLES.forEach((o, i) => {
+      if (o.kind !== 'wall') return;
+      const dx = o.bx - o.ax, dz = o.bz - o.az;
+      wallIdx[i] = wallBase.length;
+      wallBase.push(at((o.ax + o.bx) / 2, (o.az + o.bz) / 2, Math.atan2(-dz, dx), (Math.hypot(dx, dz) + 2 * o.r) / WALL_MODULE));
+      wallStates.push('whole');
+    });
+    const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
+    const lean = new THREE.Matrix4().makeRotationX(0.05).setPosition(0, -0.06, 0);
+    const squash = new THREE.Matrix4().makeScale(1, 0.18, 1.25);
+    const showWall = (k: number) => {
+      const state = wallStates[k];
+      for (const look of ['whole', 'cracked', 'broken'] as const) {
+        for (const m of wallSets[look]) {
+          let mx = HIDDEN;
+          if (look === state) mx = wallBase[k];
+          else if (look === 'whole' && !wallSets[state].length) mx = state === 'cracked' ? wallBase[k].clone().multiply(lean) : wallBase[k].clone().multiply(squash);
+          m.setMatrixAt(k, mx);
+          m.instanceMatrix.needsUpdate = true;
+        }
+      }
+    };
+
+    void loadProps().then((props) => {
+      if (disposed) return;
+      const columns: THREE.Matrix4[] = [], altars: THREE.Matrix4[] = [];
+      for (const o of TEMPLE_OBSTACLES) {
+        if (o.kind === 'wall') continue;
+        if (o.height < 2) altars.push(at(o.ax, o.az, 0));
+        else columns.push(at(o.ax, o.az, (crnd() - 0.5) * 0.5));
+      }
+      const pots = braziers.map((b) => at(b.x, b.z, 0));
+      for (const [name, list] of [['Column', columns], ['Altar', altars], ['Brazier', pots]] as const) {
+        if (props[name] && list.length) g.add(...instance(props[name], list));
+      }
+      for (const [look, name] of [['whole', 'Wall'], ['cracked', 'WallCracked'], ['broken', 'WallRubble']] as const) {
+        if (!props[name]) continue;
+        wallSets[look] = instance(props[name], wallBase);
+        // their bounds would be measured while hidden (zero scale) and never drawn again: no culling for these few
+        for (const m of wallSets[look]) m.frustumCulled = false;
+        g.add(...wallSets[look]);
+      }
+      wallBase.forEach((_, k) => showWall(k));
+    }).catch((e) => console.warn('temple: props failed to load', e));
+
+    // Stone chunks thrown out when a wall cracks or falls: ballistic, then lying on the floor until the round ends
+    const CHUNKS = 48;
+    const chunkMesh = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.13, 0), new THREE.MeshStandardMaterial({ color: 0x3e3a4c, roughness: 0.9 }), CHUNKS);
+    chunkMesh.castShadow = true;
+    chunkMesh.frustumCulled = false; // starts hidden (zero scale), see the wall sets
+    const chunkState = Array.from({ length: CHUNKS }, () => ({ p: new THREE.Vector3(), v: new THREE.Vector3(), spin: new THREE.Vector3(), rot: new THREE.Euler(), s: 0, live: false }));
+    for (let i = 0; i < CHUNKS; i++) chunkMesh.setMatrixAt(i, HIDDEN);
+    g.add(chunkMesh);
+    let chunkNext = 0;
+    const drnd = seeded(9);
+    const burst = (o: Obstacle, n: number) => {
+      for (let j = 0; j < n; j++) {
+        const c = chunkState[chunkNext];
+        chunkNext = (chunkNext + 1) % CHUNKS;
+        const t = drnd();
+        c.p.set(o.ax + (o.bx - o.ax) * t, 0.6 + drnd() * 1.4, o.az + (o.bz - o.az) * t);
+        c.v.set((drnd() - 0.5) * 5, 2 + drnd() * 3.5, (drnd() - 0.5) * 5);
+        c.spin.set(drnd() * 8, drnd() * 8, drnd() * 8);
+        c.s = 0.6 + drnd() * 1.3;
+        c.live = true;
+      }
+    };
+    const wallState = (index: number, state: WallState) => {
+      const k = wallIdx[index];
+      if (k === undefined) return;
+      const before = wallStates[k];
+      wallStates[k] = state;
+      if (state === 'whole' && before !== 'whole') {
+        for (let i = 0; i < CHUNKS; i++) { chunkState[i].live = false; chunkMesh.setMatrixAt(i, HIDDEN); }
+        chunkMesh.instanceMatrix.needsUpdate = true;
+      }
+      if (state !== before && state !== 'whole') burst(TEMPLE_OBSTACLES[index], state === 'broken' ? 18 : 6);
+      if (wallSets.whole.length) showWall(k);
+    };
 
     // Brazier coals + ground glow (additive, dim)
     const glowGeos: THREE.BufferGeometry[] = [];
@@ -453,120 +593,139 @@ export const templeArena: ArenaDef = {
     g.add(motes);
 
     // ---- backdrop -------------------------------------------------------------------------------------------
+    // Sculpted props from blender/arenas/temple_backdrop.py, placed (seeded). The grand ruined gates on the z axis
+    // 34 m out; colonnade arcs at 30 m (and at 22 m only off the z axis) with architraves over neighbouring whole
+    // columns; a hooded guardian statue on each side; obelisks and banner poles flanking the gates; low stair
+    // fragments, fallen drums and rubble heaps on the apron. Nothing above 2 m within 26 m of the centre unless
+    // |x| > 12 (checked on every vertex when the props load).
     const rnd = seeded(2024);
-    const sil = new Bucket();
-    const SIL = 0x2a2836;
-    const sil2 = 0x332f40;
-    const colGeo = new THREE.CylinderGeometry(0.8, 0.95, 1, 8);
-    const cols: { x: number; z: number; h: number; r: number }[] = [];
-    const banners: { x: number; z: number; y: number }[] = [];
+    const rr = (a: number, b: number) => a + (b - a) * rnd();
+    const UP = new THREE.Vector3(0, 1, 0);
+    const put3 = (into: Place, name: string, x: number, y: number, z: number, ry: number, s = 1, sx = 1) =>
+      (into[name] ??= []).push(new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromAxisAngle(UP, ry), new THREE.Vector3(sx * s, s, s)));
+    /** The turn that makes a prop's front (+z in three.js) look at the ring centre. */
+    const facing = (x: number, z: number) => Math.atan2(RING.x - x, RING.z - z);
+    const back: Place = {}, heaps: Place = {};
+    const banners: THREE.Matrix4[] = []; // each banner's top-edge frame
+    const bannerAt = (x: number, y: number, z: number, ry: number) =>
+      banners.push(new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), new THREE.Quaternion().setFromAxisAngle(UP, ry), new THREE.Vector3(1, 1, 1)));
+    /** A banner hung in front of a prop: `lx`, `ly`, `lz` in the prop's own frame (x, z turned by `ry`). */
+    const bannerOn = (x: number, z: number, ry: number, lx: number, ly: number, lz: number) =>
+      bannerAt(x + Math.cos(ry) * lx + Math.sin(ry) * lz, ly, z - Math.sin(ry) * lx + Math.cos(ry) * lz, ry);
+    const taken: { x: number; z: number; r: number }[] = [];
+    const free = (x: number, z: number, r: number) => taken.every((t) => Math.hypot(t.x - x, t.z - z) > t.r + r);
+    const claim = (x: number, z: number, r: number) => taken.push({ x, z, r });
 
-    // ruined gates, on the z axis at radius 34 (beyond 26 m)
-    const gate = (cz: number) => {
-      sil.box(-5.6, 7.5, cz, 2.4, 15, 2.4, SIL);
-      sil.box(-5.6, 0.4, cz, 3.2, 0.8, 3.2, sil2);
-      sil.box(-5.6, 15.3, cz, 3, 0.7, 3, sil2);
-      sil.box(5.6, 4.6, cz, 2.4, 9.2, 2.4, SIL); // right pillar broken
-      sil.box(5.6, 0.4, cz, 3.2, 0.8, 3.2, sil2);
-      sil.box(7.0, 9.5, cz + 0.4, 1.0, 0.7, 1.3, SIL, 0.4); // fallen-looking chunk
-      sil.box(-1.2, 14.2, cz, 8.6, 1.8, 2.2, SIL); // lintel, broken short of the right pillar
-      sil.box(-1.2, 15.5, cz, 9.4, 0.7, 2.6, sil2);
-      sil.box(-3.5, 16.7, cz, 4.5, 1.7, 1.8, SIL); // upper tier
-      sil.box(-12, 2.6, cz, 8, 5.2, 1.6, SIL); // flanking ruined walls
-      sil.box(13, 1.7, cz, 9, 3.4, 1.6, SIL);
-      sil.box(17.5, 4, cz, 2, 8, 1.6, SIL);
-    };
-    gate(RING.z - 34);
-    gate(RING.z + 34);
+    // the gates (GateB is the mirror ruin: its other pylon stands) and a banner on the whole pylon's face
+    for (const [name, cz, ry, s] of [['GateA', RING.z - 34, 0, 1], ['GateB', RING.z + 34, Math.PI, -1]] as const) {
+      put3(back, name, RING.x, 0, cz, ry);
+      bannerOn(RING.x, cz, ry, -5.6 * s, 14.3, 1.5);
+      // obelisks and banner poles flanking the stair, in front of the side walls
+      const toward = Math.sign(RING.z - cz);
+      for (const side of [-1, 1]) {
+        const ox = side * 13.5, oz = cz + toward * 7;
+        put3(back, 'Obelisk', ox, 0, oz, facing(ox, oz));
+        claim(ox, oz, 2.2);
+        const px = side * 8.4, pz = cz + toward * 5.5;
+        const pr = facing(px, pz);
+        put3(back, 'BannerPole', px, 0, pz, pr);
+        bannerOn(px, pz, pr, 0, 7.55, 0.2);
+      }
+      claim(RING.x, cz, 9);
+      claim(RING.x, cz + toward * 4.5, 7.5);
+    }
 
-    // colonnade sections along arcs
-    const sections = [
-      { a0: -172, a1: -112, R: 30, n: 7 },
-      { a0: -70, a1: -8, R: 30, n: 7 },
-      { a0: 12, a1: 72, R: 31, n: 7 },
-      { a0: 110, a1: 168, R: 30, n: 7 },
-      { a0: -22, a1: 22, R: 22, n: 5 }, // off the z axis (|x| > 12)
-      { a0: 158, a1: 202, R: 22, n: 5 },
-    ];
-    sections.forEach((sec, si) => {
-      const pts: { x: number; z: number; h: number }[] = [];
+    // a guardian statue on each side, banner poles beside it
+    for (const side of [-1, 1]) {
+      const sx = side * 17.5, sz = RING.z;
+      put3(back, 'Statue', sx, 0, sz, facing(sx, sz));
+      claim(sx, sz, 2.4);
+      for (const dz of [-4.6, 4.6]) {
+        const px = side * 15.2, pz = RING.z + dz, pr = facing(px, pz);
+        put3(back, 'BannerPole', px, 0, pz, pr);
+        bannerOn(px, pz, pr, 0, 7.55, 0.2);
+        claim(px, pz, 0.8);
+      }
+    }
+
+    // colonnades: whole columns (an architrave over each neighbouring pair, every other one with a banner) and
+    // broken ones; places that fall on a landmark stay empty
+    COLONNADES.forEach((sec, si) => {
+      let prev: { x: number; z: number; whole: boolean } | null = null;
       for (let i = 0; i < sec.n; i++) {
         const a = THREE.MathUtils.degToRad(sec.a0 + ((sec.a1 - sec.a0) * i) / (sec.n - 1));
         const x = RING.x + Math.cos(a) * sec.R, z = RING.z + Math.sin(a) * sec.R;
-        const intact = rnd() < 0.6;
-        const h = intact ? 9 : 3 + rnd() * 5;
-        pts.push({ x, z, h });
-        cols.push({ x, z, h, r: 1 });
+        if (!free(x, z, 1.3)) { prev = null; continue; }
+        const t = rnd();
+        const whole = t < 0.58;
+        put3(back, whole ? 'ColTall' : t < 0.8 ? 'ColBrokenA' : 'ColBrokenB', x, 0, z, rnd() * Math.PI * 2, 1, 1);
+        if (whole && prev?.whole) {
+          const mx = (prev.x + x) / 2, mz = (prev.z + z) / 2, ry = facing(mx, mz);
+          put3(back, 'Architrave', mx, COL_H, mz, ry, 1, Math.hypot(x - prev.x, z - prev.z) / ARCH_L);
+          if (si < 4 && i % 2 === 0) bannerOn(mx, mz, ry, 0, COL_H + 0.25, 1.05);
+        }
+        prev = { x, z, whole };
       }
-      for (let i = 0; i < pts.length - 1; i++) {
-        const A = pts[i], B = pts[i + 1];
-        if (A.h < 9 || B.h < 9) continue;
-        const len = Math.hypot(B.x - A.x, B.z - A.z);
-        sil.box((A.x + B.x) / 2, 9.6, (A.z + B.z) / 2, len + 0.6, 1.2, 1.5, sil2, Math.atan2(-(B.z - A.z), B.x - A.x));
-        if (si < 4 && i % 2 === 0) banners.push({ x: (A.x + B.x) / 2, z: (A.z + B.z) / 2, y: 9 });
+    });
+    for (const sec of COLONNADES) {
+      for (let i = 0; i < sec.n; i++) {
+        const a = THREE.MathUtils.degToRad(sec.a0 + ((sec.a1 - sec.a0) * i) / (sec.n - 1));
+        claim(RING.x + Math.cos(a) * sec.R, RING.z + Math.sin(a) * sec.R, 1.6);
       }
-    });
-    // two banners flank each gate as well
-    for (const cz of [RING.z - 34, RING.z + 34]) {
-      banners.push({ x: -1.2, z: cz + (cz < RING.z ? 1.5 : -1.5), y: 13.4 });
     }
 
-    // low rubble round the ring (< 2 m) between radius 16 and 26, a few tall broken columns only off the z axis
-    const rubble: { x: number; z: number; y: number; sx: number; sy: number; sz: number; ry: number; c: number }[] = [];
-    for (let i = 0; i < 46; i++) {
-      const a = rnd() * Math.PI * 2, r = 16 + rnd() * 10;
-      const h = 0.25 + rnd() * 1.3;
-      const w = 0.6 + rnd() * 1.6;
-      const x = RING.x + Math.cos(a) * r, z = RING.z + Math.sin(a) * r;
-      rubble.push({ x, z, y: h / 2, sx: w, sy: h, sz: w * (0.6 + rnd() * 0.6), ry: rnd() * Math.PI, c: 0x2a2634 + Math.floor(rnd() * 8) * 0x010101 });
+    // low debris on the apron (all under 2 m): stair fragments rising away from the ring, drums, rubble heaps
+    for (const deg of [-35, 35, 145, 215]) {
+      const a = THREE.MathUtils.degToRad(deg), x = RING.x + Math.cos(a) * 18.5, z = RING.z + Math.sin(a) * 18.5;
+      put3(back, 'Stairs', x, 0, z, facing(x, z) + rr(-0.15, 0.15));
+      claim(x, z, 3.8);
     }
-    for (let i = 0; i < 6; i++) {
-      const side = i % 2 === 0 ? 1 : -1;
-      const x = side * (14 + rnd() * 6), z = RING.z + (rnd() - 0.5) * 22;
-      cols.push({ x, z, h: 4 + rnd() * 3, r: 0.8 });
-    }
+    for (const b of braziers) claim(b.x, b.z, 1.2);
+    const scatter = (name: string, count: number, r: number, into: Place, s0: number, s1: number) => {
+      for (let tries = 0, n = 0; n < count && tries < count * 30; tries++) {
+        const a = rnd() * Math.PI * 2, d = rr(14.8, 27);
+        const x = RING.x + Math.cos(a) * d, z = RING.z + Math.sin(a) * d;
+        if (!free(x, z, r)) continue;
+        put3(into, name, x, 0, z, rnd() * Math.PI * 2, rr(s0, s1));
+        claim(x, z, r);
+        n++;
+      }
+    };
+    scatter('Drums', 5, 3.0, back, 0.9, 1.05);
+    scatter('RubbleA', 11, 1.6, heaps, 0.8, 1.3);
+    scatter('RubbleB', 14, 1.1, heaps, 0.8, 1.4);
 
-    // tall silhouettes must be > 26 m from the centre or off the z axis (|x| > 12)
-    for (const c of cols) {
-      if (c.h > 2 && Math.hypot(c.x - RING.x, c.z - RING.z) <= 26 && Math.abs(c.x) <= 12) throw new Error('temple: backdrop breaks the camera rule');
-    }
+    void loadProps().then((props) => {
+      if (disposed) return;
+      const meshes = [...merged(props, back), ...instanced(props, heaps)];
+      checkCameraRule(meshes);
+      g.add(...meshes);
+    }).catch((e) => console.error('temple: backdrop failed', e));
 
-    const silMat = new THREE.MeshBasicMaterial({ vertexColors: true });
-    const silMesh = sil.mesh(silMat, false);
-    g.add(silMesh);
-
-    const colMesh = new THREE.InstancedMesh(colGeo, new THREE.MeshBasicMaterial({ color: 0x2a2836 }), cols.length);
-    cols.forEach((c, i) => {
-      _m.compose(_p.set(c.x, c.h / 2, c.z), _q.identity(), _s.set(c.r, c.h, c.r));
-      colMesh.setMatrixAt(i, _m);
-    });
-    colMesh.instanceMatrix.needsUpdate = true;
-    g.add(colMesh);
-
-    const rubMesh = new THREE.InstancedMesh(BOX.clone(), new THREE.MeshStandardMaterial({ roughness: 0.95 }), rubble.length);
-    rubble.forEach((r, i) => {
-      _m.compose(_p.set(r.x, r.y, r.z), _q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), r.ry), _s.set(r.sx, r.sy, r.sz));
-      rubMesh.setMatrixAt(i, _m);
-      rubMesh.setColorAt(i, _c.setHex(r.c));
-    });
-    rubMesh.instanceMatrix.needsUpdate = true;
-    if (rubMesh.instanceColor) rubMesh.instanceColor.needsUpdate = true;
-    rubMesh.castShadow = rubMesh.receiveShadow = true;
-    g.add(rubMesh);
-
-    // hanging banners (shared geometry and material), swaying slightly
-    const bannerGeo = new THREE.PlaneGeometry(1.8, 5.5);
+    // hanging banners: one instanced cloth, rippling (the shared cloth's vertices) and swinging (each banner's own
+    // phase) in a slow wind; hung by the top edge
+    const bannerGeo = new THREE.PlaneGeometry(BANNER_W, BANNER_H, 1, 10).translate(0, -BANNER_H / 2, 0);
+    const bannerRest = Float32Array.from(bannerGeo.attributes.position.array as Float32Array);
     const bannerMat = new THREE.MeshBasicMaterial({ map: bannerTexture(), transparent: true, alphaTest: 0.3, side: THREE.DoubleSide });
-    const bannerMeshes: THREE.Mesh[] = [];
-    banners.forEach((b, i) => {
-      const m = new THREE.Mesh(bannerGeo, bannerMat);
-      m.position.set(b.x, b.y - 2.75, b.z); // b.y is the top edge
-      m.rotation.y = Math.atan2(RING.x - b.x, RING.z - b.z);
-      m.userData.phase = i * 1.7;
-      m.userData.baseRy = m.rotation.y;
-      bannerMeshes.push(m);
-      g.add(m);
-    });
+    const bannerMesh = new THREE.InstancedMesh(bannerGeo, bannerMat, banners.length);
+    bannerMesh.frustumCulled = false; // its matrices move every frame
+    g.add(bannerMesh);
+    const swing = new THREE.Matrix4();
+    const placeBanners = (time: number) => {
+      const pos = bannerGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const y = bannerRest[i * 3 + 1], x = bannerRest[i * 3]; // y from 0 (top) to -BANNER_H
+        const k = -y / BANNER_H;
+        pos.setZ(i, k * (0.16 * Math.sin(time * 1.9 + y * 1.3 + x * 0.6) + 0.1 * Math.sin(time * 0.7 + y * 0.5)));
+      }
+      pos.needsUpdate = true;
+      banners.forEach((b, i) => {
+        swing.makeRotationX(-0.05 * Math.sin(time * 0.6 + i * 1.7) - 0.06); // the hem lifts outward, never into a wall
+        bannerMesh.setMatrixAt(i, _m.multiplyMatrices(b, swing));
+      });
+      bannerMesh.instanceMatrix.needsUpdate = true;
+    };
+    placeBanners(0);
 
     // pale low moon far away (a sprite, ignores fog)
     const moon = new THREE.Sprite(
@@ -607,14 +766,30 @@ export const templeArena: ArenaDef = {
       }
       moteGeo.attributes.position.needsUpdate = true;
       // banners
-      for (const m of bannerMeshes) m.rotation.y = m.userData.baseRy + Math.sin(time * 0.6 + m.userData.phase) * 0.08;
-      void dt;
+      placeBanners(time);
+      // wall chunks
+      let moved = false;
+      for (let i = 0; i < CHUNKS; i++) {
+        const c = chunkState[i];
+        if (!c.live) continue;
+        c.v.y -= 14 * dt;
+        c.p.addScaledVector(c.v, dt);
+        c.rot.set(c.rot.x + c.spin.x * dt, c.rot.y + c.spin.y * dt, c.rot.z + c.spin.z * dt);
+        const landed = c.p.y <= 0.08 * c.s;
+        if (landed) c.p.y = 0.08 * c.s;
+        chunkMesh.setMatrixAt(i, _m.compose(c.p, _q.setFromEuler(c.rot), _s.setScalar(c.s)));
+        if (landed) c.live = false; // stays where it fell
+        moved = true;
+      }
+      if (moved) chunkMesh.instanceMatrix.needsUpdate = true;
     };
 
     return {
       group: g,
       update,
+      wallState,
       dispose() {
+        disposed = true;
         (moon.material.map as THREE.Texture | null)?.dispose();
         moon.material.dispose();
         disposeTree(g);
