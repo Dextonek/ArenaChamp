@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Arena } from './arena';
 import type { Enemy } from './effects/common';
-import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from './effects/telegraph';
+import { TelegraphLayer, insideTelegraph, type TelegraphShape, type TelegraphSpec } from './effects/telegraph';
 import { ARC_BEND, BODY_RADIUS, arcPoints } from './effects/projectile';
 import { MAX_UNITS, type SummonSide, type SummonStats } from './effects/summon';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
@@ -14,6 +14,7 @@ import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
 import { TOUCH } from './touch';
+import { CPU_NORMAL, type CpuLevel } from './cpuLevels';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -82,7 +83,6 @@ const RING = { x: 0, z: 7, r: 12 };
 const PLAYER_START = new THREE.Vector3(0, 0, 13);
 const OPPONENT_START = new THREE.Vector3(0, 0, 1);
 const HP = 600; // default max HP (`HeroKit.maxHp` overrides it per side)
-const AI_SPEED = 3.5;
 // Network duel: the remote hero is drawn this far in the past (ms, two send intervals at 20 Hz) so there is always a
 // next report to move toward; a gap longer than PEER_GAP means it stood still; casts snap it beyond PEER_SNAP (m).
 const PEER_DELAY = 100;
@@ -100,9 +100,9 @@ const PARRY_LEAD = 0.6;
 const BARRIER_LEAD = 1.0;
 const BARRIER_GAP = 2.6;
 const NO_GUARD = { parry: false, barrier: false };
-/** How often the AI answers a hit on its way with its parry or bolt wall (rolled once per threat; a guard must still be
- * beaten sometimes, as a dodge is). */
-const GUARD_CHANCE = 0.6;
+// How often the AI answers a hit with its guard (`CpuLevel.guard`), steps off a bolt (`boltDodge`, `boltReaction`) and
+// how fast it walks (`speed`) depend on its CPU level (src/cpuLevels.ts); Normal keeps the numbers the kits are
+// balanced with (0.6, 0.65, 0.12 s, 3.5 m/s).
 /** Breakable walls: hits a wall takes before it falls; an ultimate counts as two. Walls stand again each round. */
 const WALL_HP = 5;
 /** An area spell hits a wall inside this share of its radius (the edge of a blast only scorches it). */
@@ -112,8 +112,8 @@ const WALL_LINE_PAD = 0.3;
 const MELEE_GAP = 2; // a melee AI closes to about this distance (m)
 const DODGE_RADIUS = 1.6; // a hit still lands within this distance of where the cast aimed
 const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
-const BOLT_DODGE_CHANCE = 0.65; // how often it really steps aside (a skillshot must still land sometimes)
-const BOLT_REACTION = 0.12; // seconds between seeing the bolt and moving
+const LEAD_MAX = 3; // a CPU level's lead never puts its aim more than this far (m) ahead of the player
+const ZONE_MARGIN = 0.35; // a zone dodge aims this far (m) past the edge of the zone it leaves
 const SUMMON_REACH = 10; // the AI casts a summon spell when the enemy is within this distance (m)
 const UNIT_BLOCK = 2.5; // an enemy unit this close is shot at when nothing can be cast at the hero (m)
 
@@ -188,6 +188,18 @@ export class Duel {
   /** Skillshot dodges: bolt id -> whether this side reacts, which way, and when it starts moving. */
   private opponentDodge = new Map<number, BoltDodge>();
   private playerDodge = new Map<number, BoltDodge>();
+  /** The opponent's CPU level (src/cpuLevels.ts): how fast it walks and casts, how it aims and dodges. The autopilot
+   * always plays Normal. */
+  cpuLevel: CpuLevel = CPU_NORMAL;
+  /** Seconds before the opponent may cast again (its level's `castGap`, rolled after each cast). */
+  private castWait = 0;
+  /** The player's walk (m/s, smoothed over about 0.2 s): a level's `lead` aims ahead of it. */
+  private playerVel = new THREE.Vector3();
+  private playerLast: THREE.Vector3 | null = null;
+  /** Seconds from cast to hit of each spell the opponent cast (its zones' latest impact): a level's lead goes by it. */
+  private landsAfter = new Map<string, number>();
+  /** Zone dodges (Hard, Master): the player's cast number -> whether the opponent reacts to it, and from when. */
+  private zoneDodges = new Map<number, { react: boolean; at: number }>();
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
   autopilot = false;
   /** 'play': the player against the AI. 'run': AI against AI to watch (the autopilot drives the player's hero). */
@@ -310,8 +322,10 @@ export class Duel {
     document.body.append(this.card, this.flash, this.banner);
   }
 
-  /** main.ts: what "Leave duel" does (turns the duel off and syncs the panel). */
+  /** What "Leave duel" does: the tool turns the duel off and syncs its panel, the game goes back to its menu. */
   onLeave?: () => void;
+  /** A round is over ('win': the player won). The game's CPU match records a beaten level (src/game/cpu.ts). */
+  onFinish?: (result: 'win' | 'lose') => void;
 
   /**
    * Console recipe, N AI fights with kit objects on either side (`vfx.testKits.melee` is a kit object):
@@ -435,6 +449,10 @@ export class Duel {
     arena.summons.resetStats();
     this.opponentDodge.clear();
     this.playerDodge.clear();
+    this.zoneDodges.clear();
+    this.castWait = 0;
+    this.playerVel.set(0, 0, 0);
+    this.playerLast = null;
     this.cooldowns.fill(0);
     this.rooted = 0;
     this.think = 1.2; // a beat before the opponent moves
@@ -608,9 +626,14 @@ export class Duel {
     return o;
   }
 
-  /** The AI's walk speed for a kit: the hero's own speed scaled to the AI's pace. */
-  private aiSpeed(kit: HeroKit) {
-    return AI_SPEED * (traitFor(kit.name)?.speed ?? 4) / 4;
+  /** The AI's walk speed for a kit: the hero's own speed scaled to the CPU level's pace. */
+  private aiSpeed(kit: HeroKit, lv: CpuLevel) {
+    return lv.speed * (traitFor(kit.name)?.speed ?? 4) / 4;
+  }
+
+  /** The CPU level that drives `who`: the opponent plays `cpuLevel`, the autopilot always plays Normal. */
+  private levelOf(who: Enemy) {
+    return who === this.foe ? this.cpuLevel : CPU_NORMAL;
   }
 
   stop() {
@@ -928,6 +951,13 @@ export class Duel {
     if (!foe || arena.hpOf(foe) <= 0) return this.finish('win');
     if (this.playerHp <= 0) return this.finish('lose');
 
+    // The player's walk, smoothed over about 0.2 s: a CPU level with a `lead` aims where the player is heading.
+    if (this.playerLast && dt > 0) {
+      const k = Math.min(1, dt / 0.2);
+      this.playerVel.x += ((me.x - this.playerLast.x) / dt - this.playerVel.x) * k;
+      this.playerVel.z += ((me.z - this.playerLast.z) / dt - this.playerVel.z) * k;
+    }
+    (this.playerLast ??= new THREE.Vector3()).copy(me);
     this.ai(dt, foe, foePos, me);
     if (this.autopilot) this.pilot(dt, foe, foePos, me);
     this.renderHud();
@@ -939,6 +969,8 @@ export class Duel {
     for (let i = 0; i < 4; i++) this.cooldowns[i] = Math.max(0, this.cooldowns[i] - dt);
     this.rooted = Math.max(0, this.rooted - dt);
     this.think = Math.max(0, this.think - dt);
+    this.castWait = Math.max(0, this.castWait - dt);
+    const lv = this.cpuLevel;
     // Statuses on the opponent: stun / knock-up = no move, no cast; root = no move; slow = x0.6; silence = no cast.
     const st = this.host.arena.statusOf(foe);
     if (st?.stunned || this.host.arena.isDashing(foe)) return;
@@ -950,15 +982,23 @@ export class Duel {
     // skillshot's line before casting or walking on (if the roll says so).
     const hm = this.host.heroMode;
     const guard = this.guards(foe, at, hm.attackWinding && flat(at, me) <= hm.attackRange + 0.5);
-    const guarding = !st?.cannotCast && this.guarded(this.opponentKit, guard, (i) => this.cooldowns[i] <= 0);
+    const guarding = !st?.cannotCast && this.castWait <= 0 && this.guarded(this.opponentKit, guard, (i) => this.cooldowns[i] <= 0);
     const side = st?.cannotMove || guarding ? null : this.dodgeBolt(this.opponentDodge, foe, at);
     if (side) {
-      this.host.arena.moveFoe(foe, side.multiplyScalar(this.aiSpeed(this.opponentKit) * (st?.speedMul ?? 1) * dt), true);
+      this.host.arena.moveFoe(foe, side.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), true);
+      this.face(foe, me);
+      return;
+    }
+    // Hard and Master also walk out of the player's area zones before they land (Normal never does).
+    const out = st?.cannotMove || lv.zoneDodge <= 0 ? null : this.dodgeZones(at, me);
+    if (out) {
+      this.host.arena.moveFoe(foe, out.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), true);
       this.face(foe, me);
       return;
     }
     const sees = this.host.arena.lineOfSight(at, me);
-    if (!st?.cannotCast) {
+    // A lower level waits a moment after each cast (`castGap`); it still walks and attacks meanwhile.
+    if (!st?.cannotCast && this.castWait <= 0) {
       const mine = this.host.heroMode.status;
       // A unit of the hero's that stands in the way is shot at first; otherwise the hero.
       const full = this.host.arena.summons.alive('opponent').length >= MAX_UNITS;
@@ -967,14 +1007,15 @@ export class Duel {
       const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || (!this.oppRt?.canRecast(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
       const held = mine.stunned || mine.has('root');
       // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
-      let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard);
+      let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv);
       let unit: ReturnType<Duel['blocker']> = null;
       if (!pick && (unit = this.blocker('hero', at, me))) {
         pick = this.pickSpell(this.opponentKit, cooling, flat(at, unit.pos), this.playerHp / this.playerMax,
-          this.host.arena.lineOfSight(at, unit.pos), held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard);
+          this.host.arena.lineOfSight(at, unit.pos), held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv);
       }
       if (pick) {
         this.castSpell(pick.i, foe, at, me, pick.spec, this.opponentKit.spells[pick.i].summon ? this.summonSpot(at, me) : undefined, 0, unit?.figure);
+        if (lv.castGap[1] > 0) this.castWait = lv.castGap[0] + Math.random() * (lv.castGap[1] - lv.castGap[0]);
         return;
       }
     }
@@ -987,13 +1028,14 @@ export class Duel {
       return;
     }
     const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
-    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit) * (st?.speedMul ?? 1) * dt), true);
+    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), true);
     this.face(foe, me);
   }
 
   /**
    * The spell to cast now, if any: the first ready one in the order R, E, W, Q that is in reach. R waits until the
-   * other side is under 55% HP or the round is 20 s old; E (self) waits until the other side is inside its radius.
+   * other side is under the level's `ultHp` or the round is `ultTime` s old (Normal: 55%, 20 s); E (self) waits until
+   * the other side is inside its radius.
    * Without line of sight (`sees` false: a pillar or wall between them) only self spells can go.
    * A crowd-control spell (`cc`: stun or root) goes first when it is in reach, unless the other side is held already
    * (`otherHeld`).
@@ -1001,7 +1043,7 @@ export class Duel {
    * summon spell goes by (ready and the hero within `SUMMON_REACH`, unless `full`: the side has the most units).
    * A parry or a bolt wall (`HeroSpell.parry` / `barrier`) goes only when `guard` says a hit is on its way, and then first.
    */
-  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean, otherHeld = false, dHero = d, full = false, ownHp = 1, guard = NO_GUARD) {
+  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean, otherHeld = false, dHero = d, full = false, ownHp = 1, guard = NO_GUARD, lv = CPU_NORMAL) {
     const ready = (i: number) => {
       if (cooling(i)) return null;
       const spell = kit.spells[i];
@@ -1021,7 +1063,7 @@ export class Duel {
       // A gap closer only when the target is out of Q's range (it would waste the dash otherwise). An ultimate that leaps
       // in (Dawn Descent lands with a stun) goes in its own range like any spell.
       if (spell.dash && i !== 3 && d <= kit.spells[0].range + 0.5) return null;
-      if (i === 3 && otherHp > 0.55 && this.time < 20) return null;
+      if (i === 3 && otherHp > lv.ultHp && this.time < lv.ultTime) return null;
       return { i, spec };
     };
     if (guard.parry || guard.barrier) {
@@ -1093,7 +1135,7 @@ export class Duel {
     const guarding = !st.cannotCast && this.guarded(kit, guard, (i) => hm.ready(i));
     const side = st.cannotMove || guarding ? null : this.dodgeBolt(this.playerDodge, this.host.arena.caster, me);
     if (side) {
-      this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit) * st.speedMul * dt));
+      this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit, CPU_NORMAL) * st.speedMul * dt));
       return;
     }
     const sees = this.host.arena.lineOfSight(me, at);
@@ -1125,13 +1167,14 @@ export class Duel {
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
     const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
-    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit) * st.speedMul * dt));
+    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_NORMAL) * st.speedMul * dt));
   }
 
   /**
    * Skillshot dodge for an AI-driven figure `who` standing at `at`: returns a unit step across the line of the first
-   * bolt that will cross its position within `BOLT_WINDOW`, or null. Each bolt is rolled once (`BOLT_DODGE_CHANCE`) when
-   * it first threatens, and a successful roll starts moving `BOLT_REACTION` later, so a dodge is imperfect.
+   * bolt that will cross its position within `BOLT_WINDOW`, or null. Each bolt is rolled once (the CPU level's
+   * `boltDodge`) when it first threatens, and a successful roll starts moving `boltReaction` later, so a dodge is
+   * imperfect.
    */
   /**
    * What a hit on its way calls for: `parry` when an enemy bolt on `who`'s line arrives within PARRY_LEAD s, or `swing`
@@ -1156,7 +1199,7 @@ export class Duel {
     let roll = this.guardRolls.get(who);
     if (!roll) this.guardRolls.set(who, (roll = { on: false, pass: false }));
     const any = parry || barrier;
-    if (any && !roll.on) roll.pass = Math.random() < GUARD_CHANCE;
+    if (any && !roll.on) roll.pass = Math.random() < this.levelOf(who).guard;
     roll.on = any;
     return any && roll.pass ? { parry, barrier } : NO_GUARD;
   }
@@ -1183,12 +1226,80 @@ export class Duel {
       }
       let m = memory.get(t.id);
       if (!m) {
-        m = { react: Math.random() < BOLT_DODGE_CHANCE, side: lateral >= 0 ? 1 : -1, at: this.time + BOLT_REACTION };
+        const lv = this.levelOf(who);
+        m = { react: Math.random() < lv.boltDodge, side: lateral >= 0 ? 1 : -1, at: this.time + lv.boltReaction };
         memory.set(t.id, m);
       }
       if (m.react && this.time >= m.at && !step) step = new THREE.Vector3(-t.dir.z * m.side, 0, t.dir.x * m.side);
     }
     return step;
+  }
+
+  /**
+   * The CPU's zone dodge (Hard, Master): when the opponent stands in an area zone of the player's that shows and has not
+   * landed yet, or within DODGE_RADIUS of where that cast aimed (either one lands the hit, see `opponentHit`), it walks
+   * to the nearest open spot clear of all of them, keeping its distance to the player. Each cast is rolled once
+   * (`zoneDodge`) and a dodge starts `zoneReaction` s after the cast. Line zones are left to the bolt dodge (they are
+   * skillshots). Returns a unit step, or null.
+   */
+  private dodgeZones(at: THREE.Vector3, me: THREE.Vector3): THREE.Vector3 | null {
+    const lv = this.cpuLevel, now = this.time;
+    const pending = (c: EnemyCast & { t: number }) =>
+      c.zones.filter((z) => z.shape.kind !== 'line' && now - c.t >= z.start && now - c.t < (z.until ?? z.impact));
+    const live = this.playerCastsRecent
+      .filter((c) => c.round === this.round)
+      .map((c) => {
+        const zones = pending(c);
+        // The aim radius only counts for a cast aimed at the opponent (a zone over the spot it stood on).
+        return { c, zones, aimed: zones.some((z) => insideTelegraph(z.shape, c.aimed.x, c.aimed.z)) };
+      })
+      .filter((l) => l.zones.length);
+    for (const id of this.zoneDodges.keys()) if (!live.some((l) => l.c.id === id)) this.zoneDodges.delete(id);
+    const hits = (l: (typeof live)[number], x: number, z: number) =>
+      (l.aimed && Math.hypot(x - l.c.aimed.x, z - l.c.aimed.z) <= DODGE_RADIUS + ZONE_MARGIN) ||
+      l.zones.some((zn) => insideTelegraph(grownShape(zn.shape, ZONE_MARGIN), x, z));
+    let go = false;
+    for (const l of live) {
+      if (!hits(l, at.x, at.z)) continue;
+      let m = this.zoneDodges.get(l.c.id);
+      if (!m) this.zoneDodges.set(l.c.id, (m = { react: Math.random() < lv.zoneDodge, at: l.c.t + lv.zoneReaction }));
+      if (m.react && now >= m.at) go = true;
+    }
+    if (!go) return null;
+    const keep = flat(at, me);
+    const obstacles = this.host.arena.obstacles ?? [];
+    const open = (x: number, z: number) =>
+      Math.hypot(x - RING.x, z - RING.z) <= RING.r - 0.8 && obstacles.every((o) => capsuleDist(x, z, o) > o.r + BODY_RADIUS);
+    // Rings of 16 spots, nearest first; on each ring the spot that keeps the distance to the player best, by a free path.
+    for (let r = 0.6; r <= 4.8; r += 0.6) {
+      const spots: { p: THREE.Vector3; score: number }[] = [];
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2, x = at.x + Math.cos(a) * r, z = at.z + Math.sin(a) * r;
+        if (!open(x, z) || live.some((l) => hits(l, x, z))) continue;
+        const p = new THREE.Vector3(x, 0, z);
+        spots.push({ p, score: Math.abs(flat(p, me) - keep) });
+      }
+      spots.sort((a, b) => a.score - b.score);
+      const free = spots.find((s) => obstacles.every((o) => pathDist(at, s.p, o) > o.r + BODY_RADIUS * 0.5));
+      if (free) return free.p.sub(at).setY(0).normalize();
+    }
+    return null;
+  }
+
+  /**
+   * A CPU level's lead plus its aim error for a ground cast of `label`; zero at Normal. The lead is a share of the
+   * spell's own time to land (seen on its last cast, 0.5 s before that), so a quick spell is never aimed past the player.
+   */
+  private aimSlip(label: string) {
+    const lv = this.cpuLevel, off = new THREE.Vector3();
+    const lead = lv.lead * (this.landsAfter.get(label) ?? 0.5);
+    if (lead > 0) off.set(this.playerVel.x, 0, this.playerVel.z).multiplyScalar(lead).clampLength(0, LEAD_MAX);
+    if (lv.aimError > 0) {
+      const a = Math.random() * Math.PI * 2, r = lv.aimError * Math.sqrt(Math.random());
+      off.x += Math.cos(a) * r;
+      off.z += Math.sin(a) * r;
+    }
+    return off;
   }
 
   /**
@@ -1223,6 +1334,8 @@ export class Duel {
       point = (aim ?? (spell.dash ? dashAim(at, focus, spell.range)
         : spec.mode === 'ground' && !unit ? bestSpot(me, spec.radius ?? 5, minions.map((u) => u.pos)) : focus)).clone();
       if (miss) point.add(miss);
+      // The CPU level's lead and aim error on its own ground cast at the hero (Normal: neither). Targeted spells home.
+      if (!this.net && !aim && !unit && !spell.dash && spec.mode === 'ground') point.add(this.aimSlip(spell.label));
       targets = [unit ?? player];
       const extra = minions.filter((u) => u.figure !== unit);
       if (spec.mode === 'ground') for (const u of extra) if (flat(u.pos, point) <= (spec.radius ?? 5)) targets.push(u.figure);
@@ -1272,11 +1385,13 @@ export class Duel {
     this.zones.set(record.zones);
     this.zoneClock = 0;
     const impact = record.zones.length ? Math.max(...record.zones.map((z) => z.impact)) : 0.5;
+    this.landsAfter.set(spell.label, impact);
     // A trait's hold (Isolde's ice block) is a floor under the spell's own root.
     this.rooted = Math.max(Math.min(impact, 2.5), this.holdFloor);
     this.holdFloor = 0;
     this.figure.cast(castStyle(spell, i, spec.mode === 'enemy', this.oppAttack.motion.melee, this.rooted), this.rooted, i === 3);
-    if (cooldown >= 0) this.cooldowns[i] = cooldown;
+    // The CPU level's cooldown factor (Normal 1) on the AI's own casts.
+    if (cooldown >= 0) this.cooldowns[i] = this.net ? cooldown : cooldown * this.cpuLevel.cooldown;
     this.stats.opponentCasts++;
   }
 
@@ -1491,6 +1606,7 @@ export class Duel {
     this.zones.set([]);
     const me = this.host.heroMode.currentKit, them = this.opponentKit;
     const winner = result === 'win' ? me : them, loser = result === 'win' ? them : me;
+    this.onFinish?.(result);
     if (this.mode === 'run') {
       this.cardTitle.textContent = `${winner.name.toUpperCase()} WINS`;
       this.cardTitle.style.color = winner.accent;
@@ -1501,7 +1617,8 @@ export class Duel {
     }
     this.cardTitle.textContent = result === 'win' ? 'VICTORY' : 'DEFEAT';
     this.cardTitle.style.color = result === 'win' ? '#ffd27a' : '#ff6a6a';
-    this.cardText.textContent = result === 'win' ? `${them.name} falls.` : `${me.name} falls to ${them.name}.`;
+    const lv = this.cpuLevel.name;
+    this.cardText.textContent = result === 'win' ? `${them.name} (${lv}) falls.` : `${me.name} falls to ${them.name} (${lv}).`;
     this.card.style.display = 'flex';
     this.renderHud();
   }
@@ -1577,7 +1694,8 @@ export class Duel {
     ];
     rows.forEach(([kit, hp, max, shield], i) => {
       const b = this.bars[i];
-      const label = this.net ? `${kit.name} · ${this.names[i]}` : this.mode === 'run' || i === 1 ? `${kit.name} · AI` : `${kit.name} · you`;
+      // Offline the opponent shows its CPU level (in a run duel the player's hero is an AI too).
+      const label = this.net ? `${kit.name} · ${this.names[i]}` : i === 1 ? `${kit.name} · ${this.cpuLevel.name}` : this.mode === 'run' ? `${kit.name} · AI` : `${kit.name} · you`;
       if (b.name.textContent !== label) {
         b.name.textContent = label;
         const g = b.portrait.getContext('2d')!;
@@ -1640,6 +1758,16 @@ function bestSpot(hero: THREE.Vector3, r: number, units: THREE.Vector3[]) {
     }
   }
   return best;
+}
+
+/** A zone grown by `pad` m on every side (a cone only along its radius): the zone dodge keeps that margin. */
+function grownShape(s: TelegraphShape, pad: number): TelegraphShape {
+  switch (s.kind) {
+    case 'circle': return { ...s, radius: s.radius + pad };
+    case 'ring': return { ...s, inner: Math.max(0, s.inner - pad), outer: s.outer + pad };
+    case 'cone': return { ...s, radius: s.radius + pad };
+    case 'line': return { ...s, width: s.width + 2 * pad };
+  }
 }
 
 /** Ground-plane distance from (x, z) to an obstacle's segment. */

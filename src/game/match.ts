@@ -33,7 +33,7 @@ export class MatchController {
     });
     document.body.appendChild(this.forfeit);
 
-    api.duel.onLeave = () => this.exit();
+    // The duel card's "Back to menu" (`duel.onLeave`) is wired in main.ts: it ends this match or a CPU fight.
     // Browsers slow the timers of a hidden tab to about once a second, so the other player sees this hero jump.
     document.addEventListener('visibilitychange', () => {
       if (this.active && document.hidden) this.ui.toast('This tab is hidden: your opponent sees you stutter. Play in two windows, not two tabs.');

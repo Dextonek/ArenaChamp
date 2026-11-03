@@ -61,7 +61,8 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | `server/smoke-test.mjs` | the socket-level end-to-end test |
 | `game.html` | the second Vite entry (`build.rollupOptions.input` has `editor` and `game`) |
 | `src/net/client.ts` | `NetClient` (connect, auto-reconnect with backoff, resume by token, typed `on(type, fn)`), the `ServerMsg` union and the `Profile` type |
-| `src/game/main.ts` | screens: login / register, play (hero choice, find match), lobbies, lobby room, heroes, profile; the queue bar; toasts |
+| `src/game/main.ts` | screens: login / register, play (hero choice, find match), lobbies, lobby room, heroes, profile, play vs CPU; the queue bar; toasts. It sets `duel.onLeave` (the card's leave button ends the CPU fight or the network match) |
+| `src/game/cpu.ts` | `CpuMatch`: an offline fight against the duel AI at a CPU level (no server, no account): set kit, hero mode on, `duel.cpuLevel`, `duel.start('play')`; a Leave button; a won level is reported to the screen |
 | `src/game/match.ts` | `MatchController`: `match_start` → set kit, hero mode on, `duel.startNet`; streams moves at 20 Hz with the sender's clock; warns when its tab is hidden; forwards peer events; the result card; forfeit |
 | `src/game/heroPreview.ts` | the heroes page turntable (its own small renderer, renders only while shown) |
 | `src/game/game.css` | menu styles (duel HUD palette; hero accent through `--accent`) |
@@ -97,6 +98,18 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
    a break) ends the match: the server records both players with the round score, saves the file, and sends
    `match_end` with the result, `score` and the updated profile. The duel card shows VICTORY / DEFEAT, the time,
    "2-1 in rounds" and the new record; **Back to menu** stops the duel and hero mode.
+
+## Play vs CPU (offline)
+
+The Play card's **Play vs CPU** and the login screen's **Play vs CPU · no account needed** open the CPU screen: five
+difficulty buttons (Novice to Master, [cpuLevels.ts](../../src/cpuLevels.ts); a tick on each level already beaten),
+the hero picker, an opponent select (a random hero by default, never your own) and **Fight**. The fight is the
+offline AI duel (`CpuMatch` in `src/game/cpu.ts`, `duel.start('play')` at `duel.cpuLevel`) in a random arena: no
+server messages, nothing on the profile. One round; the card's Rematch keeps hero, opponent choice and level, and
+its Leave duel (or the Leave button during the fight) returns to the CPU screen. The choices and the beaten levels
+live in this browser's `localStorage` (`cpu.level`, `cpu.foe`, `cpu.hero` without an account,
+`cpu.won.<account or guest>`). Fight is disabled while the player is queued or in a lobby, since a `match_start`
+would take the scene over.
 
 ## Messages
 

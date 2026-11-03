@@ -1,8 +1,46 @@
 # Status
 
-_Last updated: 2026-10-30_
+_Last updated: 2026-11-03_
 
-## Current state (2026-10-30, end of day)
+## Current state (2026-11-03)
+Everything below is committed on `feat/particle-editor` unless marked. The 2026-11-02 and 2026-11-03 entries that
+said "uncommitted" now name the commit that holds them.
+
+**Commits since 2026-10-30, newest first**
+- `0a0279a` The first five v4 kits: Lyra, Vex, Marin, Mortis, Zephyr ("v4 opener done" below;
+  [kits-v4.md](../pipeline/designs/kits-v4.md)).
+- `c17cfc2` The VFX tool and the game as two apps on one runtime (`src/runtime.ts`, `src/tool/`, `src/game/`).
+- `af47bbe` Kit shapes v3, batches 1-3 (15 heroes); Sefu and Auriel models; the v4 design.
+- `0ed55d1` Arena remake, breakable walls, sculpted v2 heroes, phone play.
+- `c7f2039` Hero identity (traits and passives), kit identity v2, the motion pass.
+
+- **Pushed:** GitHub `main` is at `c7f2039`; the four commits after it are local only.
+- **Live:** the 2026-11-02 deploy of the working tree (worker `79de928c`), with the arena remake and the v2 heroes
+  behind `?figs`. Kits v3, the tool/game split and v4 are not live.
+- **In progress:** nothing running. Uncommitted: Play vs CPU (below) and this STATUS.
+- **Next:** v4 batch 2 in the [kits-v4.md](../pipeline/designs/kits-v4.md) build order, led by its engine pieces;
+  Nyx's stealth last.
+
+**Play vs CPU with five levels (2026-11-03, user: "add button as play against cpu ... 5 difficulty of cpu";
+uncommitted, not deployed)**
+- The game: **Play vs CPU** on the Play card and **Play vs CPU · no account needed** on the login screen open a CPU
+  screen: Novice, Easy, Normal, Hard, Master (a tick on beaten levels), your hero, the opponent (random by default),
+  Fight. An offline AI duel, one round, Rematch on the card, a Leave button during the fight
+  (`src/game/cpu.ts`, `src/game/main.ts`, `game.css`). No server messages; choices and ticks in `localStorage`.
+- The levels: `src/cpuLevels.ts`, read by `Duel.cpuLevel` (`src/duel.ts`): walk speed, a pause after casts,
+  cooldown factor, aim error, lead, bolt dodge, a new zone dodge, guard chance and R timing. Normal is the AI the kits
+  are balanced with (the old constants, no extra rules); the autopilot always plays Normal. The tool has View → CPU
+  level. Table and numbers: [mechanics.md](architecture/mechanics.md#cpu-levels).
+- Measured against the Normal autopilot (`pipeline/tools/duel-ladder.js`, new): the CPU won 2% / 25% / 52% / 63% /
+  85% from Novice to Master (48-80 fights each). Lyra at Normal against her six balance foes: 56% (54% before).
+- Hard and Master stayed near 64% on speed, dodge and lead alone; a cooldown factor (Hard ×0.85, Master ×0.8)
+  separates them. A fixed long lead missed more than it hit; the lead now follows each spell's own time to land.
+- Checked in the browser (game.html, desktop and 375 px): the login button, the CPU screen, a fight on Hard and on
+  Master (HUD "Lyra · Hard"), defeat and victory cards, Rematch, the tick after a win, Leave back to the CPU screen,
+  the logged-in Play card's three buttons (with a fake profile in the page, nothing sent). tsc clean, no console
+  errors. Not checked: a human playing the levels through; the live site.
+
+## State on 2026-10-30 (end of day)
 The game ("Arena of Kits") is a 1v1 MOBA-style duel: 20 heroes, each with a role, four spells of its own shapes and a
 basic attack, fought in one of five arenas. Everything below is committed on `feat/particle-editor` unless marked.
 
@@ -102,7 +140,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Open risk: there is no game-version check in matchmaking, so a player who doesn't reload can be matched against
   the new build and see different cover.
 
-**Arena remake, done (2026-11-02, uncommitted, deployed 78e57f31): user asked to "rearrange the arenas and all the objects in arena, make them high quality"**
+**Arena remake, done (2026-11-02, committed `0ed55d1`, deployed 78e57f31): user asked to "rearrange the arenas and all the objects in arena, make them high quality"**
 - Probe first: Night Temple only, both the new layout and high-quality props, then a before/after sheet for the
   user's OK. The other four arenas wait for that OK.
 - Style rules:
@@ -229,7 +267,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
      Shiori. Their registry lines and AI rules come back to me to add.
   3. Then a browser pass and AI-vs-AI duels per hero (slot R actually cast), then batches 2 to 4 (the other 15).
   - Resume: read `pipeline/designs/kit-shapes-v3.md`, then `git diff --stat`, to see which pieces landed.
-- **Batch 1 done (2026-11-03, uncommitted, not deployed, not tested online):**
+- **Batch 1 done (2026-11-03, committed `af47bbe`, not deployed, not tested online):**
   - Engine pieces built (APIs in docs/architecture/traits.md, hero-mode.md, targeting-and-arena.md,
     multiplayer.md); `server/hub.mjs` relays `cast.bend`. Projectile hooks were broken (pull measured from the bolt,
     so 0 m) and are fixed. `CastContext.obstacles()` added for sweeps.
@@ -242,7 +280,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     Brannoc 6, Shiori 5 wins. No console errors.
   - Not checked: a two-player online match with the new spells, phone controls for hold and arc aim.
   - Next: batches 2 to 4 (the other 15 heroes, same pattern: per-hero workers, then registry, browser, AI duels).
-- **Batch 2 done (2026-11-03, uncommitted, not deployed, not tested online):**
+- **Batch 2 done (2026-11-03, committed `af47bbe`, not deployed, not tested online):**
   - Vesper's kit moved out of `src/heroes.ts` into `src/kits/blood.ts` (like every other kit).
   - New spells: Vesper Hemolance (Q, now a line skillshot), Blood Step (W, 5 m blink plus a thorn strip) and
     Blood Bond (R, mark, recast pops 60 plus 50% of the damage dealt since); Nyx Shadow Swap (W, dagger, recast swaps
@@ -259,7 +297,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   - Known: Blood Bond and Nyx's dagger behave differently online (the other screen pops a flat 90; the swap aims at
     full range when that screen cannot see the hit). Vex's E and R icons are still the old drawings.
   - Next: batch 3 (five more of: Lyra, Sefu, Auriel, Zephyr, Mortis, Ada, Sirix, Cantor, Opaline, Oblivion).
-- **Batch 3 done (2026-11-03, uncommitted, not deployed, not tested online):**
+- **Batch 3 done (2026-11-03, committed `af47bbe`, not deployed, not tested online):**
   - New spells (replaced files deleted with git rm):
     - Sefu: Sand Lash (Q, line skillshot, root), Burrow (E, 7 m tunnel, untouchable 1.1 s), Dune Surge (R, wave carries
       the enemy 12 m, root).
@@ -284,7 +322,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     - Mortis 33%: the colossus was cut from 360 HP / 34 per hit / 9.5 s, when he won 75%. It overshot.
     - Zephyr 33%; Ada 46%.
     - Not balanced further, because the user asked for a fresh redesign of every kit next (see below).
-- **Sefu and Auriel models in the current style (2026-11-03, uncommitted, `?figs=v2`):**
+- **Sefu and Auriel models in the current style (2026-11-03, committed `af47bbe`, `?figs=v2`):**
   - Classes `Sand` and `Dawn` in `blender/heroes/moba_figures.py`.
   - New helpers: `arc_shell` (a curved band open at the front) and `band` (a low-resolution decorative ring).
   - Exports: `sand_v2.glb` (34.9k triangles, 452 KB) and `dawn_v2.glb` (37.8k, 499 KB). Both are in `MODELS_V2`.
@@ -336,7 +374,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     4. Two transforms are fine.
     5. Keep the beat (window ±0.25 s; the AI casts in tune 70% of the time).
     6. Start with the low-engine opener.
-- **v4 opener in progress (2026-11-03, uncommitted; on top of the separation commit `c17cfc2`): Lyra, Vex,
+- **v4 opener build log (2026-11-03, committed `0a0279a`; on top of the separation commit `c17cfc2`): Lyra, Vex,
   Marin, Mortis, Zephyr.**
   - Running together:
     - an engine worker, the only writer of `traits/types.ts`, `traits/runtime.ts`, `attacks/*`, `heroMode.ts`,
@@ -373,7 +411,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
       - after a damage pass: Lyra 71%, Vex 58%, Marin 12%, Mortis 83%, Zephyr 71%.
     - Pass 2 is running: Lyra, Mortis and Zephyr trimmed about halfway. Marin gets more damage, a wider disc, +60 HP and a fix for her Mist Form splash, which never hit.
     - Then: re-run the tournament, clean per-spell sheets, STATUS.
-- **v4 opener done (2026-11-03, uncommitted, not deployed, not tested online): Lyra, Vex, Marin, Mortis, Zephyr.**
+- **v4 opener done (2026-11-03, committed `0a0279a`, not pushed, not deployed, not tested online): Lyra, Vex, Marin, Mortis, Zephyr.**
   - Balance passes 2-4, final numbers in each hero's `pipeline/designs/kit-<theme>.md`:
     - Marin's Mist Form became a 6 m water dash with a 40 splash where she reforms (`dash` + `parry`). Her old
       splash never hit, because the AI keeps 4-6 m away.
@@ -392,12 +430,15 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
       arrow) folds into one hit.
     - The effect headers of some spells still quote first-pass numbers in comments.
     - The bolt-wall engine and the `barrier` flag are unused now that Zephyr's Wind Barrier is gone.
+    - The hero catalog (`docs/catalog/heroes/`, `docs/catalog/effects.md`) and the hero table in
+      `docs/architecture/hero-mode.md` still list kits from before v3 (batches 1-3 never reached them either).
+      Refresh them once all 20 v4 kits are in, not per batch.
   - Next: the other 15 heroes in three batches (kits-v4.md build order), each led by its engine pieces; Nyx's stealth
     last.
 
-**Two duel bugs fixed (2026-11-03, uncommitted, not deployed)**
+**Two duel bugs fixed (2026-11-03, committed `af47bbe`, not deployed)**
 - The last match's spell (often an ult) showed at the start of the next one, mostly after a forfeit or a reload:
-  turning hero mode on replayed the spell that was cast last. `clearEffects()` in `src/main.ts` now ends every spell
+  turning hero mode on replayed the spell that was cast last. `clearEffects()` (now in `src/runtime.ts`) ends every spell
   on screen when hero mode turns on or off and at every duel round (`DuelHost.clearEffects`, called from
   `Duel.setup` / `stop`); switching modes no longer replays anything. Checked in the browser: Vesper's ult cast, the
   duel left mid-cast, a new duel started: no effect visible; recasting it still works.
@@ -406,7 +447,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   would hit, looking no further than the walk's goal. Every gap is at least 2.0 m (body 1.0). A walk-through test
   of every gap in all five arenas: 140 of 184 walks passed before, 184 of 184 now.
 
-**The concept look chosen; all six v2 heroes rebuilt in it (2026-11-02, uncommitted, not deployed)**
+**The concept look chosen; all six v2 heroes rebuilt in it (2026-11-02, committed `0ed55d1`)**
 - The user picked the concept shapes ("the new look"). Brannoc and Kaia's concept builds are now the regular v2
   files (`forge_v2.glb`, `storm_v2.glb`; the `_c` files are gone). `moba_figures.FIGURES["forge"]` and `["storm"]`
   build the concept classes; `forge_a` and `storm_a` still build the earlier shapes.
@@ -441,7 +482,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Sheet: `docs/heroes/moba_v2_concept_shapes.jpg`. Waiting on the user: keep the concept shapes, the current ones,
   or a mix.
 
-**Sculpted trial, refine pass on Brannoc and Kaia (2026-11-02, uncommitted, not deployed)**
+**Sculpted trial, refine pass on Brannoc and Kaia (2026-11-02, committed `0ed55d1`)**
 - The user's choice: keep the sculpted look on these two only for now and keep experimenting with them.
 - Smoother faces: the head is fused on its own, finer than the body (`FUSE` entries with `("only", ...)` part
   prefixes). The face is remeshed to even quads with QuadriFlow; where QuadriFlow refuses a mesh, the code falls back
@@ -457,7 +498,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Checked in the game with `?figs=v2`: face, walk, attack (swing) and cast (raise) poses, with no tearing at the
   shoulders or elbows. Sheet: `docs/heroes/moba_v2_sculpt2.jpg`.
 
-**Sculpted and painted trial: Brannoc and Kaia (2026-11-02, uncommitted, not deployed)**
+**Sculpted and painted trial: Brannoc and Kaia (2026-11-02, committed `0ed55d1`)**
 - Code: [blender/heroes/sculpt.py](../blender/heroes/sculpt.py). A figure class with `SCULPT = True` lists `FUSE`
   groups and `FOLDS`.
   - `fuse`: melts one material's parts into one surface (voxel remesh, a volume-preserving smooth, decimate) and
@@ -471,7 +512,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Heavy: Brannoc 51k triangles (619 KB), Kaia 60k (709 KB). Needs a budget pass before more heroes use it.
 - The other four v2 heroes still use the non-sculpted build.
 
-**MOBA-style redesign trial: six heroes (2026-11-02, uncommitted, not deployed)**
+**MOBA-style redesign trial: six heroes (2026-11-02, committed `0ed55d1`)**
 - Added Vesper (`blood_v2.glb`, 19k triangles), Isolde (`frost_v2.glb`, 17k), Zephyr (`sky_v2.glb`, 19k) and
   Oblivion (`void_v2.glb`, 24k), each with one signature shape:
   - Vesper: a collar-blade fan and a crimson cape;
@@ -516,12 +557,12 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   - the walk, standing pose and high game camera look right;
   - tsc is clean.
 - Not checked: casts and attacks on the new bodies, a full duel, and the phone.
-- Also uncommitted, from the style experiments:
+- Also from the style experiments (committed in `0ed55d1`):
   - `blender/heroes/stylize.py` (proportion styles);
   - the `style` option and prop tagging in `hero_figures.py`;
   - the live models are not affected.
 
-**Livelier walk and idle (2026-11-02, uncommitted, not deployed)**
+**Livelier walk and idle (2026-11-02, committed `0ed55d1`)**
 - Changed only `src/heroFigure.ts` and `src/effects/weapons/hero.ts` (`Hero.robe`), plus the walk and robe notes in
   [hero-mode.md](architecture/hero-mode.md). These are kept separate from the phone files, so the two can be committed apart.
 - Added:
@@ -548,7 +589,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Known: a robe's lining still shows on the long step, and a toe can poke out behind the hem. Both happened with the
   previous walk too, because the robes are skinned to the thighs.
 
-**Phone play (2026-11-02, uncommitted, not deployed)**
+**Phone play (2026-11-02, committed `0ed55d1`)**
 - Touch controls in `src/touch.ts` + `HeroMode` (`TouchTarget`, `buildTouchHud`): joystick lower-left, tap to walk /
   attack, spell buttons in an arc (tap = cast at the nearest enemy, drag = aim, drag back = cancel), attack button,
   pinch zoom. Camera pulls back on tall screens and leads toward the joystick. Duel bar, Forfeit, Find match row and
@@ -844,7 +885,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     queue match (22.6 s), lobby match in the ring with cover (24.5 s), dodges on both screens, knockback replicated,
     disconnect = forfeit, session resume, Back to menu, profile. `tsc --noEmit` clean; selfTest sweep 156/156 ok.
   - Background tabs keep simulating in game mode (a timer steps the scene when no frame came for 250 ms).
-- **Best-of-3 rounds online + server checks (2026-10-30, user request, uncommitted, not deployed: freeze):**
+- **Best-of-3 rounds online + server checks (2026-10-30, user request; committed `484d7fd` and deployed the same day):**
   `server/hub.mjs` runs rounds (first to two; 60 s cap, more HP share wins, a tie replays; 3 s break; `round_end` /
   `round_start`), per-hero max HP from `match_loaded { maxHp }` (was a flat 600 for everyone), and accepts a hit only
   for a cast the other side made in the last 12 s, with one cast per slot per 0.8 s (R: 10 s). Client:
@@ -888,7 +929,9 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   walks round, then casts; the AI only picks spells it can see with). AI duels still finish (17-24 s).
 
 ## In progress
-- (Nothing running. Side sessions are idle; the multiplayer one left uncommitted rounds work, see "Current state".)
+- Nothing running (2026-11-03). Next: v4 batch 2. Side sessions: the multiplayer shell one is idle; the older kit
+  one ("Make the 20 hero kits play differently", `68f976c` and `4f39f41`, since replaced by v3 and v4) is idle and
+  is to be archived (see "Waiting on you").
 - **Hero roles, committed `68f976c` + `4f39f41`** (user 2026-10-30: "all heroes seem kinda the same ... should be different, like competitive").
   Proposal `pipeline/designs/hero-roles.md`: a role and signature per hero (assassin, tank, juggernaut, mage, marksman,
   support, controller, summoner) and, after the user rejected the old Q/W/E/R template (revision 2), its own kit shape
@@ -955,7 +998,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     (known quirk only). Contact sheets need a wide canvas: the pane once shrank to 510×846 and zoomed every frame;
     set the viewport to 1400×850 before `_multi`.
     Committed `3379f3c`.
-  - Wave 5 DONE (uncommitted): void (Oblivion, melee juggernaut: rift cleave, null tether pull + slow, void mantle
+  - Wave 5 DONE (committed `e8e4326`): void (Oblivion, melee juggernaut: rift cleave, null tether pull + slow, void mantle
     shield + silence, unmaking R with pull + silence), ink (Shiori, control mage: brushstroke skillshot that splits at
     the end of its range, ink snare root, paper familiars ranged crane summons, final calligraphy R with blind), chrono
     (Tempo: piercing second-hand bolt with slow, stopped moment stun, rewind dash back + heal, twelfth hour R stun).
@@ -1029,16 +1072,16 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 - Nothing.
 
 ## Waiting on you
-- Nothing blocking. Online duels on the live site still ignore statuses, shields, summons, skillshots and basic
-  attacks (all 20 heroes use some of these now), so online play differs from offline until the sync is built.
-- Push: `git push origin feat/particle-editor:main` (pushed up to 484d7fd). All commits are authored as Dextonek (old
-  history in `refs/backup/before-dextonek`).
-- Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end).
+- Nothing blocking (2026-11-03). Push and deploy happen only when you ask:
+  - Push: `git push origin feat/particle-editor:main`. GitHub `main` is at `c7f2039`; `0ed55d1`, `af47bbe`,
+    `c17cfc2` and `0a0279a` are local only. All commits are authored as Dextonek (old history in
+    `refs/backup/before-dextonek`).
+  - Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end). Live is the 2026-11-02 working
+    tree (worker `79de928c`); kits v3, the tool/game split and v4 are not live.
+- Archive the side session "Make the 20 hero kits play differently": the app refused while its Remote Control
+  link was on. Archive it from the sidebar, or say so and I switch its Remote Control off and archive it.
 - Play online: https://arena-of-kits.arenachamp.workers.dev in two browsers (online accounts start empty).
 - Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
-- Uncommitted: play/run duel, balance pass. 95638f0 duel + docs knowledge base. Branch `feat/particle-editor` has no remote; earlier
-  commits 6329099 four hero kits, models, switcher; fa60c09 blood kit, hero mode; earlier a7f26de, 60ec4cb,
-  108ce68, d89f0b7, a4b9d65.
 
 ## Known look issues (small)
 - Duel game: not cheat-proof (clients report their own hits); a reload during a match forfeits it; no mirror
@@ -1105,6 +1148,8 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   `setRGB`/`setHSL` are linear (pass `THREE.SRGBColorSpace`), PointsMaterial needs `softDotTexture()`.
 
 ## Next step candidates
+- **v4 batches 2-4** ([kits-v4.md](../pipeline/designs/kits-v4.md) build order), each led by its engine pieces;
+  Nyx's stealth last. Then refresh the hero catalog, and test online with two players and on a phone.
 - Run `/forge-vfx` on more video recipes: `d-kler-1-singularity-*` (black hole), `g-castorice-*` (cutscene finishers
   need a scripted camera, which the kit does not have yet), `f-swipe-*` (smoke slashes), `g-dark-lord-slash`.
 - A cutscene camera part (shot list: close → wide → ground → held reveal, whip-pan smears) for the §10 finishers.

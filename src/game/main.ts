@@ -11,9 +11,11 @@ import type { HeroKit } from '../heroes';
 import { NetClient, type LobbyState, type Profile } from '../net/client';
 import { HeroPreview } from './heroPreview';
 import { MatchController } from './match';
+import { CpuMatch } from './cpu';
+import { CPU_LEVELS, cpuLevel } from '../cpuLevels';
 import { TOUCH } from '../touch';
 
-type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby';
+type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu';
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
@@ -101,9 +103,13 @@ function go(screen: Screen) {
 
 function render() {
   root.replaceChildren();
-  if (match.active) { root.style.display = 'none'; return; }
+  if (match.active || cpu.active) { root.style.display = 'none'; return; }
   root.style.display = '';
-  if (!state.profile) { root.append(loginScreen()); return; }
+  // Without an account: the login screen, or the CPU screen (an offline fight needs no account).
+  if (!state.profile) {
+    root.append(state.screen === 'cpu' ? el('main', { class: 'screen' }, cpuScreen()) : loginScreen());
+    return;
+  }
   root.append(header());
   const body = el('main', { class: 'screen' });
   const s = state.screen;
@@ -112,7 +118,8 @@ function render() {
       : s === 'profile' ? profileScreen(state.profile)
         : s === 'lobbies' ? lobbiesScreen()
           : s === 'lobby' && state.lobby ? lobbyScreen(state.lobby)
-            : menuScreen(),
+            : s === 'cpu' ? cpuScreen()
+              : menuScreen(),
   );
   root.append(body);
   if (state.queue.on) root.append(queueBar());
@@ -153,6 +160,8 @@ function loginScreen() {
     el('button', { class: 'btn primary', type: 'submit', disabled: !state.connected }, state.authMode === 'login' ? 'Log in' : 'Create account'),
     el('div', { class: 'error' }, state.connected ? state.authError : 'Connecting to the game server…'),
     el('p', { class: 'fine' }, 'Local accounts on this machine only. Passwords are stored hashed in server/data/accounts.json.'),
+    el('div', { class: 'or' }, 'or'),
+    el('button', { class: 'btn ghost', type: 'button', onclick: () => go('cpu') }, 'Play vs CPU · no account needed'),
   );
   setTimeout(() => name.focus());
   return el('div', { class: 'center' }, form, heroStrip());
@@ -176,11 +185,12 @@ function menuScreen() {
         el('div', {}, el('div', { class: 'kit-name' }, hero.name), el('div', { class: 'muted' }, hero.title),
           el('div', { class: 'spell-row' }, ...hero.spells.map((s) => canvasOf(64, s.icon, 'icon sm'))))),
       heroPicker(hero.name, [], (n) => { setPreferredHero(n); render(); }),
-      el('div', { class: 'row play-actions' },
+      el('div', { class: 'row play-actions three' },
         queued
           ? el('button', { class: 'btn', onclick: () => net.send({ t: 'queue_leave' }) }, 'Cancel search')
           : el('button', { class: 'btn primary big', disabled: !!state.lobby, onclick: () => net.send({ t: 'queue_join', hero: hero.name }) }, `Find match as ${hero.name}`),
         el('button', { class: 'btn', disabled: queued, onclick: () => go(state.lobby ? 'lobby' : 'lobbies') }, state.lobby ? 'Back to lobby' : 'Lobbies'),
+        el('button', { class: 'btn', disabled: queued || !!state.lobby, onclick: () => go('cpu') }, 'Play vs CPU'),
       ),
     ),
     el('section', { class: 'card side' },
@@ -231,6 +241,63 @@ function updateQueueText(bar = root.querySelector('.queue-bar')) {
   t.textContent = `Searching as ${preferredHero().name} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} · ${state.queue.size} in queue`;
 }
 setInterval(() => state.queue.on && updateQueueText(), 500);
+
+// --- play vs CPU ---------------------------------------------------------------------------------------------
+
+// The CPU screen's choices, kept in this browser: an offline fight needs no account.
+const cpuPick = { level: cpuLevel(Number(safeGet('cpu.level'))).id, foe: safeGet('cpu.foe') ?? 'random' };
+const cpuWonKey = () => `cpu.won.${state.profile?.name ?? 'guest'}`;
+/** The CPU levels beaten so far (with any hero), as level ids. */
+const cpuWon = () => new Set((safeGet(cpuWonKey()) ?? '').split('').map(Number).filter((n) => n > 0));
+
+/** The hero for a CPU fight: the account's preferred hero, or this browser's last pick without an account. */
+function cpuHero(): HeroKit {
+  return state.profile ? preferredHero() : kitOf(safeGet('cpu.hero')) ?? kits[0];
+}
+function setCpuHero(name: string) {
+  if (state.profile) setPreferredHero(name);
+  else safeSet('cpu.hero', name);
+}
+
+function cpuScreen() {
+  const hero = cpuHero();
+  const level = cpuLevel(cpuPick.level);
+  const foeKit = cpuPick.foe !== hero.name ? kitOf(cpuPick.foe) : undefined;
+  const won = cpuWon();
+  // A match from the queue or a lobby would take the scene over: those come first.
+  const busy = state.queue.on || !!state.lobby;
+  const levels = el('div', { class: 'levels' }, ...CPU_LEVELS.map((l) => el('button', {
+    class: `level${l.id === level.id ? ' on' : ''}`, title: l.blurb,
+    onclick: () => { cpuPick.level = l.id; safeSet('cpu.level', String(l.id)); render(); },
+  }, el('span', { class: 'pips' }, '◆'.repeat(l.id)), el('b', {}, l.name, won.has(l.id) ? el('span', { class: 'won', title: 'beaten' }, '✓') : null))));
+  const foeSelect = el('select', {
+    class: 'foe-select',
+    onchange: (e: Event) => { cpuPick.foe = (e.target as HTMLSelectElement).value; safeSet('cpu.foe', cpuPick.foe); render(); },
+  },
+  el('option', { value: 'random', selected: !foeKit }, 'A random hero'),
+  ...kits.filter((k) => k.name !== hero.name).map((k) => el('option', { value: k.name, selected: k === foeKit }, `${k.name}, ${k.title}`)));
+  return el('div', { class: 'cpu' },
+    el('section', { class: 'card' },
+      el('h2', {}, 'Play vs CPU'),
+      el('p', { class: 'muted' }, 'An offline duel against the computer in a random arena. No account or server needed; it does not count on your profile.'),
+      el('h3', {}, 'Difficulty'),
+      levels,
+      el('p', { class: 'level-blurb' }, el('b', {}, `${level.name}: `), level.blurb),
+      el('h3', {}, 'Your hero'),
+      el('div', { class: 'chosen' }, portrait(hero, 'portrait lg'),
+        el('div', {}, el('div', { class: 'kit-name' }, hero.name), el('div', { class: 'muted' }, hero.title),
+          el('div', { class: 'spell-row' }, ...hero.spells.map((s) => canvasOf(64, s.icon, 'icon sm'))))),
+      heroPicker(hero.name, [], (n) => { setCpuHero(n); render(); }),
+      el('h3', { class: 'gap' }, 'Opponent'),
+      el('div', { class: 'foe-row' }, foeKit ? portrait(foeKit, 'portrait sm') : el('div', { class: 'portrait sm empty' }, '?'), foeSelect),
+      el('div', { class: 'row play-actions' },
+        el('button', { class: 'btn primary big', disabled: busy, onclick: () => cpu.start({ hero: hero.name, foe: foeKit?.name ?? 'random', level: level.id }) },
+          `Fight ${foeKit ? foeKit.name : 'a random hero'} · ${level.name}`),
+        el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
+      busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to fight the CPU.') : null,
+    ),
+  );
+}
 
 // --- heroes --------------------------------------------------------------------------------------------------
 
@@ -375,6 +442,13 @@ const match = new MatchController(net, gameApi, {
   onProfile: (p) => { state.profile = p; },
   toast,
 });
+const cpu = new CpuMatch(gameApi, {
+  onEnter: () => render(),
+  onExit: () => { state.screen = 'cpu'; render(); },
+  onWin: (level) => safeSet(cpuWonKey(), [...cpuWon().add(level)].sort().join('')),
+});
+// The duel card's "Leave duel" / "Back to menu": ends whichever fight is on.
+gameApi.duel.onLeave = () => (cpu.active ? cpu.exit() : match.exit());
 
 net.on('socket', (m) => {
   state.connected = m.open;
@@ -430,5 +504,5 @@ net.on('queue', (m) => {
 net.connect();
 render();
 
-// Console / automated checks: `game.state`, `game.net`, `game.match`.
-(window as unknown as { game: unknown }).game = { state, net, match, api: gameApi, go };
+// Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`.
+(window as unknown as { game: unknown }).game = { state, net, match, cpu, api: gameApi, go, render };

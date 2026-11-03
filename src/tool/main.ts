@@ -6,6 +6,7 @@ import { effectModules } from '../effects';
 import { HERO_KITS } from '../heroes';
 import { meleeTestKit, rangedTestKit, summonTestKit } from '../kits/test';
 import { createRuntime, type EffectSlot } from '../runtime';
+import { CPU_LEVELS, CPU_NORMAL } from '../cpuLevels';
 import { PlayerDummy } from './player';
 import { Hotbar } from './hotbar';
 
@@ -95,6 +96,11 @@ fView.add({ leave: () => setDuel(false) }, 'leave').name('leave duel');
 fView.add(duelState, 'opponent', ['random', ...HERO_KITS.map((k) => k.name)]).name('opponent').onChange((n: string) => {
   duel.opponentChoice = n;
   if (duel.on) duel.start();
+});
+// The opponent's CPU level (src/cpuLevels.ts); a run duel's autopilot always plays Normal.
+const levelState = { level: duel.cpuLevel.name };
+fView.add(levelState, 'level', CPU_LEVELS.map((l) => l.name)).name('CPU level').onChange((n: string) => {
+  duel.cpuLevel = CPU_LEVELS.find((l) => l.name === n) ?? CPU_NORMAL;
 });
 fView.add(gameplay, 'zones').name('danger zones').onChange((v: boolean) => (telegraphs.group.visible = v));
 fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => {

@@ -179,6 +179,29 @@
 .badge { font: 800 11px ui-sans-serif, system-ui; letter-spacing: 1px; padding: 3px 10px; border-radius: 20px; background: #221c26; color: var(--muted); }
 .badge.on { background: rgba(125, 255, 176, 0.15); color: var(--green); }
 
+/* play vs CPU: five level buttons (pips for the level, a tick after the name once beaten), the hero picker and an
+   opponent select */
+.cpu { max-width: 780px; margin: 0 auto; }
+.levels { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px; }
+.level {
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px 8px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--text); cursor: pointer;
+  font: 600 13px ui-sans-serif, system-ui;
+}
+.level:hover { border-color: var(--gold); }
+.level.on { border-color: var(--gold-hi); background: rgba(201, 162, 74, 0.14); box-shadow: 0 0 0 1px var(--gold-hi); }
+.level .pips { font-size: 9px; letter-spacing: 1px; color: var(--gold); }
+.level .won { margin-left: 3px; color: var(--green); }
+.level-blurb { margin: 8px 0 14px; min-height: 2.9em; }
+.ui h3.gap { margin-top: 16px; }
+.foe-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.foe-select {
+  flex: 1; max-width: 380px; min-width: 0; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line);
+  background: #120f15; color: var(--text); font: 500 15px ui-sans-serif, system-ui;
+}
+.or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+
 /* toast + in-match forfeit */
 .toast {
   position: fixed; left: 50%; top: 70px; transform: translate(-50%, -10px); z-index: 40; padding: 10px 18px; border-radius: 10px;
@@ -213,6 +236,11 @@
     border-radius: 12px; background: rgba(14, 11, 16, 0.96); border: 1px solid var(--line); box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
   }
   .play-actions .btn.big { flex: 1; padding: 12px 10px; }
+  /* The menu's three buttons: Find match on its own line, Lobbies and Play vs CPU side by side under it. */
+  .play-actions.three .btn.big { flex: 1 1 100%; }
+  .play-actions.three .btn:not(.big) { flex: 1; }
+  .levels { gap: 5px; }
+  .level { padding: 8px 2px 6px; font-size: 11px; }
   .queue-bar { bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 }
 #app, #app canvas { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }

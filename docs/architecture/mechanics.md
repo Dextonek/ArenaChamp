@@ -37,7 +37,7 @@ Rules:
 | Who | Behaviour |
 |---|---|
 | Player hero ([heroMode.ts](../../src/heroMode.ts)) | `HeroMode.status` is the caster's `StatusSet`. Stun, knock-up and root stop click-moves; stun, knock-up and silence stop casting (toast "Stunned" / "Silenced"); slow walks at x0.6; blind rolls `arena.blindOffset()` into `arena.aimOffset` around the cast, so the effect and its danger zones are played at the offset spot. The QWER bar greys while the hero cannot cast and a dark vignette fades in while blind |
-| Duel opponent and autopilot | A stunned or dashing AI does nothing; root or stun stops walking; slow scales `AI_SPEED` (3.5); silence skips casting; blind rolls an offset into the aim point (self spells are not aimed). A bolt dodge is skipped when it cannot move |
+| Duel opponent and autopilot | A stunned or dashing AI does nothing; root or stun stops walking; slow scales its CPU level's walk speed (Normal 3.5); silence skips casting; blind rolls an offset into the aim point (self spells are not aimed). A bolt dodge is skipped when it cannot move |
 | Arena foes | `arena.applyStatus(target, kind, seconds, color)` works on any foe and on the caster figure. Foes get the same visuals; a knock-up lifts a foe where its position is rebuilt |
 
 Because blind moves the cast, the telegraph is drawn at the offset spot and the zone dodge checks stay correct.
@@ -87,7 +87,29 @@ Each frame a bolt sweeps a capsule from its old to its new position on the groun
 
 ### AI dodge
 
-`Duel.dodgeBolt` asks `arena.projectiles.threats(figure)` for bolts flying at the figure. A bolt that will cross the figure within `BOLT_WINDOW` (0.6 s) is rolled once: `BOLT_DODGE_CHANCE` 0.65 decides whether this AI reacts, and it starts to move `BOLT_REACTION` (0.12 s) later, one step across the line to the side it stands on. So about a third of bolts land, and a late dodge fails. Both the opponent AI and the autopilot (the player's hero in duel simulations) do this; neither dodges while unable to move.
+`Duel.dodgeBolt` asks `arena.projectiles.threats(figure)` for bolts flying at the figure. A bolt that will cross the figure within `BOLT_WINDOW` (0.6 s) is rolled once: the CPU level's `boltDodge` (Normal 0.65) decides whether this AI reacts, and it starts to move `boltReaction` (Normal 0.12 s) later, one step across the line to the side it stands on. So at Normal about a third of bolts land, and a late dodge fails. Both the opponent AI and the autopilot (the player's hero in duel simulations, always Normal) do this; neither dodges while unable to move.
+
+`Duel.dodgeZones` (Hard and Master only, `zoneDodge` > 0): when the opponent stands in an area zone of the player's that shows and has not landed (or within 1.6 m of where that cast aimed, if a zone covers that spot), it walks to the nearest open spot clear of all of them, 0.35 m past their edges, keeping its distance to the player. Each cast is rolled once and the dodge starts `zoneReaction` s after the cast. Line zones are left to the bolt dodge. Most v4 spells land 0.2–0.4 s after the cast, so this mostly catches slower and lingering zones.
+
+### CPU levels
+
+[cpuLevels.ts](../../src/cpuLevels.ts) holds the five levels of the duel's opponent (`Duel.cpuLevel`); the game's Play vs CPU screen and the tool's View → CPU level pick one.
+
+| | Novice | Easy | Normal | Hard | Master |
+|---|---|---|---|---|---|
+| Walk speed (m/s, base-speed hero) | 2.9 | 3.2 | 3.5 | 3.85 | 4 (the player's) |
+| Pause after a cast (s) | 2.2–3.4 | 0.9–1.8 | 0 | 0 | 0 |
+| Cooldowns | ×1 | ×1 | ×1 | ×0.85 | ×0.8 |
+| Aim error on ground casts (m, up to) | 2.2 | 1.2 | 0 | 0 | 0 |
+| Lead (share of the spell's time to land) | 0 | 0 | 0 | 0.5 | 1 |
+| Bolt dodge, reaction | 0, 0.5 s | 0.3, 0.3 s | 0.65, 0.12 s | 0.8, 0.1 s | 0.9, 0.07 s |
+| Zone dodge, reaction | – | – | – | 0.45, 0.25 s | 0.8, 0.15 s |
+| Guard (parry, bolt wall) | 0 | 0.25 | 0.6 | 0.8 | 0.9 |
+| R when the player is under, or after | 30%, 45 s | 45%, 30 s | 55%, 20 s | 60%, 16 s | 65%, 12 s |
+
+The lead aims where the player will be when the spell lands, from the spell's impact time seen on its last cast (0.5 s before that), so a quick bolt is never aimed past the player; a fixed 0.8 s lead lost more than it won. The cooldown factor is the one lever beyond play skill: without it Hard and Master both stayed near 64%.
+
+Measured 2026-11-03 against the Normal autopilot with [pipeline/tools/duel-ladder.js](../../pipeline/tools/duel-ladder.js) (pairs Lyra–Brannoc, Vex–Kaia, Mortis–Isolde, each both ways; Normal, Hard and Master also Zephyr–Sirix and Marin–Cantor): the CPU won 2% at Novice (48 fights), 25% at Easy (48), 52% at Normal (80), 63% at Hard (80) and 85% at Master (80). Noise is about ±7 points at 48 fights. Lyra against the six heroes of her balance run at Normal: 56% (48 fights; 54% in that run), so Normal plays as before.
 
 ### The look ([parts/bolt.ts](../../src/effects/parts/bolt.ts))
 
@@ -212,6 +234,10 @@ for (let i = 0; i < 10; i++) {
 ### Tournament tool
 
 [pipeline/tools/duel-tourney.js](../../pipeline/tools/duel-tourney.js): paste it into the page (`eval(await (await fetch('/pipeline/tools/duel-tourney.js')).text())`), then `await _tourney(3)` runs every hero in the dropdown against every other, 3 fights per ordered pairing, or `_tourney(3, ['Vesper', 'Kaia'])` for a subset. It returns `wins`, `h2h`, `fights`, `avgSeconds`, `avgWinnerHp` and `timeouts`; a fight over 120 s is a timeout. It steps time itself, so it works with the browser pane hidden. Results vary because the AI's strafe flips are random: judge balance with 5+ fights per pairing. It covers `HERO_KITS` only; use the console recipe for test kits.
+
+The tournament runs at the opponent's current CPU level (the tool's View → CPU level), which should be Normal for kit balance.
+
+[pipeline/tools/duel-ladder.js](../../pipeline/tools/duel-ladder.js) measures a CPU level instead: `await _ladder(5, [['Lyra', 'Brannoc']], 8)` fights each pair both ways, 8 times each way, with the opponent at level 5 and the autopilot at Normal; `_ladderSum()` gives the opponent's win rate, fight length, casts and dodges per level. Results add up across calls (`_ladderReset()` clears them); a browser call stops after about 45 s, which is about 48 fights.
 
 ## Spell shapes built on these pieces (2026-10-30)
 
