@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
+import { TempleRays } from './hazards/temple';
 import { DEFAULT_STAGE, RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef, WallState } from './types';
 
@@ -404,6 +405,7 @@ function bannerTexture() {
 export const templeArena: ArenaDef = {
   id: 'temple',
   name: 'Night Temple',
+  hazard: (seed) => new TempleRays(seed),
   obstacles: TEMPLE_OBSTACLES,
   breakable: true,
   stage: DEFAULT_STAGE,

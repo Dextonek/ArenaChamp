@@ -111,6 +111,7 @@ export class MatchController {
         stacks: (name, n) => net.send({ t: 'stacks', name, n }),
         heal: (amount) => net.send({ t: 'heal', amount }),
         spend: (amount) => net.send({ t: 'spend', amount }),
+        hazard: (damage, color) => net.send({ t: 'hazard', damage, color }),
         status: (kind, seconds, color) => net.send({ t: 'status', kind, seconds, color }),
         shield: (amount, seconds, color) => net.send({ t: 'shield', amount, seconds, color }),
       },

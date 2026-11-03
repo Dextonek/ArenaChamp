@@ -138,6 +138,8 @@ export interface SummonEnv {
   place(p: THREE.Vector3): void;
   /** A walking direction that slides round obstacles. */
   slide(from: THREE.Vector3, dir: THREE.Vector3): THREE.Vector3;
+  /** The next spot on `key`'s way round the cover from `from` to `to`. */
+  route(key: object, from: THREE.Vector3, to: THREE.Vector3): THREE.Vector3;
   /** True when no obstacle stands between the two spots. */
   sees(a: THREE.Vector3, b: THREE.Vector3): boolean;
 }
@@ -340,7 +342,7 @@ export class SummonSystem {
       this.turn(fx, Math.atan2(dx, dz), dt);
       const dir = new THREE.Vector3(dx, 0, dz).divideScalar(Math.max(td, 1e-3));
       if (u.kind === 'melee') {
-        if (td > MELEE_REACH) walk = this.walk(u, dir, 1, dt);
+        if (td > MELEE_REACH) walk = this.walk(u, dir, 1, dt, tgt.pos);
         else if (u.cd <= 0) {
           u.swing = 0;
           u.swingAt = tgt.figure;
@@ -349,7 +351,7 @@ export class SummonSystem {
       } else {
         const sees = this.env.sees(pos, tgt.pos);
         if (u.kind === 'ranged') {
-          if (td > RANGED_KEEP + 1 || (!sees && td > 2)) walk = this.walk(u, dir, 1, dt);
+          if (td > RANGED_KEEP + 1 || (!sees && td > 2)) walk = this.walk(u, dir, 1, dt, tgt.pos);
           else if (td < RANGED_KEEP - 1.5) walk = this.walk(u, dir, -1, dt);
         }
         if (u.cd <= 0 && td <= u.opts.range && sees) this.shoot(u, w, tgt.pos);
@@ -361,9 +363,19 @@ export class SummonSystem {
     fx.update(dt, pose, u.hp / u.max, this.env.camera);
   }
 
-  /** Walks `sign` (+1 toward, -1 away) along `dir`; returns the walk amount for the animation. */
-  private walk(u: SummonUnit, dir: THREE.Vector3, sign: number, dt: number) {
-    const d = this.env.slide(u.pos, dir.clone().multiplyScalar(sign));
+  /**
+   * Walks `sign` (+1 toward, -1 away) along `dir`, or round the cover toward `to`; returns the walk amount for the
+   * animation.
+   */
+  private walk(u: SummonUnit, dir: THREE.Vector3, sign: number, dt: number, to?: THREE.Vector3) {
+    const way = dir.clone().multiplyScalar(sign);
+    if (to) {
+      const p = this.env.route(u, u.pos, to);
+      way.set(p.x - u.pos.x, 0, p.z - u.pos.z);
+      if (way.lengthSq() > 1e-6) way.normalize();
+      else way.copy(dir);
+    }
+    const d = this.env.slide(u.pos, way);
     u.pos.addScaledVector(d, u.opts.speed * dt);
     this.env.place(u.pos);
     return 1;

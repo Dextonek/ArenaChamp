@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
+import { SporeBurst } from './hazards/glade';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef, ArenaStage } from './types';
 
@@ -320,6 +321,7 @@ const footprint = (o: Obstacle) => (o.kind === 'pillar' && o.height > 3 ? 0.9 : 
 export const gladeArena: ArenaDef = {
   id: 'glade',
   name: 'Verdant Glade',
+  hazard: (seed) => new SporeBurst(seed),
   obstacles: GLADE_OBSTACLES,
   stage: STAGE,
   build() {

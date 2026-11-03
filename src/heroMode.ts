@@ -49,6 +49,8 @@ export class HeroMode implements TouchTarget {
   private holdFloor = 0;
   private aiming = -1;
   private moveTo: THREE.Vector3 | null = null;
+  /** Seconds the walk has made next to no way. */
+  private walkStuck = 0;
   private pending: { slot: number; target: Target } | null = null;
   private zoom = 1.25;
   private snapCamera = false;
@@ -408,10 +410,21 @@ export class HeroMode implements TouchTarget {
     }
     const status = this.status;
     if (this.moveTo && this.rooted <= 0 && !this.attacker.winding && !status.cannotMove && !arena.isDashing(arena.caster)) {
-      const d = new THREE.Vector3(this.moveTo.x - hero.x, 0, this.moveTo.z - hero.z);
+      // A click finds its way round the cover (src/nav.ts); the stick walks where it points and slides along cover.
+      const stick = !!this.steering;
+      const way = stick ? null : arena.route(arena.caster.group, hero, this.moveTo);
+      const next = way ? way.point : this.moveTo;
+      const d = new THREE.Vector3(next.x - hero.x, 0, next.z - hero.z);
       const len = d.length();
-      if (len < 0.05) this.moveTo = null;
-      else arena.walk(d.multiplyScalar(Math.min(1, (this.speed * status.speedMul * dt) / len)), len);
+      if (flatDist(hero, way ? way.goal : this.moveTo) < 0.05) this.moveTo = null;
+      else if (len > 1e-4) {
+        const before = hero.clone();
+        const step = this.speed * status.speedMul * dt;
+        arena.walk(d.multiplyScalar(Math.min(1, step / len)), len, stick);
+        // Something the route did not know holds the hero back (a wall just raised, a shove): give the order up.
+        this.walkStuck = flatDist(hero, before) < Math.min(step, len) * 0.25 ? this.walkStuck + dt : 0;
+        if (this.walkStuck > 0.6) { this.moveTo = null; this.walkStuck = 0; }
+      }
     }
 
     this.updateIndicators(dt, hero);

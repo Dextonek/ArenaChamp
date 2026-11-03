@@ -29,6 +29,8 @@ export interface CpuLevel {
   /** Chance to walk out of the player's area zones before they land (0: never), and the seconds before it moves. */
   zoneDodge: number;
   zoneReaction: number;
+  /** Chance to walk out of an arena hazard's event (rolled once per event; it starts `boltReaction` + 0.1 s later). */
+  hazardDodge: number;
   /** Chance that a ready parry or bolt wall answers a hit on its way. */
   guard: number;
   /** The ultimate waits until the player is under this HP share or the round is this many seconds old. */
@@ -40,27 +42,27 @@ export const CPU_LEVELS: CpuLevel[] = [
   {
     id: 1, name: 'Novice', blurb: 'Walks slowly, casts rarely and misses a lot. Never dodges.',
     speed: 2.9, castGap: [2.2, 3.4], cooldown: 1, aimError: 2.2, lead: 0, boltDodge: 0, boltReaction: 0.5,
-    zoneDodge: 0, zoneReaction: 0, guard: 0, ultHp: 0.3, ultTime: 45,
+    zoneDodge: 0, zoneReaction: 0, hazardDodge: 0.6, guard: 0, ultHp: 0.3, ultTime: 45,
   },
   {
     id: 2, name: 'Easy', blurb: 'Slow to cast and often off target. Steps aside from a skillshot now and then.',
     speed: 3.2, castGap: [0.9, 1.8], cooldown: 1, aimError: 1.2, lead: 0, boltDodge: 0.3, boltReaction: 0.3,
-    zoneDodge: 0, zoneReaction: 0, guard: 0.25, ultHp: 0.45, ultTime: 30,
+    zoneDodge: 0, zoneReaction: 0, hazardDodge: 0.75, guard: 0.25, ultHp: 0.45, ultTime: 30,
   },
   {
     id: 3, name: 'Normal', blurb: 'Casts every spell as soon as it is ready and dodges some skillshots.',
     speed: 3.5, castGap: [0, 0], cooldown: 1, aimError: 0, lead: 0, boltDodge: 0.65, boltReaction: 0.12,
-    zoneDodge: 0, zoneReaction: 0, guard: 0.6, ultHp: 0.55, ultTime: 20,
+    zoneDodge: 0, zoneReaction: 0, hazardDodge: 0.9, guard: 0.6, ultHp: 0.55, ultTime: 20,
   },
   {
     id: 4, name: 'Hard', blurb: 'Faster, spells back 15% sooner, aims where you are walking and leaves some of your zones.',
     speed: 3.85, castGap: [0, 0], cooldown: 0.85, aimError: 0, lead: 0.5, boltDodge: 0.8, boltReaction: 0.1,
-    zoneDodge: 0.45, zoneReaction: 0.25, guard: 0.8, ultHp: 0.6, ultTime: 16,
+    zoneDodge: 0.45, zoneReaction: 0.25, hazardDodge: 0.95, guard: 0.8, ultHp: 0.6, ultTime: 16,
   },
   {
     id: 5, name: 'Master', blurb: 'As fast as you, spells back 20% sooner, leads every shot and dodges most of yours.',
     speed: 4, castGap: [0, 0], cooldown: 0.8, aimError: 0, lead: 1, boltDodge: 0.9, boltReaction: 0.07,
-    zoneDodge: 0.8, zoneReaction: 0.15, guard: 0.9, ultHp: 0.65, ultTime: 12,
+    zoneDodge: 0.8, zoneReaction: 0.15, hazardDodge: 1, guard: 0.9, ultHp: 0.65, ultTime: 12,
   },
 ];
 

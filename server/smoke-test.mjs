@@ -132,6 +132,12 @@ try {
   b.send({ t: 'heal', amount: 500 });
   const ph = await a.next('peer_heal');
   check(ph.amount === 40 && ph.hp === 740 && (await b.next('hp')).hp === 740, 'heal capped at the max HP and relayed');
+  b.send({ t: 'hazard', damage: 500, color: '#fff' });
+  const hz = await a.next('peer_hit');
+  check(hz.id === 0 && hz.damage === 60 && hz.hp === 680 && (await b.next('hp')).hp === 680, 'an arena hazard is capped at 60 and comes off the HP');
+  b.send({ t: 'heal', amount: 60 });
+  await a.next('peer_heal');
+  await b.next('hp');
   b.send({ t: 'status', kind: 'stun', seconds: 9, color: '#fff' });
   b.send({ t: 'status', kind: 'nap', seconds: 1 });
   const ps = await a.next('peer_status');

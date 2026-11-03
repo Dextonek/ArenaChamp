@@ -9,6 +9,7 @@ import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS, type BuffKind, type StatusKind } from 
 import type { HeroKit, HeroSpell } from './heroes';
 import { HeroFigure, castStyle } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
+import type { ArenaHazard, HazardHit, HazardTarget, HazardWorld } from './arenas/hazards/base';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
@@ -54,6 +55,8 @@ export interface DuelNet {
   heal(amount: number): void;
   /** This side's hero paid HP for a spell (the server takes it off, never below 1). */
   spend(amount: number): void;
+  /** An arena hazard hit this side's hero for `damage` past its shield (the server takes it off; it can KO). */
+  hazard(damage: number, color?: string): void;
   /** This side's hero took a status / got a shield: only shown on the other screen. */
   status(kind: StatusKind, seconds: number, color?: string): void;
   shield(amount: number, seconds: number, color?: string): void;
@@ -114,6 +117,8 @@ const DODGE_RADIUS = 1.6; // a hit still lands within this distance of where the
 const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
 const LEAD_MAX = 3; // a CPU level's lead never puts its aim more than this far (m) ahead of the player
 const ZONE_MARGIN = 0.35; // a zone dodge aims this far (m) past the edge of the zone it leaves
+const HAZARD_LOOK = 1.6; // an AI starts walking when a hazard will reach it within this many seconds
+const HAZARD_CLEAR = 3; // and walks to a spot no hazard reaches for this long
 const SUMMON_REACH = 10; // the AI casts a summon spell when the enemy is within this distance (m)
 const UNIT_BLOCK = 2.5; // an enemy unit this close is shot at when nothing can be cast at the hero (m)
 
@@ -200,6 +205,18 @@ export class Duel {
   private landsAfter = new Map<string, number>();
   /** Zone dodges (Hard, Master): the player's cast number -> whether the opponent reacts to it, and from when. */
   private zoneDodges = new Map<number, { react: boolean; at: number }>();
+  /** Arena hazards (src/arenas/hazards) in play duels and network duels. */
+  hazardsOn = true;
+  /** Also in 'run' duels. Off by default: balance runs (`_tourney`, `_ladder`) stay comparable. */
+  hazardsInRuns = false;
+  /** This round's hazard, and the fight clock that drives it (it starts when the fight does, on both screens). */
+  private hazard: ArenaHazard | null = null;
+  private hazardClock = 0;
+  /** The seed of the next round's hazard: the match and round online, anything offline. */
+  private hazardSeed = '';
+  /** An AI's reaction to the hazard's event: rolled once per event. */
+  private hazardRolls = new Map<Enemy, { id: number; react: boolean; at: number }>();
+  private hazardWorld: HazardWorld;
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
   autopilot = false;
   /** 'play': the player against the AI. 'run': AI against AI to watch (the autopilot drives the player's hero). */
@@ -283,6 +300,12 @@ export class Duel {
       reach: () => (this.net ? 0 : this.oppRt?.attackReach() ?? 0),
       echo: () => (this.net ? 0 : this.oppRt?.attackEcho() ?? 0),
     });
+    this.hazardWorld = {
+      camera: arena.camera,
+      obstacles: () => arena.obstacles ?? [],
+      targets: () => this.hazardTargets(),
+      hit: (target, hit) => this.hazardHit(target, hit),
+    };
     this.group.visible = false;
     this.hud = this.buildHud();
     this.card = document.createElement('div');
@@ -353,6 +376,7 @@ export class Duel {
     const choice = this.opponentChoice;
     const picked = typeof choice === 'string' ? others.find((k) => k.name === choice) : choice;
     this.opponentKit = picked ?? others[Math.floor(Math.random() * others.length)];
+    this.hazardSeed = String(Math.random());
     this.setup(PLAYER_START, OPPONENT_START, arenaById(this.arenaChoice) ?? pickArena());
     if (!run) this.showBanner(this.currentArena!.name, 1.6);
     arena.hitFilter = (target, opts, cast) => this.opponentHit(target, opts, cast);
@@ -377,6 +401,7 @@ export class Duel {
     hm.focus = null;
     this.opponentKit = o.opponent;
     const [mine, theirs] = o.side === 0 ? [PLAYER_START, OPPONENT_START] : [OPPONENT_START, PLAYER_START];
+    this.hazardSeed = o.arena ?? '';
     this.setup(mine, theirs, pickArena(o.arena));
     this.net = o.net;
     this.names = o.names;
@@ -409,6 +434,11 @@ export class Duel {
     const arena = this.host.arena, hm = this.host.heroMode;
     this.host.clearEffects?.();
     this.useArena(def);
+    this.hazard?.dispose();
+    this.hazard = this.hazardsOn && (this.mode === 'play' || this.hazardsInRuns) ? def.hazard?.(this.hazardSeed) ?? null : null;
+    if (this.hazard) this.group.add(this.hazard.group);
+    this.hazardClock = 0;
+    this.hazardRolls.clear();
     this.oppAttackSpec = attackFor(this.opponentKit);
     this.oppAttack.reset();
     this.oppAttackFx.clear();
@@ -642,6 +672,8 @@ export class Duel {
     this.on = false;
     this.round++;
     this.host.clearEffects?.();
+    this.hazard?.dispose();
+    this.hazard = null;
     arena.projectiles.clear();
     arena.hitFilter = null;
     arena.hitMod = null;
@@ -873,8 +905,9 @@ export class Duel {
     foe.group.rotation.y = a.yaw + turn * k;
   }
 
-  private showBanner(text: string, seconds: number) {
+  private showBanner(text: string, seconds: number, fontSize = '') {
     this.banner.textContent = text;
+    this.banner.style.fontSize = fontSize;
     this.banner.style.display = 'block';
     this.banner.style.opacity = '1';
     this.bannerT = seconds;
@@ -914,6 +947,12 @@ export class Duel {
     this.zones.update(this.zoneClock);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
     this.updateBanner(dt);
+    if (this.hazard) {
+      // The fight clock runs only while heroes can act: not in the countdown, not after the round.
+      const live = !this.over && this.countdown < 0 && !hm.locked;
+      if (live) this.hazardClock += dt;
+      if (this.hazard.update(dt, this.hazardClock, live, this.hazardWorld) && this.mode === 'play') this.showBanner(this.hazard.warning, 1.1, '26px');
+    }
 
     const foe = this.foe;
     const foePos = foe ? foe.group.position : OPPONENT_START;
@@ -993,6 +1032,13 @@ export class Duel {
     const out = st?.cannotMove || lv.zoneDodge <= 0 ? null : this.dodgeZones(at, me);
     if (out) {
       this.host.arena.moveFoe(foe, out.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), true);
+      this.face(foe, me);
+      return;
+    }
+    // Every level walks out of an arena hazard's zones (the roll decides whether it notices in time).
+    const clear = st?.cannotMove ? null : this.hazardStep(foe, at, me);
+    if (clear) {
+      this.host.arena.moveFoe(foe, clear.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), true);
       this.face(foe, me);
       return;
     }
@@ -1100,9 +1146,16 @@ export class Duel {
     st.strafeT -= dt;
     if (st.strafeT <= 0) { st.strafe = -st.strafe; st.strafeT = 1.5 + Math.random() * 2; }
     const move = new THREE.Vector3();
-    if (d > want + (melee ? 0.3 : 1)) move.add(to);
-    else if (!melee && d < want - 2) move.sub(to);
-    move.addScaledVector(new THREE.Vector3(-to.z, 0, to.x), (melee ? 0.3 : 0.8) * st.strafe);
+    const closing = d > want + (melee ? 0.3 : 1) || (blocked && d > 1.5);
+    // Cover in the way: the planned way round it (src/nav.ts), without the strafe, which would walk it off the route.
+    if (closing && !this.host.arena.pathClear(at, other)) {
+      const p = this.host.arena.route(st, at, other).point;
+      move.set(p.x - at.x, 0, p.z - at.z);
+    } else {
+      if (closing) move.add(to);
+      else if (!melee && d < want - 2) move.sub(to);
+      move.addScaledVector(new THREE.Vector3(-to.z, 0, to.x), (melee ? 0.3 : 0.8) * st.strafe);
+    }
     // Step away from enemy melee units in contact, so they do not hit for free.
     if (foeSide && !melee) {
       for (const u of this.host.arena.summons.alive(foeSide)) {
@@ -1136,6 +1189,11 @@ export class Duel {
     const side = st.cannotMove || guarding ? null : this.dodgeBolt(this.playerDodge, this.host.arena.caster, me);
     if (side) {
       this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit, CPU_NORMAL) * st.speedMul * dt));
+      return;
+    }
+    const clear = st.cannotMove ? null : this.hazardStep(this.host.arena.caster, me, at);
+    if (clear) {
+      this.host.arena.walk(clear.multiplyScalar(this.aiSpeed(kit, CPU_NORMAL) * st.speedMul * dt));
       return;
     }
     const sees = this.host.arena.lineOfSight(me, at);
@@ -1266,16 +1324,35 @@ export class Duel {
       if (m.react && now >= m.at) go = true;
     }
     if (!go) return null;
+    return this.escapeStep(at, me, (x, z) => live.some((l) => hits(l, x, z)));
+  }
+
+  /** An AI's step out of the arena hazard's coming hit, if it reacts to this event (`CpuLevel.hazardDodge`), or null. */
+  private hazardStep(who: Enemy, at: THREE.Vector3, other: THREE.Vector3) {
+    const hz = this.hazard;
+    if (!hz?.active || !hz.danger(at.x, at.z, HAZARD_LOOK)) return null;
+    let roll = this.hazardRolls.get(who);
+    if (!roll || roll.id !== hz.eventId) {
+      const lv = this.levelOf(who);
+      roll = { id: hz.eventId, react: Math.random() < lv.hazardDodge, at: this.hazardClock + lv.boltReaction + 0.1 };
+      this.hazardRolls.set(who, roll);
+    }
+    if (!roll.react || this.hazardClock < roll.at) return null;
+    return this.escapeStep(at, other, (x, z) => hz.danger(x, z, HAZARD_CLEAR));
+  }
+
+  /** A unit step toward the nearest open spot that is not `unsafe`, keeping the distance to `me`, or null. */
+  private escapeStep(at: THREE.Vector3, me: THREE.Vector3, unsafe: (x: number, z: number) => boolean) {
     const keep = flat(at, me);
     const obstacles = this.host.arena.obstacles ?? [];
     const open = (x: number, z: number) =>
       Math.hypot(x - RING.x, z - RING.z) <= RING.r - 0.8 && obstacles.every((o) => capsuleDist(x, z, o) > o.r + BODY_RADIUS);
     // Rings of 16 spots, nearest first; on each ring the spot that keeps the distance to the player best, by a free path.
-    for (let r = 0.6; r <= 4.8; r += 0.6) {
+    for (let r = 0.6; r <= 7.2; r += 0.6) {
       const spots: { p: THREE.Vector3; score: number }[] = [];
       for (let k = 0; k < 16; k++) {
         const a = (k / 16) * Math.PI * 2, x = at.x + Math.cos(a) * r, z = at.z + Math.sin(a) * r;
-        if (!open(x, z) || live.some((l) => hits(l, x, z))) continue;
+        if (!open(x, z) || unsafe(x, z)) continue;
         const p = new THREE.Vector3(x, 0, z);
         spots.push({ p, score: Math.abs(flat(p, me) - keep) });
       }
@@ -1481,6 +1558,34 @@ export class Duel {
     if (opts.projectile || c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS) {
       this.host.arena.hit(target, this.resolve('opponent', target, opts, c.mods ?? NO_MODS, 'spell', c.slot, c.seq));
     }
+  }
+
+  /** What a hazard can hit on this screen: this side's hero, the units here and, offline, the opponent. */
+  private hazardTargets(): HazardTarget[] {
+    const arena = this.host.arena;
+    const list: HazardTarget[] = [{ key: arena.caster, pos: arena.caster.group.position }];
+    if (this.foe && !this.net) list.push({ key: this.foe, pos: this.foe.group.position });
+    for (const side of ['hero', 'opponent'] as const) {
+      for (const u of arena.summons.alive(side)) list.push({ key: u.figure, pos: u.pos });
+    }
+    return list;
+  }
+
+  /** A hazard's hit: not a spell, so no trait hooks and no credit. This side's hero reports its own damage online. */
+  private hazardHit(target: HazardTarget, hit: HazardHit) {
+    const arena = this.host.arena;
+    const opts: HitOptions = { damage: hit.damage, knock: 0, color: hit.color, from: hit.from };
+    if (hit.slow) opts.status = { kind: 'slow', seconds: hit.slow };
+    if (target.key === arena.caster) {
+      const before = this.playerHp;
+      this.damagePlayer(opts);
+      const took = before - this.playerHp;
+      if (took > 0) this.net?.hazard(took, hit.color);
+      return;
+    }
+    this.hitBypass = true;
+    arena.hit(target.key as Enemy, opts);
+    this.hitBypass = false;
   }
 
   /** The nearest alive unit of `side` within `UNIT_BLOCK` of `from` and closer than the hero at `other`, if any. */

@@ -102,6 +102,9 @@ const levelState = { level: duel.cpuLevel.name };
 fView.add(levelState, 'level', CPU_LEVELS.map((l) => l.name)).name('CPU level').onChange((n: string) => {
   duel.cpuLevel = CPU_LEVELS.find((l) => l.name === n) ?? CPU_NORMAL;
 });
+fView.add(duel, 'hazardsOn').name('arena hazards').onChange(() => {
+  if (duel.on) duel.start();
+});
 fView.add(gameplay, 'zones').name('danger zones').onChange((v: boolean) => (telegraphs.group.visible = v));
 fView.add(gameplay, 'player').name('player dummy (WASD)').onChange((v: boolean) => {
   if (v && rt.state.playMode) setPlayMode(false);

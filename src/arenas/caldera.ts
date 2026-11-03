@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
+import { VentEruption } from './hazards/caldera';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded, shadowed } from './common';
 import type { ArenaDef } from './types';
 
@@ -442,6 +443,7 @@ const SMOKE_FRAG = /* glsl */ `
 export const calderaArena: ArenaDef = {
   id: 'caldera',
   name: 'Ember Caldera',
+  hazard: (seed) => new VentEruption(seed),
   obstacles: CALDERA_OBSTACLES,
   stage: {
     background: 0x2a0e06,

@@ -104,12 +104,28 @@ Each frame a bolt sweeps a capsule from its old to its new position on the groun
 | Lead (share of the spell's time to land) | 0 | 0 | 0 | 0.5 | 1 |
 | Bolt dodge, reaction | 0, 0.5 s | 0.3, 0.3 s | 0.65, 0.12 s | 0.8, 0.1 s | 0.9, 0.07 s |
 | Zone dodge, reaction | – | – | – | 0.45, 0.25 s | 0.8, 0.15 s |
+| Walks out of an arena event | 0.6 | 0.75 | 0.9 | 0.95 | 1 |
 | Guard (parry, bolt wall) | 0 | 0.25 | 0.6 | 0.8 | 0.9 |
 | R when the player is under, or after | 30%, 45 s | 45%, 30 s | 55%, 20 s | 60%, 16 s | 65%, 12 s |
 
 The lead aims where the player will be when the spell lands, from the spell's impact time seen on its last cast (0.5 s before that), so a quick bolt is never aimed past the player; a fixed 0.8 s lead lost more than it won. The cooldown factor is the one lever beyond play skill: without it Hard and Master both stayed near 64%.
 
 Measured 2026-11-03 against the Normal autopilot with [pipeline/tools/duel-ladder.js](../../pipeline/tools/duel-ladder.js) (pairs Lyra–Brannoc, Vex–Kaia, Mortis–Isolde, each both ways; Normal, Hard and Master also Zephyr–Sirix and Marin–Cantor): the CPU won 2% at Novice (48 fights), 25% at Easy (48), 52% at Normal (80), 63% at Hard (80) and 85% at Master (80). Noise is about ±7 points at 48 fights. Lyra against the six heroes of her balance run at Normal: 56% (48 fights; 54% in that run), so Normal plays as before.
+
+### Walking round cover ([nav.ts](../../src/nav.ts))
+
+`Navigator` plans routes: the graph is a ring of points round each obstacle capsule, grown by the body's radius (0.5 m), linked wherever a body can walk straight between two of them, and a plan is the shortest way through it (A*). The graph is rebuilt when the obstacle list changes (a wall falls, a spell raises one).
+
+| Who | How it walks |
+|---|---|
+| Hero, click or tap (also walking into range and chasing an attack target) | `Arena.route` for the next point, `walk(..., slide = false)`. An order inside cover ends at its edge on the hero's side. If the hero makes next to no way for 0.6 s, the order is dropped |
+| Hero, stick | Straight where the stick points, sliding along cover (`steer` in obstacles.ts): a planned route would fight the thumb |
+| CPU and autopilot | `Duel.steer`: on a route, without the strafe, when closing in and a body could not walk straight there; otherwise as before |
+| Summoned units | On a route when walking toward their target |
+
+A route is kept per walker: it is planned again when the goal has moved 0.6 m or the obstacles changed, and another way replaces it only if that is over 1 m shorter, so a chase does not flip between the two sides of a pillar.
+
+Measured 2026-11-03 on 200 clicked walks over the five arenas, the same routes before and after: walks with three or more sharp turns (over 69°) 81 → 0; clicks on cover that end 0 of 40 → 40 of 40 (before, the hero pushed against the cover forever); clicks on open ground all arrived both times; path against a straight line 1.05× → 1.02×. Normal against the Normal autopilot afterward: 52% over 64 fights, no timeouts.
 
 ### The look ([parts/bolt.ts](../../src/effects/parts/bolt.ts))
 

@@ -1,5 +1,6 @@
 import type * as THREE from 'three';
 import type { Obstacle } from '../obstacles';
+import type { ArenaHazard } from './hazards/base';
 
 /**
  * The look of the world around a duel arena: sky dome, fog and the two scene lights, set by main.ts `setStage`
@@ -60,6 +61,8 @@ export interface ArenaDef {
   breakable?: boolean;
   /** Hide the tool's slab floor under the arena (a floating platform over clouds builds its own world). */
   hideGround?: boolean;
+  /** The arena's timed event for one round (src/arenas/hazards); both screens of a network duel get the same `seed`. */
+  hazard?(seed: string): ArenaHazard;
   /** Builds a fresh copy of the arena's meshes (called each time the arena is picked). */
   build(): ArenaScene;
 }

@@ -1,12 +1,13 @@
 # Status
 
-_Last updated: 2026-11-03_
+_Last updated: 2026-11-04_
 
-## Current state (2026-11-03)
+## Current state (2026-11-04)
 Everything below is committed on `feat/particle-editor` unless marked. The 2026-11-02 and 2026-11-03 entries that
 said "uncommitted" now name the commit that holds them.
 
 **Commits since 2026-10-30, newest first**
+- `ebfaebb` Play vs CPU with five levels, Novice to Master (entry below).
 - `0a0279a` The first five v4 kits: Lyra, Vex, Marin, Mortis, Zephyr ("v4 opener done" below;
   [kits-v4.md](../pipeline/designs/kits-v4.md)).
 - `c17cfc2` The VFX tool and the game as two apps on one runtime (`src/runtime.ts`, `src/tool/`, `src/game/`).
@@ -14,15 +15,33 @@ said "uncommitted" now name the commit that holds them.
 - `0ed55d1` Arena remake, breakable walls, sculpted v2 heroes, phone play.
 - `c7f2039` Hero identity (traits and passives), kit identity v2, the motion pass.
 
-- **Pushed:** GitHub `main` is at `c7f2039`; the four commits after it are local only.
+- **Pushed:** GitHub `main` is at `c7f2039`; the five commits after it are local only.
 - **Live:** the 2026-11-02 deploy of the working tree (worker `79de928c`), with the arena remake and the v2 heroes
-  behind `?figs`. Kits v3, the tool/game split and v4 are not live.
-- **In progress:** nothing running. Uncommitted: Play vs CPU (below) and this STATUS.
+  behind `?figs`. Kits v3, the tool/game split, v4 and Play vs CPU are not live.
+- **In progress:** nothing running.
 - **Next:** v4 batch 2 in the [kits-v4.md](../pipeline/designs/kits-v4.md) build order, led by its engine pieces;
   Nyx's stealth last.
 
+**Arena events and pathfinding (2026-11-04, user: "make like some effect for arenas like ray-laser" and "fix
+pathfinding", then "push it and build it"; the commit and deploy are recorded in the list above)**
+- Arena events: every arena has its own timed event (`src/arenas/hazards/`, table in
+  [arenas.md](architecture/arenas.md#arena-events-hazards)): the temple's sweeping rays (walls and columns stop them),
+  ice rifts, the lava vent and bombs, spore pods, marching lightning. First at 8 s, then every 9-13 s after the last;
+  pale zones in their own colour for at least 1.2 s; 35-45 damage, at most a slow; both heroes alike.
+- Online: seeded schedule from match and round, on a clock that starts at FIGHT; each client decides its own hero's
+  hits and sends the new `hazard` message (server capped at 60, can KO; smoke test passes). **No two-player test yet.**
+- Off in AI-vs-AI runs unless `duel.hazardsInRuns`, so `_tourney` and `_ladder` stay comparable. In 20 AI fights with
+  them on: 1.1 events per fight, 8 hits (hero 3, opponent 5), no timeouts.
+- Pathfinding: `src/nav.ts` plans real routes round cover for clicks, walking into range, attack chases, the CPU and
+  summoned units. The stick still walks straight and slides. Same 200 clicked walks before and after: walks with 3+
+  sharp turns 81 → 0; clicks on cover that end 0 of 40 → 40 of 40; path length 1.05× → 1.02× a straight line.
+  Normal against Normal afterward: 52% over 64 fights, no timeouts. The Hard and Master numbers in mechanics.md were
+  measured before routes: spot runs since gave Novice 0 of 12 and Master 8 of 12, not a full ladder.
+- Fixed on the way: the Night Temple's see-through floor hid warning zones on its far half, spell zones too (lessons.md).
+- Not checked: two players online; a person playing the events; walking on a real phone.
+
 **Play vs CPU with five levels (2026-11-03, user: "add button as play against cpu ... 5 difficulty of cpu";
-uncommitted, not deployed)**
+committed `ebfaebb`, not pushed, not deployed)**
 - The game: **Play vs CPU** on the Play card and **Play vs CPU · no account needed** on the login screen open a CPU
   screen: Novice, Easy, Normal, Hard, Master (a tick on beaten levels), your hero, the opponent (random by default),
   Fight. An offline AI duel, one round, Rematch on the card, a Leave button during the fight
@@ -930,8 +949,8 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 
 ## In progress
 - Nothing running (2026-11-03). Next: v4 batch 2. Side sessions: the multiplayer shell one is idle; the older kit
-  one ("Make the 20 hero kits play differently", `68f976c` and `4f39f41`, since replaced by v3 and v4) is idle and
-  is to be archived (see "Waiting on you").
+  one ("Make the 20 hero kits play differently", `68f976c` and `4f39f41`, since replaced by v3 and v4) is idle; the user
+  chose to leave it.
 - **Hero roles, committed `68f976c` + `4f39f41`** (user 2026-10-30: "all heroes seem kinda the same ... should be different, like competitive").
   Proposal `pipeline/designs/hero-roles.md`: a role and signature per hero (assassin, tank, juggernaut, mage, marksman,
   support, controller, summoner) and, after the user rejected the old Q/W/E/R template (revision 2), its own kit shape
@@ -1074,12 +1093,10 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 ## Waiting on you
 - Nothing blocking (2026-11-03). Push and deploy happen only when you ask:
   - Push: `git push origin feat/particle-editor:main`. GitHub `main` is at `c7f2039`; `0ed55d1`, `af47bbe`,
-    `c17cfc2` and `0a0279a` are local only. All commits are authored as Dextonek (old history in
+    `c17cfc2`, `0a0279a` and `ebfaebb` are local only. All commits are authored as Dextonek (old history in
     `refs/backup/before-dextonek`).
   - Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end). Live is the 2026-11-02 working
-    tree (worker `79de928c`); kits v3, the tool/game split and v4 are not live.
-- Archive the side session "Make the 20 hero kits play differently": the app refused while its Remote Control
-  link was on. Archive it from the sidebar, or say so and I switch its Remote Control off and archive it.
+    tree (worker `79de928c`); kits v3, the tool/game split, v4 and Play vs CPU are not live.
 - Play online: https://arena-of-kits.arenachamp.workers.dev in two browsers (online accounts start empty).
 - Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
 

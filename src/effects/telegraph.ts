@@ -160,9 +160,11 @@ interface Zone {
 export class TelegraphLayer {
   readonly group = new THREE.Group();
   private zones: Zone[] = [];
+  private alpha = 1;
 
-  /** Replaces the zones (call on every play). */
-  set(specs: TelegraphSpec[]) {
+  /** Replaces the zones (call on every play). `color`, `alpha`: an arena hazard's zones are not red, and paler. */
+  set(specs: TelegraphSpec[], color?: THREE.ColorRepresentation, alpha = 1) {
+    this.alpha = alpha;
     for (const z of this.zones) {
       this.group.remove(z.group);
       z.group.traverse((o) => {
@@ -171,10 +173,10 @@ export class TelegraphLayer {
       z.fillMat.dispose();
       z.edgeMat.dispose();
     }
-    this.zones = specs.map((spec) => this.build(spec));
+    this.zones = specs.map((spec) => this.build(spec, color));
   }
 
-  private build(spec: TelegraphSpec): Zone {
+  private build(spec: TelegraphSpec, color?: THREE.ColorRepresentation): Zone {
     const s = spec.shape;
     const zoneGroup = new THREE.Group();
     const fillMat = new THREE.ShaderMaterial({
@@ -182,17 +184,20 @@ export class TelegraphLayer {
       polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide,
       uniforms: {
         uProgress: { value: 0 }, uTime: { value: 0 }, uAlpha: { value: 0 }, uFlash: { value: 0 },
-        uColor: { value: RED.clone() },
+        uColor: { value: color !== undefined ? new THREE.Color(color) : RED.clone() },
       },
     });
     const edgeMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(1.4, 0.12, 0.05), transparent: true, opacity: 0, depthWrite: false,
+      color: color !== undefined ? new THREE.Color(color).multiplyScalar(1.5) : new THREE.Color(1.4, 0.12, 0.05), transparent: true, opacity: 0, depthWrite: false,
       polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, side: THREE.DoubleSide,
     });
 
     // Fill lies in local XY; rotateX(-π/2) maps local +Y to world -Z.
     const fillMesh = new THREE.Mesh(fillGeometry(s), fillMat);
     fillMesh.rotation.x = -Math.PI / 2;
+    // After every see-through floor: three.js sorts see-through meshes far to near, so a zone on the far half of the
+    // Night Temple was drawn first and its floor (opacity 0.92) all but hid it.
+    fillMesh.renderOrder = 1;
     zoneGroup.add(fillMesh);
 
     const W = 0.12;
@@ -213,7 +218,11 @@ export class TelegraphLayer {
         new THREE.Vector2(-hw, 0), new THREE.Vector2(-hw, -len), new THREE.Vector2(hw, -len), new THREE.Vector2(hw, 0),
       ], W, true));
     }
-    for (const e of edges) zoneGroup.add(new THREE.Mesh(e, edgeMat));
+    for (const e of edges) {
+      const edge = new THREE.Mesh(e, edgeMat);
+      edge.renderOrder = 1;
+      zoneGroup.add(edge);
+    }
 
     // Place and orient: local -Z must point along the zone's direction.
     if (s.kind === 'line') {
@@ -244,7 +253,7 @@ export class TelegraphLayer {
       const u = z.fillMat.uniforms;
       u.uProgress.value = progress;
       u.uTime.value = t;
-      u.uAlpha.value = fadeIn * out;
+      u.uAlpha.value = fadeIn * out * this.alpha;
       u.uFlash.value = flash;
       // Outline pulses faster as the hit gets close.
       const pulse = 0.5 + 0.5 * Math.sin(t * (6 + 14 * progress));

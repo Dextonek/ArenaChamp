@@ -3,6 +3,7 @@ import { CASTER_POS, Enemy, createCaster, createGround } from './effects/common'
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { yawTo } from './effects/targeting';
 import { blocksSight, pushOut, steer, type Obstacle } from './obstacles';
+import { Navigator, type NavStep } from './nav';
 import { StatusSet, STATUS_COLOR, STATUS_WORD, BLIND_RADIUS, BUFF_COLOR, BUFF_WORD, type BuffKind, type StatusKind } from './effects/status';
 import { StatusFx, StatusFxPool } from './effects/parts/status';
 import { BuffFx, BuffFxPool } from './effects/parts/buffs';
@@ -95,6 +96,8 @@ export class Arena {
   bounds: { x: number; z: number; r: number } | null = null;
   /** Solid pillars and walls (the duel ring): nobody walks through them, and they block line of sight. */
   obstacles: Obstacle[] | null = null;
+  /** Routes round `obstacles` (src/nav.ts). */
+  readonly nav = new Navigator();
   /**
    * Temporary obstacles (`addObstacle`) with the seconds they have left. They live in `obstacles` too; this list only
    * counts them down. Removal is by object identity (a duel's breakable walls are indexed into the arena definition).
@@ -150,6 +153,7 @@ export class Arena {
       say: (text, color, at, scale) => this.say(text, color, at, scale),
       place: (p) => { this.keepInside(p, 0.5); },
       slide: (from, dir) => (this.obstacles ? steer(from, dir, this.obstacles) : dir),
+      route: (key, from, to) => this.route(key, from, to).point,
       sees: (a, b) => this.lineOfSight(a, b),
     });
     this.heroWorld = {
@@ -639,10 +643,26 @@ export class Arena {
     this.moveFoe(target, new THREE.Vector3(delta.x, 0, delta.z));
   }
 
-  /** Play mode: walks the caster by `move` (world units, ground plane) and turns it to face the way it goes. */
-  walk(move: THREE.Vector3, reach = Infinity) {
+  /**
+   * The next spot on `key`'s walk round the cover from `from` to `to` (src/nav.ts), and where that walk ends. `key` is
+   * whoever walks: its route is kept between frames.
+   */
+  route(key: object, from: THREE.Vector3, to: THREE.Vector3): NavStep {
+    return this.obstacles ? this.nav.step(key, from, to, this.obstacles, this.bounds) : { point: to, goal: to };
+  }
+
+  /** Whether a body can walk straight from `a` to `b`. */
+  pathClear(a: THREE.Vector3, b: THREE.Vector3) {
+    return !this.obstacles || this.nav.clear(a, b, this.obstacles);
+  }
+
+  /**
+   * Play mode: walks the caster by `move` (world units, ground plane) and turns it to face the way it goes. `slide`:
+   * turn along an obstacle in the way; off for a walk on a planned route, which already clears the cover.
+   */
+  walk(move: THREE.Vector3, reach = Infinity, slide = true) {
     if (move.lengthSq() < 1e-8 || this.casterSt.dash) return;
-    if (this.obstacles) {
+    if (this.obstacles && slide) {
       // Slide round a pillar or wall in the way instead of walking into it.
       const len = move.length();
       move = steer(this.caster.group.position, move.clone().divideScalar(len), this.obstacles, 0.5, reach).multiplyScalar(len);

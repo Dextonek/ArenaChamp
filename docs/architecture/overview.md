@@ -16,6 +16,8 @@ How the apps are put together. Two apps share one runtime: [runtime.ts](../../sr
 | VFX tool: panel, particle editor, play mode, `window.vfx` | [tool/main.ts](../../src/tool/main.ts) |
 | Duel game: menus, matches, play vs CPU, `window.game` | [game/main.ts](../../src/game/main.ts), [game/match.ts](../../src/game/match.ts), [game/cpu.ts](../../src/game/cpu.ts) |
 | CPU levels of the duel AI (Novice to Master) | [cpuLevels.ts](../../src/cpuLevels.ts) |
+| Arena events (the temple's rays, ice rifts, lava bombs, spores, lightning) | [arenas/hazards/](../../src/arenas/hazards/base.ts) |
+| Pathfinding round cover | [nav.ts](../../src/nav.ts) |
 | Particle mode (the default "particles" mode) | [emitter.ts](../../src/emitter.ts), [presets.ts](../../src/presets.ts) |
 | Final screen pass (`FinishPass`) | [post.ts](../../src/post.ts) |
 | Effect contract and registry | [effects/types.ts](../../src/effects/types.ts), [effects/index.ts](../../src/effects/index.ts) |

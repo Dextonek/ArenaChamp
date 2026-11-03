@@ -46,6 +46,35 @@ From the two gameplay cameras (a network player on side 1 looks from the other e
 The ring itself never changes: centre (0, 7), radius 12, starts at (0, 13) and (0, 1). `arena.bounds`, the AI,
 the hero-mode camera focus and the network position stream all assume it.
 
+## Arena events (hazards)
+
+Every arena has its own timed event (`ArenaDef.hazard`, [src/arenas/hazards/](../../src/arenas/hazards/base.ts)). The
+first comes 8 s into the fight, then one 9-13 s after the last ended. It shows pale zones in its own colour (never the
+spells' red) for at least 1.2 s, then hits both heroes and their units alike.
+
+| Arena | Banner | What happens | Hit |
+|---|---|---|---|
+| Night Temple | The altar wakes | The sun altar fires two opposite rays that sweep a 110° wedge each. Stay out of the wedges, or behind cover: walls and columns stop a ray | 45 |
+| Frostfall Lake | The ice splits | Two parallel rifts open, then a wave of ice spikes runs down each from opposite ends | 45, slow 1.5 s |
+| Ember Caldera | The vent erupts | The vent in the open middle blows, then throws eight lava bombs in point-symmetric pairs | 45 |
+| Verdant Glade | Spores rise | Six pods swell and burst into clouds that hurt while they last (one hit per 0.8 s at most) | 35, slow 1.5 s |
+| Sky Ruins | The storm strikes | Two zigzag lines of lightning march across the platform from opposite edges | 45 |
+
+- **Fair:** point-symmetric or centred on (0, 7). No hazard stuns; none hits within the first 8 s.
+- **Not spells:** no trait hooks and no credit. A shield soaks a hazard's hit; a passive such as an ice block does not stop it.
+- **Clock and seed:** `Duel.hazardClock` runs only while heroes can act (not in the countdown, not after the round).
+  Every random choice comes from the seed: the match id and round online, so both screens run the same events. Sparks
+  and flicker use `Math.random`, because they only look.
+- **Hits:** each screen decides the hits on what it lists in `HazardWorld.targets`: its own hero, the units on that
+  screen and, offline, the opponent. Online the hero's damage goes out as `hazard` (see
+  [multiplayer.md](multiplayer.md#messages)).
+- **AI:** both the CPU and the autopilot walk out (`Duel.hazardStep`, `ArenaHazard.danger`); `CpuLevel.hazardDodge` is the
+  chance per event.
+- **Switches:** `duel.hazardsOn` (the tool's View → arena hazards). `duel.hazardsInRuns` is off, so AI-vs-AI balance
+  runs (`_tourney`, `_ladder`) stay comparable with the numbers in the kit designs.
+- **New hazard:** extend `ArenaHazard`, fill `threats` in `begin` (from `rng` only), draw in `tick`, and use `fx.ts`
+  (`GlowBeam`, `Sparks`, `FloorGlows`). Anything on the floor needs `renderOrder` ≥ 1: see lessons.md.
+
 ## Rules for a new arena
 
 - Point-symmetric cover about (0, 7); starts clear for 3 m; nothing within 1.5 m of the rim; gaps ≥ 2 m; no
@@ -60,5 +89,5 @@ the hero-mode camera focus and the network position stream all assume it.
 
 ## Limits
 
-- The live Cloudflare build still has only the temple until the deploy freeze is lifted. The arena choice needs no
-  server change, but both players must run a client that has the arenas, or they would see different cover.
+- Both players must run the same client: the arena choice and the hazard schedule need no server, so an old client
+  would see different cover and events. The `hazard` message does need the current server.

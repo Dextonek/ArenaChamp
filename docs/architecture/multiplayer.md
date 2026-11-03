@@ -131,6 +131,7 @@ Client → server:
 | `cast` (since 2026-10-30) | + `yaw` | which way the hero faced (spells fired straight ahead) |
 | `took_hit` | `id`, `damage`, `color`, `soaked`, `blocked` | `damage` got past the hero's own shield, `soaked` is what the shield took; a hit from a basic attack is capped at 40. `blocked`: the victim's passive swallowed it whole (Isolde's ice block, Oblivion's void maw): no HP is taken, and the attacker's passives do not count it |
 | `dodged` | `id` | |
+| `hazard` | `damage`, `color` | an arena event hit this hero: capped at 60, at most one per 0.3 s, comes off the HP and can KO; the other client gets `peer_hit` with id 0 (no cast, no credit) |
 | `attack` | `id` | a basic attack released at the other hero; at most one per 0.5 s |
 | `heal` | `amount` | the hero healed itself; the server adds it (at most 150, at most 300 in 2 s, up to the max HP) |
 | `status` | `kind`, `seconds`, `color` | a status the hero took (shown on the other screen; ≤ 3 s) |
@@ -266,6 +267,7 @@ takes an effect decides it**, and the server records and relays.
 | Dashes, blinks | the caster's own client moves it; the other screen sees it through the move reports. |
 | Skillshots | the other player's bolts fly on this screen (`ctx.projectile` stays on in the replay); touching this hero is the hit. |
 | Spells fired where the hero faces (`self` mode) | `cast.yaw` turns the replayed caster before the spell plays. |
+| Arena events | both clients run the same schedule from `<match id>-<round>` on a clock that starts at FIGHT. Each client decides the hits on its own hero and units; the hero's damage goes out as `hazard`. Not two-player tested yet. |
 | Summoned units | the other player's units spawn and fight on this screen; their hits on this hero go through `took_hit` with the summoning cast's id. Each screen simulates its own copy, so units can stand in different places or die at different times on the two screens. |
 | Basic attacks | see [attacks.md](attacks.md). Echo (Lyra) is folded into one hit; reach (Zephyr) is local. |
 | Units from a trait (`TraitView.summon`) | only this player's own passive raises units, on its own screen; the other screen does not see them (a spell's units are replayed through the cast there) and `hitFilter` drops their hits on the other hero, so online they hit the pack only: they do no damage to the other hero. The other side's `summon` is a no-op here. `deathSpots` only know units this screen simulates. |

@@ -21,6 +21,7 @@ for technique. Add a row whenever a fix took more than one try.
 | Soft square points | `PointsMaterial` without a texture | Use `softDotTexture()` |
 | Impact-frame silhouettes miss shader ribbons | The silhouette mask renders with an override material, which custom ribbon shaders don't survive | Add a solid stand-in mesh, visible only during the impact frames (Celestial Hunt's stag) |
 | A cinematic's fog swap had no effect | `runtime.ts` sets `scene.fog = null` while a cinematic camera is active | Don't change fog from an effect |
+| See-through floor hides what lies on its far half | three.js sorts see-through meshes far to near by each mesh's centre, so a zone on the far half of the Night Temple was drawn before its floor (opacity 0.92) | Give anything lying on a floor `renderOrder` ≥ 1 |
 
 ## Cameras and framing
 | Problem | Cause | Fix |

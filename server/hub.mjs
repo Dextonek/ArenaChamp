@@ -43,6 +43,8 @@ const BUFF_KINDS = ['haste', 'might', 'armor', 'vulnerable', 'weaken'];
 const BUFF_MAX = 0.5;
 const BUFF_MAX_S = 6;
 const SPELL_HIT_MAX = 400;
+const HAZARD_MAX = 60; // one arena hazard hit
+const HAZARD_GAP_MS = 300; // the least time between two hazard hits on one hero
 const HERO_RE = /^[A-Za-z][A-Za-z' -]{0,23}$/;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
@@ -298,6 +300,22 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
           t: 'peer_shield', amount: Math.max(0, Math.min(SHIELD_MAX, Math.round(m.amount))),
           seconds: Math.max(0, Math.min(SHIELD_MAX_S, m.seconds)), color: color(m.color),
         });
+      }
+      case 'hazard': {
+        // An arena hazard hit this client's hero: it decides where its hero stood, as with spells. It can KO; nobody
+        // gets credit. The other screen draws it as a hit (id 0 names no cast).
+        const match = c.match;
+        if (!match || match.state !== 'fight' || !num(m.damage) || m.damage <= 0) return;
+        const me = match.players[c.side];
+        const now = Date.now();
+        if (now - (me.hazardAt ?? 0) < HAZARD_GAP_MS) return;
+        me.hazardAt = now;
+        const damage = Math.min(HAZARD_MAX, Math.round(m.damage));
+        me.hp = Math.max(0, me.hp - damage);
+        send(match.players[1 - c.side].client, { t: 'peer_hit', id: 0, damage, soaked: 0, hp: me.hp, color: color(m.color) });
+        send(c, { t: 'hp', hp: me.hp });
+        if (me.hp <= 0) endRound(match, 1 - c.side, 'ko');
+        return;
       }
       case 'took_hit': {
         const match = c.match;
