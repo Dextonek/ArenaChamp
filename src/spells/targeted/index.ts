@@ -76,61 +76,61 @@ import { cleaveTestModule } from './cleaveTest';
 import { summonMeleeTestModule, summonRangedTestModule, turretTestModule } from './summonTests';
 import { crimsonRequiemModule } from './crimsonRequiem';
 import { hemolanceModule } from './hemolance';
-import { thornGardenModule } from './thornGarden';
+import { bloodStepModule } from './bloodStep';
 import { crimsonPactModule } from './crimsonPact';
-import { sanguineEclipseModule } from './sanguineEclipse';
-import { rivetShotModule } from './rivetShot';
+import { bloodBondModule } from './bloodBond';
+import { slagFlickModule } from './slagFlick';
 import { anvilDropModule } from './anvilDrop';
 import { bellowsWardModule } from './bellowsWard';
-import { forgefallModule } from './forgefall';
+import { forgeChargeModule } from './forgeCharge';
 import { rimeSpearModule } from './rimeSpear';
 import { frostfernFieldModule } from './frostfernField';
 import { glacialMantleModule } from './glacialMantle';
-import { wintersCrownModule } from './wintersCrown';
+import { glacierWallModule } from './glacierWall';
 import { starshotModule } from './starshot';
 import { constellationSnareModule } from './constellationSnare';
 import { orbitVeilModule } from './orbitVeil';
 import { celestialHuntModule } from './celestialHunt';
 import { volatileFlaskModule } from './volatileFlask';
 import { causticPoolModule } from './causticPool';
-import { mutagenModule } from './mutagen';
-import { grandTransmutationModule } from './grandTransmutation';
+import { volatileLeapModule } from './volatileLeap';
+import { elixirOfUnmakingModule } from './elixirOfUnmaking';
 import { sandLashModule } from './sandLash';
 import { quicksandModule } from './quicksand';
-import { duneWardModule } from './duneWard';
-import { tombOfKingsModule } from './tombOfKings';
+import { burrowModule } from './burrow';
+import { duneSurgeModule } from './duneSurge';
 import { arcLanceModule } from './arcLance';
-import { downpourModule } from './downpour';
+import { ballLightningModule } from './ballLightning';
 import { staticFieldModule } from './staticField';
-import { eyeOfTheStormModule } from './eyeOfTheStorm';
+import { thunderlanceModule } from './thunderlance';
 import { umbralBlinkModule } from './umbralBlink';
-import { graspOfTheDeepModule } from './graspOfTheDeep';
+import { shadowSwapModule } from './shadowSwap';
 import { nightShroudModule } from './nightShroud';
-import { eclipseExecutionModule } from './eclipseExecution';
+import { shadowMarkModule } from './shadowMark';
 import { bloomLashModule } from './bloomLash';
 import { overgrowthModule } from './overgrowth';
 import { verdantWardModule } from './verdantWard';
-import { worldBlossomModule } from './worldBlossom';
+import { seedOfRebirthModule } from './seedOfRebirth';
 import { tideWhipModule } from './tideWhip';
-import { whirlpoolModule } from './whirlpool';
+import { bubblePrisonModule } from './bubblePrison';
 import { undertowDanceModule } from './undertowDance';
 import { leviathansWaltzModule } from './leviathansWaltz';
 import { radiantSpearModule } from './radiantSpear';
 import { aegisWallModule } from './aegisWall';
-import { haloOfBladesModule } from './haloOfBlades';
-import { judgementOfDawnModule } from './judgementOfDawn';
+import { radiantParryModule } from './radiantParry';
+import { dawnDescentModule } from './dawnDescent';
 import { galeEdgeModule } from './galeEdge';
 import { tailwindRushModule } from './tailwindRush';
-import { cycloneGuardModule } from './cycloneGuard';
-import { thousandWindsModule } from './thousandWinds';
+import { windBarrierModule } from './windBarrier';
+import { galeCycloneModule } from './galeCyclone';
 import { clockworkRivetShotModule } from './clockworkRivetShot';
 import { cogTurretModule } from './cogTurret';
 import { gearFieldModule } from './gearField';
-import { gearfallModule } from './gearfall';
+import { magRailModule } from './magRail';
 import { boneSpearModule } from './boneSpear';
 import { graveCallModule } from './graveCall';
 import { ossuaryWardModule } from './ossuaryWard';
-import { legionOfTheOssuaryModule } from './legionOfTheOssuary';
+import { boneColossusModule } from './boneColossus';
 import { prismBoltModule } from './prismBolt';
 import { refractionFieldModule } from './refractionField';
 import { mirrorShellModule } from './mirrorShell';
@@ -149,12 +149,12 @@ import { voidMantleModule } from './voidMantle';
 import { unmakingModule } from './unmaking';
 import { secondHandModule } from './secondHand';
 import { stoppedMomentModule } from './stoppedMoment';
-import { rewindModule } from './rewind';
-import { twelfthHourModule } from './twelfthHour';
-import { brushstrokeModule } from './brushstroke';
-import { inkSnareModule } from './inkSnare';
+import { quickstepModule } from './quickstep';
+import { unwindModule } from './unwind';
+import { echoBrushstrokeModule } from './echoBrushstroke';
+import { inkDoubleModule } from './inkDouble';
 import { paperFamiliarsModule } from './paperFamiliars';
-import { finalCalligraphyModule } from './finalCalligraphy';
+import { curvingCalligraphyModule } from './curvingCalligraphy';
 
 /**
  * Targeted spells (category 'targeted'): they aim at the enemies / ground spot picked in the shared arena.
@@ -228,61 +228,61 @@ export const targetedModules: EffectModule[] = [
   hourglassOfAgesModule,
   midnightCircusModule,
   hemolanceModule,
-  thornGardenModule,
+  bloodStepModule,
   crimsonPactModule,
-  sanguineEclipseModule,
-  rivetShotModule,
+  bloodBondModule,
+  slagFlickModule,
   anvilDropModule,
   bellowsWardModule,
-  forgefallModule,
+  forgeChargeModule,
   rimeSpearModule,
   frostfernFieldModule,
   glacialMantleModule,
-  wintersCrownModule,
+  glacierWallModule,
   starshotModule,
   constellationSnareModule,
   orbitVeilModule,
   celestialHuntModule,
   volatileFlaskModule,
   causticPoolModule,
-  mutagenModule,
-  grandTransmutationModule,
+  volatileLeapModule,
+  elixirOfUnmakingModule,
   sandLashModule,
   quicksandModule,
-  duneWardModule,
-  tombOfKingsModule,
+  burrowModule,
+  duneSurgeModule,
   arcLanceModule,
-  downpourModule,
+  ballLightningModule,
   staticFieldModule,
-  eyeOfTheStormModule,
+  thunderlanceModule,
   umbralBlinkModule,
-  graspOfTheDeepModule,
+  shadowSwapModule,
   nightShroudModule,
-  eclipseExecutionModule,
+  shadowMarkModule,
   bloomLashModule,
   overgrowthModule,
   verdantWardModule,
-  worldBlossomModule,
+  seedOfRebirthModule,
   tideWhipModule,
-  whirlpoolModule,
+  bubblePrisonModule,
   undertowDanceModule,
   leviathansWaltzModule,
   radiantSpearModule,
   aegisWallModule,
-  haloOfBladesModule,
-  judgementOfDawnModule,
+  radiantParryModule,
+  dawnDescentModule,
   galeEdgeModule,
   tailwindRushModule,
-  cycloneGuardModule,
-  thousandWindsModule,
+  windBarrierModule,
+  galeCycloneModule,
   clockworkRivetShotModule,
   cogTurretModule,
   gearFieldModule,
-  gearfallModule,
+  magRailModule,
   boneSpearModule,
   graveCallModule,
   ossuaryWardModule,
-  legionOfTheOssuaryModule,
+  boneColossusModule,
   prismBoltModule,
   refractionFieldModule,
   mirrorShellModule,
@@ -301,12 +301,12 @@ export const targetedModules: EffectModule[] = [
   unmakingModule,
   secondHandModule,
   stoppedMomentModule,
-  rewindModule,
-  twelfthHourModule,
-  brushstrokeModule,
-  inkSnareModule,
+  quickstepModule,
+  unwindModule,
+  echoBrushstrokeModule,
+  inkDoubleModule,
   paperFamiliarsModule,
-  finalCalligraphyModule,
+  curvingCalligraphyModule,
   neonFractureJabModule,
   prismOvertureModule,
   crimsonRequiemModule,

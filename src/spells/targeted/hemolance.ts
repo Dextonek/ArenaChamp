@@ -5,37 +5,42 @@ import {
   BLOOD, BLOOD_CSS, BloodDrops, BloodPool, BloodSigil, BloodTendril, BloodThorns, CrescentArc, ShockRefraction,
   SmokeBall, StarBurst, clearScreenFx, createScreenFx, impactFrameAt,
 } from '../../effects/parts';
+import { BOLT_HEIGHT, type Projectile } from '../../effects/projectile';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Hemolance (blood kit, Q: quick strike): a pale cut across the caster's raised palm sprays blood; a tendril of
- * blood pours up out of the hand, coils once above the shoulder and straightens toward the enemy in front of a
+ * Hemolance (blood kit, Q: 8 m line skillshot): a pale cut across the caster's raised palm sprays blood; a tendril of
+ * blood pours up out of the hand, coils once above the shoulder and straightens down the aim in front of a
  * small bone sigil. Everything holds for a dead beat, then in two frames the liquid HARDENS into one faceted
- * crystal lance (a core-white glint runs along its edge). The lance flies, impales the enemy, an impact frame lands
- * and a crown of thorns bursts from the ground. After a short hold the crystal shatters into dark flakes, a pool
- * spreads and dries, and the drops fly home into the caster's chest. See pipeline/designs/hemolance.md.
+ * crystal lance (a core-white glint runs along its edge). The lance flies as a bolt (`ctx.projectile`: the first enemy
+ * it touches is hit, dodged by stepping off the line), an impact frame lands and a crown of thorns bursts from the
+ * ground where it struck (smaller at max range or a pillar when it missed). After a short hold the crystal shatters
+ * into dark flakes, a pool spreads and dries, and on a hit the drops fly home into the caster's chest. The 6 HP heal
+ * is the trait's (`landed`, `src/traits/blood.ts`), so it holds in a network duel too. With no projectile (a network
+ * duel on the caster's screen) the lance is a deterministic visual at the same speed. See pipeline/designs/hemolance.md,
+ * kit-shapes-v3.md.
  */
 export interface HemolanceSettings {
   damage: number;
-  /** HP she heals when the lance lands. */
-  heal: number;
   loop: boolean;
 }
 
-export const defaultHemolance = (): HemolanceSettings => ({ damage: 42, heal: 6, loop: false });
+export const defaultHemolance = (): HemolanceSettings => ({ damage: 50, loop: false });
 
 // Timeline (seconds).
 const DRAW_T = 0.12;
 const POURED_T = 0.2; // tendril fully poured, starts to straighten
 const HARDEN_T = 0.35; // after the dead beat 0.29..0.35: liquid becomes crystal
 const THROW_T = 0.42;
-const IMPACT_T = 0.55;
-const SHATTER_T = 0.8;
-const DRAIN_T = 0.7;
-const DURATION = 1.6;
+const DURATION = 1.9;
 const LANCE_LEN = 3.0;
 const DRAIN_DROPS = 8;
+const REACH = 8; // from her feet: the kit's range
+const MUZZLE = 0.55;
+const SPEED = 30;
+const RADIUS = 0.5;
+const FLIGHT_END = THROW_T + (REACH - MUZZLE) / SPEED;
 
 export class Hemolance implements Effect {
   readonly group = new THREE.Group();
@@ -58,10 +63,14 @@ export class Hemolance implements Effect {
   private feet = new THREE.Vector3(0, 0, -8);
   private hit = new THREE.Vector3(0, 1.1, -8);
   private dir = new THREE.Vector3(0, 0, -1);
-  private lanceEnd = new THREE.Vector3();
+  private head = new THREE.Vector3(); // the lance's contact point on the ground: live in flight, frozen on landing
+  private base = new THREE.Vector3();
+  private impT = -1;
+  private struck = false;
+  private bolt: Projectile | null = null;
 
   // Event flags.
-  private flags = { cutDrops: false, pour1: false, pour2: false, hardened: false, impacted: false, pool: false, drain: false, shattered: false, smoke: false, dried: false };
+  private flags = { cutDrops: false, pour1: false, pour2: false, hardened: false, thrown: false, landed: false, pool: false, drain: false, shattered: false, smoke: false, dried: false };
   private shedTimer = 0;
   private arrivals: number[] = [];
   private lanceId = -1;
@@ -85,7 +94,6 @@ export class Hemolance implements Effect {
   // Scratch.
   private v1 = new THREE.Vector3();
   private v2 = new THREE.Vector3();
-  private v3 = new THREE.Vector3();
   private qa = new THREE.Quaternion();
   private qb = new THREE.Quaternion();
 
@@ -130,21 +138,24 @@ export class Hemolance implements Effect {
   }
 
   get impactTime() {
-    return IMPACT_T;
+    return THROW_T + 0.1;
+  }
+
+  /** Seconds until the lance has flown its full range (the telegraph's last moment). */
+  get flightEnd() {
+    return FLIGHT_END;
   }
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.from.copy(ctx.from);
-    this.feet.copy(ctx.targetPos[0] ?? ctx.point).setY(0);
     this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
+    this.feet.copy(ctx.from).addScaledVector(this.fwd, REACH).setY(0);
     this.side.set(this.fwd.z, 0, -this.fwd.x);
     this.hand.copy(ctx.from).addScaledVector(this.fwd, 0.55).setY(1.5);
     this.chest.copy(ctx.from).addScaledVector(this.fwd, 0.15).setY(1.25);
     this.hit.copy(this.feet).setY(1.1);
-    this.dir.subVectors(this.hit, this.hand).normalize();
-    // The lance ends with its tip a little past the hit point.
-    this.lanceEnd.copy(this.hit).addScaledVector(this.dir, 0.25 - LANCE_LEN);
+    this.dir.copy(this.fwd);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.hit);
     this.pool.place(this.feet);
@@ -166,6 +177,11 @@ export class Hemolance implements Effect {
     this.shedTimer = 0;
     this.arrivals.length = 0;
     this.lanceId = -1;
+    this.bolt = null;
+    this.impT = -1;
+    this.struck = false;
+    this.head.copy(this.hand);
+    this.base.copy(this.hand);
     for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
     clearScreenFx(this.screen);
     this.smoke.clear();
@@ -240,53 +256,85 @@ export class Hemolance implements Effect {
       f.hardened = true;
       this.lanceId = this.lance.spike(this.hand, this.dir, LANCE_LEN, 0.34, 0, 0);
     }
-    // Shed a drop now and then along the throw path.
-    if (t >= THROW_T && t < IMPACT_T) {
+    // The throw: the lance flies as a bolt (without one, no bolt flies on this screen and the visual runs the same path).
+    if (!f.thrown && t >= THROW_T) {
+      f.thrown = true;
+      if (ctx?.projectile) {
+        this.v1.copy(ctx.from).addScaledVector(this.fwd, MUZZLE);
+        this.bolt = ctx.projectile({
+          from: this.v1.clone(), dir: this.fwd.clone(), speed: SPEED, range: REACH - MUZZLE, radius: RADIUS,
+          hit: { damage: this.settings.damage, knock: 4, color: BLOOD_CSS.body },
+        });
+        this.bolt.onHit((_target, at) => this.land(at, true));
+      }
+    }
+    if (f.thrown && !f.landed) {
+      const b = this.bolt;
+      if (b) {
+        if (b.alive) this.head.set(b.pos.x, 0, b.pos.z);
+        else this.land(b.pos, false);
+      } else {
+        const d = Math.min(REACH - MUZZLE, (t - THROW_T) * SPEED);
+        this.head.copy(ctx?.from ?? this.from).addScaledVector(this.fwd, MUZZLE + d).setY(0);
+        if (d >= REACH - MUZZLE) this.land(this.head, false);
+      }
+      // Shed a drop now and then along the throw path.
       this.shedTimer += dt;
       while (this.shedTimer >= 0.015) {
         this.shedTimer -= 0.015;
-        this.v1.copy(this.lanceBase(t)).addScaledVector(this.dir, Math.random() * LANCE_LEN * 0.6);
+        this.v1.copy(this.base).addScaledVector(this.dir, Math.random() * LANCE_LEN * 0.6);
         this.v2.set((Math.random() - 0.5) * 1.2, 0.3 + Math.random() * 0.8, (Math.random() - 0.5) * 1.2);
         this.drops.emit(this.v1, this.v2, 0.035 + Math.random() * 0.03);
       }
     }
-    if (!f.impacted && t >= IMPACT_T) {
-      f.impacted = true;
-      this.crown.erupt(this.feet, 1.3, 10, 1.4, { tilt: 0.45, stagger: 0.1, grow: 0.15 });
-      this.drops.spray(this.hit, this.v1.set(0, 1, 0), 14, 6, 0.8);
-      this.shake = 0.35;
-      if (ctx && ctx.targets[0]) {
-        ctx.hit(ctx.targets[0], { damage: this.settings.damage, knock: 4, from: ctx.from, color: BLOOD_CSS.body });
-        // Blood price: the lance heals her, only when it lands (the target is still where she aimed; a dodge gives nothing).
-        const e = ctx.targets[0], at = ctx.targetPos[0];
-        if (Math.hypot(e.group.position.x - at.x, e.group.position.z - at.z) <= 1.5) ctx.healSelf?.(this.settings.heal);
+    if (f.landed) {
+      const after = t - this.impT;
+      if (!f.pool && after >= 0.05) { f.pool = true; this.pool.spread(this.struck ? 1.4 : 0.9, 0.3); }
+      if (!f.drain && after >= 0.15 && this.struck) {
+        f.drain = true;
+        this.drops.drain(this.hit, (out) => out.copy(this.chest), DRAIN_DROPS, { stagger: 0.025, duration: 0.35, radius: 0.09, spread: 0.35 });
       }
+      if (!f.shattered && after >= 0.25) {
+        f.shattered = true;
+        this.lance.shatter(10, 4.5, 0.4);
+        this.crown.shatter(4, 4, 0.4);
+      }
+      if (!f.smoke && after >= 0.35) { f.smoke = true; this.smoke.trigger(this.v1.copy(this.feet).setY(0.5), 0.9, 0.7); }
+      if (!f.dried && after >= 0.4) { f.dried = true; this.pool.dry(0.15, 0.3); this.drops.splats.fadeOutAll(0.4); }
     }
-    if (!f.pool && t >= 0.6) { f.pool = true; this.pool.spread(1.4, 0.3); }
-    if (!f.drain && t >= DRAIN_T) {
-      f.drain = true;
-      this.drops.drain(this.hit, (out) => out.copy(this.chest), DRAIN_DROPS, { stagger: 0.025, duration: 0.35, radius: 0.09, spread: 0.35 });
-    }
-    if (!f.shattered && t >= SHATTER_T) {
-      f.shattered = true;
-      this.lance.shatter(10, 4.5, 0.4);
-      this.crown.shatter(4, 4, 0.4);
-    }
-    if (!f.smoke && t >= 0.9) { f.smoke = true; this.smoke.trigger(this.v1.copy(this.feet).setY(0.5), 0.9, 0.7); }
-    if (!f.dried && t >= 0.95) { f.dried = true; this.pool.dry(0.15, 0.3); this.drops.splats.fadeOutAll(0.4); }
 
     this.layout(dt);
   }
 
-  /** Lance base position at time t during the throw (accelerating). */
-  private lanceBase(t: number) {
-    const u = THREE.MathUtils.clamp((t - THROW_T) / (IMPACT_T - THROW_T), 0, 1);
-    return this.v3.lerpVectors(this.hand, this.lanceEnd, Math.pow(u, 1.6));
+  /** The lance lands: on a body (`struck`) or at the end of its range / a pillar. */
+  private land(at: THREE.Vector3, struck: boolean) {
+    const f = this.flags;
+    if (f.landed) return;
+    f.landed = true;
+    this.struck = struck;
+    this.impT = this.time;
+    this.head.set(at.x, 0, at.z);
+    this.feet.copy(this.head);
+    this.hit.set(at.x, 1.1, at.z);
+    this.screen.focus.copy(this.hit);
+    this.pool.place(this.feet);
+    this.crown.erupt(this.feet, struck ? 1.3 : 0.8, struck ? 10 : 6, struck ? 1.4 : 0.9, { tilt: 0.45, stagger: 0.1, grow: 0.15 });
+    this.drops.spray(this.hit, this.v1.set(0, 1, 0), struck ? 14 : 6, 6, 0.8);
+    if (struck) this.shake = 0.35;
+  }
+
+  /** The lance's base: it leads the contact point by the lance's length (less 0.25 m of tip), never behind the hand. */
+  private placeBase() {
+    const along = (this.head.x - this.hand.x) * this.fwd.x + (this.head.z - this.hand.z) * this.fwd.z;
+    const k = Math.max(0, along - (LANCE_LEN - 0.25));
+    const rise = smoothstep((this.time - THROW_T) / 0.1);
+    this.base.copy(this.hand).addScaledVector(this.fwd, k);
+    this.base.y = this.hand.y + (BOLT_HEIGHT - this.hand.y) * rise;
   }
 
   private layout(_dt: number) {
     const t = this.time;
-    const after = t - IMPACT_T;
+    const after = t - this.impT;
     const f = this.flags;
 
     // --- 0..0.35 The cut: a bone crescent slashes across the raised palm. ---
@@ -316,26 +364,25 @@ export class Hemolance implements Effect {
 
     // --- 1.18..1.4 Throw: the lance flies, a dark-red streak trails it. ---
     if (this.lanceId >= 0) {
-      const base = this.lanceBase(t);
+      this.placeBase();
+      const base = this.base;
       this.lance.place(this.lanceId, base, this.dir);
-      const flown = Math.min(1, Math.max(0, (t - THROW_T) / (IMPACT_T - THROW_T)));
       const trail = Math.min(3.2, this.hand.distanceTo(base));
-      const sOn = t >= THROW_T && flown > 0;
-      if (sOn) {
+      if (f.thrown && !f.landed && trail > 0.05) {
         const pts = this.streakPts;
         pts[0].copy(base);
         pts[1].copy(base).addScaledVector(this.dir, -trail);
         this.streak.setPoints(pts);
-        this.streak.head = 1 - THREE.MathUtils.clamp(after / 0.08, 0, 1);
+        this.streak.head = 1;
         this.streak.update(t);
       } else {
         this.streak.mesh.visible = false;
       }
     }
 
-    // --- 1.4 Impact: bone-card impact frame, accent star, ground refraction, shake. ---
-    this.screen.impact = impactFrameAt(t, IMPACT_T, [1], 0.03);
-    if (f.impacted) {
+    // --- Impact: bone-card impact frame, accent star, ground refraction, shake (a miss only thuds). ---
+    this.screen.impact = f.landed && this.struck ? impactFrameAt(t, this.impT, [1], 0.03) : 0;
+    if (f.landed && this.struck) {
       const sp = StarBurst.pop(after - 0.03, 0, 0.015);
       this.pop.set(this.hit, 1.1 * sp.scale, sp.opacity, 0.2);
       const gp = THREE.MathUtils.clamp(after / 0.3, 0, 1);
@@ -355,14 +402,19 @@ export class Hemolance implements Effect {
 export const hemolanceModule: EffectModule = {
   label: 'hemolance',
   category: 'hero: blood',
-  targeting: { mode: 'enemy' },
+  // A skillshot is aimed at a spot (the ground point or the target's feet); `radius` only sizes the aim strip.
+  targeting: { mode: 'ground', radius: RADIUS },
   create: () => new Hemolance(),
   telegraphs(effect) {
     const e = effect as Hemolance;
     const ctx = e.ctx;
     if (!ctx) return [];
-    const c = ctx.targetPos[0] ?? ctx.point;
-    return [{ shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: c.x, z2: c.z, width: 1.0 }, start: 0.1, impact: IMPACT_T }];
+    const d = { x: Math.sin(ctx.aim), z: Math.cos(ctx.aim) };
+    // Armed at the throw, then shown until the lance has passed; a bolt's hit is the dodge check, not the zone.
+    return [{
+      shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + d.x * REACH, z2: ctx.from.z + d.z * REACH, width: RADIUS * 2 },
+      start: 0.1, impact: THROW_T, until: e.flightEnd,
+    }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -373,6 +425,5 @@ export const hemolanceModule: EffectModule = {
     const s = (effect as Hemolance).settings;
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 150, 1);
-    f.add(s, 'heal', 0, 60, 1);
   },
 };

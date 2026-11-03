@@ -255,6 +255,12 @@ takes an effect decides it**, and the server records and relays.
 | Spells fired where the hero faces (`self` mode) | `cast.yaw` turns the replayed caster before the spell plays. |
 | Summoned units | the other player's units spawn and fight on this screen; their hits on this hero go through `took_hit` with the summoning cast's id. Each screen simulates its own copy, so units can stand in different places or die at different times on the two screens. |
 | Basic attacks | see [attacks.md](attacks.md). |
+| Hold-to-charge | the charge becomes `mods.power` in the cast message, like any trait mod. |
+| Recast that only acts (`replay: false`) | sends no cast: it moves the hero (a blink, a rewind), which streams as moves. A jump over 4 m between two move reports snaps on the other screen (`PEER_JUMP`) instead of gliding. |
+| Skillshot that pulls (`pull` on a bolt hit) | the bolt flies on the victim's screen, the hit carries `from` = the bolt's start, and `damagePlayer` drags the hero toward it (4 m at most). The caster's screen only draws the result through the victim's moves. |
+| Carry (`ctx.carry`) | applied by the victim's client when the replayed cast calls it; on the caster's screen `arena.remoteFigure` (the other hero) is left alone and follows its streamed position. The effect must judge the catch with the live position of the target. |
+| Arc aim | `cast.bend` (clamped to +-1.5 rad by the server, optional) rides with the cast; both screens fly the same arc. An older server drops the field and the replay flies straight. |
+| Temporary walls | both screens build the wall from the cast (`ctx.sentFrom`, `ctx.point`) and time it out on their own clocks; the replay's `from` is not used for the geometry. A new round clears them. |
 
 Tested with two local players (2026-10-30): a Lyra bolt into Auriel's shield (28 through, 25 soaked), Lyra's root
 trap and basic attack, Marin's hook pulling Fenna 3 m, Fenna's heal on hit and her turret hitting Marin 4 times.

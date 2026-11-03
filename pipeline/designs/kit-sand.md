@@ -36,12 +36,14 @@ Read `kit-common.md` first (files, timing, balance budget, look lessons).
 - `SandPool`: a ground decal of loose sand that swirls inward (a quicksand vortex): `spread(center, radius, s)`,
   `swirl` (0..1), `settle(seconds)`.
 
-## Q · Sand Lash (`sandLash.ts`, label `sand lash`, `enemy`, range 10, cd 3, damage 50)
-0–0.2: he sweeps the crook; a sand ribbon pours out of the ground at his side. **0.5 hit**: the ribbon lashes
-across to the target like a whip (a fast arc, width 0.35), wraps once around its legs and sets into a sandstone shackle
-(a ring of 4 carved stone shards) for 0.4 s; turquoise accent glint (2 frames), dust puff, a small ground
-`ShockRefraction` (0.03). `ctx.hit(target, { damage: 50, knock: 1, color: SAND_CSS.body })`. 0.9: the shackle
-crumbles to dust. Clean by 1.6.
+## Q - Sand Lash (`sandLash.ts`, label `sand lash`, `ground` (aim only), `aim: 'line'`, range 10, cd 3.5, damage 54), v3
+A line skillshot. 0-0.2: he sweeps the crook; a sand ribbon pours up out of the floor at his side and winds once round
+his raised arm. **0.24 the crack**: the coil unwinds into a whip of sand that flies down the aim at 24 m/s
+(`ctx.projectile`, radius 0.45, a 3.6 m ribbon body trailing the tip). The first enemy it touches takes
+`damage 54, knock 1, root 0.8 s` (the hit carries the root); the tip wraps its legs and sets into a sandstone shackle
+(4 carved shards) that crumbles at +0.7 s. Impact frame, turquoise StarBurst, ground `ShockRefraction`, shake 0.14. A
+miss lets the whip sink into the floor where it ended. Telegraph: a 0.9 m line, 10 m, armed at the crack. No projectile
+(a network duel, caster's screen): the whip is the same visual at the same speed. Clean by 2.1.
 
 ## W · Quicksand (`quicksand.ts`, label `quicksand`, `ground`, radius 4, range 10, cd 7, damage 45 + 10)
 0–0.3: a glyph ring (radius 4) carves itself into the floor at the point. 0.3–0.7: a sand pool spreads inside it and
@@ -50,21 +52,20 @@ the swirl snaps tight and 5–7 sandstone pillars punch up around the edge, lean
 shake 0.4, ground `ShockRefraction` (1 → 5, 0.04). `ctx.hit(e, { damage: 45, knock: 0 })` within 4; a tick at 1.3:
 `ctx.hit(e, { damage: 10, knock: 0 })`. 1.4–2.2: the pillars crumble, the sand settles and fades. Clean by 2.3.
 
-## E · Dune Ward (`duneWard.ts`, label `dune ward`, `self`, radius 5, cd 9, 2 × 13)
-0–0.35: three sand ribbons rise from the floor and wind around him (a slow spiral at radius 1.2–1.8, waist to head
-height) and a small glyph ring forms under him. 0.35–2.6: the ribbons keep circling; at 1.0 and 2.0 they flare out to
-radius 5 as a flat sand shockwave ring along the floor (a ribbon ring expanding, dust at its edge), hitting every enemy
-inside: `ctx.hit(e, { damage: 13, knock: 2 })`. 2.6–3.0: the ribbons set into sandstone and crumble. Clean by 3.2.
-Telegraph ends at the first pulse.
+## E - Burrow (`burrow.ts`, label `burrow`, `ground` radius 9, `dash: true`, range 11 (AI reach), tunnel up to 7 m, cd 11, damage 45), v3
+Replaces Dune Ward. 0-0.25: the sand under his feet swirls open. **0.25** he dives: the figure is hidden
+(`group.visible = false`, restored at the eruption and in `reset()`), `ctx.moveCaster(exit, 0.75)`. A mound of swirling
+sand follows him and a furrow trails 2.8 m behind (the enemy can read where he is). **Untouchable**: the trait's
+`afterCast` sets `mem.burrow = time + BURROW_SECONDS (1.1)` and `taken` sets `hit.blocked`; the eruption is at
+`BURROW_SECONDS - 0.1`. **1.0 the eruption**: three strands of sand shoot up, impact frame, StarBurst, sand ring,
+refraction, shake 0.5; every enemy within 2 m of the exit takes `damage 30, knock 3, knock-up 0.5 s`. The exit is a
+2.2 m telegraph circle (one shape object, updated if `moveCaster` clamps the exit) shown from 0.1. Clean by 2.4.
 
-## R · Tomb of Kings (`tombOfKings.ts`, label `tomb of kings`, `ground`, radius 7, range 13, cd 20, damage 125)
-The ultimate: a **sandstone pyramid** rises out of a sand vortex and **collapses onto the zone**.
-0–0.4: he plants the crook; the world darkens warm (`darken` 0.55, tint `#2a1a0c`); a big glyph ring (radius 7) carves
-itself at the point. 0.3–1.6: the floor inside turns to swirling sand; sand ribbons spiral up from the ring's edge and
-build a **stepped pyramid** of carved sandstone blocks over the point (base ~7 wide, ~6 tall; it rises layer by
-layer), enemies are pulled 0.6 toward the centre. 1.6–1.85: a glyph on the pyramid's face lights turquoise — **dead
-beat 1.85–2.0** (the sand freezes). **2.0–2.2**: the pyramid implodes downward into the vortex. **2.2 hit**: impact
-frames `[1, 2]` at 0.04 s, a ring of sandstone shards bursts outward across the radius, a sand shockwave ribbon, dust,
-ground `ShockRefraction` (1 → 12, 0.07), turquoise accent at the centre, shake 0.75.
-`ctx.hit(e, { damage: 125, knock: 6, from: point })` within 7. 2.2–4.5: the shards crumble to dust, the sand settles,
-the glyph ring fades, the darken lifts. Clean by 4.5.
+## R - Dune Surge (`duneSurge.ts`, label `dune surge`, `ground` radius 16 (direction only), `aim: 'line'`, range 12, cd 20), v3
+Replaces Tomb of Kings. 0-0.6: the floor in front of him churns and heaves into three stacked ridges of sand; a
+3.6 m wide, 12 m long lane telegraph is on the floor from 0.05. **0.6**: the wave (3 m wide) rolls 12 m at 11 m/s
+(1.09 s). The first enemy inside it is caught (14 damage) and carried on the crest (`ctx.carry` every frame, as in
+`forgeCharge.ts`); anything else it passes takes 16 and is thrown ahead (knock 7). At the end (or where the carried body
+meets stone: a stalled carry, or the lane is shortened by `sweepHit`) the wave **crashes**: 92 damage, root 1.3 s, the
+root sets into 5 sandstone pillars that crumble when it ends; impact frames, big StarBurst, sand ring, refraction, shake
+0.7. Nobody caught: the wave breaks at 12 m. Clean by 3.9. Online each client carries and hits its own hero.

@@ -20,8 +20,18 @@ export interface ProjectileOptions {
   range: number;
   /** Collision radius of the bolt (m); an enemy body adds `BODY_RADIUS`. */
   radius: number;
-  /** What a hit does. The engine adds `projectile: true` and, unless set, `from` = where the bolt was. */
+  /**
+   * What a hit does. The engine adds `projectile: true` and, unless set, `from` = where the bolt was; a hit with
+   * `pull` gets `from` = where the bolt started instead (the caster), so the target is dragged toward the caster.
+   */
   hit: HitOptions;
+  /**
+   * Turn rate in rad/s while it flies: the direction rotates this fast, so the path is a circular arc (radius
+   * `speed / |curve|`). Positive turns to the left of the direction of travel (counter-clockwise seen from above),
+   * negative to the right. `arcShot` computes the launch direction and rate for an arc through a chosen point. A
+   * bounce straightens the bolt; split children fly straight. Hits are swept along the real path as for any bolt.
+   */
+  curve?: number;
   /** Keeps flying after a hit; every enemy is hit once. */
   pierce?: boolean;
   /** After a hit it turns toward the nearest other enemy within `BOUNCE_RANGE` of the hit, this many times. */
@@ -33,6 +43,46 @@ export interface ProjectileOptions {
    */
   split?: { count: number; spreadDeg: number; at: 'hit' | 'end'; hit?: HitOptions; range?: number };
 }
+
+/**
+ * A wall of wind that destroys the other side's bolts (`CastContext.boltWall`). A segment `a` to `b` on the ground
+ * plane with a half-thickness. It does not block walking, sight or the owner's own bolts, and it does not stop homing
+ * basic attacks (those are hits, not bolts). Bolts are tested along their swept path every frame, so a fast bolt
+ * cannot tunnel through it.
+ */
+export interface BoltWallOptions {
+  /** Ends of the wall (ground plane; y is ignored). */
+  a: THREE.Vector3;
+  b: THREE.Vector3;
+  /** Half the thickness (m). A bolt adds its own radius. */
+  halfWidth: number;
+  /** Lifetime (s). */
+  seconds: number;
+  /** Called for every bolt it destroys, with the bolt and where it died (children count as bolts). */
+  onBlock?: (bolt: Projectile, at: THREE.Vector3) => void;
+}
+
+/** The handle of a bolt wall: `end()` removes it early. The system drops it after `seconds` and on `clear()`. */
+export class BoltWall {
+  alive = true;
+  /** Seconds left. */
+  left: number;
+  readonly a: THREE.Vector3;
+  readonly b: THREE.Vector3;
+  /** @internal */
+  constructor(readonly side: 'hero' | 'opponent', readonly opts: BoltWallOptions) {
+    this.a = new THREE.Vector3(opts.a.x, 0, opts.a.z);
+    this.b = new THREE.Vector3(opts.b.x, 0, opts.b.z);
+    this.left = opts.seconds;
+  }
+
+  end() {
+    this.alive = false;
+  }
+}
+
+/** The side a bolt belongs to, from its world's tag ('hero', 'hero-unit', 'opponent', 'opponent-unit'). */
+const sideOfTag = (tag: string): 'hero' | 'opponent' => (tag.startsWith('hero') ? 'hero' : 'opponent');
 
 /** Called for every hit, by the bolt that made it (children too): the enemy and where the bolt was. */
 export type ProjectileHitCallback = (target: Enemy, at: THREE.Vector3, bolt: Projectile) => void;
@@ -59,6 +109,8 @@ export class Projectile {
   rangeLeft: number;
   bounces: number;
   splitDone = false;
+  /** Turn rate now (rad/s, from `opts.curve`). */
+  curve: number;
 
   /** @internal */
   constructor(
@@ -74,6 +126,7 @@ export class Projectile {
   ) {
     this.rangeLeft = range;
     this.bounces = isChild ? 0 : opts.bounce ?? 0;
+    this.curve = isChild ? 0 : opts.curve ?? 0;
   }
 
   /** Registers a hit listener. It fires for this bolt's whole family (children share it). Returns the bolt. */
@@ -119,10 +172,80 @@ function segmentTouch(ax: number, az: number, bx: number, bz: number, px: number
   return { t, d: Math.hypot(px - (ax + dx * t), pz - (az + dz * t)) };
 }
 
+/** Rotates a ground direction by `angle` rad toward its left (counter-clockwise seen from above). */
+function turnDir(d: THREE.Vector3, angle: number) {
+  const c = Math.cos(angle), s = Math.sin(angle);
+  // dir = (sin φ, cos φ): φ + angle.
+  const x = d.x * c + d.z * s, z = d.z * c - d.x * s;
+  d.x = x;
+  d.z = z;
+}
+
+/**
+ * The launch of a curving bolt that flies a circular arc from `from` through `to` (ground plane): the direction to
+ * fire in, the `curve` rate and the arc length to use as `range`. `bend` is the total turn of the heading along the
+ * arc in radians (positive: the path bows to the right of the chord and turns left; negative the mirror image; 0:
+ * a straight shot). The chord is `from` to `to`; the heading at launch is the chord's rotated by `-bend / 2`.
+ * Both screens of a network duel get the same numbers from the cast (`CastContext.point`, `bend`).
+ */
+export function arcShot(from: THREE.Vector3, to: THREE.Vector3, bend: number, speed: number): { dir: THREE.Vector3; curve: number; range: number } {
+  const chord = Math.hypot(to.x - from.x, to.z - from.z);
+  const dir = new THREE.Vector3(to.x - from.x, 0, to.z - from.z);
+  if (chord < 1e-6) return { dir: new THREE.Vector3(0, 0, -1), curve: 0, range: 0 };
+  dir.divideScalar(chord);
+  const b = THREE.MathUtils.clamp(bend, -MAX_BEND, MAX_BEND);
+  if (Math.abs(b) < 1e-3) return { dir, curve: 0, range: chord };
+  // Circle through both ends with total turn b: radius = chord / (2 sin(b/2)), length = radius * b.
+  const length = (chord * b) / (2 * Math.sin(b / 2));
+  turnDir(dir, -b / 2);
+  return { dir, curve: (b * speed) / length, range: Math.abs(length) };
+}
+
+/** Largest bend an arc aim uses (rad): 80 degrees of total turn. */
+export const MAX_BEND = THREE.MathUtils.degToRad(80);
+/** The bend of an arc aim (rad): 70 degrees of total turn. */
+export const ARC_BEND = THREE.MathUtils.degToRad(70);
+/** An aim this close (rad) to the line toward the enemy counts as straight on: the side is the resting one. */
+export const ARC_DEAD = THREE.MathUtils.degToRad(12);
+
+/**
+ * The bend an arc aim uses. The arc bows away from `axis` (the unit direction toward the enemy): a point left of that
+ * line makes the shot bow to the left of the chord, so it launches wide on that side and curls back onto the point
+ * (round the cover on that side); a point right of it bows right. Within `ARC_DEAD` of the line (aiming straight at
+ * the enemy) it bows to `rest` (+1 right, -1 left), which the caller flips after each arc cast so successive shots
+ * alternate; `flip` (Shift) turns the side round. Returns a signed bend for `arcShot`: positive bows right.
+ */
+export function arcBendFor(from: THREE.Vector3, point: THREE.Vector3, axis: THREE.Vector3, rest: number, flip = false): number {
+  const cx = point.x - from.x, cz = point.z - from.z;
+  // Angle of the chord left of the axis (the heading is atan2(x, z); left is the increasing way).
+  const off = Math.atan2(cx * axis.z - cz * axis.x, cx * axis.x + cz * axis.z);
+  let side = Math.abs(off) >= ARC_DEAD ? (off > 0 ? -1 : 1) : rest >= 0 ? 1 : -1;
+  if (flip) side = -side;
+  return side * ARC_BEND;
+}
+
+/** Points along the arc `arcShot` describes (`n` + 1 of them, ground plane, y = 0), for the aim strip and the AI's path checks. */
+export function arcPoints(from: THREE.Vector3, to: THREE.Vector3, bend: number, n = 24): THREE.Vector3[] {
+  const a = arcShot(from, to, bend, 1);
+  const out: THREE.Vector3[] = [];
+  const d = a.dir.clone();
+  const p = new THREE.Vector3(from.x, 0, from.z);
+  const step = a.range / n, dTurn = a.curve * step;
+  for (let i = 0; i <= n; i++) {
+    out.push(p.clone());
+    turnDir(d, dTurn / 2);
+    p.addScaledVector(d, step);
+    turnDir(d, dTurn / 2);
+  }
+  return out;
+}
+
 /** The arena's bolts: spawns, moves and collides them every frame. */
 export class ProjectileSystem {
   /** Bolts in flight (children included). */
   readonly live: Projectile[] = [];
+  /** Bolt walls standing now. */
+  readonly walls: BoltWall[] = [];
   stats: Record<string, ProjectileStats> = {};
   private nextId = 1;
   /** Root bolts still flying or whose children do, to settle the `landed` / `missed` tally. */
@@ -137,6 +260,13 @@ export class ProjectileSystem {
     return p;
   }
 
+  /** Raises a wall of wind owned by `side`: it destroys the other side's bolts that cross it. */
+  wall(side: 'hero' | 'opponent', opts: BoltWallOptions): BoltWall {
+    const w = new BoltWall(side, opts);
+    this.walls.push(w);
+    return w;
+  }
+
   /** Bolts currently flying toward `figure` (what its AI looks at to dodge). */
   threats(figure: Enemy): Projectile[] {
     return this.live.filter((p) => p.world.victims().some((v) => v.figure === figure));
@@ -146,6 +276,8 @@ export class ProjectileSystem {
     for (const p of this.live) p.alive = false;
     this.live.length = 0;
     this.open.clear();
+    for (const w of this.walls) w.alive = false;
+    this.walls.length = 0;
   }
 
   resetStats() {
@@ -153,6 +285,13 @@ export class ProjectileSystem {
   }
 
   update(dt: number) {
+    if (this.walls.length) {
+      for (const w of this.walls) {
+        w.left -= dt;
+        if (w.left <= 0) w.alive = false;
+      }
+      this.walls.splice(0, this.walls.length, ...this.walls.filter((w) => w.alive));
+    }
     const n = this.live.length;
     for (let i = 0; i < n; i++) {
       const p = this.live[i];
@@ -190,11 +329,20 @@ export class ProjectileSystem {
   }
 
   private step(p: Projectile, dt: number) {
-    const dist = Math.min(p.speed * dt, p.rangeLeft);
+    let dist = Math.min(p.speed * dt, p.rangeLeft);
+    // A curving bolt turns half of this step's angle before it moves and half after: the chord matches the arc.
+    const turn = p.curve * (dist / p.speed);
+    if (turn) turnDir(p.dir, turn / 2);
     const a = p.pos, b = this._v.copy(a).addScaledVector(p.dir, dist);
     if (p.world.blocked?.(a, b)) {
       p.alive = false;
       return;
+    }
+    // A wall of the other side on the path: the bolt flies up to it, hits what it meets on the way, then ends there.
+    const wallCut = this.walls.length ? this.crossWall(p, a, b) : null;
+    if (wallCut) {
+      dist *= wallCut.t;
+      b.copy(a).addScaledVector(p.dir, dist);
     }
     const reach = p.radius + BODY_RADIUS;
     // Enemies the swept capsule touches this frame, in the order the bolt meets them.
@@ -209,7 +357,8 @@ export class ProjectileSystem {
       p.hitSet.add(c.v.figure);
       p.hits++;
       this.tally(p.world.tag).hits++;
-      p.world.hit(c.v.figure, { ...p.opts.hit, projectile: true, from: p.opts.hit.from ?? at.clone() });
+      const origin = p.opts.hit.pull ? new THREE.Vector3(p.opts.from.x, 0, p.opts.from.z) : at.clone();
+      p.world.hit(c.v.figure, { ...p.opts.hit, projectile: true, from: p.opts.hit.from ?? origin });
       p.fire(c.v.figure, at);
       if (p.opts.pierce) continue;
       // The first hit of a bolt that does not pierce: split, bounce on, or end here.
@@ -224,6 +373,7 @@ export class ProjectileSystem {
       const next = p.bounces > 0 ? this.nextTarget(p, at) : null;
       if (next) {
         p.bounces--;
+        p.curve = 0;
         p.dir.set(next.pos.x - at.x, 0, next.pos.z - at.z).normalize();
         p.rangeLeft = Math.max(p.rangeLeft, Math.hypot(next.pos.x - at.x, next.pos.z - at.z) + 2);
         return;
@@ -232,11 +382,37 @@ export class ProjectileSystem {
       return;
     }
     p.pos.addScaledVector(p.dir, moved);
+    if (wallCut) {
+      p.alive = false;
+      wallCut.wall.opts.onBlock?.(p, p.pos.clone());
+      return;
+    }
+    if (turn) turnDir(p.dir, turn / 2);
     p.rangeLeft -= moved;
     if (p.rangeLeft <= 1e-4) {
       p.alive = false;
       if (p.opts.split?.at === 'end' && !p.splitDone) this.split(p);
     }
+  }
+
+  /** The first wall of the other side the path a to b meets, and where along it (0..1), or null. */
+  private crossWall(p: Projectile, a: THREE.Vector3, b: THREE.Vector3): { wall: BoltWall; t: number } | null {
+    const side = sideOfTag(p.world.tag);
+    let best: { wall: BoltWall; t: number } | null = null;
+    for (const w of this.walls) {
+      if (!w.alive || w.side === side) continue;
+      const reach = w.opts.halfWidth + p.radius;
+      const steps = Math.min(40, Math.max(2, Math.ceil(Math.hypot(b.x - a.x, b.z - a.z) / 0.12)));
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const d = segmentTouch(w.a.x, w.a.z, w.b.x, w.b.z, a.x + (b.x - a.x) * t, a.z + (b.z - a.z) * t).d;
+        if (d <= reach) {
+          if (!best || t < best.t) best = { wall: w, t };
+          break;
+        }
+      }
+    }
+    return best;
   }
 
   /** The nearest live enemy within `BOUNCE_RANGE` of `at` that this bolt's family has not hit. */
@@ -257,7 +433,7 @@ export class ProjectileSystem {
     const root = p.root ?? p;
     for (let i = 0; i < s.count; i++) {
       const off = s.count > 1 ? THREE.MathUtils.degToRad(-s.spreadDeg / 2 + (s.spreadDeg * i) / (s.count - 1)) : 0;
-      const opts: ProjectileOptions = { ...p.opts, hit: s.hit ?? p.opts.hit, range: s.range ?? 6, pierce: false, bounce: 0, split: undefined };
+      const opts: ProjectileOptions = { ...p.opts, hit: s.hit ?? p.opts.hit, range: s.range ?? 6, pierce: false, bounce: 0, split: undefined, curve: 0 };
       const child = new Projectile(this.nextId++, p.world, opts, root, p.callbacks, p.speed, p.radius, opts.range, true);
       for (const e of p.hitSet) child.hitSet.add(e);
       this.init(child, p.pos, new THREE.Vector3(Math.sin(base + off), 0, Math.cos(base + off)));

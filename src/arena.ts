@@ -96,6 +96,18 @@ export class Arena {
   /** Solid pillars and walls (the duel ring): nobody walks through them, and they block line of sight. */
   obstacles: Obstacle[] | null = null;
   /**
+   * Temporary obstacles (`addObstacle`) with the seconds they have left. They live in `obstacles` too; this list only
+   * counts them down. Removal is by object identity (a duel's breakable walls are indexed into the arena definition).
+   */
+  private temps: { o: Obstacle; left: number }[] = [];
+  /** A figure another player's client moves (the duel's remote hero): `carry` leaves it alone. */
+  remoteFigure: Enemy | null = null;
+  /**
+   * The bend of an arc aim for the next `context()` (see `CastContext.bend`). Hero mode sets it around a cast, like
+   * `aimOffset`, and clears it again.
+   */
+  aimBend = 0;
+  /**
    * A blinded caster's miss: the next `context()` moves the aim point (and, for single-target spells, the target
    * positions) by this offset on the ground plane. Hero mode sets it around a cast and clears it again.
    */
@@ -326,6 +338,12 @@ export class Arena {
     return {
       caster: this.caster,
       from,
+      sentFrom: from,
+      bend: this.aimBend,
+      addObstacle: (o, seconds) => this.addObstacle(o, seconds),
+      removeObstacle: (o) => this.removeObstacle(o),
+      obstacles: () => this.obstacles ?? [],
+      carry: (target, delta) => this.carryFigure(target, delta),
       aim: yawTo(from, aimAt),
       targets: targets.map((f) => f.figure),
       // Single-target spells aim at the target's spot: a blind caster's miss moves it too (the enemy stays the target).
@@ -338,6 +356,7 @@ export class Arena {
       },
       ...this.selfFx(this.caster),
       projectile: (po) => this.fire(po, 'hero', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
+      boltWall: (wo) => this.projectiles.wall('hero', wo),
       // The units' hits carry this cast's number, so the duel gives them the cast's power (Mortis's bones, Ada's scrap).
       summon: (so) => this.summons.spawn({
         ...this.heroWorld,
@@ -519,6 +538,7 @@ export class Arena {
   }
 
   update(dt: number) {
+    this.tickTemps(dt);
     this.projectiles.update(dt);
     this.summons.update(dt);
     this.tickStatus(this.casterSt, this.caster, dt);
@@ -574,13 +594,57 @@ export class Arena {
     this.updateLabels(dt);
   }
 
+  /**
+   * Adds a temporary obstacle for `seconds` (a wall that blocks walking, sight and bolts); returns it. Needs a duel's
+   * obstacle list (an empty one is made if there is none). Remove it early with `removeObstacle`. The caster is pushed
+   * out of it at once; other figures when they next move.
+   */
+  addObstacle(o: Obstacle, seconds: number): Obstacle {
+    (this.obstacles ??= []).push(o);
+    this.temps.push({ o, left: Math.max(0.05, seconds) });
+    pushOut(this.caster.group.position, [o]);
+    return o;
+  }
+
+  /** Removes an obstacle by identity (a temporary one, or a broken wall). Never by index. */
+  removeObstacle(o: Obstacle) {
+    this.temps = this.temps.filter((t) => t.o !== o);
+    if (this.obstacles) this.obstacles = this.obstacles.filter((x) => x !== o);
+  }
+
+  /** Drops every temporary obstacle (a new round, the duel ends). */
+  clearTempObstacles() {
+    for (const t of this.temps) this.removeObstacle(t.o);
+    this.temps = [];
+  }
+
+  private tickTemps(dt: number) {
+    if (!this.temps.length) return;
+    for (const t of this.temps) t.left -= dt;
+    for (const t of this.temps.filter((x) => x.left <= 0)) this.removeObstacle(t.o);
+  }
+
+  /**
+   * Moves a figure by `delta` now (a carry: `CastContext.carry`), inside the bounds and out of the obstacles. The
+   * caster and the arena foes move; the remote hero (`remoteFigure`) and summoned units do not.
+   */
+  carryFigure(target: Enemy, delta: THREE.Vector3) {
+    if (target === this.remoteFigure) return;
+    if (target === this.caster) {
+      this.caster.group.position.add(new THREE.Vector3(delta.x, 0, delta.z));
+      this.keepInside(this.caster.group.position);
+      return;
+    }
+    this.moveFoe(target, new THREE.Vector3(delta.x, 0, delta.z));
+  }
+
   /** Play mode: walks the caster by `move` (world units, ground plane) and turns it to face the way it goes. */
-  walk(move: THREE.Vector3) {
+  walk(move: THREE.Vector3, reach = Infinity) {
     if (move.lengthSq() < 1e-8 || this.casterSt.dash) return;
     if (this.obstacles) {
       // Slide round a pillar or wall in the way instead of walking into it.
       const len = move.length();
-      move = steer(this.caster.group.position, move.clone().divideScalar(len), this.obstacles).multiplyScalar(len);
+      move = steer(this.caster.group.position, move.clone().divideScalar(len), this.obstacles, 0.5, reach).multiplyScalar(len);
     }
     const p = this.caster.group.position.add(move);
     p.x = THREE.MathUtils.clamp(p.x, -55, 55);
@@ -679,6 +743,9 @@ export class Arena {
     /** Delivers a hit on the hero or on one of the hero side's summoned units (`isUnit`). */
     hit: (target: Enemy, opts?: HitOptions) => void;
     displace?: (target: Enemy, offset: THREE.Vector3) => void;
+    /** Where the caster stood on its own screen, and the arc aim's bend (a network cast brings both). */
+    sentFrom?: THREE.Vector3;
+    bend?: number;
   }): CastContext {
     const from = o.from.clone().setY(0), point = o.point.clone().setY(0);
     const enemy = o.enemy ?? o.targets[0];
@@ -696,10 +763,21 @@ export class Arena {
       targetPos: o.targetPos.map((p) => p.clone().setY(0)),
       point,
       hit: o.hit,
-      displace: o.displace ?? (() => {}),
+      // By default it moves arena figures, as the player's context does (a duel opponent lifting itself: Dawn Descent).
+      displace: o.displace ?? ((target, offset) => {
+        const f = this.foes.find((x) => x.figure === target);
+        if (f) f.displaced.copy(offset);
+      }),
+      sentFrom: (o.sentFrom ?? o.from).clone().setY(0),
+      bend: o.bend ?? 0,
+      addObstacle: (ob, seconds) => this.addObstacle(ob, seconds),
+      removeObstacle: (ob) => this.removeObstacle(ob),
+      obstacles: () => this.obstacles ?? [],
+      carry: (target, delta) => this.carryFigure(target, delta),
       ...this.selfFx(o.caster),
       // The bolt flies at this cast's targets (the player hero), and its hits go the same way the spell's own do.
       projectile: (po) => this.fire(po, 'opponent', victims, deliver),
+      boltWall: (wo) => this.projectiles.wall('opponent', wo),
       summon: (so) => this.summons.spawn({
         side: 'opponent', victims, hit: deliver, fire: (po) => this.fire(po, 'opponent-unit', victims, deliver),
       }, so),

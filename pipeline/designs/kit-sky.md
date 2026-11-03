@@ -65,3 +65,19 @@ a giant vertical crescent (~6 high) splits the centre. **2.2 hit**: impact frame
 bursts outward as a ring of crescents to the radius, a pink accent at the centre, ground `ShockRefraction`
 (1 → 12, 0.07), shake 0.7: every enemy within 7 `ctx.hit(e, { damage: 125, knock: 0, from: point, status: { kind:
 'knockup', seconds: 0.8 } })`. 2.2–4.5: leaves and crescents fall and fade, the darken lifts. Clean by 4.5.
+
+## v3 (batch 3, 2026-11-03): E and R replaced
+
+Supersedes the E and R rows above (the old effects `cycloneGuard.ts` and `thousandWinds.ts` stay in the repo, unregistered).
+
+- **E Wind Barrier** (`windBarrier.ts`, label `wind barrier`, ground, `aim: 'line'`, range 3, cd 9, no damage). A 5 m wall of
+  wind across the aim, 2 m in front of him, live from 0.25 s for 3 s. It destroys the other side's bolts that cross it
+  (`ctx.boltWall`, see `docs/architecture/targeting-and-arena.md`) with a crescent and leaf puff where each dies; it
+  blocks no walking or sight and not his own bolts. Basic attacks are homing hits, not bolts, so they pass.
+- **R Gale Cyclone** (`galeCyclone.ts`, label `gale cyclone`, ground radius 40 so every enemy is listed, range 4, cd 20,
+  `cc`). A cyclone of 2.5 m radius, 5 m high, wraps him and follows the caster figure for 4 s. First contact: 26 and a
+  0.5 s knock-up; then every 0.6 s inside: 15 and a shove of 3.5. All hits carry `projectile: true` (the zone moves) and
+  the last tick is at 3.9 s. No telegraph: the funnel is the signal.
+- Trait: Momentum skips the barrier (no damage), otherwise unchanged.
+- Online: statuses (the knock-up) are ignored, so the first contact is a shove and a tick; each screen judges its own
+  hero against the live caster position. The wall stops the enemy's bolts on the screen of the hero who raised it.

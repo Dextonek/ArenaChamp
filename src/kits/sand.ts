@@ -146,22 +146,27 @@ export const sandKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'sand lash', name: 'Sand Lash', range: 10, cooldown: 3, cc: true,
-      blurb: 'Sand cracks across to one enemy like a whip and sets into a stone shackle that roots it for 0.8 s.',
+      key: 'Q', label: 'sand lash', name: 'Sand Lash', range: 10, cooldown: 3.5, cc: true, aim: 'line',
+      blurb: 'A whip of sand flies 10 m down the aim: the first enemy it touches takes 54 damage and is rooted 0.8 s in a stone shackle. Step off the line to dodge it.',
       icon(g, s) {
         ground(g, s);
-        // A ribbon whipping up from the lower left and over to a stone shackle ring at the lower right.
-        ribbon(g, s * 0.1, s * 0.86, s * 0.2, s * 0.12, s * 0.72, s * 0.62, s * 0.1);
-        grains(g, [[s * 0.1, s * 0.74, 1], [s * 0.17, s * 0.8, 0], [s * 0.06, s * 0.66, 0], [s * 0.2, s * 0.9, 1]], s * 0.018);
-        // The shackle: a stone ring of four shards.
-        const cx = s * 0.74, cy = s * 0.74;
+        // A lash streaking left to right along the floor, its tip cracking into a stone shackle on the right.
+        ribbon(g, s * 0.04, s * 0.7, s * 0.3, s * 0.42, s * 0.66, s * 0.58, s * 0.11);
+        ribbon(g, s * 0.1, s * 0.84, s * 0.34, s * 0.7, s * 0.6, s * 0.7, s * 0.05);
+        g.strokeStyle = S.stoneShade;
+        g.lineWidth = s * 0.012;
+        for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(s * (0.04 + i * 0.05), s * (0.3 + i * 0.07)); g.lineTo(s * (0.2 + i * 0.05), s * (0.3 + i * 0.07)); g.stroke(); }
+        grains(g, [[s * 0.2, s * 0.58, 1], [s * 0.3, s * 0.78, 0], [s * 0.12, s * 0.5, 0], [s * 0.46, s * 0.3, 1]], s * 0.018);
+        // The shackle: four stone shards round the tip, a turquoise crack between them.
+        const cx = s * 0.78, cy = s * 0.62;
         for (let i = 0; i < 4; i++) {
           const a = (i / 4) * Math.PI * 2 + 0.5;
-          pillar(g, cx + Math.cos(a) * s * 0.17, cy + Math.sin(a) * s * 0.07 + s * 0.05, s * 0.11, s * 0.2, -Math.cos(a) * s * 0.03);
+          pillar(g, cx + Math.cos(a) * s * 0.14, cy + Math.sin(a) * s * 0.06 + s * 0.1, s * 0.1, s * 0.22, -Math.cos(a) * s * 0.03);
         }
         g.strokeStyle = S.accent;
-        g.lineWidth = s * 0.018;
-        g.beginPath(); g.moveTo(s * 0.82, s * 0.5); g.lineTo(s * 0.9, s * 0.42); g.moveTo(s * 0.86, s * 0.5); g.lineTo(s * 0.86, s * 0.4); g.stroke();
+        g.lineWidth = s * 0.02;
+        g.lineCap = 'round';
+        g.beginPath(); g.moveTo(s * 0.7, s * 0.34); g.lineTo(s * 0.78, s * 0.44); g.lineTo(s * 0.74, s * 0.44); g.lineTo(s * 0.82, s * 0.56); g.stroke();
       },
     },
     {
@@ -193,57 +198,60 @@ export const sandKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'dune ward', name: 'Dune Ward', range: 0, cooldown: 9, buff: { kind: 'haste', amount: 0.2, seconds: 3 },
-      blurb: 'Three sand ribbons wind around him and speed him up; twice they fling a ring of sand that slows enemies near. No shield.',
+      // Range 11 is only the duel AI's reach: it burrows when the enemy is out of Q's range; the tunnel itself is 7 m.
+      key: 'E', label: 'burrow', name: 'Burrow', range: 11, cooldown: 11, dash: true,
+      blurb: 'Dives into the sand and tunnels up to 7 m toward the aim, untouchable for 1.1 s while a moving mound shows where he is. He erupts with 45 damage and a 0.5 s knock-up on enemies within 2 m of the exit.',
       icon(g, s) {
         ground(g, s);
-        // The outer flung-sand ring, pale at the edge.
-        g.strokeStyle = S.stone;
-        g.lineWidth = s * 0.03;
-        g.beginPath(); g.arc(s * 0.5, s * 0.5, s * 0.42, 0, Math.PI * 2); g.stroke();
-        g.strokeStyle = S.body;
-        g.lineWidth = s * 0.05;
-        g.setLineDash([s * 0.09, s * 0.04]);
-        g.beginPath(); g.arc(s * 0.5, s * 0.5, s * 0.36, 0, Math.PI * 2); g.stroke();
-        g.setLineDash([]);
-        // Three ribbons in a spiral around the middle.
+        // A furrow of mounds crossing the floor from the lower left, and the eruption at the upper right.
+        ribbon(g, s * 0.04, s * 0.88, s * 0.3, s * 0.82, s * 0.62, s * 0.62, s * 0.07);
         for (let i = 0; i < 3; i++) {
-          const a0 = (i / 3) * Math.PI * 2 + 0.4;
-          const p = (a: number, r: number): [number, number] => [s * 0.5 + Math.cos(a) * r, s * 0.5 + Math.sin(a) * r];
-          const [x0, y0] = p(a0, s * 0.14);
-          const [cx, cy] = p(a0 + 1.1, s * 0.34);
-          const [x1, y1] = p(a0 + 2.2, s * 0.2);
-          ribbon(g, x0, y0, cx, cy, x1, y1, s * 0.075);
+          const x = s * (0.12 + i * 0.15), y = s * (0.86 - i * 0.07);
+          g.fillStyle = S.body;
+          g.beginPath(); g.ellipse(x, y, s * 0.07, s * 0.035, 0, 0, Math.PI * 2); g.fill();
+          g.fillStyle = S.hot;
+          g.beginPath(); g.ellipse(x - s * 0.01, y - s * 0.01, s * 0.035, s * 0.015, 0, 0, Math.PI * 2); g.fill();
         }
-        g.fillStyle = S.stone;
-        g.beginPath(); g.arc(s * 0.5, s * 0.5, s * 0.07, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = S.dark;
-        g.lineWidth = s * 0.015;
-        g.stroke();
+        ring(g, s * 0.7, s * 0.7, s * 0.26, s * 0.09, s * 0.035);
+        // The column: a fan of stone shards and sand ribbons bursting up out of the hole.
+        pillar(g, s * 0.6, s * 0.7, s * 0.09, s * 0.26, -s * 0.08);
+        pillar(g, s * 0.8, s * 0.7, s * 0.09, s * 0.3, s * 0.08);
+        pillar(g, s * 0.7, s * 0.72, s * 0.1, s * 0.42, 0);
+        ribbon(g, s * 0.64, s * 0.66, s * 0.56, s * 0.3, s * 0.7, s * 0.14, s * 0.06);
+        ribbon(g, s * 0.76, s * 0.66, s * 0.86, s * 0.3, s * 0.74, s * 0.16, s * 0.06);
+        grains(g, [[s * 0.52, s * 0.34, 1], [s * 0.9, s * 0.42, 0], [s * 0.6, s * 0.12, 0], [s * 0.84, s * 0.16, 1], [s * 0.46, s * 0.5, 0]], s * 0.018);
+        g.strokeStyle = S.accent;
+        g.lineWidth = s * 0.022;
+        g.lineCap = 'round';
+        g.beginPath(); g.moveTo(s * 0.66, s * 0.3); g.lineTo(s * 0.7, s * 0.2); g.lineTo(s * 0.74, s * 0.3); g.stroke();
       },
     },
     {
-      key: 'R', label: 'tomb of kings', name: 'Tomb of Kings', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. Sand ribbons stack a sandstone pyramid over the zone, then it implodes and stuns everyone inside for 1 s.',
+      key: 'R', label: 'dune surge', name: 'Dune Surge', range: 12, cooldown: 20, cc: true, aim: 'line',
+      blurb: 'Ultimate. A sand wave 3 m wide rolls 12 m down the aim at 11 m/s. The first enemy it reaches is carried on its crest to the end, where the wave crashes: 92 damage and a 1.3 s root. Anything else it passes takes 16 and is thrown ahead.',
       icon(g, s) {
         ground(g, s);
-        ring(g, s * 0.5, s * 0.82, s * 0.46, s * 0.14, s * 0.04);
-        g.fillStyle = S.body;
-        g.beginPath(); g.ellipse(s * 0.5, s * 0.82, s * 0.36, s * 0.1, 0, 0, Math.PI * 2); g.fill();
-        // The stepped pyramid, six tiers.
-        for (let k = 0; k < 6; k++) {
-          const w = s * (0.62 - k * 0.095);
-          slab(g, s * 0.5 - w / 2, s * 0.76 - (k + 1) * s * 0.105, w, s * 0.105, k < 4);
-        }
-        // The lit glyph on its face.
-        g.strokeStyle = S.accent;
-        g.lineWidth = s * 0.03;
+        // A tall wave seen from the side, curling over to the right, three ridges stacked behind its crest.
+        ribbon(g, s * 0.04, s * 0.84, s * 0.3, s * 0.78, s * 0.66, s * 0.66, s * 0.1);
+        ribbon(g, s * 0.1, s * 0.74, s * 0.34, s * 0.58, s * 0.66, s * 0.5, s * 0.1);
+        ribbon(g, s * 0.16, s * 0.62, s * 0.36, s * 0.3, s * 0.72, s * 0.3, s * 0.12);
+        // The curling crest.
+        ribbon(g, s * 0.5, s * 0.34, s * 0.74, s * 0.12, s * 0.84, s * 0.36, s * 0.09);
+        g.strokeStyle = S.stone;
+        g.lineWidth = s * 0.02;
         g.lineCap = 'round';
-        g.beginPath(); g.moveTo(s * 0.43, s * 0.47); g.lineTo(s * 0.5, s * 0.38); g.lineTo(s * 0.57, s * 0.47); g.lineTo(s * 0.5, s * 0.56); g.closePath(); g.stroke();
-        // Shards flying out.
-        pillar(g, s * 0.08, s * 0.86, s * 0.07, s * 0.14, s * 0.02);
-        pillar(g, s * 0.93, s * 0.84, s * 0.07, s * 0.16, -s * 0.02);
-        grains(g, [[s * 0.14, s * 0.62, 1], [s * 0.88, s * 0.6, 0], [s * 0.2, s * 0.5, 0], [s * 0.8, s * 0.44, 1]], s * 0.016);
+        g.beginPath(); g.moveTo(s * 0.52, s * 0.28); g.quadraticCurveTo(s * 0.74, s * 0.06, s * 0.84, s * 0.3); g.stroke();
+        // The carried body on the crest, and the stone that sets where it crashes.
+        g.fillStyle = S.dark;
+        g.beginPath(); g.arc(s * 0.82, s * 0.46, s * 0.04, 0, Math.PI * 2); g.fill();
+        g.fillRect(s * 0.8, s * 0.48, s * 0.04, s * 0.1);
+        pillar(g, s * 0.78, s * 0.9, s * 0.1, s * 0.28, -s * 0.05);
+        slab(g, s * 0.84, s * 0.86, s * 0.14, s * 0.1, false);
+        grains(g, [[s * 0.2, s * 0.48, 1], [s * 0.1, s * 0.56, 0], [s * 0.92, s * 0.52, 1], [s * 0.64, s * 0.2, 0]], s * 0.018);
+        // Speed marks along the base.
+        g.strokeStyle = S.accent;
+        g.lineWidth = s * 0.02;
+        g.beginPath(); g.moveTo(s * 0.04, s * 0.94); g.lineTo(s * 0.34, s * 0.94); g.moveTo(s * 0.12, s * 0.9); g.lineTo(s * 0.3, s * 0.9); g.stroke();
       },
     },
   ],

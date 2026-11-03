@@ -24,6 +24,12 @@ export interface CogTurretSettings {
   hitKnock: number;
 }
 
+/**
+ * Her live turrets, keyed by the caster's figure. Cog Turret adds the summon it makes; Mag Rail (`magRail.ts`) reads
+ * the units that still live to fire a rail from each. Network duels make no summons, so the list stays empty there.
+ */
+export const cogTurrets = new WeakMap<object, Summon[]>();
+
 export const defaultCogTurret = (): CogTurretSettings => ({ hp: 80, seconds: 6, damage: 12, attackEvery: 1.4, range: 8, hitDamage: 20, hitKnock: 3 });
 
 const BUILD_END = 0.5; // the last click, the summon and the small hit
@@ -163,6 +169,9 @@ export class CogTurret implements Effect {
           kind: 'turret', at: P.clone(), hp: s.hp, seconds: s.seconds, damage: s.damage, attackEvery: s.attackEvery, range: s.range,
           color: CLOCKWORK_CSS.body, look: turretLook,
         });
+        const mine = (cogTurrets.get(ctx.caster) ?? []).filter((m) => m.alive);
+        mine.push(this.summoned);
+        cogTurrets.set(ctx.caster, mine);
         const run = this.run;
         this.summoned.onDeath((u) => {
           if (run !== this.run) return;

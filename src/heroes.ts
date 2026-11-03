@@ -22,6 +22,7 @@ import { stormKit } from './kits/storm';
 import { astralKit } from './kits/astral';
 import { forgeKit } from './kits/forge';
 import { frostKit } from './kits/frost';
+import { bloodKit } from './kits/blood';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -41,10 +42,20 @@ export interface HeroSpell {
   cc?: true;
   /** A gap closer (a dash toward the target): the duel AI casts it when the enemy is out of Q's range, not otherwise. */
   dash?: true;
+  /** A last stand (a cheat death, a heal): the duel AI casts it when its own HP drops under about 45%, not by the enemy's HP. */
+  save?: true;
+  /** A parry (Radiant Parry): the duel AI casts it only when a hit is about to land (a bolt due, an attack winding up). */
+  parry?: true;
+  /** A bolt wall (Wind Barrier): the duel AI raises it toward an enemy bolt that is still far enough out to be caught. */
+  barrier?: true;
   /** The spell summons units (`ctx.summon`): the duel AI casts it when ready and the enemy is within about 10 m, at a spot in front of itself. */
   summon?: true;
-  /** `line`: a skillshot. Hero mode shows a strip of the spell's range and width from the hero toward the cursor, not the ground circle. */
-  aim?: 'line';
+  /**
+   * `line`: a skillshot. Hero mode shows a strip of the spell's range and width from the hero toward the cursor, not the ground circle.
+   * `arc`: a curving skillshot (`ProjectileOptions.curve`): the strip bends from the hero to the cursor; the bend comes to the
+   * spell as `CastContext.bend` (rule: `arcBendFor` in effects/projectile.ts). The spell's targeting is a ground point.
+   */
+  aim?: 'line' | 'arc';
   /** A buff the hero gives itself when it casts this (see `BuffKind`). */
   buff?: { kind: BuffKind; amount: number; seconds: number };
   /** A debuff every hit of this spell puts on what it hits. */
@@ -70,160 +81,6 @@ export interface HeroKit {
   melee?: true;
   spells: [HeroSpell, HeroSpell, HeroSpell, HeroSpell];
 }
-
-// --- Blood kit icons: dark crimson ground, bone foil, one shape each (the kit's signature shapes) ----------
-const B = { core: '#fff1e6', hot: '#ff3b4e', body: '#8c0f22', dark: '#140306', bone: '#e9dcc6' };
-
-function iconGround(g: CanvasRenderingContext2D, s: number) {
-  const r = g.createRadialGradient(s * 0.5, s * 0.42, s * 0.05, s * 0.5, s * 0.5, s * 0.75);
-  r.addColorStop(0, '#3a0610');
-  r.addColorStop(1, B.dark);
-  g.fillStyle = r;
-  g.fillRect(0, 0, s, s);
-}
-
-/** A faceted crystal spike from (x1,y1) to the tip (x2,y2), `w` wide at the base. */
-function thorn(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, w: number) {
-  const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy), nx = -dy / l, ny = dx / l;
-  g.beginPath();
-  g.moveTo(x1 + nx * w / 2, y1 + ny * w / 2);
-  g.lineTo(x2, y2);
-  g.lineTo(x1 - nx * w / 2, y1 - ny * w / 2);
-  g.closePath();
-  g.fillStyle = B.body;
-  g.fill();
-  // Lit facet: the half toward the upper left, with the hot edge line.
-  g.beginPath();
-  g.moveTo(x1, y1);
-  g.lineTo(x2, y2);
-  g.lineTo(x1 + nx * w / 2, y1 + ny * w / 2);
-  g.closePath();
-  g.fillStyle = '#b3162c';
-  g.fill();
-  g.strokeStyle = B.hot;
-  g.lineWidth = Math.max(1, w * 0.08);
-  g.beginPath();
-  g.moveTo(x1 + nx * w / 2, y1 + ny * w / 2);
-  g.lineTo(x2, y2);
-  g.stroke();
-}
-
-function drop(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
-  g.beginPath();
-  g.moveTo(x, y - r * 2.2);
-  g.bezierCurveTo(x + r * 1.1, y - r * 0.6, x + r, y + r, x, y + r);
-  g.bezierCurveTo(x - r, y + r, x - r * 1.1, y - r * 0.6, x, y - r * 2.2);
-  g.fillStyle = B.body;
-  g.fill();
-  g.fillStyle = B.core;
-  g.beginPath();
-  g.arc(x - r * 0.35, y - r * 0.1, r * 0.18, 0, Math.PI * 2);
-  g.fill();
-}
-
-const bloodKit: HeroKit = {
-  name: 'Vesper',
-  title: 'the Crimson Countess',
-  maxHp: 620,
-  accent: B.hot,
-  foil: B.bone,
-  portrait(g, s) {
-    iconGround(g, s);
-    // A bone crescent behind a blood drop: the moon and the blood.
-    g.fillStyle = B.bone;
-    g.beginPath();
-    g.arc(s * 0.5, s * 0.5, s * 0.34, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = B.dark;
-    g.beginPath();
-    g.arc(s * 0.6, s * 0.44, s * 0.31, 0, Math.PI * 2);
-    g.fill();
-    drop(g, s * 0.56, s * 0.58, s * 0.13);
-  },
-  spells: [
-    {
-      key: 'Q', label: 'hemolance', name: 'Hemolance', range: 8, cooldown: 3,
-      blurb: 'Hardens her blood into a crystal lance and impales one enemy; if it lands, the blood comes home and heals her 6.',
-      icon(g, s) {
-        iconGround(g, s);
-        thorn(g, s * 0.2, s * 0.82, s * 0.86, s * 0.16, s * 0.2);
-        drop(g, s * 0.28, s * 0.36, s * 0.07);
-        drop(g, s * 0.68, s * 0.74, s * 0.05);
-      },
-    },
-    {
-      key: 'W', label: 'thorn garden', name: 'Thorn Garden', range: 8, cooldown: 7,
-      blurb: 'A pool of blood inside a bone sigil freezes upward into a thicket of thorns that slows whoever it catches.',
-      icon(g, s) {
-        iconGround(g, s);
-        g.strokeStyle = B.bone;
-        g.lineWidth = s * 0.03;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.8, s * 0.38, s * 0.1, 0, 0, Math.PI * 2);
-        g.stroke();
-        const spikes: [number, number, number][] = [[0.24, 0.42, 0.13], [0.38, 0.22, 0.15], [0.52, 0.12, 0.17], [0.66, 0.26, 0.15], [0.78, 0.46, 0.12]];
-        for (const [x, top, w] of spikes) thorn(g, s * x, s * 0.82, s * (x + (x - 0.5) * 0.25), s * top, s * w);
-      },
-    },
-    {
-      key: 'E', label: 'crimson pact', name: 'Crimson Pact', range: 0, cooldown: 9,
-      buff: { kind: 'might', amount: 0.2, seconds: 3 },
-      blurb: 'A heart of blood beats over her and latches onto the nearest enemy within 6 m: three drains, and she heals half of what they deal.',
-      icon(g, s) {
-        iconGround(g, s);
-        g.strokeStyle = B.bone;
-        g.lineWidth = s * 0.025;
-        g.beginPath();
-        g.arc(s * 0.5, s * 0.52, s * 0.38, 0, Math.PI * 2);
-        g.stroke();
-        // Heart.
-        const x = s * 0.5, y = s * 0.44, r = s * 0.17;
-        g.beginPath();
-        g.moveTo(x, y + r * 1.9);
-        g.bezierCurveTo(x - r * 2.2, y + r * 0.5, x - r * 1.4, y - r * 1.3, x, y - r * 0.3);
-        g.bezierCurveTo(x + r * 1.4, y - r * 1.3, x + r * 2.2, y + r * 0.5, x, y + r * 1.9);
-        g.fillStyle = B.body;
-        g.fill();
-        g.strokeStyle = B.hot;
-        g.lineWidth = s * 0.02;
-        g.stroke();
-        g.fillStyle = B.core;
-        g.beginPath();
-        g.arc(x - r * 0.7, y + r * 0.1, r * 0.16, 0, Math.PI * 2);
-        g.fill();
-      },
-    },
-    {
-      key: 'R', label: 'sanguine eclipse', name: 'Sanguine Eclipse', range: 8, cooldown: 20,
-      blurb: 'Ultimate. A bleeding moon rises; the blood in a 6 m zone is harvested (heals her 10 per enemy) and freezes into a thorn-star that falls on it.',
-      icon(g, s) {
-        iconGround(g, s);
-        // Bone moon, red running down from the top.
-        g.save();
-        g.beginPath();
-        g.arc(s * 0.5, s * 0.36, s * 0.24, 0, Math.PI * 2);
-        g.fillStyle = B.bone;
-        g.fill();
-        g.clip();
-        g.fillStyle = B.body;
-        g.fillRect(0, 0, s, s * 0.22);
-        for (const [x, l, w] of [[0.32, 0.18, 0.05], [0.42, 0.08, 0.04], [0.52, 0.22, 0.06], [0.63, 0.11, 0.04], [0.7, 0.16, 0.05]]) {
-          g.fillRect(s * (x - w / 2), s * 0.2, s * w, s * l);
-          g.beginPath();
-          g.arc(s * x, s * (0.2 + l), s * w * 0.6, 0, Math.PI * 2);
-          g.fill();
-        }
-        g.restore();
-        // Thorn-star below it.
-        const cx = s * 0.5, cy = s * 0.72;
-        for (let i = 0; i < 8; i++) {
-          const a = (i / 8) * Math.PI * 2 + 0.2, l = s * (i % 2 ? 0.13 : 0.22);
-          thorn(g, cx, cy, cx + Math.cos(a) * l, cy + Math.sin(a) * l, s * 0.07);
-        }
-      },
-    },
-  ],
-};
 
 /** Each hero's rigged figure (blender/heroes/hero_figures.py exports them; concept: docs/heroes/lineup_concept.svg). */
 const MODELS: Record<string, string> = {
@@ -251,7 +108,7 @@ const MODELS: Record<string, string> = {
 
 /**
  * The MOBA-style redesign on trial (blender/heroes/moba_figures.py): `?figs=v2` in the URL swaps these heroes'
- * figures; without it the game keeps the current ones.
+ * figures (sculpted, in the concept sheet's shapes); without it the game keeps the current ones.
  */
 const MODELS_V2: Record<string, string> = {
   Brannoc: 'models/heroes/forge_v2.glb',
@@ -260,11 +117,11 @@ const MODELS_V2: Record<string, string> = {
   Isolde: 'models/heroes/frost_v2.glb',
   Zephyr: 'models/heroes/sky_v2.glb',
   Oblivion: 'models/heroes/void_v2.glb',
+  Sefu: 'models/heroes/sand_v2.glb',
+  Auriel: 'models/heroes/dawn_v2.glb',
 };
-// `?figs=v2c`: the v2 heroes, with Brannoc and Kaia in the first concept sheet's shapes (a trial)
-const MODELS_V2C: Record<string, string> = { Brannoc: 'models/heroes/forge_c_v2.glb', Kaia: 'models/heroes/storm_c_v2.glb' };
+// `v2c` (the concept trial's link) still works and now shows the same figures
 const FIGS = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('figs') : null;
 if (FIGS === 'v2' || FIGS === 'v2c') Object.assign(MODELS, MODELS_V2);
-if (FIGS === 'v2c') Object.assign(MODELS, MODELS_V2C);
 
 export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

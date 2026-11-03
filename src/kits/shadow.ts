@@ -58,23 +58,6 @@ function figure(g: CanvasRenderingContext2D, x: number, y: number, h: number, s:
   cutFill(g, s, 0.01);
 }
 
-/** A hand rising from (x, y) with height h, five claws. */
-function hand(g: CanvasRenderingContext2D, x: number, y: number, h: number, s: number) {
-  const fingers: [number, number, number][] = [[-0.2, -0.95, 0.4], [-0.1, -0.3, 0.64], [0, -0.04, 0.74], [0.1, 0.22, 0.66], [0.2, 0.55, 0.46]];
-  g.beginPath();
-  g.moveTo(x - 0.16 * h, y);
-  g.lineTo(x - 0.22 * h, y - 0.26 * h);
-  for (const [bx, a, len] of fingers) {
-    g.lineTo(x + (bx - 0.05) * h, y - 0.28 * h);
-    g.lineTo(x + (bx + Math.sin(a) * len) * h, y - (0.28 + Math.cos(a) * len) * h);
-    g.lineTo(x + (bx + 0.05) * h, y - 0.28 * h);
-  }
-  g.lineTo(x + 0.22 * h, y - 0.26 * h);
-  g.lineTo(x + 0.16 * h, y);
-  g.closePath();
-  cutFill(g, s, 0.012);
-}
-
 /** A thin crescent (tips at (cx, cy -+ r), bulge to the left), `thick` as a fraction of r. */
 function crescent(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, bulge: number, thick: number, s: number) {
   g.beginPath();
@@ -152,15 +135,17 @@ export const shadowKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'grasp of the deep', name: 'Grasp of the Deep', range: 0, cooldown: 7,
-      blurb: 'A burst round her: a shadow pool opens, black hands rise and close on enemies within 3 m, hurt and silence them.',
+      key: 'W', label: 'shadow swap', name: 'Shadow Swap', range: 11, cooldown: 8, aim: 'line',
+      blurb: 'Throws a shadow dagger 11 m that cuts what it meets. Cast again within 3 s to swap to it, or to just short of the enemy it hit (the enemy stays put).',
       icon(g, s) {
         ground(g, s);
-        ellipse(g, s * 0.5, s * 0.8, s * 0.44, s * 0.15, S.foil);
-        ellipse(g, s * 0.5, s * 0.8, s * 0.36, s * 0.11, S.dark, S.hot, s * 0.014);
-        hand(g, s * 0.3, s * 0.82, s * 0.5, s);
-        hand(g, s * 0.7, s * 0.82, s * 0.5, s);
-        hand(g, s * 0.5, s * 0.86, s * 0.7, s);
+        ellipse(g, s * 0.5, s * 0.82, s * 0.42, s * 0.12, S.foil);
+        // A dagger flying up-right with two stepped ghosts behind it, and the hooded figure fading in at its tip.
+        blade(g, s * 0.1, s * 0.74, s * 0.36, s * 0.56, s * 0.08, s);
+        blade(g, s * 0.26, s * 0.64, s * 0.54, s * 0.44, s * 0.1, s);
+        blade(g, s * 0.44, s * 0.54, s * 0.8, s * 0.26, s * 0.14, s);
+        figure(g, s * 0.78, s * 0.9, s * 0.38, s);
+        mintCut(g, s * 0.62, s * 0.4, s * 0.88, s * 0.2, s * 0.02);
       },
     },
     {
@@ -177,20 +162,17 @@ export const shadowKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'eclipse execution', name: 'Eclipse Execution', range: 10, cooldown: 20,
-      blurb: 'Ultimate. An eclipse darkens a small zone and a giant crescent blade cuts down through it for huge damage.',
+      key: 'R', label: 'shadow mark', name: 'Shadow Mark', range: 10, cooldown: 20,
+      blurb: 'Ultimate. Marks the enemy; 2 s later she steps out behind it and cuts it with crossed blades for big damage, plus 30% of the damage it took meanwhile.',
       icon(g, s) {
         ground(g, s);
-        disc(g, s * 0.5, s * 0.36, s * 0.27, S.foil);
-        disc(g, s * 0.52, s * 0.36, s * 0.25, S.dark, S.hot, s * 0.014);
-        ellipse(g, s * 0.5, s * 0.88, s * 0.42, s * 0.07, S.foil);
-        // The crescent blade sweeping down in front of the eclipse (a smile turned on its side).
-        g.save();
-        g.translate(s * 0.5, s * 0.62);
-        g.rotate(-Math.PI / 2);
-        crescent(g, 0, 0, s * 0.4, 0.55, 0.3, s);
-        g.restore();
-        mintCut(g, s * 0.16, s * 0.84, s * 0.84, s * 0.84, s * 0.02);
+        ellipse(g, s * 0.5, s * 0.86, s * 0.4, s * 0.1, S.foil);
+        // The marked figure with a crescent sigil over its head, and the mint crossed cut behind it.
+        figure(g, s * 0.5, s * 0.9, s * 0.6, s);
+        crescent(g, s * 0.5, s * 0.16, s * 0.12, 0.55, 0.3, s);
+        disc(g, s * 0.5, s * 0.16, s * 0.022, S.accent);
+        mintCut(g, s * 0.2, s * 0.3, s * 0.82, s * 0.8, s * 0.022);
+        mintCut(g, s * 0.82, s * 0.3, s * 0.2, s * 0.8, s * 0.022);
       },
     },
   ],

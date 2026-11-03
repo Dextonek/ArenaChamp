@@ -1,7 +1,10 @@
 import type * as THREE from 'three';
 import type { Enemy } from '../effects/common';
 import type { BuffKind, StatusSet } from '../effects/status';
-import { NO_MODS, type CastMods, type LandedHit, type Side, type Trait, type TraitHit, type TraitView } from './types';
+import { NO_MODS, type CastMods, type HoldSpec, type LandedHit, type RecastSpec, type Side, type Trait, type TraitHit, type TraitView } from './types';
+
+/** How far back `past` can look (s); the history keeps a little more. */
+export const HISTORY_SECONDS = 3;
 
 /** What a runtime needs from the duel for its side. */
 export interface TraitHost {
@@ -23,6 +26,8 @@ export interface TraitHost {
   units(): THREE.Vector3[];
   /** Stops this side's hero walking and attacking for `seconds`. */
   hold(seconds: number): void;
+  /** Slides this side's hero to `p` over `seconds` (a dash); the opponent's side does nothing in a network duel. */
+  moveTo(p: THREE.Vector3, seconds: number): void;
   /** A passive fired (`big`: stacks popped on the enemy) at `at`; `stack` names the stacks that popped. */
   burst?(at: THREE.Vector3, big: boolean, stack?: string): void;
   /** Stacks changed on the enemy hero (a network duel shows them on the other screen). */
@@ -40,8 +45,10 @@ export class TraitRuntime implements TraitView {
   /** Ammo charges left on the charges slot, and the refill clock. */
   ammo = 0;
   private ammoT = 0;
-  /** Seconds left on an open recast (0 = none). */
-  recastLeft = 0;
+  /** Seconds left on an open recast, per slot (0 = none). */
+  private recastClock = [0, 0, 0, 0];
+  /** This hero's position and HP over the last few seconds (`past`), oldest first. */
+  private history: { t: number; x: number; z: number; hp: number }[] = [];
   private stackMap = new Map<string, { n: number; left: number }>();
   private lastPos: THREE.Vector3 | null = null;
 
@@ -60,7 +67,8 @@ export class TraitRuntime implements TraitView {
     this.stackMap.clear();
     this.ammo = this.trait?.charges?.count ?? 0;
     this.ammoT = 0;
-    this.recastLeft = 0;
+    this.recastClock.fill(0);
+    this.history.length = 0;
     this.still = 0;
     this.lastPos = null;
   }
@@ -118,6 +126,46 @@ export class TraitRuntime implements TraitView {
     if (seconds > 0) this.host.hold(seconds);
   }
 
+  moveTo(p: THREE.Vector3, seconds: number) {
+    this.host.moveTo(p, Math.max(0, seconds));
+  }
+
+  past(secondsAgo: number) {
+    const h = this.history;
+    if (!h.length) return null;
+    const want = this.time - Math.max(0, Math.min(HISTORY_SECONDS, secondsAgo));
+    if (want <= h[0].t) return { x: h[0].x, z: h[0].z, hp: h[0].hp };
+    let i = 0;
+    while (i < h.length - 1 && h[i + 1].t <= want) i++;
+    const a = h[i], b = h[Math.min(i + 1, h.length - 1)];
+    const k = b.t > a.t ? Math.max(0, Math.min(1, (want - a.t) / (b.t - a.t))) : 0;
+    // Position glides between the two samples; HP is the value the earlier one had.
+    return { x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k, hp: a.hp };
+  }
+
+  /** The hold rule of `slot` (charges while aimed), if the trait has one. */
+  holdOf(slot: number): HoldSpec | undefined {
+    const h = this.trait?.hold;
+    return Array.isArray(h) ? h.find((x) => x.slot === slot) : h && h.slot === slot ? h : undefined;
+  }
+
+  /** The recast rule of `slot`, if the trait has one. */
+  recastOf(slot: number): RecastSpec | undefined {
+    const r = this.trait?.recast;
+    return Array.isArray(r) ? r.find((x) => x.slot === slot) : r && r.slot === slot ? r : undefined;
+  }
+
+  /** Seconds left on the open recast of `slot` (0 = none). */
+  recastLeft(slot: number) {
+    return this.recastClock[slot] ?? 0;
+  }
+
+  /** Charge 0..1 after aiming `slot` for `aimed` seconds (1 for a slot without a hold rule). */
+  charge(slot: number, aimed: number) {
+    const h = this.holdOf(slot);
+    return h ? Math.max(0, Math.min(1, aimed / h.seconds)) : 1;
+  }
+
   enemyDistance() {
     const e = this.enemy(), p = this.self().group.position;
     return e ? Math.hypot(e.group.position.x - p.x, e.group.position.z - p.z) : Infinity;
@@ -165,6 +213,8 @@ export class TraitRuntime implements TraitView {
     if (this.lastPos && Math.hypot(p.x - this.lastPos.x, p.z - this.lastPos.z) > dt * 0.5) this.still = 0;
     else this.still += dt;
     this.lastPos = p.clone();
+    this.history.push({ t: this.time, x: p.x, z: p.z, hp: this.hp() });
+    while (this.history.length > 2 && this.history[1].t < this.time - HISTORY_SECONDS - 0.5) this.history.shift();
     const ch = this.trait?.charges;
     if (ch && this.ammo < ch.count) {
       this.ammoT += dt;
@@ -179,7 +229,7 @@ export class TraitRuntime implements TraitView {
       s.left -= dt;
       if (s.left <= 0) { this.stackMap.delete(k); this.host.stacksChanged?.(k, 0); }
     }
-    this.recastLeft = Math.max(0, this.recastLeft - dt);
+    for (let i = 0; i < 4; i++) this.recastClock[i] = Math.max(0, this.recastClock[i] - dt);
   }
 
   /** Seconds until the next ammo charge (0 when full or no ammo slot). */
@@ -197,20 +247,21 @@ export class TraitRuntime implements TraitView {
 
   /** True when `slot` can be cast once more now (its recast window is open): no cooldown check. */
   canRecast(slot: number) {
-    return this.recastLeft > 0 && this.trait?.recast?.slot === slot;
+    return this.recastLeft(slot) > 0 && !!this.recastOf(slot);
   }
 
   /**
    * A cast goes out: its mods (power from the trait and the caster's might / weaken, the kit's own debuff), then the
    * ammo and recast bookkeeping. Returns the mods and the cooldown to set (-1: a recast, keep the cooldown running).
    */
-  cast(slot: number, base: number, charge: number, dealtMul: number, debuff?: CastMods['debuff']): { mods: CastMods; cooldown: number } {
+  cast(slot: number, base: number, charge: number, dealtMul: number, debuff?: CastMods['debuff']): { mods: CastMods; cooldown: number; replay: boolean } {
     const t = this.trait;
     if (this.canRecast(slot)) {
-      // The free second cast: the first cast's cooldown keeps running.
-      this.recastLeft = 0;
+      // The free second cast: the first cast's cooldown keeps running. `replay: false` plays no effect (only `recastAct`).
+      const rc = this.recastOf(slot)!;
+      this.recastClock[slot] = 0;
       t?.recastAct?.(this, slot);
-      return { mods: { ...NO_MODS, power: (t?.recast?.power ?? 0.6) * dealtMul, debuff }, cooldown: -1 };
+      return { mods: { ...NO_MODS, power: (rc.power ?? 0.6) * dealtMul, debuff }, cooldown: -1, replay: rc.replay !== false };
     }
     const m = t?.castMods?.(this, slot, charge) ?? {};
     const mods: CastMods = { ...NO_MODS, ...m, power: (m.power ?? 1) * dealtMul };
@@ -222,9 +273,11 @@ export class TraitRuntime implements TraitView {
       this.ammo = Math.max(0, this.ammo - 1);
       cooldown = Math.min(cooldown, 0.4);
     }
-    if (t?.recast && t.recast.slot === slot) this.recastLeft = t.recast.window;
+    const rc = this.recastOf(slot);
+    if (rc) this.recastClock[slot] = rc.window;
+    // Runs here, in the cast's rules: before the effect's play() builds its context (see docs/architecture/traits.md).
     t?.afterCast?.(this, slot);
-    return { mods, cooldown };
+    return { mods, cooldown, replay: true };
   }
 
   /** A basic attack is released: its mods. */

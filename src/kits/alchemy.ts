@@ -209,9 +209,8 @@ export const alchemyKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'mutagen', name: 'Mutagen', range: 0, cooldown: 9,
-      buff: { kind: 'might', amount: 0.2, seconds: 3 },
-      blurb: 'She drinks a flask and heals 45 HP. No damage and no flasks.',
+      key: 'E', label: 'volatile leap', name: 'Volatile Leap', range: 0, cooldown: 9,
+      blurb: 'A flask bursts at her feet: enemies within 3 m take a hit and are knocked away, and the blast throws her 5 m back, away from the aim.',
       icon(g, s) {
         ground(g, s);
         g.strokeStyle = 'rgba(200,255,74,0.4)';
@@ -232,8 +231,8 @@ export const alchemyKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'grand transmutation', name: 'Grand Transmutation', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A giant circle turns the zone to gold; the field slows everything in it for 2 s, then shatters.',
+      key: 'R', label: 'elixir of unmaking', name: 'Elixir of Unmaking', range: 0, cooldown: 20,
+      blurb: 'Ultimate. She drinks it: for 5 s her Volatile Flask has almost no cooldown (0.4 s), its hits add double toxin, and she deals 20% more damage. No damage itself.',
       icon(g, s) {
         ground(g, s);
         circleGlyph(g, s * 0.5, s * 0.5, s * 0.46, A.gold, s * 0.02, 1);

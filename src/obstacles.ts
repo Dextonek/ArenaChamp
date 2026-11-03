@@ -62,15 +62,28 @@ export function pushOut(p: THREE.Vector3, obstacles: readonly Obstacle[], body =
  * A walking direction that slides round an obstacle in the way instead of pushing into it: when the hero at `p`
  * is about to touch an obstacle it is walking toward, the direction turns along the obstacle's edge (the side
  * closer to where it was going). `dir` is a unit vector on the ground plane; returns a new unit vector.
+ * Only an obstacle the straight walk would run into turns it, the nearest one: a gap between two obstacles that is
+ * wide enough for the body is walked straight through (turning for both made the hero shuffle in place there).
+ * `reach`: how far the walk still goes.
  */
-export function steer(p: THREE.Vector3, dir: THREE.Vector3, obstacles: readonly Obstacle[], body = 0.5) {
+export function steer(p: THREE.Vector3, dir: THREE.Vector3, obstacles: readonly Obstacle[], body = 0.5, reach = Infinity) {
   const out = dir.clone();
+  // Look ahead no further than the walk goes: a goal right beside an obstacle is reached, not circled.
+  const look = Math.min(0.7, reach), ex = p.x + dir.x * look, ez = p.z + dir.z * look;
+  let hit: Obstacle | null = null, hitD = Infinity;
   for (const o of obstacles) {
     const c = closest(o, p.x, p.z);
     const nx = c.x - p.x, nz = c.z - p.z, d = Math.hypot(nx, nz);
-    if (d > o.r + body + 0.7 || d < 1e-5) continue;
-    const toward = (nx * out.x + nz * out.z) / d;
-    if (toward <= 0.05) continue;
+    if (d > o.r + body + look || d < 1e-5 || d >= hitD) continue;
+    if ((nx * dir.x + nz * dir.z) / d <= 0.05) continue;
+    if (segDist(p.x, p.z, ex, ez, o.ax, o.az, o.bx, o.bz) >= o.r + body - 0.01) continue;
+    hit = o;
+    hitD = d;
+  }
+  if (hit) {
+    const o = hit;
+    const c = closest(o, p.x, p.z);
+    const nx = c.x - p.x, nz = c.z - p.z, d = Math.hypot(nx, nz);
     // Tangent of the obstacle's edge, on the side of the obstacle's middle the hero already stands on (sideways
     // of the walk). Choosing by the walk direction alone flips every frame when walking straight at it.
     let tx = -nz / d, tz = nx / d;
@@ -95,6 +108,62 @@ function segDist(ax: number, az: number, bx: number, bz: number, cx: number, cz:
     return Math.hypot(px - c.x, pz - c.z);
   };
   return Math.min(pt(ax, az, cx, cz, dx, dz), pt(bx, bz, cx, cz, dx, dz), pt(cx, cz, ax, az, bx, bz), pt(dx, dz, ax, az, bx, bz));
+}
+
+/** Where a moving body first touches an obstacle (`sweepHit`). */
+export interface SweepContact {
+  /** How far along from to (0..1) the body's centre is at the first touch. */
+  t: number;
+  /** The body's centre at that moment (y = 0). */
+  point: THREE.Vector3;
+  /** The obstacle's nearest spot to the body then (y = 0). */
+  surface: THREE.Vector3;
+  /** Unit vector from the obstacle toward the body at the touch (the way a slammed body bounces back). */
+  normal: THREE.Vector3;
+  obstacle: Obstacle;
+}
+
+/**
+ * Sweeps a round body of `radius` along the straight path from `from` to `to` (ground plane) and returns the first
+ * obstacle it touches, with the body's centre at that moment, or null when the path is clear. A body that starts
+ * inside an obstacle touches at t = 0. For a carry (Brannoc's Forge Charge): sweep the carried target's path with its
+ * body radius (0.5) to find the wall it is slammed into. Pass the live list (`arena.obstacles`).
+ */
+export function sweepHit(from: THREE.Vector3, to: THREE.Vector3, radius: number, obstacles: readonly Obstacle[]): SweepContact | null {
+  const dx = to.x - from.x, dz = to.z - from.z;
+  let best: SweepContact | null = null;
+  for (const o of obstacles) {
+    const reach = o.r + radius;
+    // Distance from the body to the obstacle's segment as the body moves is convex in t: find the lowest point, then the first crossing.
+    const dist = (t: number) => {
+      const px = from.x + dx * t, pz = from.z + dz * t, c = closest(o, px, pz);
+      return Math.hypot(px - c.x, pz - c.z);
+    };
+    let hitT: number;
+    if (dist(0) <= reach) hitT = 0;
+    else {
+      let lo = 0, hi = 1;
+      for (let i = 0; i < 40; i++) {
+        const m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+        if (dist(m1) < dist(m2)) hi = m2; else lo = m1;
+      }
+      const low = (lo + hi) / 2;
+      if (dist(low) > reach) continue;
+      lo = 0; hi = low;
+      for (let i = 0; i < 40; i++) {
+        const m = (lo + hi) / 2;
+        if (dist(m) <= reach) hi = m; else lo = m;
+      }
+      hitT = hi;
+    }
+    if (best && hitT >= best.t) continue;
+    const px = from.x + dx * hitT, pz = from.z + dz * hitT, c = closest(o, px, pz);
+    let nx = px - c.x, nz = pz - c.z;
+    const d = Math.hypot(nx, nz);
+    if (d < 1e-5) { nx = -dx; nz = -dz; const l = Math.hypot(nx, nz) || 1; nx /= l; nz /= l; } else { nx /= d; nz /= d; }
+    best = { t: hitT, point: new THREE.Vector3(px, 0, pz), surface: new THREE.Vector3(c.x, 0, c.z), normal: new THREE.Vector3(nx, 0, nz), obstacle: o };
+  }
+  return best;
 }
 
 /** True when an obstacle stands between `a` and `b` (ground plane): no line of sight. */

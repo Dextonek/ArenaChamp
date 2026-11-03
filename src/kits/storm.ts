@@ -173,20 +173,51 @@ export const stormKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'downpour', name: 'Downpour', range: 10, cooldown: 7,
-      blurb: 'Gathers a storm cloud over a spot; lightning strikes down three times and each strike slows whoever stands in the rain.',
+      key: 'W', label: 'ball lightning', name: 'Ball Lightning', range: 10, cooldown: 8, aim: 'line',
+      blurb: 'Rolls a slow crackling orb 10 m that damages and slows what it meets. Cast again within 3 s to blink to the orb.',
       icon(g, s) {
         iconGround(g, s);
-        cloud(g, s * 0.5, s * 0.3, s * 0.78);
-        rain(g, s * 0.1, s * 0.3, s * 0.8, s * 0.62, 16, s * 0.014);
-        bolt(g, s * 0.36, s * 0.32, s * 0.3, s * 0.84, s * 0.045, 2, 21);
-        bolt(g, s * 0.66, s * 0.32, s * 0.72, s * 0.8, s * 0.04, 1, 24);
+        // A bright orb with arcs jumping off it, a spark trail behind, and a dashed blink arrow over it.
+        const ox = s * 0.62, oy = s * 0.56;
         g.strokeStyle = S.rain;
-        g.lineWidth = s * 0.018;
+        g.lineWidth = s * 0.014;
+        g.lineCap = 'round';
+        for (let i = 0; i < 5; i++) {
+          const y = s * (0.4 + i * 0.09);
+          g.globalAlpha = 0.5;
+          g.beginPath();
+          g.moveTo(s * 0.04, y);
+          g.lineTo(s * (0.2 + 0.05 * i), y + s * 0.02);
+          g.stroke();
+        }
+        g.globalAlpha = 1;
+        const glow = g.createRadialGradient(ox, oy, s * 0.02, ox, oy, s * 0.22);
+        glow.addColorStop(0, S.core);
+        glow.addColorStop(0.35, S.hot);
+        glow.addColorStop(0.7, S.body);
+        glow.addColorStop(1, 'rgba(74,168,255,0)');
+        g.fillStyle = glow;
         g.beginPath();
-        g.ellipse(s * 0.3, s * 0.88, s * 0.12, s * 0.035, 0, 0, Math.PI * 2);
-        g.ellipse(s * 0.72, s * 0.84, s * 0.1, s * 0.03, 0, 0, Math.PI * 2);
+        g.arc(ox, oy, s * 0.22, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = S.dark;
+        g.lineWidth = s * 0.02;
+        g.beginPath();
+        g.arc(ox, oy, s * 0.12, 0, Math.PI * 2);
         g.stroke();
+        bolt(g, ox + s * 0.1, oy - s * 0.1, s * 0.94, s * 0.26, s * 0.035, 1, 52);
+        bolt(g, ox - s * 0.1, oy + s * 0.1, s * 0.5, s * 0.92, s * 0.03, 1, 57);
+        bolt(g, ox + s * 0.1, oy + s * 0.12, s * 0.94, s * 0.8, s * 0.028, 1, 61);
+        // Dashed arc: she blinks to the orb.
+        g.strokeStyle = S.accent;
+        g.lineWidth = s * 0.025;
+        g.setLineDash([s * 0.05, s * 0.04]);
+        g.beginPath();
+        g.moveTo(s * 0.14, s * 0.3);
+        g.quadraticCurveTo(s * 0.4, s * 0.06, ox - s * 0.04, oy - s * 0.2);
+        g.stroke();
+        g.setLineDash([]);
+        spark(g, s * 0.14, s * 0.3, s * 0.03);
       },
     },
     {
@@ -209,25 +240,26 @@ export const stormKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'eye of the storm', name: 'Eye of the Storm', range: 13, cooldown: 26,
-      blurb: 'Ultimate. A storm wheel turns over a 5 m zone and drops one colossal lightning tree through its eye: 10% harder, and slower to come back.',
+      key: 'R', label: 'thunderlance', name: 'Thunderlance', range: 20, cooldown: 18, aim: 'line',
+      blurb: 'Ultimate. Hold to charge up to 1.5 s, then one lightning bolt pierces 20 m down the line; a full charge hits 2.5 times harder than a tap.',
       icon(g, s) {
         iconGround(g, s);
-        // A ring of cloud (the wheel) seen at an angle, with a clear eye.
-        const cx = s * 0.5, cy = s * 0.3, rx = s * 0.42, ry = s * 0.15;
-        for (let i = 0; i < 9; i++) {
-          const a = (i / 9) * Math.PI * 2 + 0.3;
-          const px = cx + Math.cos(a) * rx, py = cy + Math.sin(a) * ry;
-          cloud(g, px, py + s * 0.04, s * (0.26 + 0.05 * Math.sin(a)));
-        }
-        rain(g, s * 0.1, s * 0.4, s * 0.8, s * 0.5, 12, s * 0.012);
-        bolt(g, cx, s * 0.12, s * 0.5, s * 0.9, s * 0.09, 3, 41);
-        g.strokeStyle = S.rain;
-        g.lineWidth = s * 0.018;
+        // One huge bolt shooting across the icon like a lance, rain behind it and a charge ring at the staff end.
+        rain(g, s * 0.05, s * 0.08, s * 0.9, s * 0.84, 14, s * 0.011);
+        bolt(g, s * 0.1, s * 0.82, s * 0.94, s * 0.16, s * 0.1, 3, 71);
+        g.strokeStyle = S.accent;
+        g.lineWidth = s * 0.03;
+        g.lineCap = 'round';
         g.beginPath();
-        g.ellipse(cx, s * 0.9, s * 0.3, s * 0.06, 0, 0, Math.PI * 2);
+        g.arc(s * 0.16, s * 0.76, s * 0.14, Math.PI * 0.55, Math.PI * 1.9);
         g.stroke();
-        spark(g, cx, s * 0.9, s * 0.03);
+        g.strokeStyle = S.rain;
+        g.lineWidth = s * 0.014;
+        g.beginPath();
+        g.arc(s * 0.16, s * 0.76, s * 0.19, Math.PI * 0.55, Math.PI * 1.55);
+        g.stroke();
+        spark(g, s * 0.91, s * 0.18, s * 0.03);
+        spark(g, s * 0.34, s * 0.5, s * 0.02);
       },
     },
   ],

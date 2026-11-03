@@ -284,27 +284,43 @@ export const inkKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'ink snare', name: 'Ink Snare', range: 10, cooldown: 8, debuff: { kind: 'vulnerable', amount: 0.25, seconds: 3 },
-      blurb: 'Ink bleeds into paper on the ground, then grasping strokes rise: everyone inside is hurt and takes 25% more damage for 3 s.',
+      key: 'W', label: 'ink double', name: 'Ink Double', range: 12, cooldown: 8,
+      blurb: 'Dashes 4 m back, away from the aim. An ink double of her stays 3 s; her next Brushstroke in that time is fired from the double too.',
       icon(g, s) {
         iconGround(g, s);
-        // A torn paper disc on the floor, a dark pool bleeding into it, grasping strokes rising round a seal.
-        paper(g, s * 0.5, s * 0.74, s * 0.42, s * 0.17, 5);
-        g.fillStyle = S.body;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.74, s * 0.3, s * 0.115, 0, 0, Math.PI * 2);
-        g.fill();
+        // Her ink double stands left, dissolving into drops; she is a step to the right, three smear strokes between them.
+        paper(g, s * 0.32, s * 0.86, s * 0.26, s * 0.08, 4);
+        brush(g, [[s * 0.4, s * 0.5], [s * 0.55, s * 0.46], [s * 0.7, s * 0.42]], s * 0.07);
+        brush(g, [[s * 0.4, s * 0.62], [s * 0.56, s * 0.58], [s * 0.72, s * 0.55]], s * 0.06);
+        const fig = (cx: number, base: number, k: number, ink: boolean) => {
+          g.fillStyle = ink ? S.body : S.foil;
+          g.beginPath();
+          g.ellipse(cx, base - s * 0.5 * k, s * 0.13 * k * 1.12, s * 0.15 * k * 1.12, 0, 0, Math.PI * 2);
+          g.moveTo(cx - s * 0.27 * k * 1.1, base);
+          g.quadraticCurveTo(cx - s * 0.1 * k, base - s * 0.4 * k, cx, base - s * 0.38 * k);
+          g.quadraticCurveTo(cx + s * 0.1 * k, base - s * 0.4 * k, cx + s * 0.27 * k * 1.1, base);
+          g.closePath();
+          g.fill();
+          g.fillStyle = S.dark;
+          g.beginPath();
+          g.ellipse(cx, base - s * 0.5 * k, s * 0.13 * k, s * 0.15 * k, 0, 0, Math.PI * 2);
+          g.moveTo(cx - s * 0.27 * k, base);
+          g.quadraticCurveTo(cx - s * 0.1 * k, base - s * 0.4 * k, cx, base - s * 0.38 * k);
+          g.quadraticCurveTo(cx + s * 0.1 * k, base - s * 0.4 * k, cx + s * 0.27 * k, base);
+          g.closePath();
+          g.fill();
+        };
+        fig(s * 0.76, s * 0.86, 1, true);
+        // The double: a ghost of the same shape in pale ink, its lower half breaking into drops.
+        g.globalAlpha = 0.55;
+        fig(s * 0.24, s * 0.86, 1, true);
+        g.globalAlpha = 1;
         g.fillStyle = S.dark;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.74, s * 0.27, s * 0.095, 0, 0, Math.PI * 2);
-        g.fill();
-        brush(g, [[s * 0.24, s * 0.76], [s * 0.18, s * 0.5], [s * 0.3, s * 0.26]], s * 0.1);
-        brush(g, [[s * 0.76, s * 0.76], [s * 0.84, s * 0.48], [s * 0.72, s * 0.24]], s * 0.1);
-        brush(g, [[s * 0.4, s * 0.8], [s * 0.36, s * 0.52], [s * 0.46, s * 0.18]], s * 0.11);
-        brush(g, [[s * 0.6, s * 0.8], [s * 0.66, s * 0.5], [s * 0.56, s * 0.2]], s * 0.11);
-        seal(g, s * 0.5, s * 0.74, s * 0.15);
-        drop(g, s * 0.12, s * 0.86, s * 0.022);
-        drop(g, s * 0.9, s * 0.88, s * 0.02);
+        for (const [dx, dy, r] of [[0.14, 0.7, 0.025], [0.3, 0.76, 0.02], [0.2, 0.62, 0.018], [0.34, 0.66, 0.015], [0.08, 0.8, 0.017]] as [number, number, number][]) {
+          drop(g, s * dx, s * dy, s * r);
+        }
+        seal(g, s * 0.76, s * 0.62, s * 0.1);
+        drop(g, s * 0.92, s * 0.3, s * 0.022);
       },
     },
     {
@@ -334,21 +350,19 @@ export const inkKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'final calligraphy', name: 'Final Calligraphy', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A giant brush writes one huge character across a sheet of paper; a giant seal stamps it and the ink erupts, blinding everyone inside.',
+      key: 'R', label: 'final calligraphy', name: 'Final Calligraphy', range: 16, cooldown: 20, cc: true, aim: 'arc',
+      blurb: 'Ultimate. One giant brushstroke that curves: aim the bend round cover. It hits for heavy damage and blinds, and a seal stamps where it lands.',
       icon(g, s) {
         iconGround(g, s);
-        // A big paper sheet with a huge character in five strokes, the brush above it, a giant seal dropping in.
-        paper(g, s * 0.5, s * 0.64, s * 0.46, s * 0.34, 9);
-        brush(g, [[s * 0.42, s * 0.3], [s * 0.48, s * 0.34], [s * 0.54, s * 0.4]], s * 0.1);
-        brush(g, [[s * 0.14, s * 0.46], [s * 0.4, s * 0.48], [s * 0.7, s * 0.46], [s * 0.82, s * 0.5]], s * 0.1);
-        brush(g, [[s * 0.52, s * 0.36], [s * 0.5, s * 0.6], [s * 0.5, s * 0.8], [s * 0.42, s * 0.82]], s * 0.12);
-        brush(g, [[s * 0.5, s * 0.58], [s * 0.36, s * 0.7], [s * 0.2, s * 0.84]], s * 0.1);
-        brush(g, [[s * 0.52, s * 0.58], [s * 0.66, s * 0.7], [s * 0.84, s * 0.86]], s * 0.11);
-        brush(g, [[s * 0.1, s * 0.02], [s * 0.2, s * 0.2], [s * 0.3, s * 0.36]], s * 0.07);
-        seal(g, s * 0.74, s * 0.24, s * 0.3, 0.08);
-        drop(g, s * 0.9, s * 0.58, s * 0.025);
-        drop(g, s * 0.08, s * 0.68, s * 0.022);
+        // One huge wet stroke sweeping in a curve from the lower left round to the upper right, a seal stamped at its end.
+        paper(g, s * 0.62, s * 0.34, s * 0.34, s * 0.24, 9);
+        brush(g, [[s * 0.06, s * 0.94], [s * 0.2, s * 0.58], [s * 0.46, s * 0.4], [s * 0.78, s * 0.3]], s * 0.34);
+        brush(g, [[s * 0.1, s * 0.96], [s * 0.26, s * 0.74], [s * 0.42, s * 0.66]], s * 0.09);
+        seal(g, s * 0.8, s * 0.26, s * 0.26, 0.08);
+        drop(g, s * 0.94, s * 0.5, s * 0.03);
+        drop(g, s * 0.64, s * 0.12, s * 0.024);
+        drop(g, s * 0.9, s * 0.62, s * 0.02);
+        drop(g, s * 0.1, s * 0.5, s * 0.02);
       },
     },
   ],

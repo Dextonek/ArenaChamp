@@ -151,8 +151,8 @@ export const tideKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'tide whip', name: 'Tide Whip', range: 10, cooldown: 3,
-      blurb: 'Spins a water ribbon off her wrist; it lashes one enemy, wraps it and hooks it 3 m toward her.',
+      key: 'Q', label: 'tide whip', name: 'Tide Whip', range: 10, cooldown: 3, aim: 'line',
+      blurb: 'Spins a water ribbon off her wrist and lashes it 10 m down the aim; the first enemy it touches is wrapped and hooked 3.5 m toward her.',
       icon(g, s) {
         iconGround(g, s);
         // A whip of water from low left curling to the right, wrapping a small post.
@@ -167,32 +167,50 @@ export const tideKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'whirlpool', name: 'Whirlpool', range: 10, cooldown: 7, cc: true,
-      blurb: 'A pool spreads and three ribbons spiral up, pulling enemies in twice, and a water column knocks them up.',
+      key: 'W', label: 'bubble prison', name: 'Bubble Prison', range: 9, cooldown: 8, aim: 'line', cc: true,
+      blurb: 'Blows a slow bubble 9 m down the aim. The first enemy it touches floats inside it for 0.8 s, helpless, and drifts 2 m toward her.',
       icon(g, s) {
         iconGround(g, s);
-        // A pool ellipse with three spiral ribbons rising.
-        g.fillStyle = '#0d4f74';
+        // A floor ring of water, a big bubble with a small figure floating in it and a smaller bubble trailing behind.
         g.strokeStyle = S.foam;
         g.lineWidth = s * 0.02;
+        g.fillStyle = '#0d4f74';
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.78, s * 0.4, s * 0.12, 0, 0, Math.PI * 2);
+        g.ellipse(s * 0.56, s * 0.86, s * 0.3, s * 0.08, 0, 0, Math.PI * 2);
         g.fill();
         g.stroke();
-        for (let i = 0; i < 3; i++) {
-          const a = (i / 3) * Math.PI * 2;
-          const pts: [number, number][] = [];
-          for (let k = 0; k <= 5; k++) {
-            const u = k / 5, an = a + u * 4.4, r = s * (0.34 - 0.24 * u);
-            pts.push([s * 0.5 + Math.cos(an) * r, s * 0.74 - u * s * 0.5 + Math.sin(an) * r * 0.3]);
-          }
-          ribbon(g, pts, s * 0.07, true);
-        }
-        drops(g, [[s * 0.5, s * 0.12, s * 0.025], [s * 0.3, s * 0.2, s * 0.018], [s * 0.72, s * 0.22, s * 0.018]]);
+        const cx = s * 0.58, cy = s * 0.46, r = s * 0.34;
+        const sh = g.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.1, cx, cy, r);
+        sh.addColorStop(0, 'rgba(234,248,251,0.55)');
+        sh.addColorStop(0.75, 'rgba(31,159,214,0.35)');
+        sh.addColorStop(1, 'rgba(31,159,214,0.75)');
+        g.fillStyle = sh;
+        g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = S.foam;
+        g.lineWidth = s * 0.025;
+        g.stroke();
+        // The captive: a small figure with a coral flower, hanging in the water.
+        g.fillStyle = S.foam;
+        g.beginPath(); g.ellipse(cx, cy + r * 0.12, r * 0.14, r * 0.3, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#e8c9b0';
+        g.beginPath(); g.arc(cx, cy - r * 0.26, r * 0.13, 0, Math.PI * 2); g.fill();
+        g.fillStyle = S.dark;
+        g.beginPath(); g.arc(cx, cy - r * 0.31, r * 0.13, Math.PI, Math.PI * 2); g.fill();
+        coral(g, cx + r * 0.14, cy - r * 0.34, s * 0.022);
+        // Glint on the bubble, the small trailing bubble and a few drops.
+        g.strokeStyle = S.core;
+        g.lineWidth = s * 0.02;
+        g.beginPath(); g.arc(cx, cy, r * 0.78, Math.PI * 1.08, Math.PI * 1.38); g.stroke();
+        g.strokeStyle = S.foam;
+        g.lineWidth = s * 0.016;
+        g.fillStyle = 'rgba(191,242,255,0.45)';
+        g.beginPath(); g.arc(s * 0.15, s * 0.64, s * 0.09, 0, Math.PI * 2); g.fill(); g.stroke();
+        g.beginPath(); g.arc(s * 0.3, s * 0.78, s * 0.045, 0, Math.PI * 2); g.fill(); g.stroke();
+        drops(g, [[s * 0.2, s * 0.3, s * 0.02], [s * 0.9, s * 0.18, s * 0.02], [s * 0.4, s * 0.12, s * 0.016]]);
       },
     },
     {
-      key: 'E', label: 'undertow dance', name: 'Undertow Dance', range: 6, cooldown: 9, buff: { kind: 'haste', amount: 0.25, seconds: 2 },
+            key: 'E', label: 'undertow dance', name: 'Undertow Dance', range: 6, cooldown: 9, buff: { kind: 'haste', amount: 0.25, seconds: 2 },
       blurb: 'She surfs up to 6 m to the aim, healing 15 on landing, and leaves a foam strip for 3 s that slows whoever crosses it.',
       icon(g, s) {
         iconGround(g, s);

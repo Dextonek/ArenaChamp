@@ -1,16 +1,18 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
-import { ShockRefraction, clearScreenFx, createScreenFx } from '../../effects/parts';
-import { SAND_CSS, Dust, GlyphRing, SandPool, SandstoneBlocks } from '../../effects/parts/sand';
+import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
+import { SAND, SAND_CSS, Dust, GemGlints, GlyphRing, SandHood, SandPool, SandstoneBlocks } from '../../effects/parts/sand';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
  * Quicksand (sand kit, W: lingering zone): a ring of carved glyphs cuts itself into the floor, sand floods inside it and
  * swirls inward for about 2 s, sinking the enemies in it: three ticks (at 0.8, 1.4 and 2.0 s) hurt and slow whoever is
- * inside. Then the swirl snaps tight at 2.6 s and sandstone pillars punch up around the edge, leaning inward like
- * closing teeth, and root whoever is still inside. They crumble and the sand settles. See pipeline/designs/kit-sand.md.
+ * inside, jewels glinting in the sand. From 1.5 s a cobra of sand rears up out of the swirl behind the zone, its hood
+ * striped gold and turquoise like a nemes. Then the swirl snaps tight at 2.6 s, the cobra strikes and breaks, and
+ * gold-and-turquoise banded sandstone pillars punch up around the edge, leaning inward like closing teeth, and root
+ * whoever is still inside. They crumble and the sand settles. See pipeline/designs/kit-sand.md.
  */
 export interface QuicksandSettings {
   /** The pillars closing (with the root). */
@@ -35,6 +37,7 @@ const DURATION = 4.1;
 
 const RADIUS = 4;
 const PILLARS = 7;
+const HOOD_T = 1.5; // the sand cobra starts to rear
 
 export class Quicksand implements Effect {
   readonly group = new THREE.Group();
@@ -47,6 +50,7 @@ export class Quicksand implements Effect {
   /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
   ctx: CastContext | null = null;
   private time = 0;
+  private dtLast = 0;
 
   // Cast geometry, computed in cast().
   private point = new THREE.Vector3(0, 0, -8);
@@ -60,6 +64,11 @@ export class Quicksand implements Effect {
   private pillars = new SandstoneBlocks(PILLARS + 1);
   private dust = new Dust(10, 40);
   private groundShock = new ShockRefraction({ facing: 'ground' });
+  private hood = new SandHood();
+  private glints = new GemGlints(40);
+  private star = new StarBurst({ points: 10, inner: 0.3, color: SAND.accent, core: SAND.core, additive: false });
+  private hoodBase = new THREE.Vector3();
+  private hoodYaw = 0;
 
   // Scratch.
   private v1 = new THREE.Vector3();
@@ -69,8 +78,11 @@ export class Quicksand implements Effect {
     this.settings = settings;
     this.pillars.dust = this.dust;
     this.pillars.dustEvery = 2;
+    this.pillars.banded = 1;
+    this.screen.tint.set(SAND.dark);
+    this.screen.impactColor.set(SAND.stone);
     this.dust.life = 0.6;
-    this.group.add(this.ring.mesh, this.pool.mesh, this.pillars.mesh, this.dust.mesh, this.groundShock.mesh);
+    this.group.add(this.ring.mesh, this.pool.mesh, this.pillars.mesh, this.dust.mesh, this.hood.mesh, this.glints.mesh, this.star.mesh, this.groundShock.mesh);
     this.reset();
   }
 
@@ -89,6 +101,14 @@ export class Quicksand implements Effect {
     this.screen.focus.copy(this.point);
     this.pool.place(this.point);
     this.ring.set(this.point, RADIUS, 0);
+    // The cobra stands just behind the middle (away from the caster, who is the camera side) and faces the caster.
+    this.v1.set(this.point.x - ctx.from.x, 0, this.point.z - ctx.from.z);
+    if (this.v1.lengthSq() < 1e-4) this.v1.set(0, 0, -1);
+    this.v1.normalize();
+    this.hoodBase.copy(this.point).addScaledVector(this.v1, 1.4);
+    this.hoodYaw = Math.atan2(-this.v1.x, -this.v1.z);
+    this.hood.place(this.hoodBase, this.hoodYaw);
+    this.glints.face(this.v1.multiplyScalar(-0.89).setY(0.45));
   }
 
   play() {
@@ -106,6 +126,10 @@ export class Quicksand implements Effect {
     this.pool.reset();
     this.pillars.reset();
     this.dust.reset();
+    this.hood.reset();
+    this.hood.place(this.hoodBase, this.hoodYaw);
+    this.glints.reset();
+    this.star.set(this.point, 1e-3, 0);
     this.groundShock.set(this.point, 0, 0);
     this.release();
   }
@@ -122,7 +146,9 @@ export class Quicksand implements Effect {
     this.pool.update(dt);
     this.pillars.update(dt);
     this.dust.update(dt);
+    this.glints.update(dt);
     this.time += dt;
+    this.dtLast = dt;
     if (this.time >= DURATION) {
       if (this.settings.loop) { this.play(); return; }
       this.playing = false;
@@ -143,6 +169,7 @@ export class Quicksand implements Effect {
     if (!f.impacted && t >= HIT_T) {
       f.impacted = true;
       this.snap();
+      this.glints.scatter(this.point, RADIUS, 22, 0.9);
       this.eachInside((e) => ctx?.hit(e, {
         damage: this.settings.damage, knock: 0, from: this.point, color: SAND_CSS.body, status: { kind: 'root', seconds: this.settings.root },
       }));
@@ -224,8 +251,28 @@ export class Quicksand implements Effect {
       });
     }
 
-    // --- Hit: ground refraction, shake. ---
+    // --- Jewels glint in the turning sand. ---
+    if (t > POOL_T && !f.impacted) this.glints.trickle(this.dtLast, this.point, RADIUS * 0.85, 7 + 7 * smoothstep((t - 1.0) / 1.0));
+
+    // --- 1.5..2.6 a sand cobra rears up behind the middle, hood flaring, swaying; at the hit it strikes and breaks apart. ---
+    {
+      const rear = smoothstep((t - HOOD_T) / 0.7);
+      const sway = t * (1.0 + 2.0 * rear);
+      if (!f.impacted) {
+        this.hood.set(rear < 1 ? rear * (1 + 0.08 * Math.sin(rear * Math.PI)) : 1, 0, 0.92 * smoothstep((t - HOOD_T) / 0.2), 0, sway);
+      } else {
+        const strike = smoothstep(after / 0.14);
+        this.hood.set(1, strike, 0.92 * (1 - smoothstep((after - 0.1) / 0.3)), smoothstep((after - 0.05) / 0.35), sway);
+      }
+    }
+
+    // --- Hit: turquoise star, ground refraction, impact frame, shake. ---
     if (f.impacted) {
+      this.screen.impact = impactFrameAt(after, 0, [1], 0.03);
+      this.v1.copy(this.point).setY(1.4);
+      const sp = StarBurst.pop(after, 0.02, 0.05);
+      this.star.set(this.v1, 1.8 * sp.scale + 1e-3, sp.opacity, 0.15);
+      this.pillars.lit = after < 0.35 ? 1 - smoothstep(after / 0.35) : 0;
       const gp = THREE.MathUtils.clamp(after / 0.4, 0, 1);
       this.groundShock.set(this.point, 1 + 4 * gp, 0.04 * (1 - gp) * (1 - gp));
       this.shake = 0.4 * Math.exp(-after * 9) + (f.crumbled ? 0.12 * Math.exp(-(t - CRUMBLE_T) * 10) : 0);

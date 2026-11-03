@@ -52,14 +52,13 @@ jumping between them. At 1.0 and 2.0 the gears lurch a notch and an electric rin
 inside `ctx.hit(e, { damage: 13, knock: 0, status: { kind: 'slow', seconds: 1.0 } })`. 2.6–3.0: the gears fold away
 with steam. Clean by 3.2. Telegraph ends at the first pulse.
 
-## R · Gearfall (`gearfall.ts`, label `gearfall`, `ground`, radius 7, range 13, cd 20, damage 125 + root, `cc`)
-The ultimate: a **colossal gear** is lowered from the sky by a crane of girders and slammed flat onto the zone,
-pinning everyone under its teeth.
-0–0.4: the world darkens to a warm iron-dark (`darken` 0.55, tint `#1a0f08`); a ring of small gears marks radius 7.
-0.3–1.6: a giant gear (radius ~6, chunky teeth, dark hub, copper spokes) descends tilted from ~9 high, spinning
-slowly, with two crane chains and sparks jumping along its rim; enemies are pulled 0.4 toward the centre. 1.6–1.85:
-it stops, tilts flat, steam bursts from its hub — **dead beat 1.85–2.0**. **2.0–2.2**: it drops. **2.2 hit**: impact
-frames `[1, 2]` at 0.04 s, a ring of loose cogs and steam bursts outward, a cyan spark ring races across the radius,
-ground `ShockRefraction` (1 → 12, 0.07), shake 0.75: every enemy within 7 `ctx.hit(e, { damage: 125, knock: 0,
-from: point, status: { kind: 'root', seconds: 1.2 } })`. 2.2–4.5: the gear spins down, sinks with steam and breaks
-into cogs that fade, the darken lifts. Clean by 4.5.
+## R · Mag Rail (`magRail.ts`, label `mag rail`, `ground` aimed as a `line`, range 14, cd 18, 70 + 38 per turret)
+Batch 3 (kit-shapes-v3): replaces Gearfall (`gearfall.ts` stays in the repo, unregistered). Rails fire from her AND
+from each live Cog Turret (`cogTurrets` WeakMap in cogTurret.ts), all aimed at the targeted spot so the lines cross.
+0–0.6 charge: magnetic coil rings (`MagCoil`) spin up at every muzzle, cyan arcs jump (also between her and the
+turrets), a thin aim line (`RailBeam`) runs from each origin to the spot while a ring closes on it; a turret that dies
+during the charge fizzles. 0.6: each origin fires a piercing bolt through `ctx.projectile` (45 m/s, range 18, radius
+0.4): a hard white head, an ion streak and a thin glowing line left behind. Her rail `damage` 70, each turret's 38.
+A hit: first impact frame, star, sparks, ground `ShockRefraction`, shake. Clean by 1.6 s. With no turret up only her
+rail fires. Network duels have no summons or bolts: her rail plays as a visual with no hit.
+

@@ -85,6 +85,34 @@ slide along their edges, and `lineOfSight(a, b)` is false when one stands betwee
 use it to refuse casts without sight. `setHp(target, hp)` sets a foe's HP directly (a network duel takes the server's
 number). See [multiplayer.md](multiplayer.md#the-ring-pillars-walls-and-line-of-sight).
 
+### Temporary obstacles, carries and arcs (2026-11-03)
+
+- `arena.addObstacle(o, seconds)` adds an `Obstacle` to the live list for `seconds` and returns it; `removeObstacle(o)`
+  removes by object identity (never by index: the duel's `wallHp` indexes the arena definition's list, which the arena
+  list only copies); `clearTempObstacles()` runs when a round starts and the duel stops. Walking, `lineOfSight`, bolts and
+  the duel AI all read `arena.obstacles`, so they respect it at once. The caster is pushed out of a new obstacle
+  immediately, other figures when they next move. Effects use `ctx.addObstacle?(o, seconds)` / `ctx.removeObstacle?(o)`
+  and draw the wall themselves; build the obstacle from `ctx.sentFrom` and `ctx.point` (the same numbers on both screens of
+  a network duel; `ctx.from` on the replay is where the hero is drawn, up to about 0.5 m behind).
+- `sweepHit(from, to, radius, obstacles)` (obstacles.ts) returns the first obstacle a round body would touch on a straight
+  path, with the body's centre, the contact normal and `t` (0..1), or null: Brannoc's charge sweeps the carried target
+  with its body radius 0.5 to find the wall it is slammed into.
+- `ctx.displace` is a visual offset that the next `context()` drops. For a carry use `ctx.carry?(target, delta)` every
+  frame: it moves the figure for good (`arena.carryFigure`), inside the ring and out of walls. It moves the caster (the
+  victim of the AI's or the other player's replayed cast) and the arena foes, never `arena.remoteFigure`.
+- Skillshot hits that pull (`HitOptions.pull`, with `knock: 0`): the bolt hit gets `from` = where the bolt started (the
+  caster), so the target is dragged toward the caster, 4 m at most, stopping 1 m short. `ProjectileOptions.curve` bends
+  the path (rad/s, positive turns left); `arcShot` / `arcPoints` / `arcBendFor` are the helpers.
+- Bolt walls (`ctx.boltWall?({ a, b, halfWidth, seconds, onBlock })`, projectile.ts): a segment of wind that destroys the
+  other side's bolts. Each frame the system tests every bolt's swept path against every wall of the other side (a bolt's
+  side comes from its tag: `hero*` or `opponent*`; split children and summon bolts count as bolts); a crossing bolt
+  ends there (`alive = false`, no split) and `onBlock(bolt, at)` fires for the puff. It blocks neither walking nor
+  sight nor the owner's own bolts, and homing basic attacks (`HitOptions.attack`) are hits, not bolts, so they pass.
+  The handle's `end()` removes it early; it expires after `seconds`; `arena.projectiles.clear()` (round start, stop)
+  removes all. Existing bolts behave as before when no wall stands. Online each screen simulates only the bolts that
+  fly at its own hero, so the wall stops the enemy's bolts on the screen of the hero who raised it (where those hits
+  are decided); build the segment from `sentFrom` and `point` so both screens draw the same wall.
+
 ### Caster movement and misc
 
 - `walk(move)`: moves the caster on the ground plane (clamped to +/-55) and turns it to face the movement (used by play mode and hero mode).

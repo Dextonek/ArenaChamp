@@ -161,47 +161,57 @@ export const dawnKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'halo of blades', name: 'Halo of Blades', range: 0, cooldown: 9,
-      buff: { kind: 'armor', amount: 0.2, seconds: 3 },
-      blurb: 'Shields her for 25 while six blades circle her for 3 s and cut whatever they touch (3 hits at most).',
+      key: 'E', label: 'radiant parry', name: 'Radiant Parry', range: 0, cooldown: 11, parry: true,
+      blurb: 'A sun-shield stance for 0.6 s. The first hit on her in that window is parried: no damage, and the enemy takes 20 and is stunned 0.6 s (a summoned unit is parried without the stun). If nothing hits her the stance fades.',
       icon(g, s) {
         ground(g, s);
-        sigil(g, s * 0.5, s * 0.72, s * 0.42, s * 0.14, s);
-        ring(g, s * 0.5, s * 0.2, s * 0.2, s * 0.07, s * 0.04, D.dark);
-        ring(g, s * 0.5, s * 0.2, s * 0.2, s * 0.07, s * 0.024, D.body);
-        ring(g, s * 0.5, s * 0.2, s * 0.2, s * 0.07, s * 0.008, D.core);
-        // Six blades around a small hex in an ellipse.
-        for (let i = 0; i < 6; i++) {
-          const a = (i / 6) * Math.PI * 2 + 0.3, x = s * 0.5 + Math.cos(a) * s * 0.34, y = s * 0.56 + Math.sin(a) * s * 0.17;
-          const dx = -Math.sin(a), dy = Math.cos(a) * 0.5;
-          shard(g, x - dx * s * 0.09, y - dy * s * 0.09, x + dx * s * 0.11, y + dy * s * 0.11, s * 0.075, s, i % 2 ? D.hot : D.foil);
+        sigil(g, s * 0.5, s * 0.86, s * 0.4, s * 0.09, s);
+        // A halo of ray ticks behind a big kite shield, a blade glancing off it, and the flash of the parry.
+        for (let i = 0; i < 12; i++) {
+          const a = (i / 12) * Math.PI * 2;
+          g.beginPath();
+          g.moveTo(s * 0.5 + Math.cos(a - 0.1) * s * 0.3, s * 0.46 + Math.sin(a - 0.1) * s * 0.3);
+          g.lineTo(s * 0.5 + Math.cos(a) * s * (i % 2 ? 0.46 : 0.6), s * 0.46 + Math.sin(a) * s * (i % 2 ? 0.46 : 0.6));
+          g.lineTo(s * 0.5 + Math.cos(a + 0.1) * s * 0.3, s * 0.46 + Math.sin(a + 0.1) * s * 0.3);
+          g.closePath();
+          g.fillStyle = 'rgba(255,231,160,0.26)';
+          g.fill();
         }
-        hex(g, s * 0.5, s * 0.56, s * 0.08, s, D.body);
+        ring(g, s * 0.5, s * 0.46, s * 0.34, s * 0.34, s * 0.03, D.dark);
+        ring(g, s * 0.5, s * 0.46, s * 0.34, s * 0.34, s * 0.016, D.body);
+        shield(g, s * 0.5, s * 0.16, s * 0.46, s * 0.62, s, D.foil);
+        shield(g, s * 0.5, s * 0.26, s * 0.3, s * 0.4, s, D.hot);
+        hex(g, s * 0.5, s * 0.4, s * 0.06, s, D.body);
+        // The deflected blade, snapped away to the upper right.
+        shard(g, s * 0.78, s * 0.36, s * 0.92, s * 0.1, s * 0.07, s, D.body);
+        spark(g, s * 0.74, s * 0.3, s * 0.12);
       },
     },
     {
-      key: 'R', label: 'judgement of dawn', name: 'Judgement of Dawn', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A colossal sword of hard light is driven into the zone and shields her for 50.',
+      key: 'R', label: 'dawn descent', name: 'Dawn Descent', range: 12, cooldown: 16, dash: true, cc: true,
+      blurb: 'Ultimate. She leaps up to 12 m in a high arc and cannot be touched while airborne (1 s). She lands on the aimed spot: a 2.5 m zone takes 40 and stuns 1 s, and a shield of 40 wraps her for 3 s.',
       icon(g, s) {
         ground(g, s);
-        sigil(g, s * 0.5, s * 0.88, s * 0.44, s * 0.09, s);
-        // Sun rays behind, then the sword point down: blade, guard, grip.
-        for (let i = 0; i < 9; i++) {
-          const a = -Math.PI * 0.95 + (i / 8) * Math.PI * 0.9;
-          g.beginPath();
-          g.moveTo(s * 0.5, s * 0.3);
-          g.lineTo(s * 0.5 + Math.cos(a - 0.06) * s * 0.7, s * 0.3 + Math.sin(a - 0.06) * s * 0.7);
-          g.lineTo(s * 0.5 + Math.cos(a + 0.06) * s * 0.7, s * 0.3 + Math.sin(a + 0.06) * s * 0.7);
-          g.closePath();
-          g.fillStyle = 'rgba(255,231,160,0.2)';
-          g.fill();
-        }
-        shard(g, s * 0.5, s * 0.84, s * 0.5, s * 0.34, s * 0.2, s, D.hot);
-        shard(g, s * 0.5, s * 0.84, s * 0.5, s * 0.5, s * 0.1, s, D.foil);
-        shard(g, s * 0.3, s * 0.3, s * 0.7, s * 0.3, s * 0.07, s, D.body);
-        hex(g, s * 0.5, s * 0.2, s * 0.05, s, D.hot);
-        hex(g, s * 0.5, s * 0.1, s * 0.06, s, D.foil);
-        spark(g, s * 0.5, s * 0.86, s * 0.07);
+        // The landing zone at the bottom right, the arc of the leap from the upper left, a figure of shards coming down.
+        sigil(g, s * 0.66, s * 0.82, s * 0.3, s * 0.085, s);
+        ring(g, s * 0.66, s * 0.82, s * 0.2, s * 0.055, s * 0.016, D.core);
+        g.beginPath();
+        g.moveTo(s * 0.08, s * 0.8);
+        g.quadraticCurveTo(s * 0.3, s * -0.2, s * 0.58, s * 0.42);
+        g.strokeStyle = 'rgba(255,231,160,0.55)';
+        g.lineWidth = s * 0.03;
+        g.setLineDash([s * 0.05, s * 0.04]);
+        g.stroke();
+        g.setLineDash([]);
+        // A halo disc behind the falling figure, a blade pointing down, the guard and the wings.
+        ring(g, s * 0.62, s * 0.4, s * 0.17, s * 0.17, s * 0.03, D.dark);
+        ring(g, s * 0.62, s * 0.4, s * 0.17, s * 0.17, s * 0.016, D.body);
+        shard(g, s * 0.66, s * 0.76, s * 0.62, s * 0.42, s * 0.2, s, D.hot);
+        shard(g, s * 0.66, s * 0.76, s * 0.64, s * 0.54, s * 0.09, s, D.foil);
+        shard(g, s * 0.48, s * 0.34, s * 0.78, s * 0.3, s * 0.06, s, D.body);
+        hex(g, s * 0.62, s * 0.24, s * 0.06, s, D.foil);
+        spark(g, s * 0.66, s * 0.8, s * 0.09);
+        spark(g, s * 0.26, s * 0.2, s * 0.06);
       },
     },
   ],

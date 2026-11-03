@@ -212,7 +212,133 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   Use the `/game` address: the redirect from `/` drops the query.
 - Default play, without `?figs`, still uses the old models. Not checked live, because the live game needs a login.
 
-**Concept-shape variants of Brannoc and Kaia, smoothed (2026-11-02, uncommitted, deployed behind `?figs=v2c`)**
+**Kit shapes v3 design (2026-11-03, design only, nothing built, waiting on the user)**
+- The user: kits feel the same (one skillshot, then circles), ultimates are mostly big circles. Counted from the
+  built kits: W is a circle on 13 of 20 heroes, R a big circle on 16 of 20; Q is already varied.
+- `pipeline/designs/kit-shapes-v3.md`: 16 new ultimates (rewind, charged line, terrain wall, curving stroke, charge
+  and wall slam, mark and recast, cheat death, spell steal, ...), 4 new Ws, 4 Qs turned into skillshots, 2 new Es,
+  18 engine pieces with cost, and a build order: 5 engine pieces, then a play-test of Tempo, Kaia, Isolde, Shiori
+  and Brannoc before the other 15. Keeps kit-identity-v2's passives; its slot shapes are replaced.
+- Second pass the same day (user: "remade more and make it"): circle Ws 13 → 4, self-burst Es 8 → 3; 16 Rs, 8 Ws,
+  7 Es new, 4 Qs become skillshots. v2's passives are not part of it (not answered).
+- **Build in progress (2026-11-03), batch 1 of about 4:**
+  1. Engine pieces (one worker, sole writer of traits/heroMode/touch/arena/obstacles/projectile/duel): per-slot
+     hold and recast, trait history plus `moveTo` with online snap, temporary obstacles, curving projectile with
+     an arc aim, a carry and wall-slam sweep, and a skillshot hook. Running.
+  2. Then the five play-test heroes in parallel, per-hero files only: Tempo plus Kaia, Isolde plus Brannoc,
+     Shiori. Their registry lines and AI rules come back to me to add.
+  3. Then a browser pass and AI-vs-AI duels per hero (slot R actually cast), then batches 2 to 4 (the other 15).
+  - Resume: read `pipeline/designs/kit-shapes-v3.md`, then `git diff --stat`, to see which pieces landed.
+- **Batch 1 done (2026-11-03, uncommitted, not deployed, not tested online):**
+  - Engine pieces built (APIs in docs/architecture/traits.md, hero-mode.md, targeting-and-arena.md,
+    multiplayer.md); `server/hub.mjs` relays `cast.bend`. Projectile hooks were broken (pull measured from the bolt,
+    so 0 m) and are fixed. `CastContext.obstacles()` added for sweeps.
+  - New spells: Tempo Unwind (R) and Quickstep (E, 2 charges); Kaia Thunderlance (R, hold 1.5 s) and Ball Lightning
+    (W, recast to blink); Isolde Glacier Wall (R); Brannoc Slag Flick (Q skillshot) and Forge Charge (R, wall slam);
+    Shiori Final Calligraphy (R, curving) and Ink Double (W). The 9 replaced effect files are deleted (git rm).
+  - Checked in the browser: all 9 cast in a duel (sheet `docs/heroes/kits_v3_batch1_sheet.jpg`); Thunderlance's
+    lightning drew black only (quad buffer full, outline layer first), fixed with a bigger buffer. AI-vs-AI: every
+    hero casts all four slots; 12 duels each vs Lyra, Zephyr, Vex, Auriel, Sirix, Mortis: Tempo 7, Kaia 6, Isolde 6,
+    Brannoc 6, Shiori 5 wins. No console errors.
+  - Not checked: a two-player online match with the new spells, phone controls for hold and arc aim.
+  - Next: batches 2 to 4 (the other 15 heroes, same pattern: per-hero workers, then registry, browser, AI duels).
+- **Batch 2 done (2026-11-03, uncommitted, not deployed, not tested online):**
+  - Vesper's kit moved out of `src/heroes.ts` into `src/kits/blood.ts` (like every other kit).
+  - New spells: Vesper Hemolance (Q, now a line skillshot), Blood Step (W, 5 m blink plus a thorn strip) and
+    Blood Bond (R, mark, recast pops 60 plus 50% of the damage dealt since); Nyx Shadow Swap (W, dagger, recast swaps
+    to it) and Shadow Mark (R, 2 s later she strikes from behind for 80 plus 30%); Vex Volatile Leap (E, blast and a
+    5 m jump back) and Elixir of Unmaking (R, 5 s of Q at 0.4 s with double toxin and +20% damage); Fenna Seed of
+    Rebirth (R, cheat death to +35%); Marin Tide Whip (Q, hook pulls 3.5 m) and Bubble Prison (W, knock-up plus a
+    2 m drift). The 10 replaced effect files are deleted (git rm).
+  - New AI flag `HeroSpell.save`: the AI casts it when its own HP is under 45% (Seed of Rebirth). Before it, Fenna
+    never cast her R.
+  - Balance: 24-36 AI duels each against Lyra, Zephyr, Auriel, Sirix, Mortis and Ada. Wins: Vesper 39%, Vex about
+    46%, Nyx 42%, Fenna 54%, Marin 46%. To get there: Vesper HP 620 → 700, HP cost 4-8% → 2.5-6%, Hemolance
+    42 → 50; Vex spell penalty 15% → 12%, Leap 26 → 40, Elixir gives might; Nyx dagger 45 → 35, mark 110 → 80.
+    No console errors. Sheet: `docs/heroes/kits_v3_batch2_sheet.jpg`.
+  - Known: Blood Bond and Nyx's dagger behave differently online (the other screen pops a flat 90; the swap aims at
+    full range when that screen cannot see the hit). Vex's E and R icons are still the old drawings.
+  - Next: batch 3 (five more of: Lyra, Sefu, Auriel, Zephyr, Mortis, Ada, Sirix, Cantor, Opaline, Oblivion).
+- **Batch 3 done (2026-11-03, uncommitted, not deployed, not tested online):**
+  - New spells (replaced files deleted with git rm):
+    - Sefu: Sand Lash (Q, line skillshot, root), Burrow (E, 7 m tunnel, untouchable 1.1 s), Dune Surge (R, wave carries
+      the enemy 12 m, root).
+    - Auriel: Radiant Parry (E, 0.6 s stance; the first hit is blocked and the enemy stunned 0.6 s), Dawn Descent (R,
+      12 m leap, untouchable in the air, 2.5 m landing stun, shield 40).
+    - Zephyr: Wind Barrier (E, a 5 m wall that destroys the enemy's bolts for 3 s), Gale Cyclone (R, a 2.5 m cyclone
+      that moves with him for 4 s).
+    - Mortis: Bone Colossus (R, one giant skeleton: 280 HP, 28 per hit, 8 s).
+    - Ada: Mag Rail (R, rails from her and from each live turret, crossing on the target).
+  - Look-only refresh of the spells Sefu and Auriel keep: Quicksand (a striped sand cobra rears out), Radiant Spear
+    (a feather-plate spear), Aegis Wall (kite shields with sun emblems).
+  - Engine:
+    - Bolt walls: `ProjectileSystem.wall`, `CastContext.boltWall`.
+    - `contextFor` now has a default `displace` that moves arena figures, so an AI Auriel visibly leaps.
+    - Two new AI flags, `HeroSpell.parry` and `HeroSpell.barrier`. The AI casts them only when a bolt is due or the
+      enemy's attack winds up, before it would sidestep, and only on a 60% roll per threat.
+    - A dash-flagged ultimate may now be cast inside Q range.
+  - Checked: tsc clean, no console errors, every new spell cast and seen in a duel (sheets in the scratchpad), every
+    hero casts all four slots.
+  - AI duels (24 each against Lyra, Vex, Sirix, Cantor, Opaline and Oblivion), last pass:
+    - Sefu 50% and Auriel 62%, after buffs to Sefu and nerfs to Auriel.
+    - Mortis 33%: the colossus was cut from 360 HP / 34 per hit / 9.5 s, when he won 75%. It overshot.
+    - Zephyr 33%; Ada 46%.
+    - Not balanced further, because the user asked for a fresh redesign of every kit next (see below).
+- **Sefu and Auriel models in the current style (2026-11-03, uncommitted, `?figs=v2`):**
+  - Classes `Sand` and `Dawn` in `blender/heroes/moba_figures.py`.
+  - New helpers: `arc_shell` (a curved band open at the front) and `band` (a low-resolution decorative ring).
+  - Exports: `sand_v2.glb` (34.9k triangles, 452 KB) and `dawn_v2.glb` (37.8k, 499 KB). Both are in `MODELS_V2`.
+  - Sefu: a striped gold-and-turquoise nemes flaring past his shoulders like a sphinx headdress, a rearing cobra on
+    the brow, a jewelled collar, a pleated kilt with a royal apron, gold greaves and bracers, a crook taller than he
+    is.
+  - Auriel: raised wings (a gold arm and nine feather plates each), a winged circlet, a golden braid, ivory plate, a
+    light sword and a big kite shield with a sun.
+  - Her first ivory was near-white and bloomed over the whole figure in the game, so the colours are now mid-value.
+    Isolde's white skirt shows the same bloom, not fixed.
+- **Next: a fresh design of all 20 kits** (user, 2026-11-03: forget the current kits; new ideas for every hero, more
+  targeted spells, dashes, pulls and buffs, passives that fit the new kits). Design first, for the user's approval,
+  then build in batches.
+  - Design: [pipeline/designs/kits-v4.md](../pipeline/designs/kits-v4.md). It holds:
+    - all 20 kits and passives;
+    - 15 engine pieces with costs;
+    - a low-engine opener: Lyra, Vex, Marin, Mortis, Zephyr;
+    - six questions for the user.
+  - Waiting on the user:
+    - answers to those six questions;
+    - whether to commit batches 1–3 and the two models first, which is recommended (v4 rewrites every kit again).
+  - Nothing of v4 is built.
+
+**Two duel bugs fixed (2026-11-03, uncommitted, not deployed)**
+- The last match's spell (often an ult) showed at the start of the next one, mostly after a forfeit or a reload:
+  turning hero mode on replayed the spell that was cast last. `clearEffects()` in `src/main.ts` now ends every spell
+  on screen when hero mode turns on or off and at every duel round (`DuelHost.clearEffects`, called from
+  `Duel.setup` / `stop`); switching modes no longer replays anything. Checked in the browser: Vesper's ult cast, the
+  duel left mid-cast, a new duel started: no effect visible; recasting it still works.
+- Heroes stuck at gaps between obstacles: `steer` in `src/obstacles.ts` turned for every obstacle within 1.2 m, so
+  the two sides of a gap turned the hero back and forth. It now turns only for the nearest obstacle the straight walk
+  would hit, looking no further than the walk's goal. Every gap is at least 2.0 m (body 1.0). A walk-through test
+  of every gap in all five arenas: 140 of 184 walks passed before, 184 of 184 now.
+
+**The concept look chosen; all six v2 heroes rebuilt in it (2026-11-02, uncommitted, not deployed)**
+- The user picked the concept shapes ("the new look"). Brannoc and Kaia's concept builds are now the regular v2
+  files (`forge_v2.glb`, `storm_v2.glb`; the `_c` files are gone). `moba_figures.FIGURES["forge"]` and `["storm"]`
+  build the concept classes; `forge_a` and `storm_a` still build the earlier shapes.
+- `src/heroes.ts`: `?figs=v2` shows all six; `?figs=v2c` is kept as an alias so the old link still works.
+- Vesper, Isolde, Zephyr and Oblivion rebuilt in the concept style with the sculpted finish (`SCULPT`, `FUSE`, `WRAP`,
+  `PAINT` on `Blood`, `Frost`, `Sky`, `Void`; they had no sculpt pass before). One signature shape each:
+  - Vesper: bigger head and eyes, the blade fan 1.5× (a crimson V), a wider skirt, a long scepter with a big ruby in a
+    gold claw. 33.6k triangles, 430 KB.
+  - Isolde: bigger head and eyes, the shard halo 1.5× wide, an ice tiara instead of the bun, a spear taller than she
+    is with a crystal head; ice glow lowered to 0.45 so the halo does not bloom over her face. 35.3k, 454 KB.
+  - Zephyr: bigger head, sharp eyes, hair swept back in big blades, the scarf 1.5× longer and wider, a longer
+    curved blade. 38.2k, 491 KB.
+  - Oblivion: a tower instead of Brannoc's wedge (straight-sided cuirass, long tassets), horns 1.5× taller, taller
+    pauldron spikes, a pale greatsword nearly his height with thick void edges. 34.2k, 418 KB.
+- Sheet: `docs/heroes/moba_v2_concept_six.jpg` (all six in game: face, 3/4, full, walk, attack, game cam).
+- Not done: the other 14 heroes (later batches); default play without `?figs` still uses the old models for all 20.
+- Waiting on the user: feedback on the four, and whether to commit.
+
+**Concept-shape variants of Brannoc and Kaia, smoothed (2026-11-02, superseded by the entry above)**
 - Smoothing pass: Brannoc's iron body and helmet, trousers, boots, chimney stacks and smoke, and Kaia's legs and
   boots, are each fused into one smooth shape (extra `FUSE` groups on the concept classes). Brannoc now has 40.7k
   triangles (518 KB), Kaia 35.8k (458 KB).

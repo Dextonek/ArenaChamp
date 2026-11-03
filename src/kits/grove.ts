@@ -276,22 +276,32 @@ export const groveKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'world blossom', name: 'World Blossom', range: 0, cooldown: 20,
-      blurb: 'Ultimate. A colossal flower closes over her and slams down: enemies within 5 m are slowed for 2 s, and she heals 45 at once and 60 more over 3 s.',
+      key: 'R', label: 'seed of rebirth', name: 'Seed of Rebirth', range: 0, cooldown: 20, save: true,
+      blurb: 'Ultimate. A seed hangs on her for 5 s: the first hit that would drop her under 15% HP blooms her back up by 35% of her max HP instead (a lethal hit leaves her on 1 HP). Unused, it blooms for a small heal.',
       icon(g, s) {
         ground(g, s);
-        rootRing(g, s * 0.5, s * 0.86, s * 0.46, s * 0.12, s * 0.04);
-        // The braided trunk: two strands twisting up.
-        vine(g, spiral(s * 0.5, s * 0.84, s * 0.46, s * 0.05, 3, 0), s * 0.06);
-        vine(g, spiral(s * 0.5, s * 0.84, s * 0.46, s * 0.05, 3, Math.PI), s * 0.06);
-        // The colossal flower, wide open, cream inside and a pink rim.
-        flower(g, s * 0.5, s * 0.4, s * 0.4, 0);
-        // Small flowers bursting at the sides.
-        flower(g, s * 0.12, s * 0.88, s * 0.1, -0.3);
-        flower(g, s * 0.88, s * 0.88, s * 0.1, 0.3);
-        flower(g, s * 0.26, s * 0.92, s * 0.08, -0.15);
-        flower(g, s * 0.74, s * 0.92, s * 0.08, 0.15);
-        motes(g, [[s * 0.1, s * 0.4, 0], [s * 0.9, s * 0.38, 0], [s * 0.2, s * 0.2, 1], [s * 0.82, s * 0.16, 1], [s * 0.5, s * 0.1, 0], [s * 0.66, s * 0.62, 1]], s * 0.018);
+        rootRing(g, s * 0.5, s * 0.88, s * 0.4, s * 0.1, s * 0.04);
+        // A closed bud on a spiral stem, a cream glow behind it and a bloom bursting out of its top.
+        const glow = g.createRadialGradient(s * 0.5, s * 0.42, s * 0.02, s * 0.5, s * 0.42, s * 0.4);
+        glow.addColorStop(0, 'rgba(255,251,224,0.85)');
+        glow.addColorStop(1, 'rgba(255,251,224,0)');
+        g.fillStyle = glow;
+        g.fillRect(0, 0, s, s);
+        vine(g, spiral(s * 0.5, s * 0.86, s * 0.34, s * 0.05, 2.5, 0), s * 0.06);
+        // The seed: a pale oval ringed in dark, its pink bud cap above it.
+        g.fillStyle = G.dark;
+        g.beginPath(); g.ellipse(s * 0.5, s * 0.5, s * 0.17, s * 0.21, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = G.bark;
+        g.beginPath(); g.ellipse(s * 0.5, s * 0.5, s * 0.145, s * 0.185, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = G.accent;
+        g.beginPath(); g.moveTo(s * 0.35, s * 0.46); g.quadraticCurveTo(s * 0.5, s * 0.2, s * 0.65, s * 0.46); g.quadraticCurveTo(s * 0.5, s * 0.38, s * 0.35, s * 0.46); g.fill();
+        g.strokeStyle = G.pinkDark;
+        g.lineWidth = s * 0.012;
+        g.beginPath(); g.moveTo(s * 0.5, s * 0.25); g.lineTo(s * 0.5, s * 0.42); g.stroke();
+        leaf(g, s * 0.5, s * 0.62, -0.9, s * 0.2);
+        leaf(g, s * 0.5, s * 0.62, 0.9, s * 0.2);
+        flower(g, s * 0.5, s * 0.2, s * 0.2, 0);
+        motes(g, [[s * 0.16, s * 0.3, 1], [s * 0.86, s * 0.32, 0], [s * 0.26, s * 0.16, 0], [s * 0.78, s * 0.12, 1], [s * 0.12, s * 0.56, 0], [s * 0.9, s * 0.58, 1]], s * 0.016);
       },
     },
   ],

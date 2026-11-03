@@ -18,6 +18,7 @@ import { defaultLook } from './minion';
  * - `RibCage`      a cage of curved ribs around a point (E): grows in segments, flexes, crumbles.
  * - `BoneHand`     the colossal skeletal hand (R): forearm, palm, four fingers and a thumb, joints lit teal.
  * - `skeletonLook` the `MinionLook` for summons: a small skeleton (melee, with a blade) or an archer (ranged, bow).
+ * - `colossusLook` the Bone Colossus (R): the same skeleton at 2.5x with horns, shoulder spikes and a bone club.
  */
 
 /** Palette. Numbers for `THREE.Color`, `BONE_CSS` for APIs that want a string. `bone` is the ivory foil. */
@@ -1285,5 +1286,86 @@ export const skeletonLook: MinionLook = (kind, p: MinionPalette) => {
       sk.group.rotation.y = Math.sin(pose.time * 1.7) * 0.12;
       if (bowGroup) bowGroup.rotation.x = Math.sin(pose.time * 2) * 0.03;
     },
+  };
+};
+
+// ---------------------------------------------------------------------------------------------------------------
+// Colossus look (Bone Colossus, the ultimate's single big summon)
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * The Bone Colossus (`SummonOptions.look`): the same skeleton as `skeletonLook`, scaled 2.5x (about 2.5 m, 3 m with the
+ * horns), with a pair of curling horns on the skull, bone spikes on the shoulders, a bigger soulfire heart in the cage
+ * and a bone club in the right hand instead of the blade. On `pose.swing` the club is raised overhead and slammed down
+ * in front of him. It climbs out of the ground over its first 0.85 s (`pose.time`), shaking as it comes. Always a melee
+ * rig; `barY` is raised for the HP bar.
+ */
+export const colossusLook: MinionLook = (kind, p: MinionPalette) => {
+  const inner = skeletonLook('melee', p);
+  const body = inner.root;
+  const root = new THREE.Group();
+  root.scale.setScalar(2.5);
+  root.add(body);
+  // Horns: two bone segments each, curling out and up from the skull.
+  for (const s of [-1, 1]) {
+    const h1 = put(body, boneChunkGeometry(5, 0.35), p.trim, s * 0.1, 0.96, -0.01);
+    h1.rotation.set(-0.1, 0, -s * 0.85);
+    h1.scale.set(0.032, 0.15, 0.032);
+    const h2 = put(body, boneChunkGeometry(5, 0.05), p.trim, s * 0.22, 1.07, -0.02);
+    h2.rotation.set(-0.15, 0, -s * 0.2);
+    h2.scale.set(0.024, 0.15, 0.024);
+    // Shoulder spikes.
+    const sp = put(body, boneChunkGeometry(4, 0.06), p.trim, s * 0.23, 0.78, -0.02);
+    sp.rotation.z = -s * 1.1;
+    sp.scale.set(0.03, 0.15, 0.03);
+    const sp2 = put(body, boneChunkGeometry(4, 0.06), p.trim, s * 0.17, 0.8, -0.06);
+    sp2.rotation.set(-0.5, 0, -s * 0.6);
+    sp2.scale.set(0.024, 0.12, 0.024);
+  }
+  // A spine of back spikes.
+  for (let i = 0; i < 4; i++) {
+    const b = put(body, boneChunkGeometry(4, 0.06), p.trim, 0, 0.7 - i * 0.07, -0.09);
+    b.rotation.x = -1.2;
+    b.scale.set(0.02, 0.09 - i * 0.012, 0.02);
+  }
+  // Bigger soulfire heart inside the ribs.
+  const heart = put(body, cached('skelHeart', () => new THREE.OctahedronGeometry(0.045, 0)), p.eye, 0, 0.6, 0.03);
+  heart.scale.setScalar(1.8);
+  // The right arm (shoulder group at x 0.19, y 0.74) and its forearm: hide the blade, hang a club in the hand.
+  const sh = body.children.find((c) => c.type === 'Group' && Math.abs(c.position.x - 0.19) < 1e-3 && Math.abs(c.position.y - 0.74) < 1e-3);
+  const el = sh?.children.find((c) => c.type === 'Group');
+  if (el) {
+    for (const c of el.children) if (c.type === 'Mesh' && (Math.abs(c.scale.z - 0.4) < 1e-3 || Math.abs(c.scale.x - 0.14) < 1e-3)) c.visible = false;
+    const shaft = put(el, boneChunkGeometry(6, 0.9), p.body, 0, -0.14, 0.02);
+    shaft.rotation.x = Math.PI;
+    shaft.scale.set(0.034, 0.34, 0.034);
+    const head = put(el, boneChunkGeometry(6, 0.7), p.body, 0, -0.4, 0.02);
+    head.rotation.x = Math.PI;
+    head.scale.set(0.095, 0.24, 0.095);
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2 + 0.4;
+      const sp = put(el, boneChunkGeometry(4, 0.06), p.trim, Math.cos(a) * 0.08, -0.5, 0.02 + Math.sin(a) * 0.08);
+      sp.rotation.set(Math.sin(a) * 1.2, 0, -Math.cos(a) * 1.2);
+      sp.scale.set(0.02, 0.1, 0.02);
+    }
+  }
+  return {
+    root,
+    barY: 3.3,
+    animate(dt, pose) {
+      inner.animate(dt, pose);
+      if (sh && el && pose.swing >= 0) {
+        // Club up and back, then slammed down in front of him.
+        const s = pose.swing;
+        el.rotation.x = 0;
+        sh.rotation.x = s < 0.6 ? 0.2 + 2.3 * (s / 0.6) : 2.5 - 3.0 * Math.pow((s - 0.6) / 0.4, 1.6);
+      }
+      heart.scale.setScalar(1.8 + Math.sin(pose.time * 5) * 0.35 + (pose.swing >= 0 ? 0.6 : 0));
+      // Climbing out of the ground.
+      const u = clamp01(pose.time / 0.85);
+      root.position.y = -2.9 * Math.pow(1 - u, 2.2);
+      root.position.x = Math.sin(pose.time * 55) * 0.06 * (1 - u);
+    },
+    dispose: inner.dispose,
   };
 };

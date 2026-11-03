@@ -576,10 +576,10 @@ export class Dust {
 
 function stoneMaterial() {
   return new THREE.ShaderMaterial({
-    uniforms: { ...sandUniforms(), uMap: { value: getTabletTexture() }, uLit: { value: 0 } },
+    uniforms: { ...sandUniforms(), uMap: { value: getTabletTexture() }, uLit: { value: 0 }, uBand: { value: 0 } },
     vertexShader: /* glsl */ `
       attribute float aTaper; attribute float aSeed;
-      varying vec3 vPosV; varying vec2 vUv; varying vec2 vDim; varying float vSeed;
+      varying vec3 vPosV; varying vec2 vUv; varying vec2 vDim; varying float vSeed; varying float vY;
       void main() {
         vec3 p = position;
         p.xz *= mix(1.0, aTaper, p.y);
@@ -588,11 +588,12 @@ function stoneMaterial() {
         vUv = uv;
         vDim = vec2(0.5 * (length(instanceMatrix[0].xyz) + length(instanceMatrix[2].xyz)), length(instanceMatrix[1].xyz));
         vSeed = aSeed;
+        vY = position.y;
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: /* glsl */ `
-      uniform vec3 uDark, uStone, uAccent; uniform sampler2D uMap; uniform float uLit;
-      varying vec3 vPosV; varying vec2 vUv; varying vec2 vDim; varying float vSeed;
+      uniform vec3 uDark, uStone, uAccent; uniform sampler2D uMap; uniform float uLit, uBand;
+      varying vec3 vPosV; varying vec2 vUv; varying vec2 vDim; varying float vSeed; varying float vY;
       void main() {
         vec3 nv = normalize(cross(dFdx(vPosV), dFdy(vPosV)));
         vec3 n = normalize(transpose(mat3(viewMatrix)) * nv);
@@ -605,6 +606,18 @@ function stoneMaterial() {
         float inc = step(0.5, cut) * side;
         vec3 glyph = mix(col * 0.38, uAccent * 0.95, uLit);
         col = mix(col, glyph, inc);
+        // Banded pillars (uBand): gold and turquoise stripes up the upper shaft like a nemes headcloth, a gold cap on top.
+        if (uBand > 0.0) {
+          float h = vY * vDim.y;
+          float stripe = fract(h * 2.4);
+          vec3 gold = vec3(0.86, 0.63, 0.2), turq = uAccent * 0.9;
+          vec3 bandCol = stripe < 0.34 ? gold : (stripe < 0.56 ? turq : col);
+          bandCol = (stripe > 0.32 && stripe < 0.36) || (stripe > 0.54 && stripe < 0.58) ? uDark * 1.6 : bandCol;
+          float zone = smoothstep(0.38, 0.46, vY);
+          bandCol = mix(bandCol, gold, smoothstep(0.9, 0.94, vY));
+          float shade = n.y > 0.7 ? 1.0 : (ndl > 0.15 ? 0.86 : 0.64);
+          col = mix(col, bandCol * shade, uBand * zone * max(side, step(0.7, n.y)));
+        }
         // Chiselled edge: a dark line hugging every face border.
         vec2 e = min(vUv, 1.0 - vUv);
         float border = 1.0 - smoothstep(0.0, 0.035, min(e.x, e.y) * min(vDim.x, vDim.y) * 0.5);
@@ -676,6 +689,10 @@ export class SandstoneBlocks {
       });
     }
   }
+
+  /** 0..1 paints the upper shafts with gold and turquoise bands (a nemes headcloth) and a gold cap. */
+  get banded() { return (this.mesh.material as THREE.ShaderMaterial).uniforms.uBand.value as number; }
+  set banded(v: number) { (this.mesh.material as THREE.ShaderMaterial).uniforms.uBand.value = clamp01(v); }
 
   get lit() { return (this.mesh.material as THREE.ShaderMaterial).uniforms.uLit.value as number; }
   set lit(v: number) { (this.mesh.material as THREE.ShaderMaterial).uniforms.uLit.value = clamp01(v); }
@@ -1093,5 +1110,219 @@ export class SandWave {
 
   reset() {
     this.mesh.visible = false;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// GemGlints
+// ---------------------------------------------------------------------------------------------------------------
+
+/** Jewel colours of the Dune Sovereign collar: gold, turquoise, lapis blue and carnelian. */
+export const GEM_COLORS = [0xf2c14e, 0x3fd4c8, 0x3a5fd9, 0xd9482b] as const;
+
+interface Glint {
+  live: boolean; pos: THREE.Vector3; vy: number; age: number; life: number; size: number; spin: number; ph: number; color: number;
+}
+
+/**
+ * Tiny twinkling jewel diamonds (gold, turquoise, lapis, carnelian) that wink in the sand and drift up: `scatter(center,
+ * radius, count, life)` throws a burst over a disc, `trickle(dt, center, radius, perSecond)` keeps a steady glitter.
+ * They face the camera along the vector given to `face` (set it once per cast). `update(dt)` every frame. Add `mesh`.
+ */
+export class GemGlints {
+  readonly mesh: THREE.InstancedMesh;
+  private glints: Glint[] = [];
+  private cursor = 0;
+  private acc = 0;
+  private facing = new THREE.Vector3(0, 0.45, 0.9).normalize();
+  private qFace = new THREE.Quaternion();
+  private q = new THREE.Quaternion();
+  private m = new THREE.Matrix4();
+  private s = new THREE.Vector3();
+  private c = new THREE.Color();
+  private p = new THREE.Vector3();
+  private static Z = new THREE.Vector3(0, 0, 1);
+
+  constructor(readonly max = 32) {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0.5); shape.lineTo(0.28, 0); shape.lineTo(0, -0.5); shape.lineTo(-0.28, 0); shape.closePath();
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    this.mesh = new THREE.InstancedMesh(new THREE.ShapeGeometry(shape), mat, max);
+    this.mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = 9;
+    this.mesh.count = 0;
+    this.mesh.visible = false;
+    for (let i = 0; i < max; i++) {
+      this.glints.push({ live: false, pos: new THREE.Vector3(), vy: 0, age: 0, life: 1, size: 0.2, spin: 0, ph: 0, color: 0 });
+    }
+    this.face(this.facing);
+  }
+
+  /** Unit vector from the scene toward the camera. */
+  face(toCamera: THREE.Vector3) {
+    this.facing.copy(toCamera).normalize();
+    this.qFace.setFromUnitVectors(GemGlints.Z, this.facing);
+  }
+
+  private spawn(pos: THREE.Vector3, life: number) {
+    const g = this.glints[this.cursor];
+    this.cursor = (this.cursor + 1) % this.max;
+    g.live = true; g.age = 0; g.life = life * (0.7 + Math.random() * 0.6);
+    g.pos.copy(pos);
+    g.vy = 0.3 + Math.random() * 0.7;
+    g.size = 0.22 + Math.random() * 0.2;
+    g.spin = (Math.random() - 0.5) * 3;
+    g.ph = Math.random() * 6;
+    g.color = GEM_COLORS[Math.floor(Math.random() * GEM_COLORS.length)];
+  }
+
+  scatter(center: THREE.Vector3, radius: number, count: number, life = 0.9) {
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2, r = radius * Math.sqrt(Math.random());
+      this.spawn(this.p.set(center.x + Math.cos(a) * r, 0.15 + Math.random() * 1.6, center.z + Math.sin(a) * r), life);
+    }
+  }
+
+  trickle(dt: number, center: THREE.Vector3, radius: number, perSecond: number, life = 0.8) {
+    this.acc += dt * perSecond;
+    const n = Math.floor(this.acc);
+    this.acc -= n;
+    if (n > 0) this.scatter(center, radius, n, life);
+  }
+
+  reset() {
+    for (const g of this.glints) g.live = false;
+    this.acc = 0;
+    this.mesh.count = 0;
+    this.mesh.visible = false;
+  }
+
+  update(dt: number) {
+    let k = 0;
+    for (const g of this.glints) {
+      if (!g.live) continue;
+      g.age += dt;
+      if (g.age >= g.life) { g.live = false; continue; }
+      const u = g.age / g.life;
+      g.pos.y += g.vy * dt;
+      // Wink in, flash, wink out: a pinched twinkle.
+      const tw = Math.sin(Math.PI * u) * (0.65 + 0.35 * Math.sin(g.age * 18 + g.ph));
+      this.q.setFromAxisAngle(GemGlints.Z, g.spin * g.age).premultiply(this.qFace);
+      this.m.compose(g.pos, this.q, this.s.set(Math.max(g.size * tw, MIN_SCALE), Math.max(g.size * tw * 1.4, MIN_SCALE), 1));
+      this.mesh.setMatrixAt(k, this.m);
+      this.mesh.setColorAt(k, this.c.setHex(g.color));
+      k++;
+    }
+    this.mesh.count = k;
+    this.mesh.visible = k > 0;
+    this.mesh.instanceMatrix.needsUpdate = true;
+    if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// SandHood
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * A rearing cobra made of sand: a thin upright sheet (facing `yaw`) cut by a shader into a narrow neck, a wide rounded
+ * hood striped gold and turquoise like a nemes headcloth, and a small head with a dark eye. `place(base, yaw)` stands
+ * it on the ground; `set(rear, strike, opacity, erode, time)`: `rear` 0..1 is how far it has risen (and grown),
+ * `strike` 0..1 tilts it forward at the camera, `erode` 0..1 dissolves it into grains. Add `mesh`.
+ */
+export class SandHood {
+  readonly mesh: THREE.Mesh;
+  /** World size of the fully risen hood (width of the hood, height of the head). */
+  width = 3.6;
+  height = 4.6;
+  private mat: THREE.ShaderMaterial;
+
+  constructor() {
+    this.mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      uniforms: { ...sandUniforms(), uOpacity: { value: 0 }, uErode: { value: 0 }, uTime: { value: 0 } },
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uBody, uDark, uHot, uAccent, uStone; uniform float uOpacity, uErode, uTime;
+        varying vec2 vUv;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        float noise(vec2 p) {
+          vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
+        }
+        // Half width of the silhouette at height v: neck, flaring hood, rounded shoulders.
+        float halfWidth(float v) {
+          if (v < 0.24) return 0.13 + 0.03 * (v / 0.24);
+          if (v < 0.6) return mix(0.16, 0.86, pow(smoothstep(0.24, 0.6, v), 0.8));
+          float k = (v - 0.6) / 0.15;
+          return k >= 1.0 ? 0.0 : 0.86 * sqrt(max(0.0, 1.0 - k * k));
+        }
+        void main() {
+          float u = vUv.x * 2.0 - 1.0, v = vUv.y;
+          float hw = halfWidth(v);
+          vec2 hp = vec2(u / 0.17, (v - 0.8) / 0.14);
+          float head = 1.0 - length(hp);
+          float body = hw - abs(u);
+          float d = max(body, head * 0.17);
+          // Ragged, grainy edge that eats inward as it erodes.
+          float n = noise(vec2(u * 11.0, v * 17.0 - uTime * 2.0));
+          float edge = d + (n - 0.5) * 0.09 - uErode * (0.5 + 0.5 * n) * 0.6;
+          if (edge < 0.0) discard;
+          vec3 gold = vec3(0.88, 0.64, 0.2), turq = uAccent * 0.92;
+          vec3 col = uBody * (0.9 + 0.2 * n);
+          // Nemes stripes across the hood, bending down toward the edges.
+          if (v > 0.26 && v < 0.74) {
+            float s = fract(v * 8.0 + u * u * 1.6);
+            col = s < 0.4 ? gold : (s < 0.74 ? turq : uStone * 0.95);
+            col = (abs(s - 0.4) < 0.025 || abs(s - 0.74) < 0.025 || s < 0.02) ? uDark * 1.5 : col;
+          }
+          // Neck: sand grains streaming up, a lit centre line.
+          if (v <= 0.26) col = mix(uBody, uHot, 0.35 * smoothstep(0.12, 0.0, abs(u)) + 0.25 * step(0.6, noise(vec2(u * 20.0, v * 30.0 - uTime * 6.0))));
+          // Head: gold, a turquoise brow band and a dark eye.
+          if (head > 0.0) {
+            col = gold;
+            if (hp.y > 0.35) col = turq;
+            if (length(vec2(abs(u) - 0.05, v - 0.805)) < 0.017) col = uDark * 1.4;
+          }
+          // Dark outline hugging the border.
+          col = mix(uDark * 1.5, col, smoothstep(0.0, 0.025, edge));
+          // Fade near the foot so it grows out of the sand.
+          float foot = smoothstep(0.0, 0.08, v);
+          gl_FragColor = vec4(col, uOpacity * foot);
+        }`,
+    });
+    this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), this.mat);
+    this.mesh.frustumCulled = false;
+    this.mesh.rotation.order = 'YXZ'; // yaw first, then tilt forward in the hood own plane
+    this.mesh.renderOrder = 5;
+    this.mesh.visible = false;
+  }
+
+  place(base: THREE.Vector3, yaw: number) {
+    this.mesh.position.set(base.x, 0.02, base.z);
+    this.mesh.rotation.set(0, yaw, 0);
+  }
+
+  set(rear: number, strike: number, opacity: number, erode: number, time: number) {
+    const r = clamp01(rear);
+    this.mesh.visible = r > 0.01 && opacity > 0.004;
+    const sway = Math.sin(time * 3.2) * 0.05 * r;
+    this.mesh.scale.set(this.width * (0.3 + 0.7 * r) * (1 + 0.04 * Math.sin(time * 9)), Math.max(this.height * r, MIN_SCALE), 1);
+    this.mesh.rotation.x = strike * 0.85;
+    this.mesh.rotation.z = sway;
+    this.mat.uniforms.uOpacity.value = opacity;
+    this.mat.uniforms.uErode.value = erode;
+    this.mat.uniforms.uTime.value = time;
+  }
+
+  reset() {
+    this.mesh.visible = false;
+    this.mat.uniforms.uOpacity.value = 0;
+    this.mat.uniforms.uErode.value = 0;
+    this.mesh.scale.set(1, MIN_SCALE, 1);
+    this.mesh.rotation.set(0, 0, 0);
   }
 }

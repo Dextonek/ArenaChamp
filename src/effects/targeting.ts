@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import type { Enemy } from './common';
 import { frameArena } from './common';
 import type { BuffKind, StatusKind } from './status';
-import type { Projectile, ProjectileOptions } from './projectile';
+import type { BoltWall, BoltWallOptions, Projectile, ProjectileOptions } from './projectile';
 import type { Summon, SummonOptions } from './summon';
+import type { Obstacle } from '../obstacles';
 
 /**
  * Targeting for effects that aim at enemies the user picks in the shared arena (`src/arena.ts`).
@@ -101,6 +102,47 @@ export interface CastContext {
    * `children`, `onHit`) to draw it. Call it at the cast moment. Network duels leave it undefined (no bolt flies).
    */
   projectile?(opts: ProjectileOptions): Projectile;
+  /**
+   * Raises a wall of wind (see `BoltWallOptions` in projectile.ts): a segment that destroys the other side's bolts
+   * which cross it, with an `onBlock` callback for the puff. It blocks neither walking nor sight nor this side's own
+   * bolts, and homing basic attacks (hits, not bolts) pass. The returned handle's `end()` removes it early; a new
+   * round clears it. Build the segment from `sentFrom` and `point` only, so both screens agree. In a network duel each
+   * screen simulates only the bolts that fly at its own hero, so the wall stops the enemy's bolts on the screen of the
+   * hero who raised it (where those hits are decided). Undefined outside the arena.
+   */
+  boltWall?(opts: BoltWallOptions): BoltWall;
+  /**
+   * The bend of an arc aim (`HeroSpell.aim: 'arc'`): the total turn of the bolt's heading in radians, signed as in
+   * `arcShot` (projectile.ts). 0 (or undefined) is a straight shot. The spell passes it to `arcShot(from, point, bend,
+   * speed)` for the launch direction, curve and range. The bend travels with the cast in a network duel.
+   */
+  readonly bend?: number;
+  /**
+   * Where the caster stood on the screen that cast, at cast time. Equals `from` on the caster's own screen; on the
+   * other screen of a network duel `from` is where the hero is drawn (a little behind), so anything both screens must
+   * agree on (a wall's position) is built from `sentFrom` and `point`.
+   */
+  readonly sentFrom?: THREE.Vector3;
+  /**
+   * Adds a temporary wall or pillar (an `Obstacle`, see obstacles.ts) for `seconds`: it blocks walking, line of sight
+   * and bolts for both heroes and the duel AI, then is removed. Returns the obstacle; `removeObstacle` ends it early,
+   * by identity. A new round clears them all. A hero standing where it appears is pushed out when it next moves. The
+   * effect draws the wall's look itself. Build the obstacle from `sentFrom` and `point` only, so both screens of a
+   * network duel make the same wall. Undefined outside a duel.
+   */
+  addObstacle?(o: Obstacle, seconds: number): Obstacle;
+  removeObstacle?(o: Obstacle): void;
+  /** The live obstacles now (walls, pillars, temporary ones): for an effect that sweeps a path against them. */
+  obstacles?(): readonly Obstacle[];
+  /**
+   * Moves `target` by `delta` (ground plane) now, kept inside the ring and out of the obstacles: a carry. Call it every
+   * frame with that frame's step (a charge that drags the enemy along). Unlike `displace` the new spot sticks. Only a
+   * side moves its own figures: offline it moves the enemy hero and the arena foes; in a network duel it moves only
+   * this side's own hero (the victim's client applies it when the cast is replayed there) and does nothing to the
+   * other player's figure, which follows the position its own client streams. Decide the catch with the target's
+   * live position (`target.group.position`) so each screen judges its own hero.
+   */
+  carry?(target: Enemy, delta: THREE.Vector3): void;
   /**
    * Summons small units for the caster's side (see `summon.ts`): `melee` ones walk up and hit, `ranged` ones keep their
    * distance and shoot dodgeable bolts, a `turret` stands and shoots. The arena owns and ticks them; follow the returned

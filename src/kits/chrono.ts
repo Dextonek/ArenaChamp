@@ -243,74 +243,76 @@ export const chronoKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'rewind', name: 'Rewind', range: 0, cooldown: 11,
+      key: 'E', label: 'quickstep', name: 'Quickstep', range: 5, cooldown: 8, aim: 'line',
       buff: { kind: 'haste', amount: 0.25, seconds: 2 },
-      blurb: 'Marks his spot and shields him. A moment later he rewinds back to it, healing and bursting a dial that shoves enemies away.',
+      blurb: 'Slides 5 m toward the aim, leaving afterimages. Two charges; for 2 s after a dash his cooldowns tick twice as fast.',
       icon(g, s) {
         iconGround(g, s);
-        // He stands on the right; the pale afterimage waits on a small dial at the left, a curved arrow rewinding to it.
-        dial(g, s * 0.26, s * 0.84, s * 0.2, { numerals: 'none', squash: 0.45 });
-        ghostFigure(g, s * 0.26, s * 0.82, s * 0.5, 0.5);
-        ghostFigure(g, s * 0.5, s * 0.82, s * 0.5, 0.28);
-        ghostFigure(g, s * 0.74, s * 0.82, s * 0.5, 1, true);
+        // He steps right through a row of fading afterimages, speed streaks behind, a small dial under the start.
+        dial(g, s * 0.2, s * 0.86, s * 0.16, { numerals: 'none', squash: 0.4, alpha: 0.8 });
+        g.strokeStyle = S.body;
+        g.lineWidth = s * 0.02;
+        g.lineCap = 'round';
+        for (const y of [0.4, 0.56, 0.7]) {
+          g.globalAlpha = 0.55;
+          g.beginPath();
+          g.moveTo(s * 0.06, s * y);
+          g.lineTo(s * 0.34, s * y);
+          g.stroke();
+        }
+        g.globalAlpha = 1;
+        ghostFigure(g, s * 0.26, s * 0.84, s * 0.56, 0.22);
+        ghostFigure(g, s * 0.44, s * 0.84, s * 0.56, 0.4);
+        ghostFigure(g, s * 0.62, s * 0.84, s * 0.56, 0.62);
+        ghostFigure(g, s * 0.82, s * 0.84, s * 0.56, 1, true);
+        // Two chevrons for the two charges.
+        g.lineJoin = 'round';
+        g.strokeStyle = S.hot;
+        g.lineWidth = s * 0.04;
+        for (const x of [0.66, 0.8]) {
+          g.beginPath();
+          g.moveTo(s * (x - 0.05), s * 0.1);
+          g.lineTo(s * (x + 0.03), s * 0.2);
+          g.lineTo(s * (x - 0.05), s * 0.3);
+          g.stroke();
+        }
+        mote(g, s * 0.5, s * 0.16, s * 0.02);
+      },
+    },
+    {
+      key: 'R', label: 'unwind', name: 'Unwind', range: 0, cooldown: 22,
+      blurb: 'Ultimate. Goes back to where he stood 2.5 s ago, with the HP he had then. Both the spot he leaves and the one he reaches burst for damage.',
+      icon(g, s) {
+        iconGround(g, s);
+        // Two floor dials, the later one on the right, a dashed arrow curling backward from it to the earlier one.
+        dial(g, s * 0.24, s * 0.8, s * 0.2, { numerals: 'none', squash: 0.45 });
+        dial(g, s * 0.76, s * 0.8, s * 0.2, { numerals: 'none', squash: 0.45 });
+        ghostFigure(g, s * 0.24, s * 0.82, s * 0.5, 0.5);
+        ghostFigure(g, s * 0.76, s * 0.82, s * 0.5, 1, true);
+        // A big dial face above them with its hands wound back and a red second hand.
+        dial(g, s * 0.5, s * 0.3, s * 0.26, { ivory: true, numerals: 'quarter' });
+        blade(g, s * 0.5, s * 0.3, -1.1, s * 0.17, s * 0.045, S.body);
+        blade(g, s * 0.5, s * 0.3, -0.35, s * 0.12, s * 0.05, S.body);
+        blade(g, s * 0.5, s * 0.3, -2.4, s * 0.2, s * 0.03, S.accent);
         g.strokeStyle = S.body;
         g.lineWidth = s * 0.035;
         g.lineCap = 'round';
-        g.setLineDash([s * 0.07, s * 0.05]);
+        g.setLineDash([s * 0.06, s * 0.045]);
         g.beginPath();
-        g.moveTo(s * 0.74, s * 0.18);
-        g.bezierCurveTo(s * 0.6, s * 0.04, s * 0.38, s * 0.04, s * 0.28, s * 0.2);
+        g.moveTo(s * 0.78, s * 0.56);
+        g.bezierCurveTo(s * 0.82, s * 0.5, s * 0.2, s * 0.5, s * 0.24, s * 0.58);
         g.stroke();
         g.setLineDash([]);
         g.lineJoin = 'round';
         g.beginPath();
-        g.moveTo(s * 0.34, s * 0.1);
-        g.lineTo(s * 0.26, s * 0.22);
-        g.lineTo(s * 0.4, s * 0.22);
+        g.moveTo(s * 0.12, s * 0.5);
+        g.lineTo(s * 0.26, s * 0.66);
+        g.lineTo(s * 0.32, s * 0.5);
         g.closePath();
         g.fillStyle = S.body;
         g.fill();
-        // A small plus for the heal.
-        g.fillStyle = S.hot;
-        g.fillRect(s * 0.84, s * 0.12, s * 0.05, s * 0.15);
-        g.fillRect(s * 0.79, s * 0.17, s * 0.15, s * 0.05);
-      },
-    },
-    {
-      key: 'R', label: 'twelfth hour', name: 'Twelfth Hour', range: 13, cooldown: 20,
-      blurb: 'Ultimate. A giant clock hangs over the zone for 3.5 s, then strikes twelve for 135 damage, no stun: walk out of the circle or take it.',
-      icon(g, s) {
-        iconGround(g, s);
-        // A giant ivory clock over a numeral ring on the floor, the red second hand driving down, shock lines racing out.
-        g.strokeStyle = S.body;
-        g.lineWidth = s * 0.025;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.86, s * 0.44, s * 0.11, 0, 0, Math.PI * 2);
-        g.stroke();
-        g.strokeStyle = S.foil;
-        g.lineWidth = s * 0.012;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.86, s * 0.47, s * 0.125, 0, 0, Math.PI * 2);
-        g.stroke();
-        g.lineCap = 'round';
-        for (let i = 0; i < 12; i++) {
-          const a = (i / 12) * Math.PI * 2;
-          g.strokeStyle = S.body;
-          g.lineWidth = s * 0.016;
-          g.beginPath();
-          g.moveTo(s * 0.5 + Math.sin(a) * s * 0.18, s * 0.86 - Math.cos(a) * s * 0.045);
-          g.lineTo(s * 0.5 + Math.sin(a) * s * 0.4, s * 0.86 - Math.cos(a) * s * 0.1);
-          g.stroke();
-        }
-        dial(g, s * 0.5, s * 0.36, s * 0.32, { ivory: true, numerals: 'all' });
-        blade(g, s * 0.5, s * 0.36, 0, s * 0.22, s * 0.05, S.body);
-        blade(g, s * 0.5, s * 0.36, 0.05, s * 0.15, s * 0.06, S.body);
-        // The second hand flies down from the dial into the centre.
-        blade(g, s * 0.5, s * 0.5, 3.14, s * 0.36, s * 0.07, S.accent);
-        g.fillStyle = S.accent;
-        g.beginPath();
-        g.arc(s * 0.5, s * 0.36, s * 0.02, 0, Math.PI * 2);
-        g.fill();
+        mote(g, s * 0.9, s * 0.12, s * 0.022);
+        mote(g, s * 0.1, s * 0.16, s * 0.018);
       },
     },
   ],

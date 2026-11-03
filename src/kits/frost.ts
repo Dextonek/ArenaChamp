@@ -169,17 +169,26 @@ export const frostKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: "winter's crown", name: "Winter's Crown", range: 0, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A colossal crown of ice forms over her and drives down: everything within 5 m is stunned.',
+      key: 'R', label: 'glacier wall', name: 'Glacier Wall', range: 10, cooldown: 20,
+      blurb: 'Ultimate. Raises an ice wall 7 m long across the aim point (range 10), perpendicular to her. It blocks walking, sight and bolts for 4 s, then shatters. Enemies on its line when it rises take damage, are shoved to the nearer side and slowed for 1.5 s.',
       icon(g, s) {
         iconGround(g, s);
-        // Ground ferns, then an upside-down crown of crystals above them.
-        for (let i = 0; i < 5; i++) fern(g, s * 0.5, s * 0.86, Math.PI + (i - 2) * 0.62, s * 0.32, s * 0.02);
-        const teeth: [number, number][] = [[0.2, 0.58], [0.33, 0.7], [0.5, 0.76], [0.67, 0.7], [0.8, 0.58]];
-        for (const [x, tip] of teeth) crystal(g, s * (x + (x - 0.5) * 0.25), s * 0.1, s * x, s * tip, s * 0.13);
+        // A row of tall crystals across the frame, ferns racing along the floor in front, one pink glint.
+        for (let i = 0; i < 6; i++) fern(g, s * (0.14 + i * 0.145), s * 0.9, -Math.PI / 2 + (i % 2 ? 0.5 : -0.5), s * 0.16, s * 0.016);
+        const xs = [0.1, 0.24, 0.38, 0.5, 0.62, 0.76, 0.9];
+        xs.forEach((x, i) => {
+          const tall = i === 3 ? 0.14 : i % 2 ? 0.34 : 0.22;
+          crystal(g, s * x, s * 0.86, s * (x + (i % 2 ? 0.02 : -0.02)), s * tall, s * (i === 3 ? 0.16 : 0.13));
+        });
+        g.strokeStyle = F.rime;
+        g.lineWidth = s * 0.02;
+        g.beginPath();
+        g.moveTo(s * 0.04, s * 0.88);
+        g.lineTo(s * 0.96, s * 0.88);
+        g.stroke();
         g.fillStyle = F.accent;
         g.beginPath();
-        g.arc(s * 0.5, s * 0.82, s * 0.018, 0, Math.PI * 2);
+        g.arc(s * 0.5, s * 0.1, s * 0.018, 0, Math.PI * 2);
         g.fill();
       },
     },

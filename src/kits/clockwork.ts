@@ -250,38 +250,51 @@ export const clockworkKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'gearfall', name: 'Gearfall', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A colossal gear is lowered on chains and slammed down, pinning everyone under its teeth.',
+      key: 'R', label: 'mag rail', name: 'Mag Rail', range: 14, cooldown: 18, aim: 'line',
+      blurb: 'Ultimate. After a 0.6 s charge she and each of her live turrets fire a piercing rail (45 m/s, 18 m) at the spot she targeted, so the lines cross there. Her rail hits for 70, each turret rail for 38. With no turret up, only hers fires.',
       icon(g, s) {
         iconGround(g, s);
-        // A ring of small gears on the floor, a cyan spark ring, and the giant gear hanging on two chains.
-        for (let i = 0; i < 8; i++) {
-          const a = (i / 8) * Math.PI * 2;
-          gear(g, s * (0.5 + Math.cos(a) * 0.4), s * (0.84 + Math.sin(a) * 0.1), s * 0.05, 8, S.brass, false);
-        }
-        g.strokeStyle = S.accent;
-        g.lineWidth = s * 0.014;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.84, s * 0.34, s * 0.07, 0, 0, Math.PI * 2);
-        g.stroke();
-        g.strokeStyle = S.foil;
-        g.lineWidth = s * 0.03;
-        g.setLineDash([s * 0.04, s * 0.03]);
-        for (const x of [0.2, 0.8]) {
+        // Two rails from a turret gear (left) and from her coil (bottom) cross on a star at the upper right.
+        const tx = s * 0.72, ty = s * 0.3;
+        g.lineCap = 'round';
+        for (const [x, y, w] of [[0.1, 0.34, 0.05], [0.22, 0.92, 0.07]] as [number, number, number][]) {
+          const ex = s * x + (tx - s * x) * 1.25, ey = s * y + (ty - s * y) * 1.25;
+          g.strokeStyle = S.accent;
+          g.lineWidth = s * w;
           g.beginPath();
-          g.moveTo(s * x, s * 0.02);
-          g.lineTo(s * x, s * 0.4);
+          g.moveTo(s * x, s * y);
+          g.lineTo(ex, ey);
+          g.stroke();
+          g.strokeStyle = '#e8fffa';
+          g.lineWidth = s * w * 0.35;
           g.stroke();
         }
-        g.setLineDash([]);
-        g.save();
-        g.translate(s * 0.5, s * 0.5);
-        g.scale(1, 0.7);
-        gear(g, 0, 0, s * 0.38, 18, S.body);
-        g.restore();
-        zig(g, [[s * 0.14, s * 0.46], [s * 0.2, s * 0.5], [s * 0.16, s * 0.56], [s * 0.24, s * 0.6]], s * 0.024);
-        steam(g, s * 0.86, s * 0.7, s * 0.05);
-        steam(g, s * 0.1, s * 0.72, s * 0.04);
+        // Spring-loaded coil rings at her muzzle and a small turret gear at the other.
+        for (let i = 0; i < 3; i++) {
+          g.strokeStyle = i === 2 ? S.accent : S.brass;
+          g.lineWidth = s * 0.035;
+          g.beginPath();
+          g.ellipse(s * (0.12 + i * 0.08), s * (0.86 - i * 0.07), s * 0.04, s * 0.11, -0.95, 0, Math.PI * 2);
+          g.stroke();
+        }
+        gear(g, s * 0.1, s * 0.34, s * 0.14, 10, S.body, false);
+        spring(g, s * 0.1, s * 0.48, s * 0.1, s * 0.62, s * 0.04, 3);
+        // The crossing: a hard white star with a cyan ring.
+        g.strokeStyle = S.accent;
+        g.lineWidth = s * 0.02;
+        g.beginPath();
+        g.arc(tx, ty, s * 0.17, 0, Math.PI * 2);
+        g.stroke();
+        g.fillStyle = '#ffffff';
+        g.beginPath();
+        for (let i = 0; i < 16; i++) {
+          const a = (i / 16) * Math.PI * 2, r = (i % 2 ? 0.05 : 0.15) * s;
+          g.lineTo(tx + Math.cos(a) * r, ty + Math.sin(a) * r);
+        }
+        g.closePath();
+        g.fill();
+        zig(g, [[s * 0.9, s * 0.12], [s * 0.84, s * 0.2], [s * 0.9, s * 0.26]], s * 0.022);
+        steam(g, s * 0.34, s * 0.7, s * 0.04);
       },
     },
   ],

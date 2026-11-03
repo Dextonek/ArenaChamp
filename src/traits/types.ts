@@ -95,7 +95,25 @@ export interface TraitView {
   units(): THREE.Vector3[];
   /** This hero cannot walk or attack for `seconds` (casting is gated by the trait's own `canCast`). */
   hold(seconds: number): void;
+  /**
+   * Where this hero stood `secondsAgo` ago (at most about 3 s back) and the HP it had then; null before the first
+   * sample of the round. A round younger than `secondsAgo` gives the oldest sample. Only this player's own hero is
+   * sampled: in a network duel the other side's view returns null.
+   */
+  past(secondsAgo: number): { x: number; z: number; hp: number } | null;
+  /**
+   * Slides this side's hero to `p` over `seconds` (0: at once), the way a dash does, clamped into the ring and out of
+   * the obstacles. Nothing else moves it meanwhile. Online the other player's hero moves on its own client, so the
+   * opponent side's call does nothing there.
+   */
+  moveTo(p: THREE.Vector3, seconds: number): void;
 }
+
+/** A slot that charges while it is aimed (see `Trait.hold`). */
+export interface HoldSpec { slot: number; seconds: number }
+
+/** A slot that can be cast once more after the first cast (see `Trait.recast`). */
+export interface RecastSpec { slot: number; window: number; name: string; power?: number; replay?: boolean }
 
 export interface Trait {
   passive: { name: string; blurb: string };
@@ -106,15 +124,20 @@ export interface Trait {
   speed?: number;
   /** The basic attack's changes to the melee / ranged default. */
   attack?: Partial<AttackSpec>;
-  /** Hold: aiming slot `slot` longer charges it, full after `seconds`; `castPower` gets the charge 0..1. */
-  hold?: { slot: number; seconds: number };
+  /**
+   * Hold: aiming slot `slot` longer charges it, full after `seconds`; `castMods` gets the charge 0..1. One slot
+   * or several (each slot charges on its own).
+   */
+  hold?: HoldSpec | HoldSpec[];
   /** Ammo: slot `slot` has `count` charges, one back every `every` seconds (its cooldown is only a short gap). */
   charges?: { slot: number; count: number; every: number };
   /**
    * Recast: for `window` seconds after casting `slot`, it can be cast once more, free (no cooldown), at `power` x the
-   * damage (default 0.6). `recastAct` runs at that second cast.
+   * damage (default 0.6). `recastAct` runs at that second cast. One slot or several. With `replay: false` the second
+   * cast plays no effect and is not aimed: only `recastAct` runs (a blink to the orb, a pop of the mark). Online it
+   * sends no cast message: whatever it does must move this hero (`moveTo`) or change its own state.
    */
-  recast?: { slot: number; window: number; name: string; power?: number };
+  recast?: RecastSpec | RecastSpec[];
   /** Shields this hero makes are this much stronger (Auriel). */
   shieldMul?: number;
 
@@ -122,7 +145,7 @@ export interface Trait {
   canCast?(t: TraitView, slot: number): string | null;
   /** The cast's mods (called once per cast; may spend the resource). `charge` 0..1 for a hold slot, else 1. */
   castMods?(t: TraitView, slot: number, charge: number): Partial<CastMods>;
-  /** After a cast went out. */
+  /** After the cast's rules ran: before the effect plays (the hero has not moved yet; a `moveTo` here starts a dash the effect sees as it begins). */
   afterCast?(t: TraitView, slot: number): void;
   /** The cooldown slot `slot` gets after a cast (default `base`). */
   cooldown?(t: TraitView, slot: number, base: number): number;

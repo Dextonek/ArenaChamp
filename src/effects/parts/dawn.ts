@@ -87,8 +87,8 @@ export function dawnPanelNormal(dir: THREE.Vector3, view: THREE.Vector3, out = n
 // ---------------------------------------------------------------------------------------------------------------
 
 type Pt = [number, number];
-export type PanelShape = 'hex' | 'shield' | 'shard';
-const SHAPES: PanelShape[] = ['hex', 'shield', 'shard'];
+export type PanelShape = 'hex' | 'shield' | 'shard' | 'feather';
+const SHAPES: PanelShape[] = ['hex', 'shield', 'shard', 'feather'];
 
 function hexPts(): Pt[] {
   const out: Pt[] = [];
@@ -100,6 +100,12 @@ function hexPts(): Pt[] {
 const SHIELD: Pt[] = [[-0.36, 0.5], [0.36, 0.5], [0.36, 0.0], [0, -0.5], [-0.36, 0.0]];
 /** A long blade shard: tip at +y, 0.28 wide, 1 long, cut tail at -y. */
 const SHARD: Pt[] = [[0, 0.5], [0.14, 0.08], [0.1, -0.5], [-0.1, -0.5], [-0.14, 0.08]];
+
+/** A hard-light feather plate: tip at +y, 0.46 wide, 1 long, notched tail, a touch fuller on the right. */
+const FEATHER: Pt[] = [
+  [0, 0.5], [0.12, 0.3], [0.2, 0.1], [0.24, -0.1], [0.2, -0.3], [0.1, -0.5], [0, -0.43],
+  [-0.1, -0.5], [-0.19, -0.3], [-0.21, -0.1], [-0.16, 0.1], [-0.08, 0.3],
+];
 
 const scalePts = (pts: Pt[], sx: number, sy = sx): Pt[] => pts.map(([x, y]) => [x * sx, y * sy] as Pt);
 
@@ -126,7 +132,14 @@ const geoCache = new Map<PanelShape, PanelGeos>();
 function geosFor(shape: PanelShape): PanelGeos {
   let g = geoCache.get(shape);
   if (g) return g;
-  if (shape === 'shard') {
+  if (shape === 'feather') {
+    g = {
+      rim: fillGeo(FEATHER),
+      face: fillGeo(scalePts(FEATHER, 0.72, 0.93)),
+      // The spine: a thin gold quill down the middle.
+      core: fillGeo([[0, 0.44], [0.024, 0.0], [0.02, -0.4], [-0.02, -0.4], [-0.024, 0.0]]),
+    };
+  } else if (shape === 'shard') {
     g = {
       rim: fillGeo(SHARD),
       face: fillGeo(scalePts(SHARD, 0.66, 0.94)),
@@ -197,6 +210,7 @@ export class LightPanels {
   private groups: { rim: THREE.InstancedMesh; face: THREE.InstancedMesh; core: THREE.InstancedMesh }[] = [];
   private mats: THREE.MeshBasicMaterial[] = [];
   private coreMats: THREE.MeshBasicMaterial[] = [];
+  private coreBase: number[] = [];
   private _glow = 0;
   private _opacity = 1;
   private m = new THREE.Matrix4();
@@ -213,6 +227,7 @@ export class LightPanels {
         polygonOffset: true, polygonOffsetFactor: off, polygonOffsetUnits: off,
       });
       (core ? this.coreMats : this.mats).push(mat);
+      if (core) this.coreBase.push(color);
       const im = new THREE.InstancedMesh(geo, mat, max);
       im.frustumCulled = false;
       im.renderOrder = ro;
@@ -224,7 +239,7 @@ export class LightPanels {
       const g = geosFor(shape);
       const rim = mk(g.rim, DAWN.dark, renderOrder, -1, false);
       const face = mk(g.face, 0xffffff, renderOrder + 1, -2, false);
-      const core = mk(g.core, DAWN.core, renderOrder + 2, -3, true);
+      const core = mk(g.core, shape === 'feather' ? DAWN.body : DAWN.core, renderOrder + 2, -3, true);
       face.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
       this.groups.push({ rim, face, core });
     }
@@ -243,7 +258,7 @@ export class LightPanels {
   get glow() { return this._glow; }
   set glow(v: number) {
     this._glow = v;
-    for (const m of this.coreMats) m.color.setHex(DAWN.core).multiplyScalar(1 + 2.2 * v);
+    this.coreMats.forEach((m, k) => m.color.setHex(this.coreBase[k]).multiplyScalar(1 + 2.2 * v));
   }
 
   get opacity() { return this._opacity; }
@@ -328,7 +343,7 @@ export class LightPanels {
   }
 
   update(dt: number) {
-    const counts = [0, 0, 0];
+    const counts = [0, 0, 0, 0];
     for (const p of this.panels) {
       if (!p.used) continue;
       let s = p.size;
@@ -673,6 +688,203 @@ export class Sigil {
     this.mat.uniforms.uReveal.value = 0;
     this.mat.uniforms.uOpacity.value = 1;
     this.mat.uniforms.uHide.value = 0;
+    this.mesh.visible = false;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// SunEmblems
+// ---------------------------------------------------------------------------------------------------------------
+
+function drawEmblem(): HTMLCanvasElement {
+  const S = 128, c = S / 2;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = S;
+  const g = cv.getContext('2d')!;
+  const css = DAWN_CSS;
+  g.translate(c, c);
+  // Twelve crisp rays (long and short), then a gold ring, an ivory disc and a hot centre, all with a dark outline.
+  for (let i = 0; i < 12; i++) {
+    const long = i % 2 === 0;
+    g.save(); g.rotate((i / 12) * Math.PI * 2);
+    g.beginPath();
+    g.moveTo(-(long ? 9 : 6), -34);
+    g.lineTo(0, -(long ? 62 : 50));
+    g.lineTo(long ? 9 : 6, -34);
+    g.closePath();
+    g.fillStyle = long ? css.body : css.hot;
+    g.fill();
+    g.lineWidth = 3; g.strokeStyle = css.dark; g.stroke();
+    g.restore();
+  }
+  const disc = (r: number, col: string, w = 3) => {
+    g.fillStyle = col; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.fill();
+    g.lineWidth = w; g.strokeStyle = css.dark; g.stroke();
+  };
+  disc(36, css.body, 4);
+  disc(27, css.foil);
+  disc(13, css.hot, 2);
+  return cv;
+}
+
+let emblemTex: THREE.CanvasTexture | null = null;
+
+/**
+ * Pooled flat sun emblems (a gold sun disc with twelve rays and a dark outline) for shield faces and sun-disc flares.
+ * `set(i, pos, quat, size)` places emblem `i` (its local +Z is the face normal; `size` is the full diameter; call it
+ * every frame), `hide(i)` removes one, `brightness` (>= 1) tints it up. Add `mesh`.
+ */
+export class SunEmblems {
+  readonly mesh: THREE.InstancedMesh;
+  private mat: THREE.MeshBasicMaterial;
+  private used: boolean[] = [];
+  private m = new THREE.Matrix4();
+  private sc = new THREE.Vector3();
+  private zero = new THREE.Matrix4().makeScale(MIN_SCALE, MIN_SCALE, MIN_SCALE);
+
+  constructor(readonly max = 12, renderOrder = 10) {
+    if (!emblemTex) {
+      emblemTex = new THREE.CanvasTexture(drawEmblem());
+      emblemTex.colorSpace = THREE.SRGBColorSpace;
+      emblemTex.anisotropy = 4;
+    }
+    this.mat = new THREE.MeshBasicMaterial({
+      map: emblemTex, transparent: true, depthWrite: false, side: THREE.DoubleSide, alphaTest: 0.04,
+      polygonOffset: true, polygonOffsetFactor: -6, polygonOffsetUnits: -6,
+    });
+    this.mesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), this.mat, max);
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = renderOrder;
+    this.mesh.visible = false;
+    for (let i = 0; i < max; i++) this.used.push(false);
+    this.reset();
+  }
+
+  get opacity() { return this.mat.opacity; }
+  set opacity(v: number) { this.mat.opacity = v; }
+
+  get brightness() { return this.mat.color.r; }
+  set brightness(v: number) { this.mat.color.setScalar(v); }
+
+  set(i: number, pos: THREE.Vector3, quat: THREE.Quaternion, size: number) {
+    if (i < 0 || i >= this.max) return;
+    this.used[i] = true;
+    this.m.compose(pos, quat, this.sc.setScalar(Math.max(size, MIN_SCALE)));
+    this.mesh.setMatrixAt(i, this.m);
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.mesh.visible = true;
+  }
+
+  hide(i: number) {
+    if (i < 0 || i >= this.max || !this.used[i]) return;
+    this.used[i] = false;
+    this.mesh.setMatrixAt(i, this.zero);
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.mesh.visible = this.used.some(Boolean);
+  }
+
+  reset() {
+    for (let i = 0; i < this.max; i++) {
+      this.used[i] = false;
+      this.mesh.setMatrixAt(i, this.zero);
+    }
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.mat.opacity = 1;
+    this.mat.color.setScalar(1);
+    this.mesh.visible = false;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// LightBeams
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * Pooled hard-light needles: crisp lens shapes (a gold outer one with a white-hot inner one) laid along a direction in
+ * the plane with normal `normal`. `set(i, center, dir, normal, length, width)` places beam `i` (width 0 hides it; call
+ * it every frame), `opacity` fades them all, `bright` (>= 1) overdrives the inner needle so it blooms. Add `mesh`.
+ */
+export class LightBeams {
+  readonly mesh = new THREE.Group();
+  private outer: THREE.InstancedMesh;
+  private inner: THREE.InstancedMesh;
+  private outerMat: THREE.MeshBasicMaterial;
+  private innerMat: THREE.MeshBasicMaterial;
+  private used: boolean[] = [];
+  private _bright = 1;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private sc = new THREE.Vector3();
+  private zero = new THREE.Matrix4().makeScale(MIN_SCALE, MIN_SCALE, MIN_SCALE);
+
+  constructor(readonly max = 1, renderOrder = 11) {
+    const geo = new THREE.BufferGeometry();
+    // A lens along +x, 1 long (-0.5..0.5) and 1 wide (-0.5..0.5) in the middle, blunt-pointed at both ends.
+    geo.setAttribute('position', new THREE.Float32BufferAttribute([-0.5, 0, 0, 0, -0.5, 0, 0.5, 0, 0, 0, 0.5, 0], 3));
+    geo.setIndex([0, 1, 2, 0, 2, 3]);
+    const mk = (color: number, ro: number, opacity: number) => {
+      const mat = new THREE.MeshBasicMaterial({
+        color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      });
+      const im = new THREE.InstancedMesh(geo, mat, max);
+      im.frustumCulled = false;
+      im.renderOrder = ro;
+      this.mesh.add(im);
+      return { mat, im };
+    };
+    const o = mk(DAWN.hot, renderOrder, 0.7), i = mk(DAWN.core, renderOrder + 1, 1);
+    this.outer = o.im; this.outerMat = o.mat;
+    this.inner = i.im; this.innerMat = i.mat;
+    for (let k = 0; k < max; k++) this.used.push(false);
+    this.reset();
+  }
+
+  get opacity() { return this._op; }
+  set opacity(v: number) {
+    this._op = v;
+    this.outerMat.opacity = 0.7 * v;
+    this.innerMat.opacity = v;
+  }
+  private _op = 1;
+
+  get bright() { return this._bright; }
+  set bright(v: number) {
+    this._bright = v;
+    this.innerMat.color.setHex(DAWN.core).multiplyScalar(v);
+  }
+
+  set(i: number, center: THREE.Vector3, dir: THREE.Vector3, normal: THREE.Vector3, length: number, width: number) {
+    if (i < 0 || i >= this.max) return;
+    if (width <= 1e-3 || length <= 1e-3) { this.hide(i); return; }
+    dawnOrient(normal, dir, this.q);
+    this.q.multiply(_qr); // dawnOrient puts +Y along dir; the lens runs along +x
+    this.used[i] = true;
+    this.m.compose(center, this.q, this.sc.set(length, width * 2.4, 1));
+    this.outer.setMatrixAt(i, this.m);
+    this.m.compose(center, this.q, this.sc.set(length * 0.96, width, 1));
+    this.inner.setMatrixAt(i, this.m);
+    this.outer.instanceMatrix.needsUpdate = this.inner.instanceMatrix.needsUpdate = true;
+    this.mesh.visible = true;
+  }
+
+  hide(i: number) {
+    if (i < 0 || i >= this.max || !this.used[i]) return;
+    this.used[i] = false;
+    this.outer.setMatrixAt(i, this.zero);
+    this.inner.setMatrixAt(i, this.zero);
+    this.outer.instanceMatrix.needsUpdate = this.inner.instanceMatrix.needsUpdate = true;
+    this.mesh.visible = this.used.some(Boolean);
+  }
+
+  reset() {
+    for (let i = 0; i < this.max; i++) {
+      this.used[i] = false;
+      this.outer.setMatrixAt(i, this.zero);
+      this.inner.setMatrixAt(i, this.zero);
+    }
+    this.outer.instanceMatrix.needsUpdate = this.inner.instanceMatrix.needsUpdate = true;
+    this.opacity = 1;
+    this.bright = 1;
     this.mesh.visible = false;
   }
 }

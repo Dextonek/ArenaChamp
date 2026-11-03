@@ -205,6 +205,8 @@ let active: EffectSlot | undefined;
  */
 const lingering = new Set<EffectSlot>();
 let keepLingering = false;
+/** True while hero mode turns on or off: switching modes must not replay the spell that was cast last. */
+let quietMode = false;
 /** A cast context for the next play() instead of the arena's own (`castAs`: a duel opponent casting). */
 let castOverride: CastContext | null = null;
 
@@ -432,7 +434,7 @@ function setMode() {
   arena.setVisible(targeted || playMode.on);
   fArena.show(targeted || playMode.on);
 
-  if (next) {
+  if (next && !quietMode) {
     const effect = ensureEffect(next);
     Object.assign(bloom, next.module.bloom);
     if (effect) {
@@ -565,6 +567,7 @@ const duel = new Duel({
   playerZones: () => zones,
   targeting: (label) => slots.get(label)?.module.targeting,
   setStage,
+  clearEffects,
 });
 scene.add(duel.group);
 duel.onLeave = () => setDuel(false);
@@ -583,10 +586,9 @@ function setHeroMode(on: boolean) {
   heroState.on = on;
   heroCtrl.updateDisplay();
   keepLingering = on;
-  if (!on) {
-    if (duel.on) setDuel(false);
-    dropLingering();
-  }
+  clearEffects();
+  if (!on && duel.on) setDuel(false);
+  quietMode = true;
   if (on) {
     setPlayMode(true);
     hotbar.setVisible(false);
@@ -603,11 +605,28 @@ function setHeroMode(on: boolean) {
     setPlayMode(false);
     arena.reset();
   }
+  quietMode = false;
 }
 
 function dropLingering() {
   for (const slot of lingering) if (slot.effect) retire(slot);
   lingering.clear();
+}
+
+/**
+ * Ends every spell on screen, the active one too (hero mode on or off, a new duel round): nothing cast in the last
+ * fight, an ult included, carries over. The active spell is rebuilt fresh on its next cast.
+ */
+function clearEffects() {
+  dropLingering();
+  if (active?.effect) {
+    scene.remove(active.effect.group);
+    active.folder?.destroy();
+    active.effect = undefined;
+    active.folder = undefined;
+  }
+  zones = [];
+  telegraphs.set(zones);
 }
 
 /** A lingering effect is over: hide it (a detached copy leaves the scene for good). */

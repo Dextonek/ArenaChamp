@@ -8,6 +8,7 @@ import { HeroFigure, castStyle } from './heroFigure';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import { traitFor, type TraitRuntime } from './traits';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
+import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
 
 /** What hero mode needs from main.ts. */
@@ -26,6 +27,7 @@ export interface HeroModeHost {
 const HERO_SPEED = 4;
 const GREY_SLOT = 'grayscale(1) brightness(0.5)';
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
+const ARC_SEGS = 24;
 const HOVER_PICK = TOUCH ? 3.2 : 2.2; // how close to the cursor an enemy counts as hovered (a fingertip is wider)
 
 export type Target = { enemy: Enemy } | { point: THREE.Vector3 };
@@ -66,6 +68,14 @@ export class HeroMode implements TouchTarget {
   private hoverRing: THREE.Mesh;
   private moveMarker: THREE.Mesh;
   private moveMarkerT = 1;
+  /** The curved strip of an arc aim (`HeroSpell.aim: 'arc'`): a ribbon along the arc from the hero to the cursor. */
+  private aimArc: THREE.Mesh;
+  /** The side an arc aimed straight at the enemy bows to (+1 right, -1 left): flips after every arc cast. */
+  private arcRest = 1;
+  /** Shift held: the arc bows the other way. */
+  private arcFlip = false;
+  /** The bend of the cast that just went out (0 unless it was an arc aim): a network duel sends it with the cast. */
+  castBend = 0;
 
   // The hero's figure (stands in for the arena's capsule caster while hero mode is on).
   private figure = new HeroFigure();
@@ -159,6 +169,17 @@ export class HeroMode implements TouchTarget {
     // A triangle with its base on the origin and its tip at +Y 1 (same plane trick as the strip).
     this.aimTip = flat(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-0.5, 0), new THREE.Vector2(0.5, 0), new THREE.Vector2(0, 1)])), kit.accent, 0.5);
     this.hoverRing = flat(new THREE.RingGeometry(0.95, 1.2, 48), kit.accent, 0.95);
+    // A ribbon of ARC_SEGS segments in world coordinates (positions rewritten every frame while an arc is aimed).
+    const ribbon = new THREE.BufferGeometry();
+    ribbon.setAttribute('position', new THREE.BufferAttribute(new Float32Array((ARC_SEGS + 1) * 6), 3));
+    const idx: number[] = [];
+    for (let i = 0; i < ARC_SEGS; i++) idx.push(i * 2, i * 2 + 1, i * 2 + 2, i * 2 + 1, i * 2 + 3, i * 2 + 2);
+    ribbon.setIndex(idx);
+    this.aimArc = new THREE.Mesh(ribbon, new THREE.MeshBasicMaterial({ color: kit.accent, transparent: true, opacity: 0.28, depthWrite: false, side: THREE.DoubleSide }));
+    this.aimArc.renderOrder = 5;
+    this.aimArc.frustumCulled = false;
+    this.aimArc.visible = false;
+    this.group.add(this.aimArc);
     this.moveMarker = flat(new THREE.RingGeometry(0.3, 0.42, 32), kit.foil, 0.9);
     this.group.add(this.figure.group);
     this.group.visible = false;
@@ -307,7 +328,7 @@ export class HeroMode implements TouchTarget {
     const color = (m: THREE.Mesh, c: string) => (m.material as THREE.MeshBasicMaterial).color.set(c);
     color(this.rangeRing, kit.foil);
     color(this.moveMarker, kit.foil);
-    for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.hoverRing]) color(m, kit.accent);
+    for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.aimArc, this.hoverRing]) color(m, kit.accent);
     const shown = this.hud.style.display;
     this.hud.remove();
     this.joystick?.el.remove();
@@ -383,7 +404,7 @@ export class HeroMode implements TouchTarget {
       const d = new THREE.Vector3(this.moveTo.x - hero.x, 0, this.moveTo.z - hero.z);
       const len = d.length();
       if (len < 0.05) this.moveTo = null;
-      else arena.walk(d.multiplyScalar(Math.min(1, (this.speed * status.speedMul * dt) / len)));
+      else arena.walk(d.multiplyScalar(Math.min(1, (this.speed * status.speedMul * dt) / len)), len);
     }
 
     this.updateIndicators(dt, hero);
@@ -496,6 +517,19 @@ export class HeroMode implements TouchTarget {
   private setMouse(e: PointerEvent) {
     const r = this.host.dom.getBoundingClientRect();
     this.mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    this.arcFlip = e.shiftKey;
+  }
+
+  /**
+   * The bend of an arc aim at `point` (see `arcBendFor`): the axis is the line toward the nearest enemy (else the
+   * way the hero faces). The mouse and a touch drag give the point the same way, so the rule is the same on a phone.
+   */
+  private arcBend(hero: THREE.Vector3, point: THREE.Vector3) {
+    const foe = this.nearestFoe();
+    const yaw = this.host.arena.caster.group.rotation.y;
+    const axis = foe ? new THREE.Vector3(foe.pos.x - hero.x, 0, foe.pos.z - hero.z) : new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw));
+    if (axis.lengthSq() < 1e-6) axis.set(Math.sin(yaw), 0, Math.cos(yaw));
+    return arcBendFor(hero, point, axis.normalize(), this.arcRest, this.arcFlip);
   }
 
   /** Ground point under the mouse (the hero's feet if the ray misses the ground). */
@@ -528,6 +562,12 @@ export class HeroMode implements TouchTarget {
     const why = recast ? null : this.traits?.blocked(i);
     if (why) { this.say(why); return; }
     this.aimStart = performance.now();
+    // A recast that only acts (`recast.replay: false`) has nothing to aim: it goes off at once.
+    if (recast && this.traits?.recastOf(i)?.replay === false) {
+      this.aiming = -1;
+      this.castNow(i, { point: this.host.arena.caster.group.position.clone() });
+      return;
+    }
     const spec = this.host.targeting(spell.label);
     if (!spec) { this.say(`${spell.label}: not a targeted effect`); return; }
     if (spec.mode === 'self') {
@@ -657,18 +697,39 @@ export class HeroMode implements TouchTarget {
     const spell = this.kit.spells[i];
     if (this.status.cannotCast || !this.ready(i)) return;
     const arena = this.host.arena;
+    const rt = this.traits;
+    if (rt?.canRecast(i) && rt.recastOf(i)?.replay === false) {
+      // A recast that only acts: the trait's `recastAct` runs in the rules and moves the hero; no effect plays and no
+      // cast is sent. The first cast's cooldown keeps running.
+      this.moveTo = null;
+      this.attacker.cancel();
+      this.castRules?.(i, spell.cooldown, 1);
+      this.rooted = Math.max(this.rooted, this.holdFloor);
+      this.holdFloor = 0;
+      this.flashSlot(i);
+      return;
+    }
     if ('enemy' in target) arena.setTarget(target.enemy);
     else arena.setGroundPoint(target.point);
     this.moveTo = null;
     this.attacker.cancel();
     // Blind: the cast point is rolled now and the effect (its danger zones too) is played at the offset spot.
     arena.aimOffset = this.status.blind ? arena.blindOffset() : null;
-    const hold = this.traits?.trait?.hold;
-    const charge = hold && hold.slot === i && !this.spectate ? Math.min(1, (performance.now() - this.aimStart) / 1000 / hold.seconds) : 1;
+    // A hold slot charges while it is aimed (each slot on its own); a recast and the autopilot cast at full charge.
+    const charge = rt && !this.spectate && !rt.canRecast(i) ? rt.charge(i, (performance.now() - this.aimStart) / 1000) : 1;
+    // An arc aim bends toward a side the player sees in the strip; the cast carries it (CastContext.bend).
+    let bend = 0;
+    if (spell.aim === 'arc' && 'point' in target) {
+      bend = this.arcBend(arena.caster.group.position, target.point);
+      this.arcRest = -this.arcRest;
+    }
+    this.castBend = bend;
+    arena.aimBend = bend;
     // The rules run before the effect plays: the cast's mods must be ready for hits that land at once.
     const cooldown = this.castRules ? this.castRules(i, spell.cooldown, charge) : spell.cooldown;
     this.rooted = Math.max(this.host.cast(spell.label), this.holdFloor);
     this.holdFloor = 0;
+    arena.aimBend = 0;
     this.figure.cast(castStyle(spell, i, 'enemy' in target, this.attacker.motion.melee, this.rooted), this.rooted, i === 3);
     arena.aimOffset = null;
     if (cooldown >= 0) this.cooldowns[i] = cooldown;
@@ -746,6 +807,8 @@ export class HeroMode implements TouchTarget {
     const single = spec?.mode === 'enemy' || spec?.mode === 'enemies';
     // A skillshot (`aim: 'line'`): a strip and an arrow of the spell's range and width toward the cursor, no ground circle.
     const line = aiming && !single && spell?.aim === 'line';
+    // A curving skillshot (`aim: 'arc'`): the strip bends from the hero to the cursor, the way the cast will fly.
+    const arc = aiming && !single && spell?.aim === 'arc';
 
     this.rangeRing.visible = aiming;
     if (spell) {
@@ -790,7 +853,9 @@ export class HeroMode implements TouchTarget {
     }
 
     // Ground spell: its area circle at the cursor, clamped to range.
-    const area = aiming && !single && !line;
+    this.aimArc.visible = arc;
+    if (arc && spell) this.drawArc(hero, clampToRange(hero, this.cursor, spell.range), Math.max(0.3, (spec?.radius ?? 0.4) * 2));
+    const area = aiming && !single && !line && !arc;
     this.areaRing.visible = this.areaFill.visible = area;
     if (area && spell) {
       const c = clampToRange(hero, this.cursor, spell.range);
@@ -809,6 +874,26 @@ export class HeroMode implements TouchTarget {
     this.moveMarker.visible = this.moveMarkerT < 1;
     this.moveMarker.scale.setScalar(1.4 - this.moveMarkerT * 0.8);
     (this.moveMarker.material as THREE.MeshBasicMaterial).opacity = 0.9 * (1 - this.moveMarkerT);
+  }
+
+  /** Writes the arc strip: a ribbon of `width` along the arc from `hero` to `end`, with the arrow head at its end. */
+  private drawArc(hero: THREE.Vector3, end: THREE.Vector3, width: number) {
+    const bend = this.arcBend(hero, end);
+    const pts = arcPoints(hero, end, bend, ARC_SEGS);
+    const pos = (this.aimArc.geometry as THREE.BufferGeometry).getAttribute('position') as THREE.BufferAttribute;
+    for (let i = 0; i <= ARC_SEGS; i++) {
+      const a = pts[Math.max(0, i - 1)], b = pts[Math.min(ARC_SEGS, i + 1)];
+      const dx = b.x - a.x, dz = b.z - a.z, l = Math.hypot(dx, dz) || 1;
+      const nx = (dz / l) * width * 0.5, nz = (-dx / l) * width * 0.5;
+      pos.setXYZ(i * 2, pts[i].x + nx, 0.055, pts[i].z + nz);
+      pos.setXYZ(i * 2 + 1, pts[i].x - nx, 0.055, pts[i].z - nz);
+    }
+    pos.needsUpdate = true;
+    const tail = pts[ARC_SEGS - 1], tip = pts[ARC_SEGS], d = new THREE.Vector3(tip.x - tail.x, 0, tip.z - tail.z).normalize();
+    this.aimTip.visible = true;
+    this.aimTip.position.set(tip.x, 0.056, tip.z);
+    this.aimTip.rotation.set(-Math.PI / 2, 0, Math.atan2(-d.x, -d.z));
+    this.aimTip.scale.set(width + 0.7, Math.min(1.4, width * 1.5 + 0.5), 1);
   }
 
   // --- HUD ----------------------------------------------------------------------------------------------
@@ -1043,6 +1128,12 @@ export class HeroMode implements TouchTarget {
       const t = this.traits;
       if (t?.trait?.charges?.slot === i) secs.textContent = `${t.ammo}` + (t.ammo < t.trait.charges.count ? ` · ${Math.ceil(t.ammoWait)}` : '');
       if (t?.canRecast(i)) { secs.textContent = 'RE'; shade.style.background = 'rgba(255,230,160,0.25)'; }
+      // A hold slot being aimed shows its charge: a gold wedge and the percentage.
+      else if (t?.holdOf(i) && this.aiming === i) {
+        const c = t.charge(i, (performance.now() - this.aimStart) / 1000);
+        secs.textContent = `${Math.round(c * 100)}%`;
+        shade.style.background = `conic-gradient(rgba(255,226,140,0.5) ${c * 360}deg, rgba(6,2,3,0.15) 0deg)`;
+      }
       box.style.outline = this.aiming === i ? `2px solid ${this.kit.foil}` : '';
       box.style.outlineOffset = '2px';
     });

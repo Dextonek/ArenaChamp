@@ -1,7 +1,7 @@
 ---
 title: Hero identity layer (traits)
 tags: [architecture, duel, heroes, traits, passives, buffs, multiplayer]
-updated: 2026-10-30
+updated: 2026-11-03
 ---
 
 # Hero identity layer (traits)
@@ -75,8 +75,32 @@ opponent's hits on the player and the player's units in `hitPlayer`, `hitUnit` a
 | `badge(t)` | the HUD | "3", "2/3" on the passive slot |
 
 Fields: `resource { name, max, color, start }`, `speed` (m/s, default 4), `attack` (overrides of the melee or ranged
-default), `hold { slot, seconds }`, `charges { slot, count, every }`, `recast { slot, window, name, power }` (a free
-second cast of the same spell at `power` x damage within `window` s; `recastAct` runs then), `shieldMul`.
+default), `hold`, `charges { slot, count, every }`, `recast`, `shieldMul`.
+
+**Per-slot hold and recast (2026-11-03).** `hold` and `recast` take one object or an array, one entry per slot:
+
+- `hold: { slot, seconds }` (or `[...]`): aiming that slot longer charges it, full after `seconds`; `castMods(t, slot,
+  charge)` gets 0..1. Mouse: press the key, wait, click. Phone: hold the slot button (a tap casts uncharged), then
+  release. The HUD slot shows the charge as a percentage and a gold wedge. A recast and the autopilot cast at charge 1.
+- `recast: { slot, window, name, power?, replay? }` (or `[...]`): a free second cast of that slot within `window` s at
+  `power` x damage (default 0.6); `recastAct(t, slot)` runs then. Each slot has its own window.
+  `replay: false` makes the recast **act only**: it is not aimed, plays no effect and sends no cast message online;
+  only `recastAct` runs (blink to the orb with `t.moveTo`, pop a mark). The first cast's cooldown keeps running.
+- `TraitRuntime` has `holdOf(slot)`, `recastOf(slot)`, `recastLeft(slot)`, `charge(slot, aimedSeconds)`, `canRecast(slot)`;
+  `cast()` returns `{ mods, cooldown, replay }`.
+
+**Order inside a cast.** `castRules` (hero mode) and the AI's `castSpell` run the trait first (`castMods`, `cooldown`,
+`afterCast`, or `recastAct` on a recast) and only then play the effect: **`afterCast` runs before the effect's
+`play()`**, so before the effect builds its `CastContext`. A `moveTo` in `afterCast` starts a dash; the context's
+`from` is still the old spot, because a dash only moves the hero from the next frame on.
+
+**History and moving the hero.** `TraitView.past(secondsAgo)` returns `{ x, z, hp }` of this hero up to 3 s back
+(sampled every frame by `tick`; the oldest sample when the round is younger; null before the first). Only the player's
+own hero is sampled online, so the other side's `past` is null there. `TraitView.moveTo(p, seconds)` slides this
+side's hero with the same dash as `ctx.moveCaster` (`arena.moveFigure`: eased, clamped into the ring and out of the
+obstacles, nothing else moves it meanwhile; 0 s is near-instant). Online the opponent side's `moveTo` does nothing:
+the other player's client moves its own hero. A jump of more than 4 m between two move reports snaps the hero on the
+receiving screen instead of gliding (`Duel.peerMove`, `PEER_JUMP`).
 
 `TraitView` gives: `side`, `time`, `still` (seconds standing still), `self()`, `enemy()`, `status(figure)`, `hp()`,
 `maxHp()`, `res` / `addRes(n)`, `say(text)`, `heal(n)`, `buff(kind, amount, s)`, `shield(n, s)`, `payHp(n)`,

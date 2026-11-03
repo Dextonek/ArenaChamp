@@ -1,7 +1,7 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Sky kit data: Zephyr, the Wind Blade (a melee hero). Four spells (labels as registered), canvas-drawn icons in the
+ * Sky kit data: Zephyr, the Wind Blade (a melee bruiser). Four spells (labels as registered), canvas-drawn icons in the
  * kit's palette: dark storm-teal ground, cloud foil, sharp pale mint sickle crescents with a hot leading edge and a dark
  * inner edge, thin spiral gust ribbons, small leaves, one blossom-pink accent. Signature shape: the wind crescent.
  */
@@ -211,54 +211,44 @@ export const skyKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'cyclone guard', name: 'Cyclone Guard', range: 6, cooldown: 9, aim: 'line',
-      buff: { kind: 'haste', amount: 0.2, seconds: 3 },
-      blurb: 'A wind dash of up to 6 m down the aim that carries him through the enemy, cutting everything on the path.',
+      key: 'E', label: 'wind barrier', name: 'Wind Barrier', range: 3, cooldown: 9, aim: 'line', barrier: true,
+      blurb: 'A 5 m wall of wind stands across the aim, 2 m in front of him, for 3 s. It destroys every enemy bolt that crosses it, with a puff where each dies. It blocks no walking or sight, does not stop his own bolts, and basic attacks (homing hits) pass through.',
       icon(g, s) {
         iconGround(g, s);
-        // A ring of sickles round a small core with a shield arc over it.
-        for (let i = 0; i < 5; i++) {
-          const a = (i / 5) * PI * 2 + 0.3;
-          sickle(g, s * 0.5, s * 0.52, s * (0.34 + 0.03 * (i % 2)), a, a + PI * 0.34, s * 0.08);
+        // A wall of tall waving gust ribbons across the middle, an enemy bolt bursting into a pink puff on it.
+        for (let i = 0; i < 4; i++) {
+          const x = s * (0.34 + i * 0.1);
+          gust(g, [[x + s * 0.03, s * 0.92], [x - s * 0.04, s * 0.7], [x + s * 0.04, s * 0.5], [x - s * 0.03, s * 0.3], [x + s * 0.02, s * 0.08]], s * 0.07);
         }
-        g.strokeStyle = S.cloud;
-        g.globalAlpha = 0.8;
-        g.lineWidth = s * 0.02;
-        g.beginPath();
-        g.arc(s * 0.5, s * 0.52, s * 0.2, PI * 1.15, PI * 1.85);
-        g.stroke();
-        g.globalAlpha = 1;
-        g.fillStyle = S.hot;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.54, s * 0.05, s * 0.1, 0, 0, PI * 2);
-        g.fill();
-        leaf(g, s * 0.14, s * 0.2, s * 0.04, 0.5);
-        leaf(g, s * 0.86, s * 0.84, s * 0.04, -0.6, S.accent);
+        sickle(g, s * 0.5, s * 0.5, s * 0.4, -PI * 0.36, PI * 0.36, s * 0.07, S.cloud);
+        lines(g, [[s * 0.04, s * 0.5, s * 0.2, 0], [s * 0.1, s * 0.42, s * 0.16, 0], [s * 0.08, s * 0.58, s * 0.16, 0]], s * 0.018);
+        blossom(g, s * 0.3, s * 0.5, s * 0.055);
+        lines(g, [[s * 0.26, s * 0.4, -s * 0.05, -s * 0.07], [s * 0.26, s * 0.6, -s * 0.05, s * 0.07]], s * 0.016);
+        leaf(g, s * 0.82, s * 0.22, s * 0.045, 0.6);
+        leaf(g, s * 0.86, s * 0.76, s * 0.04, -0.5, S.accent);
       },
     },
     {
-      key: 'R', label: 'thousand winds', name: 'Thousand Winds', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A sky-high cyclone of blades closes over a small zone; he dives into its eye and the winds burst out and knock up.',
+      key: 'R', label: 'gale cyclone', name: 'Gale Cyclone', range: 4, cooldown: 20, cc: true,
+      blurb: 'Ultimate. A cyclone 2.5 m in radius wraps him and moves with him for 4 s; he can walk and fight inside it. An enemy it touches takes 26 and is knocked up 0.5 s on first contact, then 15 and a shove out every 0.6 s it stays. Outrun it.',
       icon(g, s) {
         iconGround(g, s);
-        // A funnel of small sickles over a ring of crescents on the floor, a tall crescent through the middle, a pink star.
+        // A funnel of gust ribbons, narrow at the foot and wide at the top, over a ring on the floor, a pink blossom in the eye.
         g.strokeStyle = S.cloud;
         g.globalAlpha = 0.7;
-        g.lineWidth = s * 0.014;
+        g.lineWidth = s * 0.016;
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.84, s * 0.42, s * 0.1, 0, 0, PI * 2);
+        g.ellipse(s * 0.5, s * 0.88, s * 0.34, s * 0.07, 0, 0, PI * 2);
         g.stroke();
         g.globalAlpha = 1;
-        for (let i = 0; i < 11; i++) {
-          const k = i / 10, y = s * (0.14 + 0.62 * k), half = s * (0.14 + 0.28 * k) * (0.9 + 0.2 * ((i * 7) % 3) / 2);
-          const x = s * 0.5 + (i % 2 ? -1 : 1) * half * (0.55 + 0.4 * ((i * 5) % 4) / 3);
-          sickle(g, x, y, s * 0.09, i % 2 ? PI * 0.6 : -PI * 0.1, i % 2 ? PI * 1.2 : PI * 0.5, s * 0.03);
-        }
-        gust(g, [[s * 0.22, s * 0.78], [s * 0.7, s * 0.62], [s * 0.3, s * 0.44], [s * 0.66, s * 0.28], [s * 0.46, s * 0.12]], s * 0.045);
-        sickle(g, s * 0.2, s * 0.5, s * 0.46, -PI * 0.36, PI * 0.36, s * 0.1, S.cloud);
-        blossom(g, s * 0.5, s * 0.5, s * 0.035);
-        leaf(g, s * 0.14, s * 0.26, s * 0.04, 0.4);
-        leaf(g, s * 0.9, s * 0.4, s * 0.04, -0.5, S.accent);
+        gust(g, [[s * 0.2, s * 0.14], [s * 0.82, s * 0.26], [s * 0.3, s * 0.4], [s * 0.7, s * 0.54], [s * 0.4, s * 0.68], [s * 0.56, s * 0.86]], s * 0.075);
+        gust(g, [[s * 0.8, s * 0.12], [s * 0.2, s * 0.28], [s * 0.7, s * 0.42], [s * 0.34, s * 0.58], [s * 0.6, s * 0.72], [s * 0.46, s * 0.86]], s * 0.055);
+        sickle(g, s * 0.5, s * 0.5, s * 0.44, PI * 0.68, PI * 1.32, s * 0.08, S.cloud);
+        sickle(g, s * 0.5, s * 0.5, s * 0.44, -PI * 0.32, PI * 0.32, s * 0.08, S.cloud);
+        blossom(g, s * 0.5, s * 0.5, s * 0.04);
+        leaf(g, s * 0.12, s * 0.62, s * 0.045, 0.5);
+        leaf(g, s * 0.9, s * 0.7, s * 0.04, -0.7, S.accent);
+        leaf(g, s * 0.86, s * 0.1, s * 0.035, 0.2);
       },
     },
   ],

@@ -58,7 +58,7 @@ export type ServerMsg =
   }
   | { t: 'round_start'; round: number; score: number[] }
   | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number; r?: number }
-  | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods }
+  | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods; bend?: number }
   | { t: 'peer_hit'; id: number; damage: number; soaked?: number; hp: number; color?: string; blocked?: boolean }
   | { t: 'peer_attack'; id: number; mods?: CastMods }
   | { t: 'peer_spend'; amount: number; hp: number }

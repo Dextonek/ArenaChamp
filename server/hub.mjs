@@ -232,6 +232,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
         me.casts++;
         return send(match.players[1 - c.side].client, {
           t: 'peer_cast', id: m.id, slot: m.slot, x: m.x, z: m.z, fx: m.fx, fz: m.fz, enemy: !!m.enemy, yaw: num(m.yaw) ? m.yaw : undefined,
+          // The bend of an arc aim (about +-1.4 rad at most): relayed so the other screen draws the same curve.
+          bend: num(m.bend) ? Math.max(-1.5, Math.min(1.5, m.bend)) : undefined,
           mods: mods(m.mods),
         });
       }

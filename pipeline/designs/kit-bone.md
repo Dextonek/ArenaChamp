@@ -49,14 +49,15 @@ skeletonLook })`. The spell's own visual is clean by 2.0 (the skeletons live on 
 the ribs flex outward and fire a ring of bone shards to radius 4: every enemy inside `ctx.hit(e, { damage: 12,
 knock: 1 })`. 2.6–3.0: the cage crumbles into dust. Clean by 3.2. Telegraph ends at the first pulse.
 
-## R · Legion of the Ossuary (`legionOfTheOssuary.ts`, label `legion of the ossuary`, `ground`, radius 7, range 13, cd 20, damage 125, `summon`)
-The ultimate: a **giant skeletal hand** rises from the ground, crushes the zone, and leaves an honour guard behind.
-0–0.4: the world darkens to a teal-black (`darken` 0.55, tint `#0a1412`); cracks with teal light spread over radius
-7. 0.3–1.6: a colossal bone hand (fingers ~5 long, wrist ~4 high) rises out of the ground at the zone's far edge,
-soulfire in every joint; it rears up and opens over the point; enemies are pulled 0.4 toward the centre.
-1.6–1.85: the fingers close into a fist — **dead beat 1.85–2.0**. **2.0–2.2**: it slams down. **2.2 hit**: impact
-frames `[1, 2]` at 0.04 s, a ring of bone spires bursts outward across the radius, dust, an ember accent at the
-centre, ground `ShockRefraction` (1 → 12, 0.07), shake 0.75: every enemy within 7 `ctx.hit(e, { damage: 125, knock:
-5, from: point })`. At 2.4 two skeleton archers climb out of the cracks: `ctx.summon({ kind: 'ranged', at: point,
-count: 2, hp: 35, seconds: 6, damage: 8, attackEvery: 1.5, look: skeletonLook })`. 2.4–4.5: the hand crumbles into
-the ground, the spires sink, the darken lifts. Clean by 4.5 (the archers live on as units).
+## R · Bone Colossus (`boneColossus.ts`, label `bone colossus`, `ground`, radius 2.6, range 9, cd 20, damage 25, `summon`)
+Replaces Legion of the Ossuary (v3 batch 3). One giant skeleton the enemy has to deal with. 0–0.75: the ground trembles
+(rising shake, `darken` 0.4, cracks with teal light spread over radius 3.6, wisps, rim spires shove up from 0.35).
+**0.75 split**: impact frames `[1, 2]`, ember star, ground `ShockRefraction`, dust ring, 26 bone chips, shake 0.8;
+`ctx.hit` on everyone within 2.6 (damage 25, knock 4), and `ctx.summon({ kind: 'melee', count: 1, hp: 280, seconds: 8,
+damage: 28, attackEvery: 1.5, speed: 2.6, look: colossusLook })`. The look (`parts/bone.ts`) is the skeleton at 2.5x with
+horns, shoulder and back spikes, a bigger soulfire heart and a bone club; it climbs out over 0.85 s and the club is raised
+and slammed on `pose.swing`. The effect follows the Summon handle: every landed swing cracks the ground in front of him
+(small crack decal, dust ring, chips, `ShockRefraction`, shake 0.4), every ~0.6 s of walking a dust puff and a small shake.
+On death (slain or timed out) he collapses into bones (chips, ring, dust, soulfire, impact frame, shake 0.55); the effect
+ends 1.6 s later. Damage comes from the unit's own attack, not `ctx.hit`. Without `ctx.summon` (network) only the look
+plays and the effect ends at 2.6. Trait: the colossus counts as one unit death (+1 bone); Bones spend gives it +8% per bone.

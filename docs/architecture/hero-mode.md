@@ -69,6 +69,15 @@ All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 - range ring around the hero (kit `foil`), radius = spell range;
 - single-target spells: an aim strip from the hero to the hovered enemy (or toward the cursor), clamped to range, and a hover ring on the enemy (accent when in range, foil when out of range);
 - ground spells: an area circle plus fill at the clamped cursor point, radius from the spec's `radius` (default 5);
+- curving skillshots (`HeroSpell.aim: 'arc'`, a ground spell): a ribbon along a circular arc from the hero to the clamped
+  cursor point with the arrow head at its end. The bend rule (`arcBendFor`, effects/projectile.ts): the arc bows away
+  from the line toward the nearest enemy, so a point left of that line makes the shot launch wide to the left and curl
+  back onto the point (round cover on that side), a point right of it bows right; within 12 degrees of the line (aiming
+  straight at the enemy) it bows to a resting side that flips after every arc cast, and Shift turns the side round. The
+  bend is 70 degrees of total turn. The cast gets it as `CastContext.bend` (`arcShot(from, point, bend, speed)` gives the
+  launch direction, curve and range). On a phone the point comes from the drag, so the rule is the same (no Shift: the
+  resting side alternates). The AI bends a shot round cover when the straight line is blocked, else fires it straight;
+- hold slots (`Trait.hold`) show their charge on the slot button while aimed;
 - the move-order marker.
 
 ### Range, walk-into-range, rooting, cooldowns

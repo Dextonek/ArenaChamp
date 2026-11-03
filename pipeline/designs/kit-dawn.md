@@ -4,8 +4,8 @@
 **Support**, 640 HP. Signature: *Aegis*. Every spell shields her; the stun dome and the orbit punish whoever stays close. Numbers are first guesses for the tournament.
 - Q Radiant Spear: a piercing skillshot (`aim: 'line'`, range 12, speed 24, radius 0.5, 50 damage); a hit gives a 20 shield for 4 s. The six-shard spear rides the bolt, the spray fans out of the target on the first hit.
 - W Aegis Wall: a trap (`cc`). The shield ring stands open for 1.2 s, then the dome slams: 45 damage and **stun 0.8** to whoever is still inside radius 4 (live position), a 10 tick at 1.7 s.
-- E Halo of Blades: an ORBIT. Six blades circle her at 2.5 m for 3 s (she stands rooted for 2 s) and cut what they touch: 10 each, at most 3 hits, one per 0.7 s per enemy; shield 40 at the cast. Telegraph: the orbit circle (radius 3.6).
-- R Judgement of Dawn: radius 7 to 6, 125 to 95, **shield 80** at the impact.
+- E Radiant Parry (batch 3, replaces Halo of Blades): a sun-shield stance for 0.6 s. The first hit on her in the window is parried (no damage); the enemy hero takes 20 and is stunned 0.6 s. A parried summoned-unit hit closes the window without the stun. Nothing hit: the stance fades (a quiet whiff). cd 11 (balance pass: it was 0.8 s, a 1 s stun and cd 8; she won 79% of AI duels).
+- R Dawn Descent (batch 3, replaces Judgement of Dawn): a leap up to 12 m in a high arc, untouchable while airborne (1.0 s), landing on a 2.5 m zone that deals 40 and stuns 1 s, then a shield of 40 for 3 s. cd 16 (balance pass: 50 damage and a 60 shield before).
 
 **Signature shape: hard-light geometry.** Light is solid: **flat gold panels with crisp edges** (hexagons, kite shields,
 long blade shards) that click together into shapes (a shield wall, a halo of blades, a great sword), lit from inside
@@ -47,19 +47,8 @@ the edge, standing upright, then tilts inward over the enemies like a closing do
 `ctx.hit(e, { damage: 45, knock: 0 })` within 4; a tick at 1.3 as the dome pulses: `ctx.hit(e, { damage: 10, knock: 0 })`.
 1.4–2.2: the dome shatters outward into panels that fade, the sigil fades. Clean by 2.3.
 
-## E · Halo of Blades (`haloOfBlades.ts`, label `halo of blades`, `self`, radius 5, cd 9, 2 × 13)
-0–0.3: a halo ring forms over her head and six blade shards assemble around her at waist height (radius 1.6). 0.3–2.6:
-the blades orbit; at 1.0 and 2.0 each blade launches to the nearest enemy within 5 (a straight streak), strikes and
-snaps back: `ctx.hit(e, { damage: 13, knock: 1 })`. 2.6–3.0: the blades and halo shatter into panels. Clean by 3.2.
-Telegraph ends at the first pulse.
+## E · Radiant Parry (`radiantParry.ts`, label `radiant parry`, `self`, radius 12, cd 8, damage 20 + stun 1)
+0–0.14: a kite shield of hard light clicks together in front of her chest, six hexes turning round it, four spokes, a halo behind, a sun sigil under her feet. 0.14–0.8: the stance holds, core lines building. The trait (`src/traits/dawn.ts`, `PARRY_SECONDS` 0.8) swallows the FIRST hit and records it in `dawnParries` (keyed by her figure). **Parry:** impact frames `[1, 2]`, a white star and flare, a full sun-ray burst, a refraction ring, shake 0.55, the shield bursts into panels 0.12 s later; at +0.05 s `ctx.hit(enemy, { damage: 20, status: stun 1, projectile: true, knock: 0 })` (not for a unit's hit). **Whiff** (0.86): the glow cuts off, the panels crumble slowly, no flash or shake. Clean by 1.85. Online: the other screen's trait gets no hit reports, so the stun is offline only.
 
-## R · Judgement of Dawn (`judgementOfDawn.ts`, label `judgement of dawn`, `ground`, radius 7, range 13, cd 20, damage 125)
-The ultimate: a **colossal sword of hard light** assembles in the sky and is driven into the zone.
-0–0.4: she raises her blade; the world darkens to a pre-dawn blue (`darken` 0.55, tint `#1a2238`); a big sun-wheel
-sigil (radius 7) draws on. 0.3–1.6: above the point, ~4–9 up, a giant sword (~7 long, point down) assembles from
-dozens of gold panels clicking in from the edges of the frame; a halo ring forms behind its hilt; sun rays fan from
-it; enemies are held (pull 0.4). 1.6–1.85: the sword's core lines brighten to white — **dead beat 1.85–2.0**.
-**2.0–2.2**: it drives straight down into the point. **2.2 hit**: impact frames `[1, 2]` at 0.04 s, a ring of panel
-shards bursts outward across the radius, a sky-blue accent at the centre, sun rays from the impact, ground
-`ShockRefraction` (1 → 12, 0.07), shake 0.75. `ctx.hit(e, { damage: 125, knock: 6, from: point })` within 7.
-2.2–4.5: the sword stands a moment, then shatters into panels that fade, the sigil fades, the darken lifts. Clean by 4.5.
+## R · Dawn Descent (`dawnDescent.ts`, label `dawn descent`, `ground`, radius 2.5, range 12, cd 16, damage 50 + stun 1, shield 60)
+0–0.12: a sigil draws under her feet, eight blades stand round her. 0.12: the blades burst up and out, a refraction ring leaves her feet, she leaps. 0.12–1.0 (`DESCENT_AIR`, shared with the trait, which blocks every hit meanwhile): a high arc (2.6–5.2 high by distance), a sun disc behind her, falling shard trail, a shadow sigil sliding on the ground; the landing zone (radius 2.5 sun-wheel plus a closing gold ring) is on the ground from the cast and is the telegraph. **1.0 touchdown:** impact frames, sky-blue star, sun rays, panel ring, ground refraction, shake 0.7; whoever is in the zone (live) takes `ctx.hit(e, { damage: 50, knock: 2, status: stun 1 })`; `ctx.shieldSelf(60, 3)`. Clean by 2.6. Flags `dash` and `cc`.

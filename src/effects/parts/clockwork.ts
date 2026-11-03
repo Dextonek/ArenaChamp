@@ -986,3 +986,106 @@ function turretRig(p: MinionPalette): MinionRig {
 /** The brass turret for summons: a tripod, a spinning gear body, a short barrel and a cyan lens. Other kinds fall back to the default look. */
 export const turretLook: MinionLook = (kind: SummonKind, palette: MinionPalette) =>
   kind === 'turret' ? turretRig(palette) : defaultLook(kind, palette);
+
+/**
+ * A straight glowing beam between two points: two crossed soft ribbons (visible from any angle) with a white-hot core
+ * and cyan edge. `fade` makes it brightest at the far end `b` (a streak that trails behind its head at `b`). Unlit,
+ * additive, below the bloom threshold at full opacity. Used by Mag Rail's aim lines, rail head, ion streak and afterglow.
+ */
+export class RailBeam {
+  readonly mesh = new THREE.Group();
+  private mat: THREE.ShaderMaterial;
+  private d = new THREE.Vector3();
+  private q = new THREE.Quaternion();
+  private static X = new THREE.Vector3(1, 0, 0);
+  private static geo = new THREE.PlaneGeometry(1, 1).translate(0.5, 0, 0);
+
+  constructor(color: number = CLOCKWORK.accent, fade = false) {
+    this.mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending,
+      uniforms: { uColor: { value: new THREE.Color(color).multiplyScalar(0.92) }, uOpacity: { value: 0 }, uFade: { value: fade ? 1 : 0 } },
+      vertexShader: /* glsl */ `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: /* glsl */ `
+        varying vec2 vUv; uniform vec3 uColor; uniform float uOpacity; uniform float uFade;
+        void main() {
+          float across = 1.0 - abs(vUv.y - 0.5) * 2.0;
+          float along = mix(1.0, pow(vUv.x, 1.6), uFade);
+          vec3 c = mix(uColor, vec3(0.92), pow(across, 3.0) * 0.8);
+          gl_FragColor = vec4(c, pow(across, 1.3) * along * uOpacity);
+        }`,
+    });
+    const a = new THREE.Mesh(RailBeam.geo, this.mat);
+    const b = new THREE.Mesh(RailBeam.geo, this.mat);
+    b.rotation.x = Math.PI / 2;
+    this.mesh.add(a, b);
+    this.mesh.visible = false;
+    this.mesh.frustumCulled = false;
+  }
+
+  /** Lays the beam from `a` to `b` with the given thickness (m) and opacity 0..1; opacity 0 hides it. */
+  set(a: THREE.Vector3, b: THREE.Vector3, width: number, opacity: number) {
+    const len = this.d.subVectors(b, a).length();
+    if (opacity <= 0.001 || len < 1e-3) { this.mesh.visible = false; return; }
+    this.mesh.visible = true;
+    this.mesh.position.copy(a);
+    this.mesh.quaternion.copy(this.q.setFromUnitVectors(RailBeam.X, this.d.divideScalar(len)));
+    this.mesh.scale.set(len, width, width);
+    this.mat.uniforms.uOpacity.value = opacity;
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+}
+
+/**
+ * Three magnetic coil rings round a muzzle, each with a spoke that spins. `set(pos, dir, spin, glow)`: `spin` is the
+ * spin-up phase 0..1 (rings turn faster and shrink onto the barrel, copper warming to cyan), `glow` 0..1 is a flash
+ * on top. `vis` 0 hides it.
+ */
+export class MagCoil {
+  readonly mesh = new THREE.Group();
+  private rings: THREE.Group[] = [];
+  private mats: THREE.MeshBasicMaterial[] = [];
+  private angle = 0;
+  private q = new THREE.Quaternion();
+  private static Z = new THREE.Vector3(0, 0, 1);
+  private cu = new THREE.Color(CLOCKWORK.body);
+  private cy = new THREE.Color(CLOCKWORK.accent);
+  private wh = new THREE.Color(0xffffff);
+
+  constructor() {
+    const ring = new THREE.TorusGeometry(0.3, 0.035, 4, 7);
+    const spoke = new THREE.BoxGeometry(0.6, 0.045, 0.045);
+    for (let i = 0; i < 3; i++) {
+      const mat = new THREE.MeshBasicMaterial({ color: CLOCKWORK.body, transparent: true });
+      const g = new THREE.Group();
+      g.add(new THREE.Mesh(ring, mat), new THREE.Mesh(spoke, mat));
+      this.rings.push(g);
+      this.mats.push(mat);
+      this.mesh.add(g);
+    }
+    this.mesh.visible = false;
+  }
+
+  set(pos: THREE.Vector3, dir: THREE.Vector3, spin: number, glow: number, dt: number, vis = 1) {
+    if (vis <= 0) { this.mesh.visible = false; return; }
+    this.mesh.visible = true;
+    this.mesh.position.copy(pos);
+    this.mesh.quaternion.copy(this.q.setFromUnitVectors(MagCoil.Z, dir));
+    this.angle += dt * (4 + 40 * spin * spin);
+    for (let i = 0; i < 3; i++) {
+      const g = this.rings[i];
+      g.position.z = 0.1 + i * 0.26;
+      g.rotation.z = this.angle * (i % 2 ? -1 : 1) + i;
+      g.scale.setScalar((1.15 - 0.25 * spin) * (1 - i * 0.12) * (0.5 + 0.5 * vis));
+      this.mats[i].color.copy(this.cu).lerp(this.cy, spin * (0.4 + 0.2 * i)).lerp(this.wh, glow);
+      this.mats[i].opacity = Math.min(1, vis);
+    }
+  }
+
+  reset() {
+    this.angle = 0;
+    this.mesh.visible = false;
+  }
+}
