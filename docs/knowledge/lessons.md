@@ -13,14 +13,14 @@ for technique. Add a row whenever a fix took more than one try.
 ## Rendering and shaders
 | Problem | Cause | Fix |
 |---|---|---|
-| The distortion pass did nothing | `ShaderPass` clones its uniforms; the cloned render-target texture no longer points at the target | Re-link after construction: `distortPass.uniforms.tDistort.value = distortTarget.texture` ([main.ts](../../src/main.ts)) |
+| The distortion pass did nothing | `ShaderPass` clones its uniforms; the cloned render-target texture no longer points at the target | Re-link after construction: `distortPass.uniforms.tDistort.value = distortTarget.texture` ([runtime.ts](../../src/runtime.ts)) |
 | `shader compile error: 'flat' : syntax error` | `flat` is a reserved word in GLSL 3 | Never name a GLSL variable `flat` (Lunar Tide used `flatDir`) |
 | A frame turns black or NaN in places | A lit instanced mesh with an instance scaled to exactly 0: its normals become NaN | Never scale an instance below `1e-4`; `selfTest` reports these as singular frames |
 | Colours a little off | `setRGB` / `setHSL` are linear, hex codes are sRGB | Use hex (`0x…`, `'#…'`) or pass `THREE.SRGBColorSpace` |
 | White blobs under bloom | Emissive > 1, stacked additive layers, low bloom threshold | Emissive ≤ 1, additive opacity ≤ 0.5, bloom threshold ≥ 0.8 (kit spells use 0.86) |
 | Soft square points | `PointsMaterial` without a texture | Use `softDotTexture()` |
 | Impact-frame silhouettes miss shader ribbons | The silhouette mask renders with an override material, which custom ribbon shaders don't survive | Add a solid stand-in mesh, visible only during the impact frames (Celestial Hunt's stag) |
-| A cinematic's fog swap had no effect | `main.ts` sets `scene.fog = null` while a cinematic camera is active | Don't change fog from an effect |
+| A cinematic's fog swap had no effect | `runtime.ts` sets `scene.fog = null` while a cinematic camera is active | Don't change fog from an effect |
 
 ## Cameras and framing
 | Problem | Cause | Fix |

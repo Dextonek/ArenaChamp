@@ -10,7 +10,7 @@ The contract every effect implements (`Effect` / `EffectModule` in [types.ts](..
 
 ## The `Effect` contract
 
-An `Effect` is one timed set piece that [main.ts](../../src/main.ts) plays, steps and renders.
+An `Effect` is one timed set piece that the runtime ([runtime.ts](../../src/runtime.ts)) plays, steps and renders.
 
 | Member | Meaning |
 |---|---|

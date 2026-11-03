@@ -1,11 +1,12 @@
 /**
  * game.html: the duel game. Main menu, login, profile, heroes overview, lobbies and matchmaking over the game
- * server (server/game-server.mjs), and network 1v1 matches in the existing duel ring (src/game/match.ts). The 3D
- * scene is the editor's own (src/main.ts in game mode: no panel, no editor hotkeys). Architecture:
- * docs/architecture/multiplayer.md.
+ * server (server/game-server.mjs), and network 1v1 matches in the duel ring (src/game/match.ts). The 3D scene is the
+ * shared runtime (src/runtime.ts) with only the spell effects; none of the VFX tool (src/tool/) is in this page.
+ * Architecture: docs/architecture/multiplayer.md.
  */
 import './game.css';
-import { gameApi } from '../main';
+import { createRuntime, type GameApi } from '../runtime';
+import { targetedModules } from '../spells/targeted';
 import type { HeroKit } from '../heroes';
 import { NetClient, type LobbyState, type Profile } from '../net/client';
 import { HeroPreview } from './heroPreview';
@@ -13,6 +14,10 @@ import { MatchController } from './match';
 import { TOUCH } from '../touch';
 
 type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby';
+
+// The scene keeps stepping in a hidden tab: a network duel must go on.
+// The console hook `game.api` (at the end of this file) is this runtime.
+const gameApi: GameApi = createRuntime({ modules: targetedModules, background: true });
 
 const kits = gameApi.kits;
 const net = new NetClient();

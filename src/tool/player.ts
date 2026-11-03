@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { Enemy } from './effects/common';
-import { insideTelegraph, type TelegraphSpec } from './effects/telegraph';
+import { Enemy } from '../effects/common';
+import { insideTelegraph, type TelegraphSpec } from '../effects/telegraph';
 
 /**
  * A blue player dummy you move with WASD / arrow keys to dodge telegraphed zones. At each zone's impact

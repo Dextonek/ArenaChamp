@@ -1,26 +1,49 @@
 ---
 title: Architecture overview
 tags: [architecture, main, rendering, post-processing, registry]
-updated: 2026-10-29
+updated: 2026-11-03
 ---
 
 # Architecture overview
 
-How the VFX editor is put together: the one-file app shell in [main.ts](../../src/main.ts) (scene, camera, panel, effect registry, render loop, post chain, screen feedback, play mode, debug handle) and the registries that feed it. Read this first if you add an effect, change the render pipeline or script the app from a browser console.
+How the apps are put together. Two apps share one runtime: [runtime.ts](../../src/runtime.ts) builds the scene, camera, post chain, screen feedback, effect slots, arena, hero mode, duel and render loop. The VFX tool ([tool/main.ts](../../src/tool/main.ts), `index.html`) adds the panel, particle editor, play mode, dodge dummy and the `vfx` debug handle. The duel game ([game/main.ts](../../src/game/main.ts), `game.html`) adds its menus and network matches and loads only the spell effects. Then the registries that feed them. Read this first if you add an effect, change the render pipeline or script the app from a browser console.
 
 ## Source map
 
 | Area | Files |
 |---|---|
-| App shell, loop, post chain, `window.vfx` | [main.ts](../../src/main.ts) |
+| Shared runtime: scene, post chain, effect slots, arena, hero mode, duel, loop | [runtime.ts](../../src/runtime.ts) |
+| VFX tool: panel, particle editor, play mode, `window.vfx` | [tool/main.ts](../../src/tool/main.ts) |
+| Duel game: menus, matches, `window.game` | [game/main.ts](../../src/game/main.ts), [game/match.ts](../../src/game/match.ts) |
 | Particle mode (the default "particles" mode) | [emitter.ts](../../src/emitter.ts), [presets.ts](../../src/presets.ts) |
 | Final screen pass (`FinishPass`) | [post.ts](../../src/post.ts) |
 | Effect contract and registry | [effects/types.ts](../../src/effects/types.ts), [effects/index.ts](../../src/effects/index.ts) |
 | Spell registries | `src/spells/{paladin,iconic,original,targeted,weapons}/index.ts` |
 | Shared arena, targets, hits | [arena.ts](../../src/arena.ts), [effects/targeting.ts](../../src/effects/targeting.ts) (see [targeting-and-arena.md](targeting-and-arena.md)) |
-| Danger zones and dodge dummy | [effects/telegraph.ts](../../src/effects/telegraph.ts), [player.ts](../../src/player.ts) |
-| Hotbar (play mode) | [hotbar.ts](../../src/hotbar.ts) |
+| Danger zones and dodge dummy | [effects/telegraph.ts](../../src/effects/telegraph.ts), [tool/player.ts](../../src/tool/player.ts) |
+| Hotbar (play mode) | [tool/hotbar.ts](../../src/tool/hotbar.ts) |
 | Hero mode | [heroMode.ts](../../src/heroMode.ts), [heroes.ts](../../src/heroes.ts), `src/kits/` (see [hero-mode.md](hero-mode.md)) |
+
+## Two apps, one runtime
+
+- `createRuntime({ modules, background })` builds everything into `#app` and starts the frame loop.
+  - It returns the runtime: `arena`, `heroMode`, `duel`, `slots`, `bloom`, `state` (`playMode`, `idleBloom`), `view`
+    (`paused`, `timeScale`).
+  - Also the calls `activate`, `selectEffect`, `castAs`, `clearEffects`, `setPlayMode`, `setHeroMode`, `setDuel`,
+    `setKit`, `step` and `render`.
+- **The tool** passes every effect module and fills `runtime.hooks`:
+  - an effect built or dropped: its panel folder;
+  - `activated`: what the panel shows;
+  - `played`: the dodge dummy;
+  - play mode, hero mode or the hero changed: its controls;
+  - `beforeStep`, `walkStep`, `afterStep`: the particle emitter, the WASD walk and the dummy, each at its place in the
+    step;
+  - `frame`: the stats line and the hotbar's progress.
+- **The game** passes only `targetedModules` and `background: true`, so it keeps stepping in a hidden tab.
+  - None of the tool's code is in its bundle. After `npm run build`, `game.html` loads `game-*.js` and `runtime-*.js`,
+    and neither contains lil-gui.
+  - `GameApi` (`arena`, `heroMode`, `duel`, `kits`, `setHeroMode`, `setKit`) is the part it drives.
+- **Run:** `npm run tool` or `npm run game`. One Vite server serves both pages.
 
 ## Scene and camera
 
@@ -125,7 +148,7 @@ Effects may set `cinematic` ([parts/cinematic.ts](../../src/effects/parts/cinema
 
 ## `window.vfx` debug handle
 
-Assigned at the bottom of [main.ts](../../src/main.ts). Typical use: `vfx.selectMode('<label>')`, `vfx.scrub(t)`, screenshot.
+Assigned at the bottom of [tool/main.ts](../../src/tool/main.ts), in the VFX tool only. The game page's handle is `game.api`, the runtime. Typical use: `vfx.selectMode('<label>')`, `vfx.scrub(t)`, screenshot.
 
 | Member | What it is |
 |---|---|

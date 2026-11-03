@@ -52,7 +52,7 @@ Usage example for every part: `src/spells/targeted/partsShowcase.ts` (browser-ve
   - `enemies`: a chain or a volley, `ctx.targets` in chain order (up to `maxTargets`, default 5).
   - `ground`: an AoE at `ctx.point`; `ctx.targets` = the enemies within `radius` (may be empty).
   - `self`: around the caster; `ctx.targets` = the enemies within `radius`.
-- The effect implements `cast(ctx: CastContext)`. main.ts calls it right before **every** `play()`, including your
+- The effect implements `cast(ctx: CastContext)`. The runtime (`runtime.ts`) calls it right before **every** `play()`, including your
   own `loop` restart. Store `this.ctx = ctx` (public, `CastContext | null`) and compute all positions from it:
   `ctx.from` (caster feet), `ctx.aim` (yaw toward the target), `ctx.targetPos[i]` (feet positions snapshotted at
   cast), `ctx.point` (ground aim point, y = 0).

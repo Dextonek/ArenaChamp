@@ -1,8 +1,8 @@
-import type { gameApi as GameApi } from '../main';
+import type { GameApi } from '../runtime';
 import type { HeroKit } from '../heroes';
 import type { NetClient, Profile, ServerMsg } from '../net/client';
 
-type Api = typeof GameApi;
+type Api = GameApi;
 const MOVE_HZ = 20;
 
 /**

@@ -36,7 +36,7 @@ Workers get a short prompt that points at a brief and a design note, never a ret
 | [kit-common.md](../../pipeline/designs/kit-common.md) | A hero kit: file ownership, MOBA timing, look lessons |
 
 Rules that keep parallel workers from colliding: each worker owns its own files and never edits shared files
-(`parts/index.ts`, `targeted/index.ts`, `src/heroes.ts`, `main.ts`); the reviewer registers and wires; workers do not
+(`parts/index.ts`, `targeted/index.ts`, `src/heroes.ts`, `runtime.ts`, `tool/main.ts`); the reviewer registers and wires; workers do not
 use the browser and do not commit; at most three workers run at once.
 
 ## The forge-vfx skill

@@ -295,6 +295,27 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     light sword and a big kite shield with a sun.
   - Her first ivory was near-white and bloomed over the whole figure in the game, so the colours are now mid-value.
     Isolde's white skirt shows the same bloom, not fixed.
+- **The VFX tool and the game are separate apps (2026-11-03, uncommitted):**
+  - The user asked to separate them.
+  - Before, `game.html` ran the tool's `src/main.ts` with its panel hidden and shipped all of it.
+  - **`src/runtime.ts`** (`createRuntime({ modules, background })`) is the shared scene: renderer, sky, post chain,
+    effect slots, arena, hero mode, duel, loop.
+  - **`src/tool/`** is the VFX tool (`index.html`): `tool/main.ts` with the panel, particle editor, play mode and
+    `window.vfx`, plus `tool/player.ts` (dodge dummy) and `tool/hotbar.ts`. It plugs into `runtime.hooks`.
+  - **`src/game/main.ts`** builds its own runtime with only `targetedModules` and keeps stepping in a hidden tab. Its
+    console handle is `game.api`.
+  - The `data-mode="game"` flag is gone.
+  - Run with `npm run tool` or `npm run game`.
+  - Build: `game.html` loads `game-*.js` (21 KB) and `runtime-*.js` (3.19 MB). Neither has lil-gui or editor strings.
+    Before, the game loaded a 3.7 MB chunk with the whole tool.
+  - Checked in the browser:
+    - **The tool:** all `vfx` members, a spell and a set-piece self-test, particles, play mode with the hotbar, three
+      AI duels with every slot cast.
+    - **The game:** the login screen, 20 kits, 162 spell slots, an offline AI duel via `game.api`.
+    - No console errors.
+  - Docs point at `runtime.ts`, `tool/` or `game/` instead of `main.ts` (architecture overview: "Two apps, one
+    runtime").
+  - Deploy is unchanged (the worker still sends `/` to `game.html`; the tool stays at `/index.html`).
 - **Next: a fresh design of all 20 kits** (user, 2026-11-03: forget the current kits; new ideas for every hero, more
   targeted spells, dashes, pulls and buffs, passives that fit the new kits). Design first, for the user's approval,
   then build in batches.
@@ -307,6 +328,34 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     - answers to those six questions;
     - whether to commit batches 1–3 and the two models first, which is recommended (v4 rewrites every kit again).
   - Nothing of v4 is built.
+  - **User, 2026-11-03: "U decide make it as best as you can".** The six questions are answered with the
+    recommendations:
+    1. Keep the names, looks, themes and roles.
+    2. Targeted spells need line of sight.
+    3. Keep stealth, built last.
+    4. Two transforms are fine.
+    5. Keep the beat (window ±0.25 s; the AI casts in tune 70% of the time).
+    6. Start with the low-engine opener.
+- **v4 opener in progress (2026-11-03, uncommitted; on top of the uncommitted tool/game separation): Lyra, Vex,
+  Marin, Mortis, Zephyr.**
+  - Running together:
+    - an engine worker, the only writer of `traits/types.ts`, `traits/runtime.ts`, `attacks/*`, `heroMode.ts`,
+      `duel.ts`, `summon.ts`, `targeting.ts`, `arena.ts`. It builds:
+      - basic-attack reach and echo hooks, and `TraitView.resetAttack`;
+      - `TraitView.summon`;
+      - death spots (`TraitView.deathSpots`, `CastContext.deathSpots`);
+      - line of sight for targeted spells in hero mode;
+    - the Vex worker (alchemy kit, trait, new effects);
+    - the Marin worker (tide).
+  - Waiting on the engine worker's report with the exact signatures: Lyra (astral), Mortis (bone), Zephyr (sky).
+  - Then the lead (me):
+    - registry swaps and git rm of each hero's old effect files;
+    - AI rules;
+    - a browser check of every spell;
+    - AI duels, 40–60% wins;
+    - a sheet;
+    - STATUS.
+  - Resume: read `pipeline/designs/kits-v4.md`, then `git status`, to see which kits and engine pieces have landed.
 
 **Two duel bugs fixed (2026-11-03, uncommitted, not deployed)**
 - The last match's spell (often an ult) showed at the start of the next one, mostly after a forfeit or a reload:

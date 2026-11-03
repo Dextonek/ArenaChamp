@@ -33,7 +33,7 @@ You cannot see the result, so apply **concrete, mechanical transformations** —
 10. Per-file items listed in your assignment.
 
 ## Hard constraints
-- Edit only the files you were assigned. Do not touch `common.ts`, `emitter.ts`, `types.ts`, `main.ts`,
+- Edit only the files you were assigned. Do not touch `common.ts`, `emitter.ts`, `types.ts`, `runtime.ts`, `tool/main.ts`,
   `post.ts`, any `index.ts`, or files assigned to others. No git, no npm install, no servers, no browser.
 - Do not change a module's `label`, `category`, or settings keys/defaults' meaning (GUI must keep working).
   Total duration within ±10%. Keep `frameCamera` as is unless the assignment says otherwise.

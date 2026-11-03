@@ -31,7 +31,7 @@ targeted spells: no `targeting`, `cast`, hits or telegraphs.
 - Hide with `visible = false` or opacity 0. Never set a scale below 1e-4 (the selfTest flags singular matrices).
 - Put every `FlowRibbon` a few mm **in front of** the surface it sits on (`z` ≈ +0.01 on faces), or depth hides it.
 - Write ONLY your file `src/spells/weapons/<camelCase>.ts`, exporting `<camelCase>Module`. Do not edit
-  `index.ts`, `kit.ts`, `aura.ts`, `sockets.ts`, `main.ts` or any shared file. If the kit lacks something, build
+  `index.ts`, `kit.ts`, `aura.ts`, `sockets.ts`, `runtime.ts`, `tool/main.ts` or any shared file. If the kit lacks something, build
   it inside your file (a small class) and say so in your report.
 - No git, no npm install, no dev server, no browser. Verify with `Set-Location C:\VFXTool; npx tsc --noEmit`.
 

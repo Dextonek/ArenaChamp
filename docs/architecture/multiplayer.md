@@ -35,7 +35,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
  │ src/net/client.ts NetClient      │              │  sessions (token → name, in memory)           │
  │ src/game/match.ts MatchController│              │  lobbies, queue, matches (in memory)          │
  │   └─ Duel.startNet (src/duel.ts) │              │ server/accounts.mjs → server/data/accounts.json│
- │ src/main.ts (scene, game mode)   │              └──────────────────────────────────────────────┘
+ │ src/runtime.ts (shared scene)    │              └──────────────────────────────────────────────┘
  └─────────────────────────────────┘
 ```
 
@@ -47,7 +47,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | Accounts | Names 3-16 `[A-Za-z0-9_-]`, passwords 4-64 characters hashed with PBKDF2-SHA256 (Web Crypto, 100 000 iterations, per-user salt; accounts from before the port used scrypt and are re-hashed at their next login, Node only). Stored in `server/data/accounts.json` (git-ignored) on Node, in the Durable Object's SQLite storage on Cloudflare. No e-mail, no external auth. |
 | Sessions | A random token per sign-in, kept in memory on the server (a server restart means logging in again) and in **`sessionStorage`** on the client: per tab, so two tabs of one browser can be two players. One connection per account: a second sign-in signs the first out. |
 | Same hero | Not allowed in one match (the client has one effect instance per spell label). The lobby greys out the other seat's hero and the server refuses `ready` with it; the queue only pairs different heroes. |
-| Scene reuse | `game.html` has `<body data-mode="game">` and imports `src/main.ts`, which then hides the lil-gui panel and stats line and skips the editor hotkeys. `main.ts` exports `gameApi` (arena, hero mode, duel, kits, `setHeroMode`, `setKit`). No second render pipeline. |
+| Scene reuse | `game.html` imports `src/game/main.ts`. It builds the shared runtime (`createRuntime({ modules: targetedModules, background: true })`, `src/runtime.ts`) with only the spell effects, so the VFX tool's panel, particle editor and hotkeys are not in the game's bundle. The game drives `GameApi`: arena, hero mode, duel, kits, `setHeroMode`, `setKit`. No second render pipeline. |
 
 ## Files
 
@@ -220,7 +220,7 @@ Off by default.
 ## Background tabs
 
 `requestAnimationFrame` stops in a background tab (and in a hidden browser pane), which would freeze that player's
-spells before impact, so they would never report a hit. In game mode `main.ts` steps the simulation from a 100 ms
+spells before impact, so they would never report a hit. The game's runtime (`background: true`) steps the simulation from a 100 ms
 timer whenever no frame came for 250 ms, in 1/30 s substeps of the real time that passed (browsers slow
 background timers to about once a second, so a hidden tab catches up in bigger batches).
 
@@ -271,7 +271,7 @@ trap and basic attack, Marin's hook pulling Fenna 3 m, Fenna's heal on hit and h
 - Several servers on one data file (two dev ports, the standalone server) write one account at a time; the last
   write wins per account, and sessions and lobbies are per server (both players must use the same one).
 - One match per player at a time; no spectators, no rematch button (back to the menu, queue again).
-- Mirror matches need a second effect instance per spell label (`castAs` in main.ts).
+- Mirror matches need a second effect instance per spell label (`castAs` in runtime.ts).
 - Projectiles fly through pillars visually; sight is only checked at the cast.
 - Pillars can hide a hero from the high camera when it stands right behind one (no see-through fade yet).
 - The other session's duel balance numbers predate the cover; re-run its tournament with the obstacles in.

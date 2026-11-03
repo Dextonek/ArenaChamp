@@ -29,11 +29,11 @@ The words this project uses, with what they mean here and where the thing lives 
 | **Distortion** | Screen-space refraction: heat haze and shock rings drawn on their own layer | `parts/distortion.ts` |
 | **Cinematic** | An effect that runs its own scripted camera with letterbox bars | `parts/cinematic.ts` |
 | **Hero mode** | The MOBA test mode: click to move, aim and cast a hero kit, cooldowns, hero figures | `src/heroMode.ts` |
-| **Lingering** | Hero-mode effects replaced by a newer cast that keep playing until they end | `main.ts` |
+| **Lingering** | Hero-mode effects replaced by a newer cast that keep playing until they end | `runtime.ts` |
 | **Persist** | Arena flag: HP and deaths carry over between casts; dead enemies respawn | `Arena.persist` |
 | **Hero figure** | A rigged hero model on the Dao rig, posed at runtime | `src/effects/weapons/hero.ts`, `public/models/heroes/` |
 | **Contact sheet** | A grid of frames of an effect at chosen times, used for review | `pipeline/tools/contact-sheet.js` |
-| **Self-test / sweep** | Stepping an effect frame by frame for errors; the sweep does it for every effect | `vfx.selfTest` in `main.ts` |
+| **Self-test / sweep** | Stepping an effect frame by frame for errors; the sweep does it for every effect | `vfx.selfTest` in `tool/main.ts` |
 | **Design note** | The written spec of an effect or kit, written before it is built | `pipeline/designs/` |
 | **Forge** (`/forge-vfx`) | The skill that turns ideas or library recipes into targeted spells | `.claude/skills/forge-vfx/` |
 | **Status effect / crowd control** | A timed condition a hit can add: stun, knock-up, root, slow, silence, blind. Capped, refreshed not stacked, with 0.5 s stun immunity after | `src/effects/status.ts` |

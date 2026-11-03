@@ -40,7 +40,7 @@ From the two gameplay cameras (a network player on side 1 looks from the other e
   `arena.obstacles = def.obstacles`, calls `host.setStage(def.stage)` and hides the slab floor for `hideGround`
   arenas (`arena.showGround`). `Duel.update` drives `ArenaScene.update` (snow, embers, fireflies, clouds).
   `Duel.stop()` puts back the default stage and the floor.
-- main.ts `setStage` changes the sky dome uniforms, `scene.background`, the fog colour and range and the three
+- runtime.ts `setStage` changes the sky dome uniforms, `scene.background`, the fog colour and range and the three
   lights in place (the cinematic camera toggles the same objects by reference).
 
 The ring itself never changes: centre (0, 7), radius 12, starts at (0, 13) and (0, 1). `arena.bounds`, the AI,

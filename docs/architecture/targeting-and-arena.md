@@ -11,7 +11,7 @@ How targeted spells find their targets and how the shared playground works: the 
 ## Flow of one cast
 
 1. A module with `targeting` set is selected (or its target changes: a click calls `arena.onPick`, which replays the active effect).
-2. `play()` (wrapped by `ensureEffect` in [main.ts](../../src/main.ts)) calls `arena.context(spec)`, hands the result to `effect.cast(ctx)`, then runs the real `play()`.
+2. `play()` (wrapped by `ensureEffect` in [runtime.ts](../../src/runtime.ts)) calls `arena.context(spec)`, hands the result to `effect.cast(ctx)`, then runs the real `play()`.
 3. The effect reads targets and positions from `ctx`, calls `ctx.hit(...)` at impact, and optionally `ctx.displace(...)`.
 
 ## Targeting ([targeting.ts](../../src/effects/targeting.ts))
@@ -47,7 +47,7 @@ How targeted spells find their targets and how the shared playground works: the 
 
 ## Arena ([arena.ts](../../src/arena.ts))
 
-`Arena` is the shared playground: ground, the golden `caster`, a pack of clickable enemies ("foes") with HP, the selection and a ground marker. main.ts shows it only while a targeted effect is active or play mode is on.
+`Arena` is the shared playground: ground, the golden `caster`, a pack of clickable enemies ("foes") with HP, the selection and a ground marker. The runtime shows it only while a targeted effect is active or play mode is on.
 
 ### Foes
 
@@ -58,7 +58,7 @@ Each foe is an `Enemy` figure plus `home`, `hp` (max 100), `flash`, `knock`, `of
 - A left click (pointer moved under 5 px, so orbit drags do not count) on a foe selects it; shift-click adds or removes; a click on the ground sets the ground point (shift keeps the selection). Each pick calls `onPick`.
 - `pickEnabled` (default true) gates clicks; hero mode turns it off.
 - `setTarget(enemy | null)` makes one enemy the only selection; `setGroundPoint(p | null)` aims at a spot and clears the enemy selection. `clearSelection()` clears both. `liveFoes()` returns the living foes with their current positions.
-- `aimYaw()`: yaw from the caster to the selected, clicked or nearest target without resetting anything (used by `placeEffect` in main.ts).
+- `aimYaw()`: yaw from the caster to the selected, clicked or nearest target without resetting anything (used by `placeEffect` in runtime.ts).
 
 ### `context(spec)`
 
@@ -121,7 +121,7 @@ number). See [multiplayer.md](multiplayer.md#the-ring-pillars-walls-and-line-of-
 
 ## Telegraphs ([telegraph.ts](../../src/effects/telegraph.ts))
 
-Red ground danger zones ("don't stand in the red"). Effects only declare them through `EffectModule.telegraphs(effect)` (read on every play); main.ts draws them with `TelegraphLayer` and tests the dummy.
+Red ground danger zones ("don't stand in the red"). Effects only declare them through `EffectModule.telegraphs(effect)` (read on every play); the runtime draws them with `TelegraphLayer` and tests the dummy.
 
 | Type | Fields |
 |---|---|
@@ -130,7 +130,7 @@ Red ground danger zones ("don't stand in the red"). Effects only declare them th
 
 - Direction convention: `dir` is a yaw, 0 toward +Z, pi toward -Z.
 - `insideTelegraph(shape, x, z)` is the point-in-shape test.
-- `TelegraphLayer` (`group`, `set(specs)` on every play, `update(t)` with seconds since play) fills each zone as a countdown with a bright moving front, flashes on impact and fades. main.ts hides it with the "danger zones" checkbox and gives it the same transform as the effect when `placeEffect` moves one.
+- `TelegraphLayer` (`group`, `set(specs)` on every play, `update(t)` with seconds since play) fills each zone as a countdown with a bright moving front, flashes on impact and fades. The VFX tool hides it with the "danger zones" checkbox and gives it the same transform as the effect when `placeEffect` moves one.
 - Hero mode uses the telegraphs for timing: the hero is rooted until the latest `impact` among the active zones (default 0.4 s, capped at 2.5 s).
 
 ## Player dummy ([player.ts](../../src/player.ts))

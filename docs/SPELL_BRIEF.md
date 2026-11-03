@@ -40,7 +40,7 @@ original visuals. Spell names as labels are fine. Do not copy Blizzard icon art,
   player must leave; see `src/effects/telegraph.ts` and the examples in `meteorShower.ts` / `energyBeam.ts`).
 
 ## Hard rules
-- Write only the files you were assigned. Do not edit `main.ts`, any `index.ts`, `common.ts`, `types.ts`,
+- Write only the files you were assigned. Do not edit `runtime.ts`, `tool/main.ts`, any `index.ts`, `common.ts`, `types.ts`,
   `emitter.ts`, `presets.ts` or other spells. No git, no npm install, no dev servers, no browser tools.
 - Verify with `Set-Location C:\VFXTool; npx tsc --noEmit` — zero errors in your files (strict, noUnusedLocals).
   Other agents write other files in parallel; ignore errors that are only in files that aren't yours, and say so.

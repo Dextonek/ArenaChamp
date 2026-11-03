@@ -6,7 +6,7 @@ updated: 2026-10-29
 
 # Hero mode and hero kits
 
-A MOBA-style test mode for one hero kit: click to walk, Q / W / E / R to aim and cast four spells, cooldowns, a HUD bar and a fixed follow camera. This page covers the controller ([heroMode.ts](../../src/heroMode.ts)), the kit data ([heroes.ts](../../src/heroes.ts), `src/kits/*.ts`) and how [main.ts](../../src/main.ts) wires them. Read it before adding a hero, changing the controls or touching how spells overlap.
+A MOBA-style test mode for one hero kit: click to walk, Q / W / E / R to aim and cast four spells, cooldowns, a HUD bar and a fixed follow camera. This page covers the controller ([heroMode.ts](../../src/heroMode.ts)), the kit data ([heroes.ts](../../src/heroes.ts), `src/kits/*.ts`) and how the runtime ([runtime.ts](../../src/runtime.ts)) wires them. Read it before adding a hero, changing the controls or touching how spells overlap.
 
 ## Concept
 
@@ -36,7 +36,7 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 
 ## Controller ([heroMode.ts](../../src/heroMode.ts))
 
-`HeroMode` takes a `HeroModeHost` from main.ts:
+`HeroMode` takes a `HeroModeHost` from the runtime ([runtime.ts](../../src/runtime.ts)):
 
 | Host member | Purpose |
 |---|---|
@@ -83,12 +83,12 @@ All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 ### Range, walk-into-range, rooting, cooldowns
 
 - If the target is out of range when you confirm, the cast becomes `pending` and the hero walks toward the target (`HERO_SPEED = 4`, MOBA-slow since 2026-10-30); once within `spell.range` it casts. Any new move order drops the pending cast. A pending enemy that dies cancels it.
-- `castNow` sets the arena target (`setTarget` for an enemy, `setGroundPoint` for a point), calls `host.cast(label)` and stores the returned time as `rooted` (no walking while rooted). main.ts returns the latest danger-zone `impact` of the new cast (capped at 2.5 s), or 0.4 s when the spell has no zones, so the hero stays rooted until the spell lands.
+- `castNow` sets the arena target (`setTarget` for an enemy, `setGroundPoint` for a point), calls `host.cast(label)` and stores the returned time as `rooted` (no walking while rooted). The runtime returns the latest danger-zone `impact` of the new cast (capped at 2.5 s), or 0.4 s when the spell has no zones, so the hero stays rooted until the spell lands.
 - Cooldowns count down in `update`; the slot flashes on cast. `setKit` and `setEnabled` clear cooldowns, aim and pending orders.
 
 ### Camera
 
-`followCamera` keeps a fixed top-down offset `CAM_OFFSET = (0, 15, 10.5)` scaled by the zoom, lerped to the hero (rate 12, snapped on entry), looking at `(hero.x, 0.5, hero.z - 1.5)`. main.ts disables `OrbitControls` while hero mode is on.
+`followCamera` keeps a fixed top-down offset `CAM_OFFSET = (0, 15, 10.5)` scaled by the zoom, lerped to the hero (rate 12, snapped on entry), looking at `(hero.x, 0.5, hero.z - 1.5)`. The runtime disables `OrbitControls` while hero mode is on.
 
 A tall screen (aspect below 1.25, a phone held upright) sees little to the sides because the field of view is
 vertical: the offset is scaled by `fit = 1 + (1.25 - aspect) * 0.6` and the look point moves `(fit - 1) * 4` further
@@ -131,31 +131,31 @@ Poses use the bone names `thighL/R`, `shinL/R`, `armL/R`, `foreR`, `chest` (see 
 
 `setKit` recolours the indicators, rebuilds the HUD, clears aim, pending orders and cooldowns, and shows the kit's figure. `setEnabled(on)` shows or hides the group and HUD, sets `arena.pickEnabled = !on` and `arena.persist = on`, clears orders, and on entry clears the selection and snaps the camera.
 
-## Wiring in main.ts
+## Wiring in the runtime (and the VFX tool)
 
 - **Creation:** `new HeroMode({ arena, camera, dom, targeting, nextKit, cast }, HERO_KITS[0])`, group added to the scene.
-- **Entering** (`setHeroMode(true)`; `H`, or the "hero mode (H)" checkbox in View): `keepLingering = true`; `setPlayMode(true)`; hotbar hidden; `arena.reset()`; orbit controls disabled; `heroMode.setEnabled(true)`; **kit bloom** `{ enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 }` applied (the particle preset's low threshold would make pale costumes glow until the first cast; the spell modules' own `bloom` is still applied by `setMode` on each cast).
+- **Entering** (`setHeroMode(true)`; in the tool `H`, or the "hero mode (H)" checkbox in View): `keepLingering = true`; `setPlayMode(true)`; the tool hides its hotbar; `arena.reset()`; orbit controls disabled; `heroMode.setEnabled(true)`; **kit bloom** `{ enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 }` applied (the particle preset's low threshold would make pale costumes glow until the first cast; the spell modules' own `bloom` is still applied by `activate` on each cast).
 - **Leaving:** `dropLingering()`, `heroMode.setEnabled(false)`, controls back on, `setPlayMode(false)`, `arena.reset()`. `P` also exits hero mode, and unchecking "play mode" does too.
-- **Hero dropdown:** View > hero lists `HERO_KITS` names and calls `heroMode.setKit(kit)`; it works with hero mode off too, so the next entry starts with that hero.
-- **Portrait cycling:** the `nextKit` callback sets the dropdown to the next kit (modulo the list) through `heroPickCtrl.setValue`, which fires the same `setKit` path.
-- **Casting:** `cast(label)` calls `selectMode(label)`, so each spell becomes the `active` effect and plays at the arena's target; the rooted time is derived from `zones` (see above).
-- **Overlapping spells:** while `keepLingering` is true, `setMode` moves the previous active slot into the `lingering` set if it is still `playing` instead of hiding it. `step` updates lingering effects until they stop, `liveEffects()` includes them for shake, `pickScreen` and the distortion scan. Re-casting the same spell is the `selectMode` replay path (`play()` restarts the same effect, it does not create a second copy). Only the active effect's cinematic camera is honoured.
+- **Hero choice:** `setKit(name)` sets hero mode's kit and restarts a running offline duel. The tool's View > hero dropdown calls it (and follows it through the `kitChanged` hook); it works with hero mode off too, so the next entry starts with that hero.
+- **Portrait cycling:** the `nextKit` callback calls `setKit` with the next kit (modulo the list).
+- **Casting:** `cast(label)` calls `selectEffect(label)`, so each spell becomes the `active` effect and plays at the arena's target; the rooted time is derived from `zones` (see above).
+- **Overlapping spells:** while `keepLingering` is true, `activate` moves the previous active slot into the `lingering` set if it is still `playing` instead of hiding it. `step` updates lingering effects until they stop, `liveEffects()` includes them for shake, `pickScreen` and the distortion scan. Re-casting the same spell is the `selectEffect` replay path (`play()` restarts the same effect, it does not create a second copy). Only the active effect's cinematic camera is honoured.
 - **Disabled elsewhere in hero mode:** hotbar digits 1-5, WASD caster walking (`walk`), `controls.update()`. The stats line shows the hero-mode controls plus hits and kills.
-- **Debug:** `vfx.heroMode`, `vfx.setHeroMode(true)`, `vfx.heroPickCtrl.setValue('Lyra')`.
+- **Debug:** in the tool `vfx.heroMode`, `vfx.setHeroMode(true)`, `vfx.heroPickCtrl.setValue('Lyra')`; in the game `game.api.setKit('Lyra')`.
 
 ## Duel ([duel.ts](../../src/duel.ts))
 
-A 1 vs 1 round on top of hero mode. `Duel` (constructed in main.ts with a `DuelHost`: arena, hero mode, kits,
+A 1 vs 1 round on top of hero mode. `Duel` (constructed in runtime.ts with a `DuelHost`: arena, hero mode, kits,
 `castAs`, targeting lookup) owns the ring, the opponent and the duel HUD.
 
 | Piece | How |
 |---|---|
 | Setup (`start`) | Opponent kit = the chosen one or a random other kit (never the player's: one effect instance per label). Arena: one foe, `maxHp` 600, `respawnAfter` Infinity, `bounds` = the ring (centre (0, 7), radius 12); player at (0, 0, 13), opponent at (0, 0, 1). The foe's capsule is hidden under a `HeroFigure`. Each start bumps a round id. |
-| Opponent casting | `arena.contextFor({ caster, from, point, targets: [player], hit })` builds a cast context for the foe; main.ts `castAs(label, ctx)` plays the effect through a one-shot override in the play wrapper and adds it to `lingering`, so the player's active effect, panel and camera stay. It returns the effect's danger zones, drawn by the duel's own `TelegraphLayer` on its own clock. |
+| Opponent casting | `arena.contextFor({ caster, from, point, targets: [player], hit })` builds a cast context for the foe; the runtime's `castAs(label, ctx)` plays the effect through a one-shot override in the play wrapper and adds it to `lingering`, so the player's active effect, panel and camera stay. It returns the effect's danger zones, drawn by the duel's own `TelegraphLayer` on its own clock. |
 | Dodging | The context's `hit` checks the player at the moment of the hit: inside one of that cast's zones (`insideTelegraph`) or within 1.6 of where it aimed → damage (number, red edge flash, knockback inside the ring); otherwise one DODGED label. Hits from an earlier round are ignored. |
 | AI | Waits 1.2 s, then each frame: rooted until its spell's latest impact (≤ 2.5 s); else the first ready spell in the order R, E, W, Q that is in reach (R only when the player is under 55% HP or after 20 s; E when the player is inside its radius); else walk to ~70% of Q's range and strafe, flipping every 1.5–3.5 s. Speed 6. |
 | End | Opponent HP 0 → VICTORY, player HP 0 → DEFEAT: hero mode `locked`, the loser's figure falls, a card with Rematch / Leave duel. |
-| main.ts | `setDuel(on)` (View → duel, key B; turns hero mode on), View → opponent, a new round when the hero changes, the duel ends with hero mode. |
+| runtime.ts, tool | `setDuel(on)` (the tool's View → duel, key B; turns hero mode on), View → opponent, a new round when the hero changes, the duel ends with hero mode. |
 
 **Cover and line of sight:** the ring has a centre wall, four pillars and two side walls (`DUEL_OBSTACLES` in
 [obstacles.ts](../../src/obstacles.ts), set as `arena.obstacles` while the duel is on). They block walking and line of

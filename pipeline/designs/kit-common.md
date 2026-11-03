@@ -12,7 +12,7 @@ kit follows its structure; what its review taught is written down here so the fi
   and a portrait in the kit's palette, like the blood entry in `src/heroes.ts`.
 - Names must be new: before naming a spell, grep `src/spells/targeted/` for the file name and the registered labels
   (a wave 3 Q `rivetShot.ts` overwrote the forge kit's tracked file of the same name).
-- Do not edit shared files (`parts/index.ts`, `targeted/index.ts`, `heroes.ts`, `main.ts`, `heroMode.ts`,
+- Do not edit shared files (`parts/index.ts`, `targeted/index.ts`, `heroes.ts`, `runtime.ts`, `tool/main.ts`, `heroMode.ts`,
   `blood.ts`): the reviewer registers and wires everything.
 
 ## MOBA timing (user rule)

@@ -20,7 +20,8 @@ export default defineConfig({
   plugins: [gameServer()],
   build: {
     rollupOptions: {
-      input: { editor: resolve(__dirname, 'index.html'), game: resolve(__dirname, 'game.html') },
+      // Two apps on one runtime (src/runtime.ts): the VFX tool (src/tool/) and the duel game (src/game/).
+      input: { tool: resolve(__dirname, 'index.html'), game: resolve(__dirname, 'game.html') },
     },
   },
 });
