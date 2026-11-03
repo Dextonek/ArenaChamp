@@ -1369,3 +1369,110 @@ export const colossusLook: MinionLook = (kind, p: MinionPalette) => {
     dispose: inner.dispose,
   };
 };
+
+// ---------------------------------------------------------------------------------------------------------------
+// BoneDarts and BonePiles (kit v4)
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * A handful of pointed bone darts, each placed by hand every frame (a skillshot's shard rides its bolt, an armour shard
+ * homes in): `set(i, pos, dir, size)` puts dart `i` at `pos` pointing along `dir` (`size` 1 = 0.7 m long), `hide(i)` /
+ * `reset()` take them away. Add `mesh`. Up to `max` darts (default 8).
+ */
+export class BoneDarts {
+  readonly mesh: THREE.InstancedMesh;
+  private on: boolean[];
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private s = new THREE.Vector3();
+  private d = new THREE.Vector3();
+  private p = new THREE.Vector3();
+
+  constructor(readonly max = 8) {
+    this.mesh = new THREE.InstancedMesh(boneChunkGeometry(4, 0.05), boneMaterial(1), max);
+    this.mesh.frustumCulled = false;
+    this.on = new Array<boolean>(max).fill(false);
+    this.reset();
+  }
+
+  set(i: number, pos: THREE.Vector3, dir: THREE.Vector3, size = 1) {
+    if (i < 0 || i >= this.max) return;
+    this.d.copy(dir);
+    if (this.d.lengthSq() < 1e-8) this.d.set(0, 0, 1);
+    this.q.setFromUnitVectors(UP, this.d.normalize());
+    const k = Math.max(size, MIN_SCALE);
+    // The geometry runs 0..1 along +Y: centre it on `pos`.
+    this.m.compose(this.p.copy(this.d).multiplyScalar(-0.35 * k).add(pos), this.q, this.s.set(0.1 * k, 0.7 * k, 0.1 * k));
+    this.mesh.setMatrixAt(i, this.m);
+    this.on[i] = true;
+    this.sync();
+  }
+
+  hide(i: number) {
+    if (i < 0 || i >= this.max || !this.on[i]) return;
+    this.on[i] = false;
+    this.m.compose(this.d.set(0, -50, 0), this.q.identity(), this.s.set(MIN_SCALE, MIN_SCALE, MIN_SCALE));
+    this.mesh.setMatrixAt(i, this.m);
+    this.sync();
+  }
+
+  private sync() {
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.mesh.visible = this.on.some(Boolean);
+  }
+
+  reset() {
+    this.on.fill(true);
+    for (let i = 0; i < this.max; i++) this.hide(i);
+  }
+}
+
+/**
+ * Bone piles on the ground (Mortis's passive: a pile where a summoned unit was slain): `set(spots, k)` draws a small heap
+ * of five bones, a skull on the first few, at every `{x, z}` (up to `max`), grown to `k` 0..1. The pieces are laid out
+ * from the pile's index, so a pile looks the same each frame. `reset()` hides them. Add `mesh`. Cheap: one instanced
+ * mesh, no per-pile objects.
+ */
+export class BonePiles {
+  readonly mesh: THREE.InstancedMesh;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private s = new THREE.Vector3();
+  private p = new THREE.Vector3();
+  private d = new THREE.Vector3();
+
+  constructor(readonly max = 8) {
+    this.mesh = new THREE.InstancedMesh(boneChunkGeometry(6, 0.8), boneMaterial(2), max * 5);
+    this.mesh.frustumCulled = false;
+    this.reset();
+  }
+
+  set(spots: readonly { x: number; z: number }[], k = 1) {
+    let n = 0;
+    const g = easeOut(k);
+    for (let i = 0; i < Math.min(spots.length, this.max); i++) {
+      const sp = spots[i];
+      for (let j = 0; j < 5; j++) {
+        const h = hsh(i * 7.3 + j * 1.9);
+        const a = hsh(i * 3.1 + j * 5.7) * Math.PI * 2;
+        const r = 0.12 + 0.28 * hsh(i + j * 2.3);
+        const len = (0.32 + 0.3 * h) * g;
+        // Mostly flat on the floor, a little tilted so the heap looks piled.
+        const tilt = (j % 3) * 0.28;
+        this.d.set(Math.cos(a) * Math.cos(tilt), Math.sin(tilt), Math.sin(a) * Math.cos(tilt));
+        this.q.setFromUnitVectors(UP, this.d);
+        this.p.set(sp.x + Math.cos(a + 1.7) * r, 0.07 + 0.05 * (j % 3), sp.z + Math.sin(a + 1.7) * r);
+        this.m.compose(this.p, this.q, this.s.set(Math.max(0.055 * g, MIN_SCALE), Math.max(len, MIN_SCALE), Math.max(0.055 * g, MIN_SCALE)));
+        this.mesh.setMatrixAt(n++, this.m);
+      }
+    }
+    this.mesh.count = n;
+    this.mesh.visible = n > 0;
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  reset() {
+    this.mesh.count = 0;
+    this.mesh.visible = false;
+  }
+}

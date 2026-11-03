@@ -154,8 +154,13 @@ export interface SummonStats {
   expired: number;
 }
 
+/** Where a summoned unit was slain (by damage, not by running out of time): `age` is seconds since, `side` whose unit it was. */
+export interface DeathSpot { x: number; z: number; age: number; side: SummonSide }
+
 /** Most units alive per side. */
 export const MAX_UNITS = 6;
+/** How long a death spot is remembered (s): the longest `maxAge` a caller can use. */
+export const DEATH_KEEP = 30;
 
 const MELEE_REACH = 1.4;
 const SWING_TIME = 0.3;
@@ -167,6 +172,9 @@ export class SummonSystem {
   /** Every unit, alive or in its death puff. */
   readonly units: SummonUnit[] = [];
   stats: Record<string, SummonStats> = {};
+  /** Where units were slain, with the system clock then (`deathSpots`); kept for `DEATH_KEEP` s. */
+  private deaths: { x: number; z: number; t: number; side: SummonSide }[] = [];
+  private clock = 0;
   private pool: MinionPool;
   private bolts: BoltSet;
   private looks = new Map<string, BoltLook>();
@@ -179,6 +187,14 @@ export class SummonSystem {
   /** The units of a side that are alive. */
   alive(side: SummonSide): SummonUnit[] {
     return this.units.filter((u) => u.side === side && u.alive);
+  }
+
+  /**
+   * Where units of either side were slain (killed by damage; a unit whose time ran out leaves nothing) within the last
+   * `maxAge` seconds, oldest first. Cleared with the units (a new round).
+   */
+  deathSpots(maxAge: number): DeathSpot[] {
+    return this.deaths.filter((d) => this.clock - d.t <= maxAge).map((d) => ({ x: d.x, z: d.z, age: this.clock - d.t, side: d.side }));
   }
 
   /** The unit whose figure this is, if any. */
@@ -230,6 +246,8 @@ export class SummonSystem {
   }
 
   update(dt: number) {
+    this.clock += dt;
+    while (this.deaths.length && this.clock - this.deaths[0].t > DEATH_KEEP) this.deaths.shift();
     for (const u of this.units) this.step(u, dt);
     this.separate();
     this.bolts.update(dt);
@@ -249,6 +267,7 @@ export class SummonSystem {
       this.pool.release(u.figure);
     }
     this.units.length = 0;
+    this.deaths.length = 0;
     this.bolts.clear();
   }
 
@@ -268,6 +287,7 @@ export class SummonSystem {
     u.figure.setFlash(0);
     u.figure.die();
     this.tally(u.side)[slain ? 'slain' : 'expired']++;
+    if (slain) this.deaths.push({ x: u.pos.x, z: u.pos.z, t: this.clock, side: u.side });
     u.summon.died(u);
   }
 

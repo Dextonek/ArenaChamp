@@ -295,7 +295,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     light sword and a big kite shield with a sun.
   - Her first ivory was near-white and bloomed over the whole figure in the game, so the colours are now mid-value.
     Isolde's white skirt shows the same bloom, not fixed.
-- **The VFX tool and the game are separate apps (2026-11-03, uncommitted):**
+- **The VFX tool and the game are separate apps (2026-11-03, committed `c17cfc2`, not pushed, not deployed):**
   - The user asked to separate them.
   - Before, `game.html` ran the tool's `src/main.ts` with its panel hidden and shipped all of it.
   - **`src/runtime.ts`** (`createRuntime({ modules, background })`) is the shared scene: renderer, sky, post chain,
@@ -336,7 +336,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     4. Two transforms are fine.
     5. Keep the beat (window ±0.25 s; the AI casts in tune 70% of the time).
     6. Start with the low-engine opener.
-- **v4 opener in progress (2026-11-03, uncommitted; on top of the uncommitted tool/game separation): Lyra, Vex,
+- **v4 opener in progress (2026-11-03, uncommitted; on top of the separation commit `c17cfc2`): Lyra, Vex,
   Marin, Mortis, Zephyr.**
   - Running together:
     - an engine worker, the only writer of `traits/types.ts`, `traits/runtime.ts`, `attacks/*`, `heroMode.ts`,
@@ -356,6 +356,44 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
     - a sheet;
     - STATUS.
   - Resume: read `pipeline/designs/kits-v4.md`, then `git status`, to see which kits and engine pieces have landed.
+  - **Update (later on 2026-11-03):**
+    - The engine pieces are done:
+      - `Trait.attackReach` and `attackEcho`, `TraitView.resetAttack`, `TraitView.summon`, `TraitView.deathSpots`;
+      - `CastContext.deathSpots`, `DeathSpot` in `summon.ts`;
+      - line of sight checked in `castNow`.
+    - All five kits are built, registered and their old effect files removed (git rm):
+      - Lyra: starfallArrow, twinStars, pinningArrow, meteorMark.
+      - Vex: toxinDart, fireVial, acidSplash, homunculus.
+      - Marin: waveDisc, coralSpire, mistForm, moonPull.
+      - Mortis: boneFan, raiseDead, boneArmour, graveGrasp.
+      - Zephyr: crosswind, skyward, featherStep, skyRend.
+    - The duel AI: a `parry` spell that is also a `dash` (Zephyr's Feather Step) still closes gaps.
+    - Tournament (24 each against Brannoc, Kaia, Isolde, Sirix, Cantor, Oblivion):
+      - first: Lyra 29%, Vex 25%, Marin 0%, Mortis 12%, Zephyr 21%. The damage was far too low (Marin 13/s, Mortis 19/s; the old kits deal 28-39/s).
+      - after a damage pass: Lyra 71%, Vex 58%, Marin 12%, Mortis 83%, Zephyr 71%.
+    - Pass 2 is running: Lyra, Mortis and Zephyr trimmed about halfway. Marin gets more damage, a wider disc, +60 HP and a fix for her Mist Form splash, which never hit.
+    - Then: re-run the tournament, clean per-spell sheets, STATUS.
+- **v4 opener done (2026-11-03, uncommitted, not deployed, not tested online): Lyra, Vex, Marin, Mortis, Zephyr.**
+  - Balance passes 2-4, final numbers in each hero's `pipeline/designs/kit-<theme>.md`:
+    - Marin's Mist Form became a 6 m water dash with a 40 splash where she reforms (`dash` + `parry`). Her old
+      splash never hit, because the AI keeps 4-6 m away.
+    - Marin HP 620 → 670.
+  - Last tournament, 24 duels each against Brannoc, Kaia, Isolde, Sirix, Cantor and Oblivion: Lyra 54%, Zephyr 54%,
+    Vex 58%.
+  - Over 72 duels: Mortis 61%; Marin 37.5% before her final +20 HP, never beating Brannoc. The new HP is not re-run.
+  - The noise at 24 duels is about ±10%: Marin read 71% and then 37.5% after a small trim.
+  - Sheets: `docs/heroes/kits_v4/<hero>_v4_sheet.jpg`, the four spells of each against a frozen opponent. All 20
+    cast and play.
+  - Line of sight: targeted spells refuse an unseen target. The sheet run hit this in the frost and temple arenas;
+    that is intended.
+  - No console errors; tsc clean.
+  - Known:
+    - Online: trait summons (Mortis's fifth-attack skeleton) are local only, and the attack echo (Lyra's second
+      arrow) folds into one hit.
+    - The effect headers of some spells still quote first-pass numbers in comments.
+    - The bolt-wall engine and the `barrier` flag are unused now that Zephyr's Wind Barrier is gone.
+  - Next: the other 15 heroes in three batches (kits-v4.md build order), each led by its engine pieces; Nyx's stealth
+    last.
 
 **Two duel bugs fixed (2026-11-03, uncommitted, not deployed)**
 - The last match's spell (often an ult) showed at the start of the next one, mostly after a forfeit or a reload:

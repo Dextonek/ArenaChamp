@@ -84,6 +84,8 @@ All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 
 - If the target is out of range when you confirm, the cast becomes `pending` and the hero walks toward the target (`HERO_SPEED = 4`, MOBA-slow since 2026-10-30); once within `spell.range` it casts. Any new move order drops the pending cast. A pending enemy that dies cancels it.
 - `castNow` sets the arena target (`setTarget` for an enemy, `setGroundPoint` for a point), calls `host.cast(label)` and stores the returned time as `rooted` (no walking while rooted). The runtime returns the latest danger-zone `impact` of the new cast (capped at 2.5 s), or 0.4 s when the spell has no zones, so the hero stays rooted until the spell lands.
+- A targeted spell (mode `enemy` / `enemies`) needs line of sight to its target: `confirm` shows "No line of sight" and walks into sight first, and `castNow` refuses (same hint) if the target is hidden when the cast would go. The AI and the autopilot already require sight for every non-self spell (`Duel.pickSpell`'s `sees`).
+- Basic-attack hooks from the trait (`attackReach`, `attackEcho`, `resetAttack`): `HeroMode.attackRange`, `skipEcho`, `onAttack(target, echo)`, `resetAttack()`; see [attacks.md](attacks.md).
 - Cooldowns count down in `update`; the slot flashes on cast. `setKit` and `setEnabled` clear cooldowns, aim and pending orders.
 
 ### Camera

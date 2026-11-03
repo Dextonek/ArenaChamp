@@ -1,63 +1,86 @@
-# Bone kit: Mortis, the Ossuary Lord (summoner)
+# Bone kit: Mortis, the Ossuary Lord (summoner), v4
 
-## Role (2026-10-30)
-**Summoner**, 580 HP. Signature: *Raise the dead*. Q, W and R unchanged (pierce bolt, skeletons, hand and archers).
-- E Ossuary Ward: a CAGE (`enemy` mode, range 9, `cc`): the ribs grow round the chosen enemy (radius 1.0); at 0.8 s they close and cut with shards (radius 2): 12 damage and **root 1.2**, flex again at 1.9 s for another 12. No self shield any more.
+Rebuilt from `pipeline/designs/kits-v4.md` (section "Mortis, the Ossuary Lord"). All four spells are new; the v3 spells
+(Bone Spear, Grave Call, Ossuary Ward, Bone Colossus) are replaced. **Raise Dead** is the kept idea: the summoner's core,
+now scaled by bone piles.
 
-**Signature shape: bone architecture.** Bone is **chunky, carved and stacked**: ribs, vertebrae, skull-capped spires
-and bone cages that grow out of the ground in segments, lit from inside by **teal soulfire wisps** that flicker in
-the eye sockets and cracks. Bones are ivory with dark brown crevices (not white blobs). Not the blood kit (red, wet,
-thorns) and not the shadow kit (violet void, hands from the dark).
+**Hero:** a gaunt robed necromancer in bone-grey and teal, 580 HP, walks at 3.8 m/s, ranged basic attack (range 6,
+10 damage, every 1.0 s). **Category:** `hero: bone`. **Parts:** `src/effects/parts/bone.ts`. **Kit:** `src/kits/bone.ts`
+(`boneKit`). **Trait:** `src/traits/bone.ts`.
 
-Read `kit-common.md` first (files, timing, budgets including the **Summon budget**, look lessons) and
-`docs/architecture/mechanics.md` (projectiles, summons with a pluggable `look`, shield). This is the first
-**summoner**: skeletons fight for him.
+**Signature shape: bone architecture.** Chunky, carved, stacked bone (ribs, vertebrae, spires, cages, a giant hand),
+ivory with dark brown crevices, lit from inside by small unlit teal soulfire wisps. Palette (`BONE` / `BONE_CSS`):
+core `#f4fffb`, hot `#b8fff0`, body `#3fd8b8` (soulfire), accent `#ff5a3a` (ember, a few frames at hits), dark `#0a1412`;
+foil bone `#ece4d0`.
 
-- **Hero:** a gaunt robed necromancer in bone-grey and teal with a ribcage mantle, a skull-topped staff and soulfire
-  eyes. **Category:** `hero: bone`. **Parts file:** `src/effects/parts/bone.ts`. **Kit:** `src/kits/bone.ts`
-  (`boneKit`, name `Mortis`, title `the Ossuary Lord`).
-- **Palette** (`BONE` / `BONE_CSS`): core `#f4fffb` → hot `#b8fff0` → body `#3fd8b8` (soulfire teal) → accent
-  `#ff5a3a` (ember orange, 2–3 frames at hits) → dark `#0a1412` (crevices, soot); **foil** bone `#ece4d0`.
-- **Material rules:** bone = toon-lit ivory (`#ece4d0`) with dark brown crevice lines and slight segment variation
-  (no gloss, no identical repeats); soulfire = small unlit teal wisps with eroding edges in sockets and cracks, never
-  spheres; dust = small grey-brown puffs.
+## Passive: Ossuary (`src/traits/bone.ts`)
+- **Bone piles.** Every summoned unit that dies by damage, his or the enemy's, leaves a bone pile for 8 s
+  (`deathSpots(8)` in the trait, `ctx.deathSpots?.(8)` in an effect; both sides count, expiry leaves none). His spells
+  read the piles: Bone Fan (within 3 m of him), Raise Dead (within 4 m of the spot). Piles are not used up.
+- **The fifth attack.** Every fifth basic attack that lands (`landed`, `hit.kind === 'attack'`) raises a small skeleton at
+  his feet (`t.summon`: melee, 36 HP, 6 s, 7 damage per second, `skeletonLook`).
+- **Bone Armour's shield** is made here (`afterCast`, slot 2): 30 plus 30 per living skeleton (`t.units().length`), at most
+  120, for 4 s. The trait also opens a `boneArmours` record (keyed by his figure) and adds up the damage he takes
+  (`taken`); when it uses the shield up it sets `broke`, which the effect reads to fire the shards early.
+- **Badge:** attacks toward the next skeleton ("3/5"), plus the live piles ("3/5 +2").
+- No twist. There is no resource bar any more.
 
-## Shared parts (`bone.ts`)
-- `BONE`, `BONE_CSS`.
-- `BoneSpire`: a segmented bone spike that grows from the ground in steps: `grow(pos, height, seconds, lean)`,
-  `crumble(seconds)`.
-- `SoulWisps`: pooled teal flame wisps: `attach(pos, count)`, `puff(pos, count)`.
-- `BoneDust`: grey-brown dust puffs: `burst(pos, count)`.
-- **Skeleton look** for summons: a `MinionLook` (see `src/effects/parts/minion.ts`) that builds a small skeleton
-  (skull, ribcage, limbs, teal eye wisps) for `melee` units and a skeleton archer with a bow for `ranged` units. Pass
-  it as `look` in `ctx.summon`.
+## Q · Bone Fan (`boneFan.ts`, `bone fan`, `ground`, `aim: 'line'`, range 8, cd 5)
+SHOT (a fan). Three shards, 30 each, 8 m, in an 8 degree fan; one more per bone pile within 3 m of him, six shards at
+most. Each shard is its own `ctx.projectile` (speed 20, radius 0.32). 0 to 0.3 s: the shards gather in a fan at his hand
+at chest height; the piles that lend a shard shake, soulfire stirs on them and a shard arcs from each into the fan.
+0.3 s: they leave and ride their bolts; every hit throws chips, dust and a small ember star; at max range a shard
+clatters apart. Telegraph: a cone as wide as the fan, armed at the launch. Clean by 1.3 s. Counterplay: stand between the
+shards; fight away from his piles.
 
-## Q · Bone Spear (`boneSpear.ts`, label `bone spear`, `ground`, `aim: 'line'`, range 11, cd 3, damage 50)
-A skillshot. 0–0.2: a vertebra spear (2.2 long, chunky) assembles from bones beside him with soulfire in its joints.
-0.2: `ctx.projectile({ from, dir, speed: 22, range: 11, radius: 0.45, pierce: true, hit: { damage: 50, knock: 2,
-color: BONE_CSS.body } })`; the spear follows the bolt's position; on each hit a bone-chip burst, a small ember
-accent and dust. At max range it clatters apart into bones that fade. Clean by 1.5.
+## W · Raise Dead (`raiseDead.ts`, `raise dead`, `ground`, `summon`, range 9, cd 9)
+SUMMON. The ground at the spot cracks open (2.4 m hole, a circle telegraph) with soulfire in the cracks. Piles within 4 m
+of the spot (at most three) stir and fling bones at it. At 0.7 s a skeleton claws out, plus one per pile (`ctx.summon`,
+melee, 64 HP, 8 s, 10 damage per second, at most four, never past the cap of six units), in a burst of dust, chips and six
+bone spires (two with skulls); enemies in the hole take 15 and a small knock-back. The spires sink; the skeletons stay.
+Clean by 2.0 s. Counterplay: kill skeletons away from piles.
 
-## W · Grave Call (`graveCall.ts`, label `grave call`, `ground`, radius 3, range 10, cd 9, damage 25, `summon`)
-0–0.3: the ground cracks in a circle (radius 3) with teal light in the cracks. **0.6 hit**: two skeletons claw out of
-the ground in a burst of dust and bone spires; enemies inside `ctx.hit(e, { damage: 25, knock: 1 })`. At 0.6
-`ctx.summon({ kind: 'melee', at: point, count: 2, hp: 40, seconds: 6, damage: 6, attackEvery: 1, look:
-skeletonLook })`. The spell's own visual is clean by 2.0 (the skeletons live on as units).
+## E · Bone Armour (`boneArmour.ts`, `bone armour`, `self` radius 8, cd 14)
+SELF. A cage of ribs grows round him in 0.45 s (radius 1.1, 2 m high, follows him) with soulfire in its joints. Shield:
+30 plus 30 per living skeleton (120 at most) for 4 s, given by the trait. The cage shivers in its last half second. When the
+armour breaks (the trait's record) or at 3.5 s, whichever is first (not before 0.6 s), the cage flies apart, five ribs
+turn into darts that curve at the enemy's live chest and land 0.3 s later: 38 damage, homing (`projectile: true`, one
+hit), an ember star, chips and a ground ripple. The cast is 3.5 s old at the latest, inside the duel's 4.2 s window. Clean
+by 4.6 s. Counterplay: kill his skeletons first (a thin shield breaks early, and the shards are the same 38).
 
-## E · Ossuary Ward (`ossuaryWard.ts`, label `ossuary ward`, `self`, radius 4, cd 9, shield 50 + 2 × 12)
-0–0.3: a cage of curved ribs grows around him (radius 1.4); `ctx.shieldSelf(50, 3, BONE_CSS.body)`. At 1.0 and 2.0
-the ribs flex outward and fire a ring of bone shards to radius 4: every enemy inside `ctx.hit(e, { damage: 12,
-knock: 1 })`. 2.6–3.0: the cage crumbles into dust. Clean by 3.2. Telegraph ends at the first pulse.
+AI: the duel casts a self spell only when the enemy is within `radius - 0.6` = 7.4 m, so he armours as the enemy closes in.
 
-## R · Bone Colossus (`boneColossus.ts`, label `bone colossus`, `ground`, radius 2.6, range 9, cd 20, damage 25, `summon`)
-Replaces Legion of the Ossuary (v3 batch 3). One giant skeleton the enemy has to deal with. 0–0.75: the ground trembles
-(rising shake, `darken` 0.4, cracks with teal light spread over radius 3.6, wisps, rim spires shove up from 0.35).
-**0.75 split**: impact frames `[1, 2]`, ember star, ground `ShockRefraction`, dust ring, 26 bone chips, shake 0.8;
-`ctx.hit` on everyone within 2.6 (damage 25, knock 4), and `ctx.summon({ kind: 'melee', count: 1, hp: 280, seconds: 8,
-damage: 28, attackEvery: 1.5, speed: 2.6, look: colossusLook })`. The look (`parts/bone.ts`) is the skeleton at 2.5x with
-horns, shoulder and back spikes, a bigger soulfire heart and a bone club; it climbs out over 0.85 s and the club is raised
-and slammed on `pose.swing`. The effect follows the Summon handle: every landed swing cracks the ground in front of him
-(small crack decal, dust ring, chips, `ShockRefraction`, shake 0.4), every ~0.6 s of walking a dust puff and a small shake.
-On death (slain or timed out) he collapses into bones (chips, ring, dust, soulfire, impact frame, shake 0.55); the effect
-ends 1.6 s later. Damage comes from the unit's own attack, not `ctx.hit`. Without `ctx.summon` (network) only the look
-plays and the effect ends at 2.6. Trait: the colossus counts as one unit death (+1 bone); Bones spend gives it +8% per bone.
+## R · Grave Grasp (`graveGrasp.ts`, `grave grasp`, `enemy`, `cc`, range 9, cd 22)
+TGT, PULL. A ring on the floor marks the enemy's feet and follows them, soulfire flickering up round it, the ground
+trembling (the screen darkens a little). At 0.6 s a giant skeletal hand (`BoneHand`, scale 0.62) bursts up behind the
+enemy, palm toward Mortis: bone spires, dust, chips, a ground ripple, an impact frame, 60 damage and a root of 0.85 s
+(`projectile: true`: a sure hit). At 0.85 s the fingers close; from 0.9 s the hand drags the enemy toward Mortis, 4 m at
+most and never closer than 1.1 m to him, over 0.8 s (`ctx.carry` every frame, eased out). At 1.7 s it squeezes (28
+damage, root 1 s, a second impact frame) while two skeletons claw out beside the enemy (`ctx.summon`: melee, 50 HP, 7 s,
+8 damage per second) and two skull-capped spires rise. The hand opens at 2.5 s and sinks; clean by 3.3 s. Counterplay:
+break line of sight; keep out of 9 m.
+
+## Numbers
+| | Damage | Other |
+|---|---|---|
+| Basic attack | 10 | range 6, every 1.0 s, 5th hit raises a skeleton (36 HP, 6 s, 7/s) |
+| Bone Fan | 30 per shard, 3 to 6 shards | range 8, cd 5 |
+| Raise Dead | 15 in the hole | 1 to 4 skeletons (64 HP, 8 s, 10/s), range 9, cd 9 |
+| Bone Armour | 38 (shards) | shield 30 + 30/skeleton, max 120, 4 s, cd 14 |
+| Grave Grasp | 60 + 28 | drag 4 m in 0.8 s, root 1 s, 2 skeletons (50 HP, 7 s, 8/s), range 9, cd 22 |
+
+## Online
+- Statuses, shields, skillshots and pulls follow `docs/architecture/multiplayer.md`. Units made by a spell
+  (`ctx.summon`) are synced like Grave Call's were; units made by the trait (the fifth-attack skeleton) are local to
+  this screen: they fight the pack but deal no damage to the other hero.
+- Bone piles come from the units this screen simulates (his own), so the other player's units leave none for him.
+- Bone Armour: the other screen has no `boneArmours` record, so there the shards fly at 3.5 s.
+- Grave Grasp: the victim's client carries its own hero (`ctx.carry`); on the caster's screen the hand follows the
+  streamed position of the enemy.
+
+## Parts added to `parts/bone.ts`
+- `BoneDarts`: pointed bone darts placed by hand each frame (`set(i, pos, dir, size)`), for the fan and the armour shards.
+- `BonePiles`: the bone piles on the ground (`set(spots, k)`), one instanced mesh. The effects draw the piles they use; the
+  engine does not draw them all the time (a trait has no scene).
+- Already there and now used: `RibCage` (armour), `BoneHand` (grasp), `BoneSpire`, `BoneShards`, `BoneDust`, `SoulWisps`,
+  `GroundCracks`, `skeletonLook`. `colossusLook` is no longer used by any spell.

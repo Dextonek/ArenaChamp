@@ -634,3 +634,133 @@ export class Leaves {
     if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// WindWraith
+// ---------------------------------------------------------------------------------------------------------------
+
+let wraithTex: THREE.CanvasTexture | null = null;
+
+/** The wraith's cut-out: a leaning figure of wind (white rim, mint body fading to the feet) with a scarf streaming back. */
+function wraithTexture() {
+  if (wraithTex) return wraithTex;
+  const c = document.createElement('canvas');
+  c.width = 128;
+  c.height = 256;
+  const g = c.getContext('2d')!;
+  const grad = g.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, '#ffffff');
+  grad.addColorStop(0.45, '#9ff0d6');
+  grad.addColorStop(1, 'rgba(127,230,200,0)');
+  g.fillStyle = grad;
+  g.strokeStyle = '#eef3f6';
+  g.lineWidth = 3;
+  g.lineJoin = 'round';
+  // Head, torso leaning into the cut, one leg back and one forward, a long scarf.
+  g.beginPath();
+  g.arc(60, 40, 17, 0, Math.PI * 2);
+  g.fill();
+  g.stroke();
+  g.beginPath();
+  g.moveTo(48, 62);
+  g.quadraticCurveTo(78, 66, 92, 96);
+  g.lineTo(80, 140);
+  g.lineTo(104, 244);
+  g.lineTo(84, 246);
+  g.lineTo(62, 172);
+  g.lineTo(34, 244);
+  g.lineTo(16, 236);
+  g.lineTo(46, 130);
+  g.quadraticCurveTo(38, 90, 48, 62);
+  g.closePath();
+  g.fill();
+  g.stroke();
+  g.beginPath();
+  g.moveTo(46, 62);
+  g.quadraticCurveTo(20, 64, 6, 94);
+  g.quadraticCurveTo(24, 80, 46, 78);
+  g.closePath();
+  g.fillStyle = '#ff8fb0';
+  g.fill();
+  wraithTex = new THREE.CanvasTexture(c);
+  wraithTex.colorSpace = THREE.SRGBColorSpace;
+  return wraithTex;
+}
+
+const _wpq = new THREE.Quaternion();
+const _wcq = new THREE.Quaternion();
+
+interface Wraith {
+  mesh: THREE.Mesh; mat: THREE.MeshBasicMaterial; live: boolean; age: number; life: number; vel: THREE.Vector3; size: number; flip: number;
+}
+
+/**
+ * Pooled afterimages of Zephyr: flat jade cut-outs of his figure that face the camera, slide along `dir` while they
+ * fade and shrink a little (Feather Step's ghosts, Sky Rend's six strikers). `show(pos, dir, life, size, speed, opacity)`
+ * puts one with its feet at `pos`. Add `mesh`; call `update(dt)` every frame and `reset()`.
+ */
+export class WindWraith {
+  readonly mesh = new THREE.Group();
+  frozen = false;
+  private items: Wraith[] = [];
+  private cursor = 0;
+
+  constructor(max = 8) {
+    const geo = new THREE.PlaneGeometry(1, 2).translate(0, 1, 0);
+    const tex = wraithTexture();
+    for (let i = 0; i < max; i++) {
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex, transparent: true, depthWrite: false, opacity: 0, side: THREE.DoubleSide, color: 0xffffff, toneMapped: false,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.visible = false;
+      mesh.renderOrder = 5;
+      mesh.frustumCulled = false;
+      mesh.onBeforeRender = (_r, _s, camera) => {
+        mesh.parent?.getWorldQuaternion(_wpq);
+        camera.getWorldQuaternion(_wcq);
+        mesh.quaternion.copy(_wpq.invert().multiply(_wcq));
+        mesh.updateMatrixWorld(true);
+      };
+      this.mesh.add(mesh);
+      this.items.push({ mesh, mat, live: false, age: 0, life: 1, vel: new THREE.Vector3(), size: 2, flip: 1 });
+    }
+  }
+
+  show(pos: THREE.Vector3, dir: THREE.Vector3, life = 0.4, size = 2, speed = 3, opacity = 0.8) {
+    const w = this.items[this.cursor];
+    this.cursor = (this.cursor + 1) % this.items.length;
+    w.live = true;
+    w.age = 0;
+    w.life = Math.max(life, 0.05);
+    w.size = size;
+    w.vel.set(dir.x, 0, dir.z).normalize().multiplyScalar(speed);
+    // The figure leans the way it moves across the screen: flip the cut-out by the sign of the heading's x.
+    w.flip = dir.x < 0 ? -1 : 1;
+    w.mat.opacity = opacity;
+    w.mesh.position.copy(pos);
+    w.mesh.visible = true;
+    w.mesh.userData.op = opacity;
+    w.mesh.userData.base = pos.clone();
+  }
+
+  reset() {
+    for (const w of this.items) { w.live = false; w.mesh.visible = false; w.mat.opacity = 0; }
+    this.frozen = false;
+  }
+
+  update(dt: number) {
+    const d = this.frozen ? 0 : dt;
+    for (const w of this.items) {
+      if (!w.live) continue;
+      w.age += d;
+      if (w.age >= w.life) { w.live = false; w.mesh.visible = false; continue; }
+      const u = w.age / w.life;
+      const base = w.mesh.userData.base as THREE.Vector3;
+      w.mesh.position.copy(base).addScaledVector(w.vel, w.age * (1 - 0.4 * u));
+      const k = w.size * (1 - 0.18 * u);
+      w.mesh.scale.set(k * 0.5 * w.flip, k * 0.5 * (1 + 0.25 * easeOut(u)), 1);
+      w.mat.opacity = (w.mesh.userData.op as number) * (1 - sstep(0.25, 1, u));
+    }
+  }
+}

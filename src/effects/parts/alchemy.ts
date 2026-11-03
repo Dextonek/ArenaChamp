@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import { StarBurst } from './starBurst';
+import { ShockRefraction } from './distortion';
+import type { MinionLook, MinionPalette } from './minion';
 
 /**
  * The alchemy kit (pipeline/designs/kit-alchemy.md): thin glass flasks that shatter into flat glass shards, bubbling
@@ -27,6 +30,18 @@ export const ALCHEMY_CSS = {
   glass: '#dcefe6',
   gold: '#e8b84a',
 } as const;
+
+/**
+ * The three reagents of Vex's Reaction passive (pipeline/designs/kit-alchemy.md): green toxin (Q), orange fire (W), violet
+ * acid (E). `body` is the liquid, `hot` its bright rim, `deep` the dark side. Slot 0..2 indexes them.
+ */
+export const REAGENT = [
+  { name: 'toxin', body: 0x58c92e, hot: 0xb4ff4a, deep: 0x123a0c, css: '#7dff3a' },
+  { name: 'fire', body: 0xf07a1e, hot: 0xffc23a, deep: 0x4a1c06, css: '#ff8a2a' },
+  { name: 'acid', body: 0x9a4ee0, hot: 0xd9a6ff, deep: 0x2a0f4a, css: '#b872ff' },
+] as const;
+
+type Liquid = { body: number; hot: number; deep: number };
 
 const MIN_SCALE = 1e-4;
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -90,6 +105,14 @@ function liquidMaterial(bodyMix = 1) {
   });
 }
 
+/** Recolours a liquid material (acid, bubbles, droplets) to a reagent: body, bright rim and the dark side. */
+function tintLiquid(mat: THREE.Material, r: Liquid) {
+  const u = (mat as THREE.ShaderMaterial).uniforms;
+  u.uBody?.value.set(r.body);
+  u.uHot?.value.set(r.hot);
+  u.uDark?.value.set(r.deep);
+}
+
 /** Low-opacity pale glass with a bright fresnel rim and a pinpoint highlight. */
 function glassMaterial() {
   return new THREE.ShaderMaterial({
@@ -130,7 +153,8 @@ export class Flask {
   readonly mesh = new THREE.Group();
   private liquid: THREE.Mesh;
 
-  constructor() {
+  /** `tint` (a reagent) gives this flask its own liquid colour; without it the liquid is the kit's acid green. */
+  constructor(tint?: Liquid) {
     flaskGeo ??= {
       glass: lathe([[0.001, 0], [0.26, 0.02], [0.43, 0.12], [0.5, 0.34], [0.46, 0.58], [0.33, 0.76], [0.17, 0.9], [0.14, 1.1], [0.19, 1.17]], -0.4),
       liquid: lathe([[0.001, 0], [0.23, 0.015], [0.38, 0.11], [0.455, 0.3], [0.43, 0.44], [0.001, 0.44]], -0.38),
@@ -139,7 +163,13 @@ export class Flask {
     flaskMats ??= {
       glass: glassMaterial(), liquid: liquidMaterial(0.6), cork: new THREE.MeshBasicMaterial({ color: 0x6b5232 }),
     };
-    this.liquid = new THREE.Mesh(flaskGeo.liquid, flaskMats.liquid);
+    let liquidMat = flaskMats.liquid;
+    if (tint) {
+      liquidMat = liquidMat.clone();
+      liquidMat.uniforms = THREE.UniformsUtils.clone(liquidMat.uniforms);
+      tintLiquid(liquidMat, tint);
+    }
+    this.liquid = new THREE.Mesh(flaskGeo.liquid, liquidMat);
     const glass = new THREE.Mesh(flaskGeo.glass, flaskMats.glass);
     glass.renderOrder = 3;
     const cork = new THREE.Mesh(flaskGeo.cork, flaskMats.cork);
@@ -380,6 +410,12 @@ export class Bubbles {
     b.rise = opts.rise ?? this.rise; b.seed = Math.random() * 6.28;
   }
 
+  /** Recolours the bubbles and their pop rings to a reagent. */
+  tint(r: Liquid) {
+    tintLiquid(this.spheres.material as THREE.Material, r);
+    ((this.rings.material as THREE.ShaderMaterial).uniforms.uHot.value as THREE.Color).set(r.hot);
+  }
+
   /** Just the pop ring at `pos` (a tiny splash). */
   splash(pos: THREE.Vector3, size: number) {
     const b = this.take();
@@ -531,6 +567,12 @@ export class AcidPool {
   drain(seconds = 0.6) {
     this.drainDur = Math.max(seconds, 0.1);
     this.drainAge = 0;
+  }
+
+  /** Recolours the pool and its bubbles to a reagent. */
+  tint(r: Liquid) {
+    tintLiquid(this.mat, r);
+    this.bubbles.tint(r);
   }
 
   /** Puts one bubble on the pool at x / z (a dome sunk into the floor). */
@@ -710,6 +752,11 @@ export class Droplets {
     for (let i = 0; i < max; i++) {
       this.drops.push({ live: false, from: new THREE.Vector3(), to: new THREE.Vector3(), age: 0, dur: 0.4, size: 0.1, arc: 1 });
     }
+  }
+
+  /** Recolours the droplets to a reagent. */
+  tint(r: Liquid) {
+    tintLiquid(this.mesh.material as THREE.Material, r);
   }
 
   fire(from: THREE.Vector3, to: THREE.Vector3, seconds = 0.4, size = 0.1, delay = 0) {
@@ -1078,4 +1125,305 @@ export class FigureShell {
     this.flash = 0;
     this.opacity = 1;
   }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Flames (the fire reagent burning on a body)
+// ---------------------------------------------------------------------------------------------------------------
+
+/** A ring of flickering toon flame tongues (orange, a yellow core) that stands on a spot: `set(pos, power)` every frame. */
+export class Flames {
+  readonly mesh = new THREE.Group();
+  private tongues: { outer: THREE.Mesh; inner: THREE.Mesh; phase: number; x: number; z: number; h: number }[] = [];
+  private time = 0;
+
+  constructor(count = 6) {
+    const outerMat = new THREE.MeshBasicMaterial({ color: REAGENT[1].body, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    const innerMat = new THREE.MeshBasicMaterial({ color: REAGENT[1].hot, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    const geo = new THREE.ConeGeometry(0.16, 1, 6, 1, true).translate(0, 0.5, 0);
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2, r = 0.12 + (i % 2) * 0.2;
+      const outer = new THREE.Mesh(geo, outerMat), inner = new THREE.Mesh(geo, innerMat);
+      for (const m of [outer, inner]) { m.frustumCulled = false; this.mesh.add(m); }
+      this.tongues.push({ outer, inner, phase: Math.random() * 6.28, x: Math.cos(a) * r, z: Math.sin(a) * r, h: 0.55 + (i % 3) * 0.18 });
+    }
+    this.mesh.visible = false;
+  }
+
+  /** `base` is the spot on the floor (feet), `power` 0..1 scales and hides them. */
+  set(base: THREE.Vector3, power: number, dt = 0) {
+    this.time += dt;
+    this.mesh.visible = power > 0.01;
+    for (const f of this.tongues) {
+      const flick = 0.75 + 0.25 * Math.sin(this.time * 17 + f.phase) + 0.1 * Math.sin(this.time * 31 + f.phase * 2);
+      const h = f.h * power * flick;
+      f.outer.position.set(base.x + f.x, base.y + 0.05, base.z + f.z);
+      f.inner.position.copy(f.outer.position);
+      f.outer.scale.set(power, Math.max(h, 1e-3), power);
+      f.inner.scale.set(power * 0.55, Math.max(h * 0.62, 1e-3), power * 0.55);
+      f.outer.rotation.y = f.inner.rotation.y = this.time * 2 + f.phase;
+    }
+  }
+
+  reset() {
+    this.mesh.visible = false;
+    this.time = 0;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// ReactionBurst (the three reactions of the Reaction passive, each its own readable burst)
+// ---------------------------------------------------------------------------------------------------------------
+
+/** Combust = toxin + fire, Corrode = toxin + acid, Concussion = fire + acid. */
+export type Reaction = 'combust' | 'corrode' | 'concussion';
+const REACTIONS: Reaction[] = ['combust', 'corrode', 'concussion'];
+export const REACTION_CSS: Record<Reaction, string> = { combust: '#ff8a2a', corrode: '#b872ff', concussion: '#ffc23a' };
+export const REACTION_WORD: Record<Reaction, string> = { combust: 'COMBUST', corrode: 'CORRODE', concussion: 'CONCUSSION' };
+
+const REACTION_LIFE = 1.0;
+
+function flatMat(color: number) {
+  return new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+}
+
+/**
+ * One burst per reaction, all drawn at the struck body: Combust a round fireball (an orange sphere with a green core and
+ * a spiked star), Corrode three violet rings that shrink onto the body like a closing fist while green bubbles pop,
+ * Concussion a fast flat shockwave with a refraction ring and shards thrown outward. `trigger(kinds, at)` plays one or
+ * several (the homunculus plays all three, a beat apart); `update(dt)` every frame; `shake` and `impact` feed the
+ * effect's own shake and impact frame. Add `mesh`.
+ */
+export class ReactionBurst {
+  readonly mesh = new THREE.Group();
+  shake = 0;
+  private clock = 0;
+  private startedAt = -9;
+  private age: Record<Reaction, number> = { combust: -99, corrode: -99, concussion: -99 };
+  private fired: Record<Reaction, boolean> = { combust: true, corrode: true, concussion: true };
+  private at = new THREE.Vector3();
+  private v = new THREE.Vector3();
+
+  private shards = new GlassShards({ max: 56, color: 0xffa040, edge: 0xfff0c0, opacity: 1 });
+  private bubbles = new Bubbles(16);
+  private sphere = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), flatMat(REAGENT[1].body));
+  private core = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), flatMat(REAGENT[0].hot));
+  private fireStar = new StarBurst({ points: 10, inner: 0.3, color: REAGENT[1].hot, core: REAGENT[0].hot, additive: false });
+  private fireRing = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 40).rotateX(-Math.PI / 2), flatMat(REAGENT[1].hot));
+  private rings = [0, 1, 2].map(() => new THREE.Mesh(new THREE.RingGeometry(0.86, 1, 36).rotateX(-Math.PI / 2), flatMat(REAGENT[2].hot)));
+  private acidStar = new StarBurst({ points: 6, inner: 0.35, color: REAGENT[2].hot, core: REAGENT[0].hot, additive: false });
+  private waves = [0, 1].map((i) => new THREE.Mesh(new THREE.RingGeometry(0.88, 1, 44).rotateX(-Math.PI / 2), flatMat(i ? REAGENT[2].hot : REAGENT[1].hot)));
+  private shock = new ShockRefraction({ facing: 'ground' });
+  private conStar = new StarBurst({ points: 4, inner: 0.16, jitter: 0, color: REAGENT[1].hot, core: REAGENT[2].hot, additive: false });
+
+  constructor() {
+    this.bubbles.tint(REAGENT[0]);
+    this.mesh.add(
+      this.shards.mesh, this.bubbles.mesh, this.sphere, this.core, this.fireStar.mesh, this.fireRing, ...this.rings,
+      this.acidStar.mesh, ...this.waves, this.shock.mesh, this.conStar.mesh,
+    );
+    this.reset();
+  }
+
+  /** The frame (0 none) of an impact-frame flash for the effect's `screen.impact`: one dark frame as a reaction goes off. */
+  get impact(): 0 | 1 | 2 | 3 | 4 {
+    const i = Math.floor((this.clock - this.startedAt) / 0.03);
+    return i === 0 ? 1 : 0;
+  }
+
+  /** Starts the bursts of `kinds` at `at` (a body), 0.14 s apart in the order given. */
+  trigger(kinds: Reaction[], at: THREE.Vector3) {
+    this.at.copy(at).setY(0);
+    this.startedAt = this.clock;
+    kinds.forEach((k, i) => { this.age[k] = -i * 0.14; this.fired[k] = false; });
+  }
+
+  update(dt: number) {
+    this.clock += dt;
+    this.shards.update(dt);
+    this.bubbles.update(dt);
+    let shake = 0;
+    for (const k of REACTIONS) {
+      if (this.age[k] <= -50) continue;
+      this.age[k] += dt;
+      const a = this.age[k];
+      if (a < 0) continue;
+      if (!this.fired[k]) { this.fired[k] = true; this.spawn(k); }
+      if (a > REACTION_LIFE) { this.age[k] = -99; this.hide(k); continue; }
+      shake = Math.max(shake, this.layout(k, a));
+    }
+    this.shake = shake;
+  }
+
+  private chest(y = 1.1) {
+    return this.v.set(this.at.x, y, this.at.z);
+  }
+
+  /** The particles of one reaction, once, as it starts. */
+  private spawn(k: Reaction) {
+    const u = (this.shards.mesh.material as THREE.ShaderMaterial).uniforms;
+    if (k === 'combust') {
+      u.uColor.value.set(REAGENT[1].body); u.uEdge.value.set(REAGENT[0].hot);
+      this.shards.burst(this.chest(), 14, 8, { size: 0.28, life: 0.55, up: 3 });
+    } else if (k === 'corrode') {
+      u.uColor.value.set(REAGENT[2].body); u.uEdge.value.set(REAGENT[0].hot);
+      this.shards.burst(this.chest(1.8), 8, 2.5, { size: 0.22, life: 0.8, up: -1 });
+      for (let i = 0; i < 5; i++) {
+        this.v.set(this.at.x + (Math.random() - 0.5) * 0.9, 0.2 + Math.random() * 1.4, this.at.z + (Math.random() - 0.5) * 0.9);
+        this.bubbles.emit(this.v, 0.1 + Math.random() * 0.08, { life: 0.5 + Math.random() * 0.3 });
+      }
+    } else {
+      u.uColor.value.set(REAGENT[2].body); u.uEdge.value.set(REAGENT[1].hot);
+      this.shards.burst(this.chest(0.5), 12, 11, { size: 0.24, life: 0.4, up: 0.4 });
+    }
+  }
+
+  private hide(k: Reaction) {
+    if (k === 'combust') {
+      this.sphere.visible = this.core.visible = this.fireRing.visible = false;
+      this.fireStar.set(this.at, 0, 0);
+    } else if (k === 'corrode') {
+      for (const r of this.rings) r.visible = false;
+      this.acidStar.set(this.at, 0, 0);
+    } else {
+      for (const w of this.waves) w.visible = false;
+      this.shock.set(this.at, 0, 0);
+      this.conStar.set(this.at, 0, 0);
+    }
+  }
+
+  /** Draws one reaction at age `a`; returns its shake. */
+  private layout(k: Reaction, a: number): number {
+    const at = this.at;
+    if (k === 'combust') {
+      const grow = easeOut(a / 0.22), fade = 1 - clamp01((a - 0.12) / 0.4);
+      this.sphere.visible = this.core.visible = this.fireRing.visible = fade > 0.01;
+      this.sphere.position.set(at.x, 1.1, at.z);
+      this.sphere.scale.setScalar(0.3 + 1.5 * grow);
+      (this.sphere.material as THREE.MeshBasicMaterial).opacity = fade;
+      this.core.position.copy(this.sphere.position);
+      this.core.scale.setScalar(Math.max(1e-3, (0.2 + 0.9 * grow) * (1 - clamp01((a - 0.05) / 0.25))));
+      this.fireRing.position.set(at.x, 0.06, at.z);
+      this.fireRing.scale.setScalar(0.6 + 3 * easeOut(a / 0.4));
+      (this.fireRing.material as THREE.MeshBasicMaterial).opacity = 1 - clamp01(a / 0.5);
+      const sp = StarBurst.pop(a - 0.02, 0.02, 0.1);
+      this.fireStar.set(this.v.set(at.x, 1.1, at.z), 2.0 * sp.scale, sp.opacity, 0.2);
+      return 0.55 * Math.exp(-a * 9);
+    }
+    if (k === 'corrode') {
+      this.rings.forEach((r, i) => {
+        const local = (a - i * 0.09) / 0.42, kk = clamp01(local);
+        r.visible = local > 0 && a < 0.8;
+        r.position.set(at.x, 0.25 + i * 0.7, at.z);
+        r.scale.setScalar(1.5 - 1.25 * easeOut(kk));
+        (r.material as THREE.MeshBasicMaterial).opacity = (1 - clamp01((a - 0.4) / 0.35)) * 0.95;
+      });
+      const sp = StarBurst.pop(a - 0.42, 0.02, 0.14);
+      this.acidStar.set(this.v.set(at.x, 1.0, at.z), 1.5 * sp.scale, sp.opacity, 0.5);
+      return a > 0.4 ? 0.3 * Math.exp(-(a - 0.4) * 10) : 0;
+    }
+    this.waves.forEach((w, i) => {
+      const local = (a - i * 0.06) / 0.34;
+      w.visible = local > 0 && local < 1.25;
+      w.position.set(at.x, 0.07 + i * 0.02, at.z);
+      w.scale.setScalar(0.5 + 3.4 * easeOut(local));
+      (w.material as THREE.MeshBasicMaterial).opacity = 1 - clamp01(local - 0.1);
+    });
+    const gp = clamp01(a / 0.4);
+    this.shock.set(this.v.set(at.x, 0.1, at.z), 0.5 + 3.4 * gp, 0.04 * (1 - gp) * (1 - gp));
+    const sp = StarBurst.pop(a - 0.01, 0.02, 0.1);
+    this.conStar.set(this.v.set(at.x, 1.1, at.z), 2.4 * sp.scale, sp.opacity, 0.78);
+    return 0.7 * Math.exp(-a * 11);
+  }
+
+  reset() {
+    this.clock = 0;
+    this.startedAt = -9;
+    this.shake = 0;
+    for (const k of REACTIONS) { this.age[k] = -99; this.fired[k] = true; this.hide(k); }
+    this.shards.reset();
+    this.bubbles.reset();
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Homunculus (the walking bomb of the ultimate)
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * The `MinionLook` of Vex's homunculus (`SummonOptions.look`): a squat glass-bellied little creature (about 0.8 m) with a
+ * cork head and a hissing fuse, three reagent orbs (green, orange, violet) swirling in its belly, and a waddle. Every
+ * unit builds its own meshes: the hit flash drives `p.body`.
+ */
+export const homunculusLook: MinionLook = (_kind, p: MinionPalette) => {
+  p.body.color.set(0xb7d6c4);
+  p.trim.color.set(0x6b5232);
+  p.eye.color.set(ALCHEMY.hot).multiplyScalar(0.95);
+  p.outline.color.set(ALCHEMY.dark);
+  const root = new THREE.Group();
+  const add = (g: THREE.BufferGeometry, m: THREE.Material, x: number, y: number, z: number) => {
+    const o = new THREE.Mesh(g, m);
+    o.position.set(x, y, z);
+    o.castShadow = true;
+    root.add(o);
+    return o;
+  };
+  const bellyGeo = new THREE.IcosahedronGeometry(0.27, 2);
+  const body = add(bellyGeo, p.body, 0, 0.36, 0);
+  const hull = add(bellyGeo, p.outline, 0, 0.36, 0);
+  hull.scale.setScalar(1.14);
+  hull.castShadow = false;
+  add(new THREE.CylinderGeometry(0.07, 0.1, 0.18, 8), p.body, 0, 0.66, 0);
+  add(new THREE.CylinderGeometry(0.085, 0.07, 0.1, 8), p.trim, 0, 0.78, 0);
+  const fuse = add(new THREE.OctahedronGeometry(0.045, 0), p.eye, 0.05, 0.9, 0);
+  const pupil = new THREE.MeshBasicMaterial({ color: ALCHEMY.dark });
+  for (const s of [-1, 1]) {
+    add(new THREE.SphereGeometry(0.05, 8, 6), p.eye, s * 0.1, 0.44, 0.24).castShadow = false;
+    add(new THREE.SphereGeometry(0.022, 6, 5), pupil, s * 0.1, 0.44, 0.285).castShadow = false;
+  }
+  const orbs = REAGENT.map((r) => add(new THREE.SphereGeometry(0.075, 10, 8), new THREE.MeshBasicMaterial({ color: r.body }), 0, 0.34, 0));
+  const legGeo = new THREE.BoxGeometry(0.1, 0.16, 0.14).translate(0, -0.08, 0);
+  const legs = [-1, 1].map((s) => {
+    const g = new THREE.Group();
+    g.position.set(s * 0.12, 0.15, 0);
+    const m = new THREE.Mesh(legGeo, p.trim);
+    m.castShadow = true;
+    g.add(m);
+    root.add(g);
+    return g;
+  });
+  const armGeo = new THREE.BoxGeometry(0.07, 0.2, 0.07).translate(0, -0.1, 0);
+  const arms = [-1, 1].map((s) => {
+    const g = new THREE.Group();
+    g.position.set(s * 0.29, 0.42, 0);
+    g.add(new THREE.Mesh(armGeo, p.body));
+    root.add(g);
+    return g;
+  });
+  return {
+    root,
+    barY: 1.1,
+    animate(_dt, pose) {
+      const t = pose.time, w = pose.walk;
+      legs[0].rotation.x = Math.sin(t * 14) * 0.9 * w;
+      legs[1].rotation.x = -Math.sin(t * 14) * 0.9 * w;
+      arms[0].rotation.z = -0.5 - Math.sin(t * 14) * 0.5 * w;
+      arms[1].rotation.z = 0.5 + Math.sin(t * 14) * 0.5 * w;
+      body.rotation.z = hull.rotation.z = Math.sin(t * 7) * 0.12 * w;
+      orbs.forEach((o, i) => {
+        const a = t * (5 + w * 3) + (i / 3) * Math.PI * 2;
+        o.position.set(Math.cos(a) * 0.12, 0.34 + Math.sin(a * 1.3) * 0.06, Math.sin(a) * 0.12);
+      });
+      fuse.scale.setScalar(0.8 + 0.5 * Math.abs(Math.sin(t * 18)));
+    },
+  };
+};
+
+/** The tool preview's choices for the reaction burst (no trait runs there, so no reaction would ever be set off). */
+export const REACTION_PREVIEW = ['none', 'combust', 'corrode', 'concussion', 'all'] as const;
+export type ReactionPreview = (typeof REACTION_PREVIEW)[number];
+
+/** The reactions a preview setting stands for (empty for 'none'). */
+export function previewReactions(p: ReactionPreview): Reaction[] {
+  return p === 'none' ? [] : p === 'all' ? ['combust', 'corrode', 'concussion'] : [p];
 }

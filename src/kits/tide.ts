@@ -1,7 +1,8 @@
 import type { HeroKit } from '../heroes';
+import { MIST_SECONDS } from '../traits/tide';
 
 /**
- * Tide kit data: Marin, the Tide Dancer. Four spells (labels as registered), canvas-drawn icons in the kit's palette:
+ * Tide kit data: Marin, the Tide Dancer. Four spells (Wave Disc, Coral Spire, Mist Form, Moon's Pull; labels as registered), canvas-drawn icons in the kit's palette:
  * deep-water ground, foam foil, thick smooth blue water ribbons with a dark underside and a foam crest, one coral
  * accent. Signature shape: the water ribbon curling like a dancer's sash.
  */
@@ -107,7 +108,7 @@ export const tideKit: HeroKit = {
   title: 'the Tide Dancer',
   accent: S.body,
   foil: S.foam,
-  maxHp: 620,
+  maxHp: 670,
   portrait(g, s) {
     iconGround(g, s);
     // Sashes of water sweeping round her, behind and in front.
@@ -151,121 +152,130 @@ export const tideKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'tide whip', name: 'Tide Whip', range: 10, cooldown: 3, aim: 'line',
-      blurb: 'Spins a water ribbon off her wrist and lashes it 10 m down the aim; the first enemy it touches is wrapped and hooked 3.5 m toward her.',
+      key: 'Q', label: 'wave disc', name: 'Wave Disc', range: 9, cooldown: 4, aim: 'line',
+      blurb: 'Throws a spinning disc of water 9 m down the aim: 60 damage. High tide: it knocks the enemy back 2.5 m. Low tide: it pulls the enemy 2.5 m toward her.',
       icon(g, s) {
         iconGround(g, s);
-        // A whip of water from low left curling to the right, wrapping a small post.
-        ribbon(g, [[s * 0.08, s * 0.78], [s * 0.2, s * 0.5], [s * 0.4, s * 0.62], [s * 0.6, s * 0.4], [s * 0.76, s * 0.46]], s * 0.1);
+        // A trailing water ribbon curling in from the lower left behind a spinning disc.
+        ribbon(g, [[s * 0.06, s * 0.82], [s * 0.2, s * 0.62], [s * 0.1, s * 0.46], [s * 0.3, s * 0.4]], s * 0.09, false);
+        const cx = s * 0.6, cy = s * 0.44, rx = s * 0.3, ry = s * 0.13;
+        // Dark underside, blue body, pale top, foam rim.
+        g.fillStyle = S.dark;
+        g.beginPath(); g.ellipse(cx, cy + s * 0.05, rx * 0.95, ry * 1.1, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = S.body;
+        g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = S.hot;
+        g.beginPath(); g.ellipse(cx, cy - s * 0.01, rx * 0.8, ry * 0.75, 0, 0, Math.PI * 2); g.fill();
+        // Three foam arms spiralling out from the middle.
         g.strokeStyle = S.foam;
-        g.lineWidth = s * 0.02;
-        g.beginPath();
-        g.ellipse(s * 0.8, s * 0.5, s * 0.1, s * 0.05, 0, 0, Math.PI * 2);
-        g.stroke();
-        drops(g, [[s * 0.6, s * 0.2, s * 0.025], [s * 0.88, s * 0.3, s * 0.02], [s * 0.3, s * 0.3, s * 0.02]]);
-        coral(g, s * 0.82, s * 0.5, s * 0.03);
-      },
-    },
-    {
-      key: 'W', label: 'bubble prison', name: 'Bubble Prison', range: 9, cooldown: 8, aim: 'line', cc: true,
-      blurb: 'Blows a slow bubble 9 m down the aim. The first enemy it touches floats inside it for 0.8 s, helpless, and drifts 2 m toward her.',
-      icon(g, s) {
-        iconGround(g, s);
-        // A floor ring of water, a big bubble with a small figure floating in it and a smaller bubble trailing behind.
-        g.strokeStyle = S.foam;
-        g.lineWidth = s * 0.02;
-        g.fillStyle = '#0d4f74';
-        g.beginPath();
-        g.ellipse(s * 0.56, s * 0.86, s * 0.3, s * 0.08, 0, 0, Math.PI * 2);
-        g.fill();
-        g.stroke();
-        const cx = s * 0.58, cy = s * 0.46, r = s * 0.34;
-        const sh = g.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.1, cx, cy, r);
-        sh.addColorStop(0, 'rgba(234,248,251,0.55)');
-        sh.addColorStop(0.75, 'rgba(31,159,214,0.35)');
-        sh.addColorStop(1, 'rgba(31,159,214,0.75)');
-        g.fillStyle = sh;
-        g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+        g.lineCap = 'round';
+        g.lineWidth = s * 0.03;
+        for (let i = 0; i < 3; i++) {
+          const a0 = (i * Math.PI * 2) / 3;
+          g.beginPath();
+          for (let k = 0; k <= 10; k++) {
+            const a = a0 + k * 0.17, rr = 0.15 + k * 0.075;
+            const x = cx + Math.cos(a) * rx * rr * 1.1, y = cy + Math.sin(a) * ry * rr * 1.1;
+            if (k === 0) g.moveTo(x, y); else g.lineTo(x, y);
+          }
+          g.stroke();
+        }
         g.strokeStyle = S.foam;
         g.lineWidth = s * 0.025;
-        g.stroke();
-        // The captive: a small figure with a coral flower, hanging in the water.
+        g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.stroke();
+        // The tide's two answers: a pale chevron pointing away (High) and a blue one pointing back (Low).
         g.fillStyle = S.foam;
-        g.beginPath(); g.ellipse(cx, cy + r * 0.12, r * 0.14, r * 0.3, 0, 0, Math.PI * 2); g.fill();
-        g.fillStyle = '#e8c9b0';
-        g.beginPath(); g.arc(cx, cy - r * 0.26, r * 0.13, 0, Math.PI * 2); g.fill();
-        g.fillStyle = S.dark;
-        g.beginPath(); g.arc(cx, cy - r * 0.31, r * 0.13, Math.PI, Math.PI * 2); g.fill();
-        coral(g, cx + r * 0.14, cy - r * 0.34, s * 0.022);
-        // Glint on the bubble, the small trailing bubble and a few drops.
-        g.strokeStyle = S.core;
-        g.lineWidth = s * 0.02;
-        g.beginPath(); g.arc(cx, cy, r * 0.78, Math.PI * 1.08, Math.PI * 1.38); g.stroke();
-        g.strokeStyle = S.foam;
-        g.lineWidth = s * 0.016;
-        g.fillStyle = 'rgba(191,242,255,0.45)';
-        g.beginPath(); g.arc(s * 0.15, s * 0.64, s * 0.09, 0, Math.PI * 2); g.fill(); g.stroke();
-        g.beginPath(); g.arc(s * 0.3, s * 0.78, s * 0.045, 0, Math.PI * 2); g.fill(); g.stroke();
-        drops(g, [[s * 0.2, s * 0.3, s * 0.02], [s * 0.9, s * 0.18, s * 0.02], [s * 0.4, s * 0.12, s * 0.016]]);
+        g.beginPath(); g.moveTo(s * 0.9, s * 0.74); g.lineTo(s * 0.78, s * 0.67); g.lineTo(s * 0.78, s * 0.81); g.closePath(); g.fill();
+        g.fillStyle = '#3ab8ea';
+        g.beginPath(); g.moveTo(s * 0.5, s * 0.74); g.lineTo(s * 0.62, s * 0.67); g.lineTo(s * 0.62, s * 0.81); g.closePath(); g.fill();
+        drops(g, [[s * 0.38, s * 0.22, s * 0.022], [s * 0.88, s * 0.28, s * 0.02], [s * 0.2, s * 0.28, s * 0.016]]);
+        coral(g, s * 0.6, s * 0.44, s * 0.03);
       },
     },
     {
-            key: 'E', label: 'undertow dance', name: 'Undertow Dance', range: 6, cooldown: 9, buff: { kind: 'haste', amount: 0.25, seconds: 2 },
-      blurb: 'She surfs up to 6 m to the aim, healing 15 on landing, and leaves a foam strip for 3 s that slows whoever crosses it.',
+      key: 'W', label: 'coral spire', name: 'Coral Spire', range: 8, cooldown: 9,
+      blurb: 'A coral pillar rises at a spot (8 m) and stands for 5 s as a real obstacle. As it rises, the enemy within 2.5 m is hit for 55: High tide shoves it 3 m away, Low tide drags it 2 m to the pillar.',
       icon(g, s) {
         iconGround(g, s);
-        // A flat ring of water with a foam rim round a small figure.
-        g.strokeStyle = S.foam;
-        g.lineWidth = s * 0.13;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.66, s * 0.38, s * 0.15, 0, 0, Math.PI * 2);
-        g.stroke();
-        g.strokeStyle = S.body;
-        g.lineWidth = s * 0.09;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.66, s * 0.38, s * 0.15, 0, 0, Math.PI * 2);
-        g.stroke();
-        // Two sashes round her.
-        ribbon(g, [[s * 0.32, s * 0.52], [s * 0.42, s * 0.36], [s * 0.62, s * 0.34], [s * 0.7, s * 0.24]], s * 0.07);
-        ribbon(g, [[s * 0.68, s * 0.5], [s * 0.58, s * 0.62], [s * 0.4, s * 0.6], [s * 0.3, s * 0.4]], s * 0.06, false);
-        g.fillStyle = S.foam;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.5, s * 0.05, s * 0.12, 0, 0, Math.PI * 2);
-        g.fill();
-        coral(g, s * 0.5, s * 0.34, s * 0.025);
-      },
-    },
-    {
-      key: 'R', label: "leviathan's waltz", name: "Leviathan's Waltz", range: 12, cooldown: 20, aim: 'line', cc: true,
-      blurb: "Ultimate. A water serpent coils over a 12 m strip from her, rears up and dives through it: everything on it is knocked up.",
-      icon(g, s) {
-        iconGround(g, s);
-        // The serpent: a coiling ribbon with a head and a foam mane, over a foam crown on the floor.
-        crown(g, s * 0.5, s * 0.86, s * 0.34, s * 0.16, s * 0.1);
-        ribbon(g, [[s * 0.14, s * 0.62], [s * 0.3, s * 0.5], [s * 0.2, s * 0.32], [s * 0.42, s * 0.22], [s * 0.64, s * 0.34], [s * 0.74, s * 0.18]], s * 0.13, false);
-        // Head: a rounded wedge with two eye dots and a mane of foam spikes.
-        const hx = s * 0.76, hy = s * 0.16;
-        g.fillStyle = S.body;
-        g.strokeStyle = S.dark;
-        g.lineWidth = s * 0.016;
-        g.beginPath();
-        g.ellipse(hx, hy, s * 0.1, s * 0.07, -0.3, 0, Math.PI * 2);
-        g.fill();
-        g.stroke();
-        g.fillStyle = S.foam;
-        for (let i = 0; i < 4; i++) {
+        crown(g, s * 0.5, s * 0.86, s * 0.38, s * 0.16, s * 0.1);
+        // A tall central spire and four leaning branches, deep red at the foot to a pale tip.
+        const spike = (bx: number, by: number, w: number, tx: number, ty: number) => {
+          const gr = g.createLinearGradient(bx, by, tx, ty);
+          gr.addColorStop(0, '#8c3a4b');
+          gr.addColorStop(0.55, S.accent);
+          gr.addColorStop(1, '#ffe6d6');
+          g.fillStyle = gr;
+          g.strokeStyle = S.dark;
+          g.lineWidth = s * 0.012;
           g.beginPath();
-          g.moveTo(hx - s * 0.04 - i * s * 0.025, hy - s * 0.05);
-          g.lineTo(hx - s * 0.1 - i * s * 0.035, hy - s * (0.12 + 0.02 * (i % 2)));
-          g.lineTo(hx - s * 0.02 - i * s * 0.025, hy - s * 0.02);
+          g.moveTo(bx - w, by);
+          g.quadraticCurveTo(bx - w * 0.5, (by + ty) / 2, tx, ty);
+          g.quadraticCurveTo(bx + w * 0.5, (by + ty) / 2, bx + w, by);
+          g.closePath();
           g.fill();
-        }
-        g.beginPath();
-        g.arc(hx + s * 0.02, hy - s * 0.015, s * 0.012, 0, Math.PI * 2);
-        g.arc(hx + s * 0.055, hy + s * 0.005, s * 0.01, 0, Math.PI * 2);
-        g.fill();
-        drops(g, [[s * 0.1, s * 0.3, s * 0.02], [s * 0.5, s * 0.1, s * 0.02], [s * 0.9, s * 0.5, s * 0.02]]);
-        coral(g, s * 0.5, s * 0.84, s * 0.03);
+          g.stroke();
+        };
+        spike(s * 0.3, s * 0.82, s * 0.07, s * 0.2, s * 0.44);
+        spike(s * 0.7, s * 0.82, s * 0.07, s * 0.82, s * 0.46);
+        spike(s * 0.4, s * 0.84, s * 0.08, s * 0.34, s * 0.3);
+        spike(s * 0.6, s * 0.84, s * 0.08, s * 0.66, s * 0.32);
+        spike(s * 0.5, s * 0.86, s * 0.12, s * 0.5, s * 0.1);
+        // A ring of water pushed out from the foot, and drops.
+        g.strokeStyle = S.hot;
+        g.lineWidth = s * 0.02;
+        g.beginPath(); g.ellipse(s * 0.5, s * 0.88, s * 0.44, s * 0.1, 0, 0, Math.PI * 2); g.stroke();
+        drops(g, [[s * 0.12, s * 0.62, s * 0.02], [s * 0.9, s * 0.64, s * 0.02], [s * 0.7, s * 0.14, s * 0.016]]);
+      },
+    },
+    {
+      key: 'E', label: 'mist form', name: 'Mist Form', range: 6, cooldown: 10, dash: true, parry: true, buff: { kind: 'haste', amount: 0.4, seconds: MIST_SECONDS },
+      blurb: 'She turns to water and flows up to 6 m to the aim, through the enemy if it is in the way: untouchable for 1 s and 40% faster. She reforms at the end spot in a splash: 40 damage within 3 m.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A dancer made of water: a pale see-through figure wrapped in two spiralling ribbons, with a foam ring at her feet.
+        g.fillStyle = 'rgba(191,242,255,0.55)';
+        g.beginPath(); g.ellipse(s * 0.5, s * 0.58, s * 0.12, s * 0.25, 0, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(s * 0.5, s * 0.28, s * 0.085, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = S.foam;
+        g.lineWidth = s * 0.016;
+        g.beginPath(); g.ellipse(s * 0.5, s * 0.58, s * 0.12, s * 0.25, 0, 0, Math.PI * 2); g.stroke();
+        g.beginPath(); g.arc(s * 0.5, s * 0.28, s * 0.085, 0, Math.PI * 2); g.stroke();
+        ribbon(g, [[s * 0.3, s * 0.8], [s * 0.7, s * 0.62], [s * 0.3, s * 0.46], [s * 0.68, s * 0.28], [s * 0.52, s * 0.14]], s * 0.07);
+        ribbon(g, [[s * 0.7, s * 0.8], [s * 0.3, s * 0.64], [s * 0.7, s * 0.46], [s * 0.34, s * 0.3]], s * 0.055, false);
+        g.strokeStyle = S.foam;
+        g.lineWidth = s * 0.05;
+        g.beginPath(); g.ellipse(s * 0.5, s * 0.88, s * 0.36, s * 0.09, 0, 0, Math.PI * 2); g.stroke();
+        g.strokeStyle = S.body;
+        g.lineWidth = s * 0.028;
+        g.beginPath(); g.ellipse(s * 0.5, s * 0.88, s * 0.36, s * 0.09, 0, 0, Math.PI * 2); g.stroke();
+        drops(g, [[s * 0.18, s * 0.4, s * 0.02], [s * 0.84, s * 0.5, s * 0.02], [s * 0.78, s * 0.18, s * 0.016], [s * 0.22, s * 0.16, s * 0.016]]);
+        coral(g, s * 0.58, s * 0.22, s * 0.028);
+      },
+    },
+    {
+      key: 'R', label: "moon's pull", name: "Moon's Pull", range: 12, cooldown: 22,
+      blurb: "Ultimate. For 4 s the tide is held at Low and doubled: the enemy is dragged toward her from anywhere in the arena at 1.2 m/s for 20 damage a tick (four ticks), her pulls are twice as strong, and a 65 tide crash lands when it reaches her or the moon sets.",
+      icon(g, s) {
+        iconGround(g, s);
+        // Water ribbons spiralling in from the corners toward a foam crown, under a crescent moon.
+        crown(g, s * 0.5, s * 0.84, s * 0.2, s * 0.1, s * 0.09);
+        ribbon(g, [[s * 0.04, s * 0.5], [s * 0.1, s * 0.82], [s * 0.34, s * 0.9], [s * 0.46, s * 0.8]], s * 0.085, false);
+        ribbon(g, [[s * 0.96, s * 0.46], [s * 0.88, s * 0.8], [s * 0.66, s * 0.9], [s * 0.54, s * 0.8]], s * 0.085, false);
+        ribbon(g, [[s * 0.06, s * 0.76], [s * 0.2, s * 0.56], [s * 0.34, s * 0.62], [s * 0.42, s * 0.7]], s * 0.06, false);
+        ribbon(g, [[s * 0.94, s * 0.74], [s * 0.8, s * 0.54], [s * 0.66, s * 0.6], [s * 0.58, s * 0.7]], s * 0.06, false);
+        // The moon: a pale disc with a dark bite, ringed in foam.
+        const mx = s * 0.5, my = s * 0.3, mr = s * 0.2;
+        g.fillStyle = 'rgba(191,242,255,0.22)';
+        g.beginPath(); g.arc(mx, my, mr * 1.45, 0, Math.PI * 2); g.fill();
+        g.fillStyle = S.foam;
+        g.beginPath(); g.arc(mx, my, mr, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#0b3d5c';
+        g.beginPath(); g.arc(mx + mr * 0.42, my - mr * 0.2, mr * 0.86, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = S.hot;
+        g.lineWidth = s * 0.014;
+        g.beginPath(); g.arc(mx, my, mr * 1.3, 0, Math.PI * 2); g.stroke();
+        drops(g, [[s * 0.24, s * 0.3, s * 0.016], [s * 0.78, s * 0.22, s * 0.016], [s * 0.5, s * 0.64, s * 0.018]]);
+        coral(g, s * 0.5, s * 0.82, s * 0.03);
       },
     },
   ],

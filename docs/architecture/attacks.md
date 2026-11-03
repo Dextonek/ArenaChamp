@@ -41,6 +41,25 @@ In AI duels basic attacks deal about an eighth to a quarter of the damage and ma
 - Shields absorb attack damage. Attacks can target summoned units (`arena.liveFoes()` includes them).
 - Hits carry `HitOptions.attack`, which lets them past the duel's zone filter (`Duel.opponentHit`), like a bolt.
 
+## Reach, echo and reset (2026-11-03)
+
+Three things a trait can do to the basic attack (see [traits.md](traits.md)):
+
+- **`Trait.attackReach(t)`**: metres added to the range while it returns more than 0. `Attacker.range` is the spec's
+  range plus `AttackOwner.reach()`; it is used by `inRange`, the wind-up leash, hero mode's attack-move pick
+  (`HeroMode.attackRange`), and the AI's and the autopilot's approach and guard checks (`Duel` uses `oppAttack.range` /
+  `hm.attackRange`).
+- **`Trait.attackEcho(t)`**: a share 0..1. After an attack is released, `Attacker` waits `ECHO_DELAY` (0.12 s), then
+  releases a second bolt or strike for that share of the damage (`opts.damage * share`, the first hit's mods on top).
+  `attackMods` runs once, for the first hit (`AttackOwner.released(target, echo)`: `echo` is 0 for the first hit, the
+  share for the second; owners must not count the second as an attack). The echo is dropped when the target is gone or
+  the attacker is stunned in the gap. `Attacker.releaseNow` (the other player's attack online) never echoes.
+- **`TraitView.resetAttack()`** → `Attacker.ready()`: the cooldown is 0 now.
+
+Online: `attackReach` is applied locally only (the server does not check reach). The server drops attacks less than
+0.5 s apart, so against the other hero the echo is **folded** into the single attack message (`power` x (1 + share),
+clamped to 3 by the server) and no second bolt is drawn (`HeroMode.skipEcho`); against units it plays as two hits.
+
 ## Who attacks
 
 - **Player hero** ([heroMode.ts](../../src/heroMode.ts)): an `Attacker` on the caster; hits go through `arena.hit`.

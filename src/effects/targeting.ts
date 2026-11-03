@@ -3,7 +3,7 @@ import type { Enemy } from './common';
 import { frameArena } from './common';
 import type { BuffKind, StatusKind } from './status';
 import type { BoltWall, BoltWallOptions, Projectile, ProjectileOptions } from './projectile';
-import type { Summon, SummonOptions } from './summon';
+import type { DeathSpot, Summon, SummonOptions } from './summon';
 import type { Obstacle } from '../obstacles';
 
 /**
@@ -151,6 +151,13 @@ export interface CastContext {
    * moment. Network duels leave it undefined.
    */
   summon?(opts: SummonOptions): Summon;
+  /**
+   * Where summoned units (of either side, `side` says whose) were slain by damage within the last `maxAge` seconds
+   * (at most 30), oldest first: `{ x, z, age, side }`, `age` in seconds since the death. Units that ran out of time
+   * leave nothing. Cleared every round. Mortis's bone piles. Network duels: only the deaths of units this screen
+   * simulates (the player's own); the other player's units are not seen here.
+   */
+  deathSpots?(maxAge: number): DeathSpot[];
 }
 
 /** Yaw (telegraph `dir`) from a to b on the ground plane: 0 = toward +Z. */

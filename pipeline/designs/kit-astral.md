@@ -1,74 +1,93 @@
-# Astral kit: Lyra, the Star Archer
+# Astral kit: Lyra, the Star Archer (v4, 2026-11-03)
 
-## Role (2026-10-30)
+Source: `pipeline/designs/kits-v4.md`, "Lyra". The v3 kit (Starshot, Constellation Snare, Orbit Veil, Celestial Hunt) is
+replaced entirely. Read `kit-common.md` for files, timing and look lessons.
 
-**Marksman, 520 HP.** Signature: *Out-range*. Design: `pipeline/designs/hero-roles.md`.
+**Marksman, 550 HP, ranged attack (range 8.5, 13 damage, every 1.4 s, speed 4.0).** Verb: *the farther she is, the
+deadlier*. Category `hero: astral`; parts `src/effects/parts/astral.ts`; kit `src/kits/astral.ts`; rules
+`src/traits/astral.ts`.
 
-| Slot | Spell | New shape and numbers |
-|---|---|---|
-| Q | Starshot | Straight skillshot, `aim: 'line'`, range 14, cd 2, 40, speed 22, radius 0.4, no bounce. The bow draws, the arrow (a `BoltSet` look in gold) flies the line and ends at the first enemy; the hit leaves a star. |
-| W | Constellation Snare | TRAP, `cc`. Ground mode (targeting radius 40 so every enemy is listed; the net itself is r 4). The net is armed at 0.8 s and lies until 3.0 s; the first frame an enemy's live position is inside it snaps: 60 + **root 1.2** and the old drag-in. No one inside by 3.0 s: it fizzles with no hit. Telegraph drawn 0.. 3.2 s. |
-| E | Orbit Veil | BACKSTEP. Self mode, radius 5, cd 9. One volley at 0.6 s (12 + **slow 1.0**) on enemies within 5 of where she stood; at 0.65 s `moveCaster` carries her 5 m away from the enemy in 0.35 s, the chart, veil and orbit travel with her. 2.4 s total. |
-| R | Celestial Hunt | GLOBAL. Range 60, cd 20, radius 7 -> 3, 140. The stag is drawn over the picked spot anywhere in the ring and lands at 2.5 s; hits re-check live positions, so a walker escapes. |
+## Passive: Far Sight
+Every hit of hers (spell or basic attack) deals +0% within 4 m, rising in a straight line to +30% at 10 m or more
+(`farSight(d)`, distance from her figure to the victim at the hit, in the trait's `dealt` hook). The passive badge shows
+the current bonus against the enemy. No twist: the four spells need no second rule.
 
-**Signature shape: constellations.** Bright star points (four-point stars, varied sizes) joined by thin, crisp gold
-lines that **draw themselves** from star to star, forming a figure (a net, a bow, a stag), then **snap**: the lines
-break and the stars fall as small shooting stars. Second shape: arrows of light with a long, thin gold tail.
+| Key | Spell | Type | Numbers | Flags |
+|---|---|---|---|---|
+| Q | Starfall Arrow | HOLD, SHOT | cd 4. Hold up to 1 s: range 9 to 14 m, damage 39 to 78, full draw pierces. | `aim: 'line'` |
+| W | Twin Stars | SELF | cd 14. 5 s: basic attacks echo at 50%; +20% speed. | `buff` (haste 0.2, 5 s) |
+| E | Pinning Arrow | SHOT | cd 9. 9 m, 35. Within 1.5 m of a wall or pillar: root 1.5 s; else slow 1.5 s (x0.6 speed). | `aim: 'line'`, `cc` |
+| R | Meteor Mark | TGT, delayed | cd 24. 14 m. Follows 1.5 s, fixes, 0.5 s later 2.2 m strike: 135 + 25% of her damage on the marked enemy. | none |
 
-Read `kit-common.md` first (files, timing, look lessons).
+Cooldowns are not in the design; they are first guesses for the AI duels (4 / 14 / 9 / 24).
 
-- **Hero:** a ranged archer who reads the sky; precise, elegant, multi-target. **Category:** `hero: astral`.
-  **Parts file:** `src/effects/parts/astral.ts`. **Kit:** `src/kits/astral.ts`.
-- **Palette** (`ASTRAL` / `ASTRAL_CSS`): core `#fffbe8` (star cores only) → hot `#ffe08a` (lines) → body
-  `#5a3fc0` (the night-violet field behind stars) → accent `#7ff3ff` (cyan, 2–3 frames at hits) → dark `#070414`;
-  **foil** pale star-chart parchment `#e8e0c8` (the drawn chart rings and the zodiac glyphs on the ground).
-- **Material rules:** lines are crisp ribbons with a soft halo under them (not fat glows), width ~0.06–0.1 with a
-  0.3 halo at low opacity; stars are four-point hard shapes with a tiny white core, sizes varied; the violet body is a
-  dark translucent "night" disc or ribbon behind the gold so the gold reads (the dark layer); the chart foil is a
-  canvas ring with tick marks and zodiac glyphs, not glowing.
+## Signature shape
+Constellations: four-point stars joined by thin gold lines that draw themselves, then snap and fall. Palette
+`ASTRAL` / `ASTRAL_CSS` (starlight core, gold hot, deep indigo body, cyan accent for 2-3 frames at hits, dark, parchment
+foil for the chart rings). Every effect follows this: anticipation (bow, nock star, hanging star), a punchy hit (star
+pop, impact frame at the big ones), an aftermath (lines snap, stars fall).
 
-## Shared parts (`astral.ts`)
-- `ASTRAL`, `ASTRAL_CSS`.
-- `StarPoints`: instanced four-point stars: `add(pos, size)`, `twinkle`, `fall(i, vel)` (a star drops as a
-  shooting star with a short tail), `reset()`.
-- `ConstellationLines`: crisp gold line segments with a halo: `connect(a, b, seconds, delay)` (draws from a to b),
-  `snap(seconds)` (lines break into short falling segments and fade).
-- `StarArrow`: a light arrow with a long tapered gold tail: `fly(from, to, seconds)`, `onArrive`.
-- `StarChart`: a parchment-coloured ground ring with ticks and zodiac glyphs (canvas): `set(center, radius)`,
-  `reveal`, `opacity`, an option to hide its centre.
-- `NightVeil`: a dark violet translucent disc/dome patch with sparse tiny stars, used as the dark layer behind
-  constellations: `set(center, radius, height)`, `opacity`.
+## Q · Starfall Arrow (`starfallArrow.ts`, label `starfall arrow`, `ground`, radius 1)
+- **Hold:** `Trait.hold {slot 0, 1 s}`. `castMods` writes `lyraDraws` (keyed by her figure) and returns `power = 0.5 +
+  0.5 x charge`; the effect's base damage is 78, so 39 to 78 falls out. At full charge she says FULL DRAW.
+- **The effect reads the charge** from `lyraDraws` in `cast()` (then deletes the entry): range `9 + 5 x charge`, bow size,
+  arrow size and trail, pierce at charge 1.
+- 0 to 0.3: a gold crescent bow and string draw on, a nock star swells. 0.3: the arrow leaves (`ctx.projectile`, 26 m/s,
+  radius 0.4 to 0.5). Stars drop onto the line every 2 m behind it; once it is gone the lines join them, hold 0.45 s, snap
+  and the stars fall. A hit pops a star (cyan edge); a full draw adds an impact frame and a ground ring.
+- Telegraph: a line, caster to range, armed at 0.3 s until the flight ends. Clean by about 3 s.
 
-## Q · Starshot (`starshot.ts`, label `starshot`, `enemies`, maxTargets 3, range 12)
-0–0.25: she draws a bow of light (a gold crescent with a string line). **0.35**: a `StarArrow` flies to the first
-target and ends there (no bounce or chain). A star point pops over it (hit star, cyan accent 2 frames).
-`ctx.hit(e, {damage: 45, knock: 2})` at its arrival.
-Then the star falls as a tiny shooting star. Clean by 1.6. Telegraph: a line to the first target.
+## W · Twin Stars (`twinStars.ts`, label `twin stars`, `self`, radius 9)
+- `afterCast(slot 1)` sets `mem.twinUntil = time + 5`; `attackEcho` returns 0.5 while it holds. Haste is the kit's `buff`
+  (synced like any buff), not `t.buff`.
+- Look only: a parchment chart under her and a refraction ring; two stars spiral out of her hands and orbit her chest,
+  joined by a turning gold line that flares every 1.4 s; small stars are left behind her feet while she moves; the orbit
+  fades over the last 0.45 s. Everything follows her live position.
+- Self radius 9 so the duel AI casts it at attack range (radius minus 0.6 = 8.4).
 
-## W · Constellation Snare (`constellationSnare.ts`, label `constellation snare`, `ground`, radius 4, range 11)
-0–0.2: she fires an arrow up. 0.2–0.6: a `StarChart` ring (radius 4) draws on at the point; 7–9 stars fall onto
-points around and across the circle (on and near the enemies), each landing with a small pop. 0.6–0.8:
-constellation lines draw between them fast, forming a net (a triangulated pattern, varied lengths) over a dark
-`NightVeil` disc. **0.8 hit**: the net snaps tight toward the centre (lines shorten, stars pull in 1.0), enemies
-inside are pulled 0.8 toward the centre (`ctx.displace`), cyan accent, ground `ShockRefraction` (1 → 5, 0.04).
-`ctx.hit(e, {damage: 50, knock: 0})`. 1.4: the net snaps apart, stars fall, chart fades. Clean by 2.1.
+## E · Pinning Arrow (`pinningArrow.ts`, label `pinning arrow`, `ground`, radius 1)
+- A nock flare, then at 0.22 s a thin fast arrow (30 m/s, 9 m). The bolt's hit options carry a getter for `status`: at
+  the hit it measures the enemy's live position (the nearest of the cast's targets to the bolt, else a point just ahead
+  of it) against `ctx.obstacles()`; surface distance (centre-segment distance minus the obstacle's radius) at most 1.5:
+  root 1.5 s, else slow 1.5 s. One hit, one damage number.
+- Pinned: a star where the arrow sticks in the wall, a gold line from the enemy to it, a chart locked round their feet for
+  the root. Slowed: a chart ring turns at their feet and stars hang behind them. Both snap and fall at 1.5 s.
+- Telegraph: a line, armed at 0.22 s.
 
-## E · Orbit Veil (`orbitVeil.ts`, label `orbit veil`, `self`, radius 5)
-0–0.3: a small `StarChart` ring under her (radius 2) and a `NightVeil` dome around her. 0.3–2.8: 7 star points orbit
-her on two tilted rings (radius 1.4 and 2.0), linked by constellation lines into a turning figure; at 1.0 and 2.0
-the figure flares and fires a thin gold line from the nearest star to every enemy within 5 (a star-strike: the line
-draws to the enemy in 0.08 s, a star pops on the enemy, cyan 2 frames), `ctx.hit(e, {damage: 12, knock: 1})`.
-2.8–3.2: the orbit breaks, stars fall, veil fades. Clean by 3.3. Loopable section 0.3–2.8.
+## R · Meteor Mark (`meteorMark.ts`, label `meteor mark`, `enemy`)
+- 0 to 0.35: a star arrow climbs from her hand to a point 12 m up, 4 m to the side of the enemy. A four-point star hangs
+  there, tethered to them by a line; a reticle chart turns under their feet. They are tracked smoothly for 1.5 s; the star
+  swells with the tally.
+- 1.5: **fix.** The spot is the enemy's position at that instant. The reticle collapses, a great chart draws on the spot,
+  a ring closes on its centre, the circle telegraph (2.2 m) starts, and the star falls as a meteor (a star arrow with an
+  8 m tail and a big head) from where it hung.
+- 2.0: **strike.** `ctx.hit(target, { damage: 135 + 25% x tally, projectile: true })` if the target's live position is within
+  2.2 m of the spot. The fixed spot is decided late, so a static telegraph cannot gate it (hence `projectile`). Impact
+  frame (light, dark), a whiteout blink, a crater with a gold rim, a refraction ring, a blast star, stars thrown outward, a
+  constellation of eight spokes that holds 0.55 s, snaps and falls. Shake 0.95. Clean by 3.7 s.
+- **Tally:** `lyraMarks` (a WeakMap keyed by her figure, as `bloodBonds`). The effect opens it at `play()` and closes it
+  just before the strike; the trait's `dealt` adds each hit on the marked figure (after Far Sight). Her `tick` sets
+  `tracked`.
+- `telegraphs()` returns nothing until the spot is fixed, so the cast roots her only for the default 0.4 s.
 
-## R · Celestial Hunt (`celestialHunt.ts`, label `celestial hunt`, `ground`, radius 7, range 14)
-The ultimate: a **giant constellation stag** is drawn in the sky and charges through the zone.
-0–0.4: she aims her bow at the sky; the world darkens to night (`darken` 0.7, tint `#070414`); a big `StarChart`
-ring (radius 7) draws on around the point. 0.3–1.6: behind the zone, 6–9 above the ground, ~20 stars appear one
-after another and constellation lines draw between them into the outline of a **stag** (antlers, head, back,
-legs; side-on to the camera, ~12 wide), over a dark `NightVeil` patch so the gold reads. 1.6–1.9: the stag lowers
-its head (its stars shift) — **dead beat 1.8–1.95**. **1.95–2.35**: the stag charges down through the zone toward
-the caster side (the whole figure moves and tilts down), leaving a trail of falling star segments. **2.35 hit**
-(it passes the centre): impact frame (the stag as a black silhouette on a parchment card), a wave of star points
-bursting up from the ground across the radius, cyan accent at the centre, ground `ShockRefraction` (1 → 12, 0.07),
-shake 0.7. `ctx.hit(e, {damage: 125, knock: 7, from: point})` within 7. 2.35–4.5: the stag dissolves into a rain of
-small shooting stars over the zone; the chart and night fade. Clean by 4.5.
+## Online (docs/architecture/multiplayer.md)
+- Skillshots (Q, E) fly on the victim's screen, where the hit is decided; the status of E is decided there with the same
+  walls. The dealer's screen draws only the bow or the nock.
+- Q's charge lives in a map only her own screen's trait fills, so the other screen flies the **full draw** (range 14,
+  pierce); the damage is still right (it travels as `mods.power`). The hold's charge reaches the effect nowhere else.
+- W: haste is a synced buff; the echo is folded into the one attack message as `power x 1.5`, with no second arrow drawn.
+- R: where the trait does not track (`tracked` false) the strike is a flat 135; the hit is decided on the victim's
+  screen by the live position against the fixed spot.
+- Far Sight runs in the `dealt` hook of whichever screen resolves the hit, with the figures' positions there.
+
+## AI hints
+- Q: the duel AI casts a hold spell at full charge (range 14).
+- W: self, radius 9: cast when the enemy is within 8.4 m (attack range).
+- E: `cc`, so the AI casts it first; reach 9.
+- R: only under 55% HP or after 20 s.
+- Counterplay the AI should learn (rules for later): stay off walls against E, stay close against Far Sight.
+
+## Balance pass (2026-11-03)
+After a 7-of-24 AI tournament: Q full draw 70 to 85 (min about 42), W 4 s to 5 s and echo 0.5 to 0.6, E 30 to 40, R base 120 to 150 (tally share stays 25%). Cooldowns unchanged.
+
+Pass 2 (17 of 24 wins, too strong): Q 85 to 78 (min 39), echo 0.6 to 0.5 (W stays 5 s), E 40 to 35, R base 150 to 135 (flat fallback equals the base).

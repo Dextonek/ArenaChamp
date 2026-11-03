@@ -3,6 +3,7 @@ import type { Enemy } from '../effects/common';
 import type { HitOptions } from '../effects/targeting';
 import type { BuffKind, StatusKind, StatusSet } from '../effects/status';
 import type { AttackSpec } from '../attacks';
+import type { DeathSpot, Summon, SummonOptions } from '../effects/summon';
 
 /**
  * The hero identity layer (pipeline/designs/hero-identity.md): every hero has a passive, a twist (its own resource, a
@@ -107,6 +108,28 @@ export interface TraitView {
    * opponent side's call does nothing there.
    */
   moveTo(p: THREE.Vector3, seconds: number): void;
+  /**
+   * The hero's basic attack is ready at once: its interval restarts now (a wind-up already running goes on). Zephyr: a
+   * dash resets the attack. Online the other player's side does nothing (its own client keeps its attack).
+   */
+  resetAttack(): void;
+  /**
+   * Summons units for this side, from a trait (Mortis: every fifth basic attack raises a skeleton). The same options as
+   * `CastContext.summon` (`SummonOptions`, see src/effects/summon.ts), but `at` is optional and defaults to this hero's
+   * feet. At most 6 units per side. Returns the handle (`units`, `alive`, `onDeath`), or null when no unit can be made.
+   * The hero's units hit like a spell's units without a cast: their hits count as 'unit' hits (power 1, `dealt` /
+   * `taken` hooks run). Online only this player's own side summons (the units live on this screen); the other
+   * player's side does nothing, its own client raises its units (and they are not shown on this screen). The units' hits on the
+   * other hero are dropped online (only the victim's client decides them): there they only hit the pack.
+   */
+  summon(opts: Omit<SummonOptions, 'at'> & { at?: THREE.Vector3 }): Summon | null;
+  /**
+   * Where summoned units (of either side; `side` says whose: `d.side === t.side` for this hero's own) were slain by
+   * damage within the last `maxAge` seconds (at most 30), oldest first: `{ x, z, age, side }`, `age` in seconds since
+   * the death. A unit that ran out of time leaves nothing. Cleared every round. Same shape as
+   * `CastContext.deathSpots`. (`unitDeaths()` is still the plain count.) Online: only units this screen simulates.
+   */
+  deathSpots(maxAge: number): DeathSpot[];
 }
 
 /** A slot that charges while it is aimed (see `Trait.hold`). */
@@ -152,6 +175,23 @@ export interface Trait {
   recastAct?(t: TraitView, slot: number): void;
   /** A basic attack is released: its mods (count hits, empower every third). */
   attackMods?(t: TraitView): Partial<CastMods>;
+  /**
+   * Metres added to this hero's basic-attack reach while it returns more than 0 (Zephyr: +1 m after a Gust). Asked
+   * every frame: for the in-range check (walk-up, attack-move, the AI's and the autopilot's approach) and for the
+   * attack itself (a wind-up survives the target walking out to the longer reach). Keep it cheap and side-effect free.
+   * Not relayed online: the other player's client applies its own, and the server does not check reach.
+   */
+  attackReach?(t: TraitView): number;
+  /**
+   * An echo for the next basic attack: a share 0..1 (0 = none). While it returns more than 0 a released basic attack is
+   * followed about 0.12 s later by a second hit (a second bolt for a ranged attack, a second strike for a melee one)
+   * for that share of the damage (the first hit's mods, with `power` x the share). `attackMods` runs once, for the
+   * first hit only. Asked once per released attack, so it may read `mem`. Lyra's Twin Stars returns 0.5.
+   * Online: a second message would be dropped by the server's attack gap, so against the other hero the echo is folded
+   * into the one hit (power x (1 + share), the server caps power at 3) with no second bolt drawn; offline and against
+   * units it plays as two hits.
+   */
+  attackEcho?(t: TraitView): number;
   /** Dealer side: change a hit of this hero's (damage, status). */
   dealt?(t: TraitView, hit: TraitHit): void;
   /** Victim side: change a hit this hero takes. */

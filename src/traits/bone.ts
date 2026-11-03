@@ -1,29 +1,71 @@
 import type { Trait } from './types';
+import { BONE_CSS, skeletonLook } from '../effects/parts/bone';
+
+/** A bone pile stays this long where a summoned unit was slain (his or the enemy's). Both sides count. */
+export const PILE_KEEP = 8;
+/** Every this-many basic attacks that land raise a small skeleton. */
+export const ATTACKS_PER_SKELETON = 5;
+
+/** The small skeleton the fifth basic attack raises. */
+const RAISED = { hp: 36, seconds: 6, damage: 7 };
+
+/** Bone Armour: 30 plus 30 per living skeleton, at most 120, for 4 s. */
+export const ARMOUR_BASE = 30;
+export const ARMOUR_PER_SKELETON = 30;
+export const ARMOUR_MAX = 120;
+export const ARMOUR_SECONDS = 4;
 
 /**
- * Mortis (summoner). Passive Grave harvest: every unit that dies, either side's, gives him a bone (max 10). Twist
- * Bones: Grave Call spends them all: +12% damage per bone for the skeletons it raises; Bone Colossus too, at +8% per bone (the colossus is one big unit). Bone
- * Spear grows with the pile: +5% damage per bone held (not spent).
+ * Bone Armour's shield as the trait tracks it, keyed by Mortis's figure. `afterCast` (slot 2) opens it; `taken` adds up
+ * the damage he takes meanwhile, and once that has used the shield up `broke` is set. The effect
+ * (`src/spells/targeted/boneArmour.ts`) reads it: when the armour breaks its shards fly at the enemy at once, else at
+ * 3.5 s. Absent on the other screen of a network duel (its trait never runs the cast rules): the shards then fly at 3.5 s.
+ */
+export interface BoneArmourState { amount: number; absorbed: number; broke: boolean; born: number; until: number }
+export const boneArmours = new WeakMap<object, BoneArmourState>();
+
+/**
+ * Mortis (summoner). Passive Ossuary: every summoned unit that dies by damage, his or the enemy's, leaves a bone pile
+ * for 8 s (`deathSpots(8)`, both sides), which his spells use (Bone Fan: a shard per pile near him; Raise Dead: a
+ * skeleton per pile near the spot). Every fifth basic attack that lands raises a small skeleton at his feet. Bone Armour's
+ * shield is made here (30 plus 30 per living skeleton).
  */
 export const boneTrait: Trait = {
-  passive: { name: 'Grave harvest', blurb: 'Every summoned unit that dies, his or the enemy, gives him a bone (max 10); the colossus counts as one unit. He starts each round with 4.' },
-  twist: { name: 'Bones', blurb: 'Grave Call and Bone Colossus spend all his bones: the skeletons hit 12% harder per bone, the colossus 8% per bone. Bone Spear deals 5% more per bone he holds.' },
-  resource: { name: 'Bones', max: 10, color: '#e8e2cc', start: 4 },
+  passive: {
+    name: 'Ossuary',
+    blurb: 'Every unit that dies, his or the enemy\'s, leaves a bone pile for 8 s: Bone Fan throws a shard per pile near him, Raise Dead a skeleton per pile near the spot. Every fifth basic attack that lands raises a small skeleton.',
+  },
   speed: 3.8,
   attack: { kind: 'ranged', range: 6, damage: 10, interval: 1.0, windup: 0.25, speed: 18, look: 'bone' },
+  afterCast(t, slot) {
+    if (slot !== 2) return;
+    const n = t.units().length;
+    const amount = Math.min(ARMOUR_MAX, ARMOUR_BASE + ARMOUR_PER_SKELETON * n);
+    t.shield(amount, ARMOUR_SECONDS);
+    boneArmours.set(t.self(), { amount, absorbed: 0, broke: false, born: t.time, until: t.time + ARMOUR_SECONDS });
+    t.say(`BONE ARMOUR ${amount}`, BONE_CSS.hot);
+  },
+  taken(t, hit) {
+    const a = boneArmours.get(t.self());
+    if (!a || a.broke || hit.blocked || t.time > a.until) return;
+    a.absorbed += hit.damage;
+    if (a.absorbed >= a.amount) a.broke = true;
+  },
+  landed(t, hit) {
+    if (hit.kind !== 'attack') return;
+    t.mem.hits = (t.mem.hits ?? 0) + 1;
+    if (t.mem.hits % ATTACKS_PER_SKELETON !== 0) return;
+    const raised = t.summon({ kind: 'melee', count: 1, ...RAISED, attackEvery: 1, color: BONE_CSS.body, look: skeletonLook });
+    if (raised) t.say('RISE', BONE_CSS.body);
+  },
   tick(t) {
-    const deaths = t.unitDeaths();
-    const d = deaths - (t.mem.seen ?? 0);
-    t.mem.seen = deaths;
-    if (d > 0) t.addRes(d);
+    // Drop a finished (or previous round's) armour record.
+    const a = boneArmours.get(t.self());
+    if (a && (t.time < a.born || t.time > a.until + 1)) boneArmours.delete(t.self());
   },
-  castMods(t, slot) {
-    if (slot === 0) return { power: 1 + 0.05 * Math.floor(t.res) };
-    if ((slot !== 1 && slot !== 3) || t.res < 1) return {};
-    const bones = Math.floor(t.res);
-    t.res = 0;
-    t.say(`${bones} BONES`, '#f4efd8');
-    return { power: 1 + (slot === 3 ? 0.08 : 0.12) * bones };
+  badge(t) {
+    const piles = t.deathSpots(PILE_KEEP).length;
+    const n = (t.mem.hits ?? 0) % ATTACKS_PER_SKELETON;
+    return piles > 0 ? `${n}/${ATTACKS_PER_SKELETON} +${piles}` : `${n}/${ATTACKS_PER_SKELETON}`;
   },
-  badge: (t) => (t.res > 0 ? String(Math.floor(t.res)) : ''),
 };

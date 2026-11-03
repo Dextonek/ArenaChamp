@@ -1,10 +1,11 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Alchemy kit data (Vex, the Plague Alchemist): dark green ground, pale glass foil, acid green, a little gold. Icons are
+ * Alchemy kit data (Vex, the Plague Alchemist): dark green ground, pale glass foil, three reagent colours (green, orange, violet). Icons are
  * drawn on canvases in the kit palette, one signature shape each (see pipeline/designs/kit-alchemy.md).
  */
 const A = {
+  tox: '#6bff3a', fire: '#ff8a2a', acid: '#b872ff', fireHot: '#ffc23a', acidHot: '#d9a6ff',
   core: '#f4ffe0', hot: '#c8ff4a', body: '#4fbf2a', accent: '#ff5ad8', dark: '#0c1606', glass: '#dcefe6', gold: '#e8b84a',
   deep: '#1d3a10', coat: '#16240e',
 };
@@ -18,7 +19,7 @@ function ground(g: CanvasRenderingContext2D, s: number) {
 }
 
 /** A round flask centred at (cx, cy): glass outline, dark acid inside, a cork. `w` is the body width. */
-function flask(g: CanvasRenderingContext2D, cx: number, cy: number, w: number, rot = 0) {
+function flask(g: CanvasRenderingContext2D, cx: number, cy: number, w: number, rot = 0, liquid = A.body) {
   g.save();
   g.translate(cx, cy);
   g.rotate(rot);
@@ -26,7 +27,7 @@ function flask(g: CanvasRenderingContext2D, cx: number, cy: number, w: number, r
   // Liquid.
   g.fillStyle = A.deep;
   g.beginPath(); g.arc(0, 0, r * 0.9, Math.PI * 0.05, Math.PI * 0.95); g.closePath(); g.fill();
-  g.fillStyle = A.body;
+  g.fillStyle = liquid;
   g.beginPath(); g.arc(0, 0, r * 0.9, Math.PI * 0.2, Math.PI * 0.8); g.closePath(); g.fill();
   // Glass: body circle, neck, lip.
   g.strokeStyle = A.glass;
@@ -166,95 +167,130 @@ export const alchemyKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'volatile flask', name: 'Volatile Flask', range: 10, cooldown: 2,
-      blurb: 'A quick lob: a flask shatters in a small circle (1.6 m); whoever stands there is splashed and burns for a moment.',
+      key: 'Q', label: 'toxin dart', name: 'Toxin Dart', range: 9, cooldown: 3, aim: 'line',
+      blurb: 'A fast glass dart (9 m): 30, then 30 more over 3 s. Leaves green toxin on the enemy for 4 s. Dodge it by stepping off the line.',
       icon(g, s) {
         ground(g, s);
-        // Thrown arc, a flask at the top, and the splash with bubbles and shards below.
-        g.strokeStyle = 'rgba(220,239,230,0.55)';
-        g.lineWidth = s * 0.025;
-        g.setLineDash([s * 0.04, s * 0.05]);
-        g.beginPath(); g.moveTo(s * 0.12, s * 0.62); g.quadraticCurveTo(s * 0.4, s * 0.0, s * 0.74, s * 0.58); g.stroke();
-        g.setLineDash([]);
-        flask(g, s * 0.5, s * 0.27, s * 0.3, 0.6);
-        g.fillStyle = A.body;
-        g.beginPath(); g.ellipse(s * 0.74, s * 0.8, s * 0.2, s * 0.07, 0, 0, Math.PI * 2); g.fill();
+        // A dart flying up-right: glass shell, green core, needle tip, a bubble trail and a green splat spark.
+        g.save();
+        g.translate(s * 0.52, s * 0.48);
+        g.rotate(-0.62);
+        g.fillStyle = 'rgba(220,239,230,0.28)';
+        g.strokeStyle = A.glass;
+        g.lineWidth = s * 0.02;
+        g.beginPath(); g.roundRect(-s * 0.3, -s * 0.07, s * 0.46, s * 0.14, s * 0.07); g.fill(); g.stroke();
+        g.fillStyle = A.tox;
+        g.beginPath(); g.roundRect(-s * 0.27, -s * 0.045, s * 0.4, s * 0.09, s * 0.045); g.fill();
+        g.fillStyle = A.hot;
+        g.fillRect(-s * 0.22, -s * 0.035, s * 0.3, s * 0.02);
+        g.fillStyle = A.core;
+        g.beginPath(); g.moveTo(s * 0.16, -s * 0.045); g.lineTo(s * 0.34, 0); g.lineTo(s * 0.16, s * 0.045); g.closePath(); g.fill();
+        g.fillStyle = A.glass;
+        g.beginPath(); g.arc(-s * 0.31, 0, s * 0.055, 0, Math.PI * 2); g.fill();
+        g.restore();
+        bubble(g, s * 0.26, s * 0.7, s * 0.04);
+        bubble(g, s * 0.18, s * 0.78, s * 0.028);
+        bubble(g, s * 0.34, s * 0.78, s * 0.022);
+        // The green toxin clinging: a drip below the tip.
+        g.fillStyle = A.tox;
+        g.beginPath(); g.arc(s * 0.82, s * 0.3, s * 0.05, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.moveTo(s * 0.82, s * 0.36); g.quadraticCurveTo(s * 0.8, s * 0.5, s * 0.82, s * 0.56); g.quadraticCurveTo(s * 0.86, s * 0.5, s * 0.82, s * 0.36); g.fill();
         g.strokeStyle = A.hot;
-        g.lineWidth = s * 0.015;
-        g.beginPath(); g.ellipse(s * 0.74, s * 0.8, s * 0.2, s * 0.07, 0, Math.PI * 1.05, Math.PI * 1.7); g.stroke();
-        bubble(g, s * 0.68, s * 0.74, s * 0.05);
-        bubble(g, s * 0.82, s * 0.72, s * 0.035);
-        shard(g, s * 0.58, s * 0.66, s * 0.07, 0.4);
-        shard(g, s * 0.88, s * 0.6, s * 0.06, -0.5);
-        g.fillStyle = A.accent;
-        g.beginPath(); g.arc(s * 0.74, s * 0.66, s * 0.025, 0, Math.PI * 2); g.fill();
+        g.lineWidth = s * 0.012;
+        g.beginPath(); g.arc(s * 0.82, s * 0.3, s * 0.035, Math.PI * 1.1, Math.PI * 1.6); g.stroke();
       },
     },
     {
-      key: 'W', label: 'caustic pool', name: 'Caustic Pool', range: 10, cooldown: 7,
-      blurb: 'Two flasks shatter on the point and the pool boils for 4 s, burning and slowing everything that stays in it.',
+      key: 'W', label: 'fire vial', name: 'Fire Vial', range: 7, cooldown: 6,
+      blurb: 'A vial of fire that cannot miss (7 m, needs sight): 30, then 30 more over 2 s. Leaves orange fire on the enemy for 4 s.',
       icon(g, s) {
         ground(g, s);
-        circleGlyph(g, s * 0.5, s * 0.66, s * 0.44, A.glass, s * 0.018, 0.34);
-        g.fillStyle = A.body;
-        g.beginPath(); g.ellipse(s * 0.5, s * 0.66, s * 0.34, s * 0.12, 0, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = A.hot;
-        g.lineWidth = s * 0.015;
-        g.beginPath(); g.ellipse(s * 0.5, s * 0.66, s * 0.34, s * 0.12, 0, Math.PI * 1.05, Math.PI * 1.7); g.stroke();
-        bubble(g, s * 0.36, s * 0.66, s * 0.06);
-        bubble(g, s * 0.52, s * 0.6, s * 0.08);
-        bubble(g, s * 0.66, s * 0.68, s * 0.05);
-        fume(g, s * 0.4, s * 0.52, s * 0.4);
-        fume(g, s * 0.64, s * 0.5, s * 0.3);
+        // A vial with orange liquid, tilted, bursting into flame tongues.
+        flask(g, s * 0.4, s * 0.55, s * 0.4, -0.5, A.fire);
+        const tongue = (x: number, y: number, h: number, w: number, col: string) => {
+          g.fillStyle = col;
+          g.beginPath();
+          g.moveTo(x - w, y);
+          g.quadraticCurveTo(x - w * 0.9, y - h * 0.5, x + w * 0.1, y - h);
+          g.quadraticCurveTo(x + w * 0.5, y - h * 0.45, x + w, y);
+          g.closePath();
+          g.fill();
+        };
+        tongue(s * 0.72, s * 0.84, s * 0.5, s * 0.1, A.fire);
+        tongue(s * 0.86, s * 0.84, s * 0.34, s * 0.07, A.fire);
+        tongue(s * 0.6, s * 0.84, s * 0.3, s * 0.06, A.fire);
+        tongue(s * 0.72, s * 0.84, s * 0.3, s * 0.05, A.fireHot);
+        g.fillStyle = A.fireHot;
+        g.beginPath(); g.arc(s * 0.22, s * 0.28, s * 0.028, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(s * 0.3, s * 0.18, s * 0.02, 0, Math.PI * 2); g.fill();
+        shard(g, s * 0.62, s * 0.4, s * 0.06, 0.6);
+        shard(g, s * 0.84, s * 0.54, s * 0.05, -0.4);
       },
     },
     {
-      key: 'E', label: 'volatile leap', name: 'Volatile Leap', range: 0, cooldown: 9,
-      blurb: 'A flask bursts at her feet: enemies within 3 m take a hit and are knocked away, and the blast throws her 5 m back, away from the aim.',
+      key: 'E', label: 'acid splash', name: 'Acid Splash', range: 4, cooldown: 8,
+      blurb: 'A 4 m cone of violet acid in front of her: 40 and a shove back. Leaves violet acid on the enemy for 4 s. Her answer to being rushed.',
       icon(g, s) {
         ground(g, s);
-        g.strokeStyle = 'rgba(200,255,74,0.4)';
-        g.lineWidth = s * 0.015;
-        g.beginPath(); g.ellipse(s * 0.5, s * 0.5, s * 0.34, s * 0.34, 0, 0, Math.PI * 2); g.stroke();
-        // A green glow in the middle and four flasks around it.
-        const gr = g.createRadialGradient(s * 0.5, s * 0.5, s * 0.02, s * 0.5, s * 0.5, s * 0.22);
-        gr.addColorStop(0, A.hot);
-        gr.addColorStop(1, 'rgba(79,191,42,0)');
+        // A cone of violet spray fanning out from a smashed flask at the bottom left.
+        const gr = g.createRadialGradient(s * 0.2, s * 0.8, s * 0.02, s * 0.2, s * 0.8, s * 0.9);
+        gr.addColorStop(0, A.acidHot);
+        gr.addColorStop(1, 'rgba(184,114,255,0.15)');
         g.fillStyle = gr;
-        g.beginPath(); g.arc(s * 0.5, s * 0.5, s * 0.22, 0, Math.PI * 2); g.fill();
-        for (let i = 0; i < 4; i++) {
-          const a = (i / 4) * Math.PI * 2 + 0.5;
-          flask(g, s * 0.5 + Math.cos(a) * s * 0.34, s * 0.5 + Math.sin(a) * s * 0.34, s * 0.2, a + Math.PI / 2 + 0.4);
+        g.beginPath(); g.moveTo(s * 0.2, s * 0.8); g.arc(s * 0.2, s * 0.8, s * 0.85, -Math.PI * 0.42, -Math.PI * 0.02); g.closePath(); g.fill();
+        g.strokeStyle = A.acid;
+        g.lineWidth = s * 0.02;
+        g.beginPath(); g.arc(s * 0.2, s * 0.8, s * 0.85, -Math.PI * 0.42, -Math.PI * 0.02); g.stroke();
+        g.beginPath(); g.moveTo(s * 0.2, s * 0.8); g.lineTo(s * 0.2 + Math.cos(-Math.PI * 0.42) * s * 0.85, s * 0.8 + Math.sin(-Math.PI * 0.42) * s * 0.85); g.moveTo(s * 0.2, s * 0.8); g.lineTo(s * 0.2 + Math.cos(-Math.PI * 0.02) * s * 0.85, s * 0.8 + Math.sin(-Math.PI * 0.02) * s * 0.85); g.stroke();
+        // Droplets across the fan and the smashed flask.
+        g.fillStyle = A.acid;
+        for (const [x, y, r] of [[0.5, 0.46, 0.04], [0.62, 0.62, 0.05], [0.74, 0.44, 0.035], [0.82, 0.66, 0.045], [0.56, 0.7, 0.03], [0.7, 0.32, 0.03]] as const) {
+          g.beginPath(); g.arc(s * x, s * y, s * r, 0, Math.PI * 2); g.fill();
+          g.strokeStyle = A.acidHot;
+          g.lineWidth = s * 0.01;
+          g.beginPath(); g.arc(s * x, s * y, s * r * 0.7, Math.PI * 1.1, Math.PI * 1.6); g.stroke();
         }
-        bubble(g, s * 0.5, s * 0.5, s * 0.06);
-        fume(g, s * 0.5, s * 0.46, s * 0.3);
+        flask(g, s * 0.2, s * 0.8, s * 0.26, 0.9, A.acid);
+        shard(g, s * 0.36, s * 0.6, s * 0.06, 0.5);
+        shard(g, s * 0.3, s * 0.86, s * 0.045, -0.6);
       },
     },
     {
-      key: 'R', label: 'elixir of unmaking', name: 'Elixir of Unmaking', range: 0, cooldown: 20,
-      blurb: 'Ultimate. She drinks it: for 5 s her Volatile Flask has almost no cooldown (0.4 s), its hits add double toxin, and she deals 20% more damage. No damage itself.',
+      key: 'R', label: 'homunculus', name: 'Homunculus', range: 10, cooldown: 25, summon: true,
+      blurb: 'Ultimate. A little walking bomb (120 HP, 4 m/s) with all three reagents in its belly. It bursts on the enemy for 70 and sets off every reaction at once. Shoot it down or outrun it.',
       icon(g, s) {
         ground(g, s);
-        circleGlyph(g, s * 0.5, s * 0.5, s * 0.46, A.gold, s * 0.02, 1);
-        // The gold statue (a hooded shape) with cracks, and a green core below it.
-        g.fillStyle = A.gold;
-        g.beginPath();
-        g.moveTo(s * 0.36, s * 0.7);
-        g.quadraticCurveTo(s * 0.36, s * 0.46, s * 0.5, s * 0.42);
-        g.quadraticCurveTo(s * 0.64, s * 0.46, s * 0.64, s * 0.7);
-        g.closePath();
-        g.fill();
-        g.beginPath(); g.arc(s * 0.5, s * 0.34, s * 0.075, 0, Math.PI * 2); g.fill();
-        g.fillStyle = '#fff0c0';
-        g.beginPath(); g.moveTo(s * 0.4, s * 0.68); g.quadraticCurveTo(s * 0.4, s * 0.5, s * 0.47, s * 0.46); g.lineTo(s * 0.45, s * 0.68); g.closePath(); g.fill();
-        g.strokeStyle = A.dark;
-        g.lineWidth = s * 0.016;
+        circleGlyph(g, s * 0.5, s * 0.78, s * 0.42, A.glass, s * 0.016, 0.3);
+        // The homunculus: a glass belly with three reagent orbs, a cork neck and a lit fuse, two little legs.
+        g.fillStyle = '#6b5232';
+        g.fillRect(s * 0.44, s * 0.2, s * 0.12, s * 0.07);
+        g.strokeStyle = A.glass;
+        g.lineWidth = s * 0.022;
         g.lineCap = 'round';
-        g.beginPath(); g.moveTo(s * 0.54, s * 0.44); g.lineTo(s * 0.5, s * 0.54); g.lineTo(s * 0.57, s * 0.62); g.lineTo(s * 0.52, s * 0.7); g.stroke();
-        g.beginPath(); g.moveTo(s * 0.5, s * 0.54); g.lineTo(s * 0.42, s * 0.6); g.stroke();
-        bubble(g, s * 0.5, s * 0.8, s * 0.045);
-        shard(g, s * 0.22, s * 0.3, s * 0.05, 0.5);
-        shard(g, s * 0.8, s * 0.7, s * 0.05, -0.4);
+        g.beginPath(); g.moveTo(s * 0.45, s * 0.27); g.lineTo(s * 0.43, s * 0.36); g.moveTo(s * 0.55, s * 0.27); g.lineTo(s * 0.57, s * 0.36); g.stroke();
+        g.fillStyle = A.deep;
+        g.beginPath(); g.arc(s * 0.5, s * 0.56, s * 0.22, 0, Math.PI * 2); g.fill();
+        g.stroke();
+        for (const [x, y, c] of [[0.43, 0.52, A.tox], [0.57, 0.52, A.fire], [0.5, 0.64, A.acid]] as const) {
+          g.fillStyle = c;
+          g.beginPath(); g.arc(s * x, s * y, s * 0.07, 0, Math.PI * 2); g.fill();
+          g.fillStyle = A.core;
+          g.beginPath(); g.arc(s * (x - 0.02), s * (y - 0.02), s * 0.015, 0, Math.PI * 2); g.fill();
+        }
+        // Eyes and legs.
+        g.fillStyle = A.hot;
+        g.beginPath(); g.arc(s * 0.44, s * 0.4, s * 0.025, 0, Math.PI * 2); g.arc(s * 0.56, s * 0.4, s * 0.025, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = '#6b5232';
+        g.lineWidth = s * 0.04;
+        g.beginPath(); g.moveTo(s * 0.4, s * 0.76); g.lineTo(s * 0.36, s * 0.86); g.moveTo(s * 0.6, s * 0.76); g.lineTo(s * 0.66, s * 0.84); g.stroke();
+        // The fuse: a spark on a curl.
+        g.strokeStyle = A.glass;
+        g.lineWidth = s * 0.012;
+        g.beginPath(); g.moveTo(s * 0.52, s * 0.2); g.quadraticCurveTo(s * 0.6, s * 0.1, s * 0.66, s * 0.14); g.stroke();
+        g.fillStyle = A.fireHot;
+        g.beginPath(); g.moveTo(s * 0.66, s * 0.08); g.lineTo(s * 0.69, s * 0.14); g.lineTo(s * 0.75, s * 0.15); g.lineTo(s * 0.69, s * 0.18); g.lineTo(s * 0.66, s * 0.24); g.lineTo(s * 0.63, s * 0.18); g.lineTo(s * 0.57, s * 0.15); g.lineTo(s * 0.63, s * 0.14); g.closePath(); g.fill();
+        bubble(g, s * 0.82, s * 0.5, s * 0.03);
+        fume(g, s * 0.2, s * 0.8, s * 0.3);
       },
     },
   ],

@@ -254,7 +254,8 @@ takes an effect decides it**, and the server records and relays.
 | Skillshots | the other player's bolts fly on this screen (`ctx.projectile` stays on in the replay); touching this hero is the hit. |
 | Spells fired where the hero faces (`self` mode) | `cast.yaw` turns the replayed caster before the spell plays. |
 | Summoned units | the other player's units spawn and fight on this screen; their hits on this hero go through `took_hit` with the summoning cast's id. Each screen simulates its own copy, so units can stand in different places or die at different times on the two screens. |
-| Basic attacks | see [attacks.md](attacks.md). |
+| Basic attacks | see [attacks.md](attacks.md). Echo (Lyra) is folded into one hit; reach (Zephyr) is local. |
+| Units from a trait (`TraitView.summon`) | only this player's own passive raises units, on its own screen; the other screen does not see them (a spell's units are replayed through the cast there) and `hitFilter` drops their hits on the other hero, so online they hit the pack only: they do no damage to the other hero. The other side's `summon` is a no-op here. `deathSpots` only know units this screen simulates. |
 | Hold-to-charge | the charge becomes `mods.power` in the cast message, like any trait mod. |
 | Recast that only acts (`replay: false`) | sends no cast: it moves the hero (a blink, a rewind), which streams as moves. A jump over 4 m between two move reports snaps on the other screen (`PEER_JUMP`) instead of gliding. |
 | Skillshot that pulls (`pull` on a bolt hit) | the bolt flies on the victim's screen, the hit carries `from` = the bolt's start, and `damagePlayer` drags the hero toward it (4 m at most). The caster's screen only draws the result through the victim's moves. |

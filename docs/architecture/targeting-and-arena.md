@@ -38,6 +38,13 @@ How targeted spells find their targets and how the shared playground works: the 
 | `hit(target, opts?)` | hit reaction: flash, knockback, floating number, HP loss, death at 0 HP. Call once per hit at the impact moment; do not call `setFlash` on arena enemies yourself |
 | `displace(target, offset)` | extra offset the arena adds to the enemy's position (lift, pull); reset on every cast |
 
+Optional members added 2026-11-03: `summon(opts)` (units for the caster's side; undefined only where noted) and
+`deathSpots?(maxAge): DeathSpot[]`: `{ x, z, age, side }`, where summoned units of either side were slain **by damage**
+within the last `maxAge` seconds (kept 30 s, oldest first, cleared every round; expired units leave nothing). Wired in
+`context()` and `contextFor()`; `Arena.deathSpots(maxAge)` is the same list. A trait reads it as `TraitView.deathSpots`.
+Online it holds only the units this screen simulates. `Arena.summonFor(side, opts, hit?)` spawns units outside a cast
+(a trait's `summon`).
+
 `HitOptions`: `damage` (default random 10-20), `knock` (speed away from `from`; default 4; 0 = flinch in place), `from` (knockback source; default the caster), `color` (damage number and flash tint).
 
 ### Helpers

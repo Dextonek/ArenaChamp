@@ -1,7 +1,7 @@
 import type { HeroKit } from '../heroes';
 import { traitFor } from '../traits';
 
-export { Attacker, type AttackOwner } from './attacker';
+export { Attacker, ECHO_DELAY, type AttackOwner } from './attacker';
 export { AttackFx, type AttackLook, type MeleeLook, type RangedLook } from './fx';
 import type { AttackLook } from './fx';
 

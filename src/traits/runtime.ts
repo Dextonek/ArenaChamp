@@ -1,4 +1,5 @@
 import type * as THREE from 'three';
+import type { DeathSpot, Summon, SummonOptions } from '../effects/summon';
 import type { Enemy } from '../effects/common';
 import type { BuffKind, StatusSet } from '../effects/status';
 import { NO_MODS, type CastMods, type HoldSpec, type LandedHit, type RecastSpec, type Side, type Trait, type TraitHit, type TraitView } from './types';
@@ -28,6 +29,12 @@ export interface TraitHost {
   hold(seconds: number): void;
   /** Slides this side's hero to `p` over `seconds` (a dash); the opponent's side does nothing in a network duel. */
   moveTo(p: THREE.Vector3, seconds: number): void;
+  /** The basic attack is ready at once (a network duel: only this player's own side does anything). */
+  resetAttack(): void;
+  /** Summons units for this side (`opts.at` is set); null when none can be made or this side cannot (network duel's other player). */
+  summon(opts: SummonOptions): Summon | null;
+  /** Where units were slain within `maxAge` s (both sides). */
+  deathSpots(maxAge: number): DeathSpot[];
   /** A passive fired (`big`: stacks popped on the enemy) at `at`; `stack` names the stacks that popped. */
   burst?(at: THREE.Vector3, big: boolean, stack?: string): void;
   /** Stacks changed on the enemy hero (a network duel shows them on the other screen). */
@@ -128,6 +135,18 @@ export class TraitRuntime implements TraitView {
 
   moveTo(p: THREE.Vector3, seconds: number) {
     this.host.moveTo(p, Math.max(0, seconds));
+  }
+
+  resetAttack() {
+    this.host.resetAttack();
+  }
+
+  summon(opts: Omit<SummonOptions, 'at'> & { at?: THREE.Vector3 }) {
+    return this.host.summon({ ...opts, at: (opts.at ?? this.self().group.position).clone() });
+  }
+
+  deathSpots(maxAge: number) {
+    return this.host.deathSpots(maxAge);
   }
 
   past(secondsAgo: number) {
@@ -278,6 +297,16 @@ export class TraitRuntime implements TraitView {
     // Runs here, in the cast's rules: before the effect's play() builds its context (see docs/architecture/traits.md).
     t?.afterCast?.(this, slot);
     return { mods, cooldown, replay: true };
+  }
+
+  /** Metres of extra basic-attack reach the trait gives now (0 = none). */
+  attackReach(): number {
+    return Math.max(0, this.trait?.attackReach?.(this) ?? 0);
+  }
+
+  /** The echo share (0..1) of the next basic attack (0 = none). */
+  attackEcho(): number {
+    return Math.max(0, Math.min(1, this.trait?.attackEcho?.(this) ?? 0));
   }
 
   /** A basic attack is released: its mods. */

@@ -8,7 +8,7 @@ import { StatusFx, StatusFxPool } from './effects/parts/status';
 import { BuffFx, BuffFxPool } from './effects/parts/buffs';
 import { ShieldFx, ShieldFxPool } from './effects/parts/shield';
 import { ProjectileSystem, type Projectile, type ProjectileOptions } from './effects/projectile';
-import { SummonSystem, type SummonWorld } from './effects/summon';
+import { SummonSystem, type DeathSpot, type Summon, type SummonOptions, type SummonSide, type SummonWorld } from './effects/summon';
 
 /** Default enemy spots: a loose pack on the -Z side of the caster. */
 const LAYOUT: [number, number][] = [
@@ -363,6 +363,7 @@ export class Arena {
         hit: (t, h) => this.hit(t, h, cast),
         fire: (po) => this.fire(po, 'hero-unit', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
       }, so),
+      deathSpots: (maxAge) => this.summons.deathSpots(maxAge),
     };
   }
 
@@ -781,7 +782,28 @@ export class Arena {
       summon: (so) => this.summons.spawn({
         side: 'opponent', victims, hit: deliver, fire: (po) => this.fire(po, 'opponent-unit', victims, deliver),
       }, so),
+      deathSpots: (maxAge) => this.summons.deathSpots(maxAge),
     };
+  }
+
+  /**
+   * Summons units for `side` outside a cast (a trait's passive). The hero's units hit the pack and the opponent's
+   * units like a spell's do (no cast number: the duel treats them as 'unit' hits). The opponent's units fight the
+   * hero and the hero's units, and deliver through `hit` (the duel's: the hero's HP is the duel's).
+   */
+  summonFor(side: SummonSide, so: SummonOptions, hit?: (target: Enemy, opts?: HitOptions) => void): Summon {
+    if (side === 'hero') return this.summons.spawn(this.heroWorld, so);
+    const victims = () => [
+      { figure: this.caster, pos: this.caster.group.position },
+      ...this.summons.alive('hero').map((u) => ({ figure: u.figure, pos: u.pos })),
+    ];
+    const deliver = (t: Enemy, h: HitOptions) => (hit ? hit(t, h) : this.hit(t, h));
+    return this.summons.spawn({ side: 'opponent', victims, hit: deliver, fire: (po) => this.fire(po, 'opponent-unit', victims, deliver) }, so);
+  }
+
+  /** Where summoned units were slain within the last `maxAge` seconds (see `CastContext.deathSpots`). */
+  deathSpots(maxAge: number): DeathSpot[] {
+    return this.summons.deathSpots(maxAge);
   }
 
   /** True when `figure` is a summoned unit (alive or fading). */

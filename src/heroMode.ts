@@ -101,8 +101,13 @@ export class HeroMode implements TouchTarget {
   focusZoom = 1.5;
   /** Duel: called after every cast the player makes (slot 0-3 and what it was aimed at). */
   onCast?: (label: string, slot: number, target: Target) => void;
-  /** A basic attack on `target` was released (a network duel tells the other side). */
-  onAttack?: (target: Enemy) => void;
+  /**
+   * A basic attack on `target` was released (a network duel tells the other side). `echo` is 0 for a normal attack
+   * and the trait's echo share (0..1) for the echo's second hit (see `Trait.attackEcho`).
+   */
+  onAttack?: (target: Enemy, echo: number) => void;
+  /** The duel says an echo against `target` is not played as a second hit (online: against the other hero it is folded into the first). */
+  skipEcho?: (target: Enemy) => boolean;
   /**
    * The duel's rules for this hero's identity layer (src/traits): ammo, recast, hold charge, cooldown changes, the
    * resource and the passive's badge. Null outside a duel (plain hero mode plays the kit as is).
@@ -150,7 +155,9 @@ export class HeroMode implements TouchTarget {
       spec: () => this.attackSpec,
       land: (target, opts) => host.arena.hit(target, opts),
       posOf: (target) => this.targetPos({ enemy: target }),
-      released: (target) => this.onAttack?.(target),
+      released: (target, echo) => this.onAttack?.(target, echo),
+      reach: () => this.traits?.attackReach() ?? 0,
+      echo: (target) => (this.traits && !this.skipEcho?.(target) ? this.traits.attackEcho() : 0),
     });
     this.group.add(this.attackFx.group);
     const flat = (geo: THREE.BufferGeometry, color: string, opacity: number) => {
@@ -628,7 +635,7 @@ export class HeroMode implements TouchTarget {
   private updateAttack(hero: THREE.Vector3) {
     if (!this.attacksEnabled) { this.clearAttack(); return; }
     if (this.attackMove && !this.attackTarget) {
-      let best: Enemy | null = null, bd = this.attackSpec.range;
+      let best: Enemy | null = null, bd = this.attacker.range;
       for (const f of this.host.arena.liveFoes()) {
         const d = flatDist(hero, f.pos);
         if (d <= bd && this.attacker.inRange(hero, f.pos)) { bd = d; best = f.figure; }
@@ -658,9 +665,19 @@ export class HeroMode implements TouchTarget {
     return this.attacker.winding;
   }
 
-  /** The hero's basic attack (range, damage, timing). */
+  /** The hero's basic attack (range, damage, timing). `range` here is the base: see `attackRange`. */
   get attack(): AttackSpec {
     return this.attackSpec;
+  }
+
+  /** The basic attack's reach now: the base range plus the trait's `attackReach` (m). */
+  get attackRange() {
+    return this.attacker.range;
+  }
+
+  /** The basic attack is ready at once (a trait's `resetAttack`). */
+  resetAttack() {
+    this.attacker.ready();
   }
 
   private cancelAim() {
@@ -698,6 +715,12 @@ export class HeroMode implements TouchTarget {
     if (this.status.cannotCast || !this.ready(i)) return;
     const arena = this.host.arena;
     const rt = this.traits;
+    // A targeted spell (one enemy, or a chain from it) needs sight of its target, whoever casts it.
+    if ('enemy' in target) {
+      const mode = this.host.targeting(spell.label)?.mode;
+      const at = this.targetPos(target);
+      if ((mode === 'enemy' || mode === 'enemies') && at && !arena.lineOfSight(arena.caster.group.position, at)) { this.say('No line of sight'); return; }
+    }
     if (rt?.canRecast(i) && rt.recastOf(i)?.replay === false) {
       // A recast that only acts: the trait's `recastAct` runs in the rules and moves the hero; no effect plays and no
       // cast is sent. The first cast's cooldown keeps running.

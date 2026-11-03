@@ -780,3 +780,328 @@ export class SerpentHead {
     this.jaw.rotation.x = 0;
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Marin's v4 kit: the tide ring, the current streaks, the water disc, the coral spire and the moon halo
+// ---------------------------------------------------------------------------------------------------------------
+
+const hash1 = (i: number) => Math.abs(Math.sin(i * 78.233 + 1.7) * 43758.5453) % 1;
+const frac = (x: number) => x - Math.floor(x);
+
+function flatMat(color: number, opacity = 1, additive = false) {
+  return new THREE.MeshBasicMaterial({
+    color, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide,
+    blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+  });
+}
+
+/**
+ * The tide ring at her feet: a thin rim with eight chevrons that march OUTWARD in pale foam at High tide and INWARD in
+ * deep blue at Low tide. `set(pos, high, opacity, time, radius)` each frame; opacity 0 hides it. Add `mesh`.
+ */
+export class TideRing {
+  readonly mesh = new THREE.Group();
+  private rim: THREE.Mesh;
+  private chevrons: THREE.Mesh[] = [];
+  private static readonly N = 8;
+
+  constructor() {
+    const rg = new THREE.RingGeometry(0.94, 1, 56);
+    rg.rotateX(-Math.PI / 2);
+    this.rim = new THREE.Mesh(rg, flatMat(TIDE.hot, 0));
+    this.mesh.add(this.rim);
+    const cs = new THREE.Shape();
+    cs.moveTo(0.17, 0);
+    cs.lineTo(-0.1, 0.12);
+    cs.lineTo(-0.03, 0);
+    cs.lineTo(-0.1, -0.12);
+    cs.closePath();
+    const cg = new THREE.ShapeGeometry(cs);
+    cg.rotateX(-Math.PI / 2);
+    for (let i = 0; i < TideRing.N; i++) {
+      const m = new THREE.Mesh(cg, flatMat(TIDE.foam, 0));
+      this.chevrons.push(m);
+      this.mesh.add(m);
+    }
+    this.mesh.renderOrder = 2;
+    this.mesh.visible = false;
+  }
+
+  set(pos: THREE.Vector3, high: boolean, opacity: number, time: number, radius = 1.2) {
+    this.mesh.visible = opacity > 0.01;
+    if (!this.mesh.visible) return;
+    this.mesh.position.set(pos.x, 0.05, pos.z);
+    this.rim.scale.setScalar(radius);
+    const rm = this.rim.material as THREE.MeshBasicMaterial;
+    rm.color.setHex(high ? TIDE.hot : TIDE.body);
+    rm.opacity = 0.5 * opacity;
+    const n = TideRing.N;
+    for (let i = 0; i < n; i++) {
+      const u = frac(time * 0.75 + i / n);
+      const a = (i / n) * Math.PI * 2;
+      const r = radius * (high ? 0.7 + 0.55 * u : 1.25 - 0.55 * u);
+      const m = this.chevrons[i];
+      m.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+      m.rotation.y = high ? -a : -a + Math.PI;
+      const mat = m.material as THREE.MeshBasicMaterial;
+      mat.color.setHex(high ? TIDE.foam : TIDE.body);
+      mat.opacity = 0.95 * Math.sin(Math.PI * u) * opacity;
+    }
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+}
+
+/**
+ * Flowing streaks on the floor round a centre: darts of foam that fly OUTWARD (High tide) or darts of blue that spiral
+ * INWARD (Low tide), each fading in and out along its run. `set(center, rMin, rMax, inward, strength, time)` each
+ * frame; strength 0 hides it. Add `mesh`.
+ */
+export class TideCurrent {
+  readonly mesh: THREE.InstancedMesh;
+  private dummy = new THREE.Object3D();
+  private col = new THREE.Color();
+  private n: number;
+
+  constructor(n = 24) {
+    this.n = n;
+    const sh = new THREE.Shape();
+    sh.moveTo(0.5, 0);
+    sh.lineTo(-0.5, 0.16);
+    sh.lineTo(-0.35, 0);
+    sh.lineTo(-0.5, -0.16);
+    sh.closePath();
+    const g = new THREE.ShapeGeometry(sh);
+    g.rotateX(-Math.PI / 2);
+    const m = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+    this.mesh = new THREE.InstancedMesh(g, m, n);
+    this.mesh.frustumCulled = false;
+    this.mesh.visible = false;
+    this.mesh.renderOrder = 2;
+    for (let i = 0; i < n; i++) this.mesh.setColorAt(i, this.col.setRGB(0, 0, 0));
+  }
+
+  set(center: THREE.Vector3, rMin: number, rMax: number, inward: boolean, strength: number, time: number, speed = 0.9, len = 0.8) {
+    this.mesh.visible = strength > 0.01;
+    if (!this.mesh.visible) return;
+    const base = inward ? 0x3ab8ea : TIDE.foam;
+    for (let i = 0; i < this.n; i++) {
+      const u = frac(time * speed * (0.8 + 0.4 * hash1(i + 11)) + hash1(i));
+      const a0 = hash1(i + 3) * Math.PI * 2;
+      const a = inward ? a0 + u * 0.8 : a0;
+      const r = inward ? rMax + (rMin - rMax) * u : rMin + (rMax - rMin) * u;
+      this.dummy.position.set(center.x + Math.cos(a) * r, 0.06 + i * 0.0004, center.z + Math.sin(a) * r);
+      // Outward darts point away from the centre; inward ones point at it, bent along the spiral.
+      this.dummy.rotation.set(0, inward ? -a + Math.PI - 0.5 : -a, 0);
+      this.dummy.scale.set(len * (0.6 + 0.8 * hash1(i + 7)), 1, 0.8 + 0.6 * hash1(i + 5));
+      this.dummy.updateMatrix();
+      this.mesh.setMatrixAt(i, this.dummy.matrix);
+      this.col.setHex(base).multiplyScalar(Math.sin(Math.PI * u) * strength);
+      this.mesh.setColorAt(i, this.col);
+    }
+    this.mesh.instanceMatrix.needsUpdate = true;
+    if (this.mesh.instanceColor) this.mesh.instanceColor.needsUpdate = true;
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+}
+
+/**
+ * A spinning disc of water: a flat lens with a dark underside, a lighter top, a foam rim and three foam arms that spin
+ * round it. It rolls a little on its edge as it flies. `set(pos, scale, spin, high)`; scale 0 hides it. Add `mesh`.
+ */
+export class WaterDisc {
+  readonly mesh = new THREE.Group();
+  private spinner = new THREE.Group();
+  private rim: THREE.Mesh;
+  private arms: THREE.Mesh[] = [];
+  private top: THREE.Mesh;
+
+  constructor() {
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.07, 28), flatMat(TIDE.body, 0.92));
+    const under = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.28, 0.1, 28), flatMat(TIDE.dark, 0.9));
+    under.position.y = -0.08;
+    const tg = new THREE.CircleGeometry(0.42, 28);
+    tg.rotateX(-Math.PI / 2);
+    this.top = new THREE.Mesh(tg, flatMat(TIDE.hot, 0.85));
+    this.top.position.y = 0.045;
+    const rg = new THREE.TorusGeometry(0.5, 0.045, 6, 36);
+    rg.rotateX(Math.PI / 2);
+    this.rim = new THREE.Mesh(rg, flatMat(TIDE.foam, 1));
+    this.spinner.add(under, body, this.top, this.rim);
+    for (let i = 0; i < 3; i++) {
+      const ag = new THREE.RingGeometry(0.12, 0.4, 14, 1, (i * Math.PI * 2) / 3, 1.9);
+      ag.rotateX(-Math.PI / 2);
+      const arm = new THREE.Mesh(ag, flatMat(TIDE.foam, 0.95));
+      arm.position.y = 0.055;
+      this.arms.push(arm);
+      this.spinner.add(arm);
+    }
+    this.mesh.add(this.spinner);
+    this.mesh.visible = false;
+  }
+
+  set(pos: THREE.Vector3, scale: number, spin: number, high: boolean) {
+    this.mesh.visible = scale > 0.02;
+    if (!this.mesh.visible) return;
+    this.mesh.position.copy(pos);
+    this.mesh.scale.setScalar(scale);
+    this.spinner.rotation.y = spin * 18;
+    this.mesh.rotation.x = 0.3 + Math.sin(spin * 9) * 0.06;
+    (this.rim.material as THREE.MeshBasicMaterial).color.setHex(high ? TIDE.foam : TIDE.hot);
+    (this.top.material as THREE.MeshBasicMaterial).color.setHex(high ? TIDE.hot : 0x6fd0f2);
+    for (const a of this.arms) (a.material as THREE.MeshBasicMaterial).color.setHex(high ? TIDE.foam : 0x3ab8ea);
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+}
+
+const CORAL_DEEP = new THREE.Color(0x8c3a4b);
+const CORAL_MID = new THREE.Color(TIDE.accent);
+const CORAL_TIP = new THREE.Color(0xffe6d6);
+
+/** A tapered coral spike (base on y = 0) with vertex colours: deep red at the foot, coral, then a pale tip. */
+function coralSpike(rBot: number, rTop: number, h: number, seg: number) {
+  const g = new THREE.CylinderGeometry(rTop, rBot, h, seg, 3);
+  g.translate(0, h / 2, 0);
+  const pos = g.attributes.position as THREE.BufferAttribute;
+  const col = new Float32Array(pos.count * 3);
+  const c = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const k = clamp01(pos.getY(i) / h);
+    if (k < 0.55) c.copy(CORAL_DEEP).lerp(CORAL_MID, k / 0.55);
+    else c.copy(CORAL_MID).lerp(CORAL_TIP, (k - 0.55) / 0.45);
+    col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  return g;
+}
+
+/**
+ * A coral pillar: a tall central spike and seven leaning branches round a foam collar with a few sea-glass beads.
+ * `grow(k)` raises it (0..1, with a small overshoot), `sink(k)` lowers it again, `opacity` fades it; the base stays
+ * on the floor at the mesh's position. Add `mesh`.
+ */
+export class CoralSpire {
+  readonly mesh = new THREE.Group();
+  private pillar = new THREE.Group();
+  private mat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true });
+  private collar: THREE.Mesh;
+  private beads: THREE.Mesh[] = [];
+
+  constructor() {
+    this.pillar.add(new THREE.Mesh(coralSpike(0.8, 0.14, 4.0, 7), this.mat));
+    for (let i = 0; i < 7; i++) {
+      const a = i * 2.4;
+      const h = 1.3 + 1.0 * hash1(i + 2);
+      const b = new THREE.Mesh(coralSpike(0.26 + 0.08 * hash1(i), 0.06, h, 6), this.mat);
+      const tilt = 0.45 + 0.3 * hash1(i + 9);
+      const dx = Math.cos(a), dz = Math.sin(a);
+      b.position.set(dx * 0.5, 0.1 + i * 0.3, dz * 0.5);
+      b.rotation.z = -tilt * dx;
+      b.rotation.x = tilt * dz;
+      this.pillar.add(b);
+    }
+    const cg = new THREE.TorusGeometry(0.95, 0.13, 6, 28);
+    cg.rotateX(Math.PI / 2);
+    this.collar = new THREE.Mesh(cg, flatMat(TIDE.foam, 0.95));
+    this.collar.position.y = 0.08;
+    for (let i = 0; i < 5; i++) {
+      const bead = new THREE.Mesh(new THREE.IcosahedronGeometry(0.1 + 0.05 * hash1(i), 0), flatMat(TIDE.hot, 0.8));
+      const a = i * 1.3 + 0.4;
+      bead.position.set(Math.cos(a) * 1.05, 0.14, Math.sin(a) * 1.05);
+      this.beads.push(bead);
+    }
+    this.mesh.add(this.pillar, this.collar, ...this.beads);
+    this.reset();
+  }
+
+  /** Rise progress 0..1: the pillar shoots up with a small overshoot and the collar splashes out. */
+  grow(k: number) {
+    const e = 1 + 2.2 * Math.pow(k - 1, 3) + 1.2 * Math.pow(k - 1, 2); // ease-out-back
+    const h = Math.max(1e-3, k <= 0 ? 0 : e);
+    const w = 0.35 + 0.65 * clamp01(k * 1.4);
+    this.pillar.scale.set(w, h, w);
+    this.collar.scale.setScalar(0.4 + 0.6 * easeOut(k));
+    this.mesh.visible = k > 0;
+  }
+
+  /** Crumble progress 0..1: sinks into the floor and shrinks. */
+  sink(k: number) {
+    this.pillar.scale.set(1 - 0.3 * k, Math.max(1e-3, 1 - k * k), 1 - 0.3 * k);
+    this.opacity = 1 - sstep(0.6, 1, k);
+  }
+
+  set opacity(v: number) {
+    this.mat.opacity = v;
+    (this.collar.material as THREE.MeshBasicMaterial).opacity = 0.95 * v;
+    for (const b of this.beads) (b.material as THREE.MeshBasicMaterial).opacity = 0.8 * v;
+    this.mesh.visible = v > 0.01;
+  }
+
+  /** Brightens the foot foam (a flare when it cracks). */
+  flare(v: number) {
+    (this.collar.material as THREE.MeshBasicMaterial).color.setHex(TIDE.foam).lerp(new THREE.Color(TIDE.accent), clamp01(v));
+  }
+
+  reset() {
+    this.pillar.scale.set(0.35, 1e-3, 0.35);
+    this.mat.opacity = 1;
+    this.flare(0);
+    this.mesh.visible = false;
+  }
+}
+
+/** A pale moon disc over her head with a ring of orbiting sea-glass beads. `set(pos, size, opacity, time)`; opacity 0 hides it. */
+export class MoonHalo {
+  readonly mesh = new THREE.Group();
+  private disc: THREE.Mesh;
+  private ring: THREE.Mesh;
+  private beads: THREE.Mesh[] = [];
+
+  constructor() {
+    const dg = new THREE.CircleGeometry(0.62, 32);
+    dg.rotateX(-Math.PI / 2);
+    this.disc = new THREE.Mesh(dg, flatMat(TIDE.foam, 0.85));
+    const rg = new THREE.RingGeometry(0.78, 0.9, 40);
+    rg.rotateX(-Math.PI / 2);
+    this.ring = new THREE.Mesh(rg, flatMat(TIDE.hot, 0.7));
+    // The crescent: a dark bite out of the disc.
+    const bg = new THREE.CircleGeometry(0.5, 28);
+    bg.rotateX(-Math.PI / 2);
+    const bite = new THREE.Mesh(bg, flatMat(TIDE.dark, 0.85));
+    bite.position.set(0.24, 0.01, -0.12);
+    this.mesh.add(this.disc, bite, this.ring);
+    for (let i = 0; i < 6; i++) {
+      const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.07, 0), flatMat(TIDE.hot, 0.9));
+      this.beads.push(b);
+      this.mesh.add(b);
+    }
+    this.mesh.visible = false;
+  }
+
+  set(pos: THREE.Vector3, size: number, opacity: number, time: number) {
+    this.mesh.visible = opacity > 0.01 && size > 0.01;
+    if (!this.mesh.visible) return;
+    this.mesh.position.set(pos.x, pos.y + Math.sin(time * 2.2) * 0.06, pos.z);
+    this.mesh.scale.setScalar(size);
+    this.mesh.rotation.x = 0.35;
+    this.mesh.rotation.y = time * 0.5;
+    for (const o of [this.disc, this.ring]) (o.material as THREE.MeshBasicMaterial).opacity = (o === this.disc ? 0.85 : 0.7) * opacity;
+    this.beads.forEach((b, i) => {
+      const a = time * 1.6 + (i / this.beads.length) * Math.PI * 2;
+      b.position.set(Math.cos(a) * 1.05, Math.sin(a * 2) * 0.1, Math.sin(a) * 1.05);
+      (b.material as THREE.MeshBasicMaterial).opacity = 0.9 * opacity;
+    });
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+}

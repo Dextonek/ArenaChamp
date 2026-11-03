@@ -69,6 +69,8 @@ opponent's hits on the player and the player's units in `hitPlayer`, `hitUnit` a
 | `cooldown(t, slot, base)` | the cooldown the cast gets | half cooldown when empowered; 0 at full tide |
 | `canCast(t, slot)` | before aiming | "needs a full meter"; return a reason string |
 | `attackMods(t)` | a basic attack is released | every third hit knocks back |
+| `attackReach(t)` | every frame: metres added to the basic-attack reach while > 0 | Zephyr: +1 m after a Gust |
+| `attackEcho(t)` | once per released attack: share 0..1 of a second hit ~0.12 s later (0 = none) | Lyra's Twin Stars: 0.5 |
 | `dealt(t, hit)` / `taken(t, hit)` | a hit is resolved | backstab +30%; 15% less while standing still |
 | `landed(t, hit)` | a hit of this hero's landed | gain a combo point; heal 20% of the damage |
 | `tick(t, dt)` | every frame of the fight | momentum from walking; regen when not hit |
@@ -109,7 +111,24 @@ receiving screen instead of gliding (`Duel.peerMove`, `PEER_JUMP`).
 `enemyDistance()`, `units()` (where this hero's live summons stand: Sirix's wasps, Ada's turret) and `hold(s)` (this hero
 cannot walk or attack; Isolde's ice block, with `canCast` blocking spells).
 
-**Rule:** a trait never makes hits or units of its own. It changes the hits of casts and attacks (damage, status,
+New in the 2026-11-03 engine round (all on `TraitView`; the host side is `TraitHost`):
+
+- `resetAttack(): void`: the basic attack is ready at once (interval restarts now; a running wind-up goes on). Online only
+  this player's side does anything.
+- `summon(opts: Omit<SummonOptions, 'at'> & { at?: THREE.Vector3 }): Summon | null`: units for this side, same options
+  as `ctx.summon` (src/effects/summon.ts), `at` defaults to the hero's feet, 6 per side at most. The hero's units hit as
+  'unit' hits (no cast: power 1, `dealt` / `taken` still run); the opponent's hit the hero through the duel's
+  `hitPlayer` / `hitUnit`. Online: only this player's own side summons; the other player's side returns null (its own
+  client raises its units, and they are not shown on this screen). Online the units' hits on the other hero are dropped
+  (`hitFilter`: only the victim's client decides hits on its hero), so a passive's units are local-only there.
+- `deathSpots(maxAge: number): DeathSpot[]`: `{ x, z, age, side }`, oldest first. Units of either side slain by damage
+  within `maxAge` seconds (kept 30 s, cleared every round); a unit that expired leaves nothing. Filter with
+  `d.side === t.side` for this hero's own. `unitDeaths()` stays the plain count. The same shape is
+  `CastContext.deathSpots` for effects.
+- `Trait.attackReach` / `Trait.attackEcho` (hooks above) are read by `Attacker` through `AttackOwner.reach` /
+  `.echo`; see [attacks.md](attacks.md).
+
+**Rule:** a trait makes no hits of its own (units from `summon` hit through the normal pipeline). It changes the hits of casts and attacks (damage, status,
 debuff, knock), gives its own hero buffs, heals, shields and HP costs, moves resources and stacks, and sets
 cooldowns. That keeps it working online, where each client decides the hits on its own hero.
 
@@ -121,6 +140,7 @@ cooldowns. That keeps it working online, where each client decides the hits on i
 - The other hero's resource travels with its moves (`move.r`), its buffs with `buff` → `peer_buff`, its HP costs with
   `spend` → `peer_spend`. Stacks are decided on the victim's screen and sent back with `stacks` → `peer_stacks`.
 - Heals are batched (twice a second).
+- Basic-attack echo (`attackEcho`) is folded into the one hit online (power x (1 + share)); `attackReach` is local. `summon` works for this player's own side only. See [attacks.md](attacks.md).
 
 ## Visuals (all new, 2026-10-30)
 

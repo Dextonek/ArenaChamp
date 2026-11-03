@@ -264,9 +264,12 @@ export class Duel {
       },
       posOf: (target) => target === arena.caster ? arena.caster.group.position
         : arena.summons.alive('hero').find((u) => u.figure === target)?.pos ?? null,
-      released: () => {
-        if (!this.net && this.oppRt && this.foe) this.oppAttackMods = this.oppRt.attack(arena.statusOf(this.foe)?.dealtMul ?? 1);
+      released: (_target, echo) => {
+        // An echo's second hit reuses the first one's mods (its damage share is in the hit itself).
+        if (!echo && !this.net && this.oppRt && this.foe) this.oppAttackMods = this.oppRt.attack(arena.statusOf(this.foe)?.dealtMul ?? 1);
       },
+      reach: () => (this.net ? 0 : this.oppRt?.attackReach() ?? 0),
+      echo: () => (this.net ? 0 : this.oppRt?.attackEcho() ?? 0),
     });
     this.group.visible = false;
     this.hud = this.buildHud();
@@ -478,6 +481,10 @@ export class Duel {
       shield: (amount, seconds) => arena.shieldFigure(arena.caster, amount, seconds),
       unitDeaths: () => Object.values(arena.summons.stats).reduce((a, st) => a + st.slain, 0),
       units: () => arena.summons.alive('hero').map((u) => u.pos),
+      resetAttack: () => hm.resetAttack(),
+      // The hero's units live on this screen (online too: the other screen does not see a passive's units).
+      summon: (so) => arena.summonFor('hero', so),
+      deathSpots: (maxAge) => arena.deathSpots(maxAge),
       hold: (seconds) => hm.holdStill(seconds),
       moveTo: (p, seconds) => { arena.moveFigure(arena.caster, p, seconds); },
     });
@@ -503,6 +510,14 @@ export class Duel {
       shield: (amount, seconds) => { if (!this.net && this.foe) arena.shieldFigure(this.foe, amount, seconds); },
       unitDeaths: () => Object.values(arena.summons.stats).reduce((a, st) => a + st.slain, 0),
       units: () => arena.summons.alive('opponent').map((u) => u.pos),
+      resetAttack: () => { if (!this.net) this.oppAttack.ready(); },
+      // Online the other player's own client raises its units (the cast replay plays them here); a passive's would double.
+      summon: (so) => {
+        if (this.net || !this.foe) return null;
+        const rec: EnemyCast = { id: 0, round: this.round, zones: [], aimed: this.foe.group.position.clone(), dodgedShown: false, mods: NO_MODS, seq: ++this.oppCastSeq };
+        return arena.summonFor('opponent', so, (target, opts) => (target === arena.caster ? this.hitPlayer(rec, opts) : this.hitUnit(rec, target, opts)));
+      },
+      deathSpots: (maxAge) => arena.deathSpots(maxAge),
       // Online the other player's own client holds its hero still.
       hold: (seconds) => {
         this.foeHeld = Math.max(this.foeHeld, seconds);
@@ -528,13 +543,18 @@ export class Duel {
       this.heroLast = { slot, mods: r.mods };
       return r.cooldown;
     };
-    hm.onAttack = (target) => {
+    // Online an echo against the other hero is not a second message (the server drops attacks 0.5 s apart): the hit
+    // carries it as extra power instead.
+    hm.skipEcho = (target) => !!this.net && target === this.foe;
+    hm.onAttack = (target, echo) => {
+      if (echo) return;
       this.heroAttackMods = this.heroRt!.attack(hm.status.dealtMul);
       // Basic attacks at the other hero go to its client, which plays them and reports the hit. Attacks on units stay local.
       if (this.net && target === this.foe) {
         const id = ++this.castSeq;
         this.netIds.set(id, 'attack');
-        this.net.attack(id, this.heroAttackMods);
+        const fold = 1 + this.heroRt!.attackEcho();
+        this.net.attack(id, fold > 1 ? { ...this.heroAttackMods, power: this.heroAttackMods.power * fold } : this.heroAttackMods);
       }
     };
     // The player's hits (spells, bolts, units, attacks) on the opponent and its units get the cast's power, buffs and
@@ -612,6 +632,7 @@ export class Duel {
     this.heroRt = this.oppRt = null;
     this.host.heroMode.onCast = undefined;
     this.host.heroMode.onAttack = undefined;
+    this.host.heroMode.skipEcho = undefined;
     arena.maxHp = 100;
     arena.respawnAfter = 4;
     arena.bounds = null;
@@ -928,7 +949,7 @@ export class Duel {
     // A hit on its way: a ready parry or bolt wall answers it (cast below, before anything else); otherwise step off a
     // skillshot's line before casting or walking on (if the roll says so).
     const hm = this.host.heroMode;
-    const guard = this.guards(foe, at, hm.attackWinding && flat(at, me) <= hm.attack.range + 0.5);
+    const guard = this.guards(foe, at, hm.attackWinding && flat(at, me) <= hm.attackRange + 0.5);
     const guarding = !st?.cannotCast && this.guarded(this.opponentKit, guard, (i) => this.cooldowns[i] <= 0);
     const side = st?.cannotMove || guarding ? null : this.dodgeBolt(this.opponentDodge, foe, at);
     if (side) {
@@ -965,7 +986,7 @@ export class Duel {
       this.face(foe, me);
       return;
     }
-    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttackSpec.range);
+    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
     if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit) * (st?.speedMul ?? 1) * dt), true);
     this.face(foe, me);
   }
@@ -989,9 +1010,12 @@ export class Duel {
       if (spell.summon) return full || dHero > SUMMON_REACH ? null : { i, spec };
       // A last stand waits for the caster's own HP, not the enemy's.
       if (spell.save) return ownHp <= SAVE_HP && dHero <= SAVE_REACH ? { i, spec } : null;
-      // A parry or a bolt wall only answers a hit on its way (its own range does not matter).
-      if (spell.parry) return guard.parry ? { i, spec } : null;
-      if (spell.barrier) return guard.barrier ? { i, spec } : null;
+      // A parry or a bolt wall answers a hit on its way (its own range does not matter). One that is also a dash (a
+      // dodge step) still closes gaps by the dash rule below; otherwise it waits for the hit.
+      if (spell.parry || spell.barrier) {
+        if ((spell.parry && guard.parry) || (spell.barrier && guard.barrier)) return { i, spec };
+        if (!spell.dash) return null;
+      }
       const reach = spec.mode === 'self' ? (spec.radius ?? 5) - 0.6 : spell.range;
       if (d > reach || (spec.mode !== 'self' && !sees)) return null;
       // A gap closer only when the target is out of Q's range (it would waste the dash otherwise). An ultimate that leaps
@@ -1100,7 +1124,7 @@ export class Duel {
     // Basic attack: nothing to cast, the opponent in reach. Stands still through the wind-up.
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
-    const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attack.range);
+    const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit) * st.speedMul * dt));
   }
 

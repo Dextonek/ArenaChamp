@@ -195,222 +195,171 @@ export const boneKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'bone spear', name: 'Bone Spear', range: 11, cooldown: 3, aim: 'line',
-      blurb: 'Assembles a spear of vertebrae and throws it down a line; it pierces everything it meets and clatters apart.',
+      key: 'Q', label: 'bone fan', name: 'Bone Fan', range: 8, cooldown: 5, aim: 'line',
+      blurb: 'Flicks three bone shards in a fan (30 each). Every bone pile within 3 m of him throws one more (six at most).',
       icon(g, s) {
         iconGround(g, s);
-        // A vertebra spear, low left to high right: five chunky segments, a pointed head, soulfire in the gaps.
-        const x0 = s * 0.12, y0 = s * 0.84, x1 = s * 0.7, y1 = s * 0.26;
-        const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
-        const ang = Math.atan2(dy, dx);
-        for (let i = 0; i < 5; i++) {
-          const k = 0.04 + i * 0.17, cx = x0 + dx * k, cy = y0 + dy * k;
-          g.save();
-          g.translate(cx + ux * s * 0.06, cy + uy * s * 0.06);
-          g.rotate(ang);
+        // Five pointed shards fanning out and up from a small pile on the floor at the lower left.
+        const ox = s * 0.2, oy = s * 0.8;
+        const fan: [number, number][] = [[-1.0, -0.32], [-0.62, -0.7], [-0.1, -0.86], [0.46, -0.78], [0.86, -0.44]];
+        for (const [dx, dy] of fan) {
+          const L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, len = s * 0.62;
+          const x1 = ox + ux * len * 0.78, y1 = oy + uy * len * 0.78;
+          bone(g, ox + ux * s * 0.06, oy + uy * s * 0.06, x1, y1, s * 0.045, false);
+          // The point.
+          const nx = -uy, ny = ux;
           g.fillStyle = S.bone;
           g.strokeStyle = S.crev;
-          g.lineWidth = s * 0.014;
+          g.lineWidth = s * 0.012;
           g.beginPath();
-          g.roundRect(-s * 0.085, -s * 0.052, s * 0.17, s * 0.104, s * 0.03);
+          g.moveTo(x1 + nx * s * 0.045, y1 + ny * s * 0.045);
+          g.lineTo(ox + ux * len, oy + uy * len);
+          g.lineTo(x1 - nx * s * 0.045, y1 - ny * s * 0.045);
+          g.closePath();
           g.fill();
           g.stroke();
-          if (i % 2 === 1) {
-            g.beginPath();
-            g.moveTo(-s * 0.02, -s * 0.05);
-            g.lineTo(0, -s * 0.11);
-            g.lineTo(s * 0.02, -s * 0.05);
-            g.fill();
-            g.stroke();
-          }
-          g.restore();
-          if (i < 4) wisp(g, cx + ux * s * 0.15, cy + uy * s * 0.15 + s * 0.012, s * 0.017);
         }
-        g.save();
-        g.translate(x1 + ux * s * 0.02, y1 + uy * s * 0.02);
-        g.rotate(ang);
-        g.fillStyle = S.bone;
-        g.strokeStyle = S.crev;
-        g.lineWidth = s * 0.014;
-        g.beginPath();
-        g.moveTo(-s * 0.03, -s * 0.07);
-        g.lineTo(s * 0.2, 0);
-        g.lineTo(-s * 0.03, s * 0.07);
-        g.closePath();
-        g.fill();
-        g.stroke();
-        g.restore();
-        // Chips flying off the tail.
-        g.fillStyle = S.bone;
-        for (const [x, y, r] of [[0.08, 0.64, 0.016], [0.22, 0.9, 0.014], [0.34, 0.74, 0.012], [0.88, 0.14, 0.014]]) {
-          g.beginPath();
-          g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
-          g.fill();
-        }
-        ember(g, s * 0.9, s * 0.2, s * 0.024);
+        // The pile: a heap of short bones and a small skull.
+        bone(g, s * 0.08, s * 0.9, s * 0.3, s * 0.86, s * 0.04);
+        bone(g, s * 0.14, s * 0.84, s * 0.32, s * 0.93, s * 0.035);
+        skull(g, s * 0.2, s * 0.86, s * 0.07);
+        wisp(g, s * 0.34, s * 0.74, s * 0.022);
+        wisp(g, s * 0.54, s * 0.2, s * 0.02);
+        ember(g, s * 0.9, s * 0.18, s * 0.022);
       },
     },
     {
-      key: 'W', label: 'grave call', name: 'Grave Call', range: 10, cooldown: 9, summon: true,
-      blurb: 'The ground cracks open; two skeletons claw out in a burst of bone and fight for him for a few seconds.',
+      key: 'W', label: 'raise dead', name: 'Raise Dead', range: 9, cooldown: 9, summon: true,
+      blurb: 'A skeleton claws out of the ground at the spot, and one more for every bone pile within 4 m of it (three more at most).',
       icon(g, s) {
         iconGround(g, s);
-        // A cracked floor ellipse, teal light in the cracks.
+        // A mound of earth with a skeletal hand reaching out of it, a skull rising behind, bones round the foot.
         g.fillStyle = '#071210';
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.78, s * 0.42, s * 0.14, 0, 0, Math.PI * 2);
+        g.ellipse(s * 0.5, s * 0.84, s * 0.44, s * 0.13, 0, 0, Math.PI * 2);
         g.fill();
-        ring(g, s * 0.5, s * 0.78, s * 0.42, s * 0.14, S.crev, s * 0.02);
-        g.lineCap = 'round';
-        g.lineJoin = 'round';
-        const cracks: [number, number][][] = [
-          [[0.5, 0.78], [0.36, 0.72], [0.26, 0.76], [0.14, 0.72]],
-          [[0.5, 0.78], [0.66, 0.84], [0.78, 0.8], [0.9, 0.84]],
-          [[0.5, 0.78], [0.44, 0.88], [0.34, 0.9]],
-          [[0.5, 0.78], [0.58, 0.7], [0.72, 0.72]],
-        ];
-        for (const [col, w] of [[S.dark, 0.034], [S.body, 0.014]] as [string, number][]) {
-          g.strokeStyle = col;
-          g.lineWidth = s * w;
-          for (const c of cracks) {
-            g.beginPath();
-            c.forEach(([x, y], i) => (i ? g.lineTo(s * x, s * y) : g.moveTo(s * x, s * y)));
-            g.stroke();
-          }
-        }
-        // Spires either side, a skull clawing out in the middle, and the claw fingers.
-        spire(g, s * 0.2, s * 0.76, s * 0.34, s * 0.12);
-        spire(g, s * 0.8, s * 0.78, s * 0.28, s * 0.1);
-        skull(g, s * 0.5, s * 0.5, s * 0.15);
-        bone(g, s * 0.3, s * 0.74, s * 0.34, s * 0.52, s * 0.03);
-        bone(g, s * 0.7, s * 0.74, s * 0.66, s * 0.5, s * 0.03);
-        wisp(g, s * 0.4, s * 0.3, s * 0.022);
-        wisp(g, s * 0.62, s * 0.26, s * 0.02);
-        g.fillStyle = '#8a7d6c';
-        for (const [x, y, r] of [[0.14, 0.86, 0.04], [0.86, 0.88, 0.035], [0.5, 0.94, 0.03]]) {
-          g.beginPath();
-          g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
-          g.fill();
-        }
-      },
-    },
-    {
-      key: 'E', label: 'ossuary ward', name: 'Ossuary Ward', range: 9, cooldown: 9, cc: true, debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
-      blurb: 'A cage of ribs grows round the chosen enemy, closes and roots it for 1.2 s, and flexes again to cut it with bone shards.',
-      icon(g, s) {
-        iconGround(g, s);
-        ring(g, s * 0.5, s * 0.8, s * 0.4, s * 0.12, '#071210', s * 0.1);
-        ring(g, s * 0.5, s * 0.8, s * 0.4, s * 0.12, S.crev, s * 0.016);
-        // A dome of curved ribs from the ground ellipse up to a point.
-        const tops = [0.5, 0.5, 0.5, 0.5, 0.5];
-        const feet: [number, number][] = [[0.14, 0.78], [0.28, 0.9], [0.5, 0.93], [0.72, 0.9], [0.86, 0.78]];
-        const back: [number, number][] = [[0.3, 0.72], [0.5, 0.7], [0.7, 0.72]];
-        const arcs = (pts: [number, number][], w: number) => {
-          pts.forEach(([x, y], i) => {
-            const ctrlX = x + (0.5 - x) * 0.05 + (x < 0.5 ? -0.16 : x > 0.5 ? 0.16 : 0.0);
-            g.strokeStyle = S.crev;
-            g.lineWidth = s * w * 1.45;
-            g.lineCap = 'round';
-            g.beginPath();
-            g.moveTo(s * x, s * y);
-            g.quadraticCurveTo(s * ctrlX, s * (0.1 + (i % 2) * 0.05), s * tops[0], s * 0.14);
-            g.stroke();
-            g.strokeStyle = S.bone;
-            g.lineWidth = s * w;
-            g.beginPath();
-            g.moveTo(s * x, s * y);
-            g.quadraticCurveTo(s * ctrlX, s * (0.1 + (i % 2) * 0.05), s * tops[0], s * 0.14);
-            g.stroke();
-          });
-        };
-        arcs(back, 0.026);
-        skull(g, s * 0.5, s * 0.58, s * 0.1);
-        wisp(g, s * 0.34, s * 0.48, s * 0.02);
-        wisp(g, s * 0.66, s * 0.44, s * 0.022);
-        arcs(feet, 0.034);
-        g.fillStyle = S.bone;
-        for (const [x, y, r] of [[0.06, 0.6, 0.014], [0.94, 0.62, 0.014], [0.04, 0.86, 0.012], [0.96, 0.88, 0.012]]) {
-          g.beginPath();
-          g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
-          g.fill();
-        }
-        ember(g, s * 0.5, s * 0.14, s * 0.022);
-      },
-    },
-    {
-      key: 'R', label: 'bone colossus', name: 'Bone Colossus', range: 9, cooldown: 20, summon: true,
-      blurb: 'Ultimate. The ground at the spot splits (25 damage and a knock-back to anyone on it) and a 2.5 m horned skeleton climbs out. It has 280 HP, walks at 2.6 m/s and smashes the nearest enemy with its club for 28 every 1.5 s for 8 s, then falls apart into bones.',
-      icon(g, s) {
-        iconGround(g, s);
-        // The split ground: a dark cracked ellipse with teal light in the cracks.
-        g.fillStyle = '#071210';
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.86, s * 0.46, s * 0.12, 0, 0, Math.PI * 2);
-        g.fill();
-        g.lineCap = 'round';
-        g.lineJoin = 'round';
-        const cracks: [number, number][][] = [
-          [[0.5, 0.86], [0.34, 0.82], [0.2, 0.86], [0.06, 0.82]],
-          [[0.5, 0.86], [0.68, 0.9], [0.8, 0.86], [0.94, 0.9]],
-          [[0.5, 0.86], [0.42, 0.95], [0.3, 0.97]],
-        ];
-        for (const [col, w] of [[S.dark, 0.034], [S.body, 0.014]] as [string, number][]) {
-          g.strokeStyle = col;
-          g.lineWidth = s * w;
-          for (const c of cracks) {
-            g.beginPath();
-            c.forEach(([x, y], i) => (i ? g.lineTo(s * x, s * y) : g.moveTo(s * x, s * y)));
-            g.stroke();
-          }
-        }
-        // The bone club raised on the right: a shaft with a spiked, knobbed head.
-        bone(g, s * 0.8, s * 0.82, s * 0.86, s * 0.34, s * 0.05, false);
+        ring(g, s * 0.5, s * 0.84, s * 0.44, s * 0.13, S.crev, s * 0.02);
+        skull(g, s * 0.5, s * 0.34, s * 0.14);
+        // The forearm and the hand: a palm, four fingers with knuckles and a thumb.
+        bone(g, s * 0.5, s * 0.9, s * 0.5, s * 0.66, s * 0.07);
         g.fillStyle = S.bone;
         g.strokeStyle = S.crev;
         g.lineWidth = s * 0.016;
         g.beginPath();
-        g.ellipse(s * 0.86, s * 0.27, s * 0.085, s * 0.11, 0.1, 0, Math.PI * 2);
+        g.roundRect(s * 0.37, s * 0.52, s * 0.26, s * 0.16, s * 0.04);
         g.fill();
         g.stroke();
-        for (const [dx, dy] of [[-0.1, -0.06], [0.1, -0.06], [0, -0.14]]) {
+        const fingers: [number, number, number][] = [[0.39, 0.5, 0.28], [0.46, 0.5, 0.2], [0.54, 0.5, 0.18], [0.61, 0.5, 0.26]];
+        fingers.forEach(([x, y, top], i) => {
+          const lean = (i - 1.5) * 0.04;
+          bone(g, s * x, s * y, s * (x + lean), s * (y - (y - top) * 0.55), s * 0.032);
+          bone(g, s * (x + lean), s * (y - (y - top) * 0.55), s * (x + lean * 2.4), s * top, s * 0.026);
+        });
+        bone(g, s * 0.37, s * 0.6, s * 0.27, s * 0.5, s * 0.032);
+        bone(g, s * 0.27, s * 0.5, s * 0.24, s * 0.42, s * 0.026);
+        wisp(g, s * 0.3, s * 0.3, s * 0.02);
+        wisp(g, s * 0.74, s * 0.38, s * 0.024);
+        g.fillStyle = '#8a7d6c';
+        for (const [x, y, r] of [[0.16, 0.86, 0.04], [0.84, 0.88, 0.035], [0.3, 0.94, 0.03], [0.7, 0.95, 0.03]]) {
           g.beginPath();
-          g.moveTo(s * (0.86 + dx * 0.55), s * (0.27 + dy * 0.5));
-          g.lineTo(s * (0.86 + dx * 1.3), s * (0.27 + dy * 1.1));
-          g.lineTo(s * (0.86 + dx * 0.4 + (dx ? 0 : 0.03)), s * (0.27 + dy * 0.2 + 0.03));
+          g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
           g.fill();
-          g.stroke();
         }
-        // The ribcage rising out of the hole.
-        for (let i = 0; i < 3; i++) {
-          const y = s * (0.7 + i * 0.065), w = s * (0.2 - i * 0.025);
-          for (const [col, lw] of [[S.crev, 0.04], [S.bone, 0.026]] as [string, number][]) {
-            g.strokeStyle = col;
-            g.lineWidth = s * lw;
+      },
+    },
+    {
+      key: 'E', label: 'bone armour', name: 'Bone Armour', range: 0, cooldown: 14,
+      blurb: 'A cage of ribs closes round him: a shield of 30, plus 30 per living skeleton (120 at most), for 4 s. When it breaks, or at 3.5 s, its shards fly at the enemy for 38.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A shield ring in soulfire, a ribcage cuirass inside it, shards springing off the rim.
+        ring(g, s * 0.5, s * 0.5, s * 0.4, s * 0.4, '#071210', s * 0.07);
+        ring(g, s * 0.5, s * 0.5, s * 0.4, s * 0.4, S.body, s * 0.022);
+        // Shoulder spikes either side.
+        spire(g, s * 0.2, s * 0.5, s * 0.22, s * 0.1);
+        spire(g, s * 0.8, s * 0.5, s * 0.22, s * 0.1);
+        // The sternum and the rib arcs, four each side.
+        bone(g, s * 0.5, s * 0.2, s * 0.5, s * 0.8, s * 0.04, false);
+        for (let i = 0; i < 4; i++) {
+          const y = s * (0.3 + i * 0.12), w = s * (0.27 - i * 0.025);
+          for (const sx of [-1, 1]) {
+            for (const [col, lw] of [[S.crev, 0.05], [S.bone, 0.034]] as [string, number][]) {
+              g.strokeStyle = col;
+              g.lineWidth = s * lw;
+              g.lineCap = 'round';
+              g.beginPath();
+              g.moveTo(s * 0.5, y);
+              g.quadraticCurveTo(s * 0.5 + sx * w * 0.9, y - s * 0.08, s * 0.5 + sx * w, y + s * 0.1);
+              g.stroke();
+            }
+          }
+        }
+        wisp(g, s * 0.5, s * 0.52, s * 0.028);
+        wisp(g, s * 0.38, s * 0.4, s * 0.018);
+        wisp(g, s * 0.62, s * 0.64, s * 0.018);
+        // Shards flying out of the rim.
+        for (const [x1, y1, x2, y2] of [[0.1, 0.18, 0.04, 0.08], [0.9, 0.2, 0.96, 0.1], [0.92, 0.82, 0.97, 0.9]]) {
+          bone(g, s * x1, s * y1, s * x2, s * y2, s * 0.03, false);
+        }
+        ember(g, s * 0.5, s * 0.1, s * 0.022);
+      },
+    },
+    {
+      key: 'R', label: 'grave grasp', name: 'Grave Grasp', range: 9, cooldown: 22, cc: true,
+      blurb: 'Ultimate. A giant skeletal hand bursts out under the enemy (60 damage), drags it 4 m toward him in 0.8 s and holds it rooted for 1 s while two skeletons claw out beside it (28 damage more). Needs line of sight.',
+      icon(g, s) {
+        iconGround(g, s);
+        // The floor, with drag furrows running to the left.
+        g.fillStyle = '#071210';
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.88, s * 0.48, s * 0.11, 0, 0, Math.PI * 2);
+        g.fill();
+        g.lineCap = 'round';
+        for (const [col, w] of [[S.dark, 0.034], [S.body, 0.012]] as [string, number][]) {
+          g.strokeStyle = col;
+          g.lineWidth = s * w;
+          for (const y of [0.86, 0.92]) {
             g.beginPath();
-            g.moveTo(s * 0.46 - w, y - s * 0.04);
-            g.quadraticCurveTo(s * 0.46, y + s * 0.07, s * 0.46 + w, y - s * 0.04);
+            g.moveTo(s * 0.9, s * y);
+            g.lineTo(s * 0.34, s * (y + 0.02));
             g.stroke();
           }
         }
-        bone(g, s * 0.46, s * 0.55, s * 0.46, s * 0.86, s * 0.026, false);
-        wisp(g, s * 0.46, s * 0.77, s * 0.022);
-        // Shoulder spikes.
-        spire(g, s * 0.22, s * 0.62, s * 0.14, s * 0.06);
-        // The horned skull looming over it all.
-        for (const sx of [-1, 1]) {
-          g.strokeStyle = S.crev;
-          g.lineWidth = s * 0.05;
+        // The forearm rising from the right, the big fist closing on a little soul.
+        bone(g, s * 0.94, s * 0.9, s * 0.74, s * 0.5, s * 0.11);
+        bone(g, s * 0.84, s * 0.92, s * 0.68, s * 0.6, s * 0.05);
+        g.fillStyle = S.bone;
+        g.strokeStyle = S.crev;
+        g.lineWidth = s * 0.02;
+        g.beginPath();
+        g.ellipse(s * 0.62, s * 0.42, s * 0.18, s * 0.15, 0.3, 0, Math.PI * 2);
+        g.fill();
+        g.stroke();
+        // The captive: a wisp and a tiny skull held in the hollow of the fingers.
+        wisp(g, s * 0.36, s * 0.56, s * 0.04);
+        skull(g, s * 0.36, s * 0.62, s * 0.06);
+        // Four fingers curling over it from the top, with knuckles.
+        for (let i = 0; i < 4; i++) {
+          const x0 = s * (0.52 - i * 0.07), y0 = s * (0.3 + i * 0.02);
+          const pts: [number, number][] = [[x0, y0], [x0 - s * 0.14, y0 - s * 0.04], [x0 - s * 0.2, y0 + s * 0.08], [x0 - s * 0.16, y0 + s * 0.22]];
+          for (const [col, lw] of [[S.crev, 0.07], [S.bone, 0.05]] as [string, number][]) {
+            g.strokeStyle = col;
+            g.lineWidth = s * lw * (1 - i * 0.07);
+            g.beginPath();
+            pts.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y)));
+            g.stroke();
+          }
+          g.fillStyle = S.bone;
           g.beginPath();
-          g.moveTo(s * (0.46 + sx * 0.12), s * 0.26);
-          g.quadraticCurveTo(s * (0.46 + sx * 0.3), s * 0.24, s * (0.46 + sx * 0.28), s * 0.06);
-          g.stroke();
-          g.strokeStyle = S.bone;
-          g.lineWidth = s * 0.034;
-          g.stroke();
+          g.arc(pts[1][0], pts[1][1], s * 0.034, 0, Math.PI * 2);
+          g.arc(pts[2][0], pts[2][1], s * 0.03, 0, Math.PI * 2);
+          g.fill();
         }
-        skull(g, s * 0.46, s * 0.33, s * 0.17);
-        wisp(g, s * 0.2, s * 0.34, s * 0.02);
-        ember(g, s * 0.3, s * 0.1, s * 0.022);
+        // The thumb across the front.
+        bone(g, s * 0.66, s * 0.56, s * 0.46, s * 0.7, s * 0.05);
+        wisp(g, s * 0.84, s * 0.26, s * 0.026);
+        wisp(g, s * 0.16, s * 0.3, s * 0.02);
+        ember(g, s * 0.28, s * 0.12, s * 0.022);
       },
     },
   ],

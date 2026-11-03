@@ -87,14 +87,14 @@ import { rimeSpearModule } from './rimeSpear';
 import { frostfernFieldModule } from './frostfernField';
 import { glacialMantleModule } from './glacialMantle';
 import { glacierWallModule } from './glacierWall';
-import { starshotModule } from './starshot';
-import { constellationSnareModule } from './constellationSnare';
-import { orbitVeilModule } from './orbitVeil';
-import { celestialHuntModule } from './celestialHunt';
-import { volatileFlaskModule } from './volatileFlask';
-import { causticPoolModule } from './causticPool';
-import { volatileLeapModule } from './volatileLeap';
-import { elixirOfUnmakingModule } from './elixirOfUnmaking';
+import { starfallArrowModule } from './starfallArrow';
+import { twinStarsModule } from './twinStars';
+import { pinningArrowModule } from './pinningArrow';
+import { meteorMarkModule } from './meteorMark';
+import { toxinDartModule } from './toxinDart';
+import { fireVialModule } from './fireVial';
+import { acidSplashModule } from './acidSplash';
+import { homunculusModule } from './homunculus';
 import { sandLashModule } from './sandLash';
 import { quicksandModule } from './quicksand';
 import { burrowModule } from './burrow';
@@ -111,26 +111,26 @@ import { bloomLashModule } from './bloomLash';
 import { overgrowthModule } from './overgrowth';
 import { verdantWardModule } from './verdantWard';
 import { seedOfRebirthModule } from './seedOfRebirth';
-import { tideWhipModule } from './tideWhip';
-import { bubblePrisonModule } from './bubblePrison';
-import { undertowDanceModule } from './undertowDance';
-import { leviathansWaltzModule } from './leviathansWaltz';
+import { waveDiscModule } from './waveDisc';
+import { coralSpireModule } from './coralSpire';
+import { mistFormModule } from './mistForm';
+import { moonPullModule } from './moonPull';
 import { radiantSpearModule } from './radiantSpear';
 import { aegisWallModule } from './aegisWall';
 import { radiantParryModule } from './radiantParry';
 import { dawnDescentModule } from './dawnDescent';
-import { galeEdgeModule } from './galeEdge';
-import { tailwindRushModule } from './tailwindRush';
-import { windBarrierModule } from './windBarrier';
-import { galeCycloneModule } from './galeCyclone';
+import { crosswindModule } from './crosswind';
+import { skywardModule } from './skyward';
+import { featherStepModule } from './featherStep';
+import { skyRendModule } from './skyRend';
 import { clockworkRivetShotModule } from './clockworkRivetShot';
 import { cogTurretModule } from './cogTurret';
 import { gearFieldModule } from './gearField';
 import { magRailModule } from './magRail';
-import { boneSpearModule } from './boneSpear';
-import { graveCallModule } from './graveCall';
-import { ossuaryWardModule } from './ossuaryWard';
-import { boneColossusModule } from './boneColossus';
+import { boneFanModule } from './boneFan';
+import { raiseDeadModule } from './raiseDead';
+import { boneArmourModule } from './boneArmour';
+import { graveGraspModule } from './graveGrasp';
 import { prismBoltModule } from './prismBolt';
 import { refractionFieldModule } from './refractionField';
 import { mirrorShellModule } from './mirrorShell';
@@ -239,14 +239,14 @@ export const targetedModules: EffectModule[] = [
   frostfernFieldModule,
   glacialMantleModule,
   glacierWallModule,
-  starshotModule,
-  constellationSnareModule,
-  orbitVeilModule,
-  celestialHuntModule,
-  volatileFlaskModule,
-  causticPoolModule,
-  volatileLeapModule,
-  elixirOfUnmakingModule,
+  starfallArrowModule,
+  twinStarsModule,
+  pinningArrowModule,
+  meteorMarkModule,
+  toxinDartModule,
+  fireVialModule,
+  acidSplashModule,
+  homunculusModule,
   sandLashModule,
   quicksandModule,
   burrowModule,
@@ -263,26 +263,26 @@ export const targetedModules: EffectModule[] = [
   overgrowthModule,
   verdantWardModule,
   seedOfRebirthModule,
-  tideWhipModule,
-  bubblePrisonModule,
-  undertowDanceModule,
-  leviathansWaltzModule,
+  waveDiscModule,
+  coralSpireModule,
+  mistFormModule,
+  moonPullModule,
   radiantSpearModule,
   aegisWallModule,
   radiantParryModule,
   dawnDescentModule,
-  galeEdgeModule,
-  tailwindRushModule,
-  windBarrierModule,
-  galeCycloneModule,
+  crosswindModule,
+  skywardModule,
+  featherStepModule,
+  skyRendModule,
   clockworkRivetShotModule,
   cogTurretModule,
   gearFieldModule,
   magRailModule,
-  boneSpearModule,
-  graveCallModule,
-  ossuaryWardModule,
-  boneColossusModule,
+  boneFanModule,
+  raiseDeadModule,
+  boneArmourModule,
+  graveGraspModule,
   prismBoltModule,
   refractionFieldModule,
   mirrorShellModule,

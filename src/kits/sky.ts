@@ -1,7 +1,7 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Sky kit data: Zephyr, the Wind Blade (a melee bruiser). Four spells (labels as registered), canvas-drawn icons in the
+ * Sky kit data: Zephyr, the Wind Blade (a melee assassin, kits v4). Four spells (labels as registered), canvas-drawn icons in the
  * kit's palette: dark storm-teal ground, cloud foil, sharp pale mint sickle crescents with a hot leading edge and a dark
  * inner edge, thin spiral gust ribbons, small leaves, one blossom-pink accent. Signature shape: the wind crescent.
  */
@@ -183,72 +183,90 @@ export const skyKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'gale edge', name: 'Gale Edge', range: 3, cooldown: 1.5,
-      blurb: 'A quick melee swing: two crossing wind crescents cut the cone in front of him and shove everything in it back.',
+      key: 'Q', label: 'crosswind', name: 'Crosswind', range: 3, cooldown: 4,
+      blurb: 'A 3 m cross-cut of wind in front of him: 42 damage. Press Q again within 2 s for a 3 m dash-slash through the aim (28 damage), a dash that gives a Gust.',
       icon(g, s) {
         iconGround(g, s);
-        // Two crossing sickles with speed lines behind them.
-        lines(g, [[s * 0.08, s * 0.4, s * 0.2, 0], [s * 0.05, s * 0.58, s * 0.24, 0], [s * 0.12, s * 0.74, s * 0.16, 0]], s * 0.02);
-        sickle(g, s * 0.42, s * 0.62, s * 0.46, -PI * 0.78, -PI * 0.12, s * 0.12);
-        sickle(g, s * 0.42, s * 0.34, s * 0.46, PI * 0.12, PI * 0.78, s * 0.1);
-        blossom(g, s * 0.84, s * 0.48, s * 0.04);
-        leaf(g, s * 0.78, s * 0.2, s * 0.045, 0.5);
-        leaf(g, s * 0.88, s * 0.78, s * 0.04, -0.7, S.accent);
+        // Two long crescents cut across each other into an X, a pink blossom at the crossing, speed lines behind.
+        lines(g, [[s * 0.04, s * 0.5, s * 0.14, 0], [s * 0.02, s * 0.62, s * 0.18, 0], [s * 0.08, s * 0.38, s * 0.12, 0]], s * 0.018);
+        sickle(g, s * 0.866, s * 0.089, s * 0.731, 1.579, 3.017, s * 0.11);
+        sickle(g, s * 0.134, s * 0.089, s * 0.731, 0.125, 1.563, s * 0.1, S.cloud);
+        blossom(g, s * 0.5, s * 0.72, s * 0.05);
+        leaf(g, s * 0.84, s * 0.14, s * 0.04, 0.6);
+        leaf(g, s * 0.16, s * 0.9, s * 0.04, -0.6, S.accent);
       },
     },
     {
-      key: 'W', label: 'tailwind rush', name: 'Tailwind Rush', range: 8, cooldown: 7, dash: true, cc: true,
-      blurb: 'A gap closer: he rides a gust to the spot and a spiral wind lifts everyone there off their feet.',
+      key: 'W', label: 'skyward', name: 'Skyward', range: 5, cooldown: 8, dash: true, cc: true,
+      blurb: 'He leaps into the air, untouchable for 0.8 s, and comes down on a spot within 5 m: 34 damage within 2 m and a 0.5 s knock-up. A dash: it gives a Gust and resets his basic attack when he lands.',
       icon(g, s) {
         iconGround(g, s);
-        // A long gust streak from the lower left to a landing spiral at the upper right.
-        gust(g, [[s * 0.06, s * 0.86], [s * 0.26, s * 0.74], [s * 0.46, s * 0.64], [s * 0.66, s * 0.5]], s * 0.1);
-        sickle(g, s * 0.2, s * 0.9, s * 0.64, -PI * 0.42, -PI * 0.16, s * 0.1);
-        gust(g, [[s * 0.66, s * 0.62], [s * 0.86, s * 0.56], [s * 0.8, s * 0.38], [s * 0.64, s * 0.4], [s * 0.7, s * 0.2], [s * 0.84, s * 0.1]], s * 0.07);
-        lines(g, [[s * 0.1, s * 0.62, s * 0.18, 0], [s * 0.2, s * 0.5, s * 0.16, 0]], s * 0.016);
-        leaf(g, s * 0.9, s * 0.3, s * 0.045, 0.7);
-        leaf(g, s * 0.56, s * 0.16, s * 0.04, -0.4, S.accent);
-      },
-    },
-    {
-      key: 'E', label: 'wind barrier', name: 'Wind Barrier', range: 3, cooldown: 9, aim: 'line', barrier: true,
-      blurb: 'A 5 m wall of wind stands across the aim, 2 m in front of him, for 3 s. It destroys every enemy bolt that crosses it, with a puff where each dies. It blocks no walking or sight, does not stop his own bolts, and basic attacks (homing hits) pass through.',
-      icon(g, s) {
-        iconGround(g, s);
-        // A wall of tall waving gust ribbons across the middle, an enemy bolt bursting into a pink puff on it.
-        for (let i = 0; i < 4; i++) {
-          const x = s * (0.34 + i * 0.1);
-          gust(g, [[x + s * 0.03, s * 0.92], [x - s * 0.04, s * 0.7], [x + s * 0.04, s * 0.5], [x - s * 0.03, s * 0.3], [x + s * 0.02, s * 0.08]], s * 0.07);
-        }
-        sickle(g, s * 0.5, s * 0.5, s * 0.4, -PI * 0.36, PI * 0.36, s * 0.07, S.cloud);
-        lines(g, [[s * 0.04, s * 0.5, s * 0.2, 0], [s * 0.1, s * 0.42, s * 0.16, 0], [s * 0.08, s * 0.58, s * 0.16, 0]], s * 0.018);
-        blossom(g, s * 0.3, s * 0.5, s * 0.055);
-        lines(g, [[s * 0.26, s * 0.4, -s * 0.05, -s * 0.07], [s * 0.26, s * 0.6, -s * 0.05, s * 0.07]], s * 0.016);
-        leaf(g, s * 0.82, s * 0.22, s * 0.045, 0.6);
-        leaf(g, s * 0.86, s * 0.76, s * 0.04, -0.5, S.accent);
-      },
-    },
-    {
-      key: 'R', label: 'gale cyclone', name: 'Gale Cyclone', range: 4, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A cyclone 2.5 m in radius wraps him and moves with him for 4 s; he can walk and fight inside it. An enemy it touches takes 26 and is knocked up 0.5 s on first contact, then 15 and a shove out every 0.6 s it stays. Outrun it.',
-      icon(g, s) {
-        iconGround(g, s);
-        // A funnel of gust ribbons, narrow at the foot and wide at the top, over a ring on the floor, a pink blossom in the eye.
+        // A tall leap arc from the lower left over a blossom apex, down to a landing ring on the ground with a dome of crescents.
         g.strokeStyle = S.cloud;
-        g.globalAlpha = 0.7;
-        g.lineWidth = s * 0.016;
+        g.globalAlpha = 0.75;
+        g.lineWidth = s * 0.018;
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.88, s * 0.34, s * 0.07, 0, 0, PI * 2);
+        g.ellipse(s * 0.64, s * 0.84, s * 0.28, s * 0.07, 0, 0, PI * 2);
         g.stroke();
         g.globalAlpha = 1;
-        gust(g, [[s * 0.2, s * 0.14], [s * 0.82, s * 0.26], [s * 0.3, s * 0.4], [s * 0.7, s * 0.54], [s * 0.4, s * 0.68], [s * 0.56, s * 0.86]], s * 0.075);
-        gust(g, [[s * 0.8, s * 0.12], [s * 0.2, s * 0.28], [s * 0.7, s * 0.42], [s * 0.34, s * 0.58], [s * 0.6, s * 0.72], [s * 0.46, s * 0.86]], s * 0.055);
-        sickle(g, s * 0.5, s * 0.5, s * 0.44, PI * 0.68, PI * 1.32, s * 0.08, S.cloud);
-        sickle(g, s * 0.5, s * 0.5, s * 0.44, -PI * 0.32, PI * 0.32, s * 0.08, S.cloud);
-        blossom(g, s * 0.5, s * 0.5, s * 0.04);
-        leaf(g, s * 0.12, s * 0.62, s * 0.045, 0.5);
-        leaf(g, s * 0.9, s * 0.7, s * 0.04, -0.7, S.accent);
-        leaf(g, s * 0.86, s * 0.1, s * 0.035, 0.2);
+        gust(g, [[s * 0.08, s * 0.88], [s * 0.18, s * 0.5], [s * 0.38, s * 0.18], [s * 0.54, s * 0.4], [s * 0.64, s * 0.72]], s * 0.085);
+        sickle(g, s * 0.64, s * 0.84, s * 0.26, PI * 1.12, PI * 1.88, s * 0.06, S.cloud);
+        lines(g, [[s * 0.04, s * 0.58, 0, s * 0.16], [s * 0.12, s * 0.5, 0, s * 0.12]], s * 0.016);
+        blossom(g, s * 0.38, s * 0.14, s * 0.04);
+        leaf(g, s * 0.86, s * 0.34, s * 0.045, 0.7);
+        leaf(g, s * 0.78, s * 0.62, s * 0.04, -0.4, S.accent);
+      },
+    },
+    {
+      key: 'E', label: 'feather step', name: 'Feather Step', range: 4, cooldown: 7, aim: 'line', dash: true, parry: true,
+      blurb: 'A 4 m step in any direction, untouchable for 0.2 s: enough to slip a bolt or a swing. Two charges (one back every 7 s). A dash: it gives a Gust and resets his basic attack.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A quick step to the upper right: two fading ghosts behind, a streak, chevron crescents and trailing feathers.
+        g.fillStyle = S.body;
+        g.globalAlpha = 0.18;
+        g.beginPath();
+        g.ellipse(s * 0.18, s * 0.66, s * 0.07, s * 0.16, 0.3, 0, PI * 2);
+        g.fill();
+        g.globalAlpha = 0.34;
+        g.beginPath();
+        g.ellipse(s * 0.36, s * 0.58, s * 0.07, s * 0.16, 0.3, 0, PI * 2);
+        g.fill();
+        g.globalAlpha = 1;
+        gust(g, [[s * 0.08, s * 0.8], [s * 0.3, s * 0.7], [s * 0.54, s * 0.56], [s * 0.78, s * 0.42]], s * 0.075);
+        sickle(g, s * 0.78, s * 0.42, s * 0.2, -PI * 0.42, PI * 0.18, s * 0.06, S.cloud);
+        sickle(g, s * 0.66, s * 0.48, s * 0.2, -PI * 0.42, PI * 0.18, s * 0.05, S.hot);
+        leaf(g, s * 0.2, s * 0.86, s * 0.05, 0.9, S.cloud);
+        leaf(g, s * 0.34, s * 0.82, s * 0.045, 0.7, S.accent);
+        blossom(g, s * 0.86, s * 0.28, s * 0.035);
+      },
+    },
+    {
+      key: 'R', label: 'sky rend', name: 'Sky Rend', range: 7, cooldown: 24,
+      blurb: 'Ultimate. Aim at an enemy within 7 m: he vanishes into the wind and strikes six times in 1.2 s from every side, 15 damage each (double on an airborne enemy), untouchable throughout, and ends behind them.',
+      icon(g, s) {
+        iconGround(g, s);
+        // Six streaks converge on one point, a pinwheel of three crescents round them, a pink blossom in the eye.
+        const cx = s * 0.5, cy = s * 0.5;
+        const radial: [number, number, number, number][] = [];
+        for (let k = 0; k < 6; k++) {
+          const a = (k * PI) / 3 + 0.2;
+          radial.push([cx + Math.cos(a) * s * 0.46, cy + Math.sin(a) * s * 0.46, -Math.cos(a) * s * 0.22, -Math.sin(a) * s * 0.22]);
+        }
+        lines(g, radial, s * 0.022);
+        for (let k = 0; k < 3; k++) {
+          const a = (k * 2 * PI) / 3 + 0.3;
+          sickle(g, cx, cy, s * 0.4, a, a + 1.5, s * 0.09, k === 1 ? S.cloud : S.body);
+        }
+        g.fillStyle = S.dark;
+        g.globalAlpha = 0.6;
+        g.beginPath();
+        g.arc(cx, cy, s * 0.1, 0, PI * 2);
+        g.fill();
+        g.globalAlpha = 1;
+        blossom(g, cx, cy, s * 0.06);
+        leaf(g, s * 0.12, s * 0.16, s * 0.04, 0.6);
+        leaf(g, s * 0.88, s * 0.86, s * 0.04, -0.6, S.accent);
       },
     },
   ],
