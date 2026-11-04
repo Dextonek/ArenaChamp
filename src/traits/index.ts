@@ -27,6 +27,7 @@ import { catTrait } from './cat';
 import { ledgerTrait } from './ledger';
 import { sumoTrait } from './sumo';
 import { mimeTrait } from './mime';
+import { refereeTrait } from './referee';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -57,6 +58,7 @@ export const TRAITS: Record<string, Trait> = {
   'Mr. Ledger': ledgerTrait,
   'Big Yoko': sumoTrait,
   Mum: mimeTrait,
+  'Referee Whistler': refereeTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

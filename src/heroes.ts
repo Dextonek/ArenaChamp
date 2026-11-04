@@ -31,6 +31,7 @@ import { catKit } from './kits/cat';
 import { ledgerKit } from './kits/ledger';
 import { sumoKit } from './kits/sumo';
 import { mimeKit } from './kits/mime';
+import { refereeKit } from './kits/referee';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -129,6 +130,7 @@ const MODELS: Record<string, string> = {
   'Mr. Ledger': 'models/heroes/ledger_v2.glb',
   'Big Yoko': 'models/heroes/sumo_v2.glb',
   Mum: 'models/heroes/mime_v2.glb',
+  'Referee Whistler': 'models/heroes/referee_v2.glb',
 };
 
 /**
@@ -146,7 +148,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.73 },
   Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
   'Sir Whiskers': { radius: 0.49, height: 2.39 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
-  'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.58 },
+  'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.58 }, 'Referee Whistler': { radius: 0.41, height: 2.33 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
