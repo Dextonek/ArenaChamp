@@ -61,6 +61,8 @@ export class SummonUnit {
   slain = false;
   age = 0;
   cd: number;
+  /** How fast it attacks (1 = its own speed, 2 = twice as fast). Ada's Overclock sets it every frame. */
+  rate = 1;
   /** Melee swing progress 0..1 (-1 = not swinging) and who it is aimed at. */
   swing = -1;
   swingAt: Enemy | null = null;
@@ -316,7 +318,7 @@ export class SummonSystem {
     u.flash *= Math.exp(-dt * 7);
     if (u.flash > 0.002) fx.setFlash(u.flash, u.flashTint);
     else if (u.flash > 0) { u.flash = 0; fx.setFlash(0); }
-    u.cd = Math.max(0, u.cd - dt);
+    u.cd = Math.max(0, u.cd - dt * u.rate);
     u.shot = Math.max(0, u.shot - dt * 4);
 
     const w = u.summon.world;

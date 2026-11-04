@@ -87,6 +87,13 @@ export interface TraitView {
   readonly ammo: number;
   /** Ends this hero's shield now (and on the other screen). */
   clearShield(): void;
+  /** The HP left in this hero's shield (0 when none). A trait watches it in `tick` to learn how a shield ended. */
+  shieldAmount(): number;
+  /**
+   * Sets how fast each of this hero's live summoned units attacks: `rate(position)` is a multiplier (1 = its own speed,
+   * 2 = twice as fast). Call it every frame from `tick`. Ada's Overclock and Siege Mode.
+   */
+  unitRate(rate: (pos: THREE.Vector3) => number): void;
   /** Frees this hero from a `hold` early (a broken channel). */
   release(): void;
   /**
@@ -180,12 +187,23 @@ export interface PipLook { color: string; shape?: 'drop' | 'flake' | 'sprout' | 
 /** A ring at a hero's feet, drawn on both screens (`Trait.ring`). `fill` 0..1 draws an inner arc (time left). */
 export interface HeroRing { radius: number; color: string; fill?: number; opacity?: number }
 
-/** Something a passive keeps on the ground, drawn on both screens for its whole life (`Trait.marks`). */
-export interface GroundMark { x: number; z: number; kind: 'bones'; age: number; life: number }
+/**
+ * Something a passive keeps on the ground, drawn on both screens for its whole life (`Trait.marks`): Mortis's piles, Kaia's
+ * rods, Fenna's flowers, Shiori's strokes. `kind` picks the look: 'bones', or a builder in `Trait.markLook`. `yaw` and
+ * `length` turn and stretch it along its own z axis (a stroke of ink). It pops in, and shrinks away in the last second.
+ */
+export interface GroundMark { x: number; z: number; kind: string; age: number; life: number; yaw?: number; length?: number }
 
 export interface Trait {
   passive: { name: string; blurb: string };
   twist?: { name: string; blurb: string };
+  /** The CPU playing this hero holds `slot` back for now (`dist`: metres to the enemy hero). Vesper: R only within 4 m. */
+  aiHold?(t: TraitView, slot: number, dist: number): boolean;
+  /**
+   * Where the CPU playing against this hero should walk now, or null: touch a rod, trample a flower, walk away from a core.
+   * `t` is this hero's view, so its enemy is the CPU in question.
+   */
+  enemyGoal?(t: TraitView): { x: number; z: number } | null;
   /**
    * This hero's rule that acts on the enemy hero, run every frame on the screen where that enemy's position and hits are
    * decided: offline always, online on the victim's screen (`t` is this trait's view there). Oblivion's pull, Fenna's
@@ -207,6 +225,8 @@ export interface Trait {
   ring?(t: TraitView): HeroRing | null;
   /** What this hero's passive keeps on the ground, asked every frame on both screens (Mortis's bone piles). */
   marks?(t: TraitView): GroundMark[];
+  /** A builder per mark kind (called once per pooled copy): the object's feet at y 0, its length along z at 1 m. */
+  markLook?: Record<string, () => THREE.Object3D>;
   /** An own resource: a bar under HP (shown for both heroes). */
   resource?: { name: string; max: number; color: string; start?: number };
   /** Walk speed in m/s (default 4). */

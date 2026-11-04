@@ -27,7 +27,7 @@ function note(g: CanvasRenderingContext2D, x: number, y: number, size: number, a
     g.fillStyle = g.strokeStyle = pass === 0 ? S.body : S.dark;
     g.beginPath();
     g.ellipse(-size * 0.14, size * 0.28, size * 0.26 + k, size * 0.18 + k, -0.45, 0, Math.PI * 2);
-  g.fill();
+    g.fill();
     g.lineWidth = size * 0.1 + k * 2;
     g.beginPath();
     g.moveTo(size * 0.08, size * 0.22);
@@ -129,7 +129,7 @@ function lyre(g: CanvasRenderingContext2D, cx: number, by: number, h: number) {
   g.lineWidth = h * 0.03;
   g.beginPath();
   g.ellipse(cx, by - h * 0.06, w * 0.5, h * 0.1, 0, 0, Math.PI);
-  g.fill();
+    g.fill();
   g.stroke();
   g.strokeStyle = '#fff0c8';
   g.lineWidth = Math.max(1, h * 0.022);
@@ -239,17 +239,20 @@ export const bardKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'discordant note', name: 'Discordant Note', range: 12, cooldown: 3, aim: 'line',
-      blurb: 'Hurls a big dark note that bursts on the first enemy; 0.8 s later a second beat lands on that spot (1.6 m): step off it.',
+      key: 'Q', label: 'resounding chord', name: 'Resounding Chord', range: 5, cooldown: 3,
+      blurb: 'A chord in a 5 m cone: 45. In tune with his beat: also silenced 0.5 s. Move on his pulse: that is when the good one comes.',
       icon(g, s) {
         iconGround(g, s);
-        // A stave streaming from the lower left, a big note flying up and right, two sound rings and a gold spark.
-        stave(g, (u) => [s * (0.04 + u * 0.5), s * (0.92 - u * 0.5 + Math.sin(u * 7) * 0.025)], s * 0.018, 1);
-        ring(g, s * 0.72, s * 0.36, s * 0.2, s * 0.24, s * 0.03);
-        ring(g, s * 0.72, s * 0.36, s * 0.3, s * 0.34, s * 0.02);
-        note(g, s * 0.64, s * 0.46, s * 0.48, 0.3, true);
+        // Three staves fan out of the lower left into a cone, notes riding them, sound rings across the cone and a gold spark.
+        for (const a of [-0.5, 0, 0.5]) {
+          stave(g, (u) => [s * (0.1 + u * 0.8 * Math.cos(a)), s * (0.82 - u * 0.8 * Math.sin(a + 0.55) + Math.sin(u * 7) * 0.02)], s * 0.013);
+        }
+        ring(g, s * 0.34, s * 0.7, s * 0.34, s * 0.4, s * 0.026);
+        ring(g, s * 0.34, s * 0.7, s * 0.52, s * 0.6, s * 0.02);
+        note(g, s * 0.62, s * 0.4, s * 0.3, 0.3, true);
+        pair(g, s * 0.78, s * 0.7, s * 0.2, -0.1);
         g.fillStyle = S.accent;
-        for (const [x, y, r] of [[0.88, 0.14, 0.035], [0.52, 0.12, 0.022], [0.92, 0.6, 0.025]]) {
+        for (const [x, y, r] of [[0.9, 0.2, 0.032], [0.5, 0.16, 0.022], [0.92, 0.5, 0.022]]) {
           g.beginPath();
           g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
           g.fill();
@@ -257,53 +260,49 @@ export const bardKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'silencing refrain', name: 'Silencing Refrain', range: 10, cooldown: 7,
-      debuff: { kind: 'weaken', amount: 0.2, seconds: 3 },
-      blurb: 'A stave coils round the ground and the music stops dead: enemies inside take damage and are silenced.',
+      key: 'W', label: 'siren song', name: 'Siren Song', range: 8, cooldown: 12, cc: true,
+      blurb: 'A note flies at the enemy (8 m, 10 m/s) and charms them: they walk toward him and cannot act, 0.8 s (1.1 s in tune). Cover breaks the note: step behind a pillar as it flies.',
       icon(g, s) {
         iconGround(g, s);
-        // A stave coiling round a ring on the floor, a huge rest in the middle and frozen notes.
-        stave(g, (u) => {
-          const a = u * Math.PI * 3.2 + 0.6, r = 0.4 - u * 0.12;
-          return [s * (0.5 + Math.cos(a) * r), s * (0.62 + Math.sin(a) * r * 0.5)];
-        }, s * 0.016);
-        g.strokeStyle = S.body;
-        g.lineWidth = s * 0.02;
-        g.beginPath();
-        g.moveTo(s * 0.42, s * 0.14);
-        g.lineTo(s * 0.6, s * 0.3);
-        g.lineTo(s * 0.42, s * 0.46);
-        g.lineTo(s * 0.6, s * 0.6);
-        g.bezierCurveTo(s * 0.34, s * 0.56, s * 0.34, s * 0.8, s * 0.56, s * 0.78);
-        g.lineCap = 'round';
-        g.lineJoin = 'round';
-        g.lineWidth = s * 0.15;
-        g.stroke();
-        g.strokeStyle = S.dark;
-        g.lineWidth = s * 0.1;
-        g.stroke();
-        note(g, s * 0.16, s * 0.34, s * 0.2, -0.2);
-        pair(g, s * 0.84, s * 0.4, s * 0.18, 0.15);
-      },
-    },
-    {
-      key: 'E', label: 'ballad of valor', name: 'Ballad of Valor', range: 0, cooldown: 9,
-      blurb: 'Two staves circle him: two sound rings shove enemies away, and the second one heals him 55. No shield.',
-      icon(g, s) {
-        iconGround(g, s);
-        // Two staves circling a small figure, gold notes rising, a ring racing out on the floor.
-        ring(g, s * 0.5, s * 0.8, s * 0.42, s * 0.12, s * 0.025);
+        // A stave streams from the left into a big eighth note; a swirl of rose rings on the far side marks the charmed one.
+        stave(g, (u) => [s * (0.04 + u * 0.52), s * (0.7 - u * 0.2 + Math.sin(u * 8) * 0.03)], s * 0.018);
+        ring(g, s * 0.74, s * 0.66, s * 0.2, s * 0.09, s * 0.024);
+        ring(g, s * 0.74, s * 0.66, s * 0.12, s * 0.055, s * 0.02);
         g.fillStyle = S.foil;
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.56, s * 0.06, s * 0.16, 0, 0, Math.PI * 2);
+        g.ellipse(s * 0.74, s * 0.52, s * 0.05, s * 0.12, 0, 0, Math.PI * 2);
         g.fill();
         g.fillStyle = S.body;
         g.beginPath();
-        g.arc(s * 0.5, s * 0.36, s * 0.06, 0, Math.PI * 2);
+        g.arc(s * 0.74, s * 0.36, s * 0.05, 0, Math.PI * 2);
         g.fill();
-        stave(g, (u) => [s * (0.5 + Math.cos(u * Math.PI * 2) * 0.3), s * (0.62 + Math.sin(u * Math.PI * 2) * 0.1)], s * 0.014);
-        stave(g, (u) => [s * (0.5 + Math.cos(-u * Math.PI * 2 + 1) * 0.3), s * (0.46 + Math.sin(-u * Math.PI * 2 + 1) * 0.09)], s * 0.014);
-        for (const [x, y, sz] of [[0.18, 0.3, 0.2], [0.84, 0.26, 0.18], [0.5, 0.12, 0.17]]) {
+        note(g, s * 0.52, s * 0.4, s * 0.56, 0.2, true);
+        // A golden clef spark over the head.
+        g.strokeStyle = S.accent;
+        g.lineWidth = s * 0.025;
+        g.lineCap = 'round';
+        g.beginPath();
+        g.arc(s * 0.74, s * 0.2, s * 0.06, Math.PI * 0.2, Math.PI * 1.9);
+        g.stroke();
+        g.fillStyle = S.accent;
+        for (const [x, y, r] of [[0.9, 0.14, 0.025], [0.14, 0.18, 0.02]]) {
+          g.beginPath();
+          g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
+          g.fill();
+        }
+      },
+    },
+    {
+      key: 'E', label: 'rising chorus', name: 'Rising Chorus', range: 0, cooldown: 11,
+      blurb: 'For 3 s every in-tune spell gives him +25% speed for 1.5 s and a 30 shield. Hit him hard now: 50 damage breaks the beat.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A golden lyre in the middle, two staves winding round it, gold notes climbing and a ring racing out on the floor.
+        ring(g, s * 0.5, s * 0.84, s * 0.4, s * 0.1, s * 0.024);
+        stave(g, (u) => [s * (0.5 + Math.cos(u * Math.PI * 2) * 0.36), s * (0.68 + Math.sin(u * Math.PI * 2) * 0.1)], s * 0.013);
+        lyre(g, s * 0.5, s * 0.84, s * 0.62);
+        stave(g, (u) => [s * (0.5 + Math.cos(-u * Math.PI * 2 + 1) * 0.36), s * (0.44 + Math.sin(-u * Math.PI * 2 + 1) * 0.09)], s * 0.013);
+        for (const [x, y, sz] of [[0.16, 0.34, 0.22], [0.86, 0.3, 0.2], [0.5, 0.1, 0.17]]) {
           g.save();
           g.translate(s * x, s * y);
           g.fillStyle = S.accent;
@@ -322,20 +321,28 @@ export const bardKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'crescendo', name: 'Crescendo', range: 0, cooldown: 20,
-      blurb: 'Ultimate. A giant golden lyre rises over him and one deafening chord hurts everything within 5 m. Then an encore: for 3 s his other spells come back after 1 s.',
+      key: 'R', label: 'duet', name: 'Duet', range: 0, cooldown: 24,
+      blurb: 'A ring (6 m) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat it pulses for 12, and in-tune spells inside it also silence 0.5 s. Cannot be cast while the enemy is charmed.',
       icon(g, s) {
         iconGround(g, s);
-        // A giant golden lyre, staves spiralling up into it and sound rings on the floor.
-        ring(g, s * 0.5, s * 0.86, s * 0.44, s * 0.1, s * 0.022);
-        ring(g, s * 0.5, s * 0.86, s * 0.3, s * 0.07, s * 0.016);
-        stave(g, (u) => [s * (0.06 + u * 0.3), s * (0.84 - u * 0.52 + Math.sin(u * 6) * 0.03)], s * 0.012);
-        stave(g, (u) => [s * (0.94 - u * 0.3), s * (0.84 - u * 0.52 + Math.sin(u * 6 + 1) * 0.03)], s * 0.012);
-        lyre(g, s * 0.5, s * 0.86, s * 0.8);
-        note(g, s * 0.14, s * 0.4, s * 0.17, -0.2);
-        pair(g, s * 0.86, s * 0.42, s * 0.15, 0.2);
+        // A closed ring of staves seen on the floor, two small figures inside it and notes climbing the wall.
+        stave(g, (u) => [s * (0.5 + Math.cos(u * Math.PI * 2) * 0.42), s * (0.58 + Math.sin(u * Math.PI * 2) * 0.24)], s * 0.016);
+        ring(g, s * 0.5, s * 0.58, s * 0.3, s * 0.15, s * 0.018);
+        for (const [x, c] of [[0.36, S.foil], [0.64, S.body]] as const) {
+          g.fillStyle = c;
+          g.beginPath();
+          g.ellipse(s * x, s * 0.58, s * 0.05, s * 0.13, 0, 0, Math.PI * 2);
+          g.fill();
+          g.fillStyle = c;
+          g.beginPath();
+          g.arc(s * x, s * 0.4, s * 0.045, 0, Math.PI * 2);
+          g.fill();
+        }
+        note(g, s * 0.16, s * 0.2, s * 0.2, -0.2);
+        pair(g, s * 0.84, s * 0.2, s * 0.18, 0.15);
+        lyre(g, s * 0.5, s * 0.34, s * 0.26);
         g.fillStyle = S.accent;
-        for (const [x, y, r] of [[0.5, 0.06, 0.03], [0.08, 0.1, 0.02], [0.92, 0.12, 0.022]]) {
+        for (const [x, y, r] of [[0.5, 0.05, 0.028], [0.06, 0.08, 0.02], [0.94, 0.08, 0.02]]) {
           g.beginPath();
           g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
           g.fill();

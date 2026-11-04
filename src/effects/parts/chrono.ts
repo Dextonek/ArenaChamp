@@ -19,6 +19,10 @@ export const CHRONO = {
   foil: 0xf4ecd8,
 } as const;
 
+/** The golden hands of Tempo's strong echoes (Stolen Hour). */
+export const ECHO_GOLD = 0xffc83a;
+export const ECHO_GOLD_CSS = '#ffc83a';
+
 export const CHRONO_CSS = {
   core: '#ffffff',
   hot: '#f4ffd0',
@@ -372,6 +376,9 @@ export class Dial {
   readonly normal = new THREE.Vector3(0, 1, 0);
   frozen = false;
   on = false;
+  /** Overall opacity multiplier and colour tint (a ghost clock: 0.5 and a gold tint). Not touched by `reset()`. */
+  gain = 1;
+  readonly tint = new THREE.Color(1, 1, 1);
   private face: THREE.Mesh;
   private mat: THREE.MeshBasicMaterial;
   private crackMesh: THREE.Mesh;
@@ -501,9 +508,9 @@ export class Dial {
   }
 
   private paint() {
-    const a = this.fadeK;
+    const a = this.fadeK * this.gain;
     this.mat.opacity = a;
-    this.mat.color.setScalar(1 + this.flashV * 0.7);
+    this.mat.color.copy(this.tint).multiplyScalar(1 + this.flashV * 0.7);
     for (const h of this.hands) h.alpha = a;
     this.crackMat.color.setScalar(1);
   }
@@ -987,5 +994,86 @@ export class Flakes {
     this.mesh.visible = live;
     this.any = live;
     this.mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// EchoClock
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * The ghost clock hands of Tempo's passive: a pale translucent dial that appears when a spell is cast, at the place the
+ * echo will come from, and whose hands run round to twelve exactly when the echo fires. It brightens in the last 0.3 s.
+ * `show(center, radius, normal, seconds)` starts it (`seconds` = time until the echo); `place` follows a moving spot;
+ * `gold(true)` is the Stolen Hour version; `fire()` flashes and fades it out; `reset()` hides it. Add `group`.
+ */
+export class EchoClock {
+  readonly group = new THREE.Group();
+  readonly dial: Dial;
+  /** Seconds since `show`, and until the echo. */
+  t = 0;
+  dur = 1.5;
+  on = false;
+  private isGold = false;
+  private base = 0.55;
+  private fired = false;
+
+  constructor(order = 9) {
+    this.dial = new Dial({ face: 'ring', marks: 'ticks', order });
+    this.group.add(this.dial.group);
+    this.reset();
+  }
+
+  show(center: THREE.Vector3, radius: number, normal: THREE.Vector3, seconds: number) {
+    this.dial.show(center, radius, normal, 0.12);
+    this.on = true;
+    this.t = 0;
+    this.dur = Math.max(seconds, 0.1);
+    this.fired = false;
+    this.gold(this.isGold);
+    this.paint();
+  }
+
+  place(center: THREE.Vector3, radius?: number) {
+    this.dial.place(center, radius);
+  }
+
+  /** Strength: gold hands (Stolen Hour) or the pale chartreuse ones. */
+  gold(on: boolean) {
+    this.isGold = on;
+    this.dial.tint.set(on ? 0xffd45a : 0xffffff);
+    for (const h of this.dial.hands) h.color = on ? ECHO_GOLD : CHRONO.body;
+  }
+
+  /** The echo fires: a flash and a quick fade. */
+  fire() {
+    if (!this.on || this.fired) return;
+    this.fired = true;
+    this.dial.flash(1);
+    this.dial.hide(0.3);
+  }
+
+  reset() {
+    this.on = false;
+    this.fired = false;
+    this.dial.reset();
+  }
+
+  private paint() {
+    const left = this.dur - this.t;
+    const pulse = 0.5 + 0.5 * Math.sin(this.t * 9);
+    this.dial.gain = this.base + 0.12 * pulse + (left < 0.3 ? 0.3 * (1 - Math.max(0, left) / 0.3) : 0);
+    // The hands run to twelve at the echo: the long hand a full turn, the short one the rest of the way round.
+    const p = Math.min(1, this.t / this.dur);
+    this.dial.hands[0].setAngle(p * TAU);
+    this.dial.hands[1].setAngle(Math.PI * 0.66 + p * Math.PI * 1.34);
+  }
+
+  update(dt: number) {
+    if (!this.on) return;
+    this.t += dt;
+    if (!this.fired) this.paint();
+    this.dial.update(dt);
+    if (!this.dial.on) this.on = false;
   }
 }

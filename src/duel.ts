@@ -550,6 +550,8 @@ export class Duel {
         this.net?.shield(0, 0);
       },
       release: () => hm.release(),
+      shieldAmount: () => arena.shieldOf(arena.caster)?.amount ?? 0,
+      unitRate: (rate) => { for (const u of arena.summons.alive('hero')) u.rate = rate(u.pos); },
       note: (name, n) => { if (this.heroRt) this.heroRt.trait?.peerNote?.(this.heroRt, name, n); },
       // Online the victim's screen decides a hit on it: nothing to do here.
       hitEnemy: (opts) => {
@@ -607,6 +609,8 @@ export class Duel {
         this.rooted = 0;
         this.foeHeld = 0;
       },
+      shieldAmount: () => (this.foe ? arena.shieldOf(this.foe)?.amount ?? 0 : 0),
+      unitRate: (rate) => { for (const u of arena.summons.alive('opponent')) u.rate = rate(u.pos); },
       // Online this screen resolved a hit its own client must hear about.
       note: (name, n) => {
         if (this.net) this.net.stacks(`!${name}`, n);
@@ -1013,8 +1017,8 @@ export class Duel {
     this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, 3.05);
     this.traitFx.ring('foe', this.foe?.group.position ?? null, this.oppRt?.ringNow() ?? null);
     this.traitFx.ring('hero', this.host.arena.caster.group.position, this.heroRt?.ringNow() ?? null);
-    this.traitFx.marks('foe', this.oppRt?.marksNow() ?? []);
-    this.traitFx.marks('hero', this.heroRt?.marksNow() ?? []);
+    this.traitFx.marks('foe', this.oppRt?.marksNow() ?? [], this.oppRt?.trait?.markLook);
+    this.traitFx.marks('hero', this.heroRt?.marksNow() ?? [], this.heroRt?.trait?.markLook);
     this.zoneClock += dt;
     this.zones.update(this.zoneClock);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
@@ -1134,7 +1138,8 @@ export class Duel {
       // An open recast counts as ready (the AI fires its free second cast when it is in reach).
       const ward = this.ward(this.heroRt);
       const opens = (i: number) => !!this.oppRt?.canRecast(i) && !this.oppRt.recastOf(i)?.aiWait;
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
+      const aiHolds = (i: number) => !!this.oppRt?.trait?.aiHold?.(this.oppRt, i, flat(at, me));
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || aiHolds(i) || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
       const held = mine.stunned || mine.has('root');
       // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
       let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv);
@@ -1157,7 +1162,9 @@ export class Duel {
       this.face(foe, me);
       return;
     }
-    const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
+    // Something of the hero's that this CPU should walk to or away from (`Trait.enemyGoal`) beats its usual steering.
+    const goal = this.heroRt?.trait?.enemyGoal?.(this.heroRt);
+    const move = goal ? new THREE.Vector3(goal.x - at.x, 0, goal.z - at.z).normalize() : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
     // A planned route already clears the cover: no wall slide on it.
     if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), !this.opponentAi.routed);
     this.face(foe, me);
@@ -1300,7 +1307,7 @@ export class Duel {
     if (!st.cannotCast) {
       const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
       const ward = this.ward(this.oppRt);
-      const waits = (i: number) => !!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait;
+      const waits = (i: number) => (!!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait) || !!this.heroRt?.trait?.aiHold?.(this.heroRt, i, flat(me, at));
       const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i) || waits(i);
       const held = !!theirs && (theirs.stunned || theirs.has('root'));
       const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
@@ -1324,7 +1331,8 @@ export class Duel {
     // Basic attack: nothing to cast, the opponent in reach. Stands still through the wind-up.
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
-    const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
+    const goal = this.oppRt?.trait?.enemyGoal?.(this.oppRt);
+    const move = goal ? new THREE.Vector3(goal.x - me.x, 0, goal.z - me.z).normalize() : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_NORMAL) * st.speedMul * dt), Infinity, !this.playerAi.routed);
   }
 

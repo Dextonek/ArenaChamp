@@ -868,3 +868,87 @@ export class Lyre {
     this.buildStrings();
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Duet wall
+// ---------------------------------------------------------------------------------------------------------------
+
+const WALL_H = 2.4;
+
+/**
+ * A ring wall made of music (Duet): an open cylinder 2.4 m tall with five parchment stave lines across it, bar lines, a
+ * rose glow at the foot and a few dark-ink notes sliding along the lines, over a faint plum body, so it reads from the
+ * gameplay camera as a wall of staves. `set(center, radius, alpha, time)` places it (hidden at alpha 0); `time` drives the
+ * slide. Unlit and below the bloom threshold. Add `mesh`.
+ */
+export class DuetWall {
+  readonly mesh: THREE.Mesh;
+  private mat: THREE.ShaderMaterial;
+
+  constructor() {
+    const geo = new THREE.CylinderGeometry(1, 1, 1, 96, 1, true).translate(0, 0.5, 0);
+    this.mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      uniforms: {
+        uA: { value: 0 }, uT: { value: 0 }, uR: { value: 6 },
+        uPaper: { value: col(BARD.foil) }, uRose: { value: col(BARD.body) }, uInk: { value: col(BARD.dark, 1) }, uGold: { value: col(BARD.accent) },
+      },
+      vertexShader: /* glsl */ `
+        varying vec2 vUv;
+        void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: /* glsl */ `
+        uniform float uA; uniform float uT; uniform float uR; uniform vec3 uPaper, uRose, uInk, uGold; varying vec2 vUv;
+        float line(float y, float c, float w) { return 1.0 - smoothstep(w * 0.5, w, abs(y - c)); }
+        void main() {
+          float y = vUv.y;
+          float arc = vUv.x * uR * 6.2832;
+          vec3 c = uInk;
+          float a = 0.16 * (1.0 - y * 0.6);
+          // The five stave lines.
+          float l = 0.0;
+          for (int i = 0; i < 5; i++) l = max(l, line(y, 0.36 + 0.1 * float(i), 0.022));
+          c = mix(c, uPaper, l);
+          a = max(a, l * 0.85);
+          // Bar lines, every 3 m.
+          float bf = fract(vUv.x * 12.0);
+          float bar = 1.0 - smoothstep(0.01, 0.025, min(bf, 1.0 - bf));
+          bar *= step(0.33, y) * step(y, 0.87);
+          c = mix(c, uPaper, bar);
+          a = max(a, bar * 0.75);
+          // Notes sliding along the lines.
+          for (int i = 0; i < 7; i++) {
+            float fi = float(i);
+            float cx = fract(fi / 7.0 + uT * 0.04 * (0.8 + 0.1 * fi));
+            float cy = 0.36 + 0.1 * floor(mod(fi * 1.7 + 1.0, 5.0)) + 0.05;
+            vec2 d = vec2((fract(arc / (uR * 6.2832) - cx + 0.5) - 0.5) * uR * 6.2832 / 0.34, (y - cy) / 0.045);
+            float n = 1.0 - smoothstep(0.6, 1.0, length(d));
+            float rim = 1.0 - smoothstep(0.9, 1.3, length(d));
+            c = mix(c, uRose, rim);
+            c = mix(c, uInk, n);
+            a = max(a, rim * 0.95);
+          }
+          // The foot glows, the top fades.
+          float foot = 1.0 - smoothstep(0.0, 0.09, y);
+          c = mix(c, uRose, foot);
+          a = max(a, foot * 0.9);
+          c = mix(c, uGold, (1.0 - smoothstep(0.0, 0.02, y)) * 0.8);
+          a *= 1.0 - smoothstep(0.82, 1.0, y);
+          gl_FragColor = vec4(c, a * uA);
+        }`,
+    });
+    this.mesh = new THREE.Mesh(geo, this.mat);
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = 7;
+    this.mesh.visible = false;
+  }
+
+  set(center: THREE.Vector3, radius: number, alpha: number, time = 0) {
+    this.mesh.visible = alpha > 0.01 && radius > 0.05;
+    if (!this.mesh.visible) return;
+    this.mesh.position.set(center.x, 0, center.z);
+    this.mesh.scale.set(radius, WALL_H, radius);
+    this.mat.uniforms.uA.value = clamp01(alpha);
+    this.mat.uniforms.uT.value = time;
+    this.mat.uniforms.uR.value = radius;
+  }
+}

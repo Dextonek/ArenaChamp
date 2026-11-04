@@ -91,6 +91,26 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { cobraSpitModule } from './cobraSpit';
+import { shepherdsCrookModule } from './shepherdsCrook';
+import { scarabStrideModule } from './scarabStride';
+import { sarcophagusModule } from './sarcophagus';
+import { tickBoltModule } from './tickBolt';
+import { slowTimeModule } from './slowTime';
+import { timeSkipModule } from './timeSkip';
+import { stolenHourModule } from './stolenHour';
+import { lancetModule } from './lancet';
+import { mistWaltzModule } from './mistWaltz';
+import { hemocurseModule } from './hemocurse';
+import { sanguineFeastModule } from './sanguineFeast';
+import { chainHammerModule } from './chainHammer';
+import { forgeRoarModule } from './forgeRoar';
+import { redHotRivetModule } from './redHotRivet';
+import { moltenCoreModule } from './moltenCore';
+import { resoundingChordModule } from './resoundingChord';
+import { sirenSongModule } from './sirenSong';
+import { risingChorusModule } from './risingChorus';
+import { duetModule } from './duet';
 import { toxinDartModule } from './toxinDart';
 import { fireVialModule } from './fireVial';
 import { acidSplashModule } from './acidSplash';
@@ -243,6 +263,26 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  cobraSpitModule,
+  shepherdsCrookModule,
+  scarabStrideModule,
+  sarcophagusModule,
+  tickBoltModule,
+  slowTimeModule,
+  timeSkipModule,
+  stolenHourModule,
+  lancetModule,
+  mistWaltzModule,
+  hemocurseModule,
+  sanguineFeastModule,
+  chainHammerModule,
+  forgeRoarModule,
+  redHotRivetModule,
+  moltenCoreModule,
+  resoundingChordModule,
+  sirenSongModule,
+  risingChorusModule,
+  duetModule,
   toxinDartModule,
   fireVialModule,
   acidSplashModule,

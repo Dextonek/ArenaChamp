@@ -44,6 +44,10 @@ export interface TraitHost {
   stateChanged?(name: string, n: number): void;
   /** Ends this side's shield now. */
   clearShield(): void;
+  /** The HP left in this side's shield. */
+  shieldAmount(): number;
+  /** Sets the attack rate of this side's live units. */
+  unitRate(rate: (pos: THREE.Vector3) => number): void;
   /** Frees this side's hero from a hold. */
   release(): void;
   /** A note for this hero's own client (see `TraitView.noteOwner`). */
@@ -143,6 +147,14 @@ export class TraitRuntime implements TraitView {
 
   clearShield() {
     this.host.clearShield();
+  }
+
+  shieldAmount() {
+    return this.host.shieldAmount();
+  }
+
+  unitRate(rate: (pos: THREE.Vector3) => number) {
+    this.host.unitRate(rate);
   }
 
   release() {

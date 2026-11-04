@@ -1,5 +1,14 @@
 # Sand kit: Sefu, the Dune Sovereign
 
+## v5 (2026-11-04)
+Rebuilt from [kits-v5.md](kits-v5.md) ("Sefu"). Controller, 600 HP, 4.0 m/s, basic attack 5.5 m, 8 per 0.7 s. Question: when do I Judge them, and can I keep them Judged? Weakness: cover (the crook needs sight and is his only way to Judge before R). Old spells (`sandLash`, `quicksand`, `burrow`, `duneSurge`) stay in the VFX tool; `BURROW_SECONDS` stays exported from `traits/sand.ts` for `burrow.ts`.
+- **Passive, Pharaoh's Decree** (`traits/sand.ts`): the crook's hit, and the sarcophagus's burst (not its 0-damage seal), Judge for 3 s: one stack `judged`, and the debuff `grounded` 0.5 for 3 s (dashes, blinks and leaps go half as far). All his hits on a Judged enemy deal +20% (the stack is read before the hit adds it). A Cobra Spit hit on a Judged enemy halves Q's remaining cooldown (`noteOwner('spit')`, `peerNote`; the bolt lands >= 0.25 s after the cast set the cooldown, so it is safe).
+- **Q Cobra Spit** (`cobraSpit.ts`, label `cobra spit`, `ground`, `aim: 'line'`, range 9, cd 5): a sand cobra rears in front of him, 0.25 s wind-up, venom bolt 20 m/s radius 0.35 from his feet (reaches 6 m at 0.55 s). 50 damage, blind 1.2 s. Clean by 1.3 s.
+- **W Shepherd's Crook** (`shepherdsCrook.ts`, label `shepherd's crook`, `enemy`, range 6, cd 10, `cc`): 0.5 s wind-up with a gold mark on the enemy; a stone crook hooks the neck. 35 damage, pull 3, knock 0, slow 0.5 s, `projectile: true`. Judged. Clean by 1.3 s.
+- **E Scarab Stride** (`scarabStride.ts`, label `scarab stride`, `ground`, range 11 = the AI's gap-closing reach, cd 12, `dash`): a 6 m dash over 0.5 s, line telegraphed at the start (1.4 m wide). Passing through the enemy (live position vs the swept path, within 0.7 m) bites once: 30, then 30 poison as two ticks of 15 at +1 s and +2 s. Not untouchable. The poison ends about 2.5 s after the cast; clean by 3.0 s.
+- **R Sarcophagus** (`sarcophagus.ts`, label `sarcophagus`, `enemy`, range 9, cd 24, `cc`): a 1.6 m circle at the spot the enemy stood at the cast. The gold case rises with its halves wide and shuts at 0.7 s. If they are still inside: sealed 1.2 s (cannot act, cannot be hit). One frame after the seal ends the case bursts open in scarabs: 90 damage (108 on a Judged enemy), Judged, with `projectile: true`. That is about 2.0 s after the cast, not 1.9: the effect cannot read the enemy's status, so it waits one frame past the seal. If they stepped out it shuts on nothing: no seal, no damage. Clean by about 3.1 s.
+- New parts in `effects/parts/sand.ts`: `ScarabSwarm` (pooled scarabs: `burst`, `scuttle`), `Sarcophagus` (two-half gold mummiform case: `place`, `set(open, rise)`).
+
 ## Role (2026-10-30)
 **Controller**, 600 HP. Signature: *Shackles and teeth*.
 - Q Sand Lash: **root 0.8** (`cc`), 53 damage.

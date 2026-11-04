@@ -1109,3 +1109,130 @@ export class BloodSigil {
     this.opacity = 1;
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// BloodMist
+// ---------------------------------------------------------------------------------------------------------------
+
+interface Puff {
+  alive: boolean;
+  pos: THREE.Vector3;
+  vel: THREE.Vector3;
+  r0: number;
+  r1: number;
+  age: number; // negative = still waiting
+  life: number;
+  seed: number;
+}
+
+/**
+ * Vesper's mist (Mist Waltz): pooled soft wisps of blood-red haze, camera-facing quads with a lumpy toon edge that erodes
+ * as they fade (a dark core, one red band, one thin bone rim on the lit side). `puff` adds one that drifts with `vel`,
+ * grows from `r0` to `r1` and lives `life` s after `delay`; `stream` lays `count` of them along a line. `update(dt)`
+ * every frame; add `mesh` to the group.
+ */
+export class BloodMist {
+  readonly mesh: THREE.InstancedMesh;
+  private puffs: Puff[] = [];
+  private cursor = 0;
+  private state: THREE.InstancedBufferAttribute;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private s = new THREE.Vector3();
+
+  constructor(max = 64) {
+    const geo = new THREE.PlaneGeometry(2, 2);
+    this.state = new THREE.InstancedBufferAttribute(new Float32Array(max * 4), 4);
+    this.state.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('aState', this.state);
+    const mat = new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      uniforms: { ...bloodUniforms(), uBone: { value: new THREE.Color(BLOOD.bone) } },
+      vertexShader: /* glsl */ `
+        attribute vec4 aState; varying vec2 vUv; varying vec4 vState;
+        void main() {
+          vUv = uv; vState = aState;
+          vec4 c = instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+          float sc = length(instanceMatrix[0].xyz);
+          vec4 mv = modelViewMatrix * c;
+          mv.xy += position.xy * sc;
+          gl_Position = projectionMatrix * mv;
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uBody, uDark, uHot, uBone;
+        varying vec2 vUv; varying vec4 vState;
+        void main() {
+          vec2 p = vUv * 2.0 - 1.0;
+          float r = length(p), a = atan(p.y, p.x), sd = vState.y;
+          float lump = 1.0 + 0.2 * sin(a * 3.0 + sd * 6.0) + 0.12 * sin(a * 7.0 + sd * 11.0);
+          float R = 0.85 * lump * (0.5 + 0.5 * vState.x);          // the edge erodes as it fades
+          float aa = max(fwidth(r), 1e-4);
+          float alpha = (0.35 + 0.55 * vState.x) * (1.0 - smoothstep(R - aa, R, r));
+          if (alpha < 0.004) discard;
+          float lit = dot(p / max(r, 1e-4), vec2(-0.45, 0.65));
+          vec3 col = mix(uDark, uBody, 0.75);
+          col = mix(col, uHot, step(r, R * 0.55) * step(0.0, lit) * 0.7);
+          col = mix(col, uBone, smoothstep(R - 0.07, R - 0.04, r) * step(0.2, lit) * 0.8);
+          gl_FragColor = vec4(col, alpha);
+        }`,
+    });
+    this.mesh = new THREE.InstancedMesh(geo, mat, max);
+    this.mesh.frustumCulled = false;
+    this.mesh.count = 0;
+    for (let i = 0; i < max; i++) {
+      this.puffs.push({ alive: false, pos: new THREE.Vector3(), vel: new THREE.Vector3(), r0: 0.3, r1: 0.6, age: 0, life: 1, seed: 0 });
+    }
+  }
+
+  /** One puff at `pos` drifting with `vel`; the oldest is recycled when the pool is full. */
+  puff(pos: THREE.Vector3, vel: THREE.Vector3, r0 = 0.3, r1 = 0.7, life = 0.8, delay = 0) {
+    const p = this.puffs[this.cursor];
+    this.cursor = (this.cursor + 1) % this.puffs.length;
+    p.alive = true;
+    p.pos.copy(pos);
+    p.vel.copy(vel);
+    p.r0 = r0; p.r1 = r1; p.life = life; p.age = -delay;
+    p.seed = Math.random() * 6.28;
+  }
+
+  /** `count` puffs along the line a to b with a little spread and rise. `delay`..`delay + stagger` is when they start. */
+  stream(a: THREE.Vector3, b: THREE.Vector3, count: number, r0 = 0.3, r1 = 0.8, life = 0.8, delay = 0, stagger = 0.15) {
+    const p = new THREE.Vector3(), v = new THREE.Vector3();
+    for (let i = 0; i < count; i++) {
+      const k = (i + Math.random() * 0.8) / count;
+      p.lerpVectors(a, b, k);
+      p.x += (Math.random() - 0.5) * 0.4; p.z += (Math.random() - 0.5) * 0.4;
+      v.set((Math.random() - 0.5) * 0.8, 0.3 + Math.random() * 0.6, (Math.random() - 0.5) * 0.8);
+      this.puff(p, v, r0 * (0.7 + Math.random() * 0.6), r1 * (0.7 + Math.random() * 0.6), life * (0.8 + Math.random() * 0.4), delay + stagger * k);
+    }
+  }
+
+  reset() {
+    for (const p of this.puffs) p.alive = false;
+    this.mesh.count = 0;
+  }
+
+  update(dt: number) {
+    let k = 0;
+    const arr = this.state.array as Float32Array;
+    for (const p of this.puffs) {
+      if (!p.alive) continue;
+      p.age += dt;
+      if (p.age < 0) continue;
+      if (p.age >= p.life) { p.alive = false; continue; }
+      const u = p.age / p.life;
+      p.pos.addScaledVector(p.vel, dt);
+      p.vel.multiplyScalar(Math.exp(-dt * 2.2));
+      const r = Math.max((p.r0 + (p.r1 - p.r0) * easeOut(u)) , MIN_SCALE);
+      this.m.compose(p.pos, this.q, this.s.setScalar(r));
+      this.mesh.setMatrixAt(k, this.m);
+      // Fades in over the first 15% and out over the rest.
+      arr[k * 4] = clamp01(Math.min(u / 0.15, (1 - u) / 0.85) * 1.15);
+      arr[k * 4 + 1] = p.seed;
+      k++;
+    }
+    this.mesh.count = k;
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.state.needsUpdate = true;
+  }
+}

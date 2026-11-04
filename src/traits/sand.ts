@@ -1,40 +1,49 @@
 import type { Trait } from './types';
 
 /**
- * Burrow (E): seconds from the cast during which Sefu is untouchable. The effect (`src/spells/targeted/burrow.ts`) times
- * its dive, tunnel and eruption to it; `afterCast` opens the deadline and `taken` swallows every hit before it.
+ * Burrow (the old E, `src/spells/targeted/burrow.ts`, still listed by the VFX tool): seconds from the cast during which Sefu
+ * was untouchable. The v5 kit no longer uses it; the old effect still imports it.
  */
 export const BURROW_SECONDS = 1.1;
 
+/** Seconds a Judged mark lasts, and the damage a Judged enemy takes more from Sefu. */
+export const JUDGED_SECONDS = 3;
+export const JUDGED_BONUS = 0.2;
+/** Judged: dashes, blinks and leaps go this much less far (the `grounded` debuff). */
+export const JUDGED_GROUNDED = 0.5;
+
 /**
- * Sefu (controller). Passive Sandstorm: rooted enemies take +45% from him (slowed ones are Isolde's), and his Sand Lash and Dune
- * Surge both root. Twist Hold W: aiming Quicksand longer charges it (full after 1 s): up to 50% more damage and a short extra
- * root on what it hits. Burrow (E): while it lasts every hit on him is swallowed whole (`taken`). Basic attack: a thrown sand
- * lash (5 m) that slows 0.4 s.
+ * Sefu (controller, v5). Passive Pharaoh's Decree: an enemy his Shepherd's Crook pulls, or his Sarcophagus opens on, is Judged
+ * for 3 s (one stack of 'judged' on the enemy, drawn over their head). A Judged enemy takes 20% more from all his hits, and
+ * their dashes, blinks and leaps go half as far (the `grounded` debuff). A Cobra Spit that hits a Judged enemy halves what is
+ * left of its cooldown. Basic attack: a thrown sand lash (5.5 m).
+ *
+ * `dealt` runs where the hit is decided (online, the victim's screen): it reads the stack before this hit adds it, and tells
+ * Sefu's own client about a Cobra Spit refund with `noteOwner`, which `peerNote` turns into the cooldown cut. The cast's cooldown
+ * is set right after the cast starts (hero mode and duel both set it before any bolt can fly), and the bolt lands at least 0.3 s
+ * later, so the cut always acts on a running cooldown.
  */
 export const sandTrait: Trait = {
-  passive: { name: 'Sandstorm', blurb: 'Rooted enemies take 45% more damage from him. His spells other than Quicksand hit 15% harder. Burrow makes him untouchable for 1.1 s.' },
-  twist: { name: 'Charged quicksand', blurb: 'Aim Quicksand longer (up to 1 s): up to 50% more damage and it roots what it hits for up to 0.5 s longer.' },
+  passive: { name: "Pharaoh's Decree", blurb: 'An enemy his crook pulls or his sarcophagus opens on is Judged for 3 s: his hits deal 20% more to them and their dashes, blinks and leaps go half as far. A Cobra Spit on a Judged enemy halves its cooldown.' },
   speed: 4,
   attack: { kind: 'ranged', range: 5.5, damage: 8, interval: 0.7, windup: 0.18, speed: 20, look: 'sand' },
-  hold: { slot: 1, seconds: 1 },
-  castMods(t, slot, charge) {
-    // His other spells hit 15% harder.
-    if (slot !== 1) return { power: 1.15 };
-    if (charge >= 0.99) t.say('FULL SAND', '#f0d28a');
-    return { power: 1 + 0.5 * charge, status: charge >= 0.3 ? { kind: 'root', seconds: 0.5 * charge } : undefined };
-  },
-  afterCast(t, slot) {
-    // Burrow: untouchable from the cast until the eruption has passed (the deadline is in round time).
-    if (slot === 2) t.mem.burrow = t.time + BURROW_SECONDS;
-  },
-  taken(t, hit) {
-    if (t.time < (t.mem.burrow ?? -1)) hit.blocked = true;
-  },
-  attackMods: () => ({ status: { kind: 'slow', seconds: 0.4 } }),
   dealt(t, hit) {
-    const st = hit.victimIsHero ? t.status(hit.victim) : undefined;
-    // Only roots: a bonus on slowed enemies is Isolde's.
-    if (st?.has('root')) hit.damage *= 1.45;
+    // A hit swallowed (a sealed figure) judges nothing and gains nothing.
+    if (!hit.victimIsHero || hit.blocked) return;
+    const judged = t.stacks('judged') > 0;
+    if (judged) hit.damage *= 1 + JUDGED_BONUS;
+    if (hit.kind !== 'spell') return;
+    if (hit.slot === 0 && judged) t.noteOwner('spit', 0);
+    // The crook's hit, and the sarcophagus's opening burst (not the 0-damage seal before it): Judged.
+    const seal = hit.opts.status?.kind === 'sealed';
+    if (hit.slot === 1 || (hit.slot === 3 && !seal)) {
+      t.addStacks('judged', 1, JUDGED_SECONDS, 1);
+      hit.opts.debuff = { kind: 'grounded', amount: JUDGED_GROUNDED, seconds: JUDGED_SECONDS };
+      if (!judged) t.say('JUDGED', '#ffd27a');
+    }
   },
+  peerNote(t, name) {
+    if (name === 'spit') t.setCooldown(0, t.cooldownLeft(0) / 2);
+  },
+  badge: (t) => (t.stacks('judged') > 0 ? 'J' : ''),
 };

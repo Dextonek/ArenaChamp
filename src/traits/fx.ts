@@ -20,6 +20,16 @@ const STACK_LOOK: Record<string, { color: string; shape: 'drop' | 'flake' | 'spr
   // Vitriol's reagents.
   fire: { color: '#ff9a3a', shape: 'drop' },
   acid: { color: '#c28cff', shape: 'drop' },
+  // Marks of the v5 kits.
+  judged: { color: '#ffd24a', shape: 'mark' },
+  heat: { color: '#ff7a2a', shape: 'drop' },
+  needle: { color: '#ff3b4e', shape: 'drop' },
+  curse: { color: '#c0203a', shape: 'mark' },
+  stain: { color: '#20182c', shape: 'mark' },
+  barb: { color: '#ffb347', shape: 'gem' },
+  brand: { color: '#ffe9a0', shape: 'mark' },
+  tag: { color: '#ffc36a', shape: 'gem' },
+  magnet: { color: '#7fd4ff', shape: 'mark' },
 };
 
 const glow = (color: THREE.ColorRepresentation, opacity: number) =>
@@ -117,8 +127,8 @@ export class TraitFx {
   private rows = new Map<string, { holder: THREE.Group; key: string }>();
   /** A ring at each hero's feet, by slot. */
   private rings = new Map<string, { outer: THREE.Mesh; arc: THREE.Mesh }>();
-  /** Ground marks of each hero, by slot. */
-  private markPools = new Map<string, THREE.Group[]>();
+  /** Ground marks of each hero, by slot and kind. */
+  private markPools = new Map<string, THREE.Object3D[]>();
   private bursts: Burst[] = [];
   private clock = 0;
   private ringGeo = new THREE.RingGeometry(0.2, 0.32, 40).rotateX(-Math.PI / 2);
@@ -156,26 +166,40 @@ export class TraitFx {
     if (ring!.fill !== undefined) r.arc.geometry.setDrawRange(0, 6 * Math.max(1, Math.round(72 * Math.min(1, ring!.fill))));
   }
 
-  /** What a passive keeps on the ground (`Trait.marks`), the slot named `who`: drawn from a pool, fading near the end of its life. */
-  marks(who: string, list: GroundMark[]) {
-    let pool = this.markPools.get(who);
-    if (!pool) {
-      pool = [];
-      this.markPools.set(who, pool);
-    }
-    while (pool.length < list.length) {
-      const pile = bonePile();
-      pool.push(pile);
-      this.group.add(pile);
-    }
-    pool.forEach((g, i) => {
-      const m = list[i];
-      g.visible = !!m;
-      if (!m) return;
+  /**
+   * What a passive keeps on the ground (`Trait.marks`), the slot named `who`: drawn from a pool per kind, popping in and
+   * shrinking away in the last second of its life. `looks` builds a kind's object; 'bones' is built in.
+   */
+  marks(who: string, list: GroundMark[], looks?: Record<string, () => THREE.Object3D>) {
+    const used = new Map<string, number>();
+    for (const m of list) {
+      const key = `${who}:${m.kind}`;
+      let pool = this.markPools.get(key);
+      if (!pool) {
+        pool = [];
+        this.markPools.set(key, pool);
+      }
+      const i = used.get(key) ?? 0;
+      used.set(key, i + 1);
+      if (i >= pool.length) {
+        const o = looks?.[m.kind]?.() ?? bonePile();
+        pool.push(o);
+        this.group.add(o);
+      }
+      const g = pool[i];
+      g.visible = true;
       g.position.set(m.x, 0.02, m.z);
+      g.rotation.y = m.yaw ?? 0;
       const left = m.life - m.age;
-      g.scale.setScalar(left < 1 ? Math.max(0.05, left) : Math.min(1, 0.4 + m.age * 3));
-    });
+      const k = left < 1 ? Math.max(0.05, left) : Math.min(1, 0.4 + m.age * 3);
+      g.scale.set(k, k, (m.length ?? 1) * (m.length ? 1 : k));
+    }
+    // Whatever this slot did not use this frame is hidden.
+    for (const [key, pool] of this.markPools) {
+      if (!key.startsWith(`${who}:`)) continue;
+      const n = used.get(key) ?? 0;
+      for (let i = n; i < pool.length; i++) pool[i].visible = false;
+    }
   }
 
   /**

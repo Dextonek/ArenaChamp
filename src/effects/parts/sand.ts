@@ -1326,3 +1326,214 @@ export class SandHood {
     this.mesh.rotation.set(0, 0, 0);
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// ScarabSwarm
+// ---------------------------------------------------------------------------------------------------------------
+
+interface Scarab { live: boolean; pos: THREE.Vector3; vel: THREE.Vector3; age: number; life: number; size: number; gold: boolean; ph: number }
+
+/**
+ * Pooled scarab beetles: a gold or turquoise shell (a flattened ellipsoid pointing along its heading) inside a dark rim.
+ * They fly on an arc, bounce once and skitter along the floor, then shrink away. `emit(pos, vel, life, size)` throws one,
+ * `burst(center, count, speed, life)` throws a ring of them out and up, `scuttle(pos, dir, count, life)` lets a few run
+ * low along `dir`. Cap = `max`, oldest recycled. `update(dt)` every frame. Add `mesh`.
+ */
+export class ScarabSwarm {
+  readonly mesh = new THREE.Group();
+  private body: THREE.InstancedMesh;
+  private rim: THREE.InstancedMesh;
+  private bugs: Scarab[] = [];
+  private cursor = 0;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private s = new THREE.Vector3();
+  private c = new THREE.Color();
+  private cGold = new THREE.Color(0xf2c14e);
+  private cTurq = new THREE.Color(SAND.accent);
+  private bv = new THREE.Vector3();
+  private bp = new THREE.Vector3();
+
+  constructor(readonly max = 40) {
+    const geo = new THREE.SphereGeometry(0.5, 7, 5);
+    this.body = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial(), max);
+    this.body.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(max * 3), 3);
+    this.rim = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: SAND.dark, side: THREE.BackSide }), max);
+    for (const im of [this.body, this.rim]) { im.frustumCulled = false; im.count = 0; this.mesh.add(im); }
+    for (let i = 0; i < max; i++) this.bugs.push({ live: false, pos: new THREE.Vector3(), vel: new THREE.Vector3(), age: 0, life: 1, size: 0.3, gold: false, ph: 0 });
+  }
+
+  emit(pos: THREE.Vector3, vel: THREE.Vector3, life = 0.9, size = 0.3) {
+    const b = this.bugs[this.cursor];
+    this.cursor = (this.cursor + 1) % this.max;
+    b.live = true; b.age = 0; b.life = life * (0.8 + Math.random() * 0.4);
+    b.pos.copy(pos);
+    b.vel.copy(vel);
+    b.size = size * (0.8 + Math.random() * 0.4);
+    b.gold = Math.random() < 0.5;
+    b.ph = Math.random() * 6.28;
+  }
+
+  /** A ring of scarabs thrown out and up from `center`, each with its own speed, landing and running on. */
+  burst(center: THREE.Vector3, count: number, speed = 5, life = 1.0) {
+    const v = this.bv, p = this.bp;
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2 + Math.random() * 0.5, k = 0.55 + Math.random() * 0.7;
+      v.set(Math.cos(a) * speed * k, 3.5 + Math.random() * 4, Math.sin(a) * speed * k);
+      this.emit(p.set(center.x + Math.cos(a) * 0.3, Math.max(center.y, 0.3), center.z + Math.sin(a) * 0.3), v, life);
+    }
+  }
+
+  /** A few scarabs running low along `dir` (a unit ground vector) from `pos`. */
+  scuttle(pos: THREE.Vector3, dir: THREE.Vector3, count = 2, life = 0.6) {
+    const v = this.bv, p = this.bp;
+    for (let i = 0; i < count; i++) {
+      const side = (Math.random() - 0.5) * 2.4;
+      v.set(dir.x * (3 + Math.random() * 2) - dir.z * side, 1.2 + Math.random() * 1.4, dir.z * (3 + Math.random() * 2) + dir.x * side);
+      this.emit(p.set(pos.x + (Math.random() - 0.5) * 0.5, 0.35 + Math.random() * 0.5, pos.z + (Math.random() - 0.5) * 0.5), v, life, 0.26);
+    }
+  }
+
+  reset() {
+    for (const b of this.bugs) b.live = false;
+    this.body.count = this.rim.count = 0;
+  }
+
+  update(dt: number) {
+    let k = 0;
+    for (const b of this.bugs) {
+      if (!b.live) continue;
+      b.age += dt;
+      if (b.age >= b.life) { b.live = false; continue; }
+      b.vel.y -= 16 * dt;
+      b.pos.addScaledVector(b.vel, dt);
+      if (b.pos.y < 0.12) {
+        b.pos.y = 0.12;
+        if (b.vel.y < -2) { b.vel.y *= -0.3; b.vel.x *= 0.55; b.vel.z *= 0.55; } else b.vel.y = 0;
+      }
+      if (b.pos.y <= 0.13) { const f = Math.exp(-2.2 * dt); b.vel.x *= f; b.vel.z *= f; }
+      const u = b.age / b.life, fade = 1 - Math.pow(clamp01((u - 0.7) / 0.3), 2);
+      const yaw = Math.atan2(b.vel.x + 1e-4, b.vel.z + 1e-4);
+      this.q.setFromAxisAngle(UP, yaw + Math.sin(b.age * 22 + b.ph) * 0.25);
+      const sc = Math.max(b.size * fade, MIN_SCALE);
+      this.m.compose(b.pos, this.q, this.s.set(sc * 0.85, sc * 0.55, sc * 1.15));
+      this.body.setMatrixAt(k, this.m);
+      this.body.setColorAt(k, this.c.copy(b.gold ? this.cGold : this.cTurq));
+      this.m.compose(b.pos, this.q, this.s.set(Math.max(sc * 1.2, MIN_SCALE), Math.max(sc * 0.8, MIN_SCALE), Math.max(sc * 1.45, MIN_SCALE)));
+      this.rim.setMatrixAt(k, this.m);
+      k++;
+    }
+    this.body.count = this.rim.count = k;
+    this.body.instanceMatrix.needsUpdate = this.rim.instanceMatrix.needsUpdate = true;
+    if (this.body.instanceColor) this.body.instanceColor.needsUpdate = true;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Sarcophagus
+// ---------------------------------------------------------------------------------------------------------------
+
+/** Height of the sarcophagus, and the x of its two hinges (the widest half-width). */
+export const SARCOPHAGUS_HEIGHT = 2.9;
+const SARC_HINGE = 0.95;
+
+function sarcophagusMaterial(face: number) {
+  return new THREE.ShaderMaterial({
+    side: THREE.DoubleSide,
+    uniforms: { ...sandUniforms(), uFace: { value: face } },
+    vertexShader: /* glsl */ `
+      varying vec3 vPosV; varying vec3 vLocal;
+      void main() {
+        vLocal = position;
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        vPosV = mv.xyz;
+        gl_Position = projectionMatrix * mv;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uBody, uDark, uHot, uStone, uAccent; uniform float uFace;
+      varying vec3 vPosV; varying vec3 vLocal;
+      void main() {
+        if (!gl_FrontFacing) {
+          // The inside of the lid: dark wood with gold ribs.
+          gl_FragColor = vec4(mix(uDark * 1.7, uBody * 0.6, step(0.8, fract(vLocal.y * 2.5))), 1.0);
+          return;
+        }
+        vec3 nv = normalize(cross(dFdx(vPosV), dFdy(vPosV)));
+        vec3 n = normalize(transpose(mat3(viewMatrix)) * nv);
+        float ndl = dot(n, normalize(vec3(-0.45, 0.65, 0.6)));
+        float shade = ndl > 0.25 ? 1.0 : (ndl > -0.15 ? 0.78 : 0.56);
+        vec3 gold = vec3(0.84, 0.6, 0.19), turq = uAccent * 0.9;
+        float y = vLocal.y, a = atan(vLocal.x, vLocal.z);
+        vec3 col = gold;
+        // Body: turquoise bands with dark seams, a pale collar of carved stone.
+        float s = fract(y * 1.7);
+        if (y < 1.7) col = s > 0.5 && s < 0.7 ? turq : gold;
+        if (y < 1.7 && (abs(s - 0.5) < 0.025 || abs(s - 0.7) < 0.025)) col = uDark * 1.5;
+        if (y >= 1.7 && y < 1.98) { col = uStone * 0.96; if (fract(a * 4.0) < 0.1) col = uDark * 1.4; }
+        // Headdress: gold and turquoise stripes falling past the face.
+        if (y >= 1.98) { float st = fract(y * 3.2 + a * 0.4); col = st < 0.4 ? gold : (st < 0.7 ? turq : uStone * 0.95); }
+        // The face on the front half: a pale mask, dark eyes with a turquoise line, a dark beard.
+        if (uFace > 0.5 && vLocal.z > 0.0) {
+          vec2 fp = vec2(vLocal.x / 0.3, (y - 2.3) / 0.3);
+          if (dot(fp, fp) < 1.0) {
+            col = uStone * 0.98;
+            if (abs(abs(vLocal.x) - 0.12) < 0.06 && abs(y - 2.36) < 0.03) col = uDark * 1.4;
+            if (abs(abs(vLocal.x) - 0.12) < 0.06 && abs(y - 2.4) < 0.012) col = turq;
+            if (abs(vLocal.x) < 0.07 && abs(y - 2.17) < 0.02) col = uDark * 1.4;
+          }
+          if (abs(vLocal.x) < 0.1 && y > 1.9 && y < 2.05) col = uDark * 1.5;
+        }
+        col *= shade;
+        float f = 1.0 - abs(nv.z);
+        if (f > 0.84) col = uDark;
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+  });
+}
+
+/**
+ * A gold mummiform sarcophagus in two halves that stand round a spot. `place(center, yaw)` sets it (the face looks along `yaw`,
+ * a heading as `atan2(dx, dz)`); `set(open, rise)`: `open` 1 = the halves stand swung wide, 0 = shut round whoever is inside
+ * (the case is opaque and 2.9 m tall, so it hides them); beyond 1 the halves fall away. `rise` 0..1 lifts it out of the floor.
+ * Add `mesh`.
+ */
+export class Sarcophagus {
+  readonly mesh = new THREE.Group();
+  private pivots: THREE.Group[] = [];
+
+  constructor() {
+    const profile = [
+      [0.001, 0], [0.62, 0], [0.66, 0.1], [0.74, 0.5], [0.86, 0.95], [0.93, 1.35], [0.95, 1.7], [0.82, 1.98], [0.6, 2.12], [0.55, 2.26],
+      [0.6, 2.42], [0.66, 2.58], [0.6, 2.74], [0.3, 2.86], [0.001, SARCOPHAGUS_HEIGHT],
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    // Front half (z > 0) hinged on +x, back half (z < 0) on -x; both swing by the same angle about the vertical.
+    for (const [side, phi, face] of [[1, -Math.PI / 2, 1], [-1, Math.PI / 2, 0]] as const) {
+      const pivot = new THREE.Group();
+      pivot.position.x = side * SARC_HINGE;
+      const half = new THREE.Mesh(new THREE.LatheGeometry(profile, 12, phi, Math.PI), sarcophagusMaterial(face));
+      half.position.x = -side * SARC_HINGE;
+      half.frustumCulled = false;
+      pivot.add(half);
+      this.pivots.push(pivot);
+      this.mesh.add(pivot);
+    }
+    this.mesh.visible = false;
+  }
+
+  place(center: THREE.Vector3, yaw: number) {
+    this.mesh.position.set(center.x, 0, center.z);
+    this.mesh.rotation.y = yaw;
+  }
+
+  set(open: number, rise: number) {
+    this.mesh.visible = rise > 0.01;
+    this.mesh.position.y = -(1 - clamp01(rise)) * (SARCOPHAGUS_HEIGHT + 0.1);
+    const ang = open * 1.3;
+    for (const p of this.pivots) p.rotation.y = ang;
+  }
+
+  reset() {
+    this.mesh.visible = false;
+    this.set(1, 0);
+  }
+}

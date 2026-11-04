@@ -1,3 +1,13 @@
+# v5 (2026-11-04)
+
+Cantor, 640 HP, 4.0 m/s, attack 6 m (10 per 1.0 s). Kit data `src/kits/bard.ts`, rules `src/traits/bard.ts`, spells `resoundingChord.ts`, `sirenSong.ts`, `risingChorus.ts`, `duet.ts` (category `hero: bard`). The old spells (`discordantNote`, `silencingRefrain`, `balladOfValor`, `crescendo`) stay for the VFX tool. Numbers follow [kits-v5.md](kits-v5.md) "Cantor".
+
+- **Passive, On the Beat:** a pulse every 1.2 s of round time (`beatPhase`, `inTune`: within 0.2 s). In tune: +30% power and 1 s off the cooldown. A stun, silence, knock-up or a hit of 50 or more (`taken`, status from `opts` or `mods`) breaks the beat for 2 s: nothing is in tune and the ring under him is flat grey. The ring swells 1.0 to 1.6 m over the 0.2 s each side of a pulse, bright gold in tune, dim rose otherwise. `afterCast` writes `cantorTuned` and `show('tuned')` so the effects read it at the cast on both screens.
+- **Q Resounding Chord:** self, quick cone 5 m / 90 degrees, hit at 0.4 s: 45. In tune: silence 0.5 s. CD 3.
+- **W Siren Song:** enemy, 8 m, sight at the cast. A note flies 10 m/s at the live position (drawn by the effect, not a bolt), breaks on cover (`stillSees` each frame), gives up after 2 s. On arrival a `projectile` hit with charm 0.8 s (1.1 s in tune). CD 12, `cc`.
+- **E Rising Chorus:** self, 3 s. Each in-tune cast in it: haste 0.25 for 1.5 s and a 30 shield for 3 s (the engine keeps the larger). Gold pip while it runs. CD 11.
+- **R Duet:** self, radius 9. A 6 m ring of staves closes in 0.8 s where he stood. At 0.8 s, if a target is inside on its live position: `ctx.confine(x, z, 6, 3.4)`; each beat a pulse of 12 (`projectile`, live position within 6.1 m); `dealt` adds silence 0.5 s to an in-tune spell hit meanwhile. If nobody is inside the ring collapses and half the cooldown comes back (`tick`, once). Not castable while the enemy is charmed. All over by 4.2 s. CD 24.
+
 # Bard kit: Cantor, the Last Verse (ranged support / control)
 
 ## Role (2026-10-30)

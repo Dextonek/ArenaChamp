@@ -1,5 +1,14 @@
 # Forge kit: Brannoc, the Ashen Smith
 
+## v5 (2026-11-04)
+Source of truth: [kits-v5.md](kits-v5.md), section "Brannoc". 780 HP, 3.6 m/s (nothing makes him faster), attack 2.6 m, 18 per 1.6 s. Code: `src/kits/forge.ts`, `src/traits/forge.ts`, spells `chainHammer.ts`, `forgeRoar.ts`, `redHotRivet.ts`, `moltenCore.ts` (labels `chain hammer`, `forge roar`, `red-hot rivet`, `molten core`), parts added to `src/effects/parts/forge.ts` (`ChainLine`, `SlagCone`). The old spells below stay in the tool.
+- **Passive, Hot Iron:** his hits put Heat on the enemy (3 at most, 5 s). His next spell that lands on a 3-Heat enemy is Tempered: bonus, Heat cleared, no Heat added by that spell. Decided in `dealt`, once per cast (`hit.cast`).
+- **Q Chain Hammer** (HOOK, cc, aim line, 9 m, cd 9): 18 m/s, 0.3 s wind-up, radius 0.45. 40, `pull: 4`, `knock: 0`, slow 1 s, no Heat. Tempered: stun 0.75 s (replaces the slow). The chain is drawn back to his hand.
+- **W Forge Roar** (SELF, cd 11): +30% armour 3 s (kit `buff`). His next basic attack in 3 s: power (18 + 35) / 18, knock-up 0.5 s, +2 Heat; on a 3-Heat enemy a 0.8 s knock-up that clears the Heat. No speed.
+- **E Red-Hot Rivet** (TGT, sight, 6 m, cd 4): 30 at 0.55 s, then 2 ticks of 8 at 1.55 s and 2.55 s, +2 Heat. Tempered: the enemy takes 20% more for 3 s.
+- **R Molten Core** (SELF, cd 24): 6 s: immune to slow, root and knock-up (`taken`), +25 per attack, reach 3 m, +1 Heat per attack, a 3 m slag cone drawn per swing. Recast Quench (opens 0.3 s later, `aiWait`): ends the core, holds him 0.6 s, a 3 m ring for 0.6 s, then 30 + 10 per second left (live positions, `projectile: true`). Tempered Quench: stun 0.75 s.
+- **Shared state:** `forgeFx` (per figure, in `traits/forge.ts`): `slamOffAt`, `coreOffAt`, `swings`, `quenchLeft` (tenths over the wire as 'quench'), mirrored in `ownChanged`.
+
 ## Role (2026-10-30)
 **Tank (melee), 820 HP**, `melee: true`. Signature: anvil lock, most hard CC, biggest shield, low damage.
 - Q Rivet Shot: range 10 -> 3 (point-blank flick), 35, slow 0.8, cd 3.

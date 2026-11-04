@@ -91,116 +91,138 @@ export const forgeKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'slag flick', name: 'Slag Flick', range: 7, cooldown: 3, aim: 'line',
-      blurb: 'Flicks a gob of white-hot slag 7 m down the aim. The first enemy it touches takes damage and is slowed for 1 s.',
+      key: 'Q', label: 'chain hammer', name: 'Chain Hammer', range: 9, cooldown: 9, cc: true, aim: 'line',
+      blurb: 'Hurls a hammer on a chain 9 m down the aim: 40 damage, drags the first enemy it touches 4 m to him and slows them 1 s. Tempered: stunned 0.75 s.',
       icon(g, s) {
         ground(g, s);
-        // A long hot streak across the frame ending in a molten gob, a dotted line ahead of it, sparks behind.
-        const grad = g.createLinearGradient(s * 0.06, s * 0.9, s * 0.74, s * 0.26);
-        grad.addColorStop(0, 'rgba(255,90,18,0)');
-        grad.addColorStop(1, F.hot);
-        g.strokeStyle = grad;
-        g.lineWidth = s * 0.13;
-        g.lineCap = 'round';
-        g.beginPath(); g.moveTo(s * 0.06, s * 0.9); g.lineTo(s * 0.7, s * 0.3); g.stroke();
-        g.strokeStyle = F.ash;
-        g.lineWidth = s * 0.02;
-        g.setLineDash([s * 0.03, s * 0.05]);
-        g.beginPath(); g.moveTo(s * 0.78, s * 0.22); g.lineTo(s * 0.95, s * 0.06); g.stroke();
-        g.setLineDash([]);
-        glow(g, s * 0.72, s * 0.28, s * 0.13);
-        glow(g, s * 0.34, s * 0.84, s * 0.04);
-        glow(g, s * 0.52, s * 0.86, s * 0.03);
-        glow(g, s * 0.2, s * 0.62, s * 0.03);
-      },
-    },
-    {
-      key: 'W', label: 'anvil drop', name: 'Anvil Drop', range: 8, cooldown: 5,
-      blurb: 'Lobs a small anvil (2 m circle) onto the spot; whoever is under it is knocked aside and slowed for 1.5 s.',
-      icon(g, s) {
-        ground(g, s);
-        g.strokeStyle = F.ash;
-        g.lineWidth = s * 0.03;
-        g.beginPath(); g.ellipse(s * 0.5, s * 0.78, s * 0.4, s * 0.12, 0, 0, Math.PI * 2); g.stroke();
-        g.strokeStyle = F.hot;
-        g.lineWidth = s * 0.025;
-        for (let i = 0; i < 6; i++) {
-          const a = (i / 6) * Math.PI * 2 + 0.3;
-          g.beginPath();
-          g.moveTo(s * 0.5 + Math.cos(a) * s * 0.31, s * 0.78 + Math.sin(a) * s * 0.075);
-          g.lineTo(s * 0.5 + Math.cos(a + 0.2) * s * 0.34, s * 0.78 + Math.sin(a + 0.2) * s * 0.085);
-          g.stroke();
-        }
-        anvil(g, s * 0.5, s * 0.42, s * 0.62, true);
-        glow(g, s * 0.2, s * 0.82, s * 0.045);
-        glow(g, s * 0.82, s * 0.8, s * 0.05);
-      },
-    },
-    {
-      key: 'E', label: 'bellows ward', name: 'Bellows Ward', range: 0, cooldown: 9,
-      buff: { kind: 'armor', amount: 0.25, seconds: 3 },
-      blurb: 'Two loops of molten chain whirl around him: a shield of 100 for 3 s, and each burst drags nearby enemies 1.5 m toward him.',
-      icon(g, s) {
-        ground(g, s);
+        // A chain of links running from the bottom left to a hammer head at the top right, with a pull arrow over it.
         const link = (x: number, y: number, rot: number, hot: boolean) => {
           g.save();
           g.translate(x, y);
           g.rotate(rot);
-          g.strokeStyle = hot ? F.body : F.ash;
-          g.lineWidth = s * 0.055;
-          g.beginPath(); g.ellipse(0, 0, s * 0.075, s * 0.045, 0, 0, Math.PI * 2); g.stroke();
+          g.strokeStyle = hot ? F.hot : F.ash;
+          g.lineWidth = s * 0.05;
+          g.beginPath(); g.ellipse(0, 0, s * 0.07, s * 0.04, 0, 0, Math.PI * 2); g.stroke();
           g.restore();
         };
-        for (let i = 0; i < 10; i++) {
-          const a = (i / 10) * Math.PI * 2;
-          link(s * 0.5 + Math.cos(a) * s * 0.36, s * 0.5 + Math.sin(a) * s * 0.36, a + Math.PI / 2, false);
+        const rot = -Math.atan2(0.5, 0.52);
+        for (let i = 0; i < 6; i++) {
+          const k = i / 5;
+          link(s * (0.1 + k * 0.5), s * (0.88 - k * 0.5), rot + (i % 2 ? 0.5 : 0), i > 3);
         }
-        for (let i = 0; i < 7; i++) {
-          const a = (i / 7) * Math.PI * 2 + 0.3;
-          link(s * 0.5 + Math.cos(a) * s * 0.2, s * 0.5 + Math.sin(a) * s * 0.2, a + Math.PI / 2, true);
-        }
-        glow(g, s * 0.5, s * 0.5, s * 0.08);
+        g.save();
+        g.translate(s * 0.68, s * 0.3);
+        g.rotate(rot + 0.2);
+        g.fillStyle = F.iron;
+        g.fillRect(-s * 0.2, -s * 0.12, s * 0.4, s * 0.24);
+        g.strokeStyle = F.ash;
+        g.lineWidth = s * 0.025;
+        g.strokeRect(-s * 0.2, -s * 0.12, s * 0.4, s * 0.24);
+        g.fillStyle = F.hot;
+        g.fillRect(-s * 0.2, -s * 0.12, s * 0.06, s * 0.24);
+        g.fillRect(s * 0.14, -s * 0.12, s * 0.06, s * 0.24);
+        g.restore();
+        glow(g, s * 0.8, s * 0.2, s * 0.05);
+        glow(g, s * 0.34, s * 0.9, s * 0.03);
       },
     },
     {
-      key: 'R', label: 'forge charge', name: 'Forge Charge', range: 8, cooldown: 20, cc: true, aim: 'line',
-      blurb: 'Ultimate. Charges 8 m down the aim and carries the first enemy he touches. Slam it into a wall or pillar on the way and the charge stops there: 110 damage and a 1.2 s stun. In the open it is knocked up at the end (62 damage).',
+      key: 'W', label: 'forge roar', name: 'Forge Roar', range: 0, cooldown: 11,
+      buff: { kind: 'armor', amount: 0.3, seconds: 3 },
+      blurb: 'For 3 s: +30% armour. His next basic attack is a slam: +35 damage, a 0.5 s knock-up and 2 Heat. Tempered: a 0.8 s knock-up. No speed.',
       icon(g, s) {
         ground(g, s);
-        // A stone wall on the right with a molten crack, an iron body pressed into it, speed streaks driving in from the left.
-        g.fillStyle = F.iron;
-        g.fillRect(s * 0.74, s * 0.14, s * 0.2, s * 0.74);
+        // A hot anvil with three roar arcs rolling off its horn and an iron plate edge under it.
         g.strokeStyle = F.ash;
-        g.lineWidth = s * 0.02;
-        g.strokeRect(s * 0.74, s * 0.14, s * 0.2, s * 0.74);
-        for (let i = 1; i < 5; i++) {
-          g.beginPath(); g.moveTo(s * 0.74, s * (0.14 + i * 0.148)); g.lineTo(s * 0.94, s * (0.14 + i * 0.148)); g.stroke();
-        }
-        g.strokeStyle = F.body;
-        g.lineWidth = s * 0.03;
         g.lineCap = 'round';
-        g.beginPath(); g.moveTo(s * 0.74, s * 0.5); g.lineTo(s * 0.82, s * 0.42); g.lineTo(s * 0.78, s * 0.3); g.stroke();
-        g.beginPath(); g.moveTo(s * 0.74, s * 0.5); g.lineTo(s * 0.84, s * 0.6); g.lineTo(s * 0.8, s * 0.74); g.stroke();
-        // The caught body, then the charging smith: a broad helm and shoulders with chevrons behind.
-        g.fillStyle = F.ironLit;
-        g.beginPath(); g.ellipse(s * 0.66, s * 0.5, s * 0.075, s * 0.16, 0, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = F.ash; g.lineWidth = s * 0.02; g.stroke();
+        for (let i = 0; i < 3; i++) {
+          g.lineWidth = s * (0.045 - i * 0.008);
+          g.beginPath(); g.arc(s * 0.5, s * 0.5, s * (0.26 + i * 0.1), -0.9, 0.9); g.stroke();
+          g.beginPath(); g.arc(s * 0.5, s * 0.5, s * (0.26 + i * 0.1), Math.PI - 0.9, Math.PI + 0.9); g.stroke();
+        }
+        g.strokeStyle = F.hot;
+        g.lineWidth = s * 0.03;
+        g.beginPath(); g.arc(s * 0.5, s * 0.5, s * 0.2, -0.7, 0.7); g.stroke();
+        anvil(g, s * 0.5, s * 0.5, s * 0.5, true);
+        glow(g, s * 0.5, s * 0.36, s * 0.05);
+        glow(g, s * 0.12, s * 0.84, s * 0.03);
+        glow(g, s * 0.9, s * 0.84, s * 0.03);
+      },
+    },
+    {
+      key: 'E', label: 'red-hot rivet', name: 'Red-Hot Rivet', range: 6, cooldown: 4,
+      blurb: 'Flicks a white-hot rivet at an enemy in sight (6 m): 30, then 16 burn over 2 s, and 2 Heat. Tempered: the enemy takes 20% more from him for 3 s.',
+      icon(g, s) {
+        ground(g, s);
+        // A big rivet on the diagonal, domed head bottom left, hot tip top right, heat shimmer and sparks around it.
+        g.strokeStyle = F.hot;
+        g.lineWidth = s * 0.025;
+        g.lineCap = 'round';
+        for (let i = 0; i < 3; i++) {
+          g.beginPath();
+          g.moveTo(s * (0.2 + i * 0.1), s * (0.14 + i * 0.05));
+          g.quadraticCurveTo(s * (0.3 + i * 0.1), s * (0.22 + i * 0.05), s * (0.22 + i * 0.1), s * (0.3 + i * 0.05));
+          g.stroke();
+        }
+        g.save();
+        g.translate(s * 0.5, s * 0.5);
+        g.rotate(-Math.PI / 4);
+        g.fillStyle = F.body;
+        g.fillRect(-s * 0.3, -s * 0.07, s * 0.55, s * 0.14);
+        g.fillStyle = F.hot;
+        g.fillRect(-s * 0.3, -s * 0.04, s * 0.55, s * 0.08);
+        g.fillStyle = F.core;
+        g.beginPath(); g.moveTo(s * 0.25, -s * 0.07); g.lineTo(s * 0.38, 0); g.lineTo(s * 0.25, s * 0.07); g.closePath(); g.fill();
+        g.fillStyle = F.iron;
+        g.beginPath(); g.ellipse(-s * 0.32, 0, s * 0.1, s * 0.16, 0, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = F.ash;
+        g.lineWidth = s * 0.025;
+        g.stroke();
+        g.restore();
+        glow(g, s * 0.82, s * 0.2, s * 0.045);
+        glow(g, s * 0.74, s * 0.34, s * 0.03);
+        glow(g, s * 0.24, s * 0.82, s * 0.03);
+        glow(g, s * 0.4, s * 0.88, s * 0.025);
+      },
+    },
+    {
+      key: 'R', label: 'molten core', name: 'Molten Core', range: 6, cooldown: 24,
+      blurb: 'For 6 s his chest cracks open: immune to slows, roots and knock-ups, and every basic attack sprays a 3 m cone: +25 damage, +1 Heat. Recast to Quench: he plants himself, a 3 m ring shows for 0.6 s, then it bursts for 30 plus 10 per second left. Tempered: also stunned 0.75 s.',
+      icon(g, s) {
+        ground(g, s);
+        // A broad iron chest plate split by jagged molten cracks around a white-hot heart, sparks flying off the cracks.
         g.fillStyle = F.iron;
         g.beginPath();
-        g.moveTo(s * 0.26, s * 0.34); g.lineTo(s * 0.5, s * 0.36); g.lineTo(s * 0.58, s * 0.5); g.lineTo(s * 0.5, s * 0.66); g.lineTo(s * 0.26, s * 0.68);
-        g.quadraticCurveTo(s * 0.2, s * 0.5, s * 0.26, s * 0.34);
-        g.closePath(); g.fill();
-        g.strokeStyle = F.ash; g.lineWidth = s * 0.022; g.stroke();
-        g.fillStyle = F.hot;
-        g.fillRect(s * 0.44, s * 0.46, s * 0.1, s * 0.035);
-        g.strokeStyle = F.hot;
-        g.lineWidth = s * 0.035;
-        for (let i = 0; i < 3; i++) {
-          g.beginPath(); g.moveTo(s * (0.06 + i * 0.06), s * (0.36 + i * 0.14)); g.lineTo(s * (0.2 + i * 0.03), s * 0.5); g.lineTo(s * (0.06 + i * 0.06), s * (0.64 - i * 0.14)); g.stroke();
-        }
-        glow(g, s * 0.72, s * 0.5, s * 0.06);
-        glow(g, s * 0.62, s * 0.8, s * 0.035);
-        glow(g, s * 0.58, s * 0.2, s * 0.03);
+        g.moveTo(s * 0.18, s * 0.24);
+        g.quadraticCurveTo(s * 0.5, s * 0.1, s * 0.82, s * 0.24);
+        g.lineTo(s * 0.78, s * 0.74);
+        g.quadraticCurveTo(s * 0.5, s * 0.94, s * 0.22, s * 0.74);
+        g.closePath();
+        g.fill();
+        g.strokeStyle = F.ash;
+        g.lineWidth = s * 0.025;
+        g.stroke();
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        const crack = (pts: [number, number][], w: number) => {
+          g.strokeStyle = F.dark;
+          g.lineWidth = w + s * 0.025;
+          g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(s * x, s * y) : g.moveTo(s * x, s * y))); g.stroke();
+          g.strokeStyle = F.body;
+          g.lineWidth = w;
+          g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(s * x, s * y) : g.moveTo(s * x, s * y))); g.stroke();
+          g.strokeStyle = F.hot;
+          g.lineWidth = w * 0.4;
+          g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(s * x, s * y) : g.moveTo(s * x, s * y))); g.stroke();
+        };
+        crack([[0.5, 0.5], [0.4, 0.38], [0.44, 0.28], [0.34, 0.2]], s * 0.045);
+        crack([[0.5, 0.5], [0.62, 0.4], [0.58, 0.3], [0.7, 0.22]], s * 0.04);
+        crack([[0.5, 0.5], [0.36, 0.6], [0.3, 0.72]], s * 0.04);
+        crack([[0.5, 0.5], [0.64, 0.62], [0.62, 0.8]], s * 0.035);
+        glow(g, s * 0.5, s * 0.5, s * 0.12);
+        glow(g, s * 0.2, s * 0.14, s * 0.03);
+        glow(g, s * 0.82, s * 0.14, s * 0.035);
+        glow(g, s * 0.5, s * 0.94, s * 0.03);
       },
     },
   ],

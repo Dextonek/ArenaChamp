@@ -1385,3 +1385,168 @@ export class PulseRing {
     this.mesh.visible = false;
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// ChainLine and SlagCone (Brannoc v5)
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * A straight run of heavy chain links from `a` to `b` (instanced, the same link as `ChainRing`, alternating planes).
+ * `set(a, b, heat, thickness)` lays the links for this frame (call it every frame; `hide()` when it is not drawn).
+ * The links keep at least `thickness` in scale so the chain still reads at gameplay distance; a long run uses
+ * bigger links instead of more than `count`. Add `mesh` to the group.
+ */
+export class ChainLine {
+  readonly mesh: THREE.InstancedMesh;
+  private n: number;
+  private heatAttr: THREE.InstancedBufferAttribute;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private q2 = new THREE.Quaternion();
+  private qr = new THREE.Quaternion().setFromAxisAngle(AX, Math.PI / 2);
+  private s = new THREE.Vector3();
+  private p = new THREE.Vector3();
+  private x = new THREE.Vector3();
+  private y = new THREE.Vector3();
+  private z = new THREE.Vector3();
+
+  constructor(count = 28) {
+    this.n = count;
+    const geo = new THREE.TorusGeometry(0.2, 0.09, 6, 12).scale(1.45, 1, 1);
+    this.heatAttr = new THREE.InstancedBufferAttribute(new Float32Array(count), 1);
+    this.heatAttr.setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('aHeat', this.heatAttr);
+    this.mesh = new THREE.InstancedMesh(geo, chainMaterial(), count);
+    this.mesh.frustumCulled = false;
+    this.hide();
+  }
+
+  hide() {
+    this.s.setScalar(MIN_SCALE);
+    this.p.set(0, -50, 0);
+    this.q.identity();
+    this.m.compose(this.p, this.q, this.s);
+    for (let i = 0; i < this.n; i++) this.mesh.setMatrixAt(i, this.m);
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  set(a: THREE.Vector3, b: THREE.Vector3, heat = 0.6, thickness = 0.7) {
+    this.x.subVectors(b, a);
+    const d = this.x.length();
+    if (d < 0.05) { this.hide(); return; }
+    this.x.multiplyScalar(1 / d);
+    const ls = Math.max(thickness, d / (this.n * 0.62));
+    const spacing = ls * 0.62;
+    const k = Math.min(this.n, Math.floor(d / spacing) + 1);
+    this.z.crossVectors(this.x, UP);
+    if (this.z.lengthSq() < 1e-6) this.z.set(0, 0, 1);
+    this.z.normalize();
+    this.y.crossVectors(this.z, this.x);
+    this.m.makeBasis(this.x, this.y, this.z);
+    this.q.setFromRotationMatrix(this.m);
+    this.q2.copy(this.q).multiply(this.qr);
+    for (let i = 0; i < this.n; i++) {
+      if (i < k) {
+        this.p.copy(a).addScaledVector(this.x, spacing * i);
+        this.s.setScalar(ls);
+        this.m.compose(this.p, i % 2 === 1 ? this.q2 : this.q, this.s);
+        this.heatAttr.setX(i, heat);
+      } else {
+        this.s.setScalar(MIN_SCALE);
+        this.m.compose(this.p.set(0, -50, 0), this.q, this.s);
+      }
+      this.mesh.setMatrixAt(i, this.m);
+    }
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.heatAttr.needsUpdate = true;
+  }
+}
+
+/**
+ * Pooled ground fans of slag, one per basic-attack swing of Molten Core: `fire(center, yaw, radius, life)` sweeps a cone
+ * (`angleDeg` wide, aimed like a telegraph `dir`: atan2(dx, dz)) out of `center` in the first fifth of its life as a
+ * hot orange fan with cracks and an ash leading edge, then a dark crust grows over it and it fades. `update(dt)`
+ * every frame. Add `group` to the effect's group.
+ */
+export class SlagCone {
+  readonly group = new THREE.Group();
+  private fans: { mesh: THREE.Mesh; mat: THREE.ShaderMaterial; age: number; life: number; live: boolean }[] = [];
+  private cursor = 0;
+
+  constructor(max = 4, angleDeg = 100) {
+    const segs = 16, half = (angleDeg * Math.PI) / 360;
+    const pos: number[] = [0, 0, 0], rr: number[] = [0], aa: number[] = [0], idx: number[] = [];
+    for (let i = 0; i <= segs; i++) {
+      const u = (i / segs) * 2 - 1, a = u * half;
+      pos.push(Math.sin(a), 0, Math.cos(a));
+      rr.push(1);
+      aa.push(u);
+      if (i > 0) idx.push(0, i, i + 1);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    geo.setAttribute('aR', new THREE.Float32BufferAttribute(rr, 1));
+    geo.setAttribute('aA', new THREE.Float32BufferAttribute(aa, 1));
+    geo.setIndex(idx);
+    for (let i = 0; i < max; i++) {
+      const mat = new THREE.ShaderMaterial({
+        transparent: true, depthWrite: false, side: THREE.DoubleSide,
+        polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3,
+        uniforms: {
+          uBody: { value: new THREE.Color(FORGE.body) }, uHot: { value: new THREE.Color(FORGE.hot) },
+          uCore: { value: new THREE.Color(FORGE.core) }, uAsh: { value: new THREE.Color(FORGE.ash) },
+          uDark: { value: new THREE.Color(FORGE.dark) }, uAge: { value: 0 },
+        },
+        vertexShader: /* glsl */ `
+          attribute float aR; attribute float aA; varying float vR; varying float vA;
+          void main() { vR = aR; vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: /* glsl */ `
+          uniform vec3 uBody, uHot, uCore, uAsh, uDark; uniform float uAge;
+          varying float vR; varying float vA;
+          void main() {
+            float reach = clamp(uAge * 6.0, 0.0, 1.0);
+            if (vR > reach) discard;
+            vec3 col = mix(uHot, uBody, smoothstep(0.0, 1.0, vR));
+            float crack = step(0.74, fract(vR * 3.6 + sin(vA * 6.0 + vR * 4.0) * 0.4));
+            col = mix(col, uCore * 0.9, crack * 0.55 * (1.0 - uAge));
+            col = mix(col, uAsh * 0.95, smoothstep(0.86, 0.95, vR) * (1.0 - smoothstep(0.0, 0.5, uAge)));
+            col = mix(col, uDark * 1.6, smoothstep(0.25, 0.9, uAge) * (0.55 + 0.4 * crack));
+            float side = 1.0 - smoothstep(0.82, 1.0, abs(vA));
+            gl_FragColor = vec4(col, (1.0 - smoothstep(0.55, 1.0, uAge)) * (0.35 + 0.6 * side));
+          }`,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.frustumCulled = false;
+      mesh.visible = false;
+      mesh.renderOrder = 3;
+      this.group.add(mesh);
+      this.fans.push({ mesh, mat, age: 0, life: 0.6, live: false });
+    }
+  }
+
+  fire(center: THREE.Vector3, yaw: number, radius: number, life = 0.6) {
+    const f = this.fans[this.cursor];
+    this.cursor = (this.cursor + 1) % this.fans.length;
+    f.live = true;
+    f.age = 0;
+    f.life = life;
+    f.mesh.visible = true;
+    f.mesh.position.set(center.x, 0.07, center.z);
+    f.mesh.rotation.y = yaw;
+    f.mesh.scale.setScalar(Math.max(radius, MIN_SCALE));
+    f.mat.uniforms.uAge.value = 0;
+  }
+
+  update(dt: number) {
+    for (const f of this.fans) {
+      if (!f.live) continue;
+      f.age += dt;
+      if (f.age >= f.life) { f.live = false; f.mesh.visible = false; continue; }
+      f.mat.uniforms.uAge.value = f.age / f.life;
+    }
+  }
+
+  reset() {
+    for (const f of this.fans) { f.live = false; f.mesh.visible = false; }
+  }
+}
