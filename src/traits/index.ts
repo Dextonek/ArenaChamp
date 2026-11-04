@@ -34,6 +34,7 @@ import { janitorTrait } from './janitor';
 import { moleTrait } from './mole';
 import { yarnTrait } from './yarn';
 import { weatherTrait } from './weather';
+import { sheepTrait } from './sheep';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -71,6 +72,7 @@ export const TRAITS: Record<string, Trait> = {
   Mabel: moleTrait,
   'Grandma Ironknit': yarnTrait,
   'Barry Cloudsley': weatherTrait,
+  Bo: sheepTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

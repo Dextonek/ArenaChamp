@@ -31,6 +31,7 @@ const STACK_LOOK: Record<string, { color: string; shape: NonNullable<PipLook['sh
   tag: { color: '#ffc36a', shape: 'gem' },
   magnet: { color: '#7fd4ff', shape: 'mark' },
   air: { color: '#ff8fb8', shape: 'balloon' },
+  wool: { color: '#c9c0a8', shape: 'balloon' },
 };
 
 const glow = (color: THREE.ColorRepresentation, opacity: number) =>
