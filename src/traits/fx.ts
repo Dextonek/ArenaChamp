@@ -12,7 +12,7 @@ import type { GroundMark, HeroRing, PipLook } from './types';
  * Owned by the duel; add `group` to the scene, call `pips` and `update` every frame.
  */
 
-const STACK_LOOK: Record<string, { color: string; shape: 'drop' | 'flake' | 'sprout' | 'mark' | 'gem' }> = {
+const STACK_LOOK: Record<string, { color: string; shape: NonNullable<PipLook['shape']> }> = {
   toxin: { color: '#9cff4a', shape: 'drop' },
   chill: { color: '#c8ecff', shape: 'flake' },
   seed: { color: '#c8e86a', shape: 'sprout' },
@@ -30,6 +30,7 @@ const STACK_LOOK: Record<string, { color: string; shape: 'drop' | 'flake' | 'spr
   brand: { color: '#ffe9a0', shape: 'mark' },
   tag: { color: '#ffc36a', shape: 'gem' },
   magnet: { color: '#7fd4ff', shape: 'mark' },
+  air: { color: '#ff8fb8', shape: 'balloon' },
 };
 
 const glow = (color: THREE.ColorRepresentation, opacity: number) =>
@@ -64,6 +65,16 @@ function token(shape: string, color: string): THREE.Group {
         leaf.rotation.z = s * -0.8;
         g.add(leaf);
       }
+      break;
+    }
+    case 'balloon': {
+      g.add(new THREE.Mesh(new THREE.SphereGeometry(0.085, 12, 10).scale(1, 1.2, 1), flat(color)));
+      const knot = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.05, 6), flat(dark));
+      knot.position.y = -0.115;
+      g.add(knot);
+      const shine = new THREE.Mesh(new THREE.CircleGeometry(0.022, 8), flat('#fff1a8'));
+      shine.position.set(-0.03, 0.045, 0.082);
+      g.add(shine);
       break;
     }
     case 'mark': {

@@ -91,6 +91,14 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { landOnMyFeetModule } from './landOnMyFeet';
+import { pounceModule } from './pounce';
+import { knockItOverModule } from './knockItOver';
+import { scratchModule } from './scratch';
+import { popPinModule } from './popPin';
+import { hotAirModule } from './hotAir';
+import { heliumBombModule } from './heliumBomb';
+import { airHoseModule } from './airHose';
 import { timberCallModule } from './timberCall';
 import { caberTossModule } from './caberToss';
 import { fastGrowthModule } from './fastGrowth';
@@ -315,6 +323,14 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  landOnMyFeetModule,
+  pounceModule,
+  knockItOverModule,
+  scratchModule,
+  popPinModule,
+  hotAirModule,
+  heliumBombModule,
+  airHoseModule,
   timberCallModule,
   caberTossModule,
   fastGrowthModule,

@@ -26,6 +26,8 @@ import { bloodKit } from './kits/blood';
 import { mirrorKit } from './kits/mirror';
 import { masonKit } from './kits/mason';
 import { timberKit } from './kits/timber';
+import { balloonKit } from './kits/balloon';
+import { catKit } from './kits/cat';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -119,6 +121,8 @@ const MODELS: Record<string, string> = {
   Silvane: 'models/heroes/mirror_v2.glb',
   Bram: 'models/heroes/mason_v2.glb',
   Hank: 'models/heroes/timber_v2.glb',
+  'Professor Puff': 'models/heroes/balloon_v2.glb',
+  'Sir Whiskers': 'models/heroes/cat_v2.glb',
 };
 
 /**
@@ -134,7 +138,8 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Mortis: { radius: 0.44, height: 2.51 }, Ada: { radius: 0.39, height: 2.29 }, Sirix: { radius: 0.44, height: 2.31 },
   Cantor: { radius: 0.39, height: 2.38 }, Opaline: { radius: 0.4, height: 2.46 }, Oblivion: { radius: 0.63, height: 2.62 },
   Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.73 },
-  Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 },
+  Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
+  'Sir Whiskers': { radius: 0.49, height: 2.39 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

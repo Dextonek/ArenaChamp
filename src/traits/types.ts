@@ -182,7 +182,7 @@ export interface HoldSpec { slot: number; seconds: number }
 export interface RecastSpec { slot: number; window: number; name: string; power?: number; replay?: boolean; arm?: number; aiWait?: boolean }
 
 /** How an own-state pip looks (`Trait.ownLook`), the same tokens as stacks. */
-export interface PipLook { color: string; shape?: 'drop' | 'flake' | 'sprout' | 'mark' | 'gem' }
+export interface PipLook { color: string; shape?: 'drop' | 'flake' | 'sprout' | 'mark' | 'gem' | 'balloon' }
 
 /** A ring at a hero's feet, drawn on both screens (`Trait.ring`). `fill` 0..1 draws an inner arc (time left). */
 export interface HeroRing { radius: number; color: string; fill?: number; opacity?: number }

@@ -22,6 +22,8 @@ import { inkTrait } from './ink';
 import { mirrorTrait } from './mirror';
 import { masonTrait } from './mason';
 import { timberTrait } from './timber';
+import { balloonTrait } from './balloon';
+import { catTrait } from './cat';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -47,6 +49,8 @@ export const TRAITS: Record<string, Trait> = {
   Silvane: mirrorTrait,
   Bram: masonTrait,
   Hank: timberTrait,
+  'Professor Puff': balloonTrait,
+  'Sir Whiskers': catTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

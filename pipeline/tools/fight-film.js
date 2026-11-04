@@ -39,7 +39,18 @@ window._film = async (hero, foe, o = {}) => {
     f++;
     if (t >= next && (!when || when(d))) {
       next = t + every;
-      vfx.render();
+      // `close`: the camera near the two heroes for this frame, at about the height a player sees them from.
+      if (o.close) {
+        const a = vfx.arena.caster.group.position, b = d.foe?.group.position ?? a, cam = vfx.controls.object;
+        const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2, far = Math.max(6, Math.hypot(a.x - b.x, a.z - b.z) * 0.9);
+        const keep = { p: cam.position.clone(), q: cam.quaternion.clone() };
+        cam.position.set(mx, far * 1.15, mz + far);
+        cam.lookAt(mx, 1, mz);
+        cam.updateMatrixWorld();
+        vfx.render();
+        cam.position.copy(keep.p);
+        cam.quaternion.copy(keep.q);
+      } else vfx.render();
       const sw = gl.width, sh = gl.height, ar = W / H;
       let cw = sw, ch = sw / ar;
       if (ch > sh) { ch = sh; cw = sh * ar; }
@@ -62,6 +73,6 @@ window._film = async (hero, foe, o = {}) => {
   im.src = out.toDataURL('image/jpeg', 0.82);
   await new Promise((ok) => { im.onload = ok; });
   // Return this from a browser call to save the sheet: the tool writes a large result to a file, and decode-sheets.py reads it.
-  window._filmSheet = `NAME:${hero.toLowerCase()}-vs-${foe.toLowerCase()}|${im.src} `;
+  window._filmSheet = `NAME:${`${hero}-vs-${foe}`.toLowerCase().replace(/[^a-z0-9-]/g, '-')}|${im.src} `;
   return { shot, seconds: +t.toFixed(1), result: d.result?.winner ?? null };
 };

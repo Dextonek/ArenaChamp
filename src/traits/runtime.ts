@@ -306,8 +306,11 @@ export class TraitRuntime implements TraitView {
     this.stackMap.delete(name);
   }
 
-  /** Stacks set from outside (a network duel: the other screen says how many it has). */
-  setStacks(name: string, n: number, seconds = 4) {
+  /**
+   * Stacks set from outside (a network duel: the other screen says how many it has). That screen decides when they end and says
+   * so with 0; `seconds` is only a fallback, and long, or stacks that last longer would end early here and clear them there too.
+   */
+  setStacks(name: string, n: number, seconds = 30) {
     if (n <= 0) this.stackMap.delete(name);
     else this.stackMap.set(name, { n, left: seconds });
   }
