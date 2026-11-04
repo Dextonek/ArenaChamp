@@ -545,6 +545,7 @@ export class Duel {
       time: () => this.time,
       say: (text, color, at) => arena.say(text, color, at, 1),
       heal: (amount) => { arena.healFigure(arena.caster, amount); },
+      healEnemy: (amount) => { if (!this.net && this.foe) arena.healFigure(this.foe, amount); },
       buff: (kind, amount, seconds) => { arena.applyBuff(arena.caster, kind, amount, seconds); },
       setCooldown: (slot, sec) => hm.setCooldown(slot, sec),
       cooldownLeft: (slot) => hm.cooldownOf(slot),
@@ -600,6 +601,7 @@ export class Duel {
       say: (text, color, at) => arena.say(text, color, at, 1),
       // Online the other player's own client heals and buffs its hero; here only offline.
       heal: (amount) => { if (!this.net && this.foe) arena.healFigure(this.foe, amount); },
+      healEnemy: (amount) => { arena.healFigure(arena.caster, amount); },
       buff: (kind, amount, seconds) => { if (!this.net && this.foe) arena.applyBuff(this.foe, kind, amount, seconds); },
       setCooldown: (slot, sec) => { this.cooldowns[slot] = Math.max(0, sec); },
       cooldownLeft: (slot) => this.cooldowns[slot],

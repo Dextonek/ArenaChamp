@@ -18,6 +18,7 @@ export interface TraitHost {
   time(): number;
   say(text: string, color: string, at: THREE.Vector3): void;
   heal(amount: number): void;
+  healEnemy?(amount: number): void;
   buff(kind: BuffKind, amount: number, seconds: number): void;
   setCooldown(slot: number, seconds: number): void;
   cooldownLeft(slot: number): number;
@@ -202,6 +203,10 @@ export class TraitRuntime implements TraitView {
 
   heal(amount: number) {
     if (amount > 0) this.host.heal(amount);
+  }
+
+  healEnemy(amount: number) {
+    if (amount > 0) this.host.healEnemy?.(amount);
   }
 
   buff(kind: BuffKind, amount: number, seconds: number) {

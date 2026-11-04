@@ -115,6 +115,8 @@ export interface TraitView {
   carrySelf(dx: number, dz: number): void;
   say(text: string, color?: string): void;
   heal(amount: number): void;
+  /** Heals the enemy hero, up to their maximum. Run it where the enemy's position is decided (`victimTick`): Cleaver's stolen dishes. */
+  healEnemy(amount: number): void;
   buff(kind: BuffKind, amount: number, seconds: number): void;
   /** Stacks this hero keeps on the enemy hero (`name` per mechanic), with the seconds they last. */
   stacks(name: string): number;

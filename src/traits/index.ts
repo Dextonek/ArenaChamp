@@ -28,6 +28,7 @@ import { ledgerTrait } from './ledger';
 import { sumoTrait } from './sumo';
 import { mimeTrait } from './mime';
 import { refereeTrait } from './referee';
+import { chefTrait } from './chef';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -59,6 +60,7 @@ export const TRAITS: Record<string, Trait> = {
   'Big Yoko': sumoTrait,
   Mum: mimeTrait,
   'Referee Whistler': refereeTrait,
+  'Madame Cleaver': chefTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,
