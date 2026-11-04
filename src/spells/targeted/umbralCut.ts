@@ -12,7 +12,7 @@ import { isBehind } from '../../traits/types';
  * Umbral Cut (shadow kit, Q: a targeted dagger strike, `projectile` hit). A click on the enemy (2.5 m, sight checked by the engine
  * at the cast) starts a `CUT_WIND` (0.35 s) wind-up in which she stands (the telegraph roots her): a black pool with a violet rim and a
  * pale foil ring marks the enemy on both screens and follows it, and a dagger cut-out lies on the floor from her to it. At 0.35 s the
- * strike lands on the enemy's LIVE position if it is within `CUT_REACH` (3.2 m) of her: `damage` (50), times `CUT_BEHIND` (1.7) when she is behind it
+ * strike lands on the enemy's LIVE position if it is within `CUT_REACH` (3.2 m) of her: `damage` (54), times `CUT_BEHIND` (1.6) when she is behind it
  * (the back 120 degrees of its facing, `isBehind` with `CUT_BACK`; its facing follows its walk, so a step toward her turns it). The
  * bonus is decided here, at the hit, on the screen that resolves it, and `damage` is passed in the hit. Out of reach: a puff and no hit.
  * A hit shows a hot violet crescent with a mint core (two crossed ones from behind) and black shards. Clean by 1.0 s. The trait's veil
@@ -23,7 +23,7 @@ export interface UmbralCutSettings {
   loop: boolean;
 }
 
-export const defaultUmbralCut = (): UmbralCutSettings => ({ damage: 50, loop: false });
+export const defaultUmbralCut = (): UmbralCutSettings => ({ damage: 54, loop: false });
 
 const DURATION = 1.0;
 const MARK_R = 1.1;

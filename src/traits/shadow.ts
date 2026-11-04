@@ -27,7 +27,7 @@ export const CUT_WIND = 0.35;
 export const CUT_REACH = 3.2;
 export const CUT_BACK = (Math.PI * 4) / 3;
 /** How much more Umbral Cut deals from behind. */
-export const CUT_BEHIND = 1.7;
+export const CUT_BEHIND = 1.6;
 /** Smoke Veil: the cloud's radius and how long it stands. */
 export const SMOKE_RADIUS = 3;
 export const SMOKE_SECONDS = 3;

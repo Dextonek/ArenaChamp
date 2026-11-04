@@ -17,7 +17,7 @@ The shadow hero kit (v5): Nyx's four spells (Q, W, E and the R ultimate), her pa
 | HP | 640 |
 | Kit shapes | Q TGT dagger strike (backstab) · W SELF smoke cloud · E DASH + SUMMON shadow double · R SELF night |
 
-She wins by fading, walking up behind the enemy and landing Q from the veil: 50% more damage, 1.7 times from behind, and a silence. Her weakness is reach: Q reaches only 2.5 m and her basic attack 1.9 m, so she has to close in and be seen doing it.
+She wins by fading, walking up behind the enemy and landing Q from the veil: 50% more damage, 1.6 times from behind, and a silence. Her weakness is reach: Q reaches only 2.5 m and her basic attack 1.9 m, so she has to close in and be seen doing it.
 
 ## At a glance
 
@@ -82,7 +82,7 @@ All four play under the normal gameplay camera. Range and cooldown come from the
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [umbral cut](../../../src/spells/targeted/umbralCut.ts) | enemy (needs sight) | 2.5 | 4 s | 0.35 s | 1.0 s | A black pool with a violet rim marks the enemy and a dagger cut-out lies from her to it; she stands still for the 0.35 s wind-up. The strike lands on the enemy's live position if it is within 3.2 m of her: 50, or 85 from behind. Out of reach: a puff and no hit. A hit shows a violet crescent with a mint core (two crossed ones from behind). |
+| Q | [umbral cut](../../../src/spells/targeted/umbralCut.ts) | enemy (needs sight) | 2.5 | 4 s | 0.35 s | 1.0 s | A black pool with a violet rim marks the enemy and a dagger cut-out lies from her to it; she stands still for the 0.35 s wind-up. The strike lands on the enemy's live position if it is within 3.2 m of her: 54, or 86 from behind. Out of reach: a puff and no hit. A hit shows a violet crescent with a mint core (two crossed ones from behind). |
 | W | [smoke veil](../../../src/spells/targeted/smokeVeil.ts) | self (cloud r 3) | 0 (self) | 12 s | first tick at 0.3 s, then every 0.4 s | 3.5 s | A 3 m cloud of dark purple smoke rises at her feet and stays where she cast it for 3 s. Every 0.4 s each enemy inside is blinded 0.5 s (no damage). While she stands inside she fades after 1.5 s without a fight. |
 | E | [shadow double](../../../src/spells/targeted/shadowDouble.ts) | ground (dash 4 m) | 4 | 10 s | none (the copy's blows) | 1.0 s | She darts 4 m in 0.18 s, through cover if it is in the way. A shadow copy (40 HP, lives 2.5 s, 15 per 0.9 s) stays where she stood and walks at the enemy. Three black cut-outs trail along the dart. |
 | R | [nightfall](../../../src/spells/targeted/nightfall.ts) | self | 0 (self) | 24 s | none (no hits) | 5.5 s | The arena darkens for 5 s (to 0.55 with a violet tint) and a pale moon crescent hangs over it. She moves 25% faster and deals 20% more, and fades again 0.8 s after each hit she lands. When it ends she is slowed 1 s. |

@@ -256,7 +256,7 @@ HP is the kit's `maxHp` (default 600; Pim and Pom 620 in all, Sir Whiskers in li
 | Vitriol | mage (reactions) | 510 | Q 20 + 5 x 5; W 18 + 5 x 5; E 40, shove; R 55 and all three reactions (Combust 34, Corrode +35% for 3 s, Concussion push 2.5 m + silence 0.5 s) |
 | Kaia | mage (burst) | 580 | Q 60 (+18 per rod arc); W 24 per pulse + slow 1 s, discharge 50; E 20, pull 3 m, stun 0.6 s at a rod; R 32 per bolt, 6 s |
 | Sefu | controller | 620 | Q 62, blind 1.2 s; W 35, pull 3 m, slow 0.5 s; E 30 + 30 poison; R seal 1.2 s, then 110 |
-| Nyx | assassin (melee) | 640 | Q 50 (85 from behind); W blind 0.5 s per tick; E 40 HP copy, 15 per 0.9 s; R +25% speed, +20% damage for 5 s |
+| Nyx | assassin (melee) | 640 | Q 54 (86 from behind); W blind 0.5 s per tick; E 40 HP copy, 15 per 0.9 s; R +25% speed, +20% damage for 5 s |
 | Fenna | support | 600 | Q 64; W 40, root 1.0 s (1.4 s near a flower); E dash 6 m; R tree roots 1 s, Uproot 60 |
 | Auriel | support | 550 | Q 40, shield 14 (burst 8); W shield 45 (burst 27); E 44, brand 2.5 s (burst stun 0.8 s); R shield 130, ring 80 |
 | Marin | controller | 610 | Q 52, push or pull 2.5 m; W 44, push 3 m or pull 2 m; E 40, flips the tide; R 24 a second drag, crash 110 |
@@ -272,7 +272,7 @@ HP is the kit's `maxHp` (default 600; Pim and Pom 620 in all, Sir Whiskers in li
 | Silvane | marksman | 620 | Q 64 (+25% per bounce, up to 3); W wall, 60 HP, Bad Luck -15% for 7 s; E up to 9 m through the Stand; R 8 x 60 (+25% per bounce) |
 | Bram | bruiser (melee) | 800 | Q 76, knock-up 0.5 s; W 70, carried, stun 0.9 s at a wall; E shield 60 for 2 s; R 150 along 10 m |
 | Hank | bruiser (melee) | 780 | Q 60 (+ felled tree 30 / 60 / 110); W 50, knock-up 0.5 s; E 30 / 60 / 90 by tree, axe 30; R 90 per fallen tree, 3 hits at most |
-| Professor Puff | mage (ranged) | 560 | Q 56 + 3 Air; W 50 + 3 Air; E push 3 m, float 6 m; R 60 + 20 per Air, shove 3 m |
+| Professor Puff | mage (ranged) | 580 | Q 60 + 3 Air; W 50 + 3 Air; E push 3 m, float 6 m; R 60 + 20 per Air, shove 3 m |
 | Sir Whiskers | assassin (melee) | 540 | Q 64; W 60, stun 0.5 s; E 60, costs a life; R 4 s save, attacks +30% |
 | Mr. Ledger | controller | 600 | Q 72 on the tab; W 62 on the tab, slow 1.5 s; E tab due now; R tab x 1.6, exposed +20% for 3 s |
 | Big Yoko | tank (melee) | 840 | Q 54, shove 3 m; W 50, slow 1 s, stamps the ring; E 40, carries; R blind 1.5 s, ring -2 m, haste 30% for 4 s; ring-out +80 and stun 0.5 s |

@@ -125,7 +125,7 @@ function bubble(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
 
 export const balloonKit: HeroKit = {
   name: 'Professor Puff',
-  maxHp: 560,
+  maxHp: 580,
   title: 'balloon scientist',
   accent: S.body,
   foil: S.foil,
@@ -204,7 +204,7 @@ export const balloonKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'air hose', name: 'Air Hose', range: 8, cooldown: 3.5, aim: 'line',
-      blurb: 'A jet of air (8 m, 22 m/s, 0.3 s wind-up): 56 damage, 3 Air and a 1 m push. Each Air pushes it 8% farther.',
+      blurb: 'A jet of air (8 m, 22 m/s, 0.3 s wind-up): 60 damage, 3 Air and a 1 m push. Each Air pushes it 8% farther.',
       icon(g, s) {
         iconGround(g, s);
         // A hose nozzle on the left blowing a jet and a small balloon rocketing out on it.

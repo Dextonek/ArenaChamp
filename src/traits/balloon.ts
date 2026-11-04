@@ -15,7 +15,7 @@ export const AIR_W = 3;
 export const KNOCK_PER_M = 7;
 
 /** Air Hose (Q): damage, range, speed, wind-up, bolt radius, push (m). */
-export const HOSE_DAMAGE = 56;
+export const HOSE_DAMAGE = 60;
 export const HOSE_RANGE = 8;
 export const HOSE_SPEED = 22;
 export const HOSE_WIND = 0.3;

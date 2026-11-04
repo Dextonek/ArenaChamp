@@ -14,10 +14,10 @@ The balloon hero kit: Professor Puff's four spells (Q, W, E and the R ultimate),
 |---|---|
 | Role | Mage (ranged) |
 | Signature | Inflate |
-| HP | 560 |
+| HP | 580 |
 | Kit shapes | Q SHOT air jet · W ZONE delayed pop · E ESCAPE float with a push · R TGT pin |
 
-He wins by stacking Air with the hose and the bomb, then popping the enemy for 60 plus 20 per Air. Waiting makes the pop stronger, and waiting is also when the Air runs out. His weakness is HP (560) and the Air itself: the enemy lets it out by standing still for 1 s or by hitting him.
+He wins by stacking Air with the hose and the bomb, then popping the enemy for 60 plus 20 per Air. Waiting makes the pop stronger, and waiting is also when the Air runs out. His weakness is HP (580) and the Air itself: the enemy lets it out by standing still for 1 s or by hitting him.
 
 ## At a glance
 
@@ -82,7 +82,7 @@ All four play under the normal gameplay camera. Range and cooldown come from the
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [air hose](../../../src/spells/targeted/airHose.ts) | line skillshot (ground aim) | 8 | 3.5 s | thrown at 0.3 s, reaches 6 m at 0.57 s | about 1.7 s | He pumps a small pink balloon up at the brass nozzle for 0.3 s and lets go: a balloon rocket, shrinking as it empties. It hits the first enemy it touches for 56, adds 3 Air and pushes 1 m (8% farther per Air already on them). A thin line shows the path. |
+| Q | [air hose](../../../src/spells/targeted/airHose.ts) | line skillshot (ground aim) | 8 | 3.5 s | thrown at 0.3 s, reaches 6 m at 0.57 s | about 1.7 s | He pumps a small pink balloon up at the brass nozzle for 0.3 s and lets go: a balloon rocket, shrinking as it empties. It hits the first enemy it touches for 60, adds 3 Air and pushes 1 m (8% farther per Air already on them). A thin line shows the path. |
 | W | [helium bomb](../../../src/spells/targeted/heliumBomb.ts) | ground (r 2.5) | 9 | 9 s | 1.0 s | 2.2 s | A shiny foil balloon floats to the spot in 0.4 s and hangs 2.6 m above it, swelling and wobbling, with the 2.5 m circle drawn on the floor. At 1.0 s it pops: 50 damage and 3 Air to everyone inside, each pushed out from the spot. The word POP shows. |
 | E | [hot air](../../../src/spells/targeted/hotAir.ts) | ground (r 2.5 push) | 9 | 10 s | push at 0.4 s | 2.4 s | He pumps himself up for 0.4 s (three big balloons swell over his head and the word BLOAT floats up), then lets go: anyone within 2.5 m is pushed 3 m (no damage). Then he floats 6 m away from the aimed spot in 0.7 s; a pale ring on the floor shows where he will land. He is out of position afterwards. |
 | R | [pop!](../../../src/spells/targeted/popPin.ts) | enemy (needs sight when it lands) | 9 | 22 s | 0.6 s (the pin is thrown at 0.15 s) | 1.9 s | Ultimate. He draws a brass pin with a pink glass head; a red circle and a closing ring mark the enemy. At 0.6 s, if he still sees them and they are within 11 m, they POP: 60 plus 20 per Air, and all their Air goes out in a 3 m shove. If they reached cover or went past 11 m, the pin clatters off. |
