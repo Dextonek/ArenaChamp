@@ -46,6 +46,11 @@ export interface SummonOptions {
   color?: string;
   /** How the units look (default: `defaultLook`). */
   look?: MinionLook;
+  /**
+   * Where a melee unit walks now, instead of at the nearest victim (Bo's sheep go to whichever hero is nearest, even him). It
+   * still strikes a victim in reach, and stops about 1 m from the spot. Null: its usual walk.
+   */
+  goal?: (pos: THREE.Vector3) => THREE.Vector3 | null;
 }
 
 /** One summoned unit. `figure` is an `Enemy`, so it is a valid `ctx.hit` target. */
@@ -79,7 +84,7 @@ export class SummonUnit {
     readonly summon: Summon,
     readonly kind: SummonKind,
     readonly side: SummonSide,
-    readonly opts: Required<Pick<SummonOptions, 'damage' | 'attackEvery' | 'range' | 'speed' | 'color'>>,
+    readonly opts: Required<Pick<SummonOptions, 'damage' | 'attackEvery' | 'range' | 'speed' | 'color'>> & Pick<SummonOptions, 'goal'>,
     hp: number,
     seconds: number,
   ) {
@@ -212,7 +217,7 @@ export class SummonSystem {
     const room = Math.max(0, MAX_UNITS - this.alive(world.side).length);
     const n = Math.min(Math.max(1, Math.round(o.count ?? 1)), room);
     const color = o.color ?? '#b8c4d8';
-    const opts = { damage: o.damage, attackEvery: o.attackEvery, color, range: o.range ?? (o.kind === 'turret' ? 8 : 9), speed: o.speed ?? (o.kind === 'melee' ? 3.6 : 3) };
+    const opts = { damage: o.damage, attackEvery: o.attackEvery, color, range: o.range ?? (o.kind === 'turret' ? 8 : 9), speed: o.speed ?? (o.kind === 'melee' ? 3.6 : 3), goal: o.goal };
     const near = world.victims()[0];
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.PI / 2;
@@ -344,7 +349,11 @@ export class SummonSystem {
       this.turn(fx, Math.atan2(dx, dz), dt);
       const dir = new THREE.Vector3(dx, 0, dz).divideScalar(Math.max(td, 1e-3));
       if (u.kind === 'melee') {
-        if (td > MELEE_REACH) walk = this.walk(u, dir, 1, dt, tgt.pos);
+        const goal = u.opts.goal?.(pos) ?? null;
+        if (goal && (td > MELEE_REACH || u.cd > 0)) {
+          const gd = Math.hypot(goal.x - pos.x, goal.z - pos.z);
+          if (gd > 1) walk = this.walk(u, new THREE.Vector3(goal.x - pos.x, 0, goal.z - pos.z).divideScalar(gd), 1, dt, goal);
+        } else if (td > MELEE_REACH) walk = this.walk(u, dir, 1, dt, tgt.pos);
         else if (u.cd <= 0) {
           u.swing = 0;
           u.swingAt = tgt.figure;

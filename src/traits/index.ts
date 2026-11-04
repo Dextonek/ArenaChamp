@@ -25,6 +25,8 @@ import { timberTrait } from './timber';
 import { balloonTrait } from './balloon';
 import { catTrait } from './cat';
 import { ledgerTrait } from './ledger';
+import { sumoTrait } from './sumo';
+import { mimeTrait } from './mime';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -53,6 +55,8 @@ export const TRAITS: Record<string, Trait> = {
   'Professor Puff': balloonTrait,
   'Sir Whiskers': catTrait,
   'Mr. Ledger': ledgerTrait,
+  'Big Yoko': sumoTrait,
+  Mum: mimeTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

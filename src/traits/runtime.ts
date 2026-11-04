@@ -149,6 +149,10 @@ export class TraitRuntime implements TraitView {
     return this.trait?.figureVeil?.(this) ?? 0;
   }
 
+  hiddenNow() {
+    return this.trait?.figureHidden?.(this) ?? false;
+  }
+
   enemyScaleNow() {
     return this.trait?.enemyScale?.(this) ?? 1;
   }

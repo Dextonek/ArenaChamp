@@ -236,6 +236,11 @@ export interface Trait {
    */
   figureVeil?(t: TraitView): number;
   /**
+   * True while this hero's figure is not drawn at all (Mabel underground, Zambini under a hat), asked every frame on both screens.
+   * The rest of the rule is the kit's: show where they are some other way, and make them safe with the `sealed` status if they are.
+   */
+  figureHidden?(t: TraitView): boolean;
+  /**
    * How big the enemy hero is drawn and judged now (1: as usual; the duel eases to it), asked every frame on both screens, so it
    * may only read what both have, such as `stacks`. Professor Puff's Air: a swollen hero is also easier to hit.
    */

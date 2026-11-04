@@ -330,6 +330,11 @@ export class HeroMode implements TouchTarget {
     this.figure.setVeil(v);
   }
 
+  /** Not drawn at all (`Trait.figureHidden`). */
+  setFigureHidden(hidden: boolean) {
+    if (this.figure.shown) this.figure.shown.visible = !hidden;
+  }
+
   /** The hero's figure has loaded (or it has none to load). */
   get figureLoaded() {
     return this.figure.loaded;

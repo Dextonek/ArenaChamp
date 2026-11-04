@@ -297,7 +297,7 @@ Theme `mole`. Assassin, melee. 640 HP, 4.3 m/s, attack 2.2 m, 11 per 0.9 s. Acce
 | Q | Claw | 3 | A 2.5 m swipe: 45 | Stay out of 2.5 m |
 | W | Dig | 7 | A hole at a spot (6 m), opening after 0.7 s, 1.5 m | Step off: 0.63 s with reaction |
 | E | Tunnel | 10 | She dives (0.3 s) and moves underground for up to 1.2 s at +40%, a mound on the surface, cannot be hit, then pops up: 40 and a 0.5 s knock-up within 1.5 m | Watch the mound: step off as it slows. She cannot cast down there |
-| R | Sinkhole | 24 | A 4 m pit at your spot (9 m, sight), 1.2 s warning: rooted 1 s and 90 | Leave: 1.25 s, so start walking early, or stand by cover at its edge |
+| R | Sinkhole | 24 | A 4 m pit at your spot (9 m, sight), 1.3 s warning: rooted 1 s and 90 | Leave: 1.25 s from the centre, inside the 1.3 s, or stand by cover at its edge |
 
 **Engine:** reuses the old `burrow.ts` idea for moving underground.
 

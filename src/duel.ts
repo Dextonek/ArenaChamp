@@ -1058,6 +1058,8 @@ export class Duel {
     this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, 3.05);
     this.figure.setVeil(this.oppRt?.veilNow() ?? 0);
     hm.setFigureVeil(this.heroRt?.veilNow() ?? 0);
+    if (this.figure.shown) this.figure.shown.visible = !this.oppRt?.hiddenNow();
+    hm.setFigureHidden(!!this.heroRt?.hiddenNow());
     // What each hero's passive does to the other's size, and the word it keeps over the other's head.
     this.sizeFigure(this.foe, this.heroRt?.enemyScaleNow() ?? 1, this.opponentKit, dt);
     this.sizeFigure(arena.caster, this.oppRt?.enemyScaleNow() ?? 1, hm.currentKit, dt);
