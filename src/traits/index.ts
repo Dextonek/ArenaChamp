@@ -29,6 +29,8 @@ import { sumoTrait } from './sumo';
 import { mimeTrait } from './mime';
 import { refereeTrait } from './referee';
 import { chefTrait } from './chef';
+import { courierTrait } from './courier';
+import { janitorTrait } from './janitor';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -61,6 +63,8 @@ export const TRAITS: Record<string, Trait> = {
   Mum: mimeTrait,
   'Referee Whistler': refereeTrait,
   'Madame Cleaver': chefTrait,
+  Pip: courierTrait,
+  Gus: janitorTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

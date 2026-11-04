@@ -34,6 +34,8 @@ import { sumoKit } from './kits/sumo';
 import { mimeKit } from './kits/mime';
 import { refereeKit } from './kits/referee';
 import { chefKit } from './kits/chef';
+import { courierKit } from './kits/courier';
+import { janitorKit } from './kits/janitor';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -143,6 +145,8 @@ const MODELS: Record<string, string> = {
   Mum: 'models/heroes/mime_v2.glb',
   'Referee Whistler': 'models/heroes/referee_v2.glb',
   'Madame Cleaver': 'models/heroes/chef_v2.glb',
+  Pip: 'models/heroes/courier_v2.glb',
+  Gus: 'models/heroes/janitor_v2.glb',
 };
 
 /**
@@ -164,7 +168,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   'Madame Cleaver': { radius: 0.58, height: 2.63 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit].map((k) => {
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit].map((k) => {
   const kit = { ...k, model: k.model ?? MODELS[k.name] };
   if (kit.alt) kit.alt.base = kit;
   return kit;

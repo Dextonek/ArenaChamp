@@ -91,6 +91,14 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { floodModule } from './flood';
+import { mopBucketModule } from './mopBucket';
+import { wetFloorSignModule } from './wetFloorSign';
+import { bigMopModule } from './bigMop';
+import { finalDeliveryModule } from './finalDelivery';
+import { shortcutModule } from './shortcut';
+import { fragileModule } from './fragile';
+import { expressLetterModule } from './expressLetter';
 import { dinnerIsServedModule } from './dinnerIsServed';
 import { burntOfferingModule } from './burntOffering';
 import { hotSoupModule } from './hotSoup';
@@ -343,6 +351,14 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  floodModule,
+  mopBucketModule,
+  wetFloorSignModule,
+  bigMopModule,
+  finalDeliveryModule,
+  shortcutModule,
+  fragileModule,
+  expressLetterModule,
   dinnerIsServedModule,
   burntOfferingModule,
   hotSoupModule,
