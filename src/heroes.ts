@@ -3,6 +3,7 @@
  * data only; a new hero is a new entry here, its spells are ordinary registered effects (looked up by label).
  */
 import type { BuffKind } from './effects/status';
+import type { Trait } from './traits/types';
 import { alchemyKit } from './kits/alchemy';
 import { sandKit } from './kits/sand';
 import { shadowKit } from './kits/shadow';
@@ -93,6 +94,15 @@ export interface HeroKit {
   maxHp?: number;
   /** The HP bar is cut into this many equal chunks, for both players (Sir Whiskers's lives). */
   hpChunks?: number;
+  /**
+   * A hero of two halves (Pim and Pom): the other half's kit, with the same name, so the same trait. It has its own spells, model,
+   * look and `attack`. `TraitView.swapKit` brings it in on both screens; each round starts on this one.
+   */
+  alt?: HeroKit;
+  /** On an `alt` kit: the kit it is the other half of (set below). */
+  base?: HeroKit;
+  /** This half's basic attack, over the trait's. */
+  attack?: Trait['attack'];
   /** A melee hero: the duel AI closes to about 2 m (not 70% of Q's range) and chases a target that backs off. */
   melee?: true;
   spells: [HeroSpell, HeroSpell, HeroSpell, HeroSpell];
@@ -154,4 +164,8 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   'Madame Cleaver': { radius: 0.58, height: 2.63 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit].map((k) => {
+  const kit = { ...k, model: k.model ?? MODELS[k.name] };
+  if (kit.alt) kit.alt.base = kit;
+  return kit;
+});

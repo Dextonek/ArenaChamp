@@ -456,6 +456,11 @@ export class Duel {
   private setup(mine: THREE.Vector3, theirs: THREE.Vector3, def: ArenaDef) {
     const arena = this.host.arena, hm = this.host.heroMode;
     this.host.clearEffects?.();
+    // A two-kit hero starts each round on its first half, with the other half's model ready.
+    if (hm.currentKit.base) hm.setKit(hm.currentKit.base);
+    if (this.opponentKit.base) this.opponentKit = this.opponentKit.base;
+    if (hm.currentKit.alt?.model) hm.preloadFigure(hm.currentKit.alt.model);
+    if (this.opponentKit.alt?.model) this.figure.preload(this.opponentKit.alt.model);
     this.useArena(def);
     this.hazard?.dispose();
     this.hazard = this.hazardsOn && (this.mode === 'play' || this.hazardsInRuns) ? def.hazard?.(this.hazardSeed) ?? null : null;
@@ -590,6 +595,10 @@ export class Duel {
         me.z += dz;
         arena.keepInside(me);
       },
+      swapKit: (alt) => {
+        const kit = alt ? me.alt ?? me : me;
+        if (kit !== hm.currentKit) hm.swapKit(kit);
+      },
     });
     this.oppRt = new TraitRuntime('opponent', traitFor(them.name), {
       self: () => this.foe ?? arena.caster,
@@ -660,6 +669,13 @@ export class Duel {
       carrySelf: (dx, dz) => {
         if (this.net || !this.foe) return;
         arena.moveFoe(this.foe, new THREE.Vector3(dx, 0, dz), true);
+      },
+      swapKit: (alt) => {
+        const kit = alt ? them.alt ?? them : them;
+        if (kit === this.opponentKit) return;
+        this.opponentKit = kit;
+        this.oppAttackSpec = attackFor(kit);
+        this.figure.setModel(kit.model, this.foe?.group.position, kit);
       },
     });
     // The channel of a cast (src/effects/channel.ts) ends the root of whoever cast it.

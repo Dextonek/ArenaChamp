@@ -215,6 +215,15 @@ export class HeroFigure {
     return !!this.figure;
   }
 
+  /** Starts loading the model at `url` without showing it, so a later `setModel` shows it at once (Pim and Pom's tag). */
+  preload(url: string) {
+    if (this.figures.has(url)) return;
+    const f = new Hero({ url, shade: 0.9, maxEmissive: 1, tintSheen: true });
+    f.root.visible = false;
+    this.figures.set(url, f);
+    this.group.add(f.root);
+  }
+
   /** A spell was cast: plays `style`'s wind-up and strike over `seconds` (the cast's own root). */
   cast(style: CastStyle, seconds: number, big = false) {
     this.castNow = { style, t: 0, dur: Math.max(0.35, Math.min(seconds, 2.5)), big };

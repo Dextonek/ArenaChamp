@@ -413,6 +413,17 @@ export class HeroMode implements TouchTarget {
     this.showFigure();
   }
 
+  /** The other half of a two-kit hero comes in (`HeroKit.alt`): new bar and model, the cooldowns stay per slot. */
+  swapKit(kit: HeroKit) {
+    const left = [...this.cooldowns];
+    this.setKit(kit);
+    left.forEach((c, i) => { this.cooldowns[i] = c; });
+  }
+
+  preloadFigure(url: string) {
+    this.figure.preload(url);
+  }
+
   setEnabled(on: boolean) {
     this.enabled = on;
     this.group.visible = on;

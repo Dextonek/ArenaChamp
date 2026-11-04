@@ -111,6 +111,11 @@ export interface TraitView {
   hitEnemy(opts: HitOptions): void;
   /** Moves the enemy hero by this step now, out of cover and inside the ring (a passive's drag). Call it from `victimTick`. */
   carryEnemy(dx: number, dz: number): void;
+  /**
+   * Brings in the other half of a two-kit hero (`HeroKit.alt`; false: the first half), here only. Call it on the own client and
+   * `show` the change, and call it again from `ownChanged` on the other screen.
+   */
+  swapKit(alt: boolean): void;
   /** Moves this hero now, kept inside the ring. Run it on this hero's own client (`tick`): online, the other screen follows its moves. */
   carrySelf(dx: number, dz: number): void;
   say(text: string, color?: string): void;

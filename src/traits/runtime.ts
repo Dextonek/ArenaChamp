@@ -58,6 +58,7 @@ export interface TraitHost {
   /** Moves the enemy hero by this step now, where this screen decides it (a passive's drag). */
   carryEnemy?(dx: number, dz: number): void;
   carrySelf?(dx: number, dz: number): void;
+  swapKit?(alt: boolean): void;
 }
 
 /**
@@ -193,6 +194,10 @@ export class TraitRuntime implements TraitView {
 
   carrySelf(dx: number, dz: number) {
     this.host.carrySelf?.(dx, dz);
+  }
+
+  swapKit(alt: boolean) {
+    this.host.swapKit?.(alt);
   }
 
   say(text: string, color = this.trait?.resource?.color ?? '#ffe7b0') {

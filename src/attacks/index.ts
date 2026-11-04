@@ -36,7 +36,7 @@ export const RANGED_ATTACK: AttackSpec = { kind: 'ranged', range: 6.5, damage: 1
 
 /** The basic attack of a kit: the melee or ranged default (by `kit.melee`), the hero's own changes (its trait), its colour. */
 export function attackFor(kit: HeroKit): AttackSpec {
-  const own = traitFor(kit.name)?.attack;
-  const base = (own?.kind ?? (kit.melee ? 'melee' : 'ranged')) === 'melee' ? MELEE_ATTACK : RANGED_ATTACK;
+  const own = { ...traitFor(kit.name)?.attack, ...kit.attack };
+  const base = (own.kind ?? (kit.melee ? 'melee' : 'ranged')) === 'melee' ? MELEE_ATTACK : RANGED_ATTACK;
   return { ...base, color: kit.accent, ...own };
 }
