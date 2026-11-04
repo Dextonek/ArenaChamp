@@ -40,7 +40,7 @@ export const TWIN_SHARE = 0.5;
 export const astralTrait: Trait = {
   passive: { name: 'Far Sight', blurb: 'Her damage rises with distance: +0% within 4 m, up to +30% at 10 m or more. A full-draw Starfall Arrow that hits takes 3 s off Pinning Arrow.' },
   speed: 4.0,
-  attack: { kind: 'ranged', range: 8.5, damage: 13, interval: 1.4, windup: 0.32, speed: 24, look: 'arrow' },
+  attack: { kind: 'ranged', range: 8.5, damage: 12, interval: 1.4, windup: 0.32, speed: 24, look: 'arrow' },
   hold: { slot: 0, seconds: 1 },
   castMods(t, slot, charge) {
     if (slot !== 0) return {};

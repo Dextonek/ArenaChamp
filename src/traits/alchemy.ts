@@ -21,7 +21,7 @@ import { shapeMove } from './tide';
 /** How long a reagent stays on the enemy (s). */
 export const REAGENT_SECONDS = 4;
 /** The reactions' numbers (kits-v4.md). */
-export const COMBUST_DAMAGE = 40;
+export const COMBUST_DAMAGE = 34;
 export const CORRODE = { amount: 0.35, seconds: 3 };
 /** Concussion: metres the push moves the enemy (`shapeMove`: a pull the engine moves the same on a player and a foe), and the silence. */
 export const CONCUSSION = { push: 2.5, silence: 0.5 };

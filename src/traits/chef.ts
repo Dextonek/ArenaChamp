@@ -16,14 +16,14 @@ export const GOOD_HEAL = 30;
 export const CLEAVER_RANGE = 9;
 export const CLEAVER_SPEED = 20;
 export const CLEAVER_WIND = 0.25;
-export const CLEAVER_DAMAGE = 50;
+export const CLEAVER_DAMAGE = 66;
 export const CLEAVER_RADIUS = 0.3;
 
 /** Hot Soup (W): reach, delay before the pot tips, radius, damage, slow seconds. */
 export const SOUP_RANGE = 8;
 export const SOUP_DELAY = 1.0;
 export const SOUP_RADIUS = 2.5;
-export const SOUP_DAMAGE = 40;
+export const SOUP_DAMAGE = 56;
 export const SOUP_SLOW = 1.5;
 
 /** Burnt Offering (E): reach, the plate's flight time, what eating it does (damage, stun seconds). */
@@ -187,7 +187,7 @@ export const chefTrait: Trait = {
     blurb: 'A dish gets better with time, and is worth more to whoever takes it. Eat her food before she does, and walk round the black and smoking ones.',
   },
   speed: 3.9,
-  attack: { kind: 'ranged', range: 5.5, damage: 9, interval: 0.8, windup: 0.2, speed: 20, look: 'orb' },
+  attack: { kind: 'ranged', range: 5.5, damage: 12, interval: 0.8, windup: 0.2, speed: 20, look: 'orb' },
 
   // The CPU playing her: the table when it stands, else a good dish within 5 m when she is hurt.
   aiGoal(t) {

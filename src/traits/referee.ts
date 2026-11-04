@@ -3,7 +3,7 @@ import type { GroundMark, Trait, TraitHit, TraitView } from './types';
 import { REFEREE_CSS, cardLook, ringLook, wordLook } from '../effects/parts/referee';
 
 /** Whistle Blast (Q): damage, range, speed, wind-up, bolt radius. */
-export const WHISTLE_DAMAGE = 50;
+export const WHISTLE_DAMAGE = 66;
 export const WHISTLE_RANGE = 8;
 export const WHISTLE_SPEED = 22;
 export const WHISTLE_WIND = 0.3;
@@ -22,7 +22,7 @@ export const CARD_RADIUS = 1.2;
 export const HANDS_SECONDS = 3;
 
 /** The red card: damage and the seconds of silence. */
-export const RED_DAMAGE = 60;
+export const RED_DAMAGE = 90;
 export const RED_SILENCE = 1.5;
 
 /**
@@ -158,7 +158,7 @@ export const refereeTrait: Trait = {
     blurb: 'Obey the rule, or take the card when the move is worth it. Your card count shows over your head.',
   },
   speed: 4.0,
-  attack: { kind: 'ranged', range: 6, damage: 9, interval: 0.9, windup: 0.25, speed: 20, look: 'orb' },
+  attack: { kind: 'ranged', range: 6, damage: 12, interval: 0.9, windup: 0.25, speed: 20, look: 'orb' },
   hiddenStacks: ['norun', 'nocast', 'hands'],
 
   // The CPU blows W and E only with the enemy in reach and no rule running; R only with the enemy inside 9 m.

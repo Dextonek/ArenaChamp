@@ -15,7 +15,7 @@ export const AIR_W = 3;
 export const KNOCK_PER_M = 7;
 
 /** Air Hose (Q): damage, range, speed, wind-up, bolt radius, push (m). */
-export const HOSE_DAMAGE = 50;
+export const HOSE_DAMAGE = 56;
 export const HOSE_RANGE = 8;
 export const HOSE_SPEED = 22;
 export const HOSE_WIND = 0.3;
@@ -26,7 +26,7 @@ export const HOSE_PUSH = 1;
 export const BOMB_RANGE = 9;
 export const BOMB_DELAY = 1.0;
 export const BOMB_RADIUS = 2.5;
-export const BOMB_DAMAGE = 40;
+export const BOMB_DAMAGE = 50;
 
 /** Hot Air (E): the float (m), the wind-up and the glide (s), the radius and the push (m) where he left. */
 export const HOT_FLOAT = 6;
@@ -38,7 +38,7 @@ export const HOT_PUSH = 3;
 /** Pop! (R): reach, the pin's time to land, base damage, damage per Air, and the shove (m) the Air goes out in. */
 export const POP_RANGE = 9;
 export const POP_WIND = 0.6;
-export const POP_BASE = 50;
+export const POP_BASE = 60;
 export const POP_PER_AIR = 20;
 export const POP_SHOVE = 3;
 /** The CPU holds Pop! until the enemy has this much Air. */

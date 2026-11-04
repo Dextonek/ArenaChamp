@@ -23,7 +23,7 @@ export const GUST_MAX = 3;
 export const GUST_DAMAGE = 20;
 export const GUST_REACH = 1;
 
-const BASE_ATTACK = 8;
+const BASE_ATTACK = 7;
 
 /** Cuts of the Sky Rend cast by a figure (written at the cast, on both screens); the effect reads it. None (the VFX tool): 9. */
 export const skyRendCuts = new WeakMap<object, number>();

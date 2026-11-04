@@ -4,7 +4,7 @@ import { pitLook } from '../effects/parts/mole';
 /** Claw (Q): reach (m), the cone's full width (degrees), damage, wind-up (s). */
 export const CLAW_REACH = 2.5;
 export const CLAW_ANGLE = 120;
-export const CLAW_DAMAGE = 45;
+export const CLAW_DAMAGE = 62;
 export const CLAW_WIND = 0.4;
 
 /** Dig (W): reach, the hole's radius (m), seconds until it opens. */
@@ -30,7 +30,7 @@ export const MOLE_SPEED = 4.3;
 export const TUNNEL_MAX = MOLE_SPEED * TUNNEL_SPEED * TUNNEL_UNDER;
 export const TUNNEL_MIN = 2;
 export const TUNNEL_RADIUS = 1.5;
-export const TUNNEL_DAMAGE = 40;
+export const TUNNEL_DAMAGE = 60;
 export const TUNNEL_KNOCKUP = 0.5;
 
 /** Sinkhole (R): reach, the pit's radius, the warning, the root and the damage. */
@@ -38,7 +38,7 @@ export const SINK_RANGE = 9;
 export const SINK_RADIUS = 4;
 export const SINK_DELAY = 1.3;
 export const SINK_ROOT = 1;
-export const SINK_DAMAGE = 90;
+export const SINK_DAMAGE = 115;
 
 /** One hole she has dug. `bornAt` / `until`: `performance.now()` ms. `in`: the enemy stands in it now (the visit has been counted). */
 export interface Hole { x: number; z: number; bornAt: number; until: number; in: boolean }
@@ -94,7 +94,7 @@ export const moleTrait: Trait = {
     blurb: 'Underground she is safe, but she can only come up once, and her mound shows where. She cannot cast down there.',
   },
   speed: MOLE_SPEED,
-  attack: { kind: 'melee', range: 2.2, damage: 11, interval: 0.9, windup: 0.25, look: 'claw' },
+  attack: { kind: 'melee', range: 2.2, damage: 16, interval: 0.9, windup: 0.25, look: 'claw' },
 
   aiHold(t, slot, dist) {
     const e = t.enemy();

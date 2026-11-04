@@ -25,7 +25,7 @@ export interface InkLashSettings {
   loop: boolean;
 }
 
-export const defaultInkLash = (): InkLashSettings => ({ damage: 62, loop: false });
+export const defaultInkLash = (): InkLashSettings => ({ damage: 66, loop: false });
 
 // Timeline (seconds).
 const RELEASE_T = 0.3;

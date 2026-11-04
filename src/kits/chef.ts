@@ -221,7 +221,7 @@ function cloche(g: CanvasRenderingContext2D, cx: number, base: number, r: number
 
 export const chefKit: HeroKit = {
   name: 'Madame Cleaver',
-  maxHp: 640,
+  maxHp: 680,
   title: 'Arena Chef',
   accent: C.core,
   foil: C.red,

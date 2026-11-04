@@ -151,7 +151,7 @@ function pick(g: CanvasRenderingContext2D, x: number, y: number, len: number, ro
 
 export const moleKit: HeroKit = {
   name: 'Mabel',
-  maxHp: 640,
+  maxHp: 680,
   melee: true,
   title: 'the Mole',
   accent: '#8a6a4a',

@@ -28,7 +28,7 @@ export const MIGHT_SECONDS = 0.7;
 export const MIGHT_RENEW = 0.35;
 
 /** Cold Front (Q): damage, range, speed, wind-up, bolt radius; in Rain it slows this long, in Wind it knocks this much further. */
-export const COLD_DAMAGE = 50;
+export const COLD_DAMAGE = 58;
 export const COLD_RANGE = 9;
 export const COLD_SPEED = 20;
 export const COLD_WIND = 0.25;
@@ -39,7 +39,7 @@ export const COLD_RAIN_SLOW = 1.5;
 export const COLD_WIND_KNOCK = 6;
 
 /** Lightning Risk (W): damage, reach, delay, radius. */
-export const BOLT_DAMAGE = 45;
+export const BOLT_DAMAGE = 56;
 export const BOLT_RANGE = 9;
 export const BOLT_DELAY = 0.8;
 export const BOLT_RADIUS = 1.5;
@@ -222,7 +222,7 @@ export const weatherTrait: Trait = {
     blurb: 'Change the forecast, or trust it? Everyone sees it, and the weather hits both. An Update costs his Cold Front.',
   },
   speed: 4.0,
-  attack: { kind: 'ranged', range: 6, damage: 10, interval: 1.0, windup: 0.25, speed: 20, look: 'drop' },
+  attack: { kind: 'ranged', range: 6, damage: 12, interval: 1.0, windup: 0.25, speed: 20, look: 'drop' },
   // The CPU: Update when the weather was a surprise or by the step; Severe Warning only inside its reach.
   aiHold(t, slot, dist) {
     if (slot === 3) return dist > TORNADO_RANGE;

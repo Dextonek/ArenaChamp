@@ -33,7 +33,7 @@ export interface SiegeModeSettings {
   loop: boolean;
 }
 
-export const defaultSiegeMode = (): SiegeModeSettings => ({ damage: 26, loop: false });
+export const defaultSiegeMode = (): SiegeModeSettings => ({ damage: 23, loop: false });
 
 // Timeline (seconds).
 const DEPLOY_T = 0.5; // the plates are down

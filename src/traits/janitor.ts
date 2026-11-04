@@ -3,7 +3,7 @@ import { wetLook } from '../effects/parts/janitor';
 import type { GroundMark, Trait, TraitView } from './types';
 
 /** Big Mop (Q): damage, the cone's reach and full angle, wind-up, and the wet strip it leaves (length, width). */
-export const MOP_DAMAGE = 45;
+export const MOP_DAMAGE = 56;
 export const MOP_REACH = 3.5;
 export const MOP_ANGLE = 140;
 export const MOP_WIND = 0.3;
@@ -41,7 +41,7 @@ export const SIGN_GAP = 1;
 export const BUCKET_RANGE = 8;
 export const BUCKET_SPEED = 16;
 export const BUCKET_WIND = 0.3;
-export const BUCKET_DAMAGE = 40;
+export const BUCKET_DAMAGE = 55;
 export const BUCKET_RADIUS = 0.4;
 export const SPLASH_R = 2.5;
 
@@ -148,7 +148,7 @@ export const janitorTrait: Trait = {
     blurb: 'Mop in your way, or where he wants you to end. The wet shows, and a slide is fast, so you can use it too: slide on purpose, or walk round the shine.',
   },
   speed: 3.9,
-  attack: { kind: 'melee', range: 2.8, damage: 14, interval: 1.3, windup: 0.35, speed: 0, look: 'sweep' },
+  attack: { kind: 'melee', range: 2.8, damage: 18, interval: 1.3, windup: 0.35, speed: 0, look: 'sweep' },
   charges: { slot: 1, count: SIGN_CHARGES, every: SIGN_EVERY },
 
   // The CPU swings the mop only within reach; the sign only with the enemy on wet floor, within 8 m, and none of his standing;

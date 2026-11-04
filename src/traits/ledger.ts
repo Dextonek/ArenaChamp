@@ -2,14 +2,14 @@ import type { GroundMark, Trait, TraitHit, TraitView } from './types';
 import { LEDGER_CSS, wordLook } from '../effects/parts/ledger';
 
 /** Invoice (Q): damage (it goes on the tab), range, speed, wind-up, bolt radius. */
-export const INVOICE_DAMAGE = 50;
+export const INVOICE_DAMAGE = 72;
 export const INVOICE_RANGE = 9;
 export const INVOICE_SPEED = 20;
 export const INVOICE_WIND = 0.25;
 export const INVOICE_RADIUS = 0.35;
 
 /** Late Fee (W): damage (on the tab), reach, delay, radius, slow seconds. */
-export const FEE_DAMAGE = 40;
+export const FEE_DAMAGE = 62;
 export const FEE_RANGE = 9;
 export const FEE_DELAY = 1.0;
 export const FEE_RADIUS = 2.5;
@@ -28,8 +28,8 @@ export const STAMP_EXPOSE_SECONDS = 3;
 
 /** On Your Tab: seconds from the last charge to it coming due, the interest, and what each hit on him pays off. */
 export const DUE_SECONDS = 3;
-export const DUE_MUL = 1.3;
-export const PAY_OFF = 3;
+export const DUE_MUL = 1.4;
+export const PAY_OFF = 2;
 /** The tab's own stack timer is only a backstop: it must outlive DUE_SECONDS. */
 const TAB_BACKSTOP = 8;
 const TAB_MAX = 999;
@@ -96,7 +96,7 @@ export const ledgerTrait: Trait = {
     blurb: 'Bill you now, or let the interest grow? Hit him to pay your tab down. Running away makes it worse.',
   },
   speed: 4.0,
-  attack: { kind: 'ranged', range: 6, damage: 8, interval: 0.8, windup: 0.25, speed: 20, look: 'spark' },
+  attack: { kind: 'ranged', range: 6, damage: 11, interval: 0.8, windup: 0.25, speed: 20, look: 'spark' },
   hiddenStacks: ['tab'],
   enemyLabel(t) {
     const n = Math.round(t.stacks('tab'));

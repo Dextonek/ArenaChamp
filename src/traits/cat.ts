@@ -7,13 +7,13 @@ export const LIVES = 9;
 export const LIFE_HP = 60;
 
 /** Scratch (Q): damage, reach (m) and the width of the claw (degrees), and the seconds his next attack stays ready at once. */
-export const SCRATCH_DAMAGE = 46;
+export const SCRATCH_DAMAGE = 56;
 export const SCRATCH_RANGE = 2.5;
 export const SCRATCH_ANGLE = 90;
 export const SCRATCH_FREE = 2;
 
 /** Knock It Over (W): damage, stun (s), pot radius (m), spot reach (m), fall time (s), and how near cover must be (m, to its surface). */
-export const POT_DAMAGE = 50;
+export const POT_DAMAGE = 60;
 export const POT_STUN = 0.5;
 export const POT_RADIUS = 1.5;
 export const POT_RANGE = 9;
@@ -89,7 +89,7 @@ export const catTrait: Trait = {
     blurb: 'On a full life, attack. On a low one, spend it: Pounce costs the life he is on and Land on My Feet saves the next one.',
   },
   speed: 4.5,
-  attack: { kind: 'melee', range: 2, damage: 11, interval: 0.7, windup: 0.25, look: 'claw' },
+  attack: { kind: 'melee', range: 2, damage: 13, interval: 0.7, windup: 0.25, look: 'claw' },
   ownLook: {
     claw: { color: '#f4e6c8', shape: 'mark' },
     feet: { color: '#e8a13a', shape: 'gem' },
