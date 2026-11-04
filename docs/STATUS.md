@@ -7,6 +7,7 @@ Everything below is committed on `feat/particle-editor` unless marked. The 2026-
 said "uncommitted" now name the commit that holds them.
 
 **Commits since 2026-10-30, newest first**
+- `45bb30f` League kit research: docs only, no code or kit change (entry below).
 - `bc0f830` A Random tile first in every hero picker (entry below).
 - `a0832f4` Zephyr and Marin rebalanced for the CPU's new walking (entry below).
 - `e0b96b4` League walking and controls, the hover outline (entry below).
@@ -19,19 +20,28 @@ said "uncommitted" now name the commit that holds them.
 - `0ed55d1` Arena remake, breakable walls, sculpted v2 heroes, phone play.
 - `c7f2039` Hero identity (traits and passives), kit identity v2, the motion pass.
 
-- **Pushed:** GitHub `main` is at `bc0f830` (2026-11-04, `git push origin feat/particle-editor:main`).
+- **Pushed:** GitHub `main` is at `bc0f830` (2026-11-04, `git push origin feat/particle-editor:main`). `45bb30f` is local only.
 - **Live:** `bc0f830`, deployed 2026-11-04 at the user's request (`npm run cf:deploy`, worker version
   `aaf3b0e5-49f0-4e40-9dcf-722e32ef55df`), https://arena-of-kits.arenachamp.workers.dev/game. Checked on the live site: the
   page serves the new bundle (`game-XTrx3sBE.js`), the online server connects, the CPU screen shows 21 tiles with Random
   first, a fight from the real buttons drew a hero (Auriel against Zephyr), and "Leave duel" came back with Random still
   chosen. No console errors. Not checked live: Random in a real queue or lobby, two players online, login, a phone, the
   in-fight Leave button (its confirm dialog closes by itself in the test browser, so it could not be answered).
-- **In progress:** nothing running. Uncommitted: this STATUS.
-- **Next:** v4 batch 2 in the [kits-v4.md](../pipeline/designs/kits-v4.md) build order, led by its engine pieces;
-  Nyx's stealth last.
+- **In progress:** the v5 remake of all 20 kits ("All kits should be remade", entry below). Design done, building next.
+- **Next:** engine pieces E1-E14 in [kits-v5.md](../pipeline/designs/kits-v5.md), then the five built kits, then three batches of five.
+
+**Kit remake v5 (2026-11-04, user: "All kits should be remade")**
+- Design: [kits-v5.md](../pipeline/designs/kits-v5.md), all 20 heroes against the League checklist, with cooldowns and every counterplay
+  line checked with the numbers. A second reader recomputed every line against the code; its corrections are in. It replaces kits-v4.md.
+- User's decisions: Nyx loses full invisibility; Vex is renamed Vitriol (shown name only); commit after each finished batch without asking.
+  Push and deploy still wait for the user. Never commit the Meshy files.
+- Each hero keeps look, theme and role. Spell and passive names were checked against League's 865 ability names: no exact match.
+- Build order: engine E1-E14, then the five built kits, then Vesper, Brannoc, Sefu, Cantor, Tempo; Isolde, Kaia, Fenna, Auriel, Ada; Sirix,
+  Shiori, Opaline, Oblivion, Nyx. Then a full tournament, the catalog refresh and the rename.
+- Balance tool: `pipeline/tools/kit-balance.js` and `pipeline/tools/duel-tourney.js`, in the VFX tool page (`vfx-dev` in launch.json).
 
 **League kit research (2026-11-04, user: "research deeply the kits from League of Legends... make docs knowledge", then
-"go through all champions... make big docs"; committed, not pushed)**
+"go through all champions... make big docs"; committed `45bb30f`, not pushed)**
 - [knowledge/league-kit-design.md](knowledge/league-kit-design.md): why the kits work, how ours compare, a 35-question checklist,
   a ranked list of what to do first, a verdict on each of our 20 heroes. About 12,000 words.
 - [knowledge/league-champion-kits.md](knowledge/league-champion-kits.md): all 173 champions, about 55,000 words, with counts across
@@ -1152,7 +1162,7 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 
 ## Waiting on you
 - Nothing blocking (2026-11-03). Push and deploy happen only when you ask:
-  - Push: `git push origin feat/particle-editor:main`. GitHub `main` and the live site are both at `bc0f830`.
+  - Push: `git push origin feat/particle-editor:main`. GitHub `main` and the live site are both at `bc0f830`; `45bb30f` (docs only, so no deploy needed) is local.
     All commits are authored as Dextonek (old history in `refs/backup/before-dextonek`).
   - Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end). Live is `bc0f830`.
 - Play online: https://arena-of-kits.arenachamp.workers.dev in two browsers (online accounts start empty).
