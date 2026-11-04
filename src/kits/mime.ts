@@ -168,7 +168,7 @@ export const mimeKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'invisible ball', name: 'Invisible Ball', range: 9, cooldown: 3.5, aim: 'line',
-      blurb: 'She throws a ball you cannot see (9 m, 22 m/s, 0.3 s wind-up): 50 damage. Only a chalk line on the floor shows where it goes. It passes her own walls.',
+      blurb: 'She throws a ball you cannot see (9 m, 22 m/s, 0.3 s wind-up): 72 damage. Only a chalk line on the floor shows where it goes. It passes her own walls.',
       icon(g, s) {
         iconGround(g, s);
         // The line on the floor, and a dotted outline where the ball is (nothing in it); a glove cocked at the lower left.
@@ -212,7 +212,7 @@ export const mimeKit: HeroKit = {
     },
     {
       key: 'E', label: 'rope trick', name: 'Rope Trick', range: 7, cooldown: 11,
-      blurb: 'She mimes a rope to you (7 m, 0.5 s, needs sight when it lands): 30 damage and you are pulled 3 m toward her. Cover breaks it.',
+      blurb: 'She mimes a rope to you (7 m, 0.5 s, needs sight when it lands): 55 damage and you are pulled 3 m toward her. Cover breaks it.',
       icon(g, s) {
         iconGround(g, s);
         // A dashed line pulled hand over hand toward the lower left, a red scarf tail, two gloves one above the other.

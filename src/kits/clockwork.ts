@@ -210,7 +210,7 @@ export const clockworkKit: HeroKit = {
     },
     {
       key: 'W', label: 'deploy turret', name: 'Deploy Turret', range: 8, cooldown: 10, summon: true,
-      blurb: 'Two charges, one back every 10 s. A turret at a spot within 8 m for 8 s: 80 HP, 12 damage every 1.4 s, range 8. Within 5 m of her it shoots 30% faster and glows.',
+      blurb: 'Two charges, one back every 10 s. A turret at a spot within 8 m for 8 s: 80 HP, 9 damage every 1.4 s, range 8. Within 5 m of her it shoots 30% faster and glows.',
       icon(g, s) {
         iconGround(g, s);
         // A turret on a tripod, a copper ring on the floor round it (her 5 m), and two charge pips.
@@ -314,7 +314,7 @@ export const clockworkKit: HeroKit = {
     },
     {
       key: 'R', label: 'siege mode', name: 'Siege Mode', range: 9, cooldown: 24,
-      blurb: 'She braces for 6 s, rooted, +20% armour. Turrets within 8 m of her fire twice as fast, and she fires heavy rounds (30 every 0.8 s) at an enemy within 9 m she can see. A stun, silence or knock-up ends it. Recast: pack up.',
+      blurb: 'She braces for 6 s, rooted, +20% armour. Turrets within 8 m of her fire twice as fast, and she fires heavy rounds (23 every 0.8 s) at an enemy within 9 m she can see. A stun, silence or knock-up ends it. Recast: pack up.',
       icon(g, s) {
         iconGround(g, s);
         // Four steel plates on the ground in a diamond round a gear, copper braces up to a collar, a heavy shell flying out.

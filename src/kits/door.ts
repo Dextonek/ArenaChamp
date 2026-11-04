@@ -219,7 +219,7 @@ export const doorKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'key toss', name: 'Key Toss', range: 9, cooldown: 3.5, aim: 'line',
-      blurb: 'A brass key (9 m): 50 damage. It flies into a door and out of its pair, going the same way, and through all four doors of the Grand Lobby.',
+      blurb: 'A brass key (9 m): 78 damage. It flies into a door and out of its pair, going the same way, and through all four doors of the Grand Lobby.',
       icon(g, s) {
         iconGround(g, s);
         // A door on the right, a ray in from the lower left, out again toward the upper left.
@@ -250,7 +250,7 @@ export const doorKit: HeroKit = {
     },
     {
       key: 'E', label: 'door slam', name: 'Slam', range: 0, cooldown: 9, cc: true,
-      blurb: 'Both doors slam: 40 damage and a 0.5 s stun on an enemy within 1.5 m of either door, after 0.7 s.',
+      blurb: 'Both doors slam: 70 damage and a 0.5 s stun on an enemy within 1.5 m of either door, after 0.7 s.',
       icon(g, s) {
         iconGround(g, s);
         // Two doors with a red ring on the floor round each and a burst at the crack.

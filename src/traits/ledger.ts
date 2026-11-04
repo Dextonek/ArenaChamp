@@ -71,8 +71,8 @@ const since = (n: number, seen: number) => (n > seen ? n - seen : 1);
 
 /**
  * Mr. Ledger (controller). Passive On Your Tab: his Invoice and Late Fee do no damage now. The damage goes on the enemy's tab, a
- * number over their head (`enemyLabel`, read from the `tab` stacks). 4 s after the last charge the tab comes due at +30%, in
- * one hit, with the word PAST DUE. An attack the enemy lands on him pays off 3 of it, a spell 15. Call It In (E) brings the tab due now
+ * number over their head (`enemyLabel`, read from the `tab` stacks). 3 s after the last charge the tab comes due at +40%, in
+ * one hit, with the word PAST DUE. An attack the enemy lands on him pays off 2 of it, a spell 10. Call It In (E) brings the tab due now
  * without the interest; Foreclosure (R) takes the whole tab at +60% and makes the enemy take +20% from him for 3 s.
  *
  * Where each rule runs (a network duel has two screens). The tab lives on the screen that decides the enemy's hits: offline the
@@ -81,7 +81,7 @@ const since = (n: number, seen: number) => (n > seen ? n - seen : 1);
  * `victimTick` brings it due with `hitEnemy`, a `'trait'` hit that `dealt` ignores, so it cannot charge the tab again. Paying
  * it off is decided on Ledger's own client, where the hits on him are decided: `taken` counts them into `show('paid', n)`, a
  * counter that reaches the other screen as `own('paid')` and is read there in `victimTick` (offline the same value, read in the same
- * place), which takes 20 off per hit. Call It In does the same with `show('call', n)` from `afterCast`. Foreclosure's hit is a
+ * place), which takes 2 off per step (an attack is one step, a spell five). Call It In does the same with `show('call', n)` from `afterCast`. Foreclosure's hit is a
  * normal spell hit; its `dealt` replaces the damage by the tab x 1.6 and empties it. The words are `bookOf` records both screens
  * draw as ground marks over the victim. A new round clears the stacks, `mem` and the shown values, and the clock in `marks`
  * clears the words.
@@ -89,7 +89,7 @@ const since = (n: number, seen: number) => (n > seen ? n - seen : 1);
 export const ledgerTrait: Trait = {
   passive: {
     name: 'On Your Tab',
-    blurb: 'His spell damage does not hurt now: it goes on your tab, a number over your head. It comes due 3 s after the last charge, at +30%. Each attack you land on him pays off 3 and each spell 15: pays off 20.',
+    blurb: 'His spell damage does not hurt now: it goes on your tab, a number over your head. It comes due 3 s after the last charge, at +40%. Each attack you land on him pays off 2 of it and each spell 10.',
   },
   twist: {
     name: 'Interest',

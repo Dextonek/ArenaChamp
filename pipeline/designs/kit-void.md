@@ -1,20 +1,20 @@
 # Void kit: Oblivion, the Unmaker (melee juggernaut)
 
 ## v5 (2026-11-04)
-780 HP, 3.8 m/s, melee attack 2.6 m, 13 per 1.2 s (`melee: true`). Code: `src/traits/void.ts`, `src/kits/void.ts`, spells `gravitySlam.ts`,
+780 HP, 3.8 m/s, melee attack 2.6 m, 15 per 1.2 s (`melee: true`). Code: `src/traits/void.ts`, `src/kits/void.ts`, spells `gravitySlam.ts`,
 `nullZone.ts`, `phaseStep.ts`, `blackHole.ts` (label 'void black hole': 'black hole' is the VFX tool's old set piece). The old v4 spell files stay.
 
 - **Passive, Deep Gravity:** while he stands still (`t.still`) a ring grows: level 1 at 1 s (3 m, 0.4 m/s), +1 m and +0.2 m/s per level, level 4 at 4 s (6 m, 1.0 m/s).
   Walking: no ring, no pull. `victimTick` drags an enemy inside the ring toward him with `carryEnemy`, stopping 1.5 m short, only while he sees it
   (`blocksSight`; the obstacles come from `voidFx(...).obstacles`, set when any of his spells casts; before that the way counts as clear). `ring` grows smoothly and
   pulses at each level, with an inner arc counting down to the next one.
-- **Q Gravity Slam** (self, 3 m, cd 4): 50 at 0.35 s, pull 1.5, knock 0, no refund. 3 m circle telegraph.
+- **Q Gravity Slam** (self, 3 m, cd 4): 60 at 0.35 s, pull 1.5, knock 0, no refund. 3 m circle telegraph.
 - **W Null Zone** (self, cd 12): a 3 m sphere fixed where he cast it for 3 s. Every 0.25 s an enemy inside (live position) gets silence 0.3 s (`projectile: true`, 0 damage).
   Eight bolt-wall segments round the circle stop bolts. Dark see-through sphere with a bright edge.
 - **E Phase Step** (ground, range 4, cd 14, dash): a 0.25 s mark, then `moveCaster(spot, 0.05)`, no untouchable window. Arms a rip for 3 s: his next basic attack
-  is +40 (power 53/13) and weakens 20% for 2 s. A fist of void shows on his hand while armed.
+  is +40 (power 55/15) and weakens 20% for 2 s. A fist of void shows on his hand while armed.
 - **R Black Hole** (ground, `aim: 'line'`, range 8, cd 24): crawls 8 m at 2 m/s for 4 s; pulls enemies within 5 m at 1.8 m/s on live positions, stopped by cover; core
-  (1 m) once per enemy: 90 and stun 1 s. Recast Collapse (opens at 0.3 s, window 4 s, CPU never fires it): it stops, the pull stops, a 3 m ring fills for 0.5 s, then 70
+  (1 m) once per enemy: 105 and stun 1 s. Recast Collapse (opens at 0.3 s, window 4 s, CPU never fires it): it stops, the pull stops, a 3 m ring fills for 0.5 s, then 85
   within 3 m. Both are `projectile: true`.
 - The CPU: Q, W and E are cast by the usual order (W and R carry `cc`, E `dash`). A CPU Oblivion walks to melee range, so it only stands still when attacking or
   casting; the ring rarely passes level 1.

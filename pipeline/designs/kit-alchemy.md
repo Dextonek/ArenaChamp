@@ -3,7 +3,7 @@
 ## v5 (2026-11-04)
 Source: `pipeline/designs/kits-v5.md`, "Vitriol". **Renamed from Vex to Vitriol** (the theme, files and category stay `alchemy`; `traits/index.ts` and `heroes.ts` follow the rename). Changes from v4:
 - **Reagents are stacks on the enemy** (`t.addStacks('toxin' | 'fire' | 'acid', 1, 4, 1)`, read with `t.stacks`, cleared with `t.clearStacks`), so both players see the pips and they sync online. Reactions still happen only in `dealt`, once per cast.
-- **Corrode** 35% more damage for 3 s (was 20%). Combust stays 55.
+- **Corrode** 35% more damage for 3 s (was 20%). Combust is now 34 (tuned down from 55).
 - **Concussion** is a 2.5 m push (`shapeMove(..., true, ...)` from `traits/tide.ts`), the same on a player and the CPU, with the 0.5 s silence.
 - **Refund:** a reaction takes 2 s off the spell that took no part (`t.noteOwner('react', slot)`, `peerNote` lowers the cooldown on her own client). Not on the Homunculus burst.
 - **Toxin Dart:** wind-up 0.25 s, bolt 20 m/s (reaches 6 m at about 0.55 s).
@@ -26,7 +26,7 @@ second, different reagent sets off a reaction and clears both:
 
 | Reagents | Reaction | Effect |
 |---|---|---|
-| green + orange | Combust | +55 damage on that hit |
+| green + orange | Combust | +34 damage on that hit |
 | green + violet | Corrode | the enemy takes 20% more (`vulnerable`) for 3 s |
 | orange + violet | Concussion | a 3 m knock-back and a 0.5 s silence |
 
@@ -42,10 +42,10 @@ second, different reagent sets off a reaction and clears both:
 ## The spells
 | Key | Spell (label) | Type | Numbers | Reagent |
 |---|---|---|---|---|
-| Q | Toxin Dart (`toxin dart`) | SHOT, `aim: 'line'` | range 9, cd 3; 30, then 5 x 6 over 3 s | green |
-| W | Fire Vial (`fire vial`) | TGT | range 7, cd 6; 30, then 5 x 6 over 2 s; always hits | orange |
+| Q | Toxin Dart (`toxin dart`) | SHOT, `aim: 'line'` | range 9, cd 3; 20, then 5 x 5 over 3 s | green |
+| W | Fire Vial (`fire vial`) | TGT | range 7, cd 6; 18, then 5 x 5 over 2 s; always hits | orange |
 | E | Acid Splash (`acid splash`) | cone, self | 4 m, 100 degrees, cd 8; 40 and a knock-back of about 1.4 m | violet |
-| R | Homunculus (`homunculus`) | SUMMON | cd 25; 120 HP, 4 m/s, lives 3.7 s; bursts within 1.5 m of an enemy: 70 to everyone within 2 m, all three reagents | all |
+| R | Homunculus (`homunculus`) | SUMMON | cd 25; 120 HP, 4 m/s, lives 3.7 s; bursts within 1.5 m of an enemy: 55 to everyone within 2 m, all three reagents | all |
 
 Flags: Q `aim: 'line'`; R `summon`. No cc (nothing stuns or roots), no dash. The duel AI: R by its summon rule (enemy
 within 10 m); Q and W by range (9 / 7 m); E is `self` with radius 4.5 (cone still 4 m), so it is cast when the enemy is within 3.9 m.
@@ -53,14 +53,14 @@ within 10 m); Q and W by range (9 / 7 m); E is `self` with radius 4.5 (cone stil
 ### Q · Toxin Dart (`toxinDart.ts`)
 0 to 0.2: a glass dart rises out of the bandolier into her hand, a green glint on its tip at 0.12. 0.2: it flies as a
 bolt (`ctx.projectile`, speed 30, radius 0.4), a bubble trail behind it. On a hit: a green splat (impact frame, star,
-glass chips, ground ring), and the toxin clings to the body as a pulsing blob with rising bubbles while five ticks of 6
+glass chips, ground ring), and the toxin clings to the body as a pulsing blob with rising bubbles while five ticks of 5
 follow every 0.6 s (`ctx.hit`, `projectile: true`). A miss only splashes the floor. Line telegraph from the throw.
 Clean by 4.3 s (the last tick is at about 3.5 s: inside the duel's 4.2 s window).
 
 ### W · Fire Vial (`fireVial.ts`)
 0 to 0.32: she uncorks a vial of orange fire, it flares gold on the cork (0.2). 0.32 to 0.72: a short high lob that follows
 the enemy's live position (a sure hit: `projectile: true`, so no zone). 0.72: the vial bursts (fireball flash with a gold
-core, star, chips, impact frame, shake), 30 (no knock-back). Flame tongues stand on the enemy for 2 s and five ticks of 6 follow every
+core, star, chips, impact frame, shake), 18 (no knock-back). Flame tongues stand on the enemy for 2 s and five ticks of 5 follow every
 0.4 s. No telegraph (nothing to dodge: break line of sight or stay out of 7 m).
 
 ### E · Acid Splash (`acidSplash.ts`)
@@ -73,7 +73,7 @@ and land as bubbles, a ring rolls out of her feet, impact frame if it struck, sh
 0 to 0.4: the alchemical circle draws on in front of her and three vials (green, orange, violet) fly into it one after
 another. 0.4: the circle flares and the homunculus (`ctx.summon`, `homunculusLook`: a glass-bellied creature, three
 reagent orbs swirling in its belly, a waddle, a lit fuse) hops out and walks at the nearest enemy. Each frame the effect
-checks the enemies: within 1.5 m it bursts, everyone within 2 m takes 70 (`ctx.hit`, `projectile: true`), the unit ends
+checks the enemies: within 1.5 m it bursts, everyone within 2 m takes 55 (`ctx.hit`, `projectile: true`), the unit ends
 (`left = 0`), three coloured fireballs, a ring at the blast radius, a star, a double impact frame and a big shake, then the
 three reaction bursts on the enemy. The unit can be shot down (120 HP): it then only fizzles. It appears at 0.4 s and lives
 3.7 s, so it is gone by 4.1 s (the duel drops a spell hit more than about 4.2 s after the cast). At 4 m/s that is 14 m.

@@ -7,7 +7,7 @@ updated: 2026-11-04
 # Weather kit: Barry Cloudsley, the weatherman (ranged mage)
 
 ## v5 (2026-11-04)
-Design source: `new-heroes-kits.md`, section "17. Barry Cloudsley". 570 HP, 4.0 m/s, basic attack 6 m, 10 per 1.0 s (look 'drop'). Accent `#6ac8ff`,
+Design source: `new-heroes-kits.md`, section "17. Barry Cloudsley". 610 HP, 4.0 m/s, basic attack 6 m, 12 per 1.0 s (look 'drop'). Accent `#6ac8ff`,
 foil `#f4e65a`. Question: change the forecast, or trust it? Weakness: everyone sees the forecast, and the weather hits both. Second decision: a
 change spends his damage spell. Palette `WEATHER` / `WEATHER_CSS` in `src/effects/parts/weather.ts`. Model: not set (registered by the lead). A cheerful TV
 weatherman: a pointer tap, a smile, weather cards. Words: AND NOW THE WEATHER, SORRY FOLKS.
@@ -29,10 +29,10 @@ weatherman: a pointer tap, a smile, weather cards. Words: AND NOW THE WEATHER, S
   rim, never above the bloom threshold, and cross-fade over 1.2 s at a change. A ring at his feet in the weather's colour fills with the time left. In the 3 s before a
   change a big weather card ('NEXT: RAIN') hangs over Barry and `enemyLabel` shows 'RAIN IN 2' over the enemy; after the change the card says AND NOW THE WEATHER (or
   SORRY FOLKS, with the real weather, if the forecast was wrong).
-- Q **Cold Front** (`coldFront.ts`, 'cold front'): GROUND, 9 m, cd 3.5, a skillshot. 0.25 s wind-up, 20 m/s, radius 0.4, 50. It reaches 6 m at 0.55 s (needs 0.25 + 0.9/4 = 0.48 s).
+- Q **Cold Front** (`coldFront.ts`, 'cold front'): GROUND, 9 m, cd 3.5, a skillshot. 0.25 s wind-up, 20 m/s, radius 0.4, 64. It reaches 6 m at 0.55 s (needs 0.25 + 0.9/4 = 0.48 s).
   In Rain the hit slows 1.5 s; in Wind it adds a knock of 6 (the engine caps a knock at 8 and moves a player 0.18 m per point, so about 1.4 m on a player, about 1.1 m on a CPU: it
   is not the 2 m of the table, which a knock cannot give). Both are put on the hit in `dealt`, where it is decided. The gust sheds drops, sparkles or leaves by the weather.
-- W **Lightning Risk** (`lightningRisk.ts`, 'lightning risk'): GROUND, 9 m, cd 9. A grinning storm cloud rolls in over the spot, a 1.5 m circle, 0.8 s (0.25 + 1.5/4 = 0.63 s of reaction): 45.
+- W **Lightning Risk** (`lightningRisk.ts`, 'lightning risk'): GROUND, 9 m, cd 9. A grinning storm cloud rolls in over the spot, a 1.5 m circle, 0.8 s (0.25 + 1.5/4 = 0.63 s of reaction): 64.
 - E **Forecast Update** (`forecastUpdate.ts`, 'forecast update'): SELF (radius 30 so the CPU's reach check never holds it), cd 12. The forecast changes now: the next change goes to
   the other weather (the other of the two it could have been: "the one you need least" is simplified to a cycle, not read from the enemy's situation). The new
   forecast is shown on a card flipped over his head with his pointer. It costs his damage spell: Cold Front goes on a 6 s cooldown. It is not castable in the last 0.6 s before a change.

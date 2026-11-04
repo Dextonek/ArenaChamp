@@ -216,7 +216,7 @@ export const courierKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'express letter', name: 'Express Letter', range: 8, cooldown: 3, aim: 'line',
-      blurb: 'A letter flicked at the aim (8 m): 35 damage, +15 for each Charge he holds. He keeps them.',
+      blurb: 'A letter flicked at the aim (8 m): 58 damage, +15 for each Charge he holds. He keeps them.',
       icon(g, s) {
         iconGround(g, s);
         streak(g, s * 0.04, s * 0.78, s * 0.5, s * 0.55, s * 0.045);
@@ -228,7 +228,7 @@ export const courierKit: HeroKit = {
     },
     {
       key: 'W', label: 'fragile', name: 'Fragile', range: 9, cooldown: 9,
-      blurb: 'A parcel thrown at a spot (9 m). After 1 s it bursts, 2.5 m wide: 50 damage and a 1 s slow. Walk out of the ring.',
+      blurb: 'A parcel thrown at a spot (9 m). After 1 s it bursts, 2.5 m wide: 72 damage and a 1 s slow. Walk out of the ring.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = 'rgba(217,70,58,0.75)';

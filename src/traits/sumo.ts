@@ -102,7 +102,7 @@ export const sumoTrait: Trait = {
   meter: { name: 'RING', max: RING_LIFE, value: (t) => { const r = liveRing(sumoBooks.get(t.self())); return r ? Math.ceil((r.bornAt + RING_LIFE * 1000 - performance.now()) / 1000) : 0; } },
   passive: {
     name: 'Dohyo',
-    blurb: 'His Stomp stamps a straw-rope ring on the floor, 5 m wide, for 8 s. A push of his that carries you from inside it to outside is a ring-out: +80 damage and stunned 0.5 s. Salt Throw shrinks it by 2 m.',
+    blurb: 'His Stomp stamps a straw-rope ring on the floor, 5 m in radius, for 8 s. A push of his that carries you from inside it to outside is a ring-out: +80 damage and stunned 0.5 s. Salt Throw shrinks it by 2 m.',
   },
   twist: {
     name: 'The Edge',

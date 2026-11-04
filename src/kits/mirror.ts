@@ -261,7 +261,7 @@ export const mirrorKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'hand mirror', name: 'Hand Mirror', range: 10, cooldown: 3, aim: 'line', bank: true,
-      blurb: 'A spinning hand mirror (10 m): 40 damage, +25% for each of up to three bounces. A mirror that lands after a bounce lies 2.5 s: walk within 1 m to catch it, and Hand Mirror is ready again.',
+      blurb: 'A spinning hand mirror (10 m): 64 damage, +25% for each of up to three bounces. A mirror that lands after a bounce lies 2.5 s: walk within 1 m to catch it, and Hand Mirror is ready again.',
       icon(g, s) {
         iconGround(g, s);
         // A wall on the right, a ray in from the lower left, out to the upper left; a hand mirror on the ray.
@@ -316,7 +316,7 @@ export const mirrorKit: HeroKit = {
     },
     {
       key: 'R', label: 'hall of mirrors', name: 'Hall of Mirrors', range: 0, cooldown: 22,
-      blurb: 'She spins and throws eight mirrors outward in a ring (12 m): 30 damage each, bouncing twice. Stand in a gap. Up to four that land can be caught: each cuts 2 s off this spell.',
+      blurb: 'She spins and throws eight mirrors outward in a ring (12 m): 60 damage each, bouncing twice. Stand in a gap. Up to four that land can be caught: each cuts 2 s off this spell.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = 'rgba(244,249,255,0.45)';

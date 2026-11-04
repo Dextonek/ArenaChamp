@@ -7,7 +7,7 @@ import { shapeMove } from './tide';
  * Vitriol (mage; the kit was Vex before v5). Passive Reaction (pipeline/designs/kit-alchemy.md, kits-v5.md): each spell
  * leaves its reagent on the enemy hero for 4 s: Q green toxin, W orange fire, E violet acid. A hit with a second, different
  * reagent sets off a reaction and clears both, and the reaction takes 2 s off the spell that took no part:
- *   toxin + fire  = Combust: 55 more damage on that hit;
+ *   toxin + fire  = Combust: 34 more damage on that hit;
  *   toxin + acid  = Corrode: the enemy takes 35% more for 3 s (`vulnerable`);
  *   fire + acid   = Concussion: a 2.5 m push (the same on a player and the CPU) and a 0.5 s silence.
  * The homunculus (R, slot 3) bursts carrying all three reagents: every reaction goes off at once and the reagents clear
@@ -73,7 +73,7 @@ function announce(t: TraitView, hit: TraitHit, kinds: Reaction[]) {
 export const alchemyTrait: Trait = {
   passive: {
     name: 'Reaction',
-    blurb: 'Each spell leaves its reagent on the enemy for 4 s: Q green toxin, W orange fire, E violet acid. A second, different reagent sets off a reaction, clears both and takes 2 s off the spell that took no part. Toxin + fire: Combust, 55 at once. Toxin + acid: Corrode, the enemy takes 35% more for 3 s. Fire + acid: Concussion, pushed 2.5 m and silenced 0.5 s. The Homunculus carries all three.',
+    blurb: 'Each spell leaves its reagent on the enemy for 4 s: Q green toxin, W orange fire, E violet acid. A second, different reagent sets off a reaction, clears both and takes 2 s off the spell that took no part. Toxin + fire: Combust, 34 at once. Toxin + acid: Corrode, the enemy takes 35% more for 3 s. Fire + acid: Concussion, pushed 2.5 m and silenced 0.5 s. The Homunculus carries all three.',
   },
   speed: 4.0,
   attack: { kind: 'ranged', range: 6.5, damage: 9, interval: 1.0, windup: 0.25, speed: 18, look: 'dart' },

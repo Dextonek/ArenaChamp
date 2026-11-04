@@ -1,7 +1,7 @@
 # Magic kit: The Great Zambini, stage magician (ranged trickster)
 
 ## v5 (2026-11-04)
-Design source: `new-heroes-kits.md`, section "15. The Great Zambini, stage magician". 570 HP, 4.1 m/s, basic attack 6 m, 10 per 1.0 s (look 'spark',
+Design source: `new-heroes-kits.md`, section "15. The Great Zambini, stage magician". 570 HP, 4.1 m/s, basic attack 6 m, 12 per 1.0 s (look 'spark',
 gold). Accent `#b05aff`, foil `#ffe08a`. Question: which hat do I come out of? Weakness: the hats really move, so watching beats him, and area
 spells hit all three. Second decision: hide for safety, or stay out for damage. Model `models/heroes/magic_v2.glb` (the lead registers it). Palette
 `MAGIC` / `MAGIC_CSS` in `src/effects/parts/magic.ts`. Kit name `The Great Zambini`, title `stage magician`. Words: TA-DA!, BEHOLD!.
@@ -9,8 +9,8 @@ spells hit all three. Second decision: hide for safety, or stay out for damage. 
   power 1.4, kept 8 s) and a white rabbit runs at the enemy: 20 HP, 8 damage per 1.2 s, 4.5 m/s, lives 8 s (`rabbitLook`, base colour 0.72 at most),
   made by the effect with `ctx.summon` at the hat (on both screens online; its hits on the hero are decided on the enemy's screen).
 - Q **Card Spray** (`cardSpray.ts`, 'card spray'): SHOT, cd 3.5, `aim: 'line'`. 0.3 s wind-up, three real bolts in a 24 degree fan (-12, 0, +12), 8 m,
-  22 m/s, radius 0.3: 22 each. Telegraph: three lines, `boltWidth(0.3)` wide, shortened at walls. 6 m at 0.57 s.
-- W **Sawn in Half** (`sawnInHalf.ts`, 'sawn in half'): SHOT, cd 10, `aim: 'line'`. 0.3 s wind-up, one bolt, 8 m, 18 m/s, radius 0.35: 50 and slowed 1.5 s
+  22 m/s, radius 0.3: 26 each. Telegraph: three lines, `boltWidth(0.3)` wide, shortened at walls. 6 m at 0.57 s.
+- W **Sawn in Half** (`sawnInHalf.ts`, 'sawn in half'): SHOT, cd 10, `aim: 'line'`. 0.3 s wind-up, one bolt, 8 m, 18 m/s, radius 0.35: 60 and slowed 1.5 s
   (in the hit and in `castMods`, which is what reaches a network duel). 6 m at 0.63 s.
 - E **The Hat Trick** (`hatTrick.ts`, 'hat trick'): SELF, cd 13. Three hats in a triangle 1.1 m round him; he is hidden (`figureHidden` from `own('down')`) and
   sealed 1.5 s. Three swaps of 0.42 s from 0.15 s, plain half-circle arcs (about 7 m/s at the fastest), each hat hopping. The two that swap and

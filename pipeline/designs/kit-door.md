@@ -1,7 +1,7 @@
 # Door kit: Wick, the Doorman (ranged controller)
 
 ## v5 (2026-11-04)
-Design source: `new-heroes-kits.md`, section "8. Wick, the Doorman". 590 HP, 4.0 m/s, basic attack 6 m, 10 per 1.0 s (look 'dart').
+Design source: `new-heroes-kits.md`, section "8. Wick, the Doorman". 650 HP, 4.0 m/s, basic attack 6 m, 15 per 1.0 s (look 'dart').
 Accent `#b08a4a`, foil `#6a2a2a`. Question: where do I put the doors so only I profit? Weakness: you can use them too, or break them; without
 them he is weak. Second decision: a door placed for escape is not there to shoot through. Palette `DOOR` / `DOOR_CSS` in `src/effects/parts/door.ts`:
 brass, polished dark wood, the red of his livery, white gloves, warm light from a crack, keys turning in the air. A very polite old man.
@@ -21,14 +21,14 @@ brass, polished dark wood, the red of his livery, white gloves, warm light from 
   there would be hit by every bolt the door passes (an enemy's 50 would break it at once). Aim at the bell, or use a spell, to break a door. Its death is
   told to his client with `noteOwner('broke', id)`; a broken door leaves planks for 0.7 s.
 - Q **Key Toss** (`keyToss.ts`, 'key toss'): SHOT, cd 3.5, `aim: 'line'`. 0.3 s wind-up (a key drawn out at a white glove, turning faster), 9 m, 22 m/s,
-  radius 0.3: 50, knock 1.5. A key flying lengthways, rolling about its length, with a brass gleam. Reaches 6 m at 0.57 s. Telegraph: a line per leg for the first
+  radius 0.3: 78, knock 1.5. A key flying lengthways, rolling about its length, with a brass gleam. Reaches 6 m at 0.57 s. Telegraph: a line per leg for the first
   three legs, `boltWidth(0.3)` wide; `doorPath` (a pure function of `sentFrom`, the aim, `ctx.doors()` and the obstacles, the same test as the projectile system)
   gives the legs, so the line goes to the door and on from the far door. Where no bolt flies (his screen online) the key is drawn along the same legs. A flash on
   the door it goes in and the one it comes out of when the real bolt's `doorLock` turns up (it does not tell an enemy's bolt: see below).
 - W **Door** (`wickDoor.ts`, 'wick door'): TERRAIN, 9 m, 2 charges (`charges`: one back every 4 s), 0.6 s between casts. Rises at 0.5 s and stands 10 s. Not
   within 1.2 m of him; the second door of a pair is pushed to 3 m from the first. A third while two stand makes the oldest go (the spell is also refused by
   `canCast`: "Both doors stand"). Telegraph: the 0.9 m footprint, impact at the rise (he is rooted 0.5 s).
-- E **Slam** (`doorSlam.ts`, 'door slam'): SELF (`radius: 30`), cd 9, `cc: true`. After 0.7 s every door of his that stands slams: 40 and a 0.5 s stun on an enemy within
+- E **Slam** (`doorSlam.ts`, 'door slam'): SELF (`radius: 30`), cd 9, `cc: true`. After 0.7 s every door of his that stands slams: 70 and a 0.5 s stun on an enemy within
   1.5 m of it, on the LIVE position (`ctx.enemies`). Telegraph: a 1.5 m circle at each door, the real shape (he is rooted until it lands). `canCast`: "No door
   stands". A lone door slams too. A door that broke meanwhile does not.
 - R **Grand Lobby** (`grandLobby.ts`, 'grand lobby'): GROUND, 9 m, cd 24. 0.8 s wind-up (hands up, a key over each glove, the ring fills, four keys circle), then

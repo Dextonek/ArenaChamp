@@ -288,7 +288,7 @@ export const ledgerKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'invoice', name: 'Invoice', range: 9, cooldown: 3.5, aim: 'line',
-      blurb: 'A paper flies (9 m): 50 damage that goes on the target\'s tab instead of hurting now. The tab comes due 4 s after the last charge, at +30%.',
+      blurb: 'A paper flies (9 m): 72 damage that goes on the target\'s tab instead of hurting now. The tab comes due 3 s after the last charge, at +40%.',
       icon(g, s) {
         iconGround(g, s);
         streak(g, s * 0.04, s * 0.84, s * 0.42, s * 0.6, s * 0.06);
@@ -303,7 +303,7 @@ export const ledgerKit: HeroKit = {
     },
     {
       key: 'W', label: 'late fee', name: 'Late Fee', range: 9, cooldown: 9,
-      blurb: 'At a spot (9 m), after 1 s: a notice lands on a 2.5 m circle. 40 damage on the tab, and slowed 1.5 s.',
+      blurb: 'At a spot (9 m), after 1 s: a notice lands on a 2.5 m circle. 62 damage on the tab, and slowed 1.5 s.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = L.gold;

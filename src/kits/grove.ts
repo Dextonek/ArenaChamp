@@ -191,7 +191,7 @@ export const groveKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'seed shot', name: 'Seed Shot', range: 9, cooldown: 4, aim: 'line',
-      blurb: 'A seed flies 9 m (0.25 s wind-up): 50 damage. A flower grows where it stops, on the enemy or at the end of its flight.',
+      blurb: 'A seed flies 9 m (0.25 s wind-up): 64 damage. A flower grows where it stops, on the enemy or at the end of its flight.',
       icon(g, s) {
         ground(g, s);
         // The flower that grows where the seed stops, on a root ring in the lower right.
@@ -228,7 +228,7 @@ export const groveKit: HeroKit = {
     },
     {
       key: 'W', label: 'strangle vine', name: 'Strangle Vine', range: 7, cooldown: 11, cc: true,
-      blurb: 'Vines (7 m, needs sight) coil round one enemy: 30 damage and rooted 1.0 s, or 1.4 s within 3 m of a flower.',
+      blurb: 'Vines (7 m, needs sight) coil round one enemy: 40 damage and rooted 1.0 s, or 1.4 s within 3 m of a flower.',
       icon(g, s) {
         ground(g, s);
         const cx = s * 0.5;
@@ -286,7 +286,7 @@ export const groveKit: HeroKit = {
     },
     {
       key: 'R', label: 'world tree', name: 'World Tree', range: 9, cooldown: 24,
-      blurb: 'A tree bursts up at a spot (9 m) after 1.2 s and stands 8 s: it blocks walking and bolts, roots an enemy within 3 m as it sprouts, and her flowers within 6 m heal 50% more. Recast: Uproot, a 3 m burst of thorns after 0.6 s: 60.',
+      blurb: 'A tree bursts up at a spot (9 m) after 1.2 s and stands 8 s: it blocks walking and bolts, roots an enemy within 3 m as it sprouts, and her flowers within 6 m heal 4 HP a second each instead of 3. Recast: Uproot, a 3 m burst of thorns after 0.6 s: 60.',
       icon(g, s) {
         ground(g, s);
         const cx = s * 0.5;

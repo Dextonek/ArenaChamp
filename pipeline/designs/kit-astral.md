@@ -22,10 +22,10 @@ the current bonus against the enemy. No twist: the four spells need no second ru
 
 | Key | Spell | Type | Numbers | Flags |
 |---|---|---|---|---|
-| Q | Starfall Arrow | HOLD, SHOT | cd 4. Hold up to 1 s: range 9 to 14 m, damage 39 to 78, full draw pierces. | `aim: 'line'` |
+| Q | Starfall Arrow | HOLD, SHOT | cd 4. Hold up to 1 s: range 9 to 14 m, damage 29 to 58, full draw pierces. | `aim: 'line'` |
 | W | Twin Stars | SELF | cd 14. 5 s: basic attacks echo at 50%; +20% speed. | `buff` (haste 0.2, 5 s) |
 | E | Pinning Arrow | SHOT | cd 9. 9 m, 35. Within 1.5 m of a wall or pillar: root 1.5 s; else slow 1.5 s (x0.6 speed). | `aim: 'line'`, `cc` |
-| R | Meteor Mark | TGT, delayed | cd 24. 14 m. Follows 1.5 s, fixes, 0.5 s later 2.2 m strike: 135 + 25% of her damage on the marked enemy. | none |
+| R | Meteor Mark | TGT, delayed | cd 24. 14 m. Follows 1.5 s, fixes, 0.5 s later 2.2 m strike: 120 + 25% of her damage on the marked enemy. | none |
 
 Cooldowns are not in the design; they are first guesses for the AI duels (4 / 14 / 9 / 24).
 
@@ -37,7 +37,7 @@ pop, impact frame at the big ones), an aftermath (lines snap, stars fall).
 
 ## Q · Starfall Arrow (`starfallArrow.ts`, label `starfall arrow`, `ground`, radius 1)
 - **Hold:** `Trait.hold {slot 0, 1 s}`. `castMods` writes `lyraDraws` (keyed by her figure) and returns `power = 0.5 +
-  0.5 x charge`; the effect's base damage is 78, so 39 to 78 falls out. At full charge she says FULL DRAW.
+  0.5 x charge`; the effect's base damage is 58, so 29 to 58 falls out. At full charge she says FULL DRAW.
 - **The effect reads the charge** from `lyraDraws` in `cast()` (then deletes the entry): range `9 + 5 x charge`, bow size,
   arrow size and trail, pierce at charge 1.
 - 0 to 0.3: a gold crescent bow and string draw on, a nock star swells. 0.3: the arrow leaves (`ctx.projectile`, 26 m/s,
@@ -69,7 +69,7 @@ pop, impact frame at the big ones), an aftermath (lines snap, stars fall).
 - 1.5: **fix.** The spot is the enemy's position at that instant. The reticle collapses, a great chart draws on the spot,
   a ring closes on its centre, the circle telegraph (2.2 m) starts, and the star falls as a meteor (a star arrow with an
   8 m tail and a big head) from where it hung.
-- 2.0: **strike.** `ctx.hit(target, { damage: 135 + 25% x tally, projectile: true })` if the target's live position is within
+- 2.0: **strike.** `ctx.hit(target, { damage: 120 + 25% x tally, projectile: true })` if the target's live position is within
   2.2 m of the spot. The fixed spot is decided late, so a static telegraph cannot gate it (hence `projectile`). Impact
   frame (light, dark), a whiteout blink, a crater with a gold rim, a refraction ring, a blast star, stars thrown outward, a
   constellation of eight spokes that holds 0.55 s, snaps and falls. Shake 0.95. Clean by 3.7 s.
@@ -84,7 +84,7 @@ pop, impact frame at the big ones), an aftermath (lines snap, stars fall).
 - Q's charge lives in a map only her own screen's trait fills, so the other screen flies the **full draw** (range 14,
   pierce); the damage is still right (it travels as `mods.power`). The hold's charge reaches the effect nowhere else.
 - W: haste is a synced buff; the echo is folded into the one attack message as `power x 1.5`, with no second arrow drawn.
-- R: where the trait does not track (`tracked` false) the strike is a flat 135; the hit is decided on the victim's
+- R: where the trait does not track (`tracked` false) the strike is a flat 120; the hit is decided on the victim's
   screen by the live position against the fixed spot.
 - Far Sight runs in the `dealt` hook of whichever screen resolves the hit, with the figures' positions there.
 
@@ -99,3 +99,5 @@ pop, impact frame at the big ones), an aftermath (lines snap, stars fall).
 After a 7-of-24 AI tournament: Q full draw 70 to 85 (min about 42), W 4 s to 5 s and echo 0.5 to 0.6, E 30 to 40, R base 120 to 150 (tally share stays 25%). Cooldowns unchanged.
 
 Pass 2 (17 of 24 wins, too strong): Q 85 to 78 (min 39), echo 0.6 to 0.5 (W stays 5 s), E 40 to 35, R base 150 to 135 (flat fallback equals the base).
+
+Pass 3 (tuning, 2026-11-04): Q full draw 78 to 58 (min 29), R base 135 to 120. Attack 13 to 12, HP 550 to 520.

@@ -22,7 +22,7 @@ export const FALL_ROOT = 0.8;
  */
 export const FALL_SLOW = 0.75;
 
-/** Tunnel (E): the dive, the time underground, her speed bonus, the farthest she can go (m), the pop-up's reach, damage and knock-up. */
+/** Mole Run (E): the dive, the time underground, her speed bonus, the farthest she can go (m), the pop-up's reach, damage and knock-up. */
 export const TUNNEL_DIVE = 0.3;
 export const TUNNEL_UNDER = 1.2;
 export const TUNNEL_SPEED = 1.4;
@@ -78,7 +78,7 @@ const WORDS_DIG = ['DIG DIG', 'HEE HEE', 'DIG, DIG!'];
  *
  * Where each rule runs. The holes are `moleHoles` records the effects write on both screens at the moment a hole opens, drawn by `marks`.
  * Falling in is `victimTick`, which runs where the enemy's position and hits are decided (the victim's screen online, the only screen
- * offline). Tunnel: the effect plays the dive and the mound on both screens; here `afterCast` notes the cast time (her own client),
+ * offline). Mole Run: the effect plays the dive and the mound on both screens; here `afterCast` notes the cast time (her own client),
  * `tick` shows `down` for the 1.2 s she is underground (`figureHidden` reads it on both screens, so her figure is not drawn) and seals her
  * for that time: `sealed` is the status that swallows every hit on her and also stops her casting and attacking. It does not stop
  * `ctx.moveCaster`'s slide, which is how she moves, so she tunnels while sealed. The sealed lock leaves her 0.5 s immune to stuns after.

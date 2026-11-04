@@ -196,7 +196,7 @@ export const boneKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'bone fan', name: 'Bone Fan', range: 8, cooldown: 5, aim: 'line',
-      blurb: 'Flicks three thin bone shards in a fan, 18 degrees apart (44 each, 8 m). Every bone pile within 3 m of him throws one more (six at most), and the fan widens. Stand between two shards past 5 m.',
+      blurb: 'Flicks three thin bone shards in a fan, 18 degrees apart (31 each, 8 m). Every bone pile within 3 m of him throws one more (six at most), and the fan widens. Stand between two shards past 5 m.',
       icon(g, s) {
         iconGround(g, s);
         // Five pointed shards fanning out and up from a small pile on the floor at the lower left.
@@ -306,7 +306,7 @@ export const boneKit: HeroKit = {
     },
     {
       key: 'R', label: 'grave grasp', name: 'Grave Grasp', range: 9, cooldown: 22, cc: true,
-      blurb: 'Ultimate. Click the enemy (needs line of sight): a hand rises where it stood, a 1.6 m ring shown for 0.7 s. If it is still inside, the hand drags it 4 m toward him (85 damage), roots it for 1 s, and two skeletons claw out beside it (28 damage more). If it stepped out, the hand closes on nothing.',
+      blurb: 'Ultimate. Click the enemy (needs line of sight): a hand rises where it stood, a 1.6 m ring shown for 0.7 s. If it is still inside, the hand drags it 4 m toward him (55 damage), roots it for 1 s, and two skeletons claw out beside it (28 damage more). If it stepped out, the hand closes on nothing.',
       icon(g, s) {
         iconGround(g, s);
         // The floor, with drag furrows running to the left.

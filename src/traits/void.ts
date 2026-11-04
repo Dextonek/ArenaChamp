@@ -67,7 +67,7 @@ const shown = (s: { level: number; since: number; from: number }, time: number) 
  * which his spells fill in when they are cast (`watchCover`); before his first cast the way counts as clear. `ring` draws it on
  * both screens, growing smoothly with a pulse at each level and an inner arc counting down to the next one.
  * Q Gravity Slam, W Null Zone: no trait rule. E Phase Step: `afterCast` arms the rip for 3 s (`mem.ripUntil`, shown as 'rip'); his
- * next basic attack in that time is power (13 + 40) / 13 and weakens the enemy 20% for 2 s. R Black Hole: the recast (Collapse, opens
+ * next basic attack in that time is power (15 + 40) / 15 and weakens the enemy 20% for 2 s. R Black Hole: the recast (Collapse, opens
  * 0.3 s late, 4 s window, the CPU never fires it) writes the flag the effect reads (`collapseAt`, mirrored by `ownChanged`).
  */
 export const voidTrait: Trait = {

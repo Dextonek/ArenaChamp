@@ -41,7 +41,7 @@ function gusts(t: { time: number; mem: Record<string, number> }) {
  * more reach. The counter is `mem.gust` with the deadline `mem.gustUntil`; the attack is scaled in `attackMods` (power
  * (10 + 20) / 10: it runs once as the attack is released, so that is where the Gust is spent) and the reach is
  * `attackReach` while one is banked. Gusts and Feather Step's charges are shown to both players (`show`, `ownLook`).
- * Crosswind (Q) can be cast again within 2 s as a 3 m dash-slash (25 of 38 damage).
+ * Crosswind (Q) can be cast again within 2 s as a 3 m dash-slash (23 of 34 damage).
  * Untouchable windows are in `taken`: Skyward 0.6 s from the cast, and Sky Rend only while the cuts run (from 0.8 s after
  * the cast to the last cut plus `REND_OUT`; a fizzled Sky Rend cancels it through `skyRendFizzled`). Feather Step has none
  * and has 2 charges (7 s each).

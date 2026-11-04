@@ -204,7 +204,7 @@ export const balloonKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'air hose', name: 'Air Hose', range: 8, cooldown: 3.5, aim: 'line',
-      blurb: 'A jet of air (8 m, 22 m/s, 0.3 s wind-up): 45 damage, 3 Air and a 1 m push. Each Air pushes it 8% farther.',
+      blurb: 'A jet of air (8 m, 22 m/s, 0.3 s wind-up): 56 damage, 3 Air and a 1 m push. Each Air pushes it 8% farther.',
       icon(g, s) {
         iconGround(g, s);
         // A hose nozzle on the left blowing a jet and a small balloon rocketing out on it.
@@ -231,7 +231,7 @@ export const balloonKit: HeroKit = {
     },
     {
       key: 'W', label: 'helium bomb', name: 'Helium Bomb', range: 9, cooldown: 9,
-      blurb: 'A balloon floats to a spot (9 m) and pops after 1.0 s: 40 damage and 3 Air to everyone within 2.5 m.',
+      blurb: 'A balloon floats to a spot (9 m) and pops after 1.0 s: 50 damage and 3 Air to everyone within 2.5 m.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = 'rgba(255,210,227,0.5)';
@@ -286,7 +286,7 @@ export const balloonKit: HeroKit = {
     },
     {
       key: 'R', label: 'pop!', name: 'Pop!', range: 9, cooldown: 22,
-      blurb: 'A pin flies at you (9 m, 0.6 s, it needs sight when it lands): 50 damage plus 20 per Air, and all your Air goes out in a 3 m shove.',
+      blurb: 'A pin flies at you (9 m, 0.6 s, it needs sight when it lands): 60 damage plus 20 per Air, and all your Air goes out in a 3 m shove.',
       icon(g, s) {
         iconGround(g, s);
         // A balloon bursting: scraps and a spiky star, with a brass pin coming in from the left.

@@ -2,7 +2,7 @@
 
 ## v5 (2026-11-04)
 Design source: `kits-v5.md`, section "Zephyr". The v4 text below is kept for history; where it differs, this section wins.
-- **HP 690 to 640.** Passive renamed **Following Wind**. Gusts show as gem pips round him and Feather Step's charges as flake
+- **HP 690 to 620.** Passive renamed **Following Wind**. Gusts show as gem pips round him and Feather Step's charges as flake
   pips, on both screens (`t.show('gust' / 'step')` in `tick`, `ownLook`); the badge stays.
 - **Skyward:** air time `SKYWARD_AIR` 0.8 to **0.6 s** (touchdown moves with it), landing circle 2 m to **1.4 m** (hit test 1.65),
   and the circle shows from take-off (0.14 s). Still untouchable for the 0.6 s.
@@ -27,7 +27,7 @@ Replaces the v3 kit (Gale Edge, Tailwind Rush, Wind Barrier, Gale Cyclone). Desi
 "Zephyr, the Wind Blade". Read `kit-common.md` first.
 
 ## Role
-**Assassin (melee)**, 690 HP (v5: 640), melee attack (range 2.4, 10 damage, 0.9 s interval), walk speed 4.6. One verb: *never stop
+**Assassin (melee)**, 690 HP (v5: 620), melee attack (range 2.4, 7 damage, 0.9 s interval), walk speed 4.6. One verb: *never stop
 moving*, every dash feeds the next strike.
 - **Passive Tailwind (v5: Following Wind).** Every dash (Q's recast, W, E) gives him a **Gust** (3 at most, 4 s; each dash refreshes the time)
   and resets his basic attack. A basic attack spends one Gust for +20 damage and 1 m more reach. Shown by the badge on the
@@ -38,7 +38,7 @@ moving*, every dash feeds the next strike.
 
 | Key | Spell (label) | Type | Numbers |
 |---|---|---|---|
-| Q | Crosswind (`crosswind`) | cone, RECAST | range 3, `enemies` mode; cone 3 m / 110 deg, 38 damage; recast within 2 s: 3 m dash-slash, 25 damage (power 2/3) |
+| Q | Crosswind (`crosswind`) | cone, RECAST | range 3, `enemies` mode; cone 3 m / 110 deg, 34 damage; recast within 2 s: 3 m dash-slash, 23 damage (power 2/3) |
 | W | Skyward (`skyward`) | LEAP, `dash`, `cc` | range 5, `ground` mode radius 2; untouchable 0.8 s; landing 34 damage within 2 m and a 0.5 s knock-up |
 | E | Feather Step (`feather step`) | DASH, `dash`, `parry`, `aim: 'line'` | range 4, `ground` mode radius 1; 2 charges (7 s each); untouchable 0.2 s |
 | R | Sky Rend (`sky rend`) | TGT, `enemy` mode | range 7; six hits of 15 over about 1 s, double on a knocked-up enemy; untouchable 1.6 s; ends 1.4 m behind the enemy |
@@ -69,7 +69,7 @@ moving*, every dash feeds the next strike.
 - **Sky Rend takes about 1.5 s from cast to reappearing**, not 1.2 s: a 0.25 s wind-up, then six cuts 0.2 s apart from
   0.35 s (the last at 1.35 s), then the step behind (1.5 s). The cuts themselves span 1.0 s. `REND_AIR` is 1.6 s so he is
   untouchable the whole time.
-- Q recast power 2/3 (not the default 0.6) so the dash-slash is 25 of 38 exactly.
+- Q recast power 2/3 (not the default 0.6) so the dash-slash is 23 of 34.
 
 ## Q · Crosswind (`crosswind.ts`, label `crosswind`, `enemies` mode `maxTargets` 10)
 Two variants of one effect, told apart by a clock per caster figure: a second cast of the same figure within 2.2 s is the

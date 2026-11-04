@@ -6,15 +6,15 @@ updated: 2026-11-04
 
 # v5 (2026-11-04)
 
-Theme `courier`. Skirmisher, ranged. 580 HP, 4.7 m/s, basic attack 5 m, 8 per 0.8 s (0.2 s wind-up, bolt 20 m/s). Accent `#ffd24a`, foil `#3a6ac8`.
+Theme `courier`. Skirmisher, ranged. 620 HP, 4.7 m/s, basic attack 5 m, 12 per 0.8 s (0.2 s wind-up, bolt 20 m/s). Accent `#ffd24a`, foil `#3a6ac8`.
 Numbers from [new-heroes-kits.md](new-heroes-kits.md) section 11; the constants live in `src/traits/courier.ts`. Modules: `expressLetter`, `fragile`,
 `shortcut`, `finalDelivery` (labels `express letter`, `fragile`, `shortcut`, `final delivery`, category `hero: courier`).
 
 | Key | Spell | CD | Rule | Built as |
 |---|---|---:|---|---|
 | P | Sign Here | | A parcel lies on the arena, the drop point is shown (marks with a beam of light, a line of dashes between). Carry the parcel to the drop: +1 Charge, 3 at most. A hit on him while carrying knocks it loose where he stood; he can pick it up again after 1.2 s | `jobOf(deliveries, seed)` (pure), `marks` / `markLook` (parcel, drop, carried, dash), `tick` (his), `taken` (his), `show` |
-| Q | Express Letter | 3 | 8 m, 24 m/s, 0.25 s wind-up, bolt radius 0.3: 35, +15 per Charge (kept) | Skillshot, line telegraph, a fluttering envelope with one after-image per Charge |
-| W | Fragile | 9 | A parcel thrown at a spot (9 m), bursts at 1.0 s, 2.5 m: 50 and slowed 1 s | Ground circle telegraph, live-position hit at the burst, stickers scatter |
+| Q | Express Letter | 3 | 8 m, 24 m/s, 0.25 s wind-up, bolt radius 0.3: 58, +15 per Charge (kept) | Skillshot, line telegraph, a fluttering envelope with one after-image per Charge |
+| W | Fragile | 9 | A parcel thrown at a spot (9 m), bursts at 1.0 s, 2.5 m: 72 and slowed 1 s | Ground circle telegraph, live-position hit at the burst, stickers scatter |
 | E | Shortcut | 9 | A sprint up to 6 m in 0.3 s. With a Charge he spends one and it is ready again in 0.4 s | `moveCaster`, `cooldown` + `afterCast` in the trait (the `spent` counter tells the effect) |
 | R | Final Delivery | 24 | Spends all Charges. A parcel with the enemy's name (URGENT: no trait can read a hero name) homes on them for 1.5 s at 5 m/s, then bursts: 80 + 40 per Charge within 2 m, unless they touch cover first (SIGN HERE, signed, it flies home) | `FinalRec` in `courierBooks`, moved by the effect on both screens; the hit and the signature are `victimTick` |
 

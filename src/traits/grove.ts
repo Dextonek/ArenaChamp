@@ -7,8 +7,8 @@ import type { GroundMark, Trait } from './types';
 
 /**
  * Fenna (support, v5). Passive Living Garden: her Seed Shot and Pollen Glide plant a flower where they land (at most 4, the
- * oldest goes, 7 s each). Within 3 m of her flowers she heals 2 HP a second per flower (at most 2 flowers count), or 3 per
- * flower within 6 m of a standing World Tree: at most 6 HP a second. An enemy within 1.5 m of a flower is slowed (0.6 s,
+ * oldest goes, 7 s each). Within 3 m of her flowers she heals 3 HP a second per flower (at most 2 flowers count), or 4 per
+ * flower within 6 m of a standing World Tree: at most 8 HP a second. An enemy within 1.5 m of a flower is slowed (0.6 s,
  * refreshed every 0.4 s); one that stands within 1 m of a flower for 0.6 s in all tramples it. Her Strangle Vine roots 1.4 s
  * instead of 1.0 s when the enemy is within 3 m of a flower. Basic attack: a ranged petal (5.5 m).
  *
@@ -207,7 +207,7 @@ export const groveTrait: Trait = {
   meter: { name: 'FLOWERS', max: MAX_FLOWERS, value: (t) => flowersOf(t.self()).length },
   passive: {
     name: 'Living Garden',
-    blurb: 'Seed Shot and Pollen Glide plant a flower where they land (4 at most, 7 s each). Within 3 m of flowers she heals 2 HP a second per flower (2 count), more near her tree. An enemy within 1.5 m of a flower is slowed; standing within 1 m for 0.6 s tramples it.',
+    blurb: 'Seed Shot and Pollen Glide plant a flower where they land (4 at most, 7 s each). Within 3 m of flowers she heals 3 HP a second per flower (2 count), 4 near her tree. An enemy within 1.5 m of a flower is slowed; standing within 1 m for 0.6 s tramples it.',
   },
   speed: 4.0,
   attack: { kind: 'ranged', range: 5.5, damage: 10, interval: 0.7, windup: 0.18, speed: 20, look: 'petal' },

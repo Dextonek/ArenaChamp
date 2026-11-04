@@ -85,19 +85,19 @@ function open(t: TraitView, kind: 1 | 2 | 3) {
 }
 
 /**
- * Auriel (support). Passive Oath of Dawn: when one of her shields breaks or runs out it bursts in light (3 m) for 60% of
+ * Auriel (support). Passive Oath of Dawn: when one of her shields breaks or runs out it bursts in light (3 m) for about 60% of
  * its size. The bursts are made by the spell effects (they play on both screens and watch `aurielShields`); this trait
  * makes the shields, watches how they end, and gives the rest of the rules:
- * - Q First Light: a hit on the enemy hero gives a 30 shield for 3 s, but not while Dawnward or Sunrise holds (the
+ * - Q First Light: a hit on the enemy hero gives a 14 shield for 3 s, but not while Dawnward or Sunrise holds (the
  *   engine keeps the larger amount and restarts the clock, so a small shield would hold a big one up).
- * - W Dawnward: 70 for 3 s; her basic attacks reach 3 m farther while it holds. Recast Pop (arms at 0.2 s) ends it now.
+ * - W Dawnward: 45 for 3 s; her basic attacks reach 3 m farther while it holds. Recast Pop (arms at 0.2 s) ends it now.
  *   Cannot be cast while Sunrise holds.
  * - E Oathbrand: its hit brands the enemy for 2.5 s; a burst that catches a branded enemy stuns it 0.8 s (`dealt`).
- * - R Sunrise: 200 for 5 s. Recast Pop (arms at 0.3 s) ends it now. When it ends a ring closes on her spot (the effect).
+ * - R Sunrise: 130 for 5 s. Recast Pop (arms at 0.3 s) ends it now. When it ends a ring closes on her spot (the effect).
  * The CPU never pops on its own (`aiWait`): the shield runs out and bursts by itself.
  */
 export const dawnTrait: Trait = {
-  passive: { name: 'Oath of Dawn', blurb: 'When one of her shields breaks or runs out, it bursts in light (3 m) for 60% of its size. A burst that catches a branded enemy stuns it for 0.8 s.' },
+  passive: { name: 'Oath of Dawn', blurb: 'When one of her shields breaks or runs out, it bursts in light (3 m) for about 60% of its size (Sunrise: a 5 m ring, 80). A burst that catches a branded enemy stuns it for 0.8 s.' },
   speed: 3.9,
   attack: { kind: 'ranged', range: 5.5, damage: 8, interval: 0.7, windup: 0.18, speed: 20, look: 'spear' },
   recast: [

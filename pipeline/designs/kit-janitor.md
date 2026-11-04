@@ -6,16 +6,16 @@ updated: 2026-11-04
 
 # v5 (2026-11-04)
 
-Gus, theme `janitor`. Controller, melee. 700 HP, 3.9 m/s, attack 2.8 m, 14 per 1.3 s (melee, 'sweep'). Accent `#ffd23a`, foil `#3a6a8a`.
+Gus, theme `janitor`. Controller, melee. 700 HP, 3.9 m/s, attack 2.8 m, 20 per 1.3 s (melee, 'sweep'). Accent `#ffd23a`, foil `#3a6a8a`.
 Numbers come from [new-heroes-kits.md](new-heroes-kits.md) section 12; the code constants are in `src/traits/janitor.ts`.
 
 | Key | Spell | CD | Final numbers |
 |---|---|---:|---|
 | P | Wet Floor | | Mopped floor is wet 6 s (Flood's 5 s), shining pale blue. On it an enemy keeps sliding and turns half as fast; Gus never slides. Big Mop wipes the enemy's rods, flowers and ink |
-| Q | Big Mop | 3.5 | `self`, 0.3 s wind-up. Cone 3.5 m, 140 degrees: 45 (60 on Flood). Wet strip 6 m x 2 m straight ahead |
+| Q | Big Mop | 3.5 | `self`, 0.3 s wind-up. Cone 3.5 m, 140 degrees: 60. Wet strip 6 m x 2 m straight ahead |
 | W | Wet Floor Sign | 0.8 gap, 2 charges, one back per 8 s | Ground, 8 m (at least 1.5 m). Lands at 0.4 s, stands 6 s, wall 0.9 m wide, 40 HP (a hidden turret unit). Slide into it at 2.5 m/s or more: 40 and stun 0.6 s |
-| E | Mop Bucket | 10 | Skillshot 8 m, 16 m/s, 0.3 s wind-up, radius 0.4: 40. Reaches 6 m at 0.65 s. Wet disc 2.5 m where it stops, 6 s |
-| R | Flood | 24 | `self`. 1 s warning (telegraph disc 7 m, roots him), then the disc is wet 5 s. He gets haste 35% for 5 s and his Q is 60 |
+| E | Mop Bucket | 10 | Skillshot 8 m, 16 m/s, 0.3 s wind-up, radius 0.4: 55. Reaches 6 m at 0.65 s. Wet disc 2.5 m where it stops, 6 s |
+| R | Flood | 24 | `self`. 1 s warning (telegraph disc 7 m, roots him), then the disc is wet 5 s. He gets haste 35% for 5 s |
 
 ## The slide
 

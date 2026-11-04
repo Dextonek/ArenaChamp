@@ -121,7 +121,7 @@ export const frostKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'icicle', name: 'Icicle', range: 11, cooldown: 4, aim: 'line',
-      blurb: 'Throws a piercing icicle (11 m): 52 and 2 Chill. It sticks in the floor where it ends for 2 s; recast to shatter it: 30 and 1 Chill within 2 m.',
+      blurb: 'Throws a piercing icicle (11 m): 42 and 2 Chill. It sticks in the floor where it ends for 2 s; recast to shatter it: 26 and 1 Chill within 2 m.',
       icon(g, s) {
         iconGround(g, s);
         // The shatter ring on the floor, small crystals leaning out of the base and the tall icicle standing in the middle.

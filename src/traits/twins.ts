@@ -77,7 +77,7 @@ function bringIn(t: TraitView, twin: number) {
  * The invariant is `pim + pom === t.hp()`, kept by watching the real HP in `tick` and not by the `taken` hook, because `taken` sees a
  * hit before a shield soaks it (Shield Up would drain Pim's share while the real bar did not move). Every drop of the real HP comes off
  * the twin who is in (what is left over past zero comes off the other: the bar really lost it); every rise (the resting twin's heal,
- * or anything else) goes to the twin who rests (what is left over past 310 to the one who is in). The resting twin heals 4 a second:
+ * or anything else) goes to the twin who rests (what is left over past 310 to the one who is in). The resting twin heals 6 a second:
  * `t.heal` in lumps of at least 2 every half second, which raises the real bar. A twin at 0 is tagged out at once, with no hold and no
  * cooldown, and when both are at 0 the real bar is at 0 and the hero is dead, which the server already says.
  *
@@ -90,7 +90,7 @@ export const twinsTrait: Trait = {
   meter: { name: 'REST', max: HALF, value: (t) => share(t, t.own('twin') ? 0 : 1) },
   passive: {
     name: 'Tag Team',
-    blurb: 'One hero, two twins on one bar of 620 HP: 310 each. Damage comes off the twin who is in; at 0 he is tagged out at once. The twin who rests heals 4 HP a second. Tag Out takes 0.5 s, and the twin who comes in has his next spell 2 s sooner.',
+    blurb: 'One hero, two twins on one bar of 620 HP: 310 each. Damage comes off the twin who is in; at 0 he is tagged out at once. The twin who rests heals 6 HP a second. Tag Out takes 0.5 s, and the twin who comes in has his next spell 2 s sooner.',
   },
   twist: {
     name: 'Who is in?',

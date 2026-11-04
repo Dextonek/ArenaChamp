@@ -176,7 +176,7 @@ export const weatherKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'cold front', name: 'Cold Front', range: 9, cooldown: 3.5, aim: 'line',
-      blurb: 'A gust (9 m): 50 damage. In Rain it slows for 1.5 s. In Wind it knocks the target back further.',
+      blurb: 'A gust (9 m): 64 damage. In Rain it slows for 1.5 s. In Wind it knocks the target back further.',
       icon(g, s) {
         iconGround(g, s);
         // A wind-driven gust of white curls with a few ice-blue specks, and a small cloud puff at the head.
@@ -194,7 +194,7 @@ export const weatherKit: HeroKit = {
     },
     {
       key: 'W', label: 'lightning risk', name: 'Lightning Risk', range: 9, cooldown: 9,
-      blurb: 'A cloud marks a spot (9 m): after 0.8 s lightning strikes it, 45 damage within 1.5 m.',
+      blurb: 'A cloud marks a spot (9 m): after 0.8 s lightning strikes it, 64 damage within 1.5 m.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = 'rgba(244,230,90,0.7)';
@@ -219,7 +219,7 @@ export const weatherKit: HeroKit = {
     },
     {
       key: 'E', label: 'forecast update', name: 'Forecast Update', range: 0, cooldown: 12,
-      blurb: 'The forecast changes now, to the other weather. It costs a Cold Front cooldown of 6 s. Cannot be cast in the last half second before a change.',
+      blurb: 'The forecast changes now, to the other weather. It costs a Cold Front cooldown of 6 s. Cannot be cast in the last 0.6 s before a change.',
       icon(g, s) {
         iconGround(g, s);
         // A white weather card with a sun on it, and two round arrows chasing each other round it.

@@ -198,7 +198,7 @@ export const sheepKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'crook whack', name: 'Crook Whack', range: 4, cooldown: 3.5,
-      blurb: 'He shakes his crook, then whacks a 4 m cone: 45 damage, and a sheep at the feet of whoever he hits. Stay out of 4 m.',
+      blurb: 'He shakes his crook, then whacks a 4 m cone: 58 damage, and a sheep at the feet of whoever he hits. Stay out of 4 m.',
       icon(g, s) {
         iconGround(g, s);
         // The swept wedge on the ground, a sheep at its far end, the crook coming down.
@@ -244,7 +244,7 @@ export const sheepKit: HeroKit = {
     },
     {
       key: 'E', label: 'shear', name: 'Shear', range: 8, cooldown: 11, aim: 'line',
-      blurb: 'Needs a sheep within 6 m: he shears it, it runs on naked and fast, and he throws the wool (8 m): 40 damage and 3 Wool.',
+      blurb: 'Needs a sheep within 6 m: he shears it, it runs on naked and fast, and he throws the wool (8 m): 50 damage and 3 Wool.',
       icon(g, s) {
         iconGround(g, s);
         // A naked pink sheep at the bottom left, a ball of wool flying up and right on a pale line, a pair of shears.
@@ -289,7 +289,7 @@ export const sheepKit: HeroKit = {
     },
     {
       key: 'R', label: 'stampede', name: 'Stampede', range: 12, cooldown: 22,
-      blurb: 'Eight sheep run down a 12 m line, 4 m wide, after 0.8 s: 25 each, three hits at most, and each hit adds Wool. Step out of the line.',
+      blurb: 'Eight sheep run down a 12 m line, 4 m wide, after 0.8 s: 30 each, three hits at most, and each hit adds Wool. Step out of the line.',
       icon(g, s) {
         iconGround(g, s);
         // A row of sheep charging right, one rank behind another, dust and speed lines streaming back.

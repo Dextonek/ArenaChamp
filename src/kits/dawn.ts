@@ -134,7 +134,7 @@ export const dawnKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'first light', name: 'First Light', range: 6, cooldown: 4,
-      blurb: 'A wave of light in a 6 m cone: 50. Hitting the enemy gives her a 30 shield for 3 s, but not while Dawnward or Sunrise holds. When that shield ends it bursts for 18 in 3 m.',
+      blurb: 'A wave of light in a 6 m cone: 40. Hitting the enemy gives her a 14 shield for 3 s, but not while Dawnward or Sunrise holds. When that shield ends it bursts for 8 in 3 m.',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.3, s * 0.84, s * 0.2, s * 0.06, s);
@@ -152,7 +152,7 @@ export const dawnKit: HeroKit = {
     },
     {
       key: 'W', label: 'dawnward', name: 'Dawnward', range: 0, cooldown: 9,
-      blurb: 'A 70 shield for 3 s. While it holds, her basic attacks reach 3 m farther. Press again to pop it now. When it ends it bursts for 42 in 3 m. It cannot be cast while Sunrise holds.',
+      blurb: 'A 45 shield for 3 s. While it holds, her basic attacks reach 3 m farther. Press again to pop it now. When it ends it bursts for 27 in 3 m. It cannot be cast while Sunrise holds.',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.5, s * 0.86, s * 0.4, s * 0.09, s);
@@ -168,7 +168,7 @@ export const dawnKit: HeroKit = {
     },
     {
       key: 'E', label: 'oathbrand', name: 'Oathbrand', range: 7, cooldown: 11,
-      blurb: 'A beam falls on the enemy (7 m) 0.5 s later if she still has sight: 50, and branded for 2.5 s. A burst that catches a branded enemy also stuns them 0.8 s.',
+      blurb: 'A beam falls on the enemy (7 m) 0.5 s later if she still has sight: 44, and branded for 2.5 s. A burst that catches a branded enemy also stuns them 0.8 s.',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.5, s * 0.8, s * 0.38, s * 0.1, s);
@@ -185,7 +185,7 @@ export const dawnKit: HeroKit = {
     },
     {
       key: 'R', label: 'sunrise', name: 'Sunrise', range: 0, cooldown: 24,
-      blurb: 'A 200 shield for 5 s, and she floats. Press again to pop it. When it breaks, runs out or is popped, a 5 m ring appears fixed at her spot, closes for 1.6 s and bursts for 120. It does not follow her.',
+      blurb: 'A 130 shield for 5 s, and she floats. Press again to pop it. When it breaks, runs out or is popped, a 5 m ring appears fixed at her spot, closes for 1.6 s and bursts for 80. It does not follow her.',
       icon(g, s) {
         ground(g, s);
         // The big closing ring on the floor, and a sun rising over a kite shield at its centre.

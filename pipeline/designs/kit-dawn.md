@@ -1,22 +1,22 @@
 # Dawn kit: Auriel, the Dawn Paladin
 
 ## v5 (2026-11-04)
-600 HP, 3.9 m/s, ranged attack 5.5 m, 8 per 0.7 s. Design: [kits-v5.md](kits-v5.md) "Auriel". Passive **Oath of Dawn**: when one of her shields breaks
-or runs out it bursts in light (3 m) for 60% of its size. The v4 `shieldMul` is gone. Code: `src/traits/dawn.ts` (shield record `aurielShields`, `burstHit`),
+550 HP, 3.9 m/s, ranged attack 5.5 m, 8 per 0.7 s. Design: [kits-v5.md](kits-v5.md) "Auriel". Passive **Oath of Dawn**: when one of her shields breaks
+or runs out it bursts in light (3 m) for about 60% of its size. The v4 `shieldMul` is gone. Code: `src/traits/dawn.ts` (shield record `aurielShields`, `burstHit`),
 spells `firstLight.ts`, `dawnward.ts`, `oathbrand.ts`, `sunrise.ts` in `src/spells/targeted/`, kit data `src/kits/dawn.ts`.
 
 | Key | Spell (label) | Numbers |
 |---|---|---|
-| Q | First Light (`first light`), QUICK cone, self radius 6.6 | 6 m, 70 degrees, hit at 0.45 s: 50. A hit on the hero gives a 30 shield for 3 s (not while W or R holds); its end bursts 18 in 3 m. cd 4 |
-| W | Dawnward (`dawnward`), self, recast Pop (arms 0.2 s, window 3 s) | 70 shield for 3 s, basic attacks +3 m reach, `show('ward')`. End: 42 in 3 m at her live position. Refused while Sunrise holds. cd 9 |
-| E | Oathbrand (`oathbrand`), enemy, 7 m | Beam 0.5 s later if `stillSees`: 50, brand 2.5 s. A burst on a branded enemy stuns 0.8 s. cd 11 |
-| R | Sunrise (`sunrise`), self, recast Pop (arms 0.3 s, window 5.2 s) | 200 shield for 5 s, she floats (look only). End: 5 m ring fixed at her spot, closes 1.6 s, bursts 120. cd 24 |
+| Q | First Light (`first light`), QUICK cone, self radius 6.6 | 6 m, 70 degrees, hit at 0.45 s: 40. A hit on the hero gives a 14 shield for 3 s (not while W or R holds); its end bursts 8 in 3 m. cd 4 |
+| W | Dawnward (`dawnward`), self, recast Pop (arms 0.2 s, window 3 s) | 45 shield for 3 s, basic attacks +3 m reach, `show('ward')`. End: 27 in 3 m at her live position. Refused while Sunrise holds. cd 9 |
+| E | Oathbrand (`oathbrand`), enemy, 7 m | Beam 0.5 s later if `stillSees`: 44, brand 2.5 s. A burst on a branded enemy stuns 0.8 s. cd 11 |
+| R | Sunrise (`sunrise`), self, recast Pop (arms 0.3 s, window 5.2 s) | 130 shield for 5 s, she floats (look only). End: 5 m ring fixed at her spot, closes 1.6 s, bursts 80. cd 24 |
 
 How the bursts work: they are spell hits inside long-lived effects (`projectile: true`, live positions), not trait hits, so they are decided on the victim's screen. The trait
 writes a shared record per figure (`kind` 0..3, `broke`), `tick` flips `broke` when `shieldAmount()` is 0, and `show('shield', kind)` / `show('sunbreak', n)` rebuild it on
 the other screen. The stun marker is a module flag set only around `burstHit` (the whole hit pipeline is synchronous), read by `dealt`. Self radius of W and R is 30 so the
 frozen `targets` list holds the enemy when the burst comes; the trait's `aiHold` keeps the CPU to 6.5 m (W) and 8 m (R). Q gives no shield while W or R holds, and
-a Sunrise cast replaces a live Dawnward record (no 42 burst). The CPU never pops (`aiWait`).
+a Sunrise cast replaces a live Dawnward record (no 27 burst). The CPU never pops (`aiWait`).
 
 
 ## Role (2026-10-30)

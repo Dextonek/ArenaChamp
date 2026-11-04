@@ -31,7 +31,7 @@ export const TWIN_SHARE = 0.5;
 
 /**
  * Lyra (marksman). Passive Far Sight: every hit of hers deals up to +30% the farther the victim is (0% within 4 m,
- * a straight ramp to +30% at 10 m). Starfall Arrow charges while aimed (1 s: range 9 to 14 m, damage 39 to 78, a
+ * a straight ramp to +30% at 10 m). Starfall Arrow charges while aimed (1 s: range 9 to 14 m, damage 29 to 58, a
  * full draw pierces, and a full-draw hit takes 3 s off Pinning Arrow); Twin Stars makes her basic attacks echo for 5 s at 50%; Pinning Arrow and Meteor Mark need no rule
  * here. The Meteor adds 25% of what she dealt the marked enemy meanwhile.
  * The refund: castMods notes a full draw in `t.mem.fullDraw` (the cast's number, so two casts never mix); `landed` (her own
@@ -44,7 +44,7 @@ export const astralTrait: Trait = {
   hold: { slot: 0, seconds: 1 },
   castMods(t, slot, charge) {
     if (slot !== 0) return {};
-    // The effect's base damage is the full draw (78); a loose string is half of it (39).
+    // The effect's base damage is the full draw (58); a loose string is half of it (29).
     lyraDraws.set(t.self(), { charge });
     if (charge >= 0.99) {
       t.say('FULL DRAW', '#ffe08a');

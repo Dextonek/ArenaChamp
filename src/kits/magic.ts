@@ -195,7 +195,7 @@ export const magicKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'card spray', name: 'Card Spray', range: 8, cooldown: 3.5, aim: 'line',
-      blurb: 'Three playing cards in a 24 degree fan (8 m): 22 damage each. Close up they are a wall; past 5 m stand in a gap.',
+      blurb: 'Three playing cards in a 24 degree fan (8 m): 26 damage each. Close up they are a wall; past 5 m stand in a gap.',
       icon(g, s) {
         iconGround(g, s);
         ray(g, s * 0.2, s * 0.86, s * 0.9, s * 0.3, s * 0.03);
@@ -210,7 +210,7 @@ export const magicKit: HeroKit = {
     },
     {
       key: 'W', label: 'sawn in half', name: 'Sawn in Half', range: 8, cooldown: 10, aim: 'line',
-      blurb: 'A saw blade slides at you (8 m, 18 m/s): 50 damage and slowed 1.5 s.',
+      blurb: 'A saw blade slides at you (8 m, 18 m/s): 60 damage and slowed 1.5 s.',
       icon(g, s) {
         iconGround(g, s);
         // The magician's box in two halves with a gap, striped purple and gold; the saw runs through the gap.

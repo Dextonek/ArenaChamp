@@ -190,7 +190,7 @@ const own = (t: TraitView) => t.time < (t.mem.stormUntil ?? 0);
 /**
  * Kaia (mage). Passive Lightning Rods: her spells plant rods where they land (Sky Strike's rod, Thunder Rod's great rod): 3 at
  * most (the oldest goes), each 6 s of round time (a great rod 3 s). When a spell of hers damages the enemy, every rod within
- * 5 m of them arcs to them for 14 and is used up (`dealt`, the screen that decides the hit). An enemy that comes within 1 m of
+ * 5 m of them arcs to them for 18 and is used up (`dealt`, the screen that decides the hit). An enemy that comes within 1 m of
  * a rod grounds it (`victimTick`): it fizzles. Both screens keep the same list in `stormOf(figure).rods`: the screen that
  * removes a rod tells the other with `noteOwner('rodgone' | 'rodfizz', id)` (`peerNote` removes it there; removing twice is
  * harmless). Rods are drawn by `marks` / `markLook`: a lightning rod on the ground and, when the enemy is within 7 m of it, a
@@ -202,7 +202,7 @@ export const stormTrait: Trait = {
   meter: { name: 'RODS', max: ROD_MAX, value: (t) => stormOf(t.self()).rods.length },
   passive: {
     name: 'Lightning Rods',
-    blurb: 'Her spells plant rods where they land (3 at most, 6 s). When a spell of hers hurts the enemy, every rod within 5 m of them arcs for 14 and is used up. An enemy within 1 m of a rod grounds it.',
+    blurb: 'Her spells plant rods where they land (3 at most, 6 s). When a spell of hers hurts the enemy, every rod within 5 m of them arcs for 18 and is used up. An enemy within 1 m of a rod grounds it.',
   },
   attack: { kind: 'ranged', range: 6, damage: 10, interval: 1.0, windup: 0.25, speed: 18, look: 'spark' },
   recast: { slot: 1, window: 3, arm: 1.2, name: 'Discharge', power: 1, replay: true },

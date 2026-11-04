@@ -270,7 +270,7 @@ function tagIcon(g: CanvasRenderingContext2D, s: number) {
 
 const tagOut = {
   key: 'R' as const, label: 'tag out', name: 'Tag Out', range: 0, cooldown: 8, anytime: true as const,
-  blurb: 'Swap twins: a 0.5 s hold while the other pops out of the backpack. The one who comes in has the next spell ready 2 s sooner. The twin who rests heals 4 HP a second.',
+  blurb: 'Swap twins: a 0.5 s hold while the other pops out of the backpack. The one who comes in has the next spell ready 2 s sooner. The twin who rests heals 6 HP a second.',
   icon: tagIcon,
 };
 

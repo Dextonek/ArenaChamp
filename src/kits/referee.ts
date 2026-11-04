@@ -139,7 +139,7 @@ export const refereeKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'whistle blast', name: 'Whistle Blast', range: 8, cooldown: 3.5, aim: 'line',
-      blurb: 'A ring of sound (8 m, 0.3 s wind-up): 50 damage. Sidestep it.',
+      blurb: 'A ring of sound (8 m, 0.3 s wind-up): 72 damage. Sidestep it.',
       icon(g, s) {
         iconGround(g, s);
         whistle(g, s * 0.3, s * 0.52, s * 0.15, -0.1);
@@ -164,7 +164,7 @@ export const refereeKit: HeroKit = {
     },
     {
       key: 'R', label: 'show the card', name: 'Show the Card', range: 9, cooldown: 24,
-      blurb: 'He points at a spot (9 m, 0.6 s): a yellow card to whoever he still sees there, and HANDS OFF for 3 s: hit him and you get another. Two yellows are a red: 60 damage and silenced 1.5 s.',
+      blurb: 'He points at a spot (9 m, 0.6 s): a yellow card to whoever he still sees there, and HANDS OFF for 3 s: hit him and you get another. Two yellows are a red: 90 damage and silenced 1.5 s.',
       icon(g, s) {
         iconGround(g, s);
         // A yellow card thrown at a ring, with an open hand's "stop" behind it.

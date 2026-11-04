@@ -57,7 +57,7 @@ const frozen = (t: TraitView) => t.time < (t.mem.frozenUntil ?? 0);
  * enemy BEFORE a hit that is not R, that hit freezes them: +30% damage, stun 0.9 s, the Chill clears, and until the freeze
  * ends (`mem.frozenUntil`) no Chill is added. R spends the Chill instead: +30 per stack on its base 50, and clears them, so a
  * frozen enemy (no Chill) takes only 50 and R never freezes.
- * Q Icicle (`src/spells/targeted/icicle.ts`) leaves the icicle in `icicles` for 2 s; its recast Shatter opens 1.3 s after the
+ * Q Icicle (`src/spells/targeted/icicle.ts`) leaves the icicle in `icicles` for 2 s; its recast Shatter opens 1.6 s after the
  * cast (`arm`) and stays open to 2.8 s. E Rime Armour: the kit's +40% armour for 3 s, shown as a pip; while it runs a basic
  * attack that hits her gives the attacker 2 Chill (`taken`, her own client). W Hoarfrost and R Winter's Shatter are targeted.
  */

@@ -39,7 +39,7 @@ export const ROPE_PULL_TIME = 0.3;
 export const ROPE_DAMAGE = 55;
 export const ROPE_SLACK = 2.2;
 
-/** The Box (R): reach (m), the wind-up (s), a side (m), seconds it stands once closed, and the nearest spot (m, so she is outside). */
+/** Boxed In (R): reach (m), the wind-up (s), a side (m), seconds it stands once closed, and the nearest spot (m, so she is outside). */
 export const BOX_RANGE = 9;
 export const BOX_WIND = 0.8;
 export const BOX_SIDE = 3;
@@ -263,7 +263,7 @@ export const mimeTrait: Trait = {
   speed: 4.1,
   attack: { kind: 'ranged', range: 5.5, damage: 14, interval: 0.9, windup: 0.25, speed: 20, look: 'orb' },
   charges: { slot: 1, count: WALL_CHARGES, every: WALL_EVERY },
-  // The CPU raises a Wall only with the enemy 3 to 8 m away and fewer than 3 plain walls standing; The Box only within 8 m.
+  // The CPU raises a Wall only with the enemy 3 to 8 m away and fewer than 3 plain walls standing; Boxed In only within 8 m.
   aiHold(t, slot, dist) {
     if (slot === 1) {
       const b = mimeBooks.get(t.self());

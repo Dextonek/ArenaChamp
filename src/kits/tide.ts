@@ -152,7 +152,7 @@ export const tideKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'wave disc', name: 'Wave Disc', range: 9, cooldown: 4, aim: 'line',
-      blurb: 'Throws a spinning disc of water 9 m down the aim (0.3 s wind-up, fast): 78 damage. High tide: it knocks the enemy back 2.5 m. Low tide: it pulls the enemy 2.5 m toward her.',
+      blurb: 'Throws a spinning disc of water 9 m down the aim (0.3 s wind-up, fast): 52 damage. High tide: it knocks the enemy back 2.5 m. Low tide: it pulls the enemy 2.5 m toward her.',
       icon(g, s) {
         iconGround(g, s);
         // A trailing water ribbon curling in from the lower left behind a spinning disc.
@@ -193,7 +193,7 @@ export const tideKit: HeroKit = {
     },
     {
       key: 'W', label: 'coral spire', name: 'Coral Spire', range: 8, cooldown: 9,
-      blurb: 'A coral pillar rises at a spot (8 m) after 0.9 s and stands for 5 s as a real obstacle. As it rises, the enemy within 2.5 m is hit for 70: High tide shoves it 3 m away, Low tide drags it 2 m to the pillar.',
+      blurb: 'A coral pillar rises at a spot (8 m) after 0.9 s and stands for 5 s as a real obstacle. As it rises, the enemy within 2.5 m is hit for 44: High tide shoves it 3 m away, Low tide drags it 2 m to the pillar.',
       icon(g, s) {
         iconGround(g, s);
         crown(g, s * 0.5, s * 0.86, s * 0.38, s * 0.16, s * 0.1);

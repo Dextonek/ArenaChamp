@@ -230,7 +230,7 @@ export const janitorKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'big mop', name: 'Big Mop', range: 3.5, cooldown: 3.5,
-      blurb: 'A mop swipe in front of him (3.5 m, 0.3 s): 45 damage (60 while he surfs on Flood), and a strip of wet floor 6 m long. It wipes your rods, flowers and ink along the strip.',
+      blurb: 'A mop swipe in front of him (3.5 m, 0.3 s): 60 damage, and a strip of wet floor 6 m long. It wipes your rods, flowers and ink along the strip.',
       icon(g, s) {
         iconGround(g, s);
         // A wet strip running up the right, a wide swipe of foam, and the mop in the middle of it.
@@ -262,7 +262,7 @@ export const janitorKit: HeroKit = {
     },
     {
       key: 'E', label: 'mop bucket', name: 'Mop Bucket', range: 8, cooldown: 10, aim: 'line',
-      blurb: 'He throws the wheeled bucket (8 m, 0.3 s wind-up): 40 damage, and the floor 2.5 m round where it stops is wet.',
+      blurb: 'He throws the wheeled bucket (8 m, 0.3 s wind-up): 55 damage, and the floor 2.5 m round where it stops is wet.',
       icon(g, s) {
         iconGround(g, s);
         // A puddle where it lands, the bucket tumbling in from the left, a trail of drops.
@@ -278,7 +278,7 @@ export const janitorKit: HeroKit = {
     },
     {
       key: 'R', label: 'flood', name: 'Flood', range: 0, cooldown: 24,
-      blurb: 'After a 1 s warning the whole floor within 7 m of him is wet for 5 s. He surfs on it: +35% speed, and his Big Mop deals 60. Stand near cover, which stops a slide, or walk straight lines.',
+      blurb: 'After a 1 s warning the whole floor within 7 m of him is wet for 5 s. He surfs on it: +35% speed. Stand near cover, which stops a slide, or walk straight lines.',
       icon(g, s) {
         iconGround(g, s);
         g.strokeStyle = 'rgba(196,228,242,0.5)';

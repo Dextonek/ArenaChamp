@@ -205,7 +205,7 @@ export const sumoKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'palm strike', name: 'Palm Strike', range: 2.8, cooldown: 3,
-      blurb: 'An open palm slaps the way he faces (2.8 m, 0.4 s): 40 damage, and you are shoved 3 m. A shove that takes you out of his ring is a ring-out.',
+      blurb: 'An open palm slaps the way he faces (2.8 m, 0.4 s): 54 damage, and you are shoved 3 m. A shove that takes you out of his ring is a ring-out.',
       icon(g, s) {
         ground(g, s);
         streaks(g, s * 0.5, s * 0.5, Math.PI, s * 0.42, 5, s * 0.03, S.dust);
@@ -223,7 +223,7 @@ export const sumoKit: HeroKit = {
     },
     {
       key: 'W', label: 'stomp', name: 'Stomp', range: 0, cooldown: 11,
-      blurb: 'He stomps a new ring at his feet (0.5 s): 40 damage and slowed 1 s within 3 m. The ring is 5 m wide and stands 8 s: a push that takes you out of it is a ring-out.',
+      blurb: 'He stomps a new ring at his feet (0.5 s): 50 damage and slowed 1 s within 3 m. The ring is 5 m in radius and stands 8 s: a push that takes you out of it is a ring-out.',
       icon(g, s) {
         ground(g, s);
         ropeRing(g, s * 0.5, s * 0.56, s * 0.42, s * 0.2, s * 0.06);

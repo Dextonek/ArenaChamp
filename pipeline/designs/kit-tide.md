@@ -15,7 +15,7 @@ Design source: `kits-v5.md`, section "Marin". Where this differs from the v4 tex
   at the natural end within 2.5 m. A stun, silence or knock-up ends it.
 
 ## Role
-**Controller**, 670 HP, ranged attack (wave, range 6.5, 10 damage), walk speed 4.1. One verb: *turn the tide*.
+**Controller**, 610 HP, ranged attack (wave, range 6.5, 10 damage), walk speed 4.1. One verb: *turn the tide*.
 - **Passive Riptide.** The tide turns every 8 s of round time (High first, then Low). At High tide her spells push the
   enemy away; at Low tide they pull it toward her. Shown on the passive slot (badge HIGH, LOW, or LOW x2 during Moon's
   Pull), by a floating word at every turn, and by a ring at her feet while one of her spells plays (foam chevrons march
@@ -29,10 +29,10 @@ Design source: `kits-v5.md`, section "Marin". Where this differs from the v4 tex
 
 | Key | Spell (label) | Type | Numbers |
 |---|---|---|---|
-| Q | Wave Disc (`wave disc`) | SHOT, `aim: 'line'` | range 9, 0.3 s wind-up, speed 20, radius 0.8, 68 damage; move 2.5 m (push at High, pull at Low) |
-| W | Coral Spire (`coral spire`) | TERRAIN | range 8, rises at 0.9 s, stands 5 s from the rise (pillar r 0.8), hits within 2.5 m for 62; push 3 m (High) or pull 2 m (Low) |
+| Q | Wave Disc (`wave disc`) | SHOT, `aim: 'line'` | range 9, 0.3 s wind-up, speed 20, radius 0.8, 52 damage; move 2.5 m (push at High, pull at Low) |
+| W | Coral Spire (`coral spire`) | TERRAIN | range 8, rises at 0.9 s, stands 5 s from the rise (pillar r 0.8), hits within 2.5 m for 44; push 3 m (High) or pull 2 m (Low) |
 | E | Mist Form (`mist form`) | DASH, `dash` + `parry`, ground, range 6 | untouchable 0.25 s (`MIST_SECONDS`); she flows up to 6 m in 0.25 s (`moveCaster`); the tide flips when she reforms; reform splash 40 within 3 m at the end spot at 0.25 s (telegraph circle plus a live distance check, `projectile: true`) |
-| R | Moon's Pull (`moon's pull`) | SELF channel, radius 25 | 3 s (`MOON_SECONDS`, `hold`): enemy within 12 m and in sight dragged 2.4 m/s, stops 1.6 m short; 15 damage a second (5 every third of a second) while the drag holds; Q and W pulls x2 (cap 4 m); 85 tide crash at the natural end on an enemy within 2.5 m (`projectile: true`); a stun, silence or knock-up ends it with no crash |
+| R | Moon's Pull (`moon's pull`) | SELF channel, radius 25 | 3 s (`MOON_SECONDS`, `hold`): enemy within 12 m and in sight dragged 2.4 m/s, stops 1.6 m short; 24 damage a second (8 every third of a second) while the drag holds; Q and W pulls x2 (cap 4 m); 110 tide crash at the natural end on an enemy within 2.5 m (`projectile: true`); a stun, silence or knock-up ends it with no crash |
 
 ## How the tide works (`src/traits/tide.ts`)
 - `highAt(time)`: `floor(time / 8) % 2 === 0`. The trait's `tick` and `dealt` compute it from round time (`t.time`).

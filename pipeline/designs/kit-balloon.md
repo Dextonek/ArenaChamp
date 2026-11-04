@@ -9,15 +9,15 @@ fragile. Palette `BALLOON` / `BALLOON_CSS` in `src/effects/parts/balloon.ts`. Ki
   pushes his hits 8% farther: `dealt` multiplies the hit's knock by 1 + 0.08 x the Air it had BEFORE this hit. Standing still for 1 s lets out 1 Air, then
   1 per 0.3 s; each hit the enemy lands on him lets out 1. A vent keeps the old lapse time (the Air never lasts longer for being let out). A label BLOAT
   shows over the enemy from 7 Air. Pips: `air` needs a look (see "Shared changes").
-- Q **Air Hose** (`airHose.ts`, 'air hose'): SHOT, cd 3.5, `aim: 'line'`. 0.3 s wind-up, 8 m, 22 m/s, radius 0.35: 45, 1 m push (knock 7). A pink balloon pumped up at
+- Q **Air Hose** (`airHose.ts`, 'air hose'): SHOT, cd 3.5, `aim: 'line'`. 0.3 s wind-up, 8 m, 22 m/s, radius 0.35: 56, 1 m push (knock 7). A pink balloon pumped up at
   the nozzle flies as the bolt, emptying, with a stream of puffs and bubbles; PFFT on a hit. Telegraph: one line, `boltWidth(0.35)`, impact at the launch.
-- W **Helium Bomb** (`heliumBomb.ts`, 'helium bomb'): ZONE, 9 m, cd 9. A foil balloon floats to the spot (0.4 s), hangs 2.6 m up and swells; pops at 1.0 s: 40 to
+- W **Helium Bomb** (`heliumBomb.ts`, 'helium bomb'): ZONE, 9 m, cd 9. A foil balloon floats to the spot (0.4 s), hangs 2.6 m up and swells; pops at 1.0 s: 50 to
   every enemy within 2.5 m (live positions), pushed out from the spot (knock 5). Circle telegraph, 1.0 s (0.88 s needed to leave with a 0.25 s reaction). Scraps, ring, POP.
 - E **Hot Air** (`hotAir.ts`, 'hot air'): SELF, cd 10, aim range 9. 0.4 s wind-up (three big balloons swell over him; BLOAT), then the air lets go: anyone within 2.5 m of where he
   stood is pushed 3 m (knock 21, no damage); he floats 6 m AWAY from the aimed spot in 0.7 s (`ctx.moveCaster`), lifted a little, and lands. A foil ring shows the landing
   from 0.2 s. Pointing at the danger backs him off it.
 - R **Pop!** (`popPin.ts`, 'pop!'): TGT, 9 m, cd 22. 0.6 s wind-up with a mark on the enemy (red circle and a closing ring, live); the pin is thrown at 0.15 s and lands at 0.6 s.
-  At the landing: no sight, or more than 11 m, and it fizzles. Otherwise one `projectile` hit: 50 + 20 per Air (added in the trait's `dealt`) and a fixed 3 m shove (knock 21, NOT
+  At the landing: no sight, or more than 11 m, and it fizzles. Otherwise one `projectile` hit: 60 + 20 per Air (added in the trait's `dealt`) and a fixed 3 m shove (knock 21, NOT
   scaled by Air); all the Air goes. The pop is a snap sized by the Air that was in it (scraps 10 to 30), one impact frame, POP!.
 
 ### Where each rule runs (the two screens)

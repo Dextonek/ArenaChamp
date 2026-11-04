@@ -196,7 +196,7 @@ export const sandKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'cobra spit', name: 'Cobra Spit', range: 9, cooldown: 5, aim: 'line',
-      blurb: 'A cobra rears and spits venom 9 m down the aim: 50 damage and blinded 1.2 s on the first enemy it touches. Half the cooldown back when it hits a Judged enemy. Step off the line to dodge it.',
+      blurb: 'A cobra rears and spits venom 9 m down the aim: 62 damage and blinded 1.2 s on the first enemy it touches. Half the cooldown back when it hits a Judged enemy. Step off the line to dodge it.',
       icon(g, s) {
         ground(g, s);
         // The cobra rearing on the left, its venom streaking away to the right.
@@ -271,7 +271,7 @@ export const sandKit: HeroKit = {
     },
     {
       key: 'R', label: 'sarcophagus', name: 'Sarcophagus', range: 9, cooldown: 24, cc: true,
-      blurb: 'A gold sarcophagus rises at the enemy 9 m away (he must see them). 0.7 s later, if they are still inside its 1.6 m circle, it shuts: sealed 1.2 s, unable to act and unable to be hit. It opens in scarabs: 90 damage and Judged. Step out and it shuts on nothing.',
+      blurb: 'A gold sarcophagus rises at the enemy 9 m away (he must see them). 0.7 s later, if they are still inside its 1.6 m circle, it shuts: sealed 1.2 s, unable to act and unable to be hit. It opens in scarabs: 110 damage and Judged. Step out and it shuts on nothing.',
       icon(g, s) {
         ground(g, s);
         ring(g, s * 0.5, s * 0.86, s * 0.44, s * 0.12, s * 0.045);

@@ -188,7 +188,7 @@ export const stormKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'sky strike', name: 'Sky Strike', range: 7, cooldown: 4,
-      blurb: 'A strike falls on an enemy in sight (7 m) 0.35 s later: 50, and a rod stands 1.5 m in front of them, toward her. Rods within 5 m of them arc for 14.',
+      blurb: 'A strike falls on an enemy in sight (7 m) 0.35 s later: 60, and a rod stands 1.5 m in front of them, toward her. Rods within 5 m of them arc for 18.',
       icon(g, s) {
         iconGround(g, s);
         cloud(g, s * 0.58, s * 0.3, s * 0.62);
@@ -201,7 +201,7 @@ export const stormKit: HeroKit = {
     },
     {
       key: 'W', label: 'thunder rod', name: 'Thunder Rod', range: 9, cooldown: 9,
-      blurb: 'A great rod at a spot (9 m) for 3 s. From 1.2 s, each second: enemies within 3.5 m take 18 and are slowed. Cast again from 1.2 s to fire it once for 40 and end it.',
+      blurb: 'A great rod at a spot (9 m) for 3 s. From 1.2 s, each second: enemies within 3.5 m take 24 and are slowed. Cast again from 1.2 s to fire it once for 50 and end it.',
       icon(g, s) {
         iconGround(g, s);
         // The 3.5 m zone as a dashed ring, a tall great rod in its middle, arcs running from the tip to the rim.
@@ -258,7 +258,7 @@ export const stormKit: HeroKit = {
     },
     {
       key: 'R', label: 'supercell storm', name: 'Supercell', range: 0, cooldown: 24,
-      blurb: 'A storm over her for 6 s. Every 0.8 s, if the enemy is within 7 m of her or 3 m of a rod, a bolt marks their spot (1.2 m) and falls 0.6 s later: 30. Rods arc as normal.',
+      blurb: 'A storm over her for 6 s. Every 0.8 s, if the enemy is within 7 m of her or 3 m of a rod, a bolt marks their spot (1.2 m) and falls 0.6 s later: 32. Rods arc as normal.',
       icon(g, s) {
         iconGround(g, s);
         cloud(g, s * 0.5, s * 0.34, s * 0.86);

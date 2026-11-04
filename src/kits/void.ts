@@ -298,7 +298,7 @@ export const voidKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'gravity slam', name: 'Gravity Slam', range: 3, cooldown: 4,
-      blurb: 'He slams the ground: 50 within 3 m, and enemies there are dragged 1.5 m toward him.',
+      blurb: 'He slams the ground: 60 within 3 m, and enemies there are dragged 1.5 m toward him.',
       icon(g, s) {
         iconGround(g, s);
         // Glass cracks racing out from a blade driven into the ground, shards pulled in toward it.
@@ -375,7 +375,7 @@ export const voidKit: HeroKit = {
     },
     {
       key: 'R', label: 'void black hole', name: 'Black Hole', range: 8, cooldown: 24, cc: true, aim: 'line',
-      blurb: 'A black hole crawls 8 m down his aim for 4 s, pulling enemies within 5 m. Touching its core deals 90 and stuns 1 s, once. Recast: it collapses at once for 70 within 3 m, after a 0.5 s warning.',
+      blurb: 'A black hole crawls 8 m down his aim for 4 s, pulling enemies within 5 m. Touching its core deals 105 and stuns 1 s, once. Recast: it collapses at once for 85 within 3 m, after a 0.5 s warning.',
       icon(g, s) {
         iconGround(g, s);
         // A black core inside a pink ring and a cyan fringe, torn slits spiralling in, shards pulled along.

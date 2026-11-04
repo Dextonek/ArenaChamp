@@ -215,7 +215,7 @@ function loginScreen() {
     name, pass,
     el('button', { class: 'btn primary', type: 'submit', disabled: !state.connected }, state.authMode === 'login' ? 'Log in' : 'Create account'),
     el('div', { class: 'error' }, state.connected ? state.authError : 'Connecting to the game server…'),
-    el('p', { class: 'fine' }, 'Local accounts on this machine only. Passwords are stored hashed in server/data/accounts.json.'),
+    el('p', { class: 'fine' }, 'Your name and record are kept on the game server. Passwords are stored hashed.'),
     el('div', { class: 'or' }, 'or'),
     el('button', { class: 'btn ghost', type: 'button', onclick: () => go('cpu') }, 'Play vs CPU · no account needed'),
   );

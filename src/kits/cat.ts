@@ -285,7 +285,7 @@ export const catKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'scratch', name: 'Scratch', range: 2.5, cooldown: 3,
-      blurb: 'A 2.5 m claw in front of him: 46 damage. His next attack within 2 s is ready at once.',
+      blurb: 'A 2.5 m claw in front of him: 64 damage. His next attack within 2 s is ready at once.',
       icon(g, s) {
         iconGround(g, s);
         // Three crossed claw strokes with a spray of fur.
@@ -302,7 +302,7 @@ export const catKit: HeroKit = {
     },
     {
       key: 'W', label: 'knock it over', name: 'Knock It Over', range: 9, cooldown: 9, cc: true,
-      blurb: 'With cover within 4 m of him, a pot falls on the spot at 9 m after 0.7 s (1.5 m): 50 damage and a 0.5 s stun. In the open it does nothing.',
+      blurb: 'With cover within 4 m of him, a pot falls on the spot at 9 m after 0.7 s (1.5 m): 60 damage and a 0.5 s stun. In the open it does nothing.',
       icon(g, s) {
         iconGround(g, s);
         // A pillar on the left, a wobbling pot tipping off, a dark shadow with a cream rim on the floor below, a swiping paw.

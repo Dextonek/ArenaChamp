@@ -240,7 +240,7 @@ export const bardKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'resounding chord', name: 'Resounding Chord', range: 5, cooldown: 3,
-      blurb: 'A chord in a 5 m cone: 45. In tune with his beat: also silenced 0.5 s. Move on his pulse: that is when the good one comes.',
+      blurb: 'A chord in a 5 m cone: 52. In tune with his beat: also silenced 0.5 s. Move on his pulse: that is when the good one comes.',
       icon(g, s) {
         iconGround(g, s);
         // Three staves fan out of the lower left into a cone, notes riding them, sound rings across the cone and a gold spark.
@@ -322,7 +322,7 @@ export const bardKit: HeroKit = {
     },
     {
       key: 'R', label: 'duet', name: 'Duet', range: 0, cooldown: 24,
-      blurb: 'A ring (6 m) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat it pulses for 12, and in-tune spells inside it also silence 0.5 s. Cannot be cast while the enemy is charmed.',
+      blurb: 'A ring (6 m) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat it pulses for 18, and in-tune spells inside it also silence 0.5 s. Cannot be cast while the enemy is charmed.',
       icon(g, s) {
         iconGround(g, s);
         // A closed ring of staves seen on the floor, two small figures inside it and notes climbing the wall.

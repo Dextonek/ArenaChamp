@@ -64,7 +64,7 @@ function announce(t: TraitView, name: string, n: number) {
  * (`marks`: one wasp mark per count, placed from his position and the round clock, so they need nothing but the shown
  * count). He starts a round with none, gains one every 2 s (`tick`, his own client) and one per basic attack that lands
  * (`landed`). Every change goes through `setWasps`, which also `show`s it, so the other screen's swarm follows.
- * Barbed Stinger (Q, 45) barbs the enemy for 3 s (`dealt`, on the screen that decides the hit; `noteOwner` / `peerNote`
+ * Barbed Stinger (Q, 42) barbs the enemy for 3 s (`dealt`, on the screen that decides the hit; `noteOwner` / `peerNote`
  * bring it home, and `show('barbed')` carries it to the other screen's effect). Recast within 3 s (`recastAct`, free): the
  * effect leaps him onto the barbed enemy within 8 m for 25; if he has 2 wasps they are spent here and the leap also
  * poisons (30 over 3 s, the effect deals the ticks): `leapPoison`, mirrored as 'leap'.

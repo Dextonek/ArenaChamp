@@ -260,7 +260,7 @@ export const moleKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'mole claw', name: 'Claw', range: 2.5, cooldown: 3,
-      blurb: 'A swipe of her digging claws, 2.5 m in front of her: 45 damage.',
+      blurb: 'A swipe of her digging claws, 2.5 m in front of her: 62 damage.',
       icon(g, s) {
         iconGround(g, s);
         stroke(g, s * 0.16, s * 0.84, s * 0.4, s * 0.16, -s * 0.08, s * 0.07);
@@ -273,7 +273,7 @@ export const moleKit: HeroKit = {
     },
     {
       key: 'W', label: 'mole dig', name: 'Dig', range: 6, cooldown: 7,
-      blurb: 'A hole at a spot (6 m), opening after 0.7 s, 1.5 m wide. It stays 8 s, three at most. Whoever walks in falls: rooted 0.8 s, then slowed. She walks across her own.',
+      blurb: 'A hole at a spot (6 m), opening after 0.7 s, 1.5 m in radius. It stays 8 s, three at most. Whoever walks in falls: rooted 0.8 s, then slowed. She walks across her own.',
       icon(g, s) {
         iconGround(g, s);
         pit(g, s * 0.5, s * 0.64, s * 0.3, s * 0.17);
@@ -285,7 +285,7 @@ export const moleKit: HeroKit = {
     },
     {
       key: 'E', label: 'mole tunnel', name: 'Mole Run', range: 7.2, cooldown: 10, dash: true,
-      blurb: 'She dives (0.3 s) and tunnels up to 7.2 m in 1.2 s, 40% faster than she walks, a mound on the surface showing where. Nothing can hit her and she cannot cast. She pops up: 40 and a 0.5 s knock-up within 1.5 m.',
+      blurb: 'She dives (0.3 s) and tunnels up to 7.2 m in 1.2 s, 40% faster than she walks, a mound on the surface showing where. Nothing can hit her and she cannot cast. She pops up: 60 and a 0.5 s knock-up within 1.5 m.',
       icon(g, s) {
         iconGround(g, s);
         // The furrow runs from a dark pit on the left up to the mound.
@@ -306,7 +306,7 @@ export const moleKit: HeroKit = {
     },
     {
       key: 'R', label: 'sinkhole', name: 'Sinkhole', range: 9, cooldown: 24,
-      blurb: 'The ground drops under the enemy: a 4 m pit at their spot (9 m, sight needed), 1.3 s warning. Whoever is inside takes 90 and is rooted 1 s.',
+      blurb: 'The ground drops under the enemy: a pit 4 m in radius at their spot (9 m, sight needed), 1.3 s warning. Whoever is inside takes 115 and is rooted 1 s.',
       icon(g, s) {
         iconGround(g, s);
         // Cracks run in to a big pit; a boot-print of pale dust at the rim.

@@ -244,7 +244,7 @@ export const hiveKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'barbed stinger', name: 'Barbed Stinger', range: 8, cooldown: 6, aim: 'line',
-      blurb: 'A stinger flies 8 m: 45, and the barb stays on them for 3 s. Cast it again within 3 s to leap onto the barbed enemy: 25, and with 2 wasps spent it poisons them for 30 over 3 s.',
+      blurb: 'A stinger flies 8 m: 42, and the barb stays on them for 3 s. Cast it again within 3 s to leap onto the barbed enemy: 25, and with 2 wasps spent it poisons them for 30 over 3 s.',
       icon(g, s) {
         iconGround(g, s);
         // A long barbed stinger from the lower left to the upper right, venom beading at its tip, a wasp riding behind it.

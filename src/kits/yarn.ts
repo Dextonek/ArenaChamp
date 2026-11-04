@@ -205,7 +205,7 @@ export const yarnKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'knitting needle', name: 'Knitting Needle', range: 9, cooldown: 3.5, aim: 'line',
-      blurb: 'A needle as long as a sword (9 m, 22 m/s, 0.3 s wind-up): 50 damage. Step off its line.',
+      blurb: 'A needle as long as a sword (9 m, 22 m/s, 0.3 s wind-up): 62 damage. Step off its line.',
       icon(g, s) {
         iconGround(g, s);
         strand(g, s * 0.04, s * 0.9, s * 0.1, s * 0.62, s * 0.3, s * 0.66, s * 0.045);
@@ -236,7 +236,7 @@ export const yarnKit: HeroKit = {
     },
     {
       key: 'E', label: 'sweater', name: 'Sweater', range: 7, cooldown: 11,
-      blurb: 'She throws a sweater on you (7 m, 0.5 s, needs sight when it lands): slowed 2 s, then it shrinks: 40 damage. Reach cover first.',
+      blurb: 'She throws a sweater on you (7 m, 0.5 s, needs sight when it lands): slowed 2 s, then it shrinks: 50 damage. Reach cover first.',
       icon(g, s) {
         iconGround(g, s);
         sweaterShape(g, s * 0.5, s * 0.5, s * 0.7);

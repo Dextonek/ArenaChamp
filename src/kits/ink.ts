@@ -271,7 +271,7 @@ export const inkKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'ink lash', name: 'Ink Lash', range: 9, cooldown: 4, aim: 'line',
-      blurb: 'A lash of ink (9 m): 50, and a stroke along its path that stays 5 s. Standing on ink slows and Stains. Where strokes cross, a point bursts for 40.',
+      blurb: 'A lash of ink (9 m): 66, and a stroke along its path that stays 5 s. Standing on ink slows and Stains. Where strokes cross, a point bursts for 40.',
       icon(g, s) {
         iconGround(g, s);
         // A fat wet stroke flung up and to the right, an older stroke crossing it, a glowing point where they meet, drops off the head.
@@ -335,7 +335,7 @@ export const inkKit: HeroKit = {
     },
     {
       key: 'R', label: 'the last character', name: 'The Last Character', range: 9, cooldown: 22, cc: true,
-      blurb: 'Ultimate. Writes one great character (9 m, 4 m wide) in 1.0 s: 30 and rooted 1 s inside it. Every stroke of hers under the enemy erupts for 40, 3 at most, and vanishes.',
+      blurb: 'Ultimate. Writes one great character (9 m, 4 m wide) in 1.0 s: 40 and rooted 1 s inside it. Every stroke of hers under the enemy erupts for 50, 3 at most, and vanishes.',
       icon(g, s) {
         iconGround(g, s);
         // One great character in black on a sheet of rice paper: dot, bar, hooked stem and two falling strokes; a seal stamped on it.

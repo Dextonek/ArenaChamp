@@ -1,7 +1,7 @@
 # Mirror kit: Silvane, the Vain (ranged marksman)
 
 ## v5 (2026-11-04)
-Design source: `new-heroes-kits.md`, section "2. Silvane, the Vain". 560 HP, 4.1 m/s, basic attack 7.5 m, 12 per 1.2 s (look 'prism').
+Design source: `new-heroes-kits.md`, section "2. Silvane, the Vain". 620 HP, 4.1 m/s, basic attack 7.5 m, 16 per 1.0 s (look 'prism').
 Accent `#cfe6ff`, foil `#d9b8ff`. Question: chase the mirror coming back, or stay where the shot is good? Weakness: open ground gives
 no bounces; close up she has no damage. Model `models/heroes/mirror_v2.glb`. Palette `MIRROR` / `MIRROR_CSS` in `src/effects/parts/mirror.ts`.
 She is not Opaline: the mirror is a real object (a spinning hand mirror, a standing mirror), there are many of them, and she runs to catch them.
@@ -10,7 +10,7 @@ She is not Opaline: the mirror is a real object (a spinning hand mirror, a stand
   `Trait.marks`, with a 1 m ring that is the catch reach). Within 1 m on her own client (`tick`): a caught Hand Mirror ends Q's cooldown, +20%
   speed 2 s (`buff haste 0.2`), a 0.25 s pose (`hold`), a word (GORGEOUS / STUNNING / DARLING); a caught Hall mirror cuts 2 s off R. She tells the other screen
   with `show('caught', id)`; `ownChanged` clears the same mark there. A rare self-compliment on a hit (her own screen).
-- Q **Hand Mirror** (`handMirror.ts`, 'hand mirror'): SHOT, cd 3.5, `aim: 'line'`, `bank: true`. 0.3 s wind-up, 10 m, 22 m/s, radius 0.3, `reflect: 3`: 40
+- Q **Hand Mirror** (`handMirror.ts`, 'hand mirror'): SHOT, cd 3.5, `aim: 'line'`, `bank: true`. 0.3 s wind-up, 10 m, 22 m/s, radius 0.3, `reflect: 3`: 64
   (+25% per bounce, +2 m each). Spins as a real mirror and flashes at each bounce. Telegraph: a line per leg for the first two legs, `boltWidth(0.3)`
   wide (what it really hits). Floor mark after at least one bounce where the path ends (from `bankPath`, the same on both screens); a hit shatters it.
 - W **Vanity Stand** (`vanityStand.ts`, 'vanity stand'): TERRAIN, 8 m, cd 12. Rises at 0.5 s, stands 6 s: a wall obstacle 1.1 m wide
@@ -19,7 +19,7 @@ She is not Opaline: the mirror is a real object (a spinning hand mirror, a stand
 - E **Through the Glass** (`throughTheGlass.ts`, 'through the glass'): DASH, cd 10, `dash: true`. Into the Stand and out 3 m beyond it, 9 m at most in all, 0.3 s
   (`ctx.moveCaster`); with no Stand, a 3 m step toward the aim.
 - R **Hall of Mirrors** (`hallOfMirrors.ts`, 'hall of mirrors'): SELF, cd 22. A 0.6 s spin, then eight mirrors outward as real bolts (16 m/s, 12 m, radius 0.3,
-  `reflect: 2`): 30 each, one bolt each. One spoke at the aim. Telegraph: eight lines, each the first leg of its path, `boltWidth(0.3)` wide; the gaps
+  `reflect: 2`): 60 each, one bolt each. One spoke at the aim. Telegraph: eight lines, each the first leg of its path, `boltWidth(0.3)` wide; the gaps
   show. Up to four that end after a bounce (the four nearest her) lie on the floor, violet: each caught cuts 2 s off R. One short impact frame.
 
 ### How Bad Luck is placed (the two screens)

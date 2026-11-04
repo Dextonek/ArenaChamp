@@ -1,15 +1,15 @@
 # Cat kit: Sir Whiskers, the Cat Knight (melee assassin)
 
 ## v5 (2026-11-04)
-Design source: `new-heroes-kits.md`, section "5. Sir Whiskers, a cat knight". 450 HP in 9 lives of 50 (`hpChunks: 9`), 4.5 m/s, basic attack 2 m, 9 per 0.7 s
+Design source: `new-heroes-kits.md`, section "5. Sir Whiskers, a cat knight". 540 HP in 9 lives of 60 (`hpChunks: 9`), 4.5 m/s, basic attack 2 m, 15 per 0.7 s
 (0.25 s wind-up, look 'claw'). Accent `#e8a13a`, foil `#f4e6c8`. Question: when do I spend a life on purpose? Weakness: many small hits cut him apart,
 and he has no answer to a slow. Palette `CAT` / `CAT_CSS` in `src/effects/parts/cat.ts`. Model: not set (registered by the caller).
-- **Passive Nine Lives** (`src/traits/cat.ts`, `taken`, runs on his own client): no hit takes more than the life he is on. The life is `ceil(hp / 50)` and the room is
-  `hp - 50 x (life - 1)` read live, so a hit on 12 HP of room takes 12 and a damage tick of 3 takes 3. At exactly 400 HP he is on life 8, full.
-- Q **Scratch** (`scratch.ts`, 'scratch'): QUICK, `self`, cd 3. A 2.5 m cone, 90 degrees, impact 0.15 s: 40 to whoever is inside on their live position. Three crossed claw
+- **Passive Nine Lives** (`src/traits/cat.ts`, `taken`, runs on his own client): no hit takes more than the life he is on. The life is `ceil(hp / 60)` and the room is
+  `hp - 60 x (life - 1)` read live, so a hit on 12 HP of room takes 12 and a damage tick of 3 takes 3. At exactly 480 HP he is on life 8, full.
+- Q **Scratch** (`scratch.ts`, 'scratch'): QUICK, `self`, cd 3. A 2.5 m cone, 90 degrees, impact 0.15 s: 64 to whoever is inside on their live position. Three crossed claw
   strokes in the air. His next attack within 2 s is ready at once (`resetAttack`) with a pip over him until it goes.
 - W **Knock It Over** (`knockItOver.ts`, 'knock it over'): GROUND, `cc`, cd 9, 9 m. Needs cover within 4 m of him (the surface of a pillar or wall in `ctx.obstacles()`).
-  A pot rocks on the cover's top, is batted off at 0.2 s, falls along an arc, tumbling, onto the spot (shown from the cast, 1.5 m circle) at 0.7 s: 50 and a 0.5 s stun
+  A pot rocks on the cover's top, is batted off at 0.2 s, falls along an arc, tumbling, onto the spot (shown from the cast, 1.5 m circle) at 0.7 s: 60 and a 0.5 s stun
   (circle delay 0.7 >= 0.25 + 1.5 / 4 = 0.63). It shatters. With no cover: nothing, he bats the air (MEH), no telegraph, no hit.
 - E **Cat Leap** (`pounce.ts`, 'pounce'): GROUND, `dash`, cd 8, 7 m. `afterCast` pays the life he is on (`payHp(room)`: to the start of that life), a cracked heart and
   MROW. Leap 0.65 s (`moveCaster`) landing 0.8 m short of the aim: 60 in a 1.5 m circle on live positions. He cannot cast for 0.4 s after landing (`hold` and `canCast`).

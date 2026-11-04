@@ -128,7 +128,7 @@ export const masonKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'raise gerald', name: 'Raise Gerald', range: 9, cooldown: 6, cc: true,
-      blurb: 'Marks a spot (9 m): 0.7 s later Gerald bursts up there, 50 damage and a 0.5 s knock-up to anyone within 1.5 m. He is a real pillar with 220 HP. A new Gerald crumbles the old one.',
+      blurb: 'Marks a spot (9 m): 0.7 s later Gerald bursts up there, 70 damage and a 0.5 s knock-up to anyone within 1.5 m. He is a real pillar with 220 HP. A new Gerald crumbles the old one.',
       icon(g, s) {
         ground(g, s);
         // A star of floor cracks, a pillar bursting out of the middle, stones flying.
@@ -152,7 +152,7 @@ export const masonKit: HeroKit = {
     },
     {
       key: 'W', label: 'the shove', name: 'The Shove', range: 8, cooldown: 7, aim: 'line',
-      blurb: 'Needs Gerald within 3 m. He slides 8 m along your aim at 8 m/s: 60 damage to the first enemy he touches, who is carried along. Stopped by a wall with them: stunned 0.9 s.',
+      blurb: 'Needs Gerald within 3 m. He slides 8 m along your aim at 8 m/s: 70 damage to the first enemy he touches, who is carried along. Stopped by a wall with them: stunned 0.9 s.',
       icon(g, s) {
         ground(g, s);
         // A pillar sliding right, speed lines behind it, a floor scrape, the arrow of the shove.

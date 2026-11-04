@@ -8,13 +8,13 @@ updated: 2026-11-04
 
 ## v5 (2026-11-04)
 
-Controller, ranged. 620 HP, 4.0 m/s, attack 6 m, 9 per 0.9 s. Accent `#f2f2f2`, foil `#1a1a1a`. Numbers from
+Controller, ranged. 620 HP, 4.0 m/s, attack 6 m, 12 per 0.9 s. Accent `#f2f2f2`, foil `#1a1a1a`. Numbers from
 [new-heroes-kits.md](new-heroes-kits.md) section 14. Stern, not silly: the funny part is how serious he is.
 
 | Key | Spell | CD | Numbers (all in `src/traits/referee.ts`) |
 |---|---|---:|---|
-| P | By the Book | | Rules show over the enemy's head (`enemyLabel`). A broken rule is a yellow card; two yellows are a red: 60 and silenced 1.5 s, yellows reset to none. Cards last the round |
-| Q | Whistle Blast | 3.5 | Ring-of-sound bolt, 8 m, 22 m/s, 0.3 s wind-up, radius 0.4: 50. Reaches 6 m at 0.57 s |
+| P | By the Book | | Rules show over the enemy's head (`enemyLabel`). A broken rule is a yellow card; two yellows are a red: 90 and silenced 1.5 s, yellows reset to none. Cards last the round |
+| Q | Whistle Blast | 3.5 | Ring-of-sound bolt, 8 m, 22 m/s, 0.3 s wind-up, radius 0.4: 72. Reaches 6 m at 0.57 s |
 | W | No Running | 9 | Self circle 7 m, lands 0.5 s, sight: NO RUNNING 3 s (no dashes, blinks or leaps) |
 | E | No Casting | 13 | Same ring: NO CASTING 2 s. Casting anyway is never blocked, it is a yellow |
 | R | Show the Card | 24 | Ground circle radius 1.2 at the aim (9 m), lands 0.6 s, sight: a yellow now and HANDS OFF 3 s (hit him: another yellow) |

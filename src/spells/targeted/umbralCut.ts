@@ -5,16 +5,16 @@ import { clearScreenFx, createScreenFx } from '../../effects/parts';
 import { CutFlash, CutShape, CutShards, ShadowPool, SHADOW, SHADOW_CSS } from '../../effects/parts/shadow';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { CUT_BACK, CUT_REACH, CUT_WIND, watchCover } from '../../traits/shadow';
+import { CUT_BACK, CUT_BEHIND, CUT_REACH, CUT_WIND, watchCover } from '../../traits/shadow';
 import { isBehind } from '../../traits/types';
 
 /**
  * Umbral Cut (shadow kit, Q: a targeted dagger strike, `projectile` hit). A click on the enemy (2.5 m, sight checked by the engine
  * at the cast) starts a `CUT_WIND` (0.35 s) wind-up in which she stands (the telegraph roots her): a black pool with a violet rim and a
  * pale foil ring marks the enemy on both screens and follows it, and a dagger cut-out lies on the floor from her to it. At 0.35 s the
- * strike lands on the enemy's LIVE position if it is within `CUT_REACH` (3.2 m) of her: `damage` (45), doubled when she is behind it
+ * strike lands on the enemy's LIVE position if it is within `CUT_REACH` (3.2 m) of her: `damage` (50), times `CUT_BEHIND` (1.6) when she is behind it
  * (the back 120 degrees of its facing, `isBehind` with `CUT_BACK`; its facing follows its walk, so a step toward her turns it). The
- * doubling is decided here, at the hit, on the screen that resolves it, and `damage` is passed in the hit. Out of reach: a puff and no hit.
+ * bonus is decided here, at the hit, on the screen that resolves it, and `damage` is passed in the hit. Out of reach: a puff and no hit.
  * A hit shows a hot violet crescent with a mint core (two crossed ones from behind) and black shards. Clean by 1.0 s. The trait's veil
  * bonus (power, silence) comes as mods with the cast. See pipeline/designs/kit-shadow.md.
  */
@@ -23,7 +23,7 @@ export interface UmbralCutSettings {
   loop: boolean;
 }
 
-export const defaultUmbralCut = (): UmbralCutSettings => ({ damage: 54, loop: false });
+export const defaultUmbralCut = (): UmbralCutSettings => ({ damage: 50, loop: false });
 
 const DURATION = 1.0;
 const MARK_R = 1.1;
@@ -141,7 +141,7 @@ export class UmbralCut implements Effect {
     return out.copy(c ? c.caster.group.position : this.start).setY(0);
   }
 
-  /** The strike: decided on the enemy's live position, doubled from behind. */
+  /** The strike: decided on the enemy's live position, more from behind. */
   private strike() {
     const ctx = this.ctx;
     const me = this.me(this.v1);
@@ -165,7 +165,7 @@ export class UmbralCut implements Effect {
     this.shake = behind ? 0.3 : 0.16;
     // `projectile: true`: judged on the live position, the touch is the check. The hit says how much it is.
     ctx.hit(this.target, {
-      damage: this.settings.damage * (behind ? 2 : 1), knock: behind ? 1.4 : 0.6, from: me.clone(),
+      damage: this.settings.damage * (behind ? CUT_BEHIND : 1), knock: behind ? 1.4 : 0.6, from: me.clone(),
       color: behind ? SHADOW_CSS.accent : SHADOW_CSS.hot, projectile: true,
     });
   }

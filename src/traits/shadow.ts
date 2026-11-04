@@ -26,6 +26,8 @@ export const MARK_SHARE = 0.3;
 export const CUT_WIND = 0.35;
 export const CUT_REACH = 3.2;
 export const CUT_BACK = (Math.PI * 4) / 3;
+/** How much more Umbral Cut deals from behind. */
+export const CUT_BEHIND = 1.6;
 /** Smoke Veil: the cloud's radius and how long it stands. */
 export const SMOKE_RADIUS = 3;
 export const SMOKE_SECONDS = 3;
@@ -111,8 +113,17 @@ export const shadowTrait: Trait = {
     blurb: 'After 2.5 s without dealing or taking damage (1.2 s within 2 m of cover) she fades: dark and see-through, still plainly visible and targetable, 10% faster. Her next Q or attack out of the veil deals 50% more, silences 0.6 s (once per 5 s) and takes 3 s off Shadow Double.',
   },
   speed: 4.6,
-  attack: { kind: 'melee', range: 1.9, damage: 11, interval: 0.7, windup: 0.18, speed: 0, look: 'twin' },
+  attack: { kind: 'melee', range: 1.9, damage: 9, interval: 0.7, windup: 0.18, speed: 0, look: 'twin' },
   aiHold: (_t, slot, dist) => slot === 3 && dist > 8,
+  // The CPU fights as a person does: it circles to the enemy's back, where Umbral Cut pays.
+  aiGoal(t) {
+    const e = t.enemy();
+    if (!e) return null;
+    const me = t.self().group.position, at = e.group.position, yaw = e.group.rotation.y;
+    if (Math.hypot(me.x - at.x, me.z - at.z) > 6) return null;
+    const bx = at.x - Math.sin(yaw) * 1.3, bz = at.z - Math.cos(yaw) * 1.3;
+    return Math.hypot(me.x - bx, me.z - bz) < 0.5 ? null : { x: bx, z: bz };
+  },
   figureVeil: (t) => (t.own('veil') > 0 ? 1 : 0),
   ring(t) {
     if (t.own('veil') <= 0) return null;

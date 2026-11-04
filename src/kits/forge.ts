@@ -151,7 +151,7 @@ export const forgeKit: HeroKit = {
     },
     {
       key: 'E', label: 'red-hot rivet', name: 'Red-Hot Rivet', range: 6, cooldown: 4,
-      blurb: 'Flicks a white-hot rivet at an enemy in sight (6 m): 30, then 16 burn over 2 s, and 2 Heat. Tempered: the enemy takes 20% more from him for 3 s.',
+      blurb: 'Flicks a white-hot rivet at an enemy in sight (6 m): 25, then 12 burn over 2 s, and 2 Heat. Tempered: the enemy takes 20% more from him for 3 s.',
       icon(g, s) {
         ground(g, s);
         // A big rivet on the diagonal, domed head bottom left, hot tip top right, heat shimmer and sparks around it.

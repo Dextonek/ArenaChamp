@@ -20,7 +20,7 @@ export const POT_RANGE = 9;
 export const POT_DELAY = 0.7;
 export const COVER_REACH = 4;
 
-/** Pounce (E): damage, reach (m), landing radius (m), leap time (s), and the seconds he cannot cast after landing. */
+/** Cat Leap (E): damage, reach (m), landing radius (m), leap time (s), and the seconds he cannot cast after landing. */
 export const POUNCE_DAMAGE = 60;
 export const POUNCE_RANGE = 7;
 export const POUNCE_RADIUS = 1.5;
@@ -69,7 +69,7 @@ const LOST_WORDS = ['MROW', 'HISS', 'NYA', 'MEOW'];
  * Sir Whiskers (assassin, melee). Passive Nine Lives: his bar is nine chunks of 60 and no single hit takes more than the life he is on
  * (`taken`, which runs on his own client: it reads his real HP, so a hit on his last 12 HP of a life takes 12 and the rest is wasted,
  * and the cap follows the life he is on now, not a fixed 60). Many small hits and damage over time cut him apart; a big spell is
- * wasted on him. Pounce spends the life he is on (`payHp`, down to the start of that life, so a low life is cheap) and cannot be cast on
+ * wasted on him. Cat Leap spends the life he is on (`payHp`, down to the start of that life, so a low life is cheap) and cannot be cast on
  * his last life. Land on My Feet arms for 4 s (shown to both players as a ring, `show('feet')`): the first hit that would cost him a
  * life leaves him 1 HP into it instead (`taken`), the hit's status and knock are dropped and he leaps 3 m away from the enemy
  * (`moveTo`); until then, or until it runs out, his attacks are 30% faster. Scratch readies his attack at once and for 2 s his next
@@ -77,7 +77,7 @@ const LOST_WORDS = ['MROW', 'HISS', 'NYA', 'MEOW'];
  *
  * Attack speed: `attack.windup` is fixed by the engine, so +30% is built as a shorter gap after each swing (0.29 s instead of 0.45 s):
  * the swing and the gap together take 0.7 / 1.3 s. The CPU's `aiHold`: Knock It Over only with cover within 4 m of him (`DUEL_OBSTACLES`),
- * Pounce only on a life with under 20 HP left (and a life to spare) or at 4 to 7 m with more than 3 lives, Land on My Feet not while it is armed.
+ * Cat Leap only on a life with under 20 HP left (and a life to spare) or at 4 to 7 m with more than 3 lives, Land on My Feet not while it is armed.
  */
 export const catTrait: Trait = {
   meter: { name: 'LIVES', max: LIVES, value: (t) => t.own('lives') },

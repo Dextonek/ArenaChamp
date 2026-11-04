@@ -359,7 +359,7 @@ export const yarnTrait: Trait = {
       hit.opts.status = { kind: 'slow', seconds: BISCUIT_SLOW };
     }
   },
-  /** Her own client: the shrink landed (the Sweater's 40), and she is pleased. */
+  /** Her own client: the shrink landed (the Sweater's 50), and she is pleased. */
   landed(t, hit) {
     if (hit.kind === 'spell' && hit.slot === 2 && hit.victimIsHero && hit.damage > 0) t.say('ooh, it suits you', YARN_CSS.cream);
   },

@@ -4,7 +4,7 @@ Rebuilt from `pipeline/designs/kits-v4.md` (section "Mortis, the Ossuary Lord").
 (Bone Spear, Grave Call, Ossuary Ward, Bone Colossus) are replaced. **Raise Dead** is the kept idea: the summoner's core,
 now scaled by bone piles.
 
-**Hero:** a gaunt robed necromancer in bone-grey and teal, 580 HP, walks at 3.8 m/s, ranged basic attack (range 6,
+**Hero:** a gaunt robed necromancer in bone-grey and teal, 470 HP, walks at 3.8 m/s, ranged basic attack (range 6,
 10 damage, every 1.0 s). **Category:** `hero: bone`. **Parts:** `src/effects/parts/bone.ts`. **Kit:** `src/kits/bone.ts`
 (`boneKit`). **Trait:** `src/traits/bone.ts`.
 
@@ -46,7 +46,7 @@ shards; fight away from his piles.
 ## W · Raise Dead (`raiseDead.ts`, `raise dead`, `ground`, `summon`, range 9, cd 9)
 SUMMON. The ground at the spot cracks open (2.4 m hole, a circle telegraph) with soulfire in the cracks. Piles within 4 m
 of the spot (at most three) stir and fling bones at it. At 0.7 s a skeleton claws out, plus one per pile (`ctx.summon`,
-melee, 64 HP, 8 s, 10 damage per second, at most four, never past the cap of six units), in a burst of dust, chips and six
+melee, 40 HP, 8 s, 10 damage per second, at most four, never past the cap of six units), in a burst of dust, chips and six
 bone spires (two with skulls); enemies in the hole take 15 and a small knock-back. The spires sink; the skeletons stay.
 Clean by 2.0 s. Counterplay: kill skeletons away from piles.
 
@@ -63,7 +63,7 @@ AI: the duel casts a self spell only when the enemy is within `radius - 0.6` = 7
 ## R · Grave Grasp (`graveGrasp.ts`, `grave grasp`, `enemy`, `cc`, range 9, cd 22)
 TGT, PULL. A ring on the floor marks the enemy's feet and follows them, soulfire flickering up round it, the ground
 trembling (the screen darkens a little). At 0.6 s a giant skeletal hand (`BoneHand`, scale 0.62) bursts up behind the
-enemy, palm toward Mortis: bone spires, dust, chips, a ground ripple, an impact frame, 60 damage and a root of 0.85 s
+enemy, palm toward Mortis: bone spires, dust, chips, a ground ripple, an impact frame, 55 damage and a root of 0.85 s
 (`projectile: true`: a sure hit). At 0.85 s the fingers close; from 0.9 s the hand drags the enemy toward Mortis, 4 m at
 most and never closer than 1.1 m to him, over 0.8 s (`ctx.carry` every frame, eased out). At 1.7 s it squeezes (28
 damage, root 1 s, a second impact frame) while two skeletons claw out beside the enemy (`ctx.summon`: melee, 50 HP, 7 s,
@@ -75,9 +75,9 @@ break line of sight; keep out of 9 m.
 |---|---|---|
 | Basic attack | 10 | range 6, every 1.0 s, 5th hit raises a skeleton (36 HP, 6 s, 7/s) |
 | Bone Fan | 30 per shard, 3 to 6 shards | range 8, cd 5 |
-| Raise Dead | 15 in the hole | 1 to 4 skeletons (64 HP, 8 s, 10/s), range 9, cd 9 |
+| Raise Dead | 15 in the hole | 1 to 4 skeletons (40 HP, 8 s, 10/s), range 9, cd 9 |
 | Bone Armour | 38 (shards) | shield 30 + 30/skeleton, max 120, 4 s, cd 14 |
-| Grave Grasp | 60 + 28 | drag 4 m in 0.8 s, root 1 s, 2 skeletons (50 HP, 7 s, 8/s), range 9, cd 22 |
+| Grave Grasp | 55 + 28 | drag 4 m in 0.8 s, root 1 s, 2 skeletons (50 HP, 7 s, 8/s), range 9, cd 22 |
 
 ## Online
 - Statuses, shields, skillshots and pulls follow `docs/architecture/multiplayer.md`. Units made by a spell

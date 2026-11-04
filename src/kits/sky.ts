@@ -184,7 +184,7 @@ export const skyKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'crosswind', name: 'Crosswind', range: 3, cooldown: 4,
-      blurb: 'A 3 m cross-cut of wind in front of him: 46 damage. Press Q again within 2 s for a 3 m dash-slash through the aim (31 damage), a dash that gives a Gust.',
+      blurb: 'A 3 m cross-cut of wind in front of him: 34 damage. Press Q again within 2 s for a 3 m dash-slash through the aim (23 damage), a dash that gives a Gust.',
       icon(g, s) {
         iconGround(g, s);
         // Two long crescents cut across each other into an X, a pink blossom at the crossing, speed lines behind.

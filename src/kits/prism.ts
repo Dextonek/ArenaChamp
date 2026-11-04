@@ -187,7 +187,7 @@ export const prismKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'ricochet light', name: 'Ricochet Light', range: 12, cooldown: 3, aim: 'line', bank: true,
-      blurb: 'A bolt of light (12 m) that bounces off up to two walls, pillars or crystals: 50 damage, +25% for each bounce. A hit after bouncing takes 1 s per bounce off this spell.',
+      blurb: 'A bolt of light (12 m) that bounces off up to two walls, pillars or crystals: 64 damage, +25% for each bounce. A hit after bouncing takes 1 s per bounce off this spell.',
       icon(g, s) {
         iconGround(g, s);
         // A wall on the right; a white beam runs in from the lower left, hits it, and leaves as a golden beam to the upper left.
@@ -254,7 +254,7 @@ export const prismKit: HeroKit = {
     },
     {
       key: 'R', label: 'shatterlight', name: 'Shatterlight', range: 10, cooldown: 22,
-      blurb: 'Click an enemy (10 m, in sight). Six shards ring the spot they stand on and, after 1.2 s, each fires inward through it: 30 damage each, and each bounces once off a wall. Step out of the ring to dodge.',
+      blurb: 'Click an enemy (10 m, in sight). Six shards ring the spot they stand on and, after 1.2 s, each fires inward through it: 36 damage each, and each bounces once off a wall. Step out of the ring to dodge.',
       icon(g, s) {
         iconGround(g, s);
         // A ring of six shards seen at an angle, each throwing a beam in to a glint at the middle.

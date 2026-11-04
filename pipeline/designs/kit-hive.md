@@ -7,7 +7,7 @@
 - **Passive, The Swarm:** up to 6 wasps circle him, drawn on both screens (`Trait.marks` + `markLook.wasp`, `waspMark` in `parts/hive.ts`, pips via
   `ownLook`). He starts a round with none, gains one every 2 s (`tick`) and one per basic attack that lands (`landed`, any victim). All changes go
   through one helper that also `show`s the count. Twist text: spend or hold.
-- **Q Barbed Stinger** (`barbedStinger.ts`, `barbed stinger`, 6 s, 8 m, `aim: 'line'`): 20 m/s, 0.25 s wind-up, 45; barb on the enemy 3 s
+- **Q Barbed Stinger** (`barbedStinger.ts`, `barbed stinger`, 6 s, 8 m, `aim: 'line'`): 20 m/s, 0.25 s wind-up, 42; barb on the enemy 3 s
   (`dealt`, only the stinger itself: knock marker 1.25, then `noteOwner('barbed')`). Recast Leap (window 3 s, `arm` 0.2, free, replay): only on a
   barbed enemy within 8 m (live positions): he leaps in 0.3 s (`moveCaster`), 25 inside a 2.4 m circle at the landing. If he has 2 wasps they are spent
   (`recastAct`) and it poisons: 30 over 3 s as three 10s at 1, 2, 3 s after landing (`projectile: true`; this recast runs 3.7 s). Told apart by a

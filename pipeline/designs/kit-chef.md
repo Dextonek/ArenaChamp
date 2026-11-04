@@ -6,15 +6,15 @@ updated: 2026-11-04
 
 # v5 (2026-11-04)
 
-Theme `chef`. Support, ranged. 640 HP, 3.9 m/s, basic attack 5.5 m, 9 per 0.8 s (0.2 s wind-up, bolt 20 m/s). Accent `#f2efe6`, foil `#d84a3a`.
+Theme `chef`. Support, ranged. 680 HP, 3.9 m/s, basic attack 5.5 m, 12 per 0.8 s (0.2 s wind-up, bolt 20 m/s). Accent `#f2efe6`, foil `#d84a3a`.
 Numbers from [new-heroes-kits.md](new-heroes-kits.md) section 7; the constants live in `src/traits/chef.ts`. Modules: `thrownCleaver`, `hotSoup`,
 `burntOffering`, `dinnerIsServed` (labels `thrown cleaver`, `hot soup`, `burnt offering`, `dinner is served`, category `hero: chef`).
 
 | Key | Spell | CD | Rule | Built as |
 |---|---|---:|---|---|
 | P | Today's Special | | Her spells leave dishes (3 at most, 8 s). Whoever walks over one eats it. Fresh: +15% speed 3 s. From 3 s it is good: also heals 30 (her only). Burnt: 60 and a 0.8 s stun to the enemy, nothing on her | `chefBooks` records, `marks` / `markLook` (fresh, good, burnt), `tick` (hers), `victimTick` (the enemy's) |
-| Q | Thrown Cleaver | 3.5 | 9 m, 20 m/s, 0.25 s wind-up, bolt radius 0.3: 50. The cleaver sticks where its line ends and a fresh dish plops out | Skillshot with a pure `bankPath` line; hit or miss the dish is at the end of the line |
-| W | Hot Soup | 9 | A pot at a spot (8 m), tips at 1.0 s, 2.5 m: 40 and slowed 1.5 s; a fresh dish at the centre at 1.3 s | Ground circle telegraph, live-position hit at the tip |
+| Q | Thrown Cleaver | 3.5 | 9 m, 20 m/s, 0.25 s wind-up, bolt radius 0.3: 66. The cleaver sticks where its line ends and a fresh dish plops out | Skillshot with a pure `bankPath` line; hit or miss the dish is at the end of the line |
+| W | Hot Soup | 9 | A pot at a spot (8 m), tips at 1.0 s, 2.5 m: 56 and slowed 1.5 s; a fresh dish at the centre at 1.3 s | Ground circle telegraph, live-position hit at the tip |
 | E | Burnt Offering | 12 | A burnt dish lobbed to a spot (2-8 m), lands at 0.55 s. It does nothing when it lands | Ground spell, footprint telegraph, writes a burnt dish on both screens |
 | R | Dinner Is Served | 24 | An 8 m table rises 3.5 m ahead of her across her aim in 0.6 s, stands 5 s, 150 HP, three dishes on it. Standing within 1.8 m for 1 s eats them: her 50 HP and +25% damage 5 s; the enemy +25% damage 5 s | Self spell, line telegraph, `ctx.addObstacle` (1.2 m thick) and three shared-HP turret units |
 

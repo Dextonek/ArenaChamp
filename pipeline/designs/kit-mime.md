@@ -1,20 +1,20 @@
 # Mime kit: Mum, the mime (ranged controller)
 
 ## v5 (2026-11-04)
-Design source: `new-heroes-kits.md`, section "13. Mum, the mime". 580 HP, 4.1 m/s, basic attack 5.5 m, 9 per 0.9 s (look 'orb', speed 20). Accent `#f7f7f2`,
+Design source: `new-heroes-kits.md`, section "13. Mum, the mime". 620 HP, 4.1 m/s, basic attack 5.5 m, 14 per 0.9 s (look 'orb', speed 20). Accent `#f7f7f2`,
 foil `#20202a`, one red `#d23a3a` (her scarf). Question: which wall is real? Weakness: one hit breaks a wall, and chalk lines show them. Second
 decision: a wall for cover is not a wall to trap you (her own walls block her sight and her basic attacks too). Palette `MIME` / `MIME_CSS` in
 `src/effects/parts/mime.ts`. **She never says a word**: no `t.say`, no floating text of hers; gestures (white gloves, a red scarf tail) and chalk only.
 - **Passive Silence Is Golden** (`src/traits/mime.ts`): up to 3 plain Walls stand, and Boxed In adds 4. Each is a real obstacle for both heroes, shown only as a
   faint dashed chalk line on the floor (a dark layer under it) and a faint rippling shimmer in the air, both from `Trait.marks` / `markLook`, on both screens.
   One hit of any size breaks one. A broken wall leaves chalk chips for 0.7 s.
-- Q **Invisible Ball** (`invisibleBall.ts`, 'invisible ball'): SHOT, cd 3.5, `aim: 'line'`. 0.3 s wind-up, 9 m, 22 m/s, radius 0.3: 50, knock 1.5. Nothing is drawn in
+- Q **Invisible Ball** (`invisibleBall.ts`, 'invisible ball'): SHOT, cd 3.5, `aim: 'line'`. 0.3 s wind-up, 9 m, 22 m/s, radius 0.3: 72, knock 1.5. Nothing is drawn in
   the air: her glove closes on nothing, draws back and throws; the dashed chalk line and the telegraph (`boltWidth(0.3)` = 1.44 m wide) are the only sign. It
   reaches 6 m at 0.54 s. A hit pops a chalk star and chips; a miss ends in a small dust puff. It flies through her own walls.
 - W **Wall** (`mimeWall.ts`, 'mime wall'): TERRAIN, 9 m (at least 1.5 m), 3 charges, one back every 3 s, 0.6 s between casts (`Trait.charges`). Both gloves press a
   pane that is not there while a chalk line is drawn 4 m long, square to her aim; at 0.5 s it is a wall for 5 s. Telegraph: its line, 0.5 m wide.
 - E **Rope Trick** (`ropeTrick.ts`, 'rope trick'): TGT, 7 m, cd 11, sight when it lands. 0.5 s: two gloves go hand over hand, the scarf streams, a chalk dashed line
-  marches from the enemy to her. If she still sees it (her own walls are cover) and it is within 9.2 m: 30 and pulled 3 m over 0.3 s, stopping 1 m short
+  marches from the enemy to her. If she still sees it (her own walls are cover) and it is within 9.2 m: 55 and pulled 3 m over 0.3 s, stopping 1 m short
   (`ctx.carry`, else the hit's `pull`). Otherwise the rope slips (chips of chalk), nothing happens. Telegraph: a circle on the enemy, live (the chalk line is only drawn).
 - R **Boxed In** (`theBox.ts`, 'the box'): ZONE, 9 m (at least 2.4 m, so she is outside), cd 22. She traces a box in the air with both gloves while a chalk square is
   drawn on the floor, 3 m a side, turned to her aim. At 0.8 s four walls close for 3 s, with a red mark at each corner. Telegraph: the four lines, 0.5 m wide.

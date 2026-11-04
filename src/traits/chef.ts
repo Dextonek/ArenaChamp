@@ -7,7 +7,7 @@ export const DISH_LIFE = 8;
 export const GOOD_AT = 3;
 /** Whoever stands this close (m) to a dish eats it. A dish does not feed whoever stood on it when it landed until they step off. */
 export const EAT_RADIUS = 0.9;
-/** Eating: fresh gives this much speed (a fraction) for FRESH_SECONDS; good heals GOOD_HEAL as well (only her own screen can heal). */
+/** Eating: fresh gives this much speed (a fraction) for FRESH_SECONDS; good heals GOOD_HEAL as well, whoever eats it. */
 export const FRESH_HASTE = 0.15;
 export const FRESH_SECONDS = 3;
 export const GOOD_HEAL = 30;

@@ -1,14 +1,14 @@
 # Shadow kit: Nyx, the Umbral Stalker
 
 ## v5 (2026-11-04)
-620 HP, 4.6 m/s, melee attack 1.9 m, 8 per 0.7 s (`melee: true`). Code: `src/traits/shadow.ts`, `src/kits/shadow.ts`, spells `umbralCut.ts`, `smokeVeil.ts`,
+610 HP, 4.6 m/s, melee attack 1.9 m, 9 per 0.7 s (`melee: true`). Code: `src/traits/shadow.ts`, `src/kits/shadow.ts`, spells `umbralCut.ts`, `smokeVeil.ts`,
 `shadowDouble.ts`, `nightfall.ts`; parts added to `src/effects/parts/shadow.ts` (`ShadowWisps`, `shadowCloneLook`). The old v4 spell files stay. She is never invisible.
 
 - **Passive, Umbral Veil:** `mem.lastFight` = round time she last dealt or took damage (`landed`, `taken`). She fades after 2.5 s, 1.2 s within 2 m of cover (obstacles from
   `watchCover`, filled by her spells at cast; before the first cast only 2.5 s), 0.8 s during Nightfall, and at once inside her smoke. Faded: `show('veil')`, `figureVeil` (dark,
   see-through, plainly visible), a violet ring at her feet, haste 0.1. First Q or basic attack out of the veil (`castMods`, `attackMods`): power 1.5, silence 0.6 s (once per 5 s),
   3 s off E, and the veil ends. W and R do not spend it.
-- **Q Umbral Cut** (enemy, range 2.5, cd 4): 0.35 s wind-up with a mark on the enemy (telegraph roots her), then 45 on the live position if within 3.2 m, doubled from behind (the enemy's
+- **Q Umbral Cut** (enemy, range 2.5, cd 4): 0.35 s wind-up with a mark on the enemy (telegraph roots her), then 50 on the live position if within 3.2 m, x1.6 (80) from behind (the enemy's
   back 120 degrees: `isBehind` with cone 4 pi / 3). Decided in the effect at the hit. `projectile: true`.
 - **W Smoke Veil** (self, radius 3, cd 12): a fixed 3 m cloud for 3 s. Inside, her veil counts (the effect writes `shadowSmoke` on both screens). An enemy inside (live position) is blinded
   0.5 s every 0.4 s from 0.3 s on, 0 damage, `projectile: true`. Dark purple toon wisps with eroding edges over a black pool with a foil ring.

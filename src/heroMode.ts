@@ -241,6 +241,7 @@ export class HeroMode implements TouchTarget {
       'position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;display:none;' +
       'background:radial-gradient(ellipse at center,rgba(4,2,8,0) 22%,rgba(4,2,8,0.55) 52%,rgba(4,2,8,0.96) 88%);';
     document.body.append(this.tip, this.toast, this.vignette);
+    window.addEventListener('resize', () => this.fitHud());
 
     const dom = host.dom;
     dom.addEventListener('pointermove', (e) => this.setMouse(e));
@@ -1072,6 +1073,12 @@ export class HeroMode implements TouchTarget {
 
   // --- HUD ----------------------------------------------------------------------------------------------
 
+  private hudPlate: HTMLElement | null = null;
+
+  private fitHud() {
+    if (this.hudPlate) this.hudPlate.style.display = window.innerWidth < 860 ? 'none' : 'flex';
+  }
+
   private buildHud() {
     if (TOUCH) return this.buildTouchHud();
     const kit = this.kit;
@@ -1100,6 +1107,9 @@ export class HeroMode implements TouchTarget {
     }
     plate.append(portrait, names);
     root.appendChild(plate);
+    // A narrow window drops the name plate, or the bar runs off the screen and hides R.
+    this.hudPlate = plate;
+    this.fitHud();
     this.passiveEls = this.buildPassive(root, tint);
 
     kit.spells.forEach((spell, i) => {

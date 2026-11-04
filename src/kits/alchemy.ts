@@ -168,7 +168,7 @@ export const alchemyKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'toxin dart', name: 'Toxin Dart', range: 9, cooldown: 3, aim: 'line',
-      blurb: 'A fast glass dart (9 m): 30, then 30 more over 3 s. Leaves green toxin on the enemy for 4 s. Reaches 6 m in about half a second: step off the line.',
+      blurb: 'A fast glass dart (9 m): 20, then 25 more over 3 s. Leaves green toxin on the enemy for 4 s. Reaches 6 m in about half a second: step off the line.',
       icon(g, s) {
         ground(g, s);
         // A dart flying up-right: glass shell, green core, needle tip, a bubble trail and a green splat spark.
@@ -202,7 +202,7 @@ export const alchemyKit: HeroKit = {
     },
     {
       key: 'W', label: 'fire vial', name: 'Fire Vial', range: 7, cooldown: 6,
-      blurb: 'A vial of fire that cannot miss (7 m, needs sight): 30, then 30 more over 2 s. Leaves orange fire on the enemy for 4 s.',
+      blurb: 'A vial of fire that cannot miss (7 m, needs sight): 18, then 25 more over 2 s. Leaves orange fire on the enemy for 4 s.',
       icon(g, s) {
         ground(g, s);
         // A vial with orange liquid, tilted, bursting into flame tongues.
@@ -257,7 +257,7 @@ export const alchemyKit: HeroKit = {
     },
     {
       key: 'R', label: 'homunculus', name: 'Homunculus', range: 10, cooldown: 25, summon: true,
-      blurb: 'Ultimate. A little walking bomb (120 HP, 4 m/s) climbs out at her feet with all three reagents in its belly and walks at the enemy. It bursts on the enemy for 70 and sets off every reaction at once. Shoot it down or outrun it.',
+      blurb: 'Ultimate. A little walking bomb (120 HP, 4 m/s) climbs out at her feet with all three reagents in its belly and walks at the enemy. It bursts on the enemy for 55 and sets off every reaction at once. Shoot it down or outrun it.',
       icon(g, s) {
         ground(g, s);
         circleGlyph(g, s * 0.5, s * 0.78, s * 0.42, A.glass, s * 0.016, 0.3);

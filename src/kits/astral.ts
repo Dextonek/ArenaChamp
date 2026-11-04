@@ -80,7 +80,7 @@ export const astralKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'starfall arrow', name: 'Starfall Arrow', range: 14, cooldown: 4, aim: 'line',
-      blurb: 'Hold to draw for up to 1 s: the range grows from 9 to 14 m and the damage from 39 to 78. At full draw the arrow pierces, and a full-draw hit takes 3 s off Pinning Arrow.',
+      blurb: 'Hold to draw for up to 1 s: the range grows from 9 to 14 m and the damage from 29 to 58. At full draw the arrow pierces, and a full-draw hit takes 3 s off Pinning Arrow.',
       icon(g, s) {
         ground(g, s);
         // A long arrow of linked stars, a big star for its head, and three small stars falling after it.
@@ -135,7 +135,7 @@ export const astralKit: HeroKit = {
     },
     {
       key: 'R', label: 'meteor mark', name: 'Meteor Mark', range: 14, cooldown: 24,
-      blurb: 'Ultimate. A star locks onto the enemy (14 m) and follows for 1.5 s, then fixes on their spot; 0.9 s later a meteor strikes it (1.8 m): 135 plus 25% of what she dealt meanwhile.',
+      blurb: 'Ultimate. A star locks onto the enemy (14 m) and follows for 1.5 s, then fixes on their spot; 0.9 s later a meteor strikes it (1.8 m): 120 plus 25% of what she dealt meanwhile.',
       icon(g, s) {
         ground(g, s);
         // The mark: rings under a crosshair of links, and the meteor falling in from the top left.

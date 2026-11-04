@@ -15,16 +15,16 @@ Question: who should be in right now? Weakness: the tag has a 0.5 s hold you can
 | | Pim (`twinsKit`, melee, accent `#ffb04a`, foil `#6ac8ff`) | Pom (`twinsKit.alt`, ranged, accent `#6ac8ff`, foil `#ffb04a`) |
 |---|---|---|
 | Model | `models/heroes/pim_v2.glb` | `models/heroes/pom_v2.glb` |
-| Basic attack | melee 2.4 m, 12 per 0.9 s, look 'sweep' | ranged 6 m, 9 per 0.9 s, speed 20, look 'dart' |
-| Q, cd 3 | **Bonk** ('bonk'): 3 m cone, 100 degrees, 0.45 s wind-up, 50 | **Pebble** ('pebble'): 9 m bolt, 22 m/s, 0.3 s wind-up, radius 0.3, 45. Reaches 6 m at 0.57 s |
-| W, cd 9 | **Charge** ('pim charge'): `dash`, up to 5 m, lane 1.6 m wide, 0.4 s dig-in then 0.2 s run, 40 and a shove on arrival | **Snare** ('snare'): `cc`, 7 m, 2 m circle, 1.0 s delay, 20 and root 1 s |
-| E, cd 10 | **Shield Up** ('shield up'): 50 shield for 2 s (the trait's `t.shield`, plus a toy shield) | **Backflip** ('backflip'): `dash`, `escape`, hops 4 m in 0.3 s; a party popper left where she stood goes off after 0.65 s: 30 in 1.5 m |
+| Basic attack | melee 2.4 m, 16 per 0.9 s, look 'sweep' | ranged 6 m, 12 per 0.9 s, speed 20, look 'dart' |
+| Q, cd 3 | **Bonk** ('bonk'): 3 m cone, 100 degrees, 0.45 s wind-up, 66 | **Pebble** ('pebble'): 9 m bolt, 22 m/s, 0.3 s wind-up, radius 0.3, 62. Reaches 6 m at 0.57 s |
+| W, cd 9 | **Charge** ('pim charge'): `dash`, up to 5 m, lane 1.6 m wide, 0.4 s dig-in then 0.2 s run, 56 and a shove on arrival | **Snare** ('snare'): `cc`, 7 m, 2 m circle, 1.0 s delay, 30 and root 1 s |
+| E, cd 10 | **Shield Up** ('shield up'): 50 shield for 2 s (the trait's `t.shield`, plus a toy shield) | **Backflip** ('backflip'): `dash`, `escape`, hops 4 m in 0.3 s; a party popper left where she stood goes off after 0.65 s: 40 in 1.5 m |
 | R, cd 8 | **Tag Out** ('tag out'), the same on both halves | |
 
 - **Passive Tag Team.** Total HP is the real HP (620, the server's one number, untouched). The trait keeps `pim` and `pom` in `mem` on the own client (310 each)
   and holds `pim + pom == t.hp()` by watching the real HP in `tick`, not in `taken` (which sees a hit before a shield soaks it): a drop comes off the twin
   who is in (what is left past 0 comes off the other: the real bar lost it), a rise goes to the twin who rests (past 310 to the one in). The resting twin heals
-  4 a second: `t.heal` in lumps of 2 or more, which raises the real bar. A twin at 0 is tagged out at once, with no hold, no cooldown and a "TAG!" word; with
+  6 a second: `t.heal` in lumps of 2 or more, which raises the real bar. A twin at 0 is tagged out at once, with no hold, no cooldown and a "TAG!" word; with
   both at 0 the real bar is 0 and the hero is dead. A new round clears `mem`: both at 310, Pim in (the duel resets the kit to its first half).
 - **Both shares are shown to both players** as pips over the hero (`ownLook`, shape 'gem'): `pimHp` orange and `pomHp` blue, one pip per 62 HP, at least one
   while a twin has any HP. (A ring at the feet would only have one colour; the pips read at once which twin is low.) The own HUD also shows the resting
@@ -46,8 +46,8 @@ Question: who should be in right now? Weakness: the tag has a 0.5 s hold you can
 ### Not built as written
 - **Backflip goes toward the aim, not away from it.** The engine's `escape` aim (`fleeAim`) already hands the CPU a point away from the enemy, and every dash
   in the game goes toward its aim, so "away from the aim" would flip the CPU into the enemy. The player clicks where to land.
-- The popper's 30 and the hop's flight: her root lasts until the popper goes off (0.65 s, the telegraph's impact), so she stands 0.35 s after landing.
-- Snare's damage (20), Charge's lane width (1.6 m) and the cone angle (100 degrees) are mine: the table gives only the reach.
+- The popper's 40 and the hop's flight: her root lasts until the popper goes off (0.65 s, the telegraph's impact), so she stands 0.35 s after landing.
+- Snare's damage (30), Charge's lane width (1.6 m) and the cone angle (100 degrees) are mine: the table gives only the reach.
 
 ## Files
 `src/kits/twins.ts`, `src/traits/twins.ts`, `src/effects/parts/twins.ts`, and in `src/spells/targeted/`: `pimBonk.ts`, `pimCharge.ts`, `pimShieldUp.ts`,

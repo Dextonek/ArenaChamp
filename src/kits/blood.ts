@@ -74,7 +74,7 @@ export const bloodKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'lancet', name: 'Lancet', range: 7, cooldown: 4,
-      blurb: 'A blood needle (7 m): 40 damage, and it stays in for 3 s. From 1 s on, cast again to rip it out: 35 more and 20 HP back, only while she sees them within 8 m.',
+      blurb: 'A blood needle (7 m): 36 damage, and it stays in for 3 s. From 1 s on, cast again to rip it out: 26 more and 20 HP back, only while she sees them within 8 m.',
       icon(g, s) {
         iconGround(g, s);
         // A long bone needle driven into a drop, a thread running back from its eye.

@@ -76,7 +76,7 @@ export const balloonTrait: Trait = {
   },
   twist: {
     name: 'Pop Now or Inflate More',
-    blurb: 'Pop! hits for 50 plus 20 per Air, so waiting pays, and waiting is when you deflate. He is fragile: stand still or hit him.',
+    blurb: 'Pop! hits for 60 plus 20 per Air, so waiting pays, and waiting is when you deflate. He is fragile: stand still or hit him.',
   },
   speed: 3.9,
   attack: { kind: 'ranged', range: 6, damage: 10, interval: 1.0, windup: 0.25, speed: 18, look: 'orb' },

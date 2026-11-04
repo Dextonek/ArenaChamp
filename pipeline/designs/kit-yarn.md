@@ -6,15 +6,15 @@ updated: 2026-11-04
 
 # v5 (2026-11-04)
 
-Grandma Ironknit, theme `yarn`. Support, ranged. 620 HP, 3.8 m/s, attack 5.5 m, 9 per 0.9 s (`dart`). Accent `#e86a9a`, foil `#c8c0a8`. Designed in
+Grandma Ironknit, theme `yarn`. Support, ranged. 620 HP, 3.8 m/s, attack 5.5 m, 12 per 0.9 s (`dart`). Accent `#e86a9a`, foil `#c8c0a8`. Designed in
 [new-heroes-kits.md](new-heroes-kits.md) section 18; code in `src/kits/yarn.ts`, `src/traits/yarn.ts`, `src/effects/parts/yarn.ts`, `src/spells/targeted/{knittingNeedle,castOn,sweater,mrBiscuit}.ts`.
 
 | Key | Spell (label) | CD | Numbers |
 |---|---|---:|---|
 | P | Keep Warm | | Up to 3 yarn lines. Crossing one: root 0.4 s, then slow 1 s (two `hitEnemy` calls: root 0.4, slow 1.4). A line stays until cut; one hit cuts it. Per-line guard 1.5 s. She crosses her own freely. Oldest goes at a fourth |
-| Q | Knitting Needle (`knitting needle`) | 3.5 | Bolt 9 m, 22 m/s, radius 0.3, 0.3 s wind-up, 50. Reaches 6 m at 0.57 s |
+| Q | Knitting Needle (`knitting needle`) | 3.5 | Bolt 9 m, 22 m/s, radius 0.3, 0.3 s wind-up, 62. Reaches 6 m at 0.57 s |
 | W | Cast On (`cast on`) | 0.6 gap, 2 charges, 6 s each | Line from 0.6 m ahead of her to the first cover in the aimed direction, up to 9 m from her; tied at 0.4 s. No cover: ends 9 m out, tied to nothing, drawn with a ball of wool on the floor |
-| E | Sweater (`sweater`) | 11 | Click, 7 m. A 1 m circle follows the enemy's feet, lands 0.5 s, needs sight (a click spell: no sidestep). Slow 2 s, shrinks at 2.5 s after the cast: 40 |
+| E | Sweater (`sweater`) | 11 | Click, 7 m. A 1 m circle follows the enemy's feet, lands 0.5 s, needs sight (a click spell: no sidestep). Slow 2 s, shrinks at 2.5 s after the cast: 50 |
 | R | Mr. Biscuit (`mr biscuit`) | 24 | Cat at her feet at 0.4 s: 200 HP, 6 s, 4.5 m/s, melee 25 per 1 s with a 1 s slow on each hit. Stops 1 s for a line cut within 4 m |
 
 ## How it works

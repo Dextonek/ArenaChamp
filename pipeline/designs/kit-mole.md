@@ -7,7 +7,7 @@ updated: 2026-11-04
 # Mole kit: Mabel, the mole (melee assassin)
 
 ## v5 (2026-11-04)
-Design source: `new-heroes-kits.md`, section "19. Mabel, the mole". 640 HP, 4.3 m/s, basic attack 2.2 m, 11 per 0.9 s (look 'claw').
+Design source: `new-heroes-kits.md`, section "19. Mabel, the mole". 680 HP, 4.3 m/s, basic attack 2.2 m, 16 per 0.9 s (look 'claw').
 Accent `#8a6a4a`, foil `#ffcf5a`. Question: where do I dig, and where do I come up? Weakness: her mound shows where she is, and she cannot cast
 underground. Second decision: underground is safe, but she can only come up once. Palette `MOLE` / `MOLE_CSS` in `src/effects/parts/mole.ts`.
 Model: not set (registered by the lead). A cheerful miner: dirt, clods, a little lamp glow from her helmet, a tiny pickaxe tap.
@@ -17,7 +17,7 @@ Model: not set (registered by the lead). A cheerful miner: dirt, clods, a little
   `victimTick` (the victim's screen): rooted 0.8 s, then slowed. Once per hole visit (`in` flag; it resets when the enemy is more than 0.4 m
   outside the rim). She walks across hers (the rule only looks at the enemy). Only a walker falls: a hole that opens under a hero gives the Dig
   telegraph (0.7 s) first, and then the same rule, so a hero still standing in it at the opening falls.
-- Q **Claw** (`moleClaw.ts`, 'mole claw'): SELF, 2.5 m, cd 3. A 0.4 s wind-up, then a 120 degree cone: 45. Three gold strokes sweep over the
+- Q **Claw** (`moleClaw.ts`, 'mole claw'): SELF, 2.5 m, cd 3. A 0.4 s wind-up, then a 120 degree cone: 62. Three gold strokes sweep over the
   ground, clods fan out. Telegraph: the cone. (The cone angle is mine: the table gives only the 2.5 m reach.)
 - W **Dig** (`moleDig.ts`, 'mole dig'): GROUND, 6 m, cd 7. A tiny pickaxe taps three times at the spot (cracks run out), at 0.7 s the ground
   gives way and the hole opens. Telegraph: the 1.5 m circle (0.25 + 1.5/4 = 0.63 s of reaction in 0.7 s).
@@ -25,10 +25,10 @@ Model: not set (registered by the lead). A cheerful miner: dirt, clods, a little
   (4.3 x 1.4 m/s, so 7.2 m at most; the aim distance is clamped to 2 to 7.2 m and the time underground is always 1.2 s), `ctx.moveCaster` with
   the engine's ease-out, so she is fastest first and slows toward the exit: the cue to step off. The mound (soil cone, dark outline, gold ring on
   the ground, a lamp glowing on top, a furrow behind, clods kicked sideways) is drawn by the effect on both screens from `sentFrom` and the aim.
-  Pop-up at 1.5 s: 40 and a 0.5 s knock-up within 1.5 m of the exit on live positions. Telegraph: the exit circle from 0.3 s.
+  Pop-up at 1.5 s: 60 and a 0.5 s knock-up within 1.5 m of the exit on live positions. Telegraph: the exit circle from 0.3 s.
 - R **Sinkhole** (`sinkhole.ts`, 'sinkhole'): ENEMY, 9 m (sight at the cast), cd 24. A 4 m circle at their spot, 1.3 s warning (0.25 + 4/4 = 1.25 s
   of reaction, as designed): she taps her pickaxe, tremor rings and cracks run to the rim, the floor darkens. At 1.3 s the pit drops (one short
-  impact frame): 90 and a 1 s root to everyone inside on live positions. The pit crumbles shut about a second later. It is not one of her holes
+  impact frame): 115 and a 1 s root to everyone inside on live positions. The pit crumbles shut about a second later. It is not one of her holes
   (it does not take part in Dig Site).
 
 ### Underground: what was built

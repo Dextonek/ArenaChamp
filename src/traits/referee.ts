@@ -98,7 +98,7 @@ function endRule(t: TraitView, name: string) {
 
 /**
  * Gives the enemy a card (the screen that decides their hits only). `rule`: the rule they broke, which ends with the card. A second
- * yellow is a red: 60 damage and silence, and the count goes back to no yellows.
+ * yellow is a red: 90 damage and silence, and the count goes back to no yellows.
  */
 function giveCard(t: TraitView, rule?: string) {
   const b = bookOf(t.self());
@@ -134,7 +134,7 @@ for (let y = 0; y <= 1; y++) for (let r = 0; r <= 3; r++) if (y + r > 0) cardKin
 
 /**
  * Referee Whistler (controller). Passive By the Book: his rules show over the enemy's head (NO RUNNING 3 s, NO CASTING 2 s, HANDS
- * OFF 3 s). Breaking one is a yellow card; he never stops the break, he only cards it. Two yellows are a red: 60 damage, silenced
+ * OFF 3 s). Breaking one is a yellow card; he never stops the break, he only cards it. Two yellows are a red: 90 damage, silenced
  * 1.5 s, a big RED CARD word and a short whistle ring, and the yellows go back to none. Cards last the round and hover over the
  * enemy's head (yellow in front, reds behind), so a player can always read the count.
  *
@@ -151,7 +151,7 @@ for (let y = 0; y <= 1; y++) for (let r = 0; r <= 3; r++) if (y + r > 0) cardKin
 export const refereeTrait: Trait = {
   passive: {
     name: 'By the Book',
-    blurb: 'A rule he calls shows over your head: NO RUNNING 3 s, NO CASTING 2 s, HANDS OFF 3 s. Break it and you get a yellow card; two yellows are a red: 60 damage and silenced 1.5 s. Cards last the round.',
+    blurb: 'A rule he calls shows over your head: NO RUNNING 3 s, NO CASTING 2 s, HANDS OFF 3 s. Break it and you get a yellow card; two yellows are a red: 90 damage and silenced 1.5 s. Cards last the round.',
   },
   twist: {
     name: 'Booked',

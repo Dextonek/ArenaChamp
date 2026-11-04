@@ -355,7 +355,7 @@ export const chefKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'thrown cleaver', name: 'Thrown Cleaver', range: 9, cooldown: 3.5, aim: 'line',
-      blurb: 'She throws her cleaver (9 m): 50 damage. It sticks in the floor where it stops, and a dish plops out there.',
+      blurb: 'She throws her cleaver (9 m): 66 damage. It sticks in the floor where it stops, and a dish plops out there.',
       icon(g, s) {
         iconGround(g, s);
         // A ghost trail behind a tumbling cleaver and a fresh dish where it lands.
@@ -378,7 +378,7 @@ export const chefKit: HeroKit = {
     },
     {
       key: 'W', label: 'hot soup', name: 'Hot Soup', range: 8, cooldown: 9,
-      blurb: 'A huge pot drops at a spot (8 m) and tips over after 1 s: 40 damage and a 1.5 s slow within 2.5 m, and a dish in the middle.',
+      blurb: 'A huge pot drops at a spot (8 m) and tips over after 1 s: 56 damage and a 1.5 s slow within 2.5 m, and a dish in the middle.',
       icon(g, s) {
         iconGround(g, s);
         // A red puddle spilling out from a tipped pot, steam over it, a dish in the middle.

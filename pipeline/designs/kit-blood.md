@@ -4,7 +4,7 @@
 Design source: `kits-v5.md`, section "Vesper". Earlier art and parts notes: `blood-kit.md`. Old spells (Hemolance, Blood Step,
 Crimson Pact, Blood Bond, ...) stay as files for the VFX tool; the kit no longer uses them.
 
-**Hero:** 700 HP, 4.0 m/s, ranged attack (5.5 m, 8 per 0.7 s). Category `hero: blood`. Parts: `src/effects/parts/blood.ts`
+**Hero:** 660 HP, 4.0 m/s, ranged attack (5.5 m, 8 per 0.7 s). Category `hero: blood`. Parts: `src/effects/parts/blood.ts`
 (new: `BloodMist`). Kit `src/kits/blood.ts`, rules `src/traits/blood.ts`.
 
 **Passive, Blood Price.** Each spell costs 20 HP (R 40; a recast is free; `castMods`, `payHp`, never below 1 HP). Below 45% HP she is
@@ -14,7 +14,7 @@ and R do not heal that way. E's heal (15) and R's (45) work only while Hungry.
 
 | Key | Spell (label) | Type | CD | Numbers |
 |---|---|---|---:|---|
-| Q | Lancet (`lancet`) | TGT, RECAST, `enemy` mode | 4 | range 7. Needle lands at 0.4 s: 40, a needle pip on the enemy for 3 s. Recast (`arm: 1`, window 3): the rip at 0.3 s, 35, only if the first cast struck, `stillSees` and within 8 m; the pip goes. |
+| Q | Lancet (`lancet`) | TGT, RECAST, `enemy` mode | 4 | range 7. Needle lands at 0.4 s: 36, a needle pip on the enemy for 3 s. Recast (`arm: 1`, window 3): the rip at 0.3 s, 26, only if the first cast struck, `stillSees` and within 8 m; the pip goes. |
 | W | Mist Waltz (`mist waltz`) | DASH, `dash`, `ground` mode | 11 | 5 m flow in 0.2 s, no damage. Next two basic attacks within 3 s: +18 damage (power 1 + 18/8), +1.5 m reach, shown as drop pips. AI reach 11. |
 | E | Hemocurse (`hemocurse`) | TGT, `enemy` mode | 12 | range 7. Lands at 0.6 s: 25, curse for 3 s. Each spell the enemy casts: 30 HP to them (`enemyCast`, `hitEnemy`) and 15 healed if she is Hungry. Breaks at 8 m or without sight. |
 | R | Sanguine Feast (`sanguine feast`) | TGT, CHANNEL, `enemy` mode | 24 | range 8. Held 1.6 s (`t.hold`). Pulses 0.4 / 1.0 / 1.6 s: 35, 35, 40 + 20% missing HP; third heals 45 if Hungry. Ends on stun/silence/knock-up (`channelBroken`), 9 m, or no sight. |

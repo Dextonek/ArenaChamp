@@ -191,7 +191,7 @@ export const timberKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'axe swing', name: 'Axe Swing', range: 3, cooldown: 3,
-      blurb: 'A quick 3 m swing in front of him: 40. Any tree of his that the swing touches falls away from him along a strip 8 m long and 1.6 m wide, shown for 0.6 s: 30, 60 or 110 by its size. A stump stays.',
+      blurb: 'A quick 3 m swing in front of him: 60. Any tree of his that the swing touches falls away from him along a strip 8 m long and 1.6 m wide, shown for 0.6 s: 30, 60 or 110 by its size. A stump stays.',
       icon(g, s) {
         ground(g, s);
         // A pale swing fan, a sapling cut at the foot, a big double axe sweeping across it, chips flying.
@@ -208,7 +208,7 @@ export const timberKit: HeroKit = {
     },
     {
       key: 'W', label: 'fast growth', name: 'Fast Growth', range: 6, cooldown: 7, cc: true,
-      blurb: 'Grows a tree at a spot up to 6 m away. After 0.7 s anything within 1.5 m of it takes 40 and is knocked up 0.5 s. A sapling has 30 HP and blocks nothing; young at 1.2 s (120 HP, real cover); full at 2.5 s. Two charges.',
+      blurb: 'Grows a tree at a spot up to 6 m away. After 0.7 s anything within 1.5 m of it takes 50 and is knocked up 0.5 s. A sapling has 30 HP and blocks nothing; young at 1.2 s (120 HP, real cover); full at 2.5 s. Two charges.',
       icon(g, s) {
         ground(g, s);
         // The ring on the ground, three stages of one tree growing left to right, roots bursting at the foot.
