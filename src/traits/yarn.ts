@@ -7,7 +7,7 @@ import type { CastContext } from '../effects/targeting';
 import type { MinionLook } from '../effects/parts/minion';
 
 /** Knitting Needle (Q): damage, reach (m), speed (m/s), wind-up (s) and the bolt's radius (m; the drawn line is `boltWidth(radius)`). */
-export const NEEDLE_DAMAGE = 50;
+export const NEEDLE_DAMAGE = 62;
 export const NEEDLE_RANGE = 9;
 export const NEEDLE_SPEED = 22;
 export const NEEDLE_WIND = 0.3;
@@ -42,7 +42,7 @@ export const SWEATER_RANGE = 7;
 export const SWEATER_WIND = 0.5;
 export const SWEATER_RADIUS = 1;
 export const SWEATER_SLOW = 2;
-export const SWEATER_DAMAGE = 40;
+export const SWEATER_DAMAGE = 50;
 
 /** Mr. Biscuit (R): HP, seconds, speed (m/s), damage a second (one hit of 25 a second), the slow each hit gives (s), the cat plays with a cut line within this reach (m) for this long (s), and the CPU's reach (m). */
 export const BISCUIT_HP = 200;
@@ -273,7 +273,7 @@ export const yarnTrait: Trait = {
     blurb: 'Yarn on your path, or round her for safety. A line tied to nothing, out in the open, is easy to walk round and easy to cut.',
   },
   speed: 3.8,
-  attack: { kind: 'ranged', range: 5.5, damage: 9, interval: 0.9, windup: 0.25, speed: 20, look: 'dart' },
+  attack: { kind: 'ranged', range: 5.5, damage: 12, interval: 0.9, windup: 0.25, speed: 20, look: 'dart' },
   charges: { slot: 1, count: CAST_CHARGES, every: CAST_EVERY },
   // The CPU strings a line only with the enemy 3 to 9 m away and fewer than 3 lines standing; Mr. Biscuit only within 9 m.
   aiHold(t, slot, dist) {

@@ -331,7 +331,7 @@ export const timberTrait: Trait = {
     blurb: 'Let this tree grow for more damage, or chop it now? Every tree is cover now or damage later, and saplings are weak. Break them early.',
   },
   speed: 3.8,
-  attack: { kind: 'melee', range: 2.5, damage: 19, interval: 1.3, windup: 0.4, speed: 0, look: 'cleave' },
+  attack: { kind: 'melee', range: 2.5, damage: 22, interval: 1.3, windup: 0.4, speed: 0, look: 'cleave' },
   charges: { slot: 1, count: 2, every: 7 },
   recast: { slot: 3, window: ROW_WINDOW, arm: ROW_ARM, name: 'Timber', power: 1, replay: true },
   markLook: {

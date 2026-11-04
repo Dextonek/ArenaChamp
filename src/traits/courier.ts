@@ -8,14 +8,14 @@ export const LETTER_RANGE = 8;
 export const LETTER_SPEED = 24;
 export const LETTER_WIND = 0.25;
 export const LETTER_RADIUS = 0.3;
-export const LETTER_DAMAGE = 54;
+export const LETTER_DAMAGE = 58;
 export const LETTER_PER_CHARGE = 15;
 
 /** Fragile (W): reach, delay before it bursts, radius, damage, slow seconds. */
 export const FRAGILE_RANGE = 9;
 export const FRAGILE_DELAY = 1.0;
 export const FRAGILE_RADIUS = 2.5;
-export const FRAGILE_DAMAGE = 66;
+export const FRAGILE_DAMAGE = 72;
 export const FRAGILE_SLOW = 1.0;
 
 /** Shortcut (E): the sprint's length (m) and time (s), and the cooldown left when a Charge was spent to refund it. */
@@ -200,7 +200,7 @@ export const courierTrait: Trait = {
     blurb: 'Express Letter hits harder for each Charge, Shortcut can spend one to be ready again, Final Delivery spends all. You can read his route, and stand on the drop point.',
   },
   speed: 4.7,
-  attack: { kind: 'ranged', range: 5, damage: 11, interval: 0.8, windup: 0.2, speed: 20, look: 'orb' },
+  attack: { kind: 'ranged', range: 5, damage: 12, interval: 0.8, windup: 0.2, speed: 20, look: 'orb' },
   ownLook: {
     charge: { color: ACCENT, shape: 'gem' },
     carry: { color: FOIL, shape: 'mark' },

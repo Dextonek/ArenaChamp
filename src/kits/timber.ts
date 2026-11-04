@@ -106,7 +106,7 @@ function chips(g: CanvasRenderingContext2D, s: number, pts: [number, number, num
 export const timberKit: HeroKit = {
   name: 'Hank',
   title: 'the Lumberjack',
-  maxHp: 740,
+  maxHp: 780,
   melee: true,
   accent: K.wood,
   foil: K.pine,

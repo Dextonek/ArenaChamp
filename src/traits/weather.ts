@@ -28,7 +28,7 @@ export const MIGHT_SECONDS = 0.7;
 export const MIGHT_RENEW = 0.35;
 
 /** Cold Front (Q): damage, range, speed, wind-up, bolt radius; in Rain it slows this long, in Wind it knocks this much further. */
-export const COLD_DAMAGE = 58;
+export const COLD_DAMAGE = 64;
 export const COLD_RANGE = 9;
 export const COLD_SPEED = 20;
 export const COLD_WIND = 0.25;
@@ -39,7 +39,7 @@ export const COLD_RAIN_SLOW = 1.5;
 export const COLD_WIND_KNOCK = 6;
 
 /** Lightning Risk (W): damage, reach, delay, radius. */
-export const BOLT_DAMAGE = 56;
+export const BOLT_DAMAGE = 64;
 export const BOLT_RANGE = 9;
 export const BOLT_DELAY = 0.8;
 export const BOLT_RADIUS = 1.5;

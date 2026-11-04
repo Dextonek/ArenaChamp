@@ -51,7 +51,7 @@ function bolt(g: CanvasRenderingContext2D, x: number, y0: number, y1: number, w:
 
 export const weatherKit: HeroKit = {
   name: 'Barry Cloudsley',
-  maxHp: 570,
+  maxHp: 610,
   title: 'the Weatherman',
   accent: W.sky,
   foil: W.sun,

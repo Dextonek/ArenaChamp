@@ -25,7 +25,7 @@ export interface OathbrandSettings {
   loop: boolean;
 }
 
-export const defaultOathbrand = (): OathbrandSettings => ({ damage: 50, loop: false });
+export const defaultOathbrand = (): OathbrandSettings => ({ damage: 44, loop: false });
 
 // Timeline (seconds).
 const FALL = 0.5; // the beam lands, and the sight check

@@ -28,7 +28,7 @@ export interface AxeSwingSettings {
   loop: boolean;
 }
 
-export const defaultAxeSwing = (): AxeSwingSettings => ({ damage: 52, loop: false });
+export const defaultAxeSwing = (): AxeSwingSettings => ({ damage: 60, loop: false });
 
 // Timeline (seconds) and reach (m).
 const HIT_T = 0.15;

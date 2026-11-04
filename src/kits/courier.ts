@@ -118,7 +118,7 @@ function glint(g: CanvasRenderingContext2D, x: number, y: number, r: number, c =
 
 export const courierKit: HeroKit = {
   name: 'Pip',
-  maxHp: 580,
+  maxHp: 620,
   title: 'the last courier',
   accent: K.accent,
   foil: K.foil,

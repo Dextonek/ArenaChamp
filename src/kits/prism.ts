@@ -106,7 +106,7 @@ function glint(g: CanvasRenderingContext2D, x: number, y: number, r: number, c =
 
 export const prismKit: HeroKit = {
   name: 'Opaline',
-  maxHp: 580,
+  maxHp: 600,
   title: 'the Lightbreaker',
   accent: S.body,
   foil: S.foil,

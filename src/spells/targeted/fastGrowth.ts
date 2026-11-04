@@ -26,7 +26,7 @@ export interface FastGrowthSettings {
   loop: boolean;
 }
 
-export const defaultFastGrowth = (): FastGrowthSettings => ({ damage: 40, knockup: 0.5, loop: false });
+export const defaultFastGrowth = (): FastGrowthSettings => ({ damage: 50, knockup: 0.5, loop: false });
 
 // Timeline (seconds) and reach (m).
 const HIT_T = 0.7;

@@ -31,7 +31,7 @@ export interface FirstLightSettings {
   previewBurst: boolean;
 }
 
-export const defaultFirstLight = (): FirstLightSettings => ({ damage: 44, burst: Q_BURST, knock: 3, loop: false, previewBurst: false });
+export const defaultFirstLight = (): FirstLightSettings => ({ damage: 40, burst: Q_BURST, knock: 3, loop: false, previewBurst: false });
 
 // Timeline (seconds).
 const HIT_T = 0.45; // the cone's hit

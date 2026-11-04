@@ -8,7 +8,7 @@ import type { MinionLook } from '../effects/parts/minion';
 import { segDist, type Obstacle } from '../obstacles';
 
 /** Invisible Ball (Q): damage, reach (m), speed (m/s), wind-up (s) and the bolt's radius (m; the drawn line is `boltWidth(radius)`). */
-export const BALL_DAMAGE = 62;
+export const BALL_DAMAGE = 72;
 export const BALL_RANGE = 9;
 export const BALL_SPEED = 22;
 export const BALL_WIND = 0.3;
@@ -36,7 +36,7 @@ export const ROPE_RANGE = 7;
 export const ROPE_WIND = 0.5;
 export const ROPE_PULL = 3;
 export const ROPE_PULL_TIME = 0.3;
-export const ROPE_DAMAGE = 45;
+export const ROPE_DAMAGE = 55;
 export const ROPE_SLACK = 2.2;
 
 /** The Box (R): reach (m), the wind-up (s), a side (m), seconds it stands once closed, and the nearest spot (m, so she is outside). */
@@ -261,7 +261,7 @@ export const mimeTrait: Trait = {
     blurb: 'A wall for cover is not a wall to trap you: read the chalk, and break the one in your way with anything. She never speaks, and her walls cost her her own sight too.',
   },
   speed: 4.1,
-  attack: { kind: 'ranged', range: 5.5, damage: 12, interval: 0.9, windup: 0.25, speed: 20, look: 'orb' },
+  attack: { kind: 'ranged', range: 5.5, damage: 14, interval: 0.9, windup: 0.25, speed: 20, look: 'orb' },
   charges: { slot: 1, count: WALL_CHARGES, every: WALL_EVERY },
   // The CPU raises a Wall only with the enemy 3 to 8 m away and fewer than 3 plain walls standing; The Box only within 8 m.
   aiHold(t, slot, dist) {

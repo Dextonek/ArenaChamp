@@ -130,7 +130,7 @@ function glint(g: CanvasRenderingContext2D, x: number, y: number, r: number, c =
 
 export const doorKit: HeroKit = {
   name: 'Wick',
-  maxHp: 620,
+  maxHp: 650,
   title: 'the Doorman',
   accent: S.brass,
   foil: S.red,

@@ -97,7 +97,7 @@ function scarf(g: CanvasRenderingContext2D, x: number, y: number, s: number) {
 export const mimeKit: HeroKit = {
   name: 'Mum',
   title: 'the mime',
-  maxHp: 580,
+  maxHp: 620,
   accent: S.chalk,
   foil: S.dark,
   portrait(g, s) {
