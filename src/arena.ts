@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CASTER_POS, Enemy, createCaster, createGround } from './effects/common';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { yawTo } from './effects/targeting';
-import { blocksSight, pushOut, steer, type Obstacle } from './obstacles';
+import { blocksSight, firstSurface, pushOut, steer, type Obstacle } from './obstacles';
 import { Navigator, type NavStep } from './nav';
 import { StatusSet, STATUS_COLOR, STATUS_WORD, BLIND_RADIUS, BUFF_COLOR, BUFF_WORD, type BuffKind, type StatusKind } from './effects/status';
 import { StatusFx, StatusFxPool } from './effects/parts/status';
@@ -350,6 +350,7 @@ export class Arena {
       bend: this.aimBend,
       addObstacle: (o, seconds) => this.addObstacle(o, seconds),
       confine: (x, z, r, seconds) => this.confine(x, z, r, seconds),
+      enemies: () => this.liveFoes().map((f) => f.figure),
       removeObstacle: (o) => this.removeObstacle(o),
       obstacles: () => this.obstacles ?? [],
       carry: (target, delta) => this.carryFigure(target, delta),
@@ -822,6 +823,7 @@ export class Arena {
       bend: o.bend ?? 0,
       addObstacle: (ob, seconds) => this.addObstacle(ob, seconds),
       confine: (x, z, r, seconds) => this.confine(x, z, r, seconds),
+      enemies: () => [...new Set([...o.targets, this.caster])],
       removeObstacle: (ob) => this.removeObstacle(ob),
       obstacles: () => this.obstacles ?? [],
       carry: (target, delta) => this.carryFigure(target, delta),
@@ -871,6 +873,7 @@ export class Arena {
     return this.projectiles.spawn({
       tag, victims, hit,
       blocked: (a, b) => !!this.obstacles && blocksSight(a, b, this.obstacles),
+      surface: (a, b) => (this.obstacles ? firstSurface(a, b, this.obstacles) : null),
     }, po);
   }
 

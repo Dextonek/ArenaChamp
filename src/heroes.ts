@@ -82,46 +82,46 @@ export interface HeroKit {
   spells: [HeroSpell, HeroSpell, HeroSpell, HeroSpell];
 }
 
-/** Each hero's rigged figure (blender/heroes/hero_figures.py exports them; concept: docs/heroes/lineup_concept.svg). */
+/**
+ * Each hero's rigged figure, the same one in fights and on the Heroes page. _v2: the current style (blender/heroes/moba_figures.py);
+ * the others are still the first style (blender/heroes/hero_figures.py).
+ */
 const MODELS: Record<string, string> = {
-  Vesper: 'models/heroes/blood.glb',
-  Brannoc: 'models/heroes/forge.glb',
-  Isolde: 'models/heroes/frost.glb',
+  Vesper: 'models/heroes/blood_v2.glb',
+  Brannoc: 'models/heroes/forge_v2.glb',
+  Isolde: 'models/heroes/frost_v2.glb',
   Lyra: 'models/heroes/astral.glb',
   Vitriol: 'models/heroes/alchemy.glb',
-  Kaia: 'models/heroes/storm.glb',
-  Sefu: 'models/heroes/sand.glb',
+  Kaia: 'models/heroes/storm_v2.glb',
+  Sefu: 'models/heroes/sand_v2.glb',
   Nyx: 'models/heroes/shadow.glb',
   Fenna: 'models/heroes/grove.glb',
-  Auriel: 'models/heroes/dawn.glb',
+  Auriel: 'models/heroes/dawn_v2.glb',
   Marin: 'models/heroes/tide.glb',
-  Zephyr: 'models/heroes/sky.glb',
+  Zephyr: 'models/heroes/sky_v2.glb',
   Mortis: 'models/heroes/bone.glb',
   Ada: 'models/heroes/clockwork.glb',
   Opaline: 'models/heroes/prism.glb',
   Sirix: 'models/heroes/hive.glb',
   Cantor: 'models/heroes/bard.glb',
-  Oblivion: 'models/heroes/void.glb',
+  Oblivion: 'models/heroes/void_v2.glb',
   Shiori: 'models/heroes/ink.glb',
   Tempo: 'models/heroes/chrono.glb',
 };
 
 /**
- * The MOBA-style redesign on trial (blender/heroes/moba_figures.py): `?figs=v2` in the URL swaps these heroes'
- * figures (sculpted, in the concept sheet's shapes); without it the game keeps the current ones.
+ * The size each hero's hits are judged with, measured from its model (2026-11-04: the width 90% of its body fits in, and the
+ * height 99% of it does). `radius`: half that width plus 0.08 m, at least 0.38, so a bolt that looks like it touched does and one
+ * that looks like it passed does. `height`: how high a mouse ray can pick it.
  */
-const MODELS_V2: Record<string, string> = {
-  Brannoc: 'models/heroes/forge_v2.glb',
-  Kaia: 'models/heroes/storm_v2.glb',
-  Vesper: 'models/heroes/blood_v2.glb',
-  Isolde: 'models/heroes/frost_v2.glb',
-  Zephyr: 'models/heroes/sky_v2.glb',
-  Oblivion: 'models/heroes/void_v2.glb',
-  Sefu: 'models/heroes/sand_v2.glb',
-  Auriel: 'models/heroes/dawn_v2.glb',
+export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
+  Vesper: { radius: 0.41, height: 2.35 }, Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
+  Lyra: { radius: 0.38, height: 2.38 }, Vitriol: { radius: 0.43, height: 2.37 }, Kaia: { radius: 0.47, height: 3.24 },
+  Sefu: { radius: 0.4, height: 2.86 }, Nyx: { radius: 0.4, height: 2.32 }, Fenna: { radius: 0.42, height: 2.55 },
+  Auriel: { radius: 0.47, height: 2.33 }, Marin: { radius: 0.43, height: 2.29 }, Zephyr: { radius: 0.4, height: 2.37 },
+  Mortis: { radius: 0.44, height: 2.51 }, Ada: { radius: 0.39, height: 2.29 }, Sirix: { radius: 0.44, height: 2.31 },
+  Cantor: { radius: 0.39, height: 2.38 }, Opaline: { radius: 0.4, height: 2.46 }, Oblivion: { radius: 0.63, height: 2.62 },
+  Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 },
 };
-// `v2c` (the concept trial's link) still works and now shows the same figures
-const FIGS = typeof location !== 'undefined' ? new URLSearchParams(location.search).get('figs') : null;
-if (FIGS === 'v2' || FIGS === 'v2c') Object.assign(MODELS, MODELS_V2);
 
 export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

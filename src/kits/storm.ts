@@ -104,6 +104,38 @@ function spark(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
   g.fill();
 }
 
+/** A lightning rod standing at (x, yBase): dark outline, pale shaft, two prongs, a spark on the tip. */
+function rod(g: CanvasRenderingContext2D, s: number, x: number, yBase: number, h: number, w: number) {
+  g.lineCap = 'round';
+  for (const [col, mul] of [[S.dark, 2.2], [S.rain, 1]] as const) {
+    g.strokeStyle = col;
+    g.lineWidth = w * mul;
+    g.beginPath();
+    g.moveTo(x, yBase);
+    g.lineTo(x, yBase - h);
+    g.moveTo(x - w * 2.4, yBase - h * 0.78);
+    g.lineTo(x, yBase - h * 0.55);
+    g.lineTo(x + w * 2.4, yBase - h * 0.78);
+    g.stroke();
+  }
+  g.fillStyle = S.dark;
+  g.beginPath();
+  g.ellipse(x, yBase, w * 3.4, w * 1.2, 0, 0, Math.PI * 2);
+  g.fill();
+  spark(g, x, yBase - h - w * 0.8, w * 1.3);
+}
+
+/** A flat ground ring (an ellipse) drawn as a dashed or solid outline. */
+function groundRing(g: CanvasRenderingContext2D, cx: number, cy: number, rx: number, ry: number, color: string, lw: number, dash = 0) {
+  g.strokeStyle = color;
+  g.lineWidth = lw;
+  g.setLineDash(dash ? [dash, dash * 0.8] : []);
+  g.beginPath();
+  g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+  g.stroke();
+  g.setLineDash([]);
+}
+
 export const stormKit: HeroKit = {
   name: 'Kaia',
   title: 'the Tempest Caller',
@@ -155,111 +187,87 @@ export const stormKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'arc lance', name: 'Arc Lance', range: 11, cooldown: 3,
-      blurb: 'Points her staff and a branching bolt leaps to one enemy, then chains to a second one nearby for half damage.',
+      key: 'Q', label: 'sky strike', name: 'Sky Strike', range: 7, cooldown: 4,
+      blurb: 'A strike falls on an enemy in sight (7 m) 0.35 s later: 50, and a rod stands 1.5 m in front of them, toward her. Rods within 5 m of them arc for 14.',
       icon(g, s) {
         iconGround(g, s);
-        // Hooked staff low left, a horizontal bolt tree jumping to the right.
-        g.strokeStyle = S.rain;
-        g.lineWidth = s * 0.05;
-        g.lineCap = 'round';
-        g.beginPath();
-        g.moveTo(s * 0.06, s * 0.94);
-        g.lineTo(s * 0.26, s * 0.5);
-        g.arc(s * 0.31, s * 0.43, s * 0.06, Math.PI * 0.95, Math.PI * 1.95);
-        g.stroke();
-        bolt(g, s * 0.3, s * 0.4, s * 0.88, s * 0.52, s * 0.05, 2, 11);
-        spark(g, s * 0.9, s * 0.52, s * 0.025);
+        cloud(g, s * 0.58, s * 0.3, s * 0.62);
+        // A thick bolt falls on a ring on the ground; a rod stands short of it on the left.
+        groundRing(g, s * 0.6, s * 0.84, s * 0.22, s * 0.07, S.rain, s * 0.02);
+        bolt(g, s * 0.58, s * 0.3, s * 0.6, s * 0.82, s * 0.07, 2, 21);
+        rod(g, s, s * 0.2, s * 0.9, s * 0.4, s * 0.025);
+        spark(g, s * 0.6, s * 0.82, s * 0.03);
       },
     },
     {
-      key: 'W', label: 'ball lightning', name: 'Ball Lightning', range: 10, cooldown: 8, aim: 'line',
-      blurb: 'Rolls a slow crackling orb 10 m that damages and slows what it meets. Cast again within 3 s to blink to the orb.',
+      key: 'W', label: 'thunder rod', name: 'Thunder Rod', range: 9, cooldown: 9,
+      blurb: 'A great rod at a spot (9 m) for 3 s. From 1.2 s, each second: enemies within 3.5 m take 18 and are slowed. Cast again from 1.2 s to fire it once for 40 and end it.',
       icon(g, s) {
         iconGround(g, s);
-        // A bright orb with arcs jumping off it, a spark trail behind, and a dashed blink arrow over it.
-        const ox = s * 0.62, oy = s * 0.56;
-        g.strokeStyle = S.rain;
-        g.lineWidth = s * 0.014;
+        // The 3.5 m zone as a dashed ring, a tall great rod in its middle, arcs running from the tip to the rim.
+        groundRing(g, s * 0.5, s * 0.8, s * 0.42, s * 0.12, S.hot, s * 0.02, s * 0.05);
+        bolt(g, s * 0.5, s * 0.2, s * 0.14, s * 0.78, s * 0.03, 1, 33);
+        bolt(g, s * 0.5, s * 0.2, s * 0.86, s * 0.78, s * 0.03, 1, 37);
+        rod(g, s, s * 0.5, s * 0.84, s * 0.62, s * 0.04);
+        spark(g, s * 0.14, s * 0.78, s * 0.02);
+        spark(g, s * 0.86, s * 0.78, s * 0.02);
+      },
+    },
+    {
+      key: 'E', label: 'polarity', name: 'Polarity', range: 8, cooldown: 11, cc: true,
+      blurb: 'Magnetises an enemy in sight (8 m): 20, then after 1 s they are yanked 3 m toward her nearest rod (her, with none). Ending within 1 m of the rod: stunned 0.6 s.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A horseshoe magnet (pale tip, yellow tip) on the left pulling toward a rod on the right along dashed arcs.
+        const cx = s * 0.3, cy = s * 0.46, r = s * 0.15;
         g.lineCap = 'round';
-        for (let i = 0; i < 5; i++) {
-          const y = s * (0.4 + i * 0.09);
-          g.globalAlpha = 0.5;
+        for (const [col, w] of [[S.dark, s * 0.17], [S.body, s * 0.1]] as const) {
+          g.strokeStyle = col;
+          g.lineWidth = w;
           g.beginPath();
-          g.moveTo(s * 0.04, y);
-          g.lineTo(s * (0.2 + 0.05 * i), y + s * 0.02);
+          g.moveTo(cx - r, cy - s * 0.2);
+          g.lineTo(cx - r, cy);
+          g.arc(cx, cy, r, Math.PI, 0, true);
+          g.lineTo(cx + r, cy - s * 0.2);
           g.stroke();
         }
-        g.globalAlpha = 1;
-        const glow = g.createRadialGradient(ox, oy, s * 0.02, ox, oy, s * 0.22);
-        glow.addColorStop(0, S.core);
-        glow.addColorStop(0.35, S.hot);
-        glow.addColorStop(0.7, S.body);
-        glow.addColorStop(1, 'rgba(74,168,255,0)');
-        g.fillStyle = glow;
+        g.strokeStyle = S.rain;
+        g.lineWidth = s * 0.1;
         g.beginPath();
-        g.arc(ox, oy, s * 0.22, 0, Math.PI * 2);
-        g.fill();
-        g.strokeStyle = S.dark;
-        g.lineWidth = s * 0.02;
-        g.beginPath();
-        g.arc(ox, oy, s * 0.12, 0, Math.PI * 2);
+        g.moveTo(cx - r, cy - s * 0.2);
+        g.lineTo(cx - r, cy - s * 0.12);
         g.stroke();
-        bolt(g, ox + s * 0.1, oy - s * 0.1, s * 0.94, s * 0.26, s * 0.035, 1, 52);
-        bolt(g, ox - s * 0.1, oy + s * 0.1, s * 0.5, s * 0.92, s * 0.03, 1, 57);
-        bolt(g, ox + s * 0.1, oy + s * 0.12, s * 0.94, s * 0.8, s * 0.028, 1, 61);
-        // Dashed arc: she blinks to the orb.
+        g.strokeStyle = S.accent;
+        g.beginPath();
+        g.moveTo(cx + r, cy - s * 0.2);
+        g.lineTo(cx + r, cy - s * 0.12);
+        g.stroke();
+        rod(g, s, s * 0.82, s * 0.9, s * 0.5, s * 0.03);
         g.strokeStyle = S.accent;
         g.lineWidth = s * 0.025;
         g.setLineDash([s * 0.05, s * 0.04]);
-        g.beginPath();
-        g.moveTo(s * 0.14, s * 0.3);
-        g.quadraticCurveTo(s * 0.4, s * 0.06, ox - s * 0.04, oy - s * 0.2);
-        g.stroke();
-        g.setLineDash([]);
-        spark(g, s * 0.14, s * 0.3, s * 0.03);
-      },
-    },
-    {
-      key: 'E', label: 'static field', name: 'Static Field', range: 0, cooldown: 9, cc: true, buff: { kind: 'haste', amount: 0.25, seconds: 2 },
-      blurb: 'A ring of lightning expands from her out to 5 m and stuns whoever its front passes: stand far, or inside before it starts.',
-      icon(g, s) {
-        iconGround(g, s);
-        cloud(g, s * 0.5, s * 0.3, s * 0.5);
-        // The ring of arcs around her, as short bolt segments along an ellipse.
-        const cx = s * 0.5, cy = s * 0.66, rx = s * 0.36, ry = s * 0.16;
-        for (let i = 0; i < 6; i++) {
-          const a0 = (i / 6) * Math.PI * 2 + 0.2, a1 = a0 + 0.62;
-          bolt(g, cx + Math.cos(a0) * rx, cy + Math.sin(a0) * ry, cx + Math.cos(a1) * rx, cy + Math.sin(a1) * ry, s * 0.035, 0, 31 + i);
+        for (const dy of [-0.06, 0.08]) {
+          g.beginPath();
+          g.moveTo(s * 0.5, s * (0.5 + dy));
+          g.quadraticCurveTo(s * 0.62, s * (0.34 + dy), s * 0.74, s * (0.5 + dy));
+          g.stroke();
         }
-        g.fillStyle = S.rain;
-        g.beginPath();
-        g.ellipse(cx, cy - s * 0.04, s * 0.06, s * 0.1, 0, 0, Math.PI * 2);
-        g.fill();
-        spark(g, cx + s * 0.04, cy - s * 0.1, s * 0.02);
+        g.setLineDash([]);
+        spark(g, s * 0.82, s * 0.38, s * 0.03);
       },
     },
     {
-      key: 'R', label: 'thunderlance', name: 'Thunderlance', range: 20, cooldown: 18, aim: 'line',
-      blurb: 'Ultimate. Hold to charge up to 1.5 s, then one lightning bolt pierces 20 m down the line; a full charge hits 2.5 times harder than a tap.',
+      key: 'R', label: 'supercell storm', name: 'Supercell', range: 0, cooldown: 24,
+      blurb: 'A storm over her for 6 s. Every 0.8 s, if the enemy is within 7 m of her or 3 m of a rod, a bolt marks their spot (1.2 m) and falls 0.6 s later: 30. Rods arc as normal.',
       icon(g, s) {
         iconGround(g, s);
-        // One huge bolt shooting across the icon like a lance, rain behind it and a charge ring at the staff end.
-        rain(g, s * 0.05, s * 0.08, s * 0.9, s * 0.84, 14, s * 0.011);
-        bolt(g, s * 0.1, s * 0.82, s * 0.94, s * 0.16, s * 0.1, 3, 71);
-        g.strokeStyle = S.accent;
-        g.lineWidth = s * 0.03;
-        g.lineCap = 'round';
-        g.beginPath();
-        g.arc(s * 0.16, s * 0.76, s * 0.14, Math.PI * 0.55, Math.PI * 1.9);
-        g.stroke();
-        g.strokeStyle = S.rain;
-        g.lineWidth = s * 0.014;
-        g.beginPath();
-        g.arc(s * 0.16, s * 0.76, s * 0.19, Math.PI * 0.55, Math.PI * 1.55);
-        g.stroke();
-        spark(g, s * 0.91, s * 0.18, s * 0.03);
-        spark(g, s * 0.34, s * 0.5, s * 0.02);
+        cloud(g, s * 0.5, s * 0.34, s * 0.86);
+        rain(g, s * 0.06, s * 0.3, s * 0.88, s * 0.7, 14, s * 0.011);
+        // Two marked circles on the ground, a bolt falling on one of them.
+        groundRing(g, s * 0.3, s * 0.82, s * 0.16, s * 0.055, S.hot, s * 0.02);
+        groundRing(g, s * 0.68, s * 0.74, s * 0.16, s * 0.055, S.accent, s * 0.025);
+        bolt(g, s * 0.62, s * 0.4, s * 0.68, s * 0.74, s * 0.06, 2, 47);
+        spark(g, s * 0.68, s * 0.74, s * 0.028);
       },
     },
   ],

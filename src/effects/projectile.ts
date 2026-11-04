@@ -34,6 +34,15 @@ export interface ProjectileOptions {
   curve?: number;
   /** Keeps flying after a hit; every enemy is hit once. */
   pierce?: boolean;
+  /**
+   * Reflects off walls and pillars this many times before cover stops it (Opaline). Each reflection adds `reflectRange`
+   * metres (default 2) and `reflectBonus` of the hit's damage (default 0.25 = +25%). `bankPath` in obstacles.ts gives
+   * the same path without flying it. Follow `Projectile.reflections`, and `onReflect` for a flash.
+   */
+  reflect?: number;
+  reflectRange?: number;
+  reflectBonus?: number;
+  onReflect?: (bolt: Projectile, at: THREE.Vector3) => void;
   /** After a hit it turns toward the nearest other enemy within `BOUNCE_RANGE` of the hit, this many times. */
   bounce?: number;
   /**
@@ -87,8 +96,9 @@ const sideOfTag = (tag: string): 'hero' | 'opponent' => (tag.startsWith('hero') 
 /** Called for every hit, by the bolt that made it (children too): the enemy and where the bolt was. */
 export type ProjectileHitCallback = (target: Enemy, at: THREE.Vector3, bolt: Projectile) => void;
 
-/** Half-width of a figure for bolt collisions (m). */
+/** Half-width of a figure for bolt collisions (m), when it has no measured body. */
 export const BODY_RADIUS = 0.5;
+const bodyOf = (figure: Enemy) => figure.body?.radius ?? BODY_RADIUS;
 /** How far a bounce looks for the next enemy (m). */
 export const BOUNCE_RANGE = 6;
 /** Bolts fly this high above the floor (m). */
@@ -105,6 +115,8 @@ export class Projectile {
   readonly hitSet = new Set<Enemy>();
   /** Enemies hit by this bolt (children count separately). */
   hits = 0;
+  /** Times it has reflected off cover so far. */
+  reflections = 0;
   /** Distance left before it ends (m). */
   rangeLeft: number;
   bounces: number;
@@ -149,6 +161,8 @@ export interface ProjectileWorld {
   hit(target: Enemy, opts: HitOptions): void;
   /** True when something solid stands between the two points (a pillar): the bolt ends there. */
   blocked?(a: THREE.Vector3, b: THREE.Vector3): boolean;
+  /** Where a to b first meets something solid, and its outward normal: a reflecting bolt turns there. */
+  surface?(a: THREE.Vector3, b: THREE.Vector3): { t: number; nx: number; nz: number } | null;
   /** Tally key for `ProjectileSystem.stats` ('hero', 'opponent'). */
   tag: string;
 }
@@ -335,7 +349,21 @@ export class ProjectileSystem {
     if (turn) turnDir(p.dir, turn / 2);
     const a = p.pos, b = this._v.copy(a).addScaledVector(p.dir, dist);
     if (p.world.blocked?.(a, b)) {
-      p.alive = false;
+      const s = p.reflections < (p.opts.reflect ?? 0) ? p.world.surface?.(a, b) : null;
+      if (!s) {
+        p.alive = false;
+        return;
+      }
+      // A bank shot: up to the surface, then away from it, a little farther and a little stronger.
+      p.pos.addScaledVector(p.dir, dist * s.t);
+      p.rangeLeft += (p.opts.reflectRange ?? 2) - dist * s.t;
+      const dot = p.dir.x * s.nx + p.dir.z * s.nz;
+      p.dir.x -= 2 * dot * s.nx;
+      p.dir.z -= 2 * dot * s.nz;
+      p.pos.addScaledVector(p.dir, 0.02);
+      p.reflections++;
+      p.curve = 0;
+      p.opts.onReflect?.(p, p.pos.clone());
       return;
     }
     // A wall of the other side on the path: the bolt flies up to it, hits what it meets on the way, then ends there.
@@ -344,12 +372,11 @@ export class ProjectileSystem {
       dist *= wallCut.t;
       b.copy(a).addScaledVector(p.dir, dist);
     }
-    const reach = p.radius + BODY_RADIUS;
-    // Enemies the swept capsule touches this frame, in the order the bolt meets them.
+    // Enemies the swept capsule touches this frame, in the order the bolt meets them. Each hero has the size of its model.
     const touched = p.world.victims()
       .filter((v) => !p.hitSet.has(v.figure))
       .map((v) => ({ v, ...segmentTouch(a.x, a.z, b.x, b.z, v.pos.x, v.pos.z) }))
-      .filter((c) => c.d <= reach)
+      .filter((c) => c.d <= p.radius + bodyOf(c.v.figure))
       .sort((c1, c2) => c1.t - c2.t);
     let moved = dist;
     for (const c of touched) {
@@ -358,7 +385,8 @@ export class ProjectileSystem {
       p.hits++;
       this.tally(p.world.tag).hits++;
       const origin = p.opts.hit.pull ? new THREE.Vector3(p.opts.from.x, 0, p.opts.from.z) : at.clone();
-      p.world.hit(c.v.figure, { ...p.opts.hit, projectile: true, from: p.opts.hit.from ?? origin });
+      const bonus = p.reflections > 0 && p.opts.hit.damage !== undefined ? { damage: p.opts.hit.damage * (1 + (p.opts.reflectBonus ?? 0.25) * p.reflections) } : null;
+      p.world.hit(c.v.figure, { ...p.opts.hit, ...bonus, projectile: true, from: p.opts.hit.from ?? origin });
       p.fire(c.v.figure, at);
       if (p.opts.pierce) continue;
       // The first hit of a bolt that does not pierce: split, bounce on, or end here.

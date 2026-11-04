@@ -16,7 +16,7 @@
     (async () => {
       const d = vfx.duel, proto = Object.getPrototypeOf(d), resolve = proto.resolve;
       try {
-        const { CPU_NORMAL } = await import('/src/cpuLevels.ts');
+        const { CPU_BALANCE } = await import('/src/cpuLevels.ts');
         d.hazardsInRuns = false;
         d.arenaChoice = 'random';
         vfx.view.paused = true;
@@ -36,7 +36,7 @@
           for (const foe of foes) {
             row.by[foe] = 0;
             for (let r = 0; r < reps; r++) {
-              d.cpuLevel = CPU_NORMAL;
+              d.cpuLevel = CPU_BALANCE;
               d.opponentChoice = foe;
               d.start('run');
               let f = 0;

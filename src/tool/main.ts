@@ -6,7 +6,7 @@ import { effectModules } from '../effects';
 import { HERO_KITS } from '../heroes';
 import { meleeTestKit, rangedTestKit, summonTestKit } from '../kits/test';
 import { createRuntime, type EffectSlot } from '../runtime';
-import { CPU_LEVELS, CPU_NORMAL } from '../cpuLevels';
+import { CPU_BALANCE, CPU_LEVELS } from '../cpuLevels';
 import { PlayerDummy } from './player';
 import { Hotbar } from './hotbar';
 
@@ -100,7 +100,7 @@ fView.add(duelState, 'opponent', ['random', ...HERO_KITS.map((k) => k.name)]).na
 // The opponent's CPU level (src/cpuLevels.ts); a run duel's autopilot always plays Normal.
 const levelState = { level: duel.cpuLevel.name };
 fView.add(levelState, 'level', CPU_LEVELS.map((l) => l.name)).name('CPU level').onChange((n: string) => {
-  duel.cpuLevel = CPU_LEVELS.find((l) => l.name === n) ?? CPU_NORMAL;
+  duel.cpuLevel = CPU_LEVELS.find((l) => l.name === n) ?? CPU_BALANCE;
 });
 fView.add(duel, 'hazardsOn').name('arena hazards').onChange(() => {
   if (duel.on) duel.start();

@@ -170,6 +170,11 @@ export interface FigureOptions {
  */
 export class Enemy {
   readonly group = new THREE.Group();
+  /**
+   * The size hits are judged with: the radius a bolt touches and the height a mouse ray can pick. The duel sets it from the hero's
+   * model (`HERO_BODIES`); anything without one (arena foes, summons) uses the default sizes.
+   */
+  body: { radius: number; height: number } | null = null;
   readonly material: THREE.MeshStandardMaterial;
   private facing: number;
   private home = new THREE.Vector3();

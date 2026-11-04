@@ -468,6 +468,7 @@ export function createRuntime(opts: RuntimeOptions) {
     targeting: (label) => slots.get(label)?.module.targeting,
     setStage,
     clearEffects,
+    warmUp: () => renderer.compileAsync(scene, camera).catch(() => undefined),
   });
   scene.add(duel.group);
   duel.onLeave = () => setDuel(false);

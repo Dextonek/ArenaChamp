@@ -91,6 +91,18 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { skyStrikeModule } from './skyStrike';
+import { thunderRodModule } from './thunderRod';
+import { polarityModule } from './polarity';
+import { supercellStormModule } from './supercellStorm';
+import { icicleModule } from './icicle';
+import { hoarfrostModule } from './hoarfrost';
+import { rimeArmourModule } from './rimeArmour';
+import { wintersShatterModule } from './wintersShatter';
+import { seedShotModule } from './seedShot';
+import { strangleVineModule } from './strangleVine';
+import { pollenGlideModule } from './pollenGlide';
+import { worldTreeModule } from './worldTree';
 import { cobraSpitModule } from './cobraSpit';
 import { shepherdsCrookModule } from './shepherdsCrook';
 import { scarabStrideModule } from './scarabStride';
@@ -263,6 +275,18 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  skyStrikeModule,
+  thunderRodModule,
+  polarityModule,
+  supercellStormModule,
+  icicleModule,
+  hoarfrostModule,
+  rimeArmourModule,
+  wintersShatterModule,
+  seedShotModule,
+  strangleVineModule,
+  pollenGlideModule,
+  worldTreeModule,
   cobraSpitModule,
   shepherdsCrookModule,
   scarabStrideModule,

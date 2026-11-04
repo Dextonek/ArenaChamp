@@ -1,5 +1,14 @@
 # Storm kit: Kaia, the Tempest Caller
 
+## v5 (2026-11-04)
+Source of truth: [kits-v5.md](kits-v5.md), section "Kaia". 560 HP, 4.0 m/s, attack 6 m, 10 per 1.0 s. Code: `src/kits/storm.ts`, `src/traits/storm.ts`, spells `skyStrike.ts`, `thunderRod.ts`, `polarity.ts`, `supercellStorm.ts` (labels `sky strike`, `thunder rod`, `polarity`, `supercell storm`: the old cinematic `supercell.ts` keeps the label `supercell`). The old spells stay in the tool.
+- **Passive, Lightning Rods:** her spells plant rods (3 at most, the oldest goes; 6 s of round time; a great rod 3 s). A spell of hers that damages the enemy makes every rod within 5 m of them arc for 14 and be used up (`dealt`). An enemy within 1 m (0.99) of a rod grounds it (`victimTick`). The list lives in `stormOf(figure).rods` on both screens (`addRod`, `removeRod`); the screen that removes a rod tells the other with `noteOwner('rodgone' | 'rodfizz', id)`, ids 0-19. Drawn by `marks` / `markLook` (a rod 2.7 m tall, a faint 5 m ring when the enemy is within 7 m of it, arcs and fizzes). The CPU walks to a rod within 3 m (`enemyGoal`).
+- **Q Sky Strike** (TGT, sight, 7 m, cd 4): 50 at 0.35 s on the live position (`projectile`), then a rod 1.5 m in front of the enemy toward her, planted after the hit.
+- **W Thunder Rod** (ZONE, RECAST, 9 m, cd 9): a great rod for 3 s at the spot (planted 0.25 s). Pulses at 1.2 s and 2.2 s: 18 and a 1 s slow within 3.5 m (live positions, zone telegraph, impact 1.2 s). Recast Discharge (from 1.2 s, window 3 s, told apart by a per-figure clock): 40 once within 3.5 m at 0.25 s after the cast, and the rod is gone. The great rod is not used up by its own pulses.
+- **E Polarity** (TGT, sight, 8 m, cd 11, `cc`): 20 at 0.25 s, the `magnet` stack for 1 s; at 1.0 s `pull: 3` toward her nearest rod to the enemy (her with none), `projectile`; the same hit carries stun 0.6 s when the live distance before the pull is 4.05 m or less (the engine stops a pull 1.0 m short). The 0-damage pull arcs no rods.
+- **R Supercell** (SELF, cd 24, targeting radius 14): 6 s storm cloud that follows her. Six checks, at 0.8 s steps from 0.8 s: an enemy within 7 m of her or 3 m of a rod gets a 1.2 m mark (shown 0.6 s), then 30 if still inside (`projectile`). The CPU holds R until the enemy is within 6.8 m or 2.8 m of a rod (`aiHold`).
+
+
 ## Role (2026-10-30)
 **Mage (burst), 560 HP.** Signature: unavoidable lightning, the only instant hits. See hero-roles.md.
 - Q Arc Lance: enemies mode, max 2 targets; the bolt chains to a second enemy (a unit) within 6 m for half damage (25). Range 11, cd 3, 50.

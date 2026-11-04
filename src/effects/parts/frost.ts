@@ -1197,3 +1197,42 @@ export class FrostBreath {
     this.bb.end();
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// icicleStandingLook: the icicle Isolde leaves in the floor (a ground mark)
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * A still icicle standing in the ground, for `Trait.markLook` (Isolde's Icicle, `src/traits/frost.ts`): a tall faceted crystal
+ * with two small ones leaning out of its base, a dark disc and a thin pale ring at `ringRadius` that show where the shatter
+ * would reach. Feet at y 0, about 1.5 m tall. Nothing animates: a mark is only scaled by the engine.
+ */
+export function icicleStandingLook(ringRadius: number): THREE.Object3D {
+  const g = new THREE.Group();
+  const mat = crystalMaterial(true);
+  const parts: [number, number, number, number, number, number][] = [
+    // x, z, height, width, lean around z, lean around x
+    [0, 0, 1.5, 0.36, 0.06, 0.04],
+    [0.3, 0.1, 0.75, 0.22, -0.4, 0.1],
+    [-0.24, -0.16, 0.6, 0.18, 0.45, -0.15],
+  ];
+  for (const [x, z, h, w, rz, rx] of parts) {
+    const m = new THREE.Mesh(crystalGeometry(), mat);
+    m.position.set(x, 0, z);
+    m.scale.set(w, h, w);
+    m.rotation.set(rx, 0, rz);
+    g.add(m);
+  }
+  const dark = new THREE.Mesh(
+    new THREE.CircleGeometry(ringRadius, 40).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: FROST.dark, transparent: true, opacity: 0.22, depthWrite: false }),
+  );
+  dark.position.y = 0.012;
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(ringRadius - 0.07, ringRadius, 56).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ color: FROST.rime, transparent: true, opacity: 0.55, depthWrite: false }),
+  );
+  ring.position.y = 0.02;
+  g.add(dark, ring);
+  return g;
+}

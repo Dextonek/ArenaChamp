@@ -10,6 +10,8 @@ import { targetedModules } from '../spells/targeted';
 import type { HeroKit } from '../heroes';
 import { NetClient, type LobbyState, type Profile } from '../net/client';
 import { HeroPreview } from './heroPreview';
+import { LoadingScreen } from './loading';
+import { traitFor } from '../traits';
 import { MatchController } from './match';
 import { CpuMatch } from './cpu';
 import { CPU_LEVELS, cpuLevel } from '../cpuLevels';
@@ -33,7 +35,8 @@ const state = {
   queue: { on: false, since: 0, size: 0 },
   /** The hero the queue was joined with (a random pick is drawn then). */
   queueHero: '',
-  heroView: kits[0].name,
+  /** The open row of the heroes table ('' when none). */
+  heroView: '',
   authError: '',
   authMode: 'login' as 'login' | 'register',
 };
@@ -184,7 +187,7 @@ function header() {
     el('button', { class: `nav${state.screen === screen ? ' on' : ''}`, onclick: () => go(screen) }, label);
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies'), nav('Heroes', 'heroes'), nav('Profile', 'profile')),
+    el('nav', {}, nav('Play', 'menu'), nav('vs CPU', 'cpu'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies'), nav('Heroes', 'heroes'), nav('Profile', 'profile')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -217,7 +220,7 @@ function loginScreen() {
     el('button', { class: 'btn ghost', type: 'button', onclick: () => go('cpu') }, 'Play vs CPU · no account needed'),
   );
   setTimeout(() => name.focus());
-  return el('div', { class: 'center' }, form, heroStrip());
+  return el('div', { class: 'center login-screen' }, form, heroStrip());
 }
 
 /** The roster as a strip of portraits (login backdrop). */
@@ -366,7 +369,7 @@ function cpuScreen() {
       el('h3', { class: 'gap' }, 'Opponent'),
       el('div', { class: 'foe-row' }, foeKit ? portrait(foeKit, 'portrait sm') : randomPortrait('portrait sm'), foeSelect),
       el('div', { class: 'row play-actions' },
-        el('button', { class: 'btn primary big', disabled: busy, onclick: () => cpu.start({ hero: hero?.name ?? randomKit([foeKit?.name]).name, foe: foeKit?.name ?? 'random', level: level.id }) },
+        el('button', { class: 'btn primary big', disabled: busy, onclick: () => void cpu.start({ hero: hero?.name ?? randomKit([foeKit?.name]).name, foe: foeKit?.name ?? 'random', level: level.id }) },
           `Fight ${foeKit ? foeKit.name : 'a random hero'} · ${level.name}`),
         el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
       busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to fight the CPU.') : null,
@@ -376,33 +379,52 @@ function cpuScreen() {
 
 // --- heroes --------------------------------------------------------------------------------------------------
 
+/** Every hero in one table, one row each. A click opens a row under itself (the turning model, every spell in full, the pick button) and closes it again. */
 function heroesScreen() {
-  const kit = kitOf(state.heroView) ?? kits[0];
-  preview.show(kit.model);
-  const list = el('div', { class: 'hero-list' }, ...kits.map((k) => {
-    const b = el('button', { class: `hero-card${k.name === kit.name ? ' on' : ''}`, onclick: () => { state.heroView = k.name; render(); } },
-      portrait(k), el('div', { class: 'kit-name' }, k.name), el('div', { class: 'muted small' }, k.title));
-    b.style.setProperty('--accent', k.accent);
-    return b;
-  }));
-  const spells = el('div', { class: 'spells' }, ...kit.spells.map((s) =>
-    el('div', { class: `spell${s.key === 'R' ? ' ult' : ''}` },
-      el('div', { class: 'icon-wrap' }, canvasOf(128, s.icon, 'icon'), el('span', { class: 'key' }, s.key)),
-      el('div', {},
-        el('div', { class: 'spell-name' }, s.name, s.key === 'R' ? el('span', { class: 'ult-tag' }, 'ULT') : null),
-        el('div', { class: 'blurb' }, s.blurb),
-        el('div', { class: 'muted small' }, `${s.range > 0 ? `range ${s.range}` : 'self'} · cooldown ${s.cooldown} s`),
-      ),
-    )));
+  const open = kitOf(state.heroView);
+  preview.show(open?.model);
+  const head = el('tr', {},
+    el('th', {}, ''), el('th', {}, 'Hero'), el('th', { class: 'opt' }, 'HP'), el('th', { class: 'opt' }, 'Passive'),
+    ...['Q', 'W', 'E', 'R'].map((k) => el('th', { class: 'icon-col' }, k)));
+  const rows = kits.flatMap((k) => {
+    const on = k.name === open?.name;
+    const row = el('tr', { class: `hero-row${on ? ' on' : ''}`, onclick: () => { state.heroView = on ? '' : k.name; render(); } },
+      el('td', {}, portrait(k, 'portrait sm')),
+      el('td', {}, el('div', { class: 'kit-name' }, k.name), el('div', { class: 'muted small' }, k.title)),
+      el('td', { class: 'opt' }, String(k.maxHp ?? 600)),
+      el('td', { class: 'opt' }, traitFor(k.name)?.passive.name ?? ''),
+      ...k.spells.map((s) => el('td', { class: 'icon-col', title: `${s.name}: ${s.blurb}` }, canvasOf(64, s.icon, 'icon sm'))));
+    row.style.setProperty('--accent', k.accent);
+    return on ? [row, heroDetail(k)] : [row];
+  });
+  return el('section', { class: 'card hero-table-card' }, el('table', { class: 'hero-table' }, head, ...rows));
+}
+
+/** The open row of the heroes table. */
+function heroDetail(kit: HeroKit) {
+  const spells = el('div', { class: 'spells' },
+    el('div', { class: 'spell passive' },
+      el('div', { class: 'icon-wrap' }, portrait(kit, 'icon')),
+      el('div', {}, el('div', { class: 'spell-name' }, traitFor(kit.name)?.passive.name ?? ''), el('div', { class: 'blurb' }, traitFor(kit.name)?.passive.blurb ?? ''))),
+    ...kit.spells.map((s) =>
+      el('div', { class: `spell${s.key === 'R' ? ' ult' : ''}` },
+        el('div', { class: 'icon-wrap' }, canvasOf(128, s.icon, 'icon'), el('span', { class: 'key' }, s.key)),
+        el('div', {},
+          el('div', { class: 'spell-name' }, s.name, s.key === 'R' ? el('span', { class: 'ult-tag' }, 'ULT') : null),
+          el('div', { class: 'blurb' }, s.blurb),
+          el('div', { class: 'muted small' }, `${s.range > 0 ? `range ${s.range}` : 'self'} · cooldown ${s.cooldown} s`),
+        ),
+      )));
   const mine = heroChoice() === kit.name;
-  const detail = el('section', { class: 'card hero-detail' },
-    el('div', { class: 'hero-head' }, portrait(kit, 'portrait lg'),
-      el('div', {}, el('h2', {}, kit.name), el('div', { class: 'muted' }, kit.title),
-        el('button', { class: `btn${mine ? '' : ' primary'}`, disabled: mine, onclick: () => { setPreferredHero(kit.name); toast(`${kit.name} is your hero`); render(); } }, mine ? 'Your hero' : 'Pick this hero'))),
-    el('div', { class: 'hero-body' }, el('div', { class: 'stage' }, preview.canvas), spells),
-  );
-  detail.style.setProperty('--accent', kit.accent);
-  return el('div', { class: 'heroes' }, list, detail);
+  const cell = el('td', { colSpan: 8 },
+    el('div', { class: 'hero-body' },
+      el('div', { class: 'hero-side' },
+        el('div', { class: 'stage' }, preview.canvas),
+        el('button', { class: `btn${mine ? '' : ' primary'}`, disabled: mine, onclick: () => { setPreferredHero(kit.name); toast(`${kit.name} is your hero`); render(); } }, mine ? 'Your hero' : 'Pick this hero')),
+      spells));
+  const row = el('tr', { class: 'hero-open' }, cell);
+  row.style.setProperty('--accent', kit.accent);
+  return row;
 }
 
 // --- profile -------------------------------------------------------------------------------------------------
@@ -517,13 +539,14 @@ function lobbyScreen(l: LobbyState) {
 
 // --- network events ----------------------------------------------------------------------------------------
 
-const match = new MatchController(net, gameApi, {
+const loading = new LoadingScreen();
+const match = new MatchController(net, gameApi, loading, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'menu'; render(); net.send({ t: 'profile' }); },
   onProfile: (p) => { state.profile = p; },
   toast,
 });
-const cpu = new CpuMatch(gameApi, {
+const cpu = new CpuMatch(gameApi, loading, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'cpu'; render(); },
   onWin: (level) => safeSet(cpuWonKey(), [...cpuWon().add(level)].sort().join('')),

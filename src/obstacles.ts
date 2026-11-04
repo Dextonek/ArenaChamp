@@ -42,6 +42,56 @@ function closest(o: Obstacle, px: number, pz: number) {
   return { x: o.ax + dx * t, z: o.az + dz * t };
 }
 
+/**
+ * The first obstacle surface on the way from a to b (ground plane): how far along it (0..1) and the surface's outward
+ * normal there, or null when the way is clear. Bank shots reflect off this.
+ */
+export function firstSurface(a: { x: number; z: number }, b: { x: number; z: number }, obstacles: readonly Obstacle[]): { t: number; nx: number; nz: number } | null {
+  const len = Math.hypot(b.x - a.x, b.z - a.z);
+  const steps = Math.max(1, Math.ceil(len / 0.08));
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps, x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t;
+    for (const o of obstacles) {
+      const c = closest(o, x, z);
+      const dx = x - c.x, dz = z - c.z, d = Math.hypot(dx, dz);
+      if (d > o.r) continue;
+      if (d < 1e-5) return { t, nx: -(b.x - a.x) / (len || 1), nz: -(b.z - a.z) / (len || 1) };
+      return { t, nx: dx / d, nz: dz / d };
+    }
+  }
+  return null;
+}
+
+/**
+ * The path of a bolt that reflects off obstacles: points from `from`, along `dir`, for `range` metres, gaining `extra`
+ * metres per reflection, at most `reflections` of them. A pure function of its inputs, so both screens of a network duel
+ * and the aim strip draw the same line. Bank shots: Opaline.
+ */
+export function bankPath(from: { x: number; z: number }, dir: { x: number; z: number }, range: number, reflections: number, obstacles: readonly Obstacle[], extra = 2): { x: number; z: number }[] {
+  const l = Math.hypot(dir.x, dir.z) || 1;
+  let dx = dir.x / l, dz = dir.z / l, x = from.x, z = from.z, left = range, r = reflections;
+  const out = [{ x, z }];
+  for (let guard = 0; guard < reflections + 2 && left > 1e-3; guard++) {
+    const end = { x: x + dx * left, z: z + dz * left };
+    const hit = firstSurface({ x, z }, end, obstacles);
+    if (!hit || r <= 0) {
+      const t = hit ? hit.t : 1;
+      out.push({ x: x + (end.x - x) * t, z: z + (end.z - z) * t });
+      break;
+    }
+    const nx = x + (end.x - x) * hit.t, nz = z + (end.z - z) * hit.t;
+    out.push({ x: nx, z: nz });
+    left = left * (1 - hit.t) + extra;
+    const dot = dx * hit.nx + dz * hit.nz;
+    dx -= 2 * dot * hit.nx;
+    dz -= 2 * dot * hit.nz;
+    x = nx + dx * 0.02;
+    z = nz + dz * 0.02;
+    r--;
+  }
+  return out;
+}
+
 /** Moves `p` (ground plane, y ignored) out of every obstacle, keeping `body` clearance. Returns `p`. */
 export function pushOut(p: THREE.Vector3, obstacles: readonly Obstacle[], body = 0.5) {
   for (let pass = 0; pass < 2; pass++) {

@@ -120,75 +120,98 @@ export const frostKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'rime spear', name: 'Rime Spear', range: 12, cooldown: 3, aim: 'line',
-      blurb: 'Throws an ice javelin down the aim that pierces everything it meets and slows it for 1.5 s.',
+      key: 'Q', label: 'icicle', name: 'Icicle', range: 11, cooldown: 4, aim: 'line',
+      blurb: 'Throws a piercing icicle (11 m): 52 and 2 Chill. It sticks in the floor where it ends for 2 s; recast to shatter it: 30 and 1 Chill within 2 m.',
       icon(g, s) {
         iconGround(g, s);
-        for (let i = 0; i < 3; i++) fern(g, s * 0.8, s * 0.82, Math.PI + (i - 1) * 0.55, s * 0.28, s * 0.02);
-        crystal(g, s * 0.16, s * 0.84, s * 0.88, s * 0.14, s * 0.15);
+        // The shatter ring on the floor, small crystals leaning out of the base and the tall icicle standing in the middle.
+        g.strokeStyle = F.rime;
+        g.lineWidth = s * 0.022;
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.84, s * 0.4, s * 0.1, 0, 0, Math.PI * 2);
+        g.stroke();
+        for (let i = 0; i < 3; i++) fern(g, s * 0.5, s * 0.84, Math.PI + (i - 1) * 0.75, s * 0.26, s * 0.018);
+        crystal(g, s * 0.3, s * 0.86, s * 0.2, s * 0.56, s * 0.09);
+        crystal(g, s * 0.7, s * 0.86, s * 0.8, s * 0.6, s * 0.08);
+        crystal(g, s * 0.5, s * 0.9, s * 0.52, s * 0.1, s * 0.16);
         g.fillStyle = F.accent;
         g.beginPath();
-        g.arc(s * 0.88, s * 0.14, s * 0.018, 0, Math.PI * 2);
+        g.arc(s * 0.52, s * 0.1, s * 0.018, 0, Math.PI * 2);
         g.fill();
       },
     },
     {
-      key: 'W', label: 'frostfern field', name: 'Frostfern Field', range: 9, cooldown: 7, aim: 'line', cc: true,
-      blurb: 'Frost ferns race 9 m down the aim from her feet, then crack into crystals and root whoever is still in the strip.',
+      key: 'W', label: 'hoarfrost', name: 'Hoarfrost', range: 8, cooldown: 9,
+      blurb: 'Frost bites the enemy (8 m, needs sight): 36 and 2 Chill.',
       icon(g, s) {
         iconGround(g, s);
-        g.strokeStyle = F.rime;
-        g.lineWidth = s * 0.025;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.8, s * 0.4, s * 0.1, 0, 0, Math.PI * 2);
-        g.stroke();
-        for (let i = 0; i < 5; i++) fern(g, s * 0.5, s * 0.8, Math.PI + (i - 2) * 0.6, s * 0.34, s * 0.022);
-        const cs: [number, number, number][] = [[0.24, 0.4, 0.1], [0.5, 0.18, 0.13], [0.76, 0.42, 0.1]];
-        for (const [x, top, w] of cs) crystal(g, s * x, s * 0.82, s * (x + (x - 0.5) * 0.2), s * top, s * w);
-      },
-    },
-    {
-      key: 'E', label: 'glacial mantle', name: 'Glacial Mantle', range: 0, cooldown: 10,
-      blurb: 'Ice block: she freezes herself solid for 1.5 s. Nothing can hurt her, and she cannot act. Then the ice shatters and a blizzard circles her, slowing enemies that come close.',
-      icon(g, s) {
-        iconGround(g, s);
-        g.strokeStyle = F.rime;
-        g.lineWidth = s * 0.025;
-        g.beginPath();
-        g.arc(s * 0.5, s * 0.5, s * 0.4, 0.3, Math.PI * 1.55);
-        g.stroke();
-        const cx = s * 0.5, cy = s * 0.5;
+        // A fern fan growing up round a faceted flake: the frost that takes hold of one body.
+        const cx = s * 0.5, cy = s * 0.55;
+        for (let i = 0; i < 7; i++) fern(g, cx, cy, (i / 7) * Math.PI * 2 + 0.2, s * 0.34, s * 0.022);
         for (let i = 0; i < 6; i++) {
-          const a = (i / 6) * Math.PI * 2 + 0.25;
-          crystal(g, cx + Math.cos(a) * s * 0.07, cy + Math.sin(a) * s * 0.07, cx + Math.cos(a) * s * (i % 2 ? 0.27 : 0.34), cy + Math.sin(a) * s * (i % 2 ? 0.27 : 0.34), s * 0.11);
+          const a = (i / 6) * Math.PI * 2;
+          crystal(g, cx + Math.cos(a) * s * 0.04, cy + Math.sin(a) * s * 0.04, cx + Math.cos(a) * s * 0.2, cy + Math.sin(a) * s * 0.2, s * 0.085);
         }
         g.fillStyle = F.rime;
         g.beginPath();
-        g.arc(cx, cy, s * 0.045, 0, Math.PI * 2);
+        g.arc(cx, cy, s * 0.04, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = F.accent;
+        g.beginPath();
+        g.arc(cx + s * 0.22, cy - s * 0.3, s * 0.018, 0, Math.PI * 2);
         g.fill();
       },
     },
     {
-      key: 'R', label: 'glacier wall', name: 'Glacier Wall', range: 10, cooldown: 20,
-      blurb: 'Ultimate. Raises an ice wall 7 m long across the aim point (range 10), perpendicular to her. It blocks walking, sight and bolts for 4 s, then shatters. Enemies on its line when it rises take damage, are shoved to the nearer side and slowed for 1.5 s.',
+      key: 'E', label: 'rime armour', name: 'Rime Armour', range: 0, cooldown: 12, buff: { kind: 'armor', amount: 0.4, seconds: 3 },
+      blurb: 'For 3 s: +40% armour, and every basic attack that hits her gives the attacker 2 Chill.',
       icon(g, s) {
         iconGround(g, s);
-        // A row of tall crystals across the frame, ferns racing along the floor in front, one pink glint.
-        for (let i = 0; i < 6; i++) fern(g, s * (0.14 + i * 0.145), s * 0.9, -Math.PI / 2 + (i % 2 ? 0.5 : -0.5), s * 0.16, s * 0.016);
-        const xs = [0.1, 0.24, 0.38, 0.5, 0.62, 0.76, 0.9];
-        xs.forEach((x, i) => {
-          const tall = i === 3 ? 0.14 : i % 2 ? 0.34 : 0.22;
-          crystal(g, s * x, s * 0.86, s * (x + (i % 2 ? 0.02 : -0.02)), s * tall, s * (i === 3 ? 0.16 : 0.13));
-        });
+        // A shell of crystals closing round a dark core: a ring of facets, pointing outward.
+        const cx = s * 0.5, cy = s * 0.52;
+        g.strokeStyle = F.rime;
+        g.lineWidth = s * 0.025;
+        g.beginPath();
+        g.arc(cx, cy, s * 0.3, 0, Math.PI * 2);
+        g.stroke();
+        for (let i = 0; i < 9; i++) {
+          const a = (i / 9) * Math.PI * 2 - Math.PI / 2;
+          crystal(g, cx + Math.cos(a) * s * 0.27, cy + Math.sin(a) * s * 0.27, cx + Math.cos(a) * s * (i % 2 ? 0.43 : 0.47), cy + Math.sin(a) * s * (i % 2 ? 0.43 : 0.47), s * 0.1);
+        }
+        g.fillStyle = '#0d2038';
+        g.beginPath();
+        g.arc(cx, cy, s * 0.22, 0, Math.PI * 2);
+        g.fill();
+        for (let i = 0; i < 4; i++) fern(g, cx, cy, (i / 4) * Math.PI * 2 + 0.4, s * 0.2, s * 0.015);
+        g.fillStyle = F.accent;
+        g.beginPath();
+        g.arc(cx + s * 0.02, cy - s * 0.02, s * 0.018, 0, Math.PI * 2);
+        g.fill();
+      },
+    },
+    {
+      key: 'R', label: "winter's shatter", name: "Winter's Shatter", range: 9, cooldown: 22,
+      blurb: 'Ultimate. Her fist closes on the enemy (9 m, needs sight). 0.8 s later the Chill shatters: 50 plus 30 per Chill (200 at 5), and the Chill is spent. It fizzles if sight is lost.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A cracked frame bursting outward: shards from a closing point, ferns racing along the cracks, one pink glint.
+        const cx = s * 0.5, cy = s * 0.5;
+        for (let i = 0; i < 8; i++) fern(g, cx, cy, (i / 8) * Math.PI * 2 + 0.15, s * 0.4, s * 0.02);
+        for (let i = 0; i < 10; i++) {
+          const a = (i / 10) * Math.PI * 2;
+          const near = s * (i % 2 ? 0.1 : 0.14), far = s * (i % 2 ? 0.3 : 0.4);
+          crystal(g, cx + Math.cos(a) * near, cy + Math.sin(a) * near, cx + Math.cos(a) * far, cy + Math.sin(a) * far, s * (i % 2 ? 0.08 : 0.12));
+        }
+        g.fillStyle = F.dark;
+        g.beginPath();
+        g.arc(cx, cy, s * 0.09, 0, Math.PI * 2);
+        g.fill();
         g.strokeStyle = F.rime;
         g.lineWidth = s * 0.02;
-        g.beginPath();
-        g.moveTo(s * 0.04, s * 0.88);
-        g.lineTo(s * 0.96, s * 0.88);
         g.stroke();
         g.fillStyle = F.accent;
         g.beginPath();
-        g.arc(s * 0.5, s * 0.1, s * 0.018, 0, Math.PI * 2);
+        g.arc(cx, cy, s * 0.02, 0, Math.PI * 2);
         g.fill();
       },
     },

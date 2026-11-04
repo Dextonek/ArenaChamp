@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Arena of Kits: two crossed blades in a gold ring on lacquer black. Built to read at 16 px. -->
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe9a8"/>
+      <stop offset="1" stop-color="#c9a24a"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="31" fill="#120d16"/>
+  <circle cx="32" cy="32" r="28.5" fill="none" stroke="url(#gold)" stroke-width="5"/>
+  <g stroke-linecap="round">
+    <!-- The blades. -->
+    <path d="M17 17 L46 46" stroke="#fff4d4" stroke-width="7"/>
+    <path d="M47 17 L18 46" stroke="url(#gold)" stroke-width="7"/>
+    <!-- The guards. -->
+    <path d="M38 48 L49 37" stroke="#ff7a3c" stroke-width="5.5"/>
+    <path d="M26 48 L15 37" stroke="#ff7a3c" stroke-width="5.5"/>
+  </g>
+  <!-- The spark where they meet. -->
+  <circle cx="32" cy="31.5" r="4.6" fill="#ff5a2a"/>
+  <circle cx="32" cy="31.5" r="2.1" fill="#fff4d4"/>
+</svg>

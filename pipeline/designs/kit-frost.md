@@ -1,5 +1,28 @@
 # Frost kit: Isolde, the Winter Warden
 
+## v5 (2026-11-04)
+600 HP, 3.9 m/s, attack 8 m, 13 per 1.4 s (ranged). Source: [kits-v5.md](kits-v5.md) "Isolde". Rules: `src/traits/frost.ts`. Spells
+(new files in `src/spells/targeted/`, category `hero: frost`; the v4 spell files below stay for the VFX tool).
+
+- **Passive, Deep Winter:** her hits add Chill on the enemy (5 at most, 4 s, snowflake pips; `addStacks` in `dealt`). Basic attack 1, Q 2, its
+  Shatter 1, W 2. A hit that leaves 3 or more Chill also slows 2 s (only when it carries no status of its own). With 5 Chill BEFORE a hit
+  that is not R, that hit freezes: x1.3 damage, stun 0.9 s, Chill clears, and no Chill is added until the freeze ends. R spends the Chill
+  (+30 per stack on 50, then clears them), adds none and never freezes, so a frozen enemy takes only 50.
+- **Q Icicle** (`icicle.ts`, `icicle`, 4 s, 11 m, `aim: 'line'`): piercing, 22 m/s, 0.3 s wind-up, 52. It sticks where the flight ends (or
+  where cover stopped it) for 2 s, drawn as a standing icicle with a 2 m ring (`Trait.marks`). Recast Shatter (`arm` 1.3 s, window 2.8 s):
+  30 and 1 Chill within 2 m of the icicle, live positions, `projectile: true`, 0.15 s after the press. The spot is worked out at the cast
+  from `sentFrom` and the aim, with the engine's sight test, so both screens agree. Told apart from the first cast by a per-figure clock (3 s).
+- **W Hoarfrost** (`hoarfrost.ts`, `hoarfrost`, 9 s, `enemy` 8 m): 36, 2 Chill, lands 0.45 s after the cast on the live position
+  (`projectile: true`), no slow of its own.
+- **E Rime Armour** (`rimeArmour.ts`, `rime armour`, 12 s, self): kit buff armor +40% for 3 s, a shell that follows her; every basic attack that
+  hits her meanwhile gives the attacker 2 Chill (`taken`, her own client).
+- **R Winter's Shatter** (`wintersShatter.ts`, `winter's shatter`, 22 s, `enemy` 9 m): fist closes, 0.8 s wind-up with rime climbing the enemy,
+  then if `stillSees` the hit, 50 plus 30 per Chill (`projectile: true`); otherwise it fizzles and spends nothing. One impact frame.
+- **Weakness:** no dash and a slow start; a hero who dodges the icicle and stays behind cover carries no Chill, so R does little.
+
+---
+
+
 ## Role (2026-10-30)
 **Controller**, 600 HP. Signature: *Frostbite, then freeze*.
 - Q Rime Spear: a piercing skillshot (`aim: 'line'`, range 12, speed 24, 53 damage), **slow 1.5**; the ferns and crystals grow where the first body is hit, the javelin shatters at max range.

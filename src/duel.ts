@@ -6,7 +6,7 @@ import { ARC_BEND, BODY_RADIUS, arcPoints } from './effects/projectile';
 import { MAX_UNITS, type SummonSide, type SummonStats } from './effects/summon';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS, type BuffKind, type StatusKind } from './effects/status';
-import type { HeroKit, HeroSpell } from './heroes';
+import { HERO_BODIES, type HeroKit, type HeroSpell } from './heroes';
 import { HeroFigure, castStyle } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
 import type { ArenaHazard, HazardHit, HazardTarget, HazardWorld } from './arenas/hazards/base';
@@ -15,7 +15,7 @@ import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
 import { TOUCH } from './touch';
-import { CPU_NORMAL, type CpuLevel } from './cpuLevels';
+import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -31,6 +31,8 @@ export interface DuelHost {
   setStage?(stage: ArenaStage | null): void;
   /** Ends every spell still on screen (main.ts `clearEffects`): a new round or a left duel starts clean. */
   clearEffects?(): void;
+  /** Compiles what is in the scene now, so the first frames of a fight do not stutter. */
+  warmUp?(): Promise<unknown>;
   /** The outline: round this object, or off (null). */
   outline?(object: THREE.Object3D | null): void;
 }
@@ -115,7 +117,7 @@ const WALL_BLAST_REACH = 0.6;
 /** How close a line spell's path has to pass a wall (besides its thickness) to hit it. */
 const WALL_LINE_PAD = 0.3;
 const MELEE_GAP = 2; // a melee AI closes to about this distance (m)
-const DODGE_RADIUS = 1.6; // a hit still lands within this distance of where the cast aimed
+const DODGE_RADIUS = 1.6; // a hit of a cast with no drawn shape still lands within this distance of where it aimed
 const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
 const LEAD_MAX = 3; // a CPU level's lead never puts its aim more than this far (m) ahead of the player
 const ZONE_MARGIN = 0.35; // a zone dodge aims this far (m) past the edge of the zone it leaves
@@ -199,7 +201,7 @@ export class Duel {
   private playerDodge = new Map<number, BoltDodge>();
   /** The opponent's CPU level (src/cpuLevels.ts): how fast it walks and casts, how it aims and dodges. The autopilot
    * always plays Normal. */
-  cpuLevel: CpuLevel = CPU_NORMAL;
+  cpuLevel: CpuLevel = CPU_BALANCE;
   /** Seconds before the opponent may cast again (its level's `castGap`, rolled after each cast). */
   private castWait = 0;
   /** The player's walk (m/s, smoothed over about 0.2 s): a level's `lead` aims ahead of it. */
@@ -270,6 +272,8 @@ export class Duel {
   /** Hit options already resolved (the arena's `hitMod` leaves them as they are). */
   private resolved = new WeakSet<HitOptions>();
   private countdown = -1;
+  /** The fight has not started: the game's loading page and countdown are still to come. */
+  private waiting = false;
   /** When the countdown ends (performance.now() ms): wall clock, so a client that stalls (a new arena compiling) still
    * unlocks with the other side instead of seconds later. */
   private countdownEnd = 0;
@@ -339,7 +343,7 @@ export class Duel {
       b.addEventListener('click', fn);
       buttons.appendChild(b);
     };
-    button('Rematch', () => this.start());
+    button('Rematch', () => (this.onRematch ? this.onRematch() : this.start()));
     button('Leave duel', () => this.onLeave?.());
     this.card.append(this.cardTitle, this.cardText, buttons);
     this.flash = document.createElement('div');
@@ -356,6 +360,13 @@ export class Duel {
 
   /** What "Leave duel" does: the tool turns the duel off and syncs its panel, the game goes back to its menu. */
   onLeave?: () => void;
+  /** What "Rematch" does, when the game wants its own loading page first (default: start again at once). */
+  onRematch?: () => void;
+  /**
+   * `start('play')` holds the fight until `countdownFrom`: the game shows its loading page first. The VFX tool leaves it off,
+   * and AI-vs-AI runs never wait.
+   */
+  holdStart = false;
   /** A round is over ('win': the player won). The game's CPU match records a beaten level (src/game/cpu.ts). */
   onFinish?: (result: 'win' | 'lose') => void;
 
@@ -387,7 +398,9 @@ export class Duel {
     this.opponentKit = picked ?? others[Math.floor(Math.random() * others.length)];
     this.hazardSeed = String(Math.random());
     this.setup(PLAYER_START, OPPONENT_START, arenaById(this.arenaChoice) ?? pickArena());
-    if (!run) this.showBanner(this.currentArena!.name, 1.6);
+    this.waiting = !run && this.holdStart;
+    if (this.waiting) hm.locked = true;
+    else if (!run) this.showBanner(this.currentArena!.name, 1.6);
     arena.hitFilter = (target, opts, cast) => this.opponentHit(target, opts, cast);
     arena.casterHeal = (amount) => this.healPlayer(amount);
     arena.casterShield = null;
@@ -417,6 +430,7 @@ export class Duel {
     this.peerTrack = [];
     this.peerClock = null;
     this.castSeq = 0;
+    this.waiting = true;
     this.think = Infinity; // no AI: the other player drives the opponent
     hm.flipCamera = o.side === 1;
     hm.snapCameraNow();
@@ -433,8 +447,6 @@ export class Duel {
     arena.casterShield = (amount, seconds, color) => this.net?.shield(amount, seconds, color);
     this.rematchButton.style.display = 'none';
     this.leaveButton.textContent = 'Back to menu';
-    this.showBanner(`Waiting for opponent · ${this.currentArena!.name}`, 999);
-    this.banner.style.fontSize = '28px';
     this.renderHud();
   }
 
@@ -467,6 +479,9 @@ export class Duel {
     arena.setCount(1);
     this.foe = arena.liveFoes()[0]?.figure ?? null;
     if (this.foe) arena.placeFoe(this.foe, theirs);
+    // Each hero is hit at the size of its own model.
+    arena.caster.body = HERO_BODIES[hm.currentKit.name] ?? null;
+    if (this.foe) this.foe.body = HERO_BODIES[this.opponentKit.name] ?? null;
     arena.caster.setHome(mine);
     arena.caster.reset();
     arena.caster.group.rotation.y = Math.atan2(theirs.x - mine.x, theirs.z - mine.z);
@@ -689,6 +704,8 @@ export class Duel {
     const vRt = !victimIsHero ? null : dealer === 'hero' ? this.oppRt : this.heroRt;
     const hit: TraitHit = { kind, slot, cast, mods, damage: (opts.damage ?? 15) * mods.power, opts: { ...opts } as HitOptions, victim, victimIsHero };
     if (victimIsHero) hit.damage *= arena.statusOf(victim)?.takenMul ?? 1;
+    // The CPU level's own lever (never online: the other side is a person).
+    if (dealer === 'opponent' && !this.net) hit.damage *= this.cpuLevel.damage;
     // Sealed (Sefu's sarcophagus): nothing reaches the figure, from either side.
     if (victimIsHero && arena.statusOf(victim)?.sealed) hit.blocked = true;
     dRt?.dealt(hit);
@@ -720,7 +737,7 @@ export class Duel {
 
   /** The CPU level that drives `who`: the opponent plays `cpuLevel`, the autopilot always plays Normal. */
   private levelOf(who: Enemy) {
-    return who === this.foe ? this.cpuLevel : CPU_NORMAL;
+    return who === this.foe ? this.cpuLevel : CPU_BALANCE;
   }
 
   stop() {
@@ -780,7 +797,21 @@ export class Duel {
 
   // --- network duel ---------------------------------------------------------------------------------------
 
-  /** The server's countdown before the fight: the hero is locked until it runs out. */
+  /**
+   * Resolves when both heroes' figures have loaded and the arena's materials are compiled, so the fight does not start on a
+   * stutter, or after `maxMs` whatever is left: a slow model must not hold a match up. The figures are drawn even when
+   * this resolves early.
+   */
+  async whenReady(maxMs = 12000) {
+    const end = performance.now() + maxMs;
+    const figures = async () => {
+      while (performance.now() < end && !(this.host.heroMode.figureLoaded && this.figure.loaded)) await new Promise((ok) => setTimeout(ok, 60));
+    };
+    await figures();
+    await Promise.race([this.host.warmUp?.() ?? Promise.resolve(), new Promise((ok) => setTimeout(ok, Math.max(0, end - performance.now())))]);
+  }
+
+  /** The countdown before the fight: the hero is locked (and an AI waits) until it runs out. */
   countdownFrom(seconds: number) {
     this.countdown = seconds;
     this.countdownEnd = performance.now() + seconds * 1000;
@@ -987,8 +1018,11 @@ export class Duel {
       this.countdown = (this.countdownEnd - performance.now()) / 1000;
       if (this.countdown <= 0) {
         this.countdown = -1;
+        this.waiting = false;
+        // No opening beat after a countdown: the fight is on for both.
+        if (!this.net) this.think = 0;
         this.host.heroMode.locked = false;
-        this.showBanner('FIGHT', 0.9);
+        this.showBanner('DUEL!', 0.9);
       } else if (this.banner.textContent !== String(Math.ceil(this.countdown))) {
         this.showBanner(String(Math.ceil(this.countdown)), 999);
       }
@@ -1004,7 +1038,8 @@ export class Duel {
     if (!this.on) return;
     const arena = this.host.arena, hm = this.host.heroMode;
     const me = arena.caster.group.position;
-    this.time += dt;
+    // The round's clock starts with the fight, on both screens.
+    if (!this.waiting) this.time += dt;
     this.arenaScene?.update?.(dt, this.time);
     this.oppAttack.update(dt);
     this.oppAttackFx.update(dt);
@@ -1077,6 +1112,10 @@ export class Duel {
       this.playerVel.z += ((me.z - this.playerLast.z) / dt - this.playerVel.z) * k;
     }
     (this.playerLast ??= new THREE.Vector3()).copy(me);
+    if (this.waiting) {
+      this.renderHud();
+      return;
+    }
     this.ai(dt, foe, foePos, me);
     if (this.autopilot) this.pilot(dt, foe, foePos, me);
     this.renderHud();
@@ -1181,7 +1220,7 @@ export class Duel {
    * summon spell goes by (ready and the hero within `SUMMON_REACH`, unless `full`: the side has the most units).
    * A parry or a bolt wall (`HeroSpell.parry` / `barrier`) goes only when `guard` says a hit is on its way, and then first.
    */
-  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean, otherHeld = false, dHero = d, full = false, ownHp = 1, guard = NO_GUARD, lv = CPU_NORMAL) {
+  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean, otherHeld = false, dHero = d, full = false, ownHp = 1, guard = NO_GUARD, lv = CPU_BALANCE) {
     const ready = (i: number) => {
       if (cooling(i)) return null;
       const spell = kit.spells[i];
@@ -1294,12 +1333,12 @@ export class Duel {
     const guarding = !st.cannotCast && this.guarded(kit, guard, (i) => hm.ready(i));
     const side = st.cannotMove || guarding ? null : this.dodgeBolt(this.playerDodge, this.host.arena.caster, me);
     if (side) {
-      this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit, CPU_NORMAL) * st.speedMul * dt));
+      this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit, CPU_BALANCE) * st.speedMul * dt));
       return;
     }
     const clear = st.cannotMove ? null : this.hazardStep(this.host.arena.caster, me, at);
     if (clear) {
-      this.host.arena.walk(clear.multiplyScalar(this.aiSpeed(kit, CPU_NORMAL) * st.speedMul * dt));
+      this.host.arena.walk(clear.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt));
       return;
     }
     const sees = this.host.arena.lineOfSight(me, at);
@@ -1333,7 +1372,7 @@ export class Duel {
     if (st.cannotMove) return;
     const goal = this.oppRt?.trait?.enemyGoal?.(this.oppRt);
     const move = goal ? new THREE.Vector3(goal.x - me.x, 0, goal.z - me.z).normalize() : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
-    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_NORMAL) * st.speedMul * dt), Infinity, !this.playerAi.routed);
+    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
   }
 
   /**
@@ -1416,13 +1455,11 @@ export class Duel {
       .filter((c) => c.round === this.round)
       .map((c) => {
         const zones = pending(c);
-        // The aim radius only counts for a cast aimed at the opponent (a zone over the spot it stood on).
-        return { c, zones, aimed: zones.some((z) => insideTelegraph(z.shape, c.aimed.x, c.aimed.z)) };
+        return { c, zones };
       })
       .filter((l) => l.zones.length);
     for (const id of this.zoneDodges.keys()) if (!live.some((l) => l.c.id === id)) this.zoneDodges.delete(id);
     const hits = (l: (typeof live)[number], x: number, z: number) =>
-      (l.aimed && Math.hypot(x - l.c.aimed.x, z - l.c.aimed.z) <= DODGE_RADIUS + ZONE_MARGIN) ||
       l.zones.some((zn) => insideTelegraph(grownShape(zn.shape, ZONE_MARGIN), x, z));
     let go = false;
     for (const l of live) {
@@ -1594,13 +1631,20 @@ export class Duel {
   }
 
   /** An enemy spell's hit on the player: lands only if the player is still in its zones (or near where it aimed). */
+  /**
+   * The hit box of a cast: inside a drawn shape if it has any, so a player never takes a hit from outside what was shown. Only a cast
+   * with no drawn shape falls back on the distance from where it aimed.
+   */
+  private inCastReach(c: { zones: { shape: TelegraphShape }[]; aimed: THREE.Vector3 }, p: THREE.Vector3) {
+    return c.zones.length ? c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) : flat(p, c.aimed) <= DODGE_RADIUS;
+  }
+
   private hitPlayer(c: EnemyCast, opts: HitOptions = {}) {
     if (this.over || c.round !== this.round || !this.on) return;
     const arena = this.host.arena;
     const me = arena.caster.group.position;
     // A skillshot already touched the hero: that was the dodge check, so the zones do not decide.
-    const inZone = opts.projectile || c.zones.some((z) => insideTelegraph(z.shape, me.x, me.z));
-    if (!inZone && flat(me, c.aimed) > DODGE_RADIUS) {
+    if (!opts.projectile && !this.inCastReach(c, me)) {
       if (!c.dodgedShown) {
         c.dodgedShown = true;
         this.stats.playerDodges++;
@@ -1664,7 +1708,7 @@ export class Duel {
   private hitUnit(c: EnemyCast, target: Enemy, opts: HitOptions = {}) {
     if (this.over || c.round !== this.round || !this.on) return;
     const p = target.group.position;
-    if (opts.projectile || c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS) {
+    if (opts.projectile || this.inCastReach(c, p)) {
       this.host.arena.hit(target, this.resolve('opponent', target, opts, c.mods ?? NO_MODS, 'spell', c.slot, c.seq));
     }
   }
@@ -1790,7 +1834,7 @@ export class Duel {
     const p = target.group.position;
     const c = this.playerCastsRecent.find((r) => r.id === cast && this.time - r.t < 4.5);
     if (!c) return true;
-    const lands = c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) || flat(p, c.aimed) <= DODGE_RADIUS;
+    const lands = this.inCastReach(c, p);
     if (!lands && target === this.foe) {
       if (!c.dodgedShown) {
         c.dodgedShown = true;

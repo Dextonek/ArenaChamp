@@ -320,6 +320,11 @@ export class HeroMode implements TouchTarget {
     return this.host.arena.applyStatus(this.host.arena.caster, kind, seconds, color);
   }
 
+  /** The hero's figure has loaded (or it has none to load). */
+  get figureLoaded() {
+    return this.figure.loaded;
+  }
+
   /** Ends a hold or a cast's root early (a broken channel). */
   release() {
     this.rooted = 0;
@@ -884,7 +889,7 @@ export class HeroMode implements TouchTarget {
     let best = BODY_PICK * BODY_PICK, found: Enemy | null = null;
     for (const f of this.host.arena.liveFoes()) {
       foot.set(f.pos.x, 0, f.pos.z);
-      head.set(f.pos.x, BODY_HEIGHT, f.pos.z);
+      head.set(f.pos.x, f.figure.body?.height ?? BODY_HEIGHT, f.pos.z);
       const d = ray.distanceSqToSegment(foot, head);
       if (d < best) { best = d; found = f.figure; }
     }

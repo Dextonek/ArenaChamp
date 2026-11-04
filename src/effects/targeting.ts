@@ -71,6 +71,11 @@ export interface CastContext {
   readonly aim: number;
   /** The enemies to hit, primary first (chain order for `enemies`). May be empty for `ground` / `self`. */
   readonly targets: readonly Enemy[];
+  /**
+   * Every enemy alive now, wherever the cast was aimed (`targets` only holds those near the aim): for a recast whose hit is
+   * decided somewhere else, such as an icicle in the ground or a tree. Judge them on their live positions.
+   */
+  enemies?(): Enemy[];
   /** Feet position of each target at cast time, same order as `targets`. */
   readonly targetPos: readonly THREE.Vector3[];
   /** Ground aim point (y = 0): clicked spot, else the primary target, else in front of the caster. */

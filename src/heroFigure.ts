@@ -126,6 +126,11 @@ const TURN_RATE = 30;
  * greatsword heroes swing overhead with both hands.
  */
 export class HeroFigure {
+  /** The current model has loaded (true when there is none: the capsule stands in). */
+  get loaded() {
+    return !this.figure || this.figure.loaded;
+  }
+
   readonly group = new THREE.Group();
   private figures = new Map<string, Hero>();
   private figure: Hero | null = null;

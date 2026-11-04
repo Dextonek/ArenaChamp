@@ -989,3 +989,98 @@ export class RootRing {
     this.mat.uniforms.uOpacity.value = alpha;
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Thorns
+// ---------------------------------------------------------------------------------------------------------------
+
+interface ThornSpot { x: number; z: number; h: number; w: number; delay: number; lean: number; yaw: number; peek: number }
+
+/**
+ * A field of thorns on a disc (World Tree's Uproot): dark-green spikes with pale bark tips. `place(center, radius)` lays
+ * them out (the same spots on every screen: a golden-angle spread, no randomness), `peek` (0..1, set from outside) shows
+ * short tips breaking the soil (the warning), `burst()` springs them all up in a ripple from the centre outward, holds
+ * them and sinks them. `update(dt)` every frame, `reset()` hides them. Add `mesh`.
+ */
+export class Thorns {
+  readonly mesh: THREE.InstancedMesh;
+  /** 0..1: short tips peeking out of the ground (the warning before the burst). */
+  peek = 0;
+  private spots: ThornSpot[] = [];
+  private center = new THREE.Vector3();
+  private radius = 3;
+  private age = -1;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private e = new THREE.Euler();
+  private s = new THREE.Vector3();
+  private p = new THREE.Vector3();
+
+  constructor(count = 44) {
+    const geo = new THREE.ConeGeometry(0.2, 1, 6, 1).translate(0, 0.5, 0);
+    this.mesh = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({
+      uniforms: groveUniforms(),
+      vertexShader: /* glsl */ `
+        varying float vY;
+        void main() {
+          vY = position.y;
+          gl_Position = projectionMatrix * modelViewMatrix * (instanceMatrix * vec4(position, 1.0));
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uBody, uDark, uBark;
+        varying float vY;
+        void main() {
+          vec3 col = mix(uDark * 2.1, uBody * 1.05, smoothstep(0.0, 0.45, vY));
+          col = mix(col, uBark, smoothstep(0.6, 0.82, vY));
+          gl_FragColor = vec4(col, 1.0);
+        }`,
+    }), count);
+    this.mesh.frustumCulled = false;
+    this.mesh.count = 0;
+    for (let i = 0; i < count; i++) {
+      const r = Math.sqrt((i + 0.5) / count), a = i * 2.39996;
+      this.spots.push({ x: Math.cos(a) * r, z: Math.sin(a) * r, h: 0.9 + 0.8 * hash(i + 1), w: 0.8 + 0.5 * hash(i + 9), delay: r * 0.16 + 0.03 * hash(i + 5), lean: 0.12 + 0.25 * hash(i + 3), yaw: a, peek: 0.12 + 0.2 * hash(i + 7) });
+    }
+  }
+
+  place(center: THREE.Vector3, radius: number) {
+    this.center.copy(center);
+    this.center.y = 0;
+    this.radius = radius;
+  }
+
+  burst() {
+    this.age = 0;
+  }
+
+  reset() {
+    this.age = -1;
+    this.peek = 0;
+    this.mesh.count = 0;
+  }
+
+  update(dt: number) {
+    if (this.age >= 0) this.age += dt;
+    if (this.age < 0 && this.peek <= 0.01) { this.mesh.count = 0; return; }
+    let n = 0;
+    for (const sp of this.spots) {
+      let k = 0;
+      if (this.age >= 0) {
+        const t = this.age - sp.delay;
+        // Springs up in 0.1 s, holds to 0.5 s, sinks in 0.25 s.
+        k = t < 0 ? sp.peek * this.peek : t < 0.1 ? smooth(t / 0.1) : t < 0.5 ? 1 : 1 - smooth((t - 0.5) / 0.25);
+        if (t >= 0 && k < 0.02) continue;
+      } else k = sp.peek * this.peek;
+      if (k < 0.02) continue;
+      const out = Math.hypot(sp.x, sp.z) || 1;
+      this.p.set(this.center.x + sp.x * this.radius, 0, this.center.z + sp.z * this.radius);
+      this.e.set(sp.lean * (sp.x / out) * 0.6, sp.yaw, sp.lean * (sp.z / out) * 0.6);
+      this.q.setFromEuler(this.e);
+      this.s.set(sp.w, Math.max(sp.h * k, MIN_SCALE), sp.w);
+      this.m.compose(this.p, this.q, this.s);
+      this.mesh.setMatrixAt(n++, this.m);
+    }
+    this.mesh.count = n;
+    this.mesh.instanceMatrix.needsUpdate = true;
+  }
+}

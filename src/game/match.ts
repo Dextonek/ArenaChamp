@@ -1,15 +1,19 @@
 import type { GameApi } from '../runtime';
 import type { HeroKit } from '../heroes';
 import type { NetClient, Profile, ServerMsg } from '../net/client';
+import { nextPaint, sleep, type LoadingScreen } from './loading';
 
 type Api = GameApi;
 const MOVE_HZ = 20;
+/** The loading page stays up at least this long, so it can be read and never just flickers. */
+const LOADING_MIN = 700;
 
 /**
  * Runs one network match on top of the existing duel: on `match_start` it sets the hero, turns hero mode on and
  * starts `Duel.startNet` against the other player's hero; it streams this side's position, relays casts, hits and
  * dodges, and shows the server's result. A match is best of three rounds: `round_end` shows the round's winner and
- * `round_start` runs `startNet` again (each round in its own arena). `onExit` brings the menu back.
+ * `round_start` runs `startNet` again (each round in its own arena). Each round shows the loading page until this side
+ * has loaded and the server says both have (`match_fight`), then the 3-2-1. `onExit` brings the menu back.
  */
 export class MatchController {
   active = false;
@@ -18,10 +22,13 @@ export class MatchController {
   private names: [string, string] = ['', ''];
   private current: Extract<ServerMsg, { t: 'match_start' }> | null = null;
   private forfeit: HTMLButtonElement;
+  /** Each round's start gets a number: one the match already left does not go on after its waits. */
+  private run = 0;
 
   constructor(
     private net: NetClient,
     private api: Api,
+    private loading: LoadingScreen,
     private ui: { onEnter(): void; onExit(): void; onProfile(p: Profile): void; toast(text: string): void },
   ) {
     this.forfeit = document.createElement('button');
@@ -39,7 +46,12 @@ export class MatchController {
       if (this.active && document.hidden) this.ui.toast('This tab is hidden: your opponent sees you stutter. Play in two windows, not two tabs.');
     });
     net.on('match_start', (m) => this.start(m));
-    net.on('match_fight', (m) => this.active && api.duel.countdownFrom(m.countdown));
+    net.on('match_fight', (m) => {
+      if (!this.active) return;
+      this.run++;
+      loading.hide();
+      api.duel.countdownFrom(m.countdown);
+    });
     net.on('peer_move', (m) => {
       if (!this.active) return;
       api.duel.peerMove(m.x, m.z, m.yaw, m.ts);
@@ -57,7 +69,7 @@ export class MatchController {
     net.on('peer_dodged', () => this.active && api.duel.peerDodged());
     net.on('hp', (m) => this.active && api.duel.setPlayerHp(m.hp));
     net.on('round_end', (m) => this.active && api.duel.netRoundEnd(this.roundText(m)));
-    net.on('round_start', (m) => this.active && this.current && this.beginRound(m.round));
+    net.on('round_start', (m) => { if (this.active && this.current) void this.beginRound(m.round); });
     net.on('match_end', (m) => this.end(m));
     net.on('socket', (m) => {
       if (!m.open && this.active) {
@@ -89,13 +101,18 @@ export class MatchController {
     this.forfeit.style.display = '';
     clearInterval(this.moveTimer);
     this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
-    this.beginRound(1);
+    void this.beginRound(1);
   }
 
   /** Sets up a round (both heroes at their starts, full HP, cooldowns ready) and tells the server this side is ready. */
-  private beginRound(round: number) {
+  private async beginRound(round: number) {
     const { api, net } = this, m = this.current!;
     const mine = this.kit(m.you.hero)!, theirs = this.kit(m.foe.hero)!;
+    const run = ++this.run;
+    this.loading.show({ mine, theirs, names: this.names, title: round > 1 ? `Round ${round}` : 'Entering the arena', line: 'Loading the arena' });
+    // The page must be on screen before the arena is built, which holds the browser up for a moment.
+    await nextPaint();
+    if (run !== this.run || !this.active) return;
     api.duel.startNet({
       opponent: theirs,
       side: m.side,
@@ -118,7 +135,12 @@ export class MatchController {
     });
     this.lastSent = '';
     this.sendMove();
-    // The hero figures load asynchronously; the server starts the countdown once both sides are here.
+    this.loading.setArena(api.duel.currentArena?.name ?? 'The arena');
+    this.loading.setLine('Loading the heroes');
+    await Promise.all([api.duel.whenReady(), sleep(LOADING_MIN)]);
+    if (run !== this.run || !this.active) return;
+    // This side is ready; the server starts the countdown once both are (or after its own wait runs out).
+    this.loading.setLine(`Waiting for ${m.foe.name}`);
     net.send({ t: 'match_loaded', maxHp: mine.maxHp ?? 600 });
   }
 
@@ -144,6 +166,8 @@ export class MatchController {
   private end(m: Extract<ServerMsg, { t: 'match_end' }>) {
     if (m.profile) this.ui.onProfile(m.profile);
     if (!this.active) return;
+    this.run++;
+    this.loading.hide();
     clearInterval(this.moveTimer);
     this.forfeit.style.display = 'none';
     const [me, foe] = this.names;
@@ -159,6 +183,8 @@ export class MatchController {
   exit() {
     const was = this.active;
     this.active = false;
+    this.run++;
+    this.loading.hide();
     this.current = null;
     clearInterval(this.moveTimer);
     this.forfeit.style.display = 'none';

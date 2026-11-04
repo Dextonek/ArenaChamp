@@ -3,7 +3,7 @@ import type { HeroKit } from '../heroes';
 /**
  * Grove kit data (Fenna, the Grove Warden): dark forest-green ground, pale bark foil, leaf-green spiral vines with
  * pink-and-cream flowers. Icons are drawn on canvases in the kit palette, one signature shape each: the spiral vine
- * that blooms (see pipeline/designs/kit-grove.md).
+ * that blooms (v5 kit: Seed Shot, Strangle Vine, Pollen Glide, World Tree; see pipeline/designs/kit-grove.md).
  */
 const G = { core: '#fffbe0', hot: '#ffe36a', body: '#4caf50', accent: '#ff7ab8', dark: '#14260f', bark: '#e8dcc0', leafDark: '#2f7a35', pinkDark: '#c4487f' };
 
@@ -190,118 +190,133 @@ export const groveKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'bloom lash', name: 'Bloom Lash', range: 10, cooldown: 3,
-      blurb: 'A spiral vine coils across to one enemy and a flower blooms on top: it plants two seeds, or blooms the seeds already there.',
+      key: 'Q', label: 'seed shot', name: 'Seed Shot', range: 9, cooldown: 4, aim: 'line',
+      blurb: 'A seed flies 9 m (0.25 s wind-up): 50 damage. A flower grows where it stops, on the enemy or at the end of its flight.',
       icon(g, s) {
         ground(g, s);
-        // A vine spiralling over the ground from the lower left up to a flower at the upper right.
+        // The flower that grows where the seed stops, on a root ring in the lower right.
+        rootRing(g, s * 0.74, s * 0.84, s * 0.2, s * 0.06, s * 0.03);
+        flower(g, s * 0.74, s * 0.82, s * 0.28, 0.1);
+        // The seed's trail: a spiral vine from the upper left, ending at the seed.
         const pts: Pt[] = [];
-        for (let i = 0; i <= 56; i++) {
-          const u = i / 56;
-          pts.push([s * (0.08 + 0.64 * u) , s * (0.84 - 0.34 * u) + Math.sin(u * 5.5 * Math.PI) * s * 0.07 * (1 - u * 0.4)]);
+        for (let i = 0; i <= 40; i++) {
+          const u = i / 40;
+          pts.push([s * (0.06 + 0.4 * u), s * (0.18 + 0.28 * u) + Math.sin(u * 4 * Math.PI) * s * 0.05 * u]);
         }
-        vine(g, pts, s * 0.07);
-        leaf(g, s * 0.26, s * 0.66, -2.1, s * 0.13);
-        leaf(g, s * 0.4, s * 0.64, 2.2, s * 0.12);
-        leaf(g, s * 0.55, s * 0.5, -2.0, s * 0.12);
-        // Coils up around the target on the right, then the flower.
-        vine(g, spiral(s * 0.76, s * 0.6, s * 0.3, s * 0.07, 2.5), s * 0.065);
-        flower(g, s * 0.76, s * 0.3, s * 0.2, 0.1);
-        motes(g, [[s * 0.9, s * 0.2, 0], [s * 0.6, s * 0.12, 1], [s * 0.94, s * 0.4, 1], [s * 0.68, s * 0.06, 0]], s * 0.016);
-      },
-    },
-    {
-      key: 'W', label: 'overgrowth', name: 'Overgrowth', range: 9, cooldown: 7, cc: true,
-      blurb: 'Vines grow up round the chosen enemy and burst into flowers; unless it steps away it is rooted for 1.2 s.',
-      icon(g, s) {
-        ground(g, s);
-        const cx = s * 0.5, cy = s * 0.74;
-        rootRing(g, cx, cy, s * 0.43, s * 0.15, s * 0.045);
-        // Roots from the centre.
-        g.strokeStyle = G.body;
-        g.lineCap = 'round';
-        g.lineWidth = s * 0.02;
-        for (let i = 0; i < 8; i++) {
-          const a = (i / 8) * Math.PI * 2 + 0.2;
-          g.beginPath(); g.moveTo(cx, cy); g.quadraticCurveTo(cx + Math.cos(a) * s * 0.2, cy + Math.sin(a) * s * 0.05 - s * 0.02, cx + Math.cos(a) * s * 0.34, cy + Math.sin(a) * s * 0.11); g.stroke();
-        }
-        // Spiral vines with flowers at the tips.
-        const spots: [number, number, number][] = [[0.22, 0.72, 0.4], [0.78, 0.72, 0.42], [0.38, 0.84, 0.3], [0.64, 0.84, 0.32], [0.5, 0.68, 0.46]];
-        spots.sort((a, b) => a[1] - b[1]);
-        for (const [x, y, h] of spots) {
-          vine(g, spiral(s * x, s * y, s * h, s * 0.045, 2.2, x * 9), s * 0.045);
-          flower(g, s * x, s * (y - h), s * 0.13, (x - 0.5) * 0.5);
-        }
-        motes(g, [[s * 0.1, s * 0.3, 1], [s * 0.9, s * 0.28, 1], [s * 0.5, s * 0.16, 0]], s * 0.014);
-      },
-    },
-    {
-      key: 'E', label: 'verdant ward', name: 'Verdant Ward', range: 9, cooldown: 12, summon: true,
-      buff: { kind: 'haste', amount: 0.2, seconds: 3 },
-      blurb: 'A flowering vine grows where she points (80 HP, 6 s) and fires petals at whatever comes near.',
-      icon(g, s) {
-        ground(g, s);
-        // The outer range ring, pale at the edge.
-        g.strokeStyle = G.bark;
-        g.lineWidth = s * 0.025;
-        g.setLineDash([s * 0.07, s * 0.05]);
-        g.beginPath(); g.arc(s * 0.5, s * 0.5, s * 0.43, 0, Math.PI * 2); g.stroke();
-        g.setLineDash([]);
-        // Three vines with flowers tipped outward, petal jets leaving them.
-        const ang = [-Math.PI / 2, Math.PI / 6, Math.PI * 5 / 6];
-        for (const a of ang) {
-          const bx = s * 0.5 + Math.cos(a) * s * 0.1, by = s * 0.52 + Math.sin(a) * s * 0.1;
-          const fx = s * 0.5 + Math.cos(a) * s * 0.3, fy = s * 0.52 + Math.sin(a) * s * 0.3;
-          const pts: Pt[] = [];
-          for (let i = 0; i <= 30; i++) {
-            const u = i / 30;
-            const px = bx + (fx - bx) * u, py = by + (fy - by) * u;
-            const nx = -Math.sin(a), ny = Math.cos(a);
-            const w = Math.sin(u * Math.PI * 4) * s * 0.025;
-            pts.push([px + nx * w, py + ny * w]);
-          }
-          vine(g, pts, s * 0.05);
-          flower(g, fx, fy, s * 0.15, a + Math.PI / 2);
-          motes(g, [
-            [fx + Math.cos(a) * s * 0.17, fy + Math.sin(a) * s * 0.17, 0],
-            [fx + Math.cos(a + 0.35) * s * 0.23, fy + Math.sin(a + 0.35) * s * 0.23, 1],
-            [fx + Math.cos(a - 0.3) * s * 0.21, fy + Math.sin(a - 0.3) * s * 0.21, 0],
-          ], s * 0.016);
-        }
+        vine(g, pts, s * 0.045);
+        leaf(g, s * 0.2, s * 0.3, -1.9, s * 0.1);
+        leaf(g, s * 0.32, s * 0.4, 2.0, s * 0.1);
+        // The seed itself: a pale oval ringed in dark, a pink bud cap on its front, a leaf pair at its back.
+        g.save();
+        g.translate(s * 0.52, s * 0.5);
+        g.rotate(0.62);
+        leaf(g, -s * 0.12, 0, -2.6, s * 0.13);
+        leaf(g, -s * 0.12, 0, 2.6, s * 0.13);
+        g.fillStyle = G.dark;
+        g.beginPath(); g.ellipse(0, 0, s * 0.19, s * 0.125, 0, 0, Math.PI * 2); g.fill();
         g.fillStyle = G.bark;
-        g.beginPath(); g.arc(s * 0.5, s * 0.52, s * 0.06, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = G.dark;
-        g.lineWidth = s * 0.014;
-        g.stroke();
+        g.beginPath(); g.ellipse(0, 0, s * 0.165, s * 0.1, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = G.accent;
+        g.beginPath(); g.moveTo(s * 0.03, -s * 0.095); g.quadraticCurveTo(s * 0.2, -s * 0.06, s * 0.16, 0); g.quadraticCurveTo(s * 0.2, s * 0.06, s * 0.03, s * 0.095); g.quadraticCurveTo(s * 0.09, 0, s * 0.03, -s * 0.095); g.fill();
+        g.fillStyle = '#fff';
+        g.globalAlpha = 0.7;
+        g.beginPath(); g.ellipse(-s * 0.04, -s * 0.04, s * 0.07, s * 0.02, 0, 0, Math.PI * 2); g.fill();
+        g.globalAlpha = 1;
+        g.restore();
+        motes(g, [[s * 0.1, s * 0.5, 1], [s * 0.2, s * 0.62, 0], [s * 0.5, s * 0.22, 1], [s * 0.86, s * 0.5, 0], [s * 0.9, s * 0.3, 1]], s * 0.016);
       },
     },
     {
-      key: 'R', label: 'seed of rebirth', name: 'Seed of Rebirth', range: 0, cooldown: 20, save: true,
-      blurb: 'Ultimate. A seed hangs on her for 5 s: the first hit that would drop her under 15% HP blooms her back up by 35% of her max HP instead (a lethal hit leaves her on 1 HP). Unused, it blooms for a small heal.',
+      key: 'W', label: 'strangle vine', name: 'Strangle Vine', range: 7, cooldown: 11, cc: true,
+      blurb: 'Vines (7 m, needs sight) coil round one enemy: 30 damage and rooted 1.0 s, or 1.4 s within 3 m of a flower.',
       icon(g, s) {
         ground(g, s);
-        rootRing(g, s * 0.5, s * 0.88, s * 0.4, s * 0.1, s * 0.04);
-        // A closed bud on a spiral stem, a cream glow behind it and a bloom bursting out of its top.
-        const glow = g.createRadialGradient(s * 0.5, s * 0.42, s * 0.02, s * 0.5, s * 0.42, s * 0.4);
-        glow.addColorStop(0, 'rgba(255,251,224,0.85)');
+        const cx = s * 0.5;
+        rootRing(g, cx, s * 0.88, s * 0.4, s * 0.1, s * 0.04);
+        // A pale figure the vines grip: head, shoulders, body.
+        g.fillStyle = G.dark;
+        g.beginPath(); g.arc(cx, s * 0.22, s * 0.105, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.moveTo(cx - s * 0.24, s * 0.86); g.lineTo(cx - s * 0.2, s * 0.4); g.quadraticCurveTo(cx, s * 0.3, cx + s * 0.2, s * 0.4); g.lineTo(cx + s * 0.24, s * 0.86); g.closePath(); g.fill();
+        g.fillStyle = G.bark;
+        g.beginPath(); g.arc(cx, s * 0.22, s * 0.085, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.moveTo(cx - s * 0.205, s * 0.86); g.lineTo(cx - s * 0.17, s * 0.42); g.quadraticCurveTo(cx, s * 0.33, cx + s * 0.17, s * 0.42); g.lineTo(cx + s * 0.205, s * 0.86); g.closePath(); g.fill();
+        // Three vines of different reach spiral up it, thorn leaves along them, flowers at two tips.
+        const coils: [number, number, number, number, number][] = [[0.2, 0.62, 2.4, 0, 0.055], [0.17, 0.52, 3.1, 2.1, 0.05], [0.23, 0.7, 1.9, 4.0, 0.06]];
+        for (const [r, h, n, ph, w] of coils) vine(g, spiral(cx, s * 0.88, s * h, s * r, n, ph), s * w);
+        leaf(g, cx - s * 0.18, s * 0.66, -2.5, s * 0.11);
+        leaf(g, cx + s * 0.17, s * 0.55, -0.6, s * 0.11);
+        leaf(g, cx - s * 0.12, s * 0.46, 2.4, s * 0.1);
+        leaf(g, cx + s * 0.2, s * 0.76, 0.5, s * 0.1);
+        flower(g, cx - s * 0.12, s * 0.34, s * 0.13, -0.4);
+        flower(g, cx + s * 0.16, s * 0.32, s * 0.12, 0.45);
+        motes(g, [[s * 0.1, s * 0.3, 1], [s * 0.9, s * 0.4, 0], [s * 0.14, s * 0.6, 0], [s * 0.88, s * 0.18, 1]], s * 0.015);
+      },
+    },
+    {
+      key: 'E', label: 'pollen glide', name: 'Pollen Glide', range: 6, cooldown: 12, dash: true,
+      blurb: 'She glides 6 m on a gust of pollen, and a flower grows where she lands. No heal of its own.',
+      icon(g, s) {
+        ground(g, s);
+        // The gust: a pale wide ribbon from the lower left sweeping up and over to the landing flower in the lower right.
+        const path: Pt[] = [];
+        for (let i = 0; i <= 44; i++) {
+          const u = i / 44;
+          path.push([s * (0.08 + 0.7 * u), s * (0.74 - 0.5 * Math.sin(u * Math.PI)) + Math.sin(u * 7) * s * 0.025]);
+        }
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        for (const [col, lw, dy] of [[G.dark, 0.13, 0.012], ['rgba(232,220,192,0.55)', 0.1, 0], [G.body, 0.035, 0]] as [string, number, number][]) {
+          g.strokeStyle = col;
+          g.lineWidth = s * lw;
+          g.beginPath();
+          path.forEach(([x, y], i) => (i === 0 ? g.moveTo(x, y + s * dy) : g.lineTo(x, y + s * dy)));
+          g.stroke();
+        }
+        // A pale ghost where she lifted off, pollen motes along the gust, a spiral vine tendril trailing it.
+        g.fillStyle = 'rgba(232,220,192,0.45)';
+        g.beginPath(); g.ellipse(s * 0.12, s * 0.7, s * 0.07, s * 0.13, 0, 0, Math.PI * 2); g.fill();
+        const tail: Pt[] = path.slice(2, 22).map(([x, y], i) => [x - s * 0.02, y + s * 0.07 + Math.sin(i * 0.9) * s * 0.02]);
+        vine(g, tail, s * 0.03);
+        motes(g, [[s * 0.3, s * 0.4, 1], [s * 0.42, s * 0.22, 1], [s * 0.55, s * 0.22, 0], [s * 0.62, s * 0.34, 1], [s * 0.22, s * 0.58, 0], [s * 0.7, s * 0.5, 1], [s * 0.46, s * 0.4, 0], [s * 0.36, s * 0.3, 1]], s * 0.018);
+        rootRing(g, s * 0.8, s * 0.88, s * 0.17, s * 0.05, s * 0.028);
+        flower(g, s * 0.8, s * 0.86, s * 0.26, 0.15);
+        leaf(g, s * 0.8, s * 0.88, -2.4, s * 0.1);
+        leaf(g, s * 0.8, s * 0.88, 2.4, s * 0.1);
+      },
+    },
+    {
+      key: 'R', label: 'world tree', name: 'World Tree', range: 9, cooldown: 24,
+      blurb: 'A tree bursts up at a spot (9 m) after 1.2 s and stands 8 s: it blocks walking and bolts, roots an enemy within 3 m as it sprouts, and her flowers within 6 m heal 50% more. Recast: Uproot, a 3 m burst of thorns after 0.6 s: 60.',
+      icon(g, s) {
+        ground(g, s);
+        const cx = s * 0.5;
+        const glow = g.createRadialGradient(cx, s * 0.36, s * 0.02, cx, s * 0.36, s * 0.5);
+        glow.addColorStop(0, 'rgba(255,251,224,0.7)');
         glow.addColorStop(1, 'rgba(255,251,224,0)');
         g.fillStyle = glow;
         g.fillRect(0, 0, s, s);
-        vine(g, spiral(s * 0.5, s * 0.86, s * 0.34, s * 0.05, 2.5, 0), s * 0.06);
-        // The seed: a pale oval ringed in dark, its pink bud cap above it.
-        g.fillStyle = G.dark;
-        g.beginPath(); g.ellipse(s * 0.5, s * 0.5, s * 0.17, s * 0.21, 0, 0, Math.PI * 2); g.fill();
-        g.fillStyle = G.bark;
-        g.beginPath(); g.ellipse(s * 0.5, s * 0.5, s * 0.145, s * 0.185, 0, 0, Math.PI * 2); g.fill();
-        g.fillStyle = G.accent;
-        g.beginPath(); g.moveTo(s * 0.35, s * 0.46); g.quadraticCurveTo(s * 0.5, s * 0.2, s * 0.65, s * 0.46); g.quadraticCurveTo(s * 0.5, s * 0.38, s * 0.35, s * 0.46); g.fill();
-        g.strokeStyle = G.pinkDark;
-        g.lineWidth = s * 0.012;
-        g.beginPath(); g.moveTo(s * 0.5, s * 0.25); g.lineTo(s * 0.5, s * 0.42); g.stroke();
-        leaf(g, s * 0.5, s * 0.62, -0.9, s * 0.2);
-        leaf(g, s * 0.5, s * 0.62, 0.9, s * 0.2);
-        flower(g, s * 0.5, s * 0.2, s * 0.2, 0);
-        motes(g, [[s * 0.16, s * 0.3, 1], [s * 0.86, s * 0.32, 0], [s * 0.26, s * 0.16, 0], [s * 0.78, s * 0.12, 1], [s * 0.12, s * 0.56, 0], [s * 0.9, s * 0.58, 1]], s * 0.016);
+        rootRing(g, cx, s * 0.9, s * 0.43, s * 0.1, s * 0.04);
+        // Branches fanning out from the trunk top, then the canopy as overlapping dark and bright blobs.
+        g.lineCap = 'round';
+        for (const [dx, dy] of [[-0.3, -0.12], [0.3, -0.12], [-0.16, -0.2], [0.16, -0.2]] as [number, number][]) {
+          g.strokeStyle = G.dark; g.lineWidth = s * 0.06;
+          g.beginPath(); g.moveTo(cx, s * 0.52); g.quadraticCurveTo(cx + dx * s * 0.5, s * 0.5 + dy * s * 0.4, cx + dx * s, s * (0.52 + dy)); g.stroke();
+          g.strokeStyle = '#7a5a34'; g.lineWidth = s * 0.035;
+          g.beginPath(); g.moveTo(cx, s * 0.52); g.quadraticCurveTo(cx + dx * s * 0.5, s * 0.5 + dy * s * 0.4, cx + dx * s, s * (0.52 + dy)); g.stroke();
+        }
+        const blobs: [number, number, number][] = [[0.22, 0.4, 0.15], [0.78, 0.4, 0.15], [0.34, 0.26, 0.17], [0.66, 0.26, 0.17], [0.5, 0.18, 0.19], [0.5, 0.36, 0.17]];
+        for (const [x, y, r] of blobs) { g.fillStyle = G.dark; g.beginPath(); g.arc(s * x, s * y, s * (r + 0.02), 0, Math.PI * 2); g.fill(); }
+        for (const [x, y, r] of blobs) { g.fillStyle = G.leafDark; g.beginPath(); g.arc(s * x, s * y, s * r, 0, Math.PI * 2); g.fill(); }
+        for (const [x, y, r] of blobs) { g.fillStyle = G.body; g.beginPath(); g.arc(s * (x - 0.025), s * (y - 0.035), s * r * 0.7, 0, Math.PI * 2); g.fill(); }
+        // The trunk: three vines twisted together from the roots up.
+        for (const ph of [0, 2.1, 4.2]) vine(g, spiral(cx, s * 0.9, s * 0.46, s * 0.05, 2.2, ph), s * 0.06);
+        // Blooms in the canopy.
+        flower(g, s * 0.5, s * 0.2, s * 0.15, 0);
+        flower(g, s * 0.24, s * 0.4, s * 0.11, -0.5);
+        flower(g, s * 0.76, s * 0.4, s * 0.11, 0.5);
+        flower(g, s * 0.36, s * 0.3, s * 0.09, -0.25);
+        flower(g, s * 0.64, s * 0.3, s * 0.09, 0.25);
+        motes(g, [[s * 0.1, s * 0.2, 1], [s * 0.9, s * 0.22, 0], [s * 0.14, s * 0.62, 0], [s * 0.88, s * 0.6, 1], [s * 0.3, s * 0.1, 1], [s * 0.7, s * 0.08, 0]], s * 0.016);
       },
     },
   ],
