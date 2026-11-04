@@ -1255,7 +1255,7 @@ export class Duel {
     }
     // Something of the hero's that this CPU should walk to or away from (`Trait.enemyGoal`) beats its usual steering.
     const goal = (this.oppRt && this.oppRt.trait?.aiGoal?.(this.oppRt)) ?? this.heroRt?.trait?.enemyGoal?.(this.heroRt);
-    const move = goal ? new THREE.Vector3(goal.x - at.x, 0, goal.z - at.z).normalize() : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
+    const move = goal ? this.goalStep(this.opponentAi, at, goal) : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
     // A planned route already clears the cover: no wall slide on it.
     if (move.lengthSq() > 0) {
       this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), !this.opponentAi.routed);
@@ -1318,6 +1318,14 @@ export class Duel {
       if (pick) return pick;
     }
     return null;
+  }
+
+  /** A step toward a trait's own goal (`aiGoal`, `enemyGoal`): straight when it can, else on the planned way round the cover. */
+  private goalStep(st: { routed?: boolean }, at: THREE.Vector3, goal: { x: number; z: number }) {
+    const to = new THREE.Vector3(goal.x, 0, goal.z);
+    st.routed = !this.host.arena.pathClear(at, to);
+    const p = st.routed ? this.host.arena.route(st, at, to).point : to;
+    return new THREE.Vector3(p.x - at.x, 0, p.z - at.z).normalize();
   }
 
   /**
@@ -1429,7 +1437,7 @@ export class Duel {
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
     const goal = (this.heroRt && this.heroRt.trait?.aiGoal?.(this.heroRt)) ?? this.oppRt?.trait?.enemyGoal?.(this.oppRt);
-    const move = goal ? new THREE.Vector3(goal.x - me.x, 0, goal.z - me.z).normalize() : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
+    const move = goal ? this.goalStep(this.playerAi, me, goal) : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
   }
 

@@ -79,8 +79,10 @@ export class Navigator {
     this.sync(obstacles, bounds);
     let route = this.routes.get(key);
     const stale = !route || route.version !== this.version || flat(route.order, to) > REPLAN_MOVE;
+    // Someone standing pressed against cover is at touching distance, which a rounding error can put just inside: that spot
+    // is free. Snapped, it would land on the walker's side of the wall, and the walker would stop there as if it had arrived.
     // Snapped only when the order changes (or lies free): the walker's own position would keep moving the spot.
-    const goal = this.free(to.x, to.z) ? to.clone().setY(0) : stale ? this.snap(to, from) : route!.goal;
+    const goal = this.free(to.x, to.z, -TOUCH) ? to.clone().setY(0) : stale ? this.snap(to, from) : route!.goal;
     if (this.clear(from, goal)) {
       this.routes.set(key, { path: [goal], goal, order: to.clone(), version: this.version });
       return { point: goal, goal };
