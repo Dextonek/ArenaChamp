@@ -103,7 +103,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 
 The Play card's **Play vs CPU** and the login screen's **Play vs CPU · no account needed** open the CPU screen: five
 difficulty buttons (Novice to Master, [cpuLevels.ts](../../src/cpuLevels.ts); a tick on each level already beaten),
-the hero picker, an opponent select (a random hero by default, never your own) and **Fight**. The fight is the
+the hero picker, an opponent select (a random hero by default, never your own) and **Fight**. Every hero picker starts with a **Random** tile: on the Play card and the CPU screen it stays chosen and is drawn when the match or fight starts, so a Rematch keeps the hero drawn; in a lobby it is drawn at once, so the other player sees the hero. The fight is the
 offline AI duel (`CpuMatch` in `src/game/cpu.ts`, `duel.start('play')` at `duel.cpuLevel`) in a random arena: no
 server messages, nothing on the profile. One round; the card's Rematch keeps hero, opponent choice and level, and
 its Leave duel (or the Leave button during the fight) returns to the CPU screen. The choices and the beaten levels

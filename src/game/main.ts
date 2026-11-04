@@ -31,6 +31,8 @@ const state = {
   lobby: null as LobbyState | null,
   lobbySeat: 0,
   queue: { on: false, since: 0, size: 0 },
+  /** The hero the queue was joined with (a random pick is drawn then). */
+  queueHero: '',
   heroView: kits[0].name,
   authError: '',
   authMode: 'login' as 'login' | 'register',
@@ -67,8 +69,54 @@ const portrait = (kit: HeroKit, cls = 'portrait') => {
   return c;
 };
 
+// --- random pick ---------------------------------------------------------------------------------------------
+
+/** The picker's choice that stands for "any hero": it becomes a real hero when the match or fight starts. */
+const RANDOM = 'random';
+const randomKit = (except: (string | null | undefined)[] = []) => {
+  const open = kits.filter((k) => !except.includes(k.name));
+  return open[Math.floor(Math.random() * open.length)] ?? kits[0];
+};
+
+/** The Random tile's icon: a gold question mark inside a ring of one dot per hero, in each hero's colour. */
+function randomPortrait(cls: string) {
+  const c = canvasOf(128, (g, s) => {
+    const m = s / 2;
+    const bg = g.createRadialGradient(m, m * 0.8, s * 0.05, m, m, m);
+    bg.addColorStop(0, '#3a2a58');
+    bg.addColorStop(1, '#0d0a16');
+    g.fillStyle = bg;
+    g.fillRect(0, 0, s, s);
+    kits.forEach((k, i) => {
+      const a = (i / kits.length) * Math.PI * 2 - Math.PI / 2;
+      g.fillStyle = k.accent;
+      g.beginPath();
+      g.arc(m + Math.cos(a) * s * 0.4, m + Math.sin(a) * s * 0.4, s * 0.032, 0, Math.PI * 2);
+      g.fill();
+    });
+    const gold = g.createLinearGradient(0, s * 0.2, 0, s * 0.8);
+    gold.addColorStop(0, '#ffe7a8');
+    gold.addColorStop(1, '#c9902e');
+    g.font = `700 ${s * 0.56}px ui-serif, Georgia, serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.lineWidth = s * 0.04;
+    g.strokeStyle = '#1a1206';
+    g.strokeText('?', m, m + s * 0.02);
+    g.fillStyle = gold;
+    g.fillText('?', m, m + s * 0.02);
+  }, cls);
+  c.style.borderColor = '#c9a24a';
+  return c;
+}
+
 // --- preferred hero (per account, this browser) ------------------------------------------------------------
 
+/** The account's choice: a hero's name, or `RANDOM`. */
+function heroChoice() {
+  if (!state.profile) return RANDOM;
+  return safeGet(`duel.hero.${state.profile.name}`) === RANDOM ? RANDOM : preferredHero().name;
+}
 function preferredHero(): HeroKit {
   const name = state.profile ? safeGet(`duel.hero.${state.profile.name}`) : null;
   return kitOf(name) ?? kitOf(state.profile?.favourite) ?? kits[0];
@@ -175,20 +223,26 @@ function heroStrip() {
 // --- menu / play ---------------------------------------------------------------------------------------------
 
 function menuScreen() {
-  const hero = preferredHero();
+  const choice = heroChoice(), hero = kitOf(choice);
   const queued = state.queue.on;
   return el('div', { class: 'menu' },
     el('section', { class: 'card play' },
       el('h2', {}, 'Play'),
       el('p', { class: 'muted' }, 'Find a match pairs you with the next player in the queue (who picked a different hero). Or open a lobby and share its code.'),
-      el('div', { class: 'chosen' }, portrait(hero, 'portrait lg'),
-        el('div', {}, el('div', { class: 'kit-name' }, hero.name), el('div', { class: 'muted' }, hero.title),
-          el('div', { class: 'spell-row' }, ...hero.spells.map((s) => canvasOf(64, s.icon, 'icon sm'))))),
-      heroPicker(hero.name, [], (n) => { setPreferredHero(n); render(); }),
+      chosenHero(hero),
+      heroPicker(choice, [], (n) => { setPreferredHero(n); render(); }),
       el('div', { class: 'row play-actions three' },
         queued
           ? el('button', { class: 'btn', onclick: () => net.send({ t: 'queue_leave' }) }, 'Cancel search')
-          : el('button', { class: 'btn primary big', disabled: !!state.lobby, onclick: () => net.send({ t: 'queue_join', hero: hero.name }) }, `Find match as ${hero.name}`),
+          : el('button', {
+            class: 'btn primary big', disabled: !!state.lobby,
+            onclick: () => {
+              const name = hero?.name ?? randomKit().name;
+              state.queueHero = name;
+              if (!hero) toast(`Random pick: ${name}`);
+              net.send({ t: 'queue_join', hero: name });
+            },
+          }, hero ? `Find match as ${hero.name}` : 'Find match as a random hero'),
         el('button', { class: 'btn', disabled: queued, onclick: () => go(state.lobby ? 'lobby' : 'lobbies') }, state.lobby ? 'Back to lobby' : 'Lobbies'),
         el('button', { class: 'btn', disabled: queued || !!state.lobby, onclick: () => go('cpu') }, 'Play vs CPU'),
       ),
@@ -213,8 +267,24 @@ function menuScreen() {
   );
 }
 
+/** The chosen hero with its spells, or the Random tile's icon when it is still to be drawn. */
+function chosenHero(hero: HeroKit | undefined) {
+  if (!hero) {
+    return el('div', { class: 'chosen' }, randomPortrait('portrait lg'),
+      el('div', {}, el('div', { class: 'kit-name' }, 'Random hero'), el('div', { class: 'muted' }, 'Drawn when the fight starts')));
+  }
+  return el('div', { class: 'chosen' }, portrait(hero, 'portrait lg'),
+    el('div', {}, el('div', { class: 'kit-name' }, hero.name), el('div', { class: 'muted' }, hero.title),
+      el('div', { class: 'spell-row' }, ...hero.spells.map((s) => canvasOf(64, s.icon, 'icon sm')))));
+}
+
+/** The hero grid. Random comes first; `pick` gets `RANDOM` for it. */
 function heroPicker(selected: string, taken: string[], pick: (name: string) => void) {
-  return el('div', { class: 'picker' }, ...kits.map((k) => {
+  const random = el('button', {
+    class: `pick${selected === RANDOM ? ' on' : ''}`, title: 'A random hero', onclick: () => pick(RANDOM),
+  }, randomPortrait('portrait sm'), el('span', {}, 'Random'));
+  random.style.setProperty('--accent', '#c9a24a');
+  return el('div', { class: 'picker' }, random, ...kits.map((k) => {
     const off = taken.includes(k.name);
     const b = el('button', {
       class: `pick${k.name === selected ? ' on' : ''}`, disabled: off, title: off ? `${k.name} is taken` : `${k.name}, ${k.title}`,
@@ -238,7 +308,7 @@ function updateQueueText(bar = root.querySelector('.queue-bar')) {
   const t = bar?.querySelector('.qtext');
   if (!t) return;
   const s = Math.max(0, Math.floor((Date.now() - state.queue.since) / 1000));
-  t.textContent = `Searching as ${preferredHero().name} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} · ${state.queue.size} in queue`;
+  t.textContent = `Searching as ${state.queueHero || preferredHero().name} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} · ${state.queue.size} in queue`;
 }
 setInterval(() => state.queue.on && updateQueueText(), 500);
 
@@ -250,9 +320,11 @@ const cpuWonKey = () => `cpu.won.${state.profile?.name ?? 'guest'}`;
 /** The CPU levels beaten so far (with any hero), as level ids. */
 const cpuWon = () => new Set((safeGet(cpuWonKey()) ?? '').split('').map(Number).filter((n) => n > 0));
 
-/** The hero for a CPU fight: the account's preferred hero, or this browser's last pick without an account. */
-function cpuHero(): HeroKit {
-  return state.profile ? preferredHero() : kitOf(safeGet('cpu.hero')) ?? kits[0];
+/** The choice for a CPU fight: the account's, or this browser's last pick without an account (a name or `RANDOM`). */
+function cpuChoice() {
+  if (state.profile) return heroChoice();
+  const saved = safeGet('cpu.hero');
+  return saved === RANDOM ? RANDOM : (kitOf(saved) ?? kits[0]).name;
 }
 function setCpuHero(name: string) {
   if (state.profile) setPreferredHero(name);
@@ -260,9 +332,9 @@ function setCpuHero(name: string) {
 }
 
 function cpuScreen() {
-  const hero = cpuHero();
+  const choice = cpuChoice(), hero = kitOf(choice);
   const level = cpuLevel(cpuPick.level);
-  const foeKit = cpuPick.foe !== hero.name ? kitOf(cpuPick.foe) : undefined;
+  const foeKit = cpuPick.foe !== choice ? kitOf(cpuPick.foe) : undefined;
   const won = cpuWon();
   // A match from the queue or a lobby would take the scene over: those come first.
   const busy = state.queue.on || !!state.lobby;
@@ -275,7 +347,7 @@ function cpuScreen() {
     onchange: (e: Event) => { cpuPick.foe = (e.target as HTMLSelectElement).value; safeSet('cpu.foe', cpuPick.foe); render(); },
   },
   el('option', { value: 'random', selected: !foeKit }, 'A random hero'),
-  ...kits.filter((k) => k.name !== hero.name).map((k) => el('option', { value: k.name, selected: k === foeKit }, `${k.name}, ${k.title}`)));
+  ...kits.filter((k) => k.name !== choice).map((k) => el('option', { value: k.name, selected: k === foeKit }, `${k.name}, ${k.title}`)));
   return el('div', { class: 'cpu' },
     el('section', { class: 'card' },
       el('h2', {}, 'Play vs CPU'),
@@ -284,14 +356,12 @@ function cpuScreen() {
       levels,
       el('p', { class: 'level-blurb' }, el('b', {}, `${level.name}: `), level.blurb),
       el('h3', {}, 'Your hero'),
-      el('div', { class: 'chosen' }, portrait(hero, 'portrait lg'),
-        el('div', {}, el('div', { class: 'kit-name' }, hero.name), el('div', { class: 'muted' }, hero.title),
-          el('div', { class: 'spell-row' }, ...hero.spells.map((s) => canvasOf(64, s.icon, 'icon sm'))))),
-      heroPicker(hero.name, [], (n) => { setCpuHero(n); render(); }),
+      chosenHero(hero),
+      heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
       el('h3', { class: 'gap' }, 'Opponent'),
-      el('div', { class: 'foe-row' }, foeKit ? portrait(foeKit, 'portrait sm') : el('div', { class: 'portrait sm empty' }, '?'), foeSelect),
+      el('div', { class: 'foe-row' }, foeKit ? portrait(foeKit, 'portrait sm') : randomPortrait('portrait sm'), foeSelect),
       el('div', { class: 'row play-actions' },
-        el('button', { class: 'btn primary big', disabled: busy, onclick: () => cpu.start({ hero: hero.name, foe: foeKit?.name ?? 'random', level: level.id }) },
+        el('button', { class: 'btn primary big', disabled: busy, onclick: () => cpu.start({ hero: hero?.name ?? randomKit([foeKit?.name]).name, foe: foeKit?.name ?? 'random', level: level.id }) },
           `Fight ${foeKit ? foeKit.name : 'a random hero'} · ${level.name}`),
         el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
       busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to fight the CPU.') : null,
@@ -319,7 +389,7 @@ function heroesScreen() {
         el('div', { class: 'muted small' }, `${s.range > 0 ? `range ${s.range}` : 'self'} · cooldown ${s.cooldown} s`),
       ),
     )));
-  const mine = preferredHero().name === kit.name;
+  const mine = heroChoice() === kit.name;
   const detail = el('section', { class: 'card hero-detail' },
     el('div', { class: 'hero-head' }, portrait(kit, 'portrait lg'),
       el('div', {}, el('h2', {}, kit.name), el('div', { class: 'muted' }, kit.title),
@@ -423,7 +493,13 @@ function lobbyScreen(l: LobbyState) {
         el('button', { class: 'btn ghost', onclick: () => net.send({ t: 'lobby_leave' }) }, 'Leave lobby')),
       el('div', { class: 'seats' }, seat(me, true), el('div', { class: 'vs' }, 'VS'), seat(other, false)),
       el('h3', {}, 'Pick your hero'),
-      heroPicker(me?.hero ?? '', other?.hero ? [other.hero] : [], (n) => { setPreferredHero(n); net.send({ t: 'lobby_pick', hero: n }); }),
+      heroPicker(me?.hero ?? '', other?.hero ? [other.hero] : [], (n) => {
+        // Random is drawn at once here: the other player sees the hero and can't pick it.
+        const name = n === RANDOM ? randomKit([other?.hero, me?.hero]).name : n;
+        if (n === RANDOM) toast(`Random pick: ${name}`);
+        else setPreferredHero(name);
+        net.send({ t: 'lobby_pick', hero: name });
+      }),
       el('div', { class: 'row' },
         el('button', {
           class: `btn ${me?.ready ? '' : 'primary'} big`, disabled: !me?.hero,
@@ -489,7 +565,8 @@ net.on('lobby', (m) => {
     // Start with the hero this player last used.
     if (!m.lobby.seats[state.lobbySeat]?.hero) {
       const other = m.lobby.seats[1 - state.lobbySeat]?.hero;
-      const hero = preferredHero().name !== other ? preferredHero().name : kits.find((k) => k.name !== other)!.name;
+      const hero = heroChoice() === RANDOM ? randomKit([other]).name
+        : preferredHero().name !== other ? preferredHero().name : kits.find((k) => k.name !== other)!.name;
       net.send({ t: 'lobby_pick', hero });
     }
   }
