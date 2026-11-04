@@ -1,25 +1,23 @@
 ---
 title: Oblivion, the Unmaker (void kit)
 tags: [catalog, heroes, void, melee, pull, mechanics]
-updated: 2026-10-30
+updated: 2026-11-04
 ---
 
 # Oblivion, the Unmaker
 
-The void hero kit: Oblivion's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A towering knight in black plate cracked with glowing pink rifts, a horned featureless helm with one rift slit for a visor, a ragged hem and a huge greatsword whose blade is a jagged slab of void. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee juggernaut with extra HP, a pull that drags enemies to him, a slow and silences.
-
-Tournament (19 opponents, 3 fights per ordered pairing, both sides): 26% at first, 54% after Rift Cleave 40 → 46, Null Tether 30 → 36 with pull 3 → 4 and Unmaking 100 → 110.
+The void hero kit (kits v5): Oblivion's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette row and the rigged hero model. A towering knight in black plate cracked with glowing pink rifts, a horned helm with one glowing slit and a greatsword of void. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee juggernaut with extra HP whose gravity pulls in whoever he can see while he stands still.
 
 ## Role
 
 | | |
 |---|---|
 | Role | Juggernaut (melee) |
-| Signature | Into the rift |
+| Signature | Deep Gravity |
 | HP | 780 |
-| Kit shapes | Q CONE · W ZONE pull to him · E AURA silence · R ZONE pull + silence |
+| Kit shapes | Q SELF slam with a short pull · W ZONE null zone, silences inside, stops bolts · E DASH step that arms a rip · R LINE black hole that crawls, pulls and stuns, recast to collapse |
 
-He wins a 1v1 by dragging the enemy into melee range with the tether and the ultimate, then silencing them so they cannot cast their way out. His weakness is reach: a kiter outside his pulls (W range 8, R range 13) is hard to catch.
+He wins a 1v1 by standing still: a ring grows round him and drags in any enemy he can see. His weakness is that while he walks he has no pull and is slower than almost everyone, so any hero can keep away. Standing still, he cannot reach you unless you are close. Walk speed 3.8 m/s.
 
 ## At a glance
 
@@ -29,8 +27,9 @@ He wins a 1v1 by dragging the enemy into melee range with the tether and the ult
 | Spell category | `hero: void` |
 | Parts file | [`src/effects/parts/void.ts`](../../../src/effects/parts/void.ts) |
 | Kit data | [`src/kits/void.ts`](../../../src/kits/void.ts) |
+| Trait data | [`src/traits/void.ts`](../../../src/traits/void.ts) |
 | Kit sheet | [`kit-void.md`](../../../pipeline/designs/kit-void.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/void.glb`](../../../public/models/heroes/void.glb) |
+| Model | [`public/models/heroes/void_v2.glb`](../../../public/models/heroes/void_v2.glb) |
 
 ## Palette
 
@@ -51,34 +50,52 @@ Torn space. The world tears like paper or cracks like glass and the tears show p
 - Shards: flat flakes, dark grey faces with an ash rim, kept to 12 or fewer per spell and short-lived.
 - Motes: small pale flat diamonds that rise slowly.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | **Deep Gravity**: while he stands still a ring grows round him: 3 m and 0.4 m/s after 1 s, then +1 m and +0.2 m/s each second up to 6 m and 1.0 m/s (level 4, after 4 s). It drags in any enemy he can see. One step ends it. |
+| Twist | none (the trait has no `twist` entry) |
+| Resource or meter | none. A ring round him (drawn on both screens) grows smoothly with a pulse at each level and an inner arc counting down to the next one. A pink `rip` mark pip shows while Phase Step's rip is armed |
+| Walk speed | 3.8 m/s |
+| Basic attack | melee, 2.6 m, 15 per 1.2 s, wind-up 0.3 s, cleave look |
+
+Other trait rules (`src/traits/void.ts`):
+
+- The drag runs on the victim's screen (`victimTick`, `carryEnemy`) and stops 1.5 m short of him. Cover stops it: it needs line of sight, and the cover comes from the obstacles his spells record when they are cast (before his first cast the way counts as clear).
+- Phase Step arms a rip for 3 s: his next basic attack deals +40 (power 55/15) and weakens the enemy by 20% for 2 s.
+- Black Hole has a recast, "Collapse" (arms after 0.3 s, window 4 s). The duel AI never fires it (`aiWait`).
+- A CPU Oblivion walks to melee range, so it only stands still when attacking or casting. The ring rarely passes level 1.
+
 ## Mechanics
 
 Oblivion uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
 
 | Mechanic | Where |
 |---|---|
-| Melee kit | `melee: true` and `maxHp: 780` in the kit data (the default is 600; the extra HP pays for having to close in). The duel AI walks up to about 2 m, never backs off and keeps chasing. The Q range is only 3 |
-| Pull | W and R use `HitOptions.pull` (see ["Pull"](../../architecture/mechanics.md#pull)). W has `pull: 4` and `knock: 0` and no `from`, so every enemy it hits is dragged toward Oblivion and stops 1 m short of him; R has `pull: 4`, `knock: 0` and `from` set to the centre of the zone, so enemies are dragged to the middle. A pull is at most 4 m, and units and network duels ignore it |
-| Slow | W slows every enemy it hits for 1.0 s (walking speed x 0.6, cap 2.5 s) |
-| Silence | E's one pulse silences for 1.2 s and R silences for 1.5 s (cap 1.5 s): they can move but not cast. E has no shield |
-| Crowd control flag | R has `cc: true`, so the duel AI casts it first when the enemy is in range |
-| Aura | E pulses once (at 1.0 s) and hits every enemy inside radius 4 for 35 with knock 1 |
-| Skillshot, summon, dash, heal | none |
-
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): melee 780 HP and a Q of about 40 (the code has 53). The budget also covers pulls (about 30-35 damage and at most 3 m on a W, about 100 and at most 4 m on an R); the code has W at 48 damage and 4 m and R at 120 damage and 4 m, radius 5.
+| Melee kit | `melee: true` and `maxHp: 780` in the kit data (the default is 600; the extra HP pays for having to close in). The duel AI walks up to about 2 m and keeps chasing. Q's range is only 3 |
+| Pull | the passive ring (drags him-ward, up to 1.0 m/s); Q (1.5 m); Black Hole (1.8 m/s within 5 m, on live positions, stopped by cover). See ["Pull"](../../architecture/mechanics.md#pull) |
+| Silence | Null Zone: every 0.25 s an enemy inside gets silence 0.3 s |
+| Stun | Black Hole core, 1 s, once per enemy |
+| Weaken | Phase Step's rip: the enemy deals 20% less for 2 s |
+| Dash | Phase Step: a 0.25 s mark, then he steps to the spot (not untouchable). Kit flag: E `dash` |
+| Bolt wall | Null Zone: eight wall segments round the circle make bolts that enter it vanish |
+| Recast | R, "Collapse" |
+| Crowd control flag | W and R have `cc: true`, so the duel AI casts them first when the enemy is in range |
+| Skillshot, summon, shield, heal | none |
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a melee cone (hit at 0.3 s, clean by 1.2 s), W a ground zone that pulls enemies to him (hit at 0.65 s, clean by 1.8 s), E a single silencing burst round him (hit at 1.0 s, clean by 2.6 s), R a pulling, silencing ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/void.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/void.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage. The R label in the kit data is "void black hole": "black hole" is the older set piece in the VFX tool.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [rift cleave](../../../src/spells/targeted/riftCleave.ts) | enemy CONE (a 110 degree cone, radius 3.2, up to 10 targets) | 3 | 2.5 s | 0.3 s | 1.2 s | The blade draws back with a few ash motes. At the hit one wide crescent sweep leaves a tear standing in the air along the arc (a black slit with a pink edge on top and a cyan fringe below); shards burst and are drawn into it, a cyan star flashes and everyone still inside the cone is hit and knocked back. From 0.5 s the rift zips shut from both ends. Damage 53, knock 2. |
-| W | [null tether](../../../src/spells/targeted/nullTether.ts) | ground ZONE (r 3.5) | 8 | 8 s | 0.65 s | 1.8 s | Glass-like cracks spread over the zone (0 to 0.3 s), then four black tendril-rifts race along the ground from the zone to his feet (0.3 to 0.6 s). At 0.65 s the tears snap taut and yank: every enemy still inside the zone is hit, dragged toward him (pull 4 m) and slowed, and shards stream along the tears toward him. From 0.8 s the tears close and the cracks fade. Damage 48, pull 4, slow 1.0 s. |
-| E | [void mantle](../../../src/spells/targeted/voidMantle.ts) | self AURA (r 4) | 0 (self) | 10 s | 1.0 s (one pulse) | 2.6 s | A ring of five standing rifts (about 1.4 tall) opens round him at radius 1.4 and turns slowly. At 1.0 s the rifts flare and a crack ring races out to radius 4: every enemy still inside is hit, knocked back and silenced. From 2.0 s the rifts zip shut one by one. No shield. Damage 35, knock 1, silence 1.2 s. |
-| R | [unmaking](../../../src/spells/targeted/unmaking.ts) | ground ZONE (r 5) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to black and a crack line traces the zone edge. The ground inside cracks like glass from the centre out, plates of ground lift and drift inward, and a vast standing rift (about 6 tall) opens over the point and widens while shards and ash stream into it and the enemies are drawn in a little (up to 0.6 m, put back at the hit). At 1.6 s the rift goes still and its edges flicker cyan; dead beat 1.85-2.0 s. At 2.0 s the rift slams shut and from 2.1 s the cracked disc inverts for two frames (the floor plates go black with pink edges). At 2.2 s: two impact frames, the plates shatter outward as shards, a cyan star, a ground refraction ring, shake and the hit, which drags everyone to the middle. The shards fall and fade, the cracks heal and the darkness lifts. Damage 120, pull 4, silence 1.5 s. |
+| Q | [gravity slam](../../../src/spells/targeted/gravitySlam.ts) | self (r 3) | 3 | 4 s | 0.35 s | 1.6 s | He slams the ground. Damage 60 within 3 m, and enemies there are dragged 1.5 m toward him. Knock 0. |
+| W | [null zone](../../../src/spells/targeted/nullZone.ts) | self (a sphere r 3 fixed at the cast spot) | 0 (self) | 12 s | opens at 0.2 s, first tick 0.25 s | 3.5 s | A dark, see-through 3 m sphere of void with a bright edge stays where he cast it for 3 s. Every 0.25 s an enemy inside gets silence 0.3 s (no damage), so it cannot cast. Eight wall segments round the circle make bolts that enter it vanish. It closes over 0.35 s. |
+| E | [phase step](../../../src/spells/targeted/phaseStep.ts) | ground (dash to the spot) | 4 | 14 s | 0.25 s (the step) | 3.6 s | He marks a spot within 4 m (at least 1 m away), then steps through the void to it 0.25 s later. No damage, not untouchable. His next basic attack within 3 s rips for +40 and weakens the enemy 20% for 2 s; a fist of void shows on his hand while it is armed. |
+| R | [void black hole](../../../src/spells/targeted/blackHole.ts) | ground (LINE, aim; pull radius 5) | 8 | 24 s | core active from 0.4 s | 4.7 s | A black hole with a rift crawls 8 m down his aim at 2 m/s for 4 s. It pulls enemies within 5 m at 1.8 m/s (stopped by cover). Touching its core (radius 1 m) deals 105 and stuns 1 s, once per enemy. Recast "Collapse" (from 0.3 s, within 4 s): it stops, a 3 m ring fills for 0.5 s, then 85 within 3 m. |
 
-Spell sources: [`riftCleave.ts`](../../../src/spells/targeted/riftCleave.ts), [`nullTether.ts`](../../../src/spells/targeted/nullTether.ts), [`voidMantle.ts`](../../../src/spells/targeted/voidMantle.ts), [`unmaking.ts`](../../../src/spells/targeted/unmaking.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-void).
+Spell sources: [`gravitySlam.ts`](../../../src/spells/targeted/gravitySlam.ts), [`nullZone.ts`](../../../src/spells/targeted/nullZone.ts), [`phaseStep.ts`](../../../src/spells/targeted/phaseStep.ts), [`blackHole.ts`](../../../src/spells/targeted/blackHole.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-void).
 
 ## Parts file
 
@@ -96,22 +113,14 @@ The kit has no unit look: Oblivion summons nothing.
 
 ## Model
 
-[`public/models/heroes/void.glb`](../../../public/models/heroes/void.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("void")` / `export("void")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Oblivion`).
+[`public/models/heroes/void_v2.glb`](../../../public/models/heroes/void_v2.glb): a rigged figure on the Dao rig. Built by `build("void")` / `export("void")` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.63 m, height 2.62 m.
 
-- Look (v2, since 2026-10-30; the first model is kept as look `void_v1`): a heavier, broad (x1.1) knight in black plate with a faceted great-helm with a glowing T-slit and swept-back horns, stacked spiked pauldrons on rounded shoulder caps, a rift core set in the breastplate, heavy gauntlets that close round the sword grip, a long tattered cape on a clasp bar, black shards floating round his shoulders, and a wider greatsword of void with pink edges, a cyan core line and fragments breaking off.
-- Props: `void_greathelm`, `void_spiked_pauldrons`, `void_core`, `void_gauntlets`, `void_cape`, `void_shards`, `rift_cracks`, `void_greatsword2`.
-- Before and after in hero mode: [`void-v2-compare_sheet.jpg`](../../heroes/void-v2-compare_sheet.jpg).
-- HUD portrait (canvas-drawn in the kit data): A charcoal ground with ash cracks, a tall tear behind him with shards in the air, a ragged cloak whose hem breaks up into floating shards, black plate with spiked pauldrons cracked with pink rifts, and a horned helm with one rift slit.
+- Look: huge and dark; a horned great-helm with a glowing eye slit, layered spiked pauldrons, black plate with a rift core in the chest, a tattered cape in four tails, armoured legs, and a greatsword with a void edge held low in the right hand. A tower, not Brannoc's wedge: a straight-sided plate body with long tassets.
+- HUD portrait (canvas-drawn in the kit data): a tall tear behind him with a pink edge and a cyan fringe and shards in the air, a ragged cloak whose hem breaks into floating black shards, and black plate with broad pauldrons cracked with glowing pink rifts.
 
-![Oblivion model preview, angle 15](../../heroes/void_15.png)
+The model in hero mode:
 
-The wave 5 concept (Oblivion, Shiori and Tempo; vector source [`wave5_concept.svg`](../../heroes/wave5_concept.svg)):
-
-![Wave 5 concept: Oblivion, Shiori and Tempo](../../heroes/wave5_concept.jpg)
-
-The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
-
-![Wave 5 in-game hero models](../../heroes/wave5-ingame_sheet.jpg)
+![Oblivion in-game hero model sheet](../../heroes/void-v2-ingame_sheet.jpg)
 
 ## Files
 
@@ -119,27 +128,13 @@ The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
 |---|---|
 | Kit sheet (design) | [`pipeline/designs/kit-void.md`](../../../pipeline/designs/kit-void.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
+| Kits v5 design | [`pipeline/designs/kits-v5.md`](../../../pipeline/designs/kits-v5.md) |
 | Parts | [`src/effects/parts/void.ts`](../../../src/effects/parts/void.ts) |
-| Spells | [`riftCleave.ts`](../../../src/spells/targeted/riftCleave.ts), [`nullTether.ts`](../../../src/spells/targeted/nullTether.ts), [`voidMantle.ts`](../../../src/spells/targeted/voidMantle.ts), [`unmaking.ts`](../../../src/spells/targeted/unmaking.ts) |
+| Spells | [`gravitySlam.ts`](../../../src/spells/targeted/gravitySlam.ts), [`nullZone.ts`](../../../src/spells/targeted/nullZone.ts), [`phaseStep.ts`](../../../src/spells/targeted/phaseStep.ts), [`blackHole.ts`](../../../src/spells/targeted/blackHole.ts) |
 | Kit data | [`src/kits/void.ts`](../../../src/kits/void.ts) |
-| Model | [`public/models/heroes/void.glb`](../../../public/models/heroes/void.glb) |
-| Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Void review (Q, W, E)
-
-![Void Q, W and E review contact sheet](../../spells/wave5-void-qwe_sheet.jpg)
-
-### Void review (R)
-
-![Void R review contact sheet](../../spells/wave5-void-r_sheet.jpg)
-
-### Void re-check (round 2)
-
-![Void re-check contact sheet](../../spells/wave5-void-w2_sheet.jpg)
+| Trait | [`src/traits/void.ts`](../../../src/traits/void.ts) |
+| Model | [`public/models/heroes/void_v2.glb`](../../../public/models/heroes/void_v2.glb) |
+| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also
 

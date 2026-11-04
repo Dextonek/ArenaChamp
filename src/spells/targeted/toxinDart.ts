@@ -14,7 +14,7 @@ import { takeReaction } from '../../traits/alchemy';
  * Toxin Dart (alchemy kit, Q: a 9 m line skillshot, reagent green). She flicks a glass dart full of green toxin out of
  * her bandolier; it glints for a beat, then flies fast as a bolt (`ctx.projectile`, dodged by stepping off the line).
  * On a hit it bursts into a green splat (an impact frame, a star, glass chips) and the toxin clings to the body as a
- * bubbling green blob while it eats at them: 25 up front, then 5 five times over 3 s (`ctx.hit` with `projectile: true`,
+ * bubbling green blob while it eats at them: 20 up front, then 5 five times over 3 s (`ctx.hit` with `projectile: true`,
  * so the ticks follow a target that walks). The green reagent itself is the trait's (`src/traits/alchemy.ts`); when this
  * hit sets off a reaction the effect reads it (`takeReaction`) and plays that burst. A miss only splashes the floor.
  * With no projectile (a network duel on the caster's screen) the dart is a deterministic visual and nothing hits.

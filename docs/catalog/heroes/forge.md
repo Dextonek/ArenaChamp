@@ -1,23 +1,23 @@
 ---
 title: Brannoc, the Ashen Smith (forge kit)
-tags: [catalog, heroes, forge]
-updated: 2026-10-30
+tags: [catalog, heroes, forge, tank, melee]
+updated: 2026-11-04
 ---
 
 # Brannoc, the Ashen Smith
 
-The forge hero kit: Brannoc's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A dwarf-sized giant of a blacksmith with a forge in his chest; heavy, slow, every hit lands like a hammer.
+The forge hero kit (v5): Brannoc's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette row and the rigged hero model. A huge smith in a scorched leather apron with a glowing forge in his chest. He hooks the enemy in with a chain hammer, puts Heat on them with every hit, and spends three Heat to Temper his next spell. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee tank with extra HP, a pull, a slow, stuns and a stance that nothing can slow or root.
 
 ## Role
 
 | | |
 |---|---|
 | Role | Tank (melee) |
-| Signature | Anvil lock: most hard CC, biggest shield, low damage |
+| Signature | Hot Iron |
 | HP | 780 |
-| Reach | Melee (the AI closes to about 2 m) |
+| Kit shapes | Q HOOK (skillshot line, pull, cc) · W SELF buff + armed slam · E TGT burn · R SELF stance + Quench recast |
 
-He outlasts: shield, stun and knock-up keep the enemy off him while he walks up and hammers. He deals the least damage of any hero and must reach a kiter.
+He wins a 1v1 by hooking the enemy into reach, building 3 Heat, and then landing a Tempered spell for a stun or a damage debuff. His weakness is reach and speed: he walks at 3.6 m/s, so a kiter who dodges the hammer (9 m, a straight line) is hard to catch.
 
 ## At a glance
 
@@ -27,8 +27,9 @@ He outlasts: shield, stun and knock-up keep the enemy off him while he walks up 
 | Spell category | `hero: forge` |
 | Parts file | [`src/effects/parts/forge.ts`](../../../src/effects/parts/forge.ts) |
 | Kit data | [`src/kits/forge.ts`](../../../src/kits/forge.ts) |
+| Trait (rules) | [`src/traits/forge.ts`](../../../src/traits/forge.ts) |
 | Kit sheet | [`kit-forge.md`](../../../pipeline/designs/kit-forge.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/forge.glb`](../../../public/models/heroes/forge.glb) |
+| Model | [`public/models/heroes/forge_v2.glb`](../../../public/models/heroes/forge_v2.glb) |
 
 ## Palette
 
@@ -48,22 +49,51 @@ Molten slag that cools: liquid metal glows white-orange, a black crust grows ove
 - Iron: dark `MeshStandard` with a thin hot rim on the forged edges.
 - Sparks: short streaks, not dots, and few.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | Hot Iron: his hits put Heat on the enemy (3 at most, each batch lasts 5 s, shown as pips over them). |
+| Twist | Tempered: his next spell that lands on a 3-Heat enemy clears the Heat and gets its bonus: Q stuns 0.75 s instead of the slow, E makes the enemy take 20% more damage for 3 s, R's Quench stuns 0.75 s. A Tempered spell adds no Heat of its own, and only the first hit of a cast counts, so a burn tick never Tempers. |
+| Resource or meter | none (the Heat is stacks on the enemy) |
+| Speed | 3.6 m/s |
+| Basic attack | melee, 2.6 m, 18 damage every 1.6 s, wind-up 0.4 s, smash look |
+| Other rules | Heat sources: E adds 2; the W slam adds 2; each basic attack while the core burns adds 1; Q adds none. During Molten Core slows, roots and knock-ups are swallowed (`taken`). The CPU against him walks away from the core when within 5 m. |
+
+## Mechanics
+
+Brannoc uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
+
+| Mechanic | Where |
+|---|---|
+| Melee kit | `melee: true` and `maxHp: 780` in the kit data. The duel AI walks up to melee range |
+| Pull and slow | Q: `pull: 4` toward him, `knock: 0`, slow 1 s. Q is flagged `cc` (the AI casts it first when the enemy is in range) and `aim: 'line'` |
+| Stun | Tempered Q and Tempered Quench: 0.75 s |
+| Knock-up | The W slam: 0.5 s (0.8 s on a 3-Heat enemy) |
+| Armour buff | W: +30% armour for 3 s (kit `buff`), no speed |
+| Damage over time | E: two burn ticks of 6 |
+| Debuff | Tempered E: `vulnerable` +20% for 3 s |
+| Stance and recast | R: 6 s of immunity to slow, root and knock-up, +25 damage and +0.4 m reach per basic attack, +1 Heat per hit; Quench (recast) ends it with a ring burst |
+| Hold | Quench holds him still for 0.6 s |
+| Skillshot | Q: a projectile at 18 m/s, 9 m, radius 0.45 |
+| Summon, dash, heal | none |
+
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is a point-blank flick, W a small lob, E a shield with a chain pull and R a hammer on his own spot. Q, W and E hit 0.45-1.9 s after the cast and are clean by about 3.3 s; R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/forge.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/forge.ts`), hit time and length from the spell files in `src/spells/targeted/`; the numbers are the spell files' defaults. "Hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [rivet shot](../../../src/spells/targeted/rivetShot.ts) | enemy (point-blank) | 3 | 3 s | 0.45 s | 1.7 s | He pulls a white-hot rivet from his chest forge, flicks it and it punches through one enemy in sparks and slag. The slag cools to black. Damage 38 and slow 0.8 s. |
-| W | [anvil drop](../../../src/spells/targeted/anvilDrop.ts) | ground (r 2, LOB) | 8 | 7 s | 0.7 s | 2.3 s | A ring of molten runes marks the ground, then a small anvil falls on it and splashes slag; it crumbles into iron chunks and the crater cools. Damage 42 and stun 1.0 s to whoever stands under it. |
-| E | [bellows ward](../../../src/spells/targeted/bellowsWard.ts) | self (r 5, BUFF) | 0 (self) | 9 s | 0.9 s and 1.9 s (two pulses) | 3.3 s | Two loops of molten chain whirl around him and burst outward in heat twice, then cool and fall with a clank. He gains a shield of 100 for 3 s; each pulse pulls enemies inside 5 m by 1.5 m toward him. No damage. Loopable. |
-| R | [forgefall](../../../src/spells/targeted/forgefall.ts) | self (r 5, SELF-R) | 0 (self) | 20 s | 2.3 s | 4.5 s | The ultimate. An anvil sigil draws on, slag streams pour up into the sky and pool into a colossal hammer that cools black while it rises; dead beat at 1.8-1.95 s, then it swings down on his own spot: impact frame, spark fountain, molten crack web. Damage 92 and knock-up 0.5 s. |
+| Q | [chain hammer](../../../src/spells/targeted/chainHammer.ts) | line skillshot (ground aim) | 9 | 9 s | released at 0.3 s, reaches 6 m at 0.63 s | 1.7 s | He whirls the hammer on its chain (0.3 s wind-up), then throws it down the aim. The first enemy it touches takes 40, is dragged 4 m toward him and is slowed 1 s; the chain stays taut 0.45 s, then whips back. A miss reels in. Tempered: stunned 0.75 s instead of the slow. |
+| W | [forge roar](../../../src/spells/targeted/forgeRoar.ts) | self | 0 (self) | 11 s | none (no damage) | 3.6 s | Heat rolls off him in a ring (2.4 m) and a loop of chain turns round his waist for 3 s of +30% armour. His next basic attack in those 3 s is a slam: +35 damage, a 0.5 s knock-up and 2 Heat (a 0.8 s knock-up that clears the Heat on a 3-Heat enemy). The hammer glows on his shoulder until the slam is spent. |
+| E | [red-hot rivet](../../../src/spells/targeted/redHotRivet.ts) | enemy (needs sight) | 6 | 4 s | 0.55 s | 3.2 s | He pulls a white-hot rivet from his chest, flicks it, and it punches into the enemy: 25 damage. It stays in and burns two ticks of 6 (at 1.55 s and 2.55 s). Adds 2 Heat. Tempered: the enemy takes 20% more for 3 s. |
+| R | [molten core](../../../src/spells/targeted/moltenCore.ts) | self (stance, then recast) | 6 (the AI's reach) | 24 s | stance 0.4 s; Quench ring 0.6 s | 6.4 s (the Quench 2.4 s) | His chest cracks open for 6 s: immune to slows, roots and knock-ups, and each basic attack sprays a 3 m slag cone (+25 damage, +1 Heat). Recast to Quench: he plants himself and a 3 m ring shows for 0.6 s, then it bursts for 30 plus 10 per second the core had left. Tempered: also stunned 0.75 s. |
 
-Spell sources: [`rivetShot.ts`](../../../src/spells/targeted/rivetShot.ts), [`anvilDrop.ts`](../../../src/spells/targeted/anvilDrop.ts), [`bellowsWard.ts`](../../../src/spells/targeted/bellowsWard.ts), [`forgefall.ts`](../../../src/spells/targeted/forgefall.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-forge).
+Spell sources: [`chainHammer.ts`](../../../src/spells/targeted/chainHammer.ts), [`forgeRoar.ts`](../../../src/spells/targeted/forgeRoar.ts), [`redHotRivet.ts`](../../../src/spells/targeted/redHotRivet.ts), [`moltenCore.ts`](../../../src/spells/targeted/moltenCore.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-forge).
 
 ## Parts file
 
-[`src/effects/parts/forge.ts`](../../../src/effects/parts/forge.ts) holds everything the four spells share. Spells import it directly (`../../effects/parts/forge`).
+[`src/effects/parts/forge.ts`](../../../src/effects/parts/forge.ts) holds everything the kit's spells share. Spells import it directly (`../../effects/parts/forge`).
 
 | Export | Role |
 |---|---|
@@ -80,16 +110,15 @@ Spell sources: [`rivetShot.ts`](../../../src/spells/targeted/rivetShot.ts), [`an
 | `HotStreak` | a short fat comet trail, core-white at the head to orange at the tail |
 | `ForgeSigil` | ash-grey anvil sigil with orange runes, drawn on by a sweep |
 | `PulseRing` | an expanding ground ring of heat |
+| `ChainLine` | a straight run of heavy chain links from `a` to `b` (instanced, the same link as `ChainRing`); `set(a, b, heat, thickness)` every frame, `hide()` |
+| `SlagCone` | pooled ground fans of slag, one per basic-attack swing of Molten Core: `fire(center, yaw, radius, life)`, `update(dt)` |
 
 ## Model
 
-[`public/models/heroes/forge.glb`](../../../public/models/heroes/forge.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("forge")` / `export("forge")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts).
-
-- Look: Broad, a rolled-sleeve work robe under iron lamellar, a leather apron, wrapped legs, a long beard; a glowing forge in his chest and a great hammer on his back.
-- Props: `chest_forge`, `slag_pauldrons`, `molten_veins`, `back_hammer`.
+[`public/models/heroes/forge_v2.glb`](../../../public/models/heroes/forge_v2.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the current style, the `_v2` models). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Brannoc`), and its hit size is in `HERO_BODIES` in the same file (radius 0.58 m, height 2.35 m).
 - HUD portrait (canvas-drawn in the kit data): A broad iron helm, an ash beard, and the forge glowing in his chest.
 
-![Brannoc turnaround, angle 15](../../heroes/forge_15.png) ![Brannoc turnaround, angle 165](../../heroes/forge_165.png)
+![Brannoc preview, angle 15](../../heroes/forge_15.png) ![Brannoc preview, angle 165](../../heroes/forge_165.png) 
 
 ## Files
 
@@ -98,43 +127,17 @@ Spell sources: [`rivetShot.ts`](../../../src/spells/targeted/rivetShot.ts), [`an
 | Kit sheet (design) | [`pipeline/designs/kit-forge.md`](../../../pipeline/designs/kit-forge.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
 | Parts | [`src/effects/parts/forge.ts`](../../../src/effects/parts/forge.ts) |
-| Spells | [`rivetShot.ts`](../../../src/spells/targeted/rivetShot.ts), [`anvilDrop.ts`](../../../src/spells/targeted/anvilDrop.ts), [`bellowsWard.ts`](../../../src/spells/targeted/bellowsWard.ts), [`forgefall.ts`](../../../src/spells/targeted/forgefall.ts) |
+| Spells | [`chainHammer.ts`](../../../src/spells/targeted/chainHammer.ts), [`forgeRoar.ts`](../../../src/spells/targeted/forgeRoar.ts), [`redHotRivet.ts`](../../../src/spells/targeted/redHotRivet.ts), [`moltenCore.ts`](../../../src/spells/targeted/moltenCore.ts) |
 | Kit data | [`src/kits/forge.ts`](../../../src/kits/forge.ts) |
-| Model | [`public/models/heroes/forge.glb`](../../../public/models/heroes/forge.glb) |
-| Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Rivet Shot
-
-![Rivet Shot contact sheet](../../spells/rivet-shot_sheet.jpg)
-
-### Anvil Drop
-
-![Anvil Drop contact sheet](../../spells/anvil-drop_sheet.jpg)
-
-### Bellows Ward
-
-![Bellows Ward contact sheet](../../spells/bellows-ward_sheet.jpg)
-
-### Forgefall
-
-![Forgefall contact sheet](../../spells/forgefall_sheet.jpg)
-
-### Forge re-check (round 2)
-
-![Forge re-check (round 2) contact sheet](../../spells/forge-recheck_sheet.jpg)
-
-### Final check (forgefall and the alchemy kit)
-
-![Final check (forgefall and the alchemy kit) contact sheet](../../spells/final-check_sheet.jpg)
+| Trait (passive, twist, rules) | [`src/traits/forge.ts`](../../../src/traits/forge.ts) |
+| Model | [`public/models/heroes/forge_v2.glb`](../../../public/models/heroes/forge_v2.glb) |
+| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
-- [Vesper (blood)](blood.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md), [Vex (alchemy)](alchemy.md)
+- [Combat mechanics](../../architecture/mechanics.md)
+- [Vesper (blood)](blood.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md), [Vitriol (alchemy)](alchemy.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

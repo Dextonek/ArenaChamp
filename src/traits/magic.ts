@@ -104,7 +104,7 @@ function popOut(t: TraitView) {
 export const magicTrait: Trait = {
   passive: {
     name: 'Ta-da!',
-    blurb: 'His first spell after he comes out of a hat deals 40% more, and a white rabbit runs at you (20 HP, 8 damage).',
+    blurb: 'His first spell within 8 s of coming out of a hat (not another hat) deals 40% more, and a white rabbit runs at you (20 HP, 8 damage).',
   },
   twist: {
     name: 'Which Hat?',

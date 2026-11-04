@@ -1,23 +1,23 @@
 ---
 title: Opaline, the Lightbreaker (prism kit)
-tags: [catalog, heroes, prism, marksman, mechanics]
-updated: 2026-10-30
+tags: [catalog, heroes, prism, marksman, bounce]
+updated: 2026-11-04
 ---
 
 # Opaline, the Lightbreaker
 
-The prism hero kit: Opaline's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A marksman in a long pale lavender robe with a ring of small prisms floating behind her head and a crystal-tipped wand; she catches light in clear crystal and splits it into a spectrum. She is built on the [combat mechanics](../../architecture/mechanics.md): a splitting skillshot, a blind, a shield and a mirror blink.
+The prism hero kit (kits v5): Opaline's four spells (Q, W, E and the R ultimate), her passive, the shared parts file, the palette row and the rigged hero model. A slim woman in a pale lavender robe with a ring of floating prisms behind her head. Her bolts bounce off walls, pillars and her own crystals.
 
 ## Role
 
 | | |
 |---|---|
-| Role | Marksman (ranged) |
-| Signature | Refraction |
-| HP | 560 |
-| Kit shapes | Q BOLT split · W ZONE blind · E BLINK + shield · R QUICK CHANNEL sweep |
+| Role | Marksman (ranged attack) |
+| Signature | Prismatic |
+| HP | 600 |
+| Kit shapes | Q BOLT that banks off up to two surfaces · W ZONE crystal wall (bolts bounce off it) · E NOVA blind + push · R TGT ring of six shards fired inward |
 
-She wins a 1v1 by out-ranging the enemy (Q reaches 14 m, cooldown 2 s), blinking out of reach and sweeping a held beam across the space in front of her. Her weakness is low HP: a dive kills her, and the ultimate roots her for 2 s.
+She wins a 1v1 by banking bolts off cover and her own crystal. Her weakness is that open ground gives her nothing to bounce from, and she has no dash. Any hero can draw her into the open or rush her after Flare is spent. Walk speed 4.2 m/s.
 
 ## At a glance
 
@@ -27,6 +27,7 @@ She wins a 1v1 by out-ranging the enemy (Q reaches 14 m, cooldown 2 s), blinking
 | Spell category | `hero: prism` |
 | Parts file | [`src/effects/parts/prism.ts`](../../../src/effects/parts/prism.ts) |
 | Kit data | [`src/kits/prism.ts`](../../../src/kits/prism.ts) |
+| Trait data | [`src/traits/prism.ts`](../../../src/traits/prism.ts) |
 | Kit sheet | [`kit-prism.md`](../../../pipeline/designs/kit-prism.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Model | [`public/models/heroes/prism.glb`](../../../public/models/heroes/prism.glb) |
 
@@ -48,33 +49,47 @@ The refracting crystal. Light enters a faceted clear crystal white and leaves as
 - Beams: a white core with thin spectrum bands either side (use a width of 0.4 or more so the bands read); a single tint gives one coloured band each side.
 - Glitter: a few small flat diamond facets that flash once and fall, each with a dark edge so it reads on a bright floor.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | **Prismatic**: her bolts bounce off walls, pillars and crystals. Each bounce adds 25% damage and 2 m of range, and a hit after bouncing takes 1 s per bounce off Ricochet Light. Her aim line shows the first bounce. |
+| Twist | none (the trait has no `twist` entry) |
+| Resource or meter | none |
+| Walk speed | 4.2 m/s |
+| Basic attack | ranged, 8.5 m, 15 per 1.4 s, wind-up 0.32 s, bolt speed 22, prism look |
+
+Other trait rules (`src/traits/prism.ts`):
+
+- The bolt reflects through `ProjectileOptions.reflect`, set by her spells. The aim line (`bank: true` on Q in the kit data) draws the first bounce; the telegraph draws every leg.
+- The cooldown refund is decided where the hit is decided, which online is the victim's screen. The trait reads the number of bounces from the bank bonus in the hit's damage (64, 80 or 96) and tells her own client (`noteOwner`), which takes that many seconds off Q.
+
 ## Mechanics
 
 Opaline uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
 
 | Mechanic | Where |
 |---|---|
-| Skillshot, split | Q is `aim: 'line'`: `ctx.projectile` fires a crystal (speed 22, range 14, radius 0.45) with `split: { count: 3, spreadDeg: 25, at: 'hit', range: 6 }`. At the first hit the parent ends and three child bolts fan out over 25 degrees; each child hits for 18 and never hits an enemy its parent hit. Hero mode draws a strip toward the cursor; the AI's bolt dodge can sidestep it |
-| Blind | W blinds every enemy it hits for 1.5 s (`status: { kind: 'blind', seconds: 1.5 }`, cap 2 s): their casts land at a random spot within 2.5 m of the aim point. It does not move self spells |
-| Shield | E gives `ctx.shieldSelf(45, 3)`, a 45 point shield for 3 s |
-| Blink | E moves her 4 m sideways of the line to the enemy in 0.12 s (`ctx.moveCaster`), toward the side nearer the middle of the ring. No damage |
-| Channel | R is QUICK: no aim, self mode, radius 12. She is rooted for 2 s and a beam sweeps 70 degrees in front of her, hitting whoever is on its line at three ticks (knock 1.5) |
-| Melee, dash, heal, summons | none. `maxHp` is 560 |
-
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md).
+| Reflection (bank) | Q (up to 2 bounces) and R's shards (one bounce each): +25% damage and +2 m range per bounce |
+| Cooldown refund | Q: 1 s per bounce after a hit |
+| Obstacle | Crystal Pillar: radius 0.7, 80 HP, 6 s; blocks walking, sight and bolts for both heroes |
+| Blind | Blinding Flare, 1.5 s. Kit flag: E `cc` |
+| Push | Blinding Flare, 2 m |
+| Skillshot | Ricochet Light (radius 0.3, speed 24), Shatterlight shards (radius 0.3, speed 14) |
+| Dash, summon, shield, heal | none |
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a splitting skillshot (first damage 0.2-0.85 s after the cast, clean by 1.5 s), W a delayed ground zone (hit at 0.75 s, clean by 2.2 s), E a blink with a shield and no damage (2.3 s), R a no-aim channel that sweeps a beam (three ticks, impact at 2.3 s, clean by 3.2 s). Range and cooldown come from the kit data (`src/kits/prism.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/prism.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [prism bolt](../../../src/spells/targeted/prismBolt.ts) | ground, BOLT skillshot line (width 0.9) | 14 | 2 s | flies from 0.2 s, about 0.64 s of flight | 1.5 s | A faceted crystal (0.8 long) forms at her wand tip over 0.2 s, then is fired along the aim line, spinning, with a short white trail. On the first enemy it bursts: glitter, a small spectrum star for two frames, and three thin tinted beams (red, gold, blue) fan out over 25 degrees, one riding each child bolt. The children hit again and spark a little. A bolt that ends without a hit pops into glitter where it was. Damage 50, knock 2; children 18, knock 1. |
-| W | [refraction field](../../../src/spells/targeted/refractionField.ts) | ground ZONE (r 4) | 10 | 7 s | 0.75 s | 2.2 s | A ring of six tilted crystals rises at the zone edge, facing inward. Each fires a white beam to a prism forming over the centre (about 2.5 high), which spins faster and brightens. At 0.75 s the prism bursts: spectral beams flash down across the zone with glitter, a little shake and a ground refraction ring, and every enemy inside is hit and blinded. From 1.0 s the crystals shatter into glitter. Damage 48, blind 1.5 s. |
-| E | [mirror shell](../../../src/spells/targeted/mirrorShell.ts) | self BLINK (r 4) | 0 (self) | 9 s | 0.3 s (the flash and the blink) | 2.3 s | Six flat crystal mirrors assemble round her (radius 1.3, waist to head), turning slowly. At 0.3 s they flash, throw spectral beams outward, and she blinks 4 m sideways of the line to the enemy in 0.12 s (the side nearer the middle of the ring). She takes a 45 point shield for 3 s. At 1.8 s the mirrors shatter into glitter. No damage. The telegraph is the blink line. Shield 45. |
-| R | [spectrum lance](../../../src/spells/targeted/spectrumLance.ts) | self QUICK CHANNEL (r 12) | 0 (self, no aim) | 20 s | 2.3 s (ticks at 0.63, 1.3 and 1.97 s) | 3.2 s | The ultimate. No aim: it fires where she faces. A huge faceted prism (about 2 tall) stands in front of her over 0.3 s and the world darkens. From 0.3 to 2.3 s she holds a rainbow beam where she faces, rooted, and it sweeps 70 degrees across, 12 m long. Three ticks hit whoever is on the beam's line then (live positions, 1.2 m wide), with glitter, a spectrum accent and a little shake. At 2.4 s the prism shatters into glitter. The telegraph is the 84 degree cone. Damage 50 per tick (3 ticks), knock 1.5. |
+| Q | [ricochet light](../../../src/spells/targeted/ricochetLight.ts) | ground (BOLT skillshot, line, radius 0.3), banks | 12 | 3 s | released at 0.3 s, flight at 24 m/s | up to 3.5 s | A bolt of light that bounces off up to two walls, pillars or crystals: 64 damage, +25% for each bounce, knock 1.5. A hit after bouncing takes 1 s per bounce off this spell. |
+| W | [crystal pillar](../../../src/spells/targeted/crystalPillar.ts) | ground (r 0.95 foot) | 8 (at least 1.5 from her) | 12 s | rises at 0.5 s | 7.5 s | A crystal (2.9 m tall) rises at the spot and stands 6 s, or until 80 damage breaks it. It blocks walking, sight and bolts for both heroes (radius 0.7), and her bolts bounce off it. It cracks at 5.6 s and shatters at 6.5 s. |
+| E | [blinding flare](../../../src/spells/targeted/blindingFlare.ts) | self (r 3) | 0 (self) | 10 s | 0.25 s | 1.5 s | Six panes of light ring her and flash. Enemies within 3 m are blinded for 1.5 s and pushed 2 m away. No damage. |
+| R | [shatterlight](../../../src/spells/targeted/shatterlight.ts) | enemy (click, in sight) | 10 | 22 s | 1.2 s (the shards fire) | up to 3.2 s | Six shards rise in a ring (radius 2.5 m) round the spot the enemy stands on. After 1.2 s each fires inward through the centre at 14 m/s: 36 damage each, and each bounces once off a wall. Step out of the ring to dodge. |
 
-Spell sources: [`prismBolt.ts`](../../../src/spells/targeted/prismBolt.ts), [`refractionField.ts`](../../../src/spells/targeted/refractionField.ts), [`mirrorShell.ts`](../../../src/spells/targeted/mirrorShell.ts), [`spectrumLance.ts`](../../../src/spells/targeted/spectrumLance.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-prism).
+Spell sources: [`ricochetLight.ts`](../../../src/spells/targeted/ricochetLight.ts), [`crystalPillar.ts`](../../../src/spells/targeted/crystalPillar.ts), [`blindingFlare.ts`](../../../src/spells/targeted/blindingFlare.ts), [`shatterlight.ts`](../../../src/spells/targeted/shatterlight.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-prism).
 
 ## Parts file
 
@@ -90,21 +105,13 @@ Spell sources: [`prismBolt.ts`](../../../src/spells/targeted/prismBolt.ts), [`re
 
 ## Model
 
-[`public/models/heroes/prism.glb`](../../../public/models/heroes/prism.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("prism")` / `export("prism")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Opaline`).
+[`public/models/heroes/prism.glb`](../../../public/models/heroes/prism.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("prism")` / `export("prism")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.40 m, height 2.46 m.
 
-- Look: A slim woman in a long pale lavender robe over white, with narrow sleeves, loose platinum hair, crystal epaulettes, a ring of small floating prisms behind her head, a crystal-tipped wand in her right hand and thin spectral bands on a dark sash.
+- Look: a slim woman in a long pale lavender robe over white, with narrow sleeves, loose platinum hair, crystal epaulettes, a ring of small floating prisms behind her head, a crystal-tipped wand in her right hand and thin spectral bands on a dark sash.
 - Props: `prism_ring`, `crystal_epaulettes`, `crystal_wand`, `spectral_sash`.
-- HUD portrait (canvas-drawn in the kit data): A floating ring of small prisms behind her head with light bending through one of them, shoulders in a pale lavender robe with white trim, crystal epaulettes and a crystal brooch at the throat, and a cool, calm face under long pale hair parted in the middle.
+- HUD portrait (canvas-drawn in the kit data): a floating ring of small prisms behind her head with light bending through one of them, shoulders in a pale lavender robe with white trim and crystal epaulettes, and a crystal brooch at the throat.
 
 ![Opaline model preview, angle 15](../../heroes/prism_15.png)
-
-The wave 4 concept (Opaline, Sirix and Cantor; vector source [`wave4_concept.svg`](../../heroes/wave4_concept.svg)):
-
-![Wave 4 concept: Opaline, Sirix and Cantor](../../heroes/wave4_concept.jpg)
-
-The wave 4 models in hero mode (Opaline, Sirix and Cantor):
-
-![Wave 4 in-game hero models](../../heroes/wave4-ingame_sheet.jpg)
 
 ## Files
 
@@ -112,29 +119,19 @@ The wave 4 models in hero mode (Opaline, Sirix and Cantor):
 |---|---|
 | Kit sheet (design) | [`pipeline/designs/kit-prism.md`](../../../pipeline/designs/kit-prism.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
+| Kits v5 design | [`pipeline/designs/kits-v5.md`](../../../pipeline/designs/kits-v5.md) |
 | Parts | [`src/effects/parts/prism.ts`](../../../src/effects/parts/prism.ts) |
-| Spells | [`prismBolt.ts`](../../../src/spells/targeted/prismBolt.ts), [`refractionField.ts`](../../../src/spells/targeted/refractionField.ts), [`mirrorShell.ts`](../../../src/spells/targeted/mirrorShell.ts), [`spectrumLance.ts`](../../../src/spells/targeted/spectrumLance.ts) |
+| Spells | [`ricochetLight.ts`](../../../src/spells/targeted/ricochetLight.ts), [`crystalPillar.ts`](../../../src/spells/targeted/crystalPillar.ts), [`blindingFlare.ts`](../../../src/spells/targeted/blindingFlare.ts), [`shatterlight.ts`](../../../src/spells/targeted/shatterlight.ts) |
 | Kit data | [`src/kits/prism.ts`](../../../src/kits/prism.ts) |
+| Trait | [`src/traits/prism.ts`](../../../src/traits/prism.ts) |
 | Model | [`public/models/heroes/prism.glb`](../../../public/models/heroes/prism.glb) |
 | Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Prism review
-
-![Prism review contact sheet](../../spells/wave4-prism_sheet.jpg)
-
-### Prism re-check (round 2)
-
-![Prism re-check contact sheet](../../spells/wave4-prism-r2_sheet.jpg)
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
 - [Combat mechanics](../../architecture/mechanics.md)
-- [Sirix (hive)](hive.md), [Cantor (bard)](bard.md), [Lyra (astral)](astral.md), [Auriel (dawn)](dawn.md)
+- [Auriel (dawn)](dawn.md), [Tempo (chrono)](chrono.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

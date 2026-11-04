@@ -74,7 +74,7 @@ A MOBA-style test of a hero kit: the hero you pick plays as a rigged figure with
 | Right-click, **Esc** or the same key | Cancel the aim |
 | E-type self spells | Cast at once, no aim |
 | Mouse wheel | Zoom the camera |
-| Click the portrait, or **View → hero** | Switch hero (Vesper, Brannoc, Isolde, Lyra, Vex) |
+| Click the portrait, or **View → hero** | Switch hero (any of the 39 heroes, see the [hero catalog](../catalog/heroes/README.md)) |
 | **H** or **P** | Leave hero mode |
 
 The bar shows each spell's icon, key, cooldown sweep and seconds, and a tooltip with range and cooldown. R is the
@@ -82,7 +82,7 @@ ultimate (gold frame). The hero is rooted until each spell lands; spells overlap
 the Q lands. Enemies keep their HP between casts and respawn 4 s after dying.
 
 ### Duel: play (B) or run (N)
-A 1 vs 1 fight in hero mode in a small ring with a gold rim. Both heroes have 600 HP (bars at the top).
+A 1 vs 1 fight in hero mode in a small ring with a gold rim. Each hero starts with its kit's HP (600 unless the kit says otherwise; bars at the top and over each hero's head).
 
 - **▶ play duel (B)**: you against an AI hero of another kit. Pick the opponent in **View → opponent** (random by
   default, never your own hero).

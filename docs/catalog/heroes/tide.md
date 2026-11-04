@@ -1,16 +1,23 @@
 ---
 title: Marin, the Tide Dancer (tide kit)
-tags: [catalog, heroes, tide]
-updated: 2026-10-30
+tags: [catalog, heroes, tide, controller, push, pull]
+updated: 2026-11-04
 ---
 
 # Marin, the Tide Dancer
 
-The tide hero kit: Marin's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A barefoot dancer with flowing sashes and water rings on her wrists; agile, she pushes and pulls. Every spell is a dance move.
+The tide hero kit (kits v5): Marin's four spells (Q, W, E and the R ultimate), her passive, the shared parts file, the palette row and the rigged hero model. A slim barefoot dancer in a sea-glass dress who swirls ribbons of water. The tide turns every 8 s, and her spells push the enemy away at High tide and pull it to her at Low tide.
 
 ## Role
 
-Controller, 620 HP, ranged. Signature: *Undertow*. She moves you where she wants. She wins a 1v1 by chaining the hook, the pull, the slowing foam and the knock-ups so the enemy never stands where it wants. Her weakness is modest damage.
+| | |
+|---|---|
+| Role | Controller (ranged attack) |
+| Signature | Turning Tide |
+| HP | 610 |
+| Kit shapes | Q BOLT skillshot, push or pull · W ZONE coral pillar (a real obstacle), push or pull · E DASH, untouchable, splash, flips the tide · R SELF channel, drag + crash |
+
+She wins a 1v1 by choosing the tide: she throws at the tide that suits her and flips it with Mist Form. Her weakness is that after Mist Form she has no way out for 10 s, and anyone can read the tide from the ring at her feet. Walking toward her at Low tide leaves her spells nothing to drag. Walk speed 4.1 m/s.
 
 ## At a glance
 
@@ -20,6 +27,7 @@ Controller, 620 HP, ranged. Signature: *Undertow*. She moves you where she wants
 | Spell category | `hero: tide` |
 | Parts file | [`src/effects/parts/tide.ts`](../../../src/effects/parts/tide.ts) |
 | Kit data | [`src/kits/tide.ts`](../../../src/kits/tide.ts) |
+| Trait data | [`src/traits/tide.ts`](../../../src/traits/tide.ts) |
 | Kit sheet | [`kit-tide.md`](../../../pipeline/designs/kit-tide.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Model | [`public/models/heroes/tide.glb`](../../../public/models/heroes/tide.glb) |
 
@@ -41,18 +49,48 @@ The water ribbon. Water moves as thick, smooth ribbons that she swirls like a da
 - Droplets: small teardrops stretched along their velocity, few.
 - Splashes: crown-shaped foam rings on the floor.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | **Turning Tide**: the tide turns every 8 s, and Mist Form turns it when she reforms. At High tide her spells push the enemy away; at Low tide they pull it toward her. A ring at her feet shows the tide and the time left. |
+| Twist | none. The tide is the whole rule |
+| Resource or meter | meter `TIDE` (max 8): the seconds left until the next turn. A ring at her feet (radius 1.6, on both screens) is pale at High tide and blue at Low tide; its arc is the time left. During Moon's Pull it is blue and shows the moon's time left |
+| Walk speed | 4.1 m/s |
+| Basic attack | ranged, 6.5 m, 10 per 0.7 s, wind-up 0.18 s, bolt speed 20, wave look |
+
+Other trait rules (`src/traits/tide.ts`):
+
+- The tide is kept in `t.mem` (`epoch`, `base`), the same on both screens. It starts at High. Mist Form's flip is sent as `tideflip` so the other screen flips too.
+- The spell effects always hand `dealt` the Low-tide shape (a pull toward the source); the trait flips it into a push at High tide. A push is a pull toward a point behind the victim, so it moves the same metres on a foe and on the player hero.
+- Mist Form: for 0.25 s (the dash) every hit on her is swallowed.
+- Moon's Pull is a 3 s channel. While it runs the tide is held at Low and her pulls are doubled.
+
+## Mechanics
+
+Marin uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
+
+| Mechanic | Where |
+|---|---|
+| Push and pull | Q (2.5 m), W (3 m push, 2 m pull), R (drag). Pull works the same on foes and on the player hero; units and network duels follow the mechanics page |
+| Obstacle | Coral Spire stands 5 s as a real obstacle (radius 0.8) |
+| Dash | Mist Form, up to 6 m in 0.25 s, untouchable meanwhile (kit flags `dash` and `parry`) |
+| Channel | Moon's Pull, 3 s; a stun, silence or knock-up ends it |
+| Skillshot | Wave Disc (line, radius 0.8, speed 20) |
+| Summon, heal, shield | none |
+
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E each have a shape of their own (see the table: dash, skillshot, trap, orbit, summon and so on), not a fixed strike, zone or aura; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/tide.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/tide.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [tide whip](../../../src/spells/targeted/tideWhip.ts) | enemy (HOOK) | 10 | 3 s | 0.45 s | 1.5 s | She spins and a water ribbon unrolls from her wrist in a curl. At the hit the ribbon lashes out to the enemy like a whip, wraps around it once and bursts into a splash crown: coral accent for 2 frames, droplets, a small ground refraction ring, one impact frame. The wrap hooks the enemy 3 m toward her. The ribbon falls as droplets and the pool drains. Damage 55, pull 3 m. |
-| W | [whirlpool](../../../src/spells/targeted/whirlpool.ts) | ground (r 4) | 10 | 7 s | 0.5 s (draw), 0.75 s (column) | 2.3 s | A water pool spreads at the point and three ribbons rise from it and spiral around the centre faster and faster. At 0.5 s the spiral pulls the enemies inside 1.5 m toward the centre (damage 5). At 0.75 s it snaps upward into a tall water column with a foam crown, splashes outward, shake and a ground refraction ring: knock-up 0.4 s. At 1.3 s the column collapses and pulls 1.5 m again, then the water falls back. Damage 45, then a tick of 10 at 1.3 s. |
-| E | [undertow dance](../../../src/spells/targeted/undertowDance.ts) | ground (TRAIL, strip 2.2 wide) | 6 | 9 s | lands 0.4 s, strip ticks 0.7-3.2 s | 3.7 s | Two water ribbons rise and circle her like sashes. At 0.1 s she surfs along the water to the aimed spot (up to 6 m, 0.3 s) and lands in a flare that heals her 15. The path stays as foam pools for about 3 s; every enemy standing on the strip is slowed 1.0 s and cut for 4 at six ticks (0.7, 1.2, 1.7, 2.2, 2.7, 3.2 s). Then the sashes fall as droplets. |
-| R | [leviathan's waltz](../../../src/spells/targeted/leviathansWaltz.ts) | ground (LINE, 12 m strip, 3.6 wide) | 12 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to a deep sea blue and a water pool spreads along a 12 m strip that starts at her feet and runs along the aim. A huge water ribbon rises from it and coils into a serpent (a head with a foam mane and two pale eye glints, a long coiling body) circling the strip at 3-6 high while the enemies on it are pulled toward the middle. It rears up over the middle, mouth open, dead beat at 1.85-2.0 s, then dives straight down: impact frames, a huge splash crown, a ring wave of water racing outward, coral accent, refraction ring. The water falls as rain. Damage 100, knock-up 0.5 s, knock 2. |
+| Q | [wave disc](../../../src/spells/targeted/waveDisc.ts) | ground (BOLT skillshot, line, radius 0.8) | 9 | 4 s | thrown at 0.3 s, then flight at 20 m/s | 2.0 s | A spinning disc of water flies down the aim. Damage 52. High tide: knocks the enemy back 2.5 m. Low tide: pulls it 2.5 m toward her, on a short water tether. |
+| W | [coral spire](../../../src/spells/targeted/coralSpire.ts) | ground (r 2.5 hit circle) | 8 (at least 2 from her) | 9 s | 0.9 s | 6.7 s | A coral pillar bursts up at the spot and stands for 5 s as a real obstacle (radius 0.8), then cracks and sinks. As it rises the enemy within 2.5 m takes 44. High tide shoves it 3 m away, Low tide drags it 2 m to the pillar. |
+| E | [mist form](../../../src/spells/targeted/mistForm.ts) | ground (dash to the aim, splash r 3) | 6 | 10 s | 0.25 s | 1.15 s | She turns to water and flows up to 6 m to the aim, through the enemy if it is in the way, untouchable for the 0.25 s run. She reforms at the end spot in a splash: 40 within 3 m. The tide flips. |
+| R | [moon's pull](../../../src/spells/targeted/moonPull.ts) | self (radius 25) | 12 | 22 s | moon up at 0.3 s; ends at 3.0 s | 3.9 s | A pale moon with orbiting sea-glass beads stands over her head and she roots herself for 3 s. The tide is held at Low and her pulls are doubled. An enemy within 12 m that she can see is dragged toward her at 2.4 m/s (it stops 1.6 m from her) for 8 every 1/3 s, 24 a second, on up to 2 tethers. If it is within 2.5 m when the moon sets by itself, a tide crash hits for 110. |
 
-Spell sources: [`tideWhip.ts`](../../../src/spells/targeted/tideWhip.ts), [`whirlpool.ts`](../../../src/spells/targeted/whirlpool.ts), [`undertowDance.ts`](../../../src/spells/targeted/undertowDance.ts), [`leviathansWaltz.ts`](../../../src/spells/targeted/leviathansWaltz.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-tide).
+Spell sources: [`waveDisc.ts`](../../../src/spells/targeted/waveDisc.ts), [`coralSpire.ts`](../../../src/spells/targeted/coralSpire.ts), [`mistForm.ts`](../../../src/spells/targeted/mistForm.ts), [`moonPull.ts`](../../../src/spells/targeted/moonPull.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-tide).
 
 ## Parts file
 
@@ -66,20 +104,21 @@ Spell sources: [`tideWhip.ts`](../../../src/spells/targeted/tideWhip.ts), [`whir
 | `SplashCrown` | a foam crown splash on the floor: `burst(pos, size, life)` |
 | `WaterPool` | a shallow ripple pool decal: `spread(center, radius, seconds)`, `ripple(pos)`, `drain(seconds)` |
 | `SerpentHead` | the serpent head of the ultimate (foam mane, eye glints): `place(pos, dir, scale, open)`, `hide()` |
+| `TideRing` | the tide ring at her feet: a thin rim with eight chevrons that march outward in pale foam at High tide and inward in deep blue at Low tide: `set(pos, high, opacity, time, radius)` |
+| `TideCurrent` | flowing streaks on the floor round a centre, foam darts outward (High) or blue darts spiralling inward (Low): `set(center, rMin, rMax, inward, strength, time)` |
+| `WaterDisc` | the spinning disc of water (flat lens, foam rim, three foam arms): `set(pos, scale, spin, high)` |
+| `CoralSpire` | the coral pillar (a central spike, seven leaning branches, a foam collar): `grow(k)`, `sink(k)`, `opacity` |
+| `MoonHalo` | a pale moon disc over her head with orbiting sea-glass beads: `set(pos, size, opacity, time)` |
 
 ## Model
 
-[`public/models/heroes/tide.glb`](../../../public/models/heroes/tide.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("tide")` / `export("tide")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts).
+[`public/models/heroes/tide.glb`](../../../public/models/heroes/tide.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("tide")` / `export("tide")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.43 m, height 2.29 m.
 
-- Look: A slim barefoot dancer in a deep teal dress with sea-glass layers and a coral sash, a sea-green braid with a coral clip, water rings on her wrists and two water sashes swirling around her.
+- Look: a slim barefoot dancer in a deep teal dress with sea-glass layers and a coral sash, a sea-green braid with a coral clip, water rings on her wrists and two water sashes swirling around her.
 - Props: `coral_clip`, `wrist_rings`, `water_sashes`.
-- HUD portrait (canvas-drawn in the kit data): Sashes of water sweeping round her, behind and in front, a wave-blue wrap on the shoulders and a head with a swept dark hair line and a coral flower.
+- HUD portrait (canvas-drawn in the kit data): sashes of water sweeping round her, a wave-blue wrap on the shoulders and a head with a swept dark hair line and a coral flower.
 
 ![Marin model preview, angle 15](../../heroes/tide_15.png)
-
-The wave 2 concept (Fenna, Auriel and Marin; vector source [`wave2_concept.svg`](../../heroes/wave2_concept.svg)):
-
-![Wave 2 concept: Fenna, Auriel and Marin](../../heroes/wave2_concept.jpg)
 
 ## Files
 
@@ -87,28 +126,19 @@ The wave 2 concept (Fenna, Auriel and Marin; vector source [`wave2_concept.svg`]
 |---|---|
 | Kit sheet (design) | [`pipeline/designs/kit-tide.md`](../../../pipeline/designs/kit-tide.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
+| Kits v5 design | [`pipeline/designs/kits-v5.md`](../../../pipeline/designs/kits-v5.md) |
 | Parts | [`src/effects/parts/tide.ts`](../../../src/effects/parts/tide.ts) |
-| Spells | [`tideWhip.ts`](../../../src/spells/targeted/tideWhip.ts), [`whirlpool.ts`](../../../src/spells/targeted/whirlpool.ts), [`undertowDance.ts`](../../../src/spells/targeted/undertowDance.ts), [`leviathansWaltz.ts`](../../../src/spells/targeted/leviathansWaltz.ts) |
+| Spells | [`waveDisc.ts`](../../../src/spells/targeted/waveDisc.ts), [`coralSpire.ts`](../../../src/spells/targeted/coralSpire.ts), [`mistForm.ts`](../../../src/spells/targeted/mistForm.ts), [`moonPull.ts`](../../../src/spells/targeted/moonPull.ts) |
 | Kit data | [`src/kits/tide.ts`](../../../src/kits/tide.ts) |
+| Trait | [`src/traits/tide.ts`](../../../src/traits/tide.ts) |
 | Model | [`public/models/heroes/tide.glb`](../../../public/models/heroes/tide.glb) |
 | Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Tide review
-
-![Tide review contact sheet](../../spells/wave2-tide_sheet.jpg)
-
-### Tide re-check (round 2)
-
-![Tide re-check contact sheet](../../spells/wave2-tide-r2_sheet.jpg)
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
-- [Vesper (blood)](blood.md), [Brannoc (forge)](forge.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md), [Vex (alchemy)](alchemy.md), [Kaia (storm)](storm.md), [Sefu (sand)](sand.md), [Nyx (shadow)](shadow.md), [Fenna (grove)](grove.md), [Auriel (dawn)](dawn.md)
+- [Combat mechanics](../../architecture/mechanics.md)
+- [Auriel (dawn)](dawn.md), [Zephyr (sky)](sky.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

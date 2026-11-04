@@ -1,23 +1,23 @@
 ---
 title: Sirix, the Swarm Warden (hive kit)
-tags: [catalog, heroes, hive, melee, summon, mechanics]
-updated: 2026-10-30
+tags: [catalog, heroes, hive, melee, swarm, mechanics]
+updated: 2026-11-04
 ---
 
 # Sirix, the Swarm Warden
 
-The hive hero kit: Sirix's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A broad brawler in black chitin plate with amber stripes, a crested insect helm and serrated claw gauntlets, who fights in the middle of a swarm of wasps. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee kit with extra HP, a slow, a leap that summons two wasp soldiers, a pure shield and a slowing ultimate that drops three more wasps.
+The hive hero kit (kits v5): Sirix's four spells (Q, W, E and the R ultimate), his passive and twist, the shared parts file, the palette row and the rigged hero model. A broad fighter in black chitin plate with a crested insect helm and a wasp swarm that circles him. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee bruiser whose spells spend wasps.
 
 ## Role
 
 | | |
 |---|---|
-| Role | Juggernaut (melee, summons) |
-| Signature | The swarm |
+| Role | Bruiser (melee) |
+| Signature | The Swarm |
 | HP | 720 |
-| Kit shapes | Q CONE slow · W DASH + wasps · E BUFF shield · R SUMMON queen ultimate |
+| Kit shapes | Q BOLT barb + recast leap, poison for 2 wasps · W BUFF armour, wasps sting attackers · E ZONE cloud of all wasps, blind · R LINE column of all wasps, shove, blind |
 
-He wins a 1v1 by closing in with the leap, then fighting beside his wasps while the shield soaks the trade; the ultimate slows the enemy and adds three more wasps. His weakness is reach: a kiter outruns him, and his wasps die to area damage.
+He wins a 1v1 by deciding when to spend the swarm: poison on the leap, a cloud to hold ground, or all six wasps in one column. His weakness is that after he spends the swarm he is a plain fighter for seconds. The wasp count shows over him, so that is the moment to hit him. Walk speed 4.0 m/s.
 
 ## At a glance
 
@@ -27,6 +27,7 @@ He wins a 1v1 by closing in with the leap, then fighting beside his wasps while 
 | Spell category | `hero: hive` |
 | Parts file | [`src/effects/parts/hive.ts`](../../../src/effects/parts/hive.ts) |
 | Kit data | [`src/kits/hive.ts`](../../../src/kits/hive.ts) |
+| Trait data | [`src/traits/hive.ts`](../../../src/traits/hive.ts) |
 | Kit sheet | [`kit-hive.md`](../../../pipeline/designs/kit-hive.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Model | [`public/models/heroes/hive.glb`](../../../public/models/heroes/hive.glb) |
 
@@ -49,34 +50,53 @@ The hexagon and the swarm. Wax-amber hexagonal cells with dark gaps, black chiti
 - Claws: flat sickles, near-black with a serrated outer edge, an amber rim and a hot tip.
 - Honey: a few amber blobs that fall and land as flat puddles.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | **The Swarm**: up to 6 wasps circle him (one more every 2 s and one per basic attack that lands). His spells spend them. He starts a round with none. |
+| Twist | **Spend or hold**: spend 2 wasps on the leap's poison, burn them in the cloud, or hold six for the surge. After the surge he is a plain fighter. |
+| Resource or meter | meter `WASPS` (max 6). The wasps are drawn as a real swarm on both screens (one wasp mark per count) |
+| Walk speed | 4.0 m/s |
+| Basic attack | melee, 2.4 m, 13 per 1.2 s, wind-up 0.3 s, claw look |
+
+Other trait rules (`src/traits/hive.ts`):
+
+- Barbed Stinger barbs the enemy for 3 s. The recast, "Leap" (arms after 0.2 s, window 3 s, free), leaps him onto the barbed enemy within 8 m. With 2 wasps he spends them and the leap also poisons.
+- Hive Shell: while it runs, each hit he takes (not a passive's) spends a wasp, if he has one, and stings the attacker for 15.
+- Swarm Cloud sends every wasp to the cloud at the cast and stops the 2 s clock while it stands. When it ends (3 s) they come back, up to 6.
+- Swarm Surge spends every wasp at the cast and nothing refills them.
+- The duel AI holds R under 4 wasps, E under 3 wasps, and the recast until the enemy is barbed and within 8 m.
+
 ## Mechanics
 
 Sirix uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
 
 | Mechanic | Where |
 |---|---|
-| Melee kit | `melee: true` and `maxHp: 720` in the kit data (the default is 600; the extra HP pays for having to close in). The duel AI walks up to about 2 m, never backs off and keeps chasing. The Q range is only 3 |
-| Slow | Q slows every enemy it hits for 1.0 s and R for 1.5 s (walking speed x 0.6, cap 2.5 s) |
-| Dash, summon | W has `dash: true` and `summon: true`: he leaps to the aimed spot with `ctx.moveCaster(point, 0.25)`, re-checks the enemies at the spot he really reaches, and calls `ctx.summon` for two wasp soldiers (`kind: 'melee'`, 40 HP, 6 s, 6 damage per 1 s) |
-| Shield | E gives `ctx.shieldSelf(60, 3)`, a pure 60 point shield for 3 s. It has no hit and no telegraph; the swarm flare is for show |
-| Summon (ultimate) | R has no `cc` any more. At the hit it calls `ctx.summon` for three wasp soldiers (`kind: 'melee'`, 40 HP, 6 s, 6 damage per 1 s) at the centre. With the leap's two that is at most five of the cap of six |
-| Unit look | the wasp soldiers use `waspLook` (see [Parts file](#parts-file)) |
-| Skillshot, heal | none |
-
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): melee 720 HP, Q about 45 with a 2.5 s cooldown, the summon W at 40 damage with the wasps making up the rest.
+| Melee kit | `melee: true` and `maxHp: 720` in the kit data. The duel AI walks up to about 2 m and keeps chasing |
+| Resource | wasps: the passive, spent by Q (2), W (one per hit taken), E (all), R (all) |
+| Recast | Q, "Leap" |
+| Armour buff | W: `buff` armour 0.4 for 3 s (40% less damage) |
+| Poison | the leap's poison, 30 over 3 s (3 ticks) |
+| Blind | E and R, 1 s |
+| Shove | R, 4 m |
+| Skillshot | Barbed Stinger (radius 0.4, speed 20), Swarm Surge (a 4 m wide column) |
+| Dash | the Q leap (to the barbed enemy) |
+| Pull, summon, shield | none |
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a melee cone (hit at 0.3 s, clean by 1.2 s), W a dash that lands a burst and two wasps (hit at 0.4 s, clean by 1.6 s), E a pure shield with no hit (3.2 s), R a slow ultimate that drops three wasps (hit at 2.2 s, clean by 4.5 s, one dead beat). Range and cooldown come from the kit data (`src/kits/hive.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/hive.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [mandible rend](../../../src/spells/targeted/mandibleRend.ts) | enemy CONE (a 100 degree cone, radius 3.2) | 3 | 2.5 s | 0.3 s | 1.2 s | The claws spread and a few wasps buzz off them. At the hit two crossing serrated claw arcs sweep the cone in front of him with honey splashes and a green flash; everyone still inside the cone is hit and slowed. Damage 45, knock 2, slow 1.0 s. |
-| W | [swarm leap](../../../src/spells/targeted/swarmLeap.ts) | ground DASH (r 2.5) | 8 | 9 s | 0.4 s | 1.6 s (the wasps live on as units) | The swarm lifts off his back in a cloud. At 0.1 s he leaps to the point in 0.25 s with the swarm streaming behind him as a ribbon. At 0.4 s a honeycomb bursts under him at the spot he really reaches, with honey splashes, and everyone within 2.5 is hit; two wasp soldiers peel off the swarm and fight for 6 s. The honeycomb crumbles and the swarm thins out. Damage 40, knock 3. |
-| E | [chitin carapace](../../../src/spells/targeted/chitinCarapace.ts) | self BUFF (r 4) | 0 (self) | 9 s | none (no hit; the swarm flare is at 1.0 s and 2.0 s) | 3.2 s | Black chitin plates with an amber rim snap together round him in a shell (radius 1.2) while the swarm circles it, and he takes a 60 point shield for 3 s. At 1.0 s and 2.0 s the swarm bursts outward as a flare, for show only: no damage, no slow. From 2.6 s the plates fall and the swarm settles. Shield 60, no damage. |
-| R | [queen's descent](../../../src/spells/targeted/queensDescent.ts) | ground SUMMON (r 7) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens to amber-black and honeycomb cells grow over the zone edge, then rise into a ring wall about 2 high. Hundreds of wasps stream in from the rim and form the silhouette of a giant queen wasp (about 8 wide, 6 long, hovering 4 to 7 high, top under 8.5) while the enemies are pulled in. At 1.6 s she folds her wings and points down; dead beat 1.85-2.0 s; at 2.0 s the swarm-queen dives into the centre. At 2.2 s the swarm bursts outward in a ring with honey splashes, a green star and the hit, and three wasp soldiers drop where she lands and fight for 6 s. The wasps scatter, the wall crumbles, the darkness lifts. Damage 85, knock 3, slow 1.5 s, 3 wasps. |
+| Q | [barbed stinger](../../../src/spells/targeted/barbedStinger.ts) | ground (BOLT skillshot, line, radius 0.4), recast Leap | 8 | 6 s | 0.25 s (leap 0.3 s) | 1.4 s (leap 1.0 s, with poison 3.7 s) | A stinger flies 8 m at 20 m/s: 42, and the barb stays on the enemy for 3 s. Cast again within 3 s to leap onto the barbed enemy (landing circle 2.4 m, he stops 1.3 m short): 25, and with 2 wasps spent it poisons them for 30 over 3 s. |
+| W | [hive shell](../../../src/spells/targeted/hiveShell.ts) | self (radius 1.5) | 0 (self) | 10 s | grown at 0.35 s | 3.5 s | Chitin plates close round him (2.4 m tall): 40% less damage for 3 s. Each hit he takes spends a wasp, which flies out and stings the attacker for 15. No damage of its own. |
+| E | [swarm cloud](../../../src/spells/targeted/swarmCloud.ts) | ground (r 2.5) | 9 | 9 s | first tick at 1.0 s | 3.65 s | All his wasps fly to the spot (0.7 s) and hang there for 3 s as a cloud. From 1 s, 7 damage per wasp each second to everyone inside, and they are blinded 1 s. The wasps come back when it ends. |
+| R | [swarm surge](../../../src/spells/targeted/swarmSurge.ts) | ground (LINE, column 10 m long, 4 m wide) | 10 | 22 s | 0.5 s (released), then flight at 12 m/s | 2.0 s | Ultimate. He looses every wasp down the column: 18 per wasp, a 4 m shove and 1 s blind. The swarm does not come back: he is a plain fighter afterwards. |
 
-Spell sources: [`mandibleRend.ts`](../../../src/spells/targeted/mandibleRend.ts), [`swarmLeap.ts`](../../../src/spells/targeted/swarmLeap.ts), [`chitinCarapace.ts`](../../../src/spells/targeted/chitinCarapace.ts), [`queensDescent.ts`](../../../src/spells/targeted/queensDescent.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-hive).
+Spell sources: [`barbedStinger.ts`](../../../src/spells/targeted/barbedStinger.ts), [`hiveShell.ts`](../../../src/spells/targeted/hiveShell.ts), [`swarmCloud.ts`](../../../src/spells/targeted/swarmCloud.ts), [`swarmSurge.ts`](../../../src/spells/targeted/swarmSurge.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-hive).
 
 ## Parts file
 
@@ -91,6 +111,7 @@ Spell sources: [`mandibleRend.ts`](../../../src/spells/targeted/mandibleRend.ts)
 | `ClawSlash` | pooled serrated claw crescents (`ClawOptions`): `slash(center, dir, radius, arcDeg, tilt, seconds, opts)` sweeps one on along its arc, lets it hang and fades it |
 | `waspLook` | a `MinionLook` for `SummonOptions.look`, see below |
 | `QueenBody` | the solid core of the swarm-queen of the ultimate, see below |
+| `waspMark` | one wasp of Sirix's orbiting swarm (`Trait.markLook`, one per wasp he holds): striped amber abdomen, dark thorax, green eyes, pale wings, about 0.8 m long |
 
 ### waspLook
 
@@ -102,21 +123,13 @@ Spell sources: [`mandibleRend.ts`](../../../src/spells/targeted/mandibleRend.ts)
 
 ## Model
 
-[`public/models/heroes/hive.glb`](../../../public/models/heroes/hive.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("hive")` / `export("hive")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Sirix`).
+[`public/models/heroes/hive.glb`](../../../public/models/heroes/hive.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("hive")` / `export("hive")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.44 m, height 2.31 m.
 
-- Look: A broad, shaven fighter in black chitin plate with amber stripes over a dark under-layer, a crested insect helm with amber eye lenses, hexagonal pauldrons, bracers and serrated claw gauntlets, and a translucent wax-coloured wing cloak.
+- Look: a broad, shaven fighter in black chitin plate with amber stripes over a dark under-layer, a crested insect helm with amber eye lenses, hexagonal pauldrons, bracers and serrated claw gauntlets, and a translucent wax-coloured wing cloak.
 - Props: `insect_helm`, `hex_pauldrons`, `claw_gauntlets`, `wing_cloak`.
-- HUD portrait (canvas-drawn in the kit data): Honeycomb cells behind, pale translucent wings spread behind the shoulders, black chitin shoulders with hexagonal pauldrons and an insect head with green eyes.
+- HUD portrait (canvas-drawn in the kit data): honeycomb cells behind, pale translucent wings spread behind the shoulders, black chitin shoulders with hexagonal pauldrons and a crested insect helm with amber eye lenses.
 
 ![Sirix model preview, angle 15](../../heroes/hive_15.png)
-
-The wave 4 concept (Opaline, Sirix and Cantor; vector source [`wave4_concept.svg`](../../heroes/wave4_concept.svg)):
-
-![Wave 4 concept: Opaline, Sirix and Cantor](../../heroes/wave4_concept.jpg)
-
-The wave 4 models in hero mode (Opaline, Sirix and Cantor):
-
-![Wave 4 in-game hero models](../../heroes/wave4-ingame_sheet.jpg)
 
 ## Files
 
@@ -124,29 +137,19 @@ The wave 4 models in hero mode (Opaline, Sirix and Cantor):
 |---|---|
 | Kit sheet (design) | [`pipeline/designs/kit-hive.md`](../../../pipeline/designs/kit-hive.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
+| Kits v5 design | [`pipeline/designs/kits-v5.md`](../../../pipeline/designs/kits-v5.md) |
 | Parts | [`src/effects/parts/hive.ts`](../../../src/effects/parts/hive.ts) |
-| Spells | [`mandibleRend.ts`](../../../src/spells/targeted/mandibleRend.ts), [`swarmLeap.ts`](../../../src/spells/targeted/swarmLeap.ts), [`chitinCarapace.ts`](../../../src/spells/targeted/chitinCarapace.ts), [`queensDescent.ts`](../../../src/spells/targeted/queensDescent.ts) |
+| Spells | [`barbedStinger.ts`](../../../src/spells/targeted/barbedStinger.ts), [`hiveShell.ts`](../../../src/spells/targeted/hiveShell.ts), [`swarmCloud.ts`](../../../src/spells/targeted/swarmCloud.ts), [`swarmSurge.ts`](../../../src/spells/targeted/swarmSurge.ts) |
 | Kit data | [`src/kits/hive.ts`](../../../src/kits/hive.ts) |
+| Trait | [`src/traits/hive.ts`](../../../src/traits/hive.ts) |
 | Model | [`public/models/heroes/hive.glb`](../../../public/models/heroes/hive.glb) |
 | Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Hive review
-
-![Hive review contact sheet](../../spells/wave4-hive_sheet.jpg)
-
-### Hive re-check (round 2)
-
-![Hive re-check contact sheet](../../spells/wave4-hive-r2_sheet.jpg)
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
 - [Combat mechanics](../../architecture/mechanics.md)
-- [Opaline (prism)](prism.md), [Cantor (bard)](bard.md), [Zephyr (sky)](sky.md), [Mortis (bone)](bone.md)
+- [Oblivion (void)](void.md), [Zephyr (sky)](sky.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

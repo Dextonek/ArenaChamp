@@ -13,8 +13,8 @@ import { lyraDraws } from '../../traits/astral';
 /**
  * Starfall Arrow (astral kit, Q: held skillshot). The trait's hold charges it while it is aimed (1 s) and passes the
  * draw to `lyraDraws` (keyed by her figure); `cast()` reads it. The draw sets the range (9 to 14 m), the bow, the
- * arrow's size and, at full draw, the pierce; the damage scale (35 to 70) travels as the cast's power, so `damage`
- * here is the full draw's 85. A gold crescent bow and string draw on, a flare at the nock, and at 0.3 s the arrow
+ * arrow's size and, at full draw, the pierce; the damage scale (29 to 58) travels as the cast's power, so `damage`
+ * here is the full draw's 58. A gold crescent bow and string draw on, a flare at the nock, and at 0.3 s the arrow
  * leaves as a skillshot (`ctx.projectile`). Where it flew, small stars drop onto the line every 2 m; once it is
  * gone the constellation lines join them, hold a beat, then snap and the stars fall. A hit pops a cyan-edged star
  * (a full draw adds an impact frame and a ground ring). Without a trait entry (the other screen of a network duel)

@@ -1,16 +1,23 @@
 ---
 title: Nyx, the Umbral Stalker (shadow kit)
-tags: [catalog, heroes, shadow]
-updated: 2026-10-30
+tags: [catalog, heroes, shadow, assassin, melee]
+updated: 2026-11-04
 ---
 
 # Nyx, the Umbral Stalker
 
-The shadow hero kit: Nyx's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A hooded assassin with twin curved daggers; she blinks, clones and executes.
+The shadow hero kit (v5): Nyx's four spells (Q, W, E and the R ultimate), her passive, the shared parts file, the palette row and the rigged hero model. A hooded figure in matte black with a thin violet edge and a mint slit for the eyes. She fades when she is left alone, and her first strike out of the fade hits harder. She is a melee assassin and she walks fast (4.6 m/s).
 
 ## Role
 
-Assassin, 600 HP, ranged. Signature: *Shadowstep*. She appears on you, silences you and cuts you down. She wins a 1v1 by diving in with the Q blink, silencing with W and finishing with the small, hard execute. Her weakness is low HP and long cooldowns on the dive.
+| | |
+|---|---|
+| Role | Assassin (melee) |
+| Signature | Umbral Veil |
+| HP | 640 |
+| Kit shapes | Q TGT dagger strike (backstab) · W SELF smoke cloud · E DASH + SUMMON shadow double · R SELF night |
+
+She wins by fading, walking up behind the enemy and landing Q from the veil: 50% more damage, 1.7 times from behind, and a silence. Her weakness is reach: Q reaches only 2.5 m and her basic attack 1.9 m, so she has to close in and be seen doing it.
 
 ## At a glance
 
@@ -20,6 +27,7 @@ Assassin, 600 HP, ranged. Signature: *Shadowstep*. She appears on you, silences 
 | Spell category | `hero: shadow` |
 | Parts file | [`src/effects/parts/shadow.ts`](../../../src/effects/parts/shadow.ts) |
 | Kit data | [`src/kits/shadow.ts`](../../../src/kits/shadow.ts) |
+| Trait (rules) | [`src/traits/shadow.ts`](../../../src/traits/shadow.ts) |
 | Kit sheet | [`kit-shadow.md`](../../../pipeline/designs/kit-shadow.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Model | [`public/models/heroes/shadow.glb`](../../../public/models/heroes/shadow.glb) |
 
@@ -41,22 +49,49 @@ Flat cut-paper shadow: flat, matte-black shapes (blades, hands, a crescent, a ho
 - Pools: the floor under a shadow shape gets a pale foil disc so the black reads on the dark floor.
 - Cuts: thin hot crescents with a mint core for 2 frames at the hit.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | Umbral Veil: after 2.5 s without dealing or taking damage (1.2 s within 2 m of cover) she fades: her figure is dark and see-through (still plainly visible and targetable), and she is 10% faster. A violet ring at her feet shows the veil. |
+| Twist | Her next Q or basic attack out of the veil deals 50% more, silences the enemy 0.6 s (once per 5 s) and takes 3 s off Shadow Double's cooldown, and the veil ends. Inside her own smoke cloud she fades after 1.5 s without a fight. During Nightfall she fades 0.8 s after each hit she lands. The passive slot shows VEIL or NIGHT. |
+| Resource or meter | none |
+| Speed | 4.6 m/s |
+| Basic attack | melee, 1.9 m, 11 damage every 0.7 s, wind-up 0.18 s, twin look |
+| Other rules | The duel AI playing her walks to a spot 1.3 m behind the enemy when within 6 m, and holds R until the enemy is within 8 m. |
+
+## Mechanics
+
+Nyx uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
+
+| Mechanic | Where |
+|---|---|
+| Melee kit | `melee: true`, `maxHp: 640`; Q range 2.5 |
+| Backstab | Q: x1.6 damage when she is in the back 120 degrees of the enemy's facing (decided at the hit) |
+| Veil | The trait's `figureVeil`, `ring`, haste buff and `leaveVeil` mods |
+| Blind | W: 0.5 s every 0.4 s to enemies inside the cloud |
+| Dash | E: 4 m in 0.18 s, through cover (`dash: true`) |
+| Summon | E: one melee shadow copy (40 HP, 2.5 s, 15 per 0.9 s); one spell kills it |
+| Buffs | R: haste +25% and might +20% for 5 s, then a 1 s self slow |
+| Silence | Q or basic attack out of the veil, 0.6 s |
+| Pull, shield, heal | none |
+
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). Q, W and E each have a shape of their own (see the table: dash, skillshot, trap, orbit, summon and so on), not a fixed strike, zone or aura; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/shadow.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/shadow.ts`), hit time and length from the spell files in `src/spells/targeted/`; the numbers are the spell files' defaults and the trait's constants.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [umbral blink](../../../src/spells/targeted/umbralBlink.ts) | enemy (DASH) | 7 | 3 s | 0.45 s | 1.5 s | A black figure cut-out peels off Nyx and blinks toward the enemy in four stepped jumps (a trail of fading figures) while Nyx herself slides there and stands beside it (about 0.25 s). Two crossed blade cut-outs slash through the enemy: mint cut, a small shadow pool, one impact frame. The cut-outs shatter into flat black shards. Damage 62, knock 2. |
-| W | [grasp of the deep](../../../src/spells/targeted/graspOfTheDeep.ts) | self (r 3, AURA) | 0 (self) | 7 s | 0.75 s | 2.3 s | A shadow pool with a pale foil disc spreads round Nyx herself and flat black hands rise out of it round and under the enemies within 3 m. At the hit they close, pull the enemies down a little and silence them for 1.0 s; a ring of upright blade cut-outs snaps up at the edge, then the hands sink and the pool shrinks. Damage 40, then a tick of 10 at 1.3 s. |
-| E | [night shroud](../../../src/spells/targeted/nightShroud.ts) | self (QUICK, r 8) | 0 (self) | 9 s | fires 0.2 s, then 0.5 s of flight | 1.8 s | No aim: it fires the instant the key is pressed. A shadow pool spreads under her and three figure cut-outs (clones) rise in front of her. At 0.2 s they fly out as three skillshots fanned 25 degrees apart along the way she faces (speed 18, range 9). A hit gives a mint cut; a bolt that misses fades at the end of its range. Then the pool shrinks. Damage 22 per bolt (3 bolts). |
-| R | [eclipse execution](../../../src/spells/targeted/eclipseExecution.ts) | ground (EXECUTE, r 2.5) | 10 | 20 s | 2.2 s | 4.5 s | The ultimate. The world goes dark, a shadow pool covers the small zone and hands hold the enemies while a pale moon rises and a black disc slides across it into an eclipse. A giant black crescent blade forms and tilts back, dead beat at 1.85-2.0 s, then it sweeps down through the zone in one stroke: impact frames, a long mint cut, refraction ring, then it shatters into black shards. Damage 160, knock 6. |
+| Q | [umbral cut](../../../src/spells/targeted/umbralCut.ts) | enemy (needs sight) | 2.5 | 4 s | 0.35 s | 1.0 s | A black pool with a violet rim marks the enemy and a dagger cut-out lies from her to it; she stands still for the 0.35 s wind-up. The strike lands on the enemy's live position if it is within 3.2 m of her: 50, or 85 from behind. Out of reach: a puff and no hit. A hit shows a violet crescent with a mint core (two crossed ones from behind). |
+| W | [smoke veil](../../../src/spells/targeted/smokeVeil.ts) | self (cloud r 3) | 0 (self) | 12 s | first tick at 0.3 s, then every 0.4 s | 3.5 s | A 3 m cloud of dark purple smoke rises at her feet and stays where she cast it for 3 s. Every 0.4 s each enemy inside is blinded 0.5 s (no damage). While she stands inside she fades after 1.5 s without a fight. |
+| E | [shadow double](../../../src/spells/targeted/shadowDouble.ts) | ground (dash 4 m) | 4 | 10 s | none (the copy's blows) | 1.0 s | She darts 4 m in 0.18 s, through cover if it is in the way. A shadow copy (40 HP, lives 2.5 s, 15 per 0.9 s) stays where she stood and walks at the enemy. Three black cut-outs trail along the dart. |
+| R | [nightfall](../../../src/spells/targeted/nightfall.ts) | self | 0 (self) | 24 s | none (no hits) | 5.5 s | The arena darkens for 5 s (to 0.55 with a violet tint) and a pale moon crescent hangs over it. She moves 25% faster and deals 20% more, and fades again 0.8 s after each hit she lands. When it ends she is slowed 1 s. |
 
-Spell sources: [`umbralBlink.ts`](../../../src/spells/targeted/umbralBlink.ts), [`graspOfTheDeep.ts`](../../../src/spells/targeted/graspOfTheDeep.ts), [`nightShroud.ts`](../../../src/spells/targeted/nightShroud.ts), [`eclipseExecution.ts`](../../../src/spells/targeted/eclipseExecution.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-shadow).
+Spell sources: [`umbralCut.ts`](../../../src/spells/targeted/umbralCut.ts), [`smokeVeil.ts`](../../../src/spells/targeted/smokeVeil.ts), [`shadowDouble.ts`](../../../src/spells/targeted/shadowDouble.ts), [`nightfall.ts`](../../../src/spells/targeted/nightfall.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-shadow).
 
 ## Parts file
 
-[`src/effects/parts/shadow.ts`](../../../src/effects/parts/shadow.ts) holds everything the four spells share. Spells import it directly (`../../effects/parts/shadow`). Everything is pooled, takes world-space positions and has a `reset()`; all materials are normal-blended.
+[`src/effects/parts/shadow.ts`](../../../src/effects/parts/shadow.ts) holds everything the kit's spells share. Spells import it directly (`../../effects/parts/shadow`). Everything is pooled, takes world-space positions and has a `reset()`; all materials are normal-blended.
 
 | Export | Role |
 |---|---|
@@ -68,16 +103,15 @@ Spell sources: [`umbralBlink.ts`](../../../src/spells/targeted/umbralBlink.ts), 
 | `Afterimage` | a stepped trail of fading black figure cut-outs between two points |
 | `CutFlash` | the hit cut: a thin hot crescent with a mint core |
 | `CutShards` | flat black shards that fall and fade when a cut-out shatters |
+| `ShadowWisps` | small dark-purple smoke wisps (Smoke Veil): toon billboards with a lumpy outline that erodes as they age; `emit(pos, vel, size, life)`, `update(dt)` |
+| `shadowCloneLook` | the `MinionLook` of the Shadow Double: a thin hooded figure about 1.3 m tall in a ragged black cloak with a violet outline and two mint eyes, a dagger in its right hand |
 
 ## Model
 
-[`public/models/heroes/shadow.glb`](../../../public/models/heroes/shadow.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("shadow")` / `export("shadow")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts).
-
-- Look: A slim woman in a tattered black cloak with a violet edge, a deep hood, pale skin and violet glowing eyes; twin curved daggers at the hips.
-- Props: `deep_hood`, `twin_daggers`.
+[`public/models/heroes/shadow.glb`](../../../public/models/heroes/shadow.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("shadow")` / `export("shadow")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) (the first style). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Nyx`), and its hit size is in `HERO_BODIES` in the same file (radius 0.4 m, height 2.32 m).
 - HUD portrait (canvas-drawn in the kit data): A pale moon behind her, two crossed daggers and the hooded black figure with a mint slit for the eyes.
 
-![Nyx turnaround, angle 15](../../heroes/shadow_15.png) ![Nyx turnaround, angle 165](../../heroes/shadow_165.png)
+![Nyx preview, angle 15](../../heroes/shadow_15.png) ![Nyx preview, angle 165](../../heroes/shadow_165.png) 
 
 ## Files
 
@@ -86,27 +120,17 @@ Spell sources: [`umbralBlink.ts`](../../../src/spells/targeted/umbralBlink.ts), 
 | Kit sheet (design) | [`pipeline/designs/kit-shadow.md`](../../../pipeline/designs/kit-shadow.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
 | Parts | [`src/effects/parts/shadow.ts`](../../../src/effects/parts/shadow.ts) |
-| Spells | [`umbralBlink.ts`](../../../src/spells/targeted/umbralBlink.ts), [`graspOfTheDeep.ts`](../../../src/spells/targeted/graspOfTheDeep.ts), [`nightShroud.ts`](../../../src/spells/targeted/nightShroud.ts), [`eclipseExecution.ts`](../../../src/spells/targeted/eclipseExecution.ts) |
+| Spells | [`umbralCut.ts`](../../../src/spells/targeted/umbralCut.ts), [`smokeVeil.ts`](../../../src/spells/targeted/smokeVeil.ts), [`shadowDouble.ts`](../../../src/spells/targeted/shadowDouble.ts), [`nightfall.ts`](../../../src/spells/targeted/nightfall.ts) |
 | Kit data | [`src/kits/shadow.ts`](../../../src/kits/shadow.ts) |
+| Trait (passive, twist, rules) | [`src/traits/shadow.ts`](../../../src/traits/shadow.ts) |
 | Model | [`public/models/heroes/shadow.glb`](../../../public/models/heroes/shadow.glb) |
 | Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Shadow review (round 1)
-
-![Shadow review contact sheet](../../spells/shadow-review_sheet.jpg)
-
-### Shadow re-check (round 2)
-
-![Shadow re-check contact sheet](../../spells/shadow-recheck_sheet.jpg)
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
-- [Kaia (storm)](storm.md), [Sefu (sand)](sand.md), [Vesper (blood)](blood.md), [Brannoc (forge)](forge.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md), [Vex (alchemy)](alchemy.md)
+- [Combat mechanics](../../architecture/mechanics.md)
+- [Kaia (storm)](storm.md), [Sefu (sand)](sand.md), [Fenna (grove)](grove.md), [Lyra (astral)](astral.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

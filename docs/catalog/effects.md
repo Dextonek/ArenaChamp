@@ -1,12 +1,12 @@
 ---
 title: Effect catalog
 tags: [catalog, effects, vfx]
-updated: 2026-10-29
+updated: 2026-11-04
 ---
 
 # Effect catalog
 
-Every effect registered in the Three.js VFX editor: **204 effects in 28 categories**, plus 13 test spells in a 29th (`test: mechanics`, 217 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
+Every effect registered in the Three.js VFX editor: **283 effects in 47 categories**, plus 13 test spells in a 48th (`test: mechanics`, 296 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
 
 ## Counts
 
@@ -38,16 +38,35 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 | [hero: void](#hero-void) | 4 |
 | [hero: chrono](#hero-chrono) | 4 |
 | [hero: ink](#hero-ink) | 4 |
+| [hero: mirror](#hero-mirror) | 4 |
+| [hero: mason](#hero-mason) | 4 |
+| [hero: timber](#hero-timber) | 4 |
+| [hero: balloon](#hero-balloon) | 4 |
+| [hero: cat](#hero-cat) | 4 |
+| [hero: ledger](#hero-ledger) | 4 |
+| [hero: sumo](#hero-sumo) | 4 |
+| [hero: mime](#hero-mime) | 4 |
+| [hero: referee](#hero-referee) | 4 |
+| [hero: chef](#hero-chef) | 4 |
+| [hero: courier](#hero-courier) | 4 |
+| [hero: janitor](#hero-janitor) | 4 |
+| [hero: mole](#hero-mole) | 4 |
+| [hero: yarn](#hero-yarn) | 4 |
+| [hero: weather](#hero-weather) | 4 |
+| [hero: sheep](#hero-sheep) | 4 |
+| [hero: magic](#hero-magic) | 4 |
+| [hero: door](#hero-door) | 4 |
+| [hero: twins](#hero-twins) | 7 |
 | [weapons](#weapons) | 5 |
 | [weapon attacks](#weapon-attacks) | 5 |
 | [test: mechanics](#test-mechanics) | 13 (test spells, not counted below) |
-| **Total** | **204** (+ 13 test spells = 217 slots) |
+| **Total** | **283** (+ 13 test spells = 296 slots) |
 
 ## How to read the tables
 
 - **Targeting** is the `targeting` spec of the module: `enemy` (one target), `enemies` (shift-clicked or a nearest-neighbour chain, capped), `ground` (a spot, radius decides who is hit), `self` (centred on the caster). `fixed scene` effects have no targeting and play on the fixed demo scene.
 - **Length** is the constant `DURATION` (or `TOTAL`, or a stated "~N s") in the source. `settings-driven` means the length is the `duration` getter, computed from other constants or from the effect's settings (cast time, flight time and so on), so there is no single literal number. `loop` is an idle aura.
-- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the twenty hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
+- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the 39 hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
 - Sheets in `docs/spells/` are contact sheets (frames over time) made by `pipeline/tools/contact-sheet.js`. A few effects also have per-frame images (`<name>_1-....jpg`) next to the sheet.
 - Descriptions are shortened from the source header; the header and the design note have the full timeline.
 
@@ -213,10 +232,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| hemolance | A pale cut across the caster's raised palm sprays blood; a tendril of blood pours up out of the hand, coils once above the shoulder and straightens toward the enemy in front ... | enemy | 1.6 s · hero kit Q | [source](../../src/spells/targeted/hemolance.ts), [design](../../pipeline/designs/hemolance.md), [kit sheet](../../pipeline/designs/blood-kit.md), [sheet](../spells/hemolance_sheet.jpg) |
-| thorn garden | The caster flicks a hand down and a tendril pours to the ground and runs to the target point. | ground (r 4.5) | 2.3 s · hero kit W | [source](../../src/spells/targeted/thornGarden.ts), [design](../../pipeline/designs/thorn-garden.md), [kit sheet](../../pipeline/designs/blood-kit.md), [sheet](../spells/thorn-garden_sheet.jpg) |
-| crimson pact | Arms spread, a bone sigil draws on under the caster and blood rises from both palms into a heart of liquid blood above her head. | self (r 6) | 3.2 s · hero kit E | [source](../../src/spells/targeted/crimsonPact.ts), [design](../../pipeline/designs/crimson-pact.md), [kit sheet](../../pipeline/designs/blood-kit.md), [sheet](../spells/crimson-pact_sheet.jpg) |
-| sanguine eclipse | The world darkens, three blood beads are thrown into the sky and a pale bone moon appears above the zone and BLEEDS (red runs down it). | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/sanguineEclipse.ts), [design](../../pipeline/designs/sanguine-eclipse.md), [kit sheet](../../pipeline/designs/blood-kit.md), [sheet](../spells/sanguine-eclipse_sheet.jpg) |
+| lancet | A blood needle flies to the enemy and stays in for 3 s; cast again to rip it out for more damage and HP back. | enemy | 1.4 s · hero kit Q | [source](../../src/spells/targeted/lancet.ts), [kit sheet](../../pipeline/designs/kit-blood.md) |
+| mist waltz | She comes apart into blood-red mist and flows 5 m, then arms her next two basic attacks. | ground (r 1) | 1.3 s · hero kit W | [source](../../src/spells/targeted/mistWaltz.ts), [kit sheet](../../pipeline/designs/kit-blood.md) |
+| hemocurse | A thread of blood and a crown of thorns put a 3 s curse on the enemy: each spell they cast costs them HP. | enemy | 4.0 s · hero kit E | [source](../../src/spells/targeted/hemocurse.ts), [kit sheet](../../pipeline/designs/kit-blood.md) |
+| sanguine feast | She is rooted for 1.6 s and drinks from the enemy through a thread of blood, in three pulses. | enemy | 2.4 s · hero kit R | [source](../../src/spells/targeted/sanguineFeast.ts), [kit sheet](../../pipeline/designs/kit-blood.md) |
 
 ## hero: forge
 
@@ -224,10 +243,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| rivet shot | Brannoc pulls a white-hot rivet out of his chest forge (sparks), flicks it, and it flies as a short hot streak and punches into the target. | enemy | 1.7 s · hero kit Q | [source](../../src/spells/targeted/rivetShot.ts), [kit sheet](../../pipeline/designs/kit-forge.md), [sheet](../spells/rivet-shot_sheet.jpg) |
-| anvil drop | A ring of molten runes draws itself on the ground while a huge dark anvil with hot edges falls from the sky onto it. | ground (r 3.5) | 2.3 s · hero kit W | [source](../../src/spells/targeted/anvilDrop.ts), [kit sheet](../../pipeline/designs/kit-forge.md), [sheet](../spells/anvil-drop_sheet.jpg) |
-| bellows ward | The forge in Brannoc's chest flares and a ring of heat haze rises around him. | self (r 5) | 3.3 s · hero kit E | [source](../../src/spells/targeted/bellowsWard.ts), [kit sheet](../../pipeline/designs/kit-forge.md), [sheet](../spells/bellows-ward_sheet.jpg) |
-| forgefall | The world darkens, an anvil sigil draws on around the zone, slag streams pour up from the ground into the sky and pool into a colossal hammer that cools black from its edges ... | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/forgefall.ts), [kit sheet](../../pipeline/designs/kit-forge.md), [sheet](../spells/forgefall_sheet.jpg) |
+| chain hammer | A hammer on a chain is whirled and thrown down the aim; the first enemy it touches is dragged to the smith and slowed. | ground (line) | 1.7 s · hero kit Q | [source](../../src/spells/targeted/chainHammer.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
+| forge roar | Heat rolls off him in a ring, a loop of chain turns at his waist and his next basic attack is armed as a slam. | self (r 4) | 3.6 s · hero kit W | [source](../../src/spells/targeted/forgeRoar.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
+| red-hot rivet | He flicks a white-hot rivet at an enemy in sight; it punches in and burns in two ticks. | enemy | 3.2 s · hero kit E | [source](../../src/spells/targeted/redHotRivet.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
+| molten core | His chest cracks open for 6 s and his swings spray slag cones; a recast Quenches it in a ring burst. | self (r 6) | 6.4 s (Quench 2.4 s) · hero kit R | [source](../../src/spells/targeted/moltenCore.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
 
 ## hero: frost
 
@@ -235,10 +254,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| rime spear | She breathes on her open hand, a long ice javelin grows in it, she throws it and it pierces the enemy. | enemy | 1.7 s · hero kit Q | [source](../../src/spells/targeted/rimeSpear.ts), [kit sheet](../../pipeline/designs/kit-frost.md), [sheet](../spells/rime-spear_sheet.jpg) |
-| frostfern field | She sweeps a hand low and her breath rolls toward the point; frost ferns race across the floor to the full radius, climbing the enemies inside (they sink a little, held). | ground (r 4.5) | 2.3 s · hero kit W | [source](../../src/spells/targeted/frostfernField.ts), [kit sheet](../../pipeline/designs/kit-frost.md), [sheet](../spells/frostfern-field_sheet.jpg) |
-| glacial mantle | Frost ferns grow out from under her and up her coat; six long ice crystals grow at her shoulders and hips like armour plates, pointing outward and down. | self (r 4) | 3.3 s · hero kit E | [source](../../src/spells/targeted/glacialMantle.ts), [kit sheet](../../pipeline/designs/kit-frost.md), [sheet](../spells/glacial-mantle_sheet.jpg) |
-| winter's crown | The world darkens cold and frost ferns spread over the whole zone (the warning). | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/wintersCrown.ts), [kit sheet](../../pipeline/designs/kit-frost.md), [sheet](../spells/winters-crown_sheet.jpg) |
+| icicle | She throws a piercing icicle that sticks in the floor for 2 s; cast again to shatter it. | ground (r 8) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/icicle.ts), [kit sheet](../../pipeline/designs/kit-frost.md) |
+| hoarfrost | A cone of mist and a pale streak run to an enemy in sight and frost bites them. | enemy | 1.4 s · hero kit W | [source](../../src/spells/targeted/hoarfrost.ts), [kit sheet](../../pipeline/designs/kit-frost.md) |
+| rime armour | Rime climbs her robe and six crystals turn round her shoulders for 3 s. | self (r 8) | 3.7 s · hero kit E | [source](../../src/spells/targeted/rimeArmour.ts), [kit sheet](../../pipeline/designs/kit-frost.md) |
+| winter's shatter | Her fist of ice closes on an enemy in sight and shatters the Chill on them. | enemy | 1.7 s · hero kit R | [source](../../src/spells/targeted/wintersShatter.ts), [kit sheet](../../pipeline/designs/kit-frost.md) |
 
 ## hero: astral
 
@@ -246,21 +265,21 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| starshot | Lyra draws a bow of light (a gold crescent and a string), a star arrow flies to the first enemy and on the hit splits and hops to the 2nd and 3rd nearest (0.08 s per hop). | enemies (up to 3) | 1.6 s · hero kit Q | [source](../../src/spells/targeted/starshot.ts), [kit sheet](../../pipeline/designs/kit-astral.md), [sheet](../spells/starshot_sheet.jpg) |
-| constellation snare | Lyra fires an arrow into the sky; a parchment star chart draws itself around the target point over a dark night veil and a handful of stars streak down onto points around and ... | ground (r 4) | 2.1 s · hero kit W | [source](../../src/spells/targeted/constellationSnare.ts), [kit sheet](../../pipeline/designs/kit-astral.md) |
-| orbit veil | A small star chart draws itself under Lyra and a night veil rises around her. | self (r 5) | 3.3 s · hero kit E | [source](../../src/spells/targeted/orbitVeil.ts), [kit sheet](../../pipeline/designs/kit-astral.md) |
-| celestial hunt | The world darkens to night and Lyra shoots an arrow into the sky. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/celestialHunt.ts), [kit sheet](../../pipeline/designs/kit-astral.md) |
+| starfall arrow | A held arrow: the longer the draw, the farther and harder it flies; stars drop along its line and join into a constellation. | ground (line) | 3.2 s · hero kit Q | [source](../../src/spells/targeted/starfallArrow.ts), [kit sheet](../../pipeline/designs/kit-astral.md) |
+| twin stars | Two stars orbit her chest on a gold line: her basic attacks echo for 5 s and she moves faster. | self (r 9) | 5.2 s · hero kit W | [source](../../src/spells/targeted/twinStars.ts), [kit sheet](../../pipeline/designs/kit-astral.md) |
+| pinning arrow | A thin arrow pins the enemy to a nearby wall, or slows them anywhere else. | ground (line) | 3.2 s · hero kit E | [source](../../src/spells/targeted/pinningArrow.ts), [kit sheet](../../pipeline/designs/kit-astral.md) |
+| meteor mark | A star locks onto the enemy, follows them for 1.5 s, fixes on their spot and falls as a meteor. | enemy | 4.1 s · hero kit R | [source](../../src/spells/targeted/meteorMark.ts), [kit sheet](../../pipeline/designs/kit-astral.md) |
 
 ## hero: alchemy
 
-4 effects. Vex, the Plague Alchemist. Hero kit, see [Alchemy](heroes/alchemy.md).
+4 effects. Vitriol, the Plague Alchemist. Hero kit, see [Alchemy](heroes/alchemy.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| volatile flask | She plucks a flask from her coat, lobs it in a high spinning arc with a thin fume trail and it shatters on the target: glass shards, an acid splash with bubbles, a magenta ... | enemy | 1.8 s · hero kit Q | [source](../../src/spells/targeted/volatileFlask.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
-| caustic pool | She throws two flasks at once, one high and one low; both shatter at the point, then a glass-ink alchemical circle flashes on and a pool of acid spreads to fill it, bubbling ... | ground (r 4) | 2.6 s · hero kit W | [source](../../src/spells/targeted/causticPool.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
-| mutagen | She drinks a flask (it tilts up at her head and shatters in her hand), her body takes a pulsing green rim, and four flasks orbit her while fumes curl up around her. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/mutagen.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
-| grand transmutation | She smashes a big flask at her feet, the world darkens and a giant glass-ink alchemical circle draws on at the point. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/grandTransmutation.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
+| toxin dart | A fast glass dart of green toxin flies down the aim and the toxin clings to the body that it hits. | ground (r 0.4) | 4.3 s · hero kit Q | [source](../../src/spells/targeted/toxinDart.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
+| fire vial | A vial of orange fire arcs after the enemy and bursts on them; flames then stand on the body. | enemy | 3.6 s · hero kit W | [source](../../src/spells/targeted/fireVial.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
+| acid splash | She smashes a flask of violet acid in a 4 m cone in front of her and shoves back whoever is in it. | self (r 4.5) | 2.1 s · hero kit E | [source](../../src/spells/targeted/acidSplash.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
+| homunculus | A glass-bellied walking bomb with all three reagents hops out of a circle and bursts on the enemy. | enemies (max 10) | 5.5 s · hero kit R | [source](../../src/spells/targeted/homunculus.ts), [kit sheet](../../pipeline/designs/kit-alchemy.md) |
 
 ## hero: storm
 
@@ -268,10 +287,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| arc lance | She points the hooked staff and sparks crackle along it; a horizontal lightning tree jumps from the staff tip to the target and splits into the ground at its feet. | enemy | 1.5 s · hero kit Q | [source](../../src/spells/targeted/arcLance.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
-| downpour | A dark storm cloud gathers high over the point while slanting rain falls inside the circle and ripples spread on the wet floor. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/downpour.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
-| static field | A small storm cloud forms over her head and her rain cloak crackles. A ring of short lightning arcs hops around her at radius 1.5 while light rain falls around her. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/staticField.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
-| eye of the storm | The world darkens blue-black and wind-blown rain starts across the whole zone. A vast ring of dark storm cloud forms high over it and turns, with a clear eye in the middle. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/eyeOfTheStorm.ts), [kit sheet](../../pipeline/designs/kit-storm.md), [sheet](../spells/storm-review_sheet.jpg) |
+| sky strike | A lightning tree falls on an enemy in sight and plants a rod in front of them. | enemy | 1.4 s · hero kit Q | [source](../../src/spells/targeted/skyStrike.ts), [kit sheet](../../pipeline/designs/kit-storm.md) |
+| thunder rod | A great rod stands on the ground and shocks and slows everyone in its ring; cast again to discharge it. | ground (r 3.5) | 3.4 s · hero kit W | [source](../../src/spells/targeted/thunderRod.ts), [kit sheet](../../pipeline/designs/kit-storm.md) |
+| polarity | A bolt magnetises an enemy in sight and then yanks them toward her nearest rod. | enemy | 1.8 s · hero kit E | [source](../../src/spells/targeted/polarity.ts), [kit sheet](../../pipeline/designs/kit-storm.md) |
+| supercell storm | A storm cloud follows her for 6 s and drops marked bolts on the enemy near her or her rods. | self (r 14) | 6.6 s · hero kit R | [source](../../src/spells/targeted/supercellStorm.ts), [kit sheet](../../pipeline/designs/kit-storm.md) |
 
 ## hero: sand
 
@@ -279,10 +298,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| sand lash | Sefu sweeps his crook and a thick ribbon of sand pours out of the floor at his side, arcs over and cracks across to the target like a whip. | enemy | 1.6 s · hero kit Q | [source](../../src/spells/targeted/sandLash.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
-| quicksand | A ring of carved glyphs cuts itself into the floor, sand floods inside it and starts to swirl inward, sinking and pulling the enemies in it. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/quicksand.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
-| dune ward | Three sand ribbons rise from the floor and wind around Sefu in a slow spiral above a small glyph ring. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/duneWard.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
-| tomb of kings | The world darkens warm, a big glyph ring carves into the floor, the ground turns to swirling sand and sand ribbons spiral up from the ring and stack a stepped sandstone pyramid layer by layer. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/tombOfKings.ts), [kit sheet](../../pipeline/designs/kit-sand.md), [sheet](../spells/sand-review_sheet.jpg) |
+| cobra spit | A cobra of sand rears up and spits venom down the aim; the first enemy hit is blinded. | ground | 1.4 s · hero kit Q | [source](../../src/spells/targeted/cobraSpit.ts), [kit sheet](../../pipeline/designs/kit-sand.md) |
+| shepherd's crook | A sandstone crook hooks round an enemy in sight and drags them toward him. | enemy | 1.4 s · hero kit W | [source](../../src/spells/targeted/shepherdsCrook.ts), [kit sheet](../../pipeline/designs/kit-sand.md) |
+| scarab stride | He skitters 6 m as a stream of scarabs, and biting an enemy on the way poisons them. | ground (r 1) | 3.0 s · hero kit E | [source](../../src/spells/targeted/scarabStride.ts), [kit sheet](../../pipeline/designs/kit-sand.md) |
+| sarcophagus | A gold sarcophagus rises at the enemy's spot and shuts on them, then opens in scarabs. | enemy | 3.1 s · hero kit R | [source](../../src/spells/targeted/sarcophagus.ts), [kit sheet](../../pipeline/designs/kit-sand.md) |
 
 ## hero: shadow
 
@@ -290,10 +309,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| umbral blink | A black figure cut-out peels off Nyx, blinks to the target in four stepped jumps (a trail of fading figures) and two crossed blade cut-outs slash through the target. | enemy | 1.5 s · hero kit Q | [source](../../src/spells/targeted/umbralBlink.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
-| grasp of the deep | A shadow pool with a pale foil disc spreads at the point; flat black hands rise out of it around and under the enemies with their fingers spread. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/graspOfTheDeep.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
-| night shroud | A shadow pool spreads under Nyx and three figure cut-outs (clones) rise around her and circle her slowly. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/nightShroud.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
-| eclipse execution | Nyx raises a dagger and the world goes dark. A shadow pool covers the whole zone, shadow hands rise across it and hold the enemies while a pale moon rises behind the zone and a black disc slides across it into an eclipse. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/eclipseExecution.ts), [kit sheet](../../pipeline/designs/kit-shadow.md), [sheet](../spells/shadow-review_sheet.jpg) |
+| umbral cut | A dagger strike lands on an enemy within 2.5 m after a short wind-up, harder from behind. | enemy | 1.0 s · hero kit Q | [source](../../src/spells/targeted/umbralCut.ts), [kit sheet](../../pipeline/designs/kit-shadow.md) |
+| smoke veil | A 3 m cloud of dark smoke stays at her feet for 3 s and blinds whoever stands in it. | self (r 3) | 3.5 s · hero kit W | [source](../../src/spells/targeted/smokeVeil.ts), [kit sheet](../../pipeline/designs/kit-shadow.md) |
+| shadow double | She darts 4 m through cover and a shadow copy stays behind and walks at the enemy. | ground (r 1) | 1.0 s · hero kit E | [source](../../src/spells/targeted/shadowDouble.ts), [kit sheet](../../pipeline/designs/kit-shadow.md) |
+| nightfall | The arena darkens for 5 s under a pale moon crescent while she is faster and hits harder. | self (r 9) | 5.5 s · hero kit R | [source](../../src/spells/targeted/nightfall.ts), [kit sheet](../../pipeline/designs/kit-shadow.md) |
 
 ## hero: grove
 
@@ -301,10 +320,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| bloom lash | Fenna sweeps her staff and a spiral vine bursts from the floor, coils across to the target and up around it, and a flower blooms on top. | enemy | 1.6 s · hero kit Q | [source](../../src/spells/targeted/bloomLash.ts), [kit sheet](../../pipeline/designs/kit-grove.md), [sheet](../spells/wave2-grove_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
-| overgrowth | Roots spread across the ground and spiral vines grow up around the enemies inside, then burst into a ring of flowers. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/overgrowth.ts), [kit sheet](../../pipeline/designs/kit-grove.md), [sheet](../spells/wave2-grove_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
-| verdant ward | Three flowering vines rise around Fenna, turn outward and twice fire petals and pollen at every enemy nearby. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/verdantWard.ts), [kit sheet](../../pipeline/designs/kit-grove.md), [sheet](../spells/wave2-grove_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
-| world blossom | The world darkens to a green dusk and a colossal flower grows from a braided trunk, folds shut over the zone and slams down in a burst of blooms. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/worldBlossom.ts), [kit sheet](../../pipeline/designs/kit-grove.md), [sheet](../spells/wave2-grove_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
+| seed shot | A seed swells in her hand and flies down the aim; a flower grows where it stops. | ground | 1.4 s · hero kit Q | [source](../../src/spells/targeted/seedShot.ts), [kit sheet](../../pipeline/designs/kit-grove.md) |
+| strangle vine | Vines run along the ground and coil up an enemy in sight, rooting them. | enemy | 2.6 s · hero kit W | [source](../../src/spells/targeted/strangleVine.ts), [kit sheet](../../pipeline/designs/kit-grove.md) |
+| pollen glide | She glides up to 6 m on a gust of gold pollen and a flower grows where she lands. | ground (r 1) | 1.3 s · hero kit E | [source](../../src/spells/targeted/pollenGlide.ts), [kit sheet](../../pipeline/designs/kit-grove.md) |
+| world tree | A giant flower opens, then a tree bursts up, roots an enemy near it and stands 8 s; a recast uproots it in thorns. | ground (r 3) | 10.2 s · hero kit R | [source](../../src/spells/targeted/worldTree.ts), [kit sheet](../../pipeline/designs/kit-grove.md) |
 
 ## hero: dawn
 
@@ -312,10 +331,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| radiant spear | Shards of hard light click into a spear over Auriel's shoulder and pierce the target, bursting out of its back. | enemy | 1.5 s · hero kit Q | [source](../../src/spells/targeted/radiantSpear.ts), [kit sheet](../../pipeline/designs/kit-dawn.md), [sheet](../spells/wave2-dawn_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
-| aegis wall | A ring of kite-shield panels rises around the point and closes into a dome that slams shut over the enemies. | ground (r 4) | 2.35 s · hero kit W | [source](../../src/spells/targeted/aegisWall.ts), [kit sheet](../../pipeline/designs/kit-dawn.md), [sheet](../spells/wave2-dawn_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
-| halo of blades | A halo crowns Auriel and six blade shards circle her, lunging at every enemy nearby, twice. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/haloOfBlades.ts), [kit sheet](../../pipeline/designs/kit-dawn.md), [sheet](../spells/wave2-dawn_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
-| judgement of dawn | The world darkens to a pre-dawn blue and a colossal sword of hard-light panels is built in the sky and driven into the zone. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/judgementOfDawn.ts), [kit sheet](../../pipeline/designs/kit-dawn.md), [sheet](../spells/wave2-dawn_sheet.jpg), [sheet](../spells/wave2-dawngrove-r2_sheet.jpg) |
+| first light | A sun disc swells and five blade shards fly out in a 6 m cone; a hit shields her and the shield bursts when it ends. | self (cone 6 m) | 4.35 s · hero kit Q | [source](../../src/spells/targeted/firstLight.ts), [kit sheet](../../pipeline/designs/kit-dawn.md) |
+| dawnward | Six kite shields click into a ring round her; when the shield ends the ring shatters in a 3 m burst. | self | 3.95 s · hero kit W | [source](../../src/spells/targeted/dawnward.ts), [kit sheet](../../pipeline/designs/kit-dawn.md) |
+| oathbrand | A thread of light and a closing ring mark the enemy, then a beam falls on it and brands it. | enemy | 3.1 s · hero kit E | [source](../../src/spells/targeted/oathbrand.ts), [kit sheet](../../pipeline/designs/kit-dawn.md) |
+| sunrise | A sun disc, a halo and eight kite shields lift her; when the shield ends a fixed 5 m ring closes and bursts. | self (r 5 ring) | 7.55 s · hero kit R | [source](../../src/spells/targeted/sunrise.ts), [kit sheet](../../pipeline/designs/kit-dawn.md) |
 
 ## hero: tide
 
@@ -323,10 +342,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| tide whip | Marin spins a water ribbon off her wrist; it lashes the target, wraps it once and bursts into a splash crown. | enemy | 1.5 s · hero kit Q | [source](../../src/spells/targeted/tideWhip.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
-| whirlpool | A pool spreads and three water ribbons spiral up, drawing the enemies in before a water column bursts. | ground (r 4) | 2.3 s · hero kit W | [source](../../src/spells/targeted/whirlpool.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
-| undertow dance | Water sashes circle Marin as she spins; twice they flare into a flat ring of water that splashes everything near. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/undertowDance.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
-| leviathan's waltz | The world darkens to a deep sea blue and a water serpent made of ribbons coils over the zone, rears up and dives through it in a crown of foam. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/leviathansWaltz.ts), [kit sheet](../../pipeline/designs/kit-tide.md), [sheet](../spells/wave2-tide_sheet.jpg), [sheet](../spells/wave2-tide-r2_sheet.jpg) |
+| wave disc | A spinning disc of water flies down the aim; it pushes at High tide and pulls at Low tide. | ground (line, bolt) | 2.0 s · hero kit Q | [source](../../src/spells/targeted/waveDisc.ts), [kit sheet](../../pipeline/designs/kit-tide.md) |
+| coral spire | A coral pillar bursts up at a spot and stands 5 s as an obstacle, pushing or pulling the enemy near it. | ground (r 2.5) | 6.7 s · hero kit W | [source](../../src/spells/targeted/coralSpire.ts), [kit sheet](../../pipeline/designs/kit-tide.md) |
+| mist form | She turns to water, flows up to 6 m, untouchable, and reforms in a splash that flips the tide. | ground (dash, r 3) | 1.15 s · hero kit E | [source](../../src/spells/targeted/mistForm.ts), [kit sheet](../../pipeline/designs/kit-tide.md) |
+| moon's pull | A pale moon rises over her for 3 s and drags the enemy toward her; a tide crash lands if it is close when the moon sets. | self (r 25) | 3.9 s · hero kit R | [source](../../src/spells/targeted/moonPull.ts), [kit sheet](../../pipeline/designs/kit-tide.md) |
 
 ## hero: sky
 
@@ -334,10 +353,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| gale edge | Two crossing wind crescents sweep the cone in front of Zephyr and shove everything in it back (melee swing). | enemy (cone r 3.2) | 1.2 s · hero kit Q | [source](../../src/spells/targeted/galeEdge.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
-| tailwind rush | She rides a gust ribbon to the spot (dash) and a spiral wind lifts everyone there off their feet (knock-up). | ground (r 2.5) | 1.6 s · hero kit W | [source](../../src/spells/targeted/tailwindRush.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
-| cyclone guard | A whirl of crescents wraps her in a 50 point shield; twice it flares out as a ring that cuts and shoves enemies near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/cycloneGuard.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
-| thousand winds | The world darkens to a pale storm teal and a cyclone of about 150 crescents closes over the zone; she dashes into its eye and the winds burst out, knocking everything up. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/thousandWinds.ts), [kit sheet](../../pipeline/designs/kit-sky.md), [sheet](../spells/wave3-sky_sheet.jpg), [sheet](../spells/wave3-sky-r2_sheet.jpg), [sheet](../spells/wave3-sky-r3_sheet.jpg) |
+| crosswind | A 3 m cross-cut of wind in front of him; cast again within 2 s for a dash-slash. | enemies (cone 3 m) | 1.2 s · hero kit Q | [source](../../src/spells/targeted/crosswind.ts), [kit sheet](../../pipeline/designs/kit-sky.md) |
+| skyward | He leaps, untouchable, and comes down on a spot, knocking enemies up. | ground (r 1.4) | 2.0 s · hero kit W | [source](../../src/spells/targeted/skyward.ts), [kit sheet](../../pipeline/designs/kit-sky.md) |
+| feather step | A quick 4 m step with jade afterimages; two charges. | ground (dash) | 1.0 s · hero kit E | [source](../../src/spells/targeted/featherStep.ts), [kit sheet](../../pipeline/designs/kit-sky.md) |
+| sky rend | He marks an enemy, vanishes, and strikers cut it from every side. | enemy | 2.2 to 3.1 s · hero kit R | [source](../../src/spells/targeted/skyRend.ts), [kit sheet](../../pipeline/designs/kit-sky.md) |
 
 ## hero: bone
 
@@ -345,10 +364,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| bone spear | A spear of vertebrae assembles beside Mortis and is thrown down a line as a piercing skillshot; it clatters apart at max range. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/boneSpear.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
-| grave call | The ground cracks open with teal light and two skeletons claw out among bone spires and fight for him for 6 s (summon). | ground (r 3) | 2.0 s · hero kit W | [source](../../src/spells/targeted/graveCall.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
-| ossuary ward | A cage of ribs grows round him with a 30 point shield; twice the ribs flex and fire a ring of bone shards at everything near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/ossuaryWard.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
-| legion of the ossuary | The world darkens to teal-black and a colossal skeletal hand rises, closes and slams the zone in a ring of bone spires; two skeleton archers climb out of the cracks (summon). | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/legionOfTheOssuary.ts), [kit sheet](../../pipeline/designs/kit-bone.md), [sheet](../spells/wave3-bone_sheet.jpg), [sheet](../spells/wave3-bone-r2_sheet.jpg), [sheet](../spells/wave3-bone-r3_sheet.jpg) |
+| bone fan | Three thin bone shards fly in a fan; every bone pile near him adds a shard. | ground (line, bolt) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/boneFan.ts), [kit sheet](../../pipeline/designs/kit-bone.md) |
+| raise dead | Bone spires rise and a skeleton claws out of the ground, one more per bone pile near the spot. | ground (r 2.4) | 2.0 s · hero kit W | [source](../../src/spells/targeted/raiseDead.ts), [kit sheet](../../pipeline/designs/kit-bone.md) |
+| bone armour | A cage of ribs closes round him; when it breaks its bone darts fly at the enemy. | self | 4.6 s · hero kit E | [source](../../src/spells/targeted/boneArmour.ts), [kit sheet](../../pipeline/designs/kit-bone.md) |
+| grave grasp | A hand rises where the enemy stood and drags it to him, rooted, with two skeletons beside it. | enemy | 3.3 s · hero kit R | [source](../../src/spells/targeted/graveGrasp.ts), [kit sheet](../../pipeline/designs/kit-bone.md) |
 
 ## hero: clockwork
 
@@ -356,10 +375,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| clockwork rivet shot | A spring-loaded launcher fires a spinning copper rivet down a line (skillshot); each hit slows the enemy and the rivet ricochets to the next. | ground (skillshot line, r 0.4) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/clockworkRivetShot.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
-| cog turret | Gears and a spring click together at the point into a brass turret (summon) that shoots whatever comes within 8 for 6 s. | ground (r 2) | 1.6 s · hero kit W | [source](../../src/spells/targeted/cogTurret.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
-| gear field | Three nested gears unfold round her; twice they lurch and an electric ring races out, hitting and slowing every enemy inside. | self (r 5) | 3.2 s · hero kit E | [source](../../src/spells/targeted/gearField.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
-| gearfall | The world darkens to a warm iron dark and a colossal gear is lowered on chains, hangs for a dead beat and drops on the zone, rooting everything in it. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/gearfall.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md), [sheet](../spells/wave3-clockwork_sheet.jpg), [sheet](../spells/wave3-clockwork-r2_sheet.jpg), [sheet](../spells/wave3-clockwork-r3_sheet.jpg) |
+| homing drone | A brass drone flies out of her backpack and always hits the enemy, tagging it. | enemy | 3.75 s · hero kit Q | [source](../../src/spells/targeted/homingDrone.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md) |
+| deploy turret | A turret is built at a spot; two charges. | ground (r 1.5) | 1.6 s · hero kit W | [source](../../src/spells/targeted/deployTurret.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md) |
+| grapple hook | A hook that slows an enemy, or reels her to a wall, pillar or her own turret. | ground (line, bolt) | up to 2.2 s · hero kit E | [source](../../src/spells/targeted/grappleHook.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md) |
+| siege mode | Four steel plates slam down and she braces, rooted, firing heavy rounds while her turrets speed up. | self (r 25) | 6.7 s · hero kit R | [source](../../src/spells/targeted/siegeMode.ts), [kit sheet](../../pipeline/designs/kit-clockwork.md) |
 
 ## hero: prism
 
@@ -367,10 +386,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| prism bolt | A crystal forms at her wand tip and is fired down a line (skillshot); on the first enemy it bursts into three spectral beams that fan out and hit again. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/prismBolt.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
-| refraction field | A ring of six crystals feeds a prism over the zone; it bursts in spectral light, hitting and blinding everyone inside. | ground (r 4) | 2.2 s · hero kit W | [source](../../src/spells/targeted/refractionField.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
-| mirror shell | Six crystal mirrors circle her with a 40 point shield; twice they throw spectral beams outward that hit everything near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/mirrorShell.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
-| spectrum lance | The world darkens to violet-black and a giant prism assembles over the zone; a beam from the sky strikes it, hangs for a dead beat and splits into seven lances that slam down and sweep the zone. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/spectrumLance.ts), [kit sheet](../../pipeline/designs/kit-prism.md), [sheet](../spells/wave4-prism_sheet.jpg), [sheet](../spells/wave4-prism-r2_sheet.jpg) |
+| ricochet light | A bolt of light that banks off up to two walls, pillars or crystals, hitting harder with each bounce. | ground (line, bolt) | up to 3.5 s · hero kit Q | [source](../../src/spells/targeted/ricochetLight.ts), [kit sheet](../../pipeline/designs/kit-prism.md) |
+| crystal pillar | A crystal rises at a spot and stands 6 s, blocking walking, sight and bolts; her bolts bounce off it. | ground (r 0.95) | 7.5 s · hero kit W | [source](../../src/spells/targeted/crystalPillar.ts), [kit sheet](../../pipeline/designs/kit-prism.md) |
+| blinding flare | Six panes of light flash round her, blinding and pushing enemies within 3 m. | self (r 3) | 1.5 s · hero kit E | [source](../../src/spells/targeted/blindingFlare.ts), [kit sheet](../../pipeline/designs/kit-prism.md) |
+| shatterlight | Six shards ring the enemy and fire inward through it, each bouncing once off a wall. | enemy | up to 3.2 s · hero kit R | [source](../../src/spells/targeted/shatterlight.ts), [kit sheet](../../pipeline/designs/kit-prism.md) |
 
 ## hero: bard
 
@@ -378,10 +397,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| discordant note | A big dark note is thrown down a line (skillshot); each hit bursts into small notes and a sound ring, and it bounces on to the nearest other enemy. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/discordantNote.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
-| silencing refrain | A stave coils round the zone while notes ride it inward; at the hush every note freezes and a dark sound ring snaps in, hitting and silencing everyone inside. | ground (r 4) | 2.2 s · hero kit W | [source](../../src/spells/targeted/silencingRefrain.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
-| ballad of valor | Two staves circle him with a 30 point shield; twice a sound ring races out, hitting and shoving back everything near, and at the second he heals. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/balladOfValor.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
-| crescendo | The world darkens to plum-black and a giant golden lyre rises over the zone carrying hundreds of notes; they freeze, the strings snap and one deafening chord hits and stuns everything below. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/crescendo.ts), [kit sheet](../../pipeline/designs/kit-bard.md), [sheet](../spells/wave4-bard_sheet.jpg) |
+| resounding chord | A chord from the lyre fans out in a 5 m cone; silences when cast on the beat. | self (cone 5 m) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/resoundingChord.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
+| siren song | A note flies at the enemy and charms it into walking toward him. | enemy | 3.8 s · hero kit W | [source](../../src/spells/targeted/sirenSong.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
+| rising chorus | Notes orbit him; in-tune casts give speed and a shield. | self (r 7) | 3.5 s · hero kit E | [source](../../src/spells/targeted/risingChorus.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
+| duet | A ring of music staves closes round both heroes and pulses on every beat. | self (r 9, ring r 6) | 4.2 s · hero kit R | [source](../../src/spells/targeted/duet.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
 
 ## hero: hive
 
@@ -389,10 +408,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| mandible rend | Two crossing serrated claw arcs sweep a cone in front of him with honey splashes; everything inside is hit and slowed. | enemies (cone, r 3.2) | 1.2 s · hero kit Q | [source](../../src/spells/targeted/mandibleRend.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
-| swarm leap | The swarm lifts off his back and streams behind him as he leaps to the point; a honeycomb bursts at the landing, hitting everything near, and two wasp soldiers peel off to fight for 6 s (dash, summon). | ground (r 2.5) | 1.6 s · hero kit W | [source](../../src/spells/targeted/swarmLeap.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
-| chitin carapace | Black chitin plates snap round him with a 40 point shield while the swarm circles; twice the swarm bursts outward, hitting and slowing everything near. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/chitinCarapace.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
-| queen's descent | The world darkens to amber-black, a honeycomb wall rises round the zone and hundreds of wasps form a giant queen wasp that folds, hangs for a dead beat and dives into the centre, hitting and stunning everything inside. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/queensDescent.ts), [kit sheet](../../pipeline/designs/kit-hive.md), [sheet](../spells/wave4-hive_sheet.jpg), [sheet](../spells/wave4-hive-r2_sheet.jpg) |
+| barbed stinger | A stinger flies down the aim and leaves a barb; cast again to leap onto the barbed enemy. | ground (line, bolt) | 1.4 s (leap 1.0 to 3.7 s) · hero kit Q | [source](../../src/spells/targeted/barbedStinger.ts), [kit sheet](../../pipeline/designs/kit-hive.md) |
+| hive shell | Chitin plates close round him; each hit he takes sends a wasp to sting the attacker. | self (r 1.5) | 3.5 s · hero kit W | [source](../../src/spells/targeted/hiveShell.ts), [kit sheet](../../pipeline/designs/kit-hive.md) |
+| swarm cloud | All his wasps fly to a spot and hang there as a stinging, blinding cloud. | ground (r 2.5) | 3.65 s · hero kit E | [source](../../src/spells/targeted/swarmCloud.ts), [kit sheet](../../pipeline/designs/kit-hive.md) |
+| swarm surge | He looses every wasp down a 10 m column that shoves and blinds. | ground (line, column) | 2.0 s · hero kit R | [source](../../src/spells/targeted/swarmSurge.ts), [kit sheet](../../pipeline/designs/kit-hive.md) |
 
 ## hero: void
 
@@ -400,10 +419,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| rift cleave | A greatsword sweep leaves a tear standing in the air along the arc; everything inside the cone is hit and knocked back before the rift zips shut. | enemies (cone, r 3.2) | 1.2 s · hero kit Q | [source](../../src/spells/targeted/riftCleave.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-qwe_sheet.jpg), [sheet](../spells/wave5-void-w2_sheet.jpg) |
-| null tether | Cracks spread over the zone and black tendril-rifts race to his feet, then snap taut and drag every enemy inside toward him, slowing them. | ground (r 3.5) | 1.8 s · hero kit W | [source](../../src/spells/targeted/nullTether.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-qwe_sheet.jpg), [sheet](../spells/wave5-void-w2_sheet.jpg) |
-| void mantle | A ring of five standing rifts opens round him with a 40 point shield; twice it pulses outward, hitting everything near, and the second pulse silences. | self (r 4) | 3.2 s · hero kit E | [source](../../src/spells/targeted/voidMantle.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-qwe_sheet.jpg) |
-| unmaking | The world darkens to black and the zone is cut out of it: the ground cracks like glass, a vast rift opens above it and drags everything in, hangs for a dead beat and slams shut, hitting and silencing everything inside. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/unmaking.ts), [kit sheet](../../pipeline/designs/kit-void.md), [sheet](../spells/wave5-void-r_sheet.jpg), [sheet](../spells/wave5-void-w2_sheet.jpg) |
+| gravity slam | He slams the ground and drags enemies within 3 m toward him. | self (r 3) | 1.6 s · hero kit Q | [source](../../src/spells/targeted/gravitySlam.ts), [kit sheet](../../pipeline/designs/kit-void.md) |
+| null zone | A 3 m sphere of void stays where he cast it for 3 s, silencing enemies inside and stopping bolts. | self (zone r 3) | 3.5 s · hero kit W | [source](../../src/spells/targeted/nullZone.ts), [kit sheet](../../pipeline/designs/kit-void.md) |
+| phase step | He marks a spot, steps through the void to it, and his next attack rips and weakens. | ground (dash) | 3.6 s · hero kit E | [source](../../src/spells/targeted/phaseStep.ts), [kit sheet](../../pipeline/designs/kit-void.md) |
+| void black hole | A black hole crawls down his aim, pulling enemies in and stunning at its core; recast to collapse it. | ground (line, pull r 5) | 4.7 s · hero kit R | [source](../../src/spells/targeted/blackHole.ts), [kit sheet](../../pipeline/designs/kit-void.md) |
 
 ## hero: chrono
 
@@ -411,10 +430,10 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| second hand | A red clock hand snaps off a small dial at his staff tip and is thrown down a line (skillshot) through everything in its path, hitting and slowing each. | ground (skillshot line, r 0.45) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/secondHand.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-qwe_sheet.jpg) |
-| stopped moment | A dial draws itself on the ground and its hands snap to twelve; the dial freezes, motes stop in the air and everyone inside is hit and stunned. | ground (r 3.5) | 2.2 s · hero kit W | [source](../../src/spells/targeted/stoppedMoment.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-qwe_sheet.jpg) |
-| rewind | He marks his spot with a dial and a 25 point shield, then rewinds back to it with afterimages replaying his path, healing and bursting the dial outward to hit and shove away everything near. | self (r 3) | 2.8 s · hero kit E | [source](../../src/spells/targeted/rewind.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-qwe_sheet.jpg) |
-| twelfth hour | The world darkens to green-black and a giant clock dial rises over the zone; its hands stop one tick short, hang for a dead beat and the red second hand drives into the centre, hitting and stunning everything inside. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/twelfthHour.ts), [kit sheet](../../pipeline/designs/kit-chrono.md), [sheet](../spells/wave5-chrono-r_sheet.jpg) |
+| tick bolt | A spinning clock hand flies down the aim; the same line repeats 1.5 s later as an echo. | ground (line, bolt) | 2.45 s · hero kit Q | [source](../../src/spells/targeted/tickBolt.ts), [kit sheet](../../pipeline/designs/kit-chrono.md) |
+| slow time | Time thickens in a 3.5 m circle; enemies in it are hit and slowed, and the circle echoes. | ground (r 3.5) | 3.35 s · hero kit W | [source](../../src/spells/targeted/slowTime.ts), [kit sheet](../../pipeline/designs/kit-chrono.md) |
+| time skip | He vanishes for 0.6 s and returns on a marker with a pulse, then echoes. | ground (dash, r 1.4) | 2.5 s · hero kit E | [source](../../src/spells/targeted/timeSkip.ts), [kit sheet](../../pipeline/designs/kit-chrono.md) |
+| stolen hour | A clock face forms over the enemy and strikes, and makes his echoes stronger for 4 s. | enemy | 2.7 s · hero kit R | [source](../../src/spells/targeted/stolenHour.ts), [kit sheet](../../pipeline/designs/kit-chrono.md) |
 
 ## hero: ink
 
@@ -422,10 +441,222 @@ Every effect registered in the Three.js VFX editor: **204 effects in 28 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| brushstroke | A wet brushstroke is flung down a line (skillshot) and hits the first enemy; a stroke that flies its full range splits into three small strokes. | ground (skillshot line, r 0.45) | 1.6 s · hero kit Q | [source](../../src/spells/targeted/brushstroke.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-qwe_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
-| ink snare | Ink bleeds into paper on the ground and strokes scribble across it, then grasping strokes rise round every foot, hitting and rooting everyone inside. | ground (r 3.5) | 2.2 s · hero kit W | [source](../../src/spells/targeted/inkSnare.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-qwe_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
-| paper familiars | Two sheets of paper fold themselves into ink cranes that fight for 6 s (summon) while a ring of ink splashes out and hits everything near. | self (r 3) | 1.4 s · hero kit E | [source](../../src/spells/targeted/paperFamiliars.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-qwe_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
-| final calligraphy | The world darkens to sumi black and a giant brush paints one huge character on a sheet of paper over the zone; a giant seal stamps it, the ink erupts and everything inside is hit and blinded. | ground (r 7) | 4.5 s · hero kit R | [source](../../src/spells/targeted/finalCalligraphy.ts), [kit sheet](../../pipeline/designs/kit-ink.md), [sheet](../spells/wave5-ink-r_sheet.jpg), [sheet](../spells/wave5-ink-r2_sheet.jpg) |
+| ink lash | A lash of ink flies down the aim and leaves a wet stroke along its path. | ground (line, bolt) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/inkLash.ts), [kit sheet](../../pipeline/designs/kit-ink.md) |
+| seal of binding | A paper seal stamps down, arms after 0.5 s and roots whoever steps in. | ground (r 1) | 1.4 s · hero kit W | [source](../../src/spells/targeted/sealOfBinding.ts), [kit sheet](../../pipeline/designs/kit-ink.md) |
+| flowing script | She glides 6 m along a line and paints a stroke behind her. | ground (dash) | 1.0 s · hero kit E | [source](../../src/spells/targeted/flowingScript.ts), [kit sheet](../../pipeline/designs/kit-ink.md) |
+| the last character | She writes one great character that roots the enemy; her strokes under it erupt. | ground (r 2) | 2.4 s · hero kit R | [source](../../src/spells/targeted/theLastCharacter.ts), [kit sheet](../../pipeline/designs/kit-ink.md) |
+
+## hero: mirror
+
+4 effects. Silvane, the Vain. Hero kit, see [Mirror](heroes/mirror.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| hand mirror | A spinning hand mirror bounces off walls for more damage each time and lies on the floor to be caught. | ground (r 0.3) | 3.2 s · hero kit Q | [source](../../src/spells/targeted/handMirror.ts), [kit sheet](../../pipeline/designs/kit-mirror.md) |
+| vanity stand | A tall standing mirror steps up at a spot and stands 6 s as a wall that blocks and reflects bolts. | ground (r 0.9) | 7.5 s · hero kit W | [source](../../src/spells/targeted/vanityStand.ts), [kit sheet](../../pipeline/designs/kit-mirror.md) |
+| through the glass | She steps into her standing mirror and out of the far side. | ground (r 1) | 1.0 s · hero kit E | [source](../../src/spells/targeted/throughTheGlass.ts), [kit sheet](../../pipeline/designs/kit-mirror.md) |
+| hall of mirrors | She spins and throws eight mirrors outward in a ring; some come to rest to be caught. | self (r 3) | 2.5 s · hero kit R | [source](../../src/spells/targeted/hallOfMirrors.ts), [kit sheet](../../pipeline/designs/kit-mirror.md) |
+
+## hero: mason
+
+4 effects. Bram, the Pillar Mason. Hero kit, see [Mason](heroes/mason.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| raise gerald | A circle marks a spot and Gerald, a limestone pillar with a face, bursts up out of the floor there. | ground (r 1.5) | 2.0 s · hero kit Q | [source](../../src/spells/targeted/raiseGerald.ts), [kit sheet](../../pipeline/designs/kit-mason.md) |
+| the shove | Bram puts his shoulder to Gerald and slides him along the aim as a battering ram. | ground (r 1) | 2.3 s · hero kit W | [source](../../src/spells/targeted/theShove.ts), [kit sheet](../../pipeline/designs/kit-mason.md) |
+| a good lean | Bram runs at Gerald and leans in for a hug, which gives him a shield. | self (r 1) | 1.4 s · hero kit E | [source](../../src/spells/targeted/aGoodLean.ts), [kit sheet](../../pipeline/designs/kit-mason.md) |
+| gerald no | Gerald topples along the aim, a long shadow grows ahead of him and he crashes into rubble. | ground (r 1) | 2.5 s · hero kit R | [source](../../src/spells/targeted/geraldNo.ts), [kit sheet](../../pipeline/designs/kit-mason.md) |
+
+## hero: timber
+
+4 effects. Hank, the Lumberjack. Hero kit, see [Timber](heroes/timber.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| axe swing | A quick swing of the double axe; any of his trees it touches is chopped and falls along a strip. | self (r 3) | 2.1 s · hero kit Q | [source](../../src/spells/targeted/axeSwing.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
+| fast growth | He slams the axe into the ground and a tree sprouts at a spot, hitting whoever stands there. | ground (r 1.5) | 1.8 s · hero kit W | [source](../../src/spells/targeted/fastGrowth.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
+| caber toss | He rips up the nearest tree and hurls it end over end, or throws his axe if there is none. | ground (r 1) | 3.0 s · hero kit E | [source](../../src/spells/targeted/caberToss.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
+| timber call | Five trees grow in a row; a recast swings and they fall like dominoes along the row. | ground (r 1) | 9.3 s (the fall 3.65 s) · hero kit R | [source](../../src/spells/targeted/timberCall.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
+
+## hero: balloon
+
+4 effects. Professor Puff, balloon scientist. Hero kit, see [Balloon](heroes/balloon.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| air hose | He pumps a small pink balloon up at the brass nozzle and lets it fly down the aim as a rocket. | ground (r 0.35) | 1.7 s · hero kit Q | [source](../../src/spells/targeted/airHose.ts), [kit sheet](../../pipeline/designs/kit-balloon.md) |
+| helium bomb | A foil balloon floats to a spot, swells and pops after 1.0 s, pushing out everyone in the circle. | ground (r 2.5) | 2.2 s · hero kit W | [source](../../src/spells/targeted/heliumBomb.ts), [kit sheet](../../pipeline/designs/kit-balloon.md) |
+| hot air | He pumps himself up, pushes away anyone close, then floats 6 m away. | ground (r 2.5) | 2.4 s · hero kit E | [source](../../src/spells/targeted/hotAir.ts), [kit sheet](../../pipeline/designs/kit-balloon.md) |
+| pop! | A brass pin flies at an enemy in sight and pops the Air out of them. | enemy | 1.9 s · hero kit R | [source](../../src/spells/targeted/popPin.ts), [kit sheet](../../pipeline/designs/kit-balloon.md) |
+
+## hero: cat
+
+4 effects. Sir Whiskers, the Cat Knight. Hero kit, see [Cat](heroes/cat.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| scratch | He rakes the air in front of him: three crossed claw strokes in a 2.5 m cone. | self (cone 2.5 m) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/scratch.ts), [kit sheet](../../pipeline/designs/kit-cat.md) |
+| knock it over | He bats a clay pot off a nearby pillar or wall onto the aimed spot; with no cover it does nothing. | ground (r 1.5) | 2.2 s · hero kit W | [source](../../src/spells/targeted/knockItOver.ts), [kit sheet](../../pipeline/designs/kit-cat.md) |
+| pounce | He spends a life and leaps up to 7 m, landing on the enemy with a push. | ground (dash, r 1.5) | 2.2 s · hero kit E | [source](../../src/spells/targeted/pounce.ts), [kit sheet](../../pipeline/designs/kit-cat.md) |
+| land on my feet | A twirl and a cream ring: for 4 s the next lost life is kept and he leaps away. | self | 4.6 s · hero kit R | [source](../../src/spells/targeted/landOnMyFeet.ts), [kit sheet](../../pipeline/designs/kit-cat.md) |
+
+## hero: ledger
+
+4 effects. Mr. Ledger, the Debt Collector. Hero kit, see [Ledger](heroes/ledger.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| invoice | A paper flies down the aim; its damage goes on the enemy's tab instead of hurting now. | ground (line, bolt) | up to 2.2 s · hero kit Q | [source](../../src/spells/targeted/invoice.ts), [kit sheet](../../pipeline/designs/kit-ledger.md) |
+| late fee | A huge LATE FEE notice drops onto a 2.5 m circle; its damage goes on the tab and it slows. | ground (r 2.5) | 2.4 s · hero kit W | [source](../../src/spells/targeted/lateFee.ts), [kit sheet](../../pipeline/designs/kit-ledger.md) |
+| call it in | The ledger is slammed shut and the enemy's tab comes due now, without interest. | self | 1.7 s · hero kit E | [source](../../src/spells/targeted/callItIn.ts), [kit sheet](../../pipeline/designs/kit-ledger.md) |
+| foreclosure | A huge rubber stamp drops onto the spot and the target pays their whole tab at +60%. | ground (r 2.2) | 2.7 s · hero kit R | [source](../../src/spells/targeted/foreclosure.ts), [kit sheet](../../pipeline/designs/kit-ledger.md) |
+
+## hero: sumo
+
+4 effects. Big Yoko, the Sumo. Hero kit, see [Sumo](heroes/sumo.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| palm strike | A huge open hand is drawn back and thrown forward, shoving everyone in a short strip in front of the caster. | self (r 3.4) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/palmStrike.ts), [kit sheet](../../pipeline/designs/kit-sumo.md) |
+| stomp | A foot comes down, cracks run out across the floor and a straw-rope ring is stamped round the caster. | self (r 3.6) | 1.7 s · hero kit W | [source](../../src/spells/targeted/stomp.ts), [kit sheet](../../pipeline/designs/kit-sumo.md) |
+| sumo charge | The caster drops low and runs down the aim, carrying the first enemy on the strip ahead of him. | ground (r 8) | 2.0 s · hero kit E | [source](../../src/spells/targeted/sumoCharge.ts), [kit sheet](../../pipeline/designs/kit-sumo.md) |
+| salt throw | A fistful of salt is thrown in a fan across a cone in front of the caster and blinds what it covers. | self (r 6.6) | 1.8 s · hero kit R | [source](../../src/spells/targeted/saltThrow.ts), [kit sheet](../../pipeline/designs/kit-sumo.md) |
+
+## hero: mime
+
+4 effects. Mum, the mime. Hero kit, see [Mime](heroes/mime.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| invisible ball | A glove closes round nothing and throws: a ball you cannot see flies down a dashed chalk line. | ground (r 0.3) | 2.2 s · hero kit Q | [source](../../src/spells/targeted/invisibleBall.ts), [kit sheet](../../pipeline/designs/kit-mime.md) |
+| mime wall | Two flat gloves press a pane that is not there and an invisible wall rises along a chalk line. | ground (r 1) | 1.4 s · hero kit W | [source](../../src/spells/targeted/mimeWall.ts), [kit sheet](../../pipeline/designs/kit-mime.md) |
+| rope trick | She mimes a rope hand over hand and heaves; the enemy is pulled toward her. | enemy | 1.6 s · hero kit E | [source](../../src/spells/targeted/ropeTrick.ts), [kit sheet](../../pipeline/designs/kit-mime.md) |
+| the box | She draws a box in the air and four invisible walls close round a spot on the floor. | ground (r 1.5) | 1.7 s · hero kit R | [source](../../src/spells/targeted/theBox.ts), [kit sheet](../../pipeline/designs/kit-mime.md) |
+
+## hero: referee
+
+4 effects. Referee Whistler, by the book. Hero kit, see [Referee](heroes/referee.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| whistle blast | Whistler blows the whistle and a standing ring of sound flies down the aim. | ground (r 0.4) | about 2 s · hero kit Q | [source](../../src/spells/targeted/whistleBlast.ts), [kit sheet](../../pipeline/designs/kit-referee.md) |
+| no running | A ring of sound rushes out and every enemy seen inside gets the rule NO RUNNING. | self (r 7) | 2.1 s · hero kit W | [source](../../src/spells/targeted/noRunning.ts), [kit sheet](../../pipeline/designs/kit-referee.md) |
+| no casting | The same whistle and ring; every enemy seen inside gets the rule NO CASTING. | self (r 7) | about 2.1 s · hero kit E | [source](../../src/spells/targeted/noCasting.ts), [kit sheet](../../pipeline/designs/kit-referee.md) |
+| show the card | A big arm points at a spot and a yellow card flies there and lands; whoever is seen inside is carded. | ground (r 1.2) | 2.2 s · hero kit R | [source](../../src/spells/targeted/showTheCard.ts), [kit sheet](../../pipeline/designs/kit-referee.md) |
+
+## hero: chef
+
+4 effects. Madame Cleaver, Arena Chef. Hero kit, see [Chef](heroes/chef.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| thrown cleaver | She throws her cleaver as a tumbling bolt; it bites into the floor at the end of the line and a dish plops out. | ground (r 0.3) | about 2.4 s · hero kit Q | [source](../../src/spells/targeted/thrownCleaver.ts), [kit sheet](../../pipeline/designs/kit-chef.md) |
+| hot soup | A huge stock pot drops on a spot, rocks and tips over, and a puddle of soup runs out with a dish in the middle. | ground (r 2.5) | 3.3 s · hero kit W | [source](../../src/spells/targeted/hotSoup.ts), [kit sheet](../../pipeline/designs/kit-chef.md) |
+| burnt offering | She spins a blackened plate in a high arc; it lands and stays as a burnt dish that harms whoever eats it. | ground (r 0.9) | 1.7 s · hero kit E | [source](../../src/spells/targeted/burntOffering.ts), [kit sheet](../../pipeline/designs/kit-chef.md) |
+| dinner is served | She snaps her fingers and an 8 m banquet table with three covered plates rises in front of her. | self (r 8.1) | about 6.9 s · hero kit R | [source](../../src/spells/targeted/dinnerIsServed.ts), [kit sheet](../../pipeline/designs/kit-chef.md) |
+
+## hero: courier
+
+4 effects. Pip, the last courier. Hero kit, see [Courier](heroes/courier.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| express letter | An airmail envelope is flicked as a fluttering bolt that grows with the caster's Charges. | ground (r 0.3) | about 2 s · hero kit Q | [source](../../src/spells/targeted/expressLetter.ts), [kit sheet](../../pipeline/designs/kit-courier.md) |
+| fragile | A brown-paper parcel is hurled at a spot, ticks and bursts into a slowing ring. | ground (r 2.5) | 2.6 s · hero kit W | [source](../../src/spells/targeted/fragile.ts), [kit sheet](../../pipeline/designs/kit-courier.md) |
+| shortcut | The caster sprints up to 6 m, spilling envelopes; a Charge refunds the spell. | ground (r 1) | 1.3 s · hero kit E | [source](../../src/spells/targeted/shortcut.ts), [kit sheet](../../pipeline/designs/kit-courier.md) |
+| final delivery | A big parcel with the enemy's name on it hunts the enemy for 1.5 s and bursts. | enemy | 3.0 s · hero kit R | [source](../../src/spells/targeted/finalDelivery.ts), [kit sheet](../../pipeline/designs/kit-courier.md) |
+
+## hero: janitor
+
+4 effects. Gus, the Caretaker. Hero kit, see [Janitor](heroes/janitor.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| big mop | He swings a squeaky mop across a cone and leaves a long strip of wet floor. | self (r 3.5) | 2.0 s · hero kit Q | [source](../../src/spells/targeted/bigMop.ts), [kit sheet](../../pipeline/designs/kit-janitor.md) |
+| wet floor sign | A yellow folding sign tumbles onto a spot and stands as a breakable obstacle. | ground (r 0.45) | about 7.4 s · hero kit W | [source](../../src/spells/targeted/wetFloorSign.ts), [kit sheet](../../pipeline/designs/kit-janitor.md) |
+| mop bucket | He throws his wheeled bucket as a tumbling bolt; it lands with a clang and wets the floor round it. | ground (r 0.4) | about 2.2 s · hero kit E | [source](../../src/spells/targeted/mopBucket.ts), [kit sheet](../../pipeline/designs/kit-janitor.md) |
+| flood | After a one second warning a wave bursts out and the whole floor round him is wet. | self (r 7) | about 7.2 s · hero kit R | [source](../../src/spells/targeted/flood.ts), [kit sheet](../../pipeline/designs/kit-janitor.md) |
+
+## hero: mole
+
+4 effects. Mabel, the Mole. Hero kit, see [Mole](heroes/mole.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| mole claw | She rakes her huge digging claws across a cone in front of her. | self (r 2.5) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/moleClaw.ts), [kit sheet](../../pipeline/designs/kit-mole.md) |
+| mole dig | A tiny pickaxe taps the ground three times and a hole opens that traps whoever walks in. | ground (r 1.5) | 1.6 s · hero kit W | [source](../../src/spells/targeted/moleDig.ts), [kit sheet](../../pipeline/designs/kit-mole.md) |
+| mole tunnel | She dives, tunnels under the floor behind a moving mound and bursts out, knocking up what is at the exit. | ground (r 8.7) | about 2.6 s · hero kit E | [source](../../src/spells/targeted/moleTunnel.ts), [kit sheet](../../pipeline/designs/kit-mole.md) |
+| sinkhole | The ground shudders under the enemy, then drops into a wide pit that roots whoever is inside. | enemy | 3.0 s · hero kit R | [source](../../src/spells/targeted/sinkhole.ts), [kit sheet](../../pipeline/designs/kit-mole.md) |
+
+## hero: yarn
+
+4 effects. Grandma Ironknit, the Knitter. Hero kit, see [Yarn](heroes/yarn.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| knitting needle | She throws a needle as long as a sword, end first, with a thread of wool behind it. | ground (r 0.3) | about 1.8 s · hero kit Q | [source](../../src/spells/targeted/knittingNeedle.ts), [kit sheet](../../pipeline/designs/kit-yarn.md) |
+| cast on | She throws a ball of wool along the aim and ties a yarn line to the nearest cover. | ground (r 1) | 1.1 s · hero kit W | [source](../../src/spells/targeted/castOn.ts), [kit sheet](../../pipeline/designs/kit-yarn.md) |
+| sweater | She throws a knitted sweater on the enemy; it slows them, then shrinks. | enemy | 3.4 s · hero kit E | [source](../../src/spells/targeted/sweater.ts), [kit sheet](../../pipeline/designs/kit-yarn.md) |
+| mr biscuit | A big grey cat springs out of a ball of wool and runs at the enemy to sit on them. | enemies (up to 10) | about 7.2 s · hero kit R | [source](../../src/spells/targeted/mrBiscuit.ts), [kit sheet](../../pipeline/designs/kit-yarn.md) |
+
+## hero: weather
+
+4 effects. Barry Cloudsley, the Weatherman. Hero kit, see [Weather](heroes/weather.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| cold front | He sweeps his pointer and a gust flies down the aim, carrying the weather of the moment. | ground (r 0.4) | about 2 s · hero kit Q | [source](../../src/spells/targeted/coldFront.ts), [kit sheet](../../pipeline/designs/kit-weather.md) |
+| lightning risk | A grinning storm cloud rolls in over a spot and a bolt strikes the circle under it. | ground (r 1.5) | about 2.0 s · hero kit W | [source](../../src/spells/targeted/lightningRisk.ts), [kit sheet](../../pipeline/designs/kit-weather.md) |
+| forecast update | A weather card hangs over his head and flips to the new forecast. | self (r 30) | 2.1 s · hero kit E | [source](../../src/spells/targeted/forecastUpdate.ts), [kit sheet](../../pipeline/designs/kit-weather.md) |
+| severe warning | A tornado stands up at a spot and walks at the enemy for four seconds. | ground (r 2) | about 5.8 s · hero kit R | [source](../../src/spells/targeted/severeWarning.ts), [kit sheet](../../pipeline/designs/kit-weather.md) |
+
+## hero: sheep
+
+4 effects. Bo, the angry shepherd. Hero kit, see [Sheep](heroes/sheep.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| crook whack | He shakes his crook, then brings it down across a cone, leaving a sheep at the feet of whoever is hit. | self (r 4) | 1.4 s · hero kit Q | [source](../../src/spells/targeted/crookWhack.ts), [kit sheet](../../pipeline/designs/kit-sheep.md) |
+| spare sheep | Three sheep are flung out of his coat and land at a spot. | ground (r 2) | 1.4 s · hero kit W | [source](../../src/spells/targeted/spareSheep.ts), [kit sheet](../../pipeline/designs/kit-sheep.md) |
+| shear | He shears a nearby sheep in one stroke and throws the wool as a spinning ball. | ground (r 0.3) | 1.4 s · hero kit E | [source](../../src/spells/targeted/shear.ts), [kit sheet](../../pipeline/designs/kit-sheep.md) |
+| stampede | Eight sheep gather abreast of him, then bolt down a long strip. | ground (r 2) | 2.9 s · hero kit R | [source](../../src/spells/targeted/stampede.ts), [kit sheet](../../pipeline/designs/kit-sheep.md) |
+
+## hero: magic
+
+4 effects. The Great Zambini, stage magician. Hero kit, see [Magic](heroes/magic.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| card spray | A fan of three playing cards flies out as three spinning bolts trailing confetti and gold stars. | ground (r 0.3) | about 2.2 s · hero kit Q | [source](../../src/spells/targeted/cardSpray.ts), [kit sheet](../../pipeline/designs/kit-magic.md) |
+| sawn in half | A toothed saw blade is drawn out of thin air and slides at the enemy. | ground (r 0.35) | about 2.2 s · hero kit W | [source](../../src/spells/targeted/sawnInHalf.ts), [kit sheet](../../pipeline/designs/kit-magic.md) |
+| hat trick | Three top hats shuffle round him while he hides under one; he steps out of it with a rabbit. | self (r 2) | about 2.7 s · hero kit E | [source](../../src/spells/targeted/hatTrick.ts), [kit sheet](../../pipeline/designs/kit-magic.md) |
+| grand finale | He vanishes; three hats ring the enemy and swords fly from all three toward the centre. | enemy | about 3.0 s · hero kit R | [source](../../src/spells/targeted/grandFinale.ts), [kit sheet](../../pipeline/designs/kit-magic.md) |
+
+## hero: door
+
+4 effects. Wick, the Doorman. Hero kit, see [Door](heroes/door.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| key toss | He throws a brass key as a bolt that flies into one door and out of its pair. | ground (r 0.3) | about 2.5 s · hero kit Q | [source](../../src/spells/targeted/keyToss.ts), [kit sheet](../../pipeline/designs/kit-door.md) |
+| wick door | An upright door with a brass number steps up at a spot; two at a time form a pair. | ground (r 0.9) | about 1.8 s · hero kit W | [source](../../src/spells/targeted/wickDoor.ts), [kit sheet](../../pipeline/designs/kit-door.md) |
+| door slam | Every standing door of his slams and hits what is near it. | self (r 30) | 1.7 s · hero kit E | [source](../../src/spells/targeted/doorSlam.ts), [kit sheet](../../pipeline/designs/kit-door.md) |
+| grand lobby | Four tall red doors rise in a ring round the enemy's spot. | ground (r 3) | about 2.3 s · hero kit R | [source](../../src/spells/targeted/grandLobby.ts), [kit sheet](../../pipeline/designs/kit-door.md) |
+
+## hero: twins
+
+7 effects. Pim and Pom, the twins. Hero kit, see [Twins](heroes/twins.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| bonk | Pim swings a wooden sword across a 3 m cone. | ground (cone) | 1.5 s · hero kit Q | [source](../../src/spells/targeted/pimBonk.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
+| pim charge | Pim runs up to 5 m along a lane and shoves what is in it. | ground (lane) | 1.6 s · hero kit W | [source](../../src/spells/targeted/pimCharge.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
+| shield up | A toy shield pops up in front of Pim: shield 50 for 2 s. | self (r 4) | 2.5 s · hero kit E | [source](../../src/spells/targeted/pimShieldUp.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
+| pebble | Pom fires a pebble from a slingshot as a real bolt. | ground (bolt) | 1.8 s · hero kit Q | [source](../../src/spells/targeted/pomPebble.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
+| snare | A net drops on a 2 m circle and roots what is inside. | ground (r 2) | 2.7 s · hero kit W | [source](../../src/spells/targeted/pomSnare.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
+| backflip | Pom hops 4 m and leaves a party popper that goes off. | ground (hop) | 1.6 s · hero kit E | [source](../../src/spells/targeted/pomBackflip.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
+| tag out | The twins high-five and swap: a 0.5 s hold, then the other kit. | self (r 3) | 1.5 s · hero kit R | [source](../../src/spells/targeted/tagOut.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
 
 ## test: mechanics
 

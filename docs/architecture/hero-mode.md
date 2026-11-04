@@ -1,7 +1,7 @@
 ---
 title: Hero mode and hero kits
 tags: [architecture, hero-mode, kits, input, camera, hud]
-updated: 2026-10-29
+updated: 2026-11-04
 ---
 
 # Hero mode and hero kits
@@ -17,18 +17,52 @@ A hero kit is **data only**: four spells bound to Q W E R (R is the ultimate). E
 | Type | Fields |
 |---|---|
 | `HeroKey` | `'Q'`, `'W'`, `'E'` or `'R'` |
-| `HeroSpell` | `key`, `label` (registered effect label), `name` (bar text), `range` (ground units from the hero; ignored for self-cast), `cooldown` (s), `blurb` (tooltip), `icon(g, size)` (canvas 2D draw function) |
-| `HeroKit` | `name`, `title`, `accent` (bar and aim-indicator colour), `foil` (pale colour for rings and text), `portrait(g, size)`, optional `model` (path under `public/`), `spells` (exactly four) |
+| `HeroSpell` | `key`, `label` (registered effect label), `name` (bar text), `range` (ground units from the hero; ignored for self-cast), `cooldown` (s), `blurb` (tooltip), `icon(g, size)` (canvas 2D draw function), and the optional AI and aim flags (`cc`, `dash`, `escape`, `anytime`, `save`, `parry`, `barrier`, `summon`, `aim`, `bank`, `buff`, `debuff`; see [mechanics.md](mechanics.md)) |
+| `HeroKit` | `name`, `title`, `accent` (bar and aim-indicator colour), `foil` (pale colour for rings and text), `portrait(g, size)`, optional `model` (path under `public/`), `maxHp`, `hpChunks`, `alt`, `base`, `attack`, `melee`, `spells` (exactly four; see [mechanics.md](mechanics.md#hero-traits-what-v5-added)) |
 
-`HERO_KITS = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit]`, each with `model` filled from the `MODELS` map by hero name when the kit has none:
+`HERO_KITS` lists 39 kits (20 original heroes and 19 added later), each with `model` filled from the `MODELS` map by hero name when the kit has none (`HeroKit.alt` kits set their own). Every kit is in `src/kits/<theme>.ts`. Each hero's page in the [hero catalog](../catalog/heroes/README.md) has its passive, numbers and spells.
 
 | Hero | Title | Kit data | Spells (Q W E R) | Model |
 |---|---|---|---|---|
-| Vesper | the Crimson Countess | inline in [heroes.ts](../../src/heroes.ts) | hemolance, thorn garden, crimson pact (self), sanguine eclipse | `models/heroes/blood.glb` |
-| Brannoc | the Ashen Smith | [kits/forge.ts](../../src/kits/forge.ts) | rivet shot, anvil drop, bellows ward (self), forgefall | `models/heroes/forge.glb` |
-| Isolde | the Winter Warden | [kits/frost.ts](../../src/kits/frost.ts) | rime spear, frostfern field, glacial mantle (self), winter's crown | `models/heroes/frost.glb` |
-| Lyra | the Star Archer | [kits/astral.ts](../../src/kits/astral.ts) | starshot, constellation snare, orbit veil (self), celestial hunt | `models/heroes/astral.glb` |
-| Vex | the Plague Alchemist | [kits/alchemy.ts](../../src/kits/alchemy.ts) | volatile flask, caustic pool, mutagen (self), grand transmutation | `models/heroes/alchemy.glb` |
+| Vesper | the Crimson Countess | [kits/blood.ts](../../src/kits/blood.ts) | lancet, mist waltz, hemocurse, sanguine feast | `models/heroes/blood_v2.glb` |
+| Brannoc | the Ashen Smith | [kits/forge.ts](../../src/kits/forge.ts) | chain hammer, forge roar, red-hot rivet, molten core | `models/heroes/forge_v2.glb` |
+| Isolde | the Winter Warden | [kits/frost.ts](../../src/kits/frost.ts) | icicle, hoarfrost, rime armour, winter's shatter | `models/heroes/frost_v2.glb` |
+| Lyra | the Star Archer | [kits/astral.ts](../../src/kits/astral.ts) | starfall arrow, twin stars, pinning arrow, meteor mark | `models/heroes/astral.glb` |
+| Vitriol | the Plague Alchemist | [kits/alchemy.ts](../../src/kits/alchemy.ts) | toxin dart, fire vial, acid splash, homunculus | `models/heroes/alchemy.glb` |
+| Kaia | the Tempest Caller | [kits/storm.ts](../../src/kits/storm.ts) | sky strike, thunder rod, polarity, supercell storm | `models/heroes/storm_v2.glb` |
+| Sefu | the Dune Sovereign | [kits/sand.ts](../../src/kits/sand.ts) | cobra spit, shepherd's crook, scarab stride, sarcophagus | `models/heroes/sand_v2.glb` |
+| Nyx | the Umbral Stalker | [kits/shadow.ts](../../src/kits/shadow.ts) | umbral cut, smoke veil, shadow double, nightfall | `models/heroes/shadow.glb` |
+| Fenna | the Grove Warden | [kits/grove.ts](../../src/kits/grove.ts) | seed shot, strangle vine, pollen glide, world tree | `models/heroes/grove.glb` |
+| Auriel | the Dawn Paladin | [kits/dawn.ts](../../src/kits/dawn.ts) | first light, dawnward, oathbrand, sunrise | `models/heroes/dawn_v2.glb` |
+| Marin | the Tide Dancer | [kits/tide.ts](../../src/kits/tide.ts) | wave disc, coral spire, mist form, moon's pull | `models/heroes/tide.glb` |
+| Zephyr | the Wind Blade | [kits/sky.ts](../../src/kits/sky.ts) | crosswind, skyward, feather step, sky rend | `models/heroes/sky_v2.glb` |
+| Mortis | the Ossuary Lord | [kits/bone.ts](../../src/kits/bone.ts) | bone fan, raise dead, bone armour, grave grasp | `models/heroes/bone.glb` |
+| Ada | the Artificer | [kits/clockwork.ts](../../src/kits/clockwork.ts) | homing drone, deploy turret, grapple hook, siege mode | `models/heroes/clockwork.glb` |
+| Sirix | the Swarm Warden | [kits/hive.ts](../../src/kits/hive.ts) | barbed stinger, hive shell, swarm cloud, swarm surge | `models/heroes/hive.glb` |
+| Cantor | the Last Verse | [kits/bard.ts](../../src/kits/bard.ts) | resounding chord, siren song, rising chorus, duet | `models/heroes/bard.glb` |
+| Opaline | the Lightbreaker | [kits/prism.ts](../../src/kits/prism.ts) | ricochet light, crystal pillar, blinding flare, shatterlight | `models/heroes/prism.glb` |
+| Oblivion | the Unmaker | [kits/void.ts](../../src/kits/void.ts) | gravity slam, null zone, phase step, void black hole | `models/heroes/void_v2.glb` |
+| Shiori | the Last Brush | [kits/ink.ts](../../src/kits/ink.ts) | ink lash, seal of binding, flowing script, the last character | `models/heroes/ink.glb` |
+| Tempo | the Unwound Hour | [kits/chrono.ts](../../src/kits/chrono.ts) | tick bolt, slow time, time skip, stolen hour | `models/heroes/chrono.glb` |
+| Silvane | the Vain | [kits/mirror.ts](../../src/kits/mirror.ts) | hand mirror, vanity stand, through the glass, hall of mirrors | `models/heroes/mirror_v2.glb` |
+| Bram | the Pillar Mason | [kits/mason.ts](../../src/kits/mason.ts) | raise gerald, the shove, a good lean, gerald no | `models/heroes/mason_v2.glb` |
+| Hank | the Lumberjack | [kits/timber.ts](../../src/kits/timber.ts) | axe swing, fast growth, caber toss, timber call | `models/heroes/timber_v2.glb` |
+| Professor Puff | balloon scientist | [kits/balloon.ts](../../src/kits/balloon.ts) | air hose, helium bomb, hot air, pop! | `models/heroes/balloon_v2.glb` |
+| Sir Whiskers | the Cat Knight | [kits/cat.ts](../../src/kits/cat.ts) | scratch, knock it over, pounce, land on my feet | `models/heroes/cat_v2.glb` |
+| Mr. Ledger | the Debt Collector | [kits/ledger.ts](../../src/kits/ledger.ts) | invoice, late fee, call it in, foreclosure | `models/heroes/ledger_v2.glb` |
+| Big Yoko | the Sumo | [kits/sumo.ts](../../src/kits/sumo.ts) | palm strike, stomp, sumo charge, salt throw | `models/heroes/sumo_v2.glb` |
+| Mum | the mime | [kits/mime.ts](../../src/kits/mime.ts) | invisible ball, mime wall, rope trick, the box | `models/heroes/mime_v2.glb` |
+| Referee Whistler | by the book | [kits/referee.ts](../../src/kits/referee.ts) | whistle blast, no running, no casting, show the card | `models/heroes/referee_v2.glb` |
+| Madame Cleaver | Arena Chef | [kits/chef.ts](../../src/kits/chef.ts) | thrown cleaver, hot soup, burnt offering, dinner is served | `models/heroes/chef_v2.glb` |
+| Pip | the last courier | [kits/courier.ts](../../src/kits/courier.ts) | express letter, fragile, shortcut, final delivery | `models/heroes/courier_v2.glb` |
+| Gus | the Caretaker | [kits/janitor.ts](../../src/kits/janitor.ts) | big mop, wet floor sign, mop bucket, flood | `models/heroes/janitor_v2.glb` |
+| Mabel | the Mole | [kits/mole.ts](../../src/kits/mole.ts) | mole claw, mole dig, mole tunnel, sinkhole | `models/heroes/mole_v2.glb` |
+| Grandma Ironknit | the Knitter | [kits/yarn.ts](../../src/kits/yarn.ts) | knitting needle, cast on, sweater, mr biscuit | `models/heroes/yarn_v2.glb` |
+| Barry Cloudsley | the Weatherman | [kits/weather.ts](../../src/kits/weather.ts) | cold front, lightning risk, forecast update, severe warning | `models/heroes/weather_v2.glb` |
+| Bo | the angry shepherd | [kits/sheep.ts](../../src/kits/sheep.ts) | crook whack, spare sheep, shear, stampede | `models/heroes/sheep_v2.glb` |
+| The Great Zambini | stage magician | [kits/magic.ts](../../src/kits/magic.ts) | card spray, sawn in half, hat trick, grand finale | `models/heroes/magic_v2.glb` |
+| Wick | the Doorman | [kits/door.ts](../../src/kits/door.ts) | key toss, wick door, door slam, grand lobby | `models/heroes/door_v2.glb` |
+| Pim and Pom | the twins | [kits/twins.ts](../../src/kits/twins.ts) | bonk / pebble, pim charge / snare, shield up / backflip, tag out | `models/heroes/pim_v2.glb`, `models/heroes/pom_v2.glb` |
 
 Self-cast spells have `range: 0`. Ranges for the others run 10-14, cooldowns 2.5-10 s for Q/W/E and 20 s for R. Icons and portraits are drawn on canvases in each kit's palette (the same palette as that kit's parts file, see [effects-and-parts.md](effects-and-parts.md#hero-kit-parts)). The figures are built by Blender, see [models.md](models.md).
 
@@ -153,11 +187,11 @@ A 1 vs 1 round on top of hero mode. `Duel` (constructed in runtime.ts with a `Du
 
 | Piece | How |
 |---|---|
-| Setup (`start`) | Opponent kit = the chosen one or a random other kit (never the player's: one effect instance per label). Arena: one foe, `maxHp` 600, `respawnAfter` Infinity, `bounds` = the ring (centre (0, 7), radius 12); player at (0, 0, 13), opponent at (0, 0, 1). The foe's capsule is hidden under a `HeroFigure`. Each start bumps a round id. |
+| Setup (`start`) | Opponent kit = the chosen one or a random other kit (never the player's: one effect instance per label). Arena: one foe, `maxHp` the opponent kit's `maxHp` (default 600), `respawnAfter` Infinity, `bounds` = the ring (centre (0, 7), radius 12); player at (0, 0, 13), opponent at (0, 0, 1). The foe's capsule is hidden under a `HeroFigure`. Each start bumps a round id. |
 | Opponent casting | `arena.contextFor({ caster, from, point, targets: [player], hit })` builds a cast context for the foe; the runtime's `castAs(label, ctx)` plays the effect through a one-shot override in the play wrapper and adds it to `lingering`, so the player's active effect, panel and camera stay. It returns the effect's danger zones, drawn by the duel's own `TelegraphLayer` on its own clock. |
 | Dodging | The context's `hit` checks the player at the moment of the hit: inside one of that cast's zones (`insideTelegraph`) or within 1.6 of where it aimed → damage (number, red edge flash, knockback inside the ring); otherwise one DODGED label. Hits from an earlier round are ignored. |
-| AI | Waits 1.2 s, then each frame: rooted until its spell's latest impact (≤ 2.5 s); else the first ready spell in the order R, E, W, Q that is in reach (R only when the player is under the level's `ultHp` or after `ultTime` s, Normal 55% and 20 s; E when the player is inside its radius); else walk to ~70% of Q's range and strafe, flipping every 1.5–3.5 s. It walks at its CPU level's speed (Normal 3.5 m/s for a hero of base speed 4). |
-| CPU level | `duel.cpuLevel` ([cpuLevels.ts](../../src/cpuLevels.ts)), five levels: Novice, Easy, Normal, Hard, Master. A level sets the opponent's walk speed, a pause after each cast (`castGap`), a cooldown factor, an aim error and a lead on its ground casts, its bolt dodge and reaction, a zone dodge (walks out of the player's area zones before they land), its guard chance and when its R may go. Normal is the AI the kits are balanced with: its numbers are the old constants and none of the extra rules run. The autopilot always plays Normal (`levelOf`). The HUD names the level ("Lyra · Hard"), the end card too. `onFinish(result)` tells the game a round is over. Levels measured with [pipeline/tools/duel-ladder.js](../../pipeline/tools/duel-ladder.js), see [mechanics.md](mechanics.md#cpu-levels). |
+| AI | Waits 1.2 s, then each frame: rooted until its spell's latest impact (≤ 2.5 s); else the first ready spell in the order R, E, W, Q that is in reach (R only when the player is under the level's `ultHp` or after `ultTime` s, Normal 45% and 28 s; E when the player is inside its radius); else walk to ~70% of Q's range and strafe, flipping every 1.5–3.5 s. It walks at its CPU level's speed (Normal 3.3 m/s for a hero of base speed 4) and looks where it walks; it faces the player only when it stands still to cast. |
+| CPU level | `duel.cpuLevel` ([cpuLevels.ts](../../src/cpuLevels.ts)), five levels: Novice, Easy, Normal, Hard, Master. A level sets the opponent's walk speed, a pause after each cast (`castGap`), a cooldown factor, an aim error and a lead on its ground casts, its bolt dodge and reaction, a zone dodge (walks out of the player's area zones before they land), its guard chance and when its R may go. A level also scales the damage it deals. The kits are balanced against `CPU_BALANCE`, which is not offered to players; the autopilot always plays it (`levelOf`). The HUD names the level ("Lyra · Hard"), the end card too. `onFinish(result)` tells the game a round is over. The numbers are in the table in [mechanics.md](mechanics.md#cpu-levels). |
 | End | Opponent HP 0 → VICTORY, player HP 0 → DEFEAT: hero mode `locked`, the loser's figure falls, a card with Rematch / Leave duel. |
 | runtime.ts, tool | `setDuel(on)` (the tool's View → duel, key B; turns hero mode on), View → opponent and View → CPU level, a new round when the hero changes, the duel ends with hero mode. |
 

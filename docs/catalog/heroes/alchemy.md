@@ -1,32 +1,33 @@
 ---
-title: Vex, the Plague Alchemist (alchemy kit)
-tags: [catalog, heroes, alchemy]
-updated: 2026-10-30
+title: Vitriol, the Plague Alchemist (alchemy kit)
+tags: [catalog, heroes, alchemy, mage, reaction]
+updated: 2026-11-04
 ---
 
-# Vex, the Plague Alchemist
+# Vitriol, the Plague Alchemist
 
-The alchemy hero kit: Vex's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A masked alchemist in a coat of vials; damage over time, zones, a gamble of an ultimate.
+The alchemy hero kit (v5): Vitriol's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette row and the rigged hero model. In the earlier versions of this page he was called Vex. A plague doctor in a dark hood and a pale glass beak mask with round green lenses, and a coat with a bandolier of vials. Each of his first three spells leaves a reagent on the enemy; two different reagents react. He has 510 HP and plays at range.
 
 ## Role
 
 | | |
 |---|---|
-| Role | Mage (poison) |
-| Signature | Lingering poison |
-| HP | 560 |
-| Reach | Ranged |
+| Role | Mage (reactions), ranged |
+| Signature | Reaction |
+| HP | 510 |
+| Kit shapes | Q LINE dart + toxin · W TGT fire (sure hit) · E CONE acid (self-cast) · R SUMMON walking bomb |
 
-She wins by damage over time: pools and fields that slow and keep ticking, plus a heal. Her flask is a small circle that can miss, and she has little burst.
+He wins by mixing two reagents on the enemy for a reaction, and by sending the homunculus, which sets off all three at once. His weakness is HP and reach: his basic attack reaches only 6.5 m, and the homunculus can be shot down.
 
 ## At a glance
 
 | | |
 |---|---|
-| Hero | Vex, the Plague Alchemist |
+| Hero | Vitriol, the Plague Alchemist |
 | Spell category | `hero: alchemy` |
 | Parts file | [`src/effects/parts/alchemy.ts`](../../../src/effects/parts/alchemy.ts) |
 | Kit data | [`src/kits/alchemy.ts`](../../../src/kits/alchemy.ts) |
+| Trait (rules) | [`src/traits/alchemy.ts`](../../../src/traits/alchemy.ts) |
 | Kit sheet | [`kit-alchemy.md`](../../../pipeline/designs/kit-alchemy.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Model | [`public/models/heroes/alchemy.glb`](../../../public/models/heroes/alchemy.glb) |
 
@@ -48,22 +49,49 @@ Glass and reaction: thin-walled glass flasks (pale green-white glass, dark liqui
 - Glass: low-opacity pale glass with a bright fresnel rim; shards are flat glass triangles with an edge line.
 - Fumes: dark green toon smoke curls (normal-blended, dark with a hot-green rim), small and few.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | Reaction: each of Q, W and E leaves its reagent on the enemy for 4 s (Q green toxin, W orange fire, E violet acid). A second, different reagent sets off a reaction, clears both reagents and takes 2 s off the cooldown of the spell that took no part. |
+| Twist | The three reactions. Toxin + fire: Combust, 34 extra damage at once. Toxin + acid: Corrode, the enemy takes 35% more damage for 3 s. Fire + acid: Concussion, the enemy is pushed 2.5 m and silenced 0.5 s. The Homunculus (R) carries all three reagents and sets off all three reactions with its one hit. |
+| Resource or meter | none (the reagents are stacks on the enemy; the passive slot shows the letters T, F, A) |
+| Speed | 4.0 m/s |
+| Basic attack | ranged, 6.5 m, 9 damage every 1.0 s, wind-up 0.25 s, bolt speed 18, dart look |
+| Other rules | Once per cast: a burn tick of the same cast does not count as a second reagent. |
+
+## Mechanics
+
+Vitriol uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
+
+| Mechanic | Where |
+|---|---|
+| Stacks on the enemy | The three reagents, from the trait's `dealt` |
+| Damage over time | Q: 5 ticks of 5 over 3 s; W: 5 ticks of 5 over 2 s (`projectile: true`, so they follow a target that walks) |
+| Skillshot | Q: a dart at 20 m/s, 9 m, radius 0.4 (`aim: 'line'`) |
+| Sure hit | W: needs sight at the cast, cannot miss |
+| Cone, self-cast | E: a 4 m cone in front of her (self targeting, radius 4.5; the AI casts when the enemy is within 3.9 m) with a shove back |
+| Summon | R: `summon: true`, a walking bomb of 120 HP at 4 m/s that lives at most 3.7 s |
+| Debuff, silence, push | The reactions |
+| Cooldown cut | A reaction takes 2 s off the unused spell (`noteOwner`, `peerNote`) |
+| Melee, dash, pull, shield, heal | none |
+
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is a lob, W a lingering pool, E a heal and R a lingering gold field. Q hits at 0.55 s and W ticks until 3.6 s; E is clean by about 2.3 s; R is the ultimate (hit around 2.0-2.5 s, clean by 5.0 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/kits/alchemy.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/alchemy.ts`), hit time and length from the spell files in `src/spells/targeted/`; the numbers are the spell files' defaults. Reaction bonuses come on top.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [volatile flask](../../../src/spells/targeted/volatileFlask.ts) | ground (r 1.6, LOB) | 10 | 3 s | 0.55 s | 1.8 s | She lobs a flask in a high spinning arc; it shatters on the spot in glass and caustic splash. Whoever stands in the 1.6 m circle takes damage 53, and one burn tick of 12 at 1.2 s. |
-| W | [caustic pool](../../../src/spells/targeted/causticPool.ts) | ground (r 4, LINGER) | 10 | 7 s | 0.6 s, then ticks at 1.2, 2.0, 2.8 and 3.6 s | 4.6 s | Two flasks shatter on the point and an alchemical circle fills with boiling acid that stays 4 s and burns everything in it, then drains to a stain. Damage 34 on the first hit, then four ticks of 7; every hit slows 1.0 s. |
-| E | [mutagen](../../../src/spells/targeted/mutagen.ts) | self (BUFF) | 0 (self) | 9 s | 0.4 s (the drink) | 2.3 s | She drinks a flask and heals 45 HP. No damage and no flasks. Loopable. |
-| R | [grand transmutation](../../../src/spells/targeted/grandTransmutation.ts) | ground (r 7, LINGER) | 13 | 20 s | 2.0 s (gold), ticks at 2.8 and 3.4 s, shatter at 3.8 s | 5.0 s | The ultimate. A giant circle and a column of acid that coils into a sphere (dead beat 1.85-2.0 s); at 2.0 s everything in the zone turns to gold (75, slow 2.0 s). The gold field stands 1.8 s and ticks 5 with slow 2.0 s at 2.8 and 3.4 s, then shatters at 3.8 s (50). |
+| Q | [toxin dart](../../../src/spells/targeted/toxinDart.ts) | line skillshot (ground aim) | 9 | 3 s | on contact (speed 20, 6 m in about 0.5 s with the wind-up) | 4.3 s | She flicks a glass dart of green toxin down the aim. On a hit: 20 damage, a green splat, and the toxin clings as a bubbling blob for 4 s, with 5 ticks of 5 over 3 s. Leaves the toxin reagent. A miss only splashes the floor. |
+| W | [fire vial](../../../src/spells/targeted/fireVial.ts) | enemy (needs sight) | 7 | 6 s | 0.72 s | about 3.6 s | A vial of orange fire arcs after the enemy's live position and bursts on them: 18 damage, then 5 ticks of 5 over 2 s while flames stand on them. It cannot miss. Leaves the fire reagent. With no enemy it bursts on the aimed spot. |
+| E | [acid splash](../../../src/spells/targeted/acidSplash.ts) | self (cone r 4) | 4 | 8 s | 0.42 s | 2.1 s | She smashes a flask of violet acid in front of her: everyone in the 4 m cone takes 40 and a shove back, and a violet puddle lies there a moment. Leaves the acid reagent. Her answer to being rushed. |
+| R | [homunculus](../../../src/spells/targeted/homunculus.ts) | enemies (up to 10) | 10 | 25 s | on contact (the bomb appears at 0.4 s, lives up to 3.7 s) | about 5.5 s | Ultimate. She flings three vials into a circle at her feet and a glass-bellied homunculus (120 HP, 4 m/s) hops out and walks at the enemy. Within 1.5 m of an enemy it bursts on everyone within 2 m for 55 and sets off all three reactions (Combust, Corrode, Concussion), a beat apart. It can be shot down, and then it only fizzles. |
 
-Spell sources: [`volatileFlask.ts`](../../../src/spells/targeted/volatileFlask.ts), [`causticPool.ts`](../../../src/spells/targeted/causticPool.ts), [`mutagen.ts`](../../../src/spells/targeted/mutagen.ts), [`grandTransmutation.ts`](../../../src/spells/targeted/grandTransmutation.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-alchemy).
+Spell sources: [`toxinDart.ts`](../../../src/spells/targeted/toxinDart.ts), [`fireVial.ts`](../../../src/spells/targeted/fireVial.ts), [`acidSplash.ts`](../../../src/spells/targeted/acidSplash.ts), [`homunculus.ts`](../../../src/spells/targeted/homunculus.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-alchemy).
 
 ## Parts file
 
-[`src/effects/parts/alchemy.ts`](../../../src/effects/parts/alchemy.ts) holds everything the four spells share. Spells import it directly (`../../effects/parts/alchemy`).
+[`src/effects/parts/alchemy.ts`](../../../src/effects/parts/alchemy.ts) holds everything the kit's spells share. Spells import it directly (`../../effects/parts/alchemy`).
 
 | Export | Role |
 |---|---|
@@ -77,16 +105,17 @@ Spell sources: [`volatileFlask.ts`](../../../src/spells/targeted/volatileFlask.t
 | `TransmuteCircle` | a glass-ink alchemical circle with glyphs that can be lit one by one |
 | `AcidColumn` | the ultimate's column of acid that coils into a sphere |
 | `FigureShell` | a gold statue or green-rim shell drawn over an arena figure without touching the arena materials |
+| `Flames` | the fire reagent burning on a body |
+| `ReactionBurst` | one burst per reaction at the struck body (Combust a fireball, Corrode three closing violet rings, Concussion a flat shockwave); `trigger(kinds, at)` plays one or several |
+| `homunculusLook` | the `MinionLook` of the homunculus: a squat glass-bellied creature with a cork head, a hissing fuse and three reagent orbs in its belly |
+| `REAGENT`, `REACTION_CSS`, `REACTION_WORD` | the three reagent colours (slot 0..2) and the reaction colours and words |
 
 ## Model
 
-[`public/models/heroes/alchemy.glb`](../../../public/models/heroes/alchemy.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("alchemy")` / `export("alchemy")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts).
+[`public/models/heroes/alchemy.glb`](../../../public/models/heroes/alchemy.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("alchemy")` / `export("alchemy")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) (the first style). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Vitriol`), and its hit size is in `HERO_BODIES` in the same file (radius 0.43 m, height 2.37 m).
+- HUD portrait (canvas-drawn in the kit data): A dark hood, a pale glass mask with two round green lenses, and a coat with a bandolier of vials.
 
-- Look: A long dark coat over a stained robe, a leather apron, a wide conical hat.
-- Props: `plague_mask` (beaked, glass eyes), `vial_bandolier` (glowing vials), `back_alembic`, `held_flask`.
-- HUD portrait (canvas-drawn in the kit data): A dark hood, a pale glass mask with a long beak-like snout and two round green lenses, and a coat with a bandolier of vials.
-
-![Vex turnaround, angle 15](../../heroes/alchemy_15.png) ![Vex turnaround, angle 165](../../heroes/alchemy_165.png)
+![Vitriol preview, angle 15](../../heroes/alchemy_15.png) ![Vitriol preview, angle 165](../../heroes/alchemy_165.png) 
 
 ## Files
 
@@ -95,30 +124,16 @@ Spell sources: [`volatileFlask.ts`](../../../src/spells/targeted/volatileFlask.t
 | Kit sheet (design) | [`pipeline/designs/kit-alchemy.md`](../../../pipeline/designs/kit-alchemy.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
 | Parts | [`src/effects/parts/alchemy.ts`](../../../src/effects/parts/alchemy.ts) |
-| Spells | [`volatileFlask.ts`](../../../src/spells/targeted/volatileFlask.ts), [`causticPool.ts`](../../../src/spells/targeted/causticPool.ts), [`mutagen.ts`](../../../src/spells/targeted/mutagen.ts), [`grandTransmutation.ts`](../../../src/spells/targeted/grandTransmutation.ts) |
+| Spells | [`toxinDart.ts`](../../../src/spells/targeted/toxinDart.ts), [`fireVial.ts`](../../../src/spells/targeted/fireVial.ts), [`acidSplash.ts`](../../../src/spells/targeted/acidSplash.ts), [`homunculus.ts`](../../../src/spells/targeted/homunculus.ts) |
 | Kit data | [`src/kits/alchemy.ts`](../../../src/kits/alchemy.ts) |
+| Trait (passive, twist, rules) | [`src/traits/alchemy.ts`](../../../src/traits/alchemy.ts) |
 | Model | [`public/models/heroes/alchemy.glb`](../../../public/models/heroes/alchemy.glb) |
 | Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Alchemy review A
-
-![Alchemy review A contact sheet](../../spells/alchemy-review-a_sheet.jpg)
-
-### Alchemy review B
-
-![Alchemy review B contact sheet](../../spells/alchemy-review-b_sheet.jpg)
-
-### Final check (forgefall and the alchemy kit)
-
-![Final check (forgefall and the alchemy kit) contact sheet](../../spells/final-check_sheet.jpg)
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
+- [Combat mechanics](../../architecture/mechanics.md)
 - [Vesper (blood)](blood.md), [Brannoc (forge)](forge.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)

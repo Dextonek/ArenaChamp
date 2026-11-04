@@ -76,12 +76,12 @@ Categories come from `EffectModule.category` (default `'set pieces'`, which also
 | `set pieces` | the eight `src/effects/*.ts` modules, plus `particles` |
 | `paladin` (13), `iconic` (20), `original` (4) | `src/spells/paladin`, `iconic`, `original` |
 | `targeted` | most of `src/spells/targeted/` (aim at arena enemies, `targeting` set) |
-| `hero: blood`, `hero: forge`, `hero: frost`, `hero: astral`, `hero: alchemy` | four spells per hero kit, also registered in `targetedModules` (see [hero-mode.md](hero-mode.md)) |
+| `hero: <theme>` (39 themes: one per hero kit, from `hero: blood` to `hero: twins`) | four spells per hero kit (seven for Pim and Pom), also registered in `targetedModules` (see [hero-mode.md](hero-mode.md)) |
 | `parts kit` | `partsShowcase` in `targeted/` |
 | `weapons` | five weapon idle auras (see [the weapons kit](effects-and-parts.md#weapons-kit-srceffectsweapons)) |
 | `weapon attacks` | five weapon strikes in `src/spells/weapons/strikes/` |
 
-`targetedModules` therefore holds 89 entries, including the 20 hero-kit spells and the parts showcase.
+`targetedModules` therefore also holds every hero-kit spell and the parts showcase (counts per category are in the [effect catalog](../catalog/effects.md)).
 
 ## Effect slots: lazy build, `setMode`, `active`
 

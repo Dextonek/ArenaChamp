@@ -1,25 +1,23 @@
 ---
 title: Tempo, the Unwound Hour (chrono kit)
-tags: [catalog, heroes, chrono, mage, control, heal, mechanics]
-updated: 2026-10-30
+tags: [catalog, heroes, chrono, mage, echo]
+updated: 2026-11-04
 ---
 
 # Tempo, the Unwound Hour
 
-The chrono hero kit: Tempo's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A slim timekeeper in a long dark coat over an ivory waistcoat, with white hair, a monocle, a glowing clock dial floating behind his head like a halo, an ivory dial on one shoulder and a staff shaped like a giant minute hand with a red second hand pinned at its pivot. He is built on the [combat mechanics](../../architecture/mechanics.md): a boomerang skillshot with a slow, a stun, a rewind that shields and heals, and a fused ultimate that strikes late and hard.
-
-Tournament (19 opponents, 3 fights per ordered pairing, both sides): 51%, unchanged.
+The chrono hero kit (kits v5): Tempo's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette row and the rigged hero model. A slim man in a long dark coat with a clock-dial halo and a staff shaped like a giant minute hand. Every spell he casts plays twice.
 
 ## Role
 
 | | |
 |---|---|
-| Role | Mage (chrono, ranged) |
-| Signature | Rewind |
+| Role | Mage (ranged attack) |
+| Signature | Echo |
 | HP | 580 |
-| Kit shapes | Q BOOMERANG slow · W ZONE stun · E BACKSTEP rewind · R FUSE |
+| Kit shapes | Q BOLT clock hand, echo · W ZONE slow, echo · E DASH time skip, untouchable, echo · R TGT clock face, echo |
 
-He wins a 1v1 by slowing the enemy with the boomerang hand, stunning them in the dial and rewinding out of trouble with a heal. His weakness is that the boomerang and the fuse can both be dodged: the ultimate gives a 3.5 s warning.
+He wins a 1v1 by making the enemy pay for where they stand twice: the echo repeats each spell 1.5 s later from the same place. His weakness is that his damage comes late and can be dodged twice. Rushed by a melee hero, he has one short blink and little else. Walk speed 4.0 m/s.
 
 ## At a glance
 
@@ -29,6 +27,7 @@ He wins a 1v1 by slowing the enemy with the boomerang hand, stunning them in the
 | Spell category | `hero: chrono` |
 | Parts file | [`src/effects/parts/chrono.ts`](../../../src/effects/parts/chrono.ts) |
 | Kit data | [`src/kits/chrono.ts`](../../../src/kits/chrono.ts) |
+| Trait data | [`src/traits/chrono.ts`](../../../src/traits/chrono.ts) |
 | Kit sheet | [`kit-chrono.md`](../../../pipeline/designs/kit-chrono.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Model | [`public/models/heroes/chrono.glb`](../../../public/models/heroes/chrono.glb) |
 
@@ -51,34 +50,51 @@ The luminous clock dial. Time is drawn as clock dials: rings of Roman numerals a
 - Afterimages: the shape copied pale and translucent, two or three at most.
 - Motes: a few small pale diamonds that stop dead in the air and later float up and fade.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | **Echo**: every spell he casts plays twice. Tick, Slow Time, Time Skip and Stolen Hour each repeat 1.5 s later from the same place at 40% damage (80% in Stolen Hour). Ghost clock hands show where. |
+| Twist | none (the trait has no `twist` entry) |
+| Resource or meter | none. A ring at his feet and a gold `stolen` mark pip show while Stolen Hour's strong echoes run |
+| Walk speed | 4.0 m/s |
+| Basic attack | ranged, 6 m, 10 per 1.0 s, wind-up 0.25 s, bolt speed 18, gear look |
+
+Other trait rules (`src/traits/chrono.ts`):
+
+- The echo lives in each spell's effect; the trait keeps the strength (40%, or 80% while Stolen Hour runs) and shows it. Ghost clock hands mark where each echo will come from, on both screens.
+- A direct hit with Tick takes 1 s off Tick (once per cast). The echo's hit never counts.
+- Slow Time: he moves 30% faster inside the circle.
+- Time Skip: untouchable for 0.6 s (every hit on him is swallowed, and he is held).
+- Stolen Hour starts its effect only if it lands. The victim's screen tells his own client, which raises the echoes to 80% for 4 s (gold pip and ring on both screens) and gives him 30% more speed. It does not touch the enemy's cooldowns.
+
 ## Mechanics
 
 Tempo uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
 
 | Mechanic | Where |
 |---|---|
-| Skillshot, boomerang | Q is `aim: 'line'`: `ctx.projectile` fires a spinning clock hand (speed 22, range 10, radius 0.45) with `pierce: true`. It flies out, hangs 0.15 s and a second piercing bolt brings it back to where he stands, so each enemy in the line is hit at most once per leg (twice in all). Hero mode draws a strip toward the cursor; the AI's bolt dodge can sidestep it |
-| Slow | Q slows every enemy it hits for 1.0 s (walking speed x 0.6, cap 2.5 s) |
-| Stun | W stuns every enemy it hits for 0.8 s (cap 1.2 s). A stun is followed by 0.5 s of stun immunity, so it cannot be chained. R no longer stuns |
-| Shield, heal | E gives `ctx.shieldSelf(25, 2)`, a 25 point shield for 2 s, and `ctx.healSelf(45)` on arrival back at the mark |
-| Dash back | E calls `ctx.moveCaster(anchor, 0.25)` at 1.8 s into the spell, not at the cast: he slides back to the spot where he stood when he cast it. The spell is not flagged `dash: true`, so the duel AI does not use it as a gap closer |
-| Crowd control flag | W has `cc: true`, so the duel AI casts it first when the enemy is in range. R has no `cc` |
-| Melee, summon, pull | none. `maxHp` is 580 |
-
-The numbers follow the "Mechanics budget" of [kit-common.md](../../../pipeline/designs/kit-common.md): a ranged control Q of about 55 (the code has 35 per leg, so up to 70 when both legs hit).
+| Echo | the passive: a second hit 1.5 s later at 40% (80% in Stolen Hour) for Q, W, E and R |
+| Slow | W (2 s), R (2 s) |
+| Untouchable | Time Skip, 0.6 s |
+| Dash | Time Skip (up to 6 m). Kit flag: E `dash` |
+| Speed buff | W (30% faster inside the circle, 3 s), R (30% faster for 4 s) |
+| Cooldown refund | Tick: 1 s on a direct hit |
+| Skillshot | Tick (radius 0.35, speed 20) |
+| Summon, shield, pull | none |
 
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four spells have different shapes: Q is a boomerang skillshot (first damage 0.2-0.65 s after the cast, the return leg until about 1.3 s, clean by 2.2 s), W a delayed ground zone (hit at 0.75 s, clean by 2.2 s), E a rewind back to the mark (the arrival and heal at 2.05 s, clean by 2.8 s), R a fuse (hit at 3.5 s, clean by 5.8 s, one dead beat). Range and cooldown come from the kit data (`src/kits/chrono.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/chrono.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage. Each length includes the echo.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [second hand](../../../src/spells/targeted/secondHand.ts) | ground, BOOMERANG skillshot line (width 0.9) | 10 | 3 s | flies from 0.2 s, out leg about 0.45 s, back leg until about 1.3 s | 2.2 s | A small dial flicks open at his staff tip and the red second hand snaps off it (0 to 0.2 s). At 0.2 s it leaves as a piercing bolt: a spinning red clock hand with a chartreuse counter-hand and two pale afterimages trailing. It flies 10 m, hangs a beat (0.15 s) and spins back along the line to where he stands. Every hit, on either leg, slows the target and flashes a tiny dial (radius 0.6) on it that ticks backward once, with a small red star. Each enemy is hit at most once per leg. At the end the hands fade. Damage 35 per leg, knock 1, slow 1.0 s. |
-| W | [stopped moment](../../../src/spells/targeted/stoppedMoment.ts) | ground ZONE (r 3.5) | 10 | 8 s | 0.75 s | 2.2 s | A clock dial (radius 3.5) draws itself on the ground, the numerals appearing one by one (0 to 0.3 s); both hands sweep toward twelve with the ticking speeding up (0.3 to 0.7 s). At 0.75 s they meet and the dial freezes: the ticks stop, motes stop dead in the air, a small red star flashes and every enemy still inside is hit and stunned; a pale afterimage of up to three victims stays where it was hit. The frozen frame holds to 1.6 s, then the motes release and the dial fades. Damage 35, stun 0.8 s. |
-| E | [rewind](../../../src/spells/targeted/rewind.ts) | self BACKSTEP (r 3) | 0 (self) | 11 s | 2.05 s | 2.8 s | He marks the moment: a dial (radius 1.2) opens at his feet, a pale afterimage of him stays standing on it and he takes a 25 point shield for 2 s. He may walk freely; the dial's hands run backward. At 1.8 s he rewinds: he slides back to the mark in 0.25 s while two or three afterimages replay his path backward. On arrival (2.05 s) he heals and the dial flashes outward to radius 3: every enemy inside is hit and shoved away from the mark. The dial fades from 2.2 s. The telegraph is a circle of 3 at the mark from 1.4 s to the arrival. Damage 15, knock 2, shield 25, heal 45. |
-| R | [twelfth hour](../../../src/spells/targeted/twelfthHour.ts) | ground FUSE (r 7) | 13 | 20 s | 3.5 s | 5.8 s | The ultimate. The world darkens to green-black and a numeral ring traces the zone edge on the ground, ticking. Behind the point a vast ivory clock dial (7 across, about 4 up, chartreuse numerals) rises facing the camera over about 1.3 s, then hangs; its two hands sweep slowly toward twelve, afterimages of the hands trailing, a red second hand ticking and motes drifting. At 2.9 s the minute hand stops one tick short and every mote freezes; dead beat 3.15-3.3 s; the last tick (3.3 to 3.5 s) brings the hands to twelve and the red second hand flies off the dial and drives into the centre. At 3.5 s: two impact frames, the ring flashes, twelve chartreuse shock lines race out along the numerals, a red star, a ground refraction ring, shake and the hit. No stun: the 3.5 s warning is the counter, walk out of the circle. The dial cracks into flakes and fades and the dark lifts. Damage 135, knock 3. |
+| Q | [tick bolt](../../../src/spells/targeted/tickBolt.ts) | ground (BOLT skillshot, line, radius 0.35) | 9 | 3 s | released at 0.25 s, flight at 20 m/s | 2.45 s | A spinning clock hand flies 9 m: 50. A direct hit takes 1 s off Tick. Echo: the same line again 1.5 s after the release, from where he stood, for 20. |
+| W | [slow time](../../../src/spells/targeted/slowTime.ts) | ground (r 3.5) | 9 | 9 s | 1.2 s | 3.35 s | Time thickens in a 3.5 m circle for 3 s with dials turning in it. After 1.2 s enemies inside take 30 and are slowed 2 s. He moves 30% faster inside for 3 s. Echo 1.5 s later: 12 and the slow again. |
+| E | [time skip](../../../src/spells/targeted/timeSkip.ts) | ground (dash, pulse r 1.4) | 6 | 11 s | 0.6 s (he returns) | 2.5 s | He vanishes for 0.6 s (untouchable) and returns on the marker up to 6 m away with a pulse of 35. Echo 1.5 s later at the same spot: 14. |
+| R | [stolen hour](../../../src/spells/targeted/stolenHour.ts) | enemy (click), sight checked | 8 | 24 s | 0.8 s | 2.7 s | A clock face (1.2 m) forms over the enemy. After 0.8 s, if he still sees them: 70 and slowed 2 s, and for 4 s his echoes hit at 80% and he moves 30% faster. Echo: 28. If the wind-up fails it fizzles at 1.5 s. |
 
-Spell sources: [`secondHand.ts`](../../../src/spells/targeted/secondHand.ts), [`stoppedMoment.ts`](../../../src/spells/targeted/stoppedMoment.ts), [`rewind.ts`](../../../src/spells/targeted/rewind.ts), [`twelfthHour.ts`](../../../src/spells/targeted/twelfthHour.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-chrono).
+Spell sources: [`tickBolt.ts`](../../../src/spells/targeted/tickBolt.ts), [`slowTime.ts`](../../../src/spells/targeted/slowTime.ts), [`timeSkip.ts`](../../../src/spells/targeted/timeSkip.ts), [`stolenHour.ts`](../../../src/spells/targeted/stolenHour.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-chrono).
 
 ## Parts file
 
@@ -92,26 +108,21 @@ Spell sources: [`secondHand.ts`](../../../src/spells/targeted/secondHand.ts), [`
 | `Afterimage` | two or three pale translucent echoes (`max`), never more: `trail(object, count, spacing)` copies of a mesh follow it, `replay(points, seconds, stagger)` figure echoes run a path backward, `stand(i, pos, yaw, alpha)` a still figure echo, `fade(seconds)` |
 | `FrozenMotes` | a few small pale motes (at most 48): `drift(center, radius, count)` floats them slowly, `freeze(center, radius, count)` adds more and stops every mote dead in the air, `release(seconds)` lets them float up and fade |
 | `Flakes` | small flat triangular flakes of a cracked dial: `emit(pos, vel, size, life)` throws one, they tumble, fall and shrink |
+| `ECHO_GOLD`, `ECHO_GOLD_CSS` | the golden colour of the strong echoes (Stolen Hour) |
+| `DialFace`, `DialMarks` | types for the dial textures: face `'ring'`, `'ivory'`, `'dark'`; marks `'full'`, `'quarter'`, `'ticks'`, `'band'` |
+| `EchoClock` | the ghost clock hands of the passive: a pale translucent dial that appears at the place the echo will come from, its hands running round to twelve as the echo fires: `show(center, radius, normal, seconds)`, `place`, `gold(true)`, `fire()` |
 
 The kit has no unit look: Tempo summons nothing.
 
 ## Model
 
-[`public/models/heroes/chrono.glb`](../../../public/models/heroes/chrono.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("chrono")` / `export("chrono")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Tempo`).
+[`public/models/heroes/chrono.glb`](../../../public/models/heroes/chrono.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("chrono")` / `export("chrono")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.41 m, height 2.46 m.
 
-- Look: A slim man in a long dark green-black coat with a chartreuse edge over an ivory waistcoat, loose white hair, a glowing chartreuse monocle on a chain, a clock-dial halo (a glowing ring with a dark face and twelve ticks) behind his head, an ivory dial plate on the left shoulder and a staff shaped like a giant minute hand with a red second hand pinned at its pivot.
+- Look: a slim man in a long dark green-black coat with a chartreuse edge over an ivory waistcoat, loose white hair, a glowing chartreuse monocle on a chain, a clock-dial halo behind his head, an ivory dial plate on the left shoulder and a staff shaped like a giant minute hand.
 - Props: `dial_halo`, `monocle`, `dial_pauldron`, `hand_staff`.
-- HUD portrait (canvas-drawn in the kit data): A glowing clock dial floating behind his head like a halo, the minute-hand staff with the red second hand at its pivot, shoulders in a long dark coat with a chartreuse edge, the ivory dial plate on the shoulder, and a long lean face with white hair swept back and tied in a tail, and a monocle on a chain.
+- HUD portrait (canvas-drawn in the kit data): a glowing clock dial floating behind his head like a halo, the minute-hand staff with the red second hand at its pivot, and shoulders in a long dark coat with a chartreuse edge.
 
 ![Tempo model preview, angle 15](../../heroes/chrono_15.png)
-
-The wave 5 concept (Oblivion, Shiori and Tempo; vector source [`wave5_concept.svg`](../../heroes/wave5_concept.svg)):
-
-![Wave 5 concept: Oblivion, Shiori and Tempo](../../heroes/wave5_concept.jpg)
-
-The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
-
-![Wave 5 in-game hero models](../../heroes/wave5-ingame_sheet.jpg)
 
 ## Files
 
@@ -119,29 +130,19 @@ The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
 |---|---|
 | Kit sheet (design) | [`pipeline/designs/kit-chrono.md`](../../../pipeline/designs/kit-chrono.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
+| Kits v5 design | [`pipeline/designs/kits-v5.md`](../../../pipeline/designs/kits-v5.md) |
 | Parts | [`src/effects/parts/chrono.ts`](../../../src/effects/parts/chrono.ts) |
-| Spells | [`secondHand.ts`](../../../src/spells/targeted/secondHand.ts), [`stoppedMoment.ts`](../../../src/spells/targeted/stoppedMoment.ts), [`rewind.ts`](../../../src/spells/targeted/rewind.ts), [`twelfthHour.ts`](../../../src/spells/targeted/twelfthHour.ts) |
+| Spells | [`tickBolt.ts`](../../../src/spells/targeted/tickBolt.ts), [`slowTime.ts`](../../../src/spells/targeted/slowTime.ts), [`timeSkip.ts`](../../../src/spells/targeted/timeSkip.ts), [`stolenHour.ts`](../../../src/spells/targeted/stolenHour.ts) |
 | Kit data | [`src/kits/chrono.ts`](../../../src/kits/chrono.ts) |
+| Trait | [`src/traits/chrono.ts`](../../../src/traits/chrono.ts) |
 | Model | [`public/models/heroes/chrono.glb`](../../../public/models/heroes/chrono.glb) |
 | Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Chrono review (Q, W, E)
-
-![Chrono Q, W and E review contact sheet](../../spells/wave5-chrono-qwe_sheet.jpg)
-
-### Chrono review (R)
-
-![Chrono R review contact sheet](../../spells/wave5-chrono-r_sheet.jpg)
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
 - [Combat mechanics](../../architecture/mechanics.md)
-- [Oblivion (void)](void.md), [Shiori (ink)](ink.md), [Ada (clockwork)](clockwork.md), [Cantor (bard)](bard.md)
+- [Oblivion (void)](void.md), [Shiori (ink)](ink.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

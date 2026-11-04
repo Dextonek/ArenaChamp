@@ -1,23 +1,23 @@
 ---
 title: Vesper, the Crimson Countess (blood kit)
-tags: [catalog, heroes, blood]
-updated: 2026-10-30
+tags: [catalog, heroes, blood, drain, juggernaut]
+updated: 2026-11-04
 ---
 
 # Vesper, the Crimson Countess
 
-The blood hero kit: Vesper's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A gothic hemomancer noble. She bleeds on purpose: a pale cut on her palm, and her blood becomes whips, lances and thorns. What she spills she takes back from her enemies.
+The blood hero kit (v5): Vesper's four spells (Q, W, E and the R ultimate), her passive, the shared parts file, the palette row and the rigged hero model. A pale countess in a black robe with a crimson lining and a tall collar. She pays HP for every spell and gets it back by drinking from the enemy, but only when she is low. She plays at range with a basic attack of 5.5 m, and she needs sight of the enemy for her curse, her rip and her feast.
 
 ## Role
 
 | | |
 |---|---|
-| Role | Juggernaut (drain) |
-| Signature | Blood price: every spell heals her |
-| HP | 620 |
-| Reach | Ranged, short reach (8 m; E 6 m) |
+| Role | Juggernaut (drain), ranged |
+| Signature | Blood price |
+| HP | 660 |
+| Kit shapes | Q TGT needle + RECAST rip · W DASH mist · E TGT curse · R TGT CHANNEL |
 
-She trades blows and heals through them: every spell gives HP back, so a long fight favours her. A kiter who stays out of her 8 m reach never feeds her.
+She wins by staying near 45% HP, where every spell hit heals her. Above that line she only pays. Her weakness is cover: the rip, the curse and the feast all need sight, and they end when the enemy gets past 8 m (the feast: 9 m).
 
 ## At a glance
 
@@ -26,9 +26,10 @@ She trades blows and heals through them: every spell gives HP back, so a long fi
 | Hero | Vesper, the Crimson Countess |
 | Spell category | `hero: blood` |
 | Parts file | [`src/effects/parts/blood.ts`](../../../src/effects/parts/blood.ts) |
-| Kit data | [`src/heroes.ts`](../../../src/heroes.ts) |
-| Kit sheet | [`blood-kit.md`](../../../pipeline/designs/blood-kit.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/blood.glb`](../../../public/models/heroes/blood.glb) |
+| Kit data | [`src/kits/blood.ts`](../../../src/kits/blood.ts) |
+| Trait (rules) | [`src/traits/blood.ts`](../../../src/traits/blood.ts) |
+| Kit sheet | [`kit-blood.md`](../../../pipeline/designs/kit-blood.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
+| Model | [`public/models/heroes/blood_v2.glb`](../../../public/models/heroes/blood_v2.glb) |
 
 ## Palette
 
@@ -50,24 +51,50 @@ The blood tendril: a tapered, viscous rope with a round bead at the tip, that ha
 - Every hit passes `color: BLOOD_CSS.body` so the arena hit flash is crimson, not white.
 - Not Crimson Requiem: no petals, no grey-world colour drain, no red laser slashes.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | Blood Price: each spell costs her 20 HP (R costs 40, the Rip recast costs nothing). It never takes her below 1 HP. |
+| Twist | Hungry: below 45% of her max HP her body burns crimson (a ring at her feet) and her spell hits of slots Q, W and E heal her for 15% of their damage. Basic attacks and R do not heal that way. Above 45% she drinks nothing. |
+| Resource or meter | none |
+| Speed | 4 m/s |
+| Basic attack | ranged, 5.5 m, 8 damage every 0.7 s, wind-up 0.18 s, bolt speed 20, drop look |
+| Other rules | Mist Waltz arms her next two basic attacks for 3 s: +18 damage and +1.5 m reach each (shown as two drop pips). The Rip is a recast of Q, open from 1 s to 3 s after the cast. Hemocurse: while it holds, each spell the enemy casts costs them 30 HP, and heals her 15 if she is Hungry. The duel AI casts R only within 4 m. |
+
+## Mechanics
+
+Vesper uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
+
+| Mechanic | Where |
+|---|---|
+| HP cost | Every spell, through the trait's `castMods` (20 HP, R 40) |
+| Recast | Q: the Rip (`recast`, window 3 s, opens at 1 s, full damage) |
+| Dash | W flows 5 m (`dash: true`, kit range 11 is only the AI's reach) |
+| Curse on spells | E: `enemyCast` costs the enemy 30 HP per spell while the curse is live |
+| Channel | R holds her 1.6 s (`hold`). A stun, a silence or a knock-up, 9 m of distance or lost sight ends it |
+| Heal | Hungry heal on spell hits, the Rip refund (20 HP), the curse heal (15), the feast heal (45 when Hungry) |
+| Basic attack buff | W: two empowered attacks with more reach |
+| Melee, summon, pull, shield | none |
+
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is an instant hit, W a ground zone, E a tether and R a ground ultimate, and all of them heal her. Q, W and E hit 0.55-1.3 s after the cast and are clean by about 2-3 s; R is the ultimate (hit around 2.0-2.5 s, clean by 4.5 s, one dead beat and one short impact frame). Range and cooldown come from the kit data (`src/heroes.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Q, E and R are targeted at an enemy and all of them are judged on the live position (`projectile: true`), so they cannot be walked out of; a red circle on the enemy is the warning. Range and cooldown come from the kit data (`src/kits/blood.ts`), hit time and length from the spell files in `src/spells/targeted/`. The numbers are the spell files' defaults.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [hemolance](../../../src/spells/targeted/hemolance.ts) | enemy (TGT drain) | 8 | 3 s | 0.55 s | 1.6 s | A pale cut on her raised palm sprays blood; a tendril pours up, coils above the shoulder, hardens into a crystal lance and impales one enemy. The blood drains back home. Damage 42; if the lance lands she heals 6. |
-| W | [thorn garden](../../../src/spells/targeted/thornGarden.ts) | ground (r 4.5, ZONE) | 8 | 7 s | 0.75 s | 2.3 s | A tendril runs to the point, a bone sigil draws on and a pool of blood spreads inside it, then freezes upward into a thicket of 34 thorns. Damage 50 and slow 1.5 s at 0.75 s, then one tick of 10 at 1.2 s. Hits check where the enemy stands now. |
-| E | [crimson pact](../../../src/spells/targeted/crimsonPact.ts) | self (r 6, TETHER) | 0 (self) | 9 s | 0.6 s, 1.3 s and 2.0 s (three drains) | 3.2 s | Arms spread, a bone sigil draws on and a heart of blood beats above her head. It latches onto the nearest enemy within 6 m with one thread and drains it on each beat: 12 damage each, and she heals 6 per drain. The tether breaks if the enemy leaves 6 m; with no enemy in range nothing drains. Loopable. |
-| R | [sanguine eclipse](../../../src/spells/targeted/sanguineEclipse.ts) | ground (r 6, ZONE) | 8 | 20 s | 2.4 s | 4.5 s | The ultimate. Three blood beads are thrown up and a bone moon appears and bleeds; the zone's blood is harvested at 1.0 s (15 per enemy, and she heals 10 per enemy hit), freezes into a thorn-star at 2.0 s and falls on the zone at 2.4 s (100). Dead beat, then one impact frame. |
+| Q | [lancet](../../../src/spells/targeted/lancet.ts) | enemy (TGT, recast) | 7 | 4 s | 0.4 s (the rip 0.3 s after its cast) | 1.4 s (the rip 1.0 s) | A crystal needle flies to the enemy and stays in for 3 s as a blood pip. Damage 36. Cast again from 1 s to 3 s: a thread runs to the needle and rips it out for 26 more, and she gets 20 HP back when it lands. The rip works only if the first cast struck, she still sees the enemy and they are within 8 m; otherwise it fizzles. |
+| W | [mist waltz](../../../src/spells/targeted/mistWaltz.ts) | ground (r 1, DASH) | 11 (the AI's reach; the flow is 5 m) | 11 s | none (no damage) | 1.3 s | She comes apart into blood-red mist and slides 5 m to the aim in 0.2 s, then the mist folds back into her. Not untouchable, no telegraph. Arms two basic attacks for 3 s: +18 damage and +1.5 m reach. |
+| E | [hemocurse](../../../src/spells/targeted/hemocurse.ts) | enemy (TGT) | 7 | 12 s | 0.6 s | 4.0 s | A thread of blood runs to the enemy and a crown of thorns closes round them. Damage 25, and the curse lasts 3 s: each spell they cast costs them 30 HP, and heals her 15 if she is Hungry. It breaks past 8 m or without sight. |
+| R | [sanguine feast](../../../src/spells/targeted/sanguineFeast.ts) | enemy (TGT, channel) | 8 | 24 s | 0.4 s, 1.0 s and 1.6 s (three pulses) | 2.4 s | Ultimate. She is rooted for 1.6 s and drinks through a thread of blood. Pulses of 35, 35, then 40 plus 20% of the enemy's missing HP. The third pulse heals her 45 if she is Hungry. A stun, silence or knock-up on her, 9 m of distance or lost sight ends it, and the pulses not yet due do not happen. |
 
-Spell sources: [`hemolance.ts`](../../../src/spells/targeted/hemolance.ts), [`thornGarden.ts`](../../../src/spells/targeted/thornGarden.ts), [`crimsonPact.ts`](../../../src/spells/targeted/crimsonPact.ts), [`sanguineEclipse.ts`](../../../src/spells/targeted/sanguineEclipse.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-blood).
+Spell sources: [`lancet.ts`](../../../src/spells/targeted/lancet.ts), [`mistWaltz.ts`](../../../src/spells/targeted/mistWaltz.ts), [`hemocurse.ts`](../../../src/spells/targeted/hemocurse.ts), [`sanguineFeast.ts`](../../../src/spells/targeted/sanguineFeast.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-blood).
 
-Per-spell design notes: [`hemolance.md`](../../../pipeline/designs/hemolance.md), [`thorn-garden.md`](../../../pipeline/designs/thorn-garden.md), [`crimson-pact.md`](../../../pipeline/designs/crimson-pact.md), [`sanguine-eclipse.md`](../../../pipeline/designs/sanguine-eclipse.md).
+The feast reads the missing HP as what she has dealt the enemy this round (the engine gives a spell no target HP), capped at 600, so it over-counts if the enemy heals.
 
 ## Parts file
 
-[`src/effects/parts/blood.ts`](../../../src/effects/parts/blood.ts) holds everything the four spells share. Spells import it directly (`../../effects/parts/blood`).
+[`src/effects/parts/blood.ts`](../../../src/effects/parts/blood.ts) holds everything the kit's spells share. Spells import it directly (`../../effects/parts/blood`).
 
 | Export | Role |
 |---|---|
@@ -78,55 +105,33 @@ Per-spell design notes: [`hemolance.md`](../../../pipeline/designs/hemolance.md)
 | `BloodDrops` | instanced teardrops with gravity, splats on landing, and `drain` (drops arcing home to the caster) |
 | `BloodThorns` | instanced crystal spikes: `erupt`, `shatter` into flakes; also usable as one big spike (the lance) |
 | `BloodSigil` | the bone crest as a ground decal, with a draw-on `reveal` and `fade` |
+| `BloodMist` | Vesper's mist (Mist Waltz): pooled soft wisps of blood-red haze with a lumpy toon edge; `puff` adds one, `stream` lays them along a line, `update(dt)` every frame |
 
 ## Model
 
-[`public/models/heroes/blood.glb`](../../../public/models/heroes/blood.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("blood")` / `export("blood")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts).
-
-- Look: A black left-lapped robe, a crimson-lined open over-robe, a tall vampire collar, a silk cloud mantle, loose black hair, red eyes.
-- Props: `blood_gem` (gem at the throat), `blood_thorns`, `vampire_collar`.
+[`public/models/heroes/blood_v2.glb`](../../../public/models/heroes/blood_v2.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the current style, the `_v2` models). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Vesper`), and its hit size is in `HERO_BODIES` in the same file (radius 0.41 m, height 2.35 m).
 - HUD portrait (canvas-drawn in the kit data): A bone crescent behind a blood drop: the moon and the blood.
 
-![Vesper turnaround, angle 15](../../heroes/blood_15.png) ![Vesper turnaround, angle 165](../../heroes/blood_165.png)
+![Vesper preview, angle 15](../../heroes/blood_15.png) ![Vesper preview, angle 165](../../heroes/blood_165.png) 
 
 ## Files
 
 | What | Where |
 |---|---|
-| Kit sheet (design) | [`pipeline/designs/blood-kit.md`](../../../pipeline/designs/blood-kit.md) |
+| Kit sheet (design) | [`pipeline/designs/kit-blood.md`](../../../pipeline/designs/kit-blood.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
 | Parts | [`src/effects/parts/blood.ts`](../../../src/effects/parts/blood.ts) |
-| Spells | [`hemolance.ts`](../../../src/spells/targeted/hemolance.ts), [`thornGarden.ts`](../../../src/spells/targeted/thornGarden.ts), [`crimsonPact.ts`](../../../src/spells/targeted/crimsonPact.ts), [`sanguineEclipse.ts`](../../../src/spells/targeted/sanguineEclipse.ts) |
-| Kit data | [`src/heroes.ts`](../../../src/heroes.ts) |
-| Model | [`public/models/heroes/blood.glb`](../../../public/models/heroes/blood.glb) |
-| Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-The blood kit is the only kit defined inline in `src/heroes.ts` (`bloodKit`); the other four live in `src/kits/`.
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Hemolance
-
-![Hemolance contact sheet](../../spells/hemolance_sheet.jpg)
-
-### Thorn Garden
-
-![Thorn Garden contact sheet](../../spells/thorn-garden_sheet.jpg)
-
-### Crimson Pact
-
-![Crimson Pact contact sheet](../../spells/crimson-pact_sheet.jpg)
-
-### Sanguine Eclipse
-
-![Sanguine Eclipse contact sheet](../../spells/sanguine-eclipse_sheet.jpg)
+| Spells | [`lancet.ts`](../../../src/spells/targeted/lancet.ts), [`mistWaltz.ts`](../../../src/spells/targeted/mistWaltz.ts), [`hemocurse.ts`](../../../src/spells/targeted/hemocurse.ts), [`sanguineFeast.ts`](../../../src/spells/targeted/sanguineFeast.ts) |
+| Kit data | [`src/kits/blood.ts`](../../../src/kits/blood.ts) |
+| Trait (passive, twist, rules) | [`src/traits/blood.ts`](../../../src/traits/blood.ts) |
+| Model | [`public/models/heroes/blood_v2.glb`](../../../public/models/heroes/blood_v2.glb) |
+| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
-- [Brannoc (forge)](forge.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md), [Vex (alchemy)](alchemy.md)
+- [Combat mechanics](../../architecture/mechanics.md)
+- [Brannoc (forge)](forge.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md), [Vitriol (alchemy)](alchemy.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

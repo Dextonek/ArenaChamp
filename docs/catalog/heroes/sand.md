@@ -1,23 +1,23 @@
 ---
 title: Sefu, the Dune Sovereign (sand kit)
-tags: [catalog, heroes, sand]
-updated: 2026-10-30
+tags: [catalog, heroes, sand, controller, judged]
+updated: 2026-11-04
 ---
 
 # Sefu, the Dune Sovereign
 
-The sand hero kit: Sefu's four spells (Q, W, E and the R ultimate), the shared parts file, the palette row and the rigged hero model. A desert king in layered linen and a gold headdress with a crook of sandstone; he controls ground and space.
+The sand hero kit (v5): Sefu's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette row and the rigged hero model. A pharaoh in layered linen, a gold collar and a striped gold headdress, with a sandstone crook. His crook and his sarcophagus Judge the enemy, and a Judged enemy takes more from him and cannot dash far. He plays at range with a basic attack of 5.5 m.
 
 ## Role
 
 | | |
 |---|---|
-| Role | Controller |
-| Signature | Shackles and teeth |
-| HP | 600 |
-| Reach | Ranged |
+| Role | Controller (ranged) |
+| Signature | Pharaoh's Decree |
+| HP | 620 |
+| Kit shapes | Q LINE skillshot blind · W TGT hook and pull · E DASH bite + poison · R TGT seal, then burst |
 
-He chains roots, slows and a stun so the enemy cannot leave his zones, and shields himself through the trade. Modest damage; the pillars and the tomb can be walked out of before they close.
+He wins by hooking the enemy with the crook (Judged), spitting at them for a cheap re-cast of the cobra, and sealing them in the sarcophagus. His weakness is the line: the cobra and the dash can be sidestepped, and the sarcophagus shuts on nothing if the enemy steps out of its 1.6 m circle.
 
 ## At a glance
 
@@ -27,8 +27,9 @@ He chains roots, slows and a stun so the enemy cannot leave his zones, and shiel
 | Spell category | `hero: sand` |
 | Parts file | [`src/effects/parts/sand.ts`](../../../src/effects/parts/sand.ts) |
 | Kit data | [`src/kits/sand.ts`](../../../src/kits/sand.ts) |
+| Trait (rules) | [`src/traits/sand.ts`](../../../src/traits/sand.ts) |
 | Kit sheet | [`kit-sand.md`](../../../pipeline/designs/kit-sand.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/sand.glb`](../../../public/models/heroes/sand.glb) |
+| Model | [`public/models/heroes/sand_v2.glb`](../../../public/models/heroes/sand_v2.glb) |
 
 ## Palette
 
@@ -48,22 +49,49 @@ Sand that flows like a ribbon and sets like stone: sand pours in thick grainy ri
 - Sandstone: flat-shaded pale stone with dark incised glyph lines (a canvas texture), never glowing.
 - Dust: small toon puffs in the body colour.
 
+## Passive and twist
+
+| | |
+|---|---|
+| Passive | Pharaoh's Decree: an enemy his crook pulls or his sarcophagus opens on is Judged for 3 s. His hits deal 20% more to a Judged enemy, and their dashes, blinks and leaps go half as far (a `grounded` debuff of 0.5). |
+| Twist | A Cobra Spit that hits a Judged enemy halves what is left of its cooldown. The sarcophagus Judges only when it opens (the seal itself does not). The passive slot shows `J` while the enemy is Judged. |
+| Resource or meter | none (Judged is a stack on the enemy) |
+| Speed | 4 m/s |
+| Basic attack | ranged, 5.5 m, 9 damage every 0.7 s, wind-up 0.18 s, bolt speed 20, sand look |
+| Other rules | Judged applies to every hit he deals, including basic attacks, once the stack is on. |
+
+## Mechanics
+
+Sefu uses these pieces of [the combat mechanics](../../architecture/mechanics.md):
+
+| Mechanic | Where |
+|---|---|
+| Skillshot | Q: a projectile at 20 m/s, radius 0.35, 9 m (`aim: 'line'`) |
+| Blind | Q: 1.2 s |
+| Pull and slow | W: pull 3 m toward him (stopping 1 m short), slow 0.5 s. W is flagged `cc` |
+| Dash | E: 6 m in 0.5 s (`dash: true`, kit range 11 is the AI's reach). He can still be hit |
+| Damage over time | E's poison: 30 as two ticks of 15, 1 s and 2 s after the bite |
+| Sealed | R: `sealed` 1.2 s, the enemy cannot act and cannot be hit. R is flagged `cc` |
+| Debuff | Judged: `grounded` 0.5 for 3 s, and +20% damage taken from him |
+| Cooldown cut | Judged Cobra Spit hit: half the cooldown back (`noteOwner`, `peerNote`) |
+| Melee, summon, shield, heal | none |
+
 ## Spells
 
-All four play under the normal gameplay camera (no cinematic, no letterbox). The four slots are four different spell types (see the Targeting column). Q is an instant root, W a lingering zone that closes, E a shield aura and R a ground ultimate. Q, W and E hit 0.5-2.6 s after the cast and are clean by about 4.1 s; R is the ultimate (hit at 2.2 s, clean by 4.5 s, one dead beat and impact frames). Range and cooldown come from the kit data (`src/kits/sand.ts`), hit time and length from the spell files in `src/spells/targeted/`; "hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/sand.ts`), hit time and length from the spell files in `src/spells/targeted/`; the numbers are the spell files' defaults. The Judged bonus (+20%) comes on top.
 
 | Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [sand lash](../../../src/spells/targeted/sandLash.ts) | enemy (TGT) | 10 | 3 s | 0.5 s | 1.6 s | He sweeps the crook and a thick ribbon of sand pours from the floor, arcs over and cracks across to one enemy like a whip. The tip wraps the legs and sets into a shackle of four carved sandstone shards that crumbles to dust. Damage 46 and root 0.8 s. |
-| W | [quicksand](../../../src/spells/targeted/quicksand.ts) | ground (r 4, LINGER) | 10 | 7 s | 0.8, 1.4 and 2.0 s (slow ticks), 2.6 s (pillars) | 4.1 s | A ring of carved glyphs cuts into the floor, sand floods inside and swirls inward. Three ticks of 6 slow whoever stands inside for 1.2 s each. The swirl snaps tight and sandstone pillars punch up around the edge at 2.6 s, leaning inward like closing teeth: damage 32 and root 1.0 s. They crumble and the sand settles. |
-| E | [dune ward](../../../src/spells/targeted/duneWard.ts) | self (r 5, AURA) | 0 (self) | 9 s | 1.0 s and 2.0 s (two pulses) | 3.2 s | Three sand ribbons rise and wind around him in a slow spiral above a small glyph ring. He gains a shield of 45 for 4 s. Twice the ribbons flare and a flat ring of flung sand sweeps out to radius 5: damage 13 and slow 1.0 s per pulse. Then the ribbons set into stone and crumble. |
-| R | [tomb of kings](../../../src/spells/targeted/tombOfKings.ts) | ground (r 7, ZONE) | 13 | 20 s | 2.2 s | 4.5 s | The ultimate. The world darkens warm, a big glyph ring carves into the floor and sand ribbons stack a stepped sandstone pyramid over the zone; a glyph on its face lights turquoise, dead beat at 1.85-2.0 s, then the pyramid implodes into the vortex: impact frames, a ring of carved shards bursts across the zone, a sand shockwave sweeps out. Damage 110 and stun 1.0 s. |
+| Q | [cobra spit](../../../src/spells/targeted/cobraSpit.ts) | line skillshot (ground aim) | 9 | 5 s | strike at 0.25 s, reaches 6 m at 0.55 s | 1.4 s | A gold and turquoise cobra of sand rears up in 0.2 s and spits venom down the aim. The first enemy it touches takes 62 and is blinded 1.2 s. A hit on a Judged enemy halves the rest of this spell's cooldown. A sidestep after the hood rises dodges it. |
+| W | [shepherd's crook](../../../src/spells/targeted/shepherdsCrook.ts) | enemy (needs sight) | 6 | 10 s | 0.5 s | 1.4 s | A ribbon of sand leaves his hand, sets into a sandstone crook and hooks round the enemy's neck. A gold mark shows who is hooked. At 0.5 s: 35 damage, pulled 3 m toward him (stopping 1 m short) and slowed 0.5 s. Judged for 3 s. |
+| E | [scarab stride](../../../src/spells/targeted/scarabStride.ts) | ground (dash line) | 11 (the AI's reach; the dash is 6 m) | 12 s | the bite when he passes through the enemy | 3.0 s | He skitters 6 m down the aim in 0.5 s as a stream of scarabs; the line (1.4 m wide) is shown as he starts. Running through the enemy bites once: 30 now and 30 poison as two ticks over 2 s. A pass that misses hits no one. He is not untouchable. |
+| R | [sarcophagus](../../../src/spells/targeted/sarcophagus.ts) | enemy (needs sight) | 9 | 24 s | shuts at 0.7 s | about 3.1 s | Ultimate. A gold sarcophagus rises at the spot the enemy stood at (a 1.6 m circle is the telegraph). At 0.7 s it shuts: if the enemy is still inside, they are sealed 1.2 s, unable to act and unable to be hit. It then opens in scarabs for 110 damage, and they are Judged. If they stepped out it shuts on nothing and sinks. The burst comes about 2.0 s after the cast; he is free to act from 0.7 s. |
 
-Spell sources: [`sandLash.ts`](../../../src/spells/targeted/sandLash.ts), [`quicksand.ts`](../../../src/spells/targeted/quicksand.ts), [`duneWard.ts`](../../../src/spells/targeted/duneWard.ts), [`tombOfKings.ts`](../../../src/spells/targeted/tombOfKings.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-sand).
+Spell sources: [`cobraSpit.ts`](../../../src/spells/targeted/cobraSpit.ts), [`shepherdsCrook.ts`](../../../src/spells/targeted/shepherdsCrook.ts), [`scarabStride.ts`](../../../src/spells/targeted/scarabStride.ts), [`sarcophagus.ts`](../../../src/spells/targeted/sarcophagus.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-sand).
 
 ## Parts file
 
-[`src/effects/parts/sand.ts`](../../../src/effects/parts/sand.ts) holds everything the four spells share. Spells import it directly (`../../effects/parts/sand`). Everything is pooled, takes world-space positions and has a `reset()`.
+[`src/effects/parts/sand.ts`](../../../src/effects/parts/sand.ts) holds everything the kit's spells share. Spells import it directly (`../../effects/parts/sand`). Everything is pooled, takes world-space positions and has a `reset()`.
 
 | Export | Role |
 |---|---|
@@ -74,16 +102,17 @@ Spell sources: [`sandLash.ts`](../../../src/spells/targeted/sandLash.ts), [`quic
 | `Dust` | small toon dust puffs and falling grains (cap about 10 puffs) |
 | `SandPool` | a ground decal of loose sand that swirls inward (the quicksand vortex): `swirl` 0..1, `settle` |
 | `SandWave` | a flat sand shockwave ring that sweeps out along the floor |
+| `GEM_COLORS`, `GemGlints` | tiny twinkling jewel diamonds (gold, turquoise, lapis, carnelian): `scatter(center, radius, count, life)`, `trickle(dt, center, radius, perSecond)` |
+| `SandHood` | a rearing cobra made of sand with a striped gold and turquoise hood: `place(base, yaw)`, `set(rear, strike, opacity, erode, time)` |
+| `ScarabSwarm` | pooled scarab beetles: `emit`, `burst(center, count, speed, life)`, `scuttle(pos, dir, count, life)` |
+| `Sarcophagus`, `SARCOPHAGUS_HEIGHT` | a gold mummiform sarcophagus in two halves round a spot (2.9 m tall, opaque): `place(center, yaw)`, `set(open, rise)` |
 
 ## Model
 
-[`public/models/heroes/sand.glb`](../../../public/models/heroes/sand.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("sand")` / `export("sand")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py); hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts).
-
-- Look: A shaved-headed king with a goatee in layered linen, a gold and turquoise striped headcloth, a broad collar, gold cuffs and a sandstone crook.
-- Props: `nemes`, `broad_collar`, `sand_crook`, `gold_cuffs`.
+[`public/models/heroes/sand_v2.glb`](../../../public/models/heroes/sand_v2.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the current style, the `_v2` models). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Sefu`), and its hit size is in `HERO_BODIES` in the same file (radius 0.4 m, height 2.86 m).
 - HUD portrait (canvas-drawn in the kit data): Layered linen shoulders, a gold collar, a bearded face under a striped gold headdress, and the sandstone crook behind.
 
-![Sefu turnaround, angle 15](../../heroes/sand_15.png) ![Sefu turnaround, angle 165](../../heroes/sand_165.png)
+![Sefu preview, angle 15](../../heroes/sand_15.png) ![Sefu preview, angle 165](../../heroes/sand_165.png) 
 
 ## Files
 
@@ -92,23 +121,17 @@ Spell sources: [`sandLash.ts`](../../../src/spells/targeted/sandLash.ts), [`quic
 | Kit sheet (design) | [`pipeline/designs/kit-sand.md`](../../../pipeline/designs/kit-sand.md) |
 | Shared kit rules | [`pipeline/designs/kit-common.md`](../../../pipeline/designs/kit-common.md) |
 | Parts | [`src/effects/parts/sand.ts`](../../../src/effects/parts/sand.ts) |
-| Spells | [`sandLash.ts`](../../../src/spells/targeted/sandLash.ts), [`quicksand.ts`](../../../src/spells/targeted/quicksand.ts), [`duneWard.ts`](../../../src/spells/targeted/duneWard.ts), [`tombOfKings.ts`](../../../src/spells/targeted/tombOfKings.ts) |
+| Spells | [`cobraSpit.ts`](../../../src/spells/targeted/cobraSpit.ts), [`shepherdsCrook.ts`](../../../src/spells/targeted/shepherdsCrook.ts), [`scarabStride.ts`](../../../src/spells/targeted/scarabStride.ts), [`sarcophagus.ts`](../../../src/spells/targeted/sarcophagus.ts) |
 | Kit data | [`src/kits/sand.ts`](../../../src/kits/sand.ts) |
-| Model | [`public/models/heroes/sand.glb`](../../../public/models/heroes/sand.glb) |
-| Model script | [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py) |
-
-## Review sheets
-
-Contact sheets in `docs/spells/` (frames over time, from `pipeline/tools/contact-sheet.js`).
-
-### Sand review
-
-![Sand review contact sheet](../../spells/sand-review_sheet.jpg)
+| Trait (passive, twist, rules) | [`src/traits/sand.ts`](../../../src/traits/sand.ts) |
+| Model | [`public/models/heroes/sand_v2.glb`](../../../public/models/heroes/sand_v2.glb) |
+| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also
 
 - [Hero roster and shared structure](README.md)
-- [Kaia (storm)](storm.md), [Nyx (shadow)](shadow.md), [Vesper (blood)](blood.md), [Brannoc (forge)](forge.md), [Isolde (frost)](frost.md), [Lyra (astral)](astral.md), [Vex (alchemy)](alchemy.md)
+- [Combat mechanics](../../architecture/mechanics.md)
+- [Kaia (storm)](storm.md), [Nyx (shadow)](shadow.md), [Fenna (grove)](grove.md), [Lyra (astral)](astral.md)
 - [Effect catalog](../effects.md)
 - [Docs home](../../README.md)
 - [Art bible](../../ART_BIBLE.md)

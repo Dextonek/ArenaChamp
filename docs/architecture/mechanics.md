@@ -1,7 +1,7 @@
 ---
 title: Combat mechanics
 tags: [architecture, mechanics, status, projectile, summon, duel, ai, testing]
-updated: 2026-10-30
+updated: 2026-11-04
 ---
 
 # Combat mechanics
@@ -90,7 +90,7 @@ Each frame a bolt sweeps a capsule from its old to its new position on the groun
 
 ### AI dodge
 
-`Duel.dodgeBolt` asks `arena.projectiles.threats(figure)` for bolts flying at the figure. A bolt that will cross the figure within `BOLT_WINDOW` (0.6 s) is rolled once: the CPU level's `boltDodge` (Normal 0.65) decides whether this AI reacts, and it starts to move `boltReaction` (Normal 0.12 s) later, one step across the line to the side it stands on. So at Normal about a third of bolts land, and a late dodge fails. Both the opponent AI and the autopilot (the player's hero in duel simulations, always Normal) do this; neither dodges while unable to move.
+`Duel.dodgeBolt` asks `arena.projectiles.threats(figure)` for bolts flying at the figure. A bolt that will cross the figure within `BOLT_WINDOW` (0.6 s) is rolled once: the CPU level's `boltDodge` (Normal 0.4) decides whether this AI reacts, and it starts to move `boltReaction` (Normal 0.2 s) later, one step across the line to the side it stands on. So at Normal about 60% of bolts land, and a late dodge fails. Both the opponent AI and the autopilot (the player's hero in duel simulations, always `CPU_BALANCE`: dodge 0.65, reaction 0.12 s) do this; neither dodges while unable to move.
 
 `Duel.dodgeZones` (Hard and Master only, `zoneDodge` > 0): when the opponent stands in an area zone of the player's that shows and has not landed (or within 1.6 m of where that cast aimed, if a zone covers that spot), it walks to the nearest open spot clear of all of them, 0.35 m past their edges, keeping its distance to the player. Each cast is rolled once and the dodge starts `zoneReaction` s after the cast. Line zones are left to the bolt dodge. Most v4 spells land 0.2–0.4 s after the cast, so this mostly catches slower and lingering zones.
 
@@ -100,66 +100,23 @@ Each frame a bolt sweeps a capsule from its old to its new position on the groun
 
 | | Novice | Easy | Normal | Hard | Master |
 |---|---|---|---|---|---|
-| Walk speed (m/s, base-speed hero) | 2.9 | 3.2 | 3.5 | 3.85 | 4 (the player's) |
-| Pause after a cast (s) | 2.2–3.4 | 0.9–1.8 | 0 | 0 | 0 |
-| Cooldowns | ×1 | ×1 | ×1 | ×0.85 | ×0.8 |
-| Aim error on ground casts (m, up to) | 2.2 | 1.2 | 0 | 0 | 0 |
-| Lead (share of the spell's time to land) | 0 | 0 | 0 | 0.5 | 1 |
-| Bolt dodge, reaction | 0, 0.5 s | 0.3, 0.3 s | 0.65, 0.12 s | 0.8, 0.1 s | 0.9, 0.07 s |
-| Zone dodge, reaction | – | – | – | 0.45, 0.25 s | 0.8, 0.15 s |
-| Walks out of an arena event | 0.6 | 0.75 | 0.9 | 0.95 | 1 |
-| Guard (parry, bolt wall) | 0 | 0.25 | 0.6 | 0.8 | 0.9 |
-| R when the player is under, or after | 30%, 45 s | 45%, 30 s | 55%, 20 s | 60%, 16 s | 65%, 12 s |
+| Walk speed (m/s, base-speed hero) | 2.7 | 3.0 | 3.3 | 3.6 | 3.9 |
+| Pause after a cast (s) | 2.6–4 | 1.4–2.4 | 0.6–1.2 | 0.2–0.5 | 0 |
+| Cooldowns | ×1.3 | ×1.15 | ×1.05 | ×0.95 | ×0.85 |
+| Damage it deals | ×0.7 | ×0.8 | ×0.9 | ×1 | ×1 |
+| Aim error on ground casts (m, up to) | 2.6 | 1.6 | 0.6 | 0 | 0 |
+| Lead (share of the spell's time to land) | 0 | 0 | 0 | 0.3 | 0.8 |
+| Bolt dodge, reaction | 0, 0.5 s | 0.15, 0.35 s | 0.4, 0.2 s | 0.6, 0.15 s | 0.8, 0.1 s |
+| Zone dodge, reaction | – | – | – | 0.3, 0.3 s | 0.65, 0.2 s |
+| Walks out of an arena event | 0.5 | 0.65 | 0.8 | 0.9 | 1 |
+| Guard (parry, bolt wall) | 0 | 0.15 | 0.35 | 0.6 | 0.8 |
+| R when the player is under, or after | 25%, 60 s | 35%, 40 s | 45%, 28 s | 55%, 20 s | 60%, 14 s |
 
-The lead aims where the player will be when the spell lands, from the spell's impact time seen on its last cast (0.5 s before that), so a quick bolt is never aimed past the player; a fixed 0.8 s lead lost more than it won. The cooldown factor is the one lever beyond play skill: without it Hard and Master both stayed near 64%.
+`CPU_BALANCE` (id 0, not offered to players) is the AI the kits are balanced against and the one the autopilot always plays: walk speed 3.5, no pause, cooldowns and damage ×1, no aim error or lead, bolt dodge 0.65 / 0.12 s, no zone dodge, event walk-out 0.9, guard 0.6, R under 55% or after 20 s. `_tourney` and `_balance` run at it. `CPU_NORMAL` (level 3) is the default a player starts on, and `cpuLevel(id)` falls back to it.
 
-Measured 2026-11-03 against the Normal autopilot with [pipeline/tools/duel-ladder.js](../../pipeline/tools/duel-ladder.js) (pairs Lyra–Brannoc, Vex–Kaia, Mortis–Isolde, each both ways; Normal, Hard and Master also Zephyr–Sirix and Marin–Cantor): the CPU won 2% at Novice (48 fights), 25% at Easy (48), 52% at Normal (80), 63% at Hard (80) and 85% at Master (80). Noise is about ±7 points at 48 fights. Lyra against the six heroes of her balance run at Normal: 56% (48 fights; 54% in that run), so Normal plays as before.
+The levels sit below the balance AI on purpose: a person reacts slower than the autopilot, and the old levels were too hard (2026-11-04). The lead aims where the player will be when the spell lands: 1 is the spot where the player will be, 0.5 half way there, 0 at its feet. A CPU hero also looks where it walks and faces the player only when it stands still to cast, so its back can be reached.
 
-Measured again 2026-11-04, after the CPU's walking changed (routes, the sliding rewrite, no dancing at corners; see [Walking round cover](#walking-round-cover-navts)), on all five pairs, 50 fights per level: 0% at Novice, 26% at Easy, 46% at Normal, 68% at Hard, 76% at Master, no timeouts. The kits moved with it, because melee heroes now reach their targets: against the same six heroes, Lyra 43% (96 fights; was 54%), Zephyr 73% (48 fights; was 54%), Vex 56% (48 fights; was 58%). Noise is about ±14 points at 48 fights.
-
-Rebalanced the same day: Zephyr's Gust +25 to +20 and Q 42 to 38; Marin's Q 60 to 68, W 55 to 62 and basic attack 8 to 10. Against the same six heroes, 96 fights each ([pipeline/tools/kit-balance.js](../../pipeline/tools/kit-balance.js)): Zephyr 51%, Marin 49%, Lyra 47%, Vex 53%, Mortis 54%. Single matchups are still far apart, with Brannoc and Oblivion strong and Kaia weak; those three still have kits from before v4. The level numbers above were measured before this pass.
-
-### Walking round cover ([nav.ts](../../src/nav.ts))
-
-`Navigator` plans routes: the graph is a ring of points round each obstacle capsule, grown by the body's radius (0.5 m), linked wherever a body can walk straight between two of them, and a plan is the shortest way through it (A*). The graph is rebuilt when the obstacle list changes (a wall falls, a spell raises one).
-
-| Who | How it walks |
-|---|---|
-| Hero, click or tap (also walking into range and chasing an attack target) | `Arena.route` for the next point, `walk(..., slide = false)`. An order inside cover ends at its edge on the hero's side. If the hero makes next to no way for 0.6 s, the order is dropped |
-| Hero, stick | Straight where the stick points, sliding along cover (`steer` in obstacles.ts): a planned route would fight the thumb. The thumb back in the middle of the stick stops the hero |
-| CPU and autopilot | `Duel.steer`: on a route, without the strafe, when closing in and a body could not walk straight there; otherwise as before |
-| Summoned units | On a route when walking toward their target |
-
-Sliding (`steer`): the part of the walk that runs along the obstacle's edge, the way the walker pushes, never against it. Pressing nearly straight at an obstacle (under 35% of the walk left along it), the walker goes round by the nearer end at 0.7 speed and keeps that side until it leaves or turns away. The turn comes at contact, not before.
-
-The CPU also has two rules against dancing at corners: closing in runs across a band of distance rather than from one exact distance, and after losing sight it stays "hidden" for 0.5 s after sight returns. It does not strafe the way that would hide the other hero within 0.9 m.
-
-The drawn body turns at rate 30 per second (`HeroFigure.shownYaw`, about 0.08 s for 90% of a turn), as in League; walking starts at once and the game reads the facing from the walker, so this is only the look.
-
-[pipeline/tools/walk-test.js](../../pipeline/tools/walk-test.js) measures all this per seed: `_walk.start({ suites: ['click', 'stick', 'cover', 'deadzone', 'chase', 'reroute', 'ai'], seeds: [1, 2, 3] })`, then `_walk.table()`.
-
-A route is kept per walker: it is planned again when the goal has moved 0.6 m or the obstacles changed, and another way replaces it only if that is over 1 m shorter, so a chase does not flip between the two sides of a pillar.
-
-Measured 2026-11-03 on 200 clicked walks over the five arenas, the same routes before and after: walks with three or more sharp turns (over 69°) 81 → 0; clicks on cover that end 0 of 40 → 40 of 40 (before, the hero pushed against the cover forever); clicks on open ground all arrived both times; path against a straight line 1.05× → 1.02×. Normal against the Normal autopilot afterward: 52% over 64 fights, no timeouts.
-
-Measured again 2026-11-04 with walk-test.js after the sliding rewrite, the same seeds before and after (seeds 1-3; after also held on seeds 4 and 5):
-
-| Suite | Measure | Before | After |
-|---|---|---|---|
-| Stick, 600 walks | double sharp turns | 289 | 0 |
-| | frames moving against the stick | 272 | 0 |
-| Stick pressed at cover, about 7,200 walks | double sharp turns | 5,354 | 39 |
-| | frames moving against the stick | 3,957 | 0 |
-| Thumb back at the middle of the stick | stops, of 150 | 0 | 150 |
-| 90 AI fights | double sharp turns | 11,252 | 2,215 (mostly knockbacks, pulls and stopping to cast) |
-| Clicks | largest facing change in one frame | 3.14 rad | 1.23 rad |
-| Clicks, chases, cover raised across a walk | arrivals and sharp turns | all arrived | unchanged |
-
-The price: along a wall the stick now gives the part of the push that runs along it, so the stick's average way made fell from 0.85 to 0.82 of the full speed.
-
-### The look ([parts/bolt.ts](../../src/effects/parts/bolt.ts))
-
-`BoltSet.follow(handle, look)` draws a handle and every child it splits into: a hot core, a flat coloured body, a dark rim, a tapered trail and a spark on each hit. `BoltLook` = `core`, `body`, `rim`, `size`, `trail`, `hit`; `defaultBoltLook()` is the orange one. `BoltSet.busy` stays true while anything still flies or fades; keep the effect `playing` until it is false. Spells may draw their own bolt from the handle instead.
+The win rates measured on 2026-11-03 and 2026-11-04 were for the earlier level numbers and the 20-hero roster, so they are not kept here.
 
 ## Summons ([summon.ts](../../src/effects/summon.ts))
 
@@ -171,7 +128,7 @@ The price: along a wall the stick now gives the part of the push that runs along
 | `ranged` | keeps about 6 m away (walks in beyond 7 m or without sight, backs off under 4.5 m; default speed 3) and fires small bolts (speed 14, radius 0.22) at range 9 with sight |
 | `turret` | never moves; fires the same bolts at whatever is in range 8 with sight |
 
-`SummonOptions`: `kind`, `at` (a ring of `count` units is spread round it), `count` (default 1), `hp`, `seconds`, `damage`, `attackEvery`, optional `range`, `speed`, `color`, `look`. A unit dies at 0 HP (`slain` true) or when `seconds` run out (`slain` false), with a small puff; `onDeath` fires for both.
+`SummonOptions`: `kind`, `at` (a ring of `count` units is spread round it), `count` (default 1), `hp`, `seconds`, `damage`, `attackEvery`, optional `range`, `speed`, `color`, `look`, `goal`. `goal(pos)` gives a melee unit a spot to walk to now instead of the nearest victim (Bo's sheep go to whichever hero is nearest, even Bo); the unit still strikes a victim in reach, stops about 1 m from the spot, and a null return means its usual walk. A unit dies at 0 HP (`slain` true) or when `seconds` run out (`slain` false), with a small puff; `onDeath` fires for both.
 
 ### The cap
 
@@ -212,6 +169,49 @@ Other `HeroSpell` flags the AI reads:
 | `cc: true` | the spell stuns or roots; see the AI rules below |
 | `summon: true` | the AI casts it when ready and the hero is within 10 m (`SUMMON_REACH`), at a spot 3 m in front of itself |
 | `aim: 'line'` | a skillshot: hero mode draws a strip of the spell's range and width from the hero toward the cursor instead of the ground circle |
+| `escape: true` | with `dash`: a getaway, not a gap closer. The AI casts it away from an enemy who comes close |
+| `anytime: true` | with R: not an ultimate for the AI, which casts it as the trait's `aiHold` allows, whatever the enemy's HP (Pim and Pom's Tag Out) |
+
+## Hero traits: what v5 added
+
+The trait layer is in [traits.md](traits.md). The fields below came with the v5 kits (2026-11-04). The types are in [`src/traits/types.ts`](../../src/traits/types.ts) and [`src/heroes.ts`](../../src/heroes.ts).
+
+### Two screens
+
+A trait hook runs on one screen and the result has to reach the other. The rules: a hook that only reads may be asked on both screens every frame and must read only what both have (`time`, `own`, `stacks`, `mem` written by `ownChanged`); a hook that changes things runs on the client that decides them (the hero's own client for its moves and meter, the victim's client for hits on a hero).
+
+| Field | Where | Meaning |
+|---|---|---|
+| `Trait.meter` | `Trait` | `{ name, max, color?, value(t) }`: what the hero has or counts, as a bar under its HP, over its head and in the top bar, for both players. `value` runs on its own client; the other screen is told each change (Shiori's ink, Kaia's rods, Sir Whiskers's lives) |
+| `Trait.enemyScale` | `Trait` | how big the enemy hero is drawn and judged (1: usual), asked on both screens. The duel eases to it and the hit size follows (Professor Puff's Air) |
+| `Trait.enemyLabel` | `Trait` | a word or number over the enemy hero's head, asked on both screens (Mr. Ledger's tab, Whistler's rule) |
+| `Trait.hiddenStacks` | `Trait` | names of stacks that draw no pips because they are a count for `enemyLabel` or a rule |
+| `Trait.figureHidden` | `Trait` | true while the figure is not drawn at all (Mabel underground, Zambini under a hat). The rest is the kit's: show the position some other way and use the `sealed` status if the hero is safe |
+| `Trait.aiGoal` | `Trait` | where the CPU playing this hero walks now, or null. It beats `enemyGoal` (which steers the CPU playing against this hero) |
+| `TraitView.swapKit(alt)` | `TraitView` | brings in the other half of a two-kit hero here only. Call it on the own client and `show` the change; call it again from `ownChanged` on the other screen |
+| `TraitView.carrySelf(dx, dz)` | `TraitView` | moves this hero, kept inside the ring. Run it on the hero's own client (`tick`); online the other screen follows its moves |
+| `TraitView.healEnemy(n)` | `TraitView` | heals the enemy hero up to their maximum. Run it where the enemy's position is decided (`victimTick`): Cleaver's stolen dishes |
+
+### Kit fields
+
+| Field | Where | Effect |
+|---|---|---|
+| `hpChunks` | `HeroKit` | the HP bar is cut into this many equal chunks, for both players (Sir Whiskers: 9 lives; Pim and Pom: 2) |
+| `alt` | `HeroKit` | the other half of a two-kit hero: its own spells, model, look and `attack`, with the same name and so the same trait. Each round starts on the first kit |
+| `base` | `HeroKit` | on an `alt` kit: the kit it is the other half of. Set in `HERO_KITS` in `src/heroes.ts` |
+| `attack` | `HeroKit` | this half's basic attack, over the trait's `attack` |
+
+### Doors and bolts
+
+`ctx.doors()` ([targeting.ts](../../src/effects/targeting.ts)) returns the list of `BoltDoor` pairs the arena's bolts pass through ([projectile.ts](../../src/effects/projectile.ts)). A `BoltDoor` is `{ ax, az, bx, bz, r }`: two door centres and a radius. A bolt of either side that flies into one comes out of the other, going the same way. It cannot go back until it is clear of both (`Projectile.doorLock`). A spell pushes its pair when the doors stand and removes it when they end; a new round clears the list (Wick).
+
+### Wiping the ground
+
+`wipeGround(owner, x, z, r)` ([ground.ts](../../src/traits/ground.ts)) removes what a hero keeps on the ground within `r` m of a spot: Kaia's rods, Fenna's flowers, Shiori's ink. Each of those traits registers its own remover with `addGroundWiper`. A spell effect calls it with the enemy's figure at the moment it lands. Effects play on both screens, so both lists stay equal (Gus's mop).
+
+### The bars over a hero's head
+
+`TraitFx.plate(who, pos, height, data, camera)` ([fx.ts](../../src/traits/fx.ts)) draws, over each hero in a duel, HP with its number, the shield as a pale segment after it, cuts for `hpChunks`, and the trait's meter under it (cut into pips when it counts a few things). It is green for the viewer's own hero and red for the enemy, the same way for both players. `Duel.update` calls it every frame for both heroes with data from `plateFor` (`PlateData`: `hp`, `max`, `shield`, `chunks`, `mine`, `meter`), and hides it when `figureHidden` is true or the hero is dead. The canvas is redrawn only when a number changes.
 
 ## Duel AI rules ([duel.ts](../../src/duel.ts))
 
@@ -219,10 +219,10 @@ Other `HeroSpell` flags the AI reads:
 
 1. **Cannot act:** stunned or dashing does nothing; a cast in progress (`rooted`) or the 1.2 s opening beat only faces the enemy.
 2. **Bolt dodge** comes before casting or walking (see above).
-3. **Cast order.** Unless the other side is already held (stunned or rooted), a ready `cc` spell in reach goes first, tried R, E, W, Q. Then the first ready spell in the order R, E, W, Q that is in reach. R waits until the other side is under 55% HP or the round is 20 s old; a self spell (E) waits until the enemy is inside its radius minus 0.6; without line of sight only self spells and summons go.
+3. **Cast order.** Unless the other side is already held (stunned or rooted), a ready `cc` spell in reach goes first, tried R, E, W, Q. Then the first ready spell in the order R, E, W, Q that is in reach. R waits until the other side is under the level's HP share (55% at Hard and for the balance AI) or the round is that many seconds old (20 s there; see the CPU table), unless the spell is `anytime`; a self spell (E) waits until the enemy is inside its radius minus 0.6; without line of sight only self spells and summons go.
 4. **Target choice.** The hero first. Only when nothing can be cast at the hero (out of range or sight) and an enemy unit stands within `UNIT_BLOCK` (2.5 m) and closer than the hero (`blocker`) does it cast at the unit. A summon spell goes by the distance to the hero.
 5. **`bestSpot`.** An area spell (`ground` mode) is aimed at the spot that still covers the hero and catches the most of the enemy's units: the hero's own spot, or a point between the hero and a unit that stays within radius minus 1 of the hero. Radii under 1.5 just take the hero.
-6. **Melee steer:** see the table above. A ranged kit also steps away from enemy melee units within 2.4 m so they do not hit for free.
+6. **Melee steer:** see the table above. A CPU looks where it walks and faces the hero only when it stands to cast. A ranged kit also steps away from enemy melee units within 2.4 m so they do not hit for free.
 7. **Strafe:** ranged kits hold about 70% of Q's range (35% without line of sight), strafe, and flip direction every 1.5 to 3.5 s.
 
 ### Per-cast hit checks (the side-bias fix)
