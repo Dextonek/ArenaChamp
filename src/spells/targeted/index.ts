@@ -91,6 +91,10 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { grandFinaleModule } from './grandFinale';
+import { hatTrickModule } from './hatTrick';
+import { sawnInHalfModule } from './sawnInHalf';
+import { cardSprayModule } from './cardSpray';
 import { stampedeModule } from './stampede';
 import { shearModule } from './shear';
 import { spareSheepModule } from './spareSheep';
@@ -367,6 +371,10 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  grandFinaleModule,
+  hatTrickModule,
+  sawnInHalfModule,
+  cardSprayModule,
   stampedeModule,
   shearModule,
   spareSheepModule,

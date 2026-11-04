@@ -45,7 +45,7 @@ const BUFF_MAX_S = 6;
 const SPELL_HIT_MAX = 400;
 const HAZARD_MAX = 60; // one arena hazard hit
 const HAZARD_GAP_MS = 300; // the least time between two hazard hits on one hero
-const HERO_RE = /^[A-Za-z][A-Za-z' -]{0,23}$/;
+const HERO_RE = /^[A-Za-z][A-Za-z.' -]{0,23}$/;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
 /**
