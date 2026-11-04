@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
 import { BoltSet, type BoltLook } from '../../effects/parts/bolt';
@@ -48,7 +49,7 @@ export class InkLash implements Effect {
 
   /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
   ctx: CastContext | null = null;
-  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: RADIUS * 2 };
+  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: boltWidth(RADIUS) };
   private time = 0;
   private len = LIVE_END;
 
@@ -111,7 +112,7 @@ export class InkLash implements Effect {
     this.start.copy(this.from).addScaledVector(this.fwd, MUZZLE);
     this.line = {
       kind: 'line', x1: this.from.x, z1: this.from.z, x2: this.from.x + this.fwd.x * RANGE, z2: this.from.z + this.fwd.z * RANGE,
-      width: RADIUS * 2,
+      width: boltWidth(RADIUS),
     };
     // With no bolt the lash ends at cover (the first surface on its line) or at full range.
     this.v1.copy(this.from).addScaledVector(this.fwd, RANGE);

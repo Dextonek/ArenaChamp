@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { ShockRefraction, StarBurst } from '../../effects/parts';
 import { HIVE, HIVE_CSS, Honeycomb, HoneySplash, Swarm } from '../../effects/parts/hive';
@@ -90,7 +91,7 @@ export class BarbedStinger implements Effect {
   ctx: CastContext | null = null;
   mode: Mode = 'sting';
   /** The stinger's path, and the leap's landing circle. */
-  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: RADIUS * 2 };
+  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: boltWidth(RADIUS) };
   circle: TelegraphShape = { kind: 'circle', x: 0, z: 0, radius: LAND_R };
   private time = 0;
   private len = STING_END;
@@ -184,7 +185,7 @@ export class BarbedStinger implements Effect {
     }
     this.hand.copy(this.from).addScaledVector(this.fwd, 0.5).setY(1.2);
     this.line = {
-      kind: 'line', x1: this.from.x, z1: this.from.z, x2: this.from.x + this.fwd.x * RANGE, z2: this.from.z + this.fwd.z * RANGE, width: RADIUS * 2,
+      kind: 'line', x1: this.from.x, z1: this.from.z, x2: this.from.x + this.fwd.x * RANGE, z2: this.from.z + this.fwd.z * RANGE, width: boltWidth(RADIUS),
     };
     this.len = this.mode === 'sting' ? STING_END : this.mode === 'none' ? NONE_END : this.poison ? LEAP_S + TICKS + 0.4 : 1.0;
   }

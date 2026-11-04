@@ -15,6 +15,9 @@
     state = { done: false, rows: {}, err: null };
     (async () => {
       const d = vfx.duel, proto = Object.getPrototypeOf(d), resolve = proto.resolve;
+      // Some rules time themselves with performance.now(): during a stepped fight it must follow the fight's own clock.
+      let simMs = performance.now();
+      performance.now = () => simMs;
       try {
         const { CPU_BALANCE } = await import('/src/cpuLevels.ts');
         d.hazardsInRuns = false;
@@ -40,7 +43,7 @@
               d.opponentChoice = foe;
               d.start('run');
               let f = 0;
-              while (!d.result && f < 7200) { vfx.step(1 / 60); f++; }
+              while (!d.result && f < 7200) { simMs += 1000 / 60; vfx.step(1 / 60); f++; }
               if (d.result) {
                 row.n++;
                 row.secs += d.result.seconds;
@@ -54,6 +57,7 @@
         state.err = String(e?.stack ?? e);
       }
       delete d.resolve;
+      delete performance.now;
       state.done = true;
     })();
     return 'started';

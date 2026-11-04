@@ -149,6 +149,14 @@ export class TraitRuntime implements TraitView {
     return this.trait?.figureVeil?.(this) ?? 0;
   }
 
+  enemyScaleNow() {
+    return this.trait?.enemyScale?.(this) ?? 1;
+  }
+
+  enemyLabelNow() {
+    return this.trait?.enemyLabel?.(this) ?? null;
+  }
+
   clearShield() {
     this.host.clearShield();
   }
@@ -306,7 +314,8 @@ export class TraitRuntime implements TraitView {
 
   /** All running stacks, for the bars. */
   allStacks() {
-    return [...this.stackMap.entries()].filter(([, s]) => s.left > 0 && s.n > 0).map(([name, s]) => ({ name, n: s.n }));
+    const hidden = this.trait?.hiddenStacks;
+    return [...this.stackMap.entries()].filter(([name, s]) => s.left > 0 && s.n > 0 && !hidden?.includes(name)).map(([name, s]) => ({ name, n: s.n }));
   }
 
   // --- the duel calls these ---------------------------------------------------------------------------------

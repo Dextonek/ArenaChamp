@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
 import { Crystal, Glitter, PRISM, PRISM_CSS, SpectrumBeam } from '../../effects/parts/prism';
@@ -40,7 +41,7 @@ const MUZZLE = 0.8;
 const RADIUS = 0.3;
 const CRYSTAL_LEN = 1.04;
 const CRYSTAL_W = 0.42;
-const LINE_W = 0.3; // thin: the bolt's own width is 0.6
+const LINE_W = boltWidth(RADIUS); // what the bolt really hits, not the bolt alone
 const BOLT_Y = 1.1;
 const FLASHES = 4;
 const MAX_T = 3.5;

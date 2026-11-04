@@ -230,6 +230,18 @@ export interface Trait {
    * (Nyx). May only read what both screens have.
    */
   figureVeil?(t: TraitView): number;
+  /**
+   * How big the enemy hero is drawn and judged now (1: as usual; the duel eases to it), asked every frame on both screens, so it
+   * may only read what both have, such as `stacks`. Professor Puff's Air: a swollen hero is also easier to hit.
+   */
+  enemyScale?(t: TraitView): number;
+  /**
+   * A word or number over the enemy hero's head, asked every frame on both screens, so it may only read what both have.
+   * Mr. Ledger's tab, Whistler's rule. Null: nothing.
+   */
+  enemyLabel?(t: TraitView): { text: string; color?: string } | null;
+  /** Stacks that draw no pips, because they are a count for `enemyLabel` or a rule (a tab is in the hundreds). */
+  hiddenStacks?: string[];
   /** A builder per mark kind (called once per pooled copy): the object's feet at y 0, its length along z at 1 m. */
   markLook?: Record<string, () => THREE.Object3D>;
   /** An own resource: a bar under HP (shown for both heroes). */

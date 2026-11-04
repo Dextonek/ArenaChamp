@@ -99,6 +99,11 @@ export type ProjectileHitCallback = (target: Enemy, at: THREE.Vector3, bolt: Pro
 /** Half-width of a figure for bolt collisions (m), when it has no measured body. */
 export const BODY_RADIUS = 0.5;
 const bodyOf = (figure: Enemy) => figure.body?.radius ?? BODY_RADIUS;
+/**
+ * How wide a bolt's drawn line must be to show what it really hits: its own radius and a hero's body on each side (most heroes are
+ * about 0.42 m). A line of only twice the bolt's radius looks like a miss when it is a hit.
+ */
+export const boltWidth = (radius: number) => 2 * (radius + 0.42);
 /** How far a bounce looks for the next enemy (m). */
 export const BOUNCE_RANGE = 6;
 /** Bolts fly this high above the floor (m). */

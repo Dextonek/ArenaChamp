@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx } from '../../effects/parts';
@@ -58,7 +59,7 @@ export class PinningArrow implements Effect {
 
   /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
   ctx: CastContext | null = null;
-  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: RADIUS * 2 };
+  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: boltWidth(RADIUS) };
   private time = 0;
 
   private fwd = new THREE.Vector3(0, 0, -1);
@@ -111,7 +112,7 @@ export class PinningArrow implements Effect {
     this.hand.copy(ctx.from).addScaledVector(this.fwd, 0.55).setY(1.4);
     this.line = {
       kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + this.fwd.x * RANGE, z2: ctx.from.z + this.fwd.z * RANGE,
-      width: RADIUS * 2,
+      width: boltWidth(RADIUS),
     };
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
   }

@@ -291,7 +291,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
       case 'stacks': {
         const match = c.match;
         if (!match || match.state !== 'fight' || typeof m.name !== 'string' || !num(m.n)) return;
-        return send(match.players[1 - c.side].client, { t: 'peer_stacks', name: m.name.slice(0, 16), n: Math.max(0, Math.min(20, Math.round(m.n))) });
+        return send(match.players[1 - c.side].client, { t: 'peer_stacks', name: m.name.slice(0, 16), n: Math.max(0, Math.min(999, Math.round(m.n))) });
       }
       case 'shield': {
         const match = c.match;

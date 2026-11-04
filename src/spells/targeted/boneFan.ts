@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { StarBurst } from '../../effects/parts';
 import { BONE, BONE_CSS, BoneDarts, BoneDust, BonePiles, BoneShards, SoulWisps } from '../../effects/parts/bone';
@@ -273,7 +274,7 @@ export const boneFanModule: EffectModule = {
     // One line per shard, exactly where its bolt flies, armed at the launch and shown until the last bolt has passed (a
     // bolt's hit is the dodge check).
     return e.lines.map((l) => ({
-      shape: { kind: 'line' as const, x1: l.x, z1: l.z, x2: l.x + l.dx * RANGE, z2: l.z + l.dz * RANGE, width: RADIUS * 2 },
+      shape: { kind: 'line' as const, x1: l.x, z1: l.z, x2: l.x + l.dx * RANGE, z2: l.z + l.dz * RANGE, width: boltWidth(RADIUS) },
       start: 0, impact: FIRE_T, until: e.flightEnd,
     }));
   },

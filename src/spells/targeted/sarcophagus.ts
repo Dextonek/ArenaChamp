@@ -171,6 +171,8 @@ export class SarcophagusSpell implements Effect {
       const inside = !!ctx && !!tg && Math.hypot(tg.group.position.x - this.spot.x, tg.group.position.z - this.spot.z) <= RADIUS;
       if (inside) {
         this.sealAt = t;
+        // The effect must outlive the seal: the burst sets the real end (without this it stopped at MISS_END, before the burst).
+        this.endT = t + this.settings.seal + AFTER_BURST;
         // The seal freezes them where they stand (up to 1.6 m off the centre): the case shuts round them there.
         this.casePos.set(tg!.group.position.x, 0, tg!.group.position.z);
         this.case.place(this.casePos, this.yaw);

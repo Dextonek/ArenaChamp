@@ -270,7 +270,8 @@ export class ThunderRod implements Effect {
     this.puddles.ripple(this.spot, 2.4);
     this.shake = 0.14;
     if (!ctx) return;
-    for (const e of ctx.targets) {
+    // Everyone in the zone now, not only who was near the aim at the cast.
+    for (const e of ctx.enemies?.() ?? ctx.targets) {
       const p = e.group.position;
       if (!insideTelegraph(this.zone, p.x, p.z)) continue;
       ctx.hit(e, {
@@ -309,7 +310,7 @@ export class ThunderRod implements Effect {
     this.sparks.burst(this.v1.copy(this.spot).setY(0.6), 24, 8);
     this.shake = 0.4;
     if (!ctx) return;
-    for (const e of ctx.targets) {
+    for (const e of ctx.enemies?.() ?? ctx.targets) {
       const p = e.group.position;
       if (!insideTelegraph(this.zone, p.x, p.z)) continue;
       ctx.hit(e, { damage: this.settings.discharge, knock: 0, from: this.spot, color: STORM_CSS.body });

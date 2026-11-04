@@ -281,7 +281,7 @@ export class Duel {
 
   // HUD.
   private hud: HTMLDivElement;
-  private bars: { fill: HTMLDivElement; shield: HTMLDivElement; text: HTMLDivElement; name: HTMLDivElement; portrait: HTMLCanvasElement; extra: HTMLDivElement }[] = [];
+  private bars: { fill: HTMLDivElement; shield: HTMLDivElement; chunks: HTMLDivElement; text: HTMLDivElement; name: HTMLDivElement; portrait: HTMLCanvasElement; extra: HTMLDivElement }[] = [];
   private card: HTMLDivElement;
   private cardTitle: HTMLDivElement;
   private cardText: HTMLDivElement;
@@ -481,7 +481,11 @@ export class Duel {
     if (this.foe) arena.placeFoe(this.foe, theirs);
     // Each hero is hit at the size of its own model.
     arena.caster.body = HERO_BODIES[hm.currentKit.name] ?? null;
-    if (this.foe) this.foe.body = HERO_BODIES[this.opponentKit.name] ?? null;
+    arena.caster.group.scale.setScalar(1);
+    if (this.foe) {
+      this.foe.body = HERO_BODIES[this.opponentKit.name] ?? null;
+      this.foe.group.scale.setScalar(1);
+    }
     arena.caster.setHome(mine);
     arena.caster.reset();
     arena.caster.group.rotation.y = Math.atan2(theirs.x - mine.x, theirs.z - mine.z);
@@ -1052,6 +1056,11 @@ export class Duel {
     this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, 3.05);
     this.figure.setVeil(this.oppRt?.veilNow() ?? 0);
     hm.setFigureVeil(this.heroRt?.veilNow() ?? 0);
+    // What each hero's passive does to the other's size, and the word it keeps over the other's head.
+    this.sizeFigure(this.foe, this.heroRt?.enemyScaleNow() ?? 1, this.opponentKit, dt);
+    this.sizeFigure(arena.caster, this.oppRt?.enemyScaleNow() ?? 1, hm.currentKit, dt);
+    this.traitFx.label('foe', this.foe?.group.position ?? null, Math.max(3.4, (this.foe?.body?.height ?? 0) + 0.4), this.heroRt?.enemyLabelNow() ?? null);
+    this.traitFx.label('hero', arena.caster.group.position, Math.max(3.4, (arena.caster.body?.height ?? 0) + 0.4), this.oppRt?.enemyLabelNow() ?? null);
     this.traitFx.ring('foe', this.foe?.group.position ?? null, this.oppRt?.ringNow() ?? null);
     this.traitFx.ring('hero', this.host.arena.caster.group.position, this.heroRt?.ringNow() ?? null);
     this.traitFx.marks('foe', this.oppRt?.marksNow() ?? [], this.oppRt?.trait?.markLook);
@@ -1207,8 +1216,12 @@ export class Duel {
     const goal = this.heroRt?.trait?.enemyGoal?.(this.heroRt);
     const move = goal ? new THREE.Vector3(goal.x - at.x, 0, goal.z - at.z).normalize() : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
     // A planned route already clears the cover: no wall slide on it.
-    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), !this.opponentAi.routed);
-    this.face(foe, me);
+    if (move.lengthSq() > 0) {
+      this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), !this.opponentAi.routed);
+      // A CPU looks where it walks, as a person's hero does, so its back can be reached (Nyx's Umbral Cut). It faces the hero to cast.
+      const want = Math.atan2(move.x, move.z), now = foe.group.rotation.y;
+      foe.group.rotation.y = now + Math.atan2(Math.sin(want - now), Math.cos(want - now)) * Math.min(1, dt * 12);
+    } else this.face(foe, me);
   }
 
   /**
@@ -1848,6 +1861,17 @@ export class Duel {
     return lands;
   }
 
+  /** Eases a hero's figure to `scale` (`Trait.enemyScale`); its hit size follows, so a swollen hero is easier to hit. */
+  private sizeFigure(who: Enemy | null | undefined, scale: number, kit: HeroKit, dt: number) {
+    if (!who) return;
+    const now = who.group.scale.x;
+    if (now === scale) return;
+    const k = Math.abs(scale - now) < 0.004 ? scale : now + (scale - now) * Math.min(1, dt * 8);
+    who.group.scale.setScalar(k);
+    const base = HERO_BODIES[kit.name];
+    who.body = base ? { radius: base.radius * k, height: base.height * k } : null;
+  }
+
   private face(foe: Enemy, me: THREE.Vector3) {
     const p = foe.group.position;
     foe.group.rotation.y = Math.atan2(me.x - p.x, me.z - p.z);
@@ -1926,15 +1950,17 @@ export class Duel {
       fill.style.cssText = `position:absolute;top:0;bottom:0;${right ? 'right' : 'left'}:0;width:100%;border-radius:6px;transition:width 0.15s;`;
       const shield = document.createElement('div');
       shield.style.cssText = 'position:absolute;top:0;bottom:0;display:none;border-radius:6px;opacity:0.85;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.7);';
+      const chunks = document.createElement('div');
+      chunks.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
       const text = document.createElement('div');
       text.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px ui-sans-serif,system-ui;color:#fff;text-shadow:0 1px 2px #000;';
-      barBg.append(fill, shield, text);
+      barBg.append(fill, shield, chunks, text);
       // Under the bar: the resource, buffs / debuffs and the stacks the other hero keeps on this one.
       const extra = document.createElement('div');
       extra.style.cssText = `display:flex;gap:4px;align-items:center;min-height:14px;flex-direction:${right ? 'row-reverse' : 'row'};font:600 10px ui-sans-serif,system-ui;`;
       col.append(name, barBg, extra);
       box.append(portrait, col);
-      this.bars.push({ fill, shield, text, name, portrait, extra });
+      this.bars.push({ fill, shield, chunks, text, name, portrait, extra });
       return box;
     };
     const vs = document.createElement('div');
@@ -1963,6 +1989,9 @@ export class Duel {
         g.clearRect(0, 0, 64, 64);
         kit.portrait(g, 64);
         b.fill.style.background = `linear-gradient(180deg, ${kit.accent}, color-mix(in srgb, ${kit.accent} 55%, #000))`;
+        // A bar cut into lives (Sir Whiskers).
+        const n = kit.hpChunks ?? 0;
+        b.chunks.style.background = n > 1 ? `repeating-linear-gradient(90deg, transparent 0 calc(${100 / n}% - 2px), rgba(0,0,0,0.75) calc(${100 / n}% - 2px) ${100 / n}%)` : 'none';
       }
       b.fill.style.width = `${Math.max(0, (hp / max) * 100)}%`;
       // A shield is a pale segment after the HP (a strong one is pushed back inside the bar).

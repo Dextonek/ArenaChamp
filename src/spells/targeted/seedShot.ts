@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx } from '../../effects/parts';
@@ -256,7 +257,7 @@ export const seedShotModule: EffectModule = {
     const d = { x: Math.sin(ctx.aim), z: Math.cos(ctx.aim) };
     // Shown from the raised hand, armed at the release, until the seed has flown; the bolt's hit is the dodge check.
     return [{
-      shape: { kind: 'line', x1: from.x, z1: from.z, x2: from.x + d.x * REACH, z2: from.z + d.z * REACH, width: RADIUS * 2 + 0.2 },
+      shape: { kind: 'line', x1: from.x, z1: from.z, x2: from.x + d.x * REACH, z2: from.z + d.z * REACH, width: boltWidth(RADIUS) },
       start: 0.02, impact: WIND_T, until: e.flightEnd,
     }];
   },

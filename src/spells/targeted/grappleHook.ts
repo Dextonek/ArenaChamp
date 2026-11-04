@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { StarBurst } from '../../effects/parts';
@@ -61,7 +62,7 @@ export class GrappleSpell implements Effect {
 
   /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
   ctx: CastContext | null = null;
-  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: RADIUS * 2 };
+  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: boltWidth(RADIUS) };
   private time = 0;
   private state: State = 'wind';
   private stateT = 0;
@@ -132,7 +133,7 @@ export class GrappleSpell implements Effect {
     this.reach = Math.min(RANGE, this.catchAt?.dist ?? RANGE);
     this.line = {
       kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + this.fwd.x * this.reach, z2: ctx.from.z + this.fwd.z * this.reach,
-      width: RADIUS * 2,
+      width: boltWidth(RADIUS),
     };
   }
 

@@ -91,6 +91,14 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { geraldNoModule } from './geraldNo';
+import { aGoodLeanModule } from './aGoodLean';
+import { theShoveModule } from './theShove';
+import { raiseGeraldModule } from './raiseGerald';
+import { hallOfMirrorsModule } from './hallOfMirrors';
+import { throughTheGlassModule } from './throughTheGlass';
+import { vanityStandModule } from './vanityStand';
+import { handMirrorModule } from './handMirror';
 import { umbralCutModule } from './umbralCut';
 import { smokeVeilModule } from './smokeVeil';
 import { shadowDoubleModule } from './shadowDouble';
@@ -303,6 +311,14 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  geraldNoModule,
+  aGoodLeanModule,
+  theShoveModule,
+  raiseGeraldModule,
+  hallOfMirrorsModule,
+  throughTheGlassModule,
+  vanityStandModule,
+  handMirrorModule,
   umbralCutModule,
   smokeVeilModule,
   shadowDoubleModule,

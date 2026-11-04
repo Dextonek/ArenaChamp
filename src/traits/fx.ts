@@ -129,11 +129,53 @@ export class TraitFx {
   private rings = new Map<string, { outer: THREE.Mesh; arc: THREE.Mesh }>();
   /** Ground marks of each hero, by slot and kind. */
   private markPools = new Map<string, THREE.Object3D[]>();
+  /** A word or number over each hero's head, by slot. */
+  private labels = new Map<string, { sprite: THREE.Sprite; canvas: HTMLCanvasElement; tex: THREE.CanvasTexture; key: string }>();
   private bursts: Burst[] = [];
   private clock = 0;
   private ringGeo = new THREE.RingGeometry(0.2, 0.32, 40).rotateX(-Math.PI / 2);
   private pillarGeo = new THREE.CylinderGeometry(0.22, 0.42, 2.6, 16, 1, true).translate(0, 1.3, 0);
   private shardGeo = new THREE.TetrahedronGeometry(0.07, 0);
+
+  /** A word or number over a hero's head (`Trait.enemyLabel`), the slot named `who`, at `height` m. Null hides it. */
+  label(who: string, pos: THREE.Vector3 | null, height: number, label: { text: string; color?: string } | null) {
+    let l = this.labels.get(who);
+    if (!pos || !label) {
+      if (l) l.sprite.visible = false;
+      return;
+    }
+    if (!l) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 384;
+      canvas.height = 96;
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false }));
+      sprite.scale.set(2.4, 0.6, 1);
+      sprite.renderOrder = 6;
+      l = { sprite, canvas, tex, key: '' };
+      this.labels.set(who, l);
+      this.group.add(sprite);
+    }
+    const key = `${label.text}|${label.color ?? ''}`;
+    if (l.key !== key) {
+      l.key = key;
+      const g = l.canvas.getContext('2d')!;
+      g.clearRect(0, 0, 384, 96);
+      g.font = '800 62px ui-sans-serif, system-ui, sans-serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.lineWidth = 12;
+      g.lineJoin = 'round';
+      g.strokeStyle = 'rgba(10, 10, 16, 0.9)';
+      g.strokeText(label.text, 192, 50, 372);
+      g.fillStyle = label.color ?? '#ffffff';
+      g.fillText(label.text, 192, 50, 372);
+      l.tex.needsUpdate = true;
+    }
+    l.sprite.visible = true;
+    l.sprite.position.set(pos.x, height, pos.z);
+  }
 
   /**
    * A ring at a hero's feet (`Trait.ring`), the slot named `who`: an outer circle and, with `fill`, an inner arc that

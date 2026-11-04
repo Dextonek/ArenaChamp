@@ -342,7 +342,7 @@ export const shatterlightModule: EffectModule = {
     const e = effect as ShatterlightFx;
     if (!e.ctx) return [];
     // The ring she roots for. The shards are bolts, so this is the warning and the root, not the gate: a `projectile` hit always passes.
-    return [{ shape: { kind: 'circle', x: e.centre.x, z: e.centre.z, radius: RING_R }, start: 0.04, impact: LAUNCH_T }];
+    return [{ shape: { kind: 'circle', x: e.centre.x, z: e.centre.z, radius: RING_R + 0.7 }, start: 0.04, impact: LAUNCH_T }];
   },
   bloom: { enabled: true, strength: 0.35, radius: 0.35, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

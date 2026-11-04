@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { CrescentArc, ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
@@ -50,7 +51,7 @@ export class StarfallArrow implements Effect {
   /** Last cast; frameCamera and telegraphs read it. Null until the first play(). */
   ctx: CastContext | null = null;
   /** The arrow's line, caster to its range, for the telegraph. */
-  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: 0.8 };
+  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: boltWidth(0.4) };
   /** The draw this cast carries, 0..1. */
   charge = 1;
   private time = 0;
@@ -135,7 +136,7 @@ export class StarfallArrow implements Effect {
     this.bowPos.copy(ctx.from).addScaledVector(this.fwd, 0.95).setY(1.55);
     this.line = {
       kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + this.fwd.x * this.range, z2: ctx.from.z + this.fwd.z * this.range,
-      width: 0.8 + 0.2 * this.charge,
+      width: boltWidth(0.4 + 0.1 * this.charge),
     };
     this.bowPivot.position.copy(this.bowPos);
     this.bowPivot.scale.setScalar(0.75 + 0.35 * this.charge);

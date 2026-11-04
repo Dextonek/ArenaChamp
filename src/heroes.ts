@@ -23,6 +23,8 @@ import { astralKit } from './kits/astral';
 import { forgeKit } from './kits/forge';
 import { frostKit } from './kits/frost';
 import { bloodKit } from './kits/blood';
+import { mirrorKit } from './kits/mirror';
+import { masonKit } from './kits/mason';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -79,6 +81,8 @@ export interface HeroKit {
   model?: string;
   /** Start HP and the duel bar's full length (default 600). Melee heroes carry more. */
   maxHp?: number;
+  /** The HP bar is cut into this many equal chunks, for both players (Sir Whiskers's lives). */
+  hpChunks?: number;
   /** A melee hero: the duel AI closes to about 2 m (not 70% of Q's range) and chases a target that backs off. */
   melee?: true;
   spells: [HeroSpell, HeroSpell, HeroSpell, HeroSpell];
@@ -109,6 +113,8 @@ const MODELS: Record<string, string> = {
   Oblivion: 'models/heroes/void_v2.glb',
   Shiori: 'models/heroes/ink.glb',
   Tempo: 'models/heroes/chrono.glb',
+  Silvane: 'models/heroes/mirror_v2.glb',
+  Bram: 'models/heroes/mason_v2.glb',
 };
 
 /**
@@ -123,7 +129,8 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Auriel: { radius: 0.47, height: 2.33 }, Marin: { radius: 0.43, height: 2.29 }, Zephyr: { radius: 0.4, height: 2.37 },
   Mortis: { radius: 0.44, height: 2.51 }, Ada: { radius: 0.39, height: 2.29 }, Sirix: { radius: 0.44, height: 2.31 },
   Cantor: { radius: 0.39, height: 2.38 }, Opaline: { radius: 0.4, height: 2.46 }, Oblivion: { radius: 0.63, height: 2.62 },
-  Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 },
+  Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.73 },
+  Bram: { radius: 0.59, height: 2.7 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit].map((k) => ({ ...k, model: k.model ?? MODELS[k.name] }));

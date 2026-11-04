@@ -19,6 +19,8 @@ import { tideTrait } from './tide';
 import { boneTrait } from './bone';
 import { clockworkTrait } from './clockwork';
 import { inkTrait } from './ink';
+import { mirrorTrait } from './mirror';
+import { masonTrait } from './mason';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -41,6 +43,8 @@ export const TRAITS: Record<string, Trait> = {
   Tempo: chronoTrait,
   Isolde: frostTrait,
   Sefu: sandTrait,
+  Silvane: mirrorTrait,
+  Bram: masonTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

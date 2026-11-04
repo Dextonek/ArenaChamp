@@ -299,7 +299,7 @@ export class Skyward implements Effect {
     if (!ctx) return;
     for (const e of ctx.targets) {
       const p = e.group.position;
-      if (Math.hypot(p.x - c.x, p.z - c.z) > RADIUS + 0.25) continue; // walked out of the zone before the touchdown
+      if (Math.hypot(p.x - this.want.x, p.z - this.want.z) > RADIUS) continue; // walked out of the zone before the touchdown
       ctx.hit(e, { damage: s.damage, knock: 3, from: c, color: SKY_CSS.body, status: { kind: 'knockup', seconds: s.knockUp } });
     }
   }

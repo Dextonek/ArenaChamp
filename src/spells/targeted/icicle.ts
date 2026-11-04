@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst } from '../../effects/parts';
@@ -74,7 +75,7 @@ export class Icicle implements Effect {
   /** True when the last cast is the Shatter. */
   shatter = false;
   /** The bolt's path (first cast) and the Shatter's ring. */
-  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: BOLT_RADIUS * 2 };
+  line: TelegraphShape = { kind: 'line', x1: 0, z1: 0, x2: 0, z2: 0, width: boltWidth(BOLT_RADIUS) };
   ring: TelegraphShape = { kind: 'circle', x: 0, z: 0, radius: SHATTER_RADIUS };
   /** The Shatter found a standing icicle (else it only puffs). */
   live = false;
@@ -153,7 +154,7 @@ export class Icicle implements Effect {
       icicles.set(ctx.caster, this.rec);
       this.spot.copy(this.o).addScaledVector(this.fwd, this.len);
       this.line = {
-        kind: 'line', x1: this.o.x, z1: this.o.z, x2: this.spot.x, z2: this.spot.z, width: BOLT_RADIUS * 2,
+        kind: 'line', x1: this.o.x, z1: this.o.z, x2: this.spot.x, z2: this.spot.z, width: boltWidth(BOLT_RADIUS),
       };
     }
   }

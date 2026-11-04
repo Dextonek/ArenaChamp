@@ -43,6 +43,7 @@ Do not commit, do not start a server, do not use a browser. Never create a file 
 - **Timing:** Q, W and E land 0.4-0.8 s after the cast unless your table says otherwise, and are clean by about 2 s. R is the biggest, with one short impact frame, under the gameplay camera, no cinematic.
 - **Telegraphs:** `telegraphs()` must return the real hit shape. A hit lands only inside one of the cast's telegraphs or as `projectile: true`. A telegraph's `impact` also roots the caster until then, capped at 2.5 s. Longer roots use `t.hold`.
 - **Zone hits:** re-check each enemy's live position at the impact moment. Never use a victim list frozen at the cast.
+- **A bolt's line shows what it really hits:** its telegraph width is `boltWidth(radius)` from `effects/projectile`, not twice the radius. The hit test and the drawn shape must always agree: the user has complained about hit boxes.
 - **Skillshot budget:** it reaches 6 m no sooner than 0.5 s after the cast starts.
 - **Look:** read "Look lessons" in kit-common.md. Shapes must read at gameplay distance, with a pale foil and a dark layer. Effects are the point of this project, so make each spell read as this hero and not as a coloured circle. Draw the moment the opponent has to read (the wind-up, the fixed circle, the ring) so a person can see it clearly.
 - **Header comment:** say what the spell does, its numbers and its timeline, as the neighbouring files do. Keep `default<Name>()` settings for damage, and a `buildGui`.

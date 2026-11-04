@@ -31,7 +31,11 @@ const FIZZ_SHOW = 0.5;
 export const STORM_SECONDS = 6;
 
 /** One rod. `id` is a small integer (0-19) so it fits the 'rodgone' note; `born` and `life` are in round seconds. */
-export interface Rod { id: number; x: number; z: number; born: number; life: number; great: boolean }
+export interface Rod {
+  id: number; x: number; z: number; born: number; life: number; great: boolean;
+  /** Can the enemy ground it now? False while they still stand where it landed on them; set by `victimTick`. */
+  touchable?: boolean;
+}
 
 interface StormFx { kind: 'arc' | 'fizz'; x: number; z: number; yaw: number; length: number; born: number; life: number }
 
@@ -253,7 +257,11 @@ export const stormTrait: Trait = {
     const s = stormOf(t.self());
     const p = e.group.position;
     for (const r of [...s.rods]) {
-      if (Math.hypot(r.x - p.x, r.z - p.z) >= GROUND_RANGE) continue;
+      const near = Math.hypot(r.x - p.x, r.z - p.z) < GROUND_RANGE;
+      // A rod that lands on them is not a touch (or a rod aimed at them would always fizzle): they step off, then back on.
+      if (r.touchable === undefined) r.touchable = !near;
+      if (!near) { r.touchable = true; continue; }
+      if (!r.touchable) continue;
       if (!removeRod(t.self(), r.id)) continue;
       t.noteOwner('rodfizz', r.id);
       pushFx(s, 'fizz', r.x, r.z, r.x, r.z + 0.1);

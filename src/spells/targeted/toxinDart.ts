@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { boltWidth } from '../../effects/projectile';
 import { Emitter } from '../../emitter';
 import { smoothstep } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
@@ -373,7 +374,7 @@ export const toxinDartModule: EffectModule = {
     const d = { x: Math.sin(ctx.aim), z: Math.cos(ctx.aim) };
     // Armed at the throw, then shown until the dart has passed; a bolt's hit is the dodge check, not the zone.
     return [{
-      shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + d.x * REACH, z2: ctx.from.z + d.z * REACH, width: RADIUS * 2 },
+      shape: { kind: 'line', x1: ctx.from.x, z1: ctx.from.z, x2: ctx.from.x + d.x * REACH, z2: ctx.from.z + d.z * REACH, width: boltWidth(RADIUS) },
       start: 0.08, impact: THROW_T, until: e.flightEnd,
     }];
   },

@@ -18,6 +18,9 @@ window._ladder = async (level, pairs, reps = 8) => {
   const a = (window._ladderAcc[lv.name] = window._ladderAcc[lv.name] ?? { fights: 0, cpuWins: 0, timeouts: 0, secs: 0, cpuCasts: 0, pilotCasts: 0, dodged: 0 });
   vfx.view.paused = true;
   if (!d.on) vfx.setDuel(true, 'run');
+  // Some rules time themselves with performance.now(): during a stepped fight it must follow the fight's own clock.
+  let simMs = performance.now();
+  performance.now = () => simMs;
   for (const [x, y] of pairs) {
     for (const [p, o] of [[x, y], [y, x]]) {
       vfx.heroPickCtrl.setValue(p);
@@ -27,7 +30,7 @@ window._ladder = async (level, pairs, reps = 8) => {
         d.start('run');
         for (let k = 0; k < 60 && !vfx.heroMode.figure?.figure?.loaded; k++) await tick();
         let f = 0;
-        while (!d.result && f < 60 * 120) { vfx.step(1 / 60); f++; }
+        while (!d.result && f < 60 * 120) { simMs += 1000 / 60; vfx.step(1 / 60); f++; }
         const res = d.result;
         if (!res) { a.timeouts++; continue; }
         a.fights++;
@@ -40,6 +43,7 @@ window._ladder = async (level, pairs, reps = 8) => {
       }
     }
   }
+  delete performance.now;
   return window._ladderSum();
 };
 window._ladderSum = () => Object.entries(window._ladderAcc).map(([name, a]) => ({

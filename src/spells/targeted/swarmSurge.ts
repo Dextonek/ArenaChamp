@@ -175,7 +175,7 @@ export class SwarmSurge implements Effect {
         Object.defineProperty(hit, 'pull', { enumerable: true, get: () => this.push().pull });
         Object.defineProperty(hit, 'from', { enumerable: true, get: () => this.push().from });
         this.bolt = ctx.projectile({
-          from: this.tip.clone(), dir: this.fwd.clone(), speed: SPEED, range: LENGTH - MUZZLE, radius: WIDTH / 2, pierce: true, hit,
+          from: this.tip.clone(), dir: this.fwd.clone(), speed: SPEED, range: LENGTH - MUZZLE, radius: WIDTH / 2 - 0.42, pierce: true, hit,
         });
         this.bolt.onHit((_target, at) => this.onHit(at));
       }
