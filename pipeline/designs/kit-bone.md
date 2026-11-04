@@ -13,6 +13,16 @@ ivory with dark brown crevices, lit from inside by small unlit teal soulfire wis
 core `#f4fffb`, hot `#b8fff0`, body `#3fd8b8` (soulfire), accent `#ff5a3a` (ember, a few frames at hits), dark `#0a1412`;
 foil bone `#ece4d0`.
 
+## v5 (2026-11-04)
+Design source: `kits-v5.md`, section "Mortis". Where this differs from the v4 text below, v5 wins.
+- Bone piles are drawn on the ground for their full 8 s on both screens (`marks`).
+- Bone Fan: shards 18 degrees apart, radius 0.2, 8 m, 0.3 s wind-up at 20 m/s (reaches 6 m at about 0.56 s). Telegraph: one line per shard.
+- Grave Grasp: still a click on the enemy, but the hand rises at the spot the enemy stood at the cast (1.6 m ring, 0.7 s). Still inside at
+  0.7 s: pull 4 m, a plain 1 s root (one `status` on the burst's hit, no second root), two skeletons. Stepped out: nothing happens.
+  This replaces the as-built hold of 0.6 s to 2.7 s.
+- Bone Armour recast (Shatter, slot 2, window 4 s, arms at 0.3 s, the AI waits): breaks the shield and fires the shards at once. The
+  `armourbroke` value tells the other screen, where `ownChanged` writes the broke record.
+
 ## Passive: Ossuary (`src/traits/bone.ts`)
 - **Bone piles.** Every summoned unit that dies by damage, his or the enemy's, leaves a bone pile for 8 s
   (`deathSpots(8)` in the trait, `ctx.deathSpots?.(8)` in an effect; both sides count, expiry leaves none). His spells

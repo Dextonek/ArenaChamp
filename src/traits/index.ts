@@ -32,7 +32,7 @@ export const TRAITS: Record<string, Trait> = {
   Auriel: dawnTrait,
   Fenna: groveTrait,
   Cantor: bardTrait,
-  Vex: alchemyTrait,
+  Vitriol: alchemyTrait,
   Zephyr: skyTrait,
   Brannoc: forgeTrait,
   Oblivion: voidTrait,

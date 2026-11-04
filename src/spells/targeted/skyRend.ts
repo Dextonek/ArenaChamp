@@ -3,44 +3,48 @@ import { Emitter } from '../../emitter';
 import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, chromaPulse, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
 import { GustRibbon, Leaves, SKY, SKY_CSS, SpeedLines, WindCrescent, WindWraith } from '../../effects/parts/sky';
+import { stillSees } from '../../effects/channel';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
+import { REND_CUT, REND_MAX_CUTS, REND_MIN_CUTS, REND_REACH, REND_WIND, skyRendCuts, skyRendFizzled } from '../../traits/sky';
 
 /**
- * Sky Rend (sky kit, R: a targeted flurry, `projectile` hits). Zephyr coils the wind round himself (0.25 s: two gust
- * spirals, the screen dims, a pink flare), then vanishes into it: his figure is hidden (and sunk under the floor for a duel
- * opponent, whose body is drawn by the duel) while a jade streak shoots to the enemy. Six times, 0.2 s apart from 0.35 s,
- * a jade afterimage of him cuts through the enemy from a new side (the sides turn 2.4 rad each time, so no two in a row
- * come from the same quarter): a wraith slides across, a big crescent and speed lines slash through the body, a star
- * pops, a refraction ring runs, the screen kicks. Each cut is `damage` (15, doubled by his trait on a knocked-up enemy:
- * `dealt` in `src/traits/sky.ts`) and every hit is `projectile: true`, judged on the target's live position, so the enemy cannot walk out of
- * it. The sixth is the finisher: bigger crescents, an impact frame, a chromatic pulse, a hard knock. His real body slides
- * to each side (`ctx.moveCaster`, 0.05 s) and at 1.4 s to a spot 1.4 m behind the enemy (by its facing), where he steps
- * out of the wind at 1.5 s with a pink star and a ring. He is untouchable the whole time (`REND_AIR`, 1.6 s, shared with
- * the trait). Clean by 2.4 s; `reset()` shows his figure again.
+ * Sky Rend (sky kit, R: a targeted flurry, `projectile` hits). A click on the enemy (7 m, sight checked by the engine at the
+ * cast) with a real 0.8 s wind-up (`REND_WIND`): he stands, coiling the wind round himself (two gust spirals, the screen dims,
+ * a pink flare grows) while a wind mark shows on the enemy on both screens (a red circle from `telegraphs`, a gust spiral, a
+ * ring and a pink star that follow it). He is NOT untouchable during the wind-up. At 0.8 s the spell checks itself: if
+ * `stillSees` the enemy is false, or the enemy is more than `REND_REACH` (9 m) away, it fizzles (a puff of leaves, no hits,
+ * `skyRendFizzled` cancels his trait's untouchable window and `releaseCaster` frees him). Otherwise he vanishes (figure
+ * hidden, and sunk under the floor for a duel opponent, whose body is drawn by the duel) while a jade streak shoots to the
+ * enemy, and cuts from all sides: 3 to 9 cuts (`skyRendCuts`, written by his trait: 3 plus 2 per Gust spent, 9 with no entry,
+ * as in the VFX tool), one every `REND_CUT` (0.16 s). Each cut is a jade afterimage that comes from a new side (the sides turn
+ * 2.4 rad each time), a big crescent and speed lines through the body, a star, a refraction ring, a screen kick. Each is
+ * `damage` (15) and every hit is `projectile: true`, judged on the target's live position, so the enemy cannot walk out of
+ * it (the last cut lands up to 2.1 s after the cast). The last is the finisher: bigger crescents, an impact frame, a
+ * chromatic pulse, a hard knock. His real body slides to each side (`ctx.moveCaster`, 0.05 s) and then to a spot 1.4 m behind
+ * the enemy (by its facing), where he steps out of the wind with a pink star and a ring. He is untouchable only while the
+ * cuts run (`taken` in `src/traits/sky.ts`) and cannot cast for 0.6 s after. No bonus on an airborne enemy. The effect scales
+ * to any number of cuts: clean 0.9 s after the step out; `reset()` shows his figure again.
  * Network duels: the other screen has no `moveCaster` (his client streams his real moves), so there the figure stays
- * hidden at wherever it is streamed until 1.5 s, and the hits land from the victim's own client on its live position.
+ * hidden at wherever it is streamed until he steps out, and the hits land from the victim's own client on its live position.
  */
 export interface SkyRendSettings {
   damage: number;
   loop: boolean;
 }
 
-export const defaultSkyRend = (): SkyRendSettings => ({ damage: 15, loop: false });
+export const defaultSkyRend = (): SkyRendSettings => ({ damage: 22, loop: false });
 
-// Timeline (seconds).
-const LEAD = 0.25;
-const FIRST = 0.35;
-const STEP = 0.2;
-const STRIKES = 6;
-const END_T = 1.5;
-const DURATION = 2.4;
+// Timeline (seconds). The wind-up is REND_WIND; then one cut every REND_CUT; he steps out right after the last.
+const FIRST = REND_WIND + 0.05;
 const SIDE = 1.6; // metres from the enemy a striker starts
 const BEHIND = 1.4;
 const TURN = 2.4; // radians between two strikers' sides
 const HIDE_Y = -8;
+const FIZZLE_END = REND_WIND + 0.5;
+const MARK_R = 1.2; // the red circle on the enemy
 const UP = new THREE.Vector3(0, 1, 0);
-const strikeAt = (k: number) => FIRST + STEP * k;
+const strikeAt = (k: number) => FIRST + REND_CUT * k;
 
 export class SkyRend implements Effect {
   readonly group = new THREE.Group();
@@ -54,8 +58,11 @@ export class SkyRend implements Effect {
   ctx: CastContext | null = null;
   private target: Enemy | null = null;
   private time = 0;
-  private done = { lead: false, vanish: false, back: false, out: false };
+  private done = { vanish: false, back: false, out: false, check: false, remark: false };
   private struck = 0;
+  /** Cuts of this cast (3..9). */
+  private cuts = REND_MAX_CUTS;
+  private fizzled = false;
   private hidden = false;
   private baseA = 0;
   private startPos = new THREE.Vector3();
@@ -69,6 +76,9 @@ export class SkyRend implements Effect {
   private outPos = new THREE.Vector3();
 
   // Parts.
+  private markGust = new GustRibbon(32);
+  private markStar = new StarBurst({ points: 6, inner: 0.25, color: SKY.accent, core: 0xfff0f5, additive: false });
+  private markRing = new ShockRefraction({ facing: 'ground' });
   private crescents = new WindCrescent(16);
   private gather = new GustRibbon(32);
   private gatherB = new GustRibbon(32);
@@ -93,22 +103,39 @@ export class SkyRend implements Effect {
     this.screen.tint.set(SKY.dark);
     this.screen.speedLineColor.set(SKY.hot);
     this.group.add(
-      this.crescents.mesh, this.gather.mesh, this.gatherB.mesh, this.streak.mesh, this.lines.mesh, this.leaves.mesh, this.wraith.mesh,
+      this.crescents.mesh, this.markGust.mesh, this.markStar.mesh, this.markRing.mesh, this.gather.mesh, this.gatherB.mesh, this.streak.mesh, this.lines.mesh, this.leaves.mesh, this.wraith.mesh,
       ...this.pops.map((p) => p.mesh), this.flare.mesh, this.shock.mesh, this.groundShock.mesh,
     );
     this.reset();
   }
 
+  /** Cuts of this cast: his trait wrote the count (here or, in a network duel, through `ownChanged`); none: 9. */
+  private count() {
+    const n = this.ctx ? skyRendCuts.get(this.ctx.caster) : undefined;
+    return Math.max(REND_MIN_CUTS, Math.min(REND_MAX_CUTS, n ?? REND_MAX_CUTS));
+  }
+
+  /** When he steps out of the wind: right after the last cut. */
+  private get outT() {
+    return strikeAt(this.cuts - 1) + 0.1;
+  }
+
   get duration() {
-    return DURATION;
+    return this.outT + 0.9;
   }
 
   get impactTime() {
-    return strikeAt(STRIKES - 1);
+    return strikeAt(this.cuts - 1);
+  }
+
+  /** The enemy's live feet, for the mark's red circle. */
+  get markAt() {
+    return this.foe;
   }
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
+    this.cuts = this.count();
     this.target = ctx.targets[0] ?? null;
     this.startPos.copy(ctx.sentFrom ?? ctx.from).setY(0);
     this.foe.copy(this.target ? this.target.group.position : ctx.point).setY(0);
@@ -119,13 +146,15 @@ export class SkyRend implements Effect {
   play() {
     this.reset();
     this.playing = true;
+    this.cuts = this.count();
     this.liveFoe();
     // The first striker comes from the side he stands on.
     this.baseA = Math.atan2(this.startPos.x - this.foe.x, this.startPos.z - this.foe.z);
-    // 0..0.25: the wind coils round him.
+    // The wind-up: the wind coils round him, and a gust spirals up the enemy (marked).
     this.v1.copy(this.startPos).setY(0);
-    this.gather.spiral(this.v1, 0.7, 2.2, 2.5, LEAD + 0.05, 0.26);
-    this.gatherB.spiral(this.v1, 0.45, 2.0, 3, LEAD + 0.05, 0.18);
+    this.gather.spiral(this.v1, 0.7, 2.2, 4, REND_WIND + 0.05, 0.26);
+    this.gatherB.spiral(this.v1, 0.45, 2.0, 5, REND_WIND + 0.05, 0.18);
+    this.markGust.spiral(this.v2.copy(this.foe).setY(0), 0.9, 2.2, 3, REND_WIND, 0.2);
   }
 
   /** Hides his figure (and sinks a duel opponent's under the floor: the duel draws that body separately). */
@@ -154,12 +183,14 @@ export class SkyRend implements Effect {
     this.outAt = -1;
     this.popAt.fill(-1);
     const d = this.done;
-    d.lead = d.vanish = d.back = d.out = false;
+    d.vanish = d.back = d.out = d.check = d.remark = false;
+    this.fizzled = false;
     clearScreenFx(this.screen);
     this.screen.impactColor.set(SKY.hot);
     this.screen.tint.set(SKY.dark);
     this.screen.speedLineColor.set(SKY.hot);
     this.crescents.reset();
+    this.markGust.reset();
     this.gather.reset();
     this.gatherB.reset();
     this.streak.reset();
@@ -170,6 +201,8 @@ export class SkyRend implements Effect {
     this.flare.set(this.foe, 1e-3, 0);
     this.shock.set(this.foe, 0, 0);
     this.groundShock.set(this.foe, 0, 0);
+    this.markStar.set(this.foe, 1e-3, 0);
+    this.markRing.set(this.foe, 0, 0);
   }
 
   /** The enemy's live feet (its figure moves while the strikes play). */
@@ -181,6 +214,7 @@ export class SkyRend implements Effect {
     for (const e of this.emitters) e.update(dt);
     if (!this.playing) return;
     this.crescents.update(dt);
+    this.markGust.update(dt);
     this.gather.update(dt);
     this.gatherB.update(dt);
     this.streak.update(dt);
@@ -188,7 +222,7 @@ export class SkyRend implements Effect {
     this.leaves.update(dt);
     this.wraith.update(dt);
     this.time += dt;
-    if (this.time >= DURATION) {
+    if (this.time >= (this.fizzled ? FIZZLE_END : this.duration)) {
       const loop = this.settings.loop;
       this.reset();
       this.playing = false;
@@ -200,16 +234,34 @@ export class SkyRend implements Effect {
     const d = this.done;
     this.liveFoe();
 
-    if (!d.vanish && t >= LEAD) {
+    if (!d.remark && t >= REND_WIND * 0.5) {
+      // The mark follows the enemy: a second spiral on its live spot.
+      d.remark = true;
+      this.markGust.spiral(this.v2.copy(this.foe).setY(0), 0.9, 2.2, 3, REND_WIND * 0.5, 0.2);
+    }
+    if (!d.check && t >= REND_WIND) {
+      d.check = true;
+      if (this.check()) {
+        this.fizzle();
+        this.layout(t);
+        return;
+      }
+    }
+    if (this.fizzled) {
+      this.layout(t);
+      this.shake *= Math.exp(-dt * 9);
+      return;
+    }
+    if (!d.vanish && t >= REND_WIND) {
       d.vanish = true;
       this.vanish();
     }
-    while (this.struck < STRIKES && t >= strikeAt(this.struck)) this.strike(this.struck++);
-    if (!d.back && t >= strikeAt(STRIKES - 1) + 0.05) {
+    while (this.struck < this.cuts && t >= strikeAt(this.struck)) this.strike(this.struck++);
+    if (!d.back && t >= strikeAt(this.cuts - 1) + 0.05) {
       d.back = true;
       this.stepBehind();
     }
-    if (!d.out && t >= END_T) {
+    if (!d.out && t >= this.outT) {
       d.out = true;
       this.out();
     }
@@ -217,7 +269,30 @@ export class SkyRend implements Effect {
     this.shake *= Math.exp(-dt * 9);
   }
 
-  /** 0.25 s: he goes into the wind, a streak shoots to the enemy. */
+  /** True when the wind-up ends without sight of the enemy, or with it more than `REND_REACH` away: the spell fizzles. */
+  private check() {
+    const ctx = this.ctx;
+    if (!ctx || !this.target) return false;
+    const from = ctx.caster.group.position;
+    const p = this.target.group.position;
+    return !stillSees(ctx, p) || Math.hypot(p.x - from.x, p.z - from.z) > REND_REACH;
+  }
+
+  /** The wind fails: a short puff, no hits, and he is free again (his trait drops the untouchable window and the lock). */
+  private fizzle() {
+    const ctx = this.ctx;
+    this.fizzled = true;
+    if (ctx) {
+      skyRendFizzled.set(ctx.caster, true);
+      ctx.releaseCaster?.();
+    }
+    this.v1.copy(this.startPos).setY(1.0);
+    this.leaves.blow(this.v1, UP, 8, 4);
+    this.lines.burst(this.v1, UP, 6, 1.4);
+    this.shake = 0.08;
+  }
+
+  /** The wind-up's end: he goes into the wind, a streak shoots to the enemy. */
   private vanish() {
     this.v1.copy(this.startPos).setY(0.9);
     this.leaves.blow(this.v1, UP, 12, 6);
@@ -229,14 +304,14 @@ export class SkyRend implements Effect {
     this.streak.along([this.v1.clone(), this.v2.clone(), this.v3.clone()], 0.3, 0.3);
     this.hide();
     this.shake = 0.2;
-    this.shockAt = LEAD;
+    this.shockAt = REND_WIND;
     this.shockPos.copy(this.v1);
   }
 
   /** Strike `k`: a striker cuts through the enemy from a new side. */
   private strike(k: number) {
     const ctx = this.ctx;
-    const last = k === STRIKES - 1;
+    const last = k === this.cuts - 1;
     const a = this.baseA + k * TURN;
     this.v1.set(this.foe.x + Math.sin(a) * SIDE, 0, this.foe.z + Math.cos(a) * SIDE);
     this.d.set(this.foe.x - this.v1.x, 0, this.foe.z - this.v1.z).normalize();
@@ -266,15 +341,15 @@ export class SkyRend implements Effect {
     });
   }
 
-  /** 1.4 s: his real body slides to the spot behind the enemy. */
+  /** After the last cut: his real body slides to the spot behind the enemy. */
   private stepBehind() {
     const ctx = this.ctx;
     const yaw = this.target ? this.target.group.rotation.y : this.baseA + Math.PI;
     this.v1.set(this.foe.x - Math.sin(yaw) * BEHIND, 0, this.foe.z - Math.cos(yaw) * BEHIND);
-    this.outPos.copy(ctx?.moveCaster ? ctx.moveCaster(this.v1, END_T - strikeAt(STRIKES - 1) - 0.05) : this.v1).setY(0);
+    this.outPos.copy(ctx?.moveCaster ? ctx.moveCaster(this.v1, this.outT - strikeAt(this.cuts - 1) - 0.05) : this.v1).setY(0);
   }
 
-  /** 1.5 s: he steps out of the wind behind the enemy. */
+  /** He steps out of the wind behind the enemy. */
   private out() {
     const ctx = this.ctx;
     this.show();
@@ -287,22 +362,35 @@ export class SkyRend implements Effect {
   }
 
   private layout(t: number) {
-    // --- The screen: dims through the coil and the cuts, frames and a chromatic kick on the finisher, focus lines on the enemy. ---
-    const dim = smoothstep(t / LEAD) * (1 - smoothstep((t - END_T) / 0.3));
-    this.screen.darken = 0.35 * dim;
-    this.screen.speedLines = 0.3 * smoothstep((t - LEAD) / 0.1) * (1 - smoothstep((t - END_T + 0.1) / 0.2));
+    // --- The screen: dims through the wind-up and the cuts, frames and a chromatic kick on the finisher, focus lines on the enemy. ---
+    const endT = this.fizzled ? REND_WIND + 0.1 : this.outT;
+    const dim = smoothstep(t / REND_WIND) * (1 - smoothstep((t - endT) / 0.3));
+    this.screen.darken = (this.fizzled ? 0.2 : 0.35) * dim;
+    this.screen.speedLines = this.fizzled ? 0 : 0.3 * smoothstep((t - REND_WIND) / 0.1) * (1 - smoothstep((t - endT + 0.1) / 0.2));
     this.screen.focus.copy(this.foe).setY(1.2);
-    const lastT = strikeAt(STRIKES - 1);
-    this.screen.impact = impactFrameAt(t, lastT, [1, 2], 0.04);
-    this.screen.chroma = t >= lastT ? chromaPulse(t, lastT, 0.8, 7) : 0;
+    const lastT = strikeAt(this.cuts - 1);
+    this.screen.impact = this.fizzled ? 0 : impactFrameAt(t, lastT, [1, 2], 0.04);
+    this.screen.chroma = !this.fizzled && t >= lastT ? chromaPulse(t, lastT, 0.8, 7) : 0;
     this.screen.edgeTint.set(SKY.body);
 
-    // --- The coil's pink flare grows through the lead, then pops. ---
-    if (t < LEAD) {
+    // --- The wind mark on the enemy: a ring that closes in and a pink star over its head, both following it. ---
+    if (t < REND_WIND) {
+      const mp = smoothstep(t / 0.15);
+      const pulse = 0.5 + 0.5 * Math.sin(t * 22);
+      this.markRing.set(this.foe, 2.0 - 1.0 * (t / REND_WIND), 0.05 * mp);
+      this.v1.copy(this.foe).setY(2.5);
+      this.markStar.set(this.v1, (0.7 + 0.25 * pulse) * mp + 1e-3, 0.95 * mp, t * 5);
+    } else {
+      this.markRing.set(this.foe, 0, 0);
+      this.markStar.set(this.foe, 1e-3, 0);
+    }
+
+    // --- The coil's pink flare grows through the wind-up, then pops (or just fades if it fizzles). ---
+    if (t < REND_WIND) {
       this.v1.copy(this.startPos).setY(1.2);
-      this.flare.set(this.v1, 0.2 + 1.0 * smoothstep(t / LEAD), 0.9 * smoothstep(t / 0.1), t * 6);
-    } else if (t < LEAD + 0.25) {
-      const fp = StarBurst.pop(t - LEAD, 0.04, 0.12);
+      this.flare.set(this.v1, 0.2 + 1.0 * smoothstep(t / REND_WIND), 0.9 * smoothstep(t / 0.1), t * 6);
+    } else if (t < REND_WIND + 0.25 && !this.fizzled) {
+      const fp = StarBurst.pop(t - REND_WIND, 0.04, 0.12);
       this.v1.copy(this.startPos).setY(1.2);
       this.flare.set(this.v1, 1.6 * fp.scale + 1e-3, fp.opacity, 0.4);
     } else this.flare.set(this.foe, 1e-3, 0);
@@ -333,10 +421,15 @@ export class SkyRend implements Effect {
 export const skyRendModule: EffectModule = {
   label: 'sky rend',
   category: 'hero: sky',
-  // Click an enemy: six hits that always land (`projectile`), so there is no zone to dodge.
+  // Click an enemy: 3 to 9 hits that always land (`projectile`) once the 0.8 s wind-up holds; the wind-up is the warning.
   targeting: { mode: 'enemy' },
   create: () => new SkyRend(),
-  telegraphs: () => [],
+  telegraphs(effect) {
+    const e = effect as SkyRend;
+    if (!e.ctx) return [];
+    // The mark on the enemy for the wind-up, read live.
+    return [{ shape: { kind: 'circle', x: e.markAt.x, z: e.markAt.z, radius: MARK_R }, start: 0, impact: REND_WIND }];
+  },
   bloom: { enabled: true, strength: 0.5, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
     const e = effect as SkyRend;

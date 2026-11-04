@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { GroundMark, HeroRing, PipLook } from './types';
 
 /**
  * Visuals of the hero identity layer in a duel:
@@ -16,6 +17,9 @@ const STACK_LOOK: Record<string, { color: string; shape: 'drop' | 'flake' | 'spr
   chill: { color: '#c8ecff', shape: 'flake' },
   seed: { color: '#c8e86a', shape: 'sprout' },
   mark: { color: '#b58cff', shape: 'mark' },
+  // Vitriol's reagents.
+  fire: { color: '#ff9a3a', shape: 'drop' },
+  acid: { color: '#c28cff', shape: 'drop' },
 };
 
 const glow = (color: THREE.ColorRepresentation, opacity: number) =>
@@ -67,6 +71,32 @@ function token(shape: string, color: string): THREE.Group {
   return g;
 }
 
+/** A small heap of pale bones on the ground, big enough to read at gameplay distance (Mortis's piles). */
+function bonePile(): THREE.Group {
+  const g = new THREE.Group();
+  const bone = new THREE.MeshBasicMaterial({ color: '#e8dfc4' });
+  const shade = new THREE.MeshBasicMaterial({ color: '#6f6450' });
+  const under = new THREE.Mesh(new THREE.CircleGeometry(0.62, 18).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: '#2a2418', transparent: true, opacity: 0.55, depthWrite: false }));
+  under.position.y = 0.01;
+  g.add(under);
+  const shape = new THREE.CapsuleGeometry(0.055, 0.42, 3, 6);
+  for (const [x, z, yaw, tilt] of [[-0.2, 0.08, 0.5, 1.45], [0.16, -0.12, -0.7, 1.5], [0.02, 0.22, 1.5, 1.35], [-0.04, -0.2, 2.4, 1.6], [0.24, 0.16, 0.2, 1.4]]) {
+    const b = new THREE.Mesh(shape, bone);
+    b.position.set(x, 0.08, z);
+    b.rotation.set(tilt, yaw, 0);
+    g.add(b);
+  }
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 8), bone);
+  skull.position.set(0.02, 0.17, 0);
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 5), shade);
+  eye.position.set(-0.05, 0.19, 0.11);
+  const eye2 = eye.clone();
+  eye2.position.x = 0.09;
+  g.add(skull, eye, eye2);
+  g.visible = false;
+  return g;
+}
+
 interface Burst {
   group: THREE.Group;
   t: number;
@@ -85,14 +115,74 @@ export class TraitFx {
   readonly group = new THREE.Group();
   /** Pips over each hero (by key), rebuilt when the stacks change. */
   private rows = new Map<string, { holder: THREE.Group; key: string }>();
+  /** A ring at each hero's feet, by slot. */
+  private rings = new Map<string, { outer: THREE.Mesh; arc: THREE.Mesh }>();
+  /** Ground marks of each hero, by slot. */
+  private markPools = new Map<string, THREE.Group[]>();
   private bursts: Burst[] = [];
   private clock = 0;
   private ringGeo = new THREE.RingGeometry(0.2, 0.32, 40).rotateX(-Math.PI / 2);
   private pillarGeo = new THREE.CylinderGeometry(0.22, 0.42, 2.6, 16, 1, true).translate(0, 1.3, 0);
   private shardGeo = new THREE.TetrahedronGeometry(0.07, 0);
 
-  /** Shows `stacks` over the figure at `pos` (the row named `who`), facing the camera. `fallback` colours unknown kinds. */
-  pips(who: string, pos: THREE.Vector3 | null, stacks: { name: string; n: number }[], camera: THREE.Camera, fallback: string) {
+  /**
+   * A ring at a hero's feet (`Trait.ring`), the slot named `who`: an outer circle and, with `fill`, an inner arc that
+   * empties. Null hides it.
+   */
+  ring(who: string, pos: THREE.Vector3 | null, ring: HeroRing | null) {
+    let r = this.rings.get(who);
+    if (!r) {
+      const mat = (o: number) => new THREE.MeshBasicMaterial({ transparent: true, opacity: o, depthWrite: false, side: THREE.DoubleSide });
+      r = {
+        outer: new THREE.Mesh(new THREE.RingGeometry(0.94, 1, 72).rotateX(-Math.PI / 2), mat(0.7)),
+        arc: new THREE.Mesh(new THREE.RingGeometry(0.78, 0.9, 72, 1, 0, Math.PI * 2).rotateX(-Math.PI / 2), mat(0.85)),
+      };
+      r.outer.renderOrder = r.arc.renderOrder = 3;
+      this.rings.set(who, r);
+      this.group.add(r.outer, r.arc);
+    }
+    const on = !!pos && !!ring;
+    r.outer.visible = on;
+    r.arc.visible = on && ring!.fill !== undefined;
+    if (!on) return;
+    const o = ring!.opacity ?? 1;
+    for (const [m, base] of [[r.outer, 0.7], [r.arc, 0.85]] as const) {
+      m.position.set(pos!.x, 0.07, pos!.z);
+      m.scale.setScalar(ring!.radius);
+      const mm = m.material as THREE.MeshBasicMaterial;
+      mm.color.set(ring!.color);
+      mm.opacity = base * o;
+    }
+    if (ring!.fill !== undefined) r.arc.geometry.setDrawRange(0, 6 * Math.max(1, Math.round(72 * Math.min(1, ring!.fill))));
+  }
+
+  /** What a passive keeps on the ground (`Trait.marks`), the slot named `who`: drawn from a pool, fading near the end of its life. */
+  marks(who: string, list: GroundMark[]) {
+    let pool = this.markPools.get(who);
+    if (!pool) {
+      pool = [];
+      this.markPools.set(who, pool);
+    }
+    while (pool.length < list.length) {
+      const pile = bonePile();
+      pool.push(pile);
+      this.group.add(pile);
+    }
+    pool.forEach((g, i) => {
+      const m = list[i];
+      g.visible = !!m;
+      if (!m) return;
+      g.position.set(m.x, 0.02, m.z);
+      const left = m.life - m.age;
+      g.scale.setScalar(left < 1 ? Math.max(0.05, left) : Math.min(1, 0.4 + m.age * 3));
+    });
+  }
+
+  /**
+   * Shows `stacks` over the figure at `pos` (the row named `who`), facing the camera. `fallback` colours unknown kinds; a
+   * stack's own `look` (a hero's own state) wins over the shared table. `height`: metres above the figure's feet.
+   */
+  pips(who: string, pos: THREE.Vector3 | null, stacks: { name: string; n: number; look?: PipLook }[], camera: THREE.Camera, fallback: string, height = 2.6) {
     let row = this.rows.get(who);
     if (!row) {
       row = { holder: new THREE.Group(), key: '' };
@@ -106,10 +196,10 @@ export class TraitFx {
         row.holder.remove(c);
         c.traverse((o) => { const m = o as THREE.Mesh; m.geometry?.dispose(); (m.material as THREE.Material | undefined)?.dispose(); });
       }
-      const all: { look: { color: string; shape: string } }[] = [];
-      for (const s of stacks) for (let i = 0; i < s.n; i++) all.push({ look: STACK_LOOK[s.name] ?? { color: fallback, shape: 'gem' } });
+      const all: { look: { color: string; shape?: string } }[] = [];
+      for (const s of stacks) for (let i = 0; i < s.n; i++) all.push({ look: s.look ?? STACK_LOOK[s.name] ?? { color: fallback, shape: 'gem' } });
       all.forEach((a, i) => {
-        const tk = token(a.look.shape, a.look.color);
+        const tk = token(a.look.shape ?? 'gem', a.look.color);
         const x = (i - (all.length - 1) / 2) * 0.26;
         tk.position.set(x, -Math.abs(x) * 0.25, 0);
         row!.holder.add(tk);
@@ -117,7 +207,7 @@ export class TraitFx {
     }
     row.holder.visible = !!pos && stacks.length > 0;
     if (pos) {
-      row.holder.position.set(pos.x, Math.max(0, pos.y) + 2.6, pos.z);
+      row.holder.position.set(pos.x, Math.max(0, pos.y) + height, pos.z);
       row.holder.quaternion.copy(camera.quaternion);
       row.holder.children.forEach((c, i) => { c.position.y = -Math.abs(c.position.x) * 0.25 + 0.04 * Math.sin(this.clock * 4 + i); });
     }
@@ -171,6 +261,8 @@ export class TraitFx {
   /** Drops every pip row and burst (the duel stopped). */
   clear() {
     for (const r of this.rows.values()) r.holder.visible = false;
+    for (const r of this.rings.values()) r.outer.visible = r.arc.visible = false;
+    for (const pool of this.markPools.values()) for (const g of pool) g.visible = false;
     for (const b of this.bursts) {
       this.group.remove(b.group);
       b.group.traverse((o) => ((o as THREE.Mesh).material as THREE.Material | undefined)?.dispose());

@@ -1,12 +1,35 @@
-# Sky kit: Zephyr, the Wind Blade (v4, 2026-11-03)
+# Sky kit: Zephyr, the Wind Blade
+
+## v5 (2026-11-04)
+Design source: `kits-v5.md`, section "Zephyr". The v4 text below is kept for history; where it differs, this section wins.
+- **HP 690 to 640.** Passive renamed **Following Wind**. Gusts show as gem pips round him and Feather Step's charges as flake
+  pips, on both screens (`t.show('gust' / 'step')` in `tick`, `ownLook`); the badge stays.
+- **Skyward:** air time `SKYWARD_AIR` 0.8 to **0.6 s** (touchdown moves with it), landing circle 2 m to **1.4 m** (hit test 1.65),
+  and the circle shows from take-off (0.14 s). Still untouchable for the 0.6 s.
+- **Feather Step:** **no untouchable window** (`stepUntil` and the `taken` check are gone; the constant is now `STEP_TIME`, the
+  0.2 s slide). Still a 4 m step, a Gust, an attack reset, 2 charges at 7 s.
+- **Sky Rend, rebuilt.** Click an enemy within 7 m (sight checked at the cast). A real **0.8 s wind-up** (`REND_WIND`): he
+  stands (`t.hold` through wind-up and cuts), the enemy shows a red circle, a gust spiral, a ring and a pink star on both
+  screens, and he is **not** untouchable. At 0.8 s the effect checks `stillSees` and the 9 m reach (`REND_REACH`): if either
+  fails it **fizzles** (a puff, no hits, `skyRendFizzled` is set, the trait cancels the window and releases the hold, the
+  Gusts are still spent). Otherwise he vanishes and cuts from all sides: **3 + 2 per Gust spent, 9 at most**, 15 each, one
+  every **0.16 s** (`REND_CUT`). The Gusts are spent at the cast (`afterCast`): the trait writes `skyRendCuts` (a WeakMap
+  keyed by his figure) and `t.show('cuts', n)`; on the other screen `ownChanged` writes the same map before the cast. No
+  entry (the VFX tool): 9 cuts. The last cut lands up to 0.8 + 9 x 0.16 = 2.24 s after the cast; hits are `projectile: true`
+  as before. He is **untouchable only while the cuts run**: `taken` blocks from cast + 0.8 s to the last cut + 0.15 s.
+  After he steps out he cannot cast for 0.6 s (`canCast`, `REND_LOCK`). The **double damage on an airborne enemy is gone**
+  (`dealt` removed).
+- Crosswind is unchanged. Cooldowns unchanged.
+
+# (v4 text, 2026-11-03)
 
 Replaces the v3 kit (Gale Edge, Tailwind Rush, Wind Barrier, Gale Cyclone). Design source: `kits-v4.md`, section
 "Zephyr, the Wind Blade". Read `kit-common.md` first.
 
 ## Role
-**Assassin (melee)**, 690 HP, melee attack (range 2.4, 10 damage, 0.9 s interval), walk speed 4.6. One verb: *never stop
+**Assassin (melee)**, 690 HP (v5: 640), melee attack (range 2.4, 10 damage, 0.9 s interval), walk speed 4.6. One verb: *never stop
 moving*, every dash feeds the next strike.
-- **Passive Tailwind.** Every dash (Q's recast, W, E) gives him a **Gust** (3 at most, 4 s; each dash refreshes the time)
+- **Passive Tailwind (v5: Following Wind).** Every dash (Q's recast, W, E) gives him a **Gust** (3 at most, 4 s; each dash refreshes the time)
   and resets his basic attack. A basic attack spends one Gust for +20 damage and 1 m more reach. Shown by the badge on the
   passive slot (the Gust count) and a floating GUST word. No twist.
 - Cooldowns are not in the design; chosen here: Q 4 s, W 8 s, E 7 s per charge, R 24 s.

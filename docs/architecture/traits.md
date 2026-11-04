@@ -128,9 +128,24 @@ New in the 2026-11-03 engine round (all on `TraitView`; the host side is `TraitH
 - `Trait.attackReach` / `Trait.attackEcho` (hooks above) are read by `Attacker` through `AttackOwner.reach` /
   `.echo`; see [attacks.md](attacks.md).
 
-**Rule:** a trait makes no hits of its own (units from `summon` hit through the normal pipeline). It changes the hits of casts and attacks (damage, status,
-debuff, knock), gives its own hero buffs, heals, shields and HP costs, moves resources and stacks, and sets
-cooldowns. That keeps it working online, where each client decides the hits on its own hero.
+New for kits v5 (2026-11-04, [kits-v5.md](../../pipeline/designs/kits-v5.md)). A network duel has two screens, so each says where it runs:
+
+| On `TraitView` or `Trait` | What it does | Runs |
+|---|---|---|
+| `t.show(name, n)`, `t.own(name)`, `Trait.ownLook`, `Trait.ownChanged` | The hero's own count, stance or armed attack, visible to both players as pips above it. A name with no look only travels to the other screen | `show` on its own client; `ownChanged` on the other screen. It reuses the `stacks` message with a `@` prefix, so the server does not change |
+| `Trait.ring(t)` | A ring at the hero's feet, with an optional arc for time left (Marin's tide) | Both screens, every frame |
+| `Trait.marks(t)` | What a passive keeps on the ground (Mortis's piles) | Both screens, every frame |
+| `t.noteOwner(name, n)`, `Trait.peerNote` | Tells the hero's own client something only the screen that resolved a hit knows, such as a refund decided in `dealt` | `!` prefix on the `stacks` message; direct offline |
+| `t.hitEnemy(opts)` | A hit from a passive or from something a spell left behind. Hooks see `kind: 'trait'`, so a `dealt` hook that calls it must ignore that kind | Offline always; online on the victim's screen, pinned on the other side's last cast |
+| `Trait.victimTick(t, dt)`, `t.carryEnemy(dx, dz)` | A rule that moves or hits the enemy | Offline always; online on the victim's screen |
+| `Trait.enemyCast(t, slot)` | The enemy cast a spell | Both screens |
+| `t.clearShield()`, `t.release()` | Ends this hero's shield; frees it from a hold (a broken channel) | Own client |
+| `RecastSpec.arm`, `RecastSpec.aiWait` | A recast that opens late, so the first cast's answer stays true; one the CPU does not fire | |
+
+`src/effects/channel.ts` holds `channelBroken(ctx)`, `stillSees(ctx, target)` and `ChannelBar`, for spells that root the caster and can be broken.
+
+**Rule:** a trait changes the hits of casts and attacks (damage, status, debuff, knock), gives its own hero buffs, heals, shields and HP costs, moves resources and
+stacks, and sets cooldowns. Its only hits of its own go through `hitEnemy` and `summon`. That keeps it working online, where each client decides the hits on its own hero.
 
 ## Online
 

@@ -9,9 +9,9 @@ import { MIST_SECONDS, tideNow } from '../../traits/tide';
 
 /**
  * Mist Form (tide kit, E: a water dash, `dash` and `parry` flags). Marin turns to water and flows up to 6 m toward the
- * aimed spot (`ctx.moveCaster`, 0.5 s), through the enemy if it is in the way (heroes do not collide). She is untouchable
- * for the whole 1 s (`MIST_SECONDS`: the trait's `taken` swallows every hit until the deadline `afterCast` set) and 40%
- * faster (the kit's `buff`, a haste). A translucent shell and three ribbons follow her; at 1.0 s she reforms at the end
+ * aimed spot (`ctx.moveCaster`, 0.25 s), through the enemy if it is in the way (heroes do not collide). She is untouchable
+ * for the whole run (`MIST_SECONDS`, 0.25 s: the trait's `taken` swallows every hit until the deadline `afterCast` set; the
+ * trait also flips the tide when she reforms). A translucent shell and three ribbons follow her; at 0.25 s she reforms at the end
  * spot in a foam crown that splashes 40 damage within 3 m. The splash is gated by a live telegraph circle at the end spot
  * and by `projectile` with a live distance check against that spot, so it lands on whoever stays inside. The tide shows in
  * the look: High is pale with outward foam streaks, Low is deep blue with inward streaks. In a network duel the replay has
@@ -25,11 +25,11 @@ export const defaultMistForm = (): MistFormSettings => ({ loop: false });
 
 // Timeline (seconds).
 const MIST_IN = 0.12; // the shell forms
-const REFORM_T = MIST_SECONDS; // she reforms: the last moment of the untouchable second
+const REFORM_T = MIST_SECONDS; // she reforms: the end of the run and of the untouchable window
 const DURATION = REFORM_T + 0.9;
 
 const DASH_RANGE = 6;
-const DASH_S = 0.5;
+const DASH_S = MIST_SECONDS; // the run lasts exactly the untouchable window
 const RIBBONS = 3;
 const SPLASH_R = 3; // the reform splash, at the end spot
 const SPLASH_DAMAGE = 40;

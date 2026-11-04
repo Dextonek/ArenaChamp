@@ -1,7 +1,7 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Alchemy kit data (Vex, the Plague Alchemist): dark green ground, pale glass foil, three reagent colours (green, orange, violet). Icons are
+ * Alchemy kit data (Vitriol, the Plague Alchemist): dark green ground, pale glass foil, three reagent colours (green, orange, violet). Icons are
  * drawn on canvases in the kit palette, one signature shape each (see pipeline/designs/kit-alchemy.md).
  */
 const A = {
@@ -104,7 +104,7 @@ function circleGlyph(g: CanvasRenderingContext2D, cx: number, cy: number, r: num
 }
 
 export const alchemyKit: HeroKit = {
-  name: 'Vex',
+  name: 'Vitriol',
   title: 'the Plague Alchemist',
   maxHp: 560,
   accent: A.body,
@@ -168,7 +168,7 @@ export const alchemyKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'toxin dart', name: 'Toxin Dart', range: 9, cooldown: 3, aim: 'line',
-      blurb: 'A fast glass dart (9 m): 30, then 30 more over 3 s. Leaves green toxin on the enemy for 4 s. Dodge it by stepping off the line.',
+      blurb: 'A fast glass dart (9 m): 30, then 30 more over 3 s. Leaves green toxin on the enemy for 4 s. Reaches 6 m in about half a second: step off the line.',
       icon(g, s) {
         ground(g, s);
         // A dart flying up-right: glass shell, green core, needle tip, a bubble trail and a green splat spark.
@@ -257,7 +257,7 @@ export const alchemyKit: HeroKit = {
     },
     {
       key: 'R', label: 'homunculus', name: 'Homunculus', range: 10, cooldown: 25, summon: true,
-      blurb: 'Ultimate. A little walking bomb (120 HP, 4 m/s) with all three reagents in its belly. It bursts on the enemy for 70 and sets off every reaction at once. Shoot it down or outrun it.',
+      blurb: 'Ultimate. A little walking bomb (120 HP, 4 m/s) climbs out at her feet with all three reagents in its belly and walks at the enemy. It bursts on the enemy for 70 and sets off every reaction at once. Shoot it down or outrun it.',
       icon(g, s) {
         ground(g, s);
         circleGlyph(g, s * 0.5, s * 0.78, s * 0.42, A.glass, s * 0.016, 0.3);

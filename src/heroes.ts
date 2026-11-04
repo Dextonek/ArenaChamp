@@ -88,7 +88,7 @@ const MODELS: Record<string, string> = {
   Brannoc: 'models/heroes/forge.glb',
   Isolde: 'models/heroes/frost.glb',
   Lyra: 'models/heroes/astral.glb',
-  Vex: 'models/heroes/alchemy.glb',
+  Vitriol: 'models/heroes/alchemy.glb',
   Kaia: 'models/heroes/storm.glb',
   Sefu: 'models/heroes/sand.glb',
   Nyx: 'models/heroes/shadow.glb',

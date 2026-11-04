@@ -248,6 +248,8 @@ export class Duel {
   private castSeq = 0;
   /** The id of the other player's last basic attack (its hit report names it). */
   private peerAttackId = 0;
+  /** The id of the other player's last cast: a passive's hit reports it (`TraitView.hitEnemy`). */
+  private peerCastId = 0;
   /** Stack pips over the heroes and passive bursts (src/traits/fx.ts). */
   private traitFx = new TraitFx();
   /** Healing not yet sent to the server (network duel), and the clock that sends it. */
@@ -542,6 +544,22 @@ export class Duel {
       deathSpots: (maxAge) => arena.deathSpots(maxAge),
       hold: (seconds) => hm.holdStill(seconds),
       moveTo: (p, seconds) => { arena.moveFigure(arena.caster, p, seconds); },
+      stateChanged: (name, n) => this.net?.stacks(`@${name}`, n),
+      clearShield: () => {
+        arena.clearShield(arena.caster);
+        this.net?.shield(0, 0);
+      },
+      release: () => hm.release(),
+      note: (name, n) => { if (this.heroRt) this.heroRt.trait?.peerNote?.(this.heroRt, name, n); },
+      // Online the victim's screen decides a hit on it: nothing to do here.
+      hitEnemy: (opts) => {
+        if (this.net || !this.foe || this.over) return;
+        arena.hit(this.foe, this.resolve('hero', this.foe, opts, NO_MODS, 'trait'));
+      },
+      carryEnemy: (dx, dz) => {
+        if (this.net || !this.foe) return;
+        arena.moveFoe(this.foe, new THREE.Vector3(dx, 0, dz), true);
+      },
     });
     this.oppRt = new TraitRuntime('opponent', traitFor(them.name), {
       self: () => this.foe ?? arena.caster,
@@ -582,7 +600,32 @@ export class Duel {
       moveTo: (p, seconds) => { if (!this.net && this.foe) arena.moveFigure(this.foe, p, seconds); },
       // Online: the other player's stacks on this hero are decided here; its own screen learns them.
       stacksChanged: (name, n) => this.net?.stacks(name, n),
+      // Online the other player's own client ends its shield and its hold, and they reach this screen.
+      clearShield: () => { if (!this.net && this.foe) arena.clearShield(this.foe); },
+      release: () => {
+        if (this.net) return;
+        this.rooted = 0;
+        this.foeHeld = 0;
+      },
+      // Online this screen resolved a hit its own client must hear about.
+      note: (name, n) => {
+        if (this.net) this.net.stacks(`!${name}`, n);
+        else if (this.oppRt) this.oppRt.trait?.peerNote?.(this.oppRt, name, n);
+      },
+      // The hero is on this screen, online too. The server wants a recent cast of the other side to pin the hit on.
+      hitEnemy: (opts) => {
+        if (this.over || !this.on) return;
+        this.damagePlayer(this.resolve('opponent', arena.caster, opts, NO_MODS, 'trait'), this.net ? this.peerCastId : undefined);
+      },
+      carryEnemy: (dx, dz) => {
+        const me = arena.caster.group.position;
+        me.x += dx;
+        me.z += dz;
+        arena.keepInside(me);
+      },
     });
+    // The channel of a cast (src/effects/channel.ts) ends the root of whoever cast it.
+    arena.releaseFigure = (who) => (who === arena.caster ? this.heroRt : this.oppRt)?.release();
     this.heroCasts.clear();
     this.netIds.clear();
     this.heroLast = null;
@@ -591,6 +634,7 @@ export class Duel {
     hm.castRules = (slot, base, charge) => {
       const spell = hm.currentKit.spells[slot];
       const r = this.heroRt!.cast(slot, base, charge, hm.status.dealtMul, spell.debuff);
+      if (this.oppRt) this.oppRt.trait?.enemyCast?.(this.oppRt, slot);
       if (spell.buff) arena.applyBuff(arena.caster, spell.buff.kind, spell.buff.amount, spell.buff.seconds);
       // The arena numbers the cast when the effect plays, right after this.
       this.heroCasts.set(arena.castSeq + 1, { slot, mods: r.mods });
@@ -633,7 +677,7 @@ export class Duel {
    * victim's passives, the cast's status / debuff / knock extras. Returns a resolved copy. The dealer learns that it
    * landed (resources, heals) unless it is the other player's side online (its own client counts that).
    */
-  private resolve(dealer: Side, victim: Enemy, opts: HitOptions, mods: CastMods, kind: 'spell' | 'attack' | 'unit', slot?: number, cast?: number): HitOptions {
+  private resolve(dealer: Side, victim: Enemy, opts: HitOptions, mods: CastMods, kind: 'spell' | 'attack' | 'unit' | 'trait', slot?: number, cast?: number): HitOptions {
     if (this.resolved.has(opts)) return opts;
     const arena = this.host.arena;
     const dRt = dealer === 'hero' ? this.heroRt : this.oppRt;
@@ -641,6 +685,8 @@ export class Duel {
     const vRt = !victimIsHero ? null : dealer === 'hero' ? this.oppRt : this.heroRt;
     const hit: TraitHit = { kind, slot, cast, mods, damage: (opts.damage ?? 15) * mods.power, opts: { ...opts } as HitOptions, victim, victimIsHero };
     if (victimIsHero) hit.damage *= arena.statusOf(victim)?.takenMul ?? 1;
+    // Sealed (Sefu's sarcophagus): nothing reaches the figure, from either side.
+    if (victimIsHero && arena.statusOf(victim)?.sealed) hit.blocked = true;
     dRt?.dealt(hit);
     vRt?.taken(hit);
     // A hook may replace the options object: read it back.
@@ -768,6 +814,8 @@ export class Duel {
     const spell = this.opponentKit.spells[m.slot];
     const spec = spell && this.host.targeting(spell.label);
     if (!spec) return;
+    this.peerCastId = m.id;
+    this.heroRt?.trait?.enemyCast?.(this.heroRt, m.slot);
     const arena = this.host.arena, foe = this.foe;
     // Cast from where the hero is drawn (a little behind its own screen, see netFollow) so it does not jump; only the
     // look depends on it, hits are decided by the side that takes them. Far off (a lost update): snap to its spot.
@@ -839,9 +887,15 @@ export class Duel {
     if (this.foe && this.on) this.host.arena.applyBuff(this.foe, kind, amount, seconds);
   }
 
-  /** The other screen decided this side's stacks on the other hero (e.g. Vex's toxin on it). */
+  /**
+   * A stacks message. `name` alone: the other screen decided this side's stacks on the other hero (e.g. Vitriol's toxin
+   * on it). `@name`: the other hero's own shown state (`TraitView.show`). `!name`: a note for this hero's own trait
+   * (`TraitView.noteOwner`). The prefixes need no change on the server, which relays any short name.
+   */
   peerStacks(name: string, n: number) {
-    this.heroRt?.setStacks(name, n);
+    if (name[0] === '@') this.oppRt?.setOwn(name.slice(1), n);
+    else if (name[0] === '!') { if (this.heroRt) this.heroRt.trait?.peerNote?.(this.heroRt, name.slice(1), n); }
+    else this.heroRt?.setStacks(name, n);
   }
 
   /** The other hero's resource (sent with its moves). */
@@ -851,7 +905,10 @@ export class Duel {
 
   /** The other hero got a shield: the bubble here (hits on it are counted on that side). */
   peerShield(amount: number, seconds: number, color?: string) {
-    if (this.foe && this.on) this.host.arena.shieldFigure(this.foe, amount, seconds, color);
+    if (!this.foe || !this.on) return;
+    // Zero: the other hero ended its shield.
+    if (amount <= 0) this.host.arena.clearShield(this.foe);
+    else this.host.arena.shieldFigure(this.foe, amount, seconds, color);
   }
 
   peerDodged() {
@@ -951,6 +1008,13 @@ export class Duel {
     const cam = this.host.arena.camera;
     this.traitFx.pips('foe', this.foe?.group.position ?? null, this.heroRt?.allStacks() ?? [], cam, this.host.heroMode.currentKit.accent);
     this.traitFx.pips('hero', this.host.arena.caster.group.position, this.oppRt?.allStacks() ?? [], cam, this.opponentKit.accent);
+    // Each hero's own state, visible to both players: pips above any stacks, a ring at the feet, marks on the ground.
+    this.traitFx.pips('foeOwn', this.foe?.group.position ?? null, this.oppRt?.allOwn() ?? [], cam, this.opponentKit.accent, 3.05);
+    this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, 3.05);
+    this.traitFx.ring('foe', this.foe?.group.position ?? null, this.oppRt?.ringNow() ?? null);
+    this.traitFx.ring('hero', this.host.arena.caster.group.position, this.heroRt?.ringNow() ?? null);
+    this.traitFx.marks('foe', this.oppRt?.marksNow() ?? []);
+    this.traitFx.marks('hero', this.heroRt?.marksNow() ?? []);
     this.zoneClock += dt;
     this.zones.update(this.zoneClock);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
@@ -989,6 +1053,9 @@ export class Duel {
       this.heroRt?.tick(dt);
       if (this.net) this.oppRt?.tickClocks(dt);
       else this.oppRt?.tick(dt);
+      // A hero's rule that acts on the enemy runs where that enemy is decided (`Trait.victimTick`).
+      if (this.oppRt) this.oppRt.trait?.victimTick?.(this.oppRt, dt);
+      if (!this.net && this.heroRt) this.heroRt.trait?.victimTick?.(this.heroRt, dt);
     }
     // Network duel: the server declares the winner (`netEnd`); the opponent is the other player.
     if (this.net) {
@@ -1021,6 +1088,13 @@ export class Duel {
     const lv = this.cpuLevel;
     // Statuses on the opponent: stun / knock-up = no move, no cast; root = no move; slow = x0.6; silence = no cast.
     const st = this.host.arena.statusOf(foe);
+    // Charmed: it walks to the hero and does nothing else.
+    if (st?.charmed && !this.host.arena.isDashing(foe)) {
+      const d = new THREE.Vector3(me.x - at.x, 0, me.z - at.z), len = d.length();
+      if (len > 1.2) this.host.arena.moveFoe(foe, d.multiplyScalar(this.aiSpeed(this.opponentKit, this.cpuLevel) * st.speedMul * dt / len), true);
+      this.face(foe, me);
+      return;
+    }
     if (st?.stunned || this.host.arena.isDashing(foe)) return;
     if (this.rooted > 0 || this.think > 0) {
       this.face(foe, me);
@@ -1059,7 +1133,8 @@ export class Duel {
       const full = this.host.arena.summons.alive('opponent').length >= MAX_UNITS;
       // An open recast counts as ready (the AI fires its free second cast when it is in reach).
       const ward = this.ward(this.heroRt);
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || (!this.oppRt?.canRecast(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
+      const opens = (i: number) => !!this.oppRt?.canRecast(i) && !this.oppRt.recastOf(i)?.aiWait;
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
       const held = mine.stunned || mine.has('root');
       // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
       let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv);
@@ -1225,7 +1300,8 @@ export class Duel {
     if (!st.cannotCast) {
       const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
       const ward = this.ward(this.oppRt);
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i);
+      const waits = (i: number) => !!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait;
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i) || waits(i);
       const held = !!theirs && (theirs.stunned || theirs.has('root'));
       const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
       // The hero first; a unit only when nothing can be cast at the hero and a unit is within 2.5 m.
@@ -1457,6 +1533,7 @@ export class Duel {
       const r = this.oppRt.cast(i, spell.cooldown, 1, arena.statusOf(foe)?.dealtMul ?? 1, spell.debuff);
       mods = r.mods;
       cooldown = r.cooldown;
+      if (this.heroRt) this.heroRt.trait?.enemyCast?.(this.heroRt, i);
       if (spell.buff) arena.applyBuff(foe, spell.buff.kind, spell.buff.amount, spell.buff.seconds);
     }
     // An arc aim: the AI bends it round cover when the straight line is blocked; a network cast brings the sender's bend.

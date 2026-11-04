@@ -10,7 +10,7 @@ import { frameCast, type CastContext, type HitOptions } from '../../effects/targ
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Pinning Arrow (astral kit, E: skillshot). A short flare at the nock, then at 0.22 s a thin fast arrow (9 m,
+ * Pinning Arrow (astral kit, E: skillshot). A short flare at the nock, then at 0.3 s a thin arrow (24 m/s) (9 m,
  * `ctx.projectile`). The status is decided at the hit: the bolt's hit options carry a getter that measures the
  * enemy's live position (the nearest of the cast's targets to the bolt, else the bolt's own point) against
  * `ctx.obstacles()`: within 1.5 m of a wall's or pillar's surface they are pinned (root 1.5 s), otherwise slowed 40%
@@ -28,8 +28,8 @@ export interface PinningArrowSettings {
 export const defaultPinningArrow = (): PinningArrowSettings => ({ damage: 35, loop: false });
 
 // Timeline (seconds).
-const RELEASE_T = 0.22;
-const SPEED = 30;
+const RELEASE_T = 0.3;
+const SPEED = 24;
 const RANGE = 9;
 const RADIUS = 0.4;
 const MUZZLE = 0.8;

@@ -219,7 +219,7 @@ try {
   await new Promise((r) => setTimeout(r, 150));
   d.send({ t: 'queue_leave' });
   await d.next('queue');
-  d.send({ t: 'queue_join', hero: 'Vex' });
+  d.send({ t: 'queue_join', hero: 'Vitriol' });
   const qc = await c.next('match_start'), qd = await d.next('match_start');
   check(qc.foe.name === DAVE && qd.foe.hero === 'Lyra', 'queue pairs two different heroes');
   d.send({ t: 'match_leave' });

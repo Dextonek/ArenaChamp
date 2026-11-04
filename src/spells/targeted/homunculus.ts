@@ -13,10 +13,10 @@ import { takeReaction } from '../../traits/alchemy';
 
 /**
  * Homunculus (alchemy kit, R: the ultimate, a walking bomb). She pulls three vials (green toxin, orange fire, violet
- * acid) from her bandolier and flings them into an alchemical circle in front of her; the circle flares and a little
- * glass-bellied homunculus (`ctx.summon`, `homunculusLook`) hops out with the three reagents swirling in its belly, and
+ * acid) from her bandolier and flings them into an alchemical circle at her feet; the circle flares and a little
+ * glass-bellied homunculus (`ctx.summon`, `homunculusLook`) hops out of it, at her feet (`ctx.from`, not the aim spot), with the three reagents swirling in its belly, and
  * waddles at the enemy (4 m/s). It bursts on contact: when it comes within 1.5 m of an enemy the effect hits everyone
- * within 2 m for 50 (`ctx.hit` with `projectile: true`: the touch is the dodge check) and ends the unit by setting its
+ * within 2 m for 70 (`ctx.hit` with `projectile: true`: the touch is the dodge check) and ends the unit by setting its
  * `left` to 0. The trait (`src/traits/alchemy.ts`) keys on slot 3: that one hit carries all three reagents, so Combust,
  * Corrode and Concussion all go off; the effect reads them (`takeReaction`) and plays the three bursts, a beat apart, on
  * the enemy. It lives 3.7 s at most (the duel drops a hit more than about 4.2 s after the cast: it appears at 0.4 s) and
@@ -64,7 +64,7 @@ export class Homunculus implements Effect {
   private fwd = new THREE.Vector3(0, 0, -1);
   private side = new THREE.Vector3(1, 0, 0);
   private hand = new THREE.Vector3(0, 1.4, 13);
-  private spot = new THREE.Vector3(0, 0, 11.8); // where the circle lies and the homunculus appears
+  private spot = new THREE.Vector3(0, 0, 13); // where the circle lies and the homunculus appears: her feet
   private flags = { spawned: false, burst: false, flare: false };
   private unit: SummonUnit | null = null;
   private burstT = -1;
@@ -118,7 +118,7 @@ export class Homunculus implements Effect {
     this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     this.side.set(this.fwd.z, 0, -this.fwd.x);
     this.hand.copy(ctx.from).addScaledVector(this.fwd, 0.45).addScaledVector(this.side, 0.3).setY(1.4);
-    this.spot.copy(ctx.from).addScaledVector(this.fwd, 1.5).setY(0);
+    this.spot.copy(ctx.from).setY(0); // at her feet: the unit climbs out here and walks at the enemy
     this.circle.set(this.spot, CIRCLE_R);
     this.screen.silhouettes = [ctx.caster.group, ...ctx.targets.map((e) => e.group)];
     this.screen.focus.copy(this.spot).setY(1);

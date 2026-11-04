@@ -3,6 +3,17 @@
 Replaces the v3 kit (Tide Whip, Bubble Prison, Undertow Dance, Leviathan's Waltz). Design source: `kits-v4.md`, section
 "Marin, the Tide Dancer". Read `kit-common.md` first.
 
+## v5 (2026-11-04)
+Design source: `kits-v5.md`, section "Marin". Where this differs from the v4 text below, v5 wins.
+- Passive renamed **Turning Tide**. The tide turns every 8 s of round time and **Mist Form flips it** when she reforms. State is
+  `epoch` and `base` in `t.mem`, the same on both screens (`ownChanged` for `tideflip`); `ring` keeps `tideOf` up to date on both.
+- A ring at her feet (radius 1.6) is always on: pale at High, blue at Low, its arc is the time left to the next turn; during Moon's Pull it
+  is blue and shows the moon's time left.
+- Wave Disc: 0.3 s wind-up, 20 m/s, radius 0.8, 9 m (reaches 6 m at 0.6 s). Coral Spire rises at 0.9 s; the push or drag happens at the rise.
+- Mist Form: untouchable 0.25 s, the dash is 0.25 s, no haste buff.
+- Moon's Pull is a 3 s channel (`hold(3)`, a `ChannelBar` empties over it): drag only within 12 m and in sight, 2.4 m/s, 15 a second, crash 85
+  at the natural end within 2.5 m. A stun, silence or knock-up ends it.
+
 ## Role
 **Controller**, 670 HP, ranged attack (wave, range 6.5, 10 damage), walk speed 4.1. One verb: *turn the tide*.
 - **Passive Riptide.** The tide turns every 8 s of round time (High first, then Low). At High tide her spells push the
@@ -18,10 +29,10 @@ Replaces the v3 kit (Tide Whip, Bubble Prison, Undertow Dance, Leviathan's Waltz
 
 | Key | Spell (label) | Type | Numbers |
 |---|---|---|---|
-| Q | Wave Disc (`wave disc`) | SHOT, `aim: 'line'` | range 9, speed 22, radius 0.8, 68 damage; move 2.5 m (push at High, pull at Low) |
-| W | Coral Spire (`coral spire`) | TERRAIN | range 8, rises at 0.65 s, stands 5 s (pillar r 0.8), hits within 2.5 m for 62; push 3 m (High) or pull 2 m (Low) |
-| E | Mist Form (`mist form`) | DASH, `dash` + `parry`, ground, range 6, `buff` haste 0.4 for 1 s | untouchable 1 s (`MIST_SECONDS`); she flows up to 6 m in 0.5 s (`moveCaster`); reform splash 40 within 3 m at the end spot at 1.0 s (telegraph circle plus a live distance check, `projectile: true`) |
-| R | Moon's Pull (`moon's pull`) | SELF global, radius 25 | 4 s (`MOON_SECONDS`): enemy dragged 1.2 m/s from anywhere, stops 1.6 m short; Q and W pulls x2 (cap 4 m); 20 per tick (4 ticks, every 0.9 s from 0.7 s); 65 tide crash at the stop distance or at 4 s, once per enemy (`projectile: true`) |
+| Q | Wave Disc (`wave disc`) | SHOT, `aim: 'line'` | range 9, 0.3 s wind-up, speed 20, radius 0.8, 68 damage; move 2.5 m (push at High, pull at Low) |
+| W | Coral Spire (`coral spire`) | TERRAIN | range 8, rises at 0.9 s, stands 5 s from the rise (pillar r 0.8), hits within 2.5 m for 62; push 3 m (High) or pull 2 m (Low) |
+| E | Mist Form (`mist form`) | DASH, `dash` + `parry`, ground, range 6 | untouchable 0.25 s (`MIST_SECONDS`); she flows up to 6 m in 0.25 s (`moveCaster`); the tide flips when she reforms; reform splash 40 within 3 m at the end spot at 0.25 s (telegraph circle plus a live distance check, `projectile: true`) |
+| R | Moon's Pull (`moon's pull`) | SELF channel, radius 25 | 3 s (`MOON_SECONDS`, `hold`): enemy within 12 m and in sight dragged 2.4 m/s, stops 1.6 m short; 15 damage a second (5 every third of a second) while the drag holds; Q and W pulls x2 (cap 4 m); 85 tide crash at the natural end on an enemy within 2.5 m (`projectile: true`); a stun, silence or knock-up ends it with no crash |
 
 ## How the tide works (`src/traits/tide.ts`)
 - `highAt(time)`: `floor(time / 8) % 2 === 0`. The trait's `tick` and `dealt` compute it from round time (`t.time`).

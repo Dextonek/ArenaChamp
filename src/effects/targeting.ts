@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { Enemy } from './common';
 import { frameArena } from './common';
-import type { BuffKind, StatusKind } from './status';
+import type { BuffKind, StatusKind, StatusSet } from './status';
 import type { BoltWall, BoltWallOptions, Projectile, ProjectileOptions } from './projectile';
 import type { DeathSpot, Summon, SummonOptions } from './summon';
 import type { Obstacle } from '../obstacles';
@@ -90,6 +90,10 @@ export interface CastContext {
   shieldSelf?(amount: number, seconds: number, color?: string): void;
   /** Heals the caster by `amount` (capped at max HP) with a green floating number. */
   healSelf?(amount: number): void;
+  /** The caster's statuses now, on both screens: a channel reads them each frame (see `channelBroken` in effects/channel.ts). */
+  casterStatus?(): StatusSet | undefined;
+  /** Frees the caster from its cast's root or a trait's hold early (a broken channel). Online only its own client does anything. */
+  releaseCaster?(): void;
   /**
    * Slides the caster to `to` over `seconds` with an ease-out; nothing else moves it meanwhile (hero mode ignores
    * click-move, the duel AI holds still). `to` is clamped to the duel ring; returns the spot it will really reach.
@@ -131,6 +135,12 @@ export interface CastContext {
    * network duel make the same wall. Undefined outside a duel.
    */
   addObstacle?(o: Obstacle, seconds: number): Obstacle;
+  /**
+   * Closes a ring for `seconds`: anyone inside it cannot walk or dash out, and it is no wall to anyone outside (Cantor's
+   * Duet). Built from `sentFrom` so both screens agree; each keeps its own hero in. The effect draws the ring. A new round
+   * clears it.
+   */
+  confine?(x: number, z: number, r: number, seconds: number): void;
   removeObstacle?(o: Obstacle): void;
   /** The live obstacles now (walls, pillars, temporary ones): for an effect that sweeps a path against them. */
   obstacles?(): readonly Obstacle[];

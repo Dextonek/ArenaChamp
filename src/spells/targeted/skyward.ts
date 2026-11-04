@@ -10,8 +10,8 @@ import { SKYWARD_AIR } from '../../traits/sky';
  * Skyward (sky kit, W: a leap with a landing zone). Zephyr crouches (0.14 s: a flat whirl of crescents and a gust
  * spiral at his feet), then leaps: a burst of speed lines and leaves, a refraction ring from his feet, and he flies the
  * aimed distance (5 m at most) in a high arc, leaving jade afterimages. At the landing spot a ring of wind and two
- * spiralling funnels draw on while he flies: that, with the red zone (`telegraphs`, a 2 m circle read live), is the
- * warning. He is untouchable from the cast to touchdown (`SKYWARD_AIR`, shared with his trait). At touchdown (0.8 s):
+ * spiralling funnels draw on from take-off: that, with the red zone (`telegraphs`, a 1.4 m circle read live, shown from
+ * take-off), is the warning. He is untouchable from the cast to touchdown (`SKYWARD_AIR`, 0.6 s, shared with his trait). At touchdown (0.6 s):
  * impact frames, a pink star, two rings of crescents across the zone, a ground refraction ring, leaves and a shake;
  * whoever is inside the zone takes `damage` and a 0.5 s knock-up. Clean by 2.0 s.
  *
@@ -35,7 +35,7 @@ const TAKEOFF = 0.14;
 const LAND_T = SKYWARD_AIR;
 const FLIGHT = LAND_T - TAKEOFF;
 const DURATION = 2.0;
-const RADIUS = 2;
+const RADIUS = 1.4;
 const MAX_RANGE = 5;
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -195,7 +195,7 @@ export class Skyward implements Effect {
       f.crouch = true;
       this.crouch();
     }
-    if (!f.zone && t >= 0.06) {
+    if (!f.zone && t >= TAKEOFF) {
       f.zone = true;
       this.drawZone();
     }
@@ -238,11 +238,11 @@ export class Skyward implements Effect {
       }
       return pts;
     };
-    this.ringA.along(ring(0, Math.PI), 0.16, LAND_T - 0.06);
-    this.ringB.along(ring(Math.PI, Math.PI * 2), 0.16, LAND_T - 0.06);
+    this.ringA.along(ring(0, Math.PI), 0.16, FLIGHT);
+    this.ringB.along(ring(Math.PI, Math.PI * 2), 0.16, FLIGHT);
     this.v1.copy(this.want).setY(0);
-    this.funnelA.spiral(this.v1, 1.5, 2.6, 1.6, LAND_T - 0.1, 0.2);
-    this.funnelB.spiral(this.v1, 0.9, 2.2, 2.2, LAND_T - 0.1, 0.14);
+    this.funnelA.spiral(this.v1, 1.1, 2.6, 1.6, FLIGHT - 0.04, 0.2);
+    this.funnelB.spiral(this.v1, 0.7, 2.2, 2.2, FLIGHT - 0.04, 0.14);
   }
 
   /** The leap: speed lines and leaves burst up, a refraction ring runs from his feet. */
@@ -289,7 +289,7 @@ export class Skyward implements Effect {
         const a = (k / 6) * Math.PI * 2 + ring * (Math.PI / 6);
         this.v2.set(Math.sin(a), 0, Math.cos(a));
         this.v1.copy(c).setY(0.3 + ring * 0.15);
-        this.crescents.slash(this.v1, this.v2, 1.5 + ring * 0.8, 60, 0.12, 0.55, { width: 0.5, sweep: 0.1, tone: ring ? 0.6 : 0 });
+        this.crescents.slash(this.v1, this.v2, 1.1 + ring * 0.5, 60, 0.12, 0.55, { width: 0.5, sweep: 0.1, tone: ring ? 0.6 : 0 });
         this.v3.copy(c).addScaledVector(this.v2, 1.0).setY(0.5);
         this.lines.burst(this.v3, this.v2, 2, 1.6);
       }
@@ -352,14 +352,14 @@ export class Skyward implements Effect {
 export const skywardModule: EffectModule = {
   label: 'skyward',
   category: 'hero: sky',
-  // A leap to a spot (5 m at most); the 2 m landing zone is the only area it ever hits.
+  // A leap to a spot (5 m at most); the 1.4 m landing zone is the only area it ever hits.
   targeting: { mode: 'ground', radius: RADIUS },
   create: () => new Skyward(),
   telegraphs(effect) {
     const e = effect as Skyward;
     if (!e.ctx) return [];
-    // The zone stands from the cast; the hit is judged on the live positions at touchdown.
-    return [{ shape: { kind: 'circle', x: e.want.x, z: e.want.z, radius: RADIUS }, start: 0, impact: LAND_T }];
+    // The zone shows from take-off; the hit is judged on the live positions at touchdown.
+    return [{ shape: { kind: 'circle', x: e.want.x, z: e.want.z, radius: RADIUS }, start: TAKEOFF, impact: LAND_T }];
   },
   bloom: { enabled: true, strength: 0.45, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {

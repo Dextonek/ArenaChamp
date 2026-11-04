@@ -196,7 +196,7 @@ export const boneKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'bone fan', name: 'Bone Fan', range: 8, cooldown: 5, aim: 'line',
-      blurb: 'Flicks three bone shards in a fan (30 each). Every bone pile within 3 m of him throws one more (six at most).',
+      blurb: 'Flicks three thin bone shards in a fan, 18 degrees apart (44 each, 8 m). Every bone pile within 3 m of him throws one more (six at most), and the fan widens. Stand between two shards past 5 m.',
       icon(g, s) {
         iconGround(g, s);
         // Five pointed shards fanning out and up from a small pile on the floor at the lower left.
@@ -269,7 +269,7 @@ export const boneKit: HeroKit = {
     },
     {
       key: 'E', label: 'bone armour', name: 'Bone Armour', range: 0, cooldown: 14,
-      blurb: 'A cage of ribs closes round him: a shield of 30, plus 30 per living skeleton (120 at most), for 4 s. When it breaks, or at 3.5 s, its shards fly at the enemy for 38.',
+      blurb: 'A cage of ribs closes round him: a shield of 30, plus 30 per living skeleton (120 at most), for 4 s. When it breaks, or at 3.5 s, its shards fly at the enemy for 38. Recast (from 0.3 s, within 4 s): Shatter it now and the shards fly at once.',
       icon(g, s) {
         iconGround(g, s);
         // A shield ring in soulfire, a ribcage cuirass inside it, shards springing off the rim.
@@ -306,7 +306,7 @@ export const boneKit: HeroKit = {
     },
     {
       key: 'R', label: 'grave grasp', name: 'Grave Grasp', range: 9, cooldown: 22, cc: true,
-      blurb: 'Ultimate. A giant skeletal hand bursts out under the enemy (60 damage), drags it 4 m toward him in 0.8 s and holds it rooted for 1 s while two skeletons claw out beside it (28 damage more). Needs line of sight.',
+      blurb: 'Ultimate. Click the enemy (needs line of sight): a hand rises where it stood, a 1.6 m ring shown for 0.7 s. If it is still inside, the hand drags it 4 m toward him (85 damage), roots it for 1 s, and two skeletons claw out beside it (28 damage more). If it stepped out, the hand closes on nothing.',
       icon(g, s) {
         iconGround(g, s);
         // The floor, with drag furrows running to the left.

@@ -62,7 +62,12 @@ function canvasOf(size: number, draw: (g: CanvasRenderingContext2D, s: number) =
   return c;
 }
 
-const kitOf = (name: string | null | undefined) => kits.find((k) => k.name === name);
+/** Heroes renamed since an account last saved its choice or its match history. */
+const OLD_NAMES: Record<string, string> = { Vex: 'Vitriol' };
+const kitOf = (name: string | null | undefined) => {
+  const now = name ? OLD_NAMES[name] ?? name : name;
+  return kits.find((k) => k.name === now);
+};
 const portrait = (kit: HeroKit, cls = 'portrait') => {
   const c = canvasOf(128, kit.portrait, cls);
   c.style.borderColor = kit.foil;
@@ -428,7 +433,7 @@ function profileScreen(p: Profile) {
           el('tr', {}, el('th', {}, 'Hero'), el('th', {}, 'Played'), el('th', {}, 'Wins'), el('th', {}, 'Win rate')),
           ...rows.map(([name, s]) => {
             const k = kitOf(name);
-            return el('tr', {}, el('td', {}, k ? el('span', { class: 'fav' }, portrait(k, 'portrait xs'), name) : name),
+            return el('tr', {}, el('td', {}, k ? el('span', { class: 'fav' }, portrait(k, 'portrait xs'), k.name) : name),
               el('td', {}, String(s.played)), el('td', {}, String(s.wins)), el('td', {}, `${Math.round((s.wins / s.played) * 100)}%`));
           })) : el('p', { class: 'muted' }, 'No matches yet.')),
       el('section', { class: 'card' }, el('h3', {}, 'Recent matches'),

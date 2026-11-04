@@ -1,4 +1,15 @@
-# Alchemy kit: Vex, the Plague Alchemist (v4, 2026-11-03)
+# Alchemy kit: Vitriol, the Plague Alchemist (v5, 2026-11-04; was Vex)
+
+## v5 (2026-11-04)
+Source: `pipeline/designs/kits-v5.md`, "Vitriol". **Renamed from Vex to Vitriol** (the theme, files and category stay `alchemy`; `traits/index.ts` and `heroes.ts` follow the rename). Changes from v4:
+- **Reagents are stacks on the enemy** (`t.addStacks('toxin' | 'fire' | 'acid', 1, 4, 1)`, read with `t.stacks`, cleared with `t.clearStacks`), so both players see the pips and they sync online. Reactions still happen only in `dealt`, once per cast.
+- **Corrode** 35% more damage for 3 s (was 20%). Combust stays 55.
+- **Concussion** is a 2.5 m push (`shapeMove(..., true, ...)` from `traits/tide.ts`), the same on a player and the CPU, with the 0.5 s silence.
+- **Refund:** a reaction takes 2 s off the spell that took no part (`t.noteOwner('react', slot)`, `peerNote` lowers the cooldown on her own client). Not on the Homunculus burst.
+- **Toxin Dart:** wind-up 0.25 s, bolt 20 m/s (reaches 6 m at about 0.55 s).
+- **Homunculus** climbs out at her feet, not at the aim spot, then walks at the enemy at 4 m/s as before.
+
+(The sections below are the v4 text; the numbers above win. Read "Vex" below as Vitriol.)
 
 ## Role
 **Mage (ranged attack), 560 HP.** She mixes reagents on the enemy, and two different ones react. Designed fresh in

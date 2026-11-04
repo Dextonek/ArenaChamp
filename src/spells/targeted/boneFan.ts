@@ -8,10 +8,11 @@ import type { Effect, EffectModule } from '../../effects/types';
 import { PILE_KEEP } from '../../traits/bone';
 
 /**
- * Bone Fan (bone kit v4, Q: a fan of skillshots). Mortis flicks his hand and three bone shards fan out in front of him
- * at chest height, each pointing down its own line. A bone pile within 3 m of him (`ctx.deathSpots(8)`, see the trait's
+ * Bone Fan (bone kit v5, Q: a fan of skillshots). Mortis flicks his hand and three bone shards fan out in front of him
+ * at chest height, each pointing down its own line, 18 degrees apart. A bone pile within 3 m of him (`ctx.deathSpots(8)`, see the trait's
  * Ossuary) lends one more shard (the fan holds six at most): the pile shakes, soulfire stirs on it and a shard flies
- * from it into the fan. At 0.3 s every shard leaves as its own bolt (`ctx.projectile`, 30 each, 8 m) and rides it; a
+ * from it into the fan (the fan widens as it grows, the same 18 degree step). At 0.3 s every shard leaves as its own bolt
+ * (`ctx.projectile`, 30 each, radius 0.2, 8 m, 20 m/s: it reaches 6 m at about 0.56 s, never before 0.5 s) and rides it; a
  * hit throws chips, dust and a small ember star, a bolt at the end of its range clatters apart. Clean by 1.3 s.
  * See pipeline/designs/kit-bone.md.
  *
@@ -25,7 +26,7 @@ export interface BoneFanSettings {
   loop: boolean;
 }
 
-export const defaultBoneFan = (): BoneFanSettings => ({ damage: 30, knock: 1, step: 8, loop: false });
+export const defaultBoneFan = (): BoneFanSettings => ({ damage: 44, knock: 1, step: 18, loop: false });
 
 // Timeline (seconds).
 const FIRE_T = 0.3; // the shards leave
@@ -33,7 +34,7 @@ const DURATION = 1.3;
 
 const RANGE = 8;
 const SPEED = 20;
-const RADIUS = 0.32;
+const RADIUS = 0.2;
 const BASE_SHARDS = 3;
 const MAX_SHARDS = 6;
 const PILE_R = 3; // piles this close to him lend a shard
@@ -95,9 +96,9 @@ export class BoneFan implements Effect {
     return FLIGHT_END;
   }
 
-  /** Total width of the fan in degrees (the telegraph's cone, a little wider than the outer shards). */
-  get spreadDeg() {
-    return (this.count - 1) * this.settings.step + 8;
+  /** The shards' lines for the telegraph: each bolt's start (at the muzzle) and direction, exactly as they fly. */
+  get lines() {
+    return this.dirs.map((d) => ({ x: this.origin.x + d.x * MUZZLE, z: this.origin.z + d.z * MUZZLE, dx: d.x, dz: d.z }));
   }
 
   cast(ctx: CastContext) {
@@ -269,11 +270,12 @@ export const boneFanModule: EffectModule = {
   telegraphs(effect) {
     const e = effect as BoneFan;
     if (!e.ctx) return [];
-    // The fan's wedge, armed at the launch and shown until the last bolt has passed (a bolt's hit is the dodge check).
-    return [{
-      shape: { kind: 'cone', x: e.origin.x, z: e.origin.z, radius: RANGE, angle: e.spreadDeg, dir: e.aim },
+    // One line per shard, exactly where its bolt flies, armed at the launch and shown until the last bolt has passed (a
+    // bolt's hit is the dodge check).
+    return e.lines.map((l) => ({
+      shape: { kind: 'line' as const, x1: l.x, z1: l.z, x2: l.x + l.dx * RANGE, z2: l.z + l.dz * RANGE, width: RADIUS * 2 },
       start: 0, impact: FIRE_T, until: e.flightEnd,
-    }];
+    }));
   },
   bloom: { enabled: true, strength: 0.35, radius: 0.4, threshold: 0.86 },
   frameCamera(camera, controls, effect) {
@@ -285,6 +287,6 @@ export const boneFanModule: EffectModule = {
     f.add(s, 'loop');
     f.add(s, 'damage', 1, 100, 1);
     f.add(s, 'knock', 0, 8, 0.5);
-    f.add(s, 'step', 3, 14, 1);
+    f.add(s, 'step', 3, 24, 1);
   },
 };

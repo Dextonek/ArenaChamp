@@ -8,16 +8,19 @@ import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 
 /**
- * Grave Grasp (bone kit v4, R: a pull that holds). The chosen enemy's feet are marked (a ring on the floor that follows
- * them, soulfire flickering up round it, the ground trembling), and at 0.6 s a giant skeletal hand bursts up behind it
- * (the arm rises out of the floor, fingers open, palm toward Mortis): bone spires, dust, chips, a ground ripple, an
- * impact frame and 60 damage with a short root (`projectile: true`: the grasp is a sure hit once cast). The fingers close
- * round it (0.1 s) and the hand drags it toward Mortis, 4 m at most and never closer than 1.1 m to him, over 0.8 s
- * (`ctx.carry` every frame, on the victim's live position: offline it moves the enemy hero, in a network duel only this
- * side's own hero, as in forgeCharge.ts). Where the context has no `carry` the burst's hit pulls it instead. At the end
- * the hand squeezes (28 damage, rooted 1 s, a second impact frame) while two skeletons claw out beside the victim
- * (`ctx.summon`, 2 units) and two skull-capped spires rise. The hand opens, sinks back into the floor and is gone
- * by 3.2 s. See pipeline/designs/kit-bone.md.
+ * Grave Grasp (bone kit v5, R: a hand that rises where the enemy stood). The cast is a click on the enemy (the engine
+ * checks sight then), but the zone is the spot the enemy stood at the cast: a 1.6 m ring on the floor, soulfire
+ * flickering up round it, the ground trembling, for 0.7 s (the telegraph). At 0.7 s a giant skeletal hand bursts up
+ * there (the arm rises out of the floor, fingers open, palm toward Mortis): bone spires, dust, chips, a ground ripple
+ * and an impact frame. If the enemy is still inside 1.6 m (its live position) the grasp lands: 60 damage and a root of
+ * exactly 1 s (the `status` of that one hit), the fingers close round it and the hand drags it toward Mortis, 4 m at
+ * most and never closer than 1.1 m to him, over 0.6 s (`ctx.carry` every frame, on the victim's live position: offline
+ * it moves the enemy hero, in a network duel only this side's own hero, as in forgeCharge.ts; where the context has no
+ * `carry` the burst's hit pulls it instead). At the end of the drag the hand squeezes (28 damage, a second impact frame)
+ * while two skeletons claw out beside the victim (`ctx.summon`, 2 units) and two skull-capped spires rise. If the
+ * enemy stepped out of the ring the hand closes on nothing: no damage, no pull, no root, no skeletons. The hits are
+ * `projectile: true` (the live check above is the dodge). The hand opens, sinks back into the floor and is gone by
+ * 3.3 s. See pipeline/designs/kit-bone.md.
  */
 export interface GraveGraspSettings {
   /** Damage when the hand bursts up. */
@@ -26,7 +29,7 @@ export interface GraveGraspSettings {
   squeeze: number;
   /** Metres the victim is dragged (the hit pull cap is 4). */
   drag: number;
-  /** Seconds the victim is rooted after the drag (engine cap 1.5). */
+  /** Seconds the victim is rooted by the burst's hit (engine cap 1.5). */
   root: number;
   /** HP, lifetime and attack damage of each of the two skeletons. */
   hp: number;
@@ -35,20 +38,20 @@ export interface GraveGraspSettings {
   loop: boolean;
 }
 
-export const defaultGraveGrasp = (): GraveGraspSettings => ({ damage: 60, squeeze: 28, drag: 4, root: 1, hp: 50, seconds: 7, attack: 8, loop: false });
+export const defaultGraveGrasp = (): GraveGraspSettings => ({ damage: 85, squeeze: 28, drag: 4, root: 1, hp: 50, seconds: 7, attack: 8, loop: false });
 
 // Timeline (seconds).
-const BURST_T = 0.6; // the hand bursts up
+const BURST_T = 0.7; // the hand bursts up: the ring is checked now
 const RISE_S = 0.25;
-const CLOSE_T = 0.85; // the fingers close
-const DRAG_T0 = 0.9;
-const DRAG_S = 0.8;
+const CLOSE_T = 0.95; // the fingers close
+const DRAG_T0 = 1.0;
+const DRAG_S = 0.6; // the drag ends inside the 1 s root (0.7 to 1.7 s)
 const DRAG_END = DRAG_T0 + DRAG_S; // the squeeze and the skeletons
 const OPEN_T = 2.5;
 const SINK_S = 0.55;
 const DURATION = 3.3;
 
-const ZONE_R = 1.7;
+const ZONE_R = 1.6;
 const HAND_SCALE = 0.62;
 const WRIST_UP = 1.3; // wrist height when the hand has risen
 const WRIST_DOWN = -1.9; // hidden below the floor
@@ -73,6 +76,7 @@ export class GraveGrasp implements Effect {
   /** The zone: on the enemy's live feet until the burst, then where the hand came up. The telegraph reads it. */
   readonly zone: Extract<TelegraphShape, { kind: 'circle' }> = { kind: 'circle', x: 0, z: 0, radius: ZONE_R };
   private time = 0;
+  private caught = false; // the enemy was inside the ring when the hand came up
   private flags = { burst: false, closed: false, dragging: false, squeezed: false, opened: false, sunk: false };
   private feet = new THREE.Vector3();
   private total = 0;
@@ -115,6 +119,7 @@ export class GraveGrasp implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
+    // The spot the enemy stood at the cast: the hand rises there, whatever the enemy does meanwhile.
     const e = ctx.targets[0];
     this.feet.copy(e ? e.group.position : ctx.point).setY(0);
     this.zone.x = this.feet.x;
@@ -135,6 +140,7 @@ export class GraveGrasp implements Effect {
     this.prevK = 0;
     this.squeezeAt = this.burstAt = -1;
     this.wispT = 0;
+    this.caught = false;
     for (const k of Object.keys(this.flags) as (keyof typeof this.flags)[]) this.flags[k] = false;
     clearScreenFx(this.screen);
     this.hand.reset();
@@ -146,9 +152,9 @@ export class GraveGrasp implements Effect {
     this.ripple.set(this.feet, 0, 0);
   }
 
-  /** Where the victim stands now (the live figure), else the cast-time spot. */
+  /** Where the victim stands now (the live figure) once it is caught, else the spot the hand rose at. */
   private victimAt(out: THREE.Vector3) {
-    const e = this.ctx?.targets[0];
+    const e = this.caught ? this.ctx?.targets[0] : undefined;
     return e ? out.set(e.group.position.x, 0, e.group.position.z) : out.copy(this.feet);
   }
 
@@ -173,11 +179,8 @@ export class GraveGrasp implements Effect {
     const f = this.flags;
     const caster = ctx?.caster.group.position;
 
-    // --- Anticipation: the mark follows the enemy; soulfire flickers up round it; the ground trembles. ---
+    // --- Anticipation: the mark stays where the enemy stood; soulfire flickers up round it; the ground trembles. ---
     if (!f.burst) {
-      this.victimAt(this.feet);
-      this.zone.x = this.feet.x;
-      this.zone.z = this.feet.z;
       this.wispT += dt;
       while (this.wispT >= 0.07) {
         this.wispT -= 0.07;
@@ -194,12 +197,13 @@ export class GraveGrasp implements Effect {
     if (!f.burst && t >= BURST_T) {
       f.burst = true;
       this.burstAt = t;
-      this.victimAt(this.feet);
+      // Still inside the ring (live position)? Then the grasp lands.
+      const target = ctx?.targets[0];
+      const tp = target?.group.position;
+      this.caught = !!(ctx && tp && Math.hypot(tp.x - this.feet.x, tp.z - this.feet.z) <= ZONE_R);
       if (caster) this.away.set(this.feet.x - caster.x, 0, this.feet.z - caster.z);
       if (this.away.lengthSq() < 1e-6) this.away.set(0, 0, 1);
       this.away.normalize();
-      this.zone.x = this.feet.x;
-      this.zone.z = this.feet.z;
       // Spires burst round the rim of the hole.
       for (let i = 0; i < SPIRES - 2; i++) {
         const a = (i / (SPIRES - 2)) * Math.PI * 2 + 0.6;
@@ -213,10 +217,10 @@ export class GraveGrasp implements Effect {
       this.wisps.puff(this.feet, 8, 1.4, 0.28);
       this.shake = 0.6;
       const e = ctx?.targets[0];
-      if (ctx && e) {
+      if (ctx && e && this.caught) {
         ctx.hit(e, {
           damage: this.settings.damage, knock: 0, from: caster ? caster.clone() : this.feet.clone(), color: BONE_CSS.body, projectile: true,
-          status: { kind: 'root', seconds: 0.85 },
+          status: { kind: 'root', seconds: this.settings.root },
           // No carry in this context: the hit drags it (a pull stops 1 m short of Mortis, 4 m at most).
           ...(ctx.carry ? {} : { pull: Math.min(4, this.settings.drag) }),
         });
@@ -232,7 +236,7 @@ export class GraveGrasp implements Effect {
     }
 
     // --- The drag: the victim is carried toward Mortis along the live line, eased out like a yank. ---
-    if (f.burst && t >= DRAG_T0 && !f.squeezed && ctx && caster) {
+    if (f.burst && this.caught && t >= DRAG_T0 && !f.squeezed && ctx && caster) {
       const e = ctx.targets[0];
       if (e) {
         const p = e.group.position;
@@ -253,6 +257,7 @@ export class GraveGrasp implements Effect {
     }
 
     // --- The squeeze: damage, root, two skeletons beside the victim, two skull spires. ---
+    if (f.burst && !f.squeezed && !this.caught && t >= DRAG_END) f.squeezed = true; // the hand closed on nothing
     if (f.burst && !f.squeezed && t >= DRAG_END) {
       f.squeezed = true;
       this.squeezeAt = t;
@@ -264,7 +269,6 @@ export class GraveGrasp implements Effect {
       if (ctx && e) {
         ctx.hit(e, {
           damage: this.settings.squeeze, knock: 0, from: this.feet.clone(), color: BONE_CSS.hot, projectile: true,
-          status: { kind: 'root', seconds: this.settings.root },
         });
         ctx.summon?.({
           kind: 'melee', at: this.feet.clone(), count: 2, hp: this.settings.hp, seconds: this.settings.seconds,
@@ -352,14 +356,14 @@ export class GraveGrasp implements Effect {
 export const graveGraspModule: EffectModule = {
   label: 'grave grasp',
   category: 'hero: bone',
-  // The clicked enemy, else the nearest one.
+  // The clicked enemy (the engine checks sight at the cast), else the nearest one.
   targeting: { mode: 'enemy' },
   create: () => new GraveGrasp(),
   telegraphs(effect) {
     const e = effect as GraveGrasp;
     if (!e.ctx) return [];
-    // The live zone (moved onto the enemy by the effect until the burst) lets the late hits through the duel's zone check;
-    // the hits are also `projectile: true`, so this is the drawn warning.
+    // The ring where the enemy stood at the cast: the drawn warning, and the zone the hits are judged against (the hits
+    // are also `projectile: true`: the effect's own live check at the burst is the dodge).
     return [{ shape: e.zone, start: 0, impact: BURST_T }];
   },
   bloom: { enabled: true, strength: 0.4, radius: 0.4, threshold: 0.86 },
@@ -373,7 +377,7 @@ export const graveGraspModule: EffectModule = {
     f.add(s, 'damage', 1, 150, 1);
     f.add(s, 'squeeze', 0, 100, 1);
     f.add(s, 'drag', 0, 4, 0.5);
-    f.add(s, 'root', 0, 1.5, 0.1);
+    f.add(s, 'root', 0.5, 1.5, 0.1);
     f.add(s, 'hp', 10, 200, 5);
     f.add(s, 'seconds', 2, 20, 1);
     f.add(s, 'attack', 1, 40, 1);

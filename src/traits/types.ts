@@ -27,9 +27,12 @@ export interface CastMods {
 
 export const NO_MODS: CastMods = { power: 1 };
 
-/** A hit being resolved: hooks may change `damage` and `opts` (a copy). */
+/**
+ * A hit being resolved: hooks may change `damage` and `opts` (a copy). `trait`: a hit from a passive or something a spell
+ * left behind (`TraitView.hitEnemy`). A `dealt` hook that itself calls `hitEnemy` must ignore this kind.
+ */
 export interface TraitHit {
-  kind: 'spell' | 'attack' | 'unit';
+  kind: 'spell' | 'attack' | 'unit' | 'trait';
   /** Spell slot 0-3 (spells only). */
   slot?: number;
   /** Which cast it came from (unique per side within a round): once-per-cast rules key on it, not on `afterCast`. */
@@ -49,7 +52,7 @@ export interface TraitHit {
 
 /** A hit that landed, as the dealer learns it (in a network duel: when the server confirms it). */
 export interface LandedHit {
-  kind: 'spell' | 'attack' | 'unit';
+  kind: 'spell' | 'attack' | 'unit' | 'trait';
   slot?: number;
   damage: number;
   victimIsHero: boolean;
@@ -72,6 +75,35 @@ export interface TraitView {
   /** The resource (0 when the trait has none). */
   res: number;
   addRes(n: number): void;
+  /**
+   * Shows this hero's own count, stance or armed attack to both players: `n` pips over the hero (looks in
+   * `Trait.ownLook`), 0 hides it. Cheap to call every frame (only a change is sent). Online it reaches the other screen,
+   * where `own` reads the same value and `Trait.ownChanged` runs. Cleared every round.
+   */
+  show(name: string, n: number): void;
+  /** The value last shown under `name`, on either screen (0 when none). */
+  own(name: string): number;
+  /** Ammo charges left on the charges slot (0 without one). Only meaningful on this hero's own client. */
+  readonly ammo: number;
+  /** Ends this hero's shield now (and on the other screen). */
+  clearShield(): void;
+  /** Frees this hero from a `hold` early (a broken channel). */
+  release(): void;
+  /**
+   * Tells this hero's own client something only the screen that resolved a hit knows (`Trait.peerNote` runs there). A
+   * refund decided in `dealt` goes this way: online `dealt` runs on the victim's screen, where `setCooldown` does nothing
+   * for the real hero. Offline it runs at once.
+   */
+  noteOwner(name: string, n: number): void;
+  /**
+   * A hit on the enemy hero from a passive or from something a spell left behind (arcs, crossings, a curse's price), at any
+   * time. Only where the hit is really decided does anything happen: offline always, online on the victim's screen (the
+   * other hero's trait there). So call it from `dealt` or `victimTick`, which run on that screen. `dealt` and `taken`
+   * hooks see it with kind 'trait'.
+   */
+  hitEnemy(opts: HitOptions): void;
+  /** Moves the enemy hero by this step now, out of cover and inside the ring (a passive's drag). Call it from `victimTick`. */
+  carryEnemy(dx: number, dz: number): void;
   say(text: string, color?: string): void;
   heal(amount: number): void;
   buff(kind: BuffKind, amount: number, seconds: number): void;
@@ -135,12 +167,46 @@ export interface TraitView {
 /** A slot that charges while it is aimed (see `Trait.hold`). */
 export interface HoldSpec { slot: number; seconds: number }
 
-/** A slot that can be cast once more after the first cast (see `Trait.recast`). */
-export interface RecastSpec { slot: number; window: number; name: string; power?: number; replay?: boolean }
+/**
+ * A slot that can be cast once more after the first cast (see `Trait.recast`). `arm`: seconds after the first cast
+ * before the second one opens, so the first cast's answer stays true. `aiWait`: the duel AI does not fire it (it lets the
+ * spell run its course).
+ */
+export interface RecastSpec { slot: number; window: number; name: string; power?: number; replay?: boolean; arm?: number; aiWait?: boolean }
+
+/** How an own-state pip looks (`Trait.ownLook`), the same tokens as stacks. */
+export interface PipLook { color: string; shape?: 'drop' | 'flake' | 'sprout' | 'mark' | 'gem' }
+
+/** A ring at a hero's feet, drawn on both screens (`Trait.ring`). `fill` 0..1 draws an inner arc (time left). */
+export interface HeroRing { radius: number; color: string; fill?: number; opacity?: number }
+
+/** Something a passive keeps on the ground, drawn on both screens for its whole life (`Trait.marks`). */
+export interface GroundMark { x: number; z: number; kind: 'bones'; age: number; life: number }
 
 export interface Trait {
   passive: { name: string; blurb: string };
   twist?: { name: string; blurb: string };
+  /**
+   * This hero's rule that acts on the enemy hero, run every frame on the screen where that enemy's position and hits are
+   * decided: offline always, online on the victim's screen (`t` is this trait's view there). Oblivion's pull, Fenna's
+   * flowers, Kaia's rods, Shiori's ink. Read shared state from a WeakMap the spells write, because spells play on both screens.
+   */
+  victimTick?(t: TraitView, dt: number): void;
+  /** The enemy hero cast `slot` (a spell or its recast), on both screens: `t` decides what it may do there (Vesper's curse). */
+  enemyCast?(t: TraitView, slot: number): void;
+  /** The look of each `TraitView.show` name. A name with no look draws nothing and only travels to the other screen. */
+  ownLook?: Record<string, PipLook>;
+  /** A `show` value changed on the other screen of a network duel (`t` is this trait's view there). */
+  ownChanged?(t: TraitView, name: string, n: number): void;
+  /** See `TraitView.noteOwner`: runs on this hero's own client. */
+  peerNote?(t: TraitView, name: string, n: number): void;
+  /**
+   * A ring at this hero's feet, asked every frame on both screens, so it may only read what both have (`time`, `own`,
+   * `mem` written by `ownChanged`). Null: no ring.
+   */
+  ring?(t: TraitView): HeroRing | null;
+  /** What this hero's passive keeps on the ground, asked every frame on both screens (Mortis's bone piles). */
+  marks?(t: TraitView): GroundMark[];
   /** An own resource: a bar under HP (shown for both heroes). */
   resource?: { name: string; max: number; color: string; start?: number };
   /** Walk speed in m/s (default 4). */

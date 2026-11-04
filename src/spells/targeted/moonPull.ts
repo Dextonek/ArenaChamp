@@ -1,27 +1,32 @@
 import * as THREE from 'three';
 import { Emitter } from '../../emitter';
-import { smoothstep } from '../../effects/common';
+import { smoothstep, type Enemy } from '../../effects/common';
 import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx, impactFrameAt } from '../../effects/parts';
 import { Droplets, MoonHalo, SplashCrown, TIDE, TIDE_CSS, TideCurrent, TideRing, WaterPool, WaterRibbon } from '../../effects/parts/tide';
+import { ChannelBar, channelBroken, stillSees } from '../../effects/channel';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import { MOON_SECONDS, tideOf } from '../../traits/tide';
 
 /**
- * Moon's Pull (tide kit, R: self, global). Marin raises her hands and a pale moon rises over her head. For 4 s
- * (`MOON_SECONDS`) the tide is held at Low and doubled: the enemy is dragged toward her from anywhere in the arena at
- * 1.2 m/s (`ctx.carry` every frame, as Forge Charge does; she is never touched, the drag stops 1.6 m short), and her
- * Wave Disc and Coral Spire pulls are twice as strong while it lasts (the trait reads `moonLeft` from `tides`, which
- * this effect owns: set on play, counted down, cleared on reset). It hurts: 20 every 0.9 s of the drag (four ticks) and a 65 tide crash when the enemy reaches her stop distance or the moon sets, whichever is first. The look is the Low tide at full
- * strength: blue streaks spiral in from across the arena, a ring of inward chevrons pulses at her feet and water tethers
- * run from her to the enemy. When the moon sets the tide lets go in a burst of foam. See pipeline/designs/kit-tide.md.
+ * Moon's Pull (tide kit, R: a 3 s channel). Marin raises her hands and a pale moon rises over her head; she is rooted
+ * for the 3 s (`MOON_SECONDS`; the trait's `afterCast` calls `t.hold(3)`) and a ring at her feet empties as it runs
+ * (`ChannelBar`). The tide is held at Low and her Wave Disc and Coral Spire pulls are doubled while it lasts (the trait
+ * reads `moonLeft` from `tides`, which this effect owns: set on play, counted down, cleared on reset). An enemy within
+ * 12 m that she can still see (`stillSees`) is dragged toward her at 2.4 m/s (`ctx.carry` every frame, as Forge Charge
+ * does; she is never touched, the drag stops 1.6 m short) and takes 15 damage a second while the drag holds (a 5 hit
+ * every third of a second). A stun, silence or knock-up ends it at once (`channelBroken`: the moon fades, the tide is
+ * released, `ctx.releaseCaster`), with no crash. If the moon sets by itself, a 85 tide crash lands on an enemy within
+ * 2.5 m of her. The hits are `projectile: true`: the drag is the catch, so the duel's zone filter does not decide.
+ * The look is the Low tide at full strength: blue streaks spiral in, a ring of inward chevrons pulses at her feet and
+ * water tethers run from her to each enemy being dragged. See pipeline/designs/kit-tide.md.
  *
- * `targeting.radius` is 25, wider than the 24 m duel ring, so that every enemy is in `ctx.targets` ("anywhere in the
- * arena"); the duel AI therefore casts it by its R rule alone (the enemy under 55% HP or the round 20 s old).
+ * `targeting.radius` is 25, wider than the 24 m duel ring, so that every enemy is in `ctx.targets`; the 12 m reach is
+ * judged here. The duel AI casts it by its R rule alone (the enemy under 55% HP or the round 20 s old).
  *
  * Network duels: `ctx.carry` moves only this side's own hero, so the drag works on the victim's screen, where the cast is
- * replayed; on Marin's screen the other hero is left alone and follows its streamed position. The catch is judged by the
- * live positions. The tethers are drawn on both screens between the live positions.
+ * replayed; on Marin's screen the other hero is left alone and follows its streamed position. The drag and the crash are
+ * judged by the live positions. The tethers are drawn on both screens between the live positions.
  */
 export interface MoonPullSettings {
   /** Metres per second the enemy is dragged. */
@@ -29,7 +34,7 @@ export interface MoonPullSettings {
   loop: boolean;
 }
 
-export const defaultMoonPull = (): MoonPullSettings => ({ speed: 1.2, loop: false });
+export const defaultMoonPull = (): MoonPullSettings => ({ speed: 2.4, loop: false });
 
 // Timeline (seconds).
 const RAISE_T = 0.3; // the moon is up and the drag begins
@@ -37,13 +42,13 @@ const END_T = MOON_SECONDS; // the moon sets: the drag and the held tide end tog
 const DURATION = END_T + 0.9;
 
 const STOP = 1.6; // the drag leaves this much between her and the enemy
+const REACH = 12; // the drag needs the enemy this close
 const RADIUS = 25;
 const MAX_TETHERS = 2;
-const TICK_DAMAGE = 20; // while the drag holds: four ticks
-const TICK_FIRST = RAISE_T + 0.4;
-const TICK_EVERY = 0.9;
-const TICKS = 4;
-const CRASH_DAMAGE = 65; // the tide crash: at the end, or when the enemy reaches her stop distance
+const TICK_DAMAGE = 8; // 24 a second while the drag holds
+const TICK_EVERY = 1 / 3;
+const CRASH_DAMAGE = 110; // the tide crash: only when the moon sets by itself
+const CRASH_R = 2.5; // ... on an enemy this close to her
 
 export class MoonPull implements Effect {
   readonly group = new THREE.Group();
@@ -58,7 +63,9 @@ export class MoonPull implements Effect {
   private time = 0;
   private flags = { raised: false, released: false, pool: false };
   private owner: object | null = null;
-  private ticks = 0;
+  private tickAcc = 0;
+  private endT = END_T;
+  private bar = new ChannelBar(TIDE.body);
   private crashed = new Set<object>();
   private centre = new THREE.Vector3();
 
@@ -87,7 +94,7 @@ export class MoonPull implements Effect {
     this.screen.tint.set(TIDE.dark);
     this.tethers.forEach((r) => { r.shed = 6; r.drops.splash = false; });
     this.group.add(
-      this.pool.mesh, this.ring.mesh, this.current.mesh, this.release.mesh, this.halo.mesh, ...this.tethers.map((r) => r.mesh),
+      this.pool.mesh, this.bar.mesh, this.ring.mesh, this.current.mesh, this.release.mesh, this.halo.mesh, ...this.tethers.map((r) => r.mesh),
       this.crown.mesh, this.drops.mesh, this.pop.mesh, this.groundShock.mesh, this.inShock.mesh,
     );
     this.reset();
@@ -121,7 +128,9 @@ export class MoonPull implements Effect {
   private reset() {
     if (this.owner) tideOf(this.owner).moonLeft = 0;
     this.owner = null;
-    this.ticks = 0;
+    this.tickAcc = 0;
+    this.endT = END_T;
+    this.bar.set(this.centre, 0);
     this.crashed.clear();
     this.time = 0;
     this.shake = 0;
@@ -160,7 +169,7 @@ export class MoonPull implements Effect {
     const f = this.flags;
     if (ctx) this.centre.copy(ctx.caster.group.position).setY(0);
     // The held tide counts down with the effect; the trait reads it (a pull of hers while it is above 0 is doubled).
-    if (this.owner) tideOf(this.owner).moonLeft = Math.max(0, MOON_SECONDS - t);
+    if (this.owner) tideOf(this.owner).moonLeft = f.released ? 0 : Math.max(0, MOON_SECONDS - t);
 
     if (!f.pool && t >= 0.05) {
       f.pool = true;
@@ -172,13 +181,15 @@ export class MoonPull implements Effect {
       this.crown.burst(this.centre, 1.3);
       this.drops.spray(this.v1.copy(this.centre).setY(0.8), this.v2.set(0, 1, 0), 14, 6);
     }
-    if (f.raised && !f.released && t < END_T && ctx) {
-      this.drag(ctx, dt);
-      while (this.ticks < TICKS && t >= TICK_FIRST + this.ticks * TICK_EVERY) {
-        this.ticks++;
-        this.strike(ctx, TICK_DAMAGE, false);
-      }
+    if (ctx && !f.released && channelBroken(ctx)) {
+      // A stun, silence or knock-up ends the channel at once: no crash, the tide lets go, she is free.
+      f.released = true;
+      this.endT = t;
+      if (this.owner) tideOf(this.owner).moonLeft = 0;
+      ctx.releaseCaster?.();
+      this.shake = 0.15;
     }
+    if (f.raised && !f.released && t < END_T && ctx) this.drag(ctx, dt);
     if (!f.released && t >= END_T) {
       f.released = true;
       if (ctx) this.strike(ctx, CRASH_DAMAGE, true);
@@ -196,11 +207,13 @@ export class MoonPull implements Effect {
   }
 
   /**
-   * A hit on every enemy in range, each `projectile` (the drag is the catch, so the duel's zone filter does not
-   * decide). A crash lands once per enemy; `reached` limits a tick to nobody (see `drag`).
+   * The tide crash: a hit on every enemy within CRASH_R of her, once each, `projectile` (the drag is the catch, so the
+   * duel's zone filter does not decide).
    */
   private strike(ctx: CastContext, damage: number, crash: boolean) {
+    const me = ctx.caster.group.position;
     for (const e of ctx.targets) {
+      if (Math.hypot(e.group.position.x - me.x, e.group.position.z - me.z) > CRASH_R) continue;
       if (crash) {
         if (this.crashed.has(e)) continue;
         this.crashed.add(e);
@@ -212,28 +225,35 @@ export class MoonPull implements Effect {
     if (crash) this.shake = Math.max(this.shake, 0.35);
   }
 
-  /** One frame of the drag: every enemy in range is carried toward her, never closer than STOP. */
+  /**
+   * One frame of the drag: every enemy within REACH that she still sees is carried toward her, never closer than STOP,
+   * and takes a tick of damage every TICK_EVERY while it holds.
+   */
   private drag(ctx: CastContext, dt: number) {
     const me = ctx.caster.group.position;
     let n = 0;
+    const held: Enemy[] = [];
     for (const e of ctx.targets) {
       const p = e.group.position;
       const dx = me.x - p.x, dz = me.z - p.z, d = Math.hypot(dx, dz);
+      if (d > REACH || !stillSees(ctx, this.v3.set(p.x, 0, p.z))) continue;
+      held.push(e);
       if (n < MAX_TETHERS) this.ends[n++].set(p.x, 1.0, p.z);
-      if (d <= STOP + 0.05) {
-        // Reached her stop distance: the tide crashes on it now.
-        if (!this.crashed.has(e)) {
-          this.crashed.add(e);
-          ctx.hit(e, { damage: CRASH_DAMAGE, knock: 0, from: me.clone(), color: TIDE_CSS.body, projectile: true });
-          this.crown.burst(this.v1.set(p.x, 0, p.z), 1.3);
-          this.shake = Math.max(this.shake, 0.35);
-        }
-        continue;
-      }
+      if (d <= STOP + 0.05) continue;
       const step = Math.min(this.settings.speed * dt, d - STOP);
       ctx.carry?.(e, this.v3.set((dx / d) * step, 0, (dz / d) * step));
     }
     for (; n < MAX_TETHERS; n++) this.ends[n].set(NaN, 0, 0);
+    if (!held.length) return;
+    this.tickAcc += dt;
+    while (this.tickAcc >= TICK_EVERY) {
+      this.tickAcc -= TICK_EVERY;
+      for (const e of held) {
+        ctx.hit(e, { damage: TICK_DAMAGE, knock: 0, from: me.clone(), color: TIDE_CSS.body, projectile: true });
+        this.v1.copy(e.group.position).setY(1.0);
+        this.drops.spray(this.v1, this.v2.set(0, 1, 0), 2, 2.5);
+      }
+    }
   }
 
   private layout() {
@@ -241,12 +261,15 @@ export class MoonPull implements Effect {
     const f = this.flags;
     const c = this.centre;
     const held = f.raised && !f.released;
-    const after = f.released ? t - END_T : -1;
+    const after = f.released ? t - this.endT : -1;
     const sinceRaise = f.raised ? t - RAISE_T : -1;
 
     // Night: the arena dims while the moon holds, and clears when it sets.
-    this.screen.darken = 0.34 * smoothstep(t / 0.35) * (1 - smoothstep((t - END_T) / 0.5));
+    this.screen.darken = 0.34 * smoothstep(t / 0.35) * (1 - smoothstep((t - this.endT) / 0.5));
     this.screen.impact = f.raised ? impactFrameAt(t, RAISE_T, [1], 0.03) : 0;
+
+    // The channel bar empties over the 3 s (and goes at once when the channel breaks).
+    this.bar.set(c, held ? Math.max(0, 1 - t / END_T) : 0);
 
     // --- The moon over her head, the Low-tide ring at her feet and the arena-wide inward current. ---
     const up = smoothstep(t / RAISE_T) * (1 - smoothstep(after / 0.4));

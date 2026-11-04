@@ -1,7 +1,7 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Sky kit data: Zephyr, the Wind Blade (a melee assassin, kits v4). Four spells (labels as registered), canvas-drawn icons in the
+ * Sky kit data: Zephyr, the Wind Blade (a melee assassin, kits v5). Four spells (labels as registered), canvas-drawn icons in the
  * kit's palette: dark storm-teal ground, cloud foil, sharp pale mint sickle crescents with a hot leading edge and a dark
  * inner edge, thin spiral gust ribbons, small leaves, one blossom-pink accent. Signature shape: the wind crescent.
  */
@@ -129,7 +129,7 @@ export const skyKit: HeroKit = {
   title: 'the Wind Blade',
   accent: S.body,
   foil: S.cloud,
-  maxHp: 690,
+  maxHp: 660,
   melee: true,
   portrait(g, s) {
     iconGround(g, s);
@@ -184,7 +184,7 @@ export const skyKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'crosswind', name: 'Crosswind', range: 3, cooldown: 4,
-      blurb: 'A 3 m cross-cut of wind in front of him: 38 damage. Press Q again within 2 s for a 3 m dash-slash through the aim (25 damage), a dash that gives a Gust.',
+      blurb: 'A 3 m cross-cut of wind in front of him: 46 damage. Press Q again within 2 s for a 3 m dash-slash through the aim (31 damage), a dash that gives a Gust.',
       icon(g, s) {
         iconGround(g, s);
         // Two long crescents cut across each other into an X, a pink blossom at the crossing, speed lines behind.
@@ -198,7 +198,7 @@ export const skyKit: HeroKit = {
     },
     {
       key: 'W', label: 'skyward', name: 'Skyward', range: 5, cooldown: 8, dash: true, cc: true,
-      blurb: 'He leaps into the air, untouchable for 0.8 s, and comes down on a spot within 5 m: 34 damage within 2 m and a 0.5 s knock-up. A dash: it gives a Gust and resets his basic attack when he lands.',
+      blurb: 'He leaps into the air, untouchable for 0.6 s, and comes down on a spot within 5 m: 34 damage within 1.4 m and a 0.5 s knock-up. The landing circle shows from take-off. A dash: it gives a Gust and resets his basic attack when he lands.',
       icon(g, s) {
         iconGround(g, s);
         // A tall leap arc from the lower left over a blossom apex, down to a landing ring on the ground with a dome of crescents.
@@ -219,7 +219,7 @@ export const skyKit: HeroKit = {
     },
     {
       key: 'E', label: 'feather step', name: 'Feather Step', range: 4, cooldown: 7, aim: 'line', dash: true, parry: true,
-      blurb: 'A 4 m step in any direction, untouchable for 0.2 s: enough to slip a bolt or a swing. Two charges (one back every 7 s). A dash: it gives a Gust and resets his basic attack.',
+      blurb: 'A quick 4 m step in any direction. Two charges (one back every 7 s), shown as pips round him. A dash: it gives a Gust and resets his basic attack.',
       icon(g, s) {
         iconGround(g, s);
         // A quick step to the upper right: two fading ghosts behind, a streak, chevron crescents and trailing feathers.
@@ -243,7 +243,7 @@ export const skyKit: HeroKit = {
     },
     {
       key: 'R', label: 'sky rend', name: 'Sky Rend', range: 7, cooldown: 24,
-      blurb: 'Ultimate. Aim at an enemy within 7 m: he vanishes into the wind and strikes six times in 1.2 s from every side, 15 damage each (double on an airborne enemy), untouchable throughout, and ends behind them.',
+      blurb: 'Ultimate. Click an enemy within 7 m: he marks them and stands for 0.8 s. If he still sees them within 9 m, he vanishes and cuts from every side: 3 cuts plus 2 per Gust he spends (9 at most), 22 damage each, untouchable while they run. He ends behind them and cannot cast for 0.6 s. If the wind-up fails (cover, or too far) it fizzles and he is free.',
       icon(g, s) {
         iconGround(g, s);
         // Six streaks converge on one point, a pinwheel of three crescents round them, a pink blossom in the eye.

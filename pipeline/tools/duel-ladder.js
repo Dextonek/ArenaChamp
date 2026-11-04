@@ -3,7 +3,7 @@
 // time itself, so it works with the browser pane hidden.
 //
 //   eval(await (await fetch('/pipeline/tools/duel-ladder.js')).text());
-//   await _ladder(5, [['Lyra', 'Brannoc'], ['Vex', 'Kaia']], 8)   // level 5: each pair both ways, 8 fights each way
+//   await _ladder(5, [['Lyra', 'Brannoc'], ['Vitriol', 'Kaia']], 8)   // level 5: each pair both ways, 8 fights each way
 //   _ladderSum()   // -> per level: fights, cpuWinPct (the opponent's), avgSecs, casts and dodges per fight
 //
 // Results add up across calls; `_ladderReset()` clears them. A browser javascript call stops after about 45 s, which

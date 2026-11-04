@@ -1,4 +1,12 @@
-# Astral kit: Lyra, the Star Archer (v4, 2026-11-03)
+# Astral kit: Lyra, the Star Archer (v5, 2026-11-04)
+
+## v5 (2026-11-04)
+Source: `pipeline/designs/kits-v5.md`, "Lyra". Changes from v4:
+- **Meteor Mark** can be walked out of: the spot still fixes at 1.5 s, the strike lands 0.9 s later (2.4 s, was 2.0 s), radius 1.8 m (was 2.2). The telegraph, closing ring and meteor flight follow the new times; the effect ends at 4.1 s.
+- **Pinning Arrow** flies slower: wind-up 0.3 s (was 0.22), bolt 24 m/s (was 30), so it reaches 6 m at about 0.55 s and can be sidestepped. The telegraph arms from the cast to the release.
+- **Far Sight** gains a refund: a full-draw Starfall Arrow that hits takes 3 s off Pinning Arrow (once per cast). `castMods` notes the full draw in `t.mem`, `landed` (her own client, so it works online) lowers the cooldown.
+
+(The sections below are the v4 text; the numbers above win.)
 
 Source: `pipeline/designs/kits-v4.md`, "Lyra". The v3 kit (Starshot, Constellation Snare, Orbit Veil, Celestial Hunt) is
 replaced entirely. Read `kit-common.md` for files, timing and look lessons.

@@ -48,9 +48,9 @@ function crack(a: number, len: number) {
 
 export class BuffFx {
   readonly group = new THREE.Group();
-  private amt: Record<BuffKind, number> = { haste: 0, might: 0, armor: 0, vulnerable: 0, weaken: 0 };
+  private amt: Record<BuffKind, number> = { haste: 0, might: 0, armor: 0, vulnerable: 0, weaken: 0, grounded: 0 };
   private parts: Record<BuffKind, THREE.Group>;
-  private mats: Record<BuffKind, THREE.MeshBasicMaterial[]> = { haste: [], might: [], armor: [], vulnerable: [], weaken: [] };
+  private mats: Record<BuffKind, THREE.MeshBasicMaterial[]> = { haste: [], might: [], armor: [], vulnerable: [], weaken: [], grounded: [] };
   private clock = Math.random() * 10;
   private embers: THREE.Mesh[] = [];
   private drops: THREE.Mesh[] = [];
@@ -134,7 +134,14 @@ export class BuffFx {
     this.chevron.position.y = 3.4;
     weaken.add(this.chevron);
 
-    this.parts = { haste, might, armor, vulnerable, weaken };
+    // Grounded: a heavy gold ring pinned round the feet.
+    const grounded = new THREE.Group();
+    const anchor = new THREE.Mesh(new THREE.RingGeometry(0.6, 0.72, 32), reg('grounded', glow(BUFF_COLOR.grounded, 0.8)));
+    anchor.rotation.x = -Math.PI / 2;
+    anchor.position.y = 0.09;
+    grounded.add(anchor);
+
+    this.parts = { haste, might, armor, vulnerable, weaken, grounded };
     for (const k of BUFF_KINDS) this.group.add(this.parts[k]);
   }
 

@@ -32,11 +32,11 @@ export const defaultToxinDart = (): ToxinDartSettings => ({ damage: 30, tick: 6,
 
 // Timeline (seconds).
 const GLINT_T = 0.12;
-const THROW_T = 0.2;
+const THROW_T = 0.25;
 const DURATION = 4.3;
 const REACH = 9; // from her feet: the kit's range
 const MUZZLE = 0.5;
-const SPEED = 30;
+const SPEED = 20;
 const RADIUS = 0.4;
 const FLIGHT_END = THROW_T + (REACH - MUZZLE) / SPEED;
 const TICKS = 5;

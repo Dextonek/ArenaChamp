@@ -126,6 +126,10 @@ export class Arena {
   casterBuff: ((kind: BuffKind, amount: number, seconds: number) => void) | null = null;
   /** Scales every shield a figure makes for itself (the duel: a hero's trait). */
   shieldScale: ((target: Enemy) => number) | null = null;
+  /** Frees a figure from its cast's root or a trait's hold (the duel: a broken channel). */
+  releaseFigure: ((who: Enemy) => void) | null = null;
+  /** Rings nobody inside can leave (Cantor's Duet), with the seconds they have left. */
+  private confines: { x: number; z: number; r: number; left: number }[] = [];
 
   private foes: Foe[] = [];
   private selected: Body[] = [];
@@ -345,6 +349,7 @@ export class Arena {
       sentFrom: from,
       bend: this.aimBend,
       addObstacle: (o, seconds) => this.addObstacle(o, seconds),
+      confine: (x, z, r, seconds) => this.confine(x, z, r, seconds),
       removeObstacle: (o) => this.removeObstacle(o),
       obstacles: () => this.obstacles ?? [],
       carry: (target, delta) => this.carryFigure(target, delta),
@@ -524,6 +529,12 @@ export class Arena {
    */
   moveFigure(target: Enemy, to: THREE.Vector3, seconds: number): THREE.Vector3 {
     const end = to.clone().setY(0);
+    // Grounded (Sefu's Judged): dashes, blinks and leaps go less far.
+    const short = this.statusOf(target)?.buff('grounded') ?? 0;
+    if (short > 0) {
+      const p = target.group.position;
+      end.set(p.x + (end.x - p.x) * (1 - short), 0, p.z + (end.z - p.z) * (1 - short));
+    }
     this.keepInside(end);
     const st = this.slotOf(target);
     if (!st) return end;
@@ -621,9 +632,14 @@ export class Arena {
   clearTempObstacles() {
     for (const t of this.temps) this.removeObstacle(t.o);
     this.temps = [];
+    this.confines.length = 0;
   }
 
   private tickTemps(dt: number) {
+    if (this.confines.length) {
+      for (const c of this.confines) c.left -= dt;
+      this.confines = this.confines.filter((c) => c.left > 0);
+    }
     if (!this.temps.length) return;
     for (const t of this.temps) t.left -= dt;
     for (const t of this.temps.filter((x) => x.left <= 0)) this.removeObstacle(t.o);
@@ -696,11 +712,24 @@ export class Arena {
   /** Moves `p` (y ignored) back inside `bounds`, `margin` from the edge, and out of the obstacles. */
   keepInside(p: THREE.Vector3, margin = 0.6) {
     if (this.obstacles) pushOut(p, this.obstacles);
+    // A confine ring (Cantor's Duet): nobody inside it can leave while it holds.
+    for (const c of this.confines) {
+      const dx = p.x - c.x, dz = p.z - c.z, d = Math.hypot(dx, dz), r = c.r - 0.3;
+      if (d > r && d < c.r + 2) { p.x = c.x + (dx / d) * r; p.z = c.z + (dz / d) * r; }
+    }
     const b = this.bounds;
     if (!b) return p;
     const dx = p.x - b.x, dz = p.z - b.z, d = Math.hypot(dx, dz), r = b.r - margin;
     if (d > r) { p.x = b.x + (dx / d) * r; p.z = b.z + (dz / d) * r; }
     return p;
+  }
+
+  /**
+   * Closes a ring round a spot for `seconds`: whoever is inside it cannot leave, and it is no wall to anyone outside. Each
+   * screen of a network duel keeps its own hero in. A new round clears it. `CastContext.confine`.
+   */
+  confine(x: number, z: number, r: number, seconds: number) {
+    this.confines.push({ x, z, r, left: seconds });
   }
 
   /** True when no obstacle stands between `a` and `b` (always true without obstacles). */
@@ -792,6 +821,7 @@ export class Arena {
       sentFrom: (o.sentFrom ?? o.from).clone().setY(0),
       bend: o.bend ?? 0,
       addObstacle: (ob, seconds) => this.addObstacle(ob, seconds),
+      confine: (x, z, r, seconds) => this.confine(x, z, r, seconds),
       removeObstacle: (ob) => this.removeObstacle(ob),
       obstacles: () => this.obstacles ?? [],
       carry: (target, delta) => this.carryFigure(target, delta),
@@ -845,11 +875,13 @@ export class Arena {
   }
 
   /** The caster-side mechanics of a cast context, bound to the figure that casts (the hero, or a duel opponent). */
-  private selfFx(who: Enemy): Pick<CastContext, 'shieldSelf' | 'healSelf' | 'moveCaster'> {
+  private selfFx(who: Enemy): Pick<CastContext, 'shieldSelf' | 'healSelf' | 'moveCaster' | 'casterStatus' | 'releaseCaster'> {
     return {
       shieldSelf: (amount, seconds, color) => this.shieldFigure(who, amount, seconds, color),
       healSelf: (amount) => { this.healFigure(who, amount); },
       moveCaster: (to, seconds) => this.moveFigure(who, to, seconds),
+      casterStatus: () => this.statusOf(who),
+      releaseCaster: () => this.releaseFigure?.(who),
     };
   }
 

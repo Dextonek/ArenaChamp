@@ -32,14 +32,14 @@ const ATTACK_MAX = 40;
 const HEAL_MAX = 150;
 const HEAL_WINDOW_MS = 2000;
 const HEAL_WINDOW_MAX = 300;
-const STATUS_KINDS = ['stun', 'root', 'slow', 'silence', 'blind', 'knockup'];
+const STATUS_KINDS = ['stun', 'root', 'slow', 'silence', 'blind', 'knockup', 'charm', 'sealed'];
 const STATUS_MAX_S = 3;
 const SHIELD_MAX = 400;
 const SHIELD_MAX_S = 10;
 // The identity layer (src/traits): a cast's power and extras, buffs and debuffs, stacks, the resource.
 const POWER_MIN = 0.25;
 const POWER_MAX = 3;
-const BUFF_KINDS = ['haste', 'might', 'armor', 'vulnerable', 'weaken'];
+const BUFF_KINDS = ['haste', 'might', 'armor', 'vulnerable', 'weaken', 'grounded'];
 const BUFF_MAX = 0.5;
 const BUFF_MAX_S = 6;
 const SPELL_HIT_MAX = 400;

@@ -155,7 +155,7 @@ score there does not prove that a kit is fair. Checklist question 35, "has a per
 - **Weakness:** being rushed after her E is spent. She has no dash and the lowest damage until a reaction goes off.
 - **Passive, Reaction:** each spell leaves a reagent on the enemy for 4 s: green (Q), orange (W), violet (E). A second, different reagent sets off a reaction and clears both, and the
   reaction takes 2 s off the spell that took no part.
-  - green + orange, **Combust:** 45 at once.
+  - green + orange, **Combust:** 55 at once.
   - green + violet, **Corrode:** the enemy takes 35% more for 3 s.
   - orange + violet, **Concussion:** moved 2.5 m away (a pull, so it is the same for a player and the CPU) and a 0.5 s silence.
 - **Visible:** reagent pips on the enemy, and they last exactly as long as the reagent does.
@@ -168,7 +168,7 @@ score there does not prove that a kit is fair. Checklist question 35, "has a per
 | Q | Toxin Dart | SHOT | 3 | A dart (9 m, 20 m/s, 0.25 s wind-up): damage now and a poison over 3 s. Green. | blocked | Sidestep: it reaches 6 m at 0.55 s. |
 | W | Fire Vial | TGT | 6 | A tossed vial that always hits (7 m): damage now and a burn over 2 s. Orange. | sight | Stay past 7 m, or break sight. |
 | E | Acid Splash | ZONE (cone) | 8 | A 4 m cone: damage and a shove. Violet. Her answer to being rushed. | ignores | Bait it: step in and out of 4 m, then commit once it is spent. It is back in 8 s, or 6 s after a reaction. |
-| R | Homunculus | SUMMON | 25 | A homunculus (120 HP) climbs out at her feet and waddles at the enemy (4 m/s, up to 6 s). It bursts on contact (2 m): damage and all three reagents, so the reactions go off at once. | ignores | Hit it (120 HP is about three spells), or walk away: it never gains on a 4 m/s walker. |
+| R | Homunculus | SUMMON | 25 | A homunculus (120 HP) climbs out at her feet and waddles at the enemy (4 m/s, up to 3.7 s). It bursts on contact (2 m): damage and all three reagents, so the reactions go off at once. | ignores | Hit it (120 HP is about three spells), or walk away: it never gains on a 4 m/s walker. |
 
 Spell damage stays as tuned in [kit-alchemy.md](kit-alchemy.md) until the balance run.
 
@@ -282,10 +282,10 @@ Spell damage stays as tuned in [kit-alchemy.md](kit-alchemy.md) until the balanc
 | Q | Wave Disc | SHOT | 4 | A spinning disc (9 m, 20 m/s, 0.3 s wind-up, radius 0.8): damage. High tide: pushes 2.5 m. Low tide: pulls 2.5 m. | blocked | Sidestep: it reaches 6 m at 0.60 s, and you need 0.58 s. Read the ring to know which way you will go. |
 | W | Coral Spire | TERRAIN | 9 | A coral pillar rises at a spot (8 m) after 0.9 s for 5 s. As it rises, High tide shoves enemies within 2.5 m away; Low tide drags them 2 m to it. | ignores | Keep off the telegraphed spot: 2.5 m takes 0.88 s from the centre. |
 | E | Mist Form | DASH | 10 | She runs 6 m as water, untouchable for its 0.25 s, then reforms with a splash: damage. The tide flips. | none | The ring shows the new tide at once, so plan for it. She has no escape for the next 10 s. |
-| R | Moon's Pull | SELF, CHANNEL | 24 | She roots herself under a moon for 3 s. An enemy within 12 m she can see is dragged toward her at 2.4 m/s and takes 15 a second. If they are within 2.5 m when it ends, the tide crashes: 85. A stun, silence or knock-up ends it. Her Wave Disc still works, and its pull is 4 m during this. | sight+ | Walk against the pull: 4.0 less 2.4 is 1.6 m/s away, so the crash misses unless her disc catches you. Or step behind cover: the drag stops there. |
+| R | Moon's Pull | SELF, CHANNEL | 24 | She roots herself under a moon for 3 s. An enemy within 12 m she can see is dragged toward her at 2.4 m/s and takes 24 a second. If they are within 2.5 m when it ends, the tide crashes: 110. A stun, silence or knock-up ends it. Her Wave Disc still works, and its pull is 4 m during this. | sight+ | Walk against the pull: 4.0 less 2.4 is 1.6 m/s away, so the crash misses unless her disc catches you. Or step behind cover: the drag stops there. |
 
 ### Zephyr, the Wind Blade (assassin, melee, built)
-640 HP, 4.6 m/s, attack 2.4 m, 10 per 0.9 s. Theme file `sky`.
+660 HP, 4.6 m/s, attack 2.4 m, 10 per 0.9 s. Theme file `sky`.
 
 - **Question:** bank a Gust for Sky Rend, or spend it on a strike?
 - **Weakness:** low HP for a melee hero. He has to come to you, and once his dashes are spent he has no way out.
@@ -293,14 +293,14 @@ Spell damage stays as tuned in [kit-alchemy.md](kit-alchemy.md) until the balanc
 - **Visible:** Gust pips and step charges on both screens, the mark during Sky Rend's wind-up.
 - **Ladder:** rhythm Q, commit W and E, turning point R.
 - **Second decision:** every Gust is either a strike now or two more cuts on Sky Rend.
-- **Changed from v4:** Sky Rend now scales with Gusts, has a real wind-up, and no bonus on airborne targets. Feather Step lost its untouchable window. Skyward's air time and circle are smaller. HP 690 to 640.
+- **Changed from v4:** Sky Rend now scales with Gusts, has a real wind-up, and no bonus on airborne targets. Feather Step lost its untouchable window. Skyward's air time and circle are smaller. HP 690 to 660.
 
 | Key | Spell | Type | CD | What it does | Cover | Counterplay, checked |
 |---|---|---|---:|---|---|---|
-| Q | Crosswind | ZONE (cone), RECAST | 4 | A 3 m cross-cut: 38. Recast within 2 s: a 3 m dash-slash. | ignores | Step out of the strip when you see the first cut: the dash only comes after it. |
+| Q | Crosswind | ZONE (cone), RECAST | 4 | A 3 m cross-cut: 46. Recast within 2 s: a 3 m dash-slash. | ignores | Step out of the strip when you see the first cut: the dash only comes after it. |
 | W | Skyward | LEAP | 8 | He leaps (untouchable 0.6 s) and lands on a spot within 5 m: damage within 1.4 m and a 0.5 s knock-up. The landing circle shows at take-off. | none | Leave the circle: 0.60 s with reaction, exactly the air time. It is tight, and it is his main reward. |
 | E | Feather Step | DASH | 7, 2 charges | A 4 m step. | none | His charges show as pips. Save your best spell for when he has none. |
-| R | Sky Rend | TGT, delayed | 24 | He marks the enemy (7 m) for 0.8 s. If he still has sight he vanishes and strikes from all sides: 3 cuts plus 2 per Gust he spends, up to 9, 15 each. He ends behind them and cannot cast for 0.6 s. | sight+ | Read his pips: no Gusts is 45 damage, three is 135. Reach cover in the mark: 2.2 m in the 0.8 s. Hit him in the 0.6 s after. |
+| R | Sky Rend | TGT, delayed | 24 | He marks the enemy (7 m) for 0.8 s. If he still has sight he vanishes and strikes from all sides: 3 cuts plus 2 per Gust he spends, up to 9, 22 each. He ends behind them and cannot cast for 0.6 s. | sight+ | Read his pips: no Gusts is 66 damage, three is 198. Reach cover in the mark: 2.2 m in the 0.8 s. Hit him in the 0.6 s after. |
 
 ### Mortis, the Ossuary Lord (summoner, ranged attack, built)
 580 HP, 3.8 m/s, attack 6 m, 10 per 1.0 s. Theme file `bone`.

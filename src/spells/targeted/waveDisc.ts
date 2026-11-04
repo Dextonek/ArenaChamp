@@ -26,12 +26,12 @@ export interface WaveDiscSettings {
   loop: boolean;
 }
 
-export const defaultWaveDisc = (): WaveDiscSettings => ({ damage: 68, move: DISC_MOVE, loop: false });
+export const defaultWaveDisc = (): WaveDiscSettings => ({ damage: 78, move: DISC_MOVE, loop: false });
 
 // Timeline (seconds). The throw is fixed; the hit (or the miss) moves the rest.
 const THROW_T = 0.3; // the disc leaves her hands and the bolt is fired
 const RANGE = 9;
-const SPEED = 22;
+const SPEED = 20; // reaches 6 m at 0.6 s
 const RADIUS = 0.8;
 const FLIGHT_END = THROW_T + RANGE / SPEED;
 const TETHER_S = 0.5; // a Low-tide hit: seconds the water tether stays drawn

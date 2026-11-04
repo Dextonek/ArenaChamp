@@ -13,14 +13,14 @@ import { lyraMarks, type LyraMark } from '../../traits/astral';
  * under their feet. It follows them (smoothly, a step behind) for 1.5 s and swells with what she deals them. At 1.5 s
  * it FIXES: the spot is the enemy's position at that instant, the reticle collapses, a great chart draws on the spot
  * with a ring closing on its centre (and, from now, the module's circle telegraph), and the star lets go and falls
- * as a meteor (a star arrow with a long tail and a big head) from where it hung. At 2.0 s it lands: the hit is decided
- * by the enemy's live position against the fixed spot (2.2 m) and goes through `ctx.hit` with `projectile: true`
- * (the telegraph is decided late, so it cannot gate it): 120 plus 25% of the damage she dealt the marked enemy
+ * as a meteor (a star arrow with a long tail and a big head) from where it hung. At 2.4 s it lands: the hit is decided
+ * by the enemy's live position against the fixed spot (1.8 m) and goes through `ctx.hit` with `projectile: true`
+ * (the telegraph is decided late, so it cannot gate it): 135 plus 25% of the damage she dealt the marked enemy
  * meanwhile. The landing is an impact frame, a whiteout blink, a crater with a gold rim, a ground refraction ring,
  * a star burst, stars thrown outward and a constellation of eight spokes that holds, then snaps and falls. The tally
  * is `lyraMarks` (src/traits/astral.ts), opened at `play()` and closed just before the strike; where the trait does
- * not track (the other screen of a network duel) the strike is the flat 120. Clean by about 3.7 s, well inside the
- * duel's 4.2 s hit window (the hit lands at 2.0 s). See pipeline/designs/kit-astral.md.
+ * not track (the other screen of a network duel) the strike is the flat 135. Clean by about 4.1 s, well inside the
+ * duel's hit window (the hit lands at 2.4 s). See pipeline/designs/kit-astral.md.
  */
 export interface MeteorMarkSettings {
   /** Damage of the strike before the tally. */
@@ -35,9 +35,9 @@ export const defaultMeteorMark = (): MeteorMarkSettings => ({ base: 135, share: 
 // Timeline (seconds).
 const LOCK_T = 0.35; // the arrow reaches the sky, the star appears
 const FIX_T = 1.5; // the spot is fixed
-const STRIKE_T = 2.0; // the meteor lands
-const END_T = 3.7;
-const RADIUS = 2.2;
+const STRIKE_T = 2.4; // the meteor lands
+const END_T = 4.1;
+const RADIUS = 1.8;
 const SKY = 12;
 const SLANT = 4;
 
@@ -230,7 +230,7 @@ export class MeteorMark implements Effect {
       this.lineId = -1;
     }
 
-    // --- 2.0 Strike: the hit, decided by the live position against the fixed spot. ---
+    // --- 2.4 Strike: the hit, decided by the live position against the fixed spot. ---
     if (!f.strike && t >= STRIKE_T) {
       f.strike = true;
       this.strike(ctx);

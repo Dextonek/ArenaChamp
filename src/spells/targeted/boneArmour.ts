@@ -12,12 +12,12 @@ import { boneArmours, type BoneArmourState } from '../../traits/bone';
  * radius 1.1, 2 m high) with soulfire in its joints, and a ring of dust and chips marks the moment it closes. The shield
  * itself (30 plus 30 per living skeleton, at most 120, for 4 s) is the trait's (`afterCast`, `src/traits/bone.ts`):
  * this effect only draws it and keeps the ribs standing round him. When the armour breaks (the trait's `boneArmours`
- * record says the damage taken used it up) or at 3.5 s, whichever is first, the ribs fly apart and five of them turn
+ * record says the damage taken used it up, or he recast it: Shatter) or at 3.5 s, whichever is first, the ribs fly apart and five of them turn
  * into darts that home in on the enemy: 0.3 s later they hit it for 38 (`projectile: true`, so the duel's zone check
  * lets them through; one hit when the first dart lands) with an ember star, chips and a ground ripple. The cast is
  * 3.5 s old at the latest, inside the duel's 4.2 s window for spell hits. Clean by 4.6 s.
  *
- * Where the trait gives no record (the VFX tool, or the other screen of a network duel) the shards simply fly at 3.5 s.
+ * Where the trait gives no record (the VFX tool) the shards simply fly at 3.5 s; on the other screen of a network duel the record is written when he shatters it or it breaks.
  * With no enemy near at the cast (`targets` is empty) the ribs only crumble.
  */
 export interface BoneArmourSettings {
@@ -168,7 +168,9 @@ export class BoneArmour implements Effect {
       this.shake = 0.18;
     }
 
-    // --- When: the shield breaks, or 3.5 s. ---
+    // --- When: the shield breaks (or he shatters it), or 3.5 s. On the other screen of a network duel the record only
+    // appears when the trait's `ownChanged` writes it, so it is looked up again until it is there. ---
+    if (!this.state && ctx) this.state = boneArmours.get(ctx.caster) ?? null;
     if (!f.burst && t >= MIN_BURST && ((this.state?.broke ?? false) || t >= BURST_T)) this.launch(t);
 
     this.layout(t, dt);

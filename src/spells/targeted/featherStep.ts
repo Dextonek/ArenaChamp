@@ -4,12 +4,12 @@ import { ShockRefraction, StarBurst, clearScreenFx, createScreenFx } from '../..
 import { GustRibbon, Leaves, SKY, SpeedLines, WindCrescent, WindWraith } from '../../effects/parts/sky';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { STEP_GRACE } from '../../traits/sky';
+import { STEP_TIME } from '../../traits/sky';
 
 /**
  * Feather Step (sky kit, E: a dash, two charges). Zephyr steps up to 4 m toward the aim (`distance` setting; a shorter aim
- * gives a shorter step, 2 m at least) in `STEP_GRACE` (0.2 s, shared with his trait: he is untouchable for exactly that
- * long, enough to slip a bolt). He is gone from where he stood: a pale refraction ring and a ring of speed lines mark the
+ * gives a shorter step, 2 m at least) in `STEP_TIME` (0.2 s, shared with his trait). He is not untouchable (v5): the step is only
+ * short and quick. He is gone from where he stood: a pale refraction ring and a ring of speed lines mark the
  * spot, and three jade afterimages of him stand along the path and fade one after another. A thin gust ribbon and a
  * horizontal crescent run the path, feathers and a few pink petals blow back, and where he lands a small star pops with
  * a second ring. No damage and no zone: the gain is the trait's (a Gust and a fresh basic attack). Clean by 1.0 s.
@@ -73,7 +73,7 @@ export class FeatherStep implements Effect {
   }
 
   get impactTime() {
-    return STEP_GRACE;
+    return STEP_TIME;
   }
 
   cast(ctx: CastContext) {
@@ -93,7 +93,7 @@ export class FeatherStep implements Effect {
     const ctx = this.ctx;
     if (!ctx) return;
     // The step: he slides to the spot (the engine clamps it into the ring and out of the walls) and the path is drawn to where he lands.
-    if (ctx.moveCaster) this.end.copy(ctx.moveCaster(this.end, STEP_GRACE)).setY(0);
+    if (ctx.moveCaster) this.end.copy(ctx.moveCaster(this.end, STEP_TIME)).setY(0);
     // Afterimages: one where he stood, two along the path, each a beat later.
     this.wraith.show(this.v1.copy(this.start), this.dir, 0.5, 2, 0.8, 0.8);
     this.wraith.show(this.v1.lerpVectors(this.start, this.end, 0.4), this.dir, 0.4, 2, 0.8, 0.55);
@@ -149,7 +149,7 @@ export class FeatherStep implements Effect {
     const lp = THREE.MathUtils.clamp(t / 0.35, 0, 1);
     this.ringA.set(this.start, 0.3 + 1.8 * lp, 0.05 * (1 - lp) * (1 - lp));
 
-    if (!this.arrived && t >= STEP_GRACE) {
+    if (!this.arrived && t >= STEP_TIME) {
       this.arrived = true;
       // Where he lands: a pink-tinged leaf puff blown along the step.
       this.v1.copy(this.end).setY(0.6);
@@ -157,7 +157,7 @@ export class FeatherStep implements Effect {
       this.shake = 0.1;
     }
     if (this.arrived) {
-      const after = t - STEP_GRACE;
+      const after = t - STEP_TIME;
       const sp = StarBurst.pop(after, 0, 0.03);
       this.v1.copy(this.end).setY(1.1);
       this.pop.set(this.v1, 0.7 * sp.scale, sp.opacity, 0.2);

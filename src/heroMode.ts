@@ -320,6 +320,12 @@ export class HeroMode implements TouchTarget {
     return this.host.arena.applyStatus(this.host.arena.caster, kind, seconds, color);
   }
 
+  /** Ends a hold or a cast's root early (a broken channel). */
+  release() {
+    this.rooted = 0;
+    this.heldFor = 0;
+  }
+
   /** The hero stands still and does not attack for `seconds` (a trait's self-lock: Isolde's ice block). */
   holdStill(seconds: number) {
     this.rooted = Math.max(this.rooted, seconds);
@@ -449,6 +455,16 @@ export class HeroMode implements TouchTarget {
       } else this.moveTo = at.clone();
     }
     const status = this.status;
+    // Charmed: the hero walks to whoever charmed it, whatever the player orders.
+    if (status.charmed && !arena.isDashing(arena.caster)) {
+      this.moveTo = null;
+      const foe = arena.liveFoes()[0];
+      if (foe) {
+        const d = new THREE.Vector3(foe.pos.x - hero.x, 0, foe.pos.z - hero.z);
+        const len = d.length();
+        if (len > 1.2) arena.walk(d.multiplyScalar(this.speed * status.speedMul * dt / len), len, true);
+      }
+    }
     if (this.moveTo && this.rooted <= 0 && !this.attacker.winding && !status.cannotMove && !arena.isDashing(arena.caster)) {
       // A click finds its way round the cover (src/nav.ts); the stick walks where it points and slides along cover.
       const stick = !!this.steering;

@@ -228,7 +228,7 @@
     /** Whole AI fights at Normal: both heroes walk with the AI's rules. */
     async ai(id, seed, r) {
       const d = await open(id, 'run'), arena = vfx.arena;
-      const pairs = [['Lyra', 'Brannoc'], ['Vex', 'Kaia'], ['Mortis', 'Isolde']];
+      const pairs = [['Lyra', 'Brannoc'], ['Vitriol', 'Kaia'], ['Mortis', 'Isolde']];
       const { CPU_NORMAL } = await import('/src/cpuLevels.ts');
       for (const [a, b] of pairs) {
         for (let k = 0; k < 2; k++) {

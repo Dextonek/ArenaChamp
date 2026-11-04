@@ -1,5 +1,4 @@
 import type { HeroKit } from '../heroes';
-import { MIST_SECONDS } from '../traits/tide';
 
 /**
  * Tide kit data: Marin, the Tide Dancer. Four spells (Wave Disc, Coral Spire, Mist Form, Moon's Pull; labels as registered), canvas-drawn icons in the kit's palette:
@@ -153,7 +152,7 @@ export const tideKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'wave disc', name: 'Wave Disc', range: 9, cooldown: 4, aim: 'line',
-      blurb: 'Throws a spinning disc of water 9 m down the aim: 68 damage. High tide: it knocks the enemy back 2.5 m. Low tide: it pulls the enemy 2.5 m toward her.',
+      blurb: 'Throws a spinning disc of water 9 m down the aim (0.3 s wind-up, fast): 78 damage. High tide: it knocks the enemy back 2.5 m. Low tide: it pulls the enemy 2.5 m toward her.',
       icon(g, s) {
         iconGround(g, s);
         // A trailing water ribbon curling in from the lower left behind a spinning disc.
@@ -194,7 +193,7 @@ export const tideKit: HeroKit = {
     },
     {
       key: 'W', label: 'coral spire', name: 'Coral Spire', range: 8, cooldown: 9,
-      blurb: 'A coral pillar rises at a spot (8 m) and stands for 5 s as a real obstacle. As it rises, the enemy within 2.5 m is hit for 62: High tide shoves it 3 m away, Low tide drags it 2 m to the pillar.',
+      blurb: 'A coral pillar rises at a spot (8 m) after 0.9 s and stands for 5 s as a real obstacle. As it rises, the enemy within 2.5 m is hit for 70: High tide shoves it 3 m away, Low tide drags it 2 m to the pillar.',
       icon(g, s) {
         iconGround(g, s);
         crown(g, s * 0.5, s * 0.86, s * 0.38, s * 0.16, s * 0.1);
@@ -228,8 +227,8 @@ export const tideKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'mist form', name: 'Mist Form', range: 6, cooldown: 10, dash: true, parry: true, buff: { kind: 'haste', amount: 0.4, seconds: MIST_SECONDS },
-      blurb: 'She turns to water and flows up to 6 m to the aim, through the enemy if it is in the way: untouchable for 1 s and 40% faster. She reforms at the end spot in a splash: 40 damage within 3 m.',
+      key: 'E', label: 'mist form', name: 'Mist Form', range: 6, cooldown: 10, dash: true, parry: true,
+      blurb: 'She turns to water and flows up to 6 m to the aim, through the enemy if it is in the way: untouchable for the 0.25 s of the run. She reforms at the end spot in a splash (40 damage within 3 m) and the tide flips.',
       icon(g, s) {
         iconGround(g, s);
         // A dancer made of water: a pale see-through figure wrapped in two spiralling ribbons, with a foam ring at her feet.
@@ -254,7 +253,7 @@ export const tideKit: HeroKit = {
     },
     {
       key: 'R', label: "moon's pull", name: "Moon's Pull", range: 12, cooldown: 22,
-      blurb: "Ultimate. For 4 s the tide is held at Low and doubled: the enemy is dragged toward her from anywhere in the arena at 1.2 m/s for 20 damage a tick (four ticks), her pulls are twice as strong, and a 65 tide crash lands when it reaches her or the moon sets.",
+      blurb: "Ultimate. She roots herself under a moon for 3 s (a stun, silence or knock-up ends it). The tide is held at Low and her pulls are doubled; an enemy within 12 m she can see is dragged toward her at 2.4 m/s for 24 damage a second, and a 110 tide crash lands if it is within 2.5 m when the moon sets.",
       icon(g, s) {
         iconGround(g, s);
         // Water ribbons spiralling in from the corners toward a foam crown, under a crescent moon.

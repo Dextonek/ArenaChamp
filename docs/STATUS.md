@@ -39,6 +39,14 @@ said "uncommitted" now name the commit that holds them.
 - Build order: engine E1-E14, then the five built kits, then Vesper, Brannoc, Sefu, Cantor, Tempo; Isolde, Kaia, Fenna, Auriel, Ada; Sirix,
   Shiori, Opaline, Oblivion, Nyx. Then a full tournament, the catalog refresh and the rename.
 - Balance tool: `pipeline/tools/kit-balance.js` and `pipeline/tools/duel-tourney.js`, in the VFX tool page (`vfx-dev` in launch.json).
+- Done: the five built kits (Lyra, Vitriol, Marin, Zephyr, Mortis) and these engine pieces: lock cap, own state visible, trait hits,
+  channel, recast arming, charm, sealed, grounded, confine ring, victim-side and enemy-cast hooks. How workers build a hero:
+  [kit-build-brief.md](../pipeline/designs/kit-build-brief.md).
+- Balance so far, 96 fights each against the six old-kit heroes: Vitriol 53%, Lyra 42%, Mortis 29%, Zephyr 17%, Marin 15%. Then a first raise for
+  the last three, not re-measured. Those foes still run old kits, so the real tuning is a full tournament once all 20 are in. Do not chase these numbers per batch.
+- Notes for later batches: `isBehind`'s default cone is the front 120° (back 240°), so Nyx's "back 120°" needs `cone = 4 * PI / 3`. A pull stops 1.0 m short, so Kaia's
+  "within 1 m" must allow equal. Auriel needs a shield that a smaller one does not refresh (`shieldFigure` restarts the clock), and her `shieldMul` 1.3 goes.
+- Server edit waiting on the next deploy: `server/hub.mjs` allows the statuses `charm`, `sealed` and the debuff `grounded`. A deploy also brings the renamed Vitriol.
 
 **League kit research (2026-11-04, user: "research deeply the kits from League of Legends... make docs knowledge", then
 "go through all champions... make big docs"; committed `45bb30f`, not pushed)**

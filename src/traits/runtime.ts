@@ -1,6 +1,7 @@
 import type * as THREE from 'three';
 import type { DeathSpot, Summon, SummonOptions } from '../effects/summon';
 import type { Enemy } from '../effects/common';
+import type { HitOptions } from '../effects/targeting';
 import type { BuffKind, StatusSet } from '../effects/status';
 import { NO_MODS, type CastMods, type HoldSpec, type LandedHit, type RecastSpec, type Side, type Trait, type TraitHit, type TraitView } from './types';
 
@@ -39,6 +40,18 @@ export interface TraitHost {
   burst?(at: THREE.Vector3, big: boolean, stack?: string): void;
   /** Stacks changed on the enemy hero (a network duel shows them on the other screen). */
   stacksChanged?(name: string, n: number): void;
+  /** This hero's own shown state changed (a network duel sends it to the other screen). */
+  stateChanged?(name: string, n: number): void;
+  /** Ends this side's shield now. */
+  clearShield(): void;
+  /** Frees this side's hero from a hold. */
+  release(): void;
+  /** A note for this hero's own client (see `TraitView.noteOwner`). */
+  note(name: string, n: number): void;
+  /** A hit on the enemy hero from this side's passive (see `TraitView.hitEnemy`). */
+  hitEnemy(opts: HitOptions): void;
+  /** Moves the enemy hero by this step now, where this screen decides it (a passive's drag). */
+  carryEnemy?(dx: number, dz: number): void;
 }
 
 /**
@@ -57,6 +70,8 @@ export class TraitRuntime implements TraitView {
   /** This hero's position and HP over the last few seconds (`past`), oldest first. */
   private history: { t: number; x: number; z: number; hp: number }[] = [];
   private stackMap = new Map<string, { n: number; left: number }>();
+  /** This hero's own shown state (`show`): pips over it, on both screens. */
+  private ownMap = new Map<string, number>();
   private lastPos: THREE.Vector3 | null = null;
 
   constructor(readonly side: Side, readonly trait: Trait | null, private host: TraitHost) {
@@ -72,6 +87,7 @@ export class TraitRuntime implements TraitView {
     this.res = this.trait?.resource?.start ?? 0;
     this.mem = {};
     this.stackMap.clear();
+    this.ownMap.clear();
     this.ammo = this.trait?.charges?.count ?? 0;
     this.ammoT = 0;
     this.recastClock.fill(0);
@@ -89,6 +105,60 @@ export class TraitRuntime implements TraitView {
   addRes(n: number) {
     const max = this.trait?.resource?.max ?? 0;
     this.res = Math.max(0, Math.min(max, this.res + n));
+  }
+
+  show(name: string, n: number) {
+    if ((this.ownMap.get(name) ?? 0) === n) return;
+    if (n === 0) this.ownMap.delete(name);
+    else this.ownMap.set(name, n);
+    this.host.stateChanged?.(name, n);
+  }
+
+  own(name: string) {
+    return this.ownMap.get(name) ?? 0;
+  }
+
+  /** A shown value that came from the other screen. */
+  setOwn(name: string, n: number) {
+    if (n === 0) this.ownMap.delete(name);
+    else this.ownMap.set(name, n);
+    this.trait?.ownChanged?.(this, name, n);
+  }
+
+  /** The shown state that has a look, for the pips. A name with no look only travels to the other screen. */
+  allOwn() {
+    const look = this.trait?.ownLook;
+    if (!look) return [];
+    return [...this.ownMap.entries()].filter(([k, n]) => n > 0 && look[k]).map(([name, n]) => ({ name, n, look: look[name] }));
+  }
+
+  /** This hero's ring and ground marks now (asked by the duel every frame, on both screens). */
+  ringNow() {
+    return this.trait?.ring?.(this) ?? null;
+  }
+
+  marksNow() {
+    return this.trait?.marks?.(this) ?? [];
+  }
+
+  clearShield() {
+    this.host.clearShield();
+  }
+
+  release() {
+    this.host.release();
+  }
+
+  noteOwner(name: string, n: number) {
+    this.host.note(name, n);
+  }
+
+  hitEnemy(opts: HitOptions) {
+    this.host.hitEnemy(opts);
+  }
+
+  carryEnemy(dx: number, dz: number) {
+    this.host.carryEnemy?.(dx, dz);
   }
 
   say(text: string, color = this.trait?.resource?.color ?? '#ffe7b0') {
@@ -266,7 +336,8 @@ export class TraitRuntime implements TraitView {
 
   /** True when `slot` can be cast once more now (its recast window is open): no cooldown check. */
   canRecast(slot: number) {
-    return this.recastLeft(slot) > 0 && !!this.recastOf(slot);
+    const rc = this.recastOf(slot), left = this.recastLeft(slot);
+    return !!rc && left > 0 && rc.window - left >= (rc.arm ?? 0);
   }
 
   /**

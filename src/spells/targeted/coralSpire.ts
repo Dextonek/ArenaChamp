@@ -12,7 +12,7 @@ import { SPIRE_PULL, SPIRE_PUSH, shapeMove, tideNow } from '../../traits/tide';
 
 /**
  * Coral Spire (tide kit, W: terrain). A ring of the tide's current marks a spot (8 m): foam streaks run outward at High
- * tide, blue streaks draw inward at Low tide. After 0.65 s a coral pillar bursts out of the floor there and stands for
+ * tide, blue streaks draw inward at Low tide. After 0.9 s a coral pillar bursts out of the floor there and stands for
  * 5 s as a real obstacle (`ctx.addObstacle`, a pillar of radius 0.8): it blocks walking, sight and bolts for both heroes
  * and the AI. As it rises, the enemy within 2.5 m of it is hit (55) and moved by the tide: at High tide shoved 3 m away,
  * at Low tide dragged 2 m toward it. The move is decided in `src/traits/tide.ts` (`dealt`); this effect hands the
@@ -27,11 +27,11 @@ export interface CoralSpireSettings {
   loop: boolean;
 }
 
-export const defaultCoralSpire = (): CoralSpireSettings => ({ damage: 62, loop: false });
+export const defaultCoralSpire = (): CoralSpireSettings => ({ damage: 70, loop: false });
 
 // Timeline (seconds).
-const RISE_T = 0.65; // the pillar bursts up, the hit lands
-const LIFE = 5; // seconds the obstacle stands
+const RISE_T = 0.9; // the pillar bursts up, the hit lands (the telegraph counts down to it)
+const LIFE = 5; // seconds the obstacle stands, counted from the rise
 const SHATTER_T = RISE_T + LIFE;
 const CRACK_T = SHATTER_T - 0.9;
 const DURATION = SHATTER_T + 0.8;

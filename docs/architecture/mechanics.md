@@ -24,12 +24,15 @@ A hit carries one status: `ctx.hit(e, { damage: 30, status: { kind: 'stun', seco
 | `slow` | 2.5 | walking speed x 0.6 (`SLOW_FACTOR`) | SLOWED |
 | `silence` | 1.5 | can move, no cast | SILENCED |
 | `blind` | 2 | every cast lands at a random spot inside `BLIND_RADIUS` (2.5 m) of the aim point | BLINDED |
+| `charm` | 1.2 | walks toward the enemy hero on its own, no cast, no attack, orders ignored | CHARMED |
+| `sealed` | 1.2 | a stun in which nothing can hit the figure, from either side | SEALED |
 
 Rules:
 
 - **Caps:** a single hit gives at most the cap, whatever `seconds` says.
 - **Refresh, no stacking:** applying a kind that runs keeps the larger remaining time and returns `'refreshed'`; the word is only shown when it returns `'applied'`.
-- **Immunity:** when a stun or knock-up ends, 0.5 s (`CC_IMMUNITY`) of immunity to both follows. A stun or knock-up inside it is refused (`'immune'`, floating "IMMUNE"), so there is no chain-lock. Root, slow, silence and blind are not affected by it.
+- **One lock:** stuns, knock-ups, roots, charms and seals in a row count as one lock, at most `LOCK_CAP` (1.5 s) however many land. A hit during a lock only takes it up to the cap. Measured: a stun at 0 s and another at 1 s end together at 1.5 s, and so do two roots.
+- **Immunity:** when a lock ends, 0.5 s (`CC_IMMUNITY`) of immunity to all of them follows. Any of them inside it is refused (`'immune'`, floating "IMMUNE"), so there is no chain-lock. Slow, silence and blind are not affected by it.
 - **Filtered hits give none:** a hit the duel's filter drops (a dodge) or one that kills gives no status. `arena.hit` applies the status only while the target lives.
 
 ### What each side does with them
