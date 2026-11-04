@@ -317,7 +317,7 @@ export const inkKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'flowing script', name: 'Flowing Script', range: 6, cooldown: 11, dash: true,
+      key: 'E', label: 'flowing script', name: 'Flowing Script', range: 6, cooldown: 11, dash: true, escape: true,
       blurb: 'Glides 6 m and paints a stroke along her path. Do not follow her down the line.',
       icon(g, s) {
         iconGround(g, s);

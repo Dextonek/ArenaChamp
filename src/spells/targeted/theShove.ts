@@ -34,7 +34,7 @@ export interface TheShoveSettings {
   loop: boolean;
 }
 
-export const defaultTheShove = (): TheShoveSettings => ({ damage: 60, stunSeconds: 0.9, loop: false });
+export const defaultTheShove = (): TheShoveSettings => ({ damage: 70, stunSeconds: 0.9, loop: false });
 
 // Timeline (seconds).
 const WIND_T = 0.3;

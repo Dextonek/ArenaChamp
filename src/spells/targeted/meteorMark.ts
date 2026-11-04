@@ -30,7 +30,7 @@ export interface MeteorMarkSettings {
   loop: boolean;
 }
 
-export const defaultMeteorMark = (): MeteorMarkSettings => ({ base: 135, share: 0.25, loop: false });
+export const defaultMeteorMark = (): MeteorMarkSettings => ({ base: 120, share: 0.25, loop: false });
 
 // Timeline (seconds).
 const LOCK_T = 0.35; // the arrow reaches the sky, the star appears

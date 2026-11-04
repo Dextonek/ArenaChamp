@@ -100,6 +100,8 @@ const PEER_JUMP = 4;
 /** A `save` spell (`HeroSpell.save`): cast when the caster's own HP is at or under this share, with the enemy within SAVE_REACH m. */
 const SAVE_HP = 0.45;
 const SAVE_REACH = 12;
+/** An `escape` spell (`HeroSpell.escape`): cast when the enemy hero is this close. */
+const ESCAPE_REACH = 3.5;
 /** A `parry` spell (`HeroSpell.parry`): raised when an enemy bolt will reach the caster within this many seconds. */
 const PARRY_LEAD = 0.6;
 /** A `barrier` spell (`HeroSpell.barrier`): raised toward a bolt due within BARRIER_LEAD s that is still BARRIER_GAP m
@@ -1244,6 +1246,7 @@ export class Duel {
       if (spell.summon) return full || dHero > SUMMON_REACH ? null : { i, spec };
       // A last stand waits for the caster's own HP, not the enemy's.
       if (spell.save) return ownHp <= SAVE_HP && dHero <= SAVE_REACH ? { i, spec } : null;
+      if (spell.escape) return dHero <= ESCAPE_REACH ? { i, spec } : null;
       // A parry or a bolt wall answers a hit on its way (its own range does not matter). One that is also a dash (a
       // dodge step) still closes gaps by the dash rule below; otherwise it waits for the hit.
       if (spell.parry || spell.barrier) {
@@ -1290,7 +1293,7 @@ export class Duel {
     st.hiddenT = blocked ? SIGHT_HOLD : Math.max(0, (st.hiddenT ?? 0) - dt);
     blocked = st.hiddenT > 0;
     // A ranged kit holds ~70% of Q's range, but no farther than its basic attack reaches (`reach`).
-    const want = melee ? MELEE_GAP : Math.min(kit.spells[0].range * (blocked ? 0.35 : 0.7), reach - 0.6);
+    const want = melee ? Math.min(MELEE_GAP, reach - 0.4) : Math.min(kit.spells[0].range * (blocked ? 0.35 : 0.7), reach - 0.6);
     const to = new THREE.Vector3(other.x - at.x, 0, other.z - at.z);
     to.divideScalar(Math.max(to.length(), 1e-3));
     st.strafeT -= dt;
@@ -1376,7 +1379,7 @@ export class Duel {
         const spell = kit.spells[pick.i];
         const target = pick.spec.mode === 'enemy' || pick.spec.mode === 'enemies' ? { enemy: unit?.figure ?? foe }
           : {
-            point: pick.spec.mode === 'self' ? me.clone() : spell.summon ? this.summonSpot(me, at) : spell.dash ? dashAim(me, at, spell.range)
+            point: pick.spec.mode === 'self' ? me.clone() : spell.summon ? this.summonSpot(me, at) : spell.escape ? fleeAim(me, at, spell.range) : spell.dash ? dashAim(me, at, spell.range)
               : unit ? tpos.clone() : bestSpot(at, pick.spec.radius ?? 5, this.host.arena.summons.alive('opponent').map((u) => u.pos)),
           };
         if (hm.autoCast(pick.i, target)) { this.stats.playerCasts++; return; }
@@ -1568,7 +1571,7 @@ export class Duel {
       for (const u of minions) if (flat(u.pos, at) <= (spec.radius ?? 5)) targets.push(u.figure);
     } else {
       // An area spell picks the spot that also catches the most of the hero's units while still covering the hero.
-      point = (aim ?? (spell.dash ? dashAim(at, focus, spell.range)
+      point = (aim ?? (spell.escape ? fleeAim(at, focus, spell.range) : spell.dash ? dashAim(at, focus, spell.range)
         : spec.mode === 'ground' && !unit ? bestSpot(me, spec.radius ?? 5, minions.map((u) => u.pos)) : focus)).clone();
       if (miss) point.add(miss);
       // The CPU level's lead and aim error on its own ground cast at the hero (Normal: neither). Targeted spells home.
@@ -2025,6 +2028,12 @@ export class Duel {
 }
 
 /** Where a dash from `from` toward `to` should end: about 1.8 m short of the target, within the spell's range. */
+/** Where an AI's getaway (`HeroSpell.escape`) goes: straight away from `to`, as far as the spell reaches. */
+function fleeAim(from: THREE.Vector3, to: THREE.Vector3, range: number) {
+  const dir = new THREE.Vector3(from.x - to.x, 0, from.z - to.z).normalize();
+  return from.clone().setY(0).addScaledVector(dir, range);
+}
+
 function dashAim(from: THREE.Vector3, to: THREE.Vector3, range: number) {
   const d = Math.max(0, flat(from, to) - 1.8);
   const dir = new THREE.Vector3(to.x - from.x, 0, to.z - from.z).normalize();

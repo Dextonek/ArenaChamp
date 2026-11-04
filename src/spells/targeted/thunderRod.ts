@@ -33,7 +33,7 @@ export interface ThunderRodSettings {
   loop: boolean;
 }
 
-export const defaultThunderRod = (): ThunderRodSettings => ({ damage: 18, discharge: 40, slowSeconds: 1, mode: 'auto', loop: false });
+export const defaultThunderRod = (): ThunderRodSettings => ({ damage: 24, discharge: 50, slowSeconds: 1, mode: 'auto', loop: false });
 
 // Timeline (seconds).
 const PLANT_T = 0.25;

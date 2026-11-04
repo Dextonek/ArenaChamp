@@ -25,7 +25,7 @@ export interface CobraSpitSettings {
   loop: boolean;
 }
 
-export const defaultCobraSpit = (): CobraSpitSettings => ({ damage: 50, blind: 1.2, loop: false });
+export const defaultCobraSpit = (): CobraSpitSettings => ({ damage: 58, blind: 1.2, loop: false });
 
 // Timeline (seconds).
 const HOOD_UP_T = 0.2;

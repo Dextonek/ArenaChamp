@@ -23,7 +23,7 @@ export interface GravitySlamSettings {
   loop: boolean;
 }
 
-export const defaultGravitySlam = (): GravitySlamSettings => ({ damage: 50, pull: 1.5, loop: false });
+export const defaultGravitySlam = (): GravitySlamSettings => ({ damage: 60, pull: 1.5, loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.35;

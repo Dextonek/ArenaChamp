@@ -26,7 +26,7 @@ export interface ShatterlightSettings {
   damage: number;
 }
 
-export const defaultShatterlight = (): ShatterlightSettings => ({ damage: 30 });
+export const defaultShatterlight = (): ShatterlightSettings => ({ damage: 36 });
 
 // Timeline (seconds).
 const FORM_T = 0.5; // shards finish rising

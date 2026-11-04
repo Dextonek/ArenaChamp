@@ -34,7 +34,7 @@ export interface HomunculusSettings {
   reaction: ReactionPreview;
 }
 
-export const defaultHomunculus = (): HomunculusSettings => ({ damage: 70, hp: 120, speed: 4, loop: false, reaction: 'none' });
+export const defaultHomunculus = (): HomunculusSettings => ({ damage: 55, hp: 120, speed: 4, loop: false, reaction: 'none' });
 
 // Timeline (seconds).
 const SPAWN_T = 0.4; // the circle flares, the homunculus hops out

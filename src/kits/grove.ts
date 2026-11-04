@@ -253,7 +253,7 @@ export const groveKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'pollen glide', name: 'Pollen Glide', range: 6, cooldown: 12, dash: true,
+      key: 'E', label: 'pollen glide', name: 'Pollen Glide', range: 6, cooldown: 12, dash: true, escape: true,
       blurb: 'She glides 6 m on a gust of pollen, and a flower grows where she lands. No heal of its own.',
       icon(g, s) {
         ground(g, s);

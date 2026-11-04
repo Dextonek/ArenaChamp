@@ -19,7 +19,7 @@ export const ROD_MAX = 3;
 export const ROD_LIFE = 6;
 export const GREAT_LIFE = 3;
 export const ARC_RANGE = 5;
-export const ARC_DAMAGE = 14;
+export const ARC_DAMAGE = 18;
 /** Touching a rod grounds it. Just under 1 m, because Polarity's pull stops the enemy exactly 1.0 m short of a rod. */
 export const GROUND_RANGE = 0.99;
 /** The ring a rod shows when the enemy is within RING_SHOW of it, and how many seconds an arc / a fizz is drawn. */

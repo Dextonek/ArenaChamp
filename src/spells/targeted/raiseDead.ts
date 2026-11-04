@@ -24,7 +24,7 @@ export interface RaiseDeadSettings {
   loop: boolean;
 }
 
-export const defaultRaiseDead = (): RaiseDeadSettings => ({ damage: 15, hp: 64, seconds: 8, attack: 10, loop: false });
+export const defaultRaiseDead = (): RaiseDeadSettings => ({ damage: 15, hp: 52, seconds: 8, attack: 10, loop: false });
 
 // Timeline (seconds).
 const CRACK_T = 0.0; // the cracks spread (done by 0.3)

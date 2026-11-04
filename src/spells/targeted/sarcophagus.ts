@@ -29,7 +29,7 @@ export interface SarcophagusSettings {
   loop: boolean;
 }
 
-export const defaultSarcophagus = (): SarcophagusSettings => ({ damage: 90, seal: 1.2, loop: false });
+export const defaultSarcophagus = (): SarcophagusSettings => ({ damage: 110, seal: 1.2, loop: false });
 
 // Timeline (seconds).
 const RISE_T = 0.4; // fully up, halves wide

@@ -33,7 +33,7 @@ export interface BlackHoleSettings {
   loop: boolean;
 }
 
-export const defaultBlackHole = (): BlackHoleSettings => ({ coreDamage: 90, stun: 1, collapseDamage: 70, loop: false });
+export const defaultBlackHole = (): BlackHoleSettings => ({ coreDamage: 105, stun: 1, collapseDamage: 85, loop: false });
 
 // Numbers.
 const CRAWL_SPEED = 2;

@@ -2,7 +2,7 @@ import type { GroundMark, Trait, TraitView } from './types';
 import { restingMirrorLook } from '../effects/parts/mirror';
 
 /** Hand Mirror (Q): damage, range, speed, wind-up, bounces, and the extra reach each bounce gives. */
-export const HAND_DAMAGE = 40;
+export const HAND_DAMAGE = 52;
 export const HAND_RANGE = 10;
 export const HAND_SPEED = 22;
 export const HAND_WIND = 0.3;
@@ -28,7 +28,7 @@ export const GLASS_TIME = 0.3;
 
 /** Hall of Mirrors (R): mirrors, damage, wind-up, speed, range, bounces; and the seconds a caught floor mirror cuts. */
 export const HALL_COUNT = 8;
-export const HALL_DAMAGE = 30;
+export const HALL_DAMAGE = 40;
 export const HALL_WIND = 0.6;
 export const HALL_SPEED = 16;
 export const HALL_RANGE = 12;
@@ -114,7 +114,7 @@ export const mirrorTrait: Trait = {
     blurb: 'Every thrown mirror asks whether to walk to the catch. Hit her on the catch: you can see where she must walk.',
   },
   speed: 4.1,
-  attack: { kind: 'ranged', range: 7.5, damage: 12, interval: 1.2, windup: 0.3, speed: 22, look: 'prism' },
+  attack: { kind: 'ranged', range: 7.5, damage: 14, interval: 1.2, windup: 0.3, speed: 22, look: 'prism' },
   marks(t) {
     const b = mirrorBooks.get(t.self());
     if (!b || b.marks.length === 0) return [];

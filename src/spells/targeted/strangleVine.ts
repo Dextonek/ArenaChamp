@@ -25,7 +25,7 @@ export interface StrangleVineSettings {
   loop: boolean;
 }
 
-export const defaultStrangleVine = (): StrangleVineSettings => ({ damage: 30, root: 1.0, rootNear: 1.4, loop: false });
+export const defaultStrangleVine = (): StrangleVineSettings => ({ damage: 40, root: 1.0, rootNear: 1.4, loop: false });
 
 // Timeline (seconds).
 const LAND_T = 0.5;

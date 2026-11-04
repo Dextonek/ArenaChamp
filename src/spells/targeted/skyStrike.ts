@@ -24,7 +24,7 @@ export interface SkyStrikeSettings {
   loop: boolean;
 }
 
-export const defaultSkyStrike = (): SkyStrikeSettings => ({ damage: 50, loop: false });
+export const defaultSkyStrike = (): SkyStrikeSettings => ({ damage: 56, loop: false });
 
 // Timeline (seconds).
 const STRIKE_T = 0.35;

@@ -296,7 +296,7 @@ export const mirrorKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'through the glass', name: 'Through the Glass', range: 9, cooldown: 10, dash: true,
+      key: 'E', label: 'through the glass', name: 'Through the Glass', range: 9, cooldown: 10, dash: true, escape: true,
       blurb: 'Step into her Stand and out of the far side, up to 9 m in all. With no Stand, a 3 m step toward the aim.',
       icon(g, s) {
         iconGround(g, s);

@@ -28,7 +28,7 @@ export interface DuetSettings {
   loop: boolean;
 }
 
-export const defaultDuet = (): DuetSettings => ({ damage: 12, loop: false });
+export const defaultDuet = (): DuetSettings => ({ damage: 18, loop: false });
 
 // Timeline (seconds).
 const CLOSE_T = 0.8; // the ring has closed: the check

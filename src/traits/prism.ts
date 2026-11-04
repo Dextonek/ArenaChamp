@@ -1,7 +1,7 @@
 import type { Trait } from './types';
 
 /** Ricochet Light's base damage: the trait reads the reflections of a hit back from it (`dealt`), so the spell's default uses it too. */
-export const RICOCHET_DAMAGE = 50;
+export const RICOCHET_DAMAGE = 58;
 /** Each reflection adds this share of a bolt's damage (the projectile system's default `reflectBonus`) and 2 m of range. */
 export const BANK_BONUS = 0.25;
 export const BANK_RANGE = 2;

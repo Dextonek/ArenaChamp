@@ -38,7 +38,7 @@ export interface IcicleSettings {
   loop: boolean;
 }
 
-export const defaultIcicle = (): IcicleSettings => ({ damage: 52, shatterDamage: 30, mode: 'auto', loop: false });
+export const defaultIcicle = (): IcicleSettings => ({ damage: 47, shatterDamage: 26, mode: 'auto', loop: false });
 
 // Timeline (seconds).
 const SHATTER_T = 0.15; // the standing icicle cracks, then bursts

@@ -26,7 +26,7 @@ export const JUDGED_GROUNDED = 0.5;
 export const sandTrait: Trait = {
   passive: { name: "Pharaoh's Decree", blurb: 'An enemy his crook pulls or his sarcophagus opens on is Judged for 3 s: his hits deal 20% more to them and their dashes, blinks and leaps go half as far. A Cobra Spit on a Judged enemy halves its cooldown.' },
   speed: 4,
-  attack: { kind: 'ranged', range: 5.5, damage: 8, interval: 0.7, windup: 0.18, speed: 20, look: 'sand' },
+  attack: { kind: 'ranged', range: 5.5, damage: 9, interval: 0.7, windup: 0.18, speed: 20, look: 'sand' },
   dealt(t, hit) {
     // A hit swallowed (a sealed figure) judges nothing and gains nothing.
     if (!hit.victimIsHero || hit.blocked) return;

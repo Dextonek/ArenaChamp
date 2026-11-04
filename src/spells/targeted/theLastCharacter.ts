@@ -25,7 +25,7 @@ export interface TheLastCharacterSettings {
   loop: boolean;
 }
 
-export const defaultTheLastCharacter = (): TheLastCharacterSettings => ({ damage: 30, strokeDamage: 40, rootSeconds: 1, loop: false });
+export const defaultTheLastCharacter = (): TheLastCharacterSettings => ({ damage: 40, strokeDamage: 50, rootSeconds: 1, loop: false });
 
 // Timeline (seconds).
 const WRITE_T = 1.0;

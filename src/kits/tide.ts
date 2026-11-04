@@ -107,7 +107,7 @@ export const tideKit: HeroKit = {
   title: 'the Tide Dancer',
   accent: S.body,
   foil: S.foam,
-  maxHp: 670,
+  maxHp: 640,
   portrait(g, s) {
     iconGround(g, s);
     // Sashes of water sweeping round her, behind and in front.

@@ -13,7 +13,7 @@ export const WELL_STOP = 1.5;
 export const RIP_SECONDS = 3;
 export const RIP_DAMAGE = 40;
 export const RIP_WEAKEN = { kind: 'weaken', amount: 0.2, seconds: 2 } as const;
-const BASE_ATTACK = 13;
+const BASE_ATTACK = 15;
 
 /**
  * What Oblivion's spells and effects share, per figure (effects play on both screens). Times are `performance.now()` ms.

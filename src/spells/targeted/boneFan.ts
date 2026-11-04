@@ -27,7 +27,7 @@ export interface BoneFanSettings {
   loop: boolean;
 }
 
-export const defaultBoneFan = (): BoneFanSettings => ({ damage: 44, knock: 1, step: 18, loop: false });
+export const defaultBoneFan = (): BoneFanSettings => ({ damage: 38, knock: 1, step: 18, loop: false });
 
 // Timeline (seconds).
 const FIRE_T = 0.3; // the shards leave

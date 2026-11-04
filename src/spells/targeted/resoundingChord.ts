@@ -22,7 +22,7 @@ export interface ResoundingChordSettings {
   loop: boolean;
 }
 
-export const defaultResoundingChord = (): ResoundingChordSettings => ({ damage: 45, loop: false });
+export const defaultResoundingChord = (): ResoundingChordSettings => ({ damage: 52, loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.4;

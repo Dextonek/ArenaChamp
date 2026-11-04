@@ -25,7 +25,7 @@ export interface SupercellStormSettings {
   loop: boolean;
 }
 
-export const defaultSupercellStorm = (): SupercellStormSettings => ({ damage: 30, loop: false });
+export const defaultSupercellStorm = (): SupercellStormSettings => ({ damage: 36, loop: false });
 
 // Timeline (seconds).
 const GATHER_T = 0.5;

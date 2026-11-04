@@ -38,7 +38,7 @@ export interface GraveGraspSettings {
   loop: boolean;
 }
 
-export const defaultGraveGrasp = (): GraveGraspSettings => ({ damage: 85, squeeze: 28, drag: 4, root: 1, hp: 50, seconds: 7, attack: 8, loop: false });
+export const defaultGraveGrasp = (): GraveGraspSettings => ({ damage: 72, squeeze: 28, drag: 4, root: 1, hp: 50, seconds: 7, attack: 8, loop: false });
 
 // Timeline (seconds).
 const BURST_T = 0.7; // the hand bursts up: the ring is checked now

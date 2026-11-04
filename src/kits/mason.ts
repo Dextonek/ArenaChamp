@@ -184,7 +184,7 @@ export const masonKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'a good lean', name: 'A Good Lean', range: 8, cooldown: 11, dash: true,
+      key: 'E', label: 'a good lean', name: 'A Good Lean', range: 8, cooldown: 11,
       blurb: 'Needs Gerald within 8 m. Dash to him and stop 1.5 m short, with a shield of 60 for 2 s. He did not ask for the hug.',
       icon(g, s) {
         ground(g, s);

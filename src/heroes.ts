@@ -45,6 +45,8 @@ export interface HeroSpell {
   cc?: true;
   /** A gap closer (a dash toward the target): the duel AI casts it when the enemy is out of Q's range, not otherwise. */
   dash?: true;
+  /** With `dash`, a getaway rather than a gap closer: the duel AI casts it away from an enemy who comes close, not toward one far off. */
+  escape?: true;
   /** A last stand (a cheat death, a heal): the duel AI casts it when its own HP drops under about 45%, not by the enemy's HP. */
   save?: true;
   /** A parry (Radiant Parry): the duel AI casts it only when a hit is about to land (a bolt due, an attack winding up). */

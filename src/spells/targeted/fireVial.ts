@@ -25,7 +25,7 @@ export interface FireVialSettings {
   reaction: ReactionPreview;
 }
 
-export const defaultFireVial = (): FireVialSettings => ({ damage: 30, tick: 6, loop: false, reaction: 'none' });
+export const defaultFireVial = (): FireVialSettings => ({ damage: 24, tick: 5, loop: false, reaction: 'none' });
 
 // Timeline (seconds).
 const FLARE_T = 0.2; // the vial flares in her hand
