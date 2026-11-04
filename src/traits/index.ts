@@ -31,6 +31,7 @@ import { refereeTrait } from './referee';
 import { chefTrait } from './chef';
 import { courierTrait } from './courier';
 import { janitorTrait } from './janitor';
+import { moleTrait } from './mole';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -65,6 +66,7 @@ export const TRAITS: Record<string, Trait> = {
   'Madame Cleaver': chefTrait,
   Pip: courierTrait,
   Gus: janitorTrait,
+  Mabel: moleTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,
