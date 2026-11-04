@@ -32,6 +32,7 @@ import { chefTrait } from './chef';
 import { courierTrait } from './courier';
 import { janitorTrait } from './janitor';
 import { moleTrait } from './mole';
+import { yarnTrait } from './yarn';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -67,6 +68,7 @@ export const TRAITS: Record<string, Trait> = {
   Pip: courierTrait,
   Gus: janitorTrait,
   Mabel: moleTrait,
+  'Grandma Ironknit': yarnTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

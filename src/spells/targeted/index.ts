@@ -91,6 +91,10 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { mrBiscuitModule } from './mrBiscuit';
+import { sweaterModule } from './sweater';
+import { castOnModule } from './castOn';
+import { knittingNeedleModule } from './knittingNeedle';
 import { sinkholeModule } from './sinkhole';
 import { moleTunnelModule } from './moleTunnel';
 import { moleDigModule } from './moleDig';
@@ -355,6 +359,10 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  mrBiscuitModule,
+  sweaterModule,
+  castOnModule,
+  knittingNeedleModule,
   sinkholeModule,
   moleTunnelModule,
   moleDigModule,
