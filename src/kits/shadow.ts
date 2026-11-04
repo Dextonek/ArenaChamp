@@ -104,7 +104,8 @@ function mintCut(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number
 
 export const shadowKit: HeroKit = {
   name: 'Nyx',
-  maxHp: 600,
+  maxHp: 620,
+  melee: true,
   title: 'the Umbral Stalker',
   accent: S.hot,
   foil: S.foil,
@@ -124,55 +125,62 @@ export const shadowKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'umbral blink', name: 'Umbral Blink', range: 7, cooldown: 5, debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
-      blurb: 'A heavy dash strike: she slides in stepped jumps to stand beside the enemy and cuts it with two crossed blades (35% more damage).',
+      key: 'Q', label: 'umbral cut', name: 'Umbral Cut', range: 2.5, cooldown: 4,
+      blurb: 'Click an enemy within 2.5 m. After 0.35 s a dagger strike lands on where it stands (within 3.2 m): 45, doubled from behind (its back 120 degrees).',
       icon(g, s) {
         ground(g, s);
-        ellipse(g, s * 0.5, s * 0.6, s * 0.4, s * 0.18, S.foil, undefined);
-        blade(g, s * 0.16, s * 0.84, s * 0.84, s * 0.2, s * 0.13, s);
-        blade(g, s * 0.84, s * 0.84, s * 0.16, s * 0.2, s * 0.13, s);
-        mintCut(g, s * 0.34, s * 0.34, s * 0.66, s * 0.66, s * 0.022);
+        ellipse(g, s * 0.5, s * 0.8, s * 0.4, s * 0.12, S.foil);
+        // A dagger driven down at a hooded figure's back, a mint cut across it.
+        figure(g, s * 0.62, s * 0.9, s * 0.62, s);
+        blade(g, s * 0.2, s * 0.14, s * 0.52, s * 0.62, s * 0.13, s);
+        crescent(g, s * 0.3, s * 0.4, s * 0.2, 0.5, 0.25, s);
+        mintCut(g, s * 0.36, s * 0.42, s * 0.78, s * 0.7, s * 0.022);
       },
     },
     {
-      key: 'W', label: 'shadow swap', name: 'Shadow Swap', range: 11, cooldown: 8, aim: 'line',
-      blurb: 'Throws a shadow dagger 11 m that cuts what it meets. Cast again within 3 s to swap to it, or to just short of the enemy it hit (the enemy stays put).',
+      key: 'W', label: 'smoke veil', name: 'Smoke Veil', range: 0, cooldown: 12,
+      blurb: 'A 3 m cloud of dark smoke at her feet for 3 s. Inside it she counts as faded even mid-fight, and an enemy inside is blinded.',
       icon(g, s) {
         ground(g, s);
-        ellipse(g, s * 0.5, s * 0.82, s * 0.42, s * 0.12, S.foil);
-        // A dagger flying up-right with two stepped ghosts behind it, and the hooded figure fading in at its tip.
-        blade(g, s * 0.1, s * 0.74, s * 0.36, s * 0.56, s * 0.08, s);
-        blade(g, s * 0.26, s * 0.64, s * 0.54, s * 0.44, s * 0.1, s);
-        blade(g, s * 0.44, s * 0.54, s * 0.8, s * 0.26, s * 0.14, s);
-        figure(g, s * 0.78, s * 0.9, s * 0.38, s);
-        mintCut(g, s * 0.62, s * 0.4, s * 0.88, s * 0.2, s * 0.02);
+        ellipse(g, s * 0.5, s * 0.74, s * 0.44, s * 0.17, S.foil);
+        ellipse(g, s * 0.5, s * 0.74, s * 0.36, s * 0.12, S.dark, S.hot, s * 0.014);
+        // Lumpy smoke wisps rising round a half-faded figure.
+        const puffs: [number, number, number][] = [[0.28, 0.66, 0.13], [0.72, 0.64, 0.14], [0.4, 0.5, 0.15], [0.62, 0.46, 0.13], [0.5, 0.3, 0.12], [0.3, 0.36, 0.09], [0.72, 0.32, 0.08]];
+        g.globalAlpha = 0.55;
+        figure(g, s * 0.5, s * 0.78, s * 0.58, s);
+        g.globalAlpha = 1;
+        for (const [x, y, r] of puffs) disc(g, s * x, s * y, s * r, '#1c0c38', S.hot, s * 0.013);
+        mintCut(g, s * 0.44, s * 0.2, s * 0.58, s * 0.14, s * 0.014);
       },
     },
     {
-      key: 'E', label: 'night shroud', name: 'Night Shroud', range: 0, cooldown: 9,
-      blurb: 'No aim: she turns to the nearest enemy within 8 m and three shadow clones fly out at it as a fan of bolts.',
+      key: 'E', label: 'shadow double', name: 'Shadow Double', range: 4, cooldown: 10, dash: true,
+      blurb: 'She darts 4 m, through cover if it is in the way. A shadow copy (40 HP, 2.5 s, 15 per 0.9 s) stays where she stood and walks at the enemy.',
       icon(g, s) {
         ground(g, s);
-        ellipse(g, s * 0.5, s * 0.7, s * 0.42, s * 0.2, S.foil);
-        ellipse(g, s * 0.5, s * 0.7, s * 0.34, s * 0.15, S.dark, S.hot, s * 0.014);
-        figure(g, s * 0.5, s * 0.78, s * 0.56, s);
-        figure(g, s * 0.2, s * 0.7, s * 0.34, s);
-        figure(g, s * 0.8, s * 0.7, s * 0.34, s);
-        mintCut(g, s * 0.62, s * 0.3, s * 0.78, s * 0.2, s * 0.018);
+        ellipse(g, s * 0.5, s * 0.84, s * 0.42, s * 0.1, S.foil);
+        // The copy where she was (ghost), stepped afterimages, and her at the far end.
+        g.globalAlpha = 0.4;
+        figure(g, s * 0.2, s * 0.88, s * 0.5, s);
+        g.globalAlpha = 0.65;
+        figure(g, s * 0.4, s * 0.88, s * 0.54, s);
+        g.globalAlpha = 1;
+        figure(g, s * 0.74, s * 0.9, s * 0.74, s);
+        mintCut(g, s * 0.3, s * 0.3, s * 0.62, s * 0.3, s * 0.018);
       },
     },
     {
-      key: 'R', label: 'shadow mark', name: 'Shadow Mark', range: 10, cooldown: 20,
-      blurb: 'Ultimate. Marks the enemy; 2 s later she steps out behind it and cuts it with crossed blades for big damage, plus 30% of the damage it took meanwhile.',
+      key: 'R', label: 'nightfall', name: 'Nightfall', range: 0, cooldown: 24,
+      blurb: 'For 5 s the arena darkens. She moves 25% faster and deals 20% more, and fades again 0.8 s after each hit she lands. When it ends she is slowed for 1 s.',
       icon(g, s) {
         ground(g, s);
-        ellipse(g, s * 0.5, s * 0.86, s * 0.4, s * 0.1, S.foil);
-        // The marked figure with a crescent sigil over its head, and the mint crossed cut behind it.
-        figure(g, s * 0.5, s * 0.9, s * 0.6, s);
-        crescent(g, s * 0.5, s * 0.16, s * 0.12, 0.55, 0.3, s);
-        disc(g, s * 0.5, s * 0.16, s * 0.022, S.accent);
-        mintCut(g, s * 0.2, s * 0.3, s * 0.82, s * 0.8, s * 0.022);
-        mintCut(g, s * 0.82, s * 0.3, s * 0.2, s * 0.8, s * 0.022);
+        disc(g, s * 0.5, s * 0.34, s * 0.26, S.foil);
+        disc(g, s * 0.58, s * 0.3, s * 0.24, '#0a0614');
+        crescent(g, s * 0.34, s * 0.34, s * 0.26, 0.4, 0.3, s);
+        ellipse(g, s * 0.5, s * 0.88, s * 0.4, s * 0.1, S.foil);
+        ellipse(g, s * 0.5, s * 0.88, s * 0.3, s * 0.07, 'rgba(0,0,0,0)', S.accent, s * 0.016);
+        figure(g, s * 0.5, s * 0.92, s * 0.5, s);
+        mintCut(g, s * 0.44, s * 0.52, s * 0.56, s * 0.52, s * 0.014);
       },
     },
   ],

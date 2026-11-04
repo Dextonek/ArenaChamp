@@ -1,5 +1,22 @@
 # Shadow kit: Nyx, the Umbral Stalker
 
+## v5 (2026-11-04)
+620 HP, 4.6 m/s, melee attack 1.9 m, 8 per 0.7 s (`melee: true`). Code: `src/traits/shadow.ts`, `src/kits/shadow.ts`, spells `umbralCut.ts`, `smokeVeil.ts`,
+`shadowDouble.ts`, `nightfall.ts`; parts added to `src/effects/parts/shadow.ts` (`ShadowWisps`, `shadowCloneLook`). The old v4 spell files stay. She is never invisible.
+
+- **Passive, Umbral Veil:** `mem.lastFight` = round time she last dealt or took damage (`landed`, `taken`). She fades after 2.5 s, 1.2 s within 2 m of cover (obstacles from
+  `watchCover`, filled by her spells at cast; before the first cast only 2.5 s), 0.8 s during Nightfall, and at once inside her smoke. Faded: `show('veil')`, `figureVeil` (dark,
+  see-through, plainly visible), a violet ring at her feet, haste 0.1. First Q or basic attack out of the veil (`castMods`, `attackMods`): power 1.5, silence 0.6 s (once per 5 s),
+  3 s off E, and the veil ends. W and R do not spend it.
+- **Q Umbral Cut** (enemy, range 2.5, cd 4): 0.35 s wind-up with a mark on the enemy (telegraph roots her), then 45 on the live position if within 3.2 m, doubled from behind (the enemy's
+  back 120 degrees: `isBehind` with cone 4 pi / 3). Decided in the effect at the hit. `projectile: true`.
+- **W Smoke Veil** (self, radius 3, cd 12): a fixed 3 m cloud for 3 s. Inside, her veil counts (the effect writes `shadowSmoke` on both screens). An enemy inside (live position) is blinded
+  0.5 s every 0.4 s from 0.3 s on, 0 damage, `projectile: true`. Dark purple toon wisps with eroding edges over a black pool with a foil ring.
+- **E Shadow Double** (ground, range 4, cd 10, dash): `moveCaster` 4 m in 0.18 s, through cover. A copy (`ctx.summon`, melee, 40 HP, 2.5 s, 15 per 0.9 s, `shadowCloneLook`) stays at her start.
+- **R Nightfall** (self, cd 24): the effect darkens the arena with its screen fx for 5 s. Haste 0.25 and might 0.2 for 5 s, ring burns brighter, at the end `slow` 1 s. The CPU holds it past 8 m.
+- The CPU: Q and basic attacks as they are; with no spell ready its own melee steering is used, nothing added.
+
+
 ## Role (2026-10-30)
 
 **Assassin, 560 HP.** Signature: *Shadowstep*. She appears on you, silences you, cuts you down. Design: `pipeline/designs/hero-roles.md`.

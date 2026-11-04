@@ -42,6 +42,12 @@ function closest(o: Obstacle, px: number, pz: number) {
   return { x: o.ax + dx * t, z: o.az + dz * t };
 }
 
+/** True when a point on the floor is inside this obstacle. */
+export function contains(o: Obstacle, x: number, z: number) {
+  const c = closest(o, x, z);
+  return Math.hypot(x - c.x, z - c.z) <= o.r;
+}
+
 /**
  * The first obstacle surface on the way from a to b (ground plane): how far along it (0..1) and the surface's outward
  * normal there, or null when the way is clear. Bank shots reflect off this.

@@ -1,7 +1,8 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Ink kit data: Shiori, the Last Brush. Four spells (labels as registered), canvas-drawn icons in the kit's palette:
+ * Ink kit data: Shiori, the Last Brush (kits v5: Ink Lash, Seal of Binding, Flowing Script, The Last Character). Four spells
+ * (labels as registered), canvas-drawn icons in the kit's palette:
  * sumi-black ground with an indigo glow, wet tapered brushstrokes with dry-brush streaks, pale rice-paper patches under
  * the ink, vermilion square seals. Signature shape: the wet brushstroke.
  */
@@ -269,100 +270,84 @@ export const inkKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'brushstroke', name: 'Brushstroke', range: 12, cooldown: 3, aim: 'line',
-      blurb: 'Flings a wet brushstroke that hits the first enemy; if it flies its full range it splits into three small strokes.',
+      key: 'Q', label: 'ink lash', name: 'Ink Lash', range: 9, cooldown: 4, aim: 'line',
+      blurb: 'A lash of ink (9 m): 50, and a stroke along its path that stays 5 s. Standing on ink slows and Stains. Where strokes cross, a point bursts for 40.',
       icon(g, s) {
         iconGround(g, s);
-        // A fat stroke flying up and to the right, drying out behind it; three drops fan off its end, a seal in the corner.
-        paper(g, s * 0.3, s * 0.72, s * 0.24, s * 0.16, 2);
-        brush(g, [[s * 0.9, s * 0.2], [s * 0.66, s * 0.38], [s * 0.4, s * 0.62], [s * 0.1, s * 0.9]], s * 0.2);
-        drop(g, s * 0.92, s * 0.1, s * 0.035);
-        drop(g, s * 0.82, s * 0.07, s * 0.028);
-        drop(g, s * 0.96, s * 0.3, s * 0.03);
-        drop(g, s * 0.74, s * 0.18, s * 0.02);
-        seal(g, s * 0.82, s * 0.84, s * 0.14, -0.1);
-      },
-    },
-    {
-      key: 'W', label: 'ink double', name: 'Ink Double', range: 12, cooldown: 8,
-      blurb: 'Dashes 4 m back, away from the aim. An ink double of her stays 3 s; her next Brushstroke in that time is fired from the double too.',
-      icon(g, s) {
-        iconGround(g, s);
-        // Her ink double stands left, dissolving into drops; she is a step to the right, three smear strokes between them.
-        paper(g, s * 0.32, s * 0.86, s * 0.26, s * 0.08, 4);
-        brush(g, [[s * 0.4, s * 0.5], [s * 0.55, s * 0.46], [s * 0.7, s * 0.42]], s * 0.07);
-        brush(g, [[s * 0.4, s * 0.62], [s * 0.56, s * 0.58], [s * 0.72, s * 0.55]], s * 0.06);
-        const fig = (cx: number, base: number, k: number, ink: boolean) => {
-          g.fillStyle = ink ? S.body : S.foil;
-          g.beginPath();
-          g.ellipse(cx, base - s * 0.5 * k, s * 0.13 * k * 1.12, s * 0.15 * k * 1.12, 0, 0, Math.PI * 2);
-          g.moveTo(cx - s * 0.27 * k * 1.1, base);
-          g.quadraticCurveTo(cx - s * 0.1 * k, base - s * 0.4 * k, cx, base - s * 0.38 * k);
-          g.quadraticCurveTo(cx + s * 0.1 * k, base - s * 0.4 * k, cx + s * 0.27 * k * 1.1, base);
-          g.closePath();
-          g.fill();
-          g.fillStyle = S.dark;
-          g.beginPath();
-          g.ellipse(cx, base - s * 0.5 * k, s * 0.13 * k, s * 0.15 * k, 0, 0, Math.PI * 2);
-          g.moveTo(cx - s * 0.27 * k, base);
-          g.quadraticCurveTo(cx - s * 0.1 * k, base - s * 0.4 * k, cx, base - s * 0.38 * k);
-          g.quadraticCurveTo(cx + s * 0.1 * k, base - s * 0.4 * k, cx + s * 0.27 * k, base);
-          g.closePath();
-          g.fill();
-        };
-        fig(s * 0.76, s * 0.86, 1, true);
-        // The double: a ghost of the same shape in pale ink, its lower half breaking into drops.
-        g.globalAlpha = 0.55;
-        fig(s * 0.24, s * 0.86, 1, true);
-        g.globalAlpha = 1;
-        g.fillStyle = S.dark;
-        for (const [dx, dy, r] of [[0.14, 0.7, 0.025], [0.3, 0.76, 0.02], [0.2, 0.62, 0.018], [0.34, 0.66, 0.015], [0.08, 0.8, 0.017]] as [number, number, number][]) {
-          drop(g, s * dx, s * dy, s * r);
-        }
-        seal(g, s * 0.76, s * 0.62, s * 0.1);
-        drop(g, s * 0.92, s * 0.3, s * 0.022);
-      },
-    },
-    {
-      key: 'E', label: 'paper familiars', name: 'Paper Familiars', range: 0, cooldown: 12, summon: true,
-      blurb: 'Folds two paper cranes that fight for her for six seconds, shooting ink darts; a splash of ink hurts nearby enemies.',
-      icon(g, s) {
-        iconGround(g, s);
-        // A ring of ink splashing out on the floor, two cranes above it, a seal under each.
-        g.strokeStyle = S.body;
-        g.lineWidth = s * 0.024;
+        // A fat wet stroke flung up and to the right, an older stroke crossing it, a glowing point where they meet, drops off the head.
+        paper(g, s * 0.3, s * 0.74, s * 0.24, s * 0.15, 2);
+        brush(g, [[s * 0.08, s * 0.28], [s * 0.34, s * 0.4], [s * 0.62, s * 0.56], [s * 0.92, s * 0.78]], s * 0.13);
+        brush(g, [[s * 0.1, s * 0.92], [s * 0.34, s * 0.62], [s * 0.6, s * 0.34], [s * 0.94, s * 0.1]], s * 0.2);
+        g.fillStyle = S.core;
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.78, s * 0.42, s * 0.12, 0, 0, Math.PI * 2);
-        g.stroke();
+        g.arc(s * 0.48, s * 0.48, s * 0.05, 0, Math.PI * 2);
+        g.fill();
         g.strokeStyle = S.hot;
-        g.globalAlpha = 0.45;
-        g.lineWidth = s * 0.008;
+        g.lineWidth = s * 0.014;
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.78, s * 0.42, s * 0.12, 0, 0, Math.PI * 2);
+        g.arc(s * 0.48, s * 0.48, s * 0.1, 0, Math.PI * 2);
         g.stroke();
-        g.globalAlpha = 1;
-        seal(g, s * 0.3, s * 0.8, s * 0.13, 0.1);
-        seal(g, s * 0.72, s * 0.76, s * 0.11, -0.1);
-        crane(g, s * 0.36, s * 0.5, s * 0.2, 1);
-        crane(g, s * 0.72, s * 0.34, s * 0.14, -1);
-        drop(g, s * 0.1, s * 0.62, s * 0.02);
-        drop(g, s * 0.92, s * 0.6, s * 0.022);
+        drop(g, s * 0.96, s * 0.24, s * 0.03);
+        drop(g, s * 0.86, s * 0.06, s * 0.024);
+        seal(g, s * 0.16, s * 0.12, s * 0.12, -0.1);
       },
     },
     {
-      key: 'R', label: 'final calligraphy', name: 'Final Calligraphy', range: 16, cooldown: 20, cc: true, aim: 'arc',
-      blurb: 'Ultimate. One giant brushstroke that curves: aim the bend round cover. It hits for heavy damage and blinds, and a seal stamps where it lands.',
+      key: 'W', label: 'seal of binding', name: 'Seal of Binding', range: 8, cooldown: 10,
+      blurb: 'Stamps a 2 m seal (8 m), armed after 0.5 s, for 6 s. An enemy who steps in is rooted 1 s and Stained. Once armed it counts as a stroke for crossings.',
       icon(g, s) {
         iconGround(g, s);
-        // One huge wet stroke sweeping in a curve from the lower left round to the upper right, a seal stamped at its end.
-        paper(g, s * 0.62, s * 0.34, s * 0.34, s * 0.24, 9);
-        brush(g, [[s * 0.06, s * 0.94], [s * 0.2, s * 0.58], [s * 0.46, s * 0.4], [s * 0.78, s * 0.3]], s * 0.34);
-        brush(g, [[s * 0.1, s * 0.96], [s * 0.26, s * 0.74], [s * 0.42, s * 0.66]], s * 0.09);
-        seal(g, s * 0.8, s * 0.26, s * 0.26, 0.08);
-        drop(g, s * 0.94, s * 0.5, s * 0.03);
-        drop(g, s * 0.64, s * 0.12, s * 0.024);
-        drop(g, s * 0.9, s * 0.62, s * 0.02);
-        drop(g, s * 0.1, s * 0.5, s * 0.02);
+        // A ring of ink on the floor, a great vermilion seal in it, a brushstroke dragged across it, ink drops.
+        g.strokeStyle = S.body;
+        g.lineWidth = s * 0.03;
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.6, s * 0.44, s * 0.3, 0, 0, Math.PI * 2);
+        g.stroke();
+        g.strokeStyle = S.foil;
+        g.lineWidth = s * 0.012;
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.6, s * 0.38, s * 0.25, 0, 0, Math.PI * 2);
+        g.stroke();
+        paper(g, s * 0.5, s * 0.6, s * 0.3, s * 0.18, 5);
+        seal(g, s * 0.5, s * 0.46, s * 0.4, 0.12);
+        brush(g, [[s * 0.06, s * 0.82], [s * 0.34, s * 0.7], [s * 0.66, s * 0.74], [s * 0.94, s * 0.64]], s * 0.1);
+        drop(g, s * 0.9, s * 0.4, s * 0.026);
+        drop(g, s * 0.12, s * 0.34, s * 0.022);
+        drop(g, s * 0.78, s * 0.16, s * 0.018);
+      },
+    },
+    {
+      key: 'E', label: 'flowing script', name: 'Flowing Script', range: 6, cooldown: 11, dash: true,
+      blurb: 'Glides 6 m and paints a stroke along her path. Do not follow her down the line.',
+      icon(g, s) {
+        iconGround(g, s);
+        // One long flowing stroke from the left sweeping to the right, speed streaks behind its start, a small crane at its head.
+        paper(g, s * 0.5, s * 0.8, s * 0.38, s * 0.1, 7);
+        brush(g, [[s * 0.04, s * 0.7], [s * 0.3, s * 0.42], [s * 0.58, s * 0.66], [s * 0.94, s * 0.36]], s * 0.2);
+        for (const [y, w] of [[0.5, 0.05], [0.84, 0.04], [0.92, 0.03]] as [number, number][]) {
+          brush(g, [[s * 0.02, s * y], [s * 0.14, s * (y - 0.01)], [s * 0.26, s * y]], s * w);
+        }
+        crane(g, s * 0.8, s * 0.26, s * 0.13, 1);
+        drop(g, s * 0.5, s * 0.3, s * 0.024);
+        drop(g, s * 0.62, s * 0.86, s * 0.022);
+        seal(g, s * 0.88, s * 0.84, s * 0.12, 0.1);
+      },
+    },
+    {
+      key: 'R', label: 'the last character', name: 'The Last Character', range: 9, cooldown: 22, cc: true,
+      blurb: 'Ultimate. Writes one great character (9 m, 4 m wide) in 1.0 s: 30 and rooted 1 s inside it. Every stroke of hers under the enemy erupts for 40, 3 at most, and vanishes.',
+      icon(g, s) {
+        iconGround(g, s);
+        // One great character in black on a sheet of rice paper: dot, bar, hooked stem and two falling strokes; a seal stamped on it.
+        paper(g, s * 0.5, s * 0.5, s * 0.46, s * 0.44, 9);
+        brush(g, [[s * 0.42, s * 0.12], [s * 0.5, s * 0.15], [s * 0.58, s * 0.2]], s * 0.08);
+        brush(g, [[s * 0.1, s * 0.3], [s * 0.5, s * 0.32], [s * 0.9, s * 0.28]], s * 0.1);
+        brush(g, [[s * 0.5, s * 0.2], [s * 0.5, s * 0.62], [s * 0.5, s * 0.82], [s * 0.4, s * 0.94]], s * 0.12);
+        brush(g, [[s * 0.48, s * 0.48], [s * 0.3, s * 0.66], [s * 0.14, s * 0.88]], s * 0.1);
+        brush(g, [[s * 0.52, s * 0.5], [s * 0.7, s * 0.68], [s * 0.88, s * 0.9]], s * 0.1);
+        seal(g, s * 0.8, s * 0.2, s * 0.2, 0.08);
+        drop(g, s * 0.94, s * 0.56, s * 0.024);
+        drop(g, s * 0.08, s * 0.5, s * 0.02);
       },
     },
   ],

@@ -1798,7 +1798,8 @@ export class Duel {
    */
   private blastWalls(from: THREE.Vector3, point: THREE.Vector3, spec: TargetingSpec, spell: HeroSpell, slot: number) {
     const hp = this.wallHp, def = this.currentArena;
-    if (!hp || !def) return;
+    // A bank shot needs its walls, so it leaves them standing.
+    if (!hp || !def || spell.bank) return;
     const dmg = slot === 3 ? 2 : 1;
     const line = spell.aim === 'line';
     if (!line && spec.mode !== 'ground' && spec.mode !== 'self') return;

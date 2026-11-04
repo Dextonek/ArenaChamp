@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CASTER_POS, Enemy, createCaster, createGround } from './effects/common';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { yawTo } from './effects/targeting';
-import { blocksSight, firstSurface, pushOut, steer, type Obstacle } from './obstacles';
+import { blocksSight, contains, firstSurface, pushOut, steer, type Obstacle } from './obstacles';
 import { Navigator, type NavStep } from './nav';
 import { StatusSet, STATUS_COLOR, STATUS_WORD, BLIND_RADIUS, BUFF_COLOR, BUFF_WORD, type BuffKind, type StatusKind } from './effects/status';
 import { StatusFx, StatusFxPool } from './effects/parts/status';
@@ -735,7 +735,10 @@ export class Arena {
 
   /** True when no obstacle stands between `a` and `b` (always true without obstacles). */
   lineOfSight(a: THREE.Vector3, b: THREE.Vector3) {
-    return !this.obstacles || !blocksSight(a, b, this.obstacles);
+    if (!this.obstacles) return true;
+    // Something standing inside an obstacle (the unit that carries a placed crystal's HP) is seen when its obstacle is.
+    const home = this.obstacles.filter((o) => contains(o, b.x, b.z));
+    return !blocksSight(a, b, home.length ? this.obstacles.filter((o) => !home.includes(o)) : this.obstacles);
   }
 
   /**

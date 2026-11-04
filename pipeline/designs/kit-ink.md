@@ -1,5 +1,30 @@
 # Ink kit: Shiori, the Last Brush (ranged control mage + summons)
 
+## v5 (2026-11-04)
+580 HP, 4.1 m/s, ranged attack 6 m, 10 per 1.0 s. Design: [kits-v5.md](kits-v5.md) "Shiori". Passive **Wet Ink**: her strokes lie on the ground for 5 s.
+An enemy within 0.8 m of a live armed stroke is slowed (0.6 s, refreshed every 0.4 s) and Stained (`stain` stack, 1 s); her hits on a Stained enemy
+deal +20% (not zero-damage or `trait` hits). Where a new stroke crosses an armed stroke (or an armed seal, a 2 m stroke across its centre) a crossing
+is made: a glowing point, and 0.65 s later it bursts once for 40 within 1.5 m (a `trait` hit from `victimTick`) and takes 1 s off Ink Lash
+(`noteOwner('crossing')`, `peerNote`). The old ink resource, the weaken stain and the familiars are gone from the kit (old spell files stay).
+Code: `src/traits/ink.ts` (boards per figure in WeakMaps: `addStroke`, `addSeal`, `strokesNear`, `removeStrokes`, the clock `inkNow` written from `marks`;
+ground marks `stroke`, `seal`, `sealWet`, `cross`, `crossHot`, `burst`, `sealPop`), spells `inkLash.ts`, `sealOfBinding.ts`, `flowingScript.ts`,
+`theLastCharacter.ts` in `src/spells/targeted/`, kit data `src/kits/ink.ts`.
+
+| Key | Spell (label) | Numbers |
+|---|---|---|
+| Q | Ink Lash (`ink lash`), SHOT, `aim: 'line'` | 0.3 s wind-up, 22 m/s, 9 m, radius 0.35: 50. Reaches 6 m at 0.57 s. The stroke runs from where it left to where it stopped, added at the end of the flight. cd 4 |
+| W | Seal of Binding (`seal of binding`), ground 8 m | A 2 m seal at the spot, armed 0.5 s after the cast, for 6 s, one list of seals drawn by `marks`. An enemy within 1 m (live) is rooted 1 s and Stained, the seal is used up. No telegraph (the drying seal is the warning). cd 10 |
+| E | Flowing Script (`flowing script`), DASH, `dash: true` | 6 m glide in 0.25 s (`ctx.moveCaster`), a stroke along the path added at the landing. cd 11 |
+| R | The Last Character (`the last character`), ground 9 m, `cc` | Circle r 2 telegraph, impact 1.0 s (roots her while she writes). At 1.0 s, live positions: inside 30 and root 1 s; plus 40 per live armed stroke within 0.8 m of the enemy (3 at most), as one hit; outside the circle only the stroke part, as a `projectile: true` hit. The counted strokes vanish. One short light impact frame. cd 22 |
+
+Online notes: Q's stroke ends at the bolt on the victim's screen and at cover or full range on the dealer's (no bolt there); E's end differs where `moveCaster` clamps.
+R removes the counted strokes on each screen from its own live positions. Crossings are made by the same effects on both screens; only the victim's screen decides damage.
+
+---
+
+(Older text below: the v4 kit, kept for the old spell files.)
+
+
 ## Role (2026-10-30)
 **Summoner**, 580 HP. Signature: *Ink familiars*. Shape unchanged (split bolt, root zone, cranes, blind R).
 - E Paper Familiars: cooldown 14 to 12 (kit data only).

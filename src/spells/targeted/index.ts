@@ -91,6 +91,22 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { umbralCutModule } from './umbralCut';
+import { smokeVeilModule } from './smokeVeil';
+import { shadowDoubleModule } from './shadowDouble';
+import { nightfallModule } from './nightfall';
+import { ricochetLightModule } from './ricochetLight';
+import { crystalPillarModule } from './crystalPillar';
+import { blindingFlareModule } from './blindingFlare';
+import { shatterlightModule } from './shatterlight';
+import { inkLashModule } from './inkLash';
+import { sealOfBindingModule } from './sealOfBinding';
+import { flowingScriptModule } from './flowingScript';
+import { theLastCharacterModule } from './theLastCharacter';
+import { gravitySlamModule } from './gravitySlam';
+import { nullZoneModule } from './nullZone';
+import { phaseStepModule } from './phaseStep';
+import { blackHoleModule } from './blackHole';
 import { homingDroneModule } from './homingDrone';
 import { deployTurretModule } from './deployTurret';
 import { grappleHookModule } from './grappleHook';
@@ -287,6 +303,22 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  umbralCutModule,
+  smokeVeilModule,
+  shadowDoubleModule,
+  nightfallModule,
+  ricochetLightModule,
+  crystalPillarModule,
+  blindingFlareModule,
+  shatterlightModule,
+  inkLashModule,
+  sealOfBindingModule,
+  flowingScriptModule,
+  theLastCharacterModule,
+  gravitySlamModule,
+  nullZoneModule,
+  phaseStepModule,
+  blackHoleModule,
   homingDroneModule,
   deployTurretModule,
   grappleHookModule,

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { MinionLook } from './minion';
 
 /**
  * The shadow kit (pipeline/designs/kit-shadow.md): flat cut-paper shadows. Matte-black shapes (blades, hands, a
@@ -727,5 +728,175 @@ export class CutShards {
     this.mesh.visible = false;
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// ShadowWisps
+// ---------------------------------------------------------------------------------------------------------------
+
+interface Wisp { live: boolean; pos: THREE.Vector3; vel: THREE.Vector3; age: number; life: number; size: number; seed: number }
+
+/**
+ * Small dark-purple smoke wisps (v5, Smoke Veil): toon billboards with two hard bands (body, a paler violet lit side), a thin violet
+ * rim so they read on the dark floor, and a lumpy outline that erodes away as each ages. Never a smooth sphere, normal-blended.
+ * `emit(pos, vel, size, life)` starts one (a ring of `max`, the oldest is reused), `update(dt)` each frame, `reset()`. Add `mesh`.
+ */
+export class ShadowWisps {
+  readonly mesh: THREE.InstancedMesh;
+  private wisps: Wisp[] = [];
+  private cursor = 0;
+  private aP: THREE.InstancedBufferAttribute;
+  private m = new THREE.Matrix4();
+  private q = new THREE.Quaternion();
+  private s = new THREE.Vector3();
+
+  constructor(private max = 60) {
+    const geo = new THREE.PlaneGeometry(2, 2);
+    this.aP = new THREE.InstancedBufferAttribute(new Float32Array(max * 2), 2).setUsage(THREE.DynamicDrawUsage);
+    geo.setAttribute('aP', this.aP);
+    this.mesh = new THREE.InstancedMesh(geo, new THREE.ShaderMaterial({
+      side: THREE.DoubleSide,
+      uniforms: { uBody: { value: new THREE.Color(0x1c0c38) }, uLit: { value: new THREE.Color(0x3a1c6a) }, uRim: { value: new THREE.Color(SHADOW.hot) } },
+      vertexShader: /* glsl */ `
+        attribute vec2 aP; varying vec2 vUv; varying vec2 vP;
+        void main() {
+          vUv = position.xy; vP = aP;
+          vec4 c = modelViewMatrix * instanceMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+          float s = length(instanceMatrix[0].xyz);
+          c.xy += position.xy * s;
+          gl_Position = projectionMatrix * c;
+        }`,
+      fragmentShader: /* glsl */ `
+        uniform vec3 uBody, uLit, uRim; varying vec2 vUv; varying vec2 vP;
+        float h(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        void main() {
+          float r = length(vUv);
+          float ang = atan(vUv.y, vUv.x);
+          float n = 0.5 + 0.5 * sin(ang * 3.0 + vP.y * 20.0) * sin(ang * 5.0 - vP.y * 9.0 + 1.3);
+          float e = vP.x;
+          float lim = (0.72 + 0.26 * n) * (1.0 - 0.5 * e) - e * 0.12;
+          if (r > lim) discard;
+          if (e > 0.35 && h(floor(vUv * 4.0) + vP.y) < (e - 0.35) * 0.9) discard;
+          float lit = dot(vUv / max(r, 1e-3), vec2(-0.5, 0.8)) - r * 0.3;
+          vec3 col = lit > 0.1 ? uLit : uBody;
+          if (r > lim - 0.09) col = uRim;
+          gl_FragColor = vec4(col, 1.0);
+        }`,
+    }), max);
+    this.mesh.frustumCulled = false;
+    this.mesh.renderOrder = 3;
+    this.mesh.count = 0;
+    for (let i = 0; i < max; i++) this.wisps.push({ live: false, pos: new THREE.Vector3(), vel: new THREE.Vector3(), age: 0, life: 1, size: 0.3, seed: 0 });
+  }
+
+  emit(pos: THREE.Vector3, vel: THREE.Vector3, size = 0.4, life = 1.2) {
+    const w = this.wisps[this.cursor];
+    this.cursor = (this.cursor + 1) % this.max;
+    w.live = true;
+    w.pos.copy(pos);
+    w.vel.copy(vel);
+    w.age = 0;
+    w.life = life;
+    w.size = size;
+    w.seed = Math.random() * 10;
+  }
+
+  update(dt: number) {
+    let n = 0;
+    const a = this.aP.array as Float32Array;
+    for (const w of this.wisps) {
+      if (!w.live) continue;
+      w.age += dt;
+      if (w.age >= w.life) { w.live = false; continue; }
+      w.vel.multiplyScalar(Math.max(0, 1 - 1.2 * dt));
+      w.pos.addScaledVector(w.vel, dt);
+      const u = w.age / w.life;
+      const sz = Math.max(w.size * (0.55 + 0.9 * Math.min(1, u * 3)) * (1 + 0.3 * u), MIN_SCALE);
+      this.m.compose(w.pos, this.q.identity(), this.s.setScalar(sz));
+      this.mesh.setMatrixAt(n, this.m);
+      a[n * 2] = u;
+      a[n * 2 + 1] = w.seed;
+      n++;
+    }
+    this.mesh.count = n;
+    this.mesh.instanceMatrix.needsUpdate = true;
+    this.aP.needsUpdate = true;
+  }
+
+  reset() {
+    for (const w of this.wisps) w.live = false;
+    this.mesh.count = 0;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// shadowCloneLook
+// ---------------------------------------------------------------------------------------------------------------
+
+let cloneGeos: { cloak: THREE.BufferGeometry; hood: THREE.BufferGeometry; eye: THREE.BufferGeometry; arm: THREE.BufferGeometry; blade: THREE.BufferGeometry } | null = null;
+
+/**
+ * The `MinionLook` of Nyx's Shadow Double (`SummonOptions.look`): a thin, hooded figure about 1.3 m tall in a ragged black cloak with a
+ * violet outline and two mint eyes, a dagger in its right hand that swings on `pose.swing`. The hit flash still works (it is the body
+ * material). The unit's own ground ring only shows for a moment as it appears and when it dies: the look cannot hide it.
+ */
+export const shadowCloneLook: MinionLook = (kind, p) => {
+  p.body.color.set(0x0b0714);
+  p.trim.color.set(0x8a4ee0);
+  p.eye.color.set(SHADOW.accent);
+  p.outline.color.set(0x4a2290);
+  cloneGeos ??= {
+    cloak: new THREE.CylinderGeometry(0.09, 0.3, 1.0, 7),
+    hood: new THREE.ConeGeometry(0.17, 0.42, 6),
+    eye: new THREE.BoxGeometry(0.045, 0.025, 0.03),
+    arm: new THREE.BoxGeometry(0.06, 0.36, 0.06).translate(0, -0.18, 0),
+    blade: new THREE.BoxGeometry(0.035, 0.04, 0.4),
+  };
+  const g = cloneGeos;
+  const root = new THREE.Group();
+  const put = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number) => {
+    const o = new THREE.Mesh(geo, mat);
+    o.position.set(x, y, z);
+    return o;
+  };
+  const hull = (o: THREE.Mesh, k: number) => {
+    const h = new THREE.Mesh(o.geometry, p.outline);
+    h.position.copy(o.position);
+    h.rotation.copy(o.rotation);
+    h.scale.setScalar(k);
+    return h;
+  };
+  const cloak = put(g.cloak, p.body, 0, 0.5, 0);
+  const hood = put(g.hood, p.body, 0, 1.17, -0.01);
+  hood.rotation.x = 0.28;
+  root.add(hull(cloak, 1.14), hull(hood, 1.2), cloak, hood);
+  for (const s of [-1, 1]) root.add(put(g.eye, p.eye, s * 0.055, 1.08, 0.115));
+  const arm = new THREE.Group();
+  arm.position.set(0.25, 0.85, 0.04);
+  arm.add(put(g.arm, p.body, 0, 0, 0));
+  if (kind === 'melee') arm.add(put(g.blade, p.trim, 0, -0.34, 0.22));
+  root.add(arm);
+  let phase = Math.random() * 6;
+  return {
+    root,
+    barY: 1.7,
+    animate(dt, pose) {
+      const w = pose.walk;
+      phase += dt * (5 + 9 * w);
+      const step = Math.sin(phase);
+      root.position.y = Math.abs(step) * 0.05 * w + Math.sin(pose.time * 3 + phase * 0.1) * 0.015;
+      cloak.rotation.z = Math.sin(phase * 0.5) * 0.05 * w;
+      let r = step * 0.5 * w, lean = 0.1 * w, push = 0;
+      if (pose.swing >= 0) {
+        const s = pose.swing;
+        r = s < 0.6 ? 2.0 * (s / 0.6) : 2.0 - ((s - 0.6) / 0.4) * 3.4;
+        lean = s < 0.6 ? -0.18 * (s / 0.6) : -0.18 + ((s - 0.6) / 0.4) * 0.6;
+        push = s < 0.6 ? 0 : ((s - 0.6) / 0.4) * 0.3;
+      }
+      arm.rotation.x = r;
+      root.rotation.x = lean;
+      root.position.z = push;
+    },
+  };
+};
 
 export { clamp01 as shadowClamp01, easeOut as shadowEaseOut, easeOutBack as shadowEaseOutBack };

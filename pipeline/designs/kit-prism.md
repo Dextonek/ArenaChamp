@@ -1,5 +1,25 @@
 # Prism kit: Opaline, the Lightbreaker (ranged mage)
 
+## v5 (2026-11-04)
+Design source: `kits-v5.md`, section "Opaline, the Lightbreaker". Where this differs from the text below, v5 wins. 560 HP, 4.2 m/s, basic
+attack 8.5 m, 13 per 1.4 s. Question: shoot straight, or bank it? Weakness: open ground gives her nothing to bounce from, and she has no dash.
+- **Passive Prismatic** (`src/traits/prism.ts`): her bolts reflect off walls, pillars and crystals. Each reflection adds 25% damage and 2 m of
+  range; a hit after reflections takes 1 s per reflection off Ricochet Light. The aim strip draws the first bounce (`bank: true` on Q), the
+  telegraph every leg. The refund is read from the bonus in the hit (`opts.damage / 50`: the engine folds the bonus in before `onHit` fires),
+  in `dealt`, then `noteOwner('bank', n)` and `peerNote` takes n seconds off slot 0 on her own client.
+- Q **Ricochet Light** (`ricochetLight.ts`, 'ricochet light'): SHOT, cd 3. 0.3 s wind-up, 12 m, 24 m/s, radius 0.3, `reflect: 2`: 50, +25% per
+  reflection. Telegraph: one thin line per leg of `bankPath`, later legs shown as the bolt would reach them (all with impact 0.3 s so the root
+  stays 0.3 s). A flash at each reflection. Online the caster's screen draws a bolt along the same path.
+- W **Crystal** (`crystalPillar.ts`, 'crystal pillar'): TERRAIN, 8 m, cd 12. Rises at 0.5 s, stands 6 s as a pillar obstacle of radius 0.7
+  (`ctx.addObstacle`): blocks walking, sight and bolts for both; her bolts reflect off it. Breaks at 80 damage: the HP lives in a summoned
+  'turret' unit (hp 80, damage 0, no reach, invisible look) at the same spot, made before the obstacle and pinned there; its death by damage
+  removes the obstacle. (The arena's breakable walls are the arena's own; obstacles take no damage.)
+- E **Blinding Flare** (`blindingFlare.ts`, 'blinding flare'): SELF zone 3 m, cd 10, `cc`. Hits at 0.25 s on live positions: blinded 1.5 s,
+  pushed 2 m (`shapeMove`, push). No damage. Telegraph: a 3 m circle round her.
+- R **Shatterlight** (`shatterlight.ts`, 'shatterlight'): ENEMY, 10 m, sight at the cast, cd 22. Six shards ring the cast spot at 2.5 m and fire
+  inward through it at 1.2 s as real bolts (radius 0.3, 14 m/s, 8 m, `reflect: 1`): 30 each (+25% on a bounce). Telegraph: a 2.5 m circle with
+  impact 1.2 s (root until then); it is the warning, not the gate (projectile hits always pass). One short light impact frame.
+
 ## Role (2026-10-30)
 
 **Marksman, 520 HP.** Signature: *Refraction*. Design: `pipeline/designs/hero-roles.md`.

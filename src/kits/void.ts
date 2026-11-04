@@ -297,88 +297,114 @@ export const voidKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'rift cleave', name: 'Rift Cleave', range: 3, cooldown: 2.5,
-      blurb: 'A melee greatsword sweep: the blade leaves a tear in the air that cuts everything in front of him and drags it 1.5 m toward him.',
+      key: 'Q', label: 'gravity slam', name: 'Gravity Slam', range: 3, cooldown: 4,
+      blurb: 'He slams the ground: 50 within 3 m, and enemies there are dragged 1.5 m toward him.',
       icon(g, s) {
         iconGround(g, s);
-        // A wide crescent tear with a jagged blade cutting through it, shards flying off.
-        slitArc(g, s * 0.5, s * 0.92, s * 0.62, -PI * 0.86, -PI * 0.14, s * 0.17, 3);
-        blade(g, s * 0.2, s * 0.9, s * 0.74, s * 0.18, s * 0.07);
-        shard(g, s * 0.84, s * 0.46, s * 0.05, 0.5, 2);
-        shard(g, s * 0.16, s * 0.42, s * 0.04, 1.4, 5);
-        shard(g, s * 0.62, s * 0.84, s * 0.035, 2.2, 7);
-        mote(g, s * 0.3, s * 0.22, s * 0.018);
-        mote(g, s * 0.9, s * 0.7, s * 0.015);
-        star(g, s * 0.5, s * 0.34, s * 0.06);
+        // Glass cracks racing out from a blade driven into the ground, shards pulled in toward it.
+        cracks(g, s * 0.5, s * 0.7, s * 0.46, s * 0.26, 10, s * 0.014, 5);
+        blade(g, s * 0.5, s * 0.02, s * 0.5, s * 0.68, s * 0.12);
+        shard(g, s * 0.16, s * 0.6, s * 0.04, 0.5, 2);
+        shard(g, s * 0.84, s * 0.56, s * 0.045, 1.6, 4);
+        shard(g, s * 0.28, s * 0.86, s * 0.035, 2.4, 7);
+        shard(g, s * 0.74, s * 0.88, s * 0.035, 0.9, 9);
+        mote(g, s * 0.2, s * 0.3, s * 0.016);
+        mote(g, s * 0.82, s * 0.28, s * 0.014);
+        star(g, s * 0.5, s * 0.7, s * 0.07);
       },
     },
     {
-      key: 'W', label: 'null tether', name: 'Null Tether', range: 8, cooldown: 8,
-      debuff: { kind: 'weaken', amount: 0.2, seconds: 3 },
-      blurb: 'Cracks spread over the ground, then black tears snap taut and drag every enemy in the zone toward him, slowing them.',
+      key: 'W', label: 'null zone', name: 'Null Zone', range: 0, cooldown: 12, cc: true,
+      blurb: 'A 3 m sphere of void stays where he cast it for 3 s. Enemies inside cannot cast, and bolts that enter it vanish.',
       icon(g, s) {
         iconGround(g, s);
-        // A cracked patch at the top, three tendril tears racing down to a point at the bottom, shards streaming along.
-        cracks(g, s * 0.5, s * 0.28, s * 0.4, s * 0.2, 9, s * 0.014, 4);
-        const bx = s * 0.5, by = s * 0.9;
-        slit(g, [[s * 0.2, s * 0.3], [s * 0.24, s * 0.5], [s * 0.34, s * 0.7], [bx, by]], s * 0.075, 2);
-        slit(g, [[s * 0.8, s * 0.3], [s * 0.76, s * 0.5], [s * 0.66, s * 0.7], [bx, by]], s * 0.075, 6);
-        slit(g, [[s * 0.5, s * 0.3], [s * 0.46, s * 0.5], [s * 0.53, s * 0.7], [bx, by]], s * 0.09, 9);
-        shard(g, s * 0.32, s * 0.6, s * 0.035, 0.6, 3);
-        shard(g, s * 0.7, s * 0.6, s * 0.035, 1.8, 5);
-        shard(g, s * 0.47, s * 0.74, s * 0.03, 2.6, 8);
-        mote(g, s * 0.12, s * 0.7, s * 0.014);
-        star(g, bx, by - s * 0.04, s * 0.05);
-      },
-    },
-    {
-      key: 'E', label: 'void mantle', name: 'Void Mantle', range: 0, cooldown: 12,
-      blurb: 'A ring of standing rifts opens round him and pulses once, hurting enemies within 4 m. For 2 s a void maw swallows the next enemy spell whole.',
-      icon(g, s) {
-        iconGround(g, s);
-        // Five standing slits round a core, an ash ring behind for the shield, cracks racing out.
-        const cx = s * 0.5, cy = s * 0.54;
-        g.strokeStyle = V.ash;
-        g.globalAlpha = 0.55;
-        g.lineWidth = s * 0.012;
+        // A dome of void: an ash rim on the ground, a torn black arc over it, silenced motes inside.
+        const cx = s * 0.5, cy = s * 0.62;
+        g.fillStyle = '#050407';
         g.beginPath();
-        g.ellipse(cx, cy, s * 0.4, s * 0.4, 0, 0, PI * 2);
+        g.ellipse(cx, cy, s * 0.42, s * 0.3, 0, PI, PI * 2);
+        g.lineTo(cx + s * 0.42, cy);
+        g.ellipse(cx, cy, s * 0.42, s * 0.12, 0, 0, PI);
+        g.closePath();
+        g.fill();
+        g.strokeStyle = V.ash;
+        g.globalAlpha = 0.7;
+        g.lineWidth = s * 0.014;
+        g.beginPath();
+        g.ellipse(cx, cy, s * 0.42, s * 0.12, 0, 0, PI * 2);
         g.stroke();
         g.globalAlpha = 1;
-        cracks(g, cx, s * 0.82, s * 0.4, s * 0.1, 7, s * 0.012, 5);
-        const rot = 0.35;
-        for (let i = 0; i < 5; i++) {
-          const a = rot + (i / 5) * PI * 2;
-          const x = cx + Math.cos(a) * s * 0.28, y = cy + Math.sin(a) * s * 0.24;
-          slitLine(g, x - s * 0.02, y + s * 0.15, x + s * 0.02, y - s * 0.15, s * (0.085 + 0.015 * (i % 2)), i + 1);
-        }
-        shard(g, cx, cy, s * 0.05, 0.4, 1);
-        star(g, cx, cy, s * 0.03);
-        mote(g, s * 0.16, s * 0.2, s * 0.014);
-        mote(g, s * 0.86, s * 0.26, s * 0.012);
+        slitArc(g, cx, cy, s * 0.4, PI * 1.05, PI * 1.95, s * 0.09, 3);
+        cracks(g, cx, cy + s * 0.04, s * 0.36, s * 0.08, 6, s * 0.01, 8);
+        shard(g, s * 0.4, s * 0.5, s * 0.035, 0.6, 3);
+        shard(g, s * 0.62, s * 0.56, s * 0.03, 1.8, 6);
+        // A bar across a bolt: nothing gets through.
+        g.strokeStyle = V.accent;
+        g.lineWidth = s * 0.018;
+        g.beginPath();
+        g.moveTo(s * 0.12, s * 0.12);
+        g.lineTo(s * 0.34, s * 0.28);
+        g.stroke();
+        mote(g, s * 0.86, s * 0.22, s * 0.014);
+        star(g, cx, s * 0.52, s * 0.045);
       },
     },
     {
-      key: 'R', label: 'unmaking', name: 'Unmaking', range: 13, cooldown: 20, cc: true,
-      blurb: 'Ultimate. A 5 m zone is cut out of the world: the ground cracks like glass, a vast rift opens above it and drags everything in, then slams shut.',
+      key: 'E', label: 'phase step', name: 'Phase Step', range: 4, cooldown: 14, dash: true,
+      blurb: 'He marks a spot within 4 m, then steps through the void to it 0.25 s later. His next basic attack within 3 s rips for +40 and weakens the enemy 20% for 2 s.',
       icon(g, s) {
         iconGround(g, s);
-        // A cracked disc on the floor, a vast vertical rift above its centre, shards pouring in, a cyan star at the base.
-        g.save();
+        // Two standing slits and a torn path between them, the far one with a star; a fist of void.
+        slitLine(g, s * 0.2, s * 0.22, s * 0.22, s * 0.84, s * 0.1, 3);
+        slitLine(g, s * 0.8, s * 0.2, s * 0.78, s * 0.8, s * 0.12, 7);
+        g.setLineDash([s * 0.04, s * 0.035]);
+        g.strokeStyle = V.ash;
+        g.lineWidth = s * 0.016;
+        g.beginPath();
+        g.moveTo(s * 0.3, s * 0.5);
+        g.lineTo(s * 0.7, s * 0.5);
+        g.stroke();
+        g.setLineDash([]);
+        shard(g, s * 0.42, s * 0.34, s * 0.035, 0.7, 2);
+        shard(g, s * 0.56, s * 0.7, s * 0.04, 1.9, 5);
+        shard(g, s * 0.5, s * 0.5, s * 0.03, 2.8, 8);
+        mote(g, s * 0.14, s * 0.1, s * 0.014);
+        mote(g, s * 0.9, s * 0.9, s * 0.014);
+        star(g, s * 0.78, s * 0.5, s * 0.06);
+      },
+    },
+    {
+      key: 'R', label: 'void black hole', name: 'Black Hole', range: 8, cooldown: 24, cc: true, aim: 'line',
+      blurb: 'A black hole crawls 8 m down his aim for 4 s, pulling enemies within 5 m. Touching its core deals 90 and stuns 1 s, once. Recast: it collapses at once for 70 within 3 m, after a 0.5 s warning.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A black core inside a pink ring and a cyan fringe, torn slits spiralling in, shards pulled along.
+        const cx = s * 0.5, cy = s * 0.52;
         g.fillStyle = '#0a090c';
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.8, s * 0.46, s * 0.15, 0, 0, PI * 2);
+        g.ellipse(cx, cy, s * 0.46, s * 0.36, 0, 0, PI * 2);
         g.fill();
-        g.restore();
-        cracks(g, s * 0.5, s * 0.8, s * 0.46, s * 0.15, 11, s * 0.013, 7);
-        slitLine(g, s * 0.5, s * 0.04, s * 0.5, s * 0.8, s * 0.24, 3);
-        shard(g, s * 0.2, s * 0.5, s * 0.05, 0.4, 2);
-        shard(g, s * 0.82, s * 0.4, s * 0.045, 1.5, 4);
-        shard(g, s * 0.3, s * 0.2, s * 0.035, 2.2, 6);
-        shard(g, s * 0.74, s * 0.68, s * 0.04, 0.9, 9);
-        mote(g, s * 0.14, s * 0.3, s * 0.014);
-        mote(g, s * 0.88, s * 0.18, s * 0.014);
-        star(g, s * 0.5, s * 0.8, s * 0.07);
+        g.strokeStyle = V.ash;
+        g.globalAlpha = 0.6;
+        g.lineWidth = s * 0.012;
+        g.stroke();
+        g.globalAlpha = 1;
+        slitArc(g, cx, cy, s * 0.36, PI * 0.1, PI * 0.95, s * 0.08, 2);
+        slitArc(g, cx, cy, s * 0.36, PI * 1.1, PI * 1.95, s * 0.08, 6);
+        slitArc(g, cx, cy, s * 0.2, PI * 0.5, PI * 1.5, s * 0.06, 9);
+        g.fillStyle = V.dark;
+        g.beginPath();
+        g.ellipse(cx, cy, s * 0.13, s * 0.11, 0, 0, PI * 2);
+        g.fill();
+        g.strokeStyle = V.accent;
+        g.lineWidth = s * 0.02;
+        g.stroke();
+        shard(g, s * 0.14, s * 0.3, s * 0.04, 0.5, 2);
+        shard(g, s * 0.86, s * 0.72, s * 0.04, 1.5, 4);
+        shard(g, s * 0.7, s * 0.2, s * 0.03, 2.2, 6);
+        mote(g, s * 0.1, s * 0.8, s * 0.014);
+        mote(g, s * 0.9, s * 0.18, s * 0.014);
+        star(g, cx, cy, s * 0.035);
       },
     },
   ],

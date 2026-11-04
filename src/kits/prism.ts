@@ -1,7 +1,7 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Prism kit data: Opaline, the Lightbreaker. Four spells (labels as registered), canvas-drawn icons in the kit's palette:
+ * Prism kit data: Opaline, the Lightbreaker (kits v5). Four spells (labels as registered), canvas-drawn icons in the kit's palette:
  * deep violet-black ground, pale lavender glass crystals with dark facet edges, light that enters white and leaves as thin
  * parallel bands of red, gold, green and blue. Signature shape: the refracting crystal.
  */
@@ -186,111 +186,93 @@ export const prismKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'prism bolt', name: 'Prism Bolt', range: 14, cooldown: 2, aim: 'line',
-      blurb: 'Fires a crystal that shatters on the first enemy into three spectral beams that fan out and hit again.',
+      key: 'Q', label: 'ricochet light', name: 'Ricochet Light', range: 12, cooldown: 3, aim: 'line', bank: true,
+      blurb: 'A bolt of light (12 m) that bounces off up to two walls, pillars or crystals: 50 damage, +25% for each bounce. A hit after bouncing takes 1 s per bounce off this spell.',
       icon(g, s) {
         iconGround(g, s);
-        // A crystal flying up and to the right with a white trail; three beams fan out of its end.
-        beam(g, s * 0.06, s * 0.9, s * 0.4, s * 0.58, s * 0.05);
-        beam(g, s * 0.58, s * 0.44, s * 0.94, s * 0.12, s * 0.055, S.red);
-        beam(g, s * 0.58, s * 0.44, s * 0.96, s * 0.38, s * 0.055, S.gold);
-        beam(g, s * 0.58, s * 0.44, s * 0.82, s * 0.8, s * 0.055, S.blue);
-        shard(g, s * 0.5, s * 0.5, s * 0.17, s * 0.075, 0.9, S.body);
-        glint(g, s * 0.62, s * 0.4, s * 0.1);
-        glint(g, s * 0.2, s * 0.36, s * 0.045);
-        glint(g, s * 0.84, s * 0.66, s * 0.04);
+        // A wall on the right; a white beam runs in from the lower left, hits it, and leaves as a golden beam to the upper left.
+        g.fillStyle = S.dark;
+        g.fillRect(s * 0.76, s * 0.08, s * 0.2, s * 0.84);
+        g.fillStyle = S.shade;
+        g.fillRect(s * 0.76, s * 0.08, s * 0.045, s * 0.84);
+        g.strokeStyle = S.hot;
+        g.lineWidth = s * 0.014;
+        g.strokeRect(s * 0.76, s * 0.08, s * 0.2, s * 0.84);
+        beam(g, s * 0.06, s * 0.86, s * 0.76, s * 0.5, s * 0.06);
+        beam(g, s * 0.76, s * 0.5, s * 0.1, s * 0.12, s * 0.06, S.gold);
+        shard(g, s * 0.3, s * 0.72, s * 0.1, s * 0.045, 1.1, S.body);
+        glint(g, s * 0.76, s * 0.5, s * 0.15);
+        glint(g, s * 0.22, s * 0.28, s * 0.05);
       },
     },
     {
-      key: 'W', label: 'refraction field', name: 'Refraction Field', range: 10, cooldown: 7,
-      debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
-      blurb: 'A ring of crystals feeds a prism that bursts in spectral light: damage and a blind to everyone inside.',
+      key: 'W', label: 'crystal pillar', name: 'Crystal', range: 8, cooldown: 12,
+      blurb: 'A crystal rises at a spot (8 m) for 6 s, or until 80 damage breaks it. It blocks walking, sight and bolts for both of you, and her bolts bounce off it.',
       icon(g, s) {
         iconGround(g, s);
-        // A floor ring with six crystals, white beams into a prism, and coloured rays flashing down.
+        // A floor ring, a tall crystal with two small ones at its foot, a beam bouncing off its side.
         g.strokeStyle = 'rgba(240,244,255,0.5)';
         g.lineWidth = s * 0.014;
         g.beginPath();
-        g.ellipse(s * 0.5, s * 0.74, s * 0.4, s * 0.15, 0, 0, Math.PI * 2);
+        g.ellipse(s * 0.5, s * 0.84, s * 0.38, s * 0.1, 0, 0, Math.PI * 2);
+        g.stroke();
+        beam(g, s * 0.02, s * 0.3, s * 0.4, s * 0.46, s * 0.04);
+        beam(g, s * 0.4, s * 0.46, s * 0.14, s * 0.9, s * 0.04, S.blue);
+        shard(g, s * 0.5, s * 0.46, s * 0.4, s * 0.16, 0, S.body);
+        shard(g, s * 0.26, s * 0.76, s * 0.12, s * 0.05, -0.3, S.shade);
+        shard(g, s * 0.76, s * 0.74, s * 0.14, s * 0.055, 0.3, S.body);
+        glint(g, s * 0.5, s * 0.18, s * 0.09);
+        glint(g, s * 0.86, s * 0.34, s * 0.04);
+      },
+    },
+    {
+      key: 'E', label: 'blinding flare', name: 'Blinding Flare', range: 0, cooldown: 10, cc: true,
+      blurb: 'A flash of light (3 m) round her: enemies in it are blinded for 1.5 s and pushed 2 m away.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A white burst: a pale disc, spectrum rays out of it, a ring on the floor.
+        g.strokeStyle = 'rgba(240,244,255,0.55)';
+        g.lineWidth = s * 0.014;
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.8, s * 0.42, s * 0.11, 0, 0, Math.PI * 2);
+        g.stroke();
+        const tints = [S.red, S.gold, S.green, S.blue, S.red, S.gold, S.green, S.blue];
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2 + 0.2;
+          beam(g, s * 0.5, s * 0.46, s * (0.5 + Math.cos(a) * 0.46), s * (0.46 + Math.sin(a) * 0.4), s * 0.045, tints[i]);
+        }
+        const r = g.createRadialGradient(s * 0.5, s * 0.46, s * 0.02, s * 0.5, s * 0.46, s * 0.2);
+        r.addColorStop(0, '#ffffff');
+        r.addColorStop(0.6, S.hot);
+        r.addColorStop(1, 'rgba(184,176,255,0)');
+        g.fillStyle = r;
+        g.beginPath();
+        g.arc(s * 0.5, s * 0.46, s * 0.2, 0, Math.PI * 2);
+        g.fill();
+        glint(g, s * 0.5, s * 0.46, s * 0.17);
+      },
+    },
+    {
+      key: 'R', label: 'shatterlight', name: 'Shatterlight', range: 10, cooldown: 22,
+      blurb: 'Click an enemy (10 m, in sight). Six shards ring the spot they stand on and, after 1.2 s, each fires inward through it: 30 damage each, and each bounces once off a wall. Step out of the ring to dodge.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A ring of six shards seen at an angle, each throwing a beam in to a glint at the middle.
+        g.strokeStyle = 'rgba(240,244,255,0.45)';
+        g.lineWidth = s * 0.014;
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.58, s * 0.4, s * 0.2, 0, 0, Math.PI * 2);
         g.stroke();
         const ring: [number, number][] = [];
         for (let i = 0; i < 6; i++) {
-          const a = (i / 6) * Math.PI * 2 + 0.3;
-          ring.push([s * (0.5 + Math.cos(a) * 0.4), s * (0.74 + Math.sin(a) * 0.15)]);
+          const a = (i / 6) * Math.PI * 2 + 0.5;
+          ring.push([s * (0.5 + Math.cos(a) * 0.4), s * (0.58 + Math.sin(a) * 0.2)]);
         }
         ring.sort((a, b) => a[1] - b[1]);
-        for (const [x, y] of ring) beam(g, x, y - s * 0.08, s * 0.5, s * 0.34, s * 0.022, S.hot);
-        for (const [x, y] of ring) shard(g, x, y - s * 0.02, s * 0.1, s * 0.04, x < s * 0.5 ? 0.2 : -0.2, S.body);
-        for (const [dx, tint] of [[-0.34, S.red], [-0.12, S.gold], [0.12, S.green], [0.34, S.blue]] as [number, string][]) {
-          beam(g, s * 0.5, s * 0.36, s * (0.5 + dx), s * 0.78, s * 0.04, tint);
-        }
-        shard(g, s * 0.5, s * 0.3, s * 0.15, s * 0.07, 0, S.hot);
-        glint(g, s * 0.5, s * 0.3, s * 0.08);
-      },
-    },
-    {
-      key: 'E', label: 'mirror shell', name: 'Mirror Shell', range: 0, cooldown: 9,
-      blurb: 'A blink: six crystal mirrors flash and she jumps 4 m sideways of the enemy, wrapped in a 45 HP shield. No damage.',
-      icon(g, s) {
-        iconGround(g, s);
-        // Beams out to the sides, a ring of mirrors seen at an angle round a small figure.
-        for (const [dx, dy, tint] of [[0.46, 0.04, S.red], [0.4, 0.2, S.gold], [-0.46, 0.04, S.green], [-0.4, 0.2, S.blue]] as [number, number, string][]) {
-          beam(g, s * 0.5, s * 0.6, s * (0.5 + dx), s * (0.6 + dy), s * 0.04, tint);
-        }
-        g.strokeStyle = 'rgba(240,244,255,0.45)';
-        g.lineWidth = s * 0.012;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.74, s * 0.3, s * 0.1, 0, 0, Math.PI * 2);
-        g.stroke();
-        const panes: [number, number][] = [];
-        for (let i = 0; i < 6; i++) {
-          const a = (i / 6) * Math.PI * 2 + 0.5;
-          panes.push([s * (0.5 + Math.cos(a) * 0.3), s * (0.62 + Math.sin(a) * 0.1)]);
-        }
-        panes.sort((a, b) => a[1] - b[1]);
-        for (const [x, y] of panes) {
-          if (y < s * 0.62) shard(g, x, y, s * 0.14, s * 0.05, 0, S.shade);
-        }
-        // The figure: a pale robe and head.
-        g.fillStyle = S.foil;
-        g.beginPath();
-        g.moveTo(s * 0.43, s * 0.8);
-        g.quadraticCurveTo(s * 0.5, s * 0.46, s * 0.57, s * 0.8);
-        g.closePath();
-        g.fill();
-        g.fillStyle = '#e9d9d6';
-        g.beginPath();
-        g.arc(s * 0.5, s * 0.44, s * 0.05, 0, Math.PI * 2);
-        g.fill();
-        for (const [x, y] of panes) {
-          if (y >= s * 0.62) shard(g, x, y, s * 0.14, s * 0.05, 0, S.body);
-        }
-        glint(g, s * 0.2, s * 0.3, s * 0.05);
-        glint(g, s * 0.8, s * 0.28, s * 0.04);
-      },
-    },
-    {
-      key: 'R', label: 'spectrum lance', name: 'Spectrum Lance', range: 0, cooldown: 20,
-      blurb: 'Ultimate. No aim: she turns to the nearest enemy within 12 m and holds a rainbow beam there for 2 s, rooted, and it sweeps 70 degrees, hitting three times.',
-      icon(g, s) {
-        iconGround(g, s);
-        // A ring on the floor, seven lances slamming down from the prism, the sky beam above.
-        g.strokeStyle = 'rgba(240,244,255,0.5)';
-        g.lineWidth = s * 0.014;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.82, s * 0.42, s * 0.11, 0, 0, Math.PI * 2);
-        g.stroke();
-        const tints = [S.red, S.gold, S.green, S.blue, S.red, S.gold, S.blue];
-        for (let i = 0; i < 7; i++) {
-          const a = (i / 7) * Math.PI * 2 + 0.4;
-          beam(g, s * 0.5, s * 0.44, s * (0.5 + Math.cos(a) * 0.4), s * (0.82 + Math.sin(a) * 0.1), s * 0.04, tints[i]);
-        }
-        beam(g, s * 0.5, 0, s * 0.5, s * 0.22, s * 0.07);
-        for (const [x, y, h] of [[0.14, 0.3, 0.06], [0.86, 0.3, 0.06], [0.27, 0.12, 0.05], [0.73, 0.12, 0.05]] as [number, number, number][]) {
-          shard(g, s * x, s * y, s * h, s * h * 0.42, 0, S.body);
-        }
-        shard(g, s * 0.5, s * 0.38, s * 0.2, s * 0.1, 0, S.hot);
-        glint(g, s * 0.5, s * 0.38, s * 0.1);
+        const tints = [S.red, S.gold, S.green, S.blue, S.red, S.gold];
+        ring.forEach(([x, y], i) => beam(g, x, y - s * 0.04, s * 0.5, s * 0.52, s * 0.035, tints[i]));
+        for (const [x, y] of ring) shard(g, x, y - s * 0.06, s * 0.11, s * 0.045, 0, S.body);
+        glint(g, s * 0.5, s * 0.52, s * 0.14);
       },
     },
   ],

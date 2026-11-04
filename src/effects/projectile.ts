@@ -348,23 +348,18 @@ export class ProjectileSystem {
     const turn = p.curve * (dist / p.speed);
     if (turn) turnDir(p.dir, turn / 2);
     const a = p.pos, b = this._v.copy(a).addScaledVector(p.dir, dist);
+    // Cover on the path: the bolt flies up to it and hits what it meets on the way, so a hero with its back to a wall, or a
+    // unit standing in a placed crystal, is hit before the bolt stops.
+    let cover: { nx: number; nz: number } | null = null;
     if (p.world.blocked?.(a, b)) {
-      const s = p.reflections < (p.opts.reflect ?? 0) ? p.world.surface?.(a, b) : null;
+      const s = p.world.surface?.(a, b);
       if (!s) {
         p.alive = false;
         return;
       }
-      // A bank shot: up to the surface, then away from it, a little farther and a little stronger.
-      p.pos.addScaledVector(p.dir, dist * s.t);
-      p.rangeLeft += (p.opts.reflectRange ?? 2) - dist * s.t;
-      const dot = p.dir.x * s.nx + p.dir.z * s.nz;
-      p.dir.x -= 2 * dot * s.nx;
-      p.dir.z -= 2 * dot * s.nz;
-      p.pos.addScaledVector(p.dir, 0.02);
-      p.reflections++;
-      p.curve = 0;
-      p.opts.onReflect?.(p, p.pos.clone());
-      return;
+      cover = s;
+      dist *= s.t;
+      b.copy(a).addScaledVector(p.dir, dist);
     }
     // A wall of the other side on the path: the bolt flies up to it, hits what it meets on the way, then ends there.
     const wallCut = this.walls.length ? this.crossWall(p, a, b) : null;
@@ -410,6 +405,22 @@ export class ProjectileSystem {
       return;
     }
     p.pos.addScaledVector(p.dir, moved);
+    if (cover && !wallCut) {
+      if (p.reflections >= (p.opts.reflect ?? 0)) {
+        p.alive = false;
+        return;
+      }
+      // A bank shot: away from the surface, a little farther and a little stronger.
+      p.rangeLeft += (p.opts.reflectRange ?? 2) - moved;
+      const dot = p.dir.x * cover.nx + p.dir.z * cover.nz;
+      p.dir.x -= 2 * dot * cover.nx;
+      p.dir.z -= 2 * dot * cover.nz;
+      p.pos.addScaledVector(p.dir, 0.02);
+      p.reflections++;
+      p.curve = 0;
+      p.opts.onReflect?.(p, p.pos.clone());
+      return;
+    }
     if (wallCut) {
       p.alive = false;
       wallCut.wall.opts.onBlock?.(p, p.pos.clone());
