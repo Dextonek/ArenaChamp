@@ -282,7 +282,7 @@ const pom: HeroKit = {
   maxHp: 620,
   hpChunks: 2,
   model: 'models/heroes/pom_v2.glb',
-  attack: { kind: 'ranged', range: 6, damage: 9, interval: 0.9, speed: 20, look: 'dart' },
+  attack: { kind: 'ranged', range: 6, damage: 12, interval: 0.9, speed: 20, look: 'dart' },
   portrait: pomPortrait,
   spells: [
     {
@@ -347,7 +347,7 @@ export const twinsKit: HeroKit = {
   hpChunks: 2,
   melee: true,
   model: 'models/heroes/pim_v2.glb',
-  attack: { kind: 'melee', range: 2.4, damage: 12, interval: 0.9, look: 'sweep' },
+  attack: { kind: 'melee', range: 2.4, damage: 16, interval: 0.9, look: 'sweep' },
   portrait: pimPortrait,
   alt: pom,
   spells: [

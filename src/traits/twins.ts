@@ -2,7 +2,7 @@ import type { Trait, TraitView } from './types';
 
 /** Pim and Pom share one hero: 620 HP in all, 310 each. The resting twin heals this much a second. */
 export const HALF = 310;
-export const REST_HEAL = 4;
+export const REST_HEAL = 6;
 /** A twin who has less than this cannot be tagged in (he would be sent straight back out). */
 export const COME_MIN = 15;
 
@@ -11,12 +11,12 @@ export const TAG_HOLD = 0.5;
 export const TAG_CUT = 2;
 
 /** Pim's Bonk (Q): damage, reach, cone width in degrees, wind-up. */
-export const BONK_DAMAGE = 50;
+export const BONK_DAMAGE = 66;
 export const BONK_REACH = 3;
 export const BONK_ANGLE = 100;
 export const BONK_WIND = 0.45;
 /** Pim's Charge (W): damage, longest rush, wind-up, rush time, how wide the lane is. */
-export const CHARGE_DAMAGE = 40;
+export const CHARGE_DAMAGE = 56;
 export const CHARGE_RANGE = 5;
 export const CHARGE_WIND = 0.4;
 export const CHARGE_TIME = 0.2;
@@ -26,7 +26,7 @@ export const SHIELD_AMOUNT = 50;
 export const SHIELD_SECONDS = 2;
 
 /** Pom's Pebble (Q): damage, range, speed, wind-up, bolt radius. */
-export const PEBBLE_DAMAGE = 45;
+export const PEBBLE_DAMAGE = 62;
 export const PEBBLE_RANGE = 9;
 export const PEBBLE_SPEED = 22;
 export const PEBBLE_WIND = 0.3;
@@ -35,12 +35,12 @@ export const PEBBLE_RADIUS = 0.3;
 export const SNARE_RANGE = 7;
 export const SNARE_DELAY = 1.0;
 export const SNARE_RADIUS = 2;
-export const SNARE_DAMAGE = 20;
+export const SNARE_DAMAGE = 30;
 export const SNARE_ROOT = 1;
 /** Pom's Backflip (E): the hop, its time, the popper's damage, radius and fuse. */
 export const FLIP_DISTANCE = 4;
 export const FLIP_TIME = 0.3;
-export const FLIP_DAMAGE = 30;
+export const FLIP_DAMAGE = 40;
 export const FLIP_RADIUS = 1.5;
 export const FLIP_FUSE = 0.65;
 

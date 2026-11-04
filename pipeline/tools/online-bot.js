@@ -49,7 +49,7 @@
       if (match.active) {
         playing = true;
         // The result card waits for a click on "Back to menu".
-        if (api.duel.over && window._botShort && log.rounds.length) match.exit();
+        if (api.duel.over && window._botShort && log.rounds.length >= 1) match.exit();
         return;
       }
       if (state.queue.on) return;
@@ -81,11 +81,11 @@
       if (log.samples.length >= 60) log.samples.shift();
       log.samples.push({ me: Math.round(d.playerHp), foe: Math.round(arena.hpOf(foe)), dist: +dist.toFixed(1), over: !!d.over, res: d.result?.winner ?? null, kit: hm.currentKit.name });
     }
-    if (d.round !== lastRound) {
+    if (d.time > 0.5 && d.round !== lastRound) {
       lastRound = d.round;
       log.rounds.push(d.round);
       // One round is enough to test a hero: `_botShort = true` ends the match when the second round starts.
-      if (window._botShort && d.round >= 2) { window.game.net.send({ t: 'match_leave' }); return; }
+      if (window._botShort && log.rounds.length >= 2) { window.game.net.send({ t: 'match_leave' }); return; }
     }
     if (d.over || d.waiting || d.countdown > 0 || hm.locked) return;
     const st = arena.statusOf(arena.caster);
