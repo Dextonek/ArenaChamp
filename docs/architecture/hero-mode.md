@@ -102,7 +102,8 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 
 - range ring around the hero (kit `foil`), radius = spell range;
-- single-target spells: an aim strip from the hero to the hovered enemy (or toward the cursor), clamped to range, and a hover ring on the enemy (accent when in range, foil when out of range);
+- single-target spells: an aim strip from the hero to the hovered enemy (or toward the cursor), clamped to range, and a hover ring on the enemy (accent when in range, foil when out of range). Without line of sight the strip ends at the cover in the way (`Arena.coverStop`) and turns `foil`;
+- line skillshots (`HeroSpell.aim: 'line'`): a strip and arrow of the spell's range and width. Both end where cover stops the bolt, and turn `foil`, unless the spell has `overCover` (it does not stop at walls). A bank shot draws its bounce instead. The cast's own line zones are cut the same way (`Arena.cutZones`, called from `zonesOf` in runtime.ts), on both sides' casts;
 - ground spells: an area circle plus fill at the clamped cursor point, radius from the spec's `radius` (default 5);
 - curving skillshots (`HeroSpell.aim: 'arc'`, a ground spell): a ribbon along a circular arc from the hero to the clamped
   cursor point with the arrow head at its end. The bend rule (`arcBendFor`, effects/projectile.ts): the arc bows away
@@ -198,7 +199,8 @@ A 1 vs 1 round on top of hero mode. `Duel` (constructed in runtime.ts with a `Du
 **Cover and line of sight:** the ring has a centre wall, four pillars and two side walls (`DUEL_OBSTACLES` in
 [obstacles.ts](../../src/obstacles.ts), set as `arena.obstacles` while the duel is on). They block walking and line of
 sight; a targeted spell needs sight of its target (hero mode turns an unseen cast into walk-then-cast, the AI only
-picks spells it can see with). Details in [multiplayer.md](multiplayer.md#the-ring-pillars-walls-and-line-of-sight).
+picks spells it can see with), and so does every basic attack, melee or ranged (`Attacker.inRange`; an attack order walks
+round the cover first). Details in [multiplayer.md](multiplayer.md#the-ring-pillars-walls-and-line-of-sight).
 
 **Network duel:** `startNet({ opponent, side, names, net })` runs the same ring against another player
 (`/game.html`): no AI, the opponent moves and casts from `peerMove` / `peerCast`, hits on the remote hero come from

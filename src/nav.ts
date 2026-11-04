@@ -78,7 +78,8 @@ export class Navigator {
   step(key: object, from: THREE.Vector3, to: THREE.Vector3, obstacles: readonly Obstacle[], bounds: NavBounds | null): NavStep {
     this.sync(obstacles, bounds);
     let route = this.routes.get(key);
-    const stale = !route || route.version !== this.version || flat(route.order, to) > REPLAN_MOVE;
+    // Planned anew when the map or the goal changed, or when a dash or a shove put cover between the walker and its next point.
+    const stale = !route || route.version !== this.version || flat(route.order, to) > REPLAN_MOVE || !this.clear(from, route.path[0]);
     // Someone standing pressed against cover is at touching distance, which a rounding error can put just inside: that spot
     // is free. Snapped, it would land on the walker's side of the wall, and the walker would stop there as if it had arrived.
     // Snapped only when the order changes (or lies free): the walker's own position would keep moving the spot.

@@ -168,7 +168,8 @@ Other `HeroSpell` flags the AI reads:
 |---|---|
 | `cc: true` | the spell stuns or roots; see the AI rules below |
 | `summon: true` | the AI casts it when ready and the hero is within 10 m (`SUMMON_REACH`), at a spot 3 m in front of itself |
-| `aim: 'line'` | a skillshot: hero mode draws a strip of the spell's range and width from the hero toward the cursor instead of the ground circle |
+| `aim: 'line'` | a skillshot: hero mode draws a strip of the spell's range and width from the hero toward the cursor instead of the ground circle. The strip ends where cover stops the bolt |
+| `overCover: true` | with `aim: 'line'`: the spell does not stop at cover, so its strips run on past a wall (The Shove, Gerald, No!, Feather Step, TIMBER!, Black Hole) |
 | `escape: true` | with `dash`: a getaway, not a gap closer. The AI casts it away from an enemy who comes close |
 | `anytime: true` | with R: not an ultimate for the AI, which casts it as the trait's `aiHold` allows, whatever the enemy's HP (Pim and Pom's Tag Out) |
 

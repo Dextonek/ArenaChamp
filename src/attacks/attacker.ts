@@ -86,11 +86,10 @@ export class Attacker {
     this.cd = 0;
   }
 
-  /** Close enough to attack `to` from `from` (ranged also needs line of sight). */
+  /** Close enough to attack `to` from `from`, with line of sight: no attack, melee or ranged, goes through cover. */
   inRange(from: THREE.Vector3, to: THREE.Vector3) {
-    const s = this.owner.spec();
     if (Math.hypot(to.x - from.x, to.z - from.z) > this.range) return false;
-    return s.kind === 'melee' || this.owner.arena.lineOfSight(from, to);
+    return this.owner.arena.lineOfSight(from, to);
   }
 
   /** Starts an attack on `target` if the last one has recovered. Returns true when a wind-up began. */
