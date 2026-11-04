@@ -190,6 +190,7 @@ function parcelSpot(t: TraitView, job: Job) {
  * (which would spend one) while it has Charges and the enemy is not close.
  */
 export const courierTrait: Trait = {
+  meter: { name: 'CHARGE', max: MAX_CHARGE, value: (t) => t.own('charge') },
   passive: {
     name: 'Sign Here',
     blurb: 'A parcel lies on the arena and the drop point is shown. Carry one to the other: +1 Charge, 3 at most. A hit on him while he carries knocks the parcel loose where he stood.',

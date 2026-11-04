@@ -87,6 +87,7 @@ function bringIn(t: TraitView, twin: number) {
  * A new round starts on Pim with both at 310 (`mem` is cleared).
  */
 export const twinsTrait: Trait = {
+  meter: { name: 'REST', max: HALF, value: (t) => share(t, t.own('twin') ? 0 : 1) },
   passive: {
     name: 'Tag Team',
     blurb: 'One hero, two twins on one bar of 620 HP: 310 each. Damage comes off the twin who is in; at 0 he is tagged out at once. The twin who rests heals 4 HP a second. Tag Out takes 0.5 s, and the twin who comes in has his next spell 2 s sooner.',

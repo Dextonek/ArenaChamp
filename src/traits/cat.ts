@@ -80,6 +80,7 @@ const LOST_WORDS = ['MROW', 'HISS', 'NYA', 'MEOW'];
  * Pounce only on a life with under 20 HP left (and a life to spare) or at 4 to 7 m with more than 3 lives, Land on My Feet not while it is armed.
  */
 export const catTrait: Trait = {
+  meter: { name: 'LIVES', max: LIVES, value: (t) => t.own('lives') },
   passive: {
     name: 'Nine Lives',
     blurb: 'His bar is nine lives of 60 HP. No single hit takes more than the life he is on: the rest of a big hit is wasted. Many small hits and damage over time are what cut him apart.',

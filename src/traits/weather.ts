@@ -213,6 +213,7 @@ const aiLikes = (b: WeatherBook) => b.wrong || mix(b.step * 5 + 1) % 3 === 0;
  * every frame on both screens (`marks`, `ring`, `enemyLabel`), and the arena-wide weather is one mark centred on the arena.
  */
 export const weatherTrait: Trait = {
+  meter: { name: 'NEXT', max: STEP, value: (t) => Math.ceil(STEP - (t.time % STEP)) },
   passive: {
     name: 'And Now the Weather',
     blurb: 'Every 8 s the arena\'s weather changes: Rain (everyone slower), Sun (everyone heals 4 a second) or Wind (a push of 1 m/s across). The next one is shown for 3 s before, but one forecast in five is wrong. He is +20% in a weather he called right.',

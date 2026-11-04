@@ -115,6 +115,7 @@ const aliveCount = (b: SheepBook) => b.flock.filter((u) => u.alive).length;
  * 6 m; R only with the enemy within 10 m.
  */
 export const sheepTrait: Trait = {
+  meter: { name: 'SHEEP', max: 6, value: (t) => aliveCount(bookOf(t.self())) },
   passive: {
     name: 'Wool Over Your Eyes',
     blurb: 'His sheep walk to whoever is nearest, Bo or you. Each touch adds Wool; at 5 Wool you are a sheep for 1 s: no casting, slow. A sheep has 30 HP and blocks bolts.',

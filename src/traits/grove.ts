@@ -204,6 +204,7 @@ function puffLook(): THREE.Object3D {
 }
 
 export const groveTrait: Trait = {
+  meter: { name: 'FLOWERS', max: MAX_FLOWERS, value: (t) => flowersOf(t.self()).length },
   passive: {
     name: 'Living Garden',
     blurb: 'Seed Shot and Pollen Glide plant a flower where they land (4 at most, 7 s each). Within 3 m of flowers she heals 2 HP a second per flower (2 count), more near her tree. An enemy within 1.5 m of a flower is slowed; standing within 1 m for 0.6 s tramples it.',

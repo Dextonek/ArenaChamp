@@ -311,6 +311,7 @@ function burstLook(): THREE.Object3D {
 }
 
 export const inkTrait: Trait = {
+  meter: { name: 'INK', max: 4, value: (t) => strokesOf(t.self()).length },
   passive: {
     name: 'Wet Ink',
     blurb: 'Her strokes stay on the ground for 5 s. An enemy on wet ink is slowed and Stained (+20% damage from her). Where two strokes cross, a point glows and 0.65 s later bursts for 40 within 1.5 m, and takes 1 s off Ink Lash.',

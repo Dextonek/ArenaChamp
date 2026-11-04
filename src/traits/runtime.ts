@@ -156,6 +156,28 @@ export class TraitRuntime implements TraitView {
     return this.trait?.figureHidden?.(this) ?? false;
   }
 
+  private meterSent = -1;
+
+  /**
+   * This hero's meter now (`Trait.meter`), or null. `remote`: it is the other player's hero, whose client counts it and sends each
+   * whole-number change. The value is clamped, so a bar never overflows.
+   */
+  meterNow(remote: boolean) {
+    const m = this.trait?.meter;
+    if (!m) return null;
+    let value: number;
+    if (remote) value = this.own('meter');
+    else {
+      value = m.value(this);
+      const whole = Math.round(value);
+      if (whole !== this.meterSent) {
+        this.meterSent = whole;
+        this.show('meter', whole);
+      }
+    }
+    return { name: m.name, max: m.max, color: m.color, value: Math.max(0, Math.min(m.max, value)) };
+  }
+
   enemyScaleNow() {
     return this.trait?.enemyScale?.(this) ?? 1;
   }

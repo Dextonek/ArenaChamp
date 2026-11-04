@@ -78,6 +78,7 @@ function announce(t: TraitView, name: string, n: number) {
  * The CPU holds R under 4 wasps, E under 3, and the recast until the enemy is barbed and within 8 m.
  */
 export const hiveTrait: Trait = {
+  meter: { name: 'WASPS', max: MAX_WASPS, value: (t) => wasps(t) },
   passive: { name: 'The Swarm', blurb: 'Up to 6 wasps circle him (one more every 2 s and one per basic attack that lands). His spells spend them.' },
   twist: { name: 'Spend or hold', blurb: 'Spend 2 wasps on the leap\'s poison, burn them in the cloud, or hold six for the surge. After the surge he is a plain fighter.' },
   speed: 4,

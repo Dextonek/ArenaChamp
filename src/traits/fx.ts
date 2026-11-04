@@ -133,6 +133,98 @@ export function stackColor(name: string): string | undefined {
   return STACK_LOOK[name]?.color;
 }
 
+/** Height of the bars over a hero's head, as a share of the camera's distance: about 3.6% of the screen's height. */
+const PLATE_SCALE = 0.034;
+
+/** What the bars over a hero's head show (`TraitFx.plate`). */
+export interface PlateData {
+  hp: number;
+  max: number;
+  shield: number;
+  /** Cuts in the HP bar (`HeroKit.hpChunks`); 0: none. */
+  chunks: number;
+  /** The viewer's own hero: green; the enemy: red. */
+  mine: boolean;
+  meter: { name: string; value: number; max: number; color: string } | null;
+}
+
+function roundedRect(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  g.beginPath();
+  g.roundRect(x, y, w, h, r);
+}
+
+function outlinedText(g: CanvasRenderingContext2D, text: string, x: number, y: number, maxW: number, fill = '#ffffff') {
+  g.lineJoin = 'round';
+  g.lineWidth = 6;
+  g.strokeStyle = 'rgba(6, 6, 10, 0.95)';
+  g.strokeText(text, x, y, maxW);
+  g.fillStyle = fill;
+  g.fillText(text, x, y, maxW);
+}
+
+function drawPlate(c: HTMLCanvasElement, d: PlateData) {
+  const g = c.getContext('2d')!;
+  const W = c.width, x = 6, w = W - 12;
+  g.clearRect(0, 0, W, c.height);
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  // HP: a dark case, the fill, the shield after it (pushed back inside the bar when it would run out), cuts, the number.
+  const hpY = 6, hpH = 46;
+  roundedRect(g, x - 3, hpY - 3, w + 6, hpH + 6, 9);
+  g.fillStyle = 'rgba(8, 8, 12, 0.92)';
+  g.fill();
+  g.save();
+  roundedRect(g, x, hpY, w, hpH, 6);
+  g.clip();
+  g.fillStyle = '#2a1a1e';
+  g.fillRect(x, hpY, w, hpH);
+  const hpK = Math.max(0, Math.min(1, d.hp / d.max));
+  const fill = g.createLinearGradient(0, hpY, 0, hpY + hpH);
+  if (d.mine) { fill.addColorStop(0, '#62e07c'); fill.addColorStop(1, '#2c9a4a'); }
+  else { fill.addColorStop(0, '#f2585c'); fill.addColorStop(1, '#a8262c'); }
+  g.fillStyle = fill;
+  g.fillRect(x, hpY, w * hpK, hpH);
+  if (d.shield > 0) {
+    const sh = Math.min(1, d.shield / d.max);
+    g.fillStyle = 'rgba(232, 240, 250, 0.9)';
+    g.fillRect(x + w * Math.min(hpK, 1 - sh), hpY, w * sh, hpH);
+  }
+  if (d.chunks > 1) {
+    g.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    for (let i = 1; i < d.chunks; i++) g.fillRect(x + (w * i) / d.chunks - 1.5, hpY, 3, hpH);
+  }
+  g.restore();
+  g.font = '800 34px ui-sans-serif, system-ui, sans-serif';
+  outlinedText(g, String(Math.max(0, Math.ceil(d.hp))) + (d.shield > 0 ? ` +${Math.ceil(d.shield)}` : ''), W / 2, hpY + hpH / 2 + 2, w - 12);
+  // The meter: pips when it counts a few things, one bar when it counts many, and its name and number on it.
+  const m = d.meter;
+  if (!m) return;
+  const my = hpY + hpH + 8, mh = 40;
+  roundedRect(g, x - 3, my - 3, w + 6, mh + 6, 8);
+  g.fillStyle = 'rgba(8, 8, 12, 0.92)';
+  g.fill();
+  g.fillStyle = m.color;
+  if (m.max <= 9) {
+    const n = Math.round(m.max), gap = 4, each = (w - gap * (n - 1)) / n;
+    for (let i = 0; i < n; i++) {
+      const on = Math.round(m.value) > i;
+      g.globalAlpha = on ? 1 : 0.16;
+      roundedRect(g, x + i * (each + gap), my, each, mh, 4);
+      g.fill();
+    }
+    g.globalAlpha = 1;
+  } else {
+    g.globalAlpha = 0.16;
+    roundedRect(g, x, my, w, mh, 5);
+    g.fill();
+    g.globalAlpha = 1;
+    roundedRect(g, x, my, Math.max(2, w * (m.value / m.max)), mh, 5);
+    g.fill();
+  }
+  g.font = '800 26px ui-sans-serif, system-ui, sans-serif';
+  outlinedText(g, `${m.name} ${Math.round(m.value)}/${m.max}`, W / 2, my + mh / 2 + 2, w - 12);
+}
+
 export class TraitFx {
   readonly group = new THREE.Group();
   /** Pips over each hero (by key), rebuilt when the stacks change. */
@@ -143,11 +235,54 @@ export class TraitFx {
   private markPools = new Map<string, THREE.Object3D[]>();
   /** A word or number over each hero's head, by slot. */
   private labels = new Map<string, { sprite: THREE.Sprite; canvas: HTMLCanvasElement; tex: THREE.CanvasTexture; key: string }>();
+  /** The HP and meter bars over each hero's head, by slot. */
+  private plates = new Map<string, { sprite: THREE.Sprite; canvas: HTMLCanvasElement; tex: THREE.CanvasTexture; key: string }>();
   private bursts: Burst[] = [];
   private clock = 0;
   private ringGeo = new THREE.RingGeometry(0.2, 0.32, 40).rotateX(-Math.PI / 2);
   private pillarGeo = new THREE.CylinderGeometry(0.22, 0.42, 2.6, 16, 1, true).translate(0, 1.3, 0);
   private shardGeo = new THREE.TetrahedronGeometry(0.07, 0);
+
+  /**
+   * The bars over a hero's head (the slot named `who`, at `height` m; null hides them): HP with its number, the shield as a pale
+   * segment after it, cuts for `chunks`, and the meter under it, cut into pips when it counts a few things. Drawn on a canvas,
+   * and only redrawn when a number changes. Green for your hero, red for the enemy, the same way for both players.
+   */
+  plate(who: string, pos: THREE.Vector3 | null, height: number, d: PlateData | null, camera?: THREE.Camera) {
+    let p = this.plates.get(who);
+    if (!pos || !d) {
+      if (p) p.sprite.visible = false;
+      return height;
+    }
+    if (!p) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 384;
+      canvas.height = 112;
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      // A fixed size on screen, near or far, so it reads on a phone at the game camera.
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false, depthWrite: false, sizeAttenuation: false }));
+      sprite.scale.set(PLATE_SCALE * (384 / 112), PLATE_SCALE, 1);
+      sprite.renderOrder = 7;
+      p = { sprite, canvas, tex, key: '' };
+      this.plates.set(who, p);
+      this.group.add(sprite);
+    }
+    const m = d.meter;
+    // Its feet at `height`: without a meter the empty lower half of the canvas hangs below that.
+    p.sprite.center.set(0.5, m ? 0 : 0.47);
+    const key = [Math.ceil(d.hp), d.max, Math.ceil(d.shield), d.mine, d.chunks, m?.name, m && Math.round(m.value), m?.max, m?.color].join('|');
+    if (p.key !== key) {
+      p.key = key;
+      drawPlate(p.canvas, d);
+      p.tex.needsUpdate = true;
+    }
+    p.sprite.visible = true;
+    p.sprite.position.set(pos.x, height, pos.z);
+    // The height of its top in the world, for what sits above it: a fixed screen size is taller the farther the camera.
+    const far = camera ? camera.position.distanceTo(p.sprite.position) : 12;
+    return height + PLATE_SCALE * far * (m ? 1 : 0.53);
+  }
 
   /** A word or number over a hero's head (`Trait.enemyLabel`), the slot named `who`, at `height` m. Null hides it. */
   label(who: string, pos: THREE.Vector3 | null, height: number, label: { text: string; color?: string } | null) {

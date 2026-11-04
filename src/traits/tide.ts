@@ -111,6 +111,7 @@ export function shapeMove(
  * No twist: the tide is the whole rule.
  */
 export const tideTrait: Trait = {
+  meter: { name: 'TIDE', max: TIDE_PERIOD, value: (t) => Math.ceil(turnLeft(t.mem, t.time)) },
   passive: { name: 'Turning Tide', blurb: 'The tide turns every 8 s, and Mist Form turns it when she reforms. At High tide her spells push the enemy away; at Low tide they pull it toward her. A ring at her feet shows the tide and the time left.' },
   speed: 4.1,
   attack: { kind: 'ranged', range: 6.5, damage: 10, interval: 0.7, windup: 0.18, speed: 20, look: 'wave' },

@@ -114,6 +114,9 @@ interface Spring { p: number; r: number; vp: number; vr: number }
 /** How fast the drawn body turns to the walker's facing (per second: about 0.08 s for 90% of a turn). */
 const TURN_RATE = 30;
 
+/** Figures painted so pale that the game's bloom turns them into a white glow: drawn darker. */
+const MODEL_SHADE: Record<string, number> = { 'models/heroes/ink.glb': 0.62 };
+
 /**
  * A hero's rigged figure standing in for a capsule figure (the player's caster in hero mode, the opponent in a duel).
  * `setModel(url, at, kit)` swaps the model (cached per url); `follow(...)` every frame places it and poses it,
@@ -196,7 +199,7 @@ export class HeroFigure {
     if (url) {
       let f = this.figures.get(url);
       if (!f) {
-        f = new Hero({ url, shade: 0.9, maxEmissive: 1, tintSheen: true });
+        f = new Hero({ url, shade: MODEL_SHADE[url] ?? 0.9, maxEmissive: 1, tintSheen: true });
         this.figures.set(url, f);
         this.group.add(f.root);
       }
@@ -218,7 +221,7 @@ export class HeroFigure {
   /** Starts loading the model at `url` without showing it, so a later `setModel` shows it at once (Pim and Pom's tag). */
   preload(url: string) {
     if (this.figures.has(url)) return;
-    const f = new Hero({ url, shade: 0.9, maxEmissive: 1, tintSheen: true });
+    const f = new Hero({ url, shade: MODEL_SHADE[url] ?? 0.9, maxEmissive: 1, tintSheen: true });
     f.root.visible = false;
     this.figures.set(url, f);
     this.group.add(f.root);

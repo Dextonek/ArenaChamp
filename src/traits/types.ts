@@ -263,6 +263,12 @@ export interface Trait {
   hiddenStacks?: string[];
   /** A builder per mark kind (called once per pooled copy): the object's feet at y 0, its length along z at 1 m. */
   markLook?: Record<string, () => THREE.Object3D>;
+  /**
+   * What this hero has and spends, or keeps a count of: a bar under its HP, over its head and in the top bar, for both players
+   * (Shiori's ink, Kaia's rods, Sir Whiskers's lives). `value` runs on this hero's own client, so it may read anything there;
+   * the other screen is told each change. `color`: the kit's accent if left out.
+   */
+  meter?: { name: string; max: number; color?: string; value(t: TraitView): number };
   /** An own resource: a bar under HP (shown for both heroes). */
   resource?: { name: string; max: number; color: string; start?: number };
   /** Walk speed in m/s (default 4). */

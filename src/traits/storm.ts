@@ -199,6 +199,7 @@ const own = (t: TraitView) => t.time < (t.mem.stormUntil ?? 0);
  * R Supercell is a 6 s storm, shown as 'storm' (a pip over her) while it runs.
  */
 export const stormTrait: Trait = {
+  meter: { name: 'RODS', max: ROD_MAX, value: (t) => stormOf(t.self()).rods.length },
   passive: {
     name: 'Lightning Rods',
     blurb: 'Her spells plant rods where they land (3 at most, 6 s). When a spell of hers hurts the enemy, every rod within 5 m of them arcs for 14 and is used up. An enemy within 1 m of a rod grounds it.',

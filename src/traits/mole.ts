@@ -85,6 +85,7 @@ const WORDS_DIG = ['DIG DIG', 'HEE HEE', 'DIG, DIG!'];
  * The CPU (`aiHold`): W when the enemy is within 6 m and no hole is within 2 m of them; E when they are 3 to 9 m away; R within 9 m.
  */
 export const moleTrait: Trait = {
+  meter: { name: 'HOLES', max: HOLE_MAX, value: (t) => liveHoles(t.self()).length },
   passive: {
     name: 'Dig Site',
     blurb: 'Holes she digs last 8 s (3 at most). Anyone who walks in falls: rooted 0.8 s, then slowed while they climb out. She walks across hers.',

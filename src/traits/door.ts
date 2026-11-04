@@ -355,6 +355,7 @@ function booksOf(t: TraitView) {
  * accident; its death is told to his own client with `noteOwner('broke')`. Doors are NOT obstacles: a hero walks into one.
  */
 export const doorTrait: Trait = {
+  meter: { name: 'DOORS', max: 2, value: (t) => { const b = booksOf(t); return b ? placedDoors(b).length : 0; } },
   passive: {
     name: 'This Way, Please',
     blurb: 'Two doors at a time (Door), standing 10 s, 40 HP each, with the same brass number on both. Anyone who walks into one leaves by the other, and a bolt that flies in comes out of the other, going the same way, whoever shot it. A hero is left alone for 1 s after a trip.',

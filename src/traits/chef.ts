@@ -178,6 +178,7 @@ function chefEats(t: TraitView, d: Dish, now: number) {
  * Missing in the shared code: healing the ENEMY (a negative hit is not capped online), so the enemy's good dish is only the speed.
  */
 export const chefTrait: Trait = {
+  meter: { name: 'DISHES', max: DISH_MAX, value: (t) => liveDishes(chefBooks.get(t.self())).length },
   passive: {
     name: "Today's Special",
     blurb: 'Her spells leave dishes on the floor (3 at most, 8 s). Whoever walks over one eats it: fresh gives 15% speed for 3 s; from 3 s it is good and also heals 30. Burnt ones are 60 damage and a 0.8 s stun to whoever eats them.',

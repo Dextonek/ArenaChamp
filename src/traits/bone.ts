@@ -34,6 +34,7 @@ export const boneArmours = new WeakMap<object, BoneArmourState>();
  * per living skeleton); a recast (Shatter) breaks it early so the shards fly at once.
  */
 export const boneTrait: Trait = {
+  meter: { name: 'BONES', max: 5, value: (t) => t.deathSpots(PILE_KEEP).length },
   passive: {
     name: 'Ossuary',
     blurb: 'Every unit that dies, his or the enemy\'s, leaves a bone pile for 8 s, drawn on the ground for its whole life: Bone Fan throws a shard per pile near him, Raise Dead a skeleton per pile near the spot. Every fifth basic attack that lands raises a small skeleton.',

@@ -321,6 +321,7 @@ export class ToolTrees {
 }
 
 export const timberTrait: Trait = {
+  meter: { name: 'TREES', max: MAX_TREES, value: (t) => standing(t.self(), t.time).length },
   passive: {
     name: 'Fresh Cut',
     blurb: 'His trees (3 at most, the oldest falls over) grow from a sapling (30 HP, blocks nothing) to a young tree at 1.2 s (120 HP, real cover) and a full tree at 2.5 s. Bigger trees fall harder when chopped: 30, 60 or 110. A stump stays 6 s.',

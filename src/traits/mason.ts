@@ -230,6 +230,7 @@ const MOOD_KIND: Record<GeraldMood, string> = { bored: 'gerald', alarmed: 'geral
  * See pipeline/designs/kit-mason.md.
  */
 export const masonTrait: Trait = {
+  meter: { name: 'GERALD', max: GERALD_HP, value: (t) => { const g = geraldOf(t.self()); return geraldHere(g) ? g.hp : 0; } },
   passive: {
     name: 'Best Friends',
     blurb: 'Gerald: one pillar, a real wall with 220 HP and a carved face that changes. Within 3 m of him Bram takes 15% less damage. Break him or fight away from him.',

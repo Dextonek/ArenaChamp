@@ -51,6 +51,7 @@ function gusts(t: { time: number; mem: Record<string, number> }) {
  * reset at the cast.
  */
 export const skyTrait: Trait = {
+  meter: { name: 'GUSTS', max: GUST_MAX, value: (t) => gusts(t) },
   passive: { name: 'Following Wind', blurb: 'Every dash gives him a Gust (3 at most, 4 s, shown as pips round him) and resets his basic attack. His basic attack spends a Gust for +20 damage and 1 m more reach. Sky Rend spends all his Gusts for 2 more cuts each.' },
   ownLook: {
     gust: { color: '#7fe6c8', shape: 'gem' },

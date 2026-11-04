@@ -251,6 +251,7 @@ function wallsOf(t: TraitView) {
  * that would go over drops the oldest wall. Her own Q passes her walls (`passBolt`).
  */
 export const mimeTrait: Trait = {
+  meter: { name: 'WALLS', max: WALL_MAX, value: (t) => { const b = mimeBooks.get(t.self()); return b ? liveWalls(b).length : 0; } },
   passive: {
     name: 'Silence Is Golden',
     blurb: 'She makes up to 3 invisible walls (Wall) and Boxed In makes 4 more: real, solid for both of you, for 5 s (3 s for the Box), shown only as faint chalk lines on the floor and a faint shimmer. One hit of any size breaks a wall.',

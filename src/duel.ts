@@ -470,6 +470,7 @@ export class Duel {
     this.oppAttackSpec = attackFor(this.opponentKit);
     this.oppAttack.reset();
     this.oppAttackFx.clear();
+    arena.foeBars = false; // the hero bars over each head take its place
     hm.attacksEnabled = true;
     if (!this.on) this.savedCount = arena.count;
     this.on = true;
@@ -809,6 +810,9 @@ export class Duel {
     arena.setCount(this.savedCount);
     arena.caster.setHome(PLAYER_START.clone().setZ(14));
     arena.caster.reset();
+    arena.foeBars = true;
+    this.traitFx.plate('hero', null, 0, null);
+    this.traitFx.plate('foe', null, 0, null);
     this.figure.setModel(undefined);
     this.oppAttack.reset();
     this.oppAttackFx.clear();
@@ -1080,11 +1084,15 @@ export class Duel {
     this.oppAttackFx.update(dt);
     this.traitFx.update(dt);
     const cam = this.host.arena.camera;
-    this.traitFx.pips('foe', this.foe?.group.position ?? null, this.heroRt?.allStacks() ?? [], cam, this.host.heroMode.currentKit.accent);
-    this.traitFx.pips('hero', this.host.arena.caster.group.position, this.oppRt?.allStacks() ?? [], cam, this.opponentKit.accent);
+    // Over each head, from the bottom: what the other hero keeps on this one, this hero's bars, this hero's own pips, a word.
+    const heroBarY = plateHeight(arena.caster), foeBarY = plateHeight(this.foe);
+    const heroTop = this.traitFx.plate('hero', this.heroRt?.hiddenNow() ? null : arena.caster.group.position, heroBarY, this.plateFor(hm.currentKit, this.playerHp, this.playerMax, arena.caster, this.heroRt, false, true), cam);
+    const foeTop = this.traitFx.plate('foe', !this.foe || this.oppRt?.hiddenNow() ? null : this.foe.group.position, foeBarY, this.foe ? this.plateFor(this.opponentKit, arena.hpOf(this.foe), this.foeMax, this.foe, this.oppRt, !!this.net, false) : null, cam);
+    this.traitFx.pips('foe', this.foe?.group.position ?? null, this.heroRt?.allStacks() ?? [], cam, this.host.heroMode.currentKit.accent, foeBarY - 0.32);
+    this.traitFx.pips('hero', this.host.arena.caster.group.position, this.oppRt?.allStacks() ?? [], cam, this.opponentKit.accent, heroBarY - 0.32);
     // Each hero's own state, visible to both players: pips above any stacks, a ring at the feet, marks on the ground.
-    this.traitFx.pips('foeOwn', this.foe?.group.position ?? null, this.oppRt?.allOwn() ?? [], cam, this.opponentKit.accent, 3.05);
-    this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, 3.05);
+    this.traitFx.pips('foeOwn', this.foe?.group.position ?? null, this.oppRt?.allOwn() ?? [], cam, this.opponentKit.accent, foeTop + 0.3);
+    this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, heroTop + 0.3);
     this.figure.setVeil(this.oppRt?.veilNow() ?? 0);
     hm.setFigureVeil(this.heroRt?.veilNow() ?? 0);
     if (this.figure.shown) this.figure.shown.visible = !this.oppRt?.hiddenNow();
@@ -1092,8 +1100,8 @@ export class Duel {
     // What each hero's passive does to the other's size, and the word it keeps over the other's head.
     this.sizeFigure(this.foe, this.heroRt?.enemyScaleNow() ?? 1, this.opponentKit, dt);
     this.sizeFigure(arena.caster, this.oppRt?.enemyScaleNow() ?? 1, hm.currentKit, dt);
-    this.traitFx.label('foe', this.foe?.group.position ?? null, Math.max(3.4, (this.foe?.body?.height ?? 0) + 0.4), this.heroRt?.enemyLabelNow() ?? null);
-    this.traitFx.label('hero', arena.caster.group.position, Math.max(3.4, (arena.caster.body?.height ?? 0) + 0.4), this.oppRt?.enemyLabelNow() ?? null);
+    this.traitFx.label('foe', this.foe?.group.position ?? null, foeTop + 0.7, this.heroRt?.enemyLabelNow() ?? null);
+    this.traitFx.label('hero', arena.caster.group.position, heroTop + 0.7, this.oppRt?.enemyLabelNow() ?? null);
     this.traitFx.ring('foe', this.foe?.group.position ?? null, this.oppRt?.ringNow() ?? null);
     this.traitFx.ring('hero', this.host.arena.caster.group.position, this.heroRt?.ringNow() ?? null);
     this.traitFx.marks('foe', this.oppRt?.marksNow() ?? [], this.oppRt?.trait?.markLook);
@@ -1896,6 +1904,18 @@ export class Duel {
     return lands;
   }
 
+  /** What the bars over a hero's head show now. Null once it has fallen. */
+  private plateFor(kit: HeroKit, hp: number, max: number, who: Enemy, rt: TraitRuntime | null | undefined, remote: boolean, mine: boolean) {
+    if (hp <= 0) return null;
+    const m = rt?.meterNow(remote);
+    return {
+      hp, max, mine,
+      shield: this.host.arena.shieldOf(who)?.amount ?? 0,
+      chunks: kit.hpChunks ?? 0,
+      meter: m ? { name: m.name, value: m.value, max: m.max, color: m.color ?? kit.accent } : null,
+    };
+  }
+
   /** Eases a hero's figure to `scale` (`Trait.enemyScale`); its hit size follows, so a swollen hero is easier to hit. */
   private sizeFigure(who: Enemy | null | undefined, scale: number, kit: HeroKit, dt: number) {
     if (!who) return;
@@ -2041,6 +2061,14 @@ export class Duel {
       const rt = i === 0 ? this.heroRt : this.oppRt, other = i === 0 ? this.oppRt : this.heroRt;
       const fig = i === 0 ? arena.caster : this.foe;
       const parts: string[] = [];
+      // The same meter as over the head: its name, a bar, and the count.
+      const meter = rt?.meterNow(i === 1 && !!this.net);
+      if (meter) {
+        const mc = meter.color ?? kit.accent;
+        parts.push(`<div title="${meter.name}" style="position:relative;flex:0 0 44px;height:7px;border-radius:4px;background:#0009;overflow:hidden">` +
+          `<div style="position:absolute;inset:0 auto 0 0;width:${(100 * meter.value) / meter.max}%;background:${mc}"></div></div>` +
+          `<span style="color:${mc};white-space:nowrap">${meter.name} ${Math.round(meter.value)}/${meter.max}</span>`);
+      }
       const res = rt?.trait?.resource;
       if (res && rt) {
         parts.push(`<div title="${res.name}" style="position:relative;width:60px;height:7px;border-radius:4px;background:#0009;overflow:hidden">` +
@@ -2064,6 +2092,11 @@ export class Duel {
 function fleeAim(from: THREE.Vector3, to: THREE.Vector3, range: number) {
   const dir = new THREE.Vector3(from.x - to.x, 0, from.z - to.z).normalize();
   return from.clone().setY(0).addScaledVector(dir, range);
+}
+
+/** Where a hero's bars sit over its head, clear of the tallest of them. */
+function plateHeight(who: Enemy | null | undefined) {
+  return Math.max(2.75, (who?.body?.height ?? 0) + 0.2);
 }
 
 function dashAim(from: THREE.Vector3, to: THREE.Vector3, range: number) {

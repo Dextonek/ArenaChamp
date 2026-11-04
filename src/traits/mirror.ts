@@ -105,6 +105,7 @@ const VAIN_WORDS = ['FLAWLESS', 'NO NOTES', 'RADIANT', 'STILL GORGEOUS'];
  * that must know. It also tells her own client with `noteOwner('broke')` (`peerNote`) so her Stand is gone there too.
  */
 export const mirrorTrait: Trait = {
+  meter: { name: 'MIRRORS', max: 4, value: (t) => { const now = performance.now(); return bookOf(t.self()).marks.filter((m) => !m.gone && now >= m.bornAt && now < m.until).length; } },
   // The CPU runs for a mirror on the floor within 5 m, as a person would.
   aiGoal(t) {
     const now = performance.now(), p = t.self().group.position;

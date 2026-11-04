@@ -263,6 +263,7 @@ const spot = new THREE.Vector3();
  * enemy: TANGLED and KEEP WARM (the Sweater, see `src/spells/targeted/sweater.ts`); "ooh, it suits you" is hers (`landed`).
  */
 export const yarnTrait: Trait = {
+  meter: { name: 'YARN', max: LINE_MAX, value: (t) => { const b = yarnBooks.get(t.self()); return b ? liveLines(b).length : 0; } },
   passive: {
     name: 'Keep Warm',
     blurb: 'Her yarn lines tie between her, pillars and walls (Cast On): three at most, the oldest goes. An enemy who walks across one is stuck 0.4 s, then slowed 1 s, and the line stays until it is cut. One hit of any size cuts it. She crosses her own freely.',

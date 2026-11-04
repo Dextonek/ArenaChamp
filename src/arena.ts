@@ -81,6 +81,8 @@ export class Arena {
    */
   persist = false;
   respawnAfter = 4;
+  /** Off in a duel, where the hero bars over each head (`TraitFx.plate`) take the place of a foe's own small bar. */
+  foeBars = true;
   /** Enemy HP (100; a duel opponent has more). */
   maxHp = MAX_HP;
   /** Optional veto on hits (a duel: the opponent dodges by leaving the zone). Return false to drop the hit. */
@@ -600,7 +602,7 @@ export class Arena {
       (f.ring.material as THREE.MeshBasicMaterial).opacity = this.selected[0] === f ? 0.9 : 0.55;
       f.bar.position.copy(f.figure.group.position).add(new THREE.Vector3(0, 2.75, 0));
       f.bar.quaternion.copy(this.camera.quaternion);
-      f.bar.visible = f.figure.group.visible && f.hp < this.maxHp;
+      f.bar.visible = this.foeBars && f.figure.group.visible && f.hp < this.maxHp;
       f.barFill.scale.x = Math.max(0.001, f.hp / this.maxHp);
       f.barFill.position.x = -0.6 * (1 - f.hp / this.maxHp);
     }
