@@ -27,8 +27,10 @@ said "uncommitted" now name the commit that holds them.
   first, a fight from the real buttons drew a hero (Auriel against Zephyr), and "Leave duel" came back with Random still
   chosen. No console errors. Not checked live: Random in a real queue or lobby, two players online, login, a phone, the
   in-fight Leave button (its confirm dialog closes by itself in the test browser, so it could not be answered).
-- **In progress:** the v5 remake of all 20 kits ("All kits should be remade", entry below). Design done, building next.
-- **Next:** engine pieces E1-E14 in [kits-v5.md](../pipeline/designs/kits-v5.md), then the five built kits, then three batches of five.
+- **Local commits, not pushed or deployed:** everything after `bc0f830`, newest `git log` first (all 20 v5 kits, Silvane, Bram, the loading page, hit boxes). A deploy must include `server/hub.mjs`.
+- **In progress:** all 20 v5 kits are built. Tuning them toward 40-60% (`_balance` on a bench worktree, so source edits do not kill runs). 19 new heroes: Silvane and Bram registered; Hank's kit and model built, waiting to register; next models Puff, Whiskers, Ledger, Mum; order in [new-heroes-kits.md](../pipeline/designs/new-heroes-kits.md).
+- **Next:** the first tuning pass, then measure the five CPU levels (`_ladder`), then the remaining heroes group by group, then final tuning, docs and cleanup (remove the `bench` entry in `.claude/launch.json`, the bench worktree and its `node_modules` junction, and the local test account).
+- **Not checked by anyone yet:** two players online on the new kits, a phone on the new pages, a person playing any v5 kit.
 
 **Kit remake v5 (2026-11-04, user: "All kits should be remade")**
 - Design: [kits-v5.md](../pipeline/designs/kits-v5.md), all 20 heroes against the League checklist, with cooldowns and every counterplay

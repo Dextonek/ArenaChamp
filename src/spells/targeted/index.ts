@@ -91,6 +91,10 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { timberCallModule } from './timberCall';
+import { caberTossModule } from './caberToss';
+import { fastGrowthModule } from './fastGrowth';
+import { axeSwingModule } from './axeSwing';
 import { geraldNoModule } from './geraldNo';
 import { aGoodLeanModule } from './aGoodLean';
 import { theShoveModule } from './theShove';
@@ -311,6 +315,10 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  timberCallModule,
+  caberTossModule,
+  fastGrowthModule,
+  axeSwingModule,
   geraldNoModule,
   aGoodLeanModule,
   theShoveModule,
