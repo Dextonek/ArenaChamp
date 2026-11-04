@@ -521,7 +521,7 @@ export class Arena {
       healed = Math.max(0, Math.min(amount, this.maxHp - f.hp));
       f.hp += healed;
     }
-    this.say(`+${Math.round(healed)}`, '#6aff9a', target.group.position, 1.1);
+    if (healed >= 1) this.say(`+${Math.round(healed)}`, '#6aff9a', target.group.position, 1.1);
     return healed;
   }
 

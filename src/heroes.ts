@@ -38,6 +38,7 @@ import { courierKit } from './kits/courier';
 import { janitorKit } from './kits/janitor';
 import { moleKit } from './kits/mole';
 import { yarnKit } from './kits/yarn';
+import { weatherKit } from './kits/weather';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -151,6 +152,7 @@ const MODELS: Record<string, string> = {
   Gus: 'models/heroes/janitor_v2.glb',
   Mabel: 'models/heroes/mole_v2.glb',
   'Grandma Ironknit': 'models/heroes/yarn_v2.glb',
+  'Barry Cloudsley': 'models/heroes/weather_v2.glb',
 };
 
 /**
@@ -170,10 +172,10 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   'Sir Whiskers': { radius: 0.49, height: 2.39 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
   'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.58 }, 'Referee Whistler': { radius: 0.41, height: 2.33 },
   'Madame Cleaver': { radius: 0.58, height: 2.63 }, Pip: { radius: 0.39, height: 2.33 }, Gus: { radius: 0.55, height: 2.39 },
-  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.54, height: 2.33 },
+  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.54, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 2.45 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit].map((k) => {
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit].map((k) => {
   const kit = { ...k, model: k.model ?? MODELS[k.name] };
   if (kit.alt) kit.alt.base = kit;
   return kit;
