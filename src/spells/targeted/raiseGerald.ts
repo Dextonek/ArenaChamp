@@ -27,7 +27,7 @@ export interface RaiseGeraldSettings {
   loop: boolean;
 }
 
-export const defaultRaiseGerald = (): RaiseGeraldSettings => ({ damage: 70, knockUp: 0.5, loop: false });
+export const defaultRaiseGerald = (): RaiseGeraldSettings => ({ damage: 76, knockUp: 0.5, loop: false });
 
 // Timeline (seconds).
 const RISE_T = 0.7;

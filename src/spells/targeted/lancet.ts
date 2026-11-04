@@ -32,7 +32,7 @@ export interface LancetSettings {
   loop: boolean;
 }
 
-export const defaultLancet = (): LancetSettings => ({ damage: 36, ripDamage: 26, mode: 'auto', loop: false });
+export const defaultLancet = (): LancetSettings => ({ damage: 33, ripDamage: 24, mode: 'auto', loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.4; // the needle arrives

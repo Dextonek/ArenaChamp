@@ -11,7 +11,7 @@ export const TAG_HOLD = 0.5;
 export const TAG_CUT = 2;
 
 /** Pim's Bonk (Q): damage, reach, cone width in degrees, wind-up. */
-export const BONK_DAMAGE = 66;
+export const BONK_DAMAGE = 72;
 export const BONK_REACH = 3;
 export const BONK_ANGLE = 100;
 export const BONK_WIND = 0.45;
@@ -26,7 +26,7 @@ export const SHIELD_AMOUNT = 50;
 export const SHIELD_SECONDS = 2;
 
 /** Pom's Pebble (Q): damage, range, speed, wind-up, bolt radius. */
-export const PEBBLE_DAMAGE = 62;
+export const PEBBLE_DAMAGE = 66;
 export const PEBBLE_RANGE = 9;
 export const PEBBLE_SPEED = 22;
 export const PEBBLE_WIND = 0.3;

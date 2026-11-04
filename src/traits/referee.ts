@@ -3,7 +3,7 @@ import type { GroundMark, Trait, TraitHit, TraitView } from './types';
 import { REFEREE_CSS, cardLook, ringLook, wordLook } from '../effects/parts/referee';
 
 /** Whistle Blast (Q): damage, range, speed, wind-up, bolt radius. */
-export const WHISTLE_DAMAGE = 72;
+export const WHISTLE_DAMAGE = 78;
 export const WHISTLE_RANGE = 8;
 export const WHISTLE_SPEED = 22;
 export const WHISTLE_WIND = 0.3;

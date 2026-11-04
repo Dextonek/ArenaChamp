@@ -128,7 +128,7 @@ export const masonKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'raise gerald', name: 'Raise Gerald', range: 9, cooldown: 6, cc: true,
-      blurb: 'Marks a spot (9 m): 0.7 s later Gerald bursts up there, 70 damage and a 0.5 s knock-up to anyone within 1.5 m. He is a real pillar with 220 HP. A new Gerald crumbles the old one.',
+      blurb: 'Marks a spot (9 m): 0.7 s later Gerald bursts up there, 76 damage and a 0.5 s knock-up to anyone within 1.5 m. He is a real pillar with 220 HP. A new Gerald crumbles the old one.',
       icon(g, s) {
         ground(g, s);
         // A star of floor cracks, a pillar bursting out of the middle, stones flying.

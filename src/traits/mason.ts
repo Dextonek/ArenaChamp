@@ -237,7 +237,7 @@ export const masonTrait: Trait = {
   },
   twist: { name: 'Cover, weapon or escape?', blurb: 'Gerald is cover, a thrown weapon and a way in. Each use spends one of the others.' },
   speed: 4.0,
-  attack: { kind: 'melee', range: 2.5, damage: 24, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
+  attack: { kind: 'melee', range: 2.5, damage: 26, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
   ownLook: { gerald: { color: '#c9b48a', shape: 'gem' } },
   markLook: {
     gerald: () => buildGerald('bored'),

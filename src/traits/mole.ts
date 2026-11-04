@@ -4,7 +4,7 @@ import { pitLook } from '../effects/parts/mole';
 /** Claw (Q): reach (m), the cone's full width (degrees), damage, wind-up (s). */
 export const CLAW_REACH = 2.5;
 export const CLAW_ANGLE = 120;
-export const CLAW_DAMAGE = 62;
+export const CLAW_DAMAGE = 68;
 export const CLAW_WIND = 0.4;
 
 /** Dig (W): reach, the hole's radius (m), seconds until it opens. */
@@ -95,7 +95,7 @@ export const moleTrait: Trait = {
     blurb: 'Underground she is safe, but she can only come up once, and her mound shows where. She cannot cast down there.',
   },
   speed: MOLE_SPEED,
-  attack: { kind: 'melee', range: 2.2, damage: 16, interval: 0.9, windup: 0.25, look: 'claw' },
+  attack: { kind: 'melee', range: 2.2, damage: 18, interval: 0.9, windup: 0.25, look: 'claw' },
 
   aiHold(t, slot, dist) {
     const e = t.enemy();

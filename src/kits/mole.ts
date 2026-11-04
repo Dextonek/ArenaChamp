@@ -260,7 +260,7 @@ export const moleKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'mole claw', name: 'Claw', range: 2.5, cooldown: 3,
-      blurb: 'A swipe of her digging claws, 2.5 m in front of her: 62 damage.',
+      blurb: 'A swipe of her digging claws, 2.5 m in front of her: 68 damage.',
       icon(g, s) {
         iconGround(g, s);
         stroke(g, s * 0.16, s * 0.84, s * 0.4, s * 0.16, -s * 0.08, s * 0.07);

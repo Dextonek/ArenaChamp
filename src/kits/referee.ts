@@ -139,7 +139,7 @@ export const refereeKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'whistle blast', name: 'Whistle Blast', range: 8, cooldown: 3.5, aim: 'line',
-      blurb: 'A ring of sound (8 m, 0.3 s wind-up): 72 damage. Sidestep it.',
+      blurb: 'A ring of sound (8 m, 0.3 s wind-up): 78 damage. Sidestep it.',
       icon(g, s) {
         iconGround(g, s);
         whistle(g, s * 0.3, s * 0.52, s * 0.15, -0.1);
