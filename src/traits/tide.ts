@@ -81,7 +81,7 @@ export function shapeMove(
 export const tideTrait: Trait = {
   passive: { name: 'Riptide', blurb: 'The tide turns every 8 s. At High tide her spells push the enemy away; at Low tide they pull it toward her.' },
   speed: 4.1,
-  attack: { kind: 'ranged', range: 6.5, damage: 8, interval: 0.7, windup: 0.18, speed: 20, look: 'wave' },
+  attack: { kind: 'ranged', range: 6.5, damage: 10, interval: 0.7, windup: 0.18, speed: 20, look: 'wave' },
   tick(t) {
     const s = tideOf(t.self());
     s.live = true;

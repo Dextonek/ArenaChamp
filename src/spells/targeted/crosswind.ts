@@ -25,7 +25,7 @@ export interface CrosswindSettings {
   loop: boolean;
 }
 
-export const defaultCrosswind = (): CrosswindSettings => ({ damage: 42, mode: 'auto', loop: false });
+export const defaultCrosswind = (): CrosswindSettings => ({ damage: 38, mode: 'auto', loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.25;

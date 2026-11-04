@@ -27,7 +27,7 @@ export interface CoralSpireSettings {
   loop: boolean;
 }
 
-export const defaultCoralSpire = (): CoralSpireSettings => ({ damage: 55, loop: false });
+export const defaultCoralSpire = (): CoralSpireSettings => ({ damage: 62, loop: false });
 
 // Timeline (seconds).
 const RISE_T = 0.65; // the pillar bursts up, the hit lands

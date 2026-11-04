@@ -7,6 +7,7 @@ Everything below is committed on `feat/particle-editor` unless marked. The 2026-
 said "uncommitted" now name the commit that holds them.
 
 **Commits since 2026-10-30, newest first**
+- `e0b96b4` League walking and controls, the hover outline (entry below).
 - `ae9e4cb` Arena events and real pathfinding round cover (entry below).
 - `ebfaebb` Play vs CPU with five levels, Novice to Master (entry below).
 - `0a0279a` The first five v4 kits: Lyra, Vex, Marin, Mortis, Zephyr ("v4 opener done" below;
@@ -16,17 +17,28 @@ said "uncommitted" now name the commit that holds them.
 - `0ed55d1` Arena remake, breakable walls, sculpted v2 heroes, phone play.
 - `c7f2039` Hero identity (traits and passives), kit identity v2, the motion pass.
 
-- **Pushed:** GitHub `main` is at `ae9e4cb` (2026-11-04, `git push origin feat/particle-editor:main`).
+- **Pushed:** GitHub `main` is at `ae9e4cb` (2026-11-04, `git push origin feat/particle-editor:main`). `e0b96b4` is local.
 - **Live:** the 2026-11-02 deploy of the working tree (worker `79de928c`), with the arena remake and the v2 heroes
   behind `?figs`. Kits v3, the tool/game split, v4, Play vs CPU, the arena events and pathfinding are not live.
 - **Blocked:** the deploy of `ae9e4cb`. The user asked for it ("build it on pages"), but this session's permission
   check refused `npm run cf:deploy`. The user has to run it (see "Waiting on you").
-- **In progress:** nothing running. Uncommitted: League walking, the hover outline, this STATUS.
+- **In progress:** nothing running. Uncommitted: the kit rebalance, this STATUS.
 - **Next:** v4 batch 2 in the [kits-v4.md](../pipeline/designs/kits-v4.md) build order, led by its engine pieces;
   Nyx's stealth last.
 
+**Five v4 kits rebalanced for the new walking (2026-11-04, user: "yes do it"; uncommitted, not deployed)**
+- Before, 48 fights each against Brannoc, Kaia, Isolde, Sirix, Cantor and Oblivion: Zephyr 71%, Marin 23%, Mortis 48%,
+  Vex 50%, Lyra 44%.
+- Changes: Zephyr's Gust +25 to +20, Q 42 to 38 (recast 25). Marin's Q 60 to 68, W 55 to 62, basic attack 8 to 10.
+- After, 96 fights each (`pipeline/tools/kit-balance.js`, new): Zephyr 51%, Marin 49%, Lyra 47%, Vex 53%, Mortis 54%.
+- Wide single matchups remain: wins of 16 against Brannoc, Kaia, Isolde, Sirix, Cantor, Oblivion are Zephyr 2 16 15 6 8 2,
+  Marin 1 14 8 8 9 7, Lyra 3 14 13 2 13 0, Vex 3 13 9 6 11 9, Mortis 10 12 3 0 16 11. Brannoc and Oblivion are strong and
+  Kaia weak; all three are still on kits from before v4.
+- Not rerun after this: the CPU level ladder, the other 15 heroes. Not played by a person.
+
 **Walking and controls like League, hover outline (2026-11-04, user: "do it like league of legends", "make like outline
-on enemy hero when u hover mouse over the hero", "retest it multiple times"; uncommitted, not deployed)**
+on enemy hero when u hover mouse over the hero", "retest it multiple times"; committed `e0b96b4`, not pushed, not
+deployed)**
 - Sliding (`steer` in `src/obstacles.ts`) rewritten: the part of the push along the edge, never against it; pressing
   straight at cover goes round by the nearer end and keeps that side. The stick's dead zone now stops the hero (it kept
   walking the old way). The CPU no longer dances at corners (`Duel.steer`).
@@ -39,8 +51,7 @@ on enemy hero when u hover mouse over the hero", "retest it multiple times"; unc
   [mechanics.md](architecture/mechanics.md#walking-round-cover-navts). Real right-clicks and hover in the game page;
   hold, and the touch stick at phone size, with pointer events dispatched in the page (not a finger).
 - Ladder after the walking change, 50 fights per level: 0 / 26 / 46 / 68 / 76 %.
-- **To decide:** hero balance moved, since melee heroes now reach their targets: Lyra 43% (96 fights, was 54%), Zephyr
-  73% (48 fights, was 54%), Vex 56% (48 fights, was 58%). No hero numbers changed; a full `_tourney` is the next check.
+- Hero balance moved, since melee heroes now reach their targets, and was rebalanced (entry above).
 - Not found: in 2 of 5 AI runs a figure stood inside cover for 22-38 frames of about 70,000. It did not come back in 30
   more fights watching for it; the seven earlier runs had 0-2 frames.
 - Not checked: a real phone; two players online; a person playing it.

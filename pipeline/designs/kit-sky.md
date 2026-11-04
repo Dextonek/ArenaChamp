@@ -7,7 +7,7 @@ Replaces the v3 kit (Gale Edge, Tailwind Rush, Wind Barrier, Gale Cyclone). Desi
 **Assassin (melee)**, 690 HP, melee attack (range 2.4, 10 damage, 0.9 s interval), walk speed 4.6. One verb: *never stop
 moving*, every dash feeds the next strike.
 - **Passive Tailwind.** Every dash (Q's recast, W, E) gives him a **Gust** (3 at most, 4 s; each dash refreshes the time)
-  and resets his basic attack. A basic attack spends one Gust for +25 damage and 1 m more reach. Shown by the badge on the
+  and resets his basic attack. A basic attack spends one Gust for +20 damage and 1 m more reach. Shown by the badge on the
   passive slot (the Gust count) and a floating GUST word. No twist.
 - Cooldowns are not in the design; chosen here: Q 4 s, W 8 s, E 7 s per charge, R 24 s.
 - **Palette** (`SKY` / `SKY_CSS`): jade wind `#7fe6c8`, white `#ffffff` / `#e6fff6`, blossom pink `#ff8fb0` as the accent,
@@ -15,7 +15,7 @@ moving*, every dash feeds the next strike.
 
 | Key | Spell (label) | Type | Numbers |
 |---|---|---|---|
-| Q | Crosswind (`crosswind`) | cone, RECAST | range 3, `enemies` mode; cone 3 m / 110 deg, 42 damage; recast within 2 s: 3 m dash-slash, 28 damage (power 2/3) |
+| Q | Crosswind (`crosswind`) | cone, RECAST | range 3, `enemies` mode; cone 3 m / 110 deg, 38 damage; recast within 2 s: 3 m dash-slash, 25 damage (power 2/3) |
 | W | Skyward (`skyward`) | LEAP, `dash`, `cc` | range 5, `ground` mode radius 2; untouchable 0.8 s; landing 34 damage within 2 m and a 0.5 s knock-up |
 | E | Feather Step (`feather step`) | DASH, `dash`, `parry`, `aim: 'line'` | range 4, `ground` mode radius 1; 2 charges (7 s each); untouchable 0.2 s |
 | R | Sky Rend (`sky rend`) | TGT, `enemy` mode | range 7; six hits of 15 over about 1 s, double on a knocked-up enemy; untouchable 1.6 s; ends 1.4 m behind the enemy |
@@ -41,13 +41,12 @@ moving*, every dash feeds the next strike.
   name: 'Dash-slash', power: 2 / 3 }` (a replaying recast: the second cast plays the same effect module).
 
 ## Numbers that differ from the design, and why
-- **Basic attack online.** +25 damage is a power of 3.5. Online the server clamps a cast's or attack's power to 3, so a
-  Gust strike deals 30, not 35. Offline it is the full 35. Kept like this because the design says to keep `attack` (10
-  damage); raising the base to 12 would give 36 and fit the cap.
+- **Basic attack online.** +20 damage is a power of 3, exactly the server's cap on a cast's or attack's power, so a Gust
+  strike deals 30 online and offline.
 - **Sky Rend takes about 1.5 s from cast to reappearing**, not 1.2 s: a 0.25 s wind-up, then six cuts 0.2 s apart from
   0.35 s (the last at 1.35 s), then the step behind (1.5 s). The cuts themselves span 1.0 s. `REND_AIR` is 1.6 s so he is
   untouchable the whole time.
-- Q recast power 2/3 (not the default 0.6) so the dash-slash is 28 of 42 exactly.
+- Q recast power 2/3 (not the default 0.6) so the dash-slash is 25 of 38 exactly.
 
 ## Q · Crosswind (`crosswind.ts`, label `crosswind`, `enemies` mode `maxTargets` 10)
 Two variants of one effect, told apart by a clock per caster figure: a second cast of the same figure within 2.2 s is the
@@ -56,10 +55,10 @@ The `mode` setting (auto, cone, dash) forces one in the tool.
 - **Cone** (impact 0.25 s, clean by 1.2 s). Telegraph: a `cone`, radius 3, 110 deg, start 0, impact 0.25. 0..0.25 wind
   gathers on the sword arm (a spiral and a trailing crescent); at 0.25 two crescents cut across each other into an X
   (tilt 0.85 and -0.85, the second reversed and pink-tinged), a pink star pop, a camera-facing refraction ring, speed lines,
-  blown leaves, one light impact frame, shake 0.16. Everyone inside the cone at 0.25 s is hit for 42, knock 2.
+  blown leaves, one light impact frame, shake 0.16. Everyone inside the cone at 0.25 s is hit for 38, knock 2.
 - **Dash-slash** (impact 0.13 s). Telegraph: a `line` strip 1.8 m wide along the 3 m path. He slides 3 m
   (`ctx.moveCaster`, 0.18 s), a jade afterimage stays where he stood, a long crescent pair and a gust ribbon run the path,
-  speed lines sweep it. Everyone in the strip at 0.13 s is hit for 42 x power (28), knock 2.5. Shake 0.1.
+  speed lines sweep it. Everyone in the strip at 0.13 s is hit for 38 x power (25), knock 2.5. Shake 0.1.
 - Online: the other screen has no `moveCaster`, so the strip is the nominal 3 m from `sentFrom` and the aim.
 
 ## W · Skyward (`skyward.ts`, label `skyward`, `ground` mode radius 2)
@@ -120,3 +119,7 @@ per cut, Feather Step charges 6 s to 7 s each. Flags and charges (2) unchanged.
 
 ## Balance pass 3 (2026-11-03)
 Pass 2 left him at 16 of 24 (67%). Trim: W landing 38 to 34, R 17 to 15 per cut. Everything else unchanged.
+
+## Balance pass 4 (2026-11-04)
+The CPU learned to walk round cover, so melee heroes reach their targets, and he rose to 71% (48 fights). Gust +25 to +20,
+Q 42 to 38 (recast 28 to 25). A trial at Gust +18 gave 42% (96 fights), a little more than needed.

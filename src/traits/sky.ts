@@ -10,7 +10,7 @@ export const REND_AIR = 1.6;
 export const GUST_SECONDS = 4;
 export const GUST_MAX = 3;
 /** Extra damage and reach (m) of the basic attack that spends a Gust. */
-export const GUST_DAMAGE = 25;
+export const GUST_DAMAGE = 20;
 export const GUST_REACH = 1;
 
 const BASE_ATTACK = 10;
@@ -22,16 +22,16 @@ function gusts(t: { time: number; mem: Record<string, number> }) {
 
 /**
  * Zephyr (assassin). Passive Tailwind: every dash (Crosswind's recast, Skyward, Feather Step) gives him a Gust (3 at most,
- * 4 s, each dash refreshes the time) and resets his basic attack. A basic attack spends one Gust for +25 damage and 1 m
+ * 4 s, each dash refreshes the time) and resets his basic attack. A basic attack spends one Gust for +20 damage and 1 m
  * more reach. The counter is `mem.gust` with the deadline `mem.gustUntil`; the attack is scaled in `attackMods` (power
- * (10 + 25) / 10: it runs once as the attack is released, so that is where the Gust is spent) and the reach is
- * `attackReach` while one is banked. Crosswind (Q) can be cast again within 2 s as a 3 m dash-slash (28 of 42 damage).
+ * (10 + 20) / 10: it runs once as the attack is released, so that is where the Gust is spent) and the reach is
+ * `attackReach` while one is banked. Crosswind (Q) can be cast again within 2 s as a 3 m dash-slash (25 of 38 damage).
  * Untouchable windows are in `taken`: Skyward 0.8 s, Feather Step 0.2 s, Sky Rend 1.6 s. Feather Step has 2 charges (7 s
  * each). Sky Rend's hits do double on a knocked-up enemy (`dealt`; Skyward's landing knocks up, so W into R combos).
  * Skyward's reset comes at touchdown (`tick`), the other dashes reset at the cast.
  */
 export const skyTrait: Trait = {
-  passive: { name: 'Tailwind', blurb: 'Every dash gives him a Gust (3 at most, 4 s) and resets his basic attack. His basic attack spends a Gust for +25 damage and 1 m more reach.' },
+  passive: { name: 'Tailwind', blurb: 'Every dash gives him a Gust (3 at most, 4 s) and resets his basic attack. His basic attack spends a Gust for +20 damage and 1 m more reach.' },
   speed: 4.6,
   attack: { kind: 'melee', range: 2.4, damage: BASE_ATTACK, interval: 0.9, windup: 0.22, speed: 0, look: 'sweep' },
   charges: { slot: 2, count: 2, every: 7 },

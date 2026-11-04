@@ -4,7 +4,7 @@ Replaces the v3 kit (Tide Whip, Bubble Prison, Undertow Dance, Leviathan's Waltz
 "Marin, the Tide Dancer". Read `kit-common.md` first.
 
 ## Role
-**Controller**, 670 HP, ranged attack (wave, range 6.5, 8 damage), walk speed 4.1. One verb: *turn the tide*.
+**Controller**, 670 HP, ranged attack (wave, range 6.5, 10 damage), walk speed 4.1. One verb: *turn the tide*.
 - **Passive Riptide.** The tide turns every 8 s of round time (High first, then Low). At High tide her spells push the
   enemy away; at Low tide they pull it toward her. Shown on the passive slot (badge HIGH, LOW, or LOW x2 during Moon's
   Pull), by a floating word at every turn, and by a ring at her feet while one of her spells plays (foam chevrons march
@@ -13,12 +13,13 @@ Replaces the v3 kit (Tide Whip, Bubble Prison, Undertow Dance, Leviathan's Waltz
 - Balance pass 2: Q 55 to 65 and radius 0.55 to 0.8, W 40 to 55, E splash 40 within 3 m, R ticks 20 and crash 80, HP 680.
 - Balance pass 3 (71% wins): HP 650, Q 60, R crash 65.
 - Balance pass 4 (37.5% over 72 duels, never beating Brannoc): HP 670.
+- Balance pass 5, 2026-11-04 (23% over 48 duels, after the CPU learned to walk round cover): Q 60 to 68, W 55 to 62, basic attack 8 to 10.
 - Cooldowns are not in the design; chosen here: Q 4 s, W 9 s, E 10 s, R 22 s.
 
 | Key | Spell (label) | Type | Numbers |
 |---|---|---|---|
-| Q | Wave Disc (`wave disc`) | SHOT, `aim: 'line'` | range 9, speed 22, radius 0.8, 60 damage; move 2.5 m (push at High, pull at Low) |
-| W | Coral Spire (`coral spire`) | TERRAIN | range 8, rises at 0.65 s, stands 5 s (pillar r 0.8), hits within 2.5 m for 55; push 3 m (High) or pull 2 m (Low) |
+| Q | Wave Disc (`wave disc`) | SHOT, `aim: 'line'` | range 9, speed 22, radius 0.8, 68 damage; move 2.5 m (push at High, pull at Low) |
+| W | Coral Spire (`coral spire`) | TERRAIN | range 8, rises at 0.65 s, stands 5 s (pillar r 0.8), hits within 2.5 m for 62; push 3 m (High) or pull 2 m (Low) |
 | E | Mist Form (`mist form`) | DASH, `dash` + `parry`, ground, range 6, `buff` haste 0.4 for 1 s | untouchable 1 s (`MIST_SECONDS`); she flows up to 6 m in 0.5 s (`moveCaster`); reform splash 40 within 3 m at the end spot at 1.0 s (telegraph circle plus a live distance check, `projectile: true`) |
 | R | Moon's Pull (`moon's pull`) | SELF global, radius 25 | 4 s (`MOON_SECONDS`): enemy dragged 1.2 m/s from anywhere, stops 1.6 m short; Q and W pulls x2 (cap 4 m); 20 per tick (4 ticks, every 0.9 s from 0.7 s); 65 tide crash at the stop distance or at 4 s, once per enemy (`projectile: true`) |
 
