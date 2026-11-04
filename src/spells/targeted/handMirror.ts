@@ -233,7 +233,7 @@ export class HandMirror implements Effect {
       this.fired = true;
       this.bend.set(this.start.x, BOLT_Y, this.start.z);
       this.shake = 0.05;
-      this.mirrors.setSpin(this.idx, SPIN);
+      if (this.idx >= 0) this.mirrors.setSpin(this.idx, SPIN);
       if (ctx?.projectile) {
         this.bolt = ctx.projectile({
           from: this.start.clone(), dir: this.dir.clone(), speed: HAND_SPEED, range: HAND_RANGE - MUZZLE, radius: RADIUS,
@@ -241,7 +241,9 @@ export class HandMirror implements Effect {
           reflect: HAND_BOUNCES, reflectRange: BANK_RANGE, reflectBonus: BANK_BONUS,
           onReflect: (_b, at) => { this.bend.set(at.x, BOLT_Y, at.z); this.flare(at, 1.5, 12); },
         });
-        this.bolt.onHit((_target, at, b) => this.onHit(at, b.reflections));
+        // A caught mirror lets her throw again while this one still flies: its hit must not end the next throw's look.
+        const thrown = this.bolt;
+        thrown.onHit((_target, at, b) => { if (this.bolt === thrown) this.onHit(at, b.reflections); });
       } else {
         this.drawn = 0;
       }

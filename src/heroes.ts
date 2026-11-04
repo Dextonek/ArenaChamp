@@ -165,7 +165,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
   'Sir Whiskers': { radius: 0.49, height: 2.39 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
   'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.58 }, 'Referee Whistler': { radius: 0.41, height: 2.33 },
-  'Madame Cleaver': { radius: 0.58, height: 2.63 },
+  'Madame Cleaver': { radius: 0.58, height: 2.63 }, Pip: { radius: 0.39, height: 2.33 }, Gus: { radius: 0.55, height: 2.39 },
 };
 
 export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit].map((k) => {

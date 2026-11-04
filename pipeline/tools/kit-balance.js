@@ -9,15 +9,22 @@
 (() => {
   const FOES = ['Brannoc', 'Kaia', 'Isolde', 'Sirix', 'Cantor', 'Oblivion'];
   const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
-  let state = { done: true, rows: {}, err: null };
+  let state = { done: true, rows: {}, err: null, errors: [] };
   window._balance = (heroes, reps = 8, foes = FOES) => {
     if (!state.done) return 'already running';
-    state = { done: false, rows: {}, err: null };
+    state = { done: false, rows: {}, err: null, errors: [] };
     (async () => {
       const d = vfx.duel, proto = Object.getPrototypeOf(d), resolve = proto.resolve;
       // Some rules time themselves with performance.now(): during a stepped fight it must follow the fight's own clock.
       let simMs = performance.now();
       performance.now = () => simMs;
+      // Errors in a run are bugs to fix, not noise: keep the first few, with the fight they came from.
+      const logError = console.error;
+      let now = '';
+      console.error = (...a) => {
+        if (state.errors.length < 12) state.errors.push(`${now}: ${a.map((x) => String(x?.stack ?? x)).join(' ').slice(0, 400)}`);
+        logError(...a);
+      };
       try {
         const { CPU_BALANCE } = await import('/src/cpuLevels.ts');
         d.hazardsInRuns = false;
@@ -41,6 +48,7 @@
             for (let r = 0; r < reps; r++) {
               d.cpuLevel = CPU_BALANCE;
               d.opponentChoice = foe;
+              now = `${hero} vs ${foe}`;
               d.start('run');
               let f = 0;
               while (!d.result && f < 7200) { simMs += 1000 / 60; vfx.step(1 / 60); f++; }
@@ -58,13 +66,14 @@
       }
       delete d.resolve;
       delete performance.now;
+      console.error = logError;
       state.done = true;
     })();
     return 'started';
   };
   window._balance.done = () => state.done;
   window._balance.show = () => ({
-    done: state.done, err: state.err,
+    done: state.done, err: state.err, errors: state.errors,
     rows: Object.fromEntries(Object.entries(state.rows).map(([k, r]) => [k, {
       pct: Math.round((100 * r.w) / Math.max(1, r.n)), n: r.n, avgSecs: +(r.secs / Math.max(1, r.n)).toFixed(1),
       byFoe: Object.values(r.by).join(' '),

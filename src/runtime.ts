@@ -547,7 +547,8 @@ export function createRuntime(opts: RuntimeOptions) {
     let best: ScreenFx | undefined, bestScore = -1;
     for (const e of effects) {
       const fx = e.screen;
-      if (!fx) continue;
+      // A spell that has ended must not leave its impact frame on the screen.
+      if (!fx || !e.playing) continue;
       const score = (fx.impact > 0 ? 10 : 0) + fx.darken + fx.whiteout + fx.speedLines + fx.desaturate + fx.chroma + fx.crack;
       if (score > bestScore) { best = fx; bestScore = score; }
     }
@@ -575,11 +576,23 @@ export function createRuntime(opts: RuntimeOptions) {
   const clock = new THREE.Clock();
   const shakeOffset = new THREE.Vector3();
 
+  /** A bug in one spell ends that spell and is logged; it must not freeze a match. */
+  function updateEffect(effect: Effect | undefined, dt: number) {
+    if (!effect) return;
+    try {
+      effect.update(dt);
+    } catch (e) {
+      console.error('Spell effect failed and was stopped:', e);
+      effect.playing = false;
+      effect.group.visible = false;
+    }
+  }
+
   function step(dt: number) {
     hooks.beforeStep?.(dt);
-    active?.effect?.update(dt);
+    updateEffect(active?.effect, dt);
     for (const slot of lingering) {
-      slot.effect?.update(dt);
+      updateEffect(slot.effect, dt);
       if (!slot.effect?.playing) {
         if (slot.effect) retire(slot);
         lingering.delete(slot);
