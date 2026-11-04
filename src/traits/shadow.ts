@@ -111,7 +111,7 @@ export const shadowTrait: Trait = {
     blurb: 'After 2.5 s without dealing or taking damage (1.2 s within 2 m of cover) she fades: dark and see-through, still plainly visible and targetable, 10% faster. Her next Q or attack out of the veil deals 50% more, silences 0.6 s (once per 5 s) and takes 3 s off Shadow Double.',
   },
   speed: 4.6,
-  attack: { kind: 'melee', range: 1.9, damage: 8, interval: 0.7, windup: 0.18, speed: 0, look: 'twin' },
+  attack: { kind: 'melee', range: 1.9, damage: 10, interval: 0.7, windup: 0.18, speed: 0, look: 'twin' },
   aiHold: (_t, slot, dist) => slot === 3 && dist > 8,
   figureVeil: (t) => (t.own('veil') > 0 ? 1 : 0),
   ring(t) {

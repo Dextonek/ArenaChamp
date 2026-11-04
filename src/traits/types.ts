@@ -205,6 +205,11 @@ export interface Trait {
    */
   enemyGoal?(t: TraitView): { x: number; z: number } | null;
   /**
+   * Where the CPU playing this hero should walk now, or null for its usual steering: catch a mirror, stay by a pillar, get behind
+   * the enemy. It beats `enemyGoal`.
+   */
+  aiGoal?(t: TraitView): { x: number; z: number } | null;
+  /**
    * This hero's rule that acts on the enemy hero, run every frame on the screen where that enemy's position and hits are
    * decided: offline always, online on the victim's screen (`t` is this trait's view there). Oblivion's pull, Fenna's
    * flowers, Kaia's rods, Shiori's ink. Read shared state from a WeakMap the spells write, because spells play on both screens.

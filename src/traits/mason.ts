@@ -236,7 +236,7 @@ export const masonTrait: Trait = {
   },
   twist: { name: 'Cover, weapon or escape?', blurb: 'Gerald is cover, a thrown weapon and a way in. Each use spends one of the others.' },
   speed: 3.8,
-  attack: { kind: 'melee', range: 2.5, damage: 18, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
+  attack: { kind: 'melee', range: 2.5, damage: 20, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
   ownLook: { gerald: { color: '#c9b48a', shape: 'gem' } },
   markLook: {
     gerald: () => buildGerald('bored'),
@@ -335,6 +335,12 @@ export const masonTrait: Trait = {
     return geraldHere(g) ? String(Math.max(0, Math.round(g.hp))) : '';
   },
   // The CPU without Gerald raises him first (Q); with him it uses the rest only where they can work.
+  // The CPU fights beside Gerald (he protects, and W and R need him near) while the enemy is in reach of him.
+  aiGoal(t) {
+    const g = geraldOf(t.self()), e = t.enemy();
+    if (!geraldHere(g) || g.moving || !e || distTo(t, g) <= 2.8) return null;
+    return Math.hypot(e.group.position.x - g.x, e.group.position.z - g.z) <= 7 ? { x: g.x, z: g.z } : null;
+  },
   aiHold(t, slot) {
     const g = geraldOf(t.self());
     if (slot === 0) return false;

@@ -146,7 +146,7 @@ export const sandKit: HeroKit = {
   title: 'the Dune Sovereign',
   accent: S.body,
   foil: S.stone,
-  maxHp: 600,
+  maxHp: 620,
   portrait(g, s) {
     ground(g, s);
     // Layered linen shoulders, a gold collar, a bearded face under a striped gold headdress, the crook behind.

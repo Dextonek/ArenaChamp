@@ -1,0 +1,380 @@
+import type { HeroKit } from '../heroes';
+
+/**
+ * Ledger kit data: Mr. Ledger, the Debt Collector (kits v5, new heroes). Four spells (labels as registered), canvas-drawn icons in
+ * the kit's palette: a dark green cloth ground, cream paper, black ink, red rubber-stamp ink and gold leaf. Signature shape: a sheet
+ * of ruled paper with a red stamp across it.
+ */
+const L = {
+  core: '#f5edd0', hot: '#efe4c0', paper: '#e6d9ae', shade: '#b9aa7c', gold: '#d9c27a', brass: '#b08a3a', foil: '#3f4a3a',
+  cloth: '#2d3a2c', wood: '#6d4a2a', ink: '#1c211c', red: '#b3261e', hotRed: '#d9453a', dark: '#161a14', suit: '#8a9088',
+};
+
+function iconGround(g: CanvasRenderingContext2D, s: number) {
+  const r = g.createRadialGradient(s * 0.5, s * 0.4, s * 0.05, s * 0.5, s * 0.5, s * 0.78);
+  r.addColorStop(0, '#4a5a48');
+  r.addColorStop(1, L.dark);
+  g.fillStyle = r;
+  g.fillRect(0, 0, s, s);
+}
+
+/** A sheet of paper centred at (cx,cy), `w` x `h`, turned by `rot`: ruled rows, a dollar total, and with `stamp` a red stamp across it. */
+function sheet(g: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, rot = 0, stamp = '') {
+  g.save();
+  g.translate(cx, cy);
+  g.rotate(rot);
+  g.fillStyle = L.dark;
+  g.fillRect(-w / 2 - w * 0.05, -h / 2 - w * 0.05, w * 1.1, h + w * 0.1);
+  g.fillStyle = L.paper;
+  g.fillRect(-w / 2, -h / 2, w, h);
+  g.fillStyle = L.shade;
+  g.fillRect(-w / 2, -h / 2, w, h * 0.07);
+  g.fillStyle = L.ink;
+  g.fillRect(-w * 0.34, -h * 0.34, w * 0.68, h * 0.07);
+  for (let i = 0; i < 4; i++) {
+    g.fillStyle = L.shade;
+    g.fillRect(-w * 0.38, -h * 0.17 + i * h * 0.13, w * 0.76, h * 0.025);
+    g.fillStyle = L.ink;
+    g.fillRect(-w * 0.34, -h * 0.2 + i * h * 0.13, w * (0.22 + ((i * 3) % 4) * 0.08), h * 0.035);
+  }
+  g.font = `900 ${Math.round(h * 0.2)}px Georgia, serif`;
+  g.textAlign = 'left';
+  g.fillStyle = L.ink;
+  g.fillText('$', -w * 0.38, h * 0.43);
+  g.fillRect(-w * 0.2, h * 0.4, w * 0.55, h * 0.03);
+  if (stamp) {
+    g.save();
+    g.rotate(-0.38);
+    g.translate(w * 0.06, h * 0.08);
+    g.strokeStyle = L.hotRed;
+    g.fillStyle = L.hotRed;
+    g.lineWidth = Math.max(2, w * 0.05);
+    g.strokeRect(-w * 0.38, -h * 0.12, w * 0.76, h * 0.24);
+    g.font = `900 ${Math.round(h * 0.17)}px Impact, Arial Black, sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(stamp, 0, h * 0.01, w * 0.68);
+    g.restore();
+  }
+  g.restore();
+}
+
+/** A speed streak behind a flying paper. */
+function streak(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, w: number) {
+  g.lineCap = 'round';
+  g.strokeStyle = L.gold;
+  g.globalAlpha = 0.75;
+  g.lineWidth = w;
+  g.beginPath();
+  g.moveTo(x1, y1);
+  g.lineTo(x2, y2);
+  g.stroke();
+  g.globalAlpha = 1;
+  g.strokeStyle = L.core;
+  g.lineWidth = w * 0.35;
+  g.beginPath();
+  g.moveTo(x1, y1);
+  g.lineTo(x2, y2);
+  g.stroke();
+}
+
+/** A gold coin. */
+function coin(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  g.fillStyle = L.dark;
+  g.beginPath();
+  g.ellipse(x, y, r * 1.15, r * 1.15 * 0.8, 0, 0, Math.PI * 2);
+  g.fill();
+  g.fillStyle = L.gold;
+  g.beginPath();
+  g.ellipse(x, y, r, r * 0.8, 0, 0, Math.PI * 2);
+  g.fill();
+  g.strokeStyle = L.brass;
+  g.lineWidth = r * 0.16;
+  g.beginPath();
+  g.ellipse(x, y, r * 0.62, r * 0.5, 0, 0, Math.PI * 2);
+  g.stroke();
+}
+
+/** The ledger: a dark green cover with gold corners and a label; `open` draws it spread with ruled pages. */
+function tome(g: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, open = false) {
+  g.save();
+  g.translate(cx, cy);
+  if (open) {
+    g.fillStyle = L.dark;
+    g.fillRect(-w * 0.56, -h * 0.52, w * 1.12, h * 1.04);
+    g.fillStyle = L.cloth;
+    g.fillRect(-w * 0.52, -h * 0.48, w * 1.04, h * 0.96);
+    g.fillStyle = L.paper;
+    g.fillRect(-w * 0.47, -h * 0.42, w * 0.45, h * 0.84);
+    g.fillRect(w * 0.02, -h * 0.42, w * 0.45, h * 0.84);
+    g.fillStyle = L.shade;
+    g.fillRect(-w * 0.02, -h * 0.42, w * 0.04, h * 0.84);
+    for (let i = 0; i < 6; i++) {
+      g.fillRect(-w * 0.43, -h * 0.3 + i * h * 0.12, w * 0.37, h * 0.015);
+      g.fillRect(w * 0.06, -h * 0.3 + i * h * 0.12, w * 0.37, h * 0.015);
+    }
+    g.strokeStyle = L.ink;
+    g.lineWidth = h * 0.03;
+    g.beginPath();
+    g.moveTo(w * 0.08, -h * 0.2);
+    for (let i = 0; i < 8; i++) g.lineTo(w * (0.1 + i * 0.045), -h * 0.2 + (i % 2 ? -0.05 : 0.04) * h + i * h * 0.01);
+    g.stroke();
+  } else {
+    g.fillStyle = L.dark;
+    g.fillRect(-w / 2 - w * 0.04, -h / 2 - w * 0.04, w * 1.08, h + w * 0.08);
+    g.fillStyle = L.cloth;
+    g.fillRect(-w / 2, -h / 2, w, h);
+    g.fillStyle = L.dark;
+    g.fillRect(-w / 2, -h / 2, w * 0.1, h);
+    g.fillStyle = L.gold;
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) g.fillRect(sx > 0 ? w / 2 - w * 0.16 : -w / 2, sy > 0 ? h / 2 - w * 0.16 : -h / 2, w * 0.16, w * 0.16);
+    g.fillStyle = L.paper;
+    g.fillRect(-w * 0.2, -h * 0.28, w * 0.46, h * 0.3);
+    g.fillStyle = L.ink;
+    g.fillRect(-w * 0.14, -h * 0.2, w * 0.34, h * 0.04);
+    g.fillRect(-w * 0.14, -h * 0.11, w * 0.24, h * 0.04);
+  }
+  g.restore();
+}
+
+/** A red rubber stamp seen from the side: a round knob, a neck, a wooden block with a brass band and the red face. */
+function stampTool(g: CanvasRenderingContext2D, cx: number, cy: number, s: number) {
+  g.save();
+  g.translate(cx, cy);
+  g.fillStyle = L.dark;
+  g.beginPath();
+  g.arc(0, -s * 0.5, s * 0.2, 0, Math.PI * 2);
+  g.fill();
+  g.fillRect(-s * 0.1, -s * 0.4, s * 0.2, s * 0.3);
+  g.fillRect(-s * 0.37, -s * 0.12, s * 0.74, s * 0.36);
+  g.fillStyle = L.wood;
+  g.beginPath();
+  g.arc(0, -s * 0.5, s * 0.16, 0, Math.PI * 2);
+  g.fill();
+  g.fillRect(-s * 0.07, -s * 0.38, s * 0.14, s * 0.28);
+  g.fillRect(-s * 0.33, -s * 0.08, s * 0.66, s * 0.28);
+  g.fillStyle = L.brass;
+  g.fillRect(-s * 0.34, 0, s * 0.68, s * 0.07);
+  g.fillStyle = L.hotRed;
+  g.fillRect(-s * 0.37, s * 0.22, s * 0.74, s * 0.08);
+  g.fillStyle = L.core;
+  g.beginPath();
+  g.arc(-s * 0.06, -s * 0.54, s * 0.04, 0, Math.PI * 2);
+  g.fill();
+  g.restore();
+}
+
+export const ledgerKit: HeroKit = {
+  name: 'Mr. Ledger',
+  maxHp: 600,
+  title: 'the Debt Collector',
+  accent: L.gold,
+  foil: L.foil,
+  portrait(g, s) {
+    iconGround(g, s);
+    // Ruled rows of figures on the wall behind him, and a big red DUE stamp.
+    g.fillStyle = 'rgba(245,237,208,0.12)';
+    for (let i = 0; i < 7; i++) g.fillRect(s * 0.06, s * (0.1 + i * 0.12), s * 0.88, s * 0.012);
+    g.save();
+    g.translate(s * 0.8, s * 0.2);
+    g.rotate(-0.4);
+    g.strokeStyle = L.hotRed;
+    g.fillStyle = L.hotRed;
+    g.globalAlpha = 0.85;
+    g.lineWidth = s * 0.014;
+    g.strokeRect(-s * 0.13, -s * 0.05, s * 0.26, s * 0.1);
+    g.font = `900 ${Math.round(s * 0.07)}px Impact, Arial Black, sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText('DUE', 0, s * 0.004);
+    g.restore();
+    g.globalAlpha = 1;
+    // Narrow shoulders in a grey suit, a white shirt, a thin dark tie.
+    g.fillStyle = L.suit;
+    g.beginPath();
+    g.moveTo(s * 0.18, s);
+    g.quadraticCurveTo(s * 0.2, s * 0.72, s * 0.38, s * 0.64);
+    g.lineTo(s * 0.62, s * 0.64);
+    g.quadraticCurveTo(s * 0.8, s * 0.72, s * 0.82, s);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = L.dark;
+    g.lineWidth = s * 0.01;
+    g.stroke();
+    g.fillStyle = '#f2efe6';
+    g.beginPath();
+    g.moveTo(s * 0.43, s * 0.64);
+    g.lineTo(s * 0.5, s * 0.8);
+    g.lineTo(s * 0.57, s * 0.64);
+    g.closePath();
+    g.fill();
+    g.fillStyle = L.ink;
+    g.beginPath();
+    g.moveTo(s * 0.485, s * 0.67);
+    g.lineTo(s * 0.515, s * 0.67);
+    g.lineTo(s * 0.525, s * 0.9);
+    g.lineTo(s * 0.5, s * 0.94);
+    g.lineTo(s * 0.475, s * 0.9);
+    g.closePath();
+    g.fill();
+    // The ledger under his arm.
+    tome(g, s * 0.22, s * 0.82, s * 0.3, s * 0.34);
+    // A long thin face, round glasses on a chain, a sour mouth.
+    g.fillStyle = '#e6cdb4';
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.46, s * 0.1, s * 0.15, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = L.dark;
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.365, s * 0.2, s * 0.03, 0, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(s * 0.35, s * 0.355);
+    g.quadraticCurveTo(s * 0.35, s * 0.15, s * 0.5, s * 0.13);
+    g.quadraticCurveTo(s * 0.65, s * 0.15, s * 0.65, s * 0.355);
+    g.closePath();
+    g.fill();
+    g.fillStyle = L.gold;
+    g.fillRect(s * 0.35, s * 0.325, s * 0.3, s * 0.014);
+    g.strokeStyle = L.gold;
+    g.lineWidth = s * 0.012;
+    for (const sx of [0.455, 0.545]) {
+      g.fillStyle = 'rgba(245,237,208,0.55)';
+      g.beginPath();
+      g.arc(s * sx, s * 0.43, s * 0.034, 0, Math.PI * 2);
+      g.fill();
+      g.stroke();
+    }
+    g.beginPath();
+    g.moveTo(s * 0.489, s * 0.43);
+    g.lineTo(s * 0.511, s * 0.43);
+    g.stroke();
+    g.fillStyle = L.ink;
+    g.beginPath();
+    g.arc(s * 0.455, s * 0.43, s * 0.008, 0, Math.PI * 2);
+    g.arc(s * 0.545, s * 0.43, s * 0.008, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(s * 0.5, s * 0.44);
+    g.lineTo(s * 0.52, s * 0.5);
+    g.lineTo(s * 0.495, s * 0.505);
+    g.stroke();
+    g.strokeStyle = '#8a4a4a';
+    g.beginPath();
+    g.moveTo(s * 0.46, s * 0.55);
+    g.quadraticCurveTo(s * 0.5, s * 0.535, s * 0.54, s * 0.555);
+    g.stroke();
+    // The chain from the glasses down into the lapel.
+    g.strokeStyle = L.gold;
+    g.lineWidth = s * 0.008;
+    g.beginPath();
+    g.moveTo(s * 0.42, s * 0.44);
+    g.quadraticCurveTo(s * 0.4, s * 0.62, s * 0.44, s * 0.7);
+    g.stroke();
+    // The bowler hat: a round crown with a band, a narrow brim.
+    g.fillStyle = L.dark;
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.17, s * 0.15, s * 0.11, 0, Math.PI, Math.PI * 2);
+    g.fill();
+    g.fillRect(s * 0.35, s * 0.17, s * 0.3, s * 0.04);
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.205, s * 0.22, s * 0.035, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = L.foil;
+    g.fillRect(s * 0.355, s * 0.165, s * 0.29, s * 0.025);
+    g.fillStyle = L.gold;
+    g.fillRect(s * 0.355, s * 0.188, s * 0.29, s * 0.008);
+  },
+  spells: [
+    {
+      key: 'Q', label: 'invoice', name: 'Invoice', range: 9, cooldown: 3.5, aim: 'line',
+      blurb: 'A paper flies (9 m): 50 damage that goes on the target\'s tab instead of hurting now. The tab comes due 4 s after the last charge, at +30%.',
+      icon(g, s) {
+        iconGround(g, s);
+        streak(g, s * 0.04, s * 0.84, s * 0.42, s * 0.6, s * 0.06);
+        streak(g, s * 0.1, s * 0.94, s * 0.4, s * 0.76, s * 0.035);
+        sheet(g, s * 0.6, s * 0.46, s * 0.4, s * 0.52, 0.5, 'DUE');
+        g.fillStyle = L.core;
+        g.beginPath();
+        g.arc(s * 0.82, s * 0.2, s * 0.02, 0, Math.PI * 2);
+        g.arc(s * 0.2, s * 0.3, s * 0.014, 0, Math.PI * 2);
+        g.fill();
+      },
+    },
+    {
+      key: 'W', label: 'late fee', name: 'Late Fee', range: 9, cooldown: 9,
+      blurb: 'At a spot (9 m), after 1 s: a notice lands on a 2.5 m circle. 40 damage on the tab, and slowed 1.5 s.',
+      icon(g, s) {
+        iconGround(g, s);
+        g.strokeStyle = L.gold;
+        g.lineWidth = s * 0.02;
+        g.setLineDash([s * 0.05, s * 0.035]);
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.66, s * 0.42, s * 0.22, 0, 0, Math.PI * 2);
+        g.stroke();
+        g.setLineDash([]);
+        g.fillStyle = 'rgba(179,38,30,0.5)';
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.66, s * 0.38, s * 0.19, 0, 0, Math.PI * 2);
+        g.fill();
+        sheet(g, s * 0.5, s * 0.42, s * 0.46, s * 0.58, -0.12, 'LATE');
+        coin(g, s * 0.16, s * 0.84, s * 0.06);
+        coin(g, s * 0.86, s * 0.78, s * 0.05);
+        coin(g, s * 0.78, s * 0.9, s * 0.04);
+      },
+    },
+    {
+      key: 'E', label: 'call it in', name: 'Call It In', range: 0, cooldown: 8,
+      blurb: 'The ledger is slammed shut: the tab on the enemy comes due now, without the interest. Needs no target, and a tab to call.',
+      icon(g, s) {
+        iconGround(g, s);
+        tome(g, s * 0.5, s * 0.58, s * 0.72, s * 0.62, true);
+        // A pencil scratching on the right page.
+        g.save();
+        g.translate(s * 0.72, s * 0.42);
+        g.rotate(0.9);
+        g.fillStyle = L.dark;
+        g.fillRect(-s * 0.03, -s * 0.2, s * 0.06, s * 0.3);
+        g.fillStyle = '#d9a63a';
+        g.fillRect(-s * 0.022, -s * 0.2, s * 0.044, s * 0.26);
+        g.fillStyle = L.shade;
+        g.beginPath();
+        g.moveTo(-s * 0.022, s * 0.06);
+        g.lineTo(s * 0.022, s * 0.06);
+        g.lineTo(0, s * 0.11);
+        g.closePath();
+        g.fill();
+        g.fillStyle = '#d96a6a';
+        g.fillRect(-s * 0.022, -s * 0.24, s * 0.044, s * 0.04);
+        g.restore();
+        coin(g, s * 0.14, s * 0.18, s * 0.06);
+        coin(g, s * 0.84, s * 0.14, s * 0.045);
+      },
+    },
+    {
+      key: 'R', label: 'foreclosure', name: 'Foreclosure', range: 9, cooldown: 24,
+      blurb: 'A huge stamp falls at a spot (9 m) in 0.8 s. Seen in the 2.2 m circle, the target pays their whole tab now at +60%, and takes 20% more from him for 3 s. Cover saves them.',
+      icon(g, s) {
+        iconGround(g, s);
+        g.strokeStyle = L.hotRed;
+        g.lineWidth = s * 0.02;
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.8, s * 0.4, s * 0.15, 0, 0, Math.PI * 2);
+        g.stroke();
+        g.fillStyle = 'rgba(179,38,30,0.6)';
+        g.fillRect(s * 0.22, s * 0.7, s * 0.56, s * 0.17);
+        g.fillStyle = L.core;
+        g.font = `900 ${Math.round(s * 0.1)}px Impact, Arial Black, sans-serif`;
+        g.textAlign = 'center';
+        g.fillText('FINAL', s * 0.5, s * 0.8, s * 0.5);
+        stampTool(g, s * 0.5, s * 0.48, s * 0.62);
+        g.fillStyle = L.hotRed;
+        for (const [x, y, r] of [[0.14, 0.62, 0.03], [0.86, 0.66, 0.035], [0.9, 0.84, 0.02], [0.1, 0.86, 0.025]] as const) {
+          g.beginPath();
+          g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
+          g.fill();
+        }
+      },
+    },
+  ],
+};

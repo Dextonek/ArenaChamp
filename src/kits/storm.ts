@@ -139,7 +139,7 @@ function groundRing(g: CanvasRenderingContext2D, cx: number, cy: number, rx: num
 export const stormKit: HeroKit = {
   name: 'Kaia',
   title: 'the Tempest Caller',
-  maxHp: 560,
+  maxHp: 580,
   accent: S.body,
   foil: S.rain,
   portrait(g, s) {

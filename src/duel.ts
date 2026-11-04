@@ -1215,7 +1215,7 @@ export class Duel {
       return;
     }
     // Something of the hero's that this CPU should walk to or away from (`Trait.enemyGoal`) beats its usual steering.
-    const goal = this.heroRt?.trait?.enemyGoal?.(this.heroRt);
+    const goal = (this.oppRt && this.oppRt.trait?.aiGoal?.(this.oppRt)) ?? this.heroRt?.trait?.enemyGoal?.(this.heroRt);
     const move = goal ? new THREE.Vector3(goal.x - at.x, 0, goal.z - at.z).normalize() : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
     // A planned route already clears the cover: no wall slide on it.
     if (move.lengthSq() > 0) {
@@ -1388,7 +1388,7 @@ export class Duel {
     // Basic attack: nothing to cast, the opponent in reach. Stands still through the wind-up.
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
-    const goal = this.oppRt?.trait?.enemyGoal?.(this.oppRt);
+    const goal = (this.heroRt && this.heroRt.trait?.aiGoal?.(this.heroRt)) ?? this.oppRt?.trait?.enemyGoal?.(this.oppRt);
     const move = goal ? new THREE.Vector3(goal.x - me.x, 0, goal.z - me.z).normalize() : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
   }

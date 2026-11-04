@@ -169,7 +169,7 @@ export const inkKit: HeroKit = {
   title: 'the Last Brush',
   accent: S.body,
   foil: S.foil,
-  maxHp: 580,
+  maxHp: 600,
   portrait(g, s) {
     iconGround(g, s);
     // Paper talisman strips floating round her, a vermilion mark on each.

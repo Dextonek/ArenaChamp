@@ -139,7 +139,7 @@ export const boneKit: HeroKit = {
   title: 'the Ossuary Lord',
   accent: S.body,
   foil: S.bone,
-  maxHp: 580,
+  maxHp: 540,
   portrait(g, s) {
     iconGround(g, s);
     // A staff on the right: a bone shaft with a small skull on top and a soulfire wisp above it.

@@ -1,7 +1,7 @@
 import type { Trait } from './types';
 
 /** Ricochet Light's base damage: the trait reads the reflections of a hit back from it (`dealt`), so the spell's default uses it too. */
-export const RICOCHET_DAMAGE = 58;
+export const RICOCHET_DAMAGE = 60;
 /** Each reflection adds this share of a bolt's damage (the projectile system's default `reflectBonus`) and 2 m of range. */
 export const BANK_BONUS = 0.25;
 export const BANK_RANGE = 2;
@@ -24,7 +24,7 @@ export const BANK_REFUND = 1;
 export const prismTrait: Trait = {
   passive: { name: 'Prismatic', blurb: 'Her bolts bounce off walls, pillars and crystals. Each bounce adds 25% damage and 2 m of range, and a hit after bouncing takes 1 s per bounce off Ricochet Light. Her aim line shows the first bounce.' },
   speed: 4.2,
-  attack: { kind: 'ranged', range: 8.5, damage: 13, interval: 1.4, windup: 0.32, speed: 22, look: 'prism' },
+  attack: { kind: 'ranged', range: 8.5, damage: 15, interval: 1.4, windup: 0.32, speed: 22, look: 'prism' },
   dealt(t, hit) {
     if (hit.kind !== 'spell' || hit.slot !== 0 || !hit.victimIsHero || hit.opts.damage === undefined) return;
     const n = Math.max(0, Math.min(BANK_MAX, Math.round((hit.opts.damage / RICOCHET_DAMAGE - 1) / BANK_BONUS)));

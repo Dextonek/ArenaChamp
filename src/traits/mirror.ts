@@ -2,7 +2,7 @@ import type { GroundMark, Trait, TraitView } from './types';
 import { restingMirrorLook } from '../effects/parts/mirror';
 
 /** Hand Mirror (Q): damage, range, speed, wind-up, bounces, and the extra reach each bounce gives. */
-export const HAND_DAMAGE = 52;
+export const HAND_DAMAGE = 56;
 export const HAND_RANGE = 10;
 export const HAND_SPEED = 22;
 export const HAND_WIND = 0.3;
@@ -28,7 +28,7 @@ export const GLASS_TIME = 0.3;
 
 /** Hall of Mirrors (R): mirrors, damage, wind-up, speed, range, bounces; and the seconds a caught floor mirror cuts. */
 export const HALL_COUNT = 8;
-export const HALL_DAMAGE = 40;
+export const HALL_DAMAGE = 60;
 export const HALL_WIND = 0.6;
 export const HALL_SPEED = 16;
 export const HALL_RANGE = 12;
@@ -105,6 +105,17 @@ const VAIN_WORDS = ['FLAWLESS', 'NO NOTES', 'RADIANT', 'STILL GORGEOUS'];
  * that must know. It also tells her own client with `noteOwner('broke')` (`peerNote`) so her Stand is gone there too.
  */
 export const mirrorTrait: Trait = {
+  // The CPU runs for a mirror on the floor within 5 m, as a person would.
+  aiGoal(t) {
+    const now = performance.now(), p = t.self().group.position;
+    let best: MirrorMark | null = null, bd = 5;
+    for (const m of bookOf(t.self()).marks) {
+      if (m.gone || now < m.bornAt || now >= m.until) continue;
+      const d = Math.hypot(m.x - p.x, m.z - p.z);
+      if (d < bd) { bd = d; best = m; }
+    }
+    return best && { x: best.x, z: best.z };
+  },
   passive: {
     name: 'Fairest of All',
     blurb: 'Each bounce of her bolts adds 25% damage and 2 m of range. A mirror that comes to rest on the floor after a bounce stays 2.5 s: she catches it by walking within 1 m. A caught Hand Mirror is ready again and she is 20% faster for 2 s; a caught Hall of Mirrors mirror cuts 2 s off Hall of Mirrors.',

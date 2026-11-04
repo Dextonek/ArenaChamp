@@ -99,7 +99,7 @@ export const dawnKit: HeroKit = {
   title: 'the Dawn Paladin',
   accent: D.body,
   foil: D.foil,
-  maxHp: 600,
+  maxHp: 570,
   portrait(g, s) {
     ground(g, s);
     // A sun disc with crisp rays behind her, a halo ring, and a helmed paladin in white and gold plate.

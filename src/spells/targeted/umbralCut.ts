@@ -23,7 +23,7 @@ export interface UmbralCutSettings {
   loop: boolean;
 }
 
-export const defaultUmbralCut = (): UmbralCutSettings => ({ damage: 45, loop: false });
+export const defaultUmbralCut = (): UmbralCutSettings => ({ damage: 54, loop: false });
 
 const DURATION = 1.0;
 const MARK_R = 1.1;

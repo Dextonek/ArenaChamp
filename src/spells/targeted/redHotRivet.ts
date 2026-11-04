@@ -25,7 +25,7 @@ export interface RedHotRivetSettings {
   loop: boolean;
 }
 
-export const defaultRedHotRivet = (): RedHotRivetSettings => ({ damage: 30, tickDamage: 8, loop: false });
+export const defaultRedHotRivet = (): RedHotRivetSettings => ({ damage: 25, tickDamage: 6, loop: false });
 
 // Timeline (seconds).
 const PULL_T = 0.25;
