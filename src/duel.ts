@@ -1274,6 +1274,7 @@ export class Duel {
       const spell = kit.spells[i];
       const spec = this.host.targeting(spell.label);
       if (!spec) return null;
+      if (spell.anytime) return { i, spec };
       if (spell.summon) return full || dHero > SUMMON_REACH ? null : { i, spec };
       // A last stand waits for the caster's own HP, not the enemy's.
       if (spell.save) return ownHp <= SAVE_HP && dHero <= SAVE_REACH ? { i, spec } : null;

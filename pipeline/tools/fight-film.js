@@ -9,6 +9,8 @@
 window._filmOff = () => document.getElementById('_sheetview')?.remove();
 window._film = async (hero, foe, o = {}) => {
   const { from = 3, every = 1.5, frames = 12, when = null } = o;
+  window._filmOff(); // a sheet left over the canvas can make the next film read black
+  await new Promise((ok) => setTimeout(ok, 200));
   const { CPU_BALANCE } = await import('/src/cpuLevels.ts');
   const tick = () => new Promise((ok) => setTimeout(ok, 30));
   const d = vfx.duel;

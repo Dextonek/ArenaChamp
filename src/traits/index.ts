@@ -36,6 +36,8 @@ import { yarnTrait } from './yarn';
 import { weatherTrait } from './weather';
 import { sheepTrait } from './sheep';
 import { magicTrait } from './magic';
+import { doorTrait } from './door';
+import { twinsTrait } from './twins';
 
 export { TraitRuntime, type TraitHost } from './runtime';
 export * from './types';
@@ -75,6 +77,8 @@ export const TRAITS: Record<string, Trait> = {
   'Barry Cloudsley': weatherTrait,
   Bo: sheepTrait,
   'The Great Zambini': magicTrait,
+  Wick: doorTrait,
+  'Pim and Pom': twinsTrait,
   Marin: tideTrait,
   Mortis: boneTrait,
   Ada: clockworkTrait,

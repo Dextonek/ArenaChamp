@@ -91,6 +91,17 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { tagOutModule } from './tagOut';
+import { pomBackflipModule } from './pomBackflip';
+import { pomSnareModule } from './pomSnare';
+import { pomPebbleModule } from './pomPebble';
+import { pimShieldUpModule } from './pimShieldUp';
+import { pimChargeModule } from './pimCharge';
+import { pimBonkModule } from './pimBonk';
+import { grandLobbyModule } from './grandLobby';
+import { doorSlamModule } from './doorSlam';
+import { wickDoorModule } from './wickDoor';
+import { keyTossModule } from './keyToss';
 import { grandFinaleModule } from './grandFinale';
 import { hatTrickModule } from './hatTrick';
 import { sawnInHalfModule } from './sawnInHalf';
@@ -371,6 +382,17 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  tagOutModule,
+  pomBackflipModule,
+  pomSnareModule,
+  pomPebbleModule,
+  pimShieldUpModule,
+  pimChargeModule,
+  pimBonkModule,
+  grandLobbyModule,
+  doorSlamModule,
+  wickDoorModule,
+  keyTossModule,
   grandFinaleModule,
   hatTrickModule,
   sawnInHalfModule,

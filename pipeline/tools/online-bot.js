@@ -34,7 +34,31 @@
     timer = setInterval(step, 100);
     return 'queued';
   };
-  window._botStop = () => { clearInterval(timer); return 'stopped'; };
+  window._botStop = () => { clearInterval(timer); clearInterval(series); return 'stopped'; };
+
+  // A list of heroes, one match each: the other tab runs its own list, and the queue pairs them in order.
+  //   _botSeries(['Bram', 'Gus']);  _botLog()  -> matches: per match who fought, casts, and the HP this screen saw at each sample
+  let series = 0;
+  window._botSeries = (heroes) => {
+    log.matches = [];
+    const left = [...heroes];
+    let playing = false;
+    clearInterval(series);
+    series = setInterval(() => {
+      const { match, state, net } = window.game;
+      if (match.active) { playing = true; return; }
+      if (state.queue.on) return;
+      if (playing) {
+        playing = false;
+        log.matches.push({ hero: log.hero, foe: log.foe, casts: [...log.casts], attacks: log.attacks, rounds: log.rounds.length, samples: log.samples.slice(-6), errors: log.errors.length });
+        log.casts = [0, 0, 0, 0]; log.attacks = 0; log.rounds = []; log.samples = []; lastRound = -1;
+      }
+      const next = left.shift();
+      if (!next) { clearInterval(series); clearInterval(timer); log.seriesDone = true; return; }
+      window._botQueue(next);
+    }, 500);
+    return 'series started';
+  };
 
   let lastRound = -1, lastSample = 0;
   function step() {

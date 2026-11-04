@@ -41,6 +41,8 @@ import { yarnKit } from './kits/yarn';
 import { weatherKit } from './kits/weather';
 import { sheepKit } from './kits/sheep';
 import { magicKit } from './kits/magic';
+import { doorKit } from './kits/door';
+import { twinsKit } from './kits/twins';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
 
@@ -62,6 +64,8 @@ export interface HeroSpell {
   dash?: true;
   /** With `dash`, a getaway rather than a gap closer: the duel AI casts it away from an enemy who comes close, not toward one far off. */
   escape?: true;
+  /** With R: not an ultimate for the duel AI, which casts it as iHold allows, whatever the enemy's HP (Tag Out). */
+  anytime?: true;
   /** A last stand (a cheat death, a heal): the duel AI casts it when its own HP drops under about 45%, not by the enemy's HP. */
   save?: true;
   /** A parry (Radiant Parry): the duel AI casts it only when a hit is about to land (a bolt due, an attack winding up). */
@@ -157,6 +161,7 @@ const MODELS: Record<string, string> = {
   'Barry Cloudsley': 'models/heroes/weather_v2.glb',
   Bo: 'models/heroes/sheep_v2.glb',
   'The Great Zambini': 'models/heroes/magic_v2.glb',
+  Wick: 'models/heroes/door_v2.glb',
 };
 
 /**
@@ -178,9 +183,10 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   'Madame Cleaver': { radius: 0.58, height: 2.63 }, Pip: { radius: 0.39, height: 2.33 }, Gus: { radius: 0.55, height: 2.39 },
   Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.54, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 2.45 },
   Bo: { radius: 0.53, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
+  Wick: { radius: 0.41, height: 2.44 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit].map((k) => {
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit].map((k) => {
   const kit = { ...k, model: k.model ?? MODELS[k.name] };
   if (kit.alt) kit.alt.base = kit;
   return kit;
