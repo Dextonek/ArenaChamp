@@ -104,7 +104,7 @@ function mintCut(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number
 
 export const shadowKit: HeroKit = {
   name: 'Nyx',
-  maxHp: 620,
+  maxHp: 640,
   melee: true,
   title: 'the Umbral Stalker',
   accent: S.hot,

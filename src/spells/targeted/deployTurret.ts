@@ -27,7 +27,7 @@ export interface DeployTurretSettings {
   range: number;
 }
 
-export const defaultDeployTurret = (): DeployTurretSettings => ({ hp: 80, seconds: 8, damage: 10, attackEvery: 1.4, range: 8 });
+export const defaultDeployTurret = (): DeployTurretSettings => ({ hp: 80, seconds: 8, damage: 9, attackEvery: 1.4, range: 8 });
 
 const BUILD_END = 0.5; // the last click and the summon
 const FOLD_T = 0.5;

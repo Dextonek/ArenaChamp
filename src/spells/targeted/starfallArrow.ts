@@ -26,7 +26,7 @@ export interface StarfallArrowSettings {
   loop: boolean;
 }
 
-export const defaultStarfallArrow = (): StarfallArrowSettings => ({ damage: 62, loop: false });
+export const defaultStarfallArrow = (): StarfallArrowSettings => ({ damage: 58, loop: false });
 
 // Timeline (seconds).
 const BOW_END = 0.24;

@@ -1,7 +1,7 @@
 import type { Trait, TraitView } from './types';
 
 /** Card Spray (Q): damage per card, reach (m), speed (m/s), wind-up (s), the fan's full width (degrees), a card's bolt radius. */
-export const CARD_DAMAGE = 22;
+export const CARD_DAMAGE = 26;
 export const CARD_RANGE = 8;
 export const CARD_SPEED = 22;
 export const CARD_WIND = 0.3;
@@ -9,7 +9,7 @@ export const CARD_FAN = 24;
 export const CARD_RADIUS = 0.3;
 
 /** Sawn in Half (W): damage, reach, speed, wind-up, the bolt's radius, and the slow it leaves (s). */
-export const SAW_DAMAGE = 50;
+export const SAW_DAMAGE = 60;
 export const SAW_RANGE = 8;
 export const SAW_SPEED = 18;
 export const SAW_WIND = 0.3;
@@ -111,7 +111,7 @@ export const magicTrait: Trait = {
     blurb: 'Hide for safety, or stay out for damage. Hit the right hat and he pops out stunned; an area spell hits all three.',
   },
   speed: 4.1,
-  attack: { kind: 'ranged', range: 6, damage: 10, interval: 1.0, windup: 0.25, speed: 20, look: 'spark', color: '#ffe08a' },
+  attack: { kind: 'ranged', range: 6, damage: 12, interval: 1.0, windup: 0.25, speed: 20, look: 'spark', color: '#ffe08a' },
 
   aiHold(t, slot, dist) {
     if (slot === 2) return !(t.hp() < 0.6 * t.maxHp() || dist <= 4);

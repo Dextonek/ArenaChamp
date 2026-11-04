@@ -209,7 +209,7 @@ export const groveTrait: Trait = {
     blurb: 'Seed Shot and Pollen Glide plant a flower where they land (4 at most, 7 s each). Within 3 m of flowers she heals 2 HP a second per flower (2 count), more near her tree. An enemy within 1.5 m of a flower is slowed; standing within 1 m for 0.6 s tramples it.',
   },
   speed: 4.0,
-  attack: { kind: 'ranged', range: 5.5, damage: 9, interval: 0.7, windup: 0.18, speed: 20, look: 'petal' },
+  attack: { kind: 'ranged', range: 5.5, damage: 10, interval: 0.7, windup: 0.18, speed: 20, look: 'petal' },
   recast: { slot: 3, window: 9.2, arm: 1.3, name: 'Uproot', power: 1 },
   // The CPU Uproots only with the enemy in the thorns' reach.
   aiHold(t, slot) {

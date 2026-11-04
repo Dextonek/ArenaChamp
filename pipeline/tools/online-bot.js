@@ -45,8 +45,13 @@
     let playing = false;
     clearInterval(series);
     series = setInterval(() => {
-      const { match, state, net } = window.game;
-      if (match.active) { playing = true; return; }
+      const { match, state, api } = window.game;
+      if (match.active) {
+        playing = true;
+        // The result card waits for a click on "Back to menu".
+        if (api.duel.over && window._botShort && log.rounds.length) match.exit();
+        return;
+      }
       if (state.queue.on) return;
       if (playing) {
         playing = false;
@@ -73,9 +78,15 @@
     const dist = Math.hypot(me.x - at.x, me.z - at.z);
     if (now - lastSample > 2000) {
       lastSample = now;
-      if (log.samples.length < 60) log.samples.push({ me: Math.round(d.playerHp), foe: Math.round(arena.hpOf(foe)), dist: +dist.toFixed(1), over: !!d.over, res: d.result?.winner ?? null, kit: hm.currentKit.name });
+      if (log.samples.length >= 60) log.samples.shift();
+      log.samples.push({ me: Math.round(d.playerHp), foe: Math.round(arena.hpOf(foe)), dist: +dist.toFixed(1), over: !!d.over, res: d.result?.winner ?? null, kit: hm.currentKit.name });
     }
-    if (d.round !== lastRound) { lastRound = d.round; log.rounds.push(d.round); }
+    if (d.round !== lastRound) {
+      lastRound = d.round;
+      log.rounds.push(d.round);
+      // One round is enough to test a hero: `_botShort = true` ends the match when the second round starts.
+      if (window._botShort && d.round >= 2) { window.game.net.send({ t: 'match_leave' }); return; }
+    }
     if (d.over || d.waiting || d.countdown > 0 || hm.locked) return;
     const st = arena.statusOf(arena.caster);
     if (!st?.cannotCast) {

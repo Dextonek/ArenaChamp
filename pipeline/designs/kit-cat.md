@@ -11,7 +11,7 @@ and he has no answer to a slow. Palette `CAT` / `CAT_CSS` in `src/effects/parts/
 - W **Knock It Over** (`knockItOver.ts`, 'knock it over'): GROUND, `cc`, cd 9, 9 m. Needs cover within 4 m of him (the surface of a pillar or wall in `ctx.obstacles()`).
   A pot rocks on the cover's top, is batted off at 0.2 s, falls along an arc, tumbling, onto the spot (shown from the cast, 1.5 m circle) at 0.7 s: 50 and a 0.5 s stun
   (circle delay 0.7 >= 0.25 + 1.5 / 4 = 0.63). It shatters. With no cover: nothing, he bats the air (MEH), no telegraph, no hit.
-- E **Pounce** (`pounce.ts`, 'pounce'): GROUND, `dash`, cd 8, 7 m. `afterCast` pays the life he is on (`payHp(room)`: to the start of that life), a cracked heart and
+- E **Cat Leap** (`pounce.ts`, 'pounce'): GROUND, `dash`, cd 8, 7 m. `afterCast` pays the life he is on (`payHp(room)`: to the start of that life), a cracked heart and
   MROW. Leap 0.65 s (`moveCaster`) landing 0.8 m short of the aim: 60 in a 1.5 m circle on live positions. He cannot cast for 0.4 s after landing (`hold` and `canCast`).
   Not castable on life 1 ("Last life").
 - R **Land on My Feet** (`landOnMyFeet.ts`, 'land on my feet'): SELF, `save`, cd 24. Armed 4 s, shown as a pulsing ring at his feet (`show('feet')`, `Trait.ring`) and

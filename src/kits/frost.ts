@@ -81,7 +81,7 @@ export const frostKit: HeroKit = {
   title: 'the Winter Warden',
   accent: F.body,
   foil: F.rime,
-  maxHp: 600,
+  maxHp: 570,
   portrait(g, s) {
     iconGround(g, s);
     // Frost fern fan behind, a tall crystal, and a hooded face with one pink glint.

@@ -155,7 +155,7 @@ function standMirror(g: CanvasRenderingContext2D, cx: number, base: number, h: n
 
 export const mirrorKit: HeroKit = {
   name: 'Silvane',
-  maxHp: 600,
+  maxHp: 620,
   title: 'the Vain',
   accent: S.body,
   foil: S.violet,

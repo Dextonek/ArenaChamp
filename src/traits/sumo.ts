@@ -18,7 +18,7 @@ const WORD_SECONDS = 1.4;
 /** Palm Strike (Q): reach, line width, damage, the shove (m) and how long the shove takes (s), wind-up. */
 export const PALM_REACH = 2.8;
 export const PALM_WIDTH = 2.0;
-export const PALM_DAMAGE = 40;
+export const PALM_DAMAGE = 54;
 export const PALM_PUSH = 3;
 export const PALM_PUSH_TIME = 0.22;
 export const PALM_WIND = 0.4;
@@ -26,7 +26,7 @@ export const PALM_WIND = 0.4;
 /** Stomp (W): wind-up, radius, damage, slow seconds. */
 export const STOMP_WIND = 0.5;
 export const STOMP_RADIUS = 3;
-export const STOMP_DAMAGE = 40;
+export const STOMP_DAMAGE = 50;
 export const STOMP_SLOW = 1;
 
 /** Charge (E): wind-up, run, run time, line width, damage, how far ahead of him the caught body rides. */
@@ -108,7 +108,7 @@ export const sumoTrait: Trait = {
     blurb: 'The push counts only when it crosses the rope. Stand out of the ring, or fight in the middle and walk away before he gets behind you.',
   },
   speed: 3.6,
-  attack: { kind: 'melee', range: 2.4, damage: 16, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
+  attack: { kind: 'melee', range: 2.4, damage: 20, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
 
   // The CPU, a ring up and the enemy inside it: it walks to the spot on the far side of the enemy from the rope, so a shove goes out over it.
   aiGoal(t) {

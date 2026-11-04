@@ -106,7 +106,7 @@ function circleGlyph(g: CanvasRenderingContext2D, cx: number, cy: number, r: num
 export const alchemyKit: HeroKit = {
   name: 'Vitriol',
   title: 'the Plague Alchemist',
-  maxHp: 560,
+  maxHp: 530,
   accent: A.body,
   foil: A.glass,
   portrait(g, s) {

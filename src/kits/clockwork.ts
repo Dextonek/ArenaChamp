@@ -101,7 +101,7 @@ export const clockworkKit: HeroKit = {
   title: 'the Artificer',
   accent: S.body,
   foil: S.foil,
-  maxHp: 580,
+  maxHp: 550,
   portrait(g, s) {
     iconGround(g, s);
     // The brass backpack of gears behind her shoulders and a spring-loaded wrist launcher on the right.

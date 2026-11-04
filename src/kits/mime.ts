@@ -224,7 +224,7 @@ export const mimeKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'the box', name: 'The Box', range: 9, cooldown: 22,
+      key: 'R', label: 'the box', name: 'Boxed In', range: 9, cooldown: 22,
       blurb: 'Four walls close round your spot (9 m, sight) after 0.8 s: 3 m wide, standing 3 s. She can shoot in; you cannot get out until you break one. Each takes one hit.',
       icon(g, s) {
         iconGround(g, s);

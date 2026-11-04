@@ -7,7 +7,7 @@ import type { SummonUnit } from '../effects/summon';
 import type { CastContext } from '../effects/targeting';
 
 /** Key Toss (Q): damage, reach (m), speed (m/s), wind-up (s), the bolt's radius (m; the drawn line is `boltWidth(radius)`). */
-export const KEY_DAMAGE = 50;
+export const KEY_DAMAGE = 66;
 export const KEY_RANGE = 9;
 export const KEY_SPEED = 22;
 export const KEY_WIND = 0.3;
@@ -38,7 +38,7 @@ const OFF_MARGIN = 0.3;
 
 /** Slam (E): the reach of each door's slam (m), damage, stun (s) and the wait (s). */
 export const SLAM_RADIUS = 1.5;
-export const SLAM_DAMAGE = 40;
+export const SLAM_DAMAGE = 55;
 export const SLAM_STUN = 0.5;
 export const SLAM_WIND = 0.7;
 
@@ -364,7 +364,7 @@ export const doorTrait: Trait = {
     blurb: 'A door put down to escape is not there to shoot through. Use his doors against him, or break the bell by one. Without them he is a weak old man.',
   },
   speed: 4,
-  attack: { kind: 'ranged', range: 6, damage: 10, interval: 1.0, windup: 0.25, speed: 20, look: 'dart' },
+  attack: { kind: 'ranged', range: 6, damage: 13, interval: 1.0, windup: 0.25, speed: 20, look: 'dart' },
   charges: { slot: 1, count: DOOR_CHARGES, every: DOOR_EVERY },
   canCast(t, slot) {
     const b = booksOf(t);

@@ -253,7 +253,7 @@ function wallsOf(t: TraitView) {
 export const mimeTrait: Trait = {
   passive: {
     name: 'Silence Is Golden',
-    blurb: 'She makes up to 3 invisible walls (Wall) and The Box makes 4 more: real, solid for both of you, for 5 s (3 s for the Box), shown only as faint chalk lines on the floor and a faint shimmer. One hit of any size breaks a wall.',
+    blurb: 'She makes up to 3 invisible walls (Wall) and Boxed In makes 4 more: real, solid for both of you, for 5 s (3 s for the Box), shown only as faint chalk lines on the floor and a faint shimmer. One hit of any size breaks a wall.',
   },
   twist: {
     name: 'Which Wall Is Real',

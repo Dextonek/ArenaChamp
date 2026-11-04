@@ -26,7 +26,7 @@ export interface SeedShotSettings {
   loop: boolean;
 }
 
-export const defaultSeedShot = (): SeedShotSettings => ({ damage: 60, loop: false });
+export const defaultSeedShot = (): SeedShotSettings => ({ damage: 64, loop: false });
 
 // Timeline (seconds).
 const WIND_T = 0.25; // the seed leaves

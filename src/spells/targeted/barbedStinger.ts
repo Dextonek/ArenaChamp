@@ -34,7 +34,7 @@ export interface BarbedStingerSettings {
   loop: boolean;
 }
 
-export const defaultBarbedStinger = (): BarbedStingerSettings => ({ damage: 45, leapDamage: 25, poison: 30, mode: 'auto', poisoned: false, loop: false });
+export const defaultBarbedStinger = (): BarbedStingerSettings => ({ damage: 42, leapDamage: 25, poison: 30, mode: 'auto', poisoned: false, loop: false });
 
 // Timeline (seconds).
 const RELEASE_T = 0.25;

@@ -8,7 +8,7 @@ import type { GroundMark, Trait } from './types';
 /** Crook Whack (Q): a cone, its reach, width (degrees, full), damage and wind-up (the root on Bo). */
 export const CROOK_REACH = 4;
 export const CROOK_ANGLE = 100;
-export const CROOK_DAMAGE = 45;
+export const CROOK_DAMAGE = 58;
 export const CROOK_WIND = 0.55;
 
 /** Spare Sheep (W): reach, how many, how long they live, and when the flung sheep land. */
@@ -19,7 +19,7 @@ export const SPARE_LAND = 0.5;
 
 /** The sheep: HP, the bump a sheep makes, how often, and how fast it walks. */
 export const SHEEP_HP = 30;
-export const SHEEP_DAMAGE = 5;
+export const SHEEP_DAMAGE = 7;
 export const SHEEP_EVERY = 1.1;
 export const SHEEP_SPEED = 3.4;
 /** A sheared sheep trots this much faster. */
@@ -27,7 +27,7 @@ export const SHORN_SPEED = 1.5;
 
 /** Shear (E): the nearest sheep within this reach is sheared; the wool bolt's damage, Wool, wind-up, speed, range and radius. */
 export const SHEAR_REACH = 6;
-export const SHEAR_DAMAGE = 40;
+export const SHEAR_DAMAGE = 50;
 export const SHEAR_WOOL = 3;
 export const SHEAR_WIND = 0.25;
 export const SHEAR_SPEED = 20;
@@ -40,7 +40,7 @@ export const STAMPEDE_LENGTH = 12;
 export const STAMPEDE_WIDTH = 4;
 export const STAMPEDE_WIND = 0.8;
 export const STAMPEDE_SPEED = 8;
-export const STAMPEDE_DAMAGE = 25;
+export const STAMPEDE_DAMAGE = 30;
 export const STAMPEDE_MAX_HITS = 3;
 export const STAMPEDE_REACH = 0.75;
 

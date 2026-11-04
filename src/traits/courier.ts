@@ -8,7 +8,7 @@ export const LETTER_RANGE = 8;
 export const LETTER_SPEED = 24;
 export const LETTER_WIND = 0.25;
 export const LETTER_RADIUS = 0.3;
-export const LETTER_DAMAGE = 50;
+export const LETTER_DAMAGE = 54;
 export const LETTER_PER_CHARGE = 15;
 
 /** Fragile (W): reach, delay before it bursts, radius, damage, slow seconds. */

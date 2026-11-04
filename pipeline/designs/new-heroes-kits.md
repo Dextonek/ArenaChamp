@@ -86,7 +86,7 @@ Theme `cat`. Assassin, melee. 450 HP in 9 lives of 50, 4.5 m/s, attack 2 m, 9 pe
 | P | Nine Lives | | His bar is 9 chunks of 50. No single hit takes more than the life he is on. Damage carries no further | Use fast attacks and damage over time: a big spell is wasted on him |
 | Q | Scratch | 3 | A 2.5 m claw: 40. Next attack within 2 s is free of its wind-up | Stay out of 2.5 m |
 | W | Knock It Over | 9 | He bats something off a pillar: within 4 m of cover, a pot falls on you at a shown spot after 0.7 s (1.5 m): 50 and a 0.5 s stun. In the open it does nothing | Step off: 0.63 s with reaction. Fight in the open |
-| E | Pounce | 8 | Spends the life he is on: leap 7 m onto you, 60. He lands and can't cast for 0.4 s | He loses a life doing it: hit him when he lands |
+| E | Cat Leap | 8 | Spends the life he is on: leap 7 m onto you, 60. He lands and can't cast for 0.4 s | He loses a life doing it: hit him when he lands |
 | R | Land on My Feet | 24 | For 4 s the next life he would lose is not lost, and he lands on his feet: a 3 m leap away. His attacks are 30% faster until then | Hit him once with something small first, to use it up |
 
 **Engine:** chunks on the HP bar for both players. `taken` caps a hit.
@@ -207,7 +207,7 @@ Theme `mime`. Controller, ranged. 580 HP, 4.1 m/s, attack 5.5 m, 9 per 0.9 s. Ac
 | Q | Invisible Ball | 3.5 | She throws a ball you cannot see, shown as a line on the floor (9 m, 22 m/s, 0.3 s wind-up): 50 | The line is drawn: sidestep, 0.57 s at 6 m |
 | W | Wall | 3, 3 charges | A wall 4 m long at a spot (9 m) | One hit |
 | E | Rope Trick | 11 | She mimes a rope to you (7 m, 0.5 s, sight when it lands): pulled 3 m, and 30 | Step behind cover: 1 m in 0.5 s |
-| R | The Box | 22 | Four walls close round your spot (9 m, sight) after 0.8 s, 3 m wide, for 3 s. She can shoot in; you can't get out until you break one. Each takes a hit | Step out: 1.5 m takes 0.63 s with reaction, inside the 0.8 s |
+| R | Boxed In | 22 | Four walls close round your spot (9 m, sight) after 0.8 s, 3 m wide, for 3 s. She can shoot in; you can't get out until you break one. Each takes a hit | Step out: 1.5 m takes 0.63 s with reaction, inside the 0.8 s |
 
 **Engine:** nothing new: obstacles and chalk marks.
 
@@ -296,7 +296,7 @@ Theme `mole`. Assassin, melee. 640 HP, 4.3 m/s, attack 2.2 m, 11 per 0.9 s. Acce
 | P | Dig Site | | Holes she digs last 8 s (3 at most). Anyone who walks in falls: rooted 0.8 s, and -15% speed for 2 s climbing out. She walks across hers | Walk round them. Knock her into one |
 | Q | Claw | 3 | A 2.5 m swipe: 45 | Stay out of 2.5 m |
 | W | Dig | 7 | A hole at a spot (6 m), opening after 0.7 s, 1.5 m | Step off: 0.63 s with reaction |
-| E | Tunnel | 10 | She dives (0.3 s) and moves underground for up to 1.2 s at +40%, a mound on the surface, cannot be hit, then pops up: 40 and a 0.5 s knock-up within 1.5 m | Watch the mound: step off as it slows. She cannot cast down there |
+| E | Mole Run | 10 | She dives (0.3 s) and moves underground for up to 1.2 s at +40%, a mound on the surface, cannot be hit, then pops up: 40 and a 0.5 s knock-up within 1.5 m | Watch the mound: step off as it slows. She cannot cast down there |
 | R | Sinkhole | 24 | A 4 m pit at your spot (9 m, sight), 1.3 s warning: rooted 1 s and 90 | Leave: 1.25 s from the centre, inside the 1.3 s, or stand by cover at its edge |
 
 **Engine:** reuses the old `burrow.ts` idea for moving underground.

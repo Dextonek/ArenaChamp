@@ -328,7 +328,7 @@ export const catKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'pounce', name: 'Pounce', range: 7, cooldown: 8, dash: true,
+      key: 'E', label: 'pounce', name: 'Cat Leap', range: 7, cooldown: 8, dash: true,
       blurb: 'Spends the life he is on: leaps 7 m onto you for 60 damage, then cannot cast for 0.4 s. Not on his last life.',
       icon(g, s) {
         iconGround(g, s);

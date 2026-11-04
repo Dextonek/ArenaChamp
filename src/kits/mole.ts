@@ -284,7 +284,7 @@ export const moleKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'mole tunnel', name: 'Tunnel', range: 7.2, cooldown: 10, dash: true,
+      key: 'E', label: 'mole tunnel', name: 'Mole Run', range: 7.2, cooldown: 10, dash: true,
       blurb: 'She dives (0.3 s) and tunnels up to 7.2 m in 1.2 s, 40% faster than she walks, a mound on the surface showing where. Nothing can hit her and she cannot cast. She pops up: 40 and a 0.5 s knock-up within 1.5 m.',
       icon(g, s) {
         iconGround(g, s);

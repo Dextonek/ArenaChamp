@@ -129,7 +129,7 @@ export const skyKit: HeroKit = {
   title: 'the Wind Blade',
   accent: S.body,
   foil: S.cloud,
-  maxHp: 660,
+  maxHp: 620,
   melee: true,
   portrait(g, s) {
     iconGround(g, s);

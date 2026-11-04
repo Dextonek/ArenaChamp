@@ -113,7 +113,7 @@ export const sheepKit: HeroKit = {
   title: 'the angry shepherd',
   accent: S.accent,
   foil: S.wood,
-  maxHp: 620,
+  maxHp: 640,
   portrait(g, s) {
     iconGround(g, s);
     // A sheep under his arm, bottom right, looking unimpressed.
