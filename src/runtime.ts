@@ -15,6 +15,7 @@ import { TelegraphLayer, type TelegraphSpec } from './effects/telegraph';
 import { Arena } from './arena';
 import { HeroMode } from './heroMode';
 import { HERO_KITS } from './heroes';
+import { stopsAtCover } from './obstacles';
 import { DEFAULT_STAGE, type ArenaStage } from './arenas';
 import { Duel } from './duel';
 import { CASTER_POS } from './effects/common';
@@ -285,7 +286,14 @@ export function createRuntime(opts: RuntimeOptions) {
     castOverride = null;
     effect.group.visible = true;
     if (active !== slot) lingering.add(slot);
-    return slot.module.telegraphs?.(effect) ?? [];
+    return zonesOf(slot, effect);
+  }
+
+  /** What a cast's danger zones show: a line skillshot's strip ends where cover stops the bolt, as its aim strip did. */
+  const BOLT_LINES = new Set(HERO_KITS.flatMap((k) => [...k.spells, ...(k.alt?.spells ?? [])]).filter(stopsAtCover).map((s) => s.label));
+  function zonesOf(slot: EffectSlot, effect: Effect) {
+    const out = slot.module.telegraphs?.(effect) ?? [];
+    return BOLT_LINES.has(slot.module.label) ? arena.cutZones(out) : out;
   }
 
   // Danger zones of the active effect. Their clock restarts whenever the active effect plays.
@@ -302,7 +310,7 @@ export function createRuntime(opts: RuntimeOptions) {
   function onEffectPlay(slot: EffectSlot) {
     if (slot !== active || !slot.effect) return;
     effectClock = 0;
-    zones = slot.module.telegraphs?.(slot.effect) ?? [];
+    zones = zonesOf(slot, slot.effect);
     telegraphs.set(zones);
     hooks.played?.(slot);
   }

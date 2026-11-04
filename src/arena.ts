@@ -3,6 +3,7 @@ import { CASTER_POS, Enemy, createCaster, createGround } from './effects/common'
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
 import { yawTo } from './effects/targeting';
 import { blocksSight, contains, firstSurface, pushOut, steer, type Obstacle } from './obstacles';
+import type { TelegraphSpec } from './effects/telegraph';
 import { Navigator, type NavStep } from './nav';
 import { StatusSet, STATUS_COLOR, STATUS_WORD, BLIND_RADIUS, BUFF_COLOR, BUFF_WORD, type BuffKind, type StatusKind } from './effects/status';
 import { StatusFx, StatusFxPool } from './effects/parts/status';
@@ -743,6 +744,25 @@ export class Arena {
     // Something standing inside an obstacle (the unit that carries a placed crystal's HP) is seen when its obstacle is.
     const home = this.obstacles.filter((o) => contains(o, b.x, b.z));
     return !blocksSight(a, b, home.length ? this.obstacles.filter((o) => !home.includes(o)) : this.obstacles);
+  }
+
+  /**
+   * How far along from `a` to `b` (0..1, 1 = clear) a bolt gets before cover stops it: the same two tests a flying bolt
+   * makes (`world.blocked`, `world.surface`), so the aim strip ends where the bolt will.
+   */
+  coverStop(a: { x: number; z: number }, b: { x: number; z: number }) {
+    if (!this.obstacles || !blocksSight(a, b, this.obstacles)) return 1;
+    return firstSurface(a, b, this.obstacles)?.t ?? 1;
+  }
+
+  /** `zones` with each line ended where cover stops a bolt flown along it. The shapes may be an effect's own, so cut ones are copies. */
+  cutZones(zones: TelegraphSpec[]): TelegraphSpec[] {
+    return zones.map((z) => {
+      if (z.shape.kind !== 'line') return z;
+      const { x1, z1, x2, z2 } = z.shape;
+      const t = this.coverStop({ x: x1, z: z1 }, { x: x2, z: z2 });
+      return t >= 1 ? z : { ...z, shape: { ...z.shape, x2: x1 + (x2 - x1) * t, z2: z1 + (z2 - z1) * t } };
+    });
   }
 
   /**

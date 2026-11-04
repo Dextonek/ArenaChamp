@@ -374,7 +374,7 @@ export const voidKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'void black hole', name: 'Black Hole', range: 8, cooldown: 24, cc: true, aim: 'line',
+      key: 'R', label: 'void black hole', name: 'Black Hole', range: 8, cooldown: 24, cc: true, aim: 'line', overCover: true,
       blurb: 'A black hole crawls 8 m down his aim for 4 s, pulling enemies within 5 m. Touching its core deals 105 and stuns 1 s, once. Recast: it collapses at once for 85 within 3 m, after a 0.5 s warning.',
       icon(g, s) {
         iconGround(g, s);

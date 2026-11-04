@@ -151,7 +151,7 @@ export const masonKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'the shove', name: 'The Shove', range: 8, cooldown: 7, aim: 'line',
+      key: 'W', label: 'the shove', name: 'The Shove', range: 8, cooldown: 7, aim: 'line', overCover: true,
       blurb: 'Needs Gerald within 3 m. He slides 8 m along your aim at 8 m/s: 70 damage to the first enemy he touches, who is carried along. Stopped by a wall with them: stunned 0.9 s.',
       icon(g, s) {
         ground(g, s);
@@ -214,7 +214,7 @@ export const masonKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'gerald no', name: 'Gerald, No!', range: 10, cooldown: 24, aim: 'line',
+      key: 'R', label: 'gerald no', name: 'Gerald, No!', range: 10, cooldown: 24, aim: 'line', overCover: true,
       blurb: 'Needs Gerald. He topples along your aim: a 10 m shadow for 1.0 s, then 150 damage to anyone in it. He breaks into rubble that slows for 3 s, and you have no pillar left.',
       icon(g, s) {
         ground(g, s);

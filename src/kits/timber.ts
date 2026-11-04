@@ -262,7 +262,7 @@ export const timberKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'timber call', name: 'TIMBER!', range: 10, cooldown: 24, aim: 'line',
+      key: 'R', label: 'timber call', name: 'TIMBER!', range: 10, cooldown: 24, aim: 'line', overCover: true,
       blurb: 'Five trees grow in a row along the aim, 2 m apart: real cover. Recast within 4 s: he swings and they fall like dominoes along the row, 90 on whoever lies in the way (3 hits at most). Without it they fall harmlessly after 8 s.',
       icon(g, s) {
         ground(g, s);

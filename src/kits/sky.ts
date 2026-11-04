@@ -218,7 +218,7 @@ export const skyKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'feather step', name: 'Feather Step', range: 4, cooldown: 7, aim: 'line', dash: true, parry: true,
+      key: 'E', label: 'feather step', name: 'Feather Step', range: 4, cooldown: 7, aim: 'line', overCover: true, dash: true, parry: true,
       blurb: 'A quick 4 m step in any direction. Two charges (one back every 7 s), shown as pips round him. A dash: it gives a Gust and resets his basic attack.',
       icon(g, s) {
         iconGround(g, s);

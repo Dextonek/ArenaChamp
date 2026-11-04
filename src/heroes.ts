@@ -82,6 +82,11 @@ export interface HeroSpell {
   aim?: 'line' | 'arc';
   /** A bank shot: with `aim: 'line'`, the aim strip stops at the wall and draws the first bounce (Opaline, Silvane). */
   bank?: true;
+  /**
+   * With `aim: 'line'`: this spell does not stop at cover (a dash, a falling pillar, a row of trees), so its aim strip and
+   * cast strip run on past a wall. Every other line skillshot is a bolt, and both strips end where cover stops it.
+   */
+  overCover?: true;
   /** A buff the hero gives itself when it casts this (see `BuffKind`). */
   buff?: { kind: BuffKind; amount: number; seconds: number };
   /** A debuff every hit of this spell puts on what it hits. */

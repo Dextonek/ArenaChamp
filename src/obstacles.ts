@@ -239,9 +239,12 @@ export function sweepHit(from: THREE.Vector3, to: THREE.Vector3, radius: number,
 }
 
 /** True when an obstacle stands between `a` and `b` (ground plane): no line of sight. */
-export function blocksSight(a: THREE.Vector3, b: THREE.Vector3, obstacles: readonly Obstacle[]) {
+export function blocksSight(a: { x: number; z: number }, b: { x: number; z: number }, obstacles: readonly Obstacle[]) {
   return obstacles.some((o) => segDist(a.x, a.z, b.x, b.z, o.ax, o.az, o.bx, o.bz) < o.r * 0.9);
 }
+
+/** Whether a spell's aim strip and cast strip end at cover: line skillshots are bolts, unless `overCover`. A bank shot draws its own bounce. */
+export const stopsAtCover = (s: { aim?: string; overCover?: true; bank?: true }) => s.aim === 'line' && !s.overCover && !s.bank;
 
 /** Stone meshes for the obstacles: pillars with a gold band and cap, low walls with a gold top edge. */
 export function buildObstacleMeshes(obstacles: readonly Obstacle[]) {

@@ -10,7 +10,7 @@ import { traitFor, type TraitRuntime } from './traits';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
-import { bankPath } from './obstacles';
+import { bankPath, stopsAtCover } from './obstacles';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -997,12 +997,16 @@ export class HeroMode implements TouchTarget {
       if (d.lengthSq() < 1e-4) d.set(Math.sin(this.host.arena.caster.group.rotation.y), 0, Math.cos(this.host.arena.caster.group.rotation.y));
       d.normalize();
       const width = Math.max(0.3, (spec?.radius ?? 0.4) * 2);
-      const tip = Math.min(1.4, width * 1.5 + 0.5);
+      // Cover stops a bolt: the strip and its arrow end at the wall, in the pale foil colour.
+      const stop = stopsAtCover(spell) ? this.host.arena.coverStop(hero, { x: hero.x + d.x * spell.range, z: hero.z + d.z * spell.range }) : 1;
+      const reach = spell.range * stop;
+      this.tintStrip(stop < 1);
+      const tip = Math.min(1.4, width * 1.5 + 0.5, reach);
       const turn = Math.atan2(-d.x, -d.z);
       this.aimLine.position.set(hero.x, 0.055, hero.z);
       this.aimLine.rotation.set(-Math.PI / 2, 0, turn);
-      this.aimLine.scale.set(width, Math.max(0.01, spell.range - tip), 1);
-      this.aimTip.position.set(hero.x + d.x * (spell.range - tip), 0.056, hero.z + d.z * (spell.range - tip));
+      this.aimLine.scale.set(width, Math.max(0.01, reach - tip), 1);
+      this.aimTip.position.set(hero.x + d.x * (reach - tip), 0.056, hero.z + d.z * (reach - tip));
       this.aimTip.rotation.set(-Math.PI / 2, 0, turn);
       this.aimTip.scale.set(width + 0.7, tip, 1);
       // A bank shot: the strip ends at the wall and a second one shows the first bounce.
@@ -1020,7 +1024,10 @@ export class HeroMode implements TouchTarget {
     } else if (this.aimLine.visible && spell) {
       const to = this.hovered ? this.hovered.group.position : this.cursor;
       const end = clampToRange(hero, to, spell.range);
-      const len = Math.max(0.01, flatDist(hero, end));
+      // The strip ends at the cover in the way, unless the enemy itself is in sight (a unit standing in its own crystal is).
+      const stop = this.hovered && this.host.arena.lineOfSight(hero, to) ? 1 : this.host.arena.coverStop(hero, end);
+      this.tintStrip(stop < 1);
+      const len = Math.max(0.01, flatDist(hero, end) * stop);
       this.aimLine.position.set(hero.x, 0.055, hero.z);
       // Rx(-90°)·Rz(θ) takes local +Y to (-sin θ, 0, -cos θ): solve for the direction to `end`.
       this.aimLine.rotation.set(-Math.PI / 2, 0, Math.atan2(-(end.x - hero.x), -(end.z - hero.z)));
@@ -1049,6 +1056,12 @@ export class HeroMode implements TouchTarget {
     this.moveMarker.visible = this.moveMarkerT < 1;
     this.moveMarker.scale.setScalar(1.4 - this.moveMarkerT * 0.8);
     (this.moveMarker.material as THREE.MeshBasicMaterial).opacity = 0.9 * (1 - this.moveMarkerT);
+  }
+
+  /** The aim strip's colour: the kit's accent, or the pale foil when cover cuts it. */
+  private tintStrip(cut: boolean) {
+    const c = cut ? this.kit.foil : this.kit.accent;
+    for (const m of [this.aimLine, this.aimTip]) (m.material as THREE.MeshBasicMaterial).color.set(c);
   }
 
   /** Writes the arc strip: a ribbon of `width` along the arc from `hero` to `end`, with the arrow head at its end. */
