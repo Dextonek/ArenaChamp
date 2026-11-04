@@ -351,6 +351,7 @@ export class Arena {
       addObstacle: (o, seconds) => this.addObstacle(o, seconds),
       confine: (x, z, r, seconds) => this.confine(x, z, r, seconds),
       enemies: () => this.liveFoes().map((f) => f.figure),
+      doors: () => this.projectiles.doors,
       removeObstacle: (o) => this.removeObstacle(o),
       obstacles: () => this.obstacles ?? [],
       carry: (target, delta) => this.carryFigure(target, delta),
@@ -634,6 +635,7 @@ export class Arena {
     for (const t of this.temps) this.removeObstacle(t.o);
     this.temps = [];
     this.confines.length = 0;
+    this.projectiles.doors.length = 0;
   }
 
   private tickTemps(dt: number) {
@@ -827,6 +829,7 @@ export class Arena {
       addObstacle: (ob, seconds) => this.addObstacle(ob, seconds),
       confine: (x, z, r, seconds) => this.confine(x, z, r, seconds),
       enemies: () => [...new Set([...o.targets, this.caster])],
+      doors: () => this.projectiles.doors,
       removeObstacle: (ob) => this.removeObstacle(ob),
       obstacles: () => this.obstacles ?? [],
       carry: (target, delta) => this.carryFigure(target, delta),

@@ -105,6 +105,8 @@ export interface CastContext {
    * Call it at the cast moment; re-check enemy positions against the returned spot when the dash lands.
    */
   moveCaster?(to: THREE.Vector3, seconds: number): THREE.Vector3;
+  /** The door pairs bolts pass through (Wick): push yours when it stands, remove it when it ends. A new round clears them. */
+  doors?(): import('./projectile').BoltDoor[];
   /**
    * Fires a skillshot (see `projectile.ts`): a bolt that flies from `from` along `dir` and hits the first enemy it
    * touches, dodged by stepping off the line. The arena ticks it; follow the returned handle (`pos`, `dir`, `alive`,

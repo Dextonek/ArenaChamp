@@ -583,6 +583,12 @@ export class Duel {
         if (this.net || !this.foe) return;
         arena.moveFoe(this.foe, new THREE.Vector3(dx, 0, dz), true);
       },
+      carrySelf: (dx, dz) => {
+        const me = arena.caster.group.position;
+        me.x += dx;
+        me.z += dz;
+        arena.keepInside(me);
+      },
     });
     this.oppRt = new TraitRuntime('opponent', traitFor(them.name), {
       self: () => this.foe ?? arena.caster,
@@ -647,6 +653,11 @@ export class Duel {
         me.x += dx;
         me.z += dz;
         arena.keepInside(me);
+      },
+      // Online this side's own client moves it; its moves arrive here.
+      carrySelf: (dx, dz) => {
+        if (this.net || !this.foe) return;
+        arena.moveFoe(this.foe, new THREE.Vector3(dx, 0, dz), true);
       },
     });
     // The channel of a cast (src/effects/channel.ts) ends the root of whoever cast it.

@@ -56,6 +56,7 @@ export interface TraitHost {
   hitEnemy(opts: HitOptions): void;
   /** Moves the enemy hero by this step now, where this screen decides it (a passive's drag). */
   carryEnemy?(dx: number, dz: number): void;
+  carrySelf?(dx: number, dz: number): void;
 }
 
 /**
@@ -187,6 +188,10 @@ export class TraitRuntime implements TraitView {
 
   carryEnemy(dx: number, dz: number) {
     this.host.carryEnemy?.(dx, dz);
+  }
+
+  carrySelf(dx: number, dz: number) {
+    this.host.carrySelf?.(dx, dz);
   }
 
   say(text: string, color = this.trait?.resource?.color ?? '#ffe7b0') {

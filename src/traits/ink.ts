@@ -1,3 +1,5 @@
+import { segDist } from '../obstacles';
+import { addGroundWiper } from './ground';
 import * as THREE from 'three';
 import { INK } from '../effects/parts/ink';
 import type { GroundMark, Trait } from './types';
@@ -398,3 +400,8 @@ export const inkTrait: Trait = {
     return n > 0 ? String(n) : '';
   },
 };
+
+addGroundWiper((owner, x, z, r) => {
+  const b = boards.get(owner);
+  if (b) b.strokes = b.strokes.filter((s) => segDist(x, z, x, z, s.ax, s.az, s.bx, s.bz) > r);
+});

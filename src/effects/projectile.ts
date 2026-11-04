@@ -122,6 +122,8 @@ export class Projectile {
   hits = 0;
   /** Times it has reflected off cover so far. */
   reflections = 0;
+  /** The door pair it just came through: it cannot go back until it is clear of both doors. */
+  doorLock: BoltDoor | null = null;
   /** Distance left before it ends (m). */
   rangeLeft: number;
   bounces: number;
@@ -157,6 +159,9 @@ export class Projectile {
     for (const cb of this.callbacks) cb(target, at, this);
   }
 }
+
+/** A pair of doors (Wick): a bolt of either side that flies into one comes out of the other, going the same way. */
+export interface BoltDoor { ax: number; az: number; bx: number; bz: number; r: number }
 
 /** What the bolts collide with and how a hit is delivered; the arena builds one per cast context. */
 export interface ProjectileWorld {
@@ -265,6 +270,8 @@ export class ProjectileSystem {
   readonly live: Projectile[] = [];
   /** Bolt walls standing now. */
   readonly walls: BoltWall[] = [];
+  /** Door pairs that stand now; effects add and remove theirs (`CastContext.doors`). */
+  readonly doors: BoltDoor[] = [];
   stats: Record<string, ProjectileStats> = {};
   private nextId = 1;
   /** Root bolts still flying or whose children do, to settle the `landed` / `missed` tally. */
@@ -353,6 +360,7 @@ export class ProjectileSystem {
     const turn = p.curve * (dist / p.speed);
     if (turn) turnDir(p.dir, turn / 2);
     const a = p.pos, b = this._v.copy(a).addScaledVector(p.dir, dist);
+    if (this.doors.length && this.throughDoor(p, a, b)) return;
     // Cover on the path: the bolt flies up to it and hits what it meets on the way, so a hero with its back to a wall, or a
     // unit standing in a placed crystal, is hit before the bolt stops.
     let cover: { nx: number; nz: number } | null = null;
@@ -437,6 +445,22 @@ export class ProjectileSystem {
       p.alive = false;
       if (p.opts.split?.at === 'end' && !p.splitDone) this.split(p);
     }
+  }
+
+  /** A door on the path a to b: the bolt comes out of the other one, this step. True when it went through. */
+  private throughDoor(p: Projectile, a: THREE.Vector3, b: THREE.Vector3) {
+    const lock = p.doorLock;
+    if (lock && (!this.doors.includes(lock) || (Math.hypot(a.x - lock.ax, a.z - lock.az) > lock.r + 0.3 && Math.hypot(a.x - lock.bx, a.z - lock.bz) > lock.r + 0.3))) p.doorLock = null;
+    for (const d of this.doors) {
+      if (p.doorLock === d) continue;
+      const inA = segmentTouch(a.x, a.z, b.x, b.z, d.ax, d.az).d <= d.r;
+      if (!inA && segmentTouch(a.x, a.z, b.x, b.z, d.bx, d.bz).d > d.r) continue;
+      p.pos.x = inA ? d.bx : d.ax;
+      p.pos.z = inA ? d.bz : d.az;
+      p.doorLock = d;
+      return true;
+    }
+    return false;
   }
 
   /** The first wall of the other side the path a to b meets, and where along it (0..1), or null. */

@@ -1,3 +1,4 @@
+import { addGroundWiper } from './ground';
 import * as THREE from 'three';
 import type { CastContext } from '../effects/targeting';
 import { Bloom, GROVE } from '../effects/parts/grove';
@@ -289,3 +290,8 @@ export const groveTrait: Trait = {
     return n > 0 ? String(n) : '';
   },
 };
+
+addGroundWiper((owner, x, z, r) => {
+  const g = gardens.get(owner);
+  if (g) g.flowers = g.flowers.filter((f) => Math.hypot(f.x - x, f.z - z) > r);
+});

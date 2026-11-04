@@ -1,3 +1,4 @@
+import { addGroundWiper } from './ground';
 import * as THREE from 'three';
 import { STORM, STORM_CSS } from '../effects/parts/storm';
 import type { GroundMark, Trait, TraitHit, TraitView } from './types';
@@ -302,3 +303,8 @@ export const stormTrait: Trait = {
   },
   badge: (t) => `${stormOf(t.self()).rods.length}/${ROD_MAX}`,
 };
+
+addGroundWiper((owner, x, z, r) => {
+  const s = stormStates.get(owner);
+  if (s) s.rods = s.rods.filter((rod) => Math.hypot(rod.x - x, rod.z - z) > r);
+});
