@@ -31,6 +31,8 @@ export interface DuelHost {
   setStage?(stage: ArenaStage | null): void;
   /** Ends every spell still on screen (main.ts `clearEffects`): a new round or a left duel starts clean. */
   clearEffects?(): void;
+  /** The outline: round this object, or off (null). */
+  outline?(object: THREE.Object3D | null): void;
 }
 
 /**
@@ -117,6 +119,8 @@ const DODGE_RADIUS = 1.6; // a hit still lands within this distance of where the
 const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
 const LEAD_MAX = 3; // a CPU level's lead never puts its aim more than this far (m) ahead of the player
 const ZONE_MARGIN = 0.35; // a zone dodge aims this far (m) past the edge of the zone it leaves
+const SIGHT_HOLD = 0.5; // having lost sight, an AI keeps walking round the cover this long after it sees again
+const STRAFE_LOOK = 0.9; // an AI does not strafe the way that would hide the other side within this far (m)
 const HAZARD_LOOK = 1.6; // an AI starts walking when a hazard will reach it within this many seconds
 const HAZARD_CLEAR = 3; // and walks to a spot no hazard reaches for this long
 const SUMMON_REACH = 10; // the AI casts a summon spell when the enemy is within this distance (m)
@@ -187,8 +191,8 @@ export class Duel {
   /** The foe figure's hit flash last frame: a jump means a new hit (flinch). */
   private foeFlash = 0;
   private think = 0;
-  private opponentAi = { strafe: 1, strafeT: 0 };
-  private playerAi = { strafe: -1, strafeT: 0 };
+  private opponentAi = { strafe: 1, strafeT: 0, closing: false, routed: false, hiddenT: 0 };
+  private playerAi = { strafe: -1, strafeT: 0, closing: false, routed: false, hiddenT: 0 };
   private playerThink = 0;
   /** Skillshot dodges: bolt id -> whether this side reacts, which way, and when it starts moving. */
   private opponentDodge = new Map<number, BoltDodge>();
@@ -205,6 +209,8 @@ export class Duel {
   private landsAfter = new Map<string, number>();
   /** Zone dodges (Hard, Master): the player's cast number -> whether the opponent reacts to it, and from when. */
   private zoneDodges = new Map<number, { react: boolean; at: number }>();
+  /** The mouse is on the other hero: it gets a red outline, as in League (the attack cursor is hero mode's). */
+  private hoverFoe = false;
   /** Arena hazards (src/arenas/hazards) in play duels and network duels. */
   hazardsOn = true;
   /** Also in 'run' duels. Off by default: balance runs (`_tourney`, `_ladder`) stay comparable. */
@@ -300,6 +306,7 @@ export class Duel {
       reach: () => (this.net ? 0 : this.oppRt?.attackReach() ?? 0),
       echo: () => (this.net ? 0 : this.oppRt?.attackEcho() ?? 0),
     });
+    host.heroMode.onHover = (enemy) => { this.hoverFoe = !!enemy && enemy === this.foe; };
     this.hazardWorld = {
       camera: arena.camera,
       obstacles: () => arena.obstacles ?? [],
@@ -672,6 +679,7 @@ export class Duel {
     this.on = false;
     this.round++;
     this.host.clearEffects?.();
+    this.host.outline?.(null);
     this.hazard?.dispose();
     this.hazard = null;
     arena.projectiles.clear();
@@ -947,6 +955,7 @@ export class Duel {
     this.zones.update(this.zoneClock);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
     this.updateBanner(dt);
+    this.host.outline?.(this.hoverFoe && !this.over ? this.figure.shown : null);
     if (this.hazard) {
       // The fight clock runs only while heroes can act: not in the countdown, not after the round.
       const live = !this.over && this.countdown < 0 && !hm.locked;
@@ -1074,7 +1083,8 @@ export class Duel {
       return;
     }
     const move = this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
-    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), true);
+    // A planned route already clears the cover: no wall slide on it.
+    if (move.lengthSq() > 0) this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), !this.opponentAi.routed);
     this.face(foe, me);
   }
 
@@ -1136,9 +1146,13 @@ export class Duel {
    * (no line of sight): close in to half that distance, so the strafe comes round the cover. A melee kit closes to
    * about 2 m instead, never backs off, strafes only a little, and so keeps chasing a target that retreats.
    */
-  private steer(st: { strafe: number; strafeT: number }, kit: HeroKit, at: THREE.Vector3, other: THREE.Vector3, dt: number, blocked = false, foeSide?: SummonSide, reach = Infinity) {
+  private steer(st: { strafe: number; strafeT: number; closing?: boolean; routed?: boolean; hiddenT?: number }, kit: HeroKit, at: THREE.Vector3, other: THREE.Vector3, dt: number, blocked = false, foeSide?: SummonSide, reach = Infinity) {
     const d = flat(at, other);
     const melee = !!kit.melee;
+    // Sight lost: it stays "hidden" a moment after it comes back, or the strafe would walk it behind the corner again and
+    // it would dance there, one step round, one step back.
+    st.hiddenT = blocked ? SIGHT_HOLD : Math.max(0, (st.hiddenT ?? 0) - dt);
+    blocked = st.hiddenT > 0;
     // A ranged kit holds ~70% of Q's range, but no farther than its basic attack reaches (`reach`).
     const want = melee ? MELEE_GAP : Math.min(kit.spells[0].range * (blocked ? 0.35 : 0.7), reach - 0.6);
     const to = new THREE.Vector3(other.x - at.x, 0, other.z - at.z);
@@ -1146,15 +1160,25 @@ export class Duel {
     st.strafeT -= dt;
     if (st.strafeT <= 0) { st.strafe = -st.strafe; st.strafeT = 1.5 + Math.random() * 2; }
     const move = new THREE.Vector3();
-    const closing = d > want + (melee ? 0.3 : 1) || (blocked && d > 1.5);
+    // Closing in starts past the far edge of the band and goes on to its near edge: one exact distance would flip it
+    // between walking in and strafing on every frame.
+    const band = melee ? 0.3 : 1;
+    if (d > want + band || (blocked && d > 1.5)) st.closing = true;
+    else if (d <= want + band * 0.4 || blocked) st.closing = false;
+    const closing = !!st.closing;
     // Cover in the way: the planned way round it (src/nav.ts), without the strafe, which would walk it off the route.
-    if (closing && !this.host.arena.pathClear(at, other)) {
+    st.routed = closing && !this.host.arena.pathClear(at, other);
+    if (st.routed) {
       const p = this.host.arena.route(st, at, other).point;
       move.set(p.x - at.x, 0, p.z - at.z);
     } else {
       if (closing) move.add(to);
       else if (!melee && d < want - 2) move.sub(to);
-      move.addScaledVector(new THREE.Vector3(-to.z, 0, to.x), (melee ? 0.3 : 0.8) * st.strafe);
+      // Strafe the way that keeps the other side in sight; if neither does, not at all.
+      const arena = this.host.arena;
+      const seesFrom = (side: number) => arena.lineOfSight(new THREE.Vector3(at.x - to.z * side * STRAFE_LOOK, 0, at.z + to.x * side * STRAFE_LOOK), other);
+      if (!seesFrom(st.strafe) && seesFrom(-st.strafe)) { st.strafe = -st.strafe; st.strafeT = 1.5 + Math.random() * 2; }
+      if (seesFrom(st.strafe)) move.addScaledVector(new THREE.Vector3(-to.z, 0, to.x), (melee ? 0.3 : 0.8) * st.strafe);
     }
     // Step away from enemy melee units in contact, so they do not hit for free.
     if (foeSide && !melee) {
@@ -1225,7 +1249,7 @@ export class Duel {
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
     const move = this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
-    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_NORMAL) * st.speedMul * dt));
+    if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_NORMAL) * st.speedMul * dt), Infinity, !this.playerAi.routed);
   }
 
   /**

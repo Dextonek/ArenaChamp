@@ -49,11 +49,12 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 
 | Input | Action |
 |---|---|
-| Left click on ground (not aiming) | walk there; clears a pending cast; shows a shrinking marker |
+| Right click on ground (not aiming) | walk there, as in League; clears a pending cast; shows a shrinking green marker. Held, the hero keeps walking at the cursor. Left click does the same |
+| Mouse on an enemy | a red contour round the enemy hero (`Duel.onHover`, the runtime's `OutlinePass`; no cost unless shown) and a sword cursor. "On" means the mouse ray passes within 0.85 m of the figure's upright body, not a ground point near it |
 | `Q` `W` `E` `R` or click a HUD slot | start aiming that spell; same key again cancels. On cooldown: toast "is on cooldown". Non-targeted effect: toast "not a targeted effect". **Self-mode spells cast immediately** |
 | Left click while aiming | confirm the cast |
-| Right click or `Esc` while aiming | cancel (right click while not aiming also orders a move) |
-| Right click on an enemy or summoned unit (not aiming) | basic attack: walk into range and keep attacking it until another order ([attacks.md](attacks.md)) |
+| Right click or `Esc` while aiming | cancel |
+| Right click on an enemy or summoned unit (not aiming) | basic attack: walk into range and keep attacking it until another order ([attacks.md](attacks.md)); a red marker under it |
 | `A`, then left click | attack-move: on an enemy, attack it; on the ground, walk there and attack the first enemy in range |
 | `S` | stop: no walk, no attack, no pending cast |
 | Q W E R on a hold spell (traits: Kaia Q, Sefu W) | aim as usual; the longer you aim before the click, the stronger the cast (full after the hero's hold time) |

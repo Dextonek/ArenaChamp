@@ -112,6 +112,8 @@ The lead aims where the player will be when the spell lands, from the spell's im
 
 Measured 2026-11-03 against the Normal autopilot with [pipeline/tools/duel-ladder.js](../../pipeline/tools/duel-ladder.js) (pairs Lyra–Brannoc, Vex–Kaia, Mortis–Isolde, each both ways; Normal, Hard and Master also Zephyr–Sirix and Marin–Cantor): the CPU won 2% at Novice (48 fights), 25% at Easy (48), 52% at Normal (80), 63% at Hard (80) and 85% at Master (80). Noise is about ±7 points at 48 fights. Lyra against the six heroes of her balance run at Normal: 56% (48 fights; 54% in that run), so Normal plays as before.
 
+Measured again 2026-11-04, after the CPU's walking changed (routes, the sliding rewrite, no dancing at corners; see [Walking round cover](#walking-round-cover-navts)), on all five pairs, 50 fights per level: 0% at Novice, 26% at Easy, 46% at Normal, 68% at Hard, 76% at Master, no timeouts. The kits moved with it, because melee heroes now reach their targets: against the same six heroes, Lyra 43% (96 fights; was 54%), Zephyr 73% (48 fights; was 54%), Vex 56% (48 fights; was 58%). Noise is about ±14 points at 48 fights. The kit designs' win rates predate this.
+
 ### Walking round cover ([nav.ts](../../src/nav.ts))
 
 `Navigator` plans routes: the graph is a ring of points round each obstacle capsule, grown by the body's radius (0.5 m), linked wherever a body can walk straight between two of them, and a plan is the shortest way through it (A*). The graph is rebuilt when the obstacle list changes (a wall falls, a spell raises one).
@@ -119,13 +121,36 @@ Measured 2026-11-03 against the Normal autopilot with [pipeline/tools/duel-ladde
 | Who | How it walks |
 |---|---|
 | Hero, click or tap (also walking into range and chasing an attack target) | `Arena.route` for the next point, `walk(..., slide = false)`. An order inside cover ends at its edge on the hero's side. If the hero makes next to no way for 0.6 s, the order is dropped |
-| Hero, stick | Straight where the stick points, sliding along cover (`steer` in obstacles.ts): a planned route would fight the thumb |
+| Hero, stick | Straight where the stick points, sliding along cover (`steer` in obstacles.ts): a planned route would fight the thumb. The thumb back in the middle of the stick stops the hero |
 | CPU and autopilot | `Duel.steer`: on a route, without the strafe, when closing in and a body could not walk straight there; otherwise as before |
 | Summoned units | On a route when walking toward their target |
+
+Sliding (`steer`): the part of the walk that runs along the obstacle's edge, the way the walker pushes, never against it. Pressing nearly straight at an obstacle (under 35% of the walk left along it), the walker goes round by the nearer end at 0.7 speed and keeps that side until it leaves or turns away. The turn comes at contact, not before.
+
+The CPU also has two rules against dancing at corners: closing in runs across a band of distance rather than from one exact distance, and after losing sight it stays "hidden" for 0.5 s after sight returns. It does not strafe the way that would hide the other hero within 0.9 m.
+
+The drawn body turns at rate 30 per second (`HeroFigure.shownYaw`, about 0.08 s for 90% of a turn), as in League; walking starts at once and the game reads the facing from the walker, so this is only the look.
+
+[pipeline/tools/walk-test.js](../../pipeline/tools/walk-test.js) measures all this per seed: `_walk.start({ suites: ['click', 'stick', 'cover', 'deadzone', 'chase', 'reroute', 'ai'], seeds: [1, 2, 3] })`, then `_walk.table()`.
 
 A route is kept per walker: it is planned again when the goal has moved 0.6 m or the obstacles changed, and another way replaces it only if that is over 1 m shorter, so a chase does not flip between the two sides of a pillar.
 
 Measured 2026-11-03 on 200 clicked walks over the five arenas, the same routes before and after: walks with three or more sharp turns (over 69°) 81 → 0; clicks on cover that end 0 of 40 → 40 of 40 (before, the hero pushed against the cover forever); clicks on open ground all arrived both times; path against a straight line 1.05× → 1.02×. Normal against the Normal autopilot afterward: 52% over 64 fights, no timeouts.
+
+Measured again 2026-11-04 with walk-test.js after the sliding rewrite, the same seeds before and after (seeds 1-3; after also held on seeds 4 and 5):
+
+| Suite | Measure | Before | After |
+|---|---|---|---|
+| Stick, 600 walks | double sharp turns | 289 | 0 |
+| | frames moving against the stick | 272 | 0 |
+| Stick pressed at cover, about 7,200 walks | double sharp turns | 5,354 | 39 |
+| | frames moving against the stick | 3,957 | 0 |
+| Thumb back at the middle of the stick | stops, of 150 | 0 | 150 |
+| 90 AI fights | double sharp turns | 11,252 | 2,215 (mostly knockbacks, pulls and stopping to cast) |
+| Clicks | largest facing change in one frame | 3.14 rad | 1.23 rad |
+| Clicks, chases, cover raised across a walk | arrivals and sharp turns | all arrived | unchanged |
+
+The price: along a wall the stick now gives the part of the push that runs along it, so the stick's average way made fell from 0.85 to 0.82 of the full speed.
 
 ### The look ([parts/bolt.ts](../../src/effects/parts/bolt.ts))
 

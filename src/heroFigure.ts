@@ -111,6 +111,9 @@ const pulse = (x: number, hw: number) => {
 /** A damped pendulum per sway chain: pitch (swings forward / back) and roll (side to side). */
 interface Spring { p: number; r: number; vp: number; vr: number }
 
+/** How fast the drawn body turns to the walker's facing (per second: about 0.08 s for 90% of a turn). */
+const TURN_RATE = 30;
+
 /**
  * A hero's rigged figure standing in for a capsule figure (the player's caster in hero mode, the opponent in a duel).
  * `setModel(url, at, kit)` swaps the model (cached per url); `follow(...)` every frame places it and poses it,
@@ -141,6 +144,8 @@ export class HeroFigure {
   private accS = 0;
   private lastYaw = 0;
   private yawRate = 0;
+  /** The facing the body shows: it follows the walker's facing at `TURN_RATE`. */
+  private shownYaw = NaN;
   private moving = false;
   private walk = 0;
   private walkPhase = 0;
@@ -181,6 +186,7 @@ export class HeroFigure {
   /** Shows the model at `url` (undefined hides the figure), styled after `kit`. Returns whether one is shown. */
   setModel(url: string | undefined, at?: THREE.Vector3, kit?: HeroKit) {
     for (const f of this.figures.values()) f.root.visible = false;
+    this.shownYaw = NaN;
     this.figure = null;
     if (url) {
       let f = this.figures.get(url);
@@ -207,6 +213,11 @@ export class HeroFigure {
   /** A spell was cast: plays `style`'s wind-up and strike over `seconds` (the cast's own root). */
   cast(style: CastStyle, seconds: number, big = false) {
     this.castNow = { style, t: 0, dur: Math.max(0.35, Math.min(seconds, 2.5)), big };
+  }
+
+  /** The model shown now (an outline goes round it), if any. */
+  get shown(): THREE.Object3D | null {
+    return this.figure?.root ?? null;
   }
 
   /** A hit landed on this hero: a flinch away from `from` and a flash in `tint`; `strength` 0..1. */
@@ -242,8 +253,12 @@ export class HeroFigure {
     }
     dt = Math.min(dt, 0.05);
     this.clock += dt;
-    this.track(dt, pos, yaw);
-    f.root.rotation.y = yaw;
+    // Walking starts at once; the body turns very fast but not in one frame, as in League. Only the look: the game
+    // reads the facing from the walker.
+    if (Number.isNaN(this.shownYaw)) this.shownYaw = yaw;
+    else this.shownYaw += Math.atan2(Math.sin(yaw - this.shownYaw), Math.cos(yaw - this.shownYaw)) * ease(dt, TURN_RATE);
+    this.track(dt, pos, this.shownYaw);
+    f.root.rotation.y = this.shownYaw;
     this.flashV = Math.max(0, this.flashV - dt * 3.2);
     f.setFlash(this.flashV, this.flashTint);
     if (this.dying >= 0) {

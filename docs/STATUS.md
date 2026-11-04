@@ -7,6 +7,7 @@ Everything below is committed on `feat/particle-editor` unless marked. The 2026-
 said "uncommitted" now name the commit that holds them.
 
 **Commits since 2026-10-30, newest first**
+- `ae9e4cb` Arena events and real pathfinding round cover (entry below).
 - `ebfaebb` Play vs CPU with five levels, Novice to Master (entry below).
 - `0a0279a` The first five v4 kits: Lyra, Vex, Marin, Mortis, Zephyr ("v4 opener done" below;
   [kits-v4.md](../pipeline/designs/kits-v4.md)).
@@ -15,15 +16,37 @@ said "uncommitted" now name the commit that holds them.
 - `0ed55d1` Arena remake, breakable walls, sculpted v2 heroes, phone play.
 - `c7f2039` Hero identity (traits and passives), kit identity v2, the motion pass.
 
-- **Pushed:** GitHub `main` is at `c7f2039`; the five commits after it are local only.
+- **Pushed:** GitHub `main` is at `ae9e4cb` (2026-11-04, `git push origin feat/particle-editor:main`).
 - **Live:** the 2026-11-02 deploy of the working tree (worker `79de928c`), with the arena remake and the v2 heroes
-  behind `?figs`. Kits v3, the tool/game split, v4 and Play vs CPU are not live.
-- **In progress:** nothing running.
+  behind `?figs`. Kits v3, the tool/game split, v4, Play vs CPU, the arena events and pathfinding are not live.
+- **Blocked:** the deploy of `ae9e4cb`. The user asked for it ("build it on pages"), but this session's permission
+  check refused `npm run cf:deploy`. The user has to run it (see "Waiting on you").
+- **In progress:** nothing running. Uncommitted: League walking, the hover outline, this STATUS.
 - **Next:** v4 batch 2 in the [kits-v4.md](../pipeline/designs/kits-v4.md) build order, led by its engine pieces;
   Nyx's stealth last.
 
+**Walking and controls like League, hover outline (2026-11-04, user: "do it like league of legends", "make like outline
+on enemy hero when u hover mouse over the hero", "retest it multiple times"; uncommitted, not deployed)**
+- Sliding (`steer` in `src/obstacles.ts`) rewritten: the part of the push along the edge, never against it; pressing
+  straight at cover goes round by the nearer end and keeps that side. The stick's dead zone now stops the hero (it kept
+  walking the old way). The CPU no longer dances at corners (`Duel.steer`).
+- Like League: hold the right button to keep walking at the cursor; a right-click counts as "on the enemy" only when the
+  mouse is on its body (it used to be anything within 2.2 m on the ground); green marker for a walk, red for an attack;
+  the body turns very fast instead of snapping. Left click still walks too.
+- Hover: a red contour round the enemy hero (`OutlinePass` in `src/runtime.ts`, off unless shown) and a red sword cursor.
+  A first try with grown mesh copies left patches inside the figures. Units get the cursor, not the contour.
+- Tested: `pipeline/tools/walk-test.js`, new, seven suites over five arenas and five seeds, before-and-after table in
+  [mechanics.md](architecture/mechanics.md#walking-round-cover-navts). Real right-clicks and hover in the game page;
+  hold, and the touch stick at phone size, with pointer events dispatched in the page (not a finger).
+- Ladder after the walking change, 50 fights per level: 0 / 26 / 46 / 68 / 76 %.
+- **To decide:** hero balance moved, since melee heroes now reach their targets: Lyra 43% (96 fights, was 54%), Zephyr
+  73% (48 fights, was 54%), Vex 56% (48 fights, was 58%). No hero numbers changed; a full `_tourney` is the next check.
+- Not found: in 2 of 5 AI runs a figure stood inside cover for 22-38 frames of about 70,000. It did not come back in 30
+  more fights watching for it; the seven earlier runs had 0-2 frames.
+- Not checked: a real phone; two players online; a person playing it.
+
 **Arena events and pathfinding (2026-11-04, user: "make like some effect for arenas like ray-laser" and "fix
-pathfinding", then "push it and build it"; the commit and deploy are recorded in the list above)**
+pathfinding", then "push it and build it"; committed `ae9e4cb` and pushed; the deploy is waiting, see "Blocked" above)**
 - Arena events: every arena has its own timed event (`src/arenas/hazards/`, table in
   [arenas.md](architecture/arenas.md#arena-events-hazards)): the temple's sweeping rays (walls and columns stop them),
   ice rifts, the lava vent and bombs, spore pods, marching lightning. First at 8 s, then every 9-13 s after the last;
@@ -1092,11 +1115,12 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 
 ## Waiting on you
 - Nothing blocking (2026-11-03). Push and deploy happen only when you ask:
-  - Push: `git push origin feat/particle-editor:main`. GitHub `main` is at `c7f2039`; `0ed55d1`, `af47bbe`,
-    `c17cfc2`, `0a0279a` and `ebfaebb` are local only. All commits are authored as Dextonek (old history in
-    `refs/backup/before-dextonek`).
+  - Push: `git push origin feat/particle-editor:main`. GitHub `main` is at `ae9e4cb`. All commits are authored as
+    Dextonek (old history in `refs/backup/before-dextonek`).
   - Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end). Live is the 2026-11-02 working
-    tree (worker `79de928c`); kits v3, the tool/game split, v4 and Play vs CPU are not live.
+    tree (worker `79de928c`); everything since `0ed55d1` is not live. **Asked for on 2026-11-04 and blocked for this
+    session: run this one yourself.** The worker is the project's Cloudflare deploy: plain Pages cannot run the game
+    server (multiplayer.md).
 - Play online: https://arena-of-kits.arenachamp.workers.dev in two browsers (online accounts start empty).
 - Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
 

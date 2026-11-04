@@ -29,8 +29,30 @@ const GREY_SLOT = 'grayscale(1) brightness(0.5)';
 const CAM_OFFSET = new THREE.Vector3(0, 15, 10.5);
 const ARC_SEGS = 24;
 const HOVER_PICK = TOUCH ? 3.2 : 2.2; // how close to the cursor an enemy counts as hovered (a fingertip is wider)
+const BODY_PICK = 0.85; // how close to a figure's upright body the mouse ray must pass for the mouse to be on it (m)
+const BODY_HEIGHT = 2.3;
+const MOVE_MARK = '#5dff9a'; // the order marker: green on the ground, red on an enemy
+const ATTACK_MARK = '#ff4a3a';
 
 export type Target = { enemy: Enemy } | { point: THREE.Vector3 };
+
+let swordCursor = '';
+/** The cursor on an enemy, as in League: a small red sword, drawn once. */
+function attackCursor() {
+  if (swordCursor) return swordCursor;
+  const c = document.createElement('canvas');
+  c.width = c.height = 32;
+  const g = c.getContext('2d')!;
+  g.lineCap = 'round';
+  for (const [color, width] of [['#2a0604', 7], ['#ff4a3a', 3.5]] as const) {
+    g.strokeStyle = color;
+    g.lineWidth = width;
+    g.beginPath(); g.moveTo(4, 4); g.lineTo(24, 24); g.stroke();
+    g.beginPath(); g.moveTo(17, 26); g.lineTo(26, 17); g.stroke();
+  }
+  swordCursor = `url(${c.toDataURL()}) 4 4, pointer`;
+  return swordCursor;
+}
 
 /**
  * A MOBA-style test mode for a hero kit: click the ground to walk there, Q/W/E/R to aim a spell (a range ring at
@@ -57,6 +79,13 @@ export class HeroMode implements TouchTarget {
   private mouse = new THREE.Vector2(2, 2);
   private cursor = new THREE.Vector3();
   private hovered: Enemy | null = null;
+  /** The enemy the mouse is on, aiming or not (src/duel.ts outlines it). */
+  private hoverFoe: Enemy | null = null;
+  private shownCursor = '';
+  /** A mouse button held since a walk order: the hero keeps walking at the cursor. */
+  private heldOrder = false;
+  /** The mouse came onto an enemy, or left it (null). */
+  onHover?: (enemy: Enemy | null) => void;
   private raycaster = new THREE.Raycaster();
   private plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
@@ -189,7 +218,7 @@ export class HeroMode implements TouchTarget {
     this.aimArc.frustumCulled = false;
     this.aimArc.visible = false;
     this.group.add(this.aimArc);
-    this.moveMarker = flat(new THREE.RingGeometry(0.3, 0.42, 32), kit.foil, 0.9);
+    this.moveMarker = flat(new THREE.RingGeometry(0.3, 0.42, 32), MOVE_MARK, 0.9);
     this.group.add(this.figure.group);
     this.group.visible = false;
 
@@ -220,18 +249,26 @@ export class HeroMode implements TouchTarget {
       if (e.button === 0) {
         if (this.aiming >= 0) this.confirm();
         else if (this.attackArmed) this.attackClick();
-        else this.order();
+        else {
+          this.order();
+          this.heldOrder = true;
+        }
       } else if (e.button === 2) {
         if (this.aiming >= 0) this.cancelAim();
         else if (this.attackArmed) this.disarm();
         else {
-          // MOBA right-click: on an enemy, attack it; on the ground, walk there.
-          const enemy = this.enemyNearCursor();
+          // As in League: right-click on an enemy attacks it; on the ground it walks, and held it keeps walking.
+          const enemy = this.enemyUnderMouse();
           if (enemy && this.attacksEnabled) this.attackOrder(enemy);
-          else this.order();
+          else {
+            this.order();
+            this.heldOrder = true;
+          }
         }
       }
     });
+    window.addEventListener('pointerup', () => { this.heldOrder = false; });
+    window.addEventListener('blur', () => { this.heldOrder = false; });
     dom.addEventListener('contextmenu', (e) => { if (this.enabled) e.preventDefault(); });
     dom.addEventListener('wheel', (e) => {
       if (!this.enabled) return;
@@ -336,7 +373,6 @@ export class HeroMode implements TouchTarget {
     this.attacker.reset();
     const color = (m: THREE.Mesh, c: string) => (m.material as THREE.MeshBasicMaterial).color.set(c);
     color(this.rangeRing, kit.foil);
-    color(this.moveMarker, kit.foil);
     for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.aimArc, this.hoverRing]) color(m, kit.accent);
     const shown = this.hud.style.display;
     this.hud.remove();
@@ -386,6 +422,7 @@ export class HeroMode implements TouchTarget {
 
     this.followCamera(hero, dt);
     if (!this.touchAiming) this.updateCursor();
+    if (!TOUCH) this.updateHover();
 
     if (this.locked) { this.pending = null; this.moveTo = null; this.clearAttack(); if (this.aiming >= 0) this.cancelAim(); }
     // The joystick: keep a walk order a step ahead in its direction (drops the attack, like a click). A cast that
@@ -393,6 +430,9 @@ export class HeroMode implements TouchTarget {
     if (this.steering && !this.pending && !this.locked && !this.spectate && !arena.isDashing(arena.caster)) {
       this.clearAttack();
       this.moveTo = hero.clone().addScaledVector(this.steering, 1.5);
+    }
+    if (this.heldOrder && !this.pending && this.aiming < 0 && !this.locked && !this.spectate && !arena.isDashing(arena.caster)) {
+      this.moveTo = this.cursor.clone();
     }
     this.attacker.update(dt);
     this.attackFx.update(dt);
@@ -443,7 +483,12 @@ export class HeroMode implements TouchTarget {
   }
 
   steer(dx: number, dy: number, push: number) {
-    if (!this.enabled || push < 0.15) return;
+    if (!this.enabled) return;
+    // The thumb back at the middle of the stick: stand still, not on in the old direction.
+    if (push < 0.15) {
+      this.stopSteer();
+      return;
+    }
     this.steering = this.screenToGround(dx, dy);
   }
 
@@ -569,7 +614,13 @@ export class HeroMode implements TouchTarget {
     this.pending = null;
     this.clearAttack();
     this.moveTo = this.cursor.clone();
-    this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
+    this.mark(this.cursor, MOVE_MARK);
+  }
+
+  /** The order marker at `at`. */
+  private mark(at: THREE.Vector3, color: string) {
+    this.moveMarker.position.set(at.x, 0.06, at.z);
+    (this.moveMarker.material as THREE.MeshBasicMaterial).color.set(color);
     this.moveMarkerT = 0;
   }
 
@@ -608,6 +659,7 @@ export class HeroMode implements TouchTarget {
     this.attackMove = null;
     this.attackTarget = enemy;
     this.host.arena.setTarget(enemy);
+    this.mark(enemy.group.position, ATTACK_MARK);
   }
 
   /** A left-click after A: attack the enemy under the cursor, else walk there attacking the first enemy in range. */
@@ -620,8 +672,7 @@ export class HeroMode implements TouchTarget {
     this.attackTarget = null;
     this.attackMove = this.cursor.clone();
     this.moveTo = this.cursor.clone();
-    this.moveMarker.position.set(this.cursor.x, 0.06, this.cursor.z);
-    this.moveMarkerT = 0;
+    this.mark(this.cursor, ATTACK_MARK);
   }
 
   /** S: stand still (drops the walk, the attack and a pending cast). */
@@ -811,6 +862,33 @@ export class HeroMode implements TouchTarget {
     return found;
   }
 
+  /** The live enemy whose upright body the mouse is on, if any: the mouse ray, not the ground point behind it. */
+  private enemyUnderMouse() {
+    const ray = this.raycaster.ray, foot = new THREE.Vector3(), head = new THREE.Vector3();
+    let best = BODY_PICK * BODY_PICK, found: Enemy | null = null;
+    for (const f of this.host.arena.liveFoes()) {
+      foot.set(f.pos.x, 0, f.pos.z);
+      head.set(f.pos.x, BODY_HEIGHT, f.pos.z);
+      const d = ray.distanceSqToSegment(foot, head);
+      if (d < best) { best = d; found = f.figure; }
+    }
+    return found;
+  }
+
+  /** Each frame: tells who the mouse is on (an outline, in the duel) and shows the attack cursor on an enemy. */
+  private updateHover() {
+    const on = this.spectate || this.locked ? null : this.enemyUnderMouse();
+    if (on !== this.hoverFoe) {
+      this.hoverFoe = on;
+      this.onHover?.(on);
+    }
+    const want = this.aiming >= 0 || this.attackArmed ? 'crosshair' : on ? attackCursor() : '';
+    if (want !== this.shownCursor) {
+      this.shownCursor = want;
+      this.host.dom.style.cursor = want;
+    }
+  }
+
   private targetPos(t: Target): THREE.Vector3 | null {
     if ('point' in t) return t.point;
     const live = this.host.arena.liveFoes().find((f) => f.figure === t.enemy);
@@ -954,7 +1032,7 @@ export class HeroMode implements TouchTarget {
     const names = document.createElement('div');
     names.innerHTML = `<div style="font:700 16px ui-serif,Georgia,serif;letter-spacing:0.5px">${kit.name}</div>` +
       `<div style="font:500 11px ui-sans-serif,system-ui;opacity:0.7">${kit.title}</div>` +
-      `<div style="margin-top:6px;font:500 10px ui-sans-serif,system-ui;opacity:0.55;line-height:1.4">click: move · Q W E R: aim<br>click: cast · right-click / Esc: cancel</div>`;
+      `<div style="margin-top:6px;font:500 10px ui-sans-serif,system-ui;opacity:0.55;line-height:1.4">right-click: walk / attack · Q W E R: aim<br>click: cast · right-click / Esc: cancel</div>`;
     if (this.host.nextKit) {
       portrait.style.cursor = 'pointer';
       portrait.title = 'next hero';

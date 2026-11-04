@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
@@ -218,6 +219,19 @@ export function createRuntime(opts: RuntimeOptions) {
   // ShaderPass clones its uniforms, and a cloned render-target texture no longer points at the target: re-link it.
   distortPass.uniforms.tDistort.value = distortTarget.texture;
   composer.addPass(distortPass);
+  // The red contour round the enemy the mouse is on. Off (no cost) unless something is outlined.
+  const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+  outlinePass.visibleEdgeColor.setRGB(1, 0.1, 0.06);
+  outlinePass.hiddenEdgeColor.setRGB(0.3, 0.03, 0.02);
+  outlinePass.edgeStrength = 3.5;
+  outlinePass.edgeThickness = 1;
+  outlinePass.enabled = false;
+  composer.addPass(outlinePass);
+  const outline = (object: THREE.Object3D | null) => {
+    if ((outlinePass.selectedObjects[0] ?? null) === object) return;
+    outlinePass.selectedObjects = object ? [object] : [];
+    outlinePass.enabled = !!object;
+  };
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 0.5, 0.2);
   composer.addPass(bloomPass);
   composer.addPass(new OutputPass());
@@ -445,6 +459,7 @@ export function createRuntime(opts: RuntimeOptions) {
 
   // --- Duel: the hero against an AI hero of another kit in a small ring (on top of hero mode) -----------------
   const duel = new Duel({
+    outline,
     arena,
     heroMode,
     kits: HERO_KITS,

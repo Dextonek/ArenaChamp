@@ -171,9 +171,8 @@ Every obstacle is a capsule on the ground (segment + radius; a pillar has zero l
 
 - **Collision:** `arena.keepInside` pushes positions out of them (`pushOut`, body clearance 0.5), so walking,
   knockback and network positions all respect them. `arena.walk` and `arena.moveFoe(…, slide = true)` (the AI) turn
-  the walk along an obstacle's edge instead of into it (`steer`; the side is chosen from where the hero stands
-  relative to the obstacle's middle, which stays stable; choosing by the walk direction alone flipped every frame
-  when walking straight at a wall).
+  the walk along an obstacle's edge instead of into it (`steer`: the part of the walk along the edge, and a kept side when pressing straight at it, see
+  [mechanics.md](mechanics.md#walking-round-cover-navts)).
 - **Line of sight:** `arena.lineOfSight(a, b)` is false when the segment a-b passes within 0.9 × an obstacle's radius
   (`blocksSight`). **A spell needs sight of its target to be cast**: an enemy spell needs sight of the enemy, a ground
   spell of the aimed spot; self spells need none. In hero mode a confirmed cast without sight shows "No line of

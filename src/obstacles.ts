@@ -58,18 +58,26 @@ export function pushOut(p: THREE.Vector3, obstacles: readonly Obstacle[], body =
   return p;
 }
 
+/** How far ahead (m) a walk looks for an obstacle in its way: next to nothing, so the turn comes at contact, not before. */
+const SLIDE_LOOK = 0.03;
+/** Below this share of the walk left along the edge, the walker is pressing nearly straight at the obstacle. */
+const HEAD_ON = 0.35;
+/** The least speed along an edge, as a share of the walk, so a shallow slide does not crawl. */
+const SLIDE_SPEED = 0.6;
+/** Pressing straight at an obstacle: which way round this walker goes, kept until it leaves or turns away. */
+const slideMemory = new WeakMap<THREE.Vector3, { o: Obstacle; side: number; dx: number; dz: number }>();
+
 /**
- * A walking direction that slides round an obstacle in the way instead of pushing into it: when the hero at `p`
- * is about to touch an obstacle it is walking toward, the direction turns along the obstacle's edge (the side
- * closer to where it was going). `dir` is a unit vector on the ground plane; returns a new unit vector.
- * Only an obstacle the straight walk would run into turns it, the nearest one: a gap between two obstacles that is
- * wide enough for the body is walked straight through (turning for both made the hero shuffle in place there).
- * `reach`: how far the walk still goes.
+ * Where a walk goes when an obstacle is in its way: the part of the walk that runs along the obstacle's edge, the way
+ * the walker is already pushing (never against it). Pressing nearly straight at it, the walker goes round at 0.7 of its
+ * speed, by the nearer end, and keeps that side until it leaves the obstacle or turns away (no flipping).
+ * Only the nearest obstacle the straight walk would run into counts, so a gap wide enough for the body is walked
+ * straight through. `dir` is a unit vector on the ground plane; `p` is the walker's own live position (it keys the
+ * memory); `reach`: how far the walk still goes. Returns a new vector of length 1 or less: multiply it by the step.
  */
 export function steer(p: THREE.Vector3, dir: THREE.Vector3, obstacles: readonly Obstacle[], body = 0.5, reach = Infinity) {
-  const out = dir.clone();
   // Look ahead no further than the walk goes: a goal right beside an obstacle is reached, not circled.
-  const look = Math.min(0.7, reach), ex = p.x + dir.x * look, ez = p.z + dir.z * look;
+  const look = Math.min(SLIDE_LOOK, reach), ex = p.x + dir.x * look, ez = p.z + dir.z * look;
   let hit: Obstacle | null = null, hitD = Infinity;
   for (const o of obstacles) {
     const c = closest(o, p.x, p.z);
@@ -80,21 +88,29 @@ export function steer(p: THREE.Vector3, dir: THREE.Vector3, obstacles: readonly 
     hit = o;
     hitD = d;
   }
-  if (hit) {
-    const o = hit;
-    const c = closest(o, p.x, p.z);
-    const nx = c.x - p.x, nz = c.z - p.z, d = Math.hypot(nx, nz);
-    // Tangent of the obstacle's edge, on the side of the obstacle's middle the hero already stands on (sideways
-    // of the walk). Choosing by the walk direction alone flips every frame when walking straight at it.
-    let tx = -nz / d, tz = nx / d;
-    const mx = p.x - (o.ax + o.bx) / 2, mz = p.z - (o.az + o.bz) / 2;
-    const along = mx * dir.x + mz * dir.z;
-    const lx = mx - along * dir.x, lz = mz - along * dir.z;
-    const side = tx * lx + tz * lz;
-    if (side < 0 || (Math.abs(side) < 1e-4 && tx * out.x + tz * out.z < 0)) { tx = -tx; tz = -tz; }
-    out.set(tx, 0, tz);
+  if (!hit) {
+    slideMemory.delete(p);
+    return dir.clone();
   }
-  return out.normalize();
+  const c = closest(hit, p.x, p.z);
+  const d = Math.hypot(c.x - p.x, c.z - p.z), nx = (c.x - p.x) / d, nz = (c.z - p.z) / d;
+  const into = dir.x * nx + dir.z * nz;
+  const vx = dir.x - into * nx, vz = dir.z - into * nz, along = Math.hypot(vx, vz);
+  if (along >= HEAD_ON) {
+    slideMemory.delete(p);
+    const speed = Math.max(along, SLIDE_SPEED) / along;
+    return new THREE.Vector3(vx * speed, 0, vz * speed);
+  }
+  // Nearly straight at it. The edge's tangent turns with the normal, so a side stays the same way round.
+  const tx = -nz, tz = nx;
+  let mem = slideMemory.get(p);
+  if (!mem || mem.o !== hit || mem.dx * dir.x + mem.dz * dir.z < 0.9) {
+    const lean = vx * tx + vz * tz;
+    const off = (p.x - (hit.ax + hit.bx) / 2) * tx + (p.z - (hit.az + hit.bz) / 2) * tz;
+    mem = { o: hit, side: Math.abs(lean) > 0.05 ? Math.sign(lean) : off < 0 ? -1 : 1, dx: dir.x, dz: dir.z };
+    slideMemory.set(p, mem);
+  }
+  return new THREE.Vector3(tx * mem.side * 0.7, 0, tz * mem.side * 0.7);
 }
 
 /** Distance between the segments a-b and c-d on the ground plane. */

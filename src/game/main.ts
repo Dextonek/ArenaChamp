@@ -202,7 +202,7 @@ function menuScreen() {
         el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
         el('li', {}, 'Both heroes have 600 HP. Last one standing wins.'),
       ) : el('ul', { class: 'how' },
-        el('li', {}, el('b', {}, 'Left click'), ' the ground to walk.'),
+        el('li', {}, el('b', {}, 'Right click'), ' the ground to walk (hold to keep walking), or an enemy to attack it.'),
         el('li', {}, el('b', {}, 'Q W E R'), ' aim a spell, click to cast. R is the ultimate.'),
         el('li', {}, el('b', {}, 'Right click / Esc'), ' cancels the aim.'),
         el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
