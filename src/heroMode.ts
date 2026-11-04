@@ -10,6 +10,7 @@ import { traitFor, type TraitRuntime } from './traits';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
+import { bankPath } from './obstacles';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -96,6 +97,7 @@ export class HeroMode implements TouchTarget {
   private aimLine: THREE.Mesh;
   /** The arrow head at the end of a skillshot's aim strip (`HeroSpell.aim: 'line'`). */
   private aimTip: THREE.Mesh;
+  private aimBounce: THREE.Mesh;
   private hoverRing: THREE.Mesh;
   private moveMarker: THREE.Mesh;
   private moveMarkerT = 1;
@@ -207,6 +209,9 @@ export class HeroMode implements TouchTarget {
     // A triangle with its base on the origin and its tip at +Y 1 (same plane trick as the strip).
     this.aimTip = flat(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-0.5, 0), new THREE.Vector2(0.5, 0), new THREE.Vector2(0, 1)])), kit.accent, 0.5);
     this.hoverRing = flat(new THREE.RingGeometry(0.95, 1.2, 48), kit.accent, 0.95);
+    // The first bounce of a bank shot (`HeroSpell.bank`), a fainter strip of the same shape.
+    this.aimBounce = flat(new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), kit.accent, 0.18);
+    this.aimBounce.visible = false;
     // A ribbon of ARC_SEGS segments in world coordinates (positions rewritten every frame while an arc is aimed).
     const ribbon = new THREE.BufferGeometry();
     ribbon.setAttribute('position', new THREE.BufferAttribute(new Float32Array((ARC_SEGS + 1) * 6), 3));
@@ -320,6 +325,11 @@ export class HeroMode implements TouchTarget {
     return this.host.arena.applyStatus(this.host.arena.caster, kind, seconds, color);
   }
 
+  /** How veiled the hero's figure looks, 0..1 (Nyx). */
+  setFigureVeil(v: number) {
+    this.figure.setVeil(v);
+  }
+
   /** The hero's figure has loaded (or it has none to load). */
   get figureLoaded() {
     return this.figure.loaded;
@@ -384,7 +394,7 @@ export class HeroMode implements TouchTarget {
     this.attacker.reset();
     const color = (m: THREE.Mesh, c: string) => (m.material as THREE.MeshBasicMaterial).color.set(c);
     color(this.rangeRing, kit.foil);
-    for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.aimArc, this.hoverRing]) color(m, kit.accent);
+    for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.aimBounce, this.aimArc, this.hoverRing]) color(m, kit.accent);
     const shown = this.hud.style.display;
     this.hud.remove();
     this.joystick?.el.remove();
@@ -963,6 +973,7 @@ export class HeroMode implements TouchTarget {
 
     // Single target: a strip from the hero to the hovered enemy (else toward the cursor), clamped to range.
     this.aimLine.visible = aiming && (single || line);
+    if (!line) this.aimBounce.visible = false;
     this.aimTip.visible = line;
     if (line && spell) {
       const d = new THREE.Vector3(this.cursor.x - hero.x, 0, this.cursor.z - hero.z);
@@ -977,6 +988,18 @@ export class HeroMode implements TouchTarget {
       this.aimTip.position.set(hero.x + d.x * (spell.range - tip), 0.056, hero.z + d.z * (spell.range - tip));
       this.aimTip.rotation.set(-Math.PI / 2, 0, turn);
       this.aimTip.scale.set(width + 0.7, tip, 1);
+      // A bank shot: the strip ends at the wall and a second one shows the first bounce.
+      const path = spell.bank ? bankPath(hero, d, spell.range, 1, this.host.arena.obstacles ?? []) : null;
+      if (path && path.length > 2) {
+        const first = Math.hypot(path[1].x - hero.x, path[1].z - hero.z);
+        this.aimLine.scale.set(width, Math.max(0.01, first), 1);
+        this.aimTip.visible = false;
+        const bx = path[2].x - path[1].x, bz = path[2].z - path[1].z;
+        this.aimBounce.position.set(path[1].x, 0.055, path[1].z);
+        this.aimBounce.rotation.set(-Math.PI / 2, 0, Math.atan2(-bx, -bz));
+        this.aimBounce.scale.set(width, Math.max(0.01, Math.hypot(bx, bz)), 1);
+        this.aimBounce.visible = true;
+      } else this.aimBounce.visible = false;
     } else if (this.aimLine.visible && spell) {
       const to = this.hovered ? this.hovered.group.position : this.cursor;
       const end = clampToRange(hero, to, spell.range);

@@ -165,136 +165,201 @@ export const clockworkKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'clockwork rivet shot', name: 'Rivet Shot', range: 12, cooldown: 3, aim: 'line', debuff: { kind: 'weaken', amount: 0.15, seconds: 3 },
-      blurb: 'Fires a spinning copper rivet that slows what it hits and sticks in it; 1 s later the rivet pops for a second hit.',
+      key: 'Q', label: 'homing drone', name: 'Homing Drone', range: 8, cooldown: 4,
+      blurb: 'Click an enemy within 8 m. A drone flies out and always hits: 45. It tags them for 3 s, and her turrets deal 30% more to a tagged enemy. Needs sight.',
       icon(g, s) {
         iconGround(g, s);
-        // A rivet flying up and to the right with a cyan spark trail and two loose cogs.
-        zig(g, [[s * 0.08, s * 0.9], [s * 0.2, s * 0.78], [s * 0.18, s * 0.7], [s * 0.34, s * 0.6], [s * 0.4, s * 0.56]], s * 0.045);
-        zig(g, [[s * 0.12, s * 0.66], [s * 0.24, s * 0.64], [s * 0.3, s * 0.52]], s * 0.03);
+        // A drone with two rotor gears and a cyan lens, a spark trail behind it and a tag ring under the target at the lower right.
+        zig(g, [[s * 0.06, s * 0.9], [s * 0.18, s * 0.76], [s * 0.16, s * 0.68], [s * 0.3, s * 0.56], [s * 0.36, s * 0.5]], s * 0.045);
+        zig(g, [[s * 0.1, s * 0.62], [s * 0.2, s * 0.6], [s * 0.26, s * 0.48]], s * 0.028);
+        g.strokeStyle = S.hot;
+        g.lineWidth = s * 0.03;
+        g.beginPath();
+        g.ellipse(s * 0.74, s * 0.82, s * 0.2, s * 0.08, 0, 0, Math.PI * 2);
+        g.stroke();
+        gear(g, s * 0.74, s * 0.82, s * 0.07, 6, S.brass, false);
+        // The drone body: a brass ellipse with a steel band, a lens, a copper fin.
         g.save();
-        g.translate(s * 0.62, s * 0.4);
-        g.rotate(-0.72);
-        g.fillStyle = S.brass;
-        g.fillRect(-s * 0.3, -s * 0.045, s * 0.26, s * 0.09);
-        g.fillStyle = S.foil;
-        g.fillRect(-s * 0.06, -s * 0.15, s * 0.07, s * 0.3);
+        g.translate(s * 0.56, s * 0.42);
+        g.rotate(0.55);
         g.fillStyle = S.body;
         g.beginPath();
-        g.ellipse(s * 0.01, 0, s * 0.19, s * 0.15, 0, -Math.PI / 2, Math.PI / 2);
+        g.moveTo(-s * 0.3, -s * 0.07);
+        g.lineTo(-s * 0.2, -s * 0.2);
+        g.lineTo(-s * 0.14, -s * 0.05);
+        g.closePath();
+        g.fill();
+        g.fillStyle = S.brass;
+        g.beginPath();
+        g.ellipse(0, 0, s * 0.22, s * 0.14, 0, 0, Math.PI * 2);
         g.fill();
         g.strokeStyle = S.dark;
         g.lineWidth = s * 0.02;
         g.stroke();
+        g.fillStyle = S.foil;
+        g.fillRect(-s * 0.02, -s * 0.14, s * 0.05, s * 0.28);
+        g.fillStyle = S.accent;
+        g.beginPath();
+        g.arc(s * 0.15, 0, s * 0.045, 0, Math.PI * 2);
+        g.fill();
         g.restore();
-        gear(g, s * 0.84, s * 0.2, s * 0.09, 8, S.brass, false);
-        gear(g, s * 0.78, s * 0.8, s * 0.07, 8, S.body, false);
+        gear(g, s * 0.5, s * 0.22, s * 0.13, 8, S.body, false);
+        gear(g, s * 0.82, s * 0.42, s * 0.09, 8, S.brass, false);
+        steam(g, s * 0.2, s * 0.84, s * 0.04);
       },
     },
     {
-      key: 'W', label: 'cog turret', name: 'Cog Turret', range: 9, cooldown: 9, summon: true,
-      blurb: 'Assembles a brass turret from loose gears; it shoots anything near for six seconds.',
+      key: 'W', label: 'deploy turret', name: 'Deploy Turret', range: 8, cooldown: 10, summon: true,
+      blurb: 'Two charges, one back every 10 s. A turret at a spot within 8 m for 8 s: 80 HP, 12 damage every 1.4 s, range 8. Within 5 m of her it shoots 30% faster and glows.',
       icon(g, s) {
         iconGround(g, s);
-        // A tripod, a gear body, a barrel and a cyan lens; steam from the joints.
+        // A turret on a tripod, a copper ring on the floor round it (her 5 m), and two charge pips.
+        g.strokeStyle = S.hot;
+        g.lineWidth = s * 0.026;
+        g.beginPath();
+        g.ellipse(s * 0.5, s * 0.86, s * 0.42, s * 0.12, 0, 0, Math.PI * 2);
+        g.stroke();
         g.strokeStyle = S.brass;
         g.lineWidth = s * 0.05;
         g.lineCap = 'round';
-        for (const [x, y] of [[0.22, 0.92], [0.5, 0.96], [0.78, 0.92]]) {
+        for (const [x, y] of [[0.26, 0.9], [0.5, 0.96], [0.74, 0.9]]) {
           g.beginPath();
-          g.moveTo(s * 0.5, s * 0.58);
+          g.moveTo(s * 0.5, s * 0.62);
           g.lineTo(s * x, s * y);
           g.stroke();
         }
         g.fillStyle = S.dark;
-        g.fillRect(s * 0.54, s * 0.34, s * 0.34, s * 0.1);
+        g.fillRect(s * 0.52, s * 0.3, s * 0.34, s * 0.1);
         g.fillStyle = S.foil;
-        g.fillRect(s * 0.56, s * 0.355, s * 0.3, s * 0.07);
-        gear(g, s * 0.46, s * 0.4, s * 0.25, 12, S.body);
-        g.fillStyle = S.brass;
-        g.fillRect(s * 0.4, s * 0.34, s * 0.12, s * 0.12);
+        g.fillRect(s * 0.54, s * 0.32, s * 0.3, s * 0.065);
+        gear(g, s * 0.46, s * 0.42, s * 0.23, 12, S.body);
         g.fillStyle = S.accent;
         g.beginPath();
-        g.arc(s * 0.9, s * 0.39, s * 0.04, 0, Math.PI * 2);
+        g.arc(s * 0.89, s * 0.35, s * 0.04, 0, Math.PI * 2);
         g.fill();
-        spring(g, s * 0.5, s * 0.66, s * 0.5, s * 0.78, s * 0.05, 3);
-        steam(g, s * 0.2, s * 0.64, s * 0.05);
-        steam(g, s * 0.78, s * 0.7, s * 0.04);
-        zig(g, [[s * 0.9, s * 0.2], [s * 0.82, s * 0.26], [s * 0.88, s * 0.3], [s * 0.78, s * 0.36]], s * 0.022);
+        for (const x of [0.12, 0.24]) {
+          g.fillStyle = S.hot;
+          g.beginPath();
+          g.arc(s * x, s * 0.14, s * 0.045, 0, Math.PI * 2);
+          g.fill();
+          g.strokeStyle = S.dark;
+          g.lineWidth = s * 0.012;
+          g.stroke();
+        }
+        spring(g, s * 0.5, s * 0.7, s * 0.5, s * 0.8, s * 0.045, 3);
+        steam(g, s * 0.78, s * 0.64, s * 0.04);
+        zig(g, [[s * 0.9, s * 0.18], [s * 0.82, s * 0.24], [s * 0.88, s * 0.28], [s * 0.78, s * 0.34]], s * 0.02);
       },
     },
     {
-      key: 'E', label: 'gear field', name: 'Gear Field', range: 9, cooldown: 9,
-      blurb: 'Three big gears unfold where she points and lurch three times over 3 s; each lurch sends an electric ring that slows enemies inside.',
+      key: 'E', label: 'grapple hook', name: 'Grapple', range: 9, cooldown: 10, aim: 'line',
+      blurb: 'A hook (9 m, 0.25 s wind-up). On an enemy: 30 and slowed 1 s, she stays put. On a wall, pillar or her own turret she reels herself to it. It cannot pull the enemy.',
       icon(g, s) {
         iconGround(g, s);
-        // Three nested flat gears seen at an angle round a small figure.
-        for (const [r, t, c] of [[0.44, 18, S.brass], [0.3, 14, S.body], [0.16, 10, S.brass]] as [number, number, string][]) {
+        // A chain from the lower left up to a grapnel biting a wall block at the upper right, with sparks at the bite.
+        g.fillStyle = '#3a2a1c';
+        g.fillRect(s * 0.72, s * 0.04, s * 0.26, s * 0.6);
+        g.strokeStyle = S.foil;
+        g.lineWidth = s * 0.015;
+        g.strokeRect(s * 0.72, s * 0.04, s * 0.26, s * 0.6);
+        g.strokeStyle = S.dark;
+        g.lineWidth = s * 0.02;
+        for (const y of [0.2, 0.36, 0.52]) {
+          g.beginPath();
+          g.moveTo(s * 0.72, s * y);
+          g.lineTo(s * 0.98, s * y);
+          g.stroke();
+        }
+        // The chain: oval links, alternating.
+        const x1 = s * 0.12, y1 = s * 0.88, x2 = s * 0.64, y2 = s * 0.34;
+        for (let i = 0; i < 7; i++) {
+          const u = (i + 0.5) / 7;
           g.save();
-          g.translate(s * 0.5, s * 0.62);
-          g.scale(1, 0.42);
-          gear(g, 0, 0, s * r, t, c, r < 0.3);
+          g.translate(x1 + (x2 - x1) * u, y1 + (y2 - y1) * u);
+          g.rotate(Math.atan2(y2 - y1, x2 - x1) + (i % 2 ? Math.PI / 2 : 0));
+          g.strokeStyle = S.dark;
+          g.lineWidth = s * 0.07;
+          g.beginPath();
+          g.ellipse(0, 0, s * 0.06, s * 0.035, 0, 0, Math.PI * 2);
+          g.stroke();
+          g.strokeStyle = S.foil;
+          g.lineWidth = s * 0.035;
+          g.stroke();
           g.restore();
         }
-        g.fillStyle = S.foil;
-        g.beginPath();
-        g.ellipse(s * 0.5, s * 0.5, s * 0.05, s * 0.13, 0, 0, Math.PI * 2);
-        g.fill();
+        // The grapnel: a brass shank with three copper prongs.
+        g.save();
+        g.translate(s * 0.66, s * 0.32);
+        g.rotate(-0.78);
+        g.fillStyle = S.brass;
+        g.fillRect(-s * 0.04, -s * 0.05, s * 0.2, s * 0.1);
         g.fillStyle = S.body;
-        g.beginPath();
-        g.arc(s * 0.5, s * 0.34, s * 0.05, 0, Math.PI * 2);
-        g.fill();
-        zig(g, [[s * 0.1, s * 0.62], [s * 0.18, s * 0.54], [s * 0.2, s * 0.64], [s * 0.3, s * 0.56]], s * 0.03);
-        zig(g, [[s * 0.9, s * 0.64], [s * 0.82, s * 0.7], [s * 0.78, s * 0.6], [s * 0.7, s * 0.68]], s * 0.03);
-        steam(g, s * 0.12, s * 0.82, s * 0.045);
+        for (const a of [-0.7, 0, 0.7]) {
+          g.save();
+          g.translate(s * 0.14, 0);
+          g.rotate(a);
+          g.beginPath();
+          g.moveTo(0, -s * 0.03);
+          g.lineTo(s * 0.17, 0);
+          g.lineTo(0, s * 0.03);
+          g.closePath();
+          g.fill();
+          g.restore();
+        }
+        g.restore();
+        zig(g, [[s * 0.78, s * 0.4], [s * 0.72, s * 0.46], [s * 0.78, s * 0.5], [s * 0.7, s * 0.56]], s * 0.024);
+        gear(g, s * 0.16, s * 0.2, s * 0.1, 9, S.brass, false);
+        steam(g, s * 0.3, s * 0.86, s * 0.04);
       },
     },
     {
-      key: 'R', label: 'mag rail', name: 'Mag Rail', range: 14, cooldown: 18, aim: 'line',
-      blurb: 'Ultimate. After a 0.6 s charge she and each of her live turrets fire a piercing rail (45 m/s, 18 m) at the spot she targeted, so the lines cross there. Her rail hits for 70, each turret rail for 38. With no turret up, only hers fires.',
+      key: 'R', label: 'siege mode', name: 'Siege Mode', range: 9, cooldown: 24,
+      blurb: 'She braces for 6 s, rooted, +20% armour. Turrets within 8 m of her fire twice as fast, and she fires heavy rounds (30 every 0.8 s) at an enemy within 9 m she can see. A stun, silence or knock-up ends it. Recast: pack up.',
       icon(g, s) {
         iconGround(g, s);
-        // Two rails from a turret gear (left) and from her coil (bottom) cross on a star at the upper right.
-        const tx = s * 0.72, ty = s * 0.3;
-        g.lineCap = 'round';
-        for (const [x, y, w] of [[0.1, 0.34, 0.05], [0.22, 0.92, 0.07]] as [number, number, number][]) {
-          const ex = s * x + (tx - s * x) * 1.25, ey = s * y + (ty - s * y) * 1.25;
-          g.strokeStyle = S.accent;
-          g.lineWidth = s * w;
+        // Four steel plates on the ground in a diamond round a gear, copper braces up to a collar, a heavy shell flying out.
+        for (const [x, y] of [[0.5, 0.9], [0.14, 0.7], [0.86, 0.7], [0.5, 0.52]] as [number, number][]) {
+          g.fillStyle = S.foil;
           g.beginPath();
-          g.moveTo(s * x, s * y);
-          g.lineTo(ex, ey);
+          g.ellipse(s * x, s * y, s * 0.17, s * 0.07, 0, 0, Math.PI * 2);
+          g.fill();
+          g.strokeStyle = S.dark;
+          g.lineWidth = s * 0.018;
           g.stroke();
-          g.strokeStyle = '#e8fffa';
-          g.lineWidth = s * w * 0.35;
+          g.strokeStyle = S.body;
+          g.lineWidth = s * 0.04;
+          g.beginPath();
+          g.moveTo(s * x, s * (y - 0.03));
+          g.lineTo(s * 0.5, s * 0.66);
           g.stroke();
         }
-        // Spring-loaded coil rings at her muzzle and a small turret gear at the other.
+        gear(g, s * 0.5, s * 0.66, s * 0.17, 12, S.body);
+        // A shoulder cannon with coil rings, and the shell leaving it toward the upper right.
+        g.save();
+        g.translate(s * 0.5, s * 0.46);
+        g.rotate(-0.55);
+        g.fillStyle = S.dark;
+        g.fillRect(0, -s * 0.06, s * 0.3, s * 0.12);
+        g.fillStyle = S.brass;
+        g.fillRect(s * 0.02, -s * 0.045, s * 0.26, s * 0.09);
         for (let i = 0; i < 3; i++) {
-          g.strokeStyle = i === 2 ? S.accent : S.brass;
-          g.lineWidth = s * 0.035;
+          g.strokeStyle = i === 2 ? S.accent : S.foil;
+          g.lineWidth = s * 0.028;
           g.beginPath();
-          g.ellipse(s * (0.12 + i * 0.08), s * (0.86 - i * 0.07), s * 0.04, s * 0.11, -0.95, 0, Math.PI * 2);
+          g.ellipse(s * (0.08 + i * 0.08), 0, s * 0.018, s * 0.08, 0, 0, Math.PI * 2);
           g.stroke();
         }
-        gear(g, s * 0.1, s * 0.34, s * 0.14, 10, S.body, false);
-        spring(g, s * 0.1, s * 0.48, s * 0.1, s * 0.62, s * 0.04, 3);
-        // The crossing: a hard white star with a cyan ring.
-        g.strokeStyle = S.accent;
-        g.lineWidth = s * 0.02;
+        g.restore();
+        zig(g, [[s * 0.7, s * 0.28], [s * 0.78, s * 0.22], [s * 0.86, s * 0.14]], s * 0.04);
+        g.fillStyle = S.body;
         g.beginPath();
-        g.arc(tx, ty, s * 0.17, 0, Math.PI * 2);
-        g.stroke();
-        g.fillStyle = '#ffffff';
-        g.beginPath();
-        for (let i = 0; i < 16; i++) {
-          const a = (i / 16) * Math.PI * 2, r = (i % 2 ? 0.05 : 0.15) * s;
-          g.lineTo(tx + Math.cos(a) * r, ty + Math.sin(a) * r);
-        }
-        g.closePath();
+        g.arc(s * 0.9, s * 0.1, s * 0.06, 0, Math.PI * 2);
         g.fill();
-        zig(g, [[s * 0.9, s * 0.12], [s * 0.84, s * 0.2], [s * 0.9, s * 0.26]], s * 0.022);
-        steam(g, s * 0.34, s * 0.7, s * 0.04);
+        g.strokeStyle = S.foil;
+        g.lineWidth = s * 0.02;
+        g.stroke();
+        steam(g, s * 0.2, s * 0.5, s * 0.045);
+        steam(g, s * 0.8, s * 0.5, s * 0.04);
       },
     },
   ],

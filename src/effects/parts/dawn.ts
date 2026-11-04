@@ -888,3 +888,29 @@ export class LightBeams {
     this.mesh.visible = false;
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// Shield ring (kits v5: Dawnward, Sunrise)
+// ---------------------------------------------------------------------------------------------------------------
+
+const _ringN = new THREE.Vector3();
+const _ringP = new THREE.Vector3();
+const _ringQ = new THREE.Quaternion();
+const _ringUp = new THREE.Vector3(0, 1, 0);
+
+/**
+ * Stands `count` kite-shield panels of `panels` (indices `first`..) in a ring round `center` at `radius` and height `y`,
+ * their faces turned outward and their points down; `spin` (radians) turns the ring. Call it every frame while the ring
+ * stands. `size` is each shield's height, `wide` stretches the width so the ring reads as a wall. Alternating ivory and gold faces.
+ */
+export function dawnShieldRing(
+  panels: LightPanels, first: number, count: number, center: THREE.Vector3, radius: number, y: number, size: number, spin: number, wide = 1.2,
+) {
+  for (let i = 0; i < count; i++) {
+    const a = spin + (i / count) * Math.PI * 2;
+    _ringN.set(Math.sin(a), 0, Math.cos(a));
+    _ringP.set(center.x + _ringN.x * radius, y, center.z + _ringN.z * radius);
+    dawnOrient(_ringN, _ringUp, _ringQ);
+    panels.place(first + i, _ringP, _ringQ, size, 'shield', wide, i % 2 ? DAWN.hot : DAWN.foil);
+  }
+}

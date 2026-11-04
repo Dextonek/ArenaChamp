@@ -1,5 +1,26 @@
 # Hive kit: Sirix, the Swarm Warden (melee brawler + summons)
 
+## v5 (2026-11-04)
+720 HP, 4.0 m/s, attack 2.4 m, 13 per 1.2 s (melee). Source: [kits-v5.md](kits-v5.md) "Sirix". Rules: `src/traits/hive.ts`. Spells (new files in
+`src/spells/targeted/`, category `hero: hive`; the v4 spell files below stay for the VFX tool).
+
+- **Passive, The Swarm:** up to 6 wasps circle him, drawn on both screens (`Trait.marks` + `markLook.wasp`, `waspMark` in `parts/hive.ts`, pips via
+  `ownLook`). He starts a round with none, gains one every 2 s (`tick`) and one per basic attack that lands (`landed`, any victim). All changes go
+  through one helper that also `show`s the count. Twist text: spend or hold.
+- **Q Barbed Stinger** (`barbedStinger.ts`, `barbed stinger`, 6 s, 8 m, `aim: 'line'`): 20 m/s, 0.25 s wind-up, 45; barb on the enemy 3 s
+  (`dealt`, only the stinger itself: knock marker 1.25, then `noteOwner('barbed')`). Recast Leap (window 3 s, `arm` 0.2, free, replay): only on a
+  barbed enemy within 8 m (live positions): he leaps in 0.3 s (`moveCaster`), 25 inside a 2.4 m circle at the landing. If he has 2 wasps they are spent
+  (`recastAct`) and it poisons: 30 over 3 s as three 10s at 1, 2, 3 s after landing (`projectile: true`; this recast runs 3.7 s). Told apart by a
+  per-figure clock (3.3 s) plus the barb stamp; mirrored values: `barbed`, `leap`.
+- **W Hive Shell** (`hiveShell.ts`, `hive shell`, 10 s): the kit's armor +40% for 3 s. Each hit he takes while it runs (not a passive's), if he has a wasp,
+  spends one and stings the attacker for 15: `taken` -> `hitEnemy` (offline) and `show('sting')` -> the attacker's screen `ownChanged` -> `hitEnemy`.
+- **E Swarm Cloud** (`swarmCloud.ts`, `swarm cloud`, 9 s, ground 9 m): every wasp goes to a 2.5 m cloud for 3 s (spent in `afterCast`, mirrored 'cloud'); telegraph impact
+  1.0 s (he is rooted that long). Ticks at 1, 2 and 3 s: 7 per wasp to enemies inside (live), blinded 1 s each. His 2 s clock stops while it stands; the wasps come back
+  when it ends (up to 6).
+- **R Swarm Surge** (`swarmSurge.ts`, `swarm surge`, 22 s, `aim: 'line'`): 0.5 s wind-up, then a column 10 m long, 4 m wide, 12 m/s (`projectile`, radius 2, pierce):
+  18 per wasp spent at the cast (108 at 6), shoved 4 m (`shapeMove` pull, decided on the live victim), blind 1 s. All wasps spent, none refilled (mirrored 'surge').
+- **CPU:** holds R under 4 wasps, E under 3, and the recast until the enemy is barbed and within 7.5 m.
+
 ## Role (2026-10-30)
 **Juggernaut (melee, summons), 700 HP.** Signature: the swarm. See hero-roles.md.
 - Q Mandible Rend, W Swarm Leap: unchanged (the leap drops 2 wasps).

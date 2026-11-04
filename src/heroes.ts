@@ -56,6 +56,8 @@ export interface HeroSpell {
    * spell as `CastContext.bend` (rule: `arcBendFor` in effects/projectile.ts). The spell's targeting is a ground point.
    */
   aim?: 'line' | 'arc';
+  /** A bank shot: with `aim: 'line'`, the aim strip stops at the wall and draws the first bounce (Opaline, Silvane). */
+  bank?: true;
   /** A buff the hero gives itself when it casts this (see `BuffKind`). */
   buff?: { kind: BuffKind; amount: number; seconds: number };
   /** A debuff every hit of this spell puts on what it hits. */

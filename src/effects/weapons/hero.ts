@@ -13,6 +13,8 @@ import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const scenes = new Map<string, Promise<THREE.Group>>();
 
+const VEIL_DARK = new THREE.Color('#150a28');
+
 export interface HeroOptions {
   /** Model under `public/` (default the Azure Cloud disciple). Any figure on the Dao rig works. */
   url?: string;
@@ -197,6 +199,34 @@ export class Hero {
         m.emissive.g += tint.g * 0.1 * f;
         m.emissive.b += tint.b * 0.1 * f;
       } else m.emissive.addScalar(0.3 * f);
+    }
+    this.applyVeil();
+  }
+
+  /**
+   * Veil 0..1 (Nyx fading): the figure goes dark and see-through, with a faint violet glow, but never vanishes: at 1 it is
+   * still plain to see on any floor. Layered over the flash, so a hit still shows.
+   */
+  setVeil(v: number) {
+    this.veil = Math.min(Math.max(0, v), 1);
+    this.applyVeil();
+  }
+
+  private veil = 0;
+  private applyVeil() {
+    const v = this.veil;
+    for (const { m } of this.mats) {
+      const on = v > 0.01;
+      if (m.transparent !== on) {
+        m.transparent = on;
+        m.needsUpdate = true;
+      }
+      m.opacity = on ? 1 - 0.55 * v : 1;
+      if (!on) continue;
+      m.color.lerp(VEIL_DARK, 0.75 * v);
+      m.emissive.r += 0.1 * v;
+      m.emissive.g += 0.03 * v;
+      m.emissive.b += 0.18 * v;
     }
   }
 

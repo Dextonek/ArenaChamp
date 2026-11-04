@@ -1050,6 +1050,8 @@ export class Duel {
     // Each hero's own state, visible to both players: pips above any stacks, a ring at the feet, marks on the ground.
     this.traitFx.pips('foeOwn', this.foe?.group.position ?? null, this.oppRt?.allOwn() ?? [], cam, this.opponentKit.accent, 3.05);
     this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, 3.05);
+    this.figure.setVeil(this.oppRt?.veilNow() ?? 0);
+    hm.setFigureVeil(this.heroRt?.veilNow() ?? 0);
     this.traitFx.ring('foe', this.foe?.group.position ?? null, this.oppRt?.ringNow() ?? null);
     this.traitFx.ring('hero', this.host.arena.caster.group.position, this.heroRt?.ringNow() ?? null);
     this.traitFx.marks('foe', this.oppRt?.marksNow() ?? [], this.oppRt?.trait?.markLook);

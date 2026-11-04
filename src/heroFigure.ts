@@ -220,6 +220,14 @@ export class HeroFigure {
     this.castNow = { style, t: 0, dur: Math.max(0.35, Math.min(seconds, 2.5)), big };
   }
 
+  /** How veiled the figure should look, 0..1 (`Trait.figureVeil`), easing there. Asked every frame. */
+  setVeil(target: number) {
+    this.veilNow += (target - this.veilNow) * 0.14;
+    if (Math.abs(target - this.veilNow) < 0.01) this.veilNow = target;
+    this.figure?.setVeil(this.veilNow);
+  }
+  private veilNow = 0;
+
   /** The model shown now (an outline goes round it), if any. */
   get shown(): THREE.Object3D | null {
     return this.figure?.root ?? null;

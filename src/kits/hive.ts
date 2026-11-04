@@ -1,7 +1,7 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Hive kit data: Sirix, the Swarm Warden (a melee brawler with summons). Four spells (labels as registered), canvas-drawn
+ * Hive kit data (v5): Sirix, the Swarm Warden (a melee bruiser who spends a swarm of wasps). Four spells (labels as registered), canvas-drawn
  * icons in the kit's palette: chitin-black ground with a faint honeycomb, wax foil, amber hexagon cells and small striped
  * wasps, serrated dark claw crescents with an amber rim, a green accent on the eyes. Signature shape: the hexagon and the swarm.
  */
@@ -243,116 +243,142 @@ export const hiveKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'mandible rend', name: 'Mandible Rend', range: 3, cooldown: 2.5,
-      debuff: { kind: 'vulnerable', amount: 0.15, seconds: 3 },
-      blurb: 'A melee double claw swipe: two crossing serrated arcs rend the cone in front of him and slow it, and a second swipe follows 0.3 s later.',
+      key: 'Q', label: 'barbed stinger', name: 'Barbed Stinger', range: 8, cooldown: 6, aim: 'line',
+      blurb: 'A stinger flies 8 m: 45, and the barb stays on them for 3 s. Cast it again within 3 s to leap onto the barbed enemy: 25, and with 2 wasps spent it poisons them for 30 over 3 s.',
       icon(g, s) {
         iconGround(g, s);
-        // Two crossing serrated claw arcs, wasps buzzing off them, honey drops.
-        claw(g, s * 0.4, s * 0.68, s * 0.5, -PI * 0.8, -PI * 0.12, s * 0.14);
-        claw(g, s * 0.4, s * 0.32, s * 0.5, PI * 0.12, PI * 0.8, s * 0.12);
-        wasp(g, s * 0.82, s * 0.5, s * 0.15, 0.2);
-        wasp(g, s * 0.66, s * 0.14, s * 0.1, -0.5);
-        drop(g, s * 0.88, s * 0.78, s * 0.04);
-        drop(g, s * 0.72, s * 0.86, s * 0.03);
-        star(g, s * 0.78, s * 0.3, s * 0.05);
+        // A long barbed stinger from the lower left to the upper right, venom beading at its tip, a wasp riding behind it.
+        g.save();
+        g.translate(s * 0.5, s * 0.5);
+        g.rotate(-0.7);
+        g.fillStyle = H.dark;
+        g.strokeStyle = H.body;
+        g.lineWidth = s * 0.02;
+        g.lineJoin = 'round';
+        g.beginPath();
+        g.moveTo(-s * 0.44, -s * 0.06);
+        g.lineTo(s * 0.12, -s * 0.06);
+        g.lineTo(s * 0.5, 0);
+        g.lineTo(s * 0.12, s * 0.06);
+        g.lineTo(-s * 0.44, s * 0.06);
+        g.closePath();
+        g.fill();
+        g.stroke();
+        // Back-swept barbs, three each side.
+        g.fillStyle = H.body;
+        for (const sd of [-1, 1]) {
+          for (const x of [-0.04, 0.1, 0.24]) {
+            g.beginPath();
+            g.moveTo(s * x, sd * s * 0.06);
+            g.lineTo(s * (x - 0.13), sd * s * 0.17);
+            g.lineTo(s * (x - 0.04), sd * s * 0.06);
+            g.closePath();
+            g.fill();
+            g.stroke();
+          }
+        }
+        g.strokeStyle = H.wax;
+        g.lineWidth = s * 0.014;
+        g.beginPath();
+        g.moveTo(-s * 0.38, 0);
+        g.lineTo(s * 0.34, 0);
+        g.stroke();
+        g.restore();
+        drop(g, s * 0.84, s * 0.2, s * 0.045);
+        star(g, s * 0.8, s * 0.28, s * 0.05);
+        wasp(g, s * 0.2, s * 0.8, s * 0.17, -0.7);
+        wasp(g, s * 0.34, s * 0.9, s * 0.1, -0.5);
+        cell(g, s * 0.84, s * 0.8, s * 0.08);
       },
     },
     {
-      key: 'W', label: 'swarm leap', name: 'Swarm Leap', range: 8, cooldown: 9, dash: true, summon: true,
-      blurb: 'A gap closer: he leaps with the swarm streaming behind him, lands in a burst of honeycomb and two wasp soldiers peel off to fight.',
+      key: 'W', label: 'hive shell', name: 'Hive Shell', range: 0, cooldown: 10, buff: { kind: 'armor', amount: 0.4, seconds: 3 },
+      blurb: 'Chitin plates close round him: 40% less damage for 3 s. Each hit he takes spends a wasp, which stings the attacker for 15.',
       icon(g, s) {
         iconGround(g, s);
-        // A ribbon of wasps rising from the lower left to a honeycomb landing at the upper right.
-        const pts: [number, number, number][] = [[0.1, 0.84, 0.3], [0.2, 0.72, 0.9], [0.3, 0.64, 0.5], [0.4, 0.56, 1.1], [0.5, 0.5, 0.6], [0.6, 0.42, 0.2]];
-        for (const [x, y, r] of pts) wasp(g, s * x, s * y, s * 0.11, -0.7 + r * 0.3);
-        cell(g, s * 0.78, s * 0.3, s * 0.12);
-        cell(g, s * 0.78 + s * 0.21, s * 0.3 + s * 0.04, s * 0.09);
-        cell(g, s * 0.67, s * 0.5, s * 0.085);
-        cell(g, s * 0.84, s * 0.52, s * 0.075);
-        wasp(g, s * 0.5, s * 0.82, s * 0.14, -0.3);
-        wasp(g, s * 0.68, s * 0.8, s * 0.14, 0.3);
-        drop(g, s * 0.9, s * 0.7, s * 0.04);
-      },
-    },
-    {
-      key: 'E', label: 'chitin carapace', name: 'Chitin Carapace', range: 0, cooldown: 9, buff: { kind: 'armor', amount: 0.1, seconds: 3 },
-      blurb: 'Black chitin plates snap round him: 10% less damage taken for 3 s, and he flips stance (swarm or carapace).',
-      icon(g, s) {
-        iconGround(g, s);
-        // A shell of chitin hexagons round a core, wasps circling it.
-        const cx = s * 0.5, cy = s * 0.52;
-        for (let i = 0; i < 7; i++) {
-          const a = (i / 7) * PI * 2 + 0.3, rr = s * 0.27;
-          hexPath(g, cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, s * 0.1, a);
+        // A dome of chitin hexagons over a wasp core, a wasp striking the shell from the right.
+        const cx = s * 0.46, cy = s * 0.74;
+        const plate = (x: number, y: number, r: number, a: number) => {
+          hexPath(g, x, y, r, a);
           g.fillStyle = '#1e1708';
           g.fill();
           g.strokeStyle = H.body;
-          g.lineWidth = s * 0.02;
+          g.lineWidth = s * 0.018;
           g.stroke();
+          hexPath(g, x, y, r * 0.5, a);
+          g.fillStyle = '#4a3208';
+          g.fill();
+        };
+        for (let i = 0; i < 9; i++) {
+          const a = PI + (i / 8) * PI;
+          plate(cx + Math.cos(a) * s * 0.36, cy + Math.sin(a) * s * 0.4, s * 0.095, a);
         }
-        hexPath(g, cx, cy, s * 0.14);
-        g.fillStyle = H.body;
-        g.fill();
-        g.strokeStyle = H.wax;
-        g.lineWidth = s * 0.016;
-        g.stroke();
-        hexPath(g, cx, cy, s * 0.06);
-        g.fillStyle = H.dark;
-        g.fill();
-        wasp(g, s * 0.16, s * 0.2, s * 0.12, 0.8);
-        wasp(g, s * 0.84, s * 0.78, s * 0.12, PI + 0.8);
-        wasp(g, s * 0.84, s * 0.22, s * 0.1, 2.2);
-        wasp(g, s * 0.16, s * 0.8, s * 0.1, -0.9);
+        for (let i = 0; i < 5; i++) {
+          const a = PI + ((i + 0.5) / 5) * PI;
+          plate(cx + Math.cos(a) * s * 0.2, cy + Math.sin(a) * s * 0.23, s * 0.085, a + 0.3);
+        }
+        cell(g, cx, cy - s * 0.04, s * 0.1);
+        g.fillStyle = H.wax;
+        g.fillRect(s * 0.06, cy + s * 0.04, s * 0.88, s * 0.025);
+        wasp(g, s * 0.86, s * 0.3, s * 0.16, PI + 0.5);
+        star(g, s * 0.7, s * 0.4, s * 0.05);
+        wasp(g, s * 0.12, s * 0.24, s * 0.1, 0.4);
       },
     },
     {
-      key: 'R', label: "queen's descent", name: "Queen's Descent", range: 13, cooldown: 20,
-      blurb: 'Ultimate. A honeycomb tower closes round the zone and the whole swarm, shaped like a giant queen wasp, dives into its centre: slows, and three wasp soldiers drop where it lands.',
+      key: 'E', label: 'swarm cloud', name: 'Swarm Cloud', range: 9, cooldown: 9,
+      blurb: 'All his wasps fly to a spot 9 m away and hang there for 3 s as a cloud: from 1 s, 7 damage per wasp each second to everyone inside, and blinded. They come back when it ends.',
       icon(g, s) {
         iconGround(g, s);
-        // A ring wall of cells on the floor, the swarm-queen diving head-first with folded wings, a green star at the centre.
-        for (let i = 0; i < 9; i++) {
-          const a = (i / 9) * PI * 2, rx = s * 0.4, ry = s * 0.12;
-          cell(g, s * 0.5 + Math.cos(a) * rx, s * 0.84 + Math.sin(a) * ry, s * 0.06 + (Math.sin(a) > 0 ? s * 0.012 : 0));
+        // A ring of cells on the floor and a spiral of wasps turning over it.
+        const cx = s * 0.5, cy = s * 0.5;
+        g.strokeStyle = H.wax;
+        g.globalAlpha = 0.6;
+        g.lineWidth = s * 0.014;
+        g.setLineDash([s * 0.04, s * 0.03]);
+        g.beginPath();
+        g.ellipse(cx, s * 0.62, s * 0.4, s * 0.26, 0, 0, PI * 2);
+        g.stroke();
+        g.setLineDash([]);
+        g.globalAlpha = 1;
+        cell(g, cx, s * 0.7, s * 0.09);
+        cell(g, cx - s * 0.2, s * 0.64, s * 0.06);
+        cell(g, cx + s * 0.2, s * 0.66, s * 0.06);
+        for (let i = 0; i < 12; i++) {
+          const a = i * 0.95, r = s * (0.07 + i * 0.026);
+          const x = cx + Math.cos(a) * r, y = cy - s * 0.04 + Math.sin(a) * r * 0.7;
+          wasp(g, x, y, s * (0.09 + (i % 3) * 0.02), a + PI / 2);
         }
-        g.save();
-        g.translate(s * 0.5, s * 0.42);
-        g.rotate(0.15);
-        // Wings folded back along the body.
-        g.fillStyle = H.wax;
-        g.globalAlpha = 0.7;
-        for (const sd of [-1, 1]) {
+        drop(g, s * 0.9, s * 0.2, s * 0.035);
+      },
+    },
+    {
+      key: 'R', label: 'swarm surge', name: 'Swarm Surge', range: 10, cooldown: 22, aim: 'line',
+      blurb: 'Ultimate. He looses every wasp down a 10 m column, 4 m wide: 18 per wasp, shoves 4 m and blinds 1 s. The swarm does not come back: he is a plain fighter afterwards.',
+      icon(g, s) {
+        iconGround(g, s);
+        // A wide wedge of wasps flying right, speed lines of wax behind them, a green star at the head.
+        g.strokeStyle = H.wax;
+        g.globalAlpha = 0.5;
+        g.lineWidth = s * 0.014;
+        for (const y of [0.3, 0.4, 0.6, 0.7]) {
           g.beginPath();
-          g.ellipse(sd * s * 0.1, -s * 0.12, s * 0.045, s * 0.2, sd * 0.25, 0, PI * 2);
-          g.fill();
+          g.moveTo(s * 0.04, s * y);
+          g.lineTo(s * (0.3 + (y > 0.5 ? 0.7 - y : y - 0.2)), s * y);
+          g.stroke();
         }
         g.globalAlpha = 1;
-        // Striped abdomen above, thorax and head pointing down.
-        g.fillStyle = H.body;
-        g.beginPath();
-        g.ellipse(0, -s * 0.18, s * 0.1, s * 0.2, 0, 0, PI * 2);
-        g.fill();
-        g.fillStyle = H.dark;
-        for (const y of [-0.3, -0.22, -0.14]) g.fillRect(-s * 0.1, s * y, s * 0.2, s * 0.035);
-        g.beginPath();
-        g.ellipse(0, s * 0.04, s * 0.085, s * 0.09, 0, 0, PI * 2);
-        g.fill();
-        g.beginPath();
-        g.arc(0, s * 0.15, s * 0.06, 0, PI * 2);
-        g.fill();
-        g.fillStyle = H.accent;
-        g.beginPath();
-        g.arc(-s * 0.03, s * 0.17, s * 0.016, 0, PI * 2);
-        g.arc(s * 0.03, s * 0.17, s * 0.016, 0, PI * 2);
-        g.fill();
-        g.restore();
-        // A loose swarm around her.
-        wasp(g, s * 0.18, s * 0.3, s * 0.1, 0.9);
-        wasp(g, s * 0.82, s * 0.26, s * 0.1, 2.3);
-        wasp(g, s * 0.26, s * 0.56, s * 0.09, 0.3);
-        wasp(g, s * 0.76, s * 0.58, s * 0.09, PI - 0.3);
-        star(g, s * 0.5, s * 0.72, s * 0.07);
+        for (let col = 0; col < 5; col++) {
+          const spread = 0.05 + col * 0.045;
+          for (let row = -2; row <= 2; row++) {
+            const x = s * (0.18 + col * 0.15 + Math.abs(row) * 0.015);
+            const y = s * (0.5 + row * spread);
+            wasp(g, x, y, s * (0.1 + col * 0.01), row * 0.08);
+          }
+        }
+        star(g, s * 0.9, s * 0.5, s * 0.06);
+        cell(g, s * 0.9, s * 0.16, s * 0.07);
+        cell(g, s * 0.9, s * 0.84, s * 0.07);
       },
     },
   ],

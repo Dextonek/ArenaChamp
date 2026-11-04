@@ -1031,3 +1031,28 @@ export class QueenBody {
     this.hide();
   }
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// waspMark
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * One wasp of Sirix's orbiting swarm (`Trait.markLook`, one per wasp he holds): the swarm's own wasp (striped amber
+ * abdomen, dark thorax, green eyes, pale wings) as a plain mesh, about 0.8 m long along +Z, hovering at chest height
+ * (the mark's feet sit on the ground, so the lift is in this builder). It bobs and rolls a little on its own clock.
+ */
+export function waspMark(): THREE.Object3D {
+  const root = new THREE.Group();
+  const body = new THREE.Mesh(waspGeometry(), new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }));
+  body.scale.setScalar(0.8);
+  body.position.y = 1.3;
+  body.frustumCulled = false;
+  const phase = Math.random() * 6.28;
+  body.onBeforeRender = () => {
+    const t = performance.now() / 1000 + phase;
+    body.position.y = 1.3 + Math.sin(t * 5) * 0.08;
+    body.rotation.z = Math.sin(t * 3.1) * 0.22;
+  };
+  root.add(body);
+  return root;
+}

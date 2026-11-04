@@ -912,6 +912,24 @@ function outlineOf(src: THREE.Mesh, p: MinionPalette, k: number) {
   return o;
 }
 
+/**
+ * How hard a turret glows (Ada's Overclock): 0 none, 1 inside her 5 m ring, 2 in Siege Mode. Keyed by the unit's position
+ * vector (the figure's own `group.position`); the trait writes it every frame, and a stale entry (a pooled figure that now
+ * holds another unit) counts as 0 after a fifth of a second.
+ */
+const turretPowers = new WeakMap<THREE.Vector3, { level: number; at: number }>();
+export function setTurretPower(pos: THREE.Vector3, level: number) {
+  const e = turretPowers.get(pos);
+  if (e) { e.level = level; e.at = performance.now(); } else turretPowers.set(pos, { level, at: performance.now() });
+}
+function turretPowerOf(root: THREE.Object3D) {
+  for (let o = root.parent, i = 0; o && i < 4; o = o.parent, i++) {
+    const e = turretPowers.get(o.position);
+    if (e) return performance.now() - e.at < 200 ? e.level : 0;
+  }
+  return 0;
+}
+
 function turretRig(p: MinionPalette): MinionRig {
   lensGeo ??= new THREE.SphereGeometry(0.075, 10, 8);
   legGeo ??= new THREE.CylinderGeometry(0.035, 0.05, 1, 6);
@@ -961,24 +979,39 @@ function turretRig(p: MinionPalette): MinionRig {
   glow.position.copy(lens.position);
   glow.scale.setScalar(2.1);
   head.add(glow);
+  // Overclock: a ring on the ground under the turret and a hotter lens while it stands inside her ring.
+  const haloMat = new THREE.MeshBasicMaterial({ color: rawColor(CLOCKWORK.hot), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const halo = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.62, 28).rotateX(-Math.PI / 2), haloMat);
+  halo.position.y = 0.05;
+  halo.visible = false;
+  root.add(halo);
+  const cyan = rawColor(CLOCKWORK.accent), hot = rawColor(CLOCKWORK.hot);
+  let power = 0;
   root.scale.setScalar(1.8); // about 1.6 m tall
   let spin = 0;
   return {
     root,
     barY: 2.0,
     animate(dt, pose) {
-      spin += dt * (1.4 + pose.shot * 12);
+      power += (turretPowerOf(root) - power) * (1 - Math.exp(-dt * 8));
+      halo.visible = power > 0.02;
+      haloMat.opacity = Math.min(0.9, 0.4 * power) * (0.8 + 0.2 * Math.sin(pose.time * 6));
+      halo.scale.setScalar(1 + 0.1 * power);
+      glowMat.color.copy(power > 1.5 ? hot : cyan);
+      spin += dt * (1.4 + pose.shot * 12 + power * 2);
       spinner.rotation.x = spin;
       barrel.position.z = 0.27 - pose.shot * 0.1;
       lens.position.z = 0.46 - pose.shot * 0.1;
       glow.position.z = lens.position.z;
-      glow.scale.setScalar(2.1 + pose.shot * 1.2);
+      glow.scale.setScalar(2.1 + pose.shot * 1.2 + power * 0.5);
       lens.scale.setScalar(1 + pose.shot * 0.7 + Math.sin(pose.time * 4) * 0.08);
       head.rotation.y = Math.sin(pose.time * 1.1) * 0.05;
     },
     dispose() {
       lensMat.dispose();
       glowMat.dispose();
+      haloMat.dispose();
+      halo.geometry.dispose();
     },
   };
 }
@@ -1087,5 +1120,197 @@ export class MagCoil {
   reset() {
     this.angle = 0;
     this.mesh.visible = false;
+  }
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Ada's v5 parts: the homing drone, the grapple head and the siege plates
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * Homing Drone: a small brass body with a cyan lens, two spinning rotor gears on short arms and a streak behind it.
+ * Local frame +Z forward. `place(pos, dir, t)` puts it at `pos` flying along `dir` (`t` in seconds drives the rotors and a
+ * small wobble); `hide()` / `reset()` hide it. About 0.8 m across at scale 1, scaled 1.7 so it reads at gameplay
+ * distance. Add `mesh`.
+ */
+export class HomingDrone {
+  readonly mesh = new THREE.Group();
+  private rotors: THREE.Mesh[] = [];
+  private body = new THREE.Group();
+  private q = new THREE.Quaternion();
+
+  constructor() {
+    const brass = toonMetal(BRASS), copper = toonMetal(CLOCKWORK.body), steel = toonMetal(STEEL, true);
+    const hull = new THREE.Mesh(new THREE.SphereGeometry(0.2, 12, 8).scale(1, 0.8, 1.35), brass);
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(0.205, 0.205, 0.06, 12).rotateX(Math.PI / 2).scale(1, 0.8, 1), steel);
+    band.position.z = 0.04;
+    const lens = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 8), new THREE.MeshBasicMaterial({ color: rawColor(CLOCKWORK.accent) }));
+    lens.position.set(0, 0.02, 0.27);
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.22, 0.2), copper);
+    fin.position.set(0, 0.1, -0.28);
+    this.body.add(hull, band, lens, fin);
+    for (const s of [-1, 1]) {
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.04, 0.05), steel);
+      arm.position.set(s * 0.26, 0.1, 0);
+      const rotor = new THREE.Mesh(gearGeometry(8, 0, 0), gearMaterial());
+      rotor.rotation.x = -Math.PI / 2;
+      rotor.scale.set(0.24, 0.24, 0.04);
+      rotor.position.set(s * 0.42, 0.14, 0);
+      this.rotors.push(rotor);
+      this.body.add(arm, rotor);
+    }
+    const streak = (r: number, len: number, color: number, op: number) => new THREE.Mesh(
+      new THREE.ConeGeometry(r, len, 8).rotateX(-Math.PI / 2).translate(0, 0, -0.35 - len / 2),
+      new THREE.MeshBasicMaterial({ color: rawColor(color), transparent: true, opacity: op, depthWrite: false }),
+    );
+    this.mesh.add(this.body, streak(0.16, 1.4, CLOCKWORK.accent, 0.5), streak(0.08, 1.1, 0xffffff, 0.75));
+    this.mesh.scale.setScalar(1.7);
+    this.mesh.visible = false;
+  }
+
+  place(pos: THREE.Vector3, dir: THREE.Vector3, t: number) {
+    this.mesh.visible = true;
+    this.mesh.position.copy(pos);
+    this.q.setFromUnitVectors(Z, dir.lengthSq() > 1e-8 ? dir.clone().normalize() : Z);
+    this.mesh.quaternion.copy(this.q);
+    this.rotors[0].rotation.z = t * 38;
+    this.rotors[1].rotation.z = -t * 38;
+    this.body.rotation.z = Math.sin(t * 17) * 0.12;
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+
+  reset() {
+    this.hide();
+  }
+}
+
+/**
+ * Grapple: the hook head, a steel grapnel with three copper prongs round a brass shank and a ring eye at the back where
+ * the cable ties on. Local frame +Z forward. `place(pos, dir, spin)`; `hide()` / `reset()` hide it. About 0.6 m long at
+ * scale 1, scaled 1.6. Add `mesh`.
+ */
+export class GrappleHook {
+  readonly mesh = new THREE.Group();
+  private head = new THREE.Group();
+  private q = new THREE.Quaternion();
+  private qs = new THREE.Quaternion();
+
+  constructor() {
+    const brass = toonMetal(BRASS), copper = toonMetal(CLOCKWORK.body), steel = toonMetal(STEEL, true);
+    const shank = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.09, 0.5, 8).rotateX(Math.PI / 2), brass);
+    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.26, 8).rotateX(Math.PI / 2), steel);
+    tip.position.z = 0.38;
+    const eye = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.035, 6, 12), steel);
+    eye.position.z = -0.3;
+    this.head.add(shank, tip, eye);
+    for (let i = 0; i < 3; i++) {
+      const a = (i / 3) * Math.PI * 2;
+      // Each prong leans out and back from the shank's front, like the flukes of a grapnel.
+      const prong = new THREE.Mesh(new THREE.ConeGeometry(0.055, 0.42, 6).translate(0, 0.21, 0), copper);
+      prong.position.set(Math.cos(a) * 0.1, Math.sin(a) * 0.1, 0.12);
+      prong.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(Math.cos(a) * 0.55, Math.sin(a) * 0.55, -0.5).normalize());
+      this.head.add(prong);
+    }
+    this.mesh.add(this.head);
+    this.mesh.scale.setScalar(1.6);
+    this.mesh.visible = false;
+  }
+
+  place(pos: THREE.Vector3, dir: THREE.Vector3, spin = 0) {
+    this.mesh.visible = true;
+    this.mesh.position.copy(pos);
+    this.q.setFromUnitVectors(Z, dir.lengthSq() > 1e-8 ? dir.clone().normalize() : Z);
+    this.qs.setFromAxisAngle(Z, spin);
+    this.mesh.quaternion.copy(this.q).multiply(this.qs);
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+
+  reset() {
+    this.hide();
+  }
+}
+
+/**
+ * Siege Mode's footing: four steel plates slammed onto the ground round her, each pinned by a copper brace that slants in
+ * to a brass collar at her waist, and a steel stake driven in beside each plate. `set(centre, k, t)`: `k` 0..1 is how far
+ * deployed it is (the plates drop in one after another; 0 hides it), `t` is seconds. Nothing moves once it is down: that is
+ * the point, it must read as a hero who cannot walk. Add `mesh`.
+ */
+export class SiegePlates {
+  readonly mesh = new THREE.Group();
+  private plates: THREE.Mesh[] = [];
+  private braces: THREE.Mesh[] = [];
+  private stakes: THREE.Mesh[] = [];
+  private collar: THREE.Mesh;
+  private d = new THREE.Vector3();
+  private a = new THREE.Vector3();
+  private b = new THREE.Vector3();
+
+  constructor(private radius = 1.9) {
+    const brass = toonMetal(BRASS), copper = toonMetal(CLOCKWORK.body), steel = toonMetal(STEEL, true);
+    const box = new THREE.BoxGeometry(1, 1, 1);
+    const bolt = new THREE.CylinderGeometry(0.07, 0.07, 0.08, 6);
+    for (let i = 0; i < 4; i++) {
+      const plate = new THREE.Mesh(box, steel);
+      plate.scale.set(1.25, 0.14, 0.8);
+      for (const [x, z] of [[0.42, 0.24], [-0.42, -0.24]]) {
+        const b = new THREE.Mesh(bolt, copper);
+        b.position.set(x / 1.25, 0.8, z / 0.8);
+        b.scale.set(1 / 1.25, 1 / 0.14, 1 / 0.8);
+        plate.add(b);
+      }
+      const brace = new THREE.Mesh(box, copper);
+      const stake = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.5, 6).rotateX(Math.PI), steel);
+      this.plates.push(plate);
+      this.braces.push(brace);
+      this.stakes.push(stake);
+      this.mesh.add(plate, brace, stake);
+    }
+    this.collar = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.09, 6, 14).rotateX(Math.PI / 2), brass);
+    this.mesh.add(this.collar);
+    this.mesh.visible = false;
+  }
+
+  set(centre: THREE.Vector3, k: number, t: number) {
+    this.mesh.visible = k > 0.01;
+    if (!this.mesh.visible) return;
+    for (let i = 0; i < 4; i++) {
+      const ang = Math.PI / 4 + (i * Math.PI) / 2;
+      const ca = Math.cos(ang), sa = Math.sin(ang);
+      const u = clamp01((k - i * 0.06) / 0.6);
+      const h = (1 - easeIn(u)) * 3.2;
+      const px = centre.x + ca * this.radius, pz = centre.z + sa * this.radius;
+      const plate = this.plates[i];
+      plate.position.set(px, h + 0.07, pz);
+      plate.rotation.y = -ang + Math.PI / 2;
+      // The stake is driven in just outside the plate, and sinks in as the footing settles.
+      this.stakes[i].position.set(px + ca * 0.75, 0.2 - (1 - clamp01((k - 0.5) / 0.4)) * 0.45, pz + sa * 0.75);
+      // The brace runs from the plate's inner edge up to the collar round her waist.
+      this.a.set(px - ca * 0.3, h + 0.15, pz - sa * 0.3);
+      this.b.set(centre.x + ca * 0.5, 1.05 + Math.sin(t * 9 + i) * 0.012, centre.z + sa * 0.5);
+      this.d.subVectors(this.b, this.a);
+      const len = this.d.length();
+      const brace = this.braces[i];
+      brace.visible = u >= 1;
+      brace.position.copy(this.a).addScaledVector(this.d, 0.5);
+      brace.scale.set(0.1, len, 0.1);
+      brace.quaternion.setFromUnitVectors(UP, this.d.multiplyScalar(1 / Math.max(len, 1e-4)));
+    }
+    this.collar.position.set(centre.x, 1.05, centre.z);
+    this.collar.scale.setScalar(Math.max(MIN_SCALE, easeOut(k)));
+  }
+
+  hide() {
+    this.mesh.visible = false;
+  }
+
+  reset() {
+    this.hide();
   }
 }

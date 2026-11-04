@@ -1,5 +1,28 @@
 # Clockwork kit: Ada, the Artificer (ranged control)
 
+## v5 (2026-11-04)
+Source: [kits-v5.md](kits-v5.md) "Ada". 580 HP, 3.9 m/s, attack 6 m, 10 per 1.0 s (rivet). Code: `src/kits/clockwork.ts`, `src/traits/clockwork.ts`,
+spells `homingDrone.ts`, `deployTurret.ts`, `grappleHook.ts`, `siegeMode.ts` (category `hero: clockwork`), parts added to `src/effects/parts/clockwork.ts`
+(`HomingDrone`, `GrappleHook`, `SiegePlates`, `setTurretPower`). The older spells (Rivet Shot, Cog Turret, Gear Field, Mag Rail) stay for the VFX tool.
+
+- **Passive, Overclock:** one rule. Her turrets within 5 m of her attack at 1.3x (`t.unitRate` from `tick` and from `ring`, so both screens apply it); in
+  Siege Mode turrets within 8 m attack at 2x. The ring at her feet is 5 m (8 m in Siege Mode), copper, faint, always on. A turret inside it glows: a hot lens
+  and a ring on the floor under it (`turretLook` reads `setTurretPower`, written by the trait every frame).
+- **Q Homing Drone** (`enemy`, 8 m, sight, cd 4): the drone homes on the live position and lands 0.45 s after the cast: 45, `projectile: true`, no telegraph.
+  `dealt` slot 0 tags them for 3 s (`tag`, one pip, plus a cogged ring on the ground).
+- **Tag:** in `dealt`, a turret's hit on a tagged enemy deals x1.3. A turret hit arrives as kind `unit` on the player's side and as kind `spell`, slot 1, on
+  the CPU's side (Deploy Turret deals no damage of its own, so slot 1 is always a turret). Both are handled.
+- **W Deploy Turret** (`ground`, 8 m, `summon`, 2 charges, one back every 10 s, kit cooldown 10 shown): a turret for 8 s, 80 HP, 12 per 1.4 s, range 8.
+  At most six units per side.
+- **E Grapple** (`aim: line`, 9 m, 20 m/s, 0.25 s wind-up, cd 10): the bolt (`ctx.projectile`) does 30 and slow 1 s on the enemy and she stays put. The effect
+  traces the line itself (`firstSurface` against `ctx.obstacles()`, plus `turretSpots`, her live turrets, 0.6 m either side of the line). A wall, pillar or
+  turret first (or an enemy that sidestepped, with cover behind): the bolt's range is cut there and she reels to 0.9 m short (`moveCaster`, 0.3 s) if at
+  least 0.5 m remains. She cannot cast it while braced (`canCast`). No pull on the enemy.
+- **R Siege Mode** (`self`, cd 24): `t.hold(6)`, +20% armour, `show('siege')`. The effect draws four plates, braces, stakes, a ring gear and a `ChannelBar`.
+  Every 0.8 s, from 0.8 s, the nearest target within 9 m she can see takes a heavy shell: 30, `projectile: true`, 0.25 s flight, and it is caught by cover that
+  appears before it lands. Ends by the clock, a stun or silence (`channelBroken`), or Pack up (recast from 0.3 s, `replay: false`, `aiWait`): all through
+  `siegeOf(caster).live`. The CPU holds R unless it has a turret up and the enemy is within 9 m (`aiHold`; the 9 m is an addition to the table).
+
 ## Role (2026-10-30)
 **Summoner** (turret engineer), 580 HP. Q, R unchanged.
 - W Cog Turret: cooldown 12 to 9 (kit data only).

@@ -145,6 +145,10 @@ export class TraitRuntime implements TraitView {
     return this.trait?.marks?.(this) ?? [];
   }
 
+  veilNow() {
+    return this.trait?.figureVeil?.(this) ?? 0;
+  }
+
   clearShield() {
     this.host.clearShield();
   }

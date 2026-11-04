@@ -1,7 +1,8 @@
 import type { HeroKit } from '../heroes';
 
 /**
- * Dawn kit data (Auriel, the Dawn Paladin): four spells with canvas-drawn icons in the kit's palette. Signature shape:
+ * Dawn kit data (Auriel, the Dawn Paladin), kits v5: First Light, Dawnward, Oathbrand, Sunrise, with canvas-drawn icons in
+ * the kit's palette. Her passive and every number live in `src/traits/dawn.ts`. Signature shape:
  * hard-light geometry, flat gold panels with crisp edges, a dark amber rim and a thin white core line. See
  * pipeline/designs/kit-dawn.md.
  */
@@ -132,86 +133,83 @@ export const dawnKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'radiant spear', name: 'Radiant Spear', range: 12, cooldown: 3, aim: 'line',
-      blurb: 'Fires a spear of light along the aim that pierces everything it meets; a hit shields her for 10.',
+      key: 'Q', label: 'first light', name: 'First Light', range: 6, cooldown: 4,
+      blurb: 'A wave of light in a 6 m cone: 50. Hitting the enemy gives her a 30 shield for 3 s, but not while Dawnward or Sunrise holds. When that shield ends it bursts for 18 in 3 m.',
       icon(g, s) {
         ground(g, s);
-        sigil(g, s * 0.72, s * 0.8, s * 0.22, s * 0.07, s);
-        // Six shards in a line from the lower left to the upper right.
-        for (let i = 0; i < 6; i++) {
-          const t = i / 6, x = s * (0.1 + t * 0.62), y = s * (0.86 - t * 0.6);
-          shard(g, x, y, x + s * 0.17, y - s * 0.115, s * (i === 5 ? 0.1 : 0.075), s, i % 2 ? D.hot : i === 5 ? D.foil : D.body);
-        }
-        spark(g, s * 0.8, s * 0.2, s * 0.1);
-      },
-    },
-    {
-      key: 'W', label: 'aegis wall', name: 'Aegis Wall', range: 10, cooldown: 7, cc: true,
-      blurb: 'A ring of shields stands open for 1.2 s, then closes into a dome that stuns whoever is still inside.',
-      icon(g, s) {
-        ground(g, s);
-        sigil(g, s * 0.5, s * 0.84, s * 0.4, s * 0.1, s);
-        // Five shields standing in an arc, the centre one tallest.
-        const xs = [0.14, 0.3, 0.5, 0.7, 0.86], hs = [0.4, 0.5, 0.62, 0.5, 0.4], ws = [0.17, 0.2, 0.26, 0.2, 0.17];
+        sigil(g, s * 0.3, s * 0.84, s * 0.2, s * 0.06, s);
+        // Five shards fanning out of a sun disc at the lower left, a small kite shield at its foot.
         for (let i = 0; i < 5; i++) {
-          const face = i === 2 ? D.foil : i % 2 ? D.hot : D.body;
-          shield(g, s * xs[i], s * (0.8 - hs[i]), s * ws[i], s * hs[i], s, face);
+          const a = -0.95 + i * 0.42, ox = s * 0.24, oy = s * 0.76, len = s * (i === 2 ? 0.78 : 0.62);
+          shard(g, ox, oy, ox + Math.cos(a) * len, oy + Math.sin(a) * len, s * (i === 2 ? 0.11 : 0.085), s, i % 2 ? D.hot : i === 2 ? D.foil : D.body);
         }
-        hex(g, s * 0.5, s * 0.12, s * 0.07, s, D.hot);
+        ring(g, s * 0.24, s * 0.76, s * 0.12, s * 0.12, s * 0.03, D.dark);
+        ring(g, s * 0.24, s * 0.76, s * 0.12, s * 0.12, s * 0.016, D.body);
+        hex(g, s * 0.24, s * 0.76, s * 0.075, s, D.foil);
+        shield(g, s * 0.2, s * 0.5, s * 0.14, s * 0.2, s, D.hot);
+        spark(g, s * 0.84, s * 0.14, s * 0.09);
       },
     },
     {
-      key: 'E', label: 'radiant parry', name: 'Radiant Parry', range: 0, cooldown: 11, parry: true,
-      blurb: 'A sun-shield stance for 0.6 s. The first hit on her in that window is parried: no damage, and the enemy takes 20 and is stunned 0.6 s (a summoned unit is parried without the stun). If nothing hits her the stance fades.',
+      key: 'W', label: 'dawnward', name: 'Dawnward', range: 0, cooldown: 9,
+      blurb: 'A 70 shield for 3 s. While it holds, her basic attacks reach 3 m farther. Press again to pop it now. When it ends it bursts for 42 in 3 m. It cannot be cast while Sunrise holds.',
       icon(g, s) {
         ground(g, s);
         sigil(g, s * 0.5, s * 0.86, s * 0.4, s * 0.09, s);
-        // A halo of ray ticks behind a big kite shield, a blade glancing off it, and the flash of the parry.
-        for (let i = 0; i < 12; i++) {
-          const a = (i / 12) * Math.PI * 2;
-          g.beginPath();
-          g.moveTo(s * 0.5 + Math.cos(a - 0.1) * s * 0.3, s * 0.46 + Math.sin(a - 0.1) * s * 0.3);
-          g.lineTo(s * 0.5 + Math.cos(a) * s * (i % 2 ? 0.46 : 0.6), s * 0.46 + Math.sin(a) * s * (i % 2 ? 0.46 : 0.6));
-          g.lineTo(s * 0.5 + Math.cos(a + 0.1) * s * 0.3, s * 0.46 + Math.sin(a + 0.1) * s * 0.3);
-          g.closePath();
-          g.fillStyle = 'rgba(255,231,160,0.26)';
-          g.fill();
-        }
-        ring(g, s * 0.5, s * 0.46, s * 0.34, s * 0.34, s * 0.03, D.dark);
-        ring(g, s * 0.5, s * 0.46, s * 0.34, s * 0.34, s * 0.016, D.body);
-        shield(g, s * 0.5, s * 0.16, s * 0.46, s * 0.62, s, D.foil);
-        shield(g, s * 0.5, s * 0.26, s * 0.3, s * 0.4, s, D.hot);
-        hex(g, s * 0.5, s * 0.4, s * 0.06, s, D.body);
-        // The deflected blade, snapped away to the upper right.
-        shard(g, s * 0.78, s * 0.36, s * 0.92, s * 0.1, s * 0.07, s, D.body);
-        spark(g, s * 0.74, s * 0.3, s * 0.12);
+        // Shield shards thrown out round a big kite shield that carries a sun.
+        const pieces: [number, number, number][] = [[0.14, 0.32, 0.09], [0.86, 0.32, 0.09], [0.1, 0.62, 0.08], [0.9, 0.62, 0.08], [0.3, 0.12, 0.07], [0.7, 0.12, 0.07]];
+        pieces.forEach(([x, y, w], i) => shield(g, s * x, s * y, s * w * 1.5, s * w * 2.4, s, i % 2 ? D.hot : D.body));
+        shield(g, s * 0.5, s * 0.14, s * 0.46, s * 0.68, s, D.foil);
+        shield(g, s * 0.5, s * 0.22, s * 0.32, s * 0.5, s, D.body);
+        ring(g, s * 0.5, s * 0.42, s * 0.1, s * 0.1, s * 0.026, D.dark);
+        hex(g, s * 0.5, s * 0.42, s * 0.085, s, D.hot);
+        spark(g, s * 0.5, s * 0.42, s * 0.05);
       },
     },
     {
-      key: 'R', label: 'dawn descent', name: 'Dawn Descent', range: 12, cooldown: 16, dash: true, cc: true,
-      blurb: 'Ultimate. She leaps up to 12 m in a high arc and cannot be touched while airborne (1 s). She lands on the aimed spot: a 2.5 m zone takes 40 and stuns 1 s, and a shield of 40 wraps her for 3 s.',
+      key: 'E', label: 'oathbrand', name: 'Oathbrand', range: 7, cooldown: 11,
+      blurb: 'A beam falls on the enemy (7 m) 0.5 s later if she still has sight: 50, and branded for 2.5 s. A burst that catches a branded enemy also stuns them 0.8 s.',
       icon(g, s) {
         ground(g, s);
-        // The landing zone at the bottom right, the arc of the leap from the upper left, a figure of shards coming down.
-        sigil(g, s * 0.66, s * 0.82, s * 0.3, s * 0.085, s);
-        ring(g, s * 0.66, s * 0.82, s * 0.2, s * 0.055, s * 0.016, D.core);
-        g.beginPath();
-        g.moveTo(s * 0.08, s * 0.8);
-        g.quadraticCurveTo(s * 0.3, s * -0.2, s * 0.58, s * 0.42);
-        g.strokeStyle = 'rgba(255,231,160,0.55)';
-        g.lineWidth = s * 0.03;
-        g.setLineDash([s * 0.05, s * 0.04]);
-        g.stroke();
-        g.setLineDash([]);
-        // A halo disc behind the falling figure, a blade pointing down, the guard and the wings.
-        ring(g, s * 0.62, s * 0.4, s * 0.17, s * 0.17, s * 0.03, D.dark);
-        ring(g, s * 0.62, s * 0.4, s * 0.17, s * 0.17, s * 0.016, D.body);
-        shard(g, s * 0.66, s * 0.76, s * 0.62, s * 0.42, s * 0.2, s, D.hot);
-        shard(g, s * 0.66, s * 0.76, s * 0.64, s * 0.54, s * 0.09, s, D.foil);
-        shard(g, s * 0.48, s * 0.34, s * 0.78, s * 0.3, s * 0.06, s, D.body);
-        hex(g, s * 0.62, s * 0.24, s * 0.06, s, D.foil);
-        spark(g, s * 0.66, s * 0.8, s * 0.09);
-        spark(g, s * 0.26, s * 0.2, s * 0.06);
+        sigil(g, s * 0.5, s * 0.8, s * 0.38, s * 0.1, s);
+        ring(g, s * 0.5, s * 0.8, s * 0.2, s * 0.055, s * 0.016, D.core);
+        // A column of light falling on a brand: a hexagon cut with a sun, the beam's tip bright.
+        shard(g, s * 0.5, s * 0.02, s * 0.5, s * 0.74, s * 0.3, s, D.hot);
+        shard(g, s * 0.5, s * 0.06, s * 0.5, s * 0.72, s * 0.12, s, D.foil);
+        hex(g, s * 0.5, s * 0.64, s * 0.15, s, D.body);
+        hex(g, s * 0.5, s * 0.64, s * 0.09, s, D.foil);
+        spark(g, s * 0.5, s * 0.64, s * 0.07);
+        shard(g, s * 0.2, s * 0.3, s * 0.34, s * 0.5, s * 0.06, s, D.body);
+        shard(g, s * 0.8, s * 0.3, s * 0.66, s * 0.5, s * 0.06, s, D.body);
+      },
+    },
+    {
+      key: 'R', label: 'sunrise', name: 'Sunrise', range: 0, cooldown: 24,
+      blurb: 'A 200 shield for 5 s, and she floats. Press again to pop it. When it breaks, runs out or is popped, a 5 m ring appears fixed at her spot, closes for 1.6 s and bursts for 120. It does not follow her.',
+      icon(g, s) {
+        ground(g, s);
+        // The big closing ring on the floor, and a sun rising over a kite shield at its centre.
+        sigil(g, s * 0.5, s * 0.76, s * 0.46, s * 0.15, s);
+        ring(g, s * 0.5, s * 0.76, s * 0.3, s * 0.095, s * 0.02, D.core);
+        for (let i = 0; i < 13; i++) {
+          const a = Math.PI + (i / 12) * Math.PI;
+          g.beginPath();
+          g.moveTo(s * 0.5 + Math.cos(a - 0.08) * s * 0.26, s * 0.58 + Math.sin(a - 0.08) * s * 0.26);
+          g.lineTo(s * 0.5 + Math.cos(a) * s * (i % 2 ? 0.4 : 0.52), s * 0.58 + Math.sin(a) * s * (i % 2 ? 0.4 : 0.52));
+          g.lineTo(s * 0.5 + Math.cos(a + 0.08) * s * 0.26, s * 0.58 + Math.sin(a + 0.08) * s * 0.26);
+          g.closePath();
+          g.fillStyle = i % 2 ? D.body : D.hot;
+          g.fill();
+          g.lineWidth = s * 0.012;
+          g.strokeStyle = D.dark;
+          g.stroke();
+        }
+        g.beginPath(); g.arc(s * 0.5, s * 0.58, s * 0.24, Math.PI, Math.PI * 2); g.closePath();
+        g.fillStyle = D.foil; g.fill(); g.lineWidth = s * 0.026; g.strokeStyle = D.dark; g.stroke();
+        g.beginPath(); g.arc(s * 0.5, s * 0.58, s * 0.14, Math.PI, Math.PI * 2); g.closePath();
+        g.fillStyle = D.hot; g.fill();
+        shield(g, s * 0.5, s * 0.5, s * 0.2, s * 0.3, s, D.body);
+        hex(g, s * 0.5, s * 0.2, s * 0.06, s, D.foil);
       },
     },
   ],

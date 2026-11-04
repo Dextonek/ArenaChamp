@@ -51,7 +51,9 @@ said "uncommitted" now name the commit that holds them.
   CPU and online fights (`src/game/loading.ts`), the eight `_v2` models as the default everywhere (they were behind `?figs=v2`), the Heroes tab as one table of rows, and a
   vs CPU tab when logged in. Hit boxes: a spell no longer hits outside its drawn shape (the old 1.6 m rule only applies to casts with no shape), and each hero has
   a hit size measured from its model (`HERO_BODIES`), which also fixes clicks on tall heroes' heads. Not measured yet: how the easier levels play.
-- New hero ideas waiting on the user to pick: [new-heroes.md](../pipeline/designs/new-heroes.md), with the user's pillar hero and mirror hero in full.
+- New heroes: the user asked for all of [new-heroes.md](../pipeline/designs/new-heroes.md) ("Yes make them", then "All"): 19 heroes, each with a kit, effects and a model,
+  for 39 in total, after the 20 kits. First write full kits for the 16 still sketched and run their numbers. Build order: Bram and Gerald, Silvane and Hank first, then the
+  rest, with the largest (Pim and Pom, Pip) late.
 - Server edit waiting on the next deploy: `server/hub.mjs` allows the statuses `charm`, `sealed` and the debuff `grounded`. A deploy also brings the renamed Vitriol.
 
 **League kit research (2026-11-04, user: "research deeply the kits from League of Legends... make docs knowledge", then

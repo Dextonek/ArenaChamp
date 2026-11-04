@@ -91,6 +91,18 @@ import { starfallArrowModule } from './starfallArrow';
 import { twinStarsModule } from './twinStars';
 import { pinningArrowModule } from './pinningArrow';
 import { meteorMarkModule } from './meteorMark';
+import { homingDroneModule } from './homingDrone';
+import { deployTurretModule } from './deployTurret';
+import { grappleHookModule } from './grappleHook';
+import { siegeModeModule } from './siegeMode';
+import { firstLightModule } from './firstLight';
+import { dawnwardModule } from './dawnward';
+import { oathbrandModule } from './oathbrand';
+import { sunriseModule } from './sunrise';
+import { barbedStingerModule } from './barbedStinger';
+import { hiveShellModule } from './hiveShell';
+import { swarmCloudModule } from './swarmCloud';
+import { swarmSurgeModule } from './swarmSurge';
 import { skyStrikeModule } from './skyStrike';
 import { thunderRodModule } from './thunderRod';
 import { polarityModule } from './polarity';
@@ -275,6 +287,18 @@ export const targetedModules: EffectModule[] = [
   twinStarsModule,
   pinningArrowModule,
   meteorMarkModule,
+  homingDroneModule,
+  deployTurretModule,
+  grappleHookModule,
+  siegeModeModule,
+  firstLightModule,
+  dawnwardModule,
+  oathbrandModule,
+  sunriseModule,
+  barbedStingerModule,
+  hiveShellModule,
+  swarmCloudModule,
+  swarmSurgeModule,
   skyStrikeModule,
   thunderRodModule,
   polarityModule,

@@ -225,6 +225,11 @@ export interface Trait {
   ring?(t: TraitView): HeroRing | null;
   /** What this hero's passive keeps on the ground, asked every frame on both screens (Mortis's bone piles). */
   marks?(t: TraitView): GroundMark[];
+  /**
+   * How veiled this hero's figure looks now, 0..1, asked every frame on both screens: dark and see-through, never hidden
+   * (Nyx). May only read what both screens have.
+   */
+  figureVeil?(t: TraitView): number;
   /** A builder per mark kind (called once per pooled copy): the object's feet at y 0, its length along z at 1 m. */
   markLook?: Record<string, () => THREE.Object3D>;
   /** An own resource: a bar under HP (shown for both heroes). */
