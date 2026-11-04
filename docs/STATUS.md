@@ -7,6 +7,7 @@ Everything below is committed on `feat/particle-editor` unless marked. The 2026-
 said "uncommitted" now name the commit that holds them.
 
 **Commits since 2026-10-30, newest first**
+- `bc0f830` A Random tile first in every hero picker (entry below).
 - `a0832f4` Zephyr and Marin rebalanced for the CPU's new walking (entry below).
 - `e0b96b4` League walking and controls, the hover outline (entry below).
 - `ae9e4cb` Arena events and real pathfinding round cover (entry below).
@@ -18,17 +19,32 @@ said "uncommitted" now name the commit that holds them.
 - `0ed55d1` Arena remake, breakable walls, sculpted v2 heroes, phone play.
 - `c7f2039` Hero identity (traits and passives), kit identity v2, the motion pass.
 
-- **Pushed:** GitHub `main` is at `ae9e4cb` (2026-11-04, `git push origin feat/particle-editor:main`). `e0b96b4` and
-  `a0832f4` are local only.
-- **Live:** `a0832f4`, deployed 2026-11-04 at the user's request (`npm run cf:deploy`, worker version
-  `6720baf6-4ed5-4e28-8e06-9e2171efca1c`), https://arena-of-kits.arenachamp.workers.dev/game. Checked on the live site: the
-  page serves the same bundles as this build (`runtime-BYRvjmup.js`), the online server connects, and a CPU fight from the
-  real buttons ran with Ember Caldera's event. Not checked live: two players online; login.
-- **In progress:** nothing running. Uncommitted: the Random tile (below), this STATUS.
+- **Pushed:** GitHub `main` is at `bc0f830` (2026-11-04, `git push origin feat/particle-editor:main`).
+- **Live:** `bc0f830`, deployed 2026-11-04 at the user's request (`npm run cf:deploy`, worker version
+  `aaf3b0e5-49f0-4e40-9dcf-722e32ef55df`), https://arena-of-kits.arenachamp.workers.dev/game. Checked on the live site: the
+  page serves the new bundle (`game-XTrx3sBE.js`), the online server connects, the CPU screen shows 21 tiles with Random
+  first, a fight from the real buttons drew a hero (Auriel against Zephyr), and "Leave duel" came back with Random still
+  chosen. No console errors. Not checked live: Random in a real queue or lobby, two players online, login, a phone, the
+  in-fight Leave button (its confirm dialog closes by itself in the test browser, so it could not be answered).
+- **In progress:** nothing running. Uncommitted: this STATUS.
 - **Next:** v4 batch 2 in the [kits-v4.md](../pipeline/designs/kits-v4.md) build order, led by its engine pieces;
   Nyx's stealth last.
 
-**Random pick in the hero grid (2026-11-04, user: "make also icon for random pick at first place"; uncommitted, not deployed)**
+**League kit research (2026-11-04, user: "research deeply the kits from League of Legends... make docs knowledge", then
+"go through all champions... make big docs"; committed, not pushed)**
+- [knowledge/league-kit-design.md](knowledge/league-kit-design.md): why the kits work, how ours compare, a 35-question checklist,
+  a ranked list of what to do first, a verdict on each of our 20 heroes. About 12,000 words.
+- [knowledge/league-champion-kits.md](knowledge/league-champion-kits.md): all 173 champions, about 55,000 words, with counts across
+  the roster. Notes and tags in [knowledge/league-research/](knowledge/league-research/).
+- Sources: the two Fandom pages the user named (read in a browser, since Fandom refuses automated reading, and out of date), the
+  official wiki for champion pages, Riot's Data Dragon 16.22.1 for checks. About 40 of 173 entries were corrected against Riot's text,
+  6 of them with swapped slots. Pages were read through a summarising tool, so small errors can remain.
+- Main finding: the counterplay lines of three built kits fail on the numbers, checked in the code: Lyra's Meteor Mark, Mortis's Bone
+  Fan, Marin's Moon's Pull. The doc also finds hidden state on 4 of 5 built kits, and few second decisions.
+- Not changed: no code or kit design. **To decide (user):** which items of the ranked list to do, before v4 batch 2. Also League has a
+  champion named Vex, the same as ours.
+
+**Random pick in the hero grid (2026-11-04, user: "make also icon for random pick at first place"; committed `bc0f830`, pushed, deployed)**
 - A Random tile comes first in every hero picker (`src/game/main.ts`), with its own icon: a gold question mark in a ring
   of one dot per hero, in each hero's colour. The CPU screen's random opponent shows the same icon.
 - Play card and CPU screen: Random stays chosen and is drawn when the match or fight starts, never the chosen opponent. A
@@ -1136,9 +1152,9 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
 
 ## Waiting on you
 - Nothing blocking (2026-11-03). Push and deploy happen only when you ask:
-  - Push: `git push origin feat/particle-editor:main`. GitHub `main` is at `ae9e4cb`; live is two commits ahead of it.
+  - Push: `git push origin feat/particle-editor:main`. GitHub `main` and the live site are both at `bc0f830`.
     All commits are authored as Dextonek (old history in `refs/backup/before-dextonek`).
-  - Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end). Live is `a0832f4`.
+  - Deploy: `npm run cf:deploy` (drops every live WebSocket: running matches end). Live is `bc0f830`.
 - Play online: https://arena-of-kits.arenachamp.workers.dev in two browsers (online accounts start empty).
 - Try it in two windows: `npm run dev`, then http://localhost:5173/game.html twice (see the guide's duel game section).
 

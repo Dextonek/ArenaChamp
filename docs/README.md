@@ -62,6 +62,8 @@ the art direction and pipeline sections if you want to make new effects the way 
 |---|---|
 | [Lessons](knowledge/lessons.md) | Technical gotchas and fixes (shaders, post passes, instancing, materials, the browser pane) |
 | [Glossary](knowledge/glossary.md) | The project's words: impact frame, telegraph, foil, dead beat, kit, lingering, ... |
+| [League kit design](knowledge/league-kit-design.md) | Why League's kits work: 14 principles, what its reworks fixed, how our 20 kits compare, a kit checklist and what to do first |
+| [League champion kits](knowledge/league-champion-kits.md) | All 173 League champions read as a designer would, with counts across the roster |
 
 ### Project state
 | Page | What it answers |
