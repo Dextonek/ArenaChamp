@@ -4,10 +4,10 @@ import { DUEL_OBSTACLES, type Obstacle } from '../obstacles';
 
 /** Nine Lives: the lives he has, and the HP of each. */
 export const LIVES = 9;
-export const LIFE_HP = 50;
+export const LIFE_HP = 60;
 
 /** Scratch (Q): damage, reach (m) and the width of the claw (degrees), and the seconds his next attack stays ready at once. */
-export const SCRATCH_DAMAGE = 40;
+export const SCRATCH_DAMAGE = 46;
 export const SCRATCH_RANGE = 2.5;
 export const SCRATCH_ANGLE = 90;
 export const SCRATCH_FREE = 2;
@@ -33,7 +33,7 @@ export const FEET_LEAP = 3;
 export const FEET_LEAP_TIME = 0.25;
 export const FEET_SPEED = 0.3;
 
-/** The life he is on (1..9) at `hp`, and the HP left in it. A full life is 50 left; at exactly 400 HP he is on life 8, full. */
+/** The life he is on (1..9) at `hp`, and the HP left in it. A full life is 60 left; at exactly 480 HP he is on life 8, full. */
 export function lifeOf(hp: number) {
   return Math.max(1, Math.min(LIVES, Math.ceil((hp - 1e-6) / LIFE_HP)));
 }
@@ -66,9 +66,9 @@ export function catBookOf(who: object): CatBook {
 const LOST_WORDS = ['MROW', 'HISS', 'NYA', 'MEOW'];
 
 /**
- * Sir Whiskers (assassin, melee). Passive Nine Lives: his bar is nine chunks of 50 and no single hit takes more than the life he is on
+ * Sir Whiskers (assassin, melee). Passive Nine Lives: his bar is nine chunks of 60 and no single hit takes more than the life he is on
  * (`taken`, which runs on his own client: it reads his real HP, so a hit on his last 12 HP of a life takes 12 and the rest is wasted,
- * and the cap follows the life he is on now, not a fixed 50). Many small hits and damage over time cut him apart; a big spell is
+ * and the cap follows the life he is on now, not a fixed 60). Many small hits and damage over time cut him apart; a big spell is
  * wasted on him. Pounce spends the life he is on (`payHp`, down to the start of that life, so a low life is cheap) and cannot be cast on
  * his last life. Land on My Feet arms for 4 s (shown to both players as a ring, `show('feet')`): the first hit that would cost him a
  * life leaves him 1 HP into it instead (`taken`), the hit's status and knock are dropped and he leaps 3 m away from the enemy
@@ -82,14 +82,14 @@ const LOST_WORDS = ['MROW', 'HISS', 'NYA', 'MEOW'];
 export const catTrait: Trait = {
   passive: {
     name: 'Nine Lives',
-    blurb: 'His bar is nine lives of 50 HP. No single hit takes more than the life he is on: the rest of a big hit is wasted. Many small hits and damage over time are what cut him apart.',
+    blurb: 'His bar is nine lives of 60 HP. No single hit takes more than the life he is on: the rest of a big hit is wasted. Many small hits and damage over time are what cut him apart.',
   },
   twist: {
     name: 'Spend a life',
     blurb: 'On a full life, attack. On a low one, spend it: Pounce costs the life he is on and Land on My Feet saves the next one.',
   },
   speed: 4.5,
-  attack: { kind: 'melee', range: 2, damage: 9, interval: 0.7, windup: 0.25, look: 'claw' },
+  attack: { kind: 'melee', range: 2, damage: 11, interval: 0.7, windup: 0.25, look: 'claw' },
   ownLook: {
     claw: { color: '#f4e6c8', shape: 'mark' },
     feet: { color: '#e8a13a', shape: 'gem' },

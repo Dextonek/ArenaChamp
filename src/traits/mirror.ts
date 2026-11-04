@@ -125,7 +125,7 @@ export const mirrorTrait: Trait = {
     blurb: 'Every thrown mirror asks whether to walk to the catch. Hit her on the catch: you can see where she must walk.',
   },
   speed: 4.1,
-  attack: { kind: 'ranged', range: 7.5, damage: 14, interval: 1.2, windup: 0.3, speed: 22, look: 'prism' },
+  attack: { kind: 'ranged', range: 7.5, damage: 14, interval: 1.0, windup: 0.3, speed: 22, look: 'prism' },
   marks(t) {
     const b = mirrorBooks.get(t.self());
     if (!b || b.marks.length === 0) return [];

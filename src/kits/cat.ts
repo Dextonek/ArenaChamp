@@ -221,7 +221,7 @@ function heart(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, f
 
 export const catKit: HeroKit = {
   name: 'Sir Whiskers',
-  maxHp: 450,
+  maxHp: 540,
   hpChunks: 9,
   melee: true,
   title: 'the Cat Knight',
@@ -285,7 +285,7 @@ export const catKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'scratch', name: 'Scratch', range: 2.5, cooldown: 3,
-      blurb: 'A 2.5 m claw in front of him: 40 damage. His next attack within 2 s is ready at once.',
+      blurb: 'A 2.5 m claw in front of him: 46 damage. His next attack within 2 s is ready at once.',
       icon(g, s) {
         iconGround(g, s);
         // Three crossed claw strokes with a spray of fur.

@@ -235,8 +235,8 @@ export const masonTrait: Trait = {
     blurb: 'Gerald: one pillar, a real wall with 220 HP and a carved face that changes. Within 3 m of him Bram takes 15% less damage. Break him or fight away from him.',
   },
   twist: { name: 'Cover, weapon or escape?', blurb: 'Gerald is cover, a thrown weapon and a way in. Each use spends one of the others.' },
-  speed: 3.8,
-  attack: { kind: 'melee', range: 2.5, damage: 20, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
+  speed: 4.0,
+  attack: { kind: 'melee', range: 2.5, damage: 24, interval: 1.2, windup: 0.35, speed: 0, look: 'smash' },
   ownLook: { gerald: { color: '#c9b48a', shape: 'gem' } },
   markLook: {
     gerald: () => buildGerald('bored'),

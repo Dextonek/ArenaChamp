@@ -71,7 +71,7 @@ export const frostTrait: Trait = {
     blurb: 'Basic attacks add 1 Chill, Icicle 2, its Shatter 1, Hoarfrost 2. Winter\'s Shatter spends the Chill for 30 more damage each.',
   },
   speed: 3.9,
-  attack: { kind: 'ranged', range: 8, damage: 13, interval: 1.4, windup: 0.32, speed: 20, look: 'icicle' },
+  attack: { kind: 'ranged', range: 8, damage: 12, interval: 1.4, windup: 0.32, speed: 20, look: 'icicle' },
   recast: { slot: 0, window: SHATTER_WINDOW, arm: SHATTER_ARM, name: 'Shatter', power: 1, replay: true },
   ownLook: {
     rime: { color: '#e8f4fa', shape: 'gem' },

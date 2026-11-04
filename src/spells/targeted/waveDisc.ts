@@ -27,7 +27,7 @@ export interface WaveDiscSettings {
   loop: boolean;
 }
 
-export const defaultWaveDisc = (): WaveDiscSettings => ({ damage: 64, move: DISC_MOVE, loop: false });
+export const defaultWaveDisc = (): WaveDiscSettings => ({ damage: 58, move: DISC_MOVE, loop: false });
 
 // Timeline (seconds). The throw is fixed; the hit (or the miss) moves the rest.
 const THROW_T = 0.3; // the disc leaves her hands and the bolt is fired

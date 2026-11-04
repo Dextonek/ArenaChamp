@@ -27,9 +27,9 @@ export const STAMP_EXPOSE = 0.2;
 export const STAMP_EXPOSE_SECONDS = 3;
 
 /** On Your Tab: seconds from the last charge to it coming due, the interest, and what each hit on him pays off. */
-export const DUE_SECONDS = 4;
+export const DUE_SECONDS = 3;
 export const DUE_MUL = 1.3;
-export const PAY_OFF = 20;
+export const PAY_OFF = 3;
 /** The tab's own stack timer is only a backstop: it must outlive DUE_SECONDS. */
 const TAB_BACKSTOP = 8;
 const TAB_MAX = 999;
@@ -72,7 +72,7 @@ const since = (n: number, seen: number) => (n > seen ? n - seen : 1);
 /**
  * Mr. Ledger (controller). Passive On Your Tab: his Invoice and Late Fee do no damage now. The damage goes on the enemy's tab, a
  * number over their head (`enemyLabel`, read from the `tab` stacks). 4 s after the last charge the tab comes due at +30%, in
- * one hit, with the word PAST DUE. Each hit the enemy lands on him pays off 20 of it. Call It In (E) brings the tab due now
+ * one hit, with the word PAST DUE. An attack the enemy lands on him pays off 3 of it, a spell 15. Call It In (E) brings the tab due now
  * without the interest; Foreclosure (R) takes the whole tab at +60% and makes the enemy take +20% from him for 3 s.
  *
  * Where each rule runs (a network duel has two screens). The tab lives on the screen that decides the enemy's hits: offline the
@@ -89,7 +89,7 @@ const since = (n: number, seen: number) => (n > seen ? n - seen : 1);
 export const ledgerTrait: Trait = {
   passive: {
     name: 'On Your Tab',
-    blurb: 'His spell damage does not hurt now: it goes on your tab, a number over your head. It comes due 4 s after the last charge, at +30%. Each hit you land on him pays off 20.',
+    blurb: 'His spell damage does not hurt now: it goes on your tab, a number over your head. It comes due 3 s after the last charge, at +30%. Each attack you land on him pays off 3 and each spell 15: pays off 20.',
   },
   twist: {
     name: 'Interest',
@@ -142,7 +142,9 @@ export const ledgerTrait: Trait = {
   /** His own client: a hit on him pays the enemy's tab down. */
   taken(t, hit: TraitHit) {
     if (hit.blocked || hit.damage <= 0 || t.stacks('tab') <= 0) return;
-    t.show('paid', (t.mem.paid = bump(t.mem.paid)));
+    // An attack pays off one step, a spell five.
+    for (let i = hit.kind === 'spell' ? 5 : 1; i > 0; i--) t.mem.paid = bump(t.mem.paid);
+    t.show('paid', t.mem.paid);
   },
   /** Where the enemy's hits are decided: payments, a called-in tab, and a tab coming due. */
   victimTick(t) {

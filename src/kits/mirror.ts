@@ -260,7 +260,7 @@ export const mirrorKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'hand mirror', name: 'Hand Mirror', range: 10, cooldown: 3.5, aim: 'line', bank: true,
+      key: 'Q', label: 'hand mirror', name: 'Hand Mirror', range: 10, cooldown: 3, aim: 'line', bank: true,
       blurb: 'A spinning hand mirror (10 m): 40 damage, +25% for each of up to three bounces. A mirror that lands after a bounce lies 2.5 s: walk within 1 m to catch it, and Hand Mirror is ready again.',
       icon(g, s) {
         iconGround(g, s);

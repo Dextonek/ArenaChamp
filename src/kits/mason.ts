@@ -101,7 +101,7 @@ function chips(g: CanvasRenderingContext2D, s: number, pts: [number, number, num
 export const masonKit: HeroKit = {
   name: 'Bram',
   title: 'the Pillar Mason',
-  maxHp: 760,
+  maxHp: 800,
   melee: true,
   accent: M.body,
   foil: '#6d6a66',

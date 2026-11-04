@@ -29,7 +29,7 @@ export interface ToxinDartSettings {
   reaction: ReactionPreview;
 }
 
-export const defaultToxinDart = (): ToxinDartSettings => ({ damage: 24, tick: 5, loop: false, reaction: 'none' });
+export const defaultToxinDart = (): ToxinDartSettings => ({ damage: 22, tick: 5, loop: false, reaction: 'none' });
 
 // Timeline (seconds).
 const GLINT_T = 0.12;
