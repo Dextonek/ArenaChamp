@@ -37,6 +37,11 @@ const ATTACK_MARK = '#ff4a3a';
 const AIM_PALE = '#e6e1d6'; // the range ring and, on a coloured kit, whatever cover blocks
 const AIM_GREY = '#8d8a86'; // what cover blocks on a kit whose own colour is pale already
 
+/** A kit's foil for HUD text and rims: on some kits it is a dark trim colour, unreadable on the dark panel. */
+function hudInk(kit: HeroKit) {
+  return new THREE.Color(kit.foil).getHSL({ h: 0, s: 0, l: 0 }).l < 0.6 ? AIM_PALE : kit.foil;
+}
+
 /** The colour of an aim mark that cover blocks: it has to differ from the kit's accent and show on the dark floor. */
 function blockedTint(accent: string) {
   return new THREE.Color(accent).getHSL({ h: 0, s: 0, l: 0 }).l > 0.8 ? AIM_GREY : AIM_PALE;
@@ -1123,16 +1128,16 @@ export class HeroMode implements TouchTarget {
     const tint = (pct: number, base = '#060608') => `color-mix(in srgb, ${kit.accent} ${pct}%, ${base})`;
     const root = document.createElement('div');
     root.style.cssText =
-      'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:6;display:none;align-items:flex-end;' +
+      'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);width:max-content;z-index:6;display:none;align-items:flex-end;' +
       'gap:14px;padding:10px 16px 12px;border-radius:14px;user-select:none;' +
       `background:linear-gradient(180deg,${tint(14)},${tint(5)});border:1px solid ${tint(32)};opacity:0.97;` +
-      'box-shadow:0 8px 28px rgba(0,0,0,0.6);font:600 12px ui-sans-serif,system-ui;color:' + kit.foil + ';';
+      'box-shadow:0 8px 28px rgba(0,0,0,0.6);font:600 12px ui-sans-serif,system-ui;color:' + hudInk(kit) + ';';
 
     // Portrait and name plate.
     const plate = document.createElement('div');
     plate.style.cssText = 'display:flex;align-items:center;gap:10px;padding-right:6px;';
     const portrait = canvasIcon(64, kit.portrait);
-    portrait.style.cssText = `width:64px;height:64px;border-radius:50%;border:2px solid ${kit.foil};box-shadow:0 0 0 2px ${tint(18)};`;
+    portrait.style.cssText = `width:64px;height:64px;border-radius:50%;border:2px solid ${hudInk(kit)};box-shadow:0 0 0 2px ${tint(18)};`;
     const names = document.createElement('div');
     names.innerHTML = `<div style="font:700 16px ui-serif,Georgia,serif;letter-spacing:0.5px">${kit.name}</div>` +
       `<div style="font:500 11px ui-sans-serif,system-ui;opacity:0.7">${kit.title}</div>` +
@@ -1171,7 +1176,7 @@ export class HeroMode implements TouchTarget {
       key.textContent = spell.key;
       key.style.cssText =
         'position:absolute;left:3px;bottom:3px;min-width:16px;height:16px;padding:0 3px;border-radius:4px;' +
-        `background:${tint(8)};border:1px solid ${ult ? '#c9a24a' : tint(55)};color:${ult ? '#ffd27a' : kit.foil};` +
+        `background:${tint(8)};border:1px solid ${ult ? '#c9a24a' : tint(55)};color:${ult ? '#ffd27a' : hudInk(kit)};` +
         'font:800 11px ui-sans-serif,system-ui;display:flex;align-items:center;justify-content:center;';
       box.append(icon, shade, secs, key);
       box.addEventListener('click', () => this.beginAim(i));
@@ -1179,7 +1184,7 @@ export class HeroMode implements TouchTarget {
       box.addEventListener('mouseleave', () => (this.tip.style.display = 'none'));
       const label = document.createElement('div');
       label.textContent = ult ? `${spell.name} · ULT` : spell.name;
-      label.style.cssText = `font:600 10px ui-sans-serif,system-ui;color:${ult ? '#e8c66a' : kit.foil};opacity:0.85;white-space:nowrap;`;
+      label.style.cssText = `font:600 10px ui-sans-serif,system-ui;color:${ult ? '#e8c66a' : hudInk(kit)};opacity:0.85;white-space:nowrap;`;
       col.append(box, label);
       root.appendChild(col);
       this.slotEls.push({ box, shade, secs });
@@ -1198,7 +1203,7 @@ export class HeroMode implements TouchTarget {
     const root = document.createElement('div');
     root.style.cssText =
       'position:fixed;inset:0;z-index:6;display:none;pointer-events:none;user-select:none;-webkit-user-select:none;' +
-      `-webkit-touch-callout:none;font:600 12px ui-sans-serif,system-ui;color:${kit.foil};`;
+      `-webkit-touch-callout:none;font:600 12px ui-sans-serif,system-ui;color:${hudInk(kit)};`;
 
     const plate = document.createElement('div');
     plate.style.cssText =
@@ -1206,7 +1211,7 @@ export class HeroMode implements TouchTarget {
       `display:flex;align-items:flex-start;gap:8px;padding:6px 8px;border-radius:12px;pointer-events:auto;` +
       `background:linear-gradient(180deg,${tint(14)}cc,${tint(5)}cc);border:1px solid ${tint(32)};`;
     const portrait = canvasIcon(64, kit.portrait);
-    portrait.style.cssText = `width:40px;height:40px;border-radius:50%;border:2px solid ${kit.foil};`;
+    portrait.style.cssText = `width:40px;height:40px;border-radius:50%;border:2px solid ${hudInk(kit)};`;
     if (this.host.nextKit) portrait.addEventListener('click', () => this.host.nextKit?.());
     plate.appendChild(portrait);
     this.passiveEls = this.buildPassive(plate, tint);
@@ -1225,8 +1230,8 @@ export class HeroMode implements TouchTarget {
     const attack = document.createElement('div');
     attack.style.cssText =
       `width:80px;height:80px;border-radius:50%;pointer-events:auto;touch-action:none;display:flex;align-items:center;` +
-      `justify-content:center;font:700 34px ui-serif,Georgia,serif;color:${kit.foil};` +
-      `background:radial-gradient(circle at 50% 38%, ${tint(55)}, ${tint(18)});border:2px solid ${kit.foil};` +
+      `justify-content:center;font:700 34px ui-serif,Georgia,serif;color:${hudInk(kit)};` +
+      `background:radial-gradient(circle at 50% 38%, ${tint(55)}, ${tint(18)});border:2px solid ${hudInk(kit)};` +
       'box-shadow:0 4px 16px rgba(0,0,0,0.6);';
     attack.textContent = '⚔';
     at(attack, 0, 0, 80);
@@ -1284,7 +1289,7 @@ export class HeroMode implements TouchTarget {
       `background:radial-gradient(circle at 50% 40%, ${tint(45)}, ${tint(10)});display:flex;align-items:center;justify-content:center;`;
     const glyph = document.createElement('div');
     glyph.textContent = trait.passive.name.slice(0, 1);
-    glyph.style.cssText = `font:700 20px ui-serif,Georgia,serif;color:${kit.foil};opacity:0.9;`;
+    glyph.style.cssText = `font:700 20px ui-serif,Georgia,serif;color:${hudInk(kit)};opacity:0.9;`;
     const badge = document.createElement('div');
     badge.style.cssText =
       'position:absolute;right:1px;bottom:1px;min-width:14px;padding:0 3px;border-radius:7px;background:#000a;' +
@@ -1304,7 +1309,7 @@ export class HeroMode implements TouchTarget {
     if (!TOUCH) box.addEventListener('mouseleave', () => (this.tip.style.display = 'none'));
     const label = document.createElement('div');
     label.textContent = trait.passive.name;
-    label.style.cssText = `font:600 10px ui-sans-serif,system-ui;color:${kit.foil};opacity:0.85;white-space:nowrap;`;
+    label.style.cssText = `font:600 10px ui-sans-serif,system-ui;color:${hudInk(kit)};opacity:0.85;white-space:nowrap;`;
     // The resource bar and the buff row sit under the passive.
     const resBox = document.createElement('div');
     resBox.style.cssText = `position:relative;width:64px;height:8px;border-radius:4px;background:#0008;overflow:hidden;display:${trait.resource ? '' : 'none'};`;
@@ -1355,7 +1360,7 @@ export class HeroMode implements TouchTarget {
         secs.textContent = `${Math.round(c * 100)}%`;
         shade.style.background = `conic-gradient(rgba(255,226,140,0.5) ${c * 360}deg, rgba(6,2,3,0.15) 0deg)`;
       }
-      box.style.outline = this.aiming === i ? `2px solid ${this.kit.foil}` : '';
+      box.style.outline = this.aiming === i ? `2px solid ${hudInk(this.kit)}` : '';
       box.style.outlineOffset = '2px';
     });
     const pe = this.passiveEls, t = this.traits;
