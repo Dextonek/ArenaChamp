@@ -4,15 +4,25 @@
 //   eval(await (await fetch('/pipeline/tools/kit-balance.js')).text());
 //   _balance(['Marin', 'Zephyr'], 16)   // 16 fights against each of the six foes
 //   _balance.show()   // per hero: win %, fights, average seconds, wins per foe, damage per second by source, taken
+//                     // and `none`: every fight with no winner after 120 s, with where it stood
 //
 // Noise is about ±14 points at 48 fights and ±10 at 96. A kit's target is 40-60%.
 (() => {
   const FOES = ['Brannoc', 'Kaia', 'Isolde', 'Sirix', 'Cantor', 'Oblivion'];
   const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
-  let state = { done: true, rows: {}, err: null, errors: [] };
+  let state = { done: true, rows: {}, err: null, errors: [], none: [] };
+  // Where a fight stood when it ran out of time: enough to tell a stall from a fight that was still going.
+  const standing = (hero, foe) => {
+    const d = vfx.duel, a = vfx.arena, h = a.caster.group.position, f = d.foe.group.position;
+    return {
+      hero, foe, arena: d.currentArena?.id, hp: [Math.round(d.playerHp), Math.round(a.hpOf(d.foe))],
+      me: [+h.x.toFixed(2), +h.z.toFixed(2)], them: [+f.x.toFixed(2), +f.z.toFixed(2)], dist: +Math.hypot(h.x - f.x, h.z - f.z).toFixed(2), sees: a.lineOfSight(h, f),
+      goal: d.heroRt?.trait?.aiGoal?.(d.heroRt) ?? null, foeGoal: d.oppRt?.trait?.aiGoal?.(d.oppRt) ?? null,
+    };
+  };
   window._balance = (heroes, reps = 8, foes = FOES) => {
     if (!state.done) return 'already running';
-    state = { done: false, rows: {}, err: null, errors: [] };
+    state = { done: false, rows: {}, err: null, errors: [], none: [] };
     (async () => {
       const d = vfx.duel, proto = Object.getPrototypeOf(d), resolve = proto.resolve;
       // Some rules time themselves with performance.now(): during a stepped fight it must follow the fight's own clock.
@@ -56,7 +66,7 @@
                 row.n++;
                 row.secs += d.result.seconds;
                 if (d.result.winner === hero) { row.w++; row.by[foe]++; }
-              }
+              } else state.none.push(standing(hero, foe));
               await tick();
             }
           }
@@ -73,7 +83,7 @@
   };
   window._balance.done = () => state.done;
   window._balance.show = () => ({
-    done: state.done, err: state.err, errors: state.errors,
+    done: state.done, err: state.err, errors: state.errors, none: state.none,
     rows: Object.fromEntries(Object.entries(state.rows).map(([k, r]) => [k, {
       pct: Math.round((100 * r.w) / Math.max(1, r.n)), n: r.n, avgSecs: +(r.secs / Math.max(1, r.n)).toFixed(1),
       byFoe: Object.values(r.by).join(' '),

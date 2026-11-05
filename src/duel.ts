@@ -119,6 +119,9 @@ const WALL_HP = 5;
 const WALL_BLAST_REACH = 0.6;
 /** How close a line spell's path has to pass a wall (besides its thickness) to hit it. */
 const WALL_LINE_PAD = 0.3;
+// A bolt's hit lands on a wall after the longest wind-up and the slowest flight of any bolt (Swarm Surge), so no wall falls before its bolt gets there.
+const WALL_BOLT_WIND = 0.5;
+const WALL_BOLT_SPEED = 12;
 const MELEE_GAP = 2; // a melee AI closes to about this distance (m)
 const DODGE_RADIUS = 1.6; // a hit of a cast with no drawn shape still lands within this distance of where it aimed
 const BOLT_WINDOW = 0.6; // the AI reacts to a bolt that will cross its position within this many seconds (s)
@@ -174,6 +177,8 @@ export class Duel {
   private arenaScene: ArenaScene | null = null;
   /** Breakable arena: each obstacle's hits left (-1 = not breakable, 0 = broken); null for an arena without. */
   private wallHp: number[] | null = null;
+  /** Bolts on their way to a wall: the hit is counted at the cast on both screens, and the wall cracks or falls when they get there. */
+  private wallHits: { at: number; i: number; o: ArenaDef['obstacles'][number] }[] = [];
   /** The opponent's basic attack (src/attacks): at the hero, or at one of the hero's units. */
   private oppAttack: Attacker;
   private oppAttackFx = new AttackFx();
@@ -1080,6 +1085,7 @@ export class Duel {
     const me = arena.caster.group.position;
     // The round's clock starts with the fight, on both screens.
     if (!this.waiting) this.time += dt;
+    if (this.wallHits.length) this.landWallHits();
     this.arenaScene?.update?.(dt, this.time);
     this.oppAttack.update(dt);
     this.oppAttackFx.update(dt);
@@ -1841,6 +1847,7 @@ export class Duel {
 
   /** Stands every wall of a breakable arena up again (each round). The obstacle list is a copy: broken walls leave it. */
   private resetWalls(def: ArenaDef) {
+    this.wallHits = [];
     this.wallHp = def.breakable ? def.obstacles.map((o) => (o.kind === 'wall' ? WALL_HP : -1)) : null;
     if (!this.wallHp) return;
     this.host.arena.obstacles = def.obstacles.slice();
@@ -1870,23 +1877,40 @@ export class Duel {
     const line = spell.aim === 'line';
     if (!line && spec.mode !== 'ground' && spec.mode !== 'self') return;
     const r = spec.radius ?? 5;
-    // A bolt flies its whole range along the aim and stops at the first of the arena's own cover (not a wall a spell raised).
+    // A bolt flies its whole range along the aim and stops at the first of the arena's own cover still standing (not a wall a spell raised).
     const aim = Math.hypot(point.x - from.x, point.z - from.z) || 1;
     const bolt = line && stopsAtCover(spell) ? new THREE.Vector3(from.x + ((point.x - from.x) / aim) * spell.range, 0, from.z + ((point.z - from.z) / aim) * spell.range) : null;
-    const struck = bolt && sweepHit(from, bolt, 0, def.obstacles.filter((_, i) => hp[i] !== 0))?.obstacle;
+    const standing = this.host.arena.obstacles;
+    const hit = bolt && sweepHit(from, bolt, 0, def.obstacles.filter((o) => standing?.includes(o)));
+    const struck = hit?.obstacle;
     def.obstacles.forEach((o, i) => {
       if (hp[i] <= 0) return;
       const near = bolt ? o === struck : line ? pathDist(from, point, o) <= o.r + WALL_LINE_PAD : capsuleDist(point.x, point.z, o) <= o.r + r * WALL_BLAST_REACH;
       if (!near) return;
       hp[i] = Math.max(0, hp[i] - dmg);
-      if (hp[i] > 0) {
-        this.arenaScene?.wallState?.(i, 'cracked');
-        return;
-      }
-      this.arenaScene?.wallState?.(i, 'broken');
-      const arena = this.host.arena;
-      if (arena.obstacles) arena.obstacles = arena.obstacles.filter((x) => x !== o);
+      // The bolt's strip ends at this wall, so the bolt has to find it standing.
+      if (hit) this.wallHits.push({ at: this.time + WALL_BOLT_WIND + (hit.t * spell.range) / WALL_BOLT_SPEED, i, o });
+      else this.wallHit(i, o);
     });
+  }
+
+  /** A hit lands on wall `i`: it cracks, or falls when it has no hits left and no bolt is still on its way to it. */
+  private wallHit(i: number, o: ArenaDef['obstacles'][number]) {
+    const arena = this.host.arena;
+    if (!arena.obstacles?.includes(o)) return;
+    if ((this.wallHp?.[i] ?? 0) > 0 || this.wallHits.some((h) => h.i === i)) {
+      this.arenaScene?.wallState?.(i, 'cracked');
+      return;
+    }
+    this.arenaScene?.wallState?.(i, 'broken');
+    arena.obstacles = arena.obstacles.filter((x) => x !== o);
+  }
+
+  private landWallHits() {
+    const due = this.wallHits.filter((h) => h.at <= this.time);
+    if (!due.length) return;
+    this.wallHits = this.wallHits.filter((h) => h.at > this.time);
+    for (const h of due) this.wallHit(h.i, h.o);
   }
 
   private recordPlayerCast() {
