@@ -288,7 +288,8 @@ export const courierTrait: Trait = {
       return;
     }
     const s = parcelSpot(t, job), loose = t.own('loose') > 0;
-    if (Math.hypot(p.x - s.x, p.z - s.z) > PICK_REACH) return;
+    // A parcel a wall was raised on (Gerald landing on it) is reached from the edge of that wall, where his body stops.
+    if (Math.hypot(p.x - s.x, p.z - s.z) > Math.max(PICK_REACH, 0.65 - coverGap(s.x, s.z, t.cover()))) return;
     if (loose && t.time - (t.mem.dropAt ?? -99) < LOOSE_GRACE) return;
     t.show('loose', 0);
     t.show('carry', 1);

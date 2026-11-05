@@ -188,7 +188,7 @@ A trait hook runs on one screen and the result has to reach the other. The rules
 | `Trait.enemyLabel` | `Trait` | a word or number over the enemy hero's head, asked on both screens (Mr. Ledger's tab, Whistler's rule) |
 | `Trait.hiddenStacks` | `Trait` | names of stacks that draw no pips because they are a count for `enemyLabel` or a rule |
 | `Trait.figureHidden` | `Trait` | true while the figure is not drawn at all (Mabel underground, Zambini under a hat). The rest is the kit's: show the position some other way and use the `sealed` status if the hero is safe |
-| `Trait.aiGoal` | `Trait` | where the CPU playing this hero walks now, or null. It beats `enemyGoal` (which steers the CPU playing against this hero) |
+| `Trait.aiGoal` | `Trait` | where the CPU playing this hero walks now, or null. It beats `enemyGoal` (which steers the CPU playing against this hero). A CPU that stands still short of either goal drops it for 4 s and fights (`Duel.reachableGoal`), so two CPUs can't wait on goals they can't reach |
 | `TraitView.swapKit(alt)` | `TraitView` | brings in the other half of a two-kit hero here only. Call it on the own client and `show` the change; call it again from `ownChanged` on the other screen |
 | `TraitView.carrySelf(dx, dz)` | `TraitView` | moves this hero, kept inside the ring. Run it on the hero's own client (`tick`); online the other screen follows its moves |
 | `TraitView.healEnemy(n)` | `TraitView` | heals the enemy hero up to their maximum. Run it where the enemy's position is decided (`victimTick`): Cleaver's stolen dishes |

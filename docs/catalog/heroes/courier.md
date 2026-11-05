@@ -59,8 +59,8 @@ The brown-paper parcel tied with string and a bow, with a red FRAGILE sticker on
 | Basic attack | Ranged, range 5, damage 12, every 0.8 s, wind-up 0.2 s, speed 20, look `orb`. |
 | Hooks | `marks` and `markLook`, `tick` (carrying, picking up, delivering), `taken` (a hit knocks the parcel loose), `cooldown` and `afterCast` (the Shortcut refund), `victimTick` (the Final Delivery burst), `ownChanged`, `peerNote`, `aiGoal`, `aiHold`, `badge`. |
 
-- He walks into the parcel (reach 1.3 m) to carry it and delivers it at the drop point; a loose parcel can be picked up again after 1.2 s. The next parcel and drop appear after a delivery.
-- Parcel and drop come from a pure function of the number of deliveries and a seed, so both screens draw the same marks.
+- He walks into the parcel (reach 1.3 m, more when cover was raised on a loose parcel: it is reached from the edge of that cover) to carry it and delivers it at the drop point; a loose parcel can be picked up again after 1.2 s. The next parcel and drop appear after a delivery.
+- Parcel and drop come from a pure function of the number of deliveries, a seed and the round's arena, at least 1.7 m from its cover, so both screens draw the same marks. Final Delivery's signature is measured against the cover standing now.
 - The CPU walks to the parcel and then the drop when the enemy is not within 4 m, keeps R for 1 or more Charges, and keeps E (which would spend one) while it has Charges and the enemy is not close.
 
 ## Mechanics

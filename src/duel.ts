@@ -119,6 +119,9 @@ const WALL_HP = 5;
 const WALL_BLAST_REACH = 0.6;
 /** How close a line spell's path has to pass a wall (besides its thickness) to hit it. */
 const WALL_LINE_PAD = 0.3;
+// How often (s) a CPU's walk to a trait's goal is checked, and how long (s) it fights instead when it has stood still short of the goal.
+const GOAL_CHECK = 1.5;
+const GOAL_REST = 4;
 // A bolt's hit lands on a wall after the longest wind-up and the slowest flight of any bolt (Swarm Surge), so no wall falls before its bolt gets there.
 const WALL_BOLT_WIND = 0.5;
 const WALL_BOLT_SPEED = 12;
@@ -201,8 +204,8 @@ export class Duel {
   /** The foe figure's hit flash last frame: a jump means a new hit (flinch). */
   private foeFlash = 0;
   private think = 0;
-  private opponentAi = { strafe: 1, strafeT: 0, closing: false, routed: false, hiddenT: 0 };
-  private playerAi = { strafe: -1, strafeT: 0, closing: false, routed: false, hiddenT: 0 };
+  private opponentAi = { strafe: 1, strafeT: 0, closing: false, routed: false, hiddenT: 0, goalT: 0, goalSeen: false, goalOff: 0, goalFrom: new THREE.Vector3() };
+  private playerAi = { strafe: -1, strafeT: 0, closing: false, routed: false, hiddenT: 0, goalT: 0, goalSeen: false, goalOff: 0, goalFrom: new THREE.Vector3() };
   private playerThink = 0;
   /** Skillshot dodges: bolt id -> whether this side reacts, which way, and when it starts moving. */
   private opponentDodge = new Map<number, BoltDodge>();
@@ -1265,7 +1268,7 @@ export class Duel {
       return;
     }
     // Something of the hero's that this CPU should walk to or away from (`Trait.enemyGoal`) beats its usual steering.
-    const goal = (this.oppRt && this.oppRt.trait?.aiGoal?.(this.oppRt)) ?? this.heroRt?.trait?.enemyGoal?.(this.heroRt);
+    const goal = this.reachableGoal(this.opponentAi, at, (this.oppRt && this.oppRt.trait?.aiGoal?.(this.oppRt)) ?? this.heroRt?.trait?.enemyGoal?.(this.heroRt), dt);
     const move = goal ? this.goalStep(this.opponentAi, at, goal) : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
     // A planned route already clears the cover: no wall slide on it.
     if (move.lengthSq() > 0) {
@@ -1329,6 +1332,25 @@ export class Duel {
       if (pick) return pick;
     }
     return null;
+  }
+
+  /**
+   * A trait's goal for this CPU, unless it has stood still short of it: the spot is where it cannot stand (under a wall a spell
+   * raised), or a rule keeps turning it back. It then fights for a while: two CPUs each waiting on a goal would wait for ever.
+   */
+  private reachableGoal(st: { goalT: number; goalSeen: boolean; goalOff: number; goalFrom: THREE.Vector3 }, at: THREE.Vector3, goal: { x: number; z: number } | null | undefined, dt: number) {
+    st.goalOff = Math.max(0, st.goalOff - dt);
+    if (st.goalOff > 0) return null;
+    st.goalT += dt;
+    st.goalSeen ||= !!goal;
+    if (st.goalT >= GOAL_CHECK) {
+      const still = st.goalSeen && flat(at, st.goalFrom) < 0.3 && (!goal || Math.hypot(at.x - goal.x, at.z - goal.z) > 0.5);
+      st.goalT = 0;
+      st.goalSeen = false;
+      st.goalFrom.copy(at);
+      if (still) { st.goalOff = GOAL_REST; return null; }
+    }
+    return goal ?? null;
   }
 
   /** A step toward a trait's own goal (`aiGoal`, `enemyGoal`): straight when it can, else on the planned way round the cover. */
@@ -1448,7 +1470,7 @@ export class Duel {
     // Basic attack: nothing to cast, the opponent in reach. Stands still through the wind-up.
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
-    const goal = (this.heroRt && this.heroRt.trait?.aiGoal?.(this.heroRt)) ?? this.oppRt?.trait?.enemyGoal?.(this.oppRt);
+    const goal = this.reachableGoal(this.playerAi, me, (this.heroRt && this.heroRt.trait?.aiGoal?.(this.heroRt)) ?? this.oppRt?.trait?.enemyGoal?.(this.oppRt), dt);
     const move = goal ? this.goalStep(this.playerAi, me, goal) : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
   }
