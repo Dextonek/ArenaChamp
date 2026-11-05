@@ -115,6 +115,7 @@ cannot walk or attack; Isolde's ice block, with `canCast` blocking spells).
 
 New in the 2026-11-03 engine round (all on `TraitView`; the host side is `TraitHost`):
 
+- `cover()` and `arenaCover()`: the cover standing now on this screen, and what the round's arena started with. Anything both screens must work out alike uses `arenaCover()`, because walls fall a moment apart. (Added 2026-11-05.)
 - `resetAttack(): void`: the basic attack is ready at once (interval restarts now; a running wind-up goes on). Online only
   this player's side does anything.
 - `summon(opts: Omit<SummonOptions, 'at'> & { at?: THREE.Vector3 }): Summon | null`: units for this side, same options

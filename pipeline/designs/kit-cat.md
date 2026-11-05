@@ -20,7 +20,7 @@ and he has no answer to a slow. Palette `CAT` / `CAT_CSS` in `src/effects/parts/
   the gap after each swing is 0.29 s instead of 0.45 s (`resetAttack` from `tick`).
 
 ### What the CPU does (`aiHold`)
-Q: whenever in 2.5 m (melee AI closes to about 2 m). W: held unless cover is within 4 m of it (`DUEL_OBSTACLES`). E: held on life 1 or beyond 8.5 m; otherwise only on a life
+Q: whenever in 2.5 m (melee AI closes to about 2 m). W: held unless cover is within 4 m of it (`t.cover()`). E: held on life 1 or beyond 8.5 m; otherwise only on a life
 with under 20 HP left, or at 4 to 7 m with more than 3 lives. R: `save` (under about 45% HP), and held while it is armed.
 
 ### Known gaps

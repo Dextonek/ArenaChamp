@@ -86,7 +86,7 @@ The caster is turned toward the aim point (toward the primary target for `self`)
 
 ### Obstacles and line of sight
 
-`arena.obstacles` (null by default; the duel ring sets `DUEL_OBSTACLES` from [obstacles.ts](../../src/obstacles.ts))
+`arena.obstacles` (null by default; a duel sets a copy of its arena's `ArenaDef.obstacles`, shapes in [obstacles.ts](../../src/obstacles.ts))
 are capsules on the ground. `keepInside` pushes positions out of them, `walk` and `moveFoe(target, move, slide = true)`
 slide along their edges, and `lineOfSight(a, b)` is false when one stands between a and b. Hero mode and the duel AI
 use it to refuse casts without sight. `setHp(target, hp)` sets a foe's HP directly (a network duel takes the server's

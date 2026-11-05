@@ -199,8 +199,8 @@ A 1 vs 1 round on top of hero mode. `Duel` (constructed in runtime.ts with a `Du
 | End | Opponent HP 0 → VICTORY, player HP 0 → DEFEAT: hero mode `locked`, the loser's figure falls, a card with Rematch / Leave duel. |
 | runtime.ts, tool | `setDuel(on)` (the tool's View → duel, key B; turns hero mode on), View → opponent and View → CPU level, a new round when the hero changes, the duel ends with hero mode. |
 
-**Cover and line of sight:** the ring has a centre wall, four pillars and two side walls (`DUEL_OBSTACLES` in
-[obstacles.ts](../../src/obstacles.ts), set as `arena.obstacles` while the duel is on). They block walking and line of
+**Cover and line of sight:** each arena has its own walls and pillars (`ArenaDef.obstacles`, shapes in
+[obstacles.ts](../../src/obstacles.ts), copied to `arena.obstacles` while the duel is on). They block walking and line of
 sight; a targeted spell needs sight of its target (hero mode turns an unseen cast into walk-then-cast, the AI only
 picks spells it can see with), and so does every basic attack, melee or ranged (`Attacker.inRange`; an attack order walks
 round the cover first). Details in [multiplayer.md](multiplayer.md#the-ring-pillars-walls-and-line-of-sight).

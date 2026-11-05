@@ -157,14 +157,9 @@ disconnect counts as a loss for the leaver and a win for the other player.
 
 ## The ring: pillars, walls and line of sight
 
-The duel ring (AI duel and network duel alike) has cover, defined once in `DUEL_OBSTACLES` in
-[obstacles.ts](../../src/obstacles.ts) and point-symmetric about the ring's centre (0, 7):
-
-| Obstacle | Where |
-|---|---|
-| centre wall | (-2.2, 7) to (2.2, 7): hides the two starts from each other |
-| 4 pillars (r 0.85) | (±5, 3.6), (±5, 10.4) |
-| 2 side walls | x = ±8.6, z 5.4 to 8.6 |
+Each arena (AI duel and network duel alike) has its own cover, `ArenaDef.obstacles` in [src/arenas](../../src/arenas),
+see [arenas.md](arenas.md). A round copies it to `arena.obstacles`, where walls fall and spells raise new ones. A trait
+reads the live list with `t.cover()`, and the list the arena started with, the same on both screens, with `t.arenaCover()`.
 
 Every obstacle is a capsule on the ground (segment + radius; a pillar has zero length). The arena gets them through
 `arena.obstacles` (set by the duel's setup, cleared by `stop`):

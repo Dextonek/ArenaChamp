@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { Trait } from './types';
-import { DUEL_OBSTACLES, type Obstacle } from '../obstacles';
+import type { Obstacle } from '../obstacles';
 
 /** Nine Lives: the lives he has, and the HP of each. */
 export const LIVES = 9;
@@ -76,7 +76,7 @@ const LOST_WORDS = ['MROW', 'HISS', 'NYA', 'MEOW'];
  * attack comes with no wait between the swings (`resetAttack`; the engine has no hook for the wind-up itself).
  *
  * Attack speed: `attack.windup` is fixed by the engine, so +30% is built as a shorter gap after each swing (0.29 s instead of 0.45 s):
- * the swing and the gap together take 0.7 / 1.3 s. The CPU's `aiHold`: Knock It Over only with cover within 4 m of him (`DUEL_OBSTACLES`),
+ * the swing and the gap together take 0.7 / 1.3 s. The CPU's `aiHold`: Knock It Over only with cover within 4 m of him,
  * Cat Leap only on a life with under 20 HP left (and a life to spare) or at 4 to 7 m with more than 3 lives, Land on My Feet not while it is armed.
  */
 export const catTrait: Trait = {
@@ -98,7 +98,7 @@ export const catTrait: Trait = {
   aiHold(t, slot, dist) {
     const me = t.self().group.position;
     const hp = t.hp(), life = lifeOf(hp);
-    if (slot === 1) return !nearestCover(me.x, me.z, DUEL_OBSTACLES);
+    if (slot === 1) return !nearestCover(me.x, me.z, t.cover());
     if (slot === 2) {
       if (life <= 1 || dist > POUNCE_RANGE + 1.5) return true;
       const lowLife = roomOf(hp) < 20;

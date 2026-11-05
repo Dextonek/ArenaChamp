@@ -20,21 +20,6 @@ export interface Obstacle {
 export const pillar = (x: number, z: number, r = 0.85): Obstacle => ({ ax: x, az: z, bx: x, bz: z, r, height: 4.2, kind: 'pillar' });
 export const wall = (ax: number, az: number, bx: number, bz: number): Obstacle => ({ ax, az, bx, bz, r: 0.35, height: 2.3, kind: 'wall' });
 
-/**
- * The duel ring's layout (ring centre (0, 7), radius 12; the heroes start at z 13 and z 1). Point-symmetric about
- * the centre, so both sides get the same cover: a short wall across the middle hides the two starts from each
- * other, four pillars at the diagonals, and two side walls along the edge.
- */
-export const DUEL_OBSTACLES: Obstacle[] = [
-  wall(-2.2, 7, 2.2, 7),
-  pillar(-5, 3.6),
-  pillar(5, 3.6),
-  pillar(-5, 10.4),
-  pillar(5, 10.4),
-  wall(-8.6, 5.4, -8.6, 8.6),
-  wall(8.6, 5.4, 8.6, 8.6),
-];
-
 /** Closest point to (px, pz) on the obstacle's segment. */
 function closest(o: Obstacle, px: number, pz: number) {
   const dx = o.bx - o.ax, dz = o.bz - o.az, len2 = dx * dx + dz * dz;

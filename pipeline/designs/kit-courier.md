@@ -22,7 +22,7 @@ Numbers from [new-heroes-kits.md](new-heroes-kits.md) section 11; the constants 
 
 Both screens must draw the parcel and the drop on the same spot and `Math.random` cannot agree, so `jobOf(n, seed)` is a pure function of the delivery count `n`
 and `seed`, the round second his client made the last delivery in (shown as `deliv` and `seed`, in that order). A small seeded generator picks a spot in the ring
-(centre (0, 7), at most 9.5 m out) at least 1.7 m from the surface of any wall or pillar of `DUEL_OBSTACLES`, then a drop 6 to 13 m from it. The first job of a round
+(centre (0, 7), at most 9.5 m out) at least 1.7 m from the surface of any wall or pillar of the round's arena (`t.arenaCover()`), then a drop 6 to 13 m from it. The first job of a round
 is always the same (round time is 0). Temporary cover other heroes raise is not read (the trait has no view of it).
 
 ## Shown values (his `t.show`)

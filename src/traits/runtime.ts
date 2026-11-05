@@ -3,6 +3,7 @@ import type { DeathSpot, Summon, SummonOptions } from '../effects/summon';
 import type { Enemy } from '../effects/common';
 import type { HitOptions } from '../effects/targeting';
 import type { BuffKind, StatusSet } from '../effects/status';
+import type { Obstacle } from '../obstacles';
 import { NO_MODS, type CastMods, type HoldSpec, type LandedHit, type RecastSpec, type Side, type Trait, type TraitHit, type TraitView } from './types';
 
 /** How far back `past` can look (s); the history keeps a little more. */
@@ -13,6 +14,8 @@ export interface TraitHost {
   self(): Enemy;
   enemy(): Enemy | null;
   status(of: Enemy): StatusSet | undefined;
+  cover(): readonly Obstacle[];
+  arenaCover(): readonly Obstacle[];
   hp(): number;
   maxHp(): number;
   time(): number;
@@ -106,6 +109,8 @@ export class TraitRuntime implements TraitView {
   self() { return this.host.self(); }
   enemy() { return this.host.enemy(); }
   status(of: Enemy) { return this.host.status(of); }
+  cover() { return this.host.cover(); }
+  arenaCover() { return this.host.arenaCover(); }
   hp() { return this.host.hp(); }
   maxHp() { return this.host.maxHp(); }
 

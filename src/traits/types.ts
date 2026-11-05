@@ -4,6 +4,7 @@ import type { HitOptions } from '../effects/targeting';
 import type { BuffKind, StatusKind, StatusSet } from '../effects/status';
 import type { AttackSpec } from '../attacks';
 import type { DeathSpot, Summon, SummonOptions } from '../effects/summon';
+import type { Obstacle } from '../obstacles';
 
 /**
  * The hero identity layer (pipeline/designs/hero-identity.md): every hero has a passive, a twist (its own resource, a
@@ -69,6 +70,10 @@ export interface TraitView {
   /** The enemy hero (null between rounds). */
   enemy(): Enemy | null;
   status(of: Enemy): StatusSet | undefined;
+  /** The cover standing now: the arena's and any a spell raised. Each screen's own view of it. */
+  cover(): readonly Obstacle[];
+  /** The cover this round's arena starts with: the same on both screens whatever has fallen, for what both must work out alike. */
+  arenaCover(): readonly Obstacle[];
   /** HP of this hero now, and its max. */
   hp(): number;
   maxHp(): number;
