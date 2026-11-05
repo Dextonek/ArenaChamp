@@ -135,6 +135,8 @@ export class HeroMode implements TouchTarget {
   private attackFx = new AttackFx();
   private attackSpec: AttackSpec;
   private attackTarget: Enemy | null = null;
+  /** The aim is a phone's press with no drag: it means the nearest enemy, and the player has not looked at a strip. */
+  private autoAimed = false;
   private attackMove: THREE.Vector3 | null = null;
   private attackArmed = false;
   /** Basic attacks on (off in a network duel: the server does not relay them yet). */
@@ -584,6 +586,7 @@ export class HeroMode implements TouchTarget {
   /** Aims at the nearest live enemy (a press without a drag), else a little ahead of the hero. */
   aimAuto() {
     if (this.aiming < 0) return;
+    this.autoAimed = true;
     const hero = this.host.arena.caster.group.position;
     const foe = this.nearestFoe();
     if (foe) this.cursor.set(foe.pos.x, 0, foe.pos.z);
@@ -595,6 +598,7 @@ export class HeroMode implements TouchTarget {
 
   aimDrag(dx: number, dy: number, f: number) {
     if (this.aiming < 0) return;
+    this.autoAimed = false;
     const hero = this.host.arena.caster.group.position;
     const d = this.screenToGround(dx, dy).multiplyScalar(Math.max(0.5, this.kit.spells[this.aiming].range * f));
     this.cursor.set(hero.x + d.x, 0, hero.z + d.z);
@@ -808,11 +812,12 @@ export class HeroMode implements TouchTarget {
 
   private cancelAim() {
     this.aiming = -1;
+    this.autoAimed = false;
     this.host.dom.style.cursor = '';
   }
 
   private confirm() {
-    const i = this.aiming;
+    const i = this.aiming, tapped = this.autoAimed;
     const spell = this.kit.spells[i];
     const spec = this.host.targeting(spell.label)!;
     const hero = this.host.arena.caster.group.position;
@@ -827,7 +832,9 @@ export class HeroMode implements TouchTarget {
     this.cancelAim();
     const at = this.targetPos(target)!;
     // A skillshot flies along its aim at once: its strip has shown where cover stops it, and a bank shot wants the wall.
-    const sees = (spell.aim === 'line' && 'point' in target) || this.host.arena.lineOfSight(hero, at);
+    // A tap on a phone has shown no strip and means the enemy, so it walks into sight first, unless the spell passes over cover.
+    const fires = spell.aim === 'line' && 'point' in target && (!tapped || !!spell.overCover);
+    const sees = fires || this.host.arena.lineOfSight(hero, at);
     if (flatDist(hero, at) <= spell.range + 1e-3 && sees) this.castNow(i, target);
     else {
       // Out of range or behind a pillar / wall: walk toward the target and cast once it is in range and in sight.
