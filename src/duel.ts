@@ -536,6 +536,7 @@ export class Duel {
     this.result = null;
     this.playerCastsRecent = [];
     this.time = 0;
+    for (const st of [this.opponentAi, this.playerAi]) { st.goalT = 0; st.goalSeen = false; st.goalOff = 0; }
     this.over = null;
     this.overT = 0;
     this.zones.set([]);
