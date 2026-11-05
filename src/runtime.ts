@@ -290,7 +290,7 @@ export function createRuntime(opts: RuntimeOptions) {
   }
 
   /** What a cast's danger zones show: a line skillshot's strip ends where cover stops the bolt, as its aim strip did. */
-  const BOLT_LINES = new Set(HERO_KITS.flatMap((k) => [...k.spells, ...(k.alt?.spells ?? [])]).filter(stopsAtCover).map((s) => s.label));
+  const BOLT_LINES = new Set(HERO_KITS.flatMap((k) => [...k.spells, ...(k.alt?.spells ?? [])]).filter((s) => stopsAtCover(s) && !s.passesOwnWalls).map((s) => s.label));
   function zonesOf(slot: EffectSlot, effect: Effect) {
     const out = slot.module.telegraphs?.(effect) ?? [];
     return BOLT_LINES.has(slot.module.label) ? arena.cutZones(out) : out;

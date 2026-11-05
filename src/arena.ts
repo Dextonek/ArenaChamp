@@ -748,11 +748,12 @@ export class Arena {
 
   /**
    * How far along from `a` to `b` (0..1, 1 = clear) a bolt gets before cover stops it: the same two tests a flying bolt
-   * makes (`world.blocked`, `world.surface`), so the aim strip ends where the bolt will.
+   * makes (`world.blocked`, `world.surface`), so the aim strip ends where the bolt will. `passes`: cover this bolt goes through.
    */
-  coverStop(a: { x: number; z: number }, b: { x: number; z: number }) {
-    if (!this.obstacles || !blocksSight(a, b, this.obstacles)) return 1;
-    return firstSurface(a, b, this.obstacles)?.t ?? 1;
+  coverStop(a: { x: number; z: number }, b: { x: number; z: number }, passes?: (o: Obstacle) => boolean) {
+    const cover = passes ? this.obstacles?.filter((o) => !passes(o)) : this.obstacles;
+    if (!cover || !blocksSight(a, b, cover)) return 1;
+    return firstSurface(a, b, cover)?.t ?? 1;
   }
 
   /** `zones` with each line ended where cover stops a bolt flown along it. The shapes may be an effect's own, so cut ones are copies. */

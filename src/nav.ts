@@ -43,10 +43,15 @@ interface Pt {
 
 const flat = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.z - b.z);
 
-function pointDist(x: number, z: number, o: Obstacle) {
+function nearestOn(x: number, z: number, o: Obstacle): Pt {
   const sx = o.bx - o.ax, sz = o.bz - o.az, len2 = sx * sx + sz * sz;
   const k = len2 > 0 ? Math.min(1, Math.max(0, ((x - o.ax) * sx + (z - o.az) * sz) / len2)) : 0;
-  return Math.hypot(x - (o.ax + sx * k), z - (o.az + sz * k));
+  return { x: o.ax + sx * k, z: o.az + sz * k };
+}
+
+function pointDist(x: number, z: number, o: Obstacle) {
+  const c = nearestOn(x, z, o);
+  return Math.hypot(x - c.x, z - c.z);
 }
 
 export class Navigator {
@@ -73,7 +78,8 @@ export class Navigator {
 
   /**
    * The next spot on `key`'s walk from `from` to `to`. `key` is whoever walks (a figure, a unit): its route is kept, so
-   * a chase does not flip between two ways round a pillar. An order inside cover ends at its edge on the walker's side.
+   * a chase does not flip between two ways round a pillar. An order inside cover ends at its edge on the walker's side; one
+   * close enough to cover that a body does not fit, on open ground, ends at the nearest spot on its own side of the cover.
    */
   step(key: object, from: THREE.Vector3, to: THREE.Vector3, obstacles: readonly Obstacle[], bounds: NavBounds | null): NavStep {
     this.sync(obstacles, bounds);
@@ -129,13 +135,25 @@ export class Navigator {
     return this.obstacles.every((o) => pointDist(x, z, o) >= o.r + BODY + pad);
   }
 
-  /** The nearest free spot to `to` on the line from the walker; failing that, the nearest free spot round it. */
+  /** Out of the margin round cover, on the spot's own side; null if the spot is inside cover or no body fits there either. */
+  private besideCover(p: Pt) {
+    if (this.obstacles.some((o) => pointDist(p.x, p.z, o) < o.r)) return null;
+    const o = this.obstacles.find((q) => pointDist(p.x, p.z, q) < q.r + BODY);
+    if (!o) return null;
+    const c = nearestOn(p.x, p.z, o), d = Math.hypot(p.x - c.x, p.z - c.z), out = o.r + BODY + 0.03;
+    const x = c.x + ((p.x - c.x) / d) * out, z = c.z + ((p.z - c.z) / d) * out;
+    return this.free(x, z, 0.02) ? new THREE.Vector3(x, 0, z) : null;
+  }
+
+  /** A spot in the margin round cover: just out of it. Else the nearest free spot on the line from the walker; failing that, round it. */
   private snap(to: THREE.Vector3, from: THREE.Vector3) {
     const p = new THREE.Vector3(to.x, 0, to.z);
     if (this.bounds) {
       const dx = p.x - this.bounds.x, dz = p.z - this.bounds.z, d = Math.hypot(dx, dz), max = this.bounds.r - RING_MARGIN - 0.02;
       if (d > max) p.set(this.bounds.x + (dx / d) * max, 0, this.bounds.z + (dz / d) * max);
     }
+    const beside = this.besideCover(p);
+    if (beside) return beside;
     const line = flat(from, p);
     for (let t = 0.1; t < line; t += 0.1) {
       const x = p.x + ((from.x - p.x) / line) * t, z = p.z + ((from.z - p.z) / line) * t;

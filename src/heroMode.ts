@@ -10,7 +10,8 @@ import { traitFor, type TraitRuntime } from './traits';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
-import { bankPath, stopsAtCover } from './obstacles';
+import { bankPath, stopsAtCover, type Obstacle } from './obstacles';
+import { isOwnWall } from './traits/mime';
 
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
@@ -37,14 +38,19 @@ const ATTACK_MARK = '#ff4a3a';
 const AIM_PALE = '#e6e1d6'; // the range ring and, on a coloured kit, whatever cover blocks
 const AIM_GREY = '#8d8a86'; // what cover blocks on a kit whose own colour is pale already
 
+/** How light a colour looks on screen, 0..1. THREE.Color holds linear values, so it has to be asked for sRGB. */
+function lightness(color: string) {
+  return new THREE.Color(color).getHSL({ h: 0, s: 0, l: 0 }, THREE.SRGBColorSpace).l;
+}
+
 /** A kit's foil for HUD text and rims: on some kits it is a dark trim colour, unreadable on the dark panel. */
 function hudInk(kit: HeroKit) {
-  return new THREE.Color(kit.foil).getHSL({ h: 0, s: 0, l: 0 }).l < 0.6 ? AIM_PALE : kit.foil;
+  return lightness(kit.foil) < 0.55 ? AIM_PALE : kit.foil;
 }
 
 /** The colour of an aim mark that cover blocks: it has to differ from the kit's accent and show on the dark floor. */
 function blockedTint(accent: string) {
-  return new THREE.Color(accent).getHSL({ h: 0, s: 0, l: 0 }).l > 0.8 ? AIM_GREY : AIM_PALE;
+  return lightness(accent) > 0.8 ? AIM_GREY : AIM_PALE;
 }
 
 export type Target = { enemy: Enemy } | { point: THREE.Vector3 };
@@ -86,7 +92,8 @@ export class HeroMode implements TouchTarget {
   private moveTo: THREE.Vector3 | null = null;
   /** Seconds the walk has made next to no way. */
   private walkStuck = 0;
-  private pending: { slot: number; target: Target } | null = null;
+  /** A cast walking into range or sight. `atSpot`: it follows an enemy, and flies at the spot where the enemy stands when it goes. */
+  private pending: { slot: number; target: Target; atSpot?: boolean } | null = null;
   private zoom = 1.25;
   private snapCamera = false;
   private mouse = new THREE.Vector2(2, 2);
@@ -499,7 +506,7 @@ export class HeroMode implements TouchTarget {
       else if (flatDist(hero, at) <= spell.range && arena.lineOfSight(hero, at)) {
         const p = this.pending;
         this.pending = null;
-        this.castNow(p.slot, p.target);
+        this.castNow(p.slot, p.atSpot ? { point: at.clone().setY(0) } : p.target);
       } else this.moveTo = at.clone();
     }
     const status = this.status;
@@ -520,8 +527,11 @@ export class HeroMode implements TouchTarget {
       const next = way ? way.point : this.moveTo;
       const d = new THREE.Vector3(next.x - hero.x, 0, next.z - hero.z);
       const len = d.length();
-      if (flatDist(hero, way ? way.goal : this.moveTo) < 0.05) this.moveTo = null;
-      else if (len > 1e-4) {
+      if (flatDist(hero, way ? way.goal : this.moveTo) < 0.05) {
+        this.moveTo = null;
+        // As far as the ground goes, and the cast above still could not go: it never will from here.
+        if (this.pending) { this.pending = null; this.say('No line of sight'); }
+      } else if (len > 1e-4) {
         const before = hero.clone();
         const step = this.speed * status.speedMul * dt;
         arena.walk(d.multiplyScalar(Math.min(1, step / len)), len, stick);
@@ -839,7 +849,8 @@ export class HeroMode implements TouchTarget {
     else {
       // Out of range or behind a pillar / wall: walk toward the target and cast once it is in range and in sight.
       if (!sees) this.say('No line of sight');
-      this.pending = { slot: i, target };
+      const foe = tapped && spell.aim === 'line' ? this.nearestFoe() : null;
+      this.pending = foe ? { slot: i, target: { enemy: foe.figure }, atSpot: true } : { slot: i, target };
       this.moveTo = at.clone();
     }
   }
@@ -1022,7 +1033,9 @@ export class HeroMode implements TouchTarget {
       d.normalize();
       const width = Math.max(0.3, (spec?.radius ?? 0.4) * 2);
       // Cover stops a bolt: the strip ends flat at the wall, in the blocked colour, with no arrow.
-      const stop = stopsAtCover(spell) ? this.host.arena.coverStop(hero, { x: hero.x + d.x * spell.range, z: hero.z + d.z * spell.range }) : 1;
+      const arena = this.host.arena, ownWalls = spell.passesOwnWalls ? (o: Obstacle) => isOwnWall(arena.caster, o) : undefined;
+      // A recast flies no bolt (a leap, a burst where the first one stuck): cover does not end its strip.
+      const stop = stopsAtCover(spell) && !this.traits?.canRecast(this.aiming) ? arena.coverStop(hero, { x: hero.x + d.x * spell.range, z: hero.z + d.z * spell.range }, ownWalls) : 1;
       const reach = spell.range * stop;
       const cut = stop < 1;
       this.tintStrip(cut);

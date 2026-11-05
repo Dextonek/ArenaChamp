@@ -14,6 +14,7 @@ import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
+import { stopsAtCover, sweepHit } from './obstacles';
 import { TOUCH } from './touch';
 import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 
@@ -1350,7 +1351,8 @@ export class Duel {
     // Closing in starts past the far edge of the band and goes on to its near edge: one exact distance would flip it
     // between walking in and strafing on every frame.
     const band = melee ? 0.3 : 1;
-    if (d > want + band || (blocked && d > 1.5)) st.closing = true;
+    // Thin cover lets two bodies stand within 1.5 m across it: with no sight yet, that is no place to stop.
+    if (d > want + band || (blocked && (d > 1.5 || !this.host.arena.lineOfSight(at, other)))) st.closing = true;
     else if (d <= want + band * 0.4 || blocked) st.closing = false;
     const closing = !!st.closing;
     // Cover in the way: the planned way round it (src/nav.ts), without the strafe, which would walk it off the route.
@@ -1868,9 +1870,13 @@ export class Duel {
     const line = spell.aim === 'line';
     if (!line && spec.mode !== 'ground' && spec.mode !== 'self') return;
     const r = spec.radius ?? 5;
+    // A bolt flies its whole range along the aim and stops at the first of the arena's own cover (not a wall a spell raised).
+    const aim = Math.hypot(point.x - from.x, point.z - from.z) || 1;
+    const bolt = line && stopsAtCover(spell) ? new THREE.Vector3(from.x + ((point.x - from.x) / aim) * spell.range, 0, from.z + ((point.z - from.z) / aim) * spell.range) : null;
+    const struck = bolt && sweepHit(from, bolt, 0, def.obstacles.filter((_, i) => hp[i] !== 0))?.obstacle;
     def.obstacles.forEach((o, i) => {
       if (hp[i] <= 0) return;
-      const near = line ? pathDist(from, point, o) <= o.r + WALL_LINE_PAD : capsuleDist(point.x, point.z, o) <= o.r + r * WALL_BLAST_REACH;
+      const near = bolt ? o === struck : line ? pathDist(from, point, o) <= o.r + WALL_LINE_PAD : capsuleDist(point.x, point.z, o) <= o.r + r * WALL_BLAST_REACH;
       if (!near) return;
       hp[i] = Math.max(0, hp[i] - dmg);
       if (hp[i] > 0) {

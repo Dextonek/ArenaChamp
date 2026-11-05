@@ -167,7 +167,7 @@ export const mimeKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'invisible ball', name: 'Invisible Ball', range: 9, cooldown: 3.5, aim: 'line',
+      key: 'Q', label: 'invisible ball', name: 'Invisible Ball', range: 9, cooldown: 3.5, aim: 'line', passesOwnWalls: true,
       blurb: 'She throws a ball you cannot see (9 m, 22 m/s, 0.3 s wind-up): 72 damage. Only a chalk line on the floor shows where it goes. It passes her own walls.',
       icon(g, s) {
         iconGround(g, s);

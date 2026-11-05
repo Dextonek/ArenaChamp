@@ -97,7 +97,8 @@ A 1 vs 1 fight in hero mode in a small ring with a gold rim. Each hero starts wi
 - The ring has **cover**: a wall across the middle, four pillars and two side walls. Nobody walks through them, and
   attacks and spells need **line of sight**. Clicking an enemy or a spot behind cover shows "No line of sight" (the
   aim ring turns pale), and the hero walks round until it can see the target, then casts. A skillshot with a strip
-  fires at once instead: the strip ends flat at the wall where cover would stop it. Self spells always go.
+  fires at once instead: the strip ends flat at the wall where cover would stop it. On a phone that takes a drag; a
+  tap on the spell walks into sight first. Self spells always go.
 
 ![A duel](../heroes/duel.jpg)
 

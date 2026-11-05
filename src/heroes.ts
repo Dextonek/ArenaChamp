@@ -87,6 +87,8 @@ export interface HeroSpell {
    * cast strip run on past a wall. Every other line skillshot is a bolt, and both strips end where cover stops it.
    */
   overCover?: true;
+  /** With `aim: 'line'`: a bolt that passes the caster's own walls (`isOwnWall`) and stops at other cover. Its effect draws its own cast strip. */
+  passesOwnWalls?: true;
   /** A buff the hero gives itself when it casts this (see `BuffKind`). */
   buff?: { kind: BuffKind; amount: number; seconds: number };
   /** A debuff every hit of this spell puts on what it hits. */
