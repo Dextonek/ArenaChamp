@@ -18,7 +18,8 @@ hero stands matters all fight long. The code is in [src/attacks/](../../src/atta
 
 A spell cast cancels the wind-up of an attack but keeps the target, so the hero goes back to attacking after the
 cast. Moving (a new order) cancels the wind-up; the attack's recovery is kept, so stepping between attacks costs
-nothing ("attack, step, attack").
+nothing ("attack, step, attack"). Cover coming between the attacker and the target cancels it the same way, and an
+attack order then walks round.
 
 ## Numbers
 
@@ -27,7 +28,7 @@ per-hero change in `OVERRIDES` (empty for now).
 
 | Type | Range | Damage | Interval | Wind-up | Look |
 |---|---|---|---|---|---|
-| Melee | 2.6 m | 13 | 1.2 s | 0.3 s | a crescent swipe in front of the hero |
+| Melee | 2.6 m (needs line of sight) | 13 | 1.2 s | 0.3 s | a crescent swipe in front of the hero |
 | Ranged | 6.5 m (needs line of sight) | 10 | 1.0 s | 0.25 s | a small homing bolt with a short trail, 18 m/s |
 
 In AI duels basic attacks deal about an eighth to a quarter of the damage and make fights about a quarter shorter
@@ -37,7 +38,7 @@ In AI duels basic attacks deal about an eighth to a quarter of the damage and ma
 
 - A blinded attacker misses: "MISS", no damage (this is what makes blind worth casting).
 - Stun and knock-up stop attacking; silence and root do not (a silenced hero can still attack, a stunned one can't).
-- A ranged bolt homes in, so it cannot be dodged by stepping aside; it vanishes if the target dies first.
+- A ranged bolt homes in, so it cannot be dodged by stepping aside; it vanishes if the target dies first. Cover stops an attack only before its release: a bolt already flying goes on round a corner, which also keeps both screens of a network duel agreeing.
 - Shields absorb attack damage. Attacks can target summoned units (`arena.liveFoes()` includes them).
 - Hits carry `HitOptions.attack`, which lets them past the duel's zone filter (`Duel.opponentHit`), like a bolt.
 

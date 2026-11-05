@@ -34,6 +34,13 @@ const BODY_PICK = 0.85; // how close to a figure's upright body the mouse ray mu
 const BODY_HEIGHT = 2.3;
 const MOVE_MARK = '#5dff9a'; // the order marker: green on the ground, red on an enemy
 const ATTACK_MARK = '#ff4a3a';
+const AIM_PALE = '#e6e1d6'; // the range ring and, on a coloured kit, whatever cover blocks
+const AIM_GREY = '#8d8a86'; // what cover blocks on a kit whose own colour is pale already
+
+/** The colour of an aim mark that cover blocks: it has to differ from the kit's accent and show on the dark floor. */
+function blockedTint(accent: string) {
+  return new THREE.Color(accent).getHSL({ h: 0, s: 0, l: 0 }).l > 0.8 ? AIM_GREY : AIM_PALE;
+}
 
 export type Target = { enemy: Enemy } | { point: THREE.Vector3 };
 
@@ -98,6 +105,8 @@ export class HeroMode implements TouchTarget {
   /** The arrow head at the end of a skillshot's aim strip (`HeroSpell.aim: 'line'`). */
   private aimTip: THREE.Mesh;
   private aimBounce: THREE.Mesh;
+  /** The flat end of a strip that cover cuts: an arrow flies on, this says the spell stops here. */
+  private aimStop: THREE.Mesh;
   private hoverRing: THREE.Mesh;
   private moveMarker: THREE.Mesh;
   private moveMarkerT = 1;
@@ -201,7 +210,7 @@ export class HeroMode implements TouchTarget {
       this.group.add(m);
       return m;
     };
-    this.rangeRing = flat(new THREE.RingGeometry(0.985, 1, 96), kit.foil, 0.45);
+    this.rangeRing = flat(new THREE.RingGeometry(0.985, 1, 96), AIM_PALE, 0.45);
     this.areaRing = flat(new THREE.RingGeometry(0.95, 1, 72), kit.accent, 0.85);
     this.areaFill = flat(new THREE.CircleGeometry(1, 72), kit.accent, 0.12);
     // Unit-length strip along +Y in the ring plane; after the flat rotation it points along -Z, scaled per frame.
@@ -212,6 +221,7 @@ export class HeroMode implements TouchTarget {
     // The first bounce of a bank shot (`HeroSpell.bank`), a fainter strip of the same shape.
     this.aimBounce = flat(new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0), kit.accent, 0.18);
     this.aimBounce.visible = false;
+    this.aimStop = flat(new THREE.PlaneGeometry(1, 1), kit.accent, 0.9);
     // A ribbon of ARC_SEGS segments in world coordinates (positions rewritten every frame while an arc is aimed).
     const ribbon = new THREE.BufferGeometry();
     ribbon.setAttribute('position', new THREE.BufferAttribute(new Float32Array((ARC_SEGS + 1) * 6), 3));
@@ -399,7 +409,6 @@ export class HeroMode implements TouchTarget {
     this.clearAttack();
     this.attacker.reset();
     const color = (m: THREE.Mesh, c: string) => (m.material as THREE.MeshBasicMaterial).color.set(c);
-    color(this.rangeRing, kit.foil);
     for (const m of [this.areaRing, this.areaFill, this.aimLine, this.aimTip, this.aimBounce, this.aimArc, this.hoverRing]) color(m, kit.accent);
     const shown = this.hud.style.display;
     this.hud.remove();
@@ -812,7 +821,8 @@ export class HeroMode implements TouchTarget {
     }
     this.cancelAim();
     const at = this.targetPos(target)!;
-    const sees = this.host.arena.lineOfSight(hero, at);
+    // A skillshot flies along its aim at once: its strip has shown where cover stops it, and a bank shot wants the wall.
+    const sees = (spell.aim === 'line' && 'point' in target) || this.host.arena.lineOfSight(hero, at);
     if (flatDist(hero, at) <= spell.range + 1e-3 && sees) this.castNow(i, target);
     else {
       // Out of range or behind a pillar / wall: walk toward the target and cast once it is in range and in sight.
@@ -985,11 +995,13 @@ export class HeroMode implements TouchTarget {
       this.hoverRing.position.set(p.x, 0.07, p.z);
       const inRange = spell ? flatDist(hero, p) <= spell.range : true;
       const castable = inRange && this.host.arena.lineOfSight(hero, p);
-      (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(castable ? this.kit.accent : this.kit.foil);
+      (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(castable ? this.kit.accent : blockedTint(this.kit.accent));
     }
 
     // Single target: a strip from the hero to the hovered enemy (else toward the cursor), clamped to range.
     this.aimLine.visible = aiming && (single || line);
+    this.aimStop.visible = false;
+    this.tintStrip(false);
     if (!line) this.aimBounce.visible = false;
     this.aimTip.visible = line;
     if (line && spell) {
@@ -997,12 +1009,14 @@ export class HeroMode implements TouchTarget {
       if (d.lengthSq() < 1e-4) d.set(Math.sin(this.host.arena.caster.group.rotation.y), 0, Math.cos(this.host.arena.caster.group.rotation.y));
       d.normalize();
       const width = Math.max(0.3, (spec?.radius ?? 0.4) * 2);
-      // Cover stops a bolt: the strip and its arrow end at the wall, in the pale foil colour.
+      // Cover stops a bolt: the strip ends flat at the wall, in the blocked colour, with no arrow.
       const stop = stopsAtCover(spell) ? this.host.arena.coverStop(hero, { x: hero.x + d.x * spell.range, z: hero.z + d.z * spell.range }) : 1;
       const reach = spell.range * stop;
-      this.tintStrip(stop < 1);
-      const tip = Math.min(1.4, width * 1.5 + 0.5, reach);
+      const cut = stop < 1;
+      this.tintStrip(cut);
+      const tip = cut ? 0 : Math.min(1.4, width * 1.5 + 0.5, reach);
       const turn = Math.atan2(-d.x, -d.z);
+      if (cut) { this.aimTip.visible = false; this.capStrip(hero, d.x, d.z, reach, turn, width); }
       this.aimLine.position.set(hero.x, 0.055, hero.z);
       this.aimLine.rotation.set(-Math.PI / 2, 0, turn);
       this.aimLine.scale.set(width, Math.max(0.01, reach - tip), 1);
@@ -1027,10 +1041,12 @@ export class HeroMode implements TouchTarget {
       // The strip ends at the cover in the way, unless the enemy itself is in sight (a unit standing in its own crystal is).
       const stop = this.hovered && this.host.arena.lineOfSight(hero, to) ? 1 : this.host.arena.coverStop(hero, end);
       this.tintStrip(stop < 1);
-      const len = Math.max(0.01, flatDist(hero, end) * stop);
+      const whole = flatDist(hero, end), len = Math.max(0.01, whole * stop);
       this.aimLine.position.set(hero.x, 0.055, hero.z);
       // Rx(-90°)·Rz(θ) takes local +Y to (-sin θ, 0, -cos θ): solve for the direction to `end`.
-      this.aimLine.rotation.set(-Math.PI / 2, 0, Math.atan2(-(end.x - hero.x), -(end.z - hero.z)));
+      const turn = Math.atan2(-(end.x - hero.x), -(end.z - hero.z));
+      this.aimLine.rotation.set(-Math.PI / 2, 0, turn);
+      if (stop < 1) this.capStrip(hero, (end.x - hero.x) / whole, (end.z - hero.z) / whole, len, turn, 0.8);
       this.aimLine.scale.set(0.8, len, 1);
     }
 
@@ -1042,9 +1058,9 @@ export class HeroMode implements TouchTarget {
     if (area && spell) {
       const c = clampToRange(hero, this.cursor, spell.range);
       const r = spec?.radius ?? 5;
-      // A spot behind a pillar or wall can't be targeted: the area shows in the pale foil colour.
+      // A spot behind a pillar or wall can't be targeted: the area shows in the blocked colour.
       const seen = this.host.arena.lineOfSight(hero, c);
-      for (const m of [this.areaRing, this.areaFill]) (m.material as THREE.MeshBasicMaterial).color.set(seen ? this.kit.accent : this.kit.foil);
+      for (const m of [this.areaRing, this.areaFill]) (m.material as THREE.MeshBasicMaterial).color.set(seen ? this.kit.accent : blockedTint(this.kit.accent));
       for (const m of [this.areaRing, this.areaFill]) {
         m.position.set(c.x, 0.06, c.z);
         m.scale.setScalar(r);
@@ -1058,10 +1074,18 @@ export class HeroMode implements TouchTarget {
     (this.moveMarker.material as THREE.MeshBasicMaterial).opacity = 0.9 * (1 - this.moveMarkerT);
   }
 
-  /** The aim strip's colour: the kit's accent, or the pale foil when cover cuts it. */
+  /** The aim strip's colour: the kit's accent, or the blocked colour when cover cuts it. */
   private tintStrip(cut: boolean) {
-    const c = cut ? this.kit.foil : this.kit.accent;
-    for (const m of [this.aimLine, this.aimTip]) (m.material as THREE.MeshBasicMaterial).color.set(c);
+    const c = cut ? blockedTint(this.kit.accent) : this.kit.accent;
+    for (const m of [this.aimLine, this.aimTip, this.aimStop]) (m.material as THREE.MeshBasicMaterial).color.set(c);
+  }
+
+  /** The flat end of a strip that cover cuts, `reach` metres along direction (`dx`, `dz`) from the hero. */
+  private capStrip(hero: THREE.Vector3, dx: number, dz: number, reach: number, turn: number, width: number) {
+    this.aimStop.visible = true;
+    this.aimStop.position.set(hero.x + dx * reach, 0.057, hero.z + dz * reach);
+    this.aimStop.rotation.set(-Math.PI / 2, 0, turn);
+    this.aimStop.scale.set(width + 0.5, 0.18, 1);
   }
 
   /** Writes the arc strip: a ribbon of `width` along the arc from `hero` to `end`, with the arrow head at its end. */

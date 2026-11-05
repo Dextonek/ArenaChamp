@@ -175,9 +175,10 @@ Every obstacle is a capsule on the ground (segment + radius; a pillar has zero l
   [mechanics.md](mechanics.md#walking-round-cover-navts)).
 - **Line of sight:** `arena.lineOfSight(a, b)` is false when the segment a-b passes within 0.9 × an obstacle's radius
   (`blocksSight`). **A spell needs sight of its target to be cast**: an enemy spell needs sight of the enemy, a ground
-  spell of the aimed spot; self spells need none. In hero mode a confirmed cast without sight shows "No line of
+  spell of the aimed spot; self spells need none. A line skillshot needs none either: it fires along its aim and
+  cover stops it. In hero mode a confirmed cast without sight shows "No line of
   sight" and becomes a pending cast: the hero walks toward the target and casts the moment it is in range *and* in
-  sight. While aiming, the hover ring and the ground circle turn the pale foil colour when the target is out of
+  sight. While aiming, the hover ring and the ground circle turn the blocked colour when the target is out of
   sight. The duel AI (and the autopilot) only picks targeted spells with sight, and closes in to half its usual
   distance while blocked so its strafe comes round the cover.
 - Sight is checked when the spell is cast; a spell already on its way still lands by the usual zone rule (walking

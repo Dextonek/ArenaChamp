@@ -101,9 +101,9 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 
 All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 
-- range ring around the hero (kit `foil`), radius = spell range;
-- single-target spells: an aim strip from the hero to the hovered enemy (or toward the cursor), clamped to range, and a hover ring on the enemy (accent when in range, foil when out of range). Without line of sight the strip ends at the cover in the way (`Arena.coverStop`) and turns `foil`;
-- line skillshots (`HeroSpell.aim: 'line'`): a strip and arrow of the spell's range and width. Both end where cover stops the bolt, and turn `foil`, unless the spell has `overCover` (it does not stop at walls). A bank shot draws its bounce instead. The cast's own line zones are cut the same way (`Arena.cutZones`, called from `zonesOf` in runtime.ts), on both sides' casts;
+- range ring around the hero (pale `AIM_PALE`, the same for every kit: a kit's `foil` can be dark), radius = spell range;
+- single-target spells: an aim strip from the hero to the hovered enemy (or toward the cursor), clamped to range, and a hover ring on the enemy (accent when it can be cast, the blocked colour when out of range or sight). Without line of sight the strip ends flat at the cover in the way (`Arena.coverStop`, `capStrip`) in the blocked colour;
+- line skillshots (`HeroSpell.aim: 'line'`): a strip and arrow of the spell's range and width. An arrow flies on. Where cover stops the bolt, the strip ends flat at the wall in the blocked colour, with no arrow, unless the spell has `overCover` (it does not stop at walls). A bank shot draws its bounce instead. The blocked colour (`blockedTint`) is pale on a coloured kit and grey on a kit whose accent is pale already, so it always differs from the accent. The cast's own line zones are cut the same way (`Arena.cutZones`, called from `zonesOf` in runtime.ts), on both sides' casts;
 - ground spells: an area circle plus fill at the clamped cursor point, radius from the spec's `radius` (default 5);
 - curving skillshots (`HeroSpell.aim: 'arc'`, a ground spell): a ribbon along a circular arc from the hero to the clamped
   cursor point with the arrow head at its end. The bend rule (`arcBendFor`, effects/projectile.ts): the arc bows away
@@ -120,7 +120,8 @@ All are flat `MeshBasicMaterial` meshes recoloured from the kit by `setKit`:
 
 - If the target is out of range when you confirm, the cast becomes `pending` and the hero walks toward the target (`HERO_SPEED = 4`, MOBA-slow since 2026-10-30); once within `spell.range` it casts. Any new move order drops the pending cast. A pending enemy that dies cancels it.
 - `castNow` sets the arena target (`setTarget` for an enemy, `setGroundPoint` for a point), calls `host.cast(label)` and stores the returned time as `rooted` (no walking while rooted). The runtime returns the latest danger-zone `impact` of the new cast (capped at 2.5 s), or 0.4 s when the spell has no zones, so the hero stays rooted until the spell lands.
-- A targeted spell (mode `enemy` / `enemies`) needs line of sight to its target: `confirm` shows "No line of sight" and walks into sight first, and `castNow` refuses (same hint) if the target is hidden when the cast would go. The AI and the autopilot already require sight for every non-self spell (`Duel.pickSpell`'s `sees`).
+- A line skillshot never waits: `confirm` fires it along its aim at once, wherever the cursor is, because its strip has shown where cover stops it and a bank shot wants the wall.
+- A ground spell needs sight of its spot, and a targeted spell (mode `enemy` / `enemies`) needs line of sight to its target: `confirm` shows "No line of sight" and walks into sight first, and `castNow` refuses (same hint) if the target is hidden when the cast would go. The AI and the autopilot already require sight for every non-self spell (`Duel.pickSpell`'s `sees`).
 - Basic-attack hooks from the trait (`attackReach`, `attackEcho`, `resetAttack`): `HeroMode.attackRange`, `skipEcho`, `onAttack(target, echo)`, `resetAttack()`; see [attacks.md](attacks.md).
 - Cooldowns count down in `update`; the slot flashes on cast. `setKit` and `setEnabled` clear cooldowns, aim and pending orders.
 

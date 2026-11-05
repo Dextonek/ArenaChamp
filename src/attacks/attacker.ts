@@ -140,7 +140,8 @@ export class Attacker {
     const st = this.owner.arena.statusOf(me);
     const at = this.owner.posOf(this.target);
     const s = this.owner.spec();
-    if (!at || st?.stunned || Math.hypot(at.x - me.group.position.x, at.z - me.group.position.z) > this.range + LEASH) {
+    // Cover between them drops it too: no swing lands through a wall (a released bolt flies on, as it would round a corner).
+    if (!at || st?.stunned || Math.hypot(at.x - me.group.position.x, at.z - me.group.position.z) > this.range + LEASH || !this.owner.arena.lineOfSight(me.group.position, at)) {
       this.wind = -1;
       return;
     }
@@ -158,7 +159,7 @@ export class Attacker {
     if (share > 0) { this.echoT = ECHO_DELAY; this.echoTarget = target; this.echoShare = Math.min(1, share); }
   }
 
-  /** The echo's second hit: same attack, a share of the damage; dropped when the target is gone or the attacker stunned. */
+  /** The echo's second hit: same attack, a share of the damage; dropped when the target is gone or behind cover, or the attacker stunned. */
   private fireEcho() {
     const target = this.echoTarget;
     this.echoT = -1;
@@ -167,6 +168,7 @@ export class Attacker {
     const st = this.owner.arena.statusOf(this.owner.self());
     if (st?.stunned) return;
     const at = this.owner.posOf(target)!, me = this.owner.self().group.position;
+    if (!this.owner.arena.lineOfSight(me, at)) return;
     this.owner.self().group.rotation.y = Math.atan2(at.x - me.x, at.z - me.z);
     this.pose = 0.18;
     this.owner.released?.(target, this.echoShare);
