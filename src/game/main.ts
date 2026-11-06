@@ -452,7 +452,7 @@ function raidScreen() {
               code, el('button', { class: 'btn', type: 'submit', disabled: busy }, 'Join by code'))))
         : el('p', { class: 'muted' }, 'Log in to raid with a friend.'),
       busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to start a raid.') : null,
-      state.profile?.raids?.played ? el('p', { class: 'muted small' }, `Raids: ${state.profile.raids.played} played, ${state.profile.raids.cleared} cleared${state.profile.raids.best ? `, fastest ${Math.floor(state.profile.raids.best / 60)}:${String(Math.floor(state.profile.raids.best % 60)).padStart(2, '0')}` : ''}.`) : null,
+      state.profile?.raids?.played ? el('p', { class: 'muted small' }, `Raids with a friend: ${state.profile.raids.played} played, ${state.profile.raids.cleared} cleared.${state.profile.raids.bosses ? ` Best: ${scoreText({ tier: state.profile.raids.tier ?? 1, bosses: state.profile.raids.bosses, seconds: state.profile.raids.best })}` : ''}`) : null,
     ),
   );
 }

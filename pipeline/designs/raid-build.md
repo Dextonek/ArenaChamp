@@ -5,8 +5,7 @@ one says in what order it gets built, the rules the code keeps so co-op stays po
 Written 2026-11-06, after reading `src/duel.ts`, `src/arena.ts`, `src/arenas/hazards/`, `src/game/match.ts` and
 `server/hub.mjs`.
 
-**As built, 2026-11-06:** slices 1 to 4 are done, plus the Sun Court the user asked for on the way. Slice 5 is not started. How it
-all works now: [docs/architecture/raid.md](../../docs/architecture/raid.md). This file stays as the plan it was built from.
+**As built, 2026-11-06:** all five slices are done, plus the Sun Court the user asked for on the way. How it all works now: [docs/architecture/raid.md](../../docs/architecture/raid.md). This file stays as the plan it was built from.
 
 ## The rules the code keeps
 

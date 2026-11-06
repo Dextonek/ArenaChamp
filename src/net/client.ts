@@ -37,8 +37,8 @@ export interface Profile {
   favourite: string | null;
   heroes: Record<string, HeroStats>;
   history: MatchRecord[];
-  /** Raids apart from the duel record: how many, how many cleared, the fastest clear (s). */
-  raids?: { played: number; cleared: number; best: number };
+  /** Runs apart from the duel record: how many, how many cleared, and the best: most bosses beaten, its tier and time (s). */
+  raids?: { played: number; cleared: number; bosses?: number; tier?: number; best: number };
 }
 
 /** What a round's loser chose: a hero swap or the next arena. */
@@ -89,8 +89,11 @@ export type ServerMsg =
     t: 'match_end'; id: string; result: 'win' | 'loss'; winner: string; reason: string; seconds: number; score?: number[]; hp: number[];
     stats: { casts: number; hits: number; dodges: number }; profile: Profile | null;
   }
-  | { t: 'raid_start'; id: string; side: 0 | 1; boss: string; hp: number; you: { name: string; hero: string }; partner: { name: string; hero: string } }
-  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: 0 | 1 }
+  | { t: 'raid_start'; id: string; side: 0 | 1; you: { name: string; hero: string }; partner: { name: string; hero: string } }
+  | { t: 'raid_offer'; stage: number; tier: number; boss: string; seconds: number }
+  | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: 0 | 1 }
+  | { t: 'raid_won'; stage: number; tier: number; bosses: number; seconds: number; last: boolean; wait: number }
+  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: 0 | 1; alone?: boolean; rim?: boolean; form?: number; flag?: boolean }
   | { t: 'boss_move'; x: number; z: number; yaw: number; ts?: number }
   | { t: 'boss_hp'; hp: number }
   | { t: 'boss_phase'; phase: number }
@@ -103,7 +106,7 @@ export type ServerMsg =
   | { t: 'revived'; side: 0 | 1; hp: number; left: number }
   | { t: 'partner_left' }
   | { t: 'boss_brain' }
-  | { t: 'raid_end'; result: 'cleared' | 'lost'; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }
+  | { t: 'raid_end'; result: 'cleared' | 'lost'; tier: number; bosses: number; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }
   | { t: 'socket'; open: boolean };
 
 type Handler<T extends ServerMsg['t']> = (msg: Extract<ServerMsg, { t: T }>) => void;

@@ -347,7 +347,17 @@ try {
     h.send({ t: 'lobby_pick', hero: 'Bram' });
     h.send({ t: 'lobby_ready', ready: true });
     const rg = await g.next('raid_start'), rh = await h.next('raid_start');
-    check(rg.side === 0 && rh.side === 1 && rg.partner.hero === 'Bram' && rh.partner.hero === 'Lyra' && rg.boss === 'sun', 'a raid starts with both heroes');
+    check(rg.side === 0 && rh.side === 1 && rg.partner.hero === 'Bram' && rh.partner.hero === 'Lyra', 'a raid starts with both heroes');
+    // The pick first: the hub waits for both, then the first boss.
+    const off = await g.next('raid_offer');
+    check(off.stage === 0 && off.tier === 1 && off.boss === 'sun' && off.seconds === 30, 'the run opens with a pick');
+    await h.next('raid_offer');
+    g.send({ t: 'raid_pick' });
+    await wait(200);
+    h.send({ t: 'raid_pick' });
+    const st = await g.next('raid_stage');
+    check(st.boss === 'sun' && st.hp === 6500 && st.brain === 0, 'both picked: the first boss loads');
+    await h.next('raid_stage');
     g.send({ t: 'match_loaded', maxHp: 520 });
     h.send({ t: 'match_loaded', maxHp: 800 });
     await g.next('match_fight');
@@ -425,17 +435,67 @@ try {
     h.send({ t: 'boss_damage', amount: 1 });
     await wait(1100);
 
-    // The clear: the boss falls, it counts on the profile as a raid and not as a win.
+    // The boss falls: on to the next pick, and everyone is up and full again.
     const finish = (/** @type {any} */ who) => { for (let i = 0; i < 2; i++) who.send({ t: 'boss_damage', amount: 600 }); };
-    for (let i = 0; i < 6; i++) {
-      finish(g);
-      await wait(1050);
-    }
-    const eg = await g.next('raid_end', 12000), eh = await h.next('raid_end', 12000);
-    check(eg.result === 'cleared' && eh.result === 'cleared', 'the raid is cleared when the boss falls');
-    check(eg.profile.raids.cleared === 1 && eg.profile.raids.played === 1 && eg.profile.wins === 0 && eg.profile.matches === 0, 'it counts as a raid, not as a win');
+    // Hits past the boss's end are dropped, so this just hits for long enough.
+    const until = async (/** @type {string} */ t, seconds) => {
+      for (let i = 0; i < seconds; i++) {
+        finish(g);
+        await wait(1050);
+      }
+      return g.next(t, 2000);
+    };
+    const won = await until('raid_won', 4);
+    check(won.bosses === 1 && won.last === false && won.seconds > 3, 'the first boss falls and the run goes on');
+    await h.next('raid_won');
+    const off2 = await g.next('raid_offer', 5000);
+    check(off2.stage === 1 && off2.boss === 'ash', 'the next pick is for the second boss');
+    g.send({ t: 'raid_pick' });
+    h.send({ t: 'raid_pick' });
+    const st2 = await g.next('raid_stage');
+    check(st2.boss === 'ash' && st2.hp === 7000, 'the second boss loads at its own HP');
+    g.send({ t: 'match_loaded', maxHp: 520 });
+    h.send({ t: 'match_loaded', maxHp: 800 });
+    await g.next('match_fight');
+    await h.next('match_fight');
+    await wait(3100);
 
-    // Someone leaves: the other fights on and takes the brain. Both down ends it.
+    // A tag team's casts carry who is on the rim and who steps in.
+    g.send({ t: 'boss_cast', id: 40, move: 'tag', step: 0, x: 1, z: 2, fx: 0, fz: -9, dir: 0, seed: 9, target: 0, form: 1 });
+    const tagged = await h.next('boss_cast');
+    check(tagged.form === 1 && tagged.fz === -9, 'a tag reaches the other screen');
+    g.send({ t: 'boss_cast', id: 41, move: 'fan', step: 0, x: 1, z: 2, fx: 0, fz: -9, dir: 0, seed: 9, target: 0, rim: true, flag: true });
+    const rimCast = await h.next('boss_cast');
+    check(rimCast.rim === true && rimCast.flag === true, 'so does a move from the rim');
+
+    // The last boss falls: the clear screen. Both go on to the next tier, keeping their upgrades, with more boss HP.
+    const clear = await until('raid_won', 6);
+    check(clear.bosses === 2 && clear.last === true && clear.tier === 1, 'the last boss falls: the raid is cleared');
+    await h.next('raid_won');
+    g.send({ t: 'raid_next', go: true });
+    await wait(150);
+    h.send({ t: 'raid_next', go: true });
+    const off3 = await g.next('raid_offer', 3000);
+    check(off3.stage === 0 && off3.tier === 2, 'both go on: the next tier opens with a pick');
+    await h.next('raid_offer');
+    g.send({ t: 'raid_pick' });
+    h.send({ t: 'raid_pick' });
+    const st3 = await g.next('raid_stage');
+    check(st3.hp === 7475, 'a tier adds 15 % to the boss');
+    g.send({ t: 'match_loaded', maxHp: 520 });
+    h.send({ t: 'match_loaded', maxHp: 800 });
+    await g.next('match_fight');
+    await h.next('match_fight');
+    await wait(3100);
+    // Both down ends the run, with its score. It counts as a raid and not as a win.
+    g.send({ t: 'hero_down' });
+    h.send({ t: 'hero_down' });
+    const eg = await g.next('raid_end', 12000), eh = await h.next('raid_end', 12000);
+    check(eg.result === 'lost' && eh.result === 'lost' && eg.bosses === 2 && eg.tier === 2, 'both down ends the run, with its score');
+    const pr = eg.profile.raids;
+    check(pr.played === 1 && pr.bosses === 2 && pr.tier === 2 && pr.best > 0 && eg.profile.wins === 0 && eg.profile.matches === 0, 'it counts as a raid, not as a win');
+
+    // Someone leaves: the other fights on and takes the brain. The last hero down ends it.
     g.send({ t: 'lobby_create', raid: 'sun' });
     // The first room's updates are still in the inbox.
     let room2 = room;
@@ -447,6 +507,12 @@ try {
     h.send({ t: 'lobby_ready', ready: true });
     await g.next('raid_start');
     await h.next('raid_start');
+    await g.next('raid_offer');
+    await h.next('raid_offer');
+    g.send({ t: 'raid_pick' });
+    h.send({ t: 'raid_pick' });
+    await g.next('raid_stage');
+    await h.next('raid_stage');
     g.send({ t: 'match_loaded', maxHp: 520 });
     h.send({ t: 'match_loaded', maxHp: 800 });
     await g.next('match_fight');

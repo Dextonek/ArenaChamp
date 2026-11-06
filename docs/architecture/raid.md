@@ -4,7 +4,41 @@ A boss fight on the duel's vs-CPU path, alone or for two. What the Raid is and w
 The order it was built in and how each piece was checked: [raid-build.md](../../pipeline/designs/raid-build.md). This file says
 how it works now.
 
-It only shows at `/game?raid`, until the run around the bosses is done or the user says otherwise (`RAID_ON` in `src/game/main.ts`).
+It only shows at `/game?raid`, until the user says otherwise (`RAID_ON` in `src/game/main.ts`).
+
+## The run
+
+Pick an upgrade, fight the Sun Warden, pick another, fight Ash and Ember. Beat both and the next tier is offered, keeping the
+upgrades, for a higher score. HP is full at each fight. One loss ends the run: alone that is one fall, for two it is both down at once.
+
+| Tier | What changes |
+|---|---|
+| Each one | Boss HP +15 % (`raidHp`). Shown times 10 % shorter and never under 1 s (`p.shown`, `raidTierFactor`). One extra move (`BossDef.extra`) |
+| Sun Warden's extras | Sun Order, then Walking Sun, then Eclipse, each from the first phase on |
+| Ash and Ember's extras | Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave from there |
+
+**The score** is the most bosses beaten, then the fastest time. Alone it stays in this browser (`raid.best`). For two it goes on both
+accounts (`recordRaid`) and does not count as a win or a loss: the profile's record stays about duels with people.
+
+## Upgrades
+
+`src/raid/upgrades.ts`. Three offered before each fight, only what this hero can use and hasn't got, from a seed; 30 s, and time
+running out takes the first. They live on the hero's own screen, like its HP and cooldowns, so the hub only waits for the picks.
+
+| Upgrade | Effect | Only for | Where it acts |
+|---|---|---|---|
+| Ricochet | Bolts bounce once off cover | Heroes with line bolts (26 of 39) | `Arena.heroBolt` |
+| Quick Hands | Cooldowns 15 % shorter | | `castRules` |
+| Ready Again | Ultimate 25 % sooner | | `castRules` |
+| Long Stride | Walk 15 % faster | | `HeroMode.speedBonus` |
+| Glass Edge | 25 % more damage, 15 % less max HP | | `resolve`, `startBoss` |
+| Stone Skin | 20 % more max HP | | `startBoss` |
+| Stubborn | Once a fight, a killing hit leaves 1 HP | | `damagePlayer` |
+| Opportunist | 60 % more damage while the boss stands open or kneels | | `resolve` |
+| Bone Breaker | Control fills the gauge 40 % faster | Heroes with `cc` spells | `BossFight.control` |
+| Fresh Start | A shield of 10 % of max HP as each phase begins | | `phaseShield` |
+
+The design called the third one Last Light, which is also the Warden's third phase, so it has its own name here.
 
 ## The four rules
 
@@ -67,6 +101,43 @@ Numbers as they are; tune by playing. Alone 3,200 HP, for two 5,600. Walks at 2 
 **From the design:** Shared Burden's circle stays where the target stood instead of following it, so nobody needs the other
 hero's exact position to draw it. If nobody stands in it, everyone pays in full.
 
+## Ash and Ember
+
+`src/raid/ashEmber.ts`. Two bosses, one HP bar, one in the ring at a time. The other stands on the rim, out of reach, and adds a move
+now and then. Alone 3,400 HP, for two 7,000. The one in the ring aims at the nearer hero, the one on the rim at the farther.
+
+| Phase | From | Who | Notes |
+|---|---|---|---|
+| Ash and Ember | 100 % | Ash in the ring, Ember on the rim | A move from the rim every 8-11 s |
+| Ember steps in | 66 % | They swap | Every 7-10 s |
+| Together | 33 % | They swap every 12 s | Every 8 s. The lava rises from the rim, three steps, then Last stand |
+
+| Who | Move | Shown | Costs | What you do |
+|---|---|---|---|---|
+| Ash | Ground Slam | 1.5 s | 22 % | Back away from the 5 m circle |
+| | Charge | 1.5 s | 25 % | Step off the line. Put cover behind you: he stops dead at it and stands open for 2 s |
+| | Drag Under | 2 s | 20 % | It pulls you in, and a ring burns far from him. Stay close, then walk away before the next thing |
+| | Burning Trail | None | 5 % a second | Puddles where he walked, for 15 s. Plan your route |
+| | Cinder Rock (from the rim) | 1.7 s | 15 % | Two rocks, each where you stood |
+| Ember | Fan | 1.5 s | 16 % | Five lines. Stand in a gap, or behind cover |
+| | Marked | Follows you 2.5 s, then 1 s | 22 %, and a puddle | Carry it somewhere neither of you needs, and walk out when it stops |
+| | Vent Bombs | 1.5 s | 14 % | Pairs either side of you. Stay between them |
+| | Lava Wave | 2.5 s | 20 % | A ring grows from the vent. Walk through the gold gap, which turns |
+| Both | Tag | 1.5 s | 15 % | Leave the circle where the next one lands |
+
+**How it stays within the rules.** A tag is a cast, so both screens swap at one moment. Marked's circle follows its target as a look only:
+what counts is its second step, at the spot the brain read. Only the brain's screen moves Ash down his Charge (`BossMove.act`), and it says in
+the cast whether he hit cover, so each screen doesn't judge that for itself. The one on the rim is a `HeroFigure` the duel only draws.
+
+**From the design:** Drag Under's second half, "walk out in time", has no zone of its own: it's whatever move comes next. Vent Bombs fall round
+the target and not from the vent. Ash's Charge only comes from the ring, so he has Cinder Rock for the rim.
+
+## The Cinder Pit
+
+`src/arenas/cinderpit.ts`: their own room, not in `ARENAS`. Radius 16, a basalt floor in a lava lake, a vent in the middle that stops
+nobody, an obsidian lip with five perches for whoever is on the rim. Four tall basalt clusters at 7.5 m, two ridges on the wings, four
+low stumps further out. None of it breaks. The floor comes from the caldera's textures and the cover from its props. All first-pass.
+
 ## The Sun Court
 
 `src/arenas/suncourt.ts`: the Warden's own room (user, 2026-11-06). It is not in `ARENAS`, so no duel picks it. Radius 16 against a
@@ -88,8 +159,9 @@ of this hero's can target or hit it.
 | A gold zone | The hub counts who stood in it | `boss_stood { id, part, inside }`, then `boss_stood { id, part, count }` to both, after both have said or 1 s |
 | A wall that saved someone | The hub, once | `boss_wall { index }` to both |
 | Falling and getting up | The hub keeps who is down | `hero_down`, `peer_down`; `revive`, `revived` |
-| Someone leaves | The hub | `partner_left`, and `boss_brain` if the leaver ran it |
-| The end | The hub | `raid_end` |
+| Someone leaves | The hub | `partner_left`, and `boss_brain` if the leaver ran it. The next fight is at the HP for one |
+| The run's order | The hub | `raid_offer`, `raid_pick`, `raid_stage`, `raid_won`; after the last boss `raid_next` from both, or the end after 30 s |
+| The end | The hub | `raid_end` with the score |
 
 **Against the design:** the hub doesn't check a hero's own HP (`boss_hit` with caps is gone). A cheat there only helps both players,
 and the hub already says it is fine for friends and not cheat-proof. The boss's HP stays capped by the hit and by the second, because
@@ -113,12 +185,16 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **Vesper's Sanguine Feast reads the HP she has taken off the target,** which grows large against a boss. All 39 heroes ran with nothing odd, but it has not been looked at on its own.
 - **A reload or a lost connection ends that player's raid.** There is no way back in, and the other hero fights on.
 - **A deploy ends every raid,** as it ends every match.
-- **Not in yet:** the run (upgrades, Ash and Ember, tiers).
+- **A Ricochet bolt still cracks the wall it bounces off, and its aim strip stops there.** On the partner's screen it doesn't bounce, since
+  the partner's upgrades aren't sent: only the look differs.
+- **A hero's upgrades don't change the partner's replay.** A Glass Edge hit looks the same; the HP comes from the hub.
+- **The offers can run out.** Ten upgrades and two picks a tier: a long run ends up with fewer than three, then none.
 
 ## Tools
 
-- `pipeline/tools/raid-check.js`: `_raidCheck()` forces each move and checks what it costs, walking out, cover and the boss's own
-  rules. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
-- `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level })` runs the autopilot and reports clears, time, damage per second
+- `pipeline/tools/raid-check.js`: `_raidCheck()` forces each of the Warden's moves and checks what it costs, walking out, cover and the
+  boss's own rules. `_raidAsh()` does the same for Ash and Ember, with the tag and the lava. `_raidUpgrades()` checks each upgrade's number and
+  each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
+- `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level, boss })` runs the autopilot and reports clears, time, damage per second
   and which move killed. It can't tell whether the fight is fun.
 - `pipeline/tools/online-bot.js`: `_botRoom(hero)` and `_botJoin(hero, code)` play a raid for two in two tabs with bots.

@@ -76,6 +76,9 @@
       // Both heroes picked and ready: the page's own room starts the raid.
       return;
     }
+    // Picks through the real cards, and goes on through the real button, unless a test holds them back.
+    if (!window._botHoldPick) document.querySelector('.raid-offer')?.click();
+    if (window._botGoOn && d.isOver) [...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.startsWith('Go on'))?.click();
     if (d.boss && !d.autopilot) d.autopilot = true;
     if (performance.now() - (raidLog.at ?? 0) > 1000 && d.boss) {
       raidLog.at = performance.now();

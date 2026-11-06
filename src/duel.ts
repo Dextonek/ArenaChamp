@@ -793,6 +793,17 @@ export class Duel {
     return this.playerHp;
   }
 
+  /** The fight on this screen has ended. */
+  get isOver() {
+    return !!this.over;
+  }
+
+  /** The result card waits on someone: it says so and its button goes. `done`: the run has ended, so it says that instead. */
+  waitingOn(text: string, done = false) {
+    this.rematchButton.style.display = 'none';
+    this.cardText.textContent = done ? text : `${this.cardText.textContent} ${text}.`;
+  }
+
   /** This hero's max HP now, with what the run's upgrades add. */
   get heroMax() {
     return this.playerMax;

@@ -18,7 +18,7 @@ How the apps are put together. Two apps share one runtime: [runtime.ts](../../sr
 | CPU levels of the duel AI (Novice to Master) | [cpuLevels.ts](../../src/cpuLevels.ts) |
 | Arena events (the temple's rays, ice rifts, lava bombs, spores, lightning) | [arenas/hazards/](../../src/arenas/hazards/base.ts) |
 | Arenas that change as a round runs long, and Last stand | [arenas/shifts/](../../src/arenas/shifts/base.ts) |
-| The Raid: boss fights alone and for two, the Sun Court | [raid.md](raid.md), [raid/](../../src/raid/fight.ts), [arenas/suncourt.ts](../../src/arenas/suncourt.ts) |
+| The Raid: boss fights and the run, alone and for two, each boss's own room | [raid.md](raid.md), [raid/](../../src/raid/fight.ts), [arenas/suncourt.ts](../../src/arenas/suncourt.ts), [arenas/cinderpit.ts](../../src/arenas/cinderpit.ts) |
 | Pathfinding round cover | [nav.ts](../../src/nav.ts) |
 | Particle mode (the default "particles" mode) | [emitter.ts](../../src/emitter.ts), [presets.ts](../../src/presets.ts) |
 | Final screen pass (`FinishPass`) | [post.ts](../../src/post.ts) |

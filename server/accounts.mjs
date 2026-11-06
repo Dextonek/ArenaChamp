@@ -12,7 +12,7 @@ const ITERATIONS = 100000;
  * @typedef {{ at: string, hero: string, from?: string, foe: string, foeHero: string, result: 'win' | 'loss', seconds: number, reason: string,
  *   rounds?: number[] }} MatchRecord
  * @typedef {{ name: string, salt: string, hash: string, algo?: 'pbkdf2' | 'scrypt', created: string, wins: number, losses: number,
- *   matches: number, heroes: Record<string, HeroStats>, history: MatchRecord[], raids?: { played: number, cleared: number, best: number } }} Account
+ *   matches: number, heroes: Record<string, HeroStats>, history: MatchRecord[], raids?: { played: number, cleared: number, bosses?: number, tier?: number, best: number } }} Account
  * @typedef {{ load(): Record<string, Account>, put(key: string, account: Account): void }} AccountStore
  */
 
@@ -85,17 +85,20 @@ export class Accounts {
   }
 
   /**
-   * Records one finished raid. It does not count as a win or a loss: the profile's record stays about duels with people.
-   * @param {string} name @param {{ at: string, hero: string, partner: string, boss: string, result: 'cleared' | 'lost' | 'left', seconds: number }} rec
+   * Records one finished run. It does not count as a win or a loss: the profile's record stays about duels with people. The best
+   * run is the most bosses beaten, then the fastest.
+   * @param {string} name @param {{ tier: number, bosses: number, seconds: number, result: 'cleared' | 'lost' | 'left' }} rec
    */
   recordRaid(name, rec) {
     const a = this.get(name);
     if (!a) return;
-    const r = (a.raids ??= { played: 0, cleared: 0, best: 0 });
+    const r = (a.raids ??= { played: 0, cleared: 0, bosses: 0, tier: 0, best: 0 });
     r.played++;
-    if (rec.result === 'cleared') {
-      r.cleared++;
-      if (!r.best || rec.seconds < r.best) r.best = rec.seconds;
+    if (rec.result === 'cleared') r.cleared++;
+    if (rec.bosses > (r.bosses ?? 0) || (rec.bosses > 0 && rec.bosses === r.bosses && rec.seconds < r.best)) {
+      r.bosses = rec.bosses;
+      r.tier = rec.tier;
+      r.best = rec.seconds;
     }
     this.save(a);
   }
@@ -108,7 +111,7 @@ export class Accounts {
     }
     return {
       name: a.name, created: a.created, wins: a.wins, losses: a.losses, matches: a.matches,
-      favourite, heroes: a.heroes, history: a.history, raids: a.raids ?? { played: 0, cleared: 0, best: 0 },
+      favourite, heroes: a.heroes, history: a.history, raids: a.raids ?? { played: 0, cleared: 0, bosses: 0, tier: 0, best: 0 },
     };
   }
 }
