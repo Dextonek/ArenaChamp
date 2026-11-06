@@ -1682,7 +1682,7 @@ export class Duel {
     }
     const sees = this.host.arena.lineOfSight(me, at);
     const theirs = this.host.arena.statusOf(foe);
-    if (!st.cannotCast) {
+    if (!st.cannotCast && !this.boss?.script.wary) {
       const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
       const ward = this.ward(this.oppRt);
       const waits = (i: number) => (!!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait) || !!this.heroRt?.trait?.aiHold?.(this.heroRt, i, flat(me, at));
@@ -1849,8 +1849,9 @@ export class Duel {
     if (!roll.react) return null;
     if (this.time < roll.at) return new THREE.Vector3();
     for (const within of BOSS_CLEAR) {
-      const step = this.escapeStep(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)));
-      if (step) return step;
+      const spot = this.escapeSpot(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)));
+      // On the planned way round cover: a straight step can wedge between two pieces of it.
+      if (spot) return this.goalStep(this.playerAi, at, spot);
     }
     return null;
   }
@@ -1869,6 +1870,11 @@ export class Duel {
 
   /** A unit step toward the nearest open spot that is not `unsafe`, keeping the distance to `me`, or null. */
   private escapeStep(at: THREE.Vector3, me: THREE.Vector3, unsafe: (x: number, z: number) => boolean) {
+    return this.escapeSpot(at, me, unsafe)?.sub(at).setY(0).normalize() ?? null;
+  }
+
+  /** The nearest open spot that is not `unsafe`, keeping the distance to `me`, or null. */
+  private escapeSpot(at: THREE.Vector3, me: THREE.Vector3, unsafe: (x: number, z: number) => boolean) {
     const keep = flat(at, me);
     const obstacles = this.host.arena.obstacles ?? [];
     const open = (x: number, z: number) =>
@@ -1884,7 +1890,7 @@ export class Duel {
       }
       spots.sort((a, b) => a.score - b.score);
       const free = spots.find((s) => obstacles.every((o) => pathDist(at, s.p, o) > o.r + BODY_RADIUS * 0.5));
-      if (free) return free.p.sub(at).setY(0).normalize();
+      if (free) return free.p;
     }
     return null;
   }

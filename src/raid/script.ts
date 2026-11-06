@@ -190,8 +190,9 @@ export class BossScript {
     return best;
   }
 
-  get busy() {
-    return this.active.length > 0;
+  /** A move is coming after whoever it aims at: an AI starts no long cast now. */
+  get wary() {
+    return this.active.some((a) => this.def.moves[a.cast.move]?.chases && a.played.threats.some((th) => !th.landed));
   }
 
   private forget(a: Active) {

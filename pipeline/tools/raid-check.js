@@ -43,7 +43,7 @@
       // Stone Sweep: in the cone, behind him, walking out.
       fresh(0, 1);
       place(0, 5);
-      check('sweep: in the cone', take(() => cast('sweep'), 1.8), 0.22);
+      check('sweep: in the cone', take(() => cast('sweep'), 1.8), 0.2);
       place(0, 5);
       check('sweep: walked out', take(() => { cast('sweep'); place(6.5, 1); }, 1.8), 0);
       place(0, -0.5);
@@ -52,14 +52,14 @@
       // Pillar Fall: under a stone, or stepped away.
       fresh(0, 1);
       place(-3, 13);
-      check('pillar: stood still', take(() => cast('pillars'), 1.7), 0.18);
+      check('pillar: stood still', take(() => cast('pillars'), 1.7), 0.15);
       place(-3, 13);
       check('pillar: walked out', take(() => { cast('pillars'); place(3, 13); }, 1.7), 0);
 
       // Sun Ray: stopped by cover, cracks the wall.
       fresh(0, 1);
       place(0, 5);
-      check('ray: in the line', take(() => cast('ray'), 2.7), 0.25);
+      check('ray: in the line', take(() => cast('ray'), 2.7), 0.22);
       fresh(-3.2, 1);
       place(-3.2, 7);
       const hp0 = d.wallHp.reduce((s, v) => s + Math.max(0, v), 0);
@@ -69,7 +69,7 @@
       // Noon: open floor, behind a wall (it falls), behind a column (it stays).
       fresh(0, 1);
       place(0, 5);
-      check('noon: in the open', take(() => cast('noon'), 4.2), 0.7);
+      check('noon: in the open', take(() => cast('noon'), 4.2), 0.4);
       yes('noon: he stands open', a.statusOf(d.foe).buff('vulnerable') === 0.5);
       fresh(-3.2, 1);
       place(-3.2, 7);
@@ -90,7 +90,7 @@
       place(s1.x, s1.z);
       d.playerHp = d.playerMax;
       step(2.7);
-      check('order: stood in wedge 1', lost(d.playerMax), 0.25);
+      check('order: stood in wedge 1', lost(d.playerMax), 0.16);
       step(3);
       fresh(0, 1);
       const [a1, a2] = wedges();
@@ -104,11 +104,11 @@
       // Eclipse: near, far, near.
       fresh(0, 1);
       place(0, 3);
-      check('eclipse near: close', take(() => cast('eclipse', { step: 0 }), 1.8), 0.2);
+      check('eclipse near: close', take(() => cast('eclipse', { step: 0 }), 1.8), 0.15);
       place(0, 12);
       check('eclipse near: far off', take(() => cast('eclipse', { step: 0 }), 1.8), 0);
       place(0, 12);
-      check('eclipse far: far off', take(() => cast('eclipse', { step: 1 }), 1.8), 0.2);
+      check('eclipse far: far off', take(() => cast('eclipse', { step: 1 }), 1.8), 0.15);
       place(0, 3);
       check('eclipse far: close', take(() => cast('eclipse', { step: 1 }), 1.8), 0);
 
@@ -116,7 +116,7 @@
       fresh(0, 1);
       const before = d.boss.script;
       place(-11, 7);
-      check('anchor: nobody in it', take(() => cast('anchors', { step: 0 }), 3.2), 0.3);
+      check('anchor: nobody in it', take(() => cast('anchors', { step: 0 }), 3.2), 0.25);
       cast('anchors', { step: 0 });
       const gold = before.active[before.active.length - 1].played.threats[0].shape;
       place(gold.x, gold.z);
@@ -133,7 +133,7 @@
       place(s4.x2 * 0.5 + s4.x1 * 0.5, s4.z2 * 0.5 + s4.z1 * 0.5);
       d.playerHp = d.playerMax;
       step(4.3);
-      check('walking sun: it passed once', lost(d.playerMax), 0.15);
+      check('walking sun: it passed once', lost(d.playerMax), 0.12);
 
       // The boss's own rules: not moved, stagger, kneel, +50 %.
       fresh(0, 2);

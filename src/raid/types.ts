@@ -136,6 +136,8 @@ export interface BossMove {
   alongside?: boolean;
   /** Only with two players. */
   coop?: boolean;
+  /** Its later steps come at wherever the target is then: an AI keeps walking through it and starts no long cast. */
+  chases?: boolean;
   pose: CastStyle;
   /** Where a step is aimed. Runs on the brain's screen only. */
   aim(c: AimContext): { x: number; z: number; dir: number };

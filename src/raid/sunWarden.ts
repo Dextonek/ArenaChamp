@@ -44,7 +44,7 @@ const stoneSweep: BossMove = {
   aim: atTarget,
   play(c, p) {
     const radius = 6.5, angle = 120, at = 1.6;
-    const th: Threat = { shape: { kind: 'cone', x: c.fx, z: c.fz, radius, angle, dir: c.dir }, at, share: 0.22, knock: 3 };
+    const th: Threat = { shape: { kind: 'cone', x: c.fx, z: c.fz, radius, angle, dir: c.dir }, at, share: 0.2, knock: 3 };
     return {
       threats: [th], duration: at + 0.5,
       look: {
@@ -63,11 +63,11 @@ const stoneSweep: BossMove = {
 
 /** Three stones, each where the target stood at that moment. Keep walking. */
 const pillarFall: BossMove = {
-  id: 'pillars', name: 'Pillar Fall', charge: 2.9, lock: 2.9, cooldown: 9, steps: [0, 0.7, 1.4], pose: 'raise',
+  id: 'pillars', name: 'Pillar Fall', charge: 2.9, lock: 2.9, cooldown: 9, steps: [0, 0.7, 1.4], chases: true, pose: 'raise',
   aim: atTarget,
   play(c, p) {
     const radius = 2.2, at = 1.5;
-    const th: Threat = { shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.18 };
+    const th: Threat = { shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.15 };
     const stone = new FallingStone(c.x, c.z, radius, at);
     p.group.add(stone.mesh);
     return {
@@ -94,7 +94,7 @@ const sunRay: BossMove = {
     const ex = c.fx + Math.sin(c.dir) * full, ez = c.fz + Math.cos(c.dir) * full;
     const k = p.rayStop(c.fx, c.fz, ex, ez);
     const x2 = c.fx + (ex - c.fx) * k, z2 = c.fz + (ez - c.fz) * k;
-    const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2, z2, width }, at, share: 0.25 };
+    const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2, z2, width }, at, share: 0.22 };
     const ray = beam(p, CORE, GLOW, 1.6);
     const a = new THREE.Vector3(c.fx, y, c.fz), b = new THREE.Vector3(x2, 0.9, z2);
     let time = 0;
@@ -127,7 +127,7 @@ const noon: BossMove = {
   play(c, p) {
     const at = 4, exposed = 5;
     const source = { x: c.fx, z: c.fz };
-    const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: RING.r + 1 }, at, share: 0.7, source, breaks: true, look: at };
+    const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: RING.r + 1 }, at, share: 0.4, source, breaks: true, look: at };
     const shadows = new ShadowFloor(source, () => p.cover(), STAND_COLOR);
     const sun = new SunOrb(c.fx, 7, c.fz);
     p.group.add(shadows.mesh, sun.sprite);
@@ -168,7 +168,7 @@ const sunOrder: BossMove = {
       const mark = new NumberMark(String(i + 1), C.x + Math.sin(dir) * 5.6, C.z + Math.cos(dir) * 5.6);
       p.group.add(mark.sprite);
       marks.push(mark);
-      return { shape: { kind: 'cone', x: C.x, z: C.z, radius, angle: 90, dir }, at: first + i * apart, share: 0.25 };
+      return { shape: { kind: 'cone', x: C.x, z: C.z, radius, angle: 90, dir }, at: first + i * apart, share: 0.16 };
     });
     return {
       threats, duration: first + 3 * apart + 0.5,
@@ -201,7 +201,7 @@ const eclipse: BossMove = {
     const reach = Math.hypot(c.fx - C.x, c.fz - C.z) + RING.r;
     const shape: TelegraphShape = far ? { kind: 'ring', x: c.fx, z: c.fz, inner: near, outer: reach } : { kind: 'circle', x: c.fx, z: c.fz, radius: near };
     return {
-      threats: [{ shape, at, share: 0.2 }], duration: at + 0.4,
+      threats: [{ shape, at, share: 0.15 }], duration: at + 0.4,
       look: {
         land() {
           for (let k = 0; k < 10; k++) {
@@ -232,7 +232,7 @@ const anchors: BossMove = {
       const light = new LightPillar(s.x, s.z, radius, 7, STAND_COLOR);
       p.group.add(light.mesh);
       lights.push(light);
-      return { shape: { kind: 'circle', x: s.x, z: s.z, radius }, kind: 'stand', at, share: 0.3, part: i };
+      return { shape: { kind: 'circle', x: s.x, z: s.z, radius }, kind: 'stand', at, share: 0.25, part: i };
     });
     return {
       threats, duration: at + 0.5,
@@ -278,7 +278,7 @@ const walkingSun: BossMove = {
       const a = angleAt(t), len = lengthAt(a);
       return { kind: 'line', x1: C.x + Math.sin(a) * inner, z1: C.z + Math.cos(a) * inner, x2: C.x + Math.sin(a) * len, z2: C.z + Math.cos(a) * len, width };
     };
-    const th: Threat = { shape: shapeAt(warm), at: warm, to: end, every: 1, share: 0.15, look: 1.2, shapeAt };
+    const th: Threat = { shape: shapeAt(warm), at: warm, to: end, every: 1, share: 0.12, look: 1.2, shapeAt };
     const ray = beam(p, CORE, GLOW, 1.5), floor = beam(p, 0xc06a20, 0x7a3208, 2.2);
     const a3 = new THREE.Vector3(), b3 = new THREE.Vector3();
     let time = 0;
@@ -344,7 +344,7 @@ export const SUN_WARDEN: BossDef = {
     name: 'The Sun Warden', title: 'Keeper of the Night Temple', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, maxHp: hp,
     spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],
   } as HeroKit),
-  hp: { solo: 4000, duo: 6500 },
+  hp: { solo: 3200, duo: 5600 },
   scale: 2,
   body: { radius: 1.2, height: 5.4 },
   speed: 2,
@@ -353,9 +353,9 @@ export const SUN_WARDEN: BossDef = {
   kneel: 6,
   phasePause: 2.5,
   phases: [
-    { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray'], gap: [1.8, 2.8] },
-    { name: 'High Noon', at: 0.7, moves: ['sweep', 'pillars', 'ray', 'noon', 'order'], opener: 'noon', gap: [1.5, 2.4] },
-    { name: 'Last Light', at: 0.35, moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.2, 2] },
+    { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray'], gap: [2.4, 3.4] },
+    { name: 'High Noon', at: 0.7, moves: ['sweep', 'pillars', 'ray', 'noon', 'order'], opener: 'noon', gap: [2, 3] },
+    { name: 'Last Light', at: 0.35, moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
   ],
   moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, noon, order: sunOrder, eclipse, anchors, walking: walkingSun },
   /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
