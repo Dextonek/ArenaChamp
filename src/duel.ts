@@ -530,9 +530,9 @@ export class Duel {
     this.opponentKit = o.def.kit(o.link.maxHp);
     this.hazardSeed = o.seed;
     this.bossDef = o.def;
-    const place = arenaById(o.def.arena);
-    if (!place) throw new Error(`No arena ${o.def.arena}`);
-    this.setup(PLAYER_START, OPPONENT_START, place);
+    const { boss: from, heroes } = o.def.starts;
+    const start = heroes[o.link.solo ? 0 : o.link.side + 1];
+    this.setup(new THREE.Vector3(start.x, 0, start.z), new THREE.Vector3(from.x, 0, from.z), o.def.place);
     const foe = this.foe;
     if (!foe) throw new Error('A boss fight with no boss');
     foe.body = { ...o.def.body };
@@ -688,8 +688,8 @@ export class Duel {
     this.foeMax = this.opponentKit.maxHp ?? HP;
     arena.maxHp = this.foeMax;
     arena.respawnAfter = Infinity;
-    arena.bounds = { ...RING };
-    this.ringTo = RING.r;
+    arena.bounds = { ...RING, r: def.ring ?? RING.r };
+    this.ringTo = arena.bounds.r;
     // A copy: temporary obstacles (`CastContext.addObstacle`) and broken walls change the list, never the arena definition.
     arena.clearTempObstacles();
     arena.obstacles = def.obstacles.slice();
@@ -1878,7 +1878,7 @@ export class Duel {
     const keep = flat(at, me);
     const obstacles = this.host.arena.obstacles ?? [];
     const open = (x: number, z: number) =>
-      Math.hypot(x - RING.x, z - RING.z) <= RING.r - 0.8 && obstacles.every((o) => capsuleDist(x, z, o) > o.r + BODY_RADIUS);
+      Math.hypot(x - RING.x, z - RING.z) <= (this.currentArena?.ring ?? RING.r) - 0.8 && obstacles.every((o) => capsuleDist(x, z, o) > o.r + BODY_RADIUS);
     // Rings of 16 spots, nearest first; on each ring the spot that keeps the distance to the player best, by a free path.
     for (let r = 0.6; r <= 7.2; r += 0.6) {
       const spots: { p: THREE.Vector3; score: number }[] = [];

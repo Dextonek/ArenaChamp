@@ -206,7 +206,7 @@ export class ZoneFloor implements ShiftLook {
   private dummy = new THREE.Object3D();
   private time = 0;
 
-  constructor(private style: FloorStyle, private steps: FloorStep[], channels?: FloorChannels, private extra?: ShiftLook) {
+  constructor(private style: FloorStyle, private steps: FloorStep[], channels?: FloorChannels, private extra?: ShiftLook, private radius = RING.r) {
     this.mat = new THREE.ShaderMaterial({
       vertexShader: vertex, fragmentShader: fragment(style), transparent: true, depthWrite: false,
       polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1,
@@ -216,7 +216,7 @@ export class ZoneFloor implements ShiftLook {
         uChanNormal: { value: new THREE.Vector2(channels?.normal.x ?? 0, channels?.normal.z ?? 0) },
       },
     });
-    this.mesh = new THREE.Mesh(new THREE.CircleGeometry(RING.r, 128).rotateX(-Math.PI / 2), this.mat);
+    this.mesh = new THREE.Mesh(new THREE.CircleGeometry(radius, 128).rotateX(-Math.PI / 2), this.mat);
     this.mesh.position.set(RING.x, 0.035, RING.z);
     this.mesh.renderOrder = 0.5;
     this.mesh.visible = false;
@@ -279,7 +279,7 @@ export class ZoneFloor implements ShiftLook {
     this.edge.from = this.edge.now;
     this.edge.to = step.edge ?? NONE;
     // An edge that starts now comes in from the rim, not from nowhere.
-    if (this.edge.from >= NONE && this.edge.to < NONE) this.edge.from = RING.r + 0.4;
+    if (this.edge.from >= NONE && this.edge.to < NONE) this.edge.from = this.radius + 0.4;
     this.vent.from = this.vent.now;
     this.vent.to = step.vent ?? 0;
     this.channelsTo = step.channels ? 1 : 0;
@@ -320,8 +320,8 @@ export class ZoneFloor implements ShiftLook {
     const rate = this.style === 'lava' ? 26 : this.style === 'sun' ? 34 : 0;
     if (!rate || Math.random() > dt * rate) return;
     const a = Math.random() * Math.PI * 2;
-    const inner = Math.min(this.edge.now, RING.r);
-    const r = this.all > 0.5 ? Math.random() * RING.r : inner + Math.random() * Math.max(0, RING.r - inner);
+    const inner = Math.min(this.edge.now, this.radius);
+    const r = this.all > 0.5 ? Math.random() * this.radius : inner + Math.random() * Math.max(0, this.radius - inner);
     const color = this.style === 'lava' ? 0xd86a20 : 0xd8a040;
     this.sparks.emit(RING.x + Math.cos(a) * r, 0.1, RING.z + Math.sin(a) * r, 1, 0.5, 2.6, 1.3, color, 0.3);
   }

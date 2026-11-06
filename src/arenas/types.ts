@@ -62,6 +62,8 @@ export interface ArenaDef {
   id: string;
   /** Shown in the countdown banner. */
   name: string;
+  /** How far the walkable ring reaches (default 12, every duel arena). A raid's own room is wider. */
+  ring?: number;
   obstacles: Obstacle[];
   stage: ArenaStage;
   /** Walls (`kind: 'wall'`) break under spells: see `Duel.blastWalls`. The scene shows it through `wallState`. */

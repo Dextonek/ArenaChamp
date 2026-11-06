@@ -45,7 +45,7 @@ let propsPromise: Promise<Record<string, PropParts>> | null = null;
 
 /** temple_props.glb and temple_backdrop.glb as {prop name: its parts (one per material)}; objects there are named
  *  "<Prop>__<material>". Both files use the same materials; the first one loaded of each name is used for all. */
-function loadProps() {
+export function loadProps() {
   propsPromise ??= (() => {
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const base = `${import.meta.env.BASE_URL}models/arenas/`;
@@ -82,7 +82,7 @@ function loadProps() {
 }
 
 /** One instanced mesh per part of `prop`, placed by `matrices` (each build gets its own copies to dispose). */
-function instance(parts: PropParts, matrices: THREE.Matrix4[]) {
+export function instance(parts: PropParts, matrices: THREE.Matrix4[]) {
   return parts.map(({ geometry, material }) => {
     const m = new THREE.InstancedMesh(geometry.clone(), material.clone(), matrices.length);
     matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
@@ -101,7 +101,7 @@ const _s = new THREE.Vector3();
 
 // ---- the backdrop: placed props merged per material (the repeated rubble instanced) -----------------------------
 
-type Place = Record<string, THREE.Matrix4[]>;
+export type Place = Record<string, THREE.Matrix4[]>;
 
 /** How much darker the backdrop is than the cover (it stands further out of the braziers' and the rim light). */
 const BACK_DIM = 0.7;
@@ -132,7 +132,7 @@ function own(material: THREE.Material) {
 }
 
 /** Places props (each by its matrices) and merges every placed part into one mesh per material. */
-function merged(props: Record<string, PropParts>, place: Place) {
+export function merged(props: Record<string, PropParts>, place: Place) {
   const lists = new Map<string, { material: THREE.Material; geos: THREE.BufferGeometry[] }>();
   for (const [name, matrices] of Object.entries(place)) {
     for (const { geometry, material, part } of props[name] ?? []) {
@@ -156,7 +156,7 @@ function merged(props: Record<string, PropParts>, place: Place) {
 }
 
 /** The repeated small props (rubble heaps): one instanced mesh per prop part. */
-function instanced(props: Record<string, PropParts>, place: Place) {
+export function instanced(props: Record<string, PropParts>, place: Place) {
   const meshes: THREE.InstancedMesh[] = [];
   for (const [name, matrices] of Object.entries(place)) {
     if (!matrices.length) continue;
@@ -173,7 +173,7 @@ function instanced(props: Record<string, PropParts>, place: Place) {
 }
 
 /** The camera rule: nothing of the backdrop above 2 m within 26 m of the centre unless |x| > 12 (every vertex). */
-function checkCameraRule(meshes: THREE.Mesh[]) {
+export function checkCameraRule(meshes: THREE.Mesh[], reach = 26) {
   const v = new THREE.Vector3();
   const mx = new THREE.Matrix4();
   for (const m of meshes) {
@@ -184,7 +184,7 @@ function checkCameraRule(meshes: THREE.Mesh[]) {
       else mx.identity();
       for (let i = 0; i < pos.count; i++) {
         v.fromBufferAttribute(pos, i).applyMatrix4(mx);
-        if (v.y > 2 && Math.abs(v.x) <= 12 && Math.hypot(v.x - RING.x, v.z - RING.z) <= 26) {
+        if (v.y > 2 && Math.abs(v.x) <= 12 && Math.hypot(v.x - RING.x, v.z - RING.z) <= reach) {
           throw new Error(`temple: backdrop breaks the camera rule at (${v.x.toFixed(1)}, ${v.y.toFixed(1)}, ${v.z.toFixed(1)})`);
         }
       }
@@ -401,6 +401,176 @@ function bannerTexture() {
   });
 }
 
+/** A prop placed at (x, z), turned `ry`, stretched `sx` along its length. */
+export const placeAt = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), ry), new THREE.Vector3(sx, 1, 1));
+
+/**
+ * The temple's sculpted cover on `obstacles`: instanced walls that crack and fall, columns that topple, altars (a low
+ * pillar), `pots` of braziers, and the stone chunks they throw. Added to `g` when the props file has loaded.
+ */
+export function templeCover(g: THREE.Group, obstacles: Obstacle[], pots: THREE.Matrix4[]) {
+  let disposed = false;
+  const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(_p.set(x, 0, z), _q.setFromAxisAngle(_s.set(0, 1, 0), ry), new THREE.Vector3(sx, 1, 1));
+  const crnd = seeded(100);
+  // Breakable walls: each wall's matrix, its state, and one instanced set per look (whole, cracked, rubble). A look
+  // without its own prop in the file falls back to the whole wall leant over (cracked) or squashed low (rubble).
+  const wallIdx: number[] = []; // obstacle index -> wall instance
+  const wallBase: THREE.Matrix4[] = [];
+  const wallStates: WallState[] = [];
+  const wallSets: Record<WallState, THREE.InstancedMesh[]> = { whole: [], cracked: [], broken: [] };
+  obstacles.forEach((o, i) => {
+    if (o.kind !== 'wall') return;
+    const dx = o.bx - o.ax, dz = o.bz - o.az;
+    wallIdx[i] = wallBase.length;
+    wallBase.push(at((o.ax + o.bx) / 2, (o.az + o.bz) / 2, Math.atan2(-dz, dx), (Math.hypot(dx, dz) + 2 * o.r) / WALL_MODULE));
+    wallStates.push('whole');
+  });
+  const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
+  const lean = new THREE.Matrix4().makeRotationX(0.05).setPosition(0, -0.06, 0);
+  const squash = new THREE.Matrix4().makeScale(1, 0.18, 1.25);
+  const showWall = (k: number) => {
+    const state = wallStates[k];
+    for (const look of ['whole', 'cracked', 'broken'] as const) {
+      for (const m of wallSets[look]) {
+        let mx = HIDDEN;
+        if (look === state) mx = wallBase[k];
+        else if (look === 'whole' && !wallSets[state].length) mx = state === 'cracked' ? wallBase[k].clone().multiply(lean) : wallBase[k].clone().multiply(squash);
+        m.setMatrixAt(k, mx);
+        m.instanceMatrix.needsUpdate = true;
+      }
+    }
+  };
+
+  // The columns: each one's matrix and the instanced sets, so a stage can topple them (`coverFall`).
+  const columnIdx: number[] = []; // obstacle index -> column instance
+  const columnBase: THREE.Matrix4[] = [];
+  let columnSets: THREE.InstancedMesh[] = [];
+  const altars: THREE.Matrix4[] = [];
+  obstacles.forEach((o, i) => {
+    if (o.kind === 'wall') return;
+    if (o.height < 2) altars.push(at(o.ax, o.az, 0));
+    else {
+      columnIdx[i] = columnBase.length;
+      columnBase.push(at(o.ax, o.az, (crnd() - 0.5) * 0.5));
+    }
+  });
+  const setColumn = (k: number, mx: THREE.Matrix4) => {
+    for (const m of columnSets) {
+      m.setMatrixAt(k, mx);
+      m.instanceMatrix.needsUpdate = true;
+    }
+  };
+
+  void loadProps().then((props) => {
+    if (disposed) return;
+    if (props.Column) {
+      columnSets = instance(props.Column, columnBase);
+      // their bounds would be measured standing and never follow a fall: no culling for these few
+      for (const m of columnSets) m.frustumCulled = false;
+      g.add(...columnSets);
+    }
+    for (const [name, list] of [['Altar', altars], ['Brazier', pots]] as const) {
+      if (props[name] && list.length) g.add(...instance(props[name], list));
+    }
+    for (const [look, name] of [['whole', 'Wall'], ['cracked', 'WallCracked'], ['broken', 'WallRubble']] as const) {
+      if (!props[name]) continue;
+      wallSets[look] = instance(props[name], wallBase);
+      // their bounds would be measured while hidden (zero scale) and never drawn again: no culling for these few
+      for (const m of wallSets[look]) m.frustumCulled = false;
+      g.add(...wallSets[look]);
+    }
+    wallBase.forEach((_, k) => showWall(k));
+  }).catch((e) => console.warn('temple: props failed to load', e));
+
+  // Stone chunks thrown out when a wall cracks or falls: ballistic, then lying on the floor until the round ends
+  const CHUNKS = 96;
+  const chunkMesh = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.13, 0), new THREE.MeshStandardMaterial({ color: 0x3e3a4c, roughness: 0.9 }), CHUNKS);
+  chunkMesh.castShadow = true;
+  chunkMesh.frustumCulled = false; // starts hidden (zero scale), see the wall sets
+  const chunkState = Array.from({ length: CHUNKS }, () => ({ p: new THREE.Vector3(), v: new THREE.Vector3(), spin: new THREE.Vector3(), rot: new THREE.Euler(), s: 0, live: false }));
+  for (let i = 0; i < CHUNKS; i++) chunkMesh.setMatrixAt(i, HIDDEN);
+  g.add(chunkMesh);
+  let chunkNext = 0;
+  const drnd = seeded(9);
+  const burst = (o: Obstacle, n: number) => {
+    for (let j = 0; j < n; j++) {
+      const c = chunkState[chunkNext];
+      chunkNext = (chunkNext + 1) % CHUNKS;
+      const t = drnd();
+      c.p.set(o.ax + (o.bx - o.ax) * t, 0.6 + drnd() * 1.4, o.az + (o.bz - o.az) * t);
+      c.v.set((drnd() - 0.5) * 5, 2 + drnd() * 3.5, (drnd() - 0.5) * 5);
+      c.spin.set(drnd() * 8, drnd() * 8, drnd() * 8);
+      c.s = 0.6 + drnd() * 1.3;
+      c.live = true;
+    }
+  };
+  // A column toppling along `dir`: it turns about its foot, faster and faster, and breaks up where it lands.
+  const falls: { k: number; o: Obstacle; dir: number; t: number; seconds: number; dust: number }[] = [];
+  const coverFall = (index: number, dir: number, seconds: number) => {
+    const k = columnIdx[index];
+    if (k !== undefined) falls.push({ k, o: obstacles[index], dir, t: 0, seconds, dust: 0 });
+  };
+  const _axis = new THREE.Vector3(), _tilt = new THREE.Matrix4(), _foot = new THREE.Matrix4();
+  const stepFalls = (dt: number) => {
+    for (let i = falls.length - 1; i >= 0; i--) {
+      const f = falls[i], { k, o, dir } = f;
+      f.t += dt;
+      const u = Math.min(1, f.t / f.seconds);
+      _axis.set(Math.cos(dir), 0, -Math.sin(dir));
+      _tilt.makeRotationAxis(_axis, u * u * Math.PI * 0.5);
+      _foot.makeTranslation(o.ax, 0, o.az);
+      // The column's own turn stays inside: only its foot moves to the spot.
+      setColumn(k, _m.copy(_foot).multiply(_tilt).multiply(_foot.clone().invert()).multiply(columnBase[k]));
+      if (u < 1) continue;
+      setColumn(k, HIDDEN);
+      const len = o.height;
+      burst({ ...o, bx: o.ax + Math.sin(dir) * len, bz: o.az + Math.cos(dir) * len }, 12);
+      falls.splice(i, 1);
+    }
+  };
+  const resetShift = () => {
+    falls.length = 0;
+    columnBase.forEach((mx, k) => setColumn(k, mx));
+  };
+
+  const wallState = (index: number, state: WallState) => {
+    const k = wallIdx[index];
+    if (k === undefined) return;
+    const before = wallStates[k];
+    wallStates[k] = state;
+    if (state === 'whole' && before !== 'whole') {
+      for (let i = 0; i < CHUNKS; i++) { chunkState[i].live = false; chunkMesh.setMatrixAt(i, HIDDEN); }
+      chunkMesh.instanceMatrix.needsUpdate = true;
+    }
+    if (state !== before && state !== 'whole') burst(obstacles[index], state === 'broken' ? 18 : 6);
+    if (wallSets.whole.length) showWall(k);
+  };
+  return {
+    wallState,
+    coverFall,
+    resetShift,
+    update(dt: number) {
+      stepFalls(dt);
+        // wall chunks
+        let moved = false;
+        for (let i = 0; i < CHUNKS; i++) {
+          const c = chunkState[i];
+          if (!c.live) continue;
+          c.v.y -= 14 * dt;
+          c.p.addScaledVector(c.v, dt);
+          c.rot.set(c.rot.x + c.spin.x * dt, c.rot.y + c.spin.y * dt, c.rot.z + c.spin.z * dt);
+          const landed = c.p.y <= 0.08 * c.s;
+          if (landed) c.p.y = 0.08 * c.s;
+          chunkMesh.setMatrixAt(i, _m.compose(c.p, _q.setFromEuler(c.rot), _s.setScalar(c.s)));
+          if (landed) c.live = false; // stays where it fell
+          moved = true;
+        }
+        if (moved) chunkMesh.instanceMatrix.needsUpdate = true;
+    },
+    dispose() { disposed = true; },
+  };
+}
+
 // ---- the arena -------------------------------------------------------------------------------------------------
 
 export const templeArena: ArenaDef = {
@@ -453,142 +623,7 @@ export const templeArena: ArenaDef = {
 
     // Cover and braziers: the sculpted props, added when the file has loaded (the first pick waits a moment for them)
     let disposed = false;
-    const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(_p.set(x, 0, z), _q.setFromAxisAngle(_s.set(0, 1, 0), ry), new THREE.Vector3(sx, 1, 1));
-    const crnd = seeded(100);
-    // Breakable walls: each wall's matrix, its state, and one instanced set per look (whole, cracked, rubble). A look
-    // without its own prop in the file falls back to the whole wall leant over (cracked) or squashed low (rubble).
-    const wallIdx: number[] = []; // obstacle index -> wall instance
-    const wallBase: THREE.Matrix4[] = [];
-    const wallStates: WallState[] = [];
-    const wallSets: Record<WallState, THREE.InstancedMesh[]> = { whole: [], cracked: [], broken: [] };
-    TEMPLE_OBSTACLES.forEach((o, i) => {
-      if (o.kind !== 'wall') return;
-      const dx = o.bx - o.ax, dz = o.bz - o.az;
-      wallIdx[i] = wallBase.length;
-      wallBase.push(at((o.ax + o.bx) / 2, (o.az + o.bz) / 2, Math.atan2(-dz, dx), (Math.hypot(dx, dz) + 2 * o.r) / WALL_MODULE));
-      wallStates.push('whole');
-    });
-    const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
-    const lean = new THREE.Matrix4().makeRotationX(0.05).setPosition(0, -0.06, 0);
-    const squash = new THREE.Matrix4().makeScale(1, 0.18, 1.25);
-    const showWall = (k: number) => {
-      const state = wallStates[k];
-      for (const look of ['whole', 'cracked', 'broken'] as const) {
-        for (const m of wallSets[look]) {
-          let mx = HIDDEN;
-          if (look === state) mx = wallBase[k];
-          else if (look === 'whole' && !wallSets[state].length) mx = state === 'cracked' ? wallBase[k].clone().multiply(lean) : wallBase[k].clone().multiply(squash);
-          m.setMatrixAt(k, mx);
-          m.instanceMatrix.needsUpdate = true;
-        }
-      }
-    };
-
-    // The columns: each one's matrix and the instanced sets, so a stage can topple them (`coverFall`).
-    const columnIdx: number[] = []; // obstacle index -> column instance
-    const columnBase: THREE.Matrix4[] = [];
-    let columnSets: THREE.InstancedMesh[] = [];
-    const altars: THREE.Matrix4[] = [];
-    TEMPLE_OBSTACLES.forEach((o, i) => {
-      if (o.kind === 'wall') return;
-      if (o.height < 2) altars.push(at(o.ax, o.az, 0));
-      else {
-        columnIdx[i] = columnBase.length;
-        columnBase.push(at(o.ax, o.az, (crnd() - 0.5) * 0.5));
-      }
-    });
-    const setColumn = (k: number, mx: THREE.Matrix4) => {
-      for (const m of columnSets) {
-        m.setMatrixAt(k, mx);
-        m.instanceMatrix.needsUpdate = true;
-      }
-    };
-
-    void loadProps().then((props) => {
-      if (disposed) return;
-      const pots = braziers.map((b) => at(b.x, b.z, 0));
-      if (props.Column) {
-        columnSets = instance(props.Column, columnBase);
-        // their bounds would be measured standing and never follow a fall: no culling for these few
-        for (const m of columnSets) m.frustumCulled = false;
-        g.add(...columnSets);
-      }
-      for (const [name, list] of [['Altar', altars], ['Brazier', pots]] as const) {
-        if (props[name] && list.length) g.add(...instance(props[name], list));
-      }
-      for (const [look, name] of [['whole', 'Wall'], ['cracked', 'WallCracked'], ['broken', 'WallRubble']] as const) {
-        if (!props[name]) continue;
-        wallSets[look] = instance(props[name], wallBase);
-        // their bounds would be measured while hidden (zero scale) and never drawn again: no culling for these few
-        for (const m of wallSets[look]) m.frustumCulled = false;
-        g.add(...wallSets[look]);
-      }
-      wallBase.forEach((_, k) => showWall(k));
-    }).catch((e) => console.warn('temple: props failed to load', e));
-
-    // Stone chunks thrown out when a wall cracks or falls: ballistic, then lying on the floor until the round ends
-    const CHUNKS = 96;
-    const chunkMesh = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.13, 0), new THREE.MeshStandardMaterial({ color: 0x3e3a4c, roughness: 0.9 }), CHUNKS);
-    chunkMesh.castShadow = true;
-    chunkMesh.frustumCulled = false; // starts hidden (zero scale), see the wall sets
-    const chunkState = Array.from({ length: CHUNKS }, () => ({ p: new THREE.Vector3(), v: new THREE.Vector3(), spin: new THREE.Vector3(), rot: new THREE.Euler(), s: 0, live: false }));
-    for (let i = 0; i < CHUNKS; i++) chunkMesh.setMatrixAt(i, HIDDEN);
-    g.add(chunkMesh);
-    let chunkNext = 0;
-    const drnd = seeded(9);
-    const burst = (o: Obstacle, n: number) => {
-      for (let j = 0; j < n; j++) {
-        const c = chunkState[chunkNext];
-        chunkNext = (chunkNext + 1) % CHUNKS;
-        const t = drnd();
-        c.p.set(o.ax + (o.bx - o.ax) * t, 0.6 + drnd() * 1.4, o.az + (o.bz - o.az) * t);
-        c.v.set((drnd() - 0.5) * 5, 2 + drnd() * 3.5, (drnd() - 0.5) * 5);
-        c.spin.set(drnd() * 8, drnd() * 8, drnd() * 8);
-        c.s = 0.6 + drnd() * 1.3;
-        c.live = true;
-      }
-    };
-    // A column toppling along `dir`: it turns about its foot, faster and faster, and breaks up where it lands.
-    const falls: { k: number; o: Obstacle; dir: number; t: number; seconds: number; dust: number }[] = [];
-    const coverFall = (index: number, dir: number, seconds: number) => {
-      const k = columnIdx[index];
-      if (k !== undefined) falls.push({ k, o: TEMPLE_OBSTACLES[index], dir, t: 0, seconds, dust: 0 });
-    };
-    const _axis = new THREE.Vector3(), _tilt = new THREE.Matrix4(), _foot = new THREE.Matrix4();
-    const stepFalls = (dt: number) => {
-      for (let i = falls.length - 1; i >= 0; i--) {
-        const f = falls[i], { k, o, dir } = f;
-        f.t += dt;
-        const u = Math.min(1, f.t / f.seconds);
-        _axis.set(Math.cos(dir), 0, -Math.sin(dir));
-        _tilt.makeRotationAxis(_axis, u * u * Math.PI * 0.5);
-        _foot.makeTranslation(o.ax, 0, o.az);
-        // The column's own turn stays inside: only its foot moves to the spot.
-        setColumn(k, _m.copy(_foot).multiply(_tilt).multiply(_foot.clone().invert()).multiply(columnBase[k]));
-        if (u < 1) continue;
-        setColumn(k, HIDDEN);
-        const len = o.height;
-        burst({ ...o, bx: o.ax + Math.sin(dir) * len, bz: o.az + Math.cos(dir) * len }, 12);
-        falls.splice(i, 1);
-      }
-    };
-    const resetShift = () => {
-      falls.length = 0;
-      columnBase.forEach((mx, k) => setColumn(k, mx));
-    };
-
-    const wallState = (index: number, state: WallState) => {
-      const k = wallIdx[index];
-      if (k === undefined) return;
-      const before = wallStates[k];
-      wallStates[k] = state;
-      if (state === 'whole' && before !== 'whole') {
-        for (let i = 0; i < CHUNKS; i++) { chunkState[i].live = false; chunkMesh.setMatrixAt(i, HIDDEN); }
-        chunkMesh.instanceMatrix.needsUpdate = true;
-      }
-      if (state !== before && state !== 'whole') burst(TEMPLE_OBSTACLES[index], state === 'broken' ? 18 : 6);
-      if (wallSets.whole.length) showWall(k);
-    };
+    const cover = templeCover(g, TEMPLE_OBSTACLES, braziers.map((b) => placeAt(b.x, b.z, 0)));
 
     // Brazier coals + ground glow (additive, dim)
     const glowGeos: THREE.BufferGeometry[] = [];
@@ -820,32 +855,18 @@ export const templeArena: ArenaDef = {
       moteGeo.attributes.position.needsUpdate = true;
       // banners
       placeBanners(time);
-      stepFalls(dt);
-      // wall chunks
-      let moved = false;
-      for (let i = 0; i < CHUNKS; i++) {
-        const c = chunkState[i];
-        if (!c.live) continue;
-        c.v.y -= 14 * dt;
-        c.p.addScaledVector(c.v, dt);
-        c.rot.set(c.rot.x + c.spin.x * dt, c.rot.y + c.spin.y * dt, c.rot.z + c.spin.z * dt);
-        const landed = c.p.y <= 0.08 * c.s;
-        if (landed) c.p.y = 0.08 * c.s;
-        chunkMesh.setMatrixAt(i, _m.compose(c.p, _q.setFromEuler(c.rot), _s.setScalar(c.s)));
-        if (landed) c.live = false; // stays where it fell
-        moved = true;
-      }
-      if (moved) chunkMesh.instanceMatrix.needsUpdate = true;
+      cover.update(dt);
     };
 
     return {
       group: g,
       update,
-      wallState,
-      coverFall,
-      resetShift,
+      wallState: cover.wallState,
+      coverFall: cover.coverFall,
+      resetShift: cover.resetShift,
       dispose() {
         disposed = true;
+        cover.dispose();
         (moon.material.map as THREE.Texture | null)?.dispose();
         moon.material.dispose();
         disposeTree(g);

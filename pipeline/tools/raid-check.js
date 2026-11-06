@@ -60,8 +60,8 @@
       fresh(0, 1);
       place(0, 5);
       check('ray: in the line', take(() => cast('ray'), 2.7), 0.22);
-      fresh(-3.2, 1);
-      place(-3.2, 7);
+      fresh(3.5, 7);
+      place(9.5, 7);
       const hp0 = d.wallHp.reduce((s, v) => s + Math.max(0, v), 0);
       check('ray: behind a wall', take(() => cast('ray'), 2.7), 0);
       check('ray: the wall took a hit', hp0 - d.wallHp.reduce((s, v) => s + Math.max(0, v), 0), 1, 0);
@@ -71,13 +71,14 @@
       place(0, 5);
       check('noon: in the open', take(() => cast('noon'), 4.2), 0.4);
       yes('noon: he stands open', a.statusOf(d.foe).buff('vulnerable') === 0.5);
-      fresh(-3.2, 1);
-      place(-3.2, 7);
+      fresh(3.5, 7);
+      place(9.5, 7);
       const n0 = a.obstacles.length;
       check('noon: behind a wall', take(() => cast('noon'), 4.2), 0);
       check('noon: that wall fell', n0 - a.obstacles.length, 1, 0);
-      fresh(8, 0);
-      place(8, 6);
+      const col = a.obstacles.find((o) => o.kind === 'pillar' && o.height >= 2), cl = Math.hypot(col.ax, col.az - 7), cdx = col.ax / cl, cdz = (col.az - 7) / cl;
+      fresh(col.ax - cdx * 3.5, col.az - cdz * 3.5);
+      place(col.ax + cdx * 1.6, col.az + cdz * 1.6);
       const n1 = a.obstacles.length;
       check('noon: behind a column', take(() => cast('noon'), 4.2), 0);
       check('noon: the column stands', n1 - a.obstacles.length, 0, 0);
@@ -184,7 +185,7 @@
       let wrong = 0, n = 0;
       const src = noon.cast;
       for (let k = 0; k < 1500; k++) {
-        const r = 11.5 * Math.sqrt(Math.random()), an = Math.random() * 6.283, x = Math.cos(an) * r, z = 7 + Math.sin(an) * r;
+        const r = 15.5 * Math.sqrt(Math.random()), an = Math.random() * 6.283, x = Math.cos(an) * r, z = 7 + Math.sin(an) * r;
         if (a.obstacles.some((o) => { const dx = o.bx - o.ax, dz = o.bz - o.az, l = dx * dx + dz * dz, t = l ? Math.min(1, Math.max(0, ((x - o.ax) * dx + (z - o.az) * dz) / l)) : 0; return Math.hypot(x - o.ax - dx * t, z - o.az - dz * t) <= o.r + 0.1; })) continue;
         n++;
         const open = a.lineOfSight(new THREE_V(src.fx, 0, src.fz), new THREE_V(x, 0, z));

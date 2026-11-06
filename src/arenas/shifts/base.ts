@@ -106,8 +106,8 @@ export class ArenaShift {
   /** The topples of the stage showing have started. */
   private toppled = false;
 
-  constructor(private banner: string, private color: THREE.ColorRepresentation, private hitColor: string, stages: ShiftStage[], private look?: ShiftLook) {
-    this.stages = [...stages, { at: LAST_AT, banner: 'Last stand', zones: [{ shape: { kind: 'circle', x: RING.x, z: RING.z, radius: RING.r + 1 }, share: LAST_SHARE }] }];
+  constructor(private banner: string, private color: THREE.ColorRepresentation, private hitColor: string, stages: ShiftStage[], private look?: ShiftLook, ring = RING.r) {
+    this.stages = [...stages, { at: LAST_AT, banner: 'Last stand', zones: [{ shape: { kind: 'circle', x: RING.x, z: RING.z, radius: ring + 1 }, share: LAST_SHARE }] }];
     this.group.add(this.coming.group, this.lasting.group);
     if (look) this.group.add(look.group);
   }

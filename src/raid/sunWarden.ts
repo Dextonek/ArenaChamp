@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { RING, seeded } from '../arenas/common';
+import { COURT_R, sunCourtArena } from '../arenas/suncourt';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
@@ -12,7 +13,7 @@ import type { AimContext, BossDef, BossMove, PlayContext, Threat } from './types
 const CORE = 0xffc060;
 const GLOW = 0xd86a18;
 const SPARK = 0xf09030;
-/** The ring's middle: the altar, round which his biggest moves turn. */
+/** The court's middle: the altar, round which his biggest moves turn. */
 const C = { x: RING.x, z: RING.z };
 
 /** Aims at the target from where the boss stands. */
@@ -21,7 +22,7 @@ const atTarget = (c: AimContext) => ({ x: c.target.x, z: c.target.z, dir: Math.a
 /** How far from (x, z) along yaw `dir` the rim is. */
 function toRim(x: number, z: number, dir: number) {
   const dx = Math.sin(dir), dz = Math.cos(dir), px = x - C.x, pz = z - C.z;
-  const b = px * dx + pz * dz, k = px * px + pz * pz - RING.r * RING.r;
+  const b = px * dx + pz * dz, k = px * px + pz * pz - COURT_R * COURT_R;
   return -b + Math.sqrt(Math.max(0, b * b - k));
 }
 
@@ -127,8 +128,8 @@ const noon: BossMove = {
   play(c, p) {
     const at = 4, exposed = 5;
     const source = { x: c.fx, z: c.fz };
-    const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: RING.r + 1 }, at, share: 0.4, source, breaks: true, look: at };
-    const shadows = new ShadowFloor(source, () => p.cover(), STAND_COLOR);
+    const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: COURT_R + 1 }, at, share: 0.4, source, breaks: true, look: at };
+    const shadows = new ShadowFloor(source, () => p.cover(), STAND_COLOR, COURT_R);
     const sun = new SunOrb(c.fx, 7, c.fz);
     p.group.add(shadows.mesh, sun.sprite);
     return {
@@ -161,11 +162,11 @@ const sunOrder: BossMove = {
   play(c, p) {
     const rng = seeded(c.seed);
     const start = rng() * Math.PI * 2, spin = rng() < 0.5 ? -1 : 1;
-    const first = 2.5, apart = 0.8, radius = RING.r + 1;
+    const first = 2.5, apart = 0.8, radius = COURT_R + 1;
     const marks: NumberMark[] = [];
     const threats: Threat[] = [0, 1, 2, 3].map((i) => {
       const dir = start + spin * i * (Math.PI / 2);
-      const mark = new NumberMark(String(i + 1), C.x + Math.sin(dir) * 5.6, C.z + Math.cos(dir) * 5.6);
+      const mark = new NumberMark(String(i + 1), C.x + Math.sin(dir) * 7.5, C.z + Math.cos(dir) * 7.5);
       p.group.add(mark.sprite);
       marks.push(mark);
       return { shape: { kind: 'cone', x: C.x, z: C.z, radius, angle: 90, dir }, at: first + i * apart, share: 0.16 };
@@ -177,7 +178,7 @@ const sunOrder: BossMove = {
           const i = threats.indexOf(th);
           marks[i].sprite.visible = false;
           const dir = start + spin * i * (Math.PI / 2);
-          for (const r of [3.5, 6.5, 9.5]) {
+          for (const r of [4, 8, 12]) {
             const x = C.x + Math.sin(dir) * r, z = C.z + Math.cos(dir) * r;
             p.sparks.emit(x, 0.3, z, 10, 3.5, 3, 0.6, SPARK);
             p.glows.flash(x, z, 2.6, GLOW, 0.55, 0.4);
@@ -198,7 +199,7 @@ const eclipse: BossMove = {
   play(c, p) {
     const at = 1.6, near = 5.5;
     const far = c.step === 1;
-    const reach = Math.hypot(c.fx - C.x, c.fz - C.z) + RING.r;
+    const reach = Math.hypot(c.fx - C.x, c.fz - C.z) + COURT_R;
     const shape: TelegraphShape = far ? { kind: 'ring', x: c.fx, z: c.fz, inner: near, outer: reach } : { kind: 'circle', x: c.fx, z: c.fz, radius: near };
     return {
       threats: [{ shape, at, share: 0.15 }], duration: at + 0.4,
@@ -222,7 +223,7 @@ const anchors: BossMove = {
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(C.x - c.boss.x, C.z - c.boss.z) }),
   play(c, p) {
     const rng = seeded(c.seed);
-    const base = rng() * Math.PI * 2, radius = 2.3, out = 6.2, at = 3;
+    const base = rng() * Math.PI * 2, radius = 2.3, out = 7.6, at = 3;
     const spot = (i: number) => ({ x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out });
     // Alone each step is one circle. Together the first step is both, and the second does nothing.
     const parts = p.solo ? [c.step] : c.step === 0 ? [0, 1] : [];
@@ -257,7 +258,7 @@ const walkingSun: BossMove = {
   play(c, p) {
     const rng = seeded(c.seed);
     const start = rng() * Math.PI * 2, spin = rng() < 0.5 ? -1 : 1;
-    const warm = 2, end = 12, speed = THREE.MathUtils.degToRad(30), width = 1.4, inner = 1.25;
+    const warm = 2, end = 12, speed = THREE.MathUtils.degToRad(24), width = 1.4, inner = 1.25;
     const angleAt = (t: number) => start + spin * speed * Math.max(0, t - warm);
     // Cover stops the ray: remembered per small turn, because an AI's look ahead asks many times a frame.
     const reach = new Map<number, number>();
@@ -269,10 +270,10 @@ const walkingSun: BossMove = {
       let k = reach.get(key);
       if (k === undefined) {
         const x1 = C.x + Math.sin(a) * inner, z1 = C.z + Math.cos(a) * inner;
-        k = p.rayStop(x1, z1, C.x + Math.sin(a) * RING.r, C.z + Math.cos(a) * RING.r);
+        k = p.rayStop(x1, z1, C.x + Math.sin(a) * COURT_R, C.z + Math.cos(a) * COURT_R);
         reach.set(key, k);
       }
-      return inner + (RING.r - inner) * k;
+      return inner + (COURT_R - inner) * k;
     };
     const shapeAt = (t: number): TelegraphShape => {
       const a = angleAt(t), len = lengthAt(a);
@@ -338,10 +339,11 @@ const MODEL = 'models/heroes/mason_v2.glb';
 export const SUN_WARDEN: BossDef = {
   id: 'sun',
   name: 'The Sun Warden',
-  title: 'Keeper of the Night Temple',
-  arena: 'temple',
+  title: 'Keeper of the Sun Court',
+  place: sunCourtArena,
+  starts: { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z: 16.5 }, { x: -1.6, z: 16.5 }, { x: 1.6, z: 16.5 }] },
   kit: (hp) => ({
-    name: 'The Sun Warden', title: 'Keeper of the Night Temple', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, maxHp: hp,
+    name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, maxHp: hp,
     spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],
   } as HeroKit),
   hp: { solo: 3200, duo: 5600 },
@@ -362,8 +364,8 @@ export const SUN_WARDEN: BossDef = {
   late: () => ({
     offset: -255,
     shift: new ArenaShift('The sun comes down', 0xd08a20, '#ffb050', [
-      { at: 45, zones: [{ shape: { kind: 'ring', x: C.x, z: C.z, inner: 6, outer: RING.r }, share: 0.03 }] },
-    ], new ZoneFloor('sun', [{ edge: 6 }])),
+      { at: 45, zones: [{ shape: { kind: 'ring', x: C.x, z: C.z, inner: 7, outer: COURT_R }, share: 0.03 }] },
+    ], new ZoneFloor('sun', [{ edge: 7 }], undefined, undefined, COURT_R), COURT_R),
   }),
 };
 

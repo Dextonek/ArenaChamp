@@ -1,4 +1,5 @@
 import type * as THREE from 'three';
+import type { ArenaDef } from '../arenas/types';
 import type { ArenaShift } from '../arenas/shifts/base';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { CastStyle } from '../heroFigure';
@@ -160,8 +161,10 @@ export interface BossDef {
   id: string;
   name: string;
   title: string;
-  /** Its arena's id. */
-  arena: string;
+  /** Its own room: not one of the duel arenas, so no duel picks it. */
+  place: ArenaDef;
+  /** Where it and the heroes start. `heroes`: alone, then side 0 and side 1 of a raid for two. */
+  starts: { boss: { x: number; z: number }; heroes: [{ x: number; z: number }, { x: number; z: number }, { x: number; z: number }] };
   kit(hp: number): HeroKit;
   hp: { solo: number; duo: number };
   /** How much bigger than a hero its model is drawn. */

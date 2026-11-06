@@ -163,12 +163,12 @@ export class ShadowFloor {
   private mat: THREE.ShaderMaterial;
   private geo = new THREE.BufferGeometry();
   private built = -1;
-  constructor(private source: { x: number; z: number }, private cover: () => readonly Obstacle[], color: THREE.ColorRepresentation) {
+  constructor(private source: { x: number; z: number }, private cover: () => readonly Obstacle[], color: THREE.ColorRepresentation, radius: number) {
     this.mat = new THREE.ShaderMaterial({
       vertexShader: shadowVertex, fragmentShader: shadowFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
       uniforms: {
         uColor: { value: new THREE.Color(color) }, uOpacity: { value: 0 }, uTime: { value: 0 },
-        uCenter: { value: new THREE.Vector2(RING.x, RING.z) }, uRadius: { value: RING.r },
+        uCenter: { value: new THREE.Vector2(RING.x, RING.z) }, uRadius: { value: radius },
       },
     });
     this.mesh = new THREE.Mesh(this.geo, this.mat);
