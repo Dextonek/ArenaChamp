@@ -8,14 +8,15 @@ Every number is a starting value to tune, not a measured one. Bosses, moves and 
 from raid games, never a boss, kit or name.
 
 **Decided by the user, 2026-11-06:** the Raid is co-op; it is a first boss, then a second boss; Last stand stays, so a
-long round always ends; the build order below stands.
+long round always ends; the build order below stands. Loser picks is built, then switched off for every match: the
+code stays, and nothing else in this design depends on it.
 
 ## Order and size
 
 | # | Feature | Size | Why here |
 |---|---|---|---|
 | 0 | Version check | small | The new rules make an old tab and a new tab disagree more often |
-| 1 | Loser picks | small | Stands alone, changes every online match |
+| 1 | Loser picks | small | Built, then switched off for every match (user, 2026-11-06) |
 | 2 | Arenas that change | medium | Builds what the Raid also needs: standing zones, damage by HP share, CPUs that keep out of zones |
 | 3 | Raid: Sun Warden on one screen | large | First boss, proves the fight is good before a second screen makes it harder to test |
 | 4 | Raid: the co-op link | large | Two players against that boss: the partner on your screen, the boss's HP on the server |
@@ -35,6 +36,9 @@ number bumped by hand when the rules change, sent with `login` and `resume`. The
 
 ## 1. Loser picks
 
+**Switched off for every match (user, 2026-11-06).** The code stays, and the rest of this section describes it switched
+on. See `docs/architecture/multiplayer.md`, *Loser picks*.
+
 ### Rules
 
 - After a round that does not end the match, its loser has 15 s to choose **one** of: swap hero, choose the next
@@ -45,7 +49,7 @@ number bumped by hand when the rules change, sent with `login` and `resume`. The
   has one effect instance per spell label).
 - An arena choice can be any of the five, including the one just played.
 - The winner can't answer the pick. The choice shows on the loading page ("Ada swaps to Bram") for at least 2 s.
-- Applies to queue and lobby matches. CPU fights are one round, so they don't change.
+- CPU fights are one round, so they don't change.
 
 ### Stats
 

@@ -18,9 +18,10 @@ const LOAD_TIMEOUT = 15000;
 // (user, 2026-10-30). BREAK_MS between rounds.
 const ROUNDS_TO_WIN = 2;
 const BREAK_MS = 3000;
-// The loser of a round that does not end the match has PICK_MS to swap hero or choose the next arena. Best of three
-// gives each player one pick at most by itself: the loser of round 1 picks, and only if they then win round 2 is
-// there a second pick, by the other player. An answer ends the wait, but the break still lasts BREAK_MS.
+// Loser picks is switched off for every match (user, 2026-11-06): the code stays, and `createHub({ loserPicks: true })`
+// turns it on. With it on, the loser of a round that does not end the match has PICK_MS to swap hero or choose the next
+// arena. Best of three gives each player one pick at most by itself: the loser of round 1 picks, and only if they then
+// win round 2 is there a second pick, by the other player. An answer ends the wait, but the break still lasts BREAK_MS.
 const PICK_MS = 15000;
 const ARENA_ID_RE = /^[a-z]{1,16}$/;
 // A hit must come from a cast the other side made at most this long ago; a slot can't be cast faster than SLOT_GAP_MS
@@ -71,9 +72,10 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const randomHex = (n) => hex(crypto.getRandomValues(new Uint8Array(n)));
 
 /**
- * @param {{ accounts: import('./accounts.mjs').Accounts, log?: (msg: string) => void }} opts
+ * @param {{ accounts: import('./accounts.mjs').Accounts, log?: (msg: string) => void, loserPicks?: boolean }} opts
+ *   `loserPicks`: the loser of a round may pick. Off everywhere; only the smoke test turns it on, to keep it working.
  */
-export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) }) {
+export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), loserPicks = false }) {
   /** @type {Map<string, string>} token → account name */
   const sessions = new Map();
   /** @type {Set<Client>} */
@@ -537,7 +539,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
 
   /**
    * A round is over: the winner scores (`winnerSide` -1: a tie, nobody does). Two wins end the match; otherwise
-   * `round_end`, a break in which the loser may pick, then `round_start` and the same load → countdown as the first round.
+   * `round_end`, a break (with `loserPicks` on, the loser may pick), then `round_start` and the same load → countdown
+   * as the first round.
    * @param {Match} match @param {number} winnerSide @param {string} reason
    */
   function endRound(match, winnerSide, reason) {
@@ -546,7 +549,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
     if (winnerSide >= 0) match.score[winnerSide]++;
     if (winnerSide >= 0 && match.score[winnerSide] >= ROUNDS_TO_WIN) return endMatch(match, winnerSide, reason);
     match.state = 'break';
-    const pickSide = winnerSide >= 0 ? 1 - winnerSide : -1;
+    const pickSide = loserPicks && winnerSide >= 0 ? 1 - winnerSide : -1;
     const wait = pickSide >= 0 ? PICK_MS : BREAK_MS;
     match.players.forEach((p, side) => send(p.client, {
       t: 'round_end', round: match.round, result: winnerSide < 0 ? 'draw' : side === winnerSide ? 'win' : 'loss', reason,

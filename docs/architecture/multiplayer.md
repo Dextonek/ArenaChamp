@@ -53,7 +53,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 
 | File | Role |
 |---|---|
-| `server/hub.mjs` | `createHub({ accounts, log })`: the runtime-free core (sessions, lobbies, queue, matches, the message handlers); `connect(send)` returns `{ message, closed }`; messages of one connection run one at a time |
+| `server/hub.mjs` | `createHub({ accounts, log, loserPicks })`: the runtime-free core (sessions, lobbies, queue, matches, the message handlers); `connect(send)` returns `{ message, closed }`; messages of one connection run one at a time |
 | `server/accounts.mjs` | `Accounts(store)`: register, login, `record` a match, `profile` (stats, favourite hero, history of 20); `store` is `{ load(), put(key, account) }` |
 | `server/game-server.mjs` | Node host: `attachGameServer(httpServer, { path, dataFile, log })` (`ws` + `fileStore`: every write re-reads the file and replaces one account, so servers sharing the file don't clobber each other) |
 | `worker/index.mjs`, `wrangler.jsonc` | Cloudflare host: the Worker and the `GameHub` Durable Object (see [Cloudflare](#cloudflare)) |
@@ -90,7 +90,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 5. **Best of three rounds.** A round has no time limit (user, 2026-10-30): it ends when a hero's HP reaches 0 (`ko`).
    The server sends `round_end { round, result,
    reason, winner, score, hp, next }` (score as [this player, the foe]); the duel freezes the hero and shows "Round 1
-   to <name> · 1-0" (`Duel.netRoundEnd`). **The round's loser picks** (see *Loser picks*). Then
+   to <name> · 1-0" (`Duel.netRoundEnd`). A 3 s break follows. Then
    `round_start { round, score, you, foe, picked }`: each client runs
    `Duel.startNet` again (fresh HP, cooldowns and start spots, and its own arena: the seed is `<match id>-<round>`)
    and sends `match_loaded`, then the usual countdown. Every round's HP is the hero's own max (`match_loaded
@@ -101,6 +101,10 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
    "2-1 in rounds" and the new record; **Back to menu** stops the duel and hero mode.
 
 ## Loser picks
+
+**Switched off for every match (user, 2026-11-06).** The code stays: `createHub({ loserPicks: true })` turns it on, and
+only `server/smoke-test.mjs` does, to keep it working. With it off, `round_end.pick` is null, the panel never opens, the
+break is 3 s and a `round_pick` is ignored. The rest of this section describes it switched on.
 
 After a round that does not end the match, its loser gets 15 s to choose one of: swap hero, choose the next arena, or
 keep things as they are (`round_end.pick { you, seconds }`, the panel from `showPick` in `src/game/main.ts`). The winner
@@ -113,8 +117,6 @@ as they are; an answer ends the wait, but the break still lasts its 3 s.
 | An arena | `round_pick.arena`. `Duel.startNet` plays `arenaId`, while the seed still drives the arena's events, so both screens stay on one schedule. The hub doesn't hold the arena list: an id a client doesn't know gets the seeded arena on both screens |
 | Reading it | The loading page says "Ada swaps to Bram" for at least 2 s (`LoadingScreen.show({ note })`) |
 | Stats | The match counts for the hero the player finished on. The history keeps the one they started on as `from` (`Lyra → Bram`) |
-
-Applies to queue and lobby matches. CPU fights are one round.
 
 ## Play vs CPU (offline)
 
@@ -143,7 +145,7 @@ Client → server:
 | `queue_join`, `queue_leave` | `hero` (join) | |
 | `match_loaded` | `maxHp` | the hero's max HP for this match (200-2000; default 600); sent every round |
 | `match_leave` | | |
-| `round_pick` | `hero` or `arena`, or neither to keep things as they are | only from the round's loser during the break; see *Loser picks* |
+| `round_pick` | `hero` or `arena`, or neither to keep things as they are | ignored while Loser picks is off; on, only from the round's loser during the break; see *Loser picks* |
 | `move` | `x`, `z`, `yaw` | clamped to the ring, relayed |
 | `cast` | `id`, `slot`, `x`, `z`, `fx`, `fz`, `enemy` | aim point, caster spot, aimed at the enemy; dropped before the countdown ends |
 | `cast` (since 2026-10-30) | + `yaw` | which way the hero faced (spells fired straight ahead) |

@@ -35,12 +35,12 @@ export function fileStore(file) {
 
 /**
  * @param {import('node:http').Server} httpServer
- * @param {{ path?: string, dataFile?: string, log?: (msg: string) => void }} [opts]
+ * @param {{ path?: string, dataFile?: string, log?: (msg: string) => void, loserPicks?: boolean }} [opts]
  */
 export function attachGameServer(httpServer, opts = {}) {
   const path = opts.path ?? '/ws';
   const accounts = new Accounts(fileStore(opts.dataFile ?? fileURLToPath(new URL('./data/accounts.json', import.meta.url))));
-  const hub = createHub({ accounts, log: opts.log });
+  const hub = createHub({ accounts, log: opts.log, loserPicks: opts.loserPicks });
   const wss = new WebSocketServer({ noServer: true });
 
   // Only our path: Vite's HMR socket shares the same http server and handles its own upgrades.
