@@ -113,13 +113,13 @@
     try {
       fresh();
       place(0, 6);
-      check('slam: close', take(() => cast('slam'), 1.7), 0.22);
+      check('slam: close', take(() => cast('slam'), 1.7), 0.18);
       place(0, 12);
       check('slam: backed away', take(() => cast('slam'), 1.7), 0);
 
       fresh(0, 3);
       place(0, 8);
-      check('charge: in its line', take(() => cast('charge', { x: 0, z: 14 }), 1.7), 0.25);
+      check('charge: in its line', take(() => cast('charge', { x: 0, z: 14 }), 1.7), 0.2);
       place(4, 8);
       check('charge: beside it', take(() => cast('charge', { x: 0, z: 14 }), 1.7), 0);
       // The brain moves him; a flag from it means he hit cover, and he stands dazed.
@@ -139,7 +139,7 @@
       yes('drag: pulls the hero in', a.caster.group.position.z < before - 1);
       fresh(0, 3);
       place(0, 14);
-      check('drag: far from him, the ring burns', take(() => cast('drag'), 2.2), 0.2);
+      check('drag: far from him, the ring burns', take(() => cast('drag'), 2.2), 0.16);
       fresh(0, 3);
       place(0, 6);
       check('drag: close to him, it does not', take(() => cast('drag'), 2.2), 0);
@@ -149,7 +149,7 @@
       d.playerHp = d.playerMax;
       cast('trail', { x: 0, z: 8 });
       step(1.2);
-      yes('trail: a puddle burns', lost() > 0.04 && lost() < 0.11);
+      yes('trail: a puddle burns', lost() > 0.03 && lost() < 0.09);
       place(5, 8);
       const was = d.playerHp;
       step(1.5);
@@ -157,20 +157,20 @@
 
       fresh(0, 3);
       place(0, 10);
-      check('fan: in a line', take(() => cast('fan', { x: 0, z: 10 }), 1.7), 0.16);
+      check('fan: in a line', take(() => cast('fan', { x: 0, z: 10 }), 1.7), 0.14);
       // Between two lines 20° apart: 10° off the middle, far enough out for the gap to be wider than a line.
       const off = 0.174;
       place(Math.sin(off) * 11, 3 + Math.cos(off) * 11);
       check('fan: in a gap', take(() => cast('fan', { x: 0, z: 14 }), 1.7), 0);
       fresh(0, 3);
       place(0, 2.6);
-      check('fan: where lines meet it hits once', take(() => cast('fan', { x: 0, z: 14, fx: 0, fz: 2.2 }), 1.7), 0.16);
+      check('fan: where lines meet it hits once', take(() => cast('fan', { x: 0, z: 14, fx: 0, fz: 2.2 }), 1.7), 0.14);
 
       fresh(0, 3);
       place(0, 10);
-      check('marked: under the bomb', take(() => cast('marked', { step: 1, x: 0, z: 10 }), 1.1), 0.22);
+      check('marked: under the bomb', take(() => cast('marked', { step: 1, x: 0, z: 10 }), 1.1), 0.18);
       step(1.2);
-      yes('marked: and a puddle after', lost() > 0.22);
+      yes('marked: and a puddle after', lost() > 0.18);
       fresh(0, 3);
       place(0, 10);
       check('marked: walked out', take(() => { cast('marked', { step: 1, x: 0, z: 10 }); place(4, 10); }, 2), 0);
@@ -179,7 +179,7 @@
       place(0, 10);
       check('bombs: between the pair', take(() => cast('bombs', { x: 0, z: 10 }), 1.7), 0);
       place(2.7, 10);
-      check('bombs: on one', take(() => cast('bombs', { x: 0, z: 10, dir: 0 }), 1.7), 0.14);
+      check('bombs: on one', take(() => cast('bombs', { x: 0, z: 10, dir: 0 }), 1.7), 0.12);
 
       fresh(0, 3);
       d.playerHp = d.playerMax;
@@ -197,7 +197,7 @@
       yes('wave: not ahead of the ring', !wave.hits(Math.sin(gapAngle + 3) * (r + 3), 7 + Math.cos(gapAngle + 3) * (r + 3), t));
       place(0, 6);
       step(wave.at + 3);
-      check('wave: it hits once as it passes', lost(), 0.2);
+      check('wave: it hits once as it passes', lost(), 0.16);
 
       // The tag: both screens swap at one moment, from a cast.
       fresh(0, 3);

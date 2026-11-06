@@ -1,6 +1,7 @@
 // Local accounts for the duel game and the stats the profile page shows. Storage is pluggable so the same code runs
 // in Node (a JSON file, `fileStore` in game-server.mjs) and in a Cloudflare Durable Object (its SQLite storage,
 // worker/index.mjs). Passwords: PBKDF2-SHA256 through Web Crypto (in both runtimes), per-user salt. No external auth.
+import { RAID_RUN } from './protocol.mjs';
 
 const NAME_RE = /^[A-Za-z0-9_-]{3,16}$/;
 const HISTORY = 20;
@@ -94,7 +95,8 @@ export class Accounts {
     if (!a) return;
     const r = (a.raids ??= { played: 0, cleared: 0, bosses: 0, tier: 0, best: 0 });
     r.played++;
-    if (rec.result === 'cleared') r.cleared++;
+    // Beating every boss of a tier is a clear, also when the next tier then ended the run.
+    if (rec.bosses >= RAID_RUN.length) r.cleared++;
     if (rec.bosses > (r.bosses ?? 0) || (rec.bosses > 0 && rec.bosses === r.bosses && rec.seconds < r.best)) {
       r.bosses = rec.bosses;
       r.tier = rec.tier;

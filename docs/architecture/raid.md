@@ -104,26 +104,26 @@ hero's exact position to draw it. If nobody stands in it, everyone pays in full.
 ## Ash and Ember
 
 `src/raid/ashEmber.ts`. Two bosses, one HP bar, one in the ring at a time. The other stands on the rim, out of reach, and adds a move
-now and then. Alone 3,400 HP, for two 7,000. The one in the ring aims at the nearer hero, the one on the rim at the farther.
+now and then. Alone 3,300 HP, for two 7,000. The one in the ring aims at the nearer hero, the one on the rim at the farther.
 
 | Phase | From | Who | Notes |
 |---|---|---|---|
-| Ash and Ember | 100 % | Ash in the ring, Ember on the rim | A move from the rim every 8-11 s |
-| Ember steps in | 66 % | They swap | Every 7-10 s |
-| Together | 33 % | They swap every 12 s | Every 8 s. The lava rises from the rim, three steps, then Last stand |
+| Ash and Ember | 100 % | Ash in the ring, Ember on the rim | A move from the rim every 10-14 s |
+| Ember steps in | 66 % | They swap | Every 9-13 s |
+| Together | 33 % | They swap every 12 s | Every 9 s. The lava rises from the rim, three steps, then Last stand |
 
 | Who | Move | Shown | Costs | What you do |
 |---|---|---|---|---|
-| Ash | Ground Slam | 1.5 s | 22 % | Back away from the 5 m circle |
-| | Charge | 1.5 s | 25 % | Step off the line. Put cover behind you: he stops dead at it and stands open for 2 s |
-| | Drag Under | 2 s | 20 % | It pulls you in, and a ring burns far from him. Stay close, then walk away before the next thing |
-| | Burning Trail | None | 5 % a second | Puddles where he walked, for 15 s. Plan your route |
-| | Cinder Rock (from the rim) | 1.7 s | 15 % | Two rocks, each where you stood |
-| Ember | Fan | 1.5 s | 16 % | Five lines. Stand in a gap, or behind cover |
-| | Marked | Follows you 2.5 s, then 1 s | 22 %, and a puddle | Carry it somewhere neither of you needs, and walk out when it stops |
-| | Vent Bombs | 1.5 s | 14 % | Pairs either side of you. Stay between them |
-| | Lava Wave | 2.5 s | 20 % | A ring grows from the vent. Walk through the gold gap, which turns |
-| Both | Tag | 1.5 s | 15 % | Leave the circle where the next one lands |
+| Ash | Ground Slam | 1.5 s | 18 % | Back away from the 5 m circle |
+| | Charge | 1.5 s | 20 % | Step off the line. Put cover behind you: he stops dead at it and stands open for 2 s |
+| | Drag Under | 2 s | 16 % | It pulls you in, and a ring burns far from him. Stay close, then walk away before the next thing |
+| | Burning Trail | None | 4 % a second | Puddles where he walked, for 15 s. Plan your route |
+| | Cinder Rock (from the rim) | 1.7 s | 12 % | Two rocks, each where you stood |
+| Ember | Fan | 1.5 s | 14 % | Five lines. Stand in a gap, or behind cover |
+| | Marked | Follows you 2.5 s, then 1 s | 18 %, and a puddle | Carry it somewhere neither of you needs, and walk out when it stops |
+| | Vent Bombs | 1.5 s | 12 % | Pairs either side of you. Stay between them |
+| | Lava Wave | 2.5 s | 16 % | A ring grows from the vent. Walk through the gold gap, which turns |
+| Both | Tag | 1.5 s | 12 % | Leave the circle where the next one lands |
 
 **How it stays within the rules.** A tag is a cast, so both screens swap at one moment. Marked's circle follows its target as a look only:
 what counts is its second step, at the spot the brain read. Only the brain's screen moves Ash down his Charge (`BossMove.act`), and it says in

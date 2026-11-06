@@ -43,7 +43,7 @@ const slam: BossMove = {
   play(c, p) {
     const radius = 5, at = p.shown(1.5);
     return {
-      threats: [{ shape: { kind: 'circle', x: c.fx, z: c.fz, radius }, at, share: 0.22, knock: 3 }], duration: at + 0.5,
+      threats: [{ shape: { kind: 'circle', x: c.fx, z: c.fz, radius }, at, share: 0.18, knock: 3 }], duration: at + 0.5,
       look: {
         land() {
           for (let k = 0; k < 10; k++) {
@@ -94,7 +94,7 @@ const charge: BossMove = {
       };
     }
     const at = p.shown(1.5), width = 2.8;
-    const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2: c.x, z2: c.z, width }, at, share: 0.25, knock: 4 };
+    const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2: c.x, z2: c.z, width }, at, share: 0.2, knock: 4 };
     return { threats: [th], duration: at + 0.4 };
   },
 };
@@ -105,7 +105,7 @@ const drag: BossMove = {
   aim: atTarget,
   play(c, p) {
     const at = p.shown(2), inner = 4.5, reach = Math.hypot(c.fx - C.x, c.fz - C.z) + PIT_R;
-    const th: Threat = { shape: { kind: 'ring', x: c.fx, z: c.fz, inner, outer: reach }, at, share: 0.2 };
+    const th: Threat = { shape: { kind: 'ring', x: c.fx, z: c.fz, inner, outer: reach }, at, share: 0.16 };
     return {
       threats: [th], duration: at + 0.4,
       look: {
@@ -128,7 +128,7 @@ const trail: BossMove = {
   id: 'trail', name: 'Burning Trail', charge: 0, lock: 0, cooldown: 0, alongside: true, quiet: true, form: ASH, pose: 'channel',
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: 0 }),
   play(c, p) {
-    const { th, pool } = puddle(p, c.x, c.z, 1.2, 0.6, 15, 0.05);
+    const { th, pool } = puddle(p, c.x, c.z, 1.2, 0.6, 15, 0.04);
     return { threats: [th], duration: 15.6, look: { update: (t) => pool.update(t, 15), dispose: () => pool.dispose() } };
   },
 };
@@ -142,7 +142,7 @@ const rock: BossMove = {
     const stone = new FallingStone(c.x, c.z, radius, at);
     p.group.add(stone.mesh);
     return {
-      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.15 }], duration: at + 0.9,
+      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.12 }], duration: at + 0.9,
       look: {
         update: (t) => stone.update(t),
         land() {
@@ -166,7 +166,7 @@ const fan: BossMove = {
     const threats: Threat[] = [-2, -1, 0, 1, 2].map((k) => {
       const dir = c.dir + k * THREE.MathUtils.degToRad(20), full = toRim(c.fx, c.fz, dir);
       const ex = c.fx + Math.sin(dir) * full, ez = c.fz + Math.cos(dir) * full, s = p.rayStop(c.fx, c.fz, ex, ez);
-      return { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2: c.fx + (ex - c.fx) * s, z2: c.fz + (ez - c.fz) * s, width }, at, share: 0.16 };
+      return { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2: c.fx + (ex - c.fx) * s, z2: c.fz + (ez - c.fz) * s, width }, at, share: 0.14 };
     });
     return {
       threats, duration: at + 0.4,
@@ -208,9 +208,9 @@ const marked: BossMove = {
       };
     }
     const at = 1;
-    const { th, pool } = puddle(p, c.x, c.z, radius, at + 0.2, at + 9, 0.05);
+    const { th, pool } = puddle(p, c.x, c.z, radius, at + 0.2, at + 9, 0.04);
     return {
-      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.22 }, th], duration: at + 9.4,
+      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.18 }, th], duration: at + 9.4,
       look: {
         update: (t) => pool.update(t - at, 9),
         land(hit) {
@@ -233,7 +233,7 @@ const bombs: BossMove = {
     const sx = Math.cos(c.dir) * off, sz = -Math.sin(c.dir) * off;
     const spots = [{ x: c.x + sx, z: c.z + sz }, { x: c.x - sx, z: c.z - sz }];
     return {
-      threats: spots.map((s) => ({ shape: { kind: 'circle', x: s.x, z: s.z, radius }, at, share: 0.14 })), duration: at + 0.5,
+      threats: spots.map((s) => ({ shape: { kind: 'circle', x: s.x, z: s.z, radius }, at, share: 0.12 })), duration: at + 0.5,
       look: {
         land(th) {
           const s = th.shape;
@@ -265,7 +265,7 @@ const wave: BossMove = {
       return Math.abs(Math.atan2(Math.sin(off), Math.cos(off))) > gapHalf;
     };
     const shape: TelegraphShape = { kind: 'circle', x: C.x, z: C.z, radius: PIT_R };
-    const th: Threat = { shape, at, to: end, every: 10, share: 0.2, hits, look: 1.2 };
+    const th: Threat = { shape, at, to: end, every: 10, share: 0.16, hits, look: 1.2 };
     const ring = new WaveRing(C.x, C.z, PIT_R + 1, gapHalf);
     p.group.add(ring.mesh);
     return {
@@ -287,7 +287,7 @@ const tag: BossMove = {
   play(c, p) {
     const radius = 3.2, at = p.shown(1.5);
     return {
-      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.15, knock: 3 }], duration: at + 0.6,
+      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.12, knock: 3 }], duration: at + 0.6,
       look: {
         land() {
           p.tag(c.form ?? 0, c.x, c.z, c.fx, c.fz);
@@ -356,9 +356,9 @@ export const ASH_AND_EMBER: BossDef = {
   rimSpots: RIM_SPOTS,
   lateAt: 2,
   phases: [
-    { name: 'Ash and Ember', at: 1, moves: [], ring: ASH, gap: [2.4, 3.4], rimEvery: [8, 11] },
-    { name: 'Ember steps in', at: NUMBERS.phases[0], moves: [], ring: EMBER, gap: [2.2, 3.2], rimEvery: [7, 10] },
-    { name: 'Together', at: NUMBERS.phases[1], moves: [], gap: [2, 3], rimEvery: [8, 8], swapEvery: 12 },
+    { name: 'Ash and Ember', at: 1, moves: [], ring: ASH, gap: [2.4, 3.4], rimEvery: [10, 14] },
+    { name: 'Ember steps in', at: NUMBERS.phases[0], moves: [], ring: EMBER, gap: [2.2, 3.2], rimEvery: [9, 13] },
+    { name: 'Together', at: NUMBERS.phases[1], moves: [], gap: [2, 3], rimEvery: [9, 9], swapEvery: 12 },
   ],
   /** A higher tier adds these: Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave. */
   extra: ['rock', 'marked', 'wave'],

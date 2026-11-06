@@ -277,6 +277,8 @@ export class Duel {
   private lateAt = 0;
   /** The other player's hero in a raid for two: a third body this screen only draws. */
   private partner: Partner | null = null;
+  /** Which way the autopilot last stepped out of a boss's zone. */
+  private pilotWay = new THREE.Vector3();
   /** How the autopilot plays (the raid tool tries it at different levels). */
   pilotLevel: CpuLevel = CPU_BALANCE;
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
@@ -2137,9 +2139,13 @@ export class Duel {
     if (!roll.react) return null;
     if (this.time < roll.at) return new THREE.Vector3();
     for (const within of BOSS_CLEAR) {
-      const spot = this.escapeSpot(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)));
+      const spot = this.escapeSpot(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)), this.pilotWay);
       // On the planned way round cover: a straight step can wedge between two pieces of it.
-      if (spot) return this.goalStep(this.playerAi, at, spot);
+      if (spot) {
+        const step = this.goalStep(this.playerAi, at, spot);
+        this.pilotWay.copy(step);
+        return step;
+      }
     }
     return null;
   }
@@ -2162,7 +2168,7 @@ export class Duel {
   }
 
   /** The nearest open spot that is not `unsafe`, keeping the distance to `me`, or null. */
-  private escapeSpot(at: THREE.Vector3, me: THREE.Vector3, unsafe: (x: number, z: number) => boolean) {
+  private escapeSpot(at: THREE.Vector3, me: THREE.Vector3, unsafe: (x: number, z: number) => boolean, way?: THREE.Vector3) {
     const keep = flat(at, me);
     const obstacles = this.host.arena.obstacles ?? [];
     const open = (x: number, z: number) =>
@@ -2174,7 +2180,9 @@ export class Duel {
         const a = (k / 16) * Math.PI * 2, x = at.x + Math.cos(a) * r, z = at.z + Math.sin(a) * r;
         if (!open(x, z) || unsafe(x, z)) continue;
         const p = new THREE.Vector3(x, 0, z);
-        spots.push({ p, score: Math.abs(flat(p, me) - keep) });
+        // Going a way already: better to keep going than to double back.
+        const on = way && way.lengthSq() > 0 ? ((x - at.x) * way.x + (z - at.z) * way.z) / r : 0;
+        spots.push({ p, score: Math.abs(flat(p, me) - keep) - on * 3 });
       }
       spots.sort((a, b) => a.score - b.score);
       const free = spots.find((s) => obstacles.every((o) => pathDist(at, s.p, o) > o.r + BODY_RADIUS * 0.5));

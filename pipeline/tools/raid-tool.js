@@ -3,7 +3,8 @@
 //
 //   eval(await (await fetch('/pipeline/tools/raid-tool.js')).text());
 //   _raid(['Lyra', 'Bram'], 4)              // 4 fights each against the Sun Warden at the balance AI's level
-//   _raid(_raid.all(), 2, { level: 3 })     // every hero, CPU level 3 (Normal) as a stand-in for a person's reactions
+//   _raid(names, 2, { level: 3 })           // CPU level 3 (Normal) as a stand-in for a person's reactions
+//   _raid(names, 1, { boss: 'ash', tier: 2, upgrades: ['glass', 'stubborn'] })   // the second boss, a higher tier, upgrades on
 //   _raid.show()                            // per hero: clears, seconds, boss HP left, damage per second, which move killed
 //   _raid.errors()                          // errors in a run are bugs to fix, with the fight they came from
 //
@@ -27,6 +28,7 @@
       try {
         const { BOSSES } = await import('/src/raid/bosses.ts');
         const { LocalLink } = await import('/src/raid/link.ts');
+        const { RunUpgrades } = await import('/src/raid/upgrades.ts');
         const { CPU_BALANCE, cpuLevel } = await import('/src/cpuLevels.ts');
         const def = BOSSES[opts.boss ?? 'sun'];
         vfx.view.paused = true;
@@ -37,8 +39,10 @@
           vfx.heroPickCtrl.setValue(hero);
           for (let r = 0; r < reps; r++) {
             now = hero;
-            const link = new LocalLink(def);
-            d.startBoss({ def, link, seed: `${hero}-${r}-${Math.random()}`, mode: 'run' });
+            const link = new LocalLink(def, opts.tier ?? 1);
+            const upgrades = new RunUpgrades();
+            for (const id of opts.upgrades ?? []) upgrades.add(id);
+            d.startBoss({ def, link, seed: `${hero}-${r}-${Math.random()}`, mode: 'run', tier: opts.tier ?? 1, upgrades });
             const foe = d.foe;
             let dealt = 0;
             const count = vfx.arena.onFoeDamage;
@@ -71,7 +75,6 @@
     })();
     return 'started';
   };
-  window._raid.all = () => vfx.kits?.map((k) => k.name) ?? [];
   window._raid.done = () => state.done;
   window._raid.errors = () => ({ err: state.err, errors: state.errors, none: state.none });
   window._raid.show = () => Object.fromEntries(Object.entries(state.rows).map(([hero, r]) => [hero, {

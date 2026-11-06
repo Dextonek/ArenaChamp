@@ -76,7 +76,7 @@ export class BossScript {
   play(cast: BossCast) {
     const move = this.def.moves[cast.move];
     if (!move) return;
-    this.eventId++;
+    if (cast.step === 0) this.eventId++;
     const played = move.play(cast, this.ctx);
     // A gold zone waits for its result from the hub, which waits for the other screen.
     const gold = played.threats.filter((th) => th.kind === 'stand').map((th) => th.at + STOOD_WAIT);
