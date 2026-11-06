@@ -45,6 +45,8 @@ export interface ArenaScene {
   wallState?(index: number, state: WallState): void;
   /** Arenas that change: cover `index` (into `ArenaDef.obstacles`) topples along yaw `dir`, flat after `seconds`, then breaks up. */
   coverFall?(index: number, dir: number, seconds: number): void;
+  /** Arenas that change: the floor beyond radius `r` breaks off and falls, with what stands on it. */
+  ringBreak?(r: number): void;
   /** A new round: everything `coverFall` and the like changed is back. */
   resetShift?(): void;
   dispose?(): void;
@@ -69,7 +71,7 @@ export interface ArenaDef {
   /** The arena's timed event for one round (src/arenas/hazards); both screens of a network duel get the same `seed`. */
   hazard?(seed: string): ArenaHazard;
   /** How the arena changes as one round runs long (src/arenas/shifts); both screens of a network duel get the same `seed`. */
-  shift?(seed: string): ArenaShift;
+  shift?(seed: string, scene: ArenaScene): ArenaShift;
   /** Builds a fresh copy of the arena's meshes (called each time the arena is picked). */
   build(): ArenaScene;
 }

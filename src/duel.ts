@@ -137,6 +137,8 @@ const STRAFE_LOOK = 0.9; // an AI does not strafe the way that would hide the ot
 const HAZARD_LOOK = 1.6; // an AI starts walking when a hazard will reach it within this many seconds
 const HAZARD_CLEAR = 3; // and walks to a spot no hazard reaches for this long
 const ZONE_LOOK = 0.8; // how far ahead (m) an AI's walk checks for a part of the floor that hurts
+const RING_SHRINK = 4; // m/s: how fast a shrinking ring closes and pushes a hero in
+const ZONE_FLASH = 0.1; // how strong the red screen flash is on a zone's tick
 const HAZARD_SEND_GAP = 0.32; // the hub's HAZARD_GAP_MS, with a little to spare
 const HAZARD_MAX = 60; // the hub's most for one hazard hit: more would show damage it does not count
 const SUMMON_REACH = 10; // the AI casts a summon spell when the enemy is within this distance (m)
@@ -250,6 +252,8 @@ export class Duel {
   /** This round's change, on the same fight clock as the hazard. */
   private shift: ArenaShift | null = null;
   private shiftWorld: ShiftWorld;
+  /** The radius the walkable ring is shrinking to (Sky Ruins); `arena.bounds` is this round's own copy of `RING`. */
+  private ringTo = RING.r;
   /** When this side's hero last reported a hazard online (the hub takes one per 0.3 s, and both kinds can land together). */
   private hazardSentAt = -Infinity;
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
@@ -356,6 +360,7 @@ export class Duel {
       remove: (i) => this.removeCover(i),
       topple: (i, dir, seconds) => this.arenaScene?.coverFall?.(i, dir, seconds),
       add: (cover) => this.addCover(cover),
+      ring: (r) => { this.ringTo = r; },
     };
     this.group.visible = false;
     this.hud = this.buildHud();
@@ -505,7 +510,7 @@ export class Duel {
     this.hazard = this.hazardsOn && (this.mode === 'play' || this.hazardsInRuns) ? def.hazard?.(this.hazardSeed) ?? null : null;
     if (this.hazard) this.group.add(this.hazard.group);
     this.shift?.dispose();
-    this.shift = this.shiftsOn && (this.mode === 'play' || this.shiftsInRuns) ? def.shift?.(this.hazardSeed) ?? null : null;
+    this.shift = this.shiftsOn && (this.mode === 'play' || this.shiftsInRuns) ? (this.arenaScene && def.shift?.(this.hazardSeed, this.arenaScene)) ?? null : null;
     if (this.shift) this.group.add(this.shift.group);
     this.hazardClock = 0;
     this.hazardSentAt = -Infinity;
@@ -521,7 +526,8 @@ export class Duel {
     this.foeMax = this.opponentKit.maxHp ?? HP;
     arena.maxHp = this.foeMax;
     arena.respawnAfter = Infinity;
-    arena.bounds = RING;
+    arena.bounds = { ...RING };
+    this.ringTo = RING.r;
     // A copy: temporary obstacles (`CastContext.addObstacle`) and broken walls change the list, never the arena definition.
     arena.clearTempObstacles();
     arena.obstacles = def.obstacles.slice();
@@ -592,6 +598,7 @@ export class Duel {
       status: (f) => arena.statusOf(f),
       cover: () => arena.obstacles ?? [],
       arenaCover: () => this.currentArena?.obstacles ?? [],
+      arenaRing: () => this.ringTo,
       hp: () => this.playerHp,
       maxHp: () => this.playerMax,
       time: () => this.time,
@@ -653,6 +660,7 @@ export class Duel {
       status: (f) => arena.statusOf(f),
       cover: () => arena.obstacles ?? [],
       arenaCover: () => this.currentArena?.obstacles ?? [],
+      arenaRing: () => this.ringTo,
       hp: () => (this.foe ? arena.hpOf(this.foe) : 0),
       maxHp: () => this.foeMax,
       time: () => this.time,
@@ -1173,6 +1181,7 @@ export class Duel {
       if (stage && this.mode === 'play') this.showBanner(stage, 1.8, '26px');
       this.host.arena.aiCover = this.shift?.aiCover ?? [];
       this.host.arena.aiBounds = this.shift?.aiBounds ?? null;
+      this.shrinkRing(dt);
     }
 
     const foe = this.foe;
@@ -1903,8 +1912,10 @@ export class Duel {
     if (isHero) {
       // Online the hub would drop a second hazard this soon, and the two screens would count different HP.
       if (this.net && this.time - this.hazardSentAt < HAZARD_SEND_GAP) return;
-      const before = this.playerHp;
+      const before = this.playerHp, flashed = Number(this.flash.style.opacity || 0);
       this.damagePlayer(opts);
+      // A zone hits again and again: the red flash stays faint, or the whole screen would strobe.
+      if (hit.share) this.flash.style.opacity = String(Math.max(flashed, ZONE_FLASH));
       const took = before - this.playerHp;
       if (took > 0) {
         this.hazardSentAt = this.time;
@@ -1956,6 +1967,18 @@ export class Duel {
     if (!arena.obstacles?.includes(o)) return;
     if (o.kind === 'wall') this.arenaScene?.wallState?.(i, 'broken');
     arena.obstacles = arena.obstacles.filter((x) => x !== o);
+  }
+
+  /** The ring closes on `ringTo` at walking pace or so, and takes along whoever is beyond it: each screen its own hero, and the units here. */
+  private shrinkRing(dt: number) {
+    const arena = this.host.arena, b = arena.bounds;
+    if (!b || b.r <= this.ringTo) return;
+    b.r = Math.max(this.ringTo, b.r - RING_SHRINK * dt);
+    arena.keepInside(arena.caster.group.position);
+    if (!this.net && this.foe) arena.moveFoe(this.foe, new THREE.Vector3(), true);
+    for (const side of ['hero', 'opponent'] as const) {
+      for (const u of arena.summons.alive(side)) arena.keepInside(u.pos);
+    }
   }
 
   /** A stage raises new cover: whoever stands there is pushed out, each screen its own hero. */

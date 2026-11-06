@@ -43,14 +43,19 @@ From the two gameplay cameras (a network player on side 1 looks from the other e
 - runtime.ts `setStage` changes the sky dome uniforms, `scene.background`, the fog colour and range and the three
   lights in place (the cinematic camera toggles the same objects by reference).
 
-The ring itself never changes: centre (0, 7), radius 12, starts at (0, 13) and (0, 1). `arena.bounds`, the AI,
-the hero-mode camera focus and the network position stream all assume it.
+The ring's centre and start spots never change: centre (0, 7), starts at (0, 13) and (0, 1). Its radius is 12, and only
+Sky Ruins' stages shrink it (see below). The server's `clampRing` stays at 12, so a smaller ring is a rule each client keeps.
 
 ## Arenas that change (stages)
 
 As a round runs long the arena gets worse in steps (`ArenaDef.shift`, [src/arenas/shifts/](../../src/arenas/shifts/base.ts),
 the table in `shifts/tables.ts`). A stage is announced by a banner and shows its zones for 3 s before they count. Its
 zones stay until the next stage's land, and hazards keep running on top.
+
+Stage 3 on each arena: [Night Temple](../arenas/stage3-temple.jpg), [Frostfall Lake](../arenas/stage3-frost.jpg),
+[Ember Caldera](../arenas/stage3-caldera.jpg), [Verdant Glade](../arenas/stage3-glade.jpg), [Sky Ruins](../arenas/stage3-skyruins.jpg).
+All of it is drawn in code (shaders and simple meshes). No Blender art was made for it; the column's fall and the floor
+looks are a first pass, for the artist to direct.
 
 | Stage | Starts at (fight clock) | Share of max HP per 0.8 s in a zone |
 |---|---|---|
@@ -65,13 +70,15 @@ zones stay until the next stage's land, and hazards keep running on top.
 | Frostfall Lake | The ice breaks | Two water channels: slow, no damage | Also freezing water outside 9 m, slow | The water outside 6.5 m |
 | Ember Caldera | The lava rises | Lava outside 10 m | Outside 8 m and over the vent to 2 m | Outside 6.5 m and over the vent to 2.5 m |
 | Verdant Glade | The forest closes in | Roots raise four new low walls in the gaps, pushing out whoever stands there | Thorns outside 9 m, slow | Thorns outside 6.5 m |
-| Sky Ruins | The platform breaks up | Outside 10 m | Outside 8 m | Outside 6.5 m |
+| Sky Ruins | The platform breaks up | The floor breaks off to 10 m | To 8 m, with the arch bases | To 6.5 m, with the broken columns |
 
 - **Last stand** makes a long round end: without heals a full hero falls about 20 s after it begins. It adds no timer, draw or limit screen.
 - **Clock and seed:** `Duel.hazardClock`, the same clock as the arena's events. Frost's channels come from the seed, so both screens match.
 - **Hits:** like a hazard's. Each screen decides the hits on what it lists; online the hero's damage goes out as `hazard`. A hit is a share of the target's max HP, so a big hero pays as much of its bar as a small one, capped at the hub's 60. `Duel.hazardHit` lets one through per 0.32 s online, because the hub would drop a second one and the screens would disagree.
 - **A person may stand in a zone and pay.** The AI does not: it walks out with nothing rolled (`hazardStep`), drops a trait's goal inside one (`reachableGoal`), plans round them (`Arena.aiRoute`, its own `Navigator`, fed by `ArenaShift.aiCover` and `aiBounds`) and stops at the edge when the other hero is inside (`offZones`). In Last stand it just fights.
 - **Cover:** a stage reports what goes and what comes (`ShiftStage.breaks`, `topples`, `adds`) and `Duel` applies it (`removeCover`, `addCover`, through the live `arena.obstacles`). The list is rebuilt from `ArenaDef.obstacles` each round; `ArenaScene.resetShift` puts back the meshes the arena owns. Pip's parcels stay where they were: `arenaCover` is the arena as it started, and a parcel a root wall covers can still be reached across it.
+- **Sky Ruins** really loses its floor. `ShiftStage.ring` shrinks `arena.bounds.r` at 4 m/s (`Duel.shrinkRing`, a copy of `RING` per round) and pushes in each screen's own hero and units, so nobody stands on air and nobody is hurt for being there; its zones only tell the AI. `ArenaScene.ringBreak` draws it: `cutFloor` discards the floor beyond the radius, `brokenEdge` shows raw rock along the same rough line, slabs and the cover and edge pieces standing there fall. Pip's parcels stay reachable: `jobOf` skips spots past the ring.
+- **Looks:** `ShiftLook`, which only draws. `ZoneFloor` (`shifts/floor.ts`) is one disc whose shader knows the zones, so an edge creeps in over the 3 s and arrives when the stage lands. One style each: `lava`, `water`, `sun`, `thorn`, `storm` (Sky Ruins' Last stand). It draws at `renderOrder` 0.5, after the see-through floors and before the spells' zones, which must read on it. Colours stay mid-value, because the floor is large and would bloom. `RootLook` (`shifts/roots.ts`) grows the glade's walls; `SkyBreakLook` raises dust along the coming edge.
 - **Switches:** `duel.shiftsOn`. `duel.shiftsInRuns` is off, so balance runs stay comparable. `duel.shiftOffset` is added to the clock the stages read: set it on both screens before the fight to test a stage.
 
 ## Arena events (hazards)

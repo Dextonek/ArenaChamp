@@ -74,6 +74,8 @@ export interface TraitView {
   cover(): readonly Obstacle[];
   /** The cover this round's arena starts with: the same on both screens whatever has fallen, for what both must work out alike. */
   arenaCover(): readonly Obstacle[];
+  /** The radius the walkable ring is, or is shrinking to (Sky Ruins' stages). */
+  arenaRing(): number;
   /** HP of this hero now, and its max. */
   hp(): number;
   maxHp(): number;

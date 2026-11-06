@@ -54,6 +54,8 @@ export interface ShiftStage {
   adds?: Obstacle[];
   /** Marks shown while the stage shows that are not zones (where new cover will stand). */
   marks?: TelegraphShape[];
+  /** The ring gets this small when the stage lands: the floor beyond is gone (Sky Ruins). */
+  ring?: number;
 }
 
 /** The duel, as a stage sees it. */
@@ -62,11 +64,15 @@ export interface ShiftWorld extends HazardWorld {
   remove(index: number): void;
   topple(index: number, dir: number, seconds: number): void;
   add(cover: Obstacle[]): void;
+  /** The walkable ring shrinks to radius `r`; whoever stands beyond is pushed in. */
+  ring(r: number): void;
 }
 
 /** What a stage looks like beyond its zones: an arena's own floor and pieces. It only draws. */
 export interface ShiftLook {
   readonly group: THREE.Object3D;
+  /** It draws the zones that stay, so the plain marks are not needed. */
+  readonly drawsZones?: boolean;
   /** Stage `index` starts showing. */
   begin?(index: number): void;
   /** Stage `index` lands. */
@@ -161,7 +167,8 @@ export class ArenaShift {
     this.landed = clock;
     this.zones = stage.zones;
     this.coming.set([]);
-    this.lasting.set(this.zones.map((z): TelegraphSpec => ({ shape: z.shape, start: 0, impact: 0, until: Infinity })), this.color, LASTING_ALPHA);
+    if (!this.look?.drawsZones) this.lasting.set(this.zones.map((z): TelegraphSpec => ({ shape: z.shape, start: 0, impact: 0, until: Infinity })), this.color, LASTING_ALPHA);
+    if (stage.ring !== undefined) world.ring(stage.ring);
     for (const i of stage.breaks ?? []) world.remove(i);
     for (const t of stage.topples ?? []) world.remove(t.index);
     if (stage.adds) world.add(stage.adds);

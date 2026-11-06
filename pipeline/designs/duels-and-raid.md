@@ -17,7 +17,7 @@ code stays, and nothing else in this design depends on it.
 |---|---|---|---|
 | 0 | Version check | small | The new rules make an old tab and a new tab disagree more often |
 | 1 | Loser picks | small | Built, then switched off for every match (user, 2026-11-06) |
-| 2 | Arenas that change | medium | Builds what the Raid also needs: standing zones, damage by HP share, CPUs that keep out of zones |
+| 2 | Arenas that change | medium | Built, see `docs/architecture/arenas.md`. Builds what the Raid also needs: standing zones, damage by HP share, CPUs that keep out of zones |
 | 3 | Raid: Sun Warden on one screen | large | First boss, proves the fight is good before a second screen makes it harder to test |
 | 4 | Raid: the co-op link | large | Two players against that boss: the partner on your screen, the boss's HP on the server |
 | 5 | Raid: upgrades, Ash and Ember, tiers | medium | The run around the bosses |
@@ -86,9 +86,12 @@ changes get longer than a hazard's 1.2 s) and lasts until the round ends. Hazard
 | Last stand | 105 s | The whole floor hurts, and more each 5 s, so a round always ends |
 
 **Decided by the user, 2026-11-06: yes.** This changes the 2026-10-30 ruling that a round has no time limit. Last stand
-adds no timer, draw or limit screen, but it does force an ending. The comment at `ROUNDS_TO_WIN` in `server/hub.mjs`
-and step 5 of *Match flow* in `docs/architecture/multiplayer.md` still state the old ruling: change them when this
-stage is built.
+adds no timer, draw or limit screen, but it does force an ending.
+
+**As built:** this section is the plan it was built from; `docs/architecture/arenas.md` has the numbers as they are.
+A column's hit is 45, like an arena event's. The CPU plans round the zones with its own route planner, which turned out
+to be needed: with only its goals clamped, it stood still in the gap between Caldera's vent and a ridge. The balance
+run this section asks for (how many rounds reach each stage, which heroes gain or lose) has not been run.
 
 Standing damage is a share of the hero's max HP (HP runs from 450 to 840), about 3 % per 0.8 s at stage 3, rising in
 Last stand. It stays under the hub's 60 per hit.

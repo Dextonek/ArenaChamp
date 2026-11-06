@@ -4,7 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { StormStrikes } from './hazards/skyruins';
-import { skyruinsShift } from './shifts/tables';
+import { SKY_RADII, skyruinsShift } from './shifts/tables';
 import { RING, canvasTexture, disposeTree, flatRing, seeded } from './common';
 import type { ArenaDef, ArenaStage } from './types';
 
@@ -180,6 +180,45 @@ function merged(props: Record<string, PropParts>, place: Place, shadow: boolean)
     meshes.push(m);
   }
   return meshes;
+}
+
+/** How the falling floor drops (m/s²), and how long a piece is drawn (s). */
+const FALL_G = 15;
+const FALL_FOR = 2.6;
+/** The rough line the floor breaks along, inward from its radius (m): in the shader and in `brokenEdge`, the same. */
+const BREAK_JAG_GLSL = '(0.22 * sin(a * 9.0 + 1.0) + 0.14 * sin(a * 23.0) + 0.08 * sin(a * 51.0))';
+const breakJag = (a: number) => 0.22 * Math.sin(a * 9 + 1) + 0.14 * Math.sin(a * 23) + 0.08 * Math.sin(a * 51);
+
+/** The raw rock showing where the floor broke off at radius `r`: rough, going down and in, under the cut's edge. */
+function brokenEdge(r: number) {
+  const around = 180, layers = [0, -0.28, -0.75, -1.5, -2.5];
+  const rnd = seeded(Math.round(r * 100));
+  const pos: number[] = [], col: number[] = [], index: number[] = [];
+  const tint = new THREE.Color();
+  for (let j = 0; j < layers.length; j++) {
+    for (let i = 0; i <= around; i++) {
+      const a = (i / around) * Math.PI * 2;
+      const inset = j === 0 ? 0 : 0.1 * j * j + (j > 1 ? rnd() * 0.4 : rnd() * 0.12);
+      const d = r - breakJag(a) - inset;
+      pos.push(RING.x + Math.cos(a) * d, layers[j] + 0.008 + (j ? (rnd() - 0.5) * 0.12 : 0), RING.z + Math.sin(a) * d);
+      tint.setHex(0x2c2e3c).lerp(new THREE.Color(0x52505a), rnd() * (j < 2 ? 1 : 0.5));
+      col.push(tint.r, tint.g, tint.b);
+    }
+  }
+  for (let j = 0; j < layers.length - 1; j++) {
+    for (let i = 0; i < around; i++) {
+      const a = j * (around + 1) + i, b = a + 1, c = a + around + 1, d = c + 1;
+      index.push(a, c, b, b, c, d);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(index);
+  const flat = g.toNonIndexed();
+  g.dispose();
+  flat.computeVertexNormals();
+  return new THREE.Mesh(flat, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, flatShading: true, side: THREE.DoubleSide }));
 }
 
 /** The repeated small props (edge balustrade, slate blocks, hanging rocks): one instanced mesh per prop part. */
@@ -525,7 +564,7 @@ export const skyruinsArena: ArenaDef = {
   id: 'skyruins',
   name: 'Sky Ruins',
   hazard: (seed) => new StormStrikes(seed),
-  shift: () => skyruinsShift(),
+  shift: (_seed, scene) => skyruinsShift(scene, SKYRUINS_OBSTACLES),
   obstacles: SKYRUINS_OBSTACLES,
   stage: STAGE,
   hideGround: true,
@@ -533,14 +572,33 @@ export const skyruinsArena: ArenaDef = {
     const g = new THREE.Group();
     const rnd = seeded(4242);
     const rr = (a: number, b: number) => a + (b - a) * rnd();
+    const cut = { value: 99 };
+    /** A floor material that shows nothing beyond the cut (the same rough line `brokenEdge` follows). */
+    const cutFloor = <T extends THREE.Material>(mat: T): T => {
+      mat.onBeforeCompile = (s) => {
+        s.uniforms.uCut = cut;
+        s.vertexShader = s.vertexShader
+          .replace('#include <common>', '#include <common>\nvarying vec3 vCutPos;')
+          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCutPos = (modelMatrix * vec4(position, 1.0)).xyz;');
+        s.fragmentShader = s.fragmentShader
+          .replace('#include <common>', '#include <common>\nuniform float uCut;\nvarying vec3 vCutPos;')
+          .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
+            {
+              vec2 q = vCutPos.xz - vec2(${RING.x.toFixed(1)}, ${RING.z.toFixed(1)});
+              float a = atan(q.y, q.x);
+              if (length(q) + ${BREAK_JAG_GLSL} > uCut) discard;
+            }`);
+      };
+      return mat;
+    };
     const textures: THREE.Texture[] = [];
     const keep = <T extends THREE.Texture>(t: T) => { textures.push(t); return t; };
 
     // Platform.
-    const top = new THREE.Mesh(topGeometry(), new THREE.MeshStandardMaterial({ map: platformTexture(), roughness: 0.85, metalness: 0.05 }));
+    const top = new THREE.Mesh(topGeometry(), cutFloor(new THREE.MeshStandardMaterial({ map: platformTexture(), roughness: 0.85, metalness: 0.05 })));
     top.receiveShadow = true;
     const rimLine = flatRing(RING.r - 0.1, RING.r + 0.04, 0xc9a24a, 0.85, 0.02);
-    const skirt = new THREE.Mesh(skirtGeometry(), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.85, flatShading: true }));
+    const skirt = new THREE.Mesh(skirtGeometry(), cutFloor(new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.85, flatShading: true })));
     skirt.castShadow = skirt.receiveShadow = true;
 
     // Cover and backdrop: the sculpted props, added when the files have loaded (the first pick waits a moment for
@@ -548,9 +606,14 @@ export const skyruinsArena: ArenaDef = {
     let disposed = false;
     const at = (x: number, y: number, z: number, ry: number, s = 1, sx = 1, q?: THREE.Quaternion) =>
       new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), q ?? new THREE.Quaternion().setFromAxisAngle(UP, ry), new THREE.Vector3(sx * s, s, s));
-    const fixed: Place = {}, floating: Place = {}, edge: Place = {}, drift: Place = {};
+    // The cover goes in bands by how far out it stands, one per stage that breaks the floor under it and one that stays.
+    const bands: Place[] = [...SKY_RADII, 0].map(() => ({}));
+    const floating: Place = {}, edge: Place = {}, drift: Place = {};
     const put = (into: Place, name: string, m: THREE.Matrix4) => (into[name] ??= []).push(m);
     SKYRUINS_OBSTACLES.forEach((o) => {
+      const reach = Math.hypot((o.ax + o.bx) / 2 - RING.x, (o.az + o.bz) / 2 - RING.z);
+      const band = SKY_RADII.findIndex((r) => reach > r);
+      const fixed = bands[band < 0 ? SKY_RADII.length : band];
       const a = o.ax + o.bx > 0;
       const twin = a ? 0 : Math.PI;
       const v = a ? 'A' : 'B';
@@ -591,7 +654,7 @@ export const skyruinsArena: ArenaDef = {
     }
     for (const deg of [256, 112]) {
       const a = (deg * Math.PI) / 180, r = 12.6;
-      put(fixed, 'Toppled', at(RING.x + Math.cos(a) * r, 0, RING.z + Math.sin(a) * r, tanYaw(a) + 0.1));
+      put(bands[0], 'Toppled', at(RING.x + Math.cos(a) * r, 0, RING.z + Math.sin(a) * r, tanYaw(a) + 0.1));
     }
     for (let i = 0; i < 18; i++) {
       const th = (i / 18) * Math.PI * 2 + rr(-0.1, 0.1), s = rr(0.9, 1.8);
@@ -614,11 +677,127 @@ export const skyruinsArena: ArenaDef = {
     }
 
     const floaters = new THREE.Group();
+    const bandGroups = bands.map(() => new THREE.Group());
+    g.add(...bandGroups);
+    // The edge pieces fall one by one: each instance keeps its place, and its own moment to let go.
+    let edgeFall: { mesh: THREE.InstancedMesh; base: Float32Array; delay: Float32Array }[] = [];
     void loadProps().then((props) => {
       if (disposed) return;
-      g.add(...merged(props, fixed, true), ...instanced(props, edge, true));
+      bands.forEach((band, i) => { const list = merged(props, band, true); if (list.length) bandGroups[i].add(...list); });
+      const edgeMeshes = instanced(props, edge, true);
+      g.add(...edgeMeshes);
+      const drnd = seeded(808);
+      edgeFall = edgeMeshes.map((mesh) => {
+        mesh.frustumCulled = false; // their bounds would not follow the fall
+        return { mesh, base: Float32Array.from(mesh.instanceMatrix.array), delay: Float32Array.from({ length: mesh.count }, () => drnd() * 0.7) };
+      });
       floaters.add(...merged(props, floating, false), ...instanced(props, drift, false));
     }).catch((e) => console.warn('skyruins: props failed to load', e));
+
+    // What breaks off when a stage lands: the floor beyond is cut (`cutFloor`), a rough rock edge shows where it broke, slabs
+    // of the floor fall from there, and the band of cover standing on it goes with them.
+    const rimRocks = SKY_RADII.map((r) => brokenEdge(r));
+    for (const m of rimRocks) { m.visible = false; g.add(m); }
+    const SLABS = 110;
+    const slabGeo = new THREE.BoxGeometry(1, 0.42, 1, 2, 1, 2);
+    const slabPos = slabGeo.attributes.position as THREE.BufferAttribute;
+    const srnd = seeded(303);
+    for (let i = 0; i < slabPos.count; i++) slabPos.setXYZ(i, slabPos.getX(i) * (0.82 + srnd() * 0.36), slabPos.getY(i) * (slabPos.getY(i) > 0 ? 1 : 0.3 + srnd()), slabPos.getZ(i) * (0.82 + srnd() * 0.36));
+    slabGeo.computeVertexNormals();
+    const slabs = new THREE.InstancedMesh(slabGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, flatShading: true }), SLABS);
+    slabs.frustumCulled = false;
+    slabs.castShadow = true;
+    const HIDDEN = new THREE.Matrix4().makeScale(0, 0, 0);
+    const slabState = Array.from({ length: SLABS }, () => ({ p: new THREE.Vector3(), q: new THREE.Quaternion(), spin: new THREE.Vector3(), s: new THREE.Vector3(), t: 0, delay: 0, live: false }));
+    const tint = new THREE.Color();
+    for (let i = 0; i < SLABS; i++) {
+      slabs.setMatrixAt(i, HIDDEN);
+      slabs.setColorAt(i, tint.setHex(0x34384a).lerp(new THREE.Color(0x4c5166), srnd()));
+    }
+    g.add(slabs);
+    let slabNext = 0;
+    const falling: { band: number; t: number }[] = [];
+    const _e = new THREE.Euler();
+    const fallBy = (t: number) => (t > 0 ? 0.5 * FALL_G * t * t : 0);
+
+    const ringBreak = (r: number) => {
+      const i = SKY_RADII.indexOf(r);
+      if (i < 0) return;
+      cut.value = r;
+      rimLine.visible = false;
+      // The old underside would hang on in pieces below the cut: the broken edge takes over from it.
+      skirt.visible = false;
+      rimRocks.forEach((m, k) => { m.visible = k === i; });
+      falling.push({ band: i, t: 0 });
+      // Slabs across the part that went, the outer ones first.
+      const outer = i ? SKY_RADII[i - 1] : RING.r + 0.5;
+      const count = Math.min(SLABS, Math.round((outer * outer - r * r) * Math.PI / 1.9));
+      for (let n = 0; n < count; n++) {
+        const c = slabState[slabNext], k = slabNext;
+        slabNext = (slabNext + 1) % SLABS;
+        const a = srnd() * Math.PI * 2, d = Math.sqrt(r * r + srnd() * (outer * outer - r * r));
+        c.p.set(RING.x + Math.cos(a) * d, -0.2, RING.z + Math.sin(a) * d);
+        c.q.setFromAxisAngle(UP, srnd() * Math.PI * 2);
+        c.spin.set((srnd() - 0.5) * 2.4, (srnd() - 0.5) * 1.2, (srnd() - 0.5) * 2.4);
+        c.s.set(1.5 + srnd() * 1.1, 0.8 + srnd() * 0.6, 1.5 + srnd() * 1.1);
+        c.t = 0;
+        c.delay = ((d - r) / Math.max(0.1, outer - r)) * -0.1 + srnd() * 0.45 + 0.1;
+        c.live = true;
+        slabs.setMatrixAt(k, _m.compose(c.p, c.q, c.s));
+      }
+      slabs.instanceMatrix.needsUpdate = true;
+    };
+    const stepFalls = (dt: number) => {
+      let moved = false;
+      for (let i = 0; i < SLABS; i++) {
+        const c = slabState[i];
+        if (!c.live) continue;
+        c.t += dt;
+        moved = true;
+        const age = c.t - c.delay;
+        if (age > FALL_FOR) {
+          c.live = false;
+          slabs.setMatrixAt(i, HIDDEN);
+          continue;
+        }
+        if (age <= 0) continue;
+        _p.copy(c.p).setY(c.p.y - fallBy(age));
+        _q.copy(c.q).multiply(new THREE.Quaternion().setFromEuler(_e.set(c.spin.x * age, c.spin.y * age, c.spin.z * age)));
+        slabs.setMatrixAt(i, _m.compose(_p, _q, c.s));
+      }
+      if (moved) slabs.instanceMatrix.needsUpdate = true;
+      for (let k = falling.length - 1; k >= 0; k--) {
+        const f = falling[k];
+        f.t += dt;
+        bandGroups[f.band].position.y = -fallBy(Math.max(0, f.t - 0.2));
+        if (f.band === 0) {
+          for (const e of edgeFall) {
+            const arr = e.mesh.instanceMatrix.array as Float32Array;
+            for (let n = 0; n < e.mesh.count; n++) arr[n * 16 + 13] = e.base[n * 16 + 13] - fallBy(f.t - e.delay[n]);
+            e.mesh.instanceMatrix.needsUpdate = true;
+          }
+        }
+        if (f.t < FALL_FOR + 1) continue;
+        bandGroups[f.band].visible = false;
+        if (f.band === 0) for (const e of edgeFall) e.mesh.visible = false;
+        falling.splice(k, 1);
+      }
+    };
+    const resetShift = () => {
+      cut.value = 99;
+      rimLine.visible = true;
+      skirt.visible = true;
+      for (const m of rimRocks) m.visible = false;
+      falling.length = 0;
+      for (const b of bandGroups) { b.position.y = 0; b.visible = true; }
+      for (const e of edgeFall) {
+        (e.mesh.instanceMatrix.array as Float32Array).set(e.base);
+        e.mesh.instanceMatrix.needsUpdate = true;
+        e.mesh.visible = true;
+      }
+      for (let i = 0; i < SLABS; i++) { slabState[i].live = false; slabs.setMatrixAt(i, HIDDEN); }
+      slabs.instanceMatrix.needsUpdate = true;
+    };
 
     // Sea of clouds: an opaque layer 6 m below and a wispy layer above it that the platform's underside pokes through.
     const seaTex = keep(cloudTexture(1024, 9, true, 12));
@@ -684,7 +863,10 @@ export const skyruinsArena: ArenaDef = {
 
     return {
       group: g,
+      ringBreak,
+      resetShift,
       update(dt: number, time: number) {
+        stepFalls(dt);
         sea.rotation.z += dt * 0.004;
         wisps.rotation.z -= dt * 0.006;
         for (const d of drifts) { d.ang += d.speed * dt; place(d); }

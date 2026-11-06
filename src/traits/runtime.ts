@@ -16,6 +16,7 @@ export interface TraitHost {
   status(of: Enemy): StatusSet | undefined;
   cover(): readonly Obstacle[];
   arenaCover(): readonly Obstacle[];
+  arenaRing(): number;
   hp(): number;
   maxHp(): number;
   time(): number;
@@ -111,6 +112,7 @@ export class TraitRuntime implements TraitView {
   status(of: Enemy) { return this.host.status(of); }
   cover() { return this.host.cover(); }
   arenaCover() { return this.host.arenaCover(); }
+  arenaRing() { return this.host.arenaRing(); }
   hp() { return this.host.hp(); }
   maxHp() { return this.host.maxHp(); }
 

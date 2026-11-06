@@ -76,22 +76,23 @@ function coverGap(x: number, z: number, cover: readonly Obstacle[]) {
 }
 
 export interface Job { px: number; pz: number; dx: number; dz: number }
-let lastJob: { key: number; cover: readonly Obstacle[]; job: Job } | null = null;
+let lastJob: { key: number; cover: readonly Obstacle[]; ring: number; job: Job } | null = null;
 
 /**
  * The parcel and the drop point of delivery number `n` (0 first), picked from `n` and `seed` (the round second the last delivery was
  * made in, shown by his client as `seed`): inside the ring, out of `cover` (the round's arena as it starts), 6 to 13 m apart. A pure
  * function: both screens get the same.
  */
-export function jobOf(n: number, seed: number, cover: readonly Obstacle[]): Job {
+export function jobOf(n: number, seed: number, cover: readonly Obstacle[], ring = 12): Job {
   const key = n * 1000 + seed;
-  if (lastJob && lastJob.key === key && lastJob.cover === cover) return lastJob.job;
+  if (lastJob && lastJob.key === key && lastJob.cover === cover && lastJob.ring === ring) return lastJob.job;
   const rnd = seeded(n * 7919 + seed * 104729 + 12345);
   const spot = () => {
     for (let i = 0; i < 40; i++) {
       const a = rnd() * Math.PI * 2, r = 1.5 + Math.sqrt(rnd()) * (RING_LIMIT - 1.5);
       const x = RING_X + Math.cos(a) * r, z = RING_Z + Math.sin(a) * r;
-      if (coverGap(x, z, cover) >= COVER_GAP) return { x, z };
+      // Past a ring a stage has shrunk: the next spot. A job that was inside it keeps its spots.
+      if (r <= ring - 1 && coverGap(x, z, cover) >= COVER_GAP) return { x, z };
     }
     return null;
   };
@@ -105,7 +106,7 @@ export function jobOf(n: number, seed: number, cover: readonly Obstacle[]): Job 
       if (gap >= 6 && gap <= 13) { job = { px: p.x, pz: p.z, dx: d.x, dz: d.z }; break; }
     }
   }
-  lastJob = { key, cover, job };
+  lastJob = { key, cover, ring, job };
   return job;
 }
 
@@ -205,7 +206,7 @@ export const courierTrait: Trait = {
   // The CPU playing him: walk to the parcel, then to the drop, unless the enemy is within 4 m.
   aiGoal(t) {
     if (t.enemyDistance() < 4) return null;
-    const job = jobOf(t.own('deliv'), t.own('seed'), t.arenaCover());
+    const job = jobOf(t.own('deliv'), t.own('seed'), t.arenaCover(), t.arenaRing());
     if (t.own('carry') > 0) return { x: job.dx, z: job.dz };
     return parcelSpot(t, job);
   },
@@ -221,7 +222,7 @@ export const courierTrait: Trait = {
   // The parcel, the drop point and the route, on both screens.
   marks(t) {
     syncBook(t);
-    const job = jobOf(t.own('deliv'), t.own('seed'), t.arenaCover());
+    const job = jobOf(t.own('deliv'), t.own('seed'), t.arenaCover(), t.arenaRing());
     const age = Math.max(0, t.time - t.own('seed'));
     const out: GroundMark[] = [{ x: job.dx, z: job.dz, kind: 'drop', age, life: 1e6 }];
     let ax: number, az: number;
@@ -276,7 +277,7 @@ export const courierTrait: Trait = {
   tick(t) {
     const b = syncBook(t);
     const p = t.self().group.position;
-    const n = t.own('deliv'), job = jobOf(n, t.own('seed'), t.arenaCover());
+    const n = t.own('deliv'), job = jobOf(n, t.own('seed'), t.arenaCover(), t.arenaRing());
     if (t.own('carry') > 0) {
       if (Math.hypot(p.x - job.dx, p.z - job.dz) > DROP_REACH) return;
       b.charge = Math.min(MAX_CHARGE, t.own('charge') + 1);
