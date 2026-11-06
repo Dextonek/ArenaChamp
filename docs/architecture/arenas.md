@@ -128,3 +128,10 @@ spells' red) for at least 1.2 s, then hits both heroes and their units alike.
   would see different cover and events. The `hazard` message does need the current server. `PROTOCOL` makes an old tab reload.
 - The two screens' fight clocks can be a few hundred ms apart, so a stage's cover can be gone on one screen and standing
   on the other for that long. A cast through it then counts on one screen only.
+- Sky Ruins' smaller ring also holds the drawn opponent on this screen (`moveFoe` → `keepInside`), so with that gap between
+  the clocks the opponent can be drawn up to about 1 m off for a moment. Hits are decided on the victim's screen, and the
+  position stream puts it right.
+- Last stand's tick tops out at the hub's 60 a hit, about 75 HP/s, while the hub allows 150 HP/s of heals. No kit is known to
+  keep that up, but "a long round always ends" is not proved until the balance run the design asks for.
+- If both heroes would fall on the same tick of Last stand, whichever `hazard` reaches the hub first loses the round; the
+  second is dropped, because the round is over by then. The hub could call it a draw (`winnerSide` -1); it does not.
