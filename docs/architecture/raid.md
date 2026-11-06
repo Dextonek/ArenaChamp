@@ -109,6 +109,8 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **Marks, stacks and meters stay on their owner's screen.** The partner's bar shows HP only.
 - **A hero behind the giant is hidden by it.** The camera looks over him from the south. Note for the art pass.
 - **Its body is wider than the walk planner assumes,** so it can clip a wall corner while walking.
+- **A hero's words and marks on the enemy still land on the boss** (`enemyLabel`, `marks`). Only `enemyScale` is off for it. Cosmetic.
+- **Vesper's Sanguine Feast reads the HP she has taken off the target,** which grows large against a boss. All 39 heroes ran with nothing odd, but it has not been looked at on its own.
 - **A reload or a lost connection ends that player's raid.** There is no way back in, and the other hero fights on.
 - **A deploy ends every raid,** as it ends every match.
 - **Not in yet:** the run (upgrades, Ash and Ember, tiers).
