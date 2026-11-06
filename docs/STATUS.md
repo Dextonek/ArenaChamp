@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-11-05_
+_Last updated: 2026-11-06_
 
 ## Current state (2026-11-05)
 Everything below is committed on `feat/particle-editor` unless marked. The 2026-11-02 and 2026-11-03 entries that
@@ -40,8 +40,8 @@ said "uncommitted" now name the commit that holds them.
 - **Checked:** `npm run test:server`, `npm run build` and the type check pass on `33efe70`. Online with bots through the real local server (`pipeline/tools/online-bot.js`), 13 pairs, all with rounds running, 0 errors and both screens agreeing on HP: Ledger v Puff, Bram v Zambini, Pim and Pom v Zambini, Wick v Silvane, Bram v Kaia, Gus v Mum, Yoko v Mabel, Shiori v Whiskers, Cleaver v Whistler, Bo v Silvane, Grandma v Mum, Pip v Barry, Hank v Whiskers. That testing found the server refusing the name "Mr. Ledger" (fixed). A local phone-size layout: login, Heroes table, hero detail, a fight with the touch controls, a tag from a tap. CPU levels against the balance AI, 24 fights each: Novice 0%, Easy 13%, Normal 38%, Hard 67%, Master 58% (noise about ±20).
 - **Known, not changed:** The 19 new heroes have no `ART_BIBLE` rows. `kit-tide.md`, `kit-bone.md`, `kit-shadow.md` and `kits-v5.md` show older numbers in places; the code is the truth. These files stay uncommitted on purpose: `blender/meshy/`, `docs/heroes/void-meshy-ingame_sheet.jpg`, `docs/heroes/void_meshy_15.png`, `docs/heroes/void_meshy_posed_15.png`.
 - **Cleaned up:** the bench worktree and its `launch.json` entry, preview servers, 18 throwaway local accounts (`v5check####`, `v5bot*`). The older local test accounts stay.
-- **Designed, not built (user, 2026-11-06):** `pipeline/designs/duels-and-raid.md`: Loser picks, Arenas that change, Friend brackets, Spectating and the Raid (two bosses with phases, upgrades between fights, one loss ends the run). No game code changed.
-- **Waiting on the user:** whether to raise Nyx (reported too strong before her nerf, a person playing her has not been measured) and Pim and Pom, and whether Gus, down to 33 at 39 fights after the goal rule, needs a longer run. For the design in `pipeline/designs/duels-and-raid.md`: (1) Last stand forces a long round to end, which changes the user's 2026-10-30 ruling of no time limit: yes or no; (2) the Raid solo first or co-op; (3) "one or two" bosses read as two boss fights in a run, the second a tag-team pair: correct or not; (4) the build order.
+- **Designed (user, 2026-11-06):** `pipeline/designs/duels-and-raid.md`: Loser picks, Arenas that change, Friend brackets, Spectating and the Raid. Decided by the user the same day: the Raid is co-op, a first boss then a second boss; Last stand stays, so a long round always ends (this changes the 2026-10-30 ruling of no time limit); the build order stands: version check, Loser picks, Arenas that change, Raid, brackets, spectating.
+- **Waiting on the user:** whether to raise Nyx (reported too strong before her nerf, a person playing her has not been measured) and Pim and Pom, and whether Gus, down to 33 at 39 fights after the goal rule, needs a longer run.
 - **Not checked by anyone yet:** a person playing any v5 kit, a real phone, two real people online.
 
 **Kit remake v5 (2026-11-04, user: "All kits should be remade")**
