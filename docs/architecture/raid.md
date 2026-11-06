@@ -189,6 +189,8 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   the partner's upgrades aren't sent: only the look differs.
 - **A hero's upgrades don't change the partner's replay.** A Glass Edge hit looks the same; the HP comes from the hub.
 - **The offers can run out.** Ten upgrades and two picks a tier: a long run ends up with fewer than three, then none.
+- **The clear card says 30 s but doesn't count down.** The hub ends the run for two when the wait is over, on whoever is still reading.
+- **Ember doesn't back away.** She wants 9 m, but with a hero closer than that she stands and casts. Tuning, not a fault.
 
 ## Tools
 

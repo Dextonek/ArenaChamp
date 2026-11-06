@@ -43,6 +43,8 @@ export class RaidController {
   private score: RaidScore = { tier: 1, bosses: 0, seconds: 0 };
   /** The boss just beaten was the last of its tier. */
   private lastOfTier = false;
+  /** How long the hub waits on the clear screen for both to go on. */
+  private clearedWait = 0;
 
   constructor(
     private net: NetClient,
@@ -191,7 +193,7 @@ export class RaidController {
     if (!this.lastOfTier) return null;
     return {
       title: 'RAID CLEARED',
-      text: `${scoreText(this.score)} The next tier is harder, and you keep your upgrades.${this.partner ? ' Both of you have to go on.' : ''}`,
+      text: `${scoreText(this.score)} The next tier is harder, and you keep your upgrades.${this.partner ? ` Both of you have to go on within ${this.clearedWait} s, or the run ends here.` : ''}`,
       again: `Go on to tier ${this.score.tier + 1}`,
     };
   }
@@ -201,6 +203,7 @@ export class RaidController {
     this.run++;
     this.score = { tier: m.tier, bosses: m.bosses, seconds: m.seconds };
     this.lastOfTier = m.last;
+    this.clearedWait = m.wait;
     clearInterval(this.moveTimer);
     this.link?.on.end('win');
   }
