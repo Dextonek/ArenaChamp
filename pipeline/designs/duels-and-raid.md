@@ -142,6 +142,10 @@ the smaller ring is a rule each client keeps, the same trust level as the rest o
 
 ## 3, 4 and 5. The Raid
 
+**As built (steps 3 and 4, 2026-11-06):** this section is the plan they were built from. The numbers and the changes from it are in
+`docs/architecture/raid.md` and `pipeline/designs/raid-build.md`. The biggest: the Sun Warden fights in his own Sun Court, not the
+Night Temple (user, 2026-11-06), and alone is always offline. Step 5, the run below, is not built.
+
 ### The run
 
 Two players open a raid room (a 4-letter code, the same as a lobby). Each picks a hero, kept for the whole run, and

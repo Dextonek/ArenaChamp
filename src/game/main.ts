@@ -17,6 +17,7 @@ import { ARENAS } from '../arenas';
 import { CpuMatch } from './cpu';
 import { CPU_LEVELS, cpuLevel } from '../cpuLevels';
 import { TOUCH } from '../touch';
+import { RaidController } from '../raid/coop';
 import { RaidRun } from '../raid/run';
 import { SUN_WARDEN } from '../raid/sunWarden';
 
@@ -167,7 +168,7 @@ function go(screen: Screen) {
 
 function render() {
   root.replaceChildren();
-  if (match.active || cpu.active || raid.active) { root.style.display = 'none'; return; }
+  if (match.active || cpu.active || raid.active || coop.active) { root.style.display = 'none'; return; }
   root.style.display = '';
   // Without an account: the login screen, or the CPU or Raid screen (an offline fight needs no account).
   if (!state.profile) {
@@ -429,6 +430,7 @@ function raidScreen() {
   const choice = cpuChoice(), hero = kitOf(choice);
   const busy = state.queue.on || !!state.lobby;
   const boss = SUN_WARDEN;
+  const code = el('input', { placeholder: 'CODE', maxlength: 4, class: 'code-in' }) as HTMLInputElement;
   return el('div', { class: 'cpu' },
     el('section', { class: 'card' },
       el('h2', {}, 'Raid'),
@@ -439,7 +441,17 @@ function raidScreen() {
       el('div', { class: 'row play-actions' },
         el('button', { class: 'btn primary big', disabled: busy, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name, boss: boss.id }) }, 'Start alone'),
         el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
+      state.profile
+        ? el('div', {},
+          el('h3', { class: 'gap' }, 'With a friend'),
+          el('p', { class: 'muted' }, 'Open a room and give your friend its code. A fallen hero lies where it fell until the other stands by it. If both are down, the raid is over.'),
+          el('div', { class: 'row' },
+            el('button', { class: 'btn', disabled: busy, onclick: () => net.send({ t: 'lobby_create', raid: boss.id }) }, 'Open a room'),
+            el('form', { class: 'row', onsubmit: (e: Event) => { e.preventDefault(); net.send({ t: 'lobby_join', code: code.value }); } },
+              code, el('button', { class: 'btn', type: 'submit', disabled: busy }, 'Join by code'))))
+        : el('p', { class: 'muted' }, 'Log in to raid with a friend.'),
       busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to start a raid.') : null,
+      state.profile?.raids?.played ? el('p', { class: 'muted small' }, `Raids: ${state.profile.raids.played} played, ${state.profile.raids.cleared} cleared${state.profile.raids.best ? `, fastest ${Math.floor(state.profile.raids.best / 60)}:${String(Math.floor(state.profile.raids.best % 60)).padStart(2, '0')}` : ''}.`) : null,
     ),
   );
 }
@@ -583,9 +595,9 @@ function lobbyScreen(l: LobbyState) {
   return el('div', { class: 'lobby' },
     el('section', { class: 'card' },
       el('div', { class: 'lobby-head' },
-        el('div', {}, el('div', { class: 'muted small' }, 'LOBBY CODE'), el('div', { class: 'code big' }, l.code)),
-        el('button', { class: 'btn ghost', onclick: () => net.send({ t: 'lobby_leave' }) }, 'Leave lobby')),
-      el('div', { class: 'seats' }, seat(me, true), el('div', { class: 'vs' }, 'VS'), seat(other, false)),
+        el('div', {}, el('div', { class: 'muted small' }, l.raid ? 'RAID ROOM CODE' : 'LOBBY CODE'), el('div', { class: 'code big' }, l.code)),
+        el('button', { class: 'btn ghost', onclick: () => net.send({ t: 'lobby_leave' }) }, l.raid ? 'Leave room' : 'Leave lobby')),
+      el('div', { class: 'seats' }, seat(me, true), el('div', { class: 'vs' }, l.raid ? '&' : 'VS'), seat(other, false)),
       el('h3', {}, 'Pick your hero'),
       heroPicker(me?.hero ?? '', other?.hero ? [other.hero] : [], (n) => {
         // Random is drawn at once here: the other player sees the hero and can't pick it.
@@ -624,8 +636,14 @@ const raid = new RaidRun(gameApi, loading, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'raid'; render(); },
 });
+const coop = new RaidController(net, gameApi, loading, {
+  onEnter: () => render(),
+  onExit: () => { state.screen = 'raid'; render(); net.send({ t: 'profile' }); },
+  onProfile: (p) => { state.profile = p; },
+  toast,
+});
 // The duel card's "Leave duel" / "Back to menu": ends whichever fight is on.
-gameApi.duel.onLeave = () => (raid.active ? raid.exit() : cpu.active ? cpu.exit() : match.exit());
+gameApi.duel.onLeave = () => (raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : match.exit());
 
 net.on('socket', (m) => {
   state.connected = m.open;
@@ -664,7 +682,7 @@ net.on('lobbies', (m) => {
   if (state.screen === 'lobbies' && !match.active) render();
 });
 net.on('lobby', (m) => {
-  const had = !!state.lobby;
+  const had = !!state.lobby, wasRaid = !!state.lobby?.raid;
   state.lobby = m.lobby;
   if (m.you !== undefined) state.lobbySeat = m.you;
   if (m.lobby && !had) {
@@ -677,7 +695,7 @@ net.on('lobby', (m) => {
       net.send({ t: 'lobby_pick', hero });
     }
   }
-  if (!m.lobby && state.screen === 'lobby') state.screen = 'lobbies';
+  if (!m.lobby && state.screen === 'lobby') state.screen = wasRaid ? 'raid' : 'lobbies';
   if (!match.active) render();
 });
 net.on('queue', (m) => {
@@ -689,4 +707,4 @@ net.connect();
 render();
 
 // Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`.
-(window as unknown as { game: unknown }).game = { state, net, match, cpu, raid, api: gameApi, go, render };
+(window as unknown as { game: unknown }).game = { state, net, match, cpu, raid, coop, api: gameApi, go, render };

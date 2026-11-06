@@ -406,6 +406,11 @@ export class HeroMode implements TouchTarget {
     this.figure.fall(t);
   }
 
+  /** Stands the fallen hero up again (a partner got it up in a raid). */
+  standHero() {
+    this.figure.stand();
+  }
+
   /**
    * A hit landed on the hero (the duel): the figure flinches away from `from` and flashes in the hit's colour, and the
    * camera shakes a little on big hits. `damage` is what got through; a fully shielded hit only flashes.

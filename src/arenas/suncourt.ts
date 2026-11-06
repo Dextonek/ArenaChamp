@@ -1,11 +1,12 @@
 import * as THREE from 'three';
+import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import { checkCameraRule, instanced, loadProps, merged, templeCover, type Place } from './temple';
 import type { ArenaDef, ArenaStage } from './types';
 
 /** How far the walkable court reaches from its centre: wider than a duel ring, because a giant fights here. */
-export const COURT_R = 16;
+export const COURT_R = RAID_BOSSES.sun.ring;
 
 const GOLD = 0xc9a24a;
 /** Screen walls on a ring round the altar, and columns further out that never break. Point-symmetric, none on the z axis. */

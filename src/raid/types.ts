@@ -38,6 +38,8 @@ export interface BossCast {
   seed: number;
   /** The hero it aims at. */
   target: RaidSide;
+  /** Only one hero was up when the move began: a move made for two plays its alone version. */
+  alone?: boolean;
 }
 
 /** Pale orange: leave. Gold: stand here. */
@@ -68,6 +70,12 @@ export interface Threat {
   shapeAt?(t: number): TelegraphShape;
   /** Parts of one move that report apart (Anchors). */
   part?: number;
+  /** A `stand` zone whose cost is shared by the heroes in it; those outside pay nothing, unless nobody is in it. */
+  split?: boolean;
+  /** This screen's hero stood in this zone when it landed. */
+  inside?: boolean;
+  /** The hub has said how many stood in it. */
+  settled?: boolean;
   /** Nothing is drawn for it. */
   hidden?: boolean;
   landed?: boolean;
@@ -202,8 +210,8 @@ export interface RaidEvents {
   phase(i: number): void;
   stagger(value: number): void;
   kneel(seconds: number): void;
-  /** Whether a `stand` zone of cast `id` was held. */
-  stood(id: number, part: number, held: boolean): void;
+  /** How many heroes stood in a `stand` zone of cast `id` when it landed. */
+  stood(id: number, part: number, count: number): void;
   /** A screen wall falls. */
   wall(index: number): void;
   end(result: 'win' | 'lose'): void;
@@ -218,7 +226,7 @@ export interface RaidLink {
   /** Which hero this screen plays. */
   readonly side: RaidSide;
   /** This screen runs the boss's brain. */
-  readonly brain: boolean;
+  brain: boolean;
   on: RaidEvents;
   /** The brain: a step of a move, to every screen. */
   cast(c: BossCast): void;
@@ -232,6 +240,13 @@ export interface RaidLink {
   wallSaved(index: number): void;
   /** This screen's hero fell. */
   heroDown(): void;
+  /** This screen's hero's HP now, for the partner's bar. */
+  heroHp(hp: number): void;
+  /** This screen's hero got the fallen partner up. */
+  revive(): void;
+  /** This screen's hero cast, or released an attack: the partner's screen replays it. */
+  heroCast(m: Record<string, unknown>): void;
+  heroAttack(id: number, mods: unknown): void;
   tick(dt: number): void;
   /** The boss's max HP in this raid. */
   readonly maxHp: number;
@@ -247,8 +262,14 @@ export interface BossWorld {
   pose(style: CastStyle, seconds: number, big: boolean): void;
   /** What watches the enemy's casts (Hemocurse, the Referee's count). */
   enemyCast(big: boolean): void;
+  /** The boss's walk from reports, on the screen that doesn't run its brain. */
+  place(x: number, z: number, yaw: number): void;
+  /** The boss's HP from whoever keeps it. */
+  setBossHp(hp: number): void;
   /** This screen's hero. */
   me(): THREE.Vector3;
+  /** It has fallen: nothing can hit it, and it stands in no zone. */
+  down(): boolean;
   /** The heroes the brain may aim at: on one screen just this one. */
   heroes(): { side: RaidSide; x: number; z: number; down: boolean }[];
   hitMe(h: BossHit): void;

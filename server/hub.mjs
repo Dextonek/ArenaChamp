@@ -8,7 +8,7 @@
 // landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
-import { PROTOCOL, RELOAD_TEXT } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RELOAD_TEXT } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
@@ -54,18 +54,33 @@ const HAZARD_MAX = 60; // one arena hazard hit
 const HAZARD_GAP_MS = 300; // the least time between two hazard hits on one hero
 const HERO_RE = /^[A-Za-z][A-Za-z.' -]{0,23}$/;
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+// The Raid. Two players, each owning their own hero's HP and telling the other (a cheat there only helps both). The boss's
+// HP, phase and stagger live here, because both must agree on them. One screen runs the boss's brain and the hub relays what
+// it decides. Damage from one screen is capped by the hit and by the second; both hit at most this hard.
+const BOSS_HIT_MAX = 600;
+const BOSS_SECOND_MAX = 1400;
+const BOSS_HP_GAP_MS = 100;
+const STAGGER_MAX = 60;
+const REVIVES = 2;
+// How long a gold zone waits for the other screen's report before it counts who it has (s).
+const STOOD_WAIT_MS = 1500;
+const MOVE_RE = /^[a-z]{1,16}$/;
+/** Stands in for the client of a player who left: nothing is sent there. */
+const GONE = /** @type {any} */ ({ closed: true, send() {} });
 
 /**
  * @typedef {{ send: (text: string) => void, name: string | null, lobby: Lobby | null, queued: { hero: string, since: number } | null,
  *   match: Match | null, side: number, chain: Promise<void>, closed: boolean }} Client
- * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[] }} Lobby
+ * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[], raid?: string | null }} Lobby
  * @typedef {{ client: Client, name: string, hero: string, first: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
  *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
- *   heals: { at: number, amount: number }[], rRecast?: boolean }} Player
+ *   heals: { at: number, amount: number }[], rRecast?: boolean, hazardAt?: number, down?: boolean, left?: boolean, dmgAt?: number, dmgSum?: number }} Player
+ * @typedef {{ id: string, hp: number, max: number, phase: number, gauge: number, kneelUntil: number, brain: number, revives: number[],
+ *   stood: Map<string, { count: number, from: Set<number>, timer: any }>, settled: Set<string>, walls: Set<number>, hpTimer: any, hpAt: number }} RaidBoss
  * @typedef {{ id: string, players: Player[], state: 'loading' | 'fight' | 'break' | 'over', created: number, startedAt: number,
  *   fightAt: number, round: number, score: number[], timer: any,
  *   pick: { side: number, at: number, next: () => void } | null,
- *   picked: { by: string, hero?: string, arena?: string } | null }} Match
+ *   picked: { by: string, hero?: string, arena?: string } | null, boss?: RaidBoss }} Match
  */
 
 /** @param {number} n */
@@ -159,7 +174,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         let code;
         do code = Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
         while (lobbies.has(code));
-        const lobby = { code, seats: [{ client: c, hero: null, ready: false }] };
+        // A raid room is a lobby too, joined by its code. It is not listed: a raid is between friends.
+        const lobby = { code, seats: [{ client: c, hero: null, ready: false }], raid: typeof m.raid === 'string' && RAID_BOSSES[m.raid] ? m.raid : null };
         lobbies.set(code, lobby);
         c.lobby = lobby;
         return lobbyChanged(lobby);
@@ -195,9 +211,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         lobbyChanged(lobby);
         if (lobby.seats.length === 2 && lobby.seats.every((s) => s.ready)) {
           lobbies.delete(lobby.code);
-          for (const s of lobby.seats) s.client.lobby = null;
+          for (const s of lobby.seats) {
+            s.client.lobby = null;
+            // The room is gone: the page must not offer "Back to lobby" after the fight.
+            send(s.client, { t: 'lobby', lobby: null });
+          }
           broadcastLobbies();
-          startMatch(lobby.seats.map((s) => ({ client: s.client, hero: /** @type {string} */ (s.hero) })));
+          const seats = lobby.seats.map((s) => ({ client: s.client, hero: /** @type {string} */ (s.hero) }));
+          if (lobby.raid) startRaid(seats, lobby.raid);
+          else startMatch(seats);
         }
         return;
       }
@@ -224,7 +246,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       case 'move': {
         const match = c.match;
         if (!match || match.state === 'over' || !num(m.x) || !num(m.z)) return;
-        const p = clampRing(m.x, m.z);
+        const p = clampRing(m.x, m.z, match.boss ? RAID_BOSSES[match.boss.id].ring : RING.r);
         return send(match.players[1 - c.side].client, {
           t: 'peer_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined,
           r: num(m.r) ? Math.max(0, Math.min(1000, m.r)) : undefined,
@@ -320,7 +342,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         // An arena hazard hit this client's hero: it decides where its hero stood, as with spells. It can KO; nobody
         // gets credit. The other screen draws it as a hit (id 0 names no cast).
         const match = c.match;
-        if (!match || match.state !== 'fight' || !num(m.damage) || m.damage <= 0) return;
+        if (!match || match.boss || match.state !== 'fight' || !num(m.damage) || m.damage <= 0) return;
         const me = match.players[c.side];
         const now = Date.now();
         if (now - (me.hazardAt ?? 0) < HAZARD_GAP_MS) return;
@@ -334,7 +356,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       }
       case 'took_hit': {
         const match = c.match;
-        if (!match || match.state !== 'fight' || !num(m.damage)) return;
+        if (!match || match.boss || match.state !== 'fight' || !num(m.damage)) return;
         const me = match.players[c.side];
         // Only a cast the other side really made, not long ago.
         const foe = match.players[1 - c.side];
@@ -384,11 +406,121 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       case 'match_leave': {
         const match = c.match;
         if (!match) return;
-        if (match.state !== 'over') endMatch(match, 1 - c.side, 'forfeit');
+        if (match.boss) raidLeave(match, c.side);
+        else if (match.state !== 'over') endMatch(match, 1 - c.side, 'forfeit');
         c.match = null;
         return;
       }
+      // --- the raid: from the screen that runs the boss's brain ---------------------------------------------------
+      case 'boss_cast': {
+        const boss = raidOf(c);
+        if (!boss || boss.brain !== c.side || typeof m.move !== 'string' || !MOVE_RE.test(m.move)) return;
+        if (![m.id, m.step, m.x, m.z, m.fx, m.fz, m.dir, m.seed].every(num) || (m.target !== 0 && m.target !== 1)) return;
+        return send(/** @type {Match} */ (c.match).players[1 - c.side].client, {
+          t: 'boss_cast', id: m.id, move: m.move, step: m.step, x: m.x, z: m.z, fx: m.fx, fz: m.fz, dir: m.dir, seed: m.seed, target: m.target, alone: m.alone === true,
+        });
+      }
+      case 'boss_move': {
+        const boss = raidOf(c);
+        if (!boss || boss.brain !== c.side || !num(m.x) || !num(m.z)) return;
+        const p = clampRing(m.x, m.z, RAID_BOSSES[boss.id].ring);
+        return send(/** @type {Match} */ (c.match).players[1 - c.side].client, { t: 'boss_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined });
+      }
+      // --- the raid: from either screen -------------------------------------------------------------------------------
+      case 'boss_damage': {
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || !num(m.amount) || m.amount <= 0) return;
+        const me = match.players[c.side], now = Date.now();
+        // Spells hit hard, but one screen can only do so much in a second.
+        if (now - (me.dmgAt ?? 0) >= 1000) { me.dmgAt = now; me.dmgSum = 0; }
+        const amount = Math.min(m.amount, BOSS_HIT_MAX, BOSS_SECOND_MAX - (me.dmgSum ?? 0));
+        if (amount <= 0) return;
+        me.dmgSum = (me.dmgSum ?? 0) + amount;
+        boss.hp = Math.max(0, boss.hp - amount);
+        const phases = RAID_BOSSES[boss.id].phases;
+        while (boss.phase < phases.length && boss.hp / boss.max <= phases[boss.phase]) {
+          boss.phase++;
+          for (const p of match.players) send(p.client, { t: 'boss_phase', phase: boss.phase });
+        }
+        sendBossHp(match);
+        if (boss.hp <= 0) raidEnd(match, 'cleared');
+        return;
+      }
+      case 'boss_stagger': {
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || !num(m.points) || m.points <= 0 || Date.now() < boss.kneelUntil) return;
+        const b = RAID_BOSSES[boss.id];
+        boss.gauge += Math.min(m.points, STAGGER_MAX);
+        if (boss.gauge >= b.staggerMax) {
+          boss.gauge = 0;
+          boss.kneelUntil = Date.now() + b.kneel * 1000;
+          for (const p of match.players) send(p.client, { t: 'boss_kneel', seconds: b.kneel });
+        }
+        for (const p of match.players) send(p.client, { t: 'boss_gauge', value: boss.gauge });
+        return;
+      }
+      case 'boss_stood': {
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || !num(m.id) || !num(m.part)) return;
+        const key = `${m.id}:${m.part}`;
+        // A report later than the wait finds the zone already counted.
+        if (boss.settled.has(key)) return;
+        let s = boss.stood.get(key);
+        if (!s) {
+          s = { count: 0, from: new Set(), timer: setTimeout(() => stoodDone(match, m.id, m.part), STOOD_WAIT_MS) };
+          boss.stood.set(key, s);
+        }
+        if (s.from.has(c.side)) return;
+        s.from.add(c.side);
+        if (m.inside === true) s.count++;
+        if (s.from.size >= match.players.filter((p) => !p.down && !p.left).length) stoodDone(match, m.id, m.part);
+        return;
+      }
+      case 'boss_wall': {
+        // A wall that saved a hero falls on both screens, once.
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || !num(m.index) || boss.walls.has(m.index)) return;
+        boss.walls.add(m.index);
+        for (const p of match.players) send(p.client, { t: 'boss_wall', index: m.index });
+        return;
+      }
+      case 'raid_hp': {
+        const match = c.match;
+        if (!raidOf(c) || !match || !num(m.hp)) return;
+        const me = match.players[c.side];
+        me.hp = Math.max(0, Math.min(me.max, Math.round(m.hp)));
+        return send(match.players[1 - c.side].client, { t: 'partner_hp', hp: me.hp, max: me.max });
+      }
+      case 'hero_down': {
+        const match = c.match;
+        if (!raidOf(c) || !match) return;
+        const me = match.players[c.side];
+        if (me.down) return;
+        me.down = true;
+        me.hp = 0;
+        for (const p of match.players) send(p.client, { t: 'peer_down', side: c.side });
+        if (match.players.every((p) => p.down || p.left)) raidEnd(match, 'lost');
+        return;
+      }
+      case 'revive': {
+        // From the partner, who stood by the fallen hero long enough. Twice a fight at most, per hero.
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match) return;
+        const side = 1 - c.side, target = match.players[side];
+        if (!target.down || target.left || match.players[c.side].down || boss.revives[side] >= REVIVES) return;
+        boss.revives[side]++;
+        target.down = false;
+        target.hp = Math.ceil(target.max / 2);
+        for (const p of match.players) send(p.client, { t: 'revived', side, hp: target.hp, left: REVIVES - boss.revives[side] });
+        return;
+      }
     }
+  }
+
+  /** The raid `c` is fighting right now, if any. @param {Client} c */
+  function raidOf(c) {
+    const match = c.match;
+    return match && match.state === 'fight' && Date.now() >= match.fightAt ? match.boss ?? null : null;
   }
 
   /** @param {Client} c @param {string} name @param {string} [token] */
@@ -430,14 +562,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     leaveLobby(c);
     leaveQueue(c);
     const match = c.match;
-    if (match && match.state !== 'over') endMatch(match, 1 - c.side, reason);
+    if (match?.boss) raidLeave(match, c.side);
+    else if (match && match.state !== 'over') endMatch(match, 1 - c.side, reason);
     c.match = null;
   }
 
   // --- lobbies --------------------------------------------------------------------------------------------
 
   function lobbyList() {
-    const list = [...lobbies.values()].filter((l) => l.seats.length < 2).map((l) => ({
+    const list = [...lobbies.values()].filter((l) => l.seats.length < 2 && !l.raid).map((l) => ({
       code: l.code, host: l.seats[0].client.name, hostHero: l.seats[0].hero,
     }));
     return { t: 'lobbies', list };
@@ -452,6 +585,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   function lobbyChanged(lobby) {
     const state = {
       code: lobby.code,
+      raid: lobby.raid ?? null,
       seats: lobby.seats.map((s) => ({ name: s.client.name, hero: s.hero, ready: s.ready })),
     };
     for (const s of lobby.seats) send(s.client, { t: 'lobby', lobby: state, you: lobby.seats.indexOf(s) });
@@ -617,6 +751,108 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     log(`match ${match.id} over: ${winner.name} wins ${match.score.join('-')} (${reason}, ${seconds} s)`);
   }
 
+  // --- raids ----------------------------------------------------------------------------------------------------
+
+  /** Two players against a boss. Alone is always offline: a raid here has two seats from start to end. @param {{ client: Client, hero: string }[]} seats @param {string} id */
+  function startRaid(seats, id) {
+    const b = RAID_BOSSES[id];
+    /** @type {Match} */
+    const match = {
+      id: randomHex(6),
+      players: seats.map((s) => ({
+        client: s.client, name: /** @type {string} */ (s.client.name), hero: s.hero, first: s.hero, max: HP, hp: HP, loaded: false,
+        casts: 0, hits: 0, dodges: 0, recent: new Map(), lastSlot: [-Infinity, -Infinity, -Infinity, -Infinity],
+        attacks: new Set(), lastAttack: -Infinity, heals: [], down: false, left: false,
+      })),
+      state: 'loading', created: Date.now(), startedAt: 0, fightAt: 0, round: 1, score: [0, 0], timer: null, pick: null, picked: null,
+      boss: { id, hp: b.hp.duo, max: b.hp.duo, phase: 0, gauge: 0, kneelUntil: 0, brain: 0, revives: [0, 0], stood: new Map(), settled: new Set(), walls: new Set(), hpTimer: null, hpAt: 0 },
+    };
+    match.players.forEach((p, side) => {
+      p.client.match = match;
+      p.client.side = side;
+      const other = match.players[1 - side];
+      send(p.client, { t: 'raid_start', id: match.id, side, boss: id, hp: b.hp.duo, you: { name: p.name, hero: p.hero }, partner: { name: other.name, hero: other.hero } });
+    });
+    match.timer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
+    log(`raid ${match.id}: ${match.players.map((p) => `${p.name} (${p.hero})`).join(' and ')} against ${id}`);
+    broadcastLobbies();
+  }
+
+  /** The boss's HP to both, at most ten times a second, and always the last one. @param {Match} match */
+  function sendBossHp(match) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
+    if (boss.hpTimer) return;
+    const go = () => {
+      boss.hpTimer = null;
+      boss.hpAt = Date.now();
+      for (const p of match.players) send(p.client, { t: 'boss_hp', hp: boss.hp });
+    };
+    const wait = BOSS_HP_GAP_MS - (Date.now() - boss.hpAt);
+    if (wait <= 0) go();
+    else boss.hpTimer = setTimeout(go, wait);
+  }
+
+  /** A gold zone is decided: how many heroes stood in it. @param {Match} match @param {number} id @param {number} part */
+  function stoodDone(match, id, part) {
+    const boss = match.boss, key = `${id}:${part}`, s = boss?.stood.get(key);
+    if (!boss || !s) return;
+    clearTimeout(s.timer);
+    boss.stood.delete(key);
+    boss.settled.add(key);
+    if (match.state !== 'fight') return;
+    for (const p of match.players) send(p.client, { t: 'boss_stood', id, part, count: s.count });
+  }
+
+  /**
+   * Someone leaves a raid (a closed socket and a reload count too: there is no way back into a running fight). The other
+   * hero fights on with the boss as it stands, and takes over its brain if the leaver ran it.
+   * @param {Match} match @param {number} side
+   */
+  function raidLeave(match, side) {
+    const me = match.players[side], boss = match.boss;
+    if (!boss || me.left) return;
+    if (match.state !== 'over') {
+      me.left = true;
+      accounts.recordRaid(me.name, { at: new Date().toISOString(), hero: me.hero, partner: match.players[1 - side].name, boss: boss.id, result: 'left', seconds: raidSeconds(match) });
+    }
+    me.client = GONE;
+    if (match.state === 'over') return;
+    const other = match.players[1 - side];
+    // Nobody left who can fight: it is over. Someone waiting on a load goes on alone.
+    if (other.left || other.down) return raidEnd(match, 'lost');
+    if (match.state === 'loading' && match.players.every((p) => p.loaded || p.left)) fight(match);
+    send(other.client, { t: 'partner_left' });
+    if (boss.brain === side) {
+      boss.brain = 1 - side;
+      send(other.client, { t: 'boss_brain' });
+    }
+  }
+
+  /** @param {Match} match */
+  function raidSeconds(match) {
+    return Math.max(0, Math.round((Date.now() - (match.startedAt || match.created)) / 100) / 10);
+  }
+
+  /** @param {Match} match @param {'cleared' | 'lost'} result */
+  function raidEnd(match, result) {
+    const boss = match.boss;
+    if (!boss || match.state === 'over') return;
+    clearTimeout(match.timer);
+    clearTimeout(boss.hpTimer);
+    for (const s of boss.stood.values()) clearTimeout(s.timer);
+    boss.stood.clear();
+    match.state = 'over';
+    const seconds = raidSeconds(match), at = new Date().toISOString();
+    match.players.forEach((p, side) => {
+      if (p.left) return;
+      accounts.recordRaid(p.name, { at, hero: p.hero, partner: match.players[1 - side].name, boss: boss.id, result, seconds });
+      const a = accounts.get(p.name);
+      send(p.client, { t: 'raid_end', result, seconds, bossHp: boss.hp, bossMax: boss.max, profile: a ? accounts.profile(a) : null });
+      p.client.match = null;
+    });
+    log(`raid ${match.id} over: ${result} (${seconds} s)`);
+  }
+
   /** @param {Client} c */
   function player(c) {
     return c.match?.players[c.side];
@@ -662,8 +898,8 @@ function validHero(h) {
   return typeof h === 'string' && HERO_RE.test(h);
 }
 
-/** A position kept inside the duel ring. @param {number} x @param {number} z */
-function clampRing(x, z) {
-  const dx = x - RING.x, dz = z - RING.z, d = Math.hypot(dx, dz), r = RING.r - 0.5;
+/** A position kept inside the ring (a raid's room is wider). @param {number} x @param {number} z @param {number} [ring] */
+function clampRing(x, z, ring = RING.r) {
+  const dx = x - RING.x, dz = z - RING.z, d = Math.hypot(dx, dz), r = ring - 0.5;
   return d > r ? { x: RING.x + (dx / d) * r, z: RING.z + (dz / d) * r } : { x, z };
 }

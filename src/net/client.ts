@@ -37,6 +37,8 @@ export interface Profile {
   favourite: string | null;
   heroes: Record<string, HeroStats>;
   history: MatchRecord[];
+  /** Raids apart from the duel record: how many, how many cleared, the fastest clear (s). */
+  raids?: { played: number; cleared: number; best: number };
 }
 
 /** What a round's loser chose: a hero swap or the next arena. */
@@ -48,6 +50,8 @@ export interface RoundPick {
 
 export interface LobbyState {
   code: string;
+  /** A raid room: the boss's id. */
+  raid?: string | null;
   seats: { name: string; hero: string | null; ready: boolean }[];
 }
 
@@ -85,6 +89,21 @@ export type ServerMsg =
     t: 'match_end'; id: string; result: 'win' | 'loss'; winner: string; reason: string; seconds: number; score?: number[]; hp: number[];
     stats: { casts: number; hits: number; dodges: number }; profile: Profile | null;
   }
+  | { t: 'raid_start'; id: string; side: 0 | 1; boss: string; hp: number; you: { name: string; hero: string }; partner: { name: string; hero: string } }
+  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: 0 | 1 }
+  | { t: 'boss_move'; x: number; z: number; yaw: number; ts?: number }
+  | { t: 'boss_hp'; hp: number }
+  | { t: 'boss_phase'; phase: number }
+  | { t: 'boss_gauge'; value: number }
+  | { t: 'boss_kneel'; seconds: number }
+  | { t: 'boss_stood'; id: number; part: number; count: number }
+  | { t: 'boss_wall'; index: number }
+  | { t: 'partner_hp'; hp: number; max: number }
+  | { t: 'peer_down'; side: 0 | 1 }
+  | { t: 'revived'; side: 0 | 1; hp: number; left: number }
+  | { t: 'partner_left' }
+  | { t: 'boss_brain' }
+  | { t: 'raid_end'; result: 'cleared' | 'lost'; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }
   | { t: 'socket'; open: boolean };
 
 type Handler<T extends ServerMsg['t']> = (msg: Extract<ServerMsg, { t: T }>) => void;

@@ -13,6 +13,8 @@ const STAND_ALPHA = 1;
 const UNIT_HIT = 60;
 /** The margin (m) an AI keeps round a zone. */
 const MARGIN = 0.5;
+/** How long a cast stays to hear a gold zone's result: longer than the hub waits for the other screen (s). */
+const STOOD_WAIT = 2.5;
 
 interface Active {
   cast: BossCast;
@@ -62,6 +64,9 @@ export class BossScript {
     if (!move) return;
     this.eventId++;
     const played = move.play(cast, this.ctx);
+    // A gold zone waits for its result from the hub, which waits for the other screen.
+    const gold = played.threats.filter((th) => th.kind === 'stand').map((th) => th.at + STOOD_WAIT);
+    if (gold.length) played.duration = Math.max(played.duration, ...gold);
     const leave = new TelegraphLayer(), stand = new TelegraphLayer();
     const spec = (th: Threat): TelegraphSpec => ({ shape: th.shape, start: th.show ?? 0, impact: th.at, until: th.to });
     const shown = played.threats.filter((th) => !th.hidden && !th.shapeAt);
@@ -103,9 +108,11 @@ export class BossScript {
   /** The first moment of a threat: a gold zone reports who stands in it, an orange one hits who does. */
   private land(a: Active, th: Threat, t: number) {
     const me = this.world.me();
-    const inside = insideTelegraph(this.shapeOf(th, t), me.x, me.z);
+    const inside = !this.world.down() && insideTelegraph(this.shapeOf(th, t), me.x, me.z);
     if (th.kind === 'stand') {
-      this.link.stood(a.cast.id, th.part ?? 0, inside);
+      th.inside = inside;
+      // A fallen hero's screen has nothing to report: the hub counts the heroes standing.
+      if (!this.world.down()) this.link.stood(a.cast.id, th.part ?? 0, inside);
       return;
     }
     if (inside) this.strike(a, th, t);
@@ -117,7 +124,7 @@ export class BossScript {
 
   private tickZone(a: Active, th: Threat, t: number) {
     const me = this.world.me();
-    if (!insideTelegraph(this.shapeOf(th, t), me.x, me.z)) return;
+    if (this.world.down() || !insideTelegraph(this.shapeOf(th, t), me.x, me.z)) return;
     if (th.lastHit !== undefined && t - th.lastHit < (th.every ?? 1)) return;
     this.strike(a, th, t);
   }
@@ -137,18 +144,28 @@ export class BossScript {
     this.world.hitMe({ share: th.share, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
   }
 
-  /** A `stand` zone's result, from whoever keeps it: if nobody held it, everyone pays. */
-  stood(id: number, part: number, held: boolean) {
+  /**
+   * A `stand` zone's result, from whoever keeps it. If nobody stood in it, everyone pays in full. A zone that splits (Shared
+   * Burden) costs those in it a share each and those outside nothing; any other (Anchors) is simply held.
+   */
+  stood(id: number, part: number, count: number) {
     const a = this.active.find((x) => x.cast.id === id);
     if (!a) return;
     const th = a.played.threats.find((x) => x.kind === 'stand' && (x.part ?? 0) === part);
-    if (!th) return;
-    if (held) {
-      this.world.say('HELD', '#ffe27a', this.world.me().x, this.world.me().z);
+    // A late report can't settle a zone twice.
+    if (!th || th.settled) return;
+    th.settled = true;
+    const hit = (share: number) => this.world.hitMe({ share, from: { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: true });
+    if (count <= 0) {
+      this.ctx.flash('rgba(255,214,120,0.8)', 0.45);
+      hit(th.share);
       return;
     }
-    this.ctx.flash('rgba(255,214,120,0.8)', 0.45);
-    this.world.hitMe({ share: th.share, from: { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: true });
+    if (th.split) {
+      if (th.inside) hit(th.share / count);
+      return;
+    }
+    this.world.say('HELD', '#ffe27a', this.world.me().x, this.world.me().z);
   }
 
   /** Whether (x, z) is hit, or will be within `within` seconds. The AI's walk-out check. */

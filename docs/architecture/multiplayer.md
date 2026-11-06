@@ -131,6 +131,12 @@ live in this browser's `localStorage` (`cpu.level`, `cpu.foe`, `cpu.hero` withou
 `cpu.won.<account or guest>`). Fight is disabled while the player is queued or in a lobby, since a `match_start`
 would take the scene over.
 
+## The Raid
+
+A raid room is a lobby with `raid: <boss id>`: `lobby_create { raid }`, joined by its code, not on the public list. When both are
+ready the hub sends `raid_start` instead of `match_start`, and `match_loaded` and `match_fight` work as in a match. The relays of
+`move`, `cast` and `attack` are the same; the rest has its own messages and rules: [raid.md](raid.md). Alone is always offline.
+
 ## Messages
 
 Client → server:

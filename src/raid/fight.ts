@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { StatusKind } from '../effects/status';
 import { BossBrain } from './brain';
 import { BossHud } from './hud';
+import { Track } from './partner';
 import { BossScript } from './script';
 import type { BossCast, BossDef, BossWorld, RaidLink } from './types';
 
@@ -9,8 +10,6 @@ import type { BossCast, BossDef, BossWorld, RaidLink } from './types';
 const STAGGER_PER_SECOND: Partial<Record<StatusKind, number>> = { stun: 22, knockup: 26, root: 14, charm: 22, sealed: 22, silence: 12, blind: 8 };
 /** Slow works at half length: a boss can't be walked away from for free. */
 const SLOW_SHARE = 0.5;
-/** How long a big move leaves it open (s), and what that and kneeling add to the damage it takes. */
-export const EXPOSED_TAKEN = 0.5;
 
 /**
  * One boss fight on this screen: it ties the brain (if this screen runs it), the script, the HUD and the link together.
@@ -20,22 +19,28 @@ export class BossFight {
   readonly group = new THREE.Group();
   readonly script: BossScript;
   private brain: BossBrain | null;
+  /** The boss's walk from reports, when another screen runs its brain. */
+  private track: Track | null;
   private over = false;
-  /** Which move felled the hero last (the raid tool's report). */
+  /** This screen's hero has fallen. */
+  meDown = false;
+  /** Which move hit this hero last (the raid tool's report). */
   killedBy = '';
   /** This fight's results so far, for the raid tool. */
   stats = { hits: {} as Record<string, number>, kneels: 0, phases: 0 };
 
-  constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, seed: string, readonly hud: BossHud) {
+  constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud) {
     this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength) });
     this.group.add(this.script.group);
     this.brain = link.brain ? new BossBrain(def, world, link, seed) : null;
+    this.track = link.brain ? null : new Track();
     link.on = {
       cast: (c) => this.onCast(c),
+      hp: (hp) => world.setBossHp(hp),
       phase: (i) => this.onPhase(i),
       stagger: (v) => hud.setGauge(v / def.staggerMax),
       kneel: (s) => this.onKneel(s),
-      stood: (id, part, held) => this.script.stood(id, part, held),
+      stood: (id, part, count) => this.script.stood(id, part, count),
       wall: (i) => world.breakWall(i),
       end: (r) => this.end(r),
     };
@@ -72,6 +77,20 @@ export class BossFight {
     this.hud.setState('EXPOSED', seconds);
   }
 
+  /** The other screen ran the brain and left: this one takes over, at the next move. What is in the air goes on. */
+  takeBrain() {
+    if (this.brain) return;
+    this.link.brain = true;
+    this.track = null;
+    this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, 100000);
+    this.brain.resume(this.stats.phases);
+  }
+
+  /** The boss's walk, reported by the screen that runs its brain. */
+  bossMove(x: number, z: number, yaw: number, ts?: number) {
+    this.track?.push(x, z, yaw, ts);
+  }
+
   /**
    * A status on the boss, before it lands: hard control doesn't hold it, it fills the gauge. Returns how long the status
    * may run (0: not at all).
@@ -89,8 +108,8 @@ export class BossFight {
   }
 
   /** This screen's hero fell. */
-  heroDown(move: string) {
-    this.killedBy = move;
+  heroDown() {
+    this.meDown = true;
     this.link.heroDown();
   }
 
@@ -111,6 +130,8 @@ export class BossFight {
     this.hud.update(dt);
     this.hud.setHp(hp, this.link.maxHp);
     this.link.tick(dt);
+    const s = this.track?.sample();
+    if (s) this.world.place(s.x, s.z, s.yaw);
     if (live && !this.over) this.brain?.update(dt);
     this.script.update(dt, live && !this.over);
   }

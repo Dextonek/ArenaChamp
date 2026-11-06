@@ -4,6 +4,74 @@
 //   eval(await (await fetch('/pipeline/tools/raid-check.js')).text());
 //   await _raidCheck()    // { ok, failed: [...], rows: [...] }
 (() => {
+  // Every hero's four spells and basic attack replayed as a partner: nothing in them may touch this screen's hero or the boss.
+  //   _raidPartners(['Lyra', 'Bram'])  in the background; _raidPartners.result() when done
+  let partners = { done: true, rows: [], errors: [] };
+  window._raidPartners = (names) => {
+    if (!partners.done) return 'already running';
+    partners = { done: false, rows: [], errors: [], n: 0 };
+    const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
+    (async () => {
+      const d = vfx.duel, a = vfx.arena;
+      const { SUN_WARDEN: def } = await import('/src/raid/sunWarden.ts');
+      const { LocalLink } = await import('/src/raid/link.ts');
+      const { HERO_KITS } = await import('/src/heroes.ts');
+      const V = a.caster.group.position.constructor;
+      let simMs = performance.now();
+      performance.now = () => simMs;
+      const step = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { simMs += 1000 / 60; vfx.step(1 / 60); } };
+      const logError = console.error;
+      let now = '';
+      console.error = (...x) => { if (partners.errors.length < 20) partners.errors.push(`${now}: ${x.map((v) => String(v?.stack ?? v)).join(' ').slice(0, 300)}`); logError(...x); };
+      vfx.view.paused = true;
+      if (!d.on) vfx.setDuel(true, 'play');
+      d.holdStart = false;
+      try {
+        for (const name of names) {
+          const kit = HERO_KITS.find((k) => k.name === name);
+          vfx.heroPickCtrl.setValue(name === 'Lyra' ? 'Bram' : 'Lyra');
+          for (let slot = 0; slot < 5; slot++) {
+            now = `${name} slot ${slot}`;
+            // A fresh fight: the hero to one side and the partner to the other, the boss between them.
+            const link = new LocalLink(def);
+            d.startBoss({ def, link, seed: 'partners', mode: 'play', name: 'me', partner: { kit, name: 'partner' } });
+            d.boss.brain.pause = 1e9;
+            a.placeFoe(d.foe, new V(0, 0, 7.5 + 1));
+            a.obstacles = [];
+            const me = a.caster.group.position;
+            me.set(-6, 0, 11);
+            d.partnerMove(6, 11, 0, undefined);
+            step(0.2);
+            const before = { hp: d.playerHp, boss: a.hpOf(d.foe), x: me.x, z: me.z, units: a.summons.alive('opponent').length + a.summons.alive('hero').length };
+            if (slot < 4) {
+              const spell = kit.spells[slot], spec = vfx.targeting?.(spell.label);
+              const b = d.foe.group.position;
+              d.partnerCast({ id: 1, slot, x: b.x, z: b.z, fx: 6, fz: 11, enemy: true, yaw: Math.atan2(b.x - 6, b.z - 11), bend: spell.aim === 'arc' ? 0.6 : undefined });
+              void spec;
+            } else d.partnerAttack();
+            step(3.5);
+            const st = a.statusOf(a.caster);
+            const row = {
+              hp: d.playerHp - before.hp, boss: a.hpOf(d.foe) - before.boss, moved: Math.hypot(me.x - before.x, me.z - before.z),
+              status: !!st && (st.stunned || st.cannotMove || st.cannotCast || st.speedMul !== 1), buffs: st?.activeBuffs().length ?? 0,
+              units: a.summons.alive('opponent').length + a.summons.alive('hero').length - before.units,
+            };
+            partners.n++;
+            if (row.hp || row.boss || row.moved > 0.001 || row.status || row.buffs || row.units) partners.rows.push({ name, slot, ...row });
+            await tick();
+          }
+        }
+      } catch (e) {
+        partners.errors.push(`${now}: ${String(e?.stack ?? e)}`);
+      }
+      delete performance.now;
+      console.error = logError;
+      partners.done = true;
+    })();
+    return 'started';
+  };
+  window._raidPartners.result = () => partners;
+
   window._raidCheck = async (hero = 'Lyra') => {
     const d = vfx.duel, a = vfx.arena;
     const { SUN_WARDEN: def } = await import('/src/raid/sunWarden.ts');

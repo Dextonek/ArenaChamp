@@ -5,6 +5,9 @@ one says in what order it gets built, the rules the code keeps so co-op stays po
 Written 2026-11-06, after reading `src/duel.ts`, `src/arena.ts`, `src/arenas/hazards/`, `src/game/match.ts` and
 `server/hub.mjs`.
 
+**As built, 2026-11-06:** slices 1 to 4 are done, plus the Sun Court the user asked for on the way. Slice 5 is not started. How it
+all works now: [docs/architecture/raid.md](../../docs/architecture/raid.md). This file stays as the plan it was built from.
+
 ## The rules the code keeps
 
 These four are what stops step 4 from being a rewrite of step 3.
@@ -27,10 +30,13 @@ These four are what stops step 4 from being a rewrite of step 3.
 | `BossScript extends ArenaHazard` | A class of its own, with the same `danger`, `active` and `eventId`, so the CPU code reads either | `ArenaHazard` runs one event at a time, in one colour, on a fixed schedule, with one lockout, all private. Walking Sun runs alongside other moves, and gold and orange zones show together |
 | A room can start with one player on the server | **Alone is always offline.** Only two-player raids reach the hub | Every relay case in the hub says `players[1 - c.side]`. With always two seats, the only guard needed is for someone who left. A one-seat room adds a class of bugs and gives nothing |
 | Stats for a solo run on the account | Not in the first version | Follows from the line above. Can be sent at the end of a run later |
+| The Sun Warden in the Night Temple | **His own room, the Sun Court** (user, 2026-11-06: "different dedicated arena for the raid") | A wider court with cover laid out for his moves. Ash and Ember get their own when they are built |
+| `boss_hit` with caps on the hub | **Each client owns its hero's HP** and reports it (`raid_hp`) | A cheat there only helps both players. The boss's HP stays on the hub with caps, because both add to it |
+| Shared Burden's circle follows the target | **It stays where the target stood** | Nobody needs the other hero's exact position to draw it. If nobody stands in it, everyone pays in full |
 
 Also new: a **`?raid` switch**. The Raid's button only shows at `/game?raid` until steps 3 and 4 are both done. So the
 finished arena work can still be pushed and deployed at any time, and nothing of the Raid shows to players, which is
-the design's rule. Removing the switch is the last act of step 4.
+the design's rule. Whether it comes off after step 4 or waits for the run around the bosses is the user's call.
 
 ## Small hooks outside `src/raid/`
 

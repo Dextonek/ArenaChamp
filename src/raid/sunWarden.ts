@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
 import { COURT_R, sunCourtArena } from '../arenas/suncourt';
 import { GlowBeam } from '../arenas/hazards/fx';
@@ -190,6 +191,32 @@ const sunOrder: BossMove = {
   },
 };
 
+/**
+ * A gold circle where the target stood, too heavy for one hero: its cost is split between the heroes in it, and if nobody is
+ * in it everyone pays in full. Only with two players. Come together, right after a move that spread you out.
+ */
+const sharedBurden: BossMove = {
+  id: 'burden', name: 'Shared Burden', charge: 3, lock: 3.4, cooldown: 18, coop: true, pose: 'raise',
+  aim: atTarget,
+  play(c, p) {
+    const radius = 2.4, at = 3;
+    const light = new LightPillar(c.x, c.z, radius, 7, STAND_COLOR);
+    p.group.add(light.mesh);
+    return {
+      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, kind: 'stand', split: true, at, share: 0.4, part: 0 }],
+      duration: at + 0.5,
+      look: {
+        update(t) { light.opacity = t < at ? 0.3 + 0.35 * (t / at) : Math.max(0, 0.65 * (1 - (t - at) * 2)); },
+        land() {
+          p.sparks.emit(c.x, 0.4, c.z, 30, 3.4, 4, 0.8, STAND_COLOR);
+          p.glows.flash(c.x, c.z, radius, GLOW, 0.6, 0.4);
+        },
+        dispose: () => light.dispose(),
+      },
+    };
+  },
+};
+
 // --- phase 3, Last Light: everything at once ----------------------------------------------------------------------
 
 /** Near him, far from him, near again. Read and swap. */
@@ -225,8 +252,8 @@ const anchors: BossMove = {
     const rng = seeded(c.seed);
     const base = rng() * Math.PI * 2, radius = 2.3, out = 7.6, at = 3;
     const spot = (i: number) => ({ x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out });
-    // Alone each step is one circle. Together the first step is both, and the second does nothing.
-    const parts = p.solo ? [c.step] : c.step === 0 ? [0, 1] : [];
+    // With one hero up each step is one circle. With two the first step is both, and the second does nothing.
+    const parts = c.alone ?? p.solo ? [c.step] : c.step === 0 ? [0, 1] : [];
     const lights: LightPillar[] = [];
     const threats: Threat[] = parts.map((i) => {
       const s = spot(i);
@@ -335,6 +362,8 @@ const noSpell = (key: HeroKey): HeroSpell => ({ key, label: '', name: '', range:
 
 /** A placeholder until the fight is proven: a hero's model, drawn big. The art comes after a person has played it. */
 const MODEL = 'models/heroes/mason_v2.glb';
+/** What the hub keeps online: one source for both. */
+const NUMBERS = RAID_BOSSES.sun;
 
 export const SUN_WARDEN: BossDef = {
   id: 'sun',
@@ -346,20 +375,20 @@ export const SUN_WARDEN: BossDef = {
     name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, maxHp: hp,
     spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],
   } as HeroKit),
-  hp: { solo: 3200, duo: 5600 },
+  hp: NUMBERS.hp,
   scale: 2,
   body: { radius: 1.2, height: 5.4 },
   speed: 2,
   keepAt: 4.5,
-  staggerMax: 100,
-  kneel: 6,
+  staggerMax: NUMBERS.staggerMax,
+  kneel: NUMBERS.kneel,
   phasePause: 2.5,
   phases: [
     { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray'], gap: [2.4, 3.4] },
-    { name: 'High Noon', at: 0.7, moves: ['sweep', 'pillars', 'ray', 'noon', 'order'], opener: 'noon', gap: [2, 3] },
-    { name: 'Last Light', at: 0.35, moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
+    { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
+    { name: 'Last Light', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
   ],
-  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, noon, order: sunOrder, eclipse, anchors, walking: walkingSun },
+  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, noon, order: sunOrder, burden: sharedBurden, eclipse, anchors, walking: walkingSun },
   /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
   late: () => ({
     offset: -255,

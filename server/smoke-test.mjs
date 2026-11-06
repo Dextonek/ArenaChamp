@@ -326,6 +326,143 @@ try {
     e.close(); f.close();
   }
 
+  // A raid: a room only its code opens, the boss's HP and phases kept here, a fall and a revive, a clear.
+  {
+    const [GINA, HAL] = ['gina', 'hal'].map((n) => n + tag);
+    const g = await client(), h = await client();
+    g.send({ t: 'register', name: GINA, password: 'pw1234' });
+    h.send({ t: 'register', name: HAL, password: 'pw1234' });
+    await g.next('session');
+    await h.next('session');
+    g.send({ t: 'lobby_create', raid: 'sun' });
+    const room = (await g.next('lobby')).lobby;
+    check(room.raid === 'sun', 'a raid room opens');
+    h.send({ t: 'lobbies' });
+    const listed = await h.next('lobbies');
+    check(!listed.list.some((/** @type {{ code: string }} */ l) => l.code === room.code), 'a raid room is not on the public list');
+    h.send({ t: 'lobby_join', code: room.code });
+    await h.next('lobby');
+    g.send({ t: 'lobby_pick', hero: 'Lyra' });
+    g.send({ t: 'lobby_ready', ready: true });
+    h.send({ t: 'lobby_pick', hero: 'Bram' });
+    h.send({ t: 'lobby_ready', ready: true });
+    const rg = await g.next('raid_start'), rh = await h.next('raid_start');
+    check(rg.side === 0 && rh.side === 1 && rg.partner.hero === 'Bram' && rh.partner.hero === 'Lyra' && rg.boss === 'sun', 'a raid starts with both heroes');
+    g.send({ t: 'match_loaded', maxHp: 520 });
+    h.send({ t: 'match_loaded', maxHp: 800 });
+    await g.next('match_fight');
+    await h.next('match_fight');
+    g.send({ t: 'boss_damage', amount: 100 });
+    h.send({ t: 'hero_down' });
+    await wait(3200);
+
+    // The brain's casts and walk reach the other screen, and only from the screen that runs it.
+    const castMsg = { t: 'boss_cast', id: 7, move: 'sweep', step: 0, x: 1, z: 2, fx: 0, fz: 0, dir: 0.5, seed: 9, target: 1 };
+    h.send({ ...castMsg, id: 8 });
+    g.send(castMsg);
+    const cast = await h.next('boss_cast');
+    check(cast.id === 7 && cast.move === 'sweep' && cast.target === 1, 'the brain\'s cast is relayed, and the other screen\'s is not');
+    g.send({ t: 'boss_move', x: 50, z: 7, yaw: 1 });
+    check(Math.abs((await h.next('boss_move')).x - 15.5) < 1e-6, 'the boss\'s walk is relayed, clamped to its wider room');
+    g.send({ t: 'move', x: 50, z: 7, yaw: 1 });
+    check(Math.abs((await h.next('peer_move')).x - 15.5) < 1e-6, 'a hero\'s walk too');
+
+    // The hub keeps the boss's HP: hits from both, capped, and sent to both.
+    g.send({ t: 'boss_damage', amount: 300 });
+    check((await g.next('boss_hp')).hp === 6200 && (await h.next('boss_hp')).hp === 6200, 'hits come off the boss and both hear it');
+    g.send({ t: 'boss_damage', amount: 99999 });
+    await wait(150);
+    check((await g.next('boss_hp')).hp === 5600, 'one hit is capped');
+    await h.next('boss_hp');
+    await wait(1050);
+    // Into the second phase (70 % of 6500 is 4550).
+    h.send({ t: 'boss_damage', amount: 600 });
+    await wait(150);
+    h.send({ t: 'boss_damage', amount: 600 });
+    check((await g.next('boss_phase')).phase === 1 && (await h.next('boss_phase')).phase === 1, 'the phase changes on both screens');
+
+    // The gauge: stagger from either screen, a full one kneels both.
+    g.send({ t: 'boss_stagger', points: 60 });
+    check((await h.next('boss_gauge')).value === 60, 'control fills the gauge');
+    h.send({ t: 'boss_stagger', points: 999 });
+    check((await g.next('boss_kneel')).seconds === 6 && (await h.next('boss_kneel')).seconds === 6, 'a full gauge makes it kneel, on both');
+    await g.next('boss_gauge');
+    await g.next('boss_gauge');
+    await h.next('boss_gauge');
+
+    // A gold zone counts who stood in it, once both have said.
+    g.send({ t: 'boss_stood', id: 20, part: 0, inside: true });
+    h.send({ t: 'boss_stood', id: 20, part: 0, inside: false });
+    check((await g.next('boss_stood')).count === 1 && (await h.next('boss_stood')).count === 1, 'a gold zone counts its heroes');
+    g.send({ t: 'boss_wall', index: 3 });
+    h.send({ t: 'boss_wall', index: 3 });
+    check((await g.next('boss_wall')).index === 3 && (await h.next('boss_wall')).index === 3, 'a wall falls on both');
+    await wait(200);
+    h.send({ t: 'boss_wall', index: 3 });
+
+    // A hero's own HP reaches the partner. A fall, a revive, and at most two of them.
+    g.send({ t: 'raid_hp', hp: 200 });
+    const php = await h.next('partner_hp');
+    check(php.hp === 200 && php.max === 520, 'a hero\'s HP reaches its partner');
+    h.send({ t: 'hero_down' });
+    check((await g.next('peer_down')).side === 1, 'a fall reaches both');
+    await h.next('peer_down');
+    h.send({ t: 'revive' });
+    g.send({ t: 'revive' });
+    const rv = await g.next('revived');
+    check(rv.side === 1 && rv.hp === 400 && rv.left === 1, 'the partner gets the fallen hero up, at half HP');
+    await h.next('revived');
+    for (let i = 0; i < 2; i++) {
+      h.send({ t: 'hero_down' });
+      await g.next('peer_down');
+      await h.next('peer_down');
+      g.send({ t: 'revive' });
+      await wait(100);
+    }
+    await g.next('revived');
+    await h.next('revived');
+    // That was the second; the third fall stays down.
+    h.send({ t: 'boss_damage', amount: 1 });
+    await wait(1100);
+
+    // The clear: the boss falls, it counts on the profile as a raid and not as a win.
+    const finish = (/** @type {any} */ who) => { for (let i = 0; i < 2; i++) who.send({ t: 'boss_damage', amount: 600 }); };
+    for (let i = 0; i < 6; i++) {
+      finish(g);
+      await wait(1050);
+    }
+    const eg = await g.next('raid_end', 12000), eh = await h.next('raid_end', 12000);
+    check(eg.result === 'cleared' && eh.result === 'cleared', 'the raid is cleared when the boss falls');
+    check(eg.profile.raids.cleared === 1 && eg.profile.raids.played === 1 && eg.profile.wins === 0 && eg.profile.matches === 0, 'it counts as a raid, not as a win');
+
+    // Someone leaves: the other fights on and takes the brain. Both down ends it.
+    g.send({ t: 'lobby_create', raid: 'sun' });
+    // The first room's updates are still in the inbox.
+    let room2 = room;
+    while (!room2 || room2.code === room.code) room2 = (await g.next('lobby')).lobby;
+    h.send({ t: 'lobby_join', code: room2.code });
+    g.send({ t: 'lobby_pick', hero: 'Lyra' });
+    g.send({ t: 'lobby_ready', ready: true });
+    h.send({ t: 'lobby_pick', hero: 'Bram' });
+    h.send({ t: 'lobby_ready', ready: true });
+    await g.next('raid_start');
+    await h.next('raid_start');
+    g.send({ t: 'match_loaded', maxHp: 520 });
+    h.send({ t: 'match_loaded', maxHp: 800 });
+    await g.next('match_fight');
+    await h.next('match_fight');
+    await wait(3100);
+    g.send({ t: 'match_leave' });
+    await h.next('partner_left');
+    await h.next('boss_brain');
+    check(true, 'side 0 leaves: the other screen takes the brain');
+    h.send({ ...castMsg, id: 30 });
+    h.send({ t: 'hero_down' });
+    const lost = await h.next('raid_end');
+    check(lost.result === 'lost' && lost.profile.raids.played === 2, 'the last hero down ends it');
+    g.close(); h.close();
+  }
+
   // Session resume with the token (a reload in the same tab).
   const a2 = await client();
   a2.send({ t: 'resume', token: sa.token });

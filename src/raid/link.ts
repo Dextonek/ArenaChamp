@@ -51,8 +51,14 @@ export class LocalLink implements RaidLink {
   }
 
   stood(id: number, part: number, inside: boolean) {
-    this.on.stood(id, part, inside);
+    this.on.stood(id, part, inside ? 1 : 0);
   }
+
+  // Nobody else to tell.
+  heroHp() {}
+  revive() {}
+  heroCast() {}
+  heroAttack() {}
 
   wallSaved(index: number) {
     this.on.wall(index);

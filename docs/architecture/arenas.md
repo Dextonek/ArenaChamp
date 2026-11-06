@@ -4,6 +4,8 @@ Every duel (the AI duel and the network duel) is fought in one of five arenas, p
 arena is a cover layout, a set of meshes and a stage (sky, fog, lights) around the same ring. The design sheet with
 each arena's look and layout is [pipeline/designs/arenas.md](../../pipeline/designs/arenas.md).
 
+The Raid has its own room, the Sun Court, which is not one of the five and has a wider ring (`ArenaDef.ring`): see [raid.md](raid.md).
+
 ![The five arenas, overview and close](../arenas/arenas-five_sheet.jpg)
 
 From the two gameplay cameras (a network player on side 1 looks from the other end):

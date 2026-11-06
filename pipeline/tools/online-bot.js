@@ -65,6 +65,65 @@
     return 'series started';
   };
 
+  // A raid for two. One tab: `await _botRoom('Lyra')` returns the room's code. The other: `await _botJoin('Bram', code)`.
+  // Then each screen's autopilot plays, with the boss's zones to walk out of and gold ones to walk into. `_botRaid()`: what this
+  // screen sees now. `_botRaidLog()`: every sample of it. The result card waits: `_botRaidLeave()` goes back to the menu.
+  const raidLog = { samples: [], casts: 0, moves: {}, downs: 0, ups: 0 };
+  let raidTimer = 0;
+  const raidStep = () => {
+    const { api, coop, state } = window.game, d = api.duel;
+    if (!coop.active) {
+      // Both heroes picked and ready: the page's own room starts the raid.
+      return;
+    }
+    if (d.boss && !d.autopilot) d.autopilot = true;
+    if (performance.now() - (raidLog.at ?? 0) > 1000 && d.boss) {
+      raidLog.at = performance.now();
+      raidLog.samples.push(window._botRaid());
+      if (raidLog.samples.length > 400) raidLog.samples.shift();
+    }
+    void state;
+  };
+  const pickReady = async (hero) => {
+    const { net } = window.game;
+    net.send({ t: 'lobby_pick', hero });
+    net.send({ t: 'lobby_ready', ready: true });
+    clearInterval(raidTimer);
+    raidTimer = setInterval(raidStep, 100);
+  };
+  window._botRoom = async (hero) => {
+    const { net, state } = window.game;
+    net.send({ t: 'lobby_create', raid: 'sun' });
+    for (let i = 0; i < 40 && !state.lobby; i++) await new Promise((r) => setTimeout(r, 100));
+    if (!state.lobby) throw new Error('no room');
+    log.hero = hero;
+    await pickReady(hero);
+    return state.lobby.code;
+  };
+  window._botJoin = async (hero, code) => {
+    const { net, state } = window.game;
+    net.send({ t: 'lobby_join', code });
+    for (let i = 0; i < 40 && !state.lobby; i++) await new Promise((r) => setTimeout(r, 100));
+    if (!state.lobby) throw new Error('no room');
+    log.hero = hero;
+    await pickReady(hero);
+    return 'joined';
+  };
+  window._botRaid = () => {
+    const { api, coop } = window.game, d = api.duel, a = api.arena;
+    if (!d.boss) return { active: coop.active, on: d.on };
+    const me = a.caster.group.position, b = d.foe?.group.position, p = d.partner;
+    return {
+      t: +d.time.toFixed(1), side: d.boss.link.side, brain: d.boss.link.brain, boss: Math.round(a.hpOf(d.foe)), phase: d.boss.stats.phases,
+      hp: Math.round(d.playerHp), down: d.boss.meDown, cover: a.obstacles?.length,
+      me: [+me.x.toFixed(1), +me.z.toFixed(1)], at: b && [+b.x.toFixed(1), +b.z.toFixed(1)],
+      partner: p && { hp: p.hp, max: p.max, down: p.down, left: p.left, pos: [+p.pos.x.toFixed(1), +p.pos.z.toFixed(1)] },
+      hits: d.boss.stats.hits, kneels: d.boss.stats.kneels, over: d.over, won: d.result?.winner ?? null, errors: log.errors.length,
+    };
+  };
+  window._botRaidLog = () => raidLog;
+  window._botRaidLeave = () => { clearInterval(raidTimer); window.game.coop.exit(); return 'left'; };
+
   let lastRound = -1, lastSample = 0;
   function step() {
     const { api, match, state } = window.game;
