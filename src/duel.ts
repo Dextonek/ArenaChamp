@@ -10,7 +10,8 @@ import { HERO_BODIES, type HeroKit, type HeroSpell } from './heroes';
 import { HeroFigure, castStyle } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
 import type { ArenaHazard, HazardHit, HazardTarget, HazardWorld } from './arenas/hazards/base';
-import type { ArenaShift } from './arenas/shifts/base';
+import type { ArenaShift, ShiftWorld } from './arenas/shifts/base';
+import type { Obstacle } from './obstacles';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
@@ -248,6 +249,7 @@ export class Duel {
   shiftOffset = 0;
   /** This round's change, on the same fight clock as the hazard. */
   private shift: ArenaShift | null = null;
+  private shiftWorld: ShiftWorld;
   /** When this side's hero last reported a hazard online (the hub takes one per 0.3 s, and both kinds can land together). */
   private hazardSentAt = -Infinity;
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
@@ -343,6 +345,17 @@ export class Duel {
       obstacles: () => arena.obstacles ?? [],
       targets: () => this.hazardTargets(),
       hit: (target, hit) => this.hazardHit(target, hit),
+    };
+    this.shiftWorld = {
+      ...this.hazardWorld,
+      crack: (i) => {
+        // A wall the spells already broke stays broken.
+        const o = this.currentArena?.obstacles[i];
+        if (o?.kind === 'wall' && arena.obstacles?.includes(o)) this.arenaScene?.wallState?.(i, 'cracked');
+      },
+      remove: (i) => this.removeCover(i),
+      topple: (i, dir, seconds) => this.arenaScene?.coverFall?.(i, dir, seconds),
+      add: (cover) => this.addCover(cover),
     };
     this.group.visible = false;
     this.hud = this.buildHud();
@@ -487,6 +500,7 @@ export class Duel {
     if (hm.currentKit.alt?.model) hm.preloadFigure(hm.currentKit.alt.model);
     if (this.opponentKit.alt?.model) this.figure.preload(this.opponentKit.alt.model);
     this.useArena(def);
+    this.arenaScene?.resetShift?.();
     this.hazard?.dispose();
     this.hazard = this.hazardsOn && (this.mode === 'play' || this.hazardsInRuns) ? def.hazard?.(this.hazardSeed) ?? null : null;
     if (this.hazard) this.group.add(this.hazard.group);
@@ -1155,7 +1169,7 @@ export class Duel {
       const live = !this.over && this.countdown < 0 && !hm.locked;
       if (live) this.hazardClock += dt;
       if (this.hazard?.update(dt, this.hazardClock, live, this.hazardWorld) && this.mode === 'play') this.showBanner(this.hazard.warning, 1.1, '26px');
-      const stage = this.shift?.update(this.hazardClock + this.shiftOffset, live, this.hazardWorld);
+      const stage = this.shift?.update(dt, this.hazardClock + this.shiftOffset, live, this.shiftWorld);
       if (stage && this.mode === 'play') this.showBanner(stage, 1.8, '26px');
       this.host.arena.aiCover = this.shift?.aiCover ?? [];
       this.host.arena.aiBounds = this.shift?.aiBounds ?? null;
@@ -1931,6 +1945,27 @@ export class Duel {
   }
 
   /** The player just cast: remember its zones and where it aimed (the opponent's position at the cast). */
+  // --- cover a stage changes ----------------------------------------------------------------------------------
+
+  /** A stage takes arena cover `i` away: it is out of the list and takes no more hits. */
+  private removeCover(i: number) {
+    const arena = this.host.arena, o = this.currentArena?.obstacles[i];
+    if (!o) return;
+    if (this.wallHp) this.wallHp[i] = 0;
+    this.wallHits = this.wallHits.filter((h) => h.i !== i);
+    if (!arena.obstacles?.includes(o)) return;
+    if (o.kind === 'wall') this.arenaScene?.wallState?.(i, 'broken');
+    arena.obstacles = arena.obstacles.filter((x) => x !== o);
+  }
+
+  /** A stage raises new cover: whoever stands there is pushed out, each screen its own hero. */
+  private addCover(cover: Obstacle[]) {
+    const arena = this.host.arena;
+    arena.obstacles = [...(arena.obstacles ?? []), ...cover];
+    arena.keepInside(arena.caster.group.position);
+    if (!this.net && this.foe) arena.moveFoe(this.foe, new THREE.Vector3(), true);
+  }
+
   // --- breakable walls ---------------------------------------------------------------------------------------
 
   /** Stands every wall of a breakable arena up again (each round). The obstacle list is a copy: broken walls leave it. */

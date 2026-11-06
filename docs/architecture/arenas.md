@@ -61,16 +61,17 @@ zones stay until the next stage's land, and hazards keep running on top.
 
 | Arena | Banner | Stage 1 | Stage 2 | Stage 3 |
 |---|---|---|---|---|
-| Night Temple | The temple falls | (cover) | (cover) | Sunfire outside 6 m |
+| Night Temple | The temple falls | The four screen walls crack, then fall | The six side columns topple in pairs along a shown line, hit for 45 where they land, and are gone | Sunfire outside 6 m |
 | Frostfall Lake | The ice breaks | Two water channels: slow, no damage | Also freezing water outside 9 m, slow | The water outside 6.5 m |
 | Ember Caldera | The lava rises | Lava outside 10 m | Outside 8 m and over the vent to 2 m | Outside 6.5 m and over the vent to 2.5 m |
-| Verdant Glade | The forest closes in | (cover) | Thorns outside 9 m, slow | Thorns outside 6.5 m |
+| Verdant Glade | The forest closes in | Roots raise four new low walls in the gaps, pushing out whoever stands there | Thorns outside 9 m, slow | Thorns outside 6.5 m |
 | Sky Ruins | The platform breaks up | Outside 10 m | Outside 8 m | Outside 6.5 m |
 
 - **Last stand** makes a long round end: without heals a full hero falls about 20 s after it begins. It adds no timer, draw or limit screen.
 - **Clock and seed:** `Duel.hazardClock`, the same clock as the arena's events. Frost's channels come from the seed, so both screens match.
 - **Hits:** like a hazard's. Each screen decides the hits on what it lists; online the hero's damage goes out as `hazard`. A hit is a share of the target's max HP, so a big hero pays as much of its bar as a small one, capped at the hub's 60. `Duel.hazardHit` lets one through per 0.32 s online, because the hub would drop a second one and the screens would disagree.
 - **A person may stand in a zone and pay.** The AI does not: it walks out with nothing rolled (`hazardStep`), drops a trait's goal inside one (`reachableGoal`), plans round them (`Arena.aiRoute`, its own `Navigator`, fed by `ArenaShift.aiCover` and `aiBounds`) and stops at the edge when the other hero is inside (`offZones`). In Last stand it just fights.
+- **Cover:** a stage reports what goes and what comes (`ShiftStage.breaks`, `topples`, `adds`) and `Duel` applies it (`removeCover`, `addCover`, through the live `arena.obstacles`). The list is rebuilt from `ArenaDef.obstacles` each round; `ArenaScene.resetShift` puts back the meshes the arena owns. Pip's parcels stay where they were: `arenaCover` is the arena as it started, and a parcel a root wall covers can still be reached across it.
 - **Switches:** `duel.shiftsOn`. `duel.shiftsInRuns` is off, so balance runs stay comparable. `duel.shiftOffset` is added to the clock the stages read: set it on both screens before the fight to test a stage.
 
 ## Arena events (hazards)
@@ -117,4 +118,6 @@ spells' red) for at least 1.2 s, then hits both heroes and their units alike.
 ## Limits
 
 - Both players must run the same client: the arena choice and the hazard schedule need no server, so an old client
-  would see different cover and events. The `hazard` message does need the current server.
+  would see different cover and events. The `hazard` message does need the current server. `PROTOCOL` makes an old tab reload.
+- The two screens' fight clocks can be a few hundred ms apart, so a stage's cover can be gone on one screen and standing
+  on the other for that long. A cast through it then counts on one screen only.

@@ -407,7 +407,7 @@ export const templeArena: ArenaDef = {
   id: 'temple',
   name: 'Night Temple',
   hazard: (seed) => new TempleRays(seed),
-  shift: () => templeShift(),
+  shift: (seed) => templeShift(seed, TEMPLE_OBSTACLES),
   obstacles: TEMPLE_OBSTACLES,
   breakable: true,
   stage: DEFAULT_STAGE,
@@ -484,16 +484,36 @@ export const templeArena: ArenaDef = {
       }
     };
 
+    // The columns: each one's matrix and the instanced sets, so a stage can topple them (`coverFall`).
+    const columnIdx: number[] = []; // obstacle index -> column instance
+    const columnBase: THREE.Matrix4[] = [];
+    let columnSets: THREE.InstancedMesh[] = [];
+    const altars: THREE.Matrix4[] = [];
+    TEMPLE_OBSTACLES.forEach((o, i) => {
+      if (o.kind === 'wall') return;
+      if (o.height < 2) altars.push(at(o.ax, o.az, 0));
+      else {
+        columnIdx[i] = columnBase.length;
+        columnBase.push(at(o.ax, o.az, (crnd() - 0.5) * 0.5));
+      }
+    });
+    const setColumn = (k: number, mx: THREE.Matrix4) => {
+      for (const m of columnSets) {
+        m.setMatrixAt(k, mx);
+        m.instanceMatrix.needsUpdate = true;
+      }
+    };
+
     void loadProps().then((props) => {
       if (disposed) return;
-      const columns: THREE.Matrix4[] = [], altars: THREE.Matrix4[] = [];
-      for (const o of TEMPLE_OBSTACLES) {
-        if (o.kind === 'wall') continue;
-        if (o.height < 2) altars.push(at(o.ax, o.az, 0));
-        else columns.push(at(o.ax, o.az, (crnd() - 0.5) * 0.5));
-      }
       const pots = braziers.map((b) => at(b.x, b.z, 0));
-      for (const [name, list] of [['Column', columns], ['Altar', altars], ['Brazier', pots]] as const) {
+      if (props.Column) {
+        columnSets = instance(props.Column, columnBase);
+        // their bounds would be measured standing and never follow a fall: no culling for these few
+        for (const m of columnSets) m.frustumCulled = false;
+        g.add(...columnSets);
+      }
+      for (const [name, list] of [['Altar', altars], ['Brazier', pots]] as const) {
         if (props[name] && list.length) g.add(...instance(props[name], list));
       }
       for (const [look, name] of [['whole', 'Wall'], ['cracked', 'WallCracked'], ['broken', 'WallRubble']] as const) {
@@ -507,7 +527,7 @@ export const templeArena: ArenaDef = {
     }).catch((e) => console.warn('temple: props failed to load', e));
 
     // Stone chunks thrown out when a wall cracks or falls: ballistic, then lying on the floor until the round ends
-    const CHUNKS = 48;
+    const CHUNKS = 96;
     const chunkMesh = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(0.13, 0), new THREE.MeshStandardMaterial({ color: 0x3e3a4c, roughness: 0.9 }), CHUNKS);
     chunkMesh.castShadow = true;
     chunkMesh.frustumCulled = false; // starts hidden (zero scale), see the wall sets
@@ -528,6 +548,35 @@ export const templeArena: ArenaDef = {
         c.live = true;
       }
     };
+    // A column toppling along `dir`: it turns about its foot, faster and faster, and breaks up where it lands.
+    const falls: { k: number; o: Obstacle; dir: number; t: number; seconds: number; dust: number }[] = [];
+    const coverFall = (index: number, dir: number, seconds: number) => {
+      const k = columnIdx[index];
+      if (k !== undefined) falls.push({ k, o: TEMPLE_OBSTACLES[index], dir, t: 0, seconds, dust: 0 });
+    };
+    const _axis = new THREE.Vector3(), _tilt = new THREE.Matrix4(), _foot = new THREE.Matrix4();
+    const stepFalls = (dt: number) => {
+      for (let i = falls.length - 1; i >= 0; i--) {
+        const f = falls[i], { k, o, dir } = f;
+        f.t += dt;
+        const u = Math.min(1, f.t / f.seconds);
+        _axis.set(Math.cos(dir), 0, -Math.sin(dir));
+        _tilt.makeRotationAxis(_axis, u * u * Math.PI * 0.5);
+        _foot.makeTranslation(o.ax, 0, o.az);
+        // The column's own turn stays inside: only its foot moves to the spot.
+        setColumn(k, _m.copy(_foot).multiply(_tilt).multiply(_foot.clone().invert()).multiply(columnBase[k]));
+        if (u < 1) continue;
+        setColumn(k, HIDDEN);
+        const len = o.height;
+        burst({ ...o, bx: o.ax + Math.sin(dir) * len, bz: o.az + Math.cos(dir) * len }, 12);
+        falls.splice(i, 1);
+      }
+    };
+    const resetShift = () => {
+      falls.length = 0;
+      columnBase.forEach((mx, k) => setColumn(k, mx));
+    };
+
     const wallState = (index: number, state: WallState) => {
       const k = wallIdx[index];
       if (k === undefined) return;
@@ -771,6 +820,7 @@ export const templeArena: ArenaDef = {
       moteGeo.attributes.position.needsUpdate = true;
       // banners
       placeBanners(time);
+      stepFalls(dt);
       // wall chunks
       let moved = false;
       for (let i = 0; i < CHUNKS; i++) {
@@ -792,6 +842,8 @@ export const templeArena: ArenaDef = {
       group: g,
       update,
       wallState,
+      coverFall,
+      resetShift,
       dispose() {
         disposed = true;
         (moon.material.map as THREE.Texture | null)?.dispose();

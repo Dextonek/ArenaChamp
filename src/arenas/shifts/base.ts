@@ -23,6 +23,8 @@ const LAST_SHARE = 0.03;
 const LAST_STEP = 0.01;
 const LAST_EVERY = 5;
 const LAST_MAX = 0.07;
+/** How long cover takes to topple (s), and when the wind-up shows it. */
+const TOPPLE = 0.8;
 
 /** A part of the floor that stays changed: it hurts (`share` of max HP per tick), slows (`slow` seconds per tick) or both. */
 export interface ShiftZone {
@@ -31,12 +33,45 @@ export interface ShiftZone {
   slow?: number;
 }
 
+/** A part of the floor that is hit once, when the stage lands (a column falling on it). */
+export interface ShiftStrike {
+  shape: TelegraphShape;
+  damage: number;
+}
+
 /** One step of the change: from `at` on the fight clock it shows `zones`, which replace the last stage's when it lands. */
 export interface ShiftStage {
   at: number;
   zones: ShiftZone[];
   /** Overrides the arena's banner. */
   banner?: string;
+  strikes?: ShiftStrike[];
+  /** Arena cover that goes (indexes into `ArenaDef.obstacles`): it cracks when the stage shows and falls when it lands. */
+  breaks?: number[];
+  /** Arena cover that topples along yaw `dir` so that it lies flat when the stage lands, and is gone then. */
+  topples?: { index: number; dir: number }[];
+  /** New cover that stands from when the stage lands. */
+  adds?: Obstacle[];
+  /** Marks shown while the stage shows that are not zones (where new cover will stand). */
+  marks?: TelegraphShape[];
+}
+
+/** The duel, as a stage sees it. */
+export interface ShiftWorld extends HazardWorld {
+  crack(index: number): void;
+  remove(index: number): void;
+  topple(index: number, dir: number, seconds: number): void;
+  add(cover: Obstacle[]): void;
+}
+
+/** What a stage looks like beyond its zones: an arena's own floor and pieces. It only draws. */
+export interface ShiftLook {
+  readonly group: THREE.Object3D;
+  /** Stage `index` starts showing. */
+  begin?(index: number): void;
+  /** Stage `index` lands. */
+  land?(index: number): void;
+  update(dt: number, clock: number, world: HazardWorld): void;
 }
 
 /**
@@ -62,10 +97,13 @@ export class ArenaShift {
   /** What an AI plans its walk round: the zones that hurt, now or at the stage showing, as cover and as a smaller ring. */
   aiCover: Obstacle[] = [];
   aiBounds: { x: number; z: number; r: number } | null = null;
+  /** The topples of the stage showing have started. */
+  private toppled = false;
 
-  constructor(private banner: string, private color: THREE.ColorRepresentation, private hitColor: string, stages: ShiftStage[]) {
+  constructor(private banner: string, private color: THREE.ColorRepresentation, private hitColor: string, stages: ShiftStage[], private look?: ShiftLook) {
     this.stages = [...stages, { at: LAST_AT, banner: 'Last stand', zones: [{ shape: { kind: 'circle', x: RING.x, z: RING.z, radius: RING.r + 1 }, share: LAST_SHARE }] }];
     this.group.add(this.coming.group, this.lasting.group);
+    if (look) this.group.add(look.group);
   }
 
   private get lastStand() {
@@ -76,20 +114,32 @@ export class ArenaShift {
    * One frame. `clock` is the fight clock (it stops outside the fight), `live` whether hits count. Returns a banner on the
    * frame a stage begins.
    */
-  update(clock: number, live: boolean, world: HazardWorld): string | null {
-    if (this.showing && clock >= this.began + REVEAL) this.land(clock);
+  update(dt: number, clock: number, live: boolean, world: ShiftWorld): string | null {
+    if (this.showing) {
+      const stage = this.stages[this.index];
+      if (!this.toppled && clock >= this.began + REVEAL - TOPPLE) {
+        this.toppled = true;
+        for (const t of stage.topples ?? []) world.topple(t.index, t.dir, TOPPLE);
+      }
+      if (clock >= this.began + REVEAL) this.land(clock, world, live);
+    }
     let banner: string | null = null;
     const next = this.stages[this.index + 1];
     if (live && !this.showing && next && clock >= next.at) {
       this.index++;
       this.showing = true;
+      this.toppled = false;
       this.began = clock;
-      this.coming.set(next.zones.map((z): TelegraphSpec => ({ shape: z.shape, start: 0, impact: REVEAL })), this.color, COMING_ALPHA);
+      const shapes = [...next.zones.map((z) => z.shape), ...(next.strikes ?? []).map((s) => s.shape), ...(next.marks ?? [])];
+      this.coming.set(shapes.map((shape): TelegraphSpec => ({ shape, start: 0, impact: REVEAL })), this.color, COMING_ALPHA);
       banner = next.banner ?? this.banner;
       this.planAi(next.zones);
+      for (const i of next.breaks ?? []) world.crack(i);
+      this.look?.begin?.(this.index);
     }
     this.coming.update(clock - this.began);
     this.lasting.update(clock - this.landed);
+    this.look?.update(dt, clock, world);
     if (live) this.hurt(clock, world);
     return banner;
   }
@@ -105,12 +155,23 @@ export class ArenaShift {
     }
   }
 
-  private land(clock: number) {
+  private land(clock: number, world: ShiftWorld, live: boolean) {
+    const stage = this.stages[this.index];
     this.showing = false;
     this.landed = clock;
-    this.zones = this.stages[this.index].zones;
+    this.zones = stage.zones;
     this.coming.set([]);
     this.lasting.set(this.zones.map((z): TelegraphSpec => ({ shape: z.shape, start: 0, impact: 0, until: Infinity })), this.color, LASTING_ALPHA);
+    for (const i of stage.breaks ?? []) world.remove(i);
+    for (const t of stage.topples ?? []) world.remove(t.index);
+    if (stage.adds) world.add(stage.adds);
+    this.look?.land?.(this.index);
+    if (!live) return;
+    for (const strike of stage.strikes ?? []) {
+      for (const target of world.targets()) {
+        if (insideTelegraph(strike.shape, target.pos.x, target.pos.z)) world.hit(target, { damage: strike.damage, color: this.hitColor, from: CENTER });
+      }
+    }
   }
 
   private hurt(clock: number, world: HazardWorld) {
@@ -136,7 +197,10 @@ export class ArenaShift {
   safe(x: number, z: number) {
     if (this.lastStand) return true;
     const hurts = (list: ShiftZone[]) => list.some((s) => s.share && insideTelegraph(grown(s.shape, MARGIN), x, z));
-    return !hurts(this.zones) && !(this.showing && hurts(this.stages[this.index].zones));
+    if (hurts(this.zones)) return false;
+    if (!this.showing) return true;
+    const stage = this.stages[this.index];
+    return !hurts(stage.zones) && !(stage.strikes ?? []).some((s) => insideTelegraph(grown(s.shape, MARGIN), x, z));
   }
 
   dispose() {

@@ -43,6 +43,10 @@ export interface ArenaScene {
    * into rubble. Called with 'whole' for every wall at the start of each round.
    */
   wallState?(index: number, state: WallState): void;
+  /** Arenas that change: cover `index` (into `ArenaDef.obstacles`) topples along yaw `dir`, flat after `seconds`, then breaks up. */
+  coverFall?(index: number, dir: number, seconds: number): void;
+  /** A new round: everything `coverFall` and the like changed is back. */
+  resetShift?(): void;
   dispose?(): void;
 }
 
