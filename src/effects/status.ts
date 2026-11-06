@@ -135,6 +135,11 @@ export class StatusSet {
     return was ? 'refreshed' : 'applied';
   }
 
+  /** Holds the figure stunned for `seconds`, past every cap: a boss kneeling. Rules that look for a stunned target see it. */
+  hold(seconds: number) {
+    this.left.stun = Math.max(this.left.stun, seconds);
+  }
+
   update(dt: number) {
     const wasLocked = this.locked;
     for (const k of STATUS_KINDS) this.left[k] = Math.max(0, this.left[k] - dt);

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { Hero, type BoneName } from './effects/weapons/hero';
+import { HERO_SCALE, Hero, type BoneName } from './effects/weapons/hero';
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
 import { traitFor } from './traits';
@@ -216,6 +216,11 @@ export class HeroFigure {
     if (at) this.last.copy(at);
     this.reset();
     return !!this.figure;
+  }
+
+  /** Draws the current model this many times a hero's size (a boss). `setModel` keeps each model's own size. */
+  setScale(scale: number) {
+    this.figure?.root.scale.setScalar(HERO_SCALE * scale);
   }
 
   /** Starts loading the model at `url` without showing it, so a later `setModel` shows it at once (Pim and Pom's tag). */

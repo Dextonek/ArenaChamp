@@ -17,8 +17,13 @@ import { ARENAS } from '../arenas';
 import { CpuMatch } from './cpu';
 import { CPU_LEVELS, cpuLevel } from '../cpuLevels';
 import { TOUCH } from '../touch';
+import { RaidRun } from '../raid/run';
+import { SUN_WARDEN } from '../raid/sunWarden';
 
-type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu';
+type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid';
+
+/** The Raid only shows at `/game?raid` until both its screens are done (pipeline/designs/raid-build.md). */
+const RAID_ON = new URLSearchParams(location.search).has('raid');
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
@@ -162,11 +167,11 @@ function go(screen: Screen) {
 
 function render() {
   root.replaceChildren();
-  if (match.active || cpu.active) { root.style.display = 'none'; return; }
+  if (match.active || cpu.active || raid.active) { root.style.display = 'none'; return; }
   root.style.display = '';
-  // Without an account: the login screen, or the CPU screen (an offline fight needs no account).
+  // Without an account: the login screen, or the CPU or Raid screen (an offline fight needs no account).
   if (!state.profile) {
-    root.append(state.screen === 'cpu' ? el('main', { class: 'screen' }, cpuScreen()) : loginScreen());
+    root.append(state.screen === 'cpu' ? el('main', { class: 'screen' }, cpuScreen()) : state.screen === 'raid' ? el('main', { class: 'screen' }, raidScreen()) : loginScreen());
     return;
   }
   root.append(header());
@@ -178,7 +183,8 @@ function render() {
         : s === 'lobbies' ? lobbiesScreen()
           : s === 'lobby' && state.lobby ? lobbyScreen(state.lobby)
             : s === 'cpu' ? cpuScreen()
-              : menuScreen(),
+              : s === 'raid' ? raidScreen()
+                : menuScreen(),
   );
   root.append(body);
   if (state.queue.on) root.append(queueBar());
@@ -190,7 +196,7 @@ function header() {
     el('button', { class: `nav${state.screen === screen ? ' on' : ''}`, onclick: () => go(screen) }, label);
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu'), nav('vs CPU', 'cpu'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies'), nav('Heroes', 'heroes'), nav('Profile', 'profile')),
+    el('nav', {}, nav('Play', 'menu'), nav('vs CPU', 'cpu'), RAID_ON ? nav('Raid', 'raid') : null, nav('Lobbies', state.lobby ? 'lobby' : 'lobbies'), nav('Heroes', 'heroes'), nav('Profile', 'profile')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -221,6 +227,7 @@ function loginScreen() {
     el('p', { class: 'fine' }, 'Your name and record are kept on the game server. Passwords are stored hashed.'),
     el('div', { class: 'or' }, 'or'),
     el('button', { class: 'btn ghost', type: 'button', onclick: () => go('cpu') }, 'Play vs CPU · no account needed'),
+    RAID_ON ? el('button', { class: 'btn ghost', type: 'button', onclick: () => go('raid') }, 'Raid · no account needed') : null,
   );
   setTimeout(() => name.focus());
   return el('div', { class: 'center login-screen' }, form, heroStrip());
@@ -416,6 +423,27 @@ function cpuScreen() {
   );
 }
 
+// --- raid ----------------------------------------------------------------------------------------------------
+
+function raidScreen() {
+  const choice = cpuChoice(), hero = kitOf(choice);
+  const busy = state.queue.on || !!state.lobby;
+  const boss = SUN_WARDEN;
+  return el('div', { class: 'cpu' },
+    el('section', { class: 'card' },
+      el('h2', {}, 'Raid'),
+      el('p', { class: 'muted' }, `${boss.name}, ${boss.title.toLowerCase()}. Pale orange means leave, gold means stand here. Hard control doesn't hold him: it fills a gauge, and a full gauge makes him kneel.`),
+      el('h3', {}, 'Your hero'),
+      chosenHero(hero),
+      heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
+      el('div', { class: 'row play-actions' },
+        el('button', { class: 'btn primary big', disabled: busy, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name, boss: boss.id }) }, 'Start alone'),
+        el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
+      busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to start a raid.') : null,
+    ),
+  );
+}
+
 // --- heroes --------------------------------------------------------------------------------------------------
 
 /** Every hero in one table, one row each. A click opens a row under itself (the turning model, every spell in full, the pick button) and closes it again. */
@@ -592,8 +620,12 @@ const cpu = new CpuMatch(gameApi, loading, {
   onExit: () => { state.screen = 'cpu'; render(); },
   onWin: (level) => safeSet(cpuWonKey(), [...cpuWon().add(level)].sort().join('')),
 });
+const raid = new RaidRun(gameApi, loading, {
+  onEnter: () => render(),
+  onExit: () => { state.screen = 'raid'; render(); },
+});
 // The duel card's "Leave duel" / "Back to menu": ends whichever fight is on.
-gameApi.duel.onLeave = () => (cpu.active ? cpu.exit() : match.exit());
+gameApi.duel.onLeave = () => (raid.active ? raid.exit() : cpu.active ? cpu.exit() : match.exit());
 
 net.on('socket', (m) => {
   state.connected = m.open;
@@ -657,4 +689,4 @@ net.connect();
 render();
 
 // Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`.
-(window as unknown as { game: unknown }).game = { state, net, match, cpu, api: gameApi, go, render };
+(window as unknown as { game: unknown }).game = { state, net, match, cpu, raid, api: gameApi, go, render };

@@ -113,6 +113,14 @@ export class Arena {
   private temps: { o: Obstacle; left: number }[] = [];
   /** A figure another player's client moves (the duel's remote hero): `carry` leaves it alone. */
   remoteFigure: Enemy | null = null;
+  /** A figure nothing can push (a boss, src/raid): knockback, pull and carry leave it alone. Its own walk still moves it. */
+  pinned: Enemy | null = null;
+  /** Decides a status before it lands: how long it may run, 0 for not at all (a boss turns hard control into stagger). */
+  statusGate: ((target: Enemy, kind: StatusKind, seconds: number) => number) | null = null;
+  /** HP a hit can't take a figure below: online only the hub kills a boss. */
+  foeFloor = 0;
+  /** What really came off a figure's HP, after its shield. */
+  onFoeDamage: ((target: Enemy, dealt: number) => void) | null = null;
   /**
    * The bend of an arc aim for the next `context()` (see `CastContext.bend`). Hero mode sets it around a cast, like
    * `aimOffset`, and clears it again.
@@ -371,7 +379,7 @@ export class Arena {
       hit: (target, opts) => this.hit(target, opts, cast),
       displace: (target, offset) => {
         const f = this.foes.find((x) => x.figure === target);
-        if (f) f.displaced.copy(offset);
+        if (f && target !== this.pinned) f.displaced.copy(offset);
       },
       ...this.selfFx(this.caster),
       projectile: (po) => this.fire(po, 'hero', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
@@ -405,19 +413,20 @@ export class Arena {
     // A shield takes the damage first; only what is left comes off HP.
     const soaked = this.soak(f.st, target, dmg);
     const dealt = dmg - soaked;
-    f.hp = Math.max(0, f.hp - dealt);
+    f.hp = Math.max(this.foeFloor, f.hp - dealt);
+    if (dealt > 0) this.onFoeDamage?.(target, dealt);
     f.flash = dealt > 0 ? 1 : 0.35;
     const big = dealt >= 40;
     // A tinted flash (the hit's colour, else warm orange), not white: white bloomed figures swallowed the hit VFX.
     f.flashTint.set(dealt > 0 ? opts.color ?? (big ? '#ffb347' : '#ff8a4a') : '#9cc4ec');
     this.hits++;
-    const knock = opts.knock ?? 4;
+    const knock = target === this.pinned ? 0 : opts.knock ?? 4;
     if (knock > 0) {
       const away = target.group.position.clone().sub(opts.from ?? this.caster.group.position).setY(0);
       if (away.lengthSq() < 1e-4) away.set(0, 0, -1);
       f.knock.add(away.normalize().multiplyScalar(knock));
     }
-    if (opts.pull && opts.pull > 0) {
+    if (opts.pull && opts.pull > 0 && target !== this.pinned) {
       // The knock velocity decays as exp(-7t), so a push of v moves the figure v / 7 metres in all.
       const to = (opts.from ?? this.caster.group.position).clone().sub(target.group.position).setY(0);
       const m = Math.min(opts.pull, 4, Math.max(0, to.length() - 1));
@@ -450,6 +459,10 @@ export class Arena {
   applyStatus(target: Enemy, kind: StatusKind, seconds: number, color = ''): boolean {
     const st = this.slotOf(target);
     if (!st) return false;
+    if (this.statusGate) {
+      seconds = this.statusGate(target, kind, seconds);
+      if (seconds <= 0) return false;
+    }
     const r = st.set.apply(kind, seconds);
     const at = target.group.position.clone().add(new THREE.Vector3(0, 0.5, 0));
     if (r === 'immune') this.say('IMMUNE', '#9a93a6', at, 0.8);
@@ -661,7 +674,7 @@ export class Arena {
    * caster and the arena foes move; the remote hero (`remoteFigure`) and summoned units do not.
    */
   carryFigure(target: Enemy, delta: THREE.Vector3) {
-    if (target === this.remoteFigure) return;
+    if (target === this.remoteFigure || target === this.pinned) return;
     if (target === this.caster) {
       this.caster.group.position.add(new THREE.Vector3(delta.x, 0, delta.z));
       this.keepInside(this.caster.group.position);

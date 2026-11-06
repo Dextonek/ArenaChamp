@@ -19,6 +19,9 @@ import { TraitFx, stackColor } from './traits/fx';
 import { stopsAtCover, sweepHit } from './obstacles';
 import { TOUCH } from './touch';
 import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
+import { BossFight } from './raid/fight';
+import { BossHud } from './raid/hud';
+import type { BossDef, BossWorld, RaidLink } from './raid/types';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -143,6 +146,9 @@ const HAZARD_SEND_GAP = 0.32; // the hub's HAZARD_GAP_MS, with a little to spare
 const HAZARD_MAX = 60; // the hub's most for one hazard hit: more would show damage it does not count
 const SUMMON_REACH = 10; // the AI casts a summon spell when the enemy is within this distance (m)
 const UNIT_BLOCK = 2.5; // an enemy unit this close is shot at when nothing can be cast at the hero (m)
+const BOSS_LOOK = 1.6; // an AI starts walking when a boss's zone will reach it within this many seconds
+const BOSS_CLEAR = [3, 1.6, 0.9]; // and walks to a spot clear for this long, or the best it can find (Sun Order leaves nowhere clear for long)
+const BOSS_TAKEN = 0.5; // what standing open or kneeling adds to the damage a boss takes
 
 interface BoltDodge {
   /** The roll came up: this side steps off the bolt's line. */
@@ -256,12 +262,18 @@ export class Duel {
   private ringTo = RING.r;
   /** When this side's hero last reported a hazard online (the hub takes one per 0.3 s, and both kinds can land together). */
   private hazardSentAt = -Infinity;
+  /** The boss fight on now (src/raid), and the boss the next `setup` is for. */
+  boss: BossFight | null = null;
+  private bossDef: BossDef | null = null;
+  private bossHud: BossHud | null = null;
+  /** How the autopilot plays (the raid tool tries it at different levels). */
+  pilotLevel: CpuLevel = CPU_BALANCE;
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
   autopilot = false;
   /** 'play': the player against the AI. 'run': AI against AI to watch (the autopilot drives the player's hero). */
   mode: 'play' | 'run' = 'play';
   /** The last finished round (duel simulations read it). */
-  result: { player: string; opponent: string; winner: string; seconds: number; playerHp: number; opponentHp: number; playerCasts: number; opponentCasts: number; playerDodges: number; units: Record<string, SummonStats> } | null = null;
+  result: { player: string; opponent: string; winner: string; seconds: number; playerHp: number; opponentHp: number; playerCasts: number; opponentCasts: number; playerDodges: number; units: Record<string, SummonStats>; boss?: { killedBy: string; hits: Record<string, number>; kneels: number; phase: number } } | null = null;
   private stats = { playerCasts: 0, opponentCasts: 0, playerDodges: 0, opponentDodges: 0 };
   /** The player's recent casts (zones and aim), for the opponent's dodge check. */
   private playerCastsRecent: (EnemyCast & { t: number })[] = [];
@@ -313,6 +325,10 @@ export class Duel {
   // HUD.
   private hud: HTMLDivElement;
   private bars: { fill: HTMLDivElement; shield: HTMLDivElement; chunks: HTMLDivElement; text: HTMLDivElement; name: HTMLDivElement; portrait: HTMLCanvasElement; extra: HTMLDivElement }[] = [];
+  /** The HUD's two sides and what stands between them: a boss fight has no second duelist. */
+  private hudSides: HTMLDivElement[] = [];
+  private hudVs!: HTMLDivElement;
+  private hudTop = '';
   private card: HTMLDivElement;
   private cardTitle: HTMLDivElement;
   private cardText: HTMLDivElement;
@@ -427,6 +443,7 @@ export class Duel {
 
   /** Starts (or restarts) a round against `opponentChoice`, never the player's own kit. */
   start(mode: 'play' | 'run' = this.mode) {
+    this.endBoss();
     this.mode = mode;
     this.net = null;
     const arena = this.host.arena, hm = this.host.heroMode;
@@ -459,6 +476,7 @@ export class Duel {
    * locked until `countdownFrom` runs out; the remote hero moves and casts from `peerMove` / `peerCast`.
    */
   startNet(o: { opponent: HeroKit; side: 0 | 1; names: [string, string]; net: DuelNet; arena?: string; arenaId?: string }) {
+    this.endBoss();
     const arena = this.host.arena, hm = this.host.heroMode;
     this.mode = 'play';
     this.autopilot = false;
@@ -495,6 +513,149 @@ export class Duel {
     this.renderHud();
   }
 
+  /**
+   * Starts a boss fight (src/raid): this side's hero against `def`, on the vs-CPU path. The boss is `Duel.foe` and
+   * `Duel.figure`, so spells land on it and traits see it as the enemy; `BossFight` takes the AI's place.
+   */
+  startBoss(o: { def: BossDef; link: RaidLink; seed: string; mode?: 'play' | 'run' }) {
+    this.endBoss();
+    const mode = o.mode ?? 'play', run = mode === 'run';
+    const arena = this.host.arena, hm = this.host.heroMode;
+    this.mode = mode;
+    this.net = null;
+    this.autopilot = run;
+    hm.spectate = run;
+    hm.focus = run ? new THREE.Vector3(RING.x, 0, RING.z) : null;
+    this.cpuLevel = CPU_BALANCE;
+    this.opponentKit = o.def.kit(o.link.maxHp);
+    this.hazardSeed = o.seed;
+    this.bossDef = o.def;
+    const place = arenaById(o.def.arena);
+    if (!place) throw new Error(`No arena ${o.def.arena}`);
+    this.setup(PLAYER_START, OPPONENT_START, place);
+    const foe = this.foe;
+    if (!foe) throw new Error('A boss fight with no boss');
+    foe.body = { ...o.def.body };
+    arena.pinned = foe;
+    arena.foeFloor = 1;
+    arena.onFoeDamage = (target, dealt) => { if (target === foe) this.boss?.damaged(dealt); };
+    arena.statusGate = (target, kind, seconds) => (target === foe && this.boss ? this.boss.control(kind, seconds) : seconds);
+    this.bossHud ??= new BossHud();
+    this.boss = new BossFight(o.def, o.link, this.bossWorld(), o.seed, this.bossHud);
+    this.group.add(this.boss.group);
+    const late = o.def.late?.();
+    if (late) {
+      this.shift = late.shift;
+      this.shiftOffset = late.offset;
+      this.group.add(late.shift.group);
+    }
+    // The boss's bar and cast bar take the top: this hero's own bar goes to a corner under them. On a phone the hero
+    // panel holds the left corner, so it goes under the Leave button.
+    this.hudSides[1].style.display = this.hudVs.style.display = 'none';
+    const small = TOUCH || innerWidth < 760;
+    this.hud.style.top = `calc(${small ? 94 : 86}px + env(safe-area-inset-top, 0px))`;
+    this.hud.style.left = small ? 'auto' : '12px';
+    this.hud.style.right = small ? '6px' : 'auto';
+    this.hud.style.transform = 'none';
+    this.waiting = !run && this.holdStart;
+    if (this.waiting) hm.locked = true;
+    arena.hitFilter = (target, opts, cast) => this.opponentHit(target, opts, cast);
+    arena.casterHeal = (amount) => this.healPlayer(amount);
+    arena.casterShield = null;
+    hm.onCast = (_label, slot, target) => {
+      this.recordPlayerCast();
+      this.playerBlast(slot, target);
+    };
+    this.renderHud();
+  }
+
+  /** What a boss fight may do to the duel. */
+  private bossWorld(): BossWorld {
+    const arena = this.host.arena;
+    const foe = this.foe!;
+    const a = new THREE.Vector3(), b = new THREE.Vector3();
+    return {
+      camera: arena.camera,
+      boss: () => foe.group.position,
+      walk: (dt, x, z, speed) => {
+        const at = foe.group.position;
+        const move = this.goalStep(this.opponentAi, at, { x, z });
+        if (move.lengthSq() > 0) arena.moveFoe(foe, move.multiplyScalar(speed * (arena.statusOf(foe)?.speedMul ?? 1) * dt), !this.opponentAi.routed);
+      },
+      face: (yaw) => { foe.group.rotation.y = yaw; },
+      pose: (style, seconds, big) => this.figure.cast(style, seconds, big),
+      enemyCast: (big) => { if (this.heroRt) this.heroRt.trait?.enemyCast?.(this.heroRt, big ? 3 : 0); },
+      me: () => arena.caster.group.position,
+      heroes: () => {
+        const me = arena.caster.group.position;
+        return [{ side: this.boss?.link.side ?? 0, x: me.x, z: me.z, down: this.playerHp <= 0 }];
+      },
+      hitMe: (h) => {
+        if (this.playerHp <= 0) return;
+        this.boss?.countHit(h.move);
+        // A weakened boss deals less, as a weakened hero does.
+        const dealt = arena.statusOf(foe)?.dealtMul ?? 1;
+        const mods = dealt !== 1 ? { ...NO_MODS, power: dealt } : NO_MODS;
+        const opts: HitOptions = { damage: h.share * this.playerMax, knock: h.knock ?? 0, color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
+        this.damagePlayer(this.resolve('opponent', arena.caster, opts, mods, 'spell', h.big ? 3 : 0, ++this.oppCastSeq));
+      },
+      units: () => arena.summons.alive('hero').map((u) => ({ figure: u.figure, pos: u.pos })),
+      hitUnit: (figure, damage) => {
+        this.hitBypass = true;
+        arena.hit(figure as Enemy, { damage, knock: 0, color: '#ffb050' });
+        this.hitBypass = false;
+      },
+      cover: () => arena.obstacles ?? [],
+      sees: (ax, az, bx, bz) => arena.lineOfSight(a.set(ax, 0, az), b.set(bx, 0, bz)),
+      rayStop: (ax, az, bx, bz) => arena.coverStop({ x: ax, z: az }, { x: bx, z: bz }),
+      firstWall: (ax, az, bx, bz) => {
+        const def = this.currentArena, standing = arena.obstacles;
+        if (!def || !standing) return -1;
+        const o = sweepHit(a.set(ax, 0, az), b.set(bx, 0, bz), 0, standing)?.obstacle;
+        return o?.kind === 'wall' ? def.obstacles.indexOf(o) : -1;
+      },
+      crackWall: (i) => {
+        const o = this.currentArena?.obstacles[i];
+        if (!o || !this.wallHp || this.wallHp[i] <= 0) return;
+        this.wallHp[i]--;
+        this.wallHit(i, o);
+      },
+      breakWall: (i) => this.removeCover(i),
+      exposed: (seconds) => {
+        arena.applyBuff(foe, 'vulnerable', BOSS_TAKEN, seconds);
+        this.boss?.exposedFor(seconds);
+      },
+      kneel: (seconds) => {
+        arena.statusOf(foe)?.hold(seconds);
+        arena.applyBuff(foe, 'vulnerable', BOSS_TAKEN, seconds);
+      },
+      banner: (text, seconds, size) => { if (this.mode === 'play') this.showBanner(text, seconds, size); },
+      say: (text, color, x, z) => arena.say(text, color, new THREE.Vector3(x, 1.5, z), 1.1),
+      finish: (result) => this.finish(result === 'win' ? 'win' : 'lose'),
+    };
+  }
+
+  /** A boss fight is over and its hooks come off. */
+  private endBoss() {
+    if (!this.boss && !this.bossDef) return;
+    const arena = this.host.arena;
+    this.boss?.dispose();
+    this.boss = null;
+    this.bossDef = null;
+    this.shiftOffset = 0;
+    arena.pinned = null;
+    arena.foeFloor = 0;
+    arena.onFoeDamage = null;
+    arena.statusGate = null;
+    this.hudSides[1].style.display = this.hudVs.style.display = '';
+    this.hud.style.top = this.hudTop;
+    this.hud.style.left = '50%';
+    this.hud.style.right = 'auto';
+    this.hud.style.transform = 'translateX(-50%)';
+    this.rematchButton.textContent = 'Rematch';
+    this.leaveButton.textContent = 'Leave duel';
+  }
+
   /** Common round setup: the ring, one foe at `theirs` under the opponent's figure, the hero at `mine`. */
   private setup(mine: THREE.Vector3, theirs: THREE.Vector3, def: ArenaDef) {
     const arena = this.host.arena, hm = this.host.heroMode;
@@ -507,10 +668,11 @@ export class Duel {
     this.useArena(def);
     this.arenaScene?.resetShift?.();
     this.hazard?.dispose();
-    this.hazard = this.hazardsOn && (this.mode === 'play' || this.hazardsInRuns) ? def.hazard?.(this.hazardSeed) ?? null : null;
+    // A boss is the room's event: the arena's own stay out of its fight.
+    this.hazard = !this.bossDef && this.hazardsOn && (this.mode === 'play' || this.hazardsInRuns) ? def.hazard?.(this.hazardSeed) ?? null : null;
     if (this.hazard) this.group.add(this.hazard.group);
     this.shift?.dispose();
-    this.shift = this.shiftsOn && (this.mode === 'play' || this.shiftsInRuns) ? (this.arenaScene && def.shift?.(this.hazardSeed, this.arenaScene)) ?? null : null;
+    this.shift = !this.bossDef && this.shiftsOn && (this.mode === 'play' || this.shiftsInRuns) ? (this.arenaScene && def.shift?.(this.hazardSeed, this.arenaScene)) ?? null : null;
     if (this.shift) this.group.add(this.shift.group);
     this.hazardClock = 0;
     this.hazardSentAt = -Infinity;
@@ -553,6 +715,7 @@ export class Duel {
       this.foe.group.rotation.y = Math.atan2(mine.x - theirs.x, mine.z - theirs.z);
     }
     this.figure.setModel(this.opponentKit.model, theirs, this.opponentKit);
+    this.figure.setScale(this.bossDef?.scale ?? 1);
     this.foeHeld = 0;
     this.figure.stand();
     this.setupTraits();
@@ -604,7 +767,7 @@ export class Duel {
       time: () => this.time,
       say: (text, color, at) => arena.say(text, color, at, 1),
       heal: (amount) => { arena.healFigure(arena.caster, amount); },
-      healEnemy: (amount) => { if (!this.net && this.foe) arena.healFigure(this.foe, amount); },
+      healEnemy: (amount) => { if (!this.net && !this.boss && this.foe) arena.healFigure(this.foe, amount); },
       buff: (kind, amount, seconds) => { arena.applyBuff(arena.caster, kind, amount, seconds); },
       setCooldown: (slot, sec) => hm.setCooldown(slot, sec),
       cooldownLeft: (slot) => hm.cooldownOf(slot),
@@ -640,7 +803,7 @@ export class Duel {
         arena.hit(this.foe, this.resolve('hero', this.foe, opts, NO_MODS, 'trait'));
       },
       carryEnemy: (dx, dz) => {
-        if (this.net || !this.foe) return;
+        if (this.net || !this.foe || arena.pinned === this.foe) return;
         arena.moveFoe(this.foe, new THREE.Vector3(dx, 0, dz), true);
       },
       carrySelf: (dx, dz) => {
@@ -829,12 +992,13 @@ export class Duel {
 
   /** The CPU level that drives `who`: the opponent plays `cpuLevel`, the autopilot always plays Normal. */
   private levelOf(who: Enemy) {
-    return who === this.foe ? this.cpuLevel : CPU_BALANCE;
+    return who === this.foe ? this.cpuLevel : this.pilotLevel;
   }
 
   stop() {
     if (!this.on) return;
     const arena = this.host.arena;
+    this.endBoss();
     this.on = false;
     this.round++;
     this.host.clearEffects?.();
@@ -1148,7 +1312,8 @@ export class Duel {
     // Over each head, from the bottom: what the other hero keeps on this one, this hero's bars, this hero's own pips, a word.
     const heroBarY = plateHeight(arena.caster), foeBarY = plateHeight(this.foe);
     const heroTop = this.traitFx.plate('hero', this.heroRt?.hiddenNow() ? null : arena.caster.group.position, heroBarY, this.plateFor(hm.currentKit, this.playerHp, this.playerMax, arena.caster, this.heroRt, false, true), cam);
-    const foeTop = this.traitFx.plate('foe', !this.foe || this.oppRt?.hiddenNow() ? null : this.foe.group.position, foeBarY, this.foe ? this.plateFor(this.opponentKit, arena.hpOf(this.foe), this.foeMax, this.foe, this.oppRt, !!this.net, false) : null, cam);
+    // A boss has its own bar at the top of the screen.
+    const foeTop = this.traitFx.plate('foe', !this.foe || this.boss || this.oppRt?.hiddenNow() ? null : this.foe.group.position, foeBarY, this.foe && !this.boss ? this.plateFor(this.opponentKit, arena.hpOf(this.foe), this.foeMax, this.foe, this.oppRt, !!this.net, false) : null, cam);
     this.traitFx.pips('foe', this.foe?.group.position ?? null, this.heroRt?.allStacks() ?? [], cam, this.host.heroMode.currentKit.accent, foeBarY - 0.32);
     this.traitFx.pips('hero', this.host.arena.caster.group.position, this.oppRt?.allStacks() ?? [], cam, this.opponentKit.accent, heroBarY - 0.32);
     // Each hero's own state, visible to both players: pips above any stacks, a ring at the feet, marks on the ground.
@@ -1159,7 +1324,7 @@ export class Duel {
     if (this.figure.shown) this.figure.shown.visible = !this.oppRt?.hiddenNow();
     hm.setFigureHidden(!!this.heroRt?.hiddenNow());
     // What each hero's passive does to the other's size, and the word it keeps over the other's head.
-    this.sizeFigure(this.foe, this.heroRt?.enemyScaleNow() ?? 1, this.opponentKit, dt);
+    if (!this.boss) this.sizeFigure(this.foe, this.heroRt?.enemyScaleNow() ?? 1, this.opponentKit, dt);
     this.sizeFigure(arena.caster, this.oppRt?.enemyScaleNow() ?? 1, hm.currentKit, dt);
     this.traitFx.label('foe', this.foe?.group.position ?? null, foeTop + 0.7, this.heroRt?.enemyLabelNow() ?? null);
     this.traitFx.label('hero', arena.caster.group.position, heroTop + 0.7, this.oppRt?.enemyLabelNow() ?? null);
@@ -1218,6 +1383,17 @@ export class Duel {
     if (this.net) {
       if (foe) this.netFollow(dt, foe, foePos);
       this.renderHud();
+      return;
+    }
+    // A boss fight: the link says when it is over, not the HP on this screen.
+    if (this.boss) {
+      const fight = this.boss, live = !this.waiting && this.countdown < 0;
+      fight.update(dt, live, foe ? arena.hpOf(foe) : 0);
+      if (this.boss && !this.over) {
+        if (this.playerHp <= 0) fight.heroDown(fight.killedBy);
+        else if (live && this.autopilot && foe) this.pilot(dt, foe, foePos, me);
+      }
+      if (this.boss) this.renderHud();
       return;
     }
     if (!foe || arena.hpOf(foe) <= 0) return this.finish('win');
@@ -1495,6 +1671,15 @@ export class Duel {
       this.host.arena.walk(clear.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt));
       return;
     }
+    // A boss's gold zone: go and stand in it, against every habit.
+    const stand = st.cannotMove ? null : this.boss?.script.standGoal(me.x, me.z);
+    if (stand) {
+      if (Math.hypot(stand.x - me.x, stand.z - me.z) > 0.8) {
+        const step = this.goalStep(this.playerAi, me, stand);
+        this.host.arena.walk(step.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
+      }
+      return;
+    }
     const sees = this.host.arena.lineOfSight(me, at);
     const theirs = this.host.arena.statusOf(foe);
     if (!st.cannotCast) {
@@ -1628,6 +1813,7 @@ export class Duel {
 
   /** An AI's step out of the arena hazard's coming hit, if it reacts to this event (`CpuLevel.hazardDodge`), or null. */
   private hazardStep(who: Enemy, at: THREE.Vector3, other: THREE.Vector3) {
+    if (this.boss) return this.bossStep(who, at, other);
     const hz = this.hazard, shift = this.shift;
     // A part of the floor that stays changed will not pass by itself: every level walks out, with nothing to roll.
     if (shift && !shift.safe(at.x, at.z)) {
@@ -1643,6 +1829,30 @@ export class Duel {
     }
     if (!roll.react || this.hazardClock < roll.at) return null;
     return this.escapeStep(at, other, (x, z) => hz.danger(x, z, HAZARD_CLEAR) || !!(shift && !shift.safe(x, z)));
+  }
+
+  /** An AI's step out of a boss's zones, if it reacts to this cast (rolled once a cast, like an arena event), or null. */
+  private bossStep(who: Enemy, at: THREE.Vector3, other: THREE.Vector3) {
+    const script = this.boss!.script, shift = this.shift;
+    if (shift && !shift.safe(at.x, at.z)) {
+      const out = this.escapeStep(at, other, (x, z) => !shift.safe(x, z));
+      if (out) return out;
+    }
+    if (!script.danger(at.x, at.z, BOSS_LOOK)) return null;
+    let roll = this.hazardRolls.get(who);
+    if (!roll || roll.id !== script.eventId) {
+      const lv = this.levelOf(who);
+      roll = { id: script.eventId, react: Math.random() < lv.hazardDodge, at: this.time + lv.boltReaction + 0.1 };
+      this.hazardRolls.set(who, roll);
+    }
+    // A person who has seen a zone doesn't start a long cast in it: it stands and takes the moment to read it.
+    if (!roll.react) return null;
+    if (this.time < roll.at) return new THREE.Vector3();
+    for (const within of BOSS_CLEAR) {
+      const step = this.escapeStep(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)));
+      if (step) return step;
+    }
+    return null;
   }
 
   /** An AI's unit step, kept out of the parts of the floor that hurt: it slides along the edge, or waits. */
@@ -1806,8 +2016,9 @@ export class Duel {
    * The hit box of a cast: inside a drawn shape if it has any, so a player never takes a hit from outside what was shown. Only a cast
    * with no drawn shape falls back on the distance from where it aimed.
    */
-  private inCastReach(c: { zones: { shape: TelegraphShape }[]; aimed: THREE.Vector3 }, p: THREE.Vector3) {
-    return c.zones.length ? c.zones.some((z) => insideTelegraph(z.shape, p.x, p.z)) : flat(p, c.aimed) <= DODGE_RADIUS;
+  private inCastReach(c: { zones: { shape: TelegraphShape }[]; aimed: THREE.Vector3 }, p: THREE.Vector3, pad = 0) {
+    if (c.zones.length) return c.zones.some((z) => insideTelegraph(pad > 0 ? grownShape(z.shape, pad) : z.shape, p.x, p.z));
+    return flat(p, c.aimed) <= DODGE_RADIUS + pad;
   }
 
   private hitPlayer(c: EnemyCast, opts: HitOptions = {}) {
@@ -1888,7 +2099,7 @@ export class Duel {
   private hazardTargets(): HazardTarget[] {
     const arena = this.host.arena;
     const list: HazardTarget[] = [{ key: arena.caster, pos: arena.caster.group.position }];
-    if (this.foe && !this.net) list.push({ key: this.foe, pos: this.foe.group.position });
+    if (this.foe && !this.net && !this.boss) list.push({ key: this.foe, pos: this.foe.group.position });
     for (const side of ['hero', 'opponent'] as const) {
       for (const u of arena.summons.alive(side)) list.push({ key: u.figure, pos: u.pos });
     }
@@ -2077,7 +2288,8 @@ export class Duel {
     const p = target.group.position;
     const c = this.playerCastsRecent.find((r) => r.id === cast && this.time - r.t < 4.5);
     if (!c) return true;
-    const lands = this.inCastReach(c, p);
+    // A boss is wide: a zone that touches any of it counts.
+    const lands = this.inCastReach(c, p, this.boss && target === this.foe ? target.body?.radius ?? 0 : 0);
     if (!lands && target === this.foe) {
       if (!c.dodgedShown) {
         c.dodgedShown = true;
@@ -2123,6 +2335,7 @@ export class Duel {
       seconds: +this.time.toFixed(1), playerHp: this.playerHp, opponentHp: this.foe ? this.host.arena.hpOf(this.foe) : 0,
       ...this.stats,
       units: structuredClone(this.host.arena.summons.stats),
+      boss: this.boss ? { killedBy: this.boss.killedBy, hits: { ...this.boss.stats.hits }, kneels: this.boss.stats.kneels, phase: this.boss.stats.phases } : undefined,
     };
     this.over = result;
     this.overT = 0;
@@ -2131,6 +2344,18 @@ export class Duel {
     const me = this.host.heroMode.currentKit, them = this.opponentKit;
     const winner = result === 'win' ? me : them, loser = result === 'win' ? them : me;
     this.onFinish?.(result);
+    if (this.boss) {
+      const time = `${Math.floor(this.time / 60)}:${String(Math.floor(this.time % 60)).padStart(2, '0')}`;
+      const left = this.foe ? Math.ceil((this.host.arena.hpOf(this.foe) / this.foeMax) * 100) : 0;
+      this.cardTitle.textContent = result === 'win' ? 'RAID CLEARED' : 'DEFEATED';
+      this.cardTitle.style.color = result === 'win' ? '#ffd27a' : '#ff6a6a';
+      this.cardText.textContent = result === 'win' ? `${them.name} falls after ${time}.` : `${me.name} falls after ${time}. ${them.name} has ${left}% left.`;
+      this.rematchButton.textContent = 'Try again';
+      this.leaveButton.textContent = 'Leave';
+      this.card.style.display = 'flex';
+      this.renderHud();
+      return;
+    }
     if (this.mode === 'run') {
       this.cardTitle.textContent = `${winner.name.toUpperCase()} WINS`;
       this.cardTitle.style.color = winner.accent;
@@ -2200,11 +2425,14 @@ export class Duel {
       col.append(name, barBg, extra);
       box.append(portrait, col);
       this.bars.push({ fill, shield, chunks, text, name, portrait, extra });
+      this.hudSides.push(box);
       return box;
     };
     const vs = document.createElement('div');
     vs.textContent = 'VS';
     vs.style.cssText = `font:800 ${small ? 12 : 16}px ui-serif,Georgia,serif;color:#c9a24a;letter-spacing:2px;`;
+    this.hudVs = vs;
+    this.hudTop = root.style.top;
     root.append(side(false), vs, side(true));
     document.body.appendChild(root);
     return root;
