@@ -39,6 +39,8 @@ const state = {
   heroView: '',
   authError: '',
   authMode: 'login' as 'login' | 'register',
+  /** This page is older than the server's rules: what to tell the player. */
+  outdated: '',
 };
 
 // --- DOM helpers ---------------------------------------------------------------------------------------------
@@ -214,7 +216,7 @@ function loginScreen() {
     el('div', { class: 'tabs' }, tab('login', 'Log in'), tab('register', 'Create account')),
     name, pass,
     el('button', { class: 'btn primary', type: 'submit', disabled: !state.connected }, state.authMode === 'login' ? 'Log in' : 'Create account'),
-    el('div', { class: 'error' }, state.connected ? state.authError : 'Connecting to the game server…'),
+    el('div', { class: 'error' }, state.outdated || (state.connected ? state.authError : 'Connecting to the game server…')),
     el('p', { class: 'fine' }, 'Your name and record are kept on the game server. Passwords are stored hashed.'),
     el('div', { class: 'or' }, 'or'),
     el('button', { class: 'btn ghost', type: 'button', onclick: () => go('cpu') }, 'Play vs CPU · no account needed'),
@@ -567,6 +569,12 @@ net.on('session', (m) => {
 net.on('auth_error', (m) => {
   state.profile = null;
   state.authError = m.error;
+  render();
+});
+net.on('update_required', (m) => {
+  state.outdated = m.error;
+  // On top of everything: a CPU fight goes on underneath, but nothing online works from this page any more.
+  document.body.append(el('div', { class: 'update-bar' }, el('span', {}, m.error), el('button', { class: 'btn small primary', onclick: () => location.reload() }, 'Reload')));
   render();
 });
 net.on('logged_out', (m) => {

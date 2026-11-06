@@ -117,8 +117,8 @@ Client → server:
 
 | `t` | Fields | Notes |
 |---|---|---|
-| `register`, `login` | `name`, `password` | → `session` or `auth_error` |
-| `resume` | `token` | after a reload in the same tab |
+| `register`, `login` | `name`, `password`, `v` | → `session` or `auth_error`, or `update_required` (see *Rules version*) |
+| `resume` | `token`, `v` | after a reload in the same tab |
 | `logout`, `profile`, `lobbies` | | |
 | `lobby_create`, `lobby_join`, `lobby_leave` | `code` (join) | 4 letters, case-insensitive |
 | `lobby_pick` | `hero` | resets that seat's ready |
@@ -142,12 +142,25 @@ Client → server:
 | `spend` | `amount` | HP the hero paid for a spell (≤ 100, never below 1 HP) |
 | `move.r` | | the hero's resource (0-1000), for the other screen's bar |
 
-Server → client: `session { token, profile }`, `auth_error { error }` (empty error = token expired), `logged_out
+Server → client: `session { token, profile }`, `auth_error { error }` (empty error = token expired), `update_required { error }`, `logged_out
 { reason }`, `profile`, `error { error }` (shown as a toast), `lobbies { list }`, `lobby { lobby, you }`, `queue
 { on, since, size }`, `match_start { id, side, hp, you, foe }`, `match_fight { countdown, round }`, `round_end`, `round_start`, `peer_move`,
 `peer_cast` (+ `yaw`), `peer_hit { id, damage, soaked, hp, color, blocked }`, `peer_dodged`, `peer_attack { id }`, `peer_heal { amount, hp }`,
 `peer_status { kind, seconds, color }`, `peer_shield { amount, seconds, color }`, `peer_buff`, `peer_stacks`, `peer_spend { amount, hp }`, `hp { hp }`, `match_end { result, winner, reason,
 seconds, score, hp, stats, profile }`.
+
+## Rules version
+
+Both screens work out arenas, hazards and parcels from the same seed with no server field, so a tab left open from an
+older build would see different cover and events from its opponent. `PROTOCOL` in `server/protocol.mjs` is one number
+read by the hub and the client; **raise it by hand in any deploy that changes those rules or the messages.** A deploy
+drops every socket, and `NetClient` reconnects and sends `resume` with its `v`, so that is when an older tab finds out.
+
+| A tab sends | The hub answers | The tab |
+|---|---|---|
+| a lower `v` | `update_required` | Stops reconnecting and shows a bar with a Reload button over everything. A CPU fight goes on underneath |
+| no `v` (from before the check) | `auth_error` with the same text | Shows it on its login screen. Its token stays, so a reload signs it back in |
+| the same or a higher `v` | as usual | A higher one is a page newer than a hub still restarting during a deploy, for a few seconds at most |
 
 ## Stats
 

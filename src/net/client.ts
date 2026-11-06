@@ -6,6 +6,7 @@
 
 import type { BuffKind, StatusKind } from '../effects/status';
 import type { CastMods } from '../traits';
+import { PROTOCOL } from '../../server/protocol.mjs';
 
 export interface HeroStats {
   played: number;
@@ -44,6 +45,7 @@ export interface LobbyState {
 export type ServerMsg =
   | { t: 'session'; token: string; profile: Profile }
   | { t: 'auth_error'; error: string }
+  | { t: 'update_required'; error: string }
   | { t: 'logged_out'; reason: string }
   | { t: 'profile'; profile: Profile }
   | { t: 'error'; error: string }
@@ -84,6 +86,8 @@ const LAG = Math.max(0, Number(query.get('lag')) || 0);
 const JITTER = Math.max(0, Number(query.get('jitter')) || 0);
 
 const TOKEN_KEY = 'duel.token';
+/** The messages that open a session carry this build's rules version: an older tab is told to reload. */
+const VERSIONED = new Set(['register', 'login', 'resume']);
 
 export class NetClient {
   private ws: WebSocket | null = null;
@@ -91,6 +95,8 @@ export class NetClient {
   private retry = 0;
   private lagIn = 0;
   private lagOut = 0;
+  /** This build is older than the server's: no more connections until the page reloads. */
+  private outdated = false;
   open = false;
 
   connect() {
@@ -109,12 +115,17 @@ export class NetClient {
       try { msg = JSON.parse(String(e.data)); } catch { return; }
       if (msg.t === 'session') NetClient.token = msg.token;
       if (msg.t === 'logged_out' || (msg.t === 'auth_error' && !msg.error)) NetClient.token = null;
+      if (msg.t === 'update_required') {
+        this.outdated = true;
+        ws.close();
+      }
       this.emit(msg);
     }));
     ws.addEventListener('close', () => {
       const was = this.open;
       this.open = false;
       if (was) this.emit({ t: 'socket', open: false });
+      if (this.outdated) return;
       // Reconnect with backoff (the dev server restarts when vite.config.ts changes).
       this.retry = Math.min(this.retry + 1, 6);
       setTimeout(() => this.connect(), 400 * this.retry);
@@ -122,7 +133,7 @@ export class NetClient {
   }
 
   send(msg: { t: string; [k: string]: unknown }) {
-    const ws = this.ws, text = JSON.stringify(msg);
+    const ws = this.ws, text = JSON.stringify(VERSIONED.has(msg.t) ? { ...msg, v: PROTOCOL } : msg);
     this.lagged('out', () => { if (ws?.readyState === WebSocket.OPEN) ws.send(text); });
   }
 

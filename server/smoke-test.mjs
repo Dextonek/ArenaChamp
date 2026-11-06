@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
+import { PROTOCOL, RELOAD_TEXT } from './protocol.mjs';
 
 const target = process.argv[2];
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
@@ -46,8 +47,8 @@ async function client() {
   });
   await new Promise((r) => ws.on('open', r));
   return {
-    /** @param {any} m */
-    send: (m) => ws.send(JSON.stringify(m)),
+    /** The messages that open a session carry the rules version, as src/net/client.ts sends them. @param {any} m */
+    send: (m) => ws.send(JSON.stringify(['register', 'login', 'resume'].includes(m.t) ? { v: PROTOCOL, ...m } : m)),
     /** @param {string} t @returns {Promise<any>} */
     next(t) {
       const i = inbox.findIndex((m) => m.t === t);
@@ -62,6 +63,14 @@ async function client() {
 }
 
 try {
+  // The rules version: an older tab is told to reload, before any name or password is looked at.
+  const old = await client();
+  old.send({ t: 'login', name: 'nobody', password: 'nothing', v: PROTOCOL - 1 });
+  check((await old.next('update_required')).error === RELOAD_TEXT, 'an older version is told to reload');
+  old.send({ t: 'resume', token: 'x', v: undefined });
+  check((await old.next('auth_error')).error === RELOAD_TEXT, 'a tab from before the check is told too, in the message it knows');
+  old.close();
+
   // Accounts.
   const a = await client(), b = await client();
   a.send({ t: 'register', name: ALICE, password: 'pw1234' });

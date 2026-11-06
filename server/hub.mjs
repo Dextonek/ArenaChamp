@@ -8,6 +8,7 @@
 // landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
+import { PROTOCOL, RELOAD_TEXT } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
@@ -115,6 +116,11 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`) })
 
   /** @param {Client} c @param {any} m */
   async function handle(c, m) {
+    if (m.t === 'register' || m.t === 'login' || m.t === 'resume') {
+      // A tab from before this check sends no version and knows only `auth_error`, which it shows on its login screen.
+      if (!num(m.v)) return send(c, { t: 'auth_error', error: RELOAD_TEXT });
+      if (m.v < PROTOCOL) return send(c, { t: 'update_required', error: RELOAD_TEXT });
+    }
     switch (m.t) {
       case 'register':
       case 'login': {
