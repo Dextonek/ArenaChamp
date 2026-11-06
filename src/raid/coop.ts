@@ -2,7 +2,7 @@ import { nextPaint, sleep, type LoadingScreen } from '../game/loading';
 import type { NetClient, Profile, ServerMsg } from '../net/client';
 import type { GameApi } from '../runtime';
 import { NetLink } from './net';
-import { BOSSES } from './sunWarden';
+import { BOSSES } from './bosses';
 
 const MOVE_HZ = 20;
 /** The loading page stays up at least this long, so it can be read and never just flickers. */

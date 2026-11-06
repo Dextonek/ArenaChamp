@@ -121,6 +121,8 @@ export class Arena {
   foeFloor = 0;
   /** What really came off a figure's HP, after its shield. */
   onFoeDamage: ((target: Enemy, dealt: number) => void) | null = null;
+  /** Changes a bolt the hero fires (a raid upgrade: Ricochet). */
+  heroBolt: ((po: ProjectileOptions) => ProjectileOptions) | null = null;
   /**
    * The bend of an arc aim for the next `context()` (see `CastContext.bend`). Hero mode sets it around a cast, like
    * `aimOffset`, and clears it again.
@@ -382,7 +384,7 @@ export class Arena {
         if (f && target !== this.pinned) f.displaced.copy(offset);
       },
       ...this.selfFx(this.caster),
-      projectile: (po) => this.fire(po, 'hero', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
+      projectile: (po) => this.fire(this.heroBolt?.(po) ?? po, 'hero', () => this.liveFoes(), (t, h) => this.hit(t, h, cast)),
       boltWall: (wo) => this.projectiles.wall('hero', wo),
       // The units' hits carry this cast's number, so the duel gives them the cast's power (Mortis's bones, Ada's scrap).
       summon: (so) => this.summons.spawn({

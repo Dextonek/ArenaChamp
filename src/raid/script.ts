@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { raidTierFactor } from '../../server/protocol.mjs';
 import { grown } from '../arenas/hazards/base';
 import { FloorGlows, Sparks } from '../arenas/hazards/fx';
 import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from '../effects/telegraph';
@@ -38,9 +39,11 @@ export class BossScript {
   private glows = new FloorGlows(10);
   private ctx: PlayContext;
 
-  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash'>) {
+  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash'>, tier = 1) {
     this.group.add(this.sparks.points, this.glows.group);
+    const pace = raidTierFactor(tier);
     this.ctx = {
+      shown: (seconds) => (seconds <= 1 ? seconds : Math.max(1, seconds * pace)),
       camera: world.camera,
       group: this.group,
       sparks: this.sparks,

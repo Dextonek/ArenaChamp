@@ -25,7 +25,7 @@
         logError(...a);
       };
       try {
-        const { BOSSES } = await import('/src/raid/sunWarden.ts');
+        const { BOSSES } = await import('/src/raid/bosses.ts');
         const { LocalLink } = await import('/src/raid/link.ts');
         const { CPU_BALANCE, cpuLevel } = await import('/src/cpuLevels.ts');
         const def = BOSSES[opts.boss ?? 'sun'];

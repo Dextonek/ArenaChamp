@@ -15,3 +15,12 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
 export const RAID_BOSSES = {
   sun: { hp: { solo: 3200, duo: 6500 }, phases: [0.7, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
 };
+
+/** The bosses of one tier of a run, in order. */
+export const RAID_RUN = ['sun'];
+
+/** A boss's HP in a raid: each tier adds 15 %. @param {string} id @param {boolean} duo @param {number} tier */
+export const raidHp = (id, duo, tier) => Math.round(RAID_BOSSES[id].hp[duo ? 'duo' : 'solo'] * 1.15 ** (tier - 1));
+
+/** How much of a move's shown time is left at a tier: each tier takes 10 % off. @param {number} tier */
+export const raidTierFactor = (tier) => 0.9 ** (tier - 1);

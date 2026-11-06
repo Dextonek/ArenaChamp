@@ -127,8 +127,39 @@ HP nor the boss's changes and nothing hostile appears. **Still not proven: two r
 
 ### Slice 5: the run (step 5)
 
-Upgrades, Ash and Ember, tiers. It gets its own plan once a person has played the Sun Warden, because that fight will
-change what the run needs.
+The user said to go on with it before anyone has played the Sun Warden (2026-11-06), so every number here waits on a person.
+It is written in this order, alone first, because one screen is always tested first.
+
+**5a. The run, alone.** Pick a hero, take one of three upgrades, fight, take another, fight the next boss, then the next tier or
+stop. A loss ends it. Bosses are a list (`RAID_RUN` in `server/protocol.mjs`), so the run works with one boss before the second exists.
+
+| Piece | Where |
+|---|---|
+| Upgrades: the list, the filter by kit, three seeded offers | `src/raid/upgrades.ts` |
+| Upgrades as one more layer on the hero | Hooks in `Duel`: cooldown in `castRules`, damage in `resolve`, max HP in `setup`, a saved life in `damagePlayer`, `HeroMode.speedBonus`, `Arena.heroBolt` for Ricochet. Each reads a `RunUpgrades` the fight is given, and does nothing without one |
+| The pick screen, 30 s, time out takes the first | `src/raid/offer.ts` |
+| The run's state and order | `RaidRun`, `src/raid/run.ts` |
+| Tiers: boss HP +15 %, shown times 10 % shorter and never under 1 s, one extra move | `raidHp` in `protocol.mjs`, `p.shown()` in moves, `tier` in the brain |
+| Score: bosses beaten, tier, total time | In this browser alone; on both accounts for two |
+
+**5b. Ash and Ember.** One HP bar, one in the ring at a time, in their own room (the Cinder Pit), for the same reason the Warden has his.
+
+- `BossDef.forms`: each form has a model and its moves in the ring and from the rim. A phase says who is in the ring.
+- The rim boss is a second `HeroFigure` the duel only draws, like the partner. Nothing can hit it.
+- **The tag is a cast,** so both screens swap at the same moment: a zone where the new one lands, then the swap.
+- New in the script: a zone with its own hit test (the Lava Wave's gap), zones that stay and hurt (trail, puddles), and a drag on this
+  screen's hero (Drag Under).
+- Marked follows its target with a look only. What counts is the later step, with the spot the brain read, so rule 1 holds.
+- Charge needs one thing only the brain's screen may do, move the boss: `BossMove.act`.
+- Rising lava reuses `ArenaShift` and `ZoneFloor`, started by the phase and not by the clock.
+
+**5c. The run for two.** The hub gets the stages: `raid_offer`, `raid_pick`, `raid_stage`, `raid_won`, `raid_cleared`, `raid_next`. Upgrades
+stay on each client, so the hub only waits for the picks. The smoke test plays a whole run with both bosses.
+
+**5d. The tool.** All 39 heroes against both bosses, and each upgrade forced on. Numbers in `STATUS.md`.
+
+**Check:** each new move forced in turn as with the Warden; each upgrade changes the number it says, and goes away with the run; two tabs
+through a whole run. **Not proven by any of it: whether it's fun, or how hard it really is.**
 
 ## What only a person can answer
 

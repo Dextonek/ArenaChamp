@@ -116,6 +116,8 @@ export interface PlayContext {
   /** The screen's small words. */
   say(text: string, color: string, x: number, z: number): void;
   solo: boolean;
+  /** How long a zone shown for `seconds` at tier 1 shows at this tier: shorter each tier, and never under 1 s. */
+  shown(seconds: number): number;
 }
 
 export interface AimContext {
@@ -188,6 +190,8 @@ export interface BossDef {
   /** The pause and banner when a phase begins (s). */
   phasePause: number;
   phases: BossPhase[];
+  /** A higher tier brings these moves in from the first phase on, one a tier. */
+  extra?: string[];
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */
   late?(): { shift: ArenaShift; offset: number };
@@ -266,6 +270,8 @@ export interface BossWorld {
   place(x: number, z: number, yaw: number): void;
   /** The boss's HP from whoever keeps it. */
   setBossHp(hp: number): void;
+  /** A phase begins: Fresh Start's shield. */
+  phaseShield(): void;
   /** This screen's hero. */
   me(): THREE.Vector3;
   /** It has fallen: nothing can hit it, and it stands in no zone. */

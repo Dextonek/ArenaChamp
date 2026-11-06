@@ -3,7 +3,9 @@ import type { StatusKind } from '../effects/status';
 import { BossBrain } from './brain';
 import { BossHud } from './hud';
 import { Track } from './partner';
+import { raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
+import type { RunUpgrades } from './upgrades';
 import type { BossCast, BossDef, BossWorld, RaidLink } from './types';
 
 /** What each hard control is worth to the stagger gauge, per second of it. Blind counts for little. */
@@ -29,10 +31,14 @@ export class BossFight {
   /** This fight's results so far, for the raid tool. */
   stats = { hits: {} as Record<string, number>, kneels: 0, phases: 0 };
 
-  constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud) {
-    this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength) });
+  /** Seconds the boss still stands open or kneels: Opportunist. */
+  private openLeft = 0;
+  private begun = false;
+
+  constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
+    this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength) }, tier);
     this.group.add(this.script.group);
-    this.brain = link.brain ? new BossBrain(def, world, link, seed) : null;
+    this.brain = link.brain ? new BossBrain(def, world, link, seed, tier) : null;
     this.track = link.brain ? null : new Track();
     link.on = {
       cast: (c) => this.onCast(c),
@@ -53,7 +59,7 @@ export class BossFight {
     if (!move) return;
     this.script.play(c);
     if (c.step !== 0) return;
-    this.hud.cast(move.name, move.charge);
+    this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
     this.world.enemyCast(!!move.big);
     if (!move.alongside) this.world.pose(move.pose, move.charge, !!move.big);
   }
@@ -62,19 +68,27 @@ export class BossFight {
     this.stats.phases = i;
     this.brain?.setPhase(i);
     this.world.banner(this.def.phases[i].name, 2.2);
+    this.world.phaseShield();
   }
 
   private onKneel(seconds: number) {
     this.stats.kneels++;
     this.brain?.kneel(seconds);
     this.world.kneel(seconds);
+    this.openLeft = Math.max(this.openLeft, seconds);
     this.hud.setState('KNEELING', seconds);
     this.world.banner('It kneels', 1.2, '26px');
   }
 
   /** A big move has ended: it stands open for `seconds` (the move's look calls this through the world). */
   exposedFor(seconds: number) {
+    this.openLeft = Math.max(this.openLeft, seconds);
     this.hud.setState('EXPOSED', seconds);
+  }
+
+  /** It stands open or kneels. */
+  get open() {
+    return this.openLeft > 0;
   }
 
   /** The other screen ran the brain and left: this one takes over, at the next move. What is in the air goes on. */
@@ -82,7 +96,7 @@ export class BossFight {
     if (this.brain) return;
     this.link.brain = true;
     this.track = null;
-    this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, 100000);
+    this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, this.tier, 100000);
     this.brain.resume(this.stats.phases);
   }
 
@@ -98,7 +112,7 @@ export class BossFight {
   control(kind: StatusKind, seconds: number) {
     if (kind === 'slow') return seconds * SLOW_SHARE;
     const rate = STAGGER_PER_SECOND[kind];
-    if (rate) this.link.stagger(rate * seconds);
+    if (rate) this.link.stagger(rate * seconds * (this.upgrades?.staggerMul ?? 1));
     return 0;
   }
 
@@ -128,10 +142,16 @@ export class BossFight {
   /** One frame. `live`: the fight is on. */
   update(dt: number, live: boolean, hp: number) {
     this.hud.update(dt);
+    this.openLeft = Math.max(0, this.openLeft - dt);
     this.hud.setHp(hp, this.link.maxHp);
     this.link.tick(dt);
     const s = this.track?.sample();
     if (s) this.world.place(s.x, s.z, s.yaw);
+    // The first phase begins with the fight.
+    if (live && !this.begun) {
+      this.begun = true;
+      this.world.phaseShield();
+    }
     if (live && !this.over) this.brain?.update(dt);
     this.script.update(dt, live && !this.over);
   }

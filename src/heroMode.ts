@@ -320,8 +320,11 @@ export class HeroMode implements TouchTarget {
 
   /** Walk speed in m/s: the hero's own (its trait), else the default. */
   get speed() {
-    return traitFor(this.kit.name)?.speed ?? HERO_SPEED;
+    return (traitFor(this.kit.name)?.speed ?? HERO_SPEED) * this.speedBonus;
   }
+
+  /** A raid upgrade's share on top of the hero's own speed (Long Stride). */
+  speedBonus = 1;
 
   /** Sets a slot's cooldown (a trait refund or reset). */
   setCooldown(i: number, seconds: number) {

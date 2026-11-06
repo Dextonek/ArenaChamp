@@ -23,6 +23,7 @@ import { BossFight } from './raid/fight';
 import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
 import type { BossDef, BossWorld, RaidLink } from './raid/types';
+import type { RunUpgrades } from './raid/upgrades';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -267,6 +268,7 @@ export class Duel {
   boss: BossFight | null = null;
   private bossDef: BossDef | null = null;
   private bossHud: BossHud | null = null;
+  private bossCard: ((result: 'win' | 'lose', seconds: number) => { title: string; text: string; again?: string } | null) | null = null;
   /** The other player's hero in a raid for two: a third body this screen only draws. */
   private partner: Partner | null = null;
   /** How the autopilot plays (the raid tool tries it at different levels). */
@@ -522,8 +524,13 @@ export class Duel {
    * Starts a boss fight (src/raid): this side's hero against `def`, on the vs-CPU path. The boss is `Duel.foe` and
    * `Duel.figure`, so spells land on it and traits see it as the enemy; `BossFight` takes the AI's place.
    */
-  startBoss(o: { def: BossDef; link: RaidLink; seed: string; mode?: 'play' | 'run'; name?: string; partner?: { kit: HeroKit; name: string } }) {
+  startBoss(o: {
+    def: BossDef; link: RaidLink; seed: string; mode?: 'play' | 'run'; name?: string; partner?: { kit: HeroKit; name: string }; tier?: number; upgrades?: RunUpgrades;
+    /** What the result card says, or null for no card: the run goes on by itself. */
+    card?: (result: 'win' | 'lose', seconds: number) => { title: string; text: string; again?: string } | null;
+  }) {
     this.endBoss();
+    this.bossCard = o.card ?? null;
     const mode = o.mode ?? 'play', run = mode === 'run';
     const arena = this.host.arena, hm = this.host.heroMode;
     this.mode = mode;
@@ -546,8 +553,17 @@ export class Duel {
     arena.onFoeDamage = (target, dealt) => { if (target === foe) this.boss?.damaged(dealt); };
     arena.statusGate = (target, kind, seconds) => (target === foe && this.boss ? this.boss.control(kind, seconds) : seconds);
     this.bossHud ??= new BossHud();
-    this.boss = new BossFight(o.def, o.link, this.bossWorld(), o.seed, this.bossHud);
+    this.boss = new BossFight(o.def, o.link, this.bossWorld(), o.seed, this.bossHud, o.tier ?? 1, o.upgrades ?? null);
     this.group.add(this.boss.group);
+    // The run's upgrades: one more layer on the hero, for this fight.
+    const up = o.upgrades;
+    up?.newFight();
+    if (up) {
+      this.playerMax = Math.round(this.playerMax * up.hpMul());
+      this.playerHp = this.playerMax;
+      hm.speedBonus = up.speedMul;
+      if (up.has('ricochet')) arena.heroBolt = (po) => ({ ...po, reflect: (po.reflect ?? 0) + 1, reflectBonus: po.reflectBonus ?? 0 });
+    }
     const late = o.def.late?.();
     if (late) {
       this.shift = late.shift;
@@ -713,6 +729,12 @@ export class Duel {
     }
   }
 
+  /** Fresh Start: a shield as each phase begins. */
+  private freshShield() {
+    const share = this.boss?.upgrades?.phaseShield ?? 0;
+    if (share > 0 && this.playerHp > 0) this.host.arena.shieldFigure(this.host.arena.caster, share * this.playerMax, 20, '#ffe27a');
+  }
+
   /** The boss's figure, for what streams its walk (src/raid/coop.ts). */
   get bossFigure() {
     return this.boss ? this.foe : null;
@@ -721,6 +743,11 @@ export class Duel {
   /** This hero's HP now. */
   get heroHp() {
     return this.playerHp;
+  }
+
+  /** This hero's max HP now, with what the run's upgrades add. */
+  get heroMax() {
+    return this.playerMax;
   }
 
   /** What a boss fight may do to the duel. */
@@ -746,6 +773,7 @@ export class Duel {
         foe.group.rotation.y = yaw;
       },
       setBossHp: (hp) => arena.setHp(foe, Math.max(1, hp)),
+      phaseShield: () => this.freshShield(),
       me: () => arena.caster.group.position,
       down: () => this.playerHp <= 0,
       heroes: () => {
@@ -806,7 +834,10 @@ export class Duel {
     this.boss?.dispose();
     this.boss = null;
     this.bossDef = null;
+    this.bossCard = null;
     this.shiftOffset = 0;
+    this.host.heroMode.speedBonus = 1;
+    arena.heroBolt = null;
     this.partner?.dispose();
     this.partner = null;
     this.clearPartnerMarks();
@@ -1083,7 +1114,7 @@ export class Duel {
       this.heroCasts.set(arena.castSeq + 1, { slot, mods: r.mods });
       if (this.heroCasts.size > 40) this.heroCasts.delete(this.heroCasts.keys().next().value!);
       this.heroLast = { slot, mods: r.mods };
-      return r.cooldown;
+      return r.cooldown * (this.boss?.upgrades?.cooldownMul(slot) ?? 1);
     };
     // Online an echo against the other hero is not a second message (the server drops attacks 0.5 s apart): the hit
     // carries it as extra power instead.
@@ -1130,6 +1161,9 @@ export class Duel {
     const vRt = !victimIsHero ? null : dealer === 'hero' ? this.oppRt : this.heroRt;
     const hit: TraitHit = { kind, slot, cast, mods, damage: (opts.damage ?? 15) * mods.power, opts: { ...opts } as HitOptions, victim, victimIsHero };
     if (victimIsHero) hit.damage *= arena.statusOf(victim)?.takenMul ?? 1;
+    // A raid's upgrades on this hero's hits on the boss.
+    const up = this.boss?.upgrades;
+    if (up && dealer === 'hero' && victim === this.foe) hit.damage *= up.dealtMul(this.boss!.open);
     // The CPU level's own lever (never online: the other side is a person).
     if (dealer === 'opponent' && !this.net) hit.damage *= this.cpuLevel.damage;
     // Sealed (Sefu's sarcophagus): nothing reaches the figure, from either side.
@@ -1158,7 +1192,8 @@ export class Duel {
 
   /** The AI's walk speed for a kit: the hero's own speed scaled to the CPU level's pace. */
   private aiSpeed(kit: HeroKit, lv: CpuLevel) {
-    return lv.speed * (traitFor(kit.name)?.speed ?? 4) / 4;
+    const bonus = kit === this.host.heroMode.currentKit ? this.host.heroMode.speedBonus : 1;
+    return lv.speed * bonus * (traitFor(kit.name)?.speed ?? 4) / 4;
   }
 
   /** The CPU level that drives `who`: the opponent plays `cpuLevel`, the autopilot always plays Normal. */
@@ -2243,6 +2278,11 @@ export class Duel {
     const left = arena.absorb(arena.caster, dmg);
     if (castId !== undefined) this.net?.tookHit(castId, left, opts.color, dmg - left);
     this.playerHp = Math.max(0, this.playerHp - left);
+    // Stubborn: once a fight, a killing hit leaves 1 HP.
+    if (this.playerHp <= 0 && this.boss?.upgrades?.trySave()) {
+      this.playerHp = 1;
+      arena.say('STUBBORN', '#ffe27a', me, 1.3);
+    }
     this.host.heroMode.figureHit(left, opts.color, opts.from ?? this.foe?.group.position);
     if (left > 0) {
       arena.say(String(left), opts.color ?? '#ff6a6a', me, left >= 40 ? 1.5 : 1);
@@ -2534,15 +2574,21 @@ export class Duel {
     if (this.boss) {
       const time = `${Math.floor(this.time / 60)}:${String(Math.floor(this.time % 60)).padStart(2, '0')}`;
       const left = this.foe ? Math.ceil((this.host.arena.hpOf(this.foe) / this.foeMax) * 100) : 0;
-      this.cardTitle.textContent = result === 'win' ? 'RAID CLEARED' : 'DEFEATED';
+      const told = this.bossCard ? this.bossCard(result, this.time) : undefined;
+      this.renderHud();
+      // A boss beaten with more to come: no card, the run goes on by itself.
+      if (told === null) {
+        this.showBanner(`${them.name} falls`, 2, '30px');
+        return;
+      }
+      this.cardTitle.textContent = told?.title ?? (result === 'win' ? 'RAID CLEARED' : 'DEFEATED');
       this.cardTitle.style.color = result === 'win' ? '#ffd27a' : '#ff6a6a';
-      this.cardText.textContent = result === 'win' ? `${them.name} falls after ${time}.` : `${me.name} falls after ${time}. ${them.name} has ${left}% left.`;
-      this.rematchButton.textContent = 'Try again';
-      // A raid for two ends the room: a new one starts from the Raid screen.
-      this.rematchButton.style.display = this.boss.link.solo ? '' : 'none';
+      this.cardText.textContent = told?.text ?? (result === 'win' ? `${them.name} falls after ${time}.` : `${me.name} falls after ${time}. ${them.name} has ${left}% left.`);
+      this.rematchButton.textContent = told?.again ?? 'Try again';
+      // Without a next step (a raid for two that has ended) there is only Leave.
+      this.rematchButton.style.display = told ? (told.again ? '' : 'none') : this.boss.link.solo ? '' : 'none';
       this.leaveButton.textContent = 'Leave';
       this.card.style.display = 'flex';
-      this.renderHud();
       return;
     }
     if (this.mode === 'run') {

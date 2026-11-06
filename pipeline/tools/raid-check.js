@@ -72,6 +72,111 @@
   };
   window._raidPartners.result = () => partners;
 
+  // Each upgrade changes the number it says, and nothing lasts past the run. Tiers: more boss HP, shorter shown times.
+  //   await _raidUpgrades()    // { ok, failed, rows }
+  window._raidUpgrades = async (hero = 'Bram') => {
+    const d = vfx.duel, a = vfx.arena, hm = vfx.heroMode;
+    const { SUN_WARDEN: def } = await import('/src/raid/sunWarden.ts');
+    const { LocalLink } = await import('/src/raid/link.ts');
+    const { RunUpgrades, offersFor, UPGRADES } = await import('/src/raid/upgrades.ts');
+    const { HERO_KITS } = await import('/src/heroes.ts');
+    const { NO_MODS } = await import('/src/traits/index.ts');
+    const rows = [], failed = [];
+    const check = (name, got, want, tol = 0.011) => {
+      const pass = Math.abs(got - want) <= tol;
+      rows.push(`${pass ? 'ok  ' : 'FAIL'} ${name}: ${+got.toFixed(3)} (want ${want})`);
+      if (!pass) failed.push(name);
+    };
+    vfx.view.paused = true;
+    if (!d.on) vfx.setDuel(true, 'play');
+    vfx.heroPickCtrl.setValue(hero);
+    d.holdStart = false;
+    const kit = HERO_KITS.find((k) => k.name === hero);
+    const fresh = (ids = [], tier = 1) => {
+      const up = new RunUpgrades();
+      for (const id of ids) up.add(id);
+      const link = new LocalLink(def, tier);
+      d.startBoss({ def, link, seed: 'up', mode: 'play', upgrades: up, tier });
+      d.boss.brain.pause = 1e9;
+      return { up, link };
+    };
+    const dealt = (damage = 100) => d.resolve('hero', d.foe, { damage }, NO_MODS, 'spell', 0, 1).damage;
+    const base = kit.maxHp ?? 600;
+    try {
+      fresh([]);
+      const cool0 = hm.castRules(0, 10, 1), cool3 = hm.castRules(3, 10, 1), walk = hm.speed;
+      check('no upgrades: damage', dealt(), 100, 0.5);
+
+      fresh(['hands']);
+      check('Quick Hands: Q', hm.castRules(0, 10, 1) / cool0, 0.85);
+      fresh(['ready']);
+      check('Ready Again: R', hm.castRules(3, 10, 1) / cool3, 0.75);
+      check('Ready Again: Q untouched', hm.castRules(0, 10, 1) / cool0, 1);
+      fresh(['stride']);
+      check('Long Stride', hm.speed / walk, 1.15);
+      fresh(['glass']);
+      check('Glass Edge: max HP', d.heroMax / base, 0.85, 0.002);
+      check('Glass Edge: damage', dealt(), 125, 0.5);
+      fresh(['stone']);
+      check('Stone Skin: max HP', d.heroMax / base, 1.2, 0.002);
+      check('it starts full', d.heroHp / d.heroMax, 1);
+
+      fresh(['opportunist']);
+      check('Opportunist: not open', dealt(), 100, 0.5);
+      d.boss.exposedFor(3);
+      check('Opportunist: open', dealt(), 160 * 1, 0.5);
+
+      const b = fresh(['breaker']);
+      a.applyStatus(d.foe, 'stun', 1);
+      check('Bone Breaker: the gauge', b.link.gauge, 22 * 1.4);
+
+      const w = d.boss.script.world;
+      const st = fresh(['stubborn']);
+      const world = d.boss.script.world;
+      void w;
+      world.hitMe({ share: 5, from: { x: 0, z: 0 }, move: 'test' });
+      check('Stubborn: a killing hit leaves 1 HP', d.heroHp, 1);
+      world.hitMe({ share: 5, from: { x: 0, z: 0 }, move: 'test' });
+      check('Stubborn: only once a fight', d.heroHp, 0);
+      void st;
+
+      fresh(['fresh']);
+      d.boss.link.on.phase(1);
+      check('Fresh Start: a shield at a phase', a.shieldOf(a.caster).amount / d.heroMax, 0.1);
+
+      fresh(['ricochet']);
+      check('Ricochet: a bolt bounces once', a.heroBolt({ reflect: 0 }).reflect, 1);
+
+      // Nothing lasts past the run.
+      fresh([]);
+      check('without it: speed', hm.speed / walk, 1);
+      check('without it: max HP', d.heroMax / base, 1);
+      check('without it: no bounce', a.heroBolt ? 1 : 0, 0);
+
+      // Offers: three, only what the hero can use, none it holds.
+      const owned = new RunUpgrades();
+      const offers = offersFor(kit, owned, 'a');
+      check('three offers', offers.length, 3);
+      check('the same seed, the same offers', offersFor(kit, owned, 'a').map((u) => u.id).join() === offers.map((u) => u.id).join() ? 1 : 0, 1);
+      owned.add(offers[0].id);
+      check('none it holds', offersFor(kit, owned, 'a').some((u) => u.id === offers[0].id) ? 1 : 0, 0);
+      const noBolts = HERO_KITS.filter((k) => !UPGRADES.find((u) => u.id === 'ricochet').fits(k)).length;
+      rows.push(`note heroes with no line bolts, never offered Ricochet: ${noBolts}`);
+
+      // Tiers.
+      const t3 = fresh([], 3);
+      check('tier 3: boss HP', t3.link.maxHp, Math.round(def.hp.solo * 1.15 * 1.15), 0.5);
+      const shown = d.boss.script.ctx.shown;
+      check('tier 3: a shown time', shown(2.5), 2.5 * 0.81);
+      check('tier 3: never under 1 s', shown(1.1), 1);
+      check('tier 3: two extra moves', d.boss.brain.extra.length, 2, 0);
+    } catch (e) {
+      failed.push(String(e?.stack ?? e));
+    }
+    d.stop();
+    return { ok: !failed.length, failed, rows };
+  };
+
   window._raidCheck = async (hero = 'Lyra') => {
     const d = vfx.duel, a = vfx.arena;
     const { SUN_WARDEN: def } = await import('/src/raid/sunWarden.ts');

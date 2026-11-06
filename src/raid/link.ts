@@ -1,3 +1,4 @@
+import { raidHp } from '../../server/protocol.mjs';
 import type { BossCast, BossDef, RaidEvents, RaidLink } from './types';
 
 const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, wall() {}, end() {} };
@@ -18,8 +19,8 @@ export class LocalLink implements RaidLink {
   private kneeling = 0;
   private over = false;
 
-  constructor(private def: BossDef) {
-    this.maxHp = def.hp.solo;
+  constructor(private def: BossDef, tier = 1) {
+    this.maxHp = raidHp(def.id, false, tier);
     this.hp = this.maxHp;
   }
 

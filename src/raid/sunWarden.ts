@@ -45,7 +45,7 @@ const stoneSweep: BossMove = {
   id: 'sweep', name: 'Stone Sweep', charge: 1.6, lock: 2.1, cooldown: 6, range: 8.5, pose: 'swing',
   aim: atTarget,
   play(c, p) {
-    const radius = 6.5, angle = 120, at = 1.6;
+    const radius = 6.5, angle = 120, at = p.shown(1.6);
     const th: Threat = { shape: { kind: 'cone', x: c.fx, z: c.fz, radius, angle, dir: c.dir }, at, share: 0.2, knock: 3 };
     return {
       threats: [th], duration: at + 0.5,
@@ -68,7 +68,7 @@ const pillarFall: BossMove = {
   id: 'pillars', name: 'Pillar Fall', charge: 2.9, lock: 2.9, cooldown: 9, steps: [0, 0.7, 1.4], chases: true, pose: 'raise',
   aim: atTarget,
   play(c, p) {
-    const radius = 2.2, at = 1.5;
+    const radius = 2.2, at = p.shown(1.5);
     const th: Threat = { shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.15 };
     const stone = new FallingStone(c.x, c.z, radius, at);
     p.group.add(stone.mesh);
@@ -91,7 +91,7 @@ const sunRay: BossMove = {
   id: 'ray', name: 'Sun Ray', charge: 2.5, lock: 3, cooldown: 8, pose: 'thrust',
   aim: atTarget,
   play(c, p) {
-    const at = 2.5, width = 2, y = 2.6;
+    const at = p.shown(2.5), width = 2, y = 2.6;
     const full = toRim(c.fx, c.fz, c.dir);
     const ex = c.fx + Math.sin(c.dir) * full, ez = c.fz + Math.cos(c.dir) * full;
     const k = p.rayStop(c.fx, c.fz, ex, ez);
@@ -127,7 +127,7 @@ const noon: BossMove = {
   id: 'noon', name: 'Noon', charge: 4, lock: 9, cooldown: 26, big: true, pose: 'raise',
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(C.x - c.boss.x, C.z - c.boss.z) }),
   play(c, p) {
-    const at = 4, exposed = 5;
+    const at = p.shown(4), exposed = 5;
     const source = { x: c.fx, z: c.fz };
     const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: COURT_R + 1 }, at, share: 0.4, source, breaks: true, look: at };
     const shadows = new ShadowFloor(source, () => p.cover(), STAND_COLOR, COURT_R);
@@ -163,7 +163,7 @@ const sunOrder: BossMove = {
   play(c, p) {
     const rng = seeded(c.seed);
     const start = rng() * Math.PI * 2, spin = rng() < 0.5 ? -1 : 1;
-    const first = 2.5, apart = 0.8, radius = COURT_R + 1;
+    const first = p.shown(2.5), apart = 0.8, radius = COURT_R + 1;
     const marks: NumberMark[] = [];
     const threats: Threat[] = [0, 1, 2, 3].map((i) => {
       const dir = start + spin * i * (Math.PI / 2);
@@ -199,7 +199,7 @@ const sharedBurden: BossMove = {
   id: 'burden', name: 'Shared Burden', charge: 3, lock: 3.4, cooldown: 18, coop: true, pose: 'raise',
   aim: atTarget,
   play(c, p) {
-    const radius = 2.4, at = 3;
+    const radius = 2.4, at = p.shown(3);
     const light = new LightPillar(c.x, c.z, radius, 7, STAND_COLOR);
     p.group.add(light.mesh);
     return {
@@ -224,7 +224,7 @@ const eclipse: BossMove = {
   id: 'eclipse', name: 'Eclipse', charge: 4.8, lock: 4.8, cooldown: 14, steps: [0, 1.6, 3.2], pose: 'burst',
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) }),
   play(c, p) {
-    const at = 1.6, near = 5.5;
+    const at = p.shown(1.6), near = 5.5;
     const far = c.step === 1;
     const reach = Math.hypot(c.fx - C.x, c.fz - C.z) + COURT_R;
     const shape: TelegraphShape = far ? { kind: 'ring', x: c.fx, z: c.fz, inner: near, outer: reach } : { kind: 'circle', x: c.fx, z: c.fz, radius: near };
@@ -250,7 +250,7 @@ const anchors: BossMove = {
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(C.x - c.boss.x, C.z - c.boss.z) }),
   play(c, p) {
     const rng = seeded(c.seed);
-    const base = rng() * Math.PI * 2, radius = 2.3, out = 7.6, at = 3;
+    const base = rng() * Math.PI * 2, radius = 2.3, out = 7.6, at = p.shown(3);
     const spot = (i: number) => ({ x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out });
     // With one hero up each step is one circle. With two the first step is both, and the second does nothing.
     const parts = c.alone ?? p.solo ? [c.step] : c.step === 0 ? [0, 1] : [];
@@ -285,7 +285,7 @@ const walkingSun: BossMove = {
   play(c, p) {
     const rng = seeded(c.seed);
     const start = rng() * Math.PI * 2, spin = rng() < 0.5 ? -1 : 1;
-    const warm = 2, end = 12, speed = THREE.MathUtils.degToRad(24), width = 1.4, inner = 1.25;
+    const warm = p.shown(2), end = 12, speed = THREE.MathUtils.degToRad(24), width = 1.4, inner = 1.25;
     const angleAt = (t: number) => start + spin * speed * Math.max(0, t - warm);
     // Cover stops the ray: remembered per small turn, because an AI's look ahead asks many times a frame.
     const reach = new Map<number, number>();
@@ -388,6 +388,8 @@ export const SUN_WARDEN: BossDef = {
     { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
     { name: 'Last Light', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
   ],
+  /** A higher tier brings these in from the first phase on, one a tier. */
+  extra: ['order', 'walking', 'eclipse'],
   moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, noon, order: sunOrder, burden: sharedBurden, eclipse, anchors, walking: walkingSun },
   /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
   late: () => ({
@@ -398,4 +400,4 @@ export const SUN_WARDEN: BossDef = {
   }),
 };
 
-export const BOSSES: Record<string, BossDef> = { sun: SUN_WARDEN };
+

@@ -18,7 +18,7 @@ import { CpuMatch } from './cpu';
 import { CPU_LEVELS, cpuLevel } from '../cpuLevels';
 import { TOUCH } from '../touch';
 import { RaidController } from '../raid/coop';
-import { RaidRun } from '../raid/run';
+import { RaidRun, scoreText } from '../raid/run';
 import { SUN_WARDEN } from '../raid/sunWarden';
 
 type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid';
@@ -434,12 +434,13 @@ function raidScreen() {
   return el('div', { class: 'cpu' },
     el('section', { class: 'card' },
       el('h2', {}, 'Raid'),
-      el('p', { class: 'muted' }, `${boss.name}, ${boss.title.toLowerCase()}. Pale orange means leave, gold means stand here. Hard control doesn't hold him: it fills a gauge, and a full gauge makes him kneel.`),
+      el('p', { class: 'muted' }, 'Take an upgrade before each boss. Beat them all and the next tier is harder, and you keep your upgrades. One loss ends the run. Pale orange means leave, gold means stand here. Hard control does not hold a boss: it fills a gauge, and a full gauge makes it kneel.'),
+      raid.best ? el('p', { class: 'muted small' }, `Your best alone: ${scoreText(raid.best)}`) : null,
       el('h3', {}, 'Your hero'),
       chosenHero(hero),
       heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
       el('div', { class: 'row play-actions' },
-        el('button', { class: 'btn primary big', disabled: busy, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name, boss: boss.id }) }, 'Start alone'),
+        el('button', { class: 'btn primary big', disabled: busy, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name }) }, 'Start alone'),
         el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
       state.profile
         ? el('div', {},

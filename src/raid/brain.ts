@@ -1,3 +1,4 @@
+import { raidTierFactor } from '../../server/protocol.mjs';
 import { seeded } from '../arenas/common';
 import { seedNumber } from '../arenas/hazards/base';
 import type { BossDef, BossMove, BossWorld, RaidLink, RaidSide } from './types';
@@ -21,11 +22,18 @@ export class BossBrain {
   private aimedAt = [-Infinity, -Infinity];
   private next: RaidSide = 0;
 
-  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, seed: string, firstId = 0) {
+  /** How much of a move's times are left at this tier. */
+  private pace: number;
+  /** The moves a higher tier brings in. */
+  private extra: string[];
+
+  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, seed: string, tier = 1, firstId = 0) {
     this.rng = seeded(seedNumber(`${seed}-brain`));
     this.opener = def.phases[0].opener ?? null;
     this.next = link.side;
     this.seq = firstId;
+    this.pace = raidTierFactor(tier);
+    this.extra = (def.extra ?? []).slice(0, tier - 1);
   }
 
   /** Taking over a fight already on: the phase as it stands, no pause and no opener. */
@@ -89,7 +97,7 @@ export class BossBrain {
     }
     // A move for two needs two heroes standing, not just two players in the room.
     const two = this.world.heroes().filter((h) => !h.down).length >= 2;
-    const open = this.def.phases[this.phase].moves
+    const open = [...new Set([...this.def.phases[this.phase].moves, ...this.extra])]
       .map((id) => moves[id])
       .filter((m) => m && (!m.coop || two) && (this.ready.get(m.id) ?? 0) <= this.time && (m.range === undefined || dist <= m.range));
     const fresh = open.filter((m) => m.id !== this.last);
@@ -103,14 +111,14 @@ export class BossBrain {
     this.aimedAt[side] = this.time;
     if (!m.alongside) {
       this.last = m.id;
-      this.locked = m.lock;
-      this.wait = m.lock + gap[0] + this.rng() * (gap[1] - gap[0]);
+      this.locked = m.lock * this.pace;
+      this.wait = this.locked + gap[0] + this.rng() * (gap[1] - gap[0]);
     }
     const seed = Math.floor(this.rng() * 2147483647);
     const alone = this.world.heroes().filter((h) => !h.down).length < 2;
     for (const [i, at] of (m.steps ?? [0]).entries()) {
       if (at <= 0) this.send(m, i, seed, side, alone);
-      else this.pending.push({ at: this.time + at, move: m, step: i, seed, target: side, alone });
+      else this.pending.push({ at: this.time + at * this.pace, move: m, step: i, seed, target: side, alone });
     }
     this.next = this.chooseNext();
   }
