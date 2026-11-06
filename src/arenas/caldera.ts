@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { VentEruption } from './hazards/caldera';
+import { calderaShift } from './shifts/tables';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded, shadowed } from './common';
 import type { ArenaDef } from './types';
 
@@ -444,6 +445,7 @@ export const calderaArena: ArenaDef = {
   id: 'caldera',
   name: 'Ember Caldera',
   hazard: (seed) => new VentEruption(seed),
+  shift: () => calderaShift(),
   obstacles: CALDERA_OBSTACLES,
   stage: {
     background: 0x2a0e06,

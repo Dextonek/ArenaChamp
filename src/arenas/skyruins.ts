@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { StormStrikes } from './hazards/skyruins';
+import { skyruinsShift } from './shifts/tables';
 import { RING, canvasTexture, disposeTree, flatRing, seeded } from './common';
 import type { ArenaDef, ArenaStage } from './types';
 
@@ -524,6 +525,7 @@ export const skyruinsArena: ArenaDef = {
   id: 'skyruins',
   name: 'Sky Ruins',
   hazard: (seed) => new StormStrikes(seed),
+  shift: () => skyruinsShift(),
   obstacles: SKYRUINS_OBSTACLES,
   stage: STAGE,
   hideGround: true,

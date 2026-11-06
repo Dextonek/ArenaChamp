@@ -10,6 +10,7 @@ import { HERO_BODIES, type HeroKit, type HeroSpell } from './heroes';
 import { HeroFigure, castStyle } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
 import type { ArenaHazard, HazardHit, HazardTarget, HazardWorld } from './arenas/hazards/base';
+import type { ArenaShift } from './arenas/shifts/base';
 import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
@@ -134,6 +135,9 @@ const SIGHT_HOLD = 0.5; // having lost sight, an AI keeps walking round the cove
 const STRAFE_LOOK = 0.9; // an AI does not strafe the way that would hide the other side within this far (m)
 const HAZARD_LOOK = 1.6; // an AI starts walking when a hazard will reach it within this many seconds
 const HAZARD_CLEAR = 3; // and walks to a spot no hazard reaches for this long
+const ZONE_LOOK = 0.8; // how far ahead (m) an AI's walk checks for a part of the floor that hurts
+const HAZARD_SEND_GAP = 0.32; // the hub's HAZARD_GAP_MS, with a little to spare
+const HAZARD_MAX = 60; // the hub's most for one hazard hit: more would show damage it does not count
 const SUMMON_REACH = 10; // the AI casts a summon spell when the enemy is within this distance (m)
 const UNIT_BLOCK = 2.5; // an enemy unit this close is shot at when nothing can be cast at the hero (m)
 
@@ -236,6 +240,16 @@ export class Duel {
   /** An AI's reaction to the hazard's event: rolled once per event. */
   private hazardRolls = new Map<Enemy, { id: number; react: boolean; at: number }>();
   private hazardWorld: HazardWorld;
+  /** Arenas that change (src/arenas/shifts) in play duels and network duels. */
+  shiftsOn = true;
+  /** Also in 'run' duels. Off by default, like `hazardsInRuns`. */
+  shiftsInRuns = false;
+  /** For tests: seconds added to the clock the stages read. Set it on both screens before the fight. */
+  shiftOffset = 0;
+  /** This round's change, on the same fight clock as the hazard. */
+  private shift: ArenaShift | null = null;
+  /** When this side's hero last reported a hazard online (the hub takes one per 0.3 s, and both kinds can land together). */
+  private hazardSentAt = -Infinity;
   /** Duel simulations: the player's hero is driven by the same AI as the opponent. */
   autopilot = false;
   /** 'play': the player against the AI. 'run': AI against AI to watch (the autopilot drives the player's hero). */
@@ -476,7 +490,11 @@ export class Duel {
     this.hazard?.dispose();
     this.hazard = this.hazardsOn && (this.mode === 'play' || this.hazardsInRuns) ? def.hazard?.(this.hazardSeed) ?? null : null;
     if (this.hazard) this.group.add(this.hazard.group);
+    this.shift?.dispose();
+    this.shift = this.shiftsOn && (this.mode === 'play' || this.shiftsInRuns) ? def.shift?.(this.hazardSeed) ?? null : null;
+    if (this.shift) this.group.add(this.shift.group);
     this.hazardClock = 0;
+    this.hazardSentAt = -Infinity;
     this.hazardRolls.clear();
     this.oppAttackSpec = attackFor(this.opponentKit);
     this.oppAttack.reset();
@@ -801,6 +819,10 @@ export class Duel {
     this.host.outline?.(null);
     this.hazard?.dispose();
     this.hazard = null;
+    this.shift?.dispose();
+    this.shift = null;
+    arena.aiCover = [];
+    arena.aiBounds = null;
     arena.projectiles.clear();
     arena.hitFilter = null;
     arena.hitMod = null;
@@ -1128,11 +1150,15 @@ export class Duel {
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
     this.updateBanner(dt);
     this.host.outline?.(this.hoverFoe && !this.over ? this.figure.shown : null);
-    if (this.hazard) {
+    if (this.hazard || this.shift) {
       // The fight clock runs only while heroes can act: not in the countdown, not after the round.
       const live = !this.over && this.countdown < 0 && !hm.locked;
       if (live) this.hazardClock += dt;
-      if (this.hazard.update(dt, this.hazardClock, live, this.hazardWorld) && this.mode === 'play') this.showBanner(this.hazard.warning, 1.1, '26px');
+      if (this.hazard?.update(dt, this.hazardClock, live, this.hazardWorld) && this.mode === 'play') this.showBanner(this.hazard.warning, 1.1, '26px');
+      const stage = this.shift?.update(this.hazardClock + this.shiftOffset, live, this.hazardWorld);
+      if (stage && this.mode === 'play') this.showBanner(stage, 1.8, '26px');
+      this.host.arena.aiCover = this.shift?.aiCover ?? [];
+      this.host.arena.aiBounds = this.shift?.aiBounds ?? null;
     }
 
     const foe = this.foe;
@@ -1272,7 +1298,7 @@ export class Duel {
     }
     // Something of the hero's that this CPU should walk to or away from (`Trait.enemyGoal`) beats its usual steering.
     const goal = this.reachableGoal(this.opponentAi, at, (this.oppRt && this.oppRt.trait?.aiGoal?.(this.oppRt)) ?? this.heroRt?.trait?.enemyGoal?.(this.heroRt), dt);
-    const move = goal ? this.goalStep(this.opponentAi, at, goal) : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range);
+    const move = this.offZones(at, goal ? this.goalStep(this.opponentAi, at, goal) : this.steer(this.opponentAi, this.opponentKit, at, me, dt, !sees, 'hero', this.oppAttack.range));
     // A planned route already clears the cover: no wall slide on it.
     if (move.lengthSq() > 0) {
       this.host.arena.moveFoe(foe, move.multiplyScalar(this.aiSpeed(this.opponentKit, lv) * (st?.speedMul ?? 1) * dt), !this.opponentAi.routed);
@@ -1342,6 +1368,8 @@ export class Duel {
    * raised), or a rule keeps turning it back. It then fights for a while: two CPUs each waiting on a goal would wait for ever.
    */
   private reachableGoal(st: { goalT: number; goalSeen: boolean; goalOff: number; goalFrom: THREE.Vector3 }, at: THREE.Vector3, goal: { x: number; z: number } | null | undefined, dt: number) {
+    // A goal in a part of the floor that hurts is dropped: a person may pay to fetch it, a CPU does not.
+    if (goal && this.shift && !this.shift.safe(goal.x, goal.z)) goal = null;
     st.goalOff = Math.max(0, st.goalOff - dt);
     if (st.goalOff > 0) return null;
     st.goalT += dt;
@@ -1359,8 +1387,8 @@ export class Duel {
   /** A step toward a trait's own goal (`aiGoal`, `enemyGoal`): straight when it can, else on the planned way round the cover. */
   private goalStep(st: { routed?: boolean }, at: THREE.Vector3, goal: { x: number; z: number }) {
     const to = new THREE.Vector3(goal.x, 0, goal.z);
-    st.routed = !this.host.arena.pathClear(at, to);
-    const p = st.routed ? this.host.arena.route(st, at, to).point : to;
+    st.routed = !this.host.arena.aiPathClear(at, to);
+    const p = st.routed ? this.host.arena.aiRoute(st, at, to).point : to;
     return new THREE.Vector3(p.x - at.x, 0, p.z - at.z).normalize();
   }
 
@@ -1391,9 +1419,9 @@ export class Duel {
     else if (d <= want + band * 0.4 || blocked) st.closing = false;
     const closing = !!st.closing;
     // Cover in the way: the planned way round it (src/nav.ts), without the strafe, which would walk it off the route.
-    st.routed = closing && !this.host.arena.pathClear(at, other);
+    st.routed = closing && !this.host.arena.aiPathClear(at, other);
     if (st.routed) {
-      const p = this.host.arena.route(st, at, other).point;
+      const p = this.host.arena.aiRoute(st, at, other).point;
       move.set(p.x - at.x, 0, p.z - at.z);
     } else {
       if (closing) move.add(to);
@@ -1474,7 +1502,7 @@ export class Duel {
     if (hm.attackWinding || hm.autoAttack(foe)) return;
     if (st.cannotMove) return;
     const goal = this.reachableGoal(this.playerAi, me, (this.heroRt && this.heroRt.trait?.aiGoal?.(this.heroRt)) ?? this.oppRt?.trait?.enemyGoal?.(this.oppRt), dt);
-    const move = goal ? this.goalStep(this.playerAi, me, goal) : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange);
+    const move = this.offZones(me, goal ? this.goalStep(this.playerAi, me, goal) : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange));
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
   }
 
@@ -1577,7 +1605,12 @@ export class Duel {
 
   /** An AI's step out of the arena hazard's coming hit, if it reacts to this event (`CpuLevel.hazardDodge`), or null. */
   private hazardStep(who: Enemy, at: THREE.Vector3, other: THREE.Vector3) {
-    const hz = this.hazard;
+    const hz = this.hazard, shift = this.shift;
+    // A part of the floor that stays changed will not pass by itself: every level walks out, with nothing to roll.
+    if (shift && !shift.safe(at.x, at.z)) {
+      const out = this.escapeStep(at, other, (x, z) => !shift.safe(x, z) || !!hz?.danger(x, z, HAZARD_CLEAR));
+      if (out) return out;
+    }
     if (!hz?.active || !hz.danger(at.x, at.z, HAZARD_LOOK)) return null;
     let roll = this.hazardRolls.get(who);
     if (!roll || roll.id !== hz.eventId) {
@@ -1586,7 +1619,19 @@ export class Duel {
       this.hazardRolls.set(who, roll);
     }
     if (!roll.react || this.hazardClock < roll.at) return null;
-    return this.escapeStep(at, other, (x, z) => hz.danger(x, z, HAZARD_CLEAR));
+    return this.escapeStep(at, other, (x, z) => hz.danger(x, z, HAZARD_CLEAR) || !!(shift && !shift.safe(x, z)));
+  }
+
+  /** An AI's unit step, kept out of the parts of the floor that hurt: it slides along the edge, or waits. */
+  private offZones(at: THREE.Vector3, move: THREE.Vector3) {
+    const shift = this.shift;
+    if (!shift || move.lengthSq() === 0) return move;
+    const clear = (m: THREE.Vector3) => shift.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK);
+    if (clear(move)) return move;
+    const side = new THREE.Vector3(-move.z, 0, move.x);
+    if (clear(side)) return move.copy(side);
+    side.negate();
+    return clear(side) ? move.copy(side) : move.set(0, 0, 0);
   }
 
   /** A unit step toward the nearest open spot that is not `unsafe`, keeping the distance to `me`, or null. */
@@ -1829,14 +1874,28 @@ export class Duel {
 
   /** A hazard's hit: not a spell, so no trait hooks and no credit. This side's hero reports its own damage online. */
   private hazardHit(target: HazardTarget, hit: HazardHit) {
-    const arena = this.host.arena;
-    const opts: HitOptions = { damage: hit.damage, knock: 0, color: hit.color, from: hit.from };
+    const arena = this.host.arena, isHero = target.key === arena.caster;
+    const max = isHero ? this.playerMax : target.key === this.foe ? this.foeMax : HP;
+    const damage = Math.min(HAZARD_MAX, hit.damage + (hit.share ?? 0) * max);
+    if (damage <= 0) {
+      // Only slows (a water channel): no number, no flinch.
+      if (!hit.slow) return;
+      if (!isHero) arena.applyStatus(target.key as Enemy, 'slow', hit.slow, hit.color);
+      else if (this.host.heroMode.applyStatus('slow', hit.slow, hit.color)) this.net?.status('slow', hit.slow, hit.color);
+      return;
+    }
+    const opts: HitOptions = { damage, knock: 0, color: hit.color, from: hit.from };
     if (hit.slow) opts.status = { kind: 'slow', seconds: hit.slow };
-    if (target.key === arena.caster) {
+    if (isHero) {
+      // Online the hub would drop a second hazard this soon, and the two screens would count different HP.
+      if (this.net && this.time - this.hazardSentAt < HAZARD_SEND_GAP) return;
       const before = this.playerHp;
       this.damagePlayer(opts);
       const took = before - this.playerHp;
-      if (took > 0) this.net?.hazard(took, hit.color);
+      if (took > 0) {
+        this.hazardSentAt = this.time;
+        this.net?.hazard(took, hit.color);
+      }
       return;
     }
     this.hitBypass = true;

@@ -87,7 +87,8 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
    whose client shows the number and flash on the opponent and sets its HP (`Duel.peerHit`, through
    `arena.setHp`). A dodge sends `dodged` → `peer_dodged` (DODGED over the opponent). The attacker's own cast never
    damages the remote hero locally: `arena.hitFilter` drops those hits.
-5. **Best of three rounds.** A round has no time limit (user, 2026-10-30): it ends when a hero's HP reaches 0 (`ko`).
+5. **Best of three rounds.** A round ends when a hero's HP reaches 0 (`ko`). The hub has no clock for it, but the arena's
+   Last stand makes a long round end (user, 2026-11-06; [arenas.md](arenas.md#arenas-that-change-stages)).
    The server sends `round_end { round, result,
    reason, winner, score, hp, next }` (score as [this player, the foe]); the duel freezes the hero and shows "Round 1
    to <name> · 1-0" (`Duel.netRoundEnd`). A 3 s break follows. Then
@@ -295,7 +296,7 @@ takes an effect decides it**, and the server records and relays.
 | Dashes, blinks | the caster's own client moves it; the other screen sees it through the move reports. |
 | Skillshots | the other player's bolts fly on this screen (`ctx.projectile` stays on in the replay); touching this hero is the hit. |
 | Spells fired where the hero faces (`self` mode) | `cast.yaw` turns the replayed caster before the spell plays. |
-| Arena events | both clients run the same schedule from `<match id>-<round>` on a clock that starts at FIGHT. Each client decides the hits on its own hero and units; the hero's damage goes out as `hazard`. Not two-player tested yet. |
+| Arena events and stages | both clients run the same schedule from `<match id>-<round>` on a clock that starts at FIGHT. Each client decides the hits on its own hero and units; the hero's damage goes out as `hazard`. Two tabs with bots agree on HP through Last stand; two real people have not tried it. |
 | Summoned units | the other player's units spawn and fight on this screen; their hits on this hero go through `took_hit` with the summoning cast's id. Each screen simulates its own copy, so units can stand in different places or die at different times on the two screens. |
 | Basic attacks | see [attacks.md](attacks.md). Echo (Lyra) is folded into one hit; reach (Zephyr) is local. |
 | Units from a trait (`TraitView.summon`) | only this player's own passive raises units, on its own screen; the other screen does not see them (a spell's units are replayed through the cast there) and `hitFilter` drops their hits on the other hero, so online they hit the pack only: they do no damage to the other hero. The other side's `summon` is a no-op here. `deathSpots` only know units this screen simulates. |

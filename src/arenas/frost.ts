@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { IceRift } from './hazards/frost';
+import { frostShift } from './shifts/tables';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef } from './types';
 
@@ -502,6 +503,7 @@ export const frostArena: ArenaDef = {
   id: 'frost',
   name: 'Frostfall Lake',
   hazard: (seed) => new IceRift(seed),
+  shift: (seed) => frostShift(seed),
   obstacles: FROST_OBSTACLES,
   stage: {
     background: 0x1a2a3a,

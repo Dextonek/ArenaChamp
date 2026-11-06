@@ -6,6 +6,8 @@ import { disposeTree, seeded } from '../common';
 /** What an arena hazard does to something it touches. Hazards are not spells: no trait hooks, no credit to anyone. */
 export interface HazardHit {
   damage: number;
+  /** Damage as a share of the target's max HP, on top of `damage` (a zone that hurts every hero alike: src/arenas/shifts). */
+  share?: number;
   color: string;
   from: THREE.Vector3;
   /** Seconds of slow (the hardest control a hazard may have). */
@@ -44,13 +46,13 @@ const LOCKOUT = 0.8;
 /** The margin (m) the danger check adds round a zone, so an AI keeps clear of its edge. */
 const MARGIN = 0.5;
 
-function seedNumber(seed: string) {
+export function seedNumber(seed: string) {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
   return h >>> 0;
 }
 
-function grown(s: TelegraphShape, pad: number): TelegraphShape {
+export function grown(s: TelegraphShape, pad: number): TelegraphShape {
   switch (s.kind) {
     case 'circle': return { ...s, radius: s.radius + pad };
     case 'ring': return { ...s, inner: Math.max(0, s.inner - pad), outer: s.outer + pad };

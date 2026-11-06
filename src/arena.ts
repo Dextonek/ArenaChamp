@@ -101,6 +101,11 @@ export class Arena {
   obstacles: Obstacle[] | null = null;
   /** Routes round `obstacles` (src/nav.ts). */
   readonly nav = new Navigator();
+  private readonly aiNav = new Navigator();
+  /** What an AI hero plans round besides the cover: the parts of the floor that hurt now (src/arenas/shifts, set by the duel). */
+  aiCover: readonly Obstacle[] = [];
+  /** And how far out it plans, when the floor beyond hurts. */
+  aiBounds: { x: number; z: number; r: number } | null = null;
   /**
    * Temporary obstacles (`addObstacle`) with the seconds they have left. They live in `obstacles` too; this list only
    * counts them down. Removal is by object identity (a duel's breakable walls are indexed into the arena definition).
@@ -671,6 +676,16 @@ export class Arena {
    */
   route(key: object, from: THREE.Vector3, to: THREE.Vector3): NavStep {
     return this.obstacles ? this.nav.step(key, from, to, this.obstacles, this.bounds) : { point: to, goal: to };
+  }
+
+  /** `route` for an AI hero: it also plans round the parts of the floor that hurt (`aiCover`, `aiBounds`). A person may walk through them. */
+  aiRoute(key: object, from: THREE.Vector3, to: THREE.Vector3): NavStep {
+    return this.obstacles ? this.aiNav.step(key, from, to, [...this.obstacles, ...this.aiCover], this.aiBounds ?? this.bounds) : { point: to, goal: to };
+  }
+
+  /** `pathClear` for an AI hero. */
+  aiPathClear(a: THREE.Vector3, b: THREE.Vector3) {
+    return !this.obstacles || this.aiNav.clear(a, b, [...this.obstacles, ...this.aiCover]);
   }
 
   /** Whether a body can walk straight from `a` to `b`. */

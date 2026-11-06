@@ -1,6 +1,7 @@
 import type * as THREE from 'three';
 import type { Obstacle } from '../obstacles';
 import type { ArenaHazard } from './hazards/base';
+import type { ArenaShift } from './shifts/base';
 
 /**
  * The look of the world around a duel arena: sky dome, fog and the two scene lights, set by main.ts `setStage`
@@ -63,6 +64,8 @@ export interface ArenaDef {
   hideGround?: boolean;
   /** The arena's timed event for one round (src/arenas/hazards); both screens of a network duel get the same `seed`. */
   hazard?(seed: string): ArenaHazard;
+  /** How the arena changes as one round runs long (src/arenas/shifts); both screens of a network duel get the same `seed`. */
+  shift?(seed: string): ArenaShift;
   /** Builds a fresh copy of the arena's meshes (called each time the arena is picked). */
   build(): ArenaScene;
 }

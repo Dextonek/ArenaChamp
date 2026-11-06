@@ -46,6 +46,33 @@ From the two gameplay cameras (a network player on side 1 looks from the other e
 The ring itself never changes: centre (0, 7), radius 12, starts at (0, 13) and (0, 1). `arena.bounds`, the AI,
 the hero-mode camera focus and the network position stream all assume it.
 
+## Arenas that change (stages)
+
+As a round runs long the arena gets worse in steps (`ArenaDef.shift`, [src/arenas/shifts/](../../src/arenas/shifts/base.ts),
+the table in `shifts/tables.ts`). A stage is announced by a banner and shows its zones for 3 s before they count. Its
+zones stay until the next stage's land, and hazards keep running on top.
+
+| Stage | Starts at (fight clock) | Share of max HP per 0.8 s in a zone |
+|---|---|---|
+| 1 | 35 s | 1.5 % |
+| 2 | 60 s | 2 % |
+| 3 | 85 s | 3 % |
+| Last stand | 105 s | the whole floor: 3 %, then 1 % more each 5 s, at most 7 % |
+
+| Arena | Banner | Stage 1 | Stage 2 | Stage 3 |
+|---|---|---|---|---|
+| Night Temple | The temple falls | (cover) | (cover) | Sunfire outside 6 m |
+| Frostfall Lake | The ice breaks | Two water channels: slow, no damage | Also freezing water outside 9 m, slow | The water outside 6.5 m |
+| Ember Caldera | The lava rises | Lava outside 10 m | Outside 8 m and over the vent to 2 m | Outside 6.5 m and over the vent to 2.5 m |
+| Verdant Glade | The forest closes in | (cover) | Thorns outside 9 m, slow | Thorns outside 6.5 m |
+| Sky Ruins | The platform breaks up | Outside 10 m | Outside 8 m | Outside 6.5 m |
+
+- **Last stand** makes a long round end: without heals a full hero falls about 20 s after it begins. It adds no timer, draw or limit screen.
+- **Clock and seed:** `Duel.hazardClock`, the same clock as the arena's events. Frost's channels come from the seed, so both screens match.
+- **Hits:** like a hazard's. Each screen decides the hits on what it lists; online the hero's damage goes out as `hazard`. A hit is a share of the target's max HP, so a big hero pays as much of its bar as a small one, capped at the hub's 60. `Duel.hazardHit` lets one through per 0.32 s online, because the hub would drop a second one and the screens would disagree.
+- **A person may stand in a zone and pay.** The AI does not: it walks out with nothing rolled (`hazardStep`), drops a trait's goal inside one (`reachableGoal`), plans round them (`Arena.aiRoute`, its own `Navigator`, fed by `ArenaShift.aiCover` and `aiBounds`) and stops at the edge when the other hero is inside (`offZones`). In Last stand it just fights.
+- **Switches:** `duel.shiftsOn`. `duel.shiftsInRuns` is off, so balance runs stay comparable. `duel.shiftOffset` is added to the clock the stages read: set it on both screens before the fight to test a stage.
+
 ## Arena events (hazards)
 
 Every arena has its own timed event (`ArenaDef.hazard`, [src/arenas/hazards/](../../src/arenas/hazards/base.ts)). The

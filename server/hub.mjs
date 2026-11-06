@@ -14,8 +14,8 @@ const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
 const COUNTDOWN = 3;
 const LOAD_TIMEOUT = 15000;
-// Best of three: the first to two round wins takes the match. A round has no time limit: it ends when a hero falls
-// (user, 2026-10-30). BREAK_MS between rounds.
+// Best of three: the first to two round wins takes the match. A round ends when a hero falls. The hub has no clock for
+// it, but the arena's Last stand makes a long round end (user, 2026-11-06; src/arenas/shifts). BREAK_MS between rounds.
 const ROUNDS_TO_WIN = 2;
 const BREAK_MS = 3000;
 // Loser picks is switched off for every match (user, 2026-11-06): the code stays, and `createHub({ loserPicks: true })`
