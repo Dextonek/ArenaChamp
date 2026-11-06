@@ -1,7 +1,8 @@
 // End-to-end check of the game server without a browser: two socket clients register, one opens a lobby and the
 // other joins it (same hero refused, then a different one), a second pair meets through the queue, and both
 // matches are played to a result (best of three rounds won by reported hits, a forfeit). Also checks that hits from
-// casts the server never saw and too-fast casts are dropped. Takes about 25 s (countdowns and breaks are real).
+// casts the server never saw and too-fast casts are dropped. Takes about 45 s (countdowns, breaks and a pick nobody
+// answers are real).
 //   node server/smoke-test.mjs                         (its own Node server on a temporary data file)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server, e.g. `npm run cf:dev`; unique names per run)
 import { createServer } from 'node:http';
