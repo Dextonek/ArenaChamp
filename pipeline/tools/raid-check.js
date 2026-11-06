@@ -72,6 +72,169 @@
   };
   window._raidPartners.result = () => partners;
 
+  // Ash and Ember: each move forced in turn, what it costs and how to get out of it, the tag, and the lava at Together.
+  //   await _raidAsh()   // { ok, failed, rows }
+  window._raidAsh = async (hero = 'Lyra') => {
+    const d = vfx.duel, a = vfx.arena;
+    const { ASH_AND_EMBER: def } = await import('/src/raid/ashEmber.ts');
+    const { LocalLink } = await import('/src/raid/link.ts');
+    const V = a.caster.group.position.constructor;
+    const rows = [], failed = [];
+    let simMs = performance.now();
+    performance.now = () => simMs;
+    const step = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { simMs += 1000 / 60; vfx.step(1 / 60); } };
+    const check = (name, got, want, tol = 0.012) => {
+      const pass = Math.abs(got - want) <= tol;
+      rows.push(`${pass ? 'ok  ' : 'FAIL'} ${name}: ${+got.toFixed(3)} (want ${want})`);
+      if (!pass) failed.push(name);
+    };
+    const yes = (name, v) => check(name, v ? 1 : 0, 1, 0);
+    let seq = 5000;
+    const fresh = (bx = 0, bz = 3) => {
+      vfx.view.paused = true;
+      if (!d.on) vfx.setDuel(true, 'play');
+      vfx.heroPickCtrl.setValue(hero);
+      d.holdStart = false;
+      d.startBoss({ def, link: new LocalLink(def), seed: 'ash', mode: 'play' });
+      d.boss.brain.pause = 1e9;
+      d.boss.brain.rimWait = 1e9;
+      a.placeFoe(d.foe, new V(bx, 0, bz));
+      a.obstacles = a.obstacles.slice();
+      step(0.05);
+    };
+    const place = (x, z) => a.caster.group.position.set(x, 0, z);
+    const cast = (move, o = {}) => {
+      const b = d.foe.group.position, me = a.caster.group.position;
+      const x = o.x ?? me.x, z = o.z ?? me.z;
+      d.boss.link.cast({ id: ++seq, move, step: o.step ?? 0, x, z, fx: o.fx ?? b.x, fz: o.fz ?? b.z, dir: o.dir ?? Math.atan2(x - b.x, z - b.z), seed: o.seed ?? 777, target: 0, form: o.form, flag: o.flag });
+    };
+    const lost = () => (d.playerMax - d.playerHp) / d.playerMax;
+    const take = (fn, s) => { d.playerHp = d.playerMax; fn(); step(s); return lost(); };
+    try {
+      fresh();
+      place(0, 6);
+      check('slam: close', take(() => cast('slam'), 1.7), 0.22);
+      place(0, 12);
+      check('slam: backed away', take(() => cast('slam'), 1.7), 0);
+
+      fresh(0, 3);
+      place(0, 8);
+      check('charge: in its line', take(() => cast('charge', { x: 0, z: 14 }), 1.7), 0.25);
+      place(4, 8);
+      check('charge: beside it', take(() => cast('charge', { x: 0, z: 14 }), 1.7), 0);
+      // The brain moves him; a flag from it means he hit cover, and he stands dazed.
+      const m = def.moves.charge, world = d.boss.script.world, c1 = { id: ++seq, move: 'charge', step: 1, x: 2, z: 9, fx: 0, fz: 3, dir: 0, seed: 1, target: 0, flag: true };
+      check('charge: it stands him still when he hit cover', m.act(world, c1), 2, 0);
+      d.boss.link.cast(c1);
+      step(0.7);
+      check('charge: he went there', Math.hypot(d.foe.group.position.x - 2, d.foe.group.position.z - 9), 0, 0.05);
+      yes('charge: dazed, he stands open', a.statusOf(d.foe).buff('vulnerable') === 0.5);
+
+      fresh(0, 3);
+      place(0, 14);
+      const before = a.caster.group.position.z;
+      d.playerHp = d.playerMax;
+      cast('drag');
+      step(1);
+      yes('drag: pulls the hero in', a.caster.group.position.z < before - 1);
+      fresh(0, 3);
+      place(0, 14);
+      check('drag: far from him, the ring burns', take(() => cast('drag'), 2.2), 0.2);
+      fresh(0, 3);
+      place(0, 6);
+      check('drag: close to him, it does not', take(() => cast('drag'), 2.2), 0);
+
+      fresh(0, 3);
+      place(0, 8);
+      d.playerHp = d.playerMax;
+      cast('trail', { x: 0, z: 8 });
+      step(1.2);
+      yes('trail: a puddle burns', lost() > 0.04 && lost() < 0.11);
+      place(5, 8);
+      const was = d.playerHp;
+      step(1.5);
+      check('trail: step off it', d.playerHp - was, 0);
+
+      fresh(0, 3);
+      place(0, 10);
+      check('fan: in a line', take(() => cast('fan', { x: 0, z: 10 }), 1.7), 0.16);
+      // Between two lines 20° apart: 10° off the middle, far enough out for the gap to be wider than a line.
+      const off = 0.174;
+      place(Math.sin(off) * 11, 3 + Math.cos(off) * 11);
+      check('fan: in a gap', take(() => cast('fan', { x: 0, z: 14 }), 1.7), 0);
+      fresh(0, 3);
+      place(0, 2.6);
+      check('fan: where lines meet it hits once', take(() => cast('fan', { x: 0, z: 14, fx: 0, fz: 2.2 }), 1.7), 0.16);
+
+      fresh(0, 3);
+      place(0, 10);
+      check('marked: under the bomb', take(() => cast('marked', { step: 1, x: 0, z: 10 }), 1.1), 0.22);
+      step(1.2);
+      yes('marked: and a puddle after', lost() > 0.22);
+      fresh(0, 3);
+      place(0, 10);
+      check('marked: walked out', take(() => { cast('marked', { step: 1, x: 0, z: 10 }); place(4, 10); }, 2), 0);
+
+      fresh(0, 3);
+      place(0, 10);
+      check('bombs: between the pair', take(() => cast('bombs', { x: 0, z: 10 }), 1.7), 0);
+      place(2.7, 10);
+      check('bombs: on one', take(() => cast('bombs', { x: 0, z: 10, dir: 0 }), 1.7), 0.14);
+
+      fresh(0, 3);
+      d.playerHp = d.playerMax;
+      cast('wave', { seed: 99 });
+      const sc = d.boss.script, wave = sc.active[sc.active.length - 1].played.threats[0];
+      // At one moment past the start: inside the gap's angle it passes; off it, it burns.
+      const t = wave.at + 1.6, r = (t - wave.at) * 5;
+      let gapAngle = 0, found = false;
+      for (let k = 0; k < 360 && !found; k++) {
+        const an = (k / 360) * 6.283;
+        if (!wave.hits(Math.sin(an) * r, 7 + Math.cos(an) * r, t)) { gapAngle = an + 0.2; found = true; }
+      }
+      yes('wave: the ring has a gap', found);
+      yes('wave: most of it burns', wave.hits(Math.sin(gapAngle + 3) * r, 7 + Math.cos(gapAngle + 3) * r, t));
+      yes('wave: not ahead of the ring', !wave.hits(Math.sin(gapAngle + 3) * (r + 3), 7 + Math.cos(gapAngle + 3) * (r + 3), t));
+      place(0, 6);
+      step(wave.at + 3);
+      check('wave: it hits once as it passes', lost(), 0.2);
+
+      // The tag: both screens swap at one moment, from a cast.
+      fresh(0, 3);
+      place(0, 14);
+      cast('tag', { x: 3, z: 7, fx: 0, fz: -10.4, form: 1 });
+      step(0.5);
+      check('tag: not yet', d.bossForm, 0, 0);
+      step(1.2);
+      check('tag: Ember is in the ring', d.bossForm, 1, 0);
+      check('tag: where the zone showed', Math.hypot(d.foe.group.position.x - 3, d.foe.group.position.z - 7), 0, 0.05);
+      check('tag: Ash is on the rim', d.rimAt.z, -10.4);
+      yes('tag: the body changes', d.foe.body.radius === def.forms[1].body.radius);
+      yes('the boss is still one bar', a.hpOf(d.foe) === def.hp.solo);
+
+      // The phases swap by themselves, and Together starts the lava.
+      fresh(0, 3);
+      place(0, 14);
+      d.boss.brain.pause = 0;
+      d.boss.brain.wait = 0;
+      a.hit(d.foe, { damage: def.hp.solo * 0.35, knock: 0 });
+      yes('phase 2 at 66 %', d.boss.stats.phases === 1);
+      step(5);
+      check('phase 2: Ember comes in', d.bossForm, 1, 0);
+      d.playerHp = d.playerMax;
+      a.hit(d.foe, { damage: def.hp.solo * 0.33, knock: 0 });
+      yes('phase 3 at 33 %', d.boss.stats.phases === 2);
+      const off0 = d.shiftOffset + d.hazardClock;
+      check('Together: the lava starts now', off0, 45, 0.2);
+      d.boss.brain.pause = 1e9;
+    } catch (e) {
+      failed.push(String(e?.stack ?? e));
+    }
+    delete performance.now;
+    d.stop();
+    return { ok: !failed.length, failed, rows };
+  };
+
   // Each upgrade changes the number it says, and nothing lasts past the run. Tiers: more boss HP, shorter shown times.
   //   await _raidUpgrades()    // { ok, failed, rows }
   window._raidUpgrades = async (hero = 'Bram') => {

@@ -58,7 +58,7 @@ export const CALDERA_OBSTACLES: Obstacle[] = [
 ];
 
 /** The ridge modules' lengths in the props file (wall segment plus 2 × 0.4 m ends); walls stretch them along x. */
-const RIDGE_MODULE = { RidgeA: 3.85, RidgeB: 4.22 };
+export const RIDGE_MODULE = { RidgeA: 3.85, RidgeB: 4.22 };
 
 // ---- the sculpted props, loaded once and shared by every build ---------------------------------------------------
 
@@ -67,7 +67,7 @@ let propsPromise: Promise<Record<string, PropParts>> | null = null;
 
 /** caldera_props.glb and caldera_backdrop.glb as {prop name: its parts (one per material)}; objects there are named
  *  "<Prop>__<material>". Both files share material names; the first one loaded of each name (the cover's) is used. */
-function loadProps() {
+export function loadProps() {
   propsPromise ??= (() => {
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const base = `${import.meta.env.BASE_URL}models/arenas/`;
@@ -106,7 +106,7 @@ function loadProps() {
 }
 
 /** One instanced mesh per part of `prop`, placed by `matrices` (each build gets its own copies to dispose). */
-function instance(parts: PropParts, matrices: THREE.Matrix4[]) {
+export function instance(parts: PropParts, matrices: THREE.Matrix4[]) {
   return parts.map(({ geometry, material }) => {
     const m = new THREE.InstancedMesh(geometry.clone(), material.clone(), matrices.length);
     matrices.forEach((mx, i) => m.setMatrixAt(i, mx));
@@ -229,7 +229,7 @@ function distToObstacle(o: Obstacle, x: number, z: number) {
 }
 
 /** Basalt floor: hexagonal columns seen from above, ash drifts on top. Returns the colour map and the lava-crack emissive map. */
-function hexFloor() {
+export function hexFloor() {
   const R = 40;
   const w = Math.sqrt(3) * R;
   const cells: { x: number; y: number }[] = [];
@@ -358,7 +358,7 @@ function apronFloor() {
   return { color, glow };
 }
 
-function lavaTexture() {
+export function lavaTexture() {
   const rnd = seeded(77);
   return canvasTexture(
     512,

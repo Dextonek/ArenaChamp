@@ -269,6 +269,12 @@ export class Duel {
   private bossDef: BossDef | null = null;
   private bossHud: BossHud | null = null;
   private bossCard: ((result: 'win' | 'lose', seconds: number) => { title: string; text: string; again?: string } | null) | null = null;
+  /** A tag team: who is in the ring, the other one's figure and where it stands. */
+  private bossForm = 0;
+  private rimFigure: HeroFigure | null = null;
+  private rimAt = new THREE.Vector3();
+  /** The clock `late`'s first stage is at. */
+  private lateAt = 0;
   /** The other player's hero in a raid for two: a third body this screen only draws. */
   private partner: Partner | null = null;
   /** How the autopilot plays (the raid tool tries it at different levels). */
@@ -568,7 +574,23 @@ export class Duel {
     if (late) {
       this.shift = late.shift;
       this.shiftOffset = late.offset;
+      this.lateAt = late.startsAt ?? 0;
       this.group.add(late.shift.group);
+    }
+    // A tag team: the other one on the rim, drawn only. Nothing can hit it.
+    const forms = o.def.forms;
+    this.bossForm = 0;
+    if (forms) {
+      const spot = o.def.rimSpots?.[0] ?? { x: 0, z: -7 };
+      this.rimAt.set(spot.x, 0, spot.z);
+      this.rimFigure ??= new HeroFigure();
+      this.group.add(this.rimFigure.group);
+      const other = forms[1].kit(o.link.maxHp);
+      this.rimFigure.setModel(other.model, this.rimAt, other);
+      this.rimFigure.setScale(forms[1].scale);
+      this.rimFigure.stand();
+      this.rimFigure.preload(forms[0].kit(o.link.maxHp).model ?? '');
+      this.figure.preload(other.model ?? '');
     }
     this.names = [o.name ?? '', o.partner?.name ?? ''];
     if (o.partner) {
@@ -707,6 +729,11 @@ export class Duel {
     this.traitFx.ring('partner', null, null);
   }
 
+  /** The tag team's one on the rim: it looks at the middle, and at nothing else. */
+  private rimStep(dt: number) {
+    if (this.rimFigure && this.bossDef?.forms) this.rimFigure.follow(dt, this.rimAt, Math.atan2(RING.x - this.rimAt.x, RING.z - this.rimAt.z), {});
+  }
+
   /** The partner's bars and name over its head, and whether this hero is getting it up. */
   private partnerStep(dt: number, cam: THREE.Camera) {
     const p = this.partner, fight = this.boss, arena = this.host.arena;
@@ -727,6 +754,27 @@ export class Duel {
       p.revive = 0;
       fight.link.revive();
     }
+  }
+
+  /** A tag team swaps: the one on the rim lands at (x, z), the one in the ring goes up to the rim at (rx, rz). */
+  private bossTag(form: number, x: number, z: number, rx: number, rz: number) {
+    const fight = this.boss, forms = this.bossDef?.forms, foe = this.foe, arena = this.host.arena;
+    if (!fight || !forms || !foe || form === this.bossForm) return;
+    const maxHp = fight.link.maxHp, next = forms[form], last = forms[this.bossForm];
+    this.bossForm = form;
+    const kit = next.kit(maxHp);
+    this.opponentKit = kit;
+    this.oppAttackSpec = attackFor(kit);
+    this.figure.setModel(kit.model, foe.group.position, kit);
+    this.figure.setScale(next.scale);
+    foe.body = { ...next.body };
+    fight.tagged();
+    arena.moveFoe(foe, new THREE.Vector3(x - foe.group.position.x, 0, z - foe.group.position.z));
+    this.rimAt.set(rx, 0, rz);
+    const up = last.kit(maxHp);
+    this.rimFigure?.setModel(up.model, this.rimAt, up);
+    this.rimFigure?.setScale(last.scale);
+    this.showBanner(`${next.name} steps in`, 1.2, '26px');
   }
 
   /** Fresh Start: a shield as each phase begins. */
@@ -765,6 +813,11 @@ export class Duel {
       },
       face: (yaw) => { foe.group.rotation.y = yaw; },
       pose: (style, seconds, big) => this.figure.cast(style, seconds, big),
+      poseRim: (style, seconds, big) => this.rimFigure?.cast(style, seconds, big),
+      tag: (form, x, z, rx, rz) => this.bossTag(form, x, z, rx, rz),
+      dash: (x, z, seconds) => { arena.moveFigure(foe, new THREE.Vector3(x, 0, z), seconds); },
+      carryMe: (dx, dz) => arena.carryFigure(arena.caster, new THREE.Vector3(dx, 0, dz)),
+      lateNow: () => { this.shiftOffset = Math.max(this.shiftOffset, this.lateAt - this.hazardClock); },
       enemyCast: (big) => { if (this.heroRt) this.heroRt.trait?.enemyCast?.(this.heroRt, big ? 3 : 0); },
       place: (x, z, yaw) => {
         const p = foe.group.position;
@@ -840,6 +893,8 @@ export class Duel {
     arena.heroBolt = null;
     this.partner?.dispose();
     this.partner = null;
+    this.rimFigure?.setModel(undefined);
+    this.rimFigure?.group.removeFromParent();
     this.clearPartnerMarks();
     arena.pinned = null;
     arena.foeFloor = 0;
@@ -1274,7 +1329,7 @@ export class Duel {
   async whenReady(maxMs = 12000) {
     const end = performance.now() + maxMs;
     const figures = async () => {
-      while (performance.now() < end && !(this.host.heroMode.figureLoaded && this.figure.loaded && (this.partner?.figure.loaded ?? true))) await new Promise((ok) => setTimeout(ok, 60));
+      while (performance.now() < end && !(this.host.heroMode.figureLoaded && this.figure.loaded && (this.partner?.figure.loaded ?? true) && (this.rimFigure?.loaded ?? true))) await new Promise((ok) => setTimeout(ok, 60));
     };
     await figures();
     await Promise.race([this.host.warmUp?.() ?? Promise.resolve(), new Promise((ok) => setTimeout(ok, Math.max(0, end - performance.now())))]);
@@ -1569,7 +1624,12 @@ export class Duel {
     if (this.over) {
       this.overT += dt;
       if (this.over === 'lose') hm.fallHero(this.overT / 0.6);
-      else this.figure.fall(this.overT / 0.6);
+      else {
+        this.figure.fall(this.overT / 0.6);
+        // One HP bar: a tag team falls together.
+        this.rimFigure?.fall(this.overT / 0.6);
+      }
+      this.rimStep(dt);
       return;
     }
     this.healClock += dt;
@@ -1596,6 +1656,7 @@ export class Duel {
       const fight = this.boss, live = !this.waiting && this.countdown < 0;
       fight.update(dt, live, foe ? arena.hpOf(foe) : 0);
       this.partnerStep(dt, cam);
+      this.rimStep(dt);
       if (this.boss && !this.over) {
         if (this.playerHp <= 0) {
           // It lies where it fell until a partner gets it up. Alone, the link ends the fight here.

@@ -14,10 +14,11 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
  */
 export const RAID_BOSSES = {
   sun: { hp: { solo: 3200, duo: 6500 }, phases: [0.7, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
+  ash: { hp: { solo: 3400, duo: 7000 }, phases: [0.66, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
 };
 
 /** The bosses of one tier of a run, in order. */
-export const RAID_RUN = ['sun'];
+export const RAID_RUN = ['sun', 'ash'];
 
 /** A boss's HP in a raid: each tier adds 15 %. @param {string} id @param {boolean} duo @param {number} tier */
 export const raidHp = (id, duo, tier) => Math.round(RAID_BOSSES[id].hp[duo ? 'duo' : 'solo'] * 1.15 ** (tier - 1));

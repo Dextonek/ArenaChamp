@@ -34,6 +34,8 @@ export class BossFight {
   /** Seconds the boss still stands open or kneels: Opportunist. */
   private openLeft = 0;
   private begun = false;
+  private ringForm = 0;
+  private rimSpot: { x: number; z: number } | null = null;
 
   constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
     this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength) }, tier);
@@ -57,11 +59,17 @@ export class BossFight {
   private onCast(c: BossCast) {
     const move = this.def.moves[c.move];
     if (!move) return;
+    // A tag team: who is in the ring and who is where, in case this screen has to take the brain over.
+    if (c.form !== undefined) {
+      this.ringForm = c.form;
+      this.rimSpot = { x: c.fx, z: c.fz };
+    }
     this.script.play(c);
-    if (c.step !== 0) return;
+    if (c.step !== 0 || move.quiet) return;
     this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
     this.world.enemyCast(!!move.big);
-    if (!move.alongside) this.world.pose(move.pose, move.charge, !!move.big);
+    if (c.rim) this.world.poseRim(move.pose, move.charge, !!move.big);
+    else if (!move.alongside) this.world.pose(move.pose, move.charge, !!move.big);
   }
 
   private onPhase(i: number) {
@@ -69,6 +77,7 @@ export class BossFight {
     this.brain?.setPhase(i);
     this.world.banner(this.def.phases[i].name, 2.2);
     this.world.phaseShield();
+    if (this.def.lateAt === i) this.world.lateNow();
   }
 
   private onKneel(seconds: number) {
@@ -97,12 +106,17 @@ export class BossFight {
     this.link.brain = true;
     this.track = null;
     this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, this.tier, 100000);
-    this.brain.resume(this.stats.phases);
+    this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot);
   }
 
   /** The boss's walk, reported by the screen that runs its brain. */
   bossMove(x: number, z: number, yaw: number, ts?: number) {
     this.track?.push(x, z, yaw, ts);
+  }
+
+  /** A tag: the old walk means nothing now. */
+  tagged() {
+    if (this.track) this.track = new Track();
   }
 
   /**

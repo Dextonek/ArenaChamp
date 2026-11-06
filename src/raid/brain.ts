@@ -1,11 +1,29 @@
 import { raidTierFactor } from '../../server/protocol.mjs';
 import { seeded } from '../arenas/common';
 import { seedNumber } from '../arenas/hazards/base';
-import type { BossDef, BossMove, BossWorld, RaidLink, RaidSide } from './types';
+import type { BossCast, BossDef, BossMove, BossWorld, RaidLink, RaidSide } from './types';
+
+/** How far a boss walks between two puddles of its trail (m). */
+const TRAIL_STEP = 2.4;
+/** How far from the middle a tag lands at most (m). */
+const LAND_REACH = 6;
+
+interface Pending {
+  at: number;
+  move: BossMove;
+  step: number;
+  seed: number;
+  target: RaidSide;
+  alone: boolean;
+  rim: boolean;
+}
 
 /**
  * The boss's mind: who it aims at, which move comes next, where it walks. It runs on one screen and sends its choices
  * as casts, so it is the only part of a fight that reads the heroes. Its rolls come from the seed, so a run can be replayed.
+ *
+ * A tag team (`BossDef.forms`) has one in the ring, who walks and casts as any boss does and aims at the nearer hero, and one
+ * on the rim, who stands still, adds a move now and then and aims at the farther hero. A tag is a cast like any other.
  */
 export class BossBrain {
   private rng: () => number;
@@ -14,18 +32,26 @@ export class BossBrain {
   private locked = 0;
   private pause = 0;
   private seq = 0;
-  private pending: { at: number; move: BossMove; step: number; seed: number; target: RaidSide; alone: boolean }[] = [];
+  private pending: Pending[] = [];
   private ready = new Map<string, number>();
   private phase = 0;
   private opener: string | null = null;
   private last = '';
   private aimedAt = [-Infinity, -Infinity];
   private next: RaidSide = 0;
+  /** Where the last step of each move was aimed. */
+  private aimed = new Map<string, { x: number; z: number; dir: number; flag?: boolean }>();
 
   /** How much of a move's times are left at this tier. */
   private pace: number;
   /** The moves a higher tier brings in. */
   private extra: string[];
+  /** A tag team: who is in the ring, where the other stands, when it next acts, when they next swap. */
+  private form = 0;
+  private rim: { x: number; z: number } | null = null;
+  private rimWait = 0;
+  private swapWait = Infinity;
+  private trailed = 0;
 
   constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, seed: string, tier = 1, firstId = 0) {
     this.rng = seeded(seedNumber(`${seed}-brain`));
@@ -34,23 +60,36 @@ export class BossBrain {
     this.seq = firstId;
     this.pace = raidTierFactor(tier);
     this.extra = (def.extra ?? []).slice(0, tier - 1);
+    if (def.forms) {
+      this.rim = def.rimSpots?.[0] ?? null;
+      this.rimWait = def.phases[0].rimEvery?.[0] ?? 8;
+    }
   }
 
   /** Taking over a fight already on: the phase as it stands, no pause and no opener. */
-  resume(phase: number) {
+  resume(phase: number, form = 0, rim: { x: number; z: number } | null = null) {
     this.phase = phase;
     this.opener = null;
     this.wait = 1;
+    this.form = form;
+    if (rim) this.rim = rim;
+    this.swapWait = this.def.phases[phase].swapEvery ?? Infinity;
   }
 
   /** A new phase: a pause, and what comes next starts over. The moves in the air go on. */
   setPhase(i: number) {
+    const phase = this.def.phases[i];
     this.phase = i;
     this.pause = this.def.phasePause;
     this.pending = [];
     this.locked = 0;
     this.wait = 0;
-    this.opener = this.def.phases[i].opener ?? null;
+    this.opener = phase.opener ?? null;
+    this.swapWait = phase.swapEvery ?? Infinity;
+    if (this.def.forms) {
+      this.rimWait = Math.max(this.rimWait, this.def.phasePause + 1);
+      if (phase.ring !== undefined && phase.ring !== this.form) this.opener = 'tag';
+    }
   }
 
   /** Kneeling: steps not yet sent are dropped. What already shows still lands. */
@@ -62,21 +101,30 @@ export class BossBrain {
 
   update(dt: number) {
     this.time += dt;
-    for (const p of this.pending.filter((x) => x.at <= this.time)) this.send(p.move, p.step, p.seed, p.target, p.alone);
+    for (const p of this.pending.filter((x) => x.at <= this.time)) this.send(p.move, p.step, p.seed, p.target, p.alone, p.rim);
     this.pending = this.pending.filter((x) => x.at > this.time);
+    // The one on the rim doesn't kneel, or wait for the one in the ring.
+    this.rimStep(dt);
     if (this.pause > 0) {
       this.pause -= dt;
       return;
     }
     this.locked = Math.max(0, this.locked - dt);
     this.wait = Math.max(0, this.wait - dt);
+    this.swapWait -= dt;
     if (this.locked > 0) return;
-    const heroes = this.world.heroes();
-    const up = heroes.filter((h) => !h.down);
+    const up = this.world.heroes().filter((h) => !h.down);
     if (!up.length) return;
-    const target = up.find((h) => h.side === this.next) ?? up[0];
     const boss = this.world.boss();
-    const dist = Math.hypot(target.x - boss.x, target.z - boss.z);
+    const off = (h: { x: number; z: number }) => Math.hypot(h.x - boss.x, h.z - boss.z);
+    // A tag team's one in the ring goes for the nearer hero; anyone else for the one it aimed at less recently.
+    const target = this.def.forms ? up.reduce((a, b) => (off(b) < off(a) ? b : a)) : up.find((h) => h.side === this.next) ?? up[0];
+    const dist = off(target);
+    if (this.swapWait <= 0 && this.wait <= 0 && this.def.moves.tag) {
+      this.swapWait = this.def.phases[this.phase].swapEvery ?? Infinity;
+      this.begin(this.def.moves.tag, target.side);
+      return;
+    }
     if (this.wait <= 0) {
       const move = this.pick(dist);
       if (move) {
@@ -84,8 +132,47 @@ export class BossBrain {
         return;
       }
     }
-    if (dist > this.def.keepAt) this.world.walk(dt, target.x, target.z, this.def.speed);
-    else this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
+    const form = this.def.forms?.[this.form];
+    const keep = form?.keepAt ?? this.def.keepAt, speed = form?.speed ?? this.def.speed;
+    if (dist > keep) {
+      this.world.walk(dt, target.x, target.z, speed);
+      // What it leaves behind as it walks.
+      this.trailed += speed * dt;
+      if (form?.trail && this.trailed >= TRAIL_STEP) {
+        this.trailed = 0;
+        const m = this.def.moves[form.trail];
+        if (m) this.send(m, 0, Math.floor(this.rng() * 2147483647), target.side, up.length < 2, false);
+      }
+    } else this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
+  }
+
+  /** What this form can do, in the ring or from the rim, with what a higher tier adds to it. */
+  private listOf(ring: boolean) {
+    const forms = this.def.forms;
+    if (!forms) return [...new Set([...this.def.phases[this.phase].moves, ...this.extra])];
+    const who = ring ? this.form : 1 - this.form, form = forms[who];
+    return [...new Set([...(ring ? form.moves : form.rimMoves), ...this.extra.filter((id) => this.def.moves[id]?.form === who)])];
+  }
+
+  private rimStep(dt: number) {
+    if (!this.def.forms || !this.rim) return;
+    this.rimWait -= dt;
+    if (this.rimWait > 0) return;
+    const every = this.def.phases[this.phase].rimEvery ?? [8, 10];
+    this.rimWait = every[0] + this.rng() * (every[1] - every[0]);
+    const up = this.world.heroes().filter((h) => !h.down);
+    if (!up.length) return;
+    const list = this.listOf(false).map((id) => this.def.moves[id]).filter((m) => m && (this.ready.get(m.id) ?? 0) <= this.time);
+    if (!list.length) return;
+    const m = list[Math.floor(this.rng() * list.length)];
+    const rim = this.rim, off = (h: { x: number; z: number }) => Math.hypot(h.x - rim.x, h.z - rim.z);
+    const target = up.reduce((a, b) => (off(b) > off(a) ? b : a));
+    this.ready.set(m.id, this.time + m.cooldown);
+    const seed = Math.floor(this.rng() * 2147483647);
+    for (const [i, at] of (m.steps ?? [0]).entries()) {
+      if (at <= 0) this.send(m, i, seed, target.side, up.length < 2, true);
+      else this.pending.push({ at: this.time + at * this.pace, move: m, step: i, seed, target: target.side, alone: up.length < 2, rim: true });
+    }
   }
 
   private pick(dist: number) {
@@ -97,7 +184,7 @@ export class BossBrain {
     }
     // A move for two needs two heroes standing, not just two players in the room.
     const two = this.world.heroes().filter((h) => !h.down).length >= 2;
-    const open = [...new Set([...this.def.phases[this.phase].moves, ...this.extra])]
+    const open = this.listOf(true)
       .map((id) => moves[id])
       .filter((m) => m && (!m.coop || two) && (this.ready.get(m.id) ?? 0) <= this.time && (m.range === undefined || dist <= m.range));
     const fresh = open.filter((m) => m.id !== this.last);
@@ -116,11 +203,33 @@ export class BossBrain {
     }
     const seed = Math.floor(this.rng() * 2147483647);
     const alone = this.world.heroes().filter((h) => !h.down).length < 2;
+    if (m === this.def.moves.tag) {
+      this.sendTag(m, seed, side, alone);
+      this.next = this.chooseNext();
+      return;
+    }
     for (const [i, at] of (m.steps ?? [0]).entries()) {
-      if (at <= 0) this.send(m, i, seed, side, alone);
-      else this.pending.push({ at: this.time + at * this.pace, move: m, step: i, seed, target: side, alone });
+      if (at <= 0) this.send(m, i, seed, side, alone, false);
+      else this.pending.push({ at: this.time + at * this.pace, move: m, step: i, seed, target: side, alone, rim: false });
     }
     this.next = this.chooseNext();
+  }
+
+  /** The one on the rim lands near the fight, and the one in the ring goes up to another spot on the rim. */
+  private sendTag(m: BossMove, seed: number, side: RaidSide, alone: boolean) {
+    const spots = this.def.rimSpots ?? [];
+    const others = spots.filter((s) => s !== this.rim);
+    const spot = others[Math.floor(this.rng() * others.length)] ?? this.rim ?? { x: 0, z: 0 };
+    const hero = this.world.heroes().find((h) => h.side === side) ?? { x: 0, z: 7 };
+    // Toward the target from the middle, but not on top of it: the zone shows, and they can walk out.
+    const dx = hero.x, dz = hero.z - 7, d = Math.hypot(dx, dz) || 1, k = Math.min(LAND_REACH, d * 0.6) / d;
+    const x = dx * k, z = 7 + dz * k;
+    const form = 1 - this.form;
+    this.form = form;
+    this.rim = spot;
+    this.link.cast({
+      id: ++this.seq, move: m.id, step: 0, x: +x.toFixed(3), z: +z.toFixed(3), fx: spot.x, fz: spot.z, dir: 0, seed, target: side, alone, form,
+    });
   }
 
   /** A move aimed at "you" takes the hero it aimed at less recently, and a seeded coin when level. */
@@ -131,14 +240,26 @@ export class BossBrain {
     return a < b ? 0 : 1;
   }
 
-  private send(m: BossMove, step: number, seed: number, side: RaidSide, alone: boolean) {
-    const boss = this.world.boss();
+  private send(m: BossMove, step: number, seed: number, side: RaidSide, alone: boolean, rim: boolean) {
+    const boss = rim && this.rim ? this.rim : this.world.boss();
     const hero = this.world.heroes().find((h) => h.side === side) ?? { x: boss.x, z: boss.z };
-    const aim = m.aim({ boss: { x: boss.x, z: boss.z }, target: { x: hero.x, z: hero.z }, step, seed });
-    if (!m.alongside) this.world.face(aim.dir);
-    this.link.cast({
-      id: ++this.seq, move: m.id, step, x: +aim.x.toFixed(3), z: +aim.z.toFixed(3), fx: +boss.x.toFixed(3), fz: +boss.z.toFixed(3),
-      dir: +aim.dir.toFixed(4), seed, target: side, alone,
+    const aim = m.aim({
+      boss: { x: boss.x, z: boss.z }, target: { x: hero.x, z: hero.z }, step, seed, prev: step > 0 ? this.aimed.get(m.id) : undefined,
+      rayStop: (ax, az, bx, bz) => this.world.rayStop(ax, az, bx, bz),
     });
+    this.aimed.set(m.id, aim);
+    if (!m.alongside && !rim) this.world.face(aim.dir);
+    const cast: BossCast = {
+      id: ++this.seq, move: m.id, step, x: +aim.x.toFixed(3), z: +aim.z.toFixed(3), fx: +boss.x.toFixed(3), fz: +boss.z.toFixed(3),
+      dir: +aim.dir.toFixed(4), seed, target: side, alone, rim: rim || undefined, flag: aim.flag,
+    };
+    this.link.cast(cast);
+    const still = m.act?.(this.world, cast);
+    if (still) this.pause = Math.max(this.pause, still);
+  }
+
+  /** Who is in the ring and where the other stands, for a screen taking over. */
+  get forms() {
+    return { form: this.form, rim: this.rim };
   }
 }

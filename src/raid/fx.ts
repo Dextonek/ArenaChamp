@@ -134,6 +134,135 @@ export class SunOrb {
   }
 }
 
+const poolGeo = new THREE.CircleGeometry(1, 28).rotateX(-Math.PI / 2);
+const poolVertex = /* glsl */ `
+  varying vec2 vP;
+  void main() {
+    vP = position.xz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const poolFragment = /* glsl */ `
+  uniform float uTime, uOpacity;
+  varying vec2 vP;
+  void main() {
+    float d = length(vP);
+    float n = 0.5 + 0.5 * sin(vP.x * 9.0 + uTime * 1.4) * sin(vP.y * 8.0 - uTime * 1.1);
+    float edge = smoothstep(1.0, 0.82, d);
+    vec3 col = mix(vec3(0.45, 0.08, 0.02), vec3(1.0, 0.42, 0.08), n * smoothstep(1.0, 0.3, d));
+    gl_FragColor = vec4(col, edge * uOpacity);
+  }
+`;
+
+/** Lava on the floor where something burned: it comes up, stays, and crusts over. */
+export class LavaPool {
+  readonly mesh: THREE.Mesh;
+  private mat: THREE.ShaderMaterial;
+  constructor(x: number, z: number, private radius: number) {
+    this.mat = new THREE.ShaderMaterial({
+      vertexShader: poolVertex, fragmentShader: poolFragment, transparent: true, depthWrite: false,
+      uniforms: { uTime: { value: 0 }, uOpacity: { value: 0 } },
+    });
+    this.mesh = new THREE.Mesh(poolGeo, this.mat);
+    this.mesh.position.set(x, 0.05, z);
+    this.mesh.scale.setScalar(0.01);
+    this.mesh.renderOrder = 1;
+  }
+
+  /** `t`: seconds since it began; it is gone at `life`. */
+  update(t: number, life: number) {
+    const grow = THREE.MathUtils.clamp(t / 0.5, 0, 1), fade = THREE.MathUtils.clamp((life - t) / 0.8, 0, 1);
+    this.mesh.visible = t > 0 && t < life;
+    this.mesh.scale.setScalar(Math.max(0.01, this.radius * grow));
+    this.mat.uniforms.uTime.value = t;
+    this.mat.uniforms.uOpacity.value = 0.9 * fade;
+  }
+
+  dispose() {
+    this.mesh.removeFromParent();
+    this.mat.dispose();
+  }
+}
+
+/** A circle lying on the floor that follows someone: only a look (Marked). */
+export class FollowMark {
+  readonly mesh: THREE.Mesh;
+  private mat: THREE.MeshBasicMaterial;
+  constructor(radius: number, color: THREE.ColorRepresentation) {
+    this.mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide });
+    this.mesh = new THREE.Mesh(new THREE.RingGeometry(radius - 0.14, radius, 48).rotateX(-Math.PI / 2), this.mat);
+    this.mesh.renderOrder = 2;
+    this.mesh.visible = false;
+  }
+
+  place(x: number, z: number, opacity: number) {
+    this.mesh.visible = true;
+    this.mesh.position.set(x, 0.06, z);
+    this.mat.opacity = opacity;
+  }
+
+  dispose() {
+    this.mesh.removeFromParent();
+    this.mesh.geometry.dispose();
+    this.mat.dispose();
+  }
+}
+
+const waveVertex = /* glsl */ `
+  varying vec2 vP;
+  void main() {
+    vP = position.xz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const waveFragment = /* glsl */ `
+  uniform float uRadius, uHalf, uGap, uGapHalf, uOpacity;
+  varying vec2 vP;
+  void main() {
+    float d = length(vP);
+    float band = 1.0 - smoothstep(uHalf * 0.6, uHalf, abs(d - uRadius));
+    if (band <= 0.0) discard;
+    float a = atan(vP.x, vP.y) - uGap;
+    a = atan(sin(a), cos(a));
+    // In the gap the ring is gold: where to walk through. The rest is lava.
+    float open = 1.0 - smoothstep(uGapHalf - 0.03, uGapHalf + 0.03, abs(a));
+    vec3 lava = mix(vec3(0.62, 0.12, 0.02), vec3(0.82, 0.3, 0.05), band);
+    vec3 col = mix(lava, vec3(1.0, 0.86, 0.45), open);
+    gl_FragColor = vec4(col, band * uOpacity * mix(1.0, 0.45, open));
+  }
+`;
+
+/** The Lava Wave: a ring growing from the vent, with one gap, which turns. */
+export class WaveRing {
+  readonly mesh: THREE.Mesh;
+  private mat: THREE.ShaderMaterial;
+  constructor(x: number, z: number, reach: number, gapHalf: number) {
+    this.mat = new THREE.ShaderMaterial({
+      vertexShader: waveVertex, fragmentShader: waveFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      uniforms: { uRadius: { value: 0 }, uHalf: { value: 0.6 }, uGap: { value: 0 }, uGapHalf: { value: gapHalf }, uOpacity: { value: 0 } },
+    });
+    // The shader reads the mesh's own position, so the ring's middle is its origin.
+    this.mesh = new THREE.Mesh(new THREE.CircleGeometry(reach, 96).rotateX(-Math.PI / 2), this.mat);
+    this.mesh.position.set(x, 0.07, z);
+    this.mesh.renderOrder = 2;
+  }
+
+  set(radius: number, gap: number, half: number, opacity: number) {
+    const u = this.mat.uniforms;
+    u.uRadius.value = radius;
+    u.uGap.value = gap;
+    u.uHalf.value = half;
+    u.uOpacity.value = opacity;
+    this.mesh.visible = opacity > 0.001;
+  }
+
+  dispose() {
+    this.mesh.removeFromParent();
+    this.mesh.geometry.dispose();
+    this.mat.dispose();
+  }
+}
+
 const shadowVertex = /* glsl */ `
   varying vec2 vP;
   void main() {

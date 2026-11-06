@@ -16,6 +16,7 @@ const UNIT_HIT = 60;
 const MARGIN = 0.5;
 /** How long a cast stays to hear a gold zone's result: longer than the hub waits for the other screen (s). */
 const STOOD_WAIT = 2.5;
+const CAST_LOCKOUT = 0.25;
 
 interface Active {
   cast: BossCast;
@@ -23,6 +24,8 @@ interface Active {
   began: number;
   leave: TelegraphLayer;
   stand: TelegraphLayer;
+  /** When this cast last hit this screen's hero. */
+  struck?: number;
 }
 
 /**
@@ -58,6 +61,14 @@ export class BossScript {
       exposed: (s) => world.exposed(s),
       say: (text, color, x, z) => world.say(text, color, x, z),
       solo: link.solo,
+      tag: (form, x, z, rx, rz) => world.tag(form, x, z, rx, rz),
+      dragMe: (x, z, meters) => {
+        const me = world.me();
+        if (world.down()) return;
+        const dx = x - me.x, dz = z - me.z, d = Math.hypot(dx, dz);
+        if (d > 2.5) world.carryMe((dx / d) * meters, (dz / d) * meters);
+      },
+      heroAt: (side) => world.heroes().find((h) => h.side === side) ?? null,
     };
   }
 
@@ -72,7 +83,7 @@ export class BossScript {
     if (gold.length) played.duration = Math.max(played.duration, ...gold);
     const leave = new TelegraphLayer(), stand = new TelegraphLayer();
     const spec = (th: Threat): TelegraphSpec => ({ shape: th.shape, start: th.show ?? 0, impact: th.at, until: th.to });
-    const shown = played.threats.filter((th) => !th.hidden && !th.shapeAt);
+    const shown = played.threats.filter((th) => !th.hidden && !th.shapeAt && !th.hits);
     leave.set(shown.filter((th) => th.kind !== 'stand').map(spec), LEAVE_COLOR, LEAVE_ALPHA);
     stand.set(shown.filter((th) => th.kind === 'stand').map(spec), STAND_COLOR, STAND_ALPHA);
     this.group.add(leave.group, stand.group);
@@ -108,10 +119,15 @@ export class BossScript {
     return th.shapeAt ? th.shapeAt(t) : th.shape;
   }
 
+  /** Whether (x, z) is in a threat at time `t`. */
+  private inThreat(th: Threat, t: number, x: number, z: number) {
+    return th.hits ? th.hits(x, z, t) : insideTelegraph(this.shapeOf(th, t), x, z);
+  }
+
   /** The first moment of a threat: a gold zone reports who stands in it, an orange one hits who does. */
   private land(a: Active, th: Threat, t: number) {
     const me = this.world.me();
-    const inside = !this.world.down() && insideTelegraph(this.shapeOf(th, t), me.x, me.z);
+    const inside = !this.world.down() && this.inThreat(th, t, me.x, me.z);
     if (th.kind === 'stand') {
       th.inside = inside;
       // A fallen hero's screen has nothing to report: the hub counts the heroes standing.
@@ -121,13 +137,13 @@ export class BossScript {
     if (inside) this.strike(a, th, t);
     // A summoned unit doesn't dodge: anything in the zone takes the hit.
     for (const u of this.world.units()) {
-      if (insideTelegraph(this.shapeOf(th, t), u.pos.x, u.pos.z) && (!th.source || this.world.sees(th.source.x, th.source.z, u.pos.x, u.pos.z))) this.world.hitUnit(u.figure, UNIT_HIT);
+      if (this.inThreat(th, t, u.pos.x, u.pos.z) && (!th.source || this.world.sees(th.source.x, th.source.z, u.pos.x, u.pos.z))) this.world.hitUnit(u.figure, UNIT_HIT);
     }
   }
 
   private tickZone(a: Active, th: Threat, t: number) {
     const me = this.world.me();
-    if (this.world.down() || !insideTelegraph(this.shapeOf(th, t), me.x, me.z)) return;
+    if (this.world.down() || !this.inThreat(th, t, me.x, me.z)) return;
     if (th.lastHit !== undefined && t - th.lastHit < (th.every ?? 1)) return;
     this.strike(a, th, t);
   }
@@ -142,6 +158,9 @@ export class BossScript {
       }
       return;
     }
+    // Zones of one cast that overlap hit once: a fan's lines meet at its source.
+    if (a.struck !== undefined && t - a.struck < CAST_LOCKOUT) return;
+    a.struck = t;
     th.lastHit = t;
     const move = this.def.moves[a.cast.move];
     this.world.hitMe({ share: th.share, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
@@ -181,6 +200,10 @@ export class BossScript {
         if (t > end) continue;
         const look = Math.max(within, th.look ?? 0);
         if (th.at - t > look) continue;
+        if (th.hits) {
+          for (let k = Math.max(t, th.at); k <= Math.min(end, t + look); k += 0.2) if (th.hits(x, z, k)) return true;
+          continue;
+        }
         if (th.shapeAt) {
           // A zone that moves: where it will be over the next moments.
           for (let k = Math.max(t, th.at); k <= Math.min(end, t + look); k += 0.2) {

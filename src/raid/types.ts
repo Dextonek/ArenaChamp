@@ -38,6 +38,12 @@ export interface BossCast {
   seed: number;
   /** The hero it aims at. */
   target: RaidSide;
+  /** A tag team's boss on the rim casts it, not the one in the ring. */
+  rim?: boolean;
+  /** A tag: the form that steps into the ring. */
+  form?: number;
+  /** The brain saw something both screens need to know (Charge hit cover). */
+  flag?: boolean;
   /** Only one hero was up when the move began: a move made for two plays its alone version. */
   alone?: boolean;
 }
@@ -68,6 +74,8 @@ export interface Threat {
   look?: number;
   /** A zone that moves (Walking Sun): its shape at time `t`. It is not drawn as a telegraph; the move's look draws it. */
   shapeAt?(t: number): TelegraphShape;
+  /** A zone no shape can say (the Lava Wave's gap): whether (x, z) is in it at time `t`. The move's look draws it. */
+  hits?(x: number, z: number, t: number): boolean;
   /** Parts of one move that report apart (Anchors). */
   part?: number;
   /** A `stand` zone whose cost is shared by the heroes in it; those outside pay nothing, unless nobody is in it. */
@@ -118,6 +126,12 @@ export interface PlayContext {
   solo: boolean;
   /** How long a zone shown for `seconds` at tier 1 shows at this tier: shorter each tier, and never under 1 s. */
   shown(seconds: number): number;
+  /** A tag team swaps: `form` lands at (x, z), the other goes up to the rim at (rx, rz). */
+  tag(form: number, x: number, z: number, rx: number, rz: number): void;
+  /** Drags this screen's hero toward (x, z), unless it is already close. */
+  dragMe(x: number, z: number, meters: number): void;
+  /** Where a hero stands, for a look only (Marked's circle): what counts comes in a later cast. */
+  heroAt(side: RaidSide): { x: number; z: number } | null;
 }
 
 export interface AimContext {
@@ -125,6 +139,10 @@ export interface AimContext {
   target: { x: number; z: number };
   step: number;
   seed: number;
+  /** Where the last step of this move was aimed. */
+  prev?: { x: number; z: number; dir: number; flag?: boolean };
+  /** How far along from a to b (0..1) a ray gets before cover stops it. */
+  rayStop(ax: number, az: number, bx: number, bz: number): number;
 }
 
 export interface BossMove {
@@ -149,11 +167,31 @@ export interface BossMove {
   coop?: boolean;
   /** Its later steps come at wherever the target is then: an AI keeps walking through it and starts no long cast. */
   chases?: boolean;
+  /** No cast bar and no pose (Burning Trail). */
+  quiet?: boolean;
+  /** Which form of a tag team it belongs to: a higher tier's extra moves go to the right one. */
+  form?: number;
+  /** What only the screen that runs the brain may do: move the boss. Returns seconds it stands still after. */
+  act?(world: BossWorld, c: BossCast): number | void;
   pose: CastStyle;
   /** Where a step is aimed. Runs on the brain's screen only. */
-  aim(c: AimContext): { x: number; z: number; dir: number };
+  aim(c: AimContext): { x: number; z: number; dir: number; flag?: boolean };
   /** What a cast does. Runs on every screen: it may read the cast and the cover, and never a hero. */
   play(c: BossCast, p: PlayContext): PlayedMove;
+}
+
+/** One of a tag team: its look, and what it does in the ring and from the rim. */
+export interface BossForm {
+  name: string;
+  kit(hp: number): HeroKit;
+  scale: number;
+  body: { radius: number; height: number };
+  speed: number;
+  keepAt: number;
+  moves: string[];
+  rimMoves: string[];
+  /** The move it leaves behind as it walks (Burning Trail). */
+  trail?: string;
 }
 
 export interface BossPhase {
@@ -161,6 +199,12 @@ export interface BossPhase {
   /** Starts when HP falls to this share. The first phase has 1. */
   at: number;
   moves: string[];
+  /** A tag team: which form is in the ring. */
+  ring?: number;
+  /** A tag team: how often the one on the rim adds a move (s). */
+  rimEvery?: [number, number];
+  /** A tag team: they swap this often (s). */
+  swapEvery?: number;
   /** The move that opens the phase. */
   opener?: string;
   /** The quiet between moves (s). */
@@ -192,9 +236,15 @@ export interface BossDef {
   phases: BossPhase[];
   /** A higher tier brings these moves in from the first phase on, one a tier. */
   extra?: string[];
+  /** A tag team: one HP bar, one in the ring at a time, the other on the rim. */
+  forms?: BossForm[];
+  /** Where the one on the rim can stand. */
+  rimSpots?: { x: number; z: number }[];
+  /** The phase that starts `late` at once, whatever the clock says. */
+  lateAt?: number;
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */
-  late?(): { shift: ArenaShift; offset: number };
+  late?(): { shift: ArenaShift; offset: number; startsAt?: number };
 }
 
 /** A hit on this screen's hero. */
@@ -264,6 +314,16 @@ export interface BossWorld {
   walk(dt: number, x: number, z: number, speed: number): void;
   face(yaw: number): void;
   pose(style: CastStyle, seconds: number, big: boolean): void;
+  /** The same for the one on the rim. */
+  poseRim(style: CastStyle, seconds: number, big: boolean): void;
+  /** A tag team swaps (see `PlayContext.tag`). */
+  tag(form: number, x: number, z: number, rx: number, rz: number): void;
+  /** The boss rushes to (x, z). Only the screen that runs the brain calls it. */
+  dash(x: number, z: number, seconds: number): void;
+  /** This screen's hero is carried by this much. */
+  carryMe(dx: number, dz: number): void;
+  /** What closes in when a fight runs long starts now. */
+  lateNow(): void;
   /** What watches the enemy's casts (Hemocurse, the Referee's count). */
   enemyCast(big: boolean): void;
   /** The boss's walk from reports, on the screen that doesn't run its brain. */
