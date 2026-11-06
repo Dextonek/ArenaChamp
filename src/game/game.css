@@ -212,6 +212,14 @@
   opacity: 0; pointer-events: none; transition: opacity 0.2s, transform 0.2s;
 }
 .toast.on { opacity: 1; transform: translate(-50%, 0); }
+/* a round's loser chooses (src/game/main.ts, showPick): over the frozen fight, with the heroes scrolling on a phone */
+.pick-panel { display: flex; justify-content: center; align-items: flex-start; padding: 20px; background: rgba(8, 6, 10, 0.72); }
+.pick-card { width: min(780px, 100%); }
+.pick-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pick-clock { font: 700 30px ui-serif, Georgia, serif; color: var(--gold-hi); min-width: 2ch; text-align: right; }
+.pick-keep { width: 100%; }
+.arena-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 8px; margin-top: 8px; }
+.loading-note { font: 600 16px ui-sans-serif, system-ui; color: #f2e6c8; }
 .update-bar {
   position: fixed; left: 50%; top: calc(14px + env(safe-area-inset-top, 0px)); transform: translateX(-50%); z-index: 50; display: flex;
   align-items: center; gap: 12px; width: max-content; max-width: calc(100vw - 32px); padding: 10px 16px; border-radius: 12px;

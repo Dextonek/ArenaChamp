@@ -49,13 +49,13 @@ async function client() {
   return {
     /** The messages that open a session carry the rules version, as src/net/client.ts sends them. @param {any} m */
     send: (m) => ws.send(JSON.stringify(['register', 'login', 'resume'].includes(m.t) ? { v: PROTOCOL, ...m } : m)),
-    /** @param {string} t @returns {Promise<any>} */
-    next(t) {
+    /** @param {string} t @param {number} [ms] @returns {Promise<any>} */
+    next(t, ms = 8000) {
       const i = inbox.findIndex((m) => m.t === t);
       if (i >= 0) return Promise.resolve(inbox.splice(i, 1)[0]);
       return new Promise((resolve, reject) => {
         waiting.push({ t, resolve });
-        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), 8000);
+        setTimeout(() => reject(new Error(`timeout waiting for ${t}`)), ms);
       });
     },
     close: () => ws.close(),
@@ -184,10 +184,21 @@ try {
   const r1a = await a.next('round_end'), r1b = await b.next('round_end');
   check(r1a.result === 'win' && r1b.result === 'loss' && r1a.score.join() === '1,0' && r1b.score.join() === '0,1', 'KO wins round 1 (1-0)');
 
+  // The round's loser picks: Bob swaps hero. The winner can't, nor can Bob take Alice's hero, or two things at once.
+  check(r1b.pick?.you === true && r1a.pick?.you === false && r1b.pick.seconds === 15, 'the round loser gets the pick, for 15 s');
+  a.send({ t: 'round_pick', hero: 'Lyra' });
+  b.send({ t: 'round_pick', hero: 'Vesper' });
+  check((await b.next('error')).error.includes('taken'), 'a swap to the other player\'s hero is refused');
+  b.send({ t: 'round_pick', hero: 'Lyra', arena: 'frost' });
+  check((await b.next('error')).error.includes('Pick one'), 'a hero and an arena together are refused');
+  b.send({ t: 'round_pick', hero: 'Lyra' });
+  b.send({ t: 'round_pick', arena: 'frost' });
+
   // Round 2: after the break both load again; Bob wins it.
-  const s2 = await a.next('round_start');
-  await b.next('round_start');
+  const s2 = await a.next('round_start'), s2b = await b.next('round_start');
   check(s2.round === 2, 'round 2 starts after the break');
+  check(s2.you === 'Vesper' && s2.foe === 'Lyra' && s2b.you === 'Lyra' && s2b.foe === 'Vesper' && s2.picked.by === BOB && s2.picked.hero === 'Lyra' && !s2.picked.arena,
+    'the swap reaches both screens; the winner\'s try and a second pick were dropped');
   a.send({ t: 'match_loaded' });
   b.send({ t: 'match_loaded', maxHp: 740 });
   check((await b.next('match_fight')).round === 2, 'round 2 countdown');
@@ -197,11 +208,15 @@ try {
   await a.next('peer_cast');
   for (let i = 0; i < 6; i++) a.send({ t: 'took_hit', id: 1, damage: 100 });
   for (let i = 0; i < 6; i++) await b.next('peer_hit');
-  check((await a.next('round_end')).score.join() === '1,1', 'Bob wins round 2 (1-1)');
-  await b.next('round_end');
+  const r2a = await a.next('round_end'), r2b = await b.next('round_end');
+  check(r2a.score.join() === '1,1', 'Bob wins round 2 (1-1)');
+  check(r2a.pick.you === true && r2b.pick.you === false, 'the second pick is the other player\'s');
+  b.send({ t: 'round_pick', arena: 'glade' });
+  a.send({ t: 'round_pick', arena: 'frost' });
 
-  // Round 3 decides the match.
-  await a.next('round_start'); await b.next('round_start');
+  // Round 3 decides the match, in the arena Alice chose.
+  const s3a = await a.next('round_start'), s3b = await b.next('round_start');
+  check(s3a.picked.arena === 'frost' && s3b.picked.arena === 'frost' && s3a.picked.by === ALICE && s3b.foe === 'Vesper', 'the chosen arena reaches both screens, the heroes stay');
   a.send({ t: 'match_loaded' });
   b.send({ t: 'match_loaded', maxHp: 740 });
   check((await a.next('match_fight')).round === 3, 'round 3 countdown');
@@ -215,6 +230,9 @@ try {
   check(ea.result === 'win' && eb.result === 'loss' && ea.reason === 'ko' && ea.score.join() === '2,1' && eb.score.join() === '1,2', 'round 3 ends the match 2-1');
   check(ea.profile.wins === 1 && ea.profile.favourite === 'Vesper' && eb.profile.losses === 1 && eb.profile.history[0].foe === ALICE
     && ea.profile.history[0].rounds.join() === '2,1', 'stats recorded with the round score');
+  const hb = eb.profile.history[0], ha = ea.profile.history[0];
+  check(hb.hero === 'Lyra' && hb.from === 'Brannoc' && eb.profile.heroes.Lyra.played === 1 && !eb.profile.heroes.Brannoc && ha.foeHero === 'Lyra' && !ha.from,
+    'the match counts for the hero finished on, and the history shows the swap');
 
   // Queue: carol and dave meet through matchmaking; same hero waits.
   const c = await client(), d = await client();
@@ -231,6 +249,30 @@ try {
   d.send({ t: 'queue_join', hero: 'Vitriol' });
   const qc = await c.next('match_start'), qd = await d.next('match_start');
   check(qc.foe.name === DAVE && qd.foe.hero === 'Lyra', 'queue pairs two different heroes');
+  /** Loads a round and has `x` knock `y` out with three big hits. @param {any} x @param {any} y @param {number} round */
+  const knockOut = async (x, y, round) => {
+    x.send({ t: 'match_loaded' }); y.send({ t: 'match_loaded' });
+    await x.next('match_fight'); await y.next('match_fight');
+    await wait(3200);
+    x.send({ t: 'cast', id: round, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    await y.next('peer_cast');
+    for (let i = 0; i < 3; i++) y.send({ t: 'took_hit', id: round, damage: 250 });
+    await x.next('round_end');
+    return y.next('round_end');
+  };
+  // Nobody answers a pick: the next round starts as it was, when the time runs out.
+  check((await knockOut(c, d, 1)).pick.you === true, 'dave lost round 1 and may pick');
+  const unanswered = Date.now();
+  const qs = await d.next('round_start', 17000);
+  await c.next('round_start');
+  check(Date.now() - unanswered > 14000 && qs.you === 'Vitriol' && qs.picked === null, 'a pick nobody answers runs out after 15 s and changes nothing');
+  // "Keep" ends the wait, but the break still lasts its 3 s.
+  check((await knockOut(d, c, 2)).pick.you === true, 'carol lost round 2 and may pick');
+  const kept = Date.now();
+  c.send({ t: 'round_pick' });
+  const qk = await c.next('round_start');
+  await d.next('round_start');
+  check(Date.now() - kept < 5000 && qk.you === 'Lyra' && qk.picked === null, 'keeping things as they are ends the wait');
   d.send({ t: 'match_leave' });
   const fc = await c.next('match_end');
   check(fc.result === 'win' && fc.reason === 'forfeit', 'forfeit ends the match');

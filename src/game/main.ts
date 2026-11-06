@@ -12,7 +12,8 @@ import { NetClient, type LobbyState, type Profile } from '../net/client';
 import { HeroPreview } from './heroPreview';
 import { LoadingScreen } from './loading';
 import { traitFor } from '../traits';
-import { MatchController } from './match';
+import { MatchController, type PickOffer } from './match';
+import { ARENAS } from '../arenas';
 import { CpuMatch } from './cpu';
 import { CPU_LEVELS, cpuLevel } from '../cpuLevels';
 import { TOUCH } from '../touch';
@@ -265,12 +266,14 @@ function menuScreen() {
         el('li', {}, 'Drag back onto the spell to cancel. The ', el('b', {}, '⚔'), ' button attacks; pinch to zoom.'),
         el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
         el('li', {}, 'Both heroes have 600 HP. Last one standing wins.'),
+        el('li', {}, 'Best of three. ', el('b', {}, 'Lose a round'), ' and you can swap hero or choose the next arena.'),
       ) : el('ul', { class: 'how' },
         el('li', {}, el('b', {}, 'Right click'), ' the ground to walk (hold to keep walking), or an enemy to attack it.'),
         el('li', {}, el('b', {}, 'Q W E R'), ' aim a spell, click to cast. R is the ultimate.'),
         el('li', {}, el('b', {}, 'Right click / Esc'), ' cancels the aim.'),
         el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
         el('li', {}, 'Both heroes have 600 HP. Last one standing wins.'),
+        el('li', {}, 'Best of three. ', el('b', {}, 'Lose a round'), ' and you can swap hero or choose the next arena.'),
       ),
       statTiles(state.profile!),
     ),
@@ -303,6 +306,40 @@ function heroPicker(selected: string, taken: string[], pick: (name: string) => v
     b.style.setProperty('--accent', k.accent);
     return b;
   }));
+}
+
+// --- a round's loser picks ---------------------------------------------------------------------------------
+
+let pickPanel: HTMLElement | null = null;
+let pickClock = 0;
+
+function hidePick() {
+  clearInterval(pickClock);
+  pickPanel?.remove();
+  pickPanel = null;
+}
+
+/** Over the frozen fight (the menu's root is hidden during a match). One tap decides: the time is short. */
+function showPick(o: PickOffer) {
+  hidePick();
+  const until = Date.now() + o.seconds * 1000;
+  const clock = el('b', { class: 'pick-clock' }, String(o.seconds));
+  pickClock = window.setInterval(() => { clock.textContent = String(Math.max(0, Math.ceil((until - Date.now()) / 1000))); }, 250);
+  const choose = (c: { hero?: string; arena?: string }) => { hidePick(); o.choose(c); };
+  pickPanel = el('div', { class: 'ui pick-panel' },
+    el('section', { class: 'card pick-card' },
+      el('div', { class: 'pick-head' }, el('h2', {}, 'You lost the round: your pick'), clock),
+      el('p', { class: 'muted' }, `Against ${o.foeHero}. Choose one, or the next round starts as it is.`),
+      el('button', { class: 'btn primary pick-keep', onclick: () => choose({}) }, `Keep ${o.myHero} and ${o.nextArena.name}`),
+      el('h3', { class: 'gap' }, 'Choose the next arena'),
+      el('div', { class: 'arena-row' }, ...ARENAS.filter((a) => a !== o.nextArena).map((a) => el('button', { class: 'btn', onclick: () => choose({ arena: a.id }) }, a.name))),
+      el('h3', { class: 'gap' }, 'Or swap hero'),
+      heroPicker(o.myHero, [o.foeHero], (n) => {
+        if (n === o.myHero) return choose({});
+        choose({ hero: n === RANDOM ? randomKit([o.myHero, o.foeHero]).name : n });
+      }),
+    ));
+  document.body.append(pickPanel);
 }
 
 function queueBar() {
@@ -465,7 +502,7 @@ function profileScreen(p: Profile) {
           el('tr', {}, el('th', {}, ''), el('th', {}, 'Hero'), el('th', {}, 'Opponent'), el('th', {}, 'Time'), el('th', {}, 'When')),
           ...p.history.map((h) => el('tr', {},
             el('td', {}, el('span', { class: `res ${h.result}` }, h.result === 'win' ? 'WIN' : 'LOSS')),
-            el('td', {}, h.hero), el('td', {}, `${h.foe} (${h.foeHero})`),
+            el('td', {}, h.from ? `${h.from} → ${h.hero}` : h.hero), el('td', {}, `${h.foe} (${h.foeHero})`),
             el('td', {}, `${h.seconds} s${h.reason !== 'ko' ? ` · ${h.reason}` : ''}`), el('td', { class: 'muted' }, date(h.at))))) : el('p', { class: 'muted' }, 'No matches yet.')),
     ),
   );
@@ -547,6 +584,8 @@ const match = new MatchController(net, gameApi, loading, {
   onExit: () => { state.screen = 'menu'; render(); net.send({ t: 'profile' }); },
   onProfile: (p) => { state.profile = p; },
   toast,
+  pick: showPick,
+  hidePick,
 });
 const cpu = new CpuMatch(gameApi, loading, {
   onEnter: () => render(),

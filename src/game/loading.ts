@@ -9,6 +9,7 @@ export class LoadingScreen {
   private root = document.createElement('div');
   private arena = document.createElement('div');
   private line = document.createElement('div');
+  private note = document.createElement('div');
   private duel = document.createElement('div');
 
   constructor() {
@@ -21,17 +22,20 @@ export class LoadingScreen {
     bar.append(document.createElement('i'));
     this.arena.className = 'loading-arena';
     this.line.className = 'loading-line';
+    this.note.className = 'loading-note';
     this.duel.className = 'loading-duel';
-    box.append(this.duel, this.arena, bar, this.line);
+    box.append(this.duel, this.arena, this.note, bar, this.line);
     this.root.append(box);
     document.body.append(this.root);
   }
 
-  /** Shows the page for `mine` against `theirs`, with the players' names under the heroes (online). `title` heads it. */
-  show(o: { mine?: HeroKit; theirs?: HeroKit; names?: [string, string]; title: string; line: string }) {
+  /** Shows the page for `mine` against `theirs`, with the players' names under the heroes (online). `title` heads it; `note` says what changed for this round. */
+  show(o: { mine?: HeroKit; theirs?: HeroKit; names?: [string, string]; title: string; line: string; note?: string }) {
     this.duel.replaceChildren(this.side(o.mine, o.names?.[0]), this.versus(), this.side(o.theirs, o.names?.[1]));
     this.arena.textContent = o.title;
     this.line.textContent = o.line;
+    this.note.textContent = o.note ?? '';
+    this.note.style.display = o.note ? '' : 'none';
     this.root.style.display = '';
   }
 

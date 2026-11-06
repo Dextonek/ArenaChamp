@@ -70,6 +70,8 @@
     const { api, match, state } = window.game;
     const d = api.duel, hm = api.heroMode, arena = api.arena;
     if (!match.active || !d.on) { if (log.rounds.length) log.ended = true; return; }
+    // A round's loser keeps things as they are, through the real button; `_botHoldPick = true` leaves the panel to a test.
+    if (!window._botHoldPick) document.querySelector('.pick-keep')?.click();
     log.foe = match.current?.foe?.hero ?? log.foe;
     const foe = d.foe;
     if (!foe) return;

@@ -15,7 +15,10 @@ export interface HeroStats {
 
 export interface MatchRecord {
   at: string;
+  /** The hero the player finished on. */
   hero: string;
+  /** The hero the player started on, when they swapped after losing a round. */
+  from?: string;
   foe: string;
   foeHero: string;
   result: 'win' | 'loss';
@@ -34,6 +37,13 @@ export interface Profile {
   favourite: string | null;
   heroes: Record<string, HeroStats>;
   history: MatchRecord[];
+}
+
+/** What a round's loser chose: a hero swap or the next arena. */
+export interface RoundPick {
+  by: string;
+  hero?: string;
+  arena?: string;
 }
 
 export interface LobbyState {
@@ -56,9 +66,9 @@ export type ServerMsg =
   | { t: 'match_fight'; countdown: number; round?: number }
   | {
     t: 'round_end'; round: number; result: 'win' | 'loss' | 'draw'; reason: string; winner: string | null; score: number[];
-    hp: number[]; next: number;
+    hp: number[]; next: number; pick: { you: boolean; seconds: number } | null;
   }
-  | { t: 'round_start'; round: number; score: number[] }
+  | { t: 'round_start'; round: number; score: number[]; you: string; foe: string; picked: RoundPick | null }
   | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number; r?: number }
   | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods; bend?: number }
   | { t: 'peer_hit'; id: number; damage: number; soaked?: number; hp: number; color?: string; blocked?: boolean }

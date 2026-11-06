@@ -426,7 +426,7 @@ export class Duel {
    * 0 starts at the +Z end (like the AI duel), side 1 at the -Z end with the camera turned round. The hero stays
    * locked until `countdownFrom` runs out; the remote hero moves and casts from `peerMove` / `peerCast`.
    */
-  startNet(o: { opponent: HeroKit; side: 0 | 1; names: [string, string]; net: DuelNet; arena?: string }) {
+  startNet(o: { opponent: HeroKit; side: 0 | 1; names: [string, string]; net: DuelNet; arena?: string; arenaId?: string }) {
     const arena = this.host.arena, hm = this.host.heroMode;
     this.mode = 'play';
     this.autopilot = false;
@@ -434,8 +434,10 @@ export class Duel {
     hm.focus = null;
     this.opponentKit = o.opponent;
     const [mine, theirs] = o.side === 0 ? [PLAYER_START, OPPONENT_START] : [OPPONENT_START, PLAYER_START];
+    // `arena` is the round's seed: it picks the arena unless `arenaId` names one (a round's loser chose it), and it
+    // drives the arena's events either way, so both screens stay on one schedule.
     this.hazardSeed = o.arena ?? '';
-    this.setup(mine, theirs, pickArena(o.arena));
+    this.setup(mine, theirs, (o.arenaId ? arenaById(o.arenaId) : undefined) ?? pickArena(o.arena));
     this.net = o.net;
     this.names = o.names;
     this.peerTrack = [];
