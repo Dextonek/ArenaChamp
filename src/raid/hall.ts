@@ -244,6 +244,8 @@ export class RaidHall {
       p.say(u.name, '#ffe27a', HALL_ALTARS[i].x, HALL_ALTARS[i].z);
       for (const card of this.cards) card.remove();
       this.cards = [];
+      // A tap on a card walked the hero here: that order is done, or it would keep the hero on the altar.
+      this.api.heroMode.halt();
       v.pick(u);
     };
 

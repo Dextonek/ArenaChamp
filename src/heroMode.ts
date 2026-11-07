@@ -713,6 +713,13 @@ export class HeroMode implements TouchTarget {
     this.mark(this.moveTo, MOVE_MARK);
   }
 
+  /** Drops the walk order: the hero stands where it is. */
+  halt() {
+    this.moveTo = null;
+    this.pending = null;
+    this.clearAttack();
+  }
+
   /** Only walking (Noonfall's hall): the spell panel goes, and spells and attacks stay off. */
   setWalkOnly(on: boolean) {
     this.walkOnly = on;
