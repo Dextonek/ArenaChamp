@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { KeepGate } from '../arenas/noonfall';
+import { RING } from '../arenas/common';
 import type { BuffKind, StatusKind } from '../effects/status';
 import { BossBrain } from './brain';
 import { BossHud } from './hud';
@@ -39,6 +41,9 @@ export class BossFight {
   private begun = false;
   private ringForm = 0;
   private rimSpot: { x: number; z: number } | null = null;
+  /** The gate heroes came in by, lit until the fight starts, and the one out, lit once the boss falls. */
+  private gates: { enter: KeepGate; exit: KeepGate } | null = null;
+  private clock = 0;
 
   constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
     this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength) }, tier);
@@ -59,6 +64,17 @@ export class BossFight {
     if (!def.hall) {
       hud.show(def);
       hud.setHp(link.maxHp, link.maxHp);
+    }
+    if (def.gates) {
+      const r = (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' ? 'ash' : 'sun';
+      const gate = (deg: number) => {
+        const a = THREE.MathUtils.degToRad(deg), x = RING.x + Math.sin(a) * r, z = RING.z + Math.cos(a) * r;
+        const g = new KeepGate(x, z, Math.atan2(RING.x - x, RING.z - z), tone);
+        this.group.add(g.group);
+        return g;
+      };
+      this.gates = { enter: gate(def.gates.enter), exit: gate(def.gates.exit) };
+      this.gates.enter.setOpen(true);
     }
   }
 
@@ -165,6 +181,7 @@ export class BossFight {
     if (this.over) return;
     this.over = true;
     this.script.clear();
+    this.gates?.exit.setOpen(result === 'win');
     this.hud.settle(result === 'win', this.link.maxHp);
     this.world.finish(result);
   }
@@ -172,6 +189,12 @@ export class BossFight {
   /** One frame. `live`: the fight is on. */
   update(dt: number, live: boolean, hp: number) {
     this.hud.update(dt);
+    this.clock += dt;
+    if (this.gates) {
+      if (live) this.gates.enter.setOpen(false);
+      this.gates.enter.update(dt, this.clock);
+      this.gates.exit.update(dt, this.clock);
+    }
     this.openLeft = Math.max(0, this.openLeft - dt);
     this.hud.setHp(hp, this.link.maxHp);
     this.link.tick(dt);
@@ -203,6 +226,8 @@ export class BossFight {
   }
 
   dispose() {
+    this.gates?.enter.dispose();
+    this.gates?.exit.dispose();
     this.script.dispose();
     this.group.removeFromParent();
     this.hud.hide();

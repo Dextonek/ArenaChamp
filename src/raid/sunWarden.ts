@@ -460,6 +460,7 @@ export const SUN_WARDEN: BossDef = {
   name: 'The Sun Warden',
   title: 'Keeper of the Sun Court',
   place: sunCourtArena,
+  gates: { enter: 0, exit: 180 },
   starts: { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z: 16.5 }, { x: -1.6, z: 16.5 }, { x: 1.6, z: 16.5 }] },
   kit: (hp) => ({
     name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, look: wardenLook, maxHp: hp,

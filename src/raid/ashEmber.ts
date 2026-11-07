@@ -390,6 +390,8 @@ export const ASH_AND_EMBER: BossDef = {
   name: 'Ash and Ember',
   title: 'Keepers of the Cinder Pit',
   place: cinderPitArena,
+  /** The way out stands between two of the rim's perches. */
+  gates: { enter: 0, exit: 157.5 },
   starts: { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z: 16.5 }, { x: -1.6, z: 16.5 }, { x: 1.6, z: 16.5 }] },
   kit: (hp) => kitOf('Ash and Ember', 'models/bosses/ash.glb', ashLook, '#e8703a')(hp),
   hp: NUMBERS.hp,
