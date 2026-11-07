@@ -101,6 +101,33 @@ function courtFloor() {
       const a = (k / 64) * Math.PI * 2;
       g.beginPath(); g.arc(Math.cos(a) * 14.4 * ppm, Math.sin(a) * 14.4 * ppm, 3, 0, Math.PI * 2); g.fill();
     }
+    // His sundial: twelve hour stones round the rim, pale stone, not gold, each cut with its count of notches.
+    for (let k = 0; k < 12; k++) {
+      const a = (k / 12) * Math.PI * 2 + Math.PI / 12;
+      g.save();
+      g.rotate(a);
+      g.fillStyle = 'rgba(150,150,170,0.16)';
+      g.fillRect(13 * ppm, -0.55 * ppm, 2.1 * ppm, 1.1 * ppm);
+      g.fillStyle = 'rgba(8,8,14,0.7)';
+      const n = (k % 4) + 1;
+      for (let j = 0; j < n; j++) g.fillRect((13.4 + j * 0.42) * ppm, -0.3 * ppm, 0.16 * ppm, 0.6 * ppm);
+      g.restore();
+    }
+    // The gnomon's shadow, frozen at the moment the sun fell: a long dark wedge from the altar.
+    g.save();
+    g.rotate(-2.3);
+    const shade = g.createLinearGradient(0, 0, 14 * ppm, 0);
+    shade.addColorStop(0, 'rgba(0,0,0,0.42)');
+    shade.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = shade;
+    g.beginPath();
+    g.moveTo(0, -1.1 * ppm);
+    g.lineTo(14 * ppm, -0.25 * ppm);
+    g.lineTo(14 * ppm, 0.25 * ppm);
+    g.lineTo(0, 1.1 * ppm);
+    g.closePath();
+    g.fill();
+    g.restore();
     g.setTransform(1, 0, 0, 1, 0, 0);
     // Scorch marks and wear: he has burned this floor before.
     for (let k = 0; k < 12; k++) {
@@ -114,6 +141,37 @@ function courtFloor() {
     for (let i = 0; i < 1800; i++) {
       g.fillStyle = rnd() < 0.5 ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.06)';
       g.fillRect(rnd() * s, rnd() * s, 1 + rnd() * 3, 1 + rnd() * 3);
+    }
+  });
+}
+
+/**
+ * Where the sun tore through the floor on its way down: thin cracks of light from the altar, out toward the north gate. The glow
+ * drawing of the court's floor; everything else in it is black.
+ */
+function courtGlow() {
+  return canvasTexture(1536, (g, s) => {
+    const rnd = seeded(91), ppm = s / (COURT_R * 2);
+    g.fillStyle = '#000';
+    g.fillRect(0, 0, s, s);
+    g.translate(s / 2, s / 2);
+    g.lineCap = 'round';
+    g.strokeStyle = '#ffb24a';
+    for (let k = 0; k < 9; k++) {
+      // Mostly toward the north, where the sun went over the edge.
+      let a = -Math.PI / 2 + (rnd() - 0.5) * 2.2, r = 1.6, x = Math.cos(a) * r, y = Math.sin(a) * r;
+      g.lineWidth = (k < 3 ? 4 : 2.2);
+      g.beginPath();
+      g.moveTo(x * ppm, y * ppm);
+      const end = 6 + rnd() * 8;
+      while (r < end) {
+        r += 0.4 + rnd() * 0.5;
+        a += (rnd() - 0.5) * 0.35;
+        x = Math.cos(a) * r;
+        y = Math.sin(a) * r;
+        g.lineTo(x * ppm, y * ppm);
+      }
+      g.stroke();
     }
   });
 }
@@ -191,7 +249,7 @@ export const sunCourtArena: ArenaDef = {
   build() {
     const g = new THREE.Group();
     const apron = floorDisc(46, new THREE.MeshStandardMaterial({ map: apronTexture(), roughness: 0.92, metalness: 0.04 }), 0.004, 64);
-    const disc = floorDisc(COURT_R, new THREE.MeshStandardMaterial({ map: courtFloor(), roughness: 0.82, metalness: 0.12, transparent: true, opacity: 0.94 }));
+    const disc = floorDisc(COURT_R, new THREE.MeshStandardMaterial({ map: courtFloor(), roughness: 0.82, metalness: 0.12, transparent: true, opacity: 0.94, emissive: 0xffffff, emissiveMap: courtGlow(), emissiveIntensity: 0.45 }));
     disc.receiveShadow = false;
     const band = flatRing(COURT_R - 1.1, COURT_R - 0.25, 0xb4561c, 0.2, 0.018);
     const rimLine = flatRing(COURT_R - 0.14, COURT_R, GOLD, 0.75, 0.02);
