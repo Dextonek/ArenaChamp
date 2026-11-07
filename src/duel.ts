@@ -151,6 +151,8 @@ const UNIT_BLOCK = 2.5; // an enemy unit this close is shot at when nothing can 
 const BOSS_LOOK = 1.6; // an AI starts walking when a boss's zone will reach it within this many seconds
 const BOSS_CLEAR = [3, 1.6, 0.9]; // and walks to a spot clear for this long, or the best it can find (Sun Order leaves nowhere clear for long)
 const BOSS_TAKEN = 0.5; // what standing open or kneeling adds to the damage a boss takes
+const HIDE_PAD = 0.5; // a boss's arms reach past its body: it counts as this much wider when it may hide a hero (m)
+const HERO_CHEST = 1.2; // the height a hero is seen at, for what may hide it (m)
 
 interface BoltDodge {
   /** The roll came up: this side steps off the bolt's line. */
@@ -752,6 +754,27 @@ export class Duel {
     this.traitFx.plate('partner', null, 0, null);
     this.traitFx.label('partner', null, 0, null);
     this.traitFx.ring('partner', null, null);
+  }
+
+  /** A boss that stands between the camera and a hero on this screen lets the hero show through. */
+  private bossFade(cam: THREE.Camera) {
+    const foe = this.foe, forms = this.bossDef?.forms;
+    this.figure.setFade(this.boss && foe?.body && this.hidesHero(cam, foe.group.position, foe.body) ? 1 : 0);
+    if (this.boss && forms) this.rimFigure?.setFade(this.hidesHero(cam, this.rimAt, forms[1 - this.bossForm].body) ? 1 : 0);
+  }
+
+  /** Whether a body at `at` stands in the line of sight from the camera to this hero or the partner. */
+  private hidesHero(cam: THREE.Camera, at: { x: number; z: number }, body: { radius: number; height: number }) {
+    const c = cam.position;
+    const hides = (hero: { x: number; z: number }) => {
+      const dx = hero.x - c.x, dz = hero.z - c.z;
+      // Where along the line the body is: 0 at the camera, 1 at the hero. Past the hero it hides nothing.
+      const t = ((at.x - c.x) * dx + (at.z - c.z) * dz) / (dx * dx + dz * dz || 1);
+      if (t <= 0 || t >= 1) return false;
+      return Math.hypot(c.x + dx * t - at.x, c.z + dz * t - at.z) < body.radius + HIDE_PAD && c.y + (HERO_CHEST - c.y) * t < body.height;
+    };
+    const p = this.partner;
+    return hides(this.host.arena.caster.group.position) || (!!p && !p.left && hides(p.pos));
   }
 
   /** The tag team's one on the rim: it looks at the middle, and at nothing else. */
@@ -1648,6 +1671,7 @@ export class Duel {
     this.traitFx.pips('foeOwn', this.foe?.group.position ?? null, this.oppRt?.allOwn() ?? [], cam, this.opponentKit.accent, foeTop + 0.3);
     this.traitFx.pips('heroOwn', this.host.arena.caster.group.position, this.heroRt?.allOwn() ?? [], cam, this.host.heroMode.currentKit.accent, heroTop + 0.3);
     this.figure.setVeil(this.oppRt?.veilNow() ?? 0);
+    this.bossFade(cam);
     hm.setFigureVeil(this.heroRt?.veilNow() ?? 0);
     if (this.figure.shown) this.figure.shown.visible = !this.oppRt?.hiddenNow();
     hm.setFigureHidden(!!this.heroRt?.hiddenNow());

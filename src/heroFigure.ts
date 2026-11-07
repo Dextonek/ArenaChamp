@@ -245,6 +245,14 @@ export class HeroFigure {
   }
   private veilNow = 0;
 
+  /** How much of what stands behind the figure should show through, 0..1, easing there. Asked every frame. */
+  setFade(target: number) {
+    this.fadeNow += (target - this.fadeNow) * 0.14;
+    if (Math.abs(target - this.fadeNow) < 0.01) this.fadeNow = target;
+    this.figure?.setFade(this.fadeNow);
+  }
+  private fadeNow = 0;
+
   /** The model shown now (an outline goes round it), if any. */
   get shown(): THREE.Object3D | null {
     return this.figure?.root ?? null;

@@ -97,6 +97,7 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor` and `onFoeDamage
 | Wide | A zone that touches any of its body counts as a hit on it (`inCastReach` with a pad) |
 | Too long | Past 5 minutes sunfire closes in, at 6 Last stand (`BossDef.late`), so nobody can stall a fight for ever |
 | Units | Whatever stands in an orange zone takes 60. Units don't dodge |
+| Hiding a hero | A boss between the camera and a hero, yours or your partner's, fades to 40 % so the hero shows through, the one on the rim too (`Duel.bossFade`, `Hero.setFade`). The camera stays where it is, because the controls follow it |
 
 ## The Sun Warden
 
@@ -199,7 +200,6 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 
 - **A summoner's partner sees fewer bodies:** units are raised only on their owner's screen.
 - **Marks, stacks and meters stay on their owner's screen.** The partner's bar shows HP only.
-- **A hero behind the giant is hidden by it.** The camera looks over him from the south. Note for the art pass.
 - **Its body is wider than the walk planner assumes,** so it can clip a wall corner while walking.
 - **A hero's words and marks on the enemy still land on the boss** (`enemyLabel`, `marks`). Only `enemyScale` is off for it. Cosmetic.
 - **Vesper's Sanguine Feast reads the HP she has taken off the target,** which grows large against a boss. All 39 heroes ran with nothing odd, but it has not been looked at on its own.
