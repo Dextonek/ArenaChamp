@@ -181,7 +181,8 @@ export const ashLook: BodyLook = (s, p) => {
   }
 
   // The seams burn hotter each phase, and the core more.
-  p.glow('torso', seamGlow);
-  p.glow('core', coreGlow);
-  p.glow('head', seamGlow * (1 + Math.sin(t * 3) * 0.1));
+  // Under the game's bloom a bright core is all that shows from above: it keeps under half of the model's glow.
+  p.glow('torso', seamGlow * 0.7);
+  p.glow('core', coreGlow * 0.38);
+  p.glow('head', seamGlow * 0.7 * (1 + Math.sin(t * 3) * 0.1));
 };

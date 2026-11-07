@@ -153,7 +153,8 @@ export const emberLook: BodyLook = (s, p) => {
   p.move('core', 0, total - 1.7 * fHood, 0);
   p.turn('core', lean * 0.6, 0, side * 0.6 + Math.sin(t * 3.1) * 0.04);
   p.size('core', Math.max(0, flameSize * (1 - 0.9 * dead)));
-  p.glow('core', flameGlow);
+  // Under the game's bloom the white-hot core hid her hood and mantle: it keeps a third of the model's glow.
+  p.glow('core', flameGlow * 0.33);
   p.glow('mantle', edgeGlow);
 
   for (const [sg, n] of [[1, 'L'], [-1, 'R']] as const) {

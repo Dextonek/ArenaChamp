@@ -18,6 +18,9 @@ const seg = (v: number, a: number, b: number) => ease((v - a) / (b - a));
 /** Rest places (metres, the parent's space: x its left, y up, z its front). */
 const FIST = { y: 2.5 };
 const SLAB = { x: 0.85, y: 0.75 };
+/** How much of the model's own glow the halo and the sun keep: the game's bloom does the rest. */
+const GLOW_HALO = 0.42;
+const GLOW_SUN = 0.6;
 /** The halo ring is tilted this far about x in the model. */
 const HALO_TILT = 0.3;
 
@@ -172,8 +175,9 @@ export const wardenLook: BodyLook = (s, p) => {
   m.spin += dt * spinRate;
   spinHalo(p, m.spin);
   if (alive > 0.01) {
-    p.glow('halo', haloGlow * alive);
-    p.glow('sun', sunGlow * alive);
+    // Under the game's bloom a bright halo hides the whole body: it glows at under half of what the model says.
+    p.glow('halo', Math.min(1.1, haloGlow * GLOW_HALO) * alive);
+    p.glow('sun', sunGlow * GLOW_SUN * alive);
   } else {
     p.glow('halo', 0);
     p.glow('sun', 0);
