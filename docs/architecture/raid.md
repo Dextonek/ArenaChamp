@@ -40,6 +40,15 @@ running out takes the first. They live on the hero's own screen, like its HP and
 
 The design called the third one Last Light, which is also the Warden's third phase, so it has its own name here.
 
+**When they run out.** Once fewer than three of those are left, about tier 4 to 6 depending on the hero, three small ones fill the cards. Each can be
+taken again and again, so a long run always has three choices (`STACKING`):
+
+| Upgrade | Effect, each time | Where it acts |
+|---|---|---|
+| Whetstone | 8 % more damage | `resolve` |
+| Thick Hide | 10 % more max HP | `startBoss` |
+| Steady Breath | Cooldowns 5 % shorter | `castRules` |
+
 A boss's hit and its floor are a share of the hero's own max HP, before upgrades (`Duel.hitBase`). If they were a share of the max HP with
 upgrades, Stone Skin would change the number on the bar and not how many hits it takes to fall, and Glass Edge would cost nothing.
 
@@ -200,7 +209,6 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **A brain in a tab hidden for over 5 minutes nearly stops.** A hidden tab goes on simulating from a timer, about once a second, which works
   (checked: nothing piles up when it comes back). After 5 minutes Chrome slows timers to once a minute, and the boss hardly acts for the other
   player. A phone that freezes the page and drops the socket hands the brain over at once.
-- **The offers can run out.** Ten upgrades and two picks a tier: a long run ends up with fewer than three, then none.
 - **Ember doesn't back away.** She wants 9 m, but with a hero closer than that she stands and casts. Tuning, not a fault.
 
 ## Tools

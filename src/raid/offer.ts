@@ -29,21 +29,9 @@ export class OfferScreen {
     document.body.append(this.root);
   }
 
-  /** Shows the offers. `pick` gets one call: a card, or the first when time runs out. With nothing to offer it answers at once. */
-  show(o: { title: string; line: string; offers: Upgrade[]; seconds: number; waiting?: string }, pick: (u: Upgrade | null) => void) {
+  /** Shows the offers. `pick` gets one call: a card, or the first when time runs out. */
+  show(o: { title: string; line: string; offers: Upgrade[]; seconds: number; waiting?: string }, pick: (u: Upgrade) => void) {
     clearInterval(this.timer);
-    if (!o.offers.length) {
-      // Nothing left to take. Someone waiting for the other player still sees why.
-      if (o.waiting) {
-        this.title.textContent = 'No upgrades left';
-        this.line.textContent = o.waiting;
-        this.cards.replaceChildren();
-        this.clock.textContent = '';
-        this.root.style.display = 'flex';
-      }
-      pick(null);
-      return;
-    }
     let left = o.seconds, done = false;
     this.title.textContent = o.title;
     this.line.textContent = o.line;

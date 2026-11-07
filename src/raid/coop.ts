@@ -152,7 +152,7 @@ export class RaidController {
       waiting: this.partner ? `Waiting for ${this.partner.name}` : undefined,
     }, (u) => {
       if (run !== this.run || !this.active) return;
-      if (u) this.upgrades.add(u.id);
+      this.upgrades.add(u.id);
       net.send({ t: 'raid_pick' });
     });
   }

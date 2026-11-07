@@ -241,7 +241,7 @@
     const d = vfx.duel, a = vfx.arena, hm = vfx.heroMode;
     const { SUN_WARDEN: def } = await import('/src/raid/sunWarden.ts');
     const { LocalLink } = await import('/src/raid/link.ts');
-    const { RunUpgrades, offersFor, UPGRADES } = await import('/src/raid/upgrades.ts');
+    const { RunUpgrades, offersFor, UPGRADES, STACKING } = await import('/src/raid/upgrades.ts');
     const { HERO_KITS } = await import('/src/heroes.ts');
     const { NO_MODS } = await import('/src/traits/index.ts');
     const rows = [], failed = [];
@@ -329,6 +329,26 @@
       check('the same seed, the same offers', offersFor(kit, owned, 'a').map((u) => u.id).join() === offers.map((u) => u.id).join() ? 1 : 0, 1);
       owned.add(offers[0].id);
       check('none it holds', offersFor(kit, owned, 'a').some((u) => u.id === offers[0].id) ? 1 : 0, 0);
+      // They never run out: what can be taken again fills the cards, and each time counts.
+      const allTaken = new RunUpgrades();
+      for (const u of UPGRADES) allTaken.add(u.id);
+      const lastOnes = offersFor(kit, allTaken, 'b');
+      check('everything taken: still three offers', lastOnes.length, 3);
+      check('and all three can be taken again', lastOnes.every((u) => STACKING.includes(u)) ? 1 : 0, 1);
+      const nearly = new RunUpgrades();
+      const fitting = UPGRADES.filter((u) => u.fits?.(kit) ?? true);
+      for (const u of fitting.slice(2)) nearly.add(u.id);
+      const mixed = offersFor(kit, nearly, 'c');
+      check('two left: those two come first', mixed.slice(0, 2).every((u) => fitting.slice(0, 2).includes(u)) ? 1 : 0, 1);
+      check('and one that can be taken again', STACKING.includes(mixed[2]) ? 1 : 0, 1);
+      fresh(['whetstone', 'whetstone']);
+      check('Whetstone twice: damage', dealt(), 100 * 1.08 * 1.08, 0.5);
+      fresh(['breath', 'breath']);
+      check('Steady Breath twice: Q', hm.castRules(0, 10, 1) / cool0, 0.95 * 0.95);
+      fresh(['hide', 'hide']);
+      check('Thick Hide twice: max HP', d.heroMax / base, 1.21, 0.002);
+      d.bossWorld().hitMe({ share: 0.2, from: { x: 0, z: 0 }, move: 'test' });
+      check('Thick Hide: a hit of 20 % takes 20 % of the HP without it', (d.heroMax - d.heroHp) / base, 0.2, 0.012);
       const noBolts = HERO_KITS.filter((k) => !UPGRADES.find((u) => u.id === 'ricochet').fits(k)).length;
       rows.push(`note heroes with no line bolts, never offered Ricochet: ${noBolts}`);
 

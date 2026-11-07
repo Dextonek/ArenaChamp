@@ -134,7 +134,7 @@ export class RaidRun {
       seconds: PICK_SECONDS,
     }, (u) => {
       if (run !== this.run || !this.active) return;
-      if (u) this.upgrades.add(u.id);
+      this.upgrades.add(u.id);
       this.offers.hide();
       void this.fight();
     });

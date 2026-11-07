@@ -26,15 +26,27 @@ export const UPGRADES: Upgrade[] = [
   { id: 'fresh', name: 'Fresh Start', blurb: 'A shield of 10 % of your max HP as each phase begins.' },
 ];
 
-/** Up to three upgrades this hero can use and hasn't got, from the seed. Time running out takes the first. */
+/** What fills the cards once fewer than three of the others are left: small, and they can be taken again and again. */
+export const STACKING: Upgrade[] = [
+  { id: 'whetstone', name: 'Whetstone', blurb: 'Deal 8 % more damage. You can take this again.' },
+  { id: 'hide', name: 'Thick Hide', blurb: '10 % more max HP. You can take this again.' },
+  { id: 'breath', name: 'Steady Breath', blurb: 'Cooldowns 5 % shorter. You can take this again.' },
+];
+
+function shuffled<T>(list: T[], rng: () => number) {
+  const out = [...list];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+/** Three upgrades from the seed: what this hero can use and hasn't got, then what can be taken again. Time running out takes the first. */
 export function offersFor(kit: HeroKit, owned: RunUpgrades, seed: string): Upgrade[] {
   const rng = seeded(seedNumber(seed));
-  const open = UPGRADES.filter((u) => !owned.has(u.id) && (u.fits?.(kit) ?? true));
-  for (let i = open.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1));
-    [open[i], open[j]] = [open[j], open[i]];
-  }
-  return open.slice(0, 3);
+  const open = shuffled(UPGRADES.filter((u) => !owned.has(u.id) && (u.fits?.(kit) ?? true)), rng);
+  return [...open, ...shuffled(STACKING, rng)].slice(0, 3);
 }
 
 /**
@@ -42,7 +54,7 @@ export function offersFor(kit: HeroKit, owned: RunUpgrades, seed: string): Upgra
  * its HP and cooldowns do. Nothing here lasts past the run.
  */
 export class RunUpgrades {
-  private ids = new Set<string>();
+  private ids = new Map<string, number>();
   private saved = false;
 
   has(id: string) {
@@ -50,11 +62,12 @@ export class RunUpgrades {
   }
 
   add(id: string) {
-    this.ids.add(id);
+    this.ids.set(id, this.count(id) + 1);
   }
 
-  names() {
-    return UPGRADES.filter((u) => this.ids.has(u.id)).map((u) => u.name);
+  /** How many times it was taken (`STACKING` can be taken again). */
+  count(id: string) {
+    return this.ids.get(id) ?? 0;
   }
 
   /** A new fight: what works once a fight is ready again. */
@@ -63,11 +76,11 @@ export class RunUpgrades {
   }
 
   cooldownMul(slot: number) {
-    return (this.has('hands') ? 0.85 : 1) * (slot === 3 && this.has('ready') ? 0.75 : 1);
+    return (this.has('hands') ? 0.85 : 1) * (slot === 3 && this.has('ready') ? 0.75 : 1) * 0.95 ** this.count('breath');
   }
 
   hpMul() {
-    return (this.has('glass') ? 0.85 : 1) * (this.has('stone') ? 1.2 : 1);
+    return (this.has('glass') ? 0.85 : 1) * (this.has('stone') ? 1.2 : 1) * 1.1 ** this.count('hide');
   }
 
   get speedMul() {
@@ -76,7 +89,7 @@ export class RunUpgrades {
 
   /** What this hero's hits on the boss are multiplied by. `open`: it stands open or kneels. */
   dealtMul(open: boolean) {
-    return (this.has('glass') ? 1.25 : 1) * (open && this.has('opportunist') ? 1.6 : 1);
+    return (this.has('glass') ? 1.25 : 1) * (open && this.has('opportunist') ? 1.6 : 1) * 1.08 ** this.count('whetstone');
   }
 
   get staggerMul() {
