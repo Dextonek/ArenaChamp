@@ -109,6 +109,8 @@ export interface Objective {
   until?: number;
   /** Whether this screen's hero may take it now. */
   can?(): boolean;
+  /** Taking it ends the danger it stands in (the altar against Noon): an AI walks through that danger for it. */
+  beats?: boolean;
   /** How far this screen's hero has held it, 0..1. */
   held?: number;
   reported?: boolean;

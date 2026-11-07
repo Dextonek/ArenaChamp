@@ -77,8 +77,9 @@ export class BossBrain {
     }
   }
 
-  /** Taking over a fight already on: the phase as it stands, no pause and no opener. */
-  resume(phase: number, form = 0, rim: { x: number; z: number } | null = null) {
+  /** Taking over a fight already on: the phase as it stands, no pause and no opener, and how often the timed move has come. */
+  resume(phase: number, form = 0, rim: { x: number; z: number } | null = null, timed = 0) {
+    this.timedDone = timed;
     this.phase = phase;
     this.opener = null;
     this.wait = 1;

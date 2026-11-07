@@ -505,6 +505,25 @@
       step(8.5);
       check('turn the light: no noon comes', (noonOff - d.playerHp) / d.playerMax, 0);
 
+      // For two: a shard each, and the light turns only when both are in, the partner's heard from the hub.
+      fresh(0, 1);
+      place(0, 18);
+      d.boss.link.cast({ id: 9001, move: 'noon', step: 0, x: 0, z: 1, fx: 0, fz: 1, dir: 0, seed: 777, target: 0, alone: false });
+      step(0.1);
+      const duo = d.boss.script.active[d.boss.script.active.length - 1];
+      yes('turn the light for two: two shards', duo.played.objectives.filter((o) => o.part < 10).length === 2);
+      const mine = duo.played.objectives.find((o) => o.part === 0);
+      const duoKneels = d.boss.stats.kneels;
+      place(mine.x, mine.z);
+      step(0.1);
+      d.boss.script.done(9001, 1, 1);
+      place(2, 7);
+      step(0.1);
+      yes('turn the light for two: one delivered, he still gathers', d.boss.stats.kneels === duoKneels && duo.played.threats.length === 1);
+      d.boss.script.done(9001, 11, 1);
+      step(0.1);
+      yes('turn the light for two: the partner delivers, and he kneels', d.boss.stats.kneels === duoKneels + 1 && duo.played.threats.length === 0);
+
       // The altar takes nothing from a hero with no shard.
       fresh(0, 1);
       place(2, 7);

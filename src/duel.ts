@@ -2075,6 +2075,13 @@ export class Duel {
       this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit, CPU_BALANCE) * st.speedMul * dt));
       return;
     }
+    // A spot that ends the danger it stands in (a shard to the altar against Noon) is worth walking through that danger for.
+    const beats = st.cannotMove ? null : this.boss?.script.objectiveGoal(me.x, me.z);
+    if (beats?.beats) {
+      const step = this.goalStep(this.playerAi, me, beats);
+      this.host.arena.walk(step.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
+      return;
+    }
     const clear = st.cannotMove ? null : this.hazardStep(this.host.arena.caster, me, at);
     if (clear) {
       this.host.arena.walk(clear.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt));

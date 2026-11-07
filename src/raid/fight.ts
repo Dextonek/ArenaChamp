@@ -44,6 +44,8 @@ export class BossFight {
   /** The gate heroes came in by, lit until the fight starts, and the one out, lit once the boss falls. */
   private gates: { enter: KeepGate; exit: KeepGate } | null = null;
   private clock = 0;
+  /** How often this phase's timed move has come, for a screen that takes the brain over. */
+  private timedSeen = 0;
 
   constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
     this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength) }, tier);
@@ -87,6 +89,7 @@ export class BossFight {
       this.rimSpot = { x: c.fx, z: c.fz };
     }
     this.script.play(c);
+    if (c.move === this.def.phases[this.stats.phases]?.timed?.move && c.step === 0) this.timedSeen++;
     if (c.step !== 0 || move.quiet) return;
     this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
     this.world.enemyCast(!!move.big);
@@ -129,7 +132,7 @@ export class BossFight {
     this.link.brain = true;
     this.track = null;
     this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, this.tier, 100000);
-    this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot);
+    this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot, this.timedSeen);
   }
 
   /** The boss's walk, reported by the screen that runs its brain. */

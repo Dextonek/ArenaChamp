@@ -157,7 +157,8 @@ const noon: BossMove = {
     // Where the shards fall comes from the seed, so both screens agree. A hero carries one, and delivers it once.
     const rng = seeded(c.seed), base = rng() * Math.PI * 2, need = c.alone ?? p.solo ? 1 : 2;
     const carrying = new Set<RaidSide>(), delivered = new Set<RaidSide>();
-    const me = p.side, deliver = 10 + me;
+    // Each hero's delivery is its own objective, and every screen has both: the partner's must be heard here too.
+    const me = p.side, DELIVER = 10;
     const shards = Array.from({ length: need }, (_, i) => {
       const x = C.x + Math.sin(base + i * Math.PI) * SHARD_OUT, z = C.z + Math.cos(base + i * Math.PI) * SHARD_OUT;
       const light = new LightPillar(x, z, 1.3, 6, STAND_COLOR), orb = new SunOrb(x, 1.1, z);
@@ -168,7 +169,7 @@ const noon: BossMove = {
     p.group.add(altar.mesh);
     const objectives: Objective[] = [
       ...shards.map((s): Objective => ({ part: s.part, x: s.x, z: s.z, radius: 1.3, until: at, can: () => !carrying.has(me) && !delivered.has(me) })),
-      { part: deliver, x: C.x, z: C.z, radius: 2.4, until: at, can: () => carrying.has(me) },
+      ...([0, 1] as const).map((side): Objective => ({ part: DELIVER + side, x: C.x, z: C.z, radius: 2.4, until: at, beats: true, can: () => side === me && carrying.has(side) })),
     ];
     const held = new Map<RaidSide, SunOrb>();
     let turned = -1, time = 0;
@@ -202,7 +203,7 @@ const noon: BossMove = {
           sun.set(2 + 9 * k, t < at ? 0.25 + 0.65 * k * k : Math.max(0, 0.9 * (1 - (t - at) * 1.5)));
         },
         done(o, side) {
-          if (o.part !== 10 && o.part !== 11) {
+          if (o.part < DELIVER) {
             carrying.add(side);
             const orb = new SunOrb(C.x, 3.1, C.z);
             p.group.add(orb.sprite);
