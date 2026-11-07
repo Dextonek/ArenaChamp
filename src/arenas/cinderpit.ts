@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { pillar, wall, type Obstacle } from '../obstacles';
-import { RIDGE_MODULE, hexFloor, instance, lavaTexture, loadProps } from './caldera';
-import { RING, disposeTree, flatRing, floorDisc } from './common';
+import { RIDGE_MODULE, instance, lavaTexture, loadProps } from './caldera';
+import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef } from './types';
 
 /** How far the walkable floor reaches from the middle. */
@@ -31,6 +31,85 @@ const COVER: Obstacle[] = [
     return { ...pillar(RING.x + Math.sin(a) * 12.5, RING.z + Math.cos(a) * 12.5, 0.8), height: 1.27 };
   }),
 ];
+
+/** Where Ash dragged his claws through the floor: three gouges at each, in metres from the middle, and the way they run. */
+const CLAWS = [{ x: -6.5, z: 3.5, dir: 0.5 }, { x: 7.5, z: -2, dir: -1.1 }, { x: 2.5, z: 9.5, dir: 2.6 }];
+
+/**
+ * The den's floor: plates of black glass and cooled lava over the sun that fell here. Its light comes up through the gaps, brightest
+ * in the middle, and Ash's claw marks cross it. Dark on purpose, so the orange and gold warnings stand out. One drawing for the colour,
+ * one for the glow, both mapped once over the whole floor.
+ */
+function denFloor() {
+  const R = PIT_R, size = 1536, ppm = size / (2 * R);
+  // The plates, the same in both drawings.
+  const rnd = seeded(707), plates: { pts: [number, number][]; tone: number }[] = [];
+  for (let gy = -R; gy <= R; gy += 1.55) {
+    for (let gx = -R; gx <= R; gx += 1.55) {
+      const cx = gx + (rnd() - 0.5) * 0.7, cy = gy + (rnd() - 0.5) * 0.7, n = 6 + Math.floor(rnd() * 3), r = 0.98 + rnd() * 0.14, a0 = rnd() * 6.28;
+      const pts = Array.from({ length: n }, (_, k): [number, number] => {
+        const a = a0 + (k / n) * Math.PI * 2, rr = r * (0.88 + rnd() * 0.2);
+        return [cx + Math.cos(a) * rr, cy + Math.sin(a) * rr];
+      });
+      plates.push({ pts, tone: rnd() });
+    }
+  }
+  const path = (g: CanvasRenderingContext2D, pts: [number, number][]) => {
+    g.beginPath();
+    pts.forEach(([x, y], i) => (i ? g.lineTo(x * ppm, y * ppm) : g.moveTo(x * ppm, y * ppm)));
+    g.closePath();
+  };
+  const gouges = (g: CanvasRenderingContext2D, style: string, width: number) => {
+    g.strokeStyle = style;
+    g.lineCap = 'round';
+    for (const c of CLAWS) {
+      const dx = Math.sin(c.dir), dz = Math.cos(c.dir), px = dz, pz = -dx;
+      for (const k of [-1, 0, 1]) {
+        g.lineWidth = width * (k === 0 ? 1.2 : 1);
+        g.beginPath();
+        for (let t = -2.6; t <= 2.6; t += 0.4) {
+          const bend = Math.sin(t * 0.6) * 0.35, x = c.x + dx * t + px * (k * 0.45 + bend), z = c.z + dz * t + pz * (k * 0.45 + bend);
+          if (t === -2.6) g.moveTo(x * ppm, z * ppm);
+          else g.lineTo(x * ppm, z * ppm);
+        }
+        g.stroke();
+      }
+    }
+  };
+  const color = canvasTexture(size, (g, s) => {
+    g.fillStyle = '#0b0807';
+    g.fillRect(0, 0, s, s);
+    g.translate(s / 2, s / 2);
+    for (const p of plates) {
+      path(g, p.pts);
+      // Black glass with the odd plate of rust-brown cooled lava.
+      g.fillStyle = p.tone < 0.7 ? `rgb(${18 + p.tone * 10},${15 + p.tone * 7},${17 + p.tone * 8})` : `rgb(${40 + p.tone * 12},${22 + p.tone * 6},${16})`;
+      g.fill();
+      g.strokeStyle = 'rgba(120,110,140,0.12)';
+      g.lineWidth = 1.5;
+      g.stroke();
+    }
+    gouges(g, '#050303', 0.5 * ppm);
+  });
+  const glow = canvasTexture(size, (g, s) => {
+    g.translate(s / 2, s / 2);
+    // The buried sun: bright under the middle, an ember glow at the edge.
+    const light = g.createRadialGradient(0, 0, 0, 0, 0, R * ppm);
+    light.addColorStop(0, '#d89a48');
+    light.addColorStop(0.35, '#9a4614');
+    light.addColorStop(1, '#3a1206');
+    g.fillStyle = light;
+    g.fillRect(-s / 2, -s / 2, s, s);
+    // The plates cover it: only the gaps between them glow.
+    g.fillStyle = '#000';
+    for (const p of plates) {
+      path(g, p.pts);
+      g.fill();
+    }
+    gouges(g, '#c8501a', 0.16 * ppm);
+  });
+  return { color, glow };
+}
 
 const STAGE: ArenaDef['stage'] = {
   background: 0x200a05,
@@ -68,8 +147,8 @@ export const cinderPitArena: ArenaDef = {
     const lava = new THREE.Mesh(new THREE.RingGeometry(R + 3, 110, 72, 1), new THREE.MeshBasicMaterial({ map: lavaTex, color: 0xcccccc }));
     lava.rotation.x = -Math.PI / 2;
     lava.position.set(RING.x, 0.01, RING.z);
-    const hx = hexFloor();
-    const floor = floorDisc(R, new THREE.MeshStandardMaterial({ map: hx.color, color: 0xffffff, roughness: 0.9, emissive: 0xffffff, emissiveMap: hx.glow, emissiveIntensity: 0.55 }), 0.024);
+    const den = denFloor();
+    const floor = floorDisc(R, new THREE.MeshStandardMaterial({ map: den.color, color: 0xffffff, roughness: 0.55, metalness: 0.15, emissive: 0xffffff, emissiveMap: den.glow, emissiveIntensity: 0.4 }), 0.024);
     g.add(lava, floor, flatRing(R - 0.65, R, 0x0b090c, 0.97, 0.03), flatRing(R - 0.65, R - 0.56, 0xd8581a, 0.85, 0.034));
 
     // The vent: a glow in the middle, drawn on the floor. It stops nobody.
