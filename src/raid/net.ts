@@ -1,7 +1,7 @@
 import type { NetClient } from '../net/client';
 import type { BossCast, BossDebuff, RaidEvents, RaidLink, RaidSide } from './types';
 
-const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, wall() {}, end() {} };
+const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, done() {}, wall() {}, end() {} };
 /** This screen's hits on the boss go out at most this often (s), added up. */
 const DAMAGE_GAP = 0.1;
 
@@ -32,6 +32,14 @@ export class NetLink implements RaidLink {
 
   stood(id: number, part: number, inside: boolean) {
     this.net.send({ t: 'boss_stood', id, part, inside });
+  }
+
+  objective(id: number, part: number) {
+    this.net.send({ t: 'boss_obj', id, part });
+  }
+
+  reward(key: string, id: number) {
+    this.net.send({ t: 'boss_reward', key, id });
   }
 
   wallSaved(index: number) {

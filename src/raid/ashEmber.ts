@@ -6,8 +6,9 @@ import { ZoneFloor } from '../arenas/shifts/floor';
 import { PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
-import { FallingStone, FollowMark, LavaPool, WaveRing } from './fx';
-import type { AimContext, BossDef, BossMove, PlayContext, Threat } from './types';
+import { FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, WaveRing } from './fx';
+import { STAND_COLOR } from './script';
+import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } from './types';
 
 const LAVA = 0xe0601a;
 const EMBER_COLOR = 0xff7a2a;
@@ -183,16 +184,25 @@ const fan: BossMove = {
   },
 };
 
+/** How wide Marked is (m), and how much of a boss's body counts as under it. */
+const MARK_R = 2.3;
+const MARK_BODY = 1.2;
+
 /**
- * A bomb follows one hero, then stops, then lands where it stopped and leaves a puddle. Carry it somewhere neither of you
- * needs. The circle that follows is only a look: what counts is the second step, at the spot the brain read.
+ * A bomb follows one hero, then stops, then lands where it stopped and leaves a puddle. Burn your own: carry it onto whichever of them
+ * is in the ring, and it hits them too. The circle that follows is only a look: what counts is the second step, at the spot the
+ * brain read, and the brain says in that cast whether the boss stood under it.
  */
 const marked: BossMove = {
   id: 'marked', name: 'Marked', charge: 3.5, lock: 2.6, cooldown: 14, steps: [0, 2.5], form: EMBER, pose: 'point',
-  aim: atTarget,
+  aim(c) {
+    const a = atTarget(c);
+    return c.step === 1 ? { ...a, flag: Math.hypot(c.ring.x - c.target.x, c.ring.z - c.target.z) <= MARK_R + MARK_BODY } : a;
+  },
   play(c, p) {
-    const radius = 2.3;
+    const radius = MARK_R;
     if (c.step === 0) {
+      p.hint('Carry the mark onto the one in the ring');
       const mark = new FollowMark(radius, EMBER_COLOR);
       p.group.add(mark.mesh);
       const end = p.shown(2.5);
@@ -217,6 +227,10 @@ const marked: BossMove = {
           if (hit === th) return;
           p.sparks.emit(c.x, 0.3, c.z, 34, 5, 4, 0.8, EMBER_COLOR);
           p.glows.flash(c.x, c.z, radius + 0.5, LAVA, 0.7, 0.5);
+          if (c.flag) {
+            p.reward('marked', c.id);
+            p.say('BURNED', '#ffb050', c.x, c.z);
+          }
         },
         dispose: () => pool.dispose(),
       },
@@ -275,6 +289,46 @@ const wave: BossMove = {
           ring.set(t < at ? 1 + (t / at) * 0.8 : radiusAt(t), gapAt(t), half, t < at ? 0.5 + 0.4 * (t / at) : t < end ? 1 : Math.max(0, 1 - (t - end) * 2.5));
         },
         dispose: () => ring.dispose(),
+      },
+    };
+  },
+};
+
+/** How long a hero must hold the vent (s), how long it stays open (s), and how much longer the lava then waits (s). */
+const SEAL_HOLD = 4;
+const SEAL_OPEN = 15;
+const SEAL_DELAY = 20;
+
+/** Seal the vent: stand on it, hits or not, and casting stops it. The lava stops rising a while, and the one in the ring staggers. */
+const seal: BossMove = {
+  id: 'seal', name: 'The Vent Opens', charge: 0, lock: 0, cooldown: 0, alongside: true, quiet: true, pose: 'channel',
+  aim: () => ({ x: C.x, z: C.z, dir: 0 }),
+  play(c, p) {
+    const radius = 1.8;
+    const light = new LightPillar(C.x, C.z, radius, 7, STAND_COLOR), ring = new HoldRing(C.x, C.z, radius, STAND_COLOR);
+    p.group.add(light.mesh, ring.mesh);
+    p.hint('Hold the vent to stop the lava');
+    const o: Objective = { part: 0, x: C.x, z: C.z, radius, hold: SEAL_HOLD, until: SEAL_OPEN };
+    let sealed = false;
+    return {
+      threats: [], objectives: [o], duration: SEAL_OPEN + 0.5,
+      look: {
+        update(t) {
+          light.opacity = sealed || t > SEAL_OPEN ? 0 : 0.45 + 0.15 * Math.sin(t * 4);
+          ring.set(sealed ? 0 : o.held ?? 0);
+        },
+        done() {
+          sealed = true;
+          p.delayLate(SEAL_DELAY);
+          p.reward('seal', c.id);
+          p.say('SEALED', '#ffe27a', C.x, C.z);
+          p.sparks.emit(C.x, 0.4, C.z, 50, 5, 5, 0.9, STAND_COLOR);
+          p.cancel(c.id);
+        },
+        dispose() {
+          light.dispose();
+          ring.dispose();
+        },
       },
     };
   },
@@ -358,11 +412,11 @@ export const ASH_AND_EMBER: BossDef = {
   phases: [
     { name: 'Ash and Ember', at: 1, moves: [], ring: ASH, gap: [2.4, 3.4], rimEvery: [10, 14] },
     { name: 'Ember steps in', at: NUMBERS.phases[0], moves: [], ring: EMBER, gap: [2.2, 3.2], rimEvery: [9, 13] },
-    { name: 'Together', at: NUMBERS.phases[1], moves: [], gap: [2, 3], rimEvery: [9, 9], swapEvery: 12 },
+    { name: 'Together', at: NUMBERS.phases[1], moves: [], gap: [2, 3], rimEvery: [9, 9], swapEvery: 12, timed: { move: 'seal', first: 6, every: 25, most: 2 } },
   ],
   /** A higher tier adds these: Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave. */
   extra: ['rock', 'marked', 'wave'],
-  moves: { slam, charge, drag, trail, rock, fan, marked, bombs, wave, tag },
+  moves: { slam, charge, drag, trail, rock, fan, marked, bombs, wave, tag, seal },
   /** Past 5 minutes, or as soon as Together begins, the lava rises. Last stand on the shift's own clock at 105 s. */
   late: () => {
     const ring = (inner: number) => ({ shape: { kind: 'ring' as const, x: C.x, z: C.z, inner, outer: PIT_R }, share: 0.03 });

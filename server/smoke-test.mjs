@@ -559,6 +559,28 @@ try {
     await wait(3100);
     h.send({ t: 'raid_form', alt: true });
     check((await g.next('peer_form')).alt === true, 'a two-kit hero\'s other half reaches the partner');
+    // A spot goes to whoever reports first, and both screens hear who.
+    h.send({ t: 'boss_obj', id: 71, part: 0 });
+    g.send({ t: 'boss_obj', id: 71, part: 0 });
+    h.send({ t: 'boss_obj', id: 'x', part: 0 });
+    const took = await g.next('boss_done');
+    check(took.id === 71 && took.side === 1 && (await h.next('boss_done')).side === 1, 'a spot goes to the first who reports, and both hear who');
+    // A reward: only from the screen that runs the brain, only from the table, once per cast.
+    h.send({ t: 'boss_reward', key: 'ray', id: 72 });
+    g.send({ t: 'boss_reward', key: 'constructor', id: 72 });
+    g.send({ t: 'boss_reward', key: 'nothing', id: 72 });
+    g.send({ t: 'boss_reward', key: 'ray', id: 72 });
+    g.send({ t: 'boss_reward', key: 'ray', id: 72 });
+    check((await g.next('boss_gauge')).value === 40 && (await h.next('boss_gauge')).value === 40, 'a reward fills the gauge, from the brain\'s screen only');
+    g.send({ t: 'boss_reward', key: 'noon', id: 73 });
+    check((await h.next('boss_kneel')).seconds > 0, 'a reward can make it kneel');
+    check((await h.next('boss_gauge')).value === 0, 'and a kneel empties the gauge');
+    await g.next('boss_gauge');
+    await g.next('boss_kneel');
+    // Older reports of the last fight may still be in the inbox.
+    let paid = await h.next('boss_hp');
+    for (let i = 0; i < 50 && paid.hp !== 6500 - 325; i++) paid = await h.next('boss_hp');
+    check(paid.hp === 6500 - 325, 'and takes 5 % of the boss\'s HP off');
     h.send({ t: 'boss_debuff', kind: 'slow', amount: 0, seconds: 1.5 });
     const slowed = await g.next('peer_debuff');
     check(slowed.kind === 'slow' && slowed.seconds === 1.5, 'a slow on the boss reaches the other screen');

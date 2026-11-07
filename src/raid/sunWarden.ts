@@ -9,7 +9,7 @@ import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import { FallingStone, LightPillar, NumberMark, ShadowFloor, SunOrb } from './fx';
 import { STAND_COLOR } from './script';
-import type { AimContext, BossDef, BossMove, PlayContext, Threat } from './types';
+import type { AimContext, BossDef, BossMove, Objective, PlayContext, RaidSide, Threat } from './types';
 
 const CORE = 0xffc060;
 const GLOW = 0xd86a18;
@@ -63,22 +63,30 @@ const stoneSweep: BossMove = {
   },
 };
 
-/** Three stones, each where the target stood at that moment. Keep walking. */
+/** How long a fallen stone stands as cover (s), and how wide it is (m). */
+const STONE_STAYS = 8;
+const STONE_R = 1.05;
+/** A sun shard falls this far from the altar (m), and a shard's carrier walks this much slower. */
+const SHARD_OUT = 9;
+
+/** Three stones, each where the target stood at that moment. Keep walking. They stay a while: his ray breaks on them. */
 const pillarFall: BossMove = {
   id: 'pillars', name: 'Pillar Fall', charge: 2.9, lock: 2.9, cooldown: 9, steps: [0, 0.7, 1.4], chases: true, pose: 'raise',
   aim: atTarget,
   play(c, p) {
     const radius = 2.2, at = p.shown(1.5);
     const th: Threat = { shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.15 };
-    const stone = new FallingStone(c.x, c.z, radius, at);
+    const stone = new FallingStone(c.x, c.z, radius, at, STONE_STAYS);
     p.group.add(stone.mesh);
     return {
-      threats: [th], duration: at + 0.9,
+      threats: [th], duration: at + STONE_STAYS + 0.9,
       look: {
         update: (t) => stone.update(t),
         land() {
           p.sparks.emit(c.x, 0.2, c.z, 26, 4.5, 3, 0.7, 0xb8a080);
           p.glows.flash(c.x, c.z, radius, GLOW, 0.6, 0.35);
+          p.addStone(c.x, c.z, STONE_R, STONE_STAYS);
+          p.hint('Keep a fallen stone between you and his ray');
         },
         dispose: () => stone.mesh.removeFromParent(),
       },
@@ -96,6 +104,8 @@ const sunRay: BossMove = {
     const ex = c.fx + Math.sin(c.dir) * full, ez = c.fz + Math.cos(c.dir) * full;
     const k = p.rayStop(c.fx, c.fz, ex, ez);
     const x2 = c.fx + (ex - c.fx) * k, z2 = c.fz + (ez - c.fz) * k;
+    // What it stops at: a fallen stone breaks, and that hurts him.
+    const stoneHit = p.firstStone(c.fx, c.fz, ex, ez);
     const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2, z2, width }, at, share: 0.22 };
     const ray = beam(p, CORE, GLOW, 1.6);
     const a = new THREE.Vector3(c.fx, y, c.fz), b = new THREE.Vector3(x2, 0.9, z2);
@@ -112,7 +122,12 @@ const sunRay: BossMove = {
         land() {
           p.sparks.emit(x2, 0.9, z2, 22, 4, 3.2, 0.6, SPARK);
           p.glows.flash(x2, z2, 1.8, GLOW, 0.6, 0.4);
-          p.crackFirst(c.fx, c.fz, ex, ez);
+          if (stoneHit) {
+            p.dropStone(stoneHit);
+            p.reward('ray', c.id);
+            p.say('THE RAY BREAKS', '#ffe27a', x2, z2);
+            p.sparks.emit(x2, 1, z2, 40, 6, 5, 0.8, 0xb8a080);
+          } else p.crackFirst(c.fx, c.fz, ex, ez);
         },
         dispose: () => dropBeam(ray),
       },
@@ -122,24 +137,91 @@ const sunRay: BossMove = {
 
 // --- phase 2, High Noon: cover becomes the puzzle -------------------------------------------------------------------
 
-/** The whole ring burns. Only cover between you and him is safe, and a screen wall that saved someone falls. He stands open after. */
+/**
+ * Turn the light: he gathers noon while sun shards fall far from the altar. Walk over one to carry it, and walk it to the altar: one
+ * alone, one each for two. Then there is no noon, and he kneels. If not, the whole ring burns: only cover between you and him is safe,
+ * a screen wall that saved someone falls, and he stands open after.
+ */
 const noon: BossMove = {
-  id: 'noon', name: 'Noon', charge: 4, lock: 9, cooldown: 26, big: true, pose: 'raise',
+  id: 'noon', name: 'Gathering Noon', charge: 8, lock: 13, cooldown: 30, big: true, pose: 'raise',
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(C.x - c.boss.x, C.z - c.boss.z) }),
   play(c, p) {
-    const at = p.shown(4), exposed = 5;
+    const at = p.shown(8), show = Math.max(0, at - 4), exposed = 5;
     const source = { x: c.fx, z: c.fz };
-    const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: COURT_R + 1 }, at, share: 0.4, source, breaks: true, look: at };
+    const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: COURT_R + 1 }, at, show, share: 0.4, source, breaks: true, look: 2.6 };
     const shadows = new ShadowFloor(source, () => p.cover(), STAND_COLOR, COURT_R);
     const sun = new SunOrb(c.fx, 7, c.fz);
     p.group.add(shadows.mesh, sun.sprite);
+    p.hint('Carry a sun shard to the altar, or hide from the light');
+    // Where the shards fall comes from the seed, so both screens agree. A hero carries one, and delivers it once.
+    const rng = seeded(c.seed), base = rng() * Math.PI * 2, need = c.alone ?? p.solo ? 1 : 2;
+    const carrying = new Set<RaidSide>(), delivered = new Set<RaidSide>();
+    const me = p.side, deliver = 10 + me;
+    const shards = Array.from({ length: need }, (_, i) => {
+      const x = C.x + Math.sin(base + i * Math.PI) * SHARD_OUT, z = C.z + Math.cos(base + i * Math.PI) * SHARD_OUT;
+      const light = new LightPillar(x, z, 1.3, 6, STAND_COLOR), orb = new SunOrb(x, 1.1, z);
+      p.group.add(light.mesh, orb.sprite);
+      return { part: i, x, z, light, orb };
+    });
+    const altar = new LightPillar(C.x, C.z, 2.4, 7, STAND_COLOR);
+    p.group.add(altar.mesh);
+    const objectives: Objective[] = [
+      ...shards.map((s): Objective => ({ part: s.part, x: s.x, z: s.z, radius: 1.3, until: at, can: () => !carrying.has(me) && !delivered.has(me) })),
+      { part: deliver, x: C.x, z: C.z, radius: 2.4, until: at, can: () => carrying.has(me) },
+    ];
+    const held = new Map<RaidSide, SunOrb>();
+    let turned = -1, time = 0;
     return {
-      threats: [th], duration: at + 1,
+      threats: [th], objectives, duration: at + 1,
       look: {
-        update(t) {
-          const k = Math.min(1, t / at);
-          shadows.update(t, t < at ? 0.2 + 0.35 * k : Math.max(0, 0.55 * (1 - (t - at) * 2)));
+        update(t, dt) {
+          time = t;
+          const pulse = 0.55 + 0.2 * Math.sin(t * 5);
+          for (const s of shards) {
+            const gone = objectives[s.part].done || t >= at || turned >= 0;
+            s.light.opacity = gone ? 0 : pulse;
+            s.orb.set(1.6, gone ? 0 : 0.95);
+          }
+          altar.opacity = carrying.size && turned < 0 && t < at ? pulse : 0;
+          for (const [side, orb] of held) {
+            const h = p.heroAt(side);
+            if (h) orb.sprite.position.set(h.x, 3.1, h.z);
+            orb.set(1.5, 0.95);
+          }
+          void dt;
+          if (turned >= 0) {
+            // The light goes back at him.
+            const f = Math.max(0, 1 - (t - turned) * 2);
+            shadows.update(t, 0);
+            sun.set(11 * (1 - f) + 2, 0.9 * f);
+            return;
+          }
+          const k = Math.min(1, t / at), s = show < at ? Math.min(1, Math.max(0, (t - show) / (at - show))) : 1;
+          shadows.update(t, t < show ? 0 : t < at ? 0.2 + 0.35 * s : Math.max(0, 0.55 * (1 - (t - at) * 2)));
           sun.set(2 + 9 * k, t < at ? 0.25 + 0.65 * k * k : Math.max(0, 0.9 * (1 - (t - at) * 1.5)));
+        },
+        done(o, side) {
+          if (o.part !== 10 && o.part !== 11) {
+            carrying.add(side);
+            const orb = new SunOrb(C.x, 3.1, C.z);
+            p.group.add(orb.sprite);
+            held.set(side, orb);
+            if (side === me) p.heavy(true);
+            return;
+          }
+          carrying.delete(side);
+          delivered.add(side);
+          held.get(side)?.dispose();
+          held.delete(side);
+          if (side === me) p.heavy(false);
+          p.sparks.emit(C.x, 1, C.z, 24, 4, 4, 0.7, STAND_COLOR);
+          if (delivered.size < need) return;
+          turned = time;
+          p.cancel(c.id);
+          p.reward('noon', c.id);
+          p.flash('rgba(255,226,140,0.7)', 0.5);
+          p.say('THE LIGHT TURNS', '#ffe27a', C.x, C.z);
+          p.sparks.emit(c.fx, 4, c.fz, 60, 7, 2, 1, SPARK, 5);
         },
         land() {
           p.flash('rgba(255,206,130,0.85)', 0.8);
@@ -150,6 +232,13 @@ const noon: BossMove = {
         dispose() {
           shadows.dispose();
           sun.dispose();
+          altar.dispose();
+          for (const s of shards) {
+            s.light.dispose();
+            s.orb.dispose();
+          }
+          for (const orb of held.values()) orb.dispose();
+          if (carrying.has(me)) p.heavy(false);
         },
       },
     };

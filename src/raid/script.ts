@@ -3,7 +3,7 @@ import { raidTierFactor } from '../../server/protocol.mjs';
 import { grown } from '../arenas/hazards/base';
 import { FloorGlows, Sparks } from '../arenas/hazards/fx';
 import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from '../effects/telegraph';
-import type { BossCast, BossDef, BossWorld, PlayContext, PlayedMove, RaidLink, Threat } from './types';
+import type { BossCast, BossDef, BossWorld, Objective, PlayContext, PlayedMove, RaidLink, RaidSide, Threat } from './types';
 
 /** Pale orange means leave, gold means stand here. Never the spells' red. */
 export const LEAVE_COLOR = 0xe8863a;
@@ -69,6 +69,15 @@ export class BossScript {
         if (d > 2.5) world.carryMe((dx / d) * meters, (dz / d) * meters);
       },
       heroAt: (side) => world.heroes().find((h) => h.side === side) ?? null,
+      side: link.side,
+      hint: (text) => world.hint(text),
+      reward: (key, id) => { if (link.brain) link.reward(key, id); },
+      cancel: (id) => this.cancel(id),
+      heavy: (on) => world.heavy(on),
+      addStone: (x, z, radius, seconds) => world.addStone(x, z, radius, seconds),
+      firstStone: (ax, az, bx, bz) => world.firstStone(ax, az, bx, bz),
+      dropStone: (o) => world.dropStone(o),
+      delayLate: (seconds) => world.delayLate(seconds),
     };
   }
 
@@ -100,6 +109,7 @@ export class BossScript {
       a.leave.update(t);
       a.stand.update(t);
       a.played.look?.update?.(t, dt);
+      if (live) this.objectives(a, t, dt);
       for (const th of a.played.threats) {
         if (t < th.at) continue;
         if (!th.landed) {
@@ -113,6 +123,60 @@ export class BossScript {
     }
     for (const a of this.active) if (this.clock - a.began >= a.played.duration) this.forget(a);
     this.active = this.active.filter((a) => this.clock - a.began < a.played.duration);
+  }
+
+  /** This screen's hero takes a spot: at once, or by holding it. It reports once, and the first report wins. */
+  private objectives(a: Active, t: number, dt: number) {
+    for (const o of a.played.objectives ?? []) {
+      if (o.done || o.reported || this.world.down() || t > (o.until ?? Infinity)) continue;
+      const me = this.world.me();
+      const inside = Math.hypot(me.x - o.x, me.z - o.z) <= o.radius && (o.can?.() ?? true);
+      if (o.hold) {
+        o.held = inside && !this.world.busy() ? (o.held ?? 0) + dt / o.hold : Math.max(0, (o.held ?? 0) - dt / o.hold);
+        if (o.held < 1) continue;
+      } else if (!inside) continue;
+      o.reported = true;
+      this.link.objective(a.cast.id, o.part);
+    }
+  }
+
+  /** A hero took an objective, this one or the partner. */
+  done(id: number, part: number, side: RaidSide) {
+    const a = this.active.find((x) => x.cast.id === id), o = a?.played.objectives?.find((x) => x.part === part);
+    if (!a || !o || o.done) return;
+    o.done = true;
+    a.played.look?.done?.(o, side);
+  }
+
+  /** What is still to land of a cast is off. Its look gets a moment to end. */
+  private cancel(id: number) {
+    const a = this.active.find((x) => x.cast.id === id);
+    if (!a) return;
+    a.played.threats = [];
+    a.leave.set([]);
+    a.stand.set([]);
+    a.played.duration = Math.min(a.played.duration, this.clock - a.began + 1.2);
+  }
+
+  /** The objectives this screen's hero can take now. */
+  private open(): Objective[] {
+    const out: Objective[] = [];
+    if (this.world.down()) return out;
+    for (const a of this.active) {
+      const t = this.clock - a.began;
+      for (const o of a.played.objectives ?? []) if (!o.done && !o.reported && t <= (o.until ?? Infinity) && (o.can?.() ?? true)) out.push(o);
+    }
+    return out;
+  }
+
+  /** The nearest spot an AI should go and take, if one shows. */
+  objectiveGoal(x: number, z: number) {
+    let best: Objective | null = null, bd = Infinity;
+    for (const o of this.open()) {
+      const d = Math.hypot(o.x - x, o.z - z);
+      if (d < bd) { bd = d; best = o; }
+    }
+    return best;
   }
 
   private shapeOf(th: Threat, t: number) {
@@ -242,6 +306,7 @@ export class BossScript {
         if (th.kind === 'stand' && !th.landed && t >= (th.show ?? 0) && th.shape.kind === 'circle') out.push({ x: th.shape.x, z: th.shape.z });
       }
     }
+    for (const o of this.open()) out.push({ x: o.x, z: o.z });
     return out;
   }
 

@@ -93,17 +93,42 @@ export interface Threat {
   lastHit?: number;
 }
 
+/**
+ * A spot a hero can take, by walking onto it or by holding it. One hero gets each and the hub says who, so both screens agree.
+ * What players do in a fight besides dodging is made of these (pipeline/designs/raid-noonfall.md).
+ */
+export interface Objective {
+  /** Which one of its cast. */
+  part: number;
+  x: number;
+  z: number;
+  radius: number;
+  /** Seconds a hero must stay in it, hits or not, and not casting (default: at once). */
+  hold?: number;
+  /** Until when it can be taken, in seconds after the cast (default: as long as the cast lasts). */
+  until?: number;
+  /** Whether this screen's hero may take it now. */
+  can?(): boolean;
+  /** How far this screen's hero has held it, 0..1. */
+  held?: number;
+  reported?: boolean;
+  done?: boolean;
+}
+
 /** What a move draws beyond its zones. */
 export interface MoveLook {
   /** `t`: seconds since the cast. */
   update?(t: number, dt: number): void;
   /** A threat of this cast lands. */
   land?(th: Threat): void;
+  /** A hero took one of its objectives. */
+  done?(o: Objective, side: RaidSide): void;
   dispose?(): void;
 }
 
 export interface PlayedMove {
   threats: Threat[];
+  objectives?: Objective[];
   /** When the script forgets this cast. */
   duration: number;
   look?: MoveLook;
@@ -135,10 +160,29 @@ export interface PlayContext {
   dragMe(x: number, z: number, meters: number): void;
   /** Where a hero stands, for a look only (Marked's circle): what counts comes in a later cast. */
   heroAt(side: RaidSide): { x: number; z: number } | null;
+  /** Which hero this screen plays. */
+  side: RaidSide;
+  /** Says what to do, once a fight. */
+  hint(text: string): void;
+  /** A mechanic was done right: the brain's screen asks, and the hub or the local link pays it once. */
+  reward(key: string, id: number): void;
+  /** What is still to land of this cast is off, and it ends soon. */
+  cancel(id: number): void;
+  /** This screen's hero carries something heavy, and walks slower. */
+  heavy(on: boolean): void;
+  /** A fallen stone stays as cover. */
+  addStone(x: number, z: number, radius: number, seconds: number): Obstacle;
+  /** The fallen stone that cover stops a ray from a to b at, if that is what stops it. */
+  firstStone(ax: number, az: number, bx: number, bz: number): Obstacle | null;
+  dropStone(o: Obstacle): void;
+  /** What closes in when a fight runs long waits this much longer. */
+  delayLate(seconds: number): void;
 }
 
 export interface AimContext {
   boss: { x: number; z: number };
+  /** The one in the ring, when this is cast from the rim. */
+  ring: { x: number; z: number };
   target: { x: number; z: number };
   step: number;
   seed: number;
@@ -212,6 +256,8 @@ export interface BossPhase {
   swapEvery?: number;
   /** The move that opens the phase. */
   opener?: string;
+  /** A move that comes by the clock, on top of the rest: first after this many seconds, then this often, this many times a fight. */
+  timed?: { move: string; first: number; every: number; most: number };
   /** The quiet between moves (s). */
   gap: [number, number];
 }
@@ -271,6 +317,8 @@ export interface RaidEvents {
   kneel(seconds: number): void;
   /** How many heroes stood in a `stand` zone of cast `id` when it landed. */
   stood(id: number, part: number, count: number): void;
+  /** A hero took an objective of cast `id`. */
+  done(id: number, part: number, side: RaidSide): void;
   /** A screen wall falls. */
   wall(index: number): void;
   end(result: 'win' | 'lose'): void;
@@ -295,6 +343,10 @@ export interface RaidLink {
   stagger(points: number): void;
   /** This screen's hero stood in a `stand` zone, or not. */
   stood(id: number, part: number, inside: boolean): void;
+  /** This screen's hero took an objective of cast `id`. */
+  objective(id: number, part: number): void;
+  /** A mechanic of cast `id` was done right: `key` in `RAID_REWARDS`. Only the screen that runs the brain says so. */
+  reward(key: string, id: number): void;
   /** A screen wall saved this screen's hero. */
   wallSaved(index: number): void;
   /** This screen's hero fell. */
@@ -337,6 +389,19 @@ export interface BossWorld {
   carryMe(dx: number, dz: number): void;
   /** What closes in when a fight runs long starts now. */
   lateNow(): void;
+  /** It waits this much longer. */
+  delayLate(seconds: number): void;
+  /** The look of this phase on the boss's body. */
+  bodyPhase(i: number): void;
+  /** Says what to do, once a fight. */
+  hint(text: string): void;
+  /** This screen's hero is casting: it can't hold a spot. */
+  busy(): boolean;
+  /** This screen's hero carries something heavy, and walks slower. */
+  heavy(on: boolean): void;
+  addStone(x: number, z: number, radius: number, seconds: number): Obstacle;
+  firstStone(ax: number, az: number, bx: number, bz: number): Obstacle | null;
+  dropStone(o: Obstacle): void;
   /** What watches the enemy's casts (Hemocurse, the Referee's count). */
   enemyCast(big: boolean): void;
   /** The boss's walk from reports, on the screen that doesn't run its brain. */

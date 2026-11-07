@@ -60,6 +60,9 @@ export class BossBrain {
   private rimWait = 0;
   private swapWait = Infinity;
   private trailed = 0;
+  /** The move that comes by the clock: when it next comes, and how many times it has come. */
+  private timedWait = 0;
+  private timedDone = 0;
 
   constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, seed: string, tier = 1, firstId = 0) {
     this.rng = seeded(seedNumber(`${seed}-brain`));
@@ -82,6 +85,7 @@ export class BossBrain {
     this.form = form;
     if (rim) this.rim = rim;
     this.swapWait = this.def.phases[phase].swapEvery ?? Infinity;
+    this.timedWait = this.def.phases[phase].timed?.first ?? 0;
   }
 
   /** A new phase: a pause, and what comes next starts over. The moves in the air go on. */
@@ -94,6 +98,7 @@ export class BossBrain {
     this.wait = 0;
     this.opener = phase.opener ?? null;
     this.swapWait = phase.swapEvery ?? Infinity;
+    this.timedWait = phase.timed?.first ?? 0;
     if (this.def.forms) {
       this.rimWait = Math.max(this.rimWait, this.def.phasePause + 1);
       if (phase.ring !== undefined && phase.ring !== this.form) this.opener = 'tag';
@@ -113,6 +118,7 @@ export class BossBrain {
     this.pending = this.pending.filter((x) => x.at > this.time);
     // The one on the rim doesn't kneel, or wait for the one in the ring.
     this.rimStep(dt);
+    this.timedStep(dt);
     if (this.pause > 0) {
       this.pause -= dt;
       return;
@@ -171,6 +177,19 @@ export class BossBrain {
       break;
     }
     this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
+  }
+
+  /** A move that comes by the clock, whatever else the boss is doing. */
+  private timedStep(dt: number) {
+    const timed = this.def.phases[this.phase].timed;
+    if (!timed || this.timedDone >= timed.most) return;
+    this.timedWait -= dt;
+    if (this.timedWait > 0) return;
+    const up = this.world.heroes().filter((h) => !h.down), m = this.def.moves[timed.move];
+    if (!up.length || !m) return;
+    this.timedWait = timed.every;
+    this.timedDone++;
+    this.send(m, 0, Math.floor(this.rng() * 2147483647), up[0].side, up.length < 2, false);
   }
 
   /** What this form can do, in the ring or from the rim, with what a higher tier adds to it. */
@@ -268,10 +287,10 @@ export class BossBrain {
   }
 
   private send(m: BossMove, step: number, seed: number, side: RaidSide, alone: boolean, rim: boolean) {
-    const boss = rim && this.rim ? this.rim : this.world.boss();
+    const boss = rim && this.rim ? this.rim : this.world.boss(), ring = this.world.boss();
     const hero = this.world.heroes().find((h) => h.side === side) ?? { x: boss.x, z: boss.z };
     const aim = m.aim({
-      boss: { x: boss.x, z: boss.z }, target: { x: hero.x, z: hero.z }, step, seed, prev: step > 0 ? this.aimed.get(m.id) : undefined,
+      boss: { x: boss.x, z: boss.z }, ring: { x: ring.x, z: ring.z }, target: { x: hero.x, z: hero.z }, step, seed, prev: step > 0 ? this.aimed.get(m.id) : undefined,
       rayStop: (ax, az, bx, bz) => this.world.rayStop(ax, az, bx, bz),
     });
     this.aimed.set(m.id, aim);

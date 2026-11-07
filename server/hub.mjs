@@ -8,7 +8,7 @@
 // landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
-import { PROTOCOL, RAID_BOSSES, RAID_RUN, RELOAD_TEXT, raidHp } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RAID_REWARDS, RAID_RUN, RELOAD_TEXT, raidHp } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
@@ -61,6 +61,8 @@ const BOSS_HIT_MAX = 600;
 const BOSS_SECOND_MAX = 1400;
 /** What one hero's hit can lay on the boss for the other screen, and the most it can be: the game's own caps on a buff. */
 const BOSS_DEBUFFS = ['slow', 'weaken', 'vulnerable'];
+/** Far more spots and rewards than any fight has: a client making them up gets nothing past this. */
+const TAKEN_MAX = 400;
 const DEBUFF_MAX = 0.5;
 const DEBUFF_MAX_S = 6;
 const BOSS_HP_GAP_MS = 100;
@@ -449,27 +451,36 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const amount = Math.min(m.amount, BOSS_HIT_MAX, BOSS_SECOND_MAX - (me.dmgSum ?? 0));
         if (amount <= 0) return;
         me.dmgSum = (me.dmgSum ?? 0) + amount;
-        boss.hp = Math.max(0, boss.hp - amount);
-        const phases = RAID_BOSSES[boss.id].phases;
-        while (boss.phase < phases.length && boss.hp / boss.max <= phases[boss.phase]) {
-          boss.phase++;
-          for (const p of match.players) send(p.client, { t: 'boss_phase', phase: boss.phase });
-        }
-        sendBossHp(match);
-        if (boss.hp <= 0) raidWon(match);
+        raidDamage(match, amount);
         return;
       }
       case 'boss_stagger': {
         const boss = raidOf(c), match = c.match;
         if (!boss || !match || !num(m.points) || m.points <= 0 || Date.now() < boss.kneelUntil) return;
-        const b = RAID_BOSSES[boss.id];
-        boss.gauge += Math.min(m.points, STAGGER_MAX);
-        if (boss.gauge >= b.staggerMax) {
-          boss.gauge = 0;
-          boss.kneelUntil = Date.now() + b.kneel * 1000;
-          for (const p of match.players) send(p.client, { t: 'boss_kneel', seconds: b.kneel });
-        }
-        for (const p of match.players) send(p.client, { t: 'boss_gauge', value: boss.gauge });
+        raidStagger(match, Math.min(m.points, STAGGER_MAX));
+        return;
+      }
+      case 'boss_obj': {
+        // A hero took a spot: the first report wins, and both screens hear who.
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || !num(m.id) || !num(m.part)) return;
+        const key = `${m.id}:${m.part}`;
+        if (boss.taken.has(key) || boss.taken.size >= TAKEN_MAX) return;
+        boss.taken.add(key);
+        for (const p of match.players) send(p.client, { t: 'boss_done', id: m.id, part: m.part, side: c.side });
+        return;
+      }
+      case 'boss_reward': {
+        // A mechanic was done right, says the screen that runs the brain. What it earns comes from the table, once per cast.
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || boss.brain !== c.side || !num(m.id) || typeof m.key !== 'string') return;
+        const table = RAID_REWARDS[boss.id], r = Object.hasOwn(table, m.key) ? table[m.key] : null, key = `reward:${m.id}:${m.key}`;
+        if (!r || boss.taken.has(key) || boss.taken.size >= TAKEN_MAX) return;
+        boss.taken.add(key);
+        if (r.hp) raidDamage(match, boss.max * r.hp);
+        if (match.state !== 'fight') return;
+        if (r.kneel) raidKneel(match);
+        else if (r.stagger && Date.now() >= boss.kneelUntil) raidStagger(match, r.stagger);
         return;
       }
       case 'boss_stood': {
@@ -826,7 +837,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /** What the hub keeps of one fight. @param {string} id @param {boolean} duo @param {number} tier @param {number} brain */
   function newBoss(id, duo, tier, brain) {
     const hp = raidHp(id, duo, tier);
-    return { id, hp, max: hp, phase: 0, gauge: 0, kneelUntil: 0, brain, revives: [0, 0], stood: new Map(), settled: new Set(), walls: new Set(), hpTimer: null, hpAt: 0 };
+    return { id, hp, max: hp, phase: 0, gauge: 0, kneelUntil: 0, brain, revives: [0, 0], stood: new Map(), settled: new Set(), walls: new Set(), taken: new Set(), hpTimer: null, hpAt: 0 };
   }
 
   /** The pick before a fight. The upgrades stay on the clients; the hub waits for both, or for the time. @param {Match} match */
@@ -903,6 +914,39 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     const wait = BOSS_HP_GAP_MS - (Date.now() - boss.hpAt);
     if (wait <= 0) go();
     else boss.hpTimer = setTimeout(go, wait);
+  }
+
+  /** This much comes off the boss: the phases it passes, both screens told, and its end. @param {Match} match @param {number} amount */
+  function raidDamage(match, amount) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
+    boss.hp = Math.max(0, boss.hp - amount);
+    const phases = RAID_BOSSES[boss.id].phases;
+    while (boss.phase < phases.length && boss.hp / boss.max <= phases[boss.phase]) {
+      boss.phase++;
+      for (const p of match.players) send(p.client, { t: 'boss_phase', phase: boss.phase });
+    }
+    sendBossHp(match);
+    if (boss.hp <= 0) raidWon(match);
+  }
+
+  /** The boss kneels, on both screens. @param {Match} match */
+  function raidKneel(match) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), b = RAID_BOSSES[boss.id];
+    boss.gauge = 0;
+    boss.kneelUntil = Date.now() + b.kneel * 1000;
+    for (const p of match.players) send(p.client, { t: 'boss_kneel', seconds: b.kneel });
+    for (const p of match.players) send(p.client, { t: 'boss_gauge', value: 0 });
+  }
+
+  /** Points on the stagger gauge: a full one kneels. @param {Match} match @param {number} points */
+  function raidStagger(match, points) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
+    boss.gauge += points;
+    if (boss.gauge >= RAID_BOSSES[boss.id].staggerMax) {
+      raidKneel(match);
+      return;
+    }
+    for (const p of match.players) send(p.client, { t: 'boss_gauge', value: boss.gauge });
   }
 
   /** A gold zone is decided: how many heroes stood in it. @param {Match} match @param {number} id @param {number} part */

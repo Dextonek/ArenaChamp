@@ -52,6 +52,7 @@ export class BossFight {
       stagger: (v) => hud.setGauge(v / def.staggerMax),
       kneel: (s) => this.onKneel(s),
       stood: (id, part, count) => this.script.stood(id, part, count),
+      done: (id, part, side) => this.script.done(id, part, side),
       wall: (i) => world.breakWall(i),
       end: (r) => this.end(r),
     };
@@ -79,6 +80,7 @@ export class BossFight {
     this.stats.phases = i;
     this.brain?.setPhase(i);
     this.world.banner(this.def.phases[i].name, 2.2);
+    this.world.bodyPhase(i);
     this.world.phaseShield();
     if (this.def.lateAt === i) this.world.lateNow();
   }

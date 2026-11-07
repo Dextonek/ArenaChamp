@@ -16,7 +16,7 @@ import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
-import { stopsAtCover, sweepHit } from './obstacles';
+import { pillar, stopsAtCover, sweepHit } from './obstacles';
 import { TOUCH } from './touch';
 import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
@@ -151,6 +151,7 @@ const UNIT_BLOCK = 2.5; // an enemy unit this close is shot at when nothing can 
 const BOSS_LOOK = 1.6; // an AI starts walking when a boss's zone will reach it within this many seconds
 const BOSS_CLEAR = [3, 1.6, 0.9]; // and walks to a spot clear for this long, or the best it can find (Sun Order leaves nowhere clear for long)
 const BOSS_TAKEN = 0.5; // what standing open or kneeling adds to the damage a boss takes
+const SHARD_WALK = 0.85; // how fast a hero carrying a sun shard walks
 const HIDE_PAD = 0.5; // a boss's arms reach past its body: it counts as this much wider when it may hide a hero (m)
 const HERO_CHEST = 1.2; // the height a hero is seen at, for what may hide it (m)
 
@@ -564,6 +565,8 @@ export class Duel {
     arena.onFoeDebuff = (target, kind, amount, seconds) => { if (target === foe) this.boss?.debuffed(kind, amount, seconds); };
     arena.statusGate = (target, kind, seconds) => (target === foe && this.boss ? this.boss.control(kind, seconds) : seconds);
     this.bossHud ??= new BossHud();
+    this.figure.setBodyPhase(0);
+    this.hinted.clear();
     this.boss = new BossFight(o.def, o.link, this.bossWorld(), o.seed, this.bossHud, o.tier ?? 1, o.upgrades ?? null);
     this.group.add(this.boss.group);
     // The run's upgrades: one more layer on the hero, for this fight.
@@ -593,6 +596,7 @@ export class Duel {
       const other = forms[1].kit(o.link.maxHp);
       this.rimFigure.setModel(other.model, this.rimAt, other);
       this.rimFigure.setScale(forms[1].scale);
+      this.rimFigure.setBodyPhase(0);
       this.rimFigure.stand();
       this.rimFigure.preload(forms[0].kit(o.link.maxHp).model ?? '');
       this.figure.preload(other.model ?? '');
@@ -895,6 +899,28 @@ export class Duel {
       dash: (x, z, seconds) => { arena.moveFigure(foe, new THREE.Vector3(x, 0, z), seconds); },
       carryMe: (dx, dz) => arena.carryFigure(arena.caster, new THREE.Vector3(dx, 0, dz)),
       lateNow: () => { this.shiftOffset = Math.max(this.shiftOffset, this.lateAt - this.hazardClock); },
+      delayLate: (seconds) => { this.shiftOffset -= seconds; },
+      bodyPhase: (i) => {
+        this.figure.setBodyPhase(i);
+        this.rimFigure?.setBodyPhase(i);
+      },
+      hint: (text) => {
+        if (this.hinted.has(text) || this.mode !== 'play') return;
+        this.hinted.add(text);
+        this.showBanner(text, 2.8, '22px');
+      },
+      busy: () => this.host.heroMode.isRooted,
+      heavy: (on) => { this.host.heroMode.speedBonus = (this.boss?.upgrades?.speedMul ?? 1) * (on ? SHARD_WALK : 1); },
+      addStone: (x, z, radius, seconds) => {
+        const o = arena.addObstacle({ ...pillar(x, z, radius), height: 2.4 }, seconds);
+        this.stones.add(o);
+        return o;
+      },
+      firstStone: (ax, az, bx, bz) => {
+        const o = sweepHit(a.set(ax, 0, az), b.set(bx, 0, bz), 0, arena.obstacles ?? [])?.obstacle;
+        return o && this.stones.has(o) ? o : null;
+      },
+      dropStone: (o) => arena.removeObstacle(o),
       enemyCast: (big) => { if (this.heroRt) this.heroRt.trait?.enemyCast?.(this.heroRt, big ? 3 : 0); },
       place: (x, z, yaw) => {
         const p = foe.group.position;
@@ -960,6 +986,11 @@ export class Duel {
       finish: (result) => this.finish(result === 'win' ? 'win' : 'lose'),
     };
   }
+
+  /** The words a boss fight has already said once. */
+  private hinted = new Set<string>();
+  /** Fallen stones standing as cover: a boss's ray breaks on them. */
+  private stones = new WeakSet<Obstacle>();
 
   /** The camera's distance before a boss fight moved it. */
   private zoomBefore: number | null = null;
@@ -2042,7 +2073,7 @@ export class Duel {
     }
     // A boss's gold zone: go and stand in it, against every habit. A fallen partner comes next: stand by it, and cast nothing.
     const fallen = this.partner?.down && !this.partner.left && this.partner.revivesLeft > 0 ? this.partner.pos : null;
-    const stand = st.cannotMove ? null : this.boss?.script.standGoal(me.x, me.z) ?? fallen;
+    const stand = st.cannotMove ? null : this.boss?.script.objectiveGoal(me.x, me.z) ?? this.boss?.script.standGoal(me.x, me.z) ?? fallen;
     if (stand) {
       if (Math.hypot(stand.x - me.x, stand.z - me.z) > 0.8) {
         const step = this.goalStep(this.playerAi, me, stand);

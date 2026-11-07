@@ -2,7 +2,7 @@
 // seed with no server field, so a tab left open from an older build would see different cover and events from its
 // opponent. Raise this by hand whenever a deploy changes those rules or the messages: the hub then tells older tabs to
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
-export const PROTOCOL = 4;
+export const PROTOCOL = 5;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -15,6 +15,15 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
 export const RAID_BOSSES = {
   sun: { hp: { solo: 3200, duo: 6500 }, phases: [0.7, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
   ash: { hp: { solo: 3300, duo: 7000 }, phases: [0.66, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
+};
+
+/**
+ * What a mechanic earns when a hero does it (pipeline/designs/raid-noonfall.md): a share of the boss's max HP, stagger points, or
+ * a kneel. The hub pays it online and `LocalLink` alone, once per cast, so two screens never pay it twice.
+ */
+export const RAID_REWARDS = {
+  sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 } },
+  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 } },
 };
 
 /** The bosses of one tier of a run, in order. */

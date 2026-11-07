@@ -1,7 +1,7 @@
-import { raidHp } from '../../server/protocol.mjs';
+import { RAID_REWARDS, raidHp } from '../../server/protocol.mjs';
 import type { BossCast, BossDef, RaidEvents, RaidLink } from './types';
 
-const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, wall() {}, end() {} };
+const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, done() {}, wall() {}, end() {} };
 
 /**
  * A raid on one screen, with no server: it decides on the spot what the hub decides online, and hands it straight back.
@@ -18,6 +18,7 @@ export class LocalLink implements RaidLink {
   private gauge = 0;
   private kneeling = 0;
   private over = false;
+  private paid = new Set<string>();
 
   constructor(private def: BossDef, tier = 1) {
     this.maxHp = raidHp(def.id, false, tier);
@@ -53,6 +54,28 @@ export class LocalLink implements RaidLink {
 
   stood(id: number, part: number, inside: boolean) {
     this.on.stood(id, part, inside ? 1 : 0);
+  }
+
+  objective(id: number, part: number) {
+    this.on.done(id, part, 0);
+  }
+
+  reward(key: string, id: number) {
+    const r = RAID_REWARDS[this.def.id]?.[key], once = `${id}:${key}`;
+    if (!r || this.paid.has(once) || this.over) return;
+    this.paid.add(once);
+    if (r.hp) {
+      this.damage(this.maxHp * r.hp);
+      // A hit's HP comes off on the arena's side too; this one has no hit.
+      this.on.hp?.(this.hp);
+    }
+    if (this.over) return;
+    if (r.kneel) {
+      this.gauge = 0;
+      this.kneeling = this.def.kneel;
+      this.on.kneel(this.def.kneel);
+      this.on.stagger(0);
+    } else if (r.stagger) this.stagger(r.stagger);
   }
 
   // Nobody else to tell.

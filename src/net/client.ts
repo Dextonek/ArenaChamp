@@ -101,6 +101,7 @@ export type ServerMsg =
   | { t: 'boss_gauge'; value: number }
   | { t: 'boss_kneel'; seconds: number }
   | { t: 'boss_stood'; id: number; part: number; count: number }
+  | { t: 'boss_done'; id: number; part: number; side: 0 | 1 }
   | { t: 'boss_wall'; index: number }
   | { t: 'partner_hp'; hp: number; max: number }
   | { t: 'peer_down'; side: 0 | 1 }

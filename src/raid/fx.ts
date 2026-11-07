@@ -15,7 +15,8 @@ const stoneMat = new THREE.MeshStandardMaterial({ color: 0x6e665a, roughness: 0.
 export class FallingStone {
   readonly mesh = new THREE.Mesh(stoneGeo, stoneMat);
   private fall = 0.4;
-  constructor(private x: number, private z: number, radius: number, private at: number) {
+  /** `stays`: seconds it stands on the floor before it sinks. */
+  constructor(private x: number, private z: number, radius: number, private at: number, private stays = 0) {
     this.mesh.scale.set(radius * 0.55, radius * 1.3, radius * 0.55);
     this.mesh.position.set(x, 30, z);
     this.mesh.rotation.y = (x * 7 + z * 3) % 6.28;
@@ -28,7 +29,7 @@ export class FallingStone {
     this.mesh.visible = k >= 0;
     if (k < 0) return;
     const after = t - this.at;
-    this.mesh.position.set(this.x, after < 0 ? 16 * (1 - k * k) : -after * 2.2, this.z);
+    this.mesh.position.set(this.x, after < 0 ? 16 * (1 - k * k) : -Math.max(0, after - this.stays) * 2.2, this.z);
   }
 }
 
@@ -73,6 +74,32 @@ export class LightPillar {
   dispose() {
     this.mesh.removeFromParent();
     this.mat.dispose();
+  }
+}
+
+/** A gold arc on the floor that closes as a hero holds a spot. */
+export class HoldRing {
+  readonly mesh: THREE.Mesh;
+  private count: number;
+  constructor(x: number, z: number, radius: number, color: THREE.ColorRepresentation) {
+    const geo = new THREE.RingGeometry(radius - 0.22, radius, 64, 1);
+    this.count = geo.index?.count ?? 0;
+    this.mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+    this.mesh.rotation.x = -Math.PI / 2;
+    this.mesh.position.set(x, 0.07, z);
+    this.mesh.renderOrder = 3;
+  }
+
+  /** `held`: how much of the ring is closed, 0..1. */
+  set(held: number) {
+    this.mesh.geometry.setDrawRange(0, Math.floor(this.count * Math.min(1, held) / 6) * 6);
+    this.mesh.visible = held > 0.001;
+  }
+
+  dispose() {
+    this.mesh.removeFromParent();
+    this.mesh.geometry.dispose();
+    (this.mesh.material as THREE.Material).dispose();
   }
 }
 

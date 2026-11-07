@@ -175,6 +175,40 @@
       place(0, 10);
       check('marked: walked out', take(() => { cast('marked', { step: 1, x: 0, z: 10 }); place(4, 10); }, 2), 0);
 
+      // Burn your own: the brain says in the cast whether the boss stood under it, and then it pays.
+      fresh(0, 10);
+      const burnHp = a.hpOf(d.foe), burnGauge = d.boss.link.gauge ?? 0;
+      place(8, 10);
+      cast('marked', { step: 1, x: 0, z: 10, flag: true });
+      step(1.2);
+      check('burn your own: 4 % off', (burnHp - a.hpOf(d.foe)) / def.hp.solo, 0.04, 0.002);
+      check('burn your own: and the gauge', (d.boss.link.gauge ?? 0) - burnGauge, 40, 0);
+      fresh(0, 10);
+      const missHp = a.hpOf(d.foe);
+      place(8, 10);
+      cast('marked', { step: 1, x: 0, z: 2 });
+      step(1.2);
+      check('burn your own: not under it, nothing', a.hpOf(d.foe), missHp, 0);
+      const ringAim = def.moves.marked.aim({ step: 1, boss: { x: 0, z: -9 }, ring: { x: 1, z: 10 }, target: { x: 0, z: 10 }, seed: 1 });
+      yes('burn your own: the brain counts the one in the ring', ringAim.flag === true);
+      yes('and not the one on the rim', !def.moves.marked.aim({ step: 1, boss: { x: 0, z: 10 }, ring: { x: 9, z: 10 }, target: { x: 0, z: 10 }, seed: 1 }).flag);
+
+      // Seal the vent: hold it 4 s, and the lava waits. Walking off lets it slip.
+      fresh(0, -4);
+      const offset0 = d.shiftOffset, sealGauge = d.boss.link.gauge ?? 0;
+      place(0, 7);
+      cast('seal');
+      step(2);
+      place(6, 7);
+      step(1);
+      const slip = d.boss.script.active[d.boss.script.active.length - 1].played.objectives[0];
+      yes('seal the vent: walking off, it slips back', slip.held > 0 && slip.held < 0.5 && !slip.done);
+      place(0, 7);
+      step(3.8);
+      yes('seal the vent: held, it is done', slip.done === true);
+      check('seal the vent: the lava waits 20 s', offset0 - d.shiftOffset, 20, 0);
+      check('seal the vent: the gauge', (d.boss.link.gauge ?? 0) - sealGauge, 40, 0);
+
       fresh(0, 3);
       place(0, 10);
       check('bombs: between the pair', take(() => cast('bombs', { x: 0, z: 10 }), 1.7), 0);
@@ -431,19 +465,69 @@
       // Noon: open floor, behind a wall (it falls), behind a column (it stays).
       fresh(0, 1);
       place(0, 5);
-      check('noon: in the open', take(() => cast('noon'), 4.2), 0.4);
+      check('noon: in the open', take(() => cast('noon'), 8.2), 0.4);
       yes('noon: he stands open', a.statusOf(d.foe).buff('vulnerable') === 0.5);
       fresh(3.5, 7);
       place(9.5, 7);
       const n0 = a.obstacles.length;
-      check('noon: behind a wall', take(() => cast('noon'), 4.2), 0);
+      check('noon: behind a wall', take(() => cast('noon'), 8.2), 0);
       check('noon: that wall fell', n0 - a.obstacles.length, 1, 0);
       const col = a.obstacles.find((o) => o.kind === 'pillar' && o.height >= 2), cl = Math.hypot(col.ax, col.az - 7), cdx = col.ax / cl, cdz = (col.az - 7) / cl;
       fresh(col.ax - cdx * 3.5, col.az - cdz * 3.5);
       place(col.ax + cdx * 1.6, col.az + cdz * 1.6);
       const n1 = a.obstacles.length;
-      check('noon: behind a column', take(() => cast('noon'), 4.2), 0);
+      check('noon: behind a column', take(() => cast('noon'), 8.2), 0);
       check('noon: the column stands', n1 - a.obstacles.length, 0, 0);
+
+      // Turn the light: a shard to the altar, and there is no noon. He kneels and pays.
+      fresh(0, 1);
+      place(0, 18);
+      cast('noon');
+      step(0.1);
+      const turn = d.boss.script.active[d.boss.script.active.length - 1];
+      const shard = turn.played.objectives.find((o) => o.part === 0);
+      yes('turn the light: alone, one shard', turn.played.objectives.filter((o) => o.part < 10).length === 1);
+      check('turn the light: the shard is far from the altar', Math.hypot(shard.x, shard.z - 7), 9, 0.01);
+      const walk0 = vfx.heroMode.speed;
+      place(shard.x, shard.z);
+      step(0.1);
+      yes('turn the light: walking over it takes it', shard.done === true);
+      check('turn the light: its carrier walks slower', vfx.heroMode.speed / walk0, 0.85);
+      const hpTurn = a.hpOf(d.foe), kneels0 = d.boss.stats.kneels;
+      d.playerHp = d.playerMax;
+      place(2, 7);
+      step(0.1);
+      yes('turn the light: he kneels', d.boss.stats.kneels === kneels0 + 1);
+      check('turn the light: and pays 5 %', (hpTurn - a.hpOf(d.foe)) / def.hp.solo, 0.05, 0.002);
+      yes('turn the light: its carrier walks as before', Math.abs(vfx.heroMode.speed - walk0) < 0.001);
+      place(0, 5);
+      const noonOff = d.playerHp;
+      step(8.5);
+      check('turn the light: no noon comes', (noonOff - d.playerHp) / d.playerMax, 0);
+
+      // The altar takes nothing from a hero with no shard.
+      fresh(0, 1);
+      place(2, 7);
+      cast('noon');
+      step(0.5);
+      yes('turn the light: no shard, nothing at the altar', d.boss.stats.kneels === 0);
+
+      // Break the ray: Pillar Fall's stone stays, stops his ray, and breaks. That fills the gauge.
+      // Down the open south side of the court, where nothing but the stone stands in the way.
+      fresh(0, 20.5);
+      place(0, 13);
+      const cover0 = a.obstacles.length;
+      cast('pillars', { x: 0, z: 16 });
+      step(1.7);
+      check('break the ray: the stone stands as cover', a.obstacles.length - cover0, 1, 0);
+      d.playerHp = d.playerMax;
+      const gauge0 = d.boss.link.gauge ?? 0;
+      place(0, 13);
+      cast('ray', { x: 0, z: 13, fx: 0, fz: 20.5, dir: Math.PI });
+      step(2.7);
+      check('break the ray: it stops at the stone', (d.playerMax - d.playerHp) / d.playerMax, 0);
+      check('break the ray: the gauge fills', (d.boss.link.gauge ?? 0) - gauge0, 40, 0);
+      check('break the ray: the stone is gone', a.obstacles.length - cover0, 0, 0);
 
       // Sun Order: wedge 1 fires at 2.5 s. Stood in it, hit once; stepping into it after it fired, nothing.
       const spot = (s) => ({ x: s.x + Math.sin(s.dir) * 5, z: s.z + Math.cos(s.dir) * 5 });
