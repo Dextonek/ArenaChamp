@@ -452,7 +452,7 @@ export const ASH_AND_EMBER: BossDef = {
   kit: (hp) => kitOf('Ash and Ember', 'models/bosses/ash.glb', ashLook, '#e8703a')(hp),
   hp: NUMBERS.hp,
   scale: 1,
-  body: { radius: 1.3, height: 5.8 },
+  body: { radius: 1.8, height: 5.8 },
   speed: 2.3,
   keepAt: 3.5,
   staggerMax: NUMBERS.staggerMax,
@@ -460,7 +460,7 @@ export const ASH_AND_EMBER: BossDef = {
   phasePause: 2.5,
   forms: [
     {
-      name: 'Ash', kit: kitOf('Ash', 'models/bosses/ash.glb', ashLook, '#e8703a'), scale: 1, body: { radius: 1.3, height: 5.8 }, speed: 2.3, keepAt: 3.5,
+      name: 'Ash', kit: kitOf('Ash', 'models/bosses/ash.glb', ashLook, '#e8703a'), scale: 1, body: { radius: 1.8, height: 5.8 }, speed: 2.3, keepAt: 3.5,
       moves: ['slam', 'charge', 'drag', 'quake'], rimMoves: ['rock'], trail: 'trail',
     },
     {

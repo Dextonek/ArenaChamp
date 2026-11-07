@@ -136,13 +136,13 @@ const sunRay: BossMove = {
   },
 };
 
-/** Fists of the Court: one fist, then the other, flies out and comes down where the target stood. Keep walking. */
+/** Fists of the Court: left, right, left, each flies out and comes down where the target stood. Keep walking. */
 const fists: BossMove = {
-  id: 'fists', name: 'Fists of the Court', charge: 2.4, lock: 2.6, cooldown: 11, steps: [0, 1], chases: true, range: 14, pose: 'raise',
-  body: { name: 'fists', seconds: 1.4 },
+  id: 'fists', name: 'Fists of the Court', charge: 2.8, lock: 3, cooldown: 10, steps: [0, 0.8, 1.6], chases: true, range: 14, pose: 'raise',
+  body: { name: 'fists', seconds: 1.2 },
   aim: atTarget,
   play(c, p) {
-    const radius = 2.5, at = p.shown(1.4);
+    const radius = 2.5, at = p.shown(1.2);
     return {
       threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.16, knock: 3 }], duration: at + 0.6,
       look: {
@@ -495,7 +495,7 @@ export const SUN_WARDEN: BossDef = {
   kneel: NUMBERS.kneel,
   phasePause: 2.5,
   phases: [
-    { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray', 'fists'], gap: [2.4, 3.4] },
+    { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray', 'fists'], gap: [1.9, 2.8] },
     { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
     { name: 'Last Light', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
   ],

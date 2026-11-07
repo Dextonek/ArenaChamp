@@ -471,9 +471,9 @@
       // Fists of the Court: a fist where you stood. Walking on, it misses.
       fresh(0, 1);
       place(-3, 13);
-      check('fists: stood still', take(() => cast('fists'), 1.6), 0.16);
+      check('fists: stood still', take(() => cast('fists'), 1.4), 0.16);
       place(-3, 13);
-      check('fists: walked out', take(() => { cast('fists'); place(3, 13); }, 1.6), 0);
+      check('fists: walked out', take(() => { cast('fists'); place(3, 13); }, 1.4), 0);
 
       // Sun Ray: stopped by cover, cracks the wall.
       fresh(0, 1);
