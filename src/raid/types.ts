@@ -324,6 +324,8 @@ export interface BossWorld {
   face(yaw: number): void;
   /** The floor that doesn't hurt: how far out a boss backing away may go. */
   floor(): { x: number; z: number; r: number };
+  /** Whether a boss can walk straight from a to b, past the cover. */
+  canWalk(ax: number, az: number, bx: number, bz: number): boolean;
   pose(style: CastStyle, seconds: number, big: boolean): void;
   /** The same for the one on the rim. */
   poseRim(style: CastStyle, seconds: number, big: boolean): void;

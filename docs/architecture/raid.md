@@ -143,7 +143,7 @@ now and then. Alone 3,300 HP, for two 7,000. The one in the ring aims at the nea
 | Both | Tag | 1.5 s | 12 % | Leave the circle where the next one lands |
 
 **Ember backs away.** She wants 9 m. With a hero under 6 m she steps back between her moves, at 2.4 m/s against a hero's 4 or more, so she can always be caught,
-above all during a cast, when she stands still (`BossForm.backAt`). She keeps off the floor's edge and off the rising lava, and stands when cornered.
+above all during a cast, when she stands still (`BossForm.backAt`). She goes round cover, keeps off the floor's edge and off the rising lava, and stands when cornered.
 
 **How it stays within the rules.** A tag is a cast, so both screens swap at one moment. Marked's circle follows its target as a look only:
 what counts is its second step, at the spot the brain read. Only the brain's screen moves Ash down his Charge (`BossMove.act`), and it says in

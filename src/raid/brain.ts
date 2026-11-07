@@ -13,6 +13,8 @@ const BACK_EDGE = 2;
 const BACK_STILL = 0.4;
 /** How fast it backs away, as a share of its walk. */
 const BACK_PACE = 0.8;
+/** The ways it tries, turned from straight away from the hero (radians), nearest first. None of them goes back toward the hero. */
+const BACK_TURNS = [0, 0.6, -0.6, 1.2, -1.2, Math.PI / 2, -Math.PI / 2];
 
 interface Pending {
   at: number;
@@ -153,17 +155,21 @@ export class BossBrain {
     else this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
   }
 
-  /** A step straight away from the target, still facing it, and along the edge of the floor when that is in the way. Cornered, it stands. */
+  /** A step away from the target, still facing it, round cover and along the edge of the floor when they are in the way. Cornered, it stands. */
   private backAway(dt: number, target: { x: number; z: number }, speed: number) {
-    const boss = this.world.boss(), floor = this.world.floor();
-    const off = Math.hypot(boss.x - target.x, boss.z - target.z) || 1, k = BACK_AIM / off;
-    let x = boss.x + (boss.x - target.x) * k, z = boss.z + (boss.z - target.z) * k;
-    const dx = x - floor.x, dz = z - floor.z, far = Math.hypot(dx, dz), reach = floor.r - BACK_EDGE;
-    if (far > reach) {
-      x = floor.x + (dx / far) * reach;
-      z = floor.z + (dz / far) * reach;
+    const boss = this.world.boss(), floor = this.world.floor(), reach = floor.r - BACK_EDGE;
+    const away = Math.atan2(boss.x - target.x, boss.z - target.z);
+    for (const turn of BACK_TURNS) {
+      let x = boss.x + Math.sin(away + turn) * BACK_AIM, z = boss.z + Math.cos(away + turn) * BACK_AIM;
+      const dx = x - floor.x, dz = z - floor.z, far = Math.hypot(dx, dz);
+      if (far > reach) {
+        x = floor.x + (dx / far) * reach;
+        z = floor.z + (dz / far) * reach;
+      }
+      if (Math.hypot(x - boss.x, z - boss.z) <= BACK_STILL || !this.world.canWalk(boss.x, boss.z, x, z)) continue;
+      this.world.walk(dt, x, z, speed * BACK_PACE);
+      break;
     }
-    if (Math.hypot(x - boss.x, z - boss.z) > BACK_STILL) this.world.walk(dt, x, z, speed * BACK_PACE);
     this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
   }
 
