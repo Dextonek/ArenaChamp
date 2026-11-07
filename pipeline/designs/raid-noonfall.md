@@ -5,6 +5,15 @@ extra and all should have like phases and spells to dodge", "so players can do m
 same day: **one place to walk through**, and **the same bosses with new bodies**. Every number is a starting value. Names, bodies and
 mechanics are original: principles from raid games, never a boss, kit or name.
 
+**As built (2026-11-07):** how it works now is in `docs/architecture/raid.md`. Changes from this plan:
+- Built in the order mechanics, bodies, hall, gates (not bodies first), after a review: mechanics were asked for twice.
+- A boss's body goes through the same model loader as a hero's (`Hero`), with no skeleton: a `look` on the kit poses its parts. No separate class.
+- Rewards are paid by the hub from one table (`RAID_REWARDS`) when the brain's screen asks, never by a client's own numbers.
+- Seal the vent makes the lava wait 20 s longer instead of sinking a step: the floor's stages only go forward.
+- Noon gathers for 8 s, with the shadows for its last 4.
+- The rooms got the hall's gates. Their floors and cover are as they were: the moves were tuned on them.
+- Extra parts on the bodies: a `corona` on the Warden's sun, `plateA` to `plateE` on Ash, so phases have something to change.
+
 The rules in `src/raid/types.ts` stay: a move never reads a hero, each step is its own cast, each screen decides hits on its own hero,
 shared things go through `RaidLink`.
 

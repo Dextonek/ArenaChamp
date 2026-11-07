@@ -6,10 +6,64 @@ how it works now.
 
 It shows to everyone: in the top bar, and on the login screen for a raid with no account. An old `/game?raid` link still works, because the page ignores the `?raid`.
 
+**Noonfall** (user, 2026-11-07: a place of their own, bosses unlike heroes, mechanics to do; design and decisions in
+[raid-noonfall.md](../../pipeline/designs/raid-noonfall.md)). A sun fell into a mountain at noon. The Sun Warden keeps the court above it, Ash and
+Ember the pit below, and the run waits in the hall between them.
+
 ## The run
 
-Pick an upgrade, fight the Sun Warden, pick another, fight Ash and Ember. Beat both and the next tier is offered, keeping the
-upgrades, for a higher score. HP is full at each fight. One loss ends the run: alone that is one fall, for two it is both down at once.
+Walk onto an altar in the hall to take an upgrade, walk through the gate, fight the Sun Warden. Back to the hall, another altar, the other gate,
+Ash and Ember. Beat both and the next tier is offered, keeping the upgrades, for a higher score. HP is full at each fight. One loss ends the
+run: alone that is one fall, for two it is both down at once.
+
+## Noonfall's hall
+
+`src/raid/hall.ts` and `src/arenas/noonfall.ts`. Round, radius 13, not in `ARENAS`. A gold wheel half sunk in the middle with lava in its
+cracks; marble and gold on the Court's side (west), hex basalt on the Pit's (east); three broken gold rays standing between the two gates. All drawn
+in code with the temple's and the caldera's props: first-pass, for the artist to direct.
+
+| What | How |
+|---|---|
+| Altars | Three low daises in an arc before the wheel, each with a light and a card naming its upgrade. Walk onto one to take it (1.5 m), or tap its card and the hero walks there. 30 s; time running out takes the first. Taking one drops the walk order, so the hero isn't held on the altar |
+| The gate | Opens once the pick is in (for two, once both are). Walk into it (2 m) and the screen fades into the fight. For two the fight starts when both are in, or after 15 s |
+| A hall visit | About 8 s for two bots from arriving to the fight: the pick, the walk, the gate |
+| Only walking | No spells and no attacks in the hall: the spell panel hides (`HeroMode.setWalkOnly`) and the autopilot only walks |
+| How it is made | A boss fight with no boss (`BossDef.hall`): the same duel path, so the hero walks and the partner shows as in a fight. The altars and the gate are objectives (below), so the edge arrows, the autopilot and the bots find them with no code of their own. `HallLink` keeps everything on this screen |
+| Loading | A fade (`fadeTo`), and the loading page only when a room takes over 1.2 s |
+
+Each boss room has the hall's gates too (`KeepGate`, `BossDef.gates`): one in at the south, lit until the fight starts, and one out, lit when
+the boss falls. In the Cinder Pit the way out stands between two of the rim's perches.
+
+## Bodies
+
+Not heroes drawn big: each boss has its own model of rigid parts in a named hierarchy, no skeleton, posed in code by a look
+(`src/raid/bodies/`: `BodyLook`, `BodyParts`; `HeroKit.look`). `HeroFigure` hands a kit with a look to it instead of the hero's walk, so the
+duel, the rim and the partner's screen call the same methods. Built by `blender/bosses/boss_bodies.py`; sheets in `docs/bosses/`.
+
+| Boss | Model | Parts | Phases |
+|---|---|---|---|
+| Sun Warden | A floating stone sentinel: a gold-inlaid monolith, slab shoulders, a carved mask, a halo round a small sun, two free fists, a ring of floating stones. 5,554 triangles | `core`, `mask`, `halo`, `sun` (`corona`), `slabL`, `slabR`, `fistL`, `fistR`, `stones` | The sun dims to black with a corona, the halo turns, the slabs break away |
+| Ash | A hunched magma brute on his knuckles: basalt plates over a glowing core, huge forearms. 6,780 | `torso`, `head`, `core`, `armL`/`foreL`/`fistL`, the same on the right, `legL`, `legR`, `plateA` to `plateE` | Plates fall away, seams burn hotter |
+| Ember | A flame in a burnt mantle: a hollow hood, a white-hot core, a torn mantle with glowing tips, two orbiting lanterns. 2,597 | `hood`, `mantle`, `core`, `lanternL`, `lanternR` | The lanterns orbit faster, the flame grows |
+
+## Mechanics players do
+
+All by walking, so a phone needs no new button. What each earns is in one table (`RAID_REWARDS` in `server/protocol.mjs`), paid once per cast
+by the hub online and by `LocalLink` alone. Only the screen that runs the brain asks for it (`link.reward`).
+
+| Boss, phase | Mechanic | What you do | The reward |
+|---|---|---|---|
+| Warden, Awake | Break the ray | Pillar Fall's stones stay 8 s as cover. Keep one between you and him when Sun Ray comes | It breaks on the stone: +40 on the gauge |
+| Warden, High Noon on | Turn the light | Gathering Noon fills for 8 s while sun shards fall 9 m from the altar. Walk over one to carry it (15 % slower, it glows over your head), and walk it to the altar. One alone, one each for two | No Noon. He kneels and takes 5 % of his max HP |
+| Warden, Last Light | Anchors | As before | |
+| Ash, any | Charge into cover | As before | |
+| Ember, any | Burn your own | Carry Marked onto whichever of them is in the ring. The brain says in the landing cast whether the boss stood under it | 4 % of max HP and +40 on the gauge |
+| Together | Seal the vent | The vent opens at 6 s, then again 25 s later. Stand on it for 4 s, hits or not, casting stops it | The lava waits 20 s longer, and +40 on the gauge |
+
+**Objectives** (`Objective` in `types.ts`): spots a hero takes, at once or by holding. A move's `play` returns them beside its threats. Each screen
+watches its own hero and reports once (`link.objective`); the hub gives each to the first report and tells both screens who (`boss_obj`, then
+`boss_done`). The edge arrows point to them and the autopilot goes for them (`BossScript.objectiveGoal`). A move that comes by the clock rather
+than the brain's pick (the vent) is `BossPhase.timed`.
 
 | Tier | What changes |
 |---|---|
@@ -73,7 +127,9 @@ Everything else follows from these, and they are why two screens work without re
 | `fight.ts` | `BossFight`: ties the rest together. `Duel.startBoss` builds it, and `update` calls it where a duel calls its AI |
 | `brain.ts` | `BossBrain`: who it aims at, which move comes next, where it walks. Runs on one screen. Its rolls are seeded |
 | `script.ts` | `BossScript`: plays casts, draws their zones, lands them, decides the hits on this screen's hero. Several run at once, in both colours |
-| `sunWarden.ts` | The first boss: numbers, phases, moves |
+| `sunWarden.ts`, `ashEmber.ts` | The bosses: numbers, phases, moves |
+| `bodies/` | Each boss's look: the parts of its own model, posed by code |
+| `hall.ts` | `RaidHall`: Noonfall's hall between fights, and `fadeTo` |
 | `link.ts` | `LocalLink`: one screen, no server. Decides on the spot what the hub decides online |
 | `net.ts` | `NetLink`: the same calls through the hub |
 | `coop.ts` | `RaidController`: a raid for two, next to `MatchController` |
@@ -92,7 +148,7 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor` and `onFoeDamage
 | Not moved | `Arena.pinned`: knockback, pull, carry and displacement leave it alone. Its own walk still moves it |
 | Control | `Arena.statusGate` asks `BossFight.control` first. Stun, knock-up, root, charm, sealed, silence and blind add to the gauge instead of landing (per second of it). Slow lands at half length |
 | Kneeling | A full gauge: `StatusSet.hold`, so rules that look for a stunned target see it, and +50 % damage taken for 6 s. Steps not yet sent are dropped; what already shows still lands |
-| Exposed | After Noon, +50 % damage taken for 5 s (`vulnerable`) |
+| Exposed | After a Noon nobody turned, +50 % damage taken for 5 s (`vulnerable`) |
 | Damage | A share of the hero's max HP, through `resolve` and `damagePlayer` as a normal hit, so parries, shields and ice blocks work. `weaken` on the boss lowers it |
 | Wide | A zone that touches any of its body counts as a hit on it (`inCastReach` with a pad) |
 | Too long | Past 5 minutes sunfire closes in, at 6 Last stand (`BossDef.late`), so nobody can stall a fight for ever |
@@ -106,9 +162,9 @@ Numbers as they are; tune by playing. Alone 3,200 HP, for two 6,500. Walks at 2 
 | Phase | From | Move | Shown | Costs | What you do |
 |---|---|---|---|---|---|
 | Awake | 100 % | Stone Sweep | 1.6 s | 20 % | Leave the 120° cone, or get behind him |
-| | | Pillar Fall | 1.5 s, 0.7 s apart | 15 % each | Keep walking: three stones, each where you stood |
+| | | Pillar Fall | 1.5 s, 0.7 s apart | 15 % each | Keep walking: three stones, each where you stood. They stay 8 s as cover |
 | | | Sun Ray | 2.5 s | 22 % | Step aside or get behind cover. Cracks the wall it hits |
-| High Noon | 70 % | Noon | 4 s | 40 % | Hide: gold shadows behind cover are safe. A wall that saved someone falls, a column stays. He stands open after |
+| High Noon | 70 % | Gathering Noon | 8 s, shadows for the last 4 | 40 % | Turn the light (above), or hide: gold shadows behind cover are safe. A wall that saved someone falls, a column stays. He stands open after |
 | | | Sun Order | 2.5 s, then 0.8 s apart | 16 % | Four wedges fire 1-2-3-4: step into 1 once it has fired |
 | | | Shared Burden (for two) | 3 s | 40 %, split | Come together in the gold circle |
 | Last Light | 35 % | Eclipse | 1.6 s each | 15 % | Near him, far from him, near again |
@@ -121,13 +177,13 @@ hero's exact position to draw it. If nobody stands in it, everyone pays in full.
 ## Ash and Ember
 
 `src/raid/ashEmber.ts`. Two bosses, one HP bar, one in the ring at a time. The other stands on the rim, out of reach, and adds a move
-now and then. Alone 3,300 HP, for two 7,000. The one in the ring aims at the nearer hero, the one on the rim at the farther.
+now and then. Alone 3,000 HP, for two 7,000. The one in the ring aims at the nearer hero, the one on the rim at the farther.
 
 | Phase | From | Who | Notes |
 |---|---|---|---|
 | Ash and Ember | 100 % | Ash in the ring, Ember on the rim | A move from the rim every 10-14 s |
 | Ember steps in | 66 % | They swap | Every 9-13 s |
-| Together | 33 % | They swap every 12 s | Every 9 s. The lava rises from the rim, three steps, then Last stand |
+| Together | 33 % | They swap every 12 s | Every 9 s. The lava rises from the rim, three steps, then Last stand. The vent opens twice |
 
 | Who | Move | Shown | Costs | What you do |
 |---|---|---|---|---|
@@ -137,7 +193,7 @@ now and then. Alone 3,300 HP, for two 7,000. The one in the ring aims at the nea
 | | Burning Trail | None | 4 % a second | Puddles where he walked, for 15 s. Plan your route |
 | | Cinder Rock (from the rim) | 1.7 s | 12 % | Two rocks, each where you stood |
 | Ember | Fan | 1.5 s | 14 % | Five lines. Stand in a gap, or behind cover |
-| | Marked | Follows you 2.5 s, then 1 s | 18 %, and a puddle | Carry it somewhere neither of you needs, and walk out when it stops |
+| | Marked | Follows you 2.5 s, then 1 s | 18 %, and a puddle | Carry it onto the one in the ring, and walk out when it stops |
 | | Vent Bombs | 1.5 s | 12 % | Pairs either side of you. Stay between them |
 | | Lava Wave | 2.5 s | 16 % | A ring grows from the vent. Walk through the gold gap, which turns |
 | Both | Tag | 1.5 s | 12 % | Leave the circle where the next one lands |
@@ -181,7 +237,9 @@ of this hero's can target or hit it.
 | A wall that saved someone | The hub, once | `boss_wall { index }` to both |
 | Falling and getting up | The hub keeps who is down | `hero_down`, `peer_down`; `revive`, `revived` |
 | Someone leaves | The hub | `partner_left`, and `boss_brain` if the leaver ran it. The next fight is at the HP for one |
-| The run's order | The hub | `raid_offer`, `raid_pick`, `raid_stage`, `raid_won`; after the last boss `raid_next` from both, or the end after 30 s |
+| An objective | The hub, to the first report | `boss_obj { id, part }`, then `boss_done { id, part, side }` to both |
+| What a mechanic earns | The hub, from `RAID_REWARDS`, once per cast | `boss_reward { key, id }` from the brain's screen only, then `boss_hp`, `boss_gauge` or `boss_kneel` |
+| The run's order | The hub | `raid_offer`, `raid_pick`, `raid_gate`, `raid_enter`, `raid_stage`, `raid_won`; after the last boss `raid_next` from both, or the end after 30 s. A hero's walk in the hall is clamped to its 13 m |
 | The end | The hub | `raid_end` with the score |
 
 **Against the design:** the hub doesn't check a hero's own HP (`boss_hit` with caps is gone). A cheat there only helps both players,
@@ -198,6 +256,11 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 
 ## Limits
 
+- **A reward rides on the brain's screen.** If that player leaves between a mechanic and its reward, the reward is lost.
+- **The bodies' poses were judged on screen only in passing** (a fight each, desktop and phone size). Glow strengths come from the Blender
+  file and may need tuning against the game's bloom; Ash's core is the brightest.
+- **Ash's model is wider than his body** (1.3 m): his forearms reach about 2.5 m out, and a hit on a forearm counts only where the body is.
+- **The hall's cards are page elements over the 3D**, placed each frame. On a small phone they can sit over each other near the edge.
 - **A summoner's partner sees fewer bodies:** units are raised only on their owner's screen.
 - **Marks, stacks and meters stay on their owner's screen.** The partner's bar shows HP only.
 - **Its body is wider than the walk planner assumes,** so it can clip a wall corner while walking.
