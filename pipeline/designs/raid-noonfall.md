@@ -98,3 +98,18 @@ The autopilot (`Duel.pilot`) goes for objectives, so the balance tool and tests 
 5. **Retest all of it,** measure with the autopilot, docs. No push and no deploy without a new ask.
 
 **Not this job:** a third boss, new moves beyond these, friend brackets, spectating. Sound is not in the game yet.
+
+## The lairs (user, 2026-11-07: "make the boss room different from the arena, it is supposed to be where the boss lives")
+
+The boss rooms still used the duel arenas' props (the temple's for the Court, the caldera's for the Pit), so they read as arenas. Each
+becomes the boss's home. **Every obstacle stays where it is, with the same size:** the moves were tuned on that cover. Only the look
+changes: props, floor, backdrop, sky and light, and what moves in the air.
+
+| Room | Its story | Cover (same spots) | Floor | Around it | In the air |
+|---|---|---|---|---|---|
+| **The Warden's sanctum** (the Sun Court) | The top of the mountain, where he keeps watch over the hole the sun tore. His throne faces the eclipse | The six screen walls become carved sun-stone slabs with gold seams (whole, cracked, rubble); the eight columns become sun obelisks with a gold disc on top; the middle altar becomes the Sun Well where shards are delivered | A great sundial: hour marks, a gnomon's shadow, cracks of light | His empty throne on a stepped plinth past the north gate; broken sun arches; floating rocks like his own; tall obelisks | Rocks drifting up and down, motes of light |
+| **Ash and Ember's den** (the Cinder Pit) | The crater the sun fell into, where it still burns under the floor. They nest here | The four basalt clusters become obsidian spires with ember cracks; the two ridges become slag walls of cooled lava; the four stumps become anvil stones with live coals; the five rim perches become Ember's lantern perches | Black glass and cooled lava over a buried sun: gold light through the cracks, Ash's claw marks | A great fallen sun shard half sunk in the lava; the ribs of something huge that burned; posts with hanging lanterns round the crater | Embers rising, heat haze on the lava |
+
+Props come from Blender (\`blender/arenas/sanctum_props.py\`, \`den_props.py\`), named \`<Prop>__<material>\` as the other arenas' are, so the
+same instancing code places them. The Court keeps its breakable walls: the sanctum's file has \`Wall\`, \`WallCracked\` and \`WallRubble\`.
+Nothing over 2 m on the camera's side, as in every arena (\`checkCameraRule\`).
