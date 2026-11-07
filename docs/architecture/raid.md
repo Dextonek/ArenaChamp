@@ -97,7 +97,7 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor` and `onFoeDamage
 | Wide | A zone that touches any of its body counts as a hit on it (`inCastReach` with a pad) |
 | Too long | Past 5 minutes sunfire closes in, at 6 Last stand (`BossDef.late`), so nobody can stall a fight for ever |
 | Units | Whatever stands in an orange zone takes 60. Units don't dodge |
-| Hiding a hero | A boss between the camera and a hero, yours or your partner's, fades to 40 % so the hero shows through, the one on the rim too (`Duel.bossFade`, `Hero.setFade`). The camera stays where it is, because the controls follow it |
+| Hiding a hero | A boss between the camera and a hero, yours or your partner's, fades to 10 % so the hero shows through, the one on the rim too (`Duel.bossFade`, `Hero.setFade`). The camera stays where it is, because the controls follow it |
 
 ## The Sun Warden
 

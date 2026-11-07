@@ -14,8 +14,11 @@ const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const scenes = new Map<string, Promise<THREE.Group>>();
 
 const VEIL_DARK = new THREE.Color('#150a28');
-/** How much of a figure goes at full fade: what is left must still read as the boss. */
-const FADE_MOST = 0.6;
+/**
+ * How much of a figure goes at full fade. It blends in linear light, where a bright figure outweighs a dark hero behind it: at
+ * 40 % it still looks solid and hides the hero. At 10 % the hero is clear and the boss still reads (checked by eye).
+ */
+const FADE_MOST = 0.9;
 
 export interface HeroOptions {
   /** Model under `public/` (default the Azure Cloud disciple). Any figure on the Dao rig works. */
