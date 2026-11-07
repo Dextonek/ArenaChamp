@@ -46,6 +46,11 @@ duel, the rim and the partner's screen call the same methods. Built by `blender/
 | Ash | A hunched magma brute on his knuckles: basalt plates over a glowing core, huge forearms. 6,780 | `torso`, `head`, `core`, `armL`/`foreL`/`fistL`, the same on the right, `legL`, `legR`, `plateA` to `plateE` | Plates fall away, seams burn hotter |
 | Ember | A flame in a burnt mantle: a hollow hood, a white-hot core, a torn mantle with glowing tips, two orbiting lanterns. 2,597 | `hood`, `mantle`, `core`, `lanternL`, `lanternR` | The lanterns orbit faster, the flame grows |
 
+**A move can use the body** (`BossMove.body`): it names an action the look knows, and the body sends a part to where the move's zone is
+(`BodyParts.toward`, which works in the world because a model's own nodes may be turned). The Warden's fists fly out, and Ember's lanterns are thrown.
+**The glow** of each body is kept low on purpose (`GLOW_HALO`, the core's share): under the game's bloom a bright halo, core or flame hid the whole
+body from above. `pipeline/tools/boss-poses.js` poses a boss through idle, walk, each cast, phases, kneel and fall on one sheet to judge that.
+
 ## Mechanics players do
 
 All by walking, so a phone needs no new button. What each earns is in one table (`RAID_REWARDS` in `server/protocol.mjs`), paid once per cast
@@ -163,6 +168,7 @@ Numbers as they are; tune by playing. Alone 3,200 HP, for two 6,500. Walks at 2 
 |---|---|---|---|---|---|
 | Awake | 100 % | Stone Sweep | 1.6 s | 20 % | Leave the 120° cone, or get behind him |
 | | | Pillar Fall | 1.5 s, 0.7 s apart | 15 % each | Keep walking: three stones, each where you stood. They stay 8 s as cover |
+| All | | Fists of the Court | 1.4 s, 1 s apart | 16 % each | One fist, then the other, flies out and lands where you stood. Keep walking |
 | | | Sun Ray | 2.5 s | 22 % | Step aside or get behind cover. Cracks the wall it hits |
 | High Noon | 70 % | Gathering Noon | 8 s, shadows for the last 4 | 40 % | Turn the light (above), or hide: gold shadows behind cover are safe. A wall that saved someone falls, a column stays. He stands open after |
 | | | Sun Order | 2.5 s, then 0.8 s apart | 16 % | Four wedges fire 1-2-3-4: step into 1 once it has fired |
@@ -190,12 +196,14 @@ now and then. Alone 3,000 HP, for two 7,000. The one in the ring aims at the nea
 | Ash | Ground Slam | 1.5 s | 18 % | Back away from the 5 m circle |
 | | Charge | 1.5 s | 20 % | Step off the line. Put cover behind you: he stops dead at it and stands open for 2 s |
 | | Drag Under | 2 s | 16 % | It pulls you in, and a ring burns far from him. Stay close, then walk away before the next thing |
+| | Knuckle Quake | 1.8 s | 15 % | Two cracks from his fists cross where you stand. Step aside, or in close between them |
 | | Burning Trail | None | 4 % a second | Puddles where he walked, for 15 s. Plan your route |
 | | Cinder Rock (from the rim) | 1.7 s | 12 % | Two rocks, each where you stood |
 | Ember | Fan | 1.5 s | 14 % | Five lines. Stand in a gap, or behind cover |
 | | Marked | Follows you 2.5 s, then 1 s | 18 %, and a puddle | Carry it onto the one in the ring, and walk out when it stops |
 | | Vent Bombs | 1.5 s | 12 % | Pairs either side of you. Stay between them |
 | | Lava Wave | 2.5 s | 16 % | A ring grows from the vent. Walk through the gold gap, which turns |
+| | Lantern Toss | 1.8 s | 14 % | Her lanterns hang either side of you and burst. Stand still between them |
 | Both | Tag | 1.5 s | 12 % | Leave the circle where the next one lands |
 
 **Ember backs away.** She wants 9 m. With a hero under 6 m she steps back between her moves, at 2.4 m/s against a hero's 4 or more, so she can always be caught,
@@ -208,18 +216,24 @@ the cast whether he hit cover, so each screen doesn't judge that for itself. The
 **From the design:** Drag Under's second half, "walk out in time", has no zone of its own: it's whatever move comes next. Vent Bombs fall round
 the target and not from the vent. Ash's Charge only comes from the ring, so he has Cinder Rock for the rim.
 
-## The Cinder Pit
+## The lairs
 
-`src/arenas/cinderpit.ts`: their own room, not in `ARENAS`. Radius 16, a basalt floor in a lava lake, a vent in the middle that stops
-nobody, an obsidian lip with five perches for whoever is on the rim. Four tall basalt clusters at 7.5 m, two ridges on the wings, four
-low stumps further out. None of it breaks. The floor comes from the caldera's textures and the cover from its props. All first-pass.
+The boss rooms are where the bosses live, not duel arenas (user, 2026-11-07). Neither is in `ARENAS`, so no duel picks them. **The cover is
+where it was** (spots and sizes): the moves were tuned on it. Each has its own prop kit, loaded with `loadKit` (`src/arenas/temple.ts`), built by
+`blender/arenas/sanctum_props.py` and `den_props.py`; sheets in `docs/arenas/`.
 
-## The Sun Court
+**The Sun Court, the Warden's sanctum** (`src/arenas/suncourt.ts`). Radius 16 against a duel ring's 12, under an eclipse. Six screen walls at
+6.5 m become carved sun-stone slabs (whole, cracked, rubble, through `templeCover` with the sanctum's kit), eight columns at 11 m become sun
+obelisks, the altar in the middle is the Sun Well where shards are delivered, and the rim's bowls are sun bowls. The floor is his sundial:
+hour stones, the gnomon's shadow frozen when the sun fell, and thin cracks of warm light toward the north (not gold: gold on this floor means a
+zone to stand in). Past the north gate his empty throne; obelisks and broken sun arches along the sides; rocks like his own drifting round;
+motes of light rising.
 
-`src/arenas/suncourt.ts`: the Warden's own room (user, 2026-11-06). It is not in `ARENAS`, so no duel picks it. Radius 16 against a
-duel ring's 12, under an eclipse. Six screen walls at 6.5 m and eight columns at 11 m, with the altar in the middle, and both heroes
-start on the south side. The floor and rim are drawn in code; the cover and backdrop are the temple's sculpted props (`templeCover`).
-The floor is cool and dark on purpose, so orange and gold stand out on it. All first-pass, for the artist to direct.
+**The Cinder Pit, Ash and Ember's den** (`src/arenas/cinderpit.ts`). Radius 16, a floor of black glass plates over the buried sun, its light
+coming up through thin seams, brightest in the middle, and Ash's claw marks across it. Four obsidian spires at 7.5 m, two slag walls on the wings,
+four anvil stones with live coals further out; none of it breaks. Ember's lantern perches on the lip at the five spots the one on the rim can
+stand (their tops at 0.7 m). Out in the lava the fallen sun's shard, the ribs of something that burned, lantern posts on the far side, rocks;
+embers rising.
 
 ## Two screens
 
@@ -259,7 +273,7 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **A reward rides on the brain's screen.** If that player leaves between a mechanic and its reward, the reward is lost.
 - **The bodies' poses were judged on screen only in passing** (a fight each, desktop and phone size). Glow strengths come from the Blender
   file and may need tuning against the game's bloom; Ash's core is the brightest.
-- **Ash's model is wider than his body** (1.3 m): his forearms reach about 2.5 m out, and a hit on a forearm counts only where the body is.
+- **Ash's body is 1.8 m wide for hits,** his forearms reach about 2.5 m: a hit on a fist's tip still misses.
 - **The hall's cards are page elements over the 3D**, placed each frame. On a small phone they can sit over each other near the edge.
 - **A summoner's partner sees fewer bodies:** units are raised only on their owner's screen.
 - **Marks, stacks and meters stay on their owner's screen.** The partner's bar shows HP only.
