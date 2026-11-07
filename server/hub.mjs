@@ -8,7 +8,7 @@
 // landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
-import { PROTOCOL, RAID_BOSSES, RAID_REWARDS, RAID_RUN, RELOAD_TEXT, raidHp } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_REWARDS, RAID_RUN, RELOAD_TEXT, raidHp } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
@@ -73,6 +73,8 @@ const STOOD_WAIT_MS = 1500;
 // The run: how long the pick lasts (a client takes the first when time runs out, and the hub waits a little longer), how long a
 // fallen boss stays on screen, and how long the clear screen waits before the run ends there.
 const OFFER_S = 30;
+/** How long the gate waits for a hero to walk in, once all have picked (s). */
+const GATE_S = 15;
 const OFFER_GRACE_MS = 2000;
 const WON_PAUSE_MS = 2200;
 const CLEARED_WAIT_S = 30;
@@ -260,7 +262,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       case 'move': {
         const match = c.match;
         if (!match || match.state === 'over' || !num(m.x) || !num(m.z)) return;
-        const p = clampRing(m.x, m.z, match.boss ? RAID_BOSSES[match.boss.id].ring : RING.r);
+        const hall = match.state === 'offer' || match.state === 'gate';
+        const p = clampRing(m.x, m.z, hall ? RAID_HALL_RING : match.boss ? RAID_BOSSES[match.boss.id].ring : RING.r);
         return send(match.players[1 - c.side].client, {
           t: 'peer_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined,
           r: num(m.r) ? Math.max(0, Math.min(1000, m.r)) : undefined,
@@ -547,7 +550,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const match = c.match, run = match?.run;
         if (!match || !run || match.state !== 'offer') return;
         run.picks.add(c.side);
-        if (match.players.every((p, side) => p.left || run.picks.has(side))) raidStage(match);
+        if (match.players.every((p, side) => p.left || run.picks.has(side))) raidGate(match);
+        return;
+      }
+      case 'raid_enter': {
+        // This hero walked into the open gate. The fight starts once all are in, or when the gate's time runs out.
+        const match = c.match, run = match?.run;
+        if (!match || !run || match.state !== 'gate') return;
+        run.enters.add(c.side);
+        if (match.players.every((p, side) => p.left || run.enters.has(side))) raidStage(match);
         return;
       }
       case 'raid_next': {
@@ -821,7 +832,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       })),
       state: 'offer', created: Date.now(), startedAt: 0, fightAt: 0, round: 1, score: [0, 0], timer: null, pick: null, picked: null,
       boss: newBoss(id, true, 1, 0),
-      run: { stage: RAID_RUN.indexOf(id), tier: 1, beaten: 0, seconds: 0, picks: new Set(), goes: new Set() },
+      run: { stage: RAID_RUN.indexOf(id), tier: 1, beaten: 0, seconds: 0, picks: new Set(), enters: new Set(), goes: new Set() },
     };
     match.players.forEach((p, side) => {
       p.client.match = match;
@@ -847,7 +858,17 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     match.state = 'offer';
     run.picks = new Set();
     for (const p of match.players) send(p.client, { t: 'raid_offer', stage: run.stage, tier: run.tier, boss: RAID_RUN[run.stage], seconds: OFFER_S });
-    match.timer = setTimeout(() => { if (match.state === 'offer') raidStage(match); }, OFFER_S * 1000 + OFFER_GRACE_MS);
+    match.timer = setTimeout(() => { if (match.state === 'offer') raidGate(match); }, OFFER_S * 1000 + OFFER_GRACE_MS);
+  }
+
+  /** All have picked: the gate opens, and they walk in. Whoever doesn't is brought along. @param {Match} match */
+  function raidGate(match) {
+    const run = /** @type {NonNullable<Match['run']>} */ (match.run);
+    clearTimeout(match.timer);
+    match.state = 'gate';
+    run.enters = new Set();
+    for (const p of match.players) send(p.client, { t: 'raid_gate', seconds: GATE_S });
+    match.timer = setTimeout(() => { if (match.state === 'gate') raidStage(match); }, GATE_S * 1000);
   }
 
   /** A fight starts loading: everyone at full HP, the boss new, whoever is left runs its brain. @param {Match} match */

@@ -26,6 +26,9 @@ export const RAID_REWARDS = {
   ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 } },
 };
 
+/** How far Noonfall's hall reaches, where a run waits between its fights (m). */
+export const RAID_HALL_RING = 13;
+
 /** The bosses of one tier of a run, in order. */
 export const RAID_RUN = ['sun', 'ash'];
 

@@ -704,6 +704,23 @@ export class HeroMode implements TouchTarget {
 
   // --- orders -------------------------------------------------------------------------------------------
 
+  /** Walks there, as a click on the ground does (a tap on something in the world that isn't the ground). */
+  walkTo(x: number, z: number) {
+    if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
+    this.pending = null;
+    this.clearAttack();
+    this.moveTo = new THREE.Vector3(x, 0, z);
+    this.mark(this.moveTo, MOVE_MARK);
+  }
+
+  /** Only walking (Noonfall's hall): the spell panel goes, and spells and attacks stay off. */
+  setWalkOnly(on: boolean) {
+    this.walkOnly = on;
+    this.attacksEnabled = !on;
+    this.hud.style.visibility = on ? 'hidden' : '';
+  }
+  private walkOnly = false;
+
   /** Click on the ground (not aiming): walk there, and forget a pending cast. */
   private order() {
     if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
@@ -721,7 +738,7 @@ export class HeroMode implements TouchTarget {
   }
 
   private beginAim(i: number) {
-    if (this.locked || this.spectate) return;
+    if (this.locked || this.spectate || this.walkOnly) return;
     const spell = this.kit.spells[i];
     if (this.status.cannotCast) { this.say(this.status.stunned ? 'Stunned' : 'Silenced'); return; }
     const recast = !!this.traits?.canRecast(i);

@@ -1,13 +1,13 @@
 import { RAID_RUN, raidTierFactor } from '../../server/protocol.mjs';
 import type { GameApi } from '../runtime';
 import { nextPaint, sleep, type LoadingScreen } from '../game/loading';
+import { RaidHall, fadeTo } from './hall';
 import { LocalLink } from './link';
-import { OfferScreen } from './offer';
 import { BOSSES } from './bosses';
 import { RunUpgrades, offersFor } from './upgrades';
 
-/** The loading page stays up at least this long, so it can be read and never just flickers. */
-const LOADING_MIN = 900;
+/** The loading page only shows when a room takes longer than this to load (ms). */
+const SLOW_LOAD = 1200;
 /** How long a fallen boss stays on screen before the pick. */
 const WON_PAUSE = 2200;
 const PICK_SECONDS = 30;
@@ -41,7 +41,7 @@ function loadBest(): RaidScore | null {
 export class RaidRun {
   active = false;
   private leave: HTMLButtonElement;
-  private offers = new OfferScreen(() => this.askLeave());
+  private hall: RaidHall;
   private hero = '';
   private stage = 0;
   private tier = 1;
@@ -59,6 +59,7 @@ export class RaidRun {
     private loading: LoadingScreen,
     private ui: { onEnter(): void; onExit(): void },
   ) {
+    this.hall = new RaidHall(api);
     this.leave = document.createElement('button');
     this.leave.className = 'btn ghost forfeit raid-leave';
     this.leave.textContent = 'Leave';
@@ -120,24 +121,38 @@ export class RaidRun {
     this.offer();
   }
 
-  /** The pick before a fight. */
+  /** The hall before a fight: walk to an altar, then through the gate. */
   private offer() {
     const kit = this.api.kits.find((k) => k.name === this.hero);
     const def = BOSSES[RAID_RUN[this.stage]];
     if (!kit || !def) return;
     const run = this.run;
     this.loading.hide();
-    this.offers.show({
-      title: 'Choose an upgrade',
-      line: `Next: ${def.name}${this.tier > 1 ? `, tier ${this.tier}` : ''}. You keep it for the whole run.`,
+    this.leave.style.display = '';
+    void this.hall.enter({
+      hero: this.hero, side: 0, solo: true, next: def, tier: this.tier, seconds: PICK_SECONDS, seed: `${this.seed}-hall`,
       offers: offersFor(kit, this.upgrades, `${this.seed}-${this.tier}-${this.stage}`),
-      seconds: PICK_SECONDS,
-    }, (u) => {
-      if (run !== this.run || !this.active) return;
-      this.upgrades.add(u.id);
-      this.offers.hide();
-      void this.fight();
+      pick: (u) => {
+        if (run !== this.run || !this.active) return;
+        this.upgrades.add(u.id);
+        this.hall.openGate();
+      },
+      enter: () => {
+        if (run === this.run && this.active) void this.fight();
+      },
+    }, (when) => this.ready(when, { mine: kit, title: 'Noonfall', line: 'Loading the hall' }));
+  }
+
+  /** Waits for what is loading. The loading page only shows if it takes a while, so a gate stays a gate. */
+  private async ready(when: Promise<void>, page: Parameters<LoadingScreen['show']>[0]) {
+    let waiting = true;
+    const slow = sleep(SLOW_LOAD).then(() => {
+      if (waiting) this.loading.show(page);
     });
+    await when;
+    waiting = false;
+    void slow;
+    this.loading.hide();
   }
 
   private async fight() {
@@ -145,7 +160,9 @@ export class RaidRun {
     const def = BOSSES[RAID_RUN[this.stage]];
     const run = ++this.run;
     const link = new LocalLink(def, this.tier);
-    this.loading.show({ mine: api.kits.find((k) => k.name === this.hero), theirs: def.kit(link.maxHp), title: def.name, line: 'Loading the arena', note: this.tier > 1 ? `Tier ${this.tier}: shown times ${Math.round((1 - raidTierFactor(this.tier)) * 100)} % shorter` : undefined });
+    await fadeTo(true);
+    if (run !== this.run) return;
+    this.hall.close();
     await nextPaint();
     if (run !== this.run) return;
     if (api.duel.on) api.duel.stop();
@@ -157,10 +174,10 @@ export class RaidRun {
       card: (result, seconds) => this.card(result, seconds),
     });
     this.leave.style.display = '';
-    this.loading.setLine('Loading the heroes');
-    await Promise.all([api.duel.whenReady(), sleep(LOADING_MIN)]);
+    await this.ready(api.duel.whenReady(), { mine: api.kits.find((k) => k.name === this.hero), theirs: def.kit(link.maxHp), title: def.name, line: 'Loading the arena', note: this.tier > 1 ? `Tier ${this.tier}: shown times ${Math.round((1 - raidTierFactor(this.tier)) * 100)} % shorter` : undefined });
     if (run !== this.run) return;
-    this.loading.hide();
+    await fadeTo(false);
+    if (run !== this.run) return;
     api.duel.countdownFrom(3);
   }
 
@@ -198,7 +215,8 @@ export class RaidRun {
     this.saveBest();
     this.active = false;
     this.run++;
-    this.offers.hide();
+    this.hall.close();
+    void fadeTo(false, 0);
     this.loading.hide();
     this.leave.style.display = 'none';
     this.api.duel.stop();

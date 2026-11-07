@@ -601,6 +601,8 @@ export class Duel {
       this.rimFigure.preload(forms[0].kit(o.link.maxHp).model ?? '');
       this.figure.preload(other.model ?? '');
     }
+    // Noonfall's hall: only walking, and no bars.
+    if (o.def.hall) hm.setWalkOnly(true);
     // A phone held upright sees about 14 m across a floor of 32: it starts from as far back as the camera goes.
     if (!run && TOUCH && hm.portrait && this.zoomBefore === null) this.zoomBefore = hm.setZoom(1.7);
     this.names = [o.name ?? '', o.partner?.name ?? ''];
@@ -631,6 +633,12 @@ export class Duel {
       this.raidCast(slot, target);
     };
     this.renderHud();
+    if (o.def.hall) this.hud.style.display = 'none';
+  }
+
+  /** A hero stands in Noonfall's hall, between fights. */
+  get inHall() {
+    return !!this.bossDef?.hall;
   }
 
   /** This hero cast in a raid for two: the partner's screen replays it. */
@@ -1005,6 +1013,7 @@ export class Duel {
     this.bossCard = null;
     this.shiftOffset = 0;
     this.host.heroMode.speedBonus = 1;
+    this.host.heroMode.setWalkOnly(false);
     if (this.zoomBefore !== null) {
       this.host.heroMode.setZoom(this.zoomBefore);
       this.zoomBefore = null;
@@ -2081,6 +2090,7 @@ export class Duel {
       }
       return;
     }
+    if (this.inHall) return;
     const sees = this.host.arena.lineOfSight(me, at);
     const theirs = this.host.arena.statusOf(foe);
     if (!st.cannotCast && !this.boss?.script.wary) {

@@ -264,6 +264,8 @@ export interface BossPhase {
 
 export interface BossDef {
   id: string;
+  /** Not a boss: Noonfall's hall, on the same path, with no bars, no spells and nothing to fight (src/raid/hall.ts). */
+  hall?: boolean;
   name: string;
   title: string;
   /** Its own room: not one of the duel arenas, so no duel picks it. */

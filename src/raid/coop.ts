@@ -4,14 +4,14 @@ import type { HeroKit } from '../heroes';
 import type { NetClient, Profile, ServerMsg } from '../net/client';
 import type { GameApi } from '../runtime';
 import { BOSSES } from './bosses';
+import { RaidHall, fadeTo } from './hall';
 import { NetLink } from './net';
-import { OfferScreen } from './offer';
 import { scoreText, type RaidScore } from './run';
 import { RunUpgrades, offersFor } from './upgrades';
 
 const MOVE_HZ = 20;
-/** The loading page stays up at least this long, so it can be read and never just flickers. */
-const LOADING_MIN = 700;
+/** The loading page only shows when a room takes longer than this to load (ms). */
+const SLOW_LOAD = 1200;
 /** This hero's HP goes to the partner's bar at most this often (ms). */
 const HP_MS = 200;
 
@@ -31,7 +31,7 @@ export class RaidController {
   private link: NetLink | null = null;
   private run = 0;
   private leave: HTMLButtonElement;
-  private offers = new OfferScreen(() => this.askLeave());
+  private hall: RaidHall;
   /** The clear screen: seconds left to go on, and whether this player has said so. */
   private clearLeft = 0;
   private clearTimer = 0;
@@ -54,6 +54,7 @@ export class RaidController {
     private loading: LoadingScreen,
     private ui: { onEnter(): void; onExit(): void; onProfile(p: Profile): void; toast(text: string): void },
   ) {
+    this.hall = new RaidHall(api);
     this.leave = document.createElement('button');
     this.leave.className = 'btn ghost forfeit raid-leave';
     this.leave.textContent = 'Leave';
@@ -72,12 +73,14 @@ export class RaidController {
     const fight = () => (this.active ? api.duel.boss : null);
     net.on('raid_start', (m) => this.start(m));
     net.on('raid_offer', (m) => this.offer(m));
+    net.on('raid_gate', (m) => { if (this.active) this.hall.openGate(m.seconds); });
     net.on('raid_stage', (m) => void this.stage(m));
     net.on('raid_won', (m) => this.won(m));
     net.on('match_fight', (m) => {
       if (!this.active) return;
       this.run++;
       loading.hide();
+      void fadeTo(false);
       api.duel.countdownFrom(m.countdown);
     });
     net.on('peer_move', (m) => { if (this.active) api.duel.partnerMove(m.x, m.z, m.yaw, m.ts); });
@@ -138,25 +141,52 @@ export class RaidController {
     this.ui.onEnter();
   }
 
-  /** The pick before a fight. The screen takes the first when time runs out; the hub waits a little longer. */
+  /** The hall before a fight. It takes the first upgrade when time runs out; the hub waits a little longer. */
   private offer(m: Extract<ServerMsg, { t: 'raid_offer' }>) {
     if (!this.active || !this.mine) return;
     const { api, net } = this, def = BOSSES[m.boss], run = ++this.run;
     clearInterval(this.clearTimer);
     if (api.duel.on) api.duel.stop();
-    this.leave.style.display = 'none';
+    this.leave.style.display = '';
     this.loading.hide();
-    this.offers.show({
-      title: 'Choose an upgrade',
-      line: `Next: ${def?.name ?? 'the boss'}${m.tier > 1 ? `, tier ${m.tier}` : ''}. You keep it for the whole run.`,
-      offers: offersFor(this.mine, this.upgrades, `${this.match}-${this.side}-${m.tier}-${m.stage}`),
-      seconds: m.seconds,
+    if (!def) {
+      this.ui.toast('This raid needs a newer page: reload');
+      return;
+    }
+    clearInterval(this.moveTimer);
+    this.link = null;
+    const mine = this.mine;
+    void this.hall.enter({
+      hero: mine.name, name: this.myName, partner: this.partner ?? undefined, side: this.side, solo: !this.partner, next: def, tier: m.tier, seconds: m.seconds,
+      seed: `${this.match}-hall`, offers: offersFor(mine, this.upgrades, `${this.match}-${this.side}-${m.tier}-${m.stage}`),
       waiting: this.partner ? `Waiting for ${this.partner.name}` : undefined,
-    }, (u) => {
+      pick: (u) => {
+        if (run !== this.run || !this.active) return;
+        this.upgrades.add(u.id);
+        net.send({ t: 'raid_pick' });
+      },
+      enter: () => {
+        if (this.active) net.send({ t: 'raid_enter' });
+      },
+    }, (when) => this.ready(when, { mine, title: 'Noonfall', line: 'Loading the hall' })).then(() => {
       if (run !== this.run || !this.active) return;
-      this.upgrades.add(u.id);
-      net.send({ t: 'raid_pick' });
+      this.lastSent = '';
+      clearInterval(this.moveTimer);
+      this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
+      this.sendMove();
     });
+  }
+
+  /** Waits for what is loading. The loading page only shows if it takes a while, so a gate stays a gate. */
+  private async ready(when: Promise<void>, page: Parameters<LoadingScreen['show']>[0]) {
+    let waiting = true;
+    const slow = sleep(SLOW_LOAD).then(() => {
+      if (waiting) this.loading.show(page);
+    });
+    await when;
+    waiting = false;
+    void slow;
+    this.loading.hide();
   }
 
   private async stage(m: Extract<ServerMsg, { t: 'raid_stage' }>) {
@@ -168,11 +198,10 @@ export class RaidController {
     const run = ++this.run;
     clearInterval(this.clearTimer);
     this.score.tier = m.tier;
-    this.offers.hide();
-    this.loading.show({
-      mine, theirs: def.kit(m.hp), names: [this.myName, def.title], title: def.name, line: 'Loading the arena',
-      note: this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : undefined,
-    });
+    clearInterval(this.moveTimer);
+    await fadeTo(true);
+    if (run !== this.run || !this.active) return;
+    this.hall.close();
     await nextPaint();
     if (run !== this.run || !this.active) return;
     if (api.duel.on) api.duel.stop();
@@ -190,10 +219,11 @@ export class RaidController {
     clearInterval(this.moveTimer);
     this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
     this.sendMove();
-    this.loading.setLine('Loading the heroes');
-    await Promise.all([api.duel.whenReady(), sleep(LOADING_MIN)]);
+    await this.ready(api.duel.whenReady(), {
+      mine, theirs: def.kit(m.hp), names: [this.myName, def.title], title: def.name, line: 'Loading the arena',
+      note: this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : undefined,
+    });
     if (run !== this.run || !this.active) return;
-    this.loading.setLine(this.partner ? `Waiting for ${this.partner.name}` : 'Starting');
     net.send({ t: 'match_loaded', maxHp: api.duel.heroMax });
   }
 
@@ -268,13 +298,12 @@ export class RaidController {
     this.over = true;
     this.score = { tier: m.tier, bosses: m.bosses, seconds: m.seconds };
     this.loading.hide();
-    this.offers.hide();
     clearInterval(this.moveTimer);
     clearInterval(this.clearTimer);
     this.leave.style.display = 'none';
     const { duel } = this.api, text = `The run ends. ${scoreText(this.score)}`;
     // On the clear screen the fight is already over: only the button to go on goes.
-    if (duel.boss && !duel.isOver) this.link?.on.end(m.result === 'cleared' ? 'win' : 'lose');
+    if (duel.boss && !duel.isOver && !duel.inHall) this.link?.on.end(m.result === 'cleared' ? 'win' : 'lose');
     else if (duel.cardShown) duel.waitingOn(text, true);
     else {
       // Between fights there is no card to say it on.
@@ -289,7 +318,8 @@ export class RaidController {
     this.active = false;
     this.run++;
     this.loading.hide();
-    this.offers.hide();
+    this.hall.close();
+    void fadeTo(false, 0);
     clearInterval(this.moveTimer);
     clearInterval(this.clearTimer);
     this.leave.style.display = 'none';

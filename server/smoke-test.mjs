@@ -348,6 +348,12 @@ try {
     h.send({ t: 'lobby_ready', ready: true });
     const rg = await g.next('raid_start'), rh = await h.next('raid_start');
     check(rg.side === 0 && rh.side === 1 && rg.partner.hero === 'Bram' && rh.partner.hero === 'Lyra', 'a raid starts with both heroes');
+    // After both have picked the gate opens, and both walk in.
+    const through = async () => {
+      await g.next('raid_gate');
+      g.send({ t: 'raid_enter' });
+      h.send({ t: 'raid_enter' });
+    };
     // The pick first: the hub waits for both, then the first boss.
     const off = await g.next('raid_offer');
     check(off.stage === 0 && off.tier === 1 && off.boss === 'sun' && off.seconds === 30, 'the run opens with a pick');
@@ -355,6 +361,11 @@ try {
     g.send({ t: 'raid_pick' });
     await wait(200);
     h.send({ t: 'raid_pick' });
+    const gate = await g.next('raid_gate');
+    check(gate.seconds === 15, 'both picked: the gate opens, and nobody is fighting yet');
+    g.send({ t: 'raid_enter' });
+    await wait(150);
+    h.send({ t: 'raid_enter' });
     const st = await g.next('raid_stage');
     check(st.boss === 'sun' && st.hp === 6500 && st.brain === 0, 'both picked: the first boss loads');
     await h.next('raid_stage');
@@ -452,6 +463,7 @@ try {
     check(off2.stage === 1 && off2.boss === 'ash', 'the next pick is for the second boss');
     g.send({ t: 'raid_pick' });
     h.send({ t: 'raid_pick' });
+    await through();
     const st2 = await g.next('raid_stage');
     check(st2.boss === 'ash' && st2.hp === 7000, 'the second boss loads at its own HP');
     g.send({ t: 'match_loaded', maxHp: 520 });
@@ -480,6 +492,7 @@ try {
     await h.next('raid_offer');
     g.send({ t: 'raid_pick' });
     h.send({ t: 'raid_pick' });
+    await through();
     const st3 = await g.next('raid_stage');
     check(st3.hp === 7475, 'a tier adds 15 % to the boss');
     g.send({ t: 'match_loaded', maxHp: 520 });
@@ -511,6 +524,7 @@ try {
     await h.next('raid_offer');
     g.send({ t: 'raid_pick' });
     h.send({ t: 'raid_pick' });
+    await through();
     await g.next('raid_stage');
     await h.next('raid_stage');
     g.send({ t: 'match_loaded', maxHp: 520 });
@@ -550,6 +564,7 @@ try {
     await h.next('raid_offer');
     g.send({ t: 'raid_pick' });
     h.send({ t: 'raid_pick' });
+    await through();
     await g.next('raid_stage');
     await h.next('raid_stage');
     g.send({ t: 'match_loaded', maxHp: 520 });
@@ -605,6 +620,8 @@ try {
     await h.next('partner_left');
     check(true, 'the other leaves at the pick: a hero who was down goes on alone');
     h.send({ t: 'raid_pick' });
+    await h.next('raid_gate');
+    h.send({ t: 'raid_enter' });
     // Older runs' stages are still in the inbox.
     let st4;
     do st4 = await h.next('raid_stage', 5000);

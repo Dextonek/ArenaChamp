@@ -56,8 +56,10 @@ export class BossFight {
       wall: (i) => world.breakWall(i),
       end: (r) => this.end(r),
     };
-    hud.show(def);
-    hud.setHp(link.maxHp, link.maxHp);
+    if (!def.hall) {
+      hud.show(def);
+      hud.setHp(link.maxHp, link.maxHp);
+    }
   }
 
   private onCast(c: BossCast) {
