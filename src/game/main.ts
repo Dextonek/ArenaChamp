@@ -23,9 +23,6 @@ import { SUN_WARDEN } from '../raid/sunWarden';
 
 type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid';
 
-/** The Raid only shows at `/game?raid` until both its screens are done (pipeline/designs/raid-build.md). */
-const RAID_ON = new URLSearchParams(location.search).has('raid');
-
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
 const gameApi: GameApi = createRuntime({ modules: targetedModules, background: true });
@@ -204,7 +201,7 @@ function header() {
     el('button', { class: `nav${state.screen === screen ? ' on' : ''}`, onclick: () => go(screen) }, label);
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu'), nav('vs CPU', 'cpu'), RAID_ON ? nav('Raid', 'raid') : null, nav('Lobbies', state.lobby ? 'lobby' : 'lobbies'), nav('Heroes', 'heroes'), nav('Profile', 'profile')),
+    el('nav', {}, nav('Play', 'menu'), nav('vs CPU', 'cpu'), nav('Raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies'), nav('Heroes', 'heroes'), nav('Profile', 'profile')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -235,7 +232,7 @@ function loginScreen() {
     el('p', { class: 'fine' }, 'Your name and record are kept on the game server. Passwords are stored hashed.'),
     el('div', { class: 'or' }, 'or'),
     el('button', { class: 'btn ghost', type: 'button', onclick: () => go('cpu') }, 'Play vs CPU · no account needed'),
-    RAID_ON ? el('button', { class: 'btn ghost', type: 'button', onclick: () => go('raid') }, 'Raid · no account needed') : null,
+    el('button', { class: 'btn ghost', type: 'button', onclick: () => go('raid') }, 'Raid · no account needed'),
   );
   setTimeout(() => name.focus());
   return el('div', { class: 'center login-screen' }, form, heroStrip());

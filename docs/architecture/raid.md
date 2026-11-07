@@ -4,7 +4,7 @@ A boss fight on the duel's vs-CPU path, alone or for two. What the Raid is and w
 The order it was built in and how each piece was checked: [raid-build.md](../../pipeline/designs/raid-build.md). This file says
 how it works now.
 
-It only shows at `/game?raid`, until the user says otherwise (`RAID_ON` in `src/game/main.ts`).
+It shows to everyone: in the top bar, and on the login screen for a raid with no account. An old `/game?raid` link still works, because the page ignores the `?raid`.
 
 ## The run
 
