@@ -105,6 +105,7 @@ export type ServerMsg =
   | { t: 'partner_hp'; hp: number; max: number }
   | { t: 'peer_down'; side: 0 | 1 }
   | { t: 'revived'; side: 0 | 1; hp: number; left: number }
+  | { t: 'peer_debuff'; kind: 'slow' | 'weaken' | 'vulnerable'; amount: number; seconds: number }
   | { t: 'partner_left' }
   | { t: 'boss_brain' }
   | { t: 'raid_end'; result: 'cleared' | 'lost'; tier: number; bosses: number; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }

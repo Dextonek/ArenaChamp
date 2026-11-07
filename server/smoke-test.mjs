@@ -559,6 +559,16 @@ try {
     await wait(3100);
     h.send({ t: 'raid_form', alt: true });
     check((await g.next('peer_form')).alt === true, 'a two-kit hero\'s other half reaches the partner');
+    h.send({ t: 'boss_debuff', kind: 'slow', amount: 0, seconds: 1.5 });
+    const slowed = await g.next('peer_debuff');
+    check(slowed.kind === 'slow' && slowed.seconds === 1.5, 'a slow on the boss reaches the other screen');
+    g.send({ t: 'boss_debuff', kind: 'weaken', amount: 9, seconds: 99 });
+    const capped = await h.next('peer_debuff');
+    check(capped.amount === 0.5 && capped.seconds === 6, 'a debuff on the boss reaches the other screen, capped');
+    h.send({ t: 'boss_debuff', kind: 'stun', amount: 1, seconds: 1 });
+    h.send({ t: 'boss_debuff', kind: 'vulnerable', amount: 0.2, seconds: 'long' });
+    h.send({ t: 'boss_debuff', kind: 'vulnerable', amount: 0.2, seconds: 2 });
+    check((await g.next('peer_debuff')).kind === 'vulnerable', 'a kind it does not know, or a bad number, goes no further');
     g.send({ t: 'boss_cast', id: 70, move: 'tag', step: 0, x: 1, z: 2, fx: 0, fz: -9, dir: 0, seed: 9, target: 0, form: 5 });
     check((await h.next('boss_cast')).form === undefined, 'a cast with a form that does not exist loses it');
     h.send({ t: 'hero_down' });

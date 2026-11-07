@@ -22,7 +22,7 @@ import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
 import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
-import type { BossDef, BossWorld, RaidLink } from './raid/types';
+import type { BossDebuff, BossDef, BossWorld, RaidLink } from './raid/types';
 import type { RunUpgrades } from './raid/upgrades';
 
 /** What the duel needs from main.ts. */
@@ -559,6 +559,7 @@ export class Duel {
     arena.pinned = foe;
     arena.foeFloor = 1;
     arena.onFoeDamage = (target, dealt) => { if (target === foe) this.boss?.damaged(dealt); };
+    arena.onFoeDebuff = (target, kind, amount, seconds) => { if (target === foe) this.boss?.debuffed(kind, amount, seconds); };
     arena.statusGate = (target, kind, seconds) => (target === foe && this.boss ? this.boss.control(kind, seconds) : seconds);
     this.bossHud ??= new BossHud();
     this.boss = new BossFight(o.def, o.link, this.bossWorld(), o.seed, this.bossHud, o.tier ?? 1, o.upgrades ?? null);
@@ -682,6 +683,21 @@ export class Duel {
     const hold = Math.min(impact, 2.5);
     p.figure.cast(castStyle(spell, m.slot, m.enemy, attackFor(p.kit).kind === 'melee', hold), hold, m.slot === 3);
     this.blastWalls(told, spec.mode === 'self' ? told.clone() : new THREE.Vector3(m.x, 0, m.z), spec, spell, m.slot);
+  }
+
+  /** The partner's hero slowed or debuffed the boss: it counts here too, and goes no further. */
+  bossDebuff(kind: BossDebuff, amount: number, seconds: number) {
+    const foe = this.foe, arena = this.host.arena;
+    if (!this.boss || !foe) return;
+    if (kind !== 'slow') {
+      arena.applyBuff(foe, kind, amount, seconds);
+      return;
+    }
+    // The gate has already shortened this slow on the partner's screen, and would pass it back.
+    const gate = arena.statusGate;
+    arena.statusGate = null;
+    arena.applyStatus(foe, 'slow', seconds);
+    arena.statusGate = gate;
   }
 
   /** The partner released a basic attack at the boss: only the look. */
@@ -947,6 +963,7 @@ export class Duel {
     arena.pinned = null;
     arena.foeFloor = 0;
     arena.onFoeDamage = null;
+    arena.onFoeDebuff = null;
     arena.statusGate = null;
     this.hudSides[1].style.display = this.hudVs.style.display = '';
     this.hud.style.flexDirection = 'row';

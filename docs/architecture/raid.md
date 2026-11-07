@@ -175,6 +175,7 @@ of this hero's can target or hit it.
 | A hit on a hero | That hero's own screen | None: each client owns its hero's HP and reports it (`raid_hp`, `partner_hp`) |
 | The boss's HP and phase | The hub | `boss_damage`, then `boss_hp` and `boss_phase` to both |
 | Stagger and kneeling | The hub | `boss_stagger`, then `boss_gauge` and `boss_kneel` to both |
+| Slow, Weakened and Vulnerable on the boss | The screen of the hero who landed it | `boss_debuff`, then `peer_debuff` to the other, which applies it and sends nothing back. The brain's screen walks the boss slower, and both heroes take less and deal more |
 | A gold zone | The hub counts who stood in it | `boss_stood { id, part, inside }`, then `boss_stood { id, part, count }` to both, after both have said or 1 s |
 | A wall that saved someone | The hub, once | `boss_wall { index }` to both |
 | Falling and getting up | The hub keeps who is down | `hero_down`, `peer_down`; `revive`, `revived` |
@@ -207,8 +208,6 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **A Ricochet bolt still cracks the wall it bounces off, and its aim strip stops there.** On the partner's screen it doesn't bounce, since
   the partner's upgrades aren't sent: only the look differs.
 - **A hero's upgrades don't change the partner's replay.** A Glass Edge hit looks the same; the HP comes from the hub.
-- **Slow and weaken on the boss are one screen's.** The walk is slowed only on the screen that runs the brain, so a slow from the other screen
-  shows but does nothing, and a weakened boss hits only the hero who weakened it for less.
 - **A brain in a tab hidden for over 5 minutes nearly stops.** A hidden tab goes on simulating from a timer, about once a second, which works
   (checked: nothing piles up when it comes back). After 5 minutes Chrome slows timers to once a minute, and the boss hardly acts for the other
   player. A phone that freezes the page and drops the socket hands the brain over at once.

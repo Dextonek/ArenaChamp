@@ -48,6 +48,9 @@ export interface BossCast {
   alone?: boolean;
 }
 
+/** What a hero's hit lays on the boss that the other screen needs too: the brain walks it, and each screen takes its hits and deals its own. */
+export type BossDebuff = 'slow' | 'weaken' | 'vulnerable';
+
 /** Pale orange: leave. Gold: stand here. */
 export type ZoneKind = 'leave' | 'stand';
 
@@ -300,6 +303,8 @@ export interface RaidLink {
   heroHp(hp: number): void;
   /** This screen's hero got the fallen partner up. */
   revive(): void;
+  /** This screen's hero slowed or debuffed the boss: the other screen gets it too. */
+  bossDebuff(kind: BossDebuff, amount: number, seconds: number): void;
   /** A two-kit hero on this screen brought in its other half. */
   heroAlt(alt: boolean): void;
   /** This screen's hero cast, or released an attack: the partner's screen replays it. */

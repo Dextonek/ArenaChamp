@@ -59,6 +59,10 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 // it decides. Damage from one screen is capped by the hit and by the second; both hit at most this hard.
 const BOSS_HIT_MAX = 600;
 const BOSS_SECOND_MAX = 1400;
+/** What one hero's hit can lay on the boss for the other screen, and the most it can be: the game's own caps on a buff. */
+const BOSS_DEBUFFS = ['slow', 'weaken', 'vulnerable'];
+const DEBUFF_MAX = 0.5;
+const DEBUFF_MAX_S = 6;
 const BOSS_HP_GAP_MS = 100;
 const STAGGER_MAX = 60;
 const REVIVES = 2;
@@ -518,6 +522,14 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const boss = raidOf(c), match = c.match;
         if (!boss || !match || typeof m.alt !== 'boolean') return;
         return send(match.players[1 - c.side].client, { t: 'peer_form', alt: m.alt });
+      }
+      case 'boss_debuff': {
+        // A hero slowed or debuffed the boss: its own screen has it. The other one walks the boss or takes its hits.
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || !BOSS_DEBUFFS.includes(m.kind) || !num(m.amount) || !num(m.seconds)) return;
+        return send(match.players[1 - c.side].client, {
+          t: 'peer_debuff', kind: m.kind, amount: Math.max(0, Math.min(m.amount, DEBUFF_MAX)), seconds: Math.max(0, Math.min(m.seconds, DEBUFF_MAX_S)),
+        });
       }
       case 'raid_pick': {
         // The upgrade itself stays on the client that took it: the hub only waits for both.

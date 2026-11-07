@@ -121,6 +121,8 @@ export class Arena {
   foeFloor = 0;
   /** What really came off a figure's HP, after its shield. */
   onFoeDamage: ((target: Enemy, dealt: number) => void) | null = null;
+  /** A hit laid a debuff on a foe: not what `applyBuff` gives it any other way. */
+  onFoeDebuff: ((target: Enemy, kind: BuffKind, amount: number, seconds: number) => void) | null = null;
   /** Changes a bolt the hero fires (a raid upgrade: Ricochet). */
   heroBolt: ((po: ProjectileOptions) => ProjectileOptions) | null = null;
   /**
@@ -437,7 +439,7 @@ export class Arena {
     if (soaked > 0) this.say(String(soaked), '#cfe6ff', target.group.position, 0.9);
     if (dealt > 0) this.say(String(dealt), opts.color ?? (big ? '#ffd24a' : '#fff1dc'), target.group.position, big ? 1.5 : 1);
     if (opts.status && f.hp > 0) this.applyStatus(target, opts.status.kind, opts.status.seconds, opts.color);
-    if (opts.debuff && f.hp > 0) this.applyBuff(target, opts.debuff.kind, opts.debuff.amount, opts.debuff.seconds);
+    if (opts.debuff && f.hp > 0 && this.applyBuff(target, opts.debuff.kind, opts.debuff.amount, opts.debuff.seconds)) this.onFoeDebuff?.(target, opts.debuff.kind, opts.debuff.amount, opts.debuff.seconds);
     if (f.hp <= 0) {
       f.dead = 0;
       this.kills++;

@@ -1,17 +1,19 @@
 import * as THREE from 'three';
-import type { StatusKind } from '../effects/status';
+import type { BuffKind, StatusKind } from '../effects/status';
 import { BossBrain } from './brain';
 import { BossHud } from './hud';
 import { Track } from './partner';
 import { raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
 import type { RunUpgrades } from './upgrades';
-import type { BossCast, BossDef, BossWorld, RaidLink } from './types';
+import type { BossCast, BossDebuff, BossDef, BossWorld, RaidLink } from './types';
 
 /** What each hard control is worth to the stagger gauge, per second of it. Blind counts for little. */
 const STAGGER_PER_SECOND: Partial<Record<StatusKind, number>> = { stun: 22, knockup: 26, root: 14, charm: 22, sealed: 22, silence: 12, blind: 8 };
 /** Slow works at half length: a boss can't be walked away from for free. */
 const SLOW_SHARE = 0.5;
+/** A hit's debuffs that count on both screens. The rest (Grounded, say) do nothing to a boss. */
+const SHARED_DEBUFFS: readonly BuffKind[] = ['weaken', 'vulnerable'];
 const spot = new THREE.Vector3();
 
 /**
@@ -125,10 +127,18 @@ export class BossFight {
    * may run (0: not at all).
    */
   control(kind: StatusKind, seconds: number) {
-    if (kind === 'slow') return seconds * SLOW_SHARE;
+    if (kind === 'slow') {
+      this.link.bossDebuff('slow', 0, seconds * SLOW_SHARE);
+      return seconds * SLOW_SHARE;
+    }
     const rate = STAGGER_PER_SECOND[kind];
     if (rate) this.link.stagger(rate * seconds * (this.upgrades?.staggerMul ?? 1));
     return 0;
+  }
+
+  /** A hit from this screen's hero laid this on the boss. */
+  debuffed(kind: BuffKind, amount: number, seconds: number) {
+    if (SHARED_DEBUFFS.includes(kind)) this.link.bossDebuff(kind as BossDebuff, amount, seconds);
   }
 
   /** What really came off the boss's HP on this screen. */

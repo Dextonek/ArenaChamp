@@ -84,6 +84,7 @@ export class RaidController {
     net.on('peer_cast', (m) => { if (this.active) api.duel.partnerCast(m); });
     net.on('peer_attack', () => { if (this.active) api.duel.partnerAttack(); });
     net.on('peer_form', (m) => { if (this.active) api.duel.partnerForm(m.alt); });
+    net.on('peer_debuff', (m) => { if (this.active) api.duel.bossDebuff(m.kind, m.amount, m.seconds); });
     net.on('boss_cast', (m) => { if (this.active) this.link?.on.cast(m); });
     net.on('boss_move', (m) => fight()?.bossMove(m.x, m.z, m.yaw, m.ts));
     net.on('boss_hp', (m) => { if (this.active) this.link?.on.hp?.(m.hp); });

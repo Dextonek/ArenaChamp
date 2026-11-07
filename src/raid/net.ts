@@ -1,5 +1,5 @@
 import type { NetClient } from '../net/client';
-import type { BossCast, RaidEvents, RaidLink, RaidSide } from './types';
+import type { BossCast, BossDebuff, RaidEvents, RaidLink, RaidSide } from './types';
 
 const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, wall() {}, end() {} };
 /** This screen's hits on the boss go out at most this often (s), added up. */
@@ -52,6 +52,10 @@ export class NetLink implements RaidLink {
 
   heroAlt(alt: boolean) {
     this.net.send({ t: 'raid_form', alt });
+  }
+
+  bossDebuff(kind: BossDebuff, amount: number, seconds: number) {
+    this.net.send({ t: 'boss_debuff', kind, amount, seconds });
   }
 
   heroCast(m: Record<string, unknown>) {

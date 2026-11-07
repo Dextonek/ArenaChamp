@@ -511,6 +511,27 @@
       a.applyStatus(d.foe, 'slow', 2);
       step(1.1);
       yes('slow runs at half length', !a.statusOf(d.foe).has('slow'));
+      // What a hero lays on the boss goes to the other screen once, and what comes from there goes no further.
+      const told = [], shared = d.boss.link;
+      shared.bossDebuff = (kind, amount, seconds) => told.push({ kind, amount, seconds });
+      a.applyStatus(d.foe, 'slow', 2);
+      yes('a slow is told to the other screen, already halved', told.length === 1 && told[0].kind === 'slow' && told[0].seconds === 1);
+      told.length = 0;
+      a.hit(d.foe, { damage: 1, knock: 0, debuff: { kind: 'weaken', amount: 0.2, seconds: 2 } });
+      a.hit(d.foe, { damage: 1, knock: 0, debuff: { kind: 'vulnerable', amount: 0.2, seconds: 2 } });
+      a.hit(d.foe, { damage: 1, knock: 0, debuff: { kind: 'grounded', amount: 0.5, seconds: 2 } });
+      yes('a hit\'s weaken and vulnerable are told, nothing else', told.map((t) => t.kind).join() === 'weaken,vulnerable');
+      told.length = 0;
+      d.bossWorld().exposed(1);
+      yes('the boss standing open is not: both screens do that themselves', told.length === 0);
+      told.length = 0;
+      a.clearStatuses(d.foe);
+      d.bossDebuff('slow', 0, 1);
+      d.bossDebuff('weaken', 0.25, 1);
+      yes('from the other screen: it lands, at the length it came with', a.statusOf(d.foe).remaining('slow') === 1 && a.statusOf(d.foe).dealtMul === 0.75);
+      yes('and goes no further', told.length === 0);
+      delete shared.bossDebuff;
+      a.clearStatuses(d.foe);
       for (let i = 0; i < 6; i++) a.applyStatus(d.foe, 'stun', 1.2);
       yes('a full gauge makes him kneel', d.boss.stats.kneels === 1);
       yes('kneeling he takes +50 %', a.statusOf(d.foe).buff('vulnerable') === 0.5);
