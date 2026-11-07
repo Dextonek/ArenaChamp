@@ -349,7 +349,7 @@ export const ASH_AND_EMBER: BossDef = {
       moves: ['slam', 'charge', 'drag'], rimMoves: ['rock'], trail: 'trail',
     },
     {
-      name: 'Ember', kit: kitOf('Ember', 'models/heroes/blood_v2.glb', '#ff8a40'), scale: 1.5, body: { radius: 0.9, height: 4 }, speed: 3, keepAt: 9,
+      name: 'Ember', kit: kitOf('Ember', 'models/heroes/blood_v2.glb', '#ff8a40'), scale: 1.5, body: { radius: 0.9, height: 4 }, speed: 3, keepAt: 9, backAt: 6,
       moves: ['fan', 'marked', 'bombs', 'wave'], rimMoves: ['fan', 'bombs'],
     },
   ],

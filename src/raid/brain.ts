@@ -7,6 +7,12 @@ import type { BossCast, BossDef, BossMove, BossWorld, RaidLink, RaidSide } from 
 const TRAIL_STEP = 2.4;
 /** How far from the middle a tag lands at most (m). */
 const LAND_REACH = 6;
+/** How far ahead a boss backing away aims (m), how far it keeps from the edge of the floor, and how short a step isn't worth taking. */
+const BACK_AIM = 2.5;
+const BACK_EDGE = 2;
+const BACK_STILL = 0.4;
+/** How fast it backs away, as a share of its walk. */
+const BACK_PACE = 0.8;
 
 interface Pending {
   at: number;
@@ -143,7 +149,22 @@ export class BossBrain {
         const m = this.def.moves[form.trail];
         if (m) this.send(m, 0, Math.floor(this.rng() * 2147483647), target.side, up.length < 2, false);
       }
-    } else this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
+    } else if (dist < (form?.backAt ?? 0)) this.backAway(dt, target, speed);
+    else this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
+  }
+
+  /** A step straight away from the target, still facing it, and along the edge of the floor when that is in the way. Cornered, it stands. */
+  private backAway(dt: number, target: { x: number; z: number }, speed: number) {
+    const boss = this.world.boss(), floor = this.world.floor();
+    const off = Math.hypot(boss.x - target.x, boss.z - target.z) || 1, k = BACK_AIM / off;
+    let x = boss.x + (boss.x - target.x) * k, z = boss.z + (boss.z - target.z) * k;
+    const dx = x - floor.x, dz = z - floor.z, far = Math.hypot(dx, dz), reach = floor.r - BACK_EDGE;
+    if (far > reach) {
+      x = floor.x + (dx / far) * reach;
+      z = floor.z + (dz / far) * reach;
+    }
+    if (Math.hypot(x - boss.x, z - boss.z) > BACK_STILL) this.world.walk(dt, x, z, speed * BACK_PACE);
+    this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
   }
 
   /** What this form can do, in the ring or from the rim, with what a higher tier adds to it. */

@@ -141,6 +141,9 @@ now and then. Alone 3,300 HP, for two 7,000. The one in the ring aims at the nea
 | | Lava Wave | 2.5 s | 16 % | A ring grows from the vent. Walk through the gold gap, which turns |
 | Both | Tag | 1.5 s | 12 % | Leave the circle where the next one lands |
 
+**Ember backs away.** She wants 9 m. With a hero under 6 m she steps back between her moves, at 2.4 m/s against a hero's 4 or more, so she can always be caught,
+above all during a cast, when she stands still (`BossForm.backAt`). She keeps off the floor's edge and off the rising lava, and stands when cornered.
+
 **How it stays within the rules.** A tag is a cast, so both screens swap at one moment. Marked's circle follows its target as a look only:
 what counts is its second step, at the spot the brain read. Only the brain's screen moves Ash down his Charge (`BossMove.act`), and it says in
 the cast whether he hit cover, so each screen doesn't judge that for itself. The one on the rim is a `HeroFigure` the duel only draws.
@@ -209,7 +212,6 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **A brain in a tab hidden for over 5 minutes nearly stops.** A hidden tab goes on simulating from a timer, about once a second, which works
   (checked: nothing piles up when it comes back). After 5 minutes Chrome slows timers to once a minute, and the boss hardly acts for the other
   player. A phone that freezes the page and drops the socket hands the brain over at once.
-- **Ember doesn't back away.** She wants 9 m, but with a hero closer than that she stands and casts. Tuning, not a fault.
 
 ## Tools
 

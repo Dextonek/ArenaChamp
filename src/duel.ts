@@ -848,6 +848,7 @@ export class Duel {
         if (move.lengthSq() > 0) arena.moveFoe(foe, move.multiplyScalar(speed * (arena.statusOf(foe)?.speedMul ?? 1) * dt), !this.opponentAi.routed);
       },
       face: (yaw) => { foe.group.rotation.y = yaw; },
+      floor: () => arena.aiBounds ?? arena.bounds ?? { x: RING.x, z: RING.z, r: RING.r },
       pose: (style, seconds, big) => this.figure.cast(style, seconds, big),
       poseRim: (style, seconds, big) => this.rimFigure?.cast(style, seconds, big),
       tag: (form, x, z, rx, rz) => this.bossTag(form, x, z, rx, rz),

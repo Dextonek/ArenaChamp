@@ -188,6 +188,8 @@ export interface BossForm {
   body: { radius: number; height: number };
   speed: number;
   keepAt: number;
+  /** A hero closer than this (m) and it backs away, between its moves. Slower than a hero, so it can always be caught. */
+  backAt?: number;
   moves: string[];
   rimMoves: string[];
   /** The move it leaves behind as it walks (Burning Trail). */
@@ -315,6 +317,8 @@ export interface BossWorld {
   boss(): THREE.Vector3;
   walk(dt: number, x: number, z: number, speed: number): void;
   face(yaw: number): void;
+  /** The floor that doesn't hurt: how far out a boss backing away may go. */
+  floor(): { x: number; z: number; r: number };
   pose(style: CastStyle, seconds: number, big: boolean): void;
   /** The same for the one on the rim. */
   poseRim(style: CastStyle, seconds: number, big: boolean): void;
