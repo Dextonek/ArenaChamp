@@ -3,6 +3,7 @@
  * data only; a new hero is a new entry here, its spells are ordinary registered effects (looked up by label).
  */
 import type { BuffKind } from './effects/status';
+import type { BodyLook } from './raid/bodies/look';
 import type { Trait } from './traits/types';
 import { alchemyKit } from './kits/alchemy';
 import { sandKit } from './kits/sand';
@@ -98,6 +99,8 @@ export interface HeroSpell {
 }
 
 export interface HeroKit {
+  /** A boss with a body of its own, not a hero's rig: poses its rigid parts (src/raid/bodies). */
+  look?: BodyLook;
   name: string;
   title: string;
   /** Accent colour of the bar and the aim indicators (css). */

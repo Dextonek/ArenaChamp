@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { HERO_SCALE, Hero, type BoneName } from './effects/weapons/hero';
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
+import { BodyParts, type BodyLook } from './raid/bodies/look';
 import { traitFor } from './traits';
 
 const AX = new THREE.Vector3(1, 0, 0);
@@ -117,6 +118,12 @@ const TURN_RATE = 30;
 /** Figures painted so pale that the game's bloom turns them into a white glow: drawn darker. */
 const MODEL_SHADE: Record<string, number> = { 'models/heroes/ink.glb': 0.62 };
 
+/** A boss's own body has no bones to pose: it has a look instead. */
+interface BodyNow {
+  look: BodyLook;
+  phase: number;
+}
+
 /**
  * A hero's rigged figure standing in for a capsule figure (the player's caster in hero mode, the opponent in a duel).
  * `setModel(url, at, kit)` swaps the model (cached per url); `follow(...)` every frame places it and poses it,
@@ -191,9 +198,34 @@ export class HeroFigure {
     return !!this.figure;
   }
 
+  private body: BodyNow | null = null;
+  private bodyParts = new Map<Hero, BodyParts>();
+
+  /** Which phase of its fight a boss's body shows. */
+  setBodyPhase(phase: number) {
+    if (this.body) this.body.phase = phase;
+  }
+
+  /** Poses a boss's body in place of a hero's walk, flinch and cast. */
+  private poseBody(f: Hero, body: BodyNow, dt: number, pos: THREE.Vector3, state: FigureState) {
+    this.hitV += (-150 * this.hitA - 15 * this.hitV) * dt;
+    this.hitA += this.hitV * dt;
+    if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.3) this.castNow = null;
+    f.root.position.set(pos.x, pos.y, pos.z);
+    if (!f.loaded) return;
+    let parts = this.bodyParts.get(f);
+    if (!parts) this.bodyParts.set(f, (parts = new BodyParts(f.root)));
+    parts.reset();
+    body.look({
+      dt, time: this.clock, fwd: this.fwd, side: this.side, speed: this.vel.length(), moving: this.moving, cast: this.castNow,
+      hit: this.hitA, kneeling: !!state.status?.stunned, phase: body.phase, fall: this.dying,
+    }, parts);
+  }
+
   /** Shows the model at `url` (undefined hides the figure), styled after `kit`. Returns whether one is shown. */
   setModel(url: string | undefined, at?: THREE.Vector3, kit?: HeroKit) {
     for (const f of this.figures.values()) f.root.visible = false;
+    if (kit?.look !== this.body?.look) this.body = kit?.look ? { look: kit.look, phase: this.body?.phase ?? 0 } : null;
     this.shownYaw = NaN;
     this.figure = null;
     if (url) {
@@ -220,7 +252,7 @@ export class HeroFigure {
 
   /** Draws the current model this many times a hero's size (a boss). `setModel` keeps each model's own size. */
   setScale(scale: number) {
-    this.figure?.root.scale.setScalar(HERO_SCALE * scale);
+    this.figure?.root.scale.setScalar((this.body ? 1 : HERO_SCALE) * scale);
   }
 
   /** Starts loading the model at `url` without showing it, so a later `setModel` shows it at once (Pim and Pom's tag). */
@@ -299,6 +331,10 @@ export class HeroFigure {
     f.root.rotation.y = this.shownYaw;
     this.flashV = Math.max(0, this.flashV - dt * 3.2);
     f.setFlash(this.flashV, this.flashTint);
+    if (this.body) {
+      this.poseBody(f, this.body, dt, pos, state);
+      return;
+    }
     if (this.dying >= 0) {
       this.applyDeath(f);
       return;
@@ -620,7 +656,7 @@ export class HeroFigure {
   /** Falls over (a defeated hero) over `t` 0..1: the knees give, the chest folds, then it tips forward. */
   fall(t: number) {
     this.dying = Math.max(0, t);
-    if (this.figure) this.applyDeath(this.figure);
+    if (this.figure && !this.body) this.applyDeath(this.figure);
   }
 
   private applyDeath(f: Hero) {
