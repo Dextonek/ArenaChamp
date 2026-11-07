@@ -40,7 +40,7 @@ const WALL_MODULE = 3.14;
 
 // ---- the sculpted props, loaded once and shared by every build ---------------------------------------------------
 
-type PropParts = { geometry: THREE.BufferGeometry; material: THREE.Material; part: string }[];
+export type PropParts = { geometry: THREE.BufferGeometry; material: THREE.Material; part: string }[];
 let propsPromise: Promise<Record<string, PropParts>> | null = null;
 
 /** temple_props.glb and temple_backdrop.glb as {prop name: its parts (one per material)}; objects there are named
@@ -79,6 +79,40 @@ export function loadProps() {
     });
   })();
   return propsPromise;
+}
+
+const kits = new Map<string, Promise<Record<string, PropParts>>>();
+
+/**
+ * Another room's prop files, read the same way as the temple's: objects named "<Prop>__<material>", one shared material per part,
+ * `tune` called once on each. Loaded once and shared by every build. The lairs use it (src/arenas/suncourt.ts, cinderpit.ts).
+ */
+export function loadKit(files: string[], tune?: (part: string, material: THREE.MeshStandardMaterial) => void) {
+  const key = files.join('|');
+  let kit = kits.get(key);
+  if (kit) return kit;
+  const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+  const base = `${import.meta.env.BASE_URL}models/arenas/`;
+  kit = Promise.all(files.map((f) => loader.loadAsync(base + f))).then((gltfs) => {
+    const out: Record<string, PropParts> = {};
+    const byPart = new Map<string, THREE.Material>();
+    for (const gltf of gltfs) {
+      gltf.scene.updateMatrixWorld(true);
+      gltf.scene.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (!m.isMesh) return;
+        const [prop, part] = m.name.split('__');
+        if (!byPart.has(part)) {
+          byPart.set(part, m.material as THREE.Material);
+          tune?.(part, m.material as THREE.MeshStandardMaterial);
+        }
+        (out[prop] ??= []).push({ geometry: m.geometry.clone().applyMatrix4(m.matrixWorld), material: byPart.get(part)!, part });
+      });
+    }
+    return out;
+  });
+  kits.set(key, kit);
+  return kit;
 }
 
 /** One instanced mesh per part of `prop`, placed by `matrices` (each build gets its own copies to dispose). */
@@ -408,7 +442,7 @@ export const placeAt = (x: number, z: number, ry: number, sx = 1) => new THREE.M
  * The temple's sculpted cover on `obstacles`: instanced walls that crack and fall, columns that topple, altars (a low
  * pillar), `pots` of braziers, and the stone chunks they throw. Added to `g` when the props file has loaded.
  */
-export function templeCover(g: THREE.Group, obstacles: Obstacle[], pots: THREE.Matrix4[]) {
+export function templeCover(g: THREE.Group, obstacles: Obstacle[], pots: THREE.Matrix4[], props: () => Promise<Record<string, PropParts>> = loadProps) {
   let disposed = false;
   const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(_p.set(x, 0, z), _q.setFromAxisAngle(_s.set(0, 1, 0), ry), new THREE.Vector3(sx, 1, 1));
   const crnd = seeded(100);
@@ -461,7 +495,7 @@ export function templeCover(g: THREE.Group, obstacles: Obstacle[], pots: THREE.M
     }
   };
 
-  void loadProps().then((props) => {
+  void props().then((props) => {
     if (disposed) return;
     if (props.Column) {
       columnSets = instance(props.Column, columnBase);
