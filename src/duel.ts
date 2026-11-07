@@ -2082,7 +2082,11 @@ export class Duel {
     }
     // A boss's gold zone: go and stand in it, against every habit. A fallen partner comes next: stand by it, and cast nothing.
     const fallen = this.partner?.down && !this.partner.left && this.partner.revivesLeft > 0 ? this.partner.pos : null;
-    const stand = st.cannotMove ? null : this.boss?.script.objectiveGoal(me.x, me.z) ?? this.boss?.script.standGoal(me.x, me.z) ?? fallen;
+    const script = this.boss?.script;
+    // A spot to take waits while something is about to land on it: a person steps back in once it has.
+    const objective = script?.objectiveGoal(me.x, me.z);
+    const safe = objective && !script!.danger(objective.x, objective.z, BOSS_LOOK) ? objective : null;
+    const stand = st.cannotMove ? null : safe ?? script?.standGoal(me.x, me.z) ?? fallen;
     if (stand) {
       if (Math.hypot(stand.x - me.x, stand.z - me.z) > 0.8) {
         const step = this.goalStep(this.playerAi, me, stand);
