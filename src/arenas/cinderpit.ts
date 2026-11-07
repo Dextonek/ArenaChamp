@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { pillar, wall, type Obstacle } from '../obstacles';
-import { RIDGE_MODULE, instance, lavaTexture, loadProps } from './caldera';
+import { instance, lavaTexture } from './caldera';
+import { loadKit } from './temple';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef } from './types';
 
@@ -31,6 +32,13 @@ const COVER: Obstacle[] = [
     return { ...pillar(RING.x + Math.sin(a) * 12.5, RING.z + Math.cos(a) * 12.5, 0.8), height: 1.27 };
   }),
 ];
+
+/** Their own kit (blender/arenas/den_props.py): obsidian spires, slag walls, anvil stones, Ember's lantern perches, the sun shard. */
+const denProps = () => loadKit(['den_props.glb'], (part, m) => {
+  if (part === 'glow') m.emissiveIntensity = Math.min(m.emissiveIntensity, 0.85);
+});
+/** The slag wall's length in the kit: walls stretch it along x to their own. */
+const RIDGE_LEN = 4.22;
 
 /** Where Ash dragged his claws through the floor: three gouges at each, in metres from the middle, and the way they run. */
 const CLAWS = [{ x: -6.5, z: 3.5, dir: 0.5 }, { x: 7.5, z: -2, dir: -1.1 }, { x: 2.5, z: 9.5, dir: 2.6 }];
@@ -163,15 +171,7 @@ export const cinderPitArena: ArenaDef = {
     lip.castShadow = lip.receiveShadow = true;
     g.add(lip, flatRing(R + 0.02, R + 0.12, 0xd8581a, 0.8, 0.31));
 
-    // A perch on the lip at each spot the one on the rim can stand.
-    const perchMat = new THREE.MeshStandardMaterial({ color: 0x241c1c, roughness: 0.7, flatShading: true });
-    for (const s of RIM_SPOTS) {
-      const perch = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.9, 0.7, 9), perchMat.clone());
-      perch.position.set(s.x, 0.35, s.z);
-      perch.castShadow = perch.receiveShadow = true;
-      g.add(perch);
-    }
-    perchMat.dispose();
+    // Ember's lantern perches on the lip, one at each spot the one on the rim can stand: their tops are flat at 0.7 m.
 
     // A crater wall far off, so the lake has an edge. Well outside the camera's way.
     const crater = new THREE.Mesh(
@@ -183,24 +183,55 @@ export const cinderPitArena: ArenaDef = {
 
     let disposed = false;
     const q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
+    // `at` stretches along x only (a wall to its length); `big` scales a backdrop piece all round.
+    const big = (x: number, z: number, ry: number, s: number) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(up, ry), new THREE.Vector3(s, s, s));
     const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(up, ry), new THREE.Vector3(sx, 1, 1));
-    void loadProps().then((props) => {
+    void denProps().then((props) => {
       if (disposed) return;
-      const place: Record<string, THREE.Matrix4[]> = { RidgeB: [], BasaltA: [], BasaltB: [] };
+      const place: Record<string, THREE.Matrix4[]> = { Ridge: [], Spire: [], Stump: [], Perch: [], SunShard: [], Ribs: [], LanternPost: [], CraterRock: [] };
       COVER.forEach((o, i) => {
         if (o.kind === 'wall') {
           const dx = o.bx - o.ax, dz = o.bz - o.az;
-          place.RidgeB.push(at((o.ax + o.bx) / 2, (o.az + o.bz) / 2, Math.atan2(-dz, dx), (Math.hypot(dx, dz) + 2 * o.r) / RIDGE_MODULE.RidgeB));
-        } else place[o.height > 2 ? 'BasaltA' : 'BasaltB'].push(at(o.ax, o.az, 0.6 + i));
+          place.Ridge.push(at((o.ax + o.bx) / 2, (o.az + o.bz) / 2, Math.atan2(-dz, dx), (Math.hypot(dx, dz) + 2 * o.r) / RIDGE_LEN));
+        } else place[o.height > 2 ? 'Spire' : 'Stump'].push(at(o.ax, o.az, 0.6 + i));
       });
+      for (const s of RIM_SPOTS) place.Perch.push(at(s.x, s.z, Math.atan2(RING.x - s.x, RING.z - s.z)));
+      // Out in the lava: the shard of the sun that fell here, the ribs of something that burned, posts with lanterns on the far side
+      // of the lip, rocks. Nothing tall on the camera's side.
+      place.SunShard.push(at(RING.x + 9, RING.z - 40, 0.4));
+      place.Ribs.push(big(RING.x - 31, RING.z - 4, 1.4, 1.2));
+      for (const [x, z] of [[-24, -6], [24, -2], [-22, 14], [23, 16], [-14, -20], [15, -21]]) place.LanternPost.push(at(RING.x + x, RING.z + z, Math.atan2(-x, -z)));
+      for (const [x, z, s] of [[34, -12, 1.2], [-38, 16, 1.4], [30, 22, 1], [-20, -36, 1.3], [26, -32, 1.1]]) place.CraterRock.push(big(RING.x + x, RING.z + z, x + z, s));
       for (const [name, list] of Object.entries(place)) if (props[name] && list.length) g.add(...instance(props[name], list));
     }).catch((e) => console.warn('cinder pit: props failed to load', e));
+
+    // Embers rising off the lava and out of the seams, fading as they climb.
+    const EMBERS = 90;
+    const emberPos = new Float32Array(EMBERS * 3), emberSeed = new Float32Array(EMBERS);
+    const ernd = seeded(616);
+    for (let i = 0; i < EMBERS; i++) {
+      emberSeed[i] = ernd();
+      const a = ernd() * Math.PI * 2, r = 4 + Math.sqrt(ernd()) * (PIT_R + 14);
+      emberPos[i * 3] = RING.x + Math.sin(a) * r;
+      emberPos[i * 3 + 2] = RING.z + Math.cos(a) * r;
+    }
+    const emberGeo = new THREE.BufferGeometry();
+    emberGeo.setAttribute('position', new THREE.BufferAttribute(emberPos, 3));
+    const embers = new THREE.Points(emberGeo, new THREE.PointsMaterial({ size: 0.14, color: 0xff8a3a, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending }));
+    embers.frustumCulled = false;
+    g.add(embers);
 
     return {
       group: g,
       update(_dt, time) {
         lavaTex.offset.x = (time * 0.004) % 1;
         lavaTex.offset.y = (time * 0.0025) % 1;
+        for (let i = 0; i < EMBERS; i++) {
+          const s = emberSeed[i], u = (time * (0.08 + s * 0.1) + s * 3) % 1;
+          emberPos[i * 3 + 1] = u * 7;
+          emberPos[i * 3] += Math.sin(time * 1.3 + s * 40) * 0.004;
+        }
+        emberGeo.attributes.position.needsUpdate = true;
       },
       dispose() {
         disposed = true;

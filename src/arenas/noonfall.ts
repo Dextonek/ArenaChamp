@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 import { RAID_HALL_RING } from '../../server/protocol.mjs';
 import { pillar, type Obstacle } from '../obstacles';
-import { RIDGE_MODULE, instance, loadProps as loadCaldera } from './caldera';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
-import { instanced, loadProps as loadTemple, merged, type Place } from './temple';
+import { instance, loadKit, merged, type Place } from './temple';
 import type { ArenaDef, ArenaStage } from './types';
 
 /** How far the hall's floor reaches from its middle. */
@@ -318,42 +317,31 @@ export const noonfallHall: ArenaDef = {
     let disposed = false;
     const rnd = seeded(1311);
     const UP = new THREE.Vector3(0, 1, 0);
-    const back: Place = {}, heaps: Place = {};
+    // The two lairs' own pieces on their two sides: the Warden's obelisks and arches on the Court's (west), Ash and Ember's spires,
+    // rocks and lanterns on the Pit's (east). Nothing tall on the camera's side.
+    const court: Place = {}, pit: Place = {};
     const put = (into: Place, name: string, x: number, z: number, ry: number, s = 1) =>
       (into[name] ??= []).push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(UP, ry), new THREE.Vector3(s, s, s)));
     const facing = (x: number, z: number) => Math.atan2(RING.x - x, RING.z - z);
-    // Marble on the Court's side, stopping short of the camera's side, so the south stays open.
-    for (let k = 0; k < 14; k++) {
-      const a = Math.PI + (k / 13) * (Math.PI * 0.72), x = RING.x + Math.sin(a) * 21, z = RING.z + Math.cos(a) * 21;
+    for (let k = 0; k < 6; k++) {
+      const an = Math.PI + 0.25 + (k / 5) * (Math.PI * 0.62), d = 19 + rnd() * 4, x = RING.x + Math.sin(an) * d, z = RING.z + Math.cos(an) * d;
       if (z > RING.z + 8) continue;
-      const t = rnd();
-      put(back, t < 0.65 ? 'ColTall' : t < 0.82 ? 'ColBrokenA' : 'ColBrokenB', x, z, rnd() * 6.28);
+      put(court, k % 2 ? 'Obelisk' : 'Column', x, z, facing(x, z), k % 2 ? 0.75 : 1.3);
     }
-    put(back, 'Statue', RING.x - 22, RING.z - 2, facing(RING.x - 22, RING.z - 2), 1.4);
-    put(back, 'GateA', RING.x, RING.z - 36, 0);
-    for (let k = 0; k < 10; k++) {
-      const a = Math.PI + rnd() * 1.6, d = 17 + rnd() * 9;
-      put(heaps, k % 2 ? 'RubbleA' : 'RubbleB', RING.x + Math.sin(a) * d, RING.z + Math.cos(a) * d, rnd() * 6.28, 0.8 + rnd() * 0.5);
+    put(court, 'Arch', RING.x - 24, RING.z - 4, facing(RING.x - 24, RING.z - 4), 1.1);
+    for (let k = 0; k < 6; k++) {
+      const an = Math.PI - 0.25 - (k / 5) * (Math.PI * 0.62), d = 18 + rnd() * 5, x = RING.x + Math.sin(an) * d, z = RING.z + Math.cos(an) * d;
+      if (z > RING.z + 8) continue;
+      put(pit, k % 3 === 2 ? 'CraterRock' : 'Spire', x, z, rnd() * 6.28, k % 3 === 2 ? 0.7 : 1.6 + rnd() * 0.6);
     }
-    void loadTemple().then((props) => {
+    for (const [x, z] of [[18, -2], [15, -12]]) put(pit, 'LanternPost', RING.x + x, RING.z + z, facing(RING.x + x, RING.z + z));
+    void loadKit(['sanctum_props.glb']).then((props) => {
+      if (!disposed) g.add(...merged(props, court));
+    }).catch((e) => console.warn('noonfall: the sanctum kit failed to load', e));
+    void loadKit(['den_props.glb']).then((props) => {
       if (disposed) return;
-      g.add(...merged(props, back), ...instanced(props, heaps));
-    }).catch((e) => console.warn('noonfall: temple props failed to load', e));
-    // Basalt on the Pit's side, with lava glow behind it.
-    const q = new THREE.Quaternion();
-    const at = (x: number, z: number, ry: number, s = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(UP, ry), new THREE.Vector3(s, s, s));
-    void loadCaldera().then((props) => {
-      if (disposed) return;
-      const place: Record<string, THREE.Matrix4[]> = { RidgeB: [], BasaltA: [], BasaltB: [] };
-      for (let k = 0; k < 14; k++) {
-        const a = Math.PI - (k / 13) * (Math.PI * 0.72), d = 19 + rnd() * 5, x = RING.x + Math.sin(a) * d, z = RING.z + Math.cos(a) * d;
-        if (z > RING.z + 8) continue;
-        const t = rnd();
-        place[t < 0.45 ? 'BasaltA' : t < 0.8 ? 'BasaltB' : 'RidgeB'].push(at(x, z, rnd() * 6.28, 1.3 + rnd() * 0.8));
-      }
-      void RIDGE_MODULE;
-      for (const [name, list] of Object.entries(place)) if (props[name] && list.length) g.add(...instance(props[name], list));
-    }).catch((e) => console.warn('noonfall: caldera props failed to load', e));
+      for (const [name, list] of Object.entries(pit)) if (props[name] && list.length) g.add(...instance(props[name], list));
+    }).catch((e) => console.warn('noonfall: the den kit failed to load', e));
 
     return {
       group: g,

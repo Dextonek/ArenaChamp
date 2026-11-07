@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { pillar, wall, type Obstacle } from '../obstacles';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
-import { checkCameraRule, instanced, loadProps, merged, templeCover, type Place } from './temple';
+import { checkCameraRule, instance, loadKit, merged, templeCover, type Place } from './temple';
 import type { ArenaDef, ArenaStage } from './types';
 
 /** How far the walkable court reaches from its centre: wider than a duel ring, because a giant fights here. */
@@ -156,11 +156,12 @@ function courtGlow() {
     g.fillRect(0, 0, s, s);
     g.translate(s / 2, s / 2);
     g.lineCap = 'round';
-    g.strokeStyle = '#ffb24a';
+    // Warm white, not gold: gold on this floor means a zone to stand in.
+    g.strokeStyle = '#f0c8a0';
     for (let k = 0; k < 9; k++) {
       // Mostly toward the north, where the sun went over the edge.
       let a = -Math.PI / 2 + (rnd() - 0.5) * 2.2, r = 1.6, x = Math.cos(a) * r, y = Math.sin(a) * r;
-      g.lineWidth = (k < 3 ? 4 : 2.2);
+      g.lineWidth = (k < 3 ? 2.6 : 1.5);
       g.beginPath();
       g.moveTo(x * ppm, y * ppm);
       const end = 6 + rnd() * 8;
@@ -225,6 +226,25 @@ function dotTexture() {
   });
 }
 
+/** His own kit (blender/arenas/sanctum_props.py): sun-stone walls, sun obelisks, the Sun Well, sun bowls, his throne. Baked for a dark
+ *  room; only the glowing parts are held down, under the bloom. */
+const sanctumProps = () => loadKit(['sanctum_props.glb'], (part, m) => {
+  if (part === 'glow') m.emissiveIntensity = Math.min(m.emissiveIntensity, 0.7);
+});
+
+/** Rocks like the Warden's own, drifting round the court: off the camera's side and away from the north one (see `checkCameraRule`). */
+interface Rock { x: number; y: number; z: number; s: number; phase: number; spin: number }
+const ROCKS: Record<string, Rock[]> = (() => {
+  const rnd = seeded(4242), out: Record<string, Rock[]> = { FloatRockA: [], FloatRockB: [], FloatRockC: [] };
+  for (let k = 0; k < 18; k++) {
+    const side = k % 2 ? 1 : -1, x = side * (14 + rnd() * 12), z = RING.z - 18 + rnd() * 30;
+    const name = (['FloatRockA', 'FloatRockB', 'FloatRockC'] as const)[k % 3];
+    out[name].push({ x, y: 2.5 + rnd() * 5, z, s: 0.8 + rnd() * 0.9, phase: rnd() * 6.28, spin: (rnd() - 0.5) * 0.3 });
+  }
+  return out;
+})();
+const _rock = new THREE.Matrix4(), _rp = new THREE.Vector3(), _rq = new THREE.Quaternion(), _re = new THREE.Euler(), _rs = new THREE.Vector3();
+
 /** Fire bowls on the rim, every 30° but none straight ahead or behind (the z axis stays open for the camera). */
 const BOWLS = Array.from({ length: 12 }, (_, k) => {
   const a = THREE.MathUtils.degToRad(15 + k * 30);
@@ -249,7 +269,7 @@ export const sunCourtArena: ArenaDef = {
   build() {
     const g = new THREE.Group();
     const apron = floorDisc(46, new THREE.MeshStandardMaterial({ map: apronTexture(), roughness: 0.92, metalness: 0.04 }), 0.004, 64);
-    const disc = floorDisc(COURT_R, new THREE.MeshStandardMaterial({ map: courtFloor(), roughness: 0.82, metalness: 0.12, transparent: true, opacity: 0.94, emissive: 0xffffff, emissiveMap: courtGlow(), emissiveIntensity: 0.45 }));
+    const disc = floorDisc(COURT_R, new THREE.MeshStandardMaterial({ map: courtFloor(), roughness: 0.82, metalness: 0.12, transparent: true, opacity: 0.94, emissive: 0xffffff, emissiveMap: courtGlow(), emissiveIntensity: 0.18 }));
     disc.receiveShadow = false;
     const band = flatRing(COURT_R - 1.1, COURT_R - 0.25, 0xb4561c, 0.2, 0.018);
     const rimLine = flatRing(COURT_R - 0.14, COURT_R, GOLD, 0.75, 0.02);
@@ -268,7 +288,8 @@ export const sunCourtArena: ArenaDef = {
     let disposed = false;
     // The bowls stand on the third step.
     const pots = BOWLS.map((b) => new THREE.Matrix4().makeTranslation(b.x, BOWL_Y, b.z));
-    const cover = templeCover(g, COURT_OBSTACLES, pots);
+    const cover = templeCover(g, COURT_OBSTACLES, pots, sanctumProps);
+    const rockSets: { list: Rock[]; sets: THREE.InstancedMesh[] }[] = [];
 
     // Flames and the light they throw on the steps.
     const glowGeos: THREE.BufferGeometry[] = BOWLS.map((b) => new THREE.CircleGeometry(0.62, 20).rotateX(-Math.PI / 2).translate(b.x, BOWL_Y + 0.04, b.z));
@@ -297,38 +318,51 @@ export const sunCourtArena: ArenaDef = {
     flames.frustumCulled = false;
     g.add(flames);
 
-    // The backdrop: giant guardians along the sides and a colonnade behind them. Nothing tall on the camera's side.
+    // The backdrop: his empty throne past the north gate, his obelisks and broken sun arches along the sides, and rocks like his own
+    // drifting round the court. Nothing tall on the camera's side, and nothing tall near the north one (`checkCameraRule`).
     const rnd = seeded(808);
     const UP = new THREE.Vector3(0, 1, 0);
-    const back: Place = {}, heaps: Place = {};
+    const back: Place = {};
     const put = (into: Place, name: string, x: number, z: number, ry: number, s = 1) =>
       (into[name] ??= []).push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(UP, ry), new THREE.Vector3(s, s, s)));
     const facing = (x: number, z: number) => Math.atan2(RING.x - x, RING.z - z);
+    put(back, 'Throne', RING.x, RING.z - 36, 0, 1.3);
     for (const side of [-1, 1]) {
-      for (const dz of [-13, 0, 13]) {
-        const x = side * 25, z = RING.z + dz;
-        put(back, 'Statue', x, z, facing(x, z), 1.5);
-      }
+      for (const dz of [-10, 2, 14]) put(back, 'Obelisk', side * 21, RING.z + dz, facing(side * 21, RING.z + dz), 0.9 + rnd() * 0.3);
+      put(back, 'Arch', side * 27, RING.z - 6, facing(side * 27, RING.z - 6), 1.2);
+      put(back, 'Arch', side * 17, RING.z - 27, facing(side * 17, RING.z - 27), 1.1);
     }
-    for (let k = 0; k < 30; k++) {
-      const a = ((k + 0.5) / 30) * Math.PI * 2, x = RING.x + Math.sin(a) * 37, z = RING.z + Math.cos(a) * 37;
-      // Off the camera's side: the south stays open.
-      if (z > RING.z + 18 && Math.abs(x) < 26) continue;
-      const t = rnd();
-      put(back, t < 0.7 ? 'ColTall' : t < 0.85 ? 'ColBrokenA' : 'ColBrokenB', x, z, rnd() * 6.28);
-    }
-    put(back, 'GateA', RING.x, RING.z - 44, 0);
-    for (const side of [-1, 1]) put(back, 'Obelisk', side * 15, RING.z - 34, facing(side * 15, RING.z - 34));
-    for (let k = 0; k < 18; k++) {
-      const a = rnd() * Math.PI * 2, d = 21 + rnd() * 12;
-      put(heaps, k % 2 ? 'RubbleA' : 'RubbleB', RING.x + Math.sin(a) * d, RING.z + Math.cos(a) * d, rnd() * 6.28, 0.9 + rnd() * 0.5);
-    }
-    void loadProps().then((props) => {
+    void sanctumProps().then((props) => {
       if (disposed) return;
-      const meshes = [...merged(props, back), ...instanced(props, heaps)];
+      const meshes = merged(props, back);
       checkCameraRule(meshes, COURT_R + 14);
       g.add(...meshes);
+      // The drifting rocks, each kind instanced, with its own height, phase and turn.
+      for (const [name, list] of Object.entries(ROCKS)) {
+        const parts = props[name];
+        if (!parts) continue;
+        const sets = instance(parts, list.map(() => new THREE.Matrix4()));
+        for (const m of sets) { m.frustumCulled = false; m.castShadow = false; }
+        g.add(...sets);
+        rockSets.push({ list, sets });
+      }
     }).catch((e) => console.error('sun court: backdrop failed', e));
+
+    // Motes of light, rising slowly over the court and fading.
+    const MOTES = 70;
+    const motePos = new Float32Array(MOTES * 3), moteSeed = new Float32Array(MOTES);
+    const mrnd = seeded(515);
+    for (let i = 0; i < MOTES; i++) {
+      moteSeed[i] = mrnd();
+      const a = mrnd() * Math.PI * 2, r = Math.sqrt(mrnd()) * (COURT_R + 4);
+      motePos[i * 3] = RING.x + Math.sin(a) * r;
+      motePos[i * 3 + 2] = RING.z + Math.cos(a) * r;
+    }
+    const moteGeo = new THREE.BufferGeometry();
+    moteGeo.setAttribute('position', new THREE.BufferAttribute(motePos, 3));
+    const motes = new THREE.Points(moteGeo, new THREE.PointsMaterial({ size: 0.16, map: dotTexture(), color: 0xffd88a, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending }));
+    motes.frustumCulled = false;
+    g.add(motes);
 
     const eclipse = new THREE.Sprite(new THREE.SpriteMaterial({ map: eclipseTexture(), transparent: true, depthWrite: false, fog: false }));
     eclipse.scale.set(190, 190, 1);
@@ -342,6 +376,15 @@ export const sunCourtArena: ArenaDef = {
       resetShift: cover.resetShift,
       update(dt, time) {
         cover.update(dt);
+        for (let i = 0; i < MOTES; i++) motePos[i * 3 + 1] = ((time * (0.18 + moteSeed[i] * 0.2) + moteSeed[i] * 7) % 6);
+        moteGeo.attributes.position.needsUpdate = true;
+        for (const { list, sets } of rockSets) {
+          list.forEach((r, k) => {
+            _rock.compose(_rp.set(r.x, r.y + Math.sin(time * 0.5 + r.phase) * 0.45, r.z), _rq.setFromEuler(_re.set(Math.sin(time * 0.3 + r.phase) * 0.15, time * r.spin + r.phase, 0)), _rs.setScalar(r.s));
+            for (const m of sets) m.setMatrixAt(k, _rock);
+          });
+          for (const m of sets) m.instanceMatrix.needsUpdate = true;
+        }
         for (let b = 0; b < BOWLS.length; b++) {
           const bowl = BOWLS[b];
           for (let j = 0; j < FLAMES; j++) {
