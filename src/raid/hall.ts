@@ -16,6 +16,8 @@ const GATE = 9;
 const ALTAR_R = 1.5;
 /** How far from a gate's spot its posts stand, toward the rim (m). */
 const GATE_BACK = 1.5;
+/** Narrower than this (px), the cards sit in a row instead of over their altars. */
+const NARROW = 560;
 /** How long the screen takes to go dark, or to come back (ms). */
 const FADE_MS = 260;
 
@@ -181,9 +183,21 @@ export class RaidHall {
     });
   }
 
-  /** Each card over its altar, as the camera moves. */
+  /**
+   * Each card over its altar, as the camera moves. On a narrow screen the altars stand too close for three cards, so they sit in a row
+   * near the bottom instead, left, middle and right like the altars.
+   */
   private placeCards() {
     const cam = this.api.arena.camera, w = innerWidth, h = innerHeight;
+    if (w < NARROW) {
+      const cw = Math.floor((w - 24) / 3);
+      this.cards.forEach((c, i) => {
+        c.style.width = `${cw}px`;
+        // Just over the joystick, where the hero coming in from the south has already walked past.
+        c.style.transform = `translate(${6 + i * (cw + 6)}px,${Math.round(h - (TOUCH ? 185 : 120) - c.offsetHeight)}px)`;
+      });
+      return;
+    }
     this.cards.forEach((c, i) => {
       const a = HALL_ALTARS[i];
       this.spot.set(a.x, 2.1, a.z).project(cam);
