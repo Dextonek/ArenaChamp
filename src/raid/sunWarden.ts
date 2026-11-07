@@ -7,6 +7,7 @@ import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
+import { wardenLook } from './bodies/warden';
 import { FallingStone, LightPillar, NumberMark, ShadowFloor, SunOrb } from './fx';
 import { STAND_COLOR } from './script';
 import type { AimContext, BossDef, BossMove, Objective, PlayContext, RaidSide, Threat } from './types';
@@ -449,8 +450,8 @@ function portrait(g: CanvasRenderingContext2D, s: number) {
 const noIcon = () => {};
 const noSpell = (key: HeroKey): HeroSpell => ({ key, label: '', name: '', range: 0, cooldown: 0, blurb: '', icon: noIcon });
 
-/** A placeholder until the fight is proven: a hero's model, drawn big. The art comes after a person has played it. */
-const MODEL = 'models/heroes/mason_v2.glb';
+/** A floating stone sentinel of its own, posed by `wardenLook`. Built by blender/bosses/boss_bodies.py. */
+const MODEL = 'models/bosses/warden.glb';
 /** What the hub keeps online: one source for both. */
 const NUMBERS = RAID_BOSSES.sun;
 
@@ -461,11 +462,11 @@ export const SUN_WARDEN: BossDef = {
   place: sunCourtArena,
   starts: { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z: 16.5 }, { x: -1.6, z: 16.5 }, { x: 1.6, z: 16.5 }] },
   kit: (hp) => ({
-    name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, maxHp: hp,
+    name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, look: wardenLook, maxHp: hp,
     spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],
   } as HeroKit),
   hp: NUMBERS.hp,
-  scale: 2,
+  scale: 1,
   body: { radius: 1.2, height: 5.4 },
   speed: 2,
   keepAt: 4.5,

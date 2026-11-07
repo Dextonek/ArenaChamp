@@ -6,6 +6,9 @@ import { ZoneFloor } from '../arenas/shifts/floor';
 import { PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
+import { ashLook } from './bodies/ash';
+import { emberLook } from './bodies/ember';
+import type { BodyLook } from './bodies/look';
 import { FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, WaveRing } from './fx';
 import { STAND_COLOR } from './script';
 import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } from './types';
@@ -376,21 +379,21 @@ function ashPortrait(g: CanvasRenderingContext2D, s: number) {
 
 const noIcon = () => {};
 const noSpell = (key: HeroKey): HeroSpell => ({ key, label: '', name: '', range: 0, cooldown: 0, blurb: '', icon: noIcon });
-const kitOf = (name: string, model: string, accent: string) => (hp: number) => ({
-  name, title: 'Keepers of the Cinder Pit', accent, foil: '#ffc080', portrait: ashPortrait, model, maxHp: hp,
+const kitOf = (name: string, model: string, look: BodyLook, accent: string) => (hp: number) => ({
+  name, title: 'Keepers of the Cinder Pit', accent, foil: '#ffc080', portrait: ashPortrait, model, look, maxHp: hp,
   spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],
 } as HeroKit);
 
-/** Placeholders until the fight is proven: heroes' models, drawn big. */
+/** Bodies of their own, posed by `ashLook` and `emberLook`. Built by blender/bosses/boss_bodies.py. */
 export const ASH_AND_EMBER: BossDef = {
   id: 'ash',
   name: 'Ash and Ember',
   title: 'Keepers of the Cinder Pit',
   place: cinderPitArena,
   starts: { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z: 16.5 }, { x: -1.6, z: 16.5 }, { x: 1.6, z: 16.5 }] },
-  kit: (hp) => kitOf('Ash and Ember', 'models/heroes/forge_v2.glb', '#e8703a')(hp),
+  kit: (hp) => kitOf('Ash and Ember', 'models/bosses/ash.glb', ashLook, '#e8703a')(hp),
   hp: NUMBERS.hp,
-  scale: 2.2,
+  scale: 1,
   body: { radius: 1.3, height: 5.8 },
   speed: 2.3,
   keepAt: 3.5,
@@ -399,11 +402,11 @@ export const ASH_AND_EMBER: BossDef = {
   phasePause: 2.5,
   forms: [
     {
-      name: 'Ash', kit: kitOf('Ash', 'models/heroes/forge_v2.glb', '#e8703a'), scale: 2.2, body: { radius: 1.3, height: 5.8 }, speed: 2.3, keepAt: 3.5,
+      name: 'Ash', kit: kitOf('Ash', 'models/bosses/ash.glb', ashLook, '#e8703a'), scale: 1, body: { radius: 1.3, height: 5.8 }, speed: 2.3, keepAt: 3.5,
       moves: ['slam', 'charge', 'drag'], rimMoves: ['rock'], trail: 'trail',
     },
     {
-      name: 'Ember', kit: kitOf('Ember', 'models/heroes/blood_v2.glb', '#ff8a40'), scale: 1.5, body: { radius: 0.9, height: 4 }, speed: 3, keepAt: 9, backAt: 6,
+      name: 'Ember', kit: kitOf('Ember', 'models/bosses/ember.glb', emberLook, '#ff8a40'), scale: 1, body: { radius: 0.9, height: 4 }, speed: 3, keepAt: 9, backAt: 6,
       moves: ['fan', 'marked', 'bombs', 'wave'], rimMoves: ['fan', 'bombs'],
     },
   ],
