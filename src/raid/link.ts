@@ -60,6 +60,7 @@ export class LocalLink implements RaidLink {
   revive() {}
   heroCast() {}
   heroAttack() {}
+  heroAlt() {}
 
   wallSaved(index: number) {
     this.on.wall(index);

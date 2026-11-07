@@ -41,7 +41,7 @@ function loadBest(): RaidScore | null {
 export class RaidRun {
   active = false;
   private leave: HTMLButtonElement;
-  private offers = new OfferScreen();
+  private offers = new OfferScreen(() => this.askLeave());
   private hero = '';
   private stage = 0;
   private tier = 1;
@@ -60,12 +60,10 @@ export class RaidRun {
     private ui: { onEnter(): void; onExit(): void },
   ) {
     this.leave = document.createElement('button');
-    this.leave.className = 'btn ghost forfeit';
+    this.leave.className = 'btn ghost forfeit raid-leave';
     this.leave.textContent = 'Leave';
     this.leave.style.display = 'none';
-    this.leave.addEventListener('click', () => {
-      if (confirm('Leave this raid? The run ends here.')) this.exit();
-    });
+    this.leave.addEventListener('click', () => this.askLeave());
     document.body.appendChild(this.leave);
     const rematch = api.duel.onRematch;
     api.duel.onRematch = () => {
@@ -78,6 +76,10 @@ export class RaidRun {
       finish?.(result);
       if (this.active) void this.finished(result);
     };
+  }
+
+  private askLeave() {
+    if (confirm('Leave this raid? The run ends here.')) this.exit();
   }
 
   /** The best run this browser has seen. */
@@ -192,6 +194,8 @@ export class RaidRun {
 
   exit() {
     if (!this.active) return;
+    // What was beaten counts, however the run ends.
+    this.saveBest();
     this.active = false;
     this.run++;
     this.offers.hide();

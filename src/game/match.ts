@@ -240,7 +240,7 @@ export class MatchController {
     const score = m.score ? `, ${m.score[0]}-${m.score[1]} in rounds` : '';
     const head = m.result === 'win' ? `${foe} falls after ${m.seconds} s${score}${why}.` : `${me} falls to ${foe} after ${m.seconds} s${score}${why}.`;
     const p = m.profile;
-    const tail = p ? ` Record: ${p.wins} W · ${p.losses} L · ${p.matches} matches.` : '';
+    const tail = p ? ` Record: ${p.wins} W · ${p.losses} L · ${p.matches} ${p.matches === 1 ? 'match' : 'matches'}.` : '';
     this.api.duel.netEnd(m.result, head + tail);
   }
 

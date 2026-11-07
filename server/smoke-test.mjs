@@ -526,6 +526,58 @@ try {
     h.send({ t: 'hero_down' });
     const lost = await h.next('raid_end');
     check(lost.result === 'lost' && lost.profile.raids.played === 2, 'the last hero down ends it');
+
+    // A room can't name something that isn't a boss.
+    g.send({ t: 'lobby_create', raid: 'constructor' });
+    let bad = room2;
+    while (!bad || bad.code === room2.code) bad = (await g.next('lobby')).lobby;
+    check(bad.raid === null, 'a room for a boss that does not exist is a plain lobby');
+    g.send({ t: 'lobby_leave' });
+    await wait(100);
+
+    // A hero still down when the boss falls: the other leaves at the pick, and the run goes on alone. Also a two-kit hero's other half.
+    g.send({ t: 'lobby_create', raid: 'sun' });
+    let room3 = bad;
+    while (!room3 || room3.code === bad.code) room3 = (await g.next('lobby')).lobby;
+    h.send({ t: 'lobby_join', code: room3.code });
+    g.send({ t: 'lobby_pick', hero: 'Lyra' });
+    g.send({ t: 'lobby_ready', ready: true });
+    h.send({ t: 'lobby_pick', hero: 'Pim and Pom' });
+    h.send({ t: 'lobby_ready', ready: true });
+    await g.next('raid_start');
+    await h.next('raid_start');
+    await g.next('raid_offer');
+    await h.next('raid_offer');
+    g.send({ t: 'raid_pick' });
+    h.send({ t: 'raid_pick' });
+    await g.next('raid_stage');
+    await h.next('raid_stage');
+    g.send({ t: 'match_loaded', maxHp: 520 });
+    h.send({ t: 'match_loaded', maxHp: 620 });
+    await g.next('match_fight');
+    await h.next('match_fight');
+    await wait(3100);
+    h.send({ t: 'raid_form', alt: true });
+    check((await g.next('peer_form')).alt === true, 'a two-kit hero\'s other half reaches the partner');
+    g.send({ t: 'boss_cast', id: 70, move: 'tag', step: 0, x: 1, z: 2, fx: 0, fz: -9, dir: 0, seed: 9, target: 0, form: 5 });
+    check((await h.next('boss_cast')).form === undefined, 'a cast with a form that does not exist loses it');
+    h.send({ t: 'hero_down' });
+    await g.next('peer_down');
+    await until('raid_won', 6);
+    await h.next('raid_won');
+    // Older runs' offers are still in the inbox.
+    let off4;
+    do off4 = await h.next('raid_offer', 5000);
+    while (off4.stage !== 1);
+    g.send({ t: 'match_leave' });
+    await h.next('partner_left');
+    check(true, 'the other leaves at the pick: a hero who was down goes on alone');
+    h.send({ t: 'raid_pick' });
+    // Older runs' stages are still in the inbox.
+    let st4;
+    do st4 = await h.next('raid_stage', 5000);
+    while (st4.stage !== 1);
+    check(st4.brain === 1, 'and runs the next boss');
     g.close(); h.close();
   }
 

@@ -83,7 +83,7 @@ export class Partner {
   private light: LightPillar;
   private ring: THREE.Mesh;
 
-  constructor(readonly kit: HeroKit, readonly name: string, at: THREE.Vector3, arena: Arena, foe: () => Enemy | null) {
+  constructor(public kit: HeroKit, readonly name: string, at: THREE.Vector3, arena: Arena, foe: () => Enemy | null) {
     this.max = this.hp = kit.maxHp ?? 600;
     this.spec = attackFor(kit);
     this.enemy.body = null;
@@ -112,6 +112,16 @@ export class Partner {
 
   get pos() {
     return this.enemy.group.position;
+  }
+
+  /** A two-kit hero: its other half came in, with its own model, spells and attack. */
+  useForm(alt: boolean) {
+    const base = this.kit.base ?? this.kit, kit = alt ? base.alt ?? base : base;
+    if (kit === this.kit) return;
+    this.kit = kit;
+    this.spec = attackFor(kit);
+    this.figure.setModel(kit.model, this.pos, kit);
+    if (!this.down) this.figure.stand();
   }
 
   /** It fell: it lies where it fell, with a gold ring to come and stand in. */

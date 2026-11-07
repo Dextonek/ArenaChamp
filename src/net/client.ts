@@ -80,6 +80,7 @@ export type ServerMsg =
   | { t: 'peer_spend'; amount: number; hp: number }
   | { t: 'peer_buff'; kind: BuffKind; amount: number; seconds: number }
   | { t: 'peer_stacks'; name: string; n: number }
+  | { t: 'peer_form'; alt: boolean }
   | { t: 'peer_heal'; amount: number; hp: number }
   | { t: 'peer_status'; kind: StatusKind; seconds: number; color?: string }
   | { t: 'peer_shield'; amount: number; seconds: number; color?: string }

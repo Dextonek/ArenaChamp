@@ -594,6 +594,8 @@ export class Duel {
       this.rimFigure.preload(forms[0].kit(o.link.maxHp).model ?? '');
       this.figure.preload(other.model ?? '');
     }
+    // A phone held upright sees about 14 m across a floor of 32: it starts from as far back as the camera goes.
+    if (!run && TOUCH && hm.portrait && this.zoomBefore === null) this.zoomBefore = hm.setZoom(1.7);
     this.names = [o.name ?? '', o.partner?.name ?? ''];
     if (o.partner) {
       const at = heroes[o.link.side === 0 ? 2 : 1];
@@ -685,6 +687,11 @@ export class Duel {
   /** The partner released a basic attack at the boss: only the look. */
   partnerAttack() {
     if (this.foe && !this.over) this.partner?.attacker.releaseNow(this.foe);
+  }
+
+  /** A two-kit partner brought in its other half. */
+  partnerForm(alt: boolean) {
+    this.partner?.useForm(alt);
   }
 
   /** The partner's HP, from its own screen. */
@@ -811,6 +818,22 @@ export class Duel {
     return this.playerMax;
   }
 
+  /** What a boss's share of HP is a share of: the hero's own max, so what an upgrade adds to it really takes more hits to lose. */
+  private get hitBase() {
+    const up = this.boss?.upgrades;
+    return up ? this.playerMax / up.hpMul() : this.playerMax;
+  }
+
+  /** New words on the result card, with its buttons as they are. */
+  cardLine(text: string) {
+    this.cardText.textContent = text;
+  }
+
+  /** The result card is up. */
+  get cardShown() {
+    return this.card.style.display === 'flex';
+  }
+
   /** What a boss fight may do to the duel. */
   private bossWorld(): BossWorld {
     const arena = this.host.arena;
@@ -854,8 +877,12 @@ export class Duel {
         // A weakened boss deals less, as a weakened hero does.
         const dealt = arena.statusOf(foe)?.dealtMul ?? 1;
         const mods = dealt !== 1 ? { ...NO_MODS, power: dealt } : NO_MODS;
-        const opts: HitOptions = { damage: h.share * this.playerMax, knock: h.knock ?? 0, color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
+        const opts: HitOptions = { damage: h.share * this.hitBase, knock: h.knock ?? 0, color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
         this.damagePlayer(this.resolve('opponent', arena.caster, opts, mods, 'spell', h.big ? 3 : 0, ++this.oppCastSeq));
+      },
+      fallenPartner: () => {
+        const p = this.partner;
+        return p && p.down && !p.left && p.revivesLeft > 0 ? { x: p.pos.x, z: p.pos.z } : null;
       },
       units: () => arena.summons.alive('hero').map((u) => ({ figure: u.figure, pos: u.pos })),
       hitUnit: (figure, damage) => {
@@ -893,6 +920,9 @@ export class Duel {
     };
   }
 
+  /** The camera's distance before a boss fight moved it. */
+  private zoomBefore: number | null = null;
+
   /** A boss fight is over and its hooks come off. */
   private endBoss() {
     if (!this.boss && !this.bossDef) return;
@@ -903,6 +933,10 @@ export class Duel {
     this.bossCard = null;
     this.shiftOffset = 0;
     this.host.heroMode.speedBonus = 1;
+    if (this.zoomBefore !== null) {
+      this.host.heroMode.setZoom(this.zoomBefore);
+      this.zoomBefore = null;
+    }
     arena.heroBolt = null;
     this.partner?.dispose();
     this.partner = null;
@@ -1082,7 +1116,9 @@ export class Duel {
       },
       swapKit: (alt) => {
         const kit = alt ? me.alt ?? me : me;
-        if (kit !== hm.currentKit) hm.swapKit(kit);
+        if (kit === hm.currentKit) return;
+        hm.swapKit(kit);
+        this.boss?.link.heroAlt(alt);
       },
     });
     this.oppRt = new TraitRuntime('opponent', traitFor(them.name), {
@@ -1614,7 +1650,8 @@ export class Duel {
     if (this.hazard || this.shift) {
       // The fight clock runs only while heroes can act: not in the countdown, not after the round.
       const live = !this.over && this.countdown < 0 && !hm.locked;
-      if (live) this.hazardClock += dt;
+      // A fallen hero's clock goes on: both screens of a raid must reach each stage together.
+      if (live || (this.boss?.meDown && !this.over && this.countdown < 0)) this.hazardClock += dt;
       if (this.hazard?.update(dt, this.hazardClock, live, this.hazardWorld) && this.mode === 'play') this.showBanner(this.hazard.warning, 1.1, '26px');
       const stage = this.shift?.update(dt, this.hazardClock + this.shiftOffset, live, this.shiftWorld);
       if (stage && this.mode === 'play') this.showBanner(stage, 1.8, '26px');
@@ -2416,7 +2453,7 @@ export class Duel {
   /** A hazard's hit: not a spell, so no trait hooks and no credit. This side's hero reports its own damage online. */
   private hazardHit(target: HazardTarget, hit: HazardHit) {
     const arena = this.host.arena, isHero = target.key === arena.caster;
-    const max = isHero ? this.playerMax : target.key === this.foe ? this.foeMax : HP;
+    const max = isHero ? this.hitBase : target.key === this.foe ? this.foeMax : HP;
     const damage = Math.min(HAZARD_MAX, hit.damage + (hit.share ?? 0) * max);
     if (damage <= 0) {
       // Only slows (a water channel): no number, no flinch.

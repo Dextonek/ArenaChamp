@@ -233,6 +233,18 @@ export class BossScript {
     return best;
   }
 
+  /** The gold zones showing now that are still to land. */
+  goldSpots() {
+    const out: { x: number; z: number }[] = [];
+    for (const a of this.active) {
+      const t = this.clock - a.began;
+      for (const th of a.played.threats) {
+        if (th.kind === 'stand' && !th.landed && t >= (th.show ?? 0) && th.shape.kind === 'circle') out.push({ x: th.shape.x, z: th.shape.z });
+      }
+    }
+    return out;
+  }
+
   /** A move is coming after whoever it aims at: an AI starts no long cast now. */
   get wary() {
     return this.active.some((a) => this.def.moves[a.cast.move]?.chases && a.played.threats.some((th) => !th.landed));

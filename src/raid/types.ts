@@ -298,6 +298,8 @@ export interface RaidLink {
   heroHp(hp: number): void;
   /** This screen's hero got the fallen partner up. */
   revive(): void;
+  /** A two-kit hero on this screen brought in its other half. */
+  heroAlt(alt: boolean): void;
   /** This screen's hero cast, or released an attack: the partner's screen replays it. */
   heroCast(m: Record<string, unknown>): void;
   heroAttack(id: number, mods: unknown): void;
@@ -338,6 +340,8 @@ export interface BossWorld {
   down(): boolean;
   /** The heroes the brain may aim at: on one screen just this one. */
   heroes(): { side: RaidSide; x: number; z: number; down: boolean }[];
+  /** Where the partner lies, while this hero can still get it up. */
+  fallenPartner(): { x: number; z: number } | null;
   hitMe(h: BossHit): void;
   /** What a zone costs a summoned unit standing in it. */
   units(): { figure: object; pos: THREE.Vector3 }[];

@@ -73,6 +73,8 @@ export interface RuntimeOptions {
   modules: EffectModule[];
   /** Keep stepping the simulation from a timer while the tab is hidden (a network duel must go on). */
   background?: boolean;
+  /** A click on the hero's portrait goes to the next hero: the tool's shortcut. In the game a fight must not change hero. */
+  heroCycle?: boolean;
 }
 
 /** Hero-mode bloom: the kit spells' look (a low threshold makes pale costumes glow before the first cast). */
@@ -450,10 +452,12 @@ export function createRuntime(opts: RuntimeOptions) {
       camera,
       dom: renderer.domElement,
       targeting: (label) => slots.get(label)?.module.targeting,
-      nextKit: () => {
-        const i = HERO_KITS.findIndex((k) => k.name === heroMode.kitName);
-        setKit(HERO_KITS[(i + 1) % HERO_KITS.length].name);
-      },
+      nextKit: opts.heroCycle
+        ? () => {
+          const i = HERO_KITS.findIndex((k) => k.name === heroMode.kitName);
+          setKit(HERO_KITS[(i + 1) % HERO_KITS.length].name);
+        }
+        : undefined,
       cast: (label) => {
         selectEffect(label);
         // Rooted until the spell lands: the latest danger-zone impact, else a short default.

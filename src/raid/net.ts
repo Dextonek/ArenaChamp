@@ -50,6 +50,10 @@ export class NetLink implements RaidLink {
     this.net.send({ t: 'revive' });
   }
 
+  heroAlt(alt: boolean) {
+    this.net.send({ t: 'raid_form', alt });
+  }
+
   heroCast(m: Record<string, unknown>) {
     this.net.send({ t: 'cast', ...m });
   }

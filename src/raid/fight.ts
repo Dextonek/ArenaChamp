@@ -12,6 +12,7 @@ import type { BossCast, BossDef, BossWorld, RaidLink } from './types';
 const STAGGER_PER_SECOND: Partial<Record<StatusKind, number>> = { stun: 22, knockup: 26, root: 14, charm: 22, sealed: 22, silence: 12, blind: 8 };
 /** Slow works at half length: a boss can't be walked away from for free. */
 const SLOW_SHARE = 0.5;
+const spot = new THREE.Vector3();
 
 /**
  * One boss fight on this screen: it ties the brain (if this screen runs it), the script, the HUD and the link together.
@@ -150,6 +151,7 @@ export class BossFight {
     if (this.over) return;
     this.over = true;
     this.script.clear();
+    this.hud.settle(result === 'win', this.link.maxHp);
     this.world.finish(result);
   }
 
@@ -168,6 +170,22 @@ export class BossFight {
     }
     if (live && !this.over) this.brain?.update(dt);
     this.script.update(dt, live && !this.over);
+    this.pointers(live && !this.over && !this.meDown);
+  }
+
+  /** Arrows to the gold zones and the fallen partner this hero can't see. */
+  private pointers(on: boolean) {
+    const list: { x: number; y: number; color: string }[] = [];
+    if (on) {
+      const add = (at: { x: number; z: number }, color: string) => {
+        spot.set(at.x, 0, at.z).project(this.world.camera);
+        list.push({ x: spot.x, y: spot.y, color });
+      };
+      for (const at of this.script.goldSpots()) add(at, '#ffe27a');
+      const fallen = this.world.fallenPartner();
+      if (fallen) add(fallen, '#8dffb0');
+    }
+    this.hud.pointTo(list);
   }
 
   dispose() {

@@ -166,8 +166,15 @@ function go(screen: Screen) {
   render();
 }
 
+/** A new screen starts at its top; a re-render of the same one (a hero picked) stays where it was. */
+let shownScreen: Screen | null = null;
+
 function render() {
   root.replaceChildren();
+  if (state.screen !== shownScreen) {
+    shownScreen = state.screen;
+    root.scrollTop = 0;
+  }
   if (match.active || cpu.active || raid.active || coop.active) { root.style.display = 'none'; return; }
   root.style.display = '';
   // Without an account: the login screen, or the CPU or Raid screen (an offline fight needs no account).
@@ -426,6 +433,13 @@ function cpuScreen() {
 
 // --- raid ----------------------------------------------------------------------------------------------------
 
+/** What an account has done in raids for two. */
+function raidLine(p: Profile) {
+  const r = p.raids;
+  if (!r) return '';
+  return `Raids with a friend: ${r.played} played, ${r.cleared} cleared.${r.bosses ? ` Best: ${scoreText({ tier: r.tier ?? 1, bosses: r.bosses, seconds: r.best })}` : ''}`;
+}
+
 function raidScreen() {
   const choice = cpuChoice(), hero = kitOf(choice);
   const busy = state.queue.on || !!state.lobby;
@@ -452,7 +466,7 @@ function raidScreen() {
               code, el('button', { class: 'btn', type: 'submit', disabled: busy }, 'Join by code'))))
         : el('p', { class: 'muted' }, 'Log in to raid with a friend.'),
       busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to start a raid.') : null,
-      state.profile?.raids?.played ? el('p', { class: 'muted small' }, `Raids with a friend: ${state.profile.raids.played} played, ${state.profile.raids.cleared} cleared.${state.profile.raids.bosses ? ` Best: ${scoreText({ tier: state.profile.raids.tier ?? 1, bosses: state.profile.raids.bosses, seconds: state.profile.raids.best })}` : ''}`) : null,
+      state.profile?.raids?.played ? el('p', { class: 'muted small' }, raidLine(state.profile)) : null,
     ),
   );
 }
@@ -528,7 +542,8 @@ function profileScreen(p: Profile) {
   return el('div', { class: 'profile' },
     el('section', { class: 'card' },
       el('h2', {}, p.name), el('div', { class: 'muted' }, `Playing since ${new Date(p.created).toLocaleDateString()}`),
-      statTiles(p)),
+      statTiles(p),
+      p.raids?.played ? el('p', { class: 'muted small' }, raidLine(p)) : null),
     el('div', { class: 'cols' },
       el('section', { class: 'card' }, el('h3', {}, 'Heroes played'),
         rows.length ? el('table', { class: 'tbl' },
@@ -658,7 +673,8 @@ net.on('session', (m) => {
 });
 net.on('auth_error', (m) => {
   state.profile = null;
-  state.authError = m.error;
+  // A message sent just before being signed out gets this answer: it must not replace the reason.
+  if (m.error !== 'Please log in' || !state.authError) state.authError = m.error;
   render();
 });
 net.on('update_required', (m) => {
@@ -668,6 +684,8 @@ net.on('update_required', (m) => {
   render();
 });
 net.on('logged_out', (m) => {
+  // First: leaving goes back to the screen the raid started from, and this one is the login.
+  if (coop.active) coop.exit(true);
   state.profile = null;
   state.lobby = null;
   state.queue.on = false;

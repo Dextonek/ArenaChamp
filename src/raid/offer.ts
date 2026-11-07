@@ -11,8 +11,9 @@ export class OfferScreen {
   private cards = document.createElement('div');
   private clock = document.createElement('div');
   private timer = 0;
+  private leave = document.createElement('button');
 
-  constructor() {
+  constructor(leave: () => void) {
     this.root.style.cssText =
       'position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;box-sizing:border-box;' +
       'background:radial-gradient(ellipse at center,rgba(40,26,14,0.94),rgba(6,5,8,0.98));font:600 13px ui-sans-serif,system-ui;color:#e9dcc6;overflow:auto;';
@@ -20,7 +21,11 @@ export class OfferScreen {
     this.line.style.cssText = 'opacity:0.75;text-align:center;';
     this.cards.style.cssText = 'display:flex;flex-wrap:wrap;gap:12px;justify-content:center;width:min(760px,100%);';
     this.clock.style.cssText = 'font:700 15px ui-sans-serif,system-ui;opacity:0.7;min-height:20px;';
-    this.root.append(this.title, this.line, this.cards, this.clock);
+    this.leave.type = 'button';
+    this.leave.className = 'btn ghost small';
+    this.leave.textContent = 'Leave';
+    this.leave.addEventListener('click', leave);
+    this.root.append(this.title, this.line, this.cards, this.clock, this.leave);
     document.body.append(this.root);
   }
 
@@ -28,6 +33,14 @@ export class OfferScreen {
   show(o: { title: string; line: string; offers: Upgrade[]; seconds: number; waiting?: string }, pick: (u: Upgrade | null) => void) {
     clearInterval(this.timer);
     if (!o.offers.length) {
+      // Nothing left to take. Someone waiting for the other player still sees why.
+      if (o.waiting) {
+        this.title.textContent = 'No upgrades left';
+        this.line.textContent = o.waiting;
+        this.cards.replaceChildren();
+        this.clock.textContent = '';
+        this.root.style.display = 'flex';
+      }
       pick(null);
       return;
     }

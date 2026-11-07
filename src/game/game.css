@@ -236,7 +236,9 @@
 /* Phones and tablets (src/touch.ts): the forfeit button moves under the duel bar, out of the bars' way; the page
    never scrolls or zooms under a drag, and a long press doesn't open the text / image menu. */
 @media (pointer: coarse), (max-width: 760px) {
-  .forfeit { top: calc(62px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); padding: 5px 10px; font-size: 11px; }
+  /* Under the duel's bar. A raid's bar is thinner and the hero's own sits lower, so its Leave stays between them. */
+  .forfeit { top: calc(100px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); padding: 5px 10px; font-size: 11px; }
+  .forfeit.raid-leave { top: calc(62px + env(safe-area-inset-top, 0px)); }
   .toast { top: calc(110px + env(safe-area-inset-top, 0px)); }
 }
 /* A phone held upright: a tighter menu, a smaller hero grid, and the Find match row pinned to the bottom of the

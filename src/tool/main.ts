@@ -15,7 +15,7 @@ import { Hotbar } from './hotbar';
  * caster with WASD, cast from the hotbar), the dodge dummy, hero mode and duels for testing kits, and the `vfx`
  * console hook. It runs on the shared runtime (src/runtime.ts), the same scene the duel game (src/game/) uses.
  */
-const rt = createRuntime({ modules: effectModules });
+const rt = createRuntime({ modules: effectModules, heroCycle: true });
 const { scene, camera, controls, renderer, arena, heroMode, duel, telegraphs, slots, bloom } = rt;
 
 const grid = new THREE.GridHelper(10, 20, 0x2a3040, 0x1a1e28);

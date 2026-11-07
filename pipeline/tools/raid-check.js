@@ -283,6 +283,12 @@
       fresh(['stone']);
       check('Stone Skin: max HP', d.heroMax / base, 1.2, 0.002);
       check('it starts full', d.heroHp / d.heroMax, 1);
+      // A boss's share is of the hero's own HP, so more max HP takes more hits to lose.
+      d.bossWorld().hitMe({ share: 0.2, from: { x: 0, z: 0 }, move: 'test' });
+      check('Stone Skin: a hit of 20 % takes 20 % of the HP without it', (d.heroMax - d.heroHp) / base, 0.2, 0.012);
+      fresh(['glass']);
+      d.bossWorld().hitMe({ share: 0.2, from: { x: 0, z: 0 }, move: 'test' });
+      check('Glass Edge: the same hit, out of less', (d.heroMax - d.heroHp) / base, 0.2, 0.012);
 
       fresh(['opportunist']);
       check('Opportunist: not open', dealt(), 100, 0.5);

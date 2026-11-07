@@ -70,6 +70,7 @@ const OFFER_S = 30;
 const OFFER_GRACE_MS = 2000;
 const WON_PAUSE_MS = 2200;
 const CLEARED_WAIT_S = 30;
+const STOOD_MAX = 400;
 const MOVE_RE = /^[a-z]{1,16}$/;
 /** Stands in for the client of a player who left: nothing is sent there. */
 const GONE = /** @type {any} */ ({ closed: true, send() {} });
@@ -182,7 +183,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         do code = Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
         while (lobbies.has(code));
         // A raid room is a lobby too, joined by its code. It is not listed: a raid is between friends.
-        const lobby = { code, seats: [{ client: c, hero: null, ready: false }], raid: typeof m.raid === 'string' && RAID_BOSSES[m.raid] ? m.raid : null };
+        const lobby = { code, seats: [{ client: c, hero: null, ready: false }], raid: typeof m.raid === 'string' && Object.hasOwn(RAID_BOSSES, m.raid) ? m.raid : null };
         lobbies.set(code, lobby);
         c.lobby = lobby;
         return lobbyChanged(lobby);
@@ -425,7 +426,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (![m.id, m.step, m.x, m.z, m.fx, m.fz, m.dir, m.seed].every(num) || (m.target !== 0 && m.target !== 1)) return;
         return send(/** @type {Match} */ (c.match).players[1 - c.side].client, {
           t: 'boss_cast', id: m.id, move: m.move, step: m.step, x: m.x, z: m.z, fx: m.fx, fz: m.fz, dir: m.dir, seed: m.seed, target: m.target, alone: m.alone === true,
-          rim: m.rim === true ? true : undefined, form: num(m.form) ? m.form : undefined, flag: m.flag === true ? true : undefined,
+          rim: m.rim === true ? true : undefined, form: m.form === 0 || m.form === 1 ? m.form : undefined, flag: m.flag === true ? true : undefined,
         });
       }
       case 'boss_move': {
@@ -475,6 +476,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (boss.settled.has(key)) return;
         let s = boss.stood.get(key);
         if (!s) {
+          // Far more zones than any fight has: a client making them up gets no timers.
+          if (boss.stood.size + boss.settled.size >= STOOD_MAX) return;
           s = { count: 0, from: new Set(), timer: setTimeout(() => stoodDone(match, m.id, m.part), STOOD_WAIT_MS) };
           boss.stood.set(key, s);
         }
@@ -510,6 +513,12 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (match.players.every((p) => p.down || p.left)) raidEnd(match, 'lost');
         return;
       }
+      case 'raid_form': {
+        // A two-kit hero's other half: the partner's screen replays its spells.
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || typeof m.alt !== 'boolean') return;
+        return send(match.players[1 - c.side].client, { t: 'peer_form', alt: m.alt });
+      }
       case 'raid_pick': {
         // The upgrade itself stays on the client that took it: the hub only waits for both.
         const match = c.match, run = match?.run;
@@ -519,10 +528,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         return;
       }
       case 'raid_next': {
-        // After the last boss: go on to the next tier, or stop here.
+        // After the last boss: this player goes on to the next tier. Stopping is leaving, and the other can go on alone.
         const match = c.match, run = match?.run;
-        if (!match || !run || match.state !== 'cleared') return;
-        if (m.go !== true) return raidEnd(match, 'cleared');
+        if (!match || !run || match.state !== 'cleared' || m.go !== true) return;
         run.goes.add(c.side);
         if (match.players.every((p, side) => p.left || run.goes.has(side))) raidNextTier(match);
         return;
@@ -844,6 +852,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     for (const s of boss.stood.values()) clearTimeout(s.timer);
     boss.stood.clear();
     match.state = 'break';
+    // A hero still down when the boss falls gets up with the next fight: between fights nobody is down.
+    for (const p of match.players) p.down = false;
     run.seconds += Math.max(0, (Date.now() - match.fightAt) / 1000);
     run.beaten++;
     const last = run.stage >= RAID_RUN.length - 1;

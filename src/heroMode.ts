@@ -635,6 +635,18 @@ export class HeroMode implements TouchTarget {
     this.zoom = THREE.MathUtils.clamp(this.zoom * f, 0.55, 1.7);
   }
 
+  /** The camera's distance, for a fight that wants more of the floor in view (a pinch still works). Returns what it was. */
+  setZoom(z: number) {
+    const was = this.zoom;
+    this.zoom = THREE.MathUtils.clamp(z, 0.55, 1.7);
+    return was;
+  }
+
+  /** The screen is taller than it is wide. */
+  get portrait() {
+    return this.host.camera.aspect < 1;
+  }
+
   private nearestFoe() {
     const hero = this.host.arena.caster.group.position;
     let best: ReturnType<Arena['liveFoes']>[number] | null = null, bd = Infinity;
