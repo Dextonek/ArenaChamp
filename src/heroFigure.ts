@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { HERO_SCALE, Hero, type BoneName } from './effects/weapons/hero';
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
-import { BodyParts, type BodyLook } from './raid/bodies/look';
+import { BodyParts, type BodyLook, type BodyState } from './raid/bodies/look';
 import { traitFor } from './traits';
 
 const AX = new THREE.Vector3(1, 0, 0);
@@ -200,6 +200,14 @@ export class HeroFigure {
 
   private body: BodyNow | null = null;
   private bodyParts = new Map<Hero, BodyParts>();
+  /** A boss's body action (`act`), with where it lands in the world. */
+  private bodyAct: { name: string; step: number; t: number; dur: number; wx: number; wz: number } | null = null;
+  private actSpot = new THREE.Vector3();
+
+  /** A boss's body does `name` (step `step` of it), landing at (x, z) after `seconds`. Its look says what that means. */
+  act(name: string, step: number, x: number, z: number, seconds: number) {
+    this.bodyAct = { name, step, t: 0, dur: Math.max(0.2, seconds), wx: x, wz: z };
+  }
 
   /** Which phase of its fight a boss's body shows. */
   setBodyPhase(phase: number) {
@@ -211,14 +219,22 @@ export class HeroFigure {
     this.hitV += (-150 * this.hitA - 15 * this.hitV) * dt;
     this.hitA += this.hitV * dt;
     if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.3) this.castNow = null;
+    // An action holds a moment where it landed, then comes back: about 1.2 s after landing it is over.
+    if (this.bodyAct && (this.bodyAct.t += dt) > this.bodyAct.dur + 1.2) this.bodyAct = null;
     f.root.position.set(pos.x, pos.y, pos.z);
     if (!f.loaded) return;
+    let act: BodyState['act'] = null;
+    if (this.bodyAct) {
+      f.root.updateMatrixWorld();
+      const at = f.root.worldToLocal(this.actSpot.set(this.bodyAct.wx, 0, this.bodyAct.wz));
+      act = { name: this.bodyAct.name, step: this.bodyAct.step, t: this.bodyAct.t, dur: this.bodyAct.dur, x: at.x, z: at.z, wx: this.bodyAct.wx, wz: this.bodyAct.wz, bx: pos.x, bz: pos.z };
+    }
     let parts = this.bodyParts.get(f);
     if (!parts) this.bodyParts.set(f, (parts = new BodyParts(f.root)));
     parts.reset();
     body.look({
       dt, time: this.clock, fwd: this.fwd, side: this.side, speed: this.vel.length(), moving: this.moving, cast: this.castNow,
-      hit: this.hitA, kneeling: !!state.status?.stunned, phase: body.phase, fall: this.dying,
+      hit: this.hitA, kneeling: !!state.status?.stunned, phase: body.phase, fall: this.dying, act,
     }, parts);
   }
 

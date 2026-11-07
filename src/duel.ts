@@ -902,6 +902,7 @@ export class Duel {
       floor: () => arena.aiBounds ?? arena.bounds ?? { x: RING.x, z: RING.z, r: RING.r },
       canWalk: (ax, az, bx, bz) => arena.aiPathClear(a.set(ax, 0, az), b.set(bx, 0, bz)),
       pose: (style, seconds, big) => this.figure.cast(style, seconds, big),
+      act: (name, step, x, z, seconds) => this.figure.act(name, step, x, z, seconds),
       poseRim: (style, seconds, big) => this.rimFigure?.cast(style, seconds, big),
       tag: (form, x, z, rx, rz) => this.bossTag(form, x, z, rx, rz),
       dash: (x, z, seconds) => { arena.moveFigure(foe, new THREE.Vector3(x, 0, z), seconds); },

@@ -198,6 +198,15 @@ export const wardenLook: BodyLook = (s, p) => {
     p.move(name, out, fy + bob * 0.4, fz + (swing ? swz : 0));
     p.turn(name, pitch, sg * 0.1 * Math.sin(t * 1.3), -sg * lean * 0.1);
   }
+  // Fists of the Court: one fist at a time flies up and out, then comes down where the hero stood, and floats back.
+  if (s.act?.name === 'fists' && fall <= 0) {
+    const name = s.act.step % 2 === 0 ? 'fistL' : 'fistR', u = s.act.t / s.act.dur;
+    const out = u < 1 ? ease(u) : 1 - seg(s.act.t - s.act.dur, 0.3, 1.2);
+    // Up high halfway, down on the floor at the end, where the zone is.
+    const arc = u < 1 ? Math.sin(Math.min(1, u) * Math.PI) * 3.2 : 0;
+    p.toward(name, s.act.wx, 0.8, s.act.wz, out, arc);
+    p.turn(name, 0.6 * out, 0, 0);
+  }
   p.move('stones', 0, stonesY + bob * 0.5, 0);
   p.turn('stones', 0, t * stonesSpin, 0);
   p.size('stones', stonesSize);

@@ -136,6 +136,25 @@ const sunRay: BossMove = {
   },
 };
 
+/** Fists of the Court: one fist, then the other, flies out and comes down where the target stood. Keep walking. */
+const fists: BossMove = {
+  id: 'fists', name: 'Fists of the Court', charge: 2.4, lock: 2.6, cooldown: 11, steps: [0, 1], chases: true, range: 14, pose: 'raise',
+  body: { name: 'fists', seconds: 1.4 },
+  aim: atTarget,
+  play(c, p) {
+    const radius = 2.5, at = p.shown(1.4);
+    return {
+      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, at, share: 0.16, knock: 3 }], duration: at + 0.6,
+      look: {
+        land() {
+          p.sparks.emit(c.x, 0.3, c.z, 30, 5, 3.5, 0.7, 0xb8a080);
+          p.glows.flash(c.x, c.z, radius + 0.4, GLOW, 0.6, 0.4);
+        },
+      },
+    };
+  },
+};
+
 // --- phase 2, High Noon: cover becomes the puzzle -------------------------------------------------------------------
 
 /**
@@ -476,13 +495,13 @@ export const SUN_WARDEN: BossDef = {
   kneel: NUMBERS.kneel,
   phasePause: 2.5,
   phases: [
-    { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray'], gap: [2.4, 3.4] },
-    { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
-    { name: 'Last Light', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
+    { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray', 'fists'], gap: [2.4, 3.4] },
+    { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
+    { name: 'Last Light', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
   ],
   /** A higher tier brings these in from the first phase on, one a tier. */
   extra: ['order', 'walking', 'eclipse'],
-  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, noon, order: sunOrder, burden: sharedBurden, eclipse, anchors, walking: walkingSun },
+  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, eclipse, anchors, walking: walkingSun },
   /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
   late: () => ({
     offset: -255,

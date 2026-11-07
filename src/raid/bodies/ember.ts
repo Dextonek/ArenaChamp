@@ -168,4 +168,18 @@ export const emberLook: BodyLook = (s, p) => {
     p.turn('lantern' + n, Math.sin(th) * 0.25, 0, -Math.cos(th) * 0.25);
     p.glow('lantern' + n, lampGlow * (n === 'L' ? 1 + held * 0.8 : 1));
   }
+
+  // Lantern Toss: the two lanterns fly out and hang either side of where she aimed, burst, then come back.
+  if (s.act?.name === 'lanterns' && fall <= 0) {
+    // The same spots as the zones: either side of her aim, across the line from her to it.
+    const { wx, wz, bx, bz } = s.act, d = Math.hypot(wx - bx, wz - bz) || 1, px = (wz - bz) / d, pz = -(wx - bx) / d, u = s.act.t / s.act.dur;
+    const out = u < 1 ? ease(u / 0.45) : 1 - seg(s.act.t - s.act.dur, 0.2, 1.1);
+    for (const [sg, n] of [[1, 'L'], [-1, 'R']] as const) {
+      p.toward('lantern' + n, wx + px * TOSS * sg, 1.2, wz + pz * TOSS * sg, out, Math.sin(Math.min(1, u / 0.45) * Math.PI) * 1.4);
+      p.glow('lantern' + n, 1 + 2.5 * (u < 1 ? ease(u) : out));
+    }
+  }
 };
+
+/** How far either side of her aim the lanterns hang (m). Ember's Lantern Toss in ashEmber.ts uses the same. */
+export const TOSS = 3.2;

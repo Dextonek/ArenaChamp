@@ -175,6 +175,22 @@
       place(0, 10);
       check('marked: walked out', take(() => { cast('marked', { step: 1, x: 0, z: 10 }); place(4, 10); }, 2), 0);
 
+      // Knuckle Quake: two cracks cross where you stood. A step aside, and neither reaches you.
+      fresh(0, 2);
+      place(0, 9);
+      check('quake: where they cross', take(() => cast('quake', { x: 0, z: 9, dir: 0 }), 2), 0.15);
+      fresh(0, 2);
+      place(3.5, 9);
+      check('quake: stepped aside', take(() => cast('quake', { x: 0, z: 9, dir: 0 }), 2), 0);
+
+      // Lantern Toss: either side of you. Standing still, nothing; a step to one side, a lantern.
+      fresh(0, 2);
+      place(0, 10);
+      check('lanterns: stood still between them', take(() => cast('lanterns', { x: 0, z: 10, dir: 0 }), 2), 0);
+      fresh(0, 2);
+      place(3.2, 10);
+      check('lanterns: under one', take(() => cast('lanterns', { x: 0, z: 10, dir: 0 }), 2), 0.14);
+
       // Burn your own: the brain says in the cast whether the boss stood under it, and then it pays.
       fresh(0, 10);
       const burnHp = a.hpOf(d.foe), burnGauge = d.boss.link.gauge ?? 0;
@@ -451,6 +467,13 @@
       check('pillar: stood still', take(() => cast('pillars'), 1.7), 0.15);
       place(-3, 13);
       check('pillar: walked out', take(() => { cast('pillars'); place(3, 13); }, 1.7), 0);
+
+      // Fists of the Court: a fist where you stood. Walking on, it misses.
+      fresh(0, 1);
+      place(-3, 13);
+      check('fists: stood still', take(() => cast('fists'), 1.6), 0.16);
+      place(-3, 13);
+      check('fists: walked out', take(() => { cast('fists'); place(3, 13); }, 1.6), 0);
 
       // Sun Ray: stopped by cover, cracks the wall.
       fresh(0, 1);

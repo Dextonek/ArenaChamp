@@ -21,6 +21,12 @@ export interface BodyState {
   phase: number;
   /** The fight is over and it falls, 0..1, or -1. */
   fall: number;
+  /**
+   * What a move does with the body itself, besides its cast pose (`BossMove.act`): fists flying out, lanterns thrown. `x`, `z` are where
+   * it lands, in the body's own space (x its left, z its front), and `wx`, `wz` in the world, where the body stands at `bx`, `bz`. `t` seconds
+   * since that step, `dur` until it lands.
+   */
+  act: { name: string; step: number; t: number; dur: number; x: number; z: number; wx: number; wz: number; bx: number; bz: number } | null;
 }
 
 /** Poses a boss's rigid parts for one frame. Parts start each frame at rest, so a look only says what differs. */
@@ -28,6 +34,9 @@ export type BodyLook = (s: BodyState, parts: BodyParts) => void;
 
 const EULER = new THREE.Euler();
 const TURN = new THREE.Quaternion();
+const AT = new THREE.Vector3();
+const UP0 = new THREE.Vector3();
+const UP1 = new THREE.Vector3();
 
 /** A boss model's named parts, each a rigid node with its pivot where it should turn. A name the model lacks is simply skipped. */
 export class BodyParts {
@@ -73,6 +82,18 @@ export class BodyParts {
   turn(name: string, x: number, y: number, z: number) {
     const n = this.nodes.get(name);
     if (n) n.node.quaternion.multiply(TURN.setFromEuler(EULER.set(x, y, z)));
+  }
+
+  /**
+   * Moves a part `k` of the way to a point in the world, and `up` metres above that in the world: to send a fist or a lantern somewhere.
+   * A model's own nodes may be turned (Blender's z up), so this works in the world, not in the part's own axes.
+   */
+  toward(name: string, x: number, y: number, z: number, k: number, up = 0) {
+    const n = this.nodes.get(name)?.node, parent = n?.parent;
+    if (!n || !parent) return;
+    parent.updateWorldMatrix(true, false);
+    n.position.lerp(parent.worldToLocal(AT.set(x, y, z)), k);
+    if (up) n.position.add(parent.worldToLocal(UP1.set(0, up, 0)).sub(parent.worldToLocal(UP0.set(0, 0, 0))));
   }
 
   /** Scales a part from rest, or hides it at 0. */

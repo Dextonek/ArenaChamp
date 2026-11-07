@@ -90,6 +90,7 @@ export class BossFight {
     }
     this.script.play(c);
     if (c.move === this.def.phases[this.stats.phases]?.timed?.move && c.step === 0) this.timedSeen++;
+    if (move.body && !c.rim) this.world.act(move.body.name, c.step, c.x, c.z, move.body.seconds * raidTierFactor(this.tier));
     if (c.step !== 0 || move.quiet) return;
     this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
     this.world.enemyCast(!!move.big);

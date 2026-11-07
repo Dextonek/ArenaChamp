@@ -7,7 +7,7 @@ import { PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import { ashLook } from './bodies/ash';
-import { emberLook } from './bodies/ember';
+import { TOSS, emberLook } from './bodies/ember';
 import type { BodyLook } from './bodies/look';
 import { FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, WaveRing } from './fx';
 import { STAND_COLOR } from './script';
@@ -127,6 +127,39 @@ const drag: BossMove = {
   },
 };
 
+/**
+ * Knuckle Quake: both fists hit the floor, and a crack runs from each, crossing where the target stands. Step aside, or in close
+ * between them: near him the two cracks are apart.
+ */
+const quake: BossMove = {
+  id: 'quake', name: 'Knuckle Quake', charge: 1.8, lock: 2.4, cooldown: 9, range: 12, form: ASH, pose: 'slam',
+  aim: atTarget,
+  play(c, p) {
+    const at = p.shown(1.8), width = 1.8, side = 2.3;
+    const px = Math.cos(c.dir), pz = -Math.sin(c.dir);
+    const threats: Threat[] = [1, -1].map((sg) => {
+      const x1 = c.fx + px * side * sg, z1 = c.fz + pz * side * sg;
+      const dir = Math.atan2(c.x - x1, c.z - z1), full = toRim(x1, z1, dir);
+      const ex = x1 + Math.sin(dir) * full, ez = z1 + Math.cos(dir) * full, k = p.rayStop(x1, z1, ex, ez);
+      return { shape: { kind: 'line', x1, z1, x2: x1 + (ex - x1) * k, z2: z1 + (ez - z1) * k, width }, at, share: 0.15 };
+    });
+    return {
+      threats, duration: at + 0.5,
+      look: {
+        land(th) {
+          const s = th.shape;
+          if (s.kind !== 'line') return;
+          for (let k = 1; k <= 5; k++) {
+            const x = s.x1 + (s.x2 - s.x1) * (k / 5), z = s.z1 + (s.z2 - s.z1) * (k / 5);
+            p.sparks.emit(x, 0.2, z, 6, 3.5, 3, 0.6, ROCK);
+            p.glows.flash(x, z, 1.4, LAVA, 0.45, 0.3);
+          }
+        },
+      },
+    };
+  },
+};
+
 /** Lava where he walked. No warning: plan your route. */
 const trail: BossMove = {
   id: 'trail', name: 'Burning Trail', charge: 0, lock: 0, cooldown: 0, alongside: true, quiet: true, form: ASH, pose: 'channel',
@@ -236,6 +269,29 @@ const marked: BossMove = {
           }
         },
         dispose: () => pool.dispose(),
+      },
+    };
+  },
+};
+
+/** Lantern Toss: her two lanterns fly out and hang either side of the target, then burst. Stand still between them. */
+const lanterns: BossMove = {
+  id: 'lanterns', name: 'Lantern Toss', charge: 1.8, lock: 2.2, cooldown: 10, form: EMBER, pose: 'thrust',
+  body: { name: 'lanterns', seconds: 1.8 },
+  aim: atTarget,
+  play(c, p) {
+    const radius = 2.2, at = p.shown(1.8);
+    const d = Math.hypot(c.x - c.fx, c.z - c.fz) || 1, px = (c.z - c.fz) / d, pz = -(c.x - c.fx) / d;
+    const spots = [1, -1].map((sg) => ({ x: c.x + px * TOSS * sg, z: c.z + pz * TOSS * sg }));
+    return {
+      threats: spots.map((s) => ({ shape: { kind: 'circle', x: s.x, z: s.z, radius }, at, share: 0.14 })), duration: at + 0.5,
+      look: {
+        land(th) {
+          const s = th.shape;
+          if (s.kind !== 'circle') return;
+          p.sparks.emit(s.x, 1.2, s.z, 30, 5, 3, 0.8, EMBER_COLOR);
+          p.glows.flash(s.x, s.z, radius + 0.4, LAVA, 0.6, 0.45);
+        },
       },
     };
   },
@@ -405,11 +461,11 @@ export const ASH_AND_EMBER: BossDef = {
   forms: [
     {
       name: 'Ash', kit: kitOf('Ash', 'models/bosses/ash.glb', ashLook, '#e8703a'), scale: 1, body: { radius: 1.3, height: 5.8 }, speed: 2.3, keepAt: 3.5,
-      moves: ['slam', 'charge', 'drag'], rimMoves: ['rock'], trail: 'trail',
+      moves: ['slam', 'charge', 'drag', 'quake'], rimMoves: ['rock'], trail: 'trail',
     },
     {
       name: 'Ember', kit: kitOf('Ember', 'models/bosses/ember.glb', emberLook, '#ff8a40'), scale: 1, body: { radius: 0.9, height: 4 }, speed: 3, keepAt: 9, backAt: 6,
-      moves: ['fan', 'marked', 'bombs', 'wave'], rimMoves: ['fan', 'bombs'],
+      moves: ['fan', 'marked', 'bombs', 'wave', 'lanterns'], rimMoves: ['fan', 'bombs'],
     },
   ],
   rimSpots: RIM_SPOTS,
@@ -421,7 +477,7 @@ export const ASH_AND_EMBER: BossDef = {
   ],
   /** A higher tier adds these: Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave. */
   extra: ['rock', 'marked', 'wave'],
-  moves: { slam, charge, drag, trail, rock, fan, marked, bombs, wave, tag, seal },
+  moves: { slam, charge, drag, quake, trail, rock, fan, marked, bombs, wave, lanterns, tag, seal },
   /** Past 5 minutes, or as soon as Together begins, the lava rises. Last stand on the shift's own clock at 105 s. */
   late: () => {
     const ring = (inner: number) => ({ shape: { kind: 'ring' as const, x: C.x, z: C.z, inner, outer: PIT_R }, share: 0.03 });

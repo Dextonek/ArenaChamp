@@ -220,6 +220,8 @@ export interface BossMove {
   quiet?: boolean;
   /** Which form of a tag team it belongs to: a higher tier's extra moves go to the right one. */
   form?: number;
+  /** What the boss's own body does for each step (its look knows the name): fists flying out, lanterns thrown. `seconds` until it lands, at tier 1. */
+  body?: { name: string; seconds: number };
   /** What only the screen that runs the brain may do: move the boss. Returns seconds it stands still after. */
   act?(world: BossWorld, c: BossCast): number | void;
   pose: CastStyle;
@@ -387,6 +389,8 @@ export interface BossWorld {
   pose(style: CastStyle, seconds: number, big: boolean): void;
   /** The same for the one on the rim. */
   poseRim(style: CastStyle, seconds: number, big: boolean): void;
+  /** The boss's body does a move's `act`, step `step`, landing at (x, z) after `seconds`. */
+  act(name: string, step: number, x: number, z: number, seconds: number): void;
   /** A tag team swaps (see `PlayContext.tag`). */
   tag(form: number, x: number, z: number, rx: number, rz: number): void;
   /** The boss rushes to (x, z). Only the screen that runs the brain calls it. */
