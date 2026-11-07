@@ -208,6 +208,8 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **A Ricochet bolt still cracks the wall it bounces off, and its aim strip stops there.** On the partner's screen it doesn't bounce, since
   the partner's upgrades aren't sent: only the look differs.
 - **A hero's upgrades don't change the partner's replay.** A Glass Edge hit looks the same; the HP comes from the hub.
+- **The first fade in a session builds a shader.** The first time a boss fades there is one short pause, about 50 ms on a desktop and not measured
+  on a phone. Nyx's veil does the same in a duel.
 - **A brain in a tab hidden for over 5 minutes nearly stops.** A hidden tab goes on simulating from a timer, about once a second, which works
   (checked: nothing piles up when it comes back). After 5 minutes Chrome slows timers to once a minute, and the boss hardly acts for the other
   player. A phone that freezes the page and drops the socket hands the brain over at once.
