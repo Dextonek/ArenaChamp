@@ -164,7 +164,8 @@ pass made Ash and Ember too hard (6 of 39 at Normal, with 3,550 HP and the enrag
 whole phase without a hit). A person will find these bosses harder than these numbers. Stages are still won about nine times in ten at Normal,
 so most losses come from the last phase and the enrage. Moves' costs and the quiet between moves were left alone: those are where the
 autopilot says least about a person. **The knobs:** `enrage` in each boss's file, HP in `RAID_BOSSES`, the stage's `STAGE_S`, `ADD_SHARE`
-and `SHOT_SHARE` in `src/raid/stage.ts`, `RAGE_HIT` and `RAGE_GAP`.
+and `SHOT_SHARE` in `src/raid/stage.ts`, `RAGE_HIT` and `RAGE_GAP`. Not measured above tier 1: there the stage's window shrinks with the
+shown times while its adds' HP grows with the boss's, so it gets harder from both sides.
 
 **As built, against the plan above it:** the adds' HP isn't kept by the hub. Each screen keeps its own, takes the partner's hits off when they
 arrive, and death is an objective: no HP to keep in sync, and nothing new for the hub to count. The stage is a move, not a new kind of phase.
