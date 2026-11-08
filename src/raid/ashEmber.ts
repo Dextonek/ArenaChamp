@@ -135,6 +135,7 @@ const drag: BossMove = {
  */
 const quake: BossMove = {
   id: 'quake', name: 'Knuckle Quake', charge: 1.8, lock: 2.4, cooldown: 9, range: 12, form: ASH, pose: 'slam',
+  body: { name: 'quake', seconds: 1.8 },
   aim: atTarget,
   play(c, p) {
     const at = p.shown(1.8), width = 1.8, side = 2.3;
@@ -175,6 +176,7 @@ const trail: BossMove = {
 /** From the rim: rocks, each where the target stood. */
 const rock: BossMove = {
   id: 'rock', name: 'Cinder Rock', charge: 2.6, lock: 0, cooldown: 7, steps: [0, 0.9], chases: true, form: ASH, pose: 'raise',
+  body: { name: 'rock', seconds: 1.7 },
   aim: atTarget,
   play(c, p) {
     const radius = 2.4, at = p.shown(1.7);
@@ -303,6 +305,7 @@ const lanterns: BossMove = {
 /** Bombs in pairs, either side of the target. Walk between them. */
 const bombs: BossMove = {
   id: 'bombs', name: 'Vent Bombs', charge: 2.9, lock: 2.4, cooldown: 9, steps: [0, 0.7, 1.4], chases: true, form: EMBER, pose: 'raise',
+  body: { name: 'bombs', seconds: 1.5 },
   aim: atTarget,
   play(c, p) {
     const radius = 1.9, at = p.shown(1.5), off = 2.7;

@@ -845,6 +845,27 @@
         check('at tier 3 the enrage comes later, as the HP grows', d.boss.enrageAt / def.enrage, 1.15 ** 2, 0.005);
         yes('a fight left while enraged: the next boss is not red', d.figure.body?.rage === false);
       }
+      // The body: its pose lasts the whole cast, so it strikes when the zone lands (no hero's 2.5 s cap), sooner at a higher tier by as
+      // much as the zone; a move's steps that overlap act out together.
+      {
+        const { raidTierFactor } = await import('/server/protocol.mjs');
+        fresh(0, 1);
+        cast('noon');
+        step(0.05);
+        check('the body: Gathering Noon strikes at 8 s, when it lands', d.figure.castNow?.dur ?? 0, 8, 0.01);
+        d.startBoss({ def, link: new LocalLink(def, 3), seed: 'tier3', mode: 'play', tier: 3 });
+        d.boss.brain.pause = 1e9;
+        step(0.05);
+        cast('sweep');
+        step(0.05);
+        check('the body at tier 3: its strike comes sooner with the zone', d.figure.castNow?.dur ?? 0, 1.6 * raidTierFactor(3), 0.01);
+        fresh(0, 1);
+        cast('pillars', { step: 0 });
+        step(0.7);
+        cast('pillars', { step: 1 });
+        step(0.1);
+        yes('the body: Pillar Fall\'s first two steps act out together', d.figure.bodyActs.filter((a) => a.name === 'pillars').map((a) => a.step).join() === '0,1');
+      }
 
       // Phases: HP thresholds; the end of the fight.
       fresh(0, 2);

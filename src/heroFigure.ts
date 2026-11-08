@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { HERO_SCALE, Hero, type BoneName } from './effects/weapons/hero';
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
-import { BodyParts, type BodyLook, type BodyState } from './raid/bodies/look';
+import { BodyParts, type BodyAct, type BodyLook } from './raid/bodies/look';
 import { traitFor } from './traits';
 
 const AX = new THREE.Vector3(1, 0, 0);
@@ -204,13 +204,14 @@ export class HeroFigure {
   private bodyParts = new Map<Hero, BodyParts>();
   /** How red an enraged body glows now, easing in. */
   private rageK = 0;
-  /** A boss's body action (`act`), with where it lands in the world. */
-  private bodyAct: { name: string; step: number; t: number; dur: number; wx: number; wz: number } | null = null;
+  /** A boss's body actions (`act`) still playing, with where each lands in the world: a move's steps can overlap. */
+  private bodyActs: { name: string; step: number; t: number; dur: number; wx: number; wz: number }[] = [];
   private actSpot = new THREE.Vector3();
 
   /** A boss's body does `name` (step `step` of it), landing at (x, z) after `seconds`. Its look says what that means. */
   act(name: string, step: number, x: number, z: number, seconds: number) {
-    this.bodyAct = { name, step, t: 0, dur: Math.max(0.2, seconds), wx: x, wz: z };
+    this.bodyActs.push({ name, step, t: 0, dur: Math.max(0.2, seconds), wx: x, wz: z });
+    if (this.bodyActs.length > 8) this.bodyActs.shift();
   }
 
   /** Which phase of its fight a boss's body shows. */
@@ -227,23 +228,26 @@ export class HeroFigure {
   private poseBody(f: Hero, body: BodyNow, dt: number, pos: THREE.Vector3, state: FigureState) {
     this.hitV += (-150 * this.hitA - 15 * this.hitV) * dt;
     this.hitA += this.hitV * dt;
-    if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.3) this.castNow = null;
+    // A boss strikes at the end of its cast (when its zone lands), then holds and settles: half a second more.
+    if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.5) this.castNow = null;
     // An action holds a moment where it landed, then comes back: about 1.2 s after landing it is over.
-    if (this.bodyAct && (this.bodyAct.t += dt) > this.bodyAct.dur + 1.2) this.bodyAct = null;
+    for (const a of this.bodyActs) a.t += dt;
+    this.bodyActs = this.bodyActs.filter((a) => a.t <= a.dur + 1.2);
     f.root.position.set(pos.x, pos.y, pos.z);
     if (!f.loaded) return;
-    let act: BodyState['act'] = null;
-    if (this.bodyAct) {
-      f.root.updateMatrixWorld();
-      const at = f.root.worldToLocal(this.actSpot.set(this.bodyAct.wx, 0, this.bodyAct.wz));
-      act = { name: this.bodyAct.name, step: this.bodyAct.step, t: this.bodyAct.t, dur: this.bodyAct.dur, x: at.x, z: at.z, wx: this.bodyAct.wx, wz: this.bodyAct.wz, bx: pos.x, bz: pos.z };
+    const acts: BodyAct[] = [];
+    if (this.bodyActs.length) f.root.updateMatrixWorld();
+    for (const a of this.bodyActs) {
+      const at = f.root.worldToLocal(this.actSpot.set(a.wx, 0, a.wz));
+      acts.push({ name: a.name, step: a.step, t: a.t, dur: a.dur, x: at.x, z: at.z, wx: a.wx, wz: a.wz, bx: pos.x, bz: pos.z, yaw: this.shownYaw });
     }
+    const act = acts[acts.length - 1] ?? null;
     let parts = this.bodyParts.get(f);
     if (!parts) this.bodyParts.set(f, (parts = new BodyParts(f.root)));
     parts.reset();
     body.look({
       dt, time: this.clock, fwd: this.fwd, side: this.side, speed: this.vel.length(), moving: this.moving, cast: this.castNow,
-      hit: this.hitA, kneeling: !!state.status?.stunned, phase: body.phase, fall: this.dying, act,
+      hit: this.hitA, kneeling: !!state.status?.stunned, phase: body.phase, fall: this.dying, act, acts,
     }, parts);
     this.rageK += ((body.rage ? 1 : 0) - this.rageK) * Math.min(1, dt * 1.5);
     parts.rage(this.rageK * (0.75 + 0.25 * Math.sin(this.clock * 5)));
@@ -293,7 +297,8 @@ export class HeroFigure {
 
   /** A spell was cast: plays `style`'s wind-up and strike over `seconds` (the cast's own root). */
   cast(style: CastStyle, seconds: number, big = false) {
-    this.castNow = { style, t: 0, dur: Math.max(0.35, Math.min(seconds, 2.5)), big };
+    // A hero's cast is quick whatever its spell says; a boss's runs the whole cast, so its strike comes when its zone lands.
+    this.castNow = { style, t: 0, dur: Math.max(0.35, this.body ? seconds : Math.min(seconds, 2.5)), big };
   }
 
   /** How veiled the figure should look, 0..1 (`Trait.figureVeil`), easing there. Asked every frame. */

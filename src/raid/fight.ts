@@ -119,13 +119,20 @@ export class BossFight {
     this.script.play(c);
     if (c.move === this.def.phases[this.stats.phases]?.timed?.move && c.step === 0) this.timedSeen++;
     if (move.stage && c.step === 0) this.stageDue = null;
-    if (move.body && !c.rim) this.world.act(move.body.name, c.step, c.x, c.z, move.body.seconds * raidTierFactor(this.tier));
+    // The body acts the move out, the one on the rim too: what it does lands with the zone.
+    if (move.body) {
+      const seconds = move.body.seconds * raidTierFactor(this.tier);
+      if (c.rim) this.world.actRim(move.body.name, c.step, c.x, c.z, seconds);
+      else this.world.act(move.body.name, c.step, c.x, c.z, seconds);
+    }
     if (c.step !== 0 || move.quiet) return;
     if (move.stage) this.stageLeft = move.charge * raidTierFactor(this.tier);
     if (move.stage || this.stageLeft <= 0) this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
     this.world.enemyCast(!!move.big);
-    if (c.rim) this.world.poseRim(move.pose, move.charge, !!move.big);
-    else if (!move.alongside) this.world.pose(move.pose, move.charge, !!move.big);
+    // The pose's strike lands with the move: its time is the cast bar's, shorter at a higher tier.
+    const charge = move.charge * raidTierFactor(this.tier);
+    if (c.rim) this.world.poseRim(move.pose, charge, !!move.big);
+    else if (!move.alongside) this.world.pose(move.pose, charge, !!move.big);
   }
 
   private onPhase(i: number) {

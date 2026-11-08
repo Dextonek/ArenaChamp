@@ -452,6 +452,8 @@ export interface BossWorld {
   poseRim(style: CastStyle, seconds: number, big: boolean): void;
   /** The boss's body does a move's `act`, step `step`, landing at (x, z) after `seconds`. */
   act(name: string, step: number, x: number, z: number, seconds: number): void;
+  /** The same for the one on the rim. */
+  actRim(name: string, step: number, x: number, z: number, seconds: number): void;
   /** A tag team swaps (see `PlayContext.tag`). */
   tag(form: number, x: number, z: number, rx: number, rz: number): void;
   /** The boss rushes to (x, z). Only the screen that runs the brain calls it. */

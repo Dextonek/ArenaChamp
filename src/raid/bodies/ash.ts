@@ -1,4 +1,4 @@
-import type { BodyLook, BodyParts, BodyState } from './look';
+import { actBeat, beat, lead, type BodyLook, type BodyParts } from './look';
 
 /**
  * Ash (models/bosses/ash.glb, built by blender/bosses/boss_bodies.py): a hunched magma brute on his knuckles.
@@ -27,13 +27,10 @@ const PLATES: Array<[string, [number, number, number], 1 | 2]> = [
   ['plateD', [-1.0, -2.2, -0.9], 2],
 ];
 
-/** The wind-up and the strike of a cast: `a` swells until 70 % of it, then drops; `k` is the strike, held and then settling. */
-function beat(c: NonNullable<BodyState['cast']>) {
-  const ta = c.dur * 0.7;
-  const a = c.t < ta ? ease(c.t / ta) : Math.max(0, 1 - (c.t - ta) / 0.1);
-  const k = c.t < ta ? 0 : c.t < c.dur ? Math.min(1, (c.t - ta) / 0.1) : Math.max(0, 1 - (c.t - c.dur) / 0.3);
-  return { a, k };
-}
+/** The moves this body acts out itself, in place of its cast pose. */
+const OWN = new Set(['quake', 'rock']);
+/** Cinder Rock: he lets go of the rock this long before it lands (s): it goes up, and comes down on you. */
+const ROCK_FLIGHT = 0.55;
 
 export const ashLook: BodyLook = (s, p) => {
   let m = mem.get(p);
@@ -44,7 +41,10 @@ export const ashLook: BodyLook = (s, p) => {
   const ph = m.phase, kn = m.kneel;
   const t = s.time;
   const fall = Math.max(0, s.fall);
-  const cast = s.cast && !s.kneeling ? s.cast : null;
+  // A move he acts out himself (below) takes the place of his cast pose. Cinder Rock's two throws overlap, one arm each.
+  const live = !s.kneeling && fall <= 0 ? s.acts : [];
+  const quakeA = lead(live, (a) => a.name === 'quake');
+  const cast = s.cast && !s.kneeling && !live.some((a) => OWN.has(a.name)) ? s.cast : null;
   const { a, k } = cast ? beat(cast) : { a: 0, k: 0 };
   const style = cast?.style;
 
@@ -116,6 +116,37 @@ export const ashLook: BodyLook = (s, p) => {
       coreGlow += a * 1.2 + k * 0.8;
       seamGlow += a * 0.6 + k * 0.5;
     }
+  }
+
+  // Knuckle Quake: reared up with both fists overhead, then thrown down far out in front, so the cracks run from his fists to you.
+  if (quakeA) {
+    const { w, s: st, r } = actBeat(quakeA, 0.2, 0.3, 0.6);
+    const wind = (1 - st) * w;
+    armL += r * (-2.4 * wind - 1.0 * st);
+    armR += r * (-2.4 * wind - 1.0 * st);
+    foreL += r * (-0.3 * wind - 0.5 * st);
+    foreR += r * (-0.3 * wind - 0.5 * st);
+    legL += r * 0.25 * wind;
+    legR += r * 0.25 * wind;
+    torsoY += r * (0.45 * wind - 0.45 * st);
+    lean += r * (-0.4 * wind + 0.85 * st);
+    head += r * (-0.25 * wind + 0.35 * st);
+    coreGlow += r * (1.2 * wind + 0.9 * st);
+    seamGlow += r * (0.6 * wind + 0.6 * st);
+  }
+  // Cinder Rock (from the rim): one arm back over his head with the rock, then thrown up high; it comes down on you. One arm, then the other.
+  for (const act of live) {
+    if (act.name !== 'rock') continue;
+    const tr = Math.max(0.3, act.dur - ROCK_FLIGHT), u = act.t - tr;
+    const wind = u < 0 ? ease(act.t / tr) : Math.max(0, 1 - u / 0.12);
+    const toss = u < 0 ? 0 : u < 0.15 ? u / 0.15 : Math.max(0, 1 - (u - 0.35) / 0.6);
+    const sg = act.step % 2 === 0 ? -1 : 1;
+    const arm = -2.7 * wind - 1.3 * toss, fore = -0.8 * wind;
+    if (sg < 0) { armR += arm; foreR += fore; armL += 0.2 * wind; } else { armL += arm; foreL += fore; armR += 0.2 * wind; }
+    twist += sg * (0.35 * wind - 0.3 * toss);
+    lean += -0.25 * wind + 0.35 * toss;
+    torsoY += 0.15 * wind;
+    coreGlow += wind * 0.8 + toss * 0.5;
   }
 
   // A hit: he rocks back and the core flares.

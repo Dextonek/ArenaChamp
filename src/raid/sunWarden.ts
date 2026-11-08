@@ -46,6 +46,7 @@ const dropBeam = (b: GlowBeam) => {
 /** A cone in front of him. Walk out, or get behind him. */
 const stoneSweep: BossMove = {
   id: 'sweep', name: 'Stone Sweep', charge: 1.6, lock: 2.1, cooldown: 6, range: 8.5, pose: 'swing',
+  body: { name: 'sweep', seconds: 1.6 },
   aim: atTarget,
   play(c, p) {
     const radius = 6.5, angle = 120, at = p.shown(1.6);
@@ -75,6 +76,7 @@ const SHARD_OUT = 9;
 /** Three stones, each where the target stood at that moment. Keep walking. They stay a while: his ray breaks on them. */
 const pillarFall: BossMove = {
   id: 'pillars', name: 'Pillar Fall', charge: 2.9, lock: 2.9, cooldown: 9, steps: [0, 0.7, 1.4], chases: true, pose: 'raise',
+  body: { name: 'pillars', seconds: 1.5 },
   aim: atTarget,
   play(c, p) {
     const radius = 2.2, at = p.shown(1.5);
@@ -274,6 +276,7 @@ const noon: BossMove = {
 /** Four wedges round the altar show 1-2-3-4, then fire in that order. Stand next to 1, then step into it once it has fired. */
 const sunOrder: BossMove = {
   id: 'order', name: 'Sun Order', charge: 4.9, lock: 4.9, cooldown: 16, pose: 'raise',
+  body: { name: 'order', seconds: 2.5 },
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(C.x - c.boss.x, C.z - c.boss.z) }),
   play(c, p) {
     const rng = seeded(c.seed);
@@ -353,6 +356,7 @@ const longHour = stageMove({
 /** Near him, far from him, near again. Read and swap. */
 const eclipse: BossMove = {
   id: 'eclipse', name: 'Eclipse', charge: 4.8, lock: 4.8, cooldown: 14, steps: [0, 1.6, 3.2], pose: 'burst',
+  body: { name: 'eclipse', seconds: 1.6 },
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) }),
   play(c, p) {
     const at = p.shown(1.6), near = 5.5;

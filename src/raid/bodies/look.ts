@@ -26,7 +26,62 @@ export interface BodyState {
    * it lands, in the body's own space (x its left, z its front), and `wx`, `wz` in the world, where the body stands at `bx`, `bz`. `t` seconds
    * since that step, `dur` until it lands.
    */
-  act: { name: string; step: number; t: number; dur: number; x: number; z: number; wx: number; wz: number; bx: number; bz: number } | null;
+  act: BodyAct | null;
+  /** Every action still playing, oldest first: a move's steps overlap (Pillar Fall's second stone is called before the first lands). */
+  acts: readonly BodyAct[];
+}
+
+/** One body action: what a move's step does with the body (see `BodyState.act`). `yaw`: which way the body faces in the world. */
+export interface BodyAct { name: string; step: number; t: number; dur: number; x: number; z: number; wx: number; wz: number; bx: number; bz: number; yaw: number }
+
+/**
+ * Of the actions that pass `test` (one fist's steps, say), the one to show: one striking or just struck, until `hold` after its impact,
+ * wins over a newer one still winding up; otherwise the newest.
+ */
+export function lead(acts: readonly BodyAct[], test: (a: BodyAct) => boolean, hold = 0.3) {
+  let best: BodyAct | null = null;
+  for (const a of acts) {
+    if (!test(a)) continue;
+    if (a.t >= a.dur - STRIKE && a.t <= a.dur + hold) return a;
+    if (!best || a.t < best.t) best = a;
+  }
+  return best;
+}
+
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+const smooth = (v: number) => { const x = clamp01(v); return x * x * (3 - 2 * x); };
+/** How long a strike takes to come down, how long it holds where it landed, and how long it takes to settle (s). */
+const STRIKE = 0.18;
+const HOLD = 0.15;
+const SETTLE = 0.35;
+
+/**
+ * The wind-up and the strike of a cast, timed so the strike lands at its end, when the move's zone lands: `a` swells until just before,
+ * `k` comes down over the last `STRIKE` seconds, holds and settles.
+ */
+export function beat(c: NonNullable<BodyState['cast']>) {
+  const ta = Math.max(c.dur * 0.5, c.dur - STRIKE);
+  const a = c.t < ta ? smooth(c.t / ta) : Math.max(0, 1 - (c.t - ta) / 0.1);
+  const k = c.t < ta ? 0 : c.t < c.dur ? Math.min(1, (c.t - ta) / (c.dur - ta)) : c.t < c.dur + HOLD ? 1 : Math.max(0, 1 - (c.t - c.dur - HOLD) / SETTLE);
+  return { a, k };
+}
+
+/**
+ * A body action's timing, its impact at `dur`: `w` the wind-up (1 from just before the impact), `s` the strike coming down (0 to 1 over
+ * the last `strike` seconds, 1 after), `r` how much of the action still shows (1 until `hold` after the impact, then down to 0).
+ */
+export function actBeat(act: BodyAct, strike = STRIKE, hold = 0.25, settle = 0.7) {
+  const ta = Math.max(act.dur * 0.5, act.dur - strike);
+  const w = act.t < ta ? smooth(act.t / ta) : 1;
+  const s = act.t < ta ? 0 : act.t < act.dur ? smooth((act.t - ta) / (act.dur - ta)) : 1;
+  const r = act.t < act.dur + hold ? 1 : 1 - smooth((act.t - act.dur - hold) / settle);
+  return { w, s, r };
+}
+
+/** Which way a body faces in the world, and its left: an action that sweeps across its front needs them. */
+export function facing(act: BodyAct) {
+  const fx = Math.sin(act.yaw), fz = Math.cos(act.yaw);
+  return { fx, fz, lx: fz, lz: -fx };
 }
 
 /** Poses a boss's rigid parts for one frame. Parts start each frame at rest, so a look only says what differs. */

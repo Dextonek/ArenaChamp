@@ -1,4 +1,4 @@
-import type { BodyLook, BodyParts, BodyState } from './look';
+import { actBeat, beat, lead, type BodyLook, type BodyParts } from './look';
 
 /**
  * Ember (models/bosses/ember.glb, built by blender/bosses/boss_bodies.py): a flame in a burnt mantle, with no legs
@@ -18,13 +18,8 @@ const LAMP = { r: 1.05, y: 2.1 };
 interface Mem { phase: number; kneel: number; orbit: number }
 const mem = new WeakMap<BodyParts, Mem>();
 
-/** The wind-up and the strike of a cast: `a` swells until 70 % of it, then drops; `k` is the strike, held and then settling. */
-function beat(c: NonNullable<BodyState['cast']>) {
-  const ta = c.dur * 0.7;
-  const a = c.t < ta ? ease(c.t / ta) : Math.max(0, 1 - (c.t - ta) / 0.1);
-  const k = c.t < ta ? 0 : c.t < c.dur ? Math.min(1, (c.t - ta) / 0.1) : Math.max(0, 1 - (c.t - c.dur) / 0.3);
-  return { a, k };
-}
+/** The moves this body acts out itself, in place of its cast pose. */
+const OWN = new Set(['bombs']);
 
 export const emberLook: BodyLook = (s, p) => {
   let m = mem.get(p);
@@ -35,7 +30,10 @@ export const emberLook: BodyLook = (s, p) => {
   const ph = m.phase, kn = m.kneel;
   const t = s.time;
   const fall = Math.max(0, s.fall);
-  const cast = s.cast && !s.kneeling ? s.cast : null;
+  // A move she acts out herself (below) takes the place of her cast pose. Vent Bombs' steps overlap: one lantern each, left then right.
+  const live = !s.kneeling && fall <= 0 ? s.acts : [];
+  const bombsA = lead(live, (a) => a.name === 'bombs');
+  const cast = s.cast && !s.kneeling && !live.some((a) => OWN.has(a.name)) ? s.cast : null;
   const { a, k } = cast ? beat(cast) : { a: 0, k: 0 };
   const style = cast?.style;
 
@@ -116,6 +114,16 @@ export const emberLook: BodyLook = (s, p) => {
     }
   }
 
+  // Vent Bombs, each pair: the lanterns lift and the flame gathers, then one lantern is flung toward you as the pair lands (placed below).
+  if (bombsA) {
+    const { w, s: st, r } = actBeat(bombsA, 0.18, 0.2, 0.5);
+    lampY += r * ((1 - st) * w * 1.2 - st * 0.4);
+    radius *= 1 - 0.3 * r * (1 - st) * w;
+    lean += r * (-0.12 * (1 - st) * w + 0.22 * st);
+    flameGlow += r * (w * 0.8 + st * 1.2);
+    lampGlow += r * (w * 0.6 + st * 1.5);
+  }
+
   // A hit: she recoils and the flame gutters.
   const h = s.hit;
   lean -= Math.abs(h) * 0.5;
@@ -167,6 +175,14 @@ export const emberLook: BodyLook = (s, p) => {
     p.move('lantern' + n, ox + sg * 1.2 * fLamp, oy - 1.7 * fLamp, oz + lampZ + 0.5 * fLamp);
     p.turn('lantern' + n, Math.sin(th) * 0.25, 0, -Math.cos(th) * 0.25);
     p.glow('lantern' + n, lampGlow * (n === 'L' ? 1 + held * 0.8 : 1));
+  }
+
+  for (const n of ['L', 'R'] as const) {
+    const a = lead(live, (x) => x.name === 'bombs' && (x.step % 2 === 0) === (n === 'L'));
+    if (!a) continue;
+    const { s: st, r } = actBeat(a, 0.18, 0.2, 0.5);
+    p.toward('lantern' + n, a.bx + (a.wx - a.bx) * 0.55, 1.6, a.bz + (a.wz - a.bz) * 0.55, r * st * 0.9, Math.sin(st * Math.PI) * 1.2);
+    p.glow('lantern' + n, 1 + 2.5 * r * st);
   }
 
   // Lantern Toss: the two lanterns fly out and hang either side of where she aimed, burst, then come back.
