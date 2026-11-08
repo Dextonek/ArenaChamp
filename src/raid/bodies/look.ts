@@ -78,13 +78,15 @@ export class BodyParts {
 
   /**
    * Enraged, 0..1, called every frame after the look: a part's own light turns red at its own brightness, and a part with none takes a dim
-   * red glow. At 0 every colour is as it loaded.
+   * red glow. It shifts the light the figure set this frame (its hit flash included, which puts each colour back first), so at 0 it
+   * touches nothing.
    */
   rage(k: number) {
+    if (k <= 0.001) return;
     for (const a of this.all) {
       const bright = Math.max(a.e.r, a.e.g, a.e.b);
-      if (bright > 0.02) a.m.emissive.copy(a.e).lerp(RAGE_TO.copy(RAGE_RED).multiplyScalar(bright), k);
-      else a.m.emissive.copy(a.e).lerp(RAGE_TO.copy(RAGE_RED).multiplyScalar(RAGE_GLOW / Math.max(0.05, a.m.emissiveIntensity)), k);
+      if (bright > 0.02) a.m.emissive.lerp(RAGE_TO.copy(RAGE_RED).multiplyScalar(bright), k);
+      else a.m.emissive.lerp(RAGE_TO.copy(RAGE_RED).multiplyScalar(RAGE_GLOW / Math.max(0.05, a.m.emissiveIntensity)), k);
     }
   }
 

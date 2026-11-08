@@ -843,6 +843,7 @@
         d.startBoss({ def, link: new LocalLink(def, 3), seed: 'tier', mode: 'play', tier: 3 });
         d.boss.brain.pause = 1e9;
         check('at tier 3 the enrage comes later, as the HP grows', d.boss.enrageAt / def.enrage, 1.15 ** 2, 0.005);
+        yes('a fight left while enraged: the next boss is not red', d.figure.body?.rage === false);
       }
 
       // Phases: HP thresholds; the end of the fight.

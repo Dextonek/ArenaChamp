@@ -319,6 +319,8 @@ export class BossFight {
   }
 
   dispose() {
+    // A fight left before its end (the Leave button): the next boss on this figure doesn't start red.
+    this.world.bodyRage(false);
     this.aura?.dispose();
     this.gates?.enter.dispose();
     this.gates?.exit.dispose();
