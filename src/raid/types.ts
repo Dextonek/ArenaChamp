@@ -93,6 +93,13 @@ export interface Threat {
   settled?: boolean;
   /** Nothing is drawn for it. */
   hidden?: boolean;
+  /**
+   * Only a warning for an AI's eyes: where the real hit of a later step can reach, so an AI goes where it can't (behind a pillar
+   * from Ash's Charge). It never hits, and an AI never ignores it: what it warns of kills.
+   */
+  warn?: boolean;
+  /** It kills whoever it hits, whatever shield or toughness: Ash's Charge. */
+  lethal?: boolean;
   landed?: boolean;
   lastHit?: number;
 }
@@ -201,6 +208,8 @@ export interface PlayContext {
   show: ShowFx;
   /** This screen's camera shakes, a little: for the biggest moments only. */
   shake(amount: number): void;
+  /** The room's cover `index` (in its `obstacles`) breaks, falling along yaw `dir`: it stops nothing from now on. */
+  breakCover(index: number, dir: number): void;
 }
 
 /** A boss's add as a cast asks for it. Its HP is per screen: each screen's hits come off on both, and the first to see it die says so. */
@@ -240,6 +249,8 @@ export interface AimContext {
   prev?: { x: number; z: number; dir: number; flag?: boolean };
   /** How far along from a to b (0..1) a ray gets before cover stops it. */
   rayStop(ax: number, az: number, bx: number, bz: number): number;
+  /** The cover standing now. */
+  cover(): readonly Obstacle[];
 }
 
 export interface BossMove {
@@ -252,6 +263,11 @@ export interface BossMove {
   lock: number;
   /** The least time before it comes again (s). */
   cooldown: number;
+  /**
+   * It comes as soon as it is ready, before any other move: first this many seconds into the fight, then each `cooldown` (Ash's
+   * Charge, which wears the pillars down on a clock).
+   */
+  due?: number;
   /** Only when the target is this close (m). */
   range?: number;
   /** When each step goes, from the move's start. */
@@ -264,6 +280,8 @@ export interface BossMove {
   coop?: boolean;
   /** Its later steps come at wherever the target is then: an AI keeps walking through it and starts no long cast. */
   chases?: boolean;
+  /** While it stands for it, until its last step, it turns to follow its target (the Charge's wind-up). */
+  tracks?: boolean;
   /** No cast bar and no pose (Burning Trail). */
   quiet?: boolean;
   /** Which form of a tag team it belongs to: a higher tier's extra moves go to the right one. */
@@ -358,6 +376,8 @@ export interface BossDef {
   lateAt?: number;
   /** Seconds into the fight it enrages: its hits cost more and its moves come faster. The timer shows under its bar. */
   enrage?: number;
+  /** The room's cover that counts, standing (Ash's six pillars): the bar shows how many are left. */
+  pillars?: readonly Obstacle[];
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */
   late?(): { shift: ArenaShift; offset: number; startsAt?: number };
@@ -366,6 +386,8 @@ export interface BossDef {
 /** A hit on this screen's hero. */
 export interface BossHit {
   share: number;
+  /** It kills, whatever shield or toughness the hero has. */
+  lethal?: boolean;
   knock?: number;
   from: { x: number; z: number };
   move: string;
@@ -510,6 +532,8 @@ export interface BossWorld {
   firstWall(ax: number, az: number, bx: number, bz: number): number;
   crackWall(index: number): void;
   breakWall(index: number): void;
+  /** The room's cover `index` breaks and falls along yaw `dir` (see `PlayContext.breakCover`). */
+  breakCover(index: number, dir: number): void;
   exposed(seconds: number): void;
   kneel(seconds: number): void;
   banner(text: string, seconds: number, size?: string): void;

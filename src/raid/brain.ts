@@ -69,6 +69,8 @@ export class BossBrain {
   private staging = false;
   /** How much of the quiet between moves is left: less once enraged. */
   private rage = 1;
+  /** The hero a move that `tracks` turns to follow, until its last step. */
+  private tracking: RaidSide | null = null;
 
   constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, seed: string, tier = 1, firstId = 0) {
     this.rng = seeded(seedNumber(`${seed}-brain`));
@@ -81,6 +83,8 @@ export class BossBrain {
       this.rim = def.rimSpots?.[0] ?? null;
       this.rimWait = def.phases[0].rimEvery?.[0] ?? 8;
     }
+    // A move on a clock comes first this far into the fight.
+    for (const m of Object.values(def.moves)) if (m.due !== undefined) this.ready.set(m.id, m.due * this.pace);
   }
 
   /** Taking over a fight already on: the phase as it stands, no pause and no opener, and how often the timed move has come. */
@@ -151,7 +155,15 @@ export class BossBrain {
     if (this.locked <= 0) this.staging = false;
     this.wait = Math.max(0, this.wait - dt);
     this.swapWait -= dt;
-    if (this.locked > 0) return;
+    if (this.locked > 0) {
+      const h = this.tracking === null ? null : this.world.heroes().find((x) => x.side === this.tracking && !x.down);
+      if (h) {
+        const b = this.world.boss();
+        this.world.face(Math.atan2(h.x - b.x, h.z - b.z));
+      }
+      return;
+    }
+    this.tracking = null;
     const up = this.world.heroes().filter((h) => !h.down);
     if (!up.length) return;
     const boss = this.world.boss();
@@ -258,6 +270,9 @@ export class BossBrain {
     const open = this.listOf(true)
       .map((id) => moves[id])
       .filter((m) => m && (!m.coop || two) && (this.ready.get(m.id) ?? 0) <= this.time && (m.range === undefined || dist <= m.range));
+    // A move on a clock doesn't wait its turn.
+    const due = open.find((m) => m.due !== undefined);
+    if (due) return due;
     const fresh = open.filter((m) => m.id !== this.last);
     const list = fresh.length ? fresh : open;
     return list.length ? list[Math.floor(this.rng() * list.length)] : null;
@@ -273,6 +288,7 @@ export class BossBrain {
       this.wait = this.locked + (gap[0] + this.rng() * (gap[1] - gap[0])) * this.rage;
     }
     if (m.stage) this.staging = true;
+    this.tracking = m.tracks ? side : null;
     const seed = Math.floor(this.rng() * 2147483647);
     const alone = this.world.heroes().filter((h) => !h.down).length < 2;
     if (m === this.def.moves.tag) {
@@ -327,9 +343,12 @@ export class BossBrain {
     const aim = m.aim({
       boss: { x: boss.x, z: boss.z }, ring: { x: ring.x, z: ring.z }, target: { x: hero.x, z: hero.z }, step, seed, prev: step > 0 ? this.aimed.get(m.id) : undefined,
       rayStop: (ax, az, bx, bz) => this.world.rayStop(ax, az, bx, bz),
+      cover: () => this.world.cover(),
     });
     this.aimed.set(m.id, aim);
     if (!m.alongside && !rim) this.world.face(aim.dir);
+    // Its last step is off: it stops turning after its target.
+    if (m.tracks && step === (m.steps?.length ?? 1) - 1) this.tracking = null;
     const cast: BossCast = {
       id: ++this.seq, move: m.id, step, x: +aim.x.toFixed(3), z: +aim.z.toFixed(3), fx: +boss.x.toFixed(3), fz: +boss.z.toFixed(3),
       dir: +aim.dir.toFixed(4), seed, target: side, alone, rim: rim || undefined, flag: aim.flag,

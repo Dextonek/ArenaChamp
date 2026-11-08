@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
-import { pillar, wall, type Obstacle } from '../obstacles';
+import { pillar, type Obstacle } from '../obstacles';
 import { instance, lavaTexture } from './caldera';
+import { buildPillars } from './cinderPillars';
 import { loadKit } from './temple';
 import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from './common';
 import type { ArenaDef } from './types';
@@ -16,29 +17,24 @@ const onRim = (deg: number) => {
 };
 export const RIM_SPOTS = [onRim(180), onRim(135), onRim(225), onRim(90), onRim(270)];
 
-/**
- * Cover made for Ash's Charge, which stops dead at it, and Ember's lines, which it cuts: tall basalt on the diagonals, ridges on
- * the wings, low stumps further out. None of it breaks. Nothing on the z axis, and the middle stays open for the vent.
- */
-const COVER: Obstacle[] = [
-  ...[45, 135, 225, 315].map((deg) => {
-    const a = THREE.MathUtils.degToRad(deg);
-    return { ...pillar(RING.x + Math.sin(a) * 7.5, RING.z + Math.cos(a) * 7.5, 0.9), height: 3.3 };
-  }),
-  { ...wall(10.5, 5.2, 10.5, 8.8), r: 0.4, height: 2.08 },
-  { ...wall(-10.5, 8.8, -10.5, 5.2), r: 0.4, height: 2.08 },
-  ...[20, 160, 200, 340].map((deg) => {
-    const a = THREE.MathUtils.degToRad(deg);
-    return { ...pillar(RING.x + Math.sin(a) * 12.5, RING.z + Math.cos(a) * 12.5, 0.8), height: 1.27 };
-  }),
-];
+/** How far from the middle the pillars stand (m), and how thick they are. */
+const PILLAR_RING = 7.5;
+const PILLAR_R = 1.15;
 
-/** Their own kit (blender/arenas/den_props.py): obsidian spires, slag walls, anvil stones, Ember's lantern perches, the sun shard. */
+/**
+ * The pit's only cover: six pillars round the vent, between where the Coal Hearts rise (src/arenas/cinderPillars.ts). Ash's Charge
+ * stops at one and breaks it; Ember's lines and his cracks stop at them too. Nothing on the z axis, and the middle stays open.
+ */
+export const PILLARS: Obstacle[] = [30, 90, 150, 210, 270, 330].map((deg) => {
+  const a = THREE.MathUtils.degToRad(deg);
+  return { ...pillar(RING.x + Math.sin(a) * PILLAR_RING, RING.z + Math.cos(a) * PILLAR_RING, PILLAR_R), height: 3.3 };
+});
+const COVER: Obstacle[] = PILLARS;
+
+/** Their own kit (blender/arenas/den_props.py): Ember's lantern perches, the sun shard, the ribs, the posts and rocks out in the lava. */
 const denProps = () => loadKit(['den_props.glb'], (part, m) => {
   if (part === 'glow') m.emissiveIntensity = Math.min(m.emissiveIntensity, 0.85);
 });
-/** The slag wall's length in the kit: walls stretch it along x to their own. */
-const RIDGE_LEN = 4.22;
 
 /** Where Ash dragged his claws through the floor: three gouges at each, in metres from the middle, and the way they run. */
 const CLAWS = [{ x: -6.5, z: 3.5, dir: 0.5 }, { x: 7.5, z: -2, dir: -1.1 }, { x: 2.5, z: 9.5, dir: 2.6 }];
@@ -186,15 +182,13 @@ export const cinderPitArena: ArenaDef = {
     // `at` stretches along x only (a wall to its length); `big` scales a backdrop piece all round.
     const big = (x: number, z: number, ry: number, s: number) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(up, ry), new THREE.Vector3(s, s, s));
     const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(up, ry), new THREE.Vector3(sx, 1, 1));
+    // The six pillars, drawn in code: each can break and stand again.
+    const pillars = buildPillars(COVER, PILLARS);
+    g.add(pillars.group);
+
     void denProps().then((props) => {
       if (disposed) return;
-      const place: Record<string, THREE.Matrix4[]> = { Ridge: [], Spire: [], Stump: [], Perch: [], SunShard: [], Ribs: [], LanternPost: [], CraterRock: [] };
-      COVER.forEach((o, i) => {
-        if (o.kind === 'wall') {
-          const dx = o.bx - o.ax, dz = o.bz - o.az;
-          place.Ridge.push(at((o.ax + o.bx) / 2, (o.az + o.bz) / 2, Math.atan2(-dz, dx), (Math.hypot(dx, dz) + 2 * o.r) / RIDGE_LEN));
-        } else place[o.height > 2 ? 'Spire' : 'Stump'].push(at(o.ax, o.az, 0.6 + i));
-      });
+      const place: Record<string, THREE.Matrix4[]> = { Perch: [], SunShard: [], Ribs: [], LanternPost: [], CraterRock: [] };
       for (const s of RIM_SPOTS) place.Perch.push(at(s.x, s.z, Math.atan2(RING.x - s.x, RING.z - s.z)));
       // Out in the lava: the shard of the sun that fell here, the ribs of something that burned, posts with lanterns on the far side
       // of the lip, rocks. Nothing tall on the camera's side.
@@ -223,7 +217,10 @@ export const cinderPitArena: ArenaDef = {
 
     return {
       group: g,
-      update(_dt, time) {
+      coverFall: pillars.coverFall,
+      resetShift: pillars.resetShift,
+      update(dt, time) {
+        pillars.update(dt, time);
         lavaTex.offset.x = (time * 0.004) % 1;
         lavaTex.offset.y = (time * 0.0025) % 1;
         for (let i = 0; i < EMBERS; i++) {
@@ -235,6 +232,7 @@ export const cinderPitArena: ArenaDef = {
       },
       dispose() {
         disposed = true;
+        pillars.dispose();
         disposeTree(g);
       },
     };

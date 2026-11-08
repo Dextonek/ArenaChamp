@@ -18,12 +18,14 @@ export const RAID_BOSSES = {
 };
 
 /**
- * What a mechanic earns when a hero does it (pipeline/designs/raid-noonfall.md): a share of the boss's max HP, stagger points, or
- * a kneel. The hub pays it online and `LocalLink` alone, once per cast, so two screens never pay it twice.
+ * What a mechanic earns when a hero does it (pipeline/designs/raid-noonfall.md): a share of the boss's max HP, stagger points, a
+ * kneel (as long as a full gauge's, and the gauge empties), or a stun (a kneel this many seconds long that leaves the gauge as it
+ * is: Ash's Charge into a pillar, which comes often). The hub pays it online and `LocalLink` alone, once per cast, so two screens
+ * never pay it twice.
  */
 export const RAID_REWARDS = {
   sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true } },
-  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true } },
+  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 } },
 };
 
 /** How far Noonfall's hall reaches, where a run waits between its fights (m). */

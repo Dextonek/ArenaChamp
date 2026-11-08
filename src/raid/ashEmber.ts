@@ -3,17 +3,19 @@ import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
 import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
-import { PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
+import { PILLARS, PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
+import { PILLAR_GLASS } from '../arenas/cinderPillars';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
+import type { Obstacle } from '../obstacles';
 import { coalHeartLook } from './bodies/adds';
 import { ashLook } from './bodies/ash';
 import { TOSS, emberLook } from './bodies/ember';
 import type { BodyLook } from './bodies/look';
-import { FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, SunOrb, WaveRing } from './fx';
+import { AimLane, FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, ShadowFloor, SunOrb, WaveRing } from './fx';
 import { STAND_COLOR } from './script';
 import { stageMove } from './stage';
-import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } from './types';
+import type { AimContext, BossCast, BossDef, BossMove, Objective, PlayContext, PlayedMove, Threat } from './types';
 
 const LAVA = 0xe0601a;
 const EMBER_COLOR = 0xff7a2a;
@@ -64,46 +66,186 @@ const slam: BossMove = {
 };
 
 /**
- * A line to the rim, stopped by cover, and he goes down it. Cover stops him dead: he stands dazed and open. So put cover behind
- * you. Only the brain's screen moves him, and it says in the second step whether he hit something, so both screens agree.
+ * The Charge: how long he winds up (s, at tier 1), how long his run takes (s), how wide it is (m). The wind-up is a hero's time to reach a
+ * pillar from the rim, 10 m or so at 4 m/s, after a moment to see it.
+ */
+const CHARGE_WIND = 3.5;
+const CHARGE_RUN = 0.45;
+const CHARGE_W = 2.8;
+/**
+ * When the first Charge comes (s into the fight, at tier 1), and how often after, while he is in the ring: he is there about half
+ * of a fight, so a slow fight runs out of pillars (pipeline/designs/raid-noonfall.md).
+ */
+const CHARGE_FIRST = 6;
+const CHARGE_EVERY = 12;
+/** He crashes into a pillar whose middle his run passes within its radius and this much more (m): part of his body's width. */
+const CRASH_PAD = 0.5;
+/** He stops this far short of where his run meets a pillar (m), so his body is up against it. */
+const CRASH_SHORT = 1;
+/** The Charge's colour: hotter than a zone's pale orange, for what kills. */
+const CHARGE_COLOR = 0xff5a26;
+
+/** The first of the pillars still standing on the way from a to b, `pad` thicker each (m): how far along (0..1), and which. */
+function firstPillar(cover: readonly Obstacle[], ax: number, az: number, bx: number, bz: number, pad: number) {
+  const dx = bx - ax, dz = bz - az, len2 = dx * dx + dz * dz;
+  let best: { t: number; i: number } | null = null;
+  PILLARS.forEach((o, i) => {
+    if (!cover.includes(o)) return;
+    const R = o.r + pad, fx = ax - o.ax, fz = az - o.az, b = fx * dx + fz * dz, c = fx * fx + fz * fz - R * R;
+    let t = 0;
+    if (c > 0) {
+      const disc = b * b - len2 * c;
+      if (disc < 0 || len2 === 0) return;
+      t = (-b - Math.sqrt(disc)) / len2;
+      if (t < 0 || t > 1) return;
+    }
+    if (!best || t < best.t) best = { t, i };
+  });
+  return best as { t: number; i: number } | null;
+}
+
+/** Whether a pillar still standing hides (x, z) from (fx, fz): a Charge from there at you would crash into it. */
+const behindPillar = (cover: readonly Obstacle[], fx: number, fz: number, x: number, z: number) => !!firstPillar(cover, fx, fz, x, z, 0);
+
+/** Where a Charge from (x, z) along `dir` ends: up against the first pillar in its way, or at the rim. */
+function chargeEnd(cover: readonly Obstacle[], x: number, z: number, dir: number) {
+  const full = toRim(x, z, dir), ex = x + Math.sin(dir) * full, ez = z + Math.cos(dir) * full;
+  const hit = firstPillar(cover, x, z, ex, ez, CRASH_PAD);
+  const len = hit ? Math.max(0, full * hit.t - CRASH_SHORT) : Math.max(0, full - 1.4);
+  return { x: x + Math.sin(dir) * len, z: z + Math.cos(dir) * len, len, pillar: hit ? hit.i : -1 };
+}
+
+/**
+ * Charge (user, 2026-11-08: "charge attack that will target player and player should go behind the pillar, the boss will get
+ * stunned and there will be window to dmg him, and if boss hit player it will be one shot, so players must kill him before all
+ * pillars are down"). Ash fixes on one hero and rakes the floor; then he runs, through where that hero is then, out to the rim,
+ * and kills whatever he runs into. Only one of the six pillars stops him: get one between you and him. He crashes into it, it
+ * breaks, and he falls to his knees, open (the reward's kneel). It comes on a clock while he is in the ring, so the pillars run
+ * out: kill him before they do. The first step only warns (an AI hides from it); the second, when he goes, is aimed by the brain
+ * at where the hero is then, and says whether he hit a pillar, so both screens break the same one.
  */
 const charge: BossMove = {
-  id: 'charge', name: 'Charge', charge: 1.5, lock: 2.2, cooldown: 10, steps: [0, 1.5], form: ASH, pose: 'lunge',
+  id: 'charge', name: 'Charge', charge: CHARGE_WIND, lock: CHARGE_WIND + 1, cooldown: CHARGE_EVERY, due: CHARGE_FIRST,
+  steps: [0, CHARGE_WIND], chases: true, tracks: true, form: ASH, pose: 'lunge',
   aim(c) {
-    if (c.prev) return c.prev;
-    const dir = Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z), full = toRim(c.boss.x, c.boss.z, dir);
-    const ex = c.boss.x + Math.sin(dir) * full, ez = c.boss.z + Math.cos(dir) * full;
-    const k = c.rayStop(c.boss.x, c.boss.z, ex, ez);
-    // He stops a body's width short of what stopped him.
-    const len = Math.max(0, full * k - 1.4);
-    return { x: c.boss.x + Math.sin(dir) * len, z: c.boss.z + Math.cos(dir) * len, dir, flag: k < 1 };
+    const dir = Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z);
+    if (c.step === 0) return { x: c.target.x, z: c.target.z, dir };
+    const end = chargeEnd(c.cover(), c.boss.x, c.boss.z, dir);
+    return { x: end.x, z: end.z, dir, flag: end.pillar >= 0 };
   },
   act(world, c) {
     if (c.step !== 1) return 0;
-    world.dash(c.x, c.z, 0.45);
-    return c.flag ? 2 : 0;
+    world.dash(c.x, c.z, CHARGE_RUN);
+    // He stands where he stopped until the kneel comes (a pillar), or a moment at the rim.
+    return CHARGE_RUN + (c.flag ? 1.2 : 0.8);
   },
   play(c, p) {
-    if (c.step === 1) {
-      let dazed = false;
-      return {
-        threats: [], duration: 0.6,
-        look: {
-          update(t) {
-            if (t < 0.45 || !c.flag || dazed) return;
-            dazed = true;
-            p.exposed(2);
-            p.say('DAZED', '#ffb050', c.x, c.z);
-            p.sparks.emit(c.x, 1.2, c.z, 30, 5, 4, 0.7, 0xb8a080);
-          },
-        },
-      };
-    }
-    const at = p.shown(1.5), width = 2.8;
-    const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2: c.x, z2: c.z, width }, at, share: 0.2, knock: 4 };
-    return { threats: [th], duration: at + 0.4 };
+    const standing = () => p.cover();
+    if (c.step === 0) return chargeWind(c, p, standing);
+    return chargeRun(c, p, standing);
   },
 };
+
+/** The wind-up: where he will run, following the one he fixed on, and the floor the pillars hide, in gold. */
+function chargeWind(c: BossCast, p: PlayContext, standing: () => readonly Obstacle[]): PlayedMove {
+  const at = p.shown(CHARGE_WIND);
+  p.hint(PILLARS.some((o) => standing().includes(o)) ? 'Charge: get a pillar between you and Ash' : 'No pillar left to stop his Charge');
+  // For an AI only: everywhere his run could reach, which is everywhere a pillar doesn't hide from him.
+  const warn: Threat = {
+    shape: { kind: 'circle', x: C.x, z: C.z, radius: PIT_R }, at, share: 0, warn: true, hidden: true, look: at + 1,
+    hits: (x, z) => !behindPillar(standing(), c.fx, c.fz, x, z),
+  };
+  const lane = new AimLane(CHARGE_COLOR), mark = new FollowMark(1.1, CHARGE_COLOR);
+  const shade = new ShadowFloor({ x: c.fx, z: c.fz }, () => PILLARS.filter((o) => standing().includes(o)), STAND_COLOR, PIT_R);
+  const glows = PILLARS.map((o) => new LightPillar(o.ax, o.az, o.r + 0.35, 5, PILLAR_GLASS));
+  p.group.add(lane.mesh, mark.mesh, shade.mesh, ...glows.map((g) => g.mesh));
+  p.show.charge(c.fx, 3.2, c.fz, at, CHARGE_COLOR, 2.4);
+  let raked = 0;
+  return {
+    threats: [warn], duration: at + 0.1,
+    look: {
+      update(t, dt) {
+        const k = Math.min(1, t / at), hero = p.heroAt(c.target) ?? { x: c.x, z: c.z };
+        const dir = Math.atan2(hero.x - c.fx, hero.z - c.fz), end = chargeEnd(standing(), c.fx, c.fz, dir);
+        // Quicker as he is about to go.
+        const pulse = 0.75 + 0.25 * Math.sin(t * (6 + 14 * k));
+        lane.set(c.fx, c.fz, dir, end.len, CHARGE_W, (0.35 + 0.55 * k) * pulse, t);
+        mark.place(hero.x, hero.z, (0.45 + 0.5 * k) * pulse);
+        shade.update(t, 0.22 + 0.2 * k);
+        glows.forEach((g, i) => { g.opacity = i === end.pillar ? 0.55 * pulse : 0; });
+        // He rakes the floor: dust and embers kicked back off his fists.
+        raked += dt;
+        if (raked > 0.28) {
+          raked = 0;
+          p.sparks.emit(c.fx - Math.sin(dir) * 1.6, 0.2, c.fz - Math.cos(dir) * 1.6, 7, 3, 2, 0.5, ROCK);
+        }
+      },
+      dispose() {
+        lane.dispose();
+        mark.dispose();
+        shade.dispose();
+        for (const g of glows) g.dispose();
+      },
+    },
+  };
+}
+
+/** The run: it kills whoever it reaches on the way, and ends at the rim, or crashes into a pillar and breaks it. */
+function chargeRun(c: BossCast, p: PlayContext, standing: () => readonly Obstacle[]): PlayedMove {
+  // Only what he has run through so far: it reaches you when he does.
+  const shapeAt = (t: number): TelegraphShape => {
+    const k = Math.min(1, Math.max(0, t / CHARGE_RUN));
+    return { kind: 'line', x1: c.fx, z1: c.fz, x2: c.fx + (c.x - c.fx) * k, z2: c.fz + (c.z - c.fz) * k, width: CHARGE_W };
+  };
+  const th: Threat = { shape: shapeAt(CHARGE_RUN), shapeAt, at: 0, to: CHARGE_RUN + 0.05, every: 10, share: 1, lethal: true, knock: 3 };
+  const len = Math.hypot(c.x - c.fx, c.z - c.fz), lane = new AimLane(CHARGE_COLOR);
+  p.group.add(lane.mesh);
+  let ended = false, trail = 0;
+  // Which pillar he hit: the one he stopped against.
+  const pillar = c.flag ? PILLARS.findIndex((o) => standing().includes(o) && Math.hypot(o.ax - c.x, o.az - c.z) <= o.r + CRASH_PAD + CRASH_SHORT + 0.6) : -1;
+  return {
+    threats: [th], duration: CHARGE_RUN + 1.2,
+    look: {
+      update(t, dt) {
+        const k = Math.min(1, t / CHARGE_RUN);
+        lane.set(c.fx, c.fz, c.dir, len * k, CHARGE_W * 1.1, Math.max(0, 1 - Math.max(0, t - CHARGE_RUN) * 1.6), t);
+        // A trail of fire and grit behind him.
+        trail += dt;
+        if (k < 1 && trail > 0.04) {
+          trail = 0;
+          const x = c.fx + (c.x - c.fx) * k, z = c.fz + (c.z - c.fz) * k;
+          p.sparks.emit(x, 0.3, z, 6, 3.5, 2.5, 0.6, LAVA);
+          p.glows.flash(x, z, 1.6, LAVA, 0.5, 0.3);
+        }
+        if (ended || t < CHARGE_RUN) return;
+        ended = true;
+        if (pillar >= 0) crash(c, p, PILLARS[pillar], standing);
+        else {
+          // The rim: he skids up against the lip.
+          p.sparks.emit(c.x, 0.4, c.z, 30, 5, 3, 0.7, LAVA);
+          p.show.ring(c.x, c.z, { radius: 4, life: 0.5, color: 0xff8a40, width: 0.5 });
+          p.shake(0.06);
+        }
+      },
+      dispose: () => lane.dispose(),
+    },
+  };
+}
+
+/** He crashes into a pillar: it breaks and falls away from him, and he goes down on his knees. */
+function crash(c: BossCast, p: PlayContext, o: Obstacle, standing: () => readonly Obstacle[]) {
+  p.breakCover(cinderPitArena.obstacles.indexOf(o), c.dir);
+  p.reward('charge', c.id);
+  p.show.shards(o.ax, 1.6, o.az, { count: 22, color: PILLAR_GLASS, speed: 7, life: 1.2, size: 0.24, up: 1.2 });
+  p.show.burst(o.ax, 1.2, o.az, 60, 7, 4, 0.9, 0xb8a080);
+  p.show.ring(o.ax, o.az, { radius: 7, life: 0.7, color: 0xc8f2ff, width: 0.6 });
+  p.show.column(o.ax, o.az, { radius: 1.4, height: 7, life: 0.5, color: PILLAR_GLASS, peak: 0.6 });
+  p.glows.flash(o.ax, o.az, 3, PILLAR_GLASS, 0.6, 0.45);
+  p.flash('rgba(200,240,255,0.7)', 0.2);
+  p.shake(0.14);
+  p.say('STUNNED', '#8fe4ff', c.x, c.z);
+  if (!PILLARS.some((x) => standing().includes(x))) p.hint('The last pillar is down: nothing stops his Charge now');
+}
 
 /** The floor drags you in, then a ring burns far from him. Stay close, then walk out before the next thing. */
 const drag: BossMove = {
@@ -545,6 +687,7 @@ export const ASH_AND_EMBER: BossDef = {
     },
   ],
   rimSpots: RIM_SPOTS,
+  pillars: PILLARS,
   lateAt: 3,
   phases: [
     { name: 'Ash and Ember', at: 1, moves: [], ring: ASH, gap: [2.4, 3.4], rimEvery: [10, 14] },

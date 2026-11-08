@@ -483,6 +483,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (r.hp) raidDamage(match, boss.max * r.hp);
         if (match.state !== 'fight') return;
         if (r.kneel) raidKneel(match);
+        else if (r.stun) raidStun(match, r.stun);
         else if (r.stagger && Date.now() >= boss.kneelUntil) raidStagger(match, r.stagger);
         return;
       }
@@ -963,6 +964,13 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     boss.kneelUntil = Date.now() + b.kneel * 1000;
     for (const p of match.players) send(p.client, { t: 'boss_kneel', seconds: b.kneel });
     for (const p of match.players) send(p.client, { t: 'boss_gauge', value: 0 });
+  }
+
+  /** The boss is stunned: it kneels `seconds` on both screens, and the gauge stays as it is. @param {Match} match @param {number} seconds */
+  function raidStun(match, seconds) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
+    boss.kneelUntil = Math.max(boss.kneelUntil, Date.now() + seconds * 1000);
+    for (const p of match.players) send(p.client, { t: 'boss_kneel', seconds });
   }
 
   /** Points on the stagger gauge: a full one kneels. @param {Match} match @param {number} points */

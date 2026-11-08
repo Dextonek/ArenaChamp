@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
-import { PROTOCOL, RAID_BOSSES, RELOAD_TEXT } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RAID_REWARDS, RELOAD_TEXT } from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
 const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo;
@@ -485,6 +485,18 @@ try {
     g.send({ t: 'boss_cast', id: 41, move: 'fan', step: 0, x: 1, z: 2, fx: 0, fz: -9, dir: 0, seed: 9, target: 0, rim: true, flag: true });
     const rimCast = await h.next('boss_cast');
     check(rimCast.rim === true && rimCast.flag === true, 'so does a move from the rim');
+    // Ash's Charge into a pillar: a stun as long as the table says, on both screens, and the gauge stays.
+    g.send({ t: 'boss_stagger', points: 30 });
+    check((await h.next('boss_gauge')).value === 30, 'the gauge fills');
+    await g.next('boss_gauge');
+    g.send({ t: 'boss_reward', key: 'charge', id: 42 });
+    const stun = RAID_REWARDS.ash.charge.stun;
+    check((await g.next('boss_kneel')).seconds === stun && (await h.next('boss_kneel')).seconds === stun, 'a Charge into a pillar stuns him, on both screens');
+    g.send({ t: 'boss_reward', key: 'charge', id: 42 });
+    await wait(stun * 1000 + 100);
+    g.send({ t: 'boss_stagger', points: 10 });
+    check((await h.next('boss_gauge')).value === 40, 'once, and the gauge kept what it had');
+    await g.next('boss_gauge');
 
     // The last boss falls: the clear screen. Both go on to the next tier, keeping their upgrades, with more boss HP.
     const clear = await until('raid_won', ASH);

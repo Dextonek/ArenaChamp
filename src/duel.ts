@@ -154,6 +154,9 @@ const BOSS_TAKEN = 0.5; // what standing open or kneeling adds to the damage a b
 const SHARD_WALK = 0.85; // how fast a hero carrying a sun shard walks
 const ADD_LIFE = 120; // a boss's add lasts at most this long (s); its stage removes it sooner
 const IMMUNE_SAY = 0.7; // how often IMMUNE shows over a boss that can't be hurt (s)
+const COVER_FALL = 0.55; // how long cover a boss breaks takes to fall (s): Ash's pillars
+const CLEAR_REACH = 7.2; // how far an AI looks for a spot out of a boss's zones (m)
+const HIDE_REACH = 14.4; // and for one a killing hit can't reach (behind a pillar from Ash's Charge): wherever it is
 const HIDE_PAD = 0.5; // a boss's arms reach past its body: it counts as this much wider when it may hide a hero (m)
 const HERO_CHEST = 1.2; // the height a hero is seen at, for what may hide it (m)
 
@@ -970,6 +973,14 @@ export class Duel {
       hitMe: (h) => {
         if (this.playerHp <= 0) return;
         this.boss?.countHit(h.move);
+        if (h.lethal) {
+          // No shield or toughness holds it: only what nothing can touch (Sealed) is spared, and Stubborn's one save.
+          if (arena.statusOf(arena.caster)?.sealed) return;
+          const shield = arena.shieldOf(arena.caster)?.amount ?? 0;
+          this.damagePlayer({ damage: this.playerHp + shield + 1, knock: h.knock ?? 0, color: '#ff5a3a', from: new THREE.Vector3(h.from.x, 0, h.from.z) });
+          if (this.playerHp <= 0) arena.say('CRUSHED', '#ff7a4a', arena.caster.group.position, 1.6);
+          return;
+        }
         // A weakened boss deals less, as a weakened hero does.
         const dealt = arena.statusOf(foe)?.dealtMul ?? 1;
         const mods = dealt !== 1 ? { ...NO_MODS, power: dealt } : NO_MODS;
@@ -1002,6 +1013,11 @@ export class Duel {
         this.wallHit(i, o);
       },
       breakWall: (i) => this.removeCover(i),
+      breakCover: (i, dir) => {
+        if (!this.host.arena.obstacles?.includes(this.currentArena?.obstacles[i] as Obstacle)) return;
+        this.removeCover(i);
+        this.arenaScene?.coverFall?.(i, dir, COVER_FALL);
+      },
       exposed: (seconds) => {
         arena.applyBuff(foe, 'vulnerable', BOSS_TAKEN, seconds);
         this.boss?.exposedFor(seconds);
@@ -2151,6 +2167,8 @@ export class Duel {
     // A boss's gold zone: go and stand in it, against every habit. A fallen partner comes next: stand by it, and cast nothing.
     const fallen = this.partner?.down && !this.partner.left && this.partner.revivesLeft > 0 ? this.partner.pos : null;
     const script = this.boss?.script;
+    // Hidden from a killing hit still to come (behind a pillar from Ash's Charge): it stays there, and casts nothing, until it has passed.
+    if (script?.mustHide && script.hidden(me.x, me.z)) return;
     // A spot to take waits while something is about to land on it: a person steps back in once it has.
     const objective = script?.objectiveGoal(me.x, me.z);
     const safe = objective && !script!.danger(objective.x, objective.z, BOSS_LOOK) ? objective : null;
@@ -2328,11 +2346,13 @@ export class Duel {
       roll = { id: script.eventId, react: Math.random() < lv.hazardDodge, at: this.time + lv.boltReaction + 0.1 };
       this.hazardRolls.set(who, roll);
     }
-    // A person who has seen a zone doesn't start a long cast in it: it stands and takes the moment to read it.
-    if (!roll.react) return null;
+    // A person who has seen a zone doesn't start a long cast in it: it stands and takes the moment to read it. A warning of a
+    // killing hit nobody lets pass.
+    const hide = script.mustHide;
+    if (!roll.react && !hide) return null;
     if (this.time < roll.at) return new THREE.Vector3();
     for (const within of BOSS_CLEAR) {
-      const spot = this.escapeSpot(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)), this.pilotWay);
+      const spot = this.escapeSpot(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)), this.pilotWay, hide ? HIDE_REACH : CLEAR_REACH);
       // On the planned way round cover: a straight step can wedge between two pieces of it.
       if (spot) {
         const step = this.goalStep(this.playerAi, at, spot);
@@ -2360,17 +2380,22 @@ export class Duel {
     return this.escapeSpot(at, me, unsafe)?.sub(at).setY(0).normalize() ?? null;
   }
 
-  /** The nearest open spot that is not `unsafe`, keeping the distance to `me`, or null. */
-  private escapeSpot(at: THREE.Vector3, me: THREE.Vector3, unsafe: (x: number, z: number) => boolean, way?: THREE.Vector3) {
+  /**
+   * The nearest open spot that is not `unsafe`, keeping the distance to `me`, or null. `reach` past the usual: hiding from a killing
+   * hit, any spot will do, even one only reached round cover (the walk goes round).
+   */
+  private escapeSpot(at: THREE.Vector3, me: THREE.Vector3, unsafe: (x: number, z: number) => boolean, way?: THREE.Vector3, reach = CLEAR_REACH) {
     const keep = flat(at, me);
     const obstacles = this.host.arena.obstacles ?? [];
     const open = (x: number, z: number) =>
       Math.hypot(x - RING.x, z - RING.z) <= (this.currentArena?.ring ?? RING.r) - 0.8 && obstacles.every((o) => capsuleDist(x, z, o) > o.r + BODY_RADIUS);
-    // Rings of 16 spots, nearest first; on each ring the spot that keeps the distance to the player best, by a free path.
-    for (let r = 0.6; r <= 7.2; r += 0.6) {
+    // Rings of 16 spots, nearest first; on each ring the spot that keeps the distance to the player best, by a free path. Hiding, 48:
+    // the floor behind a pillar far from the boss is a strip 2 m wide, which 16 spots on a wide ring step over.
+    const n = reach > CLEAR_REACH ? 48 : 16;
+    for (let r = 0.6; r <= reach; r += 0.6) {
       const spots: { p: THREE.Vector3; score: number }[] = [];
-      for (let k = 0; k < 16; k++) {
-        const a = (k / 16) * Math.PI * 2, x = at.x + Math.cos(a) * r, z = at.z + Math.sin(a) * r;
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * Math.PI * 2, x = at.x + Math.cos(a) * r, z = at.z + Math.sin(a) * r;
         if (!open(x, z) || unsafe(x, z)) continue;
         const p = new THREE.Vector3(x, 0, z);
         // Going a way already: better to keep going than to double back.
@@ -2380,6 +2405,7 @@ export class Duel {
       spots.sort((a, b) => a.score - b.score);
       const free = spots.find((s) => obstacles.every((o) => pathDist(at, s.p, o) > o.r + BODY_RADIUS * 0.5));
       if (free) return free.p;
+      if (reach > CLEAR_REACH && spots.length) return spots[0].p;
     }
     return null;
   }

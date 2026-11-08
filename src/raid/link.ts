@@ -75,6 +75,10 @@ export class LocalLink implements RaidLink {
       this.kneeling = this.def.kneel;
       this.on.kneel(this.def.kneel);
       this.on.stagger(0);
+    } else if (r.stun) {
+      // A kneel that leaves the gauge as it is.
+      this.kneeling = Math.max(this.kneeling, r.stun);
+      this.on.kneel(r.stun);
     } else if (r.stagger) this.stagger(r.stagger);
   }
 

@@ -290,6 +290,65 @@ export class WaveRing {
   }
 }
 
+// A lane on the floor from its start along +z: its length and width are the mesh's scale, so the shader is told the length.
+const laneGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, 0.5);
+const laneVertex = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const laneFragment = /* glsl */ `
+  uniform vec3 uColor;
+  uniform float uOpacity, uTime, uLength;
+  varying vec2 vUv;
+  void main() {
+    float across = abs(vUv.x - 0.5) * 2.0, along = (1.0 - vUv.y) * uLength;
+    // Bright edges, a faint floor between them.
+    float edge = smoothstep(0.72, 0.95, across) * (1.0 - smoothstep(0.95, 1.0, across));
+    // Chevrons running the way he will go.
+    float chev = fract((along - across * 0.9) * 0.45 - uTime * 2.4);
+    float arrows = smoothstep(0.0, 0.12, chev) * (1.0 - smoothstep(0.3, 0.45, chev)) * (1.0 - smoothstep(0.7, 0.95, across));
+    // It fades in from his feet and out at its end.
+    float ends = smoothstep(0.0, 1.2, along) * smoothstep(0.0, 0.6, uLength - along);
+    gl_FragColor = vec4(uColor, (0.16 + edge * 0.7 + arrows * 0.5) * ends * uOpacity);
+  }
+`;
+
+/** Where a boss will run: a lane on the floor with chevrons along it (Ash's Charge). */
+export class AimLane {
+  readonly mesh: THREE.Mesh;
+  private mat: THREE.ShaderMaterial;
+  constructor(color: THREE.ColorRepresentation) {
+    this.mat = new THREE.ShaderMaterial({
+      vertexShader: laneVertex, fragmentShader: laneFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      uniforms: { uColor: { value: new THREE.Color(color) }, uOpacity: { value: 0 }, uTime: { value: 0 }, uLength: { value: 1 } },
+    });
+    this.mesh = new THREE.Mesh(laneGeo, this.mat);
+    this.mesh.renderOrder = 2;
+    this.mesh.frustumCulled = false;
+    this.mesh.visible = false;
+  }
+
+  /** From (x, z) along yaw `dir`, `length` long and `width` wide. */
+  set(x: number, z: number, dir: number, length: number, width: number, opacity: number, time: number) {
+    this.mesh.visible = opacity > 0.001 && length > 0.05;
+    this.mesh.position.set(x, 0.065, z);
+    this.mesh.rotation.y = dir;
+    this.mesh.scale.set(width, 1, Math.max(0.05, length));
+    const u = this.mat.uniforms;
+    u.uOpacity.value = opacity;
+    u.uTime.value = time;
+    u.uLength.value = Math.max(0.05, length);
+  }
+
+  dispose() {
+    this.mesh.removeFromParent();
+    this.mat.dispose();
+  }
+}
+
 const shadowVertex = /* glsl */ `
   varying vec2 vP;
   void main() {

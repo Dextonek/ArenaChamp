@@ -70,11 +70,14 @@ export const ashLook: BodyLook = (s, p) => {
   // Casts: wind up, then strike.
   if (cast) {
     if (style === 'lunge') {
-      // Down low, the arms swept back; then he is off.
-      torsoY += -0.8 * a;
+      // Down low, the arms swept back, his right fist raking the floor like a bull's hoof, quicker as he is about to go; then he is off.
+      const u = cast.t / Math.max(0.1, cast.dur), rake = Math.sin(cast.t * (5 + 7 * u)) * a * (1 - k);
+      torsoY += -0.8 * a + Math.abs(rake) * 0.08;
       lean += 0.5 * a + 0.35 * k;
       armL += 0.9 * a;
-      armR += 0.9 * a;
+      armR += 0.9 * a + 0.55 * rake;
+      foreR += -0.35 * Math.max(0, rake);
+      twist += 0.08 * rake;
       legL += 0.4 * a;
       legR += 0.4 * a;
       head -= 0.3 * a;

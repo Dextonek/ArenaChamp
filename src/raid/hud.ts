@@ -20,6 +20,9 @@ export class BossHud {
   /** The enrage timer, in the name's row: a phone has no height to spare under the bar. */
   private rage = document.createElement('div');
   private rageText = '';
+  /** Ash's pillars still standing, a pip each, in the name's row too. */
+  private pillars = document.createElement('div');
+  private pillarsShown = -1;
   private castBox = document.createElement('div');
   private castFill = document.createElement('div');
   private castText = document.createElement('div');
@@ -45,7 +48,8 @@ export class BossHud {
     this.state.style.flex = 'none';
     this.state.style.marginLeft = '8px';
     this.rage.style.cssText = 'flex:none;margin-left:8px;font:700 11px ui-sans-serif,system-ui;letter-spacing:1px;color:#cdbfa6;';
-    this.name.append(nameText, this.rage, this.state);
+    this.pillars.style.cssText = 'flex:none;display:none;gap:3px;margin-left:8px;align-self:center;';
+    this.name.append(nameText, this.pillars, this.rage, this.state);
     this.bar.style.cssText = `position:relative;height:${small ? 12 : 16}px;border-radius:5px;background:#21131a;border:1px solid #6a5a3a;overflow:hidden;box-shadow:0 2px 10px #000a;`;
     this.fill.style.cssText = `position:absolute;inset:0 auto 0 0;width:100%;background:${BAR};transition:width 0.12s;`;
     this.ticks.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
@@ -77,8 +81,25 @@ export class BossHud {
     this.gaugeFill.style.width = '0';
     this.flashEl.style.opacity = '0';
     this.rageText = this.rage.textContent = '';
+    this.pillarsShown = -1;
+    this.pillars.style.display = 'none';
     this.fill.style.background = BAR;
     this.root.style.display = 'flex';
+  }
+
+  /** How many of the room's pillars still stand, of `total`: pale blue pips, red once one is left. */
+  setPillars(left: number, total: number) {
+    const key = left * 100 + total;
+    if (key === this.pillarsShown) return;
+    this.pillarsShown = key;
+    this.pillars.style.display = total > 0 ? 'flex' : 'none';
+    const on = left <= 1 ? '#ff7a5a' : '#8fe4ff';
+    this.pillars.replaceChildren(...Array.from({ length: total }, (_, i) => {
+      const pip = document.createElement('div');
+      pip.style.cssText = `width:7px;height:11px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:${i < left ? on : '#3a3440'};`;
+      return pip;
+    }));
+    this.pillars.title = `${left} of ${total} pillars standing`;
   }
 
   setHp(hp: number, max: number) {

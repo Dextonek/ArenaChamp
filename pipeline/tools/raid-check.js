@@ -117,18 +117,80 @@
       place(0, 12);
       check('slam: backed away', take(() => cast('slam'), 1.7), 0);
 
-      fresh(0, 3);
-      place(0, 8);
-      check('charge: in its line', take(() => cast('charge', { x: 0, z: 14 }), 1.7), 0.2);
-      place(4, 8);
-      check('charge: beside it', take(() => cast('charge', { x: 0, z: 14 }), 1.7), 0);
-      // The brain moves him; a flag from it means he hit cover, and he stands dazed.
-      const m = def.moves.charge, world = d.boss.script.world, c1 = { id: ++seq, move: 'charge', step: 1, x: 2, z: 9, fx: 0, fz: 3, dir: 0, seed: 1, target: 0, flag: true };
-      check('charge: it stands him still when he hit cover', m.act(world, c1), 2, 0);
-      d.boss.link.cast(c1);
-      step(0.7);
-      check('charge: he went there', Math.hypot(d.foe.group.position.x - 2, d.foe.group.position.z - 9), 0, 0.05);
-      yes('charge: dazed, he stands open', a.statusOf(d.foe).buff('vulnerable') === 0.5);
+      // Charge: a warning while he winds up, then a run through where you are that kills whatever it reaches. Only a pillar stops
+      // it, and breaks; he is stunned. Each step as the brain sends it: aimed by the move's own aim, and his run its `act`.
+      const { PILLARS } = await import('/src/arenas/cinderpit.ts');
+      const charging = () => {
+        const m = def.moves.charge, world = d.boss.script.world;
+        const send = (n) => {
+          const b = d.foe.group.position, me = a.caster.group.position;
+          const aim = m.aim({ boss: { x: b.x, z: b.z }, ring: { x: b.x, z: b.z }, target: { x: me.x, z: me.z }, step: n, seed: 1, rayStop: (ax, az, bx, bz) => world.rayStop(ax, az, bx, bz), cover: () => world.cover() });
+          const c = { id: ++seq, move: 'charge', step: n, x: aim.x, z: aim.z, fx: b.x, fz: b.z, dir: aim.dir, seed: 1, target: 0, flag: aim.flag };
+          d.boss.link.cast(c);
+          m.act(world, c);
+          return c;
+        };
+        send(0);
+        return { go: () => send(1) };
+      };
+      fresh(0, 1);
+      place(-1, 9);
+      d.playerHp = d.playerMax;
+      let ch = charging();
+      step(2.9);
+      check('charge: the wind-up hits nobody', lost(), 0);
+      yes('charge: an AI must hide from it', d.boss.script.mustHide);
+      yes('charge: in the open, nowhere it can\'t reach', !d.boss.script.hidden(-1, 9));
+      let run = ch.go();
+      step(1);
+      check('charge: in his way, it kills', lost(), 1);
+      yes('charge: nothing in his way: he ran on to the rim, and no pillar broke', !run.flag && a.obstacles.length === 6);
+      // In front of a pillar is no cover: he runs through you, and into it.
+      fresh(0, 1);
+      place(1.5, 9);
+      d.playerHp = d.playerMax;
+      ch = charging();
+      step(3);
+      run = ch.go();
+      step(1);
+      check('charge: in front of a pillar, it kills', lost(), 1);
+      // Alone, the fight ends there, before he reaches it.
+      yes('charge: his run went on into the pillar behind you', run.flag === true);
+
+      fresh(0, 1);
+      // Behind the pillar at 30 degrees, as he sees it.
+      place(4.5, 16);
+      d.playerHp = d.playerMax;
+      ch = charging();
+      step(2.9);
+      yes('charge: behind a pillar, an AI may stay', d.boss.script.hidden(4.5, 16));
+      run = ch.go();
+      step(1);
+      check('charge: behind a pillar, it does not', lost(), 0);
+      yes('charge: he hit the pillar', run.flag === true);
+      check('charge: and it broke', a.obstacles.length, 5, 0);
+      check('charge: he stopped up against it', Math.hypot(d.foe.group.position.x - PILLARS[0].ax, d.foe.group.position.z - PILLARS[0].az), PILLARS[0].r + 0.5 + 1, 0.3);
+      yes('charge: stunned, he kneels and stands open', !!a.statusOf(d.foe).stunned && a.statusOf(d.foe).buff('vulnerable') === 0.5);
+      step(5);
+      // A broken pillar stops nothing: the same Charge again runs through where it stood.
+      a.placeFoe(d.foe, new V(0, 0, 1));
+      d.playerHp = d.playerMax;
+      ch = charging();
+      step(3);
+      run = ch.go();
+      step(1);
+      check('charge: where a pillar broke, it kills', lost(), 1);
+      fresh(0, 1);
+      check('charge: a new fight, all six stand again', a.obstacles.length, 6, 0);
+      // No shield or toughness holds it.
+      place(1.5, 9);
+      d.playerHp = d.playerMax;
+      a.shieldFigure(a.caster, 5000, 20, '#ffffff');
+      ch = charging();
+      step(3);
+      ch.go();
+      step(1);
+      check('charge: through a shield, it still kills', lost(), 1);
 
       fresh(0, 3);
       place(0, 14);

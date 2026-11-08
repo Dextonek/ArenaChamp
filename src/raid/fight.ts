@@ -280,6 +280,10 @@ export class BossFight {
       if (this.guardLeft <= 0) this.guard(0);
     }
     this.hud.setHp(hp, this.link.maxHp);
+    if (this.def.pillars) {
+      const cover = this.world.cover();
+      this.hud.setPillars(this.def.pillars.filter((o) => cover.includes(o)).length, this.def.pillars.length);
+    }
     this.link.tick(dt);
     const s = this.track?.sample();
     if (s) this.world.place(s.x, s.z, s.yaw);

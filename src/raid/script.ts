@@ -91,6 +91,7 @@ export class BossScript {
       bossMax: link.maxHp,
       show: this.show,
       shake: (amount) => world.shake(amount),
+      breakCover: (index, dir) => world.breakCover(index, dir),
     };
   }
 
@@ -210,6 +211,8 @@ export class BossScript {
 
   /** The first moment of a threat: a gold zone reports who stands in it, an orange one hits who does. */
   private land(a: Active, th: Threat, t: number) {
+    // A warning only shows an AI where a later step's hit can reach.
+    if (th.warn) return;
     const me = this.world.me();
     const inside = !this.world.down() && this.inThreat(th, t, me.x, me.z);
     if (th.kind === 'stand') {
@@ -247,7 +250,7 @@ export class BossScript {
     a.struck = t;
     th.lastHit = t;
     const move = this.def.moves[a.cast.move];
-    this.world.hitMe({ share: th.share * this.rage, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
+    this.world.hitMe({ share: th.share * this.rage, lethal: th.lethal, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
   }
 
   /**
@@ -328,6 +331,20 @@ export class BossScript {
     }
     for (const o of this.open()) out.push({ x: o.x, z: o.z });
     return out;
+  }
+
+  /** A warning of a killing hit shows: an AI goes where it can't reach, whatever its habits, and stays there. */
+  get mustHide() {
+    return this.active.some((a) => a.played.threats.some((th) => th.warn && !th.landed));
+  }
+
+  /** Whether (x, z) is out of reach of every killing hit a warning shows now. */
+  hidden(x: number, z: number) {
+    for (const a of this.active) {
+      const t = this.clock - a.began;
+      for (const th of a.played.threats) if (th.warn && !th.landed && this.inThreat(th, Math.max(t, th.at), x, z)) return false;
+    }
+    return true;
   }
 
   /** A move is coming after whoever it aims at: an AI starts no long cast now. */

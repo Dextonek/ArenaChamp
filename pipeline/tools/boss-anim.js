@@ -44,6 +44,24 @@
     foe(x, z) { const V = vfx.arena.caster.group.position.constructor; vfx.arena.placeFoe(vfx.duel.foe, new V(x, 0, z)); },
     /** The boss turns to the hero, as the brain turns it before a move. */
     face() { const d = vfx.duel, b = d.foe.group.position, me = vfx.arena.caster.group.position; d.foe.group.rotation.y = Math.atan2(me.x - b.x, me.z - b.z); },
+    /**
+     * Ash's Charge as the brain sends it: its first step now, and `go()` sends the second, aimed at where the hero is then by the
+     * move's own aim, and runs him (its `act`). `go()` returns that cast: `flag` says he hit a pillar.
+     */
+    charge() {
+      const d = vfx.duel, m = d.boss.def.moves.charge, world = d.boss.script.world, link = d.boss.link;
+      const send = (step) => {
+        const b = d.foe.group.position, me = vfx.arena.caster.group.position;
+        const a = m.aim({ boss: { x: b.x, z: b.z }, ring: { x: b.x, z: b.z }, target: { x: me.x, z: me.z }, step, seed: 4242, rayStop: (ax, az, bx, bz) => world.rayStop(ax, az, bx, bz), cover: () => world.cover() });
+        const c = { id: ++this.seq, move: 'charge', step, x: a.x, z: a.z, fx: b.x, fz: b.z, dir: a.dir, seed: 4242, target: 0, flag: a.flag };
+        d.foe.group.rotation.y = a.dir;
+        link.cast(c);
+        m.act?.(world, c);
+        return c;
+      };
+      send(0);
+      return { go: () => send(1) };
+    },
   };
 
   window._strip = async (title, setup, plan, o = {}) => {
