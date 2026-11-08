@@ -3,6 +3,7 @@ import { raidTierFactor } from '../../server/protocol.mjs';
 import { grown } from '../arenas/hazards/base';
 import { FloorGlows, Sparks } from '../arenas/hazards/fx';
 import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from '../effects/telegraph';
+import { ShowFx } from './fxShow';
 import type { BossCast, BossDef, BossWorld, Objective, PlayContext, PlayedMove, RaidLink, RaidSide, Threat } from './types';
 
 /** Pale orange means leave, gold means stand here. Never the spells' red. */
@@ -42,10 +43,13 @@ export class BossScript {
   private clock = 0;
   private sparks = new Sparks(280, 0.18);
   private glows = new FloorGlows(10);
+  /** The big moments' effects, shared by every cast of this fight. */
+  readonly show: ShowFx;
   private ctx: PlayContext;
 
   constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash' | 'guard'>, tier = 1) {
-    this.group.add(this.sparks.points, this.glows.group);
+    this.show = new ShowFx(world.camera);
+    this.group.add(this.sparks.points, this.glows.group, this.show.group);
     const pace = raidTierFactor(tier);
     this.ctx = {
       shown: (seconds) => (seconds <= 1 ? seconds : Math.max(1, seconds * pace)),
@@ -85,6 +89,8 @@ export class BossScript {
       addHit: (id, part, amount) => link.addHit(id, part, amount),
       report: (id, part) => link.objective(id, part),
       bossMax: link.maxHp,
+      show: this.show,
+      shake: (amount) => world.shake(amount),
     };
   }
 
@@ -111,6 +117,7 @@ export class BossScript {
     this.clock += dt;
     this.sparks.update(dt);
     this.glows.update(dt);
+    this.show.update(dt);
     for (const a of this.active) {
       const t = this.clock - a.began;
       a.leave.update(t);
@@ -344,6 +351,7 @@ export class BossScript {
 
   dispose() {
     this.clear();
+    this.show.dispose();
     this.group.removeFromParent();
     this.sparks.points.geometry.dispose();
     (this.sparks.points.material as THREE.Material).dispose();

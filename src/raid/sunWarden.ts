@@ -128,6 +128,7 @@ const sunRay: BossMove = {
           if (stoneHit) {
             p.dropStone(stoneHit);
             p.reward('ray', c.id);
+            p.show.triumph(x2, z2, 0xffd890);
             p.say('THE RAY BREAKS', '#ffe27a', x2, z2);
             p.sparks.emit(x2, 1, z2, 40, 6, 5, 0.8, 0xb8a080);
           } else p.crackFirst(c.fx, c.fz, ex, ez);
@@ -242,6 +243,8 @@ const noon: BossMove = {
           turned = time;
           p.cancel(c.id);
           p.reward('noon', c.id);
+          p.show.triumph(C.x, C.z, 0xffe0a0, 1.5);
+          p.shake(0.08);
           p.flash('rgba(255,226,140,0.7)', 0.5);
           p.say('THE LIGHT TURNS', '#ffe27a', C.x, C.z);
           p.sparks.emit(c.fx, 4, c.fz, 60, 7, 2, 1, SPARK, 5);
@@ -341,7 +344,7 @@ const longHour = stageMove({
   hold: { x: C.x, z: C.z - 2.4 }, shell: { radius: 3.1, y: 2.8, color: 0xffc070 },
   center: C, ring: 9, turns: [[0, 120, 240], [60, 180, 300]],
   look: hourStoneLook, color: '#c8b088', shot: 'beam', shotColor: SPARK,
-  fail: { share: 0.55, cover: true, radius: COURT_R + 1, text: 'THE DIAL STRIKES' },
+  fail: { share: 0.55, cover: true, radius: COURT_R + 1, text: 'THE DIAL STRIKES', blast: 'flare' },
   win: 'THE HOUR BREAKS', hint: 'Break the three Hour Stones before his bar fills',
 });
 

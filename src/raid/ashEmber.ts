@@ -267,6 +267,7 @@ const marked: BossMove = {
           p.glows.flash(c.x, c.z, radius + 0.5, LAVA, 0.7, 0.5);
           if (c.flag) {
             p.reward('marked', c.id);
+            p.show.triumph(c.x, c.z, 0xff9a40);
             p.say('BURNED', '#ffb050', c.x, c.z);
           }
         },
@@ -382,6 +383,7 @@ const seal: BossMove = {
           sealed = true;
           p.delayLate(SEAL_DELAY);
           p.reward('seal', c.id);
+          p.show.triumph(C.x, C.z, 0xffd890, 1.2);
           p.say('SEALED', '#ffe27a', C.x, C.z);
           p.sparks.emit(C.x, 0.4, C.z, 50, 5, 5, 0.9, STAND_COLOR);
           p.cancel(c.id);
@@ -418,15 +420,25 @@ const tag: BossMove = {
  * Falling Star: Ember calls a star down on you, in a gold circle. Stand in it: alone it costs a tenth, for two 15 % each. Nobody in it, and
  * it costs everyone three times that. A soak: the one move that wants you under it. Hers in the ring only, so it comes from the second phase.
  */
+/**
+ * Where Falling Star's star glints, from its circle (m), and how long it takes to fall (s): just over the top of the screen, which the
+ * camera's steep look down keeps low, so most of its fall shows.
+ */
+const STAR_FROM = { x: 4, y: 11, z: -5 };
+const STAR_FALL = 1.1;
+
 const fallingStar: BossMove = {
   id: 'star', name: 'Falling Star', charge: 3.2, lock: 3.4, cooldown: 22, form: EMBER, pose: 'raise',
   aim: atTarget,
   play(c, p) {
     const radius = 2.3, at = p.shown(3.2), alone = c.alone ?? p.solo;
     const light = new LightPillar(c.x, c.z, radius, 9, STAND_COLOR);
-    const star = new SunOrb(c.x, 16, c.z);
+    // A star glints high in the sky, off to one side, then streaks down and lands in the circle.
+    const sky = new THREE.Vector3(c.x + STAR_FROM.x, STAR_FROM.y, c.z + STAR_FROM.z), ground = new THREE.Vector3(c.x, 0.4, c.z);
+    const star = new SunOrb(sky.x, sky.y, sky.z);
     p.group.add(light.mesh, star.sprite);
     p.hint('Falling Star: stand under it, together if you can');
+    let falling = false;
     return {
       threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, kind: 'stand', split: true, at, soak: alone ? 0.1 : 0.3, share: alone ? 0.3 : 0.45, part: 0 }],
       duration: at + 0.6,
@@ -434,12 +446,21 @@ const fallingStar: BossMove = {
         update(t) {
           const k = Math.min(1, t / at);
           light.opacity = t < at ? 0.3 + 0.4 * k : Math.max(0, 0.7 * (1 - (t - at) * 2.5));
-          star.sprite.position.set(c.x, 16 * (1 - k * k) + 0.6, c.z);
-          star.set(1.4 + k, t < at ? 0.5 + 0.45 * k : 0);
+          star.set(1.6 + 2.4 * k + 0.4 * Math.sin(t * 18), falling ? 0 : 0.35 + 0.6 * k);
+          if (!falling && t >= at - STAR_FALL) {
+            falling = true;
+            p.show.meteor(sky, ground, Math.max(0.2, at - t), { core: 0xfff2d6, glow: 0xff9a3a, size: 2.2, trail: 6 });
+          }
         },
         land() {
-          p.sparks.emit(c.x, 0.4, c.z, 40, 5, 4.5, 0.9, STAND_COLOR);
+          // It lands: a column of light, a shockwave, the star's pieces.
+          p.show.column(c.x, c.z, { radius: 1.3, height: 12, life: 0.8, color: 0xffe8c8, peak: 0.7 });
+          p.show.ring(c.x, c.z, { radius: 7.5, life: 0.8, color: 0xffd8a8, width: 0.7 });
+          p.show.shards(c.x, 0.6, c.z, { count: 18, color: 0xff8a40, speed: 6, life: 1.1, size: 0.22, up: 1 });
+          p.show.burst(c.x, 0.5, c.z, 50, 6, 5, 0.9, 0xffc070);
           p.glows.flash(c.x, c.z, radius + 0.5, EMBER_COLOR, 0.7, 0.5);
+          p.flash('rgba(255,224,180,0.75)', 0.22);
+          p.shake(0.08);
         },
         dispose() {
           light.dispose();
@@ -460,7 +481,7 @@ const eruption = stageMove({
   hold: C, shell: { radius: 2.9, y: 2.4, color: 0xff7030 },
   center: C, ring: 8.5, turns: [[0, 120, 240], [60, 180, 300]],
   look: coalHeartLook, color: '#5a3424', shot: 'lob', shotColor: LAVA,
-  fail: { share: 0.45, cover: false, radius: PIT_R + 1, text: 'THE VENT ERUPTS' },
+  fail: { share: 0.45, cover: false, radius: PIT_R + 1, text: 'THE VENT ERUPTS', blast: 'geyser' },
   win: 'THE FIRE GOES OUT', hint: 'Put out the three Coal Hearts before the bar fills',
 });
 

@@ -951,6 +951,11 @@ export class Duel {
         this.bossGuard = on;
         arena.untargetable = on ? foe : null;
       },
+      shake: (amount) => { if (this.mode === 'play') this.host.heroMode.hitShake = Math.max(this.host.heroMode.hitShake, amount); },
+      bodyRage: (on) => {
+        this.figure.setBodyRage(on);
+        this.rimFigure?.setBodyRage(on);
+      },
       spawnAdd: (spec) => this.spawnAdd(spec),
       phaseShield: () => this.freshShield(),
       me: () => arena.caster.group.position,

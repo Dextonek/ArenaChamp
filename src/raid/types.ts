@@ -5,6 +5,7 @@ import type { MinionLook } from '../effects/parts/minion';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { CastStyle } from '../heroFigure';
 import type { HeroKit } from '../heroes';
+import type { ShowFx } from './fxShow';
 import type { Obstacle } from '../obstacles';
 
 /**
@@ -196,6 +197,10 @@ export interface PlayContext {
   report(id: number, part: number): void;
   /** The boss's max HP in this raid: an add's HP is a share of it. */
   bossMax: number;
+  /** The fight's big one-shot effects: shockwaves, columns, shards, meteors, arcs (src/raid/fxShow.ts). */
+  show: ShowFx;
+  /** This screen's camera shakes, a little: for the biggest moments only. */
+  shake(amount: number): void;
 }
 
 /** A boss's add as a cast asks for it. Its HP is per screen: each screen's hits come off on both, and the first to see it die says so. */
@@ -470,6 +475,10 @@ export interface BossWorld {
   dropStone(o: Obstacle): void;
   /** The boss can't be hurt: hits on it show IMMUNE, and spells aim past it. */
   guard(on: boolean): void;
+  /** This screen's camera shakes, a little. */
+  shake(amount: number): void;
+  /** The boss's bodies (both of a tag team) glow red: it has enraged. */
+  bodyRage(on: boolean): void;
   /** A boss's add on this screen. */
   spawnAdd(spec: AddSpec): RaidAdd;
   /** What watches the enemy's casts (Hemocurse, the Referee's count). */

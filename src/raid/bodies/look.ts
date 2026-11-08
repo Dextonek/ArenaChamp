@@ -33,6 +33,10 @@ export interface BodyState {
 export type BodyLook = (s: BodyState, parts: BodyParts) => void;
 
 const EULER = new THREE.Euler();
+/** The enrage's red, and how bright a part with no light of its own glows in it. */
+const RAGE_RED = new THREE.Color(0xff2a10);
+const RAGE_GLOW = 0.15;
+const RAGE_TO = new THREE.Color();
 const TURN = new THREE.Quaternion();
 const AT = new THREE.Vector3();
 const UP0 = new THREE.Vector3();
@@ -56,6 +60,32 @@ export class BodyParts {
       });
       this.nodes.set(o.name, { node: o, p: o.position.clone(), q: o.quaternion.clone(), s: o.scale.clone(), mats, glow: mats.map((m) => m.emissiveIntensity) });
     });
+    const seen = new Set<THREE.Material>();
+    root.traverse((c) => {
+      const mesh = c as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      for (const m of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
+        const std = m as THREE.MeshStandardMaterial;
+        if (!std.isMeshStandardMaterial || seen.has(std)) continue;
+        seen.add(std);
+        this.all.push({ m: std, e: std.emissive.clone() });
+      }
+    });
+  }
+
+  /** Every material once, with the light colour it loaded with: what the enrage reddens. */
+  private all: { m: THREE.MeshStandardMaterial; e: THREE.Color }[] = [];
+
+  /**
+   * Enraged, 0..1, called every frame after the look: a part's own light turns red at its own brightness, and a part with none takes a dim
+   * red glow. At 0 every colour is as it loaded.
+   */
+  rage(k: number) {
+    for (const a of this.all) {
+      const bright = Math.max(a.e.r, a.e.g, a.e.b);
+      if (bright > 0.02) a.m.emissive.copy(a.e).lerp(RAGE_TO.copy(RAGE_RED).multiplyScalar(bright), k);
+      else a.m.emissive.copy(a.e).lerp(RAGE_TO.copy(RAGE_RED).multiplyScalar(RAGE_GLOW / Math.max(0.05, a.m.emissiveIntensity)), k);
+    }
   }
 
   /** Every part back at rest, and its glow as it loaded. */

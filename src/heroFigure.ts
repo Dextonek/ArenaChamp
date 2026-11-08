@@ -122,6 +122,8 @@ const MODEL_SHADE: Record<string, number> = { 'models/heroes/ink.glb': 0.62 };
 interface BodyNow {
   look: BodyLook;
   phase: number;
+  /** It has enraged: its body glows red. */
+  rage: boolean;
 }
 
 /**
@@ -200,6 +202,8 @@ export class HeroFigure {
 
   private body: BodyNow | null = null;
   private bodyParts = new Map<Hero, BodyParts>();
+  /** How red an enraged body glows now, easing in. */
+  private rageK = 0;
   /** A boss's body action (`act`), with where it lands in the world. */
   private bodyAct: { name: string; step: number; t: number; dur: number; wx: number; wz: number } | null = null;
   private actSpot = new THREE.Vector3();
@@ -212,6 +216,11 @@ export class HeroFigure {
   /** Which phase of its fight a boss's body shows. */
   setBodyPhase(phase: number) {
     if (this.body) this.body.phase = phase;
+  }
+
+  /** A boss's body glows red, throbbing: it has enraged. */
+  setBodyRage(on: boolean) {
+    if (this.body) this.body.rage = on;
   }
 
   /** Poses a boss's body in place of a hero's walk, flinch and cast. */
@@ -236,12 +245,14 @@ export class HeroFigure {
       dt, time: this.clock, fwd: this.fwd, side: this.side, speed: this.vel.length(), moving: this.moving, cast: this.castNow,
       hit: this.hitA, kneeling: !!state.status?.stunned, phase: body.phase, fall: this.dying, act,
     }, parts);
+    this.rageK += ((body.rage ? 1 : 0) - this.rageK) * Math.min(1, dt * 1.5);
+    parts.rage(this.rageK * (0.75 + 0.25 * Math.sin(this.clock * 5)));
   }
 
   /** Shows the model at `url` (undefined hides the figure), styled after `kit`. Returns whether one is shown. */
   setModel(url: string | undefined, at?: THREE.Vector3, kit?: HeroKit) {
     for (const f of this.figures.values()) f.root.visible = false;
-    if (kit?.look !== this.body?.look) this.body = kit?.look ? { look: kit.look, phase: this.body?.phase ?? 0 } : null;
+    if (kit?.look !== this.body?.look) this.body = kit?.look ? { look: kit.look, phase: this.body?.phase ?? 0, rage: this.body?.rage ?? false } : null;
     this.shownYaw = NaN;
     this.figure = null;
     if (url) {

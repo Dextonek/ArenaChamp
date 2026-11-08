@@ -731,6 +731,7 @@
       {
         fresh(0, 1);
         place(0, 12);
+        const kids0 = d.boss.script.group.children.length;
         cast('hour', { seed: 4242 });
         step(0.2);
         const hourCast = d.boss.script.active[d.boss.script.active.length - 1];
@@ -782,6 +783,9 @@
         yes('long hour: and can be hurt again', a.hpOf(d.foe) < back);
         place(0, 12);
         check('long hour: and the dial does not strike', take(() => {}, 33), 0);
+        // Its looks leave nothing behind: the shell and the shadows go with the cast, and every effect has ended.
+        check('long hour: nothing of it is left in the scene', d.boss.script.group.children.length, kids0, 0);
+        check('long hour: and no effect still plays', d.boss.script.show.live.length, 0, 0);
       }
       {
         fresh(0, 1);

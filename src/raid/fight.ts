@@ -3,6 +3,7 @@ import { KeepGate } from '../arenas/noonfall';
 import { RING } from '../arenas/common';
 import type { BuffKind, StatusKind } from '../effects/status';
 import { BossBrain } from './brain';
+import { RageAura } from './fxShow';
 import { BossHud } from './hud';
 import { Track } from './partner';
 import { raidHp, raidTierFactor } from '../../server/protocol.mjs';
@@ -64,13 +65,20 @@ export class BossFight {
   private stageDue: string | null = null;
   /** Seconds left of the stage on now: its cast bar is its clock, and no other move takes the bar meanwhile. */
   private stageLeft = 0;
+  /** Red heat round the boss once it has enraged, and the screen's slow red throb. */
+  private aura: RageAura | null = null;
+  private throb = 0;
 
   constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
     this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength), guard: (s) => this.guard(s) }, tier);
     this.group.add(this.script.group);
     this.brain = link.brain ? new BossBrain(def, world, link, seed, tier) : null;
     this.track = link.brain ? null : new Track();
-    if (def.enrage) this.enrageAt = def.enrage * (raidHp(def.id, false, tier) / raidHp(def.id, false, 1));
+    if (def.enrage) {
+      this.enrageAt = def.enrage * (raidHp(def.id, false, tier) / raidHp(def.id, false, 1));
+      this.aura = new RageAura(def.body.radius, def.body.height);
+      this.group.add(this.aura.group);
+    }
     link.on = {
       cast: (c) => this.onCast(c),
       hp: (hp) => world.setBossHp(hp),
@@ -166,6 +174,14 @@ export class BossFight {
     this.brain?.enrage();
     this.hud.setRage(0);
     this.world.banner('ENRAGED', 2.2);
+    this.world.bodyRage(true);
+    // It goes up: a red blast off it, over the whole floor.
+    const b = this.world.boss(), show = this.script.show;
+    show.ring(b.x, b.z, { radius: 18, life: 1.3, color: 0xff3018, width: 1.2 });
+    show.column(b.x, b.z, { radius: this.def.body.radius * 1.6, height: this.def.body.height * 2.6, life: 1.4, color: 0xff3a1e });
+    show.burst(b.x, this.def.body.height * 0.6, b.z, 60, 7, 3, 1, 0xff5a2a);
+    this.hud.flash('rgba(255,40,16,0.9)', 0.45);
+    this.world.shake(0.16);
   }
 
   /** It stands open or kneels. */
@@ -235,6 +251,7 @@ export class BossFight {
     this.over = true;
     this.script.clear();
     this.guard(0);
+    this.world.bodyRage(false);
     this.gates?.exit.setOpen(result === 'win');
     this.hud.settle(result === 'win', this.link.maxHp);
     this.world.finish(result);
@@ -273,6 +290,15 @@ export class BossFight {
       }
       this.brain?.update(dt);
     }
+    if (this.aura) {
+      const b = this.world.boss();
+      this.aura.update(dt, b.x, b.z, this.enraged && !this.over);
+    }
+    // Enraged, the screen throbs a little red, slowly.
+    if (this.enraged && !this.over && (this.throb -= dt) <= 0) {
+      this.throb = 2.4;
+      this.hud.flash('rgba(255,24,8,0.8)', 0.1);
+    }
     this.script.update(dt, live && !this.over);
     this.pointers(live && !this.over && !this.meDown);
   }
@@ -293,6 +319,7 @@ export class BossFight {
   }
 
   dispose() {
+    this.aura?.dispose();
     this.gates?.enter.dispose();
     this.gates?.exit.dispose();
     this.script.dispose();
