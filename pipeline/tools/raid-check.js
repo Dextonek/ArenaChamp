@@ -286,7 +286,7 @@
         cast('eruption', { seed: 31 });
         step(0.2);
         check('eruption: three Coal Hearts', a.summons.alive('opponent').length, 3, 0);
-        check('eruption: a lob, stood still', take(() => cast('eruption', { step: 1, seed: 31 }), 2.4), 0.07);
+        check('eruption: a lob, stood still', take(() => cast('eruption', { step: 1, seed: 31 }), 2.4), 0.08);
         d.playerHp = d.playerMax;
         cast('eruption', { step: 1, seed: 31 });
         step(0.1);
@@ -340,7 +340,7 @@
       a.hit(d.foe, { damage: def.hp.solo * 0.69, knock: 0 });
       yes('one hit past 66, 50 and 33 %: the stage still comes first', d.boss.stats.phases === 3 && d.boss.brain.opener === 'eruption');
       d.boss.brain.pause = 1e9;
-      yes('their enrage timer shows', /^ENRAGE (4:00|3:5\d)$/.test(d.boss.hud.rageText));
+      yes('their enrage timer shows', /^ENRAGE \d:\d\d$/.test(d.boss.hud.rageText));
     } catch (e) {
       failed.push(String(e?.stack ?? e));
     }
@@ -468,7 +468,7 @@
 
       // Tiers.
       const t3 = fresh([], 3);
-      check('tier 3: boss HP', t3.link.maxHp, Math.round(def.hp.solo * 1.15 * 1.15), 0.5);
+      check('tier 3: boss HP', t3.link.maxHp, def.hp.solo * 1.15 ** 2, 1);
       const shown = d.boss.script.ctx.shown;
       check('tier 3: a shown time', shown(2.5), 2.5 * 0.81);
       check('tier 3: never under 1 s', shown(1.1), 1);
@@ -744,7 +744,7 @@
         yes('long hour: the stones can be aimed at', stones().every((u) => a.liveFoes().some((f) => f.figure === u.figure)));
         const stoneAt = stones().map((u) => ({ x: u.pos.x, z: u.pos.z }));
         yes('long hour: they stand round the court', stoneAt.every((s) => Math.abs(Math.hypot(s.x, s.z - 7) - 9) < 0.05));
-        check('long hour: a volley, stood still', take(() => cast('hour', { step: 1, seed: 4242 }), 1.8), 0.07);
+        check('long hour: a volley, stood still', take(() => cast('hour', { step: 1, seed: 4242 }), 1.8), 0.08);
         d.playerHp = d.playerMax;
         cast('hour', { step: 1, seed: 4242 });
         step(0.1);
@@ -827,13 +827,18 @@
       {
         fresh(0, 1);
         step(0.1);
-        yes('the enrage timer shows', /^ENRAGE (4:00|3:5\d)$/.test(d.boss.hud.rageText));
+        const clock = (s) => `ENRAGE ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+        yes('the enrage timer shows', [clock(def.enrage), clock(def.enrage - 1)].includes(d.boss.hud.rageText));
         d.boss.fought = def.enrage - 0.05;
         step(0.1);
         yes('at 4:00 he enrages', d.boss.enraged === true && d.boss.hud.rageText === 'ENRAGED');
-        check('enraged: the quiet between moves', d.boss.brain.rage, 0.6, 0);
+        check('enraged: the quiet between moves', d.boss.brain.rage, 0.5, 0);
         place(0, 5);
-        check('enraged: a sweep costs half as much again', take(() => cast('sweep'), 1.8), 0.3);
+        check('enraged: a sweep costs twice as much', take(() => cast('sweep'), 1.8), 0.4);
+        // A higher tier: more HP, so the enrage comes later by as much.
+        d.startBoss({ def, link: new LocalLink(def, 3), seed: 'tier', mode: 'play', tier: 3 });
+        d.boss.brain.pause = 1e9;
+        check('at tier 3 the enrage comes later, as the HP grows', d.boss.enrageAt / def.enrage, 1.15 ** 2, 0.005);
       }
 
       // Phases: HP thresholds; the end of the fight.

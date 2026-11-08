@@ -157,7 +157,7 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor`, `onFoeDamage` a
 | Exposed | After a Noon nobody turned, +50 % damage taken for 5 s (`vulnerable`) |
 | Damage | A share of the hero's max HP, through `resolve` and `damagePlayer` as a normal hit, so parries, shields and ice blocks work. `weaken` on the boss lowers it |
 | Wide | A zone that touches any of its body counts as a hit on it (`inCastReach` with a pad) |
-| Enrage | A timer under its bar (`BossDef.enrage`, 4:00). Then every hit costs half as much again and the quiet between moves is 60 % (`BossFight.enrage`) |
+| Enrage | A timer next to its name (`BossDef.enrage`: the Warden 2:30, Ash and Ember 2:50; at a higher tier later by as much as its HP grows). Then every hit costs twice as much and the quiet between moves is half (`BossFight.enrage`): past it a fight is meant to be nearly lost |
 | Too long | Past 5 minutes sunfire closes in, at 6 Last stand (`BossDef.late`), so nobody can stall a fight for ever |
 | A stage | At 50 %: it can't be hurt or held (hits show IMMUNE, `Arena.untargetable` makes spells aim past it) from the phase's start until the stage is won or fails. Win: it kneels, and acts again after (`BossMove.stage`). Fail: a blow over the whole floor. A big hit past two phases still gets the stage first. Its cast bar is its clock: no other move takes the bar meanwhile. The guard is in `hitFilter`: in a boss fight every hit on the boss goes through `Arena.hit`, and nothing else takes its HP |
 | Units | Whatever stands in an orange zone takes 60. Units don't dodge |
@@ -165,7 +165,7 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor`, `onFoeDamage` a
 
 ## The Sun Warden
 
-Numbers as they are; tune by playing. Alone 3,200 HP, for two 6,500. Walks at 2 m/s, stops 4.5 m from its target.
+Numbers as they are; tune by playing. Alone 4,300 HP, for two 8,700. Walks at 2 m/s, stops 4.5 m from its target.
 
 | Phase | From | Move | Shown | Costs | What you do |
 |---|---|---|---|---|---|
@@ -176,7 +176,7 @@ Numbers as they are; tune by playing. Alone 3,200 HP, for two 6,500. Walks at 2 
 | High Noon | 70 % | Gathering Noon | 8 s, shadows for the last 4 | 40 % | Turn the light (above), or hide: gold shadows behind cover are safe. A wall that saved someone falls, a column stays. He stands open after |
 | | | Sun Order | 2.5 s, then 0.8 s apart | 16 % | Four wedges fire 1-2-3-4: step into 1 once it has fired |
 | | | Shared Burden (for two) | 3 s | 40 %, split | Come together in the gold circle |
-| The Long Hour | 50 % | The Long Hour (the stage) | 32 s | 7 % a beam, 55 % if it fails | He floats behind the Sun Well and can't be hurt. Break three Hour Stones; their beams cross where you stand, so step aside. If any stand when his bar fills, hide behind cover from him |
+| The Long Hour | 50 % | The Long Hour (the stage) | 30 s | 8 % a beam, 55 % if it fails | He floats behind the Sun Well and can't be hurt. Break three Hour Stones; their beams cross where you stand, so step aside. If any stand when his bar fills, hide behind cover from him |
 | Last Light | 35 % | Eclipse | 1.6 s each | 15 % | Near him, far from him, near again |
 | | | Anchors | 3 s | 25 % | Stand in the gold circle. Alone: one, then the other. For two: both at once, or the whole court pays |
 | | | Walking Sun | Runs 10 s alongside other moves | 12 % a pass | Keep ahead of the ray, or behind cover |
@@ -187,13 +187,13 @@ hero's exact position to draw it. If nobody stands in it, everyone pays in full.
 ## Ash and Ember
 
 `src/raid/ashEmber.ts`. Two bosses, one HP bar, one in the ring at a time. The other stands on the rim, out of reach, and adds a move
-now and then. Alone 3,000 HP, for two 7,000. The one in the ring aims at the nearer hero, the one on the rim at the farther.
+now and then. Alone 3,300 HP, for two 7,100. The one in the ring aims at the nearer hero, the one on the rim at the farther.
 
 | Phase | From | Who | Notes |
 |---|---|---|---|
 | Ash and Ember | 100 % | Ash in the ring, Ember on the rim | A move from the rim every 10-14 s |
 | Ember steps in | 66 % | They swap | Every 9-13 s |
-| Eruption | 50 % | The stage: Ember sinks into the vent | Every 8-11 s, through the stage. Put out three Coal Hearts; their lobs land on you and round you. If any burn when the bar fills, 45 % to everyone |
+| Eruption | 50 % | The stage: Ember sinks into the vent | Every 8-11 s, through the stage. Put out three Coal Hearts in 30 s; their lobs land on you and round you, 8 % each. If any burn when the bar fills, 45 % to everyone |
 | Together | 33 % | They swap every 12 s | Every 9 s. The lava rises from the rim, three steps, then Last stand. The vent opens twice |
 
 | Who | Move | Shown | Costs | What you do |

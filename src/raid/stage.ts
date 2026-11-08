@@ -15,13 +15,13 @@ import type { BossCast, BossMove, Objective, PlayContext, PlayedMove, RaidAdd, T
  */
 
 /** How long a stage lasts at tier 1 (s): its cast bar fills over it, and then it fails. */
-export const STAGE_S = 32;
+export const STAGE_S = 30;
 /** When the adds shoot, from the stage's start (s, tier 1). */
 const SHOTS = [5, 8.5, 12, 15.5, 19, 22.5, 26, 29];
 /** An add's HP, as a share of the boss's max. */
 const ADD_SHARE = 0.035;
 /** What one add's shot costs. */
-const SHOT_SHARE = 0.07;
+const SHOT_SHARE = 0.08;
 const BEAM_WIDTH = 1.3;
 const LOB_RADIUS = 1.7;
 

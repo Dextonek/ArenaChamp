@@ -12,7 +12,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
-import { PROTOCOL, RELOAD_TEXT } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RELOAD_TEXT } from './protocol.mjs';
+
+/** The bosses' HP for two, as the hub keeps it. */
+const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo;
 
 const target = process.argv[2];
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
@@ -367,7 +370,7 @@ try {
     await wait(150);
     h.send({ t: 'raid_enter' });
     const st = await g.next('raid_stage');
-    check(st.boss === 'sun' && st.hp === 6500 && st.brain === 0, 'both picked: the first boss loads');
+    check(st.boss === 'sun' && st.hp === SUN && st.brain === 0, 'both picked: the first boss loads');
     await h.next('raid_stage');
     g.send({ t: 'match_loaded', maxHp: 520 });
     h.send({ t: 'match_loaded', maxHp: 800 });
@@ -390,16 +393,18 @@ try {
 
     // The hub keeps the boss's HP: hits from both, capped, and sent to both.
     g.send({ t: 'boss_damage', amount: 300 });
-    check((await g.next('boss_hp')).hp === 6200 && (await h.next('boss_hp')).hp === 6200, 'hits come off the boss and both hear it');
+    check((await g.next('boss_hp')).hp === SUN - 300 && (await h.next('boss_hp')).hp === SUN - 300, 'hits come off the boss and both hear it');
     g.send({ t: 'boss_damage', amount: 99999 });
     await wait(150);
-    check((await g.next('boss_hp')).hp === 5600, 'one hit is capped');
+    check((await g.next('boss_hp')).hp === SUN - 900, 'one hit is capped');
     await h.next('boss_hp');
     await wait(1050);
-    // Into the second phase (70 % of 6500 is 4550).
+    // Into the second phase, at 70 %: from both screens, each under its own cap for the second.
     h.send({ t: 'boss_damage', amount: 600 });
     await wait(150);
     h.send({ t: 'boss_damage', amount: 600 });
+    await wait(150);
+    g.send({ t: 'boss_damage', amount: 600 });
     check((await g.next('boss_phase')).phase === 1 && (await h.next('boss_phase')).phase === 1, 'the phase changes on both screens');
 
     // The gauge: stagger from either screen, a full one kneels both.
@@ -448,15 +453,16 @@ try {
 
     // The boss falls: on to the next pick, and everyone is up and full again.
     const finish = (/** @type {any} */ who) => { for (let i = 0; i < 2; i++) who.send({ t: 'boss_damage', amount: 600 }); };
-    // Hits past the boss's end are dropped, so this just hits for long enough.
-    const until = async (/** @type {string} */ t, seconds) => {
+    // Hits past the boss's end are dropped, so this just hits for long enough: 1,200 a second, enough seconds for `hp`.
+    const until = async (/** @type {string} */ t, hp) => {
+      const seconds = Math.ceil(hp / 1200) + 1;
       for (let i = 0; i < seconds; i++) {
         finish(g);
         await wait(1050);
       }
       return g.next(t, 2000);
     };
-    const won = await until('raid_won', 4);
+    const won = await until('raid_won', SUN);
     check(won.bosses === 1 && won.last === false && won.seconds > 3, 'the first boss falls and the run goes on');
     await h.next('raid_won');
     const off2 = await g.next('raid_offer', 5000);
@@ -465,7 +471,7 @@ try {
     h.send({ t: 'raid_pick' });
     await through();
     const st2 = await g.next('raid_stage');
-    check(st2.boss === 'ash' && st2.hp === 7000, 'the second boss loads at its own HP');
+    check(st2.boss === 'ash' && st2.hp === ASH, 'the second boss loads at its own HP');
     g.send({ t: 'match_loaded', maxHp: 520 });
     h.send({ t: 'match_loaded', maxHp: 800 });
     await g.next('match_fight');
@@ -481,7 +487,7 @@ try {
     check(rimCast.rim === true && rimCast.flag === true, 'so does a move from the rim');
 
     // The last boss falls: the clear screen. Both go on to the next tier, keeping their upgrades, with more boss HP.
-    const clear = await until('raid_won', 6);
+    const clear = await until('raid_won', ASH);
     check(clear.bosses === 2 && clear.last === true && clear.tier === 1, 'the last boss falls: the raid is cleared');
     await h.next('raid_won');
     g.send({ t: 'raid_next', go: true });
@@ -494,7 +500,7 @@ try {
     h.send({ t: 'raid_pick' });
     await through();
     const st3 = await g.next('raid_stage');
-    check(st3.hp === 7475, 'a tier adds 15 % to the boss');
+    check(st3.hp === Math.round(SUN * 1.15), 'a tier adds 15 % to the boss');
     g.send({ t: 'match_loaded', maxHp: 520 });
     h.send({ t: 'match_loaded', maxHp: 800 });
     await g.next('match_fight');
@@ -594,8 +600,8 @@ try {
     await g.next('boss_kneel');
     // Older reports of the last fight may still be in the inbox.
     let paid = await h.next('boss_hp');
-    for (let i = 0; i < 50 && paid.hp !== 6500 - 325; i++) paid = await h.next('boss_hp');
-    check(paid.hp === 6500 - 325, 'and takes 5 % of the boss\'s HP off');
+    for (let i = 0; i < 50 && paid.hp !== SUN - SUN * 0.05; i++) paid = await h.next('boss_hp');
+    check(paid.hp === SUN - SUN * 0.05, 'and takes 5 % of the boss\'s HP off');
     h.send({ t: 'boss_debuff', kind: 'slow', amount: 0, seconds: 1.5 });
     const slowed = await g.next('peer_debuff');
     check(slowed.kind === 'slow' && slowed.seconds === 1.5, 'a slow on the boss reaches the other screen');
@@ -617,7 +623,7 @@ try {
     check((await h.next('boss_cast')).form === undefined, 'a cast with a form that does not exist loses it');
     h.send({ t: 'hero_down' });
     await g.next('peer_down');
-    await until('raid_won', 6);
+    await until('raid_won', SUN * 1.15);
     await h.next('raid_won');
     // Older runs' offers are still in the inbox.
     let off4;

@@ -121,15 +121,15 @@ Each boss has four phases now, one of them a stage; both have an enrage timer; E
 
 | Piece | What it is | How it works on two screens |
 |---|---|---|
-| **The stage** | At 50 % the boss stands apart in a shell of light and can't be hurt. Three adds rise round the room and shoot at one hero and then the other. Kill all three before its cast bar fills (32 s at tier 1) and the boss falls to its knees; if not, a blow over the whole floor | One move (`src/raid/stage.ts`, `BossMove.stage`), the phase's opener. Its first cast makes the adds where the seed puts them; its later steps (`spread`) shoot from those still standing |
+| **The stage** | At 50 % the boss stands apart in a shell of light and can't be hurt. Three adds rise round the room and shoot at one hero and then the other. Kill all three before its cast bar fills (30 s at tier 1) and the boss falls to its knees; if not, a blow over the whole floor | One move (`src/raid/stage.ts`, `BossMove.stage`), the phase's opener. Its first cast makes the adds where the seed puts them; its later steps (`spread`) shoot from those still standing |
 | **Adds** | Units on the boss's side of the summon system: heroes target and hit them like any enemy, and spells aim past the boss meanwhile. They never move and never attack by themselves | Each screen has its own copy. A hit on one is passed to the other screen (`boss_add` → `peer_add`), and the first screen that sees one die says so: an objective (`boss_obj` → `boss_done`), so both agree |
-| **Enrage** | A timer under the boss's bar, 4:00 for both. Then ENRAGED: every hit costs half as much again, and the quiet between moves is 60 % of what it was. The floor still closes in at 5:00 and ends it at 6:00 | Each screen's own clock from its first live frame: nothing is sent |
+| **Enrage** | A timer next to the boss's name: 2:30 for the Warden, 2:50 for Ash and Ember, later at a higher tier by as much as the HP grows. Then ENRAGED: every hit costs twice as much and the quiet between moves is half. The floor still closes in at 5:00 and ends it at 6:00 | Each screen's own clock from its first live frame: nothing is sent |
 | **Soak: Falling Star** | Ember, in the ring, calls a star down in a gold circle where you stand. Under it: alone 10 %, for two 30 % split between those under it. Nobody under it: 30 % alone, 45 % for two | A gold zone that splits, as Shared Burden; what it costs those under it is its own number (`Threat.soak`) |
 
 | Boss | The stage | Adds and their shots | If they still stand |
 |---|---|---|---|
-| The Sun Warden | **The Long Hour**: he floats behind the Sun Well | Three **Hour Stones** 9 m from the altar: beams from each through the hero, 7 % | **The dial strikes**: 55 %, and only cover between you and him is safe (gold shadows show where) |
-| Ash and Ember | **Eruption**: whoever is in the ring sinks into the vent; the one on the rim keeps throwing | Three **Coal Hearts** 8.5 m from the vent: lava lobs, the first where you stand and the others round it, 7 % each | **The vent erupts**: 45 %, and nothing covers you |
+| The Sun Warden | **The Long Hour**: he floats behind the Sun Well | Three **Hour Stones** 9 m from the altar: beams from each through the hero, 8 % | **The dial strikes**: 55 %, and only cover between you and him is safe (gold shadows show where) |
+| Ash and Ember | **Eruption**: whoever is in the ring sinks into the vent; the one on the rim keeps throwing | Three **Coal Hearts** 8.5 m from the vent: lava lobs, the first where you stand and the others round it, 8 % each | **The vent erupts**: 45 %, and nothing covers you |
 
 Each add has 3.5 % of the boss's HP. Phases: the Warden's Awake, High Noon (70 %), The Long Hour (50 %), Last Light (35 %); Ash and Ember's
 first, Ember steps in (66 %), Eruption (50 %), Together (33 %).
@@ -139,6 +139,32 @@ until the stage's cast comes (a kneel that lands with the phase makes the brain 
 
 **Tuned with the autopilot (39 heroes once each, alone):** Falling Star first cost 20 % alone under it and came from the rim as well, and Ash and
 Ember fell from 26 clears to 9, with the star the first killer. At 10 %, and from the ring only, 22 of 39. The Warden stayed at 32 of 39.
+
+### Made hard (user, 2026-11-08: "test it by playing it and make sure the bosses are hard")
+
+Played first through the real menus (a solo run with Bram at the autopilot's Normal level): the hall, an upgrade, the gate, the Warden
+won with 1 HP left thanks to Stubborn, the hall again, then Ash and Ember killed him at 27 %. Then measured: the autopilot alone, every hero
+once (Ash and Ember twice in the last row), at **Normal**, the project's stand-in for a person, and **Hard**, a strong player. Clears:
+
+| | Before | First pass | Now |
+|---|---|---|---|
+| The Warden, Normal | 25 of 39 (64 %) | 22 (56 %) | **14 (36 %)** |
+| The Warden, Hard | 31 (79 %) | 26 (67 %) | **21 (54 %)** |
+| Ash and Ember, Normal | 15 (38 %) | 10 (26 %) | **17 of 78 (22 %)** |
+| Ash and Ember, Hard | 20 (51 %) | 11 (28 %) | **35 of 78 (45 %)** |
+
+Before, no fight reached the 4:00 enrage and the stages were won almost every time. **The changes:** HP alone 4,300 for the Warden (was
+3,200) and 3,300 for Ash and Ember (was 3,000), for two 8,700 and 7,100 (Ash and Ember's two-player HP was 2.33 times one player's, now
+2.15, so the enrage bites two players no harder). The enrage at 2:30 and 2:50, about where the slowest third of the Normal wins end, and
+later at a higher tier by as much as the HP grows (`BossFight.enrageAt`). Enraged, hits cost twice as much and moves come twice as often:
+with half as much again, more than half the fights that reached it still won. The stage 30 s (was 32), its shots 8 % (were 7 %). A second
+pass made Ash and Ember too hard (6 of 39 at Normal, with 3,550 HP and the enrage at 2:45); they were eased back.
+
+**Read with care:** the autopilot dodges better than a person (at Normal it reacts to 80 % of casts within 0.2 s; Bram sat at 1 HP through a
+whole phase without a hit). A person will find these bosses harder than these numbers. Stages are still won about nine times in ten at Normal,
+so most losses come from the last phase and the enrage. Moves' costs and the quiet between moves were left alone: those are where the
+autopilot says least about a person. **The knobs:** `enrage` in each boss's file, HP in `RAID_BOSSES`, the stage's `STAGE_S`, `ADD_SHARE`
+and `SHOT_SHARE` in `src/raid/stage.ts`, `RAGE_HIT` and `RAGE_GAP`.
 
 **As built, against the plan above it:** the adds' HP isn't kept by the hub. Each screen keeps its own, takes the partner's hits off when they
 arrive, and death is an objective: no HP to keep in sync, and nothing new for the hub to count. The stage is a move, not a new kind of phase.

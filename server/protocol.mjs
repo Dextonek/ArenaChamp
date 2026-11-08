@@ -13,8 +13,8 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
  * The boss's definition in src/raid reads the same numbers.
  */
 export const RAID_BOSSES = {
-  sun: { hp: { solo: 3200, duo: 6500 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
-  ash: { hp: { solo: 3000, duo: 7000 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
+  sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
+  ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
 };
 
 /**

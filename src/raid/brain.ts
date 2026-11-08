@@ -16,7 +16,7 @@ const BACK_PACE = 0.8;
 /** The ways it tries, turned from straight away from the hero (radians), nearest first. None of them goes back toward the hero. */
 const BACK_TURNS = [0, 0.6, -0.6, 1.2, -1.2, Math.PI / 2, -Math.PI / 2];
 /** Enraged, the quiet between moves is this much of what it was. */
-const RAGE_GAP = 0.6;
+const RAGE_GAP = 0.5;
 
 interface Pending {
   at: number;

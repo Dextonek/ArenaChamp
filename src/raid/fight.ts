@@ -5,7 +5,7 @@ import type { BuffKind, StatusKind } from '../effects/status';
 import { BossBrain } from './brain';
 import { BossHud } from './hud';
 import { Track } from './partner';
-import { raidTierFactor } from '../../server/protocol.mjs';
+import { raidHp, raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
 import type { RunUpgrades } from './upgrades';
 import type { BossCast, BossDebuff, BossDef, BossWorld, RaidLink } from './types';
@@ -16,8 +16,8 @@ const STAGGER_PER_SECOND: Partial<Record<StatusKind, number>> = { stun: 22, knoc
 const SLOW_SHARE = 0.5;
 /** A hit's debuffs that count on both screens. The rest (Grounded, say) do nothing to a boss. */
 const SHARED_DEBUFFS: readonly BuffKind[] = ['weaken', 'vulnerable'];
-/** Enraged, every hit on a hero costs this much more. */
-const RAGE_HIT = 1.5;
+/** Enraged, every hit on a hero costs this much more: past it, a fight is meant to be nearly lost. */
+const RAGE_HIT = 2;
 /**
  * A phase that opens with a stage: the boss can't be hurt from the phase's start until the stage's cast comes and says how long. At most
  * this long (s): its pause, a kneel that landed with the phase (the brain waits it out), a message on its way.
@@ -56,6 +56,8 @@ export class BossFight {
   /** Seconds of fight so far, from its first live frame: the enrage timer. */
   private fought = 0;
   private enraged = false;
+  /** When it enrages (s): `BossDef.enrage`, later at a higher tier by as much as its HP grows, so the check stays the same. */
+  private enrageAt = 0;
   /** Seconds the boss still can't be hurt or held: a stage is on. */
   private guardLeft = 0;
   /** The stage this phase opens with, until its cast comes: a screen that takes the brain over opens with it too. */
@@ -68,6 +70,7 @@ export class BossFight {
     this.group.add(this.script.group);
     this.brain = link.brain ? new BossBrain(def, world, link, seed, tier) : null;
     this.track = link.brain ? null : new Track();
+    if (def.enrage) this.enrageAt = def.enrage * (raidHp(def.id, false, tier) / raidHp(def.id, false, 1));
     link.on = {
       cast: (c) => this.onCast(c),
       hp: (hp) => world.setBossHp(hp),
@@ -262,9 +265,9 @@ export class BossFight {
       this.world.phaseShield();
     }
     if (live && !this.over) {
-      if (this.def.enrage) {
+      if (this.enrageAt) {
         this.fought += dt;
-        const left = this.def.enrage - this.fought;
+        const left = this.enrageAt - this.fought;
         if (left <= 0 && !this.enraged) this.enrage();
         else if (!this.enraged) this.hud.setRage(left);
       }

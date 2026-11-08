@@ -531,8 +531,8 @@ export const ASH_AND_EMBER: BossDef = {
   /** A higher tier adds these: Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave. */
   extra: ['rock', 'marked', 'wave'],
   moves: { slam, charge, drag, quake, trail, rock, fan, marked, bombs, wave, lanterns, star: fallingStar, tag, seal, eruption },
-  /** Four minutes in they enrage: a minute before the lava rises. */
-  enrage: 240,
+  /** 2:50 in they enrage: about where the slowest third of the autopilot's wins at a person's pace end (pipeline/designs/raid-noonfall.md). */
+  enrage: 170,
   /** Past 5 minutes, or as soon as Together begins, the lava rises. Last stand on the shift's own clock at 105 s. */
   late: () => {
     const ring = (inner: number) => ({ shape: { kind: 'ring' as const, x: C.x, z: C.z, inner, outer: PIT_R }, share: 0.03 });

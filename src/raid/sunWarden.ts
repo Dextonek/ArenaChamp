@@ -521,8 +521,8 @@ export const SUN_WARDEN: BossDef = {
   /** A higher tier brings these in from the first phase on, one a tier. */
   extra: ['order', 'walking', 'eclipse'],
   moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, hour: longHour, eclipse, anchors, walking: walkingSun },
-  /** Four minutes in he enrages: a minute before the sunfire closes in. */
-  enrage: 240,
+  /** 2:30 in he enrages: about where the slowest third of the autopilot's wins at a person's pace end (pipeline/designs/raid-noonfall.md). */
+  enrage: 150,
   /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
   late: () => ({
     offset: -255,
