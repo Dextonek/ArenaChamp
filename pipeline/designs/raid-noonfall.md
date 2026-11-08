@@ -167,6 +167,25 @@ autopilot says least about a person. **The knobs:** `enrage` in each boss's file
 and `SHOT_SHARE` in `src/raid/stage.ts`, `RAGE_HIT` and `RAGE_GAP`. Not measured above tier 1: there the stage's window shrinks with the
 shown times while its adds' HP grows with the boss's, so it gets harder from both sides.
 
+### The mechanics' big effects (user, 2026-11-08: "make some VFX super effect for the mechanics")
+
+| Moment | Effect |
+|---|---|
+| A stage begins | The boss goes up in a column of its light, a shockwave crosses the floor, each add rises out of a column of its own; a small shake |
+| The shell | Lit at its rim with bands of light running over it, so the boss shows through; in its last seconds it beats faster and the blow gathers inside it |
+| An Hour Stone shoots | Its eye gathers light over the telegraph, then a white-hot beam through where the hero stood |
+| A Coal Heart throws | A burning lump on a high arc from the heart, landing in its circle with a splash of fire and a ring of heat |
+| An add dies | It bursts in its own colour: shards, a column, a ring |
+| The stage won | The shell shatters, a white shockwave over the floor, a white flash; the boss kneels |
+| The dial strikes (the Warden's fail) | 26 rays of white light out along the floor, a giant shockwave, a whiteout. The gold shadows behind cover stay the safe places |
+| The vent erupts (Ash and Ember's fail) | A geyser of fire out of the vent, sixteen lumps of lava thrown over the pit, a heat wave across the floor, a red flash |
+| Falling Star | A star glints just over the top of the screen, then streaks down into its gold circle; a column of light, a shockwave, its pieces |
+| A mechanic done right | The light turned, the ray broken, burn your own, the vent sealed: a column of light, a shockwave, sparks and shards |
+| Enraged | A red blast over the floor, red heat rising round the boss, its body lit red and throbbing, a slow red throb on the screen |
+
+All from the casts, landings and objectives, so both screens draw them; none changes a zone, a time or a cost (the checks came out the same).
+Pictures: `docs/bosses/fx-*.jpg`.
+
 **As built, against the plan above it:** the adds' HP isn't kept by the hub. Each screen keeps its own, takes the partner's hits off when they
 arrive, and death is an objective: no HP to keep in sync, and nothing new for the hub to count. The stage is a move, not a new kind of phase.
 The Warden's stage was to be called Eclipse, but he has a move of that name.
