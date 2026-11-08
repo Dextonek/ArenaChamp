@@ -64,7 +64,8 @@ acts too (`BossWorld.actRim`).
 
 The rest strike with their cast pose, now on time: Sun Ray thrusts as the ray fires, Gathering Noon comes down at 8 s, Ground Slam, Fan,
 Lava Wave, Falling Star. `pipeline/tools/boss-anim.js` (`_strip`) lays frames of a move round its landing side by side, to check the strike
-and the zone land in the same frame; sheets `docs/bosses/anim-*.jpg`.
+and the zone land in the same frame; sheets `docs/bosses/anim-*.jpg`. Not sheeted (the shared timing only): Charge, Drag Under, Marked, Lava
+Wave, Tag, Anchors, Shared Burden.
 **The glow** of each body is kept low on purpose (`GLOW_HALO`, the core's share): under the game's bloom a bright halo, core or flame hid the whole
 body from above. `pipeline/tools/boss-poses.js` poses a boss through idle, walk, each cast, phases, kneel and fall on one sheet to judge that.
 

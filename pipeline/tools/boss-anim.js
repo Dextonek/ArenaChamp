@@ -34,9 +34,9 @@
       return 'ready';
     },
     step(s) { for (let i = 0; i < Math.round(s * 60); i++) vfx.step(1 / 60); },
-    /** A step of a move, aimed at the hero (or at `x`, `z`); `rim`: from the one on the rim. */
+    /** A step of a move, aimed at the hero (or at `x`, `z`); `rim`: from the one on the rim; `from`: from there (a tag's rim spot). */
     cast(move, o = {}) {
-      const d = vfx.duel, b = o.rim ? d.rimAt : d.foe.group.position, me = vfx.arena.caster.group.position;
+      const d = vfx.duel, b = o.from ?? (o.rim ? d.rimAt : d.foe.group.position), me = vfx.arena.caster.group.position;
       const x = o.x ?? me.x, z = o.z ?? me.z;
       d.boss.link.cast({ id: ++this.seq, move, step: o.step ?? 0, x, z, fx: b.x, fz: b.z, dir: Math.atan2(x - b.x, z - b.z), seed: o.seed ?? 4242, target: 0, rim: o.rim, form: o.form });
     },
@@ -94,7 +94,8 @@
     }
     img.src = sheet.toDataURL('image/jpeg', 0.92);
     img.style.display = '';
-    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // A frame for the sheet to show in; a hidden page gets no frames, so a timer stands in.
+    await new Promise((r) => { requestAnimationFrame(() => r()); setTimeout(r, 300); });
     return `${title}: ${frames.length} frames`;
   };
   window._strip.hide = () => { const img = document.getElementById('strip'); if (img) img.style.display = 'none'; };
