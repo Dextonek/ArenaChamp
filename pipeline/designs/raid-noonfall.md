@@ -110,6 +110,36 @@ changes: props, floor, backdrop, sky and light, and what moves in the air.
 | **The Warden's sanctum** (the Sun Court) | The top of the mountain, where he keeps watch over the hole the sun tore. His throne faces the eclipse | The six screen walls become carved sun-stone slabs with gold seams (whole, cracked, rubble); the eight columns become sun obelisks with a gold disc on top; the middle altar becomes the Sun Well where shards are delivered | A great sundial: hour marks, a gnomon's shadow, cracks of light | His empty throne on a stepped plinth past the north gate; broken sun arches; floating rocks like his own; tall obelisks | Rocks drifting up and down, motes of light |
 | **Ash and Ember's den** (the Cinder Pit) | The crater the sun fell into, where it still burns under the floor. They nest here | The four basalt clusters become obsidian spires with ember cracks; the two ridges become slag walls of cooled lava; the four stumps become anvil stones with live coals; the five rim perches become Ember's lantern perches | Black glass and cooled lava over a buried sun: gold light through the cracks, Ash's claw marks | A great fallen sun shard half sunk in the lava; the ribs of something huge that burned; posts with hanging lanterns round the crater | Embers rising, heat haze on the lava |
 
-Props come from Blender (\`blender/arenas/sanctum_props.py\`, \`den_props.py\`), named \`<Prop>__<material>\` as the other arenas' are, so the
-same instancing code places them. The Court keeps its breakable walls: the sanctum's file has \`Wall\`, \`WallCracked\` and \`WallRubble\`.
-Nothing over 2 m on the camera's side, as in every arena (\`checkCameraRule\`).
+Props come from Blender (`blender/arenas/sanctum_props.py`, `den_props.py`), named `<Prop>__<material>` as the other arenas' are, so the
+same instancing code places them. The Court keeps its breakable walls: the sanctum's file has `Wall`, `WallCracked` and `WallRubble`.
+Nothing over 2 m on the camera's side, as in every arena (`checkCameraRule`).
+
+## Stages, enrage, soak and summons
+
+User, 2026-11-08: "refine how the boss works: more phases/stages and an enrage timer, and more mechanics like dodge, soak or summons".
+Each boss has four phases now, one of them a stage; both have an enrage timer; Ember has a soak.
+
+| Piece | What it is | How it works on two screens |
+|---|---|---|
+| **The stage** | At 50 % the boss stands apart in a shell of light and can't be hurt. Three adds rise round the room and shoot at one hero and then the other. Kill all three before its cast bar fills (32 s at tier 1) and the boss falls to its knees; if not, a blow over the whole floor | One move (`src/raid/stage.ts`, `BossMove.stage`), the phase's opener. Its first cast makes the adds where the seed puts them; its later steps (`spread`) shoot from those still standing |
+| **Adds** | Units on the boss's side of the summon system: heroes target and hit them like any enemy, and spells aim past the boss meanwhile. They never move and never attack by themselves | Each screen has its own copy. A hit on one is passed to the other screen (`boss_add` → `peer_add`), and the first screen that sees one die says so: an objective (`boss_obj` → `boss_done`), so both agree |
+| **Enrage** | A timer under the boss's bar, 4:00 for both. Then ENRAGED: every hit costs half as much again, and the quiet between moves is 60 % of what it was. The floor still closes in at 5:00 and ends it at 6:00 | Each screen's own clock from its first live frame: nothing is sent |
+| **Soak: Falling Star** | Ember, in the ring, calls a star down in a gold circle where you stand. Under it: alone 10 %, for two 30 % split between those under it. Nobody under it: 30 % alone, 45 % for two | A gold zone that splits, as Shared Burden; what it costs those under it is its own number (`Threat.soak`) |
+
+| Boss | The stage | Adds and their shots | If they still stand |
+|---|---|---|---|
+| The Sun Warden | **The Long Hour**: he floats behind the Sun Well | Three **Hour Stones** 9 m from the altar: beams from each through the hero, 7 % | **The dial strikes**: 55 %, and only cover between you and him is safe (gold shadows show where) |
+| Ash and Ember | **Eruption**: whoever is in the ring sinks into the vent; the one on the rim keeps throwing | Three **Coal Hearts** 8.5 m from the vent: lava lobs, the first where you stand and the others round it, 7 % each | **The vent erupts**: 45 %, and nothing covers you |
+
+Each add has 3.5 % of the boss's HP. Phases: the Warden's Awake, High Noon (70 %), The Long Hour (50 %), Last Light (35 %); Ash and Ember's
+first, Ember steps in (66 %), Eruption (50 %), Together (33 %).
+
+While a stage is on, its cast bar is its clock: a move from the one on the rim doesn't take the bar. The boss is safe from the phase's start
+until the stage's cast comes (a kneel that lands with the phase makes the brain wait it out; at most 12 s).
+
+**Tuned with the autopilot (39 heroes once each, alone):** Falling Star first cost 20 % alone under it and came from the rim as well, and Ash and
+Ember fell from 26 clears to 9, with the star the first killer. At 10 %, and from the ring only, 22 of 39. The Warden stayed at 32 of 39.
+
+**As built, against the plan above it:** the adds' HP isn't kept by the hub. Each screen keeps its own, takes the partner's hits off when they
+arrive, and death is an objective: no HP to keep in sync, and nothing new for the hub to count. The stage is a move, not a new kind of phase.
+The Warden's stage was to be called Eclipse, but he has a move of that name.

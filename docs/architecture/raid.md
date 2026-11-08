@@ -133,7 +133,8 @@ Everything else follows from these, and they are why two screens work without re
 | `brain.ts` | `BossBrain`: who it aims at, which move comes next, where it walks. Runs on one screen. Its rolls are seeded |
 | `script.ts` | `BossScript`: plays casts, draws their zones, lands them, decides the hits on this screen's hero. Several run at once, in both colours |
 | `sunWarden.ts`, `ashEmber.ts` | The bosses: numbers, phases, moves |
-| `bodies/` | Each boss's look: the parts of its own model, posed by code |
+| `stage.ts` | `stageMove`: a boss's stage, its adds and their shots, from a few numbers. Both bosses have one |
+| `bodies/` | Each boss's look: the parts of its own model, posed by code. `adds.ts`: the adds' looks |
 | `hall.ts` | `RaidHall`: Noonfall's hall between fights, and `fadeTo` |
 | `link.ts` | `LocalLink`: one screen, no server. Decides on the spot what the hub decides online |
 | `net.ts` | `NetLink`: the same calls through the hub |
@@ -142,8 +143,8 @@ Everything else follows from these, and they are why two screens work without re
 | `hud.ts`, `fx.ts` | The boss's bar, cast bar and gauge; first-pass looks in code |
 | `run.ts` | `RaidRun`: a raid alone, shaped like `CpuMatch` |
 
-Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor` and `onFoeDamage`; `StatusSet.hold`; `HeroFigure.setScale`;
-`ArenaDef.ring`. Numbers the hub must know live in `server/protocol.mjs` (`RAID_BOSSES`), and the boss's definition reads them from there.
+Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor`, `onFoeDamage` and `untargetable`; `StatusSet.hold`; `HeroFigure.setScale`;
+`ArenaDef.ring`; for adds, `SummonOptions.still`, `Summon.onHurt` and `SummonSystem.slay` and `dismiss`. Numbers the hub must know live in `server/protocol.mjs` (`RAID_BOSSES`), and the boss's definition reads them from there.
 
 ## The boss's rules
 
@@ -156,7 +157,9 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor` and `onFoeDamage
 | Exposed | After a Noon nobody turned, +50 % damage taken for 5 s (`vulnerable`) |
 | Damage | A share of the hero's max HP, through `resolve` and `damagePlayer` as a normal hit, so parries, shields and ice blocks work. `weaken` on the boss lowers it |
 | Wide | A zone that touches any of its body counts as a hit on it (`inCastReach` with a pad) |
+| Enrage | A timer under its bar (`BossDef.enrage`, 4:00). Then every hit costs half as much again and the quiet between moves is 60 % (`BossFight.enrage`) |
 | Too long | Past 5 minutes sunfire closes in, at 6 Last stand (`BossDef.late`), so nobody can stall a fight for ever |
+| A stage | At 50 %: it can't be hurt or held (hits show IMMUNE, `Arena.untargetable` makes spells aim past it) from the phase's start until the stage is won or fails. Win: it kneels, and acts again after (`BossMove.stage`). Fail: a blow over the whole floor. A big hit past two phases still gets the stage first. Its cast bar is its clock: no other move takes the bar meanwhile |
 | Units | Whatever stands in an orange zone takes 60. Units don't dodge |
 | Hiding a hero | A boss between the camera and a hero, yours or your partner's, fades to 10 % so the hero shows through, the one on the rim too (`Duel.bossFade`, `Hero.setFade`). The camera stays where it is, because the controls follow it |
 
@@ -173,6 +176,7 @@ Numbers as they are; tune by playing. Alone 3,200 HP, for two 6,500. Walks at 2 
 | High Noon | 70 % | Gathering Noon | 8 s, shadows for the last 4 | 40 % | Turn the light (above), or hide: gold shadows behind cover are safe. A wall that saved someone falls, a column stays. He stands open after |
 | | | Sun Order | 2.5 s, then 0.8 s apart | 16 % | Four wedges fire 1-2-3-4: step into 1 once it has fired |
 | | | Shared Burden (for two) | 3 s | 40 %, split | Come together in the gold circle |
+| The Long Hour | 50 % | The Long Hour (the stage) | 32 s | 7 % a beam, 55 % if it fails | He floats behind the Sun Well and can't be hurt. Break three Hour Stones; their beams cross where you stand, so step aside. If any stand when his bar fills, hide behind cover from him |
 | Last Light | 35 % | Eclipse | 1.6 s each | 15 % | Near him, far from him, near again |
 | | | Anchors | 3 s | 25 % | Stand in the gold circle. Alone: one, then the other. For two: both at once, or the whole court pays |
 | | | Walking Sun | Runs 10 s alongside other moves | 12 % a pass | Keep ahead of the ray, or behind cover |
@@ -189,6 +193,7 @@ now and then. Alone 3,000 HP, for two 7,000. The one in the ring aims at the nea
 |---|---|---|---|
 | Ash and Ember | 100 % | Ash in the ring, Ember on the rim | A move from the rim every 10-14 s |
 | Ember steps in | 66 % | They swap | Every 9-13 s |
+| Eruption | 50 % | The stage: Ember sinks into the vent | Every 8-11 s, through the stage. Put out three Coal Hearts; their lobs land on you and round you. If any burn when the bar fills, 45 % to everyone |
 | Together | 33 % | They swap every 12 s | Every 9 s. The lava rises from the rim, three steps, then Last stand. The vent opens twice |
 
 | Who | Move | Shown | Costs | What you do |
@@ -204,6 +209,7 @@ now and then. Alone 3,000 HP, for two 7,000. The one in the ring aims at the nea
 | | Vent Bombs | 1.5 s | 12 % | Pairs either side of you. Stay between them |
 | | Lava Wave | 2.5 s | 16 % | A ring grows from the vent. Walk through the gold gap, which turns |
 | | Lantern Toss | 1.8 s | 14 % | Her lanterns hang either side of you and burst. Stand still between them |
+| | Falling Star | 3.2 s | Under it: 10 % alone, 30 % split for two. Nobody: 30 % alone, 45 % for two | A soak: stand under it, together if you can |
 | Both | Tag | 1.5 s | 12 % | Leave the circle where the next one lands |
 
 **Ember backs away.** She wants 9 m. With a hero under 6 m she steps back between her moves, at 2.4 m/s against a hero's 4 or more, so she can always be caught,
@@ -252,6 +258,9 @@ of this hero's can target or hit it.
 | Falling and getting up | The hub keeps who is down | `hero_down`, `peer_down`; `revive`, `revived` |
 | Someone leaves | The hub | `partner_left`, and `boss_brain` if the leaver ran it. The next fight is at the HP for one |
 | An objective | The hub, to the first report | `boss_obj { id, part }`, then `boss_done { id, part, side }` to both |
+| An add's HP | Each screen its own copy | A hit on it: `boss_add { id, part, amount }`, then `peer_add` to the other, which takes it off and sends nothing back |
+| An add's death | The first screen that sees it: an objective | `boss_obj`, then `boss_done`: both kill it. The last one's reward is the brain's `boss_reward` |
+| The enrage timer | Each screen's own clock | None |
 | What a mechanic earns | The hub, from `RAID_REWARDS`, once per cast | `boss_reward { key, id }` from the brain's screen only, then `boss_hp`, `boss_gauge` or `boss_kneel` |
 | The run's order | The hub | `raid_offer`, `raid_pick`, `raid_gate`, `raid_enter`, `raid_stage`, `raid_won`; after the last boss `raid_next` from both, or the end after 30 s. A hero's walk in the hall is clamped to its 13 m |
 | The end | The hub | `raid_end` with the score |
@@ -271,6 +280,10 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 ## Limits
 
 - **A reward rides on the brain's screen.** If that player leaves between a mechanic and its reward, the reward is lost.
+- **An add's HP can differ a little between screens,** by a hit whose message is still on its way. Its death can't: that is an objective.
+- **The partner's attacks are drawn at the boss,** also while the partner is hitting an add. Its spells land where they were aimed. Cosmetic.
+- **Each screen's enrage timer starts on its own,** so the two can be apart by the time a message takes.
+- **A screen that takes the brain over in a stage** starts from the next move: the stage goes on to its end on both screens, but the boss may act during it.
 - **The bodies' poses were judged on screen only in passing** (a fight each, desktop and phone size). Glow strengths come from the Blender
   file and may need tuning against the game's bloom; Ash's core is the brightest.
 - **Ash's body is 1.8 m wide for hits,** his forearms reach about 2.5 m: a hit on a fist's tip still misses.
@@ -294,8 +307,9 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 ## Tools
 
 - `pipeline/tools/raid-check.js`: `_raidCheck()` forces each of the Warden's moves and checks what it costs, walking out, cover and the
-  boss's own rules. `_raidAsh()` does the same for Ash and Ember, with the tag and the lava. `_raidUpgrades()` checks each upgrade's number and
+  boss's own rules, his stage (adds, the relay, the kneel, the fail and its cover) and the enrage. `_raidAsh()` does the same for Ash and Ember,
+  with the tag, the lava, Eruption and Falling Star. `_raidUpgrades()` checks each upgrade's number and
   each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
-- `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level, boss })` runs the autopilot and reports clears, time, damage per second
-  and which move killed. It can't tell whether the fight is fun.
+- `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level, boss })` runs the autopilot and reports clears, time, damage per second,
+  which move killed, stages won of those reached, and how many fights enraged. It can't tell whether the fight is fun.
 - `pipeline/tools/online-bot.js`: `_botRoom(hero)` and `_botJoin(hero, code)` play a raid for two in two tabs with bots.
