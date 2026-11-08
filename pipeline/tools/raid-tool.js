@@ -35,7 +35,7 @@
         if (!d.on) vfx.setDuel(true, 'run');
         d.pilotLevel = opts.level ? cpuLevel(opts.level) : CPU_BALANCE;
         for (const hero of heroes) {
-          const row = (state.rows[hero] = { w: 0, n: 0, secs: 0, left: 0, killedBy: {}, hits: {}, kneels: 0, dealt: 0, phase: [0, 0, 0] });
+          const row = (state.rows[hero] = { w: 0, n: 0, secs: 0, left: 0, killedBy: {}, hits: {}, kneels: 0, dealt: 0, phase: [0, 0, 0, 0], stages: 0, stagesWon: 0, enraged: 0 });
           vfx.heroPickCtrl.setValue(hero);
           for (let r = 0; r < reps; r++) {
             now = hero;
@@ -56,6 +56,11 @@
               row.dealt += dealt;
               row.kneels += b?.kneels ?? 0;
               row.phase[b?.phase ?? 0]++;
+              // The stage: reached (its phase began), and won (its reward was paid: the adds all fell in time).
+              const stage = def.phases.findIndex((p) => p.opener && def.moves[p.opener]?.stage);
+              if (stage >= 0 && (b?.phase ?? 0) >= stage) row.stages++;
+              if ([...link.paid].some((k) => def.moves[k.split(':')[1]]?.stage)) row.stagesWon++;
+              if (d.boss?.enraged) row.enraged++;
               if (d.result.winner === hero) row.w++;
               else {
                 row.left += vfx.arena.hpOf(foe) / link.maxHp;
@@ -84,6 +89,8 @@
     leftOnLoss: r.n - r.w ? `${Math.round((r.left / (r.n - r.w)) * 100)}%` : '-',
     reached: r.phase.join('/'),
     kneels: r.n ? +(r.kneels / r.n).toFixed(1) : 0,
+    stagesWon: `${r.stagesWon}/${r.stages}`,
+    enraged: r.enraged,
     killedBy: r.killedBy,
     hits: r.hits,
   }]));

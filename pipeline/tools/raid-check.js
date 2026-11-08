@@ -106,7 +106,7 @@
     const cast = (move, o = {}) => {
       const b = d.foe.group.position, me = a.caster.group.position;
       const x = o.x ?? me.x, z = o.z ?? me.z;
-      d.boss.link.cast({ id: ++seq, move, step: o.step ?? 0, x, z, fx: o.fx ?? b.x, fz: o.fz ?? b.z, dir: o.dir ?? Math.atan2(x - b.x, z - b.z), seed: o.seed ?? 777, target: 0, form: o.form, flag: o.flag });
+      d.boss.link.cast({ id: ++seq, move, step: o.step ?? 0, x, z, fx: o.fx ?? b.x, fz: o.fz ?? b.z, dir: o.dir ?? Math.atan2(x - b.x, z - b.z), seed: o.seed ?? 777, target: 0, form: o.form, flag: o.flag, alone: o.alone });
     };
     const lost = () => (d.playerMax - d.playerHp) / d.playerMax;
     const take = (fn, s) => { d.playerHp = d.playerMax; fn(); step(s); return lost(); };
@@ -262,21 +262,85 @@
       yes('tag: the body changes', d.foe.body.radius === def.forms[1].body.radius);
       yes('the boss is still one bar', a.hpOf(d.foe) === def.hp.solo);
 
-      // The phases swap by themselves, and Together starts the lava.
+      // Falling Star, the soak: under it it costs its share, split between those under it; nobody under it, everyone pays more.
+      {
+        fresh(0, 3);
+        place(0, 10);
+        check('falling star: alone, under it', take(() => cast('star', { x: 0, z: 10 }), 3.6), 0.1);
+        check('falling star: alone, nobody under it', take(() => { cast('star', { x: 0, z: 10 }); place(5, 10); }, 3.6), 0.3);
+        place(0, 10);
+        check('falling star: for two, alone under it', take(() => cast('star', { x: 0, z: 10, alone: false }), 3.6), 0.3);
+        const link = d.boss.link;
+        link.stood = (id, part) => d.boss.script.stood(id, part, 2);
+        place(0, 10);
+        check('falling star: for two, both under it', take(() => cast('star', { x: 0, z: 10, alone: false }), 3.6), 0.15);
+        place(5, 10);
+        check('falling star: for two, the other one under it', take(() => cast('star', { x: 0, z: 10, alone: false }), 3.6), 0);
+        delete link.stood;
+      }
+
+      // Eruption, the stage: three Coal Hearts lob lava; the one in the ring can't be hurt; hearts left, the vent erupts over everyone.
+      {
+        fresh(0, -6);
+        place(0, 13);
+        cast('eruption', { seed: 31 });
+        step(0.2);
+        check('eruption: three Coal Hearts', a.summons.alive('opponent').length, 3, 0);
+        check('eruption: a lob, stood still', take(() => cast('eruption', { step: 1, seed: 31 }), 2.4), 0.07);
+        d.playerHp = d.playerMax;
+        cast('eruption', { step: 1, seed: 31 });
+        step(0.1);
+        const me0 = a.caster.group.position.clone();
+        let out = null;
+        for (let k = 0; k < 24 && !out; k++) {
+          const an = (k / 24) * 6.283, x = me0.x + Math.sin(an) * 2.6, z = me0.z + Math.cos(an) * 2.6;
+          if (!d.boss.script.danger(x, z, 3)) out = { x, z };
+        }
+        if (out) place(out.x, out.z);
+        step(2.3);
+        check('eruption: a lob, stepped out', lost(), 0);
+        const h0 = a.hpOf(d.foe);
+        a.hit(d.foe, { damage: 100, knock: 0 });
+        check('eruption: the one in the ring cannot be hurt', h0 - a.hpOf(d.foe), 0, 0);
+        place(0, 13);
+        check('eruption: hearts left, the vent erupts', take(() => {}, 32), 0.45);
+        check('eruption: and the hearts burst', a.summons.alive('opponent').length, 0, 0);
+      }
+
+      // The phases swap by themselves; Eruption opens the stage, put out they kneel, and Together starts the lava.
       fresh(0, 3);
       place(0, 14);
       d.boss.brain.pause = 0;
       d.boss.brain.wait = 0;
-      a.hit(d.foe, { damage: def.hp.solo * 0.35, knock: 0 });
+      // Small hits down to a share: one big hit (with the hero's own power on it) could pass two marks at once.
+      const hitTo = (share) => { for (let i = 0; i < 600 && a.hpOf(d.foe) / def.hp.solo > share; i++) a.hit(d.foe, { damage: 10, knock: 0 }); };
+      hitTo(0.65);
       yes('phase 2 at 66 %', d.boss.stats.phases === 1);
       step(5);
       check('phase 2: Ember comes in', d.bossForm, 1, 0);
       d.playerHp = d.playerMax;
-      a.hit(d.foe, { damage: def.hp.solo * 0.33, knock: 0 });
-      yes('phase 3 at 33 %', d.boss.stats.phases === 2);
+      hitTo(0.49);
+      yes('Eruption at 50 %', d.boss.stats.phases === 2);
+      step(3.8);
+      yes('Eruption: the brain opens the stage', d.boss.script.active.some((x) => x.cast.move === 'eruption' && x.cast.step === 0));
+      check('Eruption: Ember waits it out in the vent', Math.hypot(d.foe.group.position.x, d.foe.group.position.z - 7), 0, 0.15);
+      check('Eruption: three Coal Hearts from the brain', a.summons.alive('opponent').length, 3, 0);
+      for (const u of a.summons.alive('opponent')) a.hit(u.figure, { damage: 9999, knock: 0 });
+      step(0.1);
+      yes('Eruption: put out, they kneel', d.boss.stats.kneels === 1);
+      d.playerHp = d.playerMax;
+      hitTo(0.32);
+      yes('Together at 33 %', d.boss.stats.phases === 3);
       const off0 = d.shiftOffset + d.hazardClock;
       check('Together: the lava starts now', off0, 45, 0.2);
       d.boss.brain.pause = 1e9;
+      // One hit past all three: the stage still comes first, before any swap.
+      fresh(0, 3);
+      d.boss.brain.pause = 0;
+      a.hit(d.foe, { damage: def.hp.solo * 0.69, knock: 0 });
+      yes('one hit past 66, 50 and 33 %: the stage still comes first', d.boss.stats.phases === 3 && d.boss.brain.opener === 'eruption');
+      d.boss.brain.pause = 1e9;
+      yes('their enrage timer shows', /^ENRAGE (4:00|3:5\d)$/.test(d.boss.hud.rageText));
     } catch (e) {
       failed.push(String(e?.stack ?? e));
     }
@@ -663,12 +727,126 @@
       yes('kneeling he takes +50 %', a.statusOf(d.foe).buff('vulnerable') === 0.5);
       yes('kneeling counts as stunned', a.statusOf(d.foe).stunned);
 
+      // The Long Hour: three Hour Stones, he can't be hurt, they shoot through you. Break them and he kneels.
+      {
+        fresh(0, 1);
+        place(0, 12);
+        cast('hour', { seed: 4242 });
+        step(0.2);
+        const hourCast = d.boss.script.active[d.boss.script.active.length - 1];
+        const stones = () => a.summons.alive('opponent');
+        check('long hour: three Hour Stones', stones().length, 3, 0);
+        check('long hour: each has 3.5 % of his HP', stones()[0]?.max ?? 0, Math.round(def.hp.solo * 0.035), 0);
+        const hourHp = a.hpOf(d.foe);
+        a.hit(d.foe, { damage: 200, knock: 0 });
+        check('long hour: he cannot be hurt', hourHp - a.hpOf(d.foe), 0, 0);
+        yes('long hour: nothing aims at him', !a.liveFoes().some((f) => f.figure === d.foe));
+        yes('long hour: the stones can be aimed at', stones().every((u) => a.liveFoes().some((f) => f.figure === u.figure)));
+        const stoneAt = stones().map((u) => ({ x: u.pos.x, z: u.pos.z }));
+        yes('long hour: they stand round the court', stoneAt.every((s) => Math.abs(Math.hypot(s.x, s.z - 7) - 9) < 0.05));
+        check('long hour: a volley, stood still', take(() => cast('hour', { step: 1, seed: 4242 }), 1.8), 0.07);
+        d.playerHp = d.playerMax;
+        cast('hour', { step: 1, seed: 4242 });
+        step(0.1);
+        // A step that leaves every beam, found by the script's own danger test.
+        const me0 = a.caster.group.position.clone();
+        let out = null;
+        for (let k = 0; k < 24 && !out; k++) {
+          const an = (k / 24) * 6.283, x = me0.x + Math.sin(an) * 3, z = me0.z + Math.cos(an) * 3;
+          if (!d.boss.script.danger(x, z, 3)) out = { x, z };
+        }
+        if (out) place(out.x, out.z);
+        step(1.7);
+        check('long hour: a volley, stepped aside', lost(d.playerMax), 0);
+        // What happens to a stone on the partner's screen comes off here, and a stone the hub says broke, breaks here.
+        const relayed = [], link = d.boss.link;
+        link.addHit = (id, part, amount) => relayed.push({ id, part, amount });
+        const u0 = stones()[0];
+        a.hit(u0.figure, { damage: 30, knock: 6, from: new THREE_V(0, 0, 7) });
+        yes('long hour: a hit on a stone is told to the other screen', relayed.length === 1 && relayed[0].id === hourCast.cast.id && relayed[0].amount > 0);
+        const hp1 = u0.hp;
+        d.boss.script.addHit(hourCast.cast.id, 0, 20);
+        check('long hour: a hit from the other screen comes off here', hp1 - u0.hp, 20, 0);
+        yes('and is not told back', relayed.length === 1);
+        delete link.addHit;
+        step(0.3);
+        yes('long hour: a stone is not knocked off its spot', Math.hypot(u0.pos.x - stoneAt[0].x, u0.pos.z - stoneAt[0].z) < 0.01);
+        d.boss.script.done(hourCast.cast.id, 1, 1);
+        check('long hour: a stone the other screen broke breaks here', stones().length, 2, 0);
+        const kneels0 = d.boss.stats.kneels;
+        for (const u of stones()) a.hit(u.figure, { damage: 9999, knock: 0 });
+        step(0.1);
+        yes('long hour: all three broken, he kneels', d.boss.stats.kneels === kneels0 + 1);
+        const back = a.hpOf(d.foe);
+        a.hit(d.foe, { damage: 50, knock: 0 });
+        yes('long hour: and can be hurt again', a.hpOf(d.foe) < back);
+        place(0, 12);
+        check('long hour: and the dial does not strike', take(() => {}, 33), 0);
+      }
+      {
+        fresh(0, 1);
+        // In the open, in his sight from where he waits (the altar itself shades the floor due south of him).
+        const sight = [[-3, 9.5], [3, 9.5], [-4, 3], [4, 3]].find(([x, z]) => a.lineOfSight(new THREE_V(0, 0, 4.6), new THREE_V(x, 0, z)));
+        place(sight[0], sight[1]);
+        check('long hour: stones left, the dial strikes', take(() => cast('hour', { seed: 4242 }), 33), 0.55);
+        check('long hour: and the stones crumble', a.summons.alive('opponent').length, 0, 0);
+        fresh(0, 1);
+        // Behind the east wall, as seen from where he waits.
+        const hold = { x: 0, z: 4.6 }, wx = 6.5, wz = 7, l = Math.hypot(wx - hold.x, wz - hold.z);
+        place(hold.x + ((wx - hold.x) / l) * (l + 2.2), hold.z + ((wz - hold.z) / l) * (l + 2.2));
+        yes('long hour: that spot is out of his sight', !a.lineOfSight(new THREE_V(hold.x, 0, hold.z), a.caster.group.position));
+        check('long hour: behind a wall when it strikes', take(() => cast('hour', { seed: 4242 }), 33), 0);
+      }
+      // From the brain: one hit past 70, 50 and 35 %, the stage still comes first; broken, he kneels, and then he fights on.
+      {
+        fresh(0, 2);
+        place(0, 12);
+        d.boss.brain.pause = 0;
+        d.boss.brain.wait = 0;
+        a.hit(d.foe, { damage: def.hp.solo * 0.6, knock: 0 });
+        yes('one hit past 70, 50 and 35 %: Last Light', d.boss.stats.phases === 3);
+        // A kneel that lands with the phase: the brain waits it out, and he stays safe until the stage comes.
+        d.boss.link.on.kneel(def.kneel);
+        step(4.5);
+        const hp2 = a.hpOf(d.foe);
+        a.hit(d.foe, { damage: 100, knock: 0 });
+        check('from the phase on he cannot be hurt, a kneel or not', hp2 - a.hpOf(d.foe), 0, 0);
+        step(2.4);
+        yes('the brain still opens the stage first, once the kneel is over', d.boss.script.active.some((x) => x.cast.move === 'hour' && x.cast.step === 0));
+        step(1);
+        check('and he waits it out behind the Sun Well', Math.hypot(d.foe.group.position.x, d.foe.group.position.z - 4.6), 0, 0.15);
+        const ev = d.boss.script.eventId;
+        for (const u of a.summons.alive('opponent')) a.hit(u.figure, { damage: 9999, knock: 0 });
+        step(0.1);
+        yes('broken, he kneels', d.boss.stats.kneels === 2);
+        step(def.kneel + 4);
+        yes('and after the kneel he fights again', d.boss.script.eventId > ev);
+        d.boss.brain.pause = 1e9;
+      }
+      // Enrage: a timer under his bar, and at 4:00 every hit costs half as much again and the quiet between moves shrinks.
+      {
+        fresh(0, 1);
+        step(0.1);
+        yes('the enrage timer shows', /^ENRAGE (4:00|3:5\d)$/.test(d.boss.hud.rageText));
+        d.boss.fought = def.enrage - 0.05;
+        step(0.1);
+        yes('at 4:00 he enrages', d.boss.enraged === true && d.boss.hud.rageText === 'ENRAGED');
+        check('enraged: the quiet between moves', d.boss.brain.rage, 0.6, 0);
+        place(0, 5);
+        check('enraged: a sweep costs half as much again', take(() => cast('sweep'), 1.8), 0.3);
+      }
+
       // Phases: HP thresholds; the end of the fight.
       fresh(0, 2);
-      a.hit(d.foe, { damage: def.hp.solo * 0.31, knock: 0 });
+      // Small hits down to a share: one big hit (with the hero's own power on it) could pass two marks at once.
+      const hitTo = (share) => { for (let i = 0; i < 600 && a.hpOf(d.foe) / def.hp.solo > share; i++) a.hit(d.foe, { damage: 10, knock: 0 }); };
+      hitTo(0.69);
       yes('phase 2 at 70 %', d.boss.stats.phases === 1);
-      a.hit(d.foe, { damage: def.hp.solo * 0.36, knock: 0 });
-      yes('phase 3 at 35 %', d.boss.stats.phases === 2);
+      hitTo(0.49);
+      yes('the Long Hour at 50 %', d.boss.stats.phases === 2);
+      d.boss.guard(0);
+      hitTo(0.34);
+      yes('Last Light at 35 %', d.boss.stats.phases === 3);
       a.hit(d.foe, { damage: def.hp.solo, knock: 0 });
       step(0.1);
       yes('he falls at 0', d.result?.winner === vfx.heroMode.currentKit.name);

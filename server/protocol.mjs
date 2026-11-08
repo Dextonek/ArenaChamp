@@ -13,8 +13,8 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
  * The boss's definition in src/raid reads the same numbers.
  */
 export const RAID_BOSSES = {
-  sun: { hp: { solo: 3200, duo: 6500 }, phases: [0.7, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
-  ash: { hp: { solo: 3000, duo: 7000 }, phases: [0.66, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
+  sun: { hp: { solo: 3200, duo: 6500 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
+  ash: { hp: { solo: 3000, duo: 7000 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
 };
 
 /**
@@ -22,8 +22,8 @@ export const RAID_BOSSES = {
  * a kneel. The hub pays it online and `LocalLink` alone, once per cast, so two screens never pay it twice.
  */
 export const RAID_REWARDS = {
-  sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 } },
-  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 } },
+  sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true } },
+  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true } },
 };
 
 /** How far Noonfall's hall reaches, where a run waits between its fights (m). */

@@ -6,11 +6,13 @@ import { ZoneFloor } from '../arenas/shifts/floor';
 import { PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
+import { coalHeartLook } from './bodies/adds';
 import { ashLook } from './bodies/ash';
 import { TOSS, emberLook } from './bodies/ember';
 import type { BodyLook } from './bodies/look';
-import { FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, WaveRing } from './fx';
+import { FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, SunOrb, WaveRing } from './fx';
 import { STAND_COLOR } from './script';
+import { stageMove } from './stage';
 import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } from './types';
 
 const LAVA = 0xe0601a;
@@ -412,6 +414,56 @@ const tag: BossMove = {
   },
 };
 
+/**
+ * Falling Star: Ember calls a star down on you, in a gold circle. Stand in it: alone it costs a tenth, for two 15 % each. Nobody in it, and
+ * it costs everyone three times that. A soak: the one move that wants you under it. Hers in the ring only, so it comes from the second phase.
+ */
+const fallingStar: BossMove = {
+  id: 'star', name: 'Falling Star', charge: 3.2, lock: 3.4, cooldown: 22, form: EMBER, pose: 'raise',
+  aim: atTarget,
+  play(c, p) {
+    const radius = 2.3, at = p.shown(3.2), alone = c.alone ?? p.solo;
+    const light = new LightPillar(c.x, c.z, radius, 9, STAND_COLOR);
+    const star = new SunOrb(c.x, 16, c.z);
+    p.group.add(light.mesh, star.sprite);
+    p.hint('Falling Star: stand under it, together if you can');
+    return {
+      threats: [{ shape: { kind: 'circle', x: c.x, z: c.z, radius }, kind: 'stand', split: true, at, soak: alone ? 0.1 : 0.3, share: alone ? 0.3 : 0.45, part: 0 }],
+      duration: at + 0.6,
+      look: {
+        update(t) {
+          const k = Math.min(1, t / at);
+          light.opacity = t < at ? 0.3 + 0.4 * k : Math.max(0, 0.7 * (1 - (t - at) * 2.5));
+          star.sprite.position.set(c.x, 16 * (1 - k * k) + 0.6, c.z);
+          star.set(1.4 + k, t < at ? 0.5 + 0.45 * k : 0);
+        },
+        land() {
+          p.sparks.emit(c.x, 0.4, c.z, 40, 5, 4.5, 0.9, STAND_COLOR);
+          p.glows.flash(c.x, c.z, radius + 0.5, EMBER_COLOR, 0.7, 0.5);
+        },
+        dispose() {
+          light.dispose();
+          star.dispose();
+        },
+      },
+    };
+  },
+};
+
+/**
+ * The stage, Eruption: whoever is in the ring sinks into the vent, in a shell of fire, and can't be hurt; the one on the rim keeps
+ * throwing. Three Coal Hearts rise round the vent and lob lava at one hero and then the other. Put them out before the bar fills and the
+ * two fall to their knees; if not, the vent erupts over the whole pit, and nothing covers you from it.
+ */
+const eruption = stageMove({
+  id: 'eruption', name: 'Eruption', pose: 'channel',
+  hold: C, shell: { radius: 2.9, y: 2.4, color: 0xff7030 },
+  center: C, ring: 8.5, turns: [[0, 120, 240], [60, 180, 300]],
+  look: coalHeartLook, color: '#5a3424', shot: 'lob', shotColor: LAVA,
+  fail: { share: 0.45, cover: false, radius: PIT_R + 1, text: 'THE VENT ERUPTS' },
+  win: 'THE FIRE GOES OUT', hint: 'Put out the three Coal Hearts before the bar fills',
+});
+
 // --- the two of them --------------------------------------------------------------------------------------------------
 
 function ashPortrait(g: CanvasRenderingContext2D, s: number) {
@@ -465,19 +517,22 @@ export const ASH_AND_EMBER: BossDef = {
     },
     {
       name: 'Ember', kit: kitOf('Ember', 'models/bosses/ember.glb', emberLook, '#ff8a40'), scale: 1, body: { radius: 0.9, height: 4 }, speed: 3, keepAt: 9, backAt: 6,
-      moves: ['fan', 'marked', 'bombs', 'wave', 'lanterns'], rimMoves: ['fan', 'bombs'],
+      moves: ['fan', 'marked', 'bombs', 'wave', 'lanterns', 'star'], rimMoves: ['fan', 'bombs'],
     },
   ],
   rimSpots: RIM_SPOTS,
-  lateAt: 2,
+  lateAt: 3,
   phases: [
     { name: 'Ash and Ember', at: 1, moves: [], ring: ASH, gap: [2.4, 3.4], rimEvery: [10, 14] },
     { name: 'Ember steps in', at: NUMBERS.phases[0], moves: [], ring: EMBER, gap: [2.2, 3.2], rimEvery: [9, 13] },
-    { name: 'Together', at: NUMBERS.phases[1], moves: [], gap: [2, 3], rimEvery: [9, 9], swapEvery: 12, timed: { move: 'seal', first: 6, every: 25, most: 2 } },
+    { name: 'Eruption', at: NUMBERS.phases[1], moves: [], ring: EMBER, opener: 'eruption', gap: [2.2, 3.2], rimEvery: [8, 11] },
+    { name: 'Together', at: NUMBERS.phases[2], moves: [], gap: [2, 3], rimEvery: [9, 9], swapEvery: 12, timed: { move: 'seal', first: 6, every: 25, most: 2 } },
   ],
   /** A higher tier adds these: Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave. */
   extra: ['rock', 'marked', 'wave'],
-  moves: { slam, charge, drag, quake, trail, rock, fan, marked, bombs, wave, lanterns, tag, seal },
+  moves: { slam, charge, drag, quake, trail, rock, fan, marked, bombs, wave, lanterns, star: fallingStar, tag, seal, eruption },
+  /** Four minutes in they enrage: a minute before the lava rises. */
+  enrage: 240,
   /** Past 5 minutes, or as soon as Together begins, the lava rises. Last stand on the shift's own clock at 105 s. */
   late: () => {
     const ring = (inner: number) => ({ shape: { kind: 'ring' as const, x: C.x, z: C.z, inner, outer: PIT_R }, share: 0.03 });

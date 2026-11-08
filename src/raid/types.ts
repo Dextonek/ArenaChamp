@@ -1,6 +1,7 @@
 import type * as THREE from 'three';
 import type { ArenaDef } from '../arenas/types';
 import type { ArenaShift } from '../arenas/shifts/base';
+import type { MinionLook } from '../effects/parts/minion';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { CastStyle } from '../heroFigure';
 import type { HeroKit } from '../heroes';
@@ -83,6 +84,8 @@ export interface Threat {
   part?: number;
   /** A `stand` zone whose cost is shared by the heroes in it; those outside pay nothing, unless nobody is in it. */
   split?: boolean;
+  /** A zone that splits: what it costs in all, shared by the heroes in it (default `share`, which is then also what nobody in it costs). */
+  soak?: number;
   /** This screen's hero stood in this zone when it landed. */
   inside?: boolean;
   /** The hub has said how many stood in it. */
@@ -111,6 +114,8 @@ export interface Objective {
   can?(): boolean;
   /** Taking it ends the danger it stands in (the altar against Noon): an AI walks through that danger for it. */
   beats?: boolean;
+  /** An add: it is taken when the add dies, never by standing, and the move's look reports it. */
+  kill?: boolean;
   /** How far this screen's hero has held it, 0..1. */
   held?: number;
   reported?: boolean;
@@ -125,6 +130,8 @@ export interface MoveLook {
   land?(th: Threat): void;
   /** A hero took one of its objectives. */
   done?(o: Objective, side: RaidSide): void;
+  /** The partner hit add `part` of this cast for `amount`, on its own screen. */
+  hurt?(part: number, amount: number): void;
   dispose?(): void;
 }
 
@@ -179,6 +186,42 @@ export interface PlayContext {
   dropStone(o: Obstacle): void;
   /** What closes in when a fight runs long waits this much longer. */
   delayLate(seconds: number): void;
+  /** The boss can't be hurt or held for `seconds` (0: it can again). */
+  guard(seconds: number): void;
+  /** A boss's add, at the same spot on every screen. */
+  spawnAdd(spec: AddSpec): RaidAdd;
+  /** This screen's hero hit add `part` of cast `id`: the partner's screen takes it off too. */
+  addHit(id: number, part: number, amount: number): void;
+  /** Add `part` of cast `id` died on this screen: the first report wins, and every screen hears it (`done`). */
+  report(id: number, part: number): void;
+  /** The boss's max HP in this raid: an add's HP is a share of it. */
+  bossMax: number;
+}
+
+/** A boss's add as a cast asks for it. Its HP is per screen: each screen's hits come off on both, and the first to see it die says so. */
+export interface AddSpec {
+  x: number;
+  z: number;
+  hp: number;
+  look: MinionLook;
+  color: string;
+  /** This screen's hero hit it for this much. */
+  hurt(amount: number): void;
+  /** It died on this screen. */
+  died(): void;
+}
+
+/** An add on this screen: heroes target it and hit it like any enemy. It never moves and never attacks; its move's later steps do. */
+export interface RaidAdd {
+  readonly x: number;
+  readonly z: number;
+  readonly alive: boolean;
+  /** The partner's hit, from its own screen: it comes off here too, and goes nowhere else. */
+  hurt(amount: number): void;
+  /** It died on the other screen first. */
+  slay(): void;
+  /** Gone without dying: its stage ended. */
+  remove(): void;
 }
 
 export interface AimContext {
@@ -220,6 +263,13 @@ export interface BossMove {
   quiet?: boolean;
   /** Which form of a tag team it belongs to: a higher tier's extra moves go to the right one. */
   form?: number;
+  /**
+   * A stage: the boss stands apart and can't be hurt while it lasts (its `charge` and `lock`), and something else must be done.
+   * A kneel ends it early, and the boss acts again after the kneel.
+   */
+  stage?: boolean;
+  /** Each later step aims at the hero it aimed at less recently, not all at one. */
+  spread?: boolean;
   /** What the boss's own body does for each step (its look knows the name): fists flying out, lanterns thrown. `seconds` until it lands, at tier 1. */
   body?: { name: string; seconds: number };
   /** What only the screen that runs the brain may do: move the boss. Returns seconds it stands still after. */
@@ -301,6 +351,8 @@ export interface BossDef {
   rimSpots?: { x: number; z: number }[];
   /** The phase that starts `late` at once, whatever the clock says. */
   lateAt?: number;
+  /** Seconds into the fight it enrages: its hits cost more and its moves come faster. The timer shows under its bar. */
+  enrage?: number;
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */
   late?(): { shift: ArenaShift; offset: number; startsAt?: number };
@@ -327,6 +379,8 @@ export interface RaidEvents {
   stood(id: number, part: number, count: number): void;
   /** A hero took an objective of cast `id`. */
   done(id: number, part: number, side: RaidSide): void;
+  /** The partner hit add `part` of cast `id` for `amount` on its screen. */
+  addHit?(id: number, part: number, amount: number): void;
   /** A screen wall falls. */
   wall(index: number): void;
   end(result: 'win' | 'lose'): void;
@@ -355,6 +409,8 @@ export interface RaidLink {
   objective(id: number, part: number): void;
   /** A mechanic of cast `id` was done right: `key` in `RAID_REWARDS`. Only the screen that runs the brain says so. */
   reward(key: string, id: number): void;
+  /** This screen's hero hit add `part` of cast `id`: the partner's screen takes it off too. */
+  addHit(id: number, part: number, amount: number): void;
   /** A screen wall saved this screen's hero. */
   wallSaved(index: number): void;
   /** This screen's hero fell. */
@@ -412,6 +468,10 @@ export interface BossWorld {
   addStone(x: number, z: number, radius: number, seconds: number): Obstacle;
   firstStone(ax: number, az: number, bx: number, bz: number): Obstacle | null;
   dropStone(o: Obstacle): void;
+  /** The boss can't be hurt: hits on it show IMMUNE, and spells aim past it. */
+  guard(on: boolean): void;
+  /** A boss's add on this screen. */
+  spawnAdd(spec: AddSpec): RaidAdd;
   /** What watches the enemy's casts (Hemocurse, the Referee's count). */
   enemyCast(big: boolean): void;
   /** The boss's walk from reports, on the screen that doesn't run its brain. */

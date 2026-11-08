@@ -606,6 +606,13 @@ try {
     h.send({ t: 'boss_debuff', kind: 'vulnerable', amount: 0.2, seconds: 'long' });
     h.send({ t: 'boss_debuff', kind: 'vulnerable', amount: 0.2, seconds: 2 });
     check((await g.next('peer_debuff')).kind === 'vulnerable', 'a kind it does not know, or a bad number, goes no further');
+    h.send({ t: 'boss_add', id: 80, part: 1, amount: 9999 });
+    const passed = await g.next('peer_add');
+    check(passed.id === 80 && passed.part === 1 && passed.amount === 600, 'a hit on an add reaches the other screen, capped');
+    h.send({ t: 'boss_add', id: 80, part: 1, amount: -5 });
+    h.send({ t: 'boss_add', id: 80, part: 'x', amount: 5 });
+    h.send({ t: 'boss_add', id: 81, part: 0, amount: 12 });
+    check((await g.next('peer_add')).id === 81, 'a hit on an add with a bad number goes no further');
     g.send({ t: 'boss_cast', id: 70, move: 'tag', step: 0, x: 1, z: 2, fx: 0, fz: -9, dir: 0, seed: 9, target: 0, form: 5 });
     check((await h.next('boss_cast')).form === undefined, 'a cast with a form that does not exist loses it');
     h.send({ t: 'hero_down' });

@@ -79,6 +79,7 @@ export class LocalLink implements RaidLink {
   }
 
   // Nobody else to tell.
+  addHit() {}
   heroHp() {}
   revive() {}
   heroCast() {}

@@ -537,6 +537,12 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (!boss || !match || typeof m.alt !== 'boolean') return;
         return send(match.players[1 - c.side].client, { t: 'peer_form', alt: m.alt });
       }
+      case 'boss_add': {
+        // A hero hit a boss's add on its own screen: the partner's screen takes it off too. Who killed it is an objective (`boss_obj`).
+        const boss = raidOf(c), match = c.match;
+        if (!boss || !match || ![m.id, m.part, m.amount].every(num) || m.amount <= 0) return;
+        return send(match.players[1 - c.side].client, { t: 'peer_add', id: m.id, part: m.part, amount: Math.min(m.amount, BOSS_HIT_MAX) });
+      }
       case 'boss_debuff': {
         // A hero slowed or debuffed the boss: its own screen has it. The other one walks the boss or takes its hits.
         const boss = raidOf(c), match = c.match;

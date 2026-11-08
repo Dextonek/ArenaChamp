@@ -15,6 +15,8 @@ const BACK_STILL = 0.4;
 const BACK_PACE = 0.8;
 /** The ways it tries, turned from straight away from the hero (radians), nearest first. None of them goes back toward the hero. */
 const BACK_TURNS = [0, 0.6, -0.6, 1.2, -1.2, Math.PI / 2, -Math.PI / 2];
+/** Enraged, the quiet between moves is this much of what it was. */
+const RAGE_GAP = 0.6;
 
 interface Pending {
   at: number;
@@ -63,6 +65,10 @@ export class BossBrain {
   /** The move that comes by the clock: when it next comes, and how many times it has come. */
   private timedWait = 0;
   private timedDone = 0;
+  /** A stage is on: a kneel ends it, and the boss acts again after the kneel. */
+  private staging = false;
+  /** How much of the quiet between moves is left: less once enraged. */
+  private rage = 1;
 
   constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, seed: string, tier = 1, firstId = 0) {
     this.rng = seeded(seedNumber(`${seed}-brain`));
@@ -97,12 +103,14 @@ export class BossBrain {
     this.pending = [];
     this.locked = 0;
     this.wait = 0;
-    this.opener = phase.opener ?? null;
+    // A stage still to come stays: one big hit can pass two phases at once.
+    this.opener = this.opener && this.def.moves[this.opener]?.stage ? this.opener : phase.opener ?? null;
     this.swapWait = phase.swapEvery ?? Infinity;
     this.timedWait = phase.timed?.first ?? 0;
     if (this.def.forms) {
       this.rimWait = Math.max(this.rimWait, this.def.phasePause + 1);
-      if (phase.ring !== undefined && phase.ring !== this.form) this.opener = 'tag';
+      // A stage comes first, from whoever is in the ring: the swap can wait for the next phase.
+      if (phase.ring !== undefined && phase.ring !== this.form && !this.def.moves[this.opener ?? '']?.stage) this.opener = 'tag';
     }
   }
 
@@ -111,11 +119,26 @@ export class BossBrain {
     this.pause = Math.max(this.pause, seconds);
     this.pending = [];
     this.locked = 0;
+    // A stage won: the boss acts again once it gets up.
+    if (this.staging) {
+      this.staging = false;
+      this.wait = 0;
+    }
+  }
+
+  /** The next move is this one (a stage the old brain never got to). */
+  open(move: string) {
+    this.opener = move;
+  }
+
+  /** The fight ran past its enrage time: less quiet between moves. */
+  enrage() {
+    this.rage = RAGE_GAP;
   }
 
   update(dt: number) {
     this.time += dt;
-    for (const p of this.pending.filter((x) => x.at <= this.time)) this.send(p.move, p.step, p.seed, p.target, p.alone, p.rim);
+    for (const p of this.pending.filter((x) => x.at <= this.time)) this.send(p.move, p.step, p.seed, p.move.spread ? this.spreadSide(p.target) : p.target, p.alone, p.rim);
     this.pending = this.pending.filter((x) => x.at > this.time);
     // The one on the rim doesn't kneel, or wait for the one in the ring.
     this.rimStep(dt);
@@ -125,6 +148,7 @@ export class BossBrain {
       return;
     }
     this.locked = Math.max(0, this.locked - dt);
+    if (this.locked <= 0) this.staging = false;
     this.wait = Math.max(0, this.wait - dt);
     this.swapWait -= dt;
     if (this.locked > 0) return;
@@ -206,7 +230,7 @@ export class BossBrain {
     this.rimWait -= dt;
     if (this.rimWait > 0) return;
     const every = this.def.phases[this.phase].rimEvery ?? [8, 10];
-    this.rimWait = every[0] + this.rng() * (every[1] - every[0]);
+    this.rimWait = (every[0] + this.rng() * (every[1] - every[0])) * this.rage;
     const up = this.world.heroes().filter((h) => !h.down);
     if (!up.length) return;
     const list = this.listOf(false).map((id) => this.def.moves[id]).filter((m) => m && (this.ready.get(m.id) ?? 0) <= this.time);
@@ -246,8 +270,9 @@ export class BossBrain {
     if (!m.alongside) {
       this.last = m.id;
       this.locked = m.lock * this.pace;
-      this.wait = this.locked + gap[0] + this.rng() * (gap[1] - gap[0]);
+      this.wait = this.locked + (gap[0] + this.rng() * (gap[1] - gap[0])) * this.rage;
     }
+    if (m.stage) this.staging = true;
     const seed = Math.floor(this.rng() * 2147483647);
     const alone = this.world.heroes().filter((h) => !h.down).length < 2;
     if (m === this.def.moves.tag) {
@@ -277,6 +302,15 @@ export class BossBrain {
     this.link.cast({
       id: ++this.seq, move: m.id, step: 0, x: +x.toFixed(3), z: +z.toFixed(3), fx: spot.x, fz: spot.z, dir: 0, seed, target: side, alone, form,
     });
+  }
+
+  /** A later step of a move that spreads: the standing hero it aimed at less recently. */
+  private spreadSide(fallback: RaidSide): RaidSide {
+    const up = this.world.heroes().filter((h) => !h.down).map((h) => h.side);
+    if (up.length < 2) return up[0] ?? fallback;
+    const side = this.chooseNext();
+    this.aimedAt[side] = this.time;
+    return side;
   }
 
   /** A move aimed at "you" takes the hero it aimed at less recently, and a seeded coin when level. */

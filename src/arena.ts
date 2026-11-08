@@ -121,6 +121,8 @@ export class Arena {
   foeFloor = 0;
   /** What really came off a figure's HP, after its shield. */
   onFoeDamage: ((target: Enemy, dealt: number) => void) | null = null;
+  /** A foe nothing can target now (a boss during a stage): spells and bolts go for the others. */
+  untargetable: Enemy | null = null;
   /** A hit laid a debuff on a foe: not what `applyBuff` gives it any other way. */
   onFoeDebuff: ((target: Enemy, kind: BuffKind, amount: number, seconds: number) => void) | null = null;
   /** Changes a bolt the hero fires (a raid upgrade: Ricochet). */
@@ -268,7 +270,7 @@ export class Arena {
   /** The enemies that are alive, with where they stand right now: the pack, then the duel opponent's summoned units. */
   liveFoes(): { figure: Enemy; pos: THREE.Vector3 }[] {
     return [
-      ...this.foes.filter((f) => f.dead < 0).map((f) => ({ figure: f.figure, pos: f.figure.group.position })),
+      ...this.foes.filter((f) => f.dead < 0 && f.figure !== this.untargetable).map((f) => ({ figure: f.figure, pos: f.figure.group.position })),
       ...this.summons.alive('opponent').map((u) => ({ figure: u.figure, pos: u.pos })),
     ];
   }
@@ -312,7 +314,7 @@ export class Arena {
       }
     } else this.reset();
     // The duel opponent's summoned units are enemies too: a spell sees them in `targets` like the pack.
-    const pool: Body[] = [...(this.persist ? this.foes.filter((f) => f.dead < 0) : this.foes), ...this.summons.alive('opponent').map((u) => u.body)];
+    const pool: Body[] = [...(this.persist ? this.foes.filter((f) => f.dead < 0) : this.foes).filter((f) => f.figure !== this.untargetable), ...this.summons.alive('opponent').map((u) => u.body)];
     const byDist = (p: THREE.Vector3) => [...pool].sort((a, b) => a.home.distanceTo(p) - b.home.distanceTo(p));
     // No enemy clicked: the one nearest the clicked ground spot, else the one nearest the caster.
     const primary = this.selected.find((f) => pool.includes(f)) ?? byDist(this.groundPoint ?? from)[0];

@@ -16,6 +16,13 @@ const STAGGER_PER_SECOND: Partial<Record<StatusKind, number>> = { stun: 22, knoc
 const SLOW_SHARE = 0.5;
 /** A hit's debuffs that count on both screens. The rest (Grounded, say) do nothing to a boss. */
 const SHARED_DEBUFFS: readonly BuffKind[] = ['weaken', 'vulnerable'];
+/** Enraged, every hit on a hero costs this much more. */
+const RAGE_HIT = 1.5;
+/**
+ * A phase that opens with a stage: the boss can't be hurt from the phase's start until the stage's cast comes and says how long. At most
+ * this long (s): its pause, a kneel that landed with the phase (the brain waits it out), a message on its way.
+ */
+const STAGE_WAIT = 12;
 const spot = new THREE.Vector3();
 
 /**
@@ -46,9 +53,18 @@ export class BossFight {
   private clock = 0;
   /** How often this phase's timed move has come, for a screen that takes the brain over. */
   private timedSeen = 0;
+  /** Seconds of fight so far, from its first live frame: the enrage timer. */
+  private fought = 0;
+  private enraged = false;
+  /** Seconds the boss still can't be hurt or held: a stage is on. */
+  private guardLeft = 0;
+  /** The stage this phase opens with, until its cast comes: a screen that takes the brain over opens with it too. */
+  private stageDue: string | null = null;
+  /** Seconds left of the stage on now: its cast bar is its clock, and no other move takes the bar meanwhile. */
+  private stageLeft = 0;
 
   constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
-    this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength) }, tier);
+    this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength), guard: (s) => this.guard(s) }, tier);
     this.group.add(this.script.group);
     this.brain = link.brain ? new BossBrain(def, world, link, seed, tier) : null;
     this.track = link.brain ? null : new Track();
@@ -60,6 +76,7 @@ export class BossFight {
       kneel: (s) => this.onKneel(s),
       stood: (id, part, count) => this.script.stood(id, part, count),
       done: (id, part, side) => this.script.done(id, part, side),
+      addHit: (id, part, amount) => this.script.addHit(id, part, amount),
       wall: (i) => world.breakWall(i),
       end: (r) => this.end(r),
     };
@@ -90,9 +107,11 @@ export class BossFight {
     }
     this.script.play(c);
     if (c.move === this.def.phases[this.stats.phases]?.timed?.move && c.step === 0) this.timedSeen++;
+    if (move.stage && c.step === 0) this.stageDue = null;
     if (move.body && !c.rim) this.world.act(move.body.name, c.step, c.x, c.z, move.body.seconds * raidTierFactor(this.tier));
     if (c.step !== 0 || move.quiet) return;
-    this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
+    if (move.stage) this.stageLeft = move.charge * raidTierFactor(this.tier);
+    if (move.stage || this.stageLeft <= 0) this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
     this.world.enemyCast(!!move.big);
     if (c.rim) this.world.poseRim(move.pose, move.charge, !!move.big);
     else if (!move.alongside) this.world.pose(move.pose, move.charge, !!move.big);
@@ -104,6 +123,12 @@ export class BossFight {
     this.world.banner(this.def.phases[i].name, 2.2);
     this.world.bodyPhase(i);
     this.world.phaseShield();
+    // A stage opens this phase: from now on nothing hurts the boss, until the stage's own cast takes over.
+    const opener = this.def.phases[i].opener;
+    if (opener && this.def.moves[opener]?.stage) {
+      this.stageDue = opener;
+      this.guard(STAGE_WAIT);
+    }
     if (this.def.lateAt === i) this.world.lateNow();
   }
 
@@ -122,6 +147,24 @@ export class BossFight {
     this.hud.setState('EXPOSED', seconds);
   }
 
+  /** The boss can't be hurt or held for `seconds`; 0 ends it, and a stage's cast bar still filling with it. */
+  guard(seconds: number) {
+    this.guardLeft = Math.max(0, seconds);
+    this.world.guard(this.guardLeft > 0);
+    if (this.guardLeft > 0) return;
+    if (this.stageLeft > 0) this.hud.stopCast();
+    this.stageLeft = 0;
+  }
+
+  /** The fight ran past its enrage time: every hit costs more, and the moves come faster. */
+  private enrage() {
+    this.enraged = true;
+    this.script.rage = RAGE_HIT;
+    this.brain?.enrage();
+    this.hud.setRage(0);
+    this.world.banner('ENRAGED', 2.2);
+  }
+
   /** It stands open or kneels. */
   get open() {
     return this.openLeft > 0;
@@ -134,6 +177,8 @@ export class BossFight {
     this.track = null;
     this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, this.tier, 100000);
     this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot, this.timedSeen);
+    if (this.enraged) this.brain.enrage();
+    if (this.stageDue) this.brain.open(this.stageDue);
   }
 
   /** The boss's walk, reported by the screen that runs its brain. */
@@ -151,6 +196,7 @@ export class BossFight {
    * may run (0: not at all).
    */
   control(kind: StatusKind, seconds: number) {
+    if (this.guardLeft > 0) return 0;
     if (kind === 'slow') {
       this.link.bossDebuff('slow', 0, seconds * SLOW_SHARE);
       return seconds * SLOW_SHARE;
@@ -185,6 +231,7 @@ export class BossFight {
     if (this.over) return;
     this.over = true;
     this.script.clear();
+    this.guard(0);
     this.gates?.exit.setOpen(result === 'win');
     this.hud.settle(result === 'win', this.link.maxHp);
     this.world.finish(result);
@@ -200,6 +247,11 @@ export class BossFight {
       this.gates.exit.update(dt, this.clock);
     }
     this.openLeft = Math.max(0, this.openLeft - dt);
+    this.stageLeft = Math.max(0, this.stageLeft - dt);
+    if (this.guardLeft > 0) {
+      this.guardLeft -= dt;
+      if (this.guardLeft <= 0) this.guard(0);
+    }
     this.hud.setHp(hp, this.link.maxHp);
     this.link.tick(dt);
     const s = this.track?.sample();
@@ -209,7 +261,15 @@ export class BossFight {
       this.begun = true;
       this.world.phaseShield();
     }
-    if (live && !this.over) this.brain?.update(dt);
+    if (live && !this.over) {
+      if (this.def.enrage) {
+        this.fought += dt;
+        const left = this.def.enrage - this.fought;
+        if (left <= 0 && !this.enraged) this.enrage();
+        else if (!this.enraged) this.hud.setRage(left);
+      }
+      this.brain?.update(dt);
+    }
     this.script.update(dt, live && !this.over);
     this.pointers(live && !this.over && !this.meDown);
   }

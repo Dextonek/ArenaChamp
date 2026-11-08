@@ -22,7 +22,7 @@ import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
 import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
-import type { BossDebuff, BossDef, BossWorld, RaidLink } from './raid/types';
+import type { AddSpec, BossDebuff, BossDef, BossWorld, RaidAdd, RaidLink } from './raid/types';
 import type { RunUpgrades } from './raid/upgrades';
 
 /** What the duel needs from main.ts. */
@@ -152,6 +152,8 @@ const BOSS_LOOK = 1.6; // an AI starts walking when a boss's zone will reach it 
 const BOSS_CLEAR = [3, 1.6, 0.9]; // and walks to a spot clear for this long, or the best it can find (Sun Order leaves nowhere clear for long)
 const BOSS_TAKEN = 0.5; // what standing open or kneeling adds to the damage a boss takes
 const SHARD_WALK = 0.85; // how fast a hero carrying a sun shard walks
+const ADD_LIFE = 120; // a boss's add lasts at most this long (s); its stage removes it sooner
+const IMMUNE_SAY = 0.7; // how often IMMUNE shows over a boss that can't be hurt (s)
 const HIDE_PAD = 0.5; // a boss's arms reach past its body: it counts as this much wider when it may hide a hero (m)
 const HERO_CHEST = 1.2; // the height a hero is seen at, for what may hide it (m)
 
@@ -624,7 +626,14 @@ export class Duel {
     this.hud.style.transform = 'none';
     this.waiting = !run && this.holdStart;
     if (this.waiting) hm.locked = true;
-    arena.hitFilter = (target, opts, cast) => this.opponentHit(target, opts, cast);
+    arena.hitFilter = (target, opts, cast) => {
+      // A stage: the boss can't be hurt, its adds can.
+      if (target === this.foe && this.bossGuard) {
+        this.immune(target);
+        return false;
+      }
+      return this.opponentHit(target, opts, cast);
+    };
     arena.casterHeal = (amount) => this.healPlayer(amount);
     arena.casterShield = null;
     hm.onCast = (_label, slot, target) => {
@@ -938,6 +947,11 @@ export class Duel {
         foe.group.rotation.y = yaw;
       },
       setBossHp: (hp) => arena.setHp(foe, Math.max(1, hp)),
+      guard: (on) => {
+        this.bossGuard = on;
+        arena.untargetable = on ? foe : null;
+      },
+      spawnAdd: (spec) => this.spawnAdd(spec),
       phaseShield: () => this.freshShield(),
       me: () => arena.caster.group.position,
       down: () => this.playerHp <= 0,
@@ -998,6 +1012,36 @@ export class Duel {
 
   /** The words a boss fight has already said once. */
   private hinted = new Set<string>();
+  /** A stage is on: the boss can't be hurt, and its adds are the target. */
+  private bossGuard = false;
+  private immuneAt = -Infinity;
+
+  /** A boss's add on this screen: a unit on the boss's side that never moves and never shoots. Its move's later steps do the shooting. */
+  private spawnAdd(spec: AddSpec): RaidAdd {
+    const summons = this.host.arena.summons;
+    const handle = this.host.arena.summonFor('opponent', {
+      kind: 'turret', at: new THREE.Vector3(spec.x, 0, spec.z), hp: spec.hp, seconds: ADD_LIFE, damage: 0, attackEvery: ADD_LIFE, range: 0,
+      color: spec.color, look: spec.look, still: true,
+    }, () => {});
+    const u = handle.units[0];
+    if (!u) return { x: spec.x, z: spec.z, alive: false, hurt() {}, slay() {}, remove() {} };
+    handle.onHurt((_, damage) => spec.hurt(damage)).onDeath((x) => { if (x.slain) spec.died(); });
+    return {
+      x: u.pos.x,
+      z: u.pos.z,
+      get alive() { return u.alive; },
+      hurt: (amount) => summons.hurt(u, { damage: amount, knock: 0, color: '#d8c8a8' }, true),
+      slay: () => summons.slay(u),
+      remove: () => summons.dismiss(u),
+    };
+  }
+
+  /** A hit on the boss while it can't be hurt: IMMUNE over it, now and then. */
+  private immune(target: Enemy) {
+    if (this.time - this.immuneAt < IMMUNE_SAY) return;
+    this.immuneAt = this.time;
+    this.host.arena.say('IMMUNE', '#9a93a6', target.group.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 1);
+  }
   /** Fallen stones standing as cover: a boss's ray breaks on them. */
   private stones = new WeakSet<Obstacle>();
 
@@ -1404,6 +1448,8 @@ export class Duel {
     arena.aiBounds = null;
     arena.projectiles.clear();
     arena.hitFilter = null;
+    arena.untargetable = null;
+    this.bossGuard = false;
     arena.hitMod = null;
     arena.casterHeal = null;
     arena.casterShield = null;
@@ -2064,6 +2110,14 @@ export class Duel {
   /** Autopilot: the player's hero fights with the same rules as the opponent (for duel simulations). */
   private pilot(dt: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3) {
     const hm = this.host.heroMode;
+    // A stage: the boss can't be hurt, and the nearest of its adds is the one to go for.
+    if (this.bossGuard) {
+      let bd = Infinity;
+      for (const u of this.host.arena.summons.alive('opponent')) {
+        const d = flat(me, u.pos);
+        if (d < bd) { bd = d; foe = u.figure; at = u.pos; }
+      }
+    }
     this.playerThink = Math.max(0, this.playerThink - dt);
     // The autopilot obeys the player's statuses like the opponent's AI does.
     const st = hm.status;

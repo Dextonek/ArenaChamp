@@ -7,9 +7,11 @@ import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
 import type { TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
+import { hourStoneLook } from './bodies/adds';
 import { wardenLook } from './bodies/warden';
 import { FallingStone, LightPillar, NumberMark, ShadowFloor, SunOrb } from './fx';
 import { STAND_COLOR } from './script';
+import { stageMove } from './stage';
 import type { AimContext, BossDef, BossMove, Objective, PlayContext, RaidSide, Threat } from './types';
 
 const CORE = 0xffc060;
@@ -327,6 +329,22 @@ const sharedBurden: BossMove = {
   },
 };
 
+// --- the stage, The Long Hour: halfway down, his sundial's stones rise -----------------------------------------------
+
+/**
+ * He floats back behind the Sun Well in a shell of light and can't be hurt. Three of the dial's Hour Stones rise round the court and
+ * shoot beams through one hero and then the other: step aside. Break all three before his cast bar fills and he falls to his knees.
+ * If not, the dial strikes: the whole court burns, and only cover between you and him is safe.
+ */
+const longHour = stageMove({
+  id: 'hour', name: 'The Long Hour', pose: 'channel',
+  hold: { x: C.x, z: C.z - 2.4 }, shell: { radius: 3.1, y: 2.8, color: 0xffc070 },
+  center: C, ring: 9, turns: [[0, 120, 240], [60, 180, 300]],
+  look: hourStoneLook, color: '#c8b088', shot: 'beam', shotColor: SPARK,
+  fail: { share: 0.55, cover: true, radius: COURT_R + 1, text: 'THE DIAL STRIKES' },
+  win: 'THE HOUR BREAKS', hint: 'Break the three Hour Stones before his bar fills',
+});
+
 // --- phase 3, Last Light: everything at once ----------------------------------------------------------------------
 
 /** Near him, far from him, near again. Read and swap. */
@@ -497,11 +515,14 @@ export const SUN_WARDEN: BossDef = {
   phases: [
     { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray', 'fists'], gap: [1.9, 2.8] },
     { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
-    { name: 'Last Light', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
+    { name: 'The Long Hour', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'hour', gap: [2, 3] },
+    { name: 'Last Light', at: NUMBERS.phases[2], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
   ],
   /** A higher tier brings these in from the first phase on, one a tier. */
   extra: ['order', 'walking', 'eclipse'],
-  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, eclipse, anchors, walking: walkingSun },
+  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, hour: longHour, eclipse, anchors, walking: walkingSun },
+  /** Four minutes in he enrages: a minute before the sunfire closes in. */
+  enrage: 240,
   /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
   late: () => ({
     offset: -255,

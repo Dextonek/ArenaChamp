@@ -51,6 +51,8 @@ export interface SummonOptions {
    * still strikes a victim in reach, and stops about 1 m from the spot. Null: its usual walk.
    */
   goal?: (pos: THREE.Vector3) => THREE.Vector3 | null;
+  /** Hits don't push it: a boss's add stands where its cast put it, on every screen. */
+  still?: boolean;
 }
 
 /** One summoned unit. `figure` is an `Enemy`, so it is a valid `ctx.hit` target. */
@@ -84,7 +86,7 @@ export class SummonUnit {
     readonly summon: Summon,
     readonly kind: SummonKind,
     readonly side: SummonSide,
-    readonly opts: Required<Pick<SummonOptions, 'damage' | 'attackEvery' | 'range' | 'speed' | 'color'>> & Pick<SummonOptions, 'goal'>,
+    readonly opts: Required<Pick<SummonOptions, 'damage' | 'attackEvery' | 'range' | 'speed' | 'color'>> & Pick<SummonOptions, 'goal' | 'still'>,
     hp: number,
     seconds: number,
   ) {
@@ -104,6 +106,7 @@ export class SummonUnit {
 export class Summon {
   readonly units: SummonUnit[] = [];
   private deaths: ((unit: SummonUnit) => void)[] = [];
+  private hurts: ((unit: SummonUnit, damage: number) => void)[] = [];
 
   /** @internal */
   constructor(readonly world: SummonWorld) {}
@@ -119,9 +122,20 @@ export class Summon {
     return this;
   }
 
+  /** Calls `cb` with the damage of every hit on one of its units (not those passed on from another screen). */
+  onHurt(cb: (unit: SummonUnit, damage: number) => void) {
+    this.hurts.push(cb);
+    return this;
+  }
+
   /** @internal */
   died(u: SummonUnit) {
     for (const cb of this.deaths) cb(u);
+  }
+
+  /** @internal */
+  hurt(u: SummonUnit, damage: number) {
+    for (const cb of this.hurts) cb(u, damage);
   }
 }
 
@@ -217,7 +231,7 @@ export class SummonSystem {
     const room = Math.max(0, MAX_UNITS - this.alive(world.side).length);
     const n = Math.min(Math.max(1, Math.round(o.count ?? 1)), room);
     const color = o.color ?? '#b8c4d8';
-    const opts = { damage: o.damage, attackEvery: o.attackEvery, color, range: o.range ?? (o.kind === 'turret' ? 8 : 9), speed: o.speed ?? (o.kind === 'melee' ? 3.6 : 3), goal: o.goal };
+    const opts = { damage: o.damage, attackEvery: o.attackEvery, color, range: o.range ?? (o.kind === 'turret' ? 8 : 9), speed: o.speed ?? (o.kind === 'melee' ? 3.6 : 3), goal: o.goal, still: o.still };
     const near = world.victims()[0];
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.PI / 2;
@@ -237,15 +251,19 @@ export class SummonSystem {
     return handle;
   }
 
-  /** A hit on a unit: flash, knockback, damage number, HP; it dies at 0 HP. */
-  hurt(u: SummonUnit, opts: HitOptions) {
+  /**
+   * A hit on a unit: flash, knockback, damage number, HP; it dies at 0 HP. `passed`: the hit happened on another screen and is
+   * only taken off here (the summon's `onHurt` doesn't hear it).
+   */
+  hurt(u: SummonUnit, opts: HitOptions, passed = false) {
     if (!u.alive) return;
     const dmg = Math.round(opts.damage ?? THREE.MathUtils.randFloat(10, 20));
     this.tally(u.side).taken += Math.min(dmg, u.hp);
     u.hp -= dmg;
     u.flash = 1;
     u.flashTint.set(opts.color ?? '#ff8a4a');
-    const knock = Math.min(opts.knock ?? 4, 6);
+    if (!passed && dmg > 0) u.summon.hurt(u, dmg);
+    const knock = u.opts.still ? 0 : Math.min(opts.knock ?? 4, 6);
     if (knock > 0 && opts.from) {
       const away = new THREE.Vector3(u.pos.x - opts.from.x, 0, u.pos.z - opts.from.z);
       if (away.lengthSq() > 1e-4) u.knock.addScaledVector(away.normalize(), knock * 0.7);
@@ -267,6 +285,16 @@ export class SummonSystem {
         this.units.splice(i, 1);
       }
     }
+  }
+
+  /** A unit dies now, as if slain (another screen saw it die first). */
+  slay(u: SummonUnit) {
+    this.kill(u, true);
+  }
+
+  /** A unit goes now, as if its time ran out. */
+  dismiss(u: SummonUnit) {
+    this.kill(u, false);
   }
 
   /** Drops every unit and bolt (a new round, a new pack). */

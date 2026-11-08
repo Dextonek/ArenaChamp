@@ -36,13 +36,15 @@ export class BossScript {
   readonly group = new THREE.Group();
   /** Counts the casts so far: an AI rolls its reaction once per cast. */
   eventId = 0;
+  /** What every hit on this screen's hero is multiplied by: more once the boss enrages. */
+  rage = 1;
   private active: Active[] = [];
   private clock = 0;
   private sparks = new Sparks(280, 0.18);
   private glows = new FloorGlows(10);
   private ctx: PlayContext;
 
-  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash'>, tier = 1) {
+  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash' | 'guard'>, tier = 1) {
     this.group.add(this.sparks.points, this.glows.group);
     const pace = raidTierFactor(tier);
     this.ctx = {
@@ -78,6 +80,11 @@ export class BossScript {
       firstStone: (ax, az, bx, bz) => world.firstStone(ax, az, bx, bz),
       dropStone: (o) => world.dropStone(o),
       delayLate: (seconds) => world.delayLate(seconds),
+      guard: extra.guard,
+      spawnAdd: (spec) => world.spawnAdd(spec),
+      addHit: (id, part, amount) => link.addHit(id, part, amount),
+      report: (id, part) => link.objective(id, part),
+      bossMax: link.maxHp,
     };
   }
 
@@ -128,7 +135,8 @@ export class BossScript {
   /** This screen's hero takes a spot: at once, or by holding it. It reports once, and the first report wins. */
   private objectives(a: Active, t: number, dt: number) {
     for (const o of a.played.objectives ?? []) {
-      if (o.done || o.reported || this.world.down() || t > (o.until ?? Infinity)) continue;
+      // An add is taken by killing it: its look reports that.
+      if (o.kill || o.done || o.reported || this.world.down() || t > (o.until ?? Infinity)) continue;
       const me = this.world.me();
       const inside = Math.hypot(me.x - o.x, me.z - o.z) <= o.radius && (o.can?.() ?? true);
       if (o.hold) {
@@ -148,6 +156,11 @@ export class BossScript {
     a.played.look?.done?.(o, side);
   }
 
+  /** The partner hit an add of cast `id` on its screen. */
+  addHit(id: number, part: number, amount: number) {
+    this.active.find((x) => x.cast.id === id)?.played.look?.hurt?.(part, amount);
+  }
+
   /** What is still to land of a cast is off. Its look gets a moment to end. */
   private cancel(id: number) {
     const a = this.active.find((x) => x.cast.id === id);
@@ -164,7 +177,7 @@ export class BossScript {
     if (this.world.down()) return out;
     for (const a of this.active) {
       const t = this.clock - a.began;
-      for (const o of a.played.objectives ?? []) if (!o.done && !o.reported && t <= (o.until ?? Infinity) && (o.can?.() ?? true)) out.push(o);
+      for (const o of a.played.objectives ?? []) if (!o.kill && !o.done && !o.reported && t <= (o.until ?? Infinity) && (o.can?.() ?? true)) out.push(o);
     }
     return out;
   }
@@ -227,12 +240,12 @@ export class BossScript {
     a.struck = t;
     th.lastHit = t;
     const move = this.def.moves[a.cast.move];
-    this.world.hitMe({ share: th.share, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
+    this.world.hitMe({ share: th.share * this.rage, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
   }
 
   /**
    * A `stand` zone's result, from whoever keeps it. If nobody stood in it, everyone pays in full. A zone that splits (Shared
-   * Burden) costs those in it a share each and those outside nothing; any other (Anchors) is simply held.
+   * Burden, Falling Star) costs those in it a share each of its `soak` and those outside nothing; any other (Anchors) is simply held.
    */
   stood(id: number, part: number, count: number) {
     const a = this.active.find((x) => x.cast.id === id);
@@ -241,14 +254,14 @@ export class BossScript {
     // A late report can't settle a zone twice.
     if (!th || th.settled) return;
     th.settled = true;
-    const hit = (share: number) => this.world.hitMe({ share, from: { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: true });
+    const hit = (share: number) => this.world.hitMe({ share: share * this.rage, from: { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: true });
     if (count <= 0) {
       this.ctx.flash('rgba(255,214,120,0.8)', 0.45);
       hit(th.share);
       return;
     }
     if (th.split) {
-      if (th.inside) hit(th.share / count);
+      if (th.inside) hit((th.soak ?? th.share) / count);
       return;
     }
     this.world.say('HELD', '#ffe27a', this.world.me().x, this.world.me().z);

@@ -42,6 +42,10 @@ export class NetLink implements RaidLink {
     this.net.send({ t: 'boss_reward', key, id });
   }
 
+  addHit(id: number, part: number, amount: number) {
+    this.net.send({ t: 'boss_add', id, part, amount: Math.round(amount) });
+  }
+
   wallSaved(index: number) {
     this.net.send({ t: 'boss_wall', index });
   }

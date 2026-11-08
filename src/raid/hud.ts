@@ -5,6 +5,9 @@ import type { BossDef } from './types';
  * The boss's bar at the top of the screen: its HP with the phases marked, the move it is casting and at whom, the stagger
  * gauge and its state (exposed, kneeling). Only reads what it is told. Also the whole-screen flash of its biggest moves.
  */
+const BAR = 'linear-gradient(180deg,#f2b84a,#b5651d)';
+const RAGE_BAR = 'linear-gradient(180deg,#ff7a4a,#a8301c)';
+
 export class BossHud {
   private root = document.createElement('div');
   private name = document.createElement('div');
@@ -14,6 +17,9 @@ export class BossHud {
   private number = document.createElement('div');
   private gauge = document.createElement('div');
   private gaugeFill = document.createElement('div');
+  /** The enrage timer, in the name's row: a phone has no height to spare under the bar. */
+  private rage = document.createElement('div');
+  private rageText = '';
   private castBox = document.createElement('div');
   private castFill = document.createElement('div');
   private castText = document.createElement('div');
@@ -38,9 +44,10 @@ export class BossHud {
     nameText.style.cssText = 'min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;';
     this.state.style.flex = 'none';
     this.state.style.marginLeft = '8px';
-    this.name.append(nameText, this.state);
+    this.rage.style.cssText = 'flex:none;margin-left:8px;font:700 11px ui-sans-serif,system-ui;letter-spacing:1px;color:#cdbfa6;';
+    this.name.append(nameText, this.rage, this.state);
     this.bar.style.cssText = `position:relative;height:${small ? 12 : 16}px;border-radius:5px;background:#21131a;border:1px solid #6a5a3a;overflow:hidden;box-shadow:0 2px 10px #000a;`;
-    this.fill.style.cssText = 'position:absolute;inset:0 auto 0 0;width:100%;background:linear-gradient(180deg,#f2b84a,#b5651d);transition:width 0.12s;';
+    this.fill.style.cssText = `position:absolute;inset:0 auto 0 0;width:100%;background:${BAR};transition:width 0.12s;`;
     this.ticks.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
     this.number.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 10px ui-sans-serif,system-ui;color:#fff;text-shadow:0 1px 2px #000;';
     this.bar.append(this.fill, this.ticks, this.number);
@@ -69,6 +76,8 @@ export class BossHud {
     this.state.textContent = '';
     this.gaugeFill.style.width = '0';
     this.flashEl.style.opacity = '0';
+    this.rageText = this.rage.textContent = '';
+    this.fill.style.background = BAR;
     this.root.style.display = 'flex';
   }
 
@@ -80,6 +89,22 @@ export class BossHud {
   /** The stagger gauge, 0..1. */
   setGauge(share: number) {
     this.gaugeFill.style.width = `${Math.min(1, Math.max(0, share)) * 100}%`;
+  }
+
+  /** The enrage timer: seconds left, or 0 once it has enraged (and the bar turns red). */
+  setRage(left: number) {
+    const s = Math.ceil(left);
+    const text = left > 0 ? `ENRAGE ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : 'ENRAGED';
+    if (text === this.rageText) return;
+    this.rageText = this.rage.textContent = text;
+    this.rage.style.color = left <= 0 ? '#ff6a4a' : left <= 30 ? '#ffa070' : '#cdbfa6';
+    this.fill.style.background = left <= 0 ? RAGE_BAR : BAR;
+  }
+
+  /** The cast bar goes (a stage won early). */
+  stopCast() {
+    this.castLeft = 0;
+    this.castBox.style.display = 'none';
   }
 
   /** A move starts: its name fills the cast bar over `seconds`. */

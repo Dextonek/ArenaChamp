@@ -43,6 +43,7 @@ class HallLink implements RaidLink {
   stagger() {}
   stood() {}
   reward() {}
+  addHit() {}
   wallSaved() {}
   heroDown() {}
   heroHp() {}

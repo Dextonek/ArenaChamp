@@ -96,6 +96,7 @@ export class RaidController {
     net.on('boss_kneel', (m) => { if (this.active) this.link?.on.kneel(m.seconds); });
     net.on('boss_stood', (m) => { if (this.active) this.link?.on.stood(m.id, m.part, m.count); });
     net.on('boss_done', (m) => { if (this.active) this.link?.on.done(m.id, m.part, m.side); });
+    net.on('peer_add', (m) => { if (this.active) this.link?.on.addHit?.(m.id, m.part, m.amount); });
     net.on('boss_wall', (m) => { if (this.active) this.link?.on.wall(m.index); });
     net.on('partner_hp', (m) => { if (this.active) api.duel.partnerHp(m.hp, m.max); });
     net.on('peer_down', (m) => { if (this.active) api.duel.raidDown(m.side); });
