@@ -144,10 +144,14 @@
       let run = ch.go();
       step(1);
       check('charge: in his way, it kills', lost(), 1);
-      yes('charge: nothing in his way: he ran on to the rim, and no pillar broke', !run.flag && a.obstacles.length === 6);
+      yes('charge: nothing in his way: he ran on to the rim, and no pillar broke', !run.flag && a.obstacles.length === PILLARS.length);
+      // From him at (0, 1) toward the first pillar: 5 m from him in front of it, and 2.5 m behind it.
+      const P0 = PILLARS[0], toP = Math.hypot(P0.ax, P0.az - 1), ux = P0.ax / toP, uz = (P0.az - 1) / toP;
+      const front = { x: ux * (toP - 5), z: 1 + uz * (toP - 5) }, behind = { x: P0.ax + ux * 2.5, z: P0.az + uz * 2.5 };
+      check('charge: four pillars in the pit', PILLARS.length, 4, 0);
       // In front of a pillar is no cover: he runs through you, and into it.
       fresh(0, 1);
-      place(1.5, 9);
+      place(front.x, front.z);
       d.playerHp = d.playerMax;
       ch = charging();
       step(3);
@@ -158,17 +162,17 @@
       yes('charge: his run went on into the pillar behind you', run.flag === true);
 
       fresh(0, 1);
-      // Behind the pillar at 30 degrees, as he sees it.
-      place(4.5, 16);
+      // Behind the first pillar, as he sees it.
+      place(behind.x, behind.z);
       d.playerHp = d.playerMax;
       ch = charging();
       step(2.9);
-      yes('charge: behind a pillar, an AI may stay', d.boss.script.hidden(4.5, 16));
+      yes('charge: behind a pillar, an AI may stay', d.boss.script.hidden(behind.x, behind.z));
       run = ch.go();
       step(1);
       check('charge: behind a pillar, it does not', lost(), 0);
       yes('charge: he hit the pillar', run.flag === true);
-      check('charge: and it broke', a.obstacles.length, 5, 0);
+      check('charge: and it broke', a.obstacles.length, PILLARS.length - 1, 0);
       check('charge: he stopped up against it', Math.hypot(d.foe.group.position.x - PILLARS[0].ax, d.foe.group.position.z - PILLARS[0].az), PILLARS[0].r + 0.5 + 1, 0.3);
       yes('charge: stunned, he kneels and stands open', !!a.statusOf(d.foe).stunned && a.statusOf(d.foe).buff('vulnerable') === 0.5);
       step(5);
@@ -181,7 +185,7 @@
       step(1);
       check('charge: where a pillar broke, it kills', lost(), 1);
       fresh(0, 1);
-      check('charge: a new fight, all six stand again', a.obstacles.length, 6, 0);
+      check('charge: a new fight, all of them stand again', a.obstacles.length, PILLARS.length, 0);
       // No shield or toughness holds it.
       place(1.5, 9);
       d.playerHp = d.playerMax;

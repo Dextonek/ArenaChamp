@@ -66,10 +66,10 @@ const slam: BossMove = {
 };
 
 /**
- * The Charge: how long he winds up (s, at tier 1), how long his run takes (s), how wide it is (m). The wind-up is a hero's time to reach a
- * pillar from the rim, 10 m or so at 4 m/s, after a moment to see it.
+ * The Charge: how long he winds up (s, at tier 1), how long his run takes (s), how wide it is (m). The wind-up is a hero's time to reach the far
+ * side of a pillar from anywhere: with four of them 90 degrees apart, up to 15 m from the rim at 4 m/s, after a moment to see it.
  */
-const CHARGE_WIND = 3.5;
+const CHARGE_WIND = 4.5;
 const CHARGE_RUN = 0.45;
 const CHARGE_W = 2.8;
 /**
@@ -77,7 +77,7 @@ const CHARGE_W = 2.8;
  * of a fight, so a slow fight runs out of pillars (pipeline/designs/raid-noonfall.md).
  */
 const CHARGE_FIRST = 6;
-const CHARGE_EVERY = 12;
+const CHARGE_EVERY = 14;
 /** He crashes into a pillar whose middle his run passes within its radius and this much more (m): part of his body's width. */
 const CRASH_PAD = 0.5;
 /** He stops this far short of where his run meets a pillar (m), so his body is up against it. */
@@ -119,7 +119,7 @@ function chargeEnd(cover: readonly Obstacle[], x: number, z: number, dir: number
  * Charge (user, 2026-11-08: "charge attack that will target player and player should go behind the pillar, the boss will get
  * stunned and there will be window to dmg him, and if boss hit player it will be one shot, so players must kill him before all
  * pillars are down"). Ash fixes on one hero and rakes the floor; then he runs, through where that hero is then, out to the rim,
- * and kills whatever he runs into. Only one of the six pillars stops him: get one between you and him. He crashes into it, it
+ * and kills whatever he runs into. Only one of the four pillars stops him: get one between you and him. He crashes into it, it
  * breaks, and he falls to his knees, open (the reward's kneel). It comes on a clock while he is in the ring, so the pillars run
  * out: kill him before they do. The first step only warns (an AI hides from it); the second, when he goes, is aimed by the brain
  * at where the hero is then, and says whether he hit a pillar, so both screens break the same one.

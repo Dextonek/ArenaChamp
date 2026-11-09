@@ -376,7 +376,7 @@ export interface BossDef {
   lateAt?: number;
   /** Seconds into the fight it enrages: its hits cost more and its moves come faster. The timer shows under its bar. */
   enrage?: number;
-  /** The room's cover that counts, standing (Ash's six pillars): the bar shows how many are left. */
+  /** The room's cover that counts, standing (Ash's four pillars): the bar shows how many are left. */
   pillars?: readonly Obstacle[];
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */

@@ -22,10 +22,10 @@ const PILLAR_RING = 7.5;
 const PILLAR_R = 1.15;
 
 /**
- * The pit's only cover: six pillars round the vent, between where the Coal Hearts rise (src/arenas/cinderPillars.ts). Ash's Charge
+ * The pit's only cover: four pillars round the vent on the diagonals (src/arenas/cinderPillars.ts). Ash's Charge
  * stops at one and breaks it; Ember's lines and his cracks stop at them too. Nothing on the z axis, and the middle stays open.
  */
-export const PILLARS: Obstacle[] = [30, 90, 150, 210, 270, 330].map((deg) => {
+export const PILLARS: Obstacle[] = [45, 135, 225, 315].map((deg) => {
   const a = THREE.MathUtils.degToRad(deg);
   return { ...pillar(RING.x + Math.sin(a) * PILLAR_RING, RING.z + Math.cos(a) * PILLAR_RING, PILLAR_R), height: 3.3 };
 });
@@ -182,7 +182,7 @@ export const cinderPitArena: ArenaDef = {
     // `at` stretches along x only (a wall to its length); `big` scales a backdrop piece all round.
     const big = (x: number, z: number, ry: number, s: number) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(up, ry), new THREE.Vector3(s, s, s));
     const at = (x: number, z: number, ry: number, sx = 1) => new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), q.setFromAxisAngle(up, ry), new THREE.Vector3(sx, 1, 1));
-    // The six pillars, drawn in code: each can break and stand again.
+    // The four pillars, drawn in code: each can break and stand again.
     const pillars = buildPillars(COVER, PILLARS);
     g.add(pillars.group);
 

@@ -5,7 +5,7 @@ import type { Obstacle } from '../obstacles';
 import { canvasTexture, seeded } from './common';
 
 /**
- * The Cinder Pit's six pillars (user, 2026-11-08: "6 different pillars noticeable from others"): the only cover in the pit, and
+ * The Cinder Pit's four pillars (user, 2026-11-08: "6 different pillars noticeable from others"; 2026-11-09: fewer, four): the only cover in the pit, and
  * the only thing that stops Ash's Charge, which breaks them one by one. Six-sided basalt with veins and a crown of sun-glass:
  * pale blue-white, the one cool colour in the pit, so they read at a glance and never as a warning (orange) or a place to stand
  * (gold). Each has its own crown and a glass ring on the floor round its foot. All drawn in code.
@@ -209,7 +209,7 @@ export function buildPillars(obstacles: readonly Obstacle[], list: readonly Obst
       // The glass goes dark the moment he hits it.
       p.ring.material = deadRing;
     },
-    /** A new fight: all six stand again. */
+    /** A new fight: all four stand again. */
     resetShift() {
       for (const p of pillars) {
         p.fall = null;
