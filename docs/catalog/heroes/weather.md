@@ -1,12 +1,12 @@
 ---
-title: Barry Cloudsley, the Weatherman (weather kit)
+title: Barry Cloudsley, the Sky Augur (weather kit)
 tags: [catalog, heroes, weather, mage, ranged, forecast, mechanics]
 updated: 2026-11-04
 ---
 
-# Barry Cloudsley, the Weatherman
+# Barry Cloudsley, the Sky Augur
 
-The weather hero kit: Barry's four spells (Q, W, E and the R ultimate), the passive forecast, the shared parts file, the palette row and the rigged hero model. A cheerful, television-ready weatherman in a sharp blue suit with a terrible tie, a huge white smile, a perfect quiff, a chrome pointer and a yellow raincoat over his arm. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged mage in an arena whose weather changes every 8 s and hits both heroes.
+The weather hero kit: Barry's four spells (Q, W, E and the R ultimate), the passive forecast, the shared parts file, the palette row and the rigged hero model. A seer of the sky in a long storm-slate coat with a cloud mantle on his shoulders and a weathervane staff taller than he is. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged mage in an arena whose weather changes every 8 s and hits both heroes.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by calling the weather right: he is stronger in a weather he forecast co
 
 | | |
 |---|---|
-| Hero | Barry Cloudsley, the Weatherman |
+| Hero | Barry Cloudsley, the Sky Augur |
 | Spell category | `hero: weather` |
 | Parts file | [`src/effects/parts/weather.ts`](../../../src/effects/parts/weather.ts) |
 | Kit data | [`src/kits/weather.ts`](../../../src/kits/weather.ts) |
 | Trait | [`src/traits/weather.ts`](../../../src/traits/weather.ts) |
 | Kit sheet | [`kit-weather.md`](../../../pipeline/designs/kit-weather.md) |
-| Model | [`public/models/heroes/weather_v2.glb`](../../../public/models/heroes/weather_v2.glb) |
+| Model | [`public/models/heroes/weather_v3.glb`](../../../public/models/heroes/weather_v3.glb) |
 
 ## Palette
 
@@ -110,10 +110,10 @@ The headers of `coldFront.ts` and `lightningRisk.ts` still say 50 and 45 damage;
 
 ## Model
 
-[`public/models/heroes/weather_v2.glb`](../../../public/models/heroes/weather_v2.glb): a rigged figure built by the `Weather` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Barry Cloudsley`); hero body size is radius 0.46, height 2.45 in `HERO_BODIES`.
+[`public/models/heroes/weather_v3.glb`](../../../public/models/heroes/weather_v3.glb): a rigged figure built by the `WeatherMythic` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Barry Cloudsley`); hero body size is radius 0.46, height 3.06 in `HERO_BODIES` (the staff counts, as Kaia's does). Restyled on 2026-11-09 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: television-ready and delighted. A sharp blue suit, a shirt, a wide short tie in terrible yellow with pink spots, a square chin, a huge white smile and a perfect glossy quiff. A chrome telescopic pointer with a red tip held up and out, and a bright yellow raincoat folded over his left arm.
-- HUD portrait (canvas-drawn in the kit data): a deep blue ground with a weather map behind him (a sky blue board with a cloud, a sun and a wind curl), a yellow raincoat over one arm, a blue suit with a white shirt and a bad tie, a broad smile of teeth with perfect swept hair, and the pointer held out to the map.
+- Look: a long storm-slate coat to the floor over a sky-blue front panel with gold buttons and edges, a high standing collar with a gold rim, flared sleeves, a muted sun-gold sash, dark boots, windswept brown hair and a calm, sure smile. Signature: a mantle of cloud heaped over his shoulders, and a staff topped by a gold weathervane: a ring with the sun, rain and wind glyphs round a glowing sky-blue orb, and an arrow across the top.
+- HUD portrait (canvas-drawn in the kit data): a storm sky with slanting rain, the storm-slate coat with its sky-blue panel and gold buttons, the high collar, the cloud mantle, a calm face under windswept hair, and the weathervane staff with its glowing orb on the right.
 
 ## Files
 
@@ -124,7 +124,7 @@ The headers of `coldFront.ts` and `lightningRisk.ts` still say 50 and 45 damage;
 | Spells | [`coldFront.ts`](../../../src/spells/targeted/coldFront.ts), [`lightningRisk.ts`](../../../src/spells/targeted/lightningRisk.ts), [`forecastUpdate.ts`](../../../src/spells/targeted/forecastUpdate.ts), [`severeWarning.ts`](../../../src/spells/targeted/severeWarning.ts) |
 | Kit data | [`src/kits/weather.ts`](../../../src/kits/weather.ts) |
 | Trait | [`src/traits/weather.ts`](../../../src/traits/weather.ts) |
-| Model | [`public/models/heroes/weather_v2.glb`](../../../public/models/heroes/weather_v2.glb) |
+| Model | [`public/models/heroes/weather_v3.glb`](../../../public/models/heroes/weather_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

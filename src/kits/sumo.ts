@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const S = {
   core: '#fff8ea', foil: '#f4ead0', red: '#e63a3a', shade: '#a42626', rope: '#d2ac5a', ropeDark: '#8a6a2c', sand: '#dcc58f',
   skin: '#e6b08a', skinShade: '#b97a56', dust: '#cdbb98', dark: '#1e1412',
+  // the Mountain's lacquer, stole and trim (the _v3 model)
+  lacquer: '#7a1a22', stole: '#8a1c24', gold: '#d2ae55',
 };
 
 function ground(g: CanvasRenderingContext2D, s: number) {
@@ -128,14 +130,14 @@ export const sumoKit: HeroKit = {
   name: 'Big Yoko',
   maxHp: 840,
   melee: true,
-  title: 'the Sumo',
+  title: 'the Mountain',
   accent: S.red,
   foil: S.foil,
   portrait(g, s) {
     ground(g, s);
     // The rope ring behind him.
     ropeRing(g, s * 0.5, s * 0.92, s * 0.62, s * 0.2, s * 0.05);
-    // Huge shoulders and arms, bare, and the red belt.
+    // Huge shoulders and arms.
     g.fillStyle = S.dark;
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.9, s * 0.5, s * 0.34, 0, Math.PI, Math.PI * 2);
@@ -148,11 +150,36 @@ export const sumoKit: HeroKit = {
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.99, s * 0.3, s * 0.12, 0, Math.PI, Math.PI * 2);
     g.fill();
-    g.fillStyle = S.red;
-    g.fillRect(s * 0.3, s * 0.93, s * 0.4, s * 0.07);
-    g.fillStyle = S.shade;
-    g.fillRect(s * 0.3, s * 0.93, s * 0.4, s * 0.012);
-    // The topknot: a small bun on a dark oiled head.
+    // Crimson lacquered plates on the shoulders, each over gold so a gold edge shows.
+    for (const x of [0.12, 0.88]) {
+      const tilt = x < 0.5 ? -0.55 : 0.55;
+      g.fillStyle = S.gold;
+      g.beginPath();
+      g.ellipse(s * x, s * 0.73, s * 0.13, s * 0.075, tilt, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = S.lacquer;
+      g.beginPath();
+      g.ellipse(s * x, s * 0.722, s * 0.115, s * 0.062, tilt, 0, Math.PI * 2);
+      g.fill();
+    }
+    // The crimson stole over his left shoulder and across the chest, gold edged.
+    g.fillStyle = S.stole;
+    g.beginPath();
+    g.moveTo(s * 0.64, s * 0.64);
+    g.lineTo(s * 0.79, s * 0.67);
+    g.lineTo(s * 0.44, s);
+    g.lineTo(s * 0.27, s);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = S.gold;
+    g.lineWidth = s * 0.01;
+    g.beginPath();
+    g.moveTo(s * 0.64, s * 0.64);
+    g.lineTo(s * 0.27, s);
+    g.moveTo(s * 0.79, s * 0.67);
+    g.lineTo(s * 0.44, s);
+    g.stroke();
+    // The topknot: a small bun on a dark oiled head, tied in gold.
     g.fillStyle = S.dark;
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.17, s * 0.075, s * 0.05, 0, 0, Math.PI * 2);
@@ -161,7 +188,9 @@ export const sumoKit: HeroKit = {
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.34, s * 0.255, s * 0.25, 0, 0, Math.PI * 2);
     g.fill();
-    // The face: round, wide, skin, a calm half-closed look and a small straight mouth.
+    g.fillStyle = S.gold;
+    g.fillRect(s * 0.465, s * 0.205, s * 0.07, s * 0.018);
+    // The face: round, wide, calm closed eyes and a small straight mouth.
     g.fillStyle = S.skin;
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.4, s * 0.235, s * 0.235, 0, 0, Math.PI * 2);
@@ -185,13 +214,12 @@ export const sumoKit: HeroKit = {
       g.stroke();
       g.beginPath();
       g.moveTo(s * (x - 0.055), s * 0.365);
-      g.lineTo(s * (x + 0.055), s * 0.372 * (x < 0.5 ? 0.97 : 1.03) * 1.0);
+      g.lineTo(s * (x + 0.055), s * 0.372 * (x < 0.5 ? 0.97 : 1.03));
       g.stroke();
     }
     g.beginPath();
-    g.moveTo(s * 0.5, s * 0.41);
-    g.lineTo(s * 0.51, s * 0.45);
-    g.lineTo(s * 0.49, s * 0.455);
+    g.moveTo(s * 0.5, s * 0.415);
+    g.lineTo(s * 0.505, s * 0.445);
     g.stroke();
     g.beginPath();
     g.moveTo(s * 0.45, s * 0.52);

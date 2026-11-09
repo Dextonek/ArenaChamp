@@ -8,6 +8,8 @@ import { paintCloud, paintWeather } from '../effects/parts/weather';
  */
 const W = {
   core: '#ffffff', sky: '#6ac8ff', deep: '#2f5ea8', dark: '#16233b', sun: '#f4e65a', cloud: '#e4edf8', grey: '#7b8aa2', storm: '#4a5870', mint: '#b8f0d0',
+  // the Sky Augur's coat and trim (the _v3 model)
+  slate: '#303c54', panel: '#4a8ac4', gold: '#d2ae55',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -52,125 +54,149 @@ function bolt(g: CanvasRenderingContext2D, x: number, y0: number, y1: number, w:
 export const weatherKit: HeroKit = {
   name: 'Barry Cloudsley',
   maxHp: 610,
-  title: 'the Weatherman',
+  title: 'the Sky Augur',
   accent: W.sky,
   foil: W.sun,
   portrait(g, s) {
-    // The weather map behind him: a sky blue board with a cloud, a sun and a wind curl stuck on it.
+    // A storm sky behind him, rain slanting across it.
     const sky = g.createLinearGradient(0, 0, 0, s);
-    sky.addColorStop(0, '#5aa7e8');
-    sky.addColorStop(1, '#2c5a9c');
+    sky.addColorStop(0, '#3a5a86');
+    sky.addColorStop(1, W.dark);
     g.fillStyle = sky;
     g.fillRect(0, 0, s, s);
-    g.fillStyle = 'rgba(255,255,255,0.12)';
-    for (let i = 1; i < 6; i++) g.fillRect(0, (s * i) / 6, s, s * 0.006);
-    paintWeather(g, 1, s * 0.2, s * 0.2, s * 0.13);
-    paintWeather(g, 0, s * 0.8, s * 0.22, s * 0.13);
-    paintWeather(g, 2, s * 0.84, s * 0.55, s * 0.09);
-    // The raincoat over one arm: yellow, with a dark hem.
-    g.fillStyle = '#f0c93a';
+    g.strokeStyle = 'rgba(200,225,255,0.14)';
+    g.lineWidth = s * 0.006;
+    g.lineCap = 'round';
+    for (let i = 0; i < 14; i++) {
+      const x = ((i * 37) % 100) / 100, y = 0.05 + ((i * 13) % 7) * 0.06;
+      g.beginPath();
+      g.moveTo(s * x, s * y);
+      g.lineTo(s * (x - 0.06), s * (y + 0.15));
+      g.stroke();
+    }
+    // The storm-slate coat: broad shoulders, a sky-blue front panel with gold edges and buttons.
+    g.fillStyle = W.slate;
     g.beginPath();
-    g.moveTo(s * 0.02, s);
-    g.lineTo(s * 0.04, s * 0.66);
-    g.quadraticCurveTo(s * 0.12, s * 0.58, s * 0.26, s * 0.64);
-    g.lineTo(s * 0.34, s);
+    g.moveTo(s * 0.06, s);
+    g.quadraticCurveTo(s * 0.1, s * 0.7, s * 0.32, s * 0.63);
+    g.quadraticCurveTo(s * 0.5, s * 0.6, s * 0.68, s * 0.63);
+    g.quadraticCurveTo(s * 0.9, s * 0.7, s * 0.94, s);
     g.closePath();
     g.fill();
-    g.strokeStyle = '#8a6a10';
-    g.lineWidth = s * 0.01;
+    g.fillStyle = W.panel;
+    g.fillRect(s * 0.44, s * 0.64, s * 0.12, s * 0.36);
+    g.strokeStyle = W.gold;
+    g.lineWidth = s * 0.008;
+    g.beginPath();
+    g.moveTo(s * 0.44, s * 0.64);
+    g.lineTo(s * 0.44, s);
+    g.moveTo(s * 0.56, s * 0.64);
+    g.lineTo(s * 0.56, s);
     g.stroke();
-    // The blue suit: shoulders, a white shirt and a bad tie.
-    g.fillStyle = W.deep;
+    g.fillStyle = W.gold;
+    for (const y of [0.76, 0.85, 0.94]) {
+      g.beginPath();
+      g.arc(s * 0.5, s * y, s * 0.014, 0, Math.PI * 2);
+      g.fill();
+    }
+    // The high collar standing up behind his jaw, with a gold rim.
+    g.fillStyle = '#1a2232';
     g.beginPath();
-    g.moveTo(s * 0.1, s);
-    g.quadraticCurveTo(s * 0.14, s * 0.7, s * 0.34, s * 0.62);
-    g.quadraticCurveTo(s * 0.5, s * 0.58, s * 0.66, s * 0.62);
-    g.quadraticCurveTo(s * 0.86, s * 0.7, s * 0.9, s);
+    g.moveTo(s * 0.33, s * 0.66);
+    g.lineTo(s * 0.34, s * 0.5);
+    g.quadraticCurveTo(s * 0.5, s * 0.6, s * 0.66, s * 0.5);
+    g.lineTo(s * 0.67, s * 0.66);
     g.closePath();
     g.fill();
-    g.fillStyle = '#f4f9ff';
+    g.strokeStyle = W.gold;
+    g.lineWidth = s * 0.009;
     g.beginPath();
-    g.moveTo(s * 0.4, s * 0.62);
-    g.lineTo(s * 0.5, s * 0.78);
-    g.lineTo(s * 0.6, s * 0.62);
-    g.closePath();
-    g.fill();
-    g.fillStyle = '#ff7a3a';
-    g.beginPath();
-    g.moveTo(s * 0.47, s * 0.65);
-    g.lineTo(s * 0.53, s * 0.65);
-    g.lineTo(s * 0.55, s * 0.72);
-    g.lineTo(s * 0.5, s * 0.96);
-    g.lineTo(s * 0.45, s * 0.72);
-    g.closePath();
-    g.fill();
-    g.strokeStyle = W.sun;
-    g.lineWidth = s * 0.012;
-    g.beginPath();
-    g.moveTo(s * 0.46, s * 0.72);
-    g.lineTo(s * 0.54, s * 0.76);
-    g.moveTo(s * 0.46, s * 0.8);
-    g.lineTo(s * 0.54, s * 0.84);
-    g.moveTo(s * 0.47, s * 0.88);
-    g.lineTo(s * 0.53, s * 0.91);
+    g.moveTo(s * 0.34, s * 0.5);
+    g.quadraticCurveTo(s * 0.5, s * 0.6, s * 0.66, s * 0.5);
     g.stroke();
-    // The head: a broad smile of teeth, perfect hair in a swept wave.
+    // The cloud mantle heaped on his shoulders: a storm-grey underside, then the cloud.
+    const puffs = [[0.11, 0.75, 0.07], [0.19, 0.68, 0.08], [0.3, 0.645, 0.072], [0.7, 0.645, 0.072], [0.81, 0.68, 0.08], [0.89, 0.75, 0.07], [0.25, 0.76, 0.06], [0.75, 0.76, 0.06]];
+    for (const [shade, lift, k] of [[W.storm, 0.015, 1], [W.cloud, 0, 0.88]] as const) {
+      g.fillStyle = shade;
+      for (const [x, y, r] of puffs) {
+        g.beginPath();
+        g.arc(s * x, s * (y + lift), s * r * k, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+    // The head: a calm, sure face under windswept hair.
     g.fillStyle = '#f2c9a4';
+    g.fillRect(s * 0.46, s * 0.52, s * 0.08, s * 0.1);
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.42, s * 0.12, s * 0.15, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#6b4a2a';
+    g.fillStyle = '#4e2c14';
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.33, s * 0.14, s * 0.12, 0, Math.PI, Math.PI * 2);
+    g.moveTo(s * 0.37, s * 0.43);
+    g.quadraticCurveTo(s * 0.34, s * 0.25, s * 0.5, s * 0.22);
+    g.quadraticCurveTo(s * 0.62, s * 0.2, s * 0.74, s * 0.15);
+    g.quadraticCurveTo(s * 0.69, s * 0.24, s * 0.65, s * 0.28);
+    g.quadraticCurveTo(s * 0.67, s * 0.35, s * 0.63, s * 0.42);
+    g.quadraticCurveTo(s * 0.6, s * 0.3, s * 0.5, s * 0.3);
+    g.quadraticCurveTo(s * 0.42, s * 0.31, s * 0.39, s * 0.41);
+    g.closePath();
     g.fill();
-    g.beginPath();
-    g.moveTo(s * 0.36, s * 0.33);
-    g.quadraticCurveTo(s * 0.46, s * 0.2, s * 0.66, s * 0.3);
-    g.quadraticCurveTo(s * 0.58, s * 0.34, s * 0.5, s * 0.3);
-    g.quadraticCurveTo(s * 0.44, s * 0.34, s * 0.36, s * 0.36);
-    g.fill();
-    g.fillStyle = '#8a643c';
-    g.beginPath();
-    g.ellipse(s * 0.56, s * 0.265, s * 0.05, s * 0.016, -0.35, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = W.dark;
     for (const dx of [-0.045, 0.045]) {
+      g.fillStyle = W.dark;
       g.beginPath();
-      g.ellipse(s * (0.5 + dx), s * 0.4, s * 0.012, s * 0.018, 0, 0, Math.PI * 2);
+      g.ellipse(s * (0.5 + dx), s * 0.41, s * 0.014, s * 0.02, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = W.sky;
+      g.beginPath();
+      g.arc(s * (0.504 + dx), s * 0.404, s * 0.006, 0, Math.PI * 2);
       g.fill();
     }
-    g.strokeStyle = W.dark;
+    g.strokeStyle = '#3a2210';
     g.lineWidth = s * 0.009;
     g.beginPath();
-    g.moveTo(s * 0.455, s * 0.375);
-    g.lineTo(s * 0.485, s * 0.37);
-    g.moveTo(s * 0.515, s * 0.37);
-    g.lineTo(s * 0.545, s * 0.375);
+    g.moveTo(s * 0.44, s * 0.375);
+    g.lineTo(s * 0.48, s * 0.368);
+    g.moveTo(s * 0.52, s * 0.368);
+    g.lineTo(s * 0.56, s * 0.375);
     g.stroke();
-    g.fillStyle = '#ffffff';
-    g.beginPath();
-    g.moveTo(s * 0.43, s * 0.465);
-    g.quadraticCurveTo(s * 0.5, s * 0.535, s * 0.57, s * 0.465);
-    g.quadraticCurveTo(s * 0.5, s * 0.48, s * 0.43, s * 0.465);
-    g.fill();
     g.strokeStyle = '#a45b4a';
     g.lineWidth = s * 0.008;
-    g.stroke();
-    // The pointer, held out to the map.
-    g.strokeStyle = '#e8edf4';
-    g.lineWidth = s * 0.014;
-    g.lineCap = 'round';
     g.beginPath();
-    g.moveTo(s * 0.7, s * 0.78);
-    g.lineTo(s * 0.9, s * 0.3);
+    g.moveTo(s * 0.46, s * 0.49);
+    g.quadraticCurveTo(s * 0.5, s * 0.512, s * 0.54, s * 0.49);
     g.stroke();
-    g.fillStyle = W.sun;
+    // The weathervane staff in front of his right shoulder: a dark shaft, the glowing orb in a gold ring, the arrow on top.
+    g.strokeStyle = '#262c38';
+    g.lineWidth = s * 0.022;
     g.beginPath();
-    g.arc(s * 0.9, s * 0.3, s * 0.02, 0, Math.PI * 2);
+    g.moveTo(s * 0.86, s);
+    g.lineTo(s * 0.86, s * 0.28);
+    g.stroke();
+    const glow = g.createRadialGradient(s * 0.86, s * 0.2, 0, s * 0.86, s * 0.2, s * 0.13);
+    glow.addColorStop(0, 'rgba(170,228,255,0.9)');
+    glow.addColorStop(0.35, 'rgba(106,200,255,0.45)');
+    glow.addColorStop(1, 'rgba(106,200,255,0)');
+    g.fillStyle = glow;
+    g.fillRect(s * 0.72, s * 0.06, s * 0.28, s * 0.28);
+    g.fillStyle = '#c8eeff';
+    g.beginPath();
+    g.arc(s * 0.86, s * 0.2, s * 0.035, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#f2c9a4';
+    g.strokeStyle = W.gold;
+    g.lineWidth = s * 0.012;
     g.beginPath();
-    g.arc(s * 0.7, s * 0.78, s * 0.04, 0, Math.PI * 2);
+    g.arc(s * 0.86, s * 0.2, s * 0.072, 0, Math.PI * 2);
+    g.moveTo(s * 0.86, s * 0.128);
+    g.lineTo(s * 0.86, s * 0.07);
+    g.moveTo(s * 0.78, s * 0.07);
+    g.lineTo(s * 0.95, s * 0.07);
+    g.stroke();
+    g.fillStyle = W.gold;
+    g.beginPath();
+    g.moveTo(s * 0.755, s * 0.07);
+    g.lineTo(s * 0.795, s * 0.048);
+    g.lineTo(s * 0.795, s * 0.092);
+    g.closePath();
     g.fill();
   },
   spells: [

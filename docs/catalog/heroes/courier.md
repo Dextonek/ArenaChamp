@@ -1,12 +1,12 @@
 ---
-title: Pip, the last courier (courier kit)
+title: Pip, the Wingfoot (courier kit)
 tags: [catalog, heroes, courier, skirmisher, ranged, parcel, mechanics]
 updated: 2026-11-04
 ---
 
-# Pip, the last courier
+# Pip, the Wingfoot
 
-The courier hero kit: Pip's four spells (Q, W, E and the R ultimate), the passive parcel and drop point, the shared parts file, the palette row and the rigged hero model. A skinny, eager postman in a blue cap and shorts, with an enormous yellow mailbag far bigger than his body. He is built on the [combat mechanics](../../architecture/mechanics.md): a fast ranged skirmisher who earns Charges by carrying a parcel to a drop point on the floor.
+The courier hero kit: Pip's four spells (Q, W, E and the R ultimate), the passive parcel and drop point, the shared parts file, the palette row and the rigged hero model. A young winged messenger in a deep blue capelet, with a courier's pack of sealed scrolls on his back and small gold wings at his temples and heels. He is built on the [combat mechanics](../../architecture/mechanics.md): a fast ranged skirmisher who earns Charges by carrying a parcel to a drop point on the floor.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by running the route: a parcel and a drop point show on the floor, and e
 
 | | |
 |---|---|
-| Hero | Pip, the last courier |
+| Hero | Pip, the Wingfoot |
 | Spell category | `hero: courier` |
 | Parts file | [`src/effects/parts/courier.ts`](../../../src/effects/parts/courier.ts) |
 | Kit data | [`src/kits/courier.ts`](../../../src/kits/courier.ts) |
 | Trait | [`src/traits/courier.ts`](../../../src/traits/courier.ts) |
 | Kit sheet | [`kit-courier.md`](../../../pipeline/designs/kit-courier.md) |
-| Model | [`public/models/heroes/courier_v2.glb`](../../../public/models/heroes/courier_v2.glb) |
+| Model | [`public/models/heroes/courier_v3.glb`](../../../public/models/heroes/courier_v3.glb) |
 
 ## Palette
 
@@ -108,10 +108,10 @@ The headers of `expressLetter.ts` and `fragile.ts` still say 35 and 50 damage; t
 
 ## Model
 
-[`public/models/heroes/courier_v2.glb`](../../../public/models/heroes/courier_v2.glb): a rigged figure built by the `Courier` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Pip`); hero body size is radius 0.39, height 2.33 in `HERO_BODIES`.
+[`public/models/heroes/courier_v3.glb`](../../../public/models/heroes/courier_v3.glb): a rigged figure built by the `CourierMythic` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Pip`); hero body size is radius 0.39, height 2.36 in `HERO_BODIES`. Restyled on 2026-11-09 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: a skinny eager postman, all knees and ears. A pale blue shirt, blue cap and shorts, ginger hair, a letter in his right hand, one long sock up and the other rolled down, big red running shoes. An enormous yellow mailbag on his back and hip, far bigger than his body, with a blue flap, gold buckles and letters spilling out of the top.
-- HUD portrait (canvas-drawn in the kit data): a deep postman's-blue ground, the enormous brown bag behind him with envelopes poking out and a yellow strap, a blue jacket, a thin hurried face with a big nose, wide eyes and a whistling mouth, a blue cap with a yellow badge, and a letter in his raised hand.
+- Look: lean and quick. A short deep blue capelet with a gold hem and the hood down on his back, a fitted blue tunic with a gold hem over dark leggings, tall wrapped leather boots, leather bracers, ginger hair, freckles and an eager smile. Signature: small gold wings on a circlet at his temples and on his heels, and a courier's pack on his back, wider than he is, with sealed scrolls standing out of its top and a glowing gold courier seal on its flap; a sealed scroll in his right hand.
+- HUD portrait (canvas-drawn in the kit data): the courier's pack behind him with sealed scrolls out of its top and the glowing seal on its gold-bound flap, the deep blue capelet with a gold hem, an eager freckled face, tousled ginger hair under a gold circlet with a wing at each temple, and a sealed scroll in his raised hand.
 
 ## Files
 
@@ -122,7 +122,7 @@ The headers of `expressLetter.ts` and `fragile.ts` still say 35 and 50 damage; t
 | Spells | [`expressLetter.ts`](../../../src/spells/targeted/expressLetter.ts), [`fragile.ts`](../../../src/spells/targeted/fragile.ts), [`shortcut.ts`](../../../src/spells/targeted/shortcut.ts), [`finalDelivery.ts`](../../../src/spells/targeted/finalDelivery.ts) |
 | Kit data | [`src/kits/courier.ts`](../../../src/kits/courier.ts) |
 | Trait | [`src/traits/courier.ts`](../../../src/traits/courier.ts) |
-| Model | [`public/models/heroes/courier_v2.glb`](../../../public/models/heroes/courier_v2.glb) |
+| Model | [`public/models/heroes/courier_v3.glb`](../../../public/models/heroes/courier_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

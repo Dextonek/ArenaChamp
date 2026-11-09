@@ -50,15 +50,15 @@ A hero kit is **data only**: four spells bound to Q W E R (R is the ultimate). E
 | Professor Puff | balloon scientist | [kits/balloon.ts](../../src/kits/balloon.ts) | air hose, helium bomb, hot air, pop! | `models/heroes/balloon_v2.glb` |
 | Sir Whiskers | the Cat Knight | [kits/cat.ts](../../src/kits/cat.ts) | scratch, knock it over, pounce, land on my feet | `models/heroes/cat_v2.glb` |
 | Mr. Ledger | the Debt Collector | [kits/ledger.ts](../../src/kits/ledger.ts) | invoice, late fee, call it in, foreclosure | `models/heroes/ledger_v2.glb` |
-| Big Yoko | the Sumo | [kits/sumo.ts](../../src/kits/sumo.ts) | palm strike, stomp, sumo charge, salt throw | `models/heroes/sumo_v2.glb` |
+| Big Yoko | the Mountain | [kits/sumo.ts](../../src/kits/sumo.ts) | palm strike, stomp, sumo charge, salt throw | `models/heroes/sumo_v2.glb` |
 | Mum | the mime | [kits/mime.ts](../../src/kits/mime.ts) | invisible ball, mime wall, rope trick, the box | `models/heroes/mime_v2.glb` |
 | Referee Whistler | by the book | [kits/referee.ts](../../src/kits/referee.ts) | whistle blast, no running, no casting, show the card | `models/heroes/referee_v2.glb` |
 | Madame Cleaver | Arena Chef | [kits/chef.ts](../../src/kits/chef.ts) | thrown cleaver, hot soup, burnt offering, dinner is served | `models/heroes/chef_v2.glb` |
-| Pip | the last courier | [kits/courier.ts](../../src/kits/courier.ts) | express letter, fragile, shortcut, final delivery | `models/heroes/courier_v2.glb` |
+| Pip | the Wingfoot | [kits/courier.ts](../../src/kits/courier.ts) | express letter, fragile, shortcut, final delivery | `models/heroes/courier_v2.glb` |
 | Gus | the Caretaker | [kits/janitor.ts](../../src/kits/janitor.ts) | big mop, wet floor sign, mop bucket, flood | `models/heroes/janitor_v2.glb` |
 | Mabel | the Mole | [kits/mole.ts](../../src/kits/mole.ts) | mole claw, mole dig, mole tunnel, sinkhole | `models/heroes/mole_v2.glb` |
 | Grandma Ironknit | the Knitter | [kits/yarn.ts](../../src/kits/yarn.ts) | knitting needle, cast on, sweater, mr biscuit | `models/heroes/yarn_v2.glb` |
-| Barry Cloudsley | the Weatherman | [kits/weather.ts](../../src/kits/weather.ts) | cold front, lightning risk, forecast update, severe warning | `models/heroes/weather_v2.glb` |
+| Barry Cloudsley | the Sky Augur | [kits/weather.ts](../../src/kits/weather.ts) | cold front, lightning risk, forecast update, severe warning | `models/heroes/weather_v2.glb` |
 | Bo | the angry shepherd | [kits/sheep.ts](../../src/kits/sheep.ts) | crook whack, spare sheep, shear, stampede | `models/heroes/sheep_v2.glb` |
 | The Great Zambini | stage magician | [kits/magic.ts](../../src/kits/magic.ts) | card spray, sawn in half, hat trick, grand finale | `models/heroes/magic_v2.glb` |
 | Wick | the Doorman | [kits/door.ts](../../src/kits/door.ts) | key toss, wick door, door slam, grand lobby | `models/heroes/door_v2.glb` |

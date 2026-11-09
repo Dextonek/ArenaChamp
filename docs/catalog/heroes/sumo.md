@@ -1,12 +1,12 @@
 ---
-title: Big Yoko, the Sumo (sumo kit)
+title: Big Yoko, the Mountain (sumo kit)
 tags: [catalog, heroes, sumo, tank, melee, push, mechanics]
 updated: 2026-11-04
 ---
 
-# Big Yoko, the Sumo
+# Big Yoko, the Mountain
 
-The sumo hero kit: Big Yoko's four spells (Q, W, E and the R ultimate), the passive ring, the shared parts file, the palette row and the rigged hero model. A giant in a red belt with a topknot and a calm face, huge bare arms and bare feet, by far the widest hero. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee tank who pushes, a straw-rope ring on the floor and a push that takes you out of it.
+The sumo hero kit: Big Yoko's four spells (Q, W, E and the R ultimate), the passive ring, the shared parts file, the palette row and the rigged hero model. A giant dressed like a grand champion at a shrine: a straw rope belt with paper charms, a crimson stole, lacquered plates and a calm face under a topknot, by far the widest hero. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee tank who pushes, a straw-rope ring on the floor and a push that takes you out of it.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by stamping the ring with Stomp and then shoving the enemy out of it wit
 
 | | |
 |---|---|
-| Hero | Big Yoko, the Sumo |
+| Hero | Big Yoko, the Mountain |
 | Spell category | `hero: sumo` |
 | Parts file | [`src/effects/parts/sumo.ts`](../../../src/effects/parts/sumo.ts) |
 | Kit data | [`src/kits/sumo.ts`](../../../src/kits/sumo.ts) |
 | Trait | [`src/traits/sumo.ts`](../../../src/traits/sumo.ts) |
 | Kit sheet | [`kit-sumo.md`](../../../pipeline/designs/kit-sumo.md) |
-| Model | [`public/models/heroes/sumo_v2.glb`](../../../public/models/heroes/sumo_v2.glb) |
+| Model | [`public/models/heroes/sumo_v3.glb`](../../../public/models/heroes/sumo_v3.glb) |
 
 ## Palette
 
@@ -108,10 +108,10 @@ Spell sources: [`palmStrike.ts`](../../../src/spells/targeted/palmStrike.ts), [`
 
 ## Model
 
-[`public/models/heroes/sumo_v2.glb`](../../../public/models/heroes/sumo_v2.glb): a rigged figure built by the `Sumo` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Big Yoko`); hero body size is radius 0.76, height 2.6 in `HERO_BODIES`.
+[`public/models/heroes/sumo_v3.glb`](../../../public/models/heroes/sumo_v3.glb): a rigged figure built by the `SumoMythic` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Big Yoko`); hero body size is radius 0.76, height 2.6 in `HERO_BODIES`. Restyled on 2026-11-09 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: a massive pear of a body with huge arms held out from it and a small calm head on top, eyes peacefully closed, a black topknot. A red belt with a cream rope, cream tassels in front and a big red knot on his back; bare feet with toes.
-- HUD portrait (canvas-drawn in the kit data): a dark warm brown ground with a straw-rope ring behind him, bare round shoulders and a red belt, a round calm face with half-closed eyes, a small straight mouth and a topknot, and a few salt crystals in the air.
+- Look: the massive pear of a body with huge arms held out and a small calm head, eyes closed, a black topknot tied in gold. A dark crimson belt under a thick twisted straw rope tied at the back in two great loops, a crimson stole over his left shoulder and across the belly, four zigzag paper charms, a stiff lacquered apron to the shins with a gold border, a red fringe and a glowing crimson crest, crimson lacquered shoulder plates and dark forearm guards with gold edges, dark shin wraps, bare feet.
+- HUD portrait (canvas-drawn in the kit data): the rope ring behind him, huge shoulders under crimson lacquered plates with gold edges, the crimson stole across the chest, the round calm face with closed eyes, a topknot tied in gold, and a pinch of salt in the air.
 
 ## Files
 
@@ -122,7 +122,7 @@ Spell sources: [`palmStrike.ts`](../../../src/spells/targeted/palmStrike.ts), [`
 | Spells | [`palmStrike.ts`](../../../src/spells/targeted/palmStrike.ts), [`stomp.ts`](../../../src/spells/targeted/stomp.ts), [`sumoCharge.ts`](../../../src/spells/targeted/sumoCharge.ts), [`saltThrow.ts`](../../../src/spells/targeted/saltThrow.ts) |
 | Kit data | [`src/kits/sumo.ts`](../../../src/kits/sumo.ts) |
 | Trait | [`src/traits/sumo.ts`](../../../src/traits/sumo.ts) |
-| Model | [`public/models/heroes/sumo_v2.glb`](../../../public/models/heroes/sumo_v2.glb) |
+| Model | [`public/models/heroes/sumo_v3.glb`](../../../public/models/heroes/sumo_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

@@ -38,15 +38,15 @@ updated: 2026-11-04
 | Professor Puff | balloon scientist | balloon (`hero: balloon`) | Real balloons: shiny pink rubber with a pale gold foil, soap bubbles, torn rubber scraps and a brass pin, popping into words. | A bunch of balloons tied behind his shoulder. | [balloon](balloon.md) |
 | Sir Whiskers | the Cat Knight | cat (`hero: cat`) | Flat comic strokes of ginger, steel and cream: crossed claw marks, an amber leap ribbon, a clay pot, floating words and paw prints. | A cream halo of nine lives behind a ginger cat in a plumed helmet and a steel pauldron, with a small sword raised. | [cat](cat.md) |
 | Mr. Ledger | the Debt Collector | ledger (`hero: ledger`) | Stationery: fluttering paper, bouncing gold coins, red rubber-stamp ink and a dark green ledger. | Ruled rows of figures and a red DUE stamp behind a thin man in a grey suit with a ledger under his arm. | [ledger](ledger.md) |
-| Big Yoko | the Sumo | sumo (`hero: sumo`) | The straw-rope ring seen from the side with a pale line inside it, stamped on the floor as a dohyo. | A dark brown ground with a straw-rope ring behind a bare, round-shouldered sumo in a red belt, a calm round face with a topknot and a few salt crystals in the air. | [sumo](sumo.md) |
+| Big Yoko | the Mountain | sumo (`hero: sumo`) | The straw-rope ring seen from the side with a pale line inside it, stamped on the floor as a dohyo. | A dark brown ground with a straw-rope ring behind huge shoulders under crimson lacquered plates, a crimson stole across the chest, a calm round face with a topknot tied in gold and a few salt crystals in the air. | [sumo](sumo.md) |
 | Mum | the mime | mime (`hero: mime`) | The white glove, and dashed chalk lines on the floor for what cannot be seen. | A dark ink ground, a white glove pressed against an invisible pane with a dashed chalk line, a striped shirt, a red scarf and a white painted face under a black beret. | [mime](mime.md) |
 | Referee Whistler | by the book | referee (`hero: referee`) | The whistle, and the round "no" sign: a pictogram crossed out in a red ring with a bar. | A black ground, striped shoulders with a whistle on a cord, a square stern face with a dark cap of hair and a raised hand with a yellow card. | [referee](referee.md) |
 | Madame Cleaver | Arena Chef | chef (`hero: chef`) | The big steel cleaver with a hole near its spine, and dishes left on the floor. | A warm charcoal ground with a great cleaver raised behind a proud rosy face under a tall toque, a white double-breasted coat with a red neckerchief and a ladle in her other hand. | [chef](chef.md) |
-| Pip | the last courier | courier (`hero: courier`) | The brown-paper parcel tied with string, with a red FRAGILE sticker on its front. | A deep blue ground, an enormous brown bag with envelopes poking out, a thin hurried face with a big nose under a blue cap and a letter in a raised hand. | [courier](courier.md) |
+| Pip | the Wingfoot | courier (`hero: courier`) | The brown-paper parcel tied with string, with a red FRAGILE sticker on its front. | A deep blue ground, a leather courier's pack with sealed scrolls and a glowing seal, a deep blue capelet, an eager freckled face under a gold winged circlet and a sealed scroll in a raised hand. | [courier](courier.md) |
 | Gus | the Caretaker | janitor (`hero: janitor`) | The mop with its strings, the yellow A-frame sign, the wheeled bucket and a wet floor with a shine across it. | A deep blue ground, a mop behind the shoulder, grey overalls with a yellow strap and keys, a broad tired face with a red nose and a drooping moustache under a flat cap. | [janitor](janitor.md) |
 | Mabel | the Mole | mole (`hero: mole`) | The dark round pit with a raised rim of dirt, and three gold claw strokes. | A soil bank with a tunnel mouth behind a round fur head with a pink snout, thick round glasses and a miner's helmet with a glowing lamp, huge claws at the edges. | [mole](mole.md) |
 | Grandma Ironknit | the Knitter | yarn (`hero: yarn`) | A ball of wool with a strand pulled out and a long needle through it. | A dark wine ground with loose wool, a grey cat by her shoulder, a rose shawl, a grey bun with two needles through it and a kind round face with big glasses. | [yarn](yarn.md) |
-| Barry Cloudsley | the Weatherman | weather (`hero: weather`) | A smiling cloud and a weather card. | A deep blue ground with a weather map (a cloud, a sun, a wind curl) behind a blue suit, a broad toothy smile, swept hair and a pointer held out to the map. | [weather](weather.md) |
+| Barry Cloudsley | the Sky Augur | weather (`hero: weather`) | A smiling cloud and a weather card. | A storm sky with slanting rain, a storm-slate coat with a cloud mantle and a high gold-rimmed collar, a calm face under windswept hair and a weathervane staff with a glowing orb. | [weather](weather.md) |
 | Bo | the angry shepherd | sheep (`hero: sheep`) | The lumpy cloud of a sheep with its black face and four stick legs, and the shepherd's crook. | A dusk-green pasture, a sheep under his arm, the crook shaken beside his head and a huge grey-white beard under a furious red face and a wide hat. | [sheep](sheep.md) |
 | The Great Zambini | stage magician | magic (`hero: magic`) | The top hat and the gold star. | A violet spotlight on a dark stage with gold stars, a purple cape with a high collar, a smug pale face with a thin moustache under a tipped top hat and a star-tipped wand. | [magic](magic.md) |
 | Wick | the Doorman | door (`hero: door`) | An upright door in its frame, ajar, with warm light at the crack and a brass number plate. | A dark wine-brown ground with a door ajar behind him, a long red coat with brass buttons, a long pale face with a white moustache, a little round hat and a gloved hand holding up keys. | [door](door.md) |
@@ -229,15 +229,15 @@ The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
 - [Professor Puff, balloon scientist](balloon.md)
 - [Sir Whiskers, the Cat Knight](cat.md)
 - [Mr. Ledger, the Debt Collector](ledger.md)
-- [Big Yoko, the Sumo](sumo.md)
+- [Big Yoko, the Mountain](sumo.md)
 - [Mum, the mime](mime.md)
 - [Referee Whistler, by the book](referee.md)
 - [Madame Cleaver, Arena Chef](chef.md)
-- [Pip, the last courier](courier.md)
+- [Pip, the Wingfoot](courier.md)
 - [Gus, the Caretaker](janitor.md)
 - [Mabel, the Mole](mole.md)
 - [Grandma Ironknit, the Knitter](yarn.md)
-- [Barry Cloudsley, the Weatherman](weather.md)
+- [Barry Cloudsley, the Sky Augur](weather.md)
 - [Bo, the angry shepherd](sheep.md)
 - [The Great Zambini, stage magician](magic.md)
 - [Wick, the Doorman](door.md)

@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const K = {
   core: '#fff6dc', paper: '#e6d6ac', cream: '#eee3c4', brown: '#b98a52', brownDark: '#7a5230', string: '#e4d49c', dark: '#141c30',
   accent: '#ffd24a', foil: '#3a6ac8', blueDark: '#24427e', blueLight: '#8fb0ee', red: '#d9463a', skin: '#f0c8a0',
+  // the Wingfoot's pack, cloak, hair and trim (the _v3 model)
+  leather: '#6a4424', leatherDark: '#3e2614', cloak: '#1c2c58', hair: '#b0501a', gold: '#d2ae55',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -119,32 +121,57 @@ function glint(g: CanvasRenderingContext2D, x: number, y: number, r: number, c =
 export const courierKit: HeroKit = {
   name: 'Pip',
   maxHp: 620,
-  title: 'the last courier',
+  title: 'the Wingfoot',
   accent: K.accent,
   foil: K.foil,
   portrait(g, s) {
     iconGround(g, s);
-    // The enormous bag behind him: brown leather, a yellow strap, a flap with a buckle.
+    // The courier's pack on his back: sealed scrolls out of its top, dark leather, a gold-bound flap with the glowing seal.
+    for (const [x, y, rot] of [[0.12, 0.47, -0.3], [0.22, 0.43, -0.08], [0.33, 0.44, 0.15], [0.43, 0.48, 0.35]]) {
+      g.save();
+      g.translate(s * x, s * y);
+      g.rotate(rot);
+      g.fillStyle = K.dark;
+      g.fillRect(-s * 0.032, -s * 0.12, s * 0.064, s * 0.2);
+      g.fillStyle = K.paper;
+      g.fillRect(-s * 0.025, -s * 0.115, s * 0.05, s * 0.19);
+      g.fillStyle = K.red;
+      g.beginPath();
+      g.arc(0, -s * 0.115, s * 0.026, 0, Math.PI * 2);
+      g.fill();
+      g.restore();
+    }
     g.fillStyle = K.dark;
     g.fillRect(s * 0.02, s * 0.5, s * 0.52, s * 0.5);
-    g.fillStyle = K.brown;
+    g.fillStyle = K.leather;
     g.fillRect(s * 0.05, s * 0.53, s * 0.46, s * 0.47);
-    g.fillStyle = K.brownDark;
+    g.fillStyle = K.leatherDark;
     g.beginPath();
     g.moveTo(s * 0.05, s * 0.53);
     g.lineTo(s * 0.51, s * 0.53);
-    g.lineTo(s * 0.51, s * 0.64);
-    g.lineTo(s * 0.28, s * 0.72);
-    g.lineTo(s * 0.05, s * 0.64);
+    g.lineTo(s * 0.51, s * 0.68);
+    g.lineTo(s * 0.28, s * 0.78);
+    g.lineTo(s * 0.05, s * 0.68);
     g.closePath();
     g.fill();
+    g.strokeStyle = K.gold;
+    g.lineWidth = s * 0.009;
+    g.stroke();
+    const glow = g.createRadialGradient(s * 0.28, s * 0.68, 0, s * 0.28, s * 0.68, s * 0.1);
+    glow.addColorStop(0, 'rgba(255,224,120,0.85)');
+    glow.addColorStop(1, 'rgba(255,210,74,0)');
+    g.fillStyle = glow;
+    g.fillRect(s * 0.18, s * 0.58, s * 0.2, s * 0.2);
+    g.fillStyle = K.gold;
+    g.beginPath();
+    g.arc(s * 0.28, s * 0.68, s * 0.042, 0, Math.PI * 2);
+    g.fill();
     g.fillStyle = K.accent;
-    g.fillRect(s * 0.26, s * 0.7, s * 0.05, s * 0.06);
-    // Envelopes poking out of the top.
-    envelope(g, s * 0.16, s * 0.5, s * 0.2, -0.3);
-    envelope(g, s * 0.37, s * 0.47, s * 0.2, 0.25);
-    // His blue jacket and the bag's strap across it.
-    g.fillStyle = K.foil;
+    g.beginPath();
+    g.arc(s * 0.28, s * 0.68, s * 0.03, 0, Math.PI * 2);
+    g.fill();
+    // His deep blue capelet with a gold hem over the blue tunic, the pack strap across it.
+    g.fillStyle = K.cloak;
     g.beginPath();
     g.moveTo(s * 0.4, s);
     g.quadraticCurveTo(s * 0.44, s * 0.72, s * 0.58, s * 0.66);
@@ -152,64 +179,92 @@ export const courierKit: HeroKit = {
     g.quadraticCurveTo(s * 0.94, s * 0.74, s * 0.96, s);
     g.closePath();
     g.fill();
-    g.strokeStyle = K.blueDark;
-    g.lineWidth = s * 0.012;
-    g.stroke();
-    g.strokeStyle = K.accent;
-    g.lineWidth = s * 0.035;
+    g.fillStyle = K.foil;
     g.beginPath();
-    g.moveTo(s * 0.52, s * 0.62);
-    g.lineTo(s * 0.5, s * 0.9);
+    g.moveTo(s * 0.62, s * 0.66);
+    g.lineTo(s * 0.68, s * 0.8);
+    g.lineTo(s * 0.74, s * 0.66);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = K.gold;
+    g.lineWidth = s * 0.01;
+    g.beginPath();
+    g.moveTo(s * 0.43, s * 0.9);
+    g.quadraticCurveTo(s * 0.68, s * 0.84, s * 0.95, s * 0.9);
     g.stroke();
-    // Head: a thin, hurried face; a big nose; round cheeks.
+    g.strokeStyle = K.leatherDark;
+    g.lineWidth = s * 0.032;
+    g.beginPath();
+    g.moveTo(s * 0.55, s * 0.63);
+    g.lineTo(s * 0.52, s * 0.92);
+    g.stroke();
+    // Head: an eager young face, freckles, a quick smile.
     g.fillStyle = K.skin;
     g.beginPath();
     g.ellipse(s * 0.68, s * 0.46, s * 0.12, s * 0.15, 0.1, 0, Math.PI * 2);
     g.fill();
-    g.beginPath();
-    g.ellipse(s * 0.795, s * 0.5, s * 0.03, s * 0.04, 0, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = '#e89a86';
-    g.beginPath();
-    g.arc(s * 0.65, s * 0.52, s * 0.025, 0, Math.PI * 2);
-    g.fill();
-    // His eyes (wide, looking ahead) and a whistling little "o" mouth.
+    g.fillStyle = '#c98a62';
+    for (const [x, y] of [[0.63, 0.5], [0.655, 0.515], [0.64, 0.53], [0.775, 0.505], [0.79, 0.52]]) {
+      g.beginPath();
+      g.arc(s * x, s * y, s * 0.006, 0, Math.PI * 2);
+      g.fill();
+    }
     g.fillStyle = K.core;
     g.beginPath();
-    g.ellipse(s * 0.71, s * 0.43, s * 0.028, s * 0.034, 0, 0, Math.PI * 2);
-    g.ellipse(s * 0.77, s * 0.43, s * 0.025, s * 0.032, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.65, s * 0.44, s * 0.026, s * 0.032, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.74, s * 0.44, s * 0.026, s * 0.032, 0, 0, Math.PI * 2);
     g.fill();
     g.fillStyle = K.dark;
     g.beginPath();
-    g.arc(s * 0.72, s * 0.435, s * 0.013, 0, Math.PI * 2);
-    g.arc(s * 0.775, s * 0.435, s * 0.012, 0, Math.PI * 2);
+    g.arc(s * 0.656, s * 0.445, s * 0.013, 0, Math.PI * 2);
+    g.arc(s * 0.746, s * 0.445, s * 0.013, 0, Math.PI * 2);
     g.fill();
+    g.strokeStyle = '#8a3a30';
+    g.lineWidth = s * 0.009;
+    g.lineCap = 'round';
     g.beginPath();
-    g.arc(s * 0.74, s * 0.55, s * 0.015, 0, Math.PI * 2);
-    g.fill();
-    // The blue postman's cap with a yellow badge and a short peak.
+    g.moveTo(s * 0.66, s * 0.54);
+    g.quadraticCurveTo(s * 0.7, s * 0.565, s * 0.74, s * 0.535);
+    g.stroke();
+    // Tousled ginger hair under a gold circlet with a small wing at each temple.
+    g.fillStyle = K.hair;
+    for (const [x, y, r] of [[0.58, 0.36, 0.06], [0.64, 0.31, 0.065], [0.71, 0.3, 0.065], [0.78, 0.33, 0.06], [0.81, 0.39, 0.045], [0.56, 0.42, 0.04]]) {
+      g.beginPath();
+      g.arc(s * x, s * y, s * r, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.strokeStyle = K.gold;
+    g.lineWidth = s * 0.012;
+    g.beginPath();
+    g.moveTo(s * 0.565, s * 0.37);
+    g.quadraticCurveTo(s * 0.68, s * 0.39, s * 0.8, s * 0.36);
+    g.stroke();
+    g.fillStyle = K.gold;
+    for (const [x, dir] of [[0.565, -1], [0.8, 1]]) {
+      for (let k = 0; k < 3; k++) {
+        g.beginPath();
+        g.moveTo(s * x, s * 0.37);
+        g.lineTo(s * (x + dir * (0.07 - k * 0.012)), s * (0.24 + k * 0.045));
+        g.lineTo(s * (x + dir * (0.02 - k * 0.004)), s * (0.35 - k * 0.004));
+        g.closePath();
+        g.fill();
+      }
+    }
+    // A sealed scroll in his raised hand, and a glint.
+    g.save();
+    g.translate(s * 0.9, s * 0.55);
+    g.rotate(0.35);
     g.fillStyle = K.dark;
-    g.beginPath();
-    g.ellipse(s * 0.68, s * 0.34, s * 0.15, s * 0.1, 0.05, Math.PI, Math.PI * 2);
-    g.fill();
-    g.fillStyle = K.foil;
-    g.beginPath();
-    g.ellipse(s * 0.68, s * 0.34, s * 0.135, s * 0.09, 0.05, Math.PI, Math.PI * 2);
-    g.fill();
-    g.fillStyle = K.blueDark;
-    g.fillRect(s * 0.545, s * 0.335, s * 0.29, s * 0.03);
-    g.fillStyle = K.dark;
-    g.fillRect(s * 0.75, s * 0.335, s * 0.13, s * 0.03);
-    g.fillStyle = K.accent;
-    g.beginPath();
-    g.arc(s * 0.68, s * 0.3, s * 0.03, 0, Math.PI * 2);
-    g.fill();
-    // A letter in his raised hand, and a glint.
+    g.fillRect(-s * 0.03, -s * 0.1, s * 0.06, s * 0.18);
+    g.fillStyle = K.paper;
+    g.fillRect(-s * 0.023, -s * 0.095, s * 0.046, s * 0.17);
+    g.fillStyle = K.red;
+    g.fillRect(-s * 0.024, -s * 0.01, s * 0.048, s * 0.016);
+    g.restore();
     g.fillStyle = K.skin;
     g.beginPath();
     g.arc(s * 0.9, s * 0.62, s * 0.035, 0, Math.PI * 2);
     g.fill();
-    envelope(g, s * 0.86, s * 0.52, s * 0.18, 0.4);
     glint(g, s * 0.94, s * 0.34, s * 0.04);
     glint(g, s * 0.12, s * 0.3, s * 0.03, K.accent);
   },

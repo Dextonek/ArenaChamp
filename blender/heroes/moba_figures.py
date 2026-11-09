@@ -4454,6 +4454,441 @@ class Pom(Twin):
         self.add(kit.blob("SlingStone", pouch + Vector((0, -0.012, 0.004)), (0.024, 0.024, 0.024), self.mat("stone", "#8c8c90", roughness=0.8), segs=(10, 8)), "hand.R")
 
 
+# ============================================================================================ restyle v3 (pipeline/designs/heroes-restyle.md)
+# The new heroes re-cast as mythic figures in the game's look: dark body, gold at joints and edges, the kit's accent as
+# the one mid-tone colour and one glowing focal piece, clean faces. Exported as <theme>_v3.glb beside the _v2 models.
+
+
+class WeatherMythic(MobaFigure):
+    """
+    Barry, the Sky Augur (mage): a seer of the sky. A long storm-slate coat to the floor over a sky-blue front panel with gold
+    buttons, a high standing collar with a gold rim, flared sleeves, a muted sun-gold sash, dark boots, windswept brown
+    hair and a calm, sure smile. Signature: a mantle of cloud heaped over his shoulders, and a staff taller than he is,
+    topped by a gold weathervane: a ring with the sun, rain and wind glyphs round a glowing sky-blue orb, and an arrow
+    across the top.
+    """
+
+    J = dict(hip=0.96, waist=1.08, neck=1.48, head=1.54, top=1.82, shoulder=(0.19, 0.01, 1.42),
+             elbow_x=0.245, elbow_z=1.18, wrist_x=0.275, wrist_z=0.96, hand=0.09, leg_x=0.09, knee=0.54)
+
+    SCULPT = True
+    FUSE = (("Face", "skin", ("only", "Head", "Nose", "Ear"), 0.0036, 9000, None, 10),
+            ("Skin", "skin", ("Face",), 0.0045, 2600, None, 12),
+            ("CoatBody", "coat", (), 0.006, 6000, None, 12),
+            ("Boots", "boot", (), 0.006, 1500, None, 8),
+            ("HairBody", "hair", (), 0.0045, 3200, None, 16),
+            ("Cloud", "cloud", (), 0.0075, 5500, None, 16))
+    FOLDS = ((("CoatSkirt",), dict(below=1.02, n=15, amp=0.011, seed=4.0)),)
+    WRAP = (("Mouth", "Face", 0.0012), ("Brow", "Face", 0.002))
+    PAINT = {"skin": dict(warm=0.9), "coat": dict(shadow=(0.5, 0.56, 0.8)), "coatskirt": dict(shadow=(0.5, 0.56, 0.8)),
+             "cloud": dict(shadow=(0.55, 0.62, 0.85)), "hair": dict(shadow=(0.6, 0.45, 0.4))}
+
+    def __init__(self):
+        super().__init__("weather", self.J)
+
+    def body(self):
+        boot = self.mat("boot", "#151b28", roughness=0.5)
+        legs = self.mat("legs", "#1a2236", roughness=0.8)
+        coat = self.mat("coat", "#303c54", roughness=0.6)
+        skirt_m = self.mat("coatskirt", "#2b364c", roughness=0.62)
+        lining = self.mat("lining", "#141a28", roughness=0.7, double_sided=True)
+        panel = self.mat("panel", "#4a8ac4", roughness=0.65)
+        dark = self.mat("dark", "#1a2232", roughness=0.55, double_sided=True)
+        gold = self.mat("gold", "#d2ae55", metallic=0.7, roughness=0.3, double_sided=True)
+        sash = self.mat("sash", "#c9a83a", roughness=0.55)
+        cloud = self.mat("cloud", "#bccadc", roughness=0.9)
+        skin = self.mat("skin", "#d29a74", roughness=0.5)
+        hair = self.mat("hair", "#4e2c14", roughness=0.5)
+        eyew = self.mat("eyewhite", "#fff8f0", roughness=0.4)
+        iris = self.mat("iris", "#7fd0ff", roughness=0.2, emission="#4ab0ff", strength=1.0)
+        lash = self.mat("lash", "#24140a", roughness=0.6)
+        staff = self.mat("staff", "#262c38", metallic=0.4, roughness=0.45)
+        orb = self.mat("orb", "#a8e4ff", roughness=0.1, emission="#6ac8ff", strength=2.6)
+        rain = self.mat("rainglyph", "#6aa8d8", roughness=0.3)
+        wind = self.mat("windglyph", "#7fc8a8", roughness=0.4)
+        J = self.J
+
+        self.legs(legs, boot, thigh=(0.075, 0.058), shin=0.052, boot_r=0.056, boot_top=0.34, toe=0.22, cuff=gold)
+        # the coat: fitted to the waist, a lighter front panel with gold buttons, gold edges down both sides of it
+        self.add(loft("Torso", [kit.ring_z(z, rx, ry) for z, rx, ry in
+                                [(1.0, 0.148, 0.108), (1.12, 0.138, 0.1), (1.26, 0.165, 0.112), (1.38, 0.19, 0.12), (1.46, 0.14, 0.096), (1.52, 0.055, 0.05)]], coat, seg=24), ["chest", "pelvis"])
+        self.add(tube("Panel", (0, -0.088, 1.47), (0, -0.112, 1.04), [(0, 0.05, 0.012), (0.5, 0.05, 0.012), (1, 0.046, 0.012)], panel, seg=8, side=(1, 0, 0)), "chest")
+        for s, x in SIDES:
+            self.add(chain(f"PanelEdge{s}", [Vector((0.05 * x, -0.09, 1.47)), Vector((0.05 * x, -0.112, 1.25)), Vector((0.047 * x, -0.118, 1.04))], [0.0065, 0.0065, 0.0065], gold, seg=6), "chest")
+        for k in range(4):
+            self.add(kit.blob(f"Button{k}", (0, -0.124 + 0.004 * k, 1.4 - 0.1 * k), (0.012, 0.006, 0.012), gold, segs=(8, 6)), "chest")
+        # the long coat skirt to the floor, open in front over the same panel colour, gold hem
+        skirt = short_skirt(J["hip"], J["knee"], 0.12)
+        self.bell("CoatSkirt", [(1.08, 0.146, 0.106), (0.96, 0.19, 0.15), (0.74, 0.245, 0.2), (0.46, 0.29, 0.235), (0.16, 0.32, 0.26)], skirt_m, lining, hem=gold, n=28, weights=skirt)
+        front = [Vector((0, -0.112, 1.04)), Vector((0, -0.158, 0.92)), Vector((0, -0.205, 0.7)), Vector((0, -0.243, 0.44)), Vector((0, -0.27, 0.18))]
+        self.add(chain("SkirtPanel", front, [(0.05, 0.008), (0.06, 0.008), (0.07, 0.008), (0.078, 0.008), (0.084, 0.008)], panel, seg=8), skirt)
+        for s, x in SIDES:
+            self.add(chain(f"SkirtEdge{s}", [p + Vector(((0.05 + 0.008 * i) * x, -0.004, 0)) for i, p in enumerate(front)], [0.0065] * 5, gold, seg=6), skirt)
+        # a sun-gold sash tied on his left hip, the end hanging
+        self.add(loft("Sash", [kit.ring_z(1.04, 0.152, 0.112), kit.ring_z(1.1, 0.146, 0.106)], sash, seg=24), "pelvis")
+        self.add(chain("SashEnd", [Vector((0.13, -0.07, 1.06)), Vector((0.165, -0.1, 0.92)), Vector((0.18, -0.11, 0.78))], [(0.03, 0.008), (0.034, 0.008), (0.03, 0.008)], sash, seg=8), skirt)
+        # flared sleeves with gold cuffs
+        self.arms(coat, coat, skin, r=(0.058, 0.05, 0.044), flare=0.035, cuff=gold, hand=(0.042, 0.048, 0.064))
+        # the high standing collar, open at the throat, flaring away from the head, a gold rim along its top
+        self.add(arc_shell("Collar", [(1.66, 0.165, 0.155, 0.03), (1.58, 0.125, 0.115, 0.012), (1.5, 0.12, 0.1, 0.0)], -0.72, math.pi + 0.72, dark, thick=0.012, seg=40), "chest")
+        rim = [Vector((0.165 * math.cos(a), 0.03 + 0.155 * math.sin(a), 1.66)) for a in [-0.72 + (math.pi + 1.44) * k / 20 for k in range(21)]]
+        self.add(chain("CollarRim", rim, [0.007] * len(rim), gold, seg=6), "chest")
+
+        # signature: the cloud mantle, puffs heaped round the shoulders and the back of the neck, wider than his shoulders
+        def mantle_w(p):
+            a = 0.45 * figure_kit.smooth(0.14, 0.3, abs(p.x))
+            return {"chest": 1 - a, f"upper_arm.{'L' if p.x > 0 else 'R'}": a}
+        puffs = []
+        for k in range(11):
+            a = -0.35 + (math.pi + 0.7) * k / 10
+            rr = 0.205 + 0.03 * math.sin(k * 1.7)
+            puffs.append(((rr * 1.08 * math.cos(a), 0.02 + 0.18 * math.sin(a), 1.45 + 0.025 * math.cos(k * 2.3)), 0.1 + 0.02 * ((k * 7) % 3)))
+        for s, x in SIDES:
+            puffs += [((0.3 * x, 0.0, 1.41), 0.105), ((0.35 * x, 0.04, 1.35), 0.08), ((0.21 * x, 0.11, 1.54), 0.095)]
+        puffs += [((0.0, 0.18, 1.55), 0.115), ((0.09, 0.16, 1.61), 0.085), ((-0.1, 0.16, 1.6), 0.09)]
+        for k, (c, rad) in enumerate(puffs):
+            self.add(blob(f"Puff{k}", c, (rad * 1.1, rad, rad * 0.85), cloud, (18, 12)), mantle_w)
+
+        # head: big clear eyes with a sky-blue glint, a small nose, a calm sure smile
+        hc = Vector((0, -0.012, 1.685))
+        r = (0.12, 0.122, 0.142)
+        self.head_shape(hc, r, skin, chin=0.6)
+        for s, x in SIDES:
+            self.add(blob(f"Ear{s}", hc + Vector((0.12 * x, 0.008, -0.01)), (0.014, 0.024, 0.034), skin, (10, 8)), "head")
+        self.eyes(hc, r, eyew, iris, eyew, spread=0.05, size=(0.028, 0.03), z=0.016, lash=lash)
+        for s, x in SIDES:
+            self.add(chain(f"Brow{s}", [hc + Vector((0.02 * x, -0.118, 0.07)), hc + Vector((0.055 * x, -0.112, 0.082)), hc + Vector((0.09 * x, -0.09, 0.074))], [0.007, 0.009, 0.005], lash, seg=8), "head")
+        self.face(hc, r, skin, self.mat("lips", "#8a4a38", roughness=0.45), nose=0.014, smile=0.005, width=0.026, out=0.005)
+        # windswept hair: a cap, and locks swept back from the brow and lifting at the back, as if in a gale
+        self.add(blob("HairCap", hc + Vector((0, 0.03, 0.045)), (0.134, 0.142, 0.145), hair, (22, 14), keep=lambda co: co.z > hc.z + 0.04 or co.y > hc.y + 0.03), "head")
+        for k, dx in enumerate((-0.07, 0.0, 0.075)):
+            lock = [hc + Vector((dx, -0.11, 0.075 + 0.015 * (1 - abs(dx) / 0.075))), hc + Vector((dx * 1.15, -0.03, 0.165)), hc + Vector((dx * 1.25, 0.09, 0.168)), hc + Vector((dx * 1.3, 0.2, 0.12))]
+            self.add(chain(f"HairLock{k}", lock, [(0.05, 0.022), (0.062, 0.03), (0.055, 0.026), (0.01, 0.008)], hair, seg=10, side=(0, 0, 1)), "head")
+        self.add(blob("HairBack", hc + Vector((0, 0.07, -0.03)), (0.11, 0.075, 0.09), hair, (16, 10)), "head")
+
+        # signature: the weathervane staff in the right hand, taller than he is
+        h = self.hand_at(-1)
+        a, b = h + Vector((0, -0.01, -0.86)), h + Vector((-0.02, -0.06, 1.18))
+        self.add(tube("Staff", a, b, [(0, 0.017, 0.017), (1, 0.021, 0.021)], staff, seg=10), "hand.R")
+        self.add(tube("StaffFoot", a, a.lerp(b, 0.04), [(0, 0.024, 0.024), (1, 0.02, 0.02)], gold, seg=10), "hand.R")
+        for k, t in enumerate((0.78, 0.84, 0.9)):
+            self.add(band(f"StaffBand{k}", a.lerp(b, t), 0.023, 0.006, gold, seg=(16, 6), axis=b - a), "hand.R")
+        ring_c = b + Vector((0, 0, 0.17))
+        self.add(tube("StaffNeck", b, ring_c - Vector((0, 0, 0.14)), [(0, 0.022, 0.022), (1, 0.03, 0.03)], gold, seg=10), "hand.R")
+        self.add(torus("VaneRing", ring_c, 0.14, 0.013, gold, seg=(40, 8), axis=(0, 1, 0)), "hand.R")
+        self.add(blob("Orb", ring_c, (0.068, 0.068, 0.068), orb, (18, 12)), "hand.R")
+        for k in range(4):
+            ang = k * math.pi / 2 + math.pi / 4
+            d = Vector((math.cos(ang), 0, math.sin(ang)))
+            self.add(tube(f"VaneSpoke{k}", ring_c + d * 0.072, ring_c + d * 0.128, [(0, 0.006, 0.006), (1, 0.006, 0.006)], gold, seg=6), "hand.R")
+        # the three glyphs on the ring: the sun on his right, the rain drop on his left, the wind curl on top
+        sun = ring_c + Vector((-0.14, 0, 0))
+        self.add(blob("SunGlyph", sun, (0.034, 0.012, 0.034), gold, (14, 8)), "hand.R")
+        for k in range(8):
+            ang = k * math.pi / 4
+            d = Vector((math.cos(ang), 0, math.sin(ang)))
+            self.add(tube(f"SunRay{k}", sun + d * 0.034, sun + d * 0.058, [(0, 0.008, 0.008), (1, 0.001, 0.001)], gold, seg=6), "hand.R")
+        drop = ring_c + Vector((0.14, 0, 0))
+        self.add(blob("RainGlyph", drop + Vector((0, 0, -0.01)), (0.028, 0.013, 0.03), rain, (12, 8)), "hand.R")
+        self.add(tube("RainTip", drop + Vector((0, 0, 0.012)), drop + Vector((0, 0, 0.055)), [(0, 0.024, 0.011), (1, 0.001, 0.001)], rain, seg=8), "hand.R")
+        curl = [ring_c + Vector((0.045 * math.cos(t) * (1 - 0.06 * t), 0, 0.15 + 0.045 * math.sin(t) * (1 - 0.06 * t))) for t in [0.65 * i for i in range(10)]]
+        self.add(chain("WindGlyph", curl, [0.011 - 0.0009 * i for i in range(10)], wind, seg=6), "hand.R")
+        # the arrow across the top
+        top = ring_c + Vector((0, 0, 0.27))
+        self.add(tube("VanePost", ring_c + Vector((0, 0, 0.2)), top + Vector((0, 0, 0.03)), [(0, 0.009, 0.009), (1, 0.005, 0.005)], gold, seg=6), "hand.R")
+        self.add(tube("VaneArrow", top + Vector((0.16, 0, 0)), top + Vector((-0.12, 0, 0)), [(0, 0.007, 0.007), (1, 0.007, 0.007)], gold, seg=6), "hand.R")
+        self.add(tube("VaneHead", top + Vector((-0.12, 0, 0)), top + Vector((-0.19, 0, 0)), [(0, 0.032, 0.006), (1, 0.001, 0.001)], gold, seg=6, side=(0, 1, 0)), "hand.R")
+        self.add(tube("VaneTail", top + Vector((0.11, 0, 0)), top + Vector((0.19, 0, 0)), [(0, 0.006, 0.006), (1, 0.05, 0.006)], gold, seg=6, side=(0, 1, 0)), "hand.R")
+        self.joints_fill(neck=(skin, 0.048), shoulder=(coat, 0.062), elbow=(coat, 0.052), wrist=(skin, 0.04), hip=(legs, 0.076), knee=(legs, 0.06))
+
+
+class SumoMythic(Sumo):
+    """
+    Big Yoko, the Mountain (tank): the giant body kept, dressed like a grand champion at a shrine. A dark crimson belt
+    under a thick twisted straw rope tied at the back in two great loops, a crimson stole over one shoulder and across
+    the belly, four zigzag paper charms hanging from the rope,
+    a stiff lacquered apron to the shins with a gold border, a red fringe and a glowing crimson crest, lacquered plates
+    on the shoulders and forearm guards with gold edges, dark shin wraps. Calm closed eyes and a topknot.
+    """
+
+    PAINT = {"skin": dict(warm=1.0), "belt": dict(shadow=(0.7, 0.45, 0.5)), "lacquer": dict(shadow=(0.6, 0.45, 0.5))}
+
+    def body(self):
+        skin = self.mat("skin", "#c88e6a", roughness=0.55)
+        belt = self.mat("belt", "#6a161c", roughness=0.6, double_sided=True)
+        rope = self.mat("rope", "#cdb878", roughness=0.85)
+        ropedark = self.mat("ropedark", "#9c8450", roughness=0.85)
+        paper = self.mat("paper", "#d6cfbc", roughness=0.8, double_sided=True)
+        lacquer = self.mat("lacquer", "#2a1418", metallic=0.3, roughness=0.35, double_sided=True)
+        crimson = self.mat("crimson", "#a42626", roughness=0.5)
+        gold = self.mat("gold", "#d2ae55", metallic=0.7, roughness=0.3, double_sided=True)
+        crest = self.mat("crest", "#ff5a40", roughness=0.15, emission="#ff3a2a", strength=2.2)
+        wrap = self.mat("wrap", "#2a1c1e", roughness=0.85)
+        plate = self.mat("plate", "#7a1a22", metallic=0.3, roughness=0.35, double_sided=True)
+        stole = self.mat("stole", "#8a1c24", roughness=0.55, double_sided=True)
+        hair = self.mat("hair", "#17141a", roughness=0.45)
+        dark = self.mat("line", "#3a2418", roughness=0.6)
+        J = self.J
+        lx = J["leg_x"]
+
+        # legs: short and enormous, dark wraps on the shins, bare feet
+        for s, x in SIDES:
+            X = lx * x
+            self.add(tube(f"LegThigh{s}", (X, 0, 0.92), (X, 0, 0.42), [(0, 0.27, 0.27), (0.5, 0.26, 0.26), (1, 0.2, 0.2)], skin, seg=18), [f"thigh.{s}", f"shin.{s}", "pelvis"])
+            self.add(blob(f"LegKnee{s}", (X, -0.02, 0.42), (0.2, 0.2, 0.17), skin, (16, 12)), [f"thigh.{s}", f"shin.{s}"])
+            self.add(tube(f"LegShin{s}", (X, 0, 0.42), (X, 0, 0.08), [(0, 0.19, 0.19), (0.45, 0.185, 0.19), (1, 0.13, 0.13)], skin, seg=16), [f"shin.{s}", f"thigh.{s}"])
+            self.add(tube(f"Wrap{s}", (X, 0, 0.36), (X, 0, 0.12), [(0, 0.196, 0.2), (0.5, 0.178, 0.18), (1, 0.15, 0.15)], wrap, seg=16, cap=(False, False)), f"shin.{s}")
+            for k, z in enumerate((0.33, 0.24, 0.15)):
+                t = (0.36 - z) / 0.24
+                self.add(band(f"WrapTie{s}{k}", (X, 0, z), 0.198 - 0.045 * t, 0.009, ropedark, seg=(28, 6)), f"shin.{s}")
+            self.add(blob(f"Foot{s}", (X, -0.09, 0.062), (0.15, 0.25, 0.064), skin, (18, 12)), f"foot.{s}")
+            for k in range(5):
+                tx = X + (-0.095 + 0.0475 * k) * x * 1.1
+                big = 1.3 if k == 0 else 1.0
+                self.add(blob(f"Toe{s}{k}", (tx, -0.32 + 0.012 * k, 0.045), (0.03 * big, 0.052 * big, 0.036 * big), skin, (10, 8)), f"foot.{s}")
+        # the body, as before
+        rings = [(0.76, 0.5, 0.42, 0.0), (0.92, 0.62, 0.5, -0.03), (1.08, 0.66, 0.53, -0.06), (1.24, 0.62, 0.5, -0.04), (1.4, 0.56, 0.42, -0.015), (1.54, 0.46, 0.33, 0.0), (1.66, 0.25, 0.2, 0.0), (1.74, 0.12, 0.11, 0.0)]
+        trunk = lambda p: {"chest": figure_kit.smooth(0.96, 1.3, p.z), "pelvis": 1 - figure_kit.smooth(0.96, 1.3, p.z)}
+        self.add(loft("Torso", [kit.ring_z(z, rx, ry, cy) for z, rx, ry, cy in rings], skin, seg=30), trunk)
+        self.add(blob("Belly", (0, -0.22, 1.06), (0.52, 0.4, 0.33), skin, (24, 16)), trunk)
+        for s, x in SIDES:
+            self.add(blob(f"Pec{s}", (0.24 * x, -0.33, 1.4), (0.24, 0.13, 0.15), skin, (18, 12)), trunk)
+        self.add(tube("Neck", (0, 0.0, 1.62), (0, -0.02, 1.8), [(0, 0.2, 0.19), (1, 0.13, 0.13)], skin, seg=14), ["chest", "neck", "head"])
+        self.add(kit.blob("Navel", (0, -0.617, 1.08), (0.022, 0.006, 0.026), dark, segs=(10, 6)), trunk)
+        # arms, lacquered forearm guards with gold edges, fists
+        for s, x in SIDES:
+            sh, el, wr = self.shoulder_pts(x)
+            bones = [f"upper_arm.{s}", f"forearm.{s}"]
+            self.add(blob(f"ArmShoulder{s}", sh, (0.24, 0.24, 0.23), skin, (20, 14)), [f"upper_arm.{s}"])
+            self.add(tube(f"ArmUpper{s}", sh, el, [(0, 0.23, 0.23), (0.5, 0.225, 0.225), (1, 0.18, 0.18)], skin, seg=18), bones)
+            self.add(blob(f"ArmElbow{s}", el, (0.185, 0.185, 0.185), skin, (18, 12)), bones)
+            self.add(tube(f"ArmFore{s}", el, wr, [(0, 0.18, 0.18), (0.35, 0.185, 0.18), (1, 0.125, 0.125)], skin, seg=16), [f"forearm.{s}", f"upper_arm.{s}"])
+            f = (wr - el).normalized()
+            g0, g1 = el.lerp(wr, 0.3), el.lerp(wr, 0.96)
+            self.add(tube(f"Guard{s}", g0, g1, [(0, 0.196, 0.196), (0.5, 0.18, 0.18), (1, 0.142, 0.142)], lacquer, seg=20, cap=(False, False)), f"forearm.{s}")
+            for k, (p, rad) in enumerate(((g0, 0.198), (g1, 0.144))):
+                self.add(band(f"GuardRim{s}{k}", p, rad, 0.01, gold, seg=(32, 6), axis=f), f"forearm.{s}")
+            self.fist(x, skin, 1.5)
+
+            # crimson lacquered shoulder plates in two thin lames lying on the shoulder, each over a slightly larger
+            # gold plate so a gold edge shows
+            def plate_w(p, arm=f"upper_arm.{s}"):
+                return {"chest": 0.25, arm: 0.75}
+            for k, (c, rad, tilt) in enumerate((((0.57, 0.0, 1.755), (0.18, 0.2, 0.035), 0.45), ((0.69, 0.0, 1.65), (0.15, 0.18, 0.032), 0.85))):
+                cen = Vector((c[0] * x, c[1], c[2]))
+                rot = Euler((0, tilt * x, 0))
+                # kit.blob, not the smooth wrapper: thin plates need no extra rings, and eight at its resolution cost 15k triangles
+                self.add(kit.blob(f"PlateGold{s}{k}", cen - Vector((0.003 * x, 0, 0.008)), (rad[0] + 0.014, rad[1] + 0.014, rad[2]), gold, segs=(32, 12), rotation=rot), plate_w)
+                self.add(kit.blob(f"Plate{s}{k}", cen, rad, plate, segs=(32, 12), rotation=rot), plate_w)
+        # a crimson stole over his left shoulder, across the chest and belly, tucked under the rope at his right hip
+        path = kit.spline([(0.22, 0.45, 1.3), (0.28, 0.3, 1.55), (0.3, 0.02, 1.715), (0.2, -0.33, 1.56), (0.08, -0.47, 1.38), (-0.12, -0.64, 1.12),
+                           (-0.36, -0.53, 0.98), (-0.5, -0.49, 0.96)], 26)
+
+        def out(p):
+            return (Vector((p.x, p.y + 0.05, max(0.0, p.z - 1.45) * 2.5))).normalized()
+        self.add(kit.ribbon("Stole", path, 0.2, stole, normal=out), trunk)
+        for e in (-1, 1):
+            edge = []
+            for i, p in enumerate(path):
+                a = (path[min(i + 1, len(path) - 1)] - path[max(i - 1, 0)]).normalized()
+                edge.append(p + a.cross(out(p)).normalized() * 0.1 * e + out(p) * 0.004)
+            self.add(chain(f"StoleEdge{e + 1}", edge, [0.009] * len(edge), gold, seg=6), trunk)
+        # the belt: dark crimson under the belly, the cloth between the legs
+        band_rings = [(0.92, 0.625, 0.515, -0.035), (0.84, 0.625, 0.515, -0.025), (0.74, 0.565, 0.47, -0.01), (0.64, 0.42, 0.34, 0.0)]
+        self.add(loft("Mawashi", [kit.ring_z(z, rx, ry, cy) for z, rx, ry, cy in band_rings], belt, seg=30), ["pelvis", "thigh.L", "thigh.R"])
+        # the rope: a thick straw rope round the waist, twisted (dark diagonal bands), tied in two great loops at the back
+        n = 40
+        ring = [Vector((0.655 * math.cos(2 * math.pi * k / n), -0.035 + 0.545 * math.sin(2 * math.pi * k / n), 0.93)) for k in range(n + 1)]
+        self.add(chain("Rope", ring, [0.05] * len(ring), rope, seg=12), "pelvis")
+        for k in range(0, n, 2):
+            p, q = ring[k], ring[k + 1]
+            self.add(band(f"RopeTwist{k}", p.lerp(q, 0.5), 0.05, 0.008, ropedark, seg=(12, 4), axis=(q - p).normalized() + Vector((0, 0, 0.9))), "pelvis")
+        for s, x in SIDES:
+            self.add(torus(f"RopeLoop{s}", (0.17 * x, 0.6, 1.02), 0.15, 0.045, rope, seg=(36, 10), axis=(0.25 * x, 1, 0.15)), "pelvis")
+        self.add(blob("RopeKnot", (0, 0.6, 0.95), (0.1, 0.07, 0.08), rope, (16, 10)), "pelvis")
+        # the apron: stiff, lacquer-dark, from the rope to the shins, a gold border, a red fringe, the glowing crest
+        top, bot = Vector((0, -0.6, 0.9)), Vector((0, -0.5, 0.3))
+        self.add(tube("Apron", top, bot, [(0, 0.24, 0.022), (1, 0.27, 0.022)], lacquer, seg=10, side=(1, 0, 0)), "pelvis")
+        for s, x in SIDES:
+            self.add(chain(f"ApronEdge{s}", [top + Vector((0.238 * x, -0.016, 0)), bot + Vector((0.268 * x, -0.016, 0))], [0.011, 0.011], gold, seg=6), "pelvis")
+        self.add(chain("ApronHem", [bot + Vector((-0.27, -0.016, 0)), bot + Vector((0.27, -0.016, 0))], [0.012, 0.012], gold, seg=6), "pelvis")
+        for k in range(11):
+            p = bot + Vector((-0.24 + 0.048 * k, -0.01, -0.012))
+            self.add(kit.chain(f"Fringe{k}", [p, p + Vector((0, 0.005, -0.06)), p + Vector((0, 0.01, -0.11))], [0.012, 0.013, 0.008], crimson, seg=6), "pelvis")
+        cc = top.lerp(bot, 0.58) + Vector((0, -0.03, 0))
+        self.add(torus("CrestRing", cc, 0.1, 0.014, gold, seg=(40, 8), axis=(0, 1, 0.17)), "pelvis")
+        self.add(blob("Crest", cc + Vector((0, 0.004, 0)), (0.082, 0.016, 0.082), crest, (20, 10)), "pelvis")
+        for k in range(3):
+            ang = math.pi / 2 + k * 2 * math.pi / 3
+            d = Vector((math.cos(ang), 0, math.sin(ang)))
+            self.add(tube(f"CrestPeak{k}", cc + d * 0.03 + Vector((0, -0.016, 0)), cc + d * 0.075 + Vector((0, -0.016, 0)), [(0, 0.022, 0.006), (1, 0.002, 0.002)], gold, seg=6, side=(0, 1, 0)), "pelvis")
+        # four zigzag paper charms hanging from the rope either side of the apron
+        for k, dx in enumerate((-0.47, -0.31, 0.31, 0.47)):
+            y0 = -0.035 - 0.545 * math.sqrt(max(0.0, 1 - (dx / 0.655) ** 2)) - 0.045
+            zig = [Vector((dx + (0.028 if i % 2 else -0.028) * (i > 0), y0 - 0.01 * i, 0.9 - 0.07 * i)) for i in range(6)]
+            self.add(kit.ribbon(f"Charm{k}", zig, 0.05, paper, normal=(0, -1, 0)), "pelvis")
+        # the head: small and calm, closed eyes, a soft small smile, a smaller nose
+        hc = Vector((0, -0.05, 1.86))
+        r = (0.128, 0.125, 0.14)
+        self.head_shape(hc, r, skin, chin=0.85)
+        self.add(blob("Chin", hc + Vector((0, -0.05, -0.135)), (0.1, 0.085, 0.05), skin, (14, 10)), "head")
+        self.add(blob("Nose", hc + Vector((0, -0.126, -0.022)), (0.017, 0.018, 0.02), skin, (10, 8)), "head")
+        for s, x in SIDES:
+            self.add(blob(f"Ear{s}", hc + Vector((0.13 * x, 0.005, -0.005)), (0.016, 0.03, 0.04), skin, (10, 8)), "head")
+            arc = [hc + Vector((d_ * x, -r[1] * 0.97 * math.sqrt(1 - (d_ / r[0]) ** 2) - 0.006, 7.0 * (d_ - 0.054) ** 2)) for d_ in (0.018, 0.027, 0.036, 0.045, 0.054, 0.063, 0.072, 0.081, 0.09)]
+            self.add(kit.chain(f"Closed{s}", arc, [(0.002, 0.003), (0.005, 0.004), (0.0065, 0.005), (0.0075, 0.005), (0.008, 0.005), (0.0075, 0.005), (0.0065, 0.005), (0.005, 0.004), (0.002, 0.003)], dark, seg=6, side=(0, 0, 1)), "head")
+            brow = [hc + Vector((0.022 * x, -0.123, 0.066)), hc + Vector((0.054 * x, -0.118, 0.078)), hc + Vector((0.094 * x, -0.092, 0.066))]
+            self.add(chain(f"Brow{s}", brow, [0.01, 0.014, 0.007], hair, seg=8), "head")
+        self.grin(hc, r, -0.54, 0.03, 0.006, 0.0065, self.mat("lips", "#a8503e", roughness=0.5, double_sided=True))
+        self.add(blob("HairCap", hc + Vector((0, 0.035, 0.05)), (0.135, 0.122, 0.118), hair, (20, 14)), "head")
+        self.add(blob("HairBack", hc + Vector((0, 0.06, -0.035)), (0.122, 0.085, 0.095), hair, (14, 10)), "head")
+        knot = [hc + Vector(v) for v in [(0, 0.1, 0.13), (0, 0.04, 0.2), (0, -0.04, 0.215), (0, -0.1, 0.19)]]
+        self.add(chain("HairKnot", knot, [(0.032, 0.03), (0.036, 0.03), (0.06, 0.024), (0.078, 0.012)], hair, seg=12), "head")
+        self.add(band("KnotTie", knot[1], 0.036, 0.009, gold, seg=(16, 6), axis=knot[2] - knot[0]), "head")
+
+
+class CourierMythic(MobaFigure):
+    """
+    Pip, the Wingfoot (skirmisher): a young mythic messenger, lean and quick. A short hooded travelling cloak in deep blue
+    with a gold edge (the hood down on his back), a fitted blue tunic with a gold hem over dark leggings, tall wrapped
+    leather boots, ginger hair, freckles and an eager smile. Signature: small gold wings on a circlet at his temples and
+    on his heels, and a courier's pack on his back, wider than he is, with sealed scrolls standing out of its top and a
+    glowing gold courier seal on its flap; a sealed scroll in his right hand.
+    """
+
+    J = dict(hip=0.86, waist=0.98, neck=1.34, head=1.39, top=1.68, shoulder=(0.14, 0.01, 1.28),
+             elbow_x=0.18, elbow_z=1.06, wrist_x=0.205, wrist_z=0.86, hand=0.08, leg_x=0.075, knee=0.46)
+
+    SCULPT = True
+    FUSE = (("Face", "skin", ("only", "Head", "Nose", "Ear"), 0.0036, 8000, None, 9),
+            ("Skin", "skin", ("Face",), 0.0042, 2600, None, 10),
+            ("TunicBody", "tunic", (), 0.0055, 4500, None, 12),
+            ("LegsBody", "legs", (), 0.0055, 2400, None, 10),
+            ("Boots", "boot", (), 0.0055, 2600, None, 8),
+            ("HairBody", "hair", (), 0.0045, 2600, None, 6))
+    WRAP = (("Mouth", "Face", 0.0012), ("Freckle", "Face", 0.0008))
+    PAINT = {"skin": dict(warm=1.0), "tunic": dict(shadow=(0.5, 0.55, 0.9)), "cloak": dict(shadow=(0.5, 0.55, 0.9)),
+             "satchel": dict(shadow=(0.72, 0.55, 0.45))}
+
+    def __init__(self):
+        super().__init__("courier", self.J)
+
+    def body(self):
+        boot = self.mat("boot", "#3a2616", roughness=0.6)
+        bootwrap = self.mat("bootwrap", "#5a3e24", roughness=0.75)
+        legs = self.mat("legs", "#2a2430", roughness=0.8)
+        tunic = self.mat("tunic", "#3a66b4", roughness=0.7)
+        cloak = self.mat("cloak", "#1c2c58", roughness=0.65)
+        lining = self.mat("lining", "#a8862e", roughness=0.6, double_sided=True)
+        gold = self.mat("gold", "#d2ae55", metallic=0.7, roughness=0.3, double_sided=True)
+        leather = self.mat("satchel", "#6a4424", roughness=0.65)
+        strap = self.mat("strap", "#3e2614", roughness=0.7)
+        paper = self.mat("paper", "#d2c6a4", roughness=0.8)
+        wax = self.mat("wax", "#a8282a", roughness=0.4)
+        seal = self.mat("seal", "#ffd24a", roughness=0.15, emission="#ffc030", strength=2.4)
+        skin = self.mat("skin", "#dcae8e", roughness=0.55)
+        hair = self.mat("hair", "#b0501a", roughness=0.6)
+        spot = self.mat("freckle", "#b47850", roughness=0.7)
+        eyew = self.mat("eyewhite", "#fff8f0", roughness=0.4)
+        iris = self.mat("iris", "#3a8ad0", roughness=0.2)
+        lash = self.mat("lash", "#5a2a10", roughness=0.6)
+        J = self.J
+
+        # legs in dark leggings, tall wrapped boots with a gold wing on each heel
+        self.legs(legs, boot, thigh=(0.062, 0.046), shin=0.042, boot_r=0.05, boot_top=0.4, toe=0.21, cuff=gold)
+        for s, x in SIDES:
+            X = J["leg_x"] * x
+            for k, z in enumerate((0.33, 0.25, 0.17)):
+                self.add(band(f"BootWrap{s}{k}", (X, 0, z), 0.054, 0.007, bootwrap, seg=(20, 6), axis=(0, 0.25 * (1 if k % 2 else -1), 1)), f"shin.{s}")
+            heel = Vector((X + 0.045 * x, 0.04, 0.13))
+            for k, (ln, up) in enumerate(((0.16, 0.5), (0.135, 0.28), (0.11, 0.08))):
+                d = Vector((0.35 * x, 0.75, up)).normalized()
+                self.add(tube(f"HeelWing{s}{k}", heel + Vector((0, 0, -0.015 * k)), heel + Vector((0, 0, -0.015 * k)) + d * ln, [(0, 0.016, 0.006), (0.6, 0.02, 0.006), (1, 0.002, 0.002)], gold, seg=6, side=(0, 0, 1)), f"foot.{s}")
+        # a fitted tunic to mid-thigh with a gold hem, a leather belt
+        self.add(loft("Torso", [kit.ring_z(z, rx, ry) for z, rx, ry in
+                                [(0.9, 0.11, 0.085), (1.0, 0.104, 0.08), (1.12, 0.12, 0.084), (1.22, 0.128, 0.084), (1.3, 0.09, 0.066), (1.36, 0.045, 0.042)]], tunic, seg=22), ["chest", "pelvis"])
+        skirt = short_skirt(J["hip"], J["knee"], 0.1)
+        self.bell("TunicSkirt", [(0.98, 0.106, 0.082), (0.86, 0.14, 0.11), (0.7, 0.17, 0.135)], tunic, self.mat("tunicin", "#1c3466", roughness=0.75, double_sided=True), hem=gold, n=24, weights=skirt)
+        self.add(loft("Belt", [kit.ring_z(0.95, 0.114, 0.088), kit.ring_z(0.99, 0.112, 0.086)], strap, seg=22), "pelvis")
+        self.add(kit.box("Buckle", (0, -0.092, 0.97), (0.04, 0.012, 0.034), gold, bevel=0.004, segments=1), "pelvis")
+        self.add(chain("Neckline", [Vector((-0.05, -0.06, 1.33)), Vector((0, -0.082, 1.29)), Vector((0.05, -0.06, 1.33))], [0.006, 0.006, 0.006], gold, seg=6), "chest")
+        self.arms(tunic, skin, skin, r=(0.044, 0.036, 0.033), hand=(0.04, 0.045, 0.062))
+        for s, x in SIDES:
+            sh, el, wr = self.shoulder_pts(x)
+            f = (wr - el).normalized()
+            self.add(tube(f"Bracer{s}", el.lerp(wr, 0.4), wr + f * 0.008, [(0, 0.04, 0.04), (1, 0.043, 0.043)], strap, seg=14, cap=(False, False)), f"forearm.{s}")
+            self.add(band(f"BracerRim{s}", wr + f * 0.004, 0.043, 0.006, gold, seg=(20, 6), axis=f), f"forearm.{s}")
+        # the short hooded cloak: a capelet over the shoulders, three short tails on sway bones, a gold clasp
+        self.add(loft("Capelet", [kit.ring_z(z, rx, ry, cy) for z, rx, ry, cy in [(1.34, 0.07, 0.065, 0.0), (1.3, 0.15, 0.115, 0.01), (1.22, 0.2, 0.14, 0.015), (1.14, 0.215, 0.15, 0.02)]], cloak, seg=24, cap=(False, False)),
+                 lambda p: {"chest": 1 - 0.4 * figure_kit.smooth(0.12, 0.2, abs(p.x)), f"upper_arm.{'L' if p.x > 0 else 'R'}": 0.4 * figure_kit.smooth(0.12, 0.2, abs(p.x))})
+        self.add(loft("CapeletHem", [kit.ring_z(1.145, 0.218, 0.153, 0.02), kit.ring_z(1.125, 0.218, 0.153, 0.02)], gold, seg=24, cap=(False, False)),
+                 lambda p: {"chest": 1 - 0.4 * figure_kit.smooth(0.12, 0.2, abs(p.x)), f"upper_arm.{'L' if p.x > 0 else 'R'}": 0.4 * figure_kit.smooth(0.12, 0.2, abs(p.x))})
+        self.add(blob("Clasp", (0, -0.072, 1.31), (0.024, 0.01, 0.024), gold, (12, 8)), "chest")
+        self.add(blob("Hood", (0, 0.1, 1.33), (0.115, 0.07, 0.07), cloak, (18, 12)), "chest")
+        self.add(blob("HoodLining", (0, 0.085, 1.345), (0.085, 0.05, 0.048), lining, (14, 10)), "chest")
+        # signature: a courier's pack on his back, wider than he is, sealed scrolls standing out of its top, a gold-bound
+        # flap with the glowing courier seal facing the game camera behind him, and two straps over the shoulders
+        c = Vector((0, 0.3, 1.06))
+        W, D, Hh = 0.5, 0.24, 0.48
+        self.add(box("Pack", c, (W, D, Hh), leather, bevel=0.05, segments=3), "chest")
+        self.add(box("PackFlap", c + Vector((0, D / 2, 0.09)), (W + 0.02, 0.025, 0.3), strap, bevel=0.012, segments=2), "chest")
+        self.add(box("PackFlapTop", c + Vector((0, 0.0, Hh / 2 - 0.005)), (W + 0.02, D + 0.02, 0.022), strap, bevel=0.01, segments=2), "chest")
+        for k, dx in enumerate((-0.17, 0.17)):
+            self.add(kit.box(f"PackBand{k}", c + Vector((dx, D / 2 + 0.016, 0.02)), (0.045, 0.01, 0.34), strap, bevel=0.004, segments=1), "chest")
+            self.add(kit.box(f"PackBuckle{k}", c + Vector((dx, D / 2 + 0.024, -0.06)), (0.065, 0.012, 0.055), gold, bevel=0.005, segments=1), "chest")
+        for k, (dx, dy) in enumerate(((-0.255, -0.124), (0.255, -0.124), (-0.255, 0.124), (0.255, 0.124))):
+            self.add(blob(f"PackCorner{k}", c + Vector((dx, dy, -0.23)), (0.032, 0.032, 0.032), gold, (10, 8)), "chest")
+        sc = c + Vector((0, 0.136, 0.06))
+        self.add(torus("SealRing", sc, 0.06, 0.012, gold, seg=(32, 8), axis=(0, 1, 0)), "chest")
+        self.add(blob("Seal", sc + Vector((0, 0.006, 0)), (0.05, 0.012, 0.05), seal, (16, 10)), "chest")
+        for k in range(4):
+            ang = math.pi / 4 + k * math.pi / 2
+            d = Vector((math.cos(ang), 0, math.sin(ang)))
+            self.add(tube(f"SealWing{k}", sc + d * 0.068 + Vector((0, 0.012, 0)), sc + d * 0.1 + Vector((0, 0.012, 0)), [(0, 0.012, 0.004), (1, 0.001, 0.001)], gold, seg=6, side=(0, 1, 0)), "chest")
+        for k, (dx, ln, tilt) in enumerate(((-0.15, 0.28, -0.25), (-0.05, 0.36, -0.05), (0.06, 0.32, 0.12), (0.16, 0.24, 0.3))):
+            base = c + Vector((dx, -0.01, Hh * 0.5 - 0.04))
+            tip = base + Vector((tilt * 0.35 * ln, 0.04, ln))
+            self.add(tube(f"Scroll{k}", base, tip, [(0, 0.028, 0.028), (1, 0.028, 0.028)], paper, seg=10), "chest")
+            self.add(blob(f"ScrollSeal{k}", tip + Vector((0, 0, 0.004)), (0.024, 0.024, 0.009), wax, (10, 6)), "chest")
+            self.add(band(f"ScrollTie{k}", base.lerp(tip, 0.7), 0.029, 0.005, wax, seg=(16, 6), axis=tip - base), "chest")
+        for s_, x in SIDES:
+            pts = kit.spline([(0.07 * x, 0.19, 0.88), (0.11 * x, 0.15, 1.08), (0.1 * x, 0.1, 1.27), (0.09 * x, 0.02, 1.33), (0.085 * x, -0.07, 1.27), (0.09 * x, -0.09, 1.12)], 12)
+            self.add(kit.chain(f"PackStrap{s_}", pts, [(0.026, 0.008)] * 12, strap, seg=8, side=(1, 0, 0)), "chest")
+        # a sealed scroll in his right hand, a red ribbon and wax
+        h = self.hand_at(-1)
+        d = Vector((0.15, -0.95, 0.25)).normalized()
+        self.add(tube("HandScroll", h - d * 0.06 + Vector((0, 0, -0.02)), h + d * 0.16 + Vector((0, 0, -0.02)), [(0, 0.026, 0.026), (1, 0.026, 0.026)], paper, seg=12), "hand.R")
+        self.add(band("HandScrollTie", h + d * 0.05 + Vector((0, 0, -0.02)), 0.027, 0.006, wax, seg=(16, 6), axis=d), "hand.R")
+        self.add(blob("HandScrollWax", h + d * 0.05 + Vector((0.0, -0.004, 0.008)), (0.016, 0.016, 0.009), wax, (10, 6)), "hand.R")
+        # head: big eager eyes, a small nose, a quick smile, freckles, normal ears
+        hc = Vector((0, -0.012, 1.515))
+        r = (0.118, 0.12, 0.135)
+        self.head_shape(hc, r, skin, chin=0.45)
+        for s, x in SIDES:
+            self.add(blob(f"Ear{s}", hc + Vector((0.117 * x, 0.008, -0.008)), (0.014, 0.024, 0.033), skin, (10, 8)), "head")
+            for k, (dx, dz) in enumerate(((0.05, -0.04), (0.068, -0.034), (0.06, -0.054))):
+                self.add(kit.blob(f"Freckle{s}{k}", hc + Vector((dx * x, -r[1] * 0.93 * math.sqrt(max(0.0, 1 - (dx / r[0]) ** 2)) - 0.001, dz)), (0.005, 0.0015, 0.005), spot, segs=(8, 4)), "head")
+        self.eyes(hc, r, eyew, iris, eyew, spread=0.05, size=(0.03, 0.034), z=0.016, lash=lash)
+        for s, x in SIDES:
+            self.add(chain(f"Brow{s}", [hc + Vector((0.022 * x, -0.112, 0.074)), hc + Vector((0.056 * x, -0.106, 0.09)), hc + Vector((0.09 * x, -0.082, 0.078))], [0.006, 0.008, 0.004], lash, seg=8), "head")
+        self.face(hc, r, skin, self.mat("lips", "#8a3a30", roughness=0.45), nose=0.013, smile=0.007, width=0.026, out=0.005)
+        # tousled ginger hair
+        self.add(blob("HairCap", hc + Vector((0, 0.02, 0.035)), (0.13, 0.134, 0.122), hair, (22, 14), keep=lambda co: co.z > hc.z + 0.045 or co.y > hc.y + 0.03), "head")
+        for k, (dx, dy, dz, rad) in enumerate(((0.08, -0.07, 0.1, 0.04), (0.0, -0.09, 0.11, 0.045), (-0.075, -0.075, 0.1, 0.04), (0.04, -0.02, 0.15, 0.05), (-0.05, 0.0, 0.15, 0.05), (0.0, 0.08, 0.12, 0.055), (0.1, 0.04, 0.06, 0.04), (-0.1, 0.04, 0.06, 0.04))):
+            self.add(blob(f"Tuft{k}", hc + Vector((dx, dy, dz)), (rad, rad, rad * 0.85), hair, (12, 8)), "head")
+        self.add(blob("HairBack", hc + Vector((0, 0.065, -0.02)), (0.112, 0.08, 0.09), hair, (16, 10)), "head")
+        # signature: a gold circlet with a small wing rising back from each temple
+        cz = hc.z + 0.07
+        circ = [Vector((0.127 * math.cos(a), hc.y + 0.13 * math.sin(a), cz + 0.012 * math.sin(a))) for a in [2 * math.pi * k / 32 for k in range(33)]]
+        self.add(chain("Circlet", circ, [0.007] * len(circ), gold, seg=6), "head")
+        for s, x in SIDES:
+            root = Vector((0.13 * x, hc.y + 0.01, cz))
+            for k, (ln, up) in enumerate(((0.15, 0.85), (0.125, 0.55), (0.1, 0.25))):
+                d = Vector((0.35 * x, 0.6, up)).normalized()
+                self.add(tube(f"HeadWing{s}{k}", root + Vector((0, 0.01 * k, -0.01 * k)), root + Vector((0, 0.01 * k, -0.01 * k)) + d * ln, [(0, 0.017, 0.005), (0.6, 0.021, 0.005), (1, 0.002, 0.002)], gold, seg=6, side=(1, 0, 0)), "head")
+        self.joints_fill(neck=(skin, 0.04), shoulder=(tunic, 0.046), elbow=(skin, 0.036), wrist=(skin, 0.032), hip=(legs, 0.064), knee=(legs, 0.05))
+
+
 class ForgeConcept(Forge):
     """Brannoc in the concept sheet's shape: an inverted-triangle torso, a head sunk into the shoulders, smoking chimney
     stacks on the shoulders, fists as big as his head, a welding mask with one glowing slit."""
@@ -4483,7 +4918,9 @@ FIGURES = {"forge": ForgeConcept, "storm": StormConcept, "forge_a": Forge, "stor
            "balloon": Balloon, "cat": Cat, "ledger": Ledger, "mime": Mime,
            "sumo": Sumo, "chef": Chef, "referee": Referee, "janitor": Janitor,
            "courier": Courier, "yarn": Yarn, "weather": Weather, "mole": Mole,
-           "sheep": Sheep, "door": Door, "magic": Magic, "pim": Pim, "pom": Pom}
+           "sheep": Sheep, "door": Door, "magic": Magic, "pim": Pim, "pom": Pom,
+           # the restyle (pipeline/designs/heroes-restyle.md), exported as <theme>_v3.glb beside the _v2 models
+           "weather_v3": WeatherMythic, "sumo_v3": SumoMythic, "courier_v3": CourierMythic}
 
 
 def _reload():
@@ -4500,9 +4937,9 @@ def build(name, reload=True):
 
 
 def export(name, keep=False, reload=True):
-    """Build a figure and export it to public/models/heroes/<name>_v2.glb (meshopt, skinned)."""
+    """Build a figure and export it to public/models/heroes/<name>_v2.glb (meshopt, skinned); a `<theme>_v3` name keeps its own."""
     coll, f = build(name, reload)
-    path = os.path.join(OUT, f"{name}_v2.glb")
+    path = os.path.join(OUT, f"{name}.glb" if name.endswith("_v3") else f"{name}_v2.glb")
     if bpy.context.object and bpy.context.object.mode != "OBJECT":
         bpy.ops.object.mode_set(mode="OBJECT")
     bpy.ops.object.select_all(action="DESELECT")

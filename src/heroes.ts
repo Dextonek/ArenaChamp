@@ -131,7 +131,8 @@ export interface HeroKit {
 
 /**
  * Each hero's rigged figure, the same one in fights and on the Heroes page. _v2: the current style (blender/heroes/moba_figures.py);
- * the others are still the first style (blender/heroes/hero_figures.py).
+ * _v3: the new heroes restyled to the game's look (pipeline/designs/heroes-restyle.md), the _v2 file kept beside it; the others
+ * are still the first style (blender/heroes/hero_figures.py).
  */
 const MODELS: Record<string, string> = {
   Vesper: 'models/heroes/blood_v2.glb',
@@ -160,15 +161,15 @@ const MODELS: Record<string, string> = {
   'Professor Puff': 'models/heroes/balloon_v2.glb',
   'Sir Whiskers': 'models/heroes/cat_v2.glb',
   'Mr. Ledger': 'models/heroes/ledger_v2.glb',
-  'Big Yoko': 'models/heroes/sumo_v2.glb',
+  'Big Yoko': 'models/heroes/sumo_v3.glb',
   Mum: 'models/heroes/mime_v2.glb',
   'Referee Whistler': 'models/heroes/referee_v2.glb',
   'Madame Cleaver': 'models/heroes/chef_v2.glb',
-  Pip: 'models/heroes/courier_v2.glb',
+  Pip: 'models/heroes/courier_v3.glb',
   Gus: 'models/heroes/janitor_v2.glb',
   Mabel: 'models/heroes/mole_v2.glb',
   'Grandma Ironknit': 'models/heroes/yarn_v2.glb',
-  'Barry Cloudsley': 'models/heroes/weather_v2.glb',
+  'Barry Cloudsley': 'models/heroes/weather_v3.glb',
   Bo: 'models/heroes/sheep_v2.glb',
   'The Great Zambini': 'models/heroes/magic_v2.glb',
   Wick: 'models/heroes/door_v2.glb',
@@ -178,6 +179,8 @@ const MODELS: Record<string, string> = {
  * The size each hero's hits are judged with, measured from its model (2026-11-04: the width 90% of its body fits in, and the
  * height 99% of it does). `radius`: half that width plus 0.08 m, at least 0.38, so a bolt that looks like it touched does and one
  * that looks like it passed does. `height`: how high a mouse ray can pick it.
+ * The _v3 restyles (2026-11-09) keep the radius of the body they replace (the same build under new clothes); Barry's height
+ * moved up by his new staff (as Kaia's and Sefu's count theirs), Pip's by his taller head.
  */
 export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Vesper: { radius: 0.41, height: 2.35 }, Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
@@ -190,8 +193,8 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
   'Sir Whiskers': { radius: 0.49, height: 2.39 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
   'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.58 }, 'Referee Whistler': { radius: 0.41, height: 2.33 },
-  'Madame Cleaver': { radius: 0.58, height: 2.63 }, Pip: { radius: 0.39, height: 2.33 }, Gus: { radius: 0.55, height: 2.39 },
-  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.54, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 2.45 },
+  'Madame Cleaver': { radius: 0.58, height: 2.63 }, Pip: { radius: 0.39, height: 2.36 }, Gus: { radius: 0.55, height: 2.39 },
+  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.54, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
   Bo: { radius: 0.53, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
   Wick: { radius: 0.41, height: 2.44 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
 };

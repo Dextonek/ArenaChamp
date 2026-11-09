@@ -514,7 +514,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: sumo
 
-4 effects. Big Yoko, the Sumo. Hero kit, see [Sumo](heroes/sumo.md).
+4 effects. Big Yoko, the Mountain. Hero kit, see [Sumo](heroes/sumo.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -558,7 +558,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: courier
 
-4 effects. Pip, the last courier. Hero kit, see [Courier](heroes/courier.md).
+4 effects. Pip, the Wingfoot. Hero kit, see [Courier](heroes/courier.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -602,7 +602,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: weather
 
-4 effects. Barry Cloudsley, the Weatherman. Hero kit, see [Weather](heroes/weather.md).
+4 effects. Barry Cloudsley, the Sky Augur. Hero kit, see [Weather](heroes/weather.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
