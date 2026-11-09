@@ -375,6 +375,7 @@ function howToFight() {
     el('li', {}, 'Best of three: the first to win two rounds takes the match.'),
   ) : el('ul', { class: 'how' },
     el('li', {}, el('b', {}, 'Right click'), ' the ground to walk (hold to keep walking), or an enemy to attack it.'),
+    el('li', {}, el('b', {}, 'A then click'), ' attack-moves: it hits the enemy you click near, or walks there and attacks whoever comes in range. ', el('b', {}, 'S'), ' stops.'),
     el('li', {}, el('b', {}, 'Q W E R'), ' aim a spell, click to cast. R is the ultimate.'),
     el('li', {}, el('b', {}, 'Right click / Esc'), ' cancels the aim.'),
     el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),

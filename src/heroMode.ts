@@ -10,7 +10,7 @@ import { traitFor, type TraitRuntime } from './traits';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
-import { bankPath, stopsAtCover, type Obstacle } from './obstacles';
+import { bankPath, contains, stopsAtCover, type Obstacle } from './obstacles';
 import { isOwnWall } from './traits/mime';
 
 /** What hero mode needs from main.ts. */
@@ -33,6 +33,7 @@ const ARC_SEGS = 24;
 const HOVER_PICK = TOUCH ? 3.2 : 2.2; // how close to the cursor an enemy counts as hovered (a fingertip is wider)
 const BODY_PICK = 0.85; // how close to a figure's upright body the mouse ray must pass for the mouse to be on it (m)
 const BODY_HEIGHT = 2.3;
+const COVER_STEP = 0.1; // how finely the mouse ray is walked down a pillar or wall to find where it meets it (m of height)
 const MOVE_MARK = '#5dff9a'; // the order marker: green on the ground, red on an enemy
 const ATTACK_MARK = '#ff4a3a';
 const AIM_PALE = '#e6e1d6'; // the range ring and, on a coloured kit, whatever cover blocks
@@ -98,6 +99,8 @@ export class HeroMode implements TouchTarget {
   private snapCamera = false;
   private mouse = new THREE.Vector2(2, 2);
   private cursor = new THREE.Vector3();
+  /** The mouse is on a pillar or a wall: where the ray meets it (inside it), for walk orders. Null on open floor. */
+  private walkSpot: THREE.Vector3 | null = null;
   private hovered: Enemy | null = null;
   /** The enemy the mouse is on, aiming or not (src/duel.ts outlines it). */
   private hoverFoe: Enemy | null = null;
@@ -276,25 +279,24 @@ export class HeroMode implements TouchTarget {
       // The click itself says where the cursor is (a click can come without a move before it).
       this.setMouse(e);
       this.updateCursor();
-      if (e.button === 0) {
-        if (this.aiming >= 0) this.confirm();
-        else if (this.attackArmed) this.attackClick();
+      // As in League: a click on an enemy (the sword cursor) attacks it; on the ground it walks, and held it keeps walking.
+      // Either button: the left one walked into the enemy before, under a cursor that said it would attack.
+      const smart = () => {
+        const enemy = this.enemyUnderMouse();
+        if (enemy && this.attacksEnabled) this.attackOrder(enemy);
         else {
           this.order();
           this.heldOrder = true;
         }
+      };
+      if (e.button === 0) {
+        if (this.aiming >= 0) this.confirm();
+        else if (this.attackArmed) this.attackClick();
+        else smart();
       } else if (e.button === 2) {
         if (this.aiming >= 0) this.cancelAim();
         else if (this.attackArmed) this.disarm();
-        else {
-          // As in League: right-click on an enemy attacks it; on the ground it walks, and held it keeps walking.
-          const enemy = this.enemyUnderMouse();
-          if (enemy && this.attacksEnabled) this.attackOrder(enemy);
-          else {
-            this.order();
-            this.heldOrder = true;
-          }
-        }
+        else smart();
       }
     });
     window.addEventListener('pointerup', () => { this.heldOrder = false; });
@@ -493,7 +495,7 @@ export class HeroMode implements TouchTarget {
     if (!this.touchAiming) this.updateCursor();
     if (!TOUCH) this.updateHover();
 
-    if (this.locked) { this.pending = null; this.moveTo = null; this.clearAttack(); if (this.aiming >= 0) this.cancelAim(); }
+    if (this.locked) { this.pending = null; this.moveTo = null; this.clearAttack(); this.disarm(); if (this.aiming >= 0) this.cancelAim(); }
     // The joystick: keep a walk order a step ahead in its direction (drops the attack, like a click). A cast that
     // walks into range or sight first goes on: the stick takes over again once it fires.
     if (this.steering && !this.pending && !this.locked && !this.spectate && !arena.isDashing(arena.caster)) {
@@ -501,7 +503,7 @@ export class HeroMode implements TouchTarget {
       this.moveTo = hero.clone().addScaledVector(this.steering, 1.5);
     }
     if (this.heldOrder && !this.pending && this.aiming < 0 && !this.locked && !this.spectate && !arena.isDashing(arena.caster)) {
-      this.moveTo = this.cursor.clone();
+      this.moveTo = this.walkPoint;
     }
     this.attacker.update(dt);
     this.attackFx.update(dt);
@@ -693,20 +695,54 @@ export class HeroMode implements TouchTarget {
     return arcBendFor(hero, point, axis.normalize(), this.arcRest, this.arcFlip);
   }
 
-  /** Ground point under the mouse (the hero's feet if the ray misses the ground). */
+  /** Ground point under the mouse (the hero's feet if the ray misses the ground), or the foot of the cover it is on. */
   private updateCursor() {
     const cam = this.host.camera;
     cam.updateMatrixWorld();
     this.raycaster.setFromCamera(this.mouse, cam);
     if (!this.raycaster.ray.intersectPlane(this.plane, this.cursor)) this.cursor.copy(this.host.arena.caster.group.position);
     this.cursor.y = 0;
+    this.cursorOffCover();
+  }
+
+  /**
+   * The mouse on a pillar or a wall: the ray meets the floor behind it (a 4.5 m pillar hides about 3 m of floor), so a
+   * click there sent the hero round to the far side. Aims go to the foot of the face the mouse is on instead (where the
+   * ray first meets the cover, moved out of it toward the camera). A walk goes to the spot where the ray meets it, inside
+   * the cover: the route (src/nav.ts) then stops the hero against it on the side it comes from, not round the back.
+   */
+  private cursorOffCover() {
+    this.walkSpot = null;
+    const cover = this.host.arena.obstacles;
+    const dir = this.raycaster.ray.direction;
+    if (!cover?.length || dir.y > -0.05) return;
+    // The ray at height y stands over the floor at cursor + y·(sx, sz): nearer the camera the higher it is.
+    const sx = dir.x / dir.y, sz = dir.z / dir.y;
+    const cx = this.cursor.x, cz = this.cursor.z;
+    let top = 0, hit: Obstacle | null = null;
+    for (const o of cover) {
+      // The first cover the ray meets is the one it meets highest up.
+      for (let y = o.height; y > top; y -= COVER_STEP) {
+        if (contains(o, cx + y * sx, cz + y * sz)) { top = y; hit = o; break; }
+      }
+    }
+    if (!hit) return;
+    this.walkSpot = new THREE.Vector3(cx + top * sx, 0, cz + top * sz);
+    let y = top;
+    while (contains(hit, cx + y * sx, cz + y * sz) && y < top + 30) y += COVER_STEP;
+    this.cursor.set(cx + y * sx, 0, cz + y * sz);
+  }
+
+  /** Where a walk order at the mouse goes: the cursor, or the spot inside the cover the mouse is on. */
+  private get walkPoint() {
+    return (this.walkSpot ?? this.cursor).clone();
   }
 
   // --- orders -------------------------------------------------------------------------------------------
 
   /** Walks there, as a click on the ground does (a tap on something in the world that isn't the ground). */
   walkTo(x: number, z: number) {
-    if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
+    if (this.locked || this.spectate) return;
     this.pending = null;
     this.clearAttack();
     this.moveTo = new THREE.Vector3(x, 0, z);
@@ -728,13 +764,23 @@ export class HeroMode implements TouchTarget {
   }
   private walkOnly = false;
 
-  /** Click on the ground (not aiming): walk there, and forget a pending cast. */
+  /**
+   * Click on the ground (not aiming): walk there, and forget a pending cast. Mid-dash (or mid-knockback) the order is
+   * kept and the hero walks once it lands, as in League: a click during a dash used to be lost.
+   */
   private order() {
-    if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
+    if (this.locked || this.spectate) return;
     this.pending = null;
     this.clearAttack();
-    this.moveTo = this.cursor.clone();
-    this.mark(this.cursor, MOVE_MARK);
+    this.moveTo = this.walkPoint;
+    this.mark(this.walkGoal(this.moveTo), MOVE_MARK);
+  }
+
+  /** Where a walk to `to` ends: `to` on open floor, else the spot the route stops at (against cover, or at the ring's edge). */
+  private walkGoal(to: THREE.Vector3) {
+    if (!this.walkSpot) return to;
+    const arena = this.host.arena;
+    return arena.route(arena.caster.group, arena.caster.group.position, to).goal;
   }
 
   /** The order marker at `at`. */
@@ -772,9 +818,9 @@ export class HeroMode implements TouchTarget {
 
   // --- basic attacks -------------------------------------------------------------------------------------
 
-  /** Right-click on an enemy: walk into range and keep attacking it until another order. */
+  /** A click on an enemy: walk into range and keep attacking it until another order (kept through a dash, like a walk). */
   private attackOrder(enemy: Enemy) {
-    if (this.locked || this.spectate || this.host.arena.isDashing(this.host.arena.caster)) return;
+    if (this.locked || this.spectate) return;
     this.pending = null;
     this.attackMove = null;
     this.attackTarget = enemy;
@@ -782,17 +828,25 @@ export class HeroMode implements TouchTarget {
     this.mark(enemy.group.position, ATTACK_MARK);
   }
 
-  /** A left-click after A: attack the enemy under the cursor, else walk there attacking the first enemy in range. */
+  /** Who an A-click now would attack: the enemy the mouse is on, else the one nearest the cursor (within `HOVER_PICK`). */
+  private armedPick() {
+    return this.enemyUnderMouse() ?? this.enemyNearCursor();
+  }
+
+  /**
+   * A left-click after A: attack the enemy at the cursor (the one ringed while A is held), else walk there and attack
+   * the first enemy that comes in range (the one nearest the click if several are).
+   */
   private attackClick() {
-    const enemy = this.enemyNearCursor();
+    const enemy = this.armedPick();
     this.disarm();
     if (enemy) { this.attackOrder(enemy); return; }
     if (this.locked || this.spectate) return;
     this.pending = null;
     this.attackTarget = null;
-    this.attackMove = this.cursor.clone();
-    this.moveTo = this.cursor.clone();
-    this.mark(this.cursor, ATTACK_MARK);
+    this.attackMove = this.walkPoint;
+    this.moveTo = this.attackMove.clone();
+    this.mark(this.walkGoal(this.moveTo), ATTACK_MARK);
   }
 
   /** S: stand still (drops the walk, the attack and a pending cast). */
@@ -815,21 +869,30 @@ export class HeroMode implements TouchTarget {
     this.attacker.cancel();
   }
 
-  /** Each frame: chase the attack target and attack it in range; on an attack-move, pick up the first enemy in range. */
+  /**
+   * Each frame: chase the attack target and attack it in range. On an attack-move, pick up an enemy in range (the one
+   * nearest the click), and once it is gone (down, or out of reach of attacks) walk on to the click and pick up the next.
+   */
   private updateAttack(hero: THREE.Vector3) {
     if (!this.attacksEnabled) { this.clearAttack(); return; }
-    if (this.attackMove && !this.attackTarget) {
-      let best: Enemy | null = null, bd = this.attacker.range;
+    const goal = this.attackMove;
+    if (goal && !this.attackTarget) {
+      let best: Enemy | null = null, bd = Infinity;
       for (const f of this.host.arena.liveFoes()) {
-        const d = flatDist(hero, f.pos);
-        if (d <= bd && this.attacker.inRange(hero, f.pos)) { bd = d; best = f.figure; }
+        if (!this.attacker.inRange(hero, f.pos)) continue;
+        const d = flatDist(goal, f.pos);
+        if (d < bd) { bd = d; best = f.figure; }
       }
-      if (best) { this.attackTarget = best; this.attackMove = null; }
-      else if (!this.moveTo) this.attackMove = null;
+      if (best) { this.attackTarget = best; this.host.arena.setTarget(best); }
+      else if (!this.moveTo) this.attackMove = null; // arrived, or the walk gave up
     }
     if (!this.attackTarget) return;
     const at = this.targetPos({ enemy: this.attackTarget });
-    if (!at) { this.attackTarget = null; return; }
+    if (!at) {
+      this.attackTarget = null;
+      if (this.attackMove) this.moveTo = this.attackMove.clone();
+      return;
+    }
     if (this.attacker.inRange(hero, at)) {
       this.moveTo = null;
       if (this.rooted <= 0) this.attacker.start(this.attackTarget);
@@ -1000,9 +1063,12 @@ export class HeroMode implements TouchTarget {
     return found;
   }
 
-  /** Each frame: tells who the mouse is on (an outline, in the duel) and shows the attack cursor on an enemy. */
+  /**
+   * Each frame: tells who the mouse is on (an outline, in the duel) and shows the attack cursor on an enemy. With A
+   * held it is whoever the A-click would attack, which forgives a mouse a little off the body.
+   */
   private updateHover() {
-    const on = this.spectate || this.locked ? null : this.enemyUnderMouse();
+    const on = this.spectate || this.locked ? null : this.attackArmed ? this.armedPick() : this.enemyUnderMouse();
     if (on !== this.hoverFoe) {
       this.hoverFoe = on;
       this.onHover?.(on);
@@ -1049,20 +1115,26 @@ export class HeroMode implements TouchTarget {
     // A curving skillshot (`aim: 'arc'`): the strip bends from the hero to the cursor, the way the cast will fly.
     const arc = aiming && !single && spell?.aim === 'arc';
 
-    this.rangeRing.visible = aiming;
-    if (spell) {
+    // A pressed (attack-move armed): the basic attack's reach round the hero, as in League, and a red ring on the enemy
+    // the click would attack (pale while it is out of reach: the hero walks up to it first).
+    const armed = this.attackArmed && !aiming && !this.locked;
+    this.rangeRing.visible = aiming || armed;
+    if (spell || armed) {
       this.rangeRing.position.set(hero.x, 0.05, hero.z);
-      this.rangeRing.scale.setScalar(spell.range);
+      this.rangeRing.scale.setScalar(spell ? spell.range : this.attacker.range);
     }
 
-    this.hovered = aiming && single ? this.enemyNearCursor() : null;
+    this.hovered = aiming && single ? this.enemyNearCursor() : armed ? this.armedPick() : null;
     this.hoverRing.visible = !!this.hovered;
     if (this.hovered) {
       const p = this.hovered.group.position;
       this.hoverRing.position.set(p.x, 0.07, p.z);
-      const inRange = spell ? flatDist(hero, p) <= spell.range : true;
-      const castable = inRange && this.host.arena.lineOfSight(hero, p);
-      (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(castable ? this.kit.accent : blockedTint(this.kit.accent));
+      if (armed) (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(this.attacker.inRange(hero, p) ? ATTACK_MARK : AIM_PALE);
+      else {
+        const inRange = spell ? flatDist(hero, p) <= spell.range : true;
+        const castable = inRange && this.host.arena.lineOfSight(hero, p);
+        (this.hoverRing.material as THREE.MeshBasicMaterial).color.set(castable ? this.kit.accent : blockedTint(this.kit.accent));
+      }
     }
 
     // Single target: a strip from the hero to the hovered enemy (else toward the cursor), clamped to range.
@@ -1205,7 +1277,7 @@ export class HeroMode implements TouchTarget {
     const names = document.createElement('div');
     names.innerHTML = `<div style="font:700 16px ui-serif,Georgia,serif;letter-spacing:0.5px">${kit.name}</div>` +
       `<div style="font:500 11px ui-sans-serif,system-ui;opacity:0.7">${kit.title}</div>` +
-      `<div style="margin-top:6px;font:500 10px ui-sans-serif,system-ui;opacity:0.55;line-height:1.4">right-click: walk / attack · Q W E R: aim<br>click: cast · right-click / Esc: cancel</div>`;
+      `<div style="margin-top:6px;font:500 10px ui-sans-serif,system-ui;opacity:0.55;line-height:1.4">right-click: walk / attack · A+click: attack-move<br>Q W E R: aim · click: cast · right-click / Esc: cancel</div>`;
     if (this.host.nextKit) {
       portrait.style.cursor = 'pointer';
       portrait.title = 'next hero';
