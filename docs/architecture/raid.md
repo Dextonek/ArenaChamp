@@ -80,7 +80,7 @@ by the hub online and by `LocalLink` alone. Only the screen that runs the brain 
 | Warden, Awake | Break the ray | Pillar Fall's stones stay 8 s as cover. Keep one between you and him when Sun Ray comes | It breaks on the stone: +40 on the gauge |
 | Warden, High Noon on | Turn the light | Gathering Noon fills for 8 s while sun shards fall 9 m from the altar. Walk over one to carry it (15 % slower, it glows over your head), and walk it to the altar. One alone, one each for two | No Noon. He kneels and takes 5 % of his max HP |
 | Warden, Last Light | Anchors | As before | |
-| Ash, in the ring | Hide behind a pillar | His Charge comes every 12 s he is in the ring and kills whoever it reaches. Get one of the six pillars between you and him | He crashes into it and it breaks; he kneels 5 s (a stun: the gauge keeps what it had) |
+| Ash, in the ring | Hide behind a pillar | His Charge comes every 14 s he is in the ring and kills whoever it reaches. Get one of the four pillars between you and him | He crashes into it and it breaks; he kneels 5 s (a stun: the gauge keeps what it had) |
 | Ember, any | Burn your own | Carry Marked onto whichever of them is in the ring. The brain says in the landing cast whether the boss stood under it | 4 % of max HP and +40 on the gauge |
 | Together | Seal the vent | The vent opens at 6 s, then again 25 s later. Stand on it for 4 s, hits or not, casting stops it | The lava waits 20 s longer, and +40 on the gauge |
 
@@ -220,7 +220,7 @@ now and then. Alone 3,300 HP, for two 7,100. The one in the ring aims at the nea
 | Who | Move | Shown | Costs | What you do |
 |---|---|---|---|---|
 | Ash | Ground Slam | 1.5 s | 18 % | Back away from the 5 m circle |
-| | Charge | 3.5 s, first at 6 s, then every 12 s in the ring | Kills | He fixes on one of you and runs through where you are then. Only a pillar stops him: get one between you and him. He breaks it and kneels 5 s |
+| | Charge | 4.5 s, first at 6 s, then every 14 s in the ring | Kills | He fixes on one of you and runs through where you are then. Only a pillar stops him: get one between you and him. He breaks it and kneels 5 s |
 | | Drag Under | 2 s | 16 % | It pulls you in, and a ring burns far from him. Stay close, then walk away before the next thing |
 | | Knuckle Quake | 1.8 s | 15 % | Two cracks from his fists cross where you stand. Step aside, or in close between them |
 | | Burning Trail | None | 4 % a second | Puddles where he walked, for 15 s. Plan your route |
@@ -240,16 +240,16 @@ above all during a cast, when she stands still (`BossForm.backAt`). She goes rou
 what counts is its second step, at the spot the brain read. Only the brain's screen moves Ash down his Charge (`BossMove.act`), and it says in
 the cast whether he hit a pillar, so each screen doesn't judge that for itself. The one on the rim is a `HeroFigure` the duel only draws.
 
-**The six pillars and the Charge** (user, 2026-11-08: "6 pillars noticeable from others, a charge attack that targets the player, the player
+**The four pillars and the Charge** (user, 2026-11-08: "6 pillars noticeable from others, a charge attack that targets the player, the player
 goes behind the pillar, the boss gets stunned and there is a window to damage him, if he hits you it's a one-shot, so kill him before all the
-pillars are down").
+pillars are down"; 2026-11-09, after six outlasted most fights: "fewer pillars (4)").
 
-- **The pillars** (`PILLARS` in `src/arenas/cinderpit.ts`, drawn by `src/arenas/cinderPillars.ts`) are the pit's only cover: six at 7.5 m
-  from the vent, between where the Coal Hearts rise. Six-sided basalt with veins and a crown of pale blue-white sun-glass, the one cool colour
+- **The pillars** (`PILLARS` in `src/arenas/cinderpit.ts`, drawn by `src/arenas/cinderPillars.ts`) are the pit's only cover: four at 7.5 m
+  from the vent, on the diagonals. Six-sided basalt with veins and a crown of pale blue-white sun-glass, the one cool colour
   in the pit, with a glass ring on the floor round each. A pillar the Charge hits leaves the cover list (`PlayContext.breakCover`, through
-  `Duel.removeCover`), topples away from Ash (`ArenaScene.coverFall`) and breaks into a stump and chunks. A new fight stands all six up again
+  `Duel.removeCover`), topples away from Ash (`ArenaScene.coverFall`) and breaks into a stump and chunks. A new fight stands all four up again
   (`resetShift`). The bar shows a pip for each one standing (`BossDef.pillars`, `BossHud.setPillars`), red when one is left.
-- **The wind-up** (3.5 s at tier 1, the cast bar: time to reach a pillar from the rim): he turns to follow the one he fixed on (`BossMove.tracks`) and rakes the floor. A lane of
+- **The wind-up** (4.5 s at tier 1, the cast bar: time to reach the far side of a pillar from anywhere; with four 90 degrees apart that can be 15 m from the rim): he turns to follow the one he fixed on (`BossMove.tracks`) and rakes the floor. A lane of
   chevrons runs from him through that hero to the rim, cut at the first pillar in its way, and that pillar lights up blue: you are safe. The
   floor the pillars hide from him shows in gold (`ShadowFloor`), as Noon's shadows do.
 - **The run**: the second step is aimed by the brain at where the hero is then, so stepping aside doesn't save you; only a pillar does. He
@@ -258,7 +258,7 @@ pillars are down").
   and the run's Stubborn save you. In front of a pillar is no cover: he runs through you and into it.
 - **The crash**: the brain's screen asks for the `charge` reward, a **stun** (`RAID_REWARDS`, `stun: 5`): the hub's kneel event for 5 s, which
   leaves the stagger gauge as it is (`raidStun` in `server/hub.mjs`). He kneels and takes 50 % more.
-- **The clock**: the Charge comes before any other move as soon as it is ready (`BossMove.due`): first 6 s into the fight, then every 12 s,
+- **The clock**: the Charge comes before any other move as soon as it is ready (`BossMove.due`): first 6 s into the fight, then every 14 s,
   but only while Ash is in the ring (the first phase, and his turns in Together). A slow fight runs out of pillars, and after that every
   Charge kills the one it fixes on.
 - **The autopilot**: the first step carries a warning (`Threat.warn`) whose zone is everywhere no standing pillar hides from Ash. It never
@@ -271,7 +271,7 @@ the target and not from the vent. Ash's Charge only comes from the ring, so he h
 ## The lairs
 
 The boss rooms are where the bosses live, not duel arenas (user, 2026-11-07). Neither is in `ARENAS`, so no duel picks them. **The Sun Court's
-cover is where it was** (spots and sizes): the moves were tuned on it. The Cinder Pit's became the six pillars of Ash's Charge (2026-11-08). Each has its own prop kit, loaded with `loadKit` (`src/arenas/temple.ts`), built by
+cover is where it was** (spots and sizes): the moves were tuned on it. The Cinder Pit's became the four pillars of Ash's Charge (2026-11-08, six at first). Each has its own prop kit, loaded with `loadKit` (`src/arenas/temple.ts`), built by
 `blender/arenas/sanctum_props.py` and `den_props.py`; sheets in `docs/arenas/`.
 
 **The Sun Court, the Warden's sanctum** (`src/arenas/suncourt.ts`). Radius 16 against a duel ring's 12, under an eclipse. Six screen walls at
@@ -282,7 +282,7 @@ zone to stand in). Past the north gate his empty throne; obelisks and broken sun
 motes of light rising.
 
 **The Cinder Pit, Ash and Ember's den** (`src/arenas/cinderpit.ts`). Radius 16, a floor of black glass plates over the buried sun, its light
-coming up through thin seams, brightest in the middle, and Ash's claw marks across it. Its only cover is the six pillars of sun-glass at 7.5 m
+coming up through thin seams, brightest in the middle, and Ash's claw marks across it. Its only cover is the four pillars of sun-glass at 7.5 m
 (above), which Ash's Charge breaks; they took the place of the spires, slag walls and anvil stones on 2026-11-08. Ember's lantern perches on the lip at the five spots the one on the rim can
 stand (their tops at 0.7 m). Out in the lava the fallen sun's shard, the ribs of something that burned, lantern posts on the far side, rocks;
 embers rising.
