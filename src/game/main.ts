@@ -202,7 +202,10 @@ function render() {
   root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   if (scrollToHero) {
     scrollToHero = false;
-    root.querySelector('.hero-row.on')?.scrollIntoView({ block: 'start' });
+    // Just under the header, which wraps to three lines on a phone.
+    const row = root.querySelector<HTMLElement>('.hero-row.on');
+    const head = root.querySelector<HTMLElement>('header.top');
+    if (row) root.scrollTop += row.getBoundingClientRect().top - (head?.offsetHeight ?? 0) - 8;
   }
 }
 

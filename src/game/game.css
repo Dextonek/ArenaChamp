@@ -175,9 +175,7 @@
 .hs-note { flex: 1; min-width: 0; }
 .hs-find { min-width: 300px; }
 .hs-search { display: flex; align-items: center; gap: 12px; min-width: 300px; padding: 7px 8px 7px 14px; border: 1px solid var(--gold); border-radius: 10px; }
-.hs-search .qtext { flex: 1; }
-.hero-row { scroll-margin-top: 64px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-top: 14px; }
+.hs-search .qtext { flex: 1; }.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-top: 14px; }
 .tile { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 .tile-v { font: 700 22px ui-serif, Georgia, serif; color: var(--gold-hi); min-height: 30px; display: flex; align-items: center; }
 .tile-v .fav { font-size: 16px; }
