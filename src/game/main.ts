@@ -167,6 +167,9 @@ function go(screen: Screen) {
 let shownScreen: Screen | null = null;
 
 function render() {
+  // A pane that scrolls inside itself (the Play screen's roster) keeps its place when the same screen is drawn again.
+  const kept = new Map<string, number>();
+  if (state.screen === shownScreen) root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => kept.set(e.dataset.keepScroll!, e.scrollTop));
   root.replaceChildren();
   if (state.screen !== shownScreen) {
     shownScreen = state.screen;
@@ -180,8 +183,8 @@ function render() {
     return;
   }
   root.append(header());
-  const body = el('main', { class: 'screen' });
   const s = state.screen;
+  const body = el('main', { class: 'screen' });
   body.append(
     s === 'heroes' ? heroesScreen()
       : s === 'profile' ? profileScreen(state.profile)
@@ -192,8 +195,19 @@ function render() {
                 : menuScreen(),
   );
   root.append(body);
-  if (state.queue.on) root.append(queueBar());
+  // The Play screen (also shown for a lobby that has closed) is wider, and shows the search in its own bar.
+  const play = !!body.querySelector(':scope > .hs');
+  body.classList.toggle('wide', play);
+  if (state.queue.on && !play) root.append(queueBar());
+  root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
+  if (scrollToHero) {
+    scrollToHero = false;
+    root.querySelector('.hero-row.on')?.scrollIntoView({ block: 'start' });
+  }
 }
+
+/** Set by the Play screen's "full kit" link: the Heroes screen opens scrolled to that hero's row. */
+let scrollToHero = false;
 
 function header() {
   const p = state.profile!;
@@ -245,51 +259,129 @@ function heroStrip() {
 
 // --- menu / play ---------------------------------------------------------------------------------------------
 
+/**
+ * Play: a hero select. The chosen hero on the left (its turning model, HP, melee or ranged, the passive and Q W E R),
+ * the roster on the right, and one bar along the bottom with Find match, Lobbies and Play vs CPU (user, 2026-11-09:
+ * "can u remade this so it will be better"). The record lives on the Profile screen and in the header.
+ */
 function menuScreen() {
   const choice = heroChoice(), hero = kitOf(choice);
-  const queued = state.queue.on;
-  return el('div', { class: 'menu' },
-    el('section', { class: 'card play' },
-      el('h2', {}, 'Play'),
-      el('p', { class: 'muted' }, 'Find a match pairs you with the next player in the queue (who picked a different hero). Or open a lobby and share its code.'),
-      chosenHero(hero),
+  preview.show(hero?.model);
+  return el('div', { class: 'hs' },
+    heroShowcase(hero),
+    el('section', { class: 'card hs-roster', 'data-keep-scroll': 'roster' },
+      el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Choose your hero'), el('span', { class: 'muted small' }, `${kits.length} heroes`)),
       heroPicker(choice, [], (n) => { setPreferredHero(n); render(); }),
-      el('div', { class: 'row play-actions three' },
-        queued
-          ? el('button', { class: 'btn', onclick: () => net.send({ t: 'queue_leave' }) }, 'Cancel search')
-          : el('button', {
-            class: 'btn primary big', disabled: !!state.lobby,
-            onclick: () => {
-              const name = hero?.name ?? randomKit().name;
-              state.queueHero = name;
-              if (!hero) toast(`Random pick: ${name}`);
-              net.send({ t: 'queue_join', hero: name });
-            },
-          }, hero ? `Find match as ${hero.name}` : 'Find match as a random hero'),
-        el('button', { class: 'btn', disabled: queued, onclick: () => go(state.lobby ? 'lobby' : 'lobbies') }, state.lobby ? 'Back to lobby' : 'Lobbies'),
-        el('button', { class: 'btn', disabled: queued || !!state.lobby, onclick: () => go('cpu') }, 'Play vs CPU'),
-      ),
+      howToFight(),
     ),
-    el('section', { class: 'card side' },
-      el('h3', {}, 'How to fight'),
-      TOUCH ? el('ul', { class: 'how' },
-        el('li', {}, 'The ', el('b', {}, 'stick'), ' on the left walks; tap the ground to walk there, tap the enemy to attack.'),
-        el('li', {}, el('b', {}, 'Tap a spell'), ' to cast it at the enemy, or ', el('b', {}, 'drag'), ' it to aim and let go to cast. The big gold one is the ultimate.'),
-        el('li', {}, 'Drag back onto the spell to cancel. The ', el('b', {}, '⚔'), ' button attacks; pinch to zoom.'),
-        el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
-        el('li', {}, 'Both heroes have 600 HP. Last one standing wins.'),
-        el('li', {}, 'Best of three: the first to win two rounds takes the match.'),
-      ) : el('ul', { class: 'how' },
-        el('li', {}, el('b', {}, 'Right click'), ' the ground to walk (hold to keep walking), or an enemy to attack it.'),
-        el('li', {}, el('b', {}, 'Q W E R'), ' aim a spell, click to cast. R is the ultimate.'),
-        el('li', {}, el('b', {}, 'Right click / Esc'), ' cancels the aim.'),
-        el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
-        el('li', {}, 'Both heroes have 600 HP. Last one standing wins.'),
-        el('li', {}, 'Best of three: the first to win two rounds takes the match.'),
-      ),
-      statTiles(state.profile!),
-    ),
+    playBar(hero),
   );
+}
+
+/** The showcase's open slot: 0 the passive, 1-4 Q W E R. It stays on the same slot from hero to hero, to compare them. */
+let shownSlot = 0;
+
+/** The Play screen's chosen hero: the turning model (the big portrait when there is none), then the kit. */
+function heroShowcase(hero: HeroKit | undefined) {
+  const card = el('section', { class: 'card hs-show' });
+  card.style.setProperty('--accent', hero?.accent ?? '#c9a24a');
+  const stage = el('div', { class: 'hs-stage' },
+    hero?.model ? preview.canvas : hero ? portrait(hero, 'portrait hs-big') : randomPortrait('portrait hs-big'));
+  if (!hero) {
+    card.append(stage, el('div', { class: 'hs-info' },
+      el('div', { class: 'hs-name' }, 'Random hero'),
+      el('div', { class: 'hs-title' }, `One of the ${kits.length} heroes, drawn when the fight starts`)));
+    return card;
+  }
+  const passive = traitFor(hero.name)?.passive;
+  const slots = [
+    { key: 'P', name: passive?.name ?? 'Passive', blurb: passive?.blurb ?? '', meta: 'Passive', ult: false, icon: portrait(hero, 'icon') },
+    ...hero.spells.map((s) => ({
+      key: s.key, name: s.name, blurb: s.blurb, ult: s.key === 'R', icon: canvasOf(96, s.icon, 'icon'),
+      meta: `${s.range > 0 ? `range ${s.range}` : 'self'} · cooldown ${s.cooldown} s`,
+    })),
+  ];
+  // On a phone the text is cut to three lines: a tap on it shows the rest.
+  const detail = el('div', { class: 'hs-detail', onclick: () => detail.classList.toggle('full') });
+  const paint = (i: number) => {
+    const s = slots[i];
+    detail.replaceChildren(
+      el('div', { class: 'hs-detail-head' },
+        el('span', { class: 'hs-key' }, s.key), el('b', {}, s.name), s.ult ? el('span', { class: 'ult-tag' }, 'ULT') : null,
+        el('span', { class: 'muted small' }, s.meta)),
+      el('div', { class: 'blurb' }, s.blurb));
+    buttons.forEach((b, j) => b.classList.toggle('on', j === i));
+  };
+  // A mouse shows a slot while it points at it; a click or a tap keeps it open.
+  const buttons = slots.map((s, i) => el('button', {
+    class: `hs-ab${s.ult ? ' ult' : ''}`, title: s.name, 'aria-label': `${s.key}: ${s.name}`,
+    onmouseenter: () => paint(i), onmouseleave: () => paint(shownSlot),
+    onclick: () => { shownSlot = i; paint(i); },
+  }, s.icon, el('span', { class: 'key' }, s.key)));
+  paint(shownSlot);
+  // Pim and Pom: one half fights up close, the other from range.
+  const reach = hero.alt && !!hero.alt.melee !== !!hero.melee ? 'Melee and ranged' : hero.melee ? 'Melee' : 'Ranged';
+  card.append(stage,
+    el('div', { class: 'hs-info' },
+      el('div', { class: 'hs-name' }, hero.name),
+      el('div', { class: 'hs-title' }, hero.title),
+      el('div', { class: 'hs-chips' }, el('span', { class: 'chip' }, `${hero.maxHp ?? 600} HP`), el('span', { class: 'chip' }, reach))),
+    el('div', { class: 'hs-abilities' }, ...buttons),
+    detail,
+    el('button', { class: 'hs-more', onclick: () => { state.heroView = hero.name; scrollToHero = true; go('heroes'); } }, `${hero.name}'s full kit →`));
+  return card;
+}
+
+/** Along the bottom of the Play screen: Lobbies, Play vs CPU and Find match, or the search while queued. */
+function playBar(hero: HeroKit | undefined) {
+  const queued = state.queue.on;
+  const find = queued
+    ? el('div', { class: 'hs-search' },
+      el('span', { class: 'spinner' }), el('span', { class: 'qtext' }, ''),
+      el('button', { class: 'btn small', onclick: () => net.send({ t: 'queue_leave' }) }, 'Cancel'))
+    : el('button', {
+      class: 'btn primary big hs-find', disabled: !!state.lobby,
+      onclick: () => {
+        const name = hero?.name ?? randomKit().name;
+        state.queueHero = name;
+        if (!hero) toast(`Random pick: ${name}`);
+        net.send({ t: 'queue_join', hero: name });
+      },
+    }, hero ? `Find match as ${hero.name}` : 'Find match as a random hero');
+  const bar = el('div', { class: 'hs-bar' },
+    el('div', { class: 'hs-note muted small' }, state.lobby
+      ? 'You are in a lobby: go back to it, or leave it to search.'
+      : 'Find match pairs you with the next player in the queue who picked a different hero. Or open a lobby and share its code.'),
+    el('button', { class: 'btn', disabled: queued, onclick: () => go(state.lobby ? 'lobby' : 'lobbies') }, state.lobby ? 'Back to lobby' : 'Lobbies'),
+    el('button', { class: 'btn', disabled: queued || !!state.lobby, onclick: () => go('cpu') }, 'Play vs CPU'),
+    find);
+  if (queued) updateQueueText(bar);
+  return bar;
+}
+
+/** Whether "How to fight" is open: it stays as it was when a hero is picked. */
+let howOpen = false;
+
+function howToFight() {
+  const how = TOUCH ? el('ul', { class: 'how' },
+    el('li', {}, 'The ', el('b', {}, 'stick'), ' on the left walks; tap the ground to walk there, tap the enemy to attack.'),
+    el('li', {}, el('b', {}, 'Tap a spell'), ' to cast it at the enemy, or ', el('b', {}, 'drag'), ' it to aim and let go to cast. The big gold one is the ultimate.'),
+    el('li', {}, 'Drag back onto the spell to cancel. The ', el('b', {}, '⚔'), ' button attacks; pinch to zoom.'),
+    el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
+    el('li', {}, 'Last one standing wins the round. Each hero\'s HP is on its card.'),
+    el('li', {}, 'Best of three: the first to win two rounds takes the match.'),
+  ) : el('ul', { class: 'how' },
+    el('li', {}, el('b', {}, 'Right click'), ' the ground to walk (hold to keep walking), or an enemy to attack it.'),
+    el('li', {}, el('b', {}, 'Q W E R'), ' aim a spell, click to cast. R is the ultimate.'),
+    el('li', {}, el('b', {}, 'Right click / Esc'), ' cancels the aim.'),
+    el('li', {}, 'Red zones show where a spell lands: walk out before it hits to ', el('b', {}, 'dodge'), '.'),
+    el('li', {}, 'Last one standing wins the round. Each hero\'s HP is on its card.'),
+    el('li', {}, 'Best of three: the first to win two rounds takes the match.'),
+  );
+  const d = el('details', { class: 'hs-how' }, el('summary', {}, 'How to fight'), how);
+  d.open = howOpen;
+  d.addEventListener('toggle', () => { howOpen = d.open; });
+  return d;
 }
 
 /** The chosen hero with its spells, or the Random tile's icon when it is still to be drawn. */
@@ -363,8 +455,9 @@ function queueBar() {
   updateQueueText(bar);
   return bar;
 }
-function updateQueueText(bar = root.querySelector('.queue-bar')) {
-  const t = bar?.querySelector('.qtext');
+/** The search text, in the queue bar or the Play screen's own bar. */
+function updateQueueText(scope: ParentNode = root) {
+  const t = scope.querySelector('.qtext');
   if (!t) return;
   const s = Math.max(0, Math.floor((Date.now() - state.queue.since) / 1000));
   t.textContent = `Searching as ${state.queueHero || preferredHero().name} · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} · ${state.queue.size} in queue`;

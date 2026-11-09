@@ -70,7 +70,9 @@ export class HeroPreview {
     if (!this.canvas.isConnected || this.canvas.offsetParent === null) return;
     const w = this.canvas.clientWidth, h = this.canvas.clientHeight;
     if (w === 0 || h === 0) return;
-    if (this.canvas.width !== Math.floor(w * this.renderer.getPixelRatio())) {
+    // Both sides: the Play screen's stage changes height with the window, and the Heroes page's has its own.
+    const ratio = this.renderer.getPixelRatio();
+    if (this.canvas.width !== Math.floor(w * ratio) || this.canvas.height !== Math.floor(h * ratio)) {
       this.renderer.setSize(w, h, false);
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();

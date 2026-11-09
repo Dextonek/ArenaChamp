@@ -93,21 +93,90 @@
 .kit-name { font: 700 18px ui-serif, Georgia, serif; }
 .fav { display: inline-flex; align-items: center; gap: 6px; }
 
-/* menu */
-.menu { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+/* the chosen hero on the vs CPU and Raid screens */
 .chosen { display: flex; align-items: center; gap: 16px; margin: 16px 0 12px; }
 .spell-row { display: flex; gap: 6px; margin-top: 8px; }
-.picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+/* The hero grid (Play, vs CPU, Raid, a lobby, a lost round's pick): every tile the same size, a long name on two lines. */
+.picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; margin-top: 8px; }
 .pick {
-  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 10px 6px; min-width: 76px;
-  background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; color: var(--text); cursor: pointer;
-  font: 600 12px ui-sans-serif, system-ui;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 9px 4px 7px; min-width: 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, var(--panel-2)), var(--panel-2) 70%);
+  border: 1px solid var(--line); border-radius: 10px; color: var(--text); cursor: pointer;
+  font: 600 12px/1.2 ui-sans-serif, system-ui; transition: border-color 0.12s, transform 0.12s, box-shadow 0.12s;
 }
-.pick:hover:not(:disabled) { border-color: var(--accent); }
-.pick.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent); }
+.pick .portrait.sm { width: 58px; height: 58px; }
+.pick span {
+  width: 100%; min-height: 2.4em; text-align: center; overflow: hidden;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2;
+}
+.pick:hover:not(:disabled) { border-color: var(--accent); transform: translateY(-2px); }
+.pick.on {
+  border-color: var(--accent); color: #fff3dc;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 26%, var(--panel-2)), var(--panel-2) 85%);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px color-mix(in srgb, var(--accent) 40%, transparent);
+}
 .pick:disabled { opacity: 0.3; cursor: not-allowed; }
 .how { margin: 8px 0 18px; padding-left: 18px; }
 .how li { margin: 4px 0; }
+
+/* Play: the hero select (src/game/main.ts, menuScreen). On a desktop it fits the window: the showcase on the left,
+   the roster on the right scrolling inside itself, the bar along the bottom. Narrower, it stacks and the page scrolls
+   with the bar pinned to the bottom of the screen. */
+.screen.wide { max-width: 1520px; padding-bottom: 18px; }
+.hs {
+  display: grid; grid-template-columns: minmax(340px, 30%) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; gap: 16px;
+  height: calc(100vh - 100px); height: calc(100dvh - 100px); min-height: 600px;
+}
+.hs-show {
+  display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 15%, rgba(14, 11, 16, 0.92)), var(--panel) 55%);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+}
+.hs-stage {
+  flex: 1 1 auto; min-height: 200px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: radial-gradient(ellipse at 50% 35%, color-mix(in srgb, var(--accent) 28%, #14101a), #07060a 75%);
+}
+.hs-stage .hero-preview { display: block; }
+.portrait.hs-big { width: 168px; height: 168px; border-width: 3px; box-shadow: 0 0 40px color-mix(in srgb, var(--accent) 35%, transparent); }
+.hs-name { font: 700 30px/1.1 ui-serif, Georgia, serif; color: #fff3dc; text-shadow: 0 0 22px color-mix(in srgb, var(--accent) 55%, transparent); }
+.hs-title { color: var(--muted); font-style: italic; margin-top: 2px; }
+.hs-chips { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.chip {
+  padding: 2px 9px; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--line)); background: rgba(0, 0, 0, 0.3);
+  font: 700 11px ui-sans-serif, system-ui; letter-spacing: 0.6px; text-transform: uppercase;
+}
+.hs-abilities { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.hs-ab {
+  position: relative; padding: 0; aspect-ratio: 1; overflow: hidden; cursor: pointer; background: #000;
+  border: 1px solid var(--line); border-radius: 10px; transition: border-color 0.12s, box-shadow 0.12s;
+}
+.hs-ab .icon { width: 100%; height: 100%; border: none; border-radius: 0; }
+.hs-ab.ult { border-color: #6a5a2a; }
+.hs-ab:hover, .hs-ab.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 45%, transparent); }
+.hs-detail { min-height: 98px; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; }
+.hs-detail-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hs-detail-head b { font: 700 16px ui-serif, Georgia, serif; }
+.hs-key { min-width: 20px; padding: 0 5px; border-radius: 4px; text-align: center; border: 1px solid var(--gold); color: var(--gold-hi); font: 800 12px ui-sans-serif, system-ui; }
+.hs-more { align-self: flex-start; padding: 0; border: none; background: none; color: var(--gold); font: 600 13px ui-sans-serif, system-ui; cursor: pointer; }
+.hs-more:hover { color: var(--gold-hi); text-decoration: underline; }
+.hs-roster { min-height: 0; overflow: auto; }
+.hs-roster-head { display: flex; align-items: baseline; gap: 12px; }
+.hs-roster .picker { margin-top: 10px; }
+.hs-roster .pick { font-size: 12.5px; padding-top: 11px; }
+.hs-roster .pick .portrait.sm { width: 68px; height: 68px; }
+.hs-how { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--line); }
+.hs-how summary { cursor: pointer; font: 700 16px ui-serif, Georgia, serif; color: var(--gold); }
+.hs-how .how { margin-bottom: 4px; }
+.hs-bar {
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 12px 14px 12px 18px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+.hs-note { flex: 1; min-width: 0; }
+.hs-find { min-width: 300px; }
+.hs-search { display: flex; align-items: center; gap: 12px; min-width: 300px; padding: 7px 8px 7px 14px; border: 1px solid var(--gold); border-radius: 10px; }
+.hs-search .qtext { flex: 1; }
+.hero-row { scroll-margin-top: 64px; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-top: 14px; }
 .tile { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
 .tile-v { font: 700 22px ui-serif, Georgia, serif; color: var(--gold-hi); min-height: 30px; display: flex; align-items: center; }
@@ -228,9 +297,26 @@
 }
 .forfeit { position: fixed; right: 16px; top: 16px; z-index: 10; padding: 6px 14px; border-radius: 8px; border: 1px solid #3a3242; background: rgba(8, 6, 10, 0.8); color: #e9dcc6; font: 600 12px ui-sans-serif, system-ui; cursor: pointer; }
 
+@media (max-width: 1100px) {
+  .hs-note { display: none; }
+  .hs-bar { justify-content: flex-end; }
+}
 @media (max-width: 860px) {
-  .menu, .cols, .hero-body { grid-template-columns: 1fr; }
+  .cols, .hero-body { grid-template-columns: 1fr; }
   .top { flex-wrap: wrap; gap: 10px; }
+  /* Play stacked: the stage beside the name, the kit under both, then the roster; the bar pinned to the bottom. */
+  .hs { grid-template-columns: 1fr; grid-template-rows: auto; height: auto; min-height: 0; }
+  .hs-show { display: grid; grid-template-columns: 170px 1fr; grid-template-areas: "stage info" "abil abil" "detail detail" "more more"; gap: 10px 14px; overflow: visible; }
+  .hs-stage { grid-area: stage; height: 210px; min-height: 0; }
+  .hs-info { grid-area: info; align-self: center; }
+  .hs-abilities { grid-area: abil; grid-template-columns: repeat(5, minmax(0, 72px)); }
+  .hs-detail { grid-area: detail; }
+  .hs-more { grid-area: more; }
+  .hs-roster { overflow: visible; }
+  .hs-bar {
+    position: sticky; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 3; flex-wrap: wrap;
+    background: rgba(14, 11, 16, 0.96); box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* Phones and tablets (src/touch.ts): the forfeit button moves under the duel bar, out of the bars' way; the page
@@ -248,8 +334,32 @@
   .card { padding: 14px 14px; }
   .top { padding: 8px 12px; gap: 6px; }
   .nav { padding: 6px 9px; }
-  .picker { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .pick { min-width: 0; padding: 6px 2px 4px; font-size: 11px; }
+  .picker { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .pick { padding: 7px 2px 5px; gap: 4px; font-size: 10.5px; }
+  .pick .portrait.sm, .hs-roster .pick .portrait.sm { width: 46px; height: 46px; }
+  .hs-roster .pick { font-size: 10.5px; padding-top: 7px; }
+  .pick:hover:not(:disabled) { transform: none; }
+  /* Play on a phone */
+  .hs { gap: 10px; }
+  /* A compact card, so the first row of the roster shows above the bar without scrolling. */
+  .hs-show { grid-template-columns: 96px 1fr; gap: 8px 12px; padding: 12px; }
+  .hs-stage { height: 122px; border-radius: 10px; }
+  .portrait.hs-big { width: 80px; height: 80px; }
+  .hs-name { font-size: 21px; }
+  .hs-title { font-size: 13px; }
+  .hs-chips { margin-top: 6px; }
+  .hs-abilities { gap: 6px; }
+  .hs-ab { border-radius: 8px; }
+  .hs-ab .key { font-size: 10px; left: 3px; bottom: 3px; }
+  .hs-detail { min-height: 0; padding: 7px 10px; }
+  .hs-detail-head b { font-size: 15px; }
+  .hs-detail .blurb { font-size: 12.5px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; }
+  .hs-detail.full .blurb { display: block; }
+  .hs-more { font-size: 12px; }
+  .hs-bar { padding: 10px; gap: 8px; }
+  .hs-bar > .btn { flex: 1; }
+  .hs-bar > .hs-find, .hs-bar > .hs-search { order: -1; flex: 1 1 100%; min-width: 0; }
+  .hs-bar > .btn.hs-find { padding: 12px 10px; }
   .play-actions {
     position: sticky; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 3; padding: 10px; margin: 14px -6px 0;
     border-radius: 12px; background: rgba(14, 11, 16, 0.96); border: 1px solid var(--line); box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.5);
