@@ -10,7 +10,8 @@
 //
 // The attack is driven as the game drives it (`Attacker.motion`): `wind` 0..1 over the wind-up, then `release` 1..0.
 // Options: yawCam (0 front, -PI/2 the hero's right side with forward to the right of the picture), frames, cols, w, h,
-// windup and recover (seconds), dist (camera distance), melee (override), fit (true: the camera frames the hero by its
+// windup and recover (seconds), moveAfter (m/s: walk off once the blow is out), heading (walk: which way the hero goes
+// while facing ahead), dist (camera distance), melee (override), fit (true: the camera frames the hero by its
 // own height, so a small hero fills its cell like a tall one).
 window._motionStrip = async (name, what, o = {}) => {
   const hm = vfx.heroMode, F = hm.figure;
@@ -62,12 +63,15 @@ window._motionStrip = async (name, what, o = {}) => {
       while (t < until - 1e-6) {
         t += dt;
         const state = t < windup ? { wind: t / windup, release: 0, melee } : { wind: -1, release: Math.max(0, 1 - (t - windup) / recover), melee };
+        // moveAfter: the hero walks off at this speed as soon as the blow is out
+        if (t >= windup && o.moveAfter) pos.z += o.moveAfter * dt;
         F.follow(dt, pos, 0, { attack: state });
       }
       shot(t < windup ? `wind ${(t / windup).toFixed(2)}` : `hit +${(t - windup).toFixed(2)}s`);
     }
   } else if (what === 'walk') {
-    const v = base.clone().set(0, 0, o.speed ?? 4);
+    // heading: which way the hero goes while it faces forward (0 ahead, Math.PI a backpedal, Math.PI / 2 a side-step)
+    const v = base.clone().set(Math.sin(o.heading ?? 0) * (o.speed ?? 4), 0, Math.cos(o.heading ?? 0) * (o.speed ?? 4));
     step(0.8, {}, v);
     // one round of the walk (two steps), from where the walk and run clips start (the left foot furthest forward), a
     // frame each time the phase has gone another share of the way round: frame i is the clip at i / frames of its length

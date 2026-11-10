@@ -152,9 +152,12 @@ const WALK: ClipName = 'Walking_A', RUN: ClipName = 'Running_A';
 /**
  * The body's share of a clip, and each arm's (0..1): an arm with a staff in its hand keeps its own way of carrying it.
  * `legs` below 1 swings the legs less far; `grip` is how firmly a two-handed weapon's second hand stays on it (as the
- * weapon arm's share when left out: a clip blending in over a stance that already has both hands on keeps them on).
+ * weapon arm's share when left out: a clip blending in over a stance that already has both hands on keeps them on);
+ * `stand` below 1 leaves that much of the legs and of the hips' place to what is under the clip (a hero already walking
+ * off while its blow recovers keeps walking); `from` is taken off the hips' place (a clip entered part-way, where its
+ * figure has already stepped back, starts where the hero stands).
  */
-interface Share { body: number; armR: number; armL: number; legs?: number; grip?: number }
+interface Share { body: number; armR: number; armL: number; legs?: number; grip?: number; stand?: number; from?: THREE.Vector3 }
 const DOWN = new THREE.Vector3(0, -1, 0);
 /**
  * How much of the pack's fist guard a bare-handed fighter stands in, over the plain stand. The guard was drawn for a
@@ -268,6 +271,7 @@ export class HeroFigure {
   /** Where the clips of this frame have put the hips from where they rest (the figure's frame, leg lengths). */
   private hipsOff = new THREE.Vector3();
   private share: Share = { body: 0, armR: 0, armL: 0, legs: 1 };
+  private hipsFrom = new THREE.Vector3();
   private swingLeft = false;
   private lastWind = -1;
   private lastRelease = 0;
@@ -493,7 +497,8 @@ export class HeroFigure {
     this.run += (smooth(2.2, 4.6, speed) * (this.moving ? 1 : 0) - this.run) * ease(dt, 5);
     // The walk and the run clips each carry a body at their own speed (in its leg lengths): the two are mixed (`jog`) so
     // that the mix goes at this hero's speed on this hero's legs, and played at their own pace (a little faster or
-    // slower only past either end), so the feet do not slide. Turning on the spot keeps its own shuffle.
+    // slower only past either end), so the feet slide as little as a mix of a stroll and a sprint allows. Turning on the
+    // spot keeps its own shuffle.
     const gw = gaitInfo(WALK), gr = gaitInfo(RUN);
     const legSpeed = speed / Math.max(0.2, f.legLength * f.root.scale.y);
     this.jog += (Math.min(1, Math.max(0, (legSpeed - gw.speed) / (gr.speed - gw.speed))) - this.jog) * ease(dt, 5);
@@ -527,6 +532,7 @@ export class HeroFigure {
     let tipR = 0, tipL = 0;
     /** The clip to replay this frame, if any: which, where in it (seconds), how much of the pose is its own, mirrored or not. */
     let play: { clip: ClipName; t: number; w: number; mirror: boolean; loop: boolean } | null = null;
+    let enter: THREE.Vector3 | undefined;
 
     // Cast timeline: wind-up ramps in, the strike snaps over 0.08 s with a little overshoot, then settles out.
     let castW = 0, antic = 0, strike = 0, over = 0, crouch = 0;
@@ -685,6 +691,11 @@ export class HeroFigure {
       // A weapon is swung by the hand that holds it; bare hands and claws take turns.
       const mirror = clip === 'Melee_Unarmed_Attack_Punch_A' ? this.swingLeft : lefty;
       play = { clip, t: at, w: this.attackW, mirror, loop: false };
+      // The clip is entered part-way, where its figure has already stepped back for the blow: the hero starts from where
+      // it stands instead, and is all the way into the clip's lunge as the hit lands.
+      const back = sampleClip(clip, info.hit - lead, this.clipPose, mirror).hips;
+      this.hipsFrom.set(back.x, 0, back.z).multiplyScalar(m.wind >= 0 ? 1 - smooth(0, 1, m.wind) : 0);
+      enter = this.hipsFrom;
     }
 
     // The cast: a clip for the styles that have one (it wins over an attack still recovering), else the pose below.
@@ -694,6 +705,7 @@ export class HeroFigure {
       // the wind-up runs to the clip's own release; after it the clip plays on at its own speed
       const at = castClip.loop ? cn.t : cn.t < a ? info.hit * (cn.t / a) : Math.min(info.dur, info.hit + (cn.t - a));
       play = { clip: castClip.clip, t: at, w: castW * smooth(0, 0.1, cn.t), mirror: lefty, loop: !!castClip.loop };
+      enter = undefined;
     }
     if (pose && castW > 0 && !castClip) {
       const amp = (cn!.big ? 1.18 : 1) * castW;
@@ -755,8 +767,10 @@ export class HeroFigure {
     this.carry(f, holdR, holdL, tipR, tipL, 1 - Math.max(castClip ? 0 : castTook, this.liftW), w, ph, lefty, ownR, ownL);
     if (play) {
       sh.body = sh.armR = sh.armL = play.w * (1 - this.liftW); sh.legs = 1; sh.grip = calm;
+      // already walking off: the legs are the walk's
+      sh.stand = 1 - this.gait; sh.from = enter;
       this.replay(f, play.clip, play.t, sh, play.mirror, play.loop, holdR, holdL, lefty);
-      sh.grip = undefined;
+      sh.grip = sh.stand = sh.from = undefined;
     }
     this.played = play;
     this.going = going;
@@ -799,8 +813,9 @@ export class HeroFigure {
   private replay(f: Hero, clip: ClipName, t: number, share: Share, mirror: boolean, loop: boolean, holdR: Hold, holdL: Hold, lefty: boolean) {
     const w = share.body;
     if (w <= 0.001 && share.armR <= 0.001 && share.armL <= 0.001) return;
-    const P = sampleClip(clip, t, this.clipPose, mirror, loop), legs = share.legs ?? 1;
-    this.hipsOff.lerp(P.hips, w);
+    const P = sampleClip(clip, t, this.clipPose, mirror, loop), legs = share.legs ?? 1, wl = w * (share.stand ?? 1);
+    if (share.from) P.hips.sub(share.from);
+    this.hipsOff.lerp(P.hips, wl);
     f.turnBone('pelvis', P.qHips, w);
     f.turnBone('chest', P.qChest, w);
     f.turnBone('head', P.qHead, w);
@@ -812,9 +827,9 @@ export class HeroFigure {
         leg.thigh.lerp(DOWN, 1 - legs).normalize();
         leg.shin.lerp(DOWN, 1 - legs).normalize();
       }
-      f.pointBone(`thigh${side}`, `shin${side}`, leg.thigh, w);
-      f.pointBone(`shin${side}`, `foot${side}`, leg.shin, w);
-      f.turnBone(`foot${side}`, leg.foot, w);
+      f.pointBone(`thigh${side}`, `shin${side}`, leg.thigh, wl);
+      f.pointBone(`shin${side}`, `foot${side}`, leg.shin, wl);
+      f.turnBone(`foot${side}`, leg.foot, wl);
     }
     const main = lefty ? 'L' : 'R', other = lefty ? 'R' : 'L', melee = clip.startsWith('Melee_') && !clip.includes('Unarmed');
     for (const side of [main, other] as const) {

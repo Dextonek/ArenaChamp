@@ -132,7 +132,10 @@ Casts: `thrust` and `point` play `Ranged_Magic_Shoot`, `raise` plays `Ranged_Mag
 0.5 s of it before its own hit runs through the wind-up (never faster than 1.8 times its own speed: a quick attacker
 starts later in the clip), up to 0.6 s after it through a 0.42 s recovery. The walk and the run each carry a body at
 their own speed (1.6 and 6.2 leg lengths a second): the two are mixed so that the mix goes at the hero's speed on the
-hero's own legs, and the cycle advances with that, so a short-legged hero runs where a long-legged one jogs.
+hero's own legs, and the cycle advances with that, so a short-legged hero runs where a long-legged one jogs. An
+attack clip is entered part-way, where its figure has already stepped back for the blow (0.4 leg lengths in the
+two-handed chop): the hero starts from where it stands and is all the way into the clip's lunge as the hit lands. A
+hero that walks off while its blow recovers gets its legs back from the walk at once.
 
 **Where the copy is not the clip, on purpose:**
 - A two-handed weapon's second hand. The pack's two arms meet on its own figure's weapon; with our longer arms the same
@@ -154,7 +157,13 @@ and running. Side by side with the pack's own figure: `docs/heroes/motion_kaykit
 **Not done:** hit reactions and deaths (the pack has `Hit_A`, `Hit_B`, `Death_A`, `Death_B`; the game still flinches on
 a spring), the four hand-built cast styles, a backpedal and strafes (`Rig_Medium_MovementAdvanced.glb` in the pack has
 them), turning on the spot (the feet pivot). A foot on the ground still drifts where the walk and the run are mixed:
-the pack's walk is a slow stroll and its run a sprint, and the heroes move at a speed between the two.
+the pack's walk is a slow stroll and its run a sprint, and the heroes move at a speed between the two. Measured at
+4 m/s: a planted foot drifts 37% of the way the hero goes for Hank (legs 1.09 m, 44% run), 10% for Sir Whiskers (legs
+0.75 m, 80% run); at 2 m/s, where it is nearly all the pack's stroll, 67% and 39% (the stroll itself plants a foot fast,
+then drags it).
+
+Cost: `HeroFigure.follow` takes about 0.27 ms a frame for one hero on the development machine (up to five clip samples
+a frame: stance, guard, walk, run, attack).
 
 ## Checked, and not
 
