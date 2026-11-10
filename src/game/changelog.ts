@@ -52,6 +52,11 @@ export const CHANGELOG: Release[] = [
         title: 'Hank carries a woodsman\'s axe',
         text: 'Hank\'s axe has one blade now, on a haft he holds by its end, low at his side with the head out in front. He swings it in one hand.',
       },
+      {
+        tag: 'Motion',
+        title: 'Scepters up, blades on guard',
+        text: 'Heroes no longer point their scepters, wands, mirrors and needles straight ahead like sticks while they stand and walk: Vesper, Zambini, Silvane and the others hold them up the way they are made. Sir Whiskers and Pim and Pom keep their blades raised on guard.',
+      },
     ],
   },
   {

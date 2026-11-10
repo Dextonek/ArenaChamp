@@ -191,6 +191,15 @@ level by its end (`len` ≥ 0.9 m, `back` < 0.25 m, neither up nor down; only Ha
 the carry's, not the stance's: hanging a little out and forward, swinging a little with the walk, the axe keeping its
 modelled line. It is never two-handed, and the attack is the one-handed chop (`Melee_1H_Attack_Chop`).
 
+### Items held up, while standing and walking (2026-11-10)
+
+The user asked for the heroes holding their weapon the wrong way. A sheet of all 39 (standing, walking, the attack)
+found one cause behind ten of them: the stance, walk and run clips are a figure with empty hands, and the direction its
+hand gives an item in the idle is level and straight ahead. Every `up` item was turned to it, so Vesper's scepter,
+Zambini's and Opaline's wands, Silvane's mirror, Madame Cleaver's cleaver and Grandma Ironknit's needles pointed ahead
+at hip height, and Sir Whiskers' and Pim and Pom's blades too. Now in those three clips an `up` item stays as modelled
+for a caster and in the guard (point raised toward the enemy's face) for a fighter; casts and attacks keep the clip's aim.
+
 ## Checked, and not
 
 - Checked on the tool page with the pose sheet (`pipeline/tools/pose-sheet.js`): all 39 heroes idle, walking, in a thrust
