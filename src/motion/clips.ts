@@ -106,3 +106,34 @@ export function sampleClip(name: ClipName, t: number, out: ClipPose, mirror = fa
   }
   return out;
 }
+
+const gaits = new Map<ClipName, { dur: number; speed: number; leftFwd: number }>();
+
+/**
+ * For a walk or a run that loops on the spot: how long one round is (seconds), how fast it would carry the body (leg
+ * lengths a second: how fast the foot on the ground goes back under the hips) and the moment the left foot is furthest
+ * forward (seconds). A figure that moves at `speed` of its own leg lengths while the clip plays does not slide its feet.
+ */
+export function gaitInfo(name: ClipName) {
+  let g = gaits.get(name);
+  if (g) return g;
+  const c = DATA.clips[name], S = DATA.stride, f = c.frames, n = f.length / S;
+  // a foot, in leg lengths (thigh and shin taken as equal): [forward of its hip, height]
+  const foot = (i: number, o: number) => [0.5 * (f[i * S + o + 2] + f[i * S + o + 5]), 0.5 * (f[i * S + o + 1] + f[i * S + o + 4]) + f[i * S + 1]];
+  let low = 1e9, far = -1e9, leftFwd = 0;
+  for (let i = 0; i < n; i++) {
+    low = Math.min(low, foot(i, 33)[1], foot(i, 43)[1]);
+    if (foot(i, 33)[0] > far) { far = foot(i, 33)[0]; leftFwd = i / DATA.fps; }
+  }
+  // on the ground: within a tenth of a leg of the lowest a foot gets
+  let back = 0, frames = 0;
+  for (let i = 0; i < n - 1; i++) for (const o of [33, 43]) {
+    const a = foot(i, o), b = foot(i + 1, o);
+    if (a[1] > low + 0.1 || b[1] > low + 0.1) continue;
+    back += (a[0] - b[0]) * DATA.fps;
+    frames++;
+  }
+  g = { dur: (n - 1) / DATA.fps, speed: frames ? back / frames : 1, leftFwd };
+  gaits.set(name, g);
+  return g;
+}

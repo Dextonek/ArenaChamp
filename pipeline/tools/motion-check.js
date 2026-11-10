@@ -6,7 +6,7 @@
 //   await _motionCheck('Hank', 'attack')                     // -> the worst angle per limb through the basic attack
 //   await _motionCheck('Hank', 'attack', { windup: 0.2 })    // at another wind-up time
 //   await _motionCheck('Kaia', 'cast:thrust')
-//   await _motionCheck('Sefu', 'walk', { speed: 4 })
+//   await _motionCheck('Sefu', 'walk', { speed: 4 })         // -> how much the planted foot slides
 //   await _motionCheck('Sefu', 'idle')
 //
 // Each line: limb, worst angle in degrees, the clip second it happened at. `rows` in the result has every sample
@@ -66,7 +66,31 @@ window._motionCheck = async (name, what, o = {}) => {
     const melee = o.melee ?? F.melee, windup = o.windup ?? 0.3, release = 0.18, total = windup + (o.after ?? 0.7);
     run(total, (t) => ({ attack: t < windup ? { wind: t / windup, release: 0, melee } : { wind: -1, release: Math.max(0, 1 - (t - windup) / release), melee } }));
   } else if (what === 'walk') {
-    run(o.sec ?? 1.6, () => ({}), base.clone().set(0, 0, o.speed ?? 4));
+    // No one clip to hold the pose against (the walk and the run are mixed): what counts is that a foot on the ground
+    // stays where it is. Over each stretch a foot spends on the ground (within 8% of a leg of the lowest it gets), how
+    // far it drifts, as a share of how far the hero went meanwhile.
+    const speed = o.speed ?? 4, v = base.clone().set(0, 0, speed), track = [];
+    for (let i = 0; i < Math.round((o.sec ?? 3) / dt); i++) {
+      pos.addScaledVector(v, dt);
+      F.follow(dt, pos, 0, {});
+      H.root.updateMatrixWorld(true);
+      if (i * dt > 0.8) track.push({ L: bones.get('footL').getWorldPosition(V()), R: bones.get('footR').getWorldPosition(V()) });
+    }
+    const legs = H.legLength * H.root.scale.y, low = Math.min(...track.map((k) => Math.min(k.L.y, k.R.y))) + 0.08 * legs;
+    let drift = 0, went = 0, air = 0;
+    for (let i = 1; i < track.length; i++) {
+      let down = 0;
+      for (const side of ['L', 'R']) {
+        if (track[i][side].y > low || track[i - 1][side].y > low) continue;
+        drift += Math.abs(track[i][side].z - track[i - 1][side].z);
+        went += speed * dt;
+        down++;
+      }
+      if (!down) air++;
+    }
+    F.stand();
+    vfx.view.paused = false;
+    return `${name} at ${speed} m/s: feet on the ground drift ${(100 * drift / Math.max(went, 1e-6)).toFixed(0)}% of the way the hero goes (0% is a foot that stays put), in the air ${(100 * air / track.length).toFixed(0)}% of the time, run share ${F.jog.toFixed(2)}, legs ${legs.toFixed(2)} m`;
   } else if (what === 'idle') {
     run(o.sec ?? 2, () => ({}));
   } else if (what.startsWith('cast:')) {

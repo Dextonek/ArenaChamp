@@ -321,8 +321,9 @@ export class Hero {
    * Bends an arm so its hand comes to `target` (the figure's frame, metres at the figure's own size: X its left, Y up,
    * Z forward), the elbow pointing back, down and out. `weight` 0..1 blends from the pose the arm already has. Call
    * after the frame's other arm rotations and before `steadyHand`.
+   * `keepElbow`: the elbow stays on the side it is on now, instead of back, down and out.
    */
-  reachHand(side: 'R' | 'L', target: THREE.Vector3, weight = 1) {
+  reachHand(side: 'R' | 'L', target: THREE.Vector3, weight = 1, keepElbow = false) {
     const upper = this.bones.get(side === 'R' ? 'armR' : 'armL'), fore = this.bones.get(side === 'R' ? 'foreR' : 'foreL');
     const hand = this.bones.get(side === 'R' ? 'handR' : 'handL');
     if (!upper || !fore || !hand || !upper.parent || weight <= 0) return;
@@ -340,6 +341,12 @@ export class Hero {
     const along = (a * a - b * b + d * d) / (2 * d), out = Math.sqrt(Math.max(0, a * a - along * along));
     const pole = new THREE.Vector3(side === 'R' ? -0.45 : 0.45, -0.6, -0.65).transformDirection(this.root.matrixWorld);
     pole.addScaledVector(toT, -pole.dot(toT)).normalize();
+    if (keepElbow) {
+      // ...or on the side the elbow is on now (an arm a clip has posed keeps its bend)
+      const now = new THREE.Vector3().copy(E).sub(S);
+      now.addScaledVector(toT, -now.dot(toT));
+      if (now.lengthSq() > 1e-4) pole.copy(now.normalize());
+    }
     const elbow = new THREE.Vector3().copy(S).addScaledVector(toT, along).addScaledVector(pole, out);
     const aim = (bone: THREE.Bone, from: THREE.Vector3, to: THREE.Vector3, at: THREE.Vector3) => {
       // turn `bone` (in the world) so the direction from its joint to `from` points at `to`

@@ -101,6 +101,61 @@ frames of the real clips are not in the repository (they are other people's foot
 Not matched to footage: the thrust, the smash and the sweep were built from the cut's phases and from how those are
 described, not from clips of their own; casts were not compared at all.
 
+## An animator's clips, replayed (third pass, 2026-11-10)
+
+The user, after the second pass: "Or just find some free asset for this and replicate it", then "Try it". Standing,
+walking, running, the basic attacks and four cast styles are no longer poses built here. They are clips from the
+**KayKit Character Animations** pack by Kay Lousberg (CC0, free for any use; https://kaylousberg.itch.io/kaykit-character-animations),
+replayed on the heroes' own rig. The four clip files used and the licence are in `pipeline/assets/kaykit/`.
+
+**How the motion is copied.** The pack's rig and ours do not share bones or proportions, so bone rotations cannot be
+copied. `pipeline/tools/bake-motion.html` plays each clip on the pack's own figure and writes, 30 times a second, what
+any humanoid can follow, in the character's own frame: where the hips are from where they rest (in leg lengths), how
+the hips, chest and head are turned from rest, which way each upper arm, forearm, thigh and shin points, how each foot
+is turned, and which way the item in each hand points (`src/motion/kaykit.json`, 18 clips, read by
+`src/motion/clips.ts`). `HeroFigure.replay` (`src/heroFigure.ts`) puts those on our bones with `Hero.turnBone`,
+`Hero.pointBone` and `Hero.steadyHand`.
+
+**Which clip plays when** (`attackClip`, `CAST_CLIP` and the stance in `follow`):
+
+| The hero | Stands | Moves | Basic attack |
+|---|---|---|---|
+| One weapon held up (sword, wand, scepter, mirror) | `Idle_A` | `Walking_A` and `Running_A` mixed | `Melee_1H_Attack_Chop` and `Slice_Diagonal` in turn; `Stab` for Sir Whiskers; `Slice_Horizontal` for a sweep; ranged: `Ranged_Magic_Shoot` |
+| Two-handed weapon (Hank, Oblivion, Brannoc, Bram) | `Melee_2H_Idle` | the same legs; the arms stay in `Melee_2H_Idle` | `Melee_2H_Attack_Chop` or `Slice` |
+| Bare hands, claws, two alike (Big Yoko, Nyx, Zephyr, Sirix, Mabel) | `Idle_A` with 60% of `Melee_Unarmed_Idle` over it | walk and run | `Melee_Unarmed_Attack_Punch_A`, left and right in turn (Zephyr sweeps: `Melee_1H_Attack_Slice_Horizontal`) |
+| Tall staff in one hand | the body from `Idle_A`; the staff arm keeps the walking-staff carry above | the same; the staff is planted with the opposite foot | `Ranged_Magic_Shoot`, the staff tipping 60% of the way (Gus sweeps his broom: `Melee_2H_Attack_Slice`) |
+
+Casts: `thrust` and `point` play `Ranged_Magic_Shoot`, `raise` plays `Ranged_Magic_Raise`, `channel` loops
+`Ranged_Magic_Spellcasting`. The others (`slam`, `burst`, `lunge`, `swing`) are still the hand-built poses.
+
+**Fitted to the game, not changed.** The game says when a blow lands, so a clip is played against that moment: up to
+0.5 s of it before its own hit runs through the wind-up (never faster than 1.8 times its own speed: a quick attacker
+starts later in the clip), up to 0.6 s after it through a 0.42 s recovery. The walk and the run each carry a body at
+their own speed (1.6 and 6.2 leg lengths a second): the two are mixed so that the mix goes at the hero's speed on the
+hero's own legs, and the cycle advances with that, so a short-legged hero runs where a long-legged one jogs.
+
+**Where the copy is not the clip, on purpose:**
+- A two-handed weapon's second hand. The pack's two arms meet on its own figure's weapon; with our longer arms the same
+  arm angles leave the second hand up to 0.8 m off ours. So the second hand is put on the weapon (the nearest place
+  along a haft, next to the first hand on a hilt), and both hands come in when it cannot reach.
+- The fist guard at 60%. It was drawn for a figure with short arms and legs; all of it on a tall hero is a deep lunge
+  with the arms held wide.
+- A tall staff (the pack has none) and what hangs from a hand (a lantern, a bucket) keep the holds described above.
+- Under a long robe the legs swing 45% less, or the robe tears open.
+- A backpedal and a side-step are still the walk built here: the four files taken from the pack have none.
+- The chest rocking on a start and a stop, the lean into a turn, the slow look round and the fidgets are added on top.
+
+**Measured, not eyeballed** (`pipeline/tools/motion-check.js`): through the basic attack of each of the 39 heroes, every
+limb the clip drives is within 3 degrees of the clip at the same moment (most within 1). The exceptions are the ones
+listed above: the four two-handers' second arm, and their weapon arm by up to 75 degrees where both hands come in. A two-hander's second hand stays within 0.13 m of the weapon through a whole attack and on it standing
+and running. Side by side with the pack's own figure: `docs/heroes/motion_kaykit_chop.jpg`, `_slice.jpg`, `_stab.jpg`,
+`_run.jpg`, `_stand.jpg`.
+
+**Not done:** hit reactions and deaths (the pack has `Hit_A`, `Hit_B`, `Death_A`, `Death_B`; the game still flinches on
+a spring), the four hand-built cast styles, a backpedal and strafes (`Rig_Medium_MovementAdvanced.glb` in the pack has
+them), turning on the spot (the feet pivot). A foot on the ground still drifts where the walk and the run are mixed:
+the pack's walk is a slow stroll and its run a sprint, and the heroes move at a speed between the two.
+
 ## Checked, and not
 
 - Checked on the tool page with the pose sheet (`pipeline/tools/pose-sheet.js`): all 39 heroes idle, walking, in a thrust

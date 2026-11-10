@@ -3,7 +3,8 @@
 //
 //   eval(await (await fetch('/pipeline/tools/motion-strip.js')).text());
 //   await _motionStrip('Oblivion', 'attack')            // 16 frames through the basic attack, from the hero's right side
-//   await _motionStrip('Sefu', 'walk', { yawCam: 0 })   // 16 frames through one walk cycle, from the front
+//   await _motionStrip('Sefu', 'walk', { yawCam: 0 })   // 16 frames through one walk cycle, from the front (speed: 4)
+//   await _motionStrip('Sefu', 'idle')                  // 16 frames of standing (sec: how long)
 //   await _motionStrip('Kaia', 'cast:thrust')           // 16 frames through a cast style
 //   window._ms                                          // the JPEG data URL (return it: the tool saves big results to a file)
 //
@@ -26,7 +27,8 @@ window._motionStrip = async (name, what, o = {}) => {
   F.figure.root.updateMatrixWorld(true);
   const head = F.figure.bones.get('head'), tall = head ? (head.getWorldPosition(base.clone()).y - F.figure.root.position.y) * 1.22 : 2.3;
   const fov = (cam.fov ?? 40) * Math.PI / 180;
-  const dist = o.dist ?? (o.fit ? (2.3 * tall) / (0.86 * 2 * Math.tan(fov / 2)) : 5.2);
+  // an attack needs room for a weapon overhead and a lunge; a walk or a stand only for the hero
+  const dist = o.dist ?? (o.fit ? ((o.room ?? (what === 'attack' ? 2.3 : 1.75)) * tall) / (0.86 * 2 * Math.tan(fov / 2)) : 5.2);
   const eye = o.fit ? 0.75 * tall : 1.7, look = o.fit ? 0.62 * tall : 1.35;
   const cells = [];
   const shot = (label) => {
@@ -67,9 +69,17 @@ window._motionStrip = async (name, what, o = {}) => {
   } else if (what === 'walk') {
     const v = base.clone().set(0, 0, o.speed ?? 4);
     step(0.8, {}, v);
-    // one walk cycle (two steps): the phase runs at about 4.4 + 1.15 * speed rad/s
-    const cycle = (2 * Math.PI) / (4.4 + 1.15 * (o.speed ?? 4));
-    for (let i = 0; i < frames; i++) { step(cycle / frames, {}, v); shot(`walk ${i}`); }
+    // one round of the walk (two steps), from where the walk and run clips start (the left foot furthest forward), a
+    // frame each time the phase has gone another share of the way round: frame i is the clip at i / frames of its length
+    const TAU = 2 * Math.PI, rel = () => (((F.walkPhase - Math.PI / 2) % TAU) + TAU) % TAU;
+    for (let k = 0, prev = rel(); k < 900; k++) { step(dt, {}, v); const r = rel(); if (r < prev) break; prev = r; }
+    const from = F.walkPhase;
+    for (let i = 0; i < frames; i++) {
+      for (let k = 0; k < 600 && F.walkPhase < from + (TAU * i) / frames; k++) step(dt, {}, v);
+      shot(`walk ${i}`);
+    }
+  } else if (what === 'idle') {
+    for (let i = 0; i < frames; i++) { step((o.sec ?? 1.07) / frames); shot(`idle ${i}`); }
   } else if (what.startsWith('cast:')) {
     const style = what.slice(5), dur = o.dur ?? 0.7;
     shot('before');
