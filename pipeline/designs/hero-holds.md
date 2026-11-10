@@ -182,6 +182,15 @@ length of the floor. In a fight the stances keep their depth (knees 28-56°, the
 Walking at 4 m/s, a planted foot drifts less: Sefu 42 → 33%, Isolde 46 → 33%, Brannoc 28 → 20%, Hank 36 → 28%.
 `motion-check.js` now reports the fitted thighs and shins as off the clip; that is by design.
 
+### Hank's axe held low (2026-11-10)
+
+The user drew it: one bit, on a haft held by its end, low at the side, the head out in front. The model's axe was
+rebuilt that way (`blender/heroes/hank_axe.py`; on this computer `patch_hank_axe.py` swapped it into the exported model,
+since the figure build's helper modules are not in the repo). A new hold, `low` (`heroFigure.ts`): a long item held
+level by its end (`len` ≥ 0.9 m, `back` < 0.25 m, neither up nor down; only Hank's axe today). Like a staff its arm is
+the carry's, not the stance's: hanging a little out and forward, swinging a little with the walk, the axe keeping its
+modelled line. It is never two-handed, and the attack is the one-handed chop (`Melee_1H_Attack_Chop`).
+
 ## Checked, and not
 
 - Checked on the tool page with the pose sheet (`pipeline/tools/pose-sheet.js`): all 39 heroes idle, walking, in a thrust

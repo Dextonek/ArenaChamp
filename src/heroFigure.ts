@@ -117,12 +117,18 @@ const CAST_L = Object.fromEntries(Object.entries(CAST).map(([k, c]) => [k, { ant
  *   down on the strike. A ranged hero holds it up in front, as modelled.
  * - `hang`: it hangs below the hand (a hammer, a greatsword held low, a bucket, claws). In one hand it follows the arm,
  *   which swings less. A two-handed weapon is held low in front in both hands, its head down and forward.
+ * - `low`: long and level, held by its end (Hank's axe: the user's drawing, 2026-11-10). One hand, low at the side, the
+ *   arm a little out and forward, the head out in front as modelled; walking, the arm swings a little and the weapon
+ *   keeps its line. Like a staff its arm is carried, not the stance's; an attack swings it one-handed.
  */
-type Hold = 'none' | 'staff' | 'up' | 'hang';
+type Hold = 'none' | 'staff' | 'up' | 'hang' | 'low';
 const holdOf = (h: Held | null): Hold =>
-  !h || h.len + h.raise < 0.38 ? 'none' : isStaff(h) ? 'staff' : h.dir.y > 0.5 ? 'up' : h.dir.y < -0.5 ? 'hang' : 'none';
+  !h || h.len + h.raise < 0.38 ? 'none' : isStaff(h) ? 'staff' : h.dir.y > 0.5 ? 'up' : h.dir.y < -0.5 ? 'hang'
+    : h.len + h.raise >= 0.9 && h.back < 0.25 ? 'low' : 'none';
+/** An arm the carry holds the whole time (its item is not the stance's or the walk's), a cast or an attack aside. */
+const carried = (h: Hold) => h === 'staff' || h === 'low';
 /** How much of the walk's arm swing a hand keeps with each kind of item in it. */
-const CARRY: Record<Hold, number> = { none: 1, hang: 0.55, up: 0.4, staff: 0.12 };
+const CARRY: Record<Hold, number> = { none: 1, hang: 0.55, up: 0.4, staff: 0.12, low: 0.3 };
 /**
  * Standing, walking, running, attacks and some casts are an animator's clips, replayed on this rig
  * (`src/motion/clips.ts`: the KayKit Character Animations pack, CC0; pipeline/designs/hero-holds.md says which clip
@@ -687,14 +693,14 @@ export class HeroFigure {
     // Standing and moving, from the clips: a stance by what the hands hold, then the walk and the run over it by how
     // fast the hero goes. An arm with a staff in its hand keeps the walking-staff carry (`carry`); a two-handed weapon
     // stays across the body while the legs walk. A hand-posed cast or a knock-up takes the arms back.
-    const two = this.overhead && mainHold !== 'none' && (lefty ? holdR : holdL) === 'none';
+    const two = this.overhead && mainHold !== 'none' && mainHold !== 'low' && (lefty ? holdR : holdL) === 'none';
     const bare = mainHold === 'none' || holdR === holdL || (mainHold === 'hang' && !two);
     const guard = !two && this.melee && bare;
     // On the Heroes stand (`atEase`) every hero stands in the plain idle, its crouch shallower; a two-handed weapon keeps
     // its idle's arms only, and there is no fist guard.
     const stance: ClipName = two && !this.atEase ? 'Melee_2H_Idle' : 'Idle_A';
     const calm = 1 - Math.max(cn && !CAST_CLIP[cn.style] ? castTook : 0, this.liftW);
-    const armR = (holdR !== 'staff' || two ? 1 : 0) * calm, armL = (holdL !== 'staff' || two ? 1 : 0) * calm;
+    const armR = (!carried(holdR) || two ? 1 : 0) * calm, armL = (!carried(holdL) || two ? 1 : 0) * calm;
     const sh = this.share, standing = 1 - this.gait;
     sh.body = standing; sh.armR = (two ? 1 : standing) * armR; sh.armL = (two ? 1 : standing) * armL; sh.legs = 1;
     sh.fit = this.atEase ? AT_EASE : 1;
@@ -729,7 +735,7 @@ export class HeroFigure {
     f.rot('head', AY, (0.14 * Math.sin(t * 0.37) + 0.05 * Math.sin(t * 1.13)) * rest * clips);
     this.fidgets(f, t, still);
     // How much of each arm is still its own way of carrying things (all of it for a staff; else only in a backpedal).
-    const ownR = 1 - (two ? 1 : clips) * (holdR !== 'staff' || two ? 1 : 0), ownL = 1 - (two ? 1 : clips) * (holdL !== 'staff' || two ? 1 : 0);
+    const ownR = 1 - (two ? 1 : clips) * (!carried(holdR) || two ? 1 : 0), ownL = 1 - (two ? 1 : clips) * (!carried(holdL) || two ? 1 : 0);
 
     // Basic attack: an animator's clip, fitted to the game's timing. Through the wind-up it runs up to its own hit; after
     // the blow has gone out it runs on while the body recovers.
@@ -836,7 +842,9 @@ export class HeroFigure {
   /** The clip a hero's basic attack plays: by what it holds and how the attack looks. */
   private attackClip(melee: boolean, main: Hold, other: Hold): ClipName {
     if (!melee) return 'Ranged_Magic_Shoot';
-    const look = this.attackLook, two = this.overhead && main !== 'none' && other === 'none';
+    const look = this.attackLook, two = this.overhead && main !== 'none' && main !== 'low' && other === 'none';
+    // a long axe held low by its end is swung in one hand
+    if (main === 'low') return 'Melee_1H_Attack_Chop';
     // bare hands, two alike (two sets of claws), or something that only hangs from the hand
     if (main === 'none' || main === other || (main === 'hang' && !two && look !== 'sweep')) return 'Melee_Unarmed_Attack_Punch_A';
     if (look === 'smash') return 'Melee_2H_Attack_Chop';
@@ -888,12 +896,14 @@ export class HeroFigure {
     for (const side of [main, other] as const) {
       const hold = side === 'R' ? holdR : holdL, held = f.held[side], wa = side === 'R' ? share.armR : share.armL;
       if (!held || hold === 'none' || wa <= 0.001) continue;
-      const two = side === main && this.overhead && (side === 'R' ? holdL : holdR) === 'none';
+      const two = side === main && this.overhead && hold !== 'low' && (side === 'R' ? holdL : holdR) === 'none';
       // what hangs from a hand goes with the arm, unless it is the weapon being swung
       if (hold === 'hang' && !(side === main && melee)) continue;
       const aim = this.clipAim.copy(P.arm[side].aim);
       // a caster's tall staff only tips toward the target; swung as a weapon (a long axe, a halberd) it goes all the way
       if (hold === 'staff' && !melee) aim.lerpVectors(held.dir, aim, 0.6).normalize();
+      // a long axe held low keeps its line unless it is being swung
+      if (hold === 'low' && !melee) aim.copy(held.dir);
       f.steadyHand(side, wa, 0, aim);
       if (!two) continue;
       // The second hand goes on the weapon. A clip's two arms meet on its own figure's weapon, not on this one's (other
@@ -931,7 +941,7 @@ export class HeroFigure {
     const main = lefty ? 'L' : 'R', other = lefty ? 'R' : 'L';
     const mainHold = lefty ? holdL : holdR, otherHold = lefty ? holdR : holdL;
     // A hammer, a greatsword, a long axe: the free hand goes on the haft too.
-    const both = this.overhead && mainHold !== 'none' && otherHold === 'none';
+    const both = this.overhead && mainHold !== 'none' && mainHold !== 'low' && otherHold === 'none';
     const steady = 1 - this.liftW, T = this.carryT;
     for (const side of [main, other] as const) {
       const hold = side === 'R' ? holdR : holdL, held = f.held[side], arm = f.arm[side];
@@ -961,6 +971,13 @@ export class HeroFigure {
         T.y += (0.28 + 0.02 * w * Math.sin(2 * ph)) * L;
         T.z += 0.3 * L;
         tip += 0.12;
+      } else if (hold === 'low') {
+        // Low at the side by the haft's end, the arm a little out and forward, swinging a little with the walk; the
+        // weapon keeps its line (as modelled: forward and out, the head a little higher than the hand).
+        const p = side === 'R' ? ph : ph + Math.PI;
+        T.x += sx * 0.22 * L;
+        T.y += 0.1 * L;
+        T.z += (0.1 + 0.14 * w * Math.sin(p)) * L;
       } else if (two) {
         // Low in front in both hands, the head down and forward.
         T.set(sx * 0.14 * L, arm.hand.y + 0.14 * L, 0.5 * L);

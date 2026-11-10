@@ -10,7 +10,7 @@ import type { Effect, EffectModule } from '../../effects/types';
 import { CHOP_DAMAGE, STAGES, removeTree, stageIndex, timberNow, treesInCone, type Tree } from '../../traits/timber';
 
 /**
- * Axe Swing (timber kit v5, Q: a QUICK cone, `self` mode; label 'axe swing'). He swings his double axe over the 3 m cone in front of
+ * Axe Swing (timber kit v5, Q: a QUICK cone, `self` mode; label 'axe swing'). He swings his axe over the 3 m cone in front of
  * him (110 degrees, the same shape that is drawn as a dark fan with a pale rim and a bright edge sweeping across it): 40 on an enemy
  * inside it at 0.15 s, on live positions. Any tree of his that the cone touches (its trunk's nearest point, on his own client's
  * list and on the other screen's through this same effect, from `sentFrom` and the aim) is chopped: it leaves the list, a stump

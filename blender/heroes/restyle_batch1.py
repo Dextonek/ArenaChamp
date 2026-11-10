@@ -183,7 +183,8 @@ class TimberMythic(_Restyle, Timber):
     Hank, the Moss Hewer (bruiser): a huge forest warden. Moss-green woven tunic and bark-brown leather leggings with
     leather wraps, dark boots, brown leather straps in place of suspenders, a fur mantle heaped round his shoulders, bare
     brown hair with a thick braid down his back, and the same huge beard, now with two braids tied in brass.
-    Signature: the huge double-bitted axe, its steel dark and its two cutting edges glowing green.
+    Signature: his axe, one bit on a one-handed haft (user, 2026-11-10, from a drawing: hank_axe.py), held low by the haft's
+    end at his right side and pointing forward and out, its steel dark and its edge and a rune glowing green.
     """
 
     OVR = {
@@ -209,7 +210,7 @@ class TimberMythic(_Restyle, Timber):
         super().body()
         J = self.J
         # the old look out: the woolly hat, the red nose, the moustache, the mouth, the buttons
-        self.drop("Hat", "Bobble", "NoseBall", "Moustache", "Mouth", "Button", "AxeEdge")
+        self.drop("Hat", "Bobble", "NoseBall", "Moustache", "Mouth", "Button", "Axe", "HaftBand")
         fur = self.mat("fur", "#6e5a44", roughness=0.95)
         braid = self.mat("braid", "#6e4020", roughness=0.85)
         brass = self.mat("brass", "#d8a838", metallic=0.7, roughness=0.3)
@@ -251,22 +252,16 @@ class TimberMythic(_Restyle, Timber):
         for k, (c, rad) in enumerate(puffs):
             self.add(kit.blob(f"FurPuff{k}", c, (rad * 1.1, rad, rad * 0.85), fur, segs=(18, 12)), mantle_w)
 
-        # the axe's two cutting edges, thicker than before, glowing green, and a rune on each blade
-        edge = self.mat("axeedge", "#8ff0a0", metallic=0.2, roughness=0.15, emission="#3ad868", strength=2.4)
-        h = self.hand_grip(-1)
-        d = Vector((-0.2, -0.015, 0.98)).normalized()
-        c = h + d * 1.1
-        M = Matrix.Translation(c) @ Matrix.Rotation(math.atan2(d.x, d.z), 4, "Y")
-        strip = [(0.4, 0.262), (0.445, 0.19), (0.475, 0.1), (0.487, 0.0), (0.475, -0.1), (0.445, -0.19), (0.4, -0.262)]
-        for f in (1, -1):
-            e = kit.chain(f"AxeEdgeGlow{f}", [Vector((u * f, 0, v)) for u, v in strip], [(0.008, 0.03), (0.03, 0.03), (0.036, 0.032), (0.04, 0.034), (0.036, 0.032), (0.03, 0.03), (0.008, 0.03)], edge, seg=8, side=(1, 0, 0))
-            kit.transform(e, M)
-            self.add(e, "hand.R")
-            for yy in (-1, 1):
-                for k, (a, b) in enumerate((((0.3, 0.07), (0.3, -0.07)), ((0.3, 0.0), (0.37, 0.05)), ((0.3, 0.0), (0.37, -0.05)))):
-                    r_ = kit.tube(f"AxeRune{f}{yy}{k}", Vector((a[0] * f, 0.02 * yy, a[1])), Vector((b[0] * f, 0.02 * yy, b[1])), [(0, 0.011, 0.007), (1, 0.011, 0.007)], edge, seg=6)
-                    kit.transform(r_, M)
-                    self.add(r_, "hand.R")
+        # the axe (hank_axe.py, also used by patch_hank_axe.py on the exported model)
+        import hank_axe
+        mats = {
+            "steel": self.mat("axesteel", "#59616b", metallic=0.55, roughness=0.35),
+            "edge": self.mat("axeedge", "#8ff0a0", metallic=0.2, roughness=0.15, emission="#3ad868", strength=2.4),
+            "haft": self.mat("haft", "#6a4424", roughness=0.7),
+            "band": self.mat("haftpaint", "#c9a24a", metallic=0.6, roughness=0.35),
+        }
+        for ob, _ in hank_axe.build(self.hand_grip(-1), mats):
+            self.add(ob, "hand.R")
 
 
 class BalloonMythic(_Restyle, Balloon):

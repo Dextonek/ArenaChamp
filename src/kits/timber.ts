@@ -3,7 +3,7 @@ import type { HeroKit } from '../heroes';
 /**
  * Timber kit data: Hank, the Lumberjack (kits v5). Four spells (labels as registered) with canvas-drawn icons in the kit's palette:
  * plaid red, wood brown and pine green on a dark forest ground, with a pale cream (sawdust, birch) for the foil. Signature shape: the
- * chunky pine, and the double axe.
+ * chunky pine, and his one-bit axe.
  */
 const K = {
   cream: '#f1e2c0', hot: '#e8b868', wood: '#b5763a', bark: '#6a4426', red: '#c8322e', redDark: '#7a1c1a', pine: '#3f6b3a',
@@ -49,7 +49,7 @@ function pine(g: CanvasRenderingContext2D, cx: number, by: number, w: number, h:
   }
 }
 
-/** A double axe at (cx, cy), `len` the haft's length, turned by `rot` (0 = haft up). */
+/** Hank's axe (one bit) at (cx, cy), `len` the haft's length, turned by `rot` (0 = haft up, the blade to the right). */
 function axe(g: CanvasRenderingContext2D, cx: number, cy: number, len: number, rot: number) {
   g.save();
   g.translate(cx, cy);
@@ -69,10 +69,11 @@ function axe(g: CanvasRenderingContext2D, cx: number, cy: number, len: number, r
     g.fillStyle = color;
     g.fill();
   };
-  for (const sx of [-1, 1]) {
-    head(sx, K.dark, 1.1);
-    head(sx, K.steel);
-  }
+  head(1, K.dark, 1.1);
+  head(1, K.steel);
+  // the poll: a short block on the other side of the eye
+  g.fillStyle = K.dark;
+  g.fillRect(-len * 0.12, -len * 0.42, len * 0.12, len * 0.1);
   g.restore();
 }
 
@@ -95,7 +96,7 @@ export const timberKit: HeroKit = {
   foil: K.pine,
   portrait(g, s) {
     ground(g, s);
-    // Pines behind him, the huge double axe over his shoulder: dark steel with its edges glowing green.
+    // Pines behind him, his big axe over his shoulder: dark steel with its edge glowing green.
     pine(g, s * 0.14, s * 0.62, s * 0.26, s * 0.5, 4);
     g.save();
     g.translate(s * 0.8, s * 0.54);
@@ -105,7 +106,10 @@ export const timberKit: HeroKit = {
     g.fillRect(-len * 0.055, -len * 0.5, len * 0.11, len);
     g.fillStyle = K.bark;
     g.fillRect(-len * 0.035, -len * 0.5, len * 0.07, len);
-    for (const sx of [-1, 1]) {
+    // one bit, toward the middle of the picture, and the poll behind the eye
+    g.fillStyle = K.dark;
+    g.fillRect(0, -len * 0.43, len * 0.11, len * 0.1);
+    for (const sx of [-1]) {
       for (const [scale, color] of [[1.1, K.dark], [1, K.steelDark], [1.02, '']] as const) {
         g.beginPath();
         g.moveTo(0, -len * 0.46);
@@ -218,7 +222,7 @@ export const timberKit: HeroKit = {
       blurb: 'A quick 3 m swing in front of him: 60. Any tree of his that the swing touches falls away from him along a strip 8 m long and 1.6 m wide, shown for 0.6 s: 30, 60 or 110 by its size. A stump stays.',
       icon(g, s) {
         ground(g, s);
-        // A pale swing fan, a sapling cut at the foot, a big double axe sweeping across it, chips flying.
+        // A pale swing fan, a sapling cut at the foot, his big axe sweeping across it, chips flying.
         g.fillStyle = K.dark;
         g.beginPath(); g.moveTo(s * 0.5, s * 0.9); g.arc(s * 0.5, s * 0.9, s * 0.62, -Math.PI * 0.86, -Math.PI * 0.14); g.closePath(); g.fill();
         g.fillStyle = K.cream;

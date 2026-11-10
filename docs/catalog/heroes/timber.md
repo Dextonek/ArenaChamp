@@ -101,7 +101,7 @@ Spell sources: [`axeSwing.ts`](../../../src/spells/targeted/axeSwing.ts), [`fast
 | `buildTree`, `buildStump`, `buildAxe`, `buildAxeMark` | builders (one object each, for `Trait.markLook`): a tree in three stages, a stump, the double axe, and the axe lying in its 1.5 m ring |
 | `TreeFalls` | trees toppling: each pivots on its base with an accelerating fall, bounces once, lies 0.7 s and sinks; `harmless` is a slower, lighter fall with no bounce |
 | `FallShadows` | the shadow of a tree about to land: a flat dark strip with a pale border, drawn exactly where the hit is checked |
-| `ThrownProp` | one tumbling thing for Caber Toss: a tree about 2.6 m long or a huge double axe, spinning end over end |
+| `ThrownProp` | one tumbling thing for Caber Toss: a tree about 2.6 m long or his big axe (one bit), spinning end over end |
 | `Chips` | chips, leaves and sawdust |
 | `Birds` | a flock that bursts out of a tree, wings about 0.7 m across |
 | `FloatingWord` | a big outlined word floating up from a spot (TIMBER!) |
@@ -111,8 +111,8 @@ Spell sources: [`axeSwing.ts`](../../../src/spells/targeted/axeSwing.ts), [`fast
 
 [`public/models/heroes/timber_v3.glb`](../../../public/models/heroes/timber_v3.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it), built by the `TimberMythic` class (a subclass of `Timber`) in [`blender/heroes/restyle_batch1.py`](../../../blender/heroes/restyle_batch1.py) on top of [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Hank`), and its hit size is in `HERO_BODIES` in the same file (radius 0.61 m, height 2.69 m). Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: huge, a forest warden. A moss-green woven tunic and bark-brown leather leggings with leather wraps, dark boots, brown leather straps across the chest, bare brown hair under a leather brow band with a thick braid down his back, and the same great beard, now with two braids tied in brass. Signature: a fur mantle heaped round his shoulders, and the huge double-bitted axe upright at his side, its steel dark and both cutting edges glowing green, with a green rune on each blade.
-- HUD portrait (canvas-drawn in the kit data): pines behind him, the double axe over his shoulder with its edge aglow green, a moss-green tunic under a fur mantle, a brown-haired face with a leather brow band and a huge braided beard.
+- Look: huge, a forest warden. A moss-green woven tunic and bark-brown leather leggings with leather wraps, dark boots, brown leather straps across the chest, bare brown hair under a leather brow band with a thick braid down his back, and the same great beard, now with two braids tied in brass. Signature: a fur mantle heaped round his shoulders, and his axe (since 2026-11-10, from the user's drawing): one bit on a one-handed haft, held low by the haft's end at his right side and pointing forward and out, its steel dark, its edge glowing green and a green rune on each face. He swings it in one hand (the one-handed chop clip). Model: `blender/heroes/hank_axe.py`, put into the exported model by `patch_hank_axe.py`.
+- HUD portrait (canvas-drawn in the kit data): pines behind him, his one-bit axe over his shoulder with its edge aglow green, a moss-green tunic under a fur mantle, a brown-haired face with a leather brow band and a huge braided beard.
 
 ## Files
 

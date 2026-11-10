@@ -4,7 +4,7 @@ import * as THREE from 'three';
  * The timber kit (pipeline/designs/kit-timber.md): Hank the Lumberjack. Plaid red, wood brown and pine green, with pale
  * sawdust and birch as the foil (it shows on the dark floor and under every dark layer). Chunky stylised pines in three stages
  * (a light sapling, a mid young tree, a tall dark full tree, each with a dark footprint disc at its real obstacle radius), a
- * stump, a double axe, a falling tree 8 m long and 1.6 m wide (the strip it hits), a tumbling thrown tree and axe, sawdust and
+ * stump, his one-bit axe, a falling tree 8 m long and 1.6 m wide (the strip it hits), a tumbling thrown tree and axe, sawdust and
  * leaves, a flock of birds, a floating word and the flat shadow strip. Everything is pooled, takes world-space positions and has
  * a `reset()`. Flat unlit colours (nothing additive), so nothing turns into a white blob under bloom.
  */
@@ -131,19 +131,22 @@ export function buildStump(): THREE.Group {
   return g;
 }
 
-/** The blade of a double axe: a flat butterfly shape in the x/y plane (x along the haft's crosspiece), 0.1 m thick. */
+/**
+ * The head of Hank's axe (one bit, as on his model since 2026-11-10): a flat shape in the x/y plane, the haft along y
+ * through the eye at the origin, a short poll toward -x and the blade flaring out to its curved edge toward +x, 0.1 m thick.
+ */
 function axeHeadGeo(span: number): THREE.BufferGeometry {
-  return cachedGeo(`axeHead:${span}`, () => {
+  return cachedGeo(`axeHead1:${span}`, () => {
     const k = span / 0.75;
     const sh = new THREE.Shape();
-    const pts: [number, number][] = [[0, 0.11], [0.5, 0.5], [0.75, 0.04], [0.75, -0.04], [0.5, -0.5], [0, -0.11], [-0.5, -0.5], [-0.75, -0.04], [-0.75, 0.04], [-0.5, 0.5]];
+    const pts: [number, number][] = [[-0.16, 0.13], [0.1, 0.13], [0.5, 0.42], [0.7, 0.36], [0.78, 0.12], [0.8, -0.08], [0.74, -0.3], [0.55, -0.48], [0.38, -0.36], [0.1, -0.13], [-0.16, -0.13]];
     pts.forEach(([x, y], i) => (i ? sh.lineTo(x * k, y * k) : sh.moveTo(x * k, y * k)));
     sh.closePath();
     return new THREE.ExtrudeGeometry(sh, { depth: 0.1 * k, bevelEnabled: false }).translate(0, 0, -0.05 * k);
   });
 }
 
-/** A double axe: a haft along y (`len`) with the butterfly head at its top. Pale steel, dark haft, a red grip. */
+/** Hank's axe: a haft along y (`len`) with its one-bit head at the top. Pale steel, dark haft, a red grip. */
 export function buildAxe(len: number, span: number): THREE.Group {
   const g = new THREE.Group();
   g.add(cylMesh(0.06 * len / 1.4, 0.07 * len / 1.4, len, 0, 0x5a3a1c, 6));
@@ -341,7 +344,7 @@ export class FallShadows {
 // ---------------------------------------------------------------------------------------------------------------
 
 /**
- * One tumbling thing for Caber Toss: a tree about 2.6 m long (trunk, a crown, a root ball) or a huge double axe, spinning end over
+ * One tumbling thing for Caber Toss: a tree about 2.6 m long (trunk, a crown, a root ball) or his big axe, spinning end over
  * end about its middle. A spin that sweeps a 1.3 m circle is what the bolt's 0.9 m radius plus a body really hits.
  */
 export class ThrownProp {

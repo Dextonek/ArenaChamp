@@ -474,7 +474,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| axe swing | A quick swing of the double axe; any of his trees it touches is chopped and falls along a strip. | self (r 3) | 2.1 s · hero kit Q | [source](../../src/spells/targeted/axeSwing.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
+| axe swing | A quick swing of his axe; any of his trees it touches is chopped and falls along a strip. | self (r 3) | 2.1 s · hero kit Q | [source](../../src/spells/targeted/axeSwing.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
 | fast growth | He slams the axe into the ground and a tree sprouts at a spot, hitting whoever stands there. | ground (r 1.5) | 1.8 s · hero kit W | [source](../../src/spells/targeted/fastGrowth.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
 | caber toss | He rips up the nearest tree and hurls it end over end, or throws his axe if there is none. | ground (r 1) | 3.0 s · hero kit E | [source](../../src/spells/targeted/caberToss.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
 | timber call | Five trees grow in a row; a recast swings and they fall like dominoes along the row. | ground (r 1) | 9.3 s (the fall 3.65 s) · hero kit R | [source](../../src/spells/targeted/timberCall.ts), [kit sheet](../../pipeline/designs/kit-timber.md) |
