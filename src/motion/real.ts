@@ -36,6 +36,26 @@ const HIT: Record<string, number> = {
   Jump_Land: 0.4,
 };
 
+/**
+ * How a hero of this style attacks and what it carries, where that is not what its kit already says (a melee hero
+ * swings a blade, or a heavy weapon if its attack is a smash or a cleave; a ranged one pushes a spell):
+ * - `attack`: `fist` (bare hands, in turn), `claw` (a hooking swipe), `throw` (overhand), `chop` (Hank's axe).
+ * - `hold`: what an arm does whenever it is not striking or casting, from the pack's own holding clips: `torch` (a
+ *   staff, scepter, spear or wand upright in the LEFT hand), `lantern` (something hung from the raised RIGHT hand),
+ *   `shield` (the LEFT arm up). The pack has no other hands for these, so the models are built to match.
+ */
+export interface RealStyle {
+  attack?: 'blade' | 'heavy' | 'fist' | 'claw' | 'throw' | 'chop' | 'spell';
+  hold?: 'torch' | 'lantern' | 'shield';
+}
+export const REAL_STYLE: Record<string, RealStyle> = {
+  Isolde: { hold: 'torch' },
+};
+/** The clip and the arm of each hold. */
+export const HOLD: Record<NonNullable<RealStyle['hold']>, [string, 'armL' | 'armR']> = {
+  torch: ['Idle_Torch_Loop', 'armL'], lantern: ['Idle_Lantern_Loop', 'armR'], shield: ['Idle_Shield_Loop', 'armL'],
+};
+
 interface Library {
   /** Per clip, its tracks by body part (the pelvis' position among the legs'). */
   tracks: Map<string, Record<Part, THREE.KeyframeTrack[]>>;

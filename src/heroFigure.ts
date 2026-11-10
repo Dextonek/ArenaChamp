@@ -3,7 +3,7 @@ import { BODY_MARGIN, HERO_SCALE, Hero, bodyReach, isStaff, type BoneName, type 
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
 import { BodyParts, type BodyAct, type BodyLook } from './raid/bodies/look';
-import { RealHero, isRealModel, realClipInfo, type Layer } from './motion/real';
+import { HOLD, REAL_STYLE, RealHero, isRealModel, realClipInfo, type Layer, type RealStyle } from './motion/real';
 import { clipFigure, clipInfo, gaitInfo, newClipPose, sampleClip, type ClipFigure, type ClipName, type ClipPose } from './motion/clips';
 import { traitFor } from './traits';
 
@@ -300,6 +300,7 @@ export class HeroFigure {
   /** Seconds since the last hit, for its flinch clip. */
   private realFlinch = 9;
   private realLayers: Layer[] = [];
+  private realStyle: RealStyle = {};
 
   readonly group = new THREE.Group();
   private figures = new Map<string, Hero>();
@@ -476,6 +477,7 @@ export class HeroFigure {
       this.overhead = this.melee && (attack?.look === 'smash' || attack?.look === 'cleave');
       this.attackLook = attack?.look ?? '';
       this.duellist = DUELLISTS.has(kit.name);
+      this.realStyle = REAL_STYLE[kit.name] ?? {};
     }
     if (at) this.last.copy(at);
     this.reset();
@@ -1235,9 +1237,16 @@ export class HeroFigure {
 
   /** The clip a real hero's basic attack plays. */
   private realAttackClip(melee: boolean) {
-    if (!melee) return 'Spell_Simple_Shoot';
-    if (this.overhead) return 'Sword_Attack';
-    return this.swingLeft ? 'Sword_Regular_B' : 'Sword_Regular_A';
+    const kind = this.realStyle.attack ?? (melee ? (this.overhead ? 'heavy' : 'blade') : 'spell');
+    switch (kind) {
+      case 'heavy': return 'Sword_Attack';
+      case 'fist': return this.swingLeft ? 'Punch_Cross' : 'Punch_Jab';
+      case 'claw': return 'Melee_Hook';
+      case 'throw': return 'OverhandThrow';
+      case 'chop': return 'TreeChopping_Loop';
+      case 'spell': return 'Spell_Simple_Shoot';
+      default: return this.swingLeft ? 'Sword_Regular_B' : 'Sword_Regular_A';
+    }
   }
 
   /**
@@ -1308,6 +1317,13 @@ export class HeroFigure {
     all('Walk_Loop', gw.leftFwd + ph * gw.dur, true, this.gait * wWalk);
     all('Jog_Fwd_Loop', gj.leftFwd + ph * gj.dur, true, this.gait * wJog);
     all('Sprint_Loop', gs.leftFwd + ph * gs.dur, true, this.gait * wSprint);
+
+    // what an arm carries: the pack's own holding clip on that arm, standing and walking alike
+    const hold = this.realStyle.hold ? HOLD[this.realStyle.hold] : null;
+    if (hold) {
+      for (const l of layers) l[hold[1]] = 0;
+      layers.push({ clip: hold[0], t: this.clock, loop: true, [hold[1]]: 1 });
+    }
 
     // a hit: a short flinch of the chest and arms
     this.realFlinch += dt;

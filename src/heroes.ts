@@ -141,6 +141,10 @@ export interface HeroKit {
  */
 const MODELS_V4: Record<string, string> = {
   Lyra: 'models/heroes/astral_v4.glb',
+  Brannoc: 'models/heroes/forge_v4.glb',
+  Isolde: 'models/heroes/frost_v4.glb',
+  'Sir Whiskers': 'models/heroes/cat_v4.glb',
+  'Grandma Ironknit': 'models/heroes/yarn_v4.glb',
 };
 const FIGS_V4 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('figs') === 'v4';
 
