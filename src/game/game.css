@@ -553,6 +553,37 @@
   .level { padding: 8px 2px 6px; font-size: 11px; }
   .queue-bar { bottom: calc(96px + var(--tabbar)); }
 }
+/* News: the change log (newsScreen in main.ts) */
+.news { display: flex; flex-direction: column; gap: 20px; max-width: 920px; margin: 0 auto; }
+.news-head { text-align: center; padding: 6px 0 2px; }
+.news-head p { margin: 0; }
+.news-when { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.news-date { font: 800 11.5px var(--sans); letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+.news-badge { padding: 2px 9px; border-radius: 20px; font: 800 10.5px var(--sans); letter-spacing: 0.1em; text-transform: uppercase; }
+.news-badge.next { color: #1a1206; background: linear-gradient(180deg, #ffe7a8, #c9902e); }
+.news-badge.live { color: #9ff0b4; border: 1px solid rgba(120, 220, 150, 0.5); background: rgba(60, 160, 90, 0.14); }
+.news-release.next { border-color: var(--gold); box-shadow: 0 0 0 1px rgba(201, 162, 74, 0.25), 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 34px rgba(255, 210, 122, 0.1); }
+.news-items { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; }
+.news-item { padding: 14px 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.news-item.has-media { grid-template-columns: minmax(0, 1fr) minmax(0, 340px); align-items: start; }
+.news-item:last-child { padding-bottom: 2px; }
+.news-text b { display: block; margin: 6px 0 4px; font: 700 16.5px var(--display); letter-spacing: 0.03em; color: var(--text); }
+.news-text p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.news-tag { display: inline-block; padding: 1px 8px; border-radius: 4px; border: 1px solid var(--line-gold); color: var(--gold-hi); font: 800 10px var(--sans); letter-spacing: 0.12em; text-transform: uppercase; }
+.news-tag.t-raid { color: #ffb08a; border-color: rgba(255, 140, 90, 0.45); }
+.news-tag.t-heroes { color: #c9b6ff; border-color: rgba(170, 140, 255, 0.45); }
+.news-tag.t-motion { color: #9fe3ff; border-color: rgba(110, 200, 255, 0.45); }
+.news-tag.t-arenas { color: #a8e6a0; border-color: rgba(120, 210, 120, 0.45); }
+.news-media { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: #000; }
+video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
+.news-pic { display: block; }
+.news-pic:hover .news-media, .news-pic:focus-visible .news-media { border-color: var(--gold-hi); }
+.news-lead { margin: 10px 0 2px; }
+.news-link { align-self: center; margin-top: 4px; text-align: center; }
+@media (max-width: 760px) {
+  .news-item.has-media { grid-template-columns: minmax(0, 1fr); }
+}
+
 #app, #app canvas { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
 
 /* the page between the menu and a fight (src/game/loading.ts) */

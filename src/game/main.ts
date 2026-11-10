@@ -20,8 +20,9 @@ import { TOUCH } from '../touch';
 import { RaidController } from '../raid/coop';
 import { RaidRun, scoreText } from '../raid/run';
 import { SUN_WARDEN } from '../raid/sunWarden';
+import { CHANGELOG, type NewsItem, type Release } from './changelog';
 
-type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid';
+type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'news';
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
@@ -94,6 +95,7 @@ const ICONS = {
   heroes: '<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/><path d="M12 8v8M9 11h6"/>',
   profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
   login: '<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 8l4 4-4 4M14 12H4"/>',
+  news: '<path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8.5 12h7M8.5 16h7"/>',
 } as const;
 function icon(name: keyof typeof ICONS) {
   const s = el('span', { class: 'ic', 'aria-hidden': 'true' });
@@ -206,8 +208,10 @@ function render() {
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU or Raid screen (an offline fight needs no account).
   if (!state.profile) {
-    if (state.screen !== 'cpu' && state.screen !== 'raid') { root.append(loginScreen()); return; }
-    root.append(header(), el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : raidScreen()));
+    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'news') { root.append(loginScreen()); return; }
+    root.append(header(), state.screen === 'news'
+      ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, newsScreen())
+      : el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : raidScreen()));
     keepScroll();
     return;
   }
@@ -220,7 +224,8 @@ function render() {
         : s === 'lobbies' ? lobbiesScreen()
           : s === 'lobby' && state.lobby ? lobbyScreen(state.lobby)
             : s === 'raid' ? raidScreen()
-              : menuScreen(),
+              : s === 'news' ? newsScreen()
+                : menuScreen(),
   );
   root.append(body);
   // The Play screen (also shown for a lobby that has closed) is wider, and shows the search in its own bar.
@@ -248,12 +253,12 @@ function header() {
   if (!p) {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid')),
+      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('News', 'news', 'news')),
       el('div', { class: 'who' }, el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
   }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile')),
+    el('nav', {}, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -287,6 +292,7 @@ function loginScreen() {
     el('button', { class: 'btn primary', type: 'submit', disabled: !state.connected }, state.authMode === 'login' ? 'Log in' : 'Create account'),
     el('div', { class: 'error' }, state.outdated || (state.connected ? state.authError : 'Connecting to the game server…')),
     el('p', { class: 'fine' }, 'Your name and record are kept on the game server. Passwords are stored hashed.'),
+    el('button', { class: 'hs-more news-link', type: 'button', onclick: () => go('news') }, `What's new: ${CHANGELOG[0].title} →`),
   );
   // A keyboard on a desktop goes straight to the name; a phone keeps its keyboard down until the field is tapped.
   if (!TOUCH) setTimeout(() => name.focus());
@@ -716,6 +722,42 @@ function profileScreen(p: Profile) {
             el('td', {}, `${h.seconds} s${h.reason !== 'ko' ? ` · ${h.reason}` : ''}`), el('td', { class: 'muted' }, date(h.at))))) : el('p', { class: 'muted' }, 'No matches yet.')),
     ),
   );
+}
+
+// --- news ----------------------------------------------------------------------------------------------------
+
+/**
+ * News: the change log (`changelog.ts`), newest first, one card a release (user, 2026-11-10: "Make also new page with
+ * the change log and fill it out"). Open without an account too. A release not deployed yet is marked "Coming next";
+ * the newest one that is out, "Live now". Clips do not load or play until asked.
+ */
+function newsScreen() {
+  const day = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+  const newestLive = CHANGELOG.find((r) => r.live);
+  // A clip waits for its play button: nothing loads but its poster, and nothing moves unasked.
+  const video = (clip: string, poster: string | undefined, alt: string) => {
+    const v = el('video', { class: 'news-media', src: clip, poster: poster ?? '', preload: 'none', 'aria-label': alt }) as HTMLVideoElement;
+    v.muted = true; v.loop = true; v.playsInline = true; v.controls = true;
+    return v;
+  };
+  const media = (it: NewsItem) => {
+    if (it.clip) return video(it.clip, it.poster, it.alt ?? it.title);
+    // a picture opens at full size in its own tab
+    return it.image ? el('a', { class: 'news-pic', href: it.image, target: '_blank', rel: 'noopener' }, el('img', { class: 'news-media', src: it.image, alt: it.alt ?? '', loading: 'lazy' })) : null;
+  };
+  const item = (it: NewsItem) => el('li', { class: `news-item${it.clip || it.image ? ' has-media' : ''}` },
+    el('div', { class: 'news-text' }, el('span', { class: `news-tag t-${it.tag.toLowerCase()}` }, it.tag), el('b', {}, it.title), el('p', {}, it.text)),
+    media(it));
+  const release = (r: Release) => el('section', { class: `card news-release${r.live ? '' : ' next'}` },
+    el('div', { class: 'news-when' },
+      el('span', { class: 'news-date' }, day(r.date)),
+      !r.live ? el('span', { class: 'news-badge next' }, 'Coming next') : r === newestLive ? el('span', { class: 'news-badge live' }, 'Live now') : null),
+    el('h2', {}, r.title),
+    r.lead ? el('div', { class: 'news-lead' }, video(r.lead.clip, r.lead.poster, r.lead.alt)) : null,
+    el('ul', { class: 'news-items' }, ...r.items.map(item)));
+  return el('div', { class: 'news' },
+    el('div', { class: 'news-head' }, el('h1', {}, 'News'), el('p', { class: 'muted' }, 'What changed in Arena of Kits, newest first.')),
+    ...CHANGELOG.map(release));
 }
 
 // --- lobbies -------------------------------------------------------------------------------------------------
