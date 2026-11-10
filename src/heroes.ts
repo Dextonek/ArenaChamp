@@ -135,18 +135,13 @@ export interface HeroKit {
  * are still the first style (blender/heroes/hero_figures.py).
  */
 /**
- * Heroes that have a model of the fourth style (a realistic body moved by the animation pack's own clips:
- * src/motion/real.ts, pipeline/designs/style-v4). Shown only with `?figs=v4` in the address until all 39 have one: the
- * game must never show a mix.
+ * The fourth style (user, 2026-11-10: "make all heroes in that style"): a realistic body moved by the animation pack's
+ * own clips (src/motion/real.ts, pipeline/designs/style-v4). Every hero has such a model beside its older one, named
+ * `<theme>_v4.glb`; they are shown unless the address says `?figs=old`.
  */
-const MODELS_V4: Record<string, string> = {
-  Lyra: 'models/heroes/astral_v4.glb',
-  Brannoc: 'models/heroes/forge_v4.glb',
-  Isolde: 'models/heroes/frost_v4.glb',
-  'Sir Whiskers': 'models/heroes/cat_v4.glb',
-  'Grandma Ironknit': 'models/heroes/yarn_v4.glb',
-};
-const FIGS_V4 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('figs') === 'v4';
+const FIGS_OLD = typeof location !== 'undefined' && new URLSearchParams(location.search).get('figs') === 'old';
+/** The fourth-style model that stands in for an older one: `models/heroes/blood_v2.glb` -> `models/heroes/blood_v4.glb`. */
+export const modelV4 = (url: string | undefined) => (url && !FIGS_OLD ? url.replace(/^(models\/heroes\/[a-z]+)(_v\d+)?\.glb$/, '$1_v4.glb') : url);
 
 const MODELS: Record<string, string> = {
   Vesper: 'models/heroes/blood_v2.glb',
@@ -216,7 +211,11 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
 };
 
 export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit].map((k) => {
-  const kit = { ...k, model: k.model ?? (FIGS_V4 ? MODELS_V4[k.name] : undefined) ?? MODELS[k.name] };
-  if (kit.alt) kit.alt.base = kit;
+  const kit = { ...k, model: modelV4(k.model ?? MODELS[k.name]) };
+  if (kit.alt) {
+    // the other twin: its own model, in the same style
+    kit.alt.model = modelV4(kit.alt.model);
+    kit.alt.base = kit;
+  }
   return kit;
 });

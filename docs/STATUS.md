@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-11-10 (legs, Hank's axe; friend brackets half built)_
+_Last updated: 2026-11-10 (all 39 heroes in the fourth style; friend brackets half built)_
 
 ## Current state (2026-11-05)
 **2026-11-10, second computer: committed, not pushed, not deployed**
@@ -35,13 +35,17 @@ _Last updated: 2026-11-10 (legs, Hank's axe; friend brackets half built)_
   good", 2026-11-10).** Baked and ready, not in use: its walk, jog and sprint; offered to the user next.
 - **One hero style (v4), decided 2026-11-10: "real", for all 39** (user, after seven directions for Lyra: "yes and make
   all heroes like that"). Realistic bodies (Quaternius' Universal Base Characters, CC0) moved by the Universal
-  Animation Library's own clips. **Done:** the engine path (`src/motion/real.ts`, `HeroFigure.followReal`), the clip
-  file (`public/models/anim/ual.glb`), Lyra (`astral_v4.glb`), behind `?figs=v4`; she fights a CPU duel with no errors.
-  **Next:** gate 2, the four hardest bodies (heavy male, non-human, small or old, robe with staff), then the rest in
-  batches; plan in [style-v4/README.md](../pipeline/designs/style-v4/README.md). Try it: `npm run dev`, then
-  http://localhost:5173/game?figs=v4 and pick Lyra. Without the flag nothing changed. Dropped: the five small model
-  fixes (capes, lyre, wand, forearm), since every model is replaced.
-- All of these are in the News page's next release (`live: false`).
+  Animation Library's own clips. **Done (2026-11-10):** the engine path (`src/motion/real.ts`,
+  `HeroFigure.followReal`), the clip file (`public/models/anim/ual.glb`), the kit (`blender/heroes/realkit.py`), and
+  **all 39 heroes** (40 models, `blender/heroes/real/`), now the default; `?figs=old` shows the older models. Every hero
+  loads and fought a 10 s AI duel with no errors. Details, checks and open points:
+  [style-v4/README.md](../pipeline/designs/style-v4/README.md).
+  **Waiting on the user:** to look through the roster (`npm run dev`, http://localhost:5173/game) and name heroes to
+  redo. **Next candidates:** new 2D portraits and catalog pages to match; more face variety (the paid pack has more
+  bodies); the game page and a phone, played by a person. Dropped: the five small model fixes (capes, lyre, wand,
+  forearm), since every model is replaced.
+- The News page's next release (`live: false`) is now "Every hero remade, in one realistic style"; its earlier items
+  about fixes to the older models were folded into it.
 - Not checked: a person playing; a phone; Hank in a real fight from the game camera (pictures were taken on the Heroes
   stand rig, stepped by hand).
 

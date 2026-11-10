@@ -1,8 +1,29 @@
 # One hero style (v4): directions to pick from
 
-**Status (2026-11-10): decided. Direction 7, "real", for all 39 heroes** (user: "yes and make all heroes like that").
-Lyra is built and fights behind `?figs=v4`; the other 38 are to come, in the order under "The plan" below. Without the
-flag the game is unchanged.
+**Status (2026-11-10): built. Direction 7, "real", for all 39 heroes** (user: "yes and make all heroes like that",
+then "this is good, make all heroes in that style"). All 40 models exist (the twins are two) and are the default; the
+older models show with `?figs=old`. Not pushed, not deployed.
+
+![All 39 heroes in the fourth style](lineup_v4.jpg)
+
+**How a hero is made now:** `blender/heroes/real/<theme>.py` has one `build()` that dresses a `Real`
+(`blender/heroes/realkit.py`, shapes from `figkit.py`); `blender/heroes/real_build.py -- <themes> [--shots <folder>]`
+writes `public/models/heroes/<theme>_v4.glb` and a check picture. Lyra, Brannoc, Sir Whiskers, Grandma Ironknit and
+Isolde were built first as the proof (a plain one, a heavy one, a cat's head, a small old one, a bell skirt with a
+spear); the other 35 in three parallel batches with shared helpers in `real/parts_a.py`, `parts_b.py`, `parts_c.py`.
+`src/heroes.ts` `modelV4` maps each older model path to its `_v4` file; `REAL_STYLE` in `src/motion/real.ts` says who
+holds what (the pack's torch arm for 17 staff, scepter, lyre, mirror and lantern holders; the shield arm for Auriel)
+and who strikes how (fists, claws, a throw, Hank's chop).
+
+**Checked:** all 40 load through `HeroFigure` with no error (the line-up above is that); every hero fought a 10 s AI
+duel on the tool page against another, both on their new models: 39 fights, no errors; type check, build, server test.
+**Not checked:** a person playing; a phone; the game page's own camera for every hero; each hero's every cast style.
+
+**Known, for later:** one face per sex (the free pack), so faces repeat: heroes differ by skin tone, hair, build and
+what covers the face. The 2D portraits and the catalog pages still describe the older models. `HERO_BODIES` (hit sizes)
+are unchanged. Kit notes from the batches: a held staff's length is scaled by depth, not height (the batch helpers
+correct it); `R.cape` and `R.ring` near the neck are unreliable on the male body; `Hair_Long` and `Hair_Buns` do not fit
+the male head; the skin texture has painted underwear (cover it); `flat=True` on `R.mat` does not reach pieces.
 
 The user: "as you can see heroes have different style, let's make one better". The 39 heroes come from three
 generations: A, the 12 oldest (`hero_figures.py`: slim, small heads, plain robes: Lyra, Vitriol, Nyx, Fenna, Marin,

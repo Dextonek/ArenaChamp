@@ -45,8 +45,9 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
 - **One hero style, the fourth: realistic, one continuous body (decided 2026-11-10).** The user compared seven
   directions for Lyra (`pipeline/designs/style-v4/README.md`) and chose "real", for all 39 heroes: Quaternius'
   Universal Base Characters bodies (CC0) on the skeleton of his Universal Animation Library, whose clips play on them
-  as they are (`src/motion/real.ts`, `blender/heroes/style_real.py`, models `*_v4.glb`, shown with `?figs=v4` until all
-  39 exist). Lyra is done; the plan and its gates are in that README. The older three styles stay until the switch.
+  as they are (`src/motion/real.ts`). All 39 are built (`blender/heroes/realkit.py`, one `build()` per hero in
+  `blender/heroes/real/`, `real_build.py`; models `*_v4.glb`) and are the default; `?figs=old` shows the older models.
+  A new or changed hero is made the same way; staffs go in the left hand, weapons in the right (that README).
 - **Motion comes from an animator's clips, not hand-built poses.** Standing comes from Quaternius' Universal Animation
   Library (CC0, a realistic figure like ours: `pipeline/assets/ual/`, `pipeline/tools/bake-ual.js`) since 2026-11-10,
   after fits of the KayKit idle onto our heroes were rejected (docs/knowledge/retargeting-arms.md); the rest is still

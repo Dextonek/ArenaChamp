@@ -33,7 +33,7 @@ class Fig:
         self.facet = False
 
     # ---- materials ---------------------------------------------------------------------------------------
-    def mat(self, key, color, rough=0.6, metal=0.0, emit=None, strength=1.0, double=False, flat=False):
+    def mat(self, key, color, rough=0.6, metal=0.0, emit=None, strength=1.0, double=False, flat=False, alpha=1.0):
         m = bpy.data.materials.new(f"{self.name}_{key}")
         m.use_nodes = True
         b = m.node_tree.nodes["Principled BSDF"]
@@ -44,6 +44,12 @@ class Fig:
             b.inputs["Emission Color"].default_value = rgb(emit)
             b.inputs["Emission Strength"].default_value = strength
         m.use_backface_culling = not double
+        if alpha < 1:
+            # see-through (a wing, water): the game keeps a model's own transparency
+            b.inputs["Alpha"].default_value = alpha
+            m.blend_method = "BLEND"
+            if hasattr(m, "surface_render_method"):
+                m.surface_render_method = "BLENDED"
         self.mats[key] = m
         if flat:
             self.flat.add(key)

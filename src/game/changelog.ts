@@ -39,33 +39,28 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-10',
-    title: 'Heroes stand tall',
+    title: 'Every hero remade, in one realistic style',
     live: false,
     items: [
       {
+        tag: 'Heroes',
+        title: 'All 39 heroes have a new look',
+        text: 'Every hero is rebuilt in one style: realistic bodies with smooth, continuous shapes, each in its own colours and with its signature: Lyra\'s crescent bow and star halo, Isolde\'s crown of ice, Brannoc\'s forge pack, Sir Whiskers\' rapier. Before, the roster was three different styles side by side.',
+      },
+      {
         tag: 'Motion',
-        title: 'Heroes stand like people',
-        text: 'Heroes stand with a new standing animation made on a figure built like them: weight on one leg, one foot a little forward, arms relaxed by their sides, instead of a deep crouch with the knees pushed forward and the arms held stiffly out. In a fight their feet now land under them when they stand and walk, and slide less. Hands no longer sink into robes, skirts and round coats.',
+        title: 'Hand-animated motion made for these bodies',
+        text: 'Heroes stand, walk, jog, sprint, strike, cast, flinch and fall with animations made for exactly this kind of body, so arms no longer sink into robes and legs no longer fold. Blades are swung, fists and claws strike in turn, flasks and parcels are thrown overhand.',
+      },
+      {
+        tag: 'Motion',
+        title: 'Staffs upright, shields up',
+        text: 'A staff, scepter, spear, wand, lyre, mirror or lantern is carried upright in the left hand, standing and walking; Auriel keeps her shield raised. Swords, hammers and axes are swung in the right hand.',
       },
       {
         tag: 'Heroes',
-        title: 'Hank carries a woodsman\'s axe',
-        text: 'Hank\'s axe has one blade now, on a haft he holds by its end, low at his side with the head out in front. He swings it in one hand.',
-      },
-      {
-        tag: 'Heroes',
-        title: 'Sirix spreads his wings',
-        text: 'Sirix\'s wings are two pairs of pale, see-through insect wings rising behind his shoulders, as in his portrait, instead of two solid ovals hanging down his back. Marin\'s water sash is see-through again too.',
-      },
-      {
-        tag: 'Motion',
-        title: 'Weapons held as each hero was designed',
-        text: 'On the Heroes stand Brannoc\'s hammer hangs by his boot and Oblivion\'s greatsword hangs low in his right hand. Grandma Ironknit holds her needles out like a duellist, and Shiori\'s brush stands beside her instead of inside her robe.',
-      },
-      {
-        tag: 'Motion',
-        title: 'Scepters up, blades on guard',
-        text: 'Heroes no longer point their scepters, wands, mirrors and needles straight ahead like sticks while they stand and walk: Vesper, Zambini, Silvane and the others hold them up the way they are made. Sir Whiskers and Pim and Pom keep their blades raised on guard.',
+        title: 'Hank\'s axe and Sirix\'s wings',
+        text: 'Hank carries a woodsman\'s axe with one blade, held by the end of its haft. Sirix has two pairs of pale, see-through wings rising behind his shoulders.',
       },
     ],
   },

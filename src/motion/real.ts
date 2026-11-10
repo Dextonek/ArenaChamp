@@ -8,7 +8,7 @@ import { HERO_SCALE } from '../effects/weapons/hero';
  * Heroes of the fourth style (user, 2026-11-10: "make them look real, a continuous body", then "make all heroes like
  * that"): a realistic body on the 65-bone skeleton of Quaternius' Universal Base Characters, moved by the clips of his
  * Universal Animation Library as they are (both CC0). No fitting: the bodies and the clips were made for each other.
- * Models: `public/models/heroes/*_v4.glb` (blender/heroes/style_real.py); clips: `public/models/anim/ual.glb`
+ * Models: `public/models/heroes/*_v4.glb` (blender/heroes/realkit.py, one file per hero in blender/heroes/real/); clips: `public/models/anim/ual.glb`
  * (pipeline/tools/strip-anim.mjs). `HeroFigure` owns one `RealHero` per such model and tells it each frame which clips
  * to show (`pose`); the older heroes and the bosses keep the 16-bone path in `effects/weapons/hero.ts`.
  * Design: pipeline/designs/style-v4/README.md.
@@ -49,7 +49,15 @@ export interface RealStyle {
   hold?: 'torch' | 'lantern' | 'shield';
 }
 export const REAL_STYLE: Record<string, RealStyle> = {
-  Isolde: { hold: 'torch' },
+  // a staff, scepter, spear, wand, lyre, mirror, brush or lantern upright in the left hand
+  Vesper: { hold: 'torch' }, Isolde: { hold: 'torch' }, Kaia: { hold: 'torch' }, Sefu: { hold: 'torch' }, Fenna: { hold: 'torch' },
+  Mortis: { hold: 'torch' }, Cantor: { hold: 'torch' }, Opaline: { hold: 'torch' }, Shiori: { hold: 'torch' }, Tempo: { hold: 'torch' },
+  Silvane: { hold: 'torch' }, 'Mr. Ledger': { hold: 'torch' }, Gus: { hold: 'torch' }, 'Barry Cloudsley': { hold: 'torch' }, Bo: { hold: 'torch' },
+  'The Great Zambini': { hold: 'torch' }, Wick: { hold: 'torch' },
+  Auriel: { hold: 'shield' },
+  // how they strike
+  Vitriol: { attack: 'throw' }, Pip: { attack: 'throw' }, Sirix: { attack: 'claw' }, Mabel: { attack: 'claw' }, Hank: { attack: 'chop' },
+  'Big Yoko': { attack: 'fist' }, Mum: { attack: 'fist' },
 };
 /** The clip and the arm of each hold. */
 export const HOLD: Record<NonNullable<RealStyle['hold']>, [string, 'armL' | 'armR']> = {
