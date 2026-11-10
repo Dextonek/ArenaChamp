@@ -1,8 +1,25 @@
 # Status
 
-_Last updated: 2026-11-10 (second computer set up)_
+_Last updated: 2026-11-10 (legs, Hank's axe; friend brackets half built)_
 
 ## Current state (2026-11-05)
+**2026-11-10, second computer: committed, not pushed, not deployed**
+- `b2246ee` Heroes stand tall (user, with screenshots of Isolde and Brannoc: "in the showcase of champ some of the champ
+  has werid legs"). The pack's figure has a long thigh and a short shin, so its leg directions copied as they were put our
+  heroes' feet behind the hips with the knees pushed forward. Standing, walking and running now fit the legs to each hero
+  (`fitLeg` in `src/heroFigure.ts`); the Heroes stand shows everyone at ease (`atEase`: 35% of the idle's crouch, no fist
+  guard). Knees on the stand 16-22° (were 31-56°); walking foot slide down (Sefu 42 → 33%, Hank 36 → 28%). Write-up:
+  [hero-holds.md](../pipeline/designs/hero-holds.md) "Legs fitted to the hero".
+- `2313c57` Hank's axe (user, with a drawing: "hank shoud have axe like this and holding it like this"): one bit on a
+  one-handed haft, held low by its end at his side, head out in front, swung in one hand; portrait, Q icon and thrown axe
+  match. New hold `low` in `heroFigure.ts`. The model was patched in Blender here (`blender/heroes/patch_hank_axe.py`),
+  because the figure build needs helper modules from `C:\projectG\xianxia\blender`, which this computer does not have
+  (SETUP.md now says so). `restyle_batch1.py` builds the same axe (`hank_axe.py`) but that path is **not run yet**: on
+  the first computer, rebuild `timber_v3` once and compare it with the committed model.
+- Both are in the News page's next release ("Heroes stand tall", `live: false`).
+- Not checked: a person playing; a phone; Hank in a real fight from the game camera (pictures were taken on the Heroes
+  stand rig, stepped by hand).
+
 **Second computer set up (2026-11-10):** cloned, branch `feat/particle-editor` tracking `origin/main`, `npm ci`, and
 the type check, build and server test all pass. The lock file named a private registry from the first computer
 (`npm ci` failed with 401); it now names the public npm addresses, same versions and checksums (`9a3947e`). `SETUP.md`
@@ -1090,7 +1107,16 @@ basic attack, fought in one of five arenas. Everything below is committed on `fe
   walks round, then casts; the AI only picks spells it can see with). AI duels still finish (17-24 s).
 
 ## In progress
-- Nothing running (2026-11-03). Next: v4 batch 2. Side sessions: the multiplayer shell one is idle; the older kit
+- **Friend brackets (2026-11-10, user chose it as the next build step): the server half is written, not tested, not
+  committed.** In the working tree only: `server/hub.mjs` (cups: `cup_create`, `cup_join`, `cup_leave`, `cup_start`,
+  `cup_pick`, `cup_ready`, the `cup` state message; byes; rooms with 60 s to pick; seats held by account name),
+  `server/accounts.mjs` (tournaments won), `server/game-server.mjs` (room timings for tests), `server/protocol.mjs`
+  (`PROTOCOL` 6). Still to do: the client (`src/net/client.ts` types, a bracket screen in `src/game/main.ts`, back to the
+  bracket after a match), a 4-player cup in `server/smoke-test.mjs` (with a bye and a reconnect), docs
+  (`docs/architecture/multiplayer.md` messages), News. **Do not deploy with these files as they are**: `npm run
+  cf:deploy` builds the working tree. To set them aside: `git stash push server/hub.mjs server/accounts.mjs
+  server/game-server.mjs server/protocol.mjs`.
+- Older: nothing running (2026-11-03). Next: v4 batch 2. Side sessions: the multiplayer shell one is idle; the older kit
   one ("Make the 20 hero kits play differently", `68f976c` and `4f39f41`, since replaced by v3 and v4) is idle; the user
   chose to leave it.
 - **Hero roles, committed `68f976c` + `4f39f41`** (user 2026-10-30: "all heroes seem kinda the same ... should be different, like competitive").

@@ -9,7 +9,7 @@ read `CLAUDE.md` (the working rules) and `docs/STATUS.md` (where the work stands
 | Git | any recent | |
 | Node.js | 24 (24.17 used) | the game, the tools, the server |
 | ffmpeg | any recent, on the PATH | only to make clips (`pipeline/tools/clip-film.js`) |
-| Blender | 5.2 LTS | only to rebuild hero, weapon, arena or boss models (`blender/`) |
+| Blender | 5.2 LTS | only to rebuild hero, weapon, arena or boss models (`blender/`). The hero builds (`blender/heroes/moba_figures.py`) also load helper modules (`dao_blender`, `figure_kit`, `kit`) from `C:\projectG\xianxia\blender`, which is not in this repo: copy that folder from the first computer to the same path |
 | Claude desktop app | | the browser pane and `.claude/launch.json` dev servers |
 
 ## 2. Get the code
