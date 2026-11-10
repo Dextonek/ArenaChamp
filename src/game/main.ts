@@ -83,6 +83,24 @@ const portrait = (kit: HeroKit, cls = 'portrait') => {
   return c;
 };
 
+// --- line icons ----------------------------------------------------------------------------------------------
+
+/** Small line icons (24 x 24, drawn in the text colour) for the tabs, the login's two doors and the empty states. */
+const ICONS = {
+  play: '<path d="M8 16L20 4M20 4v4M20 4h-4M6 14l4 4M8 16l-4 4M16 16L4 4M4 4v4M4 4h4M18 14l-4 4M16 16l4 4"/>',
+  cpu: '<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>',
+  raid: '<path d="M12 3c.5 3.5 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2 .8-3.2 2-4.5.2 2 1 3 2 3 .3-3-1-5.5 1-9z"/>',
+  lobbies: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.1c2.6.4 4.5 2.8 4.5 5.9"/>',
+  heroes: '<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/><path d="M12 8v8M9 11h6"/>',
+  profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
+  login: '<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 8l4 4-4 4M14 12H4"/>',
+} as const;
+function icon(name: keyof typeof ICONS) {
+  const s = el('span', { class: 'ic', 'aria-hidden': 'true' });
+  s.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
+  return s;
+}
+
 // --- random pick ---------------------------------------------------------------------------------------------
 
 /** The picker's choice that stands for "any hero": it becomes a real hero when the match or fight starts. */
@@ -171,20 +189,25 @@ function render() {
   const kept = new Map<string, number>();
   if (state.screen === shownScreen) root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => kept.set(e.dataset.keepScroll!, e.scrollTop));
   root.replaceChildren();
-  if (state.screen !== shownScreen) {
+  // A screen that was not on show a moment ago comes in with a short rise (`.screen.enter`); a redraw does not.
+  const fresh = state.screen !== shownScreen;
+  if (fresh) {
     shownScreen = state.screen;
     root.scrollTop = 0;
   }
-  if (match.active || cpu.active || raid.active || coop.active) { root.style.display = 'none'; return; }
+  if (match.active || cpu.active || raid.active || coop.active) { root.style.display = 'none'; shownScreen = null; return; }
   root.style.display = '';
+  const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU or Raid screen (an offline fight needs no account).
   if (!state.profile) {
-    root.append(state.screen === 'cpu' ? el('main', { class: 'screen' }, cpuScreen()) : state.screen === 'raid' ? el('main', { class: 'screen' }, raidScreen()) : loginScreen());
+    if (state.screen !== 'cpu' && state.screen !== 'raid') { root.append(loginScreen()); return; }
+    root.append(header(), el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? cpuScreen() : raidScreen()));
+    keepScroll();
     return;
   }
   root.append(header());
   const s = state.screen;
-  const body = el('main', { class: 'screen' });
+  const body = el('main', { class: `screen${fresh ? ' enter' : ''}` });
   body.append(
     s === 'heroes' ? heroesScreen()
       : s === 'profile' ? profileScreen(state.profile)
@@ -199,7 +222,7 @@ function render() {
   const play = !!body.querySelector(':scope > .hs');
   body.classList.toggle('wide', play);
   if (state.queue.on && !play) root.append(queueBar());
-  root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
+  keepScroll();
   if (scrollToHero) {
     scrollToHero = false;
     // Just under the header, which wraps to three lines on a phone.
@@ -212,13 +235,20 @@ function render() {
 /** Set by the Play screen's "full kit" link: the Heroes screen opens scrolled to that hero's row. */
 let scrollToHero = false;
 
+/** The bar along the top (on a phone its tabs sit along the bottom). Without an account: the two offline screens and a way to log in. */
 function header() {
-  const p = state.profile!;
-  const nav = (label: string, screen: Screen) =>
-    el('button', { class: `nav${state.screen === screen ? ' on' : ''}`, onclick: () => go(screen) }, label);
+  const p = state.profile;
+  const nav = (label: string, screen: Screen, ic: keyof typeof ICONS) =>
+    el('button', { class: `nav${state.screen === screen ? ' on' : ''}`, onclick: () => go(screen) }, icon(ic), el('span', {}, label));
+  if (!p) {
+    return el('header', { class: 'top' },
+      el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
+      el('nav', {}, nav('vs CPU', 'cpu', 'cpu'), nav('Raid', 'raid', 'raid')),
+      el('div', { class: 'who' }, el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
+  }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu'), nav('vs CPU', 'cpu'), nav('Raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies'), nav('Heroes', 'heroes'), nav('Profile', 'profile')),
+    el('nav', {}, nav('Play', 'menu', 'play'), nav('vs CPU', 'cpu', 'cpu'), nav('Raid', 'raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -242,22 +272,27 @@ function loginScreen() {
     el('button', { type: 'button', class: `tab${state.authMode === mode ? ' on' : ''}`, onclick: () => { state.authMode = mode; state.authError = ''; render(); } }, label);
   const form = el('form', { class: 'card login', onsubmit: submit },
     el('div', { class: 'title' }, el('span', { class: 'sigil big' }, '⚔'), el('h1', {}, 'Arena of Kits'), el('p', { class: 'muted' }, TOUCH ? '1v1 hero duels · stick to move · drag a spell to aim' : '1v1 hero duels · click to move · Q W E R to cast')),
+    // The quickest way in comes first: two fights that need no account.
+    el('div', { class: 'guest' },
+      el('button', { class: 'door', type: 'button', onclick: () => go('cpu') }, icon('play'), el('b', {}, 'Duel the CPU'), el('span', { class: 'muted' }, 'Play now · no account')),
+      el('button', { class: 'door', type: 'button', onclick: () => go('raid') }, icon('raid'), el('b', {}, 'Raid the bosses'), el('span', { class: 'muted' }, 'Play now · no account'))),
+    el('div', { class: 'or' }, 'or play online'),
     el('div', { class: 'tabs' }, tab('login', 'Log in'), tab('register', 'Create account')),
     name, pass,
     el('button', { class: 'btn primary', type: 'submit', disabled: !state.connected }, state.authMode === 'login' ? 'Log in' : 'Create account'),
     el('div', { class: 'error' }, state.outdated || (state.connected ? state.authError : 'Connecting to the game server…')),
     el('p', { class: 'fine' }, 'Your name and record are kept on the game server. Passwords are stored hashed.'),
-    el('div', { class: 'or' }, 'or'),
-    el('button', { class: 'btn ghost', type: 'button', onclick: () => go('cpu') }, 'Play vs CPU · no account needed'),
-    el('button', { class: 'btn ghost', type: 'button', onclick: () => go('raid') }, 'Raid · no account needed'),
   );
-  setTimeout(() => name.focus());
+  // A keyboard on a desktop goes straight to the name; a phone keeps its keyboard down until the field is tapped.
+  if (!TOUCH) setTimeout(() => name.focus());
   return el('div', { class: 'center login-screen' }, form, heroStrip());
 }
 
 /** The roster as a strip of portraits (login backdrop). */
 function heroStrip() {
-  return el('div', { class: 'strip' }, ...kits.map((k) => portrait(k, 'portrait sm')));
+  // The roster twice, end to end: the track slides half its own width and starts over without a seam.
+  const row = () => kits.map((k) => { const c = portrait(k, 'portrait sm'); c.title = `${k.name}, ${k.title}`; return c; });
+  return el('div', { class: 'strip' }, el('div', { class: 'strip-track' }, ...row(), ...row()));
 }
 
 // --- menu / play ---------------------------------------------------------------------------------------------
@@ -388,30 +423,21 @@ function howToFight() {
   return d;
 }
 
-/** The chosen hero with its spells, or the Random tile's icon when it is still to be drawn. */
-function chosenHero(hero: HeroKit | undefined) {
-  if (!hero) {
-    return el('div', { class: 'chosen' }, randomPortrait('portrait lg'),
-      el('div', {}, el('div', { class: 'kit-name' }, 'Random hero'), el('div', { class: 'muted' }, 'Drawn when the fight starts')));
-  }
-  return el('div', { class: 'chosen' }, portrait(hero, 'portrait lg'),
-    el('div', {}, el('div', { class: 'kit-name' }, hero.name), el('div', { class: 'muted' }, hero.title),
-      el('div', { class: 'spell-row' }, ...hero.spells.map((s) => canvasOf(64, s.icon, 'icon sm')))));
-}
-
 /** The hero grid. Random comes first; `pick` gets `RANDOM` for it. */
 function heroPicker(selected: string, taken: string[], pick: (name: string) => void) {
   const random = el('button', {
     class: `pick${selected === RANDOM ? ' on' : ''}`, title: 'A random hero', onclick: () => pick(RANDOM),
   }, randomPortrait('portrait sm'), el('span', {}, 'Random'));
   random.style.setProperty('--accent', '#c9a24a');
-  return el('div', { class: 'picker' }, random, ...kits.map((k) => {
+  return el('div', { class: 'picker' }, random, ...kits.map((k, i) => {
     const off = taken.includes(k.name);
     const b = el('button', {
       class: `pick${k.name === selected ? ' on' : ''}`, disabled: off, title: off ? `${k.name} is taken` : `${k.name}, ${k.title}`,
       onclick: () => pick(k.name),
     }, portrait(k, 'portrait sm'), el('span', {}, k.name));
     b.style.setProperty('--accent', k.accent);
+    // its place in the deal when the screen opens (game.css, tile-in)
+    b.style.setProperty('--i', String(i + 1));
     return b;
   }));
 }
@@ -495,7 +521,7 @@ function cpuScreen() {
   // A match from the queue or a lobby would take the scene over: those come first.
   const busy = state.queue.on || !!state.lobby;
   const levels = el('div', { class: 'levels' }, ...CPU_LEVELS.map((l) => el('button', {
-    class: `level${l.id === level.id ? ' on' : ''}`, title: l.blurb,
+    class: `level lv-${l.id}${l.id === level.id ? ' on' : ''}`, title: l.blurb,
     onclick: () => { cpuPick.level = l.id; safeSet('cpu.level', String(l.id)); render(); },
   }, el('span', { class: 'pips' }, '◆'.repeat(l.id)), el('b', {}, l.name, won.has(l.id) ? el('span', { class: 'won', title: 'beaten' }, '✓') : null))));
   const foeSelect = el('select', {
@@ -504,24 +530,30 @@ function cpuScreen() {
   },
   el('option', { value: 'random', selected: !foeKit }, 'A random hero'),
   ...kits.filter((k) => k.name !== choice).map((k) => el('option', { value: k.name, selected: k === foeKit }, `${k.name}, ${k.title}`)));
-  return el('div', { class: 'cpu' },
-    el('section', { class: 'card' },
-      el('h2', {}, 'Play vs CPU'),
-      el('p', { class: 'muted' }, 'An offline duel against the computer in a random arena. No account or server needed; it does not count on your profile.'),
-      el('h3', {}, 'Difficulty'),
+  preview.show(hero?.model);
+  // The same hero select as Play: the chosen hero on the left, the choices on the right, the fight button along the bottom.
+  return el('div', { class: 'hs' },
+    heroShowcase(hero),
+    el('section', { class: 'card hs-roster', 'data-keep-scroll': 'cpu' },
+      el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Play vs CPU'), el('span', { class: 'muted small' }, 'Offline · a random arena · not on your record')),
+      el('h3', { class: 'gap' }, 'Difficulty'),
       levels,
       el('p', { class: 'level-blurb' }, el('b', {}, `${level.name}: `), level.blurb),
-      el('h3', {}, 'Your hero'),
-      chosenHero(hero),
-      heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
-      el('h3', { class: 'gap' }, 'Opponent'),
+      el('h3', {}, 'Opponent'),
       el('div', { class: 'foe-row' }, foeKit ? portrait(foeKit, 'portrait sm') : randomPortrait('portrait sm'), foeSelect),
-      el('div', { class: 'row play-actions' },
-        el('button', { class: 'btn primary big', disabled: busy, onclick: () => void cpu.start({ hero: hero?.name ?? randomKit([foeKit?.name]).name, foe: foeKit?.name ?? 'random', level: level.id }) },
-          `Fight ${foeKit ? foeKit.name : 'a random hero'} · ${level.name}`),
-        el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
-      busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to fight the CPU.') : null,
+      el('h3', { class: 'gap' }, 'Your hero'),
+      heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
+      howToFight(),
     ),
+    el('div', { class: 'hs-bar' },
+      el('div', { class: `hs-note small ${busy ? 'error' : 'muted'}` }, busy
+        ? 'Leave the matchmaking queue or your lobby to fight the CPU.'
+        : `${hero ? hero.name : 'A random hero'} against ${foeKit ? foeKit.name : 'a random hero'}, best of three.`),
+      el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back'),
+      el('button', {
+        class: 'btn primary big hs-find', disabled: busy,
+        onclick: () => void cpu.start({ hero: hero?.name ?? randomKit([foeKit?.name]).name, foe: foeKit?.name ?? 'random', level: level.id }),
+      }, `Fight ${foeKit ? foeKit.name : 'a random hero'} · ${level.name}`)),
   );
 }
 
@@ -539,29 +571,31 @@ function raidScreen() {
   const busy = state.queue.on || !!state.lobby;
   const boss = SUN_WARDEN;
   const code = el('input', { placeholder: 'CODE', maxlength: 4, class: 'code-in' }) as HTMLInputElement;
-  return el('div', { class: 'cpu' },
-    el('section', { class: 'card' },
-      el('h2', {}, 'Raid'),
+  preview.show(hero?.model);
+  return el('div', { class: 'hs' },
+    heroShowcase(hero),
+    el('section', { class: 'card hs-roster', 'data-keep-scroll': 'raid' },
+      el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Raid'), raid.best ? el('span', { class: 'muted small' }, `Your best alone: ${scoreText(raid.best)}`) : null),
       el('p', { class: 'muted' }, 'Take an upgrade before each boss. Beat them all and the next tier is harder, and you keep your upgrades. One loss ends the run. Pale orange means leave, gold means stand here. Hard control does not hold a boss: it fills a gauge, and a full gauge makes it kneel.'),
-      raid.best ? el('p', { class: 'muted small' }, `Your best alone: ${scoreText(raid.best)}`) : null,
-      el('h3', {}, 'Your hero'),
-      chosenHero(hero),
+      el('h3', { class: 'gap' }, 'Your hero'),
       heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
-      el('div', { class: 'row play-actions' },
-        el('button', { class: 'btn primary big', disabled: busy, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name }) }, 'Start alone'),
-        el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back')),
+      el('h3', { class: 'gap' }, 'With a friend'),
       state.profile
         ? el('div', {},
-          el('h3', { class: 'gap' }, 'With a friend'),
           el('p', { class: 'muted' }, 'Open a room and give your friend its code. A fallen hero lies where it fell until the other stands by it. If both are down, the raid is over.'),
           el('div', { class: 'row' },
-            el('button', { class: 'btn', disabled: busy, onclick: () => net.send({ t: 'lobby_create', raid: boss.id }) }, 'Open a room'),
+            el('button', { class: 'btn', disabled: busy, onclick: () => net.send({ t: 'lobby_create', raid: boss.id }) }, icon('lobbies'), 'Open a room'),
             el('form', { class: 'row', onsubmit: (e: Event) => { e.preventDefault(); net.send({ t: 'lobby_join', code: code.value }); } },
-              code, el('button', { class: 'btn', type: 'submit', disabled: busy }, 'Join by code'))))
+              code, el('button', { class: 'btn', type: 'submit', disabled: busy }, 'Join by code'))),
+          state.profile.raids?.played ? el('p', { class: 'muted small' }, raidLine(state.profile)) : null)
         : el('p', { class: 'muted' }, 'Log in to raid with a friend.'),
-      busy ? el('p', { class: 'error' }, 'Leave the matchmaking queue or your lobby to start a raid.') : null,
-      state.profile?.raids?.played ? el('p', { class: 'muted small' }, raidLine(state.profile)) : null,
     ),
+    el('div', { class: 'hs-bar' },
+      el('div', { class: `hs-note small ${busy ? 'error' : 'muted'}` }, busy
+        ? 'Leave the matchmaking queue or your lobby to start a raid.'
+        : `${hero ? hero.name : 'A random hero'} against the bosses, one after another.`),
+      el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back'),
+      el('button', { class: 'btn primary big hs-find', disabled: busy, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name }) }, icon('raid'), 'Start alone')),
   );
 }
 
@@ -668,7 +702,7 @@ function lobbiesScreen() {
       el('h2', {}, 'Lobbies'),
       el('p', { class: 'muted' }, 'Create a 1v1 lobby and give its code to a friend, or join an open one. Both pick a hero (not the same one) and ready up; the duel starts when both are ready.'),
       el('div', { class: 'row' },
-        el('button', { class: 'btn primary', disabled: busy, onclick: () => net.send({ t: 'lobby_create' }) }, 'Create lobby'),
+        el('button', { class: 'btn primary', disabled: busy, onclick: () => net.send({ t: 'lobby_create' }) }, icon('lobbies'), 'Create lobby'),
         el('form', { class: 'row', onsubmit: (e: Event) => { e.preventDefault(); net.send({ t: 'lobby_join', code: code.value }); } },
           code, el('button', { class: 'btn', type: 'submit', disabled: busy }, 'Join by code')),
       ),
@@ -685,7 +719,8 @@ function lobbiesScreen() {
             el('span', {}, el('b', {}, l.host), k ? ` · ${k.name}` : ' · picking'),
             el('button', { class: 'btn small', disabled: busy || l.host === state.profile?.name, onclick: () => net.send({ t: 'lobby_join', code: l.code }) }, 'Join'));
         }))
-        : el('p', { class: 'muted' }, 'No open lobbies. Create one!'),
+        : el('div', { class: 'empty-state' }, icon('lobbies'), el('b', {}, 'No open lobbies yet'),
+          el('span', {}, 'Create one and send its code to a friend, or find a match from the Play screen.')),
     ),
   );
 }
