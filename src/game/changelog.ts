@@ -59,6 +59,11 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Motion',
+        title: 'Weapons held as each hero was designed',
+        text: 'On the Heroes stand Brannoc's hammer hangs by his boot and Oblivion's greatsword hangs low in his right hand. Grandma Ironknit holds her needles out like a duellist, and Shiori's brush stands beside her instead of inside her robe.',
+      },
+      {
+        tag: 'Motion',
         title: 'Scepters up, blades on guard',
         text: 'Heroes no longer point their scepters, wands, mirrors and needles straight ahead like sticks while they stand and walk: Vesper, Zambini, Silvane and the others hold them up the way they are made. Sir Whiskers and Pim and Pom keep their blades raised on guard.',
       },

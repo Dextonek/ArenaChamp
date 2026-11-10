@@ -195,6 +195,11 @@ function fitArm(arm: { upper: THREE.Vector3; fore: THREE.Vector3 }, rest: number
   arm.fore.applyAxisAngle(fitAxis, a);
 }
 
+/** Casters who hold their weapons out like a fighter, on guard (their designs): Grandma Ironknit's needles. */
+const DUELLISTS = new Set(['Grandma Ironknit']);
+/** How far a long held-up item that reaches well below the hand is tipped out from the body (rad): clear of a robe. */
+const CLEAR_ROBE = 0.3;
+
 /** How much of the idle's crouch a hero keeps on the Heroes stand (`atEase`). */
 const AT_EASE = 0.35;
 const fitReach = new THREE.Vector3(), fitKnee = new THREE.Vector3();
@@ -338,6 +343,17 @@ export class HeroFigure {
   private share: Share = { body: 0, armR: 0, armL: 0, legs: 1 };
   /** Standing on the Heroes stand: the plain idle with a shallower crouch, no fist guard (`HeroPreview`). */
   atEase = false;
+  /** A caster who holds her weapons out like a fighter (`DUELLISTS`). */
+  private duellist = false;
+
+  /**
+   * A heavy weapon (a smash or a cleave) in the main hand with the other hand free is carried and swung in both hands.
+   * Not a long axe held low by its end (Hank), and on the Heroes stand not one that hangs (Brannoc's hammer, Oblivion's
+   * greatsword: their designs have them hang from the right hand).
+   */
+  private twoHanded(main: Hold, other: Hold) {
+    return this.overhead && main !== 'none' && main !== 'low' && other === 'none' && !(this.atEase && main === 'hang');
+  }
   private hipsFrom = new THREE.Vector3();
   private swingLeft = false;
   private lastWind = -1;
@@ -441,6 +457,7 @@ export class HeroFigure {
       this.melee = attack?.kind === 'melee';
       this.overhead = this.melee && (attack?.look === 'smash' || attack?.look === 'cleave');
       this.attackLook = attack?.look ?? '';
+      this.duellist = DUELLISTS.has(kit.name);
     }
     if (at) this.last.copy(at);
     this.reset();
@@ -716,7 +733,7 @@ export class HeroFigure {
     // Standing and moving, from the clips: a stance by what the hands hold, then the walk and the run over it by how
     // fast the hero goes. An arm with a staff in its hand keeps the walking-staff carry (`carry`); a two-handed weapon
     // stays across the body while the legs walk. A hand-posed cast or a knock-up takes the arms back.
-    const two = this.overhead && mainHold !== 'none' && mainHold !== 'low' && (lefty ? holdR : holdL) === 'none';
+    const two = this.twoHanded(mainHold, lefty ? holdR : holdL);
     const bare = mainHold === 'none' || holdR === holdL || (mainHold === 'hang' && !two);
     const guard = !two && this.melee && bare;
     // On the Heroes stand (`atEase`) every hero stands in the plain idle, its crouch shallower; a two-handed weapon keeps
@@ -865,7 +882,7 @@ export class HeroFigure {
   /** The clip a hero's basic attack plays: by what it holds and how the attack looks. */
   private attackClip(melee: boolean, main: Hold, other: Hold): ClipName {
     if (!melee) return 'Ranged_Magic_Shoot';
-    const look = this.attackLook, two = this.overhead && main !== 'none' && main !== 'low' && other === 'none';
+    const look = this.attackLook, two = this.twoHanded(main, other);
     // a long axe held low by its end is swung in one hand
     if (main === 'low') return 'Melee_1H_Attack_Chop';
     // bare hands, two alike (two sets of claws), or something that only hangs from the hand
@@ -921,7 +938,7 @@ export class HeroFigure {
     for (const side of [main, other] as const) {
       const hold = side === 'R' ? holdR : holdL, held = f.held[side], wa = side === 'R' ? share.armR : share.armL;
       if (!held || hold === 'none' || wa <= 0.001) continue;
-      const two = side === main && this.overhead && hold !== 'low' && (side === 'R' ? holdL : holdR) === 'none';
+      const two = side === main && this.twoHanded(hold, side === 'R' ? holdL : holdR);
       // what hangs from a hand goes with the arm, unless it is the weapon being swung
       if (hold === 'hang' && !(side === main && melee)) continue;
       const aim = this.clipAim.copy(P.arm[side].aim);
@@ -933,8 +950,13 @@ export class HeroFigure {
       // ahead, which is no way to hold one. An item held up stays as modelled for a caster (a scepter, a wand, a mirror),
       // and in a guard for a fighter, its point raised toward the enemy's face (the `up` carry).
       if (hold === 'up' && !two && (clip === 'Idle_A' || clip === WALK || clip === RUN)) {
-        if (this.melee) aim.set(side === 'R' ? 0.16 : -0.16, 0.74, 0.65).normalize();
-        else aim.copy(held.dir);
+        if (this.melee || this.duellist) aim.set(side === 'R' ? 0.16 : -0.16, 0.74, 0.65).normalize();
+        else {
+          aim.copy(held.dir);
+          // one that reaches well below the hand (Shiori's brush) is tipped out, or its lower end sinks into a robe
+          // (out is the side the hand hangs on: some models have their right hand on +x)
+          if (held.back > 0.4) aim.applyAxisAngle(fitAxis, Math.sign(f.arm[side]?.hand.x || (side === 'R' ? -1 : 1)) * CLEAR_ROBE);
+        }
       }
       f.steadyHand(side, wa, 0, aim);
       if (!two) continue;
@@ -973,7 +995,7 @@ export class HeroFigure {
     const main = lefty ? 'L' : 'R', other = lefty ? 'R' : 'L';
     const mainHold = lefty ? holdL : holdR, otherHold = lefty ? holdR : holdL;
     // A hammer, a greatsword, a long axe: the free hand goes on the haft too.
-    const both = this.overhead && mainHold !== 'none' && mainHold !== 'low' && otherHold === 'none';
+    const both = this.twoHanded(mainHold, otherHold);
     const steady = 1 - this.liftW, T = this.carryT;
     for (const side of [main, other] as const) {
       const hold = side === 'R' ? holdR : holdL, held = f.held[side], arm = f.arm[side];

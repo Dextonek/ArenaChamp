@@ -200,6 +200,18 @@ idle now turns each hanging arm in by the difference (`fitArm`, `Hero.armOut` me
 arm and forearm together, so it keeps the clip's small motion. The walk and the run are left as the animator made them:
 they swing the arms wide and far back on purpose, and that walk was accepted.
 
+### Each hero against its design (2026-11-10)
+
+The user asked to look at each hero deeply, as with Sirix's wings. A sheet of all 39 (portrait beside the model from
+four sides) against each hero's design text (`docs/catalog/heroes/*.md`, "Look") found, fixed in the figure code:
+Brannoc's hammer ("hanging from the right hand") and Oblivion's greatsword ("held low in the right hand") were lifted
+into the two-handed carry on the Heroes stand; there they now hang (`twoHanded`; fights keep the two-handed carry).
+Grandma Ironknit's needles are "held out like a duellist": she is in `DUELLISTS`, on guard like a fighter. Shiori's
+brush reaches 0.88 m below her hand and sank into her robe: a held-up item that reaches well below the hand is tipped
+out 0.3 rad (to the side the hand hangs on; Brannoc, Oblivion and Shiori are modelled with the right hand on +x).
+Checked against the design and left: Gus's sweeping staff is head-up by design; Mum's ribbon and Zephyr's scarf are
+modelled flying.
+
 ### Items held up, while standing and walking (2026-11-10)
 
 The user asked for the heroes holding their weapon the wrong way. A sheet of all 39 (standing, walking, the attack)
