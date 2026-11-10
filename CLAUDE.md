@@ -42,6 +42,11 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   newer heroes (a weatherman, a janitor, a near-naked sumo...) were rejected as "too funky" and rebuilt as mythic
   roles (`pipeline/designs/heroes-restyle.md`). Jokes can live in names and kits, not in the figure. Before a new
   hero, render it in a line-up next to Sefu and Kaia.
+- **One hero style, the fourth: realistic, one continuous body (decided 2026-11-10).** The user compared seven
+  directions for Lyra (`pipeline/designs/style-v4/README.md`) and chose "real", for all 39 heroes: Quaternius'
+  Universal Base Characters bodies (CC0) on the skeleton of his Universal Animation Library, whose clips play on them
+  as they are (`src/motion/real.ts`, `blender/heroes/style_real.py`, models `*_v4.glb`, shown with `?figs=v4` until all
+  39 exist). Lyra is done; the plan and its gates are in that README. The older three styles stay until the switch.
 - **Motion comes from an animator's clips, not hand-built poses.** Standing comes from Quaternius' Universal Animation
   Library (CC0, a realistic figure like ours: `pipeline/assets/ual/`, `pipeline/tools/bake-ual.js`) since 2026-11-10,
   after fits of the KayKit idle onto our heroes were rejected (docs/knowledge/retargeting-arms.md); the rest is still

@@ -3,6 +3,7 @@ import { BODY_MARGIN, HERO_SCALE, Hero, bodyReach, isStaff, type BoneName, type 
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
 import { BodyParts, type BodyAct, type BodyLook } from './raid/bodies/look';
+import { RealHero, isRealModel, realClipInfo, type Layer } from './motion/real';
 import { clipFigure, clipInfo, gaitInfo, newClipPose, sampleClip, type ClipFigure, type ClipName, type ClipPose } from './motion/clips';
 import { traitFor } from './traits';
 
@@ -289,8 +290,16 @@ interface BodyNow {
 export class HeroFigure {
   /** The current model has loaded (true when there is none: the capsule stands in). */
   get loaded() {
-    return !this.figure || this.figure.loaded;
+    return this.real ? this.real.loaded : !this.figure || this.figure.loaded;
   }
+
+  /** Models of the fourth style (a realistic body on the animation pack's own skeleton: `motion/real.ts`), by url. */
+  private reals = new Map<string, RealHero>();
+  /** The one shown now, if the current model is of that style (`figure` is then null). */
+  private real: RealHero | null = null;
+  /** Seconds since the last hit, for its flinch clip. */
+  private realFlinch = 9;
+  private realLayers: Layer[] = [];
 
   readonly group = new THREE.Group();
   private figures = new Map<string, Hero>();
@@ -374,7 +383,7 @@ export class HeroFigure {
 
   /** True while a model is shown. */
   get active() {
-    return !!this.figure;
+    return !!this.figure || !!this.real;
   }
 
   private body: BodyNow | null = null;
@@ -433,10 +442,21 @@ export class HeroFigure {
   /** Shows the model at `url` (undefined hides the figure), styled after `kit`. Returns whether one is shown. */
   setModel(url: string | undefined, at?: THREE.Vector3, kit?: HeroKit) {
     for (const f of this.figures.values()) f.root.visible = false;
+    for (const r of this.reals.values()) r.root.visible = false;
+    this.real = null;
     if (kit?.look !== this.body?.look) this.body = kit?.look ? { look: kit.look, phase: this.body?.phase ?? 0, rage: this.body?.rage ?? false } : null;
     this.shownYaw = NaN;
     this.figure = null;
-    if (url) {
+    if (url && isRealModel(url)) {
+      let r = this.reals.get(url);
+      if (!r) {
+        r = new RealHero(url);
+        this.reals.set(url, r);
+        this.group.add(r.root);
+      }
+      r.root.visible = true;
+      this.real = r;
+    } else if (url) {
       let f = this.figures.get(url);
       if (!f) {
         f = new Hero({ url, shade: MODEL_SHADE[url] ?? 0.9, maxEmissive: 1, tintSheen: true });
@@ -459,16 +479,25 @@ export class HeroFigure {
     }
     if (at) this.last.copy(at);
     this.reset();
-    return !!this.figure;
+    return !!this.figure || !!this.real;
   }
 
   /** Draws the current model this many times a hero's size (a boss). `setModel` keeps each model's own size. */
   setScale(scale: number) {
     this.figure?.root.scale.setScalar((this.body ? 1 : HERO_SCALE) * scale);
+    this.real?.root.scale.setScalar(HERO_SCALE * scale);
   }
 
   /** Starts loading the model at `url` without showing it, so a later `setModel` shows it at once (Pim and Pom's tag). */
   preload(url: string) {
+    if (isRealModel(url)) {
+      if (this.reals.has(url)) return;
+      const r = new RealHero(url);
+      r.root.visible = false;
+      this.reals.set(url, r);
+      this.group.add(r.root);
+      return;
+    }
     if (this.figures.has(url)) return;
     const f = new Hero({ url, shade: MODEL_SHADE[url] ?? 0.9, maxEmissive: 1, tintSheen: true });
     f.root.visible = false;
@@ -487,6 +516,7 @@ export class HeroFigure {
     this.veilNow += (target - this.veilNow) * 0.14;
     if (Math.abs(target - this.veilNow) < 0.01) this.veilNow = target;
     this.figure?.setVeil(this.veilNow);
+    this.real?.setVeil(this.veilNow);
   }
   private veilNow = 0;
 
@@ -495,12 +525,13 @@ export class HeroFigure {
     this.fadeNow += (target - this.fadeNow) * 0.14;
     if (Math.abs(target - this.fadeNow) < 0.01) this.fadeNow = target;
     this.figure?.setFade(this.fadeNow);
+    this.real?.setFade(this.fadeNow);
   }
   private fadeNow = 0;
 
   /** The model shown now (an outline goes round it), if any. */
   get shown(): THREE.Object3D | null {
-    return this.figure?.root ?? null;
+    return this.figure?.root ?? this.real?.root ?? null;
   }
 
   /** A hit landed on this hero: a flinch away from `from` and a flash in `tint`; `strength` 0..1. */
@@ -508,6 +539,7 @@ export class HeroFigure {
     const s = Math.min(1, Math.max(0, strength));
     this.flashV = Math.max(this.flashV, 0.4 + 0.6 * s);
     this.flashTint.set(tint ?? '#ff8a4a');
+    this.realFlinch = 0;
     const f = this.figure;
     if (!f) return;
     let dx = 0, dz = -1;
@@ -526,6 +558,7 @@ export class HeroFigure {
 
   /** Places the figure at `pos` facing `yaw` and poses it for this frame. */
   follow(dt: number, pos: THREE.Vector3, yaw: number, state: FigureState = {}) {
+    if (this.real) return this.followReal(this.real, dt, pos, yaw, state);
     const f = this.figure;
     if (!f) return;
     this.base.copy(pos);
@@ -1193,9 +1226,135 @@ export class HeroFigure {
     else if (speed < 0.3) this.moving = false;
   }
 
+  // ---- heroes of the fourth style: the animation pack's clips, as they are --------------------------------------------
+
+  private poseDeath(r: RealHero) {
+    r.root.position.copy(this.base);
+    if (r.loaded) r.pose([{ clip: 'Death01', t: Math.min(1, this.dying) * realClipInfo('Death01').dur * 0.92, legs: 1, torso: 1, armR: 1, armL: 1 }]);
+  }
+
+  /** The clip a real hero's basic attack plays. */
+  private realAttackClip(melee: boolean) {
+    if (!melee) return 'Spell_Simple_Shoot';
+    if (this.overhead) return 'Sword_Attack';
+    return this.swingLeft ? 'Sword_Regular_B' : 'Sword_Regular_A';
+  }
+
+  /**
+   * `follow` for a hero of the fourth style (`motion/real.ts`). The game says the same things as to the older figures
+   * (where it stands, its attack's wind-up and release, its casts, its statuses); here they choose clips of the
+   * Universal Animation Library and the moment in each, and nothing is posed by hand. Standing, walking, jogging and
+   * sprinting blend by speed on one stride; a blow or a cast takes the arms and chest, and the legs too when the hero
+   * stands; a hit, a stun, a knock-up and the fall are clips over that.
+   */
+  private followReal(r: RealHero, dt: number, pos: THREE.Vector3, yaw: number, state: FigureState) {
+    this.base.copy(pos);
+    // A paused frame (dt 0) only places the figure: the motion estimate divides by dt.
+    if (!(dt > 1e-5)) {
+      if (this.dying < 0) r.root.position.set(pos.x, pos.y, pos.z);
+      return;
+    }
+    dt = Math.min(dt, 0.05);
+    this.clock += dt;
+    if (Number.isNaN(this.shownYaw)) this.shownYaw = yaw;
+    else this.shownYaw += Math.atan2(Math.sin(yaw - this.shownYaw), Math.cos(yaw - this.shownYaw)) * ease(dt, TURN_RATE);
+    this.track(dt, pos, this.shownYaw);
+    r.root.rotation.y = this.shownYaw;
+    r.root.position.set(pos.x, pos.y, pos.z);
+    this.flashV = Math.max(0, this.flashV - dt * 3.2);
+    r.setFlash(this.flashV, this.flashTint);
+    if (!r.loaded) return;
+    if (this.dying >= 0) return this.poseDeath(r);
+    if (state.held) {
+      // Frozen solid: the last pose stays.
+      if (this.castNow && (this.castNow.t += dt) > this.castNow.dur + 0.3) this.castNow = null;
+      return;
+    }
+    const st = state.status;
+    const lifted = (st?.lift ?? 0) > 0, stunned = !!st?.stunned && !lifted;
+    this.stunW += ((stunned ? 1 : 0) - this.stunW) * ease(dt, 10);
+    this.liftW += ((lifted ? 1 : 0) - this.liftW) * ease(dt, 12);
+
+    // One stride for the walk, the jog and the sprint: which of them, by how fast the hero goes on its own legs.
+    const speed = this.vel.length(), legSpeed = speed / Math.max(0.2, r.legLength * r.root.scale.y);
+    this.gait += ((this.moving ? 1 : 0) - this.gait) * ease(dt, 8);
+    const gw = gaitInfo('Walk_Loop'), gj = gaitInfo('Jog_Fwd_Loop'), gs = gaitInfo('Sprint_Loop');
+    const want = legSpeed <= gj.speed ? Math.max(0, (legSpeed - gw.speed) / (gj.speed - gw.speed)) : 1 + Math.min(1, (legSpeed - gj.speed) / (gs.speed - gj.speed));
+    this.jog += (want - this.jog) * ease(dt, 5);
+    const g = this.jog, wWalk = Math.max(0, 1 - g), wSprint = Math.max(0, g - 1), wJog = 1 - wWalk - wSprint;
+    const dur = wWalk * gw.dur + wJog * gj.dur + wSprint * gs.dur, carried = wWalk * gw.speed + wJog * gj.speed + wSprint * gs.speed;
+    const hurry = Math.min(1.5, Math.max(0.6, legSpeed / Math.max(0.1, carried)));
+    // backing off: the same stride, run backward
+    const mv = speed > 0.4;
+    this.dirF += ((mv ? this.fwd / speed : 1) - this.dirF) * ease(dt, 6);
+    if (this.moving) this.walkPhase += (dt * hurry * (this.dirF < -0.25 ? -1 : 1)) / dur;
+    const ph = this.walkPhase;
+
+    const layers = this.realLayers;
+    layers.length = 0;
+    const all = (clip: string, t: number, loop: boolean, w: number) => { if (w > 0.001) layers.push({ clip, t, loop, legs: w, torso: w, armR: w, armL: w }); };
+    /** A clip over what is there: it takes `upper` of the chest and arms and `legs` of the legs. */
+    const over = (clip: string, t: number, loop: boolean, upper: number, legs: number) => {
+      if (upper <= 0.001 && legs <= 0.001) return;
+      for (const l of layers) {
+        l.legs = (l.legs ?? 0) * (1 - legs);
+        l.torso = (l.torso ?? 0) * (1 - upper);
+        l.armR = (l.armR ?? 0) * (1 - upper);
+        l.armL = (l.armL ?? 0) * (1 - upper);
+      }
+      layers.push({ clip, t, loop, legs, torso: upper, armR: upper, armL: upper });
+    };
+    all('Idle_Loop', this.clock, true, 1 - this.gait);
+    all('Walk_Loop', gw.leftFwd + ph * gw.dur, true, this.gait * wWalk);
+    all('Jog_Fwd_Loop', gj.leftFwd + ph * gj.dur, true, this.gait * wJog);
+    all('Sprint_Loop', gs.leftFwd + ph * gs.dur, true, this.gait * wSprint);
+
+    // a hit: a short flinch of the chest and arms
+    this.realFlinch += dt;
+    const fl = realClipInfo('Hit_Chest');
+    if (this.realFlinch < fl.dur) over('Hit_Chest', this.realFlinch, false, 0.8 * (1 - this.realFlinch / fl.dur), 0);
+
+    // the basic attack, fitted to the game's timing as on the older figures: up to its hit through the wind-up, on after it
+    const m = state.attack, rel = m?.release ?? 0;
+    if (m && rel > 0 && (rel > this.lastRelease + 0.2 || (this.lastWind >= 0 && m.wind < 0))) this.sinceHit = 0;
+    else this.sinceHit += dt;
+    this.lastRelease = rel;
+    const swinging = !!m && (m.wind >= 0 || m.release > 0 || this.sinceHit < STRIKE_RECOVER);
+    if (m && m.wind >= 0 && this.lastWind < 0) this.swingLeft = !this.swingLeft;
+    if (m && m.wind > this.lastWind && this.lastWind >= 0) this.windSec = Math.min(1, Math.max(0.1, dt / (m.wind - this.lastWind)));
+    this.lastWind = m?.wind ?? -1;
+    this.attackW += ((swinging ? 1 : 0) - this.attackW) * ease(dt, 18);
+    if (m && this.attackW > 0.01) {
+      const clip = this.realAttackClip(m.melee), info = realClipInfo(clip);
+      const tail = Math.min(info.dur - info.hit, CLIP_TAIL), lead = Math.min(info.hit, CLIP_LEAD, this.windSec * CLIP_RUSH);
+      const at = m.wind >= 0 ? info.hit - lead * (1 - m.wind) : info.hit + tail * Math.min(1, this.sinceHit / STRIKE_RECOVER);
+      over(clip, at, false, this.attackW, this.attackW * (1 - this.gait));
+    }
+
+    // a cast
+    const cn = this.castNow;
+    if (cn) {
+      cn.t += dt;
+      const castW = cn.t < cn.dur ? 1 : 1 - (cn.t - cn.dur) / 0.3;
+      if (castW <= 0) this.castNow = null;
+      else {
+        const loop = cn.style === 'raise' || cn.style === 'channel';
+        const clip = loop ? 'Spell_Simple_Idle_Loop' : cn.style === 'slam' ? 'Jump_Land' : cn.style === 'lunge' ? 'Sword_Dash' : cn.style === 'swing' ? 'Sword_Regular_C' : 'Spell_Simple_Shoot';
+        const info = realClipInfo(clip), a = Math.min(0.24, cn.dur * 0.35) * (cn.big ? 1.3 : 1);
+        const t = loop ? cn.t : cn.t < a ? info.hit * (cn.t / a) : Math.min(info.dur, info.hit + (cn.t - a));
+        const w = castW * smooth(0, 0.1, cn.t);
+        over(clip, t, loop, w, w * (1 - this.gait));
+      }
+    }
+    if (this.stunW > 0.01) over('Zombie_Idle_Loop', this.clock, true, this.stunW, this.stunW);
+    if (this.liftW > 0.01) over('Jump_Loop', this.clock, true, this.liftW, this.liftW);
+    r.pose(layers);
+  }
+
   /** Falls over (a defeated hero) over `t` 0..1: the knees give, the chest folds, then it tips forward. */
   fall(t: number) {
     this.dying = Math.max(0, t);
+    if (this.real) this.poseDeath(this.real);
     if (this.figure && !this.body) this.applyDeath(this.figure);
   }
 

@@ -33,10 +33,14 @@ _Last updated: 2026-11-10 (legs, Hank's axe; friend brackets half built)_
 - `0fb938c` Standing from a new pack: Quaternius' Universal Animation Library (CC0), a realistic figure like ours
   (`pipeline/assets/ual/`, `pipeline/tools/bake-ual.js`, `src/motion/ual.json`). **Approved by the user ("this looks
   good", 2026-11-10).** Baked and ready, not in use: its walk, jog and sprint; offered to the user next.
-- **One hero style (v4), waiting on the user's pick (2026-11-10):** the user wants one better style for all heroes, chose
-  a new style with new stand-alone builders and Lyra as the sample. Three blockout directions (lacquer and gold, heroic,
-  chibi) are in [style-v4/README.md](../pipeline/designs/style-v4/README.md); `blender/heroes/figkit.py` is the new kit.
-  Nothing in the game changed. On hold until the pick: the five model fixes (capes, lyre, wand, forearm).
+- **One hero style (v4), decided 2026-11-10: "real", for all 39** (user, after seven directions for Lyra: "yes and make
+  all heroes like that"). Realistic bodies (Quaternius' Universal Base Characters, CC0) moved by the Universal
+  Animation Library's own clips. **Done:** the engine path (`src/motion/real.ts`, `HeroFigure.followReal`), the clip
+  file (`public/models/anim/ual.glb`), Lyra (`astral_v4.glb`), behind `?figs=v4`; she fights a CPU duel with no errors.
+  **Next:** gate 2, the four hardest bodies (heavy male, non-human, small or old, robe with staff), then the rest in
+  batches; plan in [style-v4/README.md](../pipeline/designs/style-v4/README.md). Try it: `npm run dev`, then
+  http://localhost:5173/game?figs=v4 and pick Lyra. Without the flag nothing changed. Dropped: the five small model
+  fixes (capes, lyre, wand, forearm), since every model is replaced.
 - All of these are in the News page's next release (`live: false`).
 - Not checked: a person playing; a phone; Hank in a real fight from the game camera (pictures were taken on the Heroes
   stand rig, stepped by hand).

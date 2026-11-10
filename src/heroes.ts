@@ -134,6 +134,16 @@ export interface HeroKit {
  * _v3: the new heroes restyled to the game's look (pipeline/designs/heroes-restyle.md), the _v2 file kept beside it; the others
  * are still the first style (blender/heroes/hero_figures.py).
  */
+/**
+ * Heroes that have a model of the fourth style (a realistic body moved by the animation pack's own clips:
+ * src/motion/real.ts, pipeline/designs/style-v4). Shown only with `?figs=v4` in the address until all 39 have one: the
+ * game must never show a mix.
+ */
+const MODELS_V4: Record<string, string> = {
+  Lyra: 'models/heroes/astral_v4.glb',
+};
+const FIGS_V4 = typeof location !== 'undefined' && new URLSearchParams(location.search).get('figs') === 'v4';
+
 const MODELS: Record<string, string> = {
   Vesper: 'models/heroes/blood_v2.glb',
   Brannoc: 'models/heroes/forge_v2.glb',
@@ -202,7 +212,7 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
 };
 
 export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit].map((k) => {
-  const kit = { ...k, model: k.model ?? MODELS[k.name] };
+  const kit = { ...k, model: k.model ?? (FIGS_V4 ? MODELS_V4[k.name] : undefined) ?? MODELS[k.name] };
   if (kit.alt) kit.alt.base = kit;
   return kit;
 });

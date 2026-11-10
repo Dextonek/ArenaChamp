@@ -111,6 +111,9 @@ def cloth(name, pred, offset, mat):
     bm.verts.ensure_lookup_table()
     bm.normal_update()
     keep = [pred(v.index) for v in bm.verts]
+    for i, k in enumerate(keep):
+        if k:
+            covered.add(i)
     for v in bm.verts:
         v.co += v.normal * offset
     bmesh.ops.delete(bm, geom=[f for f in bm.faces if not all(keep[v.index] for v in f.verts)], context="FACES")
@@ -156,7 +159,7 @@ def piece(how):
 
 
 pieces = []
-side = lambda d: d.endswith("_l") or d.endswith("_r")  # noqa: E731
+covered = set()
 
 # ---- fitted clothes, cut from the body ---------------------------------------------------------------------------------
 cloth("Tunic", lambda i: dom[i] in ("pelvis", "spine_01", "spine_02", "spine_03", "clavicle_l", "clavicle_r", "upperarm_l", "upperarm_r"), 0.006, "tunic")
@@ -236,12 +239,36 @@ for f in pieces:
     for ob in f.finish():
         bind(ob, f.how)
 
+# ---- for the game: no skin under the clothes, one texture, one mesh --------------------------------------------------------
+bm = bmesh.new()
+bm.from_mesh(body.data)
+bmesh.ops.delete(bm, geom=[f for f in bm.faces if all(v.index in covered for v in f.verts)], context="FACES")
+bm.to_mesh(body.data)
+bm.free()
+for ob in (body, bpy.data.objects["Eyes"]):
+    mat = ob.data.materials[0]
+    nt = mat.node_tree
+    bsdf = next(n for n in nt.nodes if n.type == "BSDF_PRINCIPLED")
+    tex = next(n for n in nt.nodes if n.type == "TEX_IMAGE" and n.image and ("BaseColor" in n.image.name or "Eye_Brown" in n.image.name))
+    for name in ("Normal", "Roughness", "Metallic", "Base Color"):
+        for l in list(bsdf.inputs[name].links):
+            nt.links.remove(l)
+    nt.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
+    bsdf.inputs["Roughness"].default_value = 0.62 if ob is body else 0.25
+    bsdf.inputs["Metallic"].default_value = 0.0
+    if ob is body and tex.image.size[0] > 1024:
+        tex.image.scale(1024, 1024)
+    mat.blend_method = "OPAQUE"
+meshes = [o for o in bpy.data.objects if o.type == "MESH" and o.parent == rig]
 bpy.ops.object.select_all(action="DESELECT")
-for o in bpy.data.objects:
-    if o == rig or o.parent == rig:
-        o.select_set(True)
+for o in meshes:
+    o.select_set(True)
+bpy.context.view_layer.objects.active = body
+bpy.ops.object.join()
+body.name = "Lyra"
+rig.select_set(True)
 bpy.context.view_layer.objects.active = rig
 bpy.ops.export_scene.gltf(filepath=out, export_format="GLB", use_selection=True, export_yup=True, export_animations=False,
-                          export_skins=True, export_cameras=False, export_lights=False, export_image_format="JPEG", export_image_quality=82)
-tris = sum(len(o.data.polygons) for o in bpy.data.objects if o.type == "MESH")
-print(f"WROTE {out} {round(os.path.getsize(out) / 1024)} KB, {tris} faces")
+                          export_skins=True, export_cameras=False, export_lights=False, export_image_format="JPEG", export_image_quality=80,
+                          export_draco_mesh_compression_enable=False, export_meshopt_compression_enable=True, export_vertex_color="NONE")
+print(f"WROTE {out} {round(os.path.getsize(out) / 1024)} KB, {len(body.data.polygons)} faces, {len(body.data.materials)} materials")

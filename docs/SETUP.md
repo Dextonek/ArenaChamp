@@ -57,6 +57,7 @@ Claude desktop app the same servers start by name from `.claude/launch.json` (`v
 | `server/data/accounts.json` | The local server's accounts. It is made by itself when someone registers; nothing to copy. |
 | `blender/meshy/`, `docs/heroes/void-meshy-ingame_sheet.jpg`, `docs/heroes/void_meshy_15.png`, `docs/heroes/void_meshy_posed_15.png` | Meshy experiments the user keeps out of git. Copy them by hand if wanted. |
 | `docs/heroes/duel_brannoc_vs_lyra.mp4`, `docs/heroes/moba_v2_fight.mp4`, `docs/arenas/temple_breakable_wall.mp4` | Old gameplay recordings (68 MB), ignored for size. Copy by hand if wanted. The current clips are in `public/news/`. |
+| The full Quaternius packs | Only the files in use are in `pipeline/assets/ual/` (animation libraries 1 and 2) and `pipeline/assets/ubc/` (base bodies, hair). The whole packs (CC0, free): https://quaternius.itch.io/universal-animation-library, https://quaternius.itch.io/universal-animation-library-2, https://quaternius.itch.io/universal-base-characters |
 | The full KayKit animation pack | Only the four clip files the game uses are in `pipeline/assets/kaykit/`. The whole pack (CC0, 14 MB): https://kaylousberg.itch.io/kaykit-character-animations |
 
 ## 5. Deploying (only when the user asks)

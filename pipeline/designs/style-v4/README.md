@@ -1,6 +1,8 @@
 # One hero style (v4): directions to pick from
 
-**Status (2026-11-10): waiting on the user to pick a direction (seven shown in three rounds).** Nothing in the game has changed.
+**Status (2026-11-10): decided. Direction 7, "real", for all 39 heroes** (user: "yes and make all heroes like that").
+Lyra is built and fights behind `?figs=v4`; the other 38 are to come, in the order under "The plan" below. Without the
+flag the game is unchanged.
 
 The user: "as you can see heroes have different style, let's make one better". The 39 heroes come from three
 generations: A, the 12 oldest (`hero_figures.py`: slim, small heads, plain robes: Lyra, Vitriol, Nyx, Fenna, Marin,
@@ -60,6 +62,50 @@ halo. The bow stays on her back for now (today she holds nothing; a bow in the h
   (writes `lyra_<direction>.glb`; they are not committed, 10 s to rebuild).
 - The pictures were taken in the game's own preview light (`HeroPreview`), the blockouts loaded beside it at the
   heroes' 1.3x.
+
+## The plan (decided 2026-11-10)
+
+![Lyra v4 in a CPU fight against Brannoc, every half second](lyra_v4_fight.jpg)
+
+**Done, gate 1: the engine path and Lyra in a real fight.**
+- `public/models/heroes/astral_v4.glb` (510 KB, one mesh, 22,000 faces, 11 materials), built by
+  `blender/heroes/style_real.py` from `pipeline/assets/ubc` (the pack files in use).
+- `public/models/anim/ual.glb` (1.2 MB): 34 clips of Universal Animation Library 1 and 2, packed by
+  `pipeline/tools/strip-anim.mjs` (rotations of every bone, the pelvis' position; no mesh).
+- `src/motion/real.ts` (`RealHero`): loads such a model, splits each clip by body part (legs, torso, each arm) and shows
+  the clips it is told, each at a given moment. `HeroFigure.followReal` (src/heroFigure.ts) chooses them from what the
+  game already tells a figure: idle, walk, jog and sprint on one stride by speed; the basic attack fitted to the
+  wind-up and release; casts; a flinch, stun, knock-up and the fall. No call site changed; older heroes and bosses keep
+  the 16-bone path. A model is of this style by its file name (`*_v4.glb`), never by "its bones were found".
+- `?figs=v4` in the address shows the v4 model of every hero that has one (`MODELS_V4` in src/heroes.ts).
+- Checked: an AI duel on the tool page (`/?figs=v4`), Lyra against Brannoc, 13 s, no errors; pictures every half second
+  from a close camera. Not checked: the game page with real buttons, 375 px, a person playing.
+
+**Next, gate 2: the four hardest bodies, before any mass production.** One heavy male (Brannoc), one non-human (Sir
+Whiskers or Mabel), one small or old (Grandma Ironknit or Professor Puff), one floor-length robe with a staff (Isolde
+or Kaia), shown in a line-up with face close-ups. The free pack has two bodies with one face each: if they cannot
+carry these four, the user decides (more body types are in the paid pack).
+
+**Which clip plays when** (none are hand-built poses):
+
+| The game says | Clip |
+|---|---|
+| standing | `Idle_Loop` |
+| moving, by speed on the hero's own legs | `Walk_Loop`, `Jog_Fwd_Loop`, `Sprint_Loop` (backing off: the stride run backward) |
+| basic attack, a blade | `Sword_Regular_A` and `_B` in turn |
+| basic attack, a heavy weapon (smash, cleave) | `Sword_Attack` |
+| basic attack, ranged | `Spell_Simple_Shoot` |
+| cast: thrust, point, burst / raise, channel / slam / lunge / swing | `Spell_Simple_Shoot` / `Spell_Simple_Idle_Loop` / `Jump_Land` / `Sword_Dash` / `Sword_Regular_C` |
+| hit / stunned / knocked up / defeated | `Hit_Chest` / `Zombie_Idle_Loop` / `Jump_Loop` / `Death01` |
+| to wire at gate 2 | bare hands and claws (`Punch_Jab`, `Punch_Cross`, `Melee_Hook`, `Zombie_Scratch`), throwers (`OverhandThrow`), Hank (`TreeChopping_Loop`), a staff, scepter or mirror held up (the arm of `Idle_Torch_Loop`), a lantern or urn (`Idle_Lantern_Loop`), a shield (`Idle_Shield_Loop`) |
+
+The packs have no bow, staff or two-handed clips: Lyra shoots her star arrows with a gesture, as she did; hammers and
+greatswords are swung in one hand.
+
+**Then:** the kit frozen, the other heroes in batches (builders can run in parallel then), each batch shown; `MODELS`
+flipped once for all 39, so the live game never shows a mix; portraits, catalog pages, News. `HERO_BODIES` (hit sizes)
+stay as they are, so balance does not move. Carry over what the user set on 2026-11-10: Hank's one-bit axe held low,
+Sirix's two pairs of wings.
 
 ## What a finished model must meet (the game reads these)
 
