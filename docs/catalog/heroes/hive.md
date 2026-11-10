@@ -125,7 +125,7 @@ Spell sources: [`barbedStinger.ts`](../../../src/spells/targeted/barbedStinger.t
 
 [`public/models/heroes/hive.glb`](../../../public/models/heroes/hive.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built by `build("hive")` / `export("hive")` in [`blender/heroes/hero_figures.py`](../../../blender/heroes/hero_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.44 m, height 2.31 m.
 
-- Look: a broad, shaven fighter in black chitin plate with amber stripes over a dark under-layer, a crested insect helm with amber eye lenses, hexagonal pauldrons, bracers and serrated claw gauntlets, and a translucent wax-coloured wing cloak.
+- Look: a broad, shaven fighter in black chitin plate with amber stripes over a dark under-layer, a crested insect helm with amber eye lenses, hexagonal pauldrons, bracers and serrated claw gauntlets, and two pairs of pale translucent wings rising up and out behind his shoulders, with amber leading edges and dark veins (since 2026-11-10, after his portrait; `blender/heroes/sirix_wings.py`, put into the exported model by `patch_sirix_wings.py`). The game keeps a model's own see-through parts (the wings, Marin's water sash): before that day it drew them solid.
 - Props: `insect_helm`, `hex_pauldrons`, `claw_gauntlets`, `wing_cloak`.
 - HUD portrait (canvas-drawn in the kit data): honeycomb cells behind, pale translucent wings spread behind the shoulders, black chitin shoulders with hexagonal pauldrons and a crested insect helm with amber eye lenses.
 

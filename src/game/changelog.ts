@@ -53,6 +53,11 @@ export const CHANGELOG: Release[] = [
         text: 'Hank\'s axe has one blade now, on a haft he holds by its end, low at his side with the head out in front. He swings it in one hand.',
       },
       {
+        tag: 'Heroes',
+        title: 'Sirix spreads his wings',
+        text: 'Sirix\'s wings are two pairs of pale, see-through insect wings rising behind his shoulders, as in his portrait, instead of two solid ovals hanging down his back. Marin\'s water sash is see-through again too.',
+      },
+      {
         tag: 'Motion',
         title: 'Scepters up, blades on guard',
         text: 'Heroes no longer point their scepters, wands, mirrors and needles straight ahead like sticks while they stand and walk: Vesper, Zambini, Silvane and the others hold them up the way they are made. Sir Whiskers and Pim and Pom keep their blades raised on guard.',

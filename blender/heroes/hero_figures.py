@@ -858,13 +858,16 @@ class HeroFigure(figure_kit.Figure):
                 self.add(kit.chain(f"Claw{side}{k}", pts, [0.016, 0.011, 0.002], amber, seg=5), HAND[side])
 
     def wing_cloak(self):
-        wing = self._mat("wing", "#f6e6b0", roughness=0.3, alpha=0.35, double_sided=True)
-        vein = self._mat("wingvein", "#2a2010", roughness=0.6)
-        for side, sx in SIDES:
-            c = Vector((0.2 * sx, 0.16, 1.05))
-            self.add(kit.blob(f"Wing{side}", c, (0.17, 0.012, 0.42), wing, (12, 8), rotation=Euler((0, 0.22 * sx, 0))), CHEST)
-            self.add(kit.tube(f"WingVein{side}", Vector((0.06 * sx, 0.15, 1.42)), Vector((0.3 * sx, 0.16, 0.7)),
-                              [(0, 0.006, 0.006), (1, 0.003, 0.003)], vein, seg=4), CHEST)
+        # Two pairs of pale translucent wings rising behind the shoulders, amber leading edges, dark veins (sirix_wings.py,
+        # also used by patch_sirix_wings.py on the exported model; user, 2026-11-10: the old hanging oval "not correct")
+        import sirix_wings
+        mats = {
+            "wing": self._mat("wing", "#f6e6b0", roughness=0.3, alpha=0.35, double_sided=True),
+            "vein": self._mat("wingvein", "#2a2010", roughness=0.6),
+            "rim": self._mat("amber", "#f0b020", roughness=0.3, metallic=0.4),
+        }
+        for ob, _ in sirix_wings.build(mats):
+            self.add(ob, CHEST)
 
     def amber_stripes(self):
         amber = self._mat("amber", "#f0b020", roughness=0.3, metallic=0.4)

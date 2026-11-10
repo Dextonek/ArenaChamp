@@ -107,7 +107,8 @@ export class Hero {
    */
   robe = 0;
   /** Every material with its loaded colour and emissive, for `setFlash`. */
-  private mats: { m: THREE.MeshStandardMaterial; color: THREE.Color; emissive: THREE.Color }[] = [];
+  /** Each material with its loaded colour, emissive and see-through (a wing, a veil of glass: `applyVeil` keeps them). */
+  private mats: { m: THREE.MeshStandardMaterial; color: THREE.Color; emissive: THREE.Color; opacity: number; transparent: boolean }[] = [];
   /** Hand-local rotation that turns the hand's frame into the weapon frame (calibrated on load). */
   private gripOffset = new THREE.Quaternion();
   private gripPoint = new THREE.Vector3(0, 0.07, 0);
@@ -160,7 +161,7 @@ export class Hero {
               phys.sheen = 0.5;
             }
             if (c.emissiveIntensity !== undefined) c.emissiveIntensity = Math.min(c.emissiveIntensity, maxEmissive);
-            if (c.color && c.emissive) this.mats.push({ m: c, color: c.color.clone(), emissive: c.emissive.clone() });
+            if (c.color && c.emissive) this.mats.push({ m: c, color: c.color.clone(), emissive: c.emissive.clone(), opacity: c.opacity, transparent: c.transparent });
             return c;
           });
           mesh.material = Array.isArray(mesh.material) ? mats : mats[0];
@@ -530,13 +531,14 @@ export class Hero {
   private fade = 0;
   private applyVeil() {
     const v = this.veil;
-    for (const { m } of this.mats) {
+    for (const { m, opacity, transparent } of this.mats) {
       const on = v > 0.01 || this.fade > 0.01;
-      if (m.transparent !== on) {
-        m.transparent = on;
+      // a part the model made see-through (Sirix's wings) stays so
+      if (m.transparent !== (on || transparent)) {
+        m.transparent = on || transparent;
         m.needsUpdate = true;
       }
-      m.opacity = on ? (1 - 0.55 * v) * (1 - FADE_MOST * this.fade) : 1;
+      m.opacity = opacity * (on ? (1 - 0.55 * v) * (1 - FADE_MOST * this.fade) : 1);
       if (!on) continue;
       m.color.lerp(VEIL_DARK, 0.75 * v);
       m.emissive.r += 0.1 * v;
