@@ -2,7 +2,7 @@
 // The fight is stepped by hand (two 1/60 s steps a frame), so the clip plays at true speed at 30 frames a second however
 // slowly the page renders. Frames go out as JPEGs to a local sink, because a clip is too big to hand back as text:
 //
-//   node <scratchpad>/sink.mjs        (PUT /<name> -> ./cap/<name>, port 5199; any small server that saves a PUT body does)
+//   node pipeline/tools/frame-sink.mjs <folder>     (PUT /<name> -> <folder>/<name>, port 5199; stops itself after 9 min)
 //
 // Paste into the VFX tool page (browser javascript tool):
 //

@@ -1,7 +1,7 @@
 ---
 title: VFX Tool documentation
 tags: [index, home]
-updated: 2026-10-29
+updated: 2026-11-10
 ---
 
 # VFX Tool documentation
@@ -12,6 +12,15 @@ models. Start with the guide if you want to use the tool, the architecture secti
 the art direction and pipeline sections if you want to make new effects the way the existing ones were made.
 
 ![The first five heroes in the game](heroes/ingame_sheet.jpg)
+
+## Start here
+| Page | What it answers |
+|---|---|
+| [CLAUDE.md](../CLAUDE.md) | The working rules the user set (commits, pushes, deploys, credentials, agents) and the lessons learned |
+| [Status](STATUS.md) | What is done, live, in progress, waiting on the user, and next |
+| [Setup](SETUP.md) | A new computer: install, clone, check, what is not in git, deploying |
+| [Showcase](SHOWCASE.md) | Pictures and clips of the game as it looks now |
+| [Change log](../src/game/changelog.ts) | What players got and when (shown in the game's News tab) |
 
 ## Map of content
 
