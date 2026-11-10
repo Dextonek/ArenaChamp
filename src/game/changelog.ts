@@ -40,7 +40,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-10',
     title: 'A new look, and heroes that move like fighters',
-    live: false,
+    live: true,
     lead: { clip: '/news/fight.mp4', poster: '/news/fight.jpg', alt: 'Big Yoko and Hank duel in Ember Caldera: charges, a felled tree and axe blows.' },
     items: [
       {
