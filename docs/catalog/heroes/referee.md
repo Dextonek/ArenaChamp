@@ -1,12 +1,12 @@
 ---
-title: Referee Whistler, by the book (referee kit)
+title: Referee Whistler, the Arbiter (referee kit)
 tags: [catalog, heroes, referee, controller, ranged, rules, mechanics]
 updated: 2026-11-04
 ---
 
-# Referee Whistler, by the book
+# Referee Whistler, the Arbiter
 
-The referee hero kit: Whistler's four spells (Q, W, E and the R ultimate), the passive rules and cards, the shared parts file, the palette row and the rigged hero model. A stern little man with a big square head, a black and white striped shirt, black shorts, long socks and a chrome whistle on a cord, with a yellow card and a red card in his pockets. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged controller who calls rules over the enemy's head and cards them for breaking one.
+The referee hero kit: Whistler's four spells (Q, W, E and the R ultimate), the passive rules and cards, the shared parts file, the palette row and the rigged hero model. A short, stern arena judge with a big square head in dark lacquered armour and a black and ivory striped tabard, with a silver horn on a gold chain and red and gold sigil tablets at his belt. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged controller who calls rules over the enemy's head and cards them for breaking one.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by calling a rule the enemy cannot afford to break. He never stops the b
 
 | | |
 |---|---|
-| Hero | Referee Whistler, by the book |
+| Hero | Referee Whistler, the Arbiter |
 | Spell category | `hero: referee` |
 | Parts file | [`src/effects/parts/referee.ts`](../../../src/effects/parts/referee.ts) |
 | Kit data | [`src/kits/referee.ts`](../../../src/kits/referee.ts) |
 | Trait | [`src/traits/referee.ts`](../../../src/traits/referee.ts) |
 | Kit sheet | [`kit-referee.md`](../../../pipeline/designs/kit-referee.md) |
-| Model | [`public/models/heroes/referee_v2.glb`](../../../public/models/heroes/referee_v2.glb) |
+| Model | [`public/models/heroes/referee_v3.glb`](../../../public/models/heroes/referee_v3.glb) |
 
 ## Palette
 
@@ -107,10 +107,10 @@ The headers of `whistleBlast.ts` and `showTheCard.ts` still say 50 damage and a 
 
 ## Model
 
-[`public/models/heroes/referee_v2.glb`](../../../public/models/heroes/referee_v2.glb): a rigged figure built by the `Referee` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Referee Whistler`); hero body size is radius 0.41, height 2.33 in `HERO_BODIES`.
+[`public/models/heroes/referee_v3.glb`](../../../public/models/heroes/referee_v3.glb): a rigged figure built by the `RefereeMythic` class in [`blender/heroes/restyle_batch2.py`](../../../blender/heroes/restyle_batch2.py) (a subclass of `Referee` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py)). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Referee Whistler`); hero body size is radius 0.41, height 2.33 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: a stern little man with a big square head, a black flat top and furious brows. A shirt in big vertical black and white stripes over a small round belly, black shorts, white socks to the knee with black hoops. A big silver whistle on a cord on his chest, and oversized red and yellow cards sticking out of his pockets: the only colour on him.
-- HUD portrait (canvas-drawn in the kit data): a black ground, striped shoulders with a collar and a whistle on a cord, a square serious pale head with a dark cap of hair, a heavy straight brow and a tight mouth, and a raised hand with a yellow card.
+- Look: a short, stern arena judge with a big square head and a calm face. Dark lacquered armour with gold edges, small pauldrons, dark greaves with gold knee guards, a black and ivory striped tabard hanging front and back, and a black helm with a gold brow band and a red crest. Signature: a silver horn on a gold chain across the chest, and red and gold sigil tablets at the belt, two in front and a larger one behind, in place of cards, their sigils glowing.
+- HUD portrait (canvas-drawn in the kit data): a black ground, dark armoured shoulders with gold-edged pauldrons, the black and ivory tabard down the chest, a silver horn on its gold chain, a red and gold sigil tablet with a glowing sigil, and a big calm square face under a black helm with a gold band and a red crest.
 
 ## Files
 
@@ -121,7 +121,7 @@ The headers of `whistleBlast.ts` and `showTheCard.ts` still say 50 damage and a 
 | Spells | [`whistleBlast.ts`](../../../src/spells/targeted/whistleBlast.ts), [`noRunning.ts`](../../../src/spells/targeted/noRunning.ts), [`noCasting.ts`](../../../src/spells/targeted/noCasting.ts), [`showTheCard.ts`](../../../src/spells/targeted/showTheCard.ts) |
 | Kit data | [`src/kits/referee.ts`](../../../src/kits/referee.ts) |
 | Trait | [`src/traits/referee.ts`](../../../src/traits/referee.ts) |
-| Model | [`public/models/heroes/referee_v2.glb`](../../../public/models/heroes/referee_v2.glb) |
+| Model | [`public/models/heroes/referee_v3.glb`](../../../public/models/heroes/referee_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

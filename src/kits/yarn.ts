@@ -7,6 +7,8 @@ import type { HeroKit } from '../heroes';
  */
 const S = {
   core: '#fff0f6', hot: '#ff9cc4', pink: '#e86a9a', shade: '#a73b69', wine: '#7a2a4c', foil: '#c8c0a8', cream: '#f2e6d0', dark: '#1e0c18', grey: '#9a9aa6',
+  // the Weaver's wine shawl, rose thread, hood, silver hair, gold and glowing spools (the _v3 model)
+  wine2: '#5a2a4a', rose: '#8a3258', hood: '#4c2644', hoodEdge: '#9c3e64', silver: '#a8a6b4', gold: '#d2ae55', spool: '#ff5a8a',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -152,55 +154,81 @@ function sweaterShape(g: CanvasRenderingContext2D, cx: number, cy: number, w: nu
 export const yarnKit: HeroKit = {
   name: 'Grandma Ironknit',
   maxHp: 620,
-  title: 'the Knitter',
+  title: 'the Weaver',
   accent: S.pink,
   foil: S.foil,
   portrait(g, s) {
     iconGround(g, s);
-    // Loose strands of wool across the back and a ball in the corner.
+    // Loose strands of rose wool across the back.
     strand(g, 0, s * 0.3, s * 0.3, s * 0.5, s * 0.55, s * 0.2, s * 0.03);
     strand(g, s, s * 0.45, s * 0.7, s * 0.2, s * 0.6, s * 0.05, s * 0.03, S.hot);
-    ball(g, s * 0.84, s * 0.78, s * 0.13);
+    // The spindle behind her shoulder with three glowing rose spools in gold flanges.
+    g.fillStyle = S.dark;
+    g.fillRect(s * 0.78, s * 0.08, s * 0.025, s * 0.7);
+    for (const y of [0.22, 0.42, 0.62]) {
+      const glow = g.createRadialGradient(s * 0.79, s * y, 0, s * 0.79, s * y, s * 0.17);
+      glow.addColorStop(0, 'rgba(255,120,170,0.55)');
+      glow.addColorStop(1, 'rgba(255,90,138,0)');
+      g.fillStyle = glow;
+      g.fillRect(s * 0.6, s * (y - 0.17), s * 0.38, s * 0.34);
+      g.fillStyle = S.spool;
+      g.beginPath();
+      g.ellipse(s * 0.79, s * y, s * 0.1, s * 0.07, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = S.core;
+      g.beginPath();
+      g.ellipse(s * 0.765, s * (y - 0.02), s * 0.03, s * 0.016, -0.4, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = S.gold;
+      g.fillRect(s * 0.7, s * (y - 0.08), s * 0.18, s * 0.014);
+      g.fillRect(s * 0.7, s * (y + 0.066), s * 0.18, s * 0.014);
+    }
     // A grey cat's head by her shoulder.
     catHead(g, s * 0.17, s * 0.82, s * 0.1);
-    // Shoulders in a rose shawl with a darker fringe.
+    // Shoulders in a dark wine shawl knitted in bands of rose thread, a gold brooch.
     g.fillStyle = S.dark;
     g.beginPath();
     g.moveTo(s * 0.1, s); g.quadraticCurveTo(s * 0.14, s * 0.68, s * 0.34, s * 0.6); g.quadraticCurveTo(s * 0.5, s * 0.55, s * 0.66, s * 0.6); g.quadraticCurveTo(s * 0.86, s * 0.68, s * 0.9, s);
     g.closePath(); g.fill();
-    g.fillStyle = S.pink;
+    g.fillStyle = S.wine2;
     g.beginPath();
     g.moveTo(s * 0.13, s); g.quadraticCurveTo(s * 0.17, s * 0.7, s * 0.35, s * 0.62); g.quadraticCurveTo(s * 0.5, s * 0.57, s * 0.65, s * 0.62); g.quadraticCurveTo(s * 0.83, s * 0.7, s * 0.87, s);
     g.closePath(); g.fill();
-    g.strokeStyle = S.hot; g.lineWidth = s * 0.012;
-    for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(s * (0.2 + i * 0.12), s * (0.98 - Math.abs(i - 2.5) * 0.02)); g.lineTo(s * (0.2 + i * 0.12), s); g.stroke(); }
-    g.strokeStyle = S.shade; g.lineWidth = s * 0.014;
-    for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(s * 0.3, s * (0.72 + i * 0.07)); g.quadraticCurveTo(s * 0.5, s * (0.76 + i * 0.07), s * 0.7, s * (0.72 + i * 0.07)); g.stroke(); }
-    // A grey bun with two needles through it.
-    g.fillStyle = S.dark; g.beginPath(); g.arc(s * 0.5, s * 0.13, s * 0.105, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#cfcfd8'; g.beginPath(); g.arc(s * 0.5, s * 0.13, s * 0.09, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = '#a8a8b4'; g.lineWidth = s * 0.012;
-    g.beginPath(); g.arc(s * 0.5, s * 0.13, s * 0.055, 0.5, 4.5); g.stroke();
-    needle(g, s * 0.34, s * 0.04, s * 0.7, s * 0.2, s * 0.018);
-    needle(g, s * 0.66, s * 0.03, s * 0.3, s * 0.22, s * 0.018);
-    // A kind round face, hair pulled back, big round glasses, a small smile.
-    g.fillStyle = '#e8c9ae';
-    g.beginPath(); g.ellipse(s * 0.5, s * 0.42, s * 0.15, s * 0.19, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#cfcfd8';
-    g.beginPath(); g.ellipse(s * 0.5, s * 0.3, s * 0.16, s * 0.1, 0, Math.PI, Math.PI * 2); g.fill();
+    g.strokeStyle = S.rose; g.lineWidth = s * 0.02;
+    for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(s * 0.26, s * (0.74 + i * 0.07)); g.quadraticCurveTo(s * 0.5, s * (0.78 + i * 0.07), s * 0.74, s * (0.74 + i * 0.07)); g.stroke(); }
+    g.fillStyle = S.gold; g.beginPath(); g.arc(s * 0.5, s * 0.67, s * 0.022, 0, Math.PI * 2); g.fill();
+    // The hood up round her face: a dark mass, a rolled rose edge, its point falling to one side.
+    g.fillStyle = S.hood;
+    g.beginPath(); g.ellipse(s * 0.5, s * 0.36, s * 0.24, s * 0.3, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = S.hood;
+    g.beginPath(); g.moveTo(s * 0.66, s * 0.12); g.quadraticCurveTo(s * 0.78, s * 0.04, s * 0.84, s * 0.2); g.quadraticCurveTo(s * 0.74, s * 0.14, s * 0.62, s * 0.2); g.closePath(); g.fill();
+    g.fillStyle = S.gold; g.beginPath(); g.arc(s * 0.84, s * 0.2, s * 0.018, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = S.hoodEdge; g.lineWidth = s * 0.04;
+    g.beginPath(); g.ellipse(s * 0.5, s * 0.42, s * 0.18, s * 0.23, 0, 0, Math.PI * 2); g.stroke();
+    // A kind old face, silver hair at the brow, calm eyes, a small smile.
+    g.fillStyle = '#e0bfa4';
+    g.beginPath(); g.ellipse(s * 0.5, s * 0.42, s * 0.155, s * 0.2, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = S.silver;
+    g.beginPath(); g.ellipse(s * 0.5, s * 0.285, s * 0.16, s * 0.065, 0, Math.PI, Math.PI * 2); g.fill();
     g.fillStyle = '#d9a58e';
     for (const sx of [-1, 1]) { g.beginPath(); g.ellipse(s * (0.5 + sx * 0.1), s * 0.5, s * 0.03, s * 0.02, 0, 0, Math.PI * 2); g.fill(); }
     for (const sx of [-1, 1]) {
-      g.fillStyle = 'rgba(240,248,255,0.85)';
-      g.beginPath(); g.arc(s * (0.5 + sx * 0.075), s * 0.4, s * 0.062, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = S.foil; g.lineWidth = s * 0.016; g.stroke();
-      g.fillStyle = S.dark; g.beginPath(); g.arc(s * (0.5 + sx * 0.075), s * 0.405, s * 0.018, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#fff8f0';
+      g.beginPath(); g.ellipse(s * (0.5 + sx * 0.07), s * 0.4, s * 0.034, s * 0.042, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#8a3a6a';
+      g.beginPath(); g.ellipse(s * (0.5 + sx * 0.07), s * 0.406, s * 0.022, s * 0.03, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = S.dark; g.beginPath(); g.arc(s * (0.5 + sx * 0.07), s * 0.408, s * 0.011, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = S.silver; g.lineWidth = s * 0.012;
+      g.beginPath(); g.moveTo(s * (0.5 + sx * 0.035), s * 0.355); g.quadraticCurveTo(s * (0.5 + sx * 0.07), s * 0.335, s * (0.5 + sx * 0.105), s * 0.35); g.stroke();
     }
-    g.strokeStyle = S.foil; g.lineWidth = s * 0.014;
-    g.beginPath(); g.moveTo(s * 0.46, s * 0.395); g.quadraticCurveTo(s * 0.5, s * 0.375, s * 0.54, s * 0.395); g.stroke();
     g.strokeStyle = '#a45b6e'; g.lineWidth = s * 0.012;
     g.beginPath(); g.moveTo(s * 0.46, s * 0.5); g.quadraticCurveTo(s * 0.5, s * 0.535, s * 0.54, s * 0.5); g.stroke();
-    glint(g, s * 0.3, s * 0.38, s * 0.03);
+    // Two silver needles crossed in front of her, gold at the butts.
+    needle(g, s * 0.2, s * 0.98, s * 0.46, s * 0.6, s * 0.02);
+    needle(g, s * 0.58, s * 0.98, s * 0.32, s * 0.6, s * 0.018);
+    g.fillStyle = S.gold;
+    for (const [x, y] of [[0.2, 0.98], [0.58, 0.98]]) { g.beginPath(); g.arc(s * x, s * y, s * 0.022, 0, Math.PI * 2); g.fill(); }
+    glint(g, s * 0.64, s * 0.3, s * 0.03);
   },
   spells: [
     {

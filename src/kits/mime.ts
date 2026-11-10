@@ -5,7 +5,11 @@ import type { HeroKit } from '../heroes';
  * a dark ink ground, chalk white, a mid grey smudge and one red from her scarf. Signature shape: the white glove, and dashed chalk
  * lines for what cannot be seen.
  */
-const S = { chalk: '#f7f7f2', dim: '#cfcfc8', smudge: '#8d8d96', dark: '#20202a', ink: '#0c0c12', red: '#d23a3a', skin: '#fbfbf6' };
+const S = {
+  chalk: '#f7f7f2', dim: '#cfcfc8', smudge: '#8d8d96', dark: '#20202a', ink: '#0c0c12', red: '#d23a3a', skin: '#fbfbf6',
+  // the Silent One's mask, hood, coat, ribbon and gold trim (the _v3 model)
+  mask: '#c8c6c0', hood: '#201b2a', coat: '#3c3452', ivory: '#c4bca6', ribbon: '#5c4a8c', gold: '#d2ae55', lilac: '#b8b4f4', lips: '#7a3a4c',
+};
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
   const r = g.createRadialGradient(s * 0.5, s * 0.4, s * 0.05, s * 0.5, s * 0.5, s * 0.8);
@@ -96,74 +100,95 @@ function scarf(g: CanvasRenderingContext2D, x: number, y: number, s: number) {
 
 export const mimeKit: HeroKit = {
   name: 'Mum',
-  title: 'the mime',
+  title: 'the Silent One',
   maxHp: 620,
   accent: S.chalk,
   foil: S.dark,
   portrait(g, s) {
     iconGround(g, s);
-    // A striped shirt: black and white bands across the shoulders.
-    g.fillStyle = S.chalk;
+    // The long dark violet ribbon flying behind her shoulder.
+    g.fillStyle = S.ribbon;
     g.beginPath();
-    g.moveTo(s * 0.1, s);
-    g.quadraticCurveTo(s * 0.14, s * 0.72, s * 0.34, s * 0.64);
-    g.lineTo(s * 0.66, s * 0.64);
-    g.quadraticCurveTo(s * 0.86, s * 0.72, s * 0.9, s);
+    g.moveTo(s * 0.62, s * 0.6);
+    g.quadraticCurveTo(s * 0.84, s * 0.42, s * 0.88, s * 0.12);
+    g.lineTo(s * 0.97, s * 0.16);
+    g.quadraticCurveTo(s * 0.94, s * 0.5, s * 0.72, s * 0.72);
     g.closePath();
     g.fill();
-    g.save();
-    g.clip();
-    g.fillStyle = S.ink;
-    for (let i = 0; i < 6; i++) g.fillRect(0, s * (0.66 + i * 0.07), s, s * 0.035);
-    g.restore();
-    // The red scarf, knotted at the throat, one tail flying.
-    g.fillStyle = S.red;
+    // Narrow shoulders in a dark violet coat with ivory diamonds, a gold edge.
+    g.fillStyle = S.coat;
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.64, s * 0.16, s * 0.045, 0, 0, Math.PI * 2);
+    g.moveTo(s * 0.12, s);
+    g.quadraticCurveTo(s * 0.16, s * 0.74, s * 0.34, s * 0.66);
+    g.lineTo(s * 0.66, s * 0.66);
+    g.quadraticCurveTo(s * 0.84, s * 0.74, s * 0.88, s);
+    g.closePath();
     g.fill();
-    scarf(g, s * 0.58, s * 0.64, s * 0.3);
-    // The white face, a long oval; a black beret tipped on it.
-    g.fillStyle = S.skin;
+    g.fillStyle = S.ivory;
+    for (const [x, y, r] of [[0.5, 0.8, 0.045], [0.5, 0.94, 0.05], [0.26, 0.86, 0.04], [0.74, 0.86, 0.04]]) {
+      g.beginPath();
+      g.moveTo(s * x, s * (y - r));
+      g.lineTo(s * (x + r), s * y);
+      g.lineTo(s * x, s * (y + r));
+      g.lineTo(s * (x - r), s * y);
+      g.closePath();
+      g.fill();
+    }
+    // An ivory ruff at the throat.
+    g.fillStyle = S.ivory;
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.42, s * 0.14, s * 0.18, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.665, s * 0.17, s * 0.045, 0, 0, Math.PI * 2);
     g.fill();
-    g.strokeStyle = S.ink;
-    g.lineWidth = s * 0.012;
-    g.stroke();
-    g.fillStyle = S.ink;
+    // The dark hood, and the porcelain mask: dark eyes with a pale glint, a gold diamond on the brow, gold tear lines.
+    g.fillStyle = S.hood;
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.27, s * 0.2, s * 0.075, -0.1, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.4, s * 0.19, s * 0.27, 0, 0, Math.PI * 2);
     g.fill();
+    g.fillStyle = S.mask;
     g.beginPath();
-    g.ellipse(s * 0.53, s * 0.225, s * 0.12, s * 0.05, -0.1, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.43, s * 0.135, s * 0.2, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillRect(s * 0.525, s * 0.16, s * 0.012, s * 0.05);
-    // A painted face: raised brows, round eyes with lashes, a small red-less mouth, a tear.
-    g.strokeStyle = S.ink;
-    g.lineWidth = s * 0.012;
     for (const sx of [0.44, 0.56]) {
+      g.fillStyle = S.dark;
       g.beginPath();
-      g.arc(s * sx, s * 0.4, s * 0.026, 0, Math.PI * 2);
-      g.stroke();
+      g.ellipse(s * sx, s * 0.42, s * 0.03, s * 0.042, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = S.lilac;
       g.beginPath();
-      g.moveTo(s * (sx - 0.04), s * 0.355);
-      g.quadraticCurveTo(s * sx, s * 0.33, s * (sx + 0.04), s * 0.355);
+      g.arc(s * sx, s * 0.43, s * 0.014, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = S.gold;
+      g.lineWidth = s * 0.007;
+      g.beginPath();
+      g.moveTo(s * sx, s * 0.465);
+      g.lineTo(s * sx, s * 0.54);
       g.stroke();
     }
+    g.fillStyle = S.gold;
     g.beginPath();
-    g.moveTo(s * 0.5, s * 0.41);
-    g.lineTo(s * 0.5, s * 0.45);
-    g.moveTo(s * 0.46, s * 0.505);
-    g.quadraticCurveTo(s * 0.5, s * 0.53, s * 0.54, s * 0.505);
-    g.stroke();
-    g.fillStyle = S.smudge;
-    g.beginPath();
-    g.ellipse(s * 0.415, s * 0.445, s * 0.008, s * 0.016, 0, 0, Math.PI * 2);
+    g.moveTo(s * 0.5, s * 0.285);
+    g.lineTo(s * 0.53, s * 0.32);
+    g.lineTo(s * 0.5, s * 0.355);
+    g.lineTo(s * 0.47, s * 0.32);
+    g.closePath();
     g.fill();
-    // A white glove pressed flat against an invisible pane, and a dashed chalk line where the pane stands.
-    chalkLine(g, s * 0.8, s * 0.12, s * 0.8, s * 0.95, s * 0.014, S.chalk, 0.6);
-    glove(g, s * 0.76, s * 0.58, s * 0.085, 0.12);
-    glint(g, s * 0.2, s * 0.2, s * 0.04);
+    g.strokeStyle = S.lips;
+    g.lineWidth = s * 0.01;
+    g.lineCap = 'round';
+    g.beginPath();
+    g.moveTo(s * 0.47, s * 0.545);
+    g.quadraticCurveTo(s * 0.5, s * 0.555, s * 0.53, s * 0.545);
+    g.stroke();
+    // Her big pale glove raised before the coat, a gold cuff, a faint glow round it.
+    const aura = g.createRadialGradient(s * 0.2, s * 0.72, s * 0.02, s * 0.2, s * 0.72, s * 0.2);
+    aura.addColorStop(0, 'rgba(196,194,255,0.45)');
+    aura.addColorStop(1, 'rgba(196,194,255,0)');
+    g.fillStyle = aura;
+    g.fillRect(0, s * 0.5, s * 0.45, s * 0.45);
+    glove(g, s * 0.2, s * 0.72, s * 0.085, -0.15, 0);
+    g.fillStyle = S.gold;
+    g.fillRect(s * 0.14, s * 0.795, s * 0.12, s * 0.03);
+    glint(g, s * 0.08, s * 0.5, s * 0.03, S.lilac);
   },
   spells: [
     {

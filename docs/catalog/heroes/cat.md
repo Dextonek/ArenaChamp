@@ -1,12 +1,12 @@
 ---
-title: Sir Whiskers, the Cat Knight (cat kit)
+title: Sir Whiskers, the Lynx Duelist (cat kit)
 tags: [catalog, heroes, cat, melee, assassin, lives]
 updated: 2026-11-04
 ---
 
-# Sir Whiskers, the Cat Knight
+# Sir Whiskers, the Lynx Duelist
 
-The cat hero kit (kits v5, a new hero): Sir Whiskers's four spells (Q, W, E and the R ultimate), his passive and twist, the shared parts file, the palette and the rigged hero model. An upright ginger cat in shining plate armour with a red plume and a tiny rapier, very pleased with himself. He is built on the [combat mechanics](../../architecture/mechanics.md): a fast melee assassin whose HP bar is nine lives.
+The cat hero kit (kits v5, a new hero): Sir Whiskers's four spells (Q, W, E and the R ultimate), his passive and twist, the shared parts file, the palette and the rigged hero model. An upright tawny cat fencer in dark gunmetal plate with gold edges and a short wine-red cape, black tufts on his ears, a long striped tail and a long rapier with a glowing amber gem, very pleased with himself. He is built on the [combat mechanics](../../architecture/mechanics.md): a fast melee assassin whose HP bar is nine lives.
 
 ## Role
 
@@ -23,14 +23,14 @@ He wins a 1v1 by deciding when to spend a life on purpose: attack on a full life
 
 | | |
 |---|---|
-| Hero | Sir Whiskers, the Cat Knight |
+| Hero | Sir Whiskers, the Lynx Duelist |
 | Spell category | `hero: cat` |
 | Parts file | [`src/effects/parts/cat.ts`](../../../src/effects/parts/cat.ts) |
 | Kit data | [`src/kits/cat.ts`](../../../src/kits/cat.ts) |
 | Trait data | [`src/traits/cat.ts`](../../../src/traits/cat.ts) |
 | Kit sheet | [`kit-cat.md`](../../../pipeline/designs/kit-cat.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Design | [`new-heroes-kits.md`](../../../pipeline/designs/new-heroes-kits.md), section 5 |
-| Model | [`public/models/heroes/cat_v2.glb`](../../../public/models/heroes/cat_v2.glb) |
+| Model | [`public/models/heroes/cat_v3.glb`](../../../public/models/heroes/cat_v3.glb) |
 
 ## Palette
 
@@ -116,10 +116,10 @@ Spell sources: [`scratch.ts`](../../../src/spells/targeted/scratch.ts), [`knockI
 
 ## Model
 
-[`public/models/heroes/cat_v2.glb`](../../../public/models/heroes/cat_v2.glb): a rigged figure on the Dao rig. Built by `build("cat")` / `export("cat")` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.49 m, height 2.39 m.
+[`public/models/heroes/cat_v3.glb`](../../../public/models/heroes/cat_v3.glb): a rigged figure on the Dao rig, built by the `CatMythic` class (a subclass of `Cat`) in [`blender/heroes/restyle_batch1.py`](../../../blender/heroes/restyle_batch1.py) on top of [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.49 m, height 2.39 m. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: an upright ginger cat in shining plate, very pleased with himself. A cat first: an enormous round ginger head, tall ears with pink insides, a cream muzzle with a pink nose, long white whiskers, tabby stripes and half-closed green eyes. Plate on his chest, shoulders, arms and shins, a tiny rapier held up in the right paw and a tall red plume between the ears. A thick striped tail curls out behind him and up one side like a question mark.
-- HUD portrait (canvas-drawn in the kit data): a cream halo of nine lives behind him, a steel pauldron and a red cloak at the shoulders, a gorget, then the head with its helmet and plume, and the small sword raised at the side.
+- Look: an upright tawny cat fencer, very pleased with himself. A cat first: an enormous round head with dark stripes, tall ears with pink insides and black lynx tufts, a cream muzzle with a pink nose, long pale whiskers and half-closed gold-green eyes. Dark gunmetal plate on his chest, shoulders, arms and shins with gold edges and gold filigree lines on the breastplate, gold knee cops, and a short wine-red cape over the shoulders; no plume. Signature: a thick striped tail curling out behind him and up one side like a question mark, and a long rapier in the right paw with a glowing amber gem set in its guard.
+- HUD portrait (canvas-drawn in the kit data): a cream halo of nine lives behind him, dark gunmetal plate with a gold edge and gold filigree and a wine-red cape at the shoulders, a gold gorget, then the tawny head with its dark helm and black ear tufts, and the long rapier raised at the side with its glowing amber gem.
 
 ## Files
 
@@ -132,7 +132,7 @@ Spell sources: [`scratch.ts`](../../../src/spells/targeted/scratch.ts), [`knockI
 | Spells | [`scratch.ts`](../../../src/spells/targeted/scratch.ts), [`knockItOver.ts`](../../../src/spells/targeted/knockItOver.ts), [`pounce.ts`](../../../src/spells/targeted/pounce.ts), [`landOnMyFeet.ts`](../../../src/spells/targeted/landOnMyFeet.ts) |
 | Kit data | [`src/kits/cat.ts`](../../../src/kits/cat.ts) |
 | Trait | [`src/traits/cat.ts`](../../../src/traits/cat.ts) |
-| Model | [`public/models/heroes/cat_v2.glb`](../../../public/models/heroes/cat_v2.glb) |
+| Model | [`public/models/heroes/cat_v3.glb`](../../../public/models/heroes/cat_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

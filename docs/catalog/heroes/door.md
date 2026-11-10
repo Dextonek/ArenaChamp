@@ -1,12 +1,12 @@
 ---
-title: Wick, the Doorman (door kit)
+title: Wick, the Doorwarden (door kit)
 tags: [catalog, heroes, door, controller, ranged, portals, mechanics]
 updated: 2026-11-04
 ---
 
-# Wick, the Doorman
+# Wick, the Doorwarden
 
-The door hero kit: Wick's four spells (Q, W, E and the R ultimate), the passive pair of doors, the shared parts file, the palette row and the rigged hero model. An old, thin hotel doorman in a long red coat with brass buttons, white gloves, a little round hat and a great ring of keys. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged controller whose doors come in pairs, so whoever walks in one leaves by the other.
+The door hero kit: Wick's four spells (Q, W, E and the R ultimate), the passive pair of doors, the shared parts file, the palette row and the rigged hero model. An old, thin keeper of thresholds in a long dark oxblood coat with gold braid, a hood lying back on his shoulders, and a great ring of keys with a glowing amber gem. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged controller whose doors come in pairs, so whoever walks in one leaves by the other.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by moving people and bolts: a hero or a bolt that enters a door comes ou
 
 | | |
 |---|---|
-| Hero | Wick, the Doorman |
+| Hero | Wick, the Doorwarden |
 | Spell category | `hero: door` |
 | Parts file | [`src/effects/parts/door.ts`](../../../src/effects/parts/door.ts) |
 | Kit data | [`src/kits/door.ts`](../../../src/kits/door.ts) |
 | Trait | [`src/traits/door.ts`](../../../src/traits/door.ts) |
 | Kit sheet | [`kit-door.md`](../../../pipeline/designs/kit-door.md) |
-| Model | [`public/models/heroes/door_v2.glb`](../../../public/models/heroes/door_v2.glb) |
+| Model | [`public/models/heroes/door_v3.glb`](../../../public/models/heroes/door_v3.glb) |
 
 ## Palette
 
@@ -112,10 +112,10 @@ The headers of `keyToss.ts` and `doorSlam.ts` still say 50 and 40 damage; the nu
 
 ## Model
 
-[`public/models/heroes/door_v2.glb`](../../../public/models/heroes/door_v2.glb): a rigged figure built by the `Door` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Wick`); hero body size is radius 0.41, height 2.44 in `HERO_BODIES`.
+[`public/models/heroes/door_v3.glb`](../../../public/models/heroes/door_v3.glb): a rigged figure built by the `DoorMythic` class in [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Wick`); hero body size is radius 0.41, height 2.44 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: old and thin as a door. A long red coat with two rows of brass buttons, gold braid on the shoulders and cuffs, white gloves, a little round pillbox hat strapped under the chin, long white side whiskers and a long polite face. A tall red line of a silhouette and a great brass ring of oversized keys hanging from his right hand.
-- HUD portrait (canvas-drawn in the kit data): a dark wine-brown ground with a door behind him, ajar, warm light at its crack, a long red coat with a stiff collar and two rows of brass buttons, a long thin pale face with a white moustache and kind tired eyes, a little round hat with a brass band and strap, and a white-gloved hand holding up a ring of keys.
+- Look: old and thin as a door. A long dark oxblood coat to below the knee with wide gold braid down the front, at the hem and at the cuffs, a high stiff collar, small gold shoulder plates, dark gloves, a hood lying back on his shoulders with a gold rim and its point down his back, short silver hair swept back, a long calm face and a thin polite smile. Signature: a great brass ring of oversized keys hanging from his right hand with a glowing amber gem among the keys, and a small dark lantern with a gold frame hanging from his left hand.
+- HUD portrait (canvas-drawn in the kit data): a dark wine-brown ground with a door behind him, ajar, warm light at its crack, a long oxblood coat with a stiff collar and gold braid down the front, a hood lying back on his shoulders, a long thin pale face with silver hair swept back, level brows, calm steady eyes and a thin smile, and a dark-gloved hand holding up a ring of keys with a glowing amber gem among them.
 
 ## Files
 
@@ -126,8 +126,8 @@ The headers of `keyToss.ts` and `doorSlam.ts` still say 50 and 40 damage; the nu
 | Spells | [`keyToss.ts`](../../../src/spells/targeted/keyToss.ts), [`wickDoor.ts`](../../../src/spells/targeted/wickDoor.ts), [`doorSlam.ts`](../../../src/spells/targeted/doorSlam.ts), [`grandLobby.ts`](../../../src/spells/targeted/grandLobby.ts) |
 | Kit data | [`src/kits/door.ts`](../../../src/kits/door.ts) |
 | Trait | [`src/traits/door.ts`](../../../src/traits/door.ts) |
-| Model | [`public/models/heroes/door_v2.glb`](../../../public/models/heroes/door_v2.glb) |
-| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
+| Model | [`public/models/heroes/door_v3.glb`](../../../public/models/heroes/door_v3.glb) |
+| Model script | [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py) (the `_v3` class), [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the old class and the build kit) |
 
 ## See also
 

@@ -7,6 +7,8 @@ import type { HeroKit } from '../heroes';
  */
 const S = {
   core: '#fff6d6', foil: '#ffcf5a', soil: '#a98258', dirt: '#6b4e33', light: '#d9b98a', dark: '#2b1d12', deep: '#120b06', fur: '#4a3b34', snout: '#e8a9a0', steel: '#9aa3ad',
+  // the Deepdelver's leather, bronze helm, lantern crystal, gold and claws (the _v3 model)
+  leather: '#7a5030', leatherDark: '#3a2416', helm: '#6a5242', crystal: '#ffb040', gold: '#d2ae55', bone: '#d8cfae', nose: '#a85a6a',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -153,7 +155,7 @@ export const moleKit: HeroKit = {
   name: 'Mabel',
   maxHp: 680,
   melee: true,
-  title: 'the Mole',
+  title: 'the Deepdelver',
   accent: '#8a6a4a',
   foil: '#ffcf5a',
   portrait(g, s) {
@@ -163,8 +165,10 @@ export const moleKit: HeroKit = {
     g.fillRect(0, s * 0.74, s, s * 0.26);
     g.fillStyle = S.soil;
     g.fillRect(0, s * 0.74, s, s * 0.02);
-    // Her body: a stout round velvet-grey frame in a miner's overalls.
-    g.fillStyle = '#3d5a7a';
+    // The pick slung across her back, its head over her left shoulder.
+    pick(g, s * 0.3, s * 0.82, s * 0.62, -0.45);
+    // Her body: a stout round frame in a studded leather cuirass with gold straps.
+    g.fillStyle = S.fur;
     g.beginPath();
     g.moveTo(s * 0.14, s);
     g.quadraticCurveTo(s * 0.16, s * 0.68, s * 0.34, s * 0.62);
@@ -172,90 +176,120 @@ export const moleKit: HeroKit = {
     g.quadraticCurveTo(s * 0.84, s * 0.68, s * 0.86, s);
     g.closePath();
     g.fill();
-    g.fillStyle = S.foil;
-    g.fillRect(s * 0.38, s * 0.68, s * 0.035, s * 0.32);
-    g.fillRect(s * 0.585, s * 0.68, s * 0.035, s * 0.32);
-    // The head: a round fur ball, a pink snout, a tiny mouth.
+    g.fillStyle = S.leather;
+    g.beginPath();
+    g.moveTo(s * 0.26, s);
+    g.quadraticCurveTo(s * 0.28, s * 0.7, s * 0.4, s * 0.64);
+    g.lineTo(s * 0.6, s * 0.64);
+    g.quadraticCurveTo(s * 0.72, s * 0.7, s * 0.74, s);
+    g.closePath();
+    g.fill();
+    g.fillStyle = S.leatherDark;
+    g.fillRect(s * 0.37, s * 0.64, s * 0.04, s * 0.36);
+    g.fillRect(s * 0.59, s * 0.64, s * 0.04, s * 0.36);
+    g.fillStyle = S.gold;
+    for (const [sx, sy] of [[0.45, 0.76], [0.55, 0.76], [0.45, 0.84], [0.55, 0.84], [0.45, 0.92], [0.55, 0.92]]) {
+      g.beginPath();
+      g.arc(s * sx, s * sy, s * 0.012, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.fillRect(s * 0.455, s * 0.68, s * 0.09, s * 0.035);
+    // The head: a dark fur wedge with a long muzzle and a small dusky-rose nose, small calm black eyes.
     g.fillStyle = S.fur;
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.46, s * 0.2, s * 0.18, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.47, s * 0.2, s * 0.17, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#5b4a42';
+    g.fillStyle = '#6a554c';
     g.beginPath();
-    g.ellipse(s * 0.44, s * 0.4, s * 0.08, s * 0.05, -0.5, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.55, s * 0.1, s * 0.085, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = S.snout;
+    g.fillStyle = S.nose;
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.55, s * 0.085, s * 0.065, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.585, s * 0.05, s * 0.036, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#c9776e';
-    for (const sx of [0.47, 0.53]) {
+    g.fillStyle = S.deep;
+    for (const sx of [0.39, 0.61]) {
       g.beginPath();
-      g.arc(s * sx, s * 0.555, s * 0.012, 0, Math.PI * 2);
+      g.ellipse(s * sx, s * 0.48, s * 0.022, s * 0.03, 0, 0, Math.PI * 2);
       g.fill();
+      g.fillStyle = S.core;
+      g.beginPath();
+      g.arc(s * (sx + 0.007), s * 0.47, s * 0.007, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = S.deep;
     }
     g.strokeStyle = S.deep;
     g.lineWidth = s * 0.008;
     g.beginPath();
-    g.moveTo(s * 0.47, s * 0.595);
-    g.quadraticCurveTo(s * 0.5, s * 0.615, s * 0.53, s * 0.595);
+    g.moveTo(s * 0.47, s * 0.62);
+    g.quadraticCurveTo(s * 0.5, s * 0.635, s * 0.53, s * 0.62);
     g.stroke();
-    // Thick round glasses: two big lenses, a bridge, tiny eyes behind.
-    for (const sx of [0.4, 0.6]) {
-      g.fillStyle = 'rgba(255,246,214,0.85)';
-      g.beginPath();
-      g.arc(s * sx, s * 0.47, s * 0.062, 0, Math.PI * 2);
-      g.fill();
-      g.strokeStyle = S.deep;
-      g.lineWidth = s * 0.014;
-      g.stroke();
-      g.fillStyle = S.deep;
-      g.beginPath();
-      g.arc(s * (sx + (sx < 0.5 ? 0.008 : -0.008)), s * 0.472, s * 0.014, 0, Math.PI * 2);
-      g.fill();
-    }
+    // The close bronze helm with a gold band, brass goggles pushed up on its brow, the glowing crystal lantern on top.
+    g.fillStyle = S.helm;
     g.beginPath();
-    g.moveTo(s * 0.462, s * 0.47);
-    g.lineTo(s * 0.538, s * 0.47);
-    g.stroke();
-    // The miner's helmet with its lamp, glowing.
-    g.fillStyle = S.foil;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.33, s * 0.2, s * 0.115, 0, Math.PI, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.36, s * 0.2, s * 0.125, 0, Math.PI, Math.PI * 2);
     g.closePath();
     g.fill();
-    g.strokeStyle = S.deep;
+    g.fillStyle = S.gold;
+    g.fillRect(s * 0.3, s * 0.352, s * 0.4, s * 0.024);
+    g.strokeStyle = S.gold;
+    g.lineWidth = s * 0.011;
+    for (const sx of [0.42, 0.58]) {
+      g.beginPath();
+      g.arc(s * sx, s * 0.325, s * 0.03, 0, Math.PI * 2);
+      g.stroke();
+      g.fillStyle = '#b8742a';
+      g.fill();
+    }
+    const glow = g.createRadialGradient(s * 0.5, s * 0.17, 1, s * 0.5, s * 0.17, s * 0.24);
+    glow.addColorStop(0, 'rgba(255,200,100,0.95)');
+    glow.addColorStop(0.35, 'rgba(255,160,40,0.5)');
+    glow.addColorStop(1, 'rgba(255,160,40,0)');
+    g.fillStyle = glow;
+    g.fillRect(s * 0.25, s * 0, s * 0.5, s * 0.4);
+    g.strokeStyle = S.gold;
     g.lineWidth = s * 0.012;
+    g.beginPath();
+    g.moveTo(s * 0.45, s * 0.25);
+    g.lineTo(s * 0.41, s * 0.17);
+    g.lineTo(s * 0.5, s * 0.07);
+    g.lineTo(s * 0.59, s * 0.17);
+    g.lineTo(s * 0.55, s * 0.25);
+    g.closePath();
+    g.fillStyle = S.crystal;
+    g.fill();
     g.stroke();
-    g.fillStyle = '#e0a93a';
-    g.fillRect(s * 0.28, s * 0.325, s * 0.44, s * 0.03);
     g.fillStyle = S.core;
     g.beginPath();
-    g.arc(s * 0.5, s * 0.285, s * 0.04, 0, Math.PI * 2);
+    g.moveTo(s * 0.5, s * 0.11);
+    g.lineTo(s * 0.54, s * 0.17);
+    g.lineTo(s * 0.5, s * 0.22);
+    g.lineTo(s * 0.46, s * 0.17);
+    g.closePath();
     g.fill();
-    const glow = g.createRadialGradient(s * 0.5, s * 0.285, 1, s * 0.5, s * 0.285, s * 0.2);
-    glow.addColorStop(0, 'rgba(255,246,214,0.9)');
-    glow.addColorStop(0.35, 'rgba(255,207,90,0.5)');
-    glow.addColorStop(1, 'rgba(255,207,90,0)');
-    g.fillStyle = glow;
-    g.fillRect(s * 0.3, s * 0.08, s * 0.4, s * 0.4);
-    // Huge digging claws at the edges of the frame, and a tiny pickaxe in one.
+    // Huge digging claws at the edges of the frame, each tipped in gold, and a gold-banded bracer.
     for (const sx of [0.1, 0.9]) {
       g.fillStyle = S.fur;
       g.beginPath();
-      g.ellipse(s * sx, s * 0.78, s * 0.095, s * 0.075, 0, 0, Math.PI * 2);
+      g.ellipse(s * sx, s * 0.8, s * 0.095, s * 0.075, 0, 0, Math.PI * 2);
       g.fill();
-      g.strokeStyle = S.core;
-      g.lineWidth = s * 0.016;
+      g.fillStyle = S.leatherDark;
+      g.fillRect(s * (sx - 0.095), s * 0.86, s * 0.19, s * 0.04);
       g.lineCap = 'round';
       for (let i = -1; i <= 1; i++) {
+        g.strokeStyle = S.bone;
+        g.lineWidth = s * 0.016;
         g.beginPath();
-        g.moveTo(s * (sx + i * 0.03), s * 0.74);
-        g.lineTo(s * (sx + i * 0.045), s * 0.66);
+        g.moveTo(s * (sx + i * 0.03), s * 0.76);
+        g.lineTo(s * (sx + i * 0.045), s * 0.68);
+        g.stroke();
+        g.strokeStyle = S.gold;
+        g.beginPath();
+        g.moveTo(s * (sx + i * 0.042), s * 0.695);
+        g.lineTo(s * (sx + i * 0.045), s * 0.68);
         g.stroke();
       }
     }
-    pick(g, s * 0.86, s * 0.86, s * 0.28, 0.35);
   },
   spells: [
     {

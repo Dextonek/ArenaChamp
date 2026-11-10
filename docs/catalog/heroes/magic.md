@@ -1,12 +1,12 @@
 ---
-title: The Great Zambini, stage magician (magic kit)
+title: The Great Zambini, the Illusionist (magic kit)
 tags: [catalog, heroes, magic, trickster, ranged, hats, mechanics]
 updated: 2026-11-04
 ---
 
-# The Great Zambini, stage magician
+# The Great Zambini, the Illusionist
 
-The magic hero kit: Zambini's four spells (Q, W, E and the R ultimate), the passive Ta-da!, the shared parts file, the palette row and the rigged hero model. A very tall, very pleased magician in a black tailcoat and a purple-lined cape, with a top hat, a thin curled moustache and a star-tipped wand. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged trickster who vanishes under hats and comes out with a rabbit.
+The magic hero kit: Zambini's four spells (Q, W, E and the R ultimate), the passive Ta-da!, the shared parts file, the palette row and the rigged hero model. A very tall showman-illusionist in a deep indigo tailcoat and a violet-lined cape, with a tall top hat, a small pointed goatee and a wand tipped with a glowing gold star. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged trickster who vanishes under hats and comes out with a rabbit.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by disappearing: under a hat he cannot be hit, and the first spell after
 
 | | |
 |---|---|
-| Hero | The Great Zambini, stage magician |
+| Hero | The Great Zambini, the Illusionist |
 | Spell category | `hero: magic` |
 | Parts file | [`src/effects/parts/magic.ts`](../../../src/effects/parts/magic.ts) |
 | Kit data | [`src/kits/magic.ts`](../../../src/kits/magic.ts) |
 | Trait | [`src/traits/magic.ts`](../../../src/traits/magic.ts) |
 | Kit sheet | [`kit-magic.md`](../../../pipeline/designs/kit-magic.md) |
-| Model | [`public/models/heroes/magic_v2.glb`](../../../public/models/heroes/magic_v2.glb) |
+| Model | [`public/models/heroes/magic_v3.glb`](../../../public/models/heroes/magic_v3.glb) |
 
 ## Palette
 
@@ -108,10 +108,10 @@ The headers of `cardSpray.ts` and `sawnInHalf.ts` still say 22 and 50 damage; th
 
 ## Model
 
-[`public/models/heroes/magic_v2.glb`](../../../public/models/heroes/magic_v2.glb): a rigged figure built by the `Magic` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `The Great Zambini`); hero body size is radius 0.45, height 2.51 in `HERO_BODIES`.
+[`public/models/heroes/magic_v3.glb`](../../../public/models/heroes/magic_v3.glb): a rigged figure built by the `MagicMythic` class in [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `The Great Zambini`); hero body size is radius 0.45, height 2.51 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: very tall, very pleased. A black tailcoat over a violet waistcoat and pale shirt, a violet bow tie, white gloves, a thin curled moustache, one eyebrow up. A tall top hat with a violet band, a star-tipped wand held high, and a long cape parted down the back, black outside and purple inside, with a purple standing collar.
-- HUD portrait (canvas-drawn in the kit data): a violet spotlight cone on a dark stage with gold stars hanging in it, a purple cape with a high collar and gold lining, a tailcoat with a white shirt front and a gold stud, a pale face with a thin waxed moustache, a smug smile and one raised brow, a tipped top hat with a violet band and a gold star, and a wand with a gold star at its tip in his raised hand.
+- Look: the same tall showman, darker and finer. A deep indigo-black tailcoat with gold-edged lapels over a plum waistcoat with gold buttons and an ivory shirt front, a stiff gold-edged collar closed with a gold brooch, dark plum gloves with gold cuffs, slick black hair, a small pointed goatee, level brows and a calm knowing smile (no curled moustache). A tall black top hat with a deep violet band and a gold buckle, a cape parted down the back (black outside, deep violet inside) with a gold-rimmed standing collar, and a black wand with gold ends carrying a glowing gold star gem.
+- HUD portrait (canvas-drawn in the kit data): a violet spotlight cone on a dark stage with gold stars hanging in it, a deep violet cape with a high collar, a tailcoat with an ivory shirt front, plum waistcoat and a gold stud, a pale calm face with level brows and a small pointed goatee, a tipped top hat with a violet band and a gold star, and a wand in his raised plum-gloved hand with a glowing gold star at its tip.
 
 ## Files
 
@@ -122,8 +122,8 @@ The headers of `cardSpray.ts` and `sawnInHalf.ts` still say 22 and 50 damage; th
 | Spells | [`cardSpray.ts`](../../../src/spells/targeted/cardSpray.ts), [`sawnInHalf.ts`](../../../src/spells/targeted/sawnInHalf.ts), [`hatTrick.ts`](../../../src/spells/targeted/hatTrick.ts), [`grandFinale.ts`](../../../src/spells/targeted/grandFinale.ts) |
 | Kit data | [`src/kits/magic.ts`](../../../src/kits/magic.ts) |
 | Trait | [`src/traits/magic.ts`](../../../src/traits/magic.ts) |
-| Model | [`public/models/heroes/magic_v2.glb`](../../../public/models/heroes/magic_v2.glb) |
-| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
+| Model | [`public/models/heroes/magic_v3.glb`](../../../public/models/heroes/magic_v3.glb) |
+| Model script | [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py) (the `_v3` class), [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the old class and the build kit) |
 
 ## See also
 

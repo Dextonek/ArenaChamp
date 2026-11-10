@@ -1,12 +1,12 @@
 ---
-title: Professor Puff, balloon scientist (balloon kit)
+title: Professor Puff, the Aeronaut (balloon kit)
 tags: [catalog, heroes, balloon, mage, ranged, air]
 updated: 2026-11-04
 ---
 
-# Professor Puff, balloon scientist
+# Professor Puff, the Aeronaut
 
-The balloon hero kit: Professor Puff's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette and the rigged hero model. A small round scientist in a white lab coat, goggles and a brass pump, with a bunch of big bright balloons tied to his back. His hits put Air on the enemy and the enemy really swells: the enemy hero is drawn bigger and is easier to hit. Then Pop! hits harder for every Air. He is a ranged mage and he is fragile.
+The balloon hero kit: Professor Puff's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette and the rigged hero model. A small round alchemist of the air in a long aubergine coat with brass buttons, goggles pushed up on his brow and a brass gas tank on his back, with glowing rose glass gas spheres floating above and beside his head on chains. His hits put Air on the enemy and the enemy really swells: the enemy hero is drawn bigger and is easier to hit. Then Pop! hits harder for every Air. He is a ranged mage and he is fragile.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by stacking Air with the hose and the bomb, then popping the enemy for 6
 
 | | |
 |---|---|
-| Hero | Professor Puff, balloon scientist |
+| Hero | Professor Puff, the Aeronaut |
 | Spell category | `hero: balloon` |
 | Parts file | [`src/effects/parts/balloon.ts`](../../../src/effects/parts/balloon.ts) |
 | Kit data | [`src/kits/balloon.ts`](../../../src/kits/balloon.ts) |
 | Trait (rules) | [`src/traits/balloon.ts`](../../../src/traits/balloon.ts) |
 | Kit sheet | [`kit-balloon.md`](../../../pipeline/designs/kit-balloon.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/balloon_v2.glb`](../../../public/models/heroes/balloon_v2.glb) |
+| Model | [`public/models/heroes/balloon_v3.glb`](../../../public/models/heroes/balloon_v3.glb) |
 
 ## Palette
 
@@ -103,9 +103,10 @@ Spell sources: [`airHose.ts`](../../../src/spells/targeted/airHose.ts), [`helium
 | `buildPin` | the brass pin of Pop! |
 ## Model
 
-[`public/models/heroes/balloon_v2.glb`](../../../public/models/heroes/balloon_v2.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the current style, the `_v2` models). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Professor Puff`), and its hit size is in `HERO_BODIES` in the same file (radius 0.54 m, height 2.43 m).
-- HUD portrait (canvas-drawn in the kit data): A bunch of balloons tied behind his shoulder.
+[`public/models/heroes/balloon_v3.glb`](../../../public/models/heroes/balloon_v3.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it), built by the `BalloonMythic` class (a subclass of `Balloon`) in [`blender/heroes/restyle_batch1.py`](../../../blender/heroes/restyle_batch1.py) on top of [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Professor Puff`), and its hit size is in `HERO_BODIES` in the same file (radius 0.54 m, height 2.43 m). Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
+- Look: small and round, an alchemist of the air. A long aubergine coat with brass buttons and a brass-bound hem, dark leggings and brown shoes, silver wild hair at the sides, big calm eyes and a small mouth, brass goggles pushed up on his brow, and a brass gas tank on his back with its hose over the shoulder to a nozzle in his right hand. Signature: four glass gas spheres glowing rose pink, each in a brass cradle on a chain tied at his belt, floating above and beside his head where the balloons were.
+- HUD portrait (canvas-drawn in the kit data): glowing rose gas spheres in brass cradles above and beside his head, an aubergine coat with a high collar and two rows of brass buttons, silver tufts of hair, brass goggles up on the brow and big calm eyes.
 
 ## Files
 
@@ -117,7 +118,7 @@ Spell sources: [`airHose.ts`](../../../src/spells/targeted/airHose.ts), [`helium
 | Spells | [`airHose.ts`](../../../src/spells/targeted/airHose.ts), [`heliumBomb.ts`](../../../src/spells/targeted/heliumBomb.ts), [`hotAir.ts`](../../../src/spells/targeted/hotAir.ts), [`popPin.ts`](../../../src/spells/targeted/popPin.ts) |
 | Kit data | [`src/kits/balloon.ts`](../../../src/kits/balloon.ts) |
 | Trait (passive, twist, rules) | [`src/traits/balloon.ts`](../../../src/traits/balloon.ts) |
-| Model | [`public/models/heroes/balloon_v2.glb`](../../../public/models/heroes/balloon_v2.glb) |
+| Model | [`public/models/heroes/balloon_v3.glb`](../../../public/models/heroes/balloon_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

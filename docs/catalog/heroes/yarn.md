@@ -1,12 +1,12 @@
 ---
-title: Grandma Ironknit, the Knitter (yarn kit)
+title: Grandma Ironknit, the Weaver (yarn kit)
 tags: [catalog, heroes, yarn, support, ranged, lines, summon, mechanics]
 updated: 2026-11-04
 ---
 
-# Grandma Ironknit, the Knitter
+# Grandma Ironknit, the Weaver
 
-The yarn hero kit: Grandma Ironknit's four spells (Q, W, E and the R ultimate), the passive yarn lines, the shared parts file, the palette row and the rigged hero model. A tiny old woman, mostly head and shawl, with a white bun, thick round glasses, a pink knitted shawl, two knitting needles as long as swords and a basket of yarn balls. She is built on the [combat mechanics](../../architecture/mechanics.md): a ranged support who ties yarn lines across the arena and sends out a cat.
+The yarn hero kit: Grandma Ironknit's four spells (Q, W, E and the R ultimate), the passive yarn lines, the shared parts file, the palette row and the rigged hero model. A tiny old fate-spinner in a dark hooded shawl knitted in bands of rose thread, with two knitting needles as long as swords and a spindle of glowing rose yarn spools behind her shoulder. She is built on the [combat mechanics](../../architecture/mechanics.md): a ranged support who ties yarn lines across the arena and sends out a cat.
 
 ## Role
 
@@ -23,13 +23,13 @@ She wins by stringing the arena: a line catches an enemy who walks across it, an
 
 | | |
 |---|---|
-| Hero | Grandma Ironknit, the Knitter |
+| Hero | Grandma Ironknit, the Weaver |
 | Spell category | `hero: yarn` |
 | Parts file | [`src/effects/parts/yarn.ts`](../../../src/effects/parts/yarn.ts) |
 | Kit data | [`src/kits/yarn.ts`](../../../src/kits/yarn.ts) |
 | Trait | [`src/traits/yarn.ts`](../../../src/traits/yarn.ts) |
 | Kit sheet | [`kit-yarn.md`](../../../pipeline/designs/kit-yarn.md) |
-| Model | [`public/models/heroes/yarn_v2.glb`](../../../public/models/heroes/yarn_v2.glb) |
+| Model | [`public/models/heroes/yarn_v3.glb`](../../../public/models/heroes/yarn_v3.glb) |
 
 ## Palette
 
@@ -110,10 +110,10 @@ The headers of `knittingNeedle.ts` and `sweater.ts` still say 50 and 40 damage; 
 
 ## Model
 
-[`public/models/heroes/yarn_v2.glb`](../../../public/models/heroes/yarn_v2.glb): a rigged figure built by the `Yarn` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Grandma Ironknit`); hero body size is radius 0.54, height 2.33 in `HERO_BODIES`.
+[`public/models/heroes/yarn_v3.glb`](../../../public/models/heroes/yarn_v3.glb): a rigged figure built by the `YarnMythic` class in [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Grandma Ironknit`); hero body size is radius 0.54, height 2.33 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: a tiny old woman, mostly head and shawl. A big round head with a white bun, thick round glasses that blow her eyes up to twice their size, a striped pink knitted shawl with a fringe and a long plum skirt. Two steel knitting needles as long as swords held out like a duellist, a half-done scarf on one, and a wicker basket of big yarn balls on her left arm. Mr. Biscuit is not in the model; the kit draws him.
-- HUD portrait (canvas-drawn in the kit data): a dark wine ground with loose strands of wool and a ball in the corner, a grey cat's head by her shoulder, a rose shawl with a darker fringe, a grey bun with two needles through it, and a kind round face with big round glasses and a small smile.
+- Look: a tiny old fate-spinner, unhurried. A long dark aubergine robe with a gold hem and a rose-thread belt, a dark wine hooded shawl knitted in bands of rose thread with a gold brooch, the hood up round her face with a rolled rose edge and its point falling down her back, silver hair at the brow, calm big eyes and a small kind smile (no glasses). Signature: two silver knitting needles as long as swords held out like a duellist, gold at the butts, half a rose-and-wine scarf on the right one, and a spindle standing up behind her left shoulder with three glowing rose yarn spools in gold flanges. Mr. Biscuit is not in the model; the kit draws him.
+- HUD portrait (canvas-drawn in the kit data): a dark wine ground with loose strands of rose wool, a spindle with three glowing rose spools behind her shoulder, a grey cat's head by her shoulder, a dark wine shawl knitted in bands of rose thread with a gold brooch, a dark hood with a rolled rose edge round a kind old face with silver hair at the brow, calm eyes and a small smile, and two silver needles crossed in front of her.
 
 ## Files
 
@@ -124,8 +124,8 @@ The headers of `knittingNeedle.ts` and `sweater.ts` still say 50 and 40 damage; 
 | Spells | [`knittingNeedle.ts`](../../../src/spells/targeted/knittingNeedle.ts), [`castOn.ts`](../../../src/spells/targeted/castOn.ts), [`sweater.ts`](../../../src/spells/targeted/sweater.ts), [`mrBiscuit.ts`](../../../src/spells/targeted/mrBiscuit.ts) |
 | Kit data | [`src/kits/yarn.ts`](../../../src/kits/yarn.ts) |
 | Trait | [`src/traits/yarn.ts`](../../../src/traits/yarn.ts) |
-| Model | [`public/models/heroes/yarn_v2.glb`](../../../public/models/heroes/yarn_v2.glb) |
-| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
+| Model | [`public/models/heroes/yarn_v3.glb`](../../../public/models/heroes/yarn_v3.glb) |
+| Model script | [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py) (the `_v3` class), [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the old class and the build kit) |
 
 ## See also
 

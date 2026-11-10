@@ -1,12 +1,12 @@
 ---
-title: Bram, the Pillar Mason (mason kit)
+title: Bram, the Stonewright (mason kit)
 tags: [catalog, heroes, mason, bruiser, melee, pillar]
 updated: 2026-11-04
 ---
 
-# Bram, the Pillar Mason
+# Bram, the Stonewright
 
-The mason hero kit: Bram's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette and the rigged hero model. A broad stonemason in a leather apron with a chisel and a big mallet, dust on him, a kind face. He has one friend: Gerald, a limestone pillar with a carved face. Gerald is a real wall with 220 HP. He is cover, a thrown weapon and a way in, and each use spends one of the others. Bram is a melee bruiser with 800 HP.
+The mason hero kit: Bram's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette and the rigged hero model. A broad temple mason in a dark tunic and a leather apron, carved limestone pauldrons on his shoulders, a rune-cut stone maul in his fist and a glowing amber rune on his chest, a calm square-jawed face. He has one friend: Gerald, a limestone pillar with a carved face. Gerald is a real wall with 220 HP. He is cover, a thrown weapon and a way in, and each use spends one of the others. Bram is a melee bruiser with 800 HP.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by building the fight around Gerald: cover to fight beside (15% less dam
 
 | | |
 |---|---|
-| Hero | Bram, the Pillar Mason |
+| Hero | Bram, the Stonewright |
 | Spell category | `hero: mason` |
 | Parts file | [`src/effects/parts/mason.ts`](../../../src/effects/parts/mason.ts) |
 | Kit data | [`src/kits/mason.ts`](../../../src/kits/mason.ts) |
 | Trait (rules) | [`src/traits/mason.ts`](../../../src/traits/mason.ts) |
 | Kit sheet | [`kit-mason.md`](../../../pipeline/designs/kit-mason.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/mason_v2.glb`](../../../public/models/heroes/mason_v2.glb) |
+| Model | [`public/models/heroes/mason_v3.glb`](../../../public/models/heroes/mason_v3.glb) |
 
 ## Palette
 
@@ -110,9 +110,10 @@ Spell sources: [`raiseGerald.ts`](../../../src/spells/targeted/raiseGerald.ts), 
 | `ShadowStrip` | a long dark shadow lying on the floor with a pale chalk edge (R's topple) |
 ## Model
 
-[`public/models/heroes/mason_v2.glb`](../../../public/models/heroes/mason_v2.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the current style, the `_v2` models). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Bram`), and its hit size is in `HERO_BODIES` in the same file (radius 0.59 m, height 2.7 m).
-- HUD portrait (canvas-drawn in the kit data): Gerald, big: a chipped block with a moss tuft, the grumpy face filling the frame.
+[`public/models/heroes/mason_v3.glb`](../../../public/models/heroes/mason_v3.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it), built by the `MasonMythic` class (a subclass of `Mason`) in [`blender/heroes/restyle_batch1.py`](../../../blender/heroes/restyle_batch1.py) on top of [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Bram`), and its hit size is in `HERO_BODIES` in the same file (radius 0.59 m, height 2.7 m). Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
+- Look: a broad, calm temple mason. A dark warm tunic with rolled sleeves, a deep brown leather apron with a gold hem and a chisel through the belt, leather bracers with gold bands on the big forearms, a gold gorget, iron-grey cropped hair and a small closed mouth. Signature: carved limestone pauldrons in two thin gold-edged lames on each shoulder, a rune-cut stone maul with gold bands in the right fist, and a glowing amber rune in a gold ring on the chest.
+- HUD portrait (canvas-drawn in the kit data): Bram's head and shoulders: a calm square-jawed face under iron-grey hair, the carved pauldrons and the apron bib with its glowing amber rune in a gold ring, the stone maul over his shoulder, and Gerald as a small grumpy block of limestone in the corner of the frame.
 
 ## Files
 
@@ -124,7 +125,7 @@ Spell sources: [`raiseGerald.ts`](../../../src/spells/targeted/raiseGerald.ts), 
 | Spells | [`raiseGerald.ts`](../../../src/spells/targeted/raiseGerald.ts), [`theShove.ts`](../../../src/spells/targeted/theShove.ts), [`aGoodLean.ts`](../../../src/spells/targeted/aGoodLean.ts), [`geraldNo.ts`](../../../src/spells/targeted/geraldNo.ts) |
 | Kit data | [`src/kits/mason.ts`](../../../src/kits/mason.ts) |
 | Trait (passive, twist, rules) | [`src/traits/mason.ts`](../../../src/traits/mason.ts) |
-| Model | [`public/models/heroes/mason_v2.glb`](../../../public/models/heroes/mason_v2.glb) |
+| Model | [`public/models/heroes/mason_v3.glb`](../../../public/models/heroes/mason_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

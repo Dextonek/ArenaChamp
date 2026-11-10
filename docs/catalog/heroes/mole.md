@@ -1,12 +1,12 @@
 ---
-title: Mabel, the Mole (mole kit)
+title: Mabel, the Deepdelver (mole kit)
 tags: [catalog, heroes, mole, assassin, melee, holes, mechanics]
 updated: 2026-11-04
 ---
 
-# Mabel, the Mole
+# Mabel, the Deepdelver
 
-The mole hero kit: Mabel's four spells (Q, W, E and the R ultimate), the passive holes, the shared parts file, the palette row and the rigged hero model. A stout, short mole in dark velvety fur, with a long pointed muzzle, thick round glasses, a yellow miner's helmet with a lamp, and enormous digging claws with a ridiculously little pickaxe. She is built on the [combat mechanics](../../architecture/mechanics.md): a melee assassin who digs pits and travels underground.
+The mole hero kit: Mabel's four spells (Q, W, E and the R ultimate), the passive holes, the shared parts file, the palette row and the rigged hero model. A stout mole-folk miner in dark velvet fur and studded leather armour, with a long muzzle, a bronze helm topped by a glowing amber crystal lantern, and enormous digging claws tipped in gold. She is built on the [combat mechanics](../../architecture/mechanics.md): a melee assassin who digs pits and travels underground.
 
 ## Role
 
@@ -23,13 +23,13 @@ She wins by making the ground dangerous: her holes root and slow whoever walks i
 
 | | |
 |---|---|
-| Hero | Mabel, the Mole |
+| Hero | Mabel, the Deepdelver |
 | Spell category | `hero: mole` |
 | Parts file | [`src/effects/parts/mole.ts`](../../../src/effects/parts/mole.ts) |
 | Kit data | [`src/kits/mole.ts`](../../../src/kits/mole.ts) |
 | Trait | [`src/traits/mole.ts`](../../../src/traits/mole.ts) |
 | Kit sheet | [`kit-mole.md`](../../../pipeline/designs/kit-mole.md) |
-| Model | [`public/models/heroes/mole_v2.glb`](../../../public/models/heroes/mole_v2.glb) |
+| Model | [`public/models/heroes/mole_v3.glb`](../../../public/models/heroes/mole_v3.glb) |
 
 ## Palette
 
@@ -111,10 +111,10 @@ The headers of `moleClaw.ts`, `moleTunnel.ts` and `sinkhole.ts` still say 45, 40
 
 ## Model
 
-[`public/models/heroes/mole_v2.glb`](../../../public/models/heroes/mole_v2.glb): a rigged figure built by the `Mole` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Mabel`); hero body size is radius 0.5, height 2.33 in `HERO_BODIES`.
+[`public/models/heroes/mole_v3.glb`](../../../public/models/heroes/mole_v3.glb): a rigged figure built by the `MoleMythic` class in [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Mabel`); hero body size is radius 0.5, height 2.33 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: stout and short in dark velvety fur. A long pointed muzzle ending in a big pink nose, little black eyes behind thick round glasses, two front teeth, no neck. A yellow miner's helmet with a bright lamp, a leather apron and a red kerchief. Enormous spade hands with five long pale claws each, reaching to her knees, and a tiny pickaxe in the right one.
-- HUD portrait (canvas-drawn in the kit data): a soil bank behind her with a dug-out tunnel mouth, a stout round grey frame in miner's overalls, a round fur head with a pink snout, thick round glasses, a miner's helmet with a glowing lamp, and huge claws at the edges of the frame with a tiny pickaxe.
+- Look: stout and short in dark velvety fur, a long muzzle with a small dusky-rose nose, small calm black eyes, no neck. A studded dark leather cuirass and skirt with a gold-buckled belt, leather straps over the shoulders, gold-banded bracers and greaves, dark leather boots, a close bronze helm with a gold ridge and brass goggles pushed up on its brow. Signature: enormous spade paws with five long pale claws each, every one tipped in gold, a glowing amber crystal lantern in a gold cage on top of the helm, and a pick slung across her back.
+- HUD portrait (canvas-drawn in the kit data): a soil bank behind her with a dug-out tunnel mouth, a stout dark-furred frame in a studded leather cuirass, a long muzzle with a small rose nose and calm black eyes, a bronze helm with a gold band and brass goggles pushed up, a glowing amber crystal lantern on top, the slung pick behind her shoulder, and huge gold-tipped claws at the edges of the frame.
 
 ## Files
 
@@ -125,8 +125,8 @@ The headers of `moleClaw.ts`, `moleTunnel.ts` and `sinkhole.ts` still say 45, 40
 | Spells | [`moleClaw.ts`](../../../src/spells/targeted/moleClaw.ts), [`moleDig.ts`](../../../src/spells/targeted/moleDig.ts), [`moleTunnel.ts`](../../../src/spells/targeted/moleTunnel.ts), [`sinkhole.ts`](../../../src/spells/targeted/sinkhole.ts) |
 | Kit data | [`src/kits/mole.ts`](../../../src/kits/mole.ts) |
 | Trait | [`src/traits/mole.ts`](../../../src/traits/mole.ts) |
-| Model | [`public/models/heroes/mole_v2.glb`](../../../public/models/heroes/mole_v2.glb) |
-| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
+| Model | [`public/models/heroes/mole_v3.glb`](../../../public/models/heroes/mole_v3.glb) |
+| Model script | [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py) (the `_v3` class), [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the old class and the build kit) |
 
 ## See also
 

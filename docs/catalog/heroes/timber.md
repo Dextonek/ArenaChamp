@@ -1,12 +1,12 @@
 ---
-title: Hank, the Lumberjack (timber kit)
+title: Hank, the Moss Hewer (timber kit)
 tags: [catalog, heroes, timber, bruiser, melee, trees]
 updated: 2026-11-04
 ---
 
-# Hank, the Lumberjack
+# Hank, the Moss Hewer
 
-The timber hero kit: Hank's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette and the rigged hero model. A huge bearded man in a red plaid shirt, suspenders, a big double axe, boots and a woolly hat. His trees are real: they grow from a sapling to a full tree, they are cover while they stand, and when he chops one it falls along a strip and hits whoever lies in the way. Bigger trees fall harder. He is a melee bruiser.
+The timber hero kit: Hank's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette and the rigged hero model. A huge forest warden with a braided beard, a moss-green tunic and a fur mantle, carrying a big double axe whose two edges glow green. His trees are real: they grow from a sapling to a full tree, they are cover while they stand, and when he chops one it falls along a strip and hits whoever lies in the way. Bigger trees fall harder. He is a melee bruiser.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by letting trees grow and then chopping them for more damage, or by usin
 
 | | |
 |---|---|
-| Hero | Hank, the Lumberjack |
+| Hero | Hank, the Moss Hewer |
 | Spell category | `hero: timber` |
 | Parts file | [`src/effects/parts/timber.ts`](../../../src/effects/parts/timber.ts) |
 | Kit data | [`src/kits/timber.ts`](../../../src/kits/timber.ts) |
 | Trait (rules) | [`src/traits/timber.ts`](../../../src/traits/timber.ts) |
 | Kit sheet | [`kit-timber.md`](../../../pipeline/designs/kit-timber.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/timber_v2.glb`](../../../public/models/heroes/timber_v2.glb) |
+| Model | [`public/models/heroes/timber_v3.glb`](../../../public/models/heroes/timber_v3.glb) |
 
 ## Palette
 
@@ -109,9 +109,10 @@ Spell sources: [`axeSwing.ts`](../../../src/spells/targeted/axeSwing.ts), [`fast
 | `RootBurst` | roots bursting round a spot (Fast Growth) |
 ## Model
 
-[`public/models/heroes/timber_v2.glb`](../../../public/models/heroes/timber_v2.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the current style, the `_v2` models). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Hank`), and its hit size is in `HERO_BODIES` in the same file (radius 0.61 m, height 2.69 m).
-- HUD portrait (canvas-drawn in the kit data): Pines behind him and a double axe over his shoulder.
+[`public/models/heroes/timber_v3.glb`](../../../public/models/heroes/timber_v3.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it), built by the `TimberMythic` class (a subclass of `Timber`) in [`blender/heroes/restyle_batch1.py`](../../../blender/heroes/restyle_batch1.py) on top of [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Hank`), and its hit size is in `HERO_BODIES` in the same file (radius 0.61 m, height 2.69 m). Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
+- Look: huge, a forest warden. A moss-green woven tunic and bark-brown leather leggings with leather wraps, dark boots, brown leather straps across the chest, bare brown hair under a leather brow band with a thick braid down his back, and the same great beard, now with two braids tied in brass. Signature: a fur mantle heaped round his shoulders, and the huge double-bitted axe upright at his side, its steel dark and both cutting edges glowing green, with a green rune on each blade.
+- HUD portrait (canvas-drawn in the kit data): pines behind him, the double axe over his shoulder with its edge aglow green, a moss-green tunic under a fur mantle, a brown-haired face with a leather brow band and a huge braided beard.
 
 ## Files
 
@@ -123,7 +124,7 @@ Spell sources: [`axeSwing.ts`](../../../src/spells/targeted/axeSwing.ts), [`fast
 | Spells | [`axeSwing.ts`](../../../src/spells/targeted/axeSwing.ts), [`fastGrowth.ts`](../../../src/spells/targeted/fastGrowth.ts), [`caberToss.ts`](../../../src/spells/targeted/caberToss.ts), [`timberCall.ts`](../../../src/spells/targeted/timberCall.ts) |
 | Kit data | [`src/kits/timber.ts`](../../../src/kits/timber.ts) |
 | Trait (passive, twist, rules) | [`src/traits/timber.ts`](../../../src/traits/timber.ts) |
-| Model | [`public/models/heroes/timber_v2.glb`](../../../public/models/heroes/timber_v2.glb) |
+| Model | [`public/models/heroes/timber_v3.glb`](../../../public/models/heroes/timber_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

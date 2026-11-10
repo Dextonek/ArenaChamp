@@ -1,12 +1,12 @@
 ---
-title: Gus, the Caretaker (janitor kit)
+title: Gus, the Temple Keeper (janitor kit)
 tags: [catalog, heroes, janitor, controller, melee, wet floor, mechanics]
 updated: 2026-11-04
 ---
 
-# Gus, the Caretaker
+# Gus, the Temple Keeper
 
-The janitor hero kit: Gus's four spells (Q, W, E and the R ultimate), the passive wet floor, the shared parts file, the palette row and the rigged hero model. A stocky, tired caretaker in baggy grey overalls and a cap with a squeaky mop, a yellow wheeled bucket and a drooping moustache. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee controller whose floor stays wet, so the enemy slides on it.
+The janitor hero kit: Gus's four spells (Q, W, E and the R ultimate), the passive wet floor, the shared parts file, the palette row and the rigged hero model. A stocky, calm old temple keeper in long grey-blue robes and a broad lacquered hat, with a ritual sweeping staff hung with paper streamers and a bronze water urn with glowing water. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee controller whose floor stays wet, so the enemy slides on it.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by deciding where the enemy slides: wet floor makes them keep going the 
 
 | | |
 |---|---|
-| Hero | Gus, the Caretaker |
+| Hero | Gus, the Temple Keeper |
 | Spell category | `hero: janitor` |
 | Parts file | [`src/effects/parts/janitor.ts`](../../../src/effects/parts/janitor.ts) |
 | Kit data | [`src/kits/janitor.ts`](../../../src/kits/janitor.ts) |
 | Trait | [`src/traits/janitor.ts`](../../../src/traits/janitor.ts) |
 | Kit sheet | [`kit-janitor.md`](../../../pipeline/designs/kit-janitor.md) |
-| Model | [`public/models/heroes/janitor_v2.glb`](../../../public/models/heroes/janitor_v2.glb) |
+| Model | [`public/models/heroes/janitor_v3.glb`](../../../public/models/heroes/janitor_v3.glb) |
 
 ## Palette
 
@@ -112,10 +112,10 @@ The headers of `bigMop.ts` and `mopBucket.ts` still say 45 and 40 damage; the nu
 
 ## Model
 
-[`public/models/heroes/janitor_v2.glb`](../../../public/models/heroes/janitor_v2.glb): a rigged figure built by the `Janitor` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Gus`); hero body size is radius 0.55, height 2.39 in `HERO_BODIES`.
+[`public/models/heroes/janitor_v3.glb`](../../../public/models/heroes/janitor_v3.glb): a rigged figure built by the `JanitorMythic` class in [`blender/heroes/restyle_batch2.py`](../../../blender/heroes/restyle_batch2.py) (a subclass of `Janitor` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py)). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Gus`); hero body size is radius 0.55, height 2.39 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: stocky and tired. Baggy grey overalls over a blue shirt, a cap, yellow rubber gloves, heavy-lidded eyes with bags under them, a big nose over a drooping walrus moustache and a brass keyring at the hip. A mop as tall as a spear in the right hand, and a yellow bucket on wheels hung from the left hand by its bail.
-- HUD portrait (canvas-drawn in the kit data): a deep blue ground with a wet floor under him and a few bubbles, the mop leaning behind his shoulder, grey overalls with a yellow strap and a bunch of keys, a broad tired face with bags under heavy-lidded eyes, a red nose and a grey drooping moustache, and a flat grey cap with a yellow badge.
+- Look: stocky, old and calm. Long grey-blue robes to the floor crossed over the chest with a pale collar and a bronze hem, a dark sash with a bronze cord, a ritual stole of two narrow dark bands, sleeves tied up with bronze cords above the elbow, bare wrapped forearms, heavy boots, heavy-lidded peaceful eyes, a short grey beard and a broad lacquered hat with a bronze rim. Signature: a ritual sweeping staff in the right hand, taller than he is, with a head of straw and white paper streamers, and a bronze water urn hanging from it on a chain, the water in it glowing aqua.
+- HUD portrait (canvas-drawn in the kit data): a deep blue ground, the sweeping staff with its straw head and paper streamers behind his shoulder, broad grey-blue shoulders with a pale crossed collar and a dark sash, the bronze urn at his side with glowing aqua water, and a calm heavy-lidded face with a short grey beard under a broad flat lacquered hat.
 
 ## Files
 
@@ -126,7 +126,7 @@ The headers of `bigMop.ts` and `mopBucket.ts` still say 45 and 40 damage; the nu
 | Spells | [`bigMop.ts`](../../../src/spells/targeted/bigMop.ts), [`wetFloorSign.ts`](../../../src/spells/targeted/wetFloorSign.ts), [`mopBucket.ts`](../../../src/spells/targeted/mopBucket.ts), [`flood.ts`](../../../src/spells/targeted/flood.ts) |
 | Kit data | [`src/kits/janitor.ts`](../../../src/kits/janitor.ts) |
 | Trait | [`src/traits/janitor.ts`](../../../src/traits/janitor.ts) |
-| Model | [`public/models/heroes/janitor_v2.glb`](../../../public/models/heroes/janitor_v2.glb) |
+| Model | [`public/models/heroes/janitor_v3.glb`](../../../public/models/heroes/janitor_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

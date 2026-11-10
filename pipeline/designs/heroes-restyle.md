@@ -1,8 +1,8 @@
 ---
 title: The 19 new heroes, restyled to the game's look
 tags: [design, heroes, models, art]
-updated: 2026-11-09
-status: pilots (Barry, Big Yoko, Pip) built as _v3 and used in the game; the other 16 wait on the user
+updated: 2026-11-10
+status: all 19 built as _v3 and used in the game (2026-11-10); the kit effects and the names are open questions
 ---
 
 # The 19 new heroes, restyled to the game's look (2026-11-09)
@@ -103,9 +103,45 @@ from behind). Classes `WeatherMythic`, `SumoMythic` (a subclass of `Sumo`, same 
   staff, as Kaia's counts hers, and Pip's to 2.36 for his taller head.
 - Not checked: a person playing them, a real phone, online.
 
+## The other 16, as built (2026-11-10, user: "Yes, all 16")
+
+Three workers in parallel, one batch each, with the rules above and the pilots' lessons as their brief. Classes in
+`blender/heroes/restyle_batch1.py`, `restyle_batch2.py`, `restyle_batch3.py` (loaded by `moba_figures._restyle_batches()`),
+exported with `blender/heroes/export_cli.py` (Blender in the background, so several build at once). Sheets:
+`docs/heroes/lineup_39_after.jpg` (all 39 as the game loads them) beside `lineup_39_before.jpg`.
+
+| Hero | Title now | Class | Triangles | What changed, and what is still open |
+|---|---|---|---|---|
+| Silvane | the Mirror Duchess | `MirrorMythic` | 31.0k | Dark violet gown, sleek hair, a fan collar of silver mirror shards, the glass as the glow. Open: the shards read a little spiky. |
+| Bram | the Stonewright | `MasonMythic` | 38.6k | Dark tunic, limestone pauldrons, a stone maul with gold bands, a glowing amber medallion. His portrait is now Bram, with Gerald small in the corner (it was Gerald's face). |
+| Hank | the Moss Hewer | `TimberMythic` | 39.0k | Moss weave, fur mantle, braided beard, the axe's edges and runes glow green. Not "Greenwarden": Fenna is "the Grove Warden". Open: the runes read a little like a K. |
+| Professor Puff | the Aeronaut | `BalloonMythic` | 32.9k | Aubergine coat, goggles on the brow, four glowing glass spheres on chains in place of balloons. Open: the spheres read a little like lanterns. |
+| Sir Whiskers | the Lynx Duelist | `CatMythic` | 29.8k | Tawny fur, ear tufts, gunmetal plate with gold edges, a short wine cape. Open: not leaner (the old body is kept). |
+| Mr. Ledger | the Tithe-Keeper | `LedgerMythic` | 36.9k | Black and oxblood robes, coin chains, a chained book with a glowing wax seal, a quill staff. Open: the cuffs read as rings. |
+| Mum | the Silent One | `MimeMythic` | 34.5k | Porcelain mask, dark hood, a violet coat with ivory diamonds, pale gloves with gold cuffs, a long ribbon. Open: the gloves are near white. |
+| Referee Whistler | the Arbiter | `RefereeMythic` | 39.7k | Dark armour, a black and ivory tabard, a crested helm, a silver horn, glowing sigil tablets. Open: the horn is small from the game camera. |
+| Madame Cleaver | the Feastmistress | `ChefMythic` | 39.1k | Crimson jerkin over mail, a long leather apron, a headwrap, the cleaver with an ember edge. The cauldron is on her back, not her hip (a hip prop hides behind the arm). |
+| Gus | the Temple Keeper | `JanitorMythic` | 30.5k | Grey-blue robes, a broad hat, a short beard, a sweeping staff with a bronze urn of glowing water hung from it. Open: the straw head still reads a little like a mop. |
+| Mabel | the Deepdelver | `MoleMythic` | 32.1k | Leather cuirass, bronze helm with a crystal lantern, gold-tipped claws. Open: brown on brown. |
+| Grandma Ironknit | the Weaver | `YarnMythic` | 26.4k | Aubergine robe, a hooded shawl, no glasses, a spindle of glowing rose spools on her back. |
+| Bo | the Ramherd | `SheepMythic` | 33.5k | A shaggy cloak, a ram-horn band, a crook with a glowing bell. The sheep under his arm is gone (his sheep are the kit's). |
+| The Great Zambini | the Illusionist | `MagicMythic` | 31.0k | Indigo tailcoat with gold-edged lapels, a goatee for the curled moustache, a glowing star on the wand. Open: from behind it is nearly the old shape. |
+| Wick | the Doorwarden | `DoorMythic` | 34.0k | An oxblood coat with gold braid, a hood, the key ring with a glowing gem, a small lantern. |
+| Pim and Pom | the Changeling Twins | `PimMythic`, `PomMythic` | 31.3k, 31.7k | Fae children with pointed ears in leaf tunics (amber and blue), a glowing sword and a glowing sling, a woven satchel for the backpack. |
+
+- The game uses all of them: `MODELS` in `src/heroes.ts` and the two `model:` lines in `src/kits/twins.ts`. The `_v2` files stay.
+- `HERO_BODIES`: measured old and new (the vertices' 90% radius and 99% height, `_size` on the sheet page). Radii follow where
+  the build changed (Grandma Ironknit 0.54 to 0.4, Bo 0.53 to 0.42, Referee Whistler 0.41 to 0.44); heights follow where a
+  tall piece went (Silvane 2.73 to 2.34, Madame Cleaver 2.63 to 2.33, Sir Whiskers 2.39 to 2.33, Mum 2.58 to 2.49, Wick 2.44 to 2.37).
+- Portraits, titles and catalog pages follow for each; the heroes README, `hero-mode.md` and `effects.md` too.
+- Checked: every model on the sheet page from the front and the game camera; all 39 in one lineup; eight AI fights of 5 s with
+  the new heroes (Hank, Mabel, Grandma, Bo, Ledger, Cleaver, Silvane, Wick, the twins, Gus, Puff, Whistler, Whiskers, Mum,
+  Zambini, Bram) with no error; type check and build.
+- Not checked: a person playing them, the game's own bloom on each (the sheet page has none), a phone, online.
+
 ## Open questions for the user
 
-1. After the pilots: restyle the other 16 the same way?
+1. (Answered 2026-11-10: "Yes, all 16".)
 2. **Kit visuals:** the last column above stays cartoon. Restyle those too (another pass of effects work), or keep the
    jokes in the spells?
 3. **Names:** "Barry Cloudsley", "Referee Whistler", "Grandma Ironknit", "Mr. Ledger", "Big Yoko" still sound like the

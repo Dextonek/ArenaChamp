@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const S = {
   core: '#ffffff', hot: '#e6c984', brass: '#b08a4a', shade: '#7a5c2c', glow: '#ffcf7a', wood: '#5a3321', woodLt: '#7a4a2c',
   woodDk: '#2c1a10', ink: '#120a06', red: '#6a2a2a', redLt: '#8c3a38', glove: '#f0ebdd', dark: '#1a0d0a',
+  // the Doorwarden's oxblood coat, hood, gold braid, silver hair, dark gloves and glowing key gem (the _v3 model)
+  coat: '#5c1a22', coatLt: '#7a2430', hood: '#6c1e28', gold: '#d2ae55', silver: '#a4a4ac', silverLo: '#6a6a72', gloveDk: '#2a1c20', gem: '#ffc058',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -131,15 +133,22 @@ function glint(g: CanvasRenderingContext2D, x: number, y: number, r: number, c =
 export const doorKit: HeroKit = {
   name: 'Wick',
   maxHp: 650,
-  title: 'the Doorman',
+  title: 'the Doorwarden',
   accent: S.brass,
   foil: S.red,
   portrait(g, s) {
     iconGround(g, s);
     // A door behind him, ajar, the warm light at its crack.
     door(g, s * 0.5, s * 0.95, s * 0.82, s * 0.5, false, '7');
-    // The long red coat: shoulders, a stiff collar, two rows of brass buttons.
-    g.fillStyle = S.red;
+    // The long oxblood coat: shoulders, a stiff collar, gold braid down the front, a hood lying back on the shoulders.
+    g.fillStyle = S.hood;
+    g.beginPath();
+    g.moveTo(s * 0.2, s * 0.7);
+    g.quadraticCurveTo(s * 0.26, s * 0.5, s * 0.5, s * 0.5);
+    g.quadraticCurveTo(s * 0.74, s * 0.5, s * 0.8, s * 0.7);
+    g.closePath();
+    g.fill();
+    g.fillStyle = S.coat;
     g.beginPath();
     g.moveTo(s * 0.16, s);
     g.quadraticCurveTo(s * 0.2, s * 0.7, s * 0.36, s * 0.62);
@@ -150,57 +159,60 @@ export const doorKit: HeroKit = {
     g.strokeStyle = S.ink;
     g.lineWidth = s * 0.012;
     g.stroke();
-    g.fillStyle = S.redLt;
+    g.fillStyle = S.coatLt;
     g.fillRect(s * 0.3, s * 0.62, s * 0.1, s * 0.38);
     g.fillRect(s * 0.6, s * 0.62, s * 0.1, s * 0.38);
-    g.fillStyle = S.brass;
-    for (let i = 0; i < 4; i++) for (const bx of [0.44, 0.56]) {
+    g.strokeStyle = S.gold;
+    g.lineWidth = s * 0.014;
+    for (const bx of [0.44, 0.56]) {
       g.beginPath();
-      g.arc(s * bx, s * (0.72 + i * 0.07), s * 0.016, 0, Math.PI * 2);
+      g.moveTo(s * bx, s * 0.64);
+      g.lineTo(s * (bx + (bx < 0.5 ? -0.04 : 0.04)), s);
+      g.stroke();
+    }
+    g.fillStyle = S.gold;
+    for (let i = 0; i < 4; i++) {
+      g.beginPath();
+      g.arc(s * 0.5, s * (0.72 + i * 0.07), s * 0.012, 0, Math.PI * 2);
       g.fill();
     }
     g.fillStyle = S.hot;
     g.fillRect(s * 0.38, s * 0.6, s * 0.24, s * 0.03);
-    // A long thin pale face, a white moustache, kind tired eyes.
+    // A long thin pale face, silver hair swept back, level brows, calm steady eyes, a thin polite smile.
     g.fillStyle = '#e8d0b8';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.46, s * 0.085, s * 0.14, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = S.glove;
+    g.fillStyle = S.silver;
     g.beginPath();
-    g.moveTo(s * 0.4, s * 0.5);
-    g.quadraticCurveTo(s * 0.5, s * 0.46, s * 0.6, s * 0.5);
-    g.quadraticCurveTo(s * 0.56, s * 0.56, s * 0.5, s * 0.52);
-    g.quadraticCurveTo(s * 0.44, s * 0.56, s * 0.4, s * 0.5);
+    g.ellipse(s * 0.5, s * 0.36, s * 0.1, s * 0.1, 0, Math.PI, Math.PI * 2);
     g.fill();
+    g.fillRect(s * 0.4, s * 0.36, s * 0.02, s * 0.1);
+    g.fillRect(s * 0.58, s * 0.36, s * 0.02, s * 0.1);
+    g.strokeStyle = S.silverLo;
+    g.lineWidth = s * 0.01;
+    for (const ex of [0.465, 0.535]) {
+      g.beginPath();
+      g.moveTo(s * (ex - 0.022), s * 0.425);
+      g.lineTo(s * (ex + 0.022), s * 0.425);
+      g.stroke();
+    }
     g.strokeStyle = S.ink;
     g.lineWidth = s * 0.008;
     for (const ex of [0.465, 0.535]) {
       g.beginPath();
-      g.moveTo(s * (ex - 0.016), s * 0.44);
-      g.quadraticCurveTo(s * ex, s * 0.45, s * (ex + 0.016), s * 0.44);
+      g.moveTo(s * (ex - 0.016), s * 0.445);
+      g.quadraticCurveTo(s * ex, s * 0.455, s * (ex + 0.016), s * 0.445);
       g.stroke();
     }
     g.beginPath();
     g.moveTo(s * 0.5, s * 0.45);
-    g.lineTo(s * 0.51, s * 0.49);
+    g.lineTo(s * 0.51, s * 0.495);
+    g.moveTo(s * 0.47, s * 0.525);
+    g.quadraticCurveTo(s * 0.5, s * 0.54, s * 0.53, s * 0.525);
     g.stroke();
-    // The little round hat with a brass band and a strap.
-    g.fillStyle = S.red;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.34, s * 0.105, s * 0.045, 0, 0, Math.PI * 2);
-    g.fill();
-    g.fillRect(s * 0.4, s * 0.27, s * 0.2, s * 0.07);
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.27, s * 0.1, s * 0.03, 0, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = S.brass;
-    g.fillRect(s * 0.4, s * 0.32, s * 0.2, s * 0.018);
-    g.strokeStyle = S.ink;
-    g.lineWidth = s * 0.008;
-    g.strokeRect(s * 0.4, s * 0.27, s * 0.2, s * 0.07);
-    // A white-gloved hand holding up a ring of keys.
-    g.fillStyle = S.glove;
+    // A dark-gloved hand holding up a ring of keys with a glowing amber gem among them.
+    g.fillStyle = S.gloveDk;
     g.beginPath();
     g.arc(s * 0.8, s * 0.64, s * 0.05, 0, Math.PI * 2);
     g.fill();
@@ -213,6 +225,19 @@ export const doorKit: HeroKit = {
     g.stroke();
     key(g, s * 0.84, s * 0.48, s * 0.2, -0.9);
     key(g, s * 0.76, s * 0.5, s * 0.17, -2.4);
+    const glow = g.createRadialGradient(s * 0.8, s * 0.4, 0, s * 0.8, s * 0.4, s * 0.12);
+    glow.addColorStop(0, 'rgba(255,192,88,0.9)');
+    glow.addColorStop(1, 'rgba(255,168,58,0)');
+    g.fillStyle = glow;
+    g.fillRect(s * 0.66, s * 0.26, s * 0.28, s * 0.28);
+    g.fillStyle = S.gem;
+    g.beginPath();
+    g.moveTo(s * 0.8, s * 0.34);
+    g.lineTo(s * 0.835, s * 0.4);
+    g.lineTo(s * 0.8, s * 0.47);
+    g.lineTo(s * 0.765, s * 0.4);
+    g.closePath();
+    g.fill();
     glint(g, s * 0.9, s * 0.36, s * 0.04);
     glint(g, s * 0.14, s * 0.3, s * 0.03, S.glow);
   },

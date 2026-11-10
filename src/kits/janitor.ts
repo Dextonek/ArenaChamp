@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const S = {
   core: '#f2f6f8', foam: '#e4f1f6', pale: '#c4e4f2', water: '#74c0ea', deep: '#3a6a8a', yellow: '#ffd23a', yellowDeep: '#d9a514',
   grey: '#8a929a', greyDark: '#4a5058', steel: '#b4bcc4', rubber: '#23282e', wood: '#a4906a', string: '#d8d6c8', dark: '#0f1a24', skin: '#e0b79a',
+  // the Temple Keeper's robe, hat, beard, bronze, straw and glowing water (the _v3 model)
+  robe: '#44546c', collar: '#7a8aa4', sash: '#242a3a', bronze: '#a07040', bronzeDark: '#6a4a28', hat: '#37323f', beard: '#a8a4a0', haft: '#5a4030', straw: '#b8a070', paper: '#c4bcaa', aqua: '#7adfff',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -133,99 +135,144 @@ export const janitorKit: HeroKit = {
   name: 'Gus',
   maxHp: 700,
   melee: true,
-  title: 'the Caretaker',
+  title: 'the Temple Keeper',
   accent: S.yellow,
   foil: S.deep,
   portrait(g, s) {
     iconGround(g, s);
-    // A wet floor under him and a few bubbles.
-    puddle(g, s * 0.5, s * 0.93, s * 0.46, s * 0.09);
-    bubble(g, s * 0.15, s * 0.3, s * 0.05);
-    bubble(g, s * 0.86, s * 0.42, s * 0.035);
-    bubble(g, s * 0.8, s * 0.2, s * 0.025);
-    // The mop leaning behind his shoulder.
-    mop(g, s * 0.17, s * 0.9, s * 0.95, 0.28);
-    // Shoulders in grey overalls with a yellow strap, a bunch of keys on the strap.
-    g.fillStyle = S.greyDark;
-    g.beginPath();
-    g.moveTo(s * 0.1, s);
-    g.quadraticCurveTo(s * 0.14, s * 0.7, s * 0.34, s * 0.62);
-    g.quadraticCurveTo(s * 0.5, s * 0.58, s * 0.66, s * 0.62);
-    g.quadraticCurveTo(s * 0.86, s * 0.7, s * 0.9, s);
-    g.closePath();
-    g.fill();
-    g.fillStyle = S.grey;
-    g.beginPath();
-    g.moveTo(s * 0.18, s);
-    g.quadraticCurveTo(s * 0.2, s * 0.74, s * 0.36, s * 0.66);
-    g.lineTo(s * 0.64, s * 0.66);
-    g.quadraticCurveTo(s * 0.8, s * 0.74, s * 0.82, s);
-    g.closePath();
-    g.fill();
-    g.fillStyle = S.yellow;
-    g.fillRect(s * 0.36, s * 0.66, s * 0.06, s * 0.34);
-    g.fillRect(s * 0.58, s * 0.66, s * 0.06, s * 0.34);
-    g.fillStyle = S.yellowDeep;
-    g.beginPath(); g.arc(s * 0.39, s * 0.8, s * 0.014, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = S.steel;
-    g.lineWidth = s * 0.012;
-    g.beginPath(); g.arc(s * 0.62, s * 0.85, s * 0.03, 0, Math.PI * 2); g.stroke();
-    for (let i = 0; i < 3; i++) {
-      g.fillStyle = i === 1 ? S.yellow : S.steel;
-      g.fillRect(s * (0.6 + i * 0.016), s * 0.87, s * 0.012, s * 0.05);
-    }
-    // A stocky neck and a broad, tired face.
-    g.fillStyle = '#c99c80';
-    g.fillRect(s * 0.44, s * 0.55, s * 0.12, s * 0.1);
-    g.fillStyle = S.skin;
-    g.beginPath(); g.ellipse(s * 0.5, s * 0.44, s * 0.13, s * 0.15, 0, 0, Math.PI * 2); g.fill();
-    // Ears.
-    g.beginPath(); g.ellipse(s * 0.365, s * 0.45, s * 0.02, s * 0.035, 0, 0, Math.PI * 2); g.fill();
-    g.beginPath(); g.ellipse(s * 0.635, s * 0.45, s * 0.02, s * 0.035, 0, 0, Math.PI * 2); g.fill();
-    // The cap: a flat grey crown, a short peak, a yellow badge.
-    g.fillStyle = S.greyDark;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.34, s * 0.14, s * 0.085, 0, Math.PI, Math.PI * 2);
-    g.fill();
-    g.fillRect(s * 0.36, s * 0.33, s * 0.28, s * 0.03);
-    g.fillStyle = S.rubber;
-    g.beginPath();
-    g.moveTo(s * 0.36, s * 0.355); g.lineTo(s * 0.64, s * 0.355); g.lineTo(s * 0.68, s * 0.385); g.lineTo(s * 0.4, s * 0.385); g.closePath(); g.fill();
-    g.fillStyle = S.yellow;
-    g.beginPath(); g.arc(s * 0.5, s * 0.3, s * 0.02, 0, Math.PI * 2); g.fill();
-    // Heavy-lidded eyes with bags under them, bushy brows pulled down.
-    g.strokeStyle = S.rubber;
-    g.lineWidth = s * 0.012;
+    // The ritual sweeping staff behind his shoulder: a straw head with white paper streamers.
+    g.strokeStyle = S.haft;
+    g.lineWidth = s * 0.022;
     g.lineCap = 'round';
-    for (const sx of [0.44, 0.56]) {
-      g.beginPath(); g.moveTo(s * (sx - 0.03), s * 0.415); g.lineTo(s * (sx + 0.03), s * 0.425); g.stroke();
-      g.fillStyle = S.rubber;
-      g.beginPath(); g.arc(s * sx, s * 0.435, s * 0.007, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = '#a97f68';
-      g.lineWidth = s * 0.008;
-      g.beginPath(); g.arc(s * sx, s * 0.448, s * 0.026, 0.2, Math.PI - 0.2); g.stroke();
-      g.strokeStyle = S.rubber;
-      g.lineWidth = s * 0.012;
-    }
-    g.strokeStyle = '#5b4a3a';
-    g.lineWidth = s * 0.014;
-    g.beginPath(); g.moveTo(s * 0.4, s * 0.395); g.lineTo(s * 0.47, s * 0.405); g.stroke();
-    g.beginPath(); g.moveTo(s * 0.6, s * 0.395); g.lineTo(s * 0.53, s * 0.405); g.stroke();
-    // A red nose and the moustache, grey and drooping.
-    g.fillStyle = '#d28b7a';
-    g.beginPath(); g.ellipse(s * 0.5, s * 0.46, s * 0.022, s * 0.026, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#9a9a96';
     g.beginPath();
-    g.moveTo(s * 0.5, s * 0.485);
-    g.quadraticCurveTo(s * 0.4, s * 0.47, s * 0.37, s * 0.54);
-    g.quadraticCurveTo(s * 0.43, s * 0.51, s * 0.5, s * 0.505);
-    g.quadraticCurveTo(s * 0.57, s * 0.51, s * 0.63, s * 0.54);
-    g.quadraticCurveTo(s * 0.6, s * 0.47, s * 0.5, s * 0.485);
+    g.moveTo(s * 0.84, s);
+    g.lineTo(s * 0.8, s * 0.2);
+    g.stroke();
+    g.strokeStyle = S.straw;
+    g.lineWidth = s * 0.02;
+    for (let i = 0; i < 9; i++) {
+      const dx = (i - 4) * s * 0.026;
+      g.beginPath();
+      g.moveTo(s * 0.8, s * 0.2);
+      g.lineTo(s * 0.8 + dx * 1.6, s * 0.02);
+      g.stroke();
+    }
+    g.fillStyle = S.paper;
+    for (const dx of [-0.05, 0.05]) {
+      g.beginPath();
+      g.moveTo(s * (0.8 + dx), s * 0.22);
+      g.lineTo(s * (0.8 + dx + 0.03), s * 0.3);
+      g.lineTo(s * (0.8 + dx - 0.01), s * 0.36);
+      g.lineTo(s * (0.8 + dx + 0.03), s * 0.43);
+      g.lineTo(s * (0.8 + dx + 0.045), s * 0.41);
+      g.lineTo(s * (0.8 + dx + 0.01), s * 0.35);
+      g.lineTo(s * (0.8 + dx + 0.05), s * 0.29);
+      g.lineTo(s * (0.8 + dx + 0.02), s * 0.22);
+      g.closePath();
+      g.fill();
+    }
+    // Broad shoulders in grey-blue robes, the pale crossed collar, a dark sash with a bronze cord.
+    g.fillStyle = S.robe;
+    g.beginPath();
+    g.moveTo(s * 0.06, s);
+    g.quadraticCurveTo(s * 0.1, s * 0.72, s * 0.3, s * 0.64);
+    g.lineTo(s * 0.7, s * 0.64);
+    g.quadraticCurveTo(s * 0.9, s * 0.72, s * 0.94, s);
+    g.closePath();
     g.fill();
-    g.fillStyle = S.core;
-    g.fillRect(s * 0.47, s * 0.515, s * 0.06, s * 0.008);
-    // A drip of soapy water from the mop head, a bubble by the cap.
-    bubble(g, s * 0.32, s * 0.2, s * 0.03);
+    g.fillStyle = S.collar;
+    for (const dir of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(s * (0.5 + dir * 0.13), s * 0.64);
+      g.lineTo(s * (0.5 - dir * 0.04), s * 0.86);
+      g.lineTo(s * (0.5 - dir * 0.09), s * 0.84);
+      g.lineTo(s * (0.5 + dir * 0.06), s * 0.64);
+      g.closePath();
+      g.fill();
+    }
+    g.fillStyle = S.sash;
+    g.fillRect(s * 0.2, s * 0.9, s * 0.6, s * 0.06);
+    g.fillStyle = S.bronze;
+    g.fillRect(s * 0.2, s * 0.915, s * 0.6, s * 0.012);
+    // The bronze water urn at his side, the water glowing aqua.
+    const glow = g.createRadialGradient(s * 0.17, s * 0.74, 0, s * 0.17, s * 0.74, s * 0.16);
+    glow.addColorStop(0, 'rgba(90,200,255,0.8)');
+    glow.addColorStop(1, 'rgba(60,170,255,0)');
+    g.fillStyle = glow;
+    g.fillRect(0, s * 0.56, s * 0.36, s * 0.36);
+    g.fillStyle = S.bronze;
+    g.beginPath();
+    g.moveTo(s * 0.04, s * 0.74);
+    g.quadraticCurveTo(s * 0.02, s * 0.94, s * 0.12, s);
+    g.lineTo(s * 0.24, s);
+    g.quadraticCurveTo(s * 0.34, s * 0.94, s * 0.31, s * 0.74);
+    g.closePath();
+    g.fill();
+    g.fillStyle = S.bronzeDark;
+    g.fillRect(s * 0.04, s * 0.86, s * 0.27, s * 0.016);
+    g.fillStyle = S.bronze;
+    g.beginPath();
+    g.ellipse(s * 0.175, s * 0.74, s * 0.14, s * 0.035, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = S.aqua;
+    g.beginPath();
+    g.ellipse(s * 0.175, s * 0.74, s * 0.11, s * 0.024, 0, 0, Math.PI * 2);
+    g.fill();
+    // A calm, heavy-lidded old face with a short grey beard.
+    g.fillStyle = S.skin;
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.46, s * 0.14, s * 0.16, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = S.beard;
+    g.beginPath();
+    g.moveTo(s * 0.37, s * 0.5);
+    g.quadraticCurveTo(s * 0.4, s * 0.68, s * 0.5, s * 0.7);
+    g.quadraticCurveTo(s * 0.6, s * 0.68, s * 0.63, s * 0.5);
+    g.quadraticCurveTo(s * 0.5, s * 0.56, s * 0.37, s * 0.5);
+    g.closePath();
+    g.fill();
+    for (const sx of [0.44, 0.56]) {
+      g.fillStyle = S.core;
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.455, s * 0.026, s * 0.024, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = S.dark;
+      g.beginPath();
+      g.arc(s * sx, s * 0.46, s * 0.013, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = S.skin;
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.44, s * 0.03, s * 0.016, 0, Math.PI, Math.PI * 2);
+      g.fill();
+    }
+    g.strokeStyle = S.beard;
+    g.lineWidth = s * 0.012;
+    for (const dir of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(s * (0.5 + dir * 0.03), s * 0.415);
+      g.lineTo(s * (0.5 + dir * 0.09), s * 0.425);
+      g.stroke();
+    }
+    // The broad flat lacquered hat, a bronze rim, a boss on top.
+    g.fillStyle = S.hat;
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.34, s * 0.3, s * 0.05, 0, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(s * 0.34, s * 0.34);
+    g.quadraticCurveTo(s * 0.36, s * 0.16, s * 0.5, s * 0.16);
+    g.quadraticCurveTo(s * 0.64, s * 0.16, s * 0.66, s * 0.34);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = S.bronze;
+    g.lineWidth = s * 0.008;
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.34, s * 0.3, s * 0.05, 0, 0, Math.PI);
+    g.stroke();
+    g.fillStyle = S.bronze;
+    g.beginPath();
+    g.arc(s * 0.5, s * 0.165, s * 0.02, 0, Math.PI * 2);
+    g.fill();
   },
   spells: [
     {

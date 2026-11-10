@@ -2,10 +2,13 @@ import type { HeroKit } from '../heroes';
 
 /**
  * Mason kit data (Bram, the Pillar Mason): a dark floor, warm limestone and sand, a chalk-pale foil. Icons are drawn on
- * canvases in the kit palette, one signature shape each; the portrait is Gerald's grumpy face, not Bram's (see
+ * canvases in the kit palette, one signature shape each; the portrait is Bram the Stonewright (the _v3 model); Gerald's grumpy face stays on the icons (see
  * pipeline/designs/kit-mason.md).
  */
-const M = { core: '#f6efdc', hot: '#dcc58f', body: '#c9b48a', stone: '#9a958c', stoneLit: '#b4afa5', stoneDark: '#5b5853', foil: '#e6e0d0', dark: '#1c1a18', fury: '#b06a58', sweat: '#8fd3ff' };
+const M = { core: '#f6efdc', hot: '#dcc58f', body: '#c9b48a', stone: '#9a958c', stoneLit: '#b4afa5', stoneDark: '#5b5853', foil: '#e6e0d0', dark: '#1c1a18', fury: '#b06a58', sweat: '#8fd3ff',
+  // the Stonewright's tunic, apron, pauldrons, maul and glowing rune (the _v3 model)
+  tunic: '#40383a', leather: '#6a4222', pauldron: '#8a8476', maul: '#69645c', haft: '#503420', gold: '#d8a838', rune: '#ff9a2a', runeHot: '#ffd890', skin: '#c08a64', hair: '#6c665e',
+};
 
 function ground(g: CanvasRenderingContext2D, s: number) {
   const r = g.createRadialGradient(s * 0.5, s * 0.42, s * 0.05, s * 0.5, s * 0.5, s * 0.75);
@@ -100,30 +103,120 @@ function chips(g: CanvasRenderingContext2D, s: number, pts: [number, number, num
 
 export const masonKit: HeroKit = {
   name: 'Bram',
-  title: 'the Pillar Mason',
+  title: 'the Stonewright',
   maxHp: 800,
   melee: true,
   accent: M.body,
   foil: '#6d6a66',
   portrait(g, s) {
     ground(g, s);
-    // Gerald, big: a chipped block with a moss tuft, the grumpy face filling the frame, a bored sweat-free stare.
-    g.fillStyle = M.stoneDark;
-    g.fillRect(s * 0.1, s * 0.12, s * 0.8, s * 0.82);
-    g.fillStyle = M.stone;
-    g.fillRect(s * 0.16, s * 0.18, s * 0.68, s * 0.76);
-    g.strokeStyle = M.foil;
-    g.lineWidth = s * 0.02;
-    g.strokeRect(s * 0.16, s * 0.18, s * 0.68, s * 0.76);
-    // The chipped top corner and the moss.
+    // The stone maul behind his shoulder: a haft and a pale stone barrel with gold bands.
+    g.save();
+    g.translate(s * 0.82, s * 0.5);
+    g.rotate(0.4);
     g.fillStyle = M.dark;
-    g.beginPath(); g.moveTo(s * 0.7, s * 0.18); g.lineTo(s * 0.84, s * 0.18); g.lineTo(s * 0.84, s * 0.32); g.closePath(); g.fill();
-    g.fillStyle = '#6f8f5a';
-    g.beginPath(); g.ellipse(s * 0.3, s * 0.18, s * 0.1, s * 0.04, 0, 0, Math.PI * 2); g.fill();
-    grumpy(g, s * 0.5, s * 0.54, s * 0.62, false);
+    g.fillRect(-s * 0.04, -s * 0.1, s * 0.08, s * 0.7);
+    g.fillStyle = M.haft;
+    g.fillRect(-s * 0.03, -s * 0.1, s * 0.06, s * 0.7);
+    g.fillStyle = M.dark;
+    g.fillRect(-s * 0.17, -s * 0.3, s * 0.34, s * 0.24);
+    g.fillStyle = M.maul;
+    g.fillRect(-s * 0.15, -s * 0.28, s * 0.3, s * 0.2);
+    g.fillStyle = M.gold;
+    g.fillRect(-s * 0.15, -s * 0.28, s * 0.03, s * 0.2);
+    g.fillRect(s * 0.12, -s * 0.28, s * 0.03, s * 0.2);
+    g.restore();
+    // Gerald, his friend, a small grumpy block of limestone at the corner of the frame.
+    grumpy(g, s * 0.16, s * 0.2, s * 0.22, false);
+    // Shoulders: a dark tunic, a leather apron bib, carved limestone pauldrons with gold edges.
+    g.fillStyle = M.tunic;
+    g.beginPath();
+    g.moveTo(s * 0.04, s);
+    g.quadraticCurveTo(s * 0.06, s * 0.74, s * 0.26, s * 0.67);
+    g.quadraticCurveTo(s * 0.5, s * 0.6, s * 0.74, s * 0.67);
+    g.quadraticCurveTo(s * 0.94, s * 0.74, s * 0.96, s);
+    g.closePath();
+    g.fill();
+    g.fillStyle = M.leather;
+    g.beginPath();
+    g.moveTo(s * 0.32, s * 0.68);
+    g.quadraticCurveTo(s * 0.5, s * 0.74, s * 0.68, s * 0.68);
+    g.lineTo(s * 0.7, s);
+    g.lineTo(s * 0.3, s);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = M.gold;
+    g.lineWidth = s * 0.012;
+    g.stroke();
+    for (const sx of [-1, 1]) {
+      g.save();
+      g.translate(s * (0.5 + sx * 0.33), s * 0.7);
+      g.rotate(sx * 0.35);
+      for (const [dy, w, h] of [[0, 0.2, 0.075], [0.07, 0.17, 0.065]] as const) {
+        g.fillStyle = M.gold;
+        g.beginPath(); g.ellipse(0, s * dy + s * 0.008, s * (w / 2 + 0.01), s * (h / 2 + 0.01), 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = M.pauldron;
+        g.beginPath(); g.ellipse(0, s * dy, s * (w / 2), s * (h / 2), 0, 0, Math.PI * 2); g.fill();
+      }
+      g.restore();
+    }
+    // The glowing amber rune in a gold ring on his chest.
+    const rg = g.createRadialGradient(s * 0.5, s * 0.86, s * 0.01, s * 0.5, s * 0.86, s * 0.12);
+    rg.addColorStop(0, M.runeHot);
+    rg.addColorStop(1, M.rune);
+    g.fillStyle = M.gold;
+    g.beginPath(); g.arc(s * 0.5, s * 0.86, s * 0.1, 0, Math.PI * 2); g.fill();
+    g.fillStyle = rg;
+    g.beginPath(); g.arc(s * 0.5, s * 0.86, s * 0.085, 0, Math.PI * 2); g.fill();
     g.strokeStyle = M.dark;
     g.lineWidth = s * 0.012;
-    g.beginPath(); g.moveTo(s * 0.2, s * 0.7); g.lineTo(s * 0.27, s * 0.78); g.lineTo(s * 0.23, s * 0.88); g.stroke();
+    g.lineCap = 'round';
+    g.beginPath();
+    g.moveTo(s * 0.5, s * 0.8); g.lineTo(s * 0.5, s * 0.92);
+    g.moveTo(s * 0.5, s * 0.835); g.lineTo(s * 0.46, s * 0.8);
+    g.moveTo(s * 0.5, s * 0.835); g.lineTo(s * 0.54, s * 0.8);
+    g.moveTo(s * 0.5, s * 0.89); g.lineTo(s * 0.465, s * 0.925);
+    g.moveTo(s * 0.5, s * 0.89); g.lineTo(s * 0.535, s * 0.925);
+    g.stroke();
+    // A thick neck with a gold gorget, a broad square-jawed face, a calm closed mouth, iron-grey hair.
+    g.fillStyle = M.skin;
+    g.fillRect(s * 0.42, s * 0.54, s * 0.16, s * 0.14);
+    g.strokeStyle = M.gold;
+    g.lineWidth = s * 0.014;
+    g.beginPath(); g.moveTo(s * 0.38, s * 0.665); g.quadraticCurveTo(s * 0.5, s * 0.71, s * 0.62, s * 0.665); g.stroke();
+    g.fillStyle = M.skin;
+    g.beginPath();
+    g.moveTo(s * 0.34, s * 0.3);
+    g.quadraticCurveTo(s * 0.34, s * 0.2, s * 0.5, s * 0.2);
+    g.quadraticCurveTo(s * 0.66, s * 0.2, s * 0.66, s * 0.3);
+    g.lineTo(s * 0.67, s * 0.5);
+    g.quadraticCurveTo(s * 0.66, s * 0.63, s * 0.5, s * 0.63);
+    g.quadraticCurveTo(s * 0.34, s * 0.63, s * 0.33, s * 0.5);
+    g.closePath();
+    g.fill();
+    g.fillStyle = M.hair;
+    g.beginPath();
+    g.moveTo(s * 0.32, s * 0.36);
+    g.quadraticCurveTo(s * 0.3, s * 0.14, s * 0.5, s * 0.14);
+    g.quadraticCurveTo(s * 0.7, s * 0.14, s * 0.68, s * 0.36);
+    g.quadraticCurveTo(s * 0.64, s * 0.26, s * 0.5, s * 0.27);
+    g.quadraticCurveTo(s * 0.36, s * 0.26, s * 0.32, s * 0.36);
+    g.fill();
+    for (const sx of [0.435, 0.565]) {
+      g.fillStyle = M.core;
+      g.beginPath(); g.ellipse(s * sx, s * 0.4, s * 0.03, s * 0.032, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#5a3a1c';
+      g.beginPath(); g.ellipse(s * sx, s * 0.405, s * 0.018, s * 0.024, 0, 0, Math.PI * 2); g.fill();
+    }
+    g.strokeStyle = '#4a4036';
+    g.lineWidth = s * 0.016;
+    g.beginPath();
+    g.moveTo(s * 0.4, s * 0.35); g.lineTo(s * 0.47, s * 0.36);
+    g.moveTo(s * 0.6, s * 0.35); g.lineTo(s * 0.53, s * 0.36);
+    g.stroke();
+    g.strokeStyle = '#6e3a2c';
+    g.lineWidth = s * 0.012;
+    g.beginPath(); g.moveTo(s * 0.45, s * 0.54); g.quadraticCurveTo(s * 0.5, s * 0.555, s * 0.55, s * 0.54); g.stroke();
   },
   spells: [
     {

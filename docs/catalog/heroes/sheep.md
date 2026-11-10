@@ -1,12 +1,12 @@
 ---
-title: Bo, the angry shepherd (sheep kit)
+title: Bo, the Ramherd (sheep kit)
 tags: [catalog, heroes, sheep, summoner, ranged, wool, mechanics]
 updated: 2026-11-04
 ---
 
-# Bo, the angry shepherd
+# Bo, the Ramherd
 
-The sheep hero kit: Bo's four spells (Q, W, E and the R ultimate), the passive wool, the shared parts file, the palette row and the rigged hero model. A furious old man with a red face, a huge wild white beard, a wide battered hat, a shaggy wool coat, a long hooked crook and one sheep clamped under his arm. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged summoner whose sheep walk to whoever is nearest, him or the enemy.
+The sheep hero kit: Bo's four spells (Q, W, E and the R ultimate), the passive wool, the shared parts file, the palette row and the rigged hero model. A grave old mountain herdsman-druid in a shaggy umber wool cloak and a silver beard, with great ram horns curling from a bronze headband and a tall crook hung with a glowing bell. He is built on the [combat mechanics](../../architecture/mechanics.md): a ranged summoner whose sheep walk to whoever is nearest, him or the enemy.
 
 ## Role
 
@@ -23,13 +23,13 @@ He wins by loading the enemy with Wool: every touch of a sheep, the wool ball or
 
 | | |
 |---|---|
-| Hero | Bo, the angry shepherd |
+| Hero | Bo, the Ramherd |
 | Spell category | `hero: sheep` |
 | Parts file | [`src/effects/parts/sheep.ts`](../../../src/effects/parts/sheep.ts) |
 | Kit data | [`src/kits/sheep.ts`](../../../src/kits/sheep.ts) |
 | Trait | [`src/traits/sheep.ts`](../../../src/traits/sheep.ts) |
 | Kit sheet | [`kit-sheep.md`](../../../pipeline/designs/kit-sheep.md) |
-| Model | [`public/models/heroes/sheep_v2.glb`](../../../public/models/heroes/sheep_v2.glb) |
+| Model | [`public/models/heroes/sheep_v3.glb`](../../../public/models/heroes/sheep_v3.glb) |
 
 ## Palette
 
@@ -110,10 +110,10 @@ The headers of `crookWhack.ts`, `shear.ts` and `stampede.ts` still say 45, 40 an
 
 ## Model
 
-[`public/models/heroes/sheep_v2.glb`](../../../public/models/heroes/sheep_v2.glb): a rigged figure built by the `Sheep` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Bo`); hero body size is radius 0.53, height 2.4 in `HERO_BODIES`.
+[`public/models/heroes/sheep_v3.glb`](../../../public/models/heroes/sheep_v3.glb): a rigged figure built by the `SheepMythic` class in [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Bo`); hero body size is radius 0.53, height 2.4 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: a furious old man. A red face, white brows diving at the nose, a shouting mouth in a huge wild white beard, a wide battered hat, a shaggy wool coat to the knees with a cream collar and hem. A long hooked crook taller than anyone, and one sheep clamped under his left arm: a ball of cream wool, a black face with white eyes, black ears and four dangling black legs.
-- HUD portrait (canvas-drawn in the kit data): a dusk-green pasture ground with a sheep under his arm looking unimpressed, the crook shaken up beside his head, a thick brown wool coat with a shaggy collar, a huge grey-white beard under a red furious face with a scowl, and a wide hat with a hay band.
+- Look: a grave, unhurried old herdsman. A deep umber shaggy wool cloak to the knees (wool tufts melted into one fleece surface) with a grey fleece mantle on the shoulders and fleece hem, a dark leather belt with a gold buckle, dark boots with gold cuffs, a weathered face with a small nose, level grey brows and steady eyes under a bronze headband, a tidy silver beard with a gold ring at its end. Signature: a pair of great curled ram horns springing from the headband, and a tall crook of dark wood taller than anyone with a glowing warm bell hanging from its hook. The cartoon sheep stays in the kit, not on the model.
+- HUD portrait (canvas-drawn in the kit data): a dusk-green pasture ground, the crook up beside his head with a glowing warm bell on its hook, a deep umber wool cloak with a grey fleece mantle, a tidy silver beard under a calm weathered face with level grey brows and steady eyes, grey hair under a bronze headband, and a great ram horn curling from each temple.
 
 ## Files
 
@@ -124,8 +124,8 @@ The headers of `crookWhack.ts`, `shear.ts` and `stampede.ts` still say 45, 40 an
 | Spells | [`crookWhack.ts`](../../../src/spells/targeted/crookWhack.ts), [`spareSheep.ts`](../../../src/spells/targeted/spareSheep.ts), [`shear.ts`](../../../src/spells/targeted/shear.ts), [`stampede.ts`](../../../src/spells/targeted/stampede.ts) |
 | Kit data | [`src/kits/sheep.ts`](../../../src/kits/sheep.ts) |
 | Trait | [`src/traits/sheep.ts`](../../../src/traits/sheep.ts) |
-| Model | [`public/models/heroes/sheep_v2.glb`](../../../public/models/heroes/sheep_v2.glb) |
-| Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
+| Model | [`public/models/heroes/sheep_v3.glb`](../../../public/models/heroes/sheep_v3.glb) |
+| Model script | [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py) (the `_v3` class), [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the old class and the build kit) |
 
 ## See also
 

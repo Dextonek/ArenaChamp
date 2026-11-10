@@ -7,6 +7,8 @@ import type { HeroKit } from '../heroes';
  */
 const S = {
   core: '#ffffff', hot: '#ffd2e3', body: '#ff8fb8', shade: '#c9507f', deep: '#8a2f5a', foil: '#fff1a8', sky: '#8fd8ff', brass: '#d9a441', dark: '#2a1424',
+  // the Aeronaut's coat and glowing gas spheres (the _v3 model)
+  coat: '#3a2540', coatDark: '#241528', gas: '#ff5c9c', gasHot: '#ffd0e4',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -126,17 +128,44 @@ function bubble(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
 export const balloonKit: HeroKit = {
   name: 'Professor Puff',
   maxHp: 580,
-  title: 'balloon scientist',
+  title: 'the Aeronaut',
   accent: S.body,
   foil: S.foil,
   portrait(g, s) {
     iconGround(g, s);
-    // A bunch of balloons tied behind his shoulder.
-    balloon(g, s * 0.24, s * 0.3, s * 0.15, S.body, S.shade);
-    balloon(g, s * 0.78, s * 0.26, s * 0.14, S.foil, '#d9b84a');
-    balloon(g, s * 0.5, s * 0.14, s * 0.12, S.sky, '#4f9fd0');
-    // Shoulders in a white lab coat with a brass pump strap.
-    g.fillStyle = '#ece6f0';
+    // Glass gas spheres glowing rose, each in a brass cradle on a chain, floating beside and above his head.
+    const sphere = (cx: number, cy: number, r: number) => {
+      g.strokeStyle = S.brass;
+      g.lineWidth = s * 0.012;
+      g.beginPath();
+      g.moveTo(cx, cy + r);
+      g.lineTo(cx + (cx < s * 0.5 ? 0.06 : -0.06) * s, cy + r * 3.2);
+      g.stroke();
+      const halo = g.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 2.1);
+      halo.addColorStop(0, 'rgba(255,92,156,0.45)');
+      halo.addColorStop(1, 'rgba(255,92,156,0)');
+      g.fillStyle = halo;
+      g.beginPath(); g.arc(cx, cy, r * 2.1, 0, Math.PI * 2); g.fill();
+      g.fillStyle = S.dark;
+      g.beginPath(); g.arc(cx, cy, r * 1.1, 0, Math.PI * 2); g.fill();
+      const gr = g.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.05, cx, cy, r);
+      gr.addColorStop(0, S.gasHot);
+      gr.addColorStop(0.45, S.gas);
+      gr.addColorStop(1, S.shade);
+      g.fillStyle = gr;
+      g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = S.brass;
+      g.lineWidth = s * 0.014;
+      g.beginPath(); g.ellipse(cx, cy - r * 0.55, r * 0.84, r * 0.2, 0, 0, Math.PI * 2); g.stroke();
+      g.beginPath(); g.ellipse(cx, cy + r * 0.55, r * 0.84, r * 0.2, 0, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = S.brass;
+      g.fillRect(cx - r * 0.2, cy - r * 1.18, r * 0.4, r * 0.18);
+    };
+    sphere(s * 0.2, s * 0.3, s * 0.12);
+    sphere(s * 0.82, s * 0.22, s * 0.125);
+    sphere(s * 0.7, s * 0.1, s * 0.085);
+    // Shoulders in a long aubergine coat with a high collar and two rows of brass buttons.
+    g.fillStyle = S.coat;
     g.beginPath();
     g.moveTo(s * 0.1, s);
     g.quadraticCurveTo(s * 0.14, s * 0.72, s * 0.34, s * 0.64);
@@ -144,62 +173,54 @@ export const balloonKit: HeroKit = {
     g.quadraticCurveTo(s * 0.86, s * 0.72, s * 0.9, s);
     g.closePath();
     g.fill();
-    g.strokeStyle = S.dark;
+    g.strokeStyle = S.brass;
     g.lineWidth = s * 0.012;
     g.stroke();
-    g.fillStyle = S.brass;
-    g.fillRect(s * 0.28, s * 0.66, s * 0.07, s * 0.34);
-    g.fillRect(s * 0.65, s * 0.66, s * 0.07, s * 0.34);
-    g.fillStyle = S.shade;
+    g.fillStyle = S.coatDark;
     g.beginPath();
-    g.moveTo(s * 0.44, s * 0.64);
+    g.moveTo(s * 0.4, s * 0.63);
     g.lineTo(s * 0.5, s * 0.74);
-    g.lineTo(s * 0.56, s * 0.64);
+    g.lineTo(s * 0.6, s * 0.63);
+    g.lineTo(s * 0.64, s * 0.7);
+    g.lineTo(s * 0.5, s * 0.82);
+    g.lineTo(s * 0.36, s * 0.7);
     g.closePath();
     g.fill();
-    // A round head: a pink face, a tuft of hair, big goggles pushed up on the brow with brass rims.
+    g.fillStyle = S.brass;
+    for (const x of [0.44, 0.56]) for (const y of [0.8, 0.88, 0.96]) {
+      g.beginPath(); g.arc(s * x, s * y, s * 0.013, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = S.brass;
+    g.fillRect(s * 0.28, s * 0.68, s * 0.035, s * 0.32);
+    g.fillRect(s * 0.685, s * 0.68, s * 0.035, s * 0.32);
+    // A round head: a warm face, silver wild hair at the sides, brass goggles pushed up on the brow, big calm eyes.
     g.fillStyle = S.dark;
-    g.beginPath();
-    g.arc(s * 0.5, s * 0.48, s * 0.2, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = '#f6c6b4';
-    g.beginPath();
-    g.arc(s * 0.5, s * 0.48, s * 0.185, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = '#c9d2de';
-    g.beginPath();
-    g.moveTo(s * 0.36, s * 0.4);
-    g.quadraticCurveTo(s * 0.4, s * 0.24, s * 0.46, s * 0.3);
-    g.quadraticCurveTo(s * 0.5, s * 0.2, s * 0.55, s * 0.3);
-    g.quadraticCurveTo(s * 0.62, s * 0.24, s * 0.64, s * 0.4);
-    g.closePath();
-    g.fill();
-    g.strokeStyle = S.brass;
-    g.lineWidth = s * 0.035;
-    g.beginPath();
-    g.moveTo(s * 0.33, s * 0.4);
-    g.lineTo(s * 0.67, s * 0.4);
-    g.stroke();
+    g.beginPath(); g.arc(s * 0.5, s * 0.46, s * 0.2, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#9a98a0';
+    for (const [x, y, r] of [[0.28, 0.45, 0.07], [0.27, 0.36, 0.06], [0.3, 0.55, 0.055], [0.72, 0.45, 0.07], [0.73, 0.36, 0.06], [0.7, 0.55, 0.055]] as const) {
+      g.beginPath(); g.arc(s * x, s * y, s * r, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = '#e4b08c';
+    g.beginPath(); g.arc(s * 0.5, s * 0.46, s * 0.185, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#2c2420';
+    g.lineWidth = s * 0.03;
+    g.beginPath(); g.moveTo(s * 0.32, s * 0.33); g.quadraticCurveTo(s * 0.5, s * 0.27, s * 0.68, s * 0.33); g.stroke();
     for (const sx of [0.42, 0.58]) {
       g.fillStyle = S.brass;
-      g.beginPath();
-      g.arc(s * sx, s * 0.46, s * 0.085, 0, Math.PI * 2);
-      g.fill();
-      g.fillStyle = '#bfe8ff';
-      g.beginPath();
-      g.arc(s * sx, s * 0.46, s * 0.062, 0, Math.PI * 2);
-      g.fill();
-      g.fillStyle = S.core;
-      g.beginPath();
-      g.arc(s * (sx - 0.02), s * 0.44, s * 0.016, 0, Math.PI * 2);
-      g.fill();
+      g.beginPath(); g.arc(s * sx, s * 0.31, s * 0.065, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#3a2a30';
+      g.beginPath(); g.arc(s * sx, s * 0.31, s * 0.047, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#ffffff';
+      g.beginPath(); g.ellipse(s * sx, s * 0.46, s * 0.034, s * 0.04, 0, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#2c6ad0';
+      g.beginPath(); g.ellipse(s * sx, s * 0.465, s * 0.02, s * 0.028, 0, 0, Math.PI * 2); g.fill();
     }
-    g.strokeStyle = S.dark;
+    g.fillStyle = '#d29a78';
+    g.beginPath(); g.ellipse(s * 0.5, s * 0.54, s * 0.022, s * 0.026, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#8a4036';
     g.lineWidth = s * 0.012;
-    g.beginPath();
-    g.arc(s * 0.5, s * 0.54, s * 0.05, 0.2, Math.PI - 0.2);
-    g.stroke();
-    glint(g, s * 0.86, s * 0.5, s * 0.04);
+    g.beginPath(); g.moveTo(s * 0.46, s * 0.595); g.quadraticCurveTo(s * 0.5, s * 0.61, s * 0.54, s * 0.595); g.stroke();
+    glint(g, s * 0.88, s * 0.52, s * 0.04);
   },
   spells: [
     {

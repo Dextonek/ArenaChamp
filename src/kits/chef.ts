@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const C = {
   core: '#f2efe6', white: '#d8d4c8', shade: '#9a958a', red: '#d84a3a', redDeep: '#9a2e26', tomato: '#e8794a', steel: '#c4ccd4', steelDark: '#8f979e',
   gold: '#e0b84a', goldDeep: '#c98a28', wood: '#8a5a34', black: '#141110', char: '#2c2724', dark: '#1e1a18', smoke: '#6a6662', leaf: '#5f9a3e',
+  // the Feastmistress's jerkin, mail, leather, headwrap, steel and gold (the _v3 model)
+  jerkin: '#7c2230', mail: '#5e626c', leather: '#3e2a22', headwrap: '#8a2630', hair: '#6a2c18', steelWar: '#6e7480', goldWar: '#d2ae55', wrap: '#7a1e28',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -222,134 +224,115 @@ function cloche(g: CanvasRenderingContext2D, cx: number, base: number, r: number
 export const chefKit: HeroKit = {
   name: 'Madame Cleaver',
   maxHp: 680,
-  title: 'Arena Chef',
+  title: 'the Feastmistress',
   accent: C.core,
   foil: C.red,
   portrait(g, s) {
     iconGround(g, s);
-    // A great steel cleaver raised behind her shoulder, and the pale light of the kitchen behind her head.
-    const halo = g.createRadialGradient(s * 0.5, s * 0.3, s * 0.05, s * 0.5, s * 0.3, s * 0.5);
-    halo.addColorStop(0, 'rgba(242,239,230,0.35)');
-    halo.addColorStop(1, 'rgba(242,239,230,0)');
-    g.fillStyle = halo;
-    g.fillRect(0, 0, s, s);
-    cleaver(g, s * 0.82, s * 0.34, s * 0.2, 0.35);
-    // The jacket: a double-breasted white coat with two columns of buttons, a red neckerchief.
+    // The great cleaver raised behind her shoulder: a dark blade with a glowing ember edge.
+    g.save();
+    g.translate(s * 0.82, s * 0.46);
+    g.rotate(0.18);
     g.fillStyle = C.dark;
+    g.fillRect(-s * 0.025, s * 0.14, s * 0.05, s * 0.2);
+    g.fillStyle = C.wrap;
+    g.fillRect(-s * 0.019, s * 0.15, s * 0.038, s * 0.18);
+    g.fillStyle = C.dark;
+    g.fillRect(-s * 0.2, -s * 0.38, s * 0.24, s * 0.52);
+    g.fillStyle = C.steelWar;
+    g.fillRect(-s * 0.19, -s * 0.37, s * 0.22, s * 0.5);
+    const edge = g.createLinearGradient(-s * 0.2, 0, -s * 0.12, 0);
+    edge.addColorStop(0, 'rgba(255,122,48,1)');
+    edge.addColorStop(1, 'rgba(255,90,24,0)');
+    g.fillStyle = edge;
+    g.fillRect(-s * 0.2, -s * 0.37, s * 0.08, s * 0.5);
+    g.restore();
+    // Mail shoulders, a crimson leather jerkin, a bandolier of small knives.
+    g.fillStyle = C.mail;
     g.beginPath();
     g.moveTo(s * 0.06, s);
-    g.quadraticCurveTo(s * 0.1, s * 0.66, s * 0.34, s * 0.6);
-    g.lineTo(s * 0.66, s * 0.6);
-    g.quadraticCurveTo(s * 0.9, s * 0.66, s * 0.94, s);
+    g.quadraticCurveTo(s * 0.1, s * 0.72, s * 0.3, s * 0.64);
+    g.lineTo(s * 0.7, s * 0.64);
+    g.quadraticCurveTo(s * 0.9, s * 0.72, s * 0.94, s);
     g.closePath();
     g.fill();
-    g.fillStyle = C.white;
+    g.fillStyle = C.jerkin;
     g.beginPath();
-    g.moveTo(s * 0.1, s);
-    g.quadraticCurveTo(s * 0.14, s * 0.68, s * 0.35, s * 0.62);
-    g.lineTo(s * 0.65, s * 0.62);
-    g.quadraticCurveTo(s * 0.86, s * 0.68, s * 0.9, s);
+    g.moveTo(s * 0.22, s);
+    g.quadraticCurveTo(s * 0.24, s * 0.74, s * 0.38, s * 0.67);
+    g.lineTo(s * 0.62, s * 0.67);
+    g.quadraticCurveTo(s * 0.76, s * 0.74, s * 0.78, s);
     g.closePath();
     g.fill();
-    g.strokeStyle = C.shade;
-    g.lineWidth = s * 0.01;
+    g.strokeStyle = C.leather;
+    g.lineWidth = s * 0.04;
     g.beginPath();
-    g.moveTo(s * 0.5, s * 0.64);
-    g.lineTo(s * 0.5, s);
-    g.moveTo(s * 0.36, s * 0.64);
-    g.quadraticCurveTo(s * 0.34, s * 0.8, s * 0.4, s);
-    g.moveTo(s * 0.64, s * 0.64);
-    g.quadraticCurveTo(s * 0.66, s * 0.8, s * 0.6, s);
+    g.moveTo(s * 0.66, s * 0.66);
+    g.lineTo(s * 0.34, s * 0.98);
     g.stroke();
-    g.fillStyle = C.steelDark;
-    for (const x of [0.43, 0.57]) for (const y of [0.74, 0.84, 0.94]) {
+    g.fillStyle = C.steelWar;
+    for (const [x, y] of [[0.6, 0.72], [0.54, 0.78], [0.48, 0.84], [0.42, 0.9]]) {
       g.beginPath();
-      g.arc(s * x, s * y, s * 0.018, 0, Math.PI * 2);
+      g.moveTo(s * x, s * (y - 0.07));
+      g.lineTo(s * (x + 0.012), s * (y - 0.01));
+      g.lineTo(s * (x - 0.012), s * (y - 0.01));
+      g.closePath();
       g.fill();
     }
-    g.fillStyle = C.red;
+    g.fillStyle = C.goldWar;
+    g.fillRect(s * 0.3, s * 0.64, s * 0.4, s * 0.014);
+    // A proud round face, chin up, under a crimson headwrap with a braid.
+    g.fillStyle = C.hair;
     g.beginPath();
-    g.moveTo(s * 0.4, s * 0.62);
-    g.lineTo(s * 0.6, s * 0.62);
-    g.lineTo(s * 0.5, s * 0.74);
-    g.closePath();
+    g.ellipse(s * 0.5, s * 0.42, s * 0.18, s * 0.2, 0, 0, Math.PI * 2);
     g.fill();
-    // The ladle in her other hand.
-    g.strokeStyle = C.steelDark;
-    g.lineWidth = s * 0.025;
+    g.fillStyle = '#d6a284';
     g.beginPath();
-    g.moveTo(s * 0.16, s * 0.9);
-    g.lineTo(s * 0.12, s * 0.5);
-    g.stroke();
-    g.fillStyle = C.steel;
-    g.beginPath();
-    g.ellipse(s * 0.11, s * 0.46, s * 0.04, s * 0.03, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.46, s * 0.14, s * 0.17, 0, 0, Math.PI * 2);
     g.fill();
-    // The face: round, rosy, proud, chin up; heavy brows, a small stern mouth.
-    g.fillStyle = '#efc7ac';
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.46, s * 0.14, s * 0.16, 0, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = '#e59a8a';
-    for (const x of [0.4, 0.6]) {
+    for (const sx of [0.44, 0.56]) {
+      g.fillStyle = C.core;
       g.beginPath();
-      g.ellipse(s * x, s * 0.5, s * 0.035, s * 0.022, 0, 0, Math.PI * 2);
+      g.ellipse(s * sx, s * 0.44, s * 0.026, s * 0.03, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#2c6a48';
+      g.beginPath();
+      g.arc(s * sx, s * 0.445, s * 0.014, 0, Math.PI * 2);
       g.fill();
     }
-    g.fillStyle = C.dark;
-    g.beginPath();
-    g.moveTo(s * 0.4, s * 0.4);
-    g.lineTo(s * 0.47, s * 0.425);
-    g.lineTo(s * 0.46, s * 0.44);
-    g.lineTo(s * 0.4, s * 0.425);
-    g.closePath();
-    g.moveTo(s * 0.6, s * 0.4);
-    g.lineTo(s * 0.53, s * 0.425);
-    g.lineTo(s * 0.54, s * 0.44);
-    g.lineTo(s * 0.6, s * 0.425);
-    g.closePath();
-    g.fill();
-    g.beginPath();
-    g.ellipse(s * 0.44, s * 0.455, s * 0.016, s * 0.012, 0, 0, Math.PI * 2);
-    g.ellipse(s * 0.56, s * 0.455, s * 0.016, s * 0.012, 0, 0, Math.PI * 2);
-    g.fill();
-    g.strokeStyle = '#a45b4e';
-    g.lineWidth = s * 0.01;
-    g.beginPath();
-    g.moveTo(s * 0.46, s * 0.54);
-    g.quadraticCurveTo(s * 0.5, s * 0.55, s * 0.54, s * 0.54);
-    g.stroke();
-    g.strokeStyle = '#d8a58c';
-    g.beginPath();
-    g.moveTo(s * 0.5, s * 0.46);
-    g.lineTo(s * 0.51, s * 0.5);
-    g.stroke();
-    // The tall toque: pleats fanning up from a band, a red pin.
-    g.fillStyle = C.dark;
-    g.fillRect(s * 0.355, s * 0.29, s * 0.29, s * 0.07);
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.2, s * 0.19, s * 0.15, 0, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = C.core;
-    g.fillRect(s * 0.365, s * 0.3, s * 0.27, s * 0.055);
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.2, s * 0.175, s * 0.135, 0, 0, Math.PI * 2);
-    g.fill();
-    g.strokeStyle = C.shade;
-    g.lineWidth = s * 0.008;
-    for (const x of [-0.1, -0.05, 0, 0.05, 0.1]) {
+    g.strokeStyle = C.hair;
+    g.lineWidth = s * 0.011;
+    g.lineCap = 'round';
+    for (const dir of [-1, 1]) {
       g.beginPath();
-      g.moveTo(s * (0.5 + x * 0.6), s * 0.3);
-      g.quadraticCurveTo(s * (0.5 + x * 1.5), s * 0.2, s * (0.5 + x * 1.2), s * 0.09);
+      g.moveTo(s * (0.5 + dir * 0.03), s * 0.405);
+      g.quadraticCurveTo(s * (0.5 + dir * 0.06), s * 0.385, s * (0.5 + dir * 0.1), s * 0.41);
       g.stroke();
     }
-    g.fillStyle = C.red;
-    g.fillRect(s * 0.365, s * 0.325, s * 0.27, s * 0.014);
-    // Dark hair at the temples.
-    g.fillStyle = '#3a2a22';
+    g.strokeStyle = '#a8283a';
+    g.lineWidth = s * 0.012;
     g.beginPath();
-    g.ellipse(s * 0.36, s * 0.4, s * 0.025, s * 0.06, 0, 0, Math.PI * 2);
-    g.ellipse(s * 0.64, s * 0.4, s * 0.025, s * 0.06, 0, 0, Math.PI * 2);
+    g.moveTo(s * 0.45, s * 0.55);
+    g.quadraticCurveTo(s * 0.5, s * 0.575, s * 0.55, s * 0.55);
+    g.stroke();
+    g.fillStyle = C.headwrap;
+    g.beginPath();
+    g.moveTo(s * 0.31, s * 0.4);
+    g.quadraticCurveTo(s * 0.3, s * 0.2, s * 0.5, s * 0.19);
+    g.quadraticCurveTo(s * 0.7, s * 0.2, s * 0.69, s * 0.4);
+    g.quadraticCurveTo(s * 0.66, s * 0.34, s * 0.5, s * 0.33);
+    g.quadraticCurveTo(s * 0.34, s * 0.34, s * 0.31, s * 0.4);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = C.goldWar;
+    g.lineWidth = s * 0.01;
+    g.beginPath();
+    g.moveTo(s * 0.32, s * 0.36);
+    g.quadraticCurveTo(s * 0.5, s * 0.31, s * 0.68, s * 0.36);
+    g.stroke();
+    g.fillStyle = C.hair;
+    g.beginPath();
+    g.ellipse(s * 0.28, s * 0.62, s * 0.035, s * 0.09, 0.3, 0, Math.PI * 2);
     g.fill();
   },
   spells: [

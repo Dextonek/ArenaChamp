@@ -1,12 +1,12 @@
 ---
-title: Silvane, the Vain (mirror kit)
+title: Silvane, the Mirror Duchess (mirror kit)
 tags: [catalog, heroes, mirror, marksman, bounce]
 updated: 2026-11-04
 ---
 
-# Silvane, the Vain
+# Silvane, the Mirror Duchess
 
-The mirror hero kit: Silvane's four spells (Q, W, E and the R ultimate), her passive, the shared parts file, the palette and the rigged hero model. A tall, elegant duelist in a silver gown with a high collar, carrying a hand mirror, hair perfect, nose in the air. Her mirrors are real objects: she throws them, they bounce off walls and pillars and standing mirrors, and she runs to catch them when they come to rest. She is a ranged marksman.
+The mirror hero kit: Silvane's four spells (Q, W, E and the R ultimate), her passive, the shared parts file, the palette and the rigged hero model. A tall, calm duelist in a dark violet and silver gown, a fan of mirror shards standing behind her head, carrying a hand mirror whose pale blue glass glows. Her mirrors are real objects: she throws them, they bounce off walls and pillars and standing mirrors, and she runs to catch them when they come to rest. She is a ranged marksman.
 
 ## Role
 
@@ -23,13 +23,13 @@ She wins by bank shots: every bounce adds damage, and a mirror she catches gives
 
 | | |
 |---|---|
-| Hero | Silvane, the Vain |
+| Hero | Silvane, the Mirror Duchess |
 | Spell category | `hero: mirror` |
 | Parts file | [`src/effects/parts/mirror.ts`](../../../src/effects/parts/mirror.ts) |
 | Kit data | [`src/kits/mirror.ts`](../../../src/kits/mirror.ts) |
 | Trait (rules) | [`src/traits/mirror.ts`](../../../src/traits/mirror.ts) |
 | Kit sheet | [`kit-mirror.md`](../../../pipeline/designs/kit-mirror.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
-| Model | [`public/models/heroes/mirror_v2.glb`](../../../public/models/heroes/mirror_v2.glb) |
+| Model | [`public/models/heroes/mirror_v3.glb`](../../../public/models/heroes/mirror_v3.glb) |
 
 ## Palette
 
@@ -104,9 +104,10 @@ Spell sources: [`handMirror.ts`](../../../src/spells/targeted/handMirror.ts), [`
 | `Gleam` | camera-facing ribbons with a white core and a pale blue or violet edge: `set(a, b, width, opacity, tint?, tailTaper?, slot?)`, `hide(slot)` |
 ## Model
 
-[`public/models/heroes/mirror_v2.glb`](../../../public/models/heroes/mirror_v2.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it). Built in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) (the current style, the `_v2` models). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Silvane`), and its hit size is in `HERO_BODIES` in the same file (radius 0.57 m, height 2.73 m).
-- HUD portrait (canvas-drawn in the kit data): A tall oval looking-glass behind her head: a silver frame, a pale sheen.
+[`public/models/heroes/mirror_v3.glb`](../../../public/models/heroes/mirror_v3.glb): a rigged figure on the Dao rig (same bone names as `public/models/figures/hero.glb`, so `src/effects/weapons/hero.ts` can pose it), built by the `MirrorMythic` class (a subclass of `Mirror`) in [`blender/heroes/restyle_batch1.py`](../../../blender/heroes/restyle_batch1.py) on top of [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Silvane`), and its hit size is in `HERO_BODIES` in the same file (radius 0.57 m, height 2.73 m). Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
+- Look: a tall, calm duelist. A floor-length gown in dark violet with a silver front panel, gold edges and a gold hem, a silver-violet bodice with puffed shoulders, dark opera gloves, a small calm smile and sleek violet hair swept back in one smooth fall. Signature: a standing collar of eight silver mirror shards with violet glass inlays fanned behind her head, and the hand mirror held out in her right hand, its pale blue glass the one glowing piece.
+- HUD portrait (canvas-drawn in the kit data): the looking-glass shards fanned behind her head, a dark violet gown with a silver bodice and a gold edge, a calm pale face with blue eyes and sleek violet hair, and the hand mirror held out with its glass aglow.
 
 ## Files
 
@@ -118,7 +119,7 @@ Spell sources: [`handMirror.ts`](../../../src/spells/targeted/handMirror.ts), [`
 | Spells | [`handMirror.ts`](../../../src/spells/targeted/handMirror.ts), [`vanityStand.ts`](../../../src/spells/targeted/vanityStand.ts), [`throughTheGlass.ts`](../../../src/spells/targeted/throughTheGlass.ts), [`hallOfMirrors.ts`](../../../src/spells/targeted/hallOfMirrors.ts) |
 | Kit data | [`src/kits/mirror.ts`](../../../src/kits/mirror.ts) |
 | Trait (passive, twist, rules) | [`src/traits/mirror.ts`](../../../src/traits/mirror.ts) |
-| Model | [`public/models/heroes/mirror_v2.glb`](../../../public/models/heroes/mirror_v2.glb) |
+| Model | [`public/models/heroes/mirror_v3.glb`](../../../public/models/heroes/mirror_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

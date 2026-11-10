@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const L = {
   core: '#f5edd0', hot: '#efe4c0', paper: '#e6d9ae', shade: '#b9aa7c', gold: '#d9c27a', brass: '#b08a3a', foil: '#3f4a3a',
   cloth: '#2d3a2c', wood: '#6d4a2a', ink: '#1c211c', red: '#b3261e', hotRed: '#d9453a', dark: '#161a14', suit: '#8a9088',
+  // the Tithe-Keeper's robe, collar, book, quill and wax seal (the _v3 model)
+  robe: '#2c2030', oxblood: '#7a2230', cover: '#6a1a26', goldRobe: '#d2ae55', hair: '#8c8c98', vane: '#8a7a98', seal: '#ff5a3c',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -167,123 +169,139 @@ function stampTool(g: CanvasRenderingContext2D, cx: number, cy: number, s: numbe
 export const ledgerKit: HeroKit = {
   name: 'Mr. Ledger',
   maxHp: 600,
-  title: 'the Debt Collector',
+  title: 'the Tithe-Keeper',
   accent: L.gold,
   foil: L.foil,
   portrait(g, s) {
     iconGround(g, s);
-    // Ruled rows of figures on the wall behind him, and a big red DUE stamp.
-    g.fillStyle = 'rgba(245,237,208,0.12)';
+    // Ruled rows of figures on the wall behind him, and the long quill of his staff rising behind his shoulder.
+    g.fillStyle = 'rgba(245,237,208,0.1)';
     for (let i = 0; i < 7; i++) g.fillRect(s * 0.06, s * (0.1 + i * 0.12), s * 0.88, s * 0.012);
-    g.save();
-    g.translate(s * 0.8, s * 0.2);
-    g.rotate(-0.4);
-    g.strokeStyle = L.hotRed;
-    g.fillStyle = L.hotRed;
-    g.globalAlpha = 0.85;
-    g.lineWidth = s * 0.014;
-    g.strokeRect(-s * 0.13, -s * 0.05, s * 0.26, s * 0.1);
-    g.font = `900 ${Math.round(s * 0.07)}px Impact, Arial Black, sans-serif`;
-    g.textAlign = 'center';
-    g.textBaseline = 'middle';
-    g.fillText('DUE', 0, s * 0.004);
-    g.restore();
-    g.globalAlpha = 1;
-    // Narrow shoulders in a grey suit, a white shirt, a thin dark tie.
-    g.fillStyle = L.suit;
+    g.strokeStyle = L.gold;
+    g.lineWidth = s * 0.012;
+    g.lineCap = 'round';
     g.beginPath();
-    g.moveTo(s * 0.18, s);
-    g.quadraticCurveTo(s * 0.2, s * 0.72, s * 0.38, s * 0.64);
-    g.lineTo(s * 0.62, s * 0.64);
-    g.quadraticCurveTo(s * 0.8, s * 0.72, s * 0.82, s);
+    g.moveTo(s * 0.8, s * 0.95);
+    g.quadraticCurveTo(s * 0.83, s * 0.45, s * 0.9, s * 0.06);
+    g.stroke();
+    g.fillStyle = L.vane;
+    g.beginPath();
+    g.moveTo(s * 0.9, s * 0.06);
+    g.quadraticCurveTo(s * 0.7, s * 0.22, s * 0.8, s * 0.5);
+    g.quadraticCurveTo(s * 0.84, s * 0.3, s * 0.9, s * 0.06);
+    g.fill();
+    // The high stiff oxblood collar behind his head, a gold rim.
+    g.fillStyle = L.oxblood;
+    g.beginPath();
+    g.moveTo(s * 0.3, s * 0.68);
+    g.lineTo(s * 0.26, s * 0.3);
+    g.quadraticCurveTo(s * 0.5, s * 0.22, s * 0.74, s * 0.3);
+    g.lineTo(s * 0.7, s * 0.68);
     g.closePath();
     g.fill();
-    g.strokeStyle = L.dark;
-    g.lineWidth = s * 0.01;
+    g.strokeStyle = L.goldRobe;
+    g.lineWidth = s * 0.012;
+    g.beginPath();
+    g.moveTo(s * 0.26, s * 0.3);
+    g.quadraticCurveTo(s * 0.5, s * 0.22, s * 0.74, s * 0.3);
     g.stroke();
-    g.fillStyle = '#f2efe6';
+    // Narrow shoulders in black robes, an oxblood panel down the chest edged in gold, a gold belt.
+    g.fillStyle = L.robe;
+    g.beginPath();
+    g.moveTo(s * 0.16, s);
+    g.quadraticCurveTo(s * 0.18, s * 0.72, s * 0.36, s * 0.64);
+    g.lineTo(s * 0.64, s * 0.64);
+    g.quadraticCurveTo(s * 0.82, s * 0.72, s * 0.84, s);
+    g.closePath();
+    g.fill();
+    g.fillStyle = L.oxblood;
     g.beginPath();
     g.moveTo(s * 0.43, s * 0.64);
-    g.lineTo(s * 0.5, s * 0.8);
     g.lineTo(s * 0.57, s * 0.64);
+    g.lineTo(s * 0.6, s);
+    g.lineTo(s * 0.4, s);
     g.closePath();
     g.fill();
-    g.fillStyle = L.ink;
+    g.strokeStyle = L.goldRobe;
+    g.lineWidth = s * 0.01;
     g.beginPath();
-    g.moveTo(s * 0.485, s * 0.67);
-    g.lineTo(s * 0.515, s * 0.67);
-    g.lineTo(s * 0.525, s * 0.9);
-    g.lineTo(s * 0.5, s * 0.94);
-    g.lineTo(s * 0.475, s * 0.9);
-    g.closePath();
+    g.moveTo(s * 0.43, s * 0.64);
+    g.lineTo(s * 0.4, s);
+    g.moveTo(s * 0.57, s * 0.64);
+    g.lineTo(s * 0.6, s);
+    g.stroke();
+    g.fillStyle = L.goldRobe;
+    g.fillRect(s * 0.38, s * 0.88, s * 0.24, s * 0.024);
+    // Two swags of gold coins on chains.
+    for (const dir of [-1, 1]) {
+      g.strokeStyle = L.goldRobe;
+      g.lineWidth = s * 0.006;
+      g.beginPath();
+      g.moveTo(s * (0.5 + dir * 0.09), s * 0.64);
+      g.quadraticCurveTo(s * (0.5 + dir * 0.16), s * 0.76, s * (0.5 + dir * 0.06), s * 0.86);
+      g.stroke();
+      for (const [rx, ry] of [[0.138, 0.71], [0.14, 0.775], [0.095, 0.835]]) {
+        g.beginPath();
+        g.arc(s * (0.5 + dir * rx), s * ry, s * 0.017, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+    // The great book at his side, its red wax seal glowing.
+    g.fillStyle = L.dark;
+    g.fillRect(s * 0.02, s * 0.62, s * 0.3, s * 0.38);
+    g.fillStyle = L.cover;
+    g.fillRect(s * 0.04, s * 0.64, s * 0.26, s * 0.36);
+    g.fillStyle = L.goldRobe;
+    for (const [bx, by] of [[0.04, 0.64], [0.26, 0.64]]) g.fillRect(s * bx, s * by, s * 0.04, s * 0.04);
+    g.fillRect(s * 0.04, s * 0.72, s * 0.26, s * 0.014);
+    g.fillRect(s * 0.04, s * 0.9, s * 0.26, s * 0.014);
+    const glow = g.createRadialGradient(s * 0.17, s * 0.81, 0, s * 0.17, s * 0.81, s * 0.12);
+    glow.addColorStop(0, 'rgba(255,90,60,0.9)');
+    glow.addColorStop(1, 'rgba(255,58,36,0)');
+    g.fillStyle = glow;
+    g.fillRect(s * 0.04, s * 0.68, s * 0.26, s * 0.26);
+    g.fillStyle = L.seal;
+    g.beginPath();
+    g.arc(s * 0.17, s * 0.81, s * 0.05, 0, Math.PI * 2);
     g.fill();
-    // The ledger under his arm.
-    tome(g, s * 0.22, s * 0.82, s * 0.3, s * 0.34);
-    // A long thin face, round glasses on a chain, a sour mouth.
-    g.fillStyle = '#e6cdb4';
+    // A long, narrow, calm face.
+    g.fillStyle = '#e0c2a6';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.46, s * 0.1, s * 0.15, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = L.dark;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.365, s * 0.2, s * 0.03, 0, 0, Math.PI * 2);
-    g.fill();
-    g.beginPath();
-    g.moveTo(s * 0.35, s * 0.355);
-    g.quadraticCurveTo(s * 0.35, s * 0.15, s * 0.5, s * 0.13);
-    g.quadraticCurveTo(s * 0.65, s * 0.15, s * 0.65, s * 0.355);
-    g.closePath();
-    g.fill();
-    g.fillStyle = L.gold;
-    g.fillRect(s * 0.35, s * 0.325, s * 0.3, s * 0.014);
-    g.strokeStyle = L.gold;
-    g.lineWidth = s * 0.012;
     for (const sx of [0.455, 0.545]) {
-      g.fillStyle = 'rgba(245,237,208,0.55)';
+      g.fillStyle = L.core;
       g.beginPath();
-      g.arc(s * sx, s * 0.43, s * 0.034, 0, Math.PI * 2);
+      g.ellipse(s * sx, s * 0.44, s * 0.026, s * 0.03, 0, 0, Math.PI * 2);
       g.fill();
+      g.fillStyle = L.seal;
+      g.beginPath();
+      g.arc(s * sx, s * 0.446, s * 0.014, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.strokeStyle = L.ink;
+    g.lineWidth = s * 0.008;
+    for (const dir of [-1, 1]) {
+      g.beginPath();
+      g.moveTo(s * (0.5 + dir * 0.03), s * 0.395);
+      g.quadraticCurveTo(s * (0.5 + dir * 0.06), s * 0.375, s * (0.5 + dir * 0.09), s * 0.4);
       g.stroke();
     }
-    g.beginPath();
-    g.moveTo(s * 0.489, s * 0.43);
-    g.lineTo(s * 0.511, s * 0.43);
-    g.stroke();
-    g.fillStyle = L.ink;
-    g.beginPath();
-    g.arc(s * 0.455, s * 0.43, s * 0.008, 0, Math.PI * 2);
-    g.arc(s * 0.545, s * 0.43, s * 0.008, 0, Math.PI * 2);
-    g.fill();
-    g.beginPath();
-    g.moveTo(s * 0.5, s * 0.44);
-    g.lineTo(s * 0.52, s * 0.5);
-    g.lineTo(s * 0.495, s * 0.505);
-    g.stroke();
     g.strokeStyle = '#8a4a4a';
     g.beginPath();
-    g.moveTo(s * 0.46, s * 0.55);
-    g.quadraticCurveTo(s * 0.5, s * 0.535, s * 0.54, s * 0.555);
+    g.moveTo(s * 0.47, s * 0.54);
+    g.quadraticCurveTo(s * 0.5, s * 0.55, s * 0.53, s * 0.54);
     g.stroke();
-    // The chain from the glasses down into the lapel.
-    g.strokeStyle = L.gold;
-    g.lineWidth = s * 0.008;
+    // Grey hair slicked back from the brow.
+    g.fillStyle = L.hair;
     g.beginPath();
-    g.moveTo(s * 0.42, s * 0.44);
-    g.quadraticCurveTo(s * 0.4, s * 0.62, s * 0.44, s * 0.7);
-    g.stroke();
-    // The bowler hat: a round crown with a band, a narrow brim.
-    g.fillStyle = L.dark;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.17, s * 0.15, s * 0.11, 0, Math.PI, Math.PI * 2);
+    g.moveTo(s * 0.39, s * 0.4);
+    g.quadraticCurveTo(s * 0.36, s * 0.18, s * 0.5, s * 0.16);
+    g.quadraticCurveTo(s * 0.64, s * 0.18, s * 0.61, s * 0.4);
+    g.quadraticCurveTo(s * 0.58, s * 0.3, s * 0.5, s * 0.28);
+    g.quadraticCurveTo(s * 0.42, s * 0.3, s * 0.39, s * 0.4);
+    g.closePath();
     g.fill();
-    g.fillRect(s * 0.35, s * 0.17, s * 0.3, s * 0.04);
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.205, s * 0.22, s * 0.035, 0, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = L.foil;
-    g.fillRect(s * 0.355, s * 0.165, s * 0.29, s * 0.025);
-    g.fillStyle = L.gold;
-    g.fillRect(s * 0.355, s * 0.188, s * 0.29, s * 0.008);
   },
   spells: [
     {

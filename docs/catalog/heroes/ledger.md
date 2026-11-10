@@ -1,12 +1,12 @@
 ---
-title: Mr. Ledger, the Debt Collector (ledger kit)
+title: Mr. Ledger, the Tithe-Keeper (ledger kit)
 tags: [catalog, heroes, ledger, controller, tab]
 updated: 2026-11-04
 ---
 
-# Mr. Ledger, the Debt Collector
+# Mr. Ledger, the Tithe-Keeper
 
-The ledger hero kit (kits v5, a new hero): Mr. Ledger's four spells (Q, W, E and the R ultimate), his passive and twist, the shared parts file, the palette and the rigged hero model. A long thin man in a grey suit and a black bowler with a huge ledger clamped under one arm and an oversized pencil. His spells do not hurt now: they put the damage on a tab over the enemy's head, and the tab comes due later with interest.
+The ledger hero kit (kits v5, a new hero): Mr. Ledger's four spells (Q, W, E and the R ultimate), his passive and twist, the shared parts file, the palette and the rigged hero model. A long thin arcane notary in black and oxblood robes with a high collar and gold coin chains, a great red book chained to his wrist and a quill staff. His spells do not hurt now: they put the damage on a tab over the enemy's head, and the tab comes due later with interest.
 
 ## Role
 
@@ -23,14 +23,14 @@ He wins a 1v1 by choosing when to bill: bill the enemy now, or let the interest 
 
 | | |
 |---|---|
-| Hero | Mr. Ledger, the Debt Collector |
+| Hero | Mr. Ledger, the Tithe-Keeper |
 | Spell category | `hero: ledger` |
 | Parts file | [`src/effects/parts/ledger.ts`](../../../src/effects/parts/ledger.ts) |
 | Kit data | [`src/kits/ledger.ts`](../../../src/kits/ledger.ts) |
 | Trait data | [`src/traits/ledger.ts`](../../../src/traits/ledger.ts) |
 | Kit sheet | [`kit-ledger.md`](../../../pipeline/designs/kit-ledger.md) (read [kit-common.md](../../../pipeline/designs/kit-common.md) first) |
 | Design | [`new-heroes-kits.md`](../../../pipeline/designs/new-heroes-kits.md), section 6 |
-| Model | [`public/models/heroes/ledger_v2.glb`](../../../public/models/heroes/ledger_v2.glb) |
+| Model | [`public/models/heroes/ledger_v3.glb`](../../../public/models/heroes/ledger_v3.glb) |
 
 ## Palette
 
@@ -114,10 +114,10 @@ Spell sources: [`invoice.ts`](../../../src/spells/targeted/invoice.ts), [`lateFe
 
 ## Model
 
-[`public/models/heroes/ledger_v2.glb`](../../../public/models/heroes/ledger_v2.glb): a rigged figure on the Dao rig. Built by `build("ledger")` / `export("ledger")` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.42 m, height 2.40 m.
+[`public/models/heroes/ledger_v3.glb`](../../../public/models/heroes/ledger_v3.glb): a rigged figure on the Dao rig. Built by the `LedgerMythic` class in [`blender/heroes/restyle_batch2.py`](../../../blender/heroes/restyle_batch2.py) (`export("ledger_v3")` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py)). Hero mode shows it with procedural walk, breath and cast poses. It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts). Hit size (`HERO_BODIES`): radius 0.42 m, height 2.40 m. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: a long thin man in a grey suit, elbows out round the book. A long thin face with a long nose, round gold glasses on a chain, a neat moustache and a black bowler. A huge ledger clamped under his left arm, and an oversized yellow pencil in the right hand.
-- HUD portrait (canvas-drawn in the kit data): ruled rows of figures on the wall behind him with a big red DUE stamp, narrow shoulders in a grey suit with a white shirt and a thin dark tie, and the ledger under his arm.
+- Look: a long thin arcane notary. Long black robes to the floor with an oxblood front panel edged in gold, a high stiff oxblood collar, wide sleeves with gold cuffs, a gold belt and two swags of gold coins on chains across the chest, grey slicked hair and a calm severe face. Signature: a great red book held upright at his left side and chained to his wrist, a glowing red wax seal on its cover, and a quill staff in the right hand, taller than he is, with a long feather on top.
+- HUD portrait (canvas-drawn in the kit data): ruled rows of figures on the wall behind him, the long quill rising behind his shoulder, a tall oxblood collar round a long calm face with grey slicked hair and faintly glowing red eyes, black robes with an oxblood panel and gold coin chains, and the great book at his side with its red wax seal glowing.
 
 ## Files
 
@@ -130,7 +130,7 @@ Spell sources: [`invoice.ts`](../../../src/spells/targeted/invoice.ts), [`lateFe
 | Spells | [`invoice.ts`](../../../src/spells/targeted/invoice.ts), [`lateFee.ts`](../../../src/spells/targeted/lateFee.ts), [`callItIn.ts`](../../../src/spells/targeted/callItIn.ts), [`foreclosure.ts`](../../../src/spells/targeted/foreclosure.ts) |
 | Kit data | [`src/kits/ledger.ts`](../../../src/kits/ledger.ts) |
 | Trait | [`src/traits/ledger.ts`](../../../src/traits/ledger.ts) |
-| Model | [`public/models/heroes/ledger_v2.glb`](../../../public/models/heroes/ledger_v2.glb) |
+| Model | [`public/models/heroes/ledger_v3.glb`](../../../public/models/heroes/ledger_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

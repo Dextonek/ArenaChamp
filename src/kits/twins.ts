@@ -13,6 +13,9 @@ import {
 const S = {
   pim: '#ffb04a', pimMid: '#d98c34', pom: '#6ac8ff', pomMid: '#3f9fd6', wood: '#b07a40', woodDark: '#6b4423', rope: '#b89a62',
   skin: '#e8b899', yellow: '#ffd24a', pink: '#ff7aa8', glove: '#e6e2d4', stone: '#8a8478', steel: '#8fa2b8', dark: '#1a1424', white: '#ffffff',
+  // the Changeling Twins' bark, amber and blue leaf clothes, eyes and weapon glows (the _v3 models)
+  bark: '#6e4a2a', barkDark: '#4a2e18', amber: '#c8782a', amberDark: '#b0601e', blueLeaf: '#3a86b8', blueDark: '#2a6a98',
+  glowAmber: '#ffa83a', glowBlue: '#4ab8ff', eye: '#3a6a4a',
 };
 
 function ground(g: CanvasRenderingContext2D, s: number, warm: boolean) {
@@ -207,46 +210,182 @@ function slingshot(g: CanvasRenderingContext2D, s: number, cx: number, cy: numbe
   disc(g, s, cx - h * 0.1, cy - h * 0.05, s * 0.05, S.stone);
 }
 
-/** Pim's portrait base and Pom's, by hand: head and shoulders with the hero's gear. */
-function pimPortrait(g: CanvasRenderingContext2D, s: number) {
-  ground(g, s, true);
-  star(g, s * 0.84, s * 0.2, s * 0.08, S.yellow);
-  star(g, s * 0.14, s * 0.3, s * 0.05, S.pom);
-  sword(g, s, s * 0.78, s * 0.86, s * 0.7, -Math.PI * 0.42);
+/** A pointed leaf from (x, y), `len` long and `w` wide, tilted by `rot`: the Changeling Twins' trim. */
+function leafShape(g: CanvasRenderingContext2D, s: number, x: number, y: number, len: number, w: number, rot: number, color: string) {
+  g.save();
+  g.translate(x, y);
+  g.rotate(rot);
+  g.beginPath();
+  g.moveTo(0, 0);
+  g.quadraticCurveTo(w, -len * 0.45, 0, -len);
+  g.quadraticCurveTo(-w, -len * 0.45, 0, 0);
+  g.closePath();
+  g.fillStyle = color;
+  g.fill();
+  outline(g, s, 0.012);
+  g.restore();
+}
+
+/** A fae child's head for the portraits: round face, big green eyes, a small smile, long pointed ears, and either Pim's bark acorn-cap helm with an amber leaf crest or Pom's blue leaf hood with a glowing bead. */
+function faeHead(g: CanvasRenderingContext2D, s: number, cx: number, cy: number, r: number, kind: 'acorn' | 'hood') {
+  for (const sx of [-1, 1]) {
+    g.beginPath();
+    g.moveTo(cx + sx * r * 0.85, cy - r * 0.05);
+    g.lineTo(cx + sx * r * 1.75, cy - r * 0.6);
+    g.lineTo(cx + sx * r * 0.92, cy + r * 0.3);
+    g.closePath();
+    g.fillStyle = S.skin;
+    g.fill();
+    outline(g, s, 0.014);
+  }
+  if (kind === 'hood') {
+    // The hood: a mass behind the face and a point falling back with a glowing bead.
+    disc(g, s, cx, cy - r * 0.05, r * 1.14, S.blueDark);
+    g.beginPath();
+    g.moveTo(cx - r * 0.3, cy - r * 1.0);
+    g.quadraticCurveTo(cx - r * 0.2, cy - r * 1.7, cx + r * 0.7, cy - r * 1.45);
+    g.quadraticCurveTo(cx + r * 0.1, cy - r * 1.35, cx + r * 0.3, cy - r * 0.95);
+    g.closePath();
+    g.fillStyle = S.blueDark;
+    g.fill();
+    outline(g, s, 0.014);
+    g.save();
+    g.shadowColor = S.glowBlue;
+    g.shadowBlur = s * 0.05;
+    disc(g, s, cx + r * 0.72, cy - r * 1.45, r * 0.2, '#9ad8ff');
+    g.restore();
+  }
+  disc(g, s, cx, cy, r, S.skin);
+  for (const sx of [-0.36, 0.36]) {
+    g.fillStyle = '#fff8f0';
+    g.beginPath();
+    g.ellipse(cx + r * sx, cy + r * 0.02, r * 0.19, r * 0.25, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = S.eye;
+    g.beginPath();
+    g.ellipse(cx + r * sx, cy + r * 0.05, r * 0.13, r * 0.19, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = S.dark;
+    g.beginPath();
+    g.arc(cx + r * sx, cy + r * 0.07, r * 0.065, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = S.white;
+    g.beginPath();
+    g.arc(cx + r * (sx + 0.05), cy - r * 0.03, r * 0.04, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.strokeStyle = S.dark;
+  g.lineWidth = s * 0.012;
+  g.lineCap = 'round';
+  g.beginPath();
+  g.arc(cx, cy + r * 0.3, r * 0.22, 0.15 * Math.PI, 0.85 * Math.PI);
+  g.stroke();
+  if (kind === 'hood') {
+    g.strokeStyle = S.blueLeaf;
+    g.lineWidth = r * 0.2;
+    g.beginPath();
+    g.arc(cx, cy - r * 0.05, r * 1.0, Math.PI * 1.02, Math.PI * 1.98);
+    g.stroke();
+    return;
+  }
+  // The bark acorn cap: a dome with darker bands, a stalk, an amber leaf crest swept back.
+  g.beginPath();
+  g.arc(cx, cy - r * 0.12, r * 1.1, Math.PI, 0);
+  g.closePath();
+  g.fillStyle = S.bark;
+  g.fill();
+  outline(g, s, 0.02);
+  g.strokeStyle = S.barkDark;
+  g.lineWidth = r * 0.12;
+  for (const k of [0.45, 0.75]) {
+    g.beginPath();
+    g.arc(cx, cy - r * 0.12, r * 1.1 * k, Math.PI * 1.08, Math.PI * 1.92);
+    g.stroke();
+  }
+  g.fillStyle = S.barkDark;
+  g.fillRect(cx - r * 0.07, cy - r * 1.4, r * 0.14, r * 0.3);
+  leafShape(g, s, cx - r * 0.2, cy - r * 1.0, r * 0.7, r * 0.2, -0.9, S.amber);
+  leafShape(g, s, cx + r * 0.2, cy - r * 1.0, r * 0.7, r * 0.2, 0.9, S.amber);
+}
+
+/** Shoulders in a leaf-hemmed tunic in `color`, a collar of small leaves, the satchel strap across. */
+function faeShoulders(g: CanvasRenderingContext2D, s: number, color: string, leaf: string) {
   g.beginPath();
   g.moveTo(s * 0.18, s);
   g.quadraticCurveTo(s * 0.2, s * 0.72, s * 0.5, s * 0.7);
   g.quadraticCurveTo(s * 0.8, s * 0.72, s * 0.82, s);
   g.closePath();
-  g.fillStyle = S.pimMid;
+  g.fillStyle = color;
   g.fill();
   outline(g, s, 0.02);
-  // The backpack straps, and Pom's blue hood peeping over his shoulder.
-  g.fillStyle = S.woodDark;
-  g.fillRect(s * 0.33, s * 0.74, s * 0.07, s * 0.26);
-  g.fillRect(s * 0.6, s * 0.74, s * 0.07, s * 0.26);
-  hood(g, s, s * 0.8, s * 0.55, s * 0.09);
-  helmet(g, s, s * 0.5, s * 0.46, s * 0.22);
+  g.fillStyle = S.barkDark;
+  g.save();
+  g.translate(s * 0.5, s * 0.84);
+  g.rotate(-0.55);
+  g.fillRect(-s * 0.04, -s * 0.2, s * 0.08, s * 0.4);
+  g.restore();
+  for (let i = 0; i < 7; i++) {
+    const t = i / 6;
+    leafShape(g, s, s * (0.3 + 0.4 * t), s * (0.73 - 0.03 * Math.sin(Math.PI * t)), s * 0.13, s * 0.04, (t - 0.5) * 1.6 + Math.PI, leaf);
+  }
+}
+
+/** Pim's portrait base and Pom's, by hand: head and shoulders with the hero's gear. */
+function pimPortrait(g: CanvasRenderingContext2D, s: number) {
+  ground(g, s, true);
+  star(g, s * 0.84, s * 0.2, s * 0.06, S.glowAmber, 4);
+  // The wooden sword behind him, its edges glowing amber.
+  g.save();
+  g.translate(s * 0.8, s * 0.9);
+  g.rotate(-Math.PI * 0.42);
+  g.beginPath();
+  g.roundRect(0, -s * 0.04, s * 0.7, s * 0.08, s * 0.03);
+  g.fillStyle = S.bark;
+  g.fill();
+  outline(g, s, 0.02);
+  g.shadowColor = S.glowAmber;
+  g.shadowBlur = s * 0.04;
+  g.strokeStyle = S.glowAmber;
+  g.lineWidth = s * 0.014;
+  for (const sy of [-0.04, 0.04]) {
+    g.beginPath();
+    g.moveTo(s * 0.04, s * sy);
+    g.lineTo(s * 0.66, s * sy * 0.8);
+    g.stroke();
+  }
+  g.restore();
+  faeShoulders(g, s, S.amberDark, S.amber);
+  faeHead(g, s, s * 0.82, s * 0.57, s * 0.085, 'hood');
+  faeHead(g, s, s * 0.5, s * 0.46, s * 0.21, 'acorn');
 }
 
 function pomPortrait(g: CanvasRenderingContext2D, s: number) {
   ground(g, s, false);
-  star(g, s * 0.16, s * 0.2, s * 0.08, S.yellow);
-  star(g, s * 0.86, s * 0.32, s * 0.05, S.pim);
-  g.beginPath();
-  g.moveTo(s * 0.18, s);
-  g.quadraticCurveTo(s * 0.2, s * 0.72, s * 0.5, s * 0.7);
-  g.quadraticCurveTo(s * 0.8, s * 0.72, s * 0.82, s);
-  g.closePath();
-  g.fillStyle = S.pomMid;
-  g.fill();
-  outline(g, s, 0.02);
-  g.fillStyle = S.woodDark;
-  g.fillRect(s * 0.33, s * 0.74, s * 0.07, s * 0.26);
-  g.fillRect(s * 0.6, s * 0.74, s * 0.07, s * 0.26);
-  helmet(g, s, s * 0.2, s * 0.58, s * 0.09);
-  slingshot(g, s, s * 0.78, s * 0.78, s * 0.2);
-  hood(g, s, s * 0.5, s * 0.46, s * 0.22);
+  star(g, s * 0.16, s * 0.2, s * 0.06, S.glowBlue, 4);
+  faeShoulders(g, s, S.blueDark, S.blueLeaf);
+  faeHead(g, s, s * 0.18, s * 0.58, s * 0.085, 'acorn');
+  // The slingshot, a dark Y with a glowing blue band drawn back to a glowing stone.
+  g.lineCap = 'round';
+  const cx = s * 0.8, cy = s * 0.78, h = s * 0.2;
+  for (const [w, color] of [[s * 0.1, S.dark], [s * 0.06, S.bark]] as [number, string][]) {
+    g.strokeStyle = color;
+    g.lineWidth = w;
+    g.beginPath();
+    g.moveTo(cx, cy + h);
+    g.lineTo(cx, cy);
+    g.lineTo(cx - h * 0.55, cy - h * 0.7);
+    g.moveTo(cx, cy);
+    g.lineTo(cx + h * 0.55, cy - h * 0.7);
+    g.stroke();
+  }
+  g.save();
+  g.shadowColor = S.glowBlue;
+  g.shadowBlur = s * 0.04;
+  streak(g, cx - h * 0.55, cy - h * 0.7, cx - h * 0.1, cy - h * 0.1, s * 0.02, '#7ac8ff');
+  streak(g, cx + h * 0.55, cy - h * 0.7, cx - h * 0.1, cy - h * 0.1, s * 0.02, '#7ac8ff');
+  disc(g, s, cx - h * 0.1, cy - h * 0.05, s * 0.05, '#aee4ff');
+  g.restore();
+  faeHead(g, s, s * 0.5, s * 0.46, s * 0.21, 'hood');
 }
 
 /** Tag Out: two gloves slapping together, one orange cuff and one blue, a star between them. */
@@ -276,12 +415,12 @@ const tagOut = {
 
 const pom: HeroKit = {
   name: 'Pim and Pom',
-  title: 'the twins',
+  title: 'the Changeling Twins',
   accent: S.pom,
   foil: S.pim,
   maxHp: 620,
   hpChunks: 2,
-  model: 'models/heroes/pom_v2.glb',
+  model: 'models/heroes/pom_v3.glb',
   attack: { kind: 'ranged', range: 6, damage: 12, interval: 0.9, speed: 20, look: 'dart' },
   portrait: pomPortrait,
   spells: [
@@ -340,13 +479,13 @@ const pom: HeroKit = {
 
 export const twinsKit: HeroKit = {
   name: 'Pim and Pom',
-  title: 'the twins',
+  title: 'the Changeling Twins',
   accent: S.pim,
   foil: S.pom,
   maxHp: 620,
   hpChunks: 2,
   melee: true,
-  model: 'models/heroes/pim_v2.glb',
+  model: 'models/heroes/pim_v3.glb',
   attack: { kind: 'melee', range: 2.4, damage: 16, interval: 0.9, look: 'sweep' },
   portrait: pimPortrait,
   alt: pom,

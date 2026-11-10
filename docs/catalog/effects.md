@@ -448,7 +448,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: mirror
 
-4 effects. Silvane, the Vain. Hero kit, see [Mirror](heroes/mirror.md).
+4 effects. Silvane, the Mirror Duchess. Hero kit, see [Mirror](heroes/mirror.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -459,7 +459,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: mason
 
-4 effects. Bram, the Pillar Mason. Hero kit, see [Mason](heroes/mason.md).
+4 effects. Bram, the Stonewright. Hero kit, see [Mason](heroes/mason.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -470,7 +470,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: timber
 
-4 effects. Hank, the Lumberjack. Hero kit, see [Timber](heroes/timber.md).
+4 effects. Hank, the Moss Hewer. Hero kit, see [Timber](heroes/timber.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -481,7 +481,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: balloon
 
-4 effects. Professor Puff, balloon scientist. Hero kit, see [Balloon](heroes/balloon.md).
+4 effects. Professor Puff, the Aeronaut. Hero kit, see [Balloon](heroes/balloon.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -492,7 +492,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: cat
 
-4 effects. Sir Whiskers, the Cat Knight. Hero kit, see [Cat](heroes/cat.md).
+4 effects. Sir Whiskers, the Lynx Duelist. Hero kit, see [Cat](heroes/cat.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -503,7 +503,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: ledger
 
-4 effects. Mr. Ledger, the Debt Collector. Hero kit, see [Ledger](heroes/ledger.md).
+4 effects. Mr. Ledger, the Tithe-Keeper. Hero kit, see [Ledger](heroes/ledger.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -525,7 +525,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: mime
 
-4 effects. Mum, the mime. Hero kit, see [Mime](heroes/mime.md).
+4 effects. Mum, the Silent One. Hero kit, see [Mime](heroes/mime.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -536,7 +536,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: referee
 
-4 effects. Referee Whistler, by the book. Hero kit, see [Referee](heroes/referee.md).
+4 effects. Referee Whistler, the Arbiter. Hero kit, see [Referee](heroes/referee.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -547,7 +547,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: chef
 
-4 effects. Madame Cleaver, Arena Chef. Hero kit, see [Chef](heroes/chef.md).
+4 effects. Madame Cleaver, the Feastmistress. Hero kit, see [Chef](heroes/chef.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -569,7 +569,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: janitor
 
-4 effects. Gus, the Caretaker. Hero kit, see [Janitor](heroes/janitor.md).
+4 effects. Gus, the Temple Keeper. Hero kit, see [Janitor](heroes/janitor.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -580,7 +580,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: mole
 
-4 effects. Mabel, the Mole. Hero kit, see [Mole](heroes/mole.md).
+4 effects. Mabel, the Deepdelver. Hero kit, see [Mole](heroes/mole.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -591,7 +591,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: yarn
 
-4 effects. Grandma Ironknit, the Knitter. Hero kit, see [Yarn](heroes/yarn.md).
+4 effects. Grandma Ironknit, the Weaver. Hero kit, see [Yarn](heroes/yarn.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -613,7 +613,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: sheep
 
-4 effects. Bo, the angry shepherd. Hero kit, see [Sheep](heroes/sheep.md).
+4 effects. Bo, the Ramherd. Hero kit, see [Sheep](heroes/sheep.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -624,7 +624,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: magic
 
-4 effects. The Great Zambini, stage magician. Hero kit, see [Magic](heroes/magic.md).
+4 effects. The Great Zambini, the Illusionist. Hero kit, see [Magic](heroes/magic.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -635,7 +635,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: door
 
-4 effects. Wick, the Doorman. Hero kit, see [Door](heroes/door.md).
+4 effects. Wick, the Doorwarden. Hero kit, see [Door](heroes/door.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
@@ -646,7 +646,7 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 
 ## hero: twins
 
-7 effects. Pim and Pom, the twins. Hero kit, see [Twins](heroes/twins.md).
+7 effects. Pim and Pom, the Changeling Twins. Hero kit, see [Twins](heroes/twins.md).
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|

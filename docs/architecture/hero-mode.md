@@ -44,25 +44,25 @@ A hero kit is **data only**: four spells bound to Q W E R (R is the ultimate). E
 | Oblivion | the Unmaker | [kits/void.ts](../../src/kits/void.ts) | gravity slam, null zone, phase step, void black hole | `models/heroes/void_v2.glb` |
 | Shiori | the Last Brush | [kits/ink.ts](../../src/kits/ink.ts) | ink lash, seal of binding, flowing script, the last character | `models/heroes/ink.glb` |
 | Tempo | the Unwound Hour | [kits/chrono.ts](../../src/kits/chrono.ts) | tick bolt, slow time, time skip, stolen hour | `models/heroes/chrono.glb` |
-| Silvane | the Vain | [kits/mirror.ts](../../src/kits/mirror.ts) | hand mirror, vanity stand, through the glass, hall of mirrors | `models/heroes/mirror_v2.glb` |
-| Bram | the Pillar Mason | [kits/mason.ts](../../src/kits/mason.ts) | raise gerald, the shove, a good lean, gerald no | `models/heroes/mason_v2.glb` |
-| Hank | the Lumberjack | [kits/timber.ts](../../src/kits/timber.ts) | axe swing, fast growth, caber toss, timber call | `models/heroes/timber_v2.glb` |
-| Professor Puff | balloon scientist | [kits/balloon.ts](../../src/kits/balloon.ts) | air hose, helium bomb, hot air, pop! | `models/heroes/balloon_v2.glb` |
-| Sir Whiskers | the Cat Knight | [kits/cat.ts](../../src/kits/cat.ts) | scratch, knock it over, pounce, land on my feet | `models/heroes/cat_v2.glb` |
-| Mr. Ledger | the Debt Collector | [kits/ledger.ts](../../src/kits/ledger.ts) | invoice, late fee, call it in, foreclosure | `models/heroes/ledger_v2.glb` |
-| Big Yoko | the Mountain | [kits/sumo.ts](../../src/kits/sumo.ts) | palm strike, stomp, sumo charge, salt throw | `models/heroes/sumo_v2.glb` |
-| Mum | the mime | [kits/mime.ts](../../src/kits/mime.ts) | invisible ball, mime wall, rope trick, the box | `models/heroes/mime_v2.glb` |
-| Referee Whistler | by the book | [kits/referee.ts](../../src/kits/referee.ts) | whistle blast, no running, no casting, show the card | `models/heroes/referee_v2.glb` |
-| Madame Cleaver | Arena Chef | [kits/chef.ts](../../src/kits/chef.ts) | thrown cleaver, hot soup, burnt offering, dinner is served | `models/heroes/chef_v2.glb` |
-| Pip | the Wingfoot | [kits/courier.ts](../../src/kits/courier.ts) | express letter, fragile, shortcut, final delivery | `models/heroes/courier_v2.glb` |
-| Gus | the Caretaker | [kits/janitor.ts](../../src/kits/janitor.ts) | big mop, wet floor sign, mop bucket, flood | `models/heroes/janitor_v2.glb` |
-| Mabel | the Mole | [kits/mole.ts](../../src/kits/mole.ts) | mole claw, mole dig, mole tunnel, sinkhole | `models/heroes/mole_v2.glb` |
-| Grandma Ironknit | the Knitter | [kits/yarn.ts](../../src/kits/yarn.ts) | knitting needle, cast on, sweater, mr biscuit | `models/heroes/yarn_v2.glb` |
-| Barry Cloudsley | the Sky Augur | [kits/weather.ts](../../src/kits/weather.ts) | cold front, lightning risk, forecast update, severe warning | `models/heroes/weather_v2.glb` |
-| Bo | the angry shepherd | [kits/sheep.ts](../../src/kits/sheep.ts) | crook whack, spare sheep, shear, stampede | `models/heroes/sheep_v2.glb` |
-| The Great Zambini | stage magician | [kits/magic.ts](../../src/kits/magic.ts) | card spray, sawn in half, hat trick, grand finale | `models/heroes/magic_v2.glb` |
-| Wick | the Doorman | [kits/door.ts](../../src/kits/door.ts) | key toss, wick door, door slam, grand lobby | `models/heroes/door_v2.glb` |
-| Pim and Pom | the twins | [kits/twins.ts](../../src/kits/twins.ts) | bonk / pebble, pim charge / snare, shield up / backflip, tag out | `models/heroes/pim_v2.glb`, `models/heroes/pom_v2.glb` |
+| Silvane | the Mirror Duchess | [kits/mirror.ts](../../src/kits/mirror.ts) | hand mirror, vanity stand, through the glass, hall of mirrors | `models/heroes/mirror_v3.glb` |
+| Bram | the Stonewright | [kits/mason.ts](../../src/kits/mason.ts) | raise gerald, the shove, a good lean, gerald no | `models/heroes/mason_v3.glb` |
+| Hank | the Moss Hewer | [kits/timber.ts](../../src/kits/timber.ts) | axe swing, fast growth, caber toss, timber call | `models/heroes/timber_v3.glb` |
+| Professor Puff | the Aeronaut | [kits/balloon.ts](../../src/kits/balloon.ts) | air hose, helium bomb, hot air, pop! | `models/heroes/balloon_v3.glb` |
+| Sir Whiskers | the Lynx Duelist | [kits/cat.ts](../../src/kits/cat.ts) | scratch, knock it over, pounce, land on my feet | `models/heroes/cat_v3.glb` |
+| Mr. Ledger | the Tithe-Keeper | [kits/ledger.ts](../../src/kits/ledger.ts) | invoice, late fee, call it in, foreclosure | `models/heroes/ledger_v3.glb` |
+| Big Yoko | the Mountain | [kits/sumo.ts](../../src/kits/sumo.ts) | palm strike, stomp, sumo charge, salt throw | `models/heroes/sumo_v3.glb` |
+| Mum | the Silent One | [kits/mime.ts](../../src/kits/mime.ts) | invisible ball, mime wall, rope trick, the box | `models/heroes/mime_v3.glb` |
+| Referee Whistler | the Arbiter | [kits/referee.ts](../../src/kits/referee.ts) | whistle blast, no running, no casting, show the card | `models/heroes/referee_v3.glb` |
+| Madame Cleaver | the Feastmistress | [kits/chef.ts](../../src/kits/chef.ts) | thrown cleaver, hot soup, burnt offering, dinner is served | `models/heroes/chef_v3.glb` |
+| Pip | the Wingfoot | [kits/courier.ts](../../src/kits/courier.ts) | express letter, fragile, shortcut, final delivery | `models/heroes/courier_v3.glb` |
+| Gus | the Temple Keeper | [kits/janitor.ts](../../src/kits/janitor.ts) | big mop, wet floor sign, mop bucket, flood | `models/heroes/janitor_v3.glb` |
+| Mabel | the Deepdelver | [kits/mole.ts](../../src/kits/mole.ts) | mole claw, mole dig, mole tunnel, sinkhole | `models/heroes/mole_v3.glb` |
+| Grandma Ironknit | the Weaver | [kits/yarn.ts](../../src/kits/yarn.ts) | knitting needle, cast on, sweater, mr biscuit | `models/heroes/yarn_v3.glb` |
+| Barry Cloudsley | the Sky Augur | [kits/weather.ts](../../src/kits/weather.ts) | cold front, lightning risk, forecast update, severe warning | `models/heroes/weather_v3.glb` |
+| Bo | the Ramherd | [kits/sheep.ts](../../src/kits/sheep.ts) | crook whack, spare sheep, shear, stampede | `models/heroes/sheep_v3.glb` |
+| The Great Zambini | the Illusionist | [kits/magic.ts](../../src/kits/magic.ts) | card spray, sawn in half, hat trick, grand finale | `models/heroes/magic_v3.glb` |
+| Wick | the Doorwarden | [kits/door.ts](../../src/kits/door.ts) | key toss, wick door, door slam, grand lobby | `models/heroes/door_v3.glb` |
+| Pim and Pom | the Changeling Twins | [kits/twins.ts](../../src/kits/twins.ts) | bonk / pebble, pim charge / snare, shield up / backflip, tag out | `models/heroes/pim_v3.glb`, `models/heroes/pom_v3.glb` |
 
 Self-cast spells have `range: 0`. Ranges for the others run 10-14, cooldowns 2.5-10 s for Q/W/E and 20 s for R. Icons and portraits are drawn on canvases in each kit's palette (the same palette as that kit's parts file, see [effects-and-parts.md](effects-and-parts.md#hero-kit-parts)). The figures are built by Blender, see [models.md](models.md).
 

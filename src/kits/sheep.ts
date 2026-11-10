@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const S = {
   core: '#f6f1df', accent: '#f0ead6', wool: '#b8b2a4', woolHi: '#d3cdbc', woolLo: '#8f897b', black: '#1e1a19', wood: '#7a5a3a', woodHi: '#a8845a',
   hay: '#c9b26a', red: '#e0603a', skin: '#d9a89a', dark: '#14110f', grass: '#3c4a2a',
+  // the Ramherd's umber cloak, grey fleece, silver beard, bronze and horn, and warm glowing bell (the _v3 model)
+  coat: '#5a4632', fleece: '#8e8470', silver: '#b4b4b8', silverLo: '#7a7a80', hair: '#7e7e84', gold: '#d2ae55', horn: '#b09a70', bell: '#ffc462',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -110,18 +112,31 @@ function streak(g: CanvasRenderingContext2D, x1: number, y: number, x2: number, 
 
 export const sheepKit: HeroKit = {
   name: 'Bo',
-  title: 'the angry shepherd',
+  title: 'the Ramherd',
   accent: S.accent,
   foil: S.wood,
   maxHp: 640,
   portrait(g, s) {
     iconGround(g, s);
-    // A sheep under his arm, bottom right, looking unimpressed.
-    sheep(g, s * 0.78, s * 0.8, s * 0.13);
-    // The crook, shaken up beside his head.
-    crook(g, s * 0.12, s * 0.98, s * 0.2, s * 0.14, s * 0.026);
-    // Shoulders in a thick brown wool coat with a shaggy collar.
-    g.fillStyle = '#5a4230';
+    // The crook, up beside his head, a glowing warm bell hanging from its hook.
+    crook(g, s * 0.1, s * 0.98, s * 0.17, s * 0.2, s * 0.026);
+    const bx = s * 0.06, by = s * 0.3;
+    const glow = g.createRadialGradient(bx, by, 0, bx, by, s * 0.14);
+    glow.addColorStop(0, 'rgba(255,214,120,0.9)');
+    glow.addColorStop(1, 'rgba(255,170,60,0)');
+    g.fillStyle = glow;
+    g.fillRect(bx - s * 0.14, by - s * 0.14, s * 0.28, s * 0.28);
+    g.fillStyle = S.bell;
+    g.beginPath();
+    g.moveTo(bx - s * 0.05, by + s * 0.045);
+    g.quadraticCurveTo(bx - s * 0.045, by - s * 0.04, bx, by - s * 0.045);
+    g.quadraticCurveTo(bx + s * 0.045, by - s * 0.04, bx + s * 0.05, by + s * 0.045);
+    g.closePath();
+    g.fill();
+    g.fillStyle = S.gold;
+    g.fillRect(bx - s * 0.055, by + s * 0.04, s * 0.11, s * 0.014);
+    // Shoulders in a deep umber shaggy wool coat with a grey fleece mantle.
+    g.fillStyle = S.coat;
     g.beginPath();
     g.moveTo(s * 0.12, s);
     g.quadraticCurveTo(s * 0.14, s * 0.72, s * 0.34, s * 0.64);
@@ -129,70 +144,84 @@ export const sheepKit: HeroKit = {
     g.quadraticCurveTo(s * 0.86, s * 0.72, s * 0.88, s);
     g.closePath();
     g.fill();
-    fleece(g, s * 0.5, s * 0.66, s * 0.2, S.woolLo);
-    // A huge grey-white beard under a red, furious face.
+    fleece(g, s * 0.5, s * 0.66, s * 0.2, S.fleece);
+    // A tidy silver beard under a weathered, calm face.
     g.fillStyle = S.dark;
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.62, s * 0.215, s * 0.24, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.62, s * 0.2, s * 0.24, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#b9b3a6';
+    g.fillStyle = S.silver;
     g.beginPath();
-    g.moveTo(s * 0.3, s * 0.46);
-    g.quadraticCurveTo(s * 0.28, s * 0.74, s * 0.5, s * 0.84);
-    g.quadraticCurveTo(s * 0.72, s * 0.74, s * 0.7, s * 0.46);
-    g.quadraticCurveTo(s * 0.5, s * 0.58, s * 0.3, s * 0.46);
+    g.moveTo(s * 0.32, s * 0.46);
+    g.quadraticCurveTo(s * 0.3, s * 0.74, s * 0.5, s * 0.86);
+    g.quadraticCurveTo(s * 0.7, s * 0.74, s * 0.68, s * 0.46);
+    g.quadraticCurveTo(s * 0.5, s * 0.58, s * 0.32, s * 0.46);
     g.fill();
-    g.fillStyle = '#d6d0c2';
+    g.strokeStyle = S.silverLo;
+    g.lineWidth = s * 0.012;
+    for (const dx of [-0.07, 0, 0.07]) {
+      g.beginPath();
+      g.moveTo(s * (0.5 + dx), s * 0.6);
+      g.quadraticCurveTo(s * (0.5 + dx * 1.3), s * 0.72, s * (0.5 + dx * 0.8), s * 0.82);
+      g.stroke();
+    }
+    g.fillStyle = S.gold;
     g.beginPath();
-    g.ellipse(s * 0.42, s * 0.62, s * 0.05, s * 0.1, 0.3, 0, Math.PI * 2);
+    g.arc(s * 0.5, s * 0.855, s * 0.016, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#c4604a';
+    g.fillStyle = '#c8906c';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.42, s * 0.14, s * 0.15, 0, 0, Math.PI * 2);
     g.fill();
-    // Eyes under a scowl, a shouting mouth in the beard.
-    g.strokeStyle = S.dark;
-    g.lineWidth = s * 0.018;
+    // Level grey brows, steady eyes, a small nose.
+    g.strokeStyle = S.silverLo;
+    g.lineWidth = s * 0.02;
     g.lineCap = 'round';
     g.beginPath();
-    g.moveTo(s * 0.4, s * 0.36);
-    g.lineTo(s * 0.47, s * 0.4);
-    g.moveTo(s * 0.6, s * 0.36);
-    g.lineTo(s * 0.53, s * 0.4);
+    g.moveTo(s * 0.38, s * 0.375);
+    g.lineTo(s * 0.47, s * 0.37);
+    g.moveTo(s * 0.62, s * 0.375);
+    g.lineTo(s * 0.53, s * 0.37);
     g.stroke();
-    g.fillStyle = S.core;
-    g.fillRect(s * 0.42, s * 0.415, s * 0.04, s * 0.02);
-    g.fillRect(s * 0.54, s * 0.415, s * 0.04, s * 0.02);
-    g.fillStyle = S.dark;
+    for (const sx of [0.425, 0.575]) {
+      g.fillStyle = '#fff0e0';
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.41, s * 0.026, s * 0.02, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#3a4a3c';
+      g.beginPath();
+      g.arc(s * sx, s * 0.41, s * 0.014, 0, Math.PI * 2);
+      g.fill();
+    }
+    g.fillStyle = '#b5805c';
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.58, s * 0.06, s * 0.045, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.465, s * 0.022, s * 0.03, 0, 0, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#b8473a';
+    // Grey hair under a bronze headband, and a great ram horn curling from each temple.
+    g.fillStyle = S.hair;
     g.beginPath();
-    g.ellipse(s * 0.5, s * 0.595, s * 0.035, s * 0.02, 0, 0, Math.PI * 2);
+    g.ellipse(s * 0.5, s * 0.31, s * 0.16, s * 0.1, 0, Math.PI, Math.PI * 2);
     g.fill();
-    g.fillStyle = '#c4604a';
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.5, s * 0.025, s * 0.04, 0, 0, Math.PI * 2);
-    g.fill();
-    // The wide hat: a brim and a low crown, a hay band.
-    g.fillStyle = S.dark;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.31, s * 0.34, s * 0.075, -0.05, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = '#6a5034';
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.305, s * 0.32, s * 0.06, -0.05, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = '#5a4230';
-    g.beginPath();
-    g.moveTo(s * 0.34, s * 0.3);
-    g.quadraticCurveTo(s * 0.36, s * 0.12, s * 0.5, s * 0.12);
-    g.quadraticCurveTo(s * 0.64, s * 0.12, s * 0.66, s * 0.3);
-    g.closePath();
-    g.fill();
-    g.fillStyle = S.hay;
-    g.fillRect(s * 0.345, s * 0.24, s * 0.31, s * 0.03);
+    g.fillStyle = S.gold;
+    g.fillRect(s * 0.34, s * 0.3, s * 0.32, s * 0.026);
+    for (const sx of [-1, 1]) {
+      g.strokeStyle = S.dark;
+      g.lineWidth = s * 0.062;
+      g.beginPath();
+      g.moveTo(s * (0.5 + sx * 0.15), s * 0.3);
+      g.bezierCurveTo(s * (0.5 + sx * 0.3), s * 0.18, s * (0.5 + sx * 0.4), s * 0.36, s * (0.5 + sx * 0.3), s * 0.46);
+      g.bezierCurveTo(s * (0.5 + sx * 0.26), s * 0.5, s * (0.5 + sx * 0.2), s * 0.44, s * (0.5 + sx * 0.22), s * 0.4);
+      g.stroke();
+      g.strokeStyle = S.horn;
+      g.lineWidth = s * 0.046;
+      g.stroke();
+      g.strokeStyle = S.gold;
+      g.lineWidth = s * 0.01;
+      g.beginPath();
+      g.moveTo(s * (0.5 + sx * 0.33), s * 0.28);
+      g.lineTo(s * (0.5 + sx * 0.37), s * 0.31);
+      g.stroke();
+    }
     glint(g, s * 0.86, s * 0.22, s * 0.04);
   },
   spells: [

@@ -155,32 +155,34 @@ const MODELS: Record<string, string> = {
   Oblivion: 'models/heroes/void_v2.glb',
   Shiori: 'models/heroes/ink.glb',
   Tempo: 'models/heroes/chrono.glb',
-  Silvane: 'models/heroes/mirror_v2.glb',
-  Bram: 'models/heroes/mason_v2.glb',
-  Hank: 'models/heroes/timber_v2.glb',
-  'Professor Puff': 'models/heroes/balloon_v2.glb',
-  'Sir Whiskers': 'models/heroes/cat_v2.glb',
-  'Mr. Ledger': 'models/heroes/ledger_v2.glb',
+  Silvane: 'models/heroes/mirror_v3.glb',
+  Bram: 'models/heroes/mason_v3.glb',
+  Hank: 'models/heroes/timber_v3.glb',
+  'Professor Puff': 'models/heroes/balloon_v3.glb',
+  'Sir Whiskers': 'models/heroes/cat_v3.glb',
+  'Mr. Ledger': 'models/heroes/ledger_v3.glb',
   'Big Yoko': 'models/heroes/sumo_v3.glb',
-  Mum: 'models/heroes/mime_v2.glb',
-  'Referee Whistler': 'models/heroes/referee_v2.glb',
-  'Madame Cleaver': 'models/heroes/chef_v2.glb',
+  Mum: 'models/heroes/mime_v3.glb',
+  'Referee Whistler': 'models/heroes/referee_v3.glb',
+  'Madame Cleaver': 'models/heroes/chef_v3.glb',
   Pip: 'models/heroes/courier_v3.glb',
-  Gus: 'models/heroes/janitor_v2.glb',
-  Mabel: 'models/heroes/mole_v2.glb',
-  'Grandma Ironknit': 'models/heroes/yarn_v2.glb',
+  Gus: 'models/heroes/janitor_v3.glb',
+  Mabel: 'models/heroes/mole_v3.glb',
+  'Grandma Ironknit': 'models/heroes/yarn_v3.glb',
   'Barry Cloudsley': 'models/heroes/weather_v3.glb',
-  Bo: 'models/heroes/sheep_v2.glb',
-  'The Great Zambini': 'models/heroes/magic_v2.glb',
-  Wick: 'models/heroes/door_v2.glb',
+  Bo: 'models/heroes/sheep_v3.glb',
+  'The Great Zambini': 'models/heroes/magic_v3.glb',
+  Wick: 'models/heroes/door_v3.glb',
 };
 
 /**
  * The size each hero's hits are judged with, measured from its model (2026-11-04: the width 90% of its body fits in, and the
  * height 99% of it does). `radius`: half that width plus 0.08 m, at least 0.38, so a bolt that looks like it touched does and one
  * that looks like it passed does. `height`: how high a mouse ray can pick it.
- * The _v3 restyles (2026-11-09) keep the radius of the body they replace (the same build under new clothes); Barry's height
- * moved up by his new staff (as Kaia's and Sefu's count theirs), Pip's by his taller head.
+ * The _v3 restyles (2026-11-09 and 11-10) keep the radius of the body they replace where the build is the same; where the
+ * vertices' 90% radius or 99% height moved by more than about a tenth it follows (Grandma Ironknit and Bo are narrower
+ * without the basket and the sheep; Silvane, Madame Cleaver and Sir Whiskers lost a hair tower, a tall hat and a plume;
+ * Barry's height counts his staff, as Kaia's and Sefu's do). No height is under 2.33, so a small hero can still be clicked.
  */
 export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Vesper: { radius: 0.41, height: 2.35 }, Brannoc: { radius: 0.58, height: 2.35 }, Isolde: { radius: 0.4, height: 2.84 },
@@ -189,14 +191,14 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Auriel: { radius: 0.47, height: 2.33 }, Marin: { radius: 0.43, height: 2.29 }, Zephyr: { radius: 0.4, height: 2.37 },
   Mortis: { radius: 0.44, height: 2.51 }, Ada: { radius: 0.39, height: 2.29 }, Sirix: { radius: 0.44, height: 2.31 },
   Cantor: { radius: 0.39, height: 2.38 }, Opaline: { radius: 0.4, height: 2.46 }, Oblivion: { radius: 0.63, height: 2.62 },
-  Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.73 },
+  Shiori: { radius: 0.43, height: 2.3 }, Tempo: { radius: 0.41, height: 2.46 }, Silvane: { radius: 0.57, height: 2.34 },
   Bram: { radius: 0.59, height: 2.7 }, Hank: { radius: 0.61, height: 2.69 }, 'Professor Puff': { radius: 0.54, height: 2.43 },
-  'Sir Whiskers': { radius: 0.49, height: 2.39 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
-  'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.58 }, 'Referee Whistler': { radius: 0.41, height: 2.33 },
-  'Madame Cleaver': { radius: 0.58, height: 2.63 }, Pip: { radius: 0.39, height: 2.36 }, Gus: { radius: 0.55, height: 2.39 },
-  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.54, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
-  Bo: { radius: 0.53, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
-  Wick: { radius: 0.41, height: 2.44 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
+  'Sir Whiskers': { radius: 0.49, height: 2.33 }, 'Mr. Ledger': { radius: 0.42, height: 2.4 },
+  'Big Yoko': { radius: 0.76, height: 2.6 }, Mum: { radius: 0.45, height: 2.49 }, 'Referee Whistler': { radius: 0.44, height: 2.33 },
+  'Madame Cleaver': { radius: 0.58, height: 2.33 }, Pip: { radius: 0.39, height: 2.36 }, Gus: { radius: 0.55, height: 2.39 },
+  Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.4, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
+  Bo: { radius: 0.42, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
+  Wick: { radius: 0.41, height: 2.37 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
 };
 
 export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit].map((k) => {

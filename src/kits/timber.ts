@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const K = {
   cream: '#f1e2c0', hot: '#e8b868', wood: '#b5763a', bark: '#6a4426', red: '#c8322e', redDark: '#7a1c1a', pine: '#3f6b3a',
   pineDark: '#23421f', pineLit: '#7fbf55', dark: '#1c120b', steel: '#cfd5d8', skin: '#e0a878',
+  // the Moss Hewer's tunic, fur, hair and glowing axe edge (the _v3 model)
+  moss: '#40583a', fur: '#6e5a44', leather: '#4a3220', beard: '#7a4824', braid: '#a8683a', hairBrown: '#6a3c1c', steelDark: '#59616b', glow: '#3ad868', glowHot: '#8ff0a0', gold: '#d8a838',
 };
 
 function ground(g: CanvasRenderingContext2D, s: number) {
@@ -45,25 +47,6 @@ function pine(g: CanvasRenderingContext2D, cx: number, by: number, w: number, h:
     g.closePath();
     g.fill();
   }
-}
-
-/** Plaid red: a red block with dark and cream stripes both ways. */
-function plaid(g: CanvasRenderingContext2D, x: number, y: number, w: number, h: number) {
-  g.fillStyle = K.red;
-  g.fillRect(x, y, w, h);
-  const n = 5;
-  g.fillStyle = K.redDark;
-  for (let i = 0; i < n; i++) {
-    g.fillRect(x + (w * (i + 0.2)) / n, y, w * 0.12, h);
-    g.fillRect(x, y + (h * (i + 0.2)) / n, w, h * 0.12);
-  }
-  g.fillStyle = K.cream;
-  g.globalAlpha = 0.55;
-  for (let i = 0; i < n; i++) {
-    g.fillRect(x + (w * (i + 0.6)) / n, y, w * 0.035, h);
-    g.fillRect(x, y + (h * (i + 0.6)) / n, w, h * 0.035);
-  }
-  g.globalAlpha = 1;
 }
 
 /** A double axe at (cx, cy), `len` the haft's length, turned by `rot` (0 = haft up). */
@@ -105,88 +88,129 @@ function chips(g: CanvasRenderingContext2D, s: number, pts: [number, number, num
 
 export const timberKit: HeroKit = {
   name: 'Hank',
-  title: 'the Lumberjack',
+  title: 'the Moss Hewer',
   maxHp: 780,
   melee: true,
   accent: K.wood,
   foil: K.pine,
   portrait(g, s) {
     ground(g, s);
-    // Pines behind him, a double axe over his shoulder.
+    // Pines behind him, the huge double axe over his shoulder: dark steel with its edges glowing green.
     pine(g, s * 0.14, s * 0.62, s * 0.26, s * 0.5, 4);
-    pine(g, s * 0.88, s * 0.58, s * 0.22, s * 0.42, 4);
-    axe(g, s * 0.84, s * 0.4, s * 0.8, 0.5);
-    // Shoulders in plaid, with suspenders.
+    g.save();
+    g.translate(s * 0.8, s * 0.54);
+    g.rotate(0.3);
+    const len = s * 0.52;
+    g.fillStyle = K.dark;
+    g.fillRect(-len * 0.055, -len * 0.5, len * 0.11, len);
+    g.fillStyle = K.bark;
+    g.fillRect(-len * 0.035, -len * 0.5, len * 0.07, len);
+    for (const sx of [-1, 1]) {
+      for (const [scale, color] of [[1.1, K.dark], [1, K.steelDark], [1.02, '']] as const) {
+        g.beginPath();
+        g.moveTo(0, -len * 0.46);
+        g.quadraticCurveTo(sx * len * 0.3 * scale, -len * 0.62 * scale, sx * len * 0.34 * scale, -len * 0.28);
+        g.quadraticCurveTo(sx * len * 0.3 * scale, -len * 0.38, 0, -len * 0.3);
+        g.closePath();
+        if (color) {
+          g.fillStyle = color;
+          g.fill();
+        } else {
+          // the glowing edge: a bright green line along the blade's outer curve
+          g.strokeStyle = K.glowHot;
+          g.lineWidth = len * 0.035;
+          g.stroke();
+        }
+      }
+    }
+    g.restore();
+    // Shoulders: a moss-green tunic, a fur mantle heaped round the neck, a brown leather strap.
     g.fillStyle = K.dark;
     g.beginPath();
-    g.moveTo(s * 0.06, s);
-    g.quadraticCurveTo(s * 0.1, s * 0.7, s * 0.5, s * 0.68);
-    g.quadraticCurveTo(s * 0.9, s * 0.7, s * 0.94, s);
+    g.moveTo(s * 0.04, s);
+    g.quadraticCurveTo(s * 0.08, s * 0.68, s * 0.5, s * 0.66);
+    g.quadraticCurveTo(s * 0.92, s * 0.68, s * 0.96, s);
     g.closePath();
     g.fill();
-    g.save();
+    g.fillStyle = K.moss;
     g.beginPath();
-    g.moveTo(s * 0.09, s);
-    g.quadraticCurveTo(s * 0.13, s * 0.73, s * 0.5, s * 0.71);
-    g.quadraticCurveTo(s * 0.87, s * 0.73, s * 0.91, s);
+    g.moveTo(s * 0.07, s);
+    g.quadraticCurveTo(s * 0.11, s * 0.71, s * 0.5, s * 0.69);
+    g.quadraticCurveTo(s * 0.89, s * 0.71, s * 0.93, s);
     g.closePath();
-    g.clip();
-    plaid(g, 0, s * 0.68, s, s * 0.34);
-    g.restore();
-    g.fillStyle = K.dark;
-    g.fillRect(s * 0.3, s * 0.72, s * 0.07, s * 0.28);
-    g.fillRect(s * 0.63, s * 0.72, s * 0.07, s * 0.28);
-    g.fillStyle = K.hot;
-    g.fillRect(s * 0.315, s * 0.88, s * 0.04, s * 0.04);
-    g.fillRect(s * 0.645, s * 0.88, s * 0.04, s * 0.04);
-    // The face, a huge beard, a woolly hat.
+    g.fill();
+    g.fillStyle = K.fur;
+    for (const [x, y, r] of [[0.14, 0.74, 0.085], [0.25, 0.7, 0.085], [0.36, 0.69, 0.08], [0.64, 0.69, 0.08], [0.75, 0.7, 0.085], [0.86, 0.74, 0.085], [0.09, 0.82, 0.07], [0.91, 0.82, 0.07]] as const) {
+      g.beginPath(); g.arc(s * x, s * y, s * r, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = K.leather;
+    g.beginPath();
+    g.moveTo(s * 0.2, s * 0.86);
+    g.lineTo(s * 0.34, s * 0.78);
+    g.lineTo(s * 0.4, s * 0.84);
+    g.lineTo(s * 0.26, s * 0.93);
+    g.closePath();
+    g.fill();
+    // The face, brown hair under a leather band, a huge braided beard.
     g.fillStyle = K.dark;
     g.beginPath(); g.ellipse(s * 0.5, s * 0.46, s * 0.25, s * 0.27, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = K.skin;
+    g.fillStyle = '#cf9468';
     g.beginPath(); g.ellipse(s * 0.5, s * 0.44, s * 0.22, s * 0.24, 0, 0, Math.PI * 2); g.fill();
     g.fillStyle = K.dark;
     g.beginPath();
     g.moveTo(s * 0.27, s * 0.48);
-    g.quadraticCurveTo(s * 0.26, s * 0.88, s * 0.5, s * 0.9);
-    g.quadraticCurveTo(s * 0.74, s * 0.88, s * 0.73, s * 0.48);
+    g.quadraticCurveTo(s * 0.26, s * 0.9, s * 0.5, s * 0.92);
+    g.quadraticCurveTo(s * 0.74, s * 0.9, s * 0.73, s * 0.48);
     g.quadraticCurveTo(s * 0.62, s * 0.58, s * 0.5, s * 0.56);
     g.quadraticCurveTo(s * 0.38, s * 0.58, s * 0.27, s * 0.48);
     g.fill();
-    g.fillStyle = K.wood;
+    g.fillStyle = K.beard;
     g.beginPath();
     g.moveTo(s * 0.3, s * 0.5);
-    g.quadraticCurveTo(s * 0.3, s * 0.84, s * 0.5, s * 0.86);
-    g.quadraticCurveTo(s * 0.7, s * 0.84, s * 0.7, s * 0.5);
+    g.quadraticCurveTo(s * 0.3, s * 0.86, s * 0.5, s * 0.88);
+    g.quadraticCurveTo(s * 0.7, s * 0.86, s * 0.7, s * 0.5);
     g.quadraticCurveTo(s * 0.6, s * 0.6, s * 0.5, s * 0.58);
     g.quadraticCurveTo(s * 0.4, s * 0.6, s * 0.3, s * 0.5);
     g.fill();
-    g.fillStyle = K.hot;
-    g.beginPath(); g.ellipse(s * 0.5, s * 0.74, s * 0.1, s * 0.07, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = K.dark;
-    g.fillRect(s * 0.37, s * 0.42, s * 0.08, s * 0.035);
-    g.fillRect(s * 0.55, s * 0.42, s * 0.08, s * 0.035);
-    g.fillStyle = '#c98a5a';
-    g.beginPath(); g.ellipse(s * 0.5, s * 0.5, s * 0.045, s * 0.05, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = K.dark;
+    // Two braids tied in brass.
+    for (const sx of [0.41, 0.59]) {
+      g.strokeStyle = K.dark;
+      g.lineWidth = s * 0.035;
+      g.beginPath(); g.moveTo(s * sx, s * 0.62); g.lineTo(s * (sx + (sx < 0.5 ? 0.02 : -0.02)), s * 0.84); g.stroke();
+      g.strokeStyle = K.braid;
+      g.lineWidth = s * 0.024;
+      g.setLineDash([s * 0.012, s * 0.012]);
+      g.beginPath(); g.moveTo(s * sx, s * 0.62); g.lineTo(s * (sx + (sx < 0.5 ? 0.02 : -0.02)), s * 0.84); g.stroke();
+      g.setLineDash([]);
+      g.fillStyle = K.gold;
+      g.fillRect(s * (sx + (sx < 0.5 ? 0.02 : -0.02) - 0.016), s * 0.835, s * 0.032, s * 0.018);
+    }
+    g.fillStyle = '#ffffff';
+    for (const sx of [0.4, 0.6]) {
+      g.beginPath(); g.ellipse(s * sx, s * 0.43, s * 0.03, s * 0.032, 0, 0, Math.PI * 2); g.fill();
+    }
+    g.fillStyle = '#3a2412';
+    for (const sx of [0.4, 0.6]) {
+      g.beginPath(); g.ellipse(s * sx, s * 0.435, s * 0.018, s * 0.024, 0, 0, Math.PI * 2); g.fill();
+    }
+    g.strokeStyle = K.hairBrown;
+    g.lineWidth = s * 0.018;
     g.beginPath();
-    g.moveTo(s * 0.26, s * 0.36);
-    g.quadraticCurveTo(s * 0.26, s * 0.08, s * 0.5, s * 0.08);
-    g.quadraticCurveTo(s * 0.74, s * 0.08, s * 0.74, s * 0.36);
-    g.closePath();
+    g.moveTo(s * 0.34, s * 0.385); g.lineTo(s * 0.45, s * 0.395);
+    g.moveTo(s * 0.66, s * 0.385); g.lineTo(s * 0.55, s * 0.395);
+    g.stroke();
+    g.fillStyle = '#bf8458';
+    g.beginPath(); g.ellipse(s * 0.5, s * 0.5, s * 0.032, s * 0.038, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = K.hairBrown;
+    g.beginPath();
+    g.moveTo(s * 0.27, s * 0.38);
+    g.quadraticCurveTo(s * 0.26, s * 0.1, s * 0.5, s * 0.1);
+    g.quadraticCurveTo(s * 0.74, s * 0.1, s * 0.73, s * 0.38);
+    g.quadraticCurveTo(s * 0.7, s * 0.3, s * 0.5, s * 0.29);
+    g.quadraticCurveTo(s * 0.3, s * 0.3, s * 0.27, s * 0.38);
     g.fill();
-    g.save();
-    g.beginPath();
-    g.moveTo(s * 0.285, s * 0.35);
-    g.quadraticCurveTo(s * 0.285, s * 0.11, s * 0.5, s * 0.11);
-    g.quadraticCurveTo(s * 0.715, s * 0.11, s * 0.715, s * 0.35);
-    g.closePath();
-    g.clip();
-    plaid(g, s * 0.25, s * 0.08, s * 0.5, s * 0.3);
-    g.restore();
-    g.fillStyle = K.cream;
-    g.fillRect(s * 0.27, s * 0.31, s * 0.46, s * 0.07);
-    g.fillStyle = K.cream;
-    g.beginPath(); g.arc(s * 0.5, s * 0.07, s * 0.05, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#2a1a10';
+    g.fillRect(s * 0.28, s * 0.3, s * 0.44, s * 0.03);
   },
   spells: [
     {

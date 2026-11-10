@@ -1,12 +1,12 @@
 ---
-title: Pim and Pom, the twins (twins kit)
+title: Pim and Pom, the Changeling Twins (twins kit)
 tags: [catalog, heroes, twins, fighter, two-kit, mechanics]
 updated: 2026-11-04
 ---
 
-# Pim and Pom, the twins
+# Pim and Pom, the Changeling Twins
 
-The twins hero kit: one hero in two halves. Pim (orange helmet, wooden sword, melee) and Pom (blue hood, slingshot, ranged) share one bar of 620 HP and one trait. Each has his own Q, W and E, model, portrait and basic attack; R is the same Tag Out for both. It is built on the [combat mechanics](../../architecture/mechanics.md): `HeroKit.alt` and `TraitView.swapKit` bring in the other half, `HeroKit.hpChunks` cuts the bar in two.
+The twins hero kit: one hero in two halves, fae children in leaf and bark clothes with long pointed ears. Pim (amber tunic, bark acorn-cap helm, wooden sword with a glowing amber edge, melee) and Pom (blue tunic, blue leaf hood, slingshot with a glowing blue band, ranged) share one bar of 620 HP and one trait. Each has his own Q, W and E, model, portrait and basic attack; R is the same Tag Out for both. It is built on the [combat mechanics](../../architecture/mechanics.md): `HeroKit.alt` and `TraitView.swapKit` bring in the other half, `HeroKit.hpChunks` cuts the bar in two.
 
 ## Role
 
@@ -23,13 +23,13 @@ Pim fights up close, Pom from a distance. Each round starts on Pim.
 
 | | |
 |---|---|
-| Hero | Pim and Pom, the twins |
+| Hero | Pim and Pom, the Changeling Twins |
 | Spell category | `hero: twins` |
 | Parts file | [`src/effects/parts/twins.ts`](../../../src/effects/parts/twins.ts) |
 | Kit data | [`src/kits/twins.ts`](../../../src/kits/twins.ts) (`twinsKit` is Pim, `twinsKit.alt` is Pom) |
 | Trait | [`src/traits/twins.ts`](../../../src/traits/twins.ts) |
 | Kit sheet | [`kit-twins.md`](../../../pipeline/designs/kit-twins.md) |
-| Models | [`pim_v2.glb`](../../../public/models/heroes/pim_v2.glb), [`pom_v2.glb`](../../../public/models/heroes/pom_v2.glb) |
+| Models | [`pim_v3.glb`](../../../public/models/heroes/pim_v3.glb), [`pom_v3.glb`](../../../public/models/heroes/pom_v3.glb) |
 
 ## Palette
 
@@ -109,9 +109,10 @@ Their catalog rows are in the [effect catalog](../effects.md#hero-twins).
 
 ## Model
 
-Two rigged figures, [`pim_v2.glb`](../../../public/models/heroes/pim_v2.glb) and [`pom_v2.glb`](../../../public/models/heroes/pom_v2.glb), one per half. Each half sets its own `model` in the kit data. Hero body size for hits is radius 0.38, height 2.39 under `Pim and Pom` in `HERO_BODIES` in [`src/heroes.ts`](../../../src/heroes.ts).
+Two rigged figures, [`pim_v3.glb`](../../../public/models/heroes/pim_v3.glb) and [`pom_v3.glb`](../../../public/models/heroes/pom_v3.glb), one per half, built by the `TwinMythic` base class and its `PimMythic` and `PomMythic` subclasses in [`blender/heroes/restyle_batch3.py`](../../../blender/heroes/restyle_batch3.py). Each half sets its own `model` in the kit data (still the `_v2` paths until the switch in `src/heroes.ts` and the kit data is made). Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` files stay beside them. Hero body size for hits is radius 0.38, height 2.39 under `Pim and Pom` in `HERO_BODIES` in [`src/heroes.ts`](../../../src/heroes.ts).
 
-- HUD portraits (canvas-drawn in the kit data): Pim in his orange helmet with a yellow stripe and the wooden sword behind him, Pom's blue hood small over his shoulder; Pom in her blue hood with the slingshot, Pim's helmet small in the corner.
+- Look: one body between them (same joints, head, pointed ears, hair, legs, boots, height and stance), so swapping in play changes only what they wear and hold. Both wear a short tunic with a hem of hanging leaves, a collar of small leaves, dark moss leggings, bark boots with a gold cuff, bark bracers, a bark belt with a gold leaf clasp and a small woven satchel on the back (the backpack with a twin's head in it is gone). Pim: an amber tunic, a bark acorn-cap helm with an amber leaf crest, a wooden sword whose edges glow amber. Pom: a deep blue tunic, a blue leaf hood with a glowing bead on its point and the pointed ears out at the sides, a slingshot with a glowing blue band and stone.
+- HUD portraits (canvas-drawn in the kit data): Pim with his acorn-cap helm and amber leaf crest, big green eyes and pointed ears, an amber leaf-collared tunic, the glowing-edged sword behind him and Pom's blue hood small over his shoulder; Pom in her blue leaf hood with a glowing bead, the slingshot with a glowing blue band and stone, and Pim's helm small in the corner.
 
 ## Files
 
@@ -122,7 +123,7 @@ Two rigged figures, [`pim_v2.glb`](../../../public/models/heroes/pim_v2.glb) and
 | Spells | [`pimBonk.ts`](../../../src/spells/targeted/pimBonk.ts), [`pimCharge.ts`](../../../src/spells/targeted/pimCharge.ts), [`pimShieldUp.ts`](../../../src/spells/targeted/pimShieldUp.ts), [`pomPebble.ts`](../../../src/spells/targeted/pomPebble.ts), [`pomSnare.ts`](../../../src/spells/targeted/pomSnare.ts), [`pomBackflip.ts`](../../../src/spells/targeted/pomBackflip.ts), [`tagOut.ts`](../../../src/spells/targeted/tagOut.ts) |
 | Kit data | [`src/kits/twins.ts`](../../../src/kits/twins.ts) |
 | Trait | [`src/traits/twins.ts`](../../../src/traits/twins.ts) |
-| Models | [`pim_v2.glb`](../../../public/models/heroes/pim_v2.glb), [`pom_v2.glb`](../../../public/models/heroes/pom_v2.glb) |
+| Models | [`pim_v3.glb`](../../../public/models/heroes/pim_v3.glb), [`pom_v3.glb`](../../../public/models/heroes/pom_v3.glb) |
 
 ## See also
 

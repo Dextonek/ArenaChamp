@@ -1,12 +1,12 @@
 ---
-title: Mum, the mime (mime kit)
+title: Mum, the Silent One (mime kit)
 tags: [catalog, heroes, mime, controller, ranged, walls, mechanics]
 updated: 2026-11-04
 ---
 
-# Mum, the mime
+# Mum, the Silent One
 
-The mime hero kit: Mum's four spells (Q, W, E and the R ultimate), the passive walls, the shared parts file, the palette row and the rigged hero model. A thin mime with a white face, a striped shirt, a black beret, a red scarf and white gloves. She never speaks: no floating words, only gestures. She is built on the [combat mechanics](../../architecture/mechanics.md): a ranged controller whose walls and ball you cannot see, only chalk lines on the floor.
+The mime hero kit: Mum's four spells (Q, W, E and the R ultimate), the passive walls, the shared parts file, the palette row and the rigged hero model. A thin masked harlequin in a white porcelain mask and a dark coat with ivory diamonds, with big pale gloves and a long dark ribbon. She never speaks: no floating words, only gestures. She is built on the [combat mechanics](../../architecture/mechanics.md): a ranged controller whose walls and ball you cannot see, only chalk lines on the floor.
 
 ## Role
 
@@ -23,13 +23,13 @@ She wins by hiding what is real: an unseen ball down a chalk line, walls that bl
 
 | | |
 |---|---|
-| Hero | Mum, the mime |
+| Hero | Mum, the Silent One |
 | Spell category | `hero: mime` |
 | Parts file | [`src/effects/parts/mime.ts`](../../../src/effects/parts/mime.ts) |
 | Kit data | [`src/kits/mime.ts`](../../../src/kits/mime.ts) |
 | Trait | [`src/traits/mime.ts`](../../../src/traits/mime.ts) |
 | Kit sheet | [`kit-mime.md`](../../../pipeline/designs/kit-mime.md) |
-| Model | [`public/models/heroes/mime_v2.glb`](../../../public/models/heroes/mime_v2.glb) |
+| Model | [`public/models/heroes/mime_v3.glb`](../../../public/models/heroes/mime_v3.glb) |
 
 ## Palette
 
@@ -108,10 +108,10 @@ The headers of `invisibleBall.ts` and `ropeTrick.ts` still say 50 and 30 damage;
 
 ## Model
 
-[`public/models/heroes/mime_v2.glb`](../../../public/models/heroes/mime_v2.glb): a rigged figure built by the `Mime` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Mum`); hero body size is radius 0.45, height 2.58 in `HERO_BODIES`.
+[`public/models/heroes/mime_v3.glb`](../../../public/models/heroes/mime_v3.glb): a rigged figure built by the `MimeMythic` class in [`blender/heroes/restyle_batch2.py`](../../../blender/heroes/restyle_batch2.py) (a subclass of `Mime` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py)). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Mum`); hero body size is radius 0.45, height 2.58 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: thin, with a big white-painted face with black diamonds over the eyes, high arched brows and a small red mouth, a tilted black beret, a striped shirt in big black and white bands, high black trousers and a long red scarf flying behind her. Huge white gloves with open, spread fingers and frilled cuffs, the one thing she talks with.
-- HUD portrait (canvas-drawn in the kit data): a dark ink ground with a white glove pressed flat against an invisible pane and a dashed chalk line where the pane stands, a striped shirt, a red scarf knotted at the throat with one tail flying, and a long oval white painted face with a beret, raised brows, round lashed eyes and a tear.
+- Look: thin and still, a masked harlequin. A smooth porcelain mask with big dark eyes, gold tear lines, a gold diamond on the brow and a small closed mouth, a dark hood, an ivory ruff, and a long dark violet coat to the shins with ivory diamonds down the front, on the sleeves and on the back, gold trim. Signature: huge pale gloves with open, spread fingers, gold cuffs and a faint glow, the one thing she talks with, and a long dark violet ribbon flying behind her.
+- HUD portrait (canvas-drawn in the kit data): a dark ink ground, the long violet ribbon behind her shoulder, narrow shoulders in a dark violet coat with ivory diamonds and an ivory ruff, a porcelain mask in a dark hood with dark eyes, gold tear lines and a gold brow diamond, and a big pale glove with a gold cuff raised before her with a faint glow.
 
 ## Files
 
@@ -122,7 +122,7 @@ The headers of `invisibleBall.ts` and `ropeTrick.ts` still say 50 and 30 damage;
 | Spells | [`invisibleBall.ts`](../../../src/spells/targeted/invisibleBall.ts), [`mimeWall.ts`](../../../src/spells/targeted/mimeWall.ts), [`ropeTrick.ts`](../../../src/spells/targeted/ropeTrick.ts), [`theBox.ts`](../../../src/spells/targeted/theBox.ts) |
 | Kit data | [`src/kits/mime.ts`](../../../src/kits/mime.ts) |
 | Trait | [`src/traits/mime.ts`](../../../src/traits/mime.ts) |
-| Model | [`public/models/heroes/mime_v2.glb`](../../../public/models/heroes/mime_v2.glb) |
+| Model | [`public/models/heroes/mime_v3.glb`](../../../public/models/heroes/mime_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

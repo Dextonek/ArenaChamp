@@ -7,6 +7,8 @@ import type { HeroKit } from '../heroes';
  */
 const S = {
   core: '#ffffff', hot: '#f4f9ff', body: '#cfe6ff', shade: '#8fa8cc', silver: '#c6cedb', steel: '#7d8aa0', violet: '#d9b8ff', dark: '#121a2e',
+  // the Mirror Duchess's gown, bodice, shard inlay and trim (the _v3 model)
+  gown: '#34285c', plate: '#7b789f', glassIn: '#5a4a98', hair: '#3f2d78', gold: '#e6b840',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -156,107 +158,118 @@ function standMirror(g: CanvasRenderingContext2D, cx: number, base: number, h: n
 export const mirrorKit: HeroKit = {
   name: 'Silvane',
   maxHp: 620,
-  title: 'the Vain',
+  title: 'the Mirror Duchess',
   accent: S.body,
   foil: S.violet,
   portrait(g, s) {
     iconGround(g, s);
-    // A tall oval looking-glass behind her head: a silver frame, a pale sheen.
-    g.fillStyle = S.dark;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.36, s * 0.3, s * 0.4, 0, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = S.silver;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.36, s * 0.275, s * 0.375, 0, 0, Math.PI * 2);
-    g.fill();
-    const gl = g.createLinearGradient(s * 0.25, s * 0.05, s * 0.75, s * 0.7);
-    gl.addColorStop(0, '#3a4d7a');
-    gl.addColorStop(1, '#1a2542');
-    g.fillStyle = gl;
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.36, s * 0.245, s * 0.345, 0, 0, Math.PI * 2);
-    g.fill();
-    ray(g, s * 0.3, s * 0.52, s * 0.56, s * 0.12, s * 0.03);
-    glint(g, s * 0.76, s * 0.2, s * 0.05);
-    glint(g, s * 0.2, s * 0.66, s * 0.035, S.violet);
-    // Shoulders in a silver gown with a high stiff collar.
-    g.fillStyle = '#9aa7bd';
-    g.beginPath();
-    g.moveTo(s * 0.12, s);
-    g.quadraticCurveTo(s * 0.16, s * 0.7, s * 0.34, s * 0.6);
-    g.quadraticCurveTo(s * 0.5, s * 0.54, s * 0.66, s * 0.6);
-    g.quadraticCurveTo(s * 0.84, s * 0.7, s * 0.88, s);
-    g.closePath();
-    g.fill();
-    g.strokeStyle = S.hot;
-    g.lineWidth = s * 0.02;
-    g.stroke();
-    g.fillStyle = S.silver;
-    g.beginPath();
-    g.moveTo(s * 0.37, s * 0.66);
-    g.lineTo(s * 0.33, s * 0.5);
-    g.lineTo(s * 0.43, s * 0.6);
-    g.lineTo(s * 0.5, s * 0.52);
-    g.lineTo(s * 0.57, s * 0.6);
-    g.lineTo(s * 0.67, s * 0.5);
-    g.lineTo(s * 0.63, s * 0.66);
-    g.closePath();
-    g.fill();
-    g.strokeStyle = S.dark;
-    g.lineWidth = s * 0.008;
-    g.stroke();
-    g.fillStyle = S.violet;
-    g.beginPath();
-    g.moveTo(s * 0.5, s * 0.66);
-    g.lineTo(s * 0.53, s * 0.71);
-    g.lineTo(s * 0.5, s * 0.77);
-    g.lineTo(s * 0.47, s * 0.71);
-    g.closePath();
-    g.fill();
-    // Head tipped back, nose in the air: a pale face, hair swept up in a perfect silver-blue wave.
-    g.fillStyle = '#efdcd8';
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.42, s * 0.105, s * 0.14, -0.08, 0, Math.PI * 2);
-    g.fill();
-    g.fillStyle = '#b9cbea';
-    g.beginPath();
-    g.ellipse(s * 0.5, s * 0.34, s * 0.15, s * 0.13, 0, Math.PI, Math.PI * 2);
-    g.fill();
-    g.beginPath();
-    g.moveTo(s * 0.35, s * 0.34);
-    g.quadraticCurveTo(s * 0.31, s * 0.48, s * 0.4, s * 0.54);
-    g.quadraticCurveTo(s * 0.4, s * 0.44, s * 0.43, s * 0.34);
-    g.moveTo(s * 0.65, s * 0.34);
-    g.quadraticCurveTo(s * 0.69, s * 0.48, s * 0.6, s * 0.54);
-    g.quadraticCurveTo(s * 0.6, s * 0.44, s * 0.57, s * 0.34);
-    g.fill();
-    g.fillStyle = '#d7e4f8';
-    g.beginPath();
-    g.ellipse(s * 0.45, s * 0.27, s * 0.045, s * 0.02, -0.5, 0, Math.PI * 2);
-    g.fill();
-    // Closed, heavy-lidded eyes with long lashes, a pointed nose, a small smug mouth.
-    g.strokeStyle = S.dark;
-    g.lineWidth = s * 0.008;
-    for (const sx of [0.46, 0.54]) {
+    // A fan of mirror shards behind her head: silver kites with a violet glass inlay, tallest in the middle.
+    const shard = (ang: number, len: number, w: number) => {
+      g.save();
+      g.translate(s * 0.5, s * 0.66);
+      g.rotate(ang);
+      g.fillStyle = S.dark;
       g.beginPath();
-      g.moveTo(s * (sx - 0.03), s * 0.405);
-      g.quadraticCurveTo(s * sx, s * 0.425, s * (sx + 0.03), s * 0.405);
+      g.moveTo(0, 0);
+      g.lineTo(-w * 1.15, -len * 0.45);
+      g.lineTo(0, -len * 1.04);
+      g.lineTo(w * 1.15, -len * 0.45);
+      g.closePath();
+      g.fill();
+      g.fillStyle = S.silver;
+      g.beginPath();
+      g.moveTo(0, -s * 0.01);
+      g.lineTo(-w, -len * 0.45);
+      g.lineTo(0, -len);
+      g.lineTo(w, -len * 0.45);
+      g.closePath();
+      g.fill();
+      g.fillStyle = S.glassIn;
+      g.beginPath();
+      g.moveTo(0, -len * 0.18);
+      g.lineTo(-w * 0.5, -len * 0.46);
+      g.lineTo(0, -len * 0.84);
+      g.lineTo(w * 0.5, -len * 0.46);
+      g.closePath();
+      g.fill();
+      g.restore();
+    };
+    for (const [a, l, w] of [[-1.1, 0.3, 0.07], [1.1, 0.3, 0.07], [-0.78, 0.42, 0.08], [0.78, 0.42, 0.08], [-0.42, 0.52, 0.085], [0.42, 0.52, 0.085], [-0.1, 0.58, 0.085], [0.1, 0.58, 0.085]] as const) shard(a, s * l, s * w);
+    // Shoulders in a dark violet gown with a silver bodice and a gold edge.
+    g.fillStyle = S.gown;
+    g.beginPath();
+    g.moveTo(s * 0.1, s);
+    g.quadraticCurveTo(s * 0.14, s * 0.7, s * 0.34, s * 0.62);
+    g.quadraticCurveTo(s * 0.5, s * 0.56, s * 0.66, s * 0.62);
+    g.quadraticCurveTo(s * 0.86, s * 0.7, s * 0.9, s);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = S.gold;
+    g.lineWidth = s * 0.016;
+    g.stroke();
+    g.fillStyle = S.plate;
+    g.beginPath();
+    g.moveTo(s * 0.38, s * 0.66);
+    g.quadraticCurveTo(s * 0.5, s * 0.72, s * 0.62, s * 0.66);
+    g.lineTo(s * 0.58, s);
+    g.lineTo(s * 0.42, s);
+    g.closePath();
+    g.fill();
+    g.strokeStyle = S.dark;
+    g.lineWidth = s * 0.008;
+    g.stroke();
+    // Hair behind the head: a sleek violet fall to both sides.
+    g.fillStyle = S.hair;
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.4, s * 0.15, s * 0.19, 0, 0, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(s * 0.35, s * 0.42);
+    g.quadraticCurveTo(s * 0.31, s * 0.58, s * 0.38, s * 0.7);
+    g.quadraticCurveTo(s * 0.4, s * 0.55, s * 0.43, s * 0.45);
+    g.moveTo(s * 0.65, s * 0.42);
+    g.quadraticCurveTo(s * 0.69, s * 0.58, s * 0.62, s * 0.7);
+    g.quadraticCurveTo(s * 0.6, s * 0.55, s * 0.57, s * 0.45);
+    g.fill();
+    // The face: pale, a calm small smile, lidded eyes with a blue glint.
+    g.fillStyle = '#e2bda8';
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.43, s * 0.105, s * 0.135, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = S.hair;
+    g.beginPath();
+    g.ellipse(s * 0.5, s * 0.36, s * 0.118, s * 0.09, 0, Math.PI, Math.PI * 2);
+    g.fill();
+    g.beginPath();
+    g.moveTo(s * 0.4, s * 0.37);
+    g.quadraticCurveTo(s * 0.5, s * 0.46, s * 0.6, s * 0.37);
+    g.quadraticCurveTo(s * 0.5, s * 0.3, s * 0.4, s * 0.37);
+    g.fill();
+    for (const sx of [0.455, 0.545]) {
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.43, s * 0.026, s * 0.03, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = '#4aa8e8';
+      g.beginPath();
+      g.ellipse(s * sx, s * 0.435, s * 0.016, s * 0.022, 0, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = S.dark;
+      g.lineWidth = s * 0.008;
+      g.beginPath();
+      g.moveTo(s * (sx - 0.03), s * 0.425);
+      g.quadraticCurveTo(s * sx, s * 0.4, s * (sx + 0.03), s * 0.425);
       g.stroke();
     }
-    g.beginPath();
-    g.moveTo(s * 0.5, s * 0.41);
-    g.lineTo(s * 0.52, s * 0.46);
-    g.lineTo(s * 0.495, s * 0.465);
-    g.stroke();
-    g.strokeStyle = '#a45b6e';
+    g.strokeStyle = '#a23a62';
+    g.lineWidth = s * 0.009;
     g.beginPath();
     g.moveTo(s * 0.47, s * 0.505);
-    g.quadraticCurveTo(s * 0.5, s * 0.52, s * 0.54, s * 0.5);
+    g.quadraticCurveTo(s * 0.5, s * 0.52, s * 0.535, s * 0.5);
     g.stroke();
-    // The hand mirror, held up in her right hand with her own reflection of the sky in it.
-    handMirror(g, s * 0.82, s * 0.62, s * 0.11, 0.25);
-    glint(g, s * 0.88, s * 0.52, s * 0.03);
+    // The hand mirror, held out in her right hand with its glass aglow.
+    handMirror(g, s * 0.8, s * 0.62, s * 0.115, 0.25);
+    glint(g, s * 0.86, s * 0.51, s * 0.03);
   },
   spells: [
     {

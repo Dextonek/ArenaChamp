@@ -1,12 +1,12 @@
 ---
-title: Madame Cleaver, Arena Chef (chef kit)
+title: Madame Cleaver, the Feastmistress (chef kit)
 tags: [catalog, heroes, chef, support, ranged, dishes, mechanics]
 updated: 2026-11-04
 ---
 
-# Madame Cleaver, Arena Chef
+# Madame Cleaver, the Feastmistress
 
-The chef hero kit: Madame Cleaver's four spells (Q, W, E and the R ultimate), the passive dishes, the shared parts file, the palette row and the rigged hero model. A big, proud chef with her chin up, in a white double-breasted jacket and a tall pleated hat, with a huge cleaver in one hand and a copper ladle in the other. She is built on the [combat mechanics](../../architecture/mechanics.md): a ranged support whose spells leave dishes on the floor that whoever walks over them eats.
+The chef hero kit: Madame Cleaver's four spells (Q, W, E and the R ultimate), the passive dishes, the shared parts file, the palette row and the rigged hero model. A big, proud war cook with her chin up, in a crimson leather jerkin over mail and a long dark leather apron, with a huge cleaver with a glowing ember edge and a small iron cauldron on her back. She is built on the [combat mechanics](../../architecture/mechanics.md): a ranged support whose spells leave dishes on the floor that whoever walks over them eats.
 
 ## Role
 
@@ -23,13 +23,13 @@ She wins by feeding herself: her spells leave dishes (fresh ones give speed, goo
 
 | | |
 |---|---|
-| Hero | Madame Cleaver, Arena Chef |
+| Hero | Madame Cleaver, the Feastmistress |
 | Spell category | `hero: chef` |
 | Parts file | [`src/effects/parts/chef.ts`](../../../src/effects/parts/chef.ts) |
 | Kit data | [`src/kits/chef.ts`](../../../src/kits/chef.ts) |
 | Trait | [`src/traits/chef.ts`](../../../src/traits/chef.ts) |
 | Kit sheet | [`kit-chef.md`](../../../pipeline/designs/kit-chef.md) |
-| Model | [`public/models/heroes/chef_v2.glb`](../../../public/models/heroes/chef_v2.glb) |
+| Model | [`public/models/heroes/chef_v3.glb`](../../../public/models/heroes/chef_v3.glb) |
 
 ## Palette
 
@@ -112,10 +112,10 @@ The headers of `thrownCleaver.ts` and `hotSoup.ts` still say 50 and 40 damage; t
 
 ## Model
 
-[`public/models/heroes/chef_v2.glb`](../../../public/models/heroes/chef_v2.glb): a rigged figure built by the `Chef` class in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Madame Cleaver`); hero body size is radius 0.58, height 2.63 in `HERO_BODIES`.
+[`public/models/heroes/chef_v3.glb`](../../../public/models/heroes/chef_v3.glb): a rigged figure built by the `ChefMythic` class in [`blender/heroes/restyle_batch2.py`](../../../blender/heroes/restyle_batch2.py) (`export("chef_v3")` in [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py)). It is wired through the `MODELS` map in [`src/heroes.ts`](../../../src/heroes.ts) (name `Madame Cleaver`); hero body size is radius 0.58, height 2.63 in `HERO_BODIES`. Restyled on 2026-11-10 to the game's look ([heroes-restyle.md](../../../pipeline/designs/heroes-restyle.md)); the old `_v2` file stays beside it.
 
-- Look: big and proud, chin up. A white double-breasted jacket in mid-value whites with pressed folds, a red neckerchief and apron, a tall pleated chef's hat, a huge cleaver held out in the right hand with its broad blade to the camera and a long copper ladle in the left.
-- HUD portrait (canvas-drawn in the kit data): a warm charcoal ground with pale kitchen light, a great steel cleaver raised behind her shoulder, a white double-breasted coat with a red neckerchief, a ladle in her other hand, a round rosy proud face with heavy brows and a small stern mouth, and a tall toque with a red pin.
+- Look: big and proud, chin up. A crimson leather jerkin over a mail shirt with a mail collar, sleeves and hauberk skirt, a long dark leather apron front and back with a gold border, a wide belt, a bandolier of small knives, dark leather bracers and boots, a crimson headwrap over auburn hair with a long braid. Signature: the great cleaver in the right hand with a dark blade and a glowing ember edge, and a small iron cauldron on gold chains at her back (not at the hip, where her arm would hide it from the game camera).
+- HUD portrait (canvas-drawn in the kit data): a warm charcoal ground, a great dark cleaver with a glowing ember edge raised behind her shoulder, mail shoulders, a crimson jerkin with a bandolier of small knives, and a round proud face with green eyes under a crimson headwrap, a braid at her shoulder.
 
 ## Files
 
@@ -126,7 +126,7 @@ The headers of `thrownCleaver.ts` and `hotSoup.ts` still say 50 and 40 damage; t
 | Spells | [`thrownCleaver.ts`](../../../src/spells/targeted/thrownCleaver.ts), [`hotSoup.ts`](../../../src/spells/targeted/hotSoup.ts), [`burntOffering.ts`](../../../src/spells/targeted/burntOffering.ts), [`dinnerIsServed.ts`](../../../src/spells/targeted/dinnerIsServed.ts) |
 | Kit data | [`src/kits/chef.ts`](../../../src/kits/chef.ts) |
 | Trait | [`src/traits/chef.ts`](../../../src/traits/chef.ts) |
-| Model | [`public/models/heroes/chef_v2.glb`](../../../public/models/heroes/chef_v2.glb) |
+| Model | [`public/models/heroes/chef_v3.glb`](../../../public/models/heroes/chef_v3.glb) |
 | Model script | [`blender/heroes/moba_figures.py`](../../../blender/heroes/moba_figures.py) |
 
 ## See also

@@ -8,6 +8,8 @@ import type { HeroKit } from '../heroes';
 const S = {
   core: '#fff6e0', foil: '#f4e6c8', body: '#e8a13a', warm: '#c9741f', dark: '#2a1608', plume: '#c8423a', steel: '#c4ced8', steelDark: '#7d8a98',
   clay: '#b5653a', clayDark: '#6e3a20', pink: '#ff9eb4',
+  // the Lynx Duelist's fur, plate, cape and rapier gem (the _v3 model)
+  fur: '#c68a4a', plate: '#3c4458', cape: '#5a1f2e', gold: '#d2ae55', gem: '#ffc060',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -35,7 +37,7 @@ function claw(g: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y
 }
 
 /** A cat head centred at (cx,cy), `r` its radius: ginger, pointed ears with pink insides, almond eyes, a small nose. */
-function catHead(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, helmet = false) {
+function catHead(g: CanvasRenderingContext2D, cx: number, cy: number, r: number, helmet = false, fur = S.body) {
   for (const sx of [-1, 1]) {
     g.fillStyle = S.dark;
     g.beginPath();
@@ -44,7 +46,7 @@ function catHead(g: CanvasRenderingContext2D, cx: number, cy: number, r: number,
     g.lineTo(cx + sx * r * 0.2, cy - r * 0.85);
     g.closePath();
     g.fill();
-    g.fillStyle = S.body;
+    g.fillStyle = fur;
     g.beginPath();
     g.moveTo(cx + sx * r * 0.98, cy - r * 0.28);
     g.lineTo(cx + sx * r * 0.9, cy - r * 1.22);
@@ -63,7 +65,7 @@ function catHead(g: CanvasRenderingContext2D, cx: number, cy: number, r: number,
   g.beginPath();
   g.ellipse(cx, cy, r * 1.08, r * 0.98, 0, 0, Math.PI * 2);
   g.fill();
-  g.fillStyle = S.body;
+  g.fillStyle = fur;
   g.beginPath();
   g.ellipse(cx, cy, r, r * 0.9, 0, 0, Math.PI * 2);
   g.fill();
@@ -111,35 +113,29 @@ function catHead(g: CanvasRenderingContext2D, cx: number, cy: number, r: number,
   g.quadraticCurveTo(cx + r * 0.1, cy + r * 0.38, cx + r * 0.24, cy + r * 0.3);
   g.stroke();
   if (helmet) {
-    // A steel cap over the brow with a red plume and a shine.
+    // A dark plate cap over the brow with a gold band, and black lynx tufts on the ear tips.
     g.fillStyle = S.dark;
     g.beginPath();
     g.ellipse(cx, cy - r * 0.62, r * 0.78, r * 0.36, 0, Math.PI, Math.PI * 2);
     g.fill();
-    g.fillStyle = S.steel;
+    g.fillStyle = S.plate;
     g.beginPath();
     g.ellipse(cx, cy - r * 0.62, r * 0.7, r * 0.3, 0, Math.PI, Math.PI * 2);
     g.fill();
-    g.strokeStyle = S.core;
-    g.lineWidth = r * 0.05;
+    g.strokeStyle = S.gold;
+    g.lineWidth = r * 0.06;
     g.beginPath();
-    g.moveTo(cx - r * 0.4, cy - r * 0.74);
-    g.quadraticCurveTo(cx - r * 0.2, cy - r * 0.9, cx + r * 0.05, cy - r * 0.9);
+    g.ellipse(cx, cy - r * 0.62, r * 0.7, r * 0.3, 0, Math.PI * 1.05, Math.PI * 1.95);
     g.stroke();
-    g.fillStyle = S.dark;
-    g.beginPath();
-    g.moveTo(cx - r * 0.06, cy - r * 0.9);
-    g.quadraticCurveTo(cx + r * 0.1, cy - r * 1.85, cx + r * 0.75, cy - r * 1.5);
-    g.quadraticCurveTo(cx + r * 0.4, cy - r * 1.4, cx + r * 0.16, cy - r * 0.9);
-    g.closePath();
-    g.fill();
-    g.fillStyle = S.plume;
-    g.beginPath();
-    g.moveTo(cx - r * 0.02, cy - r * 0.92);
-    g.quadraticCurveTo(cx + r * 0.1, cy - r * 1.75, cx + r * 0.66, cy - r * 1.48);
-    g.quadraticCurveTo(cx + r * 0.36, cy - r * 1.4, cx + r * 0.14, cy - r * 0.92);
-    g.closePath();
-    g.fill();
+    for (const sx of [-1, 1]) {
+      g.fillStyle = S.dark;
+      g.beginPath();
+      g.moveTo(cx + sx * r * 0.88, cy - r * 1.18);
+      g.lineTo(cx + sx * r * 0.95, cy - r * 1.7);
+      g.lineTo(cx + sx * r * 0.7, cy - r * 1.1);
+      g.closePath();
+      g.fill();
+    }
   }
 }
 
@@ -224,12 +220,12 @@ export const catKit: HeroKit = {
   maxHp: 540,
   hpChunks: 9,
   melee: true,
-  title: 'the Cat Knight',
+  title: 'the Lynx Duelist',
   accent: '#e8a13a',
   foil: '#f4e6c8',
   portrait(g, s) {
     iconGround(g, s);
-    // A cream halo of nine lives behind him, a steel pauldron and a red cloak at the shoulders.
+    // A cream halo of nine lives behind him, dark gunmetal plate with gold edges and a short wine-red cape at the shoulders.
     g.strokeStyle = 'rgba(244,230,200,0.35)';
     g.lineWidth = s * 0.012;
     for (let i = 0; i < 9; i++) {
@@ -239,7 +235,7 @@ export const catKit: HeroKit = {
       g.fillStyle = S.foil;
       g.fill();
     }
-    g.fillStyle = S.plume;
+    g.fillStyle = S.cape;
     g.beginPath();
     g.moveTo(s * 0.08, s);
     g.quadraticCurveTo(s * 0.12, s * 0.68, s * 0.3, s * 0.62);
@@ -247,7 +243,7 @@ export const catKit: HeroKit = {
     g.quadraticCurveTo(s * 0.88, s * 0.68, s * 0.92, s);
     g.closePath();
     g.fill();
-    g.fillStyle = S.steel;
+    g.fillStyle = S.plate;
     g.beginPath();
     g.moveTo(s * 0.18, s);
     g.quadraticCurveTo(s * 0.2, s * 0.74, s * 0.34, s * 0.7);
@@ -255,31 +251,49 @@ export const catKit: HeroKit = {
     g.quadraticCurveTo(s * 0.8, s * 0.74, s * 0.82, s);
     g.closePath();
     g.fill();
-    g.strokeStyle = S.dark;
-    g.lineWidth = s * 0.012;
+    g.strokeStyle = S.gold;
+    g.lineWidth = s * 0.014;
+    g.stroke();
+    // Gold filigree: a ridge down the breastplate and two curls.
+    g.lineWidth = s * 0.01;
+    g.beginPath();
+    g.moveTo(s * 0.5, s * 0.8); g.lineTo(s * 0.5, s);
+    g.moveTo(s * 0.46, s * 0.84); g.quadraticCurveTo(s * 0.38, s * 0.8, s * 0.36, s * 0.88);
+    g.moveTo(s * 0.54, s * 0.84); g.quadraticCurveTo(s * 0.62, s * 0.8, s * 0.64, s * 0.88);
     g.stroke();
     g.strokeStyle = S.core;
-    g.lineWidth = s * 0.012;
+    g.lineWidth = s * 0.01;
+    g.globalAlpha = 0.35;
     g.beginPath();
-    g.moveTo(s * 0.26, s * 0.86);
-    g.quadraticCurveTo(s * 0.28, s * 0.76, s * 0.38, s * 0.74);
+    g.moveTo(s * 0.26, s * 0.88);
+    g.quadraticCurveTo(s * 0.28, s * 0.78, s * 0.38, s * 0.75);
     g.stroke();
-    // A gorget, then the head with its helmet and plume.
-    g.fillStyle = S.foil;
+    g.globalAlpha = 1;
+    // A gold gorget, then the lynx head with its dark helm and ear tufts.
+    g.fillStyle = S.gold;
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.7, s * 0.17, s * 0.05, 0, 0, Math.PI * 2);
     g.fill();
-    catHead(g, s * 0.5, s * 0.42, s * 0.23, true);
-    // The small sword raised at the side.
+    catHead(g, s * 0.5, s * 0.42, s * 0.23, true, S.fur);
+    // The long rapier raised at the side, a glowing amber gem in its guard.
     g.save();
-    g.translate(s * 0.86, s * 0.6);
-    g.rotate(0.35);
+    g.translate(s * 0.86, s * 0.62);
+    g.rotate(0.3);
     g.fillStyle = S.dark;
-    g.fillRect(-s * 0.03, -s * 0.34, s * 0.06, s * 0.38);
+    g.fillRect(-s * 0.025, -s * 0.5, s * 0.05, s * 0.54);
     g.fillStyle = S.steel;
-    g.fillRect(-s * 0.018, -s * 0.33, s * 0.036, s * 0.35);
-    g.fillStyle = S.body;
-    g.fillRect(-s * 0.07, s * 0.03, s * 0.14, s * 0.025);
+    g.fillRect(-s * 0.014, -s * 0.49, s * 0.028, s * 0.52);
+    g.fillStyle = S.gold;
+    g.fillRect(-s * 0.075, s * 0.02, s * 0.15, s * 0.022);
+    const halo = g.createRadialGradient(0, s * 0.03, s * 0.01, 0, s * 0.03, s * 0.09);
+    halo.addColorStop(0, 'rgba(255,160,40,0.6)');
+    halo.addColorStop(1, 'rgba(255,160,40,0)');
+    g.fillStyle = halo;
+    g.beginPath(); g.arc(0, s * 0.03, s * 0.09, 0, Math.PI * 2); g.fill();
+    g.fillStyle = S.gem;
+    g.beginPath(); g.arc(0, s * 0.03, s * 0.032, 0, Math.PI * 2); g.fill();
+    g.fillStyle = S.core;
+    g.beginPath(); g.arc(-s * 0.01, s * 0.02, s * 0.01, 0, Math.PI * 2); g.fill();
     g.restore();
   },
   spells: [

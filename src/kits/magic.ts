@@ -9,6 +9,8 @@ import { paintCard, paintHat, paintStar } from '../effects/parts/magic';
 const M = {
   core: '#ffffff', hot: '#fff1c8', foil: '#ffe08a', gold: '#e0b050', violet: '#b05aff', purple: '#7a30c8', deep: '#2a1248', dark: '#120a1e',
   red: '#d8404a', card: '#d6cfc0', steel: '#c4cad8',
+  // the Illusionist's plum waistcoat, ivory shirt, plum gloves and glowing gold star gem (the _v3 model)
+  plum: '#5a2a78', ivory: '#b8b09e', glove: '#3a2a4c', gem: '#ffc850',
 };
 
 function iconGround(g: CanvasRenderingContext2D, s: number) {
@@ -76,7 +78,7 @@ function sword(g: CanvasRenderingContext2D, cx: number, cy: number, len: number,
 export const magicKit: HeroKit = {
   name: 'The Great Zambini',
   maxHp: 570,
-  title: 'stage magician',
+  title: 'the Illusionist',
   accent: M.violet,
   foil: M.foil,
   portrait(g, s) {
@@ -118,7 +120,7 @@ export const magicKit: HeroKit = {
     g.quadraticCurveTo(s * 0.78, s * 0.7, s * 0.8, s);
     g.closePath();
     g.fill();
-    g.fillStyle = '#e8e0f0';
+    g.fillStyle = M.ivory;
     g.beginPath();
     g.moveTo(s * 0.43, s * 0.62);
     g.lineTo(s * 0.57, s * 0.62);
@@ -126,7 +128,7 @@ export const magicKit: HeroKit = {
     g.lineTo(s * 0.46, s);
     g.closePath();
     g.fill();
-    g.fillStyle = M.violet;
+    g.fillStyle = M.plum;
     g.beginPath();
     g.moveTo(s * 0.46, s * 0.64);
     g.lineTo(s * 0.54, s * 0.64);
@@ -137,7 +139,7 @@ export const magicKit: HeroKit = {
     g.beginPath();
     g.arc(s * 0.5, s * 0.8, s * 0.012, 0, Math.PI * 2);
     g.fill();
-    // The face: pale, a thin waxed moustache, a smug smile, one raised brow.
+    // The face: pale and calm, level brows, a small pointed goatee, a knowing small smile.
     g.fillStyle = '#f0dcd0';
     g.beginPath();
     g.ellipse(s * 0.5, s * 0.44, s * 0.11, s * 0.14, 0, 0, Math.PI * 2);
@@ -148,8 +150,8 @@ export const magicKit: HeroKit = {
     g.beginPath();
     g.moveTo(s * 0.43, s * 0.4);
     g.lineTo(s * 0.48, s * 0.395);
-    g.moveTo(s * 0.52, s * 0.385);
-    g.lineTo(s * 0.57, s * 0.37);
+    g.moveTo(s * 0.52, s * 0.395);
+    g.lineTo(s * 0.57, s * 0.395);
     g.stroke();
     g.fillStyle = M.dark;
     g.beginPath();
@@ -157,17 +159,16 @@ export const magicKit: HeroKit = {
     g.arc(s * 0.545, s * 0.42, s * 0.01, 0, Math.PI * 2);
     g.fill();
     g.beginPath();
-    g.moveTo(s * 0.5, s * 0.485);
-    g.quadraticCurveTo(s * 0.42, s * 0.46, s * 0.37, s * 0.5);
-    g.quadraticCurveTo(s * 0.44, s * 0.5, s * 0.5, s * 0.495);
-    g.quadraticCurveTo(s * 0.56, s * 0.5, s * 0.63, s * 0.5);
-    g.quadraticCurveTo(s * 0.58, s * 0.46, s * 0.5, s * 0.485);
+    g.moveTo(s * 0.47, s * 0.55);
+    g.lineTo(s * 0.53, s * 0.55);
+    g.lineTo(s * 0.5, s * 0.6);
+    g.closePath();
     g.fill();
     g.strokeStyle = '#a45b6e';
     g.lineWidth = s * 0.008;
     g.beginPath();
-    g.moveTo(s * 0.46, s * 0.52);
-    g.quadraticCurveTo(s * 0.5, s * 0.54, s * 0.55, s * 0.515);
+    g.moveTo(s * 0.47, s * 0.515);
+    g.quadraticCurveTo(s * 0.5, s * 0.53, s * 0.54, s * 0.512);
     g.stroke();
     // The top hat, tipped a little, with a violet band and a gold star on it.
     g.save();
@@ -183,14 +184,21 @@ export const magicKit: HeroKit = {
     g.moveTo(s * 0.72, s * 0.82);
     g.lineTo(s * 0.9, s * 0.5);
     g.stroke();
-    g.strokeStyle = M.core;
+    g.strokeStyle = M.gold;
     g.lineWidth = s * 0.012;
     g.stroke();
-    paintStar(g, s * 0.9, s * 0.46, s * 0.07);
-    g.fillStyle = '#e8e0f0';
+    const glow = g.createRadialGradient(s * 0.9, s * 0.46, 0, s * 0.9, s * 0.46, s * 0.16);
+    glow.addColorStop(0, 'rgba(255,200,80,0.85)');
+    glow.addColorStop(1, 'rgba(255,176,48,0)');
+    g.fillStyle = glow;
+    g.fillRect(s * 0.7, s * 0.26, s * 0.3, s * 0.4);
+    paintStar(g, s * 0.9, s * 0.46, s * 0.07, M.gem);
+    g.fillStyle = M.glove;
     g.beginPath();
     g.ellipse(s * 0.72, s * 0.83, s * 0.05, s * 0.04, 0, 0, Math.PI * 2);
     g.fill();
+    g.fillStyle = M.gold;
+    g.fillRect(s * 0.68, s * 0.875, s * 0.08, s * 0.014);
   },
   spells: [
     {

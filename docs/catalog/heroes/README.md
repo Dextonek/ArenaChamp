@@ -32,25 +32,25 @@ updated: 2026-11-04
 | Oblivion | the Unmaker | void (`hero: void`) | Torn space: jagged slits of pure black with a hot pink edge on one side and a cyan fringe on the other, glass-like cracks on the ground and flat shards of the world drifting into the tears. | Black plate cracked with glowing pink rifts, spiked pauldrons, a ragged cloak whose hem breaks into floating shards and a horned helm with a single rift slit. | [void](void.md) |
 | Shiori | the Last Brush | ink (`hero: ink`) | The wet brushstroke: tapered strokes with bristle streaks and a dry tail, splatter, rice-paper decals where ink bleeds in and a square vermilion seal. | Floating paper talismans, a huge brush, a rice-paper white robe with the hem washed in ink and an indigo sash, and long black hair with a brush-shaped hairpin. | [ink](ink.md) |
 | Tempo | the Unwound Hour | chrono (`hero: chrono`) | The luminous clock dial: rings of Roman numerals and ticks in radium chartreuse, tapered clock hands, a red second hand and pale afterimages. | A glowing clock dial behind his head like a halo, a staff shaped like a giant minute hand, an ivory dial plate on the shoulder and a monocle. | [chrono](chrono.md) |
-| Silvane | the Vain | mirror (`hero: mirror`) | Real mirrors: spinning hand mirrors and tall standing mirrors in polished silver with pale blue glass and a little violet, bouncing off walls and breaking into glass slivers. | A tall oval looking-glass behind her head: a silver frame, a pale sheen. | [mirror](mirror.md) |
-| Bram | the Pillar Mason | mason (`hero: mason`) | Gerald and his stone: a chunky chipped limestone pillar with a carved face, rubble, dust and a long toppling shadow, in flat toon stone with a pale chalk edge. | Gerald, big: a chipped block with a moss tuft, the grumpy face filling the frame, a bored sweat-free stare. | [mason](mason.md) |
-| Hank | the Lumberjack | timber (`hero: timber`) | Real trees: chunky stylised pines in three stages (sapling, young, full) that are cover while they stand and fall along a shadowed strip, with sawdust, leaves and birds. | Pines behind him and a double axe over his shoulder. | [timber](timber.md) |
-| Professor Puff | balloon scientist | balloon (`hero: balloon`) | Real balloons: shiny pink rubber with a pale gold foil, soap bubbles, torn rubber scraps and a brass pin, popping into words. | A bunch of balloons tied behind his shoulder. | [balloon](balloon.md) |
-| Sir Whiskers | the Cat Knight | cat (`hero: cat`) | Flat comic strokes of ginger, steel and cream: crossed claw marks, an amber leap ribbon, a clay pot, floating words and paw prints. | A cream halo of nine lives behind a ginger cat in a plumed helmet and a steel pauldron, with a small sword raised. | [cat](cat.md) |
-| Mr. Ledger | the Debt Collector | ledger (`hero: ledger`) | Stationery: fluttering paper, bouncing gold coins, red rubber-stamp ink and a dark green ledger. | Ruled rows of figures and a red DUE stamp behind a thin man in a grey suit with a ledger under his arm. | [ledger](ledger.md) |
+| Silvane | the Mirror Duchess | mirror (`hero: mirror`) | Real mirrors: spinning hand mirrors and tall standing mirrors in polished silver with pale blue glass and a little violet, bouncing off walls and breaking into glass slivers. | The looking-glass shards fanned behind her head, a dark violet gown with a silver bodice and a gold edge, a calm pale face with blue eyes and sleek violet hair, and the hand mirror held out with its glass aglow. | [mirror](mirror.md) |
+| Bram | the Stonewright | mason (`hero: mason`) | Gerald and his stone: a chunky chipped limestone pillar with a carved face, rubble, dust and a long toppling shadow, in flat toon stone with a pale chalk edge. | Bram's head and shoulders: a calm square-jawed face under iron-grey hair, the carved pauldrons and the apron bib with its glowing amber rune in a gold ring, the stone maul over his shoulder, and Gerald as a small grumpy block of limestone in the corner of the frame. | [mason](mason.md) |
+| Hank | the Moss Hewer | timber (`hero: timber`) | Real trees: chunky stylised pines in three stages (sapling, young, full) that are cover while they stand and fall along a shadowed strip, with sawdust, leaves and birds. | Pines behind him, the double axe over his shoulder with its edge aglow green, a moss-green tunic under a fur mantle, a brown-haired face with a leather brow band and a huge braided beard. | [timber](timber.md) |
+| Professor Puff | the Aeronaut | balloon (`hero: balloon`) | Real balloons: shiny pink rubber with a pale gold foil, soap bubbles, torn rubber scraps and a brass pin, popping into words. | Glowing rose gas spheres in brass cradles above and beside his head, an aubergine coat with a high collar and two rows of brass buttons, silver tufts of hair, brass goggles up on the brow and big calm eyes. | [balloon](balloon.md) |
+| Sir Whiskers | the Lynx Duelist | cat (`hero: cat`) | Flat comic strokes of ginger, steel and cream: crossed claw marks, an amber leap ribbon, a clay pot, floating words and paw prints. | A cream halo of nine lives behind him, dark gunmetal plate with a gold edge and gold filigree and a wine-red cape at the shoulders, a gold gorget, then the tawny head with its dark helm and black ear tufts, and the long rapier raised at the side with its glowing amber gem. | [cat](cat.md) |
+| Mr. Ledger | the Tithe-Keeper | ledger (`hero: ledger`) | Stationery: fluttering paper, bouncing gold coins, red rubber-stamp ink and a dark green ledger. | Ruled rows of figures on the wall behind him, the long quill rising behind his shoulder, a tall oxblood collar round a long calm face with grey slicked hair and faintly glowing red eyes, black robes with an oxblood panel and gold coin chains, and the great book at his side with its red wax seal glowing. | [ledger](ledger.md) |
 | Big Yoko | the Mountain | sumo (`hero: sumo`) | The straw-rope ring seen from the side with a pale line inside it, stamped on the floor as a dohyo. | A dark brown ground with a straw-rope ring behind huge shoulders under crimson lacquered plates, a crimson stole across the chest, a calm round face with a topknot tied in gold and a few salt crystals in the air. | [sumo](sumo.md) |
-| Mum | the mime | mime (`hero: mime`) | The white glove, and dashed chalk lines on the floor for what cannot be seen. | A dark ink ground, a white glove pressed against an invisible pane with a dashed chalk line, a striped shirt, a red scarf and a white painted face under a black beret. | [mime](mime.md) |
-| Referee Whistler | by the book | referee (`hero: referee`) | The whistle, and the round "no" sign: a pictogram crossed out in a red ring with a bar. | A black ground, striped shoulders with a whistle on a cord, a square stern face with a dark cap of hair and a raised hand with a yellow card. | [referee](referee.md) |
-| Madame Cleaver | Arena Chef | chef (`hero: chef`) | The big steel cleaver with a hole near its spine, and dishes left on the floor. | A warm charcoal ground with a great cleaver raised behind a proud rosy face under a tall toque, a white double-breasted coat with a red neckerchief and a ladle in her other hand. | [chef](chef.md) |
+| Mum | the Silent One | mime (`hero: mime`) | The white glove, and dashed chalk lines on the floor for what cannot be seen. | A dark ink ground, the long violet ribbon behind her shoulder, narrow shoulders in a dark violet coat with ivory diamonds and an ivory ruff, a porcelain mask in a dark hood with dark eyes, gold tear lines and a gold brow diamond, and a big pale glove with a gold cuff raised before her with a faint glow. | [mime](mime.md) |
+| Referee Whistler | the Arbiter | referee (`hero: referee`) | The whistle, and the round "no" sign: a pictogram crossed out in a red ring with a bar. | A black ground, dark armoured shoulders with gold-edged pauldrons, the black and ivory tabard down the chest, a silver horn on its gold chain, a red and gold sigil tablet with a glowing sigil, and a big calm square face under a black helm with a gold band and a red crest. | [referee](referee.md) |
+| Madame Cleaver | the Feastmistress | chef (`hero: chef`) | The big steel cleaver with a hole near its spine, and dishes left on the floor. | A warm charcoal ground, a great dark cleaver with a glowing ember edge raised behind her shoulder, mail shoulders, a crimson jerkin with a bandolier of small knives, and a round proud face with green eyes under a crimson headwrap, a braid at her shoulder. | [chef](chef.md) |
 | Pip | the Wingfoot | courier (`hero: courier`) | The brown-paper parcel tied with string, with a red FRAGILE sticker on its front. | A deep blue ground, a leather courier's pack with sealed scrolls and a glowing seal, a deep blue capelet, an eager freckled face under a gold winged circlet and a sealed scroll in a raised hand. | [courier](courier.md) |
-| Gus | the Caretaker | janitor (`hero: janitor`) | The mop with its strings, the yellow A-frame sign, the wheeled bucket and a wet floor with a shine across it. | A deep blue ground, a mop behind the shoulder, grey overalls with a yellow strap and keys, a broad tired face with a red nose and a drooping moustache under a flat cap. | [janitor](janitor.md) |
-| Mabel | the Mole | mole (`hero: mole`) | The dark round pit with a raised rim of dirt, and three gold claw strokes. | A soil bank with a tunnel mouth behind a round fur head with a pink snout, thick round glasses and a miner's helmet with a glowing lamp, huge claws at the edges. | [mole](mole.md) |
-| Grandma Ironknit | the Knitter | yarn (`hero: yarn`) | A ball of wool with a strand pulled out and a long needle through it. | A dark wine ground with loose wool, a grey cat by her shoulder, a rose shawl, a grey bun with two needles through it and a kind round face with big glasses. | [yarn](yarn.md) |
+| Gus | the Temple Keeper | janitor (`hero: janitor`) | The mop with its strings, the yellow A-frame sign, the wheeled bucket and a wet floor with a shine across it. | A deep blue ground, the sweeping staff with its straw head and paper streamers behind his shoulder, broad grey-blue shoulders with a pale crossed collar and a dark sash, the bronze urn at his side with glowing aqua water, and a calm heavy-lidded face with a short grey beard under a broad flat lacquered hat. | [janitor](janitor.md) |
+| Mabel | the Deepdelver | mole (`hero: mole`) | The dark round pit with a raised rim of dirt, and three gold claw strokes. | A soil bank behind her with a dug-out tunnel mouth, a stout dark-furred frame in a studded leather cuirass, a long muzzle with a small rose nose and calm black eyes, a bronze helm with a gold band and brass goggles pushed up, a glowing amber crystal lantern on top, the slung pick behind her shoulder, and huge gold-tipped claws at the edges of the frame. | [mole](mole.md) |
+| Grandma Ironknit | the Weaver | yarn (`hero: yarn`) | A ball of wool with a strand pulled out and a long needle through it. | A dark wine ground with loose strands of rose wool, a spindle with three glowing rose spools behind her shoulder, a grey cat's head by her shoulder, a dark wine shawl knitted in bands of rose thread with a gold brooch, a dark hood with a rolled rose edge round a kind old face with silver hair at the brow, calm eyes and a small smile, and two silver needles crossed in front of her. | [yarn](yarn.md) |
 | Barry Cloudsley | the Sky Augur | weather (`hero: weather`) | A smiling cloud and a weather card. | A storm sky with slanting rain, a storm-slate coat with a cloud mantle and a high gold-rimmed collar, a calm face under windswept hair and a weathervane staff with a glowing orb. | [weather](weather.md) |
-| Bo | the angry shepherd | sheep (`hero: sheep`) | The lumpy cloud of a sheep with its black face and four stick legs, and the shepherd's crook. | A dusk-green pasture, a sheep under his arm, the crook shaken beside his head and a huge grey-white beard under a furious red face and a wide hat. | [sheep](sheep.md) |
-| The Great Zambini | stage magician | magic (`hero: magic`) | The top hat and the gold star. | A violet spotlight on a dark stage with gold stars, a purple cape with a high collar, a smug pale face with a thin moustache under a tipped top hat and a star-tipped wand. | [magic](magic.md) |
-| Wick | the Doorman | door (`hero: door`) | An upright door in its frame, ajar, with warm light at the crack and a brass number plate. | A dark wine-brown ground with a door ajar behind him, a long red coat with brass buttons, a long pale face with a white moustache, a little round hat and a gloved hand holding up keys. | [door](door.md) |
-| Pim and Pom | the twins | twins (`hero: twins`) | Toys: cartoon words, confetti, spiky stars and a wooden sword, slingshot, net and toy shield, all with a dark outline. | Pim in his orange helmet with the wooden sword and Pom's blue hood over his shoulder (Pom has a portrait of her own). | [twins](twins.md) |
+| Bo | the Ramherd | sheep (`hero: sheep`) | The lumpy cloud of a sheep with its black face and four stick legs, and the shepherd's crook. | A dusk-green pasture ground, the crook up beside his head with a glowing warm bell on its hook, a deep umber wool cloak with a grey fleece mantle, a tidy silver beard under a calm weathered face with level grey brows and steady eyes, grey hair under a bronze headband, and a great ram horn curling from each temple. | [sheep](sheep.md) |
+| The Great Zambini | the Illusionist | magic (`hero: magic`) | The top hat and the gold star. | A violet spotlight cone on a dark stage with gold stars hanging in it, a deep violet cape with a high collar, a tailcoat with an ivory shirt front, plum waistcoat and a gold stud, a pale calm face with level brows and a small pointed goatee, a tipped top hat with a violet band and a gold star, and a wand in his raised plum-gloved hand with a glowing gold star at its tip. | [magic](magic.md) |
+| Wick | the Doorwarden | door (`hero: door`) | An upright door in its frame, ajar, with warm light at the crack and a brass number plate. | A dark wine-brown ground with a door behind him, ajar, warm light at its crack, a long oxblood coat with a stiff collar and gold braid down the front, a hood lying back on his shoulders, a long thin pale face with silver hair swept back, level brows, calm steady eyes and a thin smile, and a dark-gloved hand holding up a ring of keys with a glowing amber gem among them. | [door](door.md) |
+| Pim and Pom | the Changeling Twins | twins (`hero: twins`) | Toys: cartoon words, confetti, spiky stars and a wooden sword, slingshot, net and toy shield, all with a dark outline. | Pim with his acorn-cap helm and amber leaf crest, big green eyes and pointed ears, an amber leaf-collared tunic, the glowing-edged sword behind him and Pom's blue hood small over his shoulder; Pom in her blue leaf hood with a glowing bead, the slingshot with a glowing blue band and stone, and Pim's helm small in the corner. | [twins](twins.md) |
 
 ## Roles (v5, 2026-11-04)
 
@@ -223,25 +223,25 @@ The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
 - [Oblivion, the Unmaker](void.md)
 - [Shiori, the Last Brush](ink.md)
 - [Tempo, the Unwound Hour](chrono.md)
-- [Silvane, the Vain](mirror.md)
-- [Bram, the Pillar Mason](mason.md)
-- [Hank, the Lumberjack](timber.md)
-- [Professor Puff, balloon scientist](balloon.md)
-- [Sir Whiskers, the Cat Knight](cat.md)
-- [Mr. Ledger, the Debt Collector](ledger.md)
+- [Silvane, the Mirror Duchess](mirror.md)
+- [Bram, the Stonewright](mason.md)
+- [Hank, the Moss Hewer](timber.md)
+- [Professor Puff, the Aeronaut](balloon.md)
+- [Sir Whiskers, the Lynx Duelist](cat.md)
+- [Mr. Ledger, the Tithe-Keeper](ledger.md)
 - [Big Yoko, the Mountain](sumo.md)
-- [Mum, the mime](mime.md)
-- [Referee Whistler, by the book](referee.md)
-- [Madame Cleaver, Arena Chef](chef.md)
+- [Mum, the Silent One](mime.md)
+- [Referee Whistler, the Arbiter](referee.md)
+- [Madame Cleaver, the Feastmistress](chef.md)
 - [Pip, the Wingfoot](courier.md)
-- [Gus, the Caretaker](janitor.md)
-- [Mabel, the Mole](mole.md)
-- [Grandma Ironknit, the Knitter](yarn.md)
+- [Gus, the Temple Keeper](janitor.md)
+- [Mabel, the Deepdelver](mole.md)
+- [Grandma Ironknit, the Weaver](yarn.md)
 - [Barry Cloudsley, the Sky Augur](weather.md)
-- [Bo, the angry shepherd](sheep.md)
-- [The Great Zambini, stage magician](magic.md)
-- [Wick, the Doorman](door.md)
-- [Pim and Pom, the twins](twins.md)
+- [Bo, the Ramherd](sheep.md)
+- [The Great Zambini, the Illusionist](magic.md)
+- [Wick, the Doorwarden](door.md)
+- [Pim and Pom, the Changeling Twins](twins.md)
 
 ## Balance (duel tournament)
 
