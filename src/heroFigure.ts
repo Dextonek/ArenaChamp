@@ -120,6 +120,53 @@ const holdOf = (h: Held | null): Hold =>
   !h || h.len + h.raise < 0.38 ? 'none' : isStaff(h) ? 'staff' : h.dir.y > 0.5 ? 'up' : h.dir.y < -0.5 ? 'hang' : 'none';
 /** How much of the walk's arm swing a hand keeps with each kind of item in it. */
 const CARRY: Record<Hold, number> = { none: 1, hang: 0.55, up: 0.4, staff: 0.12 };
+/**
+ * A weapon's strike, after frames of real cuts (pipeline/designs/hero-holds.md): from the guard the weapon is drawn back
+ * (`cock`), driven through the target with the arm reaching full length as the hit lands (`hit`), carried on past it
+ * (`thru`), then brought back to the guard. Each key: where the hand is from the shoulder, in arm lengths
+ * [toward the middle, up, forward], and where the weapon points: for a cut the angle from straight up toward forward
+ * (0 up, 1.57 level forward, more is down in front, less than 0 back over the shoulder) and a lean to the side; for a
+ * sweep the turn from forward toward the weapon's own side (2 is behind and out to that side, negative is across).
+ */
+type Strike = 'cut' | 'smash' | 'thrust' | 'sweep';
+interface StrikeKey { hand: [number, number, number]; ang: number; side: number }
+const STRIKES: Record<Strike, { cock: StrikeKey; hit: StrikeKey; thru: StrikeKey; yaw?: true }> = {
+  // From the shoulder (a longsword's Oberhau): the point back over the shoulder, then over the top to level in line with the arms.
+  cut: {
+    cock: { hand: [0.05, 0.14, 0.12], ang: -0.8, side: 0.1 },
+    hit: { hand: [0.28, 0.0, 0.94], ang: 1.62, side: 0 },
+    thru: { hand: [0.36, -0.5, 0.72], ang: 2.35, side: -0.1 },
+  },
+  // Overhead (a hammer, a splitting axe): the hands over the head, the head of the weapon behind, then down into the ground in front.
+  smash: {
+    cock: { hand: [0.3, 0.72, -0.02], ang: -1.05, side: 0 },
+    hit: { hand: [0.36, -0.3, 0.84], ang: 2.05, side: 0 },
+    thru: { hand: [0.36, -0.58, 0.66], ang: 2.5, side: 0 },
+  },
+  // A thrust (a rapier's lunge): the hand drawn back by the hip, the point on the target the whole way, then the arm straight.
+  thrust: {
+    cock: { hand: [0.12, -0.5, 0.12], ang: 1.5, side: 0 },
+    hit: { hand: [0.22, -0.04, 0.96], ang: 1.57, side: 0 },
+    thru: { hand: [0.2, -0.14, 0.82], ang: 1.5, side: 0 },
+  },
+  // A level cut from the weapon's side across the front.
+  sweep: {
+    cock: { hand: [-0.5, -0.28, -0.02], ang: 2.0, side: 0.12 },
+    hit: { hand: [0.3, -0.2, 0.86], ang: 0, side: 0 },
+    thru: { hand: [0.72, -0.3, 0.42], ang: -1.3, side: -0.06 },
+    yaw: true,
+  },
+};
+/** Where in the wind-up the weapon is furthest back: the first part draws it back, the rest drives it in. */
+const COCK_AT = 0.45;
+/**
+ * After the hit the weapon is carried on past the target and brought back to the guard over this long (seconds). The
+ * game's own `release` pulse lasts 0.18 s, too short for a body to recover in: real cuts take about that long again.
+ */
+const STRIKE_RECOVER = 0.42;
+/** The share of `STRIKE_RECOVER` in which the weapon still travels past the target. */
+const THRU_AT = 0.38;
+
 /** How far a held-up item tips (radians, forward positive) on a cast's wind-up and on its strike, per style. */
 const CAST_TIP: Record<CastStyle, [number, number]> = {
   thrust: [-0.3, 0.9], point: [-0.1, 0.9], slam: [-0.4, 0.8], burst: [0, 0], raise: [0, -0.1], lunge: [-0.3, 1.1], swing: [-0.7, 1.3], channel: [0, 0.8],
@@ -183,6 +230,8 @@ export class HeroFigure {
   private melee = false;
   /** A two-handed overhead attack (hammer, greatsword) instead of alternating slashes. */
   private overhead = false;
+  /** The basic attack's look (`Trait.attack.look`): it picks the weapon's strike. */
+  private attackLook = '';
   private clock = 0;
   // Motion read from the position (smoothed: a network figure moves in steps).
   private last = new THREE.Vector3();
@@ -215,6 +264,9 @@ export class HeroFigure {
   private attackW = 0;
   private swingLeft = false;
   private lastWind = -1;
+  private lastRelease = 0;
+  /** Seconds since this hero's last hit went out (`STRIKE_RECOVER` and more: none under way). */
+  private sinceHit = 9;
   private stunW = 0;
   private liftW = 0;
   private rootW = 0;
@@ -305,8 +357,11 @@ export class HeroFigure {
       const trait = traitFor(kit.name);
       this.heavy = Math.min(1, Math.max(0, ((kit.maxHp ?? 600) - 600) / 180));
       this.agile = Math.min(1, Math.max(0, ((trait?.speed ?? 4) - 4.1) / 0.5));
-      this.melee = trait?.attack?.kind === 'melee';
-      this.overhead = this.melee && (trait?.attack?.look === 'smash' || trait?.attack?.look === 'cleave');
+      // A kit's own attack (each of the twins has one) goes before the trait's.
+      const attack = kit.attack ?? trait?.attack;
+      this.melee = attack?.kind === 'melee';
+      this.overhead = this.melee && (attack?.look === 'smash' || attack?.look === 'cleave');
+      this.attackLook = attack?.look ?? '';
     }
     if (at) this.last.copy(at);
     this.reset();
@@ -450,6 +505,8 @@ export class HeroFigure {
     const lefty = holdR === 'none' && holdL !== 'none';
     const mainHold = lefty ? holdL : holdR;
     let tipR = 0, tipL = 0;
+    /** The weapon's strike under way (`STRIKES`): `p` 0..1 through the wind-up, 1..2 after the hit. */
+    let blow: { style: Strike; p: number } | null = null;
 
     // Cast timeline: wind-up ramps in, the strike snaps over 0.08 s with a little overshoot, then settles out.
     let castW = 0, antic = 0, strike = 0, over = 0, crouch = 0;
@@ -471,7 +528,13 @@ export class HeroFigure {
     // How far a cast has taken the arms from the way they carry things: nothing at its first frame, all of it by the wind-up's end.
     const castTook = castW * Math.max(antic, strike);
     const m = state.attack;
-    const swinging = !!m && (m.wind >= 0 || m.release > 0);
+    // A hit has just gone out: the wind-up ended in a release, or a release came with no wind-up (the other player's attack).
+    const rel = m?.release ?? 0;
+    if (m && rel > 0 && (rel > this.lastRelease + 0.2 || (this.lastWind >= 0 && m.wind < 0))) this.sinceHit = 0;
+    else this.sinceHit += dt;
+    this.lastRelease = rel;
+    const recovering = !!m && m.melee && this.sinceHit < STRIKE_RECOVER;
+    const swinging = !!m && (m.wind >= 0 || m.release > 0 || recovering);
     if (m && m.wind >= 0 && this.lastWind < 0) this.swingLeft = !this.swingLeft;
     this.lastWind = m?.wind ?? -1;
     this.attackW += ((swinging ? 1 : 0) - this.attackW) * ease(dt, 18);
@@ -560,7 +623,38 @@ export class HeroFigure {
       const k = m.wind >= 0 ? smooth(0, 1, m.wind) : 0, r = Math.max(0, m.release), aw = this.attackW;
       // A held-up weapon is cocked back on the wind-up and brought down on the strike, whatever the arm's own angle.
       const chop = (-0.75 * k + 1.45 * r) * aw;
-      if (m.melee && this.overhead) {
+      const style = m.melee ? this.strikeOf(mainHold, lefty ? holdR : holdL) : null;
+      if (style) {
+        // The weapon's own strike (`carry` moves the arms and the weapon); here the body goes with it: it turns away and
+        // rises a little as the weapon is drawn back, then turns in, leans and steps into the hit.
+        const p = m.wind >= 0 ? m.wind : 1 + Math.min(1, this.sinceHit / STRIKE_RECOVER);
+        blow = { style, p };
+        const sg = lefty ? -1 : 1;
+        const back = p < COCK_AT ? smooth(0, COCK_AT, p) : 1 - smooth(COCK_AT, 1, p);
+        const into = p < 1 ? smooth(COCK_AT, 1, p) ** 1.6 : 1 - smooth(1 + THRU_AT, 2, p);
+        const deep = style === 'thrust' ? 1.25 : style === 'smash' ? 0.5 : 1, turn = style === 'smash' ? 0.25 : style === 'thrust' ? 0.6 : 1;
+        f.rot('pelvis', AY, sg * (-0.14 * back + 0.2 * into) * turn * aw);
+        f.rot('chest', AY, sg * (-0.38 * back + 0.42 * into) * turn * aw);
+        f.rot('chest', AX, (-0.1 * back + (style === 'smash' ? 0.5 : 0.4) * into) * aw);
+        f.rot('head', AX, -0.22 * into * aw);
+        f.rot('head', AY, sg * (0.2 * back - 0.25 * into) * turn * aw);
+        // The step: the far leg forward and bent, the near leg straight behind; a smash sinks on both knees instead.
+        const lead = lefty ? 'R' : 'L', rear = lefty ? 'L' : 'R';
+        if (style === 'smash') {
+          for (const leg of ['L', 'R'] as const) {
+            f.rot(`thigh${leg}`, AX, -0.32 * into * aw);
+            f.rot(`shin${leg}`, AX, 0.62 * into * aw);
+            f.rot(`foot${leg}`, AX, -0.28 * into * aw);
+          }
+        } else {
+          f.rot(`thigh${lead}`, AX, -0.72 * deep * into * aw);
+          f.rot(`shin${lead}`, AX, 0.62 * deep * into * aw);
+          f.rot(`thigh${rear}`, AX, 0.42 * deep * into * aw);
+          f.rot(`shin${rear}`, AX, 0.08 * into * aw);
+          f.rot(`foot${rear}`, AX, -0.3 * deep * into * aw);
+        }
+        f.root.position.y -= (style === 'smash' ? 0.1 : 0.1 * deep) * into * aw;
+      } else if (m.melee && this.overhead) {
         f.rot('chest', AX, (-0.25 * k + 0.45 * r) * aw);
         f.rot('armR', AX, (-2.5 * k - 0.7 * r) * aw);
         f.rot('armL', AX, (-2.5 * k - 0.7 * r) * aw);
@@ -650,21 +744,42 @@ export class HeroFigure {
       f.rot('armR', AX, -0.25 * Math.abs(h));
     }
 
-    this.carry(f, holdR, holdL, tipR, tipL, 1 - Math.max(castTook, this.attackW, this.liftW), w, ph, lefty);
+    this.carry(f, holdR, holdL, tipR, tipL, 1 - Math.max(castTook, blow ? 0 : this.attackW, this.liftW), w, ph, lefty, blow, this.attackW);
 
     this.swing(f, dt, w);
   }
 
+  /** The strike a melee hero's weapon makes, or null for bare hands, claws and other things swung with the arm alone. */
+  private strikeOf(main: Hold, other: Hold): Strike | null {
+    if (main === 'none') return null;
+    const look = this.attackLook;
+    if (look === 'smash') return 'smash';
+    if (look === 'cleave') return 'cut';
+    if (look === 'sweep') return 'sweep';
+    // Two alike (two sets of claws, two needles) stay with the alternating arms; one held-up blade is a fencer's.
+    if (main === other || main === 'hang') return null;
+    return look === 'claw' ? 'thrust' : 'cut';
+  }
+
   private carryT = new THREE.Vector3();
+  private carryG = new THREE.Vector3();
   private carryAim = new THREE.Vector3();
+  private carryAim0 = new THREE.Vector3();
   private carryAt = new THREE.Vector3();
+  private carryS = new THREE.Vector3();
+  private carryA = new THREE.Vector3();
+  private carryB = new THREE.Vector3();
 
   /**
    * The hands carry what they hold the way people do (see `Hold`): `free` 0..1 is how much the arms are their own (not
    * taken by a cast, an attack or a knock-up). The arms are bent to put each hand in its place, then the hand is turned
-   * so the item points where it should, tipped by `tipR` / `tipL` (a cast's or an attack's doing).
+   * so the item points where it should, tipped by `tipR` / `tipL` (a cast's or a shot's doing). During a weapon's
+   * `strike` (weight `aw`) the weapon hand and the weapon follow the strike's path instead (`STRIKES`).
    */
-  private carry(f: Hero, holdR: Hold, holdL: Hold, tipR: number, tipL: number, free: number, w: number, ph: number, lefty: boolean) {
+  private carry(
+    f: Hero, holdR: Hold, holdL: Hold, tipR: number, tipL: number, free: number, w: number, ph: number, lefty: boolean,
+    strike: { style: Strike; p: number } | null, aw: number,
+  ) {
     const main = lefty ? 'L' : 'R', other = lefty ? 'R' : 'L';
     const mainHold = lefty ? holdL : holdR, otherHold = lefty ? holdR : holdL;
     // A hammer, a greatsword, a long axe: the free hand goes on the haft too.
@@ -674,15 +789,17 @@ export class HeroFigure {
       const hold = side === 'R' ? holdR : holdL, held = f.held[side], arm = f.arm[side];
       if (!held || !arm || hold === 'none') continue;
       const sx = side === 'R' ? -1 : 1, L = arm.length, two = both && side === main;
-      let tip = side === 'R' ? tipR : tipL, aim: THREE.Vector3 | undefined, hang = false;
+      const striking = strike && side === main ? strike : null;
+      let tip = side === 'R' ? tipR : tipL, aim: THREE.Vector3 | undefined, carried = true, hang = false;
       T.copy(arm.hand);
       if (hold === 'staff') {
         // Furthest forward as the opposite foot lands; lifted on the way there, on the ground on the way back.
         const p = side === 'R' ? ph : ph + Math.PI;
         T.x += sx * 0.05 * L;
-        T.y += held.raise + 0.09 * L * w * Math.max(0, Math.cos(p));
-        T.z += (0.3 + 0.22 * w * Math.sin(p)) * L;
-        tip -= 0.16 * w * Math.sin(p);
+        // (Frames of a man walking with a pole: it leans back as it is planted ahead and forward as he passes it.)
+        T.y += held.raise + 0.14 * L * w * Math.max(0, Math.cos(p));
+        T.z += (0.3 + 0.3 * w * Math.sin(p)) * L;
+        tip -= 0.28 * w * Math.sin(p);
       } else if (hold === 'up' && (this.melee || two)) {
         // A guard: the hilt in front of the hip, the point up and forward at the enemy, a little toward the middle.
         T.x -= sx * (two ? 0.3 : 0.12) * L;
@@ -700,17 +817,59 @@ export class HeroFigure {
         T.set(sx * 0.14 * L, arm.hand.y + 0.14 * L, 0.5 * L);
         aim = this.carryAim.set(-sx * 0.1, -0.74, 0.66);
         hang = true;
-      } else continue;
-      f.reachHand(side, T, free);
-      // A low two-handed weapon goes with the arms when they swing it; anything held up keeps its line through the swing.
-      f.steadyHand(side, hang ? free : steady, hang ? 0 : tip, aim);
+      } else carried = false;
+      if (!carried && !striking) continue;
+      // Where the arm and the weapon are without a strike: `reach` and `hold` of them is the hold's doing.
+      let reach = carried ? free : 0, grip = !carried ? 0 : hang ? free : steady;
+      if (striking && aw > 0.001) {
+        // The strike's path from the shoulder as it is now (the body has turned and leaned), blended in by `aw`.
+        const K = STRIKES[striking.style], S = f.shoulderAt(side, this.carryS), p = striking.p;
+        const guard = this.carryG.copy(T), aim0 = this.carryAim0.copy(aim ?? held.dir).normalize().applyAxisAngle(AX, carried && !hang ? tip : 0);
+        const at = (k: StrikeKey, out: THREE.Vector3) => out.set(S.x - sx * k.hand[0] * L, S.y + k.hand[1] * L, S.z + k.hand[2] * L);
+        const point = (ang: number, lean: number, out: THREE.Vector3) =>
+          (K.yaw ? out.set(Math.sin(sx * ang), lean, Math.cos(sx * ang)) : out.set(-sx * lean, Math.cos(ang), Math.sin(ang))).normalize();
+        // the guard's own direction as an angle, so a low guard rises through level and upright to the shoulder
+        const ang0 = K.yaw ? 0 : Math.atan2(aim0.z, aim0.y), lean0 = K.yaw ? 0 : -sx * aim0.x;
+        const A = this.carryA, B = this.carryB;
+        let u: number;
+        if (p < COCK_AT) {
+          u = smooth(0, COCK_AT, p);
+          T.copy(guard).lerp(at(K.cock, A), u);
+          if (K.yaw) this.carryAim.copy(aim0).lerp(point(K.cock.ang, K.cock.side, B), u).normalize();
+          else point(ang0 + (K.cock.ang - ang0) * u, lean0 + (K.cock.side - lean0) * u, this.carryAim);
+        } else if (p < 1) {
+          // slow off the mark, fastest as it lands
+          u = ((p - COCK_AT) / (1 - COCK_AT)) ** 1.7;
+          at(K.cock, T).lerp(at(K.hit, A), u);
+          point(K.cock.ang + (K.hit.ang - K.cock.ang) * u, K.cock.side + (K.hit.side - K.cock.side) * u, this.carryAim);
+        } else if (p < 1 + THRU_AT) {
+          u = 1 - (1 - (p - 1) / THRU_AT) ** 2;
+          at(K.hit, T).lerp(at(K.thru, A), u);
+          point(K.hit.ang + (K.thru.ang - K.hit.ang) * u, K.hit.side + (K.thru.side - K.hit.side) * u, this.carryAim);
+        } else {
+          u = smooth(1 + THRU_AT, 2, p);
+          at(K.thru, T).lerp(guard, u);
+          if (K.yaw) point(K.thru.ang, K.thru.side, this.carryAim).lerp(aim0, u).normalize();
+          else point(K.thru.ang + (ang0 - K.thru.ang) * u, K.thru.side + (lean0 - K.thru.side) * u, this.carryAim);
+        }
+        // from the hold into the strike and back out of it
+        T.lerpVectors(guard, T, aw);
+        aim = this.carryAim.lerpVectors(aim0, this.carryAim, aw).normalize();
+        tip = 0;
+        reach = Math.max(reach, aw);
+        grip = Math.max(grip, aw);
+        hang = false;
+      }
+      f.reachHand(side, T, reach);
+      // A low two-handed weapon goes with the arms when they are not its own; anything held up keeps its line.
+      f.steadyHand(side, grip, hang ? 0 : tip, aim);
       if (!two) continue;
       // The second hand: lower on a long haft, toward a hammer's head, by the pommel of a sword.
       const g = held.back >= 0.2 ? -Math.min(0.3, held.back - 0.05) : hold === 'hang' && held.len < 0.9 ? Math.min(0.22, held.len * 0.35) : -0.1;
       const dir = this.carryAt.copy(aim ?? held.dir).normalize().applyAxisAngle(AX, hang ? 0 : tip);
-      const at = f.handAt(side, T);
-      at.addScaledVector(dir, g);
-      f.reachHand(other, at, free);
+      const at2 = f.handAt(side, T);
+      at2.addScaledVector(dir, g);
+      f.reachHand(other, at2, reach);
     }
   }
 
@@ -845,6 +1004,8 @@ export class HeroFigure {
     this.hitA = this.hitV = 0;
     this.flashV = 0;
     this.stunW = this.liftW = this.rootW = this.attackW = 0;
+    this.sinceHit = 9;
+    this.lastRelease = 0;
     this.vel.set(0, 0, 0);
     this.accF = this.accS = this.fwd = this.side = this.yawRate = 0;
     this.moving = false;

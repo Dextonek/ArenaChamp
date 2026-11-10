@@ -351,6 +351,14 @@ export class Hero {
     }
   }
 
+  /** Where a shoulder is now, in the figure's frame at the figure's own size (after the frame's rotations so far). */
+  shoulderAt(side: 'R' | 'L', out = new THREE.Vector3()) {
+    const upper = this.bones.get(side === 'R' ? 'armR' : 'armL');
+    if (!upper) return out.set(0, 0, 0);
+    upper.updateWorldMatrix(true, false);
+    return this.root.worldToLocal(upper.getWorldPosition(out));
+  }
+
   /** Where a hand is now, in the figure's frame at the figure's own size (after the frame's rotations so far). */
   handAt(side: 'R' | 'L', out = new THREE.Vector3()) {
     const hand = this.bones.get(side === 'R' ? 'handR' : 'handL');

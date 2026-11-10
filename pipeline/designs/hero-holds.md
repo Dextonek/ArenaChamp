@@ -2,7 +2,7 @@
 title: How the heroes hold their weapons
 tags: [design, heroes, animation, weapons, research]
 updated: 2026-11-10
-status: built; not yet played by a person
+status: built, second pass against real footage done; not yet played by a person
 ---
 
 # How the heroes hold their weapons (2026-11-10)
@@ -62,6 +62,44 @@ that follow only that hand bone and lie beyond the hand): how long, which way it
   and holds its things the same way.
 
 Sheets after: `docs/heroes/motion_holds_after.jpg` (idle, walk, cast, attack), `docs/heroes/motion_holds_closeup.jpg`.
+
+## Frame by frame against real footage (second pass, 2026-11-10)
+
+The user, on the holds above: "still it is not good ... lets compare frame by frame with real movement of weapons from
+people". Real clips were cut into frame strips in the browser and the game's motion was filmed at the same moments from
+the same side (`pipeline/tools/motion-strip.js`: `_motionStrip(hero, 'attack' | 'walk' | 'cast:<style>')`).
+
+| Real footage | What its frames show |
+|---|---|
+| [A longsword cut from the shoulder, four times slowed](https://www.youtube.com/watch?v=IWiWCkM7HN8), side view | Guard at the shoulder, the point back and up. The hands start forward while the blade still points back; the blade comes over the top as the arms straighten; at the hit the arms are straight out at shoulder height with the blade level, in line with them. The body leans far in and the back leg drives a long step. Then the blade is carried on and the feet pass. |
+| [Walking with one hiking pole](https://www.youtube.com/watch?v=o-88ARHLUMU), front view | The pole is planted ahead about every second step, leans back as it lands and forward as he passes it, then is lifted and swung ahead. The pole hand moves little; the free arm swings wide. |
+| [Cut mechanics, measured at 100 frames a second](https://science-and-fiction.org/swordfighting/cuts.html) | A cut is mostly the sword turning about a point in the body. The body starts first and the blade barely moves; then it speeds up over 30 to 40 degrees and lands at its fastest; then it is stopped. A quick cut takes 0.25 to 0.35 s, a full one with a step 0.6 s or more. |
+
+What the game's attack did against those frames: the wind-up lifted straight arms like a stick, the hit snapped back to
+the starting pose in one frame with no reach, the body stood upright and still, and nothing followed the hit.
+
+**Now a weapon's strike follows the real phases** (`STRIKES` and `carry` in `src/heroFigure.ts`):
+
+1. **Draw back** (the first 45% of the wind-up): the weapon goes to the shoulder with its point back, the body turns away.
+2. **Drive in** (the rest of the wind-up, slow off the mark and fastest as it lands): the hand travels from the shoulder
+   to full reach, the weapon comes over the top, the body turns in, leans and steps.
+3. **The hit** lands with the arm straight and the weapon level, in line with it.
+4. **Carry through and recover** (0.42 s, the game's own pulse of 0.18 s was too short for a body): the weapon goes on
+   past, then comes back to the guard.
+
+| Strike | Who | From real |
+|---|---|---|
+| `cut` from the shoulder | Oblivion, Hank, Pim, any one held-up blade | the longsword clip |
+| `smash` from overhead | Brannoc, Bram | the same phases with the hands over the head, down into the ground in front |
+| `thrust` | Sir Whiskers's rapier | a fencer's lunge: the hand before the foot, the arm straight, the point on the target the whole way |
+| `sweep`, level across | Zephyr, Gus | the same phases turned on their side |
+
+Bare hands and claws (Big Yoko, Mabel, Sirix, Nyx) keep the old alternating swings. A staff's walk swings and leans more,
+after the pole clip. Sheets: `docs/heroes/motion_strikes_after.jpg` (the game's strikes, 16 frames each). The sheets with
+frames of the real clips are not in the repository (they are other people's footage); the links above are the sources.
+
+Not matched to footage: the thrust, the smash and the sweep were built from the cut's phases and from how those are
+described, not from clips of their own; casts were not compared at all.
 
 ## Checked, and not
 
