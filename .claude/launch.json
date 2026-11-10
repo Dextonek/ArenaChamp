@@ -38,6 +38,16 @@
         "dev"
       ],
       "port": 8788
+    },
+    {
+      "name": "sheet-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "vite",
+        "--config",
+        "pipeline/tools/vite.sheet.config.ts"
+      ],
+      "port": 5175
     }
   ]
 }

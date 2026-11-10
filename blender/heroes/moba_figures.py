@@ -4923,6 +4923,21 @@ FIGURES = {"forge": ForgeConcept, "storm": StormConcept, "forge_a": Forge, "stor
            "weather_v3": WeatherMythic, "sumo_v3": SumoMythic, "courier_v3": CourierMythic}
 
 
+def _restyle_batches():
+    """The other 16 restyles live in restyle_batch*.py (each defines register(FIGURES)); loaded here so build/export find them."""
+    for name in ("restyle_batch1", "restyle_batch2", "restyle_batch3"):
+        try:
+            mod = importlib.reload(sys.modules[name]) if name in sys.modules else importlib.import_module(name)
+            mod.register(FIGURES)
+        except ModuleNotFoundError as e:
+            if e.name != name:
+                raise
+        except Exception:
+            # one batch half-written must not stop the others from building
+            import traceback
+            print(f"RESTYLE LOAD Error in {name}: " + traceback.format_exc()[-1500:], flush=True)
+
+
 def _reload():
     for mod in (kit, dao, figure_kit):
         importlib.reload(mod)
@@ -4931,6 +4946,8 @@ def _reload():
 def build(name, reload=True):
     if reload:
         _reload()
+    if name not in FIGURES:
+        _restyle_batches()
     dao.setup_scene()
     f = FIGURES[name]()
     return f.build(), f
