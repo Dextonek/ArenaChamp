@@ -1,6 +1,6 @@
 # One hero style (v4): directions to pick from
 
-**Status (2026-11-10): waiting on the user to pick a direction (six shown in two rounds).** Nothing in the game has changed.
+**Status (2026-11-10): waiting on the user to pick a direction (seven shown in three rounds).** Nothing in the game has changed.
 
 The user: "as you can see heroes have different style, let's make one better". The 39 heroes come from three
 generations: A, the 12 oldest (`hero_figures.py`: slim, small heads, plain robes: Lyra, Vitriol, Nyx, Fenna, Marin,
@@ -35,13 +35,26 @@ whole figure rather than a costume (`blender/heroes/style_blockout2.py`):
 | 5 | Spirit | A masked spirit: one tall cloak with no legs, a hood with a floating porcelain mask and glowing eyes, hands floating free in gold cuffs, a long ribbon. 5.4 heads. | The silhouette is the character; arms and legs are hidden, so their motion barely shows. Heavy fighters and armoured heroes lose their bodies. |
 | 6 | Origami | Folded paper and gold leaf: every surface a flat fold, a paper mantle like a crane's wings, gold along the creases, diamond eyes. 5.4 heads. | Very light models (under 1,000 faces here). Hard, drawn shapes as the art bible asks; faces are the hard part. |
 
-All six keep Lyra's idea: night violet, a gold crescent bow across the back with a glowing string, a constellation
+## Third round: real, one continuous body
+
+The user: "what if you try to make them look real with a continuous body and smooth shapes", then "what if you build it
+in Blender". Built in Blender by `blender/heroes/style_real.py`:
+
+![Lyra on a realistic body, standing, walking, attacking, casting](lyra_real.jpg)
+
+| # | Direction | How it is made | What it means for the game |
+|---|---|---|---|
+| 7 | Real | The body is Quaternius' **Universal Base Characters** (CC0, free Standard pack: one female and one male body, hair styles): one continuous smooth skin, a real face, on the **same 65-bone skeleton as the Universal Animation Library**. Fitted clothes (tunic, leggings, boots, bracers) are cut from the body's own surface and pushed out a few millimetres, so they move with it exactly. The skirt, cape, collar, bow and halo are built with figkit and bound to the skeleton. | The pack's clips (idle, walk, jog, sprint, sword and spell attacks, hits, deaths, rolls: 43 free, more in pack 2) play on it **as they are**: no fitting, no arms in the body. The picture's second row is those clips, untouched. Costs: the game's motion code is written for the old 16-bone rig and its own layering, so heroes of this kind need a second, simpler animation path; models are heavier (2.7 MB here with 2K textures; about 600 KB once the textures are shrunk); the free pack has two bodies and one face each, so variety must come from hair, skin tone, build and costume; cat, mole and sumo heroes need their own heads or bodies. |
+
+All seven keep Lyra's idea: night violet, a gold crescent bow across the back with a glowing string, a constellation
 halo. The bow stays on her back for now (today she holds nothing; a bow in the hand changes her stance, carry and aim).
 
 ## Files
 
 - `blender/heroes/figkit.py`: the stand-alone figure kit (plain bpy and bmesh): materials, ellipsoids, tubes, lofts,
   rings, stars, one mesh per material.
+- `blender/heroes/style_real.py`: direction 7; needs the unpacked "Universal Base Characters[Standard]" folder
+  (https://quaternius.itch.io/universal-base-characters, CC0; not in the repo yet).
 - `blender/heroes/style_blockout.py`: the three Lyra blockouts and the proportions table (`STYLES`). Run:
   `blender --background --factory-startup --python blender/heroes/style_blockout.py -- pipeline/designs/style-v4`
   (writes `lyra_<direction>.glb`; they are not committed, 10 s to rebuild).
