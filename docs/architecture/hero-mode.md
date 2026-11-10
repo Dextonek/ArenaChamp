@@ -160,6 +160,8 @@ portraits and bars (`small` in `Duel.buildHud`).
 
 ### Figures: walk, breath, cast
 
+**Holds (2026-11-10):** what each hand holds is read from the model and carried the way people hold the real thing (a staff planted like a walking staff, a sword in a guard, two hands on a hammer or greatsword). See [hero-holds.md](../../pipeline/designs/hero-holds.md); the code is `HeroFigure.carry`, with `reachHand` and `steadyHand` in [hero.ts](../../src/effects/weapons/hero.ts).
+
 The arena's capsule caster is hidden (its children set invisible) and replaced by the kit's `Hero` figure ([hero.ts](../../src/effects/weapons/hero.ts), options `shade: 0.9, maxEmissive: 1, tintSheen: true`). Figures are cached per model url, so switching back to a hero reuses its loaded figure. `showFigure` swaps them; `poseFigure` runs every frame and layers bone rotations on top of `resetPose()`:
 
 - **walk:** a smoothed `walkAmount` (on when speed is above 0.5) drives a phase at 9 rad/s; thighs, shins and arms swing, the root bobs 0.05, the chest leans;

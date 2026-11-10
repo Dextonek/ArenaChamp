@@ -40,6 +40,42 @@ export const HERO_SCALE = 1.3;
 export type BoneName = 'pelvis' | 'chest' | 'neck' | 'head' | 'armR' | 'foreR' | 'handR' | 'armL' | 'foreL' | 'handL'
   | 'thighR' | 'shinR' | 'thighL' | 'shinL' | 'footR' | 'footL';
 
+/**
+ * What a hand holds, read from the mesh when the model loads: the vertices that follow only that hand bone and lie
+ * beyond the hand itself (a staff, a sword, a lantern). Lengths in metres at the figure's own size.
+ */
+export interface Held {
+  /** From the hand to the item's far end. */
+  len: number;
+  /** The far end's direction in the figure's frame at rest (X its left, Y up, Z forward). */
+  dir: THREE.Vector3;
+  /** How far the item reaches the other way from the hand (a staff's foot). */
+  back: number;
+  /**
+   * A tall staff is modelled in a hanging hand with its foot on the floor. People hold one higher, with the elbow bent
+   * (the tip on the ground beside the foot, the forearm about level), so at load the staff is slid down through the
+   * fist by this much: with the hand raised by `raise` the foot stands on the floor again. 0 for anything else.
+   */
+  raise: number;
+}
+
+/** An arm at rest, in the figure's frame at the figure's own size: where the hand hangs and how long the arm is. */
+export interface Arm {
+  hand: THREE.Vector3;
+  shoulder: THREE.Vector3;
+  length: number;
+}
+
+/** A tall upright staff with its foot near the floor (a staff, a spear, a long axe), as `Held` measures it. */
+export const isStaff = (h: Held | null) => !!h && h.dir.y > 0.5 && h.len + h.raise >= 1 && h.back - h.raise > 0.5;
+
+/** Per model file: what its hands hold. Measured (and its staffs slid down) once, since every copy shares the geometry. */
+const heldCache = new Map<string, { R: Held | null; L: Held | null }>();
+/** The hand of a staff is raised by this share of the arm's length (the elbow comes to about a right angle). */
+const STAFF_RAISE = 0.4;
+
+const AXIS_X = new THREE.Vector3(1, 0, 0);
+
 /** A chain of `sway_*` bones (hair, sash, robe tail), root first, with each link's rest rotation. */
 export interface SwayChain {
   name: string;
@@ -77,7 +113,18 @@ export class Hero {
   private gripPoint = new THREE.Vector3(0, 0.07, 0);
   private q = new THREE.Quaternion();
   private q2 = new THREE.Quaternion();
+  private q3 = new THREE.Quaternion();
   private v = new THREE.Vector3();
+  private v2 = new THREE.Vector3();
+  /** What each hand holds (null: nothing beyond the hand itself). Set once the model has loaded. */
+  readonly held: { R: Held | null; L: Held | null } = { R: null, L: null };
+  /** Each arm at rest (null until the model has loaded, or without arm bones). */
+  readonly arm: { R: Arm | null; L: Arm | null } = { R: null, L: null };
+  /** Each hand's orientation in the figure's frame at rest (`steadyHand`). */
+  private handRest: { R: THREE.Quaternion | null; L: THREE.Quaternion | null } = { R: null, L: null };
+  private v3 = new THREE.Vector3();
+  private v4 = new THREE.Vector3();
+  private v5 = new THREE.Vector3();
 
   constructor(opts: HeroOptions = {}) {
     this.root.scale.setScalar(HERO_SCALE);
@@ -120,30 +167,217 @@ export class Hero {
       this.collectSway(scene);
       this.robe = this.measureRobe(scene);
       this.root.add(scene);
-      this.calibrate();
+      this.calibrate(url);
       this.loaded = true;
     }).catch((e) => console.error('hero figure failed to load', e));
   }
 
   /** The weapon frame at rest (arm hanging): blade forward and 35° up, its face turned outward (-X). */
-  private calibrate() {
+  private calibrate(url: string) {
     const hand = this.bones.get('handR');
-    if (!hand) return;
     // Keep the Euler angles: restoring the quaternion would rebuild them, and a figure loaded facing -Z comes back as
     // (π, 0, π), which turns upside down once `rotation.y` / `rotation.x` are set on their own (HeroFigure.follow, fall).
     const saved = { p: this.root.position.clone(), r: this.root.rotation.clone() };
     this.root.position.set(0, 0, 0);
     this.root.quaternion.identity();
     this.root.updateMatrixWorld(true);
-    const handQ = hand.getWorldQuaternion(new THREE.Quaternion());
-    const y = new THREE.Vector3(0, Math.sin(0.6), Math.cos(0.6));
-    const z = new THREE.Vector3(-1, 0, 0);
-    const x = new THREE.Vector3().crossVectors(y, z).normalize();
-    z.crossVectors(x, y).normalize();
-    const want = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
-    this.gripOffset.copy(handQ).invert().multiply(want);
+    this.measureHeld(url);
+    if (hand) {
+      const handQ = hand.getWorldQuaternion(new THREE.Quaternion());
+      const y = new THREE.Vector3(0, Math.sin(0.6), Math.cos(0.6));
+      const z = new THREE.Vector3(-1, 0, 0);
+      const x = new THREE.Vector3().crossVectors(y, z).normalize();
+      z.crossVectors(x, y).normalize();
+      const want = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(x, y, z));
+      this.gripOffset.copy(handQ).invert().multiply(want);
+    }
     this.root.position.copy(saved.p);
     this.root.rotation.copy(saved.r);
+  }
+
+  /** Fills `held`, `arm` and the hands' rest orientations. The root stands at the origin, unturned, at rest (`calibrate`). */
+  private measureHeld(url: string) {
+    const scale = this.root.scale.x || 1, v = new THREE.Vector3(), at = new THREE.Vector3();
+    const meshes: THREE.SkinnedMesh[] = [];
+    this.root.traverse((o) => {
+      const mesh = o as THREE.SkinnedMesh;
+      if (!mesh.isSkinnedMesh) return;
+      mesh.skeleton.update();
+      meshes.push(mesh);
+    });
+    const known = heldCache.get(url);
+    const found: { R: Held | null; L: Held | null } = { R: null, L: null };
+    for (const side of ['R', 'L'] as const) {
+      const hand = this.bones.get(side === 'R' ? 'handR' : 'handL');
+      const upper = this.bones.get(side === 'R' ? 'armR' : 'armL'), fore = this.bones.get(side === 'R' ? 'foreR' : 'foreL');
+      if (!hand) continue;
+      this.handRest[side] = hand.getWorldQuaternion(new THREE.Quaternion());
+      hand.getWorldPosition(at);
+      if (upper && fore) {
+        const sh = upper.getWorldPosition(new THREE.Vector3()), el = fore.getWorldPosition(new THREE.Vector3());
+        this.arm[side] = { hand: at.clone().divideScalar(scale), shoulder: sh.clone().divideScalar(scale), length: (sh.distanceTo(el) + el.distanceTo(at)) / scale };
+      }
+      if (known) continue;
+      const pts: THREE.Vector3[] = [];
+      let far: THREE.Vector3 | null = null;
+      for (const mesh of meshes) {
+        const bi = mesh.skeleton.bones.indexOf(hand);
+        const si = mesh.geometry.getAttribute('skinIndex'), sw = mesh.geometry.getAttribute('skinWeight');
+        if (bi < 0 || !si || !sw) continue;
+        for (let i = 0; i < si.count; i++) {
+          let w = 0;
+          for (let k = 0; k < 4; k++) if (si.getComponent(i, k) === bi) w += sw.getComponent(i, k);
+          if (w < 0.9) continue;
+          mesh.getVertexPosition(i, v).applyMatrix4(mesh.matrixWorld).sub(at).divideScalar(scale);
+          // the hand itself (a fist, a glove) is not something held
+          if (v.lengthSq() < 0.16 * 0.16) continue;
+          const pt = v.clone();
+          pts.push(pt);
+          if (!far || pt.lengthSq() > far.lengthSq()) far = pt;
+        }
+      }
+      if (!far) continue;
+      const dir = far.clone().normalize();
+      let back = 0;
+      for (const pt of pts) back = Math.max(back, -pt.dot(dir));
+      const held: Held = { len: far.length(), dir, back, raise: 0 };
+      // A staff: slid down through the fist, so the hand can hold it with a bent elbow and its foot still stands on the floor.
+      const arm = this.arm[side];
+      if (arm && isStaff(held)) {
+        const raise = STAFF_RAISE * arm.length;
+        if (this.slideItem(meshes, hand, at, scale, dir.clone().multiplyScalar(-raise * scale))) {
+          held.raise = raise;
+          held.len -= raise;
+          held.back += raise;
+        }
+      }
+      found[side] = held;
+    }
+    const all = known ?? found;
+    if (!known) heldCache.set(url, found);
+    for (const side of ['R', 'L'] as const) {
+      const h = all[side];
+      this.held[side] = h ? { len: h.len, dir: h.dir.clone(), back: h.back, raise: h.raise } : null;
+    }
+  }
+
+  /**
+   * Moves what `hand` holds by `shift` (world, at rest) in the shared geometry: every connected piece of the mesh that
+   * follows only that hand and reaches beyond it (the shaft, its bands, its head), but not the hand's own shapes.
+   * Returns whether anything moved.
+   */
+  private slideItem(meshes: THREE.SkinnedMesh[], hand: THREE.Bone, at: THREE.Vector3, scale: number, shift: THREE.Vector3) {
+    const v = new THREE.Vector3();
+    let any = false;
+    for (const mesh of meshes) {
+      const geo = mesh.geometry, pos = geo.getAttribute('position') as THREE.BufferAttribute, index = geo.index;
+      const si = geo.getAttribute('skinIndex'), sw = geo.getAttribute('skinWeight');
+      const bi = mesh.skeleton.bones.indexOf(hand);
+      if (bi < 0 || !index || !si || !sw || !(pos.array instanceof Float32Array) || (pos as unknown as THREE.InterleavedBufferAttribute).isInterleavedBufferAttribute) continue;
+      const n = pos.count, rigid = new Uint8Array(n), far = new Uint8Array(n), root = new Int32Array(n);
+      for (let i = 0; i < n; i++) {
+        root[i] = i;
+        let w = 0;
+        for (let k = 0; k < 4; k++) if (si.getComponent(i, k) === bi) w += sw.getComponent(i, k);
+        if (w < 0.9) continue;
+        rigid[i] = 1;
+        if (mesh.getVertexPosition(i, v).applyMatrix4(mesh.matrixWorld).sub(at).lengthSq() > (0.16 * scale) ** 2) far[i] = 1;
+      }
+      const find = (i: number) => {
+        while (root[i] !== i) i = root[i] = root[root[i]];
+        return i;
+      };
+      for (let t = 0; t < index.count; t += 3) {
+        const a = index.getX(t), b = index.getX(t + 1), c = index.getX(t + 2);
+        if (!rigid[a] || !rigid[b] || !rigid[c]) continue;
+        root[find(b)] = find(a);
+        root[find(c)] = find(a);
+      }
+      const reaches = new Uint8Array(n);
+      for (let i = 0; i < n; i++) if (far[i]) reaches[find(i)] = 1;
+      // the shift in the mesh's own space (the bind pose is the rest pose: these models carry no animation)
+      const local = shift.clone().applyMatrix3(new THREE.Matrix3().setFromMatrix4(mesh.matrixWorld).invert());
+      for (let i = 0; i < n; i++) {
+        if (!rigid[i] || !reaches[find(i)]) continue;
+        pos.setXYZ(i, pos.getX(i) + local.x, pos.getY(i) + local.y, pos.getZ(i) + local.z);
+        any = true;
+      }
+      if (any) pos.needsUpdate = true;
+    }
+    return any;
+  }
+
+  /**
+   * Bends an arm so its hand comes to `target` (the figure's frame, metres at the figure's own size: X its left, Y up,
+   * Z forward), the elbow pointing back, down and out. `weight` 0..1 blends from the pose the arm already has. Call
+   * after the frame's other arm rotations and before `steadyHand`.
+   */
+  reachHand(side: 'R' | 'L', target: THREE.Vector3, weight = 1) {
+    const upper = this.bones.get(side === 'R' ? 'armR' : 'armL'), fore = this.bones.get(side === 'R' ? 'foreR' : 'foreL');
+    const hand = this.bones.get(side === 'R' ? 'handR' : 'handL');
+    if (!upper || !fore || !hand || !upper.parent || weight <= 0) return;
+    const keepU = this.q3.copy(upper.quaternion), keepF = fore.quaternion.clone();
+    this.root.updateWorldMatrix(true, false);
+    const T = this.v3.copy(target).applyMatrix4(this.root.matrixWorld);
+    upper.parent.updateWorldMatrix(true, false);
+    upper.updateWorldMatrix(false, true);
+    const S = upper.getWorldPosition(this.v4), E = fore.getWorldPosition(this.v5), W = hand.getWorldPosition(this.v);
+    const a = S.distanceTo(E), b = E.distanceTo(W);
+    const toT = this.v2.copy(T).sub(S);
+    const d = Math.min(Math.max(toT.length(), Math.abs(a - b) + 1e-3), a + b - 1e-3);
+    toT.normalize();
+    // the elbow: on the circle round the shoulder-to-hand line, on the side that points back, down and out
+    const along = (a * a - b * b + d * d) / (2 * d), out = Math.sqrt(Math.max(0, a * a - along * along));
+    const pole = new THREE.Vector3(side === 'R' ? -0.45 : 0.45, -0.6, -0.65).transformDirection(this.root.matrixWorld);
+    pole.addScaledVector(toT, -pole.dot(toT)).normalize();
+    const elbow = new THREE.Vector3().copy(S).addScaledVector(toT, along).addScaledVector(pole, out);
+    const aim = (bone: THREE.Bone, from: THREE.Vector3, to: THREE.Vector3, at: THREE.Vector3) => {
+      // turn `bone` (in the world) so the direction from its joint to `from` points at `to`
+      const cur = new THREE.Vector3().copy(from).sub(at).normalize(), want = new THREE.Vector3().copy(to).sub(at).normalize();
+      const turn = new THREE.Quaternion().setFromUnitVectors(cur, want);
+      const world = bone.getWorldQuaternion(new THREE.Quaternion()).premultiply(turn);
+      const parent = bone.parent!.getWorldQuaternion(new THREE.Quaternion());
+      bone.quaternion.copy(parent.invert().multiply(world));
+      bone.updateWorldMatrix(false, true);
+    };
+    aim(upper, E, elbow, S);
+    fore.getWorldPosition(E);
+    hand.getWorldPosition(W);
+    const wrist = new THREE.Vector3().copy(E).addScaledVector(new THREE.Vector3().copy(S).addScaledVector(toT, d).sub(E).normalize(), b);
+    aim(fore, W, wrist, E);
+    if (weight < 1) {
+      upper.quaternion.copy(keepU.slerp(upper.quaternion, weight));
+      fore.quaternion.copy(keepF.slerp(fore.quaternion, weight));
+    }
+  }
+
+  /** Where a hand is now, in the figure's frame at the figure's own size (after the frame's rotations so far). */
+  handAt(side: 'R' | 'L', out = new THREE.Vector3()) {
+    const hand = this.bones.get(side === 'R' ? 'handR' : 'handL');
+    if (!hand) return out.set(0, 0, 0);
+    hand.updateWorldMatrix(true, false);
+    return this.root.worldToLocal(hand.getWorldPosition(out));
+  }
+
+  /**
+   * Turns a hand so that what it holds points along `aim` in the figure's frame (X its left, Y up, Z forward), or keeps
+   * the direction it was modelled in when `aim` is left out, whatever the arm does (a staff stays upright while the arm
+   * moves); then tipped forward by `tilt` radians (a sword cocked back, then brought down). `weight` 0..1 blends from
+   * the pose's own hand. Call after every other rotation of the frame.
+   */
+  steadyHand(side: 'R' | 'L', weight: number, tilt = 0, aim?: THREE.Vector3) {
+    const hand = this.bones.get(side === 'R' ? 'handR' : 'handL'), rest = this.handRest[side], held = this.held[side];
+    if (!hand || !rest || !hand.parent || weight <= 0) return;
+    hand.parent.updateWorldMatrix(true, false);
+    hand.parent.matrixWorld.decompose(this.v, this.q, this.v2);
+    this.root.matrixWorld.decompose(this.v, this.q2, this.v2);
+    // the hand's orientation in the world: the figure's, the tip forward, the turn to `aim`, then its own at rest
+    this.q2.multiply(this.q3.setFromAxisAngle(AXIS_X, tilt));
+    if (aim && held) this.q2.multiply(this.q3.setFromUnitVectors(held.dir, this.v.copy(aim).normalize()));
+    this.q2.multiply(rest);
+    this.q.invert().multiply(this.q2);
+    if (weight >= 1) hand.quaternion.copy(this.q);
+    else hand.quaternion.slerp(this.q, weight);
   }
 
   /** Share of the skinned vertices below the knees that mostly follow a thigh (see `robe`). */

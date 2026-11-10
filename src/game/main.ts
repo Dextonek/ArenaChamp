@@ -319,7 +319,7 @@ function menuScreen() {
   const busy = state.queue.on || !!state.lobby;
   const mode: PlayMode = guest ? 'cpu' : busy ? 'online' : playMode;
   const choice = cpuChoice(), hero = kitOf(choice);
-  preview.show(hero?.model);
+  preview.show(hero?.model, hero);
   const tab = (m: PlayMode, ic: keyof typeof ICONS, title: string, sub: string) => el('button', {
     class: `mode${mode === m ? ' on' : ''}`, disabled: m === 'cpu' && busy, title: m === 'cpu' && busy ? 'Leave the queue or your lobby first' : '',
     onclick: () => {
@@ -597,7 +597,7 @@ function raidScreen() {
   const busy = state.queue.on || !!state.lobby;
   const boss = SUN_WARDEN;
   const code = el('input', { placeholder: 'CODE', maxlength: 4, class: 'code-in' }) as HTMLInputElement;
-  preview.show(hero?.model);
+  preview.show(hero?.model, hero);
   return el('div', { class: 'hs' },
     heroShowcase(hero),
     el('section', { class: 'card hs-roster', 'data-keep-scroll': 'raid' },
@@ -630,7 +630,7 @@ function raidScreen() {
 /** Every hero in one table, one row each. A click opens a row under itself (the turning model, every spell in full, the pick button) and closes it again. */
 function heroesScreen() {
   const open = kitOf(state.heroView);
-  preview.show(open?.model);
+  preview.show(open?.model, open);
   const head = el('tr', {},
     el('th', {}, ''), el('th', {}, 'Hero'), el('th', { class: 'opt' }, 'HP'), el('th', { class: 'opt' }, 'Passive'),
     ...['Q', 'W', 'E', 'R'].map((k) => el('th', { class: 'icon-col' }, k)));

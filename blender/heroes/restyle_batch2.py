@@ -171,7 +171,7 @@ class MimeMythic(Mime):
         hood = self.mat("hood", "#201b2a", roughness=0.8)
         ribbon = self.mat("ribbon", "#5c4a8c", roughness=0.6, double_sided=True)
         lips = self.mat("lips", "#7a3a4c", roughness=0.4, double_sided=True)
-        glove_m = self.mat("glove", "#b8b6c8", roughness=0.55, emission="#c4c2ff", strength=0.55)
+        glove_m = self.mat("glove", "#8f8ea6", roughness=0.55, emission="#c4c2ff", strength=0.25)
         eyew = self.mat("eyewhite", "#1c1824", roughness=0.3)
         iris = self.mat("iris", "#b8b4f4", roughness=0.2, emission="#a8a4ff", strength=0.8)
         glint = self.mat("glint", "#ffffff", roughness=0.3)

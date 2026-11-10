@@ -4496,7 +4496,7 @@ class WeatherMythic(MobaFigure):
         dark = self.mat("dark", "#1a2232", roughness=0.55, double_sided=True)
         gold = self.mat("gold", "#d2ae55", metallic=0.7, roughness=0.3, double_sided=True)
         sash = self.mat("sash", "#c9a83a", roughness=0.55)
-        cloud = self.mat("cloud", "#bccadc", roughness=0.9)
+        cloud = self.mat("cloud", "#8e9db8", roughness=0.9)
         skin = self.mat("skin", "#d29a74", roughness=0.5)
         hair = self.mat("hair", "#4e2c14", roughness=0.5)
         eyew = self.mat("eyewhite", "#fff8f0", roughness=0.4)

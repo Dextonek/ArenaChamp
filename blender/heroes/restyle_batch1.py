@@ -50,7 +50,7 @@ class MirrorMythic(_Restyle, Mirror):
         "bow": ("#4b3a8a", {}),
         "boot": ("#1f1a33", {}),
         "legs": ("#34285c", {}),
-        "glass": ("#7cb6e6", dict(roughness=0.1, emission="#a8d8ff", strength=1.9)),
+        "glass": ("#5a94c8", dict(roughness=0.1, emission="#a8d8ff", strength=0.9)),
         "skin": ("#e2bda8", {}),
         "hair": ("#3f2d78", dict(roughness=0.42)),
         "hairroll": ("#4f3b90", {}),
