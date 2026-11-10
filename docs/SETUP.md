@@ -23,6 +23,13 @@ cd VFXTool
 git checkout -b feat/particle-editor origin/main
 ```
 ```bash
+git config user.name Dextonek
+```
+```bash
+git config user.email 103364418+Dextonek@users.noreply.github.com
+```
+(All commits are authored as Dextonek. Without these two lines a new computer refuses to commit.)
+```bash
 npm ci
 ```
 The local branch is called `feat/particle-editor` so the push command stays the same everywhere:

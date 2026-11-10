@@ -1,8 +1,13 @@
 # Status
 
-_Last updated: 2026-11-10 (deploy)_
+_Last updated: 2026-11-10 (second computer set up)_
 
 ## Current state (2026-11-05)
+**Second computer set up (2026-11-10):** cloned, branch `feat/particle-editor` tracking `origin/main`, `npm ci`, and
+the type check, build and server test all pass. The lock file named a private registry from the first computer
+(`npm ci` failed with 401); it now names the public npm addresses, same versions and checksums (`9a3947e`). `SETUP.md`
+now also sets the git author (Dextonek). Not pushed.
+
 **Continuing on another computer (2026-11-10):** everything is on GitHub `main` (`Dextonek/ArenaChamp`). Set up with
 [SETUP.md](SETUP.md), read the rules in [CLAUDE.md](../CLAUDE.md), then this file. Not in git by design: the Meshy
 files, `server/data/` (local accounts and test passwords) and three old gameplay recordings (SETUP.md, section 4).
