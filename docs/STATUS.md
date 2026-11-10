@@ -28,7 +28,12 @@ _Last updated: 2026-11-10 (legs, Hank's axe; friend brackets half built)_
   run yet: rebuild `hive` once on the first computer and compare.
 - Waiting on the user: Gus's mop is modelled head-up; Grandma Ironknit's needles now point up; Shiori's brush stands
   bristles-down. Each is as the model has it; the user may want them changed.
-- All of these are in the News page's next release ("Heroes stand tall", `live: false`).
+- `00ec31a` Arms kept out of the body (a body outline per hero, arms pushed clear); research in
+  [knowledge/retargeting-arms.md](knowledge/retargeting-arms.md). The user still found it wrong.
+- `0fb938c` Standing from a new pack: Quaternius' Universal Animation Library (CC0), a realistic figure like ours
+  (`pipeline/assets/ual/`, `pipeline/tools/bake-ual.js`, `src/motion/ual.json`). **Approved by the user ("this looks
+  good", 2026-11-10).** Baked and ready, not in use: its walk, jog and sprint; offered to the user next.
+- All of these are in the News page's next release (`live: false`).
 - Not checked: a person playing; a phone; Hank in a real fight from the game camera (pictures were taken on the Heroes
   stand rig, stepped by hand).
 
