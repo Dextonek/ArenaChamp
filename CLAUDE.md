@@ -48,16 +48,16 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   as they are (`src/motion/real.ts`). All 39 are built (`blender/heroes/realkit.py`, one `build()` per hero in
   `blender/heroes/real/`, `real_build.py`; models `*_v4.glb`) and are the default; `?figs=old` shows the older models.
   A new or changed hero is made the same way; staffs go in the left hand, weapons in the right (that README).
-- **Motion comes from an animator's clips, not hand-built poses.** Standing comes from Quaternius' Universal Animation
-  Library (CC0, a realistic figure like ours: `pipeline/assets/ual/`, `pipeline/tools/bake-ual.js`) since 2026-11-10,
-  after fits of the KayKit idle onto our heroes were rejected (docs/knowledge/retargeting-arms.md); the rest is still
-  KayKit's. Hand-built holds and strikes were rejected three
-  times, even when matched to real footage. Walking, running, attacks and four casts replay the
-  KayKit Character Animations pack (CC0; `src/motion/clips.ts`, baked by `pipeline/tools/bake-motion.html`). For new
-  motion look in that pack first (https://kaylousberg.itch.io/kaykit-character-animations: hit reactions, deaths,
-  dodges, strafes, blocks, bows are not used yet). Measure the copy (`pipeline/tools/motion-check.js`) and show the
-  game beside the pack's figure at the same moments. Do not commit other people's footage. Write-up:
-  `pipeline/designs/hero-holds.md`.
+- **Motion comes from an animator's clips, not hand-built poses.** Hand-built holds and strikes were rejected three
+  times, even when matched to real footage, and so were fits of one pack's clips onto a body of other proportions
+  (docs/knowledge/retargeting-arms.md). The heroes now play Quaternius' Universal Animation Library (CC0;
+  `pipeline/assets/ual/`, packed by `pipeline/tools/strip-anim.mjs` into `public/models/anim/ual.glb`) on its own
+  skeleton, chosen and timed by `HeroFigure.followReal`. For new motion look in those two packs first (blocks, dodges,
+  a roll, a shield dash and a heavy combo are not used yet). **A faithful copy is not yet a good one:** the pack's
+  sword blows, hook and throw are metre-long lunges to the floor, so a blow takes only a third of the legs (`LEGS` in
+  `src/motion/real.ts`). Look at every new clip in the game's camera, beside the pack's own figure at the same moments
+  (`pipeline/tools/v4-clips.js`, `v4-sheet.js`). Do not commit other people's footage. The older models (`?figs=old`)
+  still replay the KayKit pack (`src/motion/clips.ts`, `pipeline/designs/hero-holds.md`).
 - **Boss difficulty** is measured with `_raid(...)` (`pipeline/tools/raid-tool.js`) in tool-page tabs: four tabs in
   parallel, about 10 minutes for 39 heroes each; any edit under `src/` or `pipeline/` reloads the tabs and kills the
   runs; one run of 39 fights swings by about ±8 points.

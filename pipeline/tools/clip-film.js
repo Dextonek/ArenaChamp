@@ -29,7 +29,7 @@ window._clip = async (name, hero, foe, o = {}) => {
   d.hazardsInRuns = false;
   if (o.arena && vfx.arenaPickCtrl) vfx.arenaPickCtrl.setValue(o.arena);
   d.start('run');
-  for (let k = 0; k < 200 && !vfx.heroMode.figure?.figure?.loaded; k++) await tick();
+  for (let k = 0; k < 200 && !vfx.heroMode.figure?.loaded; k++) await tick();
   const gl = [...document.querySelectorAll('canvas')].sort((a, b) => b.width * b.height - a.width * a.height)[0];
   const out = document.createElement('canvas');
   out.width = W; out.height = H;

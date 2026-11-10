@@ -21,7 +21,7 @@ window._film = async (hero, foe, o = {}) => {
   d.opponentChoice = foe;
   d.hazardsInRuns = false;
   d.start('run');
-  for (let k = 0; k < 200 && !vfx.heroMode.figure?.figure?.loaded; k++) await tick();
+  for (let k = 0; k < 200 && !vfx.heroMode.figure?.loaded; k++) await tick();
   await tick();
   const gl = [...document.querySelectorAll('canvas')].sort((a, b) => b.width * b.height - a.width * a.height)[0];
   const W = 640, H = 400, cols = 2, out = document.createElement('canvas');

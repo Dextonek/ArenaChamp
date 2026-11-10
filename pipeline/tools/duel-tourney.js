@@ -22,7 +22,7 @@ window._tourney = async (reps = 3, names = null) => {
       for (let r = 0; r < reps; r++) {
         d.opponentChoice = o;
         d.start('run');
-        for (let k = 0; k < 60 && !vfx.heroMode.figure?.figure?.loaded; k++) await new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
+        for (let k = 0; k < 60 && !vfx.heroMode.figure?.loaded; k++) await new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
         let f = 0;
         while (!d.result && f < 60 * 120) { vfx.step(1 / 60); f++; }
         const r2 = d.result;

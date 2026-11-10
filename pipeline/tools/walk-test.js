@@ -74,11 +74,11 @@
     d.opponentChoice = 'Kaia';
     d.start(mode);
     if (mode === 'play') d.think = 1e9;
-    for (let k = 0; k < 2000 && !vfx.heroMode.figure?.figure?.loaded; k++) await tick();
+    for (let k = 0; k < 2000 && !vfx.heroMode.figure?.loaded; k++) await tick();
     return d;
   }
   const freePoint = (R) => { for (let i = 0; i < 500; i++) { const t = R() * 6.283, r = Math.sqrt(R()) * 10.8, x = Math.sin(t) * r, z = 7 + Math.cos(t) * r; if (vfx.arena.obstacles.every((o) => clearance(o, x, z) > 0.75)) return { x, z }; } return { x: 0, z: 13 }; };
-  const yawOf = () => vfx.heroMode.figure?.figure?.root?.rotation.y;
+  const yawOf = () => vfx.heroMode.figure?.shown?.rotation.y;
   function turnWatch(r) {
     let last = yawOf();
     return () => {

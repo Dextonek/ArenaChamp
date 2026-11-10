@@ -28,7 +28,7 @@ window._ladder = async (level, pairs, reps = 8) => {
         d.cpuLevel = lv;
         d.opponentChoice = o;
         d.start('run');
-        for (let k = 0; k < 60 && !vfx.heroMode.figure?.figure?.loaded; k++) await tick();
+        for (let k = 0; k < 60 && !vfx.heroMode.figure?.loaded; k++) await tick();
         let f = 0;
         while (!d.result && f < 60 * 120) { simMs += 1000 / 60; vfx.step(1 / 60); f++; }
         const res = d.result;

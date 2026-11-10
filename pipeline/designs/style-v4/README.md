@@ -130,16 +130,39 @@ Sirix's two pairs of wings.
 
 ## What a finished model must meet (the game reads these)
 
-- **Rig:** reuse an existing armature (import a current hero's GLB, keep the rig, move the joints): the game's layered
-  motion turns bones about fixed axes. Bone names, lower-cased without punctuation, must match `NAMES` in
-  `src/effects/weapons/hero.ts`; optional `sway_*` chains.
-- **Rest pose:** arms hanging 10-15° out (not a T-pose), legs straight, feet at the origin, the right hand on -x
-  (Brannoc, Oblivion and Shiori came out mirrored).
-- **Held items:** rigid to the hand bone (weight 0.9 or more), reaching more than 0.16 m from the wrist.
-- **Skinning:** a part's main bone decides the body outline (`Hero.body`) and the robe value: skirts to pelvis and thighs.
-- **Export:** as the patch scripts do (meshopt, the active vertex colour), emissive at most 1, 300-600 KB.
-- **Roll-out:** a new file (`astral_v4.glb`) shown in the preview first; only after approval `MODELS` and `HERO_BODIES`
-  in `src/heroes.ts`, the portrait in `src/kits/astral.ts`, the catalog page, News.
+- **File:** `public/models/heroes/<theme>_v4.glb`. The name is what makes it a hero of this style (`isRealModel`).
+- **Skeleton:** the Universal Animation Library's 65 bones under their own names, as the pack's bodies have them. The
+  build's size (`height`, `width`, `depth`, `head`) is applied last, to the bones too; the game moves the pelvis in
+  proportion.
+- **Rest pose:** the pack's T-pose, feet at the origin, facing -Y in Blender (+Z in the game), the right hand on -x.
+- **Held things:** bound to `hand_l` or `hand_r` and built along the grip (`R.held`): a staff, scepter, spear, wand,
+  lyre, mirror or lantern in the LEFT hand (the pack's torch arm carries it upright), a shield on the LEFT arm, a
+  weapon in the RIGHT. Hank's axe is the exception: it lies along the hand (`real/timber.py` says why).
+- **`REAL_STYLE`** in `src/motion/real.ts`: what the hero holds and how it strikes, where its kit does not already say.
+- **Export:** meshopt, JPEG textures, emissive at most 1, 300-600 KB (`Real.finish`).
+- **Look at it:** `pipeline/tools/v4-sheet.js` (front, face, back, walking, the attack at its hit, the game's camera;
+  `_v4lineup` for everyone side by side) and, for a new clip or a new way to hold something,
+  `pipeline/tools/v4-clips.js`.
+
+## Checked on 2026-11-11, and what it changed
+
+All 40 models were drawn standing, walking and at the hit of their attack (v4-sheet), and one CPU duel was played on
+the game page through its own menus (a defeat and a rematch, no errors). Loading and fighting without errors had not
+shown three things, which are fixed:
+
+- **Melee heroes fell to the floor when they struck.** The copy of the pack's clips was exact (drawn beside the pack's
+  own figure): its sword blows, its hook and its throw are lunges a metre long. A blow now takes a third of the legs
+  (`LEGS` in `real.ts`); the arms and chest play it whole.
+- **Gus slapped with an empty right hand** while his staff stood in his left. His attack is now the pack's left-hand
+  push, which thrusts the staff (`attack: 'spell'`).
+- **Hank's axe stood up in front of his chest**, not low as the user drew it, and his chop ended with it upright. It
+  now lies along the hand: it hangs by his shin, and the chop brings it down level in front.
+
+A hit's flinch is now as big as the hit (a tick of poison barely shows). **Decided by the builders, for the user to
+overrule:** Marin has slippers (her catalog page says barefoot); Vitriol has a hood, not a hat; Nyx shows no face;
+Pim, Pom, Professor Puff and Pip have the adult face of the pack on small bodies; Mum's ribbon and Zephyr's scarf
+stream out stiff behind them (they are not cloth that moves). **Still not checked:** a person playing; a real phone;
+every cast style of every hero; frame time on a slow phone.
 
 ## After the pick
 

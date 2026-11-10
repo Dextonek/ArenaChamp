@@ -9,7 +9,9 @@ one says **which look is ours** and **how the artist works**. Anything here wins
 jade and cream-bone inlays, with one glowing gem per object (the five Blender weapons, `docs/weapons/weapons_sheet.png`).
 Energy is stylised and graphic: hard-edged shapes, black as a colour, white only in the hottest few percent, impact
 frames and focus lines on the big beats. The tone is **mythic and elegant**, never cartoon-goofy and never
-gritty-realistic. **The theme is open** (user, 2026-10-26: not only xianxia): cosmic, mechanical, nature, abyssal,
+gritty-realistic. (Since 2026-11-10 the heroes' bodies are realistic in proportion: one continuous smooth body with a
+real face, the user's pick, `pipeline/designs/style-v4/README.md`. That is not "gritty": the colours, the costumes and
+the glow stay as this page says. The big head and big eyes that `heroes-restyle.md` asks for are no longer the rule.) **The theme is open** (user, 2026-10-26: not only xianxia): cosmic, mechanical, nature, abyssal,
 ancient-world myths, abstract. What stays is the craft: drawn hard shapes, black as a colour, value ladders, one
 focal shape per beat. The eastern-myth set (silk ribbons, qi, dragons, petals) is one theme among many.
 

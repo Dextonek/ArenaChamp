@@ -299,6 +299,8 @@ export class HeroFigure {
   private real: RealHero | null = null;
   /** Seconds since the last hit, for its flinch clip. */
   private realFlinch = 9;
+  /** How much of the chest and arms the running flinch takes at its start: by the hit's strength. */
+  private realFlinchW = 0;
   private realLayers: Layer[] = [];
   private realStyle: RealStyle = {};
 
@@ -541,7 +543,12 @@ export class HeroFigure {
     const s = Math.min(1, Math.max(0, strength));
     this.flashV = Math.max(this.flashV, 0.4 + 0.6 * s);
     this.flashTint.set(tint ?? '#ff8a4a');
-    this.realFlinch = 0;
+    // A real hero's flinch is as big as the hit: a tick of poison barely shows, and never cuts a bigger flinch short.
+    const fd = realClipInfo('Hit_Chest').dur, fw = 0.2 + 0.6 * s;
+    if (this.realFlinch >= fd || fw >= this.realFlinchW * (1 - this.realFlinch / fd)) {
+      this.realFlinch = 0;
+      this.realFlinchW = fw;
+    }
     const f = this.figure;
     if (!f) return;
     let dx = 0, dz = -1;
@@ -1328,7 +1335,7 @@ export class HeroFigure {
     // a hit: a short flinch of the chest and arms
     this.realFlinch += dt;
     const fl = realClipInfo('Hit_Chest');
-    if (this.realFlinch < fl.dur) over('Hit_Chest', this.realFlinch, false, 0.8 * (1 - this.realFlinch / fl.dur), 0);
+    if (this.realFlinch < fl.dur) over('Hit_Chest', this.realFlinch, false, this.realFlinchW * (1 - this.realFlinch / fl.dur), 0);
 
     // the basic attack, fitted to the game's timing as on the older figures: up to its hit through the wind-up, on after it
     const m = state.attack, rel = m?.release ?? 0;
@@ -1344,7 +1351,7 @@ export class HeroFigure {
       const clip = this.realAttackClip(m.melee), info = realClipInfo(clip);
       const tail = Math.min(info.dur - info.hit, CLIP_TAIL), lead = Math.min(info.hit, CLIP_LEAD, this.windSec * CLIP_RUSH);
       const at = m.wind >= 0 ? info.hit - lead * (1 - m.wind) : info.hit + tail * Math.min(1, this.sinceHit / STRIKE_RECOVER);
-      over(clip, at, false, this.attackW, this.attackW * (1 - this.gait));
+      over(clip, at, false, this.attackW, this.attackW * (1 - this.gait) * info.legs);
     }
 
     // a cast
@@ -1359,7 +1366,7 @@ export class HeroFigure {
         const info = realClipInfo(clip), a = Math.min(0.24, cn.dur * 0.35) * (cn.big ? 1.3 : 1);
         const t = loop ? cn.t : cn.t < a ? info.hit * (cn.t / a) : Math.min(info.dur, info.hit + (cn.t - a));
         const w = castW * smooth(0, 0.1, cn.t);
-        over(clip, t, loop, w, w * (1 - this.gait));
+        over(clip, t, loop, w, w * (1 - this.gait) * info.legs);
       }
     }
     if (this.stunW > 0.01) over('Zombie_Idle_Loop', this.clock, true, this.stunW, this.stunW);

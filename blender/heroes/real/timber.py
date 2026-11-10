@@ -1,8 +1,8 @@
 """Hank, the Moss Hewer (bruiser): a huge forest warden. A moss-green tunic, bark-brown leather leggings and wrapped
 bracers, dark fur-topped boots, leather straps crossed on the chest, a fur mantle heaped round his shoulders, brown hair
 under a leather brow band, a thick braid down his back and a great beard in two braids tied in brass. His axe (the
-user's drawing, 2026-11-10; blender/heroes/hank_axe.py): one bit on a one-handed haft held by its end, the head out in
-front with its poll on top and the blade flaring down to a curved edge that glows green, a green rune on each face."""
+user's drawing, 2026-11-10; blender/heroes/hank_axe.py): one bit on a one-handed haft held by its end and carried
+low, the head down by his shin, the blade flaring to a curved edge that glows green, a green rune on each face."""
 import math
 
 from mathutils import Vector
@@ -14,7 +14,7 @@ from real.parts_b import braid, ellipse, flats, hair_key, legs_under, on_back, o
 OUTLINE = [(-0.065, 0.085), (0.065, 0.085), (0.072, 0.0), (0.092, -0.12), (0.14, -0.235), (0.172, -0.305), (0.125, -0.342), (0.045, -0.362), (-0.045, -0.358),
            (-0.125, -0.334), (-0.19, -0.292), (-0.15, -0.212), (-0.105, -0.13), (-0.078, -0.05), (-0.066, 0.0)]
 EDGE = [(0.165, -0.296), (0.12, -0.33), (0.045, -0.349), (-0.045, -0.346), (-0.122, -0.322), (-0.18, -0.283)]
-BUTT, END, HEAD_AT = 0.1, 1.0, 0.9
+BUTT, END, HEAD_AT = 0.0, 0.62, 0.52
 
 
 def build():
@@ -122,13 +122,18 @@ def build():
         f.torus("brass", pts[-1] + Vector((0, 0, -0.015)), 0.024, 0.008, seg=(12, 5))
         f.tube(hk, [pts[-1] + Vector((0, 0, -0.015)), pts[-1] + Vector((0, -0.005, -0.08))], [0.024, 0.004], seg=6)
 
-    # the axe: one bit, held by the haft's end, the head out in front, its blade hanging down
-    f, o, d, up = R.held("r")
+    # the axe: one bit, held by the haft's end. It lies along the hand, not across the fist as other weapons do: the
+    # pack's standing arm then carries it low, the head down in front of his shin (the user's drawing), and the pack's
+    # tree-chopping swing brings it from over his head down to level in front. Across the fist it stood up in front of
+    # his chest and the chop ended with it upright (tried with pipeline/tools/v4-clips.js `_v4rods`, 2026-11-11).
+    f, o, thumb, _ = R.held("r")
+    d = Vector((-1, 0, 0))
+    up = (thumb - d * thumb.dot(d)).normalized()
     side = d.cross(up)
-    f.tube("bark", [o + d * t for t in (-BUTT, 0.3, 0.75, END)], [0.03, 0.033, 0.036, 0.032], seg=12)
+    f.tube("bark", [o + d * t for t in (-BUTT, END * 0.3, END * 0.75, END)], [0.03, 0.033, 0.036, 0.032], seg=12)
     knob = o - d * (BUTT + 0.012)
     f.tube("brass", [knob - d * 0.03, knob, knob + d * 0.03], [0.026, 0.044, 0.03], seg=12)
-    for t in (-0.075, 0.1, HEAD_AT - 0.1):
+    for t in (0.09, HEAD_AT - 0.1):
         f.tube("brass", [o + d * (t - 0.012), o + d * (t + 0.012)], 0.041, seg=12)
     head = o + d * HEAD_AT
     thick = lambda a, b: 0.012 + 0.05 * max(0.0, min(1.0, (b + 0.36) / 0.44))

@@ -50,7 +50,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Motion',
         title: 'Hand-animated motion made for these bodies',
-        text: 'Heroes stand, walk, jog, sprint, strike, cast, flinch and fall with animations made for exactly this kind of body, so arms no longer sink into robes and legs no longer fold. Blades are swung, fists and claws strike in turn, flasks and parcels are thrown overhand.',
+        text: 'Heroes stand, walk, jog, sprint, strike, cast, flinch and fall with animations made for exactly this kind of body, so arms no longer sink into robes and legs no longer fold. Blades are swung, fists and claws strike in turn, flasks and parcels are thrown overhand, and Gus thrusts his staff.',
       },
       {
         tag: 'Motion',
@@ -60,7 +60,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Heroes',
         title: 'Hank\'s axe and Sirix\'s wings',
-        text: 'Hank carries a woodsman\'s axe with one blade, held by the end of its haft. Sirix has two pairs of pale, see-through wings rising behind his shoulders.',
+        text: 'Hank carries a woodsman\'s axe with one blade, held by the end of its haft and low at his side. Sirix has two pairs of pale, see-through wings rising behind his shoulders.',
       },
     ],
   },

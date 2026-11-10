@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-11-10 (all 39 heroes in the fourth style; friend brackets half built)_
+_Last updated: 2026-11-11 (all 39 heroes in the fourth style, looked at in motion and three faults fixed; friend brackets half built)_
 
 ## Current state (2026-11-05)
 **2026-11-10, second computer: committed, not pushed, not deployed**
@@ -38,8 +38,12 @@ _Last updated: 2026-11-10 (all 39 heroes in the fourth style; friend brackets ha
   Animation Library's own clips. **Done (2026-11-10):** the engine path (`src/motion/real.ts`,
   `HeroFigure.followReal`), the clip file (`public/models/anim/ual.glb`), the kit (`blender/heroes/realkit.py`), and
   **all 39 heroes** (40 models, `blender/heroes/real/`), now the default; `?figs=old` shows the older models. Every hero
-  loads and fought a 10 s AI duel with no errors. Details, checks and open points:
-  [style-v4/README.md](../pipeline/designs/style-v4/README.md).
+  loads and fought a 10 s AI duel with no errors. **2026-11-11:** every hero drawn standing, walking and striking, and
+  one CPU duel played on the game page; that found and fixed melee heroes falling to the floor when they struck (a blow
+  now takes a third of the legs), Gus striking with an empty hand (he thrusts his staff), and Hank's axe held up in
+  front of his chest (it hangs low, as drawn). Not checked: a person playing, a real phone, every cast. Details, the
+  builders' own choices for the user to overrule, and open points:
+  [style-v4/README.md](../pipeline/designs/style-v4/README.md) "Checked on 2026-11-11".
   **Waiting on the user:** to look through the roster (`npm run dev`, http://localhost:5173/game) and name heroes to
   redo. **Next candidates:** new 2D portraits and catalog pages to match; more face variety (the paid pack has more
   bodies); the game page and a phone, played by a person. Dropped: the five small model fixes (capes, lyre, wand,

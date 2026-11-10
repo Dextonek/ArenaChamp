@@ -37,9 +37,22 @@ const HIT: Record<string, number> = {
 };
 
 /**
+ * How much of the legs a blow may take (the rest stays with the stand). The pack's sword blows, its hook and its throw
+ * are big lunges: played whole, a hero drops to the floor and travels a metre from where the game has it (measured
+ * 2026-11-10 against the pack's own figure: the copy was exact, and wrong for an arena seen from above). A third of
+ * them keeps the step into the blow and the hero on its feet. Clips not listed take the legs whole.
+ */
+const LEGS: Record<string, number> = {
+  Sword_Attack: 0.35, Sword_Regular_A: 0.35, Sword_Regular_B: 0.35, Sword_Regular_C: 0.35, Sword_Dash: 0.35, Melee_Hook: 0.35,
+  OverhandThrow: 0.35,
+};
+
+/**
  * How a hero of this style attacks and what it carries, where that is not what its kit already says (a melee hero
  * swings a blade, or a heavy weapon if its attack is a smash or a cleave; a ranged one pushes a spell):
- * - `attack`: `fist` (bare hands, in turn), `claw` (a hooking swipe), `throw` (overhand), `chop` (Hank's axe).
+ * - `attack`: `fist` (bare hands, in turn), `claw` (a hooking swipe), `throw` (overhand), `chop` (Hank's axe), `spell`
+ *   on a melee hero whose weapon is the staff in its left hand (Gus): the pack's push is a left-hand one, so the staff
+ *   is thrust at the enemy.
  * - `hold`: what an arm does whenever it is not striking or casting, from the pack's own holding clips: `torch` (a
  *   staff, scepter, spear or wand upright in the LEFT hand), `lantern` (something hung from the raised RIGHT hand),
  *   `shield` (the LEFT arm up). The pack has no other hands for these, so the models are built to match.
@@ -52,7 +65,7 @@ export const REAL_STYLE: Record<string, RealStyle> = {
   // a staff, scepter, spear, wand, lyre, mirror, brush or lantern upright in the left hand
   Vesper: { hold: 'torch' }, Isolde: { hold: 'torch' }, Kaia: { hold: 'torch' }, Sefu: { hold: 'torch' }, Fenna: { hold: 'torch' },
   Mortis: { hold: 'torch' }, Cantor: { hold: 'torch' }, Opaline: { hold: 'torch' }, Shiori: { hold: 'torch' }, Tempo: { hold: 'torch' },
-  Silvane: { hold: 'torch' }, 'Mr. Ledger': { hold: 'torch' }, Gus: { hold: 'torch' }, 'Barry Cloudsley': { hold: 'torch' }, Bo: { hold: 'torch' },
+  Silvane: { hold: 'torch' }, 'Mr. Ledger': { hold: 'torch' }, Gus: { hold: 'torch', attack: 'spell' }, 'Barry Cloudsley': { hold: 'torch' }, Bo: { hold: 'torch' },
   'The Great Zambini': { hold: 'torch' }, Wick: { hold: 'torch' },
   Auriel: { hold: 'shield' },
   // how they strike
@@ -91,10 +104,13 @@ function loadLibrary(): Promise<Library> {
   return library;
 }
 
-/** A clip's length and the moment its blow lands (seconds); 1 s and its middle until the clips have loaded. */
+/**
+ * A clip's length and the moment its blow lands (seconds; 1 s and its middle until the clips have loaded), and the
+ * share of the legs it may take (`LEGS`).
+ */
 export function realClipInfo(name: string) {
   const dur = libraryNow?.dur.get(name) ?? 1;
-  return { dur, hit: HIT[name] ?? dur * 0.5 };
+  return { dur, hit: HIT[name] ?? dur * 0.5, legs: LEGS[name] ?? 1 };
 }
 
 const scenes = new Map<string, Promise<THREE.Group>>();

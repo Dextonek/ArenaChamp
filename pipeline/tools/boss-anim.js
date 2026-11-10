@@ -28,7 +28,7 @@
       document.querySelectorAll('.lil-gui').forEach((e) => { e.style.display = 'none'; });
       for (const who of ['sun', 'ash']) {
         await this.boss(who);
-        for (let i = 0; i < 40 && !vfx.duel.figure.figure?.loaded; i++) await new Promise((r) => setTimeout(r, 250));
+        for (let i = 0; i < 40 && !vfx.duel.figure.loaded; i++) await new Promise((r) => setTimeout(r, 250));
       }
       await new Promise((r) => setTimeout(r, 1200));
       return 'ready';
