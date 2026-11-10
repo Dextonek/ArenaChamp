@@ -37,14 +37,18 @@ licence) would make headings the same on every device; that needs a download, so
 
 - **Login:** the two fights that need no account come first, as two big doors ("Duel the CPU", "Raid the bosses"), then
   "or play online" and the form. The roster drifts by under the panel. A phone no longer opens its keyboard at once.
-- **vs CPU and Raid:** the same hero select as Play (the turning model and the kit on the left, the choices on the right,
-  the fight button along the bottom), instead of one long card. Without an account they get a small header with the two
-  screens and a Log in button. Difficulty buttons run from green to red.
+- **The CPU duel is part of Play** (user, 2026-11-10: "lets move the cpu page into play somewhere"). Two big tabs over the
+  roster, **Online match** and **CPU duel**. The CPU tab shows the difficulty (green to red) and the opponent over the
+  hero grid, and the bar's button becomes "Fight Kaia · Hard". The header has one tab fewer (Play, Raid, Lobbies, Heroes,
+  Profile). Without an account the same screen opens with only the CPU tab usable; the online tab leads to the login.
+  While a search or a lobby is on, the CPU tab is greyed out.
+- **Raid:** the same hero select as Play (the turning model and the kit on the left, the choices on the right, the
+  start button along the bottom), instead of one long card.
 - **Lobbies:** an empty list says what to do next. **Profile, Heroes:** the new panels, tables and tiles.
 - **Loading, the round pick, the toast:** the same fonts and glow.
 
-Files: `src/game/game.css` (rewritten), `src/game/main.ts` (`icon`, `header`, `loginScreen`, `heroStrip`, `cpuScreen`,
-`raidScreen`, the `enter` class in `render`). Sheets: `docs/ui/before_*.jpg`, `docs/ui/after_*.jpg`.
+Files: `src/game/game.css` (rewritten), `src/game/main.ts` (`icon`, `header`, `loginScreen`, `heroStrip`, `menuScreen` with
+`cpuOptions` and `cpuBar`, `raidScreen`, the `enter` class in `render`). Sheets: `docs/ui/before_*.jpg`, `docs/ui/after_*.jpg`.
 
 ## Part 2, not built: the screens over a fight
 

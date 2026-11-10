@@ -189,6 +189,12 @@ function render() {
   const kept = new Map<string, number>();
   if (state.screen === shownScreen) root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => kept.set(e.dataset.keepScroll!, e.scrollTop));
   root.replaceChildren();
+  // With an account the CPU duel is a mode of the Play screen (a finished CPU fight comes back here as 'cpu').
+  if (state.profile && state.screen === 'cpu') {
+    state.screen = 'menu';
+    playMode = 'cpu';
+    safeSet('play.mode', 'cpu');
+  }
   // A screen that was not on show a moment ago comes in with a short rise (`.screen.enter`); a redraw does not.
   const fresh = state.screen !== shownScreen;
   if (fresh) {
@@ -201,7 +207,7 @@ function render() {
   // Without an account: the login screen, or the CPU or Raid screen (an offline fight needs no account).
   if (!state.profile) {
     if (state.screen !== 'cpu' && state.screen !== 'raid') { root.append(loginScreen()); return; }
-    root.append(header(), el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? cpuScreen() : raidScreen()));
+    root.append(header(), el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : raidScreen()));
     keepScroll();
     return;
   }
@@ -213,9 +219,8 @@ function render() {
       : s === 'profile' ? profileScreen(state.profile)
         : s === 'lobbies' ? lobbiesScreen()
           : s === 'lobby' && state.lobby ? lobbyScreen(state.lobby)
-            : s === 'cpu' ? cpuScreen()
-              : s === 'raid' ? raidScreen()
-                : menuScreen(),
+            : s === 'raid' ? raidScreen()
+              : menuScreen(),
   );
   root.append(body);
   // The Play screen (also shown for a lobby that has closed) is wider, and shows the search in its own bar.
@@ -243,12 +248,12 @@ function header() {
   if (!p) {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-      el('nav', {}, nav('vs CPU', 'cpu', 'cpu'), nav('Raid', 'raid', 'raid')),
+      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid')),
       el('div', { class: 'who' }, el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
   }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu', 'play'), nav('vs CPU', 'cpu', 'cpu'), nav('Raid', 'raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile')),
+    el('nav', {}, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -297,22 +302,46 @@ function heroStrip() {
 
 // --- menu / play ---------------------------------------------------------------------------------------------
 
+/** The Play screen's two ways to fight: a match against a player, or an offline duel against the computer. */
+type PlayMode = 'online' | 'cpu';
+let playMode: PlayMode = safeGet('play.mode') === 'cpu' ? 'cpu' : 'online';
+
 /**
  * Play: a hero select. The chosen hero on the left (its turning model, HP, melee or ranged, the passive and Q W E R),
- * the roster on the right, and one bar along the bottom with Find match, Lobbies and Play vs CPU (user, 2026-11-09:
- * "can u remade this so it will be better"). The record lives on the Profile screen and in the header.
+ * the choices on the right, and one bar along the bottom with the button that starts the fight (user, 2026-11-09:
+ * "can u remade this so it will be better"). Two modes share it, picked by the two big tabs over the roster: an online
+ * match, or a duel against the CPU with its level and opponent (user, 2026-11-10: "lets move the cpu page into play").
+ * Without an account only the CPU duel is open, and the online tab leads to the login.
  */
 function menuScreen() {
-  const choice = heroChoice(), hero = kitOf(choice);
+  const guest = !state.profile;
+  // A search or a lobby would take the scene over: while one is on, the online side is the one in use.
+  const busy = state.queue.on || !!state.lobby;
+  const mode: PlayMode = guest ? 'cpu' : busy ? 'online' : playMode;
+  const choice = cpuChoice(), hero = kitOf(choice);
   preview.show(hero?.model);
+  const tab = (m: PlayMode, ic: keyof typeof ICONS, title: string, sub: string) => el('button', {
+    class: `mode${mode === m ? ' on' : ''}`, disabled: m === 'cpu' && busy, title: m === 'cpu' && busy ? 'Leave the queue or your lobby first' : '',
+    onclick: () => {
+      if (m === 'online' && guest) return go('login');
+      if (m === mode) return;
+      playMode = m;
+      safeSet('play.mode', m);
+      render();
+    },
+  }, icon(ic), el('span', {}, el('b', {}, title), el('small', {}, sub)));
   return el('div', { class: 'hs' },
     heroShowcase(hero),
     el('section', { class: 'card hs-roster', 'data-keep-scroll': 'roster' },
+      el('div', { class: 'modes' },
+        tab('online', 'play', 'Online match', guest ? 'Log in to fight a real player' : 'Against the next player in the queue'),
+        tab('cpu', 'cpu', 'CPU duel', 'Offline practice, five levels')),
+      mode === 'cpu' ? cpuOptions(choice) : null,
       el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Choose your hero'), el('span', { class: 'muted small' }, `${kits.length} heroes`)),
-      heroPicker(choice, [], (n) => { setPreferredHero(n); render(); }),
+      heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
       howToFight(),
     ),
-    playBar(hero),
+    mode === 'cpu' ? cpuBar(hero, choice) : playBar(hero),
   );
 }
 
@@ -370,7 +399,7 @@ function heroShowcase(hero: HeroKit | undefined) {
   return card;
 }
 
-/** Along the bottom of the Play screen: Lobbies, Play vs CPU and Find match, or the search while queued. */
+/** Along the bottom of the Play screen in its online mode: Lobbies and Find match, or the search while queued. */
 function playBar(hero: HeroKit | undefined) {
   const queued = state.queue.on;
   const find = queued
@@ -391,7 +420,6 @@ function playBar(hero: HeroKit | undefined) {
       ? 'You are in a lobby: go back to it, or leave it to search.'
       : 'Find match pairs you with the next player in the queue who picked a different hero. Or open a lobby and share its code.'),
     el('button', { class: 'btn', disabled: queued, onclick: () => go(state.lobby ? 'lobby' : 'lobbies') }, state.lobby ? 'Back to lobby' : 'Lobbies'),
-    el('button', { class: 'btn', disabled: queued || !!state.lobby, onclick: () => go('cpu') }, 'Play vs CPU'),
     find);
   if (queued) updateQueueText(bar);
   return bar;
@@ -513,13 +541,14 @@ function setCpuHero(name: string) {
   else safeSet('cpu.hero', name);
 }
 
-function cpuScreen() {
-  const choice = cpuChoice(), hero = kitOf(choice);
+/** The opponent picked for a CPU duel, or undefined for a random one (also when it is the player's own hero). */
+const cpuFoe = (choice: string) => (cpuPick.foe !== choice ? kitOf(cpuPick.foe) : undefined);
+
+/** The Play screen's CPU mode, over the roster: the five levels and the opponent. */
+function cpuOptions(choice: string) {
   const level = cpuLevel(cpuPick.level);
-  const foeKit = cpuPick.foe !== choice ? kitOf(cpuPick.foe) : undefined;
+  const foeKit = cpuFoe(choice);
   const won = cpuWon();
-  // A match from the queue or a lobby would take the scene over: those come first.
-  const busy = state.queue.on || !!state.lobby;
   const levels = el('div', { class: 'levels' }, ...CPU_LEVELS.map((l) => el('button', {
     class: `level lv-${l.id}${l.id === level.id ? ' on' : ''}`, title: l.blurb,
     onclick: () => { cpuPick.level = l.id; safeSet('cpu.level', String(l.id)); render(); },
@@ -530,31 +559,28 @@ function cpuScreen() {
   },
   el('option', { value: 'random', selected: !foeKit }, 'A random hero'),
   ...kits.filter((k) => k.name !== choice).map((k) => el('option', { value: k.name, selected: k === foeKit }, `${k.name}, ${k.title}`)));
-  preview.show(hero?.model);
-  // The same hero select as Play: the chosen hero on the left, the choices on the right, the fight button along the bottom.
-  return el('div', { class: 'hs' },
-    heroShowcase(hero),
-    el('section', { class: 'card hs-roster', 'data-keep-scroll': 'cpu' },
-      el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Play vs CPU'), el('span', { class: 'muted small' }, 'Offline · a random arena · not on your record')),
-      el('h3', { class: 'gap' }, 'Difficulty'),
+  return el('div', { class: 'cpu-opts' },
+    el('div', {},
+      el('h3', {}, 'Difficulty'),
       levels,
-      el('p', { class: 'level-blurb' }, el('b', {}, `${level.name}: `), level.blurb),
+      el('p', { class: 'level-blurb muted small' }, el('b', {}, `${level.name}: `), level.blurb)),
+    el('div', {},
       el('h3', {}, 'Opponent'),
       el('div', { class: 'foe-row' }, foeKit ? portrait(foeKit, 'portrait sm') : randomPortrait('portrait sm'), foeSelect),
-      el('h3', { class: 'gap' }, 'Your hero'),
-      heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
-      howToFight(),
-    ),
-    el('div', { class: 'hs-bar' },
-      el('div', { class: `hs-note small ${busy ? 'error' : 'muted'}` }, busy
-        ? 'Leave the matchmaking queue or your lobby to fight the CPU.'
-        : `${hero ? hero.name : 'A random hero'} against ${foeKit ? foeKit.name : 'a random hero'}, best of three.`),
-      el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back'),
-      el('button', {
-        class: 'btn primary big hs-find', disabled: busy,
-        onclick: () => void cpu.start({ hero: hero?.name ?? randomKit([foeKit?.name]).name, foe: foeKit?.name ?? 'random', level: level.id }),
-      }, `Fight ${foeKit ? foeKit.name : 'a random hero'} · ${level.name}`)),
-  );
+      el('p', { class: 'level-blurb muted small' }, 'One round in a random arena. It does not count on your record.')));
+}
+
+/** Along the bottom of the Play screen in its CPU mode: the fight button (and the way to the login without an account). */
+function cpuBar(hero: HeroKit | undefined, choice: string) {
+  const level = cpuLevel(cpuPick.level);
+  const foeKit = cpuFoe(choice);
+  return el('div', { class: 'hs-bar' },
+    el('div', { class: 'hs-note small muted' }, `${hero ? hero.name : 'A random hero'} against ${foeKit ? foeKit.name : 'a random hero'} on ${level.name}.`),
+    state.profile ? null : el('button', { class: 'btn', onclick: () => go('login') }, icon('login'), 'Log in'),
+    el('button', {
+      class: 'btn primary big hs-find',
+      onclick: () => void cpu.start({ hero: hero?.name ?? randomKit([foeKit?.name]).name, foe: foeKit?.name ?? 'random', level: level.id }),
+    }, `Fight ${foeKit ? foeKit.name : 'a random hero'} · ${level.name}`));
 }
 
 // --- raid ----------------------------------------------------------------------------------------------------

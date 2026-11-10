@@ -121,12 +121,15 @@ as they are; an answer ends the wait, but the break still lasts its 3 s.
 
 ## Play vs CPU (offline)
 
-The Play card's **Play vs CPU** and the login screen's **Play vs CPU · no account needed** open the CPU screen: five
-difficulty buttons (Novice to Master, [cpuLevels.ts](../../src/cpuLevels.ts); a tick on each level already beaten),
-the hero picker, an opponent select (a random hero by default, never your own) and **Fight**. Every hero picker starts with a **Random** tile: on the Play card and the CPU screen it stays chosen and is drawn when the match or fight starts, so a Rematch keeps the hero drawn; in a lobby it is drawn at once, so the other player sees the hero. The fight is the
+The CPU duel is a mode of the Play screen (since 2026-11-10; it was a screen of its own): two tabs over the roster,
+**Online match** and **CPU duel**. The CPU mode shows five difficulty buttons (Novice to Master,
+[cpuLevels.ts](../../src/cpuLevels.ts); a tick on each level already beaten) and an opponent select (a random hero by
+default, never your own) over the hero picker, and the bar's button becomes **Fight**. The login screen's **Duel the
+CPU** opens the same screen without an account (`state.screen === 'cpu'`): only the CPU mode is open there, and the
+online tab leads to the login. The mode is kept in `localStorage` (`play.mode`). Every hero picker starts with a **Random** tile: on the Play card and the CPU screen it stays chosen and is drawn when the match or fight starts, so a Rematch keeps the hero drawn; in a lobby it is drawn at once, so the other player sees the hero. The fight is the
 offline AI duel (`CpuMatch` in `src/game/cpu.ts`, `duel.start('play')` at `duel.cpuLevel`) in a random arena: no
 server messages, nothing on the profile. One round; the card's Rematch keeps hero, opponent choice and level, and
-its Leave duel (or the Leave button during the fight) returns to the CPU screen. The choices and the beaten levels
+its Leave duel (or the Leave button during the fight) returns to the Play screen in its CPU mode. The choices and the beaten levels
 live in this browser's `localStorage` (`cpu.level`, `cpu.foe`, `cpu.hero` without an account,
 `cpu.won.<account or guest>`). Fight is disabled while the player is queued or in a lobby, since a `match_start`
 would take the scene over.
