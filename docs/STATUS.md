@@ -16,7 +16,19 @@ _Last updated: 2026-11-10 (legs, Hank's axe; friend brackets half built)_
   because the figure build needs helper modules from `C:\projectG\xianxia\blender`, which this computer does not have
   (SETUP.md now says so). `restyle_batch1.py` builds the same axe (`hank_axe.py`) but that path is **not run yet**: on
   the first computer, rebuild `timber_v3` once and compare it with the committed model.
-- Both are in the News page's next release ("Heroes stand tall", `live: false`).
+- `0e5ad3c` Items held up stay up (user: "check more heroes which have wrong direction holding their weapon"): the
+  stance, walk and run clips' empty hand pointed every held-up item level and ahead; a caster's scepter, wand, mirror or
+  needles now stay as modelled, a fighter's blade on guard (Vesper, Opaline, Shiori, Silvane, Madame Cleaver, Grandma
+  Ironknit, Zambini, Sir Whiskers, Pim and Pom).
+- `ec4642b` Arms hang by the side when standing (user: "look at all heroes spotlight and make it be correct"): the
+  idle's arms were the pack figure's 40° out; now each hero's own modelled hang (`Hero.armOut`). Walk and run unchanged.
+- `ceb6c6b` Sirix's wings (user: "sirix wings are not correct"): rebuilt after his portrait, two pairs rising behind the
+  shoulders; and the game now keeps a model's own see-through parts (it drew Sirix's wings and Marin's water sash
+  solid). Patched in Blender here (`patch_sirix_wings.py`); `hero_figures.py` builds the same wings but that path is not
+  run yet: rebuild `hive` once on the first computer and compare.
+- Waiting on the user: Gus's mop is modelled head-up; Grandma Ironknit's needles now point up; Shiori's brush stands
+  bristles-down. Each is as the model has it; the user may want them changed.
+- All of these are in the News page's next release ("Heroes stand tall", `live: false`).
 - Not checked: a person playing; a phone; Hank in a real fight from the game camera (pictures were taken on the Heroes
   stand rig, stepped by hand).
 
