@@ -191,6 +191,15 @@ level by its end (`len` ≥ 0.9 m, `back` < 0.25 m, neither up nor down; only Ha
 the carry's, not the stance's: hanging a little out and forward, swinging a little with the walk, the axe keeping its
 modelled line. It is never two-handed, and the attack is the one-handed chop (`Melee_1H_Attack_Chop`).
 
+### Arms fitted to the body, standing (2026-11-10)
+
+On the Heroes stand (user: "look at all heroes spotlight and make it be correct") nearly every hero held its arms out
+stiffly, a mannequin's A. The pack's figure is wide and round, so its idle hangs the upper arms about 40° out from its
+sides; our heroes were modelled with them 9-15° out (Big Yoko 34°, Mabel 28°, Professor Puff 23° for their bulk). The
+idle now turns each hanging arm in by the difference (`fitArm`, `Hero.armOut` measured from the model at load), upper
+arm and forearm together, so it keeps the clip's small motion. The walk and the run are left as the animator made them:
+they swing the arms wide and far back on purpose, and that walk was accepted.
+
 ### Items held up, while standing and walking (2026-11-10)
 
 The user asked for the heroes holding their weapon the wrong way. A sheet of all 39 (standing, walking, the attack)

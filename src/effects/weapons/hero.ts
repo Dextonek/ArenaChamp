@@ -124,6 +124,8 @@ export class Hero {
   private restFig = new Map<BoneName, THREE.Quaternion>();
   /** A leg's length at rest (hip to ankle), at the figure's own size. */
   legLength = 0.8;
+  /** How far each upper arm hangs out from the side at rest (rad): the modeller's clearance of the body (`HeroFigure`). */
+  readonly armOut = { R: 0.2, L: 0.2 };
   /** The thigh's share of `legLength` (the rest is the shin): the clips' feet are placed by it (`HeroFigure`). */
   thighPart = 0.5;
   /** Each hand's orientation in the figure's frame at rest (`steadyHand`). */
@@ -229,6 +231,8 @@ export class Hero {
       if (upper && fore) {
         const sh = upper.getWorldPosition(new THREE.Vector3()), el = fore.getWorldPosition(new THREE.Vector3());
         this.arm[side] = { hand: at.clone().divideScalar(scale), shoulder: sh.clone().divideScalar(scale), length: (sh.distanceTo(el) + el.distanceTo(at)) / scale };
+        // how far the modeller hung the upper arm out from the side, clear of the body (the clips are fitted to it)
+        this.armOut[side] = Math.atan2(Math.abs(el.x - sh.x), Math.max(1e-6, sh.y - el.y));
       }
       if (known) continue;
       const pts: THREE.Vector3[] = [];

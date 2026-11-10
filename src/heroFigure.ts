@@ -172,6 +172,29 @@ const DOWN = new THREE.Vector3(0, -1, 0);
  * leg lengths (its knees are bent 12° even at rest). Measured from `pipeline/assets/kaykit/Rig_Medium_General.glb`.
  */
 const KK_THIGH = 0.227, KK_SHIN = 0.149, KK_REST_REACH = 0.993;
+/**
+ * How far the clips' figure hangs its upper arms out from its sides when they hang (its idle, rad): its body is wide and
+ * round, so about 40°. Our heroes' arms hang 9-34° out, as each was modelled to clear its own body (`Hero.armOut`).
+ */
+const KK_ARM_OUT = 0.707;
+const fitAxis = new THREE.Vector3(0, 0, 1);
+
+/**
+ * Fits a clip's arm to a hero's own body: the clip's figure needs its arms 40° out to clear its sides, our heroes much less,
+ * so copied as they are the arms stand out stiffly (a mannequin's A; user, 2026-11-10, on the Heroes stand). A hanging
+ * arm is turned in toward the side by the difference, upper arm and forearm together, as much as it hangs down. `rest` is
+ * how far this hero's upper arm hangs out at rest (rad). Used for the idle only: the walk and the run swing the arms wide
+ * and far back, as the animator made them.
+ */
+function fitArm(arm: { upper: THREE.Vector3; fore: THREE.Vector3 }, rest: number, side: 'R' | 'L') {
+  const down = Math.min(1, Math.max(0, (-arm.upper.y - 0.1) / 0.4));
+  if (down <= 0) return;
+  // turning about the forward axis: + takes a left arm out (toward +x), a right arm in
+  const a = (rest - KK_ARM_OUT) * down * (side === 'L' ? 1 : -1);
+  arm.upper.applyAxisAngle(fitAxis, a);
+  arm.fore.applyAxisAngle(fitAxis, a);
+}
+
 /** How much of the idle's crouch a hero keeps on the Heroes stand (`atEase`). */
 const AT_EASE = 0.35;
 const fitReach = new THREE.Vector3(), fitKnee = new THREE.Vector3();
@@ -881,6 +904,8 @@ export class HeroFigure {
     f.turnBone('head', P.qHead, w);
     for (const side of ['L', 'R'] as const) {
       const wa = side === 'R' ? share.armR : share.armL, leg = P.leg[side];
+      // standing only: the walk and the run swing the arms wide on purpose (as the animator made them)
+      if (share.fit !== undefined && clip === 'Idle_A') fitArm(P.arm[side], f.armOut[side], side);
       f.pointBone(`arm${side}`, `fore${side}`, P.arm[side].upper, wa);
       f.pointBone(`fore${side}`, `hand${side}`, P.arm[side].fore, wa);
       if (legs < 1) {
