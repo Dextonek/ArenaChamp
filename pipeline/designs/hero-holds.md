@@ -165,6 +165,23 @@ then drags it).
 Cost: `HeroFigure.follow` takes about 0.27 ms a frame for one hero on the development machine (up to five clip samples
 a frame: stance, guard, walk, run, attack).
 
+### Legs fitted to the hero (fourth pass, 2026-11-10)
+
+The user saw folded legs on the Heroes stand ("some of the champ has weird legs": Isolde, Brannoc). The pack's figure
+has a long thigh and a short shin (0.227 and 0.149 m) and stands with its knees bent 12° even at rest; our heroes' thigh
+and shin are about equal. Copying the clip's thigh and shin directions put the foot about 0.12 leg lengths behind the
+hip, with the knee pushed forward, and the idle bent our knees 31-56°.
+
+Now standing, walking and running fit the legs (`fitLeg`): the foot goes where the clip puts it from the hip, in leg
+lengths and measured from the pack figure's own rest reach, and the knee bends as much as this hero's thigh and shin
+need, the way the clip's knee points. Attacks and casts keep the clip's own legs. On the Heroes stand (`atEase`, set by
+`HeroPreview`) every hero stands in the plain idle with 35% of its crouch (hips and knees alike, so the feet stay on the
+stand), no fist guard, and a two-handed weapon keeps only its idle's arms: knees 16-22°, ankles within 2% of a leg
+length of the floor. In a fight the stances keep their depth (knees 28-56°, the fist guard deepest).
+
+Walking at 4 m/s, a planted foot drifts less: Sefu 42 → 33%, Isolde 46 → 33%, Brannoc 28 → 20%, Hank 36 → 28%.
+`motion-check.js` now reports the fitted thighs and shins as off the clip; that is by design.
+
 ## Checked, and not
 
 - Checked on the tool page with the pose sheet (`pipeline/tools/pose-sheet.js`): all 39 heroes idle, walking, in a thrust

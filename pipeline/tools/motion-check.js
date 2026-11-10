@@ -13,6 +13,8 @@
 // (game time, clip, clip time, weight). Limbs: upper arm, forearm, thigh, shin (L and R) and what each hand holds.
 // Arms that are not the clip's own on purpose (a second hand on a haft, a staff that only tips part of the way) show
 // as large angles: read them with the hero in mind.
+// Standing, walking and running fit the clip's legs to the hero's own (`fitLeg` in src/heroFigure.ts): the foot goes where
+// the clip puts it, the knee bends for this hero's thigh and shin. Thigh and shin there differ from the clip by design.
 window._motionCheck = async (name, what, o = {}) => {
   const { sampleClip, newClipPose } = await import('/src/motion/clips.ts');
   const hm = vfx.heroMode, F = hm.figure;

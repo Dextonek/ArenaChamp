@@ -5,7 +5,8 @@ import type { HeroKit } from '../heroes';
 
 /**
  * A small turntable for the heroes page: its own renderer and scene (lights, a dark plinth) showing one hero
- * model, turning slowly. The hero is the same figure as in a fight, at rest: it breathes, shifts its weight and holds its
+ * model, turning slowly. The hero is the same figure as in a fight, at rest and standing at ease (`HeroFigure.atEase`: a
+ * shallower crouch, no fist guard): it breathes, shifts its weight and holds its
  * staff or sword the way it does there. It only renders while its canvas is in the page and visible.
  */
 export class HeroPreview {
@@ -44,6 +45,7 @@ export class HeroPreview {
       new THREE.MeshBasicMaterial({ color: 0xc9a24a }),
     );
     rimRing.rotation.x = Math.PI / 2;
+    this.figure.atEase = true;
     this.scene.add(plinth, rimRing, this.figure.group);
     this.camera.position.set(0, 1.55, 6.2);
     this.camera.lookAt(0, 1.2, 0);

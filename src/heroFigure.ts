@@ -153,12 +153,48 @@ const WALK: ClipName = 'Walking_A', RUN: ClipName = 'Running_A';
  * The body's share of a clip, and each arm's (0..1): an arm with a staff in its hand keeps its own way of carrying it.
  * `legs` below 1 swings the legs less far; `grip` is how firmly a two-handed weapon's second hand stays on it (as the
  * weapon arm's share when left out: a clip blending in over a stance that already has both hands on keeps them on);
+ * `fit`, when set, fits the clip's legs to this hero's (`fitLeg`) with that much of the clip's crouch (1 all of it);
  * `stand` below 1 leaves that much of the legs and of the hips' place to what is under the clip (a hero already walking
  * off while its blow recovers keeps walking); `from` is taken off the hips' place (a clip entered part-way, where its
  * figure has already stepped back, starts where the hero stands).
  */
-interface Share { body: number; armR: number; armL: number; legs?: number; grip?: number; stand?: number; from?: THREE.Vector3 }
+interface Share { body: number; armR: number; armL: number; legs?: number; grip?: number; stand?: number; from?: THREE.Vector3; fit?: number }
 const DOWN = new THREE.Vector3(0, -1, 0);
+
+/**
+ * The clips' figure (KayKit's medium rig): its thigh and shin (m), and how far its ankle reaches from its hip at rest, in
+ * leg lengths (its knees are bent 12° even at rest). Measured from `pipeline/assets/kaykit/Rig_Medium_General.glb`.
+ */
+const KK_THIGH = 0.227, KK_SHIN = 0.149, KK_REST_REACH = 0.993;
+/** How much of the idle's crouch a hero keeps on the Heroes stand (`atEase`). */
+const AT_EASE = 0.35;
+const fitReach = new THREE.Vector3(), fitKnee = new THREE.Vector3();
+
+/**
+ * Fits a clip's leg to a hero's own legs. The clips' figure has a long thigh and a short shin; our heroes' are about equal,
+ * so the clip's thigh and shin directions copied as they are put the foot well behind the hip, with the knee jutting
+ * forward (legs that look folded under the hero on the Heroes stand). Instead the foot goes where the clip puts it from
+ * the hip (in leg lengths, as far in from rest as the clip's), and the knee bends as much as this hero's thigh and shin
+ * need for that, the way the clip's knee points. `part` is the thigh's share of the hero's leg; `crouch` below 1 takes
+ * the foot in from rest only that much of the way (the hips must then drop as much less: `replay`). Used for standing,
+ * walking and running; attacks and casts keep the clip's own legs.
+ */
+function fitLeg(leg: { thigh: THREE.Vector3; shin: THREE.Vector3 }, part: number, crouch = 1) {
+  const kt = KK_THIGH / (KK_THIGH + KK_SHIN);
+  const reach = fitReach.copy(leg.thigh).multiplyScalar(kt).addScaledVector(leg.shin, 1 - kt);
+  const d0 = reach.length();
+  if (d0 < 1e-4) return;
+  reach.divideScalar(d0);
+  const a = part, b = 1 - part;
+  const d = Math.max(Math.abs(a - b) + 0.02, Math.min(0.9995, 1 - (1 - d0 / KK_REST_REACH) * crouch));
+  const cos = Math.min(1, (a * a + d * d - b * b) / (2 * a * d)), sin = Math.sqrt(1 - cos * cos);
+  // The knee goes the way the clip's does: its thigh away from the hip-to-ankle line (forward when that is too small to read).
+  const knee = fitKnee.copy(leg.thigh).addScaledVector(reach, -leg.thigh.dot(reach));
+  if (knee.lengthSq() < 1e-6) knee.set(0, 0, 1).addScaledVector(reach, -reach.z);
+  knee.normalize();
+  leg.thigh.copy(reach).multiplyScalar(cos).addScaledVector(knee, sin);
+  leg.shin.copy(reach).multiplyScalar(d).addScaledVector(leg.thigh, -a).normalize();
+}
 /**
  * How much of the pack's fist guard a bare-handed fighter stands in, over the plain stand. The guard was drawn for a
  * figure with short arms and legs: all of it on a tall hero is a deep lunge with the arms held wide.
@@ -271,6 +307,8 @@ export class HeroFigure {
   /** Where the clips of this frame have put the hips from where they rest (the figure's frame, leg lengths). */
   private hipsOff = new THREE.Vector3();
   private share: Share = { body: 0, armR: 0, armL: 0, legs: 1 };
+  /** Standing on the Heroes stand: the plain idle with a shallower crouch, no fist guard (`HeroPreview`). */
+  atEase = false;
   private hipsFrom = new THREE.Vector3();
   private swingLeft = false;
   private lastWind = -1;
@@ -652,13 +690,23 @@ export class HeroFigure {
     const two = this.overhead && mainHold !== 'none' && (lefty ? holdR : holdL) === 'none';
     const bare = mainHold === 'none' || holdR === holdL || (mainHold === 'hang' && !two);
     const guard = !two && this.melee && bare;
-    const stance: ClipName = two ? 'Melee_2H_Idle' : 'Idle_A';
+    // On the Heroes stand (`atEase`) every hero stands in the plain idle, its crouch shallower; a two-handed weapon keeps
+    // its idle's arms only, and there is no fist guard.
+    const stance: ClipName = two && !this.atEase ? 'Melee_2H_Idle' : 'Idle_A';
     const calm = 1 - Math.max(cn && !CAST_CLIP[cn.style] ? castTook : 0, this.liftW);
     const armR = (holdR !== 'staff' || two ? 1 : 0) * calm, armL = (holdL !== 'staff' || two ? 1 : 0) * calm;
     const sh = this.share, standing = 1 - this.gait;
     sh.body = standing; sh.armR = (two ? 1 : standing) * armR; sh.armL = (two ? 1 : standing) * armL; sh.legs = 1;
+    sh.fit = this.atEase ? AT_EASE : 1;
     this.replay(f, stance, t, sh, lefty, true, holdR, holdL, lefty);
-    if (guard) {
+    if (two && this.atEase) {
+      const body = sh.body;
+      sh.body = 0;
+      this.replay(f, 'Melee_2H_Idle', t, sh, lefty, true, holdR, holdL, lefty);
+      sh.body = body;
+    }
+    sh.fit = 1;
+    if (guard && !this.atEase) {
       sh.body *= FIST_GUARD; sh.armR *= FIST_GUARD; sh.armL *= FIST_GUARD;
       this.replay(f, 'Melee_Unarmed_Idle', t, sh, lefty, true, holdR, holdL, lefty);
     }
@@ -671,6 +719,8 @@ export class HeroFigure {
         this.replay(f, clip, g.leftFwd + ((ph - Math.PI / 2) / (2 * Math.PI)) * g.dur, sh, false, true, holdR, holdL, lefty);
       }
     }
+    // Attacks and casts keep the clip's own legs (a lunge as the animator made it).
+    sh.fit = undefined;
     // What the clips do not know: the chest rocking on a start or a stop and leaning into a turn, the slow look round,
     // the fidgets.
     const clips = standing + going;
@@ -815,6 +865,8 @@ export class HeroFigure {
     if (w <= 0.001 && share.armR <= 0.001 && share.armL <= 0.001) return;
     const P = sampleClip(clip, t, this.clipPose, mirror, loop), legs = share.legs ?? 1, wl = w * (share.stand ?? 1);
     if (share.from) P.hips.sub(share.from);
+    // A shallower crouch lowers the hips less, as much less as the knees bend less (`fitLeg`), so the feet stay down.
+    if (share.fit !== undefined && share.fit < 1) P.hips.y *= share.fit;
     this.hipsOff.lerp(P.hips, wl);
     f.turnBone('pelvis', P.qHips, w);
     f.turnBone('chest', P.qChest, w);
@@ -827,6 +879,7 @@ export class HeroFigure {
         leg.thigh.lerp(DOWN, 1 - legs).normalize();
         leg.shin.lerp(DOWN, 1 - legs).normalize();
       }
+      if (share.fit !== undefined) fitLeg(leg, f.thighPart, share.fit);
       f.pointBone(`thigh${side}`, `shin${side}`, leg.thigh, wl);
       f.pointBone(`shin${side}`, `foot${side}`, leg.shin, wl);
       f.turnBone(`foot${side}`, leg.foot, wl);

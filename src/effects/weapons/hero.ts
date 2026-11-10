@@ -124,6 +124,8 @@ export class Hero {
   private restFig = new Map<BoneName, THREE.Quaternion>();
   /** A leg's length at rest (hip to ankle), at the figure's own size. */
   legLength = 0.8;
+  /** The thigh's share of `legLength` (the rest is the shin): the clips' feet are placed by it (`HeroFigure`). */
+  thighPart = 0.5;
   /** Each hand's orientation in the figure's frame at rest (`steadyHand`). */
   private handRest: { R: THREE.Quaternion | null; L: THREE.Quaternion | null } = { R: null, L: null };
   private v3 = new THREE.Vector3();
@@ -191,6 +193,7 @@ export class Hero {
     if (thigh && shin && foot) {
       const a = thigh.getWorldPosition(new THREE.Vector3()), b = shin.getWorldPosition(new THREE.Vector3()), c = foot.getWorldPosition(new THREE.Vector3());
       this.legLength = (a.distanceTo(b) + b.distanceTo(c)) / (this.root.scale.x || 1);
+      this.thighPart = a.distanceTo(b) / Math.max(1e-6, a.distanceTo(b) + b.distanceTo(c));
     }
     if (hand) {
       const handQ = hand.getWorldQuaternion(new THREE.Quaternion());

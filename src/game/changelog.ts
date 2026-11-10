@@ -39,6 +39,18 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-10',
+    title: 'Heroes stand tall',
+    live: false,
+    items: [
+      {
+        tag: 'Motion',
+        title: 'Straight legs on the Heroes stand',
+        text: 'Heroes on the Play and Heroes screens stand at ease on straight legs instead of a deep crouch with the knees pushed forward. In a fight their feet now land under them when they stand and walk, and slide less.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-10',
     title: 'A new look, and heroes that move like fighters',
     live: true,
     lead: { clip: '/news/fight.mp4', poster: '/news/fight.jpg', alt: 'Big Yoko and Hank duel in Ember Caldera: charges, a felled tree and axe blows.' },
