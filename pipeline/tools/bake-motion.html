@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bake motion</title>
+</head>
+<body style="margin:0;background:#111;color:#ccc;font:14px sans-serif;padding:12px">
+<p>Reads animation clips from the KayKit Character Animations pack (CC0, <code>pipeline/assets/kaykit/</code>) and writes what
+the game's own rig can replay (<code>src/motion/kaykit.json</code>, read by <code>src/motion/clips.ts</code>). Dev server only:
+<code>http://localhost:5175/pipeline/tools/bake-motion.html</code>. From the browser tool:</p>
+<pre>
+await _bake()            // every clip in CLIPS -> the JSON text in window._json (return it; the tool saves it to a file)
+await _mannequin('Melee_2H_Attack_Chop', 16)   // 16 frames of the pack's own mannequin, from its right side -> window._jpg
+await _mannequin('Melee_2H_Attack_Chop', 12, { stick: 1.3, from: 0.33, to: 1.43, w: 200, h: 220, cols: 6 })   // with a stick in its right hand
+</pre>
+<p>Per frame, in the character's own frame (X its left, Y up, Z forward): how far the hips are from where they rest (in leg
+lengths), how the hips, chest and head are turned from rest, which way each upper arm, forearm, thigh and shin points, how
+each foot is turned from rest, and which way each hand's item points.</p>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+// file -> the clips taken from it
+const CLIPS = {
+  CombatMelee: ['Melee_1H_Attack_Chop', 'Melee_1H_Attack_Slice_Diagonal', 'Melee_1H_Attack_Slice_Horizontal', 'Melee_1H_Attack_Stab',
+    'Melee_2H_Attack_Chop', 'Melee_2H_Attack_Slice', 'Melee_2H_Attack_Stab', 'Melee_2H_Idle', 'Melee_Unarmed_Attack_Punch_A', 'Melee_Unarmed_Idle'],
+  CombatRanged: ['Ranged_Magic_Raise', 'Ranged_Magic_Shoot', 'Ranged_Magic_Spellcasting'],
+  General: ['Hit_A', 'Hit_B', 'Idle_A'],
+  MovementBasic: ['Running_A', 'Walking_A'],
+};
+const FPS = 30;
+const loader = new GLTFLoader();
+const files = new Map();
+const open = async (file) => {
+  if (!files.has(file)) files.set(file, await loader.loadAsync(`/pipeline/assets/kaykit/Rig_Medium_${file}.glb`));
+  return files.get(file);
+};
+
+const bonesOf = (scene) => {
+  const b = {};
+  scene.traverse((o) => { if (o.isBone) b[o.name.replace(/\./g, '')] = o; });
+  // three strips the dot: "upperarm.l" arrives as "upperarml"
+  return b;
+};
+const V = () => new THREE.Vector3(), Q = () => new THREE.Quaternion();
+const wp = (o, out = V()) => o.getWorldPosition(out);
+const wq = (o, out = Q()) => o.getWorldQuaternion(out);
+const r3 = (n) => Math.round(n * 1000) / 1000;
+
+/** The rig at rest (its T-pose clip, or as loaded). */
+const rest = (gltf, b) => {
+  const mixer = new THREE.AnimationMixer(gltf.scene);
+  const t = gltf.animations.find((a) => a.name === 'T-Pose');
+  if (t) { mixer.clipAction(t).play(); mixer.setTime(0); }
+  gltf.scene.updateMatrixWorld(true);
+  const R = { hips: wp(b.hips), q: {}, foot: {} };
+  for (const n of ['hips', 'chest', 'head']) R.q[n] = wq(b[n]);
+  for (const s of ['l', 'r']) {
+    R.q['foot' + s] = wq(b['foot' + s]);
+    R['leg' + s] = wp(b['upperleg' + s]).distanceTo(wp(b['lowerleg' + s])) + wp(b['lowerleg' + s]).distanceTo(wp(b['foot' + s]));
+  }
+  mixer.stopAllAction();
+  mixer.uncacheRoot(gltf.scene);
+  return R;
+};
+
+const frameOf = (b, R, slotAxis) => {
+  const out = [];
+  const push = (...v) => { for (const x of v) out.push(r3(x)); };
+  const leg = (R.legl + R.legr) / 2;
+  const h = wp(b.hips).sub(R.hips).divideScalar(leg);
+  push(h.x, h.y, h.z);
+  for (const n of ['hips', 'chest', 'head']) { const d = wq(b[n]).multiply(R.q[n].clone().invert()); push(d.x, d.y, d.z, d.w); }
+  for (const s of ['l', 'r']) {
+    const ua = wp(b['lowerarm' + s]).sub(wp(b['upperarm' + s])).normalize();
+    const la = wp(b['wrist' + s]).sub(wp(b['lowerarm' + s])).normalize();
+    const aim = slotAxis.clone().applyQuaternion(wq(b['handslot' + s])).normalize();
+    push(ua.x, ua.y, ua.z, la.x, la.y, la.z, aim.x, aim.y, aim.z);
+  }
+  for (const s of ['l', 'r']) {
+    const ul = wp(b['lowerleg' + s]).sub(wp(b['upperleg' + s])).normalize();
+    const ll = wp(b['foot' + s]).sub(wp(b['lowerleg' + s])).normalize();
+    const f = wq(b['foot' + s]).multiply(R.q['foot' + s].clone().invert());
+    push(ul.x, ul.y, ul.z, ll.x, ll.y, ll.z, f.x, f.y, f.z, f.w);
+  }
+  return out;
+};
+
+/** Which way a held item points in a hand slot's own frame: the axis that points up when the 2H idle holds its weapon up. */
+window._slotAxis = new THREE.Vector3(0, 1, 0);
+
+window._bake = async () => {
+  const data = { source: 'KayKit Character Animations 1.1 by Kay Lousberg (CC0), Rig_Medium', fps: FPS, stride: 0, clips: {} };
+  for (const [file, names] of Object.entries(CLIPS)) {
+    const gltf = await open(file), b = bonesOf(gltf.scene), R = rest(gltf, b);
+    for (const name of names) {
+      const clip = gltf.animations.find((a) => a.name === name);
+      if (!clip) { console.warn('no clip', name); continue; }
+      const mixer = new THREE.AnimationMixer(gltf.scene);
+      mixer.clipAction(clip).play();
+      const n = Math.max(2, Math.round(clip.duration * FPS) + 1), frames = [];
+      // the hit: the frame where the tip of what the right hand holds is furthest forward of the hips
+      let hit = 0, far = -1e9;
+      for (let i = 0; i < n; i++) {
+        mixer.setTime(Math.min(clip.duration - 1e-4, i / FPS));
+        gltf.scene.updateMatrixWorld(true);
+        const f = frameOf(b, R, window._slotAxis);
+        data.stride = f.length;
+        frames.push(...f);
+        const reach = wp(b.wristr).z + 0.8 * window._slotAxis.clone().applyQuaternion(wq(b.handslotr)).z - wp(b.hips).z;
+        if (reach > far) { far = reach; hit = i / FPS; }
+      }
+      mixer.stopAllAction();
+      mixer.uncacheRoot(gltf.scene);
+      data.clips[name] = { dur: r3(clip.duration), hit: r3(hit), frames };
+    }
+  }
+  window._json = JSON.stringify(data);
+  return Object.entries(data.clips).map(([k, c]) => `${k}: ${c.dur}s, hit ${c.hit}s, ${c.frames.length / data.stride} frames`).join('\n') + `\nstride ${data.stride}, ${window._json.length} chars`;
+};
+
+/** Frames of the pack's own mannequin playing `name`: the look to match. `yaw` -PI/2 is its right side, forward to the right. */
+window._mannequin = async (name, frames = 16, o = {}) => {
+  const file = Object.entries(CLIPS).find(([, names]) => names.includes(name))?.[0];
+  const gltf = await open(file);
+  const clip = gltf.animations.find((a) => a.name === name);
+  const W = o.w ?? 150, H = o.h ?? 130, cols = o.cols ?? 8, yaw = o.yaw ?? -Math.PI / 2, dist = o.dist ?? (o.stick ? 8.4 : 6.2);
+  // the pack's figure holds nothing: a stick in the right hand's slot shows where a weapon would point
+  let stick = null;
+  if (o.stick) {
+    stick = new THREE.Mesh(new THREE.BoxGeometry(0.07, o.stick, 0.07), new THREE.MeshBasicMaterial({ color: 0xffd27a }));
+    stick.position.copy(window._slotAxis).multiplyScalar(o.stick / 2 - 0.2);
+    stick.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), window._slotAxis);
+    bonesOf(gltf.scene).handslotr.add(stick);
+  }
+  const r = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  r.setSize(W, H, false);
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x2a2730);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x333344, 1.6));
+  const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+  sun.position.set(2, 5, 3);
+  scene.add(sun, gltf.scene);
+  const cam = new THREE.PerspectiveCamera(30, W / H, 0.1, 80);
+  cam.position.set(Math.sin(yaw) * dist, 1.3, Math.cos(yaw) * dist);
+  cam.lookAt(0, o.stick ? 1.35 : 1.0, 0);
+  const mixer = new THREE.AnimationMixer(gltf.scene);
+  mixer.clipAction(clip).play();
+  const out = document.createElement('canvas');
+  out.width = W * cols;
+  out.height = (H + 14) * Math.ceil(frames / cols);
+  const g = out.getContext('2d');
+  g.fillStyle = '#000';
+  g.fillRect(0, 0, out.width, out.height);
+  const t0 = o.from ?? 0, t1 = o.to ?? clip.duration;
+  for (let i = 0; i < frames; i++) {
+    const t = Math.min(clip.duration - 1e-4, t0 + (t1 - t0) * i / (frames - 1));
+    mixer.setTime(t);
+    r.render(scene, cam);
+    const x = (i % cols) * W, y = Math.floor(i / cols) * (H + 14);
+    g.drawImage(r.domElement, x, y + 14);
+    g.fillStyle = '#ff0';
+    g.font = '11px sans-serif';
+    g.fillText('t=' + t.toFixed(2), x + 3, y + 11);
+  }
+  mixer.stopAllAction();
+  mixer.uncacheRoot(gltf.scene);
+  scene.remove(gltf.scene);
+  if (stick) stick.removeFromParent();
+  r.dispose();
+  window._jpg = out.toDataURL('image/jpeg', 0.85);
+  return `${name}: ${clip.duration.toFixed(2)} s, ${out.width}x${out.height}`;
+};
+// for looking into a file by hand
+window._three = THREE;
+window._open = open;
+window._ready = true;
+document.title = 'Bake motion (ready)';
+</script>
+</body>
+</html>

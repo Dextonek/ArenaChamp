@@ -120,6 +120,10 @@ export class Hero {
   readonly held: { R: Held | null; L: Held | null } = { R: null, L: null };
   /** Each arm at rest (null until the model has loaded, or without arm bones). */
   readonly arm: { R: Arm | null; L: Arm | null } = { R: null, L: null };
+  /** Each bone's orientation in the figure's frame at rest (`turnBone`). */
+  private restFig = new Map<BoneName, THREE.Quaternion>();
+  /** A leg's length at rest (hip to ankle), at the figure's own size. */
+  legLength = 0.8;
   /** Each hand's orientation in the figure's frame at rest (`steadyHand`). */
   private handRest: { R: THREE.Quaternion | null; L: THREE.Quaternion | null } = { R: null, L: null };
   private v3 = new THREE.Vector3();
@@ -182,6 +186,12 @@ export class Hero {
     this.root.quaternion.identity();
     this.root.updateMatrixWorld(true);
     this.measureHeld(url);
+    for (const [k, b] of this.bones) this.restFig.set(k, b.getWorldQuaternion(new THREE.Quaternion()));
+    const thigh = this.bones.get('thighL'), shin = this.bones.get('shinL'), foot = this.bones.get('footL');
+    if (thigh && shin && foot) {
+      const a = thigh.getWorldPosition(new THREE.Vector3()), b = shin.getWorldPosition(new THREE.Vector3()), c = foot.getWorldPosition(new THREE.Vector3());
+      this.legLength = (a.distanceTo(b) + b.distanceTo(c)) / (this.root.scale.x || 1);
+    }
     if (hand) {
       const handQ = hand.getWorldQuaternion(new THREE.Quaternion());
       const y = new THREE.Vector3(0, Math.sin(0.6), Math.cos(0.6));
@@ -349,6 +359,43 @@ export class Hero {
       upper.quaternion.copy(keepU.slerp(upper.quaternion, weight));
       fore.quaternion.copy(keepF.slerp(fore.quaternion, weight));
     }
+  }
+
+  /**
+   * Turns a bone to `delta` from its rest, both in the figure's frame (X its left, Y up, Z forward), whatever its
+   * parents are doing: a chest leaning 20° forward is `delta` = 20° about X. `weight` 0..1 blends from the pose it has.
+   * For replaying a clip made on another rig (`src/motion/clips.ts`): call parents before children.
+   */
+  turnBone(name: BoneName, delta: THREE.Quaternion, weight = 1) {
+    const b = this.bones.get(name), rest = this.restFig.get(name);
+    if (!b || !rest || !b.parent || weight <= 0) return;
+    b.parent.updateWorldMatrix(true, false);
+    b.parent.matrixWorld.decompose(this.v, this.q, this.v2);
+    this.root.matrixWorld.decompose(this.v, this.q2, this.v2);
+    this.q2.multiply(delta).multiply(rest);
+    this.q.invert().multiply(this.q2);
+    if (weight >= 1) b.quaternion.copy(this.q);
+    else b.quaternion.slerp(this.q, weight);
+  }
+
+  /**
+   * Turns a bone so that the line from its joint to `child`'s joint points along `dir` (the figure's frame): an upper
+   * arm toward its elbow, a shin toward its ankle. `weight` 0..1 blends from the pose it has. Parents before children.
+   */
+  pointBone(name: BoneName, child: BoneName, dir: THREE.Vector3, weight = 1) {
+    const b = this.bones.get(name), c = this.bones.get(child);
+    if (!b || !c || !b.parent || weight <= 0) return;
+    b.parent.updateWorldMatrix(true, false);
+    b.updateWorldMatrix(false, true);
+    const from = b.getWorldPosition(this.v4), cur = c.getWorldPosition(this.v5).sub(from).normalize();
+    const want = this.v3.copy(dir).transformDirection(this.root.matrixWorld);
+    // in the world: the turn from where it points to where it should, over the bone's own orientation
+    b.matrixWorld.decompose(this.v, this.q2, this.v2);
+    this.q2.premultiply(this.q3.setFromUnitVectors(cur, want));
+    b.parent.matrixWorld.decompose(this.v, this.q, this.v2);
+    this.q.invert().multiply(this.q2);
+    if (weight >= 1) b.quaternion.copy(this.q);
+    else b.quaternion.slerp(this.q, weight);
   }
 
   /** Where a shoulder is now, in the figure's frame at the figure's own size (after the frame's rotations so far). */

@@ -9,7 +9,8 @@
 //
 // The attack is driven as the game drives it (`Attacker.motion`): `wind` 0..1 over the wind-up, then `release` 1..0.
 // Options: yawCam (0 front, -PI/2 the hero's right side with forward to the right of the picture), frames, cols, w, h,
-// windup and recover (seconds), dist (camera distance), melee (override).
+// windup and recover (seconds), dist (camera distance), melee (override), fit (true: the camera frames the hero by its
+// own height, so a small hero fills its cell like a tall one).
 window._motionStrip = async (name, what, o = {}) => {
   const hm = vfx.heroMode, F = hm.figure;
   if (!hm.enabled) vfx.setHeroMode(true);
@@ -19,12 +20,20 @@ window._motionStrip = async (name, what, o = {}) => {
   const cam = vfx.controls.object;
   const base = hm.host.arena.caster.group.position.clone(), pos = base.clone();
   const dt = 1 / 60, frames = o.frames ?? 16, cols = o.cols ?? 8, W = o.w ?? 150, H = o.h ?? 190;
-  const yawCam = o.yawCam ?? -Math.PI / 2, dist = o.dist ?? 5.2;
+  const yawCam = o.yawCam ?? -Math.PI / 2;
+  // the hero's height: the head bone at rest, and a head more
+  F.stand(); F.follow(dt, base, 0, {});
+  F.figure.root.updateMatrixWorld(true);
+  const head = F.figure.bones.get('head'), tall = head ? (head.getWorldPosition(base.clone()).y - F.figure.root.position.y) * 1.22 : 2.3;
+  const fov = (cam.fov ?? 40) * Math.PI / 180;
+  const dist = o.dist ?? (o.fit ? (2.3 * tall) / (0.86 * 2 * Math.tan(fov / 2)) : 5.2);
+  const eye = o.fit ? 0.75 * tall : 1.7, look = o.fit ? 0.62 * tall : 1.35;
   const cells = [];
   const shot = (label) => {
-    const p = F.figure.root.position;
-    cam.position.set(p.x + Math.sin(yawCam) * dist, 1.7, p.z + Math.cos(yawCam) * dist);
-    cam.lookAt(p.x, 1.35, p.z);
+    // where the hero stands, not where a lunge has carried its body
+    const p = pos;
+    cam.position.set(p.x + Math.sin(yawCam) * dist, eye, p.z + Math.cos(yawCam) * dist);
+    cam.lookAt(p.x, look, p.z);
     vfx.render();
     const c = document.querySelector('canvas');
     const ch = c.height * 0.86, cw = ch * W / H;
