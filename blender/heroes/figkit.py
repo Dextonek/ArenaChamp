@@ -29,6 +29,8 @@ class Fig:
         self.bms = {}
         self.mats = {}
         self.flat = set()
+        # facet: few, flat faces everywhere (a folded-paper or cut-gem look)
+        self.facet = False
 
     # ---- materials ---------------------------------------------------------------------------------------
     def mat(self, key, color, rough=0.6, metal=0.0, emit=None, strength=1.0, double=False, flat=False):
@@ -58,6 +60,8 @@ class Fig:
     def ellipsoid(self, key, c, r, seg=(20, 12), rot=None, keep=None):
         """An ellipsoid at `c` with radii `r`; `keep(co)` False removes that vertex (an open hood of hair)."""
         bm = self.bm(key)
+        if self.facet:
+            seg = (max(6, seg[0] // 3), max(4, seg[1] // 3))
         m = Matrix.Translation(Vector(c)) @ (rot or Matrix.Identity(4)) @ Matrix.Diagonal((r[0], r[1], r[2], 1.0))
         vs = bmesh.ops.create_uvsphere(bm, u_segments=seg[0], v_segments=seg[1], radius=1.0, matrix=m)["verts"]
         if keep:
@@ -66,6 +70,8 @@ class Fig:
     def tube(self, key, pts, radii, seg=10, caps=True, squash=None):
         """A round tube through `pts`, its radius per point (a list or one number). `squash` (a, f): flatten along axis a by f."""
         bm = self.bm(key)
+        if self.facet:
+            seg = min(seg, 5)
         pts = [Vector(p) for p in pts]
         if not isinstance(radii, (list, tuple)):
             radii = [radii] * len(pts)
@@ -98,6 +104,8 @@ class Fig:
     def loft(self, key, rings, seg=28, arc=None, cap_top=False, cap_bot=False):
         """Stacked rings (centre, rx, ry), bottom to top, joined into a skin. `arc` (a0, a1): only that part round the body."""
         bm = self.bm(key)
+        if self.facet and arc is None:
+            seg = 8
         a0, a1 = arc or (0.0, 2 * math.pi)
         n = seg if arc is None else seg + 1
         rows = []
@@ -162,7 +170,7 @@ class Fig:
         objs = []
         for key, bm in self.bms.items():
             bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
-            smooth = key not in self.flat
+            smooth = key not in self.flat and not self.facet
             for f in bm.faces:
                 f.smooth = smooth
             me = bpy.data.meshes.new(f"{self.name}_{key}")

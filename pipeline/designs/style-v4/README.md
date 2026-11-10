@@ -1,6 +1,6 @@
 # One hero style (v4): directions to pick from
 
-**Status (2026-11-10): waiting on the user to pick a direction.** Nothing in the game has changed.
+**Status (2026-11-10): waiting on the user to pick a direction (six shown in two rounds).** Nothing in the game has changed.
 
 The user: "as you can see heroes have different style, let's make one better". The 39 heroes come from three
 generations: A, the 12 oldest (`hero_figures.py`: slim, small heads, plain robes: Lyra, Vitriol, Nyx, Fenna, Marin,
@@ -22,7 +22,20 @@ simple forms, no rig. Each is a direction to pick, mix or draw over.
 | 2 | Heroic | 7 heads, 1.82 m | The anime finisher look of the user's reference videos: long legs, a layered asymmetric costume (short skirt, coat tail, a cape off one shoulder, thigh boots), a knee-length ponytail, big eyes on a small face. |
 | 3 | Chibi | 3.5 heads, 1.5 m | Groups B and C pushed to one rule: a big head and eyes, one bell of a cloak with stars sewn on, big hands, boots and props. Reads best from the game camera. |
 
-All three keep Lyra's idea: night violet, a gold crescent bow across the back with a glowing string, a constellation
+## Second round: unique designs
+
+The user's answer to the first three: "let's try some unique design". Three bolder directions, each a way of making a
+whole figure rather than a costume (`blender/heroes/style_blockout2.py`):
+
+![Three unique directions](lyra_unique.jpg)
+
+| # | Direction | Idea | What it means for the game |
+|---|---|---|---|
+| 4 | Figurine | A jointed lacquer puppet, a precious game piece ("Arena of Kits"): rigid lacquer segments, gold ball joints, a porcelain mask face with painted eyes, a skirt of rigid petals, hair in rigid segments with gold rings. 4.6 heads. | Nothing bends, so nothing stretches or clips: every part follows one bone. Works for every body type (a heavy smith is a heavy puppet). |
+| 5 | Spirit | A masked spirit: one tall cloak with no legs, a hood with a floating porcelain mask and glowing eyes, hands floating free in gold cuffs, a long ribbon. 5.4 heads. | The silhouette is the character; arms and legs are hidden, so their motion barely shows. Heavy fighters and armoured heroes lose their bodies. |
+| 6 | Origami | Folded paper and gold leaf: every surface a flat fold, a paper mantle like a crane's wings, gold along the creases, diamond eyes. 5.4 heads. | Very light models (under 1,000 faces here). Hard, drawn shapes as the art bible asks; faces are the hard part. |
+
+All six keep Lyra's idea: night violet, a gold crescent bow across the back with a glowing string, a constellation
 halo. The bow stays on her back for now (today she holds nothing; a bow in the hand changes her stance, carry and aim).
 
 ## Files
