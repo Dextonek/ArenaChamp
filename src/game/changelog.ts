@@ -45,7 +45,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Motion',
         title: 'Straight legs and relaxed arms on the Heroes stand',
-        text: 'Heroes on the Play and Heroes screens stand at ease on straight legs instead of a deep crouch with the knees pushed forward, and their arms hang by their sides instead of sticking out stiffly. In a fight their feet now land under them when they stand and walk, and slide less.',
+        text: 'Heroes on the Play and Heroes screens stand at ease on straight legs instead of a deep crouch with the knees pushed forward, and their arms hang by their sides instead of sticking out stiffly. In a fight their feet now land under them when they stand and walk, and slide less. Hands no longer sink into robes, skirts and round coats.',
       },
       {
         tag: 'Heroes',

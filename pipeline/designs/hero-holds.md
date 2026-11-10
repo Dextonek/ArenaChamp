@@ -200,6 +200,14 @@ idle now turns each hanging arm in by the difference (`fitArm`, `Hero.armOut` me
 arm and forearm together, so it keeps the clip's small motion. The walk and the run are left as the animator made them:
 they swing the arms wide and far back on purpose, and that walk was accepted.
 
+### Arms kept out of the body (2026-11-10)
+
+The user: "still broken, the arms are in the body; go and learn on the internet how to rig them and write it down". The
+research and the method are in [retargeting-arms.md](../../docs/knowledge/retargeting-arms.md): each hero's body outline
+is measured from its mesh at load (`Hero.body`), and every frame an arm whose forearm, wrist or fingers are inside it
+is swung out from the shoulder by the least angle that clears it (`HeroFigure.clearBody`), off during attacks, casts
+and two-handed grips. Vesper's, Silvane's, Professor Puff's and Madame Cleaver's hands no longer sink into skirts and coats.
+
 ### Each hero against its design (2026-11-10)
 
 The user asked to look at each hero deeply, as with Sirix's wings. A sheet of all 39 (portrait beside the model from

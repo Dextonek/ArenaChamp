@@ -91,6 +91,33 @@ const NAMES: Record<BoneName, string> = {
 };
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+/**
+ * The body's outline at rest, to keep the arms out of it (`HeroFigure.clearBody`; docs/knowledge/retargeting-arms.md):
+ * how far the torso, a skirt or a robe reaches from the body's upright axis, per height (`step` m from `y0`) and per
+ * direction round it (`sectors`, from straight ahead), in the figure's frame at its own size. Measured from the parts that
+ * follow the pelvis, chest or legs; arms, the head, held items and see-through parts (Sirix's wings) are left out.
+ */
+export interface BodyShape { y0: number; step: number; rows: number; sectors: number; r: Float32Array }
+/** The bones whose parts make the body an arm must stay out of. */
+const BODY_BONES = new Set(['pelvis', 'chest', 'spine', 'thighr', 'thighl', 'shinr', 'shinl']);
+/** How far outside the body the middle of the forearm, the wrist and the fingers keep (m): a hand is that thick. */
+export const BODY_MARGIN = 0.05;
+const BODY_STEP = 0.04, BODY_SECTORS = 24;
+
+/** How far the body reaches at a point's height and in its direction (the widest of the neighbouring cells), or 0. */
+export function bodyReach(b: BodyShape, x: number, y: number, z: number): number {
+  const row = Math.floor((y - b.y0) / b.step);
+  if (row < -1 || row > b.rows) return 0;
+  const s = Math.floor(((Math.atan2(x, z) + Math.PI) / (2 * Math.PI)) * b.sectors) % b.sectors;
+  let r = 0;
+  for (let dr = -1; dr <= 1; dr++) {
+    const rr = row + dr;
+    if (rr < 0 || rr >= b.rows) continue;
+    for (let ds = -1; ds <= 1; ds++) r = Math.max(r, b.r[rr * b.sectors + ((s + ds + b.sectors) % b.sectors)]);
+  }
+  return r;
+}
+
 export class Hero {
   /** Feet at the origin, facing +Z; move and turn this. */
   readonly root = new THREE.Group();
@@ -127,6 +154,8 @@ export class Hero {
   legLength = 0.8;
   /** How far each upper arm hangs out from the side at rest (rad): the modeller's clearance of the body (`HeroFigure`). */
   readonly armOut = { R: 0.2, L: 0.2 };
+  /** The body's outline at rest (null until loaded): arms are kept out of it. */
+  body: BodyShape | null = null;
   /** The thigh's share of `legLength` (the rest is the shin): the clips' feet are placed by it (`HeroFigure`). */
   thighPart = 0.5;
   /** Each hand's orientation in the figure's frame at rest (`steadyHand`). */
@@ -191,6 +220,7 @@ export class Hero {
     this.root.quaternion.identity();
     this.root.updateMatrixWorld(true);
     this.measureHeld(url);
+    this.measureBody();
     for (const [k, b] of this.bones) this.restFig.set(k, b.getWorldQuaternion(new THREE.Quaternion()));
     const thigh = this.bones.get('thighL'), shin = this.bones.get('shinL'), foot = this.bones.get('footL');
     if (thigh && shin && foot) {
@@ -209,6 +239,43 @@ export class Hero {
     }
     this.root.position.copy(saved.p);
     this.root.rotation.copy(saved.r);
+  }
+
+  /** Fills `body` from the rest pose (the root at the origin, unturned: `calibrate`). */
+  private measureBody() {
+    const scale = this.root.scale.x || 1, v = new THREE.Vector3();
+    const pts: number[] = [];
+    let y0 = Infinity, y1 = -Infinity;
+    this.root.traverse((o) => {
+      const mesh = o as THREE.SkinnedMesh;
+      if (!mesh.isSkinnedMesh) return;
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      if (mats.every((m) => m.transparent && m.opacity < 0.99)) return;
+      const si = mesh.geometry.getAttribute('skinIndex'), sw = mesh.geometry.getAttribute('skinWeight');
+      if (!si || !sw) return;
+      const names = mesh.skeleton.bones.map((b) => BODY_BONES.has(norm(b.name)));
+      for (let i = 0; i < si.count; i++) {
+        let best = -1, bw = 0;
+        for (let k = 0; k < 4; k++) if (sw.getComponent(i, k) > bw) { bw = sw.getComponent(i, k); best = si.getComponent(i, k); }
+        if (best < 0 || !names[best]) continue;
+        mesh.getVertexPosition(i, v).applyMatrix4(mesh.matrixWorld).divideScalar(scale);
+        pts.push(v.x, v.y, v.z);
+        y0 = Math.min(y0, v.y);
+        y1 = Math.max(y1, v.y);
+      }
+    });
+    if (!pts.length) return;
+    const rows = Math.ceil((y1 - y0) / BODY_STEP) + 1;
+    // (no allowance for the rest pose: a model's rest pose is a rigging pose, its hands often already in the skirt)
+    const body: BodyShape = { y0, step: BODY_STEP, rows, sectors: BODY_SECTORS, r: new Float32Array(rows * BODY_SECTORS) };
+    for (let i = 0; i < pts.length; i += 3) {
+      const x = pts[i], y = pts[i + 1], z = pts[i + 2];
+      const row = Math.floor((y - y0) / BODY_STEP);
+      const s = Math.floor(((Math.atan2(x, z) + Math.PI) / (2 * Math.PI)) * BODY_SECTORS) % BODY_SECTORS;
+      const c = row * BODY_SECTORS + s;
+      body.r[c] = Math.max(body.r[c], Math.hypot(x, z));
+    }
+    this.body = body;
   }
 
   /** Fills `held`, `arm` and the hands' rest orientations. The root stands at the origin, unturned, at rest (`calibrate`). */

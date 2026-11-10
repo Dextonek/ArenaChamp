@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { HERO_SCALE, Hero, isStaff, type BoneName, type Held } from './effects/weapons/hero';
+import { BODY_MARGIN, HERO_SCALE, Hero, bodyReach, isStaff, type BoneName, type Held } from './effects/weapons/hero';
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
 import { BodyParts, type BodyAct, type BodyLook } from './raid/bodies/look';
@@ -876,7 +876,58 @@ export class HeroFigure {
     f.root.position.y += ho.y * hk;
     f.root.position.z += (-ho.x * hs + ho.z * hc) * hk;
 
+    // Last: no forearm or hand inside the body (a robe, a skirt, a round belly), as the clips' slim figure never had one.
+    this.clearBody(f, (1 - Math.max(castW, this.attackW, this.liftW, this.stunW)) * (two ? 0 : 1));
     this.swing(f, dt, w);
+  }
+
+  private bodyS = new THREE.Vector3();
+  private bodyE = new THREE.Vector3();
+  private bodyH = new THREE.Vector3();
+  private bodyP = new THREE.Vector3();
+  private bodyDir = new THREE.Vector3();
+
+  /**
+   * Keeps each arm out of the body (docs/knowledge/retargeting-arms.md: the "push the hand out of the body" step of
+   * Unreal's spatially aware retargeting, on this hero's own outline instead of capsules). The clips bend the elbows in
+   * for a slim figure; on a hero in a flared robe, a skirt or with a round belly the forearm and hand went inside it. Each
+   * arm whose forearm or hand is inside `Hero.body` is swung out from the shoulder, upper arm and forearm together, by the
+   * least angle that clears it (as much as `weight`: not during an attack or a cast, where the hands go where the blow
+   * needs them, nor on a two-handed grip).
+   */
+  private clearBody(f: Hero, weight: number) {
+    const b = f.body;
+    if (!b || weight <= 0.01) return;
+    for (const side of ['R', 'L'] as const) {
+      const upper = f.bone(side === 'R' ? 'armR' : 'armL'), fore = f.bone(side === 'R' ? 'foreR' : 'foreL'), hand = f.bone(side === 'R' ? 'handR' : 'handL');
+      if (!upper || !fore || !hand) continue;
+      hand.updateWorldMatrix(true, false);
+      const S = f.root.worldToLocal(upper.getWorldPosition(this.bodyS));
+      const E = f.root.worldToLocal(fore.getWorldPosition(this.bodyE)).sub(S);
+      const H = f.root.worldToLocal(hand.getWorldPosition(this.bodyH)).sub(S);
+      const out = Math.sign(S.x) || (side === 'R' ? -1 : 1);
+      const P = this.bodyP;
+      // the middle of the forearm, the wrist and the fingers
+      const clear = (a: number) => {
+        const c = Math.cos(a * out), s = Math.sin(a * out);
+        for (const [k, extra] of [[0.5, 0], [1, 0], [1, 0.08]] as const) {
+          P.lerpVectors(E, H, k);
+          if (extra) P.addScaledVector(this.bodyDir.copy(H).sub(E).normalize(), extra);
+          const x = P.x * c - P.y * s + S.x, y = P.x * s + P.y * c + S.y, z = P.z + S.z;
+          if (Math.hypot(x, z) < bodyReach(b, x, y, z) + BODY_MARGIN) return false;
+        }
+        return true;
+      };
+      if (clear(0)) continue;
+      let a = 0.03;
+      while (a < 0.9 && !clear(a)) a += 0.03;
+      a *= weight;
+      const c = Math.cos(a * out), s = Math.sin(a * out);
+      const turn = (v: THREE.Vector3) => v.set(v.x * c - v.y * s, v.x * s + v.y * c, v.z);
+      const handDir = turn(H.clone().sub(E)).normalize();
+      f.pointBone(side === 'R' ? 'armR' : 'armL', side === 'R' ? 'foreR' : 'foreL', turn(E.clone()).normalize(), 1);
+      f.pointBone(side === 'R' ? 'foreR' : 'foreL', side === 'R' ? 'handR' : 'handL', handDir, 1);
+    }
   }
 
   /** The clip a hero's basic attack plays: by what it holds and how the attack looks. */

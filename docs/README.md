@@ -70,6 +70,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | Page | What it answers |
 |---|---|
 | [Lessons](knowledge/lessons.md) | Technical gotchas and fixes (shaders, post passes, instancing, materials, the browser pane) |
+| [Retargeting arms](knowledge/retargeting-arms.md) | How the animator's clips are fitted to our heroes: rest poses, foot and hand goals, keeping arms out of robes and bellies, with the sources |
 | [Glossary](knowledge/glossary.md) | The project's words: impact frame, telegraph, foil, dead beat, kit, lingering, ... |
 | [League kit design](knowledge/league-kit-design.md) | Why League's kits work: 14 principles, what its reworks fixed, how our 20 kits compare, a kit checklist and what to do first |
 | [League champion kits](knowledge/league-champion-kits.md) | All 173 League champions read as a designer would, with counts across the roster |
