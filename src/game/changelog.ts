@@ -60,7 +60,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Motion',
         title: 'Weapons held as each hero was designed',
-        text: 'On the Heroes stand Brannoc's hammer hangs by his boot and Oblivion's greatsword hangs low in his right hand. Grandma Ironknit holds her needles out like a duellist, and Shiori's brush stands beside her instead of inside her robe.',
+        text: 'On the Heroes stand Brannoc\'s hammer hangs by his boot and Oblivion\'s greatsword hangs low in his right hand. Grandma Ironknit holds her needles out like a duellist, and Shiori\'s brush stands beside her instead of inside her robe.',
       },
       {
         tag: 'Motion',
