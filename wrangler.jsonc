@@ -10,8 +10,9 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    // /ws and the redirect at / go to the Worker; every other path is a file from dist/.
-    "run_worker_first": ["/ws", "/"]
+    // /ws, the redirect at / and the News clips (answered in byte ranges, for Safari) go to the Worker; every other
+    // path is a file from dist/.
+    "run_worker_first": ["/ws", "/", "/news/*"]
   },
   "durable_objects": {
     "bindings": [{ "name": "HUB", "class_name": "GameHub" }]

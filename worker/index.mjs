@@ -34,6 +34,35 @@ export class GameHub extends DurableObject {
   }
 }
 
+/**
+ * A clip from dist/news/ answered a piece at a time. Cloudflare's static assets answer a byte-range request with the
+ * whole file, and Safari on iOS will not play a video without ranges, so the Worker cuts the piece itself (the clips
+ * are under a megabyte; the whole file is read each time).
+ * @param {Request} request @param {Fetcher} assets
+ */
+async function clip(request, assets) {
+  const res = await assets.fetch(new Request(request.url, { method: 'GET' }));
+  if (!res.ok) return res;
+  const body = await res.arrayBuffer(), size = body.byteLength;
+  const headers = new Headers(res.headers);
+  headers.set('Accept-Ranges', 'bytes');
+  headers.delete('Content-Length');
+  headers.delete('Content-Encoding');
+  const m = /^bytes=(\d*)-(\d*)$/.exec((request.headers.get('Range') ?? '').trim());
+  if (!m || (m[1] === '' && m[2] === '')) {
+    return new Response(request.method === 'HEAD' ? null : body, { status: 200, headers });
+  }
+  // "bytes=a-b", "bytes=a-" (to the end) or "bytes=-n" (the last n)
+  let start = m[1] === '' ? Math.max(0, size - Number(m[2])) : Number(m[1]);
+  let end = m[1] === '' || m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1);
+  if (start >= size || start > end) {
+    headers.set('Content-Range', `bytes */${size}`);
+    return new Response(null, { status: 416, headers });
+  }
+  headers.set('Content-Range', `bytes ${start}-${end}/${size}`);
+  return new Response(request.method === 'HEAD' ? null : body.slice(start, end + 1), { status: 206, headers });
+}
+
 export default {
   /** @param {Request} request @param {{ HUB: DurableObjectNamespace, ASSETS: Fetcher }} env */
   async fetch(request, env) {
@@ -42,6 +71,7 @@ export default {
     if (url.pathname === '/ws') return env.HUB.get(env.HUB.idFromName('main')).fetch(request);
     // The game is the front page; the editor stays at /index.html.
     if (url.pathname === '/') return Response.redirect(new URL('/game.html', url).toString(), 302);
+    if (url.pathname.startsWith('/news/') && url.pathname.endsWith('.mp4')) return clip(request, env.ASSETS);
     return env.ASSETS.fetch(request);
   },
 };

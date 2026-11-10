@@ -23,7 +23,21 @@ const server = createServer((req, res) => {
     res.writeHead(404).end('not found');
     return;
   }
-  res.writeHead(200, { 'content-type': TYPES[/** @type {keyof typeof TYPES} */ (extname(file))] ?? 'application/octet-stream' });
+  const type = TYPES[/** @type {keyof typeof TYPES} */ (extname(file))] ?? 'application/octet-stream';
+  // A byte range (Safari on iOS asks for one before it plays a video): "bytes=a-b", "bytes=a-" or "bytes=-n".
+  const size = statSync(file).size, m = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range ?? '').trim());
+  if (m && (m[1] !== '' || m[2] !== '')) {
+    const start = m[1] === '' ? Math.max(0, size - Number(m[2])) : Number(m[1]);
+    const end = m[1] === '' || m[2] === '' ? size - 1 : Math.min(Number(m[2]), size - 1);
+    if (start >= size || start > end) {
+      res.writeHead(416, { 'content-range': `bytes */${size}` }).end();
+      return;
+    }
+    res.writeHead(206, { 'content-type': type, 'accept-ranges': 'bytes', 'content-range': `bytes ${start}-${end}/${size}`, 'content-length': end - start + 1 });
+    createReadStream(file, { start, end }).pipe(res);
+    return;
+  }
+  res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes', 'content-length': size });
   createReadStream(file).pipe(res);
 });
 attachGameServer(server);
