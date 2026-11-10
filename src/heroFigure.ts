@@ -904,6 +904,13 @@ export class HeroFigure {
       if (hold === 'staff' && !melee) aim.lerpVectors(held.dir, aim, 0.6).normalize();
       // a long axe held low keeps its line unless it is being swung
       if (hold === 'low' && !melee) aim.copy(held.dir);
+      // Standing, walking and running are clips of a figure with empty hands: their hand points an item level and straight
+      // ahead, which is no way to hold one. An item held up stays as modelled for a caster (a scepter, a wand, a mirror),
+      // and in a guard for a fighter, its point raised toward the enemy's face (the `up` carry).
+      if (hold === 'up' && !two && (clip === 'Idle_A' || clip === WALK || clip === RUN)) {
+        if (this.melee) aim.set(side === 'R' ? 0.16 : -0.16, 0.74, 0.65).normalize();
+        else aim.copy(held.dir);
+      }
       f.steadyHand(side, wa, 0, aim);
       if (!two) continue;
       // The second hand goes on the weapon. A clip's two arms meet on its own figure's weapon, not on this one's (other
