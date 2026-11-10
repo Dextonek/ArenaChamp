@@ -87,6 +87,29 @@ stiffly. Not yet checked: every hero walking and running from the game camera, a
 Brannoc, Oblivion and Shiori are modelled with their right hand on +x (facing the other way at rest). Anything that
 pushes "out" must use the side the hand or shoulder is actually on (`Math.sign(S.x)`), not the bone's R or L label.
 
+## The different approach: a source figure that matches (2026-11-10)
+
+After the fits above the user still found the standing pose and the legs wrong ("lets use a different approach") and
+chose, of three options (a new pack, proper rotation retargeting, baking per hero in Blender), a new animation pack. The
+fits only bend a short round figure's motion toward a tall slim one; a source made on a figure like ours needs almost
+no bending at all. Retargeting guides say the same: the closer the two rigs' proportions and rest poses, the better the
+result, and choosing a source character close to your own is the first fix.
+
+- The pack: Quaternius' Universal Animation Library 1, Standard (CC0, `pipeline/assets/ual/UAL1_Standard.glb`, 43
+  clips on one Unreal-style mannequin with 65 bones). Its figure: thigh 0.40 m and shin 0.43 m (about equal, like ours),
+  a clean T-pose (knees 4°), idle arms 12-20° out (17° on average; ours 9-15°), facing +Z like KayKit's, so the bake's
+  frame needs no change.
+- Baked by `pipeline/tools/bake-ual.js` into `src/motion/ual.json`, the same per-frame format as `kaykit.json`, with the
+  figure's own proportions in it. `src/motion/clips.ts` reads both packs into one table; `clipFigure(name)` says which
+  figure a clip was made on, and `fitLeg` / `fitArm` fit by that figure instead of KayKit constants. With this figure the
+  fits are nearly nothing.
+- In use: standing (`STAND = 'Idle_Loop'` in heroFigure.ts), on the Heroes stand and in a fight. A weight shift, one
+  foot a little forward, the arms relaxed. Baked and ready but not yet in use: `Walk_Loop`, `Jog_Fwd_Loop`,
+  `Sprint_Loop`, `Sword_Idle` (a deep crouch, 63° knees). The guard and two-handed idles, the attacks and the casts are
+  still KayKit's.
+- The pack's download is on itch.io ("No thanks, just take me to the downloads"); Universal Animation Library 2
+  (also CC0) has more clips if needed.
+
 ## Further steps, if needed
 
 - Retarget the arms as rotations relative to each rig's rest (fix 1) instead of copying directions plus the idle's
@@ -97,6 +120,9 @@ pushes "out" must use the side the hand or shoulder is actually on (`Math.sign(S
   second outline from a mid-stride pose, or a few extra centimetres while running, would cover it.
 
 ## Sources
+
+- Quaternius, Universal Animation Library (CC0): https://quaternius.com/packs/universalanimationlibrary.html and
+  https://quaternius.itch.io/universal-animation-library
 
 - Unreal Engine, IK Rig and retargeting: https://dev.epicgames.com/documentation/unreal-engine/ik-rig-animation-retargeting-in-unreal-engine
 - Spatially aware retargeting and blend to source, Unreal 5.7 (third-party guide): https://unamedia.com/ue5-mixamo/docs/improve-retargeting-results/

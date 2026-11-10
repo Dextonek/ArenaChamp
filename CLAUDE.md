@@ -42,8 +42,11 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   newer heroes (a weatherman, a janitor, a near-naked sumo...) were rejected as "too funky" and rebuilt as mythic
   roles (`pipeline/designs/heroes-restyle.md`). Jokes can live in names and kits, not in the figure. Before a new
   hero, render it in a line-up next to Sefu and Kaia.
-- **Motion comes from an animator's clips, not hand-built poses.** Hand-built holds and strikes were rejected three
-  times, even when matched to real footage. Standing, walking, running, attacks and four casts now replay the
+- **Motion comes from an animator's clips, not hand-built poses.** Standing comes from Quaternius' Universal Animation
+  Library (CC0, a realistic figure like ours: `pipeline/assets/ual/`, `pipeline/tools/bake-ual.js`) since 2026-11-10,
+  after fits of the KayKit idle onto our heroes were rejected (docs/knowledge/retargeting-arms.md); the rest is still
+  KayKit's. Hand-built holds and strikes were rejected three
+  times, even when matched to real footage. Walking, running, attacks and four casts replay the
   KayKit Character Animations pack (CC0; `src/motion/clips.ts`, baked by `pipeline/tools/bake-motion.html`). For new
   motion look in that pack first (https://kaylousberg.itch.io/kaykit-character-animations: hit reactions, deaths,
   dodges, strafes, blocks, bows are not used yet). Measure the copy (`pipeline/tools/motion-check.js`) and show the

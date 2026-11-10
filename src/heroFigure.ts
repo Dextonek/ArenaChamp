@@ -3,7 +3,7 @@ import { BODY_MARGIN, HERO_SCALE, Hero, bodyReach, isStaff, type BoneName, type 
 import type { StatusSet } from './effects/status';
 import type { HeroKit, HeroSpell } from './heroes';
 import { BodyParts, type BodyAct, type BodyLook } from './raid/bodies/look';
-import { clipInfo, gaitInfo, newClipPose, sampleClip, type ClipName, type ClipPose } from './motion/clips';
+import { clipFigure, clipInfo, gaitInfo, newClipPose, sampleClip, type ClipFigure, type ClipName, type ClipPose } from './motion/clips';
 import { traitFor } from './traits';
 
 const AX = new THREE.Vector3(1, 0, 0);
@@ -168,15 +168,13 @@ interface Share { body: number; armR: number; armL: number; legs?: number; grip?
 const DOWN = new THREE.Vector3(0, -1, 0);
 
 /**
- * The clips' figure (KayKit's medium rig): its thigh and shin (m), and how far its ankle reaches from its hip at rest, in
- * leg lengths (its knees are bent 12° even at rest). Measured from `pipeline/assets/kaykit/Rig_Medium_General.glb`.
+ * The standing clip: the Universal Animation Library's idle (a realistic mannequin, proportions close to our heroes'),
+ * since 2026-11-10. The KayKit idle (`Idle_A`) is from a small round figure whose standing pose never fitted. Each clip's
+ * own figure (thigh, shin, rest reach, arm hang) comes with it (`clipFigure`).
  */
-const KK_THIGH = 0.227, KK_SHIN = 0.149, KK_REST_REACH = 0.993;
-/**
- * How far the clips' figure hangs its upper arms out from its sides when they hang (its idle, rad): its body is wide and
- * round, so about 40°. Our heroes' arms hang 9-34° out, as each was modelled to clear its own body (`Hero.armOut`).
- */
-const KK_ARM_OUT = 0.707;
+const STAND: ClipName = 'Idle_Loop';
+/** The standing clips (the arms are fitted to the hero's hang, a held-up item stays as modelled). */
+const STANDING = new Set<ClipName>(['Idle_A', 'Idle_Loop']);
 const fitAxis = new THREE.Vector3(0, 0, 1);
 
 /**
@@ -186,11 +184,11 @@ const fitAxis = new THREE.Vector3(0, 0, 1);
  * how far this hero's upper arm hangs out at rest (rad). Used for the idle only: the walk and the run swing the arms wide
  * and far back, as the animator made them.
  */
-function fitArm(arm: { upper: THREE.Vector3; fore: THREE.Vector3 }, rest: number, side: 'R' | 'L') {
+function fitArm(arm: { upper: THREE.Vector3; fore: THREE.Vector3 }, rest: number, side: 'R' | 'L', fig: ClipFigure) {
   const down = Math.min(1, Math.max(0, (-arm.upper.y - 0.1) / 0.4));
   if (down <= 0) return;
   // turning about the forward axis: + takes a left arm out (toward +x), a right arm in
-  const a = (rest - KK_ARM_OUT) * down * (side === 'L' ? 1 : -1);
+  const a = (rest - fig.armOut) * down * (side === 'L' ? 1 : -1);
   arm.upper.applyAxisAngle(fitAxis, a);
   arm.fore.applyAxisAngle(fitAxis, a);
 }
@@ -213,14 +211,14 @@ const fitReach = new THREE.Vector3(), fitKnee = new THREE.Vector3();
  * the foot in from rest only that much of the way (the hips must then drop as much less: `replay`). Used for standing,
  * walking and running; attacks and casts keep the clip's own legs.
  */
-function fitLeg(leg: { thigh: THREE.Vector3; shin: THREE.Vector3 }, part: number, crouch = 1) {
-  const kt = KK_THIGH / (KK_THIGH + KK_SHIN);
+function fitLeg(leg: { thigh: THREE.Vector3; shin: THREE.Vector3 }, part: number, fig: ClipFigure, crouch = 1) {
+  const kt = fig.thigh / (fig.thigh + fig.shin);
   const reach = fitReach.copy(leg.thigh).multiplyScalar(kt).addScaledVector(leg.shin, 1 - kt);
   const d0 = reach.length();
   if (d0 < 1e-4) return;
   reach.divideScalar(d0);
   const a = part, b = 1 - part;
-  const d = Math.max(Math.abs(a - b) + 0.02, Math.min(0.9995, 1 - (1 - d0 / KK_REST_REACH) * crouch));
+  const d = Math.max(Math.abs(a - b) + 0.02, Math.min(0.9995, 1 - (1 - d0 / fig.restReach) * crouch));
   const cos = Math.min(1, (a * a + d * d - b * b) / (2 * a * d)), sin = Math.sqrt(1 - cos * cos);
   // The knee goes the way the clip's does: its thigh away from the hip-to-ankle line (forward when that is too small to read).
   const knee = fitKnee.copy(leg.thigh).addScaledVector(reach, -leg.thigh.dot(reach));
@@ -738,7 +736,7 @@ export class HeroFigure {
     const guard = !two && this.melee && bare;
     // On the Heroes stand (`atEase`) every hero stands in the plain idle, its crouch shallower; a two-handed weapon keeps
     // its idle's arms only, and there is no fist guard.
-    const stance: ClipName = two && !this.atEase ? 'Melee_2H_Idle' : 'Idle_A';
+    const stance: ClipName = two && !this.atEase ? 'Melee_2H_Idle' : STAND;
     const calm = 1 - Math.max(cn && !CAST_CLIP[cn.style] ? castTook : 0, this.liftW);
     const armR = (!carried(holdR) || two ? 1 : 0) * calm, armL = (!carried(holdL) || two ? 1 : 0) * calm;
     const sh = this.share, standing = 1 - this.gait;
@@ -963,6 +961,7 @@ export class HeroFigure {
     const w = share.body;
     if (w <= 0.001 && share.armR <= 0.001 && share.armL <= 0.001) return;
     const P = sampleClip(clip, t, this.clipPose, mirror, loop), legs = share.legs ?? 1, wl = w * (share.stand ?? 1);
+    const fig = clipFigure(clip);
     if (share.from) P.hips.sub(share.from);
     // A shallower crouch lowers the hips less, as much less as the knees bend less (`fitLeg`), so the feet stay down.
     if (share.fit !== undefined && share.fit < 1) P.hips.y *= share.fit;
@@ -973,14 +972,14 @@ export class HeroFigure {
     for (const side of ['L', 'R'] as const) {
       const wa = side === 'R' ? share.armR : share.armL, leg = P.leg[side];
       // standing only: the walk and the run swing the arms wide on purpose (as the animator made them)
-      if (share.fit !== undefined && clip === 'Idle_A') fitArm(P.arm[side], f.armOut[side], side);
+      if (share.fit !== undefined && STANDING.has(clip)) fitArm(P.arm[side], f.armOut[side], side, fig);
       f.pointBone(`arm${side}`, `fore${side}`, P.arm[side].upper, wa);
       f.pointBone(`fore${side}`, `hand${side}`, P.arm[side].fore, wa);
       if (legs < 1) {
         leg.thigh.lerp(DOWN, 1 - legs).normalize();
         leg.shin.lerp(DOWN, 1 - legs).normalize();
       }
-      if (share.fit !== undefined) fitLeg(leg, f.thighPart, share.fit);
+      if (share.fit !== undefined) fitLeg(leg, f.thighPart, fig, share.fit);
       f.pointBone(`thigh${side}`, `shin${side}`, leg.thigh, wl);
       f.pointBone(`shin${side}`, `foot${side}`, leg.shin, wl);
       f.turnBone(`foot${side}`, leg.foot, wl);
@@ -1000,7 +999,7 @@ export class HeroFigure {
       // Standing, walking and running are clips of a figure with empty hands: their hand points an item level and straight
       // ahead, which is no way to hold one. An item held up stays as modelled for a caster (a scepter, a wand, a mirror),
       // and in a guard for a fighter, its point raised toward the enemy's face (the `up` carry).
-      if (hold === 'up' && !two && (clip === 'Idle_A' || clip === WALK || clip === RUN)) {
+      if (hold === 'up' && !two && (STANDING.has(clip) || clip === WALK || clip === RUN)) {
         if (this.melee || this.duellist) aim.set(side === 'R' ? 0.16 : -0.16, 0.74, 0.65).normalize();
         else {
           aim.copy(held.dir);

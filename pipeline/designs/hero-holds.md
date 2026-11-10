@@ -200,6 +200,13 @@ idle now turns each hanging arm in by the difference (`fitArm`, `Hero.armOut` me
 arm and forearm together, so it keeps the clip's small motion. The walk and the run are left as the animator made them:
 they swing the arms wide and far back on purpose, and that walk was accepted.
 
+### A new standing clip from a figure like ours (2026-11-10)
+
+The user, after the arm fixes: "still no good, let's use a different approach", and chose a new pack. Standing now
+replays Quaternius' Universal Animation Library idle (`Idle_Loop`; a realistic mannequin, CC0), baked by
+`pipeline/tools/bake-ual.js`. Its thigh and shin are about equal and its arms hang 17° out, like our heroes, so the fits
+do almost nothing. The rest of the motion is still KayKit's. Details: docs/knowledge/retargeting-arms.md.
+
 ### Arms kept out of the body (2026-11-10)
 
 The user: "still broken, the arms are in the body; go and learn on the internet how to rig them and write it down". The

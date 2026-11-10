@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import raw from './kaykit.json?raw';
+import rawUal from './ual.json?raw';
 
 /**
  * Animation clips an animator made, replayed on the game's own rig. The clips are from the KayKit Character Animations
@@ -13,15 +14,42 @@ interface Baked {
   fps: number;
   stride: number;
   clips: Record<string, { dur: number; hit: number; frames: number[] }>;
+  figure?: ClipFigure;
 }
-const DATA = JSON.parse(raw) as Baked;
+
+/**
+ * The figure a clip was made on: its thigh and shin (m), how far its ankle reaches from its hip at rest (in leg lengths) and
+ * how far its idle hangs the upper arms out from its sides (rad). The game fits each clip to a hero by these
+ * (heroFigure.ts `fitLeg`, `fitArm`; docs/knowledge/retargeting-arms.md).
+ */
+export interface ClipFigure { thigh: number; shin: number; restReach: number; armOut: number }
+/** KayKit's Rig_Medium: small and round, a long thigh and a short shin, knees bent 12° at rest, idle arms 40° out. */
+const KAYKIT_FIGURE: ClipFigure = { thigh: 0.227, shin: 0.149, restReach: 0.993, armOut: 0.707 };
+
+// Two packs in one table: KayKit (attacks, casts, the guard and two-handed idles, the old walk and run) and Quaternius'
+// Universal Animation Library (pipeline/tools/bake-ual.js): a realistic mannequin whose proportions are close to our
+// heroes', used for standing since 2026-11-10 (user: the standing pose and the legs were still wrong).
+const KK = JSON.parse(raw) as Baked, UAL = JSON.parse(rawUal) as Baked;
+if (KK.fps !== UAL.fps || KK.stride !== UAL.stride) throw new Error('motion packs baked differently');
+const DATA: Baked = { fps: KK.fps, stride: KK.stride, clips: { ...KK.clips, ...UAL.clips } };
+const FIGURES = new Map<string, ClipFigure>([
+  ...Object.keys(KK.clips).map((k) => [k, KAYKIT_FIGURE] as const),
+  ...Object.keys(UAL.clips).map((k) => [k, UAL.figure ?? KAYKIT_FIGURE] as const),
+]);
+
+/** The figure the clip was made on. */
+export function clipFigure(name: ClipName): ClipFigure {
+  return FIGURES.get(name) ?? KAYKIT_FIGURE;
+}
 
 export type ClipName =
   | 'Melee_1H_Attack_Chop' | 'Melee_1H_Attack_Slice_Diagonal' | 'Melee_1H_Attack_Slice_Horizontal' | 'Melee_1H_Attack_Stab'
   | 'Melee_2H_Attack_Chop' | 'Melee_2H_Attack_Slice' | 'Melee_2H_Attack_Stab' | 'Melee_2H_Idle'
   | 'Melee_Unarmed_Attack_Punch_A' | 'Melee_Unarmed_Idle'
   | 'Ranged_Magic_Raise' | 'Ranged_Magic_Shoot' | 'Ranged_Magic_Spellcasting'
-  | 'Hit_A' | 'Hit_B' | 'Idle_A' | 'Running_A' | 'Walking_A';
+  | 'Hit_A' | 'Hit_B' | 'Idle_A' | 'Running_A' | 'Walking_A'
+  // Universal Animation Library
+  | 'Idle_Loop' | 'Walk_Loop' | 'Jog_Fwd_Loop' | 'Sprint_Loop' | 'Sword_Idle';
 
 /** One side's arm: where the upper arm and the forearm point, and where the item in the hand points. */
 export interface ArmPose { upper: THREE.Vector3; fore: THREE.Vector3; aim: THREE.Vector3 }
