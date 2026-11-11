@@ -56,6 +56,14 @@
    "src/spells/targeted/hiveShell.ts": "b8778a67adb6c051",
    "src/spells/targeted/swarmCloud.ts": "2b29dd46160a6ae0",
    "src/spells/targeted/swarmSurge.ts": "0d208c616d5d341b"
+  },
+  "Mr. Ledger": {
+   "src/kits/ledger.ts": "bfd743fbd8543c4a",
+   "src/traits/ledger.ts": "e2c549a61d8e6a27",
+   "src/spells/targeted/callItIn.ts": "d9ac58a6a3c66164",
+   "src/spells/targeted/foreclosure.ts": "5a8c2142090f71ee",
+   "src/spells/targeted/invoice.ts": "fc9179f1e861f19f",
+   "src/spells/targeted/lateFee.ts": "d80b675befcfbb00"
   }
  }
 }

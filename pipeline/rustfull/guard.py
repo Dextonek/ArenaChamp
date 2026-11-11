@@ -25,7 +25,7 @@ STAMP = Path(__file__).parent / "data" / "ported.json"
 GAME = Path(__file__).parent / "data" / "game.json"
 
 # The heroes that are ported (src/hero/mod.rs `PORTED`) and the Rust file each one lives in.
-PORTED = {"Brannoc": "src/hero/forge.rs", "Isolde": "src/hero/frost.rs", "Kaia": "src/hero/storm.rs", "Auriel": "src/hero/dawn.rs", "Sirix": "src/hero/hive.rs"}
+PORTED = {"Brannoc": "src/hero/forge.rs", "Isolde": "src/hero/frost.rs", "Kaia": "src/hero/storm.rs", "Auriel": "src/hero/dawn.rs", "Sirix": "src/hero/hive.rs", "Mr. Ledger": "src/hero/ledger.rs"}
 
 # The engine files the core was written from, and where each went.
 CORE = {

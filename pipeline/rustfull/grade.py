@@ -73,7 +73,9 @@ def numbers(r):
     """The graded numbers of one (hero, side) row."""
     n, secs = r["fights"], max(r["seconds"], 1e-9)
     p = r["wins"] / n
-    out = {"fights": n, "win": 100 * p, "win_pm": 100 * 1.96 * math.sqrt(max(p * (1 - p), 1e-9) / n), "length": r["seconds"] / n, "sources": {}}
+    # A run that saw no win (or no loss) still has a margin: as if one fight in n had gone the other way.
+    q = min(max(p, 1 / n), 1 - 1 / n)
+    out = {"fights": n, "win": 100 * p, "win_pm": 100 * 1.96 * math.sqrt(q * (1 - q) / n), "length": r["seconds"] / n, "sources": {}}
     lengths = sorted(r["lengths"])
     out["length_sd"] = (sum((x - out["length"]) ** 2 for x in lengths) / max(1, n - 1)) ** 0.5
     for k in SOURCES:

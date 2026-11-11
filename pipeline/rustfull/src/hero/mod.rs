@@ -17,6 +17,7 @@ pub mod dawn;
 pub mod forge;
 pub mod frost;
 pub mod hive;
+pub mod ledger;
 pub mod storm;
 
 /// Every hero that can fight here.
@@ -26,6 +27,7 @@ pub const HEROES: &[&Hero] = &[
     &storm::HERO,
     &dawn::HERO,
     &hive::HERO,
+    &ledger::HERO,
 ];
 
 /// A spell's effect as far as it makes hits (`Effect` in the game): a small timeline. The game keeps one per spell
