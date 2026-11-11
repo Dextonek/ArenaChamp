@@ -12,8 +12,15 @@ which kind, they chose **Python on the real game** (not a Rust rewrite of the ru
   real CPU duels of the game's own code in hidden browsers (Playwright, the installed Chrome), results as a page:
   win rates with the 40-60% band and the reach of chance, who beats whom, damage a second by source, stalls, errors.
 - **Speed here:** one hero's check (96 fights) 45 s; the whole roster twice each way (3,120 fights) 12.7 min with 14
-  browsers. Fourteen browsers left the computer barely usable (a plain `tail` took over a minute), so the default
-  is now half the cores (8); `--workers 14` when nobody needs the machine.
+  browsers at normal priority, which left the computer barely usable (a plain `tail` took over a minute).
+- **Made gentle** (user: "can we make it somehow not that laggy"): by default a quarter of the processor's threads
+  are never touched and every process of the run has the lowest priority (Chrome's working processes must be asked
+  again and again: `keep_low`). Measured while 12 browsers fought: `git status` 0.11 s (idle 0.05), starting a
+  program 1.3 s (idle 0.15), pure work 0.43 s (idle 0.30); 3.4 fights a second. Lowering only the parent's priority
+  did NOT work (Chrome's renderers stayed normal). `--priority normal --workers 14` is the old behaviour.
+- **Asked and answered** (user: "in rust would it lag much smaller, why chrome, can it be just simulation in
+  python"): see "Why a browser" in the simulator page. A rewrite in Rust was not started. The middle way (the real
+  fight code in Node, without a browser) is named there and not built; **waiting on the user** whether they want it.
 - **First whole-roster run** ([page](balance/roster-2026-11-11.html), 156 fights a hero, about plus or minus 8
   points): no errors, no fight without a winner, all nine arenas used. 27 of 40 inside 40-60%. Strong: Hank 78,
   Grandma Ironknit 72, Mortis 63, Lyra 61, Oblivion 61, Bram 60. Weak: Anka 18 (not tuned yet, see below), Cantor

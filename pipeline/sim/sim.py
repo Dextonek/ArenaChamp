@@ -11,8 +11,9 @@ hero, a changed number or a new arena is in the next run without touching this f
     python pipeline/sim/sim.py page <name>               a run's page again from its .json
 
 Common options: --arena random|<id> (default random), --events (the arenas' events and closing stages on), --workers N
-(browsers at once; default: half the machine's cores, so the computer stays usable), --out NAME, --open (show the page
-when done).
+(browsers at once; default: one for each processor thread the run may use), --priority low|normal (default low: the
+run and every browser it starts have the lowest priority, and a quarter of the processor's threads are never touched,
+`--reserve N`, so the computer stays quick), --out NAME, --open (show the page when done).
 
 It writes pipeline/sim/out/<name>.json and <name>.html (and latest.html beside them) and prints the table. A fight is a
 'run' duel at the balance CPU level: the hero on the player's side, the foe on the opponent's, both played by the CPU, as
@@ -44,6 +45,78 @@ BENCH = ["Brannoc", "Kaia", "Isolde", "Sirix", "Cantor", "Oblivion"]
 SOURCES = ["Q", "W", "E", "R", "attack", "unit", "trait"]
 # No rendering happens in a fight (the duel is stepped, never drawn), so the graphics card does not matter.
 CHROME_ARGS = ["--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--mute-audio"]
+
+
+def be_gentle(reserve):
+    """Keeps the computer quick while a run goes, in two ways. The run may only use some of the processor's threads:
+    the first `reserve` stay free for everything else (this program's own limit, which the dev server and every browser
+    it starts inherit). And it runs at the lowest priority (see `keep_low`). Returns (threads it may use, a note)."""
+    cores = os.cpu_count() or 4
+    reserve = max(0, min(reserve, cores - 1))
+    try:
+        if sys.platform == "win32":
+            import ctypes
+            k = ctypes.windll.kernel32
+            k.GetCurrentProcess.restype = ctypes.c_void_p
+            k.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+            k.SetProcessAffinityMask.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
+            me = k.GetCurrentProcess()
+            k.SetPriorityClass(me, 0x40)  # IDLE_PRIORITY_CLASS
+            mask = ((1 << cores) - 1) & ~((1 << reserve) - 1)
+            if not k.SetProcessAffinityMask(me, mask):
+                return cores, "low priority"
+        else:
+            os.nice(19)
+            if hasattr(os, "sched_setaffinity"):
+                os.sched_setaffinity(0, set(range(reserve, cores)))
+        return cores - reserve, f"low priority, {reserve} of {cores} processor threads left free"
+    except Exception:
+        return cores, "normal priority (could not lower it)"
+
+
+def keep_low():
+    """Windows: puts every process this program has started, and theirs, at the lowest priority. Chrome gives its own
+    working processes normal priority whatever its parent has, so this is asked again every few seconds."""
+    if sys.platform != "win32":
+        return
+    import ctypes
+    from ctypes import wintypes
+
+    class Entry(ctypes.Structure):
+        _fields_ = [("dwSize", wintypes.DWORD), ("cntUsage", wintypes.DWORD), ("th32ProcessID", wintypes.DWORD),
+                    ("th32DefaultHeapID", ctypes.c_size_t), ("th32ModuleID", wintypes.DWORD), ("cntThreads", wintypes.DWORD),
+                    ("th32ParentProcessID", wintypes.DWORD), ("pcPriClassBase", ctypes.c_long), ("dwFlags", wintypes.DWORD),
+                    ("szExeFile", ctypes.c_char * 260)]
+
+    k = ctypes.windll.kernel32
+    k.CreateToolhelp32Snapshot.restype = ctypes.c_void_p
+    k.Process32First.argtypes = k.Process32Next.argtypes = [ctypes.c_void_p, ctypes.POINTER(Entry)]
+    k.OpenProcess.restype = ctypes.c_void_p
+    k.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    k.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+    k.CloseHandle.argtypes = [ctypes.c_void_p]
+    snap = k.CreateToolhelp32Snapshot(0x2, 0)  # TH32CS_SNAPPROCESS
+    if not snap or snap == ctypes.c_void_p(-1).value:
+        return
+    kids = {}
+    e = Entry()
+    e.dwSize = ctypes.sizeof(Entry)
+    ok = k.Process32First(snap, ctypes.byref(e))
+    while ok:
+        kids.setdefault(e.th32ParentProcessID, []).append(e.th32ProcessID)
+        ok = k.Process32Next(snap, ctypes.byref(e))
+    k.CloseHandle(snap)
+    todo, seen = list(kids.get(os.getpid(), [])), set()
+    while todo:
+        pid = todo.pop()
+        if pid in seen:
+            continue
+        seen.add(pid)
+        todo += kids.get(pid, [])
+        h = k.OpenProcess(0x0200, False, pid)  # PROCESS_SET_INFORMATION
+        if h:
+            k.SetPriorityClass(h, 0x40)
+            k.CloseHandle(h)
 
 
 def server_up(port):
@@ -125,7 +198,10 @@ async def worker(pw, args, url, opened, jobs, results, state):
 async def progress(results, total, state):
     t0 = time.time()
     while not state["done"]:
-        await asyncio.sleep(5)
+        for _ in range(2):
+            if state["low"]:
+                keep_low()
+            await asyncio.sleep(2.5)
         n = len(results)
         rate = n / max(1e-6, time.time() - t0)
         left = (total - n) / rate if rate > 0 else 0
@@ -261,6 +337,10 @@ def print_table(data):
 async def run(args):
     port = args.port
     url = f"http://localhost:{port}/"
+    # before anything is started, so that all of it inherits the priority
+    threads, args.priority_note = be_gentle(args.reserve) if args.priority == "low" else (os.cpu_count() or 4, "normal priority")
+    if args.workers <= 0:
+        args.workers = max(1, threads)
     proc = start_server(port)
     t0 = time.time()
     try:
@@ -275,11 +355,13 @@ async def run(args):
             total = len(jobs)
             workers = len(opened)
             args.workers = workers
-            print(f"{total} fights in {workers} browsers ({args.mode}; arena {args.arena}; events {'on' if args.events else 'off'}); loaded in {time.time() - t0:.0f} s", flush=True)
+            print(f"{total} fights in {workers} browsers ({args.mode}; arena {args.arena}; events {'on' if args.events else 'off'}; {args.priority_note}); loaded in {time.time() - t0:.0f} s", flush=True)
             queue = asyncio.Queue()
             for j in jobs:
                 queue.put_nowait(j)
-            results, state = [], {"done": False, "deadline": time.time() + args.max_minutes * 60}
+            results, state = [], {"done": False, "deadline": time.time() + args.max_minutes * 60, "low": args.priority == "low"}
+            if state["low"]:
+                keep_low()
             ticker = asyncio.create_task(progress(results, total, state))
             await asyncio.gather(*[worker(pw, args, url, o, queue, results, state) for o in opened])
             state["done"] = True
@@ -307,8 +389,11 @@ def main():
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--arena", default="random")
     common.add_argument("--events", action="store_true", help="the arenas' events and closing stages on")
-    # Half the machine by default: with every core busy the computer is barely usable while a long run goes.
-    common.add_argument("--workers", type=int, default=max(1, cores // 2), help="browsers at once (default: half the cores)")
+    common.add_argument("--workers", type=int, default=0, help="browsers at once (default: one for each processor thread the run may use)")
+    common.add_argument("--priority", choices=["low", "normal"], default="low",
+                        help="low (default): lowest priority, and some processor threads are left free; normal: as any program, on all of them")
+    common.add_argument("--reserve", type=int, default=max(2, cores // 4),
+                        help="with --priority low: processor threads the run never touches (default: a quarter of them)")
     common.add_argument("--out", default="")
     common.add_argument("--open", action="store_true")
     common.add_argument("--port", type=int, default=5181)

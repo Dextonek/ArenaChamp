@@ -28,8 +28,21 @@ python pipeline/sim/sim.py page <name>                    a run's page again fro
 ```
 
 Add `--open` to show the page when it is done, `--events` to turn the arenas' events and closing stages on,
-`--arena harbour` to pin an arena (default: random), `--out name` to name the run. It uses half the machine's cores
-(`--workers 8` here); `--workers 14` is almost twice as fast, but the computer is barely usable meanwhile.
+`--arena harbour` to pin an arena (default: random), `--out name` to name the run.
+
+## It stays out of the way
+
+The first version ran 14 browsers at full load and the computer was barely usable (a plain `tail` took over a minute).
+The user: "can we make it somehow not that laggy when the simulation is working". Now, by default:
+
+- **A quarter of the processor's threads are never touched** (`--reserve 4` here: 12 of 16 are used). The run limits
+  itself, and the dev server and every browser it starts inherit the limit.
+- **Everything runs at the lowest priority.** Chrome gives its own working processes normal priority whatever its
+  parent has, so the run asks again every few seconds for every process it has started (`keep_low` in `sim.py`).
+
+Measured here while 12 browsers fought: `git status` 0.11 s (idle 0.05), starting a program 1.3 s (idle 0.15), a
+piece of pure work 0.43 s (idle 0.30). The run itself is about as fast as before (3.4 fights a second against 4).
+`--priority normal --workers 14` gives the old behaviour, for when nobody needs the machine.
 
 It prints the table and writes `pipeline/sim/out/<name>.html`, `<name>.json` and `latest.html` (the folder is not in
 git: copy a page worth keeping to `docs/balance/`).
@@ -81,7 +94,17 @@ Needs Python 3.10+, `pip install playwright`, Google Chrome (or `--browser msedg
 Every wait ends by itself: a fight has 120 simulated seconds and 90 real ones, the whole run 60 minutes
 (`--max-minutes`). The server it starts is the one it stops.
 
-**Not built, and why:** a separate simulator in Rust with the rules written again. It would run thousands of fights a
-second, but every kit would have to be written twice and kept in step by hand, and the special mechanics (embers,
-doors, trees, mirrors) only roughly: its numbers could differ from the game's. If quick "what if" questions ever need
-it, it must be checked against this one.
+## Why a browser, and what the other ways would cost
+
+The user asked (2026-11-11): "in rust would it lag much smaller, and why are we doing it in chrome, can it be just
+simulation in python?"
+
+- **Why a browser:** the rules of a fight exist in one place only, the game's own code (40 heroes' spells and
+  passives, the arenas, the CPU's brain), and that code runs in a browser. The simulator runs it as it is.
+- **A simulation written again in Rust or Python** would be small and fast (Rust: the whole roster in seconds, no
+  load worth noticing; Python: slower than the browser). But every hero would have to be written a second time and
+  changed in two places for ever, and special mechanics (embers, doors, trees, mirrors) only roughly: where the two
+  differ, the simulator's numbers are wrong and nobody sees it. Not built.
+- **The middle way, not built:** the game's real fight code run without a browser (in Node). The same true numbers,
+  no Chrome, far less memory. It needs the fight code separated from what draws it (the duel touches the 3D scene and
+  the page's HUD), which is real work on shared engine files. Worth doing if the browser way ever becomes the limit.
