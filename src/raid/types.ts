@@ -341,6 +341,8 @@ export interface BossPhase {
 }
 
 export interface BossDef {
+  /** Makes the room fit a party tuned for `band` players (`raidRing`), before the fight is built. A boss without it has one room. */
+  resize?(band: number): void;
   id: string;
   /** Not a boss: Noonfall's hall, on the same path, with no bars, no spells and nothing to fight (src/raid/hall.ts). */
   hall?: boolean;

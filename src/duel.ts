@@ -558,10 +558,13 @@ export class Duel {
     def: BossDef; link: RaidLink; seed: string; mode?: 'play' | 'run'; name?: string; partner?: { kit: HeroKit; name: string }; tier?: number; upgrades?: RunUpgrades;
     /** A raid of more than two: every other player's hero by its side (a raid for two may give `partner` instead). */
     party?: { side: number; kit: HeroKit; name: string }[];
+    /** How many the boss is tuned for (the band): its room is as wide as that needs. 2 when not given. */
+    band?: number;
     /** What the result card says, or null for no card: the run goes on by itself. */
     card?: (result: 'win' | 'lose', seconds: number) => { title: string; text: string; again?: string } | null;
   }) {
     this.endBoss();
+    o.def.resize?.(o.band ?? 2);
     this.bossCard = o.card ?? null;
     const mode = o.mode ?? 'play', run = mode === 'run';
     const arena = this.host.arena, hm = this.host.heroMode;

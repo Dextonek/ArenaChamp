@@ -6,3 +6,5 @@ export declare const RAID_HALL_RING: number;
 export declare const RAID_RUN: string[];
 export declare const raidHp: (id: string, duo: boolean, tier: number) => number;
 export declare const raidTierFactor: (tier: number) => number;
+export declare const raidRing: (id: string, band: number) => number;
+export declare const RAID_SHRINE_S: number;

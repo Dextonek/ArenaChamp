@@ -282,7 +282,7 @@ export class RaidController {
     this.band = m.band ?? this.band;
     this.link = new NetLink(net, this.side, m.hp, m.brain === this.side || !this.party.length);
     api.duel.startBoss({
-      def, link: this.link, seed: `${this.match}-${m.tier}-${m.stage}`, mode: 'play', name: this.myName, partner: this.partner ?? undefined, party: this.party.length > 1 ? this.party : undefined, tier: m.tier, upgrades: this.upgrades,
+      def, link: this.link, seed: `${this.match}-${m.tier}-${m.stage}`, mode: 'play', name: this.myName, partner: this.partner ?? undefined, party: this.party.length > 1 ? this.party : undefined, band: this.band, tier: m.tier, upgrades: this.upgrades,
       card: (result) => this.card(result),
     });
     this.leave.style.display = '';

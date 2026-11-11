@@ -343,6 +343,8 @@ export class BossFight {
         list.push({ x: spot.x, y: spot.y, color });
       };
       for (const at of this.script.goldSpots()) add(at, '#ffe27a');
+      // In a party's wide room the boss itself can be out of sight.
+      if ((this.def.place.ring ?? 0) > 18) add(this.world.boss(), '#ff8a4a');
       const fallen = this.world.fallenPartner();
       if (fallen) add(fallen, '#8dffb0');
     }

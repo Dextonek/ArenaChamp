@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
-import { COURT_R, sunCourtArena } from '../arenas/suncourt';
+import { COURT_R, setCourtSize, sunCourtArena } from '../arenas/suncourt';
+import { raidRing } from '../../server/protocol.mjs';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
@@ -347,7 +348,7 @@ const longHour = stageMove({
   hold: { x: C.x, z: C.z - 2.4 }, shell: { radius: 3.1, y: 2.8, color: 0xffc070 },
   center: C, ring: 9, turns: [[0, 120, 240], [60, 180, 300]],
   look: hourStoneLook, color: '#c8b088', shot: 'beam', shotColor: SPARK,
-  fail: { share: 0.55, cover: true, radius: COURT_R + 1, text: 'THE DIAL STRIKES', blast: 'flare' },
+  fail: { share: 0.55, cover: true, get radius() { return COURT_R + 1; }, text: 'THE DIAL STRIKES', blast: 'flare' },
   win: 'THE HOUR BREAKS', hint: 'Break the three Hour Stones before his bar fills',
 });
 
@@ -506,7 +507,13 @@ export const SUN_WARDEN: BossDef = {
   title: 'Keeper of the Sun Court',
   place: sunCourtArena,
   gates: { enter: 0, exit: 180 },
-  starts: { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z: 16.5 }, { x: -1.6, z: 16.5 }, { x: 1.6, z: 16.5 }] },
+  // Heroes come in at the south gate, wherever the rim is now.
+  get starts() {
+    const z = COURT_R + 0.5;
+    return { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z }, { x: -1.6, z }, { x: 1.6, z }] as [{ x: number; z: number }, { x: number; z: number }, { x: number; z: number }] };
+  },
+  /** A party's court is wider (`raidRing`): set before the fight is built. */
+  resize: (band) => setCourtSize(raidRing('sun', band)),
   kit: (hp) => ({
     name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, look: wardenLook, maxHp: hp,
     spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],

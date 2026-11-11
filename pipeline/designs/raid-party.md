@@ -87,6 +87,19 @@ present (not left) when a fight starts, sent in `raid_stage { band }`. The boss'
 **The brain.** If no `boss_cast` or `boss_move` comes from the brain's screen for 4 s during a fight, the hub gives the brain to the
 next player present (`boss_brain`).
 
+## The room grows with the party (user, 2026-11-11)
+
+> "make the boss room bigger much bigger so that the 40 player will be lost there"
+
+`raidRing(id, band)` in `server/protocol.mjs`: the room for two as it was (16 m), then 20, 26, 30, 34, 40 and 46 m for the bands 5 to
+40. A boss with `BossDef.resize` fits its room before the fight is built (`Duel.startBoss({ band })`). **Built for the Sun Court
+only, as the look to agree first** (`setCourtSize` in `src/arenas/suncourt.ts`): the old court stays as the middle; an outer court of
+the same slate runs to the new rim, with rings of columns and breakable screen walls every 4.5 m (100 pieces of cover at 46 m), more
+fire bowls on the rim, the backdrop pushed out. His moves that cover the floor reach the new rim; heroes come in at the south gate;
+an arrow points to the boss when he is out of sight. Pictures: `docs/raid/court-40-overview.jpg`, `court-40-play.jpg`,
+`court-40-phone.jpg`. **To do:** the hub clamps walks to the old 16 m (use `raidRing` once the server branch is merged); the Cinder
+Pit and the Heart's room the same way; the fight for two is untouched but was not measured again.
+
 ## State (2026-11-11)
 
 - Not started in code. The Heart of Noon is being built by a helper in its own worktree (its `PROTOCOL` 6 -> 7 is only there; main

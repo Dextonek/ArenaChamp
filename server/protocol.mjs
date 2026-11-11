@@ -31,6 +31,12 @@ export const RAID_REWARDS = {
 /** What the Shrine, a side door of the hall, costs on the run's time (s; src/raid/paths.ts). */
 export const RAID_SHRINE_S = 15;
 
+/**
+ * How far a boss's room reaches for a party (m): the room grows with the band, so 40 players have a place to be lost in (user,
+ * 2026-11-11). For two it is the room as it was. Both screens and the hub work it out from the band. @param {string} id @param {number} band
+ */
+export const raidRing = (id, band) => Math.round(RAID_BOSSES[id].ring * (band <= 2 ? 1 : band <= 5 ? 1.25 : band <= 10 ? 1.6 : band <= 15 ? 1.9 : band <= 20 ? 2.15 : band <= 30 ? 2.5 : 2.9));
+
 /** How far Noonfall's hall reaches, where a run waits between its fights (m). */
 export const RAID_HALL_RING = 13;
 
