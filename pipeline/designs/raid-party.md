@@ -200,6 +200,27 @@ fights on with his four small moves.
 **Not done or not checked:** a party of people or bots in the hall through the hub; forty heroes in one arm; the bell's cost on a
 phone; his mechanics scaled to the band (Noon's two shards, Anchors' two circles); the Cinder Pit's and the Heart's party rooms.
 
+## Harder mechanics for the Raid (user, 2026-11-12)
+
+> "but also make the raid beetter like make dificult mechanics"
+
+Said while the Tower was being started as its own mode: the Raid is to get better too, with mechanics that are hard. Plan: build the
+six ideas of `pipeline/designs/raid-mechanics.html` the user did not pick the first time, each made to ask something of the whole
+party, on top of the three picked (The Hour Strikes, Twin Flames, Hold Still):
+
+| Boss | Mechanic | What makes it hard |
+|---|---|---|
+| Sun Warden | Carry the Sun | One shard per five players, from the far ends of the hall's arms to the Sun Well. A carrier is slow and cannot cast; the others must put cover or themselves between the carriers and his ray. Shards not home when Noon lands burn everyone |
+| Sun Warden | Branded | A few players (one per eight) get a sun over their head that bursts after 5 s round them: they run out of the crowd, into the wings. In his last phase it comes during The Hour Strikes |
+| Ash and Ember | Lantern Chain | Two players (more pairs in a bigger party) are chained: more than 8 m apart and it snaps and burns both. Ash's rocks then make the pair move as one |
+| Ash and Ember | Seal the Vents | One vent per five players, each held by someone standing on it; every vent left open makes the lava rise faster, for both halves |
+| Heart of Noon | Take the Blade | A fallen sun blade: its carrier hits far harder for 12 s, walks slowly and draws the Heart's attacks; the party shields them, also through Hold Still |
+| Heart of Noon | Shade the Heart together | One plate per five players, each sheltering only a few: the party must split up behind them before the pulse |
+
+Rules for all of them: the count grows with the band; a failure costs the whole party, not only the one who failed; in the last
+phase two mechanics overlap; alone and for two each is either scaled down to something one or two can do or left out. They are built
+per boss once that boss's file is free (Twin Flames and the Heart's party room are being built in `ashEmber.ts` and `heart.ts` now).
+
 ## State (2026-11-11)
 
 - Not started in code. The Heart of Noon is being built by a helper in its own worktree (its `PROTOCOL` 6 -> 7 is only there; main
