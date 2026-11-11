@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
+_Last updated: 2026-11-11 (hero 40, Anka the Firebird: all six gates done by the computer, waiting on the user to play her once, not pushed, not live; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
 ## The Raid grows (2026-11-11): omens, rarer upgrades, side doors committed; the third boss and 40 players in progress; NOT live
 
@@ -149,7 +149,7 @@ which kind, they chose **Python on the real game** (not a Rust rewrite of the ru
 - **Waiting on the user:** whether to rebalance the strong and weak heroes the roster run shows, and by which
   measure (the six benchmark foes as before, or the whole roster).
 
-## Hero 40 and the new rules for creating a hero (2026-11-11): Anka at gate 5: 48% in the simulator, the Raid, the game page and online still to check
+## Hero 40 and the new rules for creating a hero (2026-11-11): Anka is finished but for the user playing her once; committed, not pushed, not live
 
 User: "okay lets make it 40 heros total so made new one", "and lets make like what need to be done when we are
 creating new hero, like docs"; of four ideas offered they picked the **Phoenix fire dancer** (the first true fire
@@ -173,9 +173,12 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   list yet, so the game does not show her.
 - **Known in the look:** the fan covers her face in the sheet's face view (the Blender picture shows the face); the
   skirt's two scalloped layers are bright; the wings stand out to the sides rather than hang.
-- **THE TREE IS NOT DEPLOYABLE (2026-11-11):** Anka is in the hero list with stand-in looks (plain discs and cones,
-  plain icons). Do not push to live or deploy before gate 4's looks are done and gate 5's numbers are in, whatever
-  the request says: ask first. The three bracket server files are also still uncommitted.
+- **Anka no longer blocks a deploy (2026-11-11, was "THE TREE IS NOT DEPLOYABLE"):** her looks are done (gate 4) and
+  every check of gate 5 the computer can make has passed (below). Before a deploy that carries her, still: (1) the
+  user plays her once (gate 5's last line: `npm run dev`, http://localhost:5173/game, CPU duel, the last tile);
+  (2) her commit is merged from its worktree (branch `t3/23f20a58`) into `feat/particle-editor`; (3) the raid change
+  that raises `PROTOCOL` to 8 is merged too: she raises no number of her own, and that one covers her (an old tab
+  must reload to know her). Push and deploy are the user's own requests, each on its own.
 - **Gate 3, kit on paper: agreed** (user: "nice yes build her").
 - **Gate 4, first step: her rules and plain working spells, done and proven offline.** `src/traits/phoenix.ts`
   (the ember book, stamping, Ashborn, the CPU's rules), `src/effects/parts/phoenix.ts` (palette and stand-in looks),
@@ -212,11 +215,50 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   460 HP: **48% over 192 simulated fights against the six benchmark foes**, every spell in use, no errors, no fight
   without a winner. The steps are a table in `pipeline/designs/kit-phoenix.md` ("Gate 5"). Her effects cost the same
   per fight step as any hero's (0.18 ms against 0.23).
-- **Gate 5, still owed (she waits behind the Rust model the user asked for):** the Raid check
-  (`pipeline/tools/raid-tool.js`, run it through `page-shots.py`); a duel through the game page's own menus (pick her
-  in the hero grid, also at phone width; fight; rematch); two screens online (there are no local test logins on this
-  computer: `server/data/` does not exist); a clip for the user and the News; the user playing her once
-  (`npm run dev`, http://localhost:5173/game). Then gate 6: catalog page, palette row, counts (40), News, `PROTOCOL`.
+- **Gate 5, the rest: done (user: "Finish Anka now").** One page with the pictures and tables:
+  [heroes/anka-gate5.html](heroes/anka-gate5.html). On the finished code:
+  - **Simulator:** `python pipeline/sim/sim.py hero Anka --fights 32`: **54%** over 192 fights (four runs that day: 56,
+    52, 56, 54; Cantor 24 of 32, Sirix 20, Brannoc 19, Oblivion 17, Isolde 12, Kaia 11); with `--events` 48% over 96.
+    No errors, no fight without a winner, every spell in use. She was 48% before the balance pass of the same day
+    (Sirix: 6 of 32 then, 20 now). Pages: `docs/balance/anka-gate5-2026-11-11.html`, `anka-gate5-events-2026-11-11.html`.
+  - **Raid** (`_raid([...], 30)` through `page-shots.py`, port 5192): the Sun Warden 26 of 30 (Vitriol 27, Kaia 24);
+    Ash and Ember 9 of 30 (Vitriol 20, Kaia 14), 11 of her 21 falls being Ash's Charge. `_raid.errors()` empty. **Her
+    second life against a boss:** an ordinary hit that would fell her turns her to ash and she rises at the nest with
+    115 HP; a `lethal` hit (Ash's Charge) passes no trait and kills her for good, nest or no nest, and in the egg; she
+    has an ember about 70% of a fight and the boss stamps about one in twelve; Stubborn and Phoenix Heart are kept
+    for the blow after her own life; with Blood Pact she rises with 1 HP.
+  - **The game page through its own menus,** 1280x800 and a phone (390x844 with touch): picked in the grid, fought
+    (a tap and a key cast, then every spell), rematch, then as the CPU's hero. No console errors. She rose with 115 HP.
+    `?figs=old` shows her as she is. Pictures: `docs/heroes/anka-gate5-*.jpg`.
+  - **Online, two screens** (two bots through this worktree's own server, four matches, nine rounds): no errors; the
+    same embers on both screens in 99% of 1,900 moments, never more than 0.3 m apart, the nest never different;
+    eight rises, each seen on both screens at the same spot. The throwaway accounts are deleted.
+  - `npm run test:server`, type check and build pass.
+- **Found and fixed on the way** (her own files only: `src/traits/phoenix.ts`, `emberQuill.ts`, `firebird.ts`,
+  `fanTheFlames.ts`; no number changed):
+  1. **The two screens could disagree on her nest for 12 s** (the first online match: the same embers only 45% of
+     the time, with her HP agreeing all the while). Embers were ranked and numbered by which LANDED first, and a
+     quill lands at a different moment on each screen. Now an ember carries the number of the cast that laid it
+     (`castNo`: counted alike on both screens), the nest is the ember of her latest cast, and Fan the Flames burns
+     the embers of every earlier cast, also one that lands after the flare.
+  2. **A hit that fells her only after rounding** (55.6 on 56 HP) started no second life. It does now.
+  3. Her passive's text said "a hero's hit": a boss's hit counts too, so it says "a hit".
+- **Gate 6: done.** `docs/catalog/heroes/phoenix.md`, her rows in `docs/catalog/heroes/README.md` and
+  `docs/catalog/effects.md` (287 effects), her palette row in `docs/ART_BIBLE.md`, the counts (40) in `CLAUDE.md`,
+  `docs/README.md`, `docs/SHOWCASE.md`, `docs/architecture/hero-mode.md` and `traits.md`; two News items at the top
+  of the release that is not live ("Anka, the Firebird: hero 40" with `public/news/anka.jpg`, "She rises once from
+  her ashes" with the clip `public/news/anka-rise.mp4`); what she showed is written back into
+  [pipeline/new-hero.md](pipeline/new-hero.md). **`PROTOCOL` was not touched here** (see above).
+- **Seen, not changed** (each is one small job, waiting on the user's word): while she is ash a row of small green
+  "+2" runs from where she fell to the nest (her HP climbs in steps); when the enemy sidesteps a quill, her screen
+  and the enemy's plant its ember in different places (the bots stand still: not measured); the computer plays her
+  badly against Ash and Ember (the Charge); the Play screen's card at laptop height holds about six lines of a
+  passive's text, hers and Vitriol's run past the box (`src/game/game.css`); a damage number stands for one frame
+  in the top left corner before it is placed (`Arena.say` in `src/arena.ts`, every hero); the Raid for two was not
+  played with her.
+- **Tool lessons:** `clip-film.js` takes one take a page load (a second take starts on a clock that went back: its
+  first seconds are black); four raid fights are noise, 30 a hero take under a minute; two screens are compared by
+  what each has on the floor, not by HP.
 - Gate 3's text: (user: "lets make some interesting kit for her").
   `pipeline/designs/kit-phoenix.md`: everything lays embers or spends them; an ember is a blast (W Fan the Flames), a
   place to fly to (E Ember Flight) and her second life (P Ashborn); Q Ember Quill and R Firebird lay them; 480 HP.

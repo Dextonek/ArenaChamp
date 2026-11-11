@@ -2,7 +2,7 @@
 title: Rules for creating a hero
 tags: [pipeline, heroes, rules, checklist]
 updated: 2026-11-11
-status: proposed to the user, not yet used; the Phoenix (hero 40) is the first to be built by them
+status: used once; Anka the Firebird (hero 40) was built by them, and what she showed is at the end
 ---
 
 # Rules for creating a hero
@@ -129,10 +129,17 @@ spell is rewritten on the sheet first.
       fight without a winner, no errors, and every spell showing in "where the damage comes from" (one that does not
       is one the CPU cannot use). Numbers changed here go back into the sheet and the blurbs. Before release,
       once with `--fights 32` and once with `--events`.
-- [ ] `_raid(['<Name>'], 4)` (`pipeline/tools/raid-tool.js`): clears like her role; `_raid.errors()` empty.
+- [ ] `_raid(['<Name>', '<two of her role>'], 30)` (`pipeline/tools/raid-tool.js`, through `page-shots.py`): clears the first
+      boss like her role; `_raid.errors()` empty. Four fights are noise: 30 a hero take a minute. A boss's hit is not a
+      hero's: if her passive answers a hit (a save, a block, a counter), try it with an ordinary boss hit and with a
+      `lethal` one, and write down what each does.
 - [ ] A CPU duel on the game page through its own menus: pick her in the hero grid (also at phone width), fight,
       lose or win, rematch; then as the CPU's hero. No console errors.
-- [ ] A clip (`pipeline/tools/clip-film.js`) for the user and the News.
+- [ ] Two screens online with bots (`pipeline/tools/online-bot.js`, two headless pages on one dev server). Equal HP on
+      both screens is not enough: read what each screen has of her things on the floor ten times a second and lay the
+      two records over each other. Throw her spells into each other's wind-ups: that is where the screens part.
+- [ ] A clip (`pipeline/tools/clip-film.js`, headless through `page-shots.py`; one take a page load) for the user and
+      the News.
 - [ ] `npm run test:server`.
 
 ### Gate 6: release
@@ -147,22 +154,35 @@ spell is rewritten on the sheet first.
 - [ ] `docs/STATUS.md`: done, not pushed, not live; then the user's push, and the deploy as its own request. Before
       a deploy: `npx wrangler deployments list` shows the version STATUS names as live (two Cloudflare accounts).
 
-## To be proven on hero 40
+## What hero 40 showed (2026-11-11)
 
-These rules have not built a hero yet. The Phoenix is the test, and what she shows goes back into this page.
+Anka went through all six gates. What her last two gates found, as rules for the next hero:
 
-- **A portrait made from the model.** Today portraits are drawn by hand on a canvas in the kit file, which is how
-  they drifted from the models. The rule above only says "drawn from the agreed model". A portrait rendered from the
-  model itself would end the drift for good; it is a proposal, not built.
-- **A hero born in the fourth style** has no older model: `?figs=old` will show her as she is.
-- **An old tab meeting a new hero.** The server takes any hero name, so only the protocol number protects an old tab;
-  raising it is the rule, and what an old tab really does is to be looked at once.
-- **Tools with their own hero lists** (`duel-tourney.js`, `clip-film.js`, `key-art.js` name heroes in examples and
-  defaults; `kit-balance.js` has six fixed benchmark foes): nothing should need her name, to be confirmed.
-- **Shown as pages.** The user asked (2026-11-11) for "visualization for everything you make, like page": each
-  gate's picture is best given as one page (pictures, the table, the numbers), not as loose files and text.
-- **The costs in rule 9** ("no more to draw than the heroes beside her") have no tool yet beyond the model's size
-  and the frame time read by hand.
+- **Order things by the cast, never by the landing.** Her embers were numbered and ranked "newest" in the order they
+  landed, and a quill lands at a different moment on the two screens. Thrown during her ultimate's wind-up or just
+  after her fan, it landed before the other spell's moment on one screen and after it on the other, and the screens
+  then disagreed on her nest for 12 s. Her HP agreed all the while, so only a record of both screens side by side
+  showed it. An effect's `cast` runs once a cast on each screen, in the same order: count there
+  (`castNo` in `src/traits/phoenix.ts`).
+- **A rule that asks "would this hit fell her" must ask about the rounded damage.** The duel takes 55.6 as 56.
+- **The Raid has hits that pass no trait** (`lethal`: Ash's Charge), as the arena's own damage does. A passive that
+  saves a life does not save it from those; say so in its text.
+- **A passive's text is read on a card with six lines** (the Play screen at laptop height). Hers is the longest in
+  the game and runs past its box there, as Vitriol's does.
+
+The questions this page asked before she was built:
+
+- **A portrait made from the model.** Hers was drawn by hand from the agreed sheet, by a helper who had the model's
+  pictures beside it. A portrait rendered from the model itself is still a proposal, not built.
+- **A hero born in the fourth style** has no older model: `?figs=old` shows her as she is, and a duel there runs without errors.
+- **An old tab meeting a new hero.** Her release raises no protocol number of its own: the raid change that ships
+  with her raises it, and that covers her. What an old tab really does when it meets her was not looked at.
+- **Tools with their own hero lists:** none needed her name. The simulator, the raid tool, the clip tool, the
+  online bots and the picture tools all took `'Anka'` as they are.
+- **Shown as pages.** Her looks are one page (`docs/heroes/anka.html`), her balance runs are pages
+  (`docs/balance/anka-gate5-*.html`), and gate 5 is one page (`docs/heroes/anka-gate5.html`).
+- **The costs in rule 9:** her effects cost 0.18 ms a fight step against 0.23 for the heroes beside her, read by
+  hand; there is still no tool.
 
 ## Where the details live
 

@@ -6,7 +6,7 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
 ## The project
 - A browser game, Arena of Kits: 1v1 MOBA duels online and against the CPU, and a co-op Raid against bosses
   (`/game`). Beside it, the VFX tool it grew out of (`/`). Three.js, Vite, TypeScript; game server on Cloudflare
-  Workers (a Durable Object) or Node. 39 heroes.
+  Workers (a Durable Object) or Node. 40 heroes.
 - The user is the game artist and designer, often on a phone. They judge by eye: show pictures, sheets and clips,
   not only numbers. Write closing messages that stand alone, in plain words.
 - Live: https://arena-of-kits.arenachamp.workers.dev/game. GitHub: `Dextonek/ArenaChamp`, branch `main`.
@@ -45,7 +45,7 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
 - **One hero style, the fourth: realistic, one continuous body (decided 2026-11-10).** The user compared seven
   directions for Lyra (`pipeline/designs/style-v4/README.md`) and chose "real", for all 39 heroes: Quaternius'
   Universal Base Characters bodies (CC0) on the skeleton of his Universal Animation Library, whose clips play on them
-  as they are (`src/motion/real.ts`). All 39 are built (`blender/heroes/realkit.py`, one `build()` per hero in
+  as they are (`src/motion/real.ts`). All 40 are built (`blender/heroes/realkit.py`, one `build()` per hero in
   `blender/heroes/real/`, `real_build.py`; models `*_v4.glb`) and are the default; `?figs=old` shows the older models.
   A new or changed hero is made the same way; staffs go in the left hand, weapons in the right (that README).
 - **Motion comes from an animator's clips, not hand-built poses.** Hand-built holds and strikes were rejected three

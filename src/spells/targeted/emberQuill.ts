@@ -7,7 +7,7 @@ import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, nestLook } from '../../effect
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import type { Obstacle } from '../../obstacles';
-import { QUILL_DAMAGE, QUILL_RADIUS, QUILL_RANGE, QUILL_SPEED, QUILL_WIND, STAMP_R, emberLive, layEmber } from '../../traits/phoenix';
+import { QUILL_DAMAGE, QUILL_RADIUS, QUILL_RANGE, QUILL_SPEED, QUILL_WIND, STAMP_R, castNo, emberLive, layEmber } from '../../traits/phoenix';
 
 /**
  * Ember Quill (phoenix kit, Q: 10 m line skillshot, `ctx.projectile`). Anka flicks her fan (0.3 s wind-up) and a feather
@@ -72,6 +72,8 @@ export class EmberQuill implements Effect {
   private laid = false;
   /** With no bolt on this screen: when the quill would stop, and where. */
   private nominalAt = -1;
+  /** This cast's number among hers (`castNo`): the ember it lays carries it, so both screens keep the embers in one order. */
+  private seq = 0;
   private nominal = new THREE.Vector3();
   private landAt = -1;
 
@@ -122,6 +124,7 @@ export class EmberQuill implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
+    this.seq = castNo(ctx.caster);
     this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
     this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     // The look: her left hand, where the fan is.
@@ -177,7 +180,7 @@ export class EmberQuill implements Effect {
   private land(x: number, z: number) {
     if (this.laid) return;
     this.laid = true;
-    if (this.ctx) layEmber(this.ctx.caster, x, z);
+    if (this.ctx) layEmber(this.ctx.caster, x, z, this.seq);
     this.landAt = this.time;
     // The look: a small burst of feather sparks where it plants.
     this.landPos.set(x, 0, z);

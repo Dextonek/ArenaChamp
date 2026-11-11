@@ -43,6 +43,21 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Heroes',
+        title: 'Anka, the Firebird: hero 40',
+        text: 'A fire dancer with wings of flame and a feather fan, and the first true fire hero. Her feathers stay on the floor as embers, three at most: Fan the Flames makes them burst, Ember Flight carries her to one, and Firebird crosses the arena as a great burning bird. She has the least health of all, 460.',
+        image: '/news/anka.jpg',
+        alt: 'Anka from the front, from behind, walking and striking: a dancer in an ember-red bodice and a feathered skirt, with flame wings swept back and an open feather fan in her left hand.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'She rises once from her ashes',
+        text: 'The newest ember is her nest and wears a crown of flame. Once a round, a hit that would fell her while a nest burns turns her to ash: an egg glows at the nest, and a moment later she rises there with a quarter of her health, in a flare. Stand on an ember for a second to stamp it out: no ember, no second life.',
+        clip: '/news/anka-rise.mp4',
+        poster: '/news/anka-rise.jpg',
+        alt: 'Anka against Isolde on the Drowned Harbour: she crosses the quay as a firebird, flies back to an ember, falls, an egg glows on the floor, and she rises from it and throws a feather.',
+      },
+      {
         tag: 'Raid',
         title: 'Omens',
         text: 'Each tier of a raid now brings omens that twist both of its fights: lava where a circle lands, a dark room, a boss that rests less or enrages sooner. One at the first tier, two from then on. The hall shows them before you pick.',

@@ -15,6 +15,8 @@ import type { GroundMark, Trait, TraitView } from './types';
  * not drawn, cannot act and nothing reaches her, an egg glows at the nest and she slides there unseen; her HP climbs to 25%.
  * Then she rises in a flare (2.2 m: 40 and a push) and every ember goes out. The arena's own damage (its event, the closing
  * floor, Last stand) is not a hero's hit: it never passes through a trait, so it kills her for good, in the egg too.
+ * In the Raid a boss's ordinary hit is a hit like a hero's (she rises), and a blow that nothing holds (`lethal`: Ash's Charge)
+ * passes no trait either: it kills her for good, nest or no nest, and in the egg (measured at gate 5, docs/catalog/heroes/phoenix.md).
  *
  * Where each rule runs. The embers are state that outlives every spell, so they live here in a WeakMap keyed by her figure,
  * and the spell effects add and spend them at the moment they land, on both screens (`layEmber`, `spendEmber`, `burnOut`).
@@ -25,6 +27,18 @@ import type { GroundMark, Trait, TraitView } from './types';
  * refuses inside the 0.5 s after a stun (most kills follow one). The other screen learns it by `show('ash', nest id + 1)` and
  * mirrors the egg in `ownChanged`. The flare is a passive's hit (`hitEnemy`) from `victimTick`. Ids are 0..19 (a note's
  * number is clamped to 0-20).
+ *
+ * Which ember is which, on both screens (gate 5, found with two screens online). A quill lands at a different moment on the
+ * two screens (on hers it flies along the aim, on the enemy's it is a real bolt), so "the newest" and an ember's id must not
+ * depend on which LANDED first: a quill thrown during Firebird's wind-up, or just after Fan the Flames, landed before the other
+ * spell's moment on one screen and after it on the other, and the two screens then disagreed on the nest for 12 s. So every
+ * cast of hers takes a number (`castNo`: an effect's `cast` runs once a cast on each screen, in the same order), an ember
+ * carries the number of the cast that laid it, the embers are kept in that order (the nest is the one of the LATEST CAST), its
+ * id is that number, and Fan the Flames burns the embers of earlier casts only: ALL of them, also one that lands after the
+ * flare (`Book.burnt`). The last matters: Firebird's take-off and a fan's flare are two timers 0.1 s apart when the fan is cast
+ * 0.3 s into the wind-up, and one slow frame on one screen (the first cast of a match builds its effect) swapped them there,
+ * so the take-off ember burned on one screen and stayed on the other. Her rising takes the embers of every cast before it
+ * in the same way.
  */
 
 export const EMBER_LIFE = 12;
@@ -70,12 +84,15 @@ export const RISE_KNOCK = 8;
 const PUFF_LIFE = 0.6;
 const NEAR_EMBER_R = 3;
 
-export interface Ember { id: number; x: number; z: number; born: number }
+export interface Ember { id: number; x: number; z: number; born: number; /** The number of the cast that laid it (`castNo`). */ seq: number }
 
 interface Book {
   embers: Ember[];
   puffs: { x: number; z: number; born: number; burnt: boolean }[];
-  next: number;
+  /** Her casts this round, counted alike on both screens. */
+  casts: number;
+  /** The embers of casts numbered below this are burnt (a fan that flared, her rising): one that lands late is out at once. */
+  burnt: number;
   /** While she is ash: the egg at the nest, where she fell, and when (ember clock). */
   ash: { x: number; z: number; fromX: number; fromZ: number; at: number } | null;
   /** The ember the CPU wants Ember Flight to take, and when it said so (`performance.now()`). */
@@ -108,7 +125,7 @@ function syncClock(fig: object, time: number) {
 
 function book(fig: object): Book {
   let b = books.get(fig);
-  if (!b) { b = { embers: [], puffs: [], next: 0, ash: null, cpuPick: null }; books.set(fig, b); }
+  if (!b) { b = { embers: [], puffs: [], casts: 0, burnt: 0, ash: null, cpuPick: null }; books.set(fig, b); }
   return b;
 }
 
@@ -123,12 +140,27 @@ export function nestOf(fig: object): Ember | null {
   return e && e.length ? e[e.length - 1] : null;
 }
 
-/** Lays an ember for `fig` now; it becomes the nest (the oldest goes past 3). Call it at the moment a spell lands, on both screens. */
-export function layEmber(fig: object, x: number, z: number): Ember {
+/** The number of this cast of hers: call it once in the effect's `cast`, and give it to `layEmber` or `burnOut` when the spell lands. */
+export function castNo(fig: object): number {
+  return ++book(fig).casts;
+}
+
+/**
+ * Lays an ember for `fig` now. Call it at the moment a spell lands, on both screens, with the number its cast took (`castNo`):
+ * the embers stay in the order of their casts, so the nest is the ember of her latest cast on both screens whichever landed
+ * first, and past 3 the ember of the oldest cast goes. Without a number (the tool, a test) it counts as a cast of its own.
+ */
+export function layEmber(fig: object, x: number, z: number, seq = castNo(fig)): Ember {
   const b = book(fig);
-  const e: Ember = { id: b.next, x, z, born: emberNow(fig) };
-  b.next = (b.next + 1) % 20;
-  b.embers.push(e);
+  const e: Ember = { id: seq % 20, x, z, born: emberNow(fig), seq };
+  // A fan cast after this ember's cast has already flared (or she has risen since): it burns as it lands, on both screens.
+  if (seq < b.burnt) {
+    b.puffs.push({ x, z, born: e.born, burnt: true });
+    return e;
+  }
+  let i = b.embers.length;
+  while (i > 0 && b.embers[i - 1].seq > seq) i--;
+  b.embers.splice(i, 0, e);
   while (b.embers.length > MAX_EMBERS) b.embers.shift();
   return e;
 }
@@ -147,9 +179,17 @@ export function spendEmber(fig: object, id: number): boolean {
   return remove(fig, id, 'burn');
 }
 
-/** Every ember burns out (Fan the Flames, her rising). Both screens. */
-export function burnOut(fig: object) {
-  for (const e of embersOf(fig).slice()) remove(fig, e.id, 'burn');
+/**
+ * Every ember burns out, or, with the number of a cast (Fan the Flames; her rising gives the next number), every ember of an
+ * EARLIER cast, whenever it lands: a quill thrown after the fan may land before the flare on one screen and after it on the
+ * other and is left on both; an ember of an earlier cast that lands after the flare burns on both. Both screens.
+ */
+export function burnOut(fig: object, before = Infinity) {
+  if (before !== Infinity) {
+    const b = book(fig);
+    b.burnt = Math.max(b.burnt, before);
+  }
+  for (const e of embersOf(fig).slice()) if (e.seq < before) remove(fig, e.id, 'burn');
 }
 
 /** An ember stamped out by the enemy. */
@@ -184,7 +224,8 @@ function endAsh(fig: object) {
   const b = books.get(fig);
   if (!b) return;
   b.ash = null;
-  burnOut(fig);
+  // Every ember of every cast so far (she cannot cast as ash, so both screens have counted the same).
+  burnOut(fig, b.casts + 1);
 }
 
 function prune(fig: object, now: number) {
@@ -201,7 +242,8 @@ export const phoenixTrait: Trait = {
   meter: { name: 'EMBERS', max: MAX_EMBERS, color: PHOENIX_CSS.body, value: (t) => embersOf(t.self()).length },
   passive: {
     name: 'Ashborn',
-    blurb: 'Her feathers stay on the floor as embers: 3 at most, 12 s each. The newest is her nest and wears a crown of flame. Once a round, a hero\'s hit that would fell her while a nest burns turns her to ash instead: 1.2 s later she rises at the nest with 25% HP in a flare (2.2 m: 40 and a push), and every ember goes out. Stand within 1 m of an ember for 1 s to stamp it out; a new one is too hot for its first second. The arena\'s own fire kills her for good.',
+    // "A hit", not "a hero's hit": a boss's ordinary hit starts it too (gate 5).
+    blurb: 'Her feathers stay on the floor as embers: 3 at most, 12 s each. The newest is her nest and wears a crown of flame. Once a round, a hit that would fell her while a nest burns turns her to ash instead: 1.2 s later she rises at the nest with 25% HP in a flare (2.2 m: 40 and a push), and every ember goes out. Stand within 1 m of an ember for 1 s to stamp it out; a new one is too hot for its first second. The arena\'s own fire kills her for good.',
   },
   twist: {
     name: 'Three things at once',
@@ -269,7 +311,9 @@ export const phoenixTrait: Trait = {
     if (hit.damage <= 0 || t.mem.reborn) return;
     const fig = t.self(), nest = nestOf(fig), hp = t.hp();
     // hp <= 0: the arena already felled her this frame (its damage passes no trait); a hero's hit after it starts nothing.
-    if (!nest || hp <= 0 || hit.damage < hp + t.shieldAmount() - 1e-6) return;
+    // The duel takes a hit's damage rounded (55.6 costs 56): judged on the unrounded number alone, a hit of 55.6 on 56 HP started
+    // nothing and then felled her, a nest burning (gate 5). Whichever of the two would fell her counts.
+    if (!nest || hp <= 0 || Math.max(hit.damage, Math.round(hit.damage)) < hp + t.shieldAmount() - 1e-6) return;
     // Swallowed whole (its status, push and pull with it); she pays down to 1 HP herself and climbs from there.
     hit.blocked = true;
     t.payHp(hp - 1);
