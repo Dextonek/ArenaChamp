@@ -67,8 +67,8 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   liked having three agents look at a rejected sample in parallel before deciding ("make it three").
 - **A new hero is made by `docs/pipeline/new-hero.md` (2026-11-11).** The user, asked for a 40th hero: "don't follow
   the same path, let's just make new rules for hero creation". Ten rules, six gates that each end in a picture and
-  the user's yes (the look is agreed before any spell is built), one checklist. The rules are proposed, not yet
-  approved; the Phoenix fire dancer (the user's pick for hero 40) is the first to be built by them, after the nod.
+  the user's yes (the look is agreed before any spell is built), one checklist. The user said "continue" to them;
+  Anka the Firebird (the Phoenix fire dancer, the user's pick for hero 40) is the first to be built by them.
 - **Boss difficulty** is measured with `_raid(...)` (`pipeline/tools/raid-tool.js`) in tool-page tabs: four tabs in
   parallel, about 10 minutes for 39 heroes each; any edit under `src/` or `pipeline/` reloads the tabs and kills the
   runs; one run of 39 fights swings by about ±8 points.

@@ -66,7 +66,7 @@ export const REAL_STYLE: Record<string, RealStyle> = {
   Vesper: { hold: 'torch' }, Isolde: { hold: 'torch' }, Kaia: { hold: 'torch' }, Sefu: { hold: 'torch' }, Fenna: { hold: 'torch' },
   Mortis: { hold: 'torch' }, Cantor: { hold: 'torch' }, Opaline: { hold: 'torch' }, Shiori: { hold: 'torch' }, Tempo: { hold: 'torch' },
   Silvane: { hold: 'torch' }, 'Mr. Ledger': { hold: 'torch' }, Gus: { hold: 'torch', attack: 'spell' }, 'Barry Cloudsley': { hold: 'torch' }, Bo: { hold: 'torch' },
-  'The Great Zambini': { hold: 'torch' }, Wick: { hold: 'torch' },
+  'The Great Zambini': { hold: 'torch' }, Wick: { hold: 'torch' }, Anka: { hold: 'torch' },
   Auriel: { hold: 'shield' },
   // how they strike
   Vitriol: { attack: 'throw' }, Pip: { attack: 'throw' }, Sirix: { attack: 'claw' }, Mabel: { attack: 'claw' }, Hank: { attack: 'chop' },
