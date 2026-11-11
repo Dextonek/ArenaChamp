@@ -2,7 +2,7 @@
 // seed with no server field, so a tab left open from an older build would see different cover and events from its
 // opponent. Raise this by hand whenever a deploy changes those rules or the messages: the hub then tells older tabs to
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
-export const PROTOCOL = 6;
+export const PROTOCOL = 7;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -15,6 +15,7 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
 export const RAID_BOSSES = {
   sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
   ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
+  heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12 },
 };
 
 /**
@@ -26,13 +27,14 @@ export const RAID_BOSSES = {
 export const RAID_REWARDS = {
   sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true } },
   ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 } },
+  heart: { lock: { stagger: 40 } },
 };
 
 /** How far Noonfall's hall reaches, where a run waits between its fights (m). */
 export const RAID_HALL_RING = 13;
 
 /** The bosses of one tier of a run, in order. */
-export const RAID_RUN = ['sun', 'ash'];
+export const RAID_RUN = ['sun', 'ash', 'heart'];
 
 /** A boss's HP in a raid: each tier adds 15 %. @param {string} id @param {boolean} duo @param {number} tier */
 export const raidHp = (id, duo, tier) => Math.round(RAID_BOSSES[id].hp[duo ? 'duo' : 'solo'] * 1.15 ** (tier - 1));

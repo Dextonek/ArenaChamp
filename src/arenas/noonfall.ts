@@ -9,11 +9,18 @@ import type { ArenaDef, ArenaStage } from './types';
 export const HALL_R = RAID_HALL_RING;
 const GOLD = 0xc9a24a;
 
-/** The two gates, on the far side where the camera sees them: the Court's and the Pit's. Where a hero walks in to go through. */
+/**
+ * The gates, on the far side where the camera sees them: the Court's, the Pit's, and between them at the north, behind the broken
+ * rays, the way down to the Sunken Heart. Where a hero walks in to go through.
+ */
 export const HALL_GATES: Record<string, { x: number; z: number; yaw: number }> = {
   sun: { x: RING.x - 7, z: RING.z - 9.2, yaw: 0.65 },
   ash: { x: RING.x + 7, z: RING.z - 9.2, yaw: -0.65 },
+  heart: { x: RING.x, z: RING.z - 10.6, yaw: 0 },
 };
+
+/** Which look a gate has: the Court's gold, the Pit's ember, or the Heart's white gold. */
+export type GateTone = 'sun' | 'ash' | 'heart';
 
 /** The three altars, in an arc before the fallen sun, and where heroes come in: alone, then side 0 and side 1. */
 export const HALL_ALTARS = [{ x: RING.x - 5.2, z: RING.z + 3.6 }, { x: RING.x, z: RING.z + 5.2 }, { x: RING.x + 5.2, z: RING.z + 3.6 }];
@@ -219,10 +226,10 @@ export class KeepGate {
   private wanted = 0;
   private trim: THREE.MeshStandardMaterial;
 
-  /** `tone`: gold for the Court's, ember for the Pit's. */
-  constructor(x: number, z: number, yaw: number, tone: 'sun' | 'ash') {
-    const color = tone === 'sun' ? 0xffc860 : 0xff6a20;
-    this.trim = new THREE.MeshStandardMaterial({ color: tone === 'sun' ? GOLD : 0x8a3a18, roughness: 0.42, metalness: 0.75, emissive: color, emissiveIntensity: 0.12 });
+  /** `tone`: gold for the Court's, ember for the Pit's, white gold for the Heart's. */
+  constructor(x: number, z: number, yaw: number, tone: GateTone) {
+    const color = tone === 'sun' ? 0xffc860 : tone === 'heart' ? 0xffe0a8 : 0xff6a20;
+    this.trim = new THREE.MeshStandardMaterial({ color: tone === 'ash' ? 0x8a3a18 : GOLD, roughness: 0.42, metalness: 0.75, emissive: color, emissiveIntensity: 0.12 });
     const W = 2.1, H = 5.4;
     const post = new THREE.BoxGeometry(0.85, H, 0.95).translate(0, H / 2, 0);
     for (const side of [-1, 1]) {
@@ -240,10 +247,12 @@ export class KeepGate {
     lintel.castShadow = true;
     const top = new THREE.Mesh(new THREE.BoxGeometry(W * 2 + 1.1, 0.24, 1.25), this.trim);
     top.position.y = H - 0.14;
-    // What lies beyond: a sun's ring for the Court, a flame's tongue for the Pit.
+    // What lies beyond: a sun's ring for the Court, a flame's tongue for the Pit, a heart in a ring across it for the Heart.
     const sign = tone === 'sun'
       ? new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.13, 8, 28), this.trim)
-      : new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.45, 6).scale(1, 1, 0.5), this.trim);
+      : tone === 'heart'
+        ? new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 0), this.trim).add(new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.08, 6, 28).rotateX(1.1), this.trim))
+        : new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.45, 6).scale(1, 1, 0.5), this.trim);
     sign.position.set(0, H + 1.25, 0);
     this.group.add(lintel, top, sign);
     this.light = new THREE.ShaderMaterial({

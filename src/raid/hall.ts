@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { HALL_ALTARS, HALL_GATES, HALL_STARTS, KeepGate, noonfallHall } from '../arenas/noonfall';
+import { RAID_RUN } from '../../server/protocol.mjs';
+import { HALL_ALTARS, HALL_GATES, HALL_STARTS, KeepGate, noonfallHall, type GateTone } from '../arenas/noonfall';
 import { RING } from '../arenas/common';
 import { softDotTexture } from '../effects/common';
 import type { HeroKey, HeroKit, HeroSpell } from '../heroes';
@@ -236,14 +237,15 @@ export class RaidHall {
 
   private play(v: HallVisit, c: BossCast, p: PlayContext) {
     const target = HALL_GATES[v.next.id] ?? HALL_GATES.sun;
-    const makeGate = (id: 'sun' | 'ash') => {
+    const makeGate = (id: GateTone) => {
       const g = HALL_GATES[id], dx = g.x - RING.x, dz = g.z - RING.z, d = Math.hypot(dx, dz);
       const gate = new KeepGate(g.x + (dx / d) * GATE_BACK, g.z + (dz / d) * GATE_BACK, g.yaw, id);
       p.group.add(gate.group);
       return gate;
     };
-    const gates = { sun: makeGate('sun'), ash: makeGate('ash') };
-    const open = gates[v.next.id === 'ash' ? 'ash' : 'sun'];
+    // One gate for each boss of the run.
+    const gates = (RAID_RUN as GateTone[]).filter((id) => HALL_GATES[id]).map((id) => ({ id, gate: makeGate(id) }));
+    const open = (gates.find((g) => g.id === v.next.id) ?? gates[0]).gate;
     const gateLight = new LightPillar(target.x, target.z, 2, 5, STAND_COLOR);
     p.group.add(gateLight.mesh);
 
@@ -300,8 +302,7 @@ export class RaidHall {
       look: {
         update: (t: number, dt: number) => {
           last = t;
-          gates.sun.update(dt, t);
-          gates.ash.update(dt, t);
+          for (const g of gates) g.gate.update(dt, t);
           open.setOpen(this.gateOn);
           const pulse = 0.5 + 0.18 * Math.sin(t * 3.4);
           altars.forEach((a, i) => {
@@ -340,8 +341,7 @@ export class RaidHall {
           take(v.offers[o.part], o.part);
         },
         dispose: () => {
-          gates.sun.dispose();
-          gates.ash.dispose();
+          for (const g of gates) g.gate.dispose();
           gateLight.dispose();
           for (const a of altars) {
             a.light.dispose();

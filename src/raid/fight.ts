@@ -114,7 +114,7 @@ export class BossFight {
       hud.setHp(link.maxHp, link.maxHp);
     }
     if (def.gates) {
-      const r = (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' ? 'ash' : 'sun';
+      const r = def.gates.r ?? (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' || def.id === 'heart' ? def.id : 'sun';
       const gate = (deg: number) => {
         const a = THREE.MathUtils.degToRad(deg), x = RING.x + Math.sin(a) * r, z = RING.z + Math.cos(a) * r;
         const g = new KeepGate(x, z, Math.atan2(RING.x - x, RING.z - z), tone);

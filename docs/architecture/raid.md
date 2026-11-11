@@ -8,19 +8,21 @@ It shows to everyone: in the top bar, and on the login screen for a raid with no
 
 **Noonfall** (user, 2026-11-07: a place of their own, bosses unlike heroes, mechanics to do; design and decisions in
 [raid-noonfall.md](../../pipeline/designs/raid-noonfall.md)). A sun fell into a mountain at noon. The Sun Warden keeps the court above it, Ash and
-Ember the pit below, and the run waits in the hall between them.
+Ember the pit below, and the run waits in the hall between them. Under the hall lies the fallen sun itself, the Heart of Noon
+([raid-heart.md](../../pipeline/designs/raid-heart.md), 2026-11-11).
 
 ## The run
 
-Walk onto an altar in the hall to take an upgrade, walk through the gate, fight the Sun Warden. Back to the hall, another altar, the other gate,
-Ash and Ember. Beat both and the next tier is offered, keeping the upgrades, for a higher score. HP is full at each fight. One loss ends the
-run: alone that is one fall, for two it is both down at once.
+Walk onto an altar in the hall to take an upgrade, walk through the gate, fight the Sun Warden. Back to the hall, another altar, the next gate,
+Ash and Ember; then a third altar and the north gate, the Heart of Noon. Beat all three (`RAID_RUN`) and the next tier is offered, keeping the
+upgrades, for a higher score. HP is full at each fight. One loss ends the run: alone that is one fall, for two it is both down at once.
 
 ## Noonfall's hall
 
 `src/raid/hall.ts` and `src/arenas/noonfall.ts`. Round, radius 13, not in `ARENAS`. A gold wheel half sunk in the middle with lava in its
-cracks; marble and gold on the Court's side (west), hex basalt on the Pit's (east); three broken gold rays standing between the two gates. All drawn
-in code with the temple's and the caldera's props: first-pass, for the artist to direct.
+cracks; marble and gold on the Court's side (west), hex basalt on the Pit's (east); three broken gold rays standing between the two gates, and behind
+them, at the north centre, the gate down to the Sunken Heart (`HALL_GATES.heart`; its lintel carries a heart in a ring, its light is white gold).
+The hall draws one gate for each boss of `RAID_RUN`. All drawn in code with the temple's and the caldera's props: first-pass, for the artist to direct.
 
 | What | How |
 |---|---|
@@ -45,6 +47,7 @@ duel, the rim and the partner's screen call the same methods. Built by `blender/
 | Sun Warden | A floating stone sentinel: a gold-inlaid monolith, slab shoulders, a carved mask, a halo round a small sun, two free fists, a ring of floating stones. 5,554 triangles | `core`, `mask`, `halo`, `sun` (`corona`), `slabL`, `slabR`, `fistL`, `fistR`, `stones` | The sun dims to black with a corona, the halo turns, the slabs break away |
 | Ash | A hunched magma brute on his knuckles: basalt plates over a glowing core, huge forearms. 6,780 | `torso`, `head`, `core`, `armL`/`foreL`/`fistL`, the same on the right, `legL`, `legR`, `plateA` to `plateE` | Plates fall away, seams burn hotter |
 | Ember | A flame in a burnt mantle: a hollow hood, a white-hot core, a torn mantle with glowing tips, two orbiting lanterns. 2,597 | `hood`, `mantle`, `core`, `lanternL`, `lanternR` | The lanterns orbit faster, the flame grows |
+| The Heart of Noon | The fallen sun: a molten heart in a crust of basalt plates, a calm gold face in front, three armillary rings, a crown of snapped rays, two sun blades for hands. 8,846 | `core` (holds `mask`, `crown`, `ringA`, `ringB`, `ringC`), `bladeL`, `bladeR`, `shards` | The seams burn brighter; in The Rings Turn the rings come down round its foot and lie flat, each turning with its beam (a locked one goes dark); in Noon Falls the crown turns and each Heartbeat swells it. The crust is one mesh, so the plates that fall are drawn by the Heartbeat itself |
 
 **Every attack strikes when it lands** (user, 2026-11-08: "if the boss is attacking he should make some animation for it so that it makes
 sense"). A cast's pose winds up over the whole cast bar and strikes as the zone lands (`beat` in `look.ts`, one for all three bosses), at the
@@ -61,6 +64,7 @@ acts too (`BossWorld.actRim`).
 | The Warden | Stone Sweep: drawn round to his right, the fists swing across the cone as it lands. Pillar Fall: a fist up over him, then down at each stone, left then right. Fists of the Court: a fist flies to where you stood. Sun Order: fists at the shoulders, a punch with each wedge. Eclipse: fists down beside him for the near circle, flung wide for the far ring |
 | Ash | Knuckle Quake: reared up, then both fists thrown down far ahead along the cracks (his Ground Slam brings them down beside him). Cinder Rock, from the rim: one arm back over his head, thrown up half a second before the rock lands, one arm then the other |
 | Ember | Lantern Toss: the lanterns fly out either side of you. Vent Bombs: the lanterns lift, and one is flung toward you as each pair lands |
+| The Heart | Blade Sweep: both blades drawn round to its right, swung across the arc as it lands. Blade Fall: one blade a step, up over you and down point-first on the line. The rings follow their beams (`HEART_LIVE` in `bodies/heart.ts`: the moves on each screen set it, the body reads it) |
 
 The rest strike with their cast pose, now on time: Sun Ray thrusts as the ray fires, Gathering Noon comes down at 8 s, Ground Slam, Fan,
 Lava Wave, Falling Star. `pipeline/tools/boss-anim.js` (`_strip`) lays frames of a move round its landing side by side, to check the strike
@@ -83,6 +87,8 @@ by the hub online and by `LocalLink` alone. Only the screen that runs the brain 
 | Ash, in the ring | Hide behind a pillar | His Charge comes every 14 s he is in the ring and kills whoever it reaches. Get one of the four pillars between you and him | He crashes into it and it breaks; he kneels 5 s (a stun: the gauge keeps what it had) |
 | Ember, any | Burn your own | Carry Marked onto whichever of them is in the ring. The brain says in the landing cast whether the boss stood under it | 4 % of max HP and +40 on the gauge |
 | Together | Seal the vent | The vent opens at 6 s, then again 25 s later. Stand on it for 4 s, hits or not, casting stops it | The lava waits 20 s longer, and +40 on the gauge |
+| Heart, The Rings Turn on | Lock a ring | Each ring's beam has a gold spot on the rim. Hold it 2 s, hits or not, casting stops it | That ring's beam goes out for 8 s, then warns 0.8 s and burns again; +40 on the gauge, once per ring |
+| Heart, Noon Falls | Shade the heart | Each Heartbeat throws three crust plates out as gold spots 6.8 m from it. Hold one 3 s and it stands up on the heart's side of its spot (cover, `addStone`), for both screens. Only cover between you and the heart saves you from the beat | No 40 % from the beat |
 
 **Objectives** (`Objective` in `types.ts`): spots a hero takes, at once or by holding. A move's `play` returns them beside its threats. Each screen
 watches its own hero and reports once (`link.objective`); the hub gives each to the first report and tells both screens who (`boss_obj`, then
@@ -94,6 +100,7 @@ than the brain's pick (the vent) is `BossPhase.timed`.
 | Each one | Boss HP +15 % (`raidHp`). Shown times 10 % shorter and never under 1 s (`p.shown`, `raidTierFactor`). One extra move (`BossDef.extra`) |
 | Sun Warden's extras | Sun Order, then Walking Sun, then Eclipse, each from the first phase on |
 | Ash and Ember's extras | Ash throws rocks in the ring too, Ember marks from the rim as well, then her wave from there |
+| The Heart's extras | The Crown of Rays, then The Rings Turn, then the Heartbeat, each from the first phase on |
 
 **The score** is the most bosses beaten, then the fastest time. Alone it stays in this browser (`raid.best`). For two it goes on both
 accounts (`recordRaid`) and does not count as a win or a loss: the profile's record stays about duels with people.
@@ -187,7 +194,7 @@ Everything else follows from these, and they are why two screens work without re
 | `fight.ts` | `BossFight`: ties the rest together. `Duel.startBoss` builds it, and `update` calls it where a duel calls its AI |
 | `brain.ts` | `BossBrain`: who it aims at, which move comes next, where it walks. Runs on one screen. Its rolls are seeded |
 | `script.ts` | `BossScript`: plays casts, draws their zones, lands them, decides the hits on this screen's hero. Several run at once, in both colours |
-| `sunWarden.ts`, `ashEmber.ts` | The bosses: numbers, phases, moves |
+| `sunWarden.ts`, `ashEmber.ts`, `heart.ts` | The bosses: numbers, phases, moves |
 | `stage.ts` | `stageMove`: a boss's stage, its adds and their shots, from a few numbers. Both bosses have one |
 | `fxShow.ts` | The big moments' effects: `ShowFx`, one per fight (`PlayContext.show`), plays pooled one-shot pieces on its own clock: a shockwave over the floor, a rising column, shards, a meteor, a lava arc, rays along the floor, a charge-up, a beam's flash, and `triumph` for a mechanic done right. `Shell` (a stage's barrier, lit at its rim) and `RageAura` (the red heat round an enraged boss) |
 | `bodies/` | Each boss's look: the parts of its own model, posed by code. `adds.ts`: the adds' looks |
@@ -213,7 +220,7 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor`, `onFoeDamage` a
 | Exposed | After a Noon nobody turned, +50 % damage taken for 5 s (`vulnerable`) |
 | Damage | A share of the hero's max HP, through `resolve` and `damagePlayer` as a normal hit, so parries, shields and ice blocks work. `weaken` on the boss lowers it |
 | Wide | A zone that touches any of its body counts as a hit on it (`inCastReach` with a pad) |
-| Enrage | A timer next to its name (`BossDef.enrage`: the Warden 2:30, Ash and Ember 2:50; at a higher tier later by as much as its HP grows). Then every hit costs twice as much and the quiet between moves is half (`BossFight.enrage`): past it a fight is meant to be nearly lost |
+| Enrage | A timer next to its name (`BossDef.enrage`: the Warden 2:30, Ash and Ember 2:50, the Heart 2:45; at a higher tier later by as much as its HP grows). Then every hit costs twice as much and the quiet between moves is half (`BossFight.enrage`): past it a fight is meant to be nearly lost |
 | Too long | Past 5 minutes sunfire closes in, at 6 Last stand (`BossDef.late`), so nobody can stall a fight for ever |
 | A stage | At 50 %: it can't be hurt or held (hits show IMMUNE, `Arena.untargetable` makes spells aim past it) from the phase's start until the stage is won or fails. Win: it kneels, and acts again after (`BossMove.stage`). Fail: a blow over the whole floor. A big hit past two phases still gets the stage first. Its cast bar is its clock: no other move takes the bar meanwhile. The guard is in `hitFilter`: in a boss fight every hit on the boss goes through `Arena.hit`, and nothing else takes its HP |
 | Units | Whatever stands in an orange zone takes 60. Units don't dodge |
@@ -304,6 +311,30 @@ pillars are down"; 2026-11-09, after six outlasted most fights: "fewer pillars (
 **From the design:** Drag Under's second half, "walk out in time", has no zone of its own: it's whatever move comes next. Vent Bombs fall round
 the target and not from the vent. Ash's Charge only comes from the ring, so he has Cinder Rock for the rim.
 
+## The Heart of Noon
+
+`src/raid/heart.ts`. The fallen sun itself. It never walks (`speed` 0): it floats over the middle of its room and turns to whom it looks at.
+Alone 3,300 HP, for two 7,100. Enrage 2:45. Its body reaches 2 m: its rings, beams and the beat start there.
+
+| Phase | From | Move | Shown | Costs | What you do |
+|---|---|---|---|---|---|
+| Embers Wake | 100 % | Blade Sweep | 1.7 s | 18 % | Leave the 130° arc 6.8 m in front of it, or get round it. Only when you are within 8.5 m |
+| | | Blade Fall | 1.4 s, 1 s apart | 15 % each | A blade comes down on a line 11 m long through where you stand; the second across the first, where you are then |
+| | | Solar Flare | 2.4 s, then three rings 1.6 s apart | 12 % a ring | Each ring has two gold gaps opposite each other, the first 20 to 45° to one side of you, each pair 12 to 20° further round. Get into a lane and drift with it |
+| The Rings Turn | 66 % | The Rings Turn | 2.5 s, then 15 s | 10 % a second in a beam | Three beams from its foot to the rim, turning at 18, 13 and 23° a second, two one way and one the other. Lock a ring (above) |
+| Noon Falls | 33 % | Heartbeat | 10 s, every 20 s | 40 % | Shade the heart (above). The floor burns from 2.2 m to the rim; at its foot is a hole, so Molten Ground leaves no pool under it |
+| | | Crown of Rays | 2.2 s, then 1 s apart | 15 % | Four rays (one at you), then the four between them. Stand between, then step into where the first fired |
+
+Noon Falls has all its moves. **How it stays within the rules.** Each ring of The Rings Turn is its own step and cast (`steps: [0, 0, 0]`),
+so each has its own spot and each lock is paid once (`RAID_REWARDS.heart.lock`, `${id}:lock`). A beam's angle depends only on the time since
+its cast; a lock puts it out for 8 s rather than pausing it, so two screens that hear the lock a moment apart still agree on where it is.
+A raised plate stands until the same moment after its cast on every screen (`addStone` with the seconds left), whenever that screen heard of
+it. Solar Flare's first gap is the brain's aim (the cast's `dir`), the rest is the seed's.
+
+**For the autopilot.** Each ring of Solar Flare tells an AI its whole run at once (`Threat.look`): it grows, so a spot clear for the next
+moment is not clear. The AI still drifts out of a lane's edge as it goes back to fighting, so Solar Flare costs it more than it should cost a
+person.
+
 ## The lairs
 
 The boss rooms are where the bosses live, not duel arenas (user, 2026-11-07). Neither is in `ARENAS`, so no duel picks them. **The Sun Court's
@@ -322,6 +353,13 @@ coming up through thin seams, brightest in the middle, and Ash's claw marks acro
 (above), which Ash's Charge breaks; they took the place of the spires, slag walls and anvil stones on 2026-11-08. Ember's lantern perches on the lip at the five spots the one on the rim can
 stand (their tops at 0.7 m). Out in the lava the fallen sun's shard, the ribs of something that burned, lantern posts on the far side, rocks;
 embers rising.
+
+**The Sunken Heart, the Heart's own room** (`src/arenas/sunkenHeart.ts`, 2026-11-11). Radius 12, round, no cover of its own: the only cover
+is what the fight raises. A floor of cooled gold crust gone dark bronze, broken into rings of plates round the heart, molten light only in the
+cracks; a basalt lip with gold edges; a molten lake beyond. The keepers' lanterns stand on the lip (basalt posts, gold caps, a caged sun: the
+only glow besides the cracks), short on the camera's side. Out in the lake what broke off as it fell: two arcs of its armillary, a snapped ray
+of its crown, slabs of crust with gold edges; gold motes rising. All drawn in code from clean forms (the arenas lesson: no scans), first-pass
+for the artist to direct.
 
 ## Two screens
 
@@ -371,6 +409,10 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **The bodies' poses were judged on screen only in passing** (a fight each, desktop and phone size). Glow strengths come from the Blender
   file and may need tuning against the game's bloom; Ash's core is the brightest.
 - **Ash's body is 1.8 m wide for hits,** his forearms reach about 2.5 m: a hit on a fist's tip still misses.
+- **The Heart's body state is one per page** (`HEART_LIVE`): its moves set it and its body reads it. One fight a page, as the game and the
+  tools run; the kit clears it when a fight starts.
+- **The Heart was not played for two in two tabs.** `_raidHeart()` gives a partner's lock and plate on this screen through the same `done`
+  the hub sends; a bot raid online through the local server was not run for it.
 - **The hall's cards are page elements over the 3D**, placed each frame. On a small phone they can sit over each other near the edge.
 - **A summoner's partner sees fewer bodies:** units are raised only on their owner's screen.
 - **Marks, stacks and meters stay on their owner's screen.** The partner's bar shows HP only.
@@ -392,7 +434,8 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 
 - `pipeline/tools/raid-check.js`: `_raidCheck()` forces each of the Warden's moves and checks what it costs, walking out, cover and the
   boss's own rules, his stage (adds, the relay, the kneel, the fail and its cover) and the enrage. `_raidAsh()` does the same for Ash and Ember,
-  with the tag, the lava, Eruption and Falling Star. `_raidUpgrades()` checks each upgrade's number and
+  with the tag, the lava, Eruption and Falling Star. `_raidHeart()` for the Heart: each move, both ways through Solar Flare's gaps, a beam,
+  a lock by this hero and by the partner (paid once), plates raised by both, cover against the beat, and the plates all going at one moment. `_raidUpgrades()` checks each upgrade's number and
   each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
 - `pipeline/tools/boss-anim.js`: `_strip(title, setup, plan)` plays a move in a stepped fight and lays frames of it side by side round its
   landing, cropped on the boss and the hero.
