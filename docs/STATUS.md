@@ -8,18 +8,25 @@ User: "save the arena we have now and make 3 new ones with all the effect and cl
 heroes"; asked for themes, they took all four: **Drowned Harbour, Sandstone Canyon, Crystal Cavern, Fallen
 Battlefield**. The five arenas stay as they are and in rotation.
 
-- **How:** scanned props and grounds from Poly Haven (CC0), cut down and laid out in Blender
-  (`blender/arenas/real/kit.py`, one script per arena, sources in `ASSETS.md` there), one GLB and one obstacle JSON per
-  arena, read by `src/arenas/real.ts` (`realProps`, `realGround`, `Sea`, `Glows`). Fetch sources:
-  `node pipeline/tools/polyhaven-get.mjs <ids>`. Pictures: `pipeline/tools/arena-shot.js`.
-- **The look, second try:** the first sample used the scans as photographed (cobbles, wood grain); the user: "it is
-  too much realistic, make it match the heroes' style". Now the props keep their real shapes but are **painted**:
-  each colour texture averaged down to 64 px so only zones of colour remain, no bumps, one even gloss
-  (`Arena(paint=64)` in kit.py); the floor is drawn, not photographed (rings of smooth slabs with a brass inlay).
-  [Before and after](arenas/harbour_before_after.jpg).
+- **The look, third try (the one that stands):** try 1 used Poly Haven scans as photographed ("too much realistic");
+  try 2 painted the same scans in flat colours ("the walls and background still too realistic, not the heroes' style").
+  The user had three agents look in parallel; all three said the same: **the shapes, not the colours**. A scan stays
+  worn and crooked whatever colour it is; the heroes' own props are clean designed forms. So everything is now **built
+  like the heroes' weapons and crowns** with their kit (`blender/heroes/figkit.py`) and their materials (wood, lacquer,
+  wine, iron, gold, rope; gold on the edges; lantern light as the only glow), a shade duller than on a hero. The sea is
+  drawn (three broad swells, clean foam), not rippled. [The three tries side by side](arenas/harbour_three_tries.jpg).
+  The rules the readers drew from the heroes are in `blender/arenas/real/STYLE.md`.
+- **How:** `blender/arenas/real/kit.py` (`A.mat`, `A.fig()`, `A.built()`, then `cover`/`put`/`back`/`finish`), one
+  script per arena, one GLB and one obstacle JSON per arena, read by `src/arenas/real.ts` (`realProps`, `Sea`,
+  `Glows`). Pictures: `pipeline/tools/arena-shot.js`. The scan path (`load`, `template`, `paint`,
+  `pipeline/tools/polyhaven-get.mjs`) stays in the kit, unused.
 - **Done:** the Drowned Harbour's look (`src/arenas/harbour.ts`, `blender/arenas/real/harbour.py`,
-  `public/models/arenas/harbour.glb` 2.3 MB, 85k triangles): [sample](arenas/harbour_sample.jpg). It is in `NEW_ARENAS`: reachable by id, not picked at
-  random. See it: `npm run dev`, http://localhost:5173/game?arena=harbour, a CPU duel.
+  `public/models/arenas/harbour.glb` 0.8 MB, 93k triangles, 12 materials, no textures):
+  [sample](arenas/harbour_sample.jpg). It is in `NEW_ARENAS`: reachable by id, not picked at random. See it:
+  `npm run dev`, http://localhost:5173/game?arena=harbour, a CPU duel.
+- **A source worth a test, not used:** Quaternius' Fantasy Props MegaKit (CC0, made the same year as the hero bodies;
+  94 pieces free): barrels, crates, chests, lanterns, banners. It has painted wood grain; one piece beside a hero in
+  the game camera would tell.
 - **Waiting on the user:** a nod on the look (or what to change) before the rest.
 - **Next, in this order:** the harbour's event (a wave rolls across the quay) and closing stages (the tide comes up in
   growing pools; Last stand), then the layout checks of `docs/architecture/arenas.md` (point symmetry, clear starts,
@@ -27,7 +34,8 @@ Battlefield**. The five arenas stay as they are and in rotation.
   a CPU duel with stages on, draw calls on the game page; then the other three arenas the same way; then all four into
   `ARENAS` with a new `PROTOCOL` (the list's length decides which arena a match id gives; `server/protocol.mjs` holds
   the uncommitted bracket work too), News, `docs/architecture/arenas.md` and `pipeline/designs/arenas.md`.
-- **Not checked yet:** draw calls and frame time, a phone, the far (-z) player's view in a real net duel. New cover
+- **Not checked yet:** draw calls and frame time (93k triangles is more than it needs: the chests and the cannon can
+  lose half), a phone, the far (-z) player's view in a real net duel. New cover
   layouts will move balance.
 
 ## Current state (2026-11-05)

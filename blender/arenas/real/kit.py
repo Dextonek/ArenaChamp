@@ -1,6 +1,12 @@
-"""The kit for arenas of the realistic style (2026-11-11): scanned props from Poly Haven (CC0; fetched by
-pipeline/tools/polyhaven-get.mjs into pipeline/assets/polyhaven/), cut down to a game's triangle and texture budget,
-laid out in the game's own coordinates and written as one GLB that src/arenas/real.ts reads.
+"""The kit for arenas in the heroes' style (2026-11-11): props laid out in the game's own coordinates and written as
+one GLB that src/arenas/real.ts reads.
+
+Props are BUILT, as the heroes' weapons and crowns are (blender/heroes/figkit.py): clean turned and boxed forms in a
+few plain materials, gold on the edges, one glow. `A.mat` names a material, `A.fig()` gives the shapes to build with,
+`A.built(key, fig)` makes the prop. Two tries with photogrammetry scans from Poly Haven (`load`, `template`, `paint`)
+were rejected by the user as "too realistic": first as photographed, then with their textures averaged into zones of
+colour. Three readers agreed why: a scan keeps its worn, crooked shape whatever colour it is. That path stays in this
+file for a far backdrop or a reference of proportions, not for anything a player looks at.
 
     A = Arena("harbour")
     m = A.load("wooden_barrels_01")                 # {object name: object}, textures shrunk to 512 px
@@ -20,9 +26,14 @@ import json
 import math
 import os
 
+import sys
+
 import bmesh
 import bpy
 from mathutils import Matrix, Vector
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "heroes")))
+from figkit import Fig  # noqa: E402
 
 S = 1.3
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
@@ -53,6 +64,31 @@ def _only(ob):
     bpy.context.view_layer.objects.active = ob
 
 
+class Shapes(Fig):
+    """The heroes' primitives (ellipsoid, tube, loft, torus, star) and a few an arena needs."""
+
+    def box(self, key, c, size, rot=None):
+        """A box of `size` (x, y, z) centred on `c`."""
+        m = Matrix.Translation(Vector(c)) @ (rot or Matrix.Identity(4)) @ Matrix.Diagonal((size[0], size[1], size[2], 1.0))
+        bmesh.ops.create_cube(self.bm(key), size=1.0, matrix=m)
+
+    def turned(self, key, a, b, profile, seg=28, caps=True):
+        """A turned form on the axis from `a` to `b`: `profile` [(t, radius)], t from 0 at `a` to 1 at `b`."""
+        a, b = Vector(a), Vector(b)
+        self.tube(key, [a.lerp(b, t) for t, _ in profile], [r for _, r in profile], seg=seg, caps=caps)
+
+    def hull(self, key, stations, seg=14, up=1.0, z0=0.0):
+        """A boat's hull along y: `stations` [(y, half beam, depth, sheer)], the rim at height `sheer` above `z0`, the
+        keel `depth` below it. `up` -1 turns it keel up (a boat laid over). An open shell: give it a two-sided material."""
+        bm = self.bm(key)
+        rows = []
+        for y, beam, depth, sheer in stations:
+            rows.append([bm.verts.new((beam * math.sin(-math.pi / 2 + math.pi * k / seg), y, z0 + up * (sheer - depth * math.cos(-math.pi / 2 + math.pi * k / seg)))) for k in range(seg + 1)])
+        for r0, r1 in zip(rows, rows[1:]):
+            for k in range(seg):
+                bm.faces.new((r0[k], r0[k + 1], r1[k + 1], r1[k]))
+
+
 class Arena:
     def __init__(self, name, paint=None, sat=1.25):
         """`paint`: the heroes' look instead of a photograph's (the user, 2026-11-11: the scans as they come were "too
@@ -62,6 +98,7 @@ class Arena:
         bpy.ops.wm.read_factory_settings(use_empty=True)
         self.name = name
         self.paint, self.sat = paint, sat
+        self.palette = Shapes(name)   # holds the shared materials
         self.templates = {}
         self.obstacles = []
         self.marks = []
@@ -70,7 +107,50 @@ class Arena:
         self.store = bpy.data.collections.new("library")   # templates and sources: not exported
         self.scene = bpy.context.scene
 
-    # ---- sources ------------------------------------------------------------------------------------------------------
+    # ---- built props ----------------------------------------------------------------------------------------------------
+    def mat(self, key, color, **kw):
+        """A material every built prop of this arena shares (as `Fig.mat`: rough, metal, emit, strength, double, flat)."""
+        return self.palette.mat(key, color, **kw)
+
+    def fig(self):
+        """Shapes to build one prop with, in the arena's materials. Build it standing on z = 0 round the origin, in
+        metres at life size (`put` makes it the heroes' 1.3)."""
+        f = Shapes(self.name)
+        f.mats, f.flat = self.palette.mats, self.palette.flat
+        return f
+
+    def built(self, key, fig, sharp=38.0, bevel=0.0):
+        """The prop `fig` holds, as template `key`. Edges sharper than `sharp` degrees stay crisp, the rest shade
+        smooth; `bevel` (metres) rounds the crisp ones a little, so a box catches the light on its edges."""
+        objs = fig.finish(self.scene.collection)
+        ob = objs[0]
+        if len(objs) > 1:
+            bpy.ops.object.select_all(action="DESELECT")
+            for o in objs:
+                o.select_set(True)
+            bpy.context.view_layer.objects.active = ob
+            bpy.ops.object.join()
+        bm = bmesh.new()
+        bm.from_mesh(ob.data)
+        bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
+        bm.to_mesh(ob.data)
+        bm.free()
+        if bevel:
+            _only(ob)
+            mod = ob.modifiers.new("b", "BEVEL")
+            mod.width, mod.segments, mod.limit_method, mod.angle_limit = bevel, 2, "ANGLE", math.radians(sharp)
+            bpy.ops.object.modifier_apply(modifier="b")
+        for poly in ob.data.polygons:
+            poly.use_smooth = True
+        ob.data.set_sharp_from_angle(angle=math.radians(sharp))
+        self.scene.collection.objects.unlink(ob)
+        self.store.objects.link(ob)
+        ob.name = key
+        self.templates[key] = ob
+        print(f"BUILT {key}: {sum(len(p.vertices) - 2 for p in ob.data.polygons)} triangles")
+        return ob
+
+    # ---- sources: scans (see the note at the top) ---------------------------------------------------------------------
     def load(self, model, tex=512, normal=True, loose=()):
         """Imports a Poly Haven model. Its textures are shrunk to `tex` px; `normal=False` drops the normal maps (far
         things do not need them). Objects named in `loose` are split into their separate pieces, biggest first, as

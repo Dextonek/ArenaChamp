@@ -1,23 +1,25 @@
 import * as THREE from 'three';
 import type { Obstacle } from '../obstacles';
-import { RING, canvasTexture, floorDisc, seeded } from './common';
+import { RING, canvasTexture, flatRing, floorDisc, seeded } from './common';
 import layout from './real/harbour.json';
 import { Glows, Sea, realProps, type RealLayout } from './real';
 import type { ArenaDef } from './types';
 
 /**
- * Drowned Harbour: the round head of a stone quay at dusk, the sea all round it. The first arena of the realistic style
- * (`real.ts`): its cover and everything round the ring are scanned props laid out in blender/arenas/real/harbour.py,
- * which also writes the obstacle list (`real/harbour.json`).
+ * Drowned Harbour: the round head of a stone quay at dusk, the sea all round it. The first arena in the heroes' style
+ * (`real.ts`): its cover and everything round the ring are built in blender/arenas/real/harbour.py, which also writes
+ * the obstacle list (`real/harbour.json`).
  *
  * Cover: three barrels in the middle (low), two rows of stacked sea chests guarding the starts (low), two mooring
- * dolphins with a lantern each flanking the middle (tall), two cannons on the wings aimed out to sea (low), two mossy
- * boulders in the far corners (low). Round it: a three-master moored on the left, a wooden pier leading off to the
- * right, low pier stubs and piles toward both cameras, rocks awash at the quay's foot, sea stacks far out.
+ * posts of lashed piles with a lantern each flanking the middle (tall), two cannons on the wings aimed out to sea
+ * (low), two boats laid keel-up on trestles in the far corners (low). Round it: a three-master with furled sails
+ * moored on the left, a pier with a lamp arch leading off to the right, low pier stubs toward both cameras, basalt
+ * sea stacks and a lighthouse far out.
  *
- * The look is the heroes': real shapes, clean smooth surfaces in plain colours (the user on the first, photographic
- * version: "too much realistic, make it match the heroes' style"). So the props are painted (`Arena(paint=...)` in
- * blender/arenas/real/kit.py) and the floor is drawn, not photographed.
+ * How it got here (the user, twice): scans as photographed were "too much realistic"; the same scans painted in flat
+ * colours still had "walls and background too realistic, not the heroes' style". Three readers agreed the cause was
+ * the scans' worn, crooked shapes, so everything is now built as the heroes' own props are: clean forms, the heroes'
+ * materials (wood, lacquer, wine, iron, gold, rope), gold on the edges, lantern light as the only glow.
  *
  * Built here: the paved floor (rings of smooth slabs with a brass inlay, in the floors' dark band, a little wet), the
  * kerb and the quay's wall of dressed blocks, the sea, and the lanterns' glow (no lamps: the arena rules allow no
@@ -149,21 +151,25 @@ export const harbourArena: ArenaDef = {
     g.add(floor, quay);
     own.push(floor.geometry, paving.map!, paving, quay.geometry, stone.map!, stone);
 
-    const sea = new Sea({ y: SEA, inner: RING.r + KERB + 0.1, deep: 0x0d2630, sky: 0x8a7a8c, glint: 0xffc890, sun: new THREE.Vector3(0.85, 0.2, 0.25), foam: 0x9aa6ae });
+    // a line of gold let into the kerb, as on the heroes' hems
+    const line = flatRing(RING.r + 0.3, RING.r + 0.4, 0x9a7a38, 1, 0.176);
+    g.add(line);
+    own.push(line.geometry, line.material as THREE.Material);
+
+    const sea = new Sea({ y: SEA, inner: RING.r + KERB + 0.1, deep: 0x0b2a3c, sky: 0x7c7490, band: 0x2c5f7c, glint: 0xffc890, sun: new THREE.Vector3(0.85, 0.2, 0.25), foam: 0x9fb0c0 });
     g.add(sea.mesh);
     own.push(sea);
 
-    const glows = new Glows(LAYOUT.marks.filter((m) => m.kind === 'lantern'), 0xffa040, 1.5);
+    const SIZE: Record<string, number> = { lantern: 1, lamp: 1.8, beacon: 5 };
+    const glows = new Glows(LAYOUT.marks.filter((m) => SIZE[m.kind]).map((m) => ({ ...m, size: SIZE[m.kind] })), 0xffa040, 1.5);
     g.add(glows.group);
     own.push(glows);
 
     let disposed = false;
+    // the heroes' materials, a shade duller than on a hero: the arena must not outshine them
     void realProps('harbour', HARBOUR_OBSTACLES.length, {
-      dim: 0.8, env: 0.35,
-      parts: {
-        glass: { emissive: 0xffa040, strength: 2.2 }, sails: { dim: 0.6 }, rigging: { dim: 0.6 }, hull: { dim: 0.65 }, cannon: { rough: 0.42, metal: 0.55 },
-        boulder_01: { dim: 0.45, tint: 0x9aa4c8, rough: 0.95 }, rock_moss: { dim: 0.55, tint: 0xb0b8d0, rough: 0.9 },
-      },
+      dim: 0.85, env: 0.35,
+      parts: { glow: { emissive: 0xffa040, strength: 2.2 }, cream: { dim: 0.6 }, stone: { dim: 0.8 }, gold: { dim: 0.8 } },
     }).then((props) => {
       if (disposed) return;
       for (const c of props.cover) if (c) g.add(c);

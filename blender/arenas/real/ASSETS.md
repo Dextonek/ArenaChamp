@@ -1,4 +1,8 @@
-# Sources of the realistic arenas
+# Scan sources (not used now)
+
+**The arenas no longer use any of this.** Two harbours made from these scans were rejected as too realistic beside the
+heroes; props are built by hand now (`STYLE.md`, `kit.py`). Kept as the record of what was tried, and for the scan path
+that remains in the kit.
 
 Every model and texture is from **Poly Haven** (https://polyhaven.com), licence **CC0** (public domain: no credit
 needed, free for any use). The raw files are not in the repo (`pipeline/assets/polyhaven/` is git-ignored); fetch them

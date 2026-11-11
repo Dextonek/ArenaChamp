@@ -5,8 +5,9 @@ import type { Obstacle } from '../obstacles';
 import { RING } from './common';
 
 /**
- * Arenas of the realistic style (2026-11-11, after the heroes'): scanned props from Poly Haven (CC0), cut down and laid
- * out in Blender (blender/arenas/real/kit.py, one script per arena) and written as one file,
+ * Arenas in the heroes' style (2026-11-11): props built in Blender the way the heroes' weapons and crowns are (clean
+ * forms, a few plain materials, gold edges, one glow; blender/arenas/real/kit.py, one script per arena) and written as
+ * one file,
  * public/models/arenas/<id>.glb, with an object per obstacle (`cover0`, `cover1`... in the order of the obstacle list)
  * and one `back` for everything round the ring. The same script writes src/arenas/real/<id>.json: the obstacles, so the
  * layout lives in one place, and the spots the game lights or animates (`marks`).
@@ -110,19 +111,20 @@ export function realGround(name: string, repeat: number, color: number, rough = 
 }
 
 /**
- * The sea round an arena: a wide disc at height `y` with a hole of radius `inner` where the arena stands. Waves are a
- * few moving sine swells whose slopes tilt the surface; it shows the sky's horizon colour at a glancing angle and its
- * own deep colour looking down, a glint from the sun, and foam where it meets the arena's foot.
+ * The sea round an arena: a wide disc at height `y` with a hole of radius `inner` where the arena stands. Drawn, not
+ * photographed (the user found the first, rippled sea too realistic beside the heroes): three broad swells and nothing
+ * finer, its deep colour looking down and the sky's at a glancing angle, the crests as lighter `band`s with a clean
+ * edge, the low sun's glint as shapes, and a clean ring of foam breathing at the arena's foot.
  */
 export class Sea {
   readonly mesh: THREE.Mesh;
   private uniforms: Record<string, THREE.IUniform>;
 
-  constructor(o: { y: number; inner: number; deep: number; sky: number; glint: number; sun: THREE.Vector3; foam?: number }) {
+  constructor(o: { y: number; inner: number; deep: number; sky: number; band: number; glint: number; sun: THREE.Vector3; foam?: number }) {
     this.uniforms = THREE.UniformsUtils.merge([
       THREE.UniformsLib.fog,
       {
-        uTime: { value: 0 }, uDeep: { value: new THREE.Color(o.deep) }, uSky: { value: new THREE.Color(o.sky) }, uGlint: { value: new THREE.Color(o.glint) },
+        uTime: { value: 0 }, uDeep: { value: new THREE.Color(o.deep) }, uSky: { value: new THREE.Color(o.sky) }, uBand: { value: new THREE.Color(o.band) }, uGlint: { value: new THREE.Color(o.glint) },
         uFoam: { value: new THREE.Color(o.foam ?? 0x8a98a4) }, uSun: { value: o.sun.clone().normalize() }, uCentre: { value: new THREE.Vector2(RING.x, RING.z) },
         uInner: { value: o.inner },
       },
@@ -141,37 +143,38 @@ export class Sea {
         }`,
       fragmentShader: /* glsl */ `
         uniform float uTime, uInner;
-        uniform vec3 uDeep, uSky, uGlint, uFoam, uSun;
+        uniform vec3 uDeep, uSky, uBand, uGlint, uFoam, uSun;
         uniform vec2 uCentre;
         varying vec3 vWorld;
         #include <fog_pars_fragment>
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-        float noise(vec2 p) {
-          vec2 i = floor(p), f = fract(p);
-          f = f * f * (3.0 - 2.0 * f);
-          return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y);
-        }
-        // the slope of one swell: direction d, wavelength l, speed s, steepness a
-        vec2 swell(vec2 p, vec2 d, float l, float s, float a) {
-          float k = 6.2832 / l;
-          return d * (a * cos(dot(p, d) * k + uTime * s));
+        // one swell: direction d, wavelength l, speed s. x: its height (-1..1), yz: its slope
+        vec3 swell(vec2 p, vec2 d, float l, float s) {
+          float k = 6.2832 / l, ph = dot(p, d) * k + uTime * s;
+          return vec3(sin(ph), d * cos(ph));
         }
         void main() {
           vec2 p = vWorld.xz;
-          vec2 slope = swell(p, normalize(vec2(1.0, 0.35)), 9.0, 0.9, 0.10) + swell(p, normalize(vec2(-0.4, 1.0)), 5.2, 1.3, 0.08)
-            + swell(p, normalize(vec2(0.7, -0.7)), 2.3, 1.9, 0.06) + swell(p, normalize(vec2(-0.9, -0.2)), 1.1, 2.6, 0.045);
-          slope += (vec2(noise(p * 1.7 + uTime * 0.25), noise(p * 1.7 - uTime * 0.2 + 7.0)) - 0.5) * 0.16;
-          vec3 n = normalize(vec3(-slope.x, 1.0, -slope.y));
+          // three broad swells and nothing finer: drawn water, not photographed
+          vec3 w = 0.5 * swell(p, normalize(vec2(1.0, 0.35)), 15.0, 0.55) + 0.3 * swell(p, normalize(vec2(-0.4, 1.0)), 9.5, 0.8)
+            + 0.2 * swell(p, normalize(vec2(0.7, -0.7)), 6.0, 1.1);
+          vec3 n = normalize(vec3(-w.y * 0.22, 1.0, -w.z * 0.22));
           vec3 v = normalize(cameraPosition - vWorld);
           float fres = pow(1.0 - max(dot(n, v), 0.0), 3.0);
-          vec3 col = mix(uDeep, uSky, 0.12 + 0.75 * fres);
+          vec3 col = mix(uDeep, uSky, 0.1 + 0.6 * fres);
+          // the crests: long lighter bands with a clean edge (the first swell's own crests, a little bent by the second:
+          // all three thresholded together made round blobs)
+          float crest = swell(p, normalize(vec2(1.0, 0.35)), 15.0, 0.55).x + 0.3 * swell(p, normalize(vec2(-0.4, 1.0)), 23.0, 0.3).x;
+          col = mix(col, uBand, 0.3 * smoothstep(0.86, 0.93, crest));
+          // the low sun's glint: shapes with an edge, not a sparkle
           vec3 h = normalize(v + uSun);
-          col += uGlint * pow(max(dot(n, h), 0.0), 140.0) * 1.6;
-          // foam at the arena's foot: a broken band that breathes with the swell
-          float r = length(p - uCentre) - uInner;
-          float band = smoothstep(1.5, 0.0, r) * (0.55 + 0.45 * sin(uTime * 0.8 + r * 3.0));
-          float foam = smoothstep(0.62, 0.95, noise(p * 1.9 + uTime * 0.15) * 0.55 + band * 0.8);
-          col = mix(col, uFoam, 0.6 * foam * smoothstep(2.0, 0.0, r));
+          col += uGlint * 0.45 * smoothstep(0.5, 0.57, pow(max(dot(n, h), 0.0), 90.0));
+          // foam at the arena's foot: a clean ring that breathes in lobes, and a thin second line further out
+          vec2 q = p - uCentre;
+          float r = length(q) - uInner, ang = atan(q.y, q.x);
+          float reach = 0.22 + 0.1 * sin(ang * 7.0 + uTime * 0.7) + 0.07 * sin(ang * 13.0 - uTime * 0.5);
+          float foam = 1.0 - smoothstep(reach, reach + 0.05, r);
+          float line = smoothstep(0.0, 0.04, r - reach - 0.45) * (1.0 - smoothstep(0.1, 0.14, r - reach - 0.45));
+          col = mix(col, uFoam, max(0.85 * foam, 0.4 * line));
           gl_FragColor = vec4(col, 1.0);
           #include <tonemapping_fragment>
           #include <colorspace_fragment>
@@ -201,7 +204,8 @@ export class Glows {
   private sprites: THREE.Sprite[] = [];
   private material: THREE.SpriteMaterial;
 
-  constructor(spots: { x: number; y: number; z: number }[], color: number, private size: number) {
+  /** `size` of one glow in metres; a spot's own `size` multiplies it. */
+  constructor(spots: { x: number; y: number; z: number; size?: number }[], color: number, private size: number) {
     if (!glowTexture) {
       const c = document.createElement('canvas');
       c.width = c.height = 64;
@@ -218,14 +222,15 @@ export class Glows {
     for (const s of spots) {
       const sp = new THREE.Sprite(this.material);
       sp.position.set(s.x, s.y, s.z);
-      sp.scale.setScalar(size);
+      sp.scale.setScalar(size * (s.size ?? 1));
+      sp.userData.size = s.size ?? 1;
       this.sprites.push(sp);
       this.group.add(sp);
     }
   }
 
   update(time: number) {
-    this.sprites.forEach((s, i) => s.scale.setScalar(this.size * (1 + 0.07 * Math.sin(time * 7.3 + i * 2.1) + 0.04 * Math.sin(time * 13.1 + i))));
+    this.sprites.forEach((s, i) => s.scale.setScalar(this.size * s.userData.size * (1 + 0.07 * Math.sin(time * 7.3 + i * 2.1) + 0.04 * Math.sin(time * 13.1 + i))));
   }
 
   dispose() {
