@@ -2,8 +2,9 @@
 // other joins it (same hero refused, then a different one), a second pair meets through the queue, and both
 // matches are played to a result (best of three rounds won by reported hits, a forfeit). Also checks that hits from
 // casts the server never saw and too-fast casts are dropped. Loser picks is off, so those matches offer no pick; on a
-// second server with it switched on, its rules are played through as well. Takes about 60 s (countdowns, breaks and a
-// pick nobody answers are real).
+// second server with it switched on, its rules are played through as well. Then a raid for a party of twelve (an open
+// room, the band, batched walks, the brain's watchdog, leavers) and a load check with forty. Takes about 150 s
+// (countdowns, breaks and a pick nobody answers are real).
 //   node server/smoke-test.mjs                         (its own Node server on a temporary data file)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server, e.g. `npm run cf:dev`; unique names per run)
 import { createServer } from 'node:http';
@@ -12,7 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
-import { PROTOCOL, RAID_BOSSES, RAID_REWARDS, RELOAD_TEXT } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RELOAD_TEXT, raidBand, raidHp, raidStaggerMax } from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
 const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo;
@@ -23,10 +24,12 @@ const http = createServer();
 const httpPicks = createServer();
 let url = target;
 let urlPicks = '';
+/** What the hub wrote to its log (its own server only): the party test reads the brain's moves from it. @type {string[]} */
+const hubLog = [];
 if (!target) {
   /** @param {import('node:http').Server} server */
   const portOf = (server) => /** @type {import('node:net').AddressInfo} */ (server.address()).port;
-  attachGameServer(http, { dataFile: join(dir, 'accounts.json'), log: () => {} });
+  attachGameServer(http, { dataFile: join(dir, 'accounts.json'), log: (m) => { hubLog.push(m); } });
   await new Promise((r) => http.listen(0, () => r(undefined)));
   url = `ws://localhost:${portOf(http)}/ws`;
   attachGameServer(httpPicks, { dataFile: join(dir, 'accounts-picks.json'), log: () => {}, loserPicks: true });
@@ -51,14 +54,25 @@ async function client(to = url) {
   const inbox = [];
   /** @type {{ t: string, resolve: (m: any) => void }[]} */
   const waiting = [];
+  /** How many messages of each type came in, read or not. @type {Record<string, number>} */
+  const got = {};
+  /** @type {{ tap: ((m: any, size: number) => void) | null }} */
+  const hook = { tap: null };
   ws.on('message', (d) => {
-    const m = JSON.parse(String(d));
+    const text = String(d), m = JSON.parse(text);
+    got[m.t] = (got[m.t] ?? 0) + 1;
+    hook.tap?.(m, text.length);
     const w = waiting.findIndex((x) => x.t === m.t);
     if (w >= 0) waiting.splice(w, 1)[0].resolve(m);
     else inbox.push(m);
   });
   await new Promise((r) => ws.on('open', r));
   return {
+    got,
+    /** Sees every message as it comes in, with its length. @param {((m: any, size: number) => void) | null} fn */
+    tap: (fn) => { hook.tap = fn; },
+    /** Drops what is waiting unread of one type. @param {string} t */
+    forget: (t) => { for (let i = inbox.length - 1; i >= 0; i--) if (inbox[i].t === t) inbox.splice(i, 1); },
     /** The messages that open a session carry the rules version, as src/net/client.ts sends them. @param {any} m */
     send: (m) => ws.send(JSON.stringify(['register', 'login', 'resume'].includes(m.t) ? { v: PROTOCOL, ...m } : m)),
     /** @param {string} t @param {number} [ms] @returns {Promise<any>} */
@@ -665,6 +679,312 @@ try {
     while (st4.stage !== 1);
     check(st4.brain === 1, 'and runs the next boss');
     g.close(); h.close();
+  }
+
+  // A raid for a party (pipeline/designs/raid-party.md): an open room on the list, the band, walks in batches, who did what,
+  // the brain's watchdog, leavers, and a loss only when everyone still here is down.
+  /** `n` new players, signed in. @param {number} n @param {string} prefix */
+  const players = async (n, prefix) => {
+    const list = await Promise.all(Array.from({ length: n }, () => client()));
+    list.forEach((x, i) => x.send({ t: 'register', name: `${prefix}${i}${tag}`, password: 'pw1234' }));
+    await Promise.all(list.map((x) => x.next('session', 20000)));
+    return list;
+  };
+  /** The next message of a type that fits, dropping older ones that don't. @param {any} x @param {string} t @param {(m: any) => boolean} fits */
+  const seen = async (x, t, fits, ms = 8000) => {
+    for (let i = 0; i < 500; i++) {
+      const m = await x.next(t, ms);
+      if (fits(m)) return m;
+    }
+    throw new Error(`no ${t} that fits`);
+  };
+  /** A room for a party, everyone seated with a hero. @param {any[]} p @param {boolean} open @param {string[]} heroes */
+  const seat = async (p, open, heroes) => {
+    p[0].send({ t: 'lobby_create', raid: 'sun', open });
+    const room = (await p[0].next('lobby')).lobby;
+    for (const x of p.slice(1)) x.send({ t: 'lobby_join', code: room.code });
+    p.forEach((x, i) => x.send({ t: 'lobby_pick', hero: heroes[i % heroes.length] }));
+    await seen(p[0], 'lobby', (m) => m.lobby?.seats.length === p.length && m.lobby.seats.every((/** @type {any} */ s) => s.hero), 20000);
+    return room;
+  };
+  /** From the pick to the fight: everyone picks, walks through the gate, loads, and the countdown runs out. @param {any[]} here */
+  const intoFight = async (here) => {
+    for (const x of here) x.send({ t: 'raid_pick' });
+    await Promise.all(here.map((x) => x.next('raid_gate')));
+    for (const x of here) x.send({ t: 'raid_enter' });
+    const stage = await Promise.all(here.map((x) => x.next('raid_stage')));
+    for (const x of here) x.send({ t: 'match_loaded', maxHp: 600 });
+    await Promise.all(here.map((x) => x.next('match_fight')));
+    await wait(3100);
+    return stage;
+  };
+  {
+    if (!target) check(!hubLog.some((l) => l.includes('the brain moves')), 'in the raids for two the brain stayed where it was');
+    const N = 12, HEROES = ['Lyra', 'Lyra', 'Bram', 'Vesper', 'Brannoc', 'Vitriol'];
+    const p = await players(N, 'pa');
+    const name = (/** @type {number} */ i) => `pa${i}${tag}`;
+    /** Everyone still in the raid. @type {any[]} */
+    let here = [...p];
+
+    // The room: open, so it is on the list for everyone, and joined by its code.
+    p[0].send({ t: 'lobby_create', raid: 'sun', open: true });
+    const room = (await p[0].next('lobby')).lobby;
+    check(room.open === true && room.max === RAID_PARTY_MAX && room.band === 2 && room.host === 0, `an open raid room with ${RAID_PARTY_MAX} seats`);
+    p[1].send({ t: 'lobbies' });
+    const on = await seen(p[1], 'lobbies', (m) => m.raids?.some((/** @type {any} */ r) => r.code === room.code));
+    const entry = on.raids.find((/** @type {any} */ r) => r.code === room.code);
+    check(entry.host === name(0) && entry.count === 1 && entry.raid === 'sun' && !on.list.some((/** @type {any} */ l) => l.code === room.code),
+      'it is on the list of open raids, with its host and how many are in');
+    for (const x of p.slice(1)) x.send({ t: 'lobby_join', code: room.code });
+    const full = await seen(p[0], 'lobby', (m) => m.lobby?.seats.length === N, 20000);
+    check(full.lobby.band === 15 && full.you === 0, 'twelve joined by its code: the room shows the band for 15');
+    // The same hero twice, the host starts, and only once everyone has a hero.
+    p.slice(0, N - 1).forEach((x, i) => x.send({ t: 'lobby_pick', hero: HEROES[i % HEROES.length] }));
+    p[1].send({ t: 'lobby_ready', ready: true });
+    const twice = await seen(p[0], 'lobby', (m) => m.lobby?.seats.filter((/** @type {any} */ s) => s.hero).length === N - 1 && m.lobby.seats[1].ready);
+    check(twice.lobby.seats[0].hero === 'Lyra' && twice.lobby.seats[1].hero === 'Lyra' && p[1].got.error === undefined, 'two may take the same hero in a party');
+    p[3].send({ t: 'raid_go' });
+    check((await p[3].next('error')).error.includes('host'), 'only the host starts it');
+    p[0].send({ t: 'raid_go' });
+    check((await p[0].next('error')).error.includes('hero'), 'and not while someone has no hero');
+    p[N - 1].send({ t: 'lobby_pick', hero: 'Kaia' });
+    await seen(p[0], 'lobby', (m) => m.lobby?.seats.every((/** @type {any} */ s) => s.hero));
+    p[0].send({ t: 'raid_go' });
+    const starts = await Promise.all(p.map((x) => x.next('raid_start')));
+    check(starts.every((m, i) => m.side === i && m.band === 15 && m.partner === undefined && m.party.length === N && m.you.name === name(i))
+      && starts[5].party[1].hero === 'Lyra' && starts[5].party[11].name === name(11) && starts[5].party[7].side === 7,
+    'the host starts: everyone gets the party of twelve and the band for 15');
+
+    // The first fight: sized for 15.
+    await Promise.all(p.map((x) => x.next('raid_offer')));
+    // The brain's screen says something every second, as a real one does (any message counts), until the watchdog's turn.
+    let brain = 0;
+    let chat = setInterval(() => p[brain].send({ t: 'ping' }), 1000);
+    const stage = await intoFight(here);
+    check(stage.every((m) => m.band === 15 && m.hp === raidHp('sun', 15, 1) && m.staggerMax === raidStaggerMax('sun', 15) && m.brain === 0)
+      && stage[0].hp === SUN * 7.5, `the boss loads for 15: ${stage[0].hp} HP, a gauge of ${stage[0].staggerMax}`);
+
+    // Walks: many a second from two heroes come out as batches, ten a second, the newest of each, never the receiver's own.
+    /** @type {any[]} */
+    const to5 = [], to2 = [];
+    p[5].tap((m) => { if (m.t === 'party_moves') to5.push(m); });
+    p[2].tap((m) => { if (m.t === 'party_moves') to2.push(m); });
+    const STEPS = 40, walked = Date.now();
+    for (let i = 1; i <= STEPS; i++) {
+      p[2].send({ t: 'move', x: i === STEPS ? 50 : i / 10, z: 7, yaw: 1, ts: i });
+      p[3].send({ t: 'move', x: -i / 10, z: 7, yaw: 2, ts: i });
+      await wait(20);
+    }
+    const walkedMs = Date.now() - walked;
+    await wait(300);
+    p[5].tap(null);
+    p[2].tap(null);
+    const last = (/** @type {any[]} */ list, /** @type {number} */ side) => list.flatMap((m) => m.list).filter((e) => e[0] === side).pop();
+    check(to5.length >= 4 && to5.length <= walkedMs / 100 + 3 && to5.every((m) => m.list.length <= 2) && !p[5].got.peer_move,
+      `${STEPS * 2} walks in ${walkedMs} ms reach another player as ${to5.length} batches, ten a second, not one message each`);
+    const l2 = last(to5, 2), l3 = last(to5, 3);
+    check(l2.length === 5 && Math.abs(l2[1] - 15.5) < 1e-6 && l2[3] === 1 && l2[4] === STEPS && l3[1] === -STEPS / 10 && l3[4] === STEPS,
+      'a batch has the newest walk of each hero as [side, x, z, yaw, ts], kept inside the room');
+    check(to2.length > 0 && to2.every((m) => m.list.every((/** @type {any} */ e) => e[0] === 3)), 'and nobody gets its own walk back');
+
+    // Who did it: a cast, a hero's HP and the boss's own cast reach everyone else, with the side.
+    p[4].send({ t: 'cast', id: 1, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    const casts = await Promise.all(p.filter((_, i) => i !== 4).map((x) => x.next('peer_cast')));
+    await wait(100);
+    check(casts.length === N - 1 && casts.every((m) => m.side === 4 && m.id === 1) && !p[4].got.peer_cast, 'a cast reaches the eleven others, saying whose it was');
+    p[6].send({ t: 'raid_hp', hp: 200 });
+    const hp6 = await p[9].next('partner_hp');
+    check(hp6.side === 6 && hp6.hp === 200 && hp6.max === 600, 'so does a hero\'s HP');
+    const bossCast = { t: 'boss_cast', id: 7, move: 'sweep', step: 0, x: 1, z: 2, fx: 0, fz: 0, dir: 0.5, seed: 9, target: 7 };
+    p[1].send({ ...bossCast, id: 8 });
+    p[0].send({ ...bossCast, id: 9, target: N });
+    p[0].send(bossCast);
+    const bc = await Promise.all(p.slice(1).map((x) => x.next('boss_cast')));
+    check(bc.every((m) => m.id === 7 && m.target === 7), 'the brain\'s cast reaches everyone, aimed at any seat of the party');
+
+    // The gauge and a mechanic's share of it are the band's size; the boss's HP is one number for all.
+    p[2].send({ t: 'boss_stagger', points: 60 });
+    await wait(50);
+    p[3].send({ t: 'boss_stagger', points: 60 });
+    await seen(p[8], 'boss_gauge', (m) => m.value === 120);
+    p[0].send({ t: 'boss_reward', key: 'ray', id: 30 });
+    const ray = RAID_REWARDS.sun.ray.stagger * 7.5;
+    check((await seen(p[8], 'boss_gauge', (m) => m.value > 120)).value === 120 + ray && !p[8].got.boss_kneel,
+      `a gauge that would be full for two is not for 15, and a mechanic fills ${ray} of it`);
+    p[1].send({ t: 'boss_damage', amount: 300 });
+    check((await p[11].next('boss_hp')).hp === SUN * 7.5 - 300, 'a hit comes off the boss for everyone');
+
+    // Two fall. A gold zone counts who stands, of those who are up, as soon as they have all said.
+    p[10].send({ t: 'hero_down' });
+    p[11].send({ t: 'hero_down' });
+    await Promise.all([seen(p[0], 'peer_down', (m) => m.side === 11), seen(p[1], 'peer_down', (m) => m.side === 10)]);
+    p[10].send({ t: 'boss_stood', id: 20, part: 0, inside: true });
+    for (let i = 0; i < 10; i++) p[i].send({ t: 'boss_stood', id: 20, part: 0, inside: i < 4 });
+    const asked = Date.now();
+    const stood = await p[10].next('boss_stood');
+    check(stood.count === 4 && Date.now() - asked < 1000 && (await p[0].next('boss_stood')).count === 4, 'a gold zone counts the four standing in it, without waiting for the two who are down');
+    // A revive names whom.
+    p[5].send({ t: 'revive' });
+    p[5].send({ t: 'revive', side: 5 });
+    p[5].send({ t: 'revive', side: 10 });
+    const up = await p[2].next('revived');
+    check(up.side === 10 && up.by === 5 && up.hp === 300 && up.left === 1 && (await p[10].next('revived')).side === 10, 'a revive names whom, and everyone hears who got up and by whom');
+    p[6].send({ t: 'revive', side: 11 });
+    await seen(p[0], 'revived', (m) => m.side === 11);
+
+    // The watchdog: the brain's screen goes quiet. After 4 s the brain goes to the next player whose screen is still there
+    // (the two seats after it have said nothing for as long, the third has).
+    await wait(600);
+    clearInterval(chat);
+    p[0].send({ t: 'ping' });
+    const quiet = Date.now();
+    chat = setInterval(() => p[3].send({ t: 'ping' }), 1000);
+    const took = await p[3].next('boss_brain', 7000), after = Date.now() - quiet;
+    brain = 3;
+    check(took.side === 3 && after > 3500 && after < 6000, `nothing from the brain's screen for 4 s: the brain moves (after ${(after / 1000).toFixed(1)} s) to the next screen that is alive`);
+    const moved = await Promise.all(p.filter((_, i) => i !== 3).map((x) => x.next('brain_moved')));
+    check(moved.every((m) => m.side === 3) && !p[1].got.boss_brain && !p[3].got.brain_moved, 'the others, the old brain too, hear whose it is now');
+    p[0].send({ ...bossCast, id: 50 });
+    p[3].send({ ...bossCast, id: 51 });
+    check((await p[0].next('boss_cast')).id === 51 && (await p[7].next('boss_cast')).id === 51, 'and the new brain\'s casts count, the old one\'s no longer');
+
+    // Two leave in the fight, one by closing the page. The fight keeps its band; the next one is sized for who is left.
+    p[8].send({ t: 'match_leave' });
+    p[9].close();
+    here = here.filter((x) => x !== p[8] && x !== p[9]);
+    const gone = [await p[0].next('partner_left'), await p[0].next('partner_left')].map((m) => m.side).sort();
+    check(gone.join() === '8,9', 'two leave: the others hear who');
+    p[1].send({ t: 'boss_stagger', points: 60 });
+    await wait(50);
+    p[2].send({ t: 'boss_stagger', points: 60 });
+    const kept = await seen(p[4], 'boss_gauge', (m) => m.value >= 120 + ray + 120);
+    await wait(200);
+    check(kept.value === 240 + ray && kept.value > raidStaggerMax('sun', 10) && !p[4].got.boss_kneel, 'the fight keeps the band it started with: the gauge is still the one for 15');
+    // The boss falls: ten players, each under its own cap, and no cap on the party as a whole.
+    let fell = false;
+    const wonAll = Promise.all(here.map((x) => x.next('raid_won', 30000))).then((w) => { fell = true; return w; });
+    const began = Date.now();
+    for (let i = 0; i < 20 && !fell; i++) {
+      for (const x of here) for (let k = 0; k < 3; k++) x.send({ t: 'boss_damage', amount: 600 });
+      await wait(1050);
+    }
+    const won = await wonAll, took1 = (Date.now() - began) / 1000;
+    check(won.every((m) => m.bosses === 1 && m.last === false) && took1 < 9, `ten players take ${SUN * 7.5} HP off in ${took1.toFixed(1)} s: 1,400 a second each, and the party's total is not capped`);
+
+    // The hall: a side door opens on a majority of those here, for everyone.
+    await Promise.all(here.map((x) => seen(x, 'raid_offer', (m) => m.stage === 1)));
+    for (const x of here) x.send({ t: 'raid_pick' });
+    await Promise.all(here.map((x) => x.next('raid_gate')));
+    here.slice(0, 5).forEach((x) => x.send({ t: 'raid_side', door: 'vault' }));
+    here.slice(5, 8).forEach((x) => x.send({ t: 'raid_side', door: 'shrine' }));
+    await wait(300);
+    check(!here[0].got.raid_side_go, 'five of ten in one side door: it stays shut');
+    here[9].send({ t: 'raid_side', door: 'vault' });
+    const doors = await Promise.all(here.map((x) => x.next('raid_side_go')));
+    check(doors.every((m) => m.door === 'vault'), 'the sixth makes a majority: it opens, for everyone');
+    clearInterval(chat);
+    brain = p.indexOf(here[0]);
+    chat = setInterval(() => p[brain].send({ t: 'ping' }), 1000);
+    const stage2 = await intoFight(here);
+    check(stage2.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === ASH * 5 && m.staggerMax === raidStaggerMax('ash', 10) && m.brain === 0)
+      && raidBand(here.length) === 10, `the next boss loads for the ten who are left: ${stage2[0].hp} HP`);
+
+    // Lost only when everyone still here is down at once.
+    for (const x of here) x.forget('peer_down');
+    here.slice(0, 9).forEach((x) => x.send({ t: 'hero_down' }));
+    await seen(here[9], 'peer_down', (m) => m.side === p.indexOf(here[8]));
+    await wait(400);
+    check(!here[9].got.raid_end && !here[0].got.raid_end, 'nine of ten down: the run goes on');
+    here[9].send({ t: 'hero_down' });
+    const ends = await Promise.all(here.map((x) => x.next('raid_end', 12000)));
+    check(ends.every((m) => m.result === 'lost' && m.bosses === 1 && m.tier === 1 && m.bossMax === ASH * 5) && ends[0].profile.raids.played === 1,
+      'the tenth falls: the run is lost for all ten, with its score');
+    clearInterval(chat);
+    if (!target) check(hubLog.filter((l) => l.includes('the brain moves')).length === 1, 'the brain moved once in all, when its screen went quiet');
+    for (const x of p) x.close();
+  }
+
+  // The host may start with whoever is seated, alone too: one or two players fight at the band for two.
+  {
+    const [solo] = await players(1, 'so');
+    solo.send({ t: 'lobby_create', raid: 'sun' });
+    await solo.next('lobby');
+    solo.send({ t: 'lobby_pick', hero: 'Lyra' });
+    solo.send({ t: 'raid_go' });
+    const start = await solo.next('raid_start');
+    await solo.next('raid_offer');
+    solo.send({ t: 'raid_pick' });
+    await solo.next('raid_gate');
+    solo.send({ t: 'raid_enter' });
+    const st = await solo.next('raid_stage');
+    check(start.party.length === 1 && start.band === 2 && start.partner === undefined && st.band === 2 && st.hp === SUN && st.staggerMax === RAID_BOSSES.sun.staggerMax,
+      'the host may start alone: the boss is the one for two');
+    solo.close();
+  }
+
+  // The load of a full raid: forty players in one fight, each sending its walk ten times a second for five seconds.
+  {
+    const N = RAID_PARTY_MAX, SECONDS = 5;
+    const t0 = Date.now();
+    const p = await players(N, 'ld');
+    const room = await seat(p, false, ['Lyra', 'Bram', 'Vesper', 'Kaia']);
+    p[1].forget('lobbies');
+    p[1].send({ t: 'lobbies' });
+    const none = await p[1].next('lobbies');
+    check(!JSON.stringify(none).includes(room.code), 'a raid room that was not opened is on no list');
+    p[0].send({ t: 'raid_go' });
+    const starts = await Promise.all(p.map((x) => x.next('raid_start', 20000)));
+    await Promise.all(p.map((x) => x.next('raid_offer')));
+    const stage = await intoFight(p);
+    check(starts.every((m) => m.band === 40 && m.party.length === N) && stage[0].band === 40 && stage[0].hp === SUN * 20, `forty in one raid: the boss loads for 40, ${stage[0].hp} HP`);
+    const setup = (Date.now() - t0) / 1000;
+
+    let frames = 0, bytes = 0, entries = 0, delay = 0, worst = 0, other = 0, began = 0;
+    /** Which heroes each player has heard of. */
+    const heard = p.map(() => new Set());
+    p.forEach((x, i) => x.tap((m, size) => {
+      frames++;
+      bytes += size;
+      if (m.t !== 'party_moves') { other++; return; }
+      const now = Date.now() - began;
+      for (const e of m.list) {
+        entries++;
+        heard[i].add(e[0]);
+        delay += now - e[4];
+        worst = Math.max(worst, now - e[4]);
+      }
+    }));
+    began = Date.now();
+    const cpu = process.cpuUsage(), mm = (/** @type {number} */ v) => +v.toFixed(3);
+    let sent = 0;
+    /** @type {any[]} */
+    const timers = [];
+    p.forEach((x, i) => {
+      let step = 0;
+      const go = () => {
+        const a = (i / N) * Math.PI * 2 + step++ * 0.05;
+        // As the game sends it: to the millimetre, with its own clock's time (here one clock for all, to measure the way).
+        x.send({ t: 'move', x: mm(Math.cos(a) * 8), z: mm(7 + Math.sin(a) * 8), yaw: mm(a), ts: Date.now() - began });
+        sent++;
+      };
+      // Not all on the same tick: each player's clock runs its own way.
+      timers.push(setTimeout(() => { go(); timers.push(setInterval(go, 100)); }, (i * 100) / N));
+    });
+    await wait(SECONDS * 1000);
+    for (const t of timers) { clearTimeout(t); clearInterval(t); }
+    await wait(250);
+    for (const x of p) x.tap(null);
+    const took = (Date.now() - began - 250) / 1000, used = process.cpuUsage(cpu), perS = frames / took;
+    console.log(`     load: ${N} players, ${sent} walks sent in ${took.toFixed(1)} s (${Math.round(sent / took)} a second)`);
+    console.log(`     load: the hub sent ${frames} messages, ${Math.round(perS)} a second (${Math.round(perS / N * 10) / 10} a second to each player), ${Math.round(bytes / took / 1024)} KB a second in all, ${Math.round(bytes / took / N / 102.4) / 10} KB a second to each player`);
+    console.log(`     load: one message per walk and player would be ${Math.round(sent / took) * (N - 1)} a second`);
+    console.log(`     load: ${entries} walks delivered, ${Math.round(delay / Math.max(1, entries))} ms from sent to received on average, ${worst} ms at worst`);
+    console.log(`     load: ${((used.user + used.system) / 1000 / took / 10).toFixed(1)} % of one core, hub${target ? ' not counted (it runs elsewhere)' : ' and all forty test clients together'}; seating and starting the forty took ${setup.toFixed(1)} s`);
+    check(perS <= N * 11.5 && other === 0, `the hub sends each player about ten batches a second (${Math.round(perS)} messages a second for forty), and nothing else`);
+    check(heard.every((h, i) => h.size === N - 1 && !h.has(i)), 'every player hears the walk of all 39 others');
+    check(entries >= sent * (N - 1) * 0.8 && worst < 500, `walks arrive within a batch or two (worst ${worst} ms)`);
+    for (const x of p) x.close();
+    await wait(300);
   }
 
   // Session resume with the token (a reload in the same tab).

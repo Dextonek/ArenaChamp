@@ -2,7 +2,7 @@
 // seed with no server field, so a tab left open from an older build would see different cover and events from its
 // opponent. Raise this by hand whenever a deploy changes those rules or the messages: the hub then tells older tabs to
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
-export const PROTOCOL = 6;
+export const PROTOCOL = 8;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -37,8 +37,34 @@ export const RAID_HALL_RING = 13;
 /** The bosses of one tier of a run, in order. */
 export const RAID_RUN = ['sun', 'ash'];
 
-/** A boss's HP in a raid: each tier adds 15 %. @param {string} id @param {boolean} duo @param {number} tier */
-export const raidHp = (id, duo, tier) => Math.round(RAID_BOSSES[id].hp[duo ? 'duo' : 'solo'] * 1.15 ** (tier - 1));
+/** The most seats a raid's lobby holds (pipeline/designs/raid-party.md). */
+export const RAID_PARTY_MAX = 40;
+
+/** The sizes a boss is tuned for: a party fights at the smallest that holds everyone present when the fight starts. */
+export const RAID_BANDS = [2, 5, 10, 15, 20, 30, 40];
+
+/** The band for `n` players: 1-2 → 2, 3-5 → 5, 6-10 → 10, 11-15 → 15, 16-20 → 20, 21-30 → 30, 31-40 → 40. @param {number} n */
+export const raidBand = (n) => RAID_BANDS.find((b) => n <= b) ?? RAID_PARTY_MAX;
+
+/**
+ * How much bigger than the duo's a band's numbers are (boss HP, the stagger gauge, what a mechanic puts on the gauge): band / 2.
+ * Bands 1 (alone, offline) and 2 are 1.
+ * @param {number} band
+ */
+export const raidScale = (band) => Math.max(2, band) / 2;
+
+/**
+ * A boss's HP in a raid: the duo's HP times band / 2, and each tier adds 15 %. Band 2 is the duo's HP as it always was. Band 1 is
+ * alone, offline, with its own HP. `false` and `true` are the older way to say 1 and 2.
+ * @param {string} id @param {number | boolean} band @param {number} tier
+ */
+export const raidHp = (id, band, tier) => {
+  const n = band === true ? 2 : band === false ? 1 : band, hp = RAID_BOSSES[id].hp;
+  return Math.round((n < 2 ? hp.solo : hp.duo * raidScale(n)) * 1.15 ** (tier - 1));
+};
+
+/** The stagger gauge's size at a band: `staggerMax` times band / 2. @param {string} id @param {number} band */
+export const raidStaggerMax = (id, band) => RAID_BOSSES[id].staggerMax * raidScale(band);
 
 /** How much of a move's shown time is left at a tier: each tier takes 10 % off. @param {number} tier */
 export const raidTierFactor = (tier) => 0.9 ** (tier - 1);

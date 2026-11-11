@@ -53,7 +53,39 @@ export interface LobbyState {
   /** A raid room: the boss's id. */
   raid?: string | null;
   seats: { name: string; hero: string | null; ready: boolean }[];
+  /** A raid room listed for everyone (`lobby_create { raid, open: true }`). Since PROTOCOL 8, as the next three. */
+  open?: boolean;
+  /** How many seats the room has: 2 for a duel, `RAID_PARTY_MAX` for a raid. */
+  max?: number;
+  /** The seat of the host, who starts a raid with `raid_go`: always 0. */
+  host?: number;
+  /** A raid room: the party size its boss would be tuned for as it sits now (`raidBand`). */
+  band?: number | null;
 }
+
+/** An open raid room on the public list. */
+export interface RaidRoom {
+  code: string;
+  host: string;
+  /** Players seated now, of `max`. */
+  count: number;
+  max: number;
+  /** The boss's id. */
+  raid: string;
+}
+
+/** One player of a raid's party: `side` is the seat it started in, and names it in every message to the end of the run. */
+export interface PartyMember {
+  side: number;
+  name: string;
+  hero: string;
+}
+
+/**
+ * One hero's newest walk in a `party_moves` batch: `[side, x, z, yaw, ts]`, and the hero's resource after that when it has one.
+ * `ts` is the sender's own clock (ms), null when it sent none.
+ */
+export type PartyMove = [side: number, x: number, z: number, yaw: number, ts: number | null, r?: number];
 
 /** Everything the server sends. */
 export type ServerMsg =
@@ -63,7 +95,7 @@ export type ServerMsg =
   | { t: 'logged_out'; reason: string }
   | { t: 'profile'; profile: Profile }
   | { t: 'error'; error: string }
-  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[] }
+  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[]; raids?: RaidRoom[] }
   | { t: 'lobby'; lobby: LobbyState | null; you?: number }
   | { t: 'queue'; on: boolean; since: number; size: number }
   | { t: 'match_start'; id: string; side: 0 | 1; hp: number; you: { name: string; hero: string }; foe: { name: string; hero: string } }
@@ -73,45 +105,54 @@ export type ServerMsg =
     hp: number[]; next: number; pick: { you: boolean; seconds: number } | null;
   }
   | { t: 'round_start'; round: number; score: number[]; you: string; foe: string; picked: RoundPick | null }
-  | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number; r?: number }
-  | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods; bend?: number }
+  // In a raid, every `peer_*` and `partner_*` message says whose hero it was (`side`); in a duel there is no `side`.
+  | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number; r?: number; side?: number }
+  // A raid party of more than two: everyone else's walks in one message, ten times a second, instead of `peer_move`.
+  | { t: 'party_moves'; list: PartyMove[] }
+  | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods; bend?: number; side?: number }
   | { t: 'peer_hit'; id: number; damage: number; soaked?: number; hp: number; color?: string; blocked?: boolean }
-  | { t: 'peer_attack'; id: number; mods?: CastMods }
-  | { t: 'peer_spend'; amount: number; hp: number }
-  | { t: 'peer_buff'; kind: BuffKind; amount: number; seconds: number }
-  | { t: 'peer_stacks'; name: string; n: number }
-  | { t: 'peer_form'; alt: boolean }
-  | { t: 'peer_heal'; amount: number; hp: number }
-  | { t: 'peer_status'; kind: StatusKind; seconds: number; color?: string }
-  | { t: 'peer_shield'; amount: number; seconds: number; color?: string }
-  | { t: 'peer_dodged'; id: number }
+  | { t: 'peer_attack'; id: number; mods?: CastMods; side?: number }
+  | { t: 'peer_spend'; amount: number; hp: number; side?: number }
+  | { t: 'peer_buff'; kind: BuffKind; amount: number; seconds: number; side?: number }
+  | { t: 'peer_stacks'; name: string; n: number; side?: number }
+  | { t: 'peer_form'; alt: boolean; side?: number }
+  | { t: 'peer_heal'; amount: number; hp: number; side?: number }
+  | { t: 'peer_status'; kind: StatusKind; seconds: number; color?: string; side?: number }
+  | { t: 'peer_shield'; amount: number; seconds: number; color?: string; side?: number }
+  | { t: 'peer_dodged'; id: number; side?: number }
   | { t: 'hp'; hp: number }
   | {
     t: 'match_end'; id: string; result: 'win' | 'loss'; winner: string; reason: string; seconds: number; score?: number[]; hp: number[];
     stats: { casts: number; hits: number; dodges: number }; profile: Profile | null;
   }
-  | { t: 'raid_start'; id: string; side: 0 | 1; you: { name: string; hero: string }; partner: { name: string; hero: string } }
+  // `partner` only in a raid for two. `party`: everyone, this player too, by seat. `band`: what the party's size is tuned for.
+  | { t: 'raid_start'; id: string; side: number; you: { name: string; hero: string }; partner?: { name: string; hero: string }; party: PartyMember[]; band: number }
   | { t: 'raid_offer'; stage: number; tier: number; boss: string; seconds: number }
   | { t: 'raid_gate'; seconds: number }
   | { t: 'raid_side_go'; door: 'vault' | 'shrine'; seconds: number }
-  | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: 0 | 1 }
+  // `band`: from the players still in the raid as this fight starts; `hp` and `staggerMax` (the gauge's size) come from it.
+  | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: number; band: number; staggerMax: number }
   | { t: 'raid_won'; stage: number; tier: number; bosses: number; seconds: number; last: boolean; wait: number }
-  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: 0 | 1; alone?: boolean; rim?: boolean; form?: number; flag?: boolean }
+  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: number; alone?: boolean; rim?: boolean; form?: number; flag?: boolean }
   | { t: 'boss_move'; x: number; z: number; yaw: number; ts?: number }
   | { t: 'boss_hp'; hp: number }
   | { t: 'boss_phase'; phase: number }
   | { t: 'boss_gauge'; value: number }
   | { t: 'boss_kneel'; seconds: number }
   | { t: 'boss_stood'; id: number; part: number; count: number }
-  | { t: 'boss_done'; id: number; part: number; side: 0 | 1 }
+  | { t: 'boss_done'; id: number; part: number; side: number }
   | { t: 'boss_wall'; index: number }
-  | { t: 'partner_hp'; hp: number; max: number }
-  | { t: 'peer_down'; side: 0 | 1 }
-  | { t: 'revived'; side: 0 | 1; hp: number; left: number }
-  | { t: 'peer_debuff'; kind: 'slow' | 'weaken' | 'vulnerable'; amount: number; seconds: number }
-  | { t: 'peer_add'; id: number; part: number; amount: number }
-  | { t: 'partner_left' }
-  | { t: 'boss_brain' }
+  | { t: 'partner_hp'; hp: number; max: number; side: number }
+  | { t: 'peer_down'; side: number }
+  // `side` got up, `by` stood by it; `left`: how often that hero can still be got up in this fight.
+  | { t: 'revived'; side: number; hp: number; left: number; by: number }
+  | { t: 'peer_debuff'; kind: 'slow' | 'weaken' | 'vulnerable'; amount: number; seconds: number; side: number }
+  | { t: 'peer_add'; id: number; part: number; amount: number; side: number }
+  | { t: 'partner_left'; side: number }
+  // To one screen only: it runs the boss's brain from now on (the one before left, or went quiet for 4 s).
+  | { t: 'boss_brain'; side: number }
+  // To every other screen, the one that ran it too: the brain is `side`'s now.
+  | { t: 'brain_moved'; side: number }
   | { t: 'raid_end'; result: 'cleared' | 'lost'; tier: number; bosses: number; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }
   | { t: 'socket'; open: boolean };
 
