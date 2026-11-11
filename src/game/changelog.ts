@@ -40,7 +40,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-11',
     title: 'Every hero remade, and four new arenas',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Arenas',
