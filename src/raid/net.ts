@@ -15,7 +15,7 @@ export class NetLink implements RaidLink {
   private pending = 0;
   private clock = 0;
 
-  constructor(private net: NetClient, readonly side: RaidSide, readonly maxHp: number, public brain: boolean) {}
+  constructor(private net: NetClient, readonly side: RaidSide, readonly maxHp: number, public brain: boolean, readonly staggerMax?: number) {}
 
   cast(c: BossCast) {
     this.net.send({ t: 'boss_cast', ...c });

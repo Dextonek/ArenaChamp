@@ -31,6 +31,7 @@ export class RaidController {
   private lastSent = '';
   private lastBoss = '';
   private lastHp = -1;
+  private pingAt = 0;
   private hpAt = 0;
   private link: NetLink | null = null;
   private run = 0;
@@ -130,6 +131,7 @@ export class RaidController {
       api.duel.partnerLeft(side);
     });
     net.on('boss_brain', () => fight()?.takeBrain());
+    net.on('brain_moved', (m) => { if (m.side !== this.side) fight()?.dropBrain(); });
     net.on('raid_end', (m) => this.end(m));
     net.on('socket', (m) => {
       if (!m.open && this.active) {
@@ -280,7 +282,7 @@ export class RaidController {
     api.setHeroMode(true);
     api.duel.holdStart = true;
     this.band = m.band ?? this.band;
-    this.link = new NetLink(net, this.side, m.hp, m.brain === this.side || !this.party.length);
+    this.link = new NetLink(net, this.side, m.hp, m.brain === this.side || !this.party.length, m.staggerMax);
     api.duel.startBoss({
       def, link: this.link, seed: `${this.match}-${m.tier}-${m.stage}`, mode: 'play', name: this.myName, partner: this.partner ?? undefined, party: this.party.length > 1 ? this.party : undefined, band: this.band, tier: m.tier, upgrades: this.upgrades,
       card: (result) => this.card(result),
@@ -345,6 +347,11 @@ export class RaidController {
     if (key !== this.lastSent) {
       this.lastSent = key;
       net.send({ t: 'move', x, z, yaw, ts });
+    }
+    // The hub moves the brain away from a screen it hears nothing from for 4 s: a brain standing still says so once a second.
+    if (link?.brain && ts - this.pingAt >= 1000) {
+      this.pingAt = ts;
+      net.send({ t: 'ping' });
     }
     const foe = api.duel.bossFigure;
     if (link?.brain && foe) {

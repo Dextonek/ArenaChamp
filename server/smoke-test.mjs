@@ -783,8 +783,8 @@ try {
     check(to5.length >= 4 && to5.length <= walkedMs / 100 + 3 && to5.every((m) => m.list.length <= 2) && !p[5].got.peer_move,
       `${STEPS * 2} walks in ${walkedMs} ms reach another player as ${to5.length} batches, ten a second, not one message each`);
     const l2 = last(to5, 2), l3 = last(to5, 3);
-    check(l2.length === 5 && Math.abs(l2[1] - 15.5) < 1e-6 && l2[3] === 1 && l2[4] === STEPS && l3[1] === -STEPS / 10 && l3[4] === STEPS,
-      'a batch has the newest walk of each hero as [side, x, z, yaw, ts], kept inside the room');
+    check(l2.length === 5 && Math.abs(l2[1] - 45.5) < 1e-6 && l2[3] === 1 && l2[4] === STEPS && l3[1] === -STEPS / 10 && l3[4] === STEPS,
+      'a batch has the newest walk of each hero as [side, x, z, yaw, ts], kept inside the room of a party (the Hall of Noon, 46 m)');
     check(to2.length > 0 && to2.every((m) => m.list.every((/** @type {any} */ e) => e[0] === 3)), 'and nobody gets its own walk back');
 
     // Who did it: a cast, a hero's HP and the boss's own cast reach everyone else, with the side.

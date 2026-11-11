@@ -460,6 +460,8 @@ export interface RaidLink {
   tick(dt: number): void;
   /** The boss's max HP in this raid. */
   readonly maxHp: number;
+  /** The stagger gauge's size in this fight, when it is not the boss's own (a party's is bigger: `raidStaggerMax`). */
+  readonly staggerMax?: number;
 }
 
 /** The duel, as a boss fight sees it (`Duel.startBoss`). */

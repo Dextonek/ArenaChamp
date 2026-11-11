@@ -100,20 +100,33 @@ an arrow points to the boss when he is out of sight. Pictures: `docs/raid/court-
 `court-40-phone.jpg`. **To do:** the hub clamps walks to the old 16 m (use `raidRing` once the server branch is merged); the Cinder
 Pit and the Heart's room the same way; the fight for two is untouched but was not measured again.
 
-## A custom arena for the party: the Great Dial (user, 2026-11-11)
+## A boss room, not a round arena: the Hall of Noon (user, 2026-11-11)
 
 > "okay but bro make like custom arena in blender or where you want for the boss it dont need to follow the others arenas"
+> "and what if the arena have not like round arena lets just forget all and lets make boss room"
 
-The wider Sun Court (rings of columns added round the old court) is dropped. **The Sun Court stays the room for two, 16 m, as it
-was.** A party (band over 2) fights the Warden in **the Great Dial**: `blender/arenas/real/greatdial.py` ->
-`public/models/arenas/greatdial.glb` (757 KB, 86 pieces of cover) and `src/arenas/real/greatdial.json`; `src/arenas/greatdial.ts`
-draws its floor, rim, lanterns and breaks its screens. One vast sundial, 46 m to the rim: the old court's screens and obelisks in the
-middle, the fallen halo (a broken gold ring 38 m across), the twelve hour stones, ray shards and braziers, a broken colonnade; round
-it the gnomon over the Warden's throne, twelve hour pylons, a second halo half sunk. A smaller party walks only as far as its band
-(`raidRing`), to a wall of light; the rest is scenery. `SUN_WARDEN.place` picks the room; `resize(band)` sets it. Pictures:
-`docs/raid/dial-40-overview.jpg`, `dial-40-play.jpg`, `dial-40-phone.jpg`. **Shown to the user, waiting for the nod.** Not done:
-the hub's walk clamp (still 16 m); the Cinder Pit's and the Heart's party rooms; the Warden's fight measured in it; his mechanics
-scaled to the band.
+Two tries before this were dropped: the Sun Court made wider with rings of columns, and the Great Dial (a round sundial 46 m to the
+rim, built in Blender). **The Sun Court stays the room for two, 16 m, as it was.** A party (band over 2) fights the Warden in **the
+Hall of Noon**: a hall in the shape of a cross cut out of dark stone. `blender/arenas/real/sunhall.py` ->
+`public/models/arenas/sunhall.glb` (865 KB) and `src/arenas/real/sunhall.json`; `src/arenas/sunhall.ts` draws its floor and lanterns
+and breaks its screens. The nave (26 m wide, 44 m long) runs from the south gate to the crossing, where the Warden waits at the Sun
+Well with the court for two round him; transepts 34 m west and east; the choir 40 m north to his throne under a gold halo. Cover: hour
+stones in rows, fallen halo pieces, ray shards, braziers, column stumps (89 obstacles with the walls).
+
+How a room that is not round works: the game's floor stays a ring (46 m, `RAID_BOSSES.sun.partyRing`, `raidRing`; the hub clamps
+walks to it); the hall's shape is its own walls, obstacles that never break (`Obstacle.fixed`). The stone is 1.3 m high on the
+camera's side and 9 to 11 m to the north; a zone drawn wider than the floor is hidden inside it. One size for every party: the band
+only sets the boss's HP and gauge. Pictures: `docs/raid/hall-overview.jpg`, `hall-play.jpg`, `hall-phone.jpg`. **Shown to the user,
+waiting for the nod.** Not done or not checked: a fight in it (the boss's and the autopilot's way round the hall's corners; his
+floor-wide moves; cover from Noon behind the hall's own walls); the north gate is inside the stone; the Cinder Pit's and the Heart's
+party rooms; his mechanics scaled to the band.
+
+## The server half is merged (2026-11-11)
+
+Branch `t3/raid-party-server-protocol-8` merged (`bfbb252`): PROTOCOL 8, lobbies of 40, `raid_go`, `party_moves`, `side` on relayed
+messages, the band, majority side doors, the brain's watchdog. The client now sends a keep-alive from the brain's screen once a second,
+handles `brain_moved` (`BossFight.dropBrain`) and takes the gauge's size from `raid_stage`. Not done: a raid of bots through the real
+hub; `docs/architecture/raid.md` and `multiplayer.md` for the new messages; the Heart's branch still says PROTOCOL 7 (take 8).
 
 ## State (2026-11-11)
 

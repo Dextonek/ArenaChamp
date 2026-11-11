@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
 import { COURT_R, setCourtRadius, sunCourtArena } from '../arenas/suncourt';
-import { greatDialArena, setDialSize } from '../arenas/greatdial';
+import { sunHallArena } from '../arenas/sunhall';
 import { raidRing } from '../../server/protocol.mjs';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
@@ -502,25 +502,24 @@ const MODEL = 'models/bosses/warden.glb';
 /** What the hub keeps online: one source for both. */
 const NUMBERS = RAID_BOSSES.sun;
 
-/** A party is in: the Warden fights in the Great Dial. */
+/** A party is in: the Warden fights in the Hall of Noon. */
 let party = false;
 
 export const SUN_WARDEN: BossDef = {
   id: 'sun',
   name: 'The Sun Warden',
   title: 'Keeper of the Sun Court',
-  get place() { return party ? greatDialArena : sunCourtArena; },
+  get place() { return party ? sunHallArena : sunCourtArena; },
   gates: { enter: 0, exit: 180 },
   // Heroes come in at the south gate, wherever the rim is now.
   get starts() {
     const z = RING.z + COURT_R - 6.5;
     return { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z }, { x: -1.6, z }, { x: 1.6, z }] as [{ x: number; z: number }, { x: number; z: number }, { x: number; z: number }] };
   },
-  /** For two, the Sun Court. A party fights in the Great Dial, as far out as its band reaches (`raidRing`): set before the fight is built. */
+  /** For two, the Sun Court. A party fights in the Hall of Noon (`raidRing`): set before the fight is built. */
   resize: (band) => {
     party = band > 2;
     setCourtRadius(raidRing('sun', band));
-    if (party) setDialSize(COURT_R);
   },
   kit: (hp) => ({
     name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, look: wardenLook, maxHp: hp,

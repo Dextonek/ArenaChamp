@@ -13,7 +13,7 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
  * The boss's definition in src/raid reads the same numbers.
  */
 export const RAID_BOSSES = {
-  sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16 },
+  sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16, partyRing: 46 },
   ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
 };
 
@@ -32,10 +32,11 @@ export const RAID_REWARDS = {
 export const RAID_SHRINE_S = 15;
 
 /**
- * How far a boss's room reaches for a party (m): the room grows with the band, so 40 players have a place to be lost in (user,
- * 2026-11-11). For two it is the room as it was. Both screens and the hub work it out from the band. @param {string} id @param {number} band
+ * How far a boss's room reaches (m). For two it is the room as it was; a party of more fights in the boss's own party room where it
+ * has one (`partyRing`: the Sun Warden's Hall of Noon), whatever the band. Both screens and the hub work it out from the band.
+ * @param {string} id @param {number} band
  */
-export const raidRing = (id, band) => Math.round(RAID_BOSSES[id].ring * (band <= 2 ? 1 : band <= 5 ? 1.25 : band <= 10 ? 1.6 : band <= 15 ? 1.9 : band <= 20 ? 2.15 : band <= 30 ? 2.5 : 2.9));
+export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? RAID_BOSSES[id].ring : RAID_BOSSES[id].ring);
 
 /** How far Noonfall's hall reaches, where a run waits between its fights (m). */
 export const RAID_HALL_RING = 13;

@@ -2861,7 +2861,7 @@ export class Duel {
   /** Stands every wall of a breakable arena up again (each round). The obstacle list is a copy: broken walls leave it. */
   private resetWalls(def: ArenaDef) {
     this.wallHits = [];
-    this.wallHp = def.breakable ? def.obstacles.map((o) => (o.kind === 'wall' ? WALL_HP : -1)) : null;
+    this.wallHp = def.breakable ? def.obstacles.map((o) => (o.kind === 'wall' && !o.fixed ? WALL_HP : -1)) : null;
     if (!this.wallHp) return;
     this.host.arena.obstacles = def.obstacles.slice();
     def.obstacles.forEach((o, i) => { if (o.kind === 'wall') this.arenaScene?.wallState?.(i, 'whole'); });

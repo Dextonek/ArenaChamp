@@ -101,7 +101,7 @@ export class BossFight {
       cast: (c) => this.onCast(c),
       hp: (hp) => world.setBossHp(hp),
       phase: (i) => this.onPhase(i),
-      stagger: (v) => hud.setGauge(v / def.staggerMax),
+      stagger: (v) => hud.setGauge(v / (link.staggerMax ?? def.staggerMax)),
       kneel: (s) => this.onKneel(s),
       stood: (id, part, count) => this.script.stood(id, part, count),
       done: (id, part, side) => this.script.done(id, part, side),
@@ -225,6 +225,14 @@ export class BossFight {
     this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot, this.timedSeen);
     if (this.enraged) this.brain.enrage();
     if (this.stageDue) this.brain.open(this.stageDue);
+  }
+
+  /** The hub gave the brain to another screen (this one went quiet): this one follows reports again. What is in the air goes on. */
+  dropBrain() {
+    if (!this.brain) return;
+    this.brain = null;
+    this.link.brain = false;
+    this.track = new Track();
   }
 
   /** The boss's walk, reported by the screen that runs its brain. */

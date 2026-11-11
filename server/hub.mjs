@@ -10,7 +10,7 @@
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
 import {
-  PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RELOAD_TEXT, raidBand, raidHp, raidScale, raidStaggerMax,
+  PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RELOAD_TEXT, raidBand, raidHp, raidScale, raidStaggerMax, raidRing,
 } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
@@ -309,7 +309,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const match = c.match;
         if (!match || match.state === 'over' || !num(m.x) || !num(m.z)) return;
         const hall = match.state === 'offer' || match.state === 'gate';
-        const p = clampRing(m.x, m.z, hall ? RAID_HALL_RING : match.boss ? RAID_BOSSES[match.boss.id].ring : RING.r);
+        const p = clampRing(m.x, m.z, hall ? RAID_HALL_RING : match.boss ? raidRing(match.boss.id, match.boss.band) : RING.r);
         const yaw = num(m.yaw) ? m.yaw : 0, ts = num(m.ts) ? m.ts : undefined, r = num(m.r) ? Math.max(0, Math.min(1000, m.r)) : undefined;
         if (match.ticker) {
           // A party: only this hero's newest walk is kept, and goes out with everyone's in the next batch (`partyMoves`).
@@ -493,7 +493,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       case 'boss_move': {
         const boss = raidOf(c), match = c.match;
         if (!boss || !match || boss.brain !== c.side || !num(m.x) || !num(m.z)) return;
-        const p = clampRing(m.x, m.z, RAID_BOSSES[boss.id].ring);
+        const p = clampRing(m.x, m.z, raidRing(boss.id, boss.band));
         return tell(match, { t: 'boss_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined }, c.side);
       }
       // --- the raid: from any screen ----------------------------------------------------------------------------------

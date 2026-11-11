@@ -15,6 +15,8 @@ export interface Obstacle {
   /** Height of the mesh (looks only; every obstacle blocks sight fully). */
   height: number;
   kind: 'pillar' | 'wall';
+  /** A wall that is part of the room itself (a boss room's own walls): it never breaks. */
+  fixed?: boolean;
 }
 
 export const pillar = (x: number, z: number, r = 0.85): Obstacle => ({ ax: x, az: z, bx: x, bz: z, r, height: 4.2, kind: 'pillar' });
