@@ -158,10 +158,11 @@ const DATA = /*DATA*/null;
   tbox.append(table);
   app.append(tbox);
 
-  if (DATA.notes?.length) {
-    app.append(el('h2', {}, DATA.notesTitle ?? 'Notes'));
+  for (const sec of DATA.sections ?? []) {
+    if (!sec.notes?.length) continue;
+    app.append(el('h2', {}, sec.title ?? 'Notes'));
     const ul = el('ul');
-    for (const n of DATA.notes) ul.append(el('li', { html: n }));
+    for (const n of sec.notes) ul.append(el('li', { html: n }));
     app.append(el('div', { class: 'box' }, ul));
   }
   app.append(el('p', { class: 'sub', style: 'margin-top:14px' }, `Real fights: ${DATA.real}. Rust fights: ${DATA.rust}. Made by pipeline/rustfull/grade.py.`));

@@ -245,6 +245,9 @@ def build_jobs(args, info):
                     jobs += [{**base, "hero": f, "foe": s}] * args.fights
     elif args.mode == "duel":
         a, b = match(args.names[0], heroes), match(args.names[1], heroes)
+        if a == b:
+            # The game never gives the opponent the player's own kit: it would quietly fight some other hero.
+            sys.exit(f"{a} against itself: the game does not play a hero against its own kit")
         subjects, foes = [a, b], [a, b]
         jobs += [{**base, "hero": a, "foe": b}] * args.fights + [{**base, "hero": b, "foe": a}] * args.fights
     else:

@@ -104,11 +104,15 @@ fn main() {
             let arena = game.arena(&arena_id).unwrap_or_else(|| panic!("no arena '{arena_id}': {}", game.arena_ids().join(", ")));
             let kit = |name: &str| game.kit(name).unwrap_or_else(|| panic!("no hero '{name}' in data/game.json"));
             let (a, b) = (kit(&args[1]), kit(&args[2]));
+            if a.name == b.name {
+                println!("{} against itself: the game's duel against the CPU never plays a hero against its own kit, so there is nothing to compare with.", a.name);
+                return;
+            }
             let t0 = Instant::now();
             // --trace: every cast and hit of every fight, in the rows pipeline/rustfull/probe.js logs in the real game
             let trace = args.iter().any(|a| a == "--trace");
             // each way round: the two sides are played by two different computer players
-            let pairs = if a.name == b.name { vec![(&a, &b)] } else { vec![(&a, &b), (&b, &a)] };
+            let pairs = vec![(&a, &b), (&b, &a)];
             // Each processor thread is one "page": it plays its share of the fights one after another, and a fight
             // starts with what the fight before on that page left, as in the real simulator's browsers. Half the
             // threads by default, so the computer stays usable.
@@ -152,7 +156,8 @@ fn main() {
                         log.push(Value::Array(r));
                     }
                 }
-                if o.winner.as_deref() == Some(o.hero.as_str()) {
+                // by the HP left, not by the winner's name: in a fight of a hero against itself both have the same name
+                if o.winner.is_some() && o.hp[1] <= 0.0 {
                     wins[n / fights as usize] += 1;
                 }
                 seconds += o.seconds;

@@ -39,15 +39,25 @@ def speed(m):
     return m["fights"] / secs if secs and m.get("fights") else None
 
 
+def player_won(f):
+    """Whether the player's side won. Read from the HP left, not from the winner's name: in a fight of a hero against
+    itself both have the same name. The opponent at 0 HP is a win, checked before the player's own 0 HP, as in the game."""
+    if f.get("w") is None:
+        return None
+    hp = f.get("hp")
+    return hp[1] <= 0 if hp else f["w"] == f["h"]
+
+
 def side_rows(fights):
     """Per (hero, side): what that hero did in the fights where it was on that side."""
     out = {}
     for f in fights:
+        won = player_won(f)
         for side, name, dealt, hits, casts in (("player", f["h"], f.get("d", {}), f.get("n", {}), f.get("c", [0] * 4)),
                                                ("opponent", f["f"], f.get("t", {}), f.get("m", {}), f.get("k", [0] * 4))):
             r = out.setdefault((name, side), {"fights": 0, "wins": 0, "seconds": 0.0, "lengths": [], "dealt": {}, "hits": {}, "casts": [0] * 4})
             r["fights"] += 1
-            r["wins"] += 1 if f.get("w") == name else 0
+            r["wins"] += 1 if won is not None and won == (side == "player") else 0
             r["seconds"] += f["s"]
             r["lengths"].append(f["s"])
             for k, v in dealt.items():
@@ -79,6 +89,20 @@ def numbers(r):
             "dps": dealt / secs,
         }
     out["dps"] = sum(r["dealt"].values()) / secs
+    return out
+
+
+def finer(rows):
+    """How far each finer number of Rust is from the real one: a list of |rust / real - 1|."""
+    out = []
+    for r in rows:
+        for k in SOURCES:
+            a, b = r["real"]["sources"].get(k), r["rust"]["sources"].get(k)
+            if not a or not b:
+                continue
+            for m in ("casts_10s", "hits_cast", "damage_hit", "dps"):
+                if a.get(m) and b.get(m) and a[m] > 0.05:
+                    out.append(abs(b[m] / a[m] - 1))
     return out
 
 
@@ -118,12 +142,16 @@ def main():
     ap.add_argument("rust")
     ap.add_argument("--json")
     ap.add_argument("--page")
-    ap.add_argument("--notes", help="a .json file: {\"title\": ..., \"notes\": [html, ...]} shown under the tables")
+    ap.add_argument("--notes", help="a .json file: {\"sections\": [{\"title\": ..., \"notes\": [html, ...]}, ...]} shown under the tables")
     args = ap.parse_args()
     rows = grade(load(args.real), load(args.rust))
     if not rows:
         sys.exit("the two files share no hero on the same side")
     show(rows)
+    off = finer(rows)
+    inside = sum(1 for r in rows if abs(r["real"]["win"] - r["rust"]["win"]) <= math.hypot(r["real"]["win_pm"], r["rust"]["win_pm"]))
+    print(f"\nwin rates inside the two runs' own noise: {inside} of {len(rows)}; largest gap {max(abs(r['real']['win'] - r['rust']['win']) for r in rows):.1f} points")
+    print(f"finer numbers: {len(off)}; within 3%: {sum(1 for x in off if x <= 0.03)}, within 5%: {sum(1 for x in off if x <= 0.05)}, within 10%: {sum(1 for x in off if x <= 0.10)}; the largest is {100 * max(off):.1f}% off")
     if args.json:
         Path(args.json).write_text(json.dumps({"rows": rows}, indent=1), encoding="utf-8")
     if args.page:
@@ -134,7 +162,7 @@ def main():
             data["speed"] = {"real": speed(ma), "rust": speed(mb)}
         if args.notes:
             n = json.loads(Path(args.notes).read_text(encoding="utf-8"))
-            data["notesTitle"], data["notes"] = n.get("title"), n.get("notes", [])
+            data["sections"] = n.get("sections") or [{"title": n.get("title"), "notes": n.get("notes", [])}]
         Path(args.page).write_text(template.replace("/*DATA*/null", json.dumps(data)), encoding="utf-8")
         print(f"\npage: {args.page}")
 

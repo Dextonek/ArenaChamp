@@ -308,7 +308,7 @@ pub struct World {
     shots: Vec<Shot>,
     pub casts: [Vec<Cast>; 2],
     cast_seq: [u32; 2],
-    /// The spells' effects, one per spell label as in the game (so in a mirror fight both sides share them).
+    /// The spells' effects, one per spell label as in the game: a new cast of a spell starts its effect again.
     effects: Vec<Option<Effect>>,
     pub rng: Rng,
     /// The winner, once the round is over.
@@ -343,6 +343,7 @@ impl World {
 
     pub fn new(hero: Kit, foe: Kit, arena: &Arena, seed: u64, carry: Carry) -> World {
         assert!(!arena.breakable, "the arena '{}' has breakable walls: not ported yet (docs/pipeline/rust-sim.md)", arena.id);
+        assert!(hero.name != foe.name, "{} against itself: the game never plays a hero against its own kit", hero.name);
         let ids = [
             hero::id(&hero.name).unwrap_or_else(|| panic!("{} is not ported yet (docs/pipeline/rust-sim.md)", hero.name)),
             hero::id(&foe.name).unwrap_or_else(|| panic!("{} is not ported yet (docs/pipeline/rust-sim.md)", foe.name)),
@@ -652,8 +653,9 @@ impl World {
     // --- casting -------------------------------------------------------------------------------------------
 
     fn fx_key(&self, s: Side, slot: usize) -> usize {
-        // The game keeps one effect per spell label: two of the same hero share it.
-        (if self.ids[0] == self.ids[1] { 0 } else { s.i() }) * 4 + slot
+        // The game keeps one effect per spell label. A duel against the CPU never has the same hero on both sides, so
+        // that is one per side and slot here.
+        s.i() * 4 + slot
     }
 
     /// Plays the spell's effect with this cast (`effect.play()` with its context) and returns its danger zones.

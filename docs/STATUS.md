@@ -13,15 +13,18 @@ out: [pipeline/rust-sim.md](pipeline/rust-sim.md). Page: `docs/balance/rust-slic
   Isolde) with their eight spells. 32 tests pass (`cargo test --release --manifest-path pipeline/rustfull/Cargo.toml`).
   The game's numbers come from its own export (`pipeline/rustfull/export.js` -> `data/game.json`).
 - **Graded:** Brannoc against Isolde in the Frost arena, 1,800 real fights beside 20,000 Rust fights: win rates
-  84.7/85.8, 32.1/32.5, 67.9/67.5, 15.3/14.2 (all inside the real run's noise), and every finer number (casts, hits
+  84.7/85.8, 32.1/32.5, 67.9/67.5, 15.3/14.2 (all inside the real run's noise), and all 54 finer numbers (casts, hits
   for each cast, damage of a hit, damage a second) within 3%. Frame over frame a real and a Rust fight are the same to
-  the centimetre until the dice differ. Rust plays about 300 fights a second on eight threads (real: 3 to 4 on eight
-  browsers).
+  the centimetre until the dice differ. Rust plays 300 to 500 fights a second on eight threads (real: 3 to 4 on
+  eight browsers). **Checked on a second arena with nothing tuned on it** (the Glade, 500 real fights): 92.8/93.7,
+  25.6/24.3, 74.4/75.7, 7.2/6.3, again all inside the noise (`docs/balance/rust-slice-glade-2026-11-11.html`).
+  A hero against itself cannot be a check: the game never plays it (both tools now refuse it).
 - **Found in the game on the way** (nothing changed in the game; each is kept in Rust as it is):
-  1. Isolde's second icicle cast (Shatter) is held back with one clock and opened with another; they round
-     differently, so in some stretches of a session (minutes 4 to 9, 17 to 35, 70 to 140 after the page opened) the
-     CPU fires a Shatter that hits nothing after every icicle and stands still half a second, and in the stretches
-     between it never does. The real simulator's numbers for Isolde depend on how long a run is. A one-line fix.
+  1. Isolde's second icicle cast (Shatter) is held back with one clock and opened with another. In simulated fights
+     they round differently, so in some stretches (minutes 4 to 9, 17 to 35, 70 to 140 of fighting on a simulator
+     page) the CPU fires a Shatter that hits nothing after every icicle and stands still half a second, and in the
+     stretches between it never does. So the real simulator's numbers for Isolde depend on how long a run is. Whether
+     it happens in a game somebody plays was not checked. A one-line fix.
   2. A pushed opponent is seen without its push on every frame it walks (`moveFoe` -> `setHome`).
   3. The computer players' walking state (strafe side and timer) is not reset between fights.
   4. From before: the two computer players are not equal (Auriel 50% as the player's side, 10% as the opponent's).

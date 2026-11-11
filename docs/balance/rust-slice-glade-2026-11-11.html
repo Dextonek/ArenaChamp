@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rust beside the game</title>
+<style>
+  /* The full Rust simulator laid beside the real game (pipeline/rustfull/grade.py fills in the data). It takes its colours
+     from the host's theme when shown inside T3 Code and brings its own dark ones when opened as a file. */
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37); --panel: var(--card, #1a1a19);
+    --real: var(--chart-1, #3987e5); --model: var(--chart-2, #d95926); --r: var(--radius, 8px);
+    --lo: #4a8fd8; --hi: #d9713f; --mid: #8a8a84;
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  html.standalone body { max-width: 980px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 26px 0 4px; }
+  p.sub { margin: 0 0 10px; color: var(--ink-2); font-size: 13px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 12px 0 4px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
+  .tile b { display: block; font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .tile span { color: var(--ink-2); font-size: 12px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; overflow-x: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ink-2); margin: 0 0 10px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; margin-right: 5px; vertical-align: -1px; }
+  .dot { border-radius: 50%; background: var(--real); }
+  .dia { background: var(--panel); border: 2px solid var(--model); transform: rotate(45deg); width: 8px !important; height: 8px !important; }
+  .whisk { height: 2px !important; width: 18px !important; background: var(--real); opacity: 0.55; vertical-align: 3px !important; }
+  .rows { display: grid; grid-template-columns: max-content 1fr max-content; column-gap: 10px; row-gap: 5px; align-items: center; min-width: 300px; }
+  .rows .name { font-size: 13px; white-space: nowrap; }
+  .rows .name small { color: var(--ink-2); }
+  .track { position: relative; height: 20px; }
+  .track .half { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--ink-2); opacity: 0.35; }
+  .track .ci { position: absolute; top: 9px; height: 2px; background: var(--real); opacity: 0.55; }
+  .track .r { position: absolute; top: 5px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--real); box-shadow: 0 0 0 2px var(--panel); }
+  .track .m { position: absolute; top: 5px; width: 7px; height: 7px; margin-left: -5px; background: var(--panel); border: 2px solid var(--model); transform: rotate(45deg); }
+  .val { font-variant-numeric: tabular-nums; font-size: 12px; white-space: nowrap; color: var(--ink-2); }
+  .axis { grid-column: 2; position: relative; height: 16px; font-size: 11px; color: var(--ink-2); }
+  .axis span { position: absolute; transform: translateX(-50%); }
+  table.data { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  table.data th { text-align: right; font-weight: 500; font-size: 12px; color: var(--ink-2); padding: 4px 10px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data td { padding: 5px 10px 5px 0; border-bottom: 1px solid color-mix(in oklab, var(--line) 55%, transparent); font-size: 13px; text-align: right; white-space: nowrap; }
+  table.data tr.head td { padding-top: 14px; font-weight: 600; text-align: left; border-bottom: 1px solid var(--line); }
+  table.data td .rust { color: var(--ink-2); }
+  .diff { display: inline-block; position: relative; width: 44px; height: 8px; margin-left: 6px; vertical-align: 0; background: color-mix(in oklab, var(--ink) 7%, transparent); border-radius: 2px; }
+  .diff::before { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--mid); }
+  .diff i { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+  code { font-family: var(--font-mono, ui-monospace, Consolas, monospace); font-size: 12px; }
+  ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+  ul li { margin: 4px 0; }
+  ul b { color: var(--ink); font-weight: 600; }
+  #tip { position: fixed; pointer-events: none; background: var(--popover, #26262a); color: var(--popover-foreground, #f0efec); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font-size: 12px; line-height: 1.4; max-width: 280px; display: none; z-index: 5; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="tip"></div>
+<script>
+const DATA = {"rows": [{"hero": "Brannoc", "side": "opponent", "real": {"fights": 250, "win": 92.80000000000001, "win_pm": 3.2042493386127107, "length": 29.568800000000053, "sources": {"Q": {"casts_10s": 1.2215578582830529, "hits_cast": 0.9623477297895903, "hits_10s": 1.17556343172533, "damage_hit": 37.59723820483314, "dps": 4.419793836746833}, "W": {"casts_10s": 0.9956440572495315, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "E": {"casts_10s": 2.306485214144635, "hits_cast": 2.915542521994135, "hits_10s": 6.724655718189431, "damage_hit": 11.184671092335547, "dps": 7.521306241714226}, "R": {"casts_10s": 0.33819431292443325, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 2.6609128540894407, "damage_hit": 28.65683782409761, "dps": 7.625334812369782}}, "length_sd": 1.7151072653705632, "dps": 19.56643489083084}, "rust": {"fights": 10000, "win": 93.67, "win_pm": 0.4772634611784146, "length": 29.729689999999408, "sources": {"Q": {"casts_10s": 1.2300834620206509, "hits_cast": 0.9607054963084496, "hits_10s": 1.1817479428813653, "damage_hit": 37.63823186178237, "dps": 4.447890307635317}, "W": {"casts_10s": 0.9917695071829066, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "E": {"casts_10s": 2.31287309083954, "hits_cast": 2.9019647765448435, "hits_10s": 6.711876242234748, "damage_hit": 11.224514137374587, "dps": 7.533754976927256}, "R": {"casts_10s": 0.33636408586837596, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 2.6322507903715633, "damage_hit": 28.790380290329175, "dps": 7.578350127431685}}, "length_sd": 1.8055662576740914, "dps": 19.559995411994258}}, {"hero": "Brannoc", "side": "player", "real": {"fights": 250, "win": 25.6, "win_pm": 5.409940858826462, "length": 29.812000000000097, "sources": {"Q": {"casts_10s": 1.229035287803565, "hits_cast": 0.8253275109170306, "hits_10s": 1.0143566349121125, "damage_hit": 37.301587301587304, "dps": 3.7837112572118485}, "W": {"casts_10s": 1.0063061854286832, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "E": {"casts_10s": 2.325238159130544, "hits_cast": 2.8770917484131564, "hits_10s": 6.689923520729885, "damage_hit": 11.097272362615323, "dps": 7.4239903394605955}, "R": {"casts_10s": 0.3354353951428944, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 2.0394472024687977, "damage_hit": 33.03947368421053, "dps": 6.738226217630462}}, "length_sd": 0.8592609133837481, "dps": 17.945927814302905}, "rust": {"fights": 10000, "win": 24.34, "win_pm": 0.8411036677508903, "length": 29.75236000000055, "sources": {"Q": {"casts_10s": 1.2324736592323877, "hits_cast": 0.8247020644140828, "hits_10s": 1.0164235711049288, "damage_hit": 37.34373863298171, "dps": 3.795705617974437}, "W": {"casts_10s": 1.0082561517808821, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "E": {"casts_10s": 2.3307058666942293, "hits_cast": 2.8879931933548684, "hits_10s": 6.731062678725193, "damage_hit": 11.080643147829127, "dps": 7.458450354862467}, "R": {"casts_10s": 0.3361077911130349, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 2.010428752542618, "damage_hit": 33.303803393797544, "dps": 6.695492391191701}}, "length_sd": 0.9040542914096484, "dps": 17.949648364028604}}, {"hero": "Isolde", "side": "opponent", "real": {"fights": 250, "win": 74.4, "win_pm": 5.409940858826462, "length": 29.812000000000097, "sources": {"Q": {"casts_10s": 3.6092848517375433, "hits_cast": 0.6342007434944238, "hits_10s": 2.289011136455111, "damage_hit": 37.875146541617816, "dps": 8.669663222863248}, "W": {"casts_10s": 1.2907554005098576, "hits_cast": 0.9708939708939709, "hits_10s": 1.2531866362538533, "damage_hit": 36.900428265524624, "dps": 4.624312357439941}, "E": {"casts_10s": 1.0022809606869685, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "R": {"casts_10s": 0.3354353951428944, "hits_cast": 1.0, "hits_10s": 0.3354353951428944, "damage_hit": 196.28, "dps": 6.58392593586473}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 5.972091775124092, "damage_hit": 11.398112783644125, "dps": 6.807057560713784}}, "length_sd": 0.8592609133837481, "dps": 26.684959076881704}, "rust": {"fights": 10000, "win": 75.66000000000001, "win_pm": 0.8411036677508903, "length": 29.75236000000055, "sources": {"Q": {"casts_10s": 3.7081092054545577, "hits_cast": 0.62122818944029, "hits_10s": 2.3035819679514073, "damage_hit": 37.88102776602419, "dps": 8.726205248927991}, "W": {"casts_10s": 1.2850409177624664, "hits_cast": 0.9654225407370596, "hits_10s": 1.2406074677773231, "damage_hit": 37.13665303026198, "dps": 4.607200907759837}, "E": {"casts_10s": 1.0031473133559639, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "R": {"casts_10s": 0.3361077911130349, "hits_cast": 1.0, "hits_10s": 0.3361077911130349, "damage_hit": 196.1945, "dps": 6.5942500023526325}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 5.973307663660856, "damage_hit": 11.392837047040288, "dps": 6.805292084392507}}, "length_sd": 0.9040542914096484, "dps": 26.73294824343297}}, {"hero": "Isolde", "side": "player", "real": {"fights": 250, "win": 7.199999999999999, "win_pm": 3.2042493386127116, "length": 29.568800000000053, "sources": {"Q": {"casts_10s": 3.429290333053753, "hits_cast": 0.6749506903353057, "hits_10s": 2.314601877654821, "damage_hit": 40.07013442431327, "dps": 9.274640837639657}, "W": {"casts_10s": 1.2256161900381461, "hits_cast": 0.9911699779249448, "hits_10s": 1.2147939720245642, "damage_hit": 36.88195991091314, "dps": 4.480398257622892}, "E": {"casts_10s": 1.0024079435080202, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "R": {"casts_10s": 0.33819431292443325, "hits_cast": 1.0, "hits_10s": 0.33819431292443325, "damage_hit": 80.66, "dps": 2.7278753280484787}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 5.527447850436937, "damage_hit": 11.393538913362702, "dps": 6.2977192175536265}}, "length_sd": 1.7151072653705632, "dps": 22.780633640864654}, "rust": {"fights": 10000, "win": 6.329999999999999, "win_pm": 0.4772634611784145, "length": 29.729689999999408, "sources": {"Q": {"casts_10s": 3.397546358539292, "hits_cast": 0.6816291778869, "hits_10s": 2.315866731203769, "damage_hit": 40.05567175018155, "dps": 9.27635976022641}, "W": {"casts_10s": 1.2362389247920422, "hits_cast": 0.9916741490490573, "hits_10s": 1.22594618376447, "damage_hit": 36.945098362005105, "dps": 4.529270234570313}, "E": {"casts_10s": 0.9920722348601881, "hits_cast": 0.0, "hits_10s": 0.0, "damage_hit": null, "dps": 0.0}, "R": {"casts_10s": 0.33636408586837596, "hits_cast": 1.0, "hits_10s": 0.33636408586837596, "damage_hit": 84.9845, "dps": 2.8585733655481}, "attack": {"casts_10s": null, "hits_cast": null, "hits_10s": 5.537561945651074, "damage_hit": 11.395170989491588, "dps": 6.31014652355957}}, "length_sd": 1.8055662576740914, "dps": 22.97434988390439}}], "real": "pair-glade.json", "rust": "rust-pair-glade.json", "arena": "in the arena 'glade'", "speed": {"real": 4.508566275924256, "rust": 519.1832135959693}};
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const app = document.getElementById('app'), tip = document.getElementById('tip');
+  const el = (tag, attrs = {}, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) { if (k === 'style') e.style.cssText = v; else if (k === 'tip') e.dataset.tip = v; else if (k === 'html') e.innerHTML = v; else e.setAttribute(k, v); }
+    for (const k of kids) e.append(k);
+    return e;
+  };
+  document.addEventListener('pointermove', (ev) => {
+    const t = ev.target.closest?.('[data-tip]');
+    if (!t) { tip.style.display = 'none'; return; }
+    tip.innerHTML = t.dataset.tip;
+    tip.style.display = 'block';
+    tip.style.left = Math.max(4, Math.min(innerWidth - tip.offsetWidth - 4, ev.clientX + 12)) + 'px';
+    tip.style.top = Math.max(4, Math.min(innerHeight - tip.offsetHeight - 4, ev.clientY + 14)) + 'px';
+  });
+  if (!DATA) { app.append(el('p', {}, 'No data: run python pipeline/rustfull/grade.py <real.json> <rust.json> --page <out.html>.')); return; }
+  const rows = DATA.rows, f1 = (v) => v.toFixed(1), f2 = (v) => v.toFixed(2);
+  const SOURCES = ['Q', 'W', 'E', 'R', 'attack', 'trait'];
+  const LABEL = { attack: 'basic attack', trait: 'passive' };
+  const METRICS = [['casts_10s', 'casts in 10 s', f2], ['hits_cast', 'hits for each cast', f2], ['damage_hit', 'damage of a hit', f1], ['dps', 'damage a second', f1]];
+
+  // --- every graded number as a pair, to count how many agree -------------------------------------------------
+  const pairs = [];
+  for (const r of rows) {
+    for (const k of SOURCES) {
+      const a = r.real.sources[k], b = r.rust.sources[k];
+      if (!a || !b) continue;
+      for (const [m] of METRICS) if (a[m] && b[m] && a[m] > 0.05) pairs.push(Math.abs(b[m] / a[m] - 1));
+    }
+  }
+  const within = (x) => pairs.filter((p) => p <= x).length;
+  const gap = Math.max(...rows.map((r) => Math.abs(r.real.win - r.rust.win)));
+  const inside = rows.filter((r) => Math.abs(r.real.win - r.rust.win) <= Math.hypot(r.real.win_pm, r.rust.win_pm)).length;
+  const realFights = rows.reduce((s, r) => s + r.real.fights, 0) / 2, rustFights = rows.reduce((s, r) => s + r.rust.fights, 0) / 2;
+  const heroes = [...new Set(rows.map((r) => r.hero))];
+
+  app.append(el('h1', {}, 'The Rust simulator beside the real game'));
+  app.append(el('p', { class: 'sub' }, `${heroes.join(' against ')}${DATA.arena ? ', ' + DATA.arena : ''}. The same fights played two ways: by the game itself in a browser (the real simulator) and by the game's rules written again in Rust. Every number below should be the same on both sides.`));
+  const tiles = el('div', { class: 'tiles' });
+  const tile = (big, small, t) => tiles.append(el('div', { class: 'tile', tip: t ?? '' }, el('b', {}, big), el('span', {}, small)));
+  tile(`${inside} of ${rows.length}`, 'win rates inside the real run’s own noise', 'A real run of this size swings by a few points from run to run. A Rust win rate inside that swing agrees.');
+  tile(`${f1(gap)} pts`, 'largest win-rate gap');
+  tile(`${within(0.05)} of ${pairs.length}`, 'other numbers within 5%', `Casts, hits for each cast, damage of a hit and damage a second, for each spell and the basic attack. Within 10%: ${within(0.10)} of ${pairs.length}.`);
+  tile(`${Math.round(realFights)} / ${Math.round(rustFights)}`, 'fights: real / Rust');
+  if (DATA.speed) tile(`${Math.round(DATA.speed.rust)} a second`, `Rust fights (real: ${f1(DATA.speed.real)} a second)`, 'Fights played each second of real time on this computer. The real simulator used several browsers at once, Rust one processor thread.');
+  app.append(tiles);
+
+  // --- win rates ----------------------------------------------------------------------------------------------
+  app.append(el('h2', {}, 'Win rate, each hero on each side'));
+  app.append(el('p', { class: 'sub' }, 'The two sides of a duel are played by two different computer players, so each hero is shown twice. The line through the real dot is how far a real run of this size swings by chance.'));
+  const box = el('div', { class: 'box' });
+  box.append(el('div', { class: 'legend', html: '<span><i class="dot"></i>real game</span><span><i class="whisk"></i>its swing by chance</span><span><i class="dia"></i>Rust</span>' }));
+  const grid = el('div', { class: 'rows' });
+  for (const r of rows) {
+    const a = r.real, b = r.rust;
+    const t = `<b>${r.hero}</b>, the ${r.side}'s side<br>real: ${f1(a.win)}% of ${a.fights} fights (±${f1(a.win_pm)})<br>Rust: ${f1(b.win)}% of ${b.fights} fights (±${f1(b.win_pm)})<br>fight length: ${f1(a.length)} s / ${f1(b.length)} s`;
+    const track = el('div', { class: 'track', tip: t }, el('div', { class: 'half' }),
+      el('div', { class: 'ci', style: `left:${Math.max(0, a.win - a.win_pm)}%;width:${Math.min(100, a.win + a.win_pm) - Math.max(0, a.win - a.win_pm)}%` }),
+      el('div', { class: 'r', style: `left:${a.win}%` }), el('div', { class: 'm', style: `left:${b.win}%` }));
+    grid.append(el('div', { class: 'name', html: `${r.hero} <small>${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}</small>` }), track, el('div', { class: 'val' }, `${f1(a.win)}% · ${f1(b.win)}%`));
+  }
+  const axis = el('div', { class: 'axis' });
+  for (const v of [0, 25, 50, 75, 100]) axis.append(el('span', { style: `left:${v}%;transform:translateX(${v === 0 ? '0' : v === 100 ? '-100%' : '-50%'})` }, v + '%'));
+  grid.append(el('div'), axis, el('div', { class: 'val' }, 'real · Rust'));
+  box.append(grid);
+  app.append(box);
+
+  // --- the tight numbers --------------------------------------------------------------------------------------
+  app.append(el('h2', {}, 'What each spell did'));
+  app.append(el('p', { class: 'sub' }, 'These numbers barely swing from run to run, so a rule written wrong shows here first. Each cell: real, then Rust, then how far Rust is off (the bar is full at 20%).'));
+  const tbox = el('div', { class: 'box' });
+  const table = el('table', { class: 'data' });
+  table.append(el('tr', {}, el('th', {}, ''), ...METRICS.map(([, name]) => el('th', {}, name))));
+  const cell = (x, y, fmt) => {
+    const td = el('td');
+    if (!x && !y) { td.textContent = '–'; return td; }
+    td.append(fmt(x ?? 0) + ' ', el('span', { class: 'rust' }, '· ' + fmt(y ?? 0)));
+    if (x && y && x > 0.05) {
+      const d = y / x - 1, w = Math.min(1, Math.abs(d) / 0.2) * 50;
+      const bar = el('span', { class: 'diff', tip: `Rust is ${d >= 0 ? '+' : '−'}${f1(Math.abs(d) * 100)}% against the real game` });
+      bar.append(el('i', { style: `${d >= 0 ? 'left:50%' : `left:${50 - w}%`};width:${Math.max(w, 1.5)}%;background:${Math.abs(d) < 0.03 ? 'var(--mid)' : d >= 0 ? 'var(--hi)' : 'var(--lo)'}` }));
+      td.append(bar);
+    }
+    return td;
+  };
+  for (const r of rows) {
+    table.append(el('tr', { class: 'head' }, el('td', { colspan: String(METRICS.length + 1) }, `${r.hero}, ${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}  —  fights last ${f1(r.real.length)} s · ${f1(r.rust.length)} s`)));
+    for (const k of SOURCES) {
+      const a = r.real.sources[k], b = r.rust.sources[k];
+      if (!a && !b) continue;
+      table.append(el('tr', {}, el('td', {}, LABEL[k] ?? k), ...METRICS.map(([m, , fmt]) => cell(a?.[m], b?.[m], fmt))));
+    }
+  }
+  tbox.append(table);
+  app.append(tbox);
+
+  for (const sec of DATA.sections ?? []) {
+    if (!sec.notes?.length) continue;
+    app.append(el('h2', {}, sec.title ?? 'Notes'));
+    const ul = el('ul');
+    for (const n of sec.notes) ul.append(el('li', { html: n }));
+    app.append(el('div', { class: 'box' }, ul));
+  }
+  app.append(el('p', { class: 'sub', style: 'margin-top:14px' }, `Real fights: ${DATA.real}. Rust fights: ${DATA.rust}. Made by pipeline/rustfull/grade.py.`));
+})();
+</script>
+</body>
+</html>

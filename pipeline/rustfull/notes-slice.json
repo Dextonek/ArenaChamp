@@ -1,8 +1,19 @@
 {
-  "title": "Three things the game does that Rust had to copy before the numbers agreed",
-  "notes": [
-    "<b>Isolde's icicle is timed by two clocks.</b> The game holds her second cast (the Shatter) back with the page's clock and opens it with the round's clock. The two round differently, so at the last frame the hold either lets go a hair early or it does not. When it does, she casts a Shatter that hits nothing and stands still for half a second after every icicle. Which way it falls follows how long the page has been open: never from minute 2 to 4, always from 4 to 9, never from 9 to 17, always from 17 to 35, and so on. So the real game's Isolde plays a little worse in some stretches than in others. Worth fixing in the game one day (one line); Rust copies it as it is, with a page clock that runs on from fight to fight.",
-    "<b>The opponent flickers.</b> When the opponent has been pushed, the game shows it at the pushed spot, but on every frame it walks it is at the unpushed spot until the next frame. Whoever looks at it in between (the player's hero, its hits, bolts) sees the unpushed one. It is a few centimetres to a few tens of centimetres, enough to change who is in reach.",
-    "<b>The computer players remember the last fight.</b> Which way each one strafes, and for how long yet, is not reset when a new fight starts, and the player's side starts the very first fight strafing the other way than the opponent."
+  "sections": [
+    {
+      "title": "Three things the game does that Rust had to copy before the numbers agreed",
+      "notes": [
+        "<b>Isolde's icicle is timed by two clocks.</b> The game holds her second cast (the Shatter) back with the page's clock and opens it with the round's clock. In a simulated fight the two round differently, so at the last frame the hold either lets go a hair early or it does not. When it does, she casts a Shatter that hits nothing and stands still for half a second after every icicle. Which way it falls follows how many minutes of fighting the simulator's page has behind it: never from minute 2 to 4, always from 4 to 9, never from 9 to 17, always from 17 to 35, and so on. So <b>the real simulator's numbers for Isolde depend on how long a run is</b>. In a game somebody plays, the clocks tick differently and this was not checked. Worth fixing in the game (one line); Rust copies the simulator as it is, with a page clock that runs on from fight to fight.",
+        "<b>The opponent flickers.</b> When the opponent has been pushed, the game shows it at the pushed spot, but on every frame it walks it is at the unpushed spot until the next frame. Whoever looks at it in between (the player's hero, its hits, bolts) sees the unpushed one. It is a few centimetres to a few tens of centimetres, enough to change who is in reach.",
+        "<b>The computer players remember the last fight.</b> Which way each one strafes, and for how long yet, is not reset when a new fight starts, and the player's side starts the very first fight strafing the other way than the opponent."
+      ]
+    },
+    {
+      "title": "Two more checks",
+      "notes": [
+        "<b>A second arena, with nothing tuned on it.</b> Every fix above was found in the Frost arena. The same pair in the Glade (other cover): 500 real fights beside 20,000 Rust fights. Win rates real / Rust: Brannoc as the opponent 92.8 / 93.7, as the player's hero 25.6 / 24.3; Isolde as the opponent 74.4 / 75.7, as the player's hero 7.2 / 6.3. All four inside the real run's noise; 52 of the 54 finer numbers within 3%, all within 6%.",
+        "<b>A check that was no check.</b> A hero against itself would test the two computer players with one hero. The game never plays that: asked for Brannoc against Brannoc, the real simulator quietly fought some other hero and wrote it down under Brannoc's name. Both tools now refuse such a request."
+      ]
+    }
   ]
 }

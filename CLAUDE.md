@@ -80,6 +80,13 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   to the real simulator's fights and says so in every answer (docs/pipeline/rust-model.md). It gets the direction of
   a number change and about half its size, and cannot see a rule change. Never rebalance from it; refresh it
   (`python pipeline/rustsim/refresh.py`) after a change to a hero, a spell or the CPU.
+- **The full Rust simulator plays only the heroes that are ported and graded (2026-11-11).** The user, shown the rough
+  model: "then lets make full functionality", and "make that simulation tool first". `pipeline/rustfull` is the
+  game's fight rules written again (docs/pipeline/rust-sim.md); two heroes so far (Brannoc, Isolde), 300 to 500 fights
+  a second. A hero counts as ported only when `python pipeline/rustfull/grade.py` shows it beside recorded real fights
+  with the win rates inside the noise, in an arena nothing was tuned on. What made the first fights disagree were not
+  the heroes but three unwritten habits of the engine; find such things by laying one real fight over one Rust fight
+  frame by frame (`frames-compare.py`), not by guessing. After a change to the game: `python pipeline/rustfull/guard.py`.
 - **Boss difficulty** is measured with `_raid(...)` (`pipeline/tools/raid-tool.js`) in tool-page tabs: four tabs in
   parallel, about 10 minutes for 39 heroes each; any edit under `src/` or `pipeline/` reloads the tabs and kills the
   runs; one run of 39 fights swings by about ±8 points.

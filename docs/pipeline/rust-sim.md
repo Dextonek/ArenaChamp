@@ -2,7 +2,7 @@
 title: The full Rust simulator (in the making)
 tags: [pipeline, balance, tools, rust, port]
 updated: 2026-11-11
-status: plays whole fights; two of 40 heroes ported (Brannoc, Isolde) and graded against the real game; one arena family (no breakable walls, no events)
+status: plays whole fights; two of 40 heroes ported (Brannoc, Isolde) and graded against the real game in two arenas (Frost, Glade); no breakable walls, no events
 ---
 
 # The full Rust simulator
@@ -12,8 +12,8 @@ copy of the rules was still wanted: **"then lets make full functionality"**, and
 first"**. This is that: the game's fight rules written again in Rust (`pipeline/rustfull/`), so fights run without a
 browser.
 
-**It plays whole fights now, for two heroes.** Brannoc against Isolde in the Frost arena agrees with the real game
-number by number (below). Every other hero still needs the [real simulator](simulator.md); quick estimates still come
+**It plays whole fights now, for two heroes.** Brannoc against Isolde agrees with the real game number by number in
+the Frost arena and in the Glade (below). Every other hero still needs the [real simulator](simulator.md); quick estimates still come
 from the rough model.
 
 ## Use it
@@ -31,7 +31,7 @@ python pipeline/rustfull/grade.py pipeline/rustfull/data/pair-frost-big.json pip
   the game changed under a ported hero.
 - It stops with a message, never with a wrong answer, on anything not ported: a hero that is not ported, an arena with
   breakable walls, a spell that dashes, flees, summons or banks.
-- Speed: about 300 fights a second on eight threads (the real simulator on eight browsers: 3 to 4).
+- Speed: 300 to 500 fights a second on eight threads (the real simulator on eight browsers: 3 to 4).
 
 ## How close it is (2026-11-11)
 
@@ -45,8 +45,9 @@ Brannoc against Isolde, Frost arena, events off: 1,800 real fights (`data/pair-f
 | Isolde as the player's hero wins | 15.3% (±2.4) | 14.2% |
 | Fight length | 27.8 s, 29.5 s | 27.7 s, 29.5 s |
 
-All four win rates are inside the real run's own noise, and every finer number (for each spell and the basic attack:
-casts in 10 s, hits for each cast, damage of a hit, damage a second) is within 3%. Laid frame over frame, a real and a
+All four win rates are inside the real run's own noise, and all 54 finer numbers (for each spell and the basic
+attack: casts in 10 s, hits for each cast, damage of a hit, damage a second) are within 3%; the largest is 1.0% off
+(`grade.py` prints the count). Laid frame over frame, a real and a
 Rust fight are the same to the centimetre for the first 4 to 9 seconds, until the dice differ. Page:
 `docs/balance/rust-slice-2026-11-11.html`.
 
@@ -60,11 +61,13 @@ down anywhere, were behind it. The port keeps all three, because the aim is to a
    so the hold either lets go one frame early or not. When it does, the CPU casts a Shatter that hits nothing and
    roots her for half a second, after every icicle thrown over open ground. Which way it falls is not chance: it
    follows the size of the page's clock, flipping at each power of two of its milliseconds (never from 2.2 to 4.4
-   minutes after the page opened, always from 4.4 to 8.7, never to 17.5, always to 35, ...). So **the real game's
-   Isolde plays differently in different stretches of a session**, and the real simulator's numbers for her depend on
-   how long a run is. Rust keeps a page clock that runs on from fight to fight (`Carry`); `--page-fights` says how
-   many fights a page plays before a fresh one starts (a real run's fights over its browsers). A fix in the game
-   would be one line (compare the same clock); it waits on the user.
+   minutes of fighting on the simulator's page, always from 4.4 to 8.7, never to 17.5, always to 35, ...). That is
+   worked out from how the simulator steps its clock (1000/60 ms a frame, `pipeline/sim/page.js`) and fits the real
+   runs' cast counts. So **the real simulator's numbers for Isolde depend on how long a run is.** In a game somebody
+   plays, a frame's length comes from the real clock, the two clocks tick differently, and whether and how often the
+   empty Shatter happens there was NOT checked. Rust keeps a page clock that runs on from fight to fight (`Carry`);
+   `--page-fights` says how many fights a page plays before a fresh one starts (a real run's fights over its
+   browsers). A fix in the game would be one line (compare the same clock); it waits on the user.
 2. **The opponent flickers.** A pushed opponent stands at `home + offset`. `moveFoe` calls `setHome`, which puts the
    figure at `home` alone until the arena's next frame. So on every frame the opponent walks, whatever looks at it
    afterwards (the autopilot, the player's hits and bolts) sees it without what pushes have added.
@@ -139,6 +142,18 @@ One frame of a simulated fight (1/60 s), in the game's order (`step` in `src/run
 | A hit on it is judged | `opponentHit`: inside the zones of that cast, for 4.5 s | `hitPlayer`: inside the zones of that cast |
 | Strafe at the page's first fight | starts one way | starts the other way |
 
+## Checked against a second arena, and one check that was no check
+
+- **The Glade** (other cover, no breakable walls), 500 real fights (`data/pair-glade.json`) beside 20,000 Rust
+  fights, with nothing tuned on it (every fix above was found in the Frost arena). Win rates real / Rust: Brannoc as
+  the opponent 92.8 / 93.7, as the player's hero 25.6 / 24.3; Isolde as the opponent 74.4 / 75.7, as the player's
+  hero 7.2 / 6.3. All four inside the real run's noise; 52 of the 54 finer numbers within 3%, all within 6% (the
+  largest, Isolde's ultimate as the player's hero, is one cast a fight and swings). Page:
+  `docs/balance/rust-slice-glade-2026-11-11.html`. The other six plain arenas were not graded.
+- **A hero against itself is not a fight the game plays.** `Duel.start` never gives the opponent the player's own kit,
+  so the real simulator, asked for Brannoc against Brannoc, quietly fought some other hero and recorded it under
+  Brannoc's name. Both tools now refuse such a request.
+
 ## The two sides are not equal (found before the fight loop was written)
 
 In 3,120 real fights, every pairing fought both ways round, seven of 40 heroes differ by side by more than chance
@@ -149,8 +164,11 @@ play of Auriel and Cantor waits on the user.
 
 ## The honest size
 
-Measured on the first two heroes: a hero's passive and four spells are 200 to 300 lines of Rust and about an hour to
-write once the engine has what the hero needs; finding the three engine quirks above took longer than both heroes.
+Measured on the first two heroes, by the clock of this session: a hero's passive and four spells are 300 to 350 lines
+of Rust. Reading the two heroes' ten game files, the two computer players and the cast code took about 40 minutes; the
+fight loop and both heroes were written and playing their first fights 13 minutes after the game's numbers were
+exported (15:34 to 15:47); finding the three engine quirks took the next 35 minutes, to the grade that agreed (16:21).
+So the heroes themselves were the small part, and the engine's unwritten habits the large one.
 
 What the other 38 need, counted from the game's export (`data/game.json`):
 
