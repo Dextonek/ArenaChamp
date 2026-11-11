@@ -9,6 +9,7 @@ mod ai;
 mod attack;
 mod geom;
 mod status;
+mod zone;
 
 fn main() {
     println!("rustfull: the game's fight rules in Rust, in the making (docs/pipeline/rust-sim.md).");
