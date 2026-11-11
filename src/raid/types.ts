@@ -266,6 +266,12 @@ export interface AimContext {
 
 export interface BossMove {
   id: string;
+  /**
+   * A mechanic for a big party only (user, 2026-11-12: "mechanics that only is cast when there is at least 10 players, and for 20 and
+   * 40"): the boss does this move only in a fight tuned for at least this many (`BossDef.band`: 10, 20 or 40). The brain leaves it out
+   * of every list otherwise; a move that comes by the clock or as an opener must ask `bandFits` itself.
+   */
+  minBand?: number;
   /** On the cast bar. */
   name: string;
   /** How long the cast bar fills (s). */
@@ -368,6 +374,8 @@ export interface BossPhase {
 export interface BossDef {
   /** Makes the room fit a party tuned for `band` players (`raidRing`), before the fight is built. A boss without it has one room. */
   resize?(band: number): void;
+  /** How many this fight is tuned for (the band: 2, 5, 10, 15, 20, 30 or 40), as `resize` last heard it. 2 when a boss does not say. */
+  band?: number;
   id: string;
   /** Not a boss: Noonfall's hall, on the same path, with no bars, no spells and nothing to fight (src/raid/hall.ts). */
   hall?: boolean;
@@ -581,3 +589,6 @@ export interface BossWorld {
   say(text: string, color: string, x: number, z: number): void;
   finish(result: 'win' | 'lose'): void;
 }
+
+/** Whether a boss does `move` in the fight it is tuned for now (`BossMove.minBand` against `BossDef.band`). */
+export const bandFits = (def: BossDef, move: BossMove | undefined) => !!move && (move.minBand ?? 0) <= (def.band ?? 2);

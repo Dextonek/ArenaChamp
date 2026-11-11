@@ -22,6 +22,8 @@ const SPARK = 0xf09030;
 /** The court's middle: the altar, round which his biggest moves turn. */
 const C = { x: RING.x, z: RING.z };
 
+/** How many the fight is tuned for now (`resize`): what his mechanics for 10, 20 and 40 ask (`BossMove.minBand`). */
+let size = 2;
 /** A party is in: the Warden fights in the Hall of Noon (`resize`). */
 let party = false;
 /** In the hall, what he aims stays this far inside its walls (m): a fallen stone's width and a little, so none lands in the stone. */
@@ -692,8 +694,10 @@ export const SUN_WARDEN: BossDef = {
   /** For two, the Sun Court. A party fights in the Hall of Noon (`raidRing`): set before the fight is built. */
   resize: (band) => {
     party = band > 2;
+    size = band;
     setCourtRadius(raidRing('sun', band));
   },
+  get band() { return size; },
   kit: (hp) => ({
     name: 'The Sun Warden', title: 'Keeper of the Sun Court', accent: '#e8a040', foil: '#ffd27a', portrait, model: MODEL, look: wardenLook, maxHp: hp,
     spells: [noSpell('Q'), noSpell('W'), noSpell('E'), noSpell('R')],

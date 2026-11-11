@@ -1,7 +1,7 @@
 import { raidTierFactor } from '../../server/protocol.mjs';
 import { seeded } from '../arenas/common';
 import { seedNumber } from '../arenas/hazards/base';
-import { moveTime, type BossCast, type BossDef, type BossMove, type BossWorld, type RaidLink, type RaidSide } from './types';
+import { moveTime, type BossCast, type BossDef, type BossMove, type BossWorld, type RaidLink, type RaidSide, bandFits } from './types';
 
 /** How far a boss walks between two puddles of its trail (m). */
 const TRAIL_STEP = 2.4;
@@ -246,9 +246,11 @@ export class BossBrain {
   /** What this form can do, in the ring or from the rim, with what a higher tier adds to it. */
   private listOf(ring: boolean) {
     const forms = this.def.forms;
-    if (!forms) return [...new Set([...this.def.phases[this.phase].moves, ...this.extra])];
+    // A mechanic for a big party only is left out of a smaller one's fight (`BossMove.minBand`).
+    const fits = (id: string) => bandFits(this.def, this.def.moves[id]);
+    if (!forms) return [...new Set([...this.def.phases[this.phase].moves, ...this.extra])].filter(fits);
     const who = ring ? this.form : 1 - this.form, form = forms[who];
-    return [...new Set([...(ring ? form.moves : form.rimMoves), ...this.extra.filter((id) => this.def.moves[id]?.form === who)])];
+    return [...new Set([...(ring ? form.moves : form.rimMoves), ...this.extra.filter((id) => this.def.moves[id]?.form === who)])].filter(fits);
   }
 
   private rimStep(dt: number) {

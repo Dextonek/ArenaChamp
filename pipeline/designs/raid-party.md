@@ -221,6 +221,25 @@ Rules for all of them: the count grows with the band; a failure costs the whole 
 phase two mechanics overlap; alone and for two each is either scaled down to something one or two can do or left out. They are built
 per boss once that boss's file is free (Twin Flames and the Heart's party room are being built in `ashEmber.ts` and `heart.ts` now).
 
+## Mechanics by party size: 10, 20 and 40 (user, 2026-11-12)
+
+> "like make mechanis that only is cast when there is atleasst 10 players and for 20 and 40 diff also make some"
+
+Each boss gets mechanics that only come in a fight tuned for at least 10, at least 20, and 40 players (the band, taken from who is
+there when the fight starts). A smaller party never sees them. The engine's part is in: `BossMove.minBand`, `BossDef.band` (set by
+`resize`), `bandFits`; the brain leaves a move out of its lists when the band is too small (`src/raid/types.ts`, `brain.ts`; the
+Warden's `band` is wired, the other two bosses' when their files are free).
+
+| Boss | Any party (3+) | 10+ | 20+ | 40 |
+|---|---|---|---|---|
+| Sun Warden | The Hour Strikes | **Branded:** one player in eight gets a sun that bursts round them; they run out of the crowd | **Carry the Sun:** a shard per five players from the arms' far ends to the Sun Well; carriers are slow and cannot cast, the rest block his ray; a shard not home burns everyone | **The Four Hours:** all four arms get a task at the same time (carry, hold anchors, break his hour stones, stand in the safe wedge); the raid splits into four squads of ten, and a failed arm burns the whole hall |
+| Ash and Ember | Twin Flames | **Lantern Chain:** pairs chained together, more pairs in a bigger party; over 8 m apart it snaps and burns both | **Seal the Vents:** a vent per five players on both halves; every vent left open makes the lava rise faster for all | **The Changing of the Flames:** gates open in the wall of fire for a few seconds and the marked half of each team must cross to the other boss; who stays on the wrong side burns |
+| Heart of Noon | Hold Still | **Shade the Heart together:** a plate per five players, each sheltering only a few; the party splits up behind them | **Take the Blade:** two fallen sun blades; each carrier hits far harder for 12 s, walks slowly and draws its attacks; the party shields them, also through Hold Still | **The Ring of Hands:** the whole raid forms a ring round the Heart on forty gold spots (at least 32 held) while it beats; a full ring stuns it, a broken one costs everyone |
+
+Rules: a failure costs the whole party; the numbers come from the players standing, not the band alone; in the last phase two of
+them may overlap; each is announced by a name on the cast bar and a first-time hint. **None of these nine is built yet** (the three
+"any party" ones are: The Hour Strikes and Hold Still merged, Twin Flames in work).
+
 ## State (2026-11-11)
 
 - Not started in code. The Heart of Noon is being built by a helper in its own worktree (its `PROTOCOL` 6 -> 7 is only there; main
