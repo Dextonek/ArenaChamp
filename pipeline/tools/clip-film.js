@@ -10,6 +10,11 @@
 //   await _clip('attack', 'Hank', 'Big Yoko', { frames: 120, when: (dist) => dist < 3.5 })   // from the first time they close
 //   await _clip('run', 'Sir Whiskers', 'Vesper', { frames: 75, from: 0.2, on: 'hero', side: 1 })
 //
+// Headless too: put the two lines above into a script file and run it with `python pipeline/tools/page-shots.py <script.js> <out>`
+// (the script is the body of an async function). ONE TAKE A PAGE LOAD: a take leaves the fight's clock ahead of the real one, so a
+// second take in the same page starts on a clock that went back and its first seconds come out black (docs/STATUS.md, the lesson
+// about a script that owns the game's clock). For several takes, load the page again for each.
+//
 // then, where the frames landed:  ffmpeg -framerate 30 -i attack_%04d.jpg -c:v libx264 -pix_fmt yuv420p -crf 27 -movflags +faststart attack.mp4
 //
 // Options: frames; from (fight seconds before filming may start); when(dist, duel, t) => boolean (filming starts the first

@@ -5,7 +5,7 @@ import { FeatherFlock, PHOENIX, PHOENIX_CSS, disc, emberLook, ring, softDisc } f
 import { insideTelegraph, type TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { FLARE_DAMAGE, FLARE_RADIUS, FLARE_WIND, MAX_EMBERS, STAMP_R, burnOut, emberLive, embersOf, type Ember } from '../../traits/phoenix';
+import { FLARE_DAMAGE, FLARE_RADIUS, FLARE_WIND, MAX_EMBERS, STAMP_R, burnOut, castNo, emberLive, embersOf, type Ember } from '../../traits/phoenix';
 
 /**
  * Fan the Flames (phoenix kit, W: no aim). One sweep of the fan: every ember of hers that burns is the centre of a 2.2 m
@@ -52,6 +52,8 @@ export class FanTheFlames implements Effect {
   /** The circles that are hit: one per ember that burned at the cast. */
   circles: TelegraphShape[] = [];
   private recs: Ember[] = [];
+  /** This cast's number among hers (`castNo` in src/traits/phoenix.ts): what both screens order her embers by. */
+  private seq = 0;
   private time = 0;
   private flared = false;
   private lit: boolean[] = [];
@@ -106,6 +108,7 @@ export class FanTheFlames implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
+    this.seq = castNo(ctx.caster);
     // The embers that burn now: the same records on both screens.
     this.recs = embersOf(ctx.caster).slice(0, MAX_EMBERS);
     this.circles = this.recs.map((e): TelegraphShape => ({ kind: 'circle', x: e.x, z: e.z, radius: HIT_R }));
@@ -207,7 +210,8 @@ export class FanTheFlames implements Effect {
       }
       this.shake = 0.3;
     }
-    burnOut(ctx.caster);
+    // Only the embers of casts before this one: a quill thrown after the fan stays, whichever screen it landed on first.
+    burnOut(ctx.caster, this.seq);
   }
 
   update(dt: number) {

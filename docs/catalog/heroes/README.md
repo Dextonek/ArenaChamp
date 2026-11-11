@@ -1,12 +1,12 @@
 ---
 title: Hero roster
 tags: [catalog, heroes, kits]
-updated: 2026-11-04
+updated: 2026-11-11
 ---
 
 # Hero roster
 
-39 hero kits (20 original, remade as "v5" on 2026-11-04, and 19 added since), each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
+40 hero kits (20 original, remade as "v5" on 2026-11-04, 19 added since, and Anka, hero 40, the first made by [the rules for creating a hero](../../pipeline/new-hero.md)), each one character with four spells (Q, W, E and the R ultimate), one shared parts file, one palette row in the art bible and one rigged model. A kit is data (`HeroKit` in [`src/heroes.ts`](../../../src/heroes.ts)); its spells are ordinary registered effects looked up by label, so each also appears in the [effect catalog](../effects.md). Hero mode (key H, `src/heroMode.ts`) plays a kit MOBA-style on top of play mode, and the hero switcher (View menu, or click the portrait) changes the hero.
 
 ## Roster
 
@@ -51,6 +51,7 @@ updated: 2026-11-04
 | The Great Zambini | the Illusionist | magic (`hero: magic`) | The top hat and the gold star. | A violet spotlight cone on a dark stage with gold stars hanging in it, a deep violet cape with a high collar, a tailcoat with an ivory shirt front, plum waistcoat and a gold stud, a pale calm face with level brows and a small pointed goatee, a tipped top hat with a violet band and a gold star, and a wand in his raised plum-gloved hand with a glowing gold star at its tip. | [magic](magic.md) |
 | Wick | the Doorwarden | door (`hero: door`) | An upright door in its frame, ajar, with warm light at the crack and a brass number plate. | A dark wine-brown ground with a door behind him, ajar, warm light at its crack, a long oxblood coat with a stiff collar and gold braid down the front, a hood lying back on his shoulders, a long thin pale face with silver hair swept back, level brows, calm steady eyes and a thin smile, and a dark-gloved hand holding up a ring of keys with a glowing amber gem among them. | [door](door.md) |
 | Pim and Pom | the Changeling Twins | twins (`hero: twins`) | Toys: cartoon words, confetti, spiky stars and a wooden sword, slingshot, net and toy shield, all with a dark outline. | Pim with his acorn-cap helm and amber leaf crest, big green eyes and pointed ears, an amber leaf-collared tunic, the glowing-edged sword behind him and Pom's blue hood small over his shoulder; Pom in her blue leaf hood with a glowing bead, the slingshot with a glowing blue band and stone, and Pim's helm small in the corner. | [twins](twins.md) |
+| Anka | the Firebird | phoenix (`hero: phoenix`) | The long feather with an eye near its tip: a gold shaft, an ember-red vane, a small teal eye; embers standing in the floor, a nest with a crown of flame, and a great firebird. | An ember-red and gold fan of feathers behind her, the gold circlet with its three-feather crest over dark-red hair, the ember-red bodice and the open feather fan held up. | [phoenix](phoenix.md) |
 
 ## Roles (v5, 2026-11-04)
 
@@ -102,6 +103,7 @@ BACKSTEP, BLINK and EXECUTE.
 | The Great Zambini | trickster (ranged) | Ta-da! | FAN 3 cards | LINE saw | SELF 3 hats | TARGET hats + swords |
 | Wick | controller (ranged) | This Way, Please | LINE key through doors | DOOR (2 charges) | AURA slam | ZONE 4 doors |
 | Pim and Pom | fighter (two halves) | Tag Team | Pim CONE · Pom BOLT | Pim DASH · Pom ZONE root | Pim BUFF shield · Pom DASH + trap | SWAP (Tag Out) |
+| Anka | mage (ranged, fragile) | Ashborn | LINE bolt, leaves an ember | SELF every ember flares | DASH to an ember | LINE dash across, leaves an ember |
 
 Spell labels per hero:
 
@@ -146,6 +148,7 @@ Spell labels per hero:
 | The Great Zambini | card spray | sawn in half | hat trick | grand finale |
 | Wick | key toss | wick door | door slam | grand lobby |
 | Pim and Pom | bonk / pebble | pim charge / snare | shield up / backflip | tag out |
+| Anka | ember quill | fan the flames | ember flight | firebird |
 
 ## How the kits share structure
 
@@ -242,6 +245,7 @@ The wave 5 models in hero mode (Oblivion, Shiori and Tempo):
 - [The Great Zambini, the Illusionist](magic.md)
 - [Wick, the Doorwarden](door.md)
 - [Pim and Pom, the Changeling Twins](twins.md)
+- [Anka, the Firebird](phoenix.md)
 
 ## Balance (duel tournament)
 
@@ -288,6 +292,7 @@ HP is the kit's `maxHp` (default 600; Pim and Pom 620 in all, Sir Whiskers in li
 | The Great Zambini | trickster (ranged) | 570 | Q 3 x 26; W 60 + slow 1.5 s; E hides 1.5 s, right hat = stun 1 s; R 3 x 30; Ta-da! +40% and a rabbit |
 | Wick | controller (ranged) | 650 | Q 78 (through doors); W pair of doors, 40 HP, 10 s; E 70 + stun 0.5 s; R 4 doors for 4 s |
 | Pim and Pom | fighter (two halves) | 620 | Pim: Q 72; W 56 dash; E shield 50. Pom: Q 66; W 30 + root 1.0 s; E 40. R swap, 310 HP each |
+| Anka | mage (ranged, fragile) | 460 | Q 54 + an ember; W 54, every ember flares; E 40, flies to an ember; R 120, 12 m lane; once a round she rises at her nest with 25% HP |
 
 Basic attacks are on in the AI duels. The default melee attack is 13 per 1.2 s at 2.6 m and the ranged one 10 per 1.0 s at 6.5 m; most heroes change them in their trait (`Trait.attack`). The win rates of the old 20-hero tournament are not kept here: the v5 rebuild made them false.
 

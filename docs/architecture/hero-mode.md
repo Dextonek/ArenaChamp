@@ -20,7 +20,7 @@ A hero kit is **data only**: four spells bound to Q W E R (R is the ultimate). E
 | `HeroSpell` | `key`, `label` (registered effect label), `name` (bar text), `range` (ground units from the hero; ignored for self-cast), `cooldown` (s), `blurb` (tooltip), `icon(g, size)` (canvas 2D draw function), and the optional AI and aim flags (`cc`, `dash`, `escape`, `anytime`, `save`, `parry`, `barrier`, `summon`, `aim`, `bank`, `buff`, `debuff`; see [mechanics.md](mechanics.md)) |
 | `HeroKit` | `name`, `title`, `accent` (bar and aim-indicator colour), `foil` (pale colour for rings and text), `portrait(g, size)`, optional `model` (path under `public/`), `maxHp`, `hpChunks`, `alt`, `base`, `attack`, `melee`, `spells` (exactly four; see [mechanics.md](mechanics.md#hero-traits-what-v5-added)) |
 
-`HERO_KITS` lists 39 kits (20 original heroes and 19 added later), each with `model` filled from the `MODELS` map by hero name when the kit has none (`HeroKit.alt` kits set their own). Every kit is in `src/kits/<theme>.ts`. Each hero's page in the [hero catalog](../catalog/heroes/README.md) has its passive, numbers and spells.
+`HERO_KITS` lists 40 kits (20 original heroes, 19 added later, and Anka), each with `model` filled from the `MODELS` map by hero name when the kit has none (`HeroKit.alt` kits set their own). Every kit is in `src/kits/<theme>.ts`. Each hero's page in the [hero catalog](../catalog/heroes/README.md) has its passive, numbers and spells.
 
 | Hero | Title | Kit data | Spells (Q W E R) | Model |
 |---|---|---|---|---|

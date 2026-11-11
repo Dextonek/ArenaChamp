@@ -1,12 +1,12 @@
 ---
 title: Effect catalog
 tags: [catalog, effects, vfx]
-updated: 2026-11-04
+updated: 2026-11-11
 ---
 
 # Effect catalog
 
-Every effect registered in the Three.js VFX editor: **283 effects in 47 categories**, plus 13 test spells in a 48th (`test: mechanics`, 296 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
+Every effect registered in the Three.js VFX editor: **287 effects in 48 categories**, plus 13 test spells in a 49th (`test: mechanics`, 300 registered slots), listed in the order of the category dropdown (the order in which `src/effects/index.ts` registers them; a category appears at its first effect). Each table gives the registered label, a one-line description taken from the effect's JSDoc header, how it targets, its length or tier, and links to the source, the design note in `pipeline/designs/` and the contact sheet in `docs/spells/` where they exist.
 
 ## Counts
 
@@ -57,16 +57,17 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 | [hero: magic](#hero-magic) | 4 |
 | [hero: door](#hero-door) | 4 |
 | [hero: twins](#hero-twins) | 7 |
+| [hero: phoenix](#hero-phoenix) | 4 |
 | [weapons](#weapons) | 5 |
 | [weapon attacks](#weapon-attacks) | 5 |
 | [test: mechanics](#test-mechanics) | 13 (test spells, not counted below) |
-| **Total** | **283** (+ 13 test spells = 296 slots) |
+| **Total** | **287** (+ 13 test spells = 300 slots) |
 
 ## How to read the tables
 
 - **Targeting** is the `targeting` spec of the module: `enemy` (one target), `enemies` (shift-clicked or a nearest-neighbour chain, capped), `ground` (a spot, radius decides who is hit), `self` (centred on the caster). `fixed scene` effects have no targeting and play on the fixed demo scene.
 - **Length** is the constant `DURATION` (or `TOTAL`, or a stated "~N s") in the source. `settings-driven` means the length is the `duration` getter, computed from other constants or from the effect's settings (cast time, flight time and so on), so there is no single literal number. `loop` is an idle aura.
-- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the 39 hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
+- **Tier** comes from `pipeline/forged.json`: `hero tier` and `hero-cinematic` are the higher-bar batches, `hero kit Q/W/E/R` is a slot in one of the 40 hero kits. **cinematic** marks the 14 effects that use `createCinematic` (a scripted camera and letterbox, `src/effects/parts/cinematic.ts`): genesis collapse, colossus drop, hyperion railgun, leviathan breach, ghost galleon broadside, caldera awakening, ophanim descent, thousand-cut iaido, lunar tide, abyssal angler, supercell, world tree rising, hourglass of ages, midnight circus. Of these, the ten tagged `hero-cinematic` plus hyperion railgun and leviathan breach (hero tier) are the fully cinematic heroes; genesis collapse and colossus drop are earlier cinematic ultimates.
 - Sheets in `docs/spells/` are contact sheets (frames over time) made by `pipeline/tools/contact-sheet.js`. A few effects also have per-frame images (`<name>_1-....jpg`) next to the sheet.
 - Descriptions are shortened from the source header; the header and the design note have the full timeline.
 
@@ -657,6 +658,17 @@ Every effect registered in the Three.js VFX editor: **283 effects in 47 categori
 | snare | A net drops on a 2 m circle and roots what is inside. | ground (r 2) | 2.7 s · hero kit W | [source](../../src/spells/targeted/pomSnare.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
 | backflip | Pom hops 4 m and leaves a party popper that goes off. | ground (hop) | 1.6 s · hero kit E | [source](../../src/spells/targeted/pomBackflip.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
 | tag out | The twins high-five and swap: a 0.5 s hold, then the other kit. | self (r 3) | 1.5 s · hero kit R | [source](../../src/spells/targeted/tagOut.ts), [kit sheet](../../pipeline/designs/kit-twins.md) |
+
+## hero: phoenix
+
+4 effects. Anka, the Firebird. Hero kit, see [Phoenix](heroes/phoenix.md).
+
+| Label | Description | Targeting | Length / tier | Links |
+|---|---|---|---|---|
+| ember quill | She flicks her fan and a feather flies as a bolt; where it ends it stays in the floor as an ember, her nest. | ground (bolt, r 0.3) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/emberQuill.ts), [kit sheet](../../pipeline/designs/kit-phoenix.md) |
+| fan the flames | One sweep of the fan: every ember flares in a ring of 2.2 m after 0.8 s, and burns out. | self (r 30) | 1.6 s · hero kit W | [source](../../src/spells/targeted/fanTheFlames.ts), [kit sheet](../../pipeline/designs/kit-phoenix.md) |
+| ember flight | She turns to feathers and flies to her ember nearest the aim, landing in a burst of 1.8 m. | ground (r 1.8) | 1.4 s · hero kit E | [source](../../src/spells/targeted/emberFlight.ts), [kit sheet](../../pipeline/designs/kit-phoenix.md) |
+| firebird | Wings of fire for a second while a lane shows, then she crosses 12 m as a great firebird and leaves an ember where she took off. | ground (lane 3 m wide) | 2.4 s · hero kit R | [source](../../src/spells/targeted/firebird.ts), [kit sheet](../../pipeline/designs/kit-phoenix.md) |
 
 ## test: mechanics
 

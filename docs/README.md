@@ -7,7 +7,7 @@ updated: 2026-11-10
 # VFX Tool documentation
 
 The knowledge base for VFX Tool, a browser-based real-time VFX editor (Three.js 0.186, Vite, TypeScript). It holds
-283 effects (plus 13 test spells for the combat mechanics): particle presets, set pieces, cinematic hero spells and 39 playable MOBA hero kits with rigged hero
+287 effects (plus 13 test spells for the combat mechanics): particle presets, set pieces, cinematic hero spells and 40 playable MOBA hero kits with rigged hero
 models. Start with the guide if you want to use the tool, the architecture section if you want to change it, and
 the art direction and pipeline sections if you want to make new effects the way the existing ones were made.
 
@@ -68,7 +68,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | Page | What it answers |
 |---|---|
 | [Effects](catalog/effects.md) | Every registered effect by category, with links to source, design note and contact sheet |
-| [Heroes](catalog/heroes/README.md) | The 39 heroes and their kits. The original twenty: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vitriol (alchemy), Kaia (storm), Sefu (sand), Nyx (shadow), Fenna (grove), Auriel (dawn), Marin (tide), Zephyr (sky), Mortis (bone), Ada (clockwork), Opaline (prism), Sirix (hive), Cantor (bard), Oblivion (void), Shiori (ink), Tempo (chrono); and 19 newer ones from Silvane (mirror) to Wick (door) and Pim and Pom (twins) |
+| [Heroes](catalog/heroes/README.md) | The 40 heroes and their kits. The original twenty: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vitriol (alchemy), Kaia (storm), Sefu (sand), Nyx (shadow), Fenna (grove), Auriel (dawn), Marin (tide), Zephyr (sky), Mortis (bone), Ada (clockwork), Opaline (prism), Sirix (hive), Cantor (bard), Oblivion (void), Shiori (ink), Tempo (chrono); and 19 newer ones from Silvane (mirror) to Wick (door) and Pim and Pom (twins); and hero 40, Anka (phoenix), the first made by the rules for creating a hero |
 
 ### Knowledge (what we learned)
 | Page | What it answers |

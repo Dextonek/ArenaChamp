@@ -43,6 +43,21 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Heroes',
+        title: 'Anka, the Firebird: hero 40',
+        text: 'A fire dancer with wings of flame and a feather fan, and the first true fire hero. Her feathers stay on the floor as embers, three at most: Fan the Flames makes them burst, Ember Flight carries her to one, and Firebird crosses the arena as a great burning bird. She has less health than any other mage, 460.',
+        image: '/news/anka.jpg',
+        alt: 'Anka from the front, from behind, walking and striking: a dancer in an ember-red bodice and a feathered skirt, with flame wings swept back and an open feather fan in her left hand.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'She rises once from her ashes',
+        text: 'The newest ember is her nest and wears a crown of flame. Once a round, a hit that would fell her while a nest burns turns her to ash: an egg glows at the nest, and a moment later she rises there with a quarter of her health, in a flare. Stand on an ember for a second to stamp it out: no ember, no second life.',
+        clip: '/news/anka-rise.mp4',
+        poster: '/news/anka-rise.jpg',
+        alt: 'Anka against Isolde on the Drowned Harbour: she crosses the quay as a firebird, flies back to an ember, falls, an egg glows on the floor, and she rises from it and throws a feather.',
+      },
+      {
         tag: 'Raid',
         title: 'The Heart of Noon',
         text: 'A third boss waits under the hall, through a new gate in the north: the fallen sun itself, a gold face in a molten heart, with two sun blades for hands. Walk through the gaps of its Solar Flare, hold the gold spots on the rim to stop its turning rings, and raise fallen plates of its crust as cover when its heart beats. A tier is now the Warden, Ash and Ember, then the Heart.',

@@ -6,7 +6,7 @@ import { BIRD_HEAD, FeatherFlock, FireBird, PHOENIX, PHOENIX_CSS, nestLook, soft
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
 import type { Enemy } from '../../effects/common';
-import { BIRD_AIR, BIRD_DAMAGE, BIRD_LENGTH, BIRD_WIDTH, BIRD_WIND, STAMP_R, emberLive, layEmber } from '../../traits/phoenix';
+import { BIRD_AIR, BIRD_DAMAGE, BIRD_LENGTH, BIRD_WIDTH, BIRD_WIND, STAMP_R, castNo, emberLive, layEmber } from '../../traits/phoenix';
 
 /**
  * Firebird (phoenix kit, R: the ultimate). Anka spreads wings of fire for 1.0 s, rooted, while the lane shows: 12 m along
@@ -65,6 +65,8 @@ export class Firebird implements Effect {
   private time = 0;
   private gone = false;
   private struck = new Set<Enemy>();
+  /** This cast's number among hers (`castNo` in src/traits/phoenix.ts): what both screens order her embers by. */
+  private seq = 0;
 
   // The look.
   readonly screen = createScreenFx();
@@ -108,6 +110,7 @@ export class Firebird implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
+    this.seq = castNo(ctx.caster);
     this.from.copy(ctx.sentFrom ?? ctx.from).setY(0);
     this.dir.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
     this.end.copy(this.from).addScaledVector(this.dir, BIRD_LENGTH);
@@ -178,7 +181,7 @@ export class Firebird implements Effect {
     const ctx = this.ctx;
     if (!ctx) return;
     // The ember where she took off: her nest, and the way back.
-    layEmber(ctx.caster, this.from.x, this.from.z);
+    layEmber(ctx.caster, this.from.x, this.from.z, this.seq);
     if (ctx.moveCaster) {
       this.end.copy(ctx.moveCaster(this.end, BIRD_AIR)).setY(0);
       this.reach = Math.max(0.5, this.end.distanceTo(this.from));

@@ -2,7 +2,7 @@
 title: Anka, the Firebird (hero 40)
 tags: [design, heroes, kits, phoenix]
 updated: 2026-11-11
-status: gates 1 to 3 agreed; gate 4 (spells) built and shown, waiting on the user; gate 5 (plays) to do
+status: gates 1 to 4 agreed; gate 5 measured and gate 6 written (2026-11-11); waiting on the user to play her once, then push and deploy
 ---
 
 # Anka, the Firebird
@@ -157,3 +157,36 @@ against those frozen rules. What changed from the sheet above while building:
   struck a little sooner than an even front would.
 - Where a quill ends is worked out as Fenna's Seed Shot does it: where the bolt really stopped on the screen that
   decides the hit, along the aim on the other.
+
+## Gate 5, finished, and gate 6 (2026-11-11)
+
+Measured on the finished code; the pictures and tables are one page: [docs/heroes/anka-gate5.html](../../docs/heroes/anka-gate5.html).
+Her catalog page with every number: [docs/catalog/heroes/phoenix.md](../../docs/catalog/heroes/phoenix.md).
+
+| Check | Result |
+|---|---|
+| Simulator, 192 fights | 52% (five runs: 56, 52, 56, 54, 52). The last: Isolde 19 of 32, Sirix 19, Cantor 19, Brannoc 17, Oblivion 15, Kaia 11. The 48% above was before the balance pass of the same day (Sirix 720 to 640 HP: 6 of 32 against him then) |
+| With events and closing stages, 96 fights | 55% (three runs: 46, 48, 55) |
+| Raid, the Sun Warden, 90 fights | 72 clears (Vitriol 78, Kaia 76) |
+| Raid, Ash and Ember, 90 fights | 33 clears (Vitriol 54, Kaia 48); 29 of 57 falls are Ash's Charge |
+| The game page, laptop and phone | picked, fought, rematch, as the CPU's hero: no errors |
+| Online, two screens, six matches (four against a Kaia who sidesteps) | embers the same 99% of the time, the nest in one place, 11 rises seen on both screens at the same spot, no errors |
+
+**What changed in her rules while measuring** (all in `src/traits/phoenix.ts` and three of her spells; the numbers did not change):
+
+- **The nest is the ember of her latest cast, not the one that landed last**, and an ember's id is its cast's number
+  (`castNo`). Fan the Flames burns the embers of every earlier cast (also one that lands after the flare) and leaves
+  those of later casts; her rising takes the embers of every cast before it. For a player this is the same as before
+  except when two of her spells overlap: a quill thrown during Firebird's wind-up is now the nest, though the take-off
+  ember lands after it. Why: a quill lands at a different moment on the two screens, and with the landing order the
+  screens disagreed on the nest (the first online match: the same embers on both screens only 45% of the time).
+- **Where a quill ended is told from the enemy's screen.** A bolt flies on both screens and only the enemy's screen
+  decides its hit, so a sidestepped quill planted her nest in two places (2 to 7 m apart). The deciding screen now
+  tells her client how far the quill really got, and the ember moves there. This is what gate 3 left "to be proven";
+  the sheet's fallback (an ember always at the quill's full reach) was not needed.
+- **A hit that fells her only after rounding** (55.6 damage on 56 HP) now starts her second life.
+- **Her passive's text says "a hit"**, not "a hero's hit": in the Raid a boss's ordinary hit starts it too. Ash's
+  Charge passes no trait, as the arena's own damage does, and kills her for good.
+
+**Left open:** the row of small "+2" numbers while she is ash; her play against Ash and Ember when the computer flies
+her; the Raid for two.

@@ -17,7 +17,7 @@ Every hero has, on top of its four spells (design: [hero-identity.md](../../pipe
 
 The layer only runs inside a duel (AI or network). Plain hero mode in the editor plays the kits as before.
 
-All 39 heroes have a trait in `src/traits/<theme>.ts` (the list is in `src/traits/index.ts`). The fields added in v5 (`meter`, `enemyScale`, `enemyLabel`, `hiddenStacks`, `figureHidden`, `aiGoal`, `swapKit`, `carrySelf`, `healEnemy`, the hero-body plates and the door pairs) are in [mechanics.md](mechanics.md#hero-traits-what-v5-added). The two tables below under Visuals and Basic-attack families list the original 20 heroes as they were on 2026-10-30 and 10-31; each hero page in the [catalog](../catalog/heroes/README.md) has the current attack.
+All 40 heroes have a trait in `src/traits/<theme>.ts` (the list is in `src/traits/index.ts`). The fields added in v5 (`meter`, `enemyScale`, `enemyLabel`, `hiddenStacks`, `figureHidden`, `aiGoal`, `swapKit`, `carrySelf`, `healEnemy`, the hero-body plates and the door pairs) are in [mechanics.md](mechanics.md#hero-traits-what-v5-added). The two tables below under Visuals and Basic-attack families list the original 20 heroes as they were on 2026-10-30 and 10-31; each hero page in the [catalog](../catalog/heroes/README.md) has the current attack.
 
 ## Buffs and debuffs
 
