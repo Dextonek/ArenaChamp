@@ -747,6 +747,15 @@ impl World {
         }
     }
 
+    /// A spell changes the shape of zone `i` it drew for cast `cast`, after the cast. The duel keeps the very shape
+    /// objects `telegraphs` handed it (`cutZones` copies only the lines it cuts), so an effect that moves its own
+    /// circle later (Sirix's leap, to where the dash really lands) moves the zone that judges its hits too.
+    pub fn reshape_zone(&mut self, s: Side, cast: u32, i: usize, shape: Shape) {
+        if let Some(z) = self.casts[s.i()].iter_mut().find(|c| c.seq == cast).and_then(|c| c.zones.get_mut(i)) {
+            z.shape = shape;
+        }
+    }
+
     /// A hit from a passive, at any time (`TraitView.hitEnemy`).
     pub fn trait_hit(&mut self, s: Side, opts: Hit) {
         if self.over.is_some() {
@@ -1386,5 +1395,20 @@ mod tests {
         assert!(c.reaches(V2::new(1.9, 0.0)) && !c.reaches(V2::new(2.1, 0.0)) && !c.reaches(V2::new(9.0, 9.0)));
         let plain = Cast { zones: Vec::new(), ..c };
         assert!(plain.reaches(V2::new(9.0, 10.5)) && !plain.reaches(V2::new(9.0, 10.7)));
+    }
+
+    #[test]
+    fn a_zone_a_spell_moves_after_its_cast_judges_from_where_it_moved() {
+        let g = Game::load();
+        let mut w = World::new(g.kit("Brannoc").unwrap(), g.kit("Isolde").unwrap(), &g.arena("frost").unwrap(), 1, Carry::first());
+        let zone = Zone { shape: Shape::Circle { x: 0.0, z: 0.0, radius: 2.4 }, start: 0.0, impact: 0.3, until: None };
+        w.casts[1].push(Cast { seq: 7, slot: 0, t: 0.0, zones: vec![zone], aimed: V2::new(0.0, 0.0), mods: NO_MODS });
+        w.reshape_zone(Side::Opponent, 7, 0, Shape::Circle { x: 5.0, z: 0.0, radius: 2.4 });
+        let c = &w.casts[1][0];
+        assert!(c.reaches(V2::new(6.0, 0.0)) && !c.reaches(V2::new(0.0, 0.0)));
+        // another cast's zone, or one it did not draw, is left alone
+        w.reshape_zone(Side::Opponent, 8, 0, Shape::Circle { x: 0.0, z: 0.0, radius: 2.4 });
+        w.reshape_zone(Side::Opponent, 7, 3, Shape::Circle { x: 0.0, z: 0.0, radius: 2.4 });
+        assert!(w.casts[1][0].reaches(V2::new(6.0, 0.0)));
     }
 }

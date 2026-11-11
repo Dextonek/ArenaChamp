@@ -48,6 +48,14 @@
    "src/spells/targeted/firstLight.ts": "63f4c6b0fdbd6927",
    "src/spells/targeted/oathbrand.ts": "cdac0c7eb3306022",
    "src/spells/targeted/sunrise.ts": "ee9f7b13ad62967f"
+  },
+  "Sirix": {
+   "src/kits/hive.ts": "cce24554994af24b",
+   "src/traits/hive.ts": "b1b52eb69add297b",
+   "src/spells/targeted/barbedStinger.ts": "cbc505e69605cd83",
+   "src/spells/targeted/hiveShell.ts": "b8778a67adb6c051",
+   "src/spells/targeted/swarmCloud.ts": "2b29dd46160a6ae0",
+   "src/spells/targeted/swarmSurge.ts": "0d208c616d5d341b"
   }
  }
 }
