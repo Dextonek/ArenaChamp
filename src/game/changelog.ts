@@ -41,6 +41,7 @@ export const CHANGELOG: Release[] = [
     date: '2026-11-11',
     title: 'Every hero remade, and four new arenas',
     live: true,
+    lead: { clip: '/news/duel4.mp4', poster: '/news/duel4.jpg', alt: 'Lyra and Hank duel on the quay of the Drowned Harbour: a wave washes across the stone, tide pools stand on the floor and Hank fells a tree.' },
     items: [
       {
         tag: 'Arenas',
@@ -53,6 +54,8 @@ export const CHANGELOG: Release[] = [
         tag: 'Arenas',
         title: 'Each has its own event',
         text: 'In the harbour two waves wash across the quay and slow whoever they catch. In the canyon two dust devils wander the floor. In the cavern rocks drop from the roof where their shadows show. On the battlefield arrows fall in strips.',
+        image: '/news/events4.jpg',
+        alt: 'The canyon, the cavern and the battlefield from the game camera, each twice: during its event, and late in a round with quicksand, the cave closing in and fires on the floor.',
       },
       {
         tag: 'Arenas',
@@ -63,16 +66,24 @@ export const CHANGELOG: Release[] = [
         tag: 'Heroes',
         title: 'All 39 heroes have a new look',
         text: 'Every hero is rebuilt in one style: realistic bodies with smooth, continuous shapes, each in its own colours and with its signature: Lyra\'s crescent bow and star halo, Isolde\'s crown of ice, Brannoc\'s forge pack, Sir Whiskers\' rapier. Before, the roster was three different styles side by side.',
+        image: '/news/heroes4.jpg',
+        alt: 'All 39 heroes and the twins Pim and Pom standing in rows, each on a dark round stand with a gold rim, in the new style.',
       },
       {
         tag: 'Motion',
         title: 'Hand-animated motion made for these bodies',
         text: 'Heroes stand, walk, jog, sprint, strike, cast, flinch and fall with animations made for exactly this kind of body, so arms no longer sink into robes and legs no longer fold. Blades are swung, fists and claws strike in turn, flasks and parcels are thrown overhand, and Gus thrusts his staff.',
+        clip: '/news/attack4.mp4',
+        poster: '/news/attack4.jpg',
+        alt: 'Hank lifts his axe over his shoulder and chops down, twice.',
       },
       {
         tag: 'Motion',
         title: 'Staffs upright, shields up',
         text: 'A staff, scepter, spear, wand, lyre, mirror or lantern is carried upright in the left hand, standing and walking; Auriel keeps her shield raised. Swords, hammers and axes are swung in the right hand.',
+        clip: '/news/run4.mp4',
+        poster: '/news/run4.jpg',
+        alt: 'Lyra runs with her crescent bow in her left hand.',
       },
       {
         tag: 'Heroes',

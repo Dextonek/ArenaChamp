@@ -15,7 +15,10 @@
 // Options: frames; from (fight seconds before filming may start); when(dist, duel, t) => boolean (filming starts the first
 // time it is true); on ('both': the camera holds the two heroes, 'hero': it follows the first one); far (camera distance
 // in metres, else by how far apart they are); height (camera height as a share of `far`); side (the camera looks across
-// the line between the two heroes; this swings it round toward one end, in shares of `far`); arena (an arena's name); w, h (frame size); sink (the sink's address).
+// the line between the two heroes; this swings it round toward one end, in shares of `far`); arena (an arena's id);
+// shift (the arena's event and closing stages on, the stage clock jumped that many seconds ahead: 90 is stage 3);
+// game (the game's own steep view instead of the side view; a number, how close: 1 as in play, 0.7 nearer);
+// w, h (frame size); sink (the sink's address).
 window._clip = async (name, hero, foe, o = {}) => {
   const { frames = 90, from = 0, when = null, on = 'both', w: W = 640, h: H = 360, sink = 'http://127.0.0.1:5199' } = o;
   const { CPU_BALANCE } = await import('/src/cpuLevels.ts');
@@ -26,10 +29,14 @@ window._clip = async (name, hero, foe, o = {}) => {
   vfx.heroPickCtrl.setValue(hero);
   d.cpuLevel = CPU_BALANCE;
   d.opponentChoice = foe;
-  d.hazardsInRuns = false;
-  if (o.arena && vfx.arenaPickCtrl) vfx.arenaPickCtrl.setValue(o.arena);
+  // `shift`: the arena's event and closing stages on, the stage clock jumped that many seconds ahead (90: stage 3)
+  d.hazardsInRuns = o.shift != null;
+  d.shiftsInRuns = o.shift != null;
+  d.shiftOffset = o.shift ?? 0;
+  if (o.arena) d.arenaChoice = o.arena;
   d.start('run');
   for (let k = 0; k < 200 && !vfx.heroMode.figure?.loaded; k++) await tick();
+  for (let k = 0; k < 40; k++) await tick();   // the arena's own files
   const gl = [...document.querySelectorAll('canvas')].sort((a, b) => b.width * b.height - a.width * a.height)[0];
   const out = document.createElement('canvas');
   out.width = W; out.height = H;
@@ -59,8 +66,14 @@ window._clip = async (name, hero, foe, o = {}) => {
       const keep = { p: cam.position.clone(), q: cam.quaternion.clone() };
       const nl = Math.hypot(nx, nz) || 1, round = o.side ?? 0.25;
       // `side` swings it a little round toward one end of that line, so the two do not stand flat in a row
-      cam.position.set(cx + (nx / nl - round * nz / nl) * cf, cf * (o.height ?? 0.55), cz + (nz / nl + round * nx / nl) * cf);
-      cam.lookAt(cx, 1.1, cz);
+      if (o.game) {
+        // the game's own steep view, from the near end; `game` is how close (1: as in play)
+        cam.position.set(cx, 15 * o.game, cz + 10.5 * o.game);
+        cam.lookAt(cx, 0.6, cz);
+      } else {
+        cam.position.set(cx + (nx / nl - round * nz / nl) * cf, cf * (o.height ?? 0.55), cz + (nz / nl + round * nx / nl) * cf);
+        cam.lookAt(cx, 1.1, cz);
+      }
       cam.updateMatrixWorld();
       vfx.render();
       cam.position.copy(keep.p);
@@ -97,12 +110,13 @@ window._showClip = async (name, hero, what, o = {}) => {
   if (!hm.enabled) vfx.setHeroMode(true);
   vfx.view.paused = true;
   vfx.heroPickCtrl.setValue(hero);
-  for (let k = 0; k < 100 && !F.figure?.loaded; k++) await new Promise((r) => setTimeout(r, 100));
+  for (let k = 0; k < 100 && !F.loaded; k++) await new Promise((r) => setTimeout(r, 100));
   const cam = vfx.controls.object, dt = 1 / 60;
   const base = hm.host.arena.caster.group.position.clone(), pos = base.clone();
   F.stand(); F.follow(dt, pos, 0, {});
-  F.figure.root.updateMatrixWorld(true);
-  const head = F.figure.bones.get('head'), tall = head ? (head.getWorldPosition(base.clone()).y - F.figure.root.position.y) * 1.22 : 2.3;
+  // a hero of the fourth style has its own figure (`real`), with no bone table: its height is given (`tall`)
+  (F.real ?? F.figure).root.updateMatrixWorld(true);
+  const head = F.figure?.bones.get('head'), tall = o.tall ?? (head ? (head.getWorldPosition(base.clone()).y - F.figure.root.position.y) * 1.22 : 2.6);
   const fov = ((cam.fov ?? 40) * Math.PI) / 180, yawCam = o.yawCam ?? -1.0;
   const dist = ((o.room ?? 2.2) * tall) / (2 * Math.tan(fov / 2));
   const gl = [...document.querySelectorAll('canvas')].sort((a, b) => b.width * b.height - a.width * a.height)[0];

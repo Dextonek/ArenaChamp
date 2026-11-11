@@ -4,7 +4,9 @@
 //   eval(await (await fetch('/pipeline/tools/key-art.js')).text());
 //   await _keyArt({ arena: 'skyruins' })   // returns a JPEG data URL of the canvas; size the viewport first (1600 x 900)
 //
-// Options: arena (an arena id), left and right (hero names, front row first), quality (JPEG, default 0.86).
+// Options: arena (an arena id), left and right (hero names, front row first), spots and spotsRight ([metres out from
+// the middle, z] per hero, when the arena's cover stands where the usual spots are), styles (a cast style per hero, or
+// 'stand'), light, quality (JPEG, default 0.86).
 window._keyArt = async (o = {}) => {
   const THREE = await import('/node_modules/.vite/deps/three.js').catch(() => import('three'));
   const { HeroFigure } = await import('/src/heroFigure.ts');
@@ -19,6 +21,11 @@ window._keyArt = async (o = {}) => {
   hm.figure.group.visible = false;
   vfx.arena.caster.group.visible = false;
   for (const f of vfx.arena.foes ?? []) f.figure.group.visible = false;
+  for (const who of ['hero', 'foe', 'partner']) d.traitFx?.plate(who, null, 0, null);   // the bars over the heads
+  let scene = d.group;
+  while (scene.parent) scene = scene.parent;
+  // the duel's small health bar over the far hero (drawn over everything)
+  scene.traverse((x) => { if (x.material?.isMeshBasicMaterial && x.material.color.getHex() === 0xd83a2a) x.parent.visible = false; });
 
   const rig = new THREE.Group();
   d.group.add(rig);
@@ -39,13 +46,13 @@ window._keyArt = async (o = {}) => {
     const pos = new THREE.Vector3(CX + side * spot[0], 0, spot[1]);
     f.setModel(kit.model, pos, kit);
     // They face the middle of the near arena, a little toward the camera.
-    figs.push({ f, pos, yaw: Math.atan2(CX - pos.x, 17 - pos.z), style: STYLES[i % 4], kit });
+    figs.push({ f, pos, yaw: Math.atan2(CX - pos.x, 17 - pos.z), style: o.styles?.[name] ?? STYLES[i % 4], kit });
     // The hero's colour: a ring at the feet and a light that wraps the figure.
     const ring = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.05, 48).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: kit.accent, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
     ring.position.set(pos.x, 0.06, pos.z);
-    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.95, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: kit.accent, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(0.95, 40).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: kit.accent, transparent: true, opacity: o.disc ?? 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
     disc.position.set(pos.x, 0.05, pos.z);
-    const light = new THREE.PointLight(kit.accent, o.light ?? 7, 6, 1.8);
+    const light = new THREE.PointLight(kit.accent, o.light ?? 2, 6, 1.8);   // 7 suited the older, darker models
     light.position.set(pos.x, 2.1, pos.z + 1.3);
     rig.add(ring, disc, light);
     // Sparks of the same colour rising round it.
@@ -60,12 +67,12 @@ window._keyArt = async (o = {}) => {
     rig.add(new THREE.Points(g, new THREE.PointsMaterial({ color: kit.accent, size: 0.09, transparent: true, opacity: 0.95, depthWrite: false, blending: THREE.AdditiveBlending })));
   };
   left.forEach((n, i) => place(n, SPOTS[i], -1, i));
-  right.forEach((n, i) => place(n, SPOTS[i], 1, i + 1));
+  right.forEach((n, i) => place(n, (o.spotsRight ?? SPOTS)[i], 1, i + 1));
 
   // Wait for the models, then pose each at the strike of its cast.
   const tick = () => new Promise((ok) => setTimeout(ok, 50));
   for (let k = 0; k < 200 && figs.some((x) => !x.f.loaded); k++) await tick();
-  for (const x of figs) x.f.cast(x.style, 1.0, true);
+  for (const x of figs) if (x.style !== 'stand') x.f.cast(x.style, 1.0, true);
   for (let s = 0; s < 34; s++) for (const x of figs) x.f.follow(1 / 60, x.pos, x.yaw, {});
 
   // A low camera from the near edge of the ring, looking across it.
