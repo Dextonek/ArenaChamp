@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-11-11 (pushed and LIVE: all 39 heroes in the fourth style and the four new arenas; new News pictures and login picture in the making; friend brackets half built)_
+_Last updated: 2026-11-11 (pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
 ## Push and deploy (2026-11-11): pushed and live
 
@@ -22,8 +22,23 @@ User: "then lets push and upload" (read as push and deploy, as on 2026-11-10).
   be the version this file names as live; after it, the address printed must end in `arenachamp.workers.dev`.**
 - **Waiting on the user:** whether the stray copy is deleted or kept (to delete: `npx wrangler login` into the other
   account, `npx wrangler delete`, then log back in to the game's account). Not deleted without a yes.
-- **In progress:** new pictures and clips of the new look for the News page and the login picture (user: "after
-  you upload it make new pictures images and clips from the updated look and put it there").
+- **New pictures and clips of the new look: live** (user: "after you upload it make new pictures images and clips
+  from the updated look and put it there"; read as the login picture and the News page, the only baked pictures
+  the game shows). `92cec77`, deployed 2026-11-11, worker version `3547a832-afcb-42ae-9696-c9b4e78b0835`, bundle
+  `game-BCi6U-U2.js`. This is what is live now.
+  - `public/login-bg.jpg`: eight heroes of the fourth style on the Drowned Harbour (also behind the loading page).
+    `_keyArt` in `pipeline/tools/key-art.js` with: arena harbour,
+    `light: 0.4, disc: 0.1, h: 1.9, ty: 2.5`, own spots per side. Its first run after a page load throws in the
+    light setup; the second works.
+  - News release 2026-11-11: lead clip `duel4.mp4` (Lyra and Hank, the swell and the tide pools, the game's own
+    view), `events4.jpg`, `heroes4.jpg` (the line-up of all 39), `attack4.mp4` (Hank), `run4.mp4` (Lyra). The
+    older releases keep their own pictures.
+  - `clip-film.js`: `shift` (events and stages on, stage clock jumped), `game` (the game's steep view), and
+    `_showClip` works with the fourth style (`room: 1.5` fills the frame; its run does not stop by itself, cut the
+    loop out: the run repeats every 33 frames).
+  - Checked on the live site: the page loads the new bundle; the login picture, the five News pictures and the
+    three clips answer 200 with their sizes, the clips answer a byte range with 206. Locally the News page lists
+    them in their places. **Not checked:** the clips playing on a phone; how the login picture crops on a phone.
 
 ## Four new arenas in the heroes' style (2026-11-11): done, pushed, live (see above)
 
