@@ -1,8 +1,8 @@
 # Status
 
-_Last updated: 2026-11-11 (hero 40, Anka the Firebird: card done, her look built and shown, waiting on the user's yes; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
+_Last updated: 2026-11-11 (hero 40, Anka the Firebird: card and look agreed, her kit on paper waits for the user's yes; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
-## Hero 40 and the new rules for creating a hero (2026-11-11): rules agreed; Anka at gate 2 (look), waiting on the user
+## Hero 40 and the new rules for creating a hero (2026-11-11): rules agreed; Anka's look agreed; gate 3 (kit on paper) written, waiting on the user
 
 User: "okay lets make it 40 heros total so made new one", "and lets make like what need to be done when we are
 creating new hero, like docs"; of four ideas offered they picked the **Phoenix fire dancer** (the first true fire
@@ -16,7 +16,7 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
 - **Gate 1, card: done.** **Anka, the Firebird** (`pipeline/designs/kit-phoenix.md`): theme `phoenix`, a fragile
   ranged mage. The new thing: a second life the enemy can take away (her feathers stay on the floor as embers; she
   rises at one when she would fall; embers can be stamped out). The user's pick of the idea counts as its yes.
-- **Gate 2, look: built, shown, waiting on the user's yes.** `blender/heroes/real/phoenix.py` ->
+- **Gate 2, look: agreed** (user: "yes this look good")**.** `blender/heroes/real/phoenix.py` ->
   `public/models/heroes/phoenix_v4.glb` (600 KB). Pictures: [between Sefu and Kaia](heroes/anka_look.jpg) (front,
   face, side, walking, attack, game camera, in the game's own light) and [the model as built](heroes/anka_model.jpg).
   Her fan is in the LEFT hand, held upright by the pack's torch arm (`REAL_STYLE` Anka: `hold: 'torch'`, already in
@@ -26,8 +26,12 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   list yet, so the game does not show her.
 - **Known in the look:** the fan covers her face in the sheet's face view (the Blender picture shows the face); the
   skirt's two scalloped layers are bright; the wings stand out to the sides rather than hang.
-- **Next, after the yes:** gate 3, the kit on paper (four spells, the passive, every answer checked), shown as a
-  table; then gate 4. A no: rebuild the look first.
+- **Gate 3, kit on paper: written, waiting on the user's yes** (user: "lets make some interesting kit for her").
+  `pipeline/designs/kit-phoenix.md`: everything lays embers or spends them; an ember is a blast (W Fan the Flames), a
+  place to fly to (E Ember Flight) and her second life (P Ashborn); Q Ember Quill and R Firebird lay them; 480 HP.
+  Every answer is checked with the game's numbers; what the engine has and what is to be proven is listed there.
+- **Next, after the yes:** gate 4: `src/effects/parts/phoenix.ts`, the four spells, `src/kits/phoenix.ts`,
+  `src/traits/phoenix.ts`, registration, one picture per spell. A no to a spell: change it on the sheet first.
   Notes for it: no hero has a revive; Sir Whiskers's lives (`hpChunks`, `src/traits/cat.ts`) are the nearest
   thing; `taken` can swallow a hit (`TraitHit.blocked`); heals are limited to 15 per spell and 50 on an R.
 
