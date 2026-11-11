@@ -75,6 +75,11 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   CPU duels in hidden browsers: one hero's check in 45 s, the whole roster in about 15 min. Offered a separate Rust
   simulator with the rules written again, the user chose Python on the real game. Numbers, comparisons and designs
   go to the user as a page (an HTML file shown in the thread), not as a wall of text.
+- **The Rust model is for quick estimates only (2026-11-11).** Asked again to remake the simulator "into some
+  language", the user chose "Rust, rough model first" over a full copy of the rules. `pipeline/rustsim` is fitted
+  to the real simulator's fights and says so in every answer (docs/pipeline/rust-model.md). It gets the direction of
+  a number change and about half its size, and cannot see a rule change. Never rebalance from it; refresh it
+  (`python pipeline/rustsim/refresh.py`) after a change to a hero, a spell or the CPU.
 - **Boss difficulty** is measured with `_raid(...)` (`pipeline/tools/raid-tool.js`) in tool-page tabs: four tabs in
   parallel, about 10 minutes for 39 heroes each; any edit under `src/` or `pipeline/` reloads the tabs and kills the
   runs; one run of 39 fights swings by about ±8 points.

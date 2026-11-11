@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rough model</title>
+<style>
+  /* How close is the rough Rust model to the real simulator? (pipeline/rustsim/refresh.py fills in the data.) It takes its
+     colours from the host's theme when shown inside T3 Code and brings its own dark ones when opened as a file. */
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37); --panel: var(--card, #1a1a19);
+    --real: var(--chart-1, #3987e5); --model: var(--chart-2, #d95926); --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  html.standalone body { max-width: 980px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 26px 0 4px; }
+  p.sub { margin: 0 0 10px; color: var(--ink-2); font-size: 13px; }
+  .warn { border: 1px solid var(--line); border-left: 4px solid var(--model); border-radius: var(--r); padding: 10px 14px; margin: 10px 0; background: var(--panel); font-size: 13px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 12px 0 4px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
+  .tile b { display: block; font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .tile span { color: var(--ink-2); font-size: 12px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; overflow-x: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ink-2); margin: 0 0 10px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; margin-right: 5px; vertical-align: -1px; }
+  .dot { border-radius: 50%; background: var(--real); }
+  .dia { background: var(--panel); border: 2px solid var(--model); transform: rotate(45deg); width: 8px !important; height: 8px !important; }
+  .rows { display: grid; grid-template-columns: max-content 1fr max-content; column-gap: 10px; row-gap: 3px; align-items: center; min-width: 300px; }
+  .rows .name { font-size: 13px; white-space: nowrap; }
+  .track { position: relative; height: 18px; }
+  .track .band { position: absolute; left: 40%; width: 20%; top: 0; bottom: 0; background: color-mix(in oklab, var(--ink) 8%, transparent); }
+  .track .half { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--ink-2); opacity: 0.4; }
+  .track .link { position: absolute; top: 8px; height: 2px; background: var(--ink-2); opacity: 0.55; }
+  .track .r { position: absolute; top: 4px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--real); box-shadow: 0 0 0 2px var(--panel); }
+  .track .m { position: absolute; top: 4px; width: 7px; height: 7px; margin-left: -5px; background: var(--panel); border: 2px solid var(--model); transform: rotate(45deg); }
+  .val { font-variant-numeric: tabular-nums; font-size: 12px; white-space: nowrap; color: var(--ink-2); }
+  .axis { grid-column: 2; position: relative; height: 16px; font-size: 11px; color: var(--ink-2); }
+  .axis span { position: absolute; transform: translateX(-50%); }
+  table.data { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  table.data th { text-align: left; font-weight: 500; font-size: 12px; color: var(--ink-2); padding: 4px 12px 6px 0; border-bottom: 1px solid var(--line); }
+  table.data td { padding: 6px 12px 6px 0; border-bottom: 1px solid color-mix(in oklab, var(--line) 55%, transparent); font-size: 13px; }
+  table.data td.num, table.data th.num { text-align: right; white-space: nowrap; }
+  code { font-family: var(--font-mono, ui-monospace, Consolas, monospace); font-size: 12px; }
+  pre { margin: 0; font-family: var(--font-mono, ui-monospace, Consolas, monospace); font-size: 12px; white-space: pre-wrap; color: var(--ink-2); }
+  ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+  #tip { position: fixed; pointer-events: none; background: var(--popover, #26262a); color: var(--popover-foreground, #f0efec); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font-size: 12px; line-height: 1.4; max-width: 260px; display: none; z-index: 5; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="tip"></div>
+<script>
+const DATA = /*__DATA__*/null;
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const app = document.getElementById('app'), tip = document.getElementById('tip');
+  const el = (tag, attrs = {}, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) { if (k === 'style') e.style.cssText = v; else if (k === 'tip') e.dataset.tip = v; else if (k === 'html') e.innerHTML = v; else e.setAttribute(k, v); }
+    for (const k of kids) e.append(k);
+    return e;
+  };
+  document.addEventListener('pointermove', (ev) => {
+    const t = ev.target.closest?.('[data-tip]');
+    if (!t) { tip.style.display = 'none'; return; }
+    tip.innerHTML = t.dataset.tip;
+    tip.style.display = 'block';
+    tip.style.left = Math.max(4, Math.min(innerWidth - tip.offsetWidth - 4, ev.clientX + 12)) + 'px';
+    tip.style.top = Math.max(4, ev.clientY - tip.offsetHeight - 10) + 'px';
+  });
+  if (!DATA) { app.append(el('p', {}, 'No data: this is the template. Run python pipeline/rustsim/refresh.py.')); return; }
+  const d = DATA, f0 = (v) => v.toFixed(0), f1 = (v) => v.toFixed(1);
+  app.append(el('h1', {}, 'The rough model: how close is it?'),
+    el('p', { class: 'sub' }, `A small Rust program that guesses fights from each hero's measured damage and life. Fitted to ${d.fights.toLocaleString()} real fights of ${d.date} (game version ${d.commit || 'unknown'}).`),
+    el('div', { class: 'warn', html: '<b>Estimates only.</b> The model does not know the game\'s rules: it only knows how often each hero\'s damage landed in the real fights. The real simulator stays the judge, and no hero is balanced from these numbers.' }));
+  if (d.commit && d.head && d.commit !== d.head) app.append(el('div', { class: 'warn', html: `<b>Out of date.</b> The game is now at version ${d.head}, the model's data is from ${d.commit}. Refresh: <code>python pipeline/rustsim/refresh.py</code>` }));
+  const tiles = el('div', { class: 'tiles' });
+  const tile = (v, t) => tiles.append(el('div', { class: 'tile' }, el('b', {}, v), el('span', {}, t)));
+  tile(f1(d.model_error) + ' pts', 'the model\'s average miss, per hero');
+  tile(f1(d.chance_error) + ' pts', 'what chance alone moves a hero between two halves of the real fights');
+  tile(String(d.heroes.length), 'heroes');
+  app.append(tiles);
+
+  app.append(el('h2', {}, 'Win rate against the whole roster: real and model'), el('p', { class: 'sub' }, 'The model was fitted to half of the fights. The round dot is each hero's real win rate in the other half, the one the model never saw; the diamond is the model's guess. The numbers at the right are real and model. The shaded band is 40 to 60%.'));
+  const legend = el('div', { class: 'legend' }, el('span', {}, el('i', { class: 'dot' }), 'Real (the unseen half)'), el('span', {}, el('i', { class: 'dia' }), 'Model'));
+  const rows = el('div', { class: 'rows' });
+  for (const h of d.heroes) {
+    const a = Math.min(h.real, h.model), b = Math.max(h.real, h.model);
+    rows.append(el('div', { class: 'name' }, h.name),
+      el('div', { class: 'track', tip: `<b>${h.name}</b><br>real ${f0(h.real)}% (${h.real_fights} fights)<br>model ${f0(h.model)}%<br>off by ${f1(Math.abs(h.model - h.real))} points<br>lives ${f0(h.ehp)} damage (HP ${f0(h.hp)}), deals ${f1(h.dps)} a second` },
+        el('div', { class: 'band' }), el('div', { class: 'half' }), el('div', { class: 'link', style: `left:${a}%;width:${b - a}%` }), el('div', { class: 'r', style: `left:${h.real}%` }), el('div', { class: 'm', style: `left:${h.model}%` })),
+      el('div', { class: 'val' }, `${f0(h.real)} / ${f0(h.model)}`));
+  }
+  const axis = el('div', { class: 'axis' });
+  for (const v of [0, 50, 100]) axis.append(el('span', { style: `left:${v}%` }, v + '%'));
+  rows.append(el('div'), axis, el('div'));
+  app.append(el('div', { class: 'box' }, legend, rows));
+
+  if (d.steps.length) {
+    app.append(el('h2', {}, 'Does it predict a change?'), el('p', { class: 'sub' }, `That is the model's whole job. Anka's own balance steps are the test: the same kit with three numbers different was measured for real against the six benchmark heroes. Today the model puts her at ${f0(d.steps_base)}%. Each real number is from 96 to 192 fights, so it can itself be 7 to 10 points off. The model gets the direction of each step and about half to two thirds of its size.`));
+    const t = el('table', { class: 'data' });
+    t.append(el('tr', {}, el('th', {}, 'If these were changed back'), el('th', { class: 'num' }, 'Real'), el('th', { class: 'num' }, 'Model'), el('th', { class: 'num' }, 'Off by')));
+    for (const s of d.steps) t.append(el('tr', {}, el('td', {}, s.label), el('td', { class: 'num' }, f0(s.real) + '%'), el('td', { class: 'num' }, f0(s.model) + '%'), el('td', { class: 'num' }, f1(Math.abs(s.model - s.real)) + ' pts')));
+    app.append(el('div', { class: 'box' }, t));
+  }
+
+  app.append(el('h2', {}, 'What it cannot see'), el('div', { class: 'box' }, el('ul', {},
+    el('li', {}, 'A change of rules. Anka went from 27% to 69% when a new ember could no longer be stamped at once: no number in a sheet says that. Anything like it must go to the real simulator.'),
+    el('li', {}, 'Who beats whom. A hero is one sheet against every opponent; reach, cover, stuns and running away are only in it as an average.'),
+    el('li', {}, 'How the computer plays. If a change makes the CPU use a spell more or less, the model does not know.'),
+    el('li', {}, 'Anything since the last real run. The numbers above are from the game version named at the top.'))));
+
+  app.append(el('h2', {}, 'How to ask it'), el('div', { class: 'box' }, el('pre', {},
+    'pipeline\\rustsim\\target\\release\\rustsim.exe whatif "Anka" hp=480 q.damage=58\n' +
+    'pipeline\\rustsim\\target\\release\\rustsim.exe whatif "Sir Whiskers" q.cooldown=3 --foes all\n' +
+    'keys: hp=N   ehp=+N   q|w|e|r.damage=N   q|w|e|r.cooldown=N   attack.damage=N   attack.interval=N\n\n' +
+    'refresh after any change to the game:   python pipeline/rustsim/refresh.py')));
+})();
+</script>
+</body>
+</html>

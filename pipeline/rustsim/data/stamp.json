@@ -1,0 +1,6 @@
+{
+ "commit": "ede7299",
+ "date": "2026-11-11 14:49",
+ "fights": 3120,
+ "command": "python pipeline/sim/sim.py all --reps 2 --keep --out roster-fit --max-minutes 45"
+}

@@ -7,7 +7,7 @@ crawl, a headless page does not.
     python pipeline/tools/page-shots.py <script.js> <out folder> [--page /game] [--size 1280x800] [--port 5181]
 
 The script file is the body of an async function. It returns an object: every value that is a `data:image/...` URL is
-saved as <key>.jpg or <key>.png in the out folder, everything else is printed as JSON. It may use `await`, `vfx` (tool
+saved as <key>.jpg or <key>.png in the out folder, everything else is printed as JSON (or saved whole with --json NAME). It may use `await`, `vfx` (tool
 page) or `game` (game page), and `import('/src/...')`.
 
 It uses the simulator's dev server (port 5181, no hot reload: pipeline/sim/vite.sim.config.ts): one that is running
@@ -76,7 +76,11 @@ async def run(args):
         else:
             rest[key] = value
     if rest:
-        print(json.dumps(rest, indent=1)[:6000])
+        if args.json:
+            (out / args.json).write_text(json.dumps(rest, indent=1), encoding="utf-8")
+            print(f"saved {out / args.json}")
+        else:
+            print(json.dumps(rest, indent=1)[:6000])
     if logs:
         print(f"{len(logs)} errors in the page; the first:")
         for line in logs[:8]:
@@ -92,6 +96,7 @@ def main():
     ap.add_argument("--port", type=int, default=5181)
     ap.add_argument("--browser", default="chrome")
     ap.add_argument("--timeout", type=float, default=240, help="seconds the script may run")
+    ap.add_argument("--json", default="", help="save what is not a picture to this file in the out folder, in full (else it is printed, cut at 6,000 characters)")
     asyncio.run(run(ap.parse_args()))
 
 

@@ -2,6 +2,34 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
+## Rough Rust model of fights (2026-11-11): built, first check done, committed, not pushed
+
+User, after the simulator: "I think we should remade this [simulator] into some language". Asked which remake, of
+four they chose **"Rust, rough model first"**: a small program, each hero a short sheet, quick what-ifs, its numbers
+estimates, the real simulator the judge.
+
+- **How it is built** (`pipeline/rustsim/`, [pipeline/rust-model.md](pipeline/rust-model.md)): the sheets are not
+  typed by hand. `export.js` reads HP, speed, attack, cooldowns and each spell's own damage from the game; a real
+  roster run kept fight by fight (`sim.py all --reps 2 --keep`: hits and casts per spell now recorded) gives how
+  often each source of damage lands, how hard, and how much damage a hero really takes before it falls. A fight in
+  the model is two such sheets racing with some luck. `rustsim check` fits on half the fights and grades on the
+  other half; `rustsim whatif "Anka" hp=480 q.damage=58` gives before and after with the same luck.
+  `python pipeline/rustsim/refresh.py` does it all again after a change to the game.
+- **First check** ([page](balance/rough-model-2026-11-11.html)): fitted to half of 3,120 real fights and graded on
+  the other half, it misses a hero's win rate against the roster by 6.2 points on average; chance alone moves the
+  real numbers 6.9 between the two halves. Anka's real balance steps (59, 63, 69% for three numbers changed back):
+  the model says 52, 55, 60: the right direction, half to two thirds of the size. It cannot see a rule change, a
+  matchup or how the CPU plays. Plain rules for all 40; no special rule was needed. **Nothing was rebalanced from
+  it, and nothing should be.**
+- **The roster as measured for it** ([page](balance/roster-2026-11-11b.html), 3,120 fights, Anka's final numbers
+  in): Anka 44% against everyone. Strong: Hank 80, Grandma Ironknit, Bram, Vitriol, Marin above 60. Weak: Cantor,
+  Auriel, Mr. Ledger, Referee Whistler under 40.
+- **Also found on the way:** this computer runs other heavy things beside this session (Warcraft III, another
+  session's `node test-sim.mjs`, an orphan `find / -iname PyCASC` that has used a processor core for hours). They
+  are not this session's and were left alone; they are part of why simulator runs were slow and the machine laggy.
+- **Waiting on the user:** whether the rough model is enough, or the full copy of the rules in Rust is still
+  wanted; and whether to rebalance the strong and weak heroes the real roster run shows.
+
 ## Fight simulator (2026-11-11): built, committed, not pushed
 
 User: "can we make like simulator of fights so we dont need to test all the duels ... faster to balance all heroes ...
@@ -13,8 +41,10 @@ which kind, they chose **Python on the real game** (not a Rust rewrite of the ru
   win rates with the 40-60% band and the reach of chance, who beats whom, damage a second by source, stalls, errors.
 - **Speed here:** one hero's check (96 fights) 45 s; the whole roster twice each way (3,120 fights) 12.7 min with 14
   browsers at normal priority, which left the computer barely usable (a plain `tail` took over a minute).
-- **Made gentle** (user: "can we make it somehow not that laggy"): by default a quarter of the processor's threads
-  are never touched and every process of the run has the lowest priority (Chrome's working processes must be asked
+- **Made gentle** (user: "can we make it somehow not that laggy"): by default HALF of the processor's threads are
+  never touched and every process of the run has a low priority (Windows' BELOW_NORMAL: the idle class starved the
+  browsers, which then took minutes to load or never started). Earlier wording: a quarter of the threads, the lowest
+  priority (Chrome's working processes must be asked
   again and again: `keep_low`). Measured while 12 browsers fought: `git status` 0.11 s (idle 0.05), starting a
   program 1.3 s (idle 0.15), pure work 0.43 s (idle 0.30); 3.4 fights a second. Lowering only the parent's priority
   did NOT work (Chrome's renderers stayed normal). `--priority normal --workers 14` is the old behaviour.
@@ -32,7 +62,7 @@ which kind, they chose **Python on the real game** (not a Rust rewrite of the ru
 - **Waiting on the user:** whether to rebalance the strong and weak heroes the roster run shows, and by which
   measure (the six benchmark foes as before, or the whole roster).
 
-## Hero 40 and the new rules for creating a hero (2026-11-11): Anka at gate 4: looks done and shown, waiting on the user
+## Hero 40 and the new rules for creating a hero (2026-11-11): Anka at gate 5: 48% in the simulator, the Raid, the game page and online still to check
 
 User: "okay lets make it 40 heros total so made new one", "and lets make like what need to be done when we are
 creating new hero, like docs"; of four ideas offered they picked the **Phoenix fire dancer** (the first true fire
@@ -88,9 +118,18 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   and was not a bug of the game.
 - **Not done in gate 4:** her rising flare has no burst of its own (the egg's ring and the burn puff only); Ember
   Flight's picture hardly shows the flight (she is fast); her page in the game's Heroes screen was not looked at.
-- **Gate 5, to do next:** teach the CPU (it hardly uses Fan the Flames and Ember Flight: 0.8 and 0.3 damage a
-  second), then her numbers (25-29% against the benchmark foes now), the Raid check, a real duel on the game page,
-  two screens online.
+- **Gate 4: agreed** (user: "i think this is good").
+- **Gate 5, first part: done.** Her kit did not work against the CPU (25-29% wins): a quill that hit left its ember
+  under the enemy, who stamped it (0.6 s) before Fan the Flames (0.8 s) could use it. Now a new ember cannot be
+  stamped in its first second and stamping takes 1.0 s. With that alone she won 69%; then rise 25%, W 54, Q 54 and
+  460 HP: **48% over 192 simulated fights against the six benchmark foes**, every spell in use, no errors, no fight
+  without a winner. The steps are a table in `pipeline/designs/kit-phoenix.md` ("Gate 5"). Her effects cost the same
+  per fight step as any hero's (0.18 ms against 0.23).
+- **Gate 5, still owed (she waits behind the Rust model the user asked for):** the Raid check
+  (`pipeline/tools/raid-tool.js`, run it through `page-shots.py`); a duel through the game page's own menus (pick her
+  in the hero grid, also at phone width; fight; rematch); two screens online (there are no local test logins on this
+  computer: `server/data/` does not exist); a clip for the user and the News; the user playing her once
+  (`npm run dev`, http://localhost:5173/game). Then gate 6: catalog page, palette row, counts (40), News, `PROTOCOL`.
 - Gate 3's text: (user: "lets make some interesting kit for her").
   `pipeline/designs/kit-phoenix.md`: everything lays embers or spends them; an ember is a blast (W Fan the Flames), a
   place to fly to (E Ember Flight) and her second life (P Ashborn); Q Ember Quill and R Firebird lay them; 480 HP.

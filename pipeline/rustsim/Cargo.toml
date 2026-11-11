@@ -1,0 +1,12 @@
+[package]
+name = "rustsim"
+version = "0.1.0"
+edition = "2021"
+description = "A rough model of Arena of Kits duels, fitted to the real simulator's fights: quick estimates, not the judge"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+opt-level = 3
