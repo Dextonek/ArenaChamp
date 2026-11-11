@@ -7,16 +7,19 @@ _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her 
 User, shown the rough model and asked whether it was enough: **"then lets make full functionality"**: the full copy
 of the fight rules in Rust. Plan, state and what is out: [pipeline/rust-sim.md](pipeline/rust-sim.md).
 
-- **Done:** `pipeline/rustfull/`: cover and walking (`geom.rs`), status effects (`status.rs`), the basic attack
-  (`attack.rs`), each a port of one game file, 10 tests passing (`cargo test --release` in that folder). The
+- **Done:** `pipeline/rustfull/`, each file a port of named game code, 24 tests passing (`cargo test --release`
+  in that folder): cover and walking (`geom.rs`), status effects (`status.rs`), the basic attack (`attack.rs`),
+  danger zones (`zone.rs`), the computer players' shared rules (`ai.rs`), the two fighters (`figure.rs`), the way
+  round cover (`nav.rs`). User: "make that simulation tool first". The
   yardstick: `pipeline/rustfull/data/slice-six.json`, 600 real fights among the six benchmark heroes in the Night
   Temple (Sirix 87%, Brannoc 74, Oblivion 55, Isolde 50, Kaia 25, Cantor 10).
 - **Found:** the duel's two computer players are not equal. Auriel wins 50% as the player's side and 10% as the
   opponent's, Cantor 40 and 5, Hank 64 and 90 (table in rust-sim.md). The port must carry both; and the roster's
   weakest heroes are mostly a CPU problem on the opponent's side, not weak kits. Nothing changed in the game.
-- **Next, in this order:** (1) the grader: Rust fights write the `--keep` record, one page Rust beside real;
-  (2) read `src/duel.ts` `update` and both CPUs, `heroMode.ts`, `arena.ts`, `projectile.ts`, `traits/runtime.ts`
-  in the fight loop's order and port as read; (3) Brannoc and Isolde (one melee, one ranged) with their traits
+- **Next, in this order:** (1) read and port `heroMode.ts` (the player's hero: `update`, `autoCast`, `autoAttack`,
+  cooldowns, the cast's root), `effects/projectile.ts` (bolts), `traits/runtime.ts` (the passives' engine) and
+  `resolve` in `duel.ts`; (2) the fight loop that ties the pieces together, writing the `--keep` record, and the
+  grader page (Rust beside real); (3) Brannoc and Isolde (one melee, one ranged) with their traits
   (`forge.ts`, `frost.ts`) and eight spells; (4) grade the slice on casts, hits, damage per hit and fight length,
   then win rate; (5) stop and show the slice page with hours per hero, measured.
 - **Waiting on the user:** nothing for the port. Open from before: whether to fix the opponent CPU's play of

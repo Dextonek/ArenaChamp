@@ -2,7 +2,7 @@
 title: The full Rust simulator (in the making)
 tags: [pipeline, balance, tools, rust, port]
 updated: 2026-11-11
-status: six pieces of the core ported and tested (21 tests); no fight loop yet
+status: seven pieces of the core ported and tested (24 tests); no fight loop yet
 ---
 
 # The full Rust simulator
@@ -26,7 +26,7 @@ written again in Rust (`pipeline/rustfull/`), so fights run without a browser an
 | The two fighters: walking, the ring, pushes, shields, dashes, taking a hit (`arena.ts` `hit`, `walk`, `moveFoe`, `keepInside`, `moveFigure`, `soak`; `damagePlayer` in `duel.ts`) | about 300 | **ported** (`figure.rs`), tested |
 | The rest of the duel: the fight loop itself, each CPU's own part (`ai`, `pilot`, `castSpell`), `resolve`, breakable walls | about 2,400 | read in part; to do |
 | The player's hero: walking, casting, cooldowns, roots (`src/heroMode.ts`) | 1,553 | to do |
-| The way round cover (`src/nav.ts`, `aiRoute`, `aiPathClear`) | | to do |
+| The way round cover (`src/nav.ts`: the graph round the capsules, the shortest way, a kept route) | 251 | **ported** (`nav.rs`), tested |
 | Bolts (`projectile.ts`), units (`summon.ts`), the passives' engine (`traits/runtime.ts`) | 1,456 | to do |
 | 40 heroes: their passives (`src/traits/`, 10,600 lines) and the hit rules inside 160 spell files | | to do |
 | Arenas: cover layouts first; events and closing stages later | | to do |
@@ -98,7 +98,7 @@ One frame of a simulated fight (1/60 s), in the game's order. The port must keep
 
 Read and ported so far: `ai` and `pilot` (their shared rules are in `ai.rs`; what each does on its own is noted
 below), `arena.update` and `arena.hit` (`figure.rs`), `castSpell`, `hitPlayer`, `damagePlayer`, `opponentHit`.
-Still to read: `heroMode.update` and its casting, `nav.ts`, bolts, units, the passives' engine, `resolve` again.
+Still to read: `heroMode.update` and its casting, bolts, units, the passives' engine, `resolve` again.
 
 ### What each computer player does on its own (the differences the port must keep)
 
