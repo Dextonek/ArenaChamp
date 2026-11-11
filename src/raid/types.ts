@@ -145,6 +145,8 @@ export interface MoveLook {
   land?(th: Threat): void;
   /** A hero took one of its objectives. */
   done?(o: Objective, side: RaidSide): void;
+  /** It was called off before it landed (a stage began over The Hour Strikes): what it shows goes out. */
+  off?(): void;
   /** The partner hit add `part` of this cast for `amount`, on its own screen. */
   hurt?(part: number, amount: number): void;
   dispose?(): void;
@@ -203,6 +205,8 @@ export interface PlayContext {
   delayLate(seconds: number): void;
   /** The boss can't be hurt or held for `seconds` (0: it can again). */
   guard(seconds: number): void;
+  /** The boss's own body does `name` (its look knows it), landing at (x, z) after `seconds`: for a move whose acting comes long after its cast. */
+  act(name: string, step: number, x: number, z: number, seconds: number): void;
   /** A boss's add, at the same spot on every screen. */
   spawnAdd(spec: AddSpec): RaidAdd;
   /** This screen's hero hit add `part` of cast `id`: the partner's screen takes it off too. */
@@ -300,6 +304,16 @@ export interface BossMove {
   stage?: boolean;
   /** Each later step aims at the hero it aimed at less recently, not all at one. */
   spread?: boolean;
+  /**
+   * Its cast bar never fills faster than this (s), whatever the tier: what it asks of the heroes doesn't get shorter (The Hour Strikes:
+   * the way to the safe arm). `moveTime` gives the time for a tier.
+   */
+  least?: number;
+  /**
+   * From its cast until it lands the floor is its own (The Hour Strikes): he does only the moves in `only`, an opener waits, and its
+   * cast bar stays up. A stage doesn't wait: its cast calls this move off on every screen.
+   */
+  holds?: { only: string[] };
   /** What the boss's own body does for each step (its look knows the name): fists flying out, lanterns thrown. `seconds` until it lands, at tier 1. */
   body?: { name: string; seconds: number };
   /** What only the screen that runs the brain may do: move the boss. Returns seconds it stands still after. */
@@ -325,6 +339,11 @@ export interface BossForm {
   rimMoves: string[];
   /** The move it leaves behind as it walks (Burning Trail). */
   trail?: string;
+}
+
+/** How long a move's cast bar fills at a tier whose times are `pace` of the first's: shorter each tier, and never under its `least`. */
+export function moveTime(m: BossMove, pace: number) {
+  return Math.max(m.least ?? 0, m.charge * pace);
 }
 
 export interface BossPhase {
@@ -379,9 +398,10 @@ export interface BossDef {
   forms?: BossForm[];
   /**
    * Noonfall's gates in this room, by where they stand round its rim (degrees: 0 the south, where heroes come in), and how far from the
-   * middle (m; default 1.7 past the floor's edge). A small room puts them further out, past the camera's view of the floor.
+   * middle (m; default 1.7 past the floor's edge). A small room puts them further out, past the camera's view of the floor. `exitR`: the
+   * way out stands this far instead (the Hall of Noon's stands before the throne, not in the stone behind it).
    */
-  gates?: { enter: number; exit: number; r?: number };
+  gates?: { enter: number; exit: number; r?: number; exitR?: number };
   /** Where the one on the rim can stand. */
   rimSpots?: { x: number; z: number }[];
   /** The phase that starts `late` at once, whatever the clock says. */

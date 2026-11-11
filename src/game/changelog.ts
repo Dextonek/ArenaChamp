@@ -59,6 +59,13 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Raid',
+        title: 'The Hour Strikes',
+        text: 'A raid of three or more fights the Sun Warden in the Hall of Noon, a hall in the shape of a cross. There he calls an hour: three of its four arms fill with sunfire, and the sun road lights up gold in the one safe arm. Run there before the bell strikes. He keeps fighting on the way.',
+        image: 'news/hour-strikes.jpg',
+        alt: 'The Hall of Noon from above: three arms of the cross glow orange, and a gold road runs up the fourth.',
+      },
+      {
+        tag: 'Raid',
         title: 'The Heart of Noon',
         text: 'A third boss waits under the hall, through a new gate in the north: the fallen sun itself, a gold face in a molten heart, with two sun blades for hands. Walk through the gaps of its Solar Flare, hold the gold spots on the rim to stop its turning rings, and raise fallen plates of its crust as cover when its heart beats. A tier is now the Warden, Ash and Ember, then the Heart.',
         image: 'news/heart-of-noon.jpg',

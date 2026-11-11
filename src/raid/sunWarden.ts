@@ -2,19 +2,19 @@ import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
 import { COURT_R, setCourtRadius, sunCourtArena } from '../arenas/suncourt';
-import { sunHallArena } from '../arenas/sunhall';
-import { raidRing } from '../../server/protocol.mjs';
+import { HALL_ARMS, HALL_HALF, armSpot, inArm, intoHall, sunHallArena } from '../arenas/sunhall';
+import { RAID_PARTY_MAX, raidRing } from '../../server/protocol.mjs';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
-import type { TelegraphShape } from '../effects/telegraph';
+import { TelegraphLayer, type TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import { hourStoneLook } from './bodies/adds';
 import { wardenLook } from './bodies/warden';
-import { FallingStone, LightPillar, NumberMark, ShadowFloor, SunOrb } from './fx';
-import { STAND_COLOR } from './script';
+import { AimLane, FallingStone, LightPillar, NumberMark, ShadowFloor, SunOrb } from './fx';
+import { LEAVE_ALPHA, LEAVE_COLOR, STAND_COLOR } from './script';
 import { stageMove } from './stage';
-import type { AimContext, BossDef, BossMove, Objective, PlayContext, RaidSide, Threat } from './types';
+import type { AimContext, BossDef, BossMove, BossPhase, Objective, PlayContext, RaidSide, Threat } from './types';
 
 const CORE = 0xffc060;
 const GLOW = 0xd86a18;
@@ -22,8 +22,19 @@ const SPARK = 0xf09030;
 /** The court's middle: the altar, round which his biggest moves turn. */
 const C = { x: RING.x, z: RING.z };
 
+/** A party is in: the Warden fights in the Hall of Noon (`resize`). */
+let party = false;
+/** In the hall, what he aims stays this far inside its walls (m): a fallen stone's width and a little, so none lands in the stone. */
+const HALL_AIM = 1.8;
+/** In the hall, how far from the Sun Well Sun Order's wedges reach (the crossing and its corners), and how far from him Eclipse's far ring. */
+const HALL_ORDER = 19;
+const HALL_ECLIPSE = 20;
+
 /** Aims at the target from where the boss stands. */
-const atTarget = (c: AimContext) => ({ x: c.target.x, z: c.target.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) });
+const atTarget = (c: AimContext) => {
+  const t = party ? intoHall(c.target.x, c.target.z, HALL_AIM) : c.target;
+  return { x: t.x, z: t.z, dir: Math.atan2(t.x - c.boss.x, t.z - c.boss.z) };
+};
 
 /** How far from (x, z) along yaw `dir` the rim is. */
 function toRim(x: number, z: number, dir: number) {
@@ -195,7 +206,8 @@ const noon: BossMove = {
     p.group.add(altar.mesh);
     const objectives: Objective[] = [
       ...shards.map((s): Objective => ({ part: s.part, x: s.x, z: s.z, radius: 1.3, until: at, can: () => !carrying.has(me) && !delivered.has(me) })),
-      ...([0, 1] as const).map((side): Objective => ({ part: DELIVER + side, x: C.x, z: C.z, radius: 2.4, until: at, beats: true, can: () => side === me && carrying.has(side) })),
+      // In a party whoever picked a shard up brings it in: one way in for each seat.
+      ...Array.from({ length: party ? RAID_PARTY_MAX : 2 }, (_, side): Objective => ({ part: DELIVER + side, x: C.x, z: C.z, radius: 2.4, until: at, beats: true, can: () => side === me && carrying.has(side) })),
     ];
     const held = new Map<RaidSide, SunOrb>();
     let turned = -1, time = 0;
@@ -283,7 +295,8 @@ const sunOrder: BossMove = {
   play(c, p) {
     const rng = seeded(c.seed);
     const start = rng() * Math.PI * 2, spin = rng() < 0.5 ? -1 : 1;
-    const first = p.shown(2.5), apart = 0.8, radius = COURT_R + 1;
+    // In the hall the wedges cover the crossing and no more: deep in an arm no edge of a wedge is near enough to step over.
+    const first = p.shown(2.5), apart = 0.8, radius = party ? HALL_ORDER : COURT_R + 1;
     const marks: NumberMark[] = [];
     const threats: Threat[] = [0, 1, 2, 3].map((i) => {
       const dir = start + spin * i * (Math.PI / 2);
@@ -363,7 +376,8 @@ const eclipse: BossMove = {
   play(c, p) {
     const at = p.shown(1.6), near = 5.5;
     const far = c.step === 1;
-    const reach = Math.hypot(c.fx - C.x, c.fz - C.z) + COURT_R;
+    // In the hall the far ring ends where a hero could still have run in from: it does not fill an arm he is not in.
+    const reach = party ? HALL_ECLIPSE : Math.hypot(c.fx - C.x, c.fz - C.z) + COURT_R;
     const shape: TelegraphShape = far ? { kind: 'ring', x: c.fx, z: c.fz, inner: near, outer: reach } : { kind: 'circle', x: c.fx, z: c.fz, radius: near };
     return {
       threats: [{ shape, at, share: 0.15 }], duration: at + 0.4,
@@ -470,6 +484,153 @@ const walkingSun: BossMove = {
   },
 };
 
+// --- the hall's own: The Hour Strikes --------------------------------------------------------------------------------
+
+/**
+ * The Hour Strikes' numbers.
+ * - `seconds`: from his call to the bell at tier 1, and `least`: never shorter, whatever the tier. Measured with the autopilot
+ *   (3.5 m/s: a slow hero, or any hero under Heavy Air) from the far end of each arm to each other arm
+ *   (`pipeline/tools/hour-walk.js`): see `docs/architecture/raid.md` for the table.
+ * - `share`: what the bell costs whoever is not in the safe arm, of max HP. More than anything else he has (Gathering Noon 40 %, the
+ *   Long Hour failed 55 %), because it is the one blow the whole party can walk out of; not a kill from full HP at tier 1, even
+ *   with Brittle and a Reckless Pact together (60 % x 1.2 x 1.25 = 90 %). Enraged it doubles, and kills.
+ * - `call`: how long he stands still to call it. After that he walks and fights on.
+ * - `inset`: an AI counts itself safe this far past the crossing's edge.
+ */
+export const HOUR = { seconds: 23, least: 19, share: 0.6, call: 3, inset: 2, first: 20, every: 55 };
+/** While an hour is in the air he does only these: nothing that covers the floor, and nothing to stand in. */
+const HOUR_ONLY = ['sweep', 'pillars', 'ray', 'fists'];
+const SUNFIRE = 0xff9a3a;
+
+/**
+ * Only in the Hall of Noon (user, 2026-11-11, card W1 of pipeline/designs/raid-mechanics.html): "He calls an hour. Three of the hall's
+ * four arms fill with sunfire; the sun road on the floor lights up in the one safe arm. The whole party runs there before the bell."
+ *
+ * The arm comes from the cast's seed (`seed % 4`, its place in `HALL_ARMS`), so every screen lights the same road. Each screen
+ * decides for its own hero whether it stands in that arm when the bell strikes. He stands still only for the call, then walks and
+ * fights on with his small moves (`holds`); a stage calls the hour off.
+ */
+const strikes: BossMove = {
+  id: 'strikes', name: 'The Hour Strikes', charge: HOUR.seconds, least: HOUR.least, lock: HOUR.call, cooldown: HOUR.every, due: HOUR.first, big: true, pose: 'raise',
+  holds: { only: HOUR_ONLY },
+  body: { name: 'strikes', seconds: HOUR.call },
+  // He turns to the arm he calls, and his fists point down it.
+  aim: (c) => {
+    const spot = armSpot(c.seed % 4, HALL_HALF + 8);
+    return { x: spot.x, z: spot.z, dir: Math.atan2(spot.x - c.boss.x, spot.z - c.boss.z) };
+  },
+  play(c, p) {
+    const arm = c.seed % 4, hall = HALL_ARMS[arm];
+    const at = Math.max(HOUR.least, p.shown(HOUR.seconds));
+    // The bell: everywhere but the safe arm. No shape says that, so the look draws it.
+    const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: COURT_R }, hits: (x, z) => !inArm(arm, x, z), at, share: HOUR.share, look: 3 };
+    // Where to run: each screen has one spot of its own, open while its hero is not in the safe arm yet. Nobody takes it: it is the
+    // arrow at the screen's edge, and where an AI walks.
+    const goal = armSpot(arm, HALL_HALF + 8);
+    const objectives: Objective[] = [{
+      part: p.side, x: goal.x, z: goal.z, radius: 1, hold: Infinity, until: at,
+      can: () => {
+        const h = p.heroAt(p.side);
+        return !!h && !inArm(arm, h.x, h.z, HOUR.inset);
+      },
+    }];
+    // The three arms that burn and the crossing, as the zones every move draws: they fill from the crossing outward.
+    const fire = new TelegraphLayer(), W = HALL_HALF;
+    const burning = HALL_ARMS.map((a, i) => ({ a, i })).filter((x) => x.i !== arm);
+    const rect = (x1: number, z1: number, x2: number, z2: number) => ({ shape: { kind: 'line' as const, x1, z1, x2, z2, width: W * 2 }, start: 0, impact: at });
+    fire.set([
+      rect(C.x - Math.sin(hall.dir) * W, C.z - Math.cos(hall.dir) * W, C.x + Math.sin(hall.dir) * W, C.z + Math.cos(hall.dir) * W),
+      ...burning.map(({ a, i }) => { const from = armSpot(i, W), to = armSpot(i, a.reach); return rect(from.x, from.z, to.x, to.z); }),
+    ], LEAVE_COLOR, LEAVE_ALPHA);
+    // The sun road in the safe arm, lit from the crossing outward, and a gold line across the arm's mouth: past it is safe.
+    const road = new AimLane(STAND_COLOR), mouth = armSpot(arm, W);
+    const sill = beam(p, 0xfff0b0, STAND_COLOR, 1.1);
+    const sa = new THREE.Vector3(mouth.x - Math.cos(hall.dir) * W, 0.08, mouth.z + Math.sin(hall.dir) * W);
+    const sb = new THREE.Vector3(mouth.x + Math.cos(hall.dir) * W, 0.08, mouth.z - Math.sin(hall.dir) * W);
+    p.group.add(fire.group, road.mesh);
+    p.hint('The hour is called: run to the arm with the lit road');
+    p.say('THE HOUR IS CALLED', '#ffe27a', mouth.x, mouth.z);
+    p.show.ring(C.x, C.z, { radius: 30, life: 1.4, color: 0xffe0b0, width: 0.9, peak: 0.6 });
+    /** A spot in the fire: somewhere in the crossing or a burning arm. */
+    const inFire = () => {
+      const k = Math.floor(Math.random() * (burning.length + 1)), across = (Math.random() * 2 - 1) * (W - 1);
+      const b = burning[k], dir = b ? b.a.dir : hall.dir, along = b ? W + Math.random() * (b.a.reach - W - 1) : (Math.random() * 2 - 1) * (W - 1);
+      return { x: C.x + Math.sin(dir) * along + Math.cos(dir) * across, z: C.z + Math.cos(dir) * along - Math.sin(dir) * across };
+    };
+    const TOLLS = 4;
+    let tolled = 0, belled = false, off = -1, time = 0;
+    return {
+      threats: [th], objectives, duration: at + 1.6,
+      look: {
+        update(t, dt) {
+          time += dt;
+          // Called off (a stage began): it all goes out in a second.
+          const on = off < 0 ? 1 : Math.max(0, 1 - (t - off));
+          const k = Math.min(1, t / at), after = Math.max(0, t - at);
+          fire.update(t);
+          fire.group.visible = off < 0;
+          // The road runs out from the crossing in the first seconds and stays; brighter as the bell nears, gone a moment after it.
+          const lit = Math.min(1, t / 2.5), fade = Math.max(0, 1 - after / 0.8) * on;
+          road.set(mouth.x, mouth.z, hall.dir, (hall.reach - W - 1) * (1 - (1 - lit) ** 2), 5, (0.5 + 0.35 * k) * fade, time);
+          sill.set(sa, sb, p.camera, time, (0.55 + 0.25 * Math.sin(time * 5)) * fade, 1.1, true);
+          if (off >= 0 || t >= at) return;
+          // Sunfire: embers rising all over what burns, more and higher as the bell nears, and tongues of flame from a third of the way
+          // on. Kept to what a phone can draw: at most about 300 embers and 45 tongues at once (a tongue is a draw call of its own).
+          for (let n = Math.random() < dt * (60 + 240 * k * k) ? 1 + Math.floor(k * 1.5) : 0; n > 0; n--) {
+            const s = inFire();
+            p.show.burst(s.x, 0.1, s.z, 2, 0.8, 1.6 + 3.5 * k, 0.9 + 0.4 * k, SUNFIRE, 0.5);
+          }
+          if (k > 0.35 && Math.random() < dt * 55 * ((k - 0.35) / 0.65)) {
+            const s = inFire();
+            p.show.column(s.x, s.z, { radius: 0.3 + Math.random() * 0.45, height: 1.5 + (2.5 + Math.random() * 4.5) * k, life: 0.8, color: SUNFIRE, peak: 0.35 + 0.4 * k });
+          }
+          // The hall's bell tolls on the way: a ring from the Sun Well, and his halo answers it.
+          if (tolled < TOLLS && t >= ((tolled + 1) / (TOLLS + 1)) * at) {
+            tolled++;
+            p.act('toll', tolled, c.x, c.z, 0.45);
+            p.show.ring(C.x, C.z, { radius: 34, life: 1.5, color: 0xffe0b0, width: 0.9, peak: 0.4 + 0.1 * tolled });
+          }
+          // His fists come together as it strikes.
+          if (!belled && t >= at - 0.8) {
+            belled = true;
+            p.act('bell', 0, c.x, c.z, 0.8);
+          }
+        },
+        land() {
+          // The bell: light over the whole hall, rings from the Sun Well to its far walls, and the three arms go up in sunfire, the
+          // nearest first.
+          p.flash('rgba(255,214,150,0.85)', 0.7);
+          p.shake(0.16);
+          p.say('THE HOUR STRIKES', '#ffb050', C.x, C.z);
+          p.show.column(C.x, C.z, { radius: 5, height: 46, life: 1.5, color: 0xfff0d0, peak: 0.9 });
+          for (const [i, delay] of [0, 0.22, 0.44].entries()) p.show.ring(C.x, C.z, { radius: 52, life: 1.5 + i * 0.2, color: i ? 0xffb060 : 0xfff0d0, width: 2.4 - i * 0.5, delay });
+          p.show.burst(C.x, 9, C.z, 120, 12, 4, 1.4, 0xffd890, 4);
+          // Many thin columns of different heights, a little off their rows, read as fire; a few wide ones as glass tubes.
+          const flame = (x: number, z: number, delay: number) => p.show.column(x + (Math.random() - 0.5) * 3, z + (Math.random() - 0.5) * 3, {
+            radius: 1 + Math.random() * 1.3, height: 9 + Math.random() * 13, life: 1 + Math.random() * 0.6, color: SUNFIRE, peak: 0.85, delay,
+          });
+          for (const across of [-8, 0, 8]) {
+            for (const along of [-8, 0, 8]) flame(C.x + Math.sin(hall.dir) * along + Math.cos(hall.dir) * across, C.z + Math.cos(hall.dir) * along - Math.sin(hall.dir) * across, 0.04);
+            for (const { a, i } of burning) {
+              for (let along = W + 3; along < a.reach - 1; along += 7) {
+                const s = armSpot(i, along);
+                flame(s.x + Math.cos(a.dir) * across, s.z - Math.sin(a.dir) * across, 0.08 + (along - W) * 0.014);
+              }
+            }
+          }
+        },
+        off() { off = time; },
+        dispose() {
+          fire.set([]);
+          fire.group.removeFromParent();
+          road.dispose();
+          dropBeam(sill);
+        },
+      },
+    };
+  },
+};
+
 // --- the boss -------------------------------------------------------------------------------------------------------
 
 /** Draws his portrait: a stone sun. */
@@ -501,19 +662,31 @@ const noSpell = (key: HeroKey): HeroSpell => ({ key, label: '', name: '', range:
 const MODEL = 'models/bosses/warden.glb';
 /** What the hub keeps online: one source for both. */
 const NUMBERS = RAID_BOSSES.sun;
+/** In the hall: how far inside the south gate a party's first row stands, and how far before the choir's end wall the way out. */
+const HALL_START = 1.4;
+const HALL_GATE = 4;
 
-/** A party is in: the Warden fights in the Hall of Noon. */
-let party = false;
+const PHASES: BossPhase[] = [
+  { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray', 'fists'], gap: [1.9, 2.8] },
+  { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
+  { name: 'The Long Hour', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'hour', gap: [2, 3] },
+  { name: 'Last Light', at: NUMBERS.phases[2], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
+];
+/** In the hall he also calls the hour, in every phase: it comes by its own clock (`BossMove.due`). */
+const HALL_PHASES: BossPhase[] = PHASES.map((ph) => ({ ...ph, moves: [...ph.moves, 'strikes'] }));
 
 export const SUN_WARDEN: BossDef = {
   id: 'sun',
   name: 'The Sun Warden',
   title: 'Keeper of the Sun Court',
   get place() { return party ? sunHallArena : sunCourtArena; },
-  gates: { enter: 0, exit: 180 },
-  // Heroes come in at the south gate, wherever the rim is now.
+  // The hall's way in stands in the gate's passage, as the court's does past its rim; its way out before the throne, at the choir's
+  // end (past its rim is the stone).
+  get gates() { return party ? { enter: 0, exit: 180, exitR: HALL_ARMS[2].reach - HALL_GATE } : { enter: 0, exit: 180 }; },
+  // Heroes come in at the south gate, wherever the rim is now. In the hall: just inside the gate, where a party's rows of eight
+  // (`partyStart` in src/duel.ts) stand clear of the nave's cover, all but seat 39 of 40.
   get starts() {
-    const z = RING.z + COURT_R - 6.5;
+    const z = party ? RING.z + HALL_ARMS[0].reach - HALL_START : RING.z + COURT_R - 6.5;
     return { boss: { x: 0, z: -1.5 }, heroes: [{ x: 0, z }, { x: -1.6, z }, { x: 1.6, z }] as [{ x: number; z: number }, { x: number; z: number }, { x: number; z: number }] };
   },
   /** For two, the Sun Court. A party fights in the Hall of Noon (`raidRing`): set before the fight is built. */
@@ -533,17 +706,16 @@ export const SUN_WARDEN: BossDef = {
   staggerMax: NUMBERS.staggerMax,
   kneel: NUMBERS.kneel,
   phasePause: 2.5,
-  phases: [
-    { name: 'Awake', at: 1, moves: ['sweep', 'pillars', 'ray', 'fists'], gap: [1.9, 2.8] },
-    { name: 'High Noon', at: NUMBERS.phases[0], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'noon', gap: [2, 3] },
-    { name: 'The Long Hour', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'hour', gap: [2, 3] },
-    { name: 'Last Light', at: NUMBERS.phases[2], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
-  ],
+  get phases() { return party ? HALL_PHASES : PHASES; },
   /** A higher tier brings these in from the first phase on, one a tier. */
   extra: ['order', 'walking', 'eclipse'],
-  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, hour: longHour, eclipse, anchors, walking: walkingSun },
-  /** 2:30 in he enrages: about where the slowest third of the autopilot's wins at a person's pace end (pipeline/designs/raid-noonfall.md). */
-  enrage: 150,
+  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, hour: longHour, eclipse, anchors, walking: walkingSun, strikes },
+  /**
+   * 2:30 in he enrages: about where the slowest third of the autopilot's wins at a person's pace end (pipeline/designs/raid-noonfall.md).
+   * In the hall 3:15: the party walks 40 m up the nave to him first, and each hour takes the fight away from him for a while (the
+   * same ten heroes' wins took 35 to 75 s longer there: pipeline/designs/raid-party.md).
+   */
+  get enrage() { return party ? 195 : 150; },
   /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
   late: () => ({
     offset: -255,

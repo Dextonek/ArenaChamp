@@ -10,7 +10,7 @@ import { raidHp, raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
 import { FUSE, QUICK_GAP } from './omens';
 import { BULWARK, CLOSE_CALL, SUN_EATER, type RunUpgrades } from './upgrades';
-import type { BossCast, BossDebuff, BossDef, BossWorld, RaidLink } from './types';
+import { moveTime, type BossCast, type BossDebuff, type BossDef, type BossWorld, type RaidLink } from './types';
 
 /** What each hard control is worth to the stagger gauge, per second of it. Blind counts for little. */
 const STAGGER_PER_SECOND: Partial<Record<StatusKind, number>> = { stun: 22, knockup: 26, root: 14, charm: 22, sealed: 22, silence: 12, blind: 8 };
@@ -64,7 +64,7 @@ export class BossFight {
   private guardLeft = 0;
   /** The stage this phase opens with, until its cast comes: a screen that takes the brain over opens with it too. */
   private stageDue: string | null = null;
-  /** Seconds left of the stage on now: its cast bar is its clock, and no other move takes the bar meanwhile. */
+  /** Seconds left of the stage on now, or of a move that holds the floor: its cast bar is its clock, and no other move takes the bar meanwhile. */
   private stageLeft = 0;
   /** Red heat round the boss once it has enraged, and the screen's slow red throb. */
   private aura: RageAura | null = null;
@@ -106,7 +106,8 @@ export class BossFight {
       stood: (id, part, count) => this.script.stood(id, part, count),
       done: (id, part, side) => this.script.done(id, part, side),
       addHit: (id, part, amount) => this.script.addHit(id, part, amount),
-      wall: (i) => world.breakWall(i),
+      // Never one of the room's own walls, whoever says so.
+      wall: (i) => { if (!def.place.obstacles[i]?.fixed) world.breakWall(i); },
       end: (r) => this.end(r),
     };
     if (!def.hall) {
@@ -114,14 +115,14 @@ export class BossFight {
       hud.setHp(link.maxHp, link.maxHp);
     }
     if (def.gates) {
-      const r = def.gates.r ?? (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' || def.id === 'heart' ? def.id : 'sun';
-      const gate = (deg: number) => {
+      const out = def.gates.r ?? (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' || def.id === 'heart' ? def.id : 'sun';
+      const gate = (deg: number, r = out) => {
         const a = THREE.MathUtils.degToRad(deg), x = RING.x + Math.sin(a) * r, z = RING.z + Math.cos(a) * r;
         const g = new KeepGate(x, z, Math.atan2(RING.x - x, RING.z - z), tone);
         this.group.add(g.group);
         return g;
       };
-      this.gates = { enter: gate(def.gates.enter), exit: gate(def.gates.exit) };
+      this.gates = { enter: gate(def.gates.enter), exit: gate(def.gates.exit, def.gates.exitR) };
       this.gates.enter.setOpen(true);
     }
   }
@@ -144,13 +145,15 @@ export class BossFight {
       else this.world.act(move.body.name, c.step, c.x, c.z, seconds);
     }
     if (c.step !== 0 || move.quiet) return;
-    if (move.stage) this.stageLeft = move.charge * raidTierFactor(this.tier);
-    if (move.stage || this.stageLeft <= 0) this.hud.cast(move.name, move.charge * raidTierFactor(this.tier));
-    this.world.enemyCast(!!move.big);
     // The pose's strike lands with the move: its time is the cast bar's, shorter at a higher tier.
-    const charge = move.charge * raidTierFactor(this.tier);
+    const charge = moveTime(move, raidTierFactor(this.tier));
+    // A stage keeps the cast bar, and so does a move that holds the floor: the bar is its clock.
+    if (move.stage || move.holds) this.stageLeft = charge;
+    if (move.stage || move.holds || this.stageLeft <= 0) this.hud.cast(move.name, charge);
+    this.world.enemyCast(!!move.big);
     if (c.rim) this.world.poseRim(move.pose, charge, !!move.big);
-    else if (!move.alongside) this.world.pose(move.pose, charge, !!move.big);
+    // A move that holds the floor acts itself out, at its call and as it lands: he does other moves in between.
+    else if (!move.alongside && !move.holds) this.world.pose(move.pose, charge, !!move.big);
   }
 
   private onPhase(i: number) {
@@ -164,6 +167,9 @@ export class BossFight {
     if (opener && this.def.moves[opener]?.stage) {
       this.stageDue = opener;
       this.guard(STAGE_WAIT);
+      // The stage calls off a move that held the floor and the bar (The Hour Strikes), on every screen as the phase turns.
+      if (this.script.yieldFloor()) this.hud.stopCast();
+      this.stageLeft = 0;
     }
     if (this.def.lateAt === i) this.world.lateNow();
   }
@@ -225,6 +231,9 @@ export class BossFight {
     this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot, this.timedSeen);
     if (this.enraged) this.brain.enrage();
     if (this.stageDue) this.brain.open(this.stageDue);
+    // A move that holds the floor is in the air: the new brain keeps to it too.
+    const held = this.script.held;
+    if (held) this.brain.hold(held.left, held.only);
   }
 
   /** The hub gave the brain to another screen (this one went quiet): this one follows reports again. What is in the air goes on. */

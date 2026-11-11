@@ -6,6 +6,7 @@
 //   _raid(names, 2, { level: 3 })           // CPU level 3 (Normal) as a stand-in for a person's reactions
 //   _raid(names, 1, { boss: 'ash', tier: 2, upgrades: ['glass', 'stubborn'] })   // the second boss, a higher tier, upgrades on
 //   _raid(names, 2, { omens: ['molten', 'quick'] })   // with omens on (src/raid/omens.ts)
+//   _raid(names, 2, { band: 5 })            // in a party's room (the Warden's Hall of Noon); the boss's HP stays the one for one hero
 //   _raid.show()                            // per hero: clears, seconds, boss HP left, damage per second, which move killed
 //   _raid.errors()                          // errors in a run are bugs to fix, with the fight they came from
 //
@@ -37,7 +38,7 @@
         if (!d.on) vfx.setDuel(true, 'run');
         d.pilotLevel = opts.level ? cpuLevel(opts.level) : CPU_BALANCE;
         for (const hero of heroes) {
-          const row = (state.rows[hero] = { w: 0, n: 0, secs: 0, left: 0, killedBy: {}, hits: {}, kneels: 0, dealt: 0, phase: [0, 0, 0, 0], stages: 0, stagesWon: 0, enraged: 0, blocked: 0, pillars: 0 });
+          const row = (state.rows[hero] = { w: 0, n: 0, secs: 0, wall: 0, left: 0, killedBy: {}, hits: {}, kneels: 0, dealt: 0, phase: [0, 0, 0, 0], stages: 0, stagesWon: 0, enraged: 0, blocked: 0, pillars: 0 });
           vfx.heroPickCtrl.setValue(hero);
           for (let r = 0; r < reps; r++) {
             now = hero;
@@ -45,7 +46,8 @@
             const upgrades = new RunUpgrades();
             for (const id of opts.upgrades ?? []) upgrades.add(id);
             upgrades.omens = OMENS.filter((o) => (opts.omens ?? []).includes(o.id));
-            d.startBoss({ def, link, seed: `${hero}-${r}-${Math.random()}`, mode: 'run', tier: opts.tier ?? 1, upgrades });
+            const began = Date.now();
+            d.startBoss({ def, link, seed: `${hero}-${r}-${Math.random()}`, mode: 'run', tier: opts.tier ?? 1, upgrades, band: opts.band });
             const foe = d.foe;
             let dealt = 0;
             const count = vfx.arena.onFoeDamage;
@@ -56,6 +58,7 @@
               const b = d.result.boss;
               row.n++;
               row.secs += d.result.seconds;
+              row.wall += (Date.now() - began) / 1000;
               row.dealt += dealt;
               row.kneels += b?.kneels ?? 0;
               row.phase[b?.phase ?? 0]++;
@@ -91,6 +94,8 @@
   window._raid.show = () => Object.fromEntries(Object.entries(state.rows).map(([hero, r]) => [hero, {
     clears: `${r.w}/${r.n}`,
     seconds: r.n ? Math.round(r.secs / r.n) : 0,
+    // How long a fight took to run here, in real seconds: a room with much cover plans its walks slower.
+    wall: r.n ? +(r.wall / r.n).toFixed(1) : 0,
     dps: r.secs ? Math.round(r.dealt / r.secs) : 0,
     leftOnLoss: r.n - r.w ? `${Math.round((r.left / (r.n - r.w)) * 100)}%` : '-',
     reached: r.phase.join('/'),

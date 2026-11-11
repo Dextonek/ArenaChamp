@@ -16,7 +16,7 @@ export const STILL_COLOR = 0xf2f6ff;
 /** Such a zone looks at the moment before it lands (s), and lets a hero still go this far in it (m): a step that was ending, not a walk. */
 export const STILL_WINDOW = 0.25;
 export const STILL_SLACK = 0.25;
-const LEAVE_ALPHA = 0.72;
+export const LEAVE_ALPHA = 0.72;
 const STAND_ALPHA = 1;
 /** What standing in a zone costs a summoned unit. */
 const UNIT_HIT = 60;
@@ -117,6 +117,7 @@ export class BossScript {
       dropStone: (o) => world.dropStone(o),
       delayLate: (seconds) => world.delayLate(seconds),
       guard: extra.guard,
+      act: (name, step, x, z, seconds) => world.act(name, step, x, z, seconds),
       spawnAdd: (spec) => world.spawnAdd(spec),
       addHit: (id, part, amount) => link.addHit(id, part, amount),
       report: (id, part) => link.objective(id, part),
@@ -131,6 +132,8 @@ export class BossScript {
   play(cast: BossCast) {
     const move = this.def.moves[cast.move];
     if (!move) return;
+    // A stage takes the floor: a move that held it (The Hour Strikes) is called off, on every screen at this same cast.
+    if (move.stage && cast.step === 0) this.yieldFloor();
     const played = move.play(cast, this.ctx);
     // A cast with nothing to walk out of (only beats to stand still for) is no new event to an AI: its roll for what is in the air stays.
     if (cast.step === 0 && !(played.threats.length && played.threats.every((th) => th.moving))) this.eventId++;
@@ -241,10 +244,19 @@ export class BossScript {
   private cancel(id: number) {
     const a = this.active.find((x) => x.cast.id === id);
     if (!a) return;
+    a.played.look?.off?.();
     a.played.threats = [];
+    a.played.objectives = [];
     a.leave.set([]);
     a.stand.set([]);
     a.played.duration = Math.min(a.played.duration, this.clock - a.began + 1.2);
+  }
+
+  /** A stage is coming: a move that holds the floor (The Hour Strikes) is called off. Whether there was one. */
+  yieldFloor() {
+    const held = this.active.filter((a) => this.def.moves[a.cast.move]?.holds && a.played.threats.some((th) => !th.landed));
+    for (const a of held) this.cancel(a.cast.id);
+    return held.length > 0;
   }
 
   /** The objectives this screen's hero can take now. */
@@ -322,7 +334,8 @@ export class BossScript {
       // Cover saved this hero. The wall that did it falls; a column doesn't.
       if (th.breaks) {
         const wall = this.world.firstWall(th.source.x, th.source.z, me.x, me.z);
-        if (wall >= 0) this.link.wallSaved(wall);
+        // The room's own walls save a hero too (the Hall of Noon's corners), and stand.
+        if (wall >= 0 && !this.def.place.obstacles[wall]?.fixed) this.link.wallSaved(wall);
       }
       return;
     }
@@ -438,6 +451,19 @@ export class BossScript {
       for (const th of a.played.threats) if (th.moving && !th.landed) best = Math.min(best, th.at - t);
     }
     return best;
+  }
+
+  /**
+   * A move that holds the floor is in the air (The Hour Strikes): how long until it lands, and the moves he may do meanwhile. For a
+   * screen that takes the brain over.
+   */
+  get held() {
+    for (const a of this.active) {
+      const only = this.def.moves[a.cast.move]?.holds?.only, t = this.clock - a.began;
+      const left = only ? Math.max(0, ...a.played.threats.filter((th) => !th.landed).map((th) => th.at - t)) : 0;
+      if (only && left > 0) return { left, only };
+    }
+    return null;
   }
 
   /** A move is coming after whoever it aims at: an AI starts no long cast now. */
