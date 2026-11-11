@@ -1,0 +1,37 @@
+{
+ "core": {
+  "src/duel.ts": "748165bc163c6a0f",
+  "src/heroMode.ts": "f963a08c1446878b",
+  "src/arena.ts": "edf18ca329ac7335",
+  "src/runtime.ts": "3dde6bef2d461f63",
+  "src/effects/projectile.ts": "15cfa49f13c3c3d1",
+  "src/effects/status.ts": "1ca7aa04689c38eb",
+  "src/effects/telegraph.ts": "642b5eb0d942ff37",
+  "src/attacks/attacker.ts": "619fa4ff9ad807f2",
+  "src/attacks/fx.ts": "20a8911d944d8f2e",
+  "src/obstacles.ts": "7f6d8076e353e807",
+  "src/nav.ts": "68176601234c295a",
+  "src/traits/runtime.ts": "5e88918a0ff01319",
+  "src/traits/types.ts": "06ef9f18df429403",
+  "src/cpuLevels.ts": "b48df56e950624e2",
+  "pipeline/sim/page.js": "133da912424296e1"
+ },
+ "heroes": {
+  "Brannoc": {
+   "src/kits/forge.ts": "5023b3614aa94ef0",
+   "src/traits/forge.ts": "b2551b939454ab5a",
+   "src/spells/targeted/chainHammer.ts": "922d739e013159e6",
+   "src/spells/targeted/forgeRoar.ts": "5e569181ef03ab8d",
+   "src/spells/targeted/moltenCore.ts": "8050c3dae5b817f8",
+   "src/spells/targeted/redHotRivet.ts": "8e7b6a59fe42b371"
+  },
+  "Isolde": {
+   "src/kits/frost.ts": "ab65d85e798f5326",
+   "src/traits/frost.ts": "3a7cb341946ccd7a",
+   "src/spells/targeted/hoarfrost.ts": "a3108e29ed6fd28c",
+   "src/spells/targeted/icicle.ts": "fe0e3956c1e0b4e7",
+   "src/spells/targeted/rimeArmour.ts": "ede1e990240e4ba0",
+   "src/spells/targeted/wintersShatter.ts": "7d662acc8ac35df7"
+  }
+ }
+}

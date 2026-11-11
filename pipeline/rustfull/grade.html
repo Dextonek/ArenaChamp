@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rust beside the game</title>
+<style>
+  /* The full Rust simulator laid beside the real game (pipeline/rustfull/grade.py fills in the data). It takes its colours
+     from the host's theme when shown inside T3 Code and brings its own dark ones when opened as a file. */
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37); --panel: var(--card, #1a1a19);
+    --real: var(--chart-1, #3987e5); --model: var(--chart-2, #d95926); --r: var(--radius, 8px);
+    --lo: #4a8fd8; --hi: #d9713f; --mid: #8a8a84;
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  html.standalone body { max-width: 980px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 26px 0 4px; }
+  p.sub { margin: 0 0 10px; color: var(--ink-2); font-size: 13px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin: 12px 0 4px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
+  .tile b { display: block; font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .tile span { color: var(--ink-2); font-size: 12px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; overflow-x: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12px; color: var(--ink-2); margin: 0 0 10px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; margin-right: 5px; vertical-align: -1px; }
+  .dot { border-radius: 50%; background: var(--real); }
+  .dia { background: var(--panel); border: 2px solid var(--model); transform: rotate(45deg); width: 8px !important; height: 8px !important; }
+  .whisk { height: 2px !important; width: 18px !important; background: var(--real); opacity: 0.55; vertical-align: 3px !important; }
+  .rows { display: grid; grid-template-columns: max-content 1fr max-content; column-gap: 10px; row-gap: 5px; align-items: center; min-width: 300px; }
+  .rows .name { font-size: 13px; white-space: nowrap; }
+  .rows .name small { color: var(--ink-2); }
+  .track { position: relative; height: 20px; }
+  .track .half { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--ink-2); opacity: 0.35; }
+  .track .ci { position: absolute; top: 9px; height: 2px; background: var(--real); opacity: 0.55; }
+  .track .r { position: absolute; top: 5px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: var(--real); box-shadow: 0 0 0 2px var(--panel); }
+  .track .m { position: absolute; top: 5px; width: 7px; height: 7px; margin-left: -5px; background: var(--panel); border: 2px solid var(--model); transform: rotate(45deg); }
+  .val { font-variant-numeric: tabular-nums; font-size: 12px; white-space: nowrap; color: var(--ink-2); }
+  .axis { grid-column: 2; position: relative; height: 16px; font-size: 11px; color: var(--ink-2); }
+  .axis span { position: absolute; transform: translateX(-50%); }
+  table.data { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  table.data th { text-align: right; font-weight: 500; font-size: 12px; color: var(--ink-2); padding: 4px 10px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data td { padding: 5px 10px 5px 0; border-bottom: 1px solid color-mix(in oklab, var(--line) 55%, transparent); font-size: 13px; text-align: right; white-space: nowrap; }
+  table.data tr.head td { padding-top: 14px; font-weight: 600; text-align: left; border-bottom: 1px solid var(--line); }
+  table.data td .rust { color: var(--ink-2); }
+  .diff { display: inline-block; position: relative; width: 44px; height: 8px; margin-left: 6px; vertical-align: 0; background: color-mix(in oklab, var(--ink) 7%, transparent); border-radius: 2px; }
+  .diff::before { content: ''; position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--mid); }
+  .diff i { position: absolute; top: 0; bottom: 0; border-radius: 2px; }
+  code { font-family: var(--font-mono, ui-monospace, Consolas, monospace); font-size: 12px; }
+  ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+  ul li { margin: 4px 0; }
+  ul b { color: var(--ink); font-weight: 600; }
+  #tip { position: fixed; pointer-events: none; background: var(--popover, #26262a); color: var(--popover-foreground, #f0efec); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font-size: 12px; line-height: 1.4; max-width: 280px; display: none; z-index: 5; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="tip"></div>
+<script>
+const DATA = /*DATA*/null;
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const app = document.getElementById('app'), tip = document.getElementById('tip');
+  const el = (tag, attrs = {}, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) { if (k === 'style') e.style.cssText = v; else if (k === 'tip') e.dataset.tip = v; else if (k === 'html') e.innerHTML = v; else e.setAttribute(k, v); }
+    for (const k of kids) e.append(k);
+    return e;
+  };
+  document.addEventListener('pointermove', (ev) => {
+    const t = ev.target.closest?.('[data-tip]');
+    if (!t) { tip.style.display = 'none'; return; }
+    tip.innerHTML = t.dataset.tip;
+    tip.style.display = 'block';
+    tip.style.left = Math.max(4, Math.min(innerWidth - tip.offsetWidth - 4, ev.clientX + 12)) + 'px';
+    tip.style.top = Math.max(4, Math.min(innerHeight - tip.offsetHeight - 4, ev.clientY + 14)) + 'px';
+  });
+  if (!DATA) { app.append(el('p', {}, 'No data: run python pipeline/rustfull/grade.py <real.json> <rust.json> --page <out.html>.')); return; }
+  const rows = DATA.rows, f1 = (v) => v.toFixed(1), f2 = (v) => v.toFixed(2);
+  const SOURCES = ['Q', 'W', 'E', 'R', 'attack', 'trait'];
+  const LABEL = { attack: 'basic attack', trait: 'passive' };
+  const METRICS = [['casts_10s', 'casts in 10 s', f2], ['hits_cast', 'hits for each cast', f2], ['damage_hit', 'damage of a hit', f1], ['dps', 'damage a second', f1]];
+
+  // --- every graded number as a pair, to count how many agree -------------------------------------------------
+  const pairs = [];
+  for (const r of rows) {
+    for (const k of SOURCES) {
+      const a = r.real.sources[k], b = r.rust.sources[k];
+      if (!a || !b) continue;
+      for (const [m] of METRICS) if (a[m] && b[m] && a[m] > 0.05) pairs.push(Math.abs(b[m] / a[m] - 1));
+    }
+  }
+  const within = (x) => pairs.filter((p) => p <= x).length;
+  const gap = Math.max(...rows.map((r) => Math.abs(r.real.win - r.rust.win)));
+  const inside = rows.filter((r) => Math.abs(r.real.win - r.rust.win) <= Math.hypot(r.real.win_pm, r.rust.win_pm)).length;
+  const realFights = rows.reduce((s, r) => s + r.real.fights, 0) / 2, rustFights = rows.reduce((s, r) => s + r.rust.fights, 0) / 2;
+  const heroes = [...new Set(rows.map((r) => r.hero))];
+
+  app.append(el('h1', {}, 'The Rust simulator beside the real game'));
+  app.append(el('p', { class: 'sub' }, `${heroes.join(' against ')}${DATA.arena ? ', ' + DATA.arena : ''}. The same fights played two ways: by the game itself in a browser (the real simulator) and by the game's rules written again in Rust. Every number below should be the same on both sides.`));
+  const tiles = el('div', { class: 'tiles' });
+  const tile = (big, small, t) => tiles.append(el('div', { class: 'tile', tip: t ?? '' }, el('b', {}, big), el('span', {}, small)));
+  tile(`${inside} of ${rows.length}`, 'win rates inside the real run’s own noise', 'A real run of this size swings by a few points from run to run. A Rust win rate inside that swing agrees.');
+  tile(`${f1(gap)} pts`, 'largest win-rate gap');
+  tile(`${within(0.05)} of ${pairs.length}`, 'other numbers within 5%', `Casts, hits for each cast, damage of a hit and damage a second, for each spell and the basic attack. Within 10%: ${within(0.10)} of ${pairs.length}.`);
+  tile(`${Math.round(realFights)} / ${Math.round(rustFights)}`, 'fights: real / Rust');
+  if (DATA.speed) tile(`${Math.round(DATA.speed.rust)} a second`, `Rust fights (real: ${f1(DATA.speed.real)} a second)`, 'Fights played each second of real time on this computer. The real simulator used several browsers at once, Rust one processor thread.');
+  app.append(tiles);
+
+  // --- win rates ----------------------------------------------------------------------------------------------
+  app.append(el('h2', {}, 'Win rate, each hero on each side'));
+  app.append(el('p', { class: 'sub' }, 'The two sides of a duel are played by two different computer players, so each hero is shown twice. The line through the real dot is how far a real run of this size swings by chance.'));
+  const box = el('div', { class: 'box' });
+  box.append(el('div', { class: 'legend', html: '<span><i class="dot"></i>real game</span><span><i class="whisk"></i>its swing by chance</span><span><i class="dia"></i>Rust</span>' }));
+  const grid = el('div', { class: 'rows' });
+  for (const r of rows) {
+    const a = r.real, b = r.rust;
+    const t = `<b>${r.hero}</b>, the ${r.side}'s side<br>real: ${f1(a.win)}% of ${a.fights} fights (±${f1(a.win_pm)})<br>Rust: ${f1(b.win)}% of ${b.fights} fights (±${f1(b.win_pm)})<br>fight length: ${f1(a.length)} s / ${f1(b.length)} s`;
+    const track = el('div', { class: 'track', tip: t }, el('div', { class: 'half' }),
+      el('div', { class: 'ci', style: `left:${Math.max(0, a.win - a.win_pm)}%;width:${Math.min(100, a.win + a.win_pm) - Math.max(0, a.win - a.win_pm)}%` }),
+      el('div', { class: 'r', style: `left:${a.win}%` }), el('div', { class: 'm', style: `left:${b.win}%` }));
+    grid.append(el('div', { class: 'name', html: `${r.hero} <small>${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}</small>` }), track, el('div', { class: 'val' }, `${f1(a.win)}% · ${f1(b.win)}%`));
+  }
+  const axis = el('div', { class: 'axis' });
+  for (const v of [0, 25, 50, 75, 100]) axis.append(el('span', { style: `left:${v}%;transform:translateX(${v === 0 ? '0' : v === 100 ? '-100%' : '-50%'})` }, v + '%'));
+  grid.append(el('div'), axis, el('div', { class: 'val' }, 'real · Rust'));
+  box.append(grid);
+  app.append(box);
+
+  // --- the tight numbers --------------------------------------------------------------------------------------
+  app.append(el('h2', {}, 'What each spell did'));
+  app.append(el('p', { class: 'sub' }, 'These numbers barely swing from run to run, so a rule written wrong shows here first. Each cell: real, then Rust, then how far Rust is off (the bar is full at 20%).'));
+  const tbox = el('div', { class: 'box' });
+  const table = el('table', { class: 'data' });
+  table.append(el('tr', {}, el('th', {}, ''), ...METRICS.map(([, name]) => el('th', {}, name))));
+  const cell = (x, y, fmt) => {
+    const td = el('td');
+    if (!x && !y) { td.textContent = '–'; return td; }
+    td.append(fmt(x ?? 0) + ' ', el('span', { class: 'rust' }, '· ' + fmt(y ?? 0)));
+    if (x && y && x > 0.05) {
+      const d = y / x - 1, w = Math.min(1, Math.abs(d) / 0.2) * 50;
+      const bar = el('span', { class: 'diff', tip: `Rust is ${d >= 0 ? '+' : '−'}${f1(Math.abs(d) * 100)}% against the real game` });
+      bar.append(el('i', { style: `${d >= 0 ? 'left:50%' : `left:${50 - w}%`};width:${Math.max(w, 1.5)}%;background:${Math.abs(d) < 0.03 ? 'var(--mid)' : d >= 0 ? 'var(--hi)' : 'var(--lo)'}` }));
+      td.append(bar);
+    }
+    return td;
+  };
+  for (const r of rows) {
+    table.append(el('tr', { class: 'head' }, el('td', { colspan: String(METRICS.length + 1) }, `${r.hero}, ${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}  —  fights last ${f1(r.real.length)} s · ${f1(r.rust.length)} s`)));
+    for (const k of SOURCES) {
+      const a = r.real.sources[k], b = r.rust.sources[k];
+      if (!a && !b) continue;
+      table.append(el('tr', {}, el('td', {}, LABEL[k] ?? k), ...METRICS.map(([m, , fmt]) => cell(a?.[m], b?.[m], fmt))));
+    }
+  }
+  tbox.append(table);
+  app.append(tbox);
+
+  if (DATA.notes?.length) {
+    app.append(el('h2', {}, DATA.notesTitle ?? 'Notes'));
+    const ul = el('ul');
+    for (const n of DATA.notes) ul.append(el('li', { html: n }));
+    app.append(el('div', { class: 'box' }, ul));
+  }
+  app.append(el('p', { class: 'sub', style: 'margin-top:14px' }, `Real fights: ${DATA.real}. Rust fights: ${DATA.rust}. Made by pipeline/rustfull/grade.py.`));
+})();
+</script>
+</body>
+</html>

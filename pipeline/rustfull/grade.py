@@ -28,6 +28,17 @@ def load(path):
     return [f for f in fights if f.get("s", 0) > 0]
 
 
+def meta(path):
+    doc = json.loads(Path(path).read_text(encoding="utf-8"))
+    return doc.get("meta", {}) if isinstance(doc, dict) else {}
+
+
+def speed(m):
+    """Fights a second of real time, from either tool's meta."""
+    secs = m.get("wallSeconds") or m.get("realSeconds")
+    return m["fights"] / secs if secs and m.get("fights") else None
+
+
 def side_rows(fights):
     """Per (hero, side): what that hero did in the fights where it was on that side."""
     out = {}
@@ -107,6 +118,7 @@ def main():
     ap.add_argument("rust")
     ap.add_argument("--json")
     ap.add_argument("--page")
+    ap.add_argument("--notes", help="a .json file: {\"title\": ..., \"notes\": [html, ...]} shown under the tables")
     args = ap.parse_args()
     rows = grade(load(args.real), load(args.rust))
     if not rows:
@@ -116,7 +128,14 @@ def main():
         Path(args.json).write_text(json.dumps({"rows": rows}, indent=1), encoding="utf-8")
     if args.page:
         template = (Path(__file__).parent / "grade.html").read_text(encoding="utf-8")
-        Path(args.page).write_text(template.replace("/*DATA*/null", json.dumps({"rows": rows, "real": Path(args.real).name, "rust": Path(args.rust).name})), encoding="utf-8")
+        ma, mb = meta(args.real), meta(args.rust)
+        data = {"rows": rows, "real": Path(args.real).name, "rust": Path(args.rust).name, "arena": ma.get("arena") and f"in the arena '{ma['arena']}'"}
+        if speed(ma) and speed(mb):
+            data["speed"] = {"real": speed(ma), "rust": speed(mb)}
+        if args.notes:
+            n = json.loads(Path(args.notes).read_text(encoding="utf-8"))
+            data["notesTitle"], data["notes"] = n.get("title"), n.get("notes", [])
+        Path(args.page).write_text(template.replace("/*DATA*/null", json.dumps(data)), encoding="utf-8")
         print(f"\npage: {args.page}")
 
 

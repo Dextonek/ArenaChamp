@@ -2,123 +2,163 @@
 title: The full Rust simulator (in the making)
 tags: [pipeline, balance, tools, rust, port]
 updated: 2026-11-11
-status: seven pieces of the core ported and tested (24 tests); no fight loop yet
+status: plays whole fights; two of 40 heroes ported (Brannoc, Isolde) and graded against the real game; one arena family (no breakable walls, no events)
 ---
 
 # The full Rust simulator
 
 The user, 2026-11-11, on being shown the [rough Rust model](rust-model.md) and asked whether it was enough or the full
-copy of the rules was still wanted: **"then lets make full functionality"**. This is that: the game's fight rules
-written again in Rust (`pipeline/rustfull/`), so fights run without a browser and thousands of times faster.
+copy of the rules was still wanted: **"then lets make full functionality"**, and later **"make that simulation tool
+first"**. This is that: the game's fight rules written again in Rust (`pipeline/rustfull/`), so fights run without a
+browser.
 
-**It is not finished and plays no fights yet.** Until it does and is graded, numbers come from the
-[real simulator](simulator.md) and quick estimates from the rough model.
+**It plays whole fights now, for two heroes.** Brannoc against Isolde in the Frost arena agrees with the real game
+number by number (below). Every other hero still needs the [real simulator](simulator.md); quick estimates still come
+from the rough model.
 
-## What it has to copy
+## Use it
 
-| Part of the game | Lines | State |
-|---|---:|---|
-| Cover, walking round it, sight, sweeps (`src/obstacles.ts`) | 269 | **ported** (`geom.rs`), tested |
-| Status effects and buffs (`src/effects/status.ts`) | 219 | **ported** (`status.rs`), tested |
-| The basic attack (`src/attacks/`) | 238 | **ported** (`attack.rs`), tested |
-| Danger zones; a hit lands only inside what was drawn (`telegraph.ts`, `inCastReach`) | | **ported** (`zone.rs`), tested |
-| The computer players' shared rules: which spell, how to walk, dropping a goal, dodging a bolt, answering a hit (`pickSpell`, `steer`, `reachableGoal`, `dodgeBolt`, `guards` in `src/duel.ts`) | about 350 | **ported** (`ai.rs`), tested |
-| The two fighters: walking, the ring, pushes, shields, dashes, taking a hit (`arena.ts` `hit`, `walk`, `moveFoe`, `keepInside`, `moveFigure`, `soak`; `damagePlayer` in `duel.ts`) | about 300 | **ported** (`figure.rs`), tested |
-| The rest of the duel: the fight loop itself, each CPU's own part (`ai`, `pilot`, `castSpell`), `resolve`, breakable walls | about 2,400 | read in part; to do |
-| The player's hero: walking, casting, cooldowns, roots (`src/heroMode.ts`) | 1,553 | to do |
-| The way round cover (`src/nav.ts`: the graph round the capsules, the shortest way, a kept route) | 251 | **ported** (`nav.rs`), tested |
-| Bolts (`projectile.ts`), units (`summon.ts`), the passives' engine (`traits/runtime.ts`) | 1,456 | to do |
-| 40 heroes: their passives (`src/traits/`, 10,600 lines) and the hit rules inside 160 spell files | | to do |
-| Arenas: cover layouts first; events and closing stages later | | to do |
+```
+cargo build --release --manifest-path pipeline/rustfull/Cargo.toml
+pipeline\rustfull\target\release\rustfull.exe duel Brannoc Isolde --fights 2000 --arena frost --out pipeline\rustfull\data\rust-pair-frost.json
+python pipeline/rustfull/grade.py pipeline/rustfull/data/pair-frost.json pipeline/rustfull/data/rust-pair-frost.json --notes pipeline/rustfull/notes-slice.json --page pipeline/rustfull/data/grade-pair-frost.html
+```
 
-## How it is done
+- `duel A B` plays `--fights` fights each way round (the two sides are played by two different computer players) and
+  writes them in the record the real simulator keeps with `--keep`. `--trace` writes every cast and hit instead.
+- `grade.py` lays a Rust file beside a real one and makes the page. `python pipeline/rustfull/guard.py` says whether
+  the game changed under a ported hero.
+- It stops with a message, never with a wrong answer, on anything not ported: a hero that is not ported, an arena with
+  breakable walls, a spell that dashes, flees, summons or banks.
+- Speed, one processor thread: 50 to 120 fights a second (the real simulator on eight browsers: about 4).
 
-1. **A small graded slice first.** The core plus two or three of the six benchmark heroes (one melee, one ranged),
-   one arena (the Night Temple), events off. Nothing else is started before that slice is graded.
-2. **The grader before the engine.** Rust fights write the same record as the real simulator's `--keep` (winner,
-   seconds, damage and hits by source, casts per slot), and one page shows Rust beside real. Graded first on what is
-   tight and catches port bugs a win rate hides: casts per slot a second, hits per cast, damage per hit, fight length.
-   Win rate comes last.
-3. **The yardstick is recorded once.** `pipeline/rustfull/data/slice-six.json`: 600 real fights among the six
-   benchmark heroes in the Night Temple (200 a hero), made with
-   `python pipeline/sim/sim.py all --heroes Brannoc Kaia Isolde Sirix Cantor Oblivion --reps 20 --keep --arena temple`.
-   Later work is graded against recorded files and does not need the browser simulator.
-4. **The core is read in the fight loop's own order and ported as it is read.** Order of operations and caps decide
-   whether two engines agree; the Rust code is the record, and each file says which game file it mirrors.
-5. **Numbers and layouts come from the game's export, not from the Rust source** (`pipeline/rustsim/export.js`, to be
-   extended with the traits' exported constants and each arena's cover). Numbers that only live inside a spell file
-   are flagged in the port.
-6. **A drift guard per hero:** a hash of its kit, trait and spell files is stored with its port; the simulator warns
-   when they changed. Silent disagreement between two copies of a rule is the risk of this whole approach.
-7. **Helpers (three at most) only after the slice passes** and the core's interface is frozen; then heroes in
-   batches, each graded against recorded real fights.
+## How close it is (2026-11-11)
 
-## Found before a line of the fight loop was written: the two sides are not equal
+Brannoc against Isolde, Frost arena, events off: 400 real fights, 4,000 Rust fights.
 
-The real duel has two computer players: the opponent's (`ai`, around line 1898 of `src/duel.ts`) and the autopilot
-that plays the player's hero in a simulated fight (around line 2189). In 3,120 real fights, every pairing fought both
-ways round:
-
-| Hero | Wins as the player's side | Wins as the opponent's side |
+| | real | Rust |
 |---|---:|---:|
-| Auriel | 50% | 10% |
-| Cantor | 40% | 5% |
-| Hank | 64% | 90% |
-| Bram | 49% | 71% |
-| Grandma Ironknit | 60% | 78% |
-| Nyx | 33% | 51% |
-| Sefu | 41% | 58% |
+| Brannoc as the opponent wins | 85.0% (±4.9) | 85.0% |
+| Brannoc as the player's hero wins | 34.0% (±6.6) | 30.9% |
+| Isolde as the opponent wins | 66.0% (±6.6) | 69.1% |
+| Isolde as the player's hero wins | 15.0% (±4.9) | 15.0% |
+| Fight length | 27.8 s, 29.4 s | 27.9 s, 29.6 s |
 
-Seven of 40 heroes differ by more than chance explains; over all fights the player's side wins 48.6%. So:
+All four win rates are inside the real run's own noise, and all 54 finer numbers (for each spell and the basic attack:
+casts in 10 s, hits for each cast, damage of a hit, damage a second) are within 5%. Laid frame over frame, a real and a
+Rust fight are the same to the centimetre for the first 4 to 9 seconds, until the dice differ. Page:
+`docs/balance/rust-slice-2026-11-11.html`.
 
-- **The port must carry both computer players**, not one.
-- **It matters for the game itself.** Auriel and Cantor look like the weakest heroes of the roster, but most of that
-  is the opponent's CPU not playing them: as the player's side they are near the middle. Anyone who picks "Duel the
-  CPU" and meets Cantor meets a pushover. That is a CPU fix, not a hero fix. Not touched yet; it waits on the user.
-- `python pipeline/sim/sim.py hero <Name>` measures the player's side only (as `kit-balance.js` always did). The
-  40-60% target was set that way, so it stays, but a hero should also be looked at with `--sides both`.
+## What had to be found to get there
 
-## The fight loop's order, as read so far
+The first Rust fights were off by 15 points of win rate on one side. Three things the game does, none of them written
+down anywhere, were behind it. The port keeps all three, because the aim is to agree with the game as it is:
 
-One frame of a simulated fight (1/60 s), in the game's order. The port must keep it.
+1. **Isolde's icicle is timed by two clocks.** `aiHold` (hold the Shatter back while the icicle stands) reads
+   `performance.now()`; the recast window reads the round's clock. At the frame both run out they round differently,
+   so about one cast in three the hold lets go one frame early and the CPU casts a Shatter that hits nothing and roots
+   her for half a second. Which way it falls depends on how long the page has been open, so **the real game itself
+   differs from page to page here** (in one probe: 5.0 against 3.1 recasts a fight for the same hero on two sides).
+   A fix in the game would be one line (compare the same clock); it waits on the user.
+2. **The opponent flickers.** A pushed opponent stands at `home + offset`. `moveFoe` calls `setHome`, which puts the
+   figure at `home` alone until the arena's next frame. So on every frame the opponent walks, whatever looks at it
+   afterwards (the autopilot, the player's hits and bolts) sees it without what pushes have added.
+3. **The computer players' walking state is never reset** between fights (`opponentAi`, `playerAi`: strafe side and
+   timer, closing, the kept route), and the player's side starts the page's first fight strafing the other way.
 
-`runtime.ts` `step(dt)`:
-1. the spell effects that are playing (`effect.update`): hits, moves and bolts are made in here
-2. the danger zones' clock (`telegraphs.update`)
-3. `arena.update(dt)`: figures, statuses, bolts, units
-4. `heroMode.update(dt)`: the player's hero: walking, its cooldowns, its basic attack
-5. `duel.update(dt)`, which is:
-   1. the round clock; the opponent's basic attack (`oppAttack.update`)
-   2. (arena events and stages: out for now)
-   3. if the round is over: return
-   4. the passives, when the fight is live: `heroRt.tick`, `oppRt.tick`, then `oppRt.victimTick`, then `heroRt.victimTick`
-   5. the end: the opponent at 0 HP is a win, checked before the player's 0 HP, which is a loss
-   6. the player's walk speed, smoothed over 0.2 s (the opponent's CPU aims ahead with it)
-   7. the opponent's CPU (`ai`, line 1898), then the autopilot for the player's hero (`pilot`)
+Also checked and fine: the simulator page already feeds `performance.now()` from the fight's clock, so the recorded
+fights do not depend on how fast the computer is.
 
-Read and ported so far: `ai` and `pilot` (their shared rules are in `ai.rs`; what each does on its own is noted
-below), `arena.update` and `arena.hit` (`figure.rs`), `castSpell`, `hitPlayer`, `damagePlayer`, `opponentHit`.
-Still to read: `heroMode.update` and its casting, bolts, units, the passives' engine, `resolve` again.
+## How a hero is ported and graded
 
-### What each computer player does on its own (the differences the port must keep)
+1. **Export** the game's own numbers: `python pipeline/tools/page-shots.py pipeline/rustfull/export.js pipeline/rustfull/data --json game.json`
+   (kits, what a passive fixes without code, each arena's cover). Nothing in the Rust source is typed from a kit.
+   Constants that live inside a trait or spell file are mirrored by hand in the hero's Rust file and listed at its top.
+2. **Write the hero**: its passive's hooks and its four spells as small timelines (`src/hero/<theme>.rs`), and add it
+   to `src/hero/mod.rs`. A spell is the same `time += dt; if !done && t >= T` steps as in the game, stepped first in
+   the frame.
+3. **Record the yardstick** once: `python pipeline/sim/sim.py duel A B --fights 200 --arena frost --keep --out <name>`,
+   copied to `pipeline/rustfull/data/`.
+4. **Grade** with `grade.py`. Look first at casts in 10 s, hits for each cast and damage of a hit: they barely swing,
+   so a wrong rule shows there long before it shows in a win rate.
+5. **When a number is off**, find the rule with the two probes: `probe.js` and `duel --trace` (every cast and hit;
+   `trace-compare.py`), then `probe-frames.js` and `frames` (every frame; `frames-compare.py` shows the first frame
+   where a real and a Rust fight part). A parting that is not a dice roll is a rule.
+6. **Stamp** the game files the port was written from: `python pipeline/rustfull/guard.py --stamp`.
+
+## What is ported
+
+| Part of the game | Where | State |
+|---|---|---|
+| Cover, walking round it, sight, sweeps (`src/obstacles.ts`) | `geom.rs` | ported, tested |
+| Status effects and buffs (`src/effects/status.ts`) | `status.rs` | ported, tested |
+| The basic attack and its homing bolt (`src/attacks/`) | `attack.rs`, `fight.rs` | ported, tested |
+| Danger zones; a hit lands only inside what was drawn | `zone.rs`, `fight.rs` | ported, tested |
+| The computer players' shared rules (`pickSpell`, `steer`, `reachableGoal`, `dodgeBolt`, `guards`) | `ai.rs` | ported, tested |
+| The two fighters: walking, the ring, pushes, shields, dashes, taking a hit | `figure.rs` | ported, tested |
+| The way round cover (`src/nav.ts`) | `nav.rs` | ported, tested |
+| Skillshot bolts: the plain path and piercing (`src/effects/projectile.ts`) | `bolt.rs` | ported, tested; curve, bank, bounce, split, wind walls, doors stop the program |
+| The frame's order, each CPU's own part (`ai`, `pilot`, `castSpell`, `castNow`), `resolve`, the passives' engine | `fight.rs` | ported, graded |
+| Brannoc (`src/traits/forge.ts`, four spells) | `hero/forge.rs` | ported, graded |
+| Isolde (`src/traits/frost.ts`, four spells) | `hero/frost.rs` | ported, graded |
+| 38 more heroes (Anka last: her kit may still move) | | to do |
+| Summoned units (`summon.ts`), spells that dash, flee, summon; charges; hold-to-charge; resources | | to do, each with the first hero that needs it |
+| Breakable walls (the Night Temple) | | to do: 60 lines in `duel.ts` (`blastWalls`) |
+| Arena events and closing stages, Last stand, the Raid, two screens | | out for now |
+
+## The fight loop's order
+
+One frame of a simulated fight (1/60 s), in the game's order (`step` in `src/runtime.ts`); `World::step` keeps it:
+
+1. the page's clock moves on (`performance.now()`), then:
+2. the spell effects that are playing: hits, moves and bolts are made in here
+3. `arena.update`: bolts (each one's hits delivered before the next flies), then the player's hero (statuses, dash,
+   shield), then the opponent (dash, push, statuses, shield)
+4. `heroMode.update`: the player's hero: cooldowns, its root, its basic attack and its attack bolts
+5. `duel.update`: the round clock; the opponent's basic attack; the passives (`heroRt.tick`, `oppRt.tick`,
+   `oppRt.victimTick`, `heroRt.victimTick`); the end (the opponent at 0 HP is a win, checked before the player's 0
+   HP); then the opponent's CPU (`ai`), then the autopilot (`pilot`)
+
+### What each computer player does on its own
 
 | | The opponent (`ai`) | The autopilot (`pilot`) |
 |---|---|---|
-| Cooldowns | its own list, counted down in `ai`; the level's cooldown factor on each cast | the hero's own (`heroMode.ready`) |
-| After a cast | rooted for the latest zone's impact, 2.5 s at most (`rooted`); a wait between casts at lower levels (`castWait`) | whatever `heroMode.autoCast` does (to be read) |
-| Where a ground spell is aimed | at the hero's feet (or the spot that also catches its units), plus the level's lead and error | `bestSpot` round the opponent; `fleeAim` / `dashAim` for an escape or a dash |
-| Zone dodge | only at levels with `zoneDodge` (none in a simulated fight) | never |
-| Walking | `moveFoe`: its home walks, pushes ride on top | `arena.walk`: nothing while it dashes |
+| Cooldowns | its own list, counted down in `ai`; the level's factor on each cast | the hero's own (`heroMode.ready`) |
+| After a cast | rooted for the latest zone's impact, 2.5 s at most; 0.5 s when the cast drew nothing | the same, but 0.4 s when it drew nothing; and the cast drops a basic attack that was winding up |
+| Where a ground spell is aimed | at the hero's feet | at the opponent's feet |
+| A targeted spell | no sight check of its own (the pick needs sight) | needs sight at the cast |
+| Walking | `moveFoe`: its home walks, pushes ride on top (and see "flickers" above) | `arena.walk` |
 | A push | a speed that dies away; 4 when the hit names none | at once, 0.18 m per unit; none when the hit names none |
+| A cast of the other side | nothing | folds the opponent's push into where it stands (`arena.context`) |
 | Order in a frame | first | second, after the opponent has moved and cast |
-| A hit on it is judged | `opponentHit`: inside the zones of that cast of the player's | `hitPlayer`: inside the zones of that cast of the opponent's |
+| A hit on it is judged | `opponentHit`: inside the zones of that cast, for 4.5 s | `hitPlayer`: inside the zones of that cast |
+| Strafe at the page's first fight | starts one way | starts the other way |
 
-## What is out, for now
+## The two sides are not equal (found before the fight loop was written)
 
-Arena events and closing stages, Last stand, the Raid and bosses, and anything about two screens (the network). Units,
-doors and cover made by spells arrive with the first hero that needs them. Anka is ported last: her kit may still move.
+In 3,120 real fights, every pairing fought both ways round, seven of 40 heroes differ by side by more than chance
+explains (Auriel 50% as the player's side against 10% as the opponent's; Cantor 40 against 5; Hank 64 against 90).
+Brannoc and Isolde show it too: Brannoc wins 85% as the opponent and 34% as the player's hero against the same Isolde.
+So the port carries both computer players, and a hero should be looked at with both sides. Fixing the opponent CPU's
+play of Auriel and Cantor waits on the user.
 
 ## The honest size
 
-Unknown until the slice is done: the slice will give hours per hero, measured, and the total follows from that. The
-user was told "several weeks" before choosing it. The rough model stays in use until the full one passes its grade.
+Measured on the first two heroes: a hero's passive and four spells are 200 to 300 lines of Rust and about an hour to
+write once the engine has what the hero needs; finding the three engine quirks above took longer than both heroes.
+
+What the other 38 need, counted from the game's export (`data/game.json`):
+
+| The hero needs | Heroes |
+|---|---:|
+| nothing the engine lacks by its kit's flags (Kaia, Auriel, Sirix, Cantor, Bram, Professor Puff, Mr. Ledger, Referee Whistler, Madame Cleaver, Barry Cloudsley, The Great Zambini, Anka) | 12 |
+| a spell that dashes | 15 |
+| summoned units | 7 |
+| ammo charges | 7 |
+| a spell that flees | 4 |
+| a parry | 2 |
+| a bank shot | 2 |
+
+The 12 are the next batch; their spells may still ask the engine for something new (a wall a spell raises, a shield,
+a heal, a drag), and each new part will bring its own quirks to find. Three helpers at once can port heroes in batches
+now that the interface (`hero/mod.rs`) stands; each batch is graded against recorded real fights before it counts.

@@ -2,28 +2,40 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
-## The full Rust simulator (2026-11-11): started; no fight loop yet
+## The full Rust simulator (2026-11-11): plays whole fights; 2 of 40 heroes ported and graded; committed, not pushed
 
-User, shown the rough model and asked whether it was enough: **"then lets make full functionality"**: the full copy
-of the fight rules in Rust. Plan, state and what is out: [pipeline/rust-sim.md](pipeline/rust-sim.md).
+User, shown the rough model and asked whether it was enough: **"then lets make full functionality"**, then **"make
+that simulation tool first"**: the full copy of the fight rules in Rust. Plan, state, how a hero is ported and what is
+out: [pipeline/rust-sim.md](pipeline/rust-sim.md). Page: `docs/balance/rust-slice-2026-11-11.html`.
 
-- **Done:** `pipeline/rustfull/`, each file a port of named game code, 24 tests passing (`cargo test --release`
-  in that folder): cover and walking (`geom.rs`), status effects (`status.rs`), the basic attack (`attack.rs`),
-  danger zones (`zone.rs`), the computer players' shared rules (`ai.rs`), the two fighters (`figure.rs`), the way
-  round cover (`nav.rs`). User: "make that simulation tool first". The
-  yardstick: `pipeline/rustfull/data/slice-six.json`, 600 real fights among the six benchmark heroes in the Night
-  Temple (Sirix 87%, Brannoc 74, Oblivion 55, Isolde 50, Kaia 25, Cantor 10).
-- **Found:** the duel's two computer players are not equal. Auriel wins 50% as the player's side and 10% as the
-  opponent's, Cantor 40 and 5, Hank 64 and 90 (table in rust-sim.md). The port must carry both; and the roster's
-  weakest heroes are mostly a CPU problem on the opponent's side, not weak kits. Nothing changed in the game.
-- **Next, in this order:** (1) read and port `heroMode.ts` (the player's hero: `update`, `autoCast`, `autoAttack`,
-  cooldowns, the cast's root), `effects/projectile.ts` (bolts), `traits/runtime.ts` (the passives' engine) and
-  `resolve` in `duel.ts`; (2) the fight loop that ties the pieces together, writing the `--keep` record, and the
-  grader page (Rust beside real); (3) Brannoc and Isolde (one melee, one ranged) with their traits
-  (`forge.ts`, `frost.ts`) and eight spells; (4) grade the slice on casts, hits, damage per hit and fight length,
-  then win rate; (5) stop and show the slice page with hours per hero, measured.
-- **Waiting on the user:** nothing for the port. Open from before: whether to fix the opponent CPU's play of
-  Auriel and Cantor; whether to rebalance Hank and the others the real roster shows; Anka's gate 5 (parked).
+- **Done:** `pipeline/rustfull/` plays whole duels without a browser: the frame in the game's order, the opponent's
+  CPU and the autopilot, casts, hit resolution, the passives' engine, bolts, and the first two heroes (Brannoc,
+  Isolde) with their eight spells. 32 tests pass (`cargo test --release --manifest-path pipeline/rustfull/Cargo.toml`).
+  The game's numbers come from its own export (`pipeline/rustfull/export.js` -> `data/game.json`).
+- **Graded:** Brannoc against Isolde in the Frost arena, 400 real fights beside 4,000 Rust fights: win rates
+  85.0/85.0, 34.0/30.9, 66.0/69.1, 15.0/15.0 (all inside the real run's noise), and all 54 finer numbers (casts, hits
+  for each cast, damage of a hit, damage a second) within 5%. Frame over frame a real and a Rust fight are the same to
+  the centimetre until the dice differ. One processor thread plays 50 to 120 fights a second (real: about 4 on eight
+  browsers).
+- **Found in the game on the way** (nothing changed in the game; each is kept in Rust as it is):
+  1. Isolde's second icicle cast (Shatter) is held back with one clock and opened with another; they round
+     differently, so one cast in three the CPU fires a Shatter that hits nothing and stands still half a second. It
+     depends on how long the page has been open, so the real game differs from page to page here. A one-line fix.
+  2. A pushed opponent is seen without its push on every frame it walks (`moveFoe` -> `setHome`).
+  3. The computer players' walking state (strafe side and timer) is not reset between fights.
+  4. From before: the two computer players are not equal (Auriel 50% as the player's side, 10% as the opponent's).
+- **Not ported, and it stops with a message instead of a wrong answer:** the other 38 heroes, summoned units, spells
+  that dash, flee, summon or bank, ammo charges, breakable walls (the Night Temple), arena events and closing stages,
+  the Raid.
+- **Next, in this order:** (1) the 12 heroes whose kits need nothing the engine lacks (Kaia, Auriel, Sirix, Cantor,
+  Bram, Professor Puff, Mr. Ledger, Referee Whistler, Madame Cleaver, Barry Cloudsley, The Great Zambini; Anka last),
+  each recorded (`python pipeline/sim/sim.py duel A B --fights 200 --arena frost --keep`) and graded
+  (`python pipeline/rustfull/grade.py`); (2) breakable walls, so the Night Temple and the 600-fight yardstick
+  (`data/slice-six.json`) can be used; (3) dashes (15 heroes), units (7), charges (7); (4) several processor threads.
+- **After a change to the game:** `python pipeline/rustfull/guard.py` lists the ported files the change touches.
+- **Waiting on the user:** whether to fix the icicle's two clocks in the game (it also makes the real simulator's
+  Isolde numbers wobble); whether to fix the opponent CPU's play of Auriel and Cantor; whether to rebalance Hank and
+  the others the real roster shows; Anka's gate 5 (parked).
 
 ## Rough Rust model of fights (2026-11-11): built, first check done, committed, not pushed
 
