@@ -244,6 +244,11 @@ pub struct Opponent {
     pub home: V2,
     /// What pushes have added to it.
     offset: V2,
+    /// Where the figure is for everyone else (the game's `group.position`). The arena's frame puts it at home plus
+    /// offset; a walk (`moveFoe`) and a fold (`setHome`) put it at home alone until the arena's next frame. So on a
+    /// frame the opponent walks, whatever looks at it afterwards (the autopilot, its hits, bolts) sees it without
+    /// what pushes have added. The game does this; the port keeps it.
+    shown: V2,
     /// The push's speed now (m/s), dying away.
     knock: V2,
     pub yaw: f64,
@@ -255,11 +260,24 @@ pub struct Opponent {
 
 impl Opponent {
     pub fn new(max: f64) -> Self {
-        Opponent { home: OPPONENT_START, offset: V2::new(0.0, 0.0), knock: V2::new(0.0, 0.0), yaw: 0.0, hp: max, max, slot: Slot::default(), slide: Slide::default() }
+        Opponent { home: OPPONENT_START, offset: V2::new(0.0, 0.0), shown: OPPONENT_START, knock: V2::new(0.0, 0.0), yaw: 0.0, hp: max, max, slot: Slot::default(), slide: Slide::default() }
     }
 
-    /// Where it is: its home plus what pushes have added.
+    /// What pushes have added becomes part of where it stands (`arena.context` does this at every cast of the
+    /// player's hero); the push's speed goes on.
+    pub fn fold(&mut self) {
+        self.home = self.whole();
+        self.offset = V2::new(0.0, 0.0);
+        self.shown = self.home;
+    }
+
+    /// Where it is for everyone else (see `shown`).
     pub fn pos(&self) -> V2 {
+        self.shown
+    }
+
+    /// Its home plus what pushes have added.
+    fn whole(&self) -> V2 {
         V2::new(self.home.x + self.offset.x, self.home.z + self.offset.z)
     }
 
@@ -278,9 +296,10 @@ impl Opponent {
         let decay = (-dt * 7.0).exp();
         self.knock.x *= decay;
         self.knock.z *= decay;
-        let mut p = self.pos();
+        let mut p = self.whole();
         keep_inside(&mut p, cover, ring, 0.6);
         self.offset = V2::new(p.x - self.home.x, p.z - self.home.z);
+        self.shown = p;
         if self.hp > 0.0 {
             self.slot.status.update(dt);
             self.slot.tick_shield(dt);
@@ -301,6 +320,7 @@ impl Opponent {
         self.home.x += mv.x;
         self.home.z += mv.z;
         keep_inside(&mut self.home, cover, ring, 0.6);
+        self.shown = self.home;
         if mv.x * mv.x + mv.z * mv.z > 1e-8 {
             self.yaw = mv.x.atan2(mv.z);
         }
@@ -354,6 +374,27 @@ impl Opponent {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_walking_opponent_is_seen_without_its_push_until_the_arenas_next_frame() {
+        let mut o = Opponent::new(600.0);
+        o.take(&Hit { damage: 10.0, knock: Some(7.0), from: Some(V2::new(0.0, 5.0)), ..Hit::default() }, V2::new(0.0, 13.0));
+        for _ in 0..60 {
+            o.update(1.0 / 60.0, &[], &RING);
+        }
+        // pushed about a metre toward lower z, and seen there
+        let pushed = o.pos();
+        assert!((pushed.z - 0.0).abs() < 0.1 && (o.home.z - 1.0).abs() < 1e-9);
+        // it walks: for the rest of this frame it is seen at its home, without the push
+        o.walk(V2::new(0.05, 0.0), false, &[], &RING);
+        assert!((o.pos().z - 1.0).abs() < 1e-9 && (o.pos().x - 0.05).abs() < 1e-9);
+        // the arena's next frame puts the push back
+        o.update(1.0 / 60.0, &[], &RING);
+        assert!((o.pos().z - pushed.z).abs() < 0.01);
+        // a cast of the player's hero folds the push into where it stands
+        o.fold();
+        assert!((o.home.z - pushed.z).abs() < 0.01 && (o.pos().z - o.home.z).abs() < 1e-9);
+    }
 
     #[test]
     fn the_same_push_moves_the_two_fighters_differently() {

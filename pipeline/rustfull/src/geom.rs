@@ -4,7 +4,7 @@
 //! Everything is on the ground plane: `x` and `z` as in the game. An obstacle is a capsule: a segment from (ax, az) to
 //! (bx, bz) with a radius; a pillar is a capsule of zero length.
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct V2 {
     pub x: f64,
     pub z: f64,

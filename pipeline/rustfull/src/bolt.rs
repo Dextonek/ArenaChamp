@@ -23,6 +23,17 @@ pub enum Side {
     Opponent,
 }
 
+impl Side {
+    /// 0 for the player's side, 1 for the opponent's: the index into everything kept once per side.
+    pub fn i(self) -> usize {
+        self as usize
+    }
+
+    pub fn other(self) -> Side {
+        if self == Side::Hero { Side::Opponent } else { Side::Hero }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct BoltSpec {
     pub from: V2,
@@ -120,6 +131,22 @@ impl Bolts {
         self.live.iter().filter(|b| b.alive && b.side != to).map(|b| crate::ai::Threat { id: b.id, pos: b.pos, dir: b.dir, radius: b.spec.radius, range_left: b.range_left, speed: b.spec.speed }).collect()
     }
 
+    /// One bolt's frame: it flies on and touches what its path meets. The fight loop calls this bolt by bolt and
+    /// delivers each bolt's hits before the next one flies, as the game does.
+    pub fn step_one(&mut self, i: usize, dt: f64, cover: &[Obstacle], victims: &[Victim]) -> Vec<Touch> {
+        let mut out = Vec::new();
+        if self.live[i].alive {
+            let v = victims.to_vec();
+            Self::step(&mut self.live[i], dt, cover, &move |_| v.clone(), &mut out);
+        }
+        out
+    }
+
+    /// Drops the bolts that ended.
+    pub fn sweep(&mut self) {
+        self.live.retain(|b| b.alive);
+    }
+
     /// One frame: every bolt flies on and touches what its path meets. `victims(side)` lists what a bolt of that side
     /// can hit now. Returns the touches in the order they happened; the caller delivers the hits.
     pub fn update(&mut self, dt: f64, cover: &[Obstacle], victims: &dyn Fn(Side) -> Vec<Victim>) -> Vec<Touch> {
@@ -190,7 +217,7 @@ impl Bolts {
             return;
         }
         p.range_left -= moved;
-        if p.range_left <= 1e-6 {
+        if p.range_left <= 1e-4 {
             p.alive = false;
         }
     }
