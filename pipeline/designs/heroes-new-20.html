@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twenty new heroes</title>
+<style>
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37);
+    --panel: var(--card, #1a1a19); --gold: #e0a83a; --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, sans-serif; }
+  html.standalone body { max-width: 1000px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  p.sub { margin: 0 0 12px; color: var(--ink-2); font-size: 13px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--c, var(--gold)); border-radius: var(--r); padding: 12px 14px; display: flex; flex-direction: column; gap: 5px; }
+  .card h3 { margin: 0; font-size: 15px; }
+  .card h3 small { color: var(--ink-2); font-weight: 400; }
+  .card .tag { font-size: 11px; color: var(--c, var(--gold)); text-transform: uppercase; letter-spacing: .05em; }
+  .card p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .card p b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>Twenty new heroes: ideas</h1>
+<p class="sub">Ideas only: none is built. Each is mythic in look (the art bible's rule), has a shape of its own that no hero has yet, and one rule that breaks the usual "four spells and a passive". A hero is built by the six gates of docs/pipeline/new-hero.md, look first.</p>
+<div class="cards" id="cards"></div>
+<script>
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const H = [
+    ['Selene', 'the Moon Huntress', 'ranged hunter', '#b9c6ff', 'A silver bow, a crescent diadem, a cloak that is dark on one side and pale on the other. Shape: the crescent that waxes to a full disc.', 'The moon turns during the fight. At new moon she is a stalker (stealth, traps); at full moon an archer of long silver volleys. <b>Her spells change with the phase</b>, and both players see the moon coming.'],
+    ['Ignatius', 'the Lamplighter', 'zone mage', '#ffc56a', 'A tall man in a dark travelling coat with a long brass pole and a ring of lanterns at his belt. Shape: the square lantern and its pool of light.', '<b>No ultimate.</b> He hangs lanterns that stay. Inside his light he is strong and sees stealth; outside it he is weak. The fight is over where the light is, and the enemy can snuff a lantern by standing in it.'],
+    ['Thren', 'the Chain Warden', 'controller, melee', '#9aa3b5', 'A broad gaoler-knight in dark iron with a great chain over one shoulder and an anchor-headed mace. Shape: heavy square links.', '<b>One chain, always out.</b> He tethers the enemy to himself or to a post he plants. The rope has a length: he shortens it, swings them round it, or breaks it for a burst. No other hero plays with a leash.'],
+    ['Ysolt', 'the Oracle', 'support mage', '#c9a6ff', 'A veiled seer with a bronze tripod bowl of smoke carried on chains. Shape: the eye inside a triangle of smoke.', '<b>She predicts.</b> She marks the floor where she says the enemy will stand in three seconds; if they do, the prophecy lands hard, and if they don’t, she loses the cast. She also sees the enemy’s next spell a moment early.'],
+    ['Korrin', 'the Houndmaster', 'duo, melee', '#c58a52', 'A hunter in furs and bronze with a horn, and Garm, a wolfhound the size of a pony in a studded collar. Shape: the paw and the hunting horn.', '<b>Two bodies, one player.</b> Garm has his own health and never leaves. Her spells are commands (hold, flank, seize), so she fights from two places at once. If Garm falls she fights alone until he limps back.'],
+    ['Vael', 'the Rose Duelist', 'duelist, melee', '#e0607a', 'A fencer in a black doublet with a rose-red sash, a thin rapier and a rose in the off hand. Shape: the thorned stem and the falling petal.', '<b>Her spells are answers.</b> Parry, riposte and bind can only be cast in the moment after the enemy acts. Mistimed, they do nothing; timed, they turn the enemy’s own spell back. She rewards reading the opponent, not rotating cooldowns.'],
+    ['Orrin', 'the Bell Founder', 'zone bruiser', '#d9a441', 'A giant of a monk in a leather apron with a bronze bell on a yoke and a long striker. Shape: the bell and its widening ring of sound.', '<b>His spells are things on the field.</b> He sets bells down; any hit on a bell, his or the enemy’s, rings it for an area effect. Bells ring each other in a chain, so he builds a carillon and then strikes one.'],
+    ['Tharsis', 'the Rust Knight', 'juggernaut', '#b5562c', 'A knight in once-fine armour eaten red-brown, a notched greatsword, flakes drifting from him. Shape: the spreading rust bloom.', '<b>He attacks cooldowns, not only health.</b> Each of his hits rusts the enemy’s last-used spell: it comes back slower every time. A long fight against him leaves the enemy with nothing to cast.'],
+    ['Eira', 'the Aurora Weaver', 'ranged mage', '#6fe0c0', 'A northern priestess in white furs with long ribbons of green and violet light trailing from her hands. Shape: the hanging curtain of light.', '<b>She bends bolts.</b> She hangs curtains of aurora across the arena; any bolt that crosses one, from either side, curves along it. She does not block shots: she redirects them, her own too.'],
+    ['Cassius', 'the Net and Trident', 'skirmisher', '#e0b040', 'A lean arena fighter with a weighted net, a bronze trident and a single armoured sleeve. Shape: the net’s mesh and the three tines.', '<b>The crowd’s favour.</b> Risk fills a meter: near misses, fighting at low health, a net thrown from far. His finishing thrust has no cooldown; it costs favour, so he must play dangerously to use it.'],
+    ['Liu', 'the Kite Master', 'ranged controller', '#ff7a5a', 'A slight figure in layered silk with a reel at her hip and three painted war kites on long strings overhead. Shape: the diamond kite and its taut string.', '<b>She attacks from where her kites are.</b> Each spell flies a kite to a spot; her attacks and spells then come from the kites, not from her. Cut a string (hit the kite) and it falls.'],
+    ['Tindra', 'the Runesmith', 'combo mage', '#7fc8ff', 'A smith-priestess with a chisel and a mallet, three standing stones floating behind her. Shape: the angular carved rune, lit from inside.', '<b>No fixed spells.</b> Q, W and E each carve a rune; the third rune casts the word they spell. Three runes in different orders make ten spells. She is the hero for players who want to learn a language.'],
+    ['Rook', 'the Siege Engineer', 'artillery', '#8c7a5a', 'A scarred engineer in a brigandine with a folding bronze ballista on her back. Shape: the bolt-thrower’s arms and its long quarrel.', '<b>She unpacks.</b> Mobile she is weak; planted, she becomes a ballista with twice any hero’s reach and cannot move. The whole duel is about when she dares to set up and how the enemy gets to her.'],
+    ['Seraphine', 'the Censer Saint', 'area healer, bruiser', '#d8c8ff', 'A veiled warrior-saint swinging a great silver censer on a chain, smoke pouring from it. Shape: the swinging censer and its drifting trail.', '<b>Her path is her weapon.</b> Smoke stays where she has walked: it heals her allies and chokes enemies. She draws shapes on the floor by walking, and closing a loop consecrates everything inside it.'],
+    ['Dagny', 'the Shieldmaiden', 'tank', '#7f9cc0', 'A tall warrior with a round shield as big as a door, a spear, a winged helm. Shape: the round shield’s boss and rim.', '<b>Facing matters.</b> Braced, nothing hurts her from the front; everything hurts from behind. She turns slowly. The enemy has to get round her, and she has to keep them in front.'],
+    ['Stheno', 'the Stone Gaze', 'controller', '#8fbf8a', 'A gorgon queen in a bronze half-mask, serpents coiled in her hair like a crown, a robe like scales. Shape: the eye whose look leaves grey stone.', '<b>Looking at her is the danger.</b> An enemy facing her slowly turns to stone; turning away saves them and spoils their aim. She fights the enemy’s camera hand as much as their hero.'],
+    ['Auriga', 'the Charioteer', 'skirmisher', '#ffd27a', 'A driver in a light bronze chariot drawn by two spectral horses of gold light. Shape: the wheel and its curved track.', '<b>She never stops.</b> The chariot always moves and she steers it; speed is her damage, and a tight turn costs speed. Hitting her means reading her line, and she runs down what stands in it.'],
+    ['Kagen', 'the Still Blade', 'assassin, melee', '#d8d8e8', 'A wandering swordsman in grey with a sheathed long blade he keeps his hand on. Shape: one thin white cut across everything.', '<b>No cooldowns, one cut.</b> The longer he keeps the blade sheathed, the more the one draw does; every other action spends that patience. He is a hero made of waiting.'],
+    ['Corvin', 'the Magpie Prince', 'trickster', '#5a6cff', 'A slender thief-prince in a feathered black-and-white coat with one bright stolen jewel at his throat. Shape: the black feather and the glint of something taken.', '<b>His ultimate is yours.</b> His R is whatever spell the enemy cast last, stolen and used once. Against every hero he is a different hero, and the enemy must think about what they hand him.'],
+    ['Nephthys', 'the Riddle', 'controller', '#e0c080', 'A sphinx-priestess: a lioness’s grace, great folded wings, a calm human face under a striped crown. Shape: the scales, with a feather on one side.', '<b>She makes the enemy choose.</b> Each spell offers two doors: lose health or lose your next spell, be rooted here or be moved there. The enemy picks, quickly, and she gains from either answer.'],
+  ];
+  const box = document.getElementById('cards');
+  H.forEach(([name, title, role, color, look, rule], i) => {
+    const d = document.createElement('div');
+    d.className = 'card';
+    d.style.setProperty('--c', color);
+    d.innerHTML = `<h3>${i + 41}. ${name} <small>${title}</small></h3><div class="tag">${role}</div><p>${look}</p><p>${rule}</p>`;
+    box.append(d);
+  });
+})();
+</script>
+</body>
+</html>
