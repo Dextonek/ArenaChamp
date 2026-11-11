@@ -2,7 +2,7 @@
 title: The full Rust simulator (in the making)
 tags: [pipeline, balance, tools, rust, port]
 updated: 2026-11-11
-status: plays whole fights; two of 40 heroes ported (Brannoc, Isolde) and graded against the real game in two arenas (Frost, Glade); no breakable walls, no events
+status: plays whole fights; six of 40 heroes ported (Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger) and graded against the real game; no breakable walls, no events
 ---
 
 # The full Rust simulator
@@ -109,7 +109,11 @@ fights do not depend on how fast the computer is.
 | The frame's order, each CPU's own part (`ai`, `pilot`, `castSpell`, `castNow`), `resolve`, the passives' engine | `fight.rs` | ported, graded |
 | Brannoc (`src/traits/forge.ts`, four spells) | `hero/forge.rs` | ported, graded |
 | Isolde (`src/traits/frost.ts`, four spells) | `hero/frost.rs` | ported, graded |
-| 38 more heroes (Anka last: her kit may still move) | | to do |
+| Kaia (`storm`) | `hero/storm.rs` | ported, graded (800 real fights) |
+| Auriel (`dawn`) | `hero/dawn.rs` | ported, graded; her ultimate lands too rarely to judge |
+| Sirix (`hive`) | `hero/hive.rs` | ported, graded; W cast 8 to 15% more often (few real casts) |
+| Mr. Ledger (`ledger`) | `hero/ledger.rs` | ported, graded; as the player's hero against Isolde his R is cast too rarely (0.71 against 0.81 a fight), cause not found |
+| 34 more heroes (Anka last: her kit may still move) | | to do |
 | Summoned units (`summon.ts`), spells that dash, flee, summon; charges; hold-to-charge; resources | | to do, each with the first hero that needs it |
 | Breakable walls (the Night Temple) | | to do: 60 lines in `duel.ts` (`blastWalls`) |
 | Arena events and closing stages, Last stand, the Raid, two screens | | out for now |

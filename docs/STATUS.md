@@ -2,7 +2,19 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
-## The full Rust simulator (2026-11-11): plays whole fights; 2 of 40 heroes ported and graded; committed, not pushed
+## The full Rust simulator (2026-11-11): plays whole fights; 6 of 40 heroes ported and graded; committed, not pushed
+
+- **Heroes in it, each graded against 800 real fights (against Brannoc and Isolde, both sides, Frost arena):**
+  Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger. All have their win rates inside the real runs' noise. Known gaps,
+  each said in its commit: Mr. Ledger as the player's hero against Isolde casts his ultimate 0.71 times a fight in
+  Rust against 0.81 in the game (cause not found); Sirix's W (Hive Shell) is cast 8 to 15% more often in Rust, from
+  only 51 to 106 real casts. How to port the next: `docs/pipeline/rust-port-hero.md`. Heroes are ported by helpers in
+  their own copies of the repo (`.claude/worktrees/`, git-ignored), two at a time, then merged and graded again here.
+- **Next:** Bram and Barry Cloudsley, then Professor Puff, Referee Whistler, Madame Cleaver, Cantor, The Great
+  Zambini; then the engine parts the other 26 need (dashes the CPU aims, units, charges, curving and bouncing bolts,
+  breakable walls). A leftover helper copy from an earlier session, `.claude/worktrees/agent-ae3b062ad31cdddea`
+  (locked, at b65a991), is not mine to remove.
+
 
 User, shown the rough model and asked whether it was enough: **"then lets make full functionality"**, then **"make
 that simulation tool first"**: the full copy of the fight rules in Rust. Plan, state, how a hero is ported and what is
