@@ -5,14 +5,15 @@ import { RING, canvasTexture, disposeTree, flatRing, floorDisc, seeded } from '.
 import { checkCameraRule, instance, loadKit, merged, templeCover, type Place } from './temple';
 import type { ArenaDef, ArenaStage } from './types';
 
-/** The court as it was built, for two: its floor's drawing and its inner cover are this size whatever the party. */
-const BASE_R = RAID_BOSSES.sun.ring;
 /**
- * How far the walkable court reaches from its centre: wider than a duel ring, because a giant fights here. For a party it grows
- * (`setCourtSize`, `raidRing`): the old court stays as the middle, and an outer court of the same stone runs out to the new rim, with
- * rings of columns and screen walls of its own. Whoever imports this reads it as it is now.
+ * How far the Warden's room reaches from its centre: wider than a duel ring, because a giant fights here. This court is the room for
+ * two and is always 16 m; a party fights in the Great Dial (./greatdial.ts), up to 46 m, and `setCourtRadius` says how far that
+ * reaches now. Whoever imports this reads it as it is now: the Warden's moves reach the rim of whichever room he is in.
  */
-export let COURT_R: number = BASE_R;
+export let COURT_R: number = RAID_BOSSES.sun.ring;
+export function setCourtRadius(r: number) {
+  COURT_R = r;
+}
 
 const GOLD = 0xc9a24a;
 /** Screen walls on a ring round the altar, and columns further out that never break. Point-symmetric, none on the z axis. */
@@ -35,35 +36,10 @@ const columns: Obstacle[] = Array.from({ length: 8 }, (_, k) => {
  * Cover made for the Sun Warden's moves: Noon needs something to hide behind and something worth spending, and his rays
  * turn round the altar in the middle. Layout rules as in docs/architecture/arenas.md; both heroes start on the south side.
  */
-export const COURT_OBSTACLES: Obstacle[] = [];
-
-/** The outer court's cover: screen walls and columns in turn on rings 9 m apart, none on the z axis (the camera's and the gates'). */
-function outerCover(r: number): Obstacle[] {
-  const out: Obstacle[] = [];
-  for (let ring = BASE_R + 4.5, i = 0; ring <= r - 3.5; ring += 4.5, i++) {
-    const n = Math.max(6, Math.round((Math.PI * 2 * ring) / (i % 2 ? 13 : 10) / 2) * 2);
-    for (let k = 0; k < n; k++) {
-      const a = ((k + 0.5) / n) * Math.PI * 2 + (i % 2 ? 0.11 : 0);
-      const cx = RING.x + Math.sin(a) * ring, cz = RING.z + Math.cos(a) * ring;
-      if (i % 2) {
-        const tx = Math.cos(a) * WALL_HALF, tz = -Math.sin(a) * WALL_HALF;
-        out.push(wall(cx - tx, cz - tz, cx + tx, cz + tz));
-      } else out.push(pillar(cx, cz));
-    }
-  }
-  return out;
-}
-
-/** The court for a party: how far it reaches now. The same list and the same arena, changed in place, before a fight is built. */
-export function setCourtSize(r: number) {
-  COURT_R = Math.max(BASE_R, r);
-  COURT_OBSTACLES.length = 0;
-  COURT_OBSTACLES.push({ ...pillar(RING.x, RING.z, 1.0), height: 1.45 }, ...walls, ...columns, ...outerCover(COURT_R));
-}
-setCourtSize(BASE_R);
+export const COURT_OBSTACLES: Obstacle[] = [{ ...pillar(RING.x, RING.z, 1.0), height: 1.45 }, ...walls, ...columns];
 
 /** Under an eclipse: a dark sky with a burning horizon, warm light from ahead, and no cold moonlight. */
-const STAGE: ArenaStage = {
+export const COURT_STAGE: ArenaStage = {
   background: 0x120b0f,
   zenith: 0x05050e,
   horizon: 0x4a2212,
@@ -89,7 +65,7 @@ const STAGE: ArenaStage = {
 function courtFloor() {
   return canvasTexture(1536, (g, s) => {
     const rnd = seeded(61);
-    const ppm = s / (BASE_R * 2);
+    const ppm = s / (COURT_R * 2);
     const c = s / 2;
     g.fillStyle = '#12141f';
     g.fillRect(0, 0, s, s);
@@ -182,7 +158,7 @@ function courtFloor() {
  */
 function courtGlow() {
   return canvasTexture(1536, (g, s) => {
-    const rnd = seeded(91), ppm = s / (BASE_R * 2);
+    const rnd = seeded(91), ppm = s / (COURT_R * 2);
     g.fillStyle = '#000';
     g.fillRect(0, 0, s, s);
     g.translate(s / 2, s / 2);
@@ -231,7 +207,7 @@ function apronTexture() {
 }
 
 /** The eclipse: a black disc in a burning corona. */
-function eclipseTexture() {
+export function eclipseTexture() {
   return canvasTexture(512, (g, s) => {
     const c = s / 2, r = s * 0.17;
     const halo = g.createRadialGradient(c, c, r * 0.9, c, c, c);
@@ -246,7 +222,7 @@ function eclipseTexture() {
   });
 }
 
-function dotTexture() {
+export function dotTexture() {
   return canvasTexture(64, (g, s) => {
     const r = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
     r.addColorStop(0, 'rgba(255,255,255,1)');
@@ -276,58 +252,11 @@ const ROCKS: Record<string, Rock[]> = (() => {
 })();
 const _rock = new THREE.Matrix4(), _rp = new THREE.Vector3(), _rq = new THREE.Quaternion(), _re = new THREE.Euler(), _rs = new THREE.Vector3();
 
-/** Fire bowls on the rim, every 30° in the court for two (more round a wider one), none straight ahead or behind (the z axis stays open for the camera). */
-const bowls = () => {
-  const n = Math.round((12 * COURT_R) / BASE_R / 2) * 2;
-  return Array.from({ length: n }, (_, k) => {
-    const a = ((k + 0.5) / n) * Math.PI * 2;
-    return { x: RING.x + Math.sin(a) * (COURT_R + 1.5), z: RING.z + Math.cos(a) * (COURT_R + 1.5) };
-  });
-};
-
-/** The outer court's floor, from the old rim to the new: the same slate in rings, the sun wheel's long rays running on, a gold line every ring of cover. */
-function outerFloor() {
-  return canvasTexture(2048, (g, s) => {
-    const rnd = seeded(77), ppm = s / (COURT_R * 2);
-    g.fillStyle = '#12141f';
-    g.fillRect(0, 0, s, s);
-    g.translate(s / 2, s / 2);
-    for (let r0 = BASE_R, ri = 0; r0 < COURT_R; r0 += 2.25, ri++) {
-      const r1 = Math.min(COURT_R, r0 + 2.25), n = Math.round(r0 * 3.2);
-      for (let k = 0; k < n; k++) {
-        const a0 = ((k + (ri % 2) * 0.5) / n) * Math.PI * 2, a1 = ((k + 1 + (ri % 2) * 0.5) / n) * Math.PI * 2;
-        g.fillStyle = rnd() < 0.5 ? `rgba(120,130,170,${0.012 + rnd() * 0.02})` : `rgba(0,0,0,${0.05 + rnd() * 0.08})`;
-        g.beginPath();
-        g.arc(0, 0, r1 * ppm, a0, a1);
-        g.arc(0, 0, r0 * ppm, a1, a0, true);
-        g.closePath();
-        g.fill();
-        g.strokeStyle = 'rgba(4,4,9,0.8)';
-        g.lineWidth = 2;
-        g.stroke();
-      }
-    }
-    g.strokeStyle = 'rgba(190,150,70,0.24)';
-    g.lineWidth = 3;
-    for (let r = BASE_R + 4.5; r < COURT_R - 1; r += 9) { g.beginPath(); g.arc(0, 0, r * ppm, 0, Math.PI * 2); g.stroke(); }
-    g.fillStyle = 'rgba(190,150,70,0.06)';
-    for (let k = 0; k < 16; k++) {
-      const a = (k / 16) * Math.PI * 2, w = 0.02;
-      g.beginPath();
-      g.moveTo(Math.cos(a - w) * (BASE_R + 0.5) * ppm, Math.sin(a - w) * (BASE_R + 0.5) * ppm);
-      g.lineTo(Math.cos(a) * (COURT_R - 1.5) * ppm, Math.sin(a) * (COURT_R - 1.5) * ppm);
-      g.lineTo(Math.cos(a + w) * (BASE_R + 0.5) * ppm, Math.sin(a + w) * (BASE_R + 0.5) * ppm);
-      g.closePath();
-      g.fill();
-      g.stroke();
-    }
-    g.setTransform(1, 0, 0, 1, 0, 0);
-    for (let i = 0; i < 2600; i++) {
-      g.fillStyle = rnd() < 0.5 ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.06)';
-      g.fillRect(rnd() * s, rnd() * s, 1 + rnd() * 3, 1 + rnd() * 3);
-    }
-  });
-}
+/** Fire bowls on the rim, every 30° but none straight ahead or behind (the z axis stays open for the camera). */
+const BOWLS = Array.from({ length: 12 }, (_, k) => {
+  const a = THREE.MathUtils.degToRad(15 + k * 30);
+  return { x: RING.x + Math.sin(a) * (COURT_R + 1.5), z: RING.z + Math.cos(a) * (COURT_R + 1.5) };
+});
 const BOWL_Y = 1.05;
 const FLAMES = 12;
 
@@ -340,23 +269,14 @@ const FLAMES = 12;
 export const sunCourtArena: ArenaDef = {
   id: 'suncourt',
   name: 'The Sun Court',
-  get ring() { return COURT_R; },
+  ring: COURT_R,
   obstacles: COURT_OBSTACLES,
   breakable: true,
-  stage: STAGE,
+  stage: COURT_STAGE,
   build() {
     const g = new THREE.Group();
-    // How much wider than the court for two this one is: the backdrop stands that much further out.
-    const wide = COURT_R / BASE_R, BOWLS = bowls();
-    const apron = floorDisc(COURT_R + 30, new THREE.MeshStandardMaterial({ map: apronTexture(), roughness: 0.92, metalness: 0.04 }), 0.004, 64);
-    if (COURT_R > BASE_R) {
-      const outer = new THREE.Mesh(new THREE.RingGeometry(BASE_R - 0.05, COURT_R, 128, 1), new THREE.MeshStandardMaterial({ map: outerFloor(), roughness: 0.84, metalness: 0.1 }));
-      outer.rotation.x = -Math.PI / 2;
-      outer.position.set(RING.x, 0.01, RING.z);
-      outer.receiveShadow = true;
-      g.add(outer, flatRing(BASE_R - 0.14, BASE_R, GOLD, 0.5, 0.02));
-    }
-    const disc = floorDisc(BASE_R, new THREE.MeshStandardMaterial({ map: courtFloor(), roughness: 0.82, metalness: 0.12, transparent: true, opacity: 0.94, emissive: 0xffffff, emissiveMap: courtGlow(), emissiveIntensity: 0.18 }));
+    const apron = floorDisc(46, new THREE.MeshStandardMaterial({ map: apronTexture(), roughness: 0.92, metalness: 0.04 }), 0.004, 64);
+    const disc = floorDisc(COURT_R, new THREE.MeshStandardMaterial({ map: courtFloor(), roughness: 0.82, metalness: 0.12, transparent: true, opacity: 0.94, emissive: 0xffffff, emissiveMap: courtGlow(), emissiveIntensity: 0.18 }));
     disc.receiveShadow = false;
     const band = flatRing(COURT_R - 1.1, COURT_R - 0.25, 0xb4561c, 0.2, 0.018);
     const rimLine = flatRing(COURT_R - 0.14, COURT_R, GOLD, 0.75, 0.02);
@@ -413,12 +333,11 @@ export const sunCourtArena: ArenaDef = {
     const put = (into: Place, name: string, x: number, z: number, ry: number, s = 1) =>
       (into[name] ??= []).push(new THREE.Matrix4().compose(new THREE.Vector3(x, 0, z), new THREE.Quaternion().setFromAxisAngle(UP, ry), new THREE.Vector3(s, s, s)));
     const facing = (x: number, z: number) => Math.atan2(RING.x - x, RING.z - z);
-    const out = COURT_R - BASE_R;
-    put(back, 'Throne', RING.x, RING.z - 36 - out, 0, 1.3 * Math.sqrt(wide));
+    put(back, 'Throne', RING.x, RING.z - 36, 0, 1.3);
     for (const side of [-1, 1]) {
-      for (const dz of [-10, 2, 14]) put(back, 'Obelisk', side * (21 + out), RING.z + dz * wide, facing(side * (21 + out), RING.z + dz * wide), (0.9 + rnd() * 0.3) * Math.sqrt(wide));
-      put(back, 'Arch', side * (27 + out), RING.z - 6 * wide, facing(side * (27 + out), RING.z - 6 * wide), 1.2 * Math.sqrt(wide));
-      put(back, 'Arch', side * (17 + out * 0.7), RING.z - 27 - out * 0.75, facing(side * (17 + out * 0.7), RING.z - 27 - out * 0.75), 1.1 * Math.sqrt(wide));
+      for (const dz of [-10, 2, 14]) put(back, 'Obelisk', side * 21, RING.z + dz, facing(side * 21, RING.z + dz), 0.9 + rnd() * 0.3);
+      put(back, 'Arch', side * 27, RING.z - 6, facing(side * 27, RING.z - 6), 1.2);
+      put(back, 'Arch', side * 17, RING.z - 27, facing(side * 17, RING.z - 27), 1.1);
     }
     void sanctumProps().then((props) => {
       if (disposed) return;
@@ -426,11 +345,9 @@ export const sunCourtArena: ArenaDef = {
       checkCameraRule(meshes, COURT_R + 14);
       g.add(...meshes);
       // The drifting rocks, each kind instanced, with its own height, phase and turn.
-      for (const [name, base] of Object.entries(ROCKS)) {
+      for (const [name, list] of Object.entries(ROCKS)) {
         const parts = props[name];
         if (!parts) continue;
-        // The drifting rocks keep to the sides of the court, however wide it is.
-        const list = base.map((r) => ({ ...r, x: r.x + Math.sign(r.x) * out, z: r.z * wide }));
         const sets = instance(parts, list.map(() => new THREE.Matrix4()));
         for (const m of sets) { m.frustumCulled = false; m.castShadow = false; }
         g.add(...sets);

@@ -100,6 +100,21 @@ an arrow points to the boss when he is out of sight. Pictures: `docs/raid/court-
 `court-40-phone.jpg`. **To do:** the hub clamps walks to the old 16 m (use `raidRing` once the server branch is merged); the Cinder
 Pit and the Heart's room the same way; the fight for two is untouched but was not measured again.
 
+## A custom arena for the party: the Great Dial (user, 2026-11-11)
+
+> "okay but bro make like custom arena in blender or where you want for the boss it dont need to follow the others arenas"
+
+The wider Sun Court (rings of columns added round the old court) is dropped. **The Sun Court stays the room for two, 16 m, as it
+was.** A party (band over 2) fights the Warden in **the Great Dial**: `blender/arenas/real/greatdial.py` ->
+`public/models/arenas/greatdial.glb` (757 KB, 86 pieces of cover) and `src/arenas/real/greatdial.json`; `src/arenas/greatdial.ts`
+draws its floor, rim, lanterns and breaks its screens. One vast sundial, 46 m to the rim: the old court's screens and obelisks in the
+middle, the fallen halo (a broken gold ring 38 m across), the twelve hour stones, ray shards and braziers, a broken colonnade; round
+it the gnomon over the Warden's throne, twelve hour pylons, a second halo half sunk. A smaller party walks only as far as its band
+(`raidRing`), to a wall of light; the rest is scenery. `SUN_WARDEN.place` picks the room; `resize(band)` sets it. Pictures:
+`docs/raid/dial-40-overview.jpg`, `dial-40-play.jpg`, `dial-40-phone.jpg`. **Shown to the user, waiting for the nod.** Not done:
+the hub's walk clamp (still 16 m); the Cinder Pit's and the Heart's party rooms; the Warden's fight measured in it; his mechanics
+scaled to the band.
+
 ## State (2026-11-11)
 
 - Not started in code. The Heart of Noon is being built by a helper in its own worktree (its `PROTOCOL` 6 -> 7 is only there; main
