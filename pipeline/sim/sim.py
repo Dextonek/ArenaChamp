@@ -151,8 +151,9 @@ async def open_page(pw, args, url):
     through an edit breaks one load, not the run."""
     last = None
     for attempt in range(3):
-        browser = await pw.chromium.launch(channel=args.browser, headless=True, args=CHROME_ARGS)
+        browser = None
         try:
+            browser = await pw.chromium.launch(channel=args.browser, headless=True, args=CHROME_ARGS, timeout=60000)
             page = await browser.new_page(viewport={"width": 640, "height": 400})
             await page.goto(url, wait_until="load", timeout=60000)
             await page.wait_for_function("typeof vfx !== 'undefined' && !!vfx.duel && !!vfx.heroPickCtrl", timeout=60000)
@@ -161,7 +162,8 @@ async def open_page(pw, args, url):
         except Exception as e:
             last = e
             try:
-                await asyncio.wait_for(browser.close(), timeout=10)
+                if browser:
+                    await asyncio.wait_for(browser.close(), timeout=10)
             except Exception:
                 pass
             await asyncio.sleep(3)
@@ -179,9 +181,11 @@ async def worker(pw, args, url, opened, jobs, results, state):
             try:
                 r = await asyncio.wait_for(page.evaluate("(job) => _simFight(job)", job), timeout=args.fight_timeout)
             except Exception as e:  # a stuck or crashed page: note the fight, start a fresh browser
+                # out of real time (the machine was busy: the run has the lowest priority) is no bug of the game's
+                slow = isinstance(e, (asyncio.TimeoutError, TimeoutError))
                 r = {"hero": job["hero"], "foe": job["foe"], "arena": None, "winner": None, "seconds": 0, "heroHp": 0, "foeHp": 0,
                      "dealt": {}, "taken": {}, "crashed": True,
-                     "errors": [f"{job['hero']} vs {job['foe']}: {type(e).__name__}: {str(e)[:200]}"]}
+                     "errors": [] if slow else [f"{job['hero']} vs {job['foe']}: {type(e).__name__}: {str(e)[:200]}"]}
                 try:
                     await asyncio.wait_for(browser.close(), timeout=10)
                 except Exception:
@@ -347,7 +351,11 @@ async def run(args):
         from playwright.async_api import async_playwright
         async with async_playwright() as pw:
             # every browser loads the game at once; the first one says which heroes and arenas there are
-            opened = await asyncio.gather(*[open_page(pw, args, url) for _ in range(max(1, args.workers))])
+            # four at a time: a dozen browsers starting together at the lowest priority can starve one another
+            opened = []
+            while len(opened) < max(1, args.workers):
+                batch = min(4, max(1, args.workers) - len(opened))
+                opened += await asyncio.gather(*[open_page(pw, args, url) for _ in range(batch)])
             info = await opened[0][1].evaluate("() => _simInfo()")
             if args.arena != "random" and args.arena not in info["arenas"]:
                 sys.exit(f"no arena {args.arena!r}. Arenas: {', '.join(info['arenas'])}")

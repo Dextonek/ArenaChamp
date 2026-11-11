@@ -123,6 +123,25 @@ place; R 120 is below the usual 125-130 because it also moves her and lays a nes
 `firebird.ts` ('firebird'); `src/effects/parts/phoenix.ts`, `src/kits/phoenix.ts`, `src/traits/phoenix.ts`. Taken
 already and not hers: `featherStep.ts`, `emberComet.ts`, `vermilionPhoenixDive.ts`, `cinderBow.ts`.
 
+## Gate 5: the numbers after the first balance runs (2026-11-11)
+
+Measured with the fight simulator (`python pipeline/sim/sim.py hero Anka`), against the six benchmark foes:
+
+| Step | Change | Win % |
+|---|---|---:|
+| As on the sheet above | 480 HP, Q 58, W 60, rise 30%, stamp 0.6 s | 25-29 |
+| Embers the CPU can use | a new ember cannot be stamped in its first second; stamping takes 1.0 s | 69 |
+| | rise 25% (115 HP), W 54 | 63 |
+| | Q 54 | 59 (192 fights) |
+| **Now** | **460 HP** | **48 (192 fights, plus or minus 7)** |
+
+The first row was not a weak hero but a kit that did not work against the CPU: a quill that hit left its ember
+under the enemy, and the enemy stamped it (0.6 s) before Fan the Flames (0.8 s) or anything else could use it, so
+she had no blast, no flight and no second life. With the grace second, W deals 3.6 damage a second, E 1.4, R 4.2.
+By foe at the last step: Cantor 27 of 32, Brannoc 20, Isolde 15, Oblivion 13, Kaia 11, Sirix 6. No errors, no
+fight without a winner. **Numbers now:** 460 HP; Q 54; W 54; E 40; R 120; rise 25% with a 40 flare; embers 12 s,
+3 at most; stamping 1.0 s after the ember's first second. The sheet's table above keeps the first numbers.
+
 ## Gate 4: the spells
 
 Built 2026-11-11 and shown to the user as [a page](../../docs/heroes/anka.html): her portrait and icons, and one

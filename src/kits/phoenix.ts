@@ -219,7 +219,7 @@ function stone(g: G, x: number, y: number, rx: number, ry: number) {
 
 export const phoenixKit: HeroKit = {
   name: 'Anka',
-  maxHp: 480,
+  maxHp: 460,
   title: 'the Firebird',
   accent: S.body,
   foil: S.ash,
@@ -530,7 +530,7 @@ export const phoenixKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'ember quill', name: 'Ember Quill', range: 10, cooldown: 3.5, aim: 'line',
-      blurb: 'A feather (10 m): 58 damage. Where it ends, in the enemy or in the floor, it stays as an ember and becomes her nest.',
+      blurb: 'A feather (10 m): 54 damage. Where it ends, in the enemy or in the floor, it stays as an ember and becomes her nest.',
       icon(g, s) {
         ground(g, s);
         // One long feather flying point first to the ember ring it is headed for, a thin trail of flame behind it.
@@ -545,7 +545,7 @@ export const phoenixKit: HeroKit = {
     },
     {
       key: 'W', label: 'fan the flames', name: 'Fan the Flames', range: 0, cooldown: 9,
-      blurb: 'Every ember flares after 0.8 s in a ring of 2.2 m: 60 damage, once. The embers burn out.',
+      blurb: 'Every ember flares after 0.8 s in a ring of 2.2 m: 54 damage, once. The embers burn out.',
       icon(g, s) {
         ground(g, s);
         // The open fan over two embers that flare as rings of flame, a small feather standing in each.

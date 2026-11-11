@@ -8,10 +8,11 @@ import type { GroundMark, Trait, TraitView } from './types';
  * spends them. An ember is a blast (Fan the Flames), a place to fly to (Ember Flight) and her second life (Ashborn).
  *
  * Embers: 3 at most, 12 s each, a fourth puts out the oldest. The NEWEST is her nest (drawn with a crown of flame for both
- * players). An enemy who stands within 1 m of an ember for 0.6 s in all stamps it out.
+ * players). An enemy who stands within 1 m of an ember for 1 s in all stamps it out; an ember is too hot to stamp in its
+ * first second (gate 5: at 0.6 s and no grace the CPU stamped every ember a quill left under it before she could use it).
  *
  * Ashborn, once a round: a hero's hit that would fell her while a nest burns is swallowed. She turns to ash: for 1.2 s she is
- * not drawn, cannot act and nothing reaches her, an egg glows at the nest and she slides there unseen; her HP climbs to 30%.
+ * not drawn, cannot act and nothing reaches her, an egg glows at the nest and she slides there unseen; her HP climbs to 25%.
  * Then she rises in a flare (2.2 m: 40 and a push) and every ember goes out. The arena's own damage (its event, the closing
  * floor, Last stand) is not a hero's hit: it never passes through a trait, so it kills her for good, in the egg too.
  *
@@ -29,10 +30,12 @@ import type { GroundMark, Trait, TraitView } from './types';
 export const EMBER_LIFE = 12;
 export const MAX_EMBERS = 3;
 export const STAMP_R = 1;
-export const STAMP_S = 0.6;
+/** Seconds an enemy must stand on an ember to stamp it out, and the seconds a new ember is too hot to stamp at all. */
+export const STAMP_S = 1.0;
+export const EMBER_FRESH = 1.0;
 
 /** Ember Quill (Q): damage, reach (m), speed (m/s), wind-up (s), the bolt's radius (m). */
-export const QUILL_DAMAGE = 58;
+export const QUILL_DAMAGE = 54;
 export const QUILL_RANGE = 10;
 export const QUILL_SPEED = 22;
 export const QUILL_WIND = 0.3;
@@ -41,7 +44,7 @@ export const QUILL_RADIUS = 0.3;
 /** Fan the Flames (W): the wait (s), each ring's radius (m), damage (once per cast, however many rings). */
 export const FLARE_WIND = 0.8;
 export const FLARE_RADIUS = 2.2;
-export const FLARE_DAMAGE = 60;
+export const FLARE_DAMAGE = 54;
 
 /** Ember Flight (E): reach to the ember (m), seconds before she leaves, seconds in the air, the landing's radius and damage. */
 export const FLIGHT_RANGE = 12;
@@ -59,7 +62,7 @@ export const BIRD_DAMAGE = 120;
 
 /** Ashborn: seconds as ash, the share of her HP she rises with, the flare's radius, damage and push. */
 export const ASH_SECONDS = 1.2;
-export const RISE_SHARE = 0.3;
+export const RISE_SHARE = 0.25;
 export const RISE_RADIUS = 2.2;
 export const RISE_DAMAGE = 40;
 export const RISE_KNOCK = 8;
@@ -198,7 +201,7 @@ export const phoenixTrait: Trait = {
   meter: { name: 'EMBERS', max: MAX_EMBERS, color: PHOENIX_CSS.body, value: (t) => embersOf(t.self()).length },
   passive: {
     name: 'Ashborn',
-    blurb: 'Her feathers stay on the floor as embers: 3 at most, 12 s each. The newest is her nest and wears a crown of flame. Once a round, a hero\'s hit that would fell her while a nest burns turns her to ash instead: 1.2 s later she rises at the nest with 30% HP in a flare (2.2 m: 40 and a push), and every ember goes out. Stand within 1 m of an ember for 0.6 s to stamp it out. The arena\'s own fire kills her for good.',
+    blurb: 'Her feathers stay on the floor as embers: 3 at most, 12 s each. The newest is her nest and wears a crown of flame. Once a round, a hero\'s hit that would fell her while a nest burns turns her to ash instead: 1.2 s later she rises at the nest with 25% HP in a flare (2.2 m: 40 and a push), and every ember goes out. Stand within 1 m of an ember for 1 s to stamp it out; a new one is too hot for its first second. The arena\'s own fire kills her for good.',
   },
   twist: {
     name: 'Three things at once',
@@ -331,7 +334,8 @@ export const phoenixTrait: Trait = {
     // The egg cannot be stamped: her embers are the egg's while she is ash.
     if (t.time < until) return;
     for (const e of b.embers.slice()) {
-      if (Math.hypot(p.x - e.x, p.z - e.z) > STAMP_R) continue;
+      // A new ember is too hot: a quill that hit leaves one under the enemy, and Fan the Flames (0.8 s) must have its chance.
+      if (t.time - e.born < EMBER_FRESH || Math.hypot(p.x - e.x, p.z - e.z) > STAMP_R) continue;
       const s = (stomps.get(e) ?? 0) + dt;
       if (s >= STAMP_S) {
         stampEmber(fig, e.id);
