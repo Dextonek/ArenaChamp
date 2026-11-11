@@ -469,6 +469,18 @@ try {
     check(off2.stage === 1 && off2.boss === 'ash', 'the next pick is for the second boss');
     g.send({ t: 'raid_pick' });
     h.send({ t: 'raid_pick' });
+    // A side door (src/raid/paths.ts): it opens only when both walk into the same one, then another pick and the gate again.
+    await g.next('raid_gate');
+    await h.next('raid_gate');
+    g.send({ t: 'raid_side', door: 'vault' });
+    h.send({ t: 'raid_side', door: 'shrine' });
+    await wait(150);
+    h.send({ t: 'raid_side', door: 'vault' });
+    const side = await g.next('raid_side_go');
+    check(side.door === 'vault' && (await h.next('raid_side_go')).door === 'vault', 'both in the same side door: it opens for both');
+    g.send({ t: 'raid_side', door: 'shrine' });
+    g.send({ t: 'raid_pick' });
+    h.send({ t: 'raid_pick' });
     await through();
     const st2 = await g.next('raid_stage');
     check(st2.boss === 'ash' && st2.hp === ASH, 'the second boss loads at its own HP');

@@ -52,6 +52,11 @@ export const CHANGELOG: Release[] = [
         title: 'Rare, legendary and dark upgrades',
         text: 'Altars can now glow blue, gold or dark red. Blue upgrades are stronger, gold ones change how you fight (a near miss speeds your cooldowns, a fall leaves you standing once), and a dark pact gives a lot for a price. They come more often the deeper the run goes.',
       },
+      {
+        tag: 'Raid',
+        title: 'Side doors: the Vault and the Shrine',
+        text: 'From the second hall on, two side doors open beside the gate. The Vault gives one more upgrade, rare or better, but another omen follows you. The Shrine lifts an omen for some time on your score. Or walk straight on. With a partner, both have to choose the same door.',
+      },
     ],
   },
   {

@@ -28,6 +28,9 @@ export const RAID_REWARDS = {
   ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 } },
 };
 
+/** What the Shrine, a side door of the hall, costs on the run's time (s; src/raid/paths.ts). */
+export const RAID_SHRINE_S = 15;
+
 /** How far Noonfall's hall reaches, where a run waits between its fights (m). */
 export const RAID_HALL_RING = 13;
 

@@ -98,6 +98,16 @@ than the brain's pick (the vent) is `BossPhase.timed`.
 **The score** is the most bosses beaten, then the fastest time. Alone it stays in this browser (`raid.best`). For two it goes on both
 accounts (`recordRaid`) and does not count as a win or a loss: the profile's record stays about duels with people.
 
+## Paths between bosses
+
+`src/raid/paths.ts` (user, 2026-11-11, option D). From the second hall of a run on, once the pick is in, two side doors open with the
+gate, at the hall's west and east edges: **the Vault** (three blue or gold cards, take one more; then one more omen to the end of the
+tier) and **the Shrine** (lifts the tier's first omen; 15 s on the run's time, `RAID_SHRINE_S`). Or straight through the gate. A side
+room is the hall again with its own altars, then the gate; one side room a hall. Alone it is all on the screen (`RaidRun.takeDoor`).
+For two a door opens only when both walk into the same one: `raid_side` to the hub, `raid_side_go` back, then a pick and the gate as
+usual (`raidSide` in `server/hub.mjs`); if they part, the gate's time takes both to the boss. Both screens keep the tier's omens in a
+`TierOmens` and change them only on what the hub says, so they agree.
+
 ## Omens
 
 `src/raid/omens.ts` (user, 2026-11-11: "evolve the raid"). Each tier rolls omens that hold for both of its fights: one at tier 1 (from

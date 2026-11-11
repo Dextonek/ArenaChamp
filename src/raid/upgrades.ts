@@ -75,6 +75,13 @@ export const CLOSE_CALL = { reach: 1.2, seconds: 1.5 } as const;
 export const BULWARK = 0.12;
 export const SUN_EATER = 0.1;
 
+/** The Vault's three cards (src/raid/paths.ts): blue and gold ones this hero can use and hasn't got, then plain ones. */
+export function vaultOffers(kit: HeroKit, owned: RunUpgrades, seed: string): Upgrade[] {
+  const rng = seeded(seedNumber(`${seed}-vault`));
+  const can = (u: Upgrade) => !owned.has(u.id) && (u.fits?.(kit) ?? true);
+  return [...shuffled([...GOLD, ...RARE].filter(can), rng), ...shuffled(UPGRADES.filter(can), rng), ...shuffled(STACKING, rng)].slice(0, 3);
+}
+
 /** What fills the cards once fewer than three of the others are left: small, and they can be taken again and again. */
 export const STACKING: Upgrade[] = [
   { id: 'whetstone', name: 'Whetstone', blurb: 'Deal 8 % more damage. You can take this again.' },

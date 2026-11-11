@@ -7,8 +7,9 @@ import { BOSSES } from './bosses';
 import { RaidHall, fadeTo } from './hall';
 import { NetLink } from './net';
 import { scoreText, type RaidScore } from './run';
-import { RunUpgrades, offersFor } from './upgrades';
-import { omenNames, omensFor } from './omens';
+import { RunUpgrades, offersFor, vaultOffers } from './upgrades';
+import { omenNames } from './omens';
+import { TierOmens, doorsFor, shrineCard, type PathId } from './paths';
 
 const MOVE_HZ = 20;
 /** The loading page only shows when a room takes longer than this to load (ms). */
@@ -45,6 +46,13 @@ export class RaidController {
   private partner: { kit: HeroKit; name: string } | null = null;
   private myName = '';
   private upgrades = new RunUpgrades();
+  /** This tier's omens, as the side doors have left them; both screens change them only on what the hub says. */
+  private omens = new TierOmens('', 0);
+  private omensTier = 0;
+  /** This hall's side room is behind us. */
+  private sideDone = false;
+  /** The hall's last offer, for a side room that opens from it. */
+  private lastOffer: Extract<ServerMsg, { t: 'raid_offer' }> | null = null;
   private score: RaidScore = { tier: 1, bosses: 0, seconds: 0 };
   /** The boss just beaten was the last of its tier. */
   private lastOfTier = false;
@@ -75,6 +83,7 @@ export class RaidController {
     net.on('raid_start', (m) => this.start(m));
     net.on('raid_offer', (m) => this.offer(m));
     net.on('raid_gate', (m) => { if (this.active) this.hall.openGate(m.seconds); });
+    net.on('raid_side_go', (m) => this.sideRoom(m.door, m.seconds));
     net.on('raid_stage', (m) => void this.stage(m));
     net.on('raid_won', (m) => this.won(m));
     net.on('match_fight', (m) => {
@@ -139,13 +148,38 @@ export class RaidController {
     this.myName = m.you.name;
     this.partner = { kit: theirs, name: m.partner.name };
     this.upgrades = new RunUpgrades();
+    this.omensTier = 0;
     this.score = { tier: 1, bosses: 0, seconds: 0 };
     this.ui.onEnter();
   }
 
-  /** The hall before a fight. It takes the first upgrade when time runs out; the hub waits a little longer. */
-  private offer(m: Extract<ServerMsg, { t: 'raid_offer' }>) {
+  /** Both walked into the same side door: the hub opens it. The Vault adds an omen, the Shrine lifts one (the hub adds its time). */
+  private sideRoom(door: PathId, seconds: number) {
+    const m = this.lastOffer;
+    if (!this.active || !m) return;
+    this.sideDone = true;
+    let lifted = null;
+    if (door === 'vault') {
+      const more = this.omens.next();
+      if (more) this.omens.add(more.id);
+    } else {
+      lifted = this.omens.first();
+      if (lifted) this.omens.lift(lifted.id);
+    }
+    this.offer({ ...m, seconds }, door, lifted);
+  }
+
+  /** The hall before a fight, or a side room of it (`door`). It takes the first card when time runs out; the hub waits a little longer. */
+  private offer(m: Extract<ServerMsg, { t: 'raid_offer' }>, door: PathId | null = null, lifted: ReturnType<TierOmens['first']> = null) {
     if (!this.active || !this.mine) return;
+    if (!door) {
+      this.lastOffer = m;
+      this.sideDone = false;
+    }
+    if (this.omensTier !== m.tier) {
+      this.omens = new TierOmens(this.match, m.tier);
+      this.omensTier = m.tier;
+    }
     const { api, net } = this, def = BOSSES[m.boss], run = ++this.run;
     clearInterval(this.clearTimer);
     if (api.duel.on) api.duel.stop();
@@ -158,15 +192,23 @@ export class RaidController {
     clearInterval(this.moveTimer);
     this.link = null;
     const mine = this.mine;
-    // The tier's omens: both screens roll the same ones from the match's id.
-    this.upgrades.omens = omensFor(this.match, m.tier);
-    void this.hall.enter({ omens: this.upgrades.omens,
+    // The tier's omens: both screens roll the same ones from the match's id, and change them only on what the hub says.
+    this.upgrades.omens = this.omens.list;
+    const seed = `${this.match}-${this.side}-${m.tier}-${m.stage}`, depth = (m.tier - 1) * RAID_RUN.length + m.stage;
+    void this.hall.enter({
+      omens: this.upgrades.omens,
+      doors: door ? [] : doorsFor(depth, this.omens, this.sideDone),
+      title: door === 'vault' ? 'The Vault: walk onto an altar to take one more' : door === 'shrine' ? 'The Shrine: walk onto the altar' : undefined,
+      noun: door === 'shrine' ? 'blessing' : undefined,
+      takeDoor: (d) => {
+        if (run === this.run && this.active) net.send({ t: 'raid_side', door: d });
+      },
       hero: mine.name, name: this.myName, partner: this.partner ?? undefined, side: this.side, solo: !this.partner, next: def, tier: m.tier, seconds: m.seconds,
-      seed: `${this.match}-hall`, offers: offersFor(mine, this.upgrades, `${this.match}-${this.side}-${m.tier}-${m.stage}`, (m.tier - 1) * RAID_RUN.length + m.stage),
+      seed: `${this.match}-hall`, offers: door === 'vault' ? vaultOffers(mine, this.upgrades, seed) : door === 'shrine' ? [shrineCard(lifted)] : offersFor(mine, this.upgrades, seed, depth),
       waiting: this.partner ? `Waiting for ${this.partner.name}` : undefined,
       pick: (u) => {
         if (run !== this.run || !this.active) return;
-        this.upgrades.add(u.id);
+        if (door !== 'shrine') this.upgrades.add(u.id);
         net.send({ t: 'raid_pick' });
       },
       enter: () => {

@@ -93,6 +93,7 @@ export type ServerMsg =
   | { t: 'raid_start'; id: string; side: 0 | 1; you: { name: string; hero: string }; partner: { name: string; hero: string } }
   | { t: 'raid_offer'; stage: number; tier: number; boss: string; seconds: number }
   | { t: 'raid_gate'; seconds: number }
+  | { t: 'raid_side_go'; door: 'vault' | 'shrine'; seconds: number }
   | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: 0 | 1 }
   | { t: 'raid_won'; stage: number; tier: number; bosses: number; seconds: number; last: boolean; wait: number }
   | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: 0 | 1; alone?: boolean; rim?: boolean; form?: number; flag?: boolean }

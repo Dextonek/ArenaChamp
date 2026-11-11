@@ -10,10 +10,17 @@ import { STAND_COLOR } from './script';
 import type { BossCast, BossDef, BossMove, Objective, PlayContext, RaidEvents, RaidLink, RaidSide } from './types';
 import { RARITY_COLOR, type Upgrade } from './upgrades';
 import type { Omen } from './omens';
+import type { PathDoor, PathId } from './paths';
 
 const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, done() {}, wall() {}, end() {} };
 /** Which objective the gate is: the altars are 0, 1 and 2. */
 const GATE = 9;
+/** The objectives' parts of the side doors: SIDE + its index. */
+const SIDE = 20;
+/** Where the side doors stand: the hall's west and east edges, clear of the gates to the north. */
+const SIDE_DOORS = [{ x: RING.x - 11, z: RING.z - 1, yaw: Math.PI / 2 }, { x: RING.x + 11, z: RING.z - 1, yaw: -Math.PI / 2 }];
+const DOOR_COLOR: Record<PathId, number> = { vault: 0x7ab8ff, shrine: 0xfff0c0 };
+const archMat = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.4, metalness: 0.8, emissive: 0xffb050, emissiveIntensity: 0.25 });
 const ALTAR_R = 1.5;
 /** How far from a gate's spot its posts stand, toward the rim (m). */
 const GATE_BACK = 1.5;
@@ -75,6 +82,14 @@ export interface HallVisit {
   offers: Upgrade[];
   /** This tier's omens, shown under the words on top. */
   omens?: readonly Omen[];
+  /** The side doors that open with the gate (src/raid/paths.ts). */
+  doors?: PathDoor[];
+  /** This hero walked into a side door. */
+  takeDoor?(door: PathId): void;
+  /** The words on top while picking, in a side room. */
+  title?: string;
+  /** What the pick's card is called in a side room ('upgrade' otherwise). */
+  noun?: string;
   /** How long the pick has before it takes the first (s). */
   seconds: number;
   seed: string;
@@ -95,6 +110,8 @@ export class RaidHall {
   private head = document.createElement('div');
   private clock = document.createElement('div');
   private omenEl = document.createElement('div');
+  private doorEls: HTMLDivElement[] = [];
+  private sideIn = false;
   private cards: HTMLButtonElement[] = [];
   private spot = new THREE.Vector3();
   private visit: HallVisit | null = null;
@@ -119,7 +136,7 @@ export class RaidHall {
     const { api } = this;
     this.visit = v;
     this.picked = null;
-    this.gateOn = this.entered = false;
+    this.gateOn = this.entered = this.sideIn = false;
     this.gateLeft = 0;
     await fadeTo(true);
     if (this.visit !== v) return;
@@ -150,6 +167,8 @@ export class RaidHall {
     this.root.style.display = 'none';
     for (const c of this.cards) c.remove();
     this.cards = [];
+    for (const d of this.doorEls) d.remove();
+    this.doorEls = [];
   }
 
   private def(v: HallVisit): BossDef {
@@ -222,6 +241,57 @@ export class RaidHall {
     });
   }
 
+  /** The side doors: an arch of the altars' gold, a light in it, and a label over it naming what is beyond. */
+  private sideDoors(v: HallVisit, p: PlayContext) {
+    for (const d of this.doorEls) d.remove();
+    this.doorEls = (v.doors ?? []).map((door) => {
+      const el = document.createElement('div');
+      el.className = 'raid-door';
+      el.dataset.door = door.id;
+      const color = `#${DOOR_COLOR[door.id].toString(16).padStart(6, '0')}`;
+      el.style.cssText = `position:absolute;left:0;top:0;width:${TOUCH ? 'min(130px,34vw)' : '190px'};padding:${TOUCH ? '5px 7px' : '7px 10px'};border-radius:10px;` +
+        `border:1px solid ${color};background:rgba(14,14,22,0.88);color:#e9e4d6;font:500 ${TOUCH ? 10 : 12}px ui-sans-serif,system-ui;line-height:1.25;display:none;box-shadow:0 4px 14px #000a;`;
+      const name = document.createElement('div');
+      name.style.cssText = `font:700 ${TOUCH ? 12 : 14}px ui-serif,Georgia,serif;color:${color};margin-bottom:2px;`;
+      name.textContent = door.name;
+      el.append(name, door.blurb);
+      this.root.append(el);
+      return el;
+    });
+    return (v.doors ?? []).map((door, i) => {
+      const at = SIDE_DOORS[i];
+      const arch = new THREE.Group();
+      const post = new THREE.BoxGeometry(0.34, 3.4, 0.5).translate(0, 1.7, 0);
+      for (const sx of [-1.25, 1.25]) {
+        const m = new THREE.Mesh(post, archMat);
+        m.position.set(sx, 0, 0);
+        arch.add(m);
+      }
+      const top = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.38, 0.6).translate(0, 3.55, 0), archMat);
+      arch.add(top);
+      arch.position.set(at.x, 0, at.z);
+      arch.rotation.y = at.yaw;
+      const light = new LightPillar(at.x, at.z, 1.1, 3.4, DOOR_COLOR[door.id]);
+      p.group.add(arch, light.mesh);
+      return { arch, light };
+    });
+  }
+
+  /** Each door's label over its door, while the doors stand open. */
+  private placeDoors(on: boolean) {
+    const cam = this.api.arena.camera, w = innerWidth, h = innerHeight;
+    this.doorEls.forEach((el, i) => {
+      el.style.display = on ? '' : 'none';
+      if (!on) return;
+      const a = SIDE_DOORS[i];
+      this.spot.set(a.x, 4.2, a.z).project(cam);
+      const cw = el.offsetWidth, ch = el.offsetHeight;
+      const x = Math.min(w - cw - 6, Math.max(6, ((this.spot.x + 1) / 2) * w - cw / 2));
+      const y = Math.min(h - ch - 6, Math.max(TOUCH ? 58 : 66, ((1 - this.spot.y) / 2) * h - ch));
+      el.style.transform = `translate(${Math.round(x)}px,${Math.round(y)}px)`;
+    });
+  }
+
   /** Everything the hall does, as one long cast. */
   private move(v: HallVisit): BossMove {
     const hall = this;
@@ -280,8 +350,10 @@ export class RaidHall {
 
     const objectives: Objective[] = [
       ...v.offers.map((_, i): Objective => ({ part: i, x: HALL_ALTARS[i].x, z: HALL_ALTARS[i].z, radius: ALTAR_R, can: () => !this.picked })),
-      { part: GATE, x: target.x, z: target.z, radius: 2, can: () => this.gateOn && !this.entered },
+      { part: GATE, x: target.x, z: target.z, radius: 2, can: () => this.gateOn && !this.entered && !this.sideIn },
+      ...(v.doors ?? []).map((_, i): Objective => ({ part: SIDE + i, x: SIDE_DOORS[i].x, z: SIDE_DOORS[i].z, radius: 1.6, can: () => this.gateOn && !this.entered && !this.sideIn })),
     ];
+    const doors = this.sideDoors(v, p);
     const headText = document.createTextNode('');
     this.head.replaceChildren(headText, this.clock, this.omenEl);
     this.omenEl.replaceChildren(...(v.omens ?? []).map((o) => {
@@ -311,18 +383,20 @@ export class RaidHall {
             a.orb.position.y = 1.5 + 0.12 * Math.sin(t * 2 + i * 2);
           });
           gateLight.opacity = this.gateOn && !this.entered ? pulse : 0;
+          for (const d of doors) d.light.opacity = this.gateOn && !this.entered && !this.sideIn ? pulse * 0.9 : 0;
           this.placeCards();
+          this.placeDoors(this.gateOn && !this.entered && !this.sideIn);
           // The words on top, and the pick's clock: time running out takes the first.
           if (!this.picked) {
             const left = v.seconds - t;
-            headText.textContent = 'Walk onto an altar to take its upgrade';
+            headText.textContent = v.title ?? `Walk onto an altar to take its ${v.noun ?? 'upgrade'}`;
             this.clock.textContent = `Next: ${nextName} · ${Math.max(0, Math.ceil(left))} s`;
             if (left <= 0) take(v.offers[0], 0);
-          } else if (this.entered) {
+          } else if (this.entered || this.sideIn) {
             headText.textContent = v.waiting ?? 'Noonfall';
             this.clock.textContent = '';
           } else if (this.gateOn) {
-            headText.textContent = `The gate to ${v.next.name} is open`;
+            headText.textContent = `The gate to ${v.next.name} is open${v.doors?.length ? ', and the side doors' : ''}`;
             if (this.gateLeft > 0) this.gateLeft = Math.max(0, this.gateLeft - dt);
             this.clock.textContent = this.gateLeft > 0 ? `Walk through · ${Math.ceil(this.gateLeft)} s` : 'Walk through';
           } else {
@@ -337,12 +411,24 @@ export class RaidHall {
             v.enter();
             return;
           }
+          if (o.part >= SIDE) {
+            const door = v.doors?.[o.part - SIDE];
+            if (!door) return;
+            this.sideIn = true;
+            v.takeDoor?.(door.id);
+            return;
+          }
           take(v.offers[o.part], o.part);
         },
         dispose: () => {
           gates.sun.dispose();
           gates.ash.dispose();
           gateLight.dispose();
+          for (const d of doors) {
+            d.light.dispose();
+            d.arch.removeFromParent();
+            d.arch.traverse((o) => { if (o instanceof THREE.Mesh) o.geometry.dispose(); });
+          }
           for (const a of altars) {
             a.light.dispose();
             a.dais.removeFromParent();

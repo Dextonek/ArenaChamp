@@ -8,7 +8,7 @@
 // landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
-import { PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_REWARDS, RAID_RUN, RELOAD_TEXT, raidHp } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RELOAD_TEXT, raidHp } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
 const RING = { x: 0, z: 7, r: 12 };
@@ -96,7 +96,7 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  *   fightAt: number, round: number, score: number[], timer: any,
  *   pick: { side: number, at: number, next: () => void } | null,
  *   picked: { by: string, hero?: string, arena?: string } | null, boss?: RaidBoss,
- *   run?: { stage: number, tier: number, beaten: number, seconds: number, picks: Set<number>, goes: Set<number> } }} Match
+ *   run?: { stage: number, tier: number, beaten: number, seconds: number, picks: Set<number>, goes: Set<number>, sides?: Map<number, string>, sided?: boolean } }} Match
  */
 
 /** @param {number} n */
@@ -568,6 +568,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (match.players.every((p, side) => p.left || run.enters.has(side))) raidStage(match);
         return;
       }
+      case 'raid_side': {
+        // A side door of the hall (src/raid/paths.ts): it opens only when all walk into the same one, once a hall, never the first.
+        const match = c.match, run = match?.run;
+        if (!match || !run || match.state !== 'gate' || run.sided || (run.tier === 1 && run.stage === 0) || (m.door !== 'vault' && m.door !== 'shrine')) return;
+        run.sides ??= new Map();
+        run.sides.set(c.side, m.door);
+        if (match.players.every((p, side) => p.left || run.sides?.get(side) === m.door)) raidSide(match, m.door);
+        return;
+      }
       case 'raid_next': {
         // After the last boss: this player goes on to the next tier. Stopping is leaving, and the other can go on alone.
         const match = c.match, run = match?.run;
@@ -864,7 +873,22 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     clearTimeout(match.timer);
     match.state = 'offer';
     run.picks = new Set();
+    run.sided = false;
+    run.sides = new Map();
     for (const p of match.players) send(p.client, { t: 'raid_offer', stage: run.stage, tier: run.tier, boss: RAID_RUN[run.stage], seconds: OFFER_S });
+    match.timer = setTimeout(() => { if (match.state === 'offer') raidGate(match); }, OFFER_S * 1000 + OFFER_GRACE_MS);
+  }
+
+  /** A side room: another pick, then the gate again. The Shrine costs time on the run. @param {Match} match @param {string} door */
+  function raidSide(match, door) {
+    const run = /** @type {NonNullable<Match['run']>} */ (match.run);
+    clearTimeout(match.timer);
+    run.sided = true;
+    run.sides = new Map();
+    if (door === 'shrine') run.seconds += RAID_SHRINE_S;
+    match.state = 'offer';
+    run.picks = new Set();
+    for (const p of match.players) send(p.client, { t: 'raid_side_go', door, seconds: OFFER_S });
     match.timer = setTimeout(() => { if (match.state === 'offer') raidGate(match); }, OFFER_S * 1000 + OFFER_GRACE_MS);
   }
 

@@ -4,8 +4,9 @@ import { nextPaint, sleep, type LoadingScreen } from '../game/loading';
 import { RaidHall, fadeTo } from './hall';
 import { LocalLink } from './link';
 import { BOSSES } from './bosses';
-import { RunUpgrades, offersFor } from './upgrades';
-import { omenNames, omensFor } from './omens';
+import { RunUpgrades, offersFor, vaultOffers } from './upgrades';
+import { omenNames } from './omens';
+import { SHRINE_SECONDS, TierOmens, doorsFor, shrineCard, type PathId } from './paths';
 
 /** The loading page only shows when a room takes longer than this to load (ms). */
 const SLOW_LOAD = 1200;
@@ -50,6 +51,10 @@ export class RaidRun {
   private seconds = 0;
   private upgrades = new RunUpgrades();
   private seed = '';
+  /** This tier's omens, as the side doors have left them. */
+  private omens = new TierOmens('', 1);
+  /** This hall's side room is behind us: no more side doors until the next boss. */
+  private sideDone = false;
   /** What the result card's button does: the next tier, or the run again from the start. */
   private again: 'tier' | 'restart' = 'restart';
   /** Each wait gets a number: one the player already left does not go on. */
@@ -110,6 +115,7 @@ export class RaidRun {
     this.seconds = 0;
     this.upgrades = new RunUpgrades();
     this.seed = String(Math.random());
+    this.omens = new TierOmens(this.seed, 1);
     this.ui.onEnter();
     if (this.api.duel.on) this.api.duel.stop();
     this.offer();
@@ -118,26 +124,56 @@ export class RaidRun {
   private async nextTier() {
     this.tier++;
     this.stage = 0;
+    this.omens = new TierOmens(this.seed, this.tier);
     if (this.api.duel.on) this.api.duel.stop();
     this.offer();
   }
 
-  /** The hall before a fight: walk to an altar, then through the gate. */
+  /** The hall before a fight: walk to an altar, then through the gate, or a side door first. */
   private offer() {
+    this.sideDone = false;
+    this.visit(null);
+  }
+
+  /** A side door: the Vault adds an omen, the Shrine lifts one and costs time. Then its room. */
+  private takeDoor(door: PathId) {
+    this.sideDone = true;
+    let lifted = null;
+    if (door === 'vault') {
+      const more = this.omens.next();
+      if (more) this.omens.add(more.id);
+    } else {
+      lifted = this.omens.first();
+      if (lifted) this.omens.lift(lifted.id);
+      this.seconds += SHRINE_SECONDS;
+    }
+    this.visit(door, lifted);
+  }
+
+  /** The hall, or one of its side rooms (`door`). */
+  private visit(door: PathId | null, lifted: ReturnType<TierOmens['first']> = null) {
     const kit = this.api.kits.find((k) => k.name === this.hero);
     const def = BOSSES[RAID_RUN[this.stage]];
     if (!kit || !def) return;
     const run = this.run;
     this.loading.hide();
     this.leave.style.display = '';
-    // The tier's omens hold for both of its fights.
-    this.upgrades.omens = omensFor(this.seed, this.tier);
-    void this.hall.enter({ omens: this.upgrades.omens,
+    // The tier's omens hold for both of its fights, as the side doors leave them.
+    this.upgrades.omens = this.omens.list;
+    const seed = `${this.seed}-${this.tier}-${this.stage}`, depth = (this.tier - 1) * RAID_RUN.length + this.stage;
+    void this.hall.enter({
+      omens: this.upgrades.omens,
+      doors: door ? [] : doorsFor(depth, this.omens, this.sideDone),
+      title: door === 'vault' ? 'The Vault: walk onto an altar to take one more' : door === 'shrine' ? 'The Shrine: walk onto the altar' : undefined,
+      noun: door === 'shrine' ? 'blessing' : undefined,
+      takeDoor: (d) => {
+        if (run === this.run && this.active && !this.sideDone) this.takeDoor(d);
+      },
       hero: this.hero, side: 0, solo: true, next: def, tier: this.tier, seconds: PICK_SECONDS, seed: `${this.seed}-hall`,
-      offers: offersFor(kit, this.upgrades, `${this.seed}-${this.tier}-${this.stage}`, (this.tier - 1) * RAID_RUN.length + this.stage),
+      offers: door === 'vault' ? vaultOffers(kit, this.upgrades, seed) : door === 'shrine' ? [shrineCard(lifted)] : offersFor(kit, this.upgrades, seed, depth),
       pick: (u) => {
         if (run !== this.run || !this.active) return;
-        this.upgrades.add(u.id);
+        if (door !== 'shrine') this.upgrades.add(u.id);
         this.hall.openGate();
       },
       enter: () => {
