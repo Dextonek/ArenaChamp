@@ -112,6 +112,20 @@
     await pickReady(hero);
     return 'joined';
   };
+  // A raid for a party (up to 40). The host's tab: `await _botParty('Lyra')` opens a public raid and returns its code. Every other
+  // tab: `await _botParty('Bram', code)`. Nobody readies up: the host starts with `_botGo()` once all are in. Then as for two.
+  window._botParty = async (hero, code) => {
+    const { net, state } = window.game;
+    net.send(code ? { t: 'lobby_join', code } : { t: 'lobby_create', raid: 'sun', open: true });
+    for (let i = 0; i < 40 && !state.lobby; i++) await new Promise((r) => setTimeout(r, 100));
+    if (!state.lobby) throw new Error('no room');
+    log.hero = hero;
+    net.send({ t: 'lobby_pick', hero });
+    clearInterval(raidTimer);
+    raidTimer = setInterval(raidStep, 100);
+    return state.lobby.code;
+  };
+  window._botGo = () => { window.game.net.send({ t: 'raid_go' }); return window.game.state.lobby?.seats.length; };
   window._botRaid = () => {
     const { api, coop } = window.game, d = api.duel, a = api.arena;
     if (!d.boss) return { active: coop.active, on: d.on };
@@ -121,6 +135,8 @@
       hp: Math.round(d.playerHp), down: d.boss.meDown, cover: a.obstacles?.length,
       me: [+me.x.toFixed(1), +me.z.toFixed(1)], at: b && [+b.x.toFixed(1), +b.z.toFixed(1)],
       partner: p && { hp: p.hp, max: p.max, down: p.down, left: p.left, pos: [+p.pos.x.toFixed(1), +p.pos.z.toFixed(1)] },
+      party: d.party && d.party.size > 1 ? { n: d.party.size, down: [...d.party.values()].filter((x) => x.down && !x.left).length, left: [...d.party.values()].filter((x) => x.left).length, lite: [...d.party.values()].filter((x) => x.lite).length, far: Math.round(Math.max(...[...d.party.values()].map((x) => Math.hypot(x.pos.x, x.pos.z - 7)))) } : undefined,
+      room: a.bounds?.r, gauge: d.boss.link.staggerMax,
       hits: d.boss.stats.hits, kneels: d.boss.stats.kneels, over: d.over, won: d.result?.winner ?? null, errors: log.errors.length,
     };
   };

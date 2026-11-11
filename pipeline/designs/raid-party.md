@@ -128,6 +128,15 @@ messages, the band, majority side doors, the brain's watchdog. The client now se
 handles `brain_moved` (`BossFight.dropBrain`) and takes the gauge's size from `raid_stage`. Not done: a raid of bots through the real
 hub; `docs/architecture/raid.md` and `multiplayer.md` for the new messages; the Heart's branch still says PROTOCOL 7 (take 8).
 
+## The first party raid through the real hub (2026-11-11)
+
+`python pipeline/tools/party-raid.py <out> --players 6 --seconds 150` (`_botParty`, `_botGo` in `pipeline/tools/online-bot.js`): six
+headless pages, six throwaway accounts, one public raid room, the host starts, every screen's autopilot plays. Result: the band is 10
+(43,500 HP, gauge 500), the room is the Hall of Noon (46 m) on every screen, all six walk from the gate to the crossing and fight,
+every screen shows the same boss HP within one message, the five partners show on each, no errors in 150 s (the boss at 62 % then,
+past its enrage: six at the HP for ten is slow, as the bands mean it to be). Picture: `docs/raid/party-online-6.jpg`. Not run yet:
+more than six (this computer's limit for headless pages is untested), a whole run through all three bosses, a player leaving.
+
 ## Unique mechanics, one per boss (user, 2026-11-11)
 
 > "and can we make like uniques mechanics for the bosses"
