@@ -19,3 +19,6 @@ pipeline/rustfull/target/
 # the full Rust simulator: what it writes itself (the real fights it is graded against are kept)
 pipeline/rustfull/data/rust-*.json
 pipeline/rustfull/data/grade-*.html
+
+# helper agents' own copies of the repo
+.claude/worktrees/
