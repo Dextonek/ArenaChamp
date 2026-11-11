@@ -2,7 +2,7 @@
 title: The full Rust simulator (in the making)
 tags: [pipeline, balance, tools, rust, port]
 updated: 2026-11-11
-status: started; three pieces of the core ported and tested; no fight loop yet
+status: six pieces of the core ported and tested (21 tests); no fight loop yet
 ---
 
 # The full Rust simulator
@@ -21,9 +21,12 @@ written again in Rust (`pipeline/rustfull/`), so fights run without a browser an
 | Cover, walking round it, sight, sweeps (`src/obstacles.ts`) | 269 | **ported** (`geom.rs`), tested |
 | Status effects and buffs (`src/effects/status.ts`) | 219 | **ported** (`status.rs`), tested |
 | The basic attack (`src/attacks/`) | 238 | **ported** (`attack.rs`), tested |
-| The duel: the fight loop, both CPUs, how a hit is resolved (`src/duel.ts`) | 3,108 | to do |
+| Danger zones; a hit lands only inside what was drawn (`telegraph.ts`, `inCastReach`) | | **ported** (`zone.rs`), tested |
+| The computer players' shared rules: which spell, how to walk, dropping a goal, dodging a bolt, answering a hit (`pickSpell`, `steer`, `reachableGoal`, `dodgeBolt`, `guards` in `src/duel.ts`) | about 350 | **ported** (`ai.rs`), tested |
+| The two fighters: walking, the ring, pushes, shields, dashes, taking a hit (`arena.ts` `hit`, `walk`, `moveFoe`, `keepInside`, `moveFigure`, `soak`; `damagePlayer` in `duel.ts`) | about 300 | **ported** (`figure.rs`), tested |
+| The rest of the duel: the fight loop itself, each CPU's own part (`ai`, `pilot`, `castSpell`), `resolve`, breakable walls | about 2,400 | read in part; to do |
 | The player's hero: walking, casting, cooldowns, roots (`src/heroMode.ts`) | 1,553 | to do |
-| The arena: figures, HP, shields, hits, sight (`src/arena.ts`) | 1,111 | to do |
+| The way round cover (`src/nav.ts`, `aiRoute`, `aiPathClear`) | | to do |
 | Bolts (`projectile.ts`), units (`summon.ts`), the passives' engine (`traits/runtime.ts`) | 1,456 | to do |
 | 40 heroes: their passives (`src/traits/`, 10,600 lines) and the hit rules inside 160 spell files | | to do |
 | Arenas: cover layouts first; events and closing stages later | | to do |
@@ -93,8 +96,22 @@ One frame of a simulated fight (1/60 s), in the game's order. The port must keep
    6. the player's walk speed, smoothed over 0.2 s (the opponent's CPU aims ahead with it)
    7. the opponent's CPU (`ai`, line 1898), then the autopilot for the player's hero (`pilot`)
 
-Still to read: `ai` and `pilot` in full, `heroMode.update` and its casting, `arena.update` and `arena.hit`,
-`resolve` (how a hit passes through both passives; read once already, lines 1405 to 1445), bolts, the passives' engine.
+Read and ported so far: `ai` and `pilot` (their shared rules are in `ai.rs`; what each does on its own is noted
+below), `arena.update` and `arena.hit` (`figure.rs`), `castSpell`, `hitPlayer`, `damagePlayer`, `opponentHit`.
+Still to read: `heroMode.update` and its casting, `nav.ts`, bolts, units, the passives' engine, `resolve` again.
+
+### What each computer player does on its own (the differences the port must keep)
+
+| | The opponent (`ai`) | The autopilot (`pilot`) |
+|---|---|---|
+| Cooldowns | its own list, counted down in `ai`; the level's cooldown factor on each cast | the hero's own (`heroMode.ready`) |
+| After a cast | rooted for the latest zone's impact, 2.5 s at most (`rooted`); a wait between casts at lower levels (`castWait`) | whatever `heroMode.autoCast` does (to be read) |
+| Where a ground spell is aimed | at the hero's feet (or the spot that also catches its units), plus the level's lead and error | `bestSpot` round the opponent; `fleeAim` / `dashAim` for an escape or a dash |
+| Zone dodge | only at levels with `zoneDodge` (none in a simulated fight) | never |
+| Walking | `moveFoe`: its home walks, pushes ride on top | `arena.walk`: nothing while it dashes |
+| A push | a speed that dies away; 4 when the hit names none | at once, 0.18 m per unit; none when the hit names none |
+| Order in a frame | first | second, after the opponent has moved and cast |
+| A hit on it is judged | `opponentHit`: inside the zones of that cast of the player's | `hitPlayer`: inside the zones of that cast of the opponent's |
 
 ## What is out, for now
 
