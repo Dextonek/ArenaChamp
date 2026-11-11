@@ -367,8 +367,10 @@ mod tests {
         for _ in 0..240 {
             o.update(1.0 / 60.0, &[], &RING);
         }
-        // a speed of 4 that dies away as exp(-7t): 4 / 7 m in all
-        assert!((o.pos().z - (1.0 - 4.0 / 7.0)).abs() < 0.03, "{}", o.pos().z);
+        // a speed of 4 that dies away as exp(-7t): 4 / 7 m in all on paper, a little more in 60 steps a second
+        // (4 dt / (1 - exp(-7 dt)) = 0.605 m), which is what the game itself does
+        let dt: f64 = 1.0 / 60.0;
+        assert!((o.pos().z - (1.0 - 4.0 * dt / (1.0 - (-7.0 * dt).exp()))).abs() < 1e-6, "{}", o.pos().z);
     }
 
     #[test]
