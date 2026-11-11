@@ -12,15 +12,19 @@ import type { ArenaDef } from './types';
 export type { ArenaDef, ArenaScene, ArenaStage } from './types';
 export { DEFAULT_STAGE } from './common';
 
-/** Every duel arena; a duel picks one at random (`pickArena`). The order is fixed: a network match picks by index. */
-export const ARENAS: ArenaDef[] = [templeArena, frostArena, calderaArena, gladeArena, skyruinsArena];
+/**
+ * Every duel arena; a duel picks one at random (`pickArena`). The order is fixed: a network match picks by index, so
+ * new arenas go at the end and come with a new `PROTOCOL` (server/protocol.mjs). The last four are in the heroes'
+ * style (`real.ts`, 2026-11-11).
+ */
+export const ARENAS: ArenaDef[] = [templeArena, frostArena, calderaArena, gladeArena, skyruinsArena, harbourArena, canyonArena, cavernArena, battlefieldArena];
 
 /**
  * Arenas being made: reachable by id (`duel.arenaChoice`, the tool) but not picked at random and not offered after a
  * lost round, until each has its event and its closing stages. Moving one into `ARENAS` changes which arena a match id
  * gives, so it needs a new `PROTOCOL` with it.
  */
-export const NEW_ARENAS: ArenaDef[] = [harbourArena, canyonArena, cavernArena, battlefieldArena];
+export const NEW_ARENAS: ArenaDef[] = [];
 
 /** The arena with this id, else undefined. */
 export const arenaById = (id: string) => ARENAS.find((a) => a.id === id) ?? NEW_ARENAS.find((a) => a.id === id);

@@ -36,9 +36,9 @@ export const POOL_STYLES = {
   /** Sea water over stone. */
   tide: { deep: 0x124a66, light: 0x3f93b4, rim: 0xbfe2ee, speed: 0.5, spacing: 1.7, alpha: 0.86 },
   /** Quicksand. */
-  sand: { deep: 0x7a5a2c, light: 0xb08a48, rim: 0xe0c078, speed: -0.35, spacing: 1.3, alpha: 0.9 },
-  /** Fire on the ground. */
-  fire: { deep: 0x8a2a0c, light: 0xd8742a, rim: 0xf0b050, speed: 0.9, spacing: 1.1, alpha: 0.82, flicker: true },
+  sand: { deep: 0x5c4424, light: 0x86683a, rim: 0xc4a460, speed: -0.35, spacing: 1.3, alpha: 0.9 },
+  /** Fire on the ground: amber, not red (red is the enemy's spells), and no brighter than the floor can bear under bloom. */
+  fire: { deep: 0x74400e, light: 0xb8782a, rim: 0xe8b458, speed: 0.9, spacing: 1.1, alpha: 0.82, flicker: true },
   /** Fallen rock and the dark behind it. */
   rubble: { deep: 0x1c1a22, light: 0x3a3644, rim: 0x8a84a0, speed: 0.15, spacing: 2.2, alpha: 0.92 },
 } satisfies Record<string, PoolStyle>;

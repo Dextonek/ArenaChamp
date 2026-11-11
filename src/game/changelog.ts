@@ -38,10 +38,27 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
-    date: '2026-11-10',
-    title: 'Every hero remade, in one realistic style',
+    date: '2026-11-11',
+    title: 'Every hero remade, and four new arenas',
     live: false,
     items: [
+      {
+        tag: 'Arenas',
+        title: 'Four new arenas, nine in all',
+        text: 'The Drowned Harbour, the Sandstone Canyon, the Crystal Cavern and the Fallen Battlefield join the five arenas you know. They are built like the heroes: clean shapes, plain colours, gold on the edges, lantern light.',
+        image: '/news/arenas4.jpg',
+        alt: 'The four new arenas from the game camera and from the floor: a stone quay with a ship, a canyon court, a crystal cave with a mine track, a battlefield with shields and banners.',
+      },
+      {
+        tag: 'Arenas',
+        title: 'Each has its own event',
+        text: 'In the harbour two waves wash across the quay and slow whoever they catch. In the canyon two dust devils wander the floor. In the cavern rocks drop from the roof where their shadows show. On the battlefield arrows fall in strips.',
+      },
+      {
+        tag: 'Arenas',
+        title: 'And its own way of closing in',
+        text: 'A long round changes the floor instead of only shrinking it: the tide rises in pools, quicksand pits widen, stone slabs fall and stand as new cover before the cave comes in, and fires spread from the wreckage.',
+      },
       {
         tag: 'Heroes',
         title: 'All 39 heroes have a new look',

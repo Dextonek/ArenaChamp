@@ -1,42 +1,42 @@
 # Status
 
-_Last updated: 2026-11-11 (realistic arenas begun: the Drowned Harbour's look is built and waits for the user's nod; all 39 heroes in the fourth style; friend brackets half built)_
+_Last updated: 2026-11-11 (four new arenas in the heroes' style, in rotation; all 39 heroes in the fourth style; friend brackets half built)_
 
-## In progress: four realistic arenas (2026-11-11)
+## Four new arenas in the heroes' style (2026-11-11): done, committed, not pushed, not deployed
 
 User: "save the arena we have now and make 3 new ones with all the effect and closing stuff, realistic like the
-heroes"; asked for themes, they took all four: **Drowned Harbour, Sandstone Canyon, Crystal Cavern, Fallen
-Battlefield**. The five arenas stay as they are and in rotation.
+heroes"; of four themes offered they took all four. The five older arenas are untouched; there are nine now.
 
-- **The look, third try (the one that stands):** try 1 used Poly Haven scans as photographed ("too much realistic");
-  try 2 painted the same scans in flat colours ("the walls and background still too realistic, not the heroes' style").
-  The user had three agents look in parallel; all three said the same: **the shapes, not the colours**. A scan stays
-  worn and crooked whatever colour it is; the heroes' own props are clean designed forms. So everything is now **built
-  like the heroes' weapons and crowns** with their kit (`blender/heroes/figkit.py`) and their materials (wood, lacquer,
-  wine, iron, gold, rope; gold on the edges; lantern light as the only glow), a shade duller than on a hero. The sea is
-  drawn (three broad swells, clean foam), not rippled. [The three tries side by side](arenas/harbour_three_tries.jpg).
-  The rules the readers drew from the heroes are in `blender/arenas/real/STYLE.md`.
-- **How:** `blender/arenas/real/kit.py` (`A.mat`, `A.fig()`, `A.built()`, then `cover`/`put`/`back`/`finish`), one
-  script per arena, one GLB and one obstacle JSON per arena, read by `src/arenas/real.ts` (`realProps`, `Sea`,
-  `Glows`). Pictures: `pipeline/tools/arena-shot.js`. The scan path (`load`, `template`, `paint`,
-  `pipeline/tools/polyhaven-get.mjs`) stays in the kit, unused.
-- **Done:** the Drowned Harbour's look (`src/arenas/harbour.ts`, `blender/arenas/real/harbour.py`,
-  `public/models/arenas/harbour.glb` 0.8 MB, 93k triangles, 12 materials, no textures):
-  [sample](arenas/harbour_sample.jpg). It is in `NEW_ARENAS`: reachable by id, not picked at random. See it:
-  `npm run dev`, http://localhost:5173/game?arena=harbour, a CPU duel.
-- **A source worth a test, not used:** Quaternius' Fantasy Props MegaKit (CC0, made the same year as the hero bodies;
-  94 pieces free): barrels, crates, chests, lanterns, banners. It has painted wood grain; one piece beside a hero in
-  the game camera would tell.
-- **Waiting on the user:** a nod on the look (or what to change) before the rest.
-- **Next, in this order:** the harbour's event (a wave rolls across the quay) and closing stages (the tide comes up in
-  growing pools; Last stand), then the layout checks of `docs/architecture/arenas.md` (point symmetry, clear starts,
-  gaps, meshes covering their capsules, the camera rule from both ends), each stage looked at with `duel.shiftOffset`,
-  a CPU duel with stages on, draw calls on the game page; then the other three arenas the same way; then all four into
-  `ARENAS` with a new `PROTOCOL` (the list's length decides which arena a match id gives; `server/protocol.mjs` holds
-  the uncommitted bracket work too), News, `docs/architecture/arenas.md` and `pipeline/designs/arenas.md`.
-- **Not checked yet:** draw calls and frame time (93k triangles is more than it needs: the chests and the cannon can
-  lose half), a phone, the far (-z) player's view in a real net duel. New cover
-  layouts will move balance.
+![The four new arenas](arenas/four_new_arenas.jpg)
+
+- **What:** Drowned Harbour, Sandstone Canyon, Crystal Cavern, Fallen Battlefield: each with its cover, its backdrop,
+  its event and its three closing stages plus Last stand. Tables and how they are made:
+  [architecture/arenas.md](architecture/arenas.md) "The four in the heroes' style". Events and third stages:
+  [picture](arenas/four_new_events_stages.jpg).
+- **The look took three tries** ([picture](arenas/harbour_three_tries.jpg)): scans as photographed ("too much
+  realistic"), the same scans painted flat ("walls and background still too realistic"), then, after three agents
+  agreed it was the shapes and not the colours, everything built by hand with the heroes' kit: accepted ("that last
+  style is good, make those new arenas in that style"). Rules: `blender/arenas/real/STYLE.md`; lesson in CLAUDE.md.
+- **Who built what:** the harbour and the shared parts (kit, `real.ts`, `PoolLook`, tools) in the main session; the
+  other three by three agents in parallel, each in its own files, then looked at and corrected here (fire from red to
+  amber, quicksand darker, the arrow strips thinned so lanes of about 3 m stay).
+- **Checked:** `node pipeline/tools/arena-check.mjs harbour canyon cavern battlefield`: all rules hold (the cavern also
+  with its four fallen slabs); each arena's event and each stage seen in the game; AI rounds with events and stages on
+  ended without errors on all four (the cavern's slabs are gone again in the next round); cost on the game page equal
+  to the older arenas (188-296 draw calls a frame against the temple's 208, the same frame time on this desktop);
+  type check, build, server test.
+- **Not checked:** a person playing them; a phone (cost and look); a real two-screen net duel (the events and stages
+  draw only from the seed, as the older ones do); whether the CPU dodges each new event as well as the old ones; hero
+  balance on the new cover (not measured: one `_tourney` per arena would tell).
+- **`PROTOCOL` is 6** (committed with this): the arena list's length decides which arena a match id gives, so tabs left
+  open from before must reload. The friend brackets' server half is still uncommitted in `server/hub.mjs`,
+  `server/accounts.mjs` and `server/game-server.mjs`; when it lands the protocol must go up again, because it adds
+  messages.
+- **Open, small:** the harbour is 93k triangles (the chests and cannons could lose half); the canyon has the most draw
+  calls (296); meshes reach up to 0.3 m past their capsules on the battlefield's wagons and catapults; Quaternius'
+  Fantasy Props MegaKit (CC0) was found as a possible source of small clutter and never tried.
+- **Waiting on the user:** to play them (`npm run dev`, http://localhost:5173/game; `?arena=harbour`, `canyon`,
+  `cavern` or `battlefield` pins one for CPU duels) and say what to change; then push and deploy, each on request.
 
 ## Current state (2026-11-05)
 **2026-11-10, second computer: committed, not pushed, not deployed**

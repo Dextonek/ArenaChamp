@@ -1,6 +1,7 @@
 # Duel arenas
 
-Every duel (the AI duel and the network duel) is fought in one of five arenas, picked at random each round. An
+Every duel (the AI duel and the network duel) is fought in one of nine arenas, picked at random each round: the first
+five (2026-10), and four in the heroes' style (2026-11-11, "The four in the heroes' style" below). An
 arena is a cover layout, a set of meshes and a stage (sky, fog, lights) around the same ring. The design sheet with
 each arena's look and layout is [pipeline/designs/arenas.md](../../pipeline/designs/arenas.md).
 
@@ -19,6 +20,32 @@ From the two gameplay cameras (a network player on side 1 looks from the other e
 | `caldera` | Ember Caldera | an open middle (the lava vent), two low obsidian ridges flanking the middle lane, two tall basalt column clusters and two low clusters of snapped stumps off the z axis, two tall bladed obsidian ridges on the wings (`CALDERA_OBSTACLES`) | hex basalt with glowing cracks and cooled lava flows, glossy faceted obsidian ridges and chiselled hexagonal basalt columns with joints and worn tops, on cooled lava crust with small glowing cracks (props from `blender/arenas/caldera_props.py`); outside: a sculpted jagged obsidian lip round the ring, basalt prism clusters, cooled-lava boulders and small vents on the apron, lava-crusted spires in the lava lake (with bubbles), big vents under the smoke columns, a chiselled crater wall of basalt segments with thin lava falls (props from `blender/arenas/caldera_backdrop.py`), embers and ash |
 | `glade` | Verdant Glade | a great fallen log across the middle (low), two broken giant stumps off its ends, two carved rune stones off the starts, two giant mushroom clusters beside the middle, two fallen trunks with upturned root plates on the wings (`GLADE_OBSTACLES`) | moss floor with grass, flowers and small mushrooms; sculpted, painted cover (grooved bark with roots and splintered breaks, chiselled stones with faint carved runes, moss draped on top surfaces) and backdrop (mossy rim stones, ferns, rocks, bushes, tall trees and dead snags) from `blender/arenas/glade_props.py` (`glade_props.glb`, `glade_backdrop.glb`, merged into one mesh per material); far forest wall and canopy, god rays, fireflies and falling leaves |
 | `skyruins` | Sky Ruins | two low broken drum stacks flanking the middle on the cross axis, two low balustrade fragments off the starts, two tall intact columns and two tall broken columns off the z axis, two broken arch bases on the wings (`SKYRUINS_OBSTACLES`) | floating slate-marble platform with a gold compass-rose inlay and worn tiles; sculpted, painted cover (fluted marble drums with chipped rims, capitals with volutes, pale fresh-marble breaks with shards, gold neckings and imposts, ivy vines with leaves spiralling up the shafts) and backdrop (broken edge balustrade, slate edge blocks, two toppled columns, rocks hanging under the edge, floating rocky islands with a ring of columns, a temple and a great broken column, the big broken arch on its islet, loose floating rocks) from `blender/arenas/skyruins_props.py` (`skyruins_props.glb`, `skyruins_backdrop.glb`; unique placements merged into one mesh per material, the edge pieces instanced); sea of clouds, cloud puffs, birds |
+
+## The four in the heroes' style
+
+![The four new arenas: game camera and from the floor](../arenas/four_new_arenas.jpg)
+
+Their events and third stages: [picture](../arenas/four_new_events_stages.jpg). How the look was reached, in three tries:
+[picture](../arenas/harbour_three_tries.jpg); the rules are in [blender/arenas/real/STYLE.md](../../blender/arenas/real/STYLE.md).
+
+| Id | Name | Cover | Round it | Its colour |
+|---|---|---|---|---|
+| `harbour` | Drowned Harbour | three barrels in the middle, two rows of sea chests guarding the starts, two mooring posts with a lantern (tall), two cannons on the wings, two boats laid keel-up in the far corners | a stone quay head in the sea at dusk: a three-master, a pier with a lamp arch, basalt stacks, a lighthouse | wine |
+| `canyon` | Sandstone Canyon | a dry well in the middle, two fallen columns guarding the starts, two wind-carved rock pillars with a lantern (tall), two clusters of glazed jars on the wings, two fallen statues in the far corners | a paved caravan court between smooth rock terraces: a broken colonnade, an awning, banners, a great arch far off | turquoise |
+| `cavern` | Crystal Cavern | a mine cart of amethyst in the middle, two stacks of pit timber guarding the starts, two tall amethyst clusters, two rows of stalagmites on the wings, two winch frames with a lantern (tall) in the far corners | a mine in a great cave: a track into two timbered tunnel mouths, great stalagmites and crystals, dark rock walls | amethyst |
+| `battlefield` | Fallen Battlefield | a war drum in the middle, two rows of great shields guarding the starts, two banner standards (tall), two broken catapults on the wings, two supply wagons in the far corners | a field after a battle in light rain: a toppled siege tower, a palisade with a gate, braziers, a far camp of tents | banner blue |
+
+- **How they are made:** every prop is built in Blender from clean forms with the heroes' kit (`blender/arenas/real/kit.py`,
+  one script per arena), in the heroes' materials plus one colour of the arena's own; no textures. The script writes
+  `public/models/arenas/<id>.glb` (an object per obstacle, one backdrop) and `src/arenas/real/<id>.json` (the
+  obstacles and the spots that glow). `src/arenas/real.ts` reads them; `src/arenas/<id>.ts` draws the floor with a
+  canvas, sets the stage and adds what moves (the harbour's sea, rain, dust, glows).
+- **Check a layout:** `node pipeline/tools/arena-check.mjs <id>` (the rules below, from the JSON).
+- **Look at one:** `pipeline/tools/arena-shot.js` (four cameras with a fight in it, beside another arena; `shift` jumps
+  to a stage). In the game: `/game?arena=<id>` pins the arena of CPU duels.
+- **Cost, measured on the game page (whole frame, two heroes fighting):** 188 to 296 draw calls and 195-256 thousand
+  triangles, against 208 and 316 thousand for the Night Temple; the same frame time on the desktop it was measured on.
+  Not measured on a phone.
 
 ## Code
 
@@ -68,6 +95,10 @@ looks are a first pass, for the artist to direct.
 
 | Arena | Banner | Stage 1 | Stage 2 | Stage 3 |
 |---|---|---|---|---|
+| Drowned Harbour | The tide comes in | Four pools open in the floor: cost and slow | The pools grow | The pools grow again and the sea comes over the kerb outside 9.6 m |
+| Sandstone Canyon | The sand gives way | Four quicksand pits open: cost and slow | The pits widen | They widen again and the sand comes in outside 9.6 m |
+| Crystal Cavern | The cave falls in | Four stone slabs come down (45 under one) and stand as new low walls | Rubble outside 9 m | Rubble outside 6.5 m |
+| Fallen Battlefield | The field burns | Fires start at four pieces of wreckage: cost, no slow | The fires spread | They spread again and fire comes in outside 9.6 m |
 | Night Temple | The temple falls | The four screen walls crack, then fall | The six side columns topple in pairs along a shown line, hit for 45 where they land, and are gone | Sunfire outside 6 m |
 | Frostfall Lake | The ice breaks | Two water channels: slow, no damage | Also freezing water outside 9 m, slow | The water outside 6.5 m |
 | Ember Caldera | The lava rises | Lava outside 10 m | Outside 8 m and over the vent to 2 m | Outside 6.5 m and over the vent to 2.5 m |
@@ -80,6 +111,9 @@ looks are a first pass, for the artist to direct.
 - **A person may stand in a zone and pay.** The AI does not: it walks out with nothing rolled (`hazardStep`), drops a trait's goal inside one (`reachableGoal`), plans round them (`Arena.aiRoute`, its own `Navigator`, fed by `ArenaShift.aiCover` and `aiBounds`) and stops at the edge when the other hero is inside (`offZones`). In Last stand it just fights.
 - **Cover:** a stage reports what goes and what comes (`ShiftStage.breaks`, `topples`, `adds`) and `Duel` applies it (`removeCover`, `addCover`, through the live `arena.obstacles`). The list is rebuilt from `ArenaDef.obstacles` each round; `ArenaScene.resetShift` puts back the meshes the arena owns. Pip's parcels stay where they were: `arenaCover` is the arena as it started, and a parcel a root wall covers can still be reached across it.
 - **Sky Ruins** really loses its floor. `ShiftStage.ring` shrinks `arena.bounds.r` at 4 m/s (`Duel.shrinkRing`, a copy of `RING` per round) and pushes in each screen's own hero and units, so nobody stands on air and nobody is hurt for being there; its zones only tell the AI. `ArenaScene.ringBreak` draws it: `cutFloor` discards the floor beyond the radius, `brokenEdge` shows raw rock along the same rough line, slabs and the cover and edge pieces standing there fall. Pip's parcels stay reachable: `jobOf` skips spots past the ring.
+- **The four in the heroes' style** do not simply close the ring: their zones are circles that grow (`PoolLook` in
+  `shifts/pools.ts`: `tide`, `sand`, `fire`, `rubble`; clean bands and a crisp edge, no noise), which cut the floor into
+  paths, and only the third stage brings a band in from the rim. Fire is amber: red is the enemy's spells.
 - **Looks:** `ShiftLook`, which only draws. `ZoneFloor` (`shifts/floor.ts`) is one disc whose shader knows the zones, so an edge creeps in over the 3 s and arrives when the stage lands. One style each: `lava`, `water`, `sun`, `thorn`, `storm` (Sky Ruins' Last stand). It draws at `renderOrder` 0.5, after the see-through floors and before the spells' zones, which must read on it. Colours stay mid-value, because the floor is large and would bloom. `RootLook` (`shifts/roots.ts`) grows the glade's walls; `SkyBreakLook` raises dust along the coming edge.
 - **Switches:** `duel.shiftsOn`. `duel.shiftsInRuns` is off, so balance runs stay comparable. `duel.shiftOffset` is added to the clock the stages read: set it on both screens before the fight to test a stage.
 
@@ -91,6 +125,10 @@ spells' red) for at least 1.2 s, then hits both heroes and their units alike.
 
 | Arena | Banner | What happens | Hit |
 |---|---|---|---|
+| Drowned Harbour | The swell breaks | Two tongues of sea wash over the quay from opposite sides, each three quarters of the way across, stretch after stretch | 35, slow 1.5 s |
+| Sandstone Canyon | Dust devils | Two whirlwinds wander the floor on curved paths, the second the first turned half round the centre | 35, slow 1.5 s |
+| Crystal Cavern | The roof gives | Eight rocks drop from the roof in point-symmetric pairs; a shadow tightens where each will land | 45 |
+| Fallen Battlefield | Arrows fall | A volley lands in strips with lanes of about 3 m between them, one pair of strips after another | 45 |
 | Night Temple | The altar wakes | The sun altar fires two opposite rays that sweep a 110° wedge each. Stay out of the wedges, or behind cover: walls and columns stop a ray | 45 |
 | Frostfall Lake | The ice splits | Two parallel rifts open, then a wave of ice spikes runs down each from opposite ends | 45, slow 1.5 s |
 | Ember Caldera | The vent erupts | The vent in the open middle blows, then throws eight lava bombs in point-symmetric pairs | 45 |

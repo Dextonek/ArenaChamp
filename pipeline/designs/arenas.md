@@ -1,4 +1,8 @@
-# Duel arenas (five, picked at random)
+# Duel arenas (nine, picked at random)
+
+**2026-11-11: four more arenas, in the heroes' style.** They follow other look rules than the ones below, which are the
+first five's: see `blender/arenas/real/STYLE.md` and `docs/architecture/arenas.md` "The four in the heroes' style".
+The layout rules and what is fixed for every arena hold for all nine.
 
 Every duel (AI duel and network duel) is played in one of five arenas. The registry is `src/arenas/index.ts`
 (`ARENAS`, `pickArena`); each arena is one file `src/arenas/<id>.ts` exporting `<id>Arena: ArenaDef`

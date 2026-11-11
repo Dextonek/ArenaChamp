@@ -58,6 +58,13 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   `src/motion/real.ts`). Look at every new clip in the game's camera, beside the pack's own figure at the same moments
   (`pipeline/tools/v4-clips.js`, `v4-sheet.js`). Do not commit other people's footage. The older models (`?figs=old`)
   still replay the KayKit pack (`src/motion/clips.ts`, `pipeline/designs/hero-holds.md`).
+- **Arenas are built like the heroes' props, never from scans (2026-11-11).** Asked for arenas "realistic like the
+  heroes", two harbours made from photogrammetry scans were rejected: as photographed ("too much realistic") and
+  painted in flat colours ("walls and background still too realistic, not the heroes' style"). What was accepted: every
+  prop built from clean forms with the heroes' kit, in their materials plus one colour of the arena's own, gold on the
+  edges, lantern light as the only glow; a drawn floor, a drawn sea (`blender/arenas/real/STYLE.md`, `kit.py`,
+  `src/arenas/real.ts`). When a look is in doubt, show one arena's look first and wait for the nod. The user also
+  liked having three agents look at a rejected sample in parallel before deciding ("make it three").
 - **Boss difficulty** is measured with `_raid(...)` (`pipeline/tools/raid-tool.js`) in tool-page tabs: four tabs in
   parallel, about 10 minutes for 39 heroes each; any edit under `src/` or `pipeline/` reloads the tabs and kills the
   runs; one run of 39 fights swings by about ±8 points.
