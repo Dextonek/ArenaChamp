@@ -2,6 +2,13 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: all six gates done by the computer, waiting on the user to play her once, not pushed, not live; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
+## THE NIGHT'S QUEUE (2026-11-12): read `docs/QUEUE.md` first
+
+The user went to sleep with: "dont ask just do it run the loop until everything is done ... i want to see it tomorow morning done".
+The jobs, their order, what is running and what is done are in [QUEUE.md](QUEUE.md): the Raid's rooms that transform and mechanics
+for 10, 20 and 40 players, the Tower (a new mode), the hero shop with obols, twenty new hero ideas, the heroes reworked. Nothing is
+pushed or deployed; neither may happen without the user's word.
+
 ## The Raid grows (2026-11-11): omens, rarer upgrades, side doors committed; the third boss and 40 players in progress; NOT live
 
 User: "lets enchance the raid more lets evolve it more"; chose all five options of `pipeline/designs/raid-next.html`, then asked for
