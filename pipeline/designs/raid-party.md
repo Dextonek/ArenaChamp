@@ -47,6 +47,46 @@ A vertical slice first, shown as a clip: 5 bots through one Warden fight, then 1
 or 2 must behave exactly as today's raid for two (the server smoke test passes unchanged). Server and lobby first; the boss files
 (`types.ts`, `brain.ts`, `script.ts`, the bosses) are moved to N players in one pass once the Heart of Noon is merged.
 
+## Measured before building (2026-11-11)
+
+- **Same hero twice.** The game keeps one effect per spell label (`castAs` in `src/runtime.ts` restarts it), so a partner's replay of a
+  spell this screen's own hero also has would cut this hero's own cast short, hits and all. Rule: a screen never replays a partner's
+  cast whose label is in its own hero's kit (both forms); it shows only the partner's cast pose. Partners' replays of each other's
+  labels only restart a picture, which is harmless. So any number of players may take the same hero in a party.
+- **39 other heroes on screen** (the Warden's room, a desktop at 60 fps): no cost on the desktop. With the CPU slowed six times (a
+  phone's stand-in), 16.7 ms a frame alone, 104 ms with 39 walking partners; drawing them is most of it (88 ms drawn and still, 20 ms
+  hidden). So only the nearest partners are drawn in full (8 on a phone, 16 on a desktop); the rest are light stand-ins. Their look
+  is shown to the user first.
+
+## The messages (PROTOCOL 8)
+
+Everything that works for two today keeps working for two: the server smoke test passes unchanged.
+
+**Lobby.** A raid lobby holds up to 40 seats (`RAID_PARTY_MAX`). `lobby_create { raid, open }`: `open` lists it publicly. The lobby
+state gains `open`, `max`, `band` (from its seats now) and `host` (seat 0). Anyone may pick any hero (duplicates allowed in a raid
+lobby of more than two; a lobby of two keeps today's rule). `lobbies` answers `{ list, raids }`: `raids` are the open raid lobbies with
+a free seat (`code`, `host`, `count`, `raid`). The host starts: `raid_go` (every seat must have a hero; a lobby of two also starts as
+today, when both are ready).
+
+**Start.** `raid_start { id, side, you, partner?, party: [{ side, name, hero }], band }` (`partner` only when there are two).
+
+**Moves.** With more than two players the hub batches walks: `party_moves { list: [[side, x, z, yaw, ts], ...] }` to each player, the
+newest of each other player, 10 times a second. With two, `peer_move` as today. Clients send `move` at 10 Hz when the party is over two.
+
+**Who did it.** Every relayed `peer_cast`, `peer_attack`, `peer_form`, `peer_debuff`, `peer_add`, `partner_hp`, `partner_left`
+carries `side`. `revive { side }` names whom. `peer_down` and `revived` already carry `side`.
+
+**The band.** `raidBand(n)`: 1-2 → 2, 3-5 → 5, 6-10 → 10, 11-15 → 15, 16-20 → 20, 21-30 → 30, 31-40 → 40. Taken from the players
+present (not left) when a fight starts, sent in `raid_stage { band }`. The boss's HP: `raidHp(id, band, tier)` = the duo's HP × band / 2
+(band 2 is today's duo exactly; alone offline keeps its own). The stagger gauge's size: `staggerMax × band / 2` (sent too).
+
+**Gold zones.** `boss_stood` counts the players standing, of those not down and not left, once all of them have said or the wait ran out.
+
+**Side doors.** A door opens when more than half of those present walked into the same one (for two: both, as today).
+
+**The brain.** If no `boss_cast` or `boss_move` comes from the brain's screen for 4 s during a fight, the hub gives the brain to the
+next player present (`boss_brain`).
+
 ## State (2026-11-11)
 
 - Not started in code. The Heart of Noon is being built by a helper in its own worktree (its `PROTOCOL` 6 -> 7 is only there; main
