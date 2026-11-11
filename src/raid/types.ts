@@ -461,6 +461,10 @@ export interface RaidLink {
 /** The duel, as a boss fight sees it (`Duel.startBoss`). */
 export interface BossWorld {
   camera: THREE.Camera;
+  /** A shield on this screen's hero: a share of its max HP (Bulwark, Sun Eater). */
+  shieldMe(share: number, seconds: number, color: string): void;
+  /** An orange zone landed just beside this screen's hero (Close Call): its cooldowns run on by `seconds`. */
+  nearMiss(seconds: number): void;
   /** The boss's spot and walk. */
   boss(): THREE.Vector3;
   walk(dt: number, x: number, z: number, speed: number): void;

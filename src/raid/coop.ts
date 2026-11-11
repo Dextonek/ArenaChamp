@@ -1,4 +1,4 @@
-import { raidTierFactor } from '../../server/protocol.mjs';
+import { RAID_RUN, raidTierFactor } from '../../server/protocol.mjs';
 import { nextPaint, sleep, type LoadingScreen } from '../game/loading';
 import type { HeroKit } from '../heroes';
 import type { NetClient, Profile, ServerMsg } from '../net/client';
@@ -8,6 +8,7 @@ import { RaidHall, fadeTo } from './hall';
 import { NetLink } from './net';
 import { scoreText, type RaidScore } from './run';
 import { RunUpgrades, offersFor } from './upgrades';
+import { omenNames, omensFor } from './omens';
 
 const MOVE_HZ = 20;
 /** The loading page only shows when a room takes longer than this to load (ms). */
@@ -157,9 +158,11 @@ export class RaidController {
     clearInterval(this.moveTimer);
     this.link = null;
     const mine = this.mine;
-    void this.hall.enter({
+    // The tier's omens: both screens roll the same ones from the match's id.
+    this.upgrades.omens = omensFor(this.match, m.tier);
+    void this.hall.enter({ omens: this.upgrades.omens,
       hero: mine.name, name: this.myName, partner: this.partner ?? undefined, side: this.side, solo: !this.partner, next: def, tier: m.tier, seconds: m.seconds,
-      seed: `${this.match}-hall`, offers: offersFor(mine, this.upgrades, `${this.match}-${this.side}-${m.tier}-${m.stage}`),
+      seed: `${this.match}-hall`, offers: offersFor(mine, this.upgrades, `${this.match}-${this.side}-${m.tier}-${m.stage}`, (m.tier - 1) * RAID_RUN.length + m.stage),
       waiting: this.partner ? `Waiting for ${this.partner.name}` : undefined,
       pick: (u) => {
         if (run !== this.run || !this.active) return;
@@ -222,7 +225,7 @@ export class RaidController {
     this.sendMove();
     await this.ready(api.duel.whenReady(), {
       mine, theirs: def.kit(m.hp), names: [this.myName, def.title], title: def.name, line: 'Loading the arena',
-      note: this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : undefined,
+      note: [this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : '', this.upgrades.omens.length ? `Omens: ${omenNames(this.upgrades.omens)}` : ''].filter(Boolean).join('. ') || undefined,
     });
     if (run !== this.run || !this.active) return;
     net.send({ t: 'match_loaded', maxHp: api.duel.heroMax });

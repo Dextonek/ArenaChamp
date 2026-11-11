@@ -39,6 +39,23 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-11',
+    title: 'The Raid grows',
+    live: false,
+    items: [
+      {
+        tag: 'Raid',
+        title: 'Omens',
+        text: 'Each tier of a raid now brings omens that twist both of its fights: lava where a circle lands, a dark room, a boss that rests less or enrages sooner. One at the first tier, two from then on. The hall shows them before you pick.',
+      },
+      {
+        tag: 'Raid',
+        title: 'Rare, legendary and dark upgrades',
+        text: 'Altars can now glow blue, gold or dark red. Blue upgrades are stronger, gold ones change how you fight (a near miss speeds your cooldowns, a fall leaves you standing once), and a dark pact gives a lot for a price. They come more often the deeper the run goes.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-11',
     title: 'Balance: Sirix, Cantor and Nyx',
     live: false,
     items: [

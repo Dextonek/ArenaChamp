@@ -327,6 +327,8 @@ export class HeroMode implements TouchTarget {
 
   /** A raid upgrade's share on top of the hero's own speed (Long Stride). */
   speedBonus = 1;
+  /** How fast the cooldowns run: 2 while a raid's Kneel Fury is on. */
+  cooldownRate = 1;
 
   /** Sets a slot's cooldown (a trait refund or reset). */
   setCooldown(i: number, seconds: number) {
@@ -486,7 +488,7 @@ export class HeroMode implements TouchTarget {
     if (!this.enabled) return;
     const arena = this.host.arena;
     const hero = arena.caster.group.position;
-    for (let i = 0; i < 4; i++) this.cooldowns[i] = Math.max(0, this.cooldowns[i] - dt);
+    for (let i = 0; i < 4; i++) this.cooldowns[i] = Math.max(0, this.cooldowns[i] - dt * this.cooldownRate);
     this.rooted = Math.max(0, this.rooted - dt);
     this.heldFor = Math.max(0, this.heldFor - dt);
     this.hitShake = Math.max(0, this.hitShake - dt * 0.5);

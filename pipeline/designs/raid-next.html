@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raid next steps</title>
+<style>
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37);
+    --panel: var(--card, #1a1a19); --gold: #e0a83a; --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, sans-serif; }
+  html.standalone body { max-width: 900px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 22px 0 6px; }
+  p.sub { margin: 0 0 12px; color: var(--ink-2); font-size: 13px; }
+  .now { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--ink-2); margin-bottom: 4px; }
+  .now span { border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; background: var(--panel); }
+  .now b { color: var(--ink-2); font-weight: 400; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .card.pick { border-color: var(--gold); }
+  .card h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: baseline; }
+  .card h3 .k { color: var(--gold); font-weight: 700; }
+  .card .tag { font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: .05em; }
+  .card p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .card ul { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); }
+  .card li { margin: 3px 0; }
+  .card li b { color: var(--ink); font-weight: 600; }
+  .meta { display: flex; gap: 12px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 8px; margin-top: auto; flex-wrap: wrap; }
+  .meta b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>The Raid: where it could go next</h1>
+<p class="sub">Five ways to grow Noonfall. They can be combined. Pick one or more and I build it in that order.</p>
+
+<h2>What the Raid has now</h2>
+<div class="now">
+  <span>Hall + 3 altars</span><b>→</b><span>Sun Warden</span><b>→</b><span>Hall</span><b>→</b><span>Ash &amp; Ember</span><b>→</b><span>next tier, harder</span>
+</div>
+<p class="sub">13 upgrades, 6 things to do in fights (break the ray, carry sun shards, hide from the charge…), enrage timers, alone or for two. Nobody has played it yet.</p>
+
+<h2>The options</h2>
+<div class="cards" id="cards"></div>
+
+<script>
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const C = [
+    { k: 'A', name: 'Omens', tag: 'my pick to start', pick: true,
+      line: 'Each tier, the hall shows 1 or 2 omens that twist both fights. Every run plays differently, and none of them needs new art.',
+      items: ['<b>Molten Ground:</b> where a zone lands, lava stays a few seconds', '<b>Twin Suns:</b> the Warden’s ray fires twice, crossing', '<b>Long Night:</b> the room goes dark, only lanterns and zones light it', '<b>Brittle:</b> you take more, but the boss kneels sooner', 'Harder omens give more score'],
+      cost: 'about a day', art: 'none' },
+    { k: 'B', name: 'Rare upgrades', tag: '',
+      line: 'Altars can glow blue or gold. Gold ones change how a fight plays, not just its numbers. Plus one dark altar: a strong gift with a price.',
+      items: ['<b>Sunfire:</b> your kills of adds explode', '<b>Echo:</b> every 4th spell casts twice', '<b>Second Wind:</b> a fallen partner stands up once', '<b>Dark altar:</b> e.g. +40 % damage, but no healing'],
+      cost: 'about a day', art: 'altar colours only' },
+    { k: 'C', name: 'A third boss', tag: 'biggest',
+      line: 'The Heart of Noon: the fallen sun itself, under the hall. The run ends here instead of only looping. New room, new body, new things to do.',
+      items: ['A body built in Blender, shown to you first', 'A room inside the cracked sun', 'Its own 3 phases and 2 new mechanics', 'Beat all three to finish a tier'],
+      cost: '3 to 4 days', art: 'boss + room, your nod first' },
+    { k: 'D', name: 'Paths between bosses', tag: '',
+      line: 'The hall grows into a short map. Between bosses you choose a door: a shrine, an elite fight with adds, a rest, a treasure.',
+      items: ['Elite room: a short fight vs. the Warden’s stone guards', 'Shrine: swap one upgrade for another', 'Treasure: two upgrades, but the next boss has an omen'],
+      cost: '2 days', art: 'small rooms from existing props' },
+    { k: 'E', name: 'Rewards that last', tag: 'touches accounts',
+      line: 'Something to keep after a run: raid ranks on the profile, a boss trim for your hero, and a weekly run with the same seed for everyone and a leaderboard.',
+      items: ['Ranks: Ember, Ash, Noon, Eclipse', 'Weekly seed: same upgrades and omens for all', 'Needs the server and accounts changed'],
+      cost: '2 days', art: 'trims, your nod' },
+  ];
+  const box = document.getElementById('cards');
+  for (const c of C) {
+    const d = document.createElement('div');
+    d.className = 'card' + (c.pick ? ' pick' : '');
+    d.innerHTML = `<h3><span class="k">${c.k}</span>${c.name}</h3>${c.tag ? `<div class="tag">${c.tag}</div>` : ''}<p>${c.line}</p><ul>${c.items.map((i) => `<li>${i}</li>`).join('')}</ul><div class="meta"><span>Work: <b>${c.cost}</b></span><span>Art: <b>${c.art}</b></span></div>`;
+    box.append(d);
+  }
+})();
+</script>
+</body>
+</html>

@@ -5,6 +5,7 @@
 //   _raid(['Lyra', 'Bram'], 4)              // 4 fights each against the Sun Warden at the balance AI's level
 //   _raid(names, 2, { level: 3 })           // CPU level 3 (Normal) as a stand-in for a person's reactions
 //   _raid(names, 1, { boss: 'ash', tier: 2, upgrades: ['glass', 'stubborn'] })   // the second boss, a higher tier, upgrades on
+//   _raid(names, 2, { omens: ['molten', 'quick'] })   // with omens on (src/raid/omens.ts)
 //   _raid.show()                            // per hero: clears, seconds, boss HP left, damage per second, which move killed
 //   _raid.errors()                          // errors in a run are bugs to fix, with the fight they came from
 //
@@ -29,6 +30,7 @@
         const { BOSSES } = await import('/src/raid/bosses.ts');
         const { LocalLink } = await import('/src/raid/link.ts');
         const { RunUpgrades } = await import('/src/raid/upgrades.ts');
+        const { OMENS } = await import('/src/raid/omens.ts');
         const { CPU_BALANCE, cpuLevel } = await import('/src/cpuLevels.ts');
         const def = BOSSES[opts.boss ?? 'sun'];
         vfx.view.paused = true;
@@ -42,6 +44,7 @@
             const link = new LocalLink(def, opts.tier ?? 1);
             const upgrades = new RunUpgrades();
             for (const id of opts.upgrades ?? []) upgrades.add(id);
+            upgrades.omens = OMENS.filter((o) => (opts.omens ?? []).includes(o.id));
             d.startBoss({ def, link, seed: `${hero}-${r}-${Math.random()}`, mode: 'run', tier: opts.tier ?? 1, upgrades });
             const foe = d.foe;
             let dealt = 0;

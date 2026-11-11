@@ -4,6 +4,8 @@ import { grown } from '../arenas/hazards/base';
 import { FloorGlows, Sparks } from '../arenas/hazards/fx';
 import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from '../effects/telegraph';
 import { ShowFx } from './fxShow';
+import { LAVA } from './omens';
+import { CLOSE_CALL } from './upgrades';
 import type { BossCast, BossDef, BossWorld, Objective, PlayContext, PlayedMove, RaidLink, RaidSide, Threat } from './types';
 
 /** Pale orange means leave, gold means stand here. Never the spells' red. */
@@ -18,6 +20,20 @@ const MARGIN = 0.5;
 /** How long a cast stays to hear a gold zone's result: longer than the hub waits for the other screen (s). */
 const STOOD_WAIT = 2.5;
 const CAST_LOCKOUT = 0.25;
+/** Molten Ground's lava: deeper than the zones' pale orange. */
+const LAVA_COLOR = 0xff5418;
+const LAVA_ALPHA = 0.8;
+
+/** A pool of lava an orange circle left (the Molten Ground omen). */
+interface Pool {
+  x: number;
+  z: number;
+  radius: number;
+  age: number;
+  /** When it last burnt this screen's hero. */
+  burnt: number;
+  layer: TelegraphLayer;
+}
 
 interface Active {
   cast: BossCast;
@@ -27,6 +43,8 @@ interface Active {
   stand: TelegraphLayer;
   /** When this cast last hit this screen's hero. */
   struck?: number;
+  /** One of its zones just missed this hero (Close Call). */
+  close?: boolean;
 }
 
 /**
@@ -39,6 +57,15 @@ export class BossScript {
   eventId = 0;
   /** What every hit on this screen's hero is multiplied by: more once the boss enrages. */
   rage = 1;
+  /** The same for this tier's omens (Brittle), for the whole fight. */
+  harm = 1;
+  /** Molten Ground: an orange circle leaves lava where it lands. */
+  molten = false;
+  /** Close Call: an orange zone that lands just beside this hero (not on it). */
+  closeCall: (() => void) | null = null;
+  /** Sun Eater: this hero stood in a gold zone as it landed. */
+  ateSun: (() => void) | null = null;
+  private pools: Pool[] = [];
   private active: Active[] = [];
   private clock = 0;
   private sparks = new Sparks(280, 0.18);
@@ -131,13 +158,48 @@ export class BossScript {
           th.landed = true;
           a.played.look?.land?.(th);
           if (live) this.land(a, th, t);
+          if (live && this.molten) this.pour(th);
         } else if (live && th.to !== undefined && t <= th.to && th.every !== undefined) {
           this.tickZone(a, th, t);
         }
       }
     }
+    this.burn(dt, live);
     for (const a of this.active) if (this.clock - a.began >= a.played.duration) this.forget(a);
     this.active = this.active.filter((a) => this.clock - a.began < a.played.duration);
+  }
+
+  /** Molten Ground: an orange circle that lands leaves a pool of lava, at most `LAVA.radius` wide, for `LAVA.seconds`. */
+  private pour(th: Threat) {
+    if (th.kind === 'stand' || th.warn || th.hidden || th.hits || th.shapeAt || !(th.share > 0) || th.shape.kind !== 'circle') return;
+    const { x, z } = th.shape, radius = Math.min(LAVA.radius, th.shape.radius);
+    const layer = new TelegraphLayer();
+    layer.set([{ shape: { kind: 'circle', x, z, radius }, start: 0, impact: 0, until: LAVA.seconds }], LAVA_COLOR, LAVA_ALPHA);
+    this.group.add(layer.group);
+    this.pools.push({ x, z, radius, age: 0, burnt: -Infinity, layer });
+  }
+
+  /** The lava's pools: they age, burn this hero once a second while it stands in one, and go. */
+  private burn(dt: number, live: boolean) {
+    if (!this.pools.length) return;
+    const me = this.world.me(), down = this.world.down();
+    for (const p of this.pools) {
+      p.age += dt;
+      p.layer.update(p.age);
+      if (!live || down || p.age > LAVA.seconds || Math.hypot(me.x - p.x, me.z - p.z) > p.radius) continue;
+      if (this.clock - p.burnt < LAVA.every) continue;
+      // One burn a second, however many pools it stands in.
+      for (const q of this.pools) q.burnt = this.clock;
+      this.world.hitMe({ share: LAVA.share * this.rage * this.harm, from: { x: p.x, z: p.z }, move: 'lava' });
+      break;
+    }
+    for (const p of this.pools) if (p.age > LAVA.seconds) this.drain(p);
+    this.pools = this.pools.filter((p) => p.age <= LAVA.seconds);
+  }
+
+  private drain(p: Pool) {
+    p.layer.set([]);
+    p.layer.group.removeFromParent();
   }
 
   /** This screen's hero takes a spot: at once, or by holding it. It reports once, and the first report wins. */
@@ -217,11 +279,17 @@ export class BossScript {
     const inside = !this.world.down() && this.inThreat(th, t, me.x, me.z);
     if (th.kind === 'stand') {
       th.inside = inside;
+      if (inside) this.ateSun?.();
       // A fallen hero's screen has nothing to report: the hub counts the heroes standing.
       if (!this.world.down()) this.link.stood(a.cast.id, th.part ?? 0, inside);
       return;
     }
     if (inside) this.strike(a, th, t);
+    else if (this.closeCall && !this.world.down() && !a.close && !th.hits && !th.shapeAt && insideTelegraph(grown(th.shape, CLOSE_CALL.reach), me.x, me.z)) {
+      // Once a cast, however many of its zones just missed.
+      a.close = true;
+      this.closeCall();
+    }
     // A summoned unit doesn't dodge: anything in the zone takes the hit.
     for (const u of this.world.units()) {
       if (this.inThreat(th, t, u.pos.x, u.pos.z) && (!th.source || this.world.sees(th.source.x, th.source.z, u.pos.x, u.pos.z))) this.world.hitUnit(u.figure, UNIT_HIT);
@@ -250,7 +318,7 @@ export class BossScript {
     a.struck = t;
     th.lastHit = t;
     const move = this.def.moves[a.cast.move];
-    this.world.hitMe({ share: th.share * this.rage, lethal: th.lethal, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
+    this.world.hitMe({ share: th.share * this.rage * this.harm, lethal: th.lethal, knock: th.knock, from: th.source ?? { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: move?.big });
   }
 
   /**
@@ -264,7 +332,7 @@ export class BossScript {
     // A late report can't settle a zone twice.
     if (!th || th.settled) return;
     th.settled = true;
-    const hit = (share: number) => this.world.hitMe({ share: share * this.rage, from: { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: true });
+    const hit = (share: number) => this.world.hitMe({ share: share * this.rage * this.harm, from: { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: true });
     if (count <= 0) {
       this.ctx.flash('rgba(255,214,120,0.8)', 0.45);
       hit(th.share);
@@ -279,6 +347,7 @@ export class BossScript {
 
   /** Whether (x, z) is hit, or will be within `within` seconds. The AI's walk-out check. */
   danger(x: number, z: number, within: number) {
+    for (const p of this.pools) if (p.age < LAVA.seconds - 0.2 && Math.hypot(x - p.x, z - p.z) <= p.radius + MARGIN) return true;
     for (const a of this.active) {
       const t = this.clock - a.began;
       for (const th of a.played.threats) {
@@ -364,6 +433,8 @@ export class BossScript {
   clear() {
     for (const a of this.active) this.forget(a);
     this.active = [];
+    for (const p of this.pools) this.drain(p);
+    this.pools = [];
   }
 
   dispose() {

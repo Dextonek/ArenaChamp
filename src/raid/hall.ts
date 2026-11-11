@@ -8,7 +8,8 @@ import { TOUCH } from '../touch';
 import { LightPillar } from './fx';
 import { STAND_COLOR } from './script';
 import type { BossCast, BossDef, BossMove, Objective, PlayContext, RaidEvents, RaidLink, RaidSide } from './types';
-import type { Upgrade } from './upgrades';
+import { RARITY_COLOR, type Upgrade } from './upgrades';
+import type { Omen } from './omens';
 
 const NO_EVENTS: RaidEvents = { cast() {}, phase() {}, stagger() {}, kneel() {}, stood() {}, done() {}, wall() {}, end() {} };
 /** Which objective the gate is: the altars are 0, 1 and 2. */
@@ -72,6 +73,8 @@ export interface HallVisit {
   next: BossDef;
   tier: number;
   offers: Upgrade[];
+  /** This tier's omens, shown under the words on top. */
+  omens?: readonly Omen[];
   /** How long the pick has before it takes the first (s). */
   seconds: number;
   seed: string;
@@ -91,6 +94,7 @@ export class RaidHall {
   private root = document.createElement('div');
   private head = document.createElement('div');
   private clock = document.createElement('div');
+  private omenEl = document.createElement('div');
   private cards: HTMLButtonElement[] = [];
   private spot = new THREE.Vector3();
   private visit: HallVisit | null = null;
@@ -104,6 +108,8 @@ export class RaidHall {
     this.head.style.cssText = `position:absolute;left:50%;top:calc(${TOUCH ? 10 : 16}px + env(safe-area-inset-top, 0px));transform:translateX(-50%);width:max-content;max-width:calc(100vw - 110px);text-align:center;` +
       `font:700 ${TOUCH ? 14 : 17}px ui-serif,Georgia,serif;letter-spacing:1px;color:#ffd27a;text-shadow:0 1px 5px #000;`;
     this.clock.style.cssText = 'font:600 12px ui-sans-serif,system-ui;letter-spacing:0;color:#e9dcc6;opacity:0.85;margin-top:2px;';
+    this.omenEl.className = 'raid-omens';
+    this.omenEl.style.cssText = `display:flex;flex-direction:column;gap:3px;align-items:center;margin-top:${TOUCH ? 5 : 8}px;font:500 ${TOUCH ? 11 : 12}px ui-sans-serif,system-ui;letter-spacing:0;color:#f2e6c8;`;
     this.root.append(this.head);
     document.body.append(this.root);
   }
@@ -162,15 +168,22 @@ export class RaidHall {
     for (const c of this.cards) c.remove();
     const width = TOUCH ? 'min(116px,30vw)' : '178px';
     this.cards = v.offers.map((u, i) => {
+      const tone = RARITY_COLOR[u.rarity ?? 'common'];
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'raid-offer';
       b.dataset.upgrade = u.id;
-      b.style.cssText = `position:absolute;left:0;top:0;width:${width};padding:${TOUCH ? '6px 7px' : '9px 11px'};border-radius:10px;border:1px solid #8a7a52;background:rgba(20,16,14,0.9);color:#f2e6c8;` +
+      b.style.cssText = `position:absolute;left:0;top:0;width:${width};padding:${TOUCH ? '6px 7px' : '9px 11px'};border-radius:10px;border:${u.rarity ? 2 : 1}px solid ${tone.edge};background:${u.rarity === 'dark' ? 'rgba(30,8,14,0.92)' : 'rgba(20,16,14,0.9)'};color:#f2e6c8;` +
         `cursor:pointer;text-align:left;pointer-events:auto;display:flex;flex-direction:column;gap:3px;font:inherit;box-shadow:0 4px 14px #000a;`;
       const name = document.createElement('div');
-      name.style.cssText = `font:700 ${TOUCH ? 12 : 15}px ui-serif,Georgia,serif;color:#ffd27a;`;
+      name.style.cssText = `font:700 ${TOUCH ? 12 : 15}px ui-serif,Georgia,serif;color:${tone.name};`;
       name.textContent = u.name;
+      if (u.rarity) {
+        const kind = document.createElement('div');
+        kind.style.cssText = `font:700 ${TOUCH ? 8 : 10}px ui-sans-serif,system-ui;letter-spacing:0.08em;text-transform:uppercase;color:${tone.edge};`;
+        kind.textContent = u.rarity === 'rare' ? 'Rare' : u.rarity === 'gold' ? 'Legendary' : 'Dark pact';
+        b.append(kind);
+      }
       const blurb = document.createElement('div');
       blurb.style.cssText = `font:500 ${TOUCH ? 10 : 12}px ui-sans-serif,system-ui;line-height:1.25;opacity:0.9;`;
       blurb.textContent = u.blurb;
@@ -239,13 +252,14 @@ export class RaidHall {
     const trimMat = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.4, metalness: 0.8, emissive: 0xffb050, emissiveIntensity: 0.3 });
     const daisGeo = new THREE.CylinderGeometry(ALTAR_R, ALTAR_R + 0.2, 0.14, 12).translate(0, 0.07, 0);
     const trimGeo = new THREE.TorusGeometry(ALTAR_R - 0.08, 0.05, 6, 36).rotateX(Math.PI / 2).translate(0, 0.15, 0);
-    const altars = HALL_ALTARS.slice(0, v.offers.length).map((a) => {
+    const altars = HALL_ALTARS.slice(0, v.offers.length).map((a, i) => {
+      const tone = RARITY_COLOR[v.offers[i].rarity ?? 'common'];
       const dais = new THREE.Mesh(daisGeo, daisMat), trim = new THREE.Mesh(trimGeo, trimMat);
       dais.position.set(a.x, 0, a.z);
       trim.position.set(a.x, 0, a.z);
       dais.receiveShadow = true;
-      const light = new LightPillar(a.x, a.z, ALTAR_R - 0.1, 4, STAND_COLOR);
-      const orb = new THREE.Sprite(new THREE.SpriteMaterial({ map: softDotTexture(), color: 0xffd27a, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9 }));
+      const light = new LightPillar(a.x, a.z, ALTAR_R - 0.1, 4, tone.light);
+      const orb = new THREE.Sprite(new THREE.SpriteMaterial({ map: softDotTexture(), color: tone.light, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9 }));
       orb.position.set(a.x, 1.5, a.z);
       orb.scale.setScalar(0.9);
       p.group.add(dais, trim, light.mesh, orb);
@@ -269,7 +283,16 @@ export class RaidHall {
       { part: GATE, x: target.x, z: target.z, radius: 2, can: () => this.gateOn && !this.entered },
     ];
     const headText = document.createTextNode('');
-    this.head.replaceChildren(headText, this.clock);
+    this.head.replaceChildren(headText, this.clock, this.omenEl);
+    this.omenEl.replaceChildren(...(v.omens ?? []).map((o) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'padding:3px 9px;border-radius:8px;background:rgba(40,14,8,0.78);border:1px solid #a0502a;box-shadow:0 2px 8px #0008;';
+      const name = document.createElement('b');
+      name.style.cssText = 'color:#ff9a5a;font-weight:700;';
+      name.textContent = `Omen · ${o.name}: `;
+      row.append(name, o.blurb);
+      return row;
+    }));
     const nextName = `${v.next.name}${v.tier > 1 ? `, tier ${v.tier}` : ''}`;
     let last = 0;
     return {

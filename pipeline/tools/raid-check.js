@@ -421,7 +421,7 @@
     const d = vfx.duel, a = vfx.arena, hm = vfx.heroMode;
     const { SUN_WARDEN: def } = await import('/src/raid/sunWarden.ts');
     const { LocalLink } = await import('/src/raid/link.ts');
-    const { RunUpgrades, offersFor, UPGRADES, STACKING } = await import('/src/raid/upgrades.ts');
+    const { RunUpgrades, offersFor, UPGRADES, STACKING, RARE, GOLD, DARK } = await import('/src/raid/upgrades.ts');
     const { HERO_KITS } = await import('/src/heroes.ts');
     const { NO_MODS } = await import('/src/traits/index.ts');
     const rows = [], failed = [];
@@ -511,16 +511,21 @@
       check('none it holds', offersFor(kit, owned, 'a').some((u) => u.id === offers[0].id) ? 1 : 0, 0);
       // They never run out: what can be taken again fills the cards, and each time counts.
       const allTaken = new RunUpgrades();
-      for (const u of UPGRADES) allTaken.add(u.id);
+      for (const u of [...UPGRADES, ...RARE, ...GOLD, ...DARK]) allTaken.add(u.id);
       const lastOnes = offersFor(kit, allTaken, 'b');
       check('everything taken: still three offers', lastOnes.length, 3);
       check('and all three can be taken again', lastOnes.every((u) => STACKING.includes(u)) ? 1 : 0, 1);
       const nearly = new RunUpgrades();
       const fitting = UPGRADES.filter((u) => u.fits?.(kit) ?? true);
-      for (const u of fitting.slice(2)) nearly.add(u.id);
+      for (const u of [...fitting.slice(2), ...RARE, ...GOLD, ...DARK]) nearly.add(u.id);
       const mixed = offersFor(kit, nearly, 'c');
       check('two left: those two come first', mixed.slice(0, 2).every((u) => fitting.slice(0, 2).includes(u)) ? 1 : 0, 1);
       check('and one that can be taken again', STACKING.includes(mixed[2]) ? 1 : 0, 1);
+      // Rarer ones: deep in a run some come up blue or gold, and from the second hall the third card may be a pact (never the first).
+      const deep = Array.from({ length: 40 }, (_, i) => offersFor(kit, new RunUpgrades(), `deep-${i}`, 5));
+      check('deep in a run: some rare or gold cards', deep.some((o) => o.some((u) => u.rarity === 'rare' || u.rarity === 'gold')) ? 1 : 0, 1);
+      check('deep in a run: some pacts, only as the third card', deep.some((o) => o[2].rarity === 'dark') && deep.every((o) => o[0].rarity !== 'dark' && o[1].rarity !== 'dark') ? 1 : 0, 1);
+      check('the first hall: no pact', Array.from({ length: 40 }, (_, i) => offersFor(kit, new RunUpgrades(), `first-${i}`, 0)).some((o) => o.some((u) => u.rarity === 'dark')) ? 1 : 0, 0);
       fresh(['whetstone', 'whetstone']);
       check('Whetstone twice: damage', dealt(), 100 * 1.08 * 1.08, 0.5);
       fresh(['breath', 'breath']);

@@ -8,7 +8,8 @@ import { BossHud } from './hud';
 import { Track } from './partner';
 import { raidHp, raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
-import type { RunUpgrades } from './upgrades';
+import { FUSE, QUICK_GAP } from './omens';
+import { BULWARK, CLOSE_CALL, SUN_EATER, type RunUpgrades } from './upgrades';
 import type { BossCast, BossDebuff, BossDef, BossWorld, RaidLink } from './types';
 
 /** What each hard control is worth to the stagger gauge, per second of it. Blind counts for little. */
@@ -68,14 +69,31 @@ export class BossFight {
   /** Red heat round the boss once it has enraged, and the screen's slow red throb. */
   private aura: RageAura | null = null;
   private throb = 0;
+  /** Long Night: the dark round this hero, over the 3D and under the HUD. */
+  private night: HTMLDivElement | null = null;
 
   constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
     this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength), guard: (s) => this.guard(s) }, tier);
     this.group.add(this.script.group);
     this.brain = link.brain ? new BossBrain(def, world, link, seed, tier) : null;
+    // This tier's omens (./omens.ts). Both screens roll the same ones.
+    const omen = (id: Parameters<RunUpgrades['omen']>[0]) => !def.hall && !!upgrades?.omen(id);
+    if (this.brain && omen('quick')) this.brain.quick = QUICK_GAP;
+    this.script.harm = upgrades?.harmMul ?? 1;
+    this.script.molten = omen('molten');
+    // The gold upgrades that act through the zones.
+    if (!def.hall && upgrades?.has('closecall')) this.script.closeCall = () => world.nearMiss(CLOSE_CALL.seconds);
+    if (!def.hall && upgrades?.has('suneater')) this.script.ateSun = () => world.shieldMe(SUN_EATER, 8, '#ffcf4a');
+    if (omen('night')) {
+      this.night = document.createElement('div');
+      this.night.className = 'raid-night';
+      this.night.style.cssText = 'position:fixed;inset:0;z-index:1;pointer-events:none;' +
+        'background:radial-gradient(circle at 50% 55%, transparent 0, transparent 17vmin, rgba(2,2,8,0.62) 34vmin, rgba(2,2,8,0.9) 60vmin);';
+      document.body.append(this.night);
+    }
     this.track = link.brain ? null : new Track();
     if (def.enrage) {
-      this.enrageAt = def.enrage * (raidHp(def.id, false, tier) / raidHp(def.id, false, 1));
+      this.enrageAt = def.enrage * (raidHp(def.id, false, tier) / raidHp(def.id, false, 1)) * (omen('fuse') ? FUSE : 1);
       this.aura = new RageAura(def.body.radius, def.body.height);
       this.group.add(this.aura.group);
     }
@@ -156,6 +174,7 @@ export class BossFight {
     this.world.kneel(seconds);
     this.openLeft = Math.max(this.openLeft, seconds);
     this.hud.setState('KNEELING', seconds);
+    if (this.upgrades?.has('bulwark') && !this.meDown) this.world.shieldMe(BULWARK, 10, '#7ab8ff');
     this.world.banner('It kneels', 1.2, '26px');
   }
 
@@ -202,6 +221,7 @@ export class BossFight {
     this.link.brain = true;
     this.track = null;
     this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, this.tier, 100000);
+    if (!this.def.hall && this.upgrades?.omen('quick')) this.brain.quick = QUICK_GAP;
     this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot, this.timedSeen);
     if (this.enraged) this.brain.enrage();
     if (this.stageDue) this.brain.open(this.stageDue);
@@ -332,6 +352,7 @@ export class BossFight {
   dispose() {
     // A fight left before its end (the Leave button): the next boss on this figure doesn't start red.
     this.world.bodyRage(false);
+    this.night?.remove();
     this.aura?.dispose();
     this.gates?.enter.dispose();
     this.gates?.exit.dispose();

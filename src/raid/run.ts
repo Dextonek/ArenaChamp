@@ -5,6 +5,7 @@ import { RaidHall, fadeTo } from './hall';
 import { LocalLink } from './link';
 import { BOSSES } from './bosses';
 import { RunUpgrades, offersFor } from './upgrades';
+import { omenNames, omensFor } from './omens';
 
 /** The loading page only shows when a room takes longer than this to load (ms). */
 const SLOW_LOAD = 1200;
@@ -129,9 +130,11 @@ export class RaidRun {
     const run = this.run;
     this.loading.hide();
     this.leave.style.display = '';
-    void this.hall.enter({
+    // The tier's omens hold for both of its fights.
+    this.upgrades.omens = omensFor(this.seed, this.tier);
+    void this.hall.enter({ omens: this.upgrades.omens,
       hero: this.hero, side: 0, solo: true, next: def, tier: this.tier, seconds: PICK_SECONDS, seed: `${this.seed}-hall`,
-      offers: offersFor(kit, this.upgrades, `${this.seed}-${this.tier}-${this.stage}`),
+      offers: offersFor(kit, this.upgrades, `${this.seed}-${this.tier}-${this.stage}`, (this.tier - 1) * RAID_RUN.length + this.stage),
       pick: (u) => {
         if (run !== this.run || !this.active) return;
         this.upgrades.add(u.id);
@@ -174,7 +177,7 @@ export class RaidRun {
       card: (result, seconds) => this.card(result, seconds),
     });
     this.leave.style.display = '';
-    await this.ready(api.duel.whenReady(), { mine: api.kits.find((k) => k.name === this.hero), theirs: def.kit(link.maxHp), title: def.name, line: 'Loading the arena', note: this.tier > 1 ? `Tier ${this.tier}: shown times ${Math.round((1 - raidTierFactor(this.tier)) * 100)} % shorter` : undefined });
+    await this.ready(api.duel.whenReady(), { mine: api.kits.find((k) => k.name === this.hero), theirs: def.kit(link.maxHp), title: def.name, line: 'Loading the arena', note: [this.tier > 1 ? `Tier ${this.tier}: shown times ${Math.round((1 - raidTierFactor(this.tier)) * 100)} % shorter` : '', this.upgrades.omens.length ? `Omens: ${omenNames(this.upgrades.omens)}` : ''].filter(Boolean).join('. ') || undefined });
     if (run !== this.run) return;
     await fadeTo(false);
     if (run !== this.run) return;

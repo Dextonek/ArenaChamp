@@ -932,7 +932,16 @@ export class Duel {
         this.showBanner(text, 2.8, '22px');
       },
       busy: () => this.host.heroMode.isRooted,
-      heavy: (on) => { this.host.heroMode.speedBonus = (this.boss?.upgrades?.speedMul ?? 1) * (on ? SHARD_WALK : 1); },
+      heavy: (on) => { this.host.heroMode.speedBonus = (this.boss?.upgrades?.speedMul ?? 1) * (on && (this.boss?.upgrades?.shardSlows ?? true) ? SHARD_WALK : 1); },
+      shieldMe: (share, seconds, color) => {
+        if (this.playerHp > 0) arena.shieldFigure(arena.caster, share * this.hitBase, seconds, color);
+      },
+      nearMiss: (seconds) => {
+        if (this.playerHp <= 0) return;
+        const hm = this.host.heroMode;
+        for (let i = 0; i < 4; i++) hm.setCooldown(i, hm.cooldownOf(i) - seconds);
+        arena.say('CLOSE CALL', '#ffcf4a', arena.caster.group.position, 1.2);
+      },
       addStone: (x, z, radius, seconds) => {
         const o = arena.addObstacle({ ...pillar(x, z, radius), height: 2.4 }, seconds);
         this.stones.add(o);
@@ -984,7 +993,7 @@ export class Duel {
         // A weakened boss deals less, as a weakened hero does.
         const dealt = arena.statusOf(foe)?.dealtMul ?? 1;
         const mods = dealt !== 1 ? { ...NO_MODS, power: dealt } : NO_MODS;
-        const opts: HitOptions = { damage: h.share * this.hitBase, knock: h.knock ?? 0, color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
+        const opts: HitOptions = { damage: h.share * this.hitBase, knock: (h.knock ?? 0) * (this.boss?.upgrades?.knockMul ?? 1), color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
         this.damagePlayer(this.resolve('opponent', arena.caster, opts, mods, 'spell', h.big ? 3 : 0, ++this.oppCastSeq));
       },
       fallenPartner: () => {
@@ -1080,6 +1089,7 @@ export class Duel {
     this.bossCard = null;
     this.shiftOffset = 0;
     this.host.heroMode.speedBonus = 1;
+    this.host.heroMode.cooldownRate = 1;
     this.host.heroMode.setWalkOnly(false);
     if (this.zoomBefore !== null) {
       this.host.heroMode.setZoom(this.zoomBefore);
@@ -1416,7 +1426,10 @@ export class Duel {
     if (victimIsHero) hit.damage *= arena.statusOf(victim)?.takenMul ?? 1;
     // A raid's upgrades on this hero's hits on the boss.
     const up = this.boss?.upgrades;
-    if (up && dealer === 'hero' && victim === this.foe) hit.damage *= up.dealtMul(this.boss!.open);
+    if (up && dealer === 'hero' && victim === this.foe) {
+      hit.damage *= up.dealtMul(this.boss!.open);
+      if (up.leech > 0) this.healPlayer(hit.damage * up.leech);
+    }
     // The CPU level's own lever (never online: the other side is a person).
     if (dealer === 'opponent' && !this.net) hit.damage *= this.cpuLevel.damage;
     // Sealed (Sefu's sarcophagus): nothing reaches the figure, from either side.
@@ -1857,6 +1870,7 @@ export class Duel {
     if (this.boss) {
       const fight = this.boss, live = !this.waiting && this.countdown < 0;
       fight.update(dt, live, foe ? arena.hpOf(foe) : 0);
+      this.host.heroMode.cooldownRate = fight.upgrades?.cooldownRate(fight.open) ?? 1;
       this.partnerStep(dt, cam);
       this.rimStep(dt);
       if (this.boss && !this.over) {
@@ -2577,8 +2591,12 @@ export class Duel {
     const left = arena.absorb(arena.caster, dmg);
     if (castId !== undefined) this.net?.tookHit(castId, left, opts.color, dmg - left);
     this.playerHp = Math.max(0, this.playerHp - left);
-    // Stubborn: once a fight, a killing hit leaves 1 HP.
-    if (this.playerHp <= 0 && this.boss?.upgrades?.trySave()) {
+    // Phoenix Heart and Stubborn: once a fight each, a killing hit leaves 40 % HP, or 1.
+    const saved = this.playerHp <= 0 ? this.boss?.upgrades?.trySave() ?? 0 : 0;
+    if (saved > 0) {
+      this.playerHp = Math.round(this.playerMax * saved);
+      arena.say('PHOENIX HEART', '#ffcf4a', me, 1.4);
+    } else if (saved < 0) {
       this.playerHp = 1;
       arena.say('STUBBORN', '#ffe27a', me, 1.3);
     }
@@ -2685,6 +2703,8 @@ export class Duel {
 
   /** A heal on the player hero (`arena.casterHeal`): HP up to the cap; returns what was added. */
   private healPlayer(amount: number) {
+    // Blood Pact: nothing heals this hero in the raid.
+    if (this.boss && !(this.boss.upgrades?.healable ?? true)) return 0;
     const healed = Math.max(0, Math.min(amount, this.playerMax - this.playerHp));
     this.playerHp += healed;
     // Online the server counts HP: heals are sent in batches (`flushHeal`, twice a second), within its caps.

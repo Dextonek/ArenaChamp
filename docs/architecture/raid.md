@@ -98,6 +98,24 @@ than the brain's pick (the vent) is `BossPhase.timed`.
 **The score** is the most bosses beaten, then the fastest time. Alone it stays in this browser (`raid.best`). For two it goes on both
 accounts (`recordRaid`) and does not count as a win or a loss: the profile's record stays about duels with people.
 
+## Omens
+
+`src/raid/omens.ts` (user, 2026-11-11: "evolve the raid"). Each tier rolls omens that hold for both of its fights: one at tier 1 (from
+the kind ones), two from tier 2 on. The hall shows them under the words on top, the loading page names them. Both screens of a raid for
+two roll them from the match's id and the tier, so the hub knows nothing of them: each acts on this screen's own hero, on its own
+clock, or on the brain (which runs on one screen, with the same omens).
+
+| Omen | Effect | Where it acts |
+|---|---|---|
+| Molten Ground (kind) | An orange circle that lands leaves lava for 4 s, at most 2.4 m wide: 4 % of max HP a second in it. The autopilot walks round it | `BossScript.pour`, `burn`, `danger` |
+| Long Night (kind) | The screen is dark beyond a few metres of the hero (a page layer over the 3D, under the HUD) | `BossFight` (`raid-night`) |
+| Brittle (kind) | Hits on you cost 20 % more; your control fills the gauge 50 % faster | `RunUpgrades.harmMul`, `staggerMul` |
+| Heavy Air (kind) | Walk 10 % slower, cooldowns 10 % shorter | `RunUpgrades.speedMul`, `cooldownMul` |
+| Quickened Court | The boss rests 25 % less between moves (and the rim acts sooner) | `BossBrain.quick` |
+| Short Fuse | The enrage comes 25 % sooner | `BossFight.enrageAt` |
+
+`_raid(names, reps, { omens: ['molten'] })` (`pipeline/tools/raid-tool.js`) measures one.
+
 ## Upgrades
 
 `src/raid/upgrades.ts`. Three offered before each fight, only what this hero can use and hasn't got, from a seed; 30 s, and time
@@ -117,6 +135,24 @@ running out takes the first. They live on the hero's own screen, like its HP and
 | Fresh Start | A shield of 10 % of max HP as each phase begins | | `phaseShield` |
 
 The design called the third one Last Light, which is also the Warden's third phase, so it has its own name here.
+
+**Rarer ones** (user, 2026-11-11). Each card may come up blue (rare) or gold (legendary), more often deeper in the run: gold 6 % at the
+first hall, +4 % each hall, at most 30 %; blue 20 %, +5 %, at most 45 % (`offersFor`, its `depth` is the halls before this one). From
+the second hall the third card is a dark pact one time in three. Time running out takes the first card, never a pact. The card's edge
+and name, its altar's light and orb take the rarity's colour (`RARITY_COLOR`).
+
+| Upgrade | Rarity | Effect | Where it acts |
+|---|---|---|---|
+| Sun Drinker | Blue | Heal 5 % of the damage you deal to the boss | `resolve` |
+| Sure Feet | Blue | A sun shard no longer slows you; the boss's blows push you half as far | `heavy`, `hitMe` |
+| Bulwark | Blue | A shield of 12 % of max HP when the boss kneels | `BossFight.onKneel`, `BossWorld.shieldMe` |
+| Close Call | Gold | An orange zone landing within 1.2 m of you (not on you) takes 1.5 s off each cooldown, once a cast | `BossScript.land`, `BossWorld.nearMiss` |
+| Kneel Fury | Gold | While the boss kneels or stands open, cooldowns run twice as fast | `HeroMode.cooldownRate` |
+| Phoenix Heart | Gold | Once a fight, a killing hit leaves you at 40 % HP (before Stubborn's 1 HP) | `damagePlayer` |
+| Sun Eater | Gold | Standing in a gold zone as it lands: a shield of 10 % of max HP | `BossScript.land`, `BossWorld.shieldMe` |
+| Reckless Pact | Dark | 35 % more damage; the boss's hits cost 25 % more | `resolve`, `BossScript.harm` |
+| Haste Pact | Dark | Cooldowns 30 % shorter; 25 % less max HP | `castRules`, `startBoss` |
+| Blood Pact | Dark | Ultimate 40 % sooner; nothing heals you | `castRules`, `healPlayer` |
 
 **When they run out.** Once fewer than three of those are left, about tier 4 to 6 depending on the hero, three small ones fill the cards. Each can be
 taken again and again, so a long run always has three choices (`STACKING`):

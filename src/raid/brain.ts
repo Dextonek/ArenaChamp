@@ -69,6 +69,8 @@ export class BossBrain {
   private staging = false;
   /** How much of the quiet between moves is left: less once enraged. */
   private rage = 1;
+  /** The same for an omen (Quickened Court), for the whole fight. */
+  quick = 1;
   /** The hero a move that `tracks` turns to follow, until its last step. */
   private tracking: RaidSide | null = null;
 
@@ -242,7 +244,7 @@ export class BossBrain {
     this.rimWait -= dt;
     if (this.rimWait > 0) return;
     const every = this.def.phases[this.phase].rimEvery ?? [8, 10];
-    this.rimWait = (every[0] + this.rng() * (every[1] - every[0])) * this.rage;
+    this.rimWait = (every[0] + this.rng() * (every[1] - every[0])) * this.rage * this.quick;
     const up = this.world.heroes().filter((h) => !h.down);
     if (!up.length) return;
     const list = this.listOf(false).map((id) => this.def.moves[id]).filter((m) => m && (this.ready.get(m.id) ?? 0) <= this.time);
@@ -285,7 +287,7 @@ export class BossBrain {
     if (!m.alongside) {
       this.last = m.id;
       this.locked = m.lock * this.pace;
-      this.wait = this.locked + (gap[0] + this.rng() * (gap[1] - gap[0])) * this.rage;
+      this.wait = this.locked + (gap[0] + this.rng() * (gap[1] - gap[0])) * this.rage * this.quick;
     }
     if (m.stage) this.staging = true;
     this.tracking = m.tracks ? side : null;
