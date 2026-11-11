@@ -6,7 +6,8 @@
 //   await _simFight({ hero, foe, arena: 'random' | id, events: false, maxSeconds: 120 })
 //     -> { hero, foe, arena, winner (a name, or null when nobody fell in time), seconds, heroHp, foeHp, heroMax, foeMax,
 //          dealt: { Q, W, E, R, attack, unit, trait } (the hero's damage on the foe, by source), taken: the same for the
-//          foe's damage on the hero, casts, foeCasts, errors, standing (only without a winner), ms (real time) }
+//          foe's damage on the hero, hits and foeHits (how many hits made that damage, by source), casts and foeCasts (casts
+//          per slot Q W E R), errors, standing (only without a winner), ms (real time) }
 //
 // The hero is the player's side, played by the same CPU as the opponent (a 'run' duel at the balance level, as
 // pipeline/tools/kit-balance.js runs them).
@@ -40,7 +41,7 @@
   window._simFight = async (job) => {
     await init();
     const d = vfx.duel, a = vfx.arena, t0 = realNow();
-    const dealt = {}, taken = {};
+    const dealt = {}, taken = {}, hits = {}, foeHits = {}, casts = [0, 0, 0, 0], foeCasts = [0, 0, 0, 0];
     errors = [];
     label = `${job.hero} vs ${job.foe}`;
     const resolve = Object.getPrototypeOf(d).resolve;
@@ -48,8 +49,8 @@
       const o = resolve.call(this, dealer, victim, opts, mods, kind, slot, cast);
       if (o.damage) {
         const k = kind === 'spell' ? 'QWER'[slot ?? 0] : kind;
-        if (dealer === 'hero' && victim === this.foe) dealt[k] = (dealt[k] || 0) + o.damage;
-        else if (dealer === 'opponent' && victim === a.caster) taken[k] = (taken[k] || 0) + o.damage;
+        if (dealer === 'hero' && victim === this.foe) { dealt[k] = (dealt[k] || 0) + o.damage; hits[k] = (hits[k] || 0) + 1; }
+        else if (dealer === 'opponent' && victim === a.caster) { taken[k] = (taken[k] || 0) + o.damage; foeHits[k] = (foeHits[k] || 0) + 1; }
       }
       return o;
     };
@@ -63,6 +64,19 @@
       d.shiftOffset = 0;
       if (vfx.heroPickCtrl.getValue() !== job.hero) vfx.heroPickCtrl.setValue(job.hero);
       d.start('run');
+      // casts per slot, both sides: every cast goes through the side's trait runtime once
+      const rt = d.heroRt ?? d.oppRt;
+      const proto = rt && Object.getPrototypeOf(rt);
+      if (proto && !proto._simCounted) {
+        const cast0 = proto.cast;
+        proto._simCounted = true;
+        proto.cast = function (slot, ...rest) {
+          const tally = this.side === 'hero' ? window._simCasts?.mine : window._simCasts?.theirs;
+          if (tally && slot >= 0 && slot < 4) tally[slot]++;
+          return cast0.call(this, slot, ...rest);
+        };
+      }
+      window._simCasts = { mine: casts, theirs: foeCasts };
       const max = (job.maxSeconds ?? 120) * 60;
       let f = 0;
       while (!d.result && f < max) { simMs += 1000 / 60; vfx.step(1 / 60); f++; }
@@ -70,7 +84,7 @@
       out = {
         hero: job.hero, foe: job.foe, arena: d.currentArena?.id ?? null, winner: r ? r.winner : null, seconds: r ? r.seconds : f / 60,
         heroHp: Math.round(r ? r.playerHp : d.playerHp), foeHp: Math.round(r ? r.opponentHp : a.hpOf(d.foe)), heroMax: d.playerMax, foeMax: d.foeMax,
-        dealt, taken, casts: r?.playerCasts ?? null, foeCasts: r?.opponentCasts ?? null, errors: errors.slice(),
+        dealt, taken, hits, foeHits, casts, foeCasts, errors: errors.slice(),
       };
       if (!r) {
         // Where it stood when time ran out: enough to tell a stall from a fight that was still going.

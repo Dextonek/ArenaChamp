@@ -12,7 +12,7 @@ hero, a changed number or a new arena is in the next run without touching this f
 
 Common options: --arena random|<id> (default random), --events (the arenas' events and closing stages on), --workers N
 (browsers at once; default: one for each processor thread the run may use), --priority low|normal (default low: the
-run and every browser it starts have the lowest priority, and a quarter of the processor's threads are never touched,
+run and every browser it starts have the lowest priority, and half of the processor's threads are never touched,
 `--reserve N`, so the computer stays quick), --out NAME, --open (show the page when done).
 
 It writes pipeline/sim/out/<name>.json and <name>.html (and latest.html beside them) and prints the table. A fight is a
@@ -47,10 +47,15 @@ SOURCES = ["Q", "W", "E", "R", "attack", "unit", "trait"]
 CHROME_ARGS = ["--disable-background-timer-throttling", "--disable-renderer-backgrounding", "--mute-audio"]
 
 
+# Windows' BELOW_NORMAL priority class. The idle class (0x40) was tried first: it is starved as soon as anything else
+# wants the processor, and a dozen browsers then took two minutes to load, or a run did not finish at all.
+LOW = 0x4000
+
+
 def be_gentle(reserve):
     """Keeps the computer quick while a run goes, in two ways. The run may only use some of the processor's threads:
     the first `reserve` stay free for everything else (this program's own limit, which the dev server and every browser
-    it starts inherit). And it runs at the lowest priority (see `keep_low`). Returns (threads it may use, a note)."""
+    it starts inherit). And it runs at a low priority (see `keep_low`). Returns (threads it may use, a note)."""
     cores = os.cpu_count() or 4
     reserve = max(0, min(reserve, cores - 1))
     try:
@@ -61,7 +66,7 @@ def be_gentle(reserve):
             k.SetPriorityClass.argtypes = [ctypes.c_void_p, ctypes.c_uint]
             k.SetProcessAffinityMask.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
             me = k.GetCurrentProcess()
-            k.SetPriorityClass(me, 0x40)  # IDLE_PRIORITY_CLASS
+            k.SetPriorityClass(me, LOW)
             mask = ((1 << cores) - 1) & ~((1 << reserve) - 1)
             if not k.SetProcessAffinityMask(me, mask):
                 return cores, "low priority"
@@ -75,7 +80,7 @@ def be_gentle(reserve):
 
 
 def keep_low():
-    """Windows: puts every process this program has started, and theirs, at the lowest priority. Chrome gives its own
+    """Windows: puts every process this program has started, and theirs, at the low priority. Chrome gives its own
     working processes normal priority whatever its parent has, so this is asked again every few seconds."""
     if sys.platform != "win32":
         return
@@ -115,7 +120,7 @@ def keep_low():
         todo += kids.get(pid, [])
         h = k.OpenProcess(0x0200, False, pid)  # PROCESS_SET_INFORMATION
         if h:
-            k.SetPriorityClass(h, 0x40)
+            k.SetPriorityClass(h, LOW)
             k.CloseHandle(h)
 
 
@@ -313,13 +318,18 @@ def summarise(args, info, results, subjects, foes, wall):
             "perCell": args.fights if args.mode != "all" else args.reps * 2, "command": " ".join(["python", "pipeline/sim/sim.py"] + sys.argv[1:]),
         },
         "rows": rows, "foes": foes, "arenas": arenas, "errors": errors[:40], "errorCount": len(errors), "standing": standing[:40],
+        # every fight, short: what pipeline/rustsim fits its rough model to (docs/pipeline/rust-model.md)
+        "fights": [{"h": r["hero"], "f": r["foe"], "a": r.get("arena"), "w": r["winner"], "s": round(r["seconds"], 2), "hp": [r["heroHp"], r["foeHp"]],
+                    "d": r.get("dealt", {}), "t": r.get("taken", {}), "n": r.get("hits", {}), "m": r.get("foeHits", {}),
+                    "c": r.get("casts"), "k": r.get("foeCasts")} for r in results if not r.get("crashed")] if args.keep else [],
     }
 
 
 def write_report(name, data):
     OUT.mkdir(exist_ok=True)
     (OUT / f"{name}.json").write_text(json.dumps(data, indent=1), encoding="utf-8")
-    page = (HERE / "report.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", json.dumps(data).replace("</", "<\\/"))
+    shown = {k: v for k, v in data.items() if k != "fights"}   # the page does not need every fight
+    page = (HERE / "report.html").read_text(encoding="utf-8").replace("/*__DATA__*/null", json.dumps(shown).replace("</", "<\\/"))
     for f in (OUT / f"{name}.html", OUT / "latest.html"):
         f.write_text(page, encoding="utf-8")
     return OUT / f"{name}.html"
@@ -351,11 +361,15 @@ async def run(args):
         from playwright.async_api import async_playwright
         async with async_playwright() as pw:
             # every browser loads the game at once; the first one says which heroes and arenas there are
-            # four at a time: a dozen browsers starting together at the lowest priority can starve one another
-            opened = []
-            while len(opened) < max(1, args.workers):
-                batch = min(4, max(1, args.workers) - len(opened))
-                opened += await asyncio.gather(*[open_page(pw, args, url) for _ in range(batch)])
+            # no more browsers than half the fights (a small run should not wait for a dozen to load)
+            if args.mode == "hero":
+                most = len(args.names) * len(args.foes or BENCH) * args.fights * (2 if args.sides == "both" else 1)
+            elif args.mode == "duel":
+                most = 2 * args.fights
+            else:
+                most = 10 ** 6
+            args.workers = max(1, min(args.workers, (most + 1) // 2))
+            opened = await asyncio.gather(*[open_page(pw, args, url) for _ in range(max(1, args.workers))])
             info = await opened[0][1].evaluate("() => _simInfo()")
             if args.arena != "random" and args.arena not in info["arenas"]:
                 sys.exit(f"no arena {args.arena!r}. Arenas: {', '.join(info['arenas'])}")
@@ -400,8 +414,9 @@ def main():
     common.add_argument("--workers", type=int, default=0, help="browsers at once (default: one for each processor thread the run may use)")
     common.add_argument("--priority", choices=["low", "normal"], default="low",
                         help="low (default): lowest priority, and some processor threads are left free; normal: as any program, on all of them")
-    common.add_argument("--reserve", type=int, default=max(2, cores // 4),
-                        help="with --priority low: processor threads the run never touches (default: a quarter of them)")
+    common.add_argument("--reserve", type=int, default=max(2, cores // 2),
+                        help="with --priority low: processor threads the run never touches (default: half of them)")
+    common.add_argument("--keep", action="store_true", help="keep every fight's record in the .json (for the Rust model)")
     common.add_argument("--out", default="")
     common.add_argument("--open", action="store_true")
     common.add_argument("--port", type=int, default=5181)
