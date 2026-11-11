@@ -16,7 +16,7 @@ import { attachGameServer } from './game-server.mjs';
 import { PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RELOAD_TEXT, raidBand, raidHp, raidStaggerMax } from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
-const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo;
+const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_BOSSES.heart.hp.duo;
 
 const target = process.argv[2];
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
@@ -524,9 +524,28 @@ try {
     check((await h.next('boss_gauge')).value === 40, 'once, and the gauge kept what it had');
     await g.next('boss_gauge');
 
+    // The second boss falls, and the third waits: the Heart of Noon.
+    const won2 = await until('raid_won', ASH);
+    check(won2.bosses === 2 && won2.last === false, 'the second boss falls and the run goes on');
+    await h.next('raid_won');
+    const offH = await g.next('raid_offer', 5000);
+    check(offH.stage === 2 && offH.boss === 'heart', 'the next pick is for the third boss');
+    await h.next('raid_offer');
+    g.send({ t: 'raid_pick' });
+    h.send({ t: 'raid_pick' });
+    await through();
+    const stH = await g.next('raid_stage');
+    check(stH.boss === 'heart' && stH.hp === HEART, 'the third boss loads at its own HP');
+    await h.next('raid_stage');
+    g.send({ t: 'match_loaded', maxHp: 520 });
+    h.send({ t: 'match_loaded', maxHp: 800 });
+    await g.next('match_fight');
+    await h.next('match_fight');
+    await wait(3100);
+
     // The last boss falls: the clear screen. Both go on to the next tier, keeping their upgrades, with more boss HP.
-    const clear = await until('raid_won', ASH);
-    check(clear.bosses === 2 && clear.last === true && clear.tier === 1, 'the last boss falls: the raid is cleared');
+    const clear = await until('raid_won', HEART);
+    check(clear.bosses === 3 && clear.last === true && clear.tier === 1, 'the last boss falls: the raid is cleared');
     await h.next('raid_won');
     g.send({ t: 'raid_next', go: true });
     await wait(150);
@@ -548,9 +567,9 @@ try {
     g.send({ t: 'hero_down' });
     h.send({ t: 'hero_down' });
     const eg = await g.next('raid_end', 12000), eh = await h.next('raid_end', 12000);
-    check(eg.result === 'lost' && eh.result === 'lost' && eg.bosses === 2 && eg.tier === 2, 'both down ends the run, with its score');
+    check(eg.result === 'lost' && eh.result === 'lost' && eg.bosses === 3 && eg.tier === 2, 'both down ends the run, with its score');
     const pr = eg.profile.raids;
-    check(pr.played === 1 && pr.bosses === 2 && pr.tier === 2 && pr.best > 0 && eg.profile.wins === 0 && eg.profile.matches === 0, 'it counts as a raid, not as a win');
+    check(pr.played === 1 && pr.bosses === 3 && pr.tier === 2 && pr.best > 0 && eg.profile.wins === 0 && eg.profile.matches === 0, 'it counts as a raid, not as a win');
 
     // Someone leaves: the other fights on and takes the brain. The last hero down ends it.
     g.send({ t: 'lobby_create', raid: 'sun' });

@@ -371,8 +371,11 @@ export interface BossDef {
   extra?: string[];
   /** A tag team: one HP bar, one in the ring at a time, the other on the rim. */
   forms?: BossForm[];
-  /** Noonfall's gates in this room, by where they stand round its rim (degrees: 0 the south, where heroes come in). */
-  gates?: { enter: number; exit: number };
+  /**
+   * Noonfall's gates in this room, by where they stand round its rim (degrees: 0 the south, where heroes come in), and how far from the
+   * middle (m; default 1.7 past the floor's edge). A small room puts them further out, past the camera's view of the floor.
+   */
+  gates?: { enter: number; exit: number; r?: number };
   /** Where the one on the rim can stand. */
   rimSpots?: { x: number; z: number }[];
   /** The phase that starts `late` at once, whatever the clock says. */

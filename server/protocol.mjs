@@ -15,6 +15,7 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
 export const RAID_BOSSES = {
   sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16, partyRing: 46 },
   ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
+  heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12 },
 };
 
 /**
@@ -26,6 +27,7 @@ export const RAID_BOSSES = {
 export const RAID_REWARDS = {
   sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true } },
   ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 } },
+  heart: { lock: { stagger: 40 } },
 };
 
 /** What the Shrine, a side door of the hall, costs on the run's time (s; src/raid/paths.ts). */
@@ -42,7 +44,7 @@ export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? R
 export const RAID_HALL_RING = 13;
 
 /** The bosses of one tier of a run, in order. */
-export const RAID_RUN = ['sun', 'ash'];
+export const RAID_RUN = ['sun', 'ash', 'heart'];
 
 /** The most seats a raid's lobby holds (pipeline/designs/raid-party.md). */
 export const RAID_PARTY_MAX = 40;

@@ -3,6 +3,7 @@
 //
 //   eval(await (await fetch('/pipeline/tools/raid-check.js')).text());
 //   await _raidCheck()    // { ok, failed: [...], rows: [...] }
+//   await _raidHeart()    // the same for the Heart of Noon: its moves, Lock a ring and Shade the heart, alone and with a partner
 (() => {
   // Every hero's four spells and basic attack replayed as a partner: nothing in them may touch this screen's hero or the boss.
   //   _raidPartners(['Lyra', 'Bram'])  in the background; _raidPartners.result() when done
@@ -981,6 +982,215 @@
         if (open === shadowed(x, z)) wrong++;
       }
       check('shadows match what blocks the light (share wrong)', wrong / n, 0, 0.03);
+    } catch (e) {
+      failed.push(String(e?.stack ?? e));
+    }
+    delete performance.now;
+    return { ok: !failed.length, failed, rows };
+  };
+  // The Heart of Noon: each move forced in turn, what it costs and how to get out of it; Lock a ring and Shade the heart, by this hero and
+  // by a partner (the hub's `done` for the other side, as it reaches this screen).
+  //   await _raidHeart()   // { ok, failed, rows }
+  window._raidHeart = async (hero = 'Lyra') => {
+    const d = vfx.duel, a = vfx.arena;
+    const { HEART_OF_NOON: def } = await import('/src/raid/heart.ts');
+    const { HEART_LIVE } = await import('/src/raid/bodies/heart.ts');
+    const { LocalLink } = await import('/src/raid/link.ts');
+    const V = a.caster.group.position.constructor;
+    const rows = [], failed = [];
+    let simMs = performance.now();
+    performance.now = () => simMs;
+    const step = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { simMs += 1000 / 60; vfx.step(1 / 60); } };
+    const check = (name, got, want, tol = 0.012) => {
+      const pass = Math.abs(got - want) <= tol;
+      rows.push(`${pass ? 'ok  ' : 'FAIL'} ${name}: ${+got.toFixed(3)} (want ${want})`);
+      if (!pass) failed.push(name);
+    };
+    const yes = (name, v) => check(name, v ? 1 : 0, 1, 0);
+    const H = { x: 0, z: 7 };
+    let seq = 9000;
+    const fresh = () => {
+      vfx.view.paused = true;
+      if (!d.on) vfx.setDuel(true, 'play');
+      vfx.heroPickCtrl.setValue(hero);
+      d.holdStart = false;
+      d.startBoss({ def, link: new LocalLink(def), seed: 'heart', mode: 'play' });
+      d.boss.brain.pause = 1e9;
+      a.placeFoe(d.foe, new V(H.x, 0, H.z));
+      step(0.05);
+    };
+    const place = (x, z) => a.caster.group.position.set(x, 0, z);
+    const polar = (deg, r) => ({ x: H.x + Math.sin((deg * Math.PI) / 180) * r, z: H.z + Math.cos((deg * Math.PI) / 180) * r });
+    const cast = (move, o = {}) => {
+      const me = a.caster.group.position, x = o.x ?? me.x, z = o.z ?? me.z;
+      const c = { id: ++seq, move, step: o.step ?? 0, x, z, fx: H.x, fz: H.z, dir: o.dir ?? Math.atan2(x - H.x, z - H.z), seed: o.seed ?? 4242, target: 0, alone: o.alone };
+      d.boss.link.cast(c);
+      return c;
+    };
+    const live = (id) => d.boss.script.active.find((x) => x.cast.id === id);
+    const since = (id) => d.boss.script.clock - live(id).began;
+    const lost = () => (d.playerMax - d.playerHp) / d.playerMax;
+    const take = (fn, s) => { d.playerHp = d.playerMax; fn(); step(s); return lost(); };
+    const gauge = () => d.boss.link.gauge ?? 0;
+    const apart = (x, y) => Math.abs(((x - y + 540) % 360) - 180);
+    /** Where a ring of Solar Flare leaves its two gaps, from its own zone: the angle (degrees) at radius `r` of one, the other opposite. */
+    const gapOf = (th, r) => {
+      const t = th.at + (r - 2) / 5.5;
+      // Doubled angles: the two gaps, 180 degrees apart, fall on one another.
+      let sx = 0, sz = 0;
+      for (let k = 0; k < 360; k++) {
+        const p = polar(k, r);
+        if (!th.hits(p.x, p.z, t)) { sx += Math.sin((2 * k * Math.PI) / 180); sz += Math.cos((2 * k * Math.PI) / 180); }
+      }
+      return (Math.atan2(sx, sz) * 90) / Math.PI;
+    };
+    /** Where a ring's beam points at time `t` after its cast (degrees), found from its own zone at radius 6, or null when it is out. */
+    const beamAt = (th, t) => {
+      for (let k = 0; k < 720; k++) { const p = polar(k / 2, 6); if (th.hits(p.x, p.z, t)) return k / 2; }
+      return null;
+    };
+    try {
+      fresh();
+      // Blade Sweep: an arc in front; behind it, nothing.
+      place(0, 12);
+      check('sweep: in front', take(() => cast('sweep'), 2), 0.18);
+      place(0, 2.5);
+      check('sweep: behind it', take(() => cast('sweep', { x: 0, z: 12, dir: 0 }), 2), 0);
+
+      // Blade Fall: each step a line through where you stood, the second across the first.
+      fresh();
+      place(0, 13);
+      check('fall: on the line', take(() => cast('fall', { x: 0, z: 13 }), 1.7), 0.15);
+      place(2.4, 13);
+      check('fall: a step aside', take(() => cast('fall', { x: 0, z: 13 }), 1.7), 0);
+      place(0, 15.5);
+      check('fall: the second blade lies across: along the first, safe', take(() => cast('fall', { x: 0, z: 13, step: 1, dir: 0 }), 1.7), 0);
+      place(3.5, 13);
+      check('fall: the second blade lies across: beside it, hit', take(() => cast('fall', { x: 0, z: 13, step: 1, dir: 0 }), 1.7), 0.15);
+
+      // Solar Flare: three rings, each with a gap a little further round. Standing still away from them, each ring hits; stepping from
+      // gap to gap as each one comes, none does.
+      fresh();
+      place(0, 13);
+      // Every flare here aimed the same way (at the hero at (0, 13)): its first gap follows the hero it aims at.
+      let c = cast('flare', { x: 0, z: 13 });
+      step(0.05);
+      const flares = live(c.id).played.threats;
+      check('flare: three rings', flares.length, 3, 0);
+      const gaps = flares.map((th) => gapOf(th, 6));
+      // Each pair of gaps a little on from the last: compare the nearer of the two.
+      const step2 = (x, y) => Math.min(apart(x, y), apart(x + 180, y));
+      yes('flare: each pair of gaps 12 to 20 degrees on from the last', step2(gaps[0], gaps[1]) >= 11 && step2(gaps[0], gaps[1]) <= 21 && step2(gaps[1], gaps[2]) >= 11 && step2(gaps[1], gaps[2]) <= 21);
+      const toHero = 0;
+      yes('flare: the first gap opens 20 to 45 degrees to one side of the hero it aims at', Math.min(apart(gaps[0], toHero), apart(gaps[0] + 180, toHero)) >= 19 && Math.min(apart(gaps[0], toHero), apart(gaps[0] + 180, toHero)) <= 46);
+      fresh();
+      let p0 = polar(gaps[0] + 90, 6);
+      place(p0.x, p0.z);
+      check('flare: standing where no gap is, every ring hits', take(() => cast('flare', { x: 0, z: 13 }), 7), 0.36, 0.02);
+      fresh();
+      d.playerHp = d.playerMax;
+      c = cast('flare', { x: 0, z: 13 });
+      let t0 = 0;
+      for (let i = 0; i < 3; i++) {
+        // Into ring i's gap a moment before it reaches radius 6.
+        const reach = flares[i].at + 4 / 5.5;
+        step(Math.max(0, reach - 0.3 - t0));
+        t0 = reach - 0.3;
+        const g = polar(gaps[i] + 180, 6);
+        place(g.x, g.z);
+      }
+      step(2);
+      check('flare: stepping through each gap', lost(), 0);
+
+      // The Rings Turn: three casts, one beam each, turning. A beam burns once a second; holding a ring's spot 2 s stops it for 8 s,
+      // pays the gauge once, and it burns again after a warning.
+      fresh();
+      place(0, 16);
+      const rc = [0, 1, 2].map((i) => cast('rings', { step: i, x: H.x, z: H.z }));
+      step(0.05);
+      const beams = rc.map((x) => live(x.id).played.threats[0]);
+      const warm = beams[0].at;
+      step(warm + 0.5);
+      yes('rings: all three are down round its foot', HEART_LIVE.rings.every((r) => r.down > 0.99));
+      const ang = beamAt(beams[0], since(rc[0].id) + 0.05);
+      yes('rings: ring A throws a beam', ang !== null);
+      const pb = polar(ang ?? 0, 6);
+      d.playerHp = d.playerMax;
+      place(pb.x, pb.z);
+      step(0.1);
+      check('rings: standing in a beam', lost(), 0.1, 0.002);
+      // The spot that locks ring B, by this hero.
+      const spot = live(rc[1].id).played.objectives[0];
+      const g0 = gauge();
+      place(spot.x, spot.z);
+      step(2.3);
+      yes('rings: holding a spot 2 s locks its ring', spot.done === true);
+      check('rings: a lock fills the gauge by 40', gauge() - g0, 40, 0);
+      const tl = since(rc[1].id);
+      yes('rings: a locked ring\'s beam is out', beamAt(beams[1], tl + 1) === null && beamAt(beams[1], tl + 7.5) === null);
+      yes('rings: it burns again after 8 s and a warning', beamAt(beams[1], tl + 9.2) !== null);
+      step(0.1);
+      yes('rings: the body shows it dark', HEART_LIVE.rings[1].lit === 0);
+      // The same spot again, as a late report: paid once.
+      d.boss.script.done(rc[1].id, 0, 1);
+      check('rings: a lock is paid once', gauge() - g0, 40, 0);
+      // Ring C, locked by the partner on its own screen: the hub's `done` for side 1 reaches this one.
+      const g1 = gauge();
+      d.boss.script.done(rc[2].id, 0, 1);
+      step(0.1);
+      const tl2 = since(rc[2].id);
+      yes('rings: the partner\'s lock puts its beam out here too', beamAt(beams[2], tl2 + 1) === null);
+      check('rings: and pays its gauge', gauge() - g1, 40, 0);
+
+      // Heartbeat: plates fall as gold spots; hold one 3 s and it stands up on the heart's side. The beat burns the floor it can see.
+      fresh();
+      const n0 = a.obstacles.length;
+      const bc = cast('heartbeat', { x: H.x, z: H.z });
+      step(0.05);
+      const hb = live(bc.id), beatAt = hb.played.threats[0].at;
+      const plates = hb.played.objectives;
+      check('heartbeat: three plates fall', plates.length, 3, 0);
+      step(1);
+      place(plates[0].x, plates[0].z);
+      step(3.3);
+      yes('heartbeat: holding a plate 3 s raises it', plates[0].done === true);
+      check('heartbeat: it stands as cover', a.obstacles.length - n0, 1, 0);
+      yes('heartbeat: it stands between the spot and the heart', !a.lineOfSight(new V(H.x, 0, H.z), new V(plates[0].x, 0, plates[0].z)));
+      // Plate 1, by the partner: it stands here too.
+      d.boss.script.done(bc.id, 1, 1);
+      step(0.1);
+      check('heartbeat: the partner\'s plate stands here too', a.obstacles.length - n0, 2, 0);
+      d.playerHp = d.playerMax;
+      place(plates[1].x, plates[1].z);
+      step(beatAt - since(bc.id) + 0.3);
+      check('heartbeat: behind the partner\'s plate, safe', lost(), 0);
+      step(1.5);
+      check('heartbeat: every plate is gone at the same moment after the beat', a.obstacles.length - n0, 0, 0);
+      fresh();
+      p0 = polar(30, 8);
+      place(p0.x, p0.z);
+      check('heartbeat: in the open, it burns', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0.4, 0.002);
+      fresh();
+      p0 = polar(30, 2);
+      place(p0.x, p0.z);
+      check('heartbeat: right at its foot it does not reach (a hole, so Molten Ground leaves no pool under it)', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0);
+      check('heartbeat: comes every 20 s', def.moves.heartbeat.cooldown, 20, 0);
+
+      // The Crown of Rays: four rays, then the four between them.
+      fresh();
+      place(0, 14);
+      check('corona: on a first ray', take(() => cast('corona', { x: 0, z: 14 }), 3.5), 0.15);
+      p0 = polar(45, 8);
+      place(p0.x, p0.z);
+      check('corona: on a second ray', take(() => cast('corona', { x: 0, z: 14, dir: 0 }), 3.5), 0.15);
+      p0 = polar(22.5, 8);
+      place(p0.x, p0.z);
+      check('corona: between them', take(() => cast('corona', { x: 0, z: 14, dir: 0 }), 3.5), 0);
+
+      // Its phases.
+      check('phases: three', def.phases.length, 3, 0);
+      yes('phases: The Rings Turn opens with the rings', def.phases[1].opener === 'rings');
+      yes('phases: Noon Falls opens with the Heartbeat', def.phases[2].opener === 'heartbeat');
     } catch (e) {
       failed.push(String(e?.stack ?? e));
     }

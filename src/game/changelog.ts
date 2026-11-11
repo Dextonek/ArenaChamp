@@ -44,6 +44,13 @@ export const CHANGELOG: Release[] = [
     items: [
       {
         tag: 'Raid',
+        title: 'The Heart of Noon',
+        text: 'A third boss waits under the hall, through a new gate in the north: the fallen sun itself, a gold face in a molten heart, with two sun blades for hands. Walk through the gaps of its Solar Flare, hold the gold spots on the rim to stop its turning rings, and raise fallen plates of its crust as cover when its heart beats. A tier is now the Warden, Ash and Ember, then the Heart.',
+        image: 'news/heart-of-noon.jpg',
+        alt: 'The Heart of Noon over its molten floor, its rings down as turning beams of light.',
+      },
+      {
+        tag: 'Raid',
         title: 'Omens',
         text: 'Each tier of a raid now brings omens that twist both of its fights: lava where a circle lands, a dark room, a boss that rests less or enrages sooner. One at the first tier, two from then on. The hall shows them before you pick.',
       },
