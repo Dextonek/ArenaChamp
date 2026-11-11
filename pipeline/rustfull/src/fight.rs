@@ -12,8 +12,8 @@ use crate::ai::{self, BoltDodge, CpuLevel, GuardRoll, Mode, Moment, Nav, Walk, B
 use crate::attack::{Attacker, Fired, Sight};
 use crate::bolt::{BoltSpec, Bolts, Side, Touch, Victim};
 use crate::data::{Arena, Kit};
-use crate::figure::{Hit, Opponent, Player, Ring};
-use crate::geom::{blocks_sight, contains, first_surface, Obstacle, V2};
+use crate::figure::{keep_inside, Hit, Opponent, Player, Ring};
+use crate::geom::{blocks_sight, contains, first_surface, push_out, Obstacle, V2};
 use crate::hero::{self, Hero, Landed, Spell};
 use crate::nav::{self, Navigator, Route};
 use crate::status::{Buff, Status, StatusSet, BLIND_RADIUS};
@@ -435,6 +435,127 @@ impl World {
         if s == Side::Hero {
             c.rooted = c.rooted.max(seconds);
             c.attacker.cancel();
+        }
+    }
+
+    // --- what a passive (`TraitView`) or a spell (`CastContext`) may do, by side ----------------------------
+    // `s` is the side whose hero it happens to. A passive acts on its own side `s` or on the enemy `s.other()`.
+
+    /// Heals up to the maximum; returns what was healed (`healFigure`, `healPlayer`).
+    pub fn heal(&mut self, s: Side, amount: f64) -> f64 {
+        if s == Side::Opponent && self.opp.hp <= 0.0 {
+            return 0.0;
+        }
+        let healed = amount.min(self.max_hp(s) - self.hp(s)).max(0.0);
+        if s == Side::Hero { self.player.hp += healed } else { self.opp.hp += healed }
+        healed
+    }
+
+    /// A shield of `amount` HP for `seconds`; the hero's own `shield_mul` makes it stronger; casting again keeps the
+    /// larger one (`shieldFigure`, `CastContext.shieldSelf`, `TraitView.shield`).
+    pub fn shield(&mut self, s: Side, amount: f64, seconds: f64) {
+        let amount = amount * self.heroes[s.i()].shield_mul;
+        if s == Side::Hero { self.player.slot.shield_up(amount, seconds) } else { self.opp.slot.shield_up(amount, seconds) }
+    }
+
+    pub fn clear_shield(&mut self, s: Side) {
+        if s == Side::Hero { self.player.slot.shield = None } else { self.opp.slot.shield = None }
+    }
+
+    /// The HP left in the side's shield (0 when none).
+    pub fn shield_amount(&self, s: Side) -> f64 {
+        let sh = if s == Side::Hero { self.player.slot.shield } else { self.opp.slot.shield };
+        sh.map_or(0.0, |x| x.amount)
+    }
+
+    /// Pays HP, never below 1 (`TraitView.payHp`; the two sides do it a little differently, as in the game).
+    pub fn pay_hp(&mut self, s: Side, amount: f64) {
+        if amount <= 0.0 {
+            return;
+        }
+        if s == Side::Hero {
+            let paid = amount.min(self.player.hp - 1.0);
+            if paid > 0.0 {
+                self.player.hp -= paid;
+            }
+        } else if self.opp.hp > 1.0 {
+            self.opp.hp = (self.opp.hp - amount).max(1.0);
+        }
+    }
+
+    pub fn set_cooldown(&mut self, s: Side, slot: usize, seconds: f64) {
+        self.ctl[s.i()].cooldowns[slot] = seconds.max(0.0);
+    }
+
+    pub fn cooldown_left(&self, s: Side, slot: usize) -> f64 {
+        self.ctl[s.i()].cooldowns[slot]
+    }
+
+    /// Slides the side's hero to `to` over `seconds`, easing out; nothing else moves it meanwhile. Returns the spot it
+    /// will really reach (`moveFigure`, `CastContext.moveCaster`, `TraitView.moveTo`).
+    pub fn move_to(&mut self, s: Side, to: V2, seconds: f64) -> V2 {
+        let from = self.pos(s);
+        if s == Side::Hero { self.player.slot.dash_to(from, to, seconds, &self.cover, &self.ring) } else { self.opp.slot.dash_to(from, to, seconds, &self.cover, &self.ring) }
+    }
+
+    pub fn dashing(&self, s: Side) -> bool {
+        if s == Side::Hero { self.player.slot.dashing() } else { self.opp.slot.dashing() }
+    }
+
+    /// Moves the side's hero by this step now, kept inside the ring and out of cover. The player's hero is simply
+    /// put there; the opponent walks there (`moveFoe`), `slide`: turning round cover in its way. In the game:
+    /// `TraitView.carryEnemy` on the opponent slides, `CastContext.carry` on it does not.
+    pub fn carry_by(&mut self, s: Side, dx: f64, dz: f64, slide: bool) {
+        if s == Side::Hero {
+            self.player.pos.x += dx;
+            self.player.pos.z += dz;
+            keep_inside(&mut self.player.pos, &self.cover, &self.ring, 0.6);
+        } else {
+            self.opp.walk(V2::new(dx, dz), slide, &self.cover, &self.ring);
+        }
+    }
+
+    /// A status on the side's hero, with the game's caps, refresh and immunity. False when it is immune.
+    pub fn apply_status(&mut self, s: Side, kind: Status, seconds: f64) -> bool {
+        self.status_mut(s).apply(kind, seconds) != crate::status::Applied::Immune
+    }
+
+    /// Frees the side's hero from its cast's root or a hold early (`TraitView.release`, a broken channel).
+    pub fn release_root(&mut self, s: Side) {
+        self.ctl[s.i()].rooted = 0.0;
+    }
+
+    /// Seconds the side's hero has stood still (`TraitView.still`).
+    pub fn still(&self, s: Side) -> f64 {
+        self.rt[s.i()].still
+    }
+
+    /// A wall or pillar a spell raises for `seconds` (`CastContext.addObstacle`): it blocks walking, sight and bolts
+    /// for both. Only the player's hero is pushed out of it at once, as in the game.
+    pub fn add_obstacle(&mut self, o: Obstacle, seconds: f64) {
+        self.cover.push(o);
+        self.temps.push((o, seconds.max(0.05)));
+        push_out(&mut self.player.pos, &[o], 0.5);
+    }
+
+    /// Ends a raised wall early (`CastContext.removeObstacle`).
+    pub fn remove_obstacle(&mut self, o: &Obstacle) {
+        self.temps.retain(|t| t.0 != *o);
+        if let Some(i) = self.cover.iter().position(|x| x == o) {
+            self.cover.remove(i);
+        }
+    }
+
+    fn tick_temps(&mut self, dt: f64) {
+        if self.temps.is_empty() {
+            return;
+        }
+        for t in self.temps.iter_mut() {
+            t.1 -= dt;
+        }
+        let gone: Vec<Obstacle> = self.temps.iter().filter(|t| t.1 <= 0.0).map(|t| t.0).collect();
+        for o in gone {
+            self.remove_obstacle(&o);
         }
     }
 
@@ -900,7 +1021,8 @@ impl World {
                 self.effects[key] = Some(e);
             }
         }
-        // 3. the arena: bolts, then the player's hero, then the opponent
+        // 3. the arena: walls a spell raised run out, then bolts, then the player's hero, then the opponent
+        self.tick_temps(dt);
         let n = self.bolts.live.len();
         for i in 0..n {
             let side = self.bolts.live[i].side;

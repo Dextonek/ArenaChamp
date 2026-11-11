@@ -97,6 +97,7 @@ const DATA = /*DATA*/null;
   const inside = rows.filter((r) => Math.abs(r.real.win - r.rust.win) <= Math.hypot(r.real.win_pm, r.rust.win_pm)).length;
   const realFights = rows.reduce((s, r) => s + r.real.fights, 0) / 2, rustFights = rows.reduce((s, r) => s + r.rust.fights, 0) / 2;
   const heroes = [...new Set(rows.map((r) => r.hero))];
+  const many = heroes.length > 2;
 
   app.append(el('h1', {}, 'The Rust simulator beside the real game'));
   app.append(el('p', { class: 'sub' }, `${heroes.join(' against ')}${DATA.arena ? ', ' + DATA.arena : ''}. The same fights played two ways: by the game itself in a browser (the real simulator) and by the game's rules written again in Rust. Every number below should be the same on both sides.`));
@@ -117,11 +118,11 @@ const DATA = /*DATA*/null;
   const grid = el('div', { class: 'rows' });
   for (const r of rows) {
     const a = r.real, b = r.rust;
-    const t = `<b>${r.hero}</b>, the ${r.side}'s side<br>real: ${f1(a.win)}% of ${a.fights} fights (±${f1(a.win_pm)})<br>Rust: ${f1(b.win)}% of ${b.fights} fights (±${f1(b.win_pm)})<br>fight length: ${f1(a.length)} s / ${f1(b.length)} s`;
+    const t = `<b>${r.hero}</b>, the ${r.side}'s side, against ${r.against}<br>real: ${f1(a.win)}% of ${a.fights} fights (±${f1(a.win_pm)})<br>Rust: ${f1(b.win)}% of ${b.fights} fights (±${f1(b.win_pm)})<br>fight length: ${f1(a.length)} s / ${f1(b.length)} s`;
     const track = el('div', { class: 'track', tip: t }, el('div', { class: 'half' }),
       el('div', { class: 'ci', style: `left:${Math.max(0, a.win - a.win_pm)}%;width:${Math.min(100, a.win + a.win_pm) - Math.max(0, a.win - a.win_pm)}%` }),
       el('div', { class: 'r', style: `left:${a.win}%` }), el('div', { class: 'm', style: `left:${b.win}%` }));
-    grid.append(el('div', { class: 'name', html: `${r.hero} <small>${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}</small>` }), track, el('div', { class: 'val' }, `${f1(a.win)}% · ${f1(b.win)}%`));
+    grid.append(el('div', { class: 'name', html: `${r.hero} <small>${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}${many ? ', against ' + r.against : ''}</small>` }), track, el('div', { class: 'val' }, `${f1(a.win)}% · ${f1(b.win)}%`));
   }
   const axis = el('div', { class: 'axis' });
   for (const v of [0, 25, 50, 75, 100]) axis.append(el('span', { style: `left:${v}%;transform:translateX(${v === 0 ? '0' : v === 100 ? '-100%' : '-50%'})` }, v + '%'));
@@ -148,7 +149,7 @@ const DATA = /*DATA*/null;
     return td;
   };
   for (const r of rows) {
-    table.append(el('tr', { class: 'head' }, el('td', { colspan: String(METRICS.length + 1) }, `${r.hero}, ${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}  —  fights last ${f1(r.real.length)} s · ${f1(r.rust.length)} s`)));
+    table.append(el('tr', { class: 'head' }, el('td', { colspan: String(METRICS.length + 1) }, `${r.hero}, ${r.side === 'player' ? 'as the player’s hero' : 'as the opponent'}${many ? ', against ' + r.against : ''}  —  fights last ${f1(r.real.length)} s · ${f1(r.rust.length)} s`)));
     for (const k of SOURCES) {
       const a = r.real.sources[k], b = r.rust.sources[k];
       if (!a && !b) continue;

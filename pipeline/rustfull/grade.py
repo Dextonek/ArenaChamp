@@ -53,9 +53,9 @@ def side_rows(fights):
     out = {}
     for f in fights:
         won = player_won(f)
-        for side, name, dealt, hits, casts in (("player", f["h"], f.get("d", {}), f.get("n", {}), f.get("c", [0] * 4)),
-                                               ("opponent", f["f"], f.get("t", {}), f.get("m", {}), f.get("k", [0] * 4))):
-            r = out.setdefault((name, side), {"fights": 0, "wins": 0, "seconds": 0.0, "lengths": [], "dealt": {}, "hits": {}, "casts": [0] * 4})
+        for side, name, enemy, dealt, hits, casts in (("player", f["h"], f["f"], f.get("d", {}), f.get("n", {}), f.get("c", [0] * 4)),
+                                                      ("opponent", f["f"], f["h"], f.get("t", {}), f.get("m", {}), f.get("k", [0] * 4))):
+            r = out.setdefault((name, side, enemy), {"fights": 0, "wins": 0, "seconds": 0.0, "lengths": [], "dealt": {}, "hits": {}, "casts": [0] * 4})
             r["fights"] += 1
             r["wins"] += 1 if won is not None and won == (side == "player") else 0
             r["seconds"] += f["s"]
@@ -111,7 +111,7 @@ def grade(real, rust):
     rows = []
     for key in sorted(a):
         if key in b:
-            rows.append({"hero": key[0], "side": key[1], "real": numbers(a[key]), "rust": numbers(b[key])})
+            rows.append({"hero": key[0], "side": key[1], "against": key[2], "real": numbers(a[key]), "rust": numbers(b[key])})
     return rows
 
 
@@ -122,7 +122,7 @@ def fmt(v, digits=2):
 def show(rows):
     for r in rows:
         a, b = r["real"], r["rust"]
-        print(f"\n{r['hero']} on the {r['side']}'s side   ({a['fights']} real fights, {b['fights']} Rust fights)")
+        print(f"\n{r['hero']} on the {r['side']}'s side against {r['against']}   ({a['fights']} real fights, {b['fights']} Rust fights)")
         print(f"  win rate        real {a['win']:5.1f}% (+-{a['win_pm']:.1f})   rust {b['win']:5.1f}% (+-{b['win_pm']:.1f})")
         print(f"  fight length    real {a['length']:5.1f} s            rust {b['length']:5.1f} s")
         print(f"  damage a second real {a['dps']:5.1f}              rust {b['dps']:5.1f}")
@@ -140,11 +140,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("real")
     ap.add_argument("rust")
+    ap.add_argument("--only", help="show only this hero's rows (a new hero graded against heroes that already agree)")
     ap.add_argument("--json")
     ap.add_argument("--page")
     ap.add_argument("--notes", help="a .json file: {\"sections\": [{\"title\": ..., \"notes\": [html, ...]}, ...]} shown under the tables")
     args = ap.parse_args()
     rows = grade(load(args.real), load(args.rust))
+    if args.only:
+        rows = [r for r in rows if r["hero"] == args.only]
     if not rows:
         sys.exit("the two files share no hero on the same side")
     show(rows)

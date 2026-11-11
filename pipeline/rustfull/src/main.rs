@@ -5,6 +5,7 @@
 //! (`python pipeline/rustfull/grade.py`). Until a hero passes that comparison, numbers for it come from the real
 //! simulator.
 //!
+//!   rustfull duel Kaia Brannoc Isolde           the first hero against each of the others, each way round
 //!   rustfull duel Brannoc Isolde [--fights 200] [--arena frost] [--seed 1] [--threads N] [--trace] [--out file.json]
 //!   rustfull frames Brannoc Isolde [--fights 6] [--seconds 9] [--out file.json]
 //!   rustfull heroes
@@ -103,8 +104,11 @@ fn main() {
             let seed: u64 = option(&args, "--seed").and_then(|v| v.parse().ok()).unwrap_or(1);
             let arena = game.arena(&arena_id).unwrap_or_else(|| panic!("no arena '{arena_id}': {}", game.arena_ids().join(", ")));
             let kit = |name: &str| game.kit(name).unwrap_or_else(|| panic!("no hero '{name}' in data/game.json"));
-            let (a, b) = (kit(&args[1]), kit(&args[2]));
-            if a.name == b.name {
+            // the first hero against each of the others (the names before the first --option)
+            let names: Vec<&String> = args[1..].iter().take_while(|a| !a.starts_with("--")).collect();
+            let a = kit(names[0]);
+            let others: Vec<data::Kit> = names[1..].iter().map(|n| kit(n)).collect();
+            if others.iter().any(|b| b.name == a.name) {
                 println!("{} against itself: the game's duel against the CPU never plays a hero against its own kit, so there is nothing to compare with.", a.name);
                 return;
             }
@@ -112,7 +116,7 @@ fn main() {
             // --trace: every cast and hit of every fight, in the rows pipeline/rustfull/probe.js logs in the real game
             let trace = args.iter().any(|a| a == "--trace");
             // each way round: the two sides are played by two different computer players
-            let pairs = vec![(&a, &b), (&b, &a)];
+            let pairs: Vec<(&data::Kit, &data::Kit)> = others.iter().flat_map(|b| [(&a, b), (b, &a)]).collect();
             // Each processor thread is one "page": it plays its share of the fights one after another, and a fight
             // starts with what the fight before on that page left, as in the real simulator's browsers. Half the
             // threads by default, so the computer stays usable.
@@ -176,7 +180,7 @@ fn main() {
         }
         _ => {
             println!("rustfull: the game's fight rules in Rust, in the making (docs/pipeline/rust-sim.md).");
-            println!("  rustfull duel <hero> <hero> [--fights 200] [--arena frost] [--seed 1] [--threads N] [--page-fights 250] [--trace] [--out file.json]");
+            println!("  rustfull duel <hero> <hero> [<hero> ...] [--fights 200] [--arena frost] [--seed 1] [--threads N] [--page-fights 250] [--trace] [--out file.json]");
             println!("  rustfull frames <hero> <hero> [--fights 6] [--seconds 9] [--out file.json]");
             println!("  rustfull heroes");
             println!("ported so far: {}. For every other hero: python pipeline/sim/sim.py.", hero::ported().join(", "));
