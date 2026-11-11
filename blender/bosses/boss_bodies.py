@@ -1,5 +1,6 @@
 """
-Raid boss bodies (design: pipeline/designs/raid-noonfall.md, "The bodies"): the Sun Warden, Ash and Ember.
+Raid boss bodies (design: pipeline/designs/raid-noonfall.md, "The bodies"): the Sun Warden, Ash and Ember, and the
+Heart of Noon (pipeline/designs/raid-heart.md).
 Not heroes drawn big. Each is rigid parts in a named hierarchy, NO armature and NO skinning; the game poses them in
 code (src/raid/bodies/*.ts). Every part is an object whose origin is the point it turns about, under one root empty
 named for the boss. Stone, basalt and burnt cloth are chiselled from convex hulls (hard flat facets), with carved gold
@@ -698,7 +699,129 @@ def build_ember():
 
 # --- Export, checks, sheets -----------------------------------------------------------------------------------------
 
-BUILD = {"warden": build_warden, "ash": build_ash, "ember": build_ember}
+# --- The Heart of Noon ------------------------------------------------------------------------------------------------
+
+def build_heart():
+    """The fallen sun itself, under the hall (the third boss, 2026-11-11): a molten heart in a cracked crust, a calm gold
+    face set in it, a broken armillary of three rings round it, a crown of snapped rays behind, two sun blades for hands."""
+    B = Boss("heart", 6.4)
+    crust, hi = B.m("crust", "#2a201e", 0.05, 0.88), B.m("crust_hi", "#4b3a33", 0.05, 0.8)
+    seam = B.m("seam", "#3a1208", 0.0, 0.6, "#ff8a2a", 1.6)
+    B.m("heart", "#3a1208", 0.0, 0.5, "#ff8a2a", 3.0)
+    B.m("gold", "#d2ae55", 0.85, 0.35, "#e0a93a", 0.35)
+    B.m("gold_mask", "#d8b25a", 0.9, 0.3, "#e0a93a", 0.3)
+    B.m("gold_ring", "#d2ae55", 0.85, 0.35, "#e0a93a", 0.35)
+    B.m("gold_crown", "#d2ae55", 0.85, 0.35, "#e0a93a", 0.35)
+    B.m("gold_blade", "#e0bc62", 0.9, 0.3, "#ffb84a", 0.5)
+    B.m("eyes", "#3a2a10", 0.0, 0.5, "#fff0c0", 5.0)
+    B.m("rune", "#26232d", 0.1, 0.7)
+    gold = B.mat["gold"]
+    C = Vector((0, 0, 3.7))
+    R0 = 1.55
+    # the face looks a little up, to the game's camera
+    FACE_UP = math.radians(28)
+
+    # core: the molten heart, and a crust of plates over it with glowing seams between; the front is left for the face
+    core = B.part("core", C)
+    core.rock(C, (R0 * 0.9, R0 * 0.9, R0 * 0.9), B.mat["heart"], n=40, rough=0.04)
+    look = Vector((0, -math.cos(FACE_UP), math.sin(FACE_UP)))
+    for t in ellipsoid_tiles(R0, R0, R0, 6, 11, 0.24, 0.07, core.rng):
+        if t["n"].dot(look) > 0.8:
+            continue
+        emit_tile(core, t, T(*C), crust if core.rng.random() < 0.8 else hi, seam, core.rng)
+    # a gold band round its waist, broken in three places
+    for k in range(30):
+        if k % 10 in (0, 1):
+            continue
+        a = k * math.tau / 30
+        xf = T(*C) @ R(0, 0, a) @ T(R0 + 0.16, 0, 0)
+        core.chunk((0.12, 0.33, 0.16), gold, xf=xf, bevel=0.03)
+    core.finish()
+
+    # mask: a calm sun-god face set in the front of the crust, looking a little up, eyes of white fire, short rays on its brow.
+    # Built facing -Y about its own centre, then turned up by FACE_UP.
+    F = C + Vector((0, -math.cos(FACE_UP), math.sin(FACE_UP))) * (R0 + 0.02)
+    MX = T(*F) @ R(-FACE_UP, 0, 0)
+    mask = B.part("mask", F, "core")
+    gm = B.mat["gold_mask"]
+    pts = []
+    for k in range(16):
+        a = k * math.tau / 16
+        x, z = 0.78 * math.cos(a), 0.98 * math.sin(a) - (0.12 if math.sin(a) < 0 else 0)
+        for dy in (0.18, -0.06 - 0.1 * (1 - abs(x) / 0.78)):
+            pts.append((x, dy, z))
+    mask.hull(pts, gm, MX)
+    mask.chunk((0.14, 0.2, 0.62), gm, xf=MX @ T(0, -0.2, -0.05), bevel=0.05, taper=(0.6, 1.0))
+    mask.chunk((1.2, 0.16, 0.14), gm, xf=MX @ T(0, -0.18, 0.32), bevel=0.05)
+    for sx in (-1, 1):
+        mask.chunk((0.36, 0.1, 0.08), B.mat["eyes"], xf=MX @ T(sx * 0.3, -0.2, 0.17) @ R(0, sx * 0.12, 0), bevel=0.03)
+        mask.chunk((0.05, 0.06, 0.3), B.mat["rune"], xf=MX @ T(sx * 0.42, -0.17, -0.22), bevel=0.015)
+    mask.chunk((0.38, 0.08, 0.05), B.mat["rune"], xf=MX @ T(0, -0.18, -0.55), bevel=0.02)
+    for k in range(7):
+        a = math.radians(30 + k * 20)
+        ln = 0.42 if k % 2 == 0 else 0.28
+        xf = MX @ T(0.8 * math.cos(a), -0.05, 0.86 * math.sin(a) + 0.05) @ R(0, -(a - math.pi / 2), 0)
+        mask.lathe([(0, 0.08), (0.08, 0.07), (ln, 0.0)], gm, sides=4, xf=xf, rot0=math.pi / 4)
+    mask.finish()
+
+    # rings: three armillary rings round the heart, at three tilts; the outer one is broken into arcs
+    def ring(name, radius, tilt, broken=()):
+        rp = B.part(name, C, "core")
+        xf = T(*C) @ tilt
+        n = 40
+        for k in range(n):
+            if any(lo <= k < hi for lo, hi in broken):
+                continue
+            a = k * math.tau / n
+            seg = xf @ R(0, 0, a) @ T(radius, 0, 0)
+            rp.chunk((0.2, radius * math.tau / n * 1.02, 0.12), B.mat["gold_ring"], xf=seg, bevel=0.025)
+            if k % 5 == 0:
+                rp.chunk((0.08, 0.16, 0.2), B.mat["rune"], xf=seg @ T(0.12, 0, 0), bevel=0.02)
+        rp.finish()
+
+    ring("ringA", 2.15, R(math.radians(72), 0, math.radians(10)))
+    ring("ringB", 2.4, R(math.radians(-25), math.radians(62), 0), broken=((6, 9),))
+    ring("ringC", 2.7, R(math.radians(18), math.radians(-30), 0), broken=((3, 8), (19, 22), (30, 36)))
+
+    # crown: rays fanned behind the heart, most of them snapped short
+    crown = B.part("crown", C + Vector((0, 0.7, 0)), "core")
+    gc = B.mat["gold_crown"]
+    for k in range(11):
+        a = math.radians(-20 + k * 22)
+        ln = (2.6, 1.3, 2.1, 0.9, 2.9, 1.1, 2.9, 0.9, 2.1, 1.3, 2.6)[k]
+        base = T(*(C + Vector((0, 0.8, 0)))) @ R(0, -(a - math.pi / 2), 0) @ T(0, 0, R0 + 0.25)
+        crown.lathe([(0, 0.2), (0.25, 0.17), (ln, 0.0 if ln > 1.5 else 0.1)], gc, sides=4, xf=base, rot0=math.pi / 4)
+        if ln <= 1.5:
+            crown.rock(C + Vector(((R0 + 0.25 + ln + 0.25) * math.cos(a), 0.8, (R0 + 0.25 + ln + 0.25) * math.sin(a))), (0.12, 0.1, 0.12), gc, n=8, rough=0.35)
+    crown.finish()
+
+    # blades: two great sun blades that float beside it, its hands; the point down, a stone hilt above
+    for name, sg in (("bladeL", 1), ("bladeR", -1)):
+        P = Vector((sg * 3.15, -0.5, 2.9))
+        bl = B.part(name, P)
+        gb = B.mat["gold_blade"]
+        bl.hull([P + Vector((0, 0, -2.2)), P + Vector((0.34, 0, 0.1)), P + Vector((-0.34, 0, 0.1)), P + Vector((0, 0.1, 0.1)),
+                 P + Vector((0, -0.1, 0.1)), P + Vector((0.2, 0, 0.55)), P + Vector((-0.2, 0, 0.55))], gb)
+        bl.hull([P + Vector((0, -0.11, -1.9)), P + Vector((0.06, -0.11, 0.0)), P + Vector((-0.06, -0.11, 0.0)), P + Vector((0, -0.05, 0.0))], seam)
+        bl.chunk((0.95, 0.24, 0.16), hi, xf=T(*(P + Vector((0, 0, 0.62)))), bevel=0.05)
+        bl.chunk((0.22, 0.22, 0.6), crust, xf=T(*(P + Vector((0, 0, 1.0)))), bevel=0.05, taper=(0.8, 0.8))
+        bl.rock(P + Vector((0, 0, 1.42)), (0.17, 0.17, 0.17), B.mat["heart"], n=12, rough=0.1)
+        bl.finish()
+
+    # shards: bits of crust that float round its foot, glowing on the underside
+    sh = B.part("shards", (0, 0, 1.1))
+    for k in range(13):
+        a = k * math.tau / 13 + sh.rng.uniform(-0.2, 0.2)
+        rad = sh.rng.uniform(1.4, 2.6)
+        z = sh.rng.uniform(0.5, 1.6)
+        sz = sh.rng.uniform(0.14, 0.32)
+        sh.rock((rad * math.cos(a), rad * math.sin(a), z), (sz, sz, sz * 0.7), crust if k % 3 else hi, n=10, rough=0.35)
+        sh.rock((rad * math.cos(a), rad * math.sin(a), z - sz * 0.55), (sz * 0.6, sz * 0.6, sz * 0.25), seam, n=8, rough=0.2)
+    sh.finish()
+    return B
+
+
+BUILD = {"warden": build_warden, "ash": build_ash, "ember": build_ember, "heart": build_heart}
 
 
 def clear(name=None):
