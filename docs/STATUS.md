@@ -32,7 +32,7 @@ which kind, they chose **Python on the real game** (not a Rust rewrite of the ru
 - **Waiting on the user:** whether to rebalance the strong and weak heroes the roster run shows, and by which
   measure (the six benchmark foes as before, or the whole roster).
 
-## Hero 40 and the new rules for creating a hero (2026-11-11): Anka at gate 4: rules and plain spells proven, looks to do
+## Hero 40 and the new rules for creating a hero (2026-11-11): Anka at gate 4: looks done and shown, waiting on the user
 
 User: "okay lets make it 40 heros total so made new one", "and lets make like what need to be done when we are
 creating new hero, like docs"; of four ideas offered they picked the **Phoenix fire dancer** (the first true fire
@@ -73,9 +73,24 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   screens online (gate 5); the CPU's use of Ember Flight and Firebird, looked at closely.
   **Testing note:** after an edit under `src/`, `import('/src/traits/phoenix.ts')` in the page is a second copy of the
   module with its own empty book: read her embers through `duel.heroRt.trait.meter.value(duel.heroRt)` instead.
-- **Gate 4, still to do:** the real looks of the four spells and the floor marks (one owner: `parts/phoenix.ts` and
-  the four spell files, rules untouched), the real icons and portrait from `docs/heroes/anka_look.jpg`, then one
-  picture per spell and her hero page for the user's yes.
+- **Gate 4, the looks: done, shown, waiting on the user's yes.** Two helpers in parallel: one drew the five effect
+  files (`parts/phoenix.ts` and the four spells; rules untouched, checked by diff), one the portrait and icons
+  (`src/kits/phoenix.ts`, from the agreed model). Mine after them: the firebird's hit now follows its beak as drawn
+  (one line in `firebird.ts`); her wings' glow in the model went from 0.7 to 0.3 (under the game camera she bloomed
+  into one orange blob). Pictures, one sheet a spell, taken by the game in a real duel:
+  [the page](heroes/anka.html) (`docs/spells/anka/*.jpg`, `docs/heroes/anka_kit_art.jpg`), made with
+  `python pipeline/tools/page-shots.py pipeline/tools/anka-shots.js docs/spells/anka`. Type check, build, and 96
+  simulated fights with the real effects: no error.
+- **Lesson, written into the tools:** review pictures are taken in a headless page (`page-shots.py`), not in the
+  hidden browser pane, where even a `MessageChannel` message took 3.8 s. And a script that owns the game's clock
+  must never let it go back: switching between the real clock and the fight's turned whole rounds white (the screen's
+  hit flash grows without end on a negative time step, `Finish.update` in `src/post.ts`). It cost an hour to find
+  and was not a bug of the game.
+- **Not done in gate 4:** her rising flare has no burst of its own (the egg's ring and the burn puff only); Ember
+  Flight's picture hardly shows the flight (she is fast); her page in the game's Heroes screen was not looked at.
+- **Gate 5, to do next:** teach the CPU (it hardly uses Fan the Flames and Ember Flight: 0.8 and 0.3 damage a
+  second), then her numbers (25-29% against the benchmark foes now), the Raid check, a real duel on the game page,
+  two screens online.
 - Gate 3's text: (user: "lets make some interesting kit for her").
   `pipeline/designs/kit-phoenix.md`: everything lays embers or spends them; an ember is a blast (W Fan the Flames), a
   place to fly to (E Ember Flight) and her second life (P Ashborn); Q Ember Quill and R Firebird lay them; 480 HP.

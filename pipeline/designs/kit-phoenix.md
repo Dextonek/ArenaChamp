@@ -2,7 +2,7 @@
 title: Anka, the Firebird (hero 40)
 tags: [design, heroes, kits, phoenix]
 updated: 2026-11-11
-status: gates 1 and 2 agreed (the look: "yes this look good"); gate 3 (kit on paper) written, waiting on the user
+status: gates 1 to 3 agreed; gate 4 (spells) built and shown, waiting on the user; gate 5 (plays) to do
 ---
 
 # Anka, the Firebird
@@ -122,3 +122,19 @@ place; R 120 is below the usual 125-130 because it also moves her and lays a nes
 `emberQuill.ts` ('ember quill'), `fanTheFlames.ts` ('fan the flames'), `emberFlight.ts` ('ember flight'),
 `firebird.ts` ('firebird'); `src/effects/parts/phoenix.ts`, `src/kits/phoenix.ts`, `src/traits/phoenix.ts`. Taken
 already and not hers: `featherStep.ts`, `emberComet.ts`, `vermilionPhoenixDive.ts`, `cinderBow.ts`.
+
+## Gate 4: the spells
+
+Built 2026-11-11 and shown to the user as [a page](../../docs/heroes/anka.html): her portrait and icons, and one
+sheet of pictures per spell taken by the game in a real duel (`docs/spells/anka/`). Her rules and plain spells were
+written and proven first (`src/traits/phoenix.ts`), then two helpers drew the effects and the kit art in parallel
+against those frozen rules. What changed from the sheet above while building:
+
+- The arena's own damage (its event, the closing floor, Last stand) passes no trait, so it kills her for good, in the
+  egg too. Her passive's text says so.
+- She is kept safe as ash by her own rule swallowing every hit, not by the `sealed` status (the engine refuses it in
+  the half second after a stun, when most kills happen).
+- The firebird's hit follows its beak as it is drawn: her slide is fast at first, so the first half of the lane is
+  struck a little sooner than an even front would.
+- Where a quill ends is worked out as Fenna's Seed Shot does it: where the bolt really stopped on the screen that
+  decides the hit, along the aim on the other.
