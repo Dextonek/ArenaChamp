@@ -1,4 +1,7 @@
+import { battlefieldArena } from './battlefield';
 import { calderaArena } from './caldera';
+import { canyonArena } from './canyon';
+import { cavernArena } from './cavern';
 import { frostArena } from './frost';
 import { gladeArena } from './glade';
 import { harbourArena } from './harbour';
@@ -17,7 +20,7 @@ export const ARENAS: ArenaDef[] = [templeArena, frostArena, calderaArena, gladeA
  * lost round, until each has its event and its closing stages. Moving one into `ARENAS` changes which arena a match id
  * gives, so it needs a new `PROTOCOL` with it.
  */
-export const NEW_ARENAS: ArenaDef[] = [harbourArena];
+export const NEW_ARENAS: ArenaDef[] = [harbourArena, canyonArena, cavernArena, battlefieldArena];
 
 /** The arena with this id, else undefined. */
 export const arenaById = (id: string) => ARENAS.find((a) => a.id === id) ?? NEW_ARENAS.find((a) => a.id === id);

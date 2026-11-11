@@ -313,7 +313,7 @@ LAYOUT = [
     (wall(-2.6, 3.8, -5.6, 2.4, 0.4, 1.3), chests),
     (pillar(4.3, 4.7, 0.7, 3.9), posts),
     (wall(7.3, 7.5, 9.0, 8.4, 0.4, 1.1), cannons),
-    (wall(6.0, 1.5, 7.9, 3.3, 0.45, 1.1), skiffs),
+    (wall(6.0, 1.5, 7.9, 3.3, 0.4, 1.1), skiffs),
 ]
 o, build = LAYOUT[0]
 A.cover(o)

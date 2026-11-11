@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import type { Obstacle } from '../obstacles';
 import { RING, canvasTexture, flatRing, floorDisc, seeded } from './common';
+import { SwellBreaks } from './hazards/harbour';
+import { harbourShift } from './shifts/harbour';
 import layout from './real/harbour.json';
 import { Glows, Sea, realProps, type RealLayout } from './real';
 import type { ArenaDef } from './types';
@@ -119,6 +121,8 @@ export const harbourArena: ArenaDef = {
   id: 'harbour',
   name: 'Drowned Harbour',
   obstacles: HARBOUR_OBSTACLES,
+  hazard: (seed) => new SwellBreaks(seed),
+  shift: () => harbourShift(),
   hideGround: true,
   stage: {
     background: 0x1c2230,

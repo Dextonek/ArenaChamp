@@ -9,18 +9,18 @@ import { RootLook } from './roots';
 import { SkyBreakLook } from './skybreak';
 
 /** The three stages on the fight clock, and what standing in a zone costs at each (share of max HP per 0.8 s). */
-const AT = [35, 60, 85];
-const SHARE = [0.015, 0.02, 0.03];
+export const AT = [35, 60, 85];
+export const SHARE = [0.015, 0.02, 0.03];
 /** Seconds of slow a zone that slows gives per tick: a little over the tick, so it holds while the hero stays. */
-const SLOW = 0.9;
+export const SLOW = 0.9;
 
 /** The floor outside radius `r`. */
-const beyond = (r: number, stage: number, slow?: number): ShiftZone => ({
+export const beyond = (r: number, stage: number, slow?: number): ShiftZone => ({
   shape: { kind: 'ring', x: RING.x, z: RING.z, inner: r, outer: RING.r }, share: SHARE[stage], slow,
 });
 /** The floor inside radius `r`. */
-const within = (r: number, stage: number): ShiftZone => ({ shape: { kind: 'circle', x: RING.x, z: RING.z, radius: r }, share: SHARE[stage] });
-const stages = (...zones: ShiftZone[][]): ShiftStage[] => zones.map((z, i) => ({ at: AT[i], zones: z }));
+export const within = (r: number, stage: number): ShiftZone => ({ shape: { kind: 'circle', x: RING.x, z: RING.z, radius: r }, share: SHARE[stage] });
+export const stages = (...zones: ShiftZone[][]): ShiftStage[] => zones.map((z, i) => ({ at: AT[i], zones: z }));
 
 /** How long a toppled column's line is and how wide (m), and what being under one costs. */
 const COLUMN_FALL = 4.4;
