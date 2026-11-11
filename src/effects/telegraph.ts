@@ -57,9 +57,11 @@ const fillVertex = /* glsl */ `
   attribute float aFill;
   varying float vFill;
   varying vec2 vLocal;
+  varying vec2 vWorld;
   void main() {
     vFill = aFill;
     vLocal = position.xy;
+    vWorld = (modelMatrix * vec4(position, 1.0)).xz;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `;
@@ -67,9 +69,12 @@ const fillVertex = /* glsl */ `
 const fillFragment = /* glsl */ `
   uniform float uProgress, uTime, uAlpha, uFlash;
   uniform vec3 uColor;
+  uniform vec3 uClip;
   varying float vFill;
   varying vec2 vLocal;
+  varying vec2 vWorld;
   void main() {
+    if (dot(vWorld, uClip.xy) + uClip.z < 0.0) discard;
     float filled = step(vFill, uProgress);
     float stripes = 0.5 + 0.5 * sin((vLocal.x + vLocal.y) * 5.0 - uTime * 5.0);
     float a = 0.08 + 0.05 * stripes + filled * 0.2;
@@ -80,6 +85,13 @@ const fillFragment = /* glsl */ `
 `;
 
 const RED = new THREE.Color(0.9, 0.06, 0.03);
+
+/**
+ * A straight cut across the floor: a layer with one draws only where `nx * x + nz * z + d >= 0` (a boss's zone that stops at a
+ * wall of fire down the middle of its room, src/raid/twin.ts). Spells never set one.
+ */
+export interface TelegraphClip { nx: number; nz: number; d: number }
+const NO_CLIP = new THREE.Vector3(0, 0, 1);
 
 /** Builds a flat ribbon (width w) along a polyline in the XZ plane, for crisp zone outlines. */
 function ribbon(points: THREE.Vector2[], w: number, closed: boolean): THREE.BufferGeometry {
@@ -149,6 +161,21 @@ function fillGeometry(shape: TelegraphShape): THREE.BufferGeometry {
   return g;
 }
 
+/** The outline's material, cut off along `clip` as the fill is. Only a layer with a clip pays for it. */
+function clipEdge(mat: THREE.MeshBasicMaterial, clip: TelegraphClip) {
+  const uClip = { value: new THREE.Vector3(clip.nx, clip.nz, clip.d) };
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uClip = uClip;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nvarying vec2 vClipAt;')
+      .replace('#include <project_vertex>', '#include <project_vertex>\nvClipAt = (modelMatrix * vec4(transformed, 1.0)).xz;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uClip;\nvarying vec2 vClipAt;')
+      .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (dot(vClipAt, uClip.xy) + uClip.z < 0.0) discard;');
+  };
+  mat.customProgramCacheKey = () => 'telegraph-clip';
+}
+
 interface Zone {
   spec: TelegraphSpec;
   group: THREE.Group;
@@ -161,6 +188,8 @@ export class TelegraphLayer {
   readonly group = new THREE.Group();
   private zones: Zone[] = [];
   private alpha = 1;
+  /** Set before `set`: the zones are cut off along this line. */
+  clip: TelegraphClip | null = null;
 
   /** Replaces the zones (call on every play). `color`, `alpha`: an arena hazard's zones are not red, and paler. */
   set(specs: TelegraphSpec[], color?: THREE.ColorRepresentation, alpha = 1) {
@@ -185,12 +214,14 @@ export class TelegraphLayer {
       uniforms: {
         uProgress: { value: 0 }, uTime: { value: 0 }, uAlpha: { value: 0 }, uFlash: { value: 0 },
         uColor: { value: color !== undefined ? new THREE.Color(color) : RED.clone() },
+        uClip: { value: this.clip ? new THREE.Vector3(this.clip.nx, this.clip.nz, this.clip.d) : NO_CLIP },
       },
     });
     const edgeMat = new THREE.MeshBasicMaterial({
       color: color !== undefined ? new THREE.Color(color).multiplyScalar(1.5) : new THREE.Color(1.4, 0.12, 0.05), transparent: true, opacity: 0, depthWrite: false,
       polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3, side: THREE.DoubleSide,
     });
+    if (this.clip) clipEdge(edgeMat, this.clip);
 
     // Fill lies in local XY; rotateX(-π/2) maps local +Y to world -Z.
     const fillMesh = new THREE.Mesh(fillGeometry(s), fillMat);

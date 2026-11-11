@@ -14,12 +14,27 @@ export class NetLink implements RaidLink {
   on = NO_EVENTS;
   private pending = 0;
   private clock = 0;
+  private boss: number | undefined;
 
   constructor(private net: NetClient, readonly side: RaidSide, readonly maxHp: number, public brain: boolean, readonly staggerMax?: number) {}
 
+  /**
+   * Twin Flames: the boss this screen's hits, control, rewards and brain are for. It changes when that one falls; what was still
+   * to be sent of hits on the fallen one is dropped. Undefined for any other fight: its messages stay as they always were.
+   */
+  get which() {
+    return this.boss;
+  }
+
+  set which(v: number | undefined) {
+    if (v !== this.boss) this.pending = 0;
+    this.boss = v;
+  }
+
   cast(c: BossCast) {
-    this.net.send({ t: 'boss_cast', ...c });
-    this.on.cast(c);
+    const out = this.boss === undefined ? c : { ...c, which: this.boss };
+    this.net.send({ t: 'boss_cast', ...out });
+    this.on.cast(out);
   }
 
   damage(amount: number) {
@@ -27,7 +42,7 @@ export class NetLink implements RaidLink {
   }
 
   stagger(points: number) {
-    this.net.send({ t: 'boss_stagger', points });
+    this.net.send({ t: 'boss_stagger', points, which: this.boss });
   }
 
   stood(id: number, part: number, inside: boolean) {
@@ -39,7 +54,7 @@ export class NetLink implements RaidLink {
   }
 
   reward(key: string, id: number) {
-    this.net.send({ t: 'boss_reward', key, id });
+    this.net.send({ t: 'boss_reward', key, id, which: this.boss });
   }
 
   addHit(id: number, part: number, amount: number) {
@@ -67,7 +82,7 @@ export class NetLink implements RaidLink {
   }
 
   bossDebuff(kind: BossDebuff, amount: number, seconds: number) {
-    this.net.send({ t: 'boss_debuff', kind, amount, seconds });
+    this.net.send({ t: 'boss_debuff', kind, amount, seconds, which: this.boss });
   }
 
   heroCast(m: Record<string, unknown>) {
@@ -81,7 +96,7 @@ export class NetLink implements RaidLink {
   tick(dt: number) {
     this.clock += dt;
     if (this.pending >= 1 && this.clock >= DAMAGE_GAP) {
-      this.net.send({ t: 'boss_damage', amount: Math.round(this.pending) });
+      this.net.send({ t: 'boss_damage', amount: Math.round(this.pending), which: this.boss });
       this.pending = 0;
       this.clock = 0;
     }

@@ -140,9 +140,14 @@ export class BossBrain {
     this.opener = move;
   }
 
-  /** The fight ran past its enrage time: less quiet between moves. */
-  enrage() {
-    this.rage = RAGE_GAP;
+  /** The fight ran past its enrage time: less quiet between moves. `gap`: how much of it is left (a furious twin's is milder). */
+  enrage(gap = RAGE_GAP) {
+    this.rage = gap;
+  }
+
+  /** It is furious no longer (Twin Flames: the two are level again). */
+  calm() {
+    this.rage = 1;
   }
 
   update(dt: number) {
@@ -190,16 +195,18 @@ export class BossBrain {
     }
     const form = this.def.forms?.[this.form];
     const keep = form?.keepAt ?? this.def.keepAt, speed = form?.speed ?? this.def.speed;
+    // A boss that is one of a tag team's forms all the time (Twin Flames) has them on itself.
+    const trail = form ? form.trail : this.def.trail, backAt = form ? form.backAt : this.def.backAt;
     if (dist > keep) {
       this.world.walk(dt, target.x, target.z, speed);
       // What it leaves behind as it walks.
       this.trailed += speed * dt;
-      if (form?.trail && this.trailed >= TRAIL_STEP) {
+      if (trail && this.trailed >= TRAIL_STEP) {
         this.trailed = 0;
-        const m = this.def.moves[form.trail];
+        const m = this.def.moves[trail];
         if (m) this.send(m, 0, Math.floor(this.rng() * 2147483647), target.side, up.length < 2, false);
       }
-    } else if (dist < (form?.backAt ?? 0)) this.backAway(dt, target, speed);
+    } else if (dist < (backAt ?? 0)) this.backAway(dt, target, speed);
     else this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
   }
 

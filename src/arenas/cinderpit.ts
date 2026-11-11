@@ -115,7 +115,7 @@ function denFloor() {
   return { color, glow };
 }
 
-const STAGE: ArenaDef['stage'] = {
+export const PIT_STAGE: ArenaDef['stage'] = {
   background: 0x200a05,
   zenith: 0x0e0505,
   horizon: 0x3a1408,
@@ -143,7 +143,7 @@ export const cinderPitArena: ArenaDef = {
   name: 'The Cinder Pit',
   ring: PIT_R,
   obstacles: COVER,
-  stage: STAGE,
+  stage: PIT_STAGE,
   build() {
     const g = new THREE.Group();
     const R = PIT_R;

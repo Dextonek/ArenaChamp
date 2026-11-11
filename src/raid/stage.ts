@@ -47,6 +47,8 @@ export interface StageSpec {
    * a flare of light from the boss along the floor, or a geyser out of the vent throwing lava everywhere.
    */
   fail: { share: number; cover: boolean; radius: number; text: string; blast: 'flare' | 'geyser' };
+  /** Only the lava a geyser throws that lands in here is drawn (one half of a room split by a wall of fire). */
+  inside?(x: number, z: number): boolean;
   win: string;
   hint: string;
 }
@@ -188,6 +190,7 @@ function open(s: StageSpec, c: BossCast, p: PlayContext): PlayedMove {
             const an = rng() * Math.PI * 2, d = 4 + rng() * (s.fail.radius - 6), fly = 0.9 + rng() * 0.7;
             V0.set(s.center.x, 2, s.center.z);
             V1.set(s.center.x + Math.sin(an) * d, 0.2, s.center.z + Math.cos(an) * d);
+            if (s.inside && !s.inside(V1.x, V1.z)) continue;
             fx.arc(V0, V1, fly, { color: 0xff7a24, size: 0.32 + rng() * 0.2, height: 7 + rng() * 5 });
             fx.ring(V1.x, V1.z, { radius: 2.2, life: 0.6, color: 0xff6a20, width: 0.4, delay: fly });
           }

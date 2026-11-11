@@ -131,14 +131,21 @@ export type ServerMsg =
   | { t: 'raid_gate'; seconds: number }
   | { t: 'raid_side_go'; door: 'vault' | 'shrine'; seconds: number }
   // `band`: from the players still in the raid as this fight starts; `hp` and `staggerMax` (the gauge's size) come from it.
-  | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: number; band: number; staggerMax: number }
+  // `twin`: Twin Flames (a party against Ash and Ember, both at once): which half of the room each side is in (0 west with Ash,
+  // 1 east with Ember, -1 gone), and each boss's own HP, brain and gauge. `hp`, `brain` and `staggerMax` are then the pair's.
+  | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: number; band: number; staggerMax: number; twin?: { half: number[]; hp: [number, number]; brain: [number, number]; staggerMax: number } }
   | { t: 'raid_won'; stage: number; tier: number; bosses: number; seconds: number; last: boolean; wait: number }
-  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: number; alone?: boolean; rim?: boolean; form?: number; flag?: boolean }
-  | { t: 'boss_move'; x: number; z: number; yaw: number; ts?: number }
-  | { t: 'boss_hp'; hp: number }
-  | { t: 'boss_phase'; phase: number }
-  | { t: 'boss_gauge'; value: number }
-  | { t: 'boss_kneel'; seconds: number }
+  // `which`, on these and below: only in Twin Flames, which of the two bosses it is about (0 Ash, 1 Ember).
+  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: number; alone?: boolean; rim?: boolean; form?: number; flag?: boolean; which?: number }
+  | { t: 'boss_move'; x: number; z: number; yaw: number; ts?: number; which?: number }
+  | { t: 'boss_hp'; hp: number; which?: number }
+  | { t: 'boss_phase'; phase: number; which?: number }
+  | { t: 'boss_gauge'; value: number; which?: number }
+  | { t: 'boss_kneel'; seconds: number; which?: number }
+  // Twin Flames: boss `which` grows furious (the other is more than 12 points ahead) or calms (within 6 again).
+  | { t: 'boss_rage'; which: number; on: boolean }
+  // Twin Flames: boss `which` fell. The wall of fire goes out and the other is everyone's; the raid is won when both have.
+  | { t: 'boss_fell'; which: number }
   | { t: 'boss_stood'; id: number; part: number; count: number }
   | { t: 'boss_done'; id: number; part: number; side: number }
   | { t: 'boss_wall'; index: number }
@@ -146,13 +153,13 @@ export type ServerMsg =
   | { t: 'peer_down'; side: number }
   // `side` got up, `by` stood by it; `left`: how often that hero can still be got up in this fight.
   | { t: 'revived'; side: number; hp: number; left: number; by: number }
-  | { t: 'peer_debuff'; kind: 'slow' | 'weaken' | 'vulnerable'; amount: number; seconds: number; side: number }
+  | { t: 'peer_debuff'; kind: 'slow' | 'weaken' | 'vulnerable'; amount: number; seconds: number; side: number; which?: number }
   | { t: 'peer_add'; id: number; part: number; amount: number; side: number }
   | { t: 'partner_left'; side: number }
   // To one screen only: it runs the boss's brain from now on (the one before left, or went quiet for 4 s).
-  | { t: 'boss_brain'; side: number }
+  | { t: 'boss_brain'; side: number; which?: number }
   // To every other screen, the one that ran it too: the brain is `side`'s now.
-  | { t: 'brain_moved'; side: number }
+  | { t: 'brain_moved'; side: number; which?: number }
   | { t: 'raid_end'; result: 'cleared' | 'lost'; tier: number; bosses: number; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }
   | { t: 'socket'; open: boolean };
 

@@ -3,6 +3,7 @@ import { nextPaint, sleep, type LoadingScreen } from '../game/loading';
 import type { HeroKit } from '../heroes';
 import type { NetClient, Profile, ServerMsg } from '../net/client';
 import type { GameApi } from '../runtime';
+import { twinFlames } from './ashEmber';
 import { BOSSES } from './bosses';
 import { RaidHall, fadeTo } from './hall';
 import { NetLink } from './net';
@@ -109,13 +110,16 @@ export class RaidController {
     net.on('peer_cast', (m) => { if (this.active) api.duel.partnerCast(who(m.side), m); });
     net.on('peer_attack', (m) => { if (this.active) api.duel.partnerAttack(who(m.side)); });
     net.on('peer_form', (m) => { if (this.active) api.duel.partnerForm(who(m.side), m.alt); });
-    net.on('peer_debuff', (m) => { if (this.active) api.duel.bossDebuff(m.kind, m.amount, m.seconds); });
+    net.on('peer_debuff', (m) => { if (this.active) api.duel.bossDebuff(m.kind, m.amount, m.seconds, m.which); });
     net.on('boss_cast', (m) => { if (this.active) this.link?.on.cast(m); });
-    net.on('boss_move', (m) => fight()?.bossMove(m.x, m.z, m.yaw, m.ts));
-    net.on('boss_hp', (m) => { if (this.active) this.link?.on.hp?.(m.hp); });
-    net.on('boss_phase', (m) => { if (this.active) this.link?.on.phase(m.phase); });
-    net.on('boss_gauge', (m) => { if (this.active) this.link?.on.stagger(m.value); });
-    net.on('boss_kneel', (m) => { if (this.active) this.link?.on.kneel(m.seconds); });
+    // Twin Flames: `which` says whose it is, and the fight sorts it (src/raid/fight.ts).
+    net.on('boss_move', (m) => fight()?.bossMove(m.x, m.z, m.yaw, m.ts, m.which));
+    net.on('boss_hp', (m) => { if (this.active) this.link?.on.hp?.(m.hp, m.which); });
+    net.on('boss_phase', (m) => { if (this.active) this.link?.on.phase(m.phase, m.which); });
+    net.on('boss_gauge', (m) => { if (this.active) this.link?.on.stagger(m.value, m.which); });
+    net.on('boss_kneel', (m) => { if (this.active) this.link?.on.kneel(m.seconds, m.which); });
+    net.on('boss_rage', (m) => { if (this.active) this.link?.on.rage?.(m.which, m.on); });
+    net.on('boss_fell', (m) => { if (this.active) this.link?.on.fell?.(m.which); });
     net.on('boss_stood', (m) => { if (this.active) this.link?.on.stood(m.id, m.part, m.count); });
     net.on('boss_done', (m) => { if (this.active) this.link?.on.done(m.id, m.part, m.side); });
     net.on('peer_add', (m) => { if (this.active) this.link?.on.addHit?.(m.id, m.part, m.amount); });
@@ -130,8 +134,8 @@ export class RaidController {
       this.party = this.party.filter((p) => p.side !== side);
       api.duel.partnerLeft(side);
     });
-    net.on('boss_brain', () => fight()?.takeBrain());
-    net.on('brain_moved', (m) => { if (m.side !== this.side) fight()?.dropBrain(); });
+    net.on('boss_brain', (m) => fight()?.takeBrain(m.which));
+    net.on('brain_moved', (m) => { if (m.side !== this.side) fight()?.dropBrain(m.which); });
     net.on('raid_end', (m) => this.end(m));
     net.on('socket', (m) => {
       if (!m.open && this.active) {
@@ -263,7 +267,9 @@ export class RaidController {
   }
 
   private async stage(m: Extract<ServerMsg, { t: 'raid_stage' }>) {
-    const { api, net } = this, def = BOSSES[m.boss], mine = this.mine;
+    // Twin Flames: a party fights Ash and Ember both at once, and this screen's boss is the one in its own half of the room.
+    const half = m.twin?.half[this.side] === 1 ? 1 : 0, twin = m.twin && m.boss === 'ash' ? m.twin : null;
+    const { api, net } = this, def = twin ? twinFlames(half) : BOSSES[m.boss], mine = this.mine;
     if (!this.active || !def || !mine) {
       if (this.active) this.ui.toast('This raid needs a newer page: reload');
       return;
@@ -282,9 +288,12 @@ export class RaidController {
     api.setHeroMode(true);
     api.duel.holdStart = true;
     this.band = m.band ?? this.band;
-    this.link = new NetLink(net, this.side, m.hp, m.brain === this.side || !this.party.length, m.staggerMax);
+    this.link = twin
+      ? new NetLink(net, this.side, twin.hp[half], twin.brain[half] === this.side, twin.staggerMax)
+      : new NetLink(net, this.side, m.hp, m.brain === this.side || !this.party.length, m.staggerMax);
     api.duel.startBoss({
       def, link: this.link, seed: `${this.match}-${m.tier}-${m.stage}`, mode: 'play', name: this.myName, partner: this.partner ?? undefined, party: this.party.length > 1 ? this.party : undefined, band: this.band, tier: m.tier, upgrades: this.upgrades,
+      twin: twin ? { half, halves: twin.half, hp: twin.hp } : undefined,
       card: (result) => this.card(result),
     });
     this.leave.style.display = '';
@@ -294,8 +303,8 @@ export class RaidController {
     this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / this.moveHz);
     this.sendMove();
     await this.ready(api.duel.whenReady(), {
-      mine, theirs: def.kit(m.hp), names: [this.myName, def.title], title: def.name, line: 'Loading the arena',
-      note: [this.party.length > 1 ? `A party of ${this.party.length + 1}: the boss is set for ${this.band}` : this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : '', this.upgrades.omens.length ? `Omens: ${omenNames(this.upgrades.omens)}` : ''].filter(Boolean).join('. ') || undefined,
+      mine, theirs: def.kit(m.hp), names: [this.myName, def.title], title: twin ? 'Twin Flames' : def.name, line: 'Loading the arena',
+      note: [twin ? `A party of ${this.party.length + 1}, set for ${this.band}: you fight ${def.name} in the ${half ? 'east' : 'west'} half. Bring both down together` : this.party.length > 1 ? `A party of ${this.party.length + 1}: the boss is set for ${this.band}` : this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : '', this.upgrades.omens.length ? `Omens: ${omenNames(this.upgrades.omens)}` : ''].filter(Boolean).join('. ') || undefined,
     });
     if (run !== this.run || !this.active) return;
     net.send({ t: 'match_loaded', maxHp: api.duel.heroMax });
@@ -358,7 +367,7 @@ export class RaidController {
       const bx = +foe.group.position.x.toFixed(3), bz = +foe.group.position.z.toFixed(3), byaw = +foe.group.rotation.y.toFixed(3), bkey = `${bx},${bz},${byaw}`;
       if (bkey !== this.lastBoss) {
         this.lastBoss = bkey;
-        net.send({ t: 'boss_move', x: bx, z: bz, yaw: byaw, ts });
+        net.send({ t: 'boss_move', x: bx, z: bz, yaw: byaw, ts, which: link.which });
       }
     }
     // The partner's bar: this hero's HP when it has changed, a few times a second.

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { raidTierFactor } from '../../server/protocol.mjs';
 import { grown } from '../arenas/hazards/base';
 import { FloorGlows, Sparks } from '../arenas/hazards/fx';
-import { TelegraphLayer, insideTelegraph, type TelegraphSpec } from '../effects/telegraph';
+import { TelegraphLayer, insideTelegraph, type TelegraphClip, type TelegraphSpec } from '../effects/telegraph';
 import { ShowFx } from './fxShow';
 import { LAVA } from './omens';
 import { CLOSE_CALL } from './upgrades';
@@ -70,6 +70,8 @@ export class BossScript {
   closeCall: (() => void) | null = null;
   /** Sun Eater: this hero stood in a gold zone as it landed. */
   ateSun: (() => void) | null = null;
+  /** Twin Flames: the line this boss's zones stop at while the wall of fire stands, or null (src/raid/twin.ts). */
+  clip: (() => TelegraphClip | null) | null = null;
   private pools: Pool[] = [];
   private active: Active[] = [];
   private clock = 0;
@@ -138,6 +140,7 @@ export class BossScript {
     const gold = played.threats.filter((th) => th.kind === 'stand').map((th) => th.at + STOOD_WAIT);
     if (gold.length) played.duration = Math.max(played.duration, ...gold);
     const leave = new TelegraphLayer(), stand = new TelegraphLayer();
+    leave.clip = stand.clip = this.clip?.() ?? null;
     const spec = (th: Threat): TelegraphSpec => ({ shape: th.shape, start: th.show ?? 0, impact: th.at, until: th.to });
     const shown = played.threats.filter((th) => !th.hidden && !th.shapeAt && !th.hits);
     leave.set(shown.filter((th) => th.kind !== 'stand').map(spec), LEAVE_COLOR, LEAVE_ALPHA);

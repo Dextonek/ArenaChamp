@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import type { Arena } from './arena';
-import type { Enemy } from './effects/common';
+import { Enemy } from './effects/common';
 import { TelegraphLayer, insideTelegraph, type TelegraphShape, type TelegraphSpec } from './effects/telegraph';
 import { ARC_BEND, BODY_RADIUS, arcPoints } from './effects/projectile';
 import { MAX_UNITS, type SummonSide, type SummonStats } from './effects/summon';
 import type { CastContext, HitOptions, TargetingSpec } from './effects/targeting';
-import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS, type BuffKind, type StatusKind } from './effects/status';
+import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS, StatusSet, type BuffKind, type StatusKind } from './effects/status';
 import { HERO_BODIES, type HeroKit, type HeroSpell } from './heroes';
 import { HeroFigure, castStyle } from './heroFigure';
 import { arenaById, pickArena, type ArenaDef, type ArenaScene, type ArenaStage } from './arenas';
@@ -22,7 +22,7 @@ import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
 import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
-import type { AddSpec, BossDebuff, BossDef, BossWorld, RaidAdd, RaidLink } from './raid/types';
+import type { AddSpec, BossDebuff, BossDef, BossWorld, RaidAdd, RaidLink, TwinSetup, TwinWorld } from './raid/types';
 import type { RunUpgrades } from './raid/upgrades';
 
 /** What the duel needs from main.ts. */
@@ -293,6 +293,14 @@ export class Duel {
   private bossForm = 0;
   private rimFigure: HeroFigure | null = null;
   private rimAt = new THREE.Vector3();
+  /**
+   * Twin Flames (src/raid/twin.ts): the other of the two bosses, a body this screen only draws (`rimFigure`). `enemy`: a figure
+   * with no meshes where it stands, for what aims at it (a partner across the wall, replayed). `mine`: which of the two is this
+   * screen's enemy now. `fallT`: seconds since one of them fell (-1: both stand).
+   */
+  private twin: {
+    defs: [BossDef, BossDef]; mine: number; halves: number[]; wall: Obstacle; enemy: Enemy; yaw: number; status: StatusSet; fallT: number; maxHp: number;
+  } | null = null;
   /** The clock `late`'s first stage is at. */
   private lateAt = 0;
   /** The other players' heroes in a raid, by side: bodies this screen only draws (src/raid/partner.ts). */
@@ -563,6 +571,8 @@ export class Duel {
     party?: { side: number; kit: HeroKit; name: string }[];
     /** How many the boss is tuned for (the band): its room is as wide as that needs. 2 when not given. */
     band?: number;
+    /** Twin Flames: `def` is this screen's of the two bosses (`BossDef.twin`), and this says who is in which half. */
+    twin?: TwinSetup;
     /** What the result card says, or null for no card: the run goes on by itself. */
     card?: (result: 'win' | 'lose', seconds: number) => { title: string; text: string; again?: string } | null;
   }) {
@@ -583,7 +593,13 @@ export class Duel {
     const { boss: from, heroes } = o.def.starts;
     const others = o.party ?? (o.partner ? [{ side: 1 - o.link.side, ...o.partner }] : []);
     const big = others.length > 1;
-    const start = big ? partyStart(heroes[0], o.link.side) : heroes[o.link.solo ? 0 : o.link.side + 1];
+    // Twin Flames: each half comes in on its own side of the wall of fire, in rows, in the order of the seats.
+    const tw = o.def.twin && o.twin ? { ...o.twin, def: o.def.twin } : null;
+    const twinStart = (side: number) => {
+      const half = tw!.halves[side] === 1 || (tw!.halves[side] === undefined && tw!.half === 1) ? 1 : 0;
+      return tw!.def.heroStart(half, tw!.halves.slice(0, side).filter((h) => h === half).length);
+    };
+    const start = tw ? twinStart(o.link.side) : big ? partyStart(heroes[0], o.link.side) : heroes[o.link.solo ? 0 : o.link.side + 1];
     this.setup(new THREE.Vector3(start.x, 0, start.z), new THREE.Vector3(from.x, 0, from.z), o.def.place);
     const foe = this.foe;
     if (!foe) throw new Error('A boss fight with no boss');
@@ -596,7 +612,25 @@ export class Duel {
     this.bossHud ??= new BossHud();
     this.figure.setBodyPhase(0);
     this.hinted.clear();
-    this.boss = new BossFight(o.def, o.link, this.bossWorld(), o.seed, this.bossHud, o.tier ?? 1, o.upgrades ?? null);
+    if (tw) {
+      // The other of the two, across the wall: drawn only. Nothing of this hero's can hit it until the one here has fallen.
+      const defs = tw.def.pair(), mine = tw.def.which, other = defs[1 - mine], at = other.starts.boss;
+      const enemy = new Enemy({ bare: true });
+      enemy.body = null;
+      enemy.group.position.set(at.x, 0, at.z);
+      this.twin = { defs, mine, halves: tw.halves, wall: tw.def.wall, enemy, yaw: 0, status: new StatusSet(), fallT: -1, maxHp: o.link.maxHp };
+      this.rimAt.set(at.x, 0, at.z);
+      this.rimFigure ??= new HeroFigure();
+      this.group.add(this.rimFigure.group);
+      const kit = other.kit(tw.hp[1 - mine]);
+      this.rimFigure.setModel(kit.model, this.rimAt, kit);
+      this.rimFigure.setScale(other.scale);
+      this.rimFigure.setBodyPhase(0);
+      this.rimFigure.stand();
+      this.rimFigure.preload(this.opponentKit.model ?? '');
+      this.figure.preload(kit.model ?? '');
+    }
+    this.boss = new BossFight(o.def, o.link, this.bossWorld(), o.seed, this.bossHud, o.tier ?? 1, o.upgrades ?? null, tw);
     this.group.add(this.boss.group);
     // The run's upgrades: one more layer on the hero, for this fight.
     const up = o.upgrades;
@@ -636,8 +670,8 @@ export class Duel {
     if (!run && TOUCH && hm.portrait && this.zoomBefore === null) this.zoomBefore = hm.setZoom(1.7);
     this.names = [o.name ?? '', others.length === 1 ? others[0].name : ''];
     for (const m of others) {
-      const at = big ? partyStart(heroes[0], m.side) : heroes[o.link.side === 0 ? 2 : 1];
-      const p = new Partner(m.kit, m.name, new THREE.Vector3(at.x, 0, at.z), arena, () => this.foe);
+      const at = tw ? twinStart(m.side) : big ? partyStart(heroes[0], m.side) : heroes[o.link.side === 0 ? 2 : 1];
+      const p = new Partner(m.kit, m.name, new THREE.Vector3(at.x, 0, at.z), arena, () => this.foeFor(m.side));
       this.party.set(m.side, p);
       this.group.add(p.group);
     }
@@ -690,12 +724,30 @@ export class Duel {
     link.heroCast({ id: ++this.castSeq, slot, x: p.x, z: p.z, fx: me.x, fz: me.z, enemy: 'enemy' in target, yaw: +this.host.arena.caster.group.rotation.y.toFixed(3), bend: bend ? +bend.toFixed(3) : undefined });
   }
 
+  /** Twin Flames: the wall of fire still stands. */
+  private twinWall() {
+    return !!this.twin && !!this.host.arena.obstacles?.includes(this.twin.wall);
+  }
+
+  /** Whether this screen's hero can get to (x, z): in Twin Flames, while the wall of fire stands, only what is on its own side. */
+  private reachable(at: { x: number; z: number }) {
+    const t = this.twin;
+    if (!t || !this.twinWall()) return true;
+    return (at.x < t.wall.ax) === (this.host.arena.caster.group.position.x < t.wall.ax);
+  }
+
+  /** The enemy a partner's replayed spells and attacks aim at: this screen's boss, or in Twin Flames the one on that partner's side of the wall. */
+  private foeFor(side: number): Enemy | null {
+    const t = this.twin;
+    return t && this.twinWall() && (t.halves[side] ?? t.mine) !== t.mine ? t.enemy : this.foe;
+  }
+
   /** The fallen partner nearest this hero that can still get up, if any. */
   private fallenNear() {
     const me = this.host.arena.caster.group.position;
     let best: Partner | null = null, bd = Infinity;
     for (const p of this.party.values()) {
-      if (!p.down || p.left || p.revivesLeft <= 0) continue;
+      if (!p.down || p.left || p.revivesLeft <= 0 || !this.reachable(p.pos)) continue;
       const d = flat(p.pos, me);
       if (d < bd) { bd = d; best = p; }
     }
@@ -718,7 +770,7 @@ export class Duel {
    * screen decides them. Temporary walls and broken walls stay, so boss rays stop at the same cover on both screens.
    */
   partnerCast(side: number, m: PeerCast) {
-    const p = this.party.get(side), foe = this.foe, arena = this.host.arena;
+    const p = this.party.get(side), foe = this.foeFor(side), arena = this.host.arena;
     if (!this.on || this.over || !p || !foe) return;
     const spell = p.kit.spells[m.slot];
     const spec = spell && this.host.targeting(spell.label);
@@ -763,10 +815,10 @@ export class Duel {
     this.blastWalls(told, spec.mode === 'self' ? told.clone() : new THREE.Vector3(m.x, 0, m.z), spec, spell, m.slot);
   }
 
-  /** The partner's hero slowed or debuffed the boss: it counts here too, and goes no further. */
-  bossDebuff(kind: BossDebuff, amount: number, seconds: number) {
+  /** The partner's hero slowed or debuffed the boss: it counts here too, and goes no further. `which`: Twin Flames, on which of the two. */
+  bossDebuff(kind: BossDebuff, amount: number, seconds: number, which?: number) {
     const foe = this.foe, arena = this.host.arena;
-    if (!this.boss || !foe) return;
+    if (!this.boss || !foe || (which !== undefined && this.boss.which !== undefined && which !== this.boss.which)) return;
     if (kind !== 'slow') {
       arena.applyBuff(foe, kind, amount, seconds);
       return;
@@ -780,8 +832,8 @@ export class Duel {
 
   /** A partner released a basic attack at the boss: only the look. */
   partnerAttack(side: number) {
-    const p = this.party.get(side);
-    if (this.foe && !this.over && p && !p.lite) p.attacker.releaseNow(this.foe);
+    const p = this.party.get(side), foe = this.foeFor(side);
+    if (foe && !this.over && p && !p.lite) p.attacker.releaseNow(foe);
   }
 
   /** A two-kit partner brought in its other half. */
@@ -874,7 +926,9 @@ export class Duel {
   private bossFade(cam: THREE.Camera) {
     const foe = this.foe, forms = this.bossDef?.forms;
     this.figure.setFade(this.boss && foe?.body && this.hidesHero(cam, foe.group.position, foe.body) ? 1 : 0);
-    if (this.boss && forms) this.rimFigure?.setFade(this.hidesHero(cam, this.rimAt, forms[1 - this.bossForm].body) ? 1 : 0);
+    const t = this.twin;
+    if (this.boss && t) this.rimFigure?.setFade(this.hidesHero(cam, t.enemy.group.position, t.defs[1 - t.mine].body) ? 1 : 0);
+    else if (this.boss && forms) this.rimFigure?.setFade(this.hidesHero(cam, this.rimAt, forms[1 - this.bossForm].body) ? 1 : 0);
   }
 
   /** Whether a body at `at` stands in the line of sight from the camera to this hero or the partner. */
@@ -894,7 +948,68 @@ export class Duel {
 
   /** The tag team's one on the rim: it looks at the middle, and at nothing else. */
   private rimStep(dt: number) {
+    const t = this.twin;
+    if (t && this.rimFigure) {
+      // Twin Flames: the other boss walks where its brain's screen says, kneels when the hub says, and lies where it fell.
+      t.status.update(dt);
+      this.rimFigure.follow(dt, t.enemy.group.position, t.yaw, { status: t.status });
+      if (t.fallT >= 0) this.rimFigure.fall(Math.min(1, (t.fallT += dt) / 0.6));
+      return;
+    }
     if (this.rimFigure && this.bossDef?.forms) this.rimFigure.follow(dt, this.rimAt, Math.atan2(RING.x - this.rimAt.x, RING.z - this.rimAt.z), {});
+  }
+
+  /** Twin Flames: the other boss on this screen, and what happens here when one of the two falls. */
+  private twinWorld(): TwinWorld {
+    return {
+      at: () => this.twin?.enemy.group.position ?? this.rimAt,
+      place: (x, z, yaw) => {
+        const t = this.twin;
+        if (!t || t.fallT >= 0) return;
+        t.enemy.group.position.set(x, 0, z);
+        t.yaw = yaw;
+      },
+      phase: (i) => this.rimFigure?.setBodyPhase(i),
+      rage: (on) => this.rimFigure?.setBodyRage(on),
+      kneel: (seconds) => this.twin?.status.hold(seconds),
+      wallUp: () => this.twinWall(),
+      fell: (dead, hp) => this.twinFell(dead, hp),
+    };
+  }
+
+  /**
+   * One of Twin Flames' two fell: the wall of fire goes out. If it was this screen's enemy, the other takes its place as the enemy
+   * here (its model, its spot, its HP), and the fallen one becomes the body that is only drawn, lying where it stood.
+   */
+  private twinFell(dead: number, hp: number) {
+    const t = this.twin, foe = this.foe, arena = this.host.arena;
+    if (!t || !foe || t.fallT >= 0) return;
+    if (this.currentArena) this.removeCover(this.currentArena.obstacles.indexOf(t.wall));
+    if (dead === t.mine) {
+      const next = t.defs[1 - dead], last = t.defs[dead];
+      const from = foe.group.position.clone(), to = t.enemy.group.position.clone(), yaw = foe.group.rotation.y;
+      t.mine = 1 - dead;
+      this.bossDef = next;
+      const kit = next.kit(t.maxHp);
+      this.opponentKit = kit;
+      this.oppAttackSpec = attackFor(kit);
+      this.figure.setModel(kit.model, to, kit);
+      this.figure.setScale(next.scale);
+      foe.body = { ...next.body };
+      arena.clearStatuses(foe);
+      arena.moveFoe(foe, to.clone().sub(from));
+      foe.group.rotation.y = t.yaw;
+      arena.setHp(foe, Math.max(1, hp));
+      this.foeHeld = 0;
+      t.enemy.group.position.copy(from);
+      t.yaw = yaw;
+      const fallen = last.kit(t.maxHp);
+      this.rimFigure?.setModel(fallen.model, from, fallen);
+      this.rimFigure?.setScale(last.scale);
+      this.rimFigure?.setBodyRage(false);
+    }
+    t.fallT = 0;
+    t.status = new StatusSet();
   }
 
   /** The partners' bars and names over their heads, and whether this hero is getting one up. */
@@ -1036,7 +1151,8 @@ export class Duel {
       delayLate: (seconds) => { this.shiftOffset -= seconds; },
       bodyPhase: (i) => {
         this.figure.setBodyPhase(i);
-        this.rimFigure?.setBodyPhase(i);
+        // A tag team shares its phases; Twin Flames' other boss has its own (`TwinWorld.phase`).
+        if (!this.twin) this.rimFigure?.setBodyPhase(i);
       },
       hint: (text) => {
         if (this.hinted.has(text) || this.mode !== 'play') return;
@@ -1081,8 +1197,9 @@ export class Duel {
       shake: (amount) => { if (this.mode === 'play') this.host.heroMode.hitShake = Math.max(this.host.heroMode.hitShake, amount); },
       bodyRage: (on) => {
         this.figure.setBodyRage(on);
-        this.rimFigure?.setBodyRage(on);
+        if (!this.twin) this.rimFigure?.setBodyRage(on);
       },
+      twin: this.twin ? this.twinWorld() : undefined,
       spawnAdd: (spec) => this.spawnAdd(spec),
       phaseShield: () => this.freshShield(),
       me: () => arena.caster.group.position,
@@ -1230,6 +1347,7 @@ export class Duel {
     const arena = this.host.arena;
     this.boss?.dispose();
     this.boss = null;
+    this.twin = null;
     this.bossDef = null;
     this.bossCard = null;
     this.shiftOffset = 0;
@@ -1987,8 +2105,8 @@ export class Duel {
       if (this.over === 'lose') hm.fallHero(this.overT / 0.6);
       else {
         this.figure.fall(this.overT / 0.6);
-        // One HP bar: a tag team falls together.
-        this.rimFigure?.fall(this.overT / 0.6);
+        // One HP bar: a tag team falls together. Of Twin Flames, the first to fall already lies there (`rimStep`).
+        if (!this.twin) this.rimFigure?.fall(this.overT / 0.6);
       }
       this.rimStep(dt);
       return;
@@ -2297,6 +2415,8 @@ export class Duel {
     if (this.bossGuard) {
       let bd = Infinity;
       for (const u of this.host.arena.summons.alive('opponent')) {
+        // Twin Flames: the other half's adds are across the wall.
+        if (!this.reachable(u.pos)) continue;
         const d = flat(me, u.pos);
         if (d < bd) { bd = d; foe = u.figure; at = u.pos; }
       }
@@ -2553,7 +2673,8 @@ export class Duel {
     const keep = flat(at, me);
     const obstacles = this.host.arena.obstacles ?? [];
     const open = (x: number, z: number) =>
-      Math.hypot(x - RING.x, z - RING.z) <= (this.currentArena?.ring ?? RING.r) - 0.8 && obstacles.every((o) => capsuleDist(x, z, o) > o.r + BODY_RADIUS);
+      Math.hypot(x - RING.x, z - RING.z) <= (this.currentArena?.ring ?? RING.r) - 0.8 && obstacles.every((o) => capsuleDist(x, z, o) > o.r + BODY_RADIUS)
+      && this.reachable({ x, z });
     // Rings of 16 spots, nearest first; on each ring the spot that keeps the distance to the player best, by a free path. Hiding, 48:
     // the floor behind a pillar far from the boss is a strip 2 m wide, which 16 spots on a wide ring step over.
     const n = reach > CLEAR_REACH ? 48 : 16;
