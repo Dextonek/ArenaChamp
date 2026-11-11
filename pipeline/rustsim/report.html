@@ -83,7 +83,7 @@ const DATA = /*__DATA__*/null;
   tile(String(d.heroes.length), 'heroes');
   app.append(tiles);
 
-  app.append(el('h2', {}, 'Win rate against the whole roster: real and model'), el('p', { class: 'sub' }, 'The model was fitted to half of the fights. The round dot is each hero's real win rate in the other half, the one the model never saw; the diamond is the model's guess. The numbers at the right are real and model. The shaded band is 40 to 60%.'));
+  app.append(el('h2', {}, 'Win rate against the whole roster: real and model'), el('p', { class: 'sub' }, 'The model was fitted to half of the fights. The round dot is the real win rate of each hero in the other half, the one the model never saw; the diamond is what the model says. The numbers at the right are real and model. The shaded band is 40 to 60%.'));
   const legend = el('div', { class: 'legend' }, el('span', {}, el('i', { class: 'dot' }), 'Real (the unseen half)'), el('span', {}, el('i', { class: 'dia' }), 'Model'));
   const rows = el('div', { class: 'rows' });
   for (const h of d.heroes) {
