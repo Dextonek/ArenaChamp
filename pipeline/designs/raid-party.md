@@ -117,9 +117,8 @@ How a room that is not round works: the game's floor stays a ring (46 m, `RAID_B
 walks to it); the hall's shape is its own walls, obstacles that never break (`Obstacle.fixed`). The stone is 1.3 m high on the
 camera's side and 9 to 11 m to the north; a zone drawn wider than the floor is hidden inside it. One size for every party: the band
 only sets the boss's HP and gauge. Pictures: `docs/raid/hall-overview.jpg`, `hall-play.jpg`, `hall-phone.jpg`. **Shown to the user,
-waiting for the nod.** Not done or not checked: a fight in it (the boss's and the autopilot's way round the hall's corners; his
-floor-wide moves; cover from Noon behind the hall's own walls); the north gate is inside the stone; the Cinder Pit's and the Heart's
-party rooms; his mechanics scaled to the band.
+waiting for the nod.** A fight in it has been run and fixed since (below: The first fights in the hall). Not done: the Cinder Pit's
+and the Heart's party rooms; his mechanics scaled to the band.
 
 ## The server half is merged (2026-11-11)
 
@@ -140,6 +139,57 @@ Nine ideas were shown (`pipeline/designs/raid-mechanics.html`); the user picked 
   other is only drawn, so the engine's rule holds; the hub keeps two HP pools. The biggest of the three; built after the other two.
 - **The Heart of Noon: Hold Still.** The heart beats in a rhythm shown on the floor; on the beat anyone moving is burnt; between
   beats, run. The rhythm quickens as it dies.
+
+## The first fights in the hall, and The Hour Strikes (2026-11-11)
+
+Built in the worktree branch `t3/c65abf91`; how it works now is in `docs/architecture/raid.md` (The Sun Warden, In the Hall of Noon).
+
+**What broke in the hall, and what was done.**
+
+| What | Fix |
+|---|---|
+| The walk planner worked its whole map out anew each time the cover changed: 2.2 s with the hall's 86 pieces, on every fallen stone. One autopilot fight took 50 s to run; in play it would be a freeze on the brain's screen and for whoever taps to walk | `src/nav.ts` finds a point's links when a plan first comes to it and skips far cover: under 0.1 s. A fight runs in 4 s. Same routes as before in the court and the duel arenas |
+| A walk ordered into the stone round the hall searched the whole map for a way (0.4 to 0.8 s) | The hall's floor is charted once; such an order ends at the nearest spot the walker can reach |
+| A hall wall that hid a hero from Noon was reported as "the wall that saved" and taken out of the game (`removeCover` does not ask whether it is fixed) | `BossScript.strike` reports only a screen; `BossFight` never breaks a fixed wall, whoever says so |
+| Six corners behind braziers: a hero put or pushed in there could not be planned out, and stood there to the end | Solid to the game (`CORNERS` in `src/arenas/sunhall.ts`) |
+| The way out stood in the stone north of the throne | `BossDef.gates.exitR`: it stands before the throne |
+| Five of a party's 40 start spots lay on a fallen halo piece | `starts` puts the first row just inside the gate: one spot of 40 is left on it (seat 39), and that hero is pushed off. A clean fix is in `src/duel.ts` (below) |
+| Deep in an arm Sun Order's wedges and Eclipse's far ring could not be walked out of | In the hall the wedges reach 19 m from the Sun Well and the far ring 20 m from him |
+| A shard picked up by seat 3 or higher could not be brought in (only seats 0 and 1 had a way in) | One way in for each seat |
+| His aim could put a stone into the wall beside a hero | `intoHall`: 1.8 m inside the walls |
+
+Checked and left as it is: Gathering Noon, the Long Hour's blow, Walking Sun and the late sunfire cover the whole hall, and the stone
+hides what is drawn past its walls (looked at from far out). The hall's corners are cover from Noon and the ray, on purpose: light
+does not go round a corner, and the gold shadows show it. His stage's Hour Stones rise 9 m from the Sun Well, inside the crossing.
+
+**Measured** (one autopilot hero, the boss's HP for one; `_raid(names, 2, { band })`, ten heroes: Lyra, Kaia, Sefu, Isolde, Vesper,
+Brannoc, Nyx, Bram, Zephyr, Sirix):
+
+| | Clears | Seconds a fight | Damage a second | Fights that enraged | Errors, fights that never ended |
+|---|---|---|---|---|---|
+| The Sun Court (band 2) | 8 of 20 | 131 to 163 | 20 to 30 | 6 | none |
+| The hall (band 5), enrage 2:30 | 6 of 20 | 133 to 211 | 12 to 25 | 16 | none |
+| The hall (band 5), enrage 3:15 | 3 of 20 | 132 to 182 | 13 to 23 | 4 | none |
+
+Twenty fights swing by more than these differences, so the two hall rows are one finding: about 9 of 40. The hall is harder for
+one autopilot hero: it walks 40 m to him, and during an hour it waits at the safe arm's mouth, where a melee hero does not reach him.
+That is why the hall's enrage was moved to 3:15; it is a number to judge by playing. The fight for two is untouched: `_raidCheck()`
+passes its 95 rows as before, and 37 new ones for the hall.
+
+**The Hour Strikes' numbers.** The bell 23 s after the call, never under 19 s at a higher tier: the longest way in the hall (the
+gate's passage to the choir, 58 m) took the autopilot 17.7 s at 3.5 m/s; all 24 ways between the arms' far ends took 7 to 18 s
+(`pipeline/tools/hour-walk.js`). 60 % of max HP. First 20 s into the fight, then 55 s after each call. He stands 3 s for the call and
+fights on with his four small moves.
+
+**Needs `src/duel.ts`** (not edited: another helper is its one writer):
+- `partyStart(first, side)` lays rows of eight from one spot. In the hall no spot keeps all 40 off the nave's cover. It should take
+  the spots from the boss (`BossDef.starts` with a list for a party), or skip a spot that lies in cover.
+- `removeCover(i)` should refuse an `Obstacle.fixed` wall itself; today the raid's files guard it.
+- The autopilot stands at the safe arm's mouth during an hour. To make it lead him into the arm, `pilot` would have to treat an
+  open objective that cannot be taken as "stay near", not "walk to it and do nothing else".
+
+**Not done or not checked:** a party of people or bots in the hall through the hub; forty heroes in one arm; the bell's cost on a
+phone; his mechanics scaled to the band (Noon's two shards, Anchors' two circles); the Cinder Pit's and the Heart's party rooms.
 
 ## State (2026-11-11)
 

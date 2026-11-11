@@ -20,13 +20,68 @@ import type { ArenaDef, WallState } from './types';
  * floor, the lanterns' glow, the eclipse over the north wall.
  */
 const LAYOUT = layout as RealLayout;
-export const HALL_OBSTACLES: Obstacle[] = LAYOUT.obstacles;
+/**
+ * Six of the hall's corners lie behind a brazier that stands a body's width from both walls: a hero pushed in there (a boss's blow, a
+ * spot inside the brazier) stood in a pocket the walk planner knows no way out of. To the game each is solid stone, from the brazier to
+ * the corner; nothing is drawn for it.
+ */
+const CORNERS: Obstacle[] = [[11, 49, 13, 51], [31.6, 17.6, 34, 20], [31.6, -3.6, 34, -6]]
+  .flatMap(([ax, az, bx, bz]) => [1, -1].map((s): Obstacle => ({ kind: 'wall', ax: s * ax, az, bx: s * bx, bz, r: 0.7, height: 1.2, fixed: true })));
+export const HALL_OBSTACLES: Obstacle[] = [...LAYOUT.obstacles, ...CORNERS];
 /** How far the hall reaches from the Sun Well (m): its nave's far corners. */
 export const HALL_R = 46;
 /** The cross, as in sunhall.py: half the arms' width, and how far the nave, the transepts and the choir reach. */
 const W = 13, SOUTH = 44, EAST = 34, NORTH = 40, GATE = 3.2;
 /** The floor's drawing covers this far each way from the well (m). */
 const SPAN = 52;
+
+/** Half the width of the hall's arms, and of the crossing they meet in (m). */
+export const HALL_HALF = W;
+/**
+ * The hall's four arms as seen from the Sun Well: which way each runs (a yaw: 0 is south, toward the gate) and how far its end wall
+ * is from the well (m). The Warden's moves name an arm by its place in this list.
+ */
+export const HALL_ARMS: readonly { name: string; dir: number; reach: number }[] = [
+  { name: 'the nave', dir: 0, reach: SOUTH },
+  { name: 'the east transept', dir: Math.PI / 2, reach: EAST },
+  { name: 'the choir', dir: Math.PI, reach: NORTH },
+  { name: 'the west transept', dir: -Math.PI / 2, reach: EAST },
+];
+
+/** Whether (x, z) is on the hall's floor, `pad` m inside its walls: the cross, and the gate's passage south of the nave. */
+export function inHall(x: number, z: number, pad = 0) {
+  const dx = Math.abs(x - RING.x), dz = z - RING.z;
+  if (dx <= W - pad && dz >= -(NORTH - pad) && dz <= SOUTH - pad) return true;
+  if (Math.abs(dz) <= W - pad && dx <= EAST - pad) return true;
+  return pad <= 0 && dx <= GATE && dz >= SOUTH && dz <= SOUTH + 8;
+}
+
+/** (x, z), or the nearest spot to it on the hall's floor, `pad` m inside its walls. */
+export function intoHall(x: number, z: number, pad = 0) {
+  if (inHall(x, z, pad)) return { x, z };
+  const dx = x - RING.x, dz = z - RING.z, clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+  // The cross is two bars: the nearer of the nearest spots in each.
+  const a = { x: clamp(dx, -(W - pad), W - pad), z: clamp(dz, -(NORTH - pad), SOUTH - pad) };
+  const b = { x: clamp(dx, -(EAST - pad), EAST - pad), z: clamp(dz, -(W - pad), W - pad) };
+  const near = Math.hypot(a.x - dx, a.z - dz) <= Math.hypot(b.x - dx, b.z - dz) ? a : b;
+  return { x: RING.x + near.x, z: RING.z + near.z };
+}
+
+/**
+ * Whether (x, z) is in arm `arm` (its place in `HALL_ARMS`), `pad` m past the crossing's edge. Past the arm's end and beside it counts
+ * too (the gate's passage, the stone): nobody stands there, and a spot there is no spot in another arm.
+ */
+export function inArm(arm: number, x: number, z: number, pad = 0) {
+  const a = HALL_ARMS[arm], dx = x - RING.x, dz = z - RING.z;
+  const along = dx * Math.sin(a.dir) + dz * Math.cos(a.dir), across = dx * Math.cos(a.dir) - dz * Math.sin(a.dir);
+  return along >= W + pad && Math.abs(across) <= W + 1;
+}
+
+/** A spot in arm `arm`, `along` m from the well down its middle. */
+export function armSpot(arm: number, along: number) {
+  const a = HALL_ARMS[arm];
+  return { x: RING.x + Math.sin(a.dir) * along, z: RING.z + Math.cos(a.dir) * along };
+}
 
 /** The hall's outline on the canvas: (x east, s south) of the well, in pixels. */
 function crossPath(g: CanvasRenderingContext2D, ppm: number, inset = 0) {
@@ -143,7 +198,7 @@ export const sunHallArena: ArenaDef = {
     let cover: (THREE.Object3D | null)[] = [];
     /** How far each piece has sunk: a broken screen goes down into the floor. */
     const sink = new Map<THREE.Object3D, number>();
-    void realProps('sunhall', HALL_OBSTACLES.length, {
+    void realProps('sunhall', LAYOUT.obstacles.length, {
       dim: 0.85, env: 0.35,
       parts: { glow: { emissive: 0xffa040, strength: 2.0 }, cream: { dim: 0.55 }, stone: { dim: 0.8 }, slate: { dim: 0.85 }, gold: { dim: 0.62, rough: 0.5 }, copper: { dim: 0.7, rough: 0.5 } },
     }).then((props) => {

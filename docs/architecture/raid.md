@@ -84,6 +84,7 @@ by the hub online and by `LocalLink` alone. Only the screen that runs the brain 
 | Warden, Awake | Break the ray | Pillar Fall's stones stay 8 s as cover. Keep one between you and him when Sun Ray comes | It breaks on the stone: +40 on the gauge |
 | Warden, High Noon on | Turn the light | Gathering Noon fills for 8 s while sun shards fall 9 m from the altar. Walk over one to carry it (15 % slower, it glows over your head), and walk it to the altar. One alone, one each for two | No Noon. He kneels and takes 5 % of his max HP |
 | Warden, Last Light | Anchors | As before | |
+| Warden, in the Hall of Noon (a party of three or more) | The Hour Strikes | He calls an hour: three of the hall's four arms and its crossing fill with sunfire, and the sun road lights gold in the one safe arm. Be in that arm when the bell strikes, 23 s after the call | No 60 % from the bell |
 | Ash, in the ring | Hide behind a pillar | His Charge comes every 14 s he is in the ring and kills whoever it reaches. Get one of the four pillars between you and him | He crashes into it and it breaks; he kneels 5 s (a stun: the gauge keeps what it had) |
 | Ember, any | Burn your own | Carry Marked onto whichever of them is in the ring. The brain says in the landing cast whether the boss stood under it | 4 % of max HP and +40 on the gauge |
 | Together | Seal the vent | The vent opens at 6 s, then again 25 s later. Stand on it for 4 s, hits or not, casting stops it | The lava waits 20 s longer, and +40 on the gauge |
@@ -233,6 +234,7 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor`, `onFoeDamage` a
 | Enrage | A timer next to its name (`BossDef.enrage`: the Warden 2:30, Ash and Ember 2:50, the Heart 2:45; at a higher tier later by as much as its HP grows). Then every hit costs twice as much and the quiet between moves is half (`BossFight.enrage`): past it a fight is meant to be nearly lost |
 | Too long | Past 5 minutes sunfire closes in, at 6 Last stand (`BossDef.late`), so nobody can stall a fight for ever |
 | A stage | At 50 %: it can't be hurt or held (hits show IMMUNE, `Arena.untargetable` makes spells aim past it) from the phase's start until the stage is won or fails. Win: it kneels, and acts again after (`BossMove.stage`). Fail: a blow over the whole floor. A big hit past two phases still gets the stage first. Its cast bar is its clock: no other move takes the bar meanwhile. The guard is in `hitFilter`: in a boss fight every hit on the boss goes through `Arena.hit`, and nothing else takes its HP |
+| A move that holds the floor | `BossMove.holds` (The Hour Strikes): from its cast until it lands he does only the moves it names, an opener waits, and its cast bar stays up. A stage calls it off. `BossMove.least`: its cast bar never fills faster than that, whatever the tier (`moveTime`) |
 | Units | Whatever stands in an orange zone takes 60. Units don't dodge |
 | Big moments | Each mechanic has its effect, started from its cast, its landing or its objective, never from a hero, so both screens draw it (`fxShow.ts`). A stage: the boss goes up in a column with a shockwave, each add rises out of a column; a stone's eye charges before its beam, a heart throws a burning lump on an arc; an add bursts when it dies; the shell shatters when it is won; failed, the Warden's flare rays out along the floor, or the vent's geyser throws lava over the pit. Falling Star is a meteor with a streak. The light turned, the ray broken, burn your own and the vent sealed each get a column and a shockwave. Enraged: a red blast, red heat round the boss, its body lit red (`BodyParts.rage`), a slow red throb on the screen. The camera shakes a little (`PlayContext.shake`, at most 0.2), only in play. Flashes are white or warm white, never gold on the floor, and short |
 | Hiding a hero | A boss between the camera and a hero, yours or your partner's, fades to 10 % so the hero shows through, the one on the rim too (`Duel.bossFade`, `Hero.setFade`). The camera stays where it is, because the controls follow it |
@@ -257,6 +259,48 @@ Numbers as they are; tune by playing. Alone 4,300 HP, for two 8,700. Walks at 2 
 
 **From the design:** Shared Burden's circle stays where the target stood instead of following it, so nobody needs the other
 hero's exact position to draw it. If nobody stands in it, everyone pays in full.
+
+### In the Hall of Noon (a party)
+
+A raid of three or more (a band over 2) fights him in the Hall of Noon (`src/arenas/sunhall.ts`, below under The lairs), and
+`SUN_WARDEN.resize(band)` switches the room before the fight is built. His numbers and moves are the court's, with these differences,
+all behind `party` in `src/raid/sunWarden.ts`, so the fight for two reads none of them:
+
+| What | In the hall |
+|---|---|
+| The Hour Strikes | Only here, in every phase (`HALL_PHASES`). Below |
+| Enrage | 3:15 instead of 2:30: the party walks 40 m up the nave to him first, and each hour takes the fight away from him for a while |
+| What he aims (Pillar Fall, Fists, the ray) | Kept 1.8 m inside the hall's walls (`intoHall`), so no stone lands in the stone |
+| Sun Order | Its wedges reach 19 m from the Sun Well (the crossing and its corners), not the whole floor: deep in an arm no edge of a wedge is near enough to step over |
+| Eclipse | Its far ring ends 20 m from him instead of at the rim |
+| Gathering Noon, the Long Hour's blow, Walking Sun, the late sunfire | The whole hall, as in the court. The stone round the hall hides what is drawn past its walls |
+| The hall's own walls | Cover like any other: round a corner Noon, the ray and the dial's blow do not reach. They never fall (`Obstacle.fixed`): a wall that saved a hero is only reported when it is a screen |
+| Sun shards | Whoever picks one up brings it in (one way in for each of the 40 seats). Still two shards, whatever the party's size |
+| Starts | Rows of eight just inside the south gate (`starts`, `partyStart` in `src/duel.ts`). Seat 39 of 40 stands on a fallen halo piece and is pushed off it |
+| Gates | The way in stands in the gate's passage; the way out before the throne, 4 m from the choir's end (`BossDef.gates.exitR`) |
+
+**The Hour Strikes** (user, 2026-11-11, picked from `pipeline/designs/raid-mechanics.html`, card W1: "He calls an hour. Three of the
+hall's four arms fill with sunfire; the sun road on the floor lights up in the one safe arm. The whole party runs there before the
+bell."). Pictures: `docs/raid/hour-called.jpg`, `hour-called-far.jpg`, `hour-late.jpg`, `hour-bell.jpg`, `hour-bell-far.jpg`,
+`hour-phone.jpg`, `hour-phone-bell.jpg` (`pipeline/tools/hour-shots.js`).
+
+| | |
+|---|---|
+| Which arm | From the cast's seed: `seed % 4`, its place in `HALL_ARMS` (the nave, the east transept, the choir, the west transept). The brain's `aim` only turns him to it |
+| What shows | The three other arms and the crossing as pale orange zones that fill from the crossing outward, embers and tongues of flame that grow as the bell nears; in the safe arm the sun road lit gold with chevrons running outward, and a gold line across the arm's mouth: past it is safe. The bell tolls four times on the way (a ring from the Sun Well) |
+| The bell | 23 s after the call at tier 1 (`HOUR.seconds`). Shorter each tier and never under 19 s (`HOUR.least`, `BossMove.least`, `moveTime`): the longest way in the hall, the gate's passage to the choir (58 m), took the autopilot 17.7 s at 3.5 m/s, which is also a slow hero under Heavy Air (`pipeline/tools/hour-walk.js`: all 24 ways, 7 to 18 s) |
+| What it costs | 60 % of max HP to whoever is not in the safe arm (`HOUR.share`). More than anything else he has (Noon 40 %, the dial 55 %), because it is the one blow the whole party can walk out of; not a kill from full HP at tier 1, even with Brittle and a Reckless Pact (90 %). Enraged it doubles |
+| Who decides | Each screen for its own hero: `inArm(arm, x, z)`, past the crossing's edge on the arm's side. One `Threat.hits`, so the gate's passage and the stone count as "not in the safe arm" too |
+| What he does meanwhile | He stands still 3 s for the call, then walks and fights on, with Stone Sweep, Pillar Fall, Fists and Sun Ray only (`BossMove.holds`). Nothing that covers the floor or asks for a spot comes until the bell: Noon, Sun Order, Shared Burden, Eclipse, Anchors and Walking Sun wait, and so does a phase's opener. A Walking Sun already turning runs out |
+| A stage | Does not wait: when the Long Hour's phase begins the hour is called off on every screen (`BossScript.yieldFloor`, from the phase and again from the stage's cast) |
+| When | By his own clock (`BossMove.due`): first 20 s into the fight, then 55 s after each call, so about three in a fight. It is picked like any move, so never while he is locked in Noon or his stage |
+| His cast bar | Stays "The Hour Strikes" until the bell, as a stage's does; the small moves between show their zones and no bar |
+| His body | The call: he rises, the fists go up and are thrown down the arm he calls, the halo swells (`strikes`). A toll: the halo and the sun swell (`toll`, on top of whatever he does). The bell: the fists struck together over his head (`bell`). The last two are started by the move's look through `PlayContext.act`, because a body keeps only its eight newest actions |
+| The big moment | At the bell: light over the whole screen, a column over the Sun Well, three rings out to the hall's far walls, and the three arms and the crossing go up in columns of sunfire, the nearest first; the camera shakes |
+| The arrow and the autopilot | Each screen has one objective of its own in the safe arm that nobody ever takes (`hold: Infinity`), open while its hero is not 2 m into that arm: it is the gold arrow at the screen's edge, and where an AI walks (`BossScript.objectiveGoal`), with no change to `src/duel.ts`. In the last 3 s the zone is also a danger an AI steps out of (`Threat.look`) |
+
+In forty fights of ten heroes alone on the autopilot in the hall, about three hours were called a fight, and the bell hit five times
+in all.
 
 ## Ash and Ember
 
@@ -358,6 +402,26 @@ hour stones, the gnomon's shadow frozen when the sun fell, and thin cracks of wa
 zone to stand in). Past the north gate his empty throne; obelisks and broken sun arches along the sides; rocks like his own drifting round;
 motes of light rising.
 
+**The Hall of Noon, the Warden's room for a party** (`src/arenas/sunhall.ts`, built by `blender/arenas/real/sunhall.py`; how it came
+about: [raid-party.md](../../pipeline/designs/raid-party.md)). A hall in the shape of a cross cut out of dark stone. Seen from the Sun
+Well at its crossing (the game's `RING`, (0, 7)): the nave 44 m south to the gate, the choir 40 m north to the throne, the transepts
+34 m west and east; every arm 26 m wide. The game's floor is still a ring (46 m); the hall's shape is its walls, obstacles that never
+break (`Obstacle.fixed`). The file also says where its floor is: `inHall`, `intoHall` (the nearest spot on it), `HALL_ARMS`, `inArm`
+and `armSpot`, which the Warden's moves use.
+
+Two things a room that is not round needed in the walk planner (`src/nav.ts`):
+- **Its map is no longer worked out whole.** With the hall's 86 pieces of cover, joining every point of the map to every other took
+  about 2 s each time the cover changed (every fallen stone). The links of a point are now found when a plan first comes to it, and
+  cover far from a walk is skipped: under 0.1 s for the map, and 5 ms for a plan from inside the hall. The routes are the same as
+  before: compared on 2,000 random walks in the court and four duel arenas, and on every walk between two spots on the hall's floor.
+- **An order into the stone ends at the nearest spot the walker can reach.** A room with walls of its own has floor inside its ring
+  that nobody can reach. Planning to such a spot searched the whole map (0.4 to 0.8 s). The floor is charted once a room in 1 m
+  squares, by the part each can be reached in (`Navigator.parts`); only an order into another part, or into one of the room's own
+  walls, is moved. A room without such walls has no chart and nothing changes.
+
+Six of its corners lie behind a brazier that stands a body's width from both walls. A hero pushed in there stood in a pocket the
+planner knows no way out of, so each is solid to the game, from the brazier to the corner (`CORNERS`), with nothing drawn for it.
+
 **The Cinder Pit, Ash and Ember's den** (`src/arenas/cinderpit.ts`). Radius 16, a floor of black glass plates over the buried sun, its light
 coming up through thin seams, brightest in the middle, and Ash's claw marks across it. Its only cover is the four pillars of sun-glass at 7.5 m
 (above), which Ash's Charge breaks; they took the place of the spires, slag walls and anvil stones on 2026-11-08. Ember's lantern perches on the lip at the five spots the one on the rim can
@@ -409,6 +473,16 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 
 ## Limits
 
+- **The Hall of Noon was fought only by one autopilot hero at a time** (`_raid(..., { band: 5 })`), never by a party of people or of
+  bots through the hub. What forty heroes do to The Hour Strikes (a crowd in one arm's mouth), and its cost on a phone (about sixty
+  columns at the bell), were not measured.
+- **The Warden's mechanics are not scaled to the band.** Noon still asks for two shards and Anchors for two circles, whatever the
+  party's size; only his HP and gauge grow.
+- **The autopilot fights worse in the hall than in the court:** 9 clears of 40 against 8 of 20 for the same ten heroes, and its
+  fights are 30 to 70 s longer. It walks 40 m to him first, and during an hour it stands at the safe arm's mouth, where a melee hero
+  does not reach him. A person would lead him into the arm.
+- **A screen that takes the brain over during an hour** keeps to its small moves (`BossFight.takeBrain`), but an opener the old
+  brain was holding back is lost with it.
 - **A reward rides on the brain's screen.** If that player leaves between a mechanic and its reward, the reward is lost.
 - **The first big moment in a session builds its shaders,** as the first fade does: a short pause the first time a stage starts. Not measured on a phone.
 - **The effects' cost was measured on a desktop only:** about 10 ms a frame (simulation and drawing) in a quiet moment, 11 to 14 ms in a stage's call, the flare and the geyser.
@@ -456,4 +530,12 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   landing, cropped on the boss and the hero.
 - `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level, boss })` runs the autopilot and reports clears, time, damage per second,
   which move killed, stages won of those reached, and how many fights enraged. It can't tell whether the fight is fun.
+  `{ band: 5 }` runs it in a party's room (the Hall of Noon), with the boss's HP still the one for one hero; `wall` is how long a
+  fight took to run, in real seconds.
+- `_raidCheck()` also has the hall's rows: the hour never comes in the court for two; in the hall each seed's arm is safe and the
+  rest is hit; the bell's time and its floor at a higher tier; what he may do meanwhile; a stage calling it off; the autopilot's run
+  from the gate to the choir; the hall's walls as cover that stands; his aim and his floor-wide moves in the hall.
+- `pipeline/tools/hour-walk.js`: the autopilot's seconds from the far end of each arm to each other arm, for the hour's time.
+  `pipeline/tools/hour-shots.js`: the pictures of The Hour Strikes from the game's camera. Both run headless with
+  `pipeline/tools/page-shots.py`.
 - `pipeline/tools/online-bot.js`: `_botRoom(hero)` and `_botJoin(hero, code)` play a raid for two in two tabs with bots.

@@ -939,6 +939,133 @@
         yes('the body: Pillar Fall\'s first two steps act out together', d.figure.bodyActs.filter((a) => a.name === 'pillars').map((a) => a.step).join() === '0,1');
       }
 
+      // The Hall of Noon (a party's room) and The Hour Strikes, which he only calls there.
+      {
+        const { HOUR } = await import('/src/raid/sunWarden.ts');
+        const { HALL_ARMS, armSpot, inHall } = await import('/src/arenas/sunhall.ts');
+        const hall = (bx = 0, bz = 3, mode = 'play', tier = 1) => {
+          d.startBoss({ def, link: new LocalLink(def, tier), seed: 'hall', mode, band: 5, tier });
+          d.boss.brain.pause = 1e9;
+          a.placeFoe(d.foe, new THREE_V(bx, 0, bz));
+          step(0.05);
+        };
+        const watch = () => {
+          const seen = [], on = d.boss.link.on;
+          d.boss.link.on = { ...on, cast: (c) => { if (c.step === 0) seen.push(c.move); on.cast(c); } };
+          return seen;
+        };
+        const T = HOUR.seconds + 0.4;
+        fresh(0, 1);
+        yes('the court for two: no hour in his lists', def.place.id === 'suncourt' && def.phases.every((ph) => !ph.moves.includes('strikes')));
+        {
+          // His brain runs for 30 s in the court: the hour never comes.
+          const seen = watch();
+          d.boss.brain.pause = 0;
+          for (let i = 0; i < 30; i++) { d.playerHp = d.playerMax; step(1); }
+          yes('the court for two: 30 s of his brain, and no hour', seen.length > 3 && !seen.includes('strikes'));
+        }
+        hall();
+        yes('a party fights in the Hall of Noon', def.place.id === 'sunhall' && d.currentArena.id === 'sunhall' && def.phases.every((ph) => ph.moves.includes('strikes')));
+        check('the hall: the way out stands before the throne (z)', d.boss.gates.exit.group.position.z, 7 - (HALL_ARMS[2].reach - 4), 0.01);
+        yes('the hall: the way out is on its floor', inHall(d.boss.gates.exit.group.position.x, d.boss.gates.exit.group.position.z, 2));
+        yes('the hall: a party\'s first spot is on its floor', inHall(def.starts.heroes[0].x, def.starts.heroes[0].z, 1));
+        // Each seed lights its own arm: a hero 20 m down it is not hit, one in the crossing is. (A fresh fight every few hours: each
+        // takes 23 s of the fight's clock, and past his enrage the bell would cost twice as much.)
+        for (let arm = 0; arm < 4; arm++) {
+          const s = armSpot(arm, 20);
+          place(s.x, s.z);
+          check(`hour: safe in ${HALL_ARMS[arm].name} when it is the one called`, take(() => cast('strikes', { seed: arm }), T), 0);
+        }
+        hall();
+        place(3, 12);
+        check('hour: in the crossing', take(() => cast('strikes', { seed: 1 }), T), HOUR.share);
+        place(-20, 7);
+        check('hour: in another arm', take(() => cast('strikes', { seed: 1 }), T), HOUR.share);
+        place(13.6, 4);
+        check('hour: just past the safe arm\'s edge', take(() => cast('strikes', { seed: 1 }), T), 0);
+        place(12.4, 4);
+        check('hour: just short of it', take(() => cast('strikes', { seed: 1 }), T), HOUR.share);
+        yes('hour: (he had not enraged, and the hero stood)', !d.boss.enraged && d.playerHp > 0);
+        hall();
+        place(0, 30);
+        check('hour: ran there in time', take(() => { cast('strikes', { seed: 1 }); step(8); place(20, 7); }, T - 8), 0);
+        place(3, 12);
+        cast('strikes', { seed: 1 });
+        step(0.1);
+        const hourCast = () => d.boss.script.active.find((x) => x.cast.move === 'strikes');
+        check('hour: the bell comes after this long at tier 1', hourCast().played.threats[0].at, HOUR.seconds, 0.001);
+        check('hour: his cast bar is its clock', d.boss.hud.castLen, HOUR.seconds, 0.001);
+        cast('sweep');
+        step(0.1);
+        check('hour: a small move leaves the bar to it', d.boss.hud.castLen, HOUR.seconds, 0.001);
+        // A stage does not wait: as its phase begins the hour is called off, and nothing lands.
+        d.playerHp = d.playerMax;
+        d.boss.link.on.phase(2);
+        // The stage itself stays away in this row: its Hour Stones' beams are not what is checked.
+        d.boss.brain.pause = 1e9;
+        yes('hour: a stage takes the cast bar from it', d.boss.hud.castLeft === 0);
+        step(HOUR.seconds + 0.5);
+        check('hour: called off when a stage begins', lost(d.playerMax), 0);
+        yes('hour: (the hero stood)', d.playerHp > 0 && !d.boss.over);
+        // While it is in the air his brain picks only small moves, and an opener waits for the bell.
+        hall();
+        {
+          const br = d.boss.brain;
+          br.phase = 3;
+          br.opener = 'walking';
+          br.hold(10, def.moves.strikes.holds.only);
+          const picked = new Set();
+          for (let i = 0; i < 80; i++) picked.add(br.pick(3)?.id);
+          yes('hour: meanwhile he does only small moves', [...picked].every((id) => def.moves.strikes.holds.only.includes(id)) && picked.size > 1);
+          yes('hour: an opener waits for the bell', br.opener === 'walking');
+          br.heldUntil = -Infinity;
+          yes('hour: and comes after it', br.pick(3)?.id === 'walking');
+          br.opener = 'hour';
+          br.hold(10, def.moves.strikes.holds.only);
+          yes('hour: a stage does not wait', br.pick(3)?.id === 'hour');
+        }
+        // By his own clock: first 20 s into the fight.
+        hall();
+        {
+          const seen = watch();
+          d.boss.brain.pause = 0;
+          place(0, 12);
+          for (let i = 0; i < HOUR.first + 6 && !seen.includes('strikes'); i++) { d.playerHp = d.playerMax; step(1); }
+          yes('hour: he calls the first one about 20 s in', seen.includes('strikes'));
+        }
+        // A higher tier: sooner, but never under what the longest way takes.
+        hall(0, 3, 'play', 4);
+        place(3, 12);
+        cast('strikes', { seed: 1 });
+        step(0.1);
+        check('hour at tier 4: the bell is never sooner than the longest way', hourCast().played.threats[0].at, HOUR.least, 0.001);
+        check('hour at tier 4: the cast bar agrees', d.boss.hud.castLen, HOUR.least, 0.001);
+        // The autopilot runs to the lit arm, from the far end of the nave to the choir, and is there when the bell strikes.
+        hall(0, 3, 'run');
+        place(0, 49);
+        d.playerHp = d.playerMax;
+        cast('strikes', { seed: 2 });
+        step(T);
+        check('hour: the autopilot ran from the gate to the choir', lost(d.playerMax), 0);
+        yes('hour: and stands in the choir', a.caster.group.position.z < 7 - 13);
+        // The hall's own walls: they hide a hero from Noon as cover does, and never fall.
+        hall(0, 30);
+        place(20, 18.5);
+        const w0 = a.obstacles.length;
+        check('the hall: round its corner, Noon does not reach', take(() => cast('noon'), 8.2), 0);
+        check('the hall: its wall stands', w0 - a.obstacles.length, 0, 0);
+        // What he aims stays on the hall's floor; his floor-wide moves do not fill its arms.
+        const aimed = def.moves.pillars.aim({ boss: { x: 0, z: 30 }, ring: { x: 0, z: 30 }, target: { x: 12.4, z: 40 }, step: 0, seed: 1 });
+        check('the hall: a stone aimed at a hero by the wall lands clear of it (x)', aimed.x, 13 - 1.8, 0.001);
+        hall(0, 3);
+        place(0, 40);
+        check('the hall: Sun Order does not reach down the nave', take(() => cast('order', { x: 0, z: 3 }), 5.6), 0);
+        place(0, 30);
+        check('the hall: Eclipse\'s far ring ends 20 m from him', take(() => cast('eclipse', { step: 1 }), 1.8), 0);
+        place(0, 15);
+        check('the hall: and still hits inside that', take(() => cast('eclipse', { step: 1 }), 1.8), 0.15);
+      }
+
       // Phases: HP thresholds; the end of the fight.
       fresh(0, 2);
       // Small hits down to a share: one big hit (with the hero's own power on it) could pass two marks at once.

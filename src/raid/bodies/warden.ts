@@ -32,8 +32,8 @@ interface FistMem { key: string; at: number; from: Pose | null; last: Pose | nul
 interface Mem { phase: number; kneel: number; spin: number; orbit: number; fists: Record<'fistL' | 'fistR', FistMem> }
 const mem = new WeakMap<BodyParts, Mem>();
 
-/** The moves this body acts out itself, in place of its cast pose. */
-const OWN = new Set(['sweep', 'pillars', 'order', 'eclipse']);
+/** The moves this body acts out itself, in place of its cast pose. The Hour Strikes: its call and its bell (the tolls between go on top of whatever he does). */
+const OWN = new Set(['sweep', 'pillars', 'order', 'eclipse', 'strikes', 'bell']);
 /** Sun Order's wedges fire this far apart, after the first (s; the move's own number, not scaled by tier). */
 const ORDER_GAP = 0.8;
 
@@ -103,6 +103,7 @@ export const wardenLook: BodyLook = (s, p) => {
   const own = live.some((a) => OWN.has(a.name));
   const sweepA = lead(live, (a) => a.name === 'sweep'), pillarsA = lead(live, (a) => a.name === 'pillars');
   const orderA = lead(live, (a) => a.name === 'order', ORDER_GAP * 3 + 0.4), eclipseA = lead(live, (a) => a.name === 'eclipse');
+  const callA = lead(live, (a) => a.name === 'strikes', 0.6), tollA = lead(live, (a) => a.name === 'toll', 0.6), bellA = lead(live, (a) => a.name === 'bell', 0.6);
   let punchL = 0, punchR = 0;
 
   // Casts: wind up, then strike as the zone lands.
@@ -223,6 +224,50 @@ export const wardenLook: BodyLook = (s, p) => {
     }
   }
 
+  // The Hour Strikes, the call: he rises, the fists go up and wide and the halo swells; then both fists are thrown down the arm he calls
+  // (placed below). He stands still for it.
+  for (const act of one(callA)) {
+    const { w, s: st, r } = actBeat(act, 0.5, 0.5, 0.8);
+    const wind = (1 - st) * w * r;
+    fy += 2.6 * wind;
+    fx += 1.2 * wind;
+    coreY += r * (0.45 * w - 0.15 * st);
+    coreLeanX += r * (-0.14 * (1 - st) * w + 0.26 * st);
+    pitch = r * (-0.5 * (1 - st) * w + 0.3 * st);
+    slabTilt += r * 0.35 * w;
+    haloSize += r * (0.3 * w + 0.15 * st);
+    haloGlow += r * (0.9 * w + 1.0 * st);
+    spinRate += r * 3.2 * w;
+    sunGlow *= 1 + r * (0.6 * w + 0.8 * st);
+    stonesY += r * 0.7 * w;
+    stonesSpin += r * 1.6 * w;
+  }
+  // A toll on the way to the bell: the halo and the sun swell for a moment and the stones jump, whatever else he is doing.
+  for (const act of one(tollA)) {
+    const u = act.t - act.dur, pulse = u < -0.3 ? 0 : u < 0 ? (u + 0.3) / 0.3 : Math.max(0, 1 - u / 0.6);
+    haloSize += 0.22 * pulse;
+    haloGlow += 1.3 * pulse;
+    sunGlow *= 1 + 0.9 * pulse;
+    stonesY += 0.35 * pulse;
+    stonesSize += 0.15 * pulse;
+  }
+  // The bell: the fists up and apart over his head, then struck together as it lands; the halo flares and the stones fly out.
+  for (const act of one(bellA)) {
+    const { w, s: st, r } = actBeat(act, 0.22, 0.3, 0.7);
+    fy += r * (2.9 * w + 0.3 * st);
+    fx += r * (1.5 * (1 - st) * w - 1.0 * st);
+    fz += r * 0.3 * st;
+    pitch = r * -0.4 * w;
+    coreY += r * (0.35 * w - 0.25 * st);
+    slabTilt += r * (0.3 * w - 0.4 * st);
+    haloSize += r * 0.5 * st;
+    haloGlow += r * (0.6 * w + 1.8 * st);
+    sunGlow *= 1 + r * (0.5 * w + 1.2 * st);
+    stonesSize += r * 0.5 * st;
+    stonesSpin += r * (1.2 * w + 2.5 * st);
+    stonesY += r * 0.6 * w;
+  }
+
   // A hit: a small flinch back and a shudder.
   const h = s.hit;
   coreLeanX -= Math.abs(h) * 0.5;
@@ -291,6 +336,16 @@ export const wardenLook: BodyLook = (s, p) => {
     for (const [name, off] of [['fistL', 0.18], ['fistR', -0.18]] as const) {
       const an = th + off;
       p.toward(name, act.bx + R * (Math.cos(an) * F.fx + Math.sin(an) * F.lx), y, act.bz + R * (Math.cos(an) * F.fz + Math.sin(an) * F.lz), r * (st > 0 ? 1 : w));
+    }
+  }
+  // The Hour Strikes, the call: both fists thrown out toward the arm he calls, side by side, and held there.
+  for (const act of one(callA)) {
+    const { s: st, r } = actBeat(act, 0.5, 0.5, 0.8);
+    if (st > 0) {
+      const dx = act.wx - act.bx, dz = act.wz - act.bz, d = Math.hypot(dx, dz) || 1, ux = dx / d, uz = dz / d;
+      for (const [name, off] of [['fistL', 0.9], ['fistR', -0.9]] as const) {
+        p.toward(name, act.bx + ux * 4.2 + uz * off, 2.6, act.bz + uz * 4.2 - ux * off, st * r);
+      }
     }
   }
   // Fists of the Court and Pillar Fall send one fist a step, left then right, and the steps overlap: each fist shows the step that

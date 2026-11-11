@@ -1,7 +1,7 @@
 import { raidTierFactor } from '../../server/protocol.mjs';
 import { seeded } from '../arenas/common';
 import { seedNumber } from '../arenas/hazards/base';
-import type { BossCast, BossDef, BossMove, BossWorld, RaidLink, RaidSide } from './types';
+import { moveTime, type BossCast, type BossDef, type BossMove, type BossWorld, type RaidLink, type RaidSide } from './types';
 
 /** How far a boss walks between two puddles of its trail (m). */
 const TRAIL_STEP = 2.4;
@@ -72,6 +72,9 @@ export class BossBrain {
   private rage = 1;
   /** The same for an omen (Quickened Court), for the whole fight. */
   quick = 1;
+  /** A move holds the floor until then (`BossMove.holds`): only the moves it names begin, and an opener waits. */
+  private heldUntil = -Infinity;
+  private heldOnly: string[] = [];
   /** The hero a move that `tracks` turns to follow, until its last step. */
   private tracking: RaidSide | null = null;
 
@@ -131,6 +134,12 @@ export class BossBrain {
       this.staging = false;
       this.wait = 0;
     }
+  }
+
+  /** A move that holds the floor is in the air, with `seconds` to go (a brain that takes a fight over). */
+  hold(seconds: number, only: string[]) {
+    this.heldUntil = this.time + seconds;
+    this.heldOnly = only;
   }
 
   /** The next move is this one (a stage the old brain never got to). */
@@ -263,7 +272,9 @@ export class BossBrain {
 
   private pick(dist: number) {
     const { moves } = this.def;
-    if (this.opener) {
+    // A move holds the floor: an opener waits for it to land, except a stage, which calls it off.
+    const held = this.time < this.heldUntil;
+    if (this.opener && (!held || moves[this.opener]?.stage)) {
       const m = moves[this.opener];
       this.opener = null;
       if (m && !m.coop) return m;
@@ -272,7 +283,8 @@ export class BossBrain {
     const two = this.world.heroes().filter((h) => !h.down).length >= 2;
     const open = this.listOf(true)
       .map((id) => moves[id])
-      .filter((m) => m && (!m.coop || two) && (this.ready.get(m.id) ?? 0) <= this.time && (m.range === undefined || dist <= m.range));
+      .filter((m) => m && (!m.coop || two) && (this.ready.get(m.id) ?? 0) <= this.time && (m.range === undefined || dist <= m.range))
+      .filter((m) => !held || this.heldOnly.includes(m.id));
     // A move on a clock doesn't wait its turn.
     const due = open.find((m) => m.due !== undefined);
     if (due) return due;
@@ -290,7 +302,11 @@ export class BossBrain {
       this.locked = m.lock * this.pace;
       this.wait = this.locked + (gap[0] + this.rng() * (gap[1] - gap[0])) * this.rage * this.quick;
     }
-    if (m.stage) this.staging = true;
+    if (m.stage) {
+      this.staging = true;
+      this.heldUntil = -Infinity;
+    }
+    if (m.holds) this.hold(moveTime(m, this.pace), m.holds.only);
     this.tracking = m.tracks ? side : null;
     const seed = Math.floor(this.rng() * 2147483647);
     const alone = this.world.heroes().filter((h) => !h.down).length < 2;
