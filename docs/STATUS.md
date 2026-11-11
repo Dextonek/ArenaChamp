@@ -2,7 +2,14 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
-## The full Rust simulator (2026-11-11): plays whole fights; 6 of 40 heroes ported and graded; committed, not pushed
+## The full Rust simulator (2026-11-11): STOPPED by the user at 7 of 40 heroes; committed, not pushed
+
+User, 2026-11-11: "stop it take to long just make python simulator". The port is paused, not deleted: Brannoc,
+Isolde, Kaia, Auriel, Sirix, Mr. Ledger and Barry Cloudsley are in Rust and graded; Bram was being ported when it
+stopped (his unfinished helper copy, if any, is in `.claude/worktrees/`). Real-fight yardsticks are recorded for Bram
+and Professor Puff (`pipeline/rustfull/data/yard-bram.json`, `yard-puff.json`). For balance numbers use the Python
+simulator (`python pipeline/sim/sim.py`). Waiting on the user: what "a Python simulator" should be (see the chat).
+
 
 - **Heroes in it, each graded against 800 real fights (against Brannoc and Isolde, both sides, Frost arena):**
   Brannoc, Isolde, Kaia, Auriel, Sirix, Mr. Ledger. All have their win rates inside the real runs' noise. Known gaps,
