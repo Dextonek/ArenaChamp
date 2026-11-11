@@ -574,12 +574,13 @@ const strikes: BossMove = {
           road.set(mouth.x, mouth.z, hall.dir, (hall.reach - W - 1) * (1 - (1 - lit) ** 2), 5, (0.5 + 0.35 * k) * fade, time);
           sill.set(sa, sb, p.camera, time, (0.55 + 0.25 * Math.sin(time * 5)) * fade, 1.1, true);
           if (off >= 0 || t >= at) return;
-          // Sunfire: embers rising all over what burns, more and higher as the bell nears, and tongues of flame in the last third.
-          for (let n = Math.random() < dt * (60 + 240 * k * k) ? 2 + Math.floor(k * 4) : 0; n > 0; n--) {
+          // Sunfire: embers rising all over what burns, more and higher as the bell nears, and tongues of flame from a third of the way
+          // on. Kept to what a phone can draw: at most about 300 embers and 45 tongues at once (a tongue is a draw call of its own).
+          for (let n = Math.random() < dt * (60 + 240 * k * k) ? 1 + Math.floor(k * 1.5) : 0; n > 0; n--) {
             const s = inFire();
-            p.show.burst(s.x, 0.1, s.z, 3, 0.8, 1.6 + 3.5 * k, 0.9 + 0.6 * k, SUNFIRE, 0.5);
+            p.show.burst(s.x, 0.1, s.z, 2, 0.8, 1.6 + 3.5 * k, 0.9 + 0.4 * k, SUNFIRE, 0.5);
           }
-          for (let n = k > 0.35 && Math.random() < dt * 90 * (k - 0.35) ? 1 + Math.floor(k * 3) : 0; n > 0; n--) {
+          if (k > 0.35 && Math.random() < dt * 55 * ((k - 0.35) / 0.65)) {
             const s = inFire();
             p.show.column(s.x, s.z, { radius: 0.3 + Math.random() * 0.45, height: 1.5 + (2.5 + Math.random() * 4.5) * k, life: 0.8, color: SUNFIRE, peak: 0.35 + 0.4 * k });
           }
@@ -606,12 +607,12 @@ const strikes: BossMove = {
           p.show.burst(C.x, 9, C.z, 120, 12, 4, 1.4, 0xffd890, 4);
           // Many thin columns of different heights, a little off their rows, read as fire; a few wide ones as glass tubes.
           const flame = (x: number, z: number, delay: number) => p.show.column(x + (Math.random() - 0.5) * 3, z + (Math.random() - 0.5) * 3, {
-            radius: 0.8 + Math.random() * 1.1, height: 9 + Math.random() * 13, life: 1 + Math.random() * 0.6, color: SUNFIRE, peak: 0.85, delay,
+            radius: 1 + Math.random() * 1.3, height: 9 + Math.random() * 13, life: 1 + Math.random() * 0.6, color: SUNFIRE, peak: 0.85, delay,
           });
-          for (const across of [-9, -3, 3, 9]) {
-            for (const along of [-9, -3, 3, 9]) flame(C.x + Math.sin(hall.dir) * along + Math.cos(hall.dir) * across, C.z + Math.cos(hall.dir) * along - Math.sin(hall.dir) * across, 0.04);
+          for (const across of [-8, 0, 8]) {
+            for (const along of [-8, 0, 8]) flame(C.x + Math.sin(hall.dir) * along + Math.cos(hall.dir) * across, C.z + Math.cos(hall.dir) * along - Math.sin(hall.dir) * across, 0.04);
             for (const { a, i } of burning) {
-              for (let along = W + 3; along < a.reach - 1; along += 6) {
+              for (let along = W + 3; along < a.reach - 1; along += 7) {
                 const s = armSpot(i, along);
                 flame(s.x + Math.cos(a.dir) * across, s.z - Math.sin(a.dir) * across, 0.08 + (along - W) * 0.014);
               }

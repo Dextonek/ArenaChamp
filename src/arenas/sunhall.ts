@@ -60,6 +60,9 @@ export function inHall(x: number, z: number, pad = 0) {
 export function intoHall(x: number, z: number, pad = 0) {
   if (inHall(x, z, pad)) return { x, z };
   const dx = x - RING.x, dz = z - RING.z, clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+  // The gate's passage is narrower than any `pad`: its middle, as far in as the spot is. (Pulled back into the nave, what he aims
+  // would never reach a hero standing in the passage.)
+  if (Math.abs(dx) <= GATE && dz > SOUTH - pad && dz <= SOUTH + 8) return { x: RING.x, z };
   // The cross is two bars: the nearer of the nearest spots in each.
   const a = { x: clamp(dx, -(W - pad), W - pad), z: clamp(dz, -(NORTH - pad), SOUTH - pad) };
   const b = { x: clamp(dx, -(EAST - pad), EAST - pad), z: clamp(dz, -(W - pad), W - pad) };

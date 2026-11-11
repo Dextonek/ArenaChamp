@@ -1057,6 +1057,8 @@
         // What he aims stays on the hall's floor; his floor-wide moves do not fill its arms.
         const aimed = def.moves.pillars.aim({ boss: { x: 0, z: 30 }, ring: { x: 0, z: 30 }, target: { x: 12.4, z: 40 }, step: 0, seed: 1 });
         check('the hall: a stone aimed at a hero by the wall lands clear of it (x)', aimed.x, 13 - 1.8, 0.001);
+        const gateAim = def.moves.pillars.aim({ boss: { x: 0, z: 30 }, ring: { x: 0, z: 30 }, target: { x: 1.5, z: 52 }, step: 0, seed: 1 });
+        yes('the hall: a hero in the gate\'s passage is still aimed at, down its middle', gateAim.x === 0 && gateAim.z === 52);
         hall(0, 3);
         place(0, 40);
         check('the hall: Sun Order does not reach down the nave', take(() => cast('order', { x: 0, z: 3 }), 5.6), 0);

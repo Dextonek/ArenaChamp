@@ -270,7 +270,7 @@ all behind `party` in `src/raid/sunWarden.ts`, so the fight for two reads none o
 |---|---|
 | The Hour Strikes | Only here, in every phase (`HALL_PHASES`). Below |
 | Enrage | 3:15 instead of 2:30: the party walks 40 m up the nave to him first, and each hour takes the fight away from him for a while |
-| What he aims (Pillar Fall, Fists, the ray) | Kept 1.8 m inside the hall's walls (`intoHall`), so no stone lands in the stone |
+| What he aims (Pillar Fall, Fists, the ray) | Kept 1.8 m inside the hall's walls (`intoHall`), so no stone lands in the stone. At a hero in the gate's passage: down its middle |
 | Sun Order | Its wedges reach 19 m from the Sun Well (the crossing and its corners), not the whole floor: deep in an arm no edge of a wedge is near enough to step over |
 | Eclipse | Its far ring ends 20 m from him instead of at the rim |
 | Gathering Noon, the Long Hour's blow, Walking Sun, the late sunfire | The whole hall, as in the court. The stone round the hall hides what is drawn past its walls |
@@ -474,8 +474,9 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 ## Limits
 
 - **The Hall of Noon was fought only by one autopilot hero at a time** (`_raid(..., { band: 5 })`), never by a party of people or of
-  bots through the hub. What forty heroes do to The Hour Strikes (a crowd in one arm's mouth), and its cost on a phone (about sixty
-  columns at the bell), were not measured.
+  bots through the hub. What forty heroes do to The Hour Strikes (a crowd in one arm's mouth) was not seen. Its cost on a phone was
+  not measured, only counted: late in the count about 45 tongues of flame and 300 embers at once, and 42 columns more for under a
+  second at the bell; each tongue and column is a draw call of its own.
 - **The Warden's mechanics are not scaled to the band.** Noon still asks for two shards and Anchors for two circles, whatever the
   party's size; only his HP and gauge grow.
 - **The autopilot fights worse in the hall than in the court:** 9 clears of 40 against 8 of 20 for the same ten heroes, and its
