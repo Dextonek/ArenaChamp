@@ -58,8 +58,8 @@ export class NetLink implements RaidLink {
     this.net.send({ t: 'raid_hp', hp: Math.round(hp) });
   }
 
-  revive() {
-    this.net.send({ t: 'revive' });
+  revive(side: RaidSide) {
+    this.net.send({ t: 'revive', side });
   }
 
   heroAlt(alt: boolean) {

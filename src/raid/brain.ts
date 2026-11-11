@@ -47,7 +47,8 @@ export class BossBrain {
   private phase = 0;
   private opener: string | null = null;
   private last = '';
-  private aimedAt = [-Infinity, -Infinity];
+  /** When each hero (by side) was last aimed at. */
+  private aimedAt: number[] = [];
   private next: RaidSide = 0;
   /** Where the last step of each move was aimed. */
   private aimed = new Map<string, { x: number; z: number; dir: number; flag?: boolean }>();
@@ -334,9 +335,13 @@ export class BossBrain {
   /** A move aimed at "you" takes the hero it aimed at less recently, and a seeded coin when level. */
   private chooseNext(): RaidSide {
     if (this.link.solo) return this.link.side;
-    const [a, b] = this.aimedAt;
-    if (a === b) return this.rng() < 0.5 ? 0 : 1;
-    return a < b ? 0 : 1;
+    // Of the heroes standing (any number in a party), the one aimed at least recently; a seeded draw among those level.
+    const up = this.world.heroes().filter((h) => !h.down).map((h) => h.side);
+    if (!up.length) return this.link.side;
+    const when = (side: number) => this.aimedAt[side] ?? -Infinity;
+    const least = Math.min(...up.map(when));
+    const level = up.filter((side) => when(side) === least).sort((a, b) => a - b);
+    return level.length === 1 ? level[0] : level[Math.floor(this.rng() * level.length)];
   }
 
   private send(m: BossMove, step: number, seed: number, side: RaidSide, alone: boolean, rim: boolean) {

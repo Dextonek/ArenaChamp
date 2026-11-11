@@ -35,6 +35,8 @@ const state = {
   connected: false,
   profile: null as Profile | null,
   lobbies: [] as { code: string; host: string; hostHero: string | null }[],
+  /** Open raids anyone can join (pipeline/designs/raid-party.md). */
+  raids: [] as { code: string; host: string; count: number; raid: string }[],
   lobby: null as LobbyState | null,
   lobbySeat: 0,
   queue: { on: false, since: 0, size: 0 },
@@ -599,6 +601,7 @@ function raidLine(p: Profile) {
 }
 
 function raidScreen() {
+  if (state.profile && !raidListAsked) { raidListAsked = true; net.send({ t: 'lobbies' }); }
   const choice = cpuChoice(), hero = kitOf(choice);
   const busy = state.queue.on || !!state.lobby;
   const boss = SUN_WARDEN;
@@ -611,16 +614,24 @@ function raidScreen() {
       el('p', { class: 'muted' }, 'Take an upgrade before each boss. Beat them all and the next tier is harder, and you keep your upgrades. One loss ends the run. Pale orange means leave, gold means stand here. Hard control does not hold a boss: it fills a gauge, and a full gauge makes it kneel.'),
       el('h3', { class: 'gap' }, 'Your hero'),
       heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
-      el('h3', { class: 'gap' }, 'With a friend'),
+      el('h3', { class: 'gap' }, 'With others: up to 40'),
       state.profile
         ? el('div', {},
-          el('p', { class: 'muted' }, 'Open a room and give your friend its code. A fallen hero lies where it fell until the other stands by it. If both are down, the raid is over.'),
+          el('p', { class: 'muted' }, 'Open a raid for anyone to join, or a private one for friends with its code. The boss is set for how many you are: 2, 5, 10, 15, 20, 30 or 40. A fallen hero lies where it fell until another stands by it. If all are down, the raid is over.'),
           el('div', { class: 'row' },
-            el('button', { class: 'btn', disabled: busy, onclick: () => net.send({ t: 'lobby_create', raid: boss.id }) }, icon('lobbies'), 'Open a room'),
+            el('button', { class: 'btn', disabled: busy, onclick: () => net.send({ t: 'lobby_create', raid: boss.id, open: true }) }, icon('lobbies'), 'Open a public raid'),
+            el('button', { class: 'btn', disabled: busy, onclick: () => net.send({ t: 'lobby_create', raid: boss.id, open: false }) }, 'Private raid'),
             el('form', { class: 'row', onsubmit: (e: Event) => { e.preventDefault(); net.send({ t: 'lobby_join', code: code.value }); } },
               code, el('button', { class: 'btn', type: 'submit', disabled: busy }, 'Join by code'))),
+          el('h3', { class: 'gap' }, 'Open raids'),
+          state.raids.length
+            ? el('div', { class: 'lobby-list' }, ...state.raids.map((r) => el('div', { class: 'raid-row' },
+              el('div', { class: 'code' }, r.code),
+              el('div', {}, el('div', { class: 'kit-name' }, `${r.host}'s raid`), el('div', { class: 'muted small' }, `${r.count} of 40 · set for ${bandOf(r.count)}`)),
+              el('button', { class: 'btn', disabled: busy || r.count >= 40, onclick: () => net.send({ t: 'lobby_join', code: r.code }) }, 'Join'))))
+            : el('p', { class: 'muted small' }, 'No open raids right now. Open one, and others can join it from here.'),
           state.profile.raids?.played ? el('p', { class: 'muted small' }, raidLine(state.profile)) : null)
-        : el('p', { class: 'muted' }, 'Log in to raid with a friend.'),
+        : el('p', { class: 'muted' }, 'Log in to raid with others.'),
     ),
     el('div', { class: 'hs-bar' },
       el('div', { class: `hs-note small ${busy ? 'error' : 'muted'}` }, busy
@@ -793,7 +804,56 @@ function lobbiesScreen() {
   );
 }
 
+/** The open raids were asked for once since the raid screen opened (the hub then keeps the list fresh). */
+let raidListAsked = false;
+
+/** How many a raid's boss is set for, from how many are in it (pipeline/designs/raid-party.md). */
+function bandOf(n: number) {
+  return n <= 2 ? 2 : n <= 5 ? 5 : n <= 10 ? 10 : n <= 15 ? 15 : n <= 20 ? 20 : n <= 30 ? 30 : 40;
+}
+
+/** A raid room for up to 40: everyone's hero, the band, and the host's Start. */
+function raidLobbyScreen(l: LobbyState) {
+  const me = l.seats[state.lobbySeat];
+  const host = state.lobbySeat === 0;
+  const picked = l.seats.filter((s) => s.hero).length;
+  const band = l.band ?? bandOf(l.seats.length);
+  const max = l.max ?? 40;
+  return el('div', { class: 'lobby' },
+    el('section', { class: 'card' },
+      el('div', { class: 'lobby-head' },
+        el('div', {}, el('div', { class: 'muted small' }, l.open ? 'PUBLIC RAID · CODE' : 'PRIVATE RAID · CODE'), el('div', { class: 'code big' }, l.code)),
+        el('button', { class: 'btn ghost', onclick: () => net.send({ t: 'lobby_leave' }) }, 'Leave raid')),
+      el('p', { class: 'muted' }, `${l.seats.length} of ${max} in the raid. The boss is set for ${band}.`),
+      el('div', { class: 'party-seats' }, ...l.seats.map((s, i) => {
+        const k = kitOf(s.hero);
+        const row = el('div', { class: `party-seat${i === state.lobbySeat ? ' mine' : ''}` },
+          k ? portrait(k, 'portrait sm') : el('div', { class: 'portrait sm empty' }, '?'),
+          el('div', {}, el('div', { class: 'kit-name' }, `${s.name}${i === 0 ? ' · host' : ''}`), el('div', { class: 'muted small' }, k ? k.name : 'picking a hero')));
+        if (k) row.style.setProperty('--accent', k.accent);
+        return row;
+      })),
+      el('h3', {}, 'Pick your hero'),
+      el('p', { class: 'muted small' }, 'Anyone can take any hero, the same one too.'),
+      heroPicker(me?.hero ?? '', [], (n) => {
+        const name = n === RANDOM ? randomKit().name : n;
+        if (n === RANDOM) toast(`Random pick: ${name}`);
+        else setPreferredHero(name);
+        net.send({ t: 'lobby_pick', hero: name });
+      }),
+      el('div', { class: 'row' },
+        host
+          ? el('button', { class: 'btn primary big', disabled: picked < l.seats.length, onclick: () => net.send({ t: 'raid_go' }) }, icon('raid'), 'Start the raid')
+          : null,
+        el('span', { class: 'muted' }, host
+          ? picked < l.seats.length ? `Waiting for ${l.seats.length - picked} to pick a hero.` : 'Everyone has a hero. Start when you are ready; more can still join until then.'
+          : `Waiting for ${l.seats[0]?.name ?? 'the host'} to start.`)),
+    ),
+  );
+}
+
 function lobbyScreen(l: LobbyState) {
+  if (l.raid) return raidLobbyScreen(l);
   const me = l.seats[state.lobbySeat];
   const other = l.seats[1 - state.lobbySeat];
   const seat = (s: LobbyState['seats'][number] | undefined, mine: boolean) => {
@@ -895,7 +955,8 @@ net.on('profile', (m) => { state.profile = m.profile; if (!match.active) render(
 net.on('error', (m) => toast(m.error));
 net.on('lobbies', (m) => {
   state.lobbies = m.list;
-  if (state.screen === 'lobbies' && !match.active) render();
+  state.raids = m.raids ?? [];
+  if ((state.screen === 'lobbies' || state.screen === 'raid') && !match.active && !coop.active && !raid.active) render();
 });
 net.on('lobby', (m) => {
   const had = !!state.lobby, wasRaid = !!state.lobby?.raid;

@@ -12,6 +12,8 @@ import { omenNames } from './omens';
 import { TierOmens, doorsFor, shrineCard, type PathId } from './paths';
 
 const MOVE_HZ = 20;
+/** A party of more than two sends its walk less often: the hub bundles everyone's 10 times a second anyway. */
+const PARTY_MOVE_HZ = 10;
 /** The loading page only shows when a room takes longer than this to load (ms). */
 const SLOW_LOAD = 1200;
 /** This hero's HP goes to the partner's bar at most this often (ms). */
@@ -41,9 +43,12 @@ export class RaidController {
   /** The hub has ended the run. */
   private over = false;
   private match = '';
-  private side: 0 | 1 = 0;
+  private side = 0;
   private mine: HeroKit | null = null;
-  private partner: { kit: HeroKit; name: string } | null = null;
+  /** The other heroes of this raid, by side (pipeline/designs/raid-party.md). */
+  private party: { side: number; kit: HeroKit; name: string }[] = [];
+  /** How many the boss is tuned for now (the band). */
+  private band = 2;
   private myName = '';
   private upgrades = new RunUpgrades();
   /** This tier's omens, as the side doors have left them; both screens change them only on what the hub says. */
@@ -93,10 +98,16 @@ export class RaidController {
       void fadeTo(false);
       api.duel.countdownFrom(m.countdown);
     });
-    net.on('peer_move', (m) => { if (this.active) api.duel.partnerMove(m.x, m.z, m.yaw, m.ts); });
-    net.on('peer_cast', (m) => { if (this.active) api.duel.partnerCast(m); });
-    net.on('peer_attack', () => { if (this.active) api.duel.partnerAttack(); });
-    net.on('peer_form', (m) => { if (this.active) api.duel.partnerForm(m.alt); });
+    // A raid for two names nobody in its messages: then it is the one partner.
+    const who = (side?: number) => side ?? this.party[0]?.side ?? 1 - this.side;
+    net.on('peer_move', (m) => { if (this.active) api.duel.partnerMove(who(m.side), m.x, m.z, m.yaw, m.ts); });
+    net.on('party_moves', (m) => {
+      if (!this.active) return;
+      for (const [side, x, z, yaw, ts] of m.list) if (side !== this.side) api.duel.partnerMove(side, x, z, yaw, ts);
+    });
+    net.on('peer_cast', (m) => { if (this.active) api.duel.partnerCast(who(m.side), m); });
+    net.on('peer_attack', (m) => { if (this.active) api.duel.partnerAttack(who(m.side)); });
+    net.on('peer_form', (m) => { if (this.active) api.duel.partnerForm(who(m.side), m.alt); });
     net.on('peer_debuff', (m) => { if (this.active) api.duel.bossDebuff(m.kind, m.amount, m.seconds); });
     net.on('boss_cast', (m) => { if (this.active) this.link?.on.cast(m); });
     net.on('boss_move', (m) => fight()?.bossMove(m.x, m.z, m.yaw, m.ts));
@@ -108,14 +119,15 @@ export class RaidController {
     net.on('boss_done', (m) => { if (this.active) this.link?.on.done(m.id, m.part, m.side); });
     net.on('peer_add', (m) => { if (this.active) this.link?.on.addHit?.(m.id, m.part, m.amount); });
     net.on('boss_wall', (m) => { if (this.active) this.link?.on.wall(m.index); });
-    net.on('partner_hp', (m) => { if (this.active) api.duel.partnerHp(m.hp, m.max); });
+    net.on('partner_hp', (m) => { if (this.active) api.duel.partnerHp(who(m.side), m.hp, m.max); });
     net.on('peer_down', (m) => { if (this.active) api.duel.raidDown(m.side); });
     net.on('revived', (m) => { if (this.active) api.duel.raidRevived(m.side, m.hp, m.left); });
-    net.on('partner_left', () => {
+    net.on('partner_left', (m) => {
       if (!this.active) return;
-      ui.toast('Your partner left: the run goes on');
-      this.partner = null;
-      api.duel.partnerLeft();
+      const side = who(m.side), gone = this.party.find((p) => p.side === side);
+      ui.toast(this.party.length > 1 ? `${gone?.name ?? 'A player'} left: the run goes on` : 'Your partner left: the run goes on');
+      this.party = this.party.filter((p) => p.side !== side);
+      api.duel.partnerLeft(side);
     });
     net.on('boss_brain', () => fight()?.takeBrain());
     net.on('raid_end', (m) => this.end(m));
@@ -127,14 +139,26 @@ export class RaidController {
     });
   }
 
+  /** The one partner of a raid for two. */
+  private get partner() {
+    return this.party.length === 1 ? this.party[0] : null;
+  }
+
+  /** How often this screen sends its walk. */
+  private get moveHz() {
+    return this.party.length > 1 ? PARTY_MOVE_HZ : MOVE_HZ;
+  }
+
   private askLeave() {
     if (confirm('Leave this raid? There is no way back in.')) this.exit();
   }
 
   private start(m: Extract<ServerMsg, { t: 'raid_start' }>) {
     const { api, net } = this;
-    const mine = api.kits.find((k) => k.name === m.you.hero), theirs = api.kits.find((k) => k.name === m.partner.hero);
-    if (!mine || !theirs) {
+    const mine = api.kits.find((k) => k.name === m.you.hero);
+    const others = (m.party ?? (m.partner ? [{ side: 1 - m.side, ...m.partner }] : [])).filter((p) => p.side !== m.side);
+    const party = others.map((p) => ({ side: p.side, name: p.name, kit: api.kits.find((k) => k.name === p.hero) }));
+    if (!mine || party.some((p) => !p.kit)) {
       this.ui.toast('This raid needs a newer page: reload');
       net.send({ t: 'match_leave' });
       return;
@@ -146,7 +170,8 @@ export class RaidController {
     this.side = m.side;
     this.mine = mine;
     this.myName = m.you.name;
-    this.partner = { kit: theirs, name: m.partner.name };
+    this.party = party.map((p) => ({ side: p.side, name: p.name, kit: p.kit! }));
+    this.band = m.band ?? 2;
     this.upgrades = new RunUpgrades();
     this.omensTier = 0;
     this.score = { tier: 1, bosses: 0, seconds: 0 };
@@ -203,9 +228,9 @@ export class RaidController {
       takeDoor: (d) => {
         if (run === this.run && this.active) net.send({ t: 'raid_side', door: d });
       },
-      hero: mine.name, name: this.myName, partner: this.partner ?? undefined, side: this.side, solo: !this.partner, next: def, tier: m.tier, seconds: m.seconds,
+      hero: mine.name, name: this.myName, partner: this.partner ?? undefined, party: this.party.length > 1 ? this.party : undefined, side: this.side, solo: !this.party.length, next: def, tier: m.tier, seconds: m.seconds,
       seed: `${this.match}-hall`, offers: door === 'vault' ? vaultOffers(mine, this.upgrades, seed) : door === 'shrine' ? [shrineCard(lifted)] : offersFor(mine, this.upgrades, seed, depth),
-      waiting: this.partner ? `Waiting for ${this.partner.name}` : undefined,
+      waiting: this.partner ? `Waiting for ${this.partner.name}` : this.party.length ? 'Waiting for the party' : undefined,
       pick: (u) => {
         if (run !== this.run || !this.active) return;
         if (door !== 'shrine') this.upgrades.add(u.id);
@@ -218,7 +243,7 @@ export class RaidController {
       if (run !== this.run || !this.active) return;
       this.lastSent = '';
       clearInterval(this.moveTimer);
-      this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
+      this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / this.moveHz);
       this.sendMove();
     });
   }
@@ -254,20 +279,21 @@ export class RaidController {
     api.setKit(mine.name);
     api.setHeroMode(true);
     api.duel.holdStart = true;
-    this.link = new NetLink(net, this.side, m.hp, m.brain === this.side || !this.partner);
+    this.band = m.band ?? this.band;
+    this.link = new NetLink(net, this.side, m.hp, m.brain === this.side || !this.party.length);
     api.duel.startBoss({
-      def, link: this.link, seed: `${this.match}-${m.tier}-${m.stage}`, mode: 'play', name: this.myName, partner: this.partner ?? undefined, tier: m.tier, upgrades: this.upgrades,
+      def, link: this.link, seed: `${this.match}-${m.tier}-${m.stage}`, mode: 'play', name: this.myName, partner: this.partner ?? undefined, party: this.party.length > 1 ? this.party : undefined, tier: m.tier, upgrades: this.upgrades,
       card: (result) => this.card(result),
     });
     this.leave.style.display = '';
     this.lastSent = this.lastBoss = '';
     this.lastHp = -1;
     clearInterval(this.moveTimer);
-    this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
+    this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / this.moveHz);
     this.sendMove();
     await this.ready(api.duel.whenReady(), {
       mine, theirs: def.kit(m.hp), names: [this.myName, def.title], title: def.name, line: 'Loading the arena',
-      note: [this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : '', this.upgrades.omens.length ? `Omens: ${omenNames(this.upgrades.omens)}` : ''].filter(Boolean).join('. ') || undefined,
+      note: [this.party.length > 1 ? `A party of ${this.party.length + 1}: the boss is set for ${this.band}` : this.partner ? `With ${this.partner.name}, ${this.partner.kit.name}` : m.tier > 1 ? `Tier ${m.tier}: shown times ${Math.round((1 - raidTierFactor(m.tier)) * 100)} % shorter` : '', this.upgrades.omens.length ? `Omens: ${omenNames(this.upgrades.omens)}` : ''].filter(Boolean).join('. ') || undefined,
     });
     if (run !== this.run || !this.active) return;
     net.send({ t: 'match_loaded', maxHp: api.duel.heroMax });
@@ -288,8 +314,8 @@ export class RaidController {
   private clearedLine() {
     const left = Math.max(0, this.clearLeft);
     const clock = this.wentOn
-      ? `Waiting for ${this.partner?.name ?? 'your partner'}: ${left} s left.`
-      : `${this.partner ? 'Both of you have' : 'You have'} to go on within ${left} s, or the run ends here.`;
+      ? `Waiting for ${this.party.length > 1 ? 'the party' : this.partner?.name ?? 'your partner'}: ${left} s left.`
+      : `${this.party.length > 1 ? 'All of you have' : this.partner ? 'Both of you have' : 'You have'} to go on within ${left} s, or the run ends here.`;
     return `${scoreText(this.score)} The next tier is harder, and you keep your upgrades. ${clock}`;
   }
 

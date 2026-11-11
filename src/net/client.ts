@@ -53,6 +53,11 @@ export interface LobbyState {
   /** A raid room: the boss's id. */
   raid?: string | null;
   seats: { name: string; hero: string | null; ready: boolean }[];
+  /** A raid room: listed for anyone to join, its most seats, how many the boss is set for now, its host (pipeline/designs/raid-party.md). */
+  open?: boolean;
+  max?: number;
+  band?: number;
+  host?: string;
 }
 
 /** Everything the server sends. */
@@ -63,7 +68,7 @@ export type ServerMsg =
   | { t: 'logged_out'; reason: string }
   | { t: 'profile'; profile: Profile }
   | { t: 'error'; error: string }
-  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[] }
+  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[]; raids?: { code: string; host: string; count: number; raid: string }[] }
   | { t: 'lobby'; lobby: LobbyState | null; you?: number }
   | { t: 'queue'; on: boolean; since: number; size: number }
   | { t: 'match_start'; id: string; side: 0 | 1; hp: number; you: { name: string; hero: string }; foe: { name: string; hero: string } }
@@ -73,14 +78,15 @@ export type ServerMsg =
     hp: number[]; next: number; pick: { you: boolean; seconds: number } | null;
   }
   | { t: 'round_start'; round: number; score: number[]; you: string; foe: string; picked: RoundPick | null }
-  | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number; r?: number }
-  | { t: 'peer_cast'; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods; bend?: number }
+  | { t: 'peer_move'; x: number; z: number; yaw: number; ts?: number; r?: number; side?: number }
+  | { t: 'party_moves'; list: [number, number, number, number, number][] }
+  | { t: 'peer_cast'; side?: number; id: number; slot: number; x: number; z: number; fx: number; fz: number; enemy: boolean; yaw?: number; mods?: CastMods; bend?: number }
   | { t: 'peer_hit'; id: number; damage: number; soaked?: number; hp: number; color?: string; blocked?: boolean }
-  | { t: 'peer_attack'; id: number; mods?: CastMods }
+  | { t: 'peer_attack'; side?: number; id: number; mods?: CastMods }
   | { t: 'peer_spend'; amount: number; hp: number }
   | { t: 'peer_buff'; kind: BuffKind; amount: number; seconds: number }
   | { t: 'peer_stacks'; name: string; n: number }
-  | { t: 'peer_form'; alt: boolean }
+  | { t: 'peer_form'; side?: number; alt: boolean }
   | { t: 'peer_heal'; amount: number; hp: number }
   | { t: 'peer_status'; kind: StatusKind; seconds: number; color?: string }
   | { t: 'peer_shield'; amount: number; seconds: number; color?: string }
@@ -90,11 +96,11 @@ export type ServerMsg =
     t: 'match_end'; id: string; result: 'win' | 'loss'; winner: string; reason: string; seconds: number; score?: number[]; hp: number[];
     stats: { casts: number; hits: number; dodges: number }; profile: Profile | null;
   }
-  | { t: 'raid_start'; id: string; side: 0 | 1; you: { name: string; hero: string }; partner: { name: string; hero: string } }
+  | { t: 'raid_start'; id: string; side: number; you: { name: string; hero: string }; partner?: { name: string; hero: string }; party?: { side: number; name: string; hero: string }[]; band?: number }
   | { t: 'raid_offer'; stage: number; tier: number; boss: string; seconds: number }
   | { t: 'raid_gate'; seconds: number }
   | { t: 'raid_side_go'; door: 'vault' | 'shrine'; seconds: number }
-  | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: 0 | 1 }
+  | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: number; band?: number }
   | { t: 'raid_won'; stage: number; tier: number; bosses: number; seconds: number; last: boolean; wait: number }
   | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: 0 | 1; alone?: boolean; rim?: boolean; form?: number; flag?: boolean }
   | { t: 'boss_move'; x: number; z: number; yaw: number; ts?: number }
@@ -105,12 +111,12 @@ export type ServerMsg =
   | { t: 'boss_stood'; id: number; part: number; count: number }
   | { t: 'boss_done'; id: number; part: number; side: 0 | 1 }
   | { t: 'boss_wall'; index: number }
-  | { t: 'partner_hp'; hp: number; max: number }
-  | { t: 'peer_down'; side: 0 | 1 }
-  | { t: 'revived'; side: 0 | 1; hp: number; left: number }
-  | { t: 'peer_debuff'; kind: 'slow' | 'weaken' | 'vulnerable'; amount: number; seconds: number }
-  | { t: 'peer_add'; id: number; part: number; amount: number }
-  | { t: 'partner_left' }
+  | { t: 'partner_hp'; side?: number; hp: number; max: number }
+  | { t: 'peer_down'; side: number }
+  | { t: 'revived'; side: number; hp: number; left: number }
+  | { t: 'peer_debuff'; side?: number; kind: 'slow' | 'weaken' | 'vulnerable'; amount: number; seconds: number }
+  | { t: 'peer_add'; side?: number; id: number; part: number; amount: number }
+  | { t: 'partner_left'; side?: number }
   | { t: 'boss_brain' }
   | { t: 'raid_end'; result: 'cleared' | 'lost'; tier: number; bosses: number; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }
   | { t: 'socket'; open: boolean };

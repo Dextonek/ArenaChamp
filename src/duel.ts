@@ -104,6 +104,15 @@ const PEER_DELAY = 100;
 const PEER_STEP = 50;
 const PEER_GAP = 120;
 const PEER_SNAP = 3;
+/** How many partners are drawn in full in a big party; the rest are light stand-ins (pipeline/designs/raid-party.md). */
+const PARTY_FULL = 16;
+const PARTY_FULL_PHONE = 8;
+/** Where a hero of a big party comes in: rows of eight behind the room's first spot, toward the boss, by side. */
+function partyStart(first: { x: number; z: number }, side: number) {
+  const col = side % 8, row = Math.floor(side / 8);
+  return { x: first.x + (col - 3.5) * 1.3, z: first.z - row * 1.3 };
+}
+const escapeHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
 const PEER_JUMP = 4;
 /** A `save` spell (`HeroSpell.save`): cast when the caster's own HP is at or under this share, with the enemy within SAVE_REACH m. */
 const SAVE_HP = 0.45;
@@ -283,8 +292,13 @@ export class Duel {
   private rimAt = new THREE.Vector3();
   /** The clock `late`'s first stage is at. */
   private lateAt = 0;
-  /** The other player's hero in a raid for two: a third body this screen only draws. */
-  private partner: Partner | null = null;
+  /** The other players' heroes in a raid, by side: bodies this screen only draws (src/raid/partner.ts). */
+  private party = new Map<number, Partner>();
+  /** Seconds to the next look at which partners are drawn in full (the nearest few, in a big party). */
+  private liteWait = 0;
+  /** The party's list on screen, for a raid of more than two. */
+  private partyEl: HTMLDivElement | null = null;
+  private partyWait = 0;
   /** Which way the autopilot last stepped out of a boss's zone. */
   private pilotWay = new THREE.Vector3();
   /** How the autopilot plays (the raid tool tries it at different levels). */
@@ -542,6 +556,8 @@ export class Duel {
    */
   startBoss(o: {
     def: BossDef; link: RaidLink; seed: string; mode?: 'play' | 'run'; name?: string; partner?: { kit: HeroKit; name: string }; tier?: number; upgrades?: RunUpgrades;
+    /** A raid of more than two: every other player's hero by its side (a raid for two may give `partner` instead). */
+    party?: { side: number; kit: HeroKit; name: string }[];
     /** What the result card says, or null for no card: the run goes on by itself. */
     card?: (result: 'win' | 'lose', seconds: number) => { title: string; text: string; again?: string } | null;
   }) {
@@ -559,7 +575,9 @@ export class Duel {
     this.hazardSeed = o.seed;
     this.bossDef = o.def;
     const { boss: from, heroes } = o.def.starts;
-    const start = heroes[o.link.solo ? 0 : o.link.side + 1];
+    const others = o.party ?? (o.partner ? [{ side: 1 - o.link.side, ...o.partner }] : []);
+    const big = others.length > 1;
+    const start = big ? partyStart(heroes[0], o.link.side) : heroes[o.link.solo ? 0 : o.link.side + 1];
     this.setup(new THREE.Vector3(start.x, 0, start.z), new THREE.Vector3(from.x, 0, from.z), o.def.place);
     const foe = this.foe;
     if (!foe) throw new Error('A boss fight with no boss');
@@ -610,15 +628,18 @@ export class Duel {
     if (o.def.hall) hm.setWalkOnly(true);
     // A phone held upright sees about 14 m across a floor of 32: it starts from as far back as the camera goes.
     if (!run && TOUCH && hm.portrait && this.zoomBefore === null) this.zoomBefore = hm.setZoom(1.7);
-    this.names = [o.name ?? '', o.partner?.name ?? ''];
-    if (o.partner) {
-      const at = heroes[o.link.side === 0 ? 2 : 1];
-      this.partner = new Partner(o.partner.kit, o.partner.name, new THREE.Vector3(at.x, 0, at.z), arena, () => this.foe);
-      this.group.add(this.partner.group);
+    this.names = [o.name ?? '', others.length === 1 ? others[0].name : ''];
+    for (const m of others) {
+      const at = big ? partyStart(heroes[0], m.side) : heroes[o.link.side === 0 ? 2 : 1];
+      const p = new Partner(m.kit, m.name, new THREE.Vector3(at.x, 0, at.z), arena, () => this.foe);
+      this.party.set(m.side, p);
+      this.group.add(p.group);
     }
+    this.liteWait = 0;
     // The boss's bar and cast bar take the top: this hero's own bar goes to a corner under them, the partner's below it.
-    // On a phone the hero panel holds the left corner, so they go under the Leave button.
-    this.hudSides[1].style.display = o.partner ? '' : 'none';
+    // On a phone the hero panel holds the left corner, so they go under the Leave button. A bigger party gets a list instead.
+    this.hudSides[1].style.display = others.length === 1 ? '' : 'none';
+    if (big) this.showParty();
     this.hudVs.style.display = 'none';
     this.hud.style.flexDirection = 'column';
     this.hud.style.alignItems = 'flex-start';
@@ -663,9 +684,26 @@ export class Duel {
     link.heroCast({ id: ++this.castSeq, slot, x: p.x, z: p.z, fx: me.x, fz: me.z, enemy: 'enemy' in target, yaw: +this.host.arena.caster.group.rotation.y.toFixed(3), bend: bend ? +bend.toFixed(3) : undefined });
   }
 
-  /** The partner's reported position (src/raid/partner.ts). */
-  partnerMove(x: number, z: number, yaw: number, ts?: number) {
-    this.partner?.track.push(x, z, yaw, ts);
+  /** The fallen partner nearest this hero that can still get up, if any. */
+  private fallenNear() {
+    const me = this.host.arena.caster.group.position;
+    let best: Partner | null = null, bd = Infinity;
+    for (const p of this.party.values()) {
+      if (!p.down || p.left || p.revivesLeft <= 0) continue;
+      const d = flat(p.pos, me);
+      if (d < bd) { bd = d; best = p; }
+    }
+    return best;
+  }
+
+  /** The one partner of a raid for two: its bar takes the opponent's place. */
+  private get partner() {
+    return this.party.size === 1 ? this.party.values().next().value ?? null : null;
+  }
+
+  /** A partner's reported position (src/raid/partner.ts). */
+  partnerMove(side: number, x: number, z: number, yaw: number, ts?: number) {
+    this.party.get(side)?.track.push(x, z, yaw, ts);
   }
 
   /**
@@ -673,14 +711,22 @@ export class Duel {
    * in it counts. Hits, statuses, carries, units and what touches this screen's hero are all left out, because its own
    * screen decides them. Temporary walls and broken walls stay, so boss rays stop at the same cover on both screens.
    */
-  partnerCast(m: PeerCast) {
-    const p = this.partner, foe = this.foe, arena = this.host.arena;
+  partnerCast(side: number, m: PeerCast) {
+    const p = this.party.get(side), foe = this.foe, arena = this.host.arena;
     if (!this.on || this.over || !p || !foe) return;
     const spell = p.kit.spells[m.slot];
     const spec = spell && this.host.targeting(spell.label);
     if (!spec) return;
     const told = new THREE.Vector3(m.fx, 0, m.fz);
     if (p.pos.distanceTo(told) > PEER_SNAP) p.pos.copy(told);
+    // The game keeps one effect per spell: a replay of a spell this screen's own hero has would cut its own cast short, hits
+    // and all. Then only the pose shows. A far stand-in shows nothing at all (its replay would cost a phone for no one).
+    const own = this.host.heroMode.currentKit, base = own.base ?? own;
+    const mine = [...base.spells, ...(base.alt?.spells ?? [])].some((s) => s.label === spell.label);
+    if (mine || p.lite) {
+      if (!p.lite) p.figure.cast(castStyle(spell, m.slot, m.enemy, attackFor(p.kit).kind === 'melee', 0.6), 0.6, m.slot === 3);
+      return;
+    }
     const from = p.pos.clone().setY(0);
     const at = foe.group.position;
     const point = spec.mode === 'self' ? from.clone() : m.enemy ? at.clone().setY(0) : new THREE.Vector3(m.x, 0, m.z);
@@ -726,35 +772,38 @@ export class Duel {
     arena.statusGate = gate;
   }
 
-  /** The partner released a basic attack at the boss: only the look. */
-  partnerAttack() {
-    if (this.foe && !this.over) this.partner?.attacker.releaseNow(this.foe);
+  /** A partner released a basic attack at the boss: only the look. */
+  partnerAttack(side: number) {
+    const p = this.party.get(side);
+    if (this.foe && !this.over && p && !p.lite) p.attacker.releaseNow(this.foe);
   }
 
   /** A two-kit partner brought in its other half. */
-  partnerForm(alt: boolean) {
-    this.partner?.useForm(alt);
+  partnerForm(side: number, alt: boolean) {
+    this.party.get(side)?.useForm(alt);
   }
 
-  /** The partner's HP, from its own screen. */
-  partnerHp(hp: number, max: number) {
-    if (!this.partner) return;
-    this.partner.hp = hp;
-    this.partner.max = max;
+  /** A partner's HP, from its own screen. */
+  partnerHp(side: number, hp: number, max: number) {
+    const p = this.party.get(side);
+    if (!p) return;
+    p.hp = hp;
+    p.max = max;
   }
 
-  /** A hero fell in a raid for two. This screen's own fall was its own news. */
-  raidDown(side: 0 | 1) {
-    if (this.boss && side !== this.boss.link.side) this.partner?.fall();
+  /** A hero fell in a raid. This screen's own fall was its own news. */
+  raidDown(side: number) {
+    if (this.boss && side !== this.boss.link.side) this.party.get(side)?.fall();
   }
 
   /** A hero got up. If it is this screen's, it can move again. */
-  raidRevived(side: 0 | 1, hp: number, left: number) {
+  raidRevived(side: number, hp: number, left: number) {
     const fight = this.boss, hm = this.host.heroMode, arena = this.host.arena;
     if (!fight) return;
     if (side !== fight.link.side) {
-      this.partner?.rise(hp, left);
-      if (this.partner) arena.say('UP!', '#ffe27a', this.partner.pos, 1.2);
+      const p = this.party.get(side);
+      p?.rise(hp, left);
+      if (p) arena.say('UP!', '#ffe27a', p.pos, 1.2);
       return;
     }
     if (!fight.meDown) return;
@@ -765,19 +814,54 @@ export class Duel {
     arena.say('UP!', '#ffe27a', arena.caster.group.position, 1.2);
   }
 
-  /** The partner left: the boss goes on, and this hero alone. */
-  partnerLeft() {
-    if (!this.partner) return;
-    this.partner.left = true;
-    this.partner.down = true;
-    this.clearPartnerMarks();
-    this.hudSides[1].style.display = 'none';
+  /** A partner left: the boss goes on without it. */
+  partnerLeft(side: number) {
+    const p = this.party.get(side);
+    if (!p) return;
+    p.left = true;
+    p.down = true;
+    this.clearPartnerMarks(side);
+    if (this.party.size === 1) this.hudSides[1].style.display = 'none';
   }
 
-  private clearPartnerMarks() {
-    this.traitFx.plate('partner', null, 0, null);
-    this.traitFx.label('partner', null, 0, null);
-    this.traitFx.ring('partner', null, null);
+  private clearPartnerMarks(side?: number) {
+    for (const s of side === undefined ? [...this.party.keys()] : [side]) {
+      this.traitFx.plate(`partner${s}`, null, 0, null);
+      this.traitFx.label(`partner${s}`, null, 0, null);
+      this.traitFx.ring(`partner${s}`, null, null);
+    }
+  }
+
+  /** The list of a big party on screen: each hero's name and HP, the fallen greyed. */
+  private showParty() {
+    if (!this.partyEl) {
+      this.partyEl = document.createElement('div');
+      this.partyEl.className = 'raid-party';
+      const small = TOUCH || innerWidth < 760;
+      this.partyEl.style.cssText = `position:fixed;z-index:6;pointer-events:none;left:${small ? 'auto' : '12px'};right:${small ? '6px' : 'auto'};` +
+        `top:calc(${small ? 150 : 150}px + env(safe-area-inset-top, 0px));display:flex;flex-direction:column;gap:2px;font:600 ${small ? 9 : 11}px ui-sans-serif,system-ui;color:#e9e4d6;`;
+      document.body.append(this.partyEl);
+    }
+    this.partyEl.style.display = '';
+    this.partyWait = 0;
+  }
+
+  /** The list's rows: the nearest first; on a phone at most 8, then how many more. */
+  private renderParty() {
+    const el = this.partyEl;
+    if (!el || this.party.size < 2) return;
+    const me = this.host.arena.caster.group.position;
+    const list = [...this.party.values()].filter((p) => !p.left).sort((a, b) => flat(a.pos, me) - flat(b.pos, me));
+    const cap = TOUCH || innerWidth < 760 ? 8 : 14;
+    const rows = list.slice(0, cap).map((p) => {
+      const w = p.down ? 0 : Math.max(0, Math.min(100, (100 * p.hp) / (p.max || 1)));
+      return `<div style="display:flex;align-items:center;gap:5px;opacity:${p.down ? 0.45 : 1}"><span style="width:7px;height:7px;border-radius:50%;background:${p.kit.accent}"></span>` +
+        `<span style="width:${TOUCH ? 62 : 92}px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(p.name)}</span>` +
+        `<span style="width:${TOUCH ? 38 : 56}px;height:5px;border-radius:3px;background:#0009;overflow:hidden"><span style="display:block;height:100%;width:${w}%;background:${p.down ? '#777' : '#6fd88a'}"></span></span></div>`;
+    });
+    if (list.length > cap) rows.push(`<div style="opacity:0.7">+${list.length - cap} more</div>`);
+    const up = list.filter((p) => !p.down).length;
+    el.innerHTML = `<div style="opacity:0.75;margin-bottom:1px">Party: ${up + (this.playerHp > 0 ? 1 : 0)} of ${list.length + 1} up</div>` + rows.join('');
   }
 
   /** A boss that stands between the camera and a hero on this screen lets the hero show through. */
@@ -797,8 +881,9 @@ export class Duel {
       if (t <= 0 || t >= 1) return false;
       return Math.hypot(c.x + dx * t - at.x, c.z + dz * t - at.z) < body.radius + HIDE_PAD && c.y + (HERO_CHEST - c.y) * t < body.height;
     };
-    const p = this.partner;
-    return hides(this.host.arena.caster.group.position) || (!!p && !p.left && hides(p.pos));
+    if (hides(this.host.arena.caster.group.position)) return true;
+    for (const p of this.party.values()) if (!p.left && !p.lite && hides(p.pos)) return true;
+    return false;
   }
 
   /** The tag team's one on the rim: it looks at the middle, and at nothing else. */
@@ -806,25 +891,45 @@ export class Duel {
     if (this.rimFigure && this.bossDef?.forms) this.rimFigure.follow(dt, this.rimAt, Math.atan2(RING.x - this.rimAt.x, RING.z - this.rimAt.z), {});
   }
 
-  /** The partner's bars and name over its head, and whether this hero is getting it up. */
+  /** The partners' bars and names over their heads, and whether this hero is getting one up. */
   private partnerStep(dt: number, cam: THREE.Camera) {
-    const p = this.partner, fight = this.boss, arena = this.host.arena;
-    if (!p || !fight) return;
-    p.update(dt);
-    if (p.left) return;
-    const shown = p.down ? null : p.pos;
-    const y = plateHeight(p.enemy);
-    const top = this.traitFx.plate('partner', shown, y, p.down ? null : { hp: p.hp, max: p.max, mine: true, shield: 0, chunks: p.kit.hpChunks ?? 0, meter: null }, cam);
-    this.traitFx.label('partner', p.pos, top + 0.4, p.down ? (p.revivesLeft > 0 ? { text: `${p.name}: stand here`, color: '#ffe27a' } : { text: p.name, color: '#a8a0a0' }) : { text: p.name, color: '#a8e0b0' });
-    this.traitFx.ring('partner', shown, { radius: 0.9, color: p.kit.accent, opacity: 0.55 });
-    if (!p.down || p.revivesLeft <= 0) return;
+    const fight = this.boss, arena = this.host.arena;
+    if (!fight || !this.party.size) return;
     const me = arena.caster.group.position;
-    // Hits don't stop it, casting does.
-    const near = !fight.meDown && flat(me, p.pos) <= REVIVE_REACH && !this.host.heroMode.isRooted;
-    p.revive = near ? p.revive + dt : Math.max(0, p.revive - dt);
-    if (p.revive >= REVIVE_TIME) {
-      p.revive = 0;
-      fight.link.revive();
+    // A big party: the nearest few in full, the rest as light stand-ins (pipeline/designs/raid-party.md), looked at twice a second.
+    if ((this.liteWait -= dt) <= 0) {
+      this.liteWait = 0.5;
+      const full = TOUCH ? PARTY_FULL_PHONE : PARTY_FULL;
+      const near = [...this.party.values()].filter((p) => !p.left).sort((a, b) => flat(a.pos, me) - flat(b.pos, me));
+      near.forEach((p, i) => p.setLite(i >= full));
+    }
+    if (this.partyEl && (this.partyWait -= dt) <= 0) {
+      this.partyWait = 0.25;
+      this.renderParty();
+    }
+    let reviving = false;
+    for (const [side, p] of this.party) {
+      p.update(dt);
+      if (p.left) continue;
+      const key = `partner${side}`, shown = p.down || p.lite ? null : p.pos;
+      const y = plateHeight(p.enemy);
+      const top = this.traitFx.plate(key, shown, y, shown ? { hp: p.hp, max: p.max, mine: true, shield: 0, chunks: p.kit.hpChunks ?? 0, meter: null } : null, cam);
+      // In a big party a stand-in's name shows only when it is down: a fallen hero must be found.
+      const label = p.down ? (p.revivesLeft > 0 ? { text: `${p.name}: stand here`, color: '#ffe27a' } : { text: p.name, color: '#a8a0a0' }) : p.lite ? null : { text: p.name, color: '#a8e0b0' };
+      this.traitFx.label(key, label ? p.pos : null, p.lite ? 1.9 : top + 0.4, label);
+      this.traitFx.ring(key, shown, { radius: 0.9, color: p.kit.accent, opacity: 0.55 });
+      if (!p.down || p.revivesLeft <= 0 || reviving) {
+        if (!p.down) p.revive = 0;
+        continue;
+      }
+      // Hits don't stop it, casting does. One at a time.
+      const near = !fight.meDown && flat(me, p.pos) <= REVIVE_REACH && !this.host.heroMode.isRooted;
+      p.revive = near ? p.revive + dt : Math.max(0, p.revive - dt);
+      if (near) reviving = true;
+      if (p.revive >= REVIVE_TIME) {
+        p.revive = 0;
+        fight.link.revive(side);
+      }
     }
   }
 
@@ -974,9 +1079,9 @@ export class Duel {
       me: () => arena.caster.group.position,
       down: () => this.playerHp <= 0,
       heroes: () => {
-        const me = arena.caster.group.position, side = this.boss?.link.side ?? 0, p = this.partner;
+        const me = arena.caster.group.position, side = this.boss?.link.side ?? 0;
         const list = [{ side, x: me.x, z: me.z, down: this.playerHp <= 0 }];
-        if (p && !p.left) list.push({ side: (1 - side) as 0 | 1, x: p.pos.x, z: p.pos.z, down: p.down });
+        for (const [s, p] of this.party) if (!p.left) list.push({ side: s, x: p.pos.x, z: p.pos.z, down: p.down });
         return list;
       },
       hitMe: (h) => {
@@ -997,8 +1102,8 @@ export class Duel {
         this.damagePlayer(this.resolve('opponent', arena.caster, opts, mods, 'spell', h.big ? 3 : 0, ++this.oppCastSeq));
       },
       fallenPartner: () => {
-        const p = this.partner;
-        return p && p.down && !p.left && p.revivesLeft > 0 ? { x: p.pos.x, z: p.pos.z } : null;
+        const p = this.fallenNear();
+        return p ? { x: p.pos.x, z: p.pos.z } : null;
       },
       units: () => arena.summons.alive('hero').map((u) => ({ figure: u.figure, pos: u.pos })),
       hitUnit: (figure, damage) => {
@@ -1096,11 +1201,12 @@ export class Duel {
       this.zoomBefore = null;
     }
     arena.heroBolt = null;
-    this.partner?.dispose();
-    this.partner = null;
+    this.clearPartnerMarks();
+    for (const p of this.party.values()) p.dispose();
+    this.party.clear();
+    if (this.partyEl) this.partyEl.style.display = 'none';
     this.rimFigure?.setModel(undefined);
     this.rimFigure?.group.removeFromParent();
-    this.clearPartnerMarks();
     arena.pinned = null;
     arena.foeFloor = 0;
     arena.onFoeDamage = null;
@@ -1542,7 +1648,7 @@ export class Duel {
   async whenReady(maxMs = 12000) {
     const end = performance.now() + maxMs;
     const figures = async () => {
-      while (performance.now() < end && !(this.host.heroMode.figureLoaded && this.figure.loaded && (this.partner?.figure.loaded ?? true) && (this.rimFigure?.loaded ?? true))) await new Promise((ok) => setTimeout(ok, 60));
+      while (performance.now() < end && !(this.host.heroMode.figureLoaded && this.figure.loaded && [...this.party.values()].every((p) => p.lite || p.figure.loaded) && (this.rimFigure?.loaded ?? true))) await new Promise((ok) => setTimeout(ok, 60));
     };
     await figures();
     await Promise.race([this.host.warmUp?.() ?? Promise.resolve(), new Promise((ok) => setTimeout(ok, Math.max(0, end - performance.now())))]);
@@ -2179,7 +2285,7 @@ export class Duel {
       return;
     }
     // A boss's gold zone: go and stand in it, against every habit. A fallen partner comes next: stand by it, and cast nothing.
-    const fallen = this.partner?.down && !this.partner.left && this.partner.revivesLeft > 0 ? this.partner.pos : null;
+    const fallen = this.fallenNear()?.pos ?? null;
     const script = this.boss?.script;
     // Hidden from a killing hit still to come (behind a pillar from Ash's Charge): it stays there, and casts nothing, until it has passed.
     if (script?.mustHide && script.hidden(me.x, me.z)) return;

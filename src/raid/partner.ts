@@ -15,6 +15,14 @@ const GAP = 120;
 /** A jump of more than this in one report is not a walk: it snaps. */
 const JUMP = 4;
 
+/**
+ * A far partner in a big party (pipeline/designs/raid-party.md): only the nearest are drawn in full, the rest as this light stand-in, a
+ * slim figure of the hero's colour, because drawing 39 heroes in full costs a phone most of its frame.
+ */
+const LITE_BODY = new THREE.CylinderGeometry(0.16, 0.3, 1.2, 7).translate(0, 0.6, 0);
+const LITE_HEAD = new THREE.IcosahedronGeometry(0.2, 0).translate(0, 1.42, 0);
+const LITE_RING = new THREE.RingGeometry(0.45, 0.55, 24).rotateX(-Math.PI / 2).translate(0, 0.04, 0);
+
 /** How close (m) and how long (s) a hero stands by a fallen partner to get them up. */
 export const REVIVE_REACH = 2.5;
 export const REVIVE_TIME = 3;
@@ -82,6 +90,11 @@ export class Partner {
   private downT = 0;
   private light: LightPillar;
   private ring: THREE.Mesh;
+  /** Drawn as the light stand-in (far away in a big party). */
+  lite = false;
+  private liteGroup = new THREE.Group();
+  private liteMat: THREE.MeshStandardMaterial;
+  private liteRingMat: THREE.MeshBasicMaterial;
 
   constructor(public kit: HeroKit, readonly name: string, at: THREE.Vector3, arena: Arena, foe: () => Enemy | null) {
     this.max = this.hp = kit.maxHp ?? 600;
@@ -107,7 +120,16 @@ export class Partner {
     );
     this.ring.visible = false;
     this.ring.renderOrder = 2;
-    this.group.add(this.figure.group, this.attackFx.group, this.light.mesh, this.ring);
+    this.liteMat = new THREE.MeshStandardMaterial({ color: kit.accent, roughness: 0.55, metalness: 0.2, emissive: kit.accent, emissiveIntensity: 0.25, flatShading: true });
+    this.liteRingMat = new THREE.MeshBasicMaterial({ color: kit.accent, transparent: true, opacity: 0.6, depthWrite: false });
+    this.liteGroup.add(new THREE.Mesh(LITE_BODY, this.liteMat), new THREE.Mesh(LITE_HEAD, this.liteMat), new THREE.Mesh(LITE_RING, this.liteRingMat));
+    this.liteGroup.visible = false;
+    this.group.add(this.figure.group, this.attackFx.group, this.light.mesh, this.ring, this.liteGroup);
+  }
+
+  /** Full figure or light stand-in. */
+  setLite(on: boolean) {
+    this.lite = on;
   }
 
   get pos() {
@@ -150,12 +172,17 @@ export class Partner {
     }
     this.attacker.update(dt);
     this.attackFx.update(dt);
-    this.figure.group.visible = !this.left;
-    this.figure.follow(dt, this.pos, this.enemy.group.rotation.y, { attack: this.attacker.motion });
+    this.figure.group.visible = !this.left && !this.lite;
+    this.liteGroup.visible = !this.left && this.lite;
+    if (this.lite) {
+      // The stand-in: where it is, lying down when fallen; no animation to play.
+      this.liteGroup.position.copy(this.pos);
+      this.liteGroup.rotation.set(this.down ? Math.PI / 2 : 0, this.enemy.group.rotation.y, 0);
+    } else this.figure.follow(dt, this.pos, this.enemy.group.rotation.y, { attack: this.attacker.motion });
     const can = this.down && !this.left && this.revivesLeft > 0;
     if (this.down) {
       this.downT += dt;
-      this.figure.fall(Math.min(1, this.downT / 0.6));
+      if (!this.lite) this.figure.fall(Math.min(1, this.downT / 0.6));
     }
     this.ring.visible = can;
     this.light.opacity = can ? 0.25 + 0.5 * (this.revive / REVIVE_TIME) : 0;
@@ -172,6 +199,8 @@ export class Partner {
     this.light.dispose();
     this.ring.geometry.dispose();
     (this.ring.material as THREE.Material).dispose();
+    this.liteMat.dispose();
+    this.liteRingMat.dispose();
     this.group.removeFromParent();
   }
 }

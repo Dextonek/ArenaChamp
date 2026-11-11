@@ -18,7 +18,8 @@ import type { Obstacle } from '../obstacles';
  * 4. Everything both screens must agree on goes through the `RaidLink`.
  */
 
-export type RaidSide = 0 | 1;
+/** Which hero of a raid: 0 and 1 for two, up to 39 in a party of 40. */
+export type RaidSide = number;
 
 /** One step of a move, as the brain sends it. Plain JSON: online it goes through the hub to the other screen as it is. */
 export interface BossCast {
@@ -445,7 +446,8 @@ export interface RaidLink {
   /** This screen's hero's HP now, for the partner's bar. */
   heroHp(hp: number): void;
   /** This screen's hero got the fallen partner up. */
-  revive(): void;
+  /** This screen's hero stood by the fallen hero of `side` long enough. */
+  revive(side: RaidSide): void;
   /** This screen's hero slowed or debuffed the boss: the other screen gets it too. */
   bossDebuff(kind: BossDebuff, amount: number, seconds: number): void;
   /** A two-kit hero on this screen brought in its other half. */

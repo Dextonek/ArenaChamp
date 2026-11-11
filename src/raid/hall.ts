@@ -74,6 +74,8 @@ export interface HallVisit {
   hero: string;
   name?: string;
   partner?: { kit: HeroKit; name: string };
+  /** A party of more than two: every other hero by its side. */
+  party?: { side: number; kit: HeroKit; name: string }[];
   side: RaidSide;
   solo: boolean;
   /** The boss beyond the gate. */
@@ -145,7 +147,7 @@ export class RaidHall {
     api.setHeroMode(true);
     api.duel.holdStart = false;
     const link = new HallLink(v.solo, v.side);
-    api.duel.startBoss({ def: this.def(v), link, seed: v.seed, mode: 'play', name: v.name, partner: v.partner });
+    api.duel.startBoss({ def: this.def(v), link, seed: v.seed, mode: 'play', name: v.name, partner: v.partner, party: v.party });
     this.showCards(v);
     this.root.style.display = '';
     const cast: BossCast = { id: 1, move: 'hall', step: 0, x: RING.x, z: RING.z, fx: RING.x, fz: RING.z, dir: 0, seed: 1, target: v.side };
