@@ -32,6 +32,22 @@
    "src/spells/targeted/icicle.ts": "fe0e3956c1e0b4e7",
    "src/spells/targeted/rimeArmour.ts": "ede1e990240e4ba0",
    "src/spells/targeted/wintersShatter.ts": "7d662acc8ac35df7"
+  },
+  "Kaia": {
+   "src/kits/storm.ts": "bf9567f4043158c8",
+   "src/traits/storm.ts": "70b18950e2c9c149",
+   "src/spells/targeted/polarity.ts": "3487b356135c1b2e",
+   "src/spells/targeted/skyStrike.ts": "95561b78214288c7",
+   "src/spells/targeted/supercellStorm.ts": "1969c7567b12607e",
+   "src/spells/targeted/thunderRod.ts": "c907db58a6811cae"
+  },
+  "Auriel": {
+   "src/kits/dawn.ts": "a2b7d862737e6440",
+   "src/traits/dawn.ts": "24a0f4c7ceeeef13",
+   "src/spells/targeted/dawnward.ts": "913479937a880248",
+   "src/spells/targeted/firstLight.ts": "63f4c6b0fdbd6927",
+   "src/spells/targeted/oathbrand.ts": "cdac0c7eb3306022",
+   "src/spells/targeted/sunrise.ts": "ee9f7b13ad62967f"
   }
  }
 }

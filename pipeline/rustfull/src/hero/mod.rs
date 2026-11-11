@@ -13,13 +13,17 @@ use crate::geom::V2;
 use crate::zone::Zone;
 use std::any::Any;
 
+pub mod dawn;
 pub mod forge;
 pub mod frost;
+pub mod storm;
 
 /// Every hero that can fight here.
 pub const HEROES: &[&Hero] = &[
     &forge::HERO,
     &frost::HERO,
+    &storm::HERO,
+    &dawn::HERO,
 ];
 
 /// A spell's effect as far as it makes hits (`Effect` in the game): a small timeline. The game keeps one per spell
