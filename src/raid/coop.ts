@@ -103,7 +103,7 @@ export class RaidController {
     net.on('peer_move', (m) => { if (this.active) api.duel.partnerMove(who(m.side), m.x, m.z, m.yaw, m.ts); });
     net.on('party_moves', (m) => {
       if (!this.active) return;
-      for (const [side, x, z, yaw, ts] of m.list) if (side !== this.side) api.duel.partnerMove(side, x, z, yaw, ts);
+      for (const [side, x, z, yaw, ts] of m.list) if (side !== this.side) api.duel.partnerMove(side, x, z, yaw, ts ?? undefined);
     });
     net.on('peer_cast', (m) => { if (this.active) api.duel.partnerCast(who(m.side), m); });
     net.on('peer_attack', (m) => { if (this.active) api.duel.partnerAttack(who(m.side)); });
