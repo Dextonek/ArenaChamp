@@ -33,7 +33,7 @@ def build():
     R.mat("ash", "#eadcc4", rough=0.65, double=True)
     R.mat("gold", "#e0a935", rough=0.28, metal=0.85)
     R.mat("teal", "#2fb8a8", rough=0.25)
-    R.mat("flame", "#ffb54a", rough=0.4, emit="#ff8a2a", strength=0.7, double=True)
+    R.mat("flame", "#ffb54a", rough=0.4, emit="#ff8a2a", strength=0.3, double=True)  # 0.7 bloomed her into one orange blob under the game camera
     hair = P.hair(R, "Hair_Long", "#6e1c12")
     cc, rxc, ryc = R.ring(z["chest"])
 
