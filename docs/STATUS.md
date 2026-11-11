@@ -22,7 +22,7 @@ a raid for up to 40 players (`pipeline/designs/raid-party.md`: difficulty in ban
 The look the user agreed (`docs/bosses/heart_sheet.jpg`) is now a fight: `src/raid/heart.ts`, its body `src/raid/bodies/heart.ts`, its
 room `src/arenas/sunkenHeart.ts`. A tier is now the Warden, Ash and Ember, then the Heart (`RAID_RUN`, `PROTOCOL` 7); its gate stands at
 the north centre of the hall. Two mechanics: Lock a ring and Shade the heart; and its own, Hold Still (stand still on each beat; built
-2026-11-11 on branch `t3/fb84f677`, pictures `docs/bosses/heart-holdstill-*.jpg`, not yet played by a person). How it works: `docs/architecture/raid.md`; what was built and
+2026-11-11 on branch `t3/heart-hold-still-mechanic`, pictures `docs/bosses/heart-holdstill-*.jpg`, not yet played by a person). How it works: `docs/architecture/raid.md`; what was built and
 measured: `pipeline/designs/raid-heart.md`; pictures: `docs/bosses/heart-fight-*.jpg`, `heart-hall-gate.jpg`. Tier 1, the autopilot
 alone, 10 heroes x 4: the Heart 14/40, Ash and Ember 11/40. `_raidHeart()` 38 rows pass (71 with Hold Still, which left the clears
 where they were: 20 of 80 before and after, with another ten heroes).
