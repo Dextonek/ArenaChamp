@@ -7,6 +7,8 @@ import type { ArenaDef, ArenaStage } from './types';
 
 /** How far the walkable floor reaches from the heart (m). */
 export const HEART_R = RAID_BOSSES.heart.ring;
+/** Where the floor's rings of plates meet, from the heart out (m): the cracks its beat runs along (Hold Still, src/raid/heart.ts). */
+export const HEART_JOINTS = [2.2, 3.6, 5.2, 6.9, 8.6, 10.3, 12];
 
 const GOLD = 0xc9a24a;
 /** The crust's colours: cooled gold gone dark bronze, and the basalt of the lip. */
@@ -48,7 +50,7 @@ function crustFloor() {
   const rnd = seeded(1203);
   // The plates: rings of them round the middle, each a little irregular, the same in both drawings.
   const plates: { pts: [number, number][]; tone: number }[] = [];
-  const rings = [[2.2, 3.6, 9], [3.6, 5.2, 13], [5.2, 6.9, 17], [6.9, 8.6, 21], [8.6, 10.3, 25], [10.3, 12, 29]] as const;
+  const rings = HEART_JOINTS.slice(0, -1).map((r0, i) => [r0, HEART_JOINTS[i + 1], 9 + i * 4] as const);
   for (const [r0, r1, n] of rings) {
     const turn = rnd() * Math.PI * 2;
     for (let k = 0; k < n; k++) {

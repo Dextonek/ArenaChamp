@@ -82,6 +82,8 @@ export class BossBrain {
     this.seq = firstId;
     this.pace = raidTierFactor(tier);
     this.extra = (def.extra ?? []).slice(0, tier - 1);
+    // The first phase's move by the clock waits its `first` too (a later phase's is set as the phase begins).
+    this.timedWait = def.phases[0].timed?.first ?? 0;
     if (def.forms) {
       this.rim = def.rimSpots?.[0] ?? null;
       this.rimWait = def.phases[0].rimEvery?.[0] ?? 8;

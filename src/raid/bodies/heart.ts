@@ -56,6 +56,9 @@ export const HEART_LIVE = {
   /** The Heartbeat gathering, 0..1, and seconds since it last struck (large when it hasn't). */
   beat: 0,
   struck: 99,
+  /** Hold Still: how full it is before its next beat, 0..1, and seconds since the last one (large when none). */
+  fill: 0,
+  clench: 99,
 };
 
 /** Clears what the moves left: a new fight starts with the rings up. */
@@ -63,6 +66,8 @@ export function resetHeartLive() {
   for (const r of HEART_LIVE.rings) Object.assign(r, { down: 0, yaw: 0, lit: 1 });
   HEART_LIVE.beat = 0;
   HEART_LIVE.struck = 99;
+  HEART_LIVE.fill = 0;
+  HEART_LIVE.clench = 99;
 }
 
 interface Mem { phase: number; kneel: number; spin: number[]; crown: number; beat: number; eyes: THREE.MeshStandardMaterial[] }
@@ -128,13 +133,16 @@ export const heartLook: BodyLook = (s, p) => {
   m.beat += dt * (1.2 + gather * 6);
   const thump = gather > 0 ? Math.pow(Math.max(0, Math.sin(m.beat * Math.PI)), 6) * (0.3 + 0.7 * gather) : 0;
   const strike = Math.max(0, 1 - HEART_LIVE.struck / 0.6);
+  // Hold Still: it fills as the floor's light runs in to it, and on the beat it clenches hard and lets go.
+  const fill = ease(HEART_LIVE.fill), since = HEART_LIVE.clench;
+  const clench = since < 0.07 ? since / 0.07 : Math.max(0, 1 - (since - 0.07) / 0.45);
 
   // Idle: it floats and breathes, the blades and the shards a little out of step.
   const bob = Math.sin(t * 1.1) * 0.12 * (1 - kn * 0.8);
-  let coreY = bob, leanX = Math.sin(t * 0.7) * 0.02, leanZ = Math.sin(t * 0.55) * 0.015, coreYaw = 0, coreSize = 1 + thump * 0.06 + strike * 0.1;
+  let coreY = bob, leanX = Math.sin(t * 0.7) * 0.02, leanZ = Math.sin(t * 0.55) * 0.015, coreYaw = 0, coreSize = 1 + thump * 0.06 + strike * 0.1 + fill * 0.07 - clench * 0.16;
   let bx = 0, by = Math.sin(t * 1.1 + 1.3) * 0.15, bz = Math.sin(t * 0.8) * 0.08, bladeTilt = 0;
   let coreGlow = lerp(GLOW_CORE[0], GLOW_CORE[1], burn) + (GLOW_CORE[2] - GLOW_CORE[1]) * noon;
-  coreGlow *= 1 + Math.sin(t * 1.9) * 0.06 + thump * 0.9 + strike * 1.2;
+  coreGlow *= 1 + Math.sin(t * 1.9) * 0.06 + thump * 0.9 + strike * 1.2 + fill * 0.35 + clench * 1.1;
   let maskGlow = 1, ringGlow = 1 + burn * 0.3, crownSpin = 0.05 + noon * 0.25, shardsOut = 1 + noon * 0.35, shardsY = 0;
 
   const live = !s.kneeling && fall <= 0 ? s.acts : [];

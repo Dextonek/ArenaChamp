@@ -165,6 +165,9 @@ const ADD_LIFE = 120; // a boss's add lasts at most this long (s); its stage rem
 const IMMUNE_SAY = 0.7; // how often IMMUNE shows over a boss that can't be hurt (s)
 const COVER_FALL = 0.55; // how long cover a boss breaks takes to fall (s): Ash's pillars
 const CLEAR_REACH = 7.2; // how far an AI looks for a spot out of a boss's zones (m)
+const STILL_LEAD = 0.36; // an AI stops walking this long before a beat that burns whoever walks: the beat's own window and a few frames (s)
+const STILL_DASH = 0.9; // and starts no dash this close to one (s)
+const WALK_LOG = 1; // how far back the hero's own walk is kept, for such a beat (s)
 const HIDE_REACH = 14.4; // and for one a killing hit can't reach (behind a pillar from Ash's Charge): wherever it is
 const HIDE_PAD = 0.5; // a boss's arms reach past its body: it counts as this much wider when it may hide a hero (m)
 const HERO_CHEST = 1.2; // the height a hero is seen at, for what may hide it (m)
@@ -1028,7 +1031,7 @@ export class Duel {
       poseRim: (style, seconds, big) => this.rimFigure?.cast(style, seconds, big),
       tag: (form, x, z, rx, rz) => this.bossTag(form, x, z, rx, rz),
       dash: (x, z, seconds) => { arena.moveFigure(foe, new THREE.Vector3(x, 0, z), seconds); },
-      carryMe: (dx, dz) => arena.carryFigure(arena.caster, new THREE.Vector3(dx, 0, dz)),
+      carryMe: (dx, dz) => this.shove(() => arena.carryFigure(arena.caster, new THREE.Vector3(dx, 0, dz))),
       lateNow: () => { this.shiftOffset = Math.max(this.shiftOffset, this.lateAt - this.hazardClock); },
       delayLate: (seconds) => { this.shiftOffset -= seconds; },
       bodyPhase: (i) => {
@@ -1052,7 +1055,9 @@ export class Duel {
         arena.say('CLOSE CALL', '#ffcf4a', arena.caster.group.position, 1.2);
       },
       addStone: (x, z, radius, seconds) => {
-        const o = arena.addObstacle({ ...pillar(x, z, radius), height: 2.4 }, seconds);
+        // A stone raised under the hero pushes it out: no walk of its own.
+        let o!: Obstacle;
+        this.shove(() => { o = arena.addObstacle({ ...pillar(x, z, radius), height: 2.4 }, seconds); });
         this.stones.add(o);
         return o;
       },
@@ -1082,6 +1087,11 @@ export class Duel {
       phaseShield: () => this.freshShield(),
       me: () => arena.caster.group.position,
       down: () => this.playerHp <= 0,
+      walked: (seconds) => {
+        let d = 0;
+        for (const w of this.walkLog) if (w.t > this.walkClock - seconds) d += w.d;
+        return d;
+      },
       heroes: () => {
         const me = arena.caster.group.position, side = this.boss?.link.side ?? 0;
         const list = [{ side, x: me.x, z: me.z, down: this.playerHp <= 0 }];
@@ -1184,6 +1194,32 @@ export class Duel {
   }
   /** Fallen stones standing as cover: a boss's ray breaks on them. */
   private stones = new WeakSet<Obstacle>();
+
+  /**
+   * How far this screen's hero went each frame by its own walk or dash, for a boss's beat that burns whoever walks
+   * (`BossWorld.walked`). What a blow, a pull, a carry or a stone raised under it moved it (`shove`) is taken off first.
+   */
+  private walkLog: { t: number; d: number }[] = [];
+  private walkFrom = new THREE.Vector3();
+  private walkClock = 0;
+  private shoved = new THREE.Vector3();
+
+  /** Runs `fn`, and keeps what it moved this screen's hero out of the hero's own walk. */
+  private shove(fn: () => void) {
+    const me = this.host.arena.caster.group.position, x = me.x, z = me.z;
+    fn();
+    this.shoved.x += me.x - x;
+    this.shoved.z += me.z - z;
+  }
+
+  /** One frame of the hero's own walk, before the boss's zones land. */
+  private logWalk(dt: number, me: THREE.Vector3) {
+    this.walkClock += dt;
+    this.walkLog.push({ t: this.walkClock, d: Math.hypot(me.x - this.walkFrom.x - this.shoved.x, me.z - this.walkFrom.z - this.shoved.z) });
+    while (this.walkLog.length && this.walkLog[0].t <= this.walkClock - WALK_LOG) this.walkLog.shift();
+    this.walkFrom.copy(me);
+    this.shoved.set(0, 0, 0);
+  }
 
   /** The camera's distance before a boss fight moved it. */
   private zoomBefore: number | null = null;
@@ -1979,6 +2015,7 @@ export class Duel {
     // A boss fight: the link says when it is over, not the HP on this screen.
     if (this.boss) {
       const fight = this.boss, live = !this.waiting && this.countdown < 0;
+      this.logWalk(dt, me);
       fight.update(dt, live, foe ? arena.hpOf(foe) : 0);
       this.host.heroMode.cooldownRate = fight.upgrades?.cooldownRate(fight.open) ?? 1;
       this.partnerStep(dt, cam);
@@ -2268,22 +2305,25 @@ export class Duel {
     // The autopilot obeys the player's statuses like the opponent's AI does.
     const st = hm.status;
     if (hm.isRooted || this.playerThink > 0 || st.stunned || this.host.arena.isDashing(this.host.arena.caster)) return;
+    // A beat that burns whoever walks (the Heart's Hold Still): it stands for it as if it could not move, and goes on casting.
+    const beat = this.boss?.script.stillIn ?? Infinity;
+    const held = st.cannotMove || beat < STILL_LEAD;
     const kit = hm.currentKit;
     const guard = this.guards(this.host.arena.caster, me, this.oppAttack.winding && this.oppAttack.inRange(at, me));
     const guarding = !st.cannotCast && this.guarded(kit, guard, (i) => hm.ready(i));
-    const side = st.cannotMove || guarding ? null : this.dodgeBolt(this.playerDodge, this.host.arena.caster, me);
+    const side = held || guarding ? null : this.dodgeBolt(this.playerDodge, this.host.arena.caster, me);
     if (side) {
       this.host.arena.walk(side.multiplyScalar(this.aiSpeed(hm.currentKit, CPU_BALANCE) * st.speedMul * dt));
       return;
     }
     // A spot that ends the danger it stands in (a shard to the altar against Noon) is worth walking through that danger for.
-    const beats = st.cannotMove ? null : this.boss?.script.objectiveGoal(me.x, me.z);
+    const beats = held ? null : this.boss?.script.objectiveGoal(me.x, me.z);
     if (beats?.beats) {
       const step = this.goalStep(this.playerAi, me, beats);
       this.host.arena.walk(step.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
       return;
     }
-    const clear = st.cannotMove ? null : this.hazardStep(this.host.arena.caster, me, at);
+    const clear = held ? null : this.hazardStep(this.host.arena.caster, me, at);
     if (clear) {
       this.host.arena.walk(clear.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt));
       return;
@@ -2296,7 +2336,7 @@ export class Duel {
     // A spot to take waits while something is about to land on it: a person steps back in once it has.
     const objective = script?.objectiveGoal(me.x, me.z);
     const safe = objective && !script!.danger(objective.x, objective.z, BOSS_LOOK) ? objective : null;
-    const stand = st.cannotMove ? null : safe ?? script?.standGoal(me.x, me.z) ?? fallen;
+    const stand = held ? null : safe ?? script?.standGoal(me.x, me.z) ?? fallen;
     if (stand) {
       if (Math.hypot(stand.x - me.x, stand.z - me.z) > 0.8) {
         const step = this.goalStep(this.playerAi, me, stand);
@@ -2311,14 +2351,15 @@ export class Duel {
       const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
       const ward = this.ward(this.oppRt);
       const waits = (i: number) => (!!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait) || !!this.heroRt?.trait?.aiHold?.(this.heroRt, i, flat(me, at));
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i) || waits(i);
-      const held = !!theirs && (theirs.stunned || theirs.has('root'));
+      // A dash is a walk: none so close to a beat that it would still be going.
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || !hm.ready(i) || waits(i) || (beat < STILL_DASH && !!kit.spells[i].dash);
+      const foeHeld = !!theirs && (theirs.stunned || theirs.has('root'));
       const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
       // The hero first; a unit only when nothing can be cast at the hero and a unit is within 2.5 m.
-      let pick = this.pickSpell(kit, cooling, flat(me, at), foeHp, sees, held, flat(me, at), full, this.playerHp / this.playerMax, guard);
+      let pick = this.pickSpell(kit, cooling, flat(me, at), foeHp, sees, foeHeld, flat(me, at), full, this.playerHp / this.playerMax, guard);
       let unit: ReturnType<Duel['blocker']> = null;
       if (!pick && (unit = this.blocker('opponent', me, at))) {
-        pick = this.pickSpell(kit, cooling, flat(me, unit.pos), foeHp, this.host.arena.lineOfSight(me, unit.pos), held, flat(me, at), full, this.playerHp / this.playerMax, guard);
+        pick = this.pickSpell(kit, cooling, flat(me, unit.pos), foeHp, this.host.arena.lineOfSight(me, unit.pos), foeHeld, flat(me, at), full, this.playerHp / this.playerMax, guard);
       }
       const tpos = unit ? unit.pos : at;
       if (pick) {
@@ -2333,7 +2374,7 @@ export class Duel {
     }
     // Basic attack: nothing to cast, the opponent in reach. Stands still through the wind-up.
     if (hm.attackWinding || hm.autoAttack(foe)) return;
-    if (st.cannotMove) return;
+    if (held) return;
     const goal = this.reachableGoal(this.playerAi, me, (this.heroRt && this.heroRt.trait?.aiGoal?.(this.heroRt)) ?? this.oppRt?.trait?.enemyGoal?.(this.oppRt), dt);
     const move = this.offZones(me, goal ? this.goalStep(this.playerAi, me, goal) : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange));
     if (move.lengthSq() > 0) this.host.arena.walk(move.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
@@ -2720,15 +2761,19 @@ export class Duel {
       const from = opts.from ?? this.foe?.group.position ?? me;
       const away = new THREE.Vector3(me.x - from.x, 0, me.z - from.z);
       if (away.lengthSq() < 1e-4) away.set(0, 0, 1);
-      me.addScaledVector(away.normalize(), knock * 0.18);
-      arena.keepInside(me);
+      this.shove(() => {
+        me.addScaledVector(away.normalize(), knock * 0.18);
+        arena.keepInside(me);
+      });
     }
     if (opts.pull && opts.pull > 0) {
       const from = opts.from ?? this.foe?.group.position ?? me;
       const to = new THREE.Vector3(from.x - me.x, 0, from.z - me.z);
       const m = Math.min(opts.pull, 4, Math.max(0, to.length() - 1));
-      if (m > 0) me.addScaledVector(to.normalize(), m);
-      arena.keepInside(me);
+      this.shove(() => {
+        if (m > 0) me.addScaledVector(to.normalize(), m);
+        arena.keepInside(me);
+      });
     }
     if (opts.debuff) this.host.arena.applyBuff(arena.caster, opts.debuff.kind, opts.debuff.amount, opts.debuff.seconds);
     // A status on this hero is enforced here; the other screen only shows it.
