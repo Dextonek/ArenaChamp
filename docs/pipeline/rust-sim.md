@@ -75,6 +75,27 @@ Seven of 40 heroes differ by more than chance explains; over all fights the play
 - `python pipeline/sim/sim.py hero <Name>` measures the player's side only (as `kit-balance.js` always did). The
   40-60% target was set that way, so it stays, but a hero should also be looked at with `--sides both`.
 
+## The fight loop's order, as read so far
+
+One frame of a simulated fight (1/60 s), in the game's order. The port must keep it.
+
+`runtime.ts` `step(dt)`:
+1. the spell effects that are playing (`effect.update`): hits, moves and bolts are made in here
+2. the danger zones' clock (`telegraphs.update`)
+3. `arena.update(dt)`: figures, statuses, bolts, units
+4. `heroMode.update(dt)`: the player's hero: walking, its cooldowns, its basic attack
+5. `duel.update(dt)`, which is:
+   1. the round clock; the opponent's basic attack (`oppAttack.update`)
+   2. (arena events and stages: out for now)
+   3. if the round is over: return
+   4. the passives, when the fight is live: `heroRt.tick`, `oppRt.tick`, then `oppRt.victimTick`, then `heroRt.victimTick`
+   5. the end: the opponent at 0 HP is a win, checked before the player's 0 HP, which is a loss
+   6. the player's walk speed, smoothed over 0.2 s (the opponent's CPU aims ahead with it)
+   7. the opponent's CPU (`ai`, line 1898), then the autopilot for the player's hero (`pilot`)
+
+Still to read: `ai` and `pilot` in full, `heroMode.update` and its casting, `arena.update` and `arena.hit`,
+`resolve` (how a hit passes through both passives; read once already, lines 1405 to 1445), bolts, the passives' engine.
+
 ## What is out, for now
 
 Arena events and closing stages, Last stand, the Raid and bosses, and anything about two screens (the network). Units,
