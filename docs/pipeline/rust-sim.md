@@ -20,32 +20,33 @@ from the rough model.
 
 ```
 cargo build --release --manifest-path pipeline/rustfull/Cargo.toml
-pipeline\rustfull\target\release\rustfull.exe duel Brannoc Isolde --fights 2000 --arena frost --out pipeline\rustfull\data\rust-pair-frost.json
-python pipeline/rustfull/grade.py pipeline/rustfull/data/pair-frost.json pipeline/rustfull/data/rust-pair-frost.json --notes pipeline/rustfull/notes-slice.json --page pipeline/rustfull/data/grade-pair-frost.html
+pipeline\rustfull\target\release\rustfull.exe duel Brannoc Isolde --fights 10000 --arena frost --page-fights 225 --out pipeline\rustfull\data\rust-pair-frost.json
+python pipeline/rustfull/grade.py pipeline/rustfull/data/pair-frost-big.json pipeline/rustfull/data/rust-pair-frost.json --notes pipeline/rustfull/notes-slice.json --page docs/balance/rust-slice-2026-11-11.html
 ```
 
 - `duel A B` plays `--fights` fights each way round (the two sides are played by two different computer players) and
   writes them in the record the real simulator keeps with `--keep`. `--trace` writes every cast and hit instead.
+  `--threads N` (default: half the processor's threads); `--page-fights N` (default 250; see the icicle below).
 - `grade.py` lays a Rust file beside a real one and makes the page. `python pipeline/rustfull/guard.py` says whether
   the game changed under a ported hero.
 - It stops with a message, never with a wrong answer, on anything not ported: a hero that is not ported, an arena with
   breakable walls, a spell that dashes, flees, summons or banks.
-- Speed, one processor thread: 50 to 120 fights a second (the real simulator on eight browsers: about 4).
+- Speed: about 300 fights a second on eight threads (the real simulator on eight browsers: 3 to 4).
 
 ## How close it is (2026-11-11)
 
-Brannoc against Isolde, Frost arena, events off: 400 real fights, 4,000 Rust fights.
+Brannoc against Isolde, Frost arena, events off: 1,800 real fights (`data/pair-frost-big.json`), 20,000 Rust fights.
 
 | | real | Rust |
 |---|---:|---:|
-| Brannoc as the opponent wins | 85.0% (±4.9) | 85.0% |
-| Brannoc as the player's hero wins | 34.0% (±6.6) | 30.9% |
-| Isolde as the opponent wins | 66.0% (±6.6) | 69.1% |
-| Isolde as the player's hero wins | 15.0% (±4.9) | 15.0% |
-| Fight length | 27.8 s, 29.4 s | 27.9 s, 29.6 s |
+| Brannoc as the opponent wins | 84.7% (±2.4) | 85.8% |
+| Brannoc as the player's hero wins | 32.1% (±3.1) | 32.5% |
+| Isolde as the opponent wins | 67.9% (±3.1) | 67.5% |
+| Isolde as the player's hero wins | 15.3% (±2.4) | 14.2% |
+| Fight length | 27.8 s, 29.5 s | 27.7 s, 29.5 s |
 
-All four win rates are inside the real run's own noise, and all 54 finer numbers (for each spell and the basic attack:
-casts in 10 s, hits for each cast, damage of a hit, damage a second) are within 5%. Laid frame over frame, a real and a
+All four win rates are inside the real run's own noise, and every finer number (for each spell and the basic attack:
+casts in 10 s, hits for each cast, damage of a hit, damage a second) is within 3%. Laid frame over frame, a real and a
 Rust fight are the same to the centimetre for the first 4 to 9 seconds, until the dice differ. Page:
 `docs/balance/rust-slice-2026-11-11.html`.
 
@@ -56,10 +57,14 @@ down anywhere, were behind it. The port keeps all three, because the aim is to a
 
 1. **Isolde's icicle is timed by two clocks.** `aiHold` (hold the Shatter back while the icicle stands) reads
    `performance.now()`; the recast window reads the round's clock. At the frame both run out they round differently,
-   so about one cast in three the hold lets go one frame early and the CPU casts a Shatter that hits nothing and roots
-   her for half a second. Which way it falls depends on how long the page has been open, so **the real game itself
-   differs from page to page here** (in one probe: 5.0 against 3.1 recasts a fight for the same hero on two sides).
-   A fix in the game would be one line (compare the same clock); it waits on the user.
+   so the hold either lets go one frame early or not. When it does, the CPU casts a Shatter that hits nothing and
+   roots her for half a second, after every icicle thrown over open ground. Which way it falls is not chance: it
+   follows the size of the page's clock, flipping at each power of two of its milliseconds (never from 2.2 to 4.4
+   minutes after the page opened, always from 4.4 to 8.7, never to 17.5, always to 35, ...). So **the real game's
+   Isolde plays differently in different stretches of a session**, and the real simulator's numbers for her depend on
+   how long a run is. Rust keeps a page clock that runs on from fight to fight (`Carry`); `--page-fights` says how
+   many fights a page plays before a fresh one starts (a real run's fights over its browsers). A fix in the game
+   would be one line (compare the same clock); it waits on the user.
 2. **The opponent flickers.** A pushed opponent stands at `home + offset`. `moveFoe` calls `setHome`, which puts the
    figure at `home` alone until the arena's next frame. So on every frame the opponent walks, whatever looks at it
    afterwards (the autopilot, the player's hits and bolts) sees it without what pushes have added.

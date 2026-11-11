@@ -204,19 +204,22 @@ impl Ctl {
     }
 }
 
-/// What the game does NOT reset between two fights on the same page: each computer player's walking state (which way
-/// it strafes and for how long yet, whether it is closing in, its kept route). A fight starts with what the fight
-/// before left. The very first starts with the game's own values: the player's side strafes the other way.
+/// What goes on from one fight to the next on the same page of the real simulator:
+/// - each computer player's walking state (which way it strafes and for how long yet, whether it is closing in, its
+///   kept route), which the game does not reset. The very first fight starts with the game's own values: the player's
+///   side strafes the other way.
+/// - the page's clock (`World::now_ms`), which only moves while a fight is stepped.
 #[derive(Clone, Debug)]
 pub struct Carry {
     walks: [Walk; 2],
     routes: [Route; 2],
+    now_ms: Option<f64>,
 }
 
 impl Carry {
-    /// As the page starts (`playerAi`, `opponentAi` in `src/duel.ts`).
+    /// As a page starts (`playerAi`, `opponentAi` in `src/duel.ts`); its clock is set by the first fight.
     pub fn first() -> Carry {
-        Carry { walks: [Walk { strafe: -1.0, ..Walk::default() }, Walk::default()], routes: [Route::default(), Route::default()] }
+        Carry { walks: [Walk { strafe: -1.0, ..Walk::default() }, Walk::default()], routes: [Route::default(), Route::default()], now_ms: None }
     }
 }
 
@@ -285,7 +288,10 @@ pub struct World {
     /// The page's clock in milliseconds (`performance.now()`), which some rules time themselves with instead of the
     /// round's clock. In a simulated fight it advances 1000/60 a frame from wherever the page's clock stood, and the
     /// two clocks do not round alike: a rule that compares one against the other at the very frame both run out falls
-    /// either way (Isolde's icicle: see `hero/frost.rs`). So the port keeps both, as the game has them.
+    /// one way or the other (Isolde's icicle: see `hero/frost.rs`). Which way is not chance: it follows the size of
+    /// the page's clock, flipping at each power of two of its milliseconds (never from 2.2 to 4.4 minutes, always
+    /// from 4.4 to 8.7, never to 17.5, always to 35, ...). So the port keeps both clocks, and the page's clock runs
+    /// on from fight to fight (`Carry`), as the game has them.
     pub now_ms: f64,
     pub cover: Vec<Obstacle>,
     pub ring: Ring,
@@ -332,7 +338,7 @@ fn status_name(k: Status) -> &'static str {
 impl World {
     /// What the next fight on the same page starts with.
     pub fn carry(&self) -> Carry {
-        Carry { walks: [self.ctl[0].walk.clone(), self.ctl[1].walk.clone()], routes: [self.ctl[0].route.clone(), self.ctl[1].route.clone()] }
+        Carry { walks: [self.ctl[0].walk.clone(), self.ctl[1].walk.clone()], routes: [self.ctl[0].route.clone(), self.ctl[1].route.clone()], now_ms: Some(self.now_ms) }
     }
 
     pub fn new(hero: Kit, foe: Kit, arena: &Arena, seed: u64, carry: Carry) -> World {
@@ -347,8 +353,8 @@ impl World {
             }
         }
         let mut rng = Rng::new(seed);
-        // the simulator page's clock when a fight starts: seconds to hours of earlier fights
-        let now_ms = 5_000.0 + rng.f() * 3_000_000.0;
+        // the simulator page's clock: where the fight before left it, or a few seconds after the page loaded
+        let now_ms = carry.now_ms.unwrap_or(3_000.0 + rng.f() * 12_000.0);
         World {
             time: 0.0,
             now_ms,
@@ -359,7 +365,7 @@ impl World {
             ids,
             rt: [Runtime::default(), Runtime::default()],
             ctl: {
-                let Carry { walks: [w0, w1], routes: [r0, r1] } = carry;
+                let Carry { walks: [w0, w1], routes: [r0, r1], .. } = carry;
                 [Ctl::new(w0, r0), Ctl::new(w1, r1)]
             },
             player: Player::new(hero.hp),

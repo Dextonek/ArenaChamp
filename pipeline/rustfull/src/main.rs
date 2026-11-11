@@ -5,7 +5,8 @@
 //! (`python pipeline/rustfull/grade.py`). Until a hero passes that comparison, numbers for it come from the real
 //! simulator.
 //!
-//!   rustfull duel Brannoc Isolde [--fights 200] [--arena frost] [--seed 1] [--out file.json]
+//!   rustfull duel Brannoc Isolde [--fights 200] [--arena frost] [--seed 1] [--threads N] [--trace] [--out file.json]
+//!   rustfull frames Brannoc Isolde [--fights 6] [--seconds 9] [--out file.json]
 //!   rustfull heroes
 
 // pieces ported ahead of the heroes that need them (shields, dashes, the game's default attacks) are not used yet
@@ -104,47 +105,74 @@ fn main() {
             let kit = |name: &str| game.kit(name).unwrap_or_else(|| panic!("no hero '{name}' in data/game.json"));
             let (a, b) = (kit(&args[1]), kit(&args[2]));
             let t0 = Instant::now();
-            let mut out = Vec::new();
-            let mut seconds = 0.0;
             // --trace: every cast and hit of every fight, in the rows pipeline/rustfull/probe.js logs in the real game
             let trace = args.iter().any(|a| a == "--trace");
-            let mut log: Vec<Value> = Vec::new();
-            let mut brief = Vec::new();
             // each way round: the two sides are played by two different computer players
             let pairs = if a.name == b.name { vec![(&a, &b)] } else { vec![(&a, &b), (&b, &a)] };
-            let mut carry = fight::Carry::first();
-            for (p, (h, f)) in pairs.iter().enumerate() {
-                let mut wins = 0;
-                for i in 0..fights {
-                    let (o, rows) = fight::fight_traced((*h).clone(), (*f).clone(), &arena, seed.wrapping_mul(1_000_003).wrapping_add(p as u64 * 500_009 + i), 120.0, trace, &mut carry);
-                    if trace {
-                        let n = out.len();
-                        brief.push(json!({ "n": n, "h": o.hero, "f": o.foe, "w": o.winner, "s": o.seconds, "hp": o.hp }));
-                        for row in rows {
-                            let mut r = vec![json!(n)];
-                            r.extend(row.as_array().unwrap().iter().cloned());
-                            log.push(Value::Array(r));
-                        }
+            // Each processor thread is one "page": it plays its share of the fights one after another, and a fight
+            // starts with what the fight before on that page left, as in the real simulator's browsers. Half the
+            // threads by default, so the computer stays usable.
+            // --page-fights: a real run's browser page plays this many fights in its life (the run's fights over its
+            // browsers); what the page's clock decides (see World::now_ms) depends on it, so match it when grading.
+            let page_fights: usize = option(&args, "--page-fights").and_then(|v| v.parse().ok()).unwrap_or(250).max(1);
+            let all = std::thread::available_parallelism().map_or(1, |n| n.get());
+            let threads = option(&args, "--threads").and_then(|v| v.parse().ok()).unwrap_or((all / 2).max(1)).max(1);
+            let jobs: Vec<(usize, usize, u64)> = (0..pairs.len()).flat_map(|p| (0..fights).map(move |i| (p, i))).enumerate().map(|(n, (p, i))| (n, p, i)).collect();
+            let mut done: Vec<(usize, fight::Outcome, Vec<Value>)> = std::thread::scope(|scope| {
+                let handles: Vec<_> = (0..threads)
+                    .map(|t| {
+                        let (jobs, pairs, arena) = (&jobs, &pairs, &arena);
+                        scope.spawn(move || {
+                            let mut carry = fight::Carry::first();
+                            let mut out = Vec::new();
+                            for (k, &(n, p, i)) in jobs.iter().filter(|j| j.0 % threads == t).enumerate() {
+                                if k > 0 && k % page_fights == 0 {
+                                    carry = fight::Carry::first();
+                                }
+                                let (h, f) = pairs[p];
+                                let (o, rows) = fight::fight_traced(h.clone(), f.clone(), arena, seed.wrapping_mul(1_000_003).wrapping_add(p as u64 * 500_009 + i), 120.0, trace, &mut carry);
+                                out.push((n, o, rows));
+                            }
+                            out
+                        })
+                    })
+                    .collect();
+                handles.into_iter().flat_map(|h| h.join().expect("a fight stopped the program")).collect()
+            });
+            done.sort_by_key(|d| d.0);
+            let (mut out, mut log, mut brief) = (Vec::new(), Vec::new(), Vec::new());
+            let mut seconds = 0.0;
+            let mut wins = vec![0u64; pairs.len()];
+            for (n, o, rows) in done {
+                if trace {
+                    brief.push(json!({ "n": n, "h": o.hero, "f": o.foe, "w": o.winner, "s": o.seconds, "hp": o.hp }));
+                    for row in rows {
+                        let mut r = vec![json!(n)];
+                        r.extend(row.as_array().unwrap().iter().cloned());
+                        log.push(Value::Array(r));
                     }
-                    if o.winner.as_deref() == Some(h.name.as_str()) {
-                        wins += 1;
-                    }
-                    seconds += o.seconds;
-                    out.push(record(&o));
                 }
-                println!("{} (the player's side) against {}: {} of {} won ({:.1}%)", h.name, f.name, wins, fights, 100.0 * wins as f64 / fights as f64);
+                if o.winner.as_deref() == Some(o.hero.as_str()) {
+                    wins[n / fights as usize] += 1;
+                }
+                seconds += o.seconds;
+                out.push(record(&o));
+            }
+            for (p, (h, f)) in pairs.iter().enumerate() {
+                println!("{} (the player's side) against {}: {} of {} won ({:.1}%)", h.name, f.name, wins[p], fights, 100.0 * wins[p] as f64 / fights as f64);
             }
             let real = t0.elapsed().as_secs_f64();
-            println!("{} fights ({:.0} s of fighting) in {:.2} s: {:.0} times faster than the fights themselves", out.len(), seconds, real, seconds / real.max(1e-9));
+            println!("{} fights ({:.0} s of fighting) in {:.2} s on {} threads: {:.0} fights a second", out.len(), seconds, real, threads, out.len() as f64 / real.max(1e-9));
             if let Some(path) = option(&args, "--out") {
-                let doc = if trace { json!({ "fights": brief, "log": log }) } else { json!({ "meta": { "tool": "rustfull", "arena": arena_id, "seed": seed, "fights": out.len(), "realSeconds": real }, "fights": out }) };
+                let doc = if trace { json!({ "fights": brief, "log": log }) } else { json!({ "meta": { "tool": "rustfull", "arena": arena_id, "seed": seed, "fights": out.len(), "realSeconds": real, "threads": threads }, "fights": out }) };
                 std::fs::write(&path, serde_json::to_string(&doc).unwrap()).unwrap_or_else(|e| panic!("cannot write {path}: {e}"));
                 println!("written: {path}");
             }
         }
         _ => {
             println!("rustfull: the game's fight rules in Rust, in the making (docs/pipeline/rust-sim.md).");
-            println!("  rustfull duel <hero> <hero> [--fights 200] [--arena frost] [--seed 1] [--out file.json]");
+            println!("  rustfull duel <hero> <hero> [--fights 200] [--arena frost] [--seed 1] [--threads N] [--page-fights 250] [--trace] [--out file.json]");
+            println!("  rustfull frames <hero> <hero> [--fights 6] [--seconds 9] [--out file.json]");
             println!("  rustfull heroes");
             println!("ported so far: {}. For every other hero: python pipeline/sim/sim.py.", hero::PORTED.join(", "));
         }
