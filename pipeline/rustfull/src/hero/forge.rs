@@ -8,7 +8,7 @@ use crate::bolt::{bolt_width, BoltSpec, Side};
 use crate::fight::{Ctx, Kind, Mods, THit, World, NO_MODS};
 use crate::figure::Hit;
 use crate::geom::V2;
-use crate::hero::HeroState;
+use crate::hero::{self, Hero, Quiet, Spell, PLAIN};
 use crate::status::{Buff, Status};
 use crate::zone::{Shape, Zone};
 
@@ -43,18 +43,27 @@ pub struct State {
 }
 
 fn st(w: &World, s: Side) -> &State {
-    match &w.hs[s.i()] {
-        HeroState::Forge(x) => x,
-        _ => unreachable!("Brannoc's state"),
-    }
+    hero::state(w, s)
 }
 
 fn st_mut(w: &mut World, s: Side) -> &mut State {
-    match &mut w.hs[s.i()] {
-        HeroState::Forge(x) => x,
-        _ => unreachable!("Brannoc's state"),
+    hero::state_mut(w, s)
+}
+
+fn new_state() -> Box<dyn std::any::Any> {
+    Box::new(State::default())
+}
+
+fn spell(slot: usize) -> Box<dyn Spell> {
+    match slot {
+        0 => Box::new(ChainHammer::default()),
+        1 => Box::new(Quiet),
+        2 => Box::new(RedHotRivet::default()),
+        _ => Box::new(MoltenCore::default()),
     }
 }
+
+pub const HERO: Hero = Hero { name: "Brannoc", state: new_state, spell, enemy_goal, attack_mods, attack_reach, after_cast, recast_act, tick, dealt, taken, ..PLAIN };
 
 fn slam_on(w: &World, s: Side) -> bool {
     w.time < st(w, s).slam_until
@@ -203,14 +212,6 @@ pub fn taken(w: &mut World, s: Side, hit: &mut THit) {
 
 // --- the spells ----------------------------------------------------------------------------------------------
 
-/// A spell whose effect makes no hit of its own (Forge Roar, Rime Armour): the kit's buff and the passive do the work.
-#[derive(Clone, Debug, Default)]
-pub struct Quiet;
-
-impl Quiet {
-    pub fn cast(&mut self, _w: &mut World, _ctx: Ctx) {}
-}
-
 // src/spells/targeted/chainHammer.ts
 const HAMMER_RELEASE: f64 = 0.3;
 const HAMMER_SPEED: f64 = 18.0;
@@ -229,19 +230,19 @@ pub struct ChainHammer {
     fired: bool,
 }
 
-impl ChainHammer {
-    pub fn cast(&mut self, _w: &mut World, ctx: Ctx) {
+impl Spell for ChainHammer {
+    fn cast(&mut self, _w: &mut World, ctx: Ctx) {
         *self = ChainHammer { ctx: Some(ctx), time: 0.0, playing: true, fired: false };
     }
 
-    pub fn zones(&self) -> Vec<Zone> {
+    fn zones(&self) -> Vec<Zone> {
         let Some(c) = self.ctx else { return Vec::new() };
         let f = c.fwd();
         let line = Shape::Line { x1: c.from.x, z1: c.from.z, x2: c.from.x + f.x * HAMMER_RANGE, z2: c.from.z + f.z * HAMMER_RANGE, width: bolt_width(HAMMER_RADIUS) };
         vec![Zone { shape: line, start: 0.0, impact: HAMMER_RELEASE, until: Some(HAMMER_RELEASE + HAMMER_RANGE / HAMMER_SPEED) }]
     }
 
-    pub fn update(&mut self, w: &mut World, dt: f64) {
+    fn update(&mut self, w: &mut World, dt: f64) {
         let Some(c) = self.ctx.filter(|_| self.playing) else { return };
         self.time += dt;
         if !self.fired && self.time >= HAMMER_RELEASE {
@@ -273,12 +274,12 @@ pub struct RedHotRivet {
     ticked: [bool; 2],
 }
 
-impl RedHotRivet {
-    pub fn cast(&mut self, _w: &mut World, ctx: Ctx) {
+impl Spell for RedHotRivet {
+    fn cast(&mut self, _w: &mut World, ctx: Ctx) {
         *self = RedHotRivet { ctx: Some(ctx), time: 0.0, playing: true, hit: false, ticked: [false; 2] };
     }
 
-    pub fn update(&mut self, w: &mut World, dt: f64) {
+    fn update(&mut self, w: &mut World, dt: f64) {
         let Some(c) = self.ctx.filter(|_| self.playing) else { return };
         self.time += dt;
         let t = self.time;
@@ -328,8 +329,8 @@ pub struct MoltenCore {
     left: f64,
 }
 
-impl MoltenCore {
-    pub fn cast(&mut self, w: &mut World, ctx: Ctx) {
+impl Spell for MoltenCore {
+    fn cast(&mut self, w: &mut World, ctx: Ctx) {
         let now = w.time;
         let x = st_mut(w, ctx.side);
         let prev = x.last_core;
@@ -344,14 +345,14 @@ impl MoltenCore {
         *self = MoltenCore { ctx: Some(ctx), time: 0.0, playing: true, quench, burst: false, left };
     }
 
-    pub fn zones(&self) -> Vec<Zone> {
+    fn zones(&self) -> Vec<Zone> {
         match self.ctx {
             Some(c) if self.quench => vec![Zone { shape: Shape::Circle { x: c.from.x, z: c.from.z, radius: QUENCH_RING_R }, start: 0.0, impact: QUENCH_RING_T, until: None }],
             _ => Vec::new(),
         }
     }
 
-    pub fn update(&mut self, w: &mut World, dt: f64) {
+    fn update(&mut self, w: &mut World, dt: f64) {
         let Some(c) = self.ctx.filter(|_| self.playing) else { return };
         self.time += dt;
         if self.quench && !self.burst && self.time >= QUENCH_RING_T {

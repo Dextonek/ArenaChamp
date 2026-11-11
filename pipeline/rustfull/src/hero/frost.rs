@@ -8,7 +8,7 @@ use crate::bolt::{bolt_width, BoltSpec, Side};
 use crate::fight::{Ctx, Kind, THit, World};
 use crate::figure::Hit;
 use crate::geom::{blocks_sight, V2};
-use crate::hero::HeroState;
+use crate::hero::{self, Hero, Quiet, Spell, PLAIN};
 use crate::status::Status;
 use crate::zone::{Shape, Zone};
 
@@ -57,18 +57,27 @@ pub struct State {
 }
 
 fn st(w: &World, s: Side) -> &State {
-    match &w.hs[s.i()] {
-        HeroState::Frost(x) => x,
-        _ => unreachable!("Isolde's state"),
-    }
+    hero::state(w, s)
 }
 
 fn st_mut(w: &mut World, s: Side) -> &mut State {
-    match &mut w.hs[s.i()] {
-        HeroState::Frost(x) => x,
-        _ => unreachable!("Isolde's state"),
+    hero::state_mut(w, s)
+}
+
+fn new_state() -> Box<dyn std::any::Any> {
+    Box::new(State::default())
+}
+
+fn spell(slot: usize) -> Box<dyn Spell> {
+    match slot {
+        0 => Box::new(Icicle::default()),
+        1 => Box::new(Hoarfrost::default()),
+        2 => Box::new(Quiet),
+        _ => Box::new(WintersShatter::default()),
     }
 }
+
+pub const HERO: Hero = Hero { name: "Isolde", state: new_state, spell, ai_hold, after_cast, tick, dealt, taken, ..PLAIN };
 
 fn rime_on(w: &World, s: Side) -> bool {
     w.time < st(w, s).rime_until
@@ -80,7 +89,7 @@ fn frozen(w: &World, s: Side) -> bool {
 }
 
 /// The computer player shatters the icicle only when the enemy stands inside its ring, not the moment the recast opens.
-pub fn ai_hold(w: &World, s: Side, slot: usize) -> bool {
+pub fn ai_hold(w: &World, s: Side, slot: usize, _dist: f64) -> bool {
     if slot != 0 {
         return false;
     }
@@ -199,7 +208,16 @@ pub struct Icicle {
 }
 
 impl Icicle {
-    pub fn cast(&mut self, w: &mut World, ctx: Ctx) {
+    fn duration(&self) -> f64 {
+        if self.shatter {
+            return if self.live { SHATTER_DURATION } else { FIZZLE_DURATION };
+        }
+        ICICLE_WIND + self.len / ICICLE_SPEED + ICICLE_TAIL
+    }
+}
+
+impl Spell for Icicle {
+    fn cast(&mut self, w: &mut World, ctx: Ctx) {
         let now = w.now_ms;
         let prev = st(w, ctx.side).icicle;
         let shatter = matches!(prev, Some(r) if !r.shattered && now - r.cast_at < ICICLE_RECAST_CLOCK);
@@ -227,7 +245,7 @@ impl Icicle {
         *self = Icicle { ctx: Some(ctx), time: 0.0, playing: true, shatter, live, len, spot, fired: false, burst: false };
     }
 
-    pub fn zones(&self) -> Vec<Zone> {
+    fn zones(&self) -> Vec<Zone> {
         let Some(c) = self.ctx else { return Vec::new() };
         if self.shatter {
             return if self.live { vec![Zone { shape: Shape::Circle { x: self.spot.x, z: self.spot.z, radius: SHATTER_RADIUS }, start: 0.0, impact: SHATTER_T, until: None }] } else { Vec::new() };
@@ -236,14 +254,7 @@ impl Icicle {
         vec![Zone { shape: line, start: 0.0, impact: ICICLE_WIND, until: Some(ICICLE_WIND + self.len / ICICLE_SPEED) }]
     }
 
-    fn duration(&self) -> f64 {
-        if self.shatter {
-            return if self.live { SHATTER_DURATION } else { FIZZLE_DURATION };
-        }
-        ICICLE_WIND + self.len / ICICLE_SPEED + ICICLE_TAIL
-    }
-
-    pub fn update(&mut self, w: &mut World, dt: f64) {
+    fn update(&mut self, w: &mut World, dt: f64) {
         let Some(c) = self.ctx.filter(|_| self.playing) else { return };
         self.time += dt;
         if self.time >= self.duration() {
@@ -287,17 +298,17 @@ pub struct Hoarfrost {
     mark: V2,
 }
 
-impl Hoarfrost {
-    pub fn cast(&mut self, w: &mut World, ctx: Ctx) {
+impl Spell for Hoarfrost {
+    fn cast(&mut self, w: &mut World, ctx: Ctx) {
         let mark = if ctx.has_target { w.pos(ctx.side.other()) } else { ctx.point };
         *self = Hoarfrost { ctx: Some(ctx), time: 0.0, playing: true, hit: false, mark };
     }
 
-    pub fn zones(&self) -> Vec<Zone> {
+    fn zones(&self) -> Vec<Zone> {
         vec![Zone { shape: Shape::Circle { x: self.mark.x, z: self.mark.z, radius: HOAR_MARK_R }, start: 0.0, impact: HOAR_HIT, until: None }]
     }
 
-    pub fn update(&mut self, w: &mut World, dt: f64) {
+    fn update(&mut self, w: &mut World, dt: f64) {
         let Some(c) = self.ctx.filter(|_| self.playing) else { return };
         self.time += dt;
         if self.time >= HOAR_DURATION {
@@ -330,17 +341,17 @@ pub struct WintersShatter {
     mark: V2,
 }
 
-impl WintersShatter {
-    pub fn cast(&mut self, w: &mut World, ctx: Ctx) {
+impl Spell for WintersShatter {
+    fn cast(&mut self, w: &mut World, ctx: Ctx) {
         let mark = if ctx.has_target { w.pos(ctx.side.other()) } else { ctx.point };
         *self = WintersShatter { ctx: Some(ctx), time: 0.0, playing: true, checked: false, fizzled: false, mark };
     }
 
-    pub fn zones(&self) -> Vec<Zone> {
+    fn zones(&self) -> Vec<Zone> {
         vec![Zone { shape: Shape::Circle { x: self.mark.x, z: self.mark.z, radius: WINTER_MARK_R }, start: 0.0, impact: WINTER_WIND, until: None }]
     }
 
-    pub fn update(&mut self, w: &mut World, dt: f64) {
+    fn update(&mut self, w: &mut World, dt: f64) {
         let Some(c) = self.ctx.filter(|_| self.playing) else { return };
         self.time += dt;
         if self.time >= (if self.fizzled { WINTER_FIZZLE_END } else { WINTER_DURATION }) {

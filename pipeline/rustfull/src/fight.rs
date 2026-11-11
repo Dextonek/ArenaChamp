@@ -14,7 +14,7 @@ use crate::bolt::{BoltSpec, Bolts, Side, Touch, Victim};
 use crate::data::{Arena, Kit};
 use crate::figure::{Hit, Opponent, Player, Ring};
 use crate::geom::{blocks_sight, contains, first_surface, Obstacle, V2};
-use crate::hero::{self, Effect, HeroId, HeroState};
+use crate::hero::{self, Hero, Landed, Spell};
 use crate::nav::{self, Navigator, Route};
 use crate::status::{Buff, Status, StatusSet, BLIND_RADIUS};
 use crate::zone::{Shape, Zone, CAST_MEMORY, DODGE_RADIUS};
@@ -298,8 +298,11 @@ pub struct World {
     pub lv: CpuLevel,
     /// The two heroes: [the player's side, the opponent's].
     pub kits: [Kit; 2],
-    pub ids: [HeroId; 2],
-    pub hs: [HeroState; 2],
+    pub heroes: [&'static Hero; 2],
+    /// Each hero's own state for this fight (see `hero::state`).
+    pub hs: [Box<dyn std::any::Any>; 2],
+    /// Cover a spell raised, with the seconds it still stands (`arena.temps`); it is part of `cover` meanwhile.
+    temps: Vec<(Obstacle, f64)>,
     pub rt: [Runtime; 2],
     pub ctl: [Ctl; 2],
     pub player: Player,
@@ -309,7 +312,7 @@ pub struct World {
     pub casts: [Vec<Cast>; 2],
     cast_seq: [u32; 2],
     /// The spells' effects, one per spell label as in the game: a new cast of a spell starts its effect again.
-    effects: Vec<Option<Effect>>,
+    effects: Vec<Option<Box<dyn Spell>>>,
     pub rng: Rng,
     /// The winner, once the round is over.
     pub over: Option<Side>,
@@ -344,9 +347,9 @@ impl World {
     pub fn new(hero: Kit, foe: Kit, arena: &Arena, seed: u64, carry: Carry) -> World {
         assert!(!arena.breakable, "the arena '{}' has breakable walls: not ported yet (docs/pipeline/rust-sim.md)", arena.id);
         assert!(hero.name != foe.name, "{} against itself: the game never plays a hero against its own kit", hero.name);
-        let ids = [
-            hero::id(&hero.name).unwrap_or_else(|| panic!("{} is not ported yet (docs/pipeline/rust-sim.md)", hero.name)),
-            hero::id(&foe.name).unwrap_or_else(|| panic!("{} is not ported yet (docs/pipeline/rust-sim.md)", foe.name)),
+        let heroes = [
+            hero::find(&hero.name).unwrap_or_else(|| panic!("{} is not ported yet (docs/pipeline/rust-sim.md)", hero.name)),
+            hero::find(&foe.name).unwrap_or_else(|| panic!("{} is not ported yet (docs/pipeline/rust-sim.md)", foe.name)),
         ];
         for k in [&hero, &foe] {
             for s in &k.spells {
@@ -362,8 +365,9 @@ impl World {
             cover: arena.cover.clone(),
             ring: Ring { x: 0.0, z: 7.0, r: arena.ring },
             lv: BALANCE,
-            hs: [hero::new_state(ids[0]), hero::new_state(ids[1])],
-            ids,
+            hs: [(heroes[0].state)(), (heroes[1].state)()],
+            heroes,
+            temps: Vec::new(),
             rt: [Runtime::default(), Runtime::default()],
             ctl: {
                 let Carry { walks: [w0, w1], routes: [r0, r1], .. } = carry;
@@ -564,6 +568,7 @@ impl World {
             t.hits[k] += 1;
             t.first_hit.get_or_insert(self.time);
         }
+        hero::landed(self, dealer, Landed { kind, slot, damage: o.damage });
         o
     }
 
@@ -661,7 +666,7 @@ impl World {
     /// Plays the spell's effect with this cast (`effect.play()` with its context) and returns its danger zones.
     fn play(&mut self, s: Side, slot: usize, ctx: Ctx) -> Vec<Zone> {
         let key = self.fx_key(s, slot);
-        let mut e = self.effects[key].take().unwrap_or_else(|| Effect::new(self.ids[s.i()], slot));
+        let mut e = self.effects[key].take().unwrap_or_else(|| (self.heroes[s.i()].spell)(slot));
         e.cast(self, ctx);
         let mut zones = e.zones();
         self.effects[key] = Some(e);

@@ -59,7 +59,7 @@ fn main() {
     let game = data::Game::load();
     match args.first().map(String::as_str) {
         Some("heroes") => {
-            println!("ported: {}", hero::PORTED.join(", "));
+            println!("ported: {}", hero::ported().join(", "));
             println!("in the game: {} heroes, arenas: {}", game.hero_names().len(), game.arena_ids().join(", "));
         }
         Some("frames") if args.len() >= 3 => {
@@ -179,7 +179,7 @@ fn main() {
             println!("  rustfull duel <hero> <hero> [--fights 200] [--arena frost] [--seed 1] [--threads N] [--page-fights 250] [--trace] [--out file.json]");
             println!("  rustfull frames <hero> <hero> [--fights 6] [--seconds 9] [--out file.json]");
             println!("  rustfull heroes");
-            println!("ported so far: {}. For every other hero: python pipeline/sim/sim.py.", hero::PORTED.join(", "));
+            println!("ported so far: {}. For every other hero: python pipeline/sim/sim.py.", hero::ported().join(", "));
         }
     }
 }
