@@ -2,6 +2,29 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
+## Fight simulator (2026-11-11): built, committed, not pushed
+
+User: "can we make like simulator of fights so we dont need to test all the duels ... faster to balance all heroes ...
+make it in rust or in python", "and make like visualization for everything you make, like page or something". Asked
+which kind, they chose **Python on the real game** (not a Rust rewrite of the rules).
+
+- **What:** `python pipeline/sim/sim.py hero <Name>` / `duel A B` / `all` ([pipeline/simulator.md](pipeline/simulator.md)):
+  real CPU duels of the game's own code in hidden browsers (Playwright, the installed Chrome), results as a page:
+  win rates with the 40-60% band and the reach of chance, who beats whom, damage a second by source, stalls, errors.
+- **Speed here:** one hero's check (96 fights) 45 s; the whole roster twice each way (3,120 fights) 12.7 min with 14
+  browsers. Fourteen browsers left the computer barely usable (a plain `tail` took over a minute), so the default
+  is now half the cores (8); `--workers 14` when nobody needs the machine.
+- **First whole-roster run** ([page](balance/roster-2026-11-11.html), 156 fights a hero, about plus or minus 8
+  points): no errors, no fight without a winner, all nine arenas used. 27 of 40 inside 40-60%. Strong: Hank 78,
+  Grandma Ironknit 72, Mortis 63, Lyra 61, Oblivion 61, Bram 60. Weak: Anka 18 (not tuned yet, see below), Cantor
+  22, Nyx 31, Auriel 35, Shiori 37, Referee Whistler 39, Ada 39. This is each hero against all the others, a harder
+  and different measure than the six benchmark foes the 40-60% target was set with: nothing has been changed on it.
+- **Anka's first number:** 29% against the six benchmark foes, 18% against the whole roster. Fan the Flames deals 1.5
+  damage a second and Ember Flight 0.2: the CPU hardly uses them (it holds W until the enemy stands in a ring, and
+  the enemy stamps an ember at its feet within a second). Gate 5 work: teach the CPU first, then the numbers.
+- **Waiting on the user:** whether to rebalance the strong and weak heroes the roster run shows, and by which
+  measure (the six benchmark foes as before, or the whole roster).
+
 ## Hero 40 and the new rules for creating a hero (2026-11-11): Anka at gate 4: rules and plain spells proven, looks to do
 
 User: "okay lets make it 40 heros total so made new one", "and lets make like what need to be done when we are

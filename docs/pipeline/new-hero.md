@@ -75,7 +75,7 @@ except reading. One hero at a time goes through gates 2 to 5.
 | **2. Look** | The model (`blender/heroes/real/<theme>.py`), her held thing, her stance | Front, face, back, walking, her attack at its hit, the game camera; then **the line-up between Sefu and Kaia** | The user says yes to the figure. Only now are colours and shapes fixed for everything else |
 | **3. Kit on paper** | The kit sheet (`pipeline/designs/kit-<theme>.md`): four spells and the passive, every number, every answer checked (rule 4) | The sheet as a table, in plain words | The user says yes, or changes spells while they are still words |
 | **4. Spells** | Palette and parts, four spells, the trait, icons and portrait drawn from the agreed look, registration | One picture per spell from the game camera at its key moments, and the hero's page in the game | Each spell reads as hers without its name; type check and build pass |
-| **5. Plays** | The CPU's use of her, balance numbers, the Raid | A clip of a CPU duel in an arena; the win rate; what the CPU does with each spell | 40-60% over at least 96 fights; no errors; the user has played her once |
+| **5. Plays** | The CPU's use of her, balance numbers, the Raid | A clip of a CPU duel in an arena; the simulator's page (win rate, who beats her, where her damage comes from) | 40-60% over at least 96 fights; no errors; the user has played her once |
 | **6. Release** | Part 3's last block: docs, News, counts, protocol, pictures | The list of what is not live yet | The user asks for the push, then for the deploy |
 
 If a gate's picture gets a no, go back one gate, not forward with a patch: a rejected look is rebuilt, a rejected
@@ -125,8 +125,10 @@ spell is rewritten on the sheet first.
 ### Gate 5: plays
 - [ ] `aiHold` (and `aiGoal`, `enemyGoal` where she has things on the floor): written down in the sheet what the
       CPU does.
-- [ ] `_balance(['<Name>'], 16)` (`pipeline/tools/kit-balance.js`): 40-60%, no fight without a winner. Numbers
-      changed here go back into the sheet and the blurbs.
+- [ ] `python pipeline/sim/sim.py hero <Name>` ([the fight simulator](simulator.md), 96 fights in 45 s): 40-60%, no
+      fight without a winner, no errors, and every spell showing in "where the damage comes from" (one that does not
+      is one the CPU cannot use). Numbers changed here go back into the sheet and the blurbs. Before release,
+      once with `--fights 32` and once with `--events`.
 - [ ] `_raid(['<Name>'], 4)` (`pipeline/tools/raid-tool.js`): clears like her role; `_raid.errors()` empty.
 - [ ] A CPU duel on the game page through its own menus: pick her in the hero grid (also at phone width), fight,
       lose or win, rematch; then as the CPU's hero. No console errors.
@@ -157,6 +159,8 @@ These rules have not built a hero yet. The Phoenix is the test, and what she sho
   raising it is the rule, and what an old tab really does is to be looked at once.
 - **Tools with their own hero lists** (`duel-tourney.js`, `clip-film.js`, `key-art.js` name heroes in examples and
   defaults; `kit-balance.js` has six fixed benchmark foes): nothing should need her name, to be confirmed.
+- **Shown as pages.** The user asked (2026-11-11) for "visualization for everything you make, like page": each
+  gate's picture is best given as one page (pictures, the table, the numbers), not as loose files and text.
 - **The costs in rule 9** ("no more to draw than the heroes beside her") have no tool yet beyond the model's size
   and the frame time read by hand.
 

@@ -1,0 +1,7155 @@
+{
+ "meta": {
+  "mode": "all",
+  "what": "40 heroes, each against every other",
+  "date": "2026-11-11 12:32",
+  "fights": 3120,
+  "crashed": 0,
+  "simSeconds": 72297,
+  "wallSeconds": 764.2,
+  "workers": 14,
+  "arena": "random",
+  "events": false,
+  "sides": "both",
+  "perCell": 4,
+  "command": "python pipeline/sim/sim.py all --reps 2 --out roster-2026-11-11 --max-minutes 30"
+ },
+ "rows": [
+  {
+   "name": "Vesper",
+   "n": 156,
+   "w": 74,
+   "pct": 47.4,
+   "ci": 7.8,
+   "avgSecs": 20.1,
+   "none": 0,
+   "dps": {
+    "Q": 11.92,
+    "W": 0.0,
+    "E": 2.35,
+    "R": 4.44,
+    "attack": 6.6,
+    "unit": 0.0,
+    "trait": 3.47
+   },
+   "takenDps": 28.5,
+   "by": {
+    "Hank": [
+     0,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     4,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Vitriol": [
+     1,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Mabel": [
+     2,
+     4
+    ],
+    "Silvane": [
+     0,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Shiori": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Mum": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Bo": [
+     4,
+     4
+    ],
+    "Sefu": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     3,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Tempo": [
+     4,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Gus": [
+     0,
+     4
+    ],
+    "Mortis": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ],
+    "Cantor": [
+     2,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Brannoc",
+   "n": 156,
+   "w": 79,
+   "pct": 50.6,
+   "ci": 7.8,
+   "avgSecs": 25.0,
+   "none": 0,
+   "dps": {
+    "Q": 3.91,
+    "W": 0.0,
+    "E": 8.44,
+    "R": 0.0,
+    "attack": 11.57,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 28.82,
+   "by": {
+    "Anka": [
+     4,
+     4
+    ],
+    "Mum": [
+     2,
+     4
+    ],
+    "Oblivion": [
+     4,
+     4
+    ],
+    "Bram": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Lyra": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     4,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Gus": [
+     4,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Isolde": [
+     3,
+     4
+    ],
+    "Mortis": [
+     3,
+     4
+    ],
+    "Marin": [
+     4,
+     4
+    ],
+    "Grandma Ironknit": [
+     2,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     0,
+     4
+    ],
+    "Shiori": [
+     0,
+     4
+    ],
+    "Tempo": [
+     0,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Vesper": [
+     4,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Isolde",
+   "n": 156,
+   "w": 88,
+   "pct": 56.4,
+   "ci": 7.8,
+   "avgSecs": 26.1,
+   "none": 0,
+   "dps": {
+    "Q": 7.58,
+    "W": 4.32,
+    "E": 0.0,
+    "R": 4.11,
+    "attack": 7.04,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 19.79,
+   "by": {
+    "Oblivion": [
+     2,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Mortis": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Mabel": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Bo": [
+     4,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     4,
+     4
+    ],
+    "Barry Cloudsley": [
+     1,
+     4
+    ],
+    "Ada": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Marin": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Brannoc": [
+     1,
+     4
+    ],
+    "Hank": [
+     2,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Gus": [
+     2,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Sefu": [
+     3,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Pip": [
+     2,
+     4
+    ],
+    "Professor Puff": [
+     2,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Lyra",
+   "n": 156,
+   "w": 95,
+   "pct": 60.9,
+   "ci": 7.7,
+   "avgSecs": 20.2,
+   "none": 0,
+   "dps": {
+    "Q": 11.83,
+    "W": 0.0,
+    "E": 4.88,
+    "R": 4.66,
+    "attack": 8.25,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 22.27,
+   "by": {
+    "Sir Whiskers": [
+     1,
+     4
+    ],
+    "Silvane": [
+     4,
+     4
+    ],
+    "Pip": [
+     4,
+     4
+    ],
+    "Auriel": [
+     4,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Bram": [
+     4,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Mum": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Mabel": [
+     3,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Fenna": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     2,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Mortis": [
+     4,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     3,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Bo": [
+     4,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Isolde": [
+     4,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Vitriol",
+   "n": 156,
+   "w": 83,
+   "pct": 53.2,
+   "ci": 7.8,
+   "avgSecs": 19.0,
+   "none": 0,
+   "dps": {
+    "Q": 9.99,
+    "W": 9.54,
+    "E": 1.81,
+    "R": 3.64,
+    "attack": 6.38,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 23.38,
+   "by": {
+    "Professor Puff": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     2,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Gus": [
+     4,
+     4
+    ],
+    "Bram": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Big Yoko": [
+     2,
+     4
+    ],
+    "Ada": [
+     0,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Nyx": [
+     2,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     0,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "Sirix": [
+     4,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Pip": [
+     4,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Wick": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     4,
+     4
+    ],
+    "Mum": [
+     1,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Kaia",
+   "n": 156,
+   "w": 71,
+   "pct": 45.5,
+   "ci": 7.8,
+   "avgSecs": 19.2,
+   "none": 0,
+   "dps": {
+    "Q": 11.57,
+    "W": 4.0,
+    "E": 1.96,
+    "R": 5.05,
+    "attack": 5.92,
+    "unit": 0.0,
+    "trait": 1.89
+   },
+   "takenDps": 28.3,
+   "by": {
+    "Grandma Ironknit": [
+     2,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Ada": [
+     2,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Marin": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Mum": [
+     1,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Isolde": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Bo": [
+     2,
+     4
+    ],
+    "Sefu": [
+     3,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Gus": [
+     0,
+     4
+    ],
+    "Bram": [
+     0,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Sefu",
+   "n": 156,
+   "w": 76,
+   "pct": 48.7,
+   "ci": 7.8,
+   "avgSecs": 23.3,
+   "none": 0,
+   "dps": {
+    "Q": 8.78,
+    "W": 3.46,
+    "E": 0.0,
+    "R": 3.64,
+    "attack": 9.19,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 24.28,
+   "by": {
+    "Big Yoko": [
+     2,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Sirix": [
+     3,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Pip": [
+     4,
+     4
+    ],
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Ada": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Gus": [
+     0,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Vesper": [
+     1,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Lyra": [
+     2,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     2,
+     4
+    ],
+    "Professor Puff": [
+     2,
+     4
+    ],
+    "Wick": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Nyx",
+   "n": 156,
+   "w": 48,
+   "pct": 30.8,
+   "ci": 7.2,
+   "avgSecs": 22.6,
+   "none": 0,
+   "dps": {
+    "Q": 14.27,
+    "W": 0.0,
+    "E": 0.62,
+    "R": 0.0,
+    "attack": 10.56,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 27.38,
+   "by": {
+    "Shiori": [
+     0,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Fenna": [
+     0,
+     4
+    ],
+    "Kaia": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     4,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Bo": [
+     2,
+     4
+    ],
+    "Ada": [
+     2,
+     4
+    ],
+    "Grandma Ironknit": [
+     2,
+     4
+    ],
+    "Anka": [
+     2,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Tempo": [
+     0,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Bram": [
+     0,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Sefu": [
+     0,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     3,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     0,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Gus": [
+     2,
+     4
+    ],
+    "Auriel": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Fenna",
+   "n": 156,
+   "w": 69,
+   "pct": 44.2,
+   "ci": 7.8,
+   "avgSecs": 24.7,
+   "none": 0,
+   "dps": {
+    "Q": 9.41,
+    "W": 3.84,
+    "E": 0.0,
+    "R": 2.03,
+    "attack": 8.28,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 23.77,
+   "by": {
+    "Vesper": [
+     0,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ],
+    "Tempo": [
+     1,
+     4
+    ],
+    "Big Yoko": [
+     4,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     0,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Brannoc": [
+     3,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     3,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ],
+    "Shiori": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     2,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Mum": [
+     2,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     4,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Mabel": [
+     3,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Ada": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Auriel",
+   "n": 156,
+   "w": 55,
+   "pct": 35.3,
+   "ci": 7.5,
+   "avgSecs": 27.4,
+   "none": 0,
+   "dps": {
+    "Q": 5.59,
+    "W": 0.84,
+    "E": 4.17,
+    "R": 1.28,
+    "attack": 7.58,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 29.21,
+   "by": {
+    "Sir Whiskers": [
+     1,
+     4
+    ],
+    "Shiori": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     0,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Vesper": [
+     2,
+     4
+    ],
+    "Cantor": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Mum": [
+     2,
+     4
+    ],
+    "Tempo": [
+     1,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Bram": [
+     0,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "Zephyr": [
+     2,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     1,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Marin",
+   "n": 156,
+   "w": 91,
+   "pct": 58.3,
+   "ci": 7.7,
+   "avgSecs": 20.5,
+   "none": 0,
+   "dps": {
+    "Q": 8.51,
+    "W": 4.47,
+    "E": 3.12,
+    "R": 5.92,
+    "attack": 7.39,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 26.11,
+   "by": {
+    "Anka": [
+     4,
+     4
+    ],
+    "Bram": [
+     3,
+     4
+    ],
+    "Gus": [
+     0,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Vitriol": [
+     3,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     4,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     1,
+     4
+    ],
+    "Isolde": [
+     4,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Mortis": [
+     4,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Mr. Ledger": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Shiori": [
+     2,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Mum": [
+     4,
+     4
+    ],
+    "Cantor": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Sirix": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     2,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Hank": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Zephyr",
+   "n": 156,
+   "w": 84,
+   "pct": 53.8,
+   "ci": 7.8,
+   "avgSecs": 22.1,
+   "none": 0,
+   "dps": {
+    "Q": 10.39,
+    "W": 0.16,
+    "E": 0.0,
+    "R": 3.64,
+    "attack": 13.01,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 25.06,
+   "by": {
+    "Isolde": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Barry Cloudsley": [
+     4,
+     4
+    ],
+    "Vesper": [
+     1,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Referee Whistler": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     4,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Nyx": [
+     0,
+     4
+    ],
+    "Wick": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Bo": [
+     4,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "Lyra": [
+     4,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Fenna": [
+     3,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Mortis",
+   "n": 156,
+   "w": 98,
+   "pct": 62.8,
+   "ci": 7.6,
+   "avgSecs": 26.2,
+   "none": 0,
+   "dps": {
+    "Q": 5.93,
+    "W": 4.3,
+    "E": 2.72,
+    "R": 2.96,
+    "attack": 6.23,
+    "unit": 0.52,
+    "trait": 0.0
+   },
+   "takenDps": 18.84,
+   "by": {
+    "Hank": [
+     1,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Madame Cleaver": [
+     4,
+     4
+    ],
+    "Bo": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     4,
+     4
+    ],
+    "Mum": [
+     4,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Marin": [
+     0,
+     4
+    ],
+    "Brannoc": [
+     1,
+     4
+    ],
+    "Tempo": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     2,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Cantor": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     4,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Sefu": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Gus": [
+     2,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Ada",
+   "n": 156,
+   "w": 60,
+   "pct": 38.5,
+   "ci": 7.6,
+   "avgSecs": 22.3,
+   "none": 0,
+   "dps": {
+    "Q": 8.47,
+    "W": 6.25,
+    "E": 0.87,
+    "R": 4.99,
+    "attack": 5.06,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 23.26,
+   "by": {
+    "Mortis": [
+     0,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Bram": [
+     0,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     1,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Marin": [
+     0,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Auriel": [
+     0,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Nyx": [
+     2,
+     4
+    ],
+    "Gus": [
+     0,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Grandma Ironknit": [
+     3,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Cantor": [
+     2,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Sefu": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Mum": [
+     1,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Sirix",
+   "n": 156,
+   "w": 92,
+   "pct": 59.0,
+   "ci": 7.7,
+   "avgSecs": 23.9,
+   "none": 0,
+   "dps": {
+    "Q": 9.76,
+    "W": 0.0,
+    "E": 4.13,
+    "R": 3.88,
+    "attack": 6.42,
+    "unit": 0.0,
+    "trait": 1.21
+   },
+   "takenDps": 26.88,
+   "by": {
+    "Isolde": [
+     3,
+     4
+    ],
+    "Shiori": [
+     2,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "Vesper": [
+     4,
+     4
+    ],
+    "Ada": [
+     3,
+     4
+    ],
+    "Pim and Pom": [
+     0,
+     4
+    ],
+    "Pip": [
+     2,
+     4
+    ],
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     0,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Lyra": [
+     2,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Bram": [
+     4,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     4,
+     4
+    ],
+    "Kaia": [
+     3,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Gus": [
+     4,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ],
+    "Hank": [
+     2,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Zephyr": [
+     4,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Cantor",
+   "n": 156,
+   "w": 35,
+   "pct": 22.4,
+   "ci": 6.5,
+   "avgSecs": 24.4,
+   "none": 0,
+   "dps": {
+    "Q": 9.93,
+    "W": 0.0,
+    "E": 0.0,
+    "R": 2.02,
+    "attack": 7.39,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 28.53,
+   "by": {
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Sefu": [
+     0,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Tempo": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Ada": [
+     2,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Mortis": [
+     3,
+     4
+    ],
+    "Gus": [
+     0,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Silvane": [
+     0,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Vitriol": [
+     1,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Bram": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Anka": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     2,
+     4
+    ],
+    "Shiori": [
+     1,
+     4
+    ],
+    "Vesper": [
+     2,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Opaline",
+   "n": 156,
+   "w": 81,
+   "pct": 51.9,
+   "ci": 7.8,
+   "avgSecs": 25.1,
+   "none": 0,
+   "dps": {
+    "Q": 12.1,
+    "W": 0.0,
+    "E": 0.0,
+    "R": 3.49,
+    "attack": 7.86,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 21.56,
+   "by": {
+    "Hank": [
+     0,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Mr. Ledger": [
+     3,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "Gus": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     4,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Mabel": [
+     4,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Vitriol": [
+     3,
+     4
+    ],
+    "Pim and Pom": [
+     4,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     1,
+     4
+    ],
+    "Ada": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Bo": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Oblivion",
+   "n": 156,
+   "w": 95,
+   "pct": 60.9,
+   "ci": 7.7,
+   "avgSecs": 24.4,
+   "none": 0,
+   "dps": {
+    "Q": 11.06,
+    "W": 0.0,
+    "E": 0.0,
+    "R": 3.79,
+    "attack": 10.14,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 28.96,
+   "by": {
+    "Isolde": [
+     2,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     4,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Bo": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     4,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     1,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     1,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Marin": [
+     4,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Bram": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Wick": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     4,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ],
+    "Shiori": [
+     0,
+     4
+    ],
+    "Mabel": [
+     4,
+     4
+    ],
+    "Kaia": [
+     3,
+     4
+    ],
+    "Anka": [
+     2,
+     4
+    ],
+    "Fenna": [
+     0,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Vesper": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     0,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Shiori",
+   "n": 156,
+   "w": 57,
+   "pct": 36.5,
+   "ci": 7.6,
+   "avgSecs": 24.3,
+   "none": 0,
+   "dps": {
+    "Q": 12.28,
+    "W": 0.0,
+    "E": 0.0,
+    "R": 2.7,
+    "attack": 7.07,
+    "unit": 0.0,
+    "trait": 0.62
+   },
+   "takenDps": 23.59,
+   "by": {
+    "Auriel": [
+     2,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Big Yoko": [
+     4,
+     4
+    ],
+    "Ada": [
+     0,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     0,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Sir Whiskers": [
+     3,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "Opaline": [
+     0,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Mabel": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     2,
+     4
+    ],
+    "Oblivion": [
+     4,
+     4
+    ],
+    "Silvane": [
+     0,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     1,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Tempo",
+   "n": 156,
+   "w": 76,
+   "pct": 48.7,
+   "ci": 7.8,
+   "avgSecs": 21.0,
+   "none": 0,
+   "dps": {
+    "Q": 13.67,
+    "W": 4.37,
+    "E": 0.0,
+    "R": 4.29,
+    "attack": 5.87,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 25.59,
+   "by": {
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Gus": [
+     4,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Fenna": [
+     3,
+     4
+    ],
+    "Mum": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     2,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Wick": [
+     0,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     4,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Mabel": [
+     4,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Vitriol": [
+     1,
+     4
+    ],
+    "Shiori": [
+     2,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Lyra": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Ada": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Silvane",
+   "n": 156,
+   "w": 83,
+   "pct": 53.2,
+   "ci": 7.8,
+   "avgSecs": 24.3,
+   "none": 0,
+   "dps": {
+    "Q": 12.0,
+    "W": 0.0,
+    "E": 0.0,
+    "R": 1.5,
+    "attack": 11.56,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 23.25,
+   "by": {
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     4,
+     4
+    ],
+    "Mabel": [
+     3,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Professor Puff": [
+     0,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Ada": [
+     1,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Vesper": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     2,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     1,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Gus": [
+     2,
+     4
+    ],
+    "Bo": [
+     3,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Bram",
+   "n": 156,
+   "w": 94,
+   "pct": 60.3,
+   "ci": 7.7,
+   "avgSecs": 26.3,
+   "none": 0,
+   "dps": {
+    "Q": 9.34,
+    "W": 2.01,
+    "E": 0.0,
+    "R": 0.36,
+    "attack": 11.25,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 27.27,
+   "by": {
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Brannoc": [
+     1,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     2,
+     4
+    ],
+    "Shiori": [
+     2,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Hank": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Bo": [
+     3,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Auriel": [
+     4,
+     4
+    ],
+    "Pip": [
+     2,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Mortis": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     1,
+     4
+    ],
+    "Mabel": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Hank",
+   "n": 156,
+   "w": 121,
+   "pct": 77.6,
+   "ci": 6.5,
+   "avgSecs": 21.6,
+   "none": 0,
+   "dps": {
+    "Q": 8.19,
+    "W": 6.86,
+    "E": 4.45,
+    "R": 0.37,
+    "attack": 8.94,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 28.4,
+   "by": {
+    "Vesper": [
+     4,
+     4
+    ],
+    "Mortis": [
+     3,
+     4
+    ],
+    "Opaline": [
+     4,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     3,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ],
+    "Sefu": [
+     4,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     3,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Tempo": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Fenna": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Madame Cleaver": [
+     4,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Mabel": [
+     2,
+     4
+    ],
+    "Bo": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     3,
+     4
+    ],
+    "Auriel": [
+     4,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Professor Puff",
+   "n": 156,
+   "w": 84,
+   "pct": 53.8,
+   "ci": 7.8,
+   "avgSecs": 21.3,
+   "none": 0,
+   "dps": {
+    "Q": 9.12,
+    "W": 5.11,
+    "E": 0.0,
+    "R": 7.78,
+    "attack": 5.37,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 24.12,
+   "by": {
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Bram": [
+     3,
+     4
+    ],
+    "Mabel": [
+     4,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Silvane": [
+     4,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Gus": [
+     2,
+     4
+    ],
+    "Tempo": [
+     1,
+     4
+    ],
+    "Lyra": [
+     2,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Pim and Pom": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     1,
+     4
+    ],
+    "Bo": [
+     2,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Ada": [
+     1,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Mr. Ledger": [
+     3,
+     4
+    ],
+    "Cantor": [
+     2,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Sir Whiskers",
+   "n": 156,
+   "w": 84,
+   "pct": 53.8,
+   "ci": 7.8,
+   "avgSecs": 19.6,
+   "none": 0,
+   "dps": {
+    "Q": 14.13,
+    "W": 5.03,
+    "E": 0.16,
+    "R": 0.0,
+    "attack": 11.17,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 22.52,
+   "by": {
+    "Lyra": [
+     3,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Ada": [
+     3,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Vesper": [
+     2,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Tempo": [
+     0,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Bo": [
+     4,
+     4
+    ],
+    "Wick": [
+     4,
+     4
+    ],
+    "Shiori": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     3,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     2,
+     4
+    ],
+    "Mum": [
+     4,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Madame Cleaver": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     0,
+     4
+    ],
+    "Bram": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Mr. Ledger",
+   "n": 156,
+   "w": 69,
+   "pct": 44.2,
+   "ci": 7.8,
+   "avgSecs": 21.0,
+   "none": 0,
+   "dps": {
+    "Q": 0.0,
+    "W": 0.0,
+    "E": 0.0,
+    "R": 4.93,
+    "attack": 8.01,
+    "unit": 0.0,
+    "trait": 13.81
+   },
+   "takenDps": 26.95,
+   "by": {
+    "Bram": [
+     2,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Cantor": [
+     2,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Auriel": [
+     4,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Mum": [
+     2,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Ada": [
+     0,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     3,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "Isolde": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Sefu": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Mabel": [
+     2,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Big Yoko",
+   "n": 156,
+   "w": 93,
+   "pct": 59.6,
+   "ci": 7.7,
+   "avgSecs": 24.0,
+   "none": 0,
+   "dps": {
+    "Q": 8.47,
+    "W": 3.47,
+    "E": 1.46,
+    "R": 0.0,
+    "attack": 8.0,
+    "unit": 0.0,
+    "trait": 3.02
+   },
+   "takenDps": 30.84,
+   "by": {
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Zephyr": [
+     4,
+     4
+    ],
+    "Shiori": [
+     0,
+     4
+    ],
+    "Fenna": [
+     0,
+     4
+    ],
+    "Gus": [
+     4,
+     4
+    ],
+    "Hank": [
+     3,
+     4
+    ],
+    "Silvane": [
+     0,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Barry Cloudsley": [
+     4,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Kaia": [
+     3,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Auriel": [
+     4,
+     4
+    ],
+    "Mortis": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Professor Puff": [
+     0,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Bo": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Opaline": [
+     0,
+     4
+    ],
+    "Sirix": [
+     4,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     4,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Mabel": [
+     3,
+     4
+    ],
+    "Vesper": [
+     4,
+     4
+    ],
+    "Marin": [
+     3,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Mum",
+   "n": 156,
+   "w": 86,
+   "pct": 55.1,
+   "ci": 7.8,
+   "avgSecs": 25.0,
+   "none": 0,
+   "dps": {
+    "Q": 12.58,
+    "W": 0.0,
+    "E": 4.09,
+    "R": 0.0,
+    "attack": 7.45,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 21.61,
+   "by": {
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Sefu": [
+     4,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ],
+    "Tempo": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Professor Puff": [
+     4,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Grandma Ironknit": [
+     2,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Kaia": [
+     3,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Pip": [
+     2,
+     4
+    ],
+    "Isolde": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Marin": [
+     0,
+     4
+    ],
+    "Silvane": [
+     4,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Ada": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     3,
+     4
+    ],
+    "Opaline": [
+     4,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Referee Whistler",
+   "n": 156,
+   "w": 60,
+   "pct": 38.5,
+   "ci": 7.6,
+   "avgSecs": 22.0,
+   "none": 0,
+   "dps": {
+    "Q": 12.51,
+    "W": 0.0,
+    "E": 0.0,
+    "R": 0.0,
+    "attack": 8.47,
+    "unit": 0.0,
+    "trait": 4.61
+   },
+   "takenDps": 27.11,
+   "by": {
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Silvane": [
+     0,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Vesper": [
+     2,
+     4
+    ],
+    "Sirix": [
+     3,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Ada": [
+     0,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     1,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "Wick": [
+     4,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     2,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Barry Cloudsley": [
+     1,
+     4
+    ],
+    "Lyra": [
+     2,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "The Great Zambini": [
+     2,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Cantor": [
+     1,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Madame Cleaver",
+   "n": 156,
+   "w": 72,
+   "pct": 46.2,
+   "ci": 7.8,
+   "avgSecs": 24.6,
+   "none": 0,
+   "dps": {
+    "Q": 11.74,
+    "W": 5.34,
+    "E": 0.0,
+    "R": 0.0,
+    "attack": 8.6,
+    "unit": 0.0,
+    "trait": 0.23
+   },
+   "takenDps": 28.01,
+   "by": {
+    "Tempo": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Isolde": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Sirix": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     1,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Pip": [
+     2,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Mabel": [
+     3,
+     4
+    ],
+    "Ada": [
+     2,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "Auriel": [
+     2,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Vesper": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Pip",
+   "n": 156,
+   "w": 85,
+   "pct": 54.5,
+   "ci": 7.8,
+   "avgSecs": 22.3,
+   "none": 0,
+   "dps": {
+    "Q": 11.72,
+    "W": 7.33,
+    "E": 0.0,
+    "R": 0.0,
+    "attack": 6.87,
+    "unit": 0.0,
+    "trait": 0.96
+   },
+   "takenDps": 25.24,
+   "by": {
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     2,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Fenna": [
+     3,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     1,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Wick": [
+     4,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     1,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Sefu": [
+     0,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Mum": [
+     2,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Mr. Ledger": [
+     3,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Auriel": [
+     4,
+     4
+    ],
+    "Tempo": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Kaia": [
+     3,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Vesper": [
+     3,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Gus",
+   "n": 156,
+   "w": 76,
+   "pct": 48.7,
+   "ci": 7.8,
+   "avgSecs": 21.9,
+   "none": 0,
+   "dps": {
+    "Q": 12.98,
+    "W": 0.0,
+    "E": 3.75,
+    "R": 0.0,
+    "attack": 9.67,
+    "unit": 0.0,
+    "trait": 0.87
+   },
+   "takenDps": 29.75,
+   "by": {
+    "Tempo": [
+     0,
+     4
+    ],
+    "Marin": [
+     4,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Lyra": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Professor Puff": [
+     2,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     1,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Pip": [
+     1,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Sefu": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Pim and Pom": [
+     0,
+     4
+    ],
+    "Sir Whiskers": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Silvane": [
+     2,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Bo": [
+     2,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     4,
+     4
+    ],
+    "Vesper": [
+     4,
+     4
+    ],
+    "Nyx": [
+     2,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Mabel",
+   "n": 156,
+   "w": 88,
+   "pct": 56.4,
+   "ci": 7.8,
+   "avgSecs": 22.4,
+   "none": 0,
+   "dps": {
+    "Q": 11.19,
+    "W": 0.0,
+    "E": 1.09,
+    "R": 4.74,
+    "attack": 10.18,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 27.34,
+   "by": {
+    "Sefu": [
+     3,
+     4
+    ],
+    "Isolde": [
+     1,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Bo": [
+     3,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Professor Puff": [
+     0,
+     4
+    ],
+    "Zephyr": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     0,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Marin": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Vesper": [
+     2,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Sirix": [
+     3,
+     4
+    ],
+    "Wick": [
+     4,
+     4
+    ],
+    "Gus": [
+     4,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Shiori": [
+     0,
+     4
+    ],
+    "Opaline": [
+     0,
+     4
+    ],
+    "Tempo": [
+     0,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Mortis": [
+     3,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Hank": [
+     2,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Mum": [
+     4,
+     4
+    ],
+    "Brannoc": [
+     3,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Grandma Ironknit",
+   "n": 156,
+   "w": 112,
+   "pct": 71.8,
+   "ci": 7.1,
+   "avgSecs": 24.3,
+   "none": 0,
+   "dps": {
+    "Q": 10.64,
+    "W": 0.0,
+    "E": 4.0,
+    "R": 3.25,
+    "attack": 7.77,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 21.32,
+   "by": {
+    "Bo": [
+     2,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Pip": [
+     2,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Sefu": [
+     3,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Opaline": [
+     4,
+     4
+    ],
+    "Mum": [
+     2,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Isolde": [
+     4,
+     4
+    ],
+    "Ada": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     4,
+     4
+    ],
+    "Nyx": [
+     2,
+     4
+    ],
+    "Mr. Ledger": [
+     3,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Sirix": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Tempo": [
+     4,
+     4
+    ],
+    "Lyra": [
+     4,
+     4
+    ],
+    "Vesper": [
+     1,
+     4
+    ],
+    "Madame Cleaver": [
+     4,
+     4
+    ],
+    "Marin": [
+     2,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Mabel": [
+     4,
+     4
+    ],
+    "Wick": [
+     4,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Barry Cloudsley",
+   "n": 156,
+   "w": 87,
+   "pct": 55.8,
+   "ci": 7.8,
+   "avgSecs": 20.5,
+   "none": 0,
+   "dps": {
+    "Q": 10.33,
+    "W": 7.04,
+    "E": 0.0,
+    "R": 0.0,
+    "attack": 8.04,
+    "unit": 0.0,
+    "trait": 4.25
+   },
+   "takenDps": 26.73,
+   "by": {
+    "Auriel": [
+     4,
+     4
+    ],
+    "Cantor": [
+     4,
+     4
+    ],
+    "Lyra": [
+     4,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     2,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Isolde": [
+     3,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Kaia": [
+     4,
+     4
+    ],
+    "Sir Whiskers": [
+     2,
+     4
+    ],
+    "Marin": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Anka": [
+     4,
+     4
+    ],
+    "Bo": [
+     2,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     2,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Vesper": [
+     4,
+     4
+    ],
+    "Referee Whistler": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     1,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "Silvane": [
+     3,
+     4
+    ],
+    "Tempo": [
+     2,
+     4
+    ],
+    "Opaline": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Ada": [
+     2,
+     4
+    ],
+    "Mum": [
+     1,
+     4
+    ],
+    "Gus": [
+     0,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     2,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Bo",
+   "n": 156,
+   "w": 88,
+   "pct": 56.4,
+   "ci": 7.8,
+   "avgSecs": 24.3,
+   "none": 0,
+   "dps": {
+    "Q": 9.82,
+    "W": 2.55,
+    "E": 3.39,
+    "R": 2.33,
+    "attack": 6.63,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 22.79,
+   "by": {
+    "Wick": [
+     3,
+     4
+    ],
+    "Grandma Ironknit": [
+     2,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Nyx": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Ada": [
+     4,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Big Yoko": [
+     1,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     2,
+     4
+    ],
+    "The Great Zambini": [
+     4,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Sefu": [
+     4,
+     4
+    ],
+    "Shiori": [
+     4,
+     4
+    ],
+    "Madame Cleaver": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     4,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Fenna": [
+     4,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Tempo": [
+     4,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Anka": [
+     2,
+     4
+    ],
+    "Gus": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     4,
+     4
+    ],
+    "Marin": [
+     3,
+     4
+    ],
+    "Sirix": [
+     3,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ]
+   }
+  },
+  {
+   "name": "The Great Zambini",
+   "n": 156,
+   "w": 64,
+   "pct": 41.0,
+   "ci": 7.7,
+   "avgSecs": 24.5,
+   "none": 0,
+   "dps": {
+    "Q": 10.27,
+    "W": 2.97,
+    "E": 0.3,
+    "R": 1.79,
+    "attack": 7.57,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 21.63,
+   "by": {
+    "Lyra": [
+     0,
+     4
+    ],
+    "Kaia": [
+     0,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Anka": [
+     2,
+     4
+    ],
+    "Tempo": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Mabel": [
+     4,
+     4
+    ],
+    "Sefu": [
+     3,
+     4
+    ],
+    "Auriel": [
+     1,
+     4
+    ],
+    "Fenna": [
+     2,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Wick": [
+     2,
+     4
+    ],
+    "Hank": [
+     1,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Zephyr": [
+     3,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Sirix": [
+     4,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Gus": [
+     3,
+     4
+    ],
+    "Bo": [
+     0,
+     4
+    ],
+    "Ada": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Big Yoko": [
+     3,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ],
+    "Marin": [
+     1,
+     4
+    ],
+    "Shiori": [
+     2,
+     4
+    ],
+    "Nyx": [
+     4,
+     4
+    ],
+    "Referee Whistler": [
+     2,
+     4
+    ],
+    "Brannoc": [
+     3,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Professor Puff": [
+     3,
+     4
+    ],
+    "Sir Whiskers": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     4,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Wick",
+   "n": 156,
+   "w": 66,
+   "pct": 42.3,
+   "ci": 7.8,
+   "avgSecs": 26.6,
+   "none": 0,
+   "dps": {
+    "Q": 8.96,
+    "W": 0.0,
+    "E": 3.49,
+    "R": 0.0,
+    "attack": 8.95,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 23.11,
+   "by": {
+    "Bo": [
+     1,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Shiori": [
+     3,
+     4
+    ],
+    "Big Yoko": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "Opaline": [
+     2,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "Sirix": [
+     2,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Kaia": [
+     1,
+     4
+    ],
+    "Referee Whistler": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     2,
+     4
+    ],
+    "Tempo": [
+     4,
+     4
+    ],
+    "Pim and Pom": [
+     3,
+     4
+    ],
+    "Oblivion": [
+     0,
+     4
+    ],
+    "Hank": [
+     2,
+     4
+    ],
+    "Mabel": [
+     0,
+     4
+    ],
+    "Nyx": [
+     3,
+     4
+    ],
+    "Mr. Ledger": [
+     2,
+     4
+    ],
+    "Marin": [
+     3,
+     4
+    ],
+    "Ada": [
+     1,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Mum": [
+     2,
+     4
+    ],
+    "Lyra": [
+     1,
+     4
+    ],
+    "Vesper": [
+     1,
+     4
+    ],
+    "Mortis": [
+     2,
+     4
+    ],
+    "Anka": [
+     1,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Auriel": [
+     3,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Brannoc": [
+     2,
+     4
+    ],
+    "Barry Cloudsley": [
+     3,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Vitriol": [
+     4,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Sefu": [
+     4,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Pim and Pom",
+   "n": 156,
+   "w": 73,
+   "pct": 46.8,
+   "ci": 7.8,
+   "avgSecs": 25.5,
+   "none": 0,
+   "dps": {
+    "Q": 12.74,
+    "W": 1.81,
+    "E": 0.37,
+    "R": 0.0,
+    "attack": 7.68,
+    "unit": 0.0,
+    "trait": 0.0
+   },
+   "takenDps": 28.46,
+   "by": {
+    "Big Yoko": [
+     2,
+     4
+    ],
+    "Auriel": [
+     4,
+     4
+    ],
+    "Brannoc": [
+     3,
+     4
+    ],
+    "Anka": [
+     3,
+     4
+    ],
+    "Fenna": [
+     3,
+     4
+    ],
+    "Sirix": [
+     4,
+     4
+    ],
+    "Oblivion": [
+     4,
+     4
+    ],
+    "Marin": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     1,
+     4
+    ],
+    "Zephyr": [
+     4,
+     4
+    ],
+    "Kaia": [
+     2,
+     4
+    ],
+    "Shiori": [
+     1,
+     4
+    ],
+    "Vesper": [
+     0,
+     4
+    ],
+    "Mr. Ledger": [
+     1,
+     4
+    ],
+    "Isolde": [
+     2,
+     4
+    ],
+    "Bram": [
+     2,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Professor Puff": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Hank": [
+     2,
+     4
+    ],
+    "Sefu": [
+     2,
+     4
+    ],
+    "Ada": [
+     3,
+     4
+    ],
+    "Mum": [
+     3,
+     4
+    ],
+    "Nyx": [
+     1,
+     4
+    ],
+    "Mortis": [
+     0,
+     4
+    ],
+    "Wick": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     1,
+     4
+    ],
+    "Tempo": [
+     0,
+     4
+    ],
+    "Silvane": [
+     1,
+     4
+    ],
+    "Bo": [
+     1,
+     4
+    ],
+    "Gus": [
+     4,
+     4
+    ],
+    "Lyra": [
+     2,
+     4
+    ],
+    "Opaline": [
+     0,
+     4
+    ],
+    "Mabel": [
+     3,
+     4
+    ],
+    "The Great Zambini": [
+     3,
+     4
+    ],
+    "Pip": [
+     3,
+     4
+    ],
+    "Barry Cloudsley": [
+     2,
+     4
+    ],
+    "Referee Whistler": [
+     1,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ]
+   }
+  },
+  {
+   "name": "Anka",
+   "n": 156,
+   "w": 28,
+   "pct": 17.9,
+   "ci": 6.0,
+   "avgSecs": 22.9,
+   "none": 0,
+   "dps": {
+    "Q": 9.22,
+    "W": 1.46,
+    "E": 0.23,
+    "R": 3.67,
+    "attack": 7.6,
+    "unit": 0.0,
+    "trait": 0.17
+   },
+   "takenDps": 23.05,
+   "by": {
+    "Brannoc": [
+     0,
+     4
+    ],
+    "Ada": [
+     0,
+     4
+    ],
+    "Marin": [
+     0,
+     4
+    ],
+    "Tempo": [
+     1,
+     4
+    ],
+    "Pim and Pom": [
+     1,
+     4
+    ],
+    "Pip": [
+     0,
+     4
+    ],
+    "Vesper": [
+     1,
+     4
+    ],
+    "Shiori": [
+     1,
+     4
+    ],
+    "Mr. Ledger": [
+     0,
+     4
+    ],
+    "The Great Zambini": [
+     2,
+     4
+    ],
+    "Big Yoko": [
+     0,
+     4
+    ],
+    "Auriel": [
+     1,
+     4
+    ],
+    "Mortis": [
+     1,
+     4
+    ],
+    "Mum": [
+     0,
+     4
+    ],
+    "Nyx": [
+     2,
+     4
+    ],
+    "Mabel": [
+     1,
+     4
+    ],
+    "Professor Puff": [
+     1,
+     4
+    ],
+    "Kaia": [
+     0,
+     4
+    ],
+    "Barry Cloudsley": [
+     0,
+     4
+    ],
+    "Referee Whistler": [
+     0,
+     4
+    ],
+    "Grandma Ironknit": [
+     0,
+     4
+    ],
+    "Sirix": [
+     0,
+     4
+    ],
+    "Hank": [
+     0,
+     4
+    ],
+    "Vitriol": [
+     0,
+     4
+    ],
+    "Lyra": [
+     0,
+     4
+    ],
+    "Fenna": [
+     1,
+     4
+    ],
+    "Sir Whiskers": [
+     0,
+     4
+    ],
+    "Madame Cleaver": [
+     1,
+     4
+    ],
+    "Oblivion": [
+     2,
+     4
+    ],
+    "Bram": [
+     1,
+     4
+    ],
+    "Wick": [
+     3,
+     4
+    ],
+    "Silvane": [
+     0,
+     4
+    ],
+    "Bo": [
+     2,
+     4
+    ],
+    "Gus": [
+     1,
+     4
+    ],
+    "Isolde": [
+     0,
+     4
+    ],
+    "Sefu": [
+     1,
+     4
+    ],
+    "Cantor": [
+     3,
+     4
+    ],
+    "Zephyr": [
+     0,
+     4
+    ],
+    "Opaline": [
+     1,
+     4
+    ]
+   }
+  }
+ ],
+ "foes": [
+  "Vesper",
+  "Brannoc",
+  "Isolde",
+  "Lyra",
+  "Vitriol",
+  "Kaia",
+  "Sefu",
+  "Nyx",
+  "Fenna",
+  "Auriel",
+  "Marin",
+  "Zephyr",
+  "Mortis",
+  "Ada",
+  "Sirix",
+  "Cantor",
+  "Opaline",
+  "Oblivion",
+  "Shiori",
+  "Tempo",
+  "Silvane",
+  "Bram",
+  "Hank",
+  "Professor Puff",
+  "Sir Whiskers",
+  "Mr. Ledger",
+  "Big Yoko",
+  "Mum",
+  "Referee Whistler",
+  "Madame Cleaver",
+  "Pip",
+  "Gus",
+  "Mabel",
+  "Grandma Ironknit",
+  "Barry Cloudsley",
+  "Bo",
+  "The Great Zambini",
+  "Wick",
+  "Pim and Pom",
+  "Anka"
+ ],
+ "arenas": {
+  "frost": 360,
+  "skyruins": 323,
+  "battlefield": 348,
+  "canyon": 318,
+  "glade": 369,
+  "cavern": 357,
+  "temple": 348,
+  "harbour": 354,
+  "caldera": 343
+ },
+ "errors": [],
+ "errorCount": 0,
+ "standing": []
+}

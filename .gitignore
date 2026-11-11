@@ -11,3 +11,4 @@ docs/arenas/*.mp4
 
 # Poly Haven source models and textures (CC0): fetched again with pipeline/tools/polyhaven-get.mjs
 pipeline/assets/polyhaven/
+pipeline/sim/out/

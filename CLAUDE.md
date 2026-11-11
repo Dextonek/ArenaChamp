@@ -69,6 +69,12 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   the same path, let's just make new rules for hero creation". Ten rules, six gates that each end in a picture and
   the user's yes (the look is agreed before any spell is built), one checklist. The user said "continue" to them;
   Anka the Firebird (the Phoenix fire dancer, the user's pick for hero 40) is the first to be built by them.
+- **Balance is measured with the fight simulator, and results are shown as a page (2026-11-11).** The user: "can we
+  make like simulator of fights so we dont need to test all the duels", and "make like visualization for everything
+  you make, like page or something". `python pipeline/sim/sim.py hero <Name>` (docs/pipeline/simulator.md) runs real
+  CPU duels in hidden browsers: one hero's check in 45 s, the whole roster in about 15 min. Offered a separate Rust
+  simulator with the rules written again, the user chose Python on the real game. Numbers, comparisons and designs
+  go to the user as a page (an HTML file shown in the thread), not as a wall of text.
 - **Boss difficulty** is measured with `_raid(...)` (`pipeline/tools/raid-tool.js`) in tool-page tabs: four tabs in
   parallel, about 10 minutes for 39 heroes each; any edit under `src/` or `pipeline/` reloads the tabs and kills the
   runs; one run of 39 fights swings by about ±8 points.
@@ -83,3 +89,4 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   saved to a file, `python -I pipeline/tools/save-shot.py <file> <out.jpg>`.
 - Clips: `pipeline/tools/clip-film.js` with `node pipeline/tools/frame-sink.mjs <folder>` and `ffmpeg`.
 - Long Python edit scripts: write the script to a file, then run it (shell here-docs with many quotes break).
+- Balance: `python pipeline/sim/sim.py hero <Name> [--open]`; it starts and stops its own server (port 5181).
