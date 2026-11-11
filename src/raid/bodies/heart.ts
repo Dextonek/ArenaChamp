@@ -28,7 +28,9 @@ const BLADE = { x: 3.15, y: 2.9, z: 0.5 };
 const GLOW_CORE = [0.09, 0.13, 0.19];
 /** However a cast or a beat swells it, the core never glows more than this many times its phase's own. */
 const GLOW_SWELL = 2.2;
-const GLOW_MASK = 0.14;
+const GLOW_MASK = 0.2;
+/** Its eyes, white fire: brighter than the rest of the face, small enough not to bloom it away. */
+const GLOW_EYES = 1.5;
 const GLOW_RING = 0.55;
 const GLOW_BLADE = 0.6;
 
@@ -63,7 +65,7 @@ export function resetHeartLive() {
   HEART_LIVE.struck = 99;
 }
 
-interface Mem { phase: number; kneel: number; spin: number[]; crown: number; beat: number }
+interface Mem { phase: number; kneel: number; spin: number[]; crown: number; beat: number; eyes: THREE.MeshStandardMaterial[] }
 const mem = new WeakMap<BodyParts, Mem>();
 const Q = new THREE.Quaternion();
 const Q2 = new THREE.Quaternion();
@@ -81,6 +83,8 @@ function spin(p: BodyParts, name: string, axis: THREE.Vector3, angle: number) {
  * the camera, caught the light whole and bloomed white, and the face is the point of the figure.
  */
 const MATTE = 0.58;
+const MASK_MATTE = 0.78;
+const MASK_TONE = 0.7;
 function matte(p: BodyParts) {
   for (const name of ['mask', 'crown', 'ringA', 'ringB', 'ringC', 'bladeL', 'bladeR']) {
     p.node(name)?.traverse((o) => {
@@ -88,7 +92,14 @@ function matte(p: BodyParts) {
       if (!mesh.isMesh) return;
       for (const mat of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) {
         const std = mat as THREE.MeshStandardMaterial;
-        if (std.isMeshStandardMaterial && std.metalness > 0.5) std.roughness = Math.max(std.roughness, MATTE);
+        if (!std.isMeshStandardMaterial || std.metalness <= 0.5) continue;
+        std.roughness = Math.max(std.roughness, MATTE);
+        // The face a shade darker and duller still: it faces the camera and the sun at once.
+        if (name === 'mask') {
+          std.roughness = Math.max(std.roughness, MASK_MATTE);
+          std.metalness = Math.min(std.metalness, 0.6);
+          std.color.multiplyScalar(MASK_TONE);
+        }
       }
     });
   }
@@ -97,8 +108,13 @@ function matte(p: BodyParts) {
 export const heartLook: BodyLook = (s, p) => {
   let m = mem.get(p);
   if (!m) {
-    mem.set(p, m = { phase: s.phase, kneel: s.kneeling ? 1 : 0, spin: [0, 0, 0], crown: 0, beat: 0 });
+    mem.set(p, m = { phase: s.phase, kneel: s.kneeling ? 1 : 0, spin: [0, 0, 0], crown: 0, beat: 0, eyes: [] });
     matte(p);
+    p.node('mask')?.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      for (const mat of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) if (mat.name.endsWith('eyes')) m!.eyes.push(mat as THREE.MeshStandardMaterial);
+    });
   }
   const dt = Math.min(s.dt, 0.1);
   m.phase += (s.phase - m.phase) * Math.min(1, dt * 1.6);
@@ -240,6 +256,7 @@ export const heartLook: BodyLook = (s, p) => {
   // Its light, low under the bloom. The rings dim when locked.
   p.glow('core', coreGlow * alive);
   p.glow('mask', GLOW_MASK * maskGlow * alive);
+  for (const e of m.eyes) e.emissiveIntensity = GLOW_EYES * Math.min(2, maskGlow) * alive;
   p.glow('crown', (0.5 + noon * 0.4 + strike) * alive);
   RINGS.forEach((name, i) => p.glow(name, GLOW_RING * ringGlow * (0.25 + 0.75 * HEART_LIVE.rings[i].lit) * (1 + HEART_LIVE.rings[i].down * 0.6) * alive));
   p.glow('bladeL', GLOW_BLADE * alive);

@@ -69,7 +69,8 @@ Rays 15 %. Tier extras: the Crown of Rays, then the rings, then the Heartbeat, f
 - **The plates fall as part of the Heartbeat's look,** not off the model: the crust is one mesh. A raised plate is cover on both
   screens (`addStone`) until the same moment after the cast.
 - **The gold of the face, crown, rings and blades is less polished in the game** (roughness 0.58, set in code): under the game's sun the
-  face, tilted up to the camera, bloomed white. Its glow is kept low as the other bosses' are. The Blender file is unchanged.
+  face, tilted up to the camera, bloomed white. The face itself is duller still and a shade darker, its eyes lit on their own. Its glow
+  is kept low as the other bosses' are. The Blender file is unchanged. The sheet's face beside the game's: `docs/bosses/heart-face-compare.jpg`.
 - **Its room's gates stand out in the lava** (`BossDef.gates.r`, 16.2 m): at the edge of so small a floor the way in stood over the
   bottom of the screen.
 
