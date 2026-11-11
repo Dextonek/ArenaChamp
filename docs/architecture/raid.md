@@ -411,6 +411,11 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **Ash's body is 1.8 m wide for hits,** his forearms reach about 2.5 m: a hit on a fist's tip still misses.
 - **The Heart's body state is one per page** (`HEART_LIVE`): its moves set it and its body reads it. One fight a page, as the game and the
   tools run; the kit clears it when a fight starts.
+- **The Heart at higher tiers.** From tier 3 The Rings Turn is in its first phase's list too and also opens the second, so for a moment six
+  beams can turn. From about tier 8 the Heartbeat gathers too briefly to raise a plate in time: the plates' fall and the 3 s hold don't
+  shorten with the tier. Tiers 3 and 4 ran with no errors.
+- **Some upgrades and omens barely touch the Heart:** Sun Eater has no gold zone to stand in, and Molten Ground pours only where a plain
+  orange circle lands, which the Heart's lines, cones and rings are not.
 - **The Heart was not played for two in two tabs.** `_raidHeart()` gives a partner's lock and plate on this screen through the same `done`
   the hub sends; a bot raid online through the local server was not run for it.
 - **The hall's cards are page elements over the 3D**, placed each frame. On a small phone they can sit over each other near the edge.
