@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Balance pass</title>
+<style>
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37); --panel: var(--card, #1a1a19);
+    --before: var(--chart-2, #d95926); --after: var(--chart-1, #3987e5); --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, sans-serif; }
+  html.standalone body { max-width: 900px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 22px 0 4px; }
+  p.sub { margin: 0 0 10px; color: var(--ink-2); font-size: 13px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; overflow-x: auto; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--ink-2); margin-bottom: 10px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+  .rows { display: grid; grid-template-columns: max-content 1fr max-content; gap: 6px 10px; align-items: center; min-width: 300px; }
+  .name { font-size: 13px; white-space: nowrap; }
+  .name small { color: var(--ink-2); }
+  .track { position: relative; height: 22px; }
+  .band { position: absolute; left: 40%; width: 20%; top: 0; bottom: 0; background: color-mix(in oklab, var(--ink) 8%, transparent); }
+  .half { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: var(--ink-2); opacity: .35; }
+  .link { position: absolute; top: 10px; height: 2px; background: var(--ink-2); opacity: .5; }
+  .dot { position: absolute; top: 6px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; box-shadow: 0 0 0 2px var(--panel); }
+  .val { font-size: 12px; color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .axis { grid-column: 2; position: relative; height: 16px; font-size: 11px; color: var(--ink-2); }
+  .axis span { position: absolute; transform: translateX(-50%); }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 500; font-size: 12px; color: var(--ink-2); padding: 4px 12px 6px 0; border-bottom: 1px solid var(--line); }
+  td { padding: 6px 12px 6px 0; border-bottom: 1px solid color-mix(in oklab, var(--line) 55%, transparent); font-size: 13px; vertical-align: top; }
+  ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+  ul li { margin: 4px 0; }
+  ul b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const H = [
+    { name: 'Sirix', change: 'Health 720 → 640', before: 83.3, after: 53.3, both: 51.9 },
+    { name: 'Cantor', change: 'Health 680 → 740; Resounding Chord 52 → 60', before: 13.3, after: 54.6, both: 38.9 },
+    { name: 'Nyx', change: 'Health 640 → 680; Umbral Cut 54 → 58 (93 from behind)', before: 28.9, after: 56.4, both: 56.4 },
+  ];
+  const app = document.getElementById('app');
+  const el = (t, a = {}, ...k) => { const e = document.createElement(t); for (const [x, v] of Object.entries(a)) x === 'html' ? (e.innerHTML = v) : e.setAttribute(x, v); e.append(...k); return e; };
+  app.append(el('h1', {}, 'Balance pass'), el('p', { class: 'sub' }, 'Every hero against every other in the fight simulator, then the heroes at the edges checked again. Three heroes changed. Not live yet.'));
+  app.append(el('h2', {}, 'The three heroes that changed'));
+  app.append(el('p', { class: 'sub' }, 'Wins as the player’s hero against the six benchmark heroes. The shaded band is the target, 40 to 60%. Nyx’s last number is over both sides: her final change was measured that way.'));
+  const box = el('div', { class: 'box' });
+  box.append(el('div', { class: 'legend', html: '<span><i style="background:var(--before)"></i>before</span><span><i style="background:var(--after)"></i>after</span>' }));
+  const g = el('div', { class: 'rows' });
+  for (const h of H) {
+    const lo = Math.min(h.before, h.after), hi = Math.max(h.before, h.after);
+    const t = el('div', { class: 'track' }, el('div', { class: 'band' }), el('div', { class: 'half' }),
+      el('div', { class: 'link', style: `left:${lo}%;width:${hi - lo}%` }),
+      el('div', { class: 'dot', style: `left:${h.before}%;background:var(--before)` }),
+      el('div', { class: 'dot', style: `left:${h.after}%;background:var(--after)` }));
+    g.append(el('div', { class: 'name' }, h.name), t, el('div', { class: 'val' }, `${h.before.toFixed(0)}% → ${h.after.toFixed(0)}%`));
+  }
+  const ax = el('div', { class: 'axis' });
+  for (const v of [0, 25, 50, 75, 100]) ax.append(el('span', { style: `left:${v}%;transform:translateX(${v === 0 ? '0' : v === 100 ? '-100%' : '-50%'})` }, v + '%'));
+  g.append(el('div'), ax, el('div'));
+  box.append(g);
+  app.append(box);
+  const tb = el('table');
+  tb.append(el('tr', {}, el('th', {}, 'Hero'), el('th', {}, 'Change'), el('th', {}, 'As player’s hero'), el('th', {}, 'Both sides')));
+  for (const h of H) tb.append(el('tr', {}, el('td', {}, h.name), el('td', {}, h.change), el('td', {}, `${h.before.toFixed(0)}% → ${h.after.toFixed(0)}%`), el('td', {}, `${h.both.toFixed(0)}%`)));
+  app.append(el('h2', {}, 'The changes'), el('div', { class: 'box' }, tb));
+  app.append(el('h2', {}, 'Left alone, on purpose'));
+  const ul = el('ul');
+  for (const n of [
+    '<b>Hank</b> wins 79% over the roster, but 58% as the player’s hero. He is strong because the opponent’s computer player plays him well: a computer-player fix, not a kit fix.',
+    '<b>Auriel</b> wins 31% over the roster, but 76% as the player’s hero. The opponent’s computer player plays her badly. Same fix.',
+    '<b>Cantor</b> is now 55% as the player’s hero, but 39% over both sides, for the same reason. A stronger kit would make him too strong in a person’s hands.',
+    '<b>Pip</b> looked strong only because he beats Cantor 29 times in 30. Against the other benchmark heroes he wins 58%.',
+    '<b>Fenna, Referee Whistler, Mr. Ledger, Shiori</b> look weak over the roster but are inside the band as the player’s hero. Each roster number swings by about ±8 points.',
+  ]) ul.append(el('li', { html: n }));
+  app.append(el('div', { class: 'box' }, ul));
+  app.append(el('p', { class: 'sub', style: 'margin-top:12px' }, 'Whole roster before and after: docs/balance/roster-2026-11-11-before.html, roster-2026-11-11-after.html.'));
+})();
+</script>
+</body>
+</html>
