@@ -911,13 +911,14 @@ export class Duel {
     for (const [side, p] of this.party) {
       p.update(dt);
       if (p.left) continue;
-      const key = `partner${side}`, shown = p.down || p.lite ? null : p.pos;
+      // In a big party the bars over every head hid the fight: only the names stay there, and the list has everyone's HP.
+      const key = `partner${side}`, shown = p.down || p.lite ? null : p.pos, big = this.party.size > 1;
       const y = plateHeight(p.enemy);
-      const top = this.traitFx.plate(key, shown, y, shown ? { hp: p.hp, max: p.max, mine: true, shield: 0, chunks: p.kit.hpChunks ?? 0, meter: null } : null, cam);
+      const top = big ? y : this.traitFx.plate(key, shown, y, shown ? { hp: p.hp, max: p.max, mine: true, shield: 0, chunks: p.kit.hpChunks ?? 0, meter: null } : null, cam);
       // In a big party a stand-in's name shows only when it is down: a fallen hero must be found.
       const label = p.down ? (p.revivesLeft > 0 ? { text: `${p.name}: stand here`, color: '#ffe27a' } : { text: p.name, color: '#a8a0a0' }) : p.lite ? null : { text: p.name, color: '#a8e0b0' };
       this.traitFx.label(key, label ? p.pos : null, p.lite ? 1.9 : top + 0.4, label);
-      this.traitFx.ring(key, shown, { radius: 0.9, color: p.kit.accent, opacity: 0.55 });
+      this.traitFx.ring(key, big ? null : shown, { radius: 0.9, color: p.kit.accent, opacity: 0.55 });
       if (!p.down || p.revivesLeft <= 0 || reviving) {
         if (!p.down) p.revive = 0;
         continue;
