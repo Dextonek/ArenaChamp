@@ -2,6 +2,21 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
+## The Raid grows (2026-11-11): omens, rarer upgrades, side doors committed; the third boss and 40 players in progress; NOT live
+
+User: "lets enchance the raid more lets evolve it more"; chose all five options of `pipeline/designs/raid-next.html`, then asked for
+a raid for up to 40 players (`pipeline/designs/raid-party.md`: difficulty in bands, a public list and codes, built now, Rewards after).
+- **Done, committed, not live:** Omens (`6830cc4`), rare, legendary and dark upgrades (`6830cc4`), side doors to the Vault and the
+  Shrine (`dad6273`). Checked: type check, `npm run test:server` (with a side-door case), `_raidUpgrades`, the raid tool with each
+  omen and the new upgrades (no errors), pictures of the hall, a dark fight with lava, the rarities, the doors and the Vault. Not
+  checked: the side doors for two in two browsers; the Shrine's room on screen.
+- **In progress:** the third boss, the Heart of Noon. The user approved its look (`docs/bosses/heart_sheet.jpg`, `e4bd0d1`); a
+  helper builds its room and fight in its own worktree (port 5191; its `PROTOCOL` 7 bump is only there). Merge it when it reports.
+- **In progress:** the raid for 40 (`pipeline/designs/raid-party.md`). Not in code yet.
+- **Waiting:** Rewards (option E), after the raid for 40.
+- **The friend brackets' server half is in `git stash`** ("friend brackets: server half"), out of the working tree. So the three
+  server files are no longer uncommitted, and older lines below that say so are out of date.
+
 ## Balance pass (2026-11-11): Sirix, Cantor, Nyx changed; committed, NOT live
 
 User: "lets try all battles duels in simulator" and "balance them after". Whole roster run (3,120 fights,
