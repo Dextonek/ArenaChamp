@@ -128,6 +128,19 @@ messages, the band, majority side doors, the brain's watchdog. The client now se
 handles `brain_moved` (`BossFight.dropBrain`) and takes the gauge's size from `raid_stage`. Not done: a raid of bots through the real
 hub; `docs/architecture/raid.md` and `multiplayer.md` for the new messages; the Heart's branch still says PROTOCOL 7 (take 8).
 
+## Unique mechanics, one per boss (user, 2026-11-11)
+
+> "and can we make like uniques mechanics for the bosses"
+
+Nine ideas were shown (`pipeline/designs/raid-mechanics.html`); the user picked one per boss:
+- **The Sun Warden: The Hour Strikes.** In the Hall of Noon he calls an hour: three of the hall's four arms fill with sunfire, the sun
+  road on the floor lights in the one safe arm, and the whole party runs there before the bell. A party's mechanic (the hall).
+- **Ash and Ember: Twin Flames.** For a party both fight at once, one on each side of a wall of fire that splits the room and the
+  party; their health must fall together, or the one behind grows furious. Each screen still has one enemy (its side's boss) and the
+  other is only drawn, so the engine's rule holds; the hub keeps two HP pools. The biggest of the three; built after the other two.
+- **The Heart of Noon: Hold Still.** The heart beats in a rhythm shown on the floor; on the beat anyone moving is burnt; between
+  beats, run. The rhythm quickens as it dies.
+
 ## State (2026-11-11)
 
 - Not started in code. The Heart of Noon is being built by a helper in its own worktree (its `PROTOCOL` 6 -> 7 is only there; main

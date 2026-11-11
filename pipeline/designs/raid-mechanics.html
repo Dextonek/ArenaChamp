@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Boss mechanics</title>
+<style>
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37);
+    --panel: var(--card, #1a1a19); --gold: #e0a83a; --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, sans-serif; }
+  html.standalone body { max-width: 900px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 16px; margin: 24px 0 2px; }
+  p.sub { margin: 0 0 10px; color: var(--ink-2); font-size: 13px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+  .card.pick { border-color: var(--gold); }
+  .card h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: baseline; }
+  .card h3 .k { color: var(--gold); font-weight: 700; }
+  .card .tag { font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: .05em; }
+  .card p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .card p b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>One-of-a-kind mechanics for each boss</h1>
+<p class="sub">Three ideas per boss. Each is something only that boss does, works by walking (so it works on a phone), and grows with the party. Pick the ones you like.</p>
+<div id="app"></div>
+<script>
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const B = [
+    { name: 'The Sun Warden', sub: 'In the Hall of Noon, the cross-shaped room. His theme: the sundial and its hours.', items: [
+      { k: 'W1', name: 'The Hour Strikes', pick: true, what: 'He calls an hour. Three of the hall’s four arms fill with sunfire; the sun road on the floor lights up in the <b>one safe arm</b>. The whole party runs there before the bell.', why: 'Uses the shape of the room. 40 players running down one hall is a real raid moment.' },
+      { k: 'W2', name: 'Carry the Sun', what: 'Sun shards fall at the far ends of the arms. Carriers bring them back to the Sun Well in the middle. <b>One shard per 5 players</b>; a carrier is slow, so the others must block his rays for them.', why: 'The party version of what he does today for two.' },
+      { k: 'W3', name: 'Branded', what: 'He brands a few players with a small sun over their head. After 5 s each brand bursts around its carrier. Branded players must <b>run away from the group</b>, into the side wings.', why: 'Splits the crowd; everyone watches who is marked.' },
+    ] },
+    { name: 'Ash and Ember', sub: 'The brute and the flame. Their theme: two bosses that are one.', items: [
+      { k: 'A1', name: 'Twin Flames', pick: true, what: 'For a party they <b>both fight at once</b>, one on each side of a wall of fire that splits the room and the party. Their health must fall together: if one is far ahead, the other grows furious.', why: 'Only a pair of bosses can do this. Two teams have to talk to each other.' },
+      { k: 'A2', name: 'Lantern Chain', what: 'Ember links two players with a burning chain. They must <b>stay close</b> or it snaps and burns both. Ash’s rocks then force them to move as one.', why: 'A two-player dance inside the big fight.' },
+      { k: 'A3', name: 'Seal the Vents', what: 'Lava vents open across the floor, <b>one per 5 players</b>. Each needs someone standing on it. Every vent left open makes the lava rise faster.', why: 'Everyone has a job; grows cleanly with the party.' },
+    ] },
+    { name: 'The Heart of Noon', sub: 'The fallen sun itself. Its theme: a heartbeat.', items: [
+      { k: 'H1', name: 'Hold Still', pick: true, what: 'The heart beats in a slow rhythm you can see on the floor. <b>On the beat, stand still</b>: anyone moving is burnt. Between beats, run. The rhythm speeds up as it dies.', why: 'Nothing else in the game plays like this. Easy to understand, hard to do while dodging.' },
+      { k: 'H2', name: 'Take the Blade', what: 'One of its sun blades falls. A player who picks it up <b>hits far harder for 12 s</b> but walks slowly and draws its attacks. The party protects the carrier.', why: 'One player becomes the hero of the moment.' },
+      { k: 'H3', name: 'Shade the Heart together', what: 'Before the big pulse, crust plates fall: <b>one per 5 players</b>. Each must be raised, and each plate shelters only a few heroes, so the party has to split up behind them.', why: 'The party version of its plate mechanic.' },
+    ] },
+  ];
+  const app = document.getElementById('app');
+  for (const b of B) {
+    const h = document.createElement('h2'); h.textContent = b.name;
+    const s = document.createElement('p'); s.className = 'sub'; s.textContent = b.sub;
+    const c = document.createElement('div'); c.className = 'cards';
+    for (const i of b.items) {
+      const d = document.createElement('div');
+      d.className = 'card' + (i.pick ? ' pick' : '');
+      d.innerHTML = `<h3><span class="k">${i.k}</span>${i.name}</h3>${i.pick ? '<div class="tag">my pick</div>' : ''}<p>${i.what}</p><p><i>${i.why}</i></p>`;
+      c.append(d);
+    }
+    app.append(h, s, c);
+  }
+})();
+</script>
+</body>
+</html>
