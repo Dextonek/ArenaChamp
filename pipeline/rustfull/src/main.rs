@@ -7,6 +7,7 @@
 
 mod ai;
 mod attack;
+mod figure;
 mod geom;
 mod status;
 mod zone;
