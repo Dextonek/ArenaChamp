@@ -101,6 +101,12 @@ export interface Threat {
   warn?: boolean;
   /** It kills whoever it hits, whatever shield or toughness: Ash's Charge. */
   lethal?: boolean;
+  /**
+   * It burns only a hero that is walking as it lands (the Heart's Hold Still): one that went more than a step's slack by its own walk or
+   * dash in the moment before (`BossWorld.walked`). Standing still costs nothing, casting or not, and a blow or a carry is no walk. It is
+   * no zone to leave: an AI doesn't walk out of it but stands for it (`BossScript.stillIn`), and summoned units are left alone.
+   */
+  moving?: boolean;
   landed?: boolean;
   lastHit?: number;
 }
@@ -530,6 +536,8 @@ export interface BossWorld {
   me(): THREE.Vector3;
   /** It has fallen: nothing can hit it, and it stands in no zone. */
   down(): boolean;
+  /** How far it went by its own walk or dash in the last `seconds` (m). What a blow, a pull or a carry moved it doesn't count. */
+  walked(seconds: number): number;
   /** The heroes the brain may aim at: on one screen just this one. */
   heroes(): { side: RaidSide; x: number; z: number; down: boolean }[];
   /** Where the partner lies, while this hero can still get it up. */

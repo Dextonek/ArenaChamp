@@ -87,6 +87,7 @@ by the hub online and by `LocalLink` alone. Only the screen that runs the brain 
 | Ash, in the ring | Hide behind a pillar | His Charge comes every 14 s he is in the ring and kills whoever it reaches. Get one of the four pillars between you and him | He crashes into it and it breaks; he kneels 5 s (a stun: the gauge keeps what it had) |
 | Ember, any | Burn your own | Carry Marked onto whichever of them is in the ring. The brain says in the landing cast whether the boss stood under it | 4 % of max HP and +40 on the gauge |
 | Together | Seal the vent | The vent opens at 6 s, then again 25 s later. Stand on it for 4 s, hits or not, casting stops it | The lava waits 20 s longer, and +40 on the gauge |
+| Heart, every phase | Hold Still | Its heart beats in runs: white light runs in along the floor's rings and lands on them on each beat, and a white ring closes round your own hero. Stop walking before each beat (let go of the stick, or S); casting is fine. Between beats, run | Nothing: a beat burns only who is walking, 12 % |
 | Heart, The Rings Turn on | Lock a ring | Each ring's beam has a gold spot on the rim. Hold it 2 s, hits or not, casting stops it | That ring's beam goes out for 8 s, then warns 0.8 s and burns again; +40 on the gauge, once per ring |
 | Heart, Noon Falls | Shade the heart | Each Heartbeat throws three crust plates out as gold spots 6.8 m from it. Hold one 3 s and it stands up on the heart's side of its spot (cover, `addStone`), for both screens. Only cover between you and the heart saves you from the beat | No 40 % from the beat |
 
@@ -223,7 +224,8 @@ Small hooks elsewhere: `Arena.pinned`, `statusGate`, `foeFloor`, `onFoeDamage` a
 
 | Rule | How |
 |---|---|
-| Colours | Pale orange means leave, gold means stand here (`LEAVE_COLOR`, `STAND_COLOR`). Gold zones also get a rising light, because the two colours are close |
+| Colours | Pale orange means leave, gold means stand here (`LEAVE_COLOR`, `STAND_COLOR`). Gold zones also get a rising light, because the two colours are close. White means stand still, wherever you are (`STILL_COLOR`: the Heart's Hold Still, drawn by its move as fine lines, never a filled zone) |
+| Only who walks | A zone can burn only a hero that is walking as it lands (`Threat.moving`): one that went more than 0.25 m in the 0.25 s before (`STILL_SLACK`, `STILL_WINDOW`) by its own walk or a dash. The duel keeps that (`BossWorld.walked`, `Duel.logWalk`) and takes off what a blow, a pull, a carry or a stone raised under the hero moved it (`Duel.shove`). Such a zone is no danger to an AI's walk, pours no lava, counts no near miss and leaves units alone; an AI stops walking 0.36 s before it (`BossScript.stillIn`) and starts no dash within 0.9 s |
 | Not moved | `Arena.pinned`: knockback, pull, carry and displacement leave it alone. Its own walk still moves it |
 | Control | `Arena.statusGate` asks `BossFight.control` first. Stun, knock-up, root, charm, sealed, silence and blind add to the gauge instead of landing (per second of it). Slow lands at half length |
 | Kneeling | A full gauge: `StatusSet.hold`, so rules that look for a stunned target see it, and +50 % damage taken for 6 s. Steps not yet sent are dropped; what already shows still lands |
@@ -334,8 +336,31 @@ Alone 3,300 HP, for two 7,100. Enrage 2:45. Its body reaches 2 m: its rings, bea
 | The Rings Turn | 66 % | The Rings Turn | 2.5 s, then 15 s | 10 % a second in a beam | Three beams from its foot to the rim, turning at 18, 13 and 23° a second, two one way and one the other. Lock a ring (above) |
 | Noon Falls | 33 % | Heartbeat | 10 s, every 20 s | 40 % | Shade the heart (above). The floor burns from 2.2 m to the rim; at its foot is a hole, so Molten Ground leaves no pool under it |
 | | | Crown of Rays | 2.2 s, then 1 s apart | 15 % | Four rays (one at you), then the four between them. Stand between, then step into where the first fired |
+| All | | Hold Still | 3 s, then a run of beats: 3 beats 2.6 s apart, then 4 at 2.1 s, then 5 at 1.6 s | 12 % a beat, only if you are walking | Stop walking before each beat. Runs come by the clock: 9 s into Embers Wake and every 21 s; 11 s into The Rings Turn and 13 s into Noon Falls, then every 20 s |
 
-Noon Falls has all its moves. **How it stays within the rules.** Each ring of The Rings Turn is its own step and cast (`steps: [0, 0, 0]`),
+Noon Falls has all its moves.
+
+**Hold Still** (user, 2026-11-11: "The heart beats in a slow rhythm you can see on the floor. On the beat, stand still: anyone moving is
+burnt. Between beats, run. The rhythm speeds up as it dies."; pictures `docs/bosses/heart-holdstill-*.jpg`). Its signature, and the
+only thing in the game that asks you not to move.
+
+- **By the clock, on top of the rest** (`BossPhase.timed`, `alongside`, `quiet`): it takes no cast bar, no pose and no turn of the Heart,
+  and its other moves go on through it. That is the point of it: easy to understand, hard to do while dodging. A move can't see the
+  phase, so each phase has its own move from one recipe (`still`, `still2`, `still3`), which is how the rhythm quickens. A whole run is
+  one cast that aims at nobody, so its beats can't drift between screens; each screen judges its own hero, so it is the same for one
+  hero or forty.
+- **What you see.** Fine white lines run in along the floor from each joint between its rings of plates to the next, and land on the
+  joint on the beat; 0.45 s before it the joints turn white (stop now), and they flash as it strikes. Round your own hero a white ring
+  closes onto a second one on the beat (`PlayContext.heroAt`, a look only), so the beat reads at your feet on a phone that can't see the
+  heart. The Heart fills as the light runs in and clenches on the beat (`HEART_LIVE.fill`, `clench`).
+- **With its other mechanics.** Nothing is made impossible, because the moment that counts is short (0.25 s) and standing is what
+  several of them ask anyway. Solar Flare: where its three rings' gaps overlap you can stand through flare and beats alike. Lock a
+  ring and Shade the heart: holding a spot is standing still. Blade Fall (shown 1.4 s) and Blade Sweep (1.7 s) leave over a second to
+  step out before or after a beat. The beams are the hard one, and meant to be: stop a step ahead of a beam. In Noon Falls a run
+  falls between two Heartbeats when both keep their clocks; when the Heartbeat slips later, the beats come while you already stand
+  behind your plate. A new phase's first run comes after the last phase's has ended. `_raidHeart()` checks the flare and the plate.
+- **Tiers.** The 3 s before the first beat and the time between beats shorten as other shown times do (`p.shown`), never under 1 s
+  between beats. **How it stays within the rules.** Each ring of The Rings Turn is its own step and cast (`steps: [0, 0, 0]`),
 so each has its own spot and each lock is paid once (`RAID_REWARDS.heart.lock`, `${id}:lock`). A beam's angle depends only on the time since
 its cast; a lock puts it out for 8 s rather than pausing it, so two screens that hear the lock a moment apart still agree on where it is.
 A raised plate stands until the same moment after its cast on every screen (`addStone` with the seconds left), whenever that screen heard of
@@ -343,7 +368,9 @@ it. Solar Flare's first gap is the brain's aim (the cast's `dir`), the rest is t
 
 **For the autopilot.** Each ring of Solar Flare tells an AI its whole run at once (`Threat.look`): it grows, so a spot clear for the next
 moment is not clear. The AI still drifts out of a lane's edge as it goes back to fighting, so Solar Flare costs it more than it should cost a
-person.
+person. For Hold Still it stops walking 0.36 s before each beat and goes on casting (`BossScript.stillIn`; in `Duel.pilot` it counts as
+unable to move), and starts no dash within 0.9 s of one. It stood for 236 of 237 beats in 12 fights, so a beat costs it almost
+nothing directly: what it pays is a zone it could not step out of in that moment.
 
 ## The lairs
 
@@ -426,6 +453,10 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   shorten with the tier. Tiers 3 and 4 ran with no errors.
 - **Some upgrades and omens barely touch the Heart:** Sun Eater has no gold zone to stand in, and Molten Ground pours only where a plain
   orange circle lands, which the Heart's lines, cones and rings are not.
+- **Hold Still was not played by a person,** on a desktop or a phone: whether the 0.25 s and the white lines feel fair is for a hand to
+  say. A walk order by tap or click goes on to its end, so a hero sent far keeps walking into the beat: let go of the stick, press S,
+  or tap near. A hero's own spell that moves it without being marked a dash (`HeroSpell.dash`) counts as walking, and the autopilot
+  doesn't know to hold it. The ring at the feet stays round a fallen hero until the run ends.
 - **The Heart was not played for two in two tabs.** `_raidHeart()` gives a partner's lock and plate on this screen through the same `done`
   the hub sends; a bot raid online through the local server was not run for it.
 - **The hall's cards are page elements over the 3D**, placed each frame. On a small phone they can sit over each other near the edge.
@@ -450,10 +481,12 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - `pipeline/tools/raid-check.js`: `_raidCheck()` forces each of the Warden's moves and checks what it costs, walking out, cover and the
   boss's own rules, his stage (adds, the relay, the kneel, the fail and its cover) and the enrage. `_raidAsh()` does the same for Ash and Ember,
   with the tag, the lava, Eruption and Falling Star. `_raidHeart()` for the Heart: each move, both ways through Solar Flare's gaps, a beam,
-  a lock by this hero and by the partner (paid once), plates raised by both, cover against the beat, and the plates all going at one moment. `_raidUpgrades()` checks each upgrade's number and
+  a lock by this hero and by the partner (paid once), plates raised by both, cover against the beat, and the plates all going at one moment;
+  Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase, and standing through a flare and behind a plate (67 rows). `_raidUpgrades()` checks each upgrade's number and
   each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
 - `pipeline/tools/boss-anim.js`: `_strip(title, setup, plan)` plays a move in a stepped fight and lays frames of it side by side round its
   landing, cropped on the boss and the hero.
 - `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level, boss })` runs the autopilot and reports clears, time, damage per second,
   which move killed, stages won of those reached, and how many fights enraged. It can't tell whether the fight is fun.
+- `pipeline/tools/heart-holdstill-shots.py`: the Hold Still pictures, from the game page with its HUD, by the browser's own screenshot.
 - `pipeline/tools/online-bot.js`: `_botRoom(hero)` and `_botJoin(hero, code)` play a raid for two in two tabs with bots.

@@ -81,6 +81,47 @@ hits in 40 fights), Solar Flare (85), Blade Sweep (36); what killed it: the Hear
 autopilot finds a flare's lane but drifts out of its edge as it goes back to fighting, so Solar Flare costs it more than it should
 cost a person. No errors.
 
+## Hold Still, its own mechanic (2026-11-11)
+
+Picked by the user from `pipeline/designs/raid-mechanics.html` (card H1; `raid-party.md`, "Unique mechanics, one per boss"): **"The
+heart beats in a slow rhythm you can see on the floor. On the beat, stand still: anyone moving is burnt. Between beats, run. The
+rhythm speeds up as it dies."** How it works now: `docs/architecture/raid.md`, "The Heart of Noon". Pictures from the game:
+`docs/bosses/heart-holdstill-announce.jpg` (the light running in), `-now` (the floor turns white: stop), `-still` (the beat passes a
+hero that stood), `-strike` (it burns one that walked), `-rings` (with the beams and a gold spot), `-phone` and `-phone-strike`
+(390 x 844); retaken by `python pipeline/tools/heart-holdstill-shots.py docs/bosses`.
+
+| What | Number |
+|---|---|
+| A run | 3 s of warning, then 3 beats 2.6 s apart (Embers Wake), 4 at 2.1 s (The Rings Turn), 5 at 1.6 s (Noon Falls) |
+| When | By the clock: 9 s into the first phase and every 21 s; 11 s into the second and 13 s into the third, then every 20 s |
+| A beat | 12 % of max HP, only for a hero that went more than 0.25 m by its own walk or dash in the 0.25 s before |
+| The cue | White lines run in along the floor's joints and land on the beat; the joints turn white 0.45 s before it; a ring closes at your feet |
+
+**Decided while building:**
+- **By the clock, not a move in its lists.** The card says "hard to do while dodging", so it has to run over its other moves. A move
+  in the lists would hold the Heart for the whole run (`lock`), and with nothing else going on a hero would simply stand and cast
+  through it. By the clock (`BossPhase.timed`) every phase has it for sure, and it takes neither the cast bar (the Heartbeat's 10 s
+  bar stays) nor the Heart's turn.
+- **A third colour, white.** Orange says leave and gold says stand here; "don't move, wherever you are" is neither. Fine white lines,
+  never a filled zone: the first try, broad bright rings, buried the floor and everything on it.
+- **A ring at your own feet.** A phone held upright can't always see the heart; the beat must read where the eyes are.
+- **Forgiving by a little.** The floor turns white 0.2 s before the moment that counts, and a last 0.25 m of a step is let pass, so
+  stopping when you see white is in time.
+- **What moves a hero that isn't a walk:** a blow's knock, a pull, a carry, a plate raised under it. None counts.
+- **The overlaps** were looked at one by one (the list in `raid.md`); nothing had to be moved except the first run of each later
+  phase, which waits until the last phase's run has ended, and the third phase's clock, set between two Heartbeats.
+
+**Measured** (the autopilot alone, tier 1, ten heroes x 4 fights a run: Lyra, Bram, Kaia, Sefu, Brannoc, Isolde, Vesper, Nyx, Cantor,
+Marin; not the same ten as above, whose names were not kept). Before: 11 and 9 of 40 (20 of 80, 106 s a fight). After: 13, 10, 9 and
+9 of 40 (41 of 160, 103 s). No change inside the noise, so the beat's cost stayed at its first number and the HP was not touched.
+The autopilot stood for 236 of 237 beats in 12 fights, and no fight of 160 ended on a beat; what it pays is small and indirect (a
+blade it could not step out of in that moment). Tier 3: 0 of 20 with it, 2 of 20 without; tier 5: 1 of 20 either way: the autopilot
+without upgrades loses there anyway. Ash and Ember as a control, same ten: 9 of 40. No errors in any run. `_raidHeart()`: 67 rows
+pass, `_raidCheck()` 95, `_raidAsh()` 77, `_raidUpgrades()` 40.
+
+**Not done for Hold Still:** a person playing it, on a desktop or a phone, so the feel of the 0.25 s and the look of the lines are
+unjudged by hand; a raid for two or a party (each screen judges its own hero, by the same code as alone); a sound for the beat.
+
 **Not done:** a raid for two in two tabs (`_raidHeart()` checks a partner's lock and plate on this screen); a person playing it; a real
 phone. The artist has not yet directed the room (first pass, drawn in code).
 

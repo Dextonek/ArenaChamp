@@ -11,6 +11,11 @@ import type { BossCast, BossDef, BossWorld, Objective, PlayContext, PlayedMove, 
 /** Pale orange means leave, gold means stand here. Never the spells' red. */
 export const LEAVE_COLOR = 0xe8863a;
 export const STAND_COLOR = 0xffe27a;
+/** White: stand still, wherever you are (a zone that burns only who walks, `Threat.moving`). Its move draws it. */
+export const STILL_COLOR = 0xf2f6ff;
+/** Such a zone looks at the moment before it lands (s), and lets a hero still go this far in it (m): a step that was ending, not a walk. */
+export const STILL_WINDOW = 0.25;
+export const STILL_SLACK = 0.25;
 const LEAVE_ALPHA = 0.72;
 const STAND_ALPHA = 1;
 /** What standing in a zone costs a summoned unit. */
@@ -126,8 +131,9 @@ export class BossScript {
   play(cast: BossCast) {
     const move = this.def.moves[cast.move];
     if (!move) return;
-    if (cast.step === 0) this.eventId++;
     const played = move.play(cast, this.ctx);
+    // A cast with nothing to walk out of (only beats to stand still for) is no new event to an AI: its roll for what is in the air stays.
+    if (cast.step === 0 && !(played.threats.length && played.threats.every((th) => th.moving))) this.eventId++;
     // A gold zone waits for its result from the hub, which waits for the other screen.
     const gold = played.threats.filter((th) => th.kind === 'stand').map((th) => th.at + STOOD_WAIT);
     if (gold.length) played.duration = Math.max(played.duration, ...gold);
@@ -284,6 +290,11 @@ export class BossScript {
       if (!this.world.down()) this.link.stood(a.cast.id, th.part ?? 0, inside);
       return;
     }
+    if (th.moving) {
+      // Only who walks is burnt (`strike`). Nothing just missed, and a unit is left alone.
+      if (inside) this.strike(a, th, t);
+      return;
+    }
     if (inside) this.strike(a, th, t);
     else if (this.closeCall && !this.world.down() && !a.close && !th.hits && !th.shapeAt && insideTelegraph(grown(th.shape, CLOSE_CALL.reach), me.x, me.z)) {
       // Once a cast, however many of its zones just missed.
@@ -305,6 +316,8 @@ export class BossScript {
 
   private strike(a: Active, th: Threat, t: number) {
     const me = this.world.me();
+    // A hero standing still as it lands takes nothing.
+    if (th.moving && this.world.walked(STILL_WINDOW) <= STILL_SLACK) return;
     if (th.source && !this.world.sees(th.source.x, th.source.z, me.x, me.z)) {
       // Cover saved this hero. The wall that did it falls; a column doesn't.
       if (th.breaks) {
@@ -351,7 +364,8 @@ export class BossScript {
     for (const a of this.active) {
       const t = this.clock - a.began;
       for (const th of a.played.threats) {
-        if (th.kind === 'stand') continue;
+        // A gold zone is no danger, and neither is a beat that burns only who walks: there is nowhere to walk out of it to.
+        if (th.kind === 'stand' || th.moving) continue;
         const end = th.to ?? th.at;
         if (t > end) continue;
         const look = Math.max(within, th.look ?? 0);
@@ -414,6 +428,16 @@ export class BossScript {
       for (const th of a.played.threats) if (th.warn && !th.landed && this.inThreat(th, Math.max(t, th.at), x, z)) return false;
     }
     return true;
+  }
+
+  /** Seconds until the next beat that burns whoever walks (`Threat.moving`), or Infinity: an AI stops walking just before it. */
+  get stillIn() {
+    let best = Infinity;
+    for (const a of this.active) {
+      const t = this.clock - a.began;
+      for (const th of a.played.threats) if (th.moving && !th.landed) best = Math.min(best, th.at - t);
+    }
+    return best;
   }
 
   /** A move is coming after whoever it aims at: an AI starts no long cast now. */

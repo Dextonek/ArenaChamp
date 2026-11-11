@@ -51,6 +51,13 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Raid',
+        title: 'Hold Still',
+        text: 'The Heart of Noon has a heartbeat. White light runs in over the floor and a ring closes at your feet: when it lands, stand still. Anyone walking on the beat is burnt; standing costs nothing, and you can keep casting. Between beats, run. The rhythm quickens as the heart dies.',
+        image: 'news/heart-hold-still.jpg',
+        alt: 'White rings of light running in over the floor to the Heart of Noon, and a white ring closing round a hero who stands still.',
+      },
+      {
+        tag: 'Raid',
         title: 'Omens',
         text: 'Each tier of a raid now brings omens that twist both of its fights: lava where a circle lands, a dark room, a boss that rests less or enrages sooner. One at the first tier, two from then on. The hall shows them before you pick.',
       },

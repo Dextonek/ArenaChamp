@@ -4,12 +4,12 @@ import { RING, seeded } from '../arenas/common';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
-import { HEART_R, sunkenHeartArena } from '../arenas/sunkenHeart';
+import { HEART_JOINTS, HEART_R, sunkenHeartArena } from '../arenas/sunkenHeart';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import type { Obstacle } from '../obstacles';
 import { HEART_LIVE, heartLook, resetHeartLive } from './bodies/heart';
 import { HoldRing, LightPillar, ShadowFloor } from './fx';
-import { STAND_COLOR } from './script';
+import { STAND_COLOR, STILL_COLOR, STILL_WINDOW } from './script';
 import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } from './types';
 
 /**
@@ -17,7 +17,11 @@ import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } fr
  * floats over the middle of the Sunken Heart and turns to whom it looks at. Its blades are its hands; its three rings come down as beams
  * that turn over the floor; in the last phase its crust falls away as plates, and its Heartbeat burns everything it can see.
  *
- * Two mechanics, each for one hero or two:
+ * Its own mechanic, in every phase, for any number of heroes (user, 2026-11-11):
+ * - Hold Still: its heart beats in a rhythm the floor shows, white light running in along the floor's rings. On each beat whoever is
+ *   walking is burnt; whoever stands still takes nothing. Between beats, run. The rhythm quickens with each phase.
+ *
+ * Two more, each for one hero or two:
  * - Lock a ring: while the rings turn, three gold spots stand on the rim, one for each. Hold one 2 s and its ring stops for 8 s (its
  *   beam goes out), +40 on the gauge. Each ring is its own cast, so each lock is paid once.
  * - Shade the heart: each Heartbeat throws crust plates out over the floor as gold spots. Hold one 3 s and it stands up as cover, on the
@@ -484,6 +488,168 @@ const crownOfRays: BossMove = {
   },
 };
 
+// --- every phase: Hold Still ----------------------------------------------------------------------------------------------
+
+/**
+ * Hold Still's rhythm in each phase: how many beats a run has and how far apart they are (s, at tier 1). It quickens as the heart dies.
+ * A move can't see the phase (two screens hear of a phase a moment apart), so each phase has its own move, made from one recipe.
+ */
+const STILL_RHYTHM = [{ beats: 3, apart: 2.6 }, { beats: 4, apart: 2.1 }, { beats: 5, apart: 1.6 }];
+/** How long before a run's first beat the floor says so (s), and what a beat costs a hero who is walking. */
+const STILL_FIRST = 3;
+const STILL_SHARE = 0.12;
+/**
+ * The floor turns white this long before a beat (s): a little before the moment that counts (`STILL_WINDOW`), so a hero that stops
+ * when it sees the white has stopped in time.
+ */
+const STILL_CUE = STILL_WINDOW + 0.2;
+/** The ring round this screen's hero: where it closes to on the beat, and where it starts from (m). */
+const STILL_FEET = [0.95, 2.6];
+
+const stillVertex = /* glsl */ `
+  varying vec2 vP;
+  void main() {
+    vP = position.xz;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const stillFragment = /* glsl */ `
+  uniform float uJoints[7];
+  uniform float uBeat, uNow, uFlash, uOpacity;
+  uniform vec3 uColor;
+  varying vec2 vP;
+  void main() {
+    float d = length(vP), a = 0.0;
+    for (int k = 0; k < 6; k++) {
+      // Each joint between the floor's rings of plates (its own cracks): dark until the moment to stand still, white as the beat strikes.
+      float joint = 1.0 - smoothstep(0.03, 0.09, abs(d - uJoints[k]));
+      a = max(a, joint * (0.45 * uNow + 0.8 * uFlash));
+      // The light running in to it from the next joint out, a fine line: it lands on the joint on the beat.
+      float run = 1.0 - smoothstep(0.02, 0.09, abs(d - mix(uJoints[k + 1], uJoints[k], uBeat)));
+      a = max(a, run * (0.12 + 0.3 * uBeat * uBeat));
+    }
+    // The whole floor pales a little as the beat strikes.
+    a = max(a, 0.05 * uFlash * step(uJoints[0], d));
+    a *= uOpacity;
+    if (a <= 0.004) discard;
+    gl_FragColor = vec4(uColor, a);
+  }
+`;
+const feetGeo = new THREE.RingGeometry(0.94, 1, 48).rotateX(-Math.PI / 2);
+
+/**
+ * Hold Still's look, in white (stand still: neither the orange of leave nor the gold of stand here): light runs in along the floor's
+ * joints to the heart and lands on them on the beat, wherever on the floor a hero looks; and a ring closes round this screen's own hero,
+ * so the beat reads at its feet on a phone that can't see the heart.
+ */
+class BeatFloor {
+  readonly group = new THREE.Group();
+  private mat: THREE.ShaderMaterial;
+  private feet: THREE.MeshBasicMaterial[] = [];
+  private rings: THREE.Mesh[] = [];
+  constructor(x: number, z: number) {
+    this.mat = new THREE.ShaderMaterial({
+      vertexShader: stillVertex, fragmentShader: stillFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+      uniforms: {
+        uJoints: { value: HEART_JOINTS.slice(0, 7) }, uBeat: { value: 0 }, uNow: { value: 0 }, uFlash: { value: 0 }, uOpacity: { value: 0 },
+        uColor: { value: new THREE.Color(STILL_COLOR) },
+      },
+    });
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(HEART_R, 96).rotateX(-Math.PI / 2), this.mat);
+    floor.position.set(x, 0.06, z);
+    floor.renderOrder = 2;
+    this.group.add(floor);
+    for (let i = 0; i < 2; i++) {
+      const m = new THREE.MeshBasicMaterial({ color: STILL_COLOR, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
+      const ring = new THREE.Mesh(feetGeo, m);
+      ring.renderOrder = 3;
+      ring.visible = false;
+      this.feet.push(m);
+      this.rings.push(ring);
+      this.group.add(ring);
+    }
+  }
+
+  /**
+   * `beat`: how far the light has run to the next beat, 0..1. `now`: 1 when it is time to stand still. `flash`: 1 as a beat
+   * strikes, falling off. `hero`: where this screen's hero stands, for the ring at its feet.
+   */
+  set(beat: number, now: number, flash: number, opacity: number, hero: { x: number; z: number } | null) {
+    const u = this.mat.uniforms;
+    u.uBeat.value = beat;
+    u.uNow.value = now;
+    u.uFlash.value = flash;
+    u.uOpacity.value = opacity;
+    this.group.visible = opacity > 0.004;
+    // At its feet: a ring that stays, and one that closes onto it on the beat.
+    const [inner, outer] = STILL_FEET;
+    this.rings.forEach((ring, i) => {
+      ring.visible = !!hero;
+      if (!hero) return;
+      ring.position.set(hero.x, 0.08, hero.z);
+      ring.scale.setScalar(i ? outer + (inner - outer) * beat : inner);
+      this.feet[i].opacity = opacity * (i ? 0.2 + 0.5 * beat : 0.22 + 0.4 * now + 0.4 * flash);
+    });
+  }
+
+  dispose() {
+    this.group.removeFromParent();
+    (this.group.children[0] as THREE.Mesh).geometry.dispose();
+    this.mat.dispose();
+    for (const m of this.feet) m.dispose();
+  }
+}
+
+/**
+ * Hold Still (user, 2026-11-11: "The heart beats in a slow rhythm you can see on the floor. On the beat, stand still: anyone moving is
+ * burnt. Between beats, run. The rhythm speeds up as it dies."). A run of beats, by the clock in every phase (`BossPhase.timed`), on
+ * top of whatever else it is doing: it takes no cast bar and doesn't stop it. Each beat burns only a hero that is walking as it
+ * lands (`Threat.moving`): each screen judges its own hero, so it is the same for one hero or forty. The whole run is one cast, so
+ * its beats can't drift between screens, and it aims at nobody.
+ */
+const holdStill = (phase: number): BossMove => ({
+  id: phase ? `still${phase + 1}` : 'still', name: 'Hold Still', charge: 0, lock: 0, cooldown: 0, alongside: true, quiet: true, pose: 'channel',
+  aim: atHeart,
+  play(c, p) {
+    const { beats, apart } = STILL_RHYTHM[phase];
+    const first = p.shown(STILL_FIRST), gap = p.shown(apart);
+    const at = Array.from({ length: beats }, (_, i) => first + i * gap), last = at[beats - 1];
+    // The whole floor, and drawn by its look: a telegraph's orange would say leave.
+    const threats: Threat[] = at.map((t) => ({ shape: { kind: 'circle', x: c.fx, z: c.fz, radius: HEART_R + 1 }, at: t, share: STILL_SHARE, moving: true, hidden: true }));
+    const floor = new BeatFloor(c.fx, c.fz);
+    p.group.add(floor.group);
+    p.hint('Hold Still: stop walking on each white beat');
+    p.say('HOLD STILL', '#f2f6ff', c.fx, c.fz + BODY_R + 1.5);
+    return {
+      threats, duration: last + 0.9,
+      look: {
+        update(t) {
+          const k = at.findIndex((x) => x > t), next = k < 0 ? last : at[k], prev = k < 0 ? last : k > 0 ? at[k - 1] : -99;
+          // The light runs in over the last `gap` before each beat, the first one too.
+          const beat = k < 0 ? 0 : Math.min(1, Math.max(0, 1 - (next - t) / gap));
+          const now = k >= 0 && next - t <= STILL_CUE ? 1 : 0;
+          const flash = Math.max(0, 1 - (t - prev) / 0.4);
+          const opacity = Math.min(1, t / 0.5) * (t < last ? 1 : Math.max(0, 1 - (t - last) / 0.7));
+          floor.set(beat, now, flash, opacity, p.heroAt(p.side));
+          HEART_LIVE.fill = k < 0 ? 0 : beat;
+          HEART_LIVE.clench = t - prev;
+        },
+        land() {
+          // The beat: it clenches, and its light goes out over the floor.
+          p.show.ring(c.fx, c.fz, { radius: HEART_R, life: 0.5, color: STILL_COLOR, width: 0.25, peak: 0.4 });
+          p.sparks.emit(c.fx, 3.4, c.fz, 12, 3.5, 1.5, 0.5, 0xfff4e0);
+          p.shake(0.03);
+        },
+        dispose() {
+          HEART_LIVE.fill = 0;
+          HEART_LIVE.clench = 99;
+          floor.dispose();
+        },
+      },
+    };
+  },
+});
+
 // --- the boss -------------------------------------------------------------------------------------------------------------
 
 /** Its portrait: a gold face in a molten sun, a ring across it. */
@@ -539,13 +705,18 @@ export const HEART_OF_NOON: BossDef = {
   kneel: NUMBERS.kneel,
   phasePause: 2.5,
   phases: [
-    { name: 'Embers Wake', at: 1, moves: ['sweep', 'fall', 'flare'], gap: [2, 3] },
-    { name: 'The Rings Turn', at: NUMBERS.phases[0], moves: ['sweep', 'fall', 'flare', 'rings'], opener: 'rings', gap: [2, 3] },
-    { name: 'Noon Falls', at: NUMBERS.phases[1], moves: ['sweep', 'fall', 'flare', 'rings', 'corona', 'heartbeat'], opener: 'heartbeat', gap: [1.8, 2.8] },
+    // Hold Still comes by the clock in each phase, quicker each time. A new phase's first run waits until the last phase's has ended;
+    // in Noon Falls a run falls between two Heartbeats (the first gathers from 2.5 s to 12.5 s into the phase, then every 20 s).
+    { name: 'Embers Wake', at: 1, moves: ['sweep', 'fall', 'flare'], gap: [2, 3], timed: { move: 'still', first: 9, every: 21, most: 99 } },
+    { name: 'The Rings Turn', at: NUMBERS.phases[0], moves: ['sweep', 'fall', 'flare', 'rings'], opener: 'rings', gap: [2, 3], timed: { move: 'still2', first: 11, every: 20, most: 99 } },
+    {
+      name: 'Noon Falls', at: NUMBERS.phases[1], moves: ['sweep', 'fall', 'flare', 'rings', 'corona', 'heartbeat'], opener: 'heartbeat', gap: [1.8, 2.8],
+      timed: { move: 'still3', first: 13, every: 20, most: 99 },
+    },
   ],
   /** A higher tier brings these in from the first phase on, one a tier: the Crown of Rays, then the rings, then the Heartbeat. */
   extra: ['corona', 'rings', 'heartbeat'],
-  moves: { sweep: bladeSweep, fall: bladeFall, flare: solarFlare, rings: ringsTurn, heartbeat, corona: crownOfRays },
+  moves: { sweep: bladeSweep, fall: bladeFall, flare: solarFlare, rings: ringsTurn, heartbeat, corona: crownOfRays, still: holdStill(0), still2: holdStill(1), still3: holdStill(2) },
   /** It enrages 2:45 in: between the Warden's 2:30 and Ash and Ember's 2:50. */
   enrage: 165,
   /** Past 5 minutes the molten floor rises from the rim, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */

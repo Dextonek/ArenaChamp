@@ -3,7 +3,7 @@
 //
 //   eval(await (await fetch('/pipeline/tools/raid-check.js')).text());
 //   await _raidCheck()    // { ok, failed: [...], rows: [...] }
-//   await _raidHeart()    // the same for the Heart of Noon: its moves, Lock a ring and Shade the heart, alone and with a partner
+//   await _raidHeart()    // the same for the Heart of Noon: its moves, Hold Still, Lock a ring and Shade the heart, alone and with a partner
 (() => {
   // Every hero's four spells and basic attack replayed as a partner: nothing in them may touch this screen's hero or the boss.
   //   _raidPartners(['Lyra', 'Bram'])  in the background; _raidPartners.result() when done
@@ -1016,6 +1016,8 @@
       d.holdStart = false;
       d.startBoss({ def, link: new LocalLink(def), seed: 'heart', mode: 'play' });
       d.boss.brain.pause = 1e9;
+      // Hold Still comes by the clock, whatever the brain's pause: none of its own here.
+      d.boss.brain.timedDone = 1e9;
       a.placeFoe(d.foe, new V(H.x, 0, H.z));
       step(0.05);
     };
@@ -1186,6 +1188,120 @@
       p0 = polar(22.5, 8);
       place(p0.x, p0.z);
       check('corona: between them', take(() => cast('corona', { x: 0, z: 14, dir: 0 }), 3.5), 0);
+
+      // Hold Still: a run of beats over the whole floor. Each burns only a hero that is walking as it lands: by its own walk or a dash,
+      // not by a blow, a carry or a stone raised under it. The rhythm quickens phase by phase.
+      const world = d.boss.script.world;
+      const beatsOf = (id) => live(id).played.threats.map((th) => th.at);
+      const walkFor = (s, dx = 0.06) => { for (let i = 0; i < Math.round(s * 60); i++) { a.walk(new V(dx, 0, 0)); step(1 / 60); } };
+      /** Steps to `before` seconds ahead of beat `n` of cast `id`. */
+      const toBeat = (id, n, before) => step(beatsOf(id)[n] - since(id) - before);
+      fresh();
+      place(-3, 13);
+      d.playerHp = d.playerMax;
+      const ev0 = d.boss.script.eventId;
+      let sc = cast('still', { x: H.x, z: H.z });
+      step(0.05);
+      const b1 = beatsOf(sc.id);
+      check('still: three beats in Embers Wake', b1.length, 3, 0);
+      check('still: the first comes 3 s after it shows', b1[0], 3, 0.001);
+      check('still: 2.6 s apart', b1[1] - b1[0], 2.6, 0.001);
+      yes('still: it is no new event to an AI (its roll for what is in the air stays)', d.boss.script.eventId === ev0);
+      yes('still: it is no zone to leave', !d.boss.script.danger(-3, 13, 5));
+      check('still: an AI is told how long until the beat', d.boss.script.stillIn, 3 - since(sc.id), 0.02);
+      yes('still: the heart fills toward the beat', (toBeat(sc.id, 0, 0.3), HEART_LIVE.fill > 0.8));
+      step(0.6);
+      check('still: standing still through a beat', lost(), 0);
+      yes('still: the heart clenched on it', HEART_LIVE.clench < 0.5 && HEART_LIVE.fill < 0.3);
+      // The second beat: walking through it.
+      toBeat(sc.id, 1, 0.5);
+      walkFor(1);
+      check('still: walking through a beat burns', lost(), 0.12);
+      // The third: it walks, and stops just in time.
+      d.playerHp = d.playerMax;
+      toBeat(sc.id, 2, 1);
+      walkFor(0.7);
+      step(0.8);
+      check('still: stopped 0.3 s before the beat', lost(), 0);
+      yes('still: the run is over', (step(1), d.boss.script.stillIn === Infinity && !live(sc.id)));
+      // Stopping too late, and a dash.
+      fresh();
+      place(-3, 13);
+      d.playerHp = d.playerMax;
+      sc = cast('still', { x: H.x, z: H.z });
+      step(0.05);
+      toBeat(sc.id, 0, 1);
+      walkFor(0.9);
+      step(0.6);
+      check('still: stopped 0.1 s before the beat, too late', lost(), 0.12);
+      d.playerHp = d.playerMax;
+      toBeat(sc.id, 1, 0.2);
+      a.moveFigure(a.caster, new V(a.caster.group.position.x + 3, 0, 13), 0.3);
+      step(0.7);
+      check('still: a dash through a beat burns', lost(), 0.12);
+      // Knocked by a blow, carried, or pushed out by a stone raised under it: none of them is a walk.
+      toBeat(sc.id, 2, 0.15);
+      d.playerHp = d.playerMax;
+      let at0 = a.caster.group.position.clone();
+      world.hitMe({ share: 0.02, knock: 6, from: { x: H.x, z: H.z }, move: 'test' });
+      const knocked = lost();
+      yes('still: the blow knocked it away', a.caster.group.position.distanceTo(at0) > 0.8 && knocked > 0);
+      step(0.5);
+      check('still: knocked through a beat, the beat costs nothing', lost() - knocked, 0, 0.001);
+      fresh();
+      place(-3, 13);
+      d.playerHp = d.playerMax;
+      sc = cast('still', { x: H.x, z: H.z });
+      step(0.05);
+      toBeat(sc.id, 0, 0.15);
+      at0 = a.caster.group.position.clone();
+      world.carryMe(1.5, 0);
+      step(0.5);
+      yes('still: carried by the boss', a.caster.group.position.distanceTo(at0) > 1.4);
+      check('still: carried through a beat', lost(), 0);
+      toBeat(sc.id, 1, 0.15);
+      at0 = a.caster.group.position.clone();
+      const under = world.addStone(at0.x, at0.z, 1, 2);
+      step(0.5);
+      yes('still: a stone raised under it pushed it out', a.caster.group.position.distanceTo(at0) > 0.5);
+      check('still: pushed out through a beat', lost(), 0);
+      world.dropStone(under);
+      // The rhythm, phase by phase.
+      fresh();
+      const b2 = (sc = cast('still2', { x: H.x, z: H.z }), step(0.05), beatsOf(sc.id));
+      check('still: four beats in The Rings Turn', b2.length, 4, 0);
+      check('still: 2.1 s apart', b2[1] - b2[0], 2.1, 0.001);
+      fresh();
+      const b3 = (sc = cast('still3', { x: H.x, z: H.z }), step(0.05), beatsOf(sc.id));
+      check('still: five beats in Noon Falls', b3.length, 5, 0);
+      check('still: 1.6 s apart', b3[1] - b3[0], 1.6, 0.001);
+      yes('still: each phase has its own, by the clock', def.phases.map((x) => x.timed?.move).join() === 'still,still2,still3');
+      yes('still: a new phase\'s first run comes after the last phase\'s has ended', def.phases.slice(1).every((x) => x.timed.first >= 3 + 4 * 1.6 + 0.9));
+      // With Solar Flare: where the three rings' gaps overlap a hero stands still through the flare and the beats alike.
+      fresh();
+      place(0, 13);
+      c = cast('flare', { x: 0, z: 13 });
+      step(0.05);
+      const lanes = live(c.id).played.threats.map((th) => gapOf(th, 6));
+      // The middle ring's gap, on the side of the first ring's: within 20 degrees of both others, and a gap is 60 wide.
+      const mid = apart(lanes[1], lanes[0]) <= 90 ? lanes[1] : lanes[1] + 180;
+      p0 = polar(mid, 6);
+      place(p0.x, p0.z);
+      d.playerHp = d.playerMax;
+      sc = cast('still3', { x: H.x, z: H.z });
+      step(10);
+      check('still: with Solar Flare, standing where its gaps overlap costs nothing', lost(), 0);
+      // With the Heartbeat: holding a plate is standing still, so the plate rises and the beats cost nothing behind it.
+      fresh();
+      const hc = cast('heartbeat', { x: H.x, z: H.z });
+      step(1);
+      const pl = live(hc.id).played.objectives[0];
+      place(pl.x, pl.z);
+      d.playerHp = d.playerMax;
+      cast('still3', { x: H.x, z: H.z });
+      step(10.6);
+      yes('still: with the Heartbeat, a plate is raised through the beats', pl.done === true);
+      check('still: and neither the beats nor the Heartbeat cost anything behind it', lost(), 0);
 
       // Its phases.
       check('phases: three', def.phases.length, 3, 0);
