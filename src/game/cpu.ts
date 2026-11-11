@@ -64,7 +64,8 @@ export class CpuMatch {
     api.setHeroMode(true);
     api.duel.cpuLevel = cpuLevel(o.level);
     api.duel.opponentChoice = foe.name;
-    api.duel.arenaChoice = 'random';
+    // `?arena=<id>` pins the arena of CPU duels: how an arena still being made (`NEW_ARENAS`) is looked at in the game.
+    api.duel.arenaChoice = new URLSearchParams(location.search).get('arena') ?? 'random';
     api.duel.holdStart = true;
     api.duel.start('play');
     this.leave.style.display = '';

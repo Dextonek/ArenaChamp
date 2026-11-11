@@ -1,6 +1,30 @@
 # Status
 
-_Last updated: 2026-11-11 (all 39 heroes in the fourth style, looked at in motion and three faults fixed; friend brackets half built)_
+_Last updated: 2026-11-11 (realistic arenas begun: the Drowned Harbour's look is built and waits for the user's nod; all 39 heroes in the fourth style; friend brackets half built)_
+
+## In progress: four realistic arenas (2026-11-11)
+
+User: "save the arena we have now and make 3 new ones with all the effect and closing stuff, realistic like the
+heroes"; asked for themes, they took all four: **Drowned Harbour, Sandstone Canyon, Crystal Cavern, Fallen
+Battlefield**. The five arenas stay as they are and in rotation.
+
+- **How:** scanned props and grounds from Poly Haven (CC0), cut down and laid out in Blender
+  (`blender/arenas/real/kit.py`, one script per arena, sources in `ASSETS.md` there), one GLB and one obstacle JSON per
+  arena, read by `src/arenas/real.ts` (`realProps`, `realGround`, `Sea`, `Glows`). Fetch sources:
+  `node pipeline/tools/polyhaven-get.mjs <ids>`. Pictures: `pipeline/tools/arena-shot.js`.
+- **Done:** the Drowned Harbour's look (`src/arenas/harbour.ts`, `blender/arenas/real/harbour.py`,
+  `public/models/arenas/harbour.glb` 3.4 MB, 85k triangles): [sample](arenas/harbour_sample.jpg),
+  [beside the Night Temple](arenas/harbour_beside_temple.jpg). It is in `NEW_ARENAS`: reachable by id, not picked at
+  random. See it: `npm run dev`, http://localhost:5173/game?arena=harbour, a CPU duel.
+- **Waiting on the user:** a nod on the look (or what to change) before the rest.
+- **Next, in this order:** the harbour's event (a wave rolls across the quay) and closing stages (the tide comes up in
+  growing pools; Last stand), then the layout checks of `docs/architecture/arenas.md` (point symmetry, clear starts,
+  gaps, meshes covering their capsules, the camera rule from both ends), each stage looked at with `duel.shiftOffset`,
+  a CPU duel with stages on, draw calls on the game page; then the other three arenas the same way; then all four into
+  `ARENAS` with a new `PROTOCOL` (the list's length decides which arena a match id gives; `server/protocol.mjs` holds
+  the uncommitted bracket work too), News, `docs/architecture/arenas.md` and `pipeline/designs/arenas.md`.
+- **Not checked yet:** draw calls and frame time, a phone, the far (-z) player's view in a real net duel. New cover
+  layouts will move balance.
 
 ## Current state (2026-11-05)
 **2026-11-10, second computer: committed, not pushed, not deployed**
