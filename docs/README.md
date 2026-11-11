@@ -55,6 +55,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 ### Pipeline (how effects are made)
 | Page | What it answers |
 |---|---|
+| [Rules for creating a hero](pipeline/new-hero.md) | The ten rules, the six gates (each ends in a picture and the user's yes) and the checklist of every file, from the idea to the deploy |
 | [Workflow](pipeline/workflow.md) | From idea to registered effect: design note, build, review rounds, registration, sweep, records |
 | [Review tools](pipeline/review-tools.md) | Contact sheets, the self-test, the full sweep, decoding, browser-pane gotchas |
 | [Spell brief](SPELL_BRIEF.md), [Targeted spell brief](TARGETED_SPELL_BRIEF.md), [Refine brief](REFINE_BRIEF.md), [Weapon aura brief](WEAPON_AURA_BRIEF.md) | The briefs given to worker agents that write or polish effects |

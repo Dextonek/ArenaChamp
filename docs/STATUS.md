@@ -1,6 +1,22 @@
 # Status
 
-_Last updated: 2026-11-11 (pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
+_Last updated: 2026-11-11 (new rules for creating a hero written, waiting on the user's yes; hero 40, the Phoenix, chosen and not started; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
+
+## Hero 40 and the new rules for creating a hero (2026-11-11): rules written, waiting on the user
+
+User: "okay lets make it 40 heros total so made new one", "and lets make like what need to be done when we are
+creating new hero, like docs"; of four ideas offered they picked the **Phoenix fire dancer** (the first true fire
+hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Then: "dont follow the same path",
+"lets just make new rules for hero creation".
+
+- **Done:** [pipeline/new-hero.md](pipeline/new-hero.md): what changes from before, ten rules, six gates (card,
+  look, kit on paper, spells, plays, release; each ends in a picture and the user's yes), the checklist of every
+  file, and what is still to be proven on hero 40. Linked from docs/README.md and CLAUDE.md. Committed, not pushed.
+- **Read as:** rules only for now. Nothing of the Phoenix is built: no card file, no model, no kit, no code.
+- **Waiting on the user:** a yes to the rules, or changes to them.
+- **Next, after the yes:** gate 1 for the Phoenix: her card (`pipeline/designs/kit-phoenix.md`), shown to the user.
+  Notes for it: no hero has a revive; Sir Whiskers's lives (`hpChunks`, `src/traits/cat.ts`) are the nearest
+  thing; `taken` can swallow a hit (`TraitHit.blocked`); heals are limited to 15 per spell and 50 on an R.
 
 ## Push and deploy (2026-11-11): pushed and live
 
