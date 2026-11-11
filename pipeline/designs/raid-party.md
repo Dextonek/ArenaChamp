@@ -240,6 +240,26 @@ Rules: a failure costs the whole party; the numbers come from the players standi
 them may overlap; each is announced by a name on the cast bar and a first-time hint. **None of these nine is built yet** (the three
 "any party" ones are: The Hour Strikes and Hold Still merged, Twin Flames in work).
 
+## The room changes with the boss's phases (user, 2026-11-12)
+
+> "also like we can make multyple areans for bos like when there will be secnd staged arena will transform fna also at final stage
+> it can be like something just think of ideas and do them they coudl be engaging and hard and challenging to complete"
+
+The user left the ideas to me and said to build them. Each boss's party room becomes three rooms in one: it transforms when the
+second phase begins and again for the last. The transformation is itself a thing to survive, and the new room asks for a new way to
+play. The rooms for one and two players stay as they are (those fights are measured); they can get lighter versions later.
+
+| Boss | First phase | Second phase: the room transforms | Last phase: it transforms again |
+|---|---|---|---|
+| Sun Warden, the Hall of Noon | The cross-shaped hall, whole | **The hall breaks open.** The four great corner blocks of stone crack (a warning runs along their edges) and fall: the cross becomes one vast round court strewn with their rubble as new cover. The walls the party hid behind are gone; his rays now reach from one arm into the next | **The sun comes down.** Sunfire wells up from the Sun Well and spreads over the crossing and on outward, a ring that grows for the rest of the fight: the party is pushed out toward the four far ends, split into four, and he comes out to hunt each group in turn. The Hour Strikes now takes three of those four refuges away |
+| Ash and Ember, the twin pit | Two halves, a wall of fire between | **The floor cracks into islands.** Lava channels open across both halves; narrow bridges of cooled crust join the islands and each stands only a while (it glows before it sinks). The teams cross from island to island as their own breaks up; Ash's Charge shatters a bridge | **The pit floods.** The wall of fire goes out and lava rises from the rim inward for good: both teams are driven onto one last island in the middle where the twins stand side by side, furious, and the two teams fight shoulder to shoulder at last |
+| Heart of Noon, its party room | The cooled crust, whole | **The floor turns.** The room is three rings round the Heart: the inner stands, the middle turns one way, the outer the other, carrying whoever stands on them (being carried is not walking: Hold Still stays fair). The beams turn against them; a hero picks the ring that carries them away from a beam, or steps across at the right moment | **The crust falls.** After each Heartbeat one sector of the floor glows along its cracks and drops into the sun for good. The room shrinks sector by sector; plates and lock spots are lost with their sector. A fight that runs long ends on a floor too small to stand on |
+
+How: a room's pieces that fall are their own objects in its Blender file; walls that go are obstacles removed; ground that burns or
+is gone is a zone that stays (as the late sunfire is); a ring that turns carries heroes with the world's carry. Each screen works its
+own hero out from the phase's cast, so two screens agree. Built per boss with its mechanics for 10, 20 and 40, once its files are
+free. **None of it is built yet.**
+
 ## State (2026-11-11)
 
 - Not started in code. The Heart of Noon is being built by a helper in its own worktree (its `PROTOCOL` 6 -> 7 is only there; main
