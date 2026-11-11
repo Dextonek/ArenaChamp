@@ -2,6 +2,21 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
+
+## The Heart of Noon, the Raid's third boss (2026-11-11): built and committed, NOT live
+
+The look the user agreed (`docs/bosses/heart_sheet.jpg`) is now a fight: `src/raid/heart.ts`, its body `src/raid/bodies/heart.ts`, its
+room `src/arenas/sunkenHeart.ts`. A tier is now the Warden, Ash and Ember, then the Heart (`RAID_RUN`, `PROTOCOL` 7); its gate stands at
+the north centre of the hall. Two mechanics: Lock a ring and Shade the heart. How it works: `docs/architecture/raid.md`; what was built and
+measured: `pipeline/designs/raid-heart.md`; pictures: `docs/bosses/heart-fight-*.jpg`, `heart-hall-gate.jpg`. Tier 1, the autopilot
+alone, 10 heroes x 4: the Heart 14/40, Ash and Ember 11/40. `_raidHeart()` 38 rows pass.
+- **Blocked:** `npm run test:server` fails 5 checks from `server/smoke-test.mjs:503` on: the test expects the run to end after Ash and
+  Ember. It needs a third boss walked through (pick, enter, `raid_stage` for `heart`, kill it) before "the last boss falls". Also
+  `server/accounts.mjs:99` counts a clear at `bosses >= RAID_RUN.length`: runs stored as two-boss clears no longer count as cleared.
+  Not edited here: `server/` was another agent's.
+- **Not checked:** a raid for two in two tabs, a person playing it, a real phone. The face is paler in the game than on the sheet (the
+  gold made matte in code so it would not bloom white): for the user to judge.
+
 ## Balance pass (2026-11-11): Sirix, Cantor, Nyx changed; committed, NOT live
 
 User: "lets try all battles duels in simulator" and "balance them after". Whole roster run (3,120 fights,
