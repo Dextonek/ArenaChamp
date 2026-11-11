@@ -299,7 +299,7 @@ export class Duel {
    * screen's enemy now. `fallT`: seconds since one of them fell (-1: both stand).
    */
   private twin: {
-    defs: [BossDef, BossDef]; mine: number; halves: number[]; wall: Obstacle; enemy: Enemy; yaw: number; status: StatusSet; fallT: number; maxHp: number;
+    defs: [BossDef, BossDef]; mine: number; half: number; halves: number[]; wall: Obstacle; enemy: Enemy; yaw: number; status: StatusSet; fallT: number; maxHp: number;
   } | null = null;
   /** The clock `late`'s first stage is at. */
   private lateAt = 0;
@@ -618,7 +618,7 @@ export class Duel {
       const enemy = new Enemy({ bare: true });
       enemy.body = null;
       enemy.group.position.set(at.x, 0, at.z);
-      this.twin = { defs, mine, halves: tw.halves, wall: tw.def.wall, enemy, yaw: 0, status: new StatusSet(), fallT: -1, maxHp: o.link.maxHp };
+      this.twin = { defs, mine, half: mine, halves: tw.halves, wall: tw.def.wall, enemy, yaw: 0, status: new StatusSet(), fallT: -1, maxHp: o.link.maxHp };
       this.rimAt.set(at.x, 0, at.z);
       this.rimFigure ??= new HeroFigure();
       this.group.add(this.rimFigure.group);
@@ -729,11 +729,23 @@ export class Duel {
     return !!this.twin && !!this.host.arena.obstacles?.includes(this.twin.wall);
   }
 
-  /** Whether this screen's hero can get to (x, z): in Twin Flames, while the wall of fire stands, only what is on its own side. */
+  /** Whether this screen's hero can get to (x, z): in Twin Flames, while the wall of fire stands, only what is in its own half. */
   private reachable(at: { x: number; z: number }) {
     const t = this.twin;
     if (!t || !this.twinWall()) return true;
-    return (at.x < t.wall.ax) === (this.host.arena.caster.group.position.x < t.wall.ax);
+    return (at.x < t.wall.ax) === (t.half === 0);
+  }
+
+  /**
+   * Twin Flames: nothing takes a hero through the wall of fire while it stands. A walk and a blow stop at it as at any cover; a
+   * dash, a blink or a leap aimed across it would not (the engine lets those pass cover), so each frame a hero found on the
+   * wrong side, or in the fire, is put back at the wall's face in its own half.
+   */
+  private holdHalf() {
+    const t = this.twin;
+    if (!t || !this.twinWall()) return;
+    const me = this.host.arena.caster.group.position, side = t.half === 0 ? -1 : 1, face = t.wall.ax + side * (t.wall.r + BODY_RADIUS);
+    if ((me.x - face) * side < 0) this.shove(() => { me.x = face; });
   }
 
   /** The enemy a partner's replayed spells and attacks aim at: this screen's boss, or in Twin Flames the one on that partner's side of the wall. */
@@ -2133,6 +2145,7 @@ export class Duel {
     // A boss fight: the link says when it is over, not the HP on this screen.
     if (this.boss) {
       const fight = this.boss, live = !this.waiting && this.countdown < 0;
+      this.holdHalf();
       this.logWalk(dt, me);
       fight.update(dt, live, foe ? arena.hpOf(foe) : 0);
       this.host.heroMode.cooldownRate = fight.upgrades?.cooldownRate(fight.open) ?? 1;

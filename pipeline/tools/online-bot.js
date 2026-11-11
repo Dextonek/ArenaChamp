@@ -68,7 +68,8 @@
   // A raid for two. One tab: `await _botRoom('Lyra')` returns the room's code. The other: `await _botJoin('Bram', code)`.
   // Then each screen's autopilot plays, with the boss's zones to walk out of and gold ones to walk into. `_botRaid()`: what this
   // screen sees now. `_botRaidLog()`: every sample of it. The result card waits: `_botRaidLeave()` goes back to the menu.
-  const raidLog = { samples: [], casts: 0, moves: {}, downs: 0, ups: 0 };
+  const raidLog = { samples: [], casts: 0, moves: {}, downs: 0, ups: 0, events: [], twinKey: '' };
+  window._botEvents = () => raidLog.events;
   let raidTimer = 0;
   const raidStep = () => {
     const { api, coop, state } = window.game, d = api.duel;
@@ -80,6 +81,20 @@
     if (!window._botHoldPick) document.querySelector('.raid-offer')?.click();
     if (window._botGoOn && d.isOver) [...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.startsWith('Go on'))?.click();
     if (d.boss && !d.autopilot) d.autopilot = true;
+    // `_botBoost = n`: this bot also takes n HP a second off the boss it fights, through the hub as its hits go. For a test that
+    // must see a fight's end: six bots at the HP for ten are slow. The hub's cap on one screen (1,400 a second) still holds.
+    if (window._botBoost > 0 && d.boss && !d.inHall && !d.isOver && d.countdown < 0 && !d.waiting) {
+      window.game.net.send({ t: 'boss_damage', amount: Math.round(window._botBoost / 10), which: d.boss.link.which });
+    }
+    // Twin Flames: what happened when, for whoever takes the pictures (`_botEvents()`).
+    const tw = d.boss?.twins;
+    if (tw) {
+      const key = `${tw.furious}|${tw.dead.join()}|${d.over ?? ''}`;
+      if (key !== raidLog.twinKey) {
+        raidLog.twinKey = key;
+        raidLog.events.push({ at: Date.now(), t: +d.time.toFixed(1), furious: tw.furious, dead: [...tw.dead], over: d.over ?? null });
+      }
+    }
     if (performance.now() - (raidLog.at ?? 0) > 1000 && d.boss) {
       raidLog.at = performance.now();
       raidLog.samples.push(window._botRaid());
@@ -114,9 +129,10 @@
   };
   // A raid for a party (up to 40). The host's tab: `await _botParty('Lyra')` opens a public raid and returns its code. Every other
   // tab: `await _botParty('Bram', code)`. Nobody readies up: the host starts with `_botGo()` once all are in. Then as for two.
-  window._botParty = async (hero, code) => {
+  // `boss`: the run starts at this boss ('sun', 'ash', 'heart'); a party at 'ash' fights Twin Flames.
+  window._botParty = async (hero, code, boss = 'sun') => {
     const { net, state } = window.game;
-    net.send(code ? { t: 'lobby_join', code } : { t: 'lobby_create', raid: 'sun', open: true });
+    net.send(code ? { t: 'lobby_join', code } : { t: 'lobby_create', raid: boss, open: true });
     for (let i = 0; i < 40 && !state.lobby; i++) await new Promise((r) => setTimeout(r, 100));
     if (!state.lobby) throw new Error('no room');
     log.hero = hero;
@@ -137,6 +153,8 @@
       partner: p && { hp: p.hp, max: p.max, down: p.down, left: p.left, pos: [+p.pos.x.toFixed(1), +p.pos.z.toFixed(1)] },
       party: d.party && d.party.size > 1 ? { n: d.party.size, down: [...d.party.values()].filter((x) => x.down && !x.left).length, left: [...d.party.values()].filter((x) => x.left).length, lite: [...d.party.values()].filter((x) => x.lite).length, far: Math.round(Math.max(...[...d.party.values()].map((x) => Math.hypot(x.pos.x, x.pos.z - 7)))) } : undefined,
       room: a.bounds?.r, gauge: d.boss.link.staggerMax,
+      // Twin Flames: this hero's half, which boss is its enemy, both HP bars as this screen has them, who is furious, who has fallen.
+      twin: d.boss.twins ? { ...d.boss.twins, hp: d.boss.twins.hp.map((x) => Math.round(x)), wall: d.twinWall(), name: d.boss.def.name } : undefined,
       hits: d.boss.stats.hits, kneels: d.boss.stats.kneels, over: d.over, won: d.result?.winner ?? null, errors: log.errors.length,
     };
   };
