@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tower</title>
+<style>
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37);
+    --panel: var(--card, #1a1a19); --gold: #e0a83a; --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, sans-serif; }
+  html.standalone body { max-width: 900px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 22px 0 6px; }
+  p.sub { margin: 0 0 10px; color: var(--ink-2); font-size: 13px; }
+  .flow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--ink-2); }
+  .flow span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; background: var(--panel); color: var(--ink); }
+  .flow span.boss { border-color: var(--gold); color: var(--gold); }
+  .flow b { font-weight: 400; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: flex; flex-direction: column; gap: 5px; }
+  .card h3 { margin: 0; font-size: 14px; }
+  .card .tag { font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: .05em; }
+  .card p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; }
+  ul { margin: 0; padding-left: 18px; color: var(--ink-2); font-size: 13px; }
+  ul li { margin: 4px 0; }
+  ul b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>The Tower: a new game mode</h1>
+<p class="sub">A third mode beside duels and the raid. The raid stays exactly as it is. Nothing here is built yet.</p>
+
+<h2>A run</h2>
+<div class="flow">
+  <span>Floor 1</span><b>→</b><span>boon</span><b>→</b><span>Floor 2</span><b>→</b><span>boon</span><b>→</b><span>…</span><b>→</b><span class="boss">Floor 10: guardian</span><b>→</b><span>Floor 11</span><b>→</b><span>…</span>
+</div>
+<p class="sub" style="margin-top:8px">Each floor is one short room, 30 to 90 seconds. Clear it and the stairs open. Your health does <b>not</b> refill between floors. You have three lives. How high can you climb?</p>
+
+<h2>Six kinds of floor, so no two feel alike</h2>
+<div class="cards" id="cards"></div>
+
+<h2>What makes it its own game</h2>
+<div class="box"><ul>
+  <li><b>Health carries over.</b> In the raid you are full at every fight. Here every hit you take follows you upstairs.</li>
+  <li><b>Short rooms, many kinds.</b> A dodging floor, then a horde, then a duel: the hero you picked is good at some and bad at others.</li>
+  <li><b>Boons, not raid upgrades.</b> After each floor choose one of three: heal, a new power, or a relic that changes a spell. The tower gets its own set.</li>
+  <li><b>It gets stranger as you climb.</b> From floor 11 floors mix two kinds (a duel inside a gauntlet), and the rooms get twists.</li>
+  <li><b>One number to brag about:</b> your highest floor, on a board.</li>
+</ul></div>
+
+<script>
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const C = [
+    ['Gauntlet', 'dodge', 'No enemy. Cross a room of sweeping fire and falling stones to reach the stairs.'],
+    ['Horde', 'fight many', 'Waves of small enemies pour in from the doors. Clear them all.'],
+    ['Duel', 'fight one', 'A hero of the roster guards the stairs, played by the computer, with one twist (twice as big, or two of them).'],
+    ['Break it', 'race the clock', 'A crystal seals the stairs. Break it before the timer ends while turrets shoot at you.'],
+    ['Hold out', 'survive', 'The stairs open in 45 seconds. Stay alive while the room turns against you.'],
+    ['Guardian', 'every 10th floor', 'A big fight: a giant version of a hero with boss health and new attacks. Beat it to save your progress.'],
+  ];
+  const box = document.getElementById('cards');
+  for (const [n, t, d] of C) {
+    const e = document.createElement('div');
+    e.className = 'card';
+    e.innerHTML = `<h3>${n}</h3><div class="tag">${t}</div><p>${d}</p>`;
+    box.append(e);
+  }
+})();
+</script>
+</body>
+</html>
