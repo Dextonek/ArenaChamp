@@ -180,7 +180,8 @@ export class EmberQuill implements Effect {
   private land(x: number, z: number) {
     if (this.laid) return;
     this.laid = true;
-    if (this.ctx) layEmber(this.ctx.caster, x, z, this.seq);
+    // With its flight: her own screen learns the quill's true end from the screen that decides its hit.
+    if (this.ctx) layEmber(this.ctx.caster, x, z, this.seq, { fx: this.from.x, fz: this.from.z, dx: this.fwd.x, dz: this.fwd.z });
     this.landAt = this.time;
     // The look: a small burst of feather sparks where it plants.
     this.landPos.set(x, 0, z);

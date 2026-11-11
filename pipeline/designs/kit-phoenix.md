@@ -165,12 +165,12 @@ Her catalog page with every number: [docs/catalog/heroes/phoenix.md](../../docs/
 
 | Check | Result |
 |---|---|
-| Simulator, 192 fights | 54% (four runs: 56, 52, 56, 54). Cantor 24 of 32, Sirix 20, Brannoc 19, Oblivion 17, Isolde 12, Kaia 11. The 48% above was before the balance pass of the same day (Sirix 720 to 640 HP: 6 of 32 against him then) |
-| With events and closing stages, 96 fights | 48% |
-| Raid, the Sun Warden, 30 fights | 26 clears (Vitriol 27, Kaia 24) |
-| Raid, Ash and Ember, 30 fights | 9 clears (Vitriol 20, Kaia 14); 11 of 21 falls are Ash's Charge |
+| Simulator, 192 fights | 52% (five runs: 56, 52, 56, 54, 52). The last: Isolde 19 of 32, Sirix 19, Cantor 19, Brannoc 17, Oblivion 15, Kaia 11. The 48% above was before the balance pass of the same day (Sirix 720 to 640 HP: 6 of 32 against him then) |
+| With events and closing stages, 96 fights | 55% (three runs: 46, 48, 55) |
+| Raid, the Sun Warden, 90 fights | 72 clears (Vitriol 78, Kaia 76) |
+| Raid, Ash and Ember, 90 fights | 33 clears (Vitriol 54, Kaia 48); 29 of 57 falls are Ash's Charge |
 | The game page, laptop and phone | picked, fought, rematch, as the CPU's hero: no errors |
-| Online, two screens, four matches | embers the same 99% of the time, eight rises seen on both screens, no errors |
+| Online, two screens, six matches (four against a Kaia who sidesteps) | embers the same 99% of the time, the nest in one place, 11 rises seen on both screens at the same spot, no errors |
 
 **What changed in her rules while measuring** (all in `src/traits/phoenix.ts` and three of her spells; the numbers did not change):
 
@@ -180,10 +180,13 @@ Her catalog page with every number: [docs/catalog/heroes/phoenix.md](../../docs/
   except when two of her spells overlap: a quill thrown during Firebird's wind-up is now the nest, though the take-off
   ember lands after it. Why: a quill lands at a different moment on the two screens, and with the landing order the
   screens disagreed on the nest (the first online match: the same embers on both screens only 45% of the time).
+- **Where a quill ended is told from the enemy's screen.** A bolt flies on both screens and only the enemy's screen
+  decides its hit, so a sidestepped quill planted her nest in two places (2 to 7 m apart). The deciding screen now
+  tells her client how far the quill really got, and the ember moves there. This is what gate 3 left "to be proven";
+  the sheet's fallback (an ember always at the quill's full reach) was not needed.
 - **A hit that fells her only after rounding** (55.6 damage on 56 HP) now starts her second life.
 - **Her passive's text says "a hit"**, not "a hero's hit": in the Raid a boss's ordinary hit starts it too. Ash's
   Charge passes no trait, as the arena's own damage does, and kills her for good.
 
-**Left open:** the row of small "+2" numbers while she is ash; the quill's ember when the enemy sidesteps (her screen
-and the enemy's plant it in different places); her play against Ash and Ember when the computer flies her; the Raid for
-two.
+**Left open:** the row of small "+2" numbers while she is ash; her play against Ash and Ember when the computer flies
+her; the Raid for two.

@@ -137,7 +137,8 @@ spell is rewritten on the sheet first.
       lose or win, rematch; then as the CPU's hero. No console errors.
 - [ ] Two screens online with bots (`pipeline/tools/online-bot.js`, two headless pages on one dev server). Equal HP on
       both screens is not enough: read what each screen has of her things on the floor ten times a second and lay the
-      two records over each other. Throw her spells into each other's wind-ups: that is where the screens part.
+      two records over each other. Throw her spells into each other's wind-ups, and let the enemy keep its distance
+      and step from side to side: those are the two places where the screens part.
 - [ ] A clip (`pipeline/tools/clip-film.js`, headless through `page-shots.py`; one take a page load) for the user and
       the News.
 - [ ] `npm run test:server`.
@@ -164,6 +165,11 @@ Anka went through all six gates. What her last two gates found, as rules for the
   then disagreed on her nest for 12 s. Her HP agreed all the while, so only a record of both screens side by side
   showed it. An effect's `cast` runs once a cast on each screen, in the same order: count there
   (`castNo` in `src/traits/phoenix.ts`).
+- **A bolt flies on both screens, and only the enemy's screen decides its hit.** Where her quill ended is where her
+  nest lies, and a quill that hit on one screen flew on to its full reach on the other: 2 to 7 m apart whenever the
+  enemy sidestepped. Bots that stand still never showed it. Whatever a bolt leaves behind must be told from the
+  screen that decides (`noteOwner` from `victimTick`), and the online check needs an enemy who keeps away and steps
+  from side to side.
 - **A rule that asks "would this hit fell her" must ask about the rounded damage.** The duel takes 55.6 as 56.
 - **The Raid has hits that pass no trait** (`lethal`: Ash's Charge), as the arena's own damage does. A passive that
   saves a life does not save it from those; say so in its text.

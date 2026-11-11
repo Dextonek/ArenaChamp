@@ -16,7 +16,7 @@ Hero 40, and the first made by [the rules for creating a hero](../../pipeline/ne
 |---|---|
 | Role | Mage (ranged), fragile |
 | Signature | Ashborn |
-| HP | 460 (the lowest in the game) |
+| HP | 460 (the lowest of the mages; only Mortis, a summoner behind his skeletons, has less: 450) |
 | Kit shapes | Q LINE bolt that leaves an ember · W SELF, every ember flares · E DASH to an ember · R LINE dash across the arena, leaves an ember |
 
 Everything she does lays embers on the floor or spends them. An ember is three things at once: a blast (W), a place to fly to (E) and her second life (the passive). She has three at most, and the enemy can stamp them out by standing on them. The question she asks is "do you chase her, or stamp her embers first?". Her weakness: without an ember she is the most fragile mage in the game, and right after Fan the Flames she has nothing.
@@ -75,7 +75,7 @@ What does not start her second life, because it passes no trait:
 - Stamping is the enemy's move, so it is decided on the enemy's screen (`victimTick`) and told to her client by the ember's id.
 - The second life is decided on her own client, in `taken`: the hit is swallowed whole and she pays down to 1 HP herself. She is kept safe as ash by `taken` swallowing every later hit, not by the `sealed` status (the engine refuses it in the half second after a stun, when most kills happen). The other screen learns it with `show('ash', ...)` and shows the egg.
 - A hit's damage is taken rounded (55.6 costs 56), so the second life starts when either the plain or the rounded number would fell her.
-- Known gap: when the enemy sidesteps a quill, her screen lays its ember where it expected the hit and the enemy's screen where the quill really ended. The bots of the online test stand still, so this was not measured.
+- **Where a quill's ember lies.** In a network duel a bolt flies on both screens, each against the enemy where that screen draws it, and only the enemy's own screen decides the hit: a quill that hits on one screen flies on to its full reach on the other. So the screen that decides tells her client how far along its aim the quill really got (`noteOwner('lay', ...)` from `victimTick`, in quarter metres), and her client moves that ember there (`peerNote`). Before this (found at gate 5 with an enemy who sidesteps) a dodged quill left her nest 2 to 7 m apart on the two screens, and the egg of her rising was shown where she did not rise. On one screen (a CPU duel, the Raid) the message changes nothing.
 
 ## Spells
 
@@ -101,15 +101,15 @@ The kit sheet's first table still has the numbers before balance (480 HP, 58, 60
 
 | Check | Result |
 |---|---|
-| Fight simulator, six benchmark foes, 192 fights | **54%** (plus or minus 7): Cantor 24 of 32, Sirix 20, Brannoc 19, Oblivion 17, Isolde 12, Kaia 11. [The page](../../balance/anka-gate5-2026-11-11.html). Four runs that day: 56, 52, 56, 54. Before the balance pass of the same day she was 48 (Sirix 6 of 32) |
-| The same with the arenas' events and closing stages, 96 fights | 48% (plus or minus 10). [The page](../../balance/anka-gate5-events-2026-11-11.html) |
-| Where her damage comes from (a second) | Q 10.4, attack 6.5, R 4.1, W 3.6, E 1.3, the flare 0.5: every spell in use |
+| Fight simulator, six benchmark foes, 192 fights | **52%** (plus or minus 7): Isolde 19 of 32, Sirix 19, Cantor 19, Brannoc 17, Oblivion 15, Kaia 11. [The page](../../balance/anka-gate5-2026-11-11.html). Five runs that day: 56, 52, 56, 54, 52. Before the balance pass of the same day she was 48 (Sirix 6 of 32) |
+| The same with the arenas' events and closing stages, 96 fights | 55% (plus or minus 10; three runs that day: 46, 48, 55). [The page](../../balance/anka-gate5-events-2026-11-11.html) |
+| Where her damage comes from (a second) | Q 10.3, attack 6.5, R 4.2, W 3.8, E 1.3, the flare 0.4: every spell in use |
 | Errors, fights without a winner | none |
-| Raid, the Sun Warden, 30 fights at the balance level | 26 clears (Vitriol 27, Kaia 24); 144 s a fight (122, 131); 27 damage a second (31, 29) |
-| Raid, Ash and Ember, 30 fights | 9 clears (Vitriol 20, Kaia 14). 11 of her 21 falls are Ash's Charge, which no second life holds (Vitriol 6 of 10, Kaia 2 of 16): probably her flights take her out from behind the pillars when the computer plays her; not looked into |
-| Her second life against a boss | An ordinary hit: she rises at the nest with 115 HP. A Charge: she falls for good, nest or no nest, and in the egg. She has an ember about 70% of a fight; the boss stamps about one ember in twelve (87 of 1,080 in 36 fights). With Stubborn or Phoenix Heart her own life goes first and the upgrade is kept for the next blow. With Blood Pact (nothing heals) she rises with 1 HP |
+| Raid, the Sun Warden, 90 fights at the balance level (three runs of 30, the last on the finished code) | 72 clears (Vitriol 78, Kaia 76); the last run 25 (28, 25); 140 s a fight (125, 129); 27 damage a second (31, 29) |
+| Raid, Ash and Ember, 90 fights | 33 clears (Vitriol 54, Kaia 48); the last run 10 (13, 20). 29 of her 57 falls are Ash's Charge, which no second life holds (Vitriol 22 of 36, Kaia 6 of 42): probably her flights take her out from behind the pillars when the computer plays her; not looked into |
+| Her second life against a boss | An ordinary hit: she rises at the nest with 115 HP. A Charge: she falls for good, nest or no nest, and in the egg. She has an ember about 70% of a fight; the boss stamps about one ember in twelve (123 of 1,509 in 48 fights). With Stubborn or Phoenix Heart her own life goes first and the upgrade is kept for the next blow. With Blood Pact (nothing heals) she rises with 1 HP |
 | The game page, 1280x800 and a phone (390x844, touch) | Picked in the grid, fought, rematch, as the CPU's hero: no errors. She rose with 115 HP on both sizes |
-| Online, two screens (bots, four matches, nine rounds, on the finished code) | No errors. Her embers the same on both screens in 99% of 1,900 moments and never more than 0.3 m apart; the nest never differed; eight rises, each seen on both screens at the same spot. Before the fix: 45% in the first match |
+| Online, two screens (bots, six matches on the finished code, four of them with a Kaia who keeps her distance and steps from side to side) | No errors. The same embers on both screens in 99% of 2,500 moments; the nest more than a metre apart in 7 of 1,750 moments (the tenth of a second before the true end arrives); 11 rises, each seen on both screens at the same spot. Before the fixes: the same embers only 45% of the time in the first match, and with a sidestepping Kaia the nest more than a metre apart a tenth of the time, by up to 7 m |
 
 ## Parts file
 

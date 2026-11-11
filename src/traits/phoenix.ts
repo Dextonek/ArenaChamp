@@ -39,6 +39,13 @@ import type { GroundMark, Trait, TraitView } from './types';
  * 0.3 s into the wind-up, and one slow frame on one screen (the first cast of a match builds its effect) swapped them there,
  * so the take-off ember burned on one screen and stayed on the other. Her rising takes the embers of every cast before it
  * in the same way.
+ *
+ * Where a quill's ember lies, on both screens (gate 5, found with an enemy who sidesteps). In a network duel a bolt flies on
+ * both screens, each against the enemy where that screen draws it, and only the enemy's own screen decides the hit: a quill
+ * that hits on one screen flies on to its full reach on the other. So the screen that decides (the one `victimTick` runs on)
+ * tells her client how far along its aim the quill really got (`noteOwner('lay', id * 50 + quarter metres)`), and her client
+ * moves that ember there when it lies more than half a metre off (`peerNote`). Without it a dodged quill left her nest 2 to 7 m
+ * apart on the two screens, and the egg of her rising was shown where she did not rise.
  */
 
 export const EMBER_LIFE = 12;
@@ -84,7 +91,30 @@ export const RISE_KNOCK = 8;
 const PUFF_LIFE = 0.6;
 const NEAR_EMBER_R = 3;
 
-export interface Ember { id: number; x: number; z: number; born: number; /** The number of the cast that laid it (`castNo`). */ seq: number }
+export interface Ember {
+  id: number; x: number; z: number; born: number;
+  /** The number of the cast that laid it (`castNo`). */
+  seq: number;
+  /** A quill's ember: where the quill left her hand and its heading, so its end can be told as a distance along it. */
+  aim?: QuillAim;
+  /** Its place has been told to her client (the screen that decides the hit). */
+  sent?: boolean;
+}
+
+/** A quill's flight, alike on both screens: from where (the caster's own position at the cast) and its heading. */
+export interface QuillAim { fx: number; fz: number; dx: number; dz: number }
+
+/** A quill's true end travels as a count of these metres along its aim (a note's number is small). */
+const LAY_STEP = 0.25;
+
+/** Moves a quill's ember to `k` steps along its aim, if it lies more than half a metre from there (on one screen it never does). */
+function placeAlong(e: Ember, k: number) {
+  if (!e.aim) return;
+  const x = e.aim.fx + e.aim.dx * k * LAY_STEP, z = e.aim.fz + e.aim.dz * k * LAY_STEP;
+  if (Math.hypot(x - e.x, z - e.z) <= 0.5) return;
+  e.x = x;
+  e.z = z;
+}
 
 interface Book {
   embers: Ember[];
@@ -93,6 +123,8 @@ interface Book {
   casts: number;
   /** The embers of casts numbered below this are burnt (a fan that flared, her rising): one that lands late is out at once. */
   burnt: number;
+  /** A quill's true end that reached her client before her own screen had laid its ember: by ember id, with the clock. */
+  told: Map<number, { k: number; at: number }>;
   /** While she is ash: the egg at the nest, where she fell, and when (ember clock). */
   ash: { x: number; z: number; fromX: number; fromZ: number; at: number } | null;
   /** The ember the CPU wants Ember Flight to take, and when it said so (`performance.now()`). */
@@ -125,7 +157,7 @@ function syncClock(fig: object, time: number) {
 
 function book(fig: object): Book {
   let b = books.get(fig);
-  if (!b) { b = { embers: [], puffs: [], casts: 0, burnt: 0, ash: null, cpuPick: null }; books.set(fig, b); }
+  if (!b) { b = { embers: [], puffs: [], casts: 0, burnt: 0, told: new Map(), ash: null, cpuPick: null }; books.set(fig, b); }
   return b;
 }
 
@@ -149,10 +181,18 @@ export function castNo(fig: object): number {
  * Lays an ember for `fig` now. Call it at the moment a spell lands, on both screens, with the number its cast took (`castNo`):
  * the embers stay in the order of their casts, so the nest is the ember of her latest cast on both screens whichever landed
  * first, and past 3 the ember of the oldest cast goes. Without a number (the tool, a test) it counts as a cast of its own.
+ * A quill gives its flight, so that its true end can be told from the screen that decides its hit (`'lay'`).
  */
-export function layEmber(fig: object, x: number, z: number, seq = castNo(fig)): Ember {
+export function layEmber(fig: object, x: number, z: number, seq = castNo(fig), quill?: QuillAim): Ember {
   const b = book(fig);
   const e: Ember = { id: seq % 20, x, z, born: emberNow(fig), seq };
+  if (quill) {
+    e.aim = { fx: quill.fx, fz: quill.fz, dx: quill.dx, dz: quill.dz };
+    // The true end came first (the quill flew on here, and hit early on the screen that decides).
+    const told = b.told.get(e.id);
+    if (told && e.born - told.at < 2) placeAlong(e, told.k);
+    b.told.delete(e.id);
+  }
   // A fan cast after this ember's cast has already flared (or she has risen since): it burns as it lands, on both screens.
   if (seq < b.burnt) {
     b.puffs.push({ x, z, born: e.born, burnt: true });
@@ -375,6 +415,13 @@ export const phoenixTrait: Trait = {
       const ex = egg.x, ez = egg.z;
       if (Math.hypot(p.x - ex, p.z - ez) <= RISE_RADIUS) t.hitEnemy({ damage: RISE_DAMAGE, knock: RISE_KNOCK, from: new THREE.Vector3(ex, 0, ez), color: PHOENIX_CSS.body });
     }
+    // This screen decides the quill's hit: her client is told how far along its aim it really got.
+    for (const e of b.embers) {
+      if (e.sent || !e.aim) continue;
+      e.sent = true;
+      const along = (e.x - e.aim.fx) * e.aim.dx + (e.z - e.aim.fz) * e.aim.dz;
+      t.noteOwner('lay', e.id * 50 + Math.max(0, Math.min(40, Math.round(along / LAY_STEP))));
+    }
     // The egg cannot be stamped: her embers are the egg's while she is ash.
     if (t.time < until) return;
     for (const e of b.embers.slice()) {
@@ -389,6 +436,13 @@ export const phoenixTrait: Trait = {
   },
   peerNote(t, name, n) {
     if (name === 'stamp') stampEmber(t.self(), n);
+    if (name === 'lay') {
+      // Where a quill really ended, from the screen that decides its hit.
+      const fig = t.self(), b = book(fig), id = Math.floor(n / 50), k = n % 50;
+      const e = b.embers.find((x) => x.id === id && x.aim);
+      if (e) placeAlong(e, k);
+      else if (!b.embers.some((x) => x.id === id)) b.told.set(id, { k, at: emberNow(fig) });
+    }
   },
   figureHidden: (t) => t.own('ash') > 0,
   markLook: {

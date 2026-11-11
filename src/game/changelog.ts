@@ -45,7 +45,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Heroes',
         title: 'Anka, the Firebird: hero 40',
-        text: 'A fire dancer with wings of flame and a feather fan, and the first true fire hero. Her feathers stay on the floor as embers, three at most: Fan the Flames makes them burst, Ember Flight carries her to one, and Firebird crosses the arena as a great burning bird. She has the least health of all, 460.',
+        text: 'A fire dancer with wings of flame and a feather fan, and the first true fire hero. Her feathers stay on the floor as embers, three at most: Fan the Flames makes them burst, Ember Flight carries her to one, and Firebird crosses the arena as a great burning bird. She has less health than any other mage, 460.',
         image: '/news/anka.jpg',
         alt: 'Anka from the front, from behind, walking and striking: a dancer in an ember-red bodice and a feathered skirt, with flame wings swept back and an open feather fan in her left hand.',
       },

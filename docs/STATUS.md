@@ -176,7 +176,7 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
 - **Anka no longer blocks a deploy (2026-11-11, was "THE TREE IS NOT DEPLOYABLE"):** her looks are done (gate 4) and
   every check of gate 5 the computer can make has passed (below). Before a deploy that carries her, still: (1) the
   user plays her once (gate 5's last line: `npm run dev`, http://localhost:5173/game, CPU duel, the last tile);
-  (2) her commit is merged from its worktree (branch `t3/23f20a58`) into `feat/particle-editor`; (3) the raid change
+  (2) her commits are merged from their worktree (branch `t3/finish-anka-hero-40`) into `feat/particle-editor`; (3) the raid change
   that raises `PROTOCOL` to 8 is merged too: she raises no number of her own, and that one covers her (an old tab
   must reload to know her). Push and deploy are the user's own requests, each on its own.
 - **Gate 3, kit on paper: agreed** (user: "nice yes build her").
@@ -216,33 +216,43 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   without a winner. The steps are a table in `pipeline/designs/kit-phoenix.md` ("Gate 5"). Her effects cost the same
   per fight step as any hero's (0.18 ms against 0.23).
 - **Gate 5, the rest: done (user: "Finish Anka now").** One page with the pictures and tables:
-  [heroes/anka-gate5.html](heroes/anka-gate5.html). On the finished code:
-  - **Simulator:** `python pipeline/sim/sim.py hero Anka --fights 32`: **54%** over 192 fights (four runs that day: 56,
-    52, 56, 54; Cantor 24 of 32, Sirix 20, Brannoc 19, Oblivion 17, Isolde 12, Kaia 11); with `--events` 48% over 96.
-    No errors, no fight without a winner, every spell in use. She was 48% before the balance pass of the same day
-    (Sirix: 6 of 32 then, 20 now). Pages: `docs/balance/anka-gate5-2026-11-11.html`, `anka-gate5-events-2026-11-11.html`.
-  - **Raid** (`_raid([...], 30)` through `page-shots.py`, port 5192): the Sun Warden 26 of 30 (Vitriol 27, Kaia 24);
-    Ash and Ember 9 of 30 (Vitriol 20, Kaia 14), 11 of her 21 falls being Ash's Charge. `_raid.errors()` empty. **Her
+  [heroes/anka-gate5.html](heroes/anka-gate5.html). Every line below was run on the finished code:
+  - **Simulator:** `python pipeline/sim/sim.py hero Anka --fights 32`: **52%** over 192 fights (five runs that day: 56,
+    52, 56, 54, 52; the last: Isolde 19 of 32, Sirix 19, Cantor 19, Brannoc 17, Oblivion 15, Kaia 11); with `--events`
+    55% over 96 (three runs: 46, 48, 55). No errors, no fight without a winner, every spell in use. She was 48% before
+    the balance pass of the same day (Sirix: 6 of 32 then). Pages: `docs/balance/anka-gate5-2026-11-11.html`,
+    `anka-gate5-events-2026-11-11.html`.
+  - **Raid** (`_raid([...], 30)` through `page-shots.py`, port 5192; three runs of 30, the last on the finished code):
+    the Sun Warden 72 of 90 (Vitriol 78, Kaia 76; the last run 25, 28, 25); Ash and Ember 33 of 90 (Vitriol 54, Kaia
+    48; the last run 10, 13, 20), 29 of her 57 falls being Ash's Charge. `_raid.errors()` empty in every run. **Her
     second life against a boss:** an ordinary hit that would fell her turns her to ash and she rises at the nest with
     115 HP; a `lethal` hit (Ash's Charge) passes no trait and kills her for good, nest or no nest, and in the egg; she
     has an ember about 70% of a fight and the boss stamps about one in twelve; Stubborn and Phoenix Heart are kept
     for the blow after her own life; with Blood Pact she rises with 1 HP.
   - **The game page through its own menus,** 1280x800 and a phone (390x844 with touch): picked in the grid, fought
     (a tap and a key cast, then every spell), rematch, then as the CPU's hero. No console errors. She rose with 115 HP.
-    `?figs=old` shows her as she is. Pictures: `docs/heroes/anka-gate5-*.jpg`.
-  - **Online, two screens** (two bots through this worktree's own server, four matches, nine rounds): no errors; the
-    same embers on both screens in 99% of 1,900 moments, never more than 0.3 m apart, the nest never different;
-    eight rises, each seen on both screens at the same spot. The throwaway accounts are deleted.
+    `?figs=old` shows her as she is. Pictures (from the first of three runs): `docs/heroes/anka-gate5-*.jpg`.
+  - **Online, two screens** (two bots through this worktree's own server; six matches, in four of them Kaia keeps her
+    distance and steps from side to side, as a person does): no errors; the same embers on both screens in 99% of
+    2,500 moments; the nest more than a metre apart in 7 of 1,750 moments (the tenth of a second before the quill's
+    true end arrives); 11 rises, each seen on both screens at the same spot. The throwaway accounts are deleted.
   - `npm run test:server`, type check and build pass.
 - **Found and fixed on the way** (her own files only: `src/traits/phoenix.ts`, `emberQuill.ts`, `firebird.ts`,
-  `fanTheFlames.ts`; no number changed):
+  `fanTheFlames.ts`; no number changed, and on one screen, a CPU duel or the Raid, nothing changed: no ember moved
+  in 16 fights):
   1. **The two screens could disagree on her nest for 12 s** (the first online match: the same embers only 45% of
      the time, with her HP agreeing all the while). Embers were ranked and numbered by which LANDED first, and a
      quill lands at a different moment on each screen. Now an ember carries the number of the cast that laid it
      (`castNo`: counted alike on both screens), the nest is the ember of her latest cast, and Fan the Flames burns
      the embers of every earlier cast, also one that lands after the flare.
-  2. **A hit that fells her only after rounding** (55.6 on 56 HP) started no second life. It does now.
-  3. Her passive's text said "a hero's hit": a boss's hit counts too, so it says "a hit".
+  2. **A quill the enemy sidestepped planted her nest in two places.** A bolt flies on both screens and only the
+     enemy's screen decides its hit, so a quill that hit on one flew on to its full reach on the other: with a
+     sidestepping Kaia the nest was more than a metre apart a tenth of the time, by up to 7 m, and the egg of her
+     rising was shown where she did not rise. Now the deciding screen tells her client how far the quill really got
+     (`noteOwner('lay', ...)`), and the ember moves there. Bots that stand still never showed this.
+  3. **A hit that fells her only after rounding** (55.6 on 56 HP) started no second life (shown on the old line). It
+     does now.
+  4. Her passive's text said "a hero's hit": a boss's hit counts too, so it says "a hit".
 - **Gate 6: done.** `docs/catalog/heroes/phoenix.md`, her rows in `docs/catalog/heroes/README.md` and
   `docs/catalog/effects.md` (287 effects), her palette row in `docs/ART_BIBLE.md`, the counts (40) in `CLAUDE.md`,
   `docs/README.md`, `docs/SHOWCASE.md`, `docs/architecture/hero-mode.md` and `traits.md`; two News items at the top
@@ -250,15 +260,15 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   her ashes" with the clip `public/news/anka-rise.mp4`); what she showed is written back into
   [pipeline/new-hero.md](pipeline/new-hero.md). **`PROTOCOL` was not touched here** (see above).
 - **Seen, not changed** (each is one small job, waiting on the user's word): while she is ash a row of small green
-  "+2" runs from where she fell to the nest (her HP climbs in steps); when the enemy sidesteps a quill, her screen
-  and the enemy's plant its ember in different places (the bots stand still: not measured); the computer plays her
+  "+2" runs from where she fell to the nest (her HP climbs in steps); the computer plays her
   badly against Ash and Ember (the Charge); the Play screen's card at laptop height holds about six lines of a
   passive's text, hers and Vitriol's run past the box (`src/game/game.css`); a damage number stands for one frame
   in the top left corner before it is placed (`Arena.say` in `src/arena.ts`, every hero); the Raid for two was not
   played with her.
 - **Tool lessons:** `clip-film.js` takes one take a page load (a second take starts on a clock that went back: its
   first seconds are black); four raid fights are noise, 30 a hero take under a minute; two screens are compared by
-  what each has on the floor, not by HP.
+  what each has on the floor, not by HP, and against an enemy who sidesteps (`python online.py <n> strafe` of this
+  session; its scripts are not in the repo yet).
 - Gate 3's text: (user: "lets make some interesting kit for her").
   `pipeline/designs/kit-phoenix.md`: everything lays embers or spends them; an ember is a blast (W Fan the Flames), a
   place to fly to (E Ember Flight) and her second life (P Ashborn); Q Ember Quill and R Firebird lay them; 480 HP.
