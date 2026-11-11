@@ -5,6 +5,7 @@
 //! Until it does and is graded against real fights, use the real simulator (pipeline/sim) for numbers and the rough
 //! model (pipeline/rustsim) for quick estimates.
 
+mod ai;
 mod attack;
 mod geom;
 mod status;
