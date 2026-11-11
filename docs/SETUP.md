@@ -67,7 +67,7 @@ npx wrangler login
 ```bash
 npm run cf:deploy
 ```
-It builds and publishes to https://arena-of-kits.arenachamp.workers.dev and drops every live connection. Record the
+It builds and publishes to https://arena-of-kits.arenachamp.workers.dev (first check with `npx wrangler deployments list` that the login is the account that holds the game: its newest entry is the version `docs/STATUS.md` names as live) and drops every live connection. Record the
 worker version and what was checked in `docs/STATUS.md`.
 
 ## 6. Blender
