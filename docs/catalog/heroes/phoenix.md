@@ -75,7 +75,7 @@ What does not start her second life, because it passes no trait:
 - Stamping is the enemy's move, so it is decided on the enemy's screen (`victimTick`) and told to her client by the ember's id.
 - The second life is decided on her own client, in `taken`: the hit is swallowed whole and she pays down to 1 HP herself. She is kept safe as ash by `taken` swallowing every later hit, not by the `sealed` status (the engine refuses it in the half second after a stun, when most kills happen). The other screen learns it with `show('ash', ...)` and shows the egg.
 - A hit's damage is taken rounded (55.6 costs 56), so the second life starts when either the plain or the rounded number would fell her.
-- **Where a quill's ember lies.** In a network duel a bolt flies on both screens, each against the enemy where that screen draws it, and only the enemy's own screen decides the hit: a quill that hits on one screen flies on to its full reach on the other. So the screen that decides tells her client how far along its aim the quill really got (`noteOwner('lay', ...)` from `victimTick`, in quarter metres), and her client moves that ember there (`peerNote`). Before this (found at gate 5 with an enemy who sidesteps) a dodged quill left her nest 2 to 7 m apart on the two screens, and the egg of her rising was shown where she did not rise. On one screen (a CPU duel, the Raid) the message changes nothing.
+- **Where a quill's ember lies.** In a network duel a bolt flies on both screens, each against the enemy where that screen draws it, and only the enemy's own screen decides the hit: a quill that hits on one screen flies on to its full reach on the other. So the screen that decides tells her client how far along its aim the quill really got (`noteOwner('lay', ...)` from `victimTick`, in quarter metres), and her client moves that ember there (`peerNote`). Before this (found at gate 5 with an enemy who sidesteps) a dodged quill left her nest 2 to 7 m apart on the two screens, and the egg of her rising was shown where she did not rise. On one screen (a CPU duel, the Raid) the message changes nothing: no ember moved in 16 duels and 8 raid fights.
 
 ## Spells
 
@@ -151,6 +151,7 @@ The kit sheet's first table still has the numbers before balance (480 HP, 58, 60
 | Model | [`public/models/heroes/phoenix_v4.glb`](../../../public/models/heroes/phoenix_v4.glb) |
 | Model script | [`blender/heroes/real/phoenix.py`](../../../blender/heroes/real/phoenix.py) |
 | Review pictures | [`pipeline/tools/anka-shots.js`](../../../pipeline/tools/anka-shots.js) with `pipeline/tools/page-shots.py` |
+| Gate 5 checks | [`pipeline/tools/hero-gate5/`](../../../pipeline/tools/hero-gate5/README.md): the game-page duel, two screens online, the raid cases |
 
 ## See also
 

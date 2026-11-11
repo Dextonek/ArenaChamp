@@ -138,7 +138,8 @@ spell is rewritten on the sheet first.
 - [ ] Two screens online with bots (`pipeline/tools/online-bot.js`, two headless pages on one dev server). Equal HP on
       both screens is not enough: read what each screen has of her things on the floor ten times a second and lay the
       two records over each other. Throw her spells into each other's wind-ups, and let the enemy keep its distance
-      and step from side to side: those are the two places where the screens part.
+      and step from side to side: those are the two places where the screens part. The scripts that did this for
+      hero 40, and the game-page duel and the raid cases beside them: `pipeline/tools/hero-gate5/`.
 - [ ] A clip (`pipeline/tools/clip-film.js`, headless through `page-shots.py`; one take a page load) for the user and
       the News.
 - [ ] `npm run test:server`.

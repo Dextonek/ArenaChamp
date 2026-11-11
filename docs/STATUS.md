@@ -238,8 +238,8 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
     true end arrives); 11 rises, each seen on both screens at the same spot. The throwaway accounts are deleted.
   - `npm run test:server`, type check and build pass.
 - **Found and fixed on the way** (her own files only: `src/traits/phoenix.ts`, `emberQuill.ts`, `firebird.ts`,
-  `fanTheFlames.ts`; no number changed, and on one screen, a CPU duel or the Raid, nothing changed: no ember moved
-  in 16 fights):
+  `fanTheFlames.ts`; no number changed. On one screen, a CPU duel or the Raid, fix 2 changes nothing: no ember
+  moved in 16 duels and 8 raid fights. Fixes 1 and 3 do change a fight on one screen too, in the cases they name):
   1. **The two screens could disagree on her nest for 12 s** (the first online match: the same embers only 45% of
      the time, with her HP agreeing all the while). Embers were ranked and numbered by which LANDED first, and a
      quill lands at a different moment on each screen. Now an ember carries the number of the cast that laid it
@@ -267,8 +267,8 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   played with her.
 - **Tool lessons:** `clip-film.js` takes one take a page load (a second take starts on a clock that went back: its
   first seconds are black); four raid fights are noise, 30 a hero take under a minute; two screens are compared by
-  what each has on the floor, not by HP, and against an enemy who sidesteps (`python online.py <n> strafe` of this
-  session; its scripts are not in the repo yet).
+  what each has on the floor, not by HP, and against an enemy who sidesteps. The scripts of these checks are in
+  `pipeline/tools/hero-gate5/` (its README says what each does), as they ran for her.
 - Gate 3's text: (user: "lets make some interesting kit for her").
   `pipeline/designs/kit-phoenix.md`: everything lays embers or spends them; an ember is a blast (W Fan the Flames), a
   place to fly to (E Ember Flight) and her second life (P Ashborn); Q Ember Quill and R Firebird lay them; 480 HP.
