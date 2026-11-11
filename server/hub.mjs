@@ -10,7 +10,7 @@
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
 import {
-  PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RELOAD_TEXT, raidBand, raidHp, raidScale, raidStaggerMax, raidRing,
+  PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, raidBand, raidHp, raidScale, raidStaggerMax, raidRing, raidTwin,
 } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
@@ -105,9 +105,15 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  *   move?: (number | null)[] | null }} Player
  *   `move`: in a party of more than two, this hero's newest walk that the others have not been sent yet.
  * @typedef {{ id: string, band: number, hp: number, max: number, staggerMax: number, phase: number, gauge: number, kneelUntil: number, brain: number,
- *   brainAt: number, revives: number[], stood: Map<string, { id: number, part: number, count: number, from: Set<number>, timer: any }>,
- *   settled: Set<string>, walls: Set<number>, taken: Set<string>, hpTimer: any, hpAt: number }} RaidBoss
+ *   brainAt: number, revives: number[], stood: Map<string, { id: number, part: number, count: number, from: Set<number>, timer: any, half: number }>,
+ *   settled: Set<string>, walls: Set<number>, taken: Set<string>, hpTimer: any, hpAt: number, twin?: RaidTwin }} RaidBoss
  *   `band`: the party size this fight is tuned for, from who was there when it started. `brainAt`: when the brain last changed screens.
+ * @typedef {{ hp: number, max: number, staggerMax: number, phase: number, gauge: number, kneelUntil: number, brain: number, brainAt: number,
+ *   hpTimer: any, hpAt: number, dead?: boolean }} RaidPool
+ *   What is kept per boss. A boss fought alone is its own pool; Twin Flames has two (`RaidTwin.pools`).
+ * @typedef {{ pools: [RaidPool, RaidPool], half: number[], fury: number }} RaidTwin
+ *   Twin Flames: Ash's pool and Ember's, which half of the room each player is in (by side: 0 west with Ash, 1 east with Ember, -1
+ *   gone before the fight), and which of the two is furious now (-1: neither). The boss's own `hp` and `max` are the two together.
  * @typedef {{ id: string, players: Player[], state: 'offer' | 'gate' | 'loading' | 'fight' | 'break' | 'cleared' | 'over', created: number, startedAt: number,
  *   fightAt: number, round: number, score: number[], timer: any,
  *   pick: { side: number, at: number, next: () => void } | null,
@@ -482,19 +488,20 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       }
       // --- the raid: from the screen that runs the boss's brain ---------------------------------------------------
       case 'boss_cast': {
-        const boss = raidOf(c), match = c.match;
-        if (!boss || !match || boss.brain !== c.side || typeof m.move !== 'string' || !MOVE_RE.test(m.move)) return;
+        const boss = raidOf(c), match = c.match, pool = boss && brainPool(boss, c.side, m.which);
+        if (!boss || !match || !pool || typeof m.move !== 'string' || !MOVE_RE.test(m.move)) return;
         if (![m.id, m.step, m.x, m.z, m.fx, m.fz, m.dir, m.seed].every(num) || !isSide(match, m.target)) return;
         return tell(match, {
           t: 'boss_cast', id: m.id, move: m.move, step: m.step, x: m.x, z: m.z, fx: m.fx, fz: m.fz, dir: m.dir, seed: m.seed, target: m.target, alone: m.alone === true,
           rim: m.rim === true ? true : undefined, form: m.form === 0 || m.form === 1 ? m.form : undefined, flag: m.flag === true ? true : undefined,
+          which: whichOf(boss, pool),
         }, c.side);
       }
       case 'boss_move': {
-        const boss = raidOf(c), match = c.match;
-        if (!boss || !match || boss.brain !== c.side || !num(m.x) || !num(m.z)) return;
+        const boss = raidOf(c), match = c.match, pool = boss && brainPool(boss, c.side, m.which);
+        if (!boss || !match || !pool || !num(m.x) || !num(m.z)) return;
         const p = clampRing(m.x, m.z, raidRing(boss.id, boss.band));
-        return tell(match, { t: 'boss_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined }, c.side);
+        return tell(match, { t: 'boss_move', x: p.x, z: p.z, yaw: num(m.yaw) ? m.yaw : 0, ts: num(m.ts) ? m.ts : undefined, which: whichOf(boss, pool) }, c.side);
       }
       // --- the raid: from any screen ----------------------------------------------------------------------------------
       case 'boss_damage': {
@@ -505,14 +512,19 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (now - (me.dmgAt ?? 0) >= 1000) { me.dmgAt = now; me.dmgSum = 0; }
         const amount = Math.min(m.amount, BOSS_HIT_MAX, BOSS_SECOND_MAX - (me.dmgSum ?? 0));
         if (amount <= 0) return;
+        // Twin Flames: it comes off the boss this hero can reach. A hit on one that has just fallen is dropped.
+        const which = reachOf(boss, c.side, m.which);
+        if (which < 0) return;
         me.dmgSum = (me.dmgSum ?? 0) + amount;
-        raidDamage(match, amount);
+        raidDamage(match, amount, which);
         return;
       }
       case 'boss_stagger': {
         const boss = raidOf(c), match = c.match;
-        if (!boss || !match || !num(m.points) || m.points <= 0 || Date.now() < boss.kneelUntil) return;
-        raidStagger(match, Math.min(m.points, STAGGER_MAX));
+        if (!boss || !match || !num(m.points) || m.points <= 0) return;
+        const which = reachOf(boss, c.side, m.which);
+        if (which < 0 || Date.now() < poolOf(boss, which).kneelUntil) return;
+        raidStagger(match, Math.min(m.points, STAGGER_MAX), which);
         return;
       }
       case 'boss_obj': {
@@ -527,17 +539,18 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       }
       case 'boss_reward': {
         // A mechanic was done right, says the screen that runs the brain. What it earns comes from the table, once per cast.
-        const boss = raidOf(c), match = c.match;
-        if (!boss || !match || boss.brain !== c.side || !num(m.id) || typeof m.key !== 'string') return;
+        const boss = raidOf(c), match = c.match, pool = boss && brainPool(boss, c.side, m.which);
+        if (!boss || !match || !pool || !num(m.id) || typeof m.key !== 'string') return;
         const table = RAID_REWARDS[boss.id], r = Object.hasOwn(table, m.key) ? table[m.key] : null, key = `reward:${m.id}:${m.key}`;
         if (!r || boss.taken.has(key) || boss.taken.size >= TAKEN_MAX) return;
         boss.taken.add(key);
-        if (r.hp) raidDamage(match, boss.max * r.hp);
-        if (match.state !== 'fight') return;
-        if (r.kneel) raidKneel(match);
-        else if (r.stun) raidStun(match, r.stun);
-        // The gauge is bigger for a bigger party, and so is what a mechanic puts in it.
-        else if (r.stagger && Date.now() >= boss.kneelUntil) raidStagger(match, r.stagger * raidScale(boss.band));
+        const which = whichOf(boss, pool) ?? 0;
+        if (r.hp) raidDamage(match, pool.max * r.hp, which);
+        if (match.state !== 'fight' || pool.dead) return;
+        if (r.kneel) raidKneel(match, which);
+        else if (r.stun) raidStun(match, r.stun, which);
+        // The gauge is bigger for a bigger party, and so is what a mechanic puts in it (each of two bosses has half of both).
+        else if (r.stagger && Date.now() >= pool.kneelUntil) raidStagger(match, r.stagger * raidScale(boss.band) * (boss.twin ? 0.5 : 1), which);
         return;
       }
       case 'boss_stood': {
@@ -550,10 +563,11 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (!s) {
           // Far more zones than any fight has: a client making them up gets no timers.
           if (boss.stood.size + boss.settled.size >= STOOD_MAX) return;
-          s = { id: m.id, part: m.part, count: 0, from: new Set(), timer: setTimeout(() => stoodDone(match, m.id, m.part), STOOD_WAIT_MS) };
+          // Twin Flames, while the wall stands: a zone is its half's own, and only that half is waited for.
+          s = { id: m.id, part: m.part, count: 0, from: new Set(), timer: setTimeout(() => stoodDone(match, m.id, m.part), STOOD_WAIT_MS), half: halfOf(boss, c.side) };
           boss.stood.set(key, s);
         }
-        if (s.from.has(c.side)) return;
+        if (s.from.has(c.side) || (s.half >= 0 && halfOf(boss, c.side) !== s.half)) return;
         s.from.add(c.side);
         if (m.inside === true) s.count++;
         stoodSettle(match);
@@ -603,8 +617,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         // A hero slowed or debuffed the boss: its own screen has it. The others walk the boss or take its hits.
         const boss = raidOf(c), match = c.match;
         if (!boss || !match || !BOSS_DEBUFFS.includes(m.kind) || !num(m.amount) || !num(m.seconds)) return;
+        const which = boss.twin ? reachOf(boss, c.side, m.which) : undefined;
+        if (which !== undefined && which < 0) return;
         return relay(c, match, {
-          t: 'peer_debuff', kind: m.kind, amount: Math.max(0, Math.min(m.amount, DEBUFF_MAX)), seconds: Math.max(0, Math.min(m.seconds, DEBUFF_MAX_S)),
+          t: 'peer_debuff', kind: m.kind, amount: Math.max(0, Math.min(m.amount, DEBUFF_MAX)), seconds: Math.max(0, Math.min(m.seconds, DEBUFF_MAX_S)), which,
         });
       }
       case 'raid_pick': {
@@ -650,6 +666,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (!isSide(match, side) || side === c.side) return;
         const target = match.players[side];
         if (!target.down || target.left || match.players[c.side].down || boss.revives[side] >= REVIVES) return;
+        // Nobody reaches through the wall of fire.
+        if (halfOf(boss, side) !== halfOf(boss, c.side)) return;
         boss.revives[side]++;
         target.down = false;
         target.hp = Math.ceil(target.max / 2);
@@ -675,6 +693,42 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       if (sides?.get(side) === door) inDoor++;
     });
     return inDoor * 2 > here;
+  }
+
+  /** What is kept of boss `which` of a fight: the boss itself, or one of Twin Flames' two. @param {RaidBoss} boss @param {number} which @returns {RaidPool} */
+  const poolOf = (boss, which) => (boss.twin ? boss.twin.pools[which] : boss);
+
+  /** Which of two a pool is, for a message; undefined for a boss fought alone, whose messages stay as they were. @param {RaidBoss} boss @param {RaidPool} pool */
+  const whichOf = (boss, pool) => (boss.twin ? boss.twin.pools.indexOf(/** @type {any} */ (pool)) : undefined);
+
+  /** Twin Flames: the wall of fire stands while both are alive. @param {RaidBoss} boss */
+  const wallUp = (boss) => !!boss.twin && !boss.twin.pools[0].dead && !boss.twin.pools[1].dead;
+
+  /** The half of the room a player is held in by the wall, or -1 when there is no wall. @param {RaidBoss} boss @param {number} side */
+  const halfOf = (boss, side) => (wallUp(boss) ? /** @type {RaidTwin} */ (boss.twin).half[side] : -1);
+
+  /**
+   * The pool whose brain `side` runs, as its message names it (`which`, for Twin Flames), or null: not this screen's to speak for.
+   * @param {RaidBoss} boss @param {number} side @param {unknown} which @returns {RaidPool | null}
+   */
+  function brainPool(boss, side, which) {
+    if (!boss.twin) return boss.brain === side ? boss : null;
+    if (which !== 0 && which !== 1) return null;
+    const pool = boss.twin.pools[which];
+    return pool.brain === side && !pool.dead ? pool : null;
+  }
+
+  /**
+   * The boss a hero's hit or control lands on: for Twin Flames the one on its side of the wall, and once one has fallen the
+   * other; -1 for one out of its reach, or just fallen. A boss fought alone is 0.
+   * @param {RaidBoss} boss @param {number} side @param {unknown} which
+   */
+  function reachOf(boss, side, which) {
+    const twin = boss.twin;
+    if (!twin) return 0;
+    const half = halfOf(boss, side), w = which === 0 || which === 1 ? which : half >= 0 ? half : twin.pools[0].dead ? 1 : 0;
+    if (twin.pools[w].dead || (half >= 0 && w !== half)) return -1;
+    return w;
   }
 
   /** The raid `c` is fighting right now, if any. @param {Client} c */
@@ -950,7 +1004,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         attacks: new Set(), lastAttack: -Infinity, heals: [], down: false, left: false,
       })),
       state: 'offer', created: Date.now(), startedAt: 0, fightAt: 0, round: 1, score: [0, 0], timer: null, pick: null, picked: null,
-      boss: newBoss(id, band, 1, 0, seats.length),
+      boss: newBoss(id, band, 1, 0, seats.length, null),
       run: { stage: RAID_RUN.indexOf(id), tier: 1, beaten: 0, seconds: 0, picks: new Set(), enters: new Set(), goes: new Set() },
     };
     const party = match.players.map((p, side) => ({ side, name: p.name, hero: p.hero }));
@@ -972,14 +1026,39 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
 
   /**
    * What the hub keeps of one fight: HP and the gauge's size come from the band.
-   * @param {string} id @param {number} band @param {number} tier @param {number} brain @param {number} seats @returns {RaidBoss}
+   * Twin Flames (`raidTwin`: a party against Ash and Ember) is two bosses at once: `half` deals the players into the two halves of
+   * the room, and each boss has half the HP and half the gauge, and its brain on the first screen of its own half.
+   * @param {string} id @param {number} band @param {number} tier @param {number} brain @param {number} seats
+   * @param {number[] | null} half by side: 0 west, 1 east, -1 not here @returns {RaidBoss}
    */
-  function newBoss(id, band, tier, brain, seats) {
-    const hp = raidHp(id, band, tier);
-    return {
-      id, band, hp, max: hp, staggerMax: raidStaggerMax(id, band), phase: 0, gauge: 0, kneelUntil: 0, brain, brainAt: 0,
+  function newBoss(id, band, tier, brain, seats, half) {
+    const hp = raidHp(id, band, tier), staggerMax = raidStaggerMax(id, band);
+    /** @type {RaidBoss} */
+    const boss = {
+      id, band, hp, max: hp, staggerMax, phase: 0, gauge: 0, kneelUntil: 0, brain, brainAt: 0,
       revives: new Array(seats).fill(0), stood: new Map(), settled: new Set(), walls: new Set(), taken: new Set(), hpTimer: null, hpAt: 0,
     };
+    if (half && raidTwin(id, band)) {
+      /** @param {number} which @returns {RaidPool} */
+      const pool = (which) => ({
+        hp: Math.round(hp / 2), max: Math.round(hp / 2), staggerMax: staggerMax / 2, phase: 0, gauge: 0, kneelUntil: 0, brain: half.indexOf(which), brainAt: 0,
+        hpTimer: null, hpAt: 0, dead: false,
+      });
+      boss.twin = { pools: [pool(0), pool(1)], half, fury: -1 };
+      boss.hp = boss.max = boss.twin.pools[0].max + boss.twin.pools[1].max;
+      boss.brain = boss.twin.pools[0].brain;
+    }
+    return boss;
+  }
+
+  /**
+   * Which half of the room each player fights in, for Twin Flames: those here are dealt west, east, west... in the order of their
+   * seats, so with three or more neither half is empty, and the first of them is in the west (Ash's). -1 for who has left.
+   * @param {Match} match
+   */
+  function dealHalves(match) {
+    let n = 0;
+    return match.players.map((p) => (p.left ? -1 : n++ % 2));
   }
 
   /**
@@ -1025,38 +1104,56 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (match.state === 'over') return stopTimers(match);
     const boss = match.boss, now = Date.now();
     if (!boss || match.state !== 'fight') return;
-    const p = match.players[boss.brain];
-    if (now - Math.max(p.client.seenAt ?? 0, boss.brainAt, match.fightAt, boss.kneelUntil) < BRAIN_QUIET_MS) return;
-    const to = nextBrain(match, boss.brain, now);
-    if (to < 0) return;
-    log(`raid ${match.id}: nothing from ${p.name}'s screen, the brain moves to ${match.players[to].name}`);
-    giveBrain(match, to);
+    // Twin Flames: each of the two has its own brain, on a screen of its own half.
+    for (const which of boss.twin ? [0, 1] : [0]) {
+      const pool = poolOf(boss, which);
+      if (pool.dead) continue;
+      const p = match.players[pool.brain];
+      // Nobody ran it (its half was empty): whoever can reach it now does.
+      if (!p) {
+        const to = nextBrain(match, -1, now, which);
+        if (to >= 0) giveBrain(match, to, which);
+        continue;
+      }
+      if (now - Math.max(p.client.seenAt ?? 0, pool.brainAt, match.fightAt, pool.kneelUntil) < BRAIN_QUIET_MS) continue;
+      const to = nextBrain(match, pool.brain, now, which);
+      if (to < 0) continue;
+      log(`raid ${match.id}: nothing from ${p.name}'s screen, the brain moves to ${match.players[to].name}`);
+      giveBrain(match, to, which);
+    }
   }
 
   /**
    * Who takes the brain after `from`: the next seat round the party that is still here, first one whose screen was heard from
-   * lately, or -1 when nobody else is here.
-   * @param {Match} match @param {number} from @param {number} now
+   * lately, or -1 when nobody else is here. Twin Flames: only a screen on that boss's side of the wall can run it (`which`).
+   * @param {Match} match @param {number} from @param {number} now @param {number} [which]
    */
-  function nextBrain(match, from, now) {
-    const n = match.players.length;
+  function nextBrain(match, from, now, which = 0) {
+    const n = match.players.length, boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
     let any = -1;
-    for (let i = 1; i < n; i++) {
-      const side = (from + i) % n, p = match.players[side];
-      if (p.left) continue;
+    for (let i = 1; i <= n; i++) {
+      const side = (from + i + n) % n, p = match.players[side];
+      if (p.left || side === from) continue;
+      const half = halfOf(boss, side);
+      if (half >= 0 && half !== which) continue;
       if (now - (p.client.seenAt ?? 0) < BRAIN_QUIET_MS) return side;
       if (any < 0) any = side;
     }
     return any;
   }
 
-  /** The brain is this screen's now: it is told (`boss_brain`), and the others hear whose it is (`brain_moved`). @param {Match} match @param {number} side */
-  function giveBrain(match, side) {
-    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
-    boss.brain = side;
-    boss.brainAt = Date.now();
-    send(match.players[side].client, { t: 'boss_brain', side });
-    tell(match, { t: 'brain_moved', side }, side);
+  /**
+   * The brain is this screen's now: it is told (`boss_brain`), and the others hear whose it is (`brain_moved`). Twin Flames: the
+   * brain of boss `which`.
+   * @param {Match} match @param {number} side @param {number} [which]
+   */
+  function giveBrain(match, side, which = 0) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), pool = poolOf(boss, which);
+    pool.brain = side;
+    pool.brainAt = Date.now();
+    if (boss.twin && which === 0) boss.brain = side;
+    send(match.players[side].client, { t: 'boss_brain', side, which: whichOf(boss, pool) });
+    tell(match, { t: 'brain_moved', side, which: whichOf(boss, pool) }, side);
   }
 
   /** The pick before a fight. The upgrades stay on the clients; the hub waits for both, or for the time. @param {Match} match */
@@ -1108,7 +1205,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     clearTimeout(match.timer);
     match.state = 'loading';
     const id = RAID_RUN[run.stage];
-    const boss = match.boss = newBoss(id, bandOf(match), run.tier, Math.max(0, match.players.findIndex((p) => !p.left)), match.players.length);
+    const boss = match.boss = newBoss(id, bandOf(match), run.tier, Math.max(0, match.players.findIndex((p) => !p.left)), match.players.length, dealHalves(match));
     for (const p of match.players) {
       p.loaded = false;
       p.down = false;
@@ -1117,7 +1214,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       p.recent.clear();
       p.attacks.clear();
     }
-    tell(match, { t: 'raid_stage', stage: run.stage, tier: run.tier, boss: id, hp: boss.hp, brain: boss.brain, band: boss.band, staggerMax: boss.staggerMax });
+    // Twin Flames: who is in which half, and each boss's own HP, gauge and brain. `hp`, `brain` and `staggerMax` stay the pair's.
+    const twin = boss.twin && { half: boss.twin.half, hp: boss.twin.pools.map((x) => x.max), brain: boss.twin.pools.map((x) => x.brain), staggerMax: boss.twin.pools[0].staggerMax };
+    tell(match, { t: 'raid_stage', stage: run.stage, tier: run.tier, boss: id, hp: boss.hp, brain: boss.brain, band: boss.band, staggerMax: boss.staggerMax, twin: twin || undefined });
     match.timer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
   }
 
@@ -1125,8 +1224,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   function raidWon(match) {
     const run = /** @type {NonNullable<Match['run']>} */ (match.run), boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
     if (match.state !== 'fight') return;
-    clearTimeout(boss.hpTimer);
-    boss.hpTimer = null;
+    for (const pool of boss.twin ? [boss, ...boss.twin.pools] : [boss]) {
+      clearTimeout(pool.hpTimer);
+      pool.hpTimer = null;
+    }
     for (const s of boss.stood.values()) clearTimeout(s.timer);
     boss.stood.clear();
     match.state = 'break';
@@ -1157,58 +1258,114 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     raidOffer(match);
   }
 
-  /** The boss's HP to everyone, at most ten times a second, and always the last one. @param {Match} match */
-  function sendBossHp(match) {
-    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
-    if (boss.hpTimer) return;
+  /**
+   * The boss's HP to everyone, at most ten times a second, and always the last one. Twin Flames: each of the two on its own.
+   * @param {Match} match @param {number} [which]
+   */
+  function sendBossHp(match, which = 0) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), pool = poolOf(boss, which);
+    if (pool.hpTimer) return;
     const go = () => {
-      boss.hpTimer = null;
-      boss.hpAt = Date.now();
-      tell(match, { t: 'boss_hp', hp: boss.hp });
+      pool.hpTimer = null;
+      pool.hpAt = Date.now();
+      tell(match, { t: 'boss_hp', hp: pool.hp, which: whichOf(boss, pool) });
     };
-    const wait = BOSS_HP_GAP_MS - (Date.now() - boss.hpAt);
+    const wait = BOSS_HP_GAP_MS - (Date.now() - pool.hpAt);
     if (wait <= 0) go();
-    else boss.hpTimer = setTimeout(go, wait);
+    else pool.hpTimer = setTimeout(go, wait);
   }
 
-  /** This much comes off the boss: the phases it passes, every screen told, and its end. @param {Match} match @param {number} amount */
-  function raidDamage(match, amount) {
-    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
-    boss.hp = Math.max(0, boss.hp - amount);
+  /**
+   * This much comes off the boss: the phases it passes, every screen told, and its end. Twin Flames: off boss `which`, with its
+   * own phases; then who is furious is looked at again, and the fight is won when both have fallen.
+   * @param {Match} match @param {number} amount @param {number} [which]
+   */
+  function raidDamage(match, amount, which = 0) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), pool = poolOf(boss, which), twin = boss.twin;
+    if (pool.dead) return;
+    pool.hp = Math.max(0, pool.hp - amount);
+    if (twin) boss.hp = twin.pools[0].hp + twin.pools[1].hp;
     const phases = RAID_BOSSES[boss.id].phases;
-    while (boss.phase < phases.length && boss.hp / boss.max <= phases[boss.phase]) {
-      boss.phase++;
-      tell(match, { t: 'boss_phase', phase: boss.phase });
+    while (pool.phase < phases.length && pool.hp / pool.max <= phases[pool.phase]) {
+      pool.phase++;
+      tell(match, { t: 'boss_phase', phase: pool.phase, which: whichOf(boss, pool) });
     }
-    sendBossHp(match);
-    if (boss.hp <= 0) raidWon(match);
-  }
-
-  /** The boss kneels, on every screen. @param {Match} match */
-  function raidKneel(match) {
-    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), b = RAID_BOSSES[boss.id];
-    boss.gauge = 0;
-    boss.kneelUntil = Date.now() + b.kneel * 1000;
-    tell(match, { t: 'boss_kneel', seconds: b.kneel });
-    tell(match, { t: 'boss_gauge', value: 0 });
-  }
-
-  /** The boss is stunned: it kneels `seconds` on every screen, and the gauge stays as it is. @param {Match} match @param {number} seconds */
-  function raidStun(match, seconds) {
-    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
-    boss.kneelUntil = Math.max(boss.kneelUntil, Date.now() + seconds * 1000);
-    tell(match, { t: 'boss_kneel', seconds });
-  }
-
-  /** Points on the stagger gauge: a full one kneels. Its size is the band's (`raidStaggerMax`). @param {Match} match @param {number} points */
-  function raidStagger(match, points) {
-    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss);
-    boss.gauge += points;
-    if (boss.gauge >= boss.staggerMax) {
-      raidKneel(match);
+    if (!twin) {
+      sendBossHp(match);
+      if (boss.hp <= 0) raidWon(match);
       return;
     }
-    tell(match, { t: 'boss_gauge', value: boss.gauge });
+    if (pool.hp > 0) {
+      sendBossHp(match, which);
+      twinFury(match);
+      return;
+    }
+    // One of the two falls: its last HP at once, then the news. The wall of fire goes out, and the other is everyone's.
+    clearTimeout(pool.hpTimer);
+    pool.hpTimer = null;
+    pool.dead = true;
+    tell(match, { t: 'boss_hp', hp: 0, which });
+    tell(match, { t: 'boss_fell', which });
+    const other = twin.pools[1 - which];
+    if (other.dead) return raidWon(match);
+    log(`raid ${match.id}: ${which ? 'Ember' : 'Ash'} falls, the wall of fire goes out`);
+    twinFury(match);
+    // Its brain stays where it is; one that nobody ran (an empty half) goes to whoever is here.
+    if (!match.players[other.brain] || match.players[other.brain].left) {
+      const to = nextBrain(match, -1, Date.now(), 1 - which);
+      if (to >= 0) giveBrain(match, to, 1 - which);
+    }
+    stoodSettle(match);
+  }
+
+  /**
+   * Twin Flames: their health must fall together. When their HP shares are more than `gapOn` apart, the one with more grows
+   * furious, until they are within `gapOff` again. The last one standing is furious to its end.
+   * @param {Match} match
+   */
+  function twinFury(match) {
+    const twin = match.boss?.twin;
+    if (!twin || match.state !== 'fight') return;
+    const [a, b] = twin.pools, gap = a.hp / a.max - b.hp / b.max;
+    let fury = twin.fury;
+    if (a.dead || b.dead) fury = a.dead ? 1 : 0;
+    else if (Math.abs(gap) > RAID_TWIN.gapOn) fury = gap > 0 ? 0 : 1;
+    else if (Math.abs(gap) <= RAID_TWIN.gapOff || (fury >= 0 && (gap > 0 ? 0 : 1) !== fury)) fury = -1;
+    if (fury === twin.fury) return;
+    if (twin.fury >= 0) tell(match, { t: 'boss_rage', which: twin.fury, on: false });
+    twin.fury = fury;
+    if (fury >= 0) tell(match, { t: 'boss_rage', which: fury, on: true });
+  }
+
+  /** The boss kneels, on every screen. @param {Match} match @param {number} [which] */
+  function raidKneel(match, which = 0) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), b = RAID_BOSSES[boss.id], pool = poolOf(boss, which);
+    pool.gauge = 0;
+    pool.kneelUntil = Date.now() + b.kneel * 1000;
+    tell(match, { t: 'boss_kneel', seconds: b.kneel, which: whichOf(boss, pool) });
+    tell(match, { t: 'boss_gauge', value: 0, which: whichOf(boss, pool) });
+  }
+
+  /** The boss is stunned: it kneels `seconds` on every screen, and the gauge stays as it is. @param {Match} match @param {number} seconds @param {number} [which] */
+  function raidStun(match, seconds, which = 0) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), pool = poolOf(boss, which);
+    pool.kneelUntil = Math.max(pool.kneelUntil, Date.now() + seconds * 1000);
+    tell(match, { t: 'boss_kneel', seconds, which: whichOf(boss, pool) });
+  }
+
+  /**
+   * Points on the stagger gauge: a full one kneels. Its size is the band's (`raidStaggerMax`; each of two bosses has half).
+   * @param {Match} match @param {number} points @param {number} [which]
+   */
+  function raidStagger(match, points, which = 0) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), pool = poolOf(boss, which);
+    if (pool.dead) return;
+    pool.gauge += points;
+    if (pool.gauge >= pool.staggerMax) {
+      raidKneel(match, which);
+      return;
+    }
+    tell(match, { t: 'boss_gauge', value: pool.gauge, which: whichOf(boss, pool) });
   }
 
   /** A gold zone is decided: how many heroes stood in it. @param {Match} match @param {number} id @param {number} part */
@@ -1231,7 +1388,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     const boss = match.boss;
     if (!boss) return;
     for (const s of [...boss.stood.values()]) {
-      if (match.players.every((p, side) => p.down || p.left || s.from.has(side))) stoodDone(match, s.id, s.part);
+      // A zone of one half of Twin Flames waits for that half only; once the wall is out, for everyone who has not said.
+      const others = (/** @type {number} */ side) => s.half >= 0 && wallUp(boss) && /** @type {RaidTwin} */ (boss.twin).half[side] !== s.half;
+      if (match.players.every((p, side) => p.down || p.left || others(side) || s.from.has(side))) stoodDone(match, s.id, s.part);
     }
   }
 
@@ -1260,8 +1419,15 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (match.state === 'offer' && allHere(match, run.picks)) return raidStage(match);
     if (match.state === 'gate' && allHere(match, run.enters)) return raidStage(match);
     if (match.state === 'cleared' && allHere(match, run.goes)) return raidNextTier(match);
-    const next = boss.brain === side ? nextBrain(match, side, Date.now()) : -1;
-    if (next >= 0) giveBrain(match, next);
+    // Whatever brain the leaver ran goes to the next screen that can run it: for Twin Flames one of the same half. A half left
+    // empty has none until the wall is out (`brainWatch` looks again).
+    for (const which of boss.twin ? [0, 1] : [0]) {
+      const pool = poolOf(boss, which);
+      if (pool.brain !== side || pool.dead) continue;
+      const next = nextBrain(match, side, Date.now(), which);
+      if (next >= 0) giveBrain(match, next, which);
+      else if (boss.twin) pool.brain = -1;
+    }
     stoodSettle(match);
   }
 
@@ -1284,6 +1450,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (!boss || match.state === 'over') return;
     clearTimeout(match.timer);
     clearTimeout(boss.hpTimer);
+    for (const pool of boss.twin?.pools ?? []) clearTimeout(pool.hpTimer);
     stopTimers(match);
     for (const s of boss.stood.values()) clearTimeout(s.timer);
     boss.stood.clear();
