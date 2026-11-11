@@ -299,6 +299,104 @@ pub fn reachable_goal(st: &mut Walk, at: V2, goal: Option<V2>, dt: f64) -> Optio
     goal
 }
 
+/// An enemy bolt in flight that can hit this figure (`projectiles.threats`).
+#[derive(Clone, Copy, Debug)]
+pub struct Threat {
+    pub id: u64,
+    pub pos: V2,
+    /// Unit vector of its flight.
+    pub dir: V2,
+    pub radius: f64,
+    pub range_left: f64,
+    pub speed: f64,
+}
+
+/// A body's radius against a bolt (`BODY_RADIUS` in `src/effects/projectile.ts`).
+pub const BODY_RADIUS: f64 = 0.5;
+
+/// Where a figure at `at` stands on a bolt's line: metres ahead of the bolt, metres to its left, and the half width
+/// inside which it is hit.
+fn on_line(t: &Threat, at: V2) -> (f64, f64, f64) {
+    let (rx, rz) = (at.x - t.pos.x, at.z - t.pos.z);
+    (rx * t.dir.x + rz * t.dir.z, -rx * t.dir.z + rz * t.dir.x, t.radius + BODY_RADIUS + 0.15)
+}
+
+/// One computer player's memory of the hit it may answer (`guardRolls`): one roll per threat, held while it lasts.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct GuardRoll {
+    on: bool,
+    pass: bool,
+}
+
+/// What a hit on its way calls for (`guards`): a parry when an enemy bolt on the figure's line arrives within
+/// `PARRY_LEAD` s or the enemy's basic attack is winding up in reach (`swing`); a wall when a bolt arrives within
+/// `BARRIER_LEAD` s but is still `BARRIER_GAP` m out. The level's `guard` is the chance it notices at all.
+pub fn guards(roll: &mut GuardRoll, threats: &[Threat], at: V2, swing: bool, lv: &CpuLevel, random: &mut dyn FnMut() -> f64) -> Guard {
+    let (mut parry, mut barrier) = (swing, false);
+    for t in threats {
+        let (ahead, lateral, need) = on_line(t, at);
+        if ahead < -need || ahead > t.range_left + need || lateral.abs() > need {
+            continue;
+        }
+        let eta = ahead / t.speed;
+        if eta <= PARRY_LEAD {
+            parry = true;
+        }
+        if eta <= BARRIER_LEAD && ahead >= BARRIER_GAP {
+            barrier = true;
+        }
+    }
+    let any = parry || barrier;
+    if any && !roll.on {
+        roll.pass = random() < lv.guard;
+    }
+    roll.on = any;
+    if any && roll.pass { Guard { parry, barrier } } else { Guard::default() }
+}
+
+/// Whether the kit has a parry or a wall (slot `only`, else any) that `guard` calls for and `ready` allows (`guarded`).
+pub fn guarded(spells: &[SpellInfo; 4], guard: Guard, ready: &dyn Fn(usize) -> bool, only: Option<usize>) -> bool {
+    spells.iter().enumerate().any(|(i, s)| only.map_or(true, |o| o == i) && ((s.parry && guard.parry) || (s.barrier && guard.barrier)) && ready(i))
+}
+
+/// What a computer player decided about one bolt (`BoltDodge`).
+#[derive(Clone, Copy, Debug)]
+pub struct BoltDodge {
+    react: bool,
+    side: f64,
+    at: f64,
+}
+
+/// Skillshot dodge (`dodgeBolt`): a unit step across the line of the first bolt that will cross the figure's position
+/// within `BOLT_WINDOW`, or `None`. Each bolt is rolled once (the level's `bolt_dodge`) when it first threatens, and a
+/// successful roll starts moving `bolt_reaction` later, so a dodge is imperfect. `time`: the round's clock.
+pub fn dodge_bolt(memory: &mut Vec<(u64, BoltDodge)>, threats: &[Threat], at: V2, time: f64, lv: &CpuLevel, random: &mut dyn FnMut() -> f64) -> Option<V2> {
+    memory.retain(|(id, _)| threats.iter().any(|t| t.id == *id));
+    let mut step = None;
+    for t in threats {
+        let (ahead, lateral, need) = on_line(t, at);
+        if ahead < -need || ahead > t.range_left + need || ahead / t.speed > BOLT_WINDOW || lateral.abs() > need {
+            // Not a threat (yet): a decided dodge stays decided while it is still ahead and close to the line.
+            if ahead < -need {
+                memory.retain(|(id, _)| *id != t.id);
+            }
+            continue;
+        }
+        let m = match memory.iter().find(|(id, _)| *id == t.id) {
+            Some((_, m)) => *m,
+            None => {
+                let m = BoltDodge { react: random() < lv.bolt_dodge, side: if lateral >= 0.0 { 1.0 } else { -1.0 }, at: time + lv.bolt_reaction };
+                memory.push((t.id, m));
+                m
+            }
+        };
+        if m.react && time >= m.at && step.is_none() {
+            step = Some(V2::new(-t.dir.z * m.side, t.dir.x * m.side));
+        }
+    }
+    step
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -344,5 +442,20 @@ mod tests {
         let mut blind = moment(&none, 3.0, 1.0, 3.0);
         blind.sees = false;
         assert_eq!(pick_spell(&kit2, 6.0, &blind, &BALANCE), Some(1));
+    }
+
+    #[test]
+    fn a_bolt_on_its_way_is_stepped_off_after_the_reaction_time() {
+        let bolt = Threat { id: 7, pos: V2::new(0.0, 0.0), dir: V2::new(0.0, 1.0), radius: 0.3, range_left: 10.0, speed: 20.0 };
+        let mut memory = Vec::new();
+        let mut always = || 0.0;
+        // 8 m ahead at 20 m/s: 0.4 s away, inside the window; the roll passes, but the step waits for the reaction
+        assert!(dodge_bolt(&mut memory, &[bolt], V2::new(0.1, 8.0), 1.0, &BALANCE, &mut always).is_none());
+        let step = dodge_bolt(&mut memory, &[bolt], V2::new(0.1, 8.0), 1.13, &BALANCE, &mut always).unwrap();
+        // it stands a little to the bolt's left (-x for a bolt flying +z) and steps further that way
+        assert!(step.x < -0.99 && step.z.abs() < 1e-9);
+        let mut never = || 0.99;
+        let mut other = Vec::new();
+        assert!(dodge_bolt(&mut other, &[bolt], V2::new(0.1, 8.0), 5.0, &BALANCE, &mut never).is_none());
     }
 }
