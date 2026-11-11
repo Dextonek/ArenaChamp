@@ -14,3 +14,4 @@ pipeline/assets/polyhaven/
 pipeline/sim/out/
 pipeline/rustsim/target/
 pipeline/rustsim/data/check.html
+pipeline/rustfull/target/
