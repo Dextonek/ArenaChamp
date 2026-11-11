@@ -37,6 +37,7 @@ import { weatherTrait } from './weather';
 import { sheepTrait } from './sheep';
 import { magicTrait } from './magic';
 import { doorTrait } from './door';
+import { phoenixTrait } from './phoenix';
 import { twinsTrait } from './twins';
 
 export { TraitRuntime, type TraitHost } from './runtime';
@@ -78,6 +79,7 @@ export const TRAITS: Record<string, Trait> = {
   Bo: sheepTrait,
   'The Great Zambini': magicTrait,
   Wick: doorTrait,
+  Anka: phoenixTrait,
   'Pim and Pom': twinsTrait,
   Marin: tideTrait,
   Mortis: boneTrait,

@@ -1,8 +1,8 @@
 # Status
 
-_Last updated: 2026-11-11 (hero 40, Anka the Firebird: card and look agreed, her kit on paper waits for the user's yes; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
+_Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
-## Hero 40 and the new rules for creating a hero (2026-11-11): rules agreed; Anka's look agreed; gate 3 (kit on paper) written, waiting on the user
+## Hero 40 and the new rules for creating a hero (2026-11-11): Anka at gate 4: rules and plain spells proven, looks to do
 
 User: "okay lets make it 40 heros total so made new one", "and lets make like what need to be done when we are
 creating new hero, like docs"; of four ideas offered they picked the **Phoenix fire dancer** (the first true fire
@@ -26,12 +26,30 @@ hero: ember red and gold, flame wings, a fan; she rises once from her ashes). Th
   list yet, so the game does not show her.
 - **Known in the look:** the fan covers her face in the sheet's face view (the Blender picture shows the face); the
   skirt's two scalloped layers are bright; the wings stand out to the sides rather than hang.
-- **Gate 3, kit on paper: written, waiting on the user's yes** (user: "lets make some interesting kit for her").
+- **THE TREE IS NOT DEPLOYABLE (2026-11-11):** Anka is in the hero list with stand-in looks (plain discs and cones,
+  plain icons). Do not push to live or deploy before gate 4's looks are done and gate 5's numbers are in, whatever
+  the request says: ask first. The three bracket server files are also still uncommitted.
+- **Gate 3, kit on paper: agreed** (user: "nice yes build her").
+- **Gate 4, first step: her rules and plain working spells, done and proven offline.** `src/traits/phoenix.ts`
+  (the ember book, stamping, Ashborn, the CPU's rules), `src/effects/parts/phoenix.ts` (palette and stand-in looks),
+  `emberQuill.ts`, `fanTheFlames.ts`, `emberFlight.ts`, `firebird.ts` (real rules and timing, stand-in looks),
+  `src/kits/phoenix.ts` (stand-in icons and portrait), registered in `heroes.ts`, `traits/index.ts`,
+  `spells/targeted/index.ts`. Proven on the tool page with scripted hits and real CPU duels: she rises at the nest
+  with 144 HP when a hero's hit would fell her; a hit while she is ash does nothing; a second killing hit in the
+  same round kills; with no ember she dies; a stamped nest gives no life; the arena's own damage kills her for good
+  (it passes no trait: said in her passive's text); a whole CPU duel against Brannoc ran with no error (the CPU
+  stamps an ember at its feet within a second; she rose at 23.5 s and won at 28 s). She is kept safe in the egg by
+  `taken` swallowing hits, not by the `sealed` status (the engine refuses it after a stun). **Not proven:** two
+  screens online (gate 5); the CPU's use of Ember Flight and Firebird, looked at closely.
+  **Testing note:** after an edit under `src/`, `import('/src/traits/phoenix.ts')` in the page is a second copy of the
+  module with its own empty book: read her embers through `duel.heroRt.trait.meter.value(duel.heroRt)` instead.
+- **Gate 4, still to do:** the real looks of the four spells and the floor marks (one owner: `parts/phoenix.ts` and
+  the four spell files, rules untouched), the real icons and portrait from `docs/heroes/anka_look.jpg`, then one
+  picture per spell and her hero page for the user's yes.
+- Gate 3's text: (user: "lets make some interesting kit for her").
   `pipeline/designs/kit-phoenix.md`: everything lays embers or spends them; an ember is a blast (W Fan the Flames), a
   place to fly to (E Ember Flight) and her second life (P Ashborn); Q Ember Quill and R Firebird lay them; 480 HP.
   Every answer is checked with the game's numbers; what the engine has and what is to be proven is listed there.
-- **Next, after the yes:** gate 4: `src/effects/parts/phoenix.ts`, the four spells, `src/kits/phoenix.ts`,
-  `src/traits/phoenix.ts`, registration, one picture per spell. A no to a spell: change it on the sheet first.
   Notes for it: no hero has a revive; Sir Whiskers's lives (`hpChunks`, `src/traits/cat.ts`) are the nearest
   thing; `taken` can swallow a hit (`TraitHit.blocked`); heals are limited to 15 per spell and 50 on an R.
 

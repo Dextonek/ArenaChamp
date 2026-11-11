@@ -43,6 +43,7 @@ import { weatherKit } from './kits/weather';
 import { sheepKit } from './kits/sheep';
 import { magicKit } from './kits/magic';
 import { doorKit } from './kits/door';
+import { phoenixKit } from './kits/phoenix';
 import { twinsKit } from './kits/twins';
 
 export type HeroKey = 'Q' | 'W' | 'E' | 'R';
@@ -182,6 +183,8 @@ const MODELS: Record<string, string> = {
   Bo: 'models/heroes/sheep_v3.glb',
   'The Great Zambini': 'models/heroes/magic_v3.glb',
   Wick: 'models/heroes/door_v3.glb',
+  // born in the fourth style: there is no older model, so `?figs=old` shows her as she is
+  Anka: 'models/heroes/phoenix_v4.glb',
 };
 
 /**
@@ -208,9 +211,10 @@ export const HERO_BODIES: Record<string, { radius: number; height: number }> = {
   Mabel: { radius: 0.5, height: 2.33 }, 'Grandma Ironknit': { radius: 0.4, height: 2.33 }, 'Barry Cloudsley': { radius: 0.46, height: 3.06 },
   Bo: { radius: 0.42, height: 2.4 }, 'The Great Zambini': { radius: 0.45, height: 2.51 },
   Wick: { radius: 0.41, height: 2.37 }, 'Pim and Pom': { radius: 0.38, height: 2.39 },
+  Anka: { radius: 0.4, height: 2.4 },
 };
 
-export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit].map((k) => {
+export const HERO_KITS: HeroKit[] = [bloodKit, forgeKit, frostKit, astralKit, alchemyKit, stormKit, sandKit, shadowKit, groveKit, dawnKit, tideKit, skyKit, boneKit, clockworkKit, hiveKit, bardKit, prismKit, voidKit, inkKit, chronoKit, mirrorKit, masonKit, timberKit, balloonKit, catKit, ledgerKit, sumoKit, mimeKit, refereeKit, chefKit, courierKit, janitorKit, moleKit, yarnKit, weatherKit, sheepKit, magicKit, doorKit, twinsKit, phoenixKit].map((k) => {
   const kit = { ...k, model: modelV4(k.model ?? MODELS[k.name]) };
   if (kit.alt) {
     // the other twin: its own model, in the same style

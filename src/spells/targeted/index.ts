@@ -100,6 +100,10 @@ import { pimChargeModule } from './pimCharge';
 import { pimBonkModule } from './pimBonk';
 import { grandLobbyModule } from './grandLobby';
 import { doorSlamModule } from './doorSlam';
+import { emberFlightModule } from './emberFlight';
+import { emberQuillModule } from './emberQuill';
+import { fanTheFlamesModule } from './fanTheFlames';
+import { firebirdModule } from './firebird';
 import { wickDoorModule } from './wickDoor';
 import { keyTossModule } from './keyToss';
 import { grandFinaleModule } from './grandFinale';
@@ -392,6 +396,10 @@ export const targetedModules: EffectModule[] = [
   grandLobbyModule,
   doorSlamModule,
   wickDoorModule,
+  emberQuillModule,
+  fanTheFlamesModule,
+  emberFlightModule,
+  firebirdModule,
   keyTossModule,
   grandFinaleModule,
   hatTrickModule,
