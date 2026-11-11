@@ -452,8 +452,8 @@ mod tests {
         // 8 m ahead at 20 m/s: 0.4 s away, inside the window; the roll passes, but the step waits for the reaction
         assert!(dodge_bolt(&mut memory, &[bolt], V2::new(0.1, 8.0), 1.0, &BALANCE, &mut always).is_none());
         let step = dodge_bolt(&mut memory, &[bolt], V2::new(0.1, 8.0), 1.13, &BALANCE, &mut always).unwrap();
-        // it stands a little to the bolt's left (-x for a bolt flying +z) and steps further that way
-        assert!(step.x < -0.99 && step.z.abs() < 1e-9);
+        // it stands 0.1 m to one side of the line (+x) and steps further that way, off the line by the shorter way
+        assert!(step.x > 0.99 && step.z.abs() < 1e-9);
         let mut never = || 0.99;
         let mut other = Vec::new();
         assert!(dodge_bolt(&mut other, &[bolt], V2::new(0.1, 8.0), 5.0, &BALANCE, &mut never).is_none());
