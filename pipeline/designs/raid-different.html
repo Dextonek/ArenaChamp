@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A different raid</title>
+<style>
+  :root {
+    --ink: var(--foreground, #f0efec); --ink-2: var(--muted-foreground, #c3c2b7); --line: var(--border, #3a3a37);
+    --panel: var(--card, #1a1a19); --gold: #e0a83a; --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, sans-serif; }
+  html.standalone body { max-width: 900px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  p.sub { margin: 0 0 12px; color: var(--ink-2); font-size: 13px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px; display: flex; flex-direction: column; gap: 7px; }
+  .card.pick { border-color: var(--gold); }
+  .card h3 { margin: 0; font-size: 16px; display: flex; gap: 8px; align-items: baseline; }
+  .card h3 .k { color: var(--gold); font-weight: 700; }
+  .card .tag { font-size: 11px; color: var(--gold); text-transform: uppercase; letter-spacing: .05em; }
+  .card p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .card p b { color: var(--ink); font-weight: 600; }
+  .meta { display: grid; grid-template-columns: max-content 1fr; gap: 3px 10px; font-size: 12px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 8px; margin-top: auto; }
+  .meta b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<h1>What if the raid were something else entirely?</h1>
+<p class="sub">Four ideas that are not "a party fights a boss in a room". Ideas only: nothing here is built.</p>
+<div class="cards" id="cards"></div>
+<script>
+(() => {
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const C = [
+    { k: 'A', name: 'One of you is the boss', pick: true,
+      what: 'Each raid, <b>one player becomes the boss</b>: huge, with the boss’s attacks on their Q W E R. The other 39 hunt them. Next round someone else is the boss.',
+      feel: 'A giant game of tag where the monster thinks. No two fights alike, because the boss is a person.',
+      reuse: 'The three bosses and their attacks already exist; a player presses the buttons instead of the computer.',
+      risk: 'Being the boss must be fun and fair to learn. Needs a queue for who gets to be it.' },
+    { k: 'B', name: 'The Descent',
+      what: 'Not one room but <b>a journey</b>: the party goes down through a chain of places. Corridors with packs of enemies, a bridge that breaks, a door that needs two groups at two levers, a mini-boss, then the boss at the bottom.',
+      feel: 'An adventure with your crowd. The party splits at forks and meets again.',
+      reuse: 'The bosses become the last rooms. The hall, omens and upgrades fit between rooms.',
+      risk: 'The most new art and levels: every room is its own small arena.' },
+    { k: 'C', name: 'The Siege',
+      what: 'The raid turned around: <b>you defend</b>. The party holds a fortress with three gates while the boss’s army comes in waves. Between waves you repair and choose upgrades. The boss walks in last.',
+      feel: 'Holding the line together. Everyone has a gate, and a gate that falls is everyone’s problem.',
+      reuse: 'Upgrades and omens between waves; the bosses as the final wave.',
+      risk: 'Needs many small enemies on screen at once, which is heavy for phones.' },
+    { k: 'D', name: 'The Titan',
+      what: 'The boss is so big that <b>the boss is the map</b>. The party fights across its body: one squad breaks its hand, another climbs to its eye, a third holds its other fist down. It only falls when all parts are broken.',
+      feel: 'Forty people taking a mountain apart, each squad with its own small fight.',
+      reuse: 'The Heart of Noon could be its heart: the last part.',
+      risk: 'One giant model and several linked rooms. The biggest build of the four.' },
+  ];
+  const box = document.getElementById('cards');
+  for (const c of C) {
+    const d = document.createElement('div');
+    d.className = 'card' + (c.pick ? ' pick' : '');
+    d.innerHTML = `<h3><span class="k">${c.k}</span>${c.name}</h3>${c.pick ? '<div class="tag">the one I would try first</div>' : ''}<p>${c.what}</p><p><i>${c.feel}</i></p>` +
+      `<div class="meta"><span>Reuses</span><b>${c.reuse}</b><span>Hard part</span><b>${c.risk}</b></div>`;
+    box.append(d);
+  }
+})();
+</script>
+</body>
+</html>
