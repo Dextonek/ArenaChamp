@@ -359,6 +359,8 @@ only thing in the game that asks you not to move.
   step out before or after a beat. The beams are the hard one, and meant to be: stop a step ahead of a beam. In Noon Falls a run
   falls between two Heartbeats when both keep their clocks; when the Heartbeat slips later, the beats come while you already stand
   behind your plate. A new phase's first run comes after the last phase's has ended. `_raidHeart()` checks the flare and the plate.
+- **It doesn't stop for a kneel or a phase's pause:** a move by the clock runs through both (`BossBrain.timedStep`). The first
+  phase's clock starts at its `first` too (the brain's constructor; before, only a later phase's did).
 - **Tiers.** The 3 s before the first beat and the time between beats shorten as other shown times do (`p.shown`), never under 1 s
   between beats. **How it stays within the rules.** Each ring of The Rings Turn is its own step and cast (`steps: [0, 0, 0]`),
 so each has its own spot and each lock is paid once (`RAID_REWARDS.heart.lock`, `${id}:lock`). A beam's angle depends only on the time since
@@ -369,8 +371,8 @@ it. Solar Flare's first gap is the brain's aim (the cast's `dir`), the rest is t
 **For the autopilot.** Each ring of Solar Flare tells an AI its whole run at once (`Threat.look`): it grows, so a spot clear for the next
 moment is not clear. The AI still drifts out of a lane's edge as it goes back to fighting, so Solar Flare costs it more than it should cost a
 person. For Hold Still it stops walking 0.36 s before each beat and goes on casting (`BossScript.stillIn`; in `Duel.pilot` it counts as
-unable to move), and starts no dash within 0.9 s of one. It stood for 236 of 237 beats in 12 fights, so a beat costs it almost
-nothing directly: what it pays is a zone it could not step out of in that moment.
+unable to move), and starts no dash within 0.9 s of one. It stood for 227 of 227 beats in 12 fights, so a beat costs it nothing
+directly, and the raid tool can't measure the beat's 12 %: what the autopilot pays is a zone it could not step out of in that moment.
 
 ## The lairs
 
@@ -482,7 +484,7 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   boss's own rules, his stage (adds, the relay, the kneel, the fail and its cover) and the enrage. `_raidAsh()` does the same for Ash and Ember,
   with the tag, the lava, Eruption and Falling Star. `_raidHeart()` for the Heart: each move, both ways through Solar Flare's gaps, a beam,
   a lock by this hero and by the partner (paid once), plates raised by both, cover against the beat, and the plates all going at one moment;
-  Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase, and standing through a flare and behind a plate (67 rows). `_raidUpgrades()` checks each upgrade's number and
+  Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase and by the brain's live clock, and standing through a flare and behind a plate (71 rows). `_raidUpgrades()` checks each upgrade's number and
   each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
 - `pipeline/tools/boss-anim.js`: `_strip(title, setup, plan)` plays a move in a stepped fight and lays frames of it side by side round its
   landing, cropped on the boss and the hero.

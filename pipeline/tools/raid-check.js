@@ -1277,6 +1277,18 @@
       check('still: 1.6 s apart', b3[1] - b3[0], 1.6, 0.001);
       yes('still: each phase has its own, by the clock', def.phases.map((x) => x.timed?.move).join() === 'still,still2,still3');
       yes('still: a new phase\'s first run comes after the last phase\'s has ended', def.phases.slice(1).every((x) => x.timed.first >= 3 + 4 * 1.6 + 0.9));
+      // By the brain's own clock: the first run waits 9 s into the fight, the next comes 21 s after it.
+      fresh();
+      d.boss.brain.timedDone = 0;
+      const runs = () => d.boss.script.active.filter((x) => x.cast.move === 'still').length;
+      step(8.5);
+      check('still: none in the first 8.5 s of the fight', runs(), 0, 0);
+      step(1.1);
+      check('still: the first run comes 9 s in', runs(), 1, 0);
+      step(11);
+      check('still: it has ended by 20 s', runs(), 0, 0);
+      step(10);
+      check('still: the next comes 21 s after the first', runs(), 1, 0);
       // With Solar Flare: where the three rings' gaps overlap a hero stands still through the flare and the beats alike.
       fresh();
       place(0, 13);

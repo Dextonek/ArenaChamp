@@ -53,7 +53,7 @@ hall's new gate `docs/bosses/heart-hall-gate.jpg`.
 | Its body, posed in code | `src/raid/bodies/heart.ts` (`heartLook`, `HEART_LIVE`) on `public/models/bosses/heart.glb` |
 | Its room | `src/arenas/sunkenHeart.ts` |
 | The run, the hall's gate | `RAID_RUN = ['sun', 'ash', 'heart']`, `PROTOCOL` 7; `HALL_GATES.heart` (`src/arenas/noonfall.ts`), the hall draws a gate for each boss of the run |
-| Its check | `_raidHeart()` in `pipeline/tools/raid-check.js`: 38 rows |
+| Its check | `_raidHeart()` in `pipeline/tools/raid-check.js`: 38 rows then, 71 with Hold Still |
 
 **Numbers.** Alone 3,300 HP, for two 7,100; phases at 66 % and 33 %; gauge 100, kneel 6 s; enrage 2:45. Blade Sweep 18 % (6.8 m,
 130°, within 8.5 m), Blade Fall 15 % a line, Solar Flare 12 % a ring, a beam 10 % a second, the Heartbeat 40 % every 20 s, the Crown of
@@ -112,12 +112,17 @@ hero that stood), `-strike` (it burns one that walked), `-rings` (with the beams
   phase, which waits until the last phase's run has ended, and the third phase's clock, set between two Heartbeats.
 
 **Measured** (the autopilot alone, tier 1, ten heroes x 4 fights a run: Lyra, Bram, Kaia, Sefu, Brannoc, Isolde, Vesper, Nyx, Cantor,
-Marin; not the same ten as above, whose names were not kept). Before: 11 and 9 of 40 (20 of 80, 106 s a fight). After: 13, 10, 9 and
-9 of 40 (41 of 160, 103 s). No change inside the noise, so the beat's cost stayed at its first number and the HP was not touched.
-The autopilot stood for 236 of 237 beats in 12 fights, and no fight of 160 ended on a beat; what it pays is small and indirect (a
-blade it could not step out of in that moment). Tier 3: 0 of 20 with it, 2 of 20 without; tier 5: 1 of 20 either way: the autopilot
-without upgrades loses there anyway. Ash and Ember as a control, same ten: 9 of 40. No errors in any run. `_raidHeart()`: 67 rows
-pass, `_raidCheck()` 95, `_raidAsh()` 77, `_raidUpgrades()` 40.
+Marin; not the same ten as above, whose names were not kept). Before: 11 and 9 of 40 (20 of 80, 106 s a fight). After: 8 and 12 of
+40 (20 of 80, 106 s). No change, so the beat's cost stayed at its first number and the HP was not touched. **The 12 % is therefore
+a designer's number, not a measured one:** the autopilot stood for 227 of 227 beats in 12 fights and no fight ended on a beat, so the
+tool can't say what a beat costs a person. What the autopilot pays is small and indirect (a blade it could not step out of in that
+moment). Tier 3: 0 of 20 with it, 2 of 20 without; tier 5: 0 of 20 with it, 1 of 20 without: the autopilot without upgrades loses
+there anyway. Ash and Ember as a control, same ten: 9 of 40. No errors in any run. `_raidHeart()`: 71 rows pass, `_raidCheck()` 95,
+`_raidAsh()` 77, `_raidUpgrades()` 40.
+
+**A fault found on the way:** the brain's clock for a move that comes by the clock started at zero in the first phase (only a later
+phase set its `first`), so the first run came as the fight began. One line in `BossBrain`'s constructor; `_raidHeart()` now runs the
+clock live and checks the 9 s and the 21 s. Ash and Ember's vent, the only earlier such move, is in their fourth phase and never saw it.
 
 **Not done for Hold Still:** a person playing it, on a desktop or a phone, so the feel of the 0.25 s and the look of the lines are
 unjudged by hand; a raid for two or a party (each screen judges its own hero, by the same code as alone); a sound for the beat.
