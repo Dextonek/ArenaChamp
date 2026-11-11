@@ -1,8 +1,30 @@
 # Status
 
-_Last updated: 2026-11-11 (four new arenas in the heroes' style, in rotation; all 39 heroes in the fourth style; friend brackets half built)_
+_Last updated: 2026-11-11 (pushed; the deploy went to the wrong Cloudflare account, the live game is still the old build; four new arenas and all 39 heroes in the fourth style wait for it; friend brackets half built)_
 
-## Four new arenas in the heroes' style (2026-11-11): done, committed, not pushed, not deployed
+## Push and deploy (2026-11-11): pushed, NOT live, blocked on the Cloudflare login
+
+User: "then lets push and upload" (read as push and deploy, as on 2026-11-10).
+
+- **Pushed:** GitHub `main` carries `6e761cd` (27 commits: all 39 heroes in the fourth style, the four new arenas,
+  `PROTOCOL` 6, the News release set `live: true`) and this status commit. Type check and server test passed first.
+- **Deploy: on the wrong account.** `npm run cf:deploy` ran and succeeded, but this computer's `wrangler` is logged
+  in to another Cloudflare account than the live game's. It made a NEW Worker there:
+  https://arena-of-kits.spacebuild-signalling.workers.dev/game (version `08d61f99-c982-486e-8601-7e7bbdcbca12`,
+  bundle `game-BChllblO.js`, its own empty account database). It works and shows the new build, but it is not the
+  game's address. **The live game https://arena-of-kits.arenachamp.workers.dev/game is unchanged**: still
+  `56b9f2b` (`game-Ba4uYuza.js`), no new heroes, no new arenas; nobody's connection was dropped.
+- **Blocked on the user:** on this computer, `npx wrangler login` in a terminal, and in the browser page it opens
+  choose the Cloudflare account that owns `arenachamp.workers.dev` (the one the first computer uses). Check with
+  `npx wrangler whoami`. Then ask for the deploy again. Before `npm run cf:deploy`: set the three bracket server files
+  aside (`git stash push server/hub.mjs server/accounts.mjs server/game-server.mjs`), pop them after, and check that
+  the address `wrangler` prints ends in `arenachamp.workers.dev`.
+- **Waiting on the user:** whether the stray copy on `spacebuild-signalling` is deleted (`npx wrangler delete` while
+  still logged in to that account) or kept. Not deleted without a yes.
+- **Note:** the News release in the repo says `live: true` since `6e761cd`; that becomes true with the real deploy.
+  If the deploy happens on a later day, set its `date` to that day.
+
+## Four new arenas in the heroes' style (2026-11-11): done, pushed, not live (see above)
 
 User: "save the arena we have now and make 3 new ones with all the effect and closing stuff, realistic like the
 heroes"; of four themes offered they took all four. The five older arenas are untouched; there are nine now.
@@ -36,7 +58,7 @@ heroes"; of four themes offered they took all four. The five older arenas are un
   calls (296); meshes reach up to 0.3 m past their capsules on the battlefield's wagons and catapults; Quaternius'
   Fantasy Props MegaKit (CC0) was found as a possible source of small clutter and never tried.
 - **Waiting on the user:** to play them (`npm run dev`, http://localhost:5173/game; `?arena=harbour`, `canyon`,
-  `cavern` or `battlefield` pins one for CPU duels) and say what to change; then push and deploy, each on request.
+  `cavern` or `battlefield` pins one for CPU duels) and say what to change.
 
 ## Current state (2026-11-05)
 **2026-11-10, second computer: committed, not pushed, not deployed**
