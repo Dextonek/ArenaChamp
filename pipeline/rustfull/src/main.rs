@@ -7,6 +7,7 @@
 
 mod ai;
 mod attack;
+mod bolt;
 mod figure;
 mod geom;
 mod nav;
