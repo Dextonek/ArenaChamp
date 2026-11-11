@@ -64,6 +64,14 @@
    "src/spells/targeted/foreclosure.ts": "5a8c2142090f71ee",
    "src/spells/targeted/invoice.ts": "fc9179f1e861f19f",
    "src/spells/targeted/lateFee.ts": "d80b675befcfbb00"
+  },
+  "Barry Cloudsley": {
+   "src/kits/weather.ts": "1dadc54fde75c1db",
+   "src/traits/weather.ts": "7a4fff94acc2daf1",
+   "src/spells/targeted/coldFront.ts": "50ccc83a81e53b31",
+   "src/spells/targeted/forecastUpdate.ts": "75466d9be610c9a7",
+   "src/spells/targeted/lightningRisk.ts": "ee2d6a1d475e0d05",
+   "src/spells/targeted/severeWarning.ts": "9905dac8e9b4f634"
   }
  }
 }
