@@ -147,7 +147,7 @@ export const bardKit: HeroKit = {
   title: 'the Last Verse',
   accent: S.body,
   foil: S.foil,
-  maxHp: 680,
+  maxHp: 740,
   portrait(g, s) {
     iconGround(g, s);
     // Staves drift behind him with a few notes riding them.
@@ -240,7 +240,7 @@ export const bardKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'resounding chord', name: 'Resounding Chord', range: 5, cooldown: 3,
-      blurb: 'A chord in a 5 m cone: 52. In tune with his beat: also silenced 0.5 s. Move on his pulse: that is when the good one comes.',
+      blurb: 'A chord in a 5 m cone: 60. In tune with his beat: also silenced 0.5 s. Move on his pulse: that is when the good one comes.',
       icon(g, s) {
         iconGround(g, s);
         // Three staves fan out of the lower left into a cone, notes riding them, sound rings across the cone and a gold spark.

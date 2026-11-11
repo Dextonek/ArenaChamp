@@ -155,7 +155,7 @@ export const hiveKit: HeroKit = {
   title: 'the Swarm Warden',
   accent: H.body,
   foil: H.wax,
-  maxHp: 720,
+  maxHp: 640,
   melee: true,
   portrait(g, s) {
     iconGround(g, s);

@@ -2,6 +2,21 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: look and kit agreed, her rules and plain spells are in and proven, real looks to do, TREE NOT DEPLOYABLE; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
+## Balance pass (2026-11-11): Sirix, Cantor, Nyx changed; committed, NOT live
+
+User: "lets try all battles duels in simulator" and "balance them after". Whole roster run (3,120 fights,
+`docs/balance/roster-2026-11-11-before.html`), then the 14 heroes at the edges re-checked as the player's side
+against the six benchmark heroes. Changed only the heroes outside 40-60% in BOTH checks:
+- **Sirix:** HP 720 -> 640. Player's side 83% -> 53%; both sides 52%.
+- **Cantor:** HP 680 -> 740, Resounding Chord 52 -> 60. Player's side 13% -> 55%; both sides 39% (the opponent CPU
+  plays him badly: not a kit problem).
+- **Nyx:** HP 640 -> 680, Umbral Cut 54 -> 58 (93 from behind). Player's side 29% -> 57%; both sides 56%.
+- Roster after: `docs/balance/roster-2026-11-11-after.html`. Not changed, on purpose: Pip (strong only against Cantor),
+  Hank (strong as the opponent, 58% as the player's side), Auriel (76% as the player's side, weak as the opponent).
+  Hank, Auriel and Cantor show the two computer players are unequal: a CPU fix, waiting on the user.
+- News item written (new release, `live: false`). The Rust port's copy of Sirix is now out of date
+  (`python pipeline/rustfull/guard.py` says so); it is paused anyway.
+
 ## The full Rust simulator (2026-11-11): STOPPED by the user at 7 of 40 heroes; committed, not pushed
 
 User, 2026-11-11: "stop it take to long just make python simulator". The port is paused, not deleted: Brannoc,

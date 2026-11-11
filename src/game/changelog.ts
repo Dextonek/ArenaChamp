@@ -39,6 +39,28 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-11',
+    title: 'Balance: Sirix, Cantor and Nyx',
+    live: false,
+    items: [
+      {
+        tag: 'Balance',
+        title: 'Sirix: less health',
+        text: 'Sirix won far too many duels. His health goes from 720 to 640.',
+      },
+      {
+        tag: 'Balance',
+        title: 'Cantor: more health, a louder chord',
+        text: 'Cantor lost most of his duels. His health goes from 680 to 740, and Resounding Chord hits for 60 instead of 52.',
+      },
+      {
+        tag: 'Balance',
+        title: 'Nyx: more health, a deeper cut',
+        text: 'Nyx lost most of her duels. Her health goes from 640 to 680, and Umbral Cut hits for 58 instead of 54 (93 from behind instead of 86).',
+      },
+    ],
+  },
+  {
+    date: '2026-11-11',
     title: 'Every hero remade, and four new arenas',
     live: true,
     lead: { clip: '/news/duel4.mp4', poster: '/news/duel4.jpg', alt: 'Lyra and Hank duel on the quay of the Drowned Harbour: a wave washes across the stone, tide pools stand on the floor and Hank fells a tree.' },
