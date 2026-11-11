@@ -12,9 +12,13 @@ Battlefield**. The five arenas stay as they are and in rotation.
   (`blender/arenas/real/kit.py`, one script per arena, sources in `ASSETS.md` there), one GLB and one obstacle JSON per
   arena, read by `src/arenas/real.ts` (`realProps`, `realGround`, `Sea`, `Glows`). Fetch sources:
   `node pipeline/tools/polyhaven-get.mjs <ids>`. Pictures: `pipeline/tools/arena-shot.js`.
+- **The look, second try:** the first sample used the scans as photographed (cobbles, wood grain); the user: "it is
+  too much realistic, make it match the heroes' style". Now the props keep their real shapes but are **painted**:
+  each colour texture averaged down to 64 px so only zones of colour remain, no bumps, one even gloss
+  (`Arena(paint=64)` in kit.py); the floor is drawn, not photographed (rings of smooth slabs with a brass inlay).
+  [Before and after](arenas/harbour_before_after.jpg).
 - **Done:** the Drowned Harbour's look (`src/arenas/harbour.ts`, `blender/arenas/real/harbour.py`,
-  `public/models/arenas/harbour.glb` 3.4 MB, 85k triangles): [sample](arenas/harbour_sample.jpg),
-  [beside the Night Temple](arenas/harbour_beside_temple.jpg). It is in `NEW_ARENAS`: reachable by id, not picked at
+  `public/models/arenas/harbour.glb` 2.3 MB, 85k triangles): [sample](arenas/harbour_sample.jpg). It is in `NEW_ARENAS`: reachable by id, not picked at
   random. See it: `npm run dev`, http://localhost:5173/game?arena=harbour, a CPU duel.
 - **Waiting on the user:** a nod on the look (or what to change) before the rest.
 - **Next, in this order:** the harbour's event (a wave rolls across the quay) and closing stages (the tide comes up in

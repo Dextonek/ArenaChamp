@@ -19,7 +19,7 @@ from mathutils import Matrix, Vector  # noqa: E402
 from kit import Arena, S, pillar, twin, wall  # noqa: E402
 
 PI = math.pi
-A = Arena("harbour")
+A = Arena("harbour", paint=64)
 rnd = random.Random(7)
 
 # ---- props --------------------------------------------------------------------------------------------------------

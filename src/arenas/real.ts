@@ -32,7 +32,7 @@ export interface RealTune {
   /** How much of the sky's reflection the props take. */
   env?: number;
   /** Per material (a part of its name): its own `dim`, a `tint` multiplied in, an emissive colour and strength. */
-  parts?: Record<string, { dim?: number; tint?: number; emissive?: number; strength?: number; rough?: number }>;
+  parts?: Record<string, { dim?: number; tint?: number; emissive?: number; strength?: number; rough?: number; metal?: number }>;
 }
 
 const files = new Map<string, Promise<THREE.Group>>();
@@ -55,6 +55,7 @@ function loadFile(id: string, tune: RealTune) {
           if (part?.tint !== undefined) mat.color.multiply(new THREE.Color(part.tint));
           mat.envMapIntensity = tune.env ?? 0.5;
           if (part?.rough !== undefined) mat.roughness = part.rough;
+          if (part?.metal !== undefined) mat.metalness = part.metal;
           if (part?.emissive !== undefined) {
             mat.emissive.set(part.emissive);
             mat.emissiveIntensity = part.strength ?? 1;

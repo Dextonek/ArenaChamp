@@ -54,9 +54,14 @@ def _only(ob):
 
 
 class Arena:
-    def __init__(self, name):
+    def __init__(self, name, paint=None, sat=1.25):
+        """`paint`: the heroes' look instead of a photograph's (the user, 2026-11-11: the scans as they come were "too
+        much realistic"). Each prop keeps its real shape, but its colour texture is averaged down to `paint` px a side,
+        so only its zones of colour are left (a barrel's staves and hoops, moss on a rock), a little more saturated
+        (`sat`); the bumps and the photographed gloss are dropped for one smooth, even surface."""
         bpy.ops.wm.read_factory_settings(use_empty=True)
         self.name = name
+        self.paint, self.sat = paint, sat
         self.templates = {}
         self.obstacles = []
         self.marks = []
@@ -90,9 +95,28 @@ class Arena:
                     out[f"{o.name}.{i}"] = p
             else:
                 out[o.name] = o
-        for img in [i for i in bpy.data.images if i not in images]:
-            if img.size[0] > tex:
-                img.scale(tex, tex)
+        new_images = [i for i in bpy.data.images if i not in images]
+        if self.paint:
+            normal = False
+            base = set()
+            for o in out.values():
+                for m in o.data.materials:
+                    b = next((n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+                    if not b:
+                        continue
+                    for l in list(m.node_tree.links):
+                        if l.to_node == b and l.to_socket.name == "Base Color" and l.from_node.type == "TEX_IMAGE":
+                            base.add(l.from_node.image)
+                        elif l.to_node == b and l.to_socket.name in ("Roughness", "Metallic"):
+                            m.node_tree.links.remove(l)
+                    b.inputs["Roughness"].default_value = 0.62
+                    b.inputs["Metallic"].default_value = 0.0
+            for img in base:
+                self._paint(img)
+        else:
+            for img in new_images:
+                if img.size[0] > tex:
+                    img.scale(tex, tex)
         if not normal:
             for o in out.values():
                 for m in o.data.materials:
@@ -103,6 +127,21 @@ class Arena:
                 c.objects.unlink(o)
             self.store.objects.link(o)
         return out
+
+    def _paint(self, img):
+        """Averages an image down to `paint` px a side (see `__init__`) and lifts its saturation."""
+        import numpy as np
+        p, big = self.paint, 512
+        img.scale(big, big)
+        px = np.empty(big * big * 4, dtype=np.float32)
+        img.pixels.foreach_get(px)
+        a = px.reshape(p, big // p, p, big // p, 4).mean(axis=(1, 3))
+        grey = a[..., :3].mean(axis=-1, keepdims=True)
+        a[..., :3] = np.clip(grey + (a[..., :3] - grey) * self.sat, 0, 1)
+        img.scale(p, p)
+        img.pixels.foreach_set(a.reshape(-1))
+        img.file_format = "PNG"
+        img.update()
 
     def flat(self, key, color, rough=0.8, metal=0.0, emit=None, strength=1.0):
         """A plain material (a rope, an iron hook, a lamp's flame)."""
@@ -218,7 +257,7 @@ class Arena:
             o.select_set(True)
         glb = os.path.join(REPO, "public", "models", "arenas", f"{self.name}.glb")
         bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB", use_selection=True, export_yup=True, export_animations=False,
-                                  export_cameras=False, export_lights=False, export_image_format="JPEG", export_image_quality=78,
+                                  export_cameras=False, export_lights=False, export_image_format="AUTO" if self.paint else "JPEG", export_image_quality=78,
                                   export_draco_mesh_compression_enable=False, export_meshopt_compression_enable=True, export_vertex_color="NONE")
         os.makedirs(os.path.join(REPO, "src", "arenas", "real"), exist_ok=True)
         with open(os.path.join(REPO, "src", "arenas", "real", f"{self.name}.json"), "w", newline="\n") as f:
