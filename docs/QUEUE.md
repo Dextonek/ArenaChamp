@@ -29,6 +29,7 @@ next job whose files are free. One writer at a time on `src/duel.ts`, `src/heroM
 | 11 | Heroes reworked, wave 2 and on | 10 | their kits, traits, spells | **not started; after the deploy, on the user's word** |
 | 12 | Engine hooks the helpers asked for: the Tower's (`TOWER-HOOK`), a carrier that cannot cast | 1, 3 | `duel.ts` | inside job 8 (`215d937`) |
 | 13 | Before the deploy: all checks on the merged whole, a party of bots through all three bosses, docs, `STATUS.md`, a page of everything with pictures | 8, 10t | docs | queued |
+| 14 | Research (the user, 10:55: "make deep resrch on all wow raid boss mechanics and docs it", "and also make deepl reserch at newwer expansion"): World of Warcraft's raid boss mechanics, every raid, deepest on the newest expansions; the report to `docs/knowledge/wow-raid-mechanics.md` | | `research_notes/WoW raid boss mechanics/`, `reports/` | by the deep-research skill, one researcher a free slot (three agents at once): (A) Classic, TBC, Wrath: running since 10:58 -> `era1_classic_tbc_wrath.md`; (B) Cataclysm, Mists, Warlords, Legion; (C) Battle for Azeroth, Shadowlands; (D) Dragonflight, The War Within, Midnight, in depth; (E) the types of mechanic, how they scale with raid size and difficulty, what the designers said; then one report writer; then copy the report to `docs/knowledge/` and commit. Not part of the deploy |
 
 ## The morning (2026-11-12, 09:00): where the night stopped, and what the user decided
 
