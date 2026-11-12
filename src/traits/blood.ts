@@ -13,8 +13,8 @@ export const PRICE_REST = 1;
 export const PRICE_COOL = 11;
 export const PRICE_R = 2;
 /** Her spell hits (Q, W, E; not the Rip, which has its refund) drink back this share of their damage; this share while Hungry. */
-export const DRINK = 0.25;
-export const DRINK_HUNGRY = 0.5;
+export const DRINK = 0.15;
+export const DRINK_HUNGRY = 0.65;
 /** She is Hungry below this share of her max HP. */
 export const HUNGRY_BELOW = 0.45;
 /**
@@ -35,8 +35,8 @@ export const MIST_SECONDS = 3;
 export const MIST_DAMAGE = 18;
 export const MIST_REACH = 1.5;
 /** Hemocurse: the damage and the Hungry heal of each spell the cursed enemy casts. */
-export const CURSE_COST = 20;
-export const CURSE_HEAL = 15;
+export const CURSE_COST = 15;
+export const CURSE_HEAL = 20;
 /** Sanguine Feast: the channel, which sets how long she is held. */
 export const FEAST_SECONDS = 1.6;
 
@@ -93,9 +93,21 @@ export const priceOf = (t: { res: number }, slot: number) => Math.round(t.res) *
  * at half 28, at a quarter 19; it keeps `AI_KEEP` HP back, and after a burst it waits until the Price is within
  * `AI_RESUME` of rest.
  */
-const aiBudget = (t: TraitView) => 10 + 35 * (t.hp() / Math.max(1, t.maxHp()));
+const aiBudget = (t: TraitView) => (hungry(t) ? AI_HUNGRY_BUDGET : 10 + 35 * (t.hp() / Math.max(1, t.maxHp())));
+/** Hungry, her spells drink back half their damage: the CPU pays up to this, whatever its HP. */
+const AI_HUNGRY_BUDGET = 40;
 const AI_KEEP = 50;
 const AI_RESUME = 5;
+/** Lancet's range (the kit's): inside it the CPU throws the needle before anything else. */
+const AI_LANCET_REACH = 7;
+/** The CPU starts the Feast (8 m; 9 m of distance ends it) only this close, so that it can finish it. */
+const AI_FEAST_REACH = 5.5;
+/**
+ * Against a brawler (an enemy whose swing has hit her: `taken`) the CPU steps back when they come within `AI_KITE_NEAR` m,
+ * to `AI_KITE_STAND` m: out of a swing's reach, inside her own (5.5 m). It only walks while it has nothing to cast or shoot.
+ */
+const AI_KITE_NEAR = 3.8;
+const AI_KITE_STAND = 4.8;
 
 /**
  * Vesper (drain juggernaut, ranged attack), reworked round one rule: no cooldowns, she pays in blood. Q, W and E can be
@@ -105,28 +117,31 @@ const AI_RESUME = 5;
  * falling 11 a second once she has cast nothing for 1 s (`tick`). The Price is her bar (`resource`) and the badge shows
  * the next cost. She cannot cast what she cannot pay (`canCast`): a Vesper who has spent herself low stands there with
  * nothing to cast, and `payHp` could not take her last HP anyway.
- * The drain gives it back: every spell hit of Q, W, E heals her a quarter of its damage, half while she is Hungry (below
+ * The drain gives it back: every spell hit of Q, W, E heals her 15% of its damage, 65% while she is Hungry (below
  * 45% HP: `tick` shows it, a crimson ring at her feet); `landed`. Lancet (Q) can be cast again from 0.6 s to 3.3 s as the
  * Rip (`recast`): free, it gives back half of what the needle really cost her when it lands (`landed`; the Rip does not
  * drink as well) and makes Lancet ready again at once (`recastAct` sets the cooldown); a needle she leaves in locks Lancet
- * 3.4 s (`cooldown`). The needle is a pip on the enemy (`dealt`). The Feast (R) gives back 60 on its third pulse (the effect).
+ * 3.4 s (`cooldown`). The needle is a pip on the enemy (`dealt`). The Feast (R) gives back 45 on its third pulse (the effect).
  * Why the Rip raises the Price and does not drink: measured 2026-11-12, a Vesper who cast nothing but needle and Rip, as
  * fast as they came, won 90% while the Rip stood outside the climb. Greed has to lose (pipeline/designs/heroes-rework.md).
  * Mist Waltz (W) arms two attacks for 3 s: +18 damage and 1.5 m more reach each (`attackMods`, `attackReach`). For the CPU
  * it is a getaway (`escape` in the kit): it flows away from an enemy within 3.5 m and shoots.
- * Hemocurse (E): the effect owns `hemocurses`; while it is live each spell the enemy casts costs them 20 HP (`enemyCast`
- * calls `hitEnemy`, decided where the hit is real) and heals her 15 if she is Hungry. It was 30 before the rework: more
- * and more heroes cast without cooldowns, and 30 a spell was a quarter of her damage. Sanguine Feast (R) holds her 1.6 s.
- * The CPU (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half), then holds off until
- * the Price is nearly back at rest; it keeps 50 HP back, always takes the Rip, does not curse a cursed enemy and starts the
- * Feast only within 4 m.
- * Measured 2026-11-12 (docs/balance/rework-vesper-after.html): 57% against the benchmark heroes, on both sides and as the
- * player's hero alone; with Lancet never held back (the greedy line) 14%.
+ * Hemocurse (E): the effect owns `hemocurses`; while it is live each spell the enemy casts costs them 15 HP (`enemyCast`
+ * calls `hitEnemy`, decided where the hit is real) and heals her 20 if she is Hungry. It was 30 before the rework and 20 after it: more
+ * and more heroes cast without cooldowns (against Cantor, a spell every beat, 20 was a fifth of her damage). Sanguine Feast (R) holds her 1.6 s.
+ * The CPU (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half; 40 while Hungry, when
+ * her spells drink most of it back), then holds off until the Price is nearly back at rest; it keeps 50 HP back, always
+ * takes the Rip, does not curse a cursed enemy, throws the needle before it waltzes away, and starts the Feast within
+ * 5.5 m (within 4 m it never used it on an archer). Once a brawler's swing has hit her (`taken`) it steps back from them
+ * between shots (`aiGoal`).
+ * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the needle 33 -> 30, the Rip 24 -> 22, the Feast 35/35/40 -> 18/18/24
+ * and 60 -> 45 back, the drink 25% -> 15% and 50% -> 65% Hungry, the curse 20 -> 15 a spell, 660 -> 640 HP): 47 to 50% against the
+ * benchmark heroes, on both sides and as the player's hero alone; with nothing but needle and Rip (the greedy line) 0%.
  */
 export const bloodTrait: Trait = {
   aiHold(t, slot, dist) {
     // The CPU only starts the Feast close enough to finish it.
-    if (slot === 3 && dist > 4) return true;
+    if (slot === 3 && dist > AI_FEAST_REACH) return true;
     if (slot === 2 && t.stacks('curse') > 0) return true;
     // A needle that is in is ripped out, whatever the Price: the Rip is free and gives blood back.
     if (slot === 0 && t.stacks('needle') > 0) return false;
@@ -134,11 +149,33 @@ export const bloodTrait: Trait = {
     // A burst, then a rest: once the Price has passed what it will pay, it waits until the Price is nearly back down.
     if (t.res > aiBudget(t)) t.mem.aiRest = 1;
     else if (t.res <= PRICE_BASE + AI_RESUME) t.mem.aiRest = 0;
-    return !!t.mem.aiRest || t.hp() - price < AI_KEEP;
+    const rests = !!t.mem.aiRest || t.hp() - price < AI_KEEP;
+    // The needle before the waltz: the CPU tries R, E, W before Q, and a brawler in her face had it waltz away again and
+    // again (out of Lancet's reach each time) and never throw a needle. The waltz waits while a needle is in (the Rip comes
+    // next, and needs them within 8 m) and while it would throw one now.
+    if (slot === 1 && (t.stacks('needle') > 0 || (!rests && t.cooldownLeft(0) <= 0 && dist <= AI_LANCET_REACH))) return true;
+    return rests;
+  },
+  aiGoal(t) {
+    const e = t.enemy();
+    if (!e || !t.mem.brawler) return null;
+    const d = t.enemyDistance();
+    if (d >= AI_KITE_NEAR) return null;
+    // Straight away from them, and along the ring's edge where the floor ends.
+    const me = t.self().group.position, p = e.group.position;
+    const k = (d - AI_KITE_STAND) / Math.max(d, 0.1);
+    let x = me.x + (p.x - me.x) * k, z = me.z + (p.z - me.z) * k;
+    const edge = t.arenaRing() - 1, r = Math.hypot(x, z);
+    if (r > edge) { x *= edge / r; z *= edge / r; }
+    return { x, z };
+  },
+  taken(t, hit) {
+    // A swing, not a bolt (a melee attack shoves harder): the CPU playing her keeps its distance from now on (`aiGoal`).
+    if (hit.kind === 'attack' && (hit.opts.knock ?? 0) > 0.5) t.mem.brawler = 1;
   },
   passive: {
     name: 'Blood Price',
-    blurb: 'No cooldowns: she pays in blood. Each spell costs her the Price in HP: 10 at rest, 10 more after every spell (the free Rip too), up to 100, falling again when she holds back for a second. Her spell hits drink back a quarter of their damage, half below 45% HP (Hungry). She cannot cast what she cannot pay.',
+    blurb: 'No cooldowns: she pays in blood. Each spell costs her the Price in HP: 10 at rest, 10 more after every spell (the free Rip too), up to 100, falling again when she holds back for a second. Her spell hits drink back 15% of their damage, 65% below 45% HP (Hungry). She cannot cast what she cannot pay.',
   },
   resource: { name: 'Price', max: PRICE_MAX, color: BLOOD, start: PRICE_BASE },
   ownLook: {

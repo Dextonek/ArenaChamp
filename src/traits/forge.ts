@@ -79,6 +79,16 @@ const swallowed = (k: string) => k === 'slow' || k === 'root' || k === 'knockup'
 const AI_REST = 1.1;
 const AI_RIDE = 3.5;
 const AI_QUENCH_REACH = 2.5;
+/** White-hot with the enemy out of the Quench's ring: this long past `AI_RIDE` he Quenches anyway, to stop the burn. */
+const AI_BURN_WAIT = 1.5;
+/**
+ * In reach of his hammer the CPU casts as a swing lands and not while the next one is on its way up: a cast drops a
+ * wind-up (the player's hero's does, and so a person's; the computer's opponent's swing lands anyway, `src/duel.ts`).
+ * Within `AI_SWING_REACH` m it casts only in the `AI_AFTER_SWING` s after a swing, or when none has come for `AI_NO_SWING` s.
+ */
+const AI_SWING_REACH = 3.0;
+const AI_AFTER_SWING = 0.5;
+const AI_NO_SWING = 2.4;
 
 /**
  * Brannoc (tank), reworked round one rule: Heat. Q, W and E have no cooldown (the kit's 0.5 s is only the gap the game
@@ -93,12 +103,15 @@ const AI_QUENCH_REACH = 2.5;
  * in the cast's mods), and the hammer is cold again. Its 11 s cooldown is the game server's: one ultimate in 10 s.
  * W Forge Roar (kit buff: +30% armour 3 s) arms a slam (`mem.slamUntil`, shown as 'slam'): his next basic attack is
  * +30 with a 0.5 s knock-up.
- * The CPU (`aiHold`): a breath between spells so he swings, no Chain Hammer on an enemy already in reach, no second roar
- * on an armed slam, a roar between two rivets in reach, no spell that would turn the hammer white while the Quench is far
- * from ready; white-hot it pays for spells only above half HP, rides the heat 3.5 s, then Quenches with the enemy inside
- * the ring (anywhere under 25% HP).
- * Measured 2026-11-12 (docs/balance/rework-brannoc-after.html): 53% against the benchmark heroes on both sides and 34% as
- * the player's hero alone; a second run of the same code gave 59% and 43%. Without the CPU's breath between spells: 44%.
+ * The CPU (`aiHold`): a breath between spells so he swings, and in reach of his hammer a spell only as a swing lands (a
+ * cast drops a wind-up: the player's side lost a third of its swings to that, which was all of the gap between his two
+ * sides); no Chain Hammer on an enemy already in reach, no second roar on an armed slam, a roar between two rivets in
+ * reach, no spell that would turn the hammer white while the Quench is far from ready. White-hot it pays for spells only
+ * above half HP, rides the heat 3.5 s, then Quenches with the enemy inside the ring (anywhere under 25% HP). An enemy who
+ * keeps out of the ring (the CPU steps back from white heat) is dragged back with the chain, and after 5 s he Quenches
+ * anyway: before, he stood there and burned.
+ * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the Chain Hammer 40 -> 34): 51% against the benchmark heroes on
+ * both sides, 54% as the player's hero alone. Without the CPU's pauses: 31%.
  */
 export const forgeTrait: Trait = {
   aiHold(t, slot, dist) {
@@ -106,10 +119,18 @@ export const forgeTrait: Trait = {
     if (slot === 3) {
       if (!white(t)) return true;
       if (hp < 0.25) return false;
-      if (dist > AI_QUENCH_REACH) return true;
-      return t.time - (t.mem.whiteAt ?? 0) < AI_RIDE && hp > 0.45;
+      const rode = t.time - (t.mem.whiteAt ?? 0);
+      // An enemy who keeps out of the ring (the CPU steps back from white heat): he does not stand and burn for them.
+      if (dist > AI_QUENCH_REACH) return rode < AI_RIDE + AI_BURN_WAIT;
+      return rode < AI_RIDE && hp > 0.45;
     }
     if (t.time < (t.mem.aiRest ?? 0)) return true;
+    // White-hot with the enemy out of the hammer's reach: the chain drags them back in, whatever his HP.
+    if (white(t) && slot === 0 && dist > AI_SWING_REACH) return hp < 0.15;
+    if (dist <= AI_SWING_REACH) {
+      const since = t.time - (t.mem.swungAt ?? -9);
+      if (since > AI_AFTER_SWING && since < AI_NO_SWING) return true;
+    }
     if (white(t)) return hp < 0.5;
     if (t.res + HEAT_GAIN[slot] >= HEAT_MAX && t.cooldownLeft(3) > 2) return true;
     if (slot === 1 && slamOn(t)) return true;
@@ -180,6 +201,7 @@ export const forgeTrait: Trait = {
   attackMods(t) {
     const m: Partial<CastMods> = {};
     let extra = 0;
+    t.mem.swungAt = t.time;
     if (slamOn(t)) {
       endSlam(t);
       extra += SLAM_DAMAGE;

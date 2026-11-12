@@ -91,9 +91,11 @@ and `-after.html`, the two bystanders `rework-bench-before.html` and `-after.htm
 
 | Hero | The rule as built | Before | After (both sides) | After (the player's side alone) |
 |---|---|---:|---:|---:|
-| Vesper | No cooldowns. Each spell costs the **Price** in HP (her bar): 10, +10 with every spell and every Rip, 100 at most, falling 11 a second after 1 s without casting; R twice the Price. She cannot cast what she cannot pay. Spell hits drink back 25% (50% below 45% HP), the Rip half of what its needle cost, the Feast 60 | 46% | 57% | 57% |
-| Brannoc | No cooldowns. Q +40, W +30, E +30 **Heat** (his bar, 100); a spell hits at 55% cold to 115% white-hot; Heat cools 10 a second after 2.5 s of rest. At 100 the hammer stays white: -14 HP a second, 35 HP a spell, attacks +15, no slow, root or knock-up, until R Quench (30 + 0.5 a point of Heat, stun 0.75 s from white heat) | 68% | 53% and 59% | 34% and 43% |
-| Cantor | No cooldowns, one spell a beat (1.2 s, a window of 0.25 s each side). On the beat: +12% per step of **Crescendo** (his bar, 0 to 5) and a step more. Off it: a quarter of the power, nothing else, the Crescendo gone. Q and R build; the Chord cast at 5 silences and starts it again; W spends it for 0.25 s of charm a step, E for a 15 shield a step | 31% | 50% | 36% |
+| Vesper | No cooldowns. Each spell costs the **Price** in HP (her bar): 10, +10 with every spell and every Rip, 100 at most, falling 11 a second after 1 s without casting; R twice the Price. She cannot cast what she cannot pay. Spell hits drink back 15% (65% below 45% HP), the Rip half of what its needle cost, the Feast 45 | 46% | 57%; tuned: 47 to 50% | 57%; tuned: 46 to 50% |
+| Brannoc | No cooldowns. Q +40, W +30, E +30 **Heat** (his bar, 100); a spell hits at 55% cold to 115% white-hot; Heat cools 10 a second after 2.5 s of rest. At 100 the hammer stays white: -14 HP a second, 35 HP a spell, attacks +15, no slow, root or knock-up, until R Quench (30 + 0.5 a point of Heat, stun 0.75 s from white heat) | 68% | 53% and 59%; tuned: 51% | 34% and 43%; tuned: 54% |
+| Cantor | No cooldowns, one spell a beat (1.2 s, a window of 0.25 s each side). On the beat: +9% per step of **Crescendo** (his bar, 0 to 5) and a step more. Off it: a quarter of the power, nothing else, the Crescendo gone. Q and R build; the Chord cast at 5 silences and starts it again; W spends it for 0.25 s of charm a step, E for a 15 shield a step. A charm or silence that cannot take hold (a raid boss) strikes for 36 a step instead | 31% | 50%; tuned: 58% | 36%; tuned: 54% |
+
+(The table's "tuned" numbers are from the section "Wave 1a tuning" below; the rest of this section is the wave as it was built, before it.)
 
 The first target (40 to 60% as the player's side) is met by Vesper only: Brannoc and Cantor sit under it there and inside it
 on both sides, because each wins about 60 to 70% as the opponent (see "Found on the way"). No errors and no fight without
@@ -173,6 +175,62 @@ Cantor a quarter weaker: they do not clear as before. Cantor's cause: with the c
 had to come down (60 every 2 to 3 s became 25 a beat) to keep him in the band as the opponent, and the autopilot, busy
 dodging, plays only 63% of his beats (81% in a duel). Raising the chord to 27 or 28 would give the raid some back and make
 the benchmark Cantor harder still: the user's call.
+
+## Wave 1a tuning (2026-11-12)
+
+The page: `docs/balance/rework-1a-tuning.html` (every pairing before and after; `python pipeline/tools/rework-1a-page.py` writes it
+from the simulator's kept runs). Tools made for it: `pipeline/tools/sim-cells.py` (a kept run split by pairing and by side, with
+how far ahead the winner ended) and `pipeline/tools/duel-trace.js` (one duel written down cast by cast).
+
+**What the numbers are now** (against the six benchmark heroes, 64 fights a pairing):
+
+| Hero | Both sides | As the player's hero | Pairings past 80 to 20 (of 8: the six, Vesper, Auriel, Lyra) | The greedy line |
+|---|---:|---:|---|---:|
+| Cantor | 58% (it was 54%); 56% in a second run | 54% (38%); 45% in a second run | none in the run of 64 (five: Kaia 100, Auriel 100, Isolde 91, Oblivion 9, Lyra 19); Lyra 31% there and 12% in a second run of 32 | 38% |
+| Brannoc | 51% (56%) | 54% (31%) | Kaia 91 (two: Kaia 100, Vesper 94) | 31% |
+| Vesper | 47 to 50% (53%) | 46 to 50% (55%) | five: Oblivion 5, Kaia 9, Sirix 97, Auriel 92, Lyra 86 (seven) | 0% |
+
+**The numbers changed:** Cantor: Resounding Chord 25 -> 22, a step of Crescendo +12% -> +9%, HP 740 -> 720. Brannoc: Chain Hammer
+40 -> 34. Vesper: Lancet 33 -> 30, the Rip 24 -> 22, the Feast 35, 35, 40 -> 18, 18, 24 and 60 -> 45 back, the drink 25% -> 15% and
+50% -> 65% Hungry, Hemocurse 20 -> 15 a spell and its Hungry heal 15 -> 20, HP 660 -> 640.
+
+**What was really wrong** (found by reading kept fights and one trace, not by turning numbers):
+
+- **These duels are races with almost no chance in them.** The same casts and hits every fight: a hero 12% ahead at the end wins 32
+  of 32. The older heroes miss with skillshots; these three hit with nearly everything. So a pairing's win rate is a step, not a
+  slope: tune on how far ahead the winner ends (`sim-cells.py` prints it), not on the win rate, and expect a volatile pairing to
+  flip (Vesper against Kaia read 100, 81, 22 and 9% over four small steps).
+- **The two computer players do not treat a basic attack alike** (`src/duel.ts`, `src/heroMode.ts`; not edited). On the player's
+  side a cast drops a swing in its wind-up (`castNow` calls `attacker.cancel()`); on the opponent's side nothing cancels
+  `oppAttack`, and the swing lands during the cast. Brannoc cast into his own swings and lost a third of them on the player's side:
+  31% there, 81% as the opponent, and all of Cantor's gap too (0 of 32 and 31 of 32 against Brannoc). His computer now casts as a
+  swing lands (`aiHold`, told by `attackMods`). The plain fix is one line, `this.oppAttack.cancel()` in `Duel.castSpell`; every
+  hero who casts often will meet this.
+- **Brannoc's computer stood and burned.** White-hot under half HP it cast nothing, and it Quenched only with the enemy within
+  2.5 m, while the enemy's computer steps back from white heat (`enemyGoal`). Now it drags them back with the chain and after 5 s
+  Quenches anyway.
+- **Cantor's computer walked to 2.6 m from everyone**, inside every Gravity Slam and the Null Zone (Oblivion won 29 of 32). Once a
+  brawler's swing has hit him it keeps 4.3 m.
+- **Vesper's computer never threw a needle at a brawler** (the CPU tries R, E, W before Q, and the waltz took her out of Lancet's
+  reach each time: 0.2 needles a fight against Brannoc), and **never started the Feast against anyone with a ranged attack** (only
+  within 4 m; it is 5.5 m now).
+- **Not solved:** Vesper against Oblivion (his Null Zone swallows her bolts and spells for a quarter of the fight, and he pulls her
+  in), against Sirix (he has to walk to her), and her other one-sided pairings; Brannoc against Kaia; Cantor against Lyra (she
+  out-ranges his whole kit). The first three and the last two went the same way before the rework. Two plays that were tried for
+  Vesper and taken out again: a waltz straight after a Rip (no change), and a waltz to make room for the Feast (she waltzed four
+  times a fight and never Feasted: 19%).
+- **Oblivion's Black Hole** lands on the opponent's Brannoc every fight and on the player's one in five (it is cast from on top of
+  him and goes astray). Not ours.
+
+**The roster's view** (the six bystanders against the six, both sides): Kaia 39% (she had fallen to 28%; 50% in the last roster
+run), Auriel 57% (33%: the engine's aim fix), Lyra 58% (58%), Isolde 43% (40%), Sirix 52% (60%), Oblivion 62% (50%). Kaia (down 11)
+and Oblivion (up 11) moved only because the benchmark changed: listed, not retuned.
+
+**The raid** (`_raid(['Vesper', 'Brannoc', 'Cantor'], 3)`, the Sun Warden): Vesper 2 of 3 and 24 a second, Brannoc 0 of 3 and 21,
+Cantor 1 of 3 and 20 with the strike at 16 a step (a charm or silence that cannot take hold strikes instead: a boss can be neither
+charmed nor silenced), 3 of 4 and 21 at 24 a step, 3 of 4 and 28 at 36, as it is now. Not measured with no strike at these numbers.
+Before the rework he was 3 of 3 and 27. In a party's raid the strike is an ordinary hit of his (`startBoss` runs with no `net`); in
+a network duel the victim's screen applies the silence or charm and decides the strike, as offline.
 
 ### Not checked
 

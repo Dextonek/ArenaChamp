@@ -16,7 +16,7 @@ import { hemocurses, type Hemocurse as CurseRecord } from '../../traits/blood';
  * `dealt`). While it holds the effect owns a record keyed by her figure (`hemocurses` in `src/traits/blood.ts`: `live`,
  * `until`): it sets `live` when the curse lands and each frame ends it, with the thorns shattering and the thread snapping,
  * if the 3 s are up, the enemy is past 8 m (`BREAK`) or she no longer sees them. The trait's `enemyCast` reads `live`: each
- * spell the enemy casts then costs them 20 HP and, if she is Hungry, heals her 15. The record is cleared on `reset()`.
+ * spell the enemy casts then costs them 15 HP and, if she is Hungry, heals her 20. The record is cleared on `reset()`.
  * Costs her 20 HP (the trait). Clean by 4.0 s (inside the duel's 4.2 s window).
  * Network duels: both screens replay the cast and run the same checks on live positions, so each has the same `live`;
  * only the victim's screen's hits and `hitEnemy` count, and only her screen heals her.

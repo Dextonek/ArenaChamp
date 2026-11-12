@@ -16,10 +16,10 @@ The bard hero kit: Cantor's four spells (Q, W, E and the R ultimate), his passiv
 |---|---|
 | Role | Support (ranged attack) |
 | Signature | Only on the Beat |
-| HP | 740 |
+| HP | 720 |
 | Kit shapes | Q QUICK cone, builds the Crescendo · W TGT note, spends it on a charm · E SELF, spends it on a shield and speed · R SELF ring that confines both heroes |
 
-He wins a 1v1 by playing in time: a chord on every pulse, the Crescendo climbing, then spent on a long charm or a shield at the right moment. His weakness is that he has to stand within 5 m for the chord to reach, he has no dash, and one cast off the beat throws the whole Crescendo away. Walk speed 4.0 m/s. Measured 2026-11-12 in the fight simulator: 50% against the benchmark heroes on both sides, 36% as the player's hero alone, which is under the 40 to 60 band ([before](../../balance/rework-cantor-before.html) 30.6%, [after](../../balance/rework-cantor-after.html)). A computer that never spends the Crescendo wins 40%.
+He wins a 1v1 by playing in time: a chord on every pulse, the Crescendo climbing, then spent on a long charm or a shield at the right moment. His weakness is that he has to stand within 5 m for the chord to reach, he has no dash, and one cast off the beat throws the whole Crescendo away. Walk speed 4.0 m/s. Tuned 2026-11-12 in the fight simulator ([the tuning's page](../../balance/rework-1a-tuning.html)): 58% against the benchmark heroes on both sides, 54% as the player's hero alone, (45% there in a second, shorter run), and no pairing among the nine measured past 78 to 22 but Lyra (before the tuning: Kaia and Auriel lost to him 32 of 32, Oblivion beat him 29 of 32). Lyra is his hard counter: she out-ranges his whole kit, and he wins 12 to 31% by run. A computer that never spends the Crescendo wins 38%.
 
 ## At a glance
 
@@ -55,8 +55,8 @@ The stave and the note. Flowing five-line staves wave through the air with dark 
 
 | | |
 |---|---|
-| Passive | **Only on the Beat.** No cooldowns: one spell a beat. A beat pulses under him every 1.2 s; a spell cast within 0.25 s of a pulse is on the beat: it lands, with +12% power for each step of Crescendo, and the Crescendo climbs a step (5 at most). A spell cast off the beat goes sour: a quarter of its power, no silence, no charm, no shield, and the Crescendo is gone. |
-| Twist | **The Crescendo is spent.** The Chord (Q) and the Duet (R) build it. The Chord cast at 5 is the release: +60%, a 0.5 s silence, and the Crescendo starts again at 0. Siren Song (W) and Rising Chorus (E) spend all of it and need at least one step. It holds three beats without a clean spell, then falls a step a beat. |
+| Passive | **Only on the Beat.** No cooldowns: one spell a beat. A beat pulses under him every 1.2 s; a spell cast within 0.25 s of a pulse is on the beat: it lands, with +9% power for each step of Crescendo, and the Crescendo climbs a step (5 at most). A spell cast off the beat goes sour: a quarter of its power, no silence, no charm, no shield, and the Crescendo is gone. |
+| Twist | **The Crescendo is spent.** The Chord (Q) and the Duet (R) build it. The Chord cast at 5 is the release: +45%, a 0.5 s silence, and the Crescendo starts again at 0. Siren Song (W) and Rising Chorus (E) spend all of it and need at least one step. It holds three beats without a clean spell, then falls a step a beat. |
 | Resource or meter | **Crescendo**, 0 to 5, a gold bar under his HP on both screens and in the HUD. A ring under him shows the beat: it swells from 1.0 to 1.6 m over the 0.25 s before a pulse (gold) and rests rose between pulses. The passive slot shows NOW inside the window. A clean spell is drawn gold, a sour one rose. |
 | Walk speed | 4.0 m/s |
 | Basic attack | ranged, 6 m, 10 per 1.0 s, wind-up 0.25 s, bolt speed 18, note look |
@@ -66,10 +66,11 @@ Other trait rules (`src/traits/bard.ts`):
 - "One spell a beat" is a gate (`canCast`): after a cast the next one waits for the next pulse's turn.
 - The 0.5 s "cooldown" of Q, W and E in the kit data is the gap the game server asks between two casts of one slot, and the Duet's 11 s is the server's one ultimate in 10 s (`server/hub.mjs`): neither is a design choice.
 - A stun or a silence does not end the Crescendo: it costs him beats (three beats of rest are free).
-- Why the top is a release: while the Crescendo stayed at 5 (every chord at +60% with a silence), a Cantor who never spent it won 74% (2026-11-12).
+- Why the top is a release: while the Crescendo stayed at 5 (every chord at +60%, as it was then, with a silence), a Cantor who never spent it won 74% (2026-11-12).
+- **A charm or a silence that cannot take hold strikes instead:** 36 for each step of Crescendo behind it (the Siren Song's steps, 5 for the Chord's release, 1 for a silence inside the Duet). A raid boss can be neither charmed nor silenced, so against one his Crescendo ends in a blow: against the Sun Warden he clears 3 of 4 with 28 damage a second (1 of 3 with 20 when the strike was 16 a step; 3 of 3 with 27 before the rework). In a duel a silence always holds, and a charm fails only on a hero just out of a stun.
 - Duet cannot be cast while the enemy is charmed. If its ring closes on nobody nothing is given back any more (11 s is the least the server allows).
 - Inside the Duet ring, a clean spell hit also silences for 0.5 s.
-- The CPU playing him (`aiHold`, `aiGoal`) casts only inside the window, walks in to 2.6 m so the chord cannot be walked out of, sings the Siren Song from 4 Crescendo and spends on the Chorus when it is under 65% HP with no shield and 3 Crescendo.
+- The CPU playing him (`aiHold`, `aiGoal`) casts only inside the window, walks in to 2.6 m so the chord cannot be walked out of, sings the Siren Song from 4 Crescendo (from 3 at an enemy who stays past the chord's reach) and spends on the Chorus when it is under 65% HP with no shield and 3 Crescendo. Once a brawler's swing has hit him it keeps the far end of the chord instead, 4.3 m off, and steps back when they close in: standing at 2.6 m from Oblivion he took every Gravity Slam and lost 29 of 32.
 - His Chord also goes where he faces when a computer opponent casts it: the engine gives a CPU's self cast no aim, so until 2026-11-12 the opponent's Chord always went due north and hit a quarter of the time (he won 1 of 80 fights as the opponent).
 
 ## Mechanics
@@ -93,10 +94,10 @@ All four play under the normal gameplay camera. Range comes from the kit data (`
 
 | Key | Label | Targeting | Range | Cost | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [resounding chord](../../../src/spells/targeted/resoundingChord.ts) | self, QUICK cone (5 m, 90 degrees) | 5 | none; +1 Crescendo on the beat | 0.4 s | 1.3 s | A chord from the lyre fans out in three sound waves. Damage 25, +12% for each step of Crescendo; cast at 5 it hits for 40, silences 0.5 s and the Crescendo starts again. Off the beat: 6. |
+| Q | [resounding chord](../../../src/spells/targeted/resoundingChord.ts) | self, QUICK cone (5 m, 90 degrees) | 5 | none; +1 Crescendo on the beat | 0.4 s | 1.3 s | A chord from the lyre fans out in three sound waves. Damage 22, +9% for each step of Crescendo; cast at 5 it hits for 32, silences 0.5 s and the Crescendo starts again. Off the beat: 6. |
 | W | [siren song](../../../src/spells/targeted/sirenSong.ts) | enemy (click) | 8 | all the Crescendo (at least 1) | 0.8 s (the note lands) | 3.8 s | A note flies at the enemy at 10 m/s (it gives up after 2 s) and charms it: it walks toward him and cannot act, 0.25 s for each step spent (1.25 s at 5). Cover breaks the note. Off the beat the note breaks on them and charms nobody. No damage. |
 | E | [rising chorus](../../../src/spells/targeted/risingChorus.ts) | self (radius 7) | all the Crescendo (at least 1) | rises at 0.35 s | 3.5 s | Notes orbit him for 3 s. On the beat: a shield of 15 for each step spent (75 at 5) for 3 s and +25% speed for 1.5 s. Off the beat: nothing. No damage. |
-| R | [duet](../../../src/spells/targeted/duet.ts) | self (radius 9) | once in 11 s; +1 Crescendo on the beat | the ring closes at 0.8 s | 4.2 s | A ring of music staves (6 m radius) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat (every 1.2 s) it pulses for 18 on each enemy inside (+12% a step of the Crescendo it was cast at; a quarter if cast off the beat), and clean spells inside it also silence 0.5 s. At 0.8 s the ring only holds if the enemy is inside 6 m; otherwise it collapses. Cannot be cast while the enemy is charmed. |
+| R | [duet](../../../src/spells/targeted/duet.ts) | self (radius 9) | once in 11 s; +1 Crescendo on the beat | the ring closes at 0.8 s | 4.2 s | A ring of music staves (6 m radius) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat (every 1.2 s) it pulses for 18 on each enemy inside (+9% a step of the Crescendo it was cast at; a quarter if cast off the beat), and clean spells inside it also silence 0.5 s. At 0.8 s the ring only holds if the enemy is inside 6 m; otherwise it collapses. Cannot be cast while the enemy is charmed. |
 
 Spell sources: [`resoundingChord.ts`](../../../src/spells/targeted/resoundingChord.ts), [`sirenSong.ts`](../../../src/spells/targeted/sirenSong.ts), [`risingChorus.ts`](../../../src/spells/targeted/risingChorus.ts), [`duet.ts`](../../../src/spells/targeted/duet.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-bard).
 

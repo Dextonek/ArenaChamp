@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wave 1a tuning: Cantor, Brannoc, Vesper</title>
+<style>
+body { background:#14121a; color:#e8e2d6; font:15px/1.5 system-ui, sans-serif; margin:0; padding:20px 16px 60px; }
+main { max-width:1080px; margin:0 auto; }
+h1 { font-size:24px; margin:0 0 6px; } h2 { font-size:20px; margin:34px 0 4px; color:#ffd24a; } h3 { font-size:15px; margin:16px 0 4px; color:#b9b1a4; }
+p { margin:6px 0 10px; } .lead { color:#cfc8ba; } .dim { color:#8d8698; } .ok { color:#8fd694; } .bad { color:#ff7a6b; }
+table { border-collapse:collapse; width:100%; margin:8px 0; } th { text-align:left; font-weight:600; color:#8d8698; font-size:12px; padding:4px 8px; border-bottom:1px solid #2c2836; }
+td { padding:6px 8px; border-bottom:1px solid #221f2b; vertical-align:top; } td.foe { white-space:nowrap; font-weight:600; } td.num { white-space:nowrap; text-align:right; font-variant-numeric:tabular-nums; }
+td.bars { width:230px; min-width:150px; } td.why { color:#cfc8ba; font-size:14px; }
+.track { position:relative; height:9px; background:#221f2b; border-radius:3px; margin:4px 0 5px; overflow:hidden; }
+.band { position:absolute; left:20%; width:60%; top:0; bottom:0; background:#2f2b3b; } .mid { position:absolute; left:50%; width:1px; top:0; bottom:0; background:#5a546a; }
+.fill { position:absolute; left:0; top:0; bottom:0; border-radius:3px; } .fill.old { background:#77708a; opacity:.8; } .fill.new { background:#8fd694; } .fill.new.bad { background:#ff7a6b; }
+ul { margin:4px 0 10px 20px; padding:0; } li { margin:3px 0; } .box { background:#1b1823; border:1px solid #2c2836; border-radius:8px; padding:10px 14px; margin:14px 0; }
+.scroll { overflow-x:auto; }
+</style></head><body><main>
+<h1>Wave 1a tuning: Cantor, Brannoc, Vesper</h1>
+<p class="lead">2026-11-12. The three heroes rebuilt last night, tuned until each wins about half its duels on either side. Every number is from the fight
+simulator (the computer playing both heroes, on the game's own code). Before: 32 fights a pairing (64 where both are of the three). After: 64 a pairing.
+A bar is how often the hero wins that pairing; the lighter strip is 20 to 80%, the aim. <span class="dim">* not one of the six benchmark heroes.</span></p>
+
+<div class="box"><b>In short.</b> All three now sit inside the band, both sides together and as the player's hero alone. Cantor has no pairing past 78 to 22 in the run shown
+(he had five); against Lyra he read 31% in it and 12% in a second, shorter run. Brannoc has one, Kaia, which is older than his rework. Vesper is even overall but her pairings are still far apart: five of eight
+are one-sided, some of them the other way round than before. Three faults were in how the computer played them, not in their numbers, and one is in
+the engine and is not fixed here (the two computer players do not treat a basic attack alike).</div>
+
+<div class="scroll"><table><tr><th>Hero</th><th>Against the six, both sides</th><th>As the player's hero alone</th><th>Pairings past 80 to 20</th><th>The greedy line</th></tr><tr><td class='foe'>Cantor</td><td class='num'><span class='dim'>54%</span> &rarr; <b>58%</b></td><td class='num'><span class='dim'>39%</span> &rarr; <b>54%</b></td><td class='num'><span class='dim'>5 of 8</span> &rarr; <b>0 of 8</b></td><td class='num'><span class='dim'>40%</span> &rarr; <b>38%</b></td></tr><tr><td class='foe'>Brannoc</td><td class='num'><span class='dim'>56%</span> &rarr; <b>51%</b></td><td class='num'><span class='dim'>31%</span> &rarr; <b>54%</b></td><td class='num'><span class='dim'>2 of 8</span> &rarr; <b>1 of 8</b></td><td class='num'><span class='dim'>44%</span> &rarr; <b>31%</b></td></tr><tr><td class='foe'>Vesper</td><td class='num'><span class='dim'>53%</span> &rarr; <b>47%</b></td><td class='num'><span class='dim'>55%</span> &rarr; <b>46%</b></td><td class='num'><span class='dim'>7 of 8</span> &rarr; <b>5 of 8</b></td><td class='num'><span class='dim'>14%</span> &rarr; <b>0%</b></td></tr></table></div>
+
+<h3>Why so many pairings were 32 of 32</h3>
+<p>A duel between two computers is close to a race with no chance in it: the same casts, the same hits, fight after fight. A hero who is 12% ahead at the end
+wins every time, so a small edge reads as 100%. The older heroes miss with skillshots, which puts chance back in; these three hit with almost everything
+(a cone, a targeted needle, a hammer in melee). That is why a few points of damage turned Cantor against Kaia from 32 of 32 to even, and why some of Vesper's
+pairings flip with every small change. The same shows among the older heroes: Kaia beats Isolde 57 of 64 and Lyra 28 of 32, and Isolde loses to Auriel 28 of 32, with nothing of theirs changed.</p>
+
+<div class="scroll"><h2>Cantor</h2>
+<p class="lead">Against the six benchmark heroes, both sides: <span class="dim">54%</span> &rarr; <b>58%</b>.
+As the player's hero alone: <span class="dim">39%</span> &rarr; <b>54%</b>.
+As the opponent: <span class="dim">70%</span> &rarr; <b>61%</b>.
+The greedy line (never spends the Crescendo): <span class="dim">40%</span> &rarr; <b>38%</b>.</p>
+<table><tr><th>Against</th><th>Cantor wins: before (grey), after</th><th></th><th>as hero &middot; as opponent</th><th>What was wrong, what was done</th></tr>
+<tr>
+<td class="foe">Brannoc</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:48.4%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:54.7%"></div></div></td>
+<td class="num"><span class="dim">48%</span><br><b class="ok">55%</b></td>
+<td class="num dim">0/32 &middot; 31/32<br>15/32 &middot; 20/32</td>
+<td class="why">Whoever was the computer&#x27;s opponent won (0 of 32 one way, 31 of 32 the other): Brannoc&#x27;s fault, see his first row.</td></tr><tr>
+<td class="foe">Kaia</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:100.0%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:65.6%"></div></div></td>
+<td class="num"><span class="bad">100%</span><br><b class="ok">66%</b></td>
+<td class="num dim">16/16 &middot; 16/16<br>20/32 &middot; 22/32</td>
+<td class="why">His chord cannot be dodged and came every beat with 740 HP behind it: a 12 to 17% edge, and in a fight with no chance in it that wins every time. The chord went 25 to 22, a step of Crescendo 12% to 9%, his HP 740 to 720.</td></tr><tr>
+<td class="foe">Isolde</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:90.6%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:62.5%"></div></div></td>
+<td class="num"><span class="bad">91%</span><br><b class="ok">62%</b></td>
+<td class="num dim">14/16 &middot; 15/16<br>16/32 &middot; 24/32</td>
+<td class="why">The same edge as against Kaia; the same numbers fixed it.</td></tr><tr>
+<td class="foe">Sirix</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:28.1%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:57.8%"></div></div></td>
+<td class="num"><span class="dim">28%</span><br><b class="ok">58%</b></td>
+<td class="num dim">5/16 &middot; 4/16<br>19/32 &middot; 18/32</td>
+<td class="why">The computer walked him to 2.6 m from everyone, into every swing. Against a brawler it now keeps the far end of the chord, 4.3 m off.</td></tr><tr>
+<td class="foe">Oblivion</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:9.4%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:48.4%"></div></div></td>
+<td class="num"><span class="bad">9%</span><br><b class="ok">48%</b></td>
+<td class="num dim">2/16 &middot; 1/16<br>17/32 &middot; 14/32</td>
+<td class="why">At 2.6 m he stood inside every Gravity Slam (7 hits of 7 casts) and the Null Zone, and could not cast a quarter of the fight. The same stand-off cured it.</td></tr><tr>
+<td class="foe">Vesper<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:31.2%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:25.0%"></div></div></td>
+<td class="num"><span class="dim">31%</span><br><b class="ok">25%</b></td>
+<td class="num dim">12/32 &middot; 8/32<br>9/32 &middot; 7/32</td>
+<td class="why">Her curse charged him for a spell every beat: a fifth of her damage on him. It costs 15 a spell now, not 20; she still out-trades him.</td></tr><tr>
+<td class="foe">Auriel<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:100.0%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:78.1%"></div></div></td>
+<td class="num"><span class="bad">100%</span><br><b class="ok">78%</b></td>
+<td class="num dim">16/16 &middot; 16/16<br>29/32 &middot; 21/32</td>
+<td class="why">The same edge as against Kaia. Still his best pairing.</td></tr><tr>
+<td class="foe">Lyra<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:18.8%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:31.2%"></div></div></td>
+<td class="num"><span class="bad">19%</span><br><b class="ok">31%</b></td>
+<td class="num dim">3/16 &middot; 3/16<br>2/32 &middot; 18/32</td>
+<td class="why">She out-ranges his whole kit (her arrow 14 m, his chord 5 m) and backs away at his speed: half his chords miss. The computer now sings the Siren Song at her from 3 Crescendo to walk her in. Still her fight, a hard counter: 31% here, 12% in a second run of 32 fights.</td></tr></table>
+<h3>What was changed</h3><ul><li>Resounding Chord 25 to 22; each step of Crescendo +12% to +9% (the release at 5: 40 to 32); HP 740 to 720.</li><li>The computer keeps 4.3 m from a brawler (it used to stand at 2.6 m from everyone) and steps back when they close in.</li><li>The computer sings the Siren Song from 3 Crescendo at an enemy who stays past the chord&#x27;s reach.</li><li>New, for the Raid: a charm or silence of his that cannot take hold strikes instead, 36 for each step of Crescendo behind it. A boss can be neither charmed nor silenced; in a duel a silence always holds.</li></ul></div>
+<div class="scroll"><h2>Brannoc</h2>
+<p class="lead">Against the six benchmark heroes, both sides: <span class="dim">56%</span> &rarr; <b>51%</b>.
+As the player's hero alone: <span class="dim">31%</span> &rarr; <b>54%</b>.
+As the opponent: <span class="dim">81%</span> &rarr; <b>47%</b>.
+The greedy line (no pause between spells): <span class="dim">44%</span> &rarr; <b>31%</b>.</p>
+<table><tr><th>Against</th><th>Brannoc wins: before (grey), after</th><th></th><th>as hero &middot; as opponent</th><th>What was wrong, what was done</th></tr>
+<tr>
+<td class="foe">Kaia</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:100.0%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new bad" style="width:90.6%"></div></div></td>
+<td class="num"><span class="bad">100%</span><br><b class="bad">91%</b></td>
+<td class="num dim">16/16 &middot; 16/16<br>28/32 &middot; 30/32</td>
+<td class="why">Not made by the rework (he won 32 of 32 before it too): she has 580 HP and, dragged in by the chain, nothing of his can be dodged. The chain hits a sixth softer now (40 to 34); it is still his fight nine times in ten.</td></tr><tr>
+<td class="foe">Isolde</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:68.8%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:50.0%"></div></div></td>
+<td class="num"><span class="dim">69%</span><br><b class="ok">50%</b></td>
+<td class="num dim">9/16 &middot; 13/16<br>16/32 &middot; 16/32</td>
+<td class="why">Was inside the band; stays there.</td></tr><tr>
+<td class="foe">Sirix</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:31.2%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:32.8%"></div></div></td>
+<td class="num"><span class="dim">31%</span><br><b class="ok">33%</b></td>
+<td class="num dim">2/16 &middot; 8/16<br>10/32 &middot; 11/32</td>
+<td class="why">Was inside the band; stays there.</td></tr><tr>
+<td class="foe">Cantor</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:51.6%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:45.3%"></div></div></td>
+<td class="num"><span class="dim">52%</span><br><b class="ok">45%</b></td>
+<td class="num dim">1/32 &middot; 32/32<br>12/32 &middot; 17/32</td>
+<td class="why">1 of 32 as the player&#x27;s hero, 32 of 32 as the opponent. On the player&#x27;s side a cast drops a hammer swing in its wind-up, on the opponent&#x27;s it does not: his computer cast into its own swings and lost a third of them. It now casts as a swing lands.</td></tr><tr>
+<td class="foe">Oblivion</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:34.4%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:34.4%"></div></div></td>
+<td class="num"><span class="dim">34%</span><br><b class="ok">34%</b></td>
+<td class="num dim">2/16 &middot; 9/16<br>21/32 &middot; 1/32</td>
+<td class="why">Two faults. White-hot and under half HP his computer stopped casting and would not Quench unless the enemy stood within 2.5 m, while the enemy&#x27;s computer steps back from white heat: he stood and burned. Fixed. The other is not his: Oblivion&#x27;s Black Hole lands on the opponent&#x27;s Brannoc every fight and on the player&#x27;s Brannoc one fight in five (1 of 32 against 21 of 32).</td></tr><tr>
+<td class="foe">Vesper<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:93.8%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:57.8%"></div></div></td>
+<td class="num"><span class="bad">94%</span><br><b class="ok">58%</b></td>
+<td class="num dim">29/32 &middot; 31/32<br>33/64 &middot; 41/64</td>
+<td class="why">Her computer waltzed away from him three times a fight, out of her own needle&#x27;s reach each time, and threw 0.2 needles a fight. Her fault; fixed on her side.</td></tr><tr>
+<td class="foe">Auriel<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:46.9%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:54.7%"></div></div></td>
+<td class="num"><span class="dim">47%</span><br><b class="ok">55%</b></td>
+<td class="num dim">5/16 &middot; 10/16<br>23/32 &middot; 12/32</td>
+<td class="why">Was inside the band; stays there.</td></tr><tr>
+<td class="foe">Lyra<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:75.0%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:29.7%"></div></div></td>
+<td class="num"><span class="dim">75%</span><br><b class="ok">30%</b></td>
+<td class="num dim">11/16 &middot; 13/16<br>5/32 &middot; 14/32</td>
+<td class="why">Was inside the band at 75%; with the softer chain (his only reach on an archer) it is her fight now, inside the band.</td></tr></table>
+<h3>What was changed</h3><ul><li>Chain Hammer 40 to 34 (19 cold to 39 white-hot; it was 22 to 46). Nothing else of his numbers.</li><li>In reach of his hammer the computer casts as a swing lands, not into the next swing&#x27;s wind-up.</li><li>White-hot with the enemy out of reach, the computer drags them back with the chain, and after 5 s it Quenches anyway.</li></ul></div>
+<div class="scroll"><h2>Vesper</h2>
+<p class="lead">Against the six benchmark heroes, both sides: <span class="dim">53%</span> &rarr; <b>47%</b>.
+As the player's hero alone: <span class="dim">55%</span> &rarr; <b>46%</b>.
+As the opponent: <span class="dim">51%</span> &rarr; <b>48%</b>.
+The greedy line (needle and Rip only, at any Price): <span class="dim">14%</span> &rarr; <b>0%</b>.</p>
+<table><tr><th>Against</th><th>Vesper wins: before (grey), after</th><th></th><th>as hero &middot; as opponent</th><th>What was wrong, what was done</th></tr>
+<tr>
+<td class="foe">Brannoc</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:6.2%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:42.2%"></div></div></td>
+<td class="num"><span class="bad">6%</span><br><b class="ok">42%</b></td>
+<td class="num dim">1/32 &middot; 3/32<br>23/64 &middot; 31/64</td>
+<td class="why">See his row: she never threw a needle at a brawler. She does now, and her Hungry drink (65% of a hit, was 50%) lets her last against him.</td></tr><tr>
+<td class="foe">Kaia</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:100.0%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new bad" style="width:9.4%"></div></div></td>
+<td class="num"><span class="bad">100%</span><br><b class="bad">9%</b></td>
+<td class="num dim">16/16 &middot; 16/16<br>0/32 &middot; 6/32</td>
+<td class="why">Turned right over. The Feast was 190 damage and 60 HP back on a 580 HP hero; with the Feast cut (35, 35, 40 to 18, 18, 24; 45 back) and the curse cheaper, Kaia wins. This pairing flips with every small number: 100%, 81%, 22%, 9% in four steps.</td></tr><tr>
+<td class="foe">Isolde</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:81.2%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:59.4%"></div></div></td>
+<td class="num"><span class="bad">81%</span><br><b class="ok">59%</b></td>
+<td class="num dim">13/16 &middot; 13/16<br>24/32 &middot; 14/32</td>
+<td class="why">Inside the band now.</td></tr><tr>
+<td class="foe">Sirix</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:81.2%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new bad" style="width:96.9%"></div></div></td>
+<td class="num"><span class="bad">81%</span><br><b class="bad">97%</b></td>
+<td class="num dim">13/16 &middot; 13/16<br>30/32 &middot; 32/32</td>
+<td class="why">He has to walk to her and has 640 HP; she out-damages him and steps back between shots. Also 4 of 4 for her before the rework. Not solved.</td></tr><tr>
+<td class="foe">Cantor</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:68.8%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new" style="width:75.0%"></div></div></td>
+<td class="num"><span class="dim">69%</span><br><b class="ok">75%</b></td>
+<td class="num dim">24/32 &middot; 20/32<br>25/32 &middot; 23/32</td>
+<td class="why">Her curse (see his row). Inside the band, at its edge.</td></tr><tr>
+<td class="foe">Oblivion</td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:9.4%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new bad" style="width:4.7%"></div></div></td>
+<td class="num"><span class="bad">9%</span><br><b class="bad">5%</b></td>
+<td class="num dim">3/16 &middot; 0/16<br>1/32 &middot; 2/32</td>
+<td class="why">His Null Zone swallows her bolts and her spells for 3 s in every 12, and he pulls her in. He won 3 of 4 before the rework too. Not solved: the cause is his kit, and neither waltzing nor stepping back gets her out.</td></tr><tr>
+<td class="foe">Auriel<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:15.6%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new bad" style="width:92.2%"></div></div></td>
+<td class="num"><span class="bad">16%</span><br><b class="bad">92%</b></td>
+<td class="num dim">4/16 &middot; 1/16<br>32/32 &middot; 27/32</td>
+<td class="why">The computer started the Feast only within 4 m, so against anyone with a ranged attack it never cast it (0.1 Feasts a fight): she lost. Started from 5.5 m she wins nearly every time. Turned over rather than evened.</td></tr><tr>
+<td class="foe">Lyra<span class="dim"> *</span></td>
+<td class="bars"><div class="track"><div class="band"></div><div class="mid"></div><div class="fill old" style="width:93.8%"></div></div><div class="track"><div class="band"></div><div class="mid"></div><div class="fill new bad" style="width:85.9%"></div></div></td>
+<td class="num"><span class="bad">94%</span><br><b class="bad">86%</b></td>
+<td class="num dim">15/16 &middot; 15/16<br>31/32 &middot; 24/32</td>
+<td class="why">520 HP and arrows she can step out of: she kills Lyra in 19 s. Softer after the cuts, not solved.</td></tr></table>
+<h3>What was changed</h3><ul><li>Lancet 33 to 30, the Rip 24 to 22; Sanguine Feast 35, 35, 40 to 18, 18, 24 (plus 20% of the missing HP, as before) and 60 to 45 HP back; HP 660 to 640.</li><li>The drink: 25% to 15% of a spell hit, and 50% to 65% while Hungry (under 45% HP): less for the one who is ahead, more for the one who is behind.</li><li>Hemocurse costs the enemy 15 a spell (was 20) and heals her 20 when Hungry (was 15).</li><li>The computer throws the needle before it waltzes away, starts the Feast from 5.5 m (was 4 m), pays up to 40 a spell while Hungry, and steps back from a brawler between shots.</li></ul></div>
+
+<h2>The roster's view</h2>
+<p class="lead">The six bystanders against the six benchmark heroes, both sides, 32 fights a pairing (64 where both are benchmark heroes), beside the last whole-roster run
+(<a style="color:#9ecbff" href="roster-2026-11-11-after.html">roster-2026-11-11-after</a>: 4 fights a pairing, so its "against the six" is only 20 fights and swings by 20 points).</p>
+<div class="scroll"><table><tr><th>Hero</th><th>Then, against all 39</th><th>Then, against the six</th><th>Now, against the six</th><th>Now, each pairing (win %)</th><th>What moved it</th></tr><tr><td class='foe'>Kaia</td><td class='num'>49%</td><td class='num'>50%</td><td class='num'><b class="bad">39%</b></td><td class='num dim'>Bra 6 Iso 89 Sir 38 Can 31 Obl 14</td><td class='why'>Down about 11. Loses to Brannoc (2 of 32, as before the rework), Oblivion and now Cantor (31%); she had fallen to 28% before this tuning. The benchmark changed, she did not: listed, not retuned.</td></tr><tr><td class='foe'>Auriel</td><td class='num'>31%</td><td class='num'>33%</td><td class='num'><b class="bad">57%</b></td><td class='num dim'>Bra 31 Kai 72 Iso 88 Sir 72 Can 28 Obl 50</td><td class='why'>Up about 24, and not from this tuning: the engine fix of the night (the computer&#x27;s opponent aims First Light) is most of it. Against Cantor 28% (it was 0 of 32).</td></tr><tr><td class='foe'>Lyra</td><td class='num'>54%</td><td class='num'>58%</td><td class='num'><b class="ok">58%</b></td><td class='num dim'>Bra 56 Kai 12 Iso 72 Sir 81 Can 88 Obl 41</td><td class='why'>Where she was.</td></tr><tr><td class='foe'>Isolde</td><td class='num'>49%</td><td class='num'>40%</td><td class='num'><b class="ok">43%</b></td><td class='num dim'>Bra 50 Kai 11 Sir 77 Can 44 Obl 38</td><td class='why'>Where she was (inside the noise of the old run&#x27;s 20 fights).</td></tr><tr><td class='foe'>Sirix</td><td class='num'>42%</td><td class='num'>60%</td><td class='num'><b class="ok">52%</b></td><td class='num dim'>Bra 75 Kai 62 Iso 23 Can 53 Obl 58</td><td class='why'>Where he was.</td></tr><tr><td class='foe'>Oblivion</td><td class='num'>52%</td><td class='num'>50%</td><td class='num'><b class="bad">62%</b></td><td class='num dim'>Bra 69 Kai 86 Iso 62 Sir 42 Can 55</td><td class='why'>Up about 11: he beats the opponent&#x27;s Brannoc 16 of 16 (the Black Hole) and Kaia 55 of 64. The benchmark changed, he did not: listed, not retuned.</td></tr></table></div>
+
+<h2>The Raid (against the Sun Warden, the autopilot)</h2>
+<div class="scroll"><table><tr><th>Hero</th><th>Before the rework</th><th>After the rework</th><th>After the tuning</th><th></th></tr>
+<tr><td class="foe">Cantor</td><td class="num">3 of 3, 27 a second</td><td class="num">1 of 3, 19 to 20</td><td class="num"><b class="ok">3 of 4, 28 a second</b></td><td class="why">A boss cannot be charmed or silenced, so his song and his release did nothing but stagger it. Now such a charm or silence strikes instead: 36 for each step of Crescendo. With 16 a step: 1 of 3 and 20; with 24: 3 of 4 and 21. Not measured with no strike at all at these numbers.</td></tr>
+<tr><td class="foe">Vesper</td><td class="num">2 of 3, 25</td><td class="num">3 of 6, 22</td><td class="num">2 of 3, 24</td><td class="why">Where she was.</td></tr>
+<tr><td class="foe">Brannoc</td><td class="num">0 of 3, 21</td><td class="num">0 of 3, 22</td><td class="num">0 of 3, 21</td><td class="why">Where he was: he does not clear, before or after. Not looked into.</td></tr>
+</table></div>
+<p class="dim">Three or four fights say little about clears; the damage a second is the steadier number.</p>
+
+<h2>Still off, and not checked</h2>
+<ul>
+<li><b>Vesper's pairings.</b> Oblivion (5%), Kaia (9%), Sirix (97%), Auriel (92%), Lyra (86%). Oblivion and Sirix went the same way before her rework. She is the one of the three whose fights swing most on a single number.</li>
+<li><b>Brannoc against Kaia</b> (91%) and <b>Cantor against Lyra</b> (31% in one run of 64, 12% in another of 32): both older than the rework, both a matter of reach.</li>
+<li><b>Cantor as the player's hero</b> read 54% in the run shown and 45% in a second one (32 fights a pairing): inside the band both times, nine points apart.</li>
+<li><b>Vesper against Kaia</b> turned over when the curse went from 20 to 15 a spell (27% before that step, 9% after). The next thing to try for her is the curse at 17 or 18.</li>
+<li><b>The engine, not fixed here</b> (it is not this job's to edit): on the player's side a cast drops a basic attack in its wind-up, on the computer's opponent's side the swing lands anyway. Any hero who casts often is weaker as the player's hero for it. The computers of these three now play round it; the next reworked heroes will meet it again.</li>
+<li><b>Oblivion's Black Hole</b> lands on the opponent's Brannoc every fight and on the player's one in five. It is most of what is left of Brannoc's gap in that pairing.</li>
+<li>No person has played the three since the tuning, and no network duel was played. The raid was run once with the last numbers (Cantor twice more while the strike was sized).</li>
+</ul>
+</main></body></html>

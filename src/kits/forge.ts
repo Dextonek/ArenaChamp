@@ -92,7 +92,7 @@ export const forgeKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'chain hammer', name: 'Chain Hammer', range: 9, cooldown: 0.5, cc: true, aim: 'line',
-      blurb: 'No cooldown, +40 Heat. Hurls a hammer on a chain 9 m down the aim: 22 damage cold, 46 white-hot, drags the first enemy it touches 4 m to him and slows them 1 s.',
+      blurb: 'No cooldown, +40 Heat. Hurls a hammer on a chain 9 m down the aim: 19 damage cold, 39 white-hot, drags the first enemy it touches 4 m to him and slows them 1 s.',
       icon(g, s) {
         ground(g, s);
         // A chain of links running from the bottom left to a hammer head at the top right, with a pull arrow over it.
