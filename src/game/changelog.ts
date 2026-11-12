@@ -216,7 +216,7 @@ export const CHANGELOG: Release[] = [
         title: 'Lantern Chain: for a raid of six or more',
         text: 'Ember\'s lanterns chain heroes together in pairs. Stay close to your partner: drift more than a few steps apart and the chain snaps and burns you both. Then Ash\'s rocks fall on the line through the pair, so step off it, both to the same side.',
         image: 'news/twin-lantern-chain.jpg',
-        alt: 'In Ash\'s hall three falling rocks hang over gold circles on the floor; across the wall of fire a red chain of light runs between two of Ember\'s heroes.',
+        alt: 'Two pairs of heroes chained by light: in Ash\'s hall a gold chain from Kaia to Brannoc past a crystal pillar, and across the wall of fire a red chain between Vesper and Isolde in Ember\'s hall.',
       },
       {
         tag: 'Raid',

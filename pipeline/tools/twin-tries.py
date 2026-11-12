@@ -72,10 +72,11 @@ def read(folder):
                 offs[half].append((min(seen), max(seen)))
     drift = max((max(hi for _, hi in o) - min(lo for lo, _ in o) for o in offs if o), default=0)
     # The bars are compared at the same moment by the computer's clock (`forge.wall`, within 0.15 s): the screens' fight clocks
-    # start a second or two apart. `barsOff`: samples over 2 % of a bar apart (a hit or a reward on its way shows as one sample).
+    # start a second or two apart. `barsOff`: samples over 2 % of a bar apart (a hit or a reward on its way shows as one sample);
+    # `cracked`, `bridges`: samples whose room differs from screen 0's at that moment, of `compared`; `inset`: the most the flood's edge differs (m).
     ref_wall = [s["forge"]["wall"] for s in first if s.get("forge")]
     ref_by_wall = [s for s in first if s.get("forge")]
-    bars_off = 0
+    bars_off = compared = 0
     for sc in screens[1:]:
         for s in sc:
             if s.get("forge") and ref_wall:
@@ -85,17 +86,39 @@ def read(folder):
                     gap = max(abs(s["twin"]["hp"][k] - r["twin"]["hp"][k]) / s["twin"]["max"][k] for k in (0, 1))
                     bars = max(bars, gap)
                     bars_off += gap > 0.02
-            ref = by_t.get(round(s["t"]))
-            if not ref or not ref.get("forge") or not s.get("forge"):
+                    # The room at the same moment: which halves have cracked, which bridges stand, how far the flood has come (m).
+                    compared += 1
+                    cracked += s["forge"]["cracked"] != r["forge"]["cracked"]
+                    bridges += s["forge"]["bridges"] != r["forge"]["bridges"]
+                    inset = max(inset, abs(s["forge"]["inset"] - r["forge"]["inset"]))
+    # Each bridge rising or sinking on a screen, against the same change on screen 0 (by the computer's clock, while screen 0 still
+    # records): `bridgeLag` is the most it came later or earlier than the samples' own spacing allows (s); `bridgeLone` counts
+    # changes screen 0 never had within 3 s.
+    def changes(sc):
+        rows = [x for x in sc if x.get("forge")]
+        out = []
+        for a, b in zip(rows, rows[1:]):
+            for k, (u, v) in enumerate(zip(a["forge"]["bridges"], b["forge"]["bridges"])):
+                if u != v:
+                    out.append((k, v, (a["forge"]["wall"] + b["forge"]["wall"]) / 2, (b["forge"]["wall"] - a["forge"]["wall"]) / 2))
+        return out
+    mine = changes(first)
+    lo, hi = (ref_wall[0], ref_wall[-1]) if ref_wall else (0, 0)
+    lag, lone = 0.0, 0
+    for sc in screens[1:]:
+        for k, v, w, h in changes(sc):
+            if not lo + 2000 < w < hi - 2000:
                 continue
-            cracked += s["forge"]["cracked"] != ref["forge"]["cracked"]
-            bridges += s["forge"]["bridges"] != ref["forge"]["bridges"]
-            inset = max(inset, abs(s["forge"]["inset"] - ref["forge"]["inset"]))
+            off = min((abs(w - w0) - h - h0 for k0, v0, w0, h0 in mine if k0 == k and v0 == v), default=1e9)
+            if off > 3000:
+                lone += 1
+            else:
+                lag = max(lag, off / 1000)
     for sc in screens:
         for s in sc:
             if s["twin"]["wall"] and s.get("me") and (s["me"][0] < 0) != (s["twin"]["half"] == 0):
                 across += 1
-    out["apart"] = {"bars": round(bars * 100, 2), "barsOff": bars_off, "roomClock": round(drift, 2), "inset": round(inset, 1), "across": across}
+    out["apart"] = {"bars": round(bars * 100, 2), "barsOff": bars_off, "roomClock": round(drift, 2), "inset": round(inset, 2), "cracked": cracked, "bridges": bridges, "compared": compared, "bridgeLag": round(lag, 2), "bridgeLone": lone, "across": across}
     out["lavaHits"] = sum((s[-1].get("hits") or {}).get("forge", 0) for s in screens)
     out["lava"] = sum(1 for sc in screens for s in sc if s.get("forge", {}).get("lava"))
     out["errors"] = sum(s[-1].get("errors", 0) for s in screens)

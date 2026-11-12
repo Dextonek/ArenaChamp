@@ -156,6 +156,9 @@ if (!phone) {
   send(0, { move: 'chain', x: -7, z: 14.2, target: 0, mate });
   send(1, { move: 'chain', x: 9, z: 12, target: seats(dealt, 1)[0], mate: seats(dealt, 1)[1] });
   run(2);
+  // The chains themselves, before the rocks: a light from each lantern to the pair's two heroes.
+  zoomTo(2.3);
+  out['twin-chain-pair'] = shot();
   send(0, { move: 'chain', step: CHAIN.most, x: -7, z: 14.2, dir: Math.atan2(6, -1.5), target: 0, mate });
   step(0.8);
   zoomTo(2.3);
