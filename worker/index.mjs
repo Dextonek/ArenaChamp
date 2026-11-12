@@ -13,12 +13,21 @@ export class GameHub extends DurableObject {
     super(ctx, env);
     const sql = ctx.storage.sql;
     sql.exec('CREATE TABLE IF NOT EXISTS accounts (key TEXT PRIMARY KEY, json TEXT NOT NULL)');
+    // The store's small records, beside the accounts: the day the shop arrived (who is a founder) and the week's boards.
+    sql.exec('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, json TEXT NOT NULL)');
     /** @type {import('../server/accounts.mjs').AccountStore} */
     const store = {
       load: () => Object.fromEntries([...sql.exec('SELECT key, json FROM accounts')].map((r) => [r.key, JSON.parse(String(r.json))])),
       put: (key, account) => { sql.exec('INSERT OR REPLACE INTO accounts (key, json) VALUES (?, ?)', key, JSON.stringify(account)); },
+      getMeta: (key) => {
+        const row = [...sql.exec('SELECT json FROM meta WHERE key = ?', key)][0];
+        return row ? JSON.parse(String(row.json)) : null;
+      },
+      putMeta: (key, value) => { sql.exec('INSERT OR REPLACE INTO meta (key, json) VALUES (?, ?)', key, JSON.stringify(value)); },
     };
-    this.hub = createHub({ accounts: new Accounts(store), log: (m) => console.log(`[game] ${m}`) });
+    // The hero shop (pipeline/designs/hero-shop.md) is on unless the `SHOP` variable in wrangler.jsonc says "off": then every
+    // hero is free as before, and obols are still earned.
+    this.hub = createHub({ accounts: new Accounts(store), log: (m) => console.log(`[game] ${m}`), shop: /** @type {any} */ (env)?.SHOP !== 'off' });
   }
 
   /** @param {Request} request */

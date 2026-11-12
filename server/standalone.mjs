@@ -1,6 +1,7 @@
 // The game server on its own port, serving the built pages from dist/ (run `npm run build` first):
 //   node server/standalone.mjs            → http://localhost:8787/game.html
 //   PORT=9000 node server/standalone.mjs
+//   SHOP=off node server/standalone.mjs   → the hero shop switched off
 // During development `npm run dev` runs the same server inside Vite instead (see vite.config.ts).
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
@@ -40,5 +41,6 @@ const server = createServer((req, res) => {
   res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes', 'content-length': size });
   createReadStream(file).pipe(res);
 });
-attachGameServer(server);
+// SHOP=off: every hero is free as before the hero shop (pipeline/designs/hero-shop.md).
+attachGameServer(server, { shop: process.env.SHOP !== 'off' });
 server.listen(PORT, () => console.log(`[game] http://localhost:${PORT}/game.html`));

@@ -10,7 +10,8 @@
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
 import {
-  PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, raidBand, raidHp, raidScale, raidStaggerMax, raidRing, raidTwin,
+  HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX,
+  isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, shopRotation,
 } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
@@ -102,8 +103,9 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  * @typedef {{ client: Client, name: string, hero: string, first: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
  *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
  *   heals: { at: number, amount: number }[], rRecast?: boolean, hazardAt?: number, down?: boolean, left?: boolean, dmgAt?: number, dmgSum?: number,
- *   move?: (number | null)[] | null }} Player
+ *   move?: (number | null)[] | null, beaten?: number }} Player
  *   `move`: in a party of more than two, this hero's newest walk that the others have not been sent yet.
+ *   `beaten`: in a raid, the bosses this player has beaten with others in this run (its rank and the week's board come from it).
  * @typedef {{ id: string, band: number, hp: number, max: number, staggerMax: number, phase: number, gauge: number, kneelUntil: number, brain: number,
  *   brainAt: number, revives: number[], stood: Map<string, { id: number, part: number, count: number, from: Set<number>, timer: any, half: number }>,
  *   settled: Set<string>, walls: Set<number>, taken: Set<string>, hpTimer: any, hpAt: number, twin?: RaidTwin }} RaidBoss
@@ -119,18 +121,25 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  *   pick: { side: number, at: number, next: () => void } | null,
  *   picked: { by: string, hero?: string, arena?: string } | null, boss?: RaidBoss, ticker?: any, watch?: any,
  *   run?: { stage: number, tier: number, beaten: number, seconds: number, picks: Set<number>, enters: Set<number>, goes: Set<number>,
- *     sides?: Map<number, string>, sided?: boolean } }} Match
+ *     sides?: Map<number, string>, sided?: boolean, together?: number, togetherS?: number, togetherTier?: number, inTier?: number } }} Match
  *   `ticker`: a party's walks, batched. `watch`: the look at whether the brain's screen is still there.
+ *   `run.together`: the bosses of this run that count for rewards (beaten by two or more, in a fight long enough to be one), the
+ *   run's time and tier when the last of them fell, and how many of them were in the tier that is being fought now.
  */
 
 /** @param {number} n */
 const randomHex = (n) => hex(crypto.getRandomValues(new Uint8Array(n)));
 
 /**
- * @param {{ accounts: import('./accounts.mjs').Accounts, log?: (msg: string) => void, loserPicks?: boolean }} opts
+ * @param {{ accounts: import('./accounts.mjs').Accounts, log?: (msg: string) => void, loserPicks?: boolean, shop?: boolean, now?: () => number }} opts
  *   `loserPicks`: the loser of a round may pick. Off everywhere; only the smoke test turns it on, to keep it working.
+ *   `shop`: the hero shop (pipeline/designs/hero-shop.md). On, a hero must be owned or free this week to be taken into a duel
+ *   or a raid room; off, every hero is free as before. Obols are earned either way. On unless told otherwise.
+ *   `now`: the clock for the shop's days and weeks (the first win of the day, the week's free heroes and boards), for tests.
  */
-export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), loserPicks = false }) {
+export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), loserPicks = false, shop = true, now = Date.now }) {
+  // With the shop on, the store remembers the day it arrived: every account from before it owns the heroes there were.
+  if (shop) accounts.openShop(now());
   /** @type {Map<string, string>} token → account name */
   const sessions = new Map();
   /** @type {Set<Client>} */
@@ -149,6 +158,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     /** @type {Client} */
     const c = { send: sendText, name: null, lobby: null, queued: null, match: null, side: 0, chain: Promise.resolve(), closed: false, seenAt: Date.now() };
     clients.add(c);
+    // Before any login: whether heroes are locked, and the week's free ones (a page without an account draws its locks from it).
+    send(c, shopState());
     return {
       /** @param {string} data */
       message(data) {
@@ -203,6 +214,41 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /** @param {Client} c @param {string} error */
   const fail = (c, error) => send(c, { t: 'error', error });
 
+  // --- the hero shop, the ranks and the week's boards -----------------------------------------------------------
+
+  /** Whether heroes are locked, this week's name and when the next begins (ms), and the week's free heroes. */
+  function shopState() {
+    const week = isoWeek(now());
+    return { t: 'shop', on: shop, week: week.id, next: week.next, free: shopRotation(week.id) };
+  }
+
+  /** Why this player may not take this hero into a fight with others, or '' when it may. @param {Client} c @param {string} hero */
+  function lockedFor(c, hero) {
+    const a = c.name ? accounts.get(c.name) : undefined;
+    return a ? accounts.locked(a, hero, now()) : '';
+  }
+
+  /** A player's raid rank ('ember', 'ash', 'noon', 'eclipse') or null. @param {string | null} name */
+  function rankOf(name) {
+    const a = name ? accounts.get(name) : undefined;
+    return a ? raidRank(accounts.withOthers(a))?.id ?? null : null;
+  }
+
+  /** The week's boards: the best raid runs with others, and the highest Tower floors as the players' pages reported them. */
+  const boardsMsg = () => ({ t: 'boards', ...accounts.boards(isoWeek(now()).id) });
+
+  /**
+   * Obols for a player, for these reasons: onto the account, and the player is told (`obols`) at once.
+   * @param {Player} p @param {[string, number][]} lines what for, and how many each
+   */
+  function pay(p, lines) {
+    const earned = lines.reduce((sum, l) => sum + l[1], 0);
+    if (earned <= 0) return 0;
+    const total = accounts.pay(p.name, earned);
+    send(p.client, { t: 'obols', earned, total, why: lines.map(([what, n]) => ({ what, n })) });
+    return earned;
+  }
+
   /** @param {Client} c @param {any} m */
   async function handle(c, m) {
     if (m.t === 'register' || m.t === 'login' || m.t === 'resume') {
@@ -223,8 +269,31 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         return signIn(c, name, m.token);
       }
     }
+    // The week's boards are for everyone to read: the Raid and Tower screens are open without an account.
+    if (m.t === 'boards') return send(c, boardsMsg());
     if (!c.name) return send(c, { t: 'auth_error', error: 'Please log in' });
     switch (m.t) {
+      case 'shop_buy': {
+        // A hero for obols, for good. The account's own obols and the price in the table decide, never the page.
+        const a = accounts.get(c.name);
+        if (!a) return;
+        const r = accounts.buy(a, m.hero, now());
+        if (r.error) return fail(c, r.error);
+        log(`${c.name} bought ${m.hero} for ${r.price} obols`);
+        return send(c, { t: 'shop_bought', hero: m.hero, price: r.price, profile: accounts.profile(a) });
+      }
+      case 'tower_report': {
+        // The floor a logged-in player's own page says it reached in this week's Tower, for the week's board. NOT VERIFIED:
+        // the Tower runs in the page with no server (docs/architecture/tower.md), so the hub cannot check it, and it pays no
+        // obols. Only this week's Tower, a floor that can be, a hero the account may play, and only upward.
+        const a = accounts.get(c.name);
+        if (!a || !Number.isInteger(m.floor) || m.floor < 1 || m.floor > TOWER_FLOOR_MAX) return;
+        if (typeof m.hero !== 'string' || !Object.hasOwn(HERO_SHOP, m.hero) || m.week !== isoWeek(now()).id) return;
+        const no = accounts.locked(a, m.hero, now());
+        if (no) return fail(c, no);
+        if (accounts.boardTower(a.name, m.week, m.floor, m.hero, now())) send(c, boardsMsg());
+        return;
+      }
       case 'logout':
         for (const [tok, n] of sessions) if (n === c.name) sessions.delete(tok);
         drop(c, 'logout');
@@ -262,6 +331,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       case 'lobby_pick': {
         const seat = c.lobby?.seats.find((s) => s.client === c);
         if (!seat || !validHero(m.hero)) return;
+        // The shop: a hero that is neither owned nor free this week stays out of a duel and a raid room.
+        const no = lockedFor(c, m.hero);
+        if (no) return fail(c, no);
         seat.hero = m.hero;
         seat.ready = false;
         return lobbyChanged(/** @type {Lobby} */ (c.lobby));
@@ -293,6 +365,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       }
       case 'queue_join': {
         if (busy(c) || !validHero(m.hero)) return;
+        const no = lockedFor(c, m.hero);
+        if (no) return fail(c, no);
         c.queued = { hero: m.hero, since: Date.now() };
         queue.push(c);
         sendQueue(c);
@@ -465,6 +539,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (m.hero !== undefined) {
           if (!validHero(m.hero)) return;
           if (m.hero === foe.hero) return fail(c, `${m.hero} is taken in this match: pick another hero`);
+          const no = lockedFor(c, m.hero);
+          if (no) return fail(c, no);
           if (m.hero !== me.hero) {
             me.hero = m.hero;
             match.picked = { by: me.name, hero: m.hero };
@@ -752,6 +828,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       sessions.set(token, name);
     }
     c.name = name;
+    send(c, shopState());
     send(c, { t: 'session', token, profile: accounts.profile(/** @type {any} */ (accounts.get(name))) });
     send(c, lobbyList());
     log(`${name} signed in`);
@@ -760,7 +837,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /** @param {Client} c */
   function sendProfile(c) {
     const a = c.name ? accounts.get(c.name) : undefined;
-    if (a) send(c, { t: 'profile', profile: accounts.profile(a) });
+    if (!a) return;
+    // With the profile, the week's free heroes as they are now: a page left open past Monday learns of the new week here.
+    send(c, shopState());
+    send(c, { t: 'profile', profile: accounts.profile(a) });
   }
 
   /** True (and tells the client) when it is already in a lobby, the queue or a match. @param {Client} c */
@@ -790,7 +870,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       code: l.code, host: l.seats[0].client.name, hostHero: l.seats[0].hero,
     }));
     const raids = all.filter((l) => l.raid && l.open && l.seats.length < l.max).map((l) => ({
-      code: l.code, host: l.seats[0].client.name, count: l.seats.length, max: l.max, raid: l.raid,
+      code: l.code, host: l.seats[0].client.name, count: l.seats.length, max: l.max, raid: l.raid, rank: rankOf(l.seats[0].client.name),
     }));
     return { t: 'lobbies', list, raids };
   }
@@ -819,7 +899,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     const state = {
       code: lobby.code,
       raid: lobby.raid ?? null,
-      seats: lobby.seats.map((s) => ({ name: s.client.name, hero: s.hero, ready: s.ready })),
+      // In a raid room each name comes with its raid rank.
+      seats: lobby.seats.map((s) => ({ name: s.client.name, hero: s.hero, ready: s.ready, rank: lobby.raid ? rankOf(s.client.name) : undefined })),
       // A raid room: listed or not, how many it seats, what its party would fight at as it sits now. The host is seat 0.
       open: lobby.open, max: lobby.max, host: 0, band: lobby.raid ? raidBand(lobby.seats.length) : null,
     };
@@ -973,13 +1054,28 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       });
     });
     const winner = match.players[winnerSide];
+    // Obols (pipeline/designs/hero-shop.md): a duel played, a win on top, the first win of the server's UTC day on top of that.
+    // A duel shorter than `minDuelS` pays nobody (a foe who left at once, two tabs trading quick wins), and whoever left a duel
+    // gets nothing from it.
+    const fought = seconds >= SHOP.minDuelS, day = isoWeek(now()).day;
+    const lines = match.players.map((p, side) => {
+      const won = side === winnerSide;
+      /** @type {[string, number][]} */
+      const l = [];
+      if (!fought || (!won && reason !== 'ko')) return l;
+      l.push(['duel', SHOP.earn.duel]);
+      if (won) l.push(['win', SHOP.earn.win]);
+      if (won && accounts.firstWin(p.name, day)) l.push(['first win of the day', SHOP.earn.firstWin]);
+      return l;
+    });
     match.players.forEach((p, side) => {
-      const a = accounts.get(p.name);
+      // Told before the match's end, so the profile there has them.
+      const earned = pay(p, lines[side]), a = accounts.get(p.name);
       send(p.client, {
         t: 'match_end', id: match.id, result: side === winnerSide ? 'win' : 'loss', winner: winner.name, reason, seconds,
         score: [match.score[side], match.score[1 - side]],
         hp: match.players.map((x) => x.hp), stats: { casts: p.casts, hits: p.hits, dodges: p.dodges },
-        profile: a ? accounts.profile(a) : null,
+        profile: a ? accounts.profile(a) : null, earned,
       });
       p.client.match = null;
     });
@@ -1233,9 +1329,29 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     match.state = 'break';
     // A hero still down when the boss falls gets up with the next fight: between fights nobody is down.
     for (const p of match.players) p.down = false;
-    run.seconds += Math.max(0, (Date.now() - match.fightAt) / 1000);
+    const fightS = Math.max(0, (Date.now() - match.fightAt) / 1000);
+    run.seconds += fightS;
     run.beaten++;
     const last = run.stage >= RAID_RUN.length - 1;
+    // The rewards (pipeline/designs/hero-shop.md, raid-next.html option E): a boss counts when two or more were still in the
+    // raid as it fell, and its fight was long enough to be one (`minBossS`: the hub takes a screen's word for its damage). It
+    // then pays obols to everyone here, counts for their raid rank and for the week's board; the last boss of a tier whose
+    // bosses all counted pays the tier on top.
+    const here = match.players.filter((p) => !p.left);
+    if (here.length >= 2 && fightS >= SHOP.minBossS) {
+      run.together = (run.together ?? 0) + 1;
+      run.togetherS = Math.round(run.seconds * 10) / 10;
+      run.togetherTier = run.tier;
+      run.inTier = (run.inTier ?? 0) + 1;
+      for (const p of here) {
+        p.beaten = (p.beaten ?? 0) + 1;
+        accounts.raidWith(p.name, p.beaten);
+        /** @type {[string, number][]} */
+        const lines = [['raid boss', SHOP.earn.boss]];
+        if (last && run.inTier >= RAID_RUN.length) lines.push([`tier ${run.tier} cleared`, SHOP.earn.tier]);
+        pay(p, lines);
+      }
+    }
     tell(match, { t: 'raid_won', stage: run.stage, tier: run.tier, bosses: run.beaten, seconds: raidSeconds(match), last, wait: last ? CLEARED_WAIT_S : 0 });
     if (last) {
       match.state = 'cleared';
@@ -1255,6 +1371,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     const run = /** @type {NonNullable<Match['run']>} */ (match.run);
     run.tier++;
     run.stage = 0;
+    run.inTier = 0;
     raidOffer(match);
   }
 
@@ -1454,8 +1571,16 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     stopTimers(match);
     for (const s of boss.stood.values()) clearTimeout(s.timer);
     boss.stood.clear();
-    const score = raidScore(match);
+    const score = raidScore(match), run = match.run;
     match.state = 'over';
+    // The week's board: the run's bosses that counted (beaten with others), the time when the last of them fell, and everyone
+    // who was in the raid for at least one of them.
+    if (run?.together) {
+      accounts.boardRaid(isoWeek(now()).id, {
+        bosses: run.together, tier: run.togetherTier ?? 1, seconds: run.togetherS ?? 0,
+        names: match.players.filter((p) => p.beaten).map((p) => p.name), at: new Date(now()).toISOString(),
+      });
+    }
     match.players.forEach((p) => {
       if (p.left) return;
       accounts.recordRaid(p.name, { ...score, result });

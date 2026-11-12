@@ -4,13 +4,15 @@ import { attachGameServer } from './server/game-server.mjs';
 
 /** Runs the duel game's WebSocket server (/ws) inside the dev and preview servers, so one command serves both. */
 function gameServer(): Plugin {
+  // SHOP=off in the environment: the hero shop switched off (every hero free), as on the other hosts.
+  const opts = { shop: process.env.SHOP !== 'off' };
   return {
     name: 'duel-game-server',
     configureServer(server) {
-      if (server.httpServer) attachGameServer(server.httpServer);
+      if (server.httpServer) attachGameServer(server.httpServer, opts);
     },
     configurePreviewServer(server) {
-      if (server.httpServer) attachGameServer(server.httpServer);
+      if (server.httpServer) attachGameServer(server.httpServer, opts);
     },
   };
 }

@@ -6,20 +6,29 @@
 // room, the band, batched walks, the brain's watchdog, leavers), Twin Flames for a party of six (two HP pools, a brain
 // per boss, the furious rule, one falls, both fall) and a load check with forty. Takes about 190 s (countdowns, breaks
 // and a pick nobody answers are real).
-//   node server/smoke-test.mjs                         (its own Node server on a temporary data file)
-//   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server, e.g. `npm run cf:dev`; unique names per run)
+// All of that runs with the hero shop switched off, as it was written: its accounts are new and play any hero. The shop
+// itself (pipeline/designs/hero-shop.md), the raid ranks and the week's boards are played on servers of their own, with the
+// shop on, at the same time as the rest (`shopCases`): their lines are printed at the end.
+//   node server/smoke-test.mjs                         (its own Node servers on temporary data files)
+//   node server/smoke-test.mjs --shop                  (only the shop, the ranks and the boards: about 130 s)
+//   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server with the shop off, e.g. `npm run cf:dev` with
+//                                                       SHOP "off"; unique names per run; the shop's cases are left out)
 import { createServer } from 'node:http';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
-import { PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RAID_TWIN, RELOAD_TEXT, raidBand, raidHp, raidStaggerMax } from './protocol.mjs';
+import {
+  HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RAID_TWIN, RELOAD_TEXT, SHOP, STARTERS, heroPrice, isoWeek, raidBand, raidHp,
+  raidStaggerMax, shopRotation,
+} from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
 const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_BOSSES.heart.hp.duo;
 
-const target = process.argv[2];
+const onlyShop = process.argv.includes('--shop');
+const target = process.argv.slice(2).find((x) => !x.startsWith('--'));
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
 const http = createServer();
 const httpPicks = createServer();
@@ -30,10 +39,10 @@ const hubLog = [];
 if (!target) {
   /** @param {import('node:http').Server} server */
   const portOf = (server) => /** @type {import('node:net').AddressInfo} */ (server.address()).port;
-  attachGameServer(http, { dataFile: join(dir, 'accounts.json'), log: (m) => { hubLog.push(m); } });
+  attachGameServer(http, { dataFile: join(dir, 'accounts.json'), log: (m) => { hubLog.push(m); }, shop: false });
   await new Promise((r) => http.listen(0, () => r(undefined)));
   url = `ws://localhost:${portOf(http)}/ws`;
-  attachGameServer(httpPicks, { dataFile: join(dir, 'accounts-picks.json'), log: () => {}, loserPicks: true });
+  attachGameServer(httpPicks, { dataFile: join(dir, 'accounts-picks.json'), log: () => {}, loserPicks: true, shop: false });
   await new Promise((r) => httpPicks.listen(0, () => r(undefined)));
   urlPicks = `ws://localhost:${portOf(httpPicks)}/ws`;
 }
@@ -89,7 +98,330 @@ async function client(to = url) {
   };
 }
 
-try {
+/**
+ * The hero shop, the raid ranks and the week's boards, each on a server of its own (never against a running one). Its lines
+ * are kept and printed when everything else is done, since it runs beside the rest.
+ * @returns {Promise<string[]>}
+ */
+async function shopCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} shop: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  /** @type {import('node:http').Server[]} */
+  const servers = [];
+  /** A hub on its own port and data file. @param {string} file @param {{ shop?: boolean, now?: () => number }} opts */
+  const serve = async (file, opts) => {
+    const server = createServer();
+    servers.push(server);
+    const game = attachGameServer(server, { dataFile: join(dir, file), log: () => {}, ...opts });
+    await new Promise((r) => server.listen(0, () => r(undefined)));
+    return { to: `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`, game, server };
+  };
+  /** A new connection, registered or logged in: the client, with what it was told on the way in. @param {string} to @param {string} name @param {'register' | 'login'} [how] */
+  const enter = async (to, name, how = 'register') => {
+    const x = await client(to);
+    const hello = await x.next('shop');
+    x.send({ t: how, name, password: 'pw1234' });
+    const session = await x.next('session');
+    return Object.assign(x, { hello, profile: session.profile, name });
+  };
+  /** The account's profile as the hub has it now. @param {any} x */
+  const profile = async (x) => { x.forget('profile'); x.send({ t: 'profile' }); return (await x.next('profile')).profile; };
+  /** Two players already in a duel: `x` knocks `y` out in this round, after holding still for `hold` ms. */
+  const round = async (/** @type {any} */ x, /** @type {any} */ y, /** @type {number} */ id, hold = 0) => {
+    x.send({ t: 'match_loaded' }); y.send({ t: 'match_loaded' });
+    await x.next('match_fight'); await y.next('match_fight');
+    await pause(3200 + hold);
+    x.send({ t: 'cast', id, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+    await y.next('peer_cast');
+    for (let i = 0; i < 3; i++) y.send({ t: 'took_hit', id, damage: 250 });
+  };
+  /** A lobby duel between two, `x` on `hx` and `y` on `hy`, up to the first round's load. */
+  const duel = async (/** @type {any} */ x, /** @type {any} */ y, /** @type {string} */ hx, /** @type {string} */ hy) => {
+    // Nothing left unread from a duel before this one (a round that was starting when someone left).
+    for (const t of ['lobby', 'round_start', 'round_end', 'match_fight', 'peer_cast']) { x.forget(t); y.forget(t); }
+    x.send({ t: 'lobby_create' });
+    const code = (await x.next('lobby')).lobby.code;
+    y.send({ t: 'lobby_join', code });
+    x.send({ t: 'lobby_pick', hero: hx }); x.send({ t: 'lobby_ready', ready: true });
+    await pause(150);
+    y.send({ t: 'lobby_pick', hero: hy }); y.send({ t: 'lobby_ready', ready: true });
+    await x.next('match_start'); await y.next('match_start');
+  };
+  /** `x` wins a duel 2-0 that lasts longer than the least a duel must to pay; both ends of it. */
+  const longDuel = async (/** @type {any} */ x, /** @type {any} */ y) => {
+    await round(x, y, 1, SHOP.minDuelS * 1000 + 500);
+    await x.next('round_start'); await y.next('round_start');
+    await round(x, y, 2);
+    return [await x.next('match_end'), await y.next('match_end')];
+  };
+
+  try {
+    const week = isoWeek().id, free = shopRotation(week);
+    /** Heroes a new account cannot play this week, the cheapest first. */
+    const lockedNow = Object.keys(HERO_SHOP).filter((h) => !STARTERS.includes(h) && !free.includes(h)).sort((p, q) => heroPrice(p) - heroPrice(q));
+    // One a new account can afford, and one it then cannot.
+    const cheap = lockedNow[0], dear = /** @type {string} */ (lockedNow.findLast((h) => h !== cheap && heroPrice(h) > SHOP.start - heroPrice(cheap)));
+
+    // --- founders: accounts from before the shop own every hero there was ----------------------------------------
+    const before = await serve('accounts-founders.json', { shop: false });
+    const elder0 = await enter(before.to, 'elder');
+    ok(elder0.hello.on === false && elder0.profile.owned.length === Object.keys(HERO_SHOP).length && elder0.profile.founder === false, 'shop off: every hero is the account\'s, and nobody is a founder yet');
+    elder0.close();
+    before.server.close();
+    await pause(20);
+    const arrived = await serve('accounts-founders.json', { shop: true });
+    const elder = await enter(arrived.to, 'elder', 'login');
+    ok(elder.profile.founder === true && elder.profile.owned.length === Object.keys(HERO_SHOP).length && elder.profile.obols === SHOP.start, 'an account from before the shop is a founder: it owns all 40 heroes, and gets the 900 obols');
+    elder.send({ t: 'lobby_create' });
+    await elder.next('lobby');
+    elder.send({ t: 'lobby_pick', hero: cheap });
+    ok((await elder.next('lobby')).lobby.seats[0].hero === cheap, `a founder takes a hero that is locked for others (${cheap})`);
+    elder.send({ t: 'shop_buy', hero: cheap });
+    ok((await elder.next('error')).error.includes('already own'), 'a founder cannot buy what it owns');
+    const young = await enter(arrived.to, 'young');
+    ok(young.profile.founder === false && young.profile.owned.length === STARTERS.length, 'an account made after the shop arrived is not a founder');
+    elder.close(); young.close();
+    arrived.server.close();
+    await pause(20);
+    const again = await serve('accounts-founders.json', { shop: true });
+    const young2 = await enter(again.to, 'young', 'login'), elder2 = await enter(again.to, 'elder', 'login');
+    ok(young2.profile.founder === false && elder2.profile.founder === true, 'the day the shop arrived is written once: opening the store again moves nobody');
+    young2.close(); elder2.close();
+
+    // --- a new account, the locks, buying -----------------------------------------------------------------------
+    const main = await serve('accounts-shop.json', { shop: true });
+    const nia = await enter(main.to, 'nia'), omar = await enter(main.to, 'omar');
+    ok(nia.hello.on === true && nia.hello.week === week && nia.hello.free.join() === free.join(), 'a connection is told the shop is on, the week and its free heroes, before any login');
+    ok(free.length === SHOP.rotation && new Set(free).size === SHOP.rotation && !free.some((h) => STARTERS.includes(h)), `the week's rotation: ${SHOP.rotation} heroes, never a starter (${free.join(', ')})`);
+    ok(STARTERS.length === 12 && nia.profile.obols === SHOP.start && nia.profile.owned.slice().sort().join() === STARTERS.slice().sort().join() && nia.profile.founder === false && nia.profile.rank === null,
+      'a new account: the 12 starters, 900 obols, no rank');
+    nia.send({ t: 'lobby_create' });
+    await nia.next('lobby');
+    nia.send({ t: 'lobby_pick', hero: cheap });
+    ok((await nia.next('error')).error.includes('locked'), `a locked hero is refused at lobby_pick (${cheap})`);
+    nia.send({ t: 'lobby_pick', hero: 'Nobody' });
+    ok((await nia.next('error')).error.includes('not a hero'), 'so is a hero that does not exist');
+    nia.send({ t: 'lobby_pick', hero: free[0] });
+    ok((await nia.next('lobby')).lobby.seats[0].hero === free[0], `a hero free this week is taken (${free[0]})`);
+    nia.send({ t: 'lobby_leave' });
+    await pause(100);
+    nia.forget('lobby');
+    nia.send({ t: 'queue_join', hero: cheap });
+    ok((await nia.next('error')).error.includes('locked') && nia.got.queue === undefined, 'a locked hero is refused at the queue');
+    nia.send({ t: 'lobby_create', raid: 'sun' });
+    const raidRoom = await nia.next('lobby');
+    nia.send({ t: 'lobby_pick', hero: cheap });
+    ok((await nia.next('error')).error.includes('locked') && raidRoom.lobby.seats[0].rank === null, 'and in a raid room');
+    nia.send({ t: 'lobby_leave' });
+    await pause(100);
+    nia.forget('lobby');
+
+    nia.send({ t: 'shop_buy', hero: 'Nobody' });
+    ok((await nia.next('error')).error.includes('No such hero'), 'buying a hero that does not exist is refused');
+    nia.send({ t: 'shop_buy', hero: STARTERS[0] });
+    ok((await nia.next('error')).error.includes('already own'), 'buying a starter is refused: it is owned');
+    nia.send({ t: 'shop_buy', hero: cheap });
+    const bought = await nia.next('shop_bought');
+    ok(bought.hero === cheap && bought.price === heroPrice(cheap) && bought.profile.obols === SHOP.start - heroPrice(cheap) && bought.profile.owned.includes(cheap),
+      `buying with enough obols: ${cheap} for ${heroPrice(cheap)}, ${SHOP.start - heroPrice(cheap)} left`);
+    nia.send({ t: 'shop_buy', hero: cheap });
+    ok((await nia.next('error')).error.includes('already own'), 'buying it again is refused');
+    nia.send({ t: 'shop_buy', hero: dear });
+    ok((await nia.next('error')).error.includes('Not enough obols') && (await profile(nia)).obols === SHOP.start - heroPrice(cheap), `not enough obols for ${dear}: refused, and nothing is taken`);
+
+    // --- the Tower's board: the page's own word, not verified -----------------------------------------------------
+    const guest = await client(main.to);
+    guest.send({ t: 'boards' });
+    const empty = await guest.next('boards');
+    ok(empty.week === week && empty.raid.length === 0 && empty.tower.length === 0 && guest.got.auth_error === undefined, 'the week\'s boards are read without an account');
+    nia.send({ t: 'tower_report', floor: 7, hero: cheap, week });
+    const t7 = await nia.next('boards');
+    ok(t7.tower.length === 1 && t7.tower[0].name === 'nia' && t7.tower[0].floor === 7 && t7.tower[0].hero === cheap, 'a climb reports its floor to the week\'s Tower board');
+    nia.send({ t: 'tower_report', floor: 5, hero: cheap, week });
+    nia.send({ t: 'tower_report', floor: 9000, hero: cheap, week });
+    nia.send({ t: 'tower_report', floor: 30, hero: cheap, week: '2020-W01' });
+    nia.send({ t: 'tower_report', floor: 30, hero: dear, week });
+    ok((await nia.next('error')).error.includes('locked'), 'a climb with a locked hero is not taken');
+    omar.send({ t: 'tower_report', floor: 12, hero: STARTERS[1], week });
+    const t12 = await omar.next('boards');
+    ok(t12.tower.map((/** @type {any} */ r) => `${r.name} ${r.floor}`).join() === 'omar 12,nia 7' && (await profile(nia)).tower.floor === 7, 'a lower floor, an impossible one and another week\'s change nothing; the board is the highest first');
+
+    // --- earning: duels on the shop's server, a day rolled over on another, the shop switched off on a third ---------
+    const duels = (async () => {
+      const obolsBefore = (await profile(nia)).obols;
+      // A duel that ends at once: nia wins a round, omar leaves. About five seconds, and it pays nobody.
+      await duel(nia, omar, cheap, STARTERS[1]);
+      await round(nia, omar, 1);
+      await nia.next('round_end'); await omar.next('round_end');
+      await pause(4500);
+      omar.send({ t: 'match_leave' });
+      const quick = await nia.next('match_end'), quickLost = await omar.next('match_end');
+      ok(quick.result === 'win' && quick.seconds < SHOP.minDuelS && quick.earned === 0 && quick.profile.obols === obolsBefore && nia.got.obols === undefined
+        && quickLost.earned === 0, `a duel of ${quick.seconds} s that the other left earns nothing`);
+      // A real one: a duel played 40, the win 40, the first win of the day 120; the loser 40.
+      await duel(nia, omar, cheap, STARTERS[1]);
+      const [won, lost] = await longDuel(nia, omar);
+      const e = SHOP.earn, pay = await nia.next('obols');
+      ok(won.seconds >= SHOP.minDuelS && won.earned === e.duel + e.win + e.firstWin && won.profile.obols === obolsBefore + won.earned,
+        `a duel of ${won.seconds} s won: ${e.duel} for the duel, ${e.win} for the win, ${e.firstWin} for the first win of the day`);
+      ok(pay.earned === won.earned && pay.total === won.profile.obols && pay.why.map((/** @type {any} */ w) => w.n).join() === [e.duel, e.win, e.firstWin].join(), 'the player is told what the obols are for');
+      ok(lost.earned === e.duel && lost.profile.obols === SHOP.start + e.duel, `the loser earns the duel's ${e.duel}`);
+      // The second win of the same day: no first win again. Omar leaves it after half a minute, and gets nothing.
+      await duel(nia, omar, cheap, STARTERS[1]);
+      await round(nia, omar, 1, SHOP.minDuelS * 1000 + 500);
+      await nia.next('round_end'); await omar.next('round_end');
+      omar.send({ t: 'match_leave' });
+      const second = await nia.next('match_end');
+      ok(second.reason === 'forfeit' && second.earned === e.duel + e.win, `a second win on the same day earns ${e.duel + e.win}: the first win is once a day`);
+      ok((await profile(omar)).obols === SHOP.start + e.duel, 'whoever leaves a duel gets nothing from it');
+    })();
+
+    const days = (async () => {
+      // Its own clock: a day and a week are rolled forward by hand.
+      const skew = { ms: 0 };
+      const srv = await serve('accounts-days.json', { shop: true, now: () => Date.now() + skew.ms });
+      const pia = await enter(srv.to, 'pia'), quin = await enter(srv.to, 'quin');
+      await duel(pia, quin, STARTERS[0], STARTERS[1]);
+      const [d1] = await longDuel(pia, quin);
+      skew.ms += 86400000;
+      await duel(pia, quin, STARTERS[0], STARTERS[1]);
+      const [d2] = await longDuel(pia, quin);
+      const e = SHOP.earn;
+      ok(d1.earned === e.duel + e.win + e.firstWin && d2.earned === d1.earned, 'the first win of the next UTC day pays again');
+      // The week turns: other heroes are free, last week's are locked again, and the boards start empty.
+      pia.send({ t: 'tower_report', floor: 3, hero: STARTERS[0], week });
+      await pia.next('boards');
+      skew.ms = 7 * 86400000;
+      pia.forget('shop');
+      const next = isoWeek(Date.now() + skew.ms).id;
+      await profile(pia);
+      const told = await pia.next('shop');
+      ok(told.week === next && next !== week && told.free.join() === shopRotation(next).join() && !told.free.some((/** @type {string} */ h) => free.includes(h)), `a new week (${next}) frees six other heroes`);
+      pia.forget('lobby');
+      pia.send({ t: 'lobby_create' });
+      await pia.next('lobby');
+      pia.send({ t: 'lobby_pick', hero: free[0] });
+      ok((await pia.next('error')).error.includes('locked'), `last week's free hero is locked again (${free[0]})`);
+      pia.send({ t: 'boards' });
+      const fresh = await pia.next('boards');
+      ok(fresh.week === next && fresh.tower.length === 0, 'the new week\'s boards start empty');
+      pia.close(); quin.close();
+    })();
+
+    const off = (async () => {
+      const srv = await serve('accounts-off.json', { shop: false });
+      const zed = await enter(srv.to, 'zed'), yan = await enter(srv.to, 'yan');
+      ok(zed.hello.on === false && zed.profile.owned.length === Object.keys(HERO_SHOP).length && zed.profile.obols === SHOP.start, 'shop off: every hero is free to a new account');
+      zed.send({ t: 'shop_buy', hero: cheap });
+      ok((await zed.next('error')).error.includes('closed'), 'shop off: nothing is sold');
+      await duel(zed, yan, cheap, dear);
+      const [w, l] = await longDuel(zed, yan);
+      const e = SHOP.earn;
+      ok(w.earned === e.duel + e.win + e.firstWin && l.earned === e.duel && w.profile.obols === SHOP.start + w.earned, `shop off: heroes locked elsewhere fight (${cheap} against ${dear}), and obols are still earned`);
+      zed.close(); yan.close();
+    })();
+
+    // --- the Raid's rewards: obols, ranks, the week's board -------------------------------------------------------
+    const raids = (async () => {
+      const g = await enter(main.to, 'rhea'), h = await enter(main.to, 'sol');
+      /** A room for the two, started: up to the first pick. */
+      const start = async () => {
+        g.forget('lobby'); h.forget('lobby');
+        g.send({ t: 'lobby_create', raid: 'sun', open: true });
+        const room = (await g.next('lobby')).lobby;
+        h.send({ t: 'lobby_join', code: room.code });
+        g.send({ t: 'lobby_pick', hero: STARTERS[0] }); g.send({ t: 'lobby_ready', ready: true });
+        h.send({ t: 'lobby_pick', hero: STARTERS[1] }); h.send({ t: 'lobby_ready', ready: true });
+        await g.next('raid_start'); await h.next('raid_start');
+        return room;
+      };
+      /** From the pick to the fight: both pick, both walk in, both load. */
+      const stage = async () => {
+        await g.next('raid_offer', 9000); await h.next('raid_offer', 9000);
+        g.send({ t: 'raid_pick' }); h.send({ t: 'raid_pick' });
+        await g.next('raid_gate'); await h.next('raid_gate');
+        g.send({ t: 'raid_enter' }); h.send({ t: 'raid_enter' });
+        const st = await g.next('raid_stage'); await h.next('raid_stage');
+        g.send({ t: 'match_loaded', maxHp: 520 }); h.send({ t: 'match_loaded', maxHp: 800 });
+        await g.next('match_fight'); await h.next('match_fight');
+        await pause(3100);
+        return st;
+      };
+      /** Both hit as hard as a screen may (1,200 a second each) until the boss falls. */
+      const kill = async (/** @type {number} */ hp) => {
+        for (let i = 0; i < Math.ceil(hp / 2400) + 1; i++) {
+          for (const who of [g, h]) for (let k = 0; k < 2; k++) who.send({ t: 'boss_damage', amount: 600 });
+          await pause(1050);
+        }
+        const won = await g.next('raid_won', 3000);
+        await h.next('raid_won', 3000);
+        return won;
+      };
+      const leave = async () => { g.send({ t: 'match_leave' }); h.send({ t: 'match_leave' }); await pause(300); };
+
+      // A boss that falls in a few seconds (two screens saying so) pays nothing and counts for nothing.
+      await start();
+      await stage();
+      await kill(SUN);
+      await leave();
+      g.send({ t: 'boards' });
+      const none = await g.next('boards');
+      ok(g.got.obols === undefined && (await profile(g)).rank === null && none.raid.length === 0, `a boss that falls in under ${SHOP.minBossS} s pays nothing, gives no rank and is on no board`);
+
+      // A run that counts: the three bosses of a tier, each fought for longer than that.
+      await start();
+      const e = SHOP.earn, hold = SHOP.minBossS * 1000 + 300;
+      await stage();
+      await pause(hold);
+      const won1 = await kill(SUN);
+      const pay1 = await g.next('obols');
+      ok(won1.bosses === 1 && pay1.earned === e.boss && pay1.total === SHOP.start + e.boss && (await h.next('obols')).earned === e.boss, `a raid boss beaten with another pays each ${e.boss}`);
+      await stage();
+      await pause(hold);
+      await kill(ASH);
+      await g.next('obols'); await h.next('obols');
+      await stage();
+      await pause(hold);
+      const won3 = await kill(HEART);
+      const pay3 = await g.next('obols');
+      ok(won3.last === true && pay3.earned === e.boss + e.tier && pay3.total === SHOP.start + 3 * e.boss + e.tier, `the last boss of a tier pays ${e.tier} on top: the tier is cleared`);
+      await leave();
+      const pg = await profile(g), ph = await profile(h);
+      ok(pg.rank === 'ash' && ph.rank === 'ash' && pg.raids.others === 3 && pg.obols === SHOP.start + 3 * e.boss + e.tier, 'three bosses in one run with others: the rank Ash, on the profile with the obols');
+      g.send({ t: 'boards' });
+      const board = await g.next('boards');
+      ok(board.raid.length === 1 && board.raid[0].bosses === 3 && board.raid[0].seconds >= 3 * SHOP.minBossS && board.raid[0].names.join() === 'rhea,sol' && board.raid[0].tier === 1,
+        `the run is on the week's raid board: 3 bosses in ${board.raid[0]?.seconds} s, by both names`);
+      // The rank stands beside a name in a raid room and on the list of open raids.
+      g.forget('lobby');
+      g.send({ t: 'lobby_create', raid: 'sun', open: true });
+      const seat = (await g.next('lobby')).lobby.seats[0];
+      h.forget('lobbies');
+      h.send({ t: 'lobbies' });
+      const listed = (await h.next('lobbies')).raids.find((/** @type {any} */ r) => r.host === 'rhea');
+      ok(seat.rank === 'ash' && listed?.rank === 'ash', 'the rank stands beside a name in a raid room and on the list of open raids');
+      g.close(); h.close();
+    })();
+
+    await Promise.all([duels, days, off, raids]);
+    nia.close(); omar.close(); guest.close();
+  } catch (e) {
+    ok(false, String(e instanceof Error ? e.stack : e));
+  }
+  for (const s of servers) s.close();
+  return lines;
+}
+
+// The shop's cases run beside the rest, on their own servers.
+const shopRun = target ? null : shopCases();
+
+if (!onlyShop) try {
   // The rules version: an older tab is told to reload, before any name or password is looked at.
   const old = await client();
   old.send({ t: 'login', name: 'nobody', password: 'nothing', v: PROTOCOL - 1 });
@@ -1203,6 +1535,8 @@ try {
 } catch (e) {
   check(false, String(e));
 }
+if (shopRun) for (const line of await shopRun) console.log(line);
+else console.log('     the shop, the ranks and the boards were not played: they need servers of their own');
 http.close();
 httpPicks.close();
 rmSync(dir, { recursive: true, force: true });
