@@ -392,7 +392,7 @@ export class BossBrain {
     if (m.tracks && step === (m.steps?.length ?? 1) - 1) this.tracking = null;
     const cast: BossCast = {
       id: ++this.seq, move: m.id, step, x: +aim.x.toFixed(3), z: +aim.z.toFixed(3), fx: +boss.x.toFixed(3), fz: +boss.z.toFixed(3),
-      dir: +aim.dir.toFixed(4), seed, target: aim.target ?? side, alone, rim: rim || undefined, flag: aim.flag,
+      dir: +aim.dir.toFixed(4), seed, target: aim.target ?? side, alone, rim: rim || undefined, flag: aim.flag, mate: aim.mate,
     };
     this.link.cast(cast);
     const still = m.act?.(this.world, cast);

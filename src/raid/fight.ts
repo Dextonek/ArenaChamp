@@ -9,7 +9,7 @@ import { Track } from './partner';
 import { RAID_TWIN, raidHp, raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
 import { FUSE, QUICK_GAP } from './omens';
-import { FURY_GAP, FURY_HIT, type Ghost, ghostLink, ghostWorld, twinClip } from './twin';
+import { FLOOD_GAP, FLOOD_HIT, FURY_GAP, FURY_HIT, type Ghost, ghostLink, ghostWorld, twinClip } from './twin';
 import { BULWARK, CLOSE_CALL, SUN_EATER, type RunUpgrades } from './upgrades';
 import { moveTime, type BossCast, type BossDebuff, type BossDef, type BossWorld, type RaidLink, type TwinSetup } from './types';
 
@@ -52,6 +52,8 @@ interface Twin {
   /** The other boss's walk from reports, and the red heat round it when it is furious. */
   track: Track;
   aura: RageAura;
+  /** The wall of fire is out though both stand (the pit floods): the other's moves hurt this hero too. */
+  open: boolean;
 }
 
 /**
@@ -127,7 +129,7 @@ export class BossFight {
       this.twin = {
         half: setup.half, halves: setup.halves, mine, defs, scripts, ghosts,
         hp: [setup.hp[0], setup.hp[1]], max: [setup.hp[0], setup.hp[1]], phase: [0, 0], gauge: [0, 0], dead: [false, false], furious: -1,
-        lastId: [0, RAID_TWIN.ids], stageUntil: [0, 0], track: new Track(), aura: new RageAura(other.body.radius, other.body.height),
+        lastId: [0, RAID_TWIN.ids], stageUntil: [0, 0], track: new Track(), aura: new RageAura(other.body.radius, other.body.height), open: false,
       };
       link.which = mine;
       this.script = scripts[mine];
@@ -208,6 +210,61 @@ export class BossFight {
     const brain = new BossBrain(this.def, mine, this.link, seed, this.tier, firstId);
     if (this.omen('quick')) brain.quick = QUICK_GAP;
     return brain;
+  }
+
+  /**
+   * The scripts this screen's hero must mind: its own boss's, and in Twin Flames the other's too once the wall of fire is out
+   * (the pit floods). What an AI asks of a fight (`danger`, `mustHide`...) it asks of all of them.
+   */
+  private get minds(): BossScript[] {
+    const t = this.twin;
+    return t && t.open && !t.dead[1 - t.mine] ? [this.script, t.scripts[1 - t.mine]] : [this.script];
+  }
+
+  /** Whether (x, z) is hit, or will be within `within` seconds, by anything this hero must mind. */
+  danger(x: number, z: number, within: number) {
+    return this.minds.some((s) => s.danger(x, z, within));
+  }
+
+  /** A warning of a killing hit shows. */
+  get mustHide() {
+    return this.minds.some((s) => s.mustHide);
+  }
+
+  /** Whether (x, z) is out of reach of every killing hit a warning shows now. */
+  hidden(x: number, z: number) {
+    return this.minds.every((s) => s.hidden(x, z));
+  }
+
+  /** A move is coming after whoever it aims at. */
+  get wary() {
+    return this.minds.some((s) => s.wary);
+  }
+
+  /** Counts the casts so far: an AI rolls its reaction once per cast. */
+  get eventId() {
+    return this.minds.reduce((n, s) => n + s.eventId, 0);
+  }
+
+  /** Seconds until the next beat that burns whoever walks, or Infinity. */
+  get stillIn() {
+    return Math.min(...this.minds.map((s) => s.stillIn));
+  }
+
+  /** The nearest spot an AI should go and take, if one shows. */
+  objectiveGoal(x: number, z: number) {
+    return this.nearest(this.minds.map((s) => s.objectiveGoal(x, z)), x, z);
+  }
+
+  /** The gold zone an AI should go and stand in, if one shows. */
+  standGoal(x: number, z: number) {
+    return this.nearest(this.minds.map((s) => s.standGoal(x, z)), x, z);
+  }
+
+  private nearest<T extends { x: number; z: number }>(list: (T | null)[], x: number, z: number) {
+    let best: T | null = null;
+    for (const o of list) if (o && (!best || Math.hypot(o.x - x, o.z - z) < Math.hypot(best.x - x, best.z - z))) best = o;
+    return best;
   }
 
   /** Every script of this fight: one, or Twin Flames' two. */
@@ -369,9 +426,11 @@ export class BossFight {
    * stronger of the two counts, never both together.
    */
   private rageNow() {
-    const t = this.twin, fury = !!t && t.furious === t.mine;
-    this.script.rage = Math.max(this.enraged ? RAGE_HIT : 1, fury ? FURY_HIT : 1);
-    const gap = Math.min(this.enraged ? RAGE_GAP : 1, fury ? FURY_GAP : 1);
+    const t = this.twin, fury = !!t && t.furious === t.mine, flood = !!t && t.open && !t.dead[0] && !t.dead[1];
+    this.script.rage = Math.max(this.enraged ? RAGE_HIT : 1, fury ? FURY_HIT : 1, flood ? FLOOD_HIT : 1);
+    // The other's moves hurt this hero too once the wall is out: as angry as it is on its own screens.
+    if (t && flood) t.scripts[1 - t.mine].rage = Math.max(this.enraged ? RAGE_HIT : 1, t.furious === 1 - t.mine ? FURY_HIT : 1, FLOOD_HIT);
+    const gap = Math.min(this.enraged ? RAGE_GAP : 1, fury ? FURY_GAP : 1, flood ? FLOOD_GAP : 1);
     if (gap < 1) this.brain?.enrage(gap);
     else this.brain?.calm();
     this.world.bodyRage(this.enraged || fury);
@@ -572,6 +631,14 @@ export class BossFight {
       // This screen's own boss as its hits have left it; the other as the hub says.
       t.hp[t.mine] = hp;
       this.hud.setTwin(t);
+      // The pit floods: the wall of fire is out for good, and from now on both of them hurt this hero.
+      if (!t.open && this.def.twin?.open?.()) {
+        t.open = true;
+        for (const g of t.ghosts) g.open = true;
+        this.rageNow();
+        if (!t.dead[0] && !t.dead[1]) this.world.banner('The wall of fire goes out: the pit floods', 2.8, '24px');
+        this.hud.flash('rgba(255,170,90,0.8)', 0.3);
+      }
     } else if (!t) this.hud.setHp(hp, this.link.maxHp);
     if (this.def.pillars) {
       const cover = this.world.cover();
@@ -622,7 +689,7 @@ export class BossFight {
         spot.set(at.x, 0, at.z).project(this.world.camera);
         list.push({ x: spot.x, y: spot.y, color });
       };
-      for (const at of this.script.goldSpots()) add(at, '#ffe27a');
+      for (const s of this.minds) for (const at of s.goldSpots()) add(at, '#ffe27a');
       // In a party's wide room the boss itself can be out of sight.
       if ((this.def.place.ring ?? 0) > 18) add(this.world.boss(), '#ff8a4a');
       const fallen = this.world.fallenPartner();

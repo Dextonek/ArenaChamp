@@ -51,6 +51,9 @@ export interface StageSpec {
   inside?(x: number, z: number): boolean;
   win: string;
   hint: string;
+  /** How long it lasts at tier 1 (s; default `STAGE_S`), and an add's HP as a share of the boss's max (default 3.5 %). */
+  seconds?: number;
+  add?: number;
 }
 
 /** The adds of each stage on this screen, by the cast's seed: its later steps shoot from those still standing. */
@@ -62,9 +65,11 @@ const V0 = new THREE.Vector3();
 const V1 = new THREE.Vector3();
 
 export function stageMove(s: StageSpec): BossMove {
+  const seconds = s.seconds ?? STAGE_S;
   return {
-    id: s.id, name: s.name, charge: STAGE_S, lock: STAGE_S, cooldown: 999, stage: true, spread: true, big: true, pose: s.pose,
-    steps: [0, ...SHOTS],
+    id: s.id, name: s.name, charge: seconds, lock: seconds, cooldown: 999, stage: true, spread: true, big: true, pose: s.pose,
+    // The same volleys, as far as the stage lasts.
+    steps: [0, ...SHOTS.filter((at) => at < seconds), ...(seconds > STAGE_S ? [32.5, 36, 39.5, 43].filter((at) => at < seconds) : [])],
     aim: (c) => (c.step === 0
       ? { x: s.hold.x, z: s.hold.z, dir: Math.atan2(s.center.x - s.hold.x, s.center.z - s.hold.z) }
       : { x: c.target.x, z: c.target.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) }),
@@ -75,10 +80,10 @@ export function stageMove(s: StageSpec): BossMove {
 
 /** The stage begins: the adds, the light that keeps the boss safe, and the blow waiting at its end. */
 function open(s: StageSpec, c: BossCast, p: PlayContext): PlayedMove {
-  const end = p.shown(STAGE_S), warn = Math.max(0, end - 4);
+  const end = p.shown(s.seconds ?? STAGE_S), warn = Math.max(0, end - 4);
   const rng = seeded(c.seed);
   const turns = s.turns[Math.floor(rng() * s.turns.length)];
-  const hp = Math.max(40, Math.round(p.bossMax * ADD_SHARE));
+  const hp = Math.max(40, Math.round(p.bossMax * (s.add ?? ADD_SHARE)));
   const objectives: Objective[] = [], adds: RaidAdd[] = [];
   turns.forEach((deg, part) => {
     const a = THREE.MathUtils.degToRad(deg), x = s.center.x + Math.sin(a) * s.ring, z = s.center.z + Math.cos(a) * s.ring;

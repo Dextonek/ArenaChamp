@@ -22,7 +22,7 @@ import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
 import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
-import type { AddSpec, BossDebuff, BossDef, BossHit, BossWorld, RaidAdd, RaidLink, TwinSetup, TwinWorld } from './raid/types';
+import type { AddSpec, BossDebuff, BossDef, BossHit, BossWorld, RaidAdd, RaidLink, RoomFloor, TwinSetup, TwinWorld } from './raid/types';
 import type { RunUpgrades } from './raid/upgrades';
 
 /** What the duel needs from main.ts. */
@@ -104,6 +104,8 @@ const PEER_DELAY = 100;
 const PEER_STEP = 50;
 const PEER_GAP = 120;
 const PEER_SNAP = 3;
+/** What a second in a boss room's lava costs a summoned unit standing in it. */
+const ROOM_UNIT_HIT = 60;
 /** How many partners are drawn in full in a big party; the rest are light stand-ins (pipeline/designs/raid-party.md). */
 const PARTY_FULL = 16;
 const PARTY_FULL_PHONE = 8;
@@ -754,7 +756,8 @@ export class Duel {
   /** The enemy a partner's replayed spells and attacks aim at: this screen's boss, or in Twin Flames the one on that partner's side of the wall. */
   private foeFor(side: number): Enemy | null {
     const t = this.twin;
-    return t && this.twinWall() && (t.halves[side] ?? t.mine) !== t.mine ? t.enemy : this.foe;
+    // While both stand each hero has its own of the two, wall of fire or not (the pit floods: the wall is out, and both still stand).
+    return t && t.fallT < 0 && (t.halves[side] ?? t.mine) !== t.mine ? t.enemy : this.foe;
   }
 
   /** The fallen partner nearest this hero that can still get up, if any. */
@@ -1299,6 +1302,37 @@ export class Duel {
     const mods = dealt !== 1 ? { ...NO_MODS, power: dealt } : NO_MODS;
     const opts: HitOptions = { damage: h.share * this.hitBase, knock: (h.knock ?? 0) * (this.boss.upgrades?.knockMul ?? 1), color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
     this.damagePlayer(this.resolve('opponent', arena.caster, opts, mods, 'spell', h.big ? 3 : 0, ++this.oppCastSeq));
+  }
+
+  /** A boss room's own floor that hurts, as it is this frame (`BossDef.floor`: the Twin Forge's lava), or null. */
+  private roomFloor: RoomFloor | null = null;
+  /** Seconds until the room's floor may burn this screen's hero again, and its units. */
+  private burnWait = 0;
+
+  /**
+   * A boss room whose own floor hurts for good (`BossDef.floor`): an AI plans its walk round it, a boss backing away stays on what
+   * is left of it, and it burns this screen's hero and its units once a second while they stand in it. Asked of the room each
+   * frame, not of a boss's script: it burns whoever of two bosses still lives.
+   */
+  private roomStep(dt: number) {
+    const arena = this.host.arena, floor = this.boss ? this.bossDef?.floor?.() ?? null : null;
+    this.roomFloor = floor;
+    if (!floor) return;
+    arena.aiCover = [...(this.shift?.aiCover ?? []), ...floor.cover];
+    if (floor.bounds) arena.aiBounds = { x: RING.x, z: RING.z, r: floor.bounds };
+    else if (!this.shift) arena.aiBounds = null;
+    this.burnWait = Math.max(0, this.burnWait - dt);
+    if (this.over || this.countdown >= 0 || this.burnWait > 0) return;
+    const me = arena.caster.group.position, share = this.playerHp > 0 ? floor.burn(me.x, me.z) : 0;
+    const units = arena.summons.alive('hero').filter((u) => floor.burn(u.pos.x, u.pos.z) > 0);
+    if (share <= 0 && !units.length) return;
+    this.burnWait = 1;
+    if (share > 0) this.hurtHero({ share: share * (this.boss?.script.harm ?? 1), from: { x: me.x, z: me.z }, move: 'lava' });
+    for (const u of units) {
+      this.hitBypass = true;
+      arena.hit(u.figure, { damage: ROOM_UNIT_HIT, knock: 0, color: '#ffb050' });
+      this.hitBypass = false;
+    }
   }
 
   /** The words a boss fight has already said once. */
@@ -2113,6 +2147,7 @@ export class Duel {
       this.host.arena.aiBounds = this.shift?.aiBounds ?? null;
       this.shrinkRing(dt);
     }
+    this.roomStep(dt);
 
     const foe = this.foe;
     const foePos = foe ? foe.group.position : OPPONENT_START;
@@ -2351,7 +2386,7 @@ export class Duel {
    */
   private reachableGoal(st: { goalT: number; goalSeen: boolean; goalOff: number; goalFrom: THREE.Vector3 }, at: THREE.Vector3, goal: { x: number; z: number } | null | undefined, dt: number) {
     // A goal in a part of the floor that hurts is dropped: a person may pay to fetch it, a CPU does not.
-    if (goal && this.shift && !this.shift.safe(goal.x, goal.z)) goal = null;
+    if (goal && ((this.shift && !this.shift.safe(goal.x, goal.z)) || this.roomFloor?.safe(goal.x, goal.z) === false)) goal = null;
     st.goalOff = Math.max(0, st.goalOff - dt);
     if (st.goalOff > 0) return null;
     st.goalT += dt;
@@ -2452,7 +2487,7 @@ export class Duel {
     const st = hm.status;
     if (hm.isRooted || this.playerThink > 0 || st.stunned || this.host.arena.isDashing(this.host.arena.caster)) return;
     // A beat that burns whoever walks (the Heart's Hold Still): it stands for it as if it could not move, and goes on casting.
-    const beat = this.boss?.script.stillIn ?? Infinity;
+    const beat = this.boss?.stillIn ?? Infinity;
     const held = st.cannotMove || beat < STILL_LEAD;
     const kit = hm.currentKit;
     const guard = this.guards(this.host.arena.caster, me, this.oppAttack.winding && this.oppAttack.inRange(at, me));
@@ -2463,7 +2498,7 @@ export class Duel {
       return;
     }
     // A spot that ends the danger it stands in (a shard to the altar against Noon) is worth walking through that danger for.
-    const beats = held ? null : this.boss?.script.objectiveGoal(me.x, me.z);
+    const beats = held ? null : this.boss?.objectiveGoal(me.x, me.z);
     if (beats?.beats) {
       const step = this.goalStep(this.playerAi, me, beats);
       this.host.arena.walk(step.multiplyScalar(this.aiSpeed(kit, CPU_BALANCE) * st.speedMul * dt), Infinity, !this.playerAi.routed);
@@ -2476,13 +2511,15 @@ export class Duel {
     }
     // A boss's gold zone: go and stand in it, against every habit. A fallen partner comes next: stand by it, and cast nothing.
     const fallen = this.fallenNear()?.pos ?? null;
-    const script = this.boss?.script;
+    const script = this.boss;
     // Hidden from a killing hit still to come (behind a pillar from Ash's Charge): it stays there, and casts nothing, until it has passed.
     if (script?.mustHide && script.hidden(me.x, me.z)) return;
     // A spot to take waits while something is about to land on it: a person steps back in once it has.
     const objective = script?.objectiveGoal(me.x, me.z);
     const safe = objective && !script!.danger(objective.x, objective.z, BOSS_LOOK) ? objective : null;
-    const stand = held ? null : safe ?? script?.standGoal(me.x, me.z) ?? fallen;
+    const spot = held ? null : safe ?? script?.standGoal(me.x, me.z) ?? fallen;
+    // Not into a room's lava for it.
+    const stand = spot && this.roomFloor?.safe(spot.x, spot.z) === false ? null : spot;
     if (stand) {
       if (Math.hypot(stand.x - me.x, stand.z - me.z) > 0.8) {
         const step = this.goalStep(this.playerAi, me, stand);
@@ -2493,7 +2530,7 @@ export class Duel {
     if (this.inHall) return;
     const sees = this.host.arena.lineOfSight(me, at);
     const theirs = this.host.arena.statusOf(foe);
-    if (!st.cannotCast && !this.boss?.script.wary) {
+    if (!st.cannotCast && !this.boss?.wary) {
       const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
       const ward = this.ward(this.oppRt);
       const waits = (i: number) => (!!this.heroRt?.canRecast(i) && !!this.heroRt.recastOf(i)?.aiWait) || !!this.heroRt?.trait?.aiHold?.(this.heroRt, i, flat(me, at));
@@ -2645,9 +2682,11 @@ export class Duel {
 
   /** An AI's step out of a boss's zones, if it reacts to this cast (rolled once a cast, like an arena event), or null. */
   private bossStep(who: Enemy, at: THREE.Vector3, other: THREE.Vector3) {
-    const script = this.boss!.script, shift = this.shift;
-    if (shift && !shift.safe(at.x, at.z)) {
-      const out = this.escapeStep(at, other, (x, z) => !shift.safe(x, z));
+    const script = this.boss!, shift = this.shift, floor = this.roomFloor;
+    // The parts of the floor that hurt for good (what closes in, a room's lava): out of them first, whatever else shows.
+    const hurts = (x: number, z: number) => !!(shift && !shift.safe(x, z)) || floor?.safe(x, z) === false;
+    if (hurts(at.x, at.z)) {
+      const out = this.escapeStep(at, other, hurts);
       if (out) return out;
     }
     if (!script.danger(at.x, at.z, BOSS_LOOK)) return null;
@@ -2663,7 +2702,7 @@ export class Duel {
     if (!roll.react && !hide) return null;
     if (this.time < roll.at) return new THREE.Vector3();
     for (const within of BOSS_CLEAR) {
-      const spot = this.escapeSpot(at, other, (x, z) => script.danger(x, z, within) || !!(shift && !shift.safe(x, z)), this.pilotWay, hide ? HIDE_REACH : CLEAR_REACH);
+      const spot = this.escapeSpot(at, other, (x, z) => script.danger(x, z, within) || hurts(x, z), this.pilotWay, hide ? HIDE_REACH : CLEAR_REACH);
       // On the planned way round cover: a straight step can wedge between two pieces of it.
       if (spot) {
         const step = this.goalStep(this.playerAi, at, spot);
@@ -2676,9 +2715,9 @@ export class Duel {
 
   /** An AI's unit step, kept out of the parts of the floor that hurt: it slides along the edge, or waits. */
   private offZones(at: THREE.Vector3, move: THREE.Vector3) {
-    const shift = this.shift;
-    if (!shift || move.lengthSq() === 0) return move;
-    const clear = (m: THREE.Vector3) => shift.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK);
+    const shift = this.shift, floor = this.roomFloor;
+    if ((!shift && !floor) || move.lengthSq() === 0) return move;
+    const clear = (m: THREE.Vector3) => (!shift || shift.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK)) && floor?.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK) !== false;
     if (clear(move)) return move;
     const side = new THREE.Vector3(-move.z, 0, move.x);
     if (clear(side)) return move.copy(side);

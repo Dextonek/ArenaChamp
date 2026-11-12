@@ -16,8 +16,16 @@ import type { BossCast, BossDef, BossWorld, RaidEvents, RaidLink } from './types
 export const FURY_HIT = 1.5;
 export const FURY_GAP = 0.6;
 
-/** Whether a script is a ghost now. One object per script, switched by the fight. */
-export interface Ghost { on: boolean }
+/** Once the pit floods (the wall of fire out, both still standing) each of the two hits this much harder, and this much of the quiet between its moves is left. */
+export const FLOOD_HIT = 1.25;
+export const FLOOD_GAP = 0.8;
+
+/**
+ * Whether a script is a ghost now. One object per script, switched by the fight. `open`: the wall of fire is out though both
+ * stand (the pit floods): a ghost's zones then hit this hero, its adds and spots are this hero's to take, and its gold zones
+ * count it. It is still not this screen's enemy: it runs no brain here, pays no reward, and nothing of it acts on this screen's boss.
+ */
+export interface Ghost { on: boolean; open?: boolean }
 
 /** The line boss `which`'s zones are cut off at while the wall of fire stands: its own side of it. */
 export function twinClip(def: BossDef, which: number): TelegraphClip {
@@ -27,16 +35,19 @@ export function twinClip(def: BossDef, which: number): TelegraphClip {
 
 /** The world as the other boss's script sees it: this hero is not there, and nothing of theirs acts on this screen. */
 export function ghostWorld(world: BossWorld, ghost: Ghost): BossWorld {
+  /** Across the wall of fire: this hero is not there. */
+  const away = () => ghost.on && !ghost.open;
   return {
     ...world,
-    down: () => ghost.on || world.down(),
-    hitMe: (h) => { if (!ghost.on) world.hitMe(h); },
-    units: () => (ghost.on ? [] : world.units()),
-    carryMe: (dx, dz) => { if (!ghost.on) world.carryMe(dx, dz); },
-    hint: (text) => { if (!ghost.on) world.hint(text); },
-    heavy: (on) => { if (!ghost.on) world.heavy(on); },
-    mute: (on) => { if (!ghost.on) world.mute(on); },
-    shake: (amount) => { if (!ghost.on) world.shake(amount); },
+    down: () => away() || world.down(),
+    hitMe: (h) => { if (!away()) world.hitMe(h); },
+    units: () => (away() ? [] : world.units()),
+    carryMe: (dx, dz) => { if (!away()) world.carryMe(dx, dz); },
+    hint: (text) => { if (!away()) world.hint(text); },
+    heavy: (on) => { if (!away()) world.heavy(on); },
+    mute: (on) => { if (!away()) world.mute(on); },
+    shake: (amount) => { if (!away()) world.shake(amount); },
+    // What a move does to its own boss never reaches this screen's.
     exposed: (seconds) => { if (!ghost.on) world.exposed(seconds); },
   };
 }
@@ -44,6 +55,7 @@ export function ghostWorld(world: BossWorld, ghost: Ghost): BossWorld {
 /** The link as the other boss's script sees it: it says nothing to anyone, and runs no brain. */
 export function ghostLink(link: RaidLink, ghost: Ghost): RaidLink {
   const quiet = () => {};
+  const away = () => ghost.on && !ghost.open;
   return {
     solo: link.solo,
     side: link.side,
@@ -52,11 +64,11 @@ export function ghostLink(link: RaidLink, ghost: Ghost): RaidLink {
     set brain(_v: boolean) { /* the fight sets it on the real link */ },
     on: link.on,
     cast: quiet, damage: quiet, stagger: quiet, heroDown: quiet, heroHp: quiet, revive: quiet, bossDebuff: quiet, heroAlt: quiet, heroCast: quiet, heroAttack: quiet, tick: quiet,
-    stood: (id, part, inside) => { if (!ghost.on) link.stood(id, part, inside); },
-    objective: (id, part) => { if (!ghost.on) link.objective(id, part); },
+    stood: (id, part, inside) => { if (!away()) link.stood(id, part, inside); },
+    objective: (id, part) => { if (!away()) link.objective(id, part); },
     reward: (key, id) => { if (!ghost.on) link.reward(key, id); },
-    addHit: (id, part, amount) => { if (!ghost.on) link.addHit(id, part, amount); },
-    wallSaved: (index) => { if (!ghost.on) link.wallSaved(index); },
+    addHit: (id, part, amount) => { if (!away()) link.addHit(id, part, amount); },
+    wallSaved: (index) => { if (!away()) link.wallSaved(index); },
   };
 }
 
