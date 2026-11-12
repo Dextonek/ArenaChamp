@@ -68,7 +68,7 @@ SCENES = {
     }"""),
     # The Price run up by a burst of spells.
     "vesper": ("Vesper", "Sefu", """() => {
-      const a = T.until((rt) => rt.res >= 38, 60);
+      const a = T.until((rt) => rt.res >= 48, 60);
       T.step(0.25);
       return a;
     }"""),

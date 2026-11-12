@@ -97,8 +97,8 @@ const AI_QUENCH_REACH = 2.5;
  * on an armed slam, a roar between two rivets in reach, no spell that would turn the hammer white while the Quench is far
  * from ready; white-hot it pays for spells only above half HP, rides the heat 3.5 s, then Quenches with the enemy inside
  * the ring (anywhere under 25% HP).
- * Measured 2026-11-12 (docs/balance/rework-brannoc-after.html): 59% against the benchmark heroes on both sides, 43% as
- * the player's hero alone.
+ * Measured 2026-11-12 (docs/balance/rework-brannoc-after.html): 53% against the benchmark heroes on both sides and 34% as
+ * the player's hero alone; a second run of the same code gave 59% and 43%. Without the CPU's breath between spells: 44%.
  */
 export const forgeTrait: Trait = {
   aiHold(t, slot, dist) {

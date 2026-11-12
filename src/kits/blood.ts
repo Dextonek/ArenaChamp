@@ -74,7 +74,7 @@ export const bloodKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'lancet', name: 'Lancet', range: 7, cooldown: 0.5,
-      blurb: 'Costs the Price. A blood needle (7 m): 33 damage, and it stays in for 3 s. From 0.6 s on, cast again to rip it out, free: 24 more, half the needle\'s price back, and Lancet is ready again at once. Only while she sees them within 8 m; a needle left in is lost.',
+      blurb: 'Costs the Price. A blood needle (7 m): 33 damage, and it stays in for 3 s. From 0.6 s on, cast again to rip it out: 24 more, half the needle\'s price back, and Lancet is ready again at once. The Rip costs nothing but raises the Price. Only while she sees them within 8 m; a needle left in is lost.',
       icon(g, s) {
         iconGround(g, s);
         // A long bone needle driven into a drop, a thread running back from its eye.
@@ -90,7 +90,7 @@ export const bloodKit: HeroKit = {
       },
     },
     {
-      // Range 11 is only the duel AI's reach: it flows in when the enemy is out of Q's range; the flow itself is 5 m.
+      // The flow itself is 5 m. The duel AI uses it as a getaway (`escape`): away from an enemy who comes within 3.5 m.
       key: 'W', label: 'mist waltz', name: 'Mist Waltz', range: 11, cooldown: 0.5, dash: true, escape: true,
       blurb: 'Costs the Price, no cooldown. She flows 5 m as mist. Her next two basic attacks within 3 s reach 1.5 m farther and deal +18.',
       icon(g, s) {
@@ -120,7 +120,7 @@ export const bloodKit: HeroKit = {
     },
     {
       key: 'E', label: 'hemocurse', name: 'Hemocurse', range: 7, cooldown: 0.5,
-      blurb: 'Costs the Price, no cooldown. A curse (7 m): 25 damage, for 3 s. Each spell the enemy casts costs them 30 HP, and if she is Hungry she heals 15. It breaks at 8 m or without sight.',
+      blurb: 'Costs the Price, no cooldown. A curse (7 m): 25 damage, for 3 s. Each spell the enemy casts costs them 20 HP, and if she is Hungry she heals 15. It breaks at 8 m or without sight.',
       icon(g, s) {
         iconGround(g, s);
         // A bone ring with a drop inside, thorned like a sigil, a broken link at the bottom.

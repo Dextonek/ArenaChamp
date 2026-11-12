@@ -19,7 +19,7 @@ The blood hero kit: Vesper's four spells (Q, W, E and the R ultimate), her passi
 | HP | 660 |
 | Kit shapes | Q TGT needle + RECAST rip · W DASH mist (a getaway) · E TGT curse · R TGT CHANNEL |
 
-She wins by spending at the right moments: a burst of spells while the Price is low, then a pause while it falls, with the Rip and the Feast paying her back. Spending without pause runs the Price to 60 a spell and bleeds her dry: the Price cannot take her last HP, but at 1 HP anything does. Her weakness is cover: the rip, the curse and the feast all need sight, and they end when the enemy gets past 8 m (the feast: 9 m). Measured 2026-11-12 in the fight simulator: 56% against the benchmark heroes, both sides ([before](../../balance/rework-vesper-before.html) 46.4%, [after](../../balance/rework-vesper-after.html)).
+She wins by spending at the right moments: a burst of spells while the Price is low, then a pause while it falls, with the Rip and the Feast paying her back. Spending without pause runs the Price up to 100 a spell, and she cannot cast what she cannot pay: a greedy Vesper stands there at low health with nothing to cast. Her weakness is cover: the rip, the curse and the feast all need sight, and they end when the enemy gets past 8 m (the feast: 9 m). Measured 2026-11-12 in the fight simulator: 57% against the benchmark heroes, on both sides and as the player's hero alone ([before](../../balance/rework-vesper-before.html) 46.4%, [after](../../balance/rework-vesper-after.html)); a computer that never holds Lancet back (needle, Rip, needle, as fast as they come) wins 14%.
 
 ## At a glance
 
@@ -57,12 +57,12 @@ The blood tendril: a tapered, viscous rope with a round bead at the tip, that ha
 
 | | |
 |---|---|
-| Passive | **Blood Price.** No cooldowns: each spell costs her the Price in HP (R twice the Price; the Rip is free). The Price is 10 at rest, 10 more after every spell she pays for, 60 at most, and falls 10 a second once she has paid for nothing for 1.5 s. It never takes her below 1 HP. |
-| Twist | **The drain.** Every spell hit of Q, W and E heals her a quarter of its damage, and half while she is Hungry: below 45% of her max HP her body burns crimson (a ring at her feet). The Rip gives back half of what its needle cost; the Feast gives back 60. Basic attacks do not heal. |
-| Resource or meter | **Price**, 10 to 60, a crimson bar under her HP on both screens and in the HUD; the passive slot shows what the next spell costs ("-30"). |
+| Passive | **Blood Price.** No cooldowns: each spell costs her the Price in HP (R twice the Price; the Rip costs nothing). The Price is 10 at rest, 10 more after every spell, the Rip too, 100 at most, and falls 11 a second once she has cast nothing for 1 s. She cannot cast what she cannot pay ("Not enough blood"). |
+| Twist | **The drain.** Every spell hit of Q, W and E heals her a quarter of its damage, and half while she is Hungry: below 45% of her max HP her body burns crimson (a ring at her feet). The Rip does not drink: it gives back half of what its needle really cost her. The Feast gives back 60. Basic attacks do not heal. |
+| Resource or meter | **Price**, 10 to 100, a crimson bar under her HP on both screens and in the HUD; the passive slot shows what the next spell costs ("-30"). |
 | Speed | 4 m/s |
 | Basic attack | ranged, 5.5 m, 8 damage every 0.7 s, wind-up 0.18 s, bolt speed 20, drop look |
-| Other rules | Mist Waltz arms her next two basic attacks for 3 s: +18 damage and +1.5 m reach each (shown as two drop pips). The Rip is a recast of Q, open from 0.6 s to 3 s after the cast; it makes Lancet ready again at once, and a needle she leaves in locks Lancet 3.4 s. Hemocurse: while it holds, each spell the enemy casts costs them 20 HP (30 before the rework: against heroes without cooldowns it was a quarter of her damage), and heals her 15 if she is Hungry. The CPU playing her (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half), then holds off until the Price is back near 10; it keeps 50 HP back, always takes the free Rip, does not curse a cursed enemy, starts the Feast only within 4 m, and uses Mist Waltz as a getaway from an enemy within 3.5 m (`escape` in the kit). |
+| Other rules | Mist Waltz arms her next two basic attacks for 3 s: +18 damage and +1.5 m reach each (shown as two drop pips). The Rip is a recast of Q, open from 0.6 s to 3.3 s after the cast; it makes Lancet ready again at once, and a needle she leaves in locks Lancet 3.4 s. Why the Rip raises the Price and the top is 100: while the Rip stood outside the climb and the Price stopped at 60, a Vesper who cast nothing but needle and Rip won 90% (2026-11-12). Hemocurse: while it holds, each spell the enemy casts costs them 20 HP (30 before the rework: against heroes without cooldowns it was a quarter of her damage), and heals her 15 if she is Hungry. The CPU playing her (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half), then holds off until the Price is back near 10; it keeps 50 HP back, always takes the free Rip, does not curse a cursed enemy, starts the Feast only within 4 m, and uses Mist Waltz as a getaway from an enemy within 3.5 m (`escape` in the kit). |
 
 The 0.5 s "cooldown" of Q, W and E in the kit data is the gap the game server asks between two casts of one slot, and the Feast's 11 s is the server's one ultimate in 10 s (`server/hub.mjs`): neither is a design choice.
 
@@ -73,12 +73,12 @@ Vesper uses these pieces of [the combat mechanics](../../architecture/mechanics.
 | Mechanic | Where |
 |---|---|
 | HP cost | Every spell, through the trait's `castMods` (the Price; R twice) |
-| Own resource | `resource` Price: `castMods` raises it, `tick` lets it fall |
-| Recast | Q: the Rip (`recast`, window 3 s, opens at 0.6 s, full damage); `recastAct` makes Lancet ready again |
+| Own resource | `resource` Price: `castMods` and the Rip raise it, `tick` lets it fall; `canCast` stops a spell she cannot pay |
+| Recast | Q: the Rip (`recast`, window 3.3 s, opens at 0.6 s, full damage); `recastAct` makes Lancet ready again and raises the Price |
 | Dash | W flows 5 m (`dash: true`, `escape: true`: the AI flows away from an enemy within 3.5 m) |
 | Curse on spells | E: `enemyCast` costs the enemy 20 HP per spell while the curse is live |
 | Channel | R holds her 1.6 s (`hold`). A stun, a silence or a knock-up, 9 m of distance or lost sight ends it |
-| Heal | A quarter of every Q, W, E spell hit (half when Hungry), the Rip refund (half the needle's price), the curse heal (15, Hungry), the feast heal (60) |
+| Heal | A quarter of every Q, W, E spell hit (half when Hungry; not the Rip), the Rip refund (half of what the needle cost), the curse heal (15, Hungry), the feast heal (60) |
 | Basic attack buff | W: two empowered attacks with more reach |
 | Melee, summon, pull, shield | none |
 
@@ -88,7 +88,7 @@ All four play under the normal gameplay camera. Q, E and R are targeted at an en
 
 | Key | Label | Targeting | Range | Cost | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [lancet](../../../src/spells/targeted/lancet.ts) | enemy (TGT, recast) | 7 | the Price (the Rip is free) | 0.4 s (the rip 0.3 s after its cast) | 1.4 s (the rip 1.0 s) | A crystal needle flies to the enemy and stays in for 3 s as a blood pip. Damage 33. Cast again from 0.6 s to 3 s: a thread runs to the needle and rips it out for 24 more, she gets half the needle's price back when it lands, and Lancet is ready again at once. The rip works only if the first cast struck, she still sees the enemy and they are within 8 m; otherwise it fizzles. A needle left in is lost, and locks Lancet 3.4 s. |
+| Q | [lancet](../../../src/spells/targeted/lancet.ts) | enemy (TGT, recast) | 7 | the Price (the Rip is free) | 0.4 s (the rip 0.3 s after its cast) | 1.4 s (the rip 1.0 s) | A crystal needle flies to the enemy and stays in for 3 s as a blood pip. Damage 33. Cast again from 0.6 s to 3.3 s: a thread runs to the needle and rips it out for 24 more, she gets half the needle's price back when it lands, and Lancet is ready again at once; the Rip costs nothing but raises the Price by 10. The rip works only if the first cast struck, she still sees the enemy and they are within 8 m; otherwise it fizzles. A needle left in is lost, and locks Lancet 3.4 s. |
 | W | [mist waltz](../../../src/spells/targeted/mistWaltz.ts) | ground (r 1, DASH) | 11 (the AI's reach; the flow is 5 m) | the Price | none (no damage) | 1.3 s | She comes apart into blood-red mist and slides 5 m to the aim in 0.2 s, then the mist folds back into her. Not untouchable, no telegraph. Arms two basic attacks for 3 s: +18 damage and +1.5 m reach. |
 | E | [hemocurse](../../../src/spells/targeted/hemocurse.ts) | enemy (TGT) | 7 | the Price | 0.6 s | 4.0 s | A thread of blood runs to the enemy and a crown of thorns closes round them. Damage 25, and the curse lasts 3 s: each spell they cast costs them 20 HP, and heals her 15 if she is Hungry. It breaks past 8 m or without sight. |
 | R | [sanguine feast](../../../src/spells/targeted/sanguineFeast.ts) | enemy (TGT, channel) | 8 | twice the Price; once in 11 s | 0.4 s, 1.0 s and 1.6 s (three pulses) | 2.4 s | Ultimate. She is rooted for 1.6 s and drinks through a thread of blood. Pulses of 35, 35, then 40 plus 20% of the enemy's missing HP. The third pulse heals her 60. A stun, silence or knock-up on her, 9 m of distance or lost sight ends it, and the pulses not yet due do not happen. |

@@ -84,29 +84,52 @@ turns with a clock, an order that matters. The look, the name, the theme and the
 ## Wave 1a (built 2026-11-12): Vesper, Brannoc, Cantor
 
 All three play by their rule now, in their own files, through the trait's hooks; no engine file was touched. The numbers
-are from the fight simulator (`python pipeline/sim/sim.py hero <Name> --sides both`, about 160 to 190 fights a run; a
-run swings by about 7 points, and the same code run twice differed by 6 to 8). Pages: `docs/balance/rework-<hero>-before.html`
+are from the fight simulator (`python pipeline/sim/sim.py hero <Name> --sides both`, 160 to 190 fights a run; a run
+swings by about 7 points, and the same code run twice differed by 6 to 8). Pages: `docs/balance/rework-<hero>-before.html`
 and `-after.html`, the two bystanders `rework-bench-before.html` and `-after.html`. Pictures: `docs/heroes/rework-<hero>.jpg`
 (`python pipeline/tools/rework-shots.py docs/heroes --port <a running dev server>`).
 
 | Hero | The rule as built | Before | After (both sides) | After (the player's side alone) |
 |---|---|---:|---:|---:|
-| Vesper | No cooldowns. Each spell costs the **Price** in HP (her bar): 10, +10 with every spell, 60 at most, falling 10 a second after 1.5 s without paying; R twice the Price. Spell hits drink back 25% (50% below 45% HP), the Rip half its needle's price, the Feast 60 | 46% | 56% | 53% |
+| Vesper | No cooldowns. Each spell costs the **Price** in HP (her bar): 10, +10 with every spell and every Rip, 100 at most, falling 11 a second after 1 s without casting; R twice the Price. She cannot cast what she cannot pay. Spell hits drink back 25% (50% below 45% HP), the Rip half of what its needle cost, the Feast 60 | 46% | 57% | 57% |
 | Brannoc | No cooldowns. Q +40, W +30, E +30 **Heat** (his bar, 100); a spell hits at 55% cold to 115% white-hot; Heat cools 10 a second after 2.5 s of rest. At 100 the hammer stays white: -14 HP a second, 35 HP a spell, attacks +15, no slow, root or knock-up, until R Quench (30 + 0.5 a point of Heat, stun 0.75 s from white heat) | 68% | 53% and 59% | 34% and 43% |
-| Cantor | No cooldowns, one spell a beat (1.2 s, a window of 0.25 s each side). On the beat: +12% per step of **Crescendo** (his bar, 0 to 5) and a step more. Off it: a quarter of the power, nothing else, the Crescendo gone. Q and R build; W spends it for 0.25 s of charm a step, E for a 15 shield a step | 31% | 47% and 54% | 35% and 45% |
+| Cantor | No cooldowns, one spell a beat (1.2 s, a window of 0.25 s each side). On the beat: +12% per step of **Crescendo** (his bar, 0 to 5) and a step more. Off it: a quarter of the power, nothing else, the Crescendo gone. Q and R build; the Chord cast at 5 silences and starts it again; W spends it for 0.25 s of charm a step, E for a 15 shield a step | 31% | 50% | 36% |
 
-No errors and no fight without a winner in any run. Casts in a fight (Q, W, E, R): Vesper 4.4, 2.2, 3.8, 0.8; Brannoc 4.1,
-3.1, 5.3, 1.9; Cantor 13.5, 1.0, 2.7, 1.4. The damage table cannot show Brannoc's W (its slam counts as a basic attack)
-nor Cantor's W and E (a charm and a shield deal nothing).
+The first target (40 to 60% as the player's side) is met by Vesper only: Brannoc and Cantor sit under it there and inside it
+on both sides, because each wins about 60 to 70% as the opponent (see "Found on the way"). No errors and no fight without
+a winner in any run. Casts in a fight (Q, W, E, R): Vesper 3.4, 2.6, 4.2, 0.8; Brannoc 4.1, 3.1, 5.3, 1.9; Cantor 13.3, 0.9,
+2.7, 1.4. The damage table cannot show Vesper's W (a dash; its two shots count as basic attacks), Brannoc's W (its slam
+counts as a basic attack) nor Cantor's W and E (a charm and a shield deal nothing).
+
+### The greedy line of each rule (what a person can do that the careful computer does not)
+
+The computer plays each rule with restraint (`aiHold`), so its win rate says nothing about a player who does not. Each
+rule's most greedy line was played by a computer changed for one run (not committed), 96 or 80 fights:
+
+| Hero | The greedy line | Win rate | Against the careful line |
+|---|---|---:|---:|
+| Vesper | needle, Rip, needle, as fast as they come, whatever the Price | 14% | 57% |
+| Brannoc | no breath between spells | 44% | 53 to 59% |
+| Cantor | never spend the Crescendo | 40% | 50% |
+
+Two of the three rules were broken by their greedy line as first built, and were changed:
+
+- **Vesper:** with the Rip free of the climb, a refund of half the nominal price, the drink on the Rip too and a top of
+  60, the needle-and-Rip loop cost almost nothing and won 90%. Now the Rip raises the Price like any spell and does not
+  drink, the refund is half of what the needle really cost, the top is 100 and a spell she cannot pay cannot be cast.
+- **Cantor:** with the Crescendo staying at 5 (every chord +60% with a silence), never spending it won 74%. Now the chord
+  at 5 is the release: it silences and the Crescendo starts again.
 
 ### What differs from the plan, and why
 
 - **"No cooldowns" has two numbers the game server sets.** `server/hub.mjs` drops a slot cast twice inside 0.35 s and a
   second ultimate inside 10 s (it measures arrival, so 10 s exactly could be dropped). Q, W, E carry 0.5 s and every R 11 s.
-  For R to be free the hub needs a per-hero gap (not edited: not ours to edit).
-- **The blood and the burn cannot kill.** `payHp` stops at 1 HP (the server's `spend` too). So "greed kills her" and
-  "Quench or burn" mean: she or he is at 1 HP and the next touch kills. A hook that lets a hero's own rule take the last
-  HP is missing.
+  For R to be free the hub needs a per-hero gap (not edited: not ours to edit). It also takes at most 100 HP in one
+  `spend`, so Vesper's Feast pays its double Price in two payments.
+- **The blood and the burn cannot kill.** `payHp` stops at 1 HP (the server's `spend` too). "Greed kills her" is built
+  as: she cannot cast what she cannot pay, so a greedy Vesper stands at low health with nothing to cast, and loses.
+  "Quench or burn" is: the burn takes him to 1 HP and the next touch kills. A hook that lets a hero's own rule take the
+  last HP is missing.
 - **Vesper's price climbs.** A flat price with no cooldown is either free or unplayable; the climbing Price is what makes
   "cast again at once" a choice. Hemocurse's cost went 30 -> 20 a spell: against heroes that cast without cooldowns (more
   each wave) 30 was a quarter of her damage. The computer uses Mist Waltz as a getaway now (`escape`), so it is played.
@@ -125,28 +148,37 @@ nor Cantor's W and E (a charm and a shield deal nothing).
   (pass the foe's facing as `aim` for a self-mode cast), and other QUICK cones (Auriel's First Light, perhaps Hank) will
   have the same fault: Auriel's "76% as the player's side, weak as the opponent" fits.
 - **The benchmark moved, through Cantor and not through Brannoc.** Kaia and Lyra against the six, before and after
-  (32 fights a cell): Lyra 48% -> 45% (inside the noise; her Brannoc cell 10/32 -> 4/32 and 9/32 in two runs, her Cantor
-  cell 28/32 -> 23/32). Kaia 42% -> 17% and 22%: her Brannoc cell did not move (0/32 before and after), her Cantor cell
-  went 32/32 -> 1/32. A benchmark Cantor who used to miss was a free win for every hero; now he is a real fight. Every
-  hero's number against the six will sit lower for it, the ranged and fragile ones most. Not tuned round.
+  (32 fights a cell; three runs after): Lyra 48% -> 43 to 47% (inside the noise; her Brannoc cell 10/32 -> 4/32 to 9/32,
+  her Cantor cell 28/32 -> 20/32 to 24/32). Kaia 42% -> 17 to 22%: her Brannoc cell did not move (0/32 before and after),
+  her Cantor cell went 32/32 -> 0/32 or 1/32, and her Sirix cell read 15/32, 14/32, 6/32, 6/32 with nothing of Sirix's or
+  hers changed. A benchmark Cantor who used to miss was a free win for every hero; now he is a real fight. How much of
+  Kaia's fall is the aim alone and how much his new numbers was not measured apart. Every hero's number against the six
+  will sit lower for it, the ranged and fragile ones most. Not tuned round.
 - **The Brannoc and Cantor pairing is won by whoever the opponent's side is** (15 of 16 each way): the fights end with the
   winner at 20 to 30 HP, and the two computer players are not quite equal. It is most of why each is weaker as the
-  player's side (Brannoc 34-43%, Cantor 35-45%) than as the opponent (about 70% and 60%).
+  player's side than as the opponent.
 
 ### The raid (`_raidPartners`, `_raid(names, 3)` against the Sun Warden)
 
-As partners nothing of theirs touches the wrong side (15 checks, none flagged, before and after); no errors in either run.
+As partners nothing of theirs touches the wrong side (15 checks, none flagged, before and after); no errors in any run.
 
 | Hero | Clears before | Clears after | Damage a second before | after |
 |---|---:|---:|---:|---:|
-| Vesper | 2/3 | 1/3 | 25 | 23 |
-| Brannoc | 0/3 | 0/3 | 21 | 21 |
-| Cantor | 3/3 | 0/3, and 2/3 in a second run | 27 | 20 |
+| Vesper | 2/3 | 3/6 | 25 | 22 |
+| Brannoc | 0/3 | 0/3 | 21 | 22 |
+| Cantor | 3/3 | 1/3 (0/3 and 2/3 in two earlier runs) | 27 | 19 to 20 |
 
-Three fights say little about clears; the damage is the steadier number. Cantor is a quarter weaker against a boss: with
-the chord aimed for both computer players his chord had to come down (60 every 2 to 3 s became 25 a beat) to keep him in
-the band as the opponent, and the autopilot, busy dodging, plays only 63% of his beats (81% in a duel). Raising the chord to
-27 or 28 would give the raid some back and make the benchmark Cantor harder still: the user's call.
+Three fights say little about clears; the damage is the steadier number. Vesper is a little weaker against a boss and
+Cantor a quarter weaker: they do not clear as before. Cantor's cause: with the chord aimed for both computer players it
+had to come down (60 every 2 to 3 s became 25 a beat) to keep him in the band as the opponent, and the autopilot, busy
+dodging, plays only 63% of his beats (81% in a duel). Raising the chord to 27 or 28 would give the raid some back and make
+the benchmark Cantor harder still: the user's call.
+
+### Not checked
+
+- No network duel was played: what the other screen shows (the bars, the white ring, a sour chord, the Quench) rests on
+  reading the code, not on two browsers.
+- No person has played them: whether the beat's window of half a second is kind enough to a thumb on a phone is unknown.
 
 ### Left for the lead
 

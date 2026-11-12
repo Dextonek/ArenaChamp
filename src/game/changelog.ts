@@ -52,14 +52,14 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Heroes',
         title: 'Cantor: only on the beat',
-        text: 'His spells have no cooldowns now: he may cast one on every pulse of the ring under him. On the pulse it lands and his Crescendo climbs; off the pulse it goes sour and the Crescendo is gone. Siren Song and Rising Chorus spend the Crescendo: the more of it, the longer the charm and the bigger the shield.',
+        text: 'His spells have no cooldowns now: he may cast one on every pulse of the ring under him. On the pulse it lands and his Crescendo climbs; off the pulse it goes sour and the Crescendo is gone. A chord at the top of the Crescendo silences, and the Crescendo starts again. Siren Song and Rising Chorus spend it: the more of it, the longer the charm and the bigger the shield.',
         image: '/news/rework-cantor.jpg',
         alt: 'Cantor in a duel striking a gold chord on the pulse, the gold ring of the beat swollen under him and his Crescendo bar part full.',
       },
       {
         tag: 'Heroes',
         title: 'Vesper: no cooldowns, she pays in blood',
-        text: 'Every spell of hers can be cast again at once and costs her health: 10 at first and 10 more with each spell, falling again when she holds back. Her hits drink some of it back, and so do ripping her needle out and her Feast. Spend without a pause and she bleeds herself dry.',
+        text: 'Every spell of hers can be cast again at once and costs her health: 10 at first and 10 more with each spell, falling again when she holds back. Her hits drink some of it back, and so do ripping her needle out and her Feast. Spend without a pause and the price outruns her: she cannot cast what she cannot pay.',
         image: '/news/rework-vesper.jpg',
         alt: 'Vesper in a duel after a burst of spells, the Price bar under her portrait run up and the cost of each spell floating over her head.',
       },

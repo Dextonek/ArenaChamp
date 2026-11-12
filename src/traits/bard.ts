@@ -10,7 +10,7 @@ export const CRESCENDO_POWER = 0.12;
 export const SOUR_POWER = 0.25;
 /** The Crescendo holds this many beats without a clean spell, then falls one step a beat. */
 export const REST_BEATS = 3;
-/** Resounding Chord at the top of the Crescendo also silences. */
+/** Resounding Chord at the top of the Crescendo also silences, and spends it: the top is a release, not a place to stay. */
 export const CHORD_SILENCE = 0.5;
 /** Siren Song spends the Crescendo: seconds of charm for each step. */
 export const CHARM_PER = 0.25;
@@ -88,12 +88,16 @@ function setNote(t: TraitView, clean: boolean, crescendo: number) {
  * the cast), and the Crescendo, his bar (`resource`, 0 to 5), goes up one. Off the beat it goes sour: a quarter of its power,
  * no silence, charm or shield, and the Crescendo is gone. The Crescendo holds three beats without a clean spell and then
  * falls a step a beat (`tick`): a stun or a silence costs him beats, nothing more.
- * Q Resounding Chord and R Duet build it; at 5 the Chord also silences 0.5 s. W Siren Song and E Rising Chorus spend all of
- * it (and need at least 1): 0.25 s of charm a step, a 15 shield a step for 3 s with +25% speed for 1.5 s.
+ * Q Resounding Chord and R Duet build it; the Chord cast at 5 is the release: +60% and a 0.5 s silence, and the Crescendo
+ * starts again at 0 (measured 2026-11-12: while it stayed at 5, a Cantor who never spent it won 74%). W Siren Song and
+ * E Rising Chorus spend all of it (and need at least 1): 0.25 s of charm a step, a 15 shield a step for 3 s with +25% speed
+ * for 1.5 s.
  * `cantorNotes` tells his effects what the cast was, on both screens (`show('note')`). Duet (R) cannot be cast while the
  * enemy is charmed (`canCast`); inside its ring `dealt` adds a 0.5 s silence to a clean spell hit.
  * The CPU (`aiHold`) casts only inside the window, sings the Siren Song from 4 Crescendo, and spends on the Chorus's shield
  * when it is under 65% HP with no shield and 3 Crescendo; it walks in to where the Chord reaches (`aiGoal`).
+ * Measured 2026-11-12 (docs/balance/rework-cantor-after.html): 50% against the benchmark heroes on both sides, 36% as the
+ * player's hero alone; a CPU that never spends the Crescendo: 40%.
  */
 export const bardTrait: Trait = {
   aiHold(t, slot, dist) {
@@ -114,7 +118,7 @@ export const bardTrait: Trait = {
   },
   passive: {
     name: 'Only on the Beat',
-    blurb: 'No cooldowns: one spell a beat (every 1.2 s). On the pulse it lands and the Crescendo climbs a step (5 at most, +12% power a step). Off the pulse it goes sour: a quarter of the power, nothing else, and the Crescendo is gone. Siren Song and Rising Chorus spend the Crescendo. It holds three beats of rest, then falls.',
+    blurb: 'No cooldowns: one spell a beat (every 1.2 s). On the pulse it lands and the Crescendo climbs a step (5 at most, +12% power a step). Off the pulse it goes sour: a quarter of the power, nothing else, and the Crescendo is gone. The Chord at 5 silences and starts it again; Siren Song and Rising Chorus spend it. It holds three beats of rest, then falls.',
   },
   resource: { name: 'Crescendo', max: CRESCENDO_MAX, color: GOLD },
   ownChanged(t, name, n) {
@@ -147,10 +151,11 @@ export const bardTrait: Trait = {
         t.shield(CHORUS_SHIELD_PER * c, CHORUS_SHIELD_SECONDS);
         t.buff('haste', CHORUS_HASTE.amount, CHORUS_HASTE.seconds);
       }
-    } else {
-      t.addRes(1);
-      if (c + 1 === CRESCENDO_MAX) t.say('CRESCENDO', '#ffe58a');
-    }
+    } else if (slot === 0 && c >= CRESCENDO_MAX) {
+      // The chord at the top is the release: full power and a silence (the effect reads the 5), then it starts again.
+      t.addRes(-CRESCENDO_MAX);
+      t.say('CRESCENDO', '#ffe58a');
+    } else t.addRes(1);
     return { power: 1 + CRESCENDO_POWER * c };
   },
   dealt(t, hit) {

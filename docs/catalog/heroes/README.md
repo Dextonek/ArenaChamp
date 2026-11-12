@@ -253,7 +253,7 @@ HP is the kit's `maxHp` (default 600; Pim and Pom 620 in all, Sir Whiskers in li
 
 | Hero | Role | HP | Q / W / E / R main numbers |
 |---|---|---|---|
-| Vesper | juggernaut (drain) | 660 | No cooldowns, each spell costs the Price (10, +10 a spell, 60 at most; R twice). Q 33, rip 24 (half the price back); W dash 5 m, next 2 attacks +18; E 25, curse 20 per enemy spell; R 35 + 35 + 40 (+20% missing HP), heals 60. Spell hits heal 25% (50% under 45% HP) |
+| Vesper | juggernaut (drain) | 660 | No cooldowns, each spell costs the Price (10, +10 a spell and a Rip, 100 at most; R twice). Q 33, rip 24 (half the needle's price back, no drink); W dash 5 m, next 2 attacks +18; E 25, curse 20 per enemy spell; R 35 + 35 + 40 (+20% missing HP), heals 60. Spell hits heal 25% (50% under 45% HP) |
 | Brannoc | tank (melee) | 780 | No cooldowns, spells add Heat (Q 40, W 30, E 30 of 100) and hit at 55% cold to 115% white-hot. Q 40, pull 4 m, slow 1 s; W +30% armour, slam +30 and knock-up 0.5 s; E 25 + 2 x 6; R Quench 30 + 0.5 per Heat (stun 0.75 s from white heat). White heat: -14 HP a second, 35 HP a spell, attacks +15 |
 | Isolde | controller | 570 | Q 42 + 2 Chill, shatter 26; W 36 + 2 Chill; E +40% armour, 2 Chill to attackers; R 50 + 30 per Chill (200 at 5) |
 | Lyra | marksman | 520 | Q 29 to 58 by the draw (+30% at 10 m); W second arrow at half damage, +20% speed; E 35, root 1.5 s at a wall or slow 40%; R 120 + 25% of damage dealt meanwhile |
@@ -269,7 +269,7 @@ HP is the kit's `maxHp` (default 600; Pim and Pom 620 in all, Sir Whiskers in li
 | Ada | engineer | 550 | Q 45, tag +30% turret damage; W turret 80 HP, 9 per 1.4 s; E 30, slow 1 s; R 23 per 0.8 s, 6 s |
 | Opaline | marksman | 600 | Q 64 (+25% per bounce); W crystal 80 HP, 6 s; E blind 1.5 s, push 2 m; R 6 x 36 |
 | Sirix | bruiser (melee) | 720 | Q 42, leap 25 (+ poison 30 for 2 wasps); W armour 40% for 3 s, sting 15; E 7 per wasp per second, blind 1 s; R 18 per wasp, shove 4 m, blind 1 s |
-| Cantor | support | 740 | No cooldowns, one spell a beat (1.2 s); on the beat +12% per Crescendo (0 to 5), off it a quarter. Q 25 (silence 0.5 s at 5 Crescendo); W charm 0.25 s per Crescendo spent; E shield 15 per Crescendo spent, speed +25%; R 18 per beat, ring 3.4 s |
+| Cantor | support | 740 | No cooldowns, one spell a beat (1.2 s); on the beat +12% per Crescendo (0 to 5), off it a quarter. Q 25 (cast at 5 Crescendo: 40, silence 0.5 s, the Crescendo starts again); W charm 0.25 s per Crescendo spent; E shield 15 per Crescendo spent, speed +25%; R 18 per beat, ring 3.4 s |
 | Oblivion | juggernaut (melee) | 780 | Q 60, pull 1.5 m; W silence 0.3 s per 0.25 s, 3 s; E +40 rip, weaken 20% for 2 s; R core 105 + stun 1 s, collapse 85 |
 | Shiori | summoner | 600 | Q 66, crossing burst 40; W root 1.0 s; E dash 6 m, stroke; R 40, root 1.0 s, strokes 3 x 50 |
 | Tempo | mage (chrono) | 580 | Q 50, echo 20; W 30, slow 2 s, echo 12; E 35, echo 14; R 70, slow 2 s, echo 28 |

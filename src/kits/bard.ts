@@ -240,7 +240,7 @@ export const bardKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'resounding chord', name: 'Resounding Chord', range: 5, cooldown: 0.5,
-      blurb: 'No cooldown. A chord in a 5 m cone: 25, and 12% more for each step of Crescendo. On the beat it adds a step; at 5 it also silences 0.5 s. Off the beat: 6 damage and the Crescendo is gone.',
+      blurb: 'No cooldown. A chord in a 5 m cone: 25, and 12% more for each step of Crescendo. On the beat it adds a step; cast at 5 it hits for 40, silences 0.5 s and the Crescendo starts again. Off the beat: 6 damage and the Crescendo is gone.',
       icon(g, s) {
         iconGround(g, s);
         // Three staves fan out of the lower left into a cone, notes riding them, sound rings across the cone and a gold spark.

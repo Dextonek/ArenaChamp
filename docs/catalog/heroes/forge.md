@@ -19,7 +19,7 @@ The forge hero kit: Brannoc's four spells (Q, W, E and the R ultimate), his pass
 | HP | 780 |
 | Kit shapes | Q HOOK (skillshot line, pull) · W SELF armour + armed slam · E TGT burn · R SELF Quench (spends the Heat) |
 
-He wins a 1v1 by heating up on the way in: the third spell in a row turns the hammer white, and then he is at his strongest and on a clock, because white heat burns him. The Quench ends it with a burst and a stun, and leaves him cold and weak. His weakness is reach and speed: he walks at 3.6 m/s, so a kiter who dodges the hammer (9 m, a straight line) lets him burn for nothing. Measured 2026-11-12 in the fight simulator: 53% and 59% in two runs against the benchmark heroes, both sides ([before](../../balance/rework-brannoc-before.html) 67.5%, [after](../../balance/rework-brannoc-after.html)).
+He wins a 1v1 by heating up on the way in: the third spell in a row turns the hammer white, and then he is at his strongest and on a clock, because white heat burns him. The Quench ends it with a burst and a stun, and leaves him cold and weak. His weakness is reach and speed: he walks at 3.6 m/s, so a kiter who dodges the hammer (9 m, a straight line) lets him burn for nothing. Measured 2026-11-12 in the fight simulator: 53% and 59% in two runs against the benchmark heroes on both sides; 34% and 43% as the player's hero alone, which is under the 40 to 60 band ([before](../../balance/rework-brannoc-before.html) 67.5%, [after](../../balance/rework-brannoc-after.html)). A computer that leaves no breath between his spells wins 44%: the Heat itself is the limit.
 
 ## At a glance
 
