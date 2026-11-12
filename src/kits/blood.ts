@@ -143,7 +143,7 @@ export const bloodKit: HeroKit = {
     },
     {
       key: 'R', label: 'sanguine feast', name: 'Sanguine Feast', range: 8, cooldown: 11,
-      blurb: 'Costs twice the Price, once in 11 s. She roots herself and drinks (8 m) for 1.6 s: pulses of 18, 18, then 24 plus 20% of their missing HP, and 45 HP back. A stun or silence, cover, or 9 m of distance ends it.',
+      blurb: 'Costs twice the Price, once in 11 s. She roots herself and drinks (8 m) for 1.6 s: pulses of 15, 15, then 20 plus 15% of their missing HP, and 45 HP back. A stun or silence, cover, or 9 m of distance ends it.',
       icon(g, s) {
         iconGround(g, s);
         // Two fangs over a falling drop, a bone ring round the whole.
