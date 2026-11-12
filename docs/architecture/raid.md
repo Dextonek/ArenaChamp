@@ -359,8 +359,8 @@ from the same cast:
 **How the rubble and the court's wall are "added".** They are not: they are in the room's obstacle list from the start, standing
 inside the stone, where no walk, look or ray reaches them until the walls in front of them go. So nothing has to be added at the
 same moment on every screen, a stone raised by `addStone` (which is timed, round, and breaks under his ray for a reward) is not
-misused for it, and nobody can stand where rubble lands, so nobody has to be pushed out of it. It is why the hall has 138 obstacles
-with its corners, not 86.
+misused for it, and nobody can stand where rubble lands, so nobody has to be pushed out of it. It is why the hall's file has 138
+obstacles, not 86.
 
 **The cast.** `breach` comes by the phase's clock (`BossPhase.timed`, at once), not as the phase's opener: that is the stage, whose
 cast is cut short when its stones are broken early, and the fall must not be. One hit can take him through two phases at once; then
