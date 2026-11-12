@@ -1,7 +1,7 @@
 ---
 title: The Heart of Noon, the Raid's third boss
 tags: [raid, boss, design]
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # The Heart of Noon
@@ -129,4 +129,66 @@ unjudged by hand; a raid for two or a party (each screen judges its own hero, by
 
 **Not done:** a raid for two in two tabs (`_raidHeart()` checks a partner's lock and plate on this screen); a person playing it; a real
 phone. The artist has not yet directed the room (first pass, drawn in code).
+
+## A room and a fight for a party: the Sunburst (2026-11-12)
+
+Asked for (user, 2026-11-11): "make the boss room bigger much bigger so that the 40 player will be lost there", "make like custom arena
+in blender ... for the boss it dont need to follow the others arenas", "what if the arena have not like round arena lets just forget all
+and lets make boss room". The Warden got the Hall of Noon; this is the Heart's. The room and why it is a sun:
+`pipeline/designs/raid-party.md`. How the fight works in it: `docs/architecture/raid.md`, "A party: the Sunburst". One or two heroes keep
+the Sunken Heart and the fight above, unchanged (`_raidHeart()`'s first 71 rows).
+
+| Piece | Where |
+|---|---|
+| The room, built | `blender/arenas/real/sunburst.py` -> `public/models/arenas/sunburst.glb`, `src/arenas/real/sunburst.json` |
+| The room in the game: floor, lanterns, far wall, its measures | `src/arenas/sunburst.ts` (`BURST`, `burstAt`, `rayAngle`, `spurAngle`) |
+| Which room, and what a party must do | `HEART_OF_NOON.resize(band)`, `party` and `band` in `src/raid/heart.ts`; `partyRing: 35` in `server/protocol.mjs` |
+| A shelter that holds five; an AI's margin in a lane | `Threat.most`, `Threat.margin` (`src/raid/types.ts`, `src/raid/script.ts`) |
+| Its check | `_raidHeart()`: 57 more rows, 128 in all |
+| Its pictures | `python pipeline/tools/heart-room-shots.py docs/raid` -> `docs/raid/heartroom-*.jpg` |
+
+**Decided while building:**
+- **A sun, eight rays.** Its attacks are all radial, so a shape whose every bay is a radius lets each of them run to a wall and gives
+  no free shelter from the beat. Eight because its fight is eights: 4 + 4 rays of the crown, up to 8 plates.
+- **The plates fall at the spurs' noses, and shelter by count.** One plate for five heroes means nothing if forty can stand behind one:
+  heroes do not push each other. So a raised plate's pocket (from the plate out to the stone, about 15 m²) is a gold zone the hub
+  counts, as it counts Shared Burden: five are sheltered, and with more in it each pays its share of what the rest would have taken
+  (8 in one pocket: 15 % each instead of 40 %). While the beat's orange floor shows, a pocket with more than five in it says how many
+  over its plate ("7/5"), from where the heroes are drawn on that screen. The first plate falls at the spur nearest the hero the Heart
+  looks at.
+- **A ring's spots stand in a row down one ray, all to be held.** The party rule is that what must be held grows with the band. Spread
+  over many rays, a party that has lost heroes could never lock a ring; in one row, one hero can still take them one after another
+  (four spots: about 11 s of the 14 the spots show).
+- **Solar Flare, three tries.** (1) Each ring open over one half of every ray, the next ring over the other half: nowhere is clear for
+  the whole flare, and the autopilot, which looks for such a place, cleared 2 of 20. (2) A gap in every ray, drifting: a lane is 1 m
+  wide where the party stands to hit the Heart; 1 and 2 of 40. (3) Four gaps over four spurs, the same for all three rings, each
+  reaching over the near half of the ray on either side: lanes 4.4 m wide at the Heart, and in every bay one half open. Kept.
+- **Cover stops what runs along the floor, not the beat.** Far out in a bay a beam's end moves at up to 13 m/s (a hero walks 4), so
+  a bay needs a place to stand: a piece of the fallen armillary across half of each. It stops a beam and the flare's rings (and so does
+  a raised plate: without that, half the pockets lay in the flare's fire and the Heartbeat killed the autopilot most). If the pieces
+  also shaded the beat, eight of them would give a party eight beats with no plate raised, so the beat comes from above.
+- **The band, not the heroes standing.** The brain knows how many stand, but the hub's relay of a cast passes only the fields it knows.
+  The band is known to every screen before the fight; a count needs one more field in `server/hub.mjs` (`case 'boss_cast'`).
+
+**Measured** (the autopilot alone, tier 1, the same ten heroes x 4 fights, one session, 2026-11-12; in the Sunburst one hero meets the
+mechanics of band 10: two plates, one spot a ring): the Sunken Heart 10 of 40 (99 s a fight), the Sunburst 14 of 40 (119 s; the walk in
+from the gate is 7 s of it). Inside the noise of 40 fights, so no number of the fight was changed for the room. On the way: 1 and 2 of
+40 with a gap in every ray; 7 of 40 with four lanes; 7 of 40 with the AI's margin (the flare's hits fell from 174 to 57 in 40 fights, but
+the Heartbeat then killed 10: a pocket under the flare's fire); 14 of 40 once cover stopped the flare. What hits it most in the Sunburst:
+the beams (151 in 40 fights), the flare (57), Blade Fall (38); what kills it: the beams (10), the Heartbeat (8). No errors in any run.
+From the end of a ray the autopilot finds its way to a spot in another ray (7 of 8 starts locked a ring within 14 s; the eighth was
+still walking). `_raidHeart()` 128 rows pass, and after the two small additions to the script the other bosses' checks as before
+(`_raidCheck()` 95, `_raidAsh()` 77, `_raidUpgrades()` 40); type check, build and `npm run test:server` pass.
+
+**What the 14 of 40 is, and is not.** One hero, with one hero's HP, against the mechanics of band 10, one run of 40 fights, with a
+margin added for the autopilot in the flare's lanes. It says the room and its moves can be read and walked by the autopilot about as
+well as the room for two. It says nothing of a party: a pocket's count, a row held by several heroes and the hub's part in both were
+run on one screen only, with the other players' reports fed in by hand.
+
+**Not done:** a party of real screens through the hub in this room (the partner's side of every row is a report fed in by hand); a
+person playing it; a real phone; tiers above 1; the molten floor past five minutes was not looked at in this room; the numbers of the
+fight (HP, shares, the enrage) are the room for two's times the band, untouched; no sound; `PROTOCOL` needs a new number when it goes
+out; it is not on the News page (the party raid and the Hall of Noon are not there yet either). The hub's limit of 400 spots and
+rewards a fight (`TAKEN_MAX`) is near for a band of 40 at tier 4 and up: about 340 in six minutes (`docs/architecture/raid.md`). The
+room is first pass for the artist to direct.
 

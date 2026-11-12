@@ -43,6 +43,11 @@ export const CHANGELOG: Release[] = [
     live: false,
     items: [
       {
+        tag: 'Raid',
+        title: 'The Sunburst',
+        text: 'Three or more players fight the Heart of Noon in a room of its own: the crater where the sun fell, a round well with eight long rays cut into the stone. Its flare leaves four lanes, its rings are locked by holding a row of gold spots out in a ray, and a plate of its crust falls for every five of you. Each shelters five.',
+      },
+      {
         tag: 'Heroes',
         title: 'Anka, the Firebird: hero 40',
         text: 'A fire dancer with wings of flame and a feather fan, and the first true fire hero. Her feathers stay on the floor as embers, three at most: Fan the Flames makes them burst, Ember Flight carries her to one, and Firebird crosses the arena as a great burning bird. She has less health than any other mage, 460.',

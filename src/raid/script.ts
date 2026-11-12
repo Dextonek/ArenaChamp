@@ -362,6 +362,14 @@ export class BossScript {
     if (!th || th.settled) return;
     th.settled = true;
     const hit = (share: number) => this.world.hitMe({ share: share * this.rage * this.harm, from: { x: a.cast.fx, z: a.cast.fz }, move: a.cast.move, big: true });
+    // A shelter that holds only so many (`Threat.most`): what those over the number would have taken is shared by all in it.
+    if (th.most !== undefined) {
+      if (th.inside && count > th.most) {
+        this.world.say('CROWDED', '#ffb050', this.world.me().x, this.world.me().z);
+        hit((th.share * (count - th.most)) / count);
+      }
+      return;
+    }
     if (count <= 0) {
       this.ctx.flash('rgba(255,214,120,0.8)', 0.45);
       hit(th.share);
@@ -387,7 +395,10 @@ export class BossScript {
         const look = Math.max(within, th.look ?? 0);
         if (th.at - t > look) continue;
         if (th.hits) {
-          for (let k = Math.max(t, th.at); k <= Math.min(end, t + look); k += 0.2) if (th.hits(x, z, k)) return true;
+          const m = th.margin ?? 0;
+          for (let k = Math.max(t, th.at); k <= Math.min(end, t + look); k += 0.2) {
+            if (th.hits(x, z, k) || (m > 0 && (th.hits(x + m, z, k) || th.hits(x - m, z, k) || th.hits(x, z + m, k) || th.hits(x, z - m, k)))) return true;
+          }
           continue;
         }
         if (th.shapeAt) {

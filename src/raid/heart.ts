@@ -1,15 +1,17 @@
 import * as THREE from 'three';
-import { RAID_BOSSES } from '../../server/protocol.mjs';
+import { RAID_BOSSES, RAID_PARTY_MAX, raidRing } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
+import { BURST, BURST_JOINTS, BURST_R, burstAt, rayAngle, spurAngle, sunburstArena } from '../arenas/sunburst';
 import { HEART_JOINTS, HEART_R, sunkenHeartArena } from '../arenas/sunkenHeart';
+import { TelegraphLayer } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import type { Obstacle } from '../obstacles';
 import { HEART_LIVE, heartLook, resetHeartLive } from './bodies/heart';
 import { HoldRing, LightPillar, ShadowFloor } from './fx';
-import { STAND_COLOR, STILL_COLOR, STILL_WINDOW } from './script';
+import { LEAVE_ALPHA, LEAVE_COLOR, STAND_COLOR, STILL_COLOR, STILL_WINDOW } from './script';
 import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } from './types';
 
 /**
@@ -30,6 +32,25 @@ import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } fr
 
 const C = { x: RING.x, z: RING.z };
 const NUMBERS = RAID_BOSSES.heart;
+
+/**
+ * A party is in (a band over 2): it fights in the Sunburst (src/arenas/sunburst.ts: a well and eight rays, 35 m to the far corners),
+ * and what its mechanics ask grows with the band. Set by `resize` before the fight is built, from the band the hub sends, so it is the
+ * same on every screen; a move may read it as it reads the cover. One or two heroes keep the Sunken Heart, and nothing below changes
+ * for them. In the Sunburst:
+ * - every move reaches the walls: the flare's rings, the beams, the rays, the Heartbeat and the beat of Hold Still;
+ * - Solar Flare has four gaps, each over a spur, so one half of every ray stays open;
+ * - a ring has more gold spots, in a row down one ray, and locks when all of them are held;
+ * - one plate falls for every five heroes, each in front of a spur's nose, and its shade (the pocket from it to the stone) shelters five;
+ * - the Crown of Rays fires down four rays and then the four between;
+ * - what runs along the floor stops at cover, the fallen armillary's pieces and a raised plate: a ring's beam and the flare's rings.
+ *   The Heartbeat doesn't stop at the armillary's pieces: it comes from above, and only a plate stood on edge shades it.
+ */
+let party = false;
+let band = 2;
+/** How far its room reaches from it (m). */
+const roomR = () => (party ? BURST_R : HEART_R);
+const TAU = Math.PI * 2;
 /** How far its body reaches from its middle (m): what its beams and rings start from. */
 const BODY_R = 2;
 /** The molten gold of its light, and the deeper glow round it. */
@@ -41,6 +62,62 @@ const CRUST = 0x8a6a48;
 const atTarget = (c: AimContext) => ({ x: c.target.x, z: c.target.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) });
 const atHeart = (c: AimContext) => ({ x: C.x, z: C.z, dir: Math.atan2(c.target.x - C.x, c.target.z - C.z) });
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+
+/** The floor behind a piece of cover, as the Heart sees it: the angle of its middle and how far it reaches to each side (radians), from how far out (m). */
+interface Shade { a: number; half: number; d: number }
+
+/** The shade of each piece of cover that is not the room's own wall, from (x, z). For what spreads over the floor from the Heart (the flare's rings). */
+function shadesOf(cover: readonly Obstacle[], x: number, z: number): Shade[] {
+  const out: Shade[] = [];
+  for (const o of cover) {
+    if (o.fixed) continue;
+    const mid = Math.atan2((o.ax + o.bx) / 2 - x, (o.az + o.bz) / 2 - z);
+    let lo = Infinity, hi = -Infinity;
+    for (const [px, pz] of [[o.ax, o.az], [o.bx, o.bz]]) {
+      const dist = Math.hypot(px - x, pz - z), rel = wrap(Math.atan2(px - x, pz - z) - mid), side = Math.asin(Math.min(1, o.r / Math.max(dist, 0.01)));
+      lo = Math.min(lo, rel - side);
+      hi = Math.max(hi, rel + side);
+    }
+    // How near the piece comes: the nearest point of its middle line.
+    const sx = o.bx - o.ax, sz = o.bz - o.az, len2 = sx * sx + sz * sz;
+    const t = len2 > 0 ? THREE.MathUtils.clamp(((x - o.ax) * sx + (z - o.az) * sz) / len2, 0, 1) : 0;
+    out.push({ a: mid + (lo + hi) / 2, half: (hi - lo) / 2, d: Math.hypot(o.ax + sx * t - x, o.az + sz * t - z) });
+  }
+  return out;
+}
+
+/** The most pieces of cover a flare's ring is cut by: the room's eight and a plate in front of each spur. */
+const SHADES = 16;
+
+/**
+ * How far a beam from (x, z) along yaw `a` gets before cover stops it, at most `max` (m). The room's own walls don't count: the beam
+ * ends in the stone anyway. Each piece of cover is a capsule: two round ends and two straight sides.
+ */
+function beamStop(cover: readonly Obstacle[], x: number, z: number, a: number, max: number) {
+  const dx = Math.sin(a), dz = Math.cos(a);
+  let best = max;
+  for (const o of cover) {
+    if (o.fixed) continue;
+    for (const [px, pz] of [[o.ax, o.az], [o.bx, o.bz]]) {
+      const ex = px - x, ez = pz - z, b = ex * dx + ez * dz, q = b * b - (ex * ex + ez * ez - o.r * o.r);
+      if (q < 0) continue;
+      const t = b - Math.sqrt(q);
+      if (t >= 0 && t < best) best = t;
+    }
+    const sx = o.bx - o.ax, sz = o.bz - o.az, len = Math.hypot(sx, sz);
+    if (len < 1e-6) continue;
+    const ux = sx / len, uz = sz / len, nx = -uz, nz = ux, den = dx * nx + dz * nz;
+    if (Math.abs(den) < 1e-6) continue;
+    const off = (o.ax - x) * nx + (o.az - z) * nz;
+    for (const side of [-1, 1]) {
+      const t = (off + side * o.r) / den;
+      if (t < 0 || t >= best) continue;
+      const s = (x + dx * t - o.ax) * ux + (z + dz * t - o.az) * uz;
+      if (s >= 0 && s <= len) best = t;
+    }
+  }
+  return best;
+}
 
 const beam = (p: PlayContext, core: THREE.ColorRepresentation, glow: THREE.ColorRepresentation, width: number) => {
   const b = new GlowBeam(core, glow, width);
@@ -123,9 +200,24 @@ const FLARE_HALF = 0.6;
 const FLARE_GAP = 30;
 const FLARE_TURN = [12, 20];
 const FLARE_ASIDE = [20, 45];
+/**
+ * In the Sunburst a ring has four gaps, each lying over a spur (every other spur: the seed says which four), the same for all three
+ * rings: four lanes, wide where the party stands to hit the Heart (over 4 m at 6 m from it). A gap is this wide to each side of its
+ * spur (degrees), so it reaches over the near half of the ray on either side: in every ray one half stays open and the other burns,
+ * and a hero far out in a bay, who could never run to a lane across the room, steps to the right wall. Two gaps there would leave six
+ * rays with no way out, and a gap in every ray makes lanes 1 m wide at the Heart.
+ */
+const FLARE_PARTY_LANES = 4;
+const FLARE_PARTY_GAP = 21;
+/**
+ * How far inside a lane an AI stands there (m). All three rings have the same lanes, so one standing on a lane's very edge, where an
+ * AI stops, and stepping over it and back as it fights, took every ring that came while it was over (measured: 1.4 hits a flare
+ * against 0.9 in the room for two, whose lanes move on).
+ */
+const FLARE_PARTY_MARGIN = 0.7;
 
-/** Of an angle, how far it is from the nearer of two gaps opposite each other (radians, 0..π/2). */
-const offPair = (a: number) => Math.abs(Math.atan2(Math.sin(2 * a), Math.cos(2 * a)) / 2);
+/** Of an angle, how far it is from the nearest of `lanes` gaps spread evenly round (radians): two opposite each other in the room for two. */
+const offLanes = (a: number, lanes: number) => Math.abs(Math.atan2(Math.sin(lanes * a), Math.cos(lanes * a)) / lanes);
 
 const flareVertex = /* glsl */ `
   varying vec2 vP;
@@ -135,15 +227,24 @@ const flareVertex = /* glsl */ `
   }
 `;
 const flareFragment = /* glsl */ `
-  uniform float uRadius, uHalf, uGap, uGapHalf, uOpacity;
+  uniform float uRadius, uHalf, uGap, uGapHalf, uOpacity, uLanes;
+  uniform vec3 uShade[16];
+  uniform int uShades;
   varying vec2 vP;
   void main() {
     float d = length(vP);
     float band = 1.0 - smoothstep(uHalf * 0.6, uHalf, abs(d - uRadius));
     if (band <= 0.0) discard;
-    // Two gaps, opposite each other: how far this point is from the nearer one.
-    float a = atan(vP.x, vP.y) - uGap;
-    a = abs(atan(sin(2.0 * a), cos(2.0 * a)) * 0.5);
+    float at = atan(vP.x, vP.y);
+    // Behind a piece of cover the ring is cut: (angle, half its width, how far out it stands).
+    for (int i = 0; i < 16; i++) {
+      if (i >= uShades) break;
+      float off = at - uShade[i].x;
+      if (d > uShade[i].z && abs(atan(sin(off), cos(off))) < uShade[i].y) discard;
+    }
+    // The gaps, spread evenly round (two opposite each other in the room for two): how far this point is from the nearest one.
+    float a = at - uGap;
+    a = abs(atan(sin(uLanes * a), cos(uLanes * a)) / uLanes);
     float open = 1.0 - smoothstep(uGapHalf - 0.03, uGapHalf + 0.03, a);
     vec3 fire = mix(vec3(0.66, 0.2, 0.03), vec3(0.9, 0.42, 0.08), band);
     vec3 col = mix(fire, vec3(1.0, 0.86, 0.45), open);
@@ -151,18 +252,28 @@ const flareFragment = /* glsl */ `
   }
 `;
 
-/** A ring of Solar Flare: fire with two gold gaps opposite each other, growing from the heart. */
+/** A ring of Solar Flare: fire with gold gaps spread evenly round (two opposite each other, or the Sunburst's four), growing from the heart. */
 class FlareRing {
   readonly mesh: THREE.Mesh;
   private mat: THREE.ShaderMaterial;
-  constructor(x: number, z: number, reach: number, gapHalf: number) {
+  constructor(x: number, z: number, reach: number, gapHalf: number, lanes: number) {
     this.mat = new THREE.ShaderMaterial({
       vertexShader: flareVertex, fragmentShader: flareFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-      uniforms: { uRadius: { value: 0 }, uHalf: { value: FLARE_HALF }, uGap: { value: 0 }, uGapHalf: { value: gapHalf }, uOpacity: { value: 0 } },
+      uniforms: {
+        uRadius: { value: 0 }, uHalf: { value: FLARE_HALF }, uGap: { value: 0 }, uGapHalf: { value: gapHalf }, uOpacity: { value: 0 }, uLanes: { value: lanes },
+        uShade: { value: Array.from({ length: SHADES }, () => new THREE.Vector3()) }, uShades: { value: 0 },
+      },
     });
     this.mesh = new THREE.Mesh(new THREE.CircleGeometry(reach, 96).rotateX(-Math.PI / 2), this.mat);
     this.mesh.position.set(x, 0.07, z);
     this.mesh.renderOrder = 2;
+  }
+
+  /** The cover that cuts it (the Sunburst): nothing of it is drawn behind a piece. */
+  cut(shades: Shade[]) {
+    const u = this.mat.uniforms, n = Math.min(SHADES, shades.length);
+    for (let i = 0; i < n; i++) (u.uShade.value as THREE.Vector3[])[i].set(shades[i].a, shades[i].half, shades[i].d);
+    u.uShades.value = n;
   }
 
   set(radius: number, gap: number, half: number, opacity: number) {
@@ -191,30 +302,41 @@ const solarFlare: BossMove = {
   aim: atHeart,
   play(c, p) {
     const rng = seeded(c.seed), deg = THREE.MathUtils.degToRad;
-    const side = rng() < 0.5 ? -1 : 1, aside = deg(FLARE_ASIDE[0] + rng() * (FLARE_ASIDE[1] - FLARE_ASIDE[0]));
-    const turn = (rng() < 0.5 ? -1 : 1) * deg(FLARE_TURN[0] + rng() * (FLARE_TURN[1] - FLARE_TURN[0]));
-    const at = p.shown(2.4), first = c.dir + side * aside, gapHalf = deg(FLARE_GAP), reach = HEART_R + 0.6;
+    // The same four rolls in both rooms: a side, how far aside, which way the gaps go round, and how far each time.
+    const side = rng() < 0.5 ? -1 : 1, far = rng(), sense = rng() < 0.5 ? -1 : 1, on = rng();
+    const pick = (range: number[], u: number) => deg(range[0] + u * (range[1] - range[0]));
+    const R = roomR(), lanes = party ? FLARE_PARTY_LANES : 2, gapHalf = deg(party ? FLARE_PARTY_GAP : FLARE_GAP), reach = R + 0.6;
+    // The first gap: to one side of the hero it aims at, and each pair a little on from the last. In the Sunburst the gaps lie over
+    // four spurs, the same for all three rings, and the seed says which four: lanes that wide are near everyone, so it aims at nobody.
+    const first = party ? spurAngle(side > 0 ? 0 : 1) : c.dir + side * pick(FLARE_ASIDE, far);
+    const turn = party ? 0 : sense * pick(FLARE_TURN, on);
+    const at = p.shown(2.4);
+    // In the Sunburst a ring stops at cover: the floor behind a piece, as it stands this frame.
+    let shades: Shade[] = party ? shadesOf(p.cover(), c.fx, c.fz) : [];
+    const shaded = (d: number, a: number) => shades.some((s) => d > s.d && Math.abs(wrap(a - s.a)) < s.half);
     const flares = Array.from({ length: FLARE_RINGS }, (_, i) => {
       const go = at + i * FLARE_APART, end = go + (reach - BODY_R) / FLARE_SPEED, gap = first + i * turn;
       const radiusAt = (t: number) => BODY_R + (t - go) * FLARE_SPEED;
       const hits = (x: number, z: number, t: number) => {
         if (t < go || t > end) return false;
-        const dx = x - c.fx, dz = z - c.fz;
-        if (Math.abs(Math.hypot(dx, dz) - radiusAt(t)) > FLARE_HALF) return false;
-        return offPair(Math.atan2(dx, dz) - gap) > gapHalf;
+        const dx = x - c.fx, dz = z - c.fz, d = Math.hypot(dx, dz), a = Math.atan2(dx, dz);
+        if (Math.abs(d - radiusAt(t)) > FLARE_HALF) return false;
+        return offLanes(a - gap, lanes) > gapHalf && !shaded(d, a);
       };
       // An AI sees the whole of its run at once: a ring grows, and a spot only clear for the next moment is not clear.
-      const th: Threat = { shape: { kind: 'circle', x: c.fx, z: c.fz, radius: HEART_R }, at: go, to: end, every: 10, share: 0.12, hits, look: end - go + 0.6 };
-      const ring = new FlareRing(c.fx, c.fz, reach + 0.5, gapHalf);
+      const th: Threat = { shape: { kind: 'circle', x: c.fx, z: c.fz, radius: R }, at: go, to: end, every: 10, share: 0.12, hits, look: end - go + 0.6, margin: party ? FLARE_PARTY_MARGIN : 0 };
+      const ring = new FlareRing(c.fx, c.fz, reach + 0.5, gapHalf, lanes);
       p.group.add(ring.mesh);
       return { go, end, gap, radiusAt, th, ring };
     });
-    p.hint('Solar Flare: walk through the gaps');
+    p.hint(party ? 'Solar Flare: four lanes, each over a spur and half of the ray on either side. Get into one, or behind cover' : 'Solar Flare: walk through the gaps');
     return {
       threats: flares.map((f) => f.th), duration: flares[FLARE_RINGS - 1].end + 0.4,
       look: {
         update(t) {
+          if (party) shades = shadesOf(p.cover(), c.fx, c.fz);
           flares.forEach((f, i) => {
+            if (party) f.ring.cut(shades);
             // Before it leaves, each ring waits round the heart, nested, showing where its gaps will be.
             if (t < f.go) f.ring.set(BODY_R + 0.35 + i * 0.55, f.gap, 0.22, 0.35 + 0.5 * Math.min(1, t / at));
             else f.ring.set(f.radiusAt(t), f.gap, FLARE_HALF, t < f.end ? 1 : Math.max(0, 1 - (t - f.end) * 2.5));
@@ -245,6 +367,15 @@ const LOCK_WARN = 0.8;
 /** Where a ring's spot stands, from the heart (m), and how wide it is. */
 const LOCK_OUT = HEART_R - 1.7;
 const LOCK_R = 1.3;
+/**
+ * In the Sunburst a ring has a gold spot for every ten heroes the fight is tuned for, in a row down one ray, and locks when all of
+ * them are held (one hero may hold them one after another). The three rings' rays, counted on from the first (which the seed picks);
+ * where a row's first spot stands along its ray (m, just past the fallen armillary's piece), and how far apart the spots are.
+ */
+const lockSpots = () => (party ? Math.max(1, Math.round(band / 10)) : 1);
+const LOCK_RAYS = [0, 3, 5];
+const LOCK_ALONG = 23.5;
+const LOCK_APART = 3;
 
 /**
  * The Rings Turn: the three rings come down round its foot and each throws a beam over the floor that turns, each at its own speed.
@@ -257,8 +388,10 @@ const ringsTurn: BossMove = {
   aim: atHeart,
   play(c, p) {
     const i = c.step % 3, rng = seeded(c.seed);
-    const base = rng() * Math.PI * 2, sense = rng() < 0.5 ? -1 : 1;
+    const base = rng() * Math.PI * 2, sense = rng() < 0.5 ? -1 : 1, R = roomR();
     const warm = p.shown(2.5), end = warm + RINGS_RUN;
+    /** How far the beam gets at yaw `a`: to the wall, or in the Sunburst to the cover in its way. */
+    const reach = (a: number) => (party ? beamStop(p.cover(), c.fx, c.fz, a, R + 0.5) : R + 0.5);
     const speed = THREE.MathUtils.degToRad(RING_SPEED[i]) * (i % 2 ? -sense : sense);
     const start = base + (i * Math.PI * 2) / 3;
     const angleAt = (t: number) => start + speed * Math.max(0, t - warm);
@@ -269,22 +402,26 @@ const ringsTurn: BossMove = {
       if (t < warm || t > end || state(t) !== 'on') return false;
       const a = angleAt(t), px = x - c.fx, pz = z - c.fz;
       const along = px * Math.sin(a) + pz * Math.cos(a);
-      if (along < BODY_R * 0.8 || along > HEART_R + 0.5) return false;
+      if (along < BODY_R * 0.8 || along > reach(a)) return false;
       return Math.abs(px * Math.cos(a) - pz * Math.sin(a)) <= RING_W / 2;
     };
-    const th: Threat = { shape: { kind: 'circle', x: c.fx, z: c.fz, radius: HEART_R }, at: warm, to: end, every: 1, share: 0.1, hits, look: 1.2 };
-    // Its spot on the rim, between where its beam and the next one start.
-    const sa = start + Math.PI / 3, sx = C.x + Math.sin(sa) * LOCK_OUT, sz = C.z + Math.cos(sa) * LOCK_OUT;
-    const o: Objective = { part: 0, x: sx, z: sz, radius: LOCK_R, hold: LOCK_HOLD, until: end - 1, can: () => lockedAt < 0 && time >= warm };
-    const light = new LightPillar(sx, sz, LOCK_R, 6, STAND_COLOR), held = new HoldRing(sx, sz, LOCK_R, STAND_COLOR);
+    const th: Threat = { shape: { kind: 'circle', x: c.fx, z: c.fz, radius: R }, at: warm, to: end, every: 1, share: 0.1, hits, look: 1.2 };
+    // Its spot on the rim, between where its beam and the next one start. In the Sunburst: its row of spots down its ray.
+    const sa = start + Math.PI / 3, lockRay = (Math.floor((base / TAU) * BURST.rays) + LOCK_RAYS[i]) % BURST.rays;
+    const spots = Array.from({ length: lockSpots() }, (_, j) => {
+      const at = party ? burstAt(lockRay, LOCK_ALONG + j * LOCK_APART) : { x: C.x + Math.sin(sa) * LOCK_OUT, z: C.z + Math.cos(sa) * LOCK_OUT };
+      const light = new LightPillar(at.x, at.z, LOCK_R, 6, STAND_COLOR), held = new HoldRing(at.x, at.z, LOCK_R, STAND_COLOR);
+      p.group.add(light.mesh, held.mesh);
+      return { ...at, light, held, taken: false };
+    });
+    const objectives: Objective[] = spots.map((s, j) => ({ part: j, x: s.x, z: s.z, radius: LOCK_R, hold: LOCK_HOLD, until: end - 1, can: () => lockedAt < 0 && time >= warm }));
     const ray = beam(p, CORE, GLOW, 1.4), floor = beam(p, 0xc06a20, 0x7a3208, RING_W * 1.4);
-    p.group.add(light.mesh, held.mesh);
-    if (i === 0) p.hint('Hold a gold spot on the rim to lock its ring');
+    if (i === 0) p.hint(party && spots.length > 1 ? 'Hold every gold spot of a row to lock its ring' : party ? 'Hold a gold spot out in a ray to lock its ring' : 'Hold a gold spot on the rim to lock its ring');
     const a3 = new THREE.Vector3(), b3 = new THREE.Vector3();
     let shown = start, frozen = start, beamTime = 0;
     const live = HEART_LIVE.rings[i];
     return {
-      threats: [th], objectives: [o], duration: end + 1.2,
+      threats: [th], objectives, duration: end + 1.2,
       look: {
         update(t, dt) {
           time = t;
@@ -300,31 +437,45 @@ const ringsTurn: BossMove = {
           const dx = Math.sin(shown), dz = Math.cos(shown);
           const on = t < warm ? 0.15 + 0.4 * (t / warm) : t < end ? (st === 'on' ? 1 : st === 'warn' ? 0.35 : 0) : Math.max(0, 1 - (t - end) / 0.4);
           const width = t < warm || st === 'warn' ? 0.3 : 1.4;
+          const far = reach(shown) - 0.2;
           a3.set(c.fx + dx * BODY_R * 0.8, 0.8, c.fz + dz * BODY_R * 0.8);
-          b3.set(c.fx + dx * (HEART_R + 0.3), 0.6, c.fz + dz * (HEART_R + 0.3));
+          b3.set(c.fx + dx * far, 0.6, c.fz + dz * far);
           ray.set(a3, b3, p.camera, beamTime, on, width);
           if (st === 'on' && t >= warm && t < end && Math.random() < dt * 25) p.sparks.emit(b3.x, 0.6, b3.z, 3, 3, 3, 0.5, SPARK);
           a3.y = b3.y = 0.05;
           floor.set(a3, b3, p.camera, beamTime, on * 0.5, RING_W * 1.4, true);
-          // The spot: lit while it can be taken.
+          // A spot: lit while it can be taken, and it stays lit, held, until the last of its row is.
           const open = lockedAt < 0 && t >= warm && t < end - 1;
-          light.opacity = open ? 0.45 + 0.15 * Math.sin(t * 4 + i) : 0;
-          held.set(open ? o.held ?? 0 : 0);
+          spots.forEach((s, j) => {
+            s.light.opacity = !open ? 0 : s.taken ? 0.25 : 0.45 + 0.15 * Math.sin(t * 4 + i + j);
+            s.held.set(!open ? 0 : s.taken ? 1 : objectives[j].held ?? 0);
+          });
         },
-        done() {
+        done(o) {
+          const s = spots[o.part];
+          if (!s || s.taken) return;
+          s.taken = true;
+          p.sparks.emit(s.x, 0.5, s.z, 36, 4.5, 4, 0.8, STAND_COLOR);
+          p.show.beam(new THREE.Vector3(s.x, 0.8, s.z), new THREE.Vector3(c.fx, 2.5, c.fz), { life: 0.6, core: 0xfff0c8, glow: 0xffb050, width: 0.6 });
+          const got = spots.filter((x) => x.taken).length;
+          if (got < spots.length) {
+            p.say(`HELD ${got}/${spots.length}`, '#ffe27a', s.x, s.z);
+            return;
+          }
+          // The last of its row: the ring locks.
           lockedAt = time;
           frozen = shown;
           p.reward('lock', c.id);
-          p.show.triumph(sx, sz, 0xffd890);
-          p.say('RING LOCKED', '#ffe27a', sx, sz);
-          p.sparks.emit(sx, 0.5, sz, 36, 4.5, 4, 0.8, STAND_COLOR);
-          p.show.beam(new THREE.Vector3(sx, 0.8, sz), new THREE.Vector3(c.fx, 2.5, c.fz), { life: 0.6, core: 0xfff0c8, glow: 0xffb050, width: 0.6 });
+          p.show.triumph(s.x, s.z, 0xffd890);
+          p.say('RING LOCKED', '#ffe27a', s.x, s.z);
         },
         dispose() {
           live.down = 0;
           live.lit = 1;
-          light.dispose();
-          held.dispose();
+          for (const s of spots) {
+            s.light.dispose();
+            s.held.dispose();
+          }
           dropBeam(ray);
           dropBeam(floor);
         },
@@ -348,6 +499,17 @@ const PLATE_HOLD = 3;
 const PLATE_R = 1.05;
 const PLATE_IN = 1.35;
 const PLATE_AFTER = 1;
+/**
+ * In the Sunburst: one plate for every five heroes the fight is tuned for, eight at most (one for each spur); how far out a plate's
+ * spot is (m): in front of a spur's nose. Its shade is the pocket from the raised plate out to the stone, and it shelters this many:
+ * with more in it, what the rest would have taken is shared by all in it (`Threat.most`, counted by the hub as a gold zone is).
+ */
+const partyPlates = () => Math.min(BURST.rays, Math.max(1, Math.ceil(band / 5)));
+const PARTY_PLATE_OUT = 13.5;
+const POCKET_END = BURST.well - 0.1;
+const POCKET_HOLDS = 5;
+/** A pocket with more in it than it shelters says how many, this often (s), while the beat's floor shows: a look, from where the heroes are drawn. */
+const POCKET_SAYS = 0.9;
 
 const plateGeo = new THREE.BoxGeometry(2.3, 0.32, 2.6);
 const plateTrimGeo = new THREE.BoxGeometry(2.36, 0.1, 0.14);
@@ -362,14 +524,17 @@ const heartbeat: BossMove = {
   aim: atHeart,
   play(c, p) {
     const at = p.shown(BEAT_GATHER), rng = seeded(c.seed), base = rng() * Math.PI * 2, source = { x: c.fx, z: c.fz };
-    const raised: (Obstacle | null)[] = Array.from({ length: PLATES }, () => null);
+    const R = roomR(), count = party ? partyPlates() : PLATES, out = party ? PARTY_PLATE_OUT : PLATE_OUT;
+    // In the Sunburst the first plate falls at the spur nearest the hero it looks at (the brain's aim), the rest spread round from it.
+    const spur = Math.floor(((((c.dir % TAU) + TAU) % TAU) / TAU) * BURST.rays);
+    const raised: (Obstacle | null)[] = Array.from({ length: count }, () => null);
     let time = 0, struck = false;
     // Dark crust with a gold edge: never orange, which on this floor means leave.
     const crust = new THREE.MeshStandardMaterial({ color: 0x2a211c, roughness: 0.72, metalness: 0.3, flatShading: true, emissive: 0xff8a3a, emissiveIntensity: 0 });
     const trim = new THREE.MeshStandardMaterial({ color: 0xc9a24a, roughness: 0.36, metalness: 0.85, emissive: 0xffa040, emissiveIntensity: 0.15 });
-    const plates = Array.from({ length: PLATES }, (_, k) => {
-      const a = base + (k * Math.PI * 2) / PLATES + (rng() - 0.5) * 0.5;
-      const x = C.x + Math.sin(a) * PLATE_OUT, z = C.z + Math.cos(a) * PLATE_OUT;
+    const plates = Array.from({ length: count }, (_, k) => {
+      const a = party ? spurAngle((spur + Math.round((k * BURST.rays) / count)) % BURST.rays) : base + (k * Math.PI * 2) / PLATES + (rng() - 0.5) * 0.5;
+      const x = C.x + Math.sin(a) * out, z = C.z + Math.cos(a) * out;
       // Where it stands once raised: between the spot and the heart, facing the heart.
       const cx = x - Math.sin(a) * PLATE_IN, cz = z - Math.cos(a) * PLATE_IN;
       const mesh = new THREE.Mesh(plateGeo, crust), edge = new THREE.Mesh(plateTrimGeo, trim);
@@ -384,15 +549,41 @@ const heartbeat: BossMove = {
     const objectives: Objective[] = plates.map((s, k) => ({
       part: k, x: s.x, z: s.z, radius: 1.3, hold: PLATE_HOLD, until: at - 0.3, can: () => !raised[k] && time >= PLATE_FALL,
     }));
-    const shade = new ShadowFloor(source, () => raised.filter((o): o is Obstacle => !!o), STAND_COLOR, HEART_R);
+    const shade = new ShadowFloor(source, () => raised.filter((o): o is Obstacle => !!o), STAND_COLOR, party ? POCKET_END : HEART_R);
     p.group.add(shade.mesh);
-    p.hint('Heartbeat: hold a fallen plate to raise it, then stand behind it');
-    const th: Threat = { shape: { kind: 'ring', x: c.fx, z: c.fz, inner: BODY_R + 0.2, outer: HEART_R + 1 }, at, show: at - BEAT_LOOK, share: BEAT_SHARE, source, look: BEAT_LOOK };
+    p.hint(party ? `Heartbeat: raise the fallen plates. Each shelters ${POCKET_HOLDS}, in the pocket behind it` : 'Heartbeat: hold a fallen plate to raise it, then stand behind it');
+    const burnt = { kind: 'ring', x: c.fx, z: c.fz, inner: BODY_R + 0.2, outer: R + 1 } as const;
+    // In the Sunburst only a raised plate shelters, and only in its pocket: from the plate out to the stone, as wide as its shade.
+    const half = Math.atan(PLATE_R / (out - PLATE_IN));
+    const inPocket = (k: number, x: number, z: number) => {
+      if (!raised[k]) return false;
+      const dx = x - C.x, dz = z - C.z, r = Math.hypot(dx, dz);
+      return r >= out - PLATE_IN - 0.3 && r <= POCKET_END && Math.abs(wrap(Math.atan2(dx, dz) - plates[k].a)) <= half;
+    };
+    const th: Threat = party
+      ? {
+        shape: burnt, at, share: BEAT_SHARE, look: BEAT_LOOK,
+        hits: (x, z) => {
+          const r = Math.hypot(x - c.fx, z - c.fz);
+          return r >= burnt.inner && r <= burnt.outer && !plates.some((_, k) => inPocket(k, x, z));
+        },
+      }
+      : { shape: burnt, at, show: at - BEAT_LOOK, share: BEAT_SHARE, source, look: BEAT_LOOK };
+    const threats = [th];
+    let said = 0;
+    // A zone with its own rule is not drawn for it: the beat's orange floor, as the room for two shows it.
+    const zone = party ? new TelegraphLayer() : null;
+    if (zone) {
+      zone.set([{ shape: burnt, start: at - BEAT_LOOK, impact: at }], LEAVE_COLOR, LEAVE_ALPHA);
+      p.group.add(zone.group);
+    }
     return {
-      threats: [th], objectives, duration: at + PLATE_AFTER + 0.8,
+      // A pocket's count comes back from the hub after the beat: the cast stays to hear it.
+      threats, objectives, duration: at + (party ? 3 : PLATE_AFTER + 0.8),
       look: {
         update(t) {
           time = t;
+          zone?.update(t);
           HEART_LIVE.beat = t < at ? Math.min(1, t / at) : 0;
           HEART_LIVE.struck = t < at ? 99 : t - at;
           crust.emissiveIntensity = t < at ? 0.04 + 0.06 * (t / at) ** 2 : Math.max(0, 0.1 - (t - at) * 0.2);
@@ -422,6 +613,18 @@ const heartbeat: BossMove = {
           const s = Math.min(1, Math.max(0, (t - (at - BEAT_LOOK)) / BEAT_LOOK));
           shade.update(t, t < at ? 0.15 + 0.4 * s : Math.max(0, 0.55 * (1 - (t - at) * 2)));
           if (t >= PLATE_FALL - 0.05 && t < PLATE_FALL + 0.05) for (const s2 of plates) p.sparks.emit(s2.x, 0.3, s2.z, 4, 3, 2, 0.5, CRUST);
+          // A crowded pocket, in the Sunburst: how many stand in it, over the plate, while there is still time to leave it.
+          if (party && t >= at - BEAT_LOOK && t < at && t - said >= POCKET_SAYS) {
+            said = t;
+            const inside = plates.map(() => 0);
+            for (let side = 0; side < RAID_PARTY_MAX; side++) {
+              const h = p.heroAt(side);
+              if (!h) continue;
+              const k = plates.findIndex((_, i) => inPocket(i, h.x, h.z));
+              if (k >= 0) inside[k]++;
+            }
+            plates.forEach((s2, k) => { if (inside[k] > POCKET_HOLDS) p.say(`${inside[k]}/${POCKET_HOLDS}`, '#ffb050', s2.cx, s2.cz); });
+          }
         },
         done(o) {
           const s = plates[o.part];
@@ -429,14 +632,24 @@ const heartbeat: BossMove = {
           s.up = time;
           // It stands until the same moment after the cast on every screen, whenever this screen heard of it.
           raised[o.part] = p.addStone(s.cx, s.cz, PLATE_R, Math.max(0.3, at + PLATE_AFTER - time));
+          // Its pocket, in the Sunburst: a gold zone that counts who stands in it as the beat lands.
+          if (party && time < at) {
+            const mid = (out - PLATE_IN + POCKET_END) / 2, k = o.part;
+            threats.push({
+              kind: 'stand', shape: { kind: 'circle', x: C.x + Math.sin(s.a) * mid, z: C.z + Math.cos(s.a) * mid, radius: 1.4 }, at, show: time, share: BEAT_SHARE,
+              part: k, most: POCKET_HOLDS, hits: (x, z) => inPocket(k, x, z),
+            });
+          }
           p.say('RAISED', '#ffe27a', s.x, s.z);
           p.sparks.emit(s.cx, 0.6, s.cz, 30, 4, 4, 0.8, STAND_COLOR);
           p.show.ring(s.cx, s.cz, { radius: 2.4, life: 0.5, color: 0xffd890, width: 0.4 });
         },
-        land() {
+        land(landed) {
+          // The beat itself, once: a raised plate's pocket lands with it, and is no second beat.
+          if (landed !== th) return;
           struck = true;
           p.flash('rgba(255,214,140,0.85)', 0.6);
-          p.show.ring(c.fx, c.fz, { radius: HEART_R + 2, life: 1.1, color: 0xffd090, width: 1.2 });
+          p.show.ring(c.fx, c.fz, { radius: R + 2, life: 1.1, color: 0xffd090, width: 1.2 });
           p.show.column(c.fx, c.fz, { radius: BODY_R * 1.2, height: 14, life: 0.8, color: 0xffe0b0, peak: 0.6 });
           p.show.burst(c.fx, 3.5, c.fz, 60, 7, 3, 1, SPARK);
           p.shake(0.12);
@@ -446,6 +659,10 @@ const heartbeat: BossMove = {
           HEART_LIVE.beat = 0;
           HEART_LIVE.struck = 99;
           shade.dispose();
+          if (zone) {
+            zone.set([]);
+            zone.group.removeFromParent();
+          }
           for (const s of plates) {
             s.mesh.removeFromParent();
             s.light.dispose();
@@ -465,11 +682,13 @@ const crownOfRays: BossMove = {
   id: 'corona', name: 'Crown of Rays', charge: 2.2, lock: 3.6, cooldown: 12, pose: 'burst',
   aim: atHeart,
   play(c, p) {
-    const at = p.shown(2.2), apart = 1, width = 2.4, length = HEART_R + 1;
+    const at = p.shown(2.2), apart = 1, width = party ? 4 : 2.4, length = roomR() + 1;
+    // In the Sunburst the rays run down the bays: the four of every other ray, the one nearest its aim among them, then the four between.
+    const first = party ? rayAngle(Math.round(c.dir / (TAU / BURST.rays))) : c.dir;
     const threats: Threat[] = [];
     for (let wave = 0; wave < 2; wave++) {
       for (let k = 0; k < 4; k++) {
-        const a = c.dir + wave * (Math.PI / 4) + (k * Math.PI) / 2, dx = Math.sin(a), dz = Math.cos(a);
+        const a = first + wave * (Math.PI / 4) + (k * Math.PI) / 2, dx = Math.sin(a), dz = Math.cos(a);
         threats.push({ shape: { kind: 'line', x1: c.fx + dx * BODY_R * 0.8, z1: c.fz + dz * BODY_R * 0.8, x2: c.fx + dx * length, z2: c.fz + dz * length, width }, at: at + wave * apart, share: 0.15, part: wave });
       }
     }
@@ -547,15 +766,16 @@ class BeatFloor {
   private mat: THREE.ShaderMaterial;
   private feet: THREE.MeshBasicMaterial[] = [];
   private rings: THREE.Mesh[] = [];
-  constructor(x: number, z: number) {
+  /** `radius`: how far the room's floor reaches; `joints`: the seven joints of its floor the light lands on and runs between. */
+  constructor(x: number, z: number, radius: number, joints: number[]) {
     this.mat = new THREE.ShaderMaterial({
       vertexShader: stillVertex, fragmentShader: stillFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
       uniforms: {
-        uJoints: { value: HEART_JOINTS.slice(0, 7) }, uBeat: { value: 0 }, uNow: { value: 0 }, uFlash: { value: 0 }, uOpacity: { value: 0 },
+        uJoints: { value: joints.slice(0, 7) }, uBeat: { value: 0 }, uNow: { value: 0 }, uFlash: { value: 0 }, uOpacity: { value: 0 },
         uColor: { value: new THREE.Color(STILL_COLOR) },
       },
     });
-    const floor = new THREE.Mesh(new THREE.CircleGeometry(HEART_R, 96).rotateX(-Math.PI / 2), this.mat);
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(radius, 96).rotateX(-Math.PI / 2), this.mat);
     floor.position.set(x, 0.06, z);
     floor.renderOrder = 2;
     this.group.add(floor);
@@ -615,8 +835,9 @@ const holdStill = (phase: number): BossMove => ({
     const first = p.shown(STILL_FIRST), gap = p.shown(apart);
     const at = Array.from({ length: beats }, (_, i) => first + i * gap), last = at[beats - 1];
     // The whole floor, and drawn by its look: a telegraph's orange would say leave.
-    const threats: Threat[] = at.map((t) => ({ shape: { kind: 'circle', x: c.fx, z: c.fz, radius: HEART_R + 1 }, at: t, share: STILL_SHARE, moving: true, hidden: true }));
-    const floor = new BeatFloor(c.fx, c.fz);
+    const R = roomR();
+    const threats: Threat[] = at.map((t) => ({ shape: { kind: 'circle', x: c.fx, z: c.fz, radius: R + 1 }, at: t, share: STILL_SHARE, moving: true, hidden: true }));
+    const floor = new BeatFloor(c.fx, c.fz, R, party ? BURST_JOINTS : HEART_JOINTS);
     p.group.add(floor.group);
     p.hint('Hold Still: stop walking on each white beat');
     p.say('HOLD STILL', '#f2f6ff', c.fx, c.fz + BODY_R + 1.5);
@@ -636,7 +857,7 @@ const holdStill = (phase: number): BossMove => ({
         },
         land() {
           // The beat: it clenches, and its light goes out over the floor.
-          p.show.ring(c.fx, c.fz, { radius: HEART_R, life: 0.5, color: STILL_COLOR, width: 0.25, peak: 0.4 });
+          p.show.ring(c.fx, c.fz, { radius: R, life: 0.5, color: STILL_COLOR, width: 0.25, peak: 0.4 });
           p.sparks.emit(c.fx, 3.4, c.fz, 12, 3.5, 1.5, 0.5, 0xfff4e0);
           p.shake(0.03);
         },
@@ -683,10 +904,22 @@ export const HEART_OF_NOON: BossDef = {
   id: 'heart',
   name: 'The Heart of Noon',
   title: 'The Fallen Sun',
-  place: sunkenHeartArena,
-  /** Out in the lake past the lip: at the floor's edge the way in would stand over the bottom of the screen in so small a room. */
-  gates: { enter: 0, exit: 180, r: 16.2 },
-  starts: { boss: { x: C.x, z: C.z }, heroes: [{ x: C.x, z: C.z + 9.5 }, { x: C.x - 1.6, z: C.z + 9.5 }, { x: C.x + 1.6, z: C.z + 9.5 }] },
+  /** For two, the Sunken Heart. A party fights in the Sunburst (`raidRing`): set before the fight is built. */
+  resize: (b) => {
+    band = b;
+    party = raidRing('heart', b) > HEART_R;
+  },
+  get place() { return party ? sunburstArena : sunkenHeartArena; },
+  /**
+   * For two, out in the lake past the lip: at the floor's edge the way in would stand over the bottom of the screen in so small a
+   * room. In the Sunburst, in the passage at the end of the south ray and in the alcove at the end of the north one.
+   */
+  get gates() { return party ? { enter: 0, exit: 180 } : { enter: 0, exit: 180, r: 16.2 }; },
+  /** A party comes in at the far end of the south ray, in rows toward the Heart (`partyStart` in src/duel.ts). */
+  get starts() {
+    const z = C.z + (party ? BURST.len - 4 : 9.5);
+    return { boss: { x: C.x, z: C.z }, heroes: [{ x: C.x, z }, { x: C.x - 1.6, z }, { x: C.x + 1.6, z }] as [{ x: number; z: number }, { x: number; z: number }, { x: number; z: number }] };
+  },
   kit: (hp) => {
     // A new fight: the rings start up, whatever the last one left.
     resetHeartLive();
@@ -723,7 +956,7 @@ export const HEART_OF_NOON: BossDef = {
   late: () => ({
     offset: -255,
     shift: new ArenaShift('The heart overflows', 0xd08a20, '#ffb050', [
-      { at: 45, zones: [{ shape: { kind: 'ring', x: C.x, z: C.z, inner: 6, outer: HEART_R }, share: 0.03 }] },
-    ], new ZoneFloor('sun', [{ edge: 6 }], undefined, undefined, HEART_R), HEART_R),
+      { at: 45, zones: [{ shape: { kind: 'ring', x: C.x, z: C.z, inner: 6, outer: roomR() }, share: 0.03 }] },
+    ], new ZoneFloor('sun', [{ edge: 6 }], undefined, undefined, roomR()), roomR()),
   }),
 };

@@ -21,8 +21,8 @@ const BASALT = 0x17131a;
  */
 const COVER: Obstacle[] = [];
 
-/** Under the mountain, lit from the molten floor and the lanterns: warm, low, no sky. */
-const STAGE: ArenaStage = {
+/** Under the mountain, lit from the molten floor and the lanterns: warm, low, no sky. The party's room (./sunburst.ts) has the same light. */
+export const HEART_STAGE: ArenaStage = {
   background: 0x150a06,
   zenith: 0x080405,
   horizon: 0x3c1a0a,
@@ -168,7 +168,7 @@ export const sunkenHeartArena: ArenaDef = {
   name: 'The Sunken Heart',
   ring: HEART_R,
   obstacles: COVER,
-  stage: STAGE,
+  stage: HEART_STAGE,
   build() {
     const g = new THREE.Group();
     const R = HEART_R;

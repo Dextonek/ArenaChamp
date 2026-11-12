@@ -90,8 +90,8 @@ by the hub online and by `LocalLink` alone. Only the screen that runs the brain 
 | Together | Seal the vent | The vent opens at 6 s, then again 25 s later. Stand on it for 4 s, hits or not, casting stops it | The lava waits 20 s longer, and +40 on the gauge |
 | Ash and Ember, a party | Twin Flames | Both fight at once, one each side of a wall of fire that splits the room and the party. Bring their health down together: both bars and the gap show on every screen | Nothing: more than 12 points apart and the one with more health grows furious until they are within 6 again (below) |
 | Heart, every phase | Hold Still | Its heart beats in runs: white light runs in along the floor's rings and lands on them on each beat, and a white ring closes round your own hero. Stop walking before each beat (let go of the stick, or S); casting is fine. Between beats, run | Nothing: a beat burns only who is walking, 12 % |
-| Heart, The Rings Turn on | Lock a ring | Each ring's beam has a gold spot on the rim. Hold it 2 s, hits or not, casting stops it | That ring's beam goes out for 8 s, then warns 0.8 s and burns again; +40 on the gauge, once per ring |
-| Heart, Noon Falls | Shade the heart | Each Heartbeat throws three crust plates out as gold spots 6.8 m from it. Hold one 3 s and it stands up on the heart's side of its spot (cover, `addStone`), for both screens. Only cover between you and the heart saves you from the beat | No 40 % from the beat |
+| Heart, The Rings Turn on | Lock a ring | Each ring's beam has a gold spot on the rim. Hold it 2 s, hits or not, casting stops it | That ring's beam goes out for 8 s, then warns 0.8 s and burns again; +40 on the gauge, once per ring. A party: a row of spots out in a ray, all to be held (below) |
+| Heart, Noon Falls | Shade the heart | Each Heartbeat throws three crust plates out as gold spots 6.8 m from it. Hold one 3 s and it stands up on the heart's side of its spot (cover, `addStone`), for both screens. Only cover between you and the heart saves you from the beat | No 40 % from the beat. A party: a plate for every five, each sheltering five (below) |
 
 **Objectives** (`Objective` in `types.ts`): spots a hero takes, at once or by holding. A move's `play` returns them beside its threats. Each screen
 watches its own hero and reports once (`link.objective`); the hub gives each to the first report and tells both screens who (`boss_obj`, then
@@ -479,6 +479,50 @@ person. For Hold Still it stops walking 0.36 s before each beat and goes on cast
 unable to move), and starts no dash within 0.9 s of one. It stood for 227 of 227 beats in 12 fights, so a beat costs it nothing
 directly, and the raid tool can't measure the beat's 12 %: what the autopilot pays is a zone it could not step out of in that moment.
 
+### A party: the Sunburst
+
+Three or more players (a band over 2) fight the Heart in its own party room, the Sunburst (`src/arenas/sunburst.ts`, "The lairs" below): a
+round well 18 m to its rim, and eight rays, bays 11.6 m wide, cut straight out to 34 m; the stone left between two rays is a spur. The
+game's floor is a ring of 35 m (`RAID_BOSSES.heart.partyRing`, `raidRing`); the shape is the room's own walls (`Obstacle.fixed`).
+`HEART_OF_NOON.resize(band)` sets it before the fight is built, from the band the hub sends, the same on every screen: `place`, `starts`
+and `gates` are getters, and the moves read the band as they read the cover (`party`, `band` in `src/raid/heart.ts`). One or two heroes
+keep the Sunken Heart, and nothing of the fight changes for them. Pictures: `docs/raid/heartroom-*.jpg`.
+
+| Move | In the Sunburst |
+|---|---|
+| Blade Sweep, Blade Fall | As they are: one is close to it, the other falls where its hero stands, anywhere in the room |
+| Solar Flare | Its rings run to the end of every ray (6.1 s). Four gaps, each lying over a spur (every other spur: the seed says which four), 42° wide, the same for all three rings: four lanes, 4.4 m wide at 6 m from the Heart. A lane reaches over the near half of the ray on either side, so in every ray one half stays open and the other burns. It aims at nobody |
+| The Rings Turn | A beam runs to the walls. Each ring has a row of gold spots down one ray, the first 23.5 m out and 3 m apart: one spot for bands 5 and 10, two for 15 and 20, three for 30, four for 40. The ring locks when all of its row are held (a spot stays held; one hero may take them one after another); the gauge is paid once, when the last is. The three rings' rays are the seed's |
+| Heartbeat | It burns the whole room. One plate for every five heroes the fight is tuned for (1, 2, 3, 4, 6, 8 for bands 5 to 40), each falling 13.5 m out in front of a spur's nose: the first at the spur nearest the hero it looks at (the brain's aim), the rest spread round. Only a raised plate shelters, and only in its pocket: from the plate out to the stone, as wide as its shade (about 15 m²). A pocket shelters five: with more in it, what those over five would have taken is shared by all in it. While the beat's floor shows, a pocket with more than five in it says how many over its plate ("7/5") |
+| Crown of Rays | Down four rays (every other one, the one nearest its aim among them), then the four between. 4 m wide in a ray 11.6 m wide |
+| Hold Still | The beat reaches the whole room; the light runs in along seven joints of the bigger floor (`BURST_JOINTS`) |
+| Past 5 minutes | The molten floor rises from the walls in to 6 m from the Heart, as in the room for two |
+
+**Cover.** In each ray a piece of the fallen armillary lies across half its width, 22.5 m out. What runs along the floor stops at cover,
+the pieces and any raised plate: a ring's beam (`beamStop`) and the flare's rings (`shadesOf`; the ring is drawn cut behind a piece). The
+Heartbeat doesn't stop at the pieces: it comes from above, and only a plate stood on edge shades it. So a hero far out in a bay, where a
+beam's end moves at up to 13 m/s and can't be outrun, has a place to stand through the rings and the flare, far from the fight; and the
+plates stay the only shelter from the beat.
+
+**How it stays within the rules.** A move never reads a hero: the band is the fight's, known to every screen before it starts. A pocket's
+count is a gold zone's (`Threat.kind: 'stand'`, added to its cast when its plate is raised, with `Threat.most`): each screen says whether
+its hero stood in it as the beat landed, the hub counts (`boss_stood`), and each screen takes its own share (`BossScript.stood`). The
+Heartbeat's zone for a party has its own rule (`hits`: the whole room but the raised pockets), so its orange floor is drawn by the move.
+A row's spots are objectives of its ring's cast, one part each; the lock is paid by the brain's screen once (`${id}:lock`).
+A pocket being a gold zone, Sun Eater's shield comes to a hero standing in one as the beat lands (in the room for two the Heart has no gold zone).
+
+**Two small things the script gained.** `Threat.most` (above). `Threat.margin`: an AI keeps that far inside what a zone's `hits` leaves
+open. All three rings of a party's flare have the same lanes, and an AI stops on a lane's very edge and steps over it and back as it
+fights: it took 1.4 hits a flare against 0.9 in the room for two; with 0.7 m, 0.3.
+
+**Not there yet.** What the mechanics ask is set by the band, not by how many heroes still stand when a move is cast: the hub's relay of
+`boss_cast` passes only the fields it knows, so a count would not reach the other screens (`server/hub.mjs`, `case 'boss_cast'`: one more
+field; `BossBrain.send` would set it). Heroes do not push each other, so a pocket's five is kept by the count, not by its size. A new
+room is a rule both screens must agree on: `PROTOCOL` needs a new number when this goes out. The hub grants at most 400 spots and
+rewards a fight (`TAKEN_MAX`): a band of 40 uses 15 for each turn of the rings (twelve spots and three locks) and 8 for each Heartbeat,
+about 180 in six minutes at tier 1 and about 340 from tier 4, where both come from the first phase. Past 400 the hub would grant no
+more plates or spots, and say nothing.
+
 ## The lairs
 
 The boss rooms are where the bosses live, not duel arenas (user, 2026-11-07). Neither is in `ARENAS`, so no duel picks them. **The Sun Court's
@@ -529,6 +573,19 @@ cracks; a basalt lip with gold edges; a molten lake beyond. The keepers' lantern
 only glow besides the cracks), short on the camera's side. Out in the lake what broke off as it fell: two arcs of its armillary, a snapped ray
 of its crown, slabs of crust with gold edges; gold motes rising. All drawn in code from clean forms (the arenas lesson: no scans), first-pass
 for the artist to direct.
+
+**The Sunburst, the Heart's room for a party** (`src/arenas/sunburst.ts`, 2026-11-12; `blender/arenas/real/sunburst.py` ->
+`public/models/arenas/sunburst.glb`, 596 KB, and `src/arenas/real/sunburst.json`: 8 pieces of cover and 39 stretches of wall). The place
+under the hall where the sun fell: a crater in the shape of the sun itself. A round well, 18 m to its rim, with the Heart over its middle
+and the old room's floor round it (its rim is a brass line at 12 m); eight rays, bays 11.6 m wide, cut straight out to 34 m, one every
+45°. The party comes in at the gate at the end of the south ray; the way out is an alcove at the end of the north one, under the keepers'
+sun sign (the armillary whole: three rings round a lit disc). Why a sun: everything the Heart does runs outward from the middle, so every
+ray is a straight lane from it to an end wall, and no wall ever stands between it and a hero. The stone between two rays (a spur) splits
+a party into bays that don't see each other. The stone is 1.3 m high on the camera's side with the keepers' lanterns standing on it, 6.5 m
+along the north side of the east and west rays (behind a low shelf where a ray's floor lies to their north), 9.5 m with a second step to
+13 m round the northern rays, with lit lantern niches between pilasters. Its own colour is a burnt red at the foot of every wall. The floor
+is drawn in code: the crust of the room for two carried on outward, rings of plates to the well's rim and across every ray, a burnt streak
+down the middle of each. The room is waiting for the user's nod.
 
 ## Two screens
 
@@ -640,7 +697,7 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   boss's own rules, his stage (adds, the relay, the kneel, the fail and its cover) and the enrage. `_raidAsh()` does the same for Ash and Ember,
   with the tag, the lava, Eruption and Falling Star. `_raidHeart()` for the Heart: each move, both ways through Solar Flare's gaps, a beam,
   a lock by this hero and by the partner (paid once), plates raised by both, cover against the beat, and the plates all going at one moment;
-  Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase and by the brain's live clock, and standing through a flare and behind a plate (71 rows). `_raidUpgrades()` checks each upgrade's number and
+  Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase and by the brain's live clock, and standing through a flare and behind a plate (71 rows); then the same fight for a party in the Sunburst at bands 5, 10 and 40: the room and its walls, the flare's four lanes and its shade behind cover, a beam's reach and where it stops, a row of spots locked by this hero and a partner, the plates by band, a pocket and its count of five, the beat's look coming once, the crown down the rays, the beat at a ray's end, and the room for two again after it (128 rows in all). `_raidUpgrades()` checks each upgrade's number and
   each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
   `_raidTwin()` for Twin Flames, with the two HP pools kept on the page (`TwinLocalLink`): the room and the wall (walk, sight, bolt, blow,
   carry, dash), each boss's moves in its half and the other's as a look only, the Charge at the wall and at a pillar, the furious rule
@@ -660,6 +717,8 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   `pipeline/tools/hour-shots.js`: the pictures of The Hour Strikes from the game's camera. Both run headless with
   `pipeline/tools/page-shots.py`.
 - `pipeline/tools/heart-holdstill-shots.py`: the Hold Still pictures, from the game page with its HUD, by the browser's own screenshot.
+- `pipeline/tools/heart-room-shots.py`: the Sunburst's pictures the same way, with 39 partners placed about the room by hand
+  (`docs/raid/heartroom-*.jpg`).
 - `pipeline/tools/online-bot.js`: `_botRoom(hero)` and `_botJoin(hero, code)` play a raid for two in two tabs with bots.
 - `pipeline/tools/party-raid.py`: a party of bots through the real hub in hidden pages. `--boss ash` starts the run at Ash and Ember
   (Twin Flames for a party); `--twin --boost 60` steers that fight through all its moments and takes its pictures; `--phone` makes the

@@ -14,7 +14,7 @@ next job whose files are free. One writer at a time on `src/duel.ts`, `src/heroM
 | # | Job | Needs first | Files it owns | State |
 |---|---|---|---|---|
 | 1 | Twin Flames: Ash and Ember for a party | | `ashEmber.ts`, `duel.ts`, `hub.mjs` | **done, merged** (PROTOCOL 9; all checks pass) |
-| 2 | The Heart's party boss room | | `heart.ts`, a new arena | running |
+| 2 | The Heart's party boss room | | `heart.ts`, a new arena | **done, merged**: the Sunburst (PROTOCOL 10; all checks pass) |
 | 3 | The Tower, first version (alone, the week's Tower) | | `src/tower/`, `src/game/main.ts` | running |
 | 4 | Sun Warden: the hall transforms (second and last phase) + his mechanics for 10, 20, 40 (Branded, Carry the Sun, The Four Hours) | | `sunWarden.ts`, `sunhall.ts`, `sunhall.py` | running (port 5200) |
 | 5 | Twenty new hero ideas (a page; ideas only, no hero is built) | | `pipeline/designs/` | **done**: `pipeline/designs/heroes-new-20.html` |

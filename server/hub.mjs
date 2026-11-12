@@ -66,7 +66,7 @@ const BOSS_SECOND_MAX = 1400;
 /** What one hero's hit can lay on the boss for the other screen, and the most it can be: the game's own caps on a buff. */
 const BOSS_DEBUFFS = ['slow', 'weaken', 'vulnerable'];
 /** Far more spots and rewards than any fight has: a client making them up gets nothing past this. */
-const TAKEN_MAX = 400;
+const TAKEN_MAX = 2000;
 const DEBUFF_MAX = 0.5;
 const DEBUFF_MAX_S = 6;
 const BOSS_HP_GAP_MS = 100;
@@ -82,7 +82,7 @@ const GATE_S = 15;
 const OFFER_GRACE_MS = 2000;
 const WON_PAUSE_MS = 2200;
 const CLEARED_WAIT_S = 30;
-const STOOD_MAX = 400;
+const STOOD_MAX = 2000;
 const MOVE_RE = /^[a-z]{1,16}$/;
 /** A party of more than two gets everyone's walk in one message, this often (ms): 39 messages for each step would be too many. */
 const MOVES_MS = 100;
