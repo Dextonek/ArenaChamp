@@ -1335,11 +1335,26 @@ const coop = new RaidController(net, gameApi, loading, {
 // The duel card's "Leave duel" / "Back to menu": ends whichever fight is on.
 gameApi.duel.onLeave = () => (tower.active ? tower.exit() : raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : watch.active ? watch.exit() : match.exit());
 
+let socketWasOpen = false, newBuildShown = false;
 net.on('socket', (m) => {
   state.connected = m.open;
   if (!m.open) { state.queue.on = false; state.lobby = null; }
+  // Back after a drop (a deploy drops every connection): is the site on another build now? (see vite.config.ts)
+  if (m.open && socketWasOpen) void checkBuild();
+  if (m.open) socketWasOpen = true;
   render();
 });
+
+async function checkBuild() {
+  if (__BUILD__ === 'dev' || newBuildShown || state.outdated) return;
+  let build: unknown;
+  try { build = (await (await fetch('/build.json', { cache: 'no-store' })).json())?.build; } catch { return; }
+  if (typeof build !== 'string' || build === __BUILD__ || newBuildShown) return;
+  newBuildShown = true;
+  // The rules are the same (or the hub would have said update_required): everything still works; reloading picks up the rest.
+  document.body.append(el('div', { class: 'update-bar' }, el('span', {}, 'A new version of the game is out.'),
+    el('button', { class: 'btn small primary', onclick: () => location.reload() }, 'Reload')));
+}
 net.on('session', (m) => {
   state.profile = m.profile;
   if (state.screen === 'login') state.screen = 'menu';

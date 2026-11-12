@@ -47,6 +47,11 @@ export const CHANGELOG: Release[] = [
         title: 'Quick cast, as in League',
         text: 'Spells can now go off straight from the key. Hold Q, W, E or R to see the aim and let go to cast (Quick + indicator, the new start), or cast at the cursor the moment you press (Quick), or keep the old way: press to aim, click to cast (Normal). A then a click still attack-moves, as before. Switch with "Casting" under your hero\'s name on the spell bar; the game remembers your choice.',
       },
+      {
+        tag: 'Menus',
+        title: 'Told when a new version is out',
+        text: 'When a new version of the game goes up while you have it open, a bar at the top says so, with a Reload button, so you are never left playing the old one.',
+      },
     ],
   },
   {

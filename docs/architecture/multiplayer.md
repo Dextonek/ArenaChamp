@@ -265,6 +265,13 @@ drops every socket, and `NetClient` reconnects and sends `resume` with its `v`, 
 | no `v` (from before the check) | `auth_error` with the same text | Shows it on its login screen. Its token stays, so a reload signs it back in |
 | the same or a higher `v` | as usual | A higher one is a page newer than a hub still restarting during a deploy, for a few seconds at most |
 
+**Any other new build (since 2026-11-12).** A change that leaves the rules alone (a control, a menu) used to leave open tabs
+on the old code: the reconnect after the deploy said nothing. Each build now has an id (`vite.config.ts`: `__BUILD__` in the
+code, `/build.json` beside it). When the socket comes back after a drop, the game page reads `/build.json` (no cache); if it
+names another build, the same bar shows "A new version of the game is out." with Reload. Nothing is stopped: the rules are
+the same, so the tab keeps playing until the player reloads. `PROTOCOL` 15 was raised only to bring the tabs from before this
+check onto it.
+
 ## Stats
 
 Per account: `wins`, `losses`, `matches`, per-hero `{ played, wins }` and the last 20 matches (hero, `from` after a swap,

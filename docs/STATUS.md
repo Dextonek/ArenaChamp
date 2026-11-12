@@ -2,6 +2,14 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
 
+## Open tabs are told about every new build (2026-11-12, night)
+
+- After the A-key fix went live the user still had the instant A: the tab had reconnected on the old code, since nothing told a
+  tab to reload unless `PROTOCOL` changed. Now each build has an id (`/build.json`); after a reconnect a page on another build
+  shows "A new version of the game is out." with Reload ([architecture/multiplayer.md](architecture/multiplayer.md), *Rules
+  version*). `PROTOCOL` 15, raised once with no rule change, so the tabs from before this check reload too. Checked on the built
+  game under `vite preview`: no bar for the same build; the bar after `/build.json` changed and the socket came back.
+
 ## Quick cast, as in League (2026-11-12, night): pushed and LIVE (version ca9551e2)
 
 - The user, after a look at League's three cast modes: "yes build quickcast", with A attacking at the cursor at once in the

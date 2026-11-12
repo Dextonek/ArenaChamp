@@ -2,7 +2,9 @@
 // seed with no server field, so a tab left open from an older build would see different cover and events from its
 // opponent. Raise this by hand whenever a deploy changes those rules or the messages: the hub then tells older tabs to
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
-export const PROTOCOL = 14;
+// 15 (2026-11-12): no rule change; raised once so the tabs from before `/build.json` (vite.config.ts) reload. Since then any
+// deploy shows open tabs a Reload bar on their own; raise this only for a rule or message change.
+export const PROTOCOL = 15;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
