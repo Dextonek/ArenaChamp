@@ -7,7 +7,7 @@
 // It is the body of an async function run in the game page (see page-shots.py). A raid alone is started, then its fight is begun again
 // as a party's of twelve at the HP for forty: eleven partners who only stand where they are put. The brain is stopped; each move is
 // cast by hand, what the hub would say of the partners (who took a shard) is said by hand, and the game is stepped to the moment.
-// A wide page gives the warden-* pictures, a narrow one warden-phone-*.
+// A wide page gives the warden-* pictures (thirteen), a narrow one warden-phone-open and warden-phone-sunfire.
 const api = game.api, d = api.duel, hm = api.heroMode;
 const { SUN_WARDEN } = await import('/src/raid/sunWarden.ts');
 const { BREACH, SUNFIRE, BRAND, hallFight } = await import('/src/raid/wardenHall.ts');
@@ -120,6 +120,15 @@ if (!phone) {
   boss(12, -12);
   zoomTo(1.5);
   out['warden-open'] = shot();
+
+  // The Hour Strikes in the round court: three quarters and the crossing burn, the east quarter is the safe one.
+  me(3, 13);
+  boss(-4, 4);
+  send({ move: 'strikes', seed: 1 });
+  step(12);
+  zoomTo(4.6);
+  out['warden-hour-open-far'] = shot();
+  d.boss.script.clear();
 
   // The sun comes down: two minutes on.
   me(2, 30);

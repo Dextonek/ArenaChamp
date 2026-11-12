@@ -66,6 +66,37 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Raid',
+        title: 'The Hall of Noon breaks open',
+        text: 'The Warden\'s hall changes as he does. When his second phase begins, the four great blocks of stone between the hall\'s arms crack and fall: stand clear of the walls. The cross becomes one round court strewn with rubble to hide behind, and his rays now reach from one arm into the next.',
+        image: 'news/hall-breaks-open.jpg',
+        alt: 'The Hall of Noon from far above after its corners have fallen: one round court with rubble in its four corners, the nave and the choir running out of it.',
+      },
+      {
+        tag: 'Raid',
+        title: 'The sun comes down',
+        text: 'In the Warden\'s last phase sunfire wells up from the Sun Well and spreads for two and a half minutes. It burns whoever stands in it, pushes the party out to the edges of the court and splits it up, and he comes out of the middle to hunt one group at a time.',
+        image: 'news/sun-comes-down.jpg',
+        alt: 'A wide disc of orange sunfire over the middle of the round court, the party in small groups round its edge.',
+      },
+      {
+        tag: 'Raid',
+        title: 'Branded: for a raid of six or more',
+        text: 'One hero in eight gets a sun over its head. Five seconds later it bursts. If it is yours, run out of the crowd: the burst burns everyone near you, and one that goes off in a crowd costs the whole party.',
+      },
+      {
+        tag: 'Raid',
+        title: 'Carry the Sun: for sixteen or more',
+        text: 'A sun shard for every five heroes falls at the far ends of the hall. Carry them home to the Sun Well before Noon lands. His ray comes for the carriers and throws them back, so stand in its way for them. Every shard left out there burns everyone; all home, and he kneels.',
+      },
+      {
+        tag: 'Raid',
+        title: 'The Four Hours: for a full raid',
+        text: 'With more than thirty in the raid, all four arms of the hall get a task at once: carry shards home, hold the gold circles, break his hour stones, stand in the gold lane. The raid splits into four. Each arm done fills a quarter of his stagger gauge; each arm failed burns the whole hall.',
+        image: 'news/four-hours.jpg',
+        alt: 'The hall from far above with a word over each arm: CARRY, HOLD, BREAK and STAND, with gold circles, orange lanes and sun shards on the floor.',
+      },
+      {
+        tag: 'Raid',
         title: 'Twin Flames',
         text: 'A party of three or more now fights Ash and Ember both at once, in a wider pit split down the middle by a wall of fire: half the party with Ash among his pillars, half with Ember over her vents. Bring them down together. Both health bars show on every screen, and if one gets more than 12 points ahead, the other grows furious until you are level again. When one falls the wall goes out, and the last one is everyone\'s. For one or two players they are the tag team they were.',
         image: 'news/twin-flames.jpg',

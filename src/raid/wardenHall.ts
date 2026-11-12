@@ -156,15 +156,9 @@ function breakHall(p: PlayContext, at: number): Part {
     p.flash('rgba(255,232,200,0.75)', 0.4);
     p.say('THE HALL BREAKS OPEN', '#ffe27a', C.x, C.z);
     for (const f of HALL_FALLS) {
-      // Each piece throws its dust up as it goes down: thin plumes all over it, the tall north ones a wall of them.
+      // Each piece throws its dust up as it goes down, and again as it is gone: the tall north ones a wall of it.
       const tall = f.h > 2, drop = Math.sqrt((2 * f.h) / (tall ? 15 : 9));
-      dust.push({ at: t + f.delay + drop * 0.5, x: f.x, z: f.z, tall });
-      for (let k = 0; k < (tall ? 5 : 3); k++) {
-        p.show.column(f.x + (Math.random() - 0.5) * 6, f.z + (Math.random() - 0.5) * 6, {
-          radius: 0.5 + Math.random() * 0.7, height: (tall ? 6 : 2) + Math.random() * (tall ? 8 : 2.5), life: (tall ? 2 : 1.4) + Math.random() * 0.8,
-          color: 0xc8b89a, peak: tall ? 0.3 : 0.22, delay: f.delay + drop * (0.3 + 0.5 * Math.random()),
-        });
-      }
+      dust.push({ at: t + f.delay + drop * 0.25, x: f.x, z: f.z, tall }, { at: t + f.delay + drop * 0.8, x: f.x, z: f.z, tall });
     }
   };
   return {
@@ -196,9 +190,13 @@ function breakHall(p: PlayContext, at: number): Part {
         const d = dust[i];
         if (t < d.at) continue;
         dust.splice(i, 1);
-        p.sparks.emit(d.x, 0.4, d.z, d.tall ? 26 : 12, d.tall ? 7 : 4, d.tall ? 5 : 2.5, 1.3, DUST, 5);
-        p.show.burst(d.x, 0.5, d.z, d.tall ? 16 : 8, d.tall ? 6 : 3.5, 3, 1.2, 0x9a8c74, 4);
-        p.show.shards(d.x, 0.6, d.z, { count: d.tall ? 9 : 4, color: '#6a6e80', speed: d.tall ? 7 : 4, life: 1.2, size: 0.26, up: 0.8 });
+        // Clouds of it, not columns: thrown up and out, slow to settle.
+        for (let k = 0; k < (d.tall ? 4 : 2); k++) {
+          const x = d.x + (Math.random() - 0.5) * 6, z = d.z + (Math.random() - 0.5) * 6;
+          p.show.burst(x, 0.4, z, d.tall ? 14 : 7, d.tall ? 4.5 : 2.6, d.tall ? 6 : 2.4, 1.6 + Math.random() * 0.8, 0xa89c84, 1.6);
+          p.sparks.emit(x, 0.4, z, d.tall ? 12 : 6, d.tall ? 6 : 3.5, d.tall ? 4 : 2, 1.2, DUST, 5);
+        }
+        p.show.shards(d.x, 0.6, d.z, { count: d.tall ? 7 : 3, color: '#6a6e80', speed: d.tall ? 7 : 4, life: 1.2, size: 0.26, up: 0.8 });
         if (d.tall) p.shake(0.06);
       }
     },

@@ -237,8 +237,8 @@ Warden's `band` is wired, the other two bosses' when their files are free).
 | Heart of Noon | Hold Still | **Shade the Heart together:** a plate per five players, each sheltering only a few; the party splits up behind them | **Take the Blade:** two fallen sun blades; each carrier hits far harder for 12 s, walks slowly and draws its attacks; the party shields them, also through Hold Still | **The Ring of Hands:** the whole raid forms a ring round the Heart on forty gold spots (at least 32 held) while it beats; a full ring stuns it, a broken one costs everyone |
 
 Rules: a failure costs the whole party; the numbers come from the players standing, not the band alone; in the last phase two of
-them may overlap; each is announced by a name on the cast bar and a first-time hint. **None of these nine is built yet** (the three
-"any party" ones are: The Hour Strikes and Hold Still merged, Twin Flames in work).
+them may overlap; each is announced by a name on the cast bar and a first-time hint. **The Sun Warden's three are built**
+(2026-11-12, below); the other six are not. The three "any party" ones are all built.
 
 ## The room changes with the boss's phases (user, 2026-11-12)
 
@@ -258,7 +258,7 @@ play. The rooms for one and two players stay as they are (those fights are measu
 How: a room's pieces that fall are their own objects in its Blender file; walls that go are obstacles removed; ground that burns or
 is gone is a zone that stays (as the late sunfire is); a ring that turns carries heroes with the world's carry. Each screen works its
 own hero out from the phase's cast, so two screens agree. Built per boss with its mechanics for 10, 20 and 40, once its files are
-free. **None of it is built yet.**
+free. **The Sun Warden's two are built** (2026-11-12, below); Ash and Ember's and the Heart's are not.
 ## Twin Flames is built (2026-11-12)
 
 How it works now: `docs/architecture/raid.md`, "Twin Flames". Pictures: `docs/bosses/twin-west.jpg`, `twin-east.jpg`,
@@ -296,6 +296,61 @@ by the tool (one half helped ahead): Ember furious at 13 points, calm again at 3
 (the brain goes to the same half; an empty half has none), not in the browser. A higher tier (its extras go to whose they are: Ash
 gets Cinder Rock). The room is a first pass in code: a Blender room is to come, with `TWIN_LAYOUT` as its plan. Choosing a side.
 The party's list does not say who is in which half. `docs/architecture/multiplayer.md` does not have the new messages (raid.md does).
+
+## The Warden's hall transforms, and his three party mechanics are built (2026-11-12)
+
+How it works now: `docs/architecture/raid.md`, "The hall transforms, and what comes only for a big party". The code is
+`src/raid/wardenHall.ts`, with the room's shape in `src/arenas/sunhall.ts` and its pieces in `blender/arenas/real/sunhall.py`.
+Pictures: `docs/raid/warden-*.jpg` (fourteen; `pipeline/tools/warden-shots.js`).
+
+**What was decided, where the brief left it open.**
+
+- **How far the hall opens.** To a circle through the transepts' far corners, 36.4 m from the Sun Well. The transepts lie wholly in
+  it; the last 10 m of the nave and 6 m of the choir stay beyond it as two short arms. A court out to the game's ring (46 m) would
+  have left the transepts' end walls standing in the middle of the floor.
+- **Hit, not pushed.** Whoever stands within 4 m of a wall as it goes takes 30 %. Nobody is pushed: the rubble lies where the
+  blocks stood, and nobody stood there.
+- **The rubble and the court's wall are there from the start,** inside the stone, not added when the blocks fall. Nothing can
+  reach them until the walls go, so it is the same to the game, with nothing to add at one moment on every screen. `addStone` was
+  the other way: it is timed, makes round stones only, and his ray breaks its stones for a reward.
+- **The fall is not the phase's opener.** That slot is his stage, whose cast ends early when its stones are broken. It comes by
+  the phase's clock at the same moment, so the hall breaks while the party breaks his hour stones: the two overlap on purpose.
+- **The sunfire: 6 m to 24 m in two and a half minutes, 6 % a second.** A party has minutes. At the end a ring 12 m wide is left
+  inside the court's wall, with the rubble in it, and the two short arms. He walks faster in it and comes closer, and hunts one
+  quarter at a time for 14 s.
+- **The Sun Well's objectives move out with the fire.** A shard is home at the fire's edge, not at the well; Gathering Noon's
+  shards and Anchors' circles fall past it.
+- **What closes in after five minutes** comes from the walls in the hall, not from the middle: the middle is burning already.
+- **His great mechanics take turns, with 16 s between.** The first try had Carry the Sun, the hour and Carry the Sun again back to
+  back for two minutes. Now: the hour, Carry the Sun, the hour, The Four Hours, each after a breath. Branded has a clock of its
+  own (28 s) and may come during any of them in his last phase only.
+- **Branded costs the party when it bursts in a crowd:** two or more others caught, and everyone pays 6 % for each (24 % at most).
+  Caught alone with the branded hero, a hero pays only its own 30 %.
+- **Carry the Sun replaces Gathering Noon** for 20 or more, opener and all, instead of standing beside it: both end in a Noon.
+- **A hero can stand in the ray's way.** The design's "the rest block his ray" had nothing a hero could do but bait a stone. Now
+  the brain looks for a hero between him and the carrier, and the ray ends on that hero.
+- **The Four Hours asks by the heroes standing,** not by the band: with twenty left each arm asks half.
+
+**Numbers.** In the tables of raid.md. In short: the fall 6 s after the warning; Branded one in eight, 5 s, 5 m, 30 % and 8 %; Carry
+the Sun a shard for five, 36 s, 12 % and 56 % over the shards missing; The Four Hours 38 s, 18 % an arm, a quarter of the gauge an
+arm.
+
+**What differs from the brief, and why.**
+
+- **Carriers can cast.** "Slow and unable to cast" needs the hero's own code: the raid's files can slow this screen's hero
+  (`BossWorld.heavy`) but nothing in them can stop its spells. Needs `src/duel.ts` (below).
+- **No list field on `BossCast`.** The hub drops any field it does not know, and `server/hub.mjs` was not mine to edit. The
+  branded heroes go one to a cast in `target`, the counts in `x`. It works with the hub as it is.
+- **The court is not the whole ring.** See the first decision.
+
+**Needs an engine file** (not edited: others are their writers):
+
+- `src/duel.ts` (and `src/heroMode.ts`): a `BossWorld.mute(on)` that stops this screen's hero from casting, for a shard's carrier.
+- `src/duel.ts`: `removeCover(i)` takes a fixed wall out when asked, and the hall's opening relies on that
+  (`PlayContext.breakCover`). An earlier note here asked for it to refuse fixed walls: if that is done, the hall needs a way of
+  its own to open (a row of `_raidCheck` fails if the walls still stand).
+- `server/hub.mjs`: nothing. `server/protocol.mjs` has five new rewards (`carry`, `foura` to `fourd`) and `PROTOCOL` must be
+  raised before a deploy: the hall's shape and these moves are rules two screens must agree on.
 
 ## State (2026-11-11)
 

@@ -429,9 +429,19 @@ const anchors: BossMove = {
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(C.x - c.boss.x, C.z - c.boss.z) }),
   play(c, p) {
     const rng = seeded(c.seed);
-    // A party's last phase: past the sunfire.
-    const base = rng() * Math.PI * 2, radius = 2.3, out = party && hallFight.fire ? Math.max(7.6, hallFight.fire + 5) : 7.6, at = p.shown(3);
-    const spot = (i: number) => ({ x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out });
+    const base = rng() * Math.PI * 2, radius = 2.3, out = 7.6, at = p.shown(3), fire = party ? hallFight.fire : 0;
+    const spot = (i: number) => {
+      if (!fire) return { x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out };
+      // A party's last phase: the sunfire lies over the Sun Well, and he is out with one group of the party. The circles lie either
+      // side of him, where that group can reach them, clear of the fire and of cover.
+      let x = c.fx + Math.sin(base + i * Math.PI) * out, z = c.fz + Math.cos(base + i * Math.PI) * out;
+      const d = Math.hypot(x - C.x, z - C.z) || 1, least = fire + 4;
+      if (d < least) {
+        x = C.x + ((x - C.x) / d) * least;
+        z = C.z + ((z - C.z) / d) * least;
+      }
+      return freeSpot(x, z, 2.6);
+    };
     // With one hero up each step is one circle. With two the first step is both, and the second does nothing.
     const parts = c.alone ?? p.solo ? [c.step] : c.step === 0 ? [0, 1] : [];
     const lights: LightPillar[] = [];

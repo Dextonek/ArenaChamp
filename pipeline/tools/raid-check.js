@@ -1231,6 +1231,13 @@
           const o = active('noon')[0].played.objectives, r = hallFight.fire;
           yes('sunfire: Gathering Noon\'s shard falls past it, and is brought to its edge', fromWell(o[0]) >= r + 5 && H.inHall(o[0].x, o[0].z, 1) && o[1].radius > r + 2);
         }
+        a.placeFoe(d.foe, new THREE_V(4, 0, 7 + hallFight.fire + 6));
+        send({ move: 'anchors', fx: 4, fz: 7 + hallFight.fire + 6, seed: 3 });
+        step(0.1);
+        {
+          const s = active('anchors')[0].played.threats[0].shape, r = hallFight.fire;
+          yes('sunfire: the circle of Anchors lies by him, clear of the fire and of cover', fromWell(s) >= r + 3.9 && Math.hypot(s.x - 4, s.z - (7 + r + 6)) < 12 && H.inHall(s.x, s.z, 2) && freeOf(s, 2));
+        }
         open(5, 'run');
         place(2, 15);
         send({ move: 'sunfall' });

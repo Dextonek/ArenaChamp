@@ -3,7 +3,7 @@ A raid for a party, played by bots through the real hub: N headless pages of the
 one public raid room, the host starts, every screen's autopilot plays. To find what only breaks with many screens.
 
     python pipeline/tools/party-raid.py <out folder> [--players 6] [--seconds 150] [--port 5196] [--boss sun]
-                                        [--boost 0] [--twin] [--phone]
+                                        [--boost 0] [--twin] [--phone] [--hall]
 
 --boss   the boss the run starts at (sun, ash, heart): the lobby's `raid`. A party at `ash` fights Twin Flames.
 --boost  every bot also takes this much HP a second off the boss it fights, through the hub (under its caps), so a fight
@@ -13,6 +13,10 @@ one public raid room, the host starts, every screen's autopilot plays. To find w
          Ember. Pictures at each of those moments; a check that all screens agree on both HP bars and that every bot
          stayed in its own half while the wall stood.
 --phone  the last player's screen is a phone held upright (390 x 844).
+--hall   the Sun Warden's hall (with --boss sun and three or more players): every second each screen says whether its hall
+         has broken open, how far its sunfire has come, and how much cover stands. Prints when the hall broke on each screen
+         (the fight's own clock), whether the screens agree on cover each second, and which of his moves each screen saw;
+         pictures as the hall breaks and of the sunfire.
 
 It starts its own dev server (the game's hub lives in it) on the port and stops it by its PID; one already there is used
 and left alone. The bots' accounts are local (server/data/, git-ignored): delete them after (names start with v5bot). It
@@ -44,6 +48,18 @@ async def shot(pg, path):
     """A picture of the game as it is, with the page's animations held (they freeze a headless page's screenshot)."""
     await pg.screenshot(path=str(path))
     print(f"      picture {path.name}")
+
+
+HALL_JS = """async () => {
+  const H = await import('/src/arenas/sunhall.ts'), W = await import('/src/raid/wardenHall.ts'), d = window.game.api.duel;
+  if (!d.boss) return null;
+  // The moment the hall broke on this screen, by the computer's clock (every screen is on this computer), looked for 50 times a second.
+  window._hallWatch ??= setInterval(() => { if (H.hallBreak.open && !window._hallOpenAt) window._hallOpenAt = Date.now(); }, 20);
+  window._hallSeen ??= {};
+  for (const x of d.boss.script.active) window._hallSeen[x.cast.move] = (window._hallSeen[x.cast.move] ?? new Set()).add(x.cast.id);
+  return { t: +d.time.toFixed(1), open: H.hallBreak.open, at: window._hallOpenAt ?? 0, fire: +W.hallFight.fire.toFixed(1), cover: window.game.api.arena.obstacles?.length ?? 0,
+    phase: d.boss.stats.phases, seen: Object.fromEntries(Object.entries(window._hallSeen).map(([k, v]) => [k, v.size])) };
+}"""
 
 
 class TwinPlan:
@@ -178,10 +194,28 @@ async def run(args):
             spread = 0.0
             crossed = 0
             twin_seen = False
+            # The Warden's hall: when each screen's broke open (the fight's clock), seconds on which the screens' cover differed.
+            broke, fire_most, hall_last, cover_apart, hall_shots = {}, {}, [], [], set()
             while time.time() - t0 < args.seconds:
-                await asyncio.sleep(1 if args.boss == "ash" else 5)
+                await asyncio.sleep(1 if args.boss == "ash" or args.hall else 5)
                 t = time.time() - t0
                 now = [await pg.evaluate("() => _botRaid()") for pg in pages]
+                if args.hall:
+                    hall = [await pg.evaluate(HALL_JS) for pg in pages]
+                    if all(hall):
+                        hall_last = hall
+                        for i, h in enumerate(hall):
+                            if h["at"] and i not in broke:
+                                broke[i] = h["at"]
+                            fire_most[i] = max(fire_most.get(i, 0), h["fire"])
+                        if len({h["cover"] for h in hall}) > 1:
+                            cover_apart.append((round(t), [h["cover"] for h in hall]))
+                        for name, when in (("hall-breaking", any("breach" in h["seen"] for h in hall) and not any(h["open"] for h in hall)),
+                                           ("hall-open", all(h["open"] for h in hall)), ("hall-sunfire", min(h["fire"] for h in hall) > 9)):
+                            if when and name not in hall_shots:
+                                hall_shots.add(name)
+                                await shot(pages[0], out / f"{name}.png")
+                                await shot(pages[-1], out / f"{name}-last.png")
                 if all(s.get("twin") for s in now):
                     twin_seen = True
                     if plan:
@@ -221,6 +255,12 @@ async def run(args):
                 twin = f", half {tw['half']}, enemy {tw['name']}, bars {tw['hp']}, furious {tw['furious']}, dead {tw['dead']}" if tw else ""
                 print(f"screen {i}: samples {len(s)}, room {last_s.get('room')}, gauge {last_s.get('gauge')}, party {last_s.get('party')}, boss {last_s.get('boss')}, phase {last_s.get('phase')}, "
                       f"hp {last_s.get('hp')}, far {far:.0f}, over {last_s.get('over')}{twin}, errors {len(l['log']['errors'])} {l['log']['errors'][:2]}")
+            if args.hall and hall_last:
+                apart = f"{max(broke.values()) - min(broke.values())} ms apart" if len(broke) == len(pages) else f"only on {len(broke)} of {len(pages)} screens"
+                print(f"hall: broke open on every screen within {apart}; the sunfire came as far as {[fire_most.get(i, 0) for i in range(len(pages))]} m; "
+                      f"cover at the end {[h['cover'] for h in hall_last]}; seconds with cover apart: {len(cover_apart)} {cover_apart[:6]}")
+                for i, h in enumerate(hall_last):
+                    print(f"hall: screen {i} saw {h['seen']}")
             if twin_seen:
                 events = logs[0]["raid"].get("events", [])
                 if plan:
@@ -243,6 +283,7 @@ if __name__ == "__main__":
     ap.add_argument("--boost", type=int, default=0)
     ap.add_argument("--twin", action="store_true")
     ap.add_argument("--phone", action="store_true")
+    ap.add_argument("--hall", action="store_true")
     ap.add_argument("--width", type=int, default=900)
     ap.add_argument("--height", type=int, default=600)
     a = ap.parse_args()
