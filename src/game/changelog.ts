@@ -50,16 +50,14 @@ export const CHANGELOG: Release[] = [
         alt: 'The guardian of floor 10, a giant echo of Marin, throws a fan of five beams of light across the Tower\'s round room at Kaia, who stands behind a pillar.',
       },
       {
-        tag: 'Menus',
-        title: 'The Shop: heroes for obols',
-        text: 'A new Shop screen. Twelve heroes are free for everyone, six more are free each week, and the rest are bought with obols: 600, 900 or 1,200, by how hard a hero is to play well (Anka, the newest, 1,500 for her first weeks). A new account starts with 900, enough for one hero at once. Any locked hero can be tried against the CPU first. Accounts that were here before the shop keep all 40 heroes.',
-        image: '/news/shop.jpg',
-        alt: 'The Shop: 1,430 obols at the top, what a duel and a raid boss pay, the six heroes that are free this week, and the first heroes as cards with a lock and a price or the word Starter.',
+        tag: 'Online',
+        title: 'Obols: earned by playing, kept for later',
+        text: 'Your account now earns obols. An online duel pays 40, a win 40 more, and the first win of each day 120 on top. A raid boss beaten with others pays everyone 60, and a cleared tier 150 more. Every account starts with 900. There is no real money anywhere: obols only come from playing.',
       },
       {
-        tag: 'Online',
-        title: 'Obols are earned by playing',
-        text: 'An online duel pays 40 obols, a win 40 more, and the first win of each day 120 on top. A raid boss beaten with others pays everyone 60, and a cleared tier 150 more. There is no real money anywhere: obols only come from playing.',
+        tag: 'Menus',
+        title: 'The Shop, closed for now',
+        text: 'A new Shop screen shows every hero with its page and its kit. The Shop is closed for now: every hero stays free to play, as before. The obols you earn are kept for when it opens.',
       },
       {
         tag: 'Raid',
