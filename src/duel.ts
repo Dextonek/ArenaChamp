@@ -2791,7 +2791,9 @@ export class Duel {
       point,
       targets,
       enemy: player,
-      aim: this.net && yaw !== undefined && spec.mode === 'self' ? yaw : undefined,
+      // A spell cast straight ahead goes the way its caster faces: a network cast brings the sender's facing, and the computer's
+      // opponent faces its target (it used to fire such spells due north wherever the hero stood: Cantor's chord, Auriel's First Light).
+      aim: spec.mode !== 'self' ? undefined : this.net ? yaw : foe.group.rotation.y,
       sentFrom: netCast?.sentFrom,
       bend,
       targetPos: targets.map((t) => {
