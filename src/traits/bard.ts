@@ -68,6 +68,16 @@ export const cantorDuets = new WeakMap<object, DuetState>();
 /** How the CPU plays him: it walks in until the enemy is this close, to stand about this far off. */
 const AI_CHORD_REACH = 3.2;
 const AI_CHORD_STAND = 2.6;
+/**
+ * Against a brawler (an enemy whose swing has hit him: `taken`) it keeps the far end of the chord instead: it steps back when
+ * they come within `AI_KITE_NEAR` m and walks in past `AI_KITE_FAR`, to stand `AI_KITE_STAND` m off, out of a swing's reach
+ * and inside the 5 m cone. It only walks while it has nothing to cast or shoot.
+ */
+/** An enemy this far off (and no brawler) is out of the chord's sure reach: the Siren Song goes first. */
+const AI_SING_FROM = 4.6;
+const AI_KITE_NEAR = 3.7;
+const AI_KITE_FAR = 4.7;
+const AI_KITE_STAND = 4.3;
 
 /** The spells that spend the Crescendo. */
 const spends = (slot: number) => slot === 1 || slot === 2;
@@ -103,18 +113,34 @@ export const bardTrait: Trait = {
   aiHold(t, slot, dist) {
     if (!inTune(t.time)) return true;
     const hurt = t.hp() < t.maxHp() * 0.65 && t.shieldAmount() <= 0 && t.res >= 3;
-    if (slot === 1) return t.res < 4 || hurt;
-    if (slot === 2) return !hurt;
+    // An enemy who keeps out of the chord (an archer backing off) is sung to from 3 Crescendo: the charm walks them in.
+    const far = !t.mem.brawler && dist > AI_SING_FROM;
+    if (slot === 1) return far ? t.res < 3 : t.res < 4 || hurt;
+    if (slot === 2) return !hurt || far;
     if (slot === 3) return dist > 4.5;
     return false;
   },
   // The CPU playing him stands where his Chord reaches (a 5 m cone), not out at the end of his basic attack.
   aiGoal(t) {
     const e = t.enemy();
-    if (!e || t.enemyDistance() <= AI_CHORD_REACH) return null;
+    if (!e) return null;
     const me = t.self().group.position, p = e.group.position, d = t.enemyDistance();
+    if (t.mem.brawler) {
+      if (d >= AI_KITE_NEAR && d <= AI_KITE_FAR) return null;
+      // Straight away from them (or in to them), and along the ring's edge where the floor ends.
+      const k = (d - AI_KITE_STAND) / Math.max(d, 0.1);
+      let x = me.x + (p.x - me.x) * k, z = me.z + (p.z - me.z) * k;
+      const edge = t.arenaRing() - 1, r = Math.hypot(x, z);
+      if (r > edge) { x *= edge / r; z *= edge / r; }
+      return { x, z };
+    }
+    if (d <= AI_CHORD_REACH) return null;
     const k = (d - AI_CHORD_STAND) / d;
     return { x: me.x + (p.x - me.x) * k, z: me.z + (p.z - me.z) * k };
+  },
+  taken(t, hit) {
+    // A swing, not a bolt (a melee attack shoves harder): the CPU playing him keeps its distance from now on (`aiGoal`).
+    if (hit.kind === 'attack' && (hit.opts.knock ?? 0) > 0.5) t.mem.brawler = 1;
   },
   passive: {
     name: 'Only on the Beat',

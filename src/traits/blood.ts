@@ -96,6 +96,16 @@ export const priceOf = (t: { res: number }, slot: number) => Math.round(t.res) *
 const aiBudget = (t: TraitView) => 10 + 35 * (t.hp() / Math.max(1, t.maxHp()));
 const AI_KEEP = 50;
 const AI_RESUME = 5;
+/** Lancet's range (the kit's): inside it the CPU throws the needle before anything else. */
+const AI_LANCET_REACH = 7;
+/** The CPU starts the Feast (8 m; 9 m of distance ends it) only this close, so that it can finish it. */
+const AI_FEAST_REACH = 5.5;
+/**
+ * Against a brawler (an enemy whose swing has hit her: `taken`) the CPU steps back when they come within `AI_KITE_NEAR` m,
+ * to `AI_KITE_STAND` m: out of a swing's reach, inside her own (5.5 m). It only walks while it has nothing to cast or shoot.
+ */
+const AI_KITE_NEAR = 3.8;
+const AI_KITE_STAND = 4.8;
 
 /**
  * Vesper (drain juggernaut, ranged attack), reworked round one rule: no cooldowns, she pays in blood. Q, W and E can be
@@ -126,7 +136,7 @@ const AI_RESUME = 5;
 export const bloodTrait: Trait = {
   aiHold(t, slot, dist) {
     // The CPU only starts the Feast close enough to finish it.
-    if (slot === 3 && dist > 4) return true;
+    if (slot === 3 && dist > AI_FEAST_REACH) return true;
     if (slot === 2 && t.stacks('curse') > 0) return true;
     // A needle that is in is ripped out, whatever the Price: the Rip is free and gives blood back.
     if (slot === 0 && t.stacks('needle') > 0) return false;
@@ -134,7 +144,29 @@ export const bloodTrait: Trait = {
     // A burst, then a rest: once the Price has passed what it will pay, it waits until the Price is nearly back down.
     if (t.res > aiBudget(t)) t.mem.aiRest = 1;
     else if (t.res <= PRICE_BASE + AI_RESUME) t.mem.aiRest = 0;
-    return !!t.mem.aiRest || t.hp() - price < AI_KEEP;
+    const rests = !!t.mem.aiRest || t.hp() - price < AI_KEEP;
+    // The needle before the waltz: the CPU tries R, E, W before Q, and a brawler in her face had it waltz away again and
+    // again (out of Lancet's reach each time) and never throw a needle. The waltz waits while a needle is in (the Rip comes
+    // next, and needs them within 8 m) and while it would throw one now.
+    if (slot === 1 && (t.stacks('needle') > 0 || (!rests && t.cooldownLeft(0) <= 0 && dist <= AI_LANCET_REACH))) return true;
+    return rests;
+  },
+  aiGoal(t) {
+    const e = t.enemy();
+    if (!e || !t.mem.brawler) return null;
+    const d = t.enemyDistance();
+    if (d >= AI_KITE_NEAR) return null;
+    // Straight away from them, and along the ring's edge where the floor ends.
+    const me = t.self().group.position, p = e.group.position;
+    const k = (d - AI_KITE_STAND) / Math.max(d, 0.1);
+    let x = me.x + (p.x - me.x) * k, z = me.z + (p.z - me.z) * k;
+    const edge = t.arenaRing() - 1, r = Math.hypot(x, z);
+    if (r > edge) { x *= edge / r; z *= edge / r; }
+    return { x, z };
+  },
+  taken(t, hit) {
+    // A swing, not a bolt (a melee attack shoves harder): the CPU playing her keeps its distance from now on (`aiGoal`).
+    if (hit.kind === 'attack' && (hit.opts.knock ?? 0) > 0.5) t.mem.brawler = 1;
   },
   passive: {
     name: 'Blood Price',
