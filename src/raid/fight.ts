@@ -232,6 +232,7 @@ export class BossFight {
    * its own boss only (`objectiveGoal`, `standGoal`, `mustHide`): the other twin's vents and gold zones are its own team's, and
    * bots that crossed the room for them left their own fight and stood in one spot for the next thing to land. A person may still
    * take them.
+   */
   private get minds(): BossScript[] {
     const t = this.twin;
     return t && t.open && !t.dead[1 - t.mine] ? [this.script, t.scripts[1 - t.mine]] : [this.script];
