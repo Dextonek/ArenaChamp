@@ -538,7 +538,7 @@ they stay the tag team above, and nothing new goes over the wire.
 | Sides | The wall stands from the start. The hub deals the players present west, east, west... in the order of their seats as the fight loads (`dealHalves`), so neither half can be empty; the host is in the west. Each half comes in through the gate's passage on its own side, in rows of four. Nobody chooses a side; for 40 the hub deals some of them again in the fight (The Changing of the Flames, below) |
 | Each keeps to its hall | A twin walks no further toward a hero than its own hall reaches, 2.6 m inside its walls and never into the gate's passage (`BossDef.roam`, `forgeRoam`): Ember backs away from whoever comes near, and in the first fight in the forge she backed into the passage's dead end and her half fought there. Ash goes no further than 9 m from his place (`ASH_LEASH`): his first four pillars stand 10 m from it, and in the first fights he met the heroes at the hall's south end, 12 m from any pillar, where every Charge killed. Ember no further than 10 m from her great vent (`EMBER_LEASH`): a half that chased her over the bridges fell 20 points behind the other, and she grew furious for it. Their moves reach wherever they reach |
 | One enemy a screen | The boss in this hero's half is `Duel.foe`. The other is a body the duel only draws (`rimFigure`, `Duel.twin`), walked from its brain's `boss_move`, with its own bar |
-| Two of everything | Each has its own def (`twinFlames(which)`: 0 Ash, 1 Ember), 0.44 of the band's HP (`RAID_TWIN.share`, `raidTwinHp`; half until 2026-11-12, below), its phases at 66, 50 and 33 % of its own HP, half the band's gauge, its own kneel, brain and watchdog. A brain runs on a screen of its own half. A half everyone has left has no brain until the wall is out |
+| Two of everything | Each has its own def (`twinFlames(which)`: 0 Ash, 1 Ember), 0.485 of the band's HP (`RAID_TWIN.share`, `raidTwinHp`; half until 2026-11-12, below), its phases at 66, 50 and 33 % of its own HP, half the band's gauge, its own kneel, brain and watchdog. A brain runs on a screen of its own half. A half everyone has left has no brain until the wall is out |
 | Two scripts a screen | `src/raid/twin.ts`. Each boss's casts play in its own `BossScript`. The other boss's script is a **ghost**: it draws everything, cut off at the wall (`TelegraphLayer.clip`), but this hero stands in none of it, takes no spot of it, reports nothing, and none of its side effects (a stage's guard, a drag, a hint, a flash) reach this screen's own fight. So the engine's rule holds: one hero, one enemy, and bodies it only draws |
 | Health falls together | The hub: when their HP shares are more than 12 points apart the one with **more** health is furious (`boss_rage`), until they are within 6 (`RAID_TWIN`). Furious: its hits cost 1.5 times as much and the quiet between its moves is 0.6 of what it was (`FURY_HIT`, `FURY_GAP`); red heat round it, a red bar, a banner on every screen. The clock's enrage (2:50: 2 times, 0.5) is the stronger, and the two never multiply |
 | The bars | Two bars in place of the one, Ash's on the left as he is in the room, each draining toward the middle; this screen's enemy has the bright edge. Between them the gap in points, amber past 6, red past 12, with an arrow at the one with more health (`BossHud.setTwin`) |
@@ -702,7 +702,34 @@ How each stays within the rules:
 | Enrage | 2:50 | 4:30 | A half walks a long hall, crosses bridges and stands out its own Eruption: six bots have both twins at a third after about 2:20 |
 | Ash's Charge | Every 14 s | Every 22 s, and not in Together | A party's fight is twice as long, and a pillar breaks each time he is stopped: at 14 s six pillars are gone before the Eruption. In Together the flood takes his pillars one by one and both teams end on one island with two of them: every Charge there killed the hero it fixed on |
 | A Coal Heart's HP | 3.5 % of the boss's | 3.5 % of that twin's, times the heroes its half has over the heroes it is tuned for (half the band), never under 0.4 | Six players are a fight tuned for ten: three to a half, not five. Before, each half needed the whole 30 s; now 17 to 26 s |
-| Each twin's HP | | Half the band's, as before | Not changed: the hub's numbers and the server test stand as they were |
+| Each twin's HP | One boss, 7,100 | 0.485 of the band's (`RAID_TWIN.share`, `raidTwinHp`): 17,218 each at band 10, the pair 0.97 of it | Six bots unhelped won 2 of 6 at half, 3 of 3 at 0.44, 5 of 6 at 0.47, 4 of 6 at 0.485 (below) |
+
+**Measured in the forge** (2026-11-12; `python pipeline/tools/twin-tries.py <out> --tries 6 --seconds 360 --port 5217`: six bots
+through the real hub, band 10, nobody helping, every screen's autopilot; times on the fight's own clock):
+
+| Each twin's HP | Won | The tries |
+|---|---|---|
+| 0.5 of the band's (17,750) | 2 of 6 | Won at 4:00 and 3:40. Lost: wiped at 3:26 with both near 27 %; wiped at 3:58 with Ash at 1 %, Ember 20 %; past the 4:30 enrage with Ember at 8 % (Ash fell at 3:50) and with both at 11 and 19 % |
+| 0.44 (15,620) | 3 of 3 | Won at 3:15, 3:37 and 3:43, at most two of six down at the end. Stopped at three: it overshoots |
+| 0.47 (16,685) | 5 of 6 | Won at 3:12, 3:36, 3:38, 3:41 and 3:45; lost one, wiped at 2:57 with Ash at 19 %, Ember 35 % |
+| **0.485 (17,218)** | **4 of 6** | Won at 3:23, 3:30, 3:39 and 3:58. Lost two, both wipes: at 3:05 with Ash at 11 %, Ember 21 %; at 3:20 with Ash at 14 %, Ember 30 % (five of the six to Falling Star, on the last island) |
+
+What kills the bots: Ember's half far more than Ash's. Her Lava Wave (10 to 20 hits a fight), Marked (4 to 17) and Falling Star (5 to
+12), and Lantern Chain (4 to 15: a bot walks back to its mate but often too late, and the snap burns both for 30 %). Ash's Charge hits
+once or twice a fight. Each Eruption took 13 to 30 s of its 30. The flood began 1:57 to 2:56 in. (Hits named `lava` in the tool's
+counts are the run's Molten Ground omen, pools left by circles, not the forge: the forge's own floor is `forge`, 1 to 4 hits a fight.)
+
+How far the screens agree, over all 21 tries, compared at the same moment by the computer's clock (`forge.wall`; the tool's `apart`):
+both bars within 1.7 % of a bar, but for one or two samples of 4 % in three tries, at the moment a reward of about 700 HP was on its
+way (`barsOff`); the same halves cracked, but for one sample at the crack in three tries; the flood's edge within 0.1 m, but for one
+sample of 0.7 m and one of 2.9 m, as a vent's seal (which draws the lava back 2.9 m at once) reached one screen before another; no
+bot across the standing wall in any sample; no errors. Every bridge that rose or sank on one screen did so on screen 0 within the
+samples' own spacing (`bridgeLag`), **but for one glitch, not chased:** right as a half cracks, some screens show two of its bridges
+up for one or two seconds that the others never show (`bridgeLone`; in 5 of 21 tries, 2 to 14 such changes). (Compared by each
+screen's own fight clock, which starts a second or two apart, the tool first showed 5 to 6 % between bars: that was the clock, not
+the screens.)
+
+A big party, through the hub: twelve bots in one fight (band 15, so Lantern Chain comes; each bot helped by 12 HP a second so the fight ends in the time, `party-raid.py --players 12 --boss ash --boost 12`): won at 2:12, nobody down at the end; all twelve screens agreed on both bars within 1.3 % at every moment compared, on which halves had cracked, on every bridge (within 0.5 s) and on the flood's edge (within 0.1 m); nobody across the standing wall; no errors.
 
 **What the autopilot does in the forge** (`Duel.pilot`): it plans its walk over the bridges and steps out of lava first of all; chained,
 it walks back toward its mate once they are 5.4 m apart; marked, it walks to the nearest gate once they open, through whatever lands

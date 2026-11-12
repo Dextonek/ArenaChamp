@@ -149,7 +149,7 @@ ready the hub sends `raid_start` instead of `match_start`, then leads the run wi
 
 | Message | Since | What |
 |---|---|---|
-| `raid_stage.twin { half, hp, brain, staggerMax }` | 9 | Which half each seat is in (0 west with Ash, 1 east with Ember, -1 gone), each boss's HP and brain's screen, one boss's gauge. Since 13 each boss has `RAID_TWIN.share` (0.44) of the band's HP, not half (`raidTwinHp`) |
+| `raid_stage.twin { half, hp, brain, staggerMax }` | 9 | Which half each seat is in (0 west with Ash, 1 east with Ember, -1 gone), each boss's HP and brain's screen, one boss's gauge. Since 13 each boss has `RAID_TWIN.share` (0.485) of the band's HP, not half (`raidTwinHp`) |
 | `which` on `boss_cast`, `boss_move`, `boss_damage`, `boss_stagger`, `boss_debuff`, `boss_reward`, `boss_hp`, `boss_phase`, `boss_gauge`, `boss_kneel`, `peer_debuff`, `boss_brain`, `brain_moved` | 9 | Which of the two it is about (0 Ash, 1 Ember) |
 | `boss_rage { which, on }`, `boss_fell { which }` | 9 | One grows furious or calms; one fell |
 | `boss_cast.mate` | 13 | A second hero the step is for, beside `target` (Lantern Chain's pair); passed on only if it is a seat |
