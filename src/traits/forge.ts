@@ -79,6 +79,14 @@ const swallowed = (k: string) => k === 'slow' || k === 'root' || k === 'knockup'
 const AI_REST = 1.1;
 const AI_RIDE = 3.5;
 const AI_QUENCH_REACH = 2.5;
+/**
+ * In reach of his hammer the CPU casts as a swing lands and not while the next one is on its way up: a cast drops a
+ * wind-up (the player's hero's does, and so a person's; the computer's opponent's swing lands anyway, `src/duel.ts`).
+ * Within `AI_SWING_REACH` m it casts only in the `AI_AFTER_SWING` s after a swing, or when none has come for `AI_NO_SWING` s.
+ */
+const AI_SWING_REACH = 3.0;
+const AI_AFTER_SWING = 0.5;
+const AI_NO_SWING = 2.4;
 
 /**
  * Brannoc (tank), reworked round one rule: Heat. Q, W and E have no cooldown (the kit's 0.5 s is only the gap the game
@@ -110,6 +118,10 @@ export const forgeTrait: Trait = {
       return t.time - (t.mem.whiteAt ?? 0) < AI_RIDE && hp > 0.45;
     }
     if (t.time < (t.mem.aiRest ?? 0)) return true;
+    if (dist <= AI_SWING_REACH) {
+      const since = t.time - (t.mem.swungAt ?? -9);
+      if (since > AI_AFTER_SWING && since < AI_NO_SWING) return true;
+    }
     if (white(t)) return hp < 0.5;
     if (t.res + HEAT_GAIN[slot] >= HEAT_MAX && t.cooldownLeft(3) > 2) return true;
     if (slot === 1 && slamOn(t)) return true;
@@ -180,6 +192,7 @@ export const forgeTrait: Trait = {
   attackMods(t) {
     const m: Partial<CastMods> = {};
     let extra = 0;
+    t.mem.swungAt = t.time;
     if (slamOn(t)) {
       endSlam(t);
       extra += SLAM_DAMAGE;
