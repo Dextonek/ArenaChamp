@@ -4,6 +4,7 @@ import { RING, seeded } from '../arenas/common';
 import {
   FORGE, TWIN_BRIDGES, TWIN_CHANNELS, TWIN_LAYOUT, bridgesCrossed, floodInset, forge, forgeBounds, forgeCover, forgeGates, forgeSafe, inForge, lavaAt,
 } from '../arenas/twinpit';
+export { forgeRoam } from '../arenas/twinpit';
 import { FallingStone, FollowMark, HoldRing, LightPillar, SunOrb } from './fx';
 import { STAND_COLOR } from './script';
 import type { BossCast, BossMove, Objective, PlayContext, PlayedMove, RaidSide, RoomFloor, Threat } from './types';
@@ -41,6 +42,9 @@ const FLOOR: RoomFloor = {
   get bounds() { return forgeBounds() || undefined; },
   safe: (x, z) => forgeSafe(x, z),
   burn: (x, z) => lavaAt(x, z),
+  refuge: C,
+  // Not `lava`: that is the Molten Ground omen's.
+  name: 'forge',
 };
 export const forgeFloor = (): RoomFloor | null => (forge.cracked[0] >= 0 || forge.cracked[1] >= 0 || forge.floodAt >= 0 ? FLOOR : null);
 

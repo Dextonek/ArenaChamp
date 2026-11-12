@@ -2465,7 +2465,7 @@
       d.countdown = -1;
       for (let i = 0; i < 30 && !d.over; i++) { step(1); d.playerHp = d.playerMax; }
       yes('autopilot: it crosses by a bridge to reach Ash, and hurts him', link.pools[0].hp < POOL && me().z < 7 + 12);
-      check('autopilot: and never stands in the lava on its way', d.boss.stats.hits.lava ?? 0, 0, 0);
+      check('autopilot: and never stands in the lava on its way', d.boss.stats.hits.forge ?? 0, 0, 0);
       d.autopilot = false;
 
       // The pit floods: when the first of the two reaches its last phase.

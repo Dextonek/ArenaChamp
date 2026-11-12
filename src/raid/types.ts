@@ -463,6 +463,12 @@ export interface BossDef {
   enrage?: number;
   /** The room's cover that counts, standing (Ash's four pillars): the bar shows how many are left. */
   pillars?: readonly Obstacle[];
+  /**
+   * Where it may walk to, when that is less than the room: a spot it is asked to go to, pulled back into its own part of the room (each
+   * of Twin Flames' two keeps to its own hall of the forge, and out of the gate's passage: a boss that backs away must not end in a
+   * dead end). Its moves reach wherever they reach.
+   */
+  roam?(x: number, z: number): { x: number; z: number };
   /** As a tag team's form has them (`BossForm`): it backs away from a hero closer than this, and leaves this move behind as it walks. */
   backAt?: number;
   trail?: string;
@@ -495,6 +501,10 @@ export interface RoomFloor {
   safe(x: number, z: number): boolean;
   /** What a second standing at (x, z) costs, as a share of max HP (0: nothing). */
   burn(x: number, z: number): number;
+  /** Where an AI caught far inside it heads for, when no dry spot is near (the last island's middle). */
+  refuge?: { x: number; z: number };
+  /** What its hits are counted as (a fight's result names what hit a hero). */
+  name: string;
 }
 
 /**

@@ -17,7 +17,7 @@ import type { BodyLook } from './bodies/look';
 import { AimLane, FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, ShadowFloor, SunOrb, WaveRing } from './fx';
 import { STAND_COLOR } from './script';
 import { stageMove } from './stage';
-import { chain, change, crack, flood, forgeFloor, resetForge, shatterBridges, vents } from './twinForge';
+import { chain, change, crack, flood, forgeFloor, forgeRoam, resetForge, shatterBridges, vents } from './twinForge';
 import type { AimContext, BossCast, BossDef, BossMove, BossPhase, Objective, PlayContext, PlayedMove, Threat } from './types';
 
 const LAVA = 0xe0601a;
@@ -905,6 +905,8 @@ function twinDef(which: 0 | 1): BossDef {
     enrage: TWIN_ENRAGE,
     // The forge's own lava: its channels and its flood (src/raid/twinForge.ts). Nothing else closes in.
     floor: forgeFloor,
+    // Each keeps to its own hall, and out of the gate's passage: the heroes come to it.
+    roam: (x, z) => forgeRoam(which, x, z),
     twin: { which, pair: () => TWINS, wall: TWIN_WALL, heroStart: twinHeroStart, open: () => forge.open },
   };
 }

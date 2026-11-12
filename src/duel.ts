@@ -1360,7 +1360,7 @@ export class Duel {
     const units = arena.summons.alive('hero').filter((u) => floor.burn(u.pos.x, u.pos.z) > 0);
     if (share <= 0 && !units.length) return;
     this.burnWait = 1;
-    if (share > 0) this.hurtHero({ share: share * (this.boss?.script.harm ?? 1), from: { x: me.x, z: me.z }, move: 'lava' });
+    if (share > 0) this.hurtHero({ share: share * (this.boss?.script.harm ?? 1), from: { x: me.x, z: me.z }, move: floor.name });
     for (const u of units) {
       this.hitBypass = true;
       arena.hit(u.figure, { damage: ROOM_UNIT_HIT, knock: 0, color: '#ffb050' });
@@ -2721,6 +2721,8 @@ export class Duel {
     if (hurts(at.x, at.z)) {
       const out = this.escapeStep(at, other, hurts);
       if (out) return out;
+      // No dry spot near (the flood came over it far from its edge): toward what the room says is left.
+      if (floor?.refuge && floor.safe(at.x, at.z) === false) return this.goalStep(this.playerAi, at, floor.refuge);
     }
     if (!script.danger(at.x, at.z, BOSS_LOOK)) return null;
     let roll = this.hazardRolls.get(who);
@@ -2750,7 +2752,9 @@ export class Duel {
   private offZones(at: THREE.Vector3, move: THREE.Vector3) {
     const shift = this.shift, floor = this.roomFloor;
     if ((!shift && !floor) || move.lengthSq() === 0) return move;
-    const clear = (m: THREE.Vector3) => (!shift || shift.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK)) && floor?.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK) !== false;
+    // Standing in a room's lava already, any step is as good: it is on its way out.
+    const inIt = floor?.safe(at.x, at.z) === false;
+    const clear = (m: THREE.Vector3) => (!shift || shift.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK)) && (inIt || floor?.safe(at.x + m.x * ZONE_LOOK, at.z + m.z * ZONE_LOOK) !== false);
     if (clear(move)) return move;
     const side = new THREE.Vector3(-move.z, 0, move.x);
     if (clear(side)) return move.copy(side);

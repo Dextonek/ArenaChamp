@@ -206,7 +206,13 @@ const capsuleDist = (o: Obstacle, x: number, z: number) => {
  * the same moment of the fight; `reset` before each fight (`BossDef.resize`). `clock` runs with the room (`tick`).
  */
 export const forge = {
+  /**
+   * The room's clock (s). It runs with the frames, and never behind real time: a screen that draws under 30 frames a second counts
+   * short frames (the game caps a frame's time), and its bridges and its flood would fall behind every other screen's.
+   */
   clock: 0,
+  frames: 0,
+  since: 0,
   /** When each half's lava opened or will open (the room's clock), or -1: it has not cracked. And the seed its bridges turn by. */
   cracked: [-1, -1],
   seeds: [0, 0],
@@ -224,10 +230,15 @@ export const forge = {
     this.shattered.fill(-Infinity);
     this.floodAt = -1;
     this.held = 0;
+    this.clock = this.frames = 0;
+    this.since = performance.now();
     coverKey = '';
     coverAt = NaN;
   },
-  tick(dt: number) { this.clock += dt; },
+  tick(dt: number) {
+    this.frames += dt;
+    this.clock = Math.max(this.clock, this.frames, (performance.now() - this.since) / 1000);
+  },
   /** Half `half`'s floor cracks: its lava opens after `warn` s. Nothing, if it has cracked already. */
   crack(half: number, seed: number, warn = FORGE.warn) {
     if (this.cracked[half] >= 0) return false;
@@ -333,6 +344,20 @@ export function forgeSafe(x: number, z: number, pad = 0.45) {
   if (forge.floodAt >= 0 && dryDepth(x, z, floodInset(forge.clock + 2)) < pad + 0.4) return false;
   for (const o of forgeCover()) if (capsuleDist(o, x, z) <= o.r + pad) return false;
   return true;
+}
+
+/**
+ * Where one of the two may walk to: (x, z) pulled back into its own hall, 2.6 m inside its walls and the channel, and never into the
+ * gate's passage; once the pit floods, into the floor that is still dry, either hall.
+ */
+export function forgeRoam(half: number, x: number, z: number) {
+  const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v)), pad = 2.6;
+  if (forge.open) {
+    const inset = floodInset() + pad;
+    return { x: clamp(x, C.x - F.hx + inset, C.x + F.hx - inset), z: clamp(z, C.z - F.hn + inset, C.z + F.hn - inset) };
+  }
+  const s = half ? 1 : -1, x0 = C.x + s * (F.chan + pad), x1 = C.x + s * (F.hx - pad);
+  return { x: clamp(x, Math.min(x0, x1), Math.max(x0, x1)), z: clamp(z, C.z - F.hn + pad, C.z + F.hs - pad) };
 }
 
 /** How far out from the middle an AI and a boss backing away may go once the pit floods (m), or 0 while it is dry. */
