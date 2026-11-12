@@ -450,7 +450,7 @@ export const change: BossMove = {
       p.group.add(light.mesh);
       return light;
     });
-    const rings = new Map<RaidSide, FollowMark>();
+    const rings = new Map<RaidSide, FollowMark>(), orbs = new Map<RaidSide, SunOrb>();
     /** The mouth of the gate nearest this hero, on the side it stands on. */
     const mouth = () => {
       const h = heroOf(p, me) ?? { x: C.x, z: C.z }, s = h.x < C.x ? -1 : 1;
@@ -487,6 +487,9 @@ export const change: BossMove = {
           for (const [side, ring] of rings) {
             const h = heroOf(p, side), on = t < end && !state.crossed.has(side);
             if (h) ring.place(h.x, h.z, on ? 0.55 + 0.3 * Math.sin(t * 5) : 0);
+            const orb = orbs.get(side);
+            if (h) orb?.sprite.position.set(h.x, 3.2, h.z);
+            orb?.set(1.5, on ? 0.9 : 0);
           }
           if (!opened && t >= warn) {
             opened = true;
@@ -510,9 +513,11 @@ export const change: BossMove = {
             }
           } else {
             state.marked.add(side);
-            const ring = new FollowMark(1.5, STAND_COLOR);
-            p.group.add(ring.mesh);
+            // A gold ring round a marked hero, and a small light over its head: seen from across the room.
+            const ring = new FollowMark(1.5, STAND_COLOR), orb = new SunOrb(C.x, 3.2, C.z);
+            p.group.add(ring.mesh, orb.sprite);
             rings.set(side, ring);
+            orbs.set(side, orb);
             if (side === me) {
               p.hint('You are marked: cross through a gate to the other boss before they shut');
               p.flash('rgba(255,226,140,0.7)', 0.3);
@@ -524,6 +529,7 @@ export const change: BossMove = {
           forgeGates(false);
           for (const l of lights) l.dispose();
           for (const r of rings.values()) r.dispose();
+          for (const o of orbs.values()) o.dispose();
         },
       },
     };

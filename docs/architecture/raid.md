@@ -536,7 +536,7 @@ they stay the tag team above, and nothing new goes over the wire.
 |---|---|
 | The room | The Twin Forge (`src/arenas/twinpit.ts`, built in Blender: below): two halls side by side, 52 m by 54 m in all, split from the back wall to the gate by a wall of fire 1.8 m thick: an obstacle that never breaks (`Obstacle.fixed`), so it stops walking, sight and bolts. The game's floor is a ring of 38 m (`RAID_BOSSES.ash.partyRing`); the forge's own walls are its shape. West: Ash, with four pillars round him and one more for every three heroes of his half (5 at band 5, 6 at 10, 8 at 20, 11 at 40), and a great anvil. East: Ember over her great vent, six small vents round it, a great brazier |
 | Sides | The wall stands from the start. The hub deals the players present west, east, west... in the order of their seats as the fight loads (`dealHalves`), so neither half can be empty; the host is in the west. Each half comes in through the gate's passage on its own side, in rows of four. Nobody chooses a side; for 40 the hub deals some of them again in the fight (The Changing of the Flames, below) |
-| Each keeps to its hall | A twin walks no further toward a hero than its own hall reaches, 2.6 m inside its walls and never into the gate's passage (`BossDef.roam`, `forgeRoam`): Ember backs away from whoever comes near, and in the first fight in the forge she backed into the passage's dead end and her half fought there. Their moves reach wherever they reach |
+| Each keeps to its hall | A twin walks no further toward a hero than its own hall reaches, 2.6 m inside its walls and never into the gate's passage (`BossDef.roam`, `forgeRoam`): Ember backs away from whoever comes near, and in the first fight in the forge she backed into the passage's dead end and her half fought there. Ash goes no further than 9 m from his place (`ASH_LEASH`): his first four pillars stand 10 m from it, and in the first fights he met the heroes at the hall's south end, 12 m from any pillar, where every Charge killed. Their moves reach wherever they reach |
 | One enemy a screen | The boss in this hero's half is `Duel.foe`. The other is a body the duel only draws (`rimFigure`, `Duel.twin`), walked from its brain's `boss_move`, with its own bar |
 | Two of everything | Each has its own def (`twinFlames(which)`: 0 Ash, 1 Ember), half the band's HP, its phases at 66, 50 and 33 % of its own HP, half the band's gauge, its own kneel, brain and watchdog. A brain runs on a screen of its own half. A half everyone has left has no brain until the wall is out |
 | Two scripts a screen | `src/raid/twin.ts`. Each boss's casts play in its own `BossScript`. The other boss's script is a **ghost**: it draws everything, cut off at the wall (`TelegraphLayer.clip`), but this hero stands in none of it, takes no spot of it, reports nothing, and none of its side effects (a stage's guard, a drag, a hint, a flash) reach this screen's own fight. So the engine's rule holds: one hero, one enemy, and bodies it only draws |
@@ -650,10 +650,13 @@ gate's passage floods first. The twins follow the heroes onto it, and Ember, who
   floods later, when the survivor gets there.
 - **One enemy a screen still holds.** The flood changes nobody's enemy: each screen fights its own half's twin until that one falls,
   and then the other, exactly as before. What changes is the other twin's script: it stops being a ghost that this hero is "across the
-  wall" from (`Ghost.open`). Its zones hit this hero, its Coal Hearts and vents are this hero's to take, its gold zones count this
-  hero, and its brain may aim at this hero. It still is not this screen's enemy: this hero's hits and control never land on it, it
-  runs no brain here, and nothing of it acts on this screen's boss. An AI minds both scripts (`BossFight.danger`, `mustHide`...).
-- **Furious, side by side.** In the flood each hits 1.25 times as hard and waits 0.8 of the quiet between its moves (`FLOOD_HIT`,
+  wall" from (`Ghost.open`). Its zones hit this hero, its Coal Hearts and vents are this hero's to take, and its gold zones count
+  this hero. It still is not this screen's enemy: this hero's hits and control never land on it, it runs no brain here, and nothing
+  of it acts on this screen's boss. An AI minds both scripts (`BossFight.danger`, `mustHide`...).
+- **Each twin still goes for its own team.** A brain sees only the heroes of its own half while both twins stand, wall or no wall
+  (`BossFight.newBrain`); with the wall out and nobody of its half standing it goes for whoever is. In the first fights a twin's
+  brain saw everyone once the wall was out, and Ash's Charge fixed on heroes of Ember's half, who have no pillar within reach.
+- **Furious, side by side.** In the flood each hits 1.15 times as hard and waits 0.85 of the quiet between its moves (`FLOOD_HIT`,
   `FLOOD_GAP`); being behind (1.5, 0.6) and the clock's enrage (2, 0.5) are stronger, and none of them multiply.
 - **The hub** takes the wall as out from its relay of the `flood` cast (`RAID_TWIN.flood`): a hero gets one of the other half up, a
   gold zone waits for everyone. Hits stay each half's own boss's until one falls.
@@ -664,23 +667,22 @@ gate's passage floods first. The twins follow the heroes onto it, and Ember, who
 
 | For | Mechanic | How it goes |
 |---|---|---|
-| 10 or more | **Lantern Chain** (`chain`) | Ember's lanterns chain heroes in pairs: a pair for every five heroes a twin sees standing (one to four). First 24 s into the fight, then every 36 s; a chain lasts 12 s. The two have 3 s to come together; after that, over 8 m apart it snaps and burns both for 30 %. Then Ash's rocks fall three times (3.5, 7 and 10.5 s in): one between the two and one 4.6 m past each of them, along the line through the pair, 14 % each: both must step off that line, and to the same side |
+| 10 or more | **Lantern Chain** (`chain`) | Ember's lanterns chain heroes in pairs: a pair for every five heroes a twin sees standing (one to four). First 24 s into the fight, then every 36 s; a chain lasts 12 s. The two have 3 s to come together; after that, over 8 m apart it snaps and burns both for 30 %. Then Ash's rocks fall three times (3.5, 7 and 10.5 s in): one between the two and one 4.6 m past each of them, along the line through the pair, 10 % each: both must step off that line, and to the same side |
 | 20 or more | **Seal the Vents** (`ventsw`, `ventse`) | In Together, in place of the one vent: each twin opens a vent for every five heroes of its half (one to four), up to three times. Each is sealed by one hero standing on it 4 s; they close after 16 s. Each one sealed draws the lava back 12 s; each one left open brings it on 10 s, for both halves. All of a cast's sealed: that twin staggers (40, scaled as its gauge is) |
 | 40 | **The Changing of the Flames** (`change`) | Ash calls it, first 40 s into the fight and then every 60 s, while the wall of fire stands. The hub marks every second standing hero of each half, turning from call to call. After 4 s three gates open in the wall for 8 s (the thresholds across the channel). A marked hero that steps into a gate is carried through, and its enemy changes to the other twin. When the gates shut, the marked who did not cross are dragged through the fire all the same, for 40 %. A hero that is not marked burns in a gate (15 % a second) and does not pass |
 
 How each stays within the rules:
 
-- **A pair is never across the wall.** Each twin casts the chain on its own half, because a brain sees only its own side of the wall
-  while it stands (`BossFight.newBrain`). Ember's lanterns and Ash's rocks are how it looks in both halves. Once the wall is out a twin
-  sees everyone, and a pair may be of both teams.
+- **A pair is never across the wall.** Each twin casts the chain on its own half, because a brain sees only the heroes of its own
+  half while both stand (`BossFight.newBrain`). Ember's lanterns and Ash's rocks are how it looks in both halves.
 - **The pair goes in the cast**: `target` and the new `BossCast.mate`, which the hub passes on if it is a seat.
 - **The snap is one event for every screen.** Each of the two screens watches its own hero's distance to the other (a look read,
   `PlayContext.heroAt`); the first to see it past 8 m reports an objective (`boss_obj`, part 0), the hub tells everyone once
   (`boss_done`), and each of the two screens burns its own hero.
 - **An AI keeps to its mate**: on the two screens the chain holds, the other hero is a spot to walk toward while they are more than
   5.4 m apart (an objective that is never taken).
-- **The vents' count** is the brain's (`x` in the cast): the heroes it sees, or half of them once the wall is out and it sees both
-  teams. Each vent is an objective, so the hub gives each to one hero and every screen hears which are sealed.
+- **The vents' count** is the brain's (`x` in the cast): the heroes of its half it sees standing. Each vent is an objective, so the
+  hub gives each to one hero and every screen hears which are sealed.
 - **The Changing of the Flames is the hub's to deal.** Ash's brain's screen asks (`boss_reward` with the key `change`: a request, not
   a reward); the hub marks and says who as objectives taken (part 100 + the seat); a crossing is an objective too (part 200 + the
   seat), which the hub takes only from that marked hero itself, and answers by dealing it into the other half (`twin_halves`). A

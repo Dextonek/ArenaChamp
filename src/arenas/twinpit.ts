@@ -351,20 +351,21 @@ export const ASH_LEASH = 9;
 
 /**
  * Where one of the two may walk to: (x, z) pulled back into its own hall, 2.6 m inside its walls and the channel, and never into the
- * gate's passage; Ash no further than `ASH_LEASH` from his place, among his pillars. Once the pit floods: into the floor that is
- * still dry, either hall.
+ * gate's passage; Ash no further than `ASH_LEASH` from his place, among his pillars. Once the pit floods each still keeps to its
+ * own side of the channel, on the floor that is dry, and Ash to his place as far as the lava has left it: the flood brings both to
+ * the last island, side by side.
  */
 export function forgeRoam(half: number, x: number, z: number) {
-  const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v)), pad = 2.6;
-  if (forge.open) {
-    const inset = floodInset() + pad;
-    return { x: clamp(x, C.x - F.hx + inset, C.x + F.hx - inset), z: clamp(z, C.z - F.hn + inset, C.z + F.hn - inset) };
-  }
-  const s = half ? 1 : -1, x0 = C.x + s * (F.chan + pad), x1 = C.x + s * (F.hx - pad);
-  const at = { x: clamp(x, Math.min(x0, x1), Math.max(x0, x1)), z: clamp(z, C.z - F.hn + pad, C.z + F.hs - pad) };
+  const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v)), pad = 2.6, s = half ? 1 : -1;
+  // How far the lava has come, and the strip of its own hall that is left: from the channel out, and north to south.
+  const inset = forge.open ? floodInset() : 0;
+  const x0 = C.x + s * (F.chan + pad), x1 = C.x + s * Math.max(F.chan + pad, F.hx - inset - pad);
+  const zn = C.z - F.hn + inset + pad, zs = C.z + (forge.open ? F.hn - inset : F.hs) - pad;
+  const into = (p: { x: number; z: number }) => ({ x: clamp(p.x, Math.min(x0, x1), Math.max(x0, x1)), z: clamp(p.z, zn, zs) });
+  const at = into({ x, z });
   if (half) return at;
-  const home = F.hold[0], far = Math.hypot(at.x - home.x, at.z - home.z);
-  return far <= ASH_LEASH ? at : { x: home.x + ((at.x - home.x) / far) * ASH_LEASH, z: home.z + ((at.z - home.z) / far) * ASH_LEASH };
+  const home = into(F.hold[0]), far = Math.hypot(at.x - home.x, at.z - home.z);
+  return far <= ASH_LEASH ? at : into({ x: home.x + ((at.x - home.x) / far) * ASH_LEASH, z: home.z + ((at.z - home.z) / far) * ASH_LEASH });
 }
 
 /** Whether the flood has come over (x, z): what stands there is under the lava. */

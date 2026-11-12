@@ -772,6 +772,18 @@ export class Duel {
     return best;
   }
 
+  /**
+   * The fallen partner an AI goes to get up: the nearest one, if this hero is the nearest of those standing to it. In a party
+   * everyone walking to one fallen hero, and casting nothing there, is a crowd in one spot for whatever lands next.
+   */
+  private fallenMine() {
+    const p = this.fallenNear();
+    if (!p) return null;
+    const mine = flat(p.pos, this.host.arena.caster.group.position);
+    for (const q of this.party.values()) if (q !== p && !q.down && !q.left && this.reachable(q.pos) && flat(q.pos, p.pos) < mine) return null;
+    return p;
+  }
+
   /** The one partner of a raid for two: its bar takes the opponent's place. */
   private get partner() {
     return this.party.size === 1 ? this.party.values().next().value ?? null : null;
@@ -2543,7 +2555,7 @@ export class Duel {
       return;
     }
     // A boss's gold zone: go and stand in it, against every habit. A fallen partner comes next: stand by it, and cast nothing.
-    const fallen = this.fallenNear()?.pos ?? null;
+    const fallen = this.fallenMine()?.pos ?? null;
     const script = this.boss;
     // Hidden from a killing hit still to come (behind a pillar from Ash's Charge): it stays there, and casts nothing, until it has passed.
     if (script?.mustHide && script.hidden(me.x, me.z)) return;

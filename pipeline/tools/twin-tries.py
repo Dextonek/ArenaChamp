@@ -102,8 +102,11 @@ def main():
     for i in range(a.tries):
         folder = out / f"try{i + 1}"
         if not a.only_read:
-            run = subprocess.Popen([sys.executable, str(ROOT / "pipeline" / "tools" / "party-raid.py"), str(folder), "--players", str(a.players), "--seconds", str(a.seconds),
-                                    "--port", str(a.port), "--boss", "ash"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            folder.mkdir(parents=True, exist_ok=True)
+            # What the run prints (its lines every five seconds, an error if it stops) is kept beside its pictures.
+            log = open(folder / "run.log", "w", encoding="utf-8")
+            run = subprocess.Popen([sys.executable, "-u", str(ROOT / "pipeline" / "tools" / "party-raid.py"), str(folder), "--players", str(a.players), "--seconds", str(a.seconds),
+                                    "--port", str(a.port), "--boss", "ash"], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT)
             try:
                 run.wait(timeout=a.seconds + 150)
             except subprocess.TimeoutExpired:

@@ -1157,7 +1157,7 @@
           for (let i = 0; i < 150 && !['brand', 'carry', 'four'].every((id) => seen.some((c) => c.move === id)); i++) { d.playerHp = d.playerMax; step(1); }
           yes('band 40: he opens High Noon with Carry the Sun, brands, and calls The Four Hours', seen.find((c) => c.step === 0 && !['brand'].includes(c.move))?.move === 'carry' && seen.some((c) => c.move === 'brand') && seen.some((c) => c.move === 'four'));
           // The hub passes a cast on field by field (server/hub.mjs, `boss_cast`): anything else would not arrive.
-          const HUB = ['id', 'move', 'step', 'x', 'z', 'fx', 'fz', 'dir', 'seed', 'target', 'alone', 'rim', 'form', 'flag', 'which'];
+          const HUB = ['id', 'move', 'step', 'x', 'z', 'fx', 'fz', 'dir', 'seed', 'target', 'alone', 'rim', 'form', 'flag', 'which', 'mate'];
           yes('every cast he sent has only what the hub passes on', seen.every((c) => Object.keys(c).every((k) => HUB.includes(k)) && [c.id, c.step, c.x, c.z, c.fx, c.fz, c.dir, c.seed, c.target].every(Number.isFinite)));
           const brandCast = seen.find((c) => c.move === 'brand' && c.step === 0), me = a.caster.group.position;
           yes('Branded: alone, the brain brands the one hero standing, where it stands', brandCast.target === 0 && !brandCast.flag && Math.hypot(brandCast.x - me.x, brandCast.z - me.z) < 12);
