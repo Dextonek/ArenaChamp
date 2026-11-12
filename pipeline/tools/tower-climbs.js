@@ -1,5 +1,5 @@
-// The Tower's measurement, headless: ten heroes climb this week's Tower twice each on the autopilot, then three of them climb
-// two other weeks' Towers once, so the numbers are not tuned to one Tower only. About three minutes.
+// The Tower's measurement, headless: ten heroes climb this week's Tower twice each on the autopilot, then the same ten climb
+// the next two weeks' Towers once each, so the numbers are not tuned to one Tower only. About six minutes.
 //
 //   python pipeline/tools/page-shots.py pipeline/tools/tower-climbs.js <out folder> --page /game --timeout 590 --port 5199 --json tower-climbs.json
 //
@@ -10,14 +10,15 @@ const { isoWeek } = await import('/src/tower/week.ts');
 const wait = async () => { const t0 = Date.now(); while (!_tower.done() && Date.now() - t0 < 400000) await new Promise((r) => setTimeout(r, 500)); };
 const t0 = Date.now();
 const week = isoWeek().id;
-_tower(['Lyra', 'Bram', 'Kaia', 'Sefu', 'Vesper', 'Brannoc', 'Isolde', 'Nyx', 'Mortis', 'Auriel'], 2);
+const HEROES = ['Lyra', 'Bram', 'Kaia', 'Sefu', 'Vesper', 'Brannoc', 'Isolde', 'Nyx', 'Mortis', 'Auriel'];
+_tower(HEROES, 2);
 await wait();
 const main = { week, done: _tower.done(), show: _tower.show(), floors: _tower.floors(), errors: _tower.errors() };
 // The two weeks after this one.
 const other = {};
 for (const days of [7, 14]) {
   const next = isoWeek(new Date(Date.now() + days * 86400000)).id;
-  _tower(['Kaia', 'Brannoc', 'Sefu'], 1, { week: next });
+  _tower(HEROES, 1, { week: next });
   await wait();
   other[next] = { show: _tower.show(), floors: _tower.floors(), errors: _tower.errors() };
 }

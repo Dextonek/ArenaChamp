@@ -95,16 +95,23 @@ export function towerFor(week: string, upTo = 30): FloorPlan[] {
   const rng = seeded(seedNumber(`tower-${week}`));
   const kinds: FloorKind[] = [];
   let hand: FloorKind[] = [];
+  const last = () => kinds[kinds.length - 1];
+  /** A new hand of the five kinds, shuffled. Its first is never the kind just played, and never an echo right after a guardian. */
+  const deal = () => {
+    hand = [...KINDS];
+    for (let i = hand.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [hand[i], hand[j]] = [hand[j], hand[i]];
+    }
+    if (hand[0] === last() || (last() === 'guardian' && hand[0] === 'duel')) hand.push(hand.shift()!);
+  };
   for (let n = 1; n <= upTo; n++) {
     if (n % 10 === 0) { kinds.push('guardian'); continue; }
-    if (!hand.length) {
-      hand = [...KINDS];
-      for (let i = hand.length - 1; i > 0; i--) {
-        const j = Math.floor(rng() * (i + 1));
-        [hand[i], hand[j]] = [hand[j], hand[i]];
-      }
-      // Never the same kind on both sides of a new hand.
-      if (hand[0] === kinds[kinds.length - 1] || (kinds[kinds.length - 1] === 'guardian' && hand[0] === 'duel')) hand.push(hand.shift()!);
+    if (!hand.length) deal();
+    // Never an echo right after a guardian: the hand's next kind comes first, or a new hand if the echo was its last.
+    if (last() === 'guardian' && hand[0] === 'duel') {
+      if (hand.length > 1) hand.push(hand.shift()!);
+      else deal();
     }
     kinds.push(hand.shift()!);
   }

@@ -18,7 +18,7 @@ Floor, boon, floor, boon. `TowerRun` (`src/tower/run.ts`) is shaped like `RaidRu
 | Its end | The floor's goal done: the link ends the fight as won (`TowerLink.win`), so what was fought falls and every zone goes. No card: the climb goes on by itself |
 | The landing | 0.9 s later the same room again, cleared (`src/tower/landing.ts`): a fight with no boss, only walking, as Noonfall's hall is. Three altars rise before the stairs, each with a boon; walk onto one, or tap its card and the hero walks there. Then the stairs light up; walk onto them |
 | Health | Carries over. The hero starts each fight with what it left the last one with (`setHealth`), never more than its max. Second Wind gives 5 % back after each floor |
-| Lives | Three a climb. A fall takes one and starts the floor again after 1.7 s, with half the hero's health. With none left the fight ends as lost and the card says where the climb ended |
+| Lives | Three a climb. A fall takes one and starts the floor again after 1.7 s, with half the hero's health; the floor's link is closed at the fall, so nothing that still lands in that moment can clear it. With none left the fight ends as lost and the card says where the climb ended |
 | A guardian beaten | Saves the climb (`tower.save`): the next climb this week may begin on the floor above it, with the boons the hero had and three lives. The menu offers that, or floor 1 |
 | The best floor | The highest floor cleared, per week, in this browser (`tower.best`; this week's and the seven before) |
 | The autopilot's climb | `start({ mode: 'run' })`: the same run with no fades, no waits and nothing on the page. Whatever would wait is kept until `pump()`, which the tool calls between two steps of the simulation. Nothing is saved from it |
@@ -70,8 +70,10 @@ by the link (`TowerLink.fell`), which a raid's link ends a fight with.
 
 **The numbers** are in one table, `TOWER` in `src/tower/floors.ts`, as shares of the hero's max health at floor 1; `floorNumbers`
 raises them with the height: enemies' health +8 % a floor, a hit +5 % of the first floor's a floor (from 1.12), and a step at
-floors 11 and 21 (+10 % health, +0.15 on the hit). The quiet between blows gets 2.2 % shorter a floor, to half at most. Zones show
-10 % shorter at each height (the Raid's tier). A keeper's blow grows with 60 % of that. What they were tuned to: `pipeline/designs/tower.md`.
+floors 11 and 21 (+10 % health, +0.2 on the hit). The quiet between blows gets 2.2 % shorter a floor, to half at most. Zones show
+10 % shorter at each height (the Raid's tier). A keeper's blow grows with 60 % of that, and at most three keepers stand at
+once below floor 10, four to floor 20, five to 30: what a horde costs goes by that more than by how many come in all. What they
+were tuned to: `pipeline/designs/tower.md`.
 
 ## Boons
 
@@ -119,7 +121,8 @@ a staff) and a sentry (a brazier on a post, its flame in a gold cage).
 
 ## On the screen
 
-`src/tower/hud.ts`, page elements with their own styles as the boss's bar has. Top left (under the boss's bar on a phone): the
+`src/tower/hud.ts`, page elements with their own styles as the boss's bar has. Top left (on a phone under the boss's bar, and in a
+room with a foe under the hero's own panel, which holds that corner there): the
 floor and its kind, three hearts, the hero's health (it carries over, so it is always in sight), and the floor's goal in a few
 words: "Reach the stairs", "Clear the room: 6 left", "Break the crystal: 0:42", "Hold out: 0:31", "Defeat the echo of Marin". As a
 floor begins its numeral and kind cross the screen, with its mix and twist. On a landing the three cards sit in a row near the
@@ -131,13 +134,14 @@ mark on a floor with a twist), the best floor this week and last, and Start; bes
 
 ## Hooks the engine should get
 
-Each is done from the Tower's side for now and marked `TOWER-HOOK`: four in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`.
+Each is done from the Tower's side for now and marked `TOWER-HOOK`: five in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`.
 
 | What the Tower needs | What it does now | What the engine should get |
 |---|---|---|
 | A unit's blow on the hero (a keeper's strike, a lampbearer's bolt) | A cast of a move with one unseen zone on the hero that lands at once (`bite`): the one public way a boss's hit has. It keeps shields, a parry, Warding and the Phoenix Feather | `Duel.hurtHero(opts)`: `hitPlayer` is private, and a boss's adds never attack |
 | Health at a fight's start | `Duel.setPlayerHp` right after `startBoss` (it exists for a network duel) | `startBoss({ hp })` |
 | Molten Steps | Sets `script.molten` on the fight after `startBoss` | `startBoss` taking the floor's twists; the fight turns it on only for a raid's omen, never in a room with no boss |
+| Sunlit in a room with no foe | Sets `script.ateSun` after `startBoss` where the fight left it empty | The fight wiring it whatever the room (it does only when `!def.hall`, and Hold out's gold circles are in such a room) |
 | Boons against units | Units get less health by what the boons add to damage; the Thirsting Blade heals through `arena.casterHeal` | `RunUpgrades.dealtMul` and `leech` applied to the boss's side's units too (`Duel.resolve` checks `victim === this.foe`) |
 | A boon with its own number | Casts it to the base class's type | `RunUpgrades`' getters declared `: number` (they have the type of the Raid's own numbers), or the duel taking an interface |
 | An echo that moves as its hero | An own name, so the hero's passive does not run on the boss's side; only heroes with no held staff are echoes (`ECHOES`) | `HeroKit.styleOf`, the hero whose motion style a kit uses: `HeroFigure.setModel` and `Duel.setupTraits` both go by `kit.name` |
@@ -178,6 +182,6 @@ Each is done from the Tower's side for now and marked `TOWER-HOOK`: four in `src
 
 - `pipeline/tools/tower-tool.js`: `_tower(heroes, reps, { week, level, from, boons, upTo })` runs the autopilot's climb and reports,
   per hero, the floor each climb ended on, and per kind and per floor: cleared of those tried, seconds, health lost, what felled,
-  and which moves hit. `pipeline/tools/tower-climbs.js` is the run the numbers in the design file come from (ten heroes twice, and
-  three heroes in two other weeks), headless with `page-shots.py --page /game`.
+  and which moves hit. `pipeline/tools/tower-climbs.js` is the run the numbers in the design file come from (ten heroes twice in
+  this week's Tower, and once in each of the next two weeks'), headless with `page-shots.py --page /game`, about seven minutes.
 - `pipeline/tools/tower-shots.py`: the pictures in `docs/tower/`, from the game page with its HUD, by the browser's own screenshot.

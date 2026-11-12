@@ -73,7 +73,7 @@ export function floorNumbers(n: number, restless = false) {
   // A little with every floor, and a step at each of the Tower's heights (floor 11, floor 21): past a guardian the air is thinner.
   const up = n - 1, height = towerHeight(n);
   return {
-    hp: (1 + 0.08 * up) * (1 + 0.1 * height), hit: Math.min(2.6, 1.12 + 0.05 * up + 0.15 * height),
+    hp: (1 + 0.08 * up) * (1 + 0.1 * height), hit: Math.min(2.7, 1.12 + 0.05 * up + 0.2 * height),
     gap: Math.max(0.5, 1 - 0.022 * up) * (restless ? 0.7 : 1),
   };
 }
@@ -86,7 +86,7 @@ export const TOWER = {
   sentry: 110,
   crystal: { hp: 800, seconds: 45, again: 18, share: [0.3, 0.35, 0.4] },
   hold: [45, 55, 60],
-  duel: { hp: 650, cleave: 0.17, lunge: 0.17, fan: 0.12, stars: 0.12, quake: 0.15 },
+  duel: { hp: 650, cleave: 0.17, lunge: 0.17, fan: 0.12, stars: 0.09, quake: 0.13 },
   guardian: { hp: 1500 },
 } as const;
 
@@ -140,8 +140,8 @@ export function buildFloor(plan: FloorPlan, env: FloorEnv): Floor {
   // --- what a floor raises -------------------------------------------------------------------------------------
   const raised: Summon[] = [];
   /** One of the horde, at (x, z). Null when the room is full. */
-  /** How many may stand at once: fewer on the low floors, the summon system's own six from floor 24. */
-  const most = Math.min(MAX_UNITS, n < 12 ? 4 : n < 24 ? 5 : 6);
+  /** How many may stand at once: what a horde costs goes by this more than by how many come in all. Three below the first guardian, four to the second, the summon system's own six from floor 30. */
+  const most = Math.min(MAX_UNITS, n < 10 ? 3 : n < 20 ? 4 : n < 30 ? 5 : 6);
   const raise = (who: Bite, at: { x: number; z: number }, died?: () => void) => {
     if (arena.summons.alive('opponent').length >= most) return null;
     const u = TOWER[who];
@@ -287,7 +287,7 @@ export function buildFloor(plan: FloorPlan, env: FloorEnv): Floor {
     });
   } else if (kind === 'horde') {
     // Keepers come in by the doors in waves. The room's bar is how many are left.
-    const total = Math.min(16, Math.round(8 + 0.3 * n)), waves = n < 4 ? 2 : 3;
+    const total = Math.min(16, Math.round(8 + 0.3 * n)), waves = 3;
     hp = total;
     const who = (i: number): Bite => (n >= 3 && i % 4 === 3 ? 'lampbearer' : 'keeper');
     def = room('tower-horde', 'The horde', `${total} keepers`, total, {
@@ -425,7 +425,7 @@ export function buildFloor(plan: FloorPlan, env: FloorEnv): Floor {
     const k = guardian ? 2.4 : twist === 'giant' ? 1.9 : twist === 'swift' ? 1.2 : 1.45;
     const quick = twist === 'swift' ? 0.6 : 1;
     hp = Math.round((guardian ? TOWER.guardian.hp : TOWER.duel.hp * (twist === 'giant' ? 1.35 : twist === 'swift' ? 0.8 : 0.85)) * num.hp);
-    const D = TOWER.duel, hit = num.hit * (guardian ? 1.15 : twist === 'giant' ? 1.15 : 1);
+    const D = TOWER.duel, hit = num.hit * (guardian ? 1.1 : twist === 'giant' ? 1.15 : 1);
     const body = HERO_BODIES[real.name] ?? { radius: 0.45, height: 2.4 };
     const blows: Record<string, BossMove> = real.melee
       ? { cleave: cleave({ share: D.cleave * hit, k }), lunge: lunge({ share: D.lunge * hit, k }) }

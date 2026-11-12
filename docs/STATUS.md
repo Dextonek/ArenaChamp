@@ -10,11 +10,12 @@ alone first, the same Tower each week. Built by a helper in its own worktree (br
   saved climb past each guardian), the stair-well room, the tool and the pictures. How it works: `docs/architecture/tower.md`;
   what was built, measured and what differs from the design: `pipeline/designs/tower.md`; pictures: `docs/tower/tower.html`.
 - **Checked:** type check, build, `npm run test:server`; the Raid's `_raidCheck` (133), `_raidAsh` (77), `_raidHeart` (71),
-  `_raidUpgrades` (40) all pass; the autopilot's climbs with no errors (ten heroes twice: floors 10 to 20, the middle 16; two other
-  weeks: 7 to 13). Command: `python pipeline/tools/page-shots.py pipeline/tools/tower-climbs.js <out> --page /game --timeout 590 --port 5199 --json tower-climbs.json`.
+  `_raidUpgrades` (40) all pass; the autopilot's climbs with no errors (ten heroes: the middle climb ends on floor 14.5 this
+  week, 12.5 and 11.5 in the next two; from 5 to 23); a climb played in the page in real time by script (floors, a boon, the
+  stairs, falls, the card, the saved climb). Command: `python pipeline/tools/page-shots.py pipeline/tools/tower-climbs.js <out> --page /game --timeout 590 --port 5199 --json tower-climbs.json`.
 - **Not checked:** nobody has played it; not on a real phone.
-- **Waiting on the main agent:** merge it, and add the six `TOWER-HOOK` methods to the engine once its one writer is done
-  (`docs/architecture/tower.md`, "Hooks the engine should get"; four in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`).
+- **Waiting on the main agent:** merge it, and add the seven `TOWER-HOOK` methods to the engine once its one writer is done
+  (`docs/architecture/tower.md`, "Hooks the engine should get"; five in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`).
 - **Waiting on the user:** play a climb and say what feels wrong; direct the room's look (first pass, drawn in code).
 - **Next:** friends and a shared board, with the accounts work.
 

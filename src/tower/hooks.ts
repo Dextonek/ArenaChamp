@@ -1,12 +1,13 @@
 import type * as THREE from 'three';
 import type { BossMove } from '../raid/types';
 import type { GameApi } from '../runtime';
+import type { TowerBoons } from './boons';
 import type { TowerLink } from './link';
 
 /**
  * Every place where the Tower reaches into the duel for something the duel has no method for yet. The Tower may not edit the
  * engine files (src/duel.ts, src/heroMode.ts, src/arena.ts) in its first version, so each of these is done from this side in the
- * least bad way, and says what small method the engine should get instead. Search for `TOWER-HOOK` to find them all: four are
+ * least bad way, and says what small method the engine should get instead. Search for `TOWER-HOOK` to find them all: five are
  * in this file, one is in boons.ts (the type of a boon's number) and one in floors.ts (an echo's name).
  */
 
@@ -75,4 +76,23 @@ export function setMolten(api: GameApi) {
  */
 export function leechFrom(api: GameApi, damage: number, share: number) {
   if (share > 0 && damage > 0) api.arena.casterHeal?.(damage * share);
+}
+
+/** What Sunlit's shield is worth, as a share of the hero's own max health, and how long it lasts (s): the Raid's Sun Eater's numbers. */
+const SUNLIT = { share: 0.1, seconds: 8 };
+
+/**
+ * Sunlit: a shield for standing in a gold zone as it lands.
+ *
+ * TOWER-HOOK: the fight wires this (`BossScript.ateSun`) only in a room with a boss (`!def.hall`), and the Tower's gold circles
+ * are mostly in a room with none (Hold out). The fight should wire it whatever the room. Until then the script's own field,
+ * which is public, is set after `startBoss` where the fight left it empty.
+ */
+export function setSunlit(api: GameApi, boons: TowerBoons) {
+  const script = api.duel.boss?.script;
+  if (!script || script.ateSun || !boons.has('tw-sun')) return;
+  script.ateSun = () => {
+    // A share of the hero's own max, before Thick Hide, as a boss's hit is.
+    if (api.duel.heroHp > 0) api.arena.shieldFigure(api.arena.caster, (SUNLIT.share * api.duel.heroMax) / boons.hpMul(), SUNLIT.seconds, '#ffcf4a');
+  };
 }

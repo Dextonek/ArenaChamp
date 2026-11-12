@@ -259,16 +259,19 @@ export function call(o: { raise: (count: number, seed: number, p: PlayContext) =
 
 // --- an echo's own blows: from where it stands, at the size it is drawn -----------------------------------------
 
-/** A wide swing: the cone in front of it. Get behind it, or back out. */
+/**
+ * A wide swing: the cone in front of it. Get behind it, or back out. It grows less than the echo does: a giant's swing that
+ * reached 7 m could not be walked out of in the time it shows.
+ */
 export function cleave(o: { share: number; k: number }): BossMove {
-  const radius = 3.6 + 1.5 * o.k;
+  const radius = 3.2 + o.k;
   return {
-    id: 'cleave', name: 'Cleave', charge: 1.4, lock: 1.5, cooldown: 4, range: radius + 1.5, pose: 'swing',
+    id: 'cleave', name: 'Cleave', charge: 1.6, lock: 1.7, cooldown: 4, range: radius + 1.5, pose: 'swing',
     aim: atHero,
     play(c, p): PlayedMove {
-      const at = p.shown(1.4);
+      const at = p.shown(1.6);
       return {
-        threats: [{ shape: { kind: 'cone', x: c.fx, z: c.fz, radius, angle: 115, dir: c.dir }, at, share: o.share, knock: 3 }], duration: at + 0.6,
+        threats: [{ shape: { kind: 'cone', x: c.fx, z: c.fz, radius, angle: 100, dir: c.dir }, at, share: o.share, knock: 3 }], duration: at + 0.6,
         look: { land: () => { p.sparks.emit(c.fx + Math.sin(c.dir) * radius * 0.6, 0.6, c.fz + Math.cos(c.dir) * radius * 0.6, 22, 5, 2, 0.5, 0xffd0a0); p.shake(0.04); } },
       };
     },

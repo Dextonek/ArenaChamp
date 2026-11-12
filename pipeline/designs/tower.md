@@ -65,42 +65,49 @@ autopilot and looked at in pictures.
 
 ### Numbers, as measured
 
-`pipeline/tools/tower-climbs.js` (the autopilot at the balance level; ten heroes twice in this week's Tower, 2026-W46, and three
-heroes once in each of the two weeks after). No errors, and no floor that could not be finished.
+`pipeline/tools/tower-climbs.js` (the autopilot at the balance level): the same ten heroes climb this week's Tower (2026-W46)
+twice each, and the two weeks' after it once each. No errors, and no floor that could not be finished.
 
-| Hero | The floor each climb ended on |
-|---|---|
-| Lyra, Mortis | 20, 20 |
-| Kaia | 20, 13 |
-| Bram | 18, 13 |
-| Auriel | 18, 17 |
-| Sefu, Nyx | 16, 16 |
-| Vesper | 13, 13 |
-| Isolde | 11, 12 |
-| Brannoc | 10, 10 |
-| In 2026-W47: Kaia, Sefu, Brannoc | 13, 12, 10 |
-| In 2026-W48: Kaia, Sefu, Brannoc | 10, 10, 7 |
+| Hero | 2026-W46, two climbs | 2026-W47 | 2026-W48 |
+|---|---|---|---|
+| Mortis | 22, 20 | 17 | 23 |
+| Lyra | 22, 18 | 17 | 18 |
+| Auriel | 22, 12 | 13 | 11 |
+| Bram | 18, 18 | 20 | 12 |
+| Sefu | 16, 16 | 16 | 12 |
+| Kaia | 16, 13 | 12 | 12 |
+| Nyx | 11, 12 | 12 | 7 |
+| Vesper | 11, 11 | 12 | 7 |
+| Isolde | 11, 11 | 10 | 5 |
+| Brannoc | 10, 10 | 10 | 7 |
+| **The middle** | **14.5** | **12.5** | **11.5** |
 
-| Kind (this week, 20 climbs) | Cleared of those tried | Seconds | Health lost on a cleared floor | What felled |
+The number is the floor a climb ended on (it cleared one fewer).
+
+| Kind (2026-W46, 20 climbs) | Cleared of those tried | Seconds | Health lost on a cleared floor | What felled |
 |---|---|---|---|---|
-| Gauntlet | 52 of 52 | 31 | 21 % | |
-| Break it | 61 of 69 | 42 | 14 % | the crystal's strike 6, a beam 1, sweeping fire 1 |
-| Hold out | 59 of 63 | 48 | 28 % | stones 3, the tide 1 |
-| Horde | 50 of 74 | 38 | 34 % | a keeper 14, a lampbearer 7, sweeping fire 3 |
-| Duel | 52 of 66 | 46 | 15 % | starfall 8, a shockwave 6 (all on floor 13) |
-| Guardian | 18 of 39 | 87 | 41 % | floor 10: 18 of 29; floor 20: 0 of 10 |
+| Gauntlet | 53 of 53 | 31 | 25 % | |
+| Break it | 55 of 60 | 42 | 14 % | the crystal's strike 4, sweeping fire 1 |
+| Hold out | 57 of 57 | 48 | 28 % | |
+| Horde | 44 of 76 | 41 | 27 % | a keeper 20, a lampbearer 7, sweeping fire 5 |
+| Duel | 50 of 58 | 47 | 14 % | a shockwave 3, a fan 2, starfall 1, a lunge 1, sweeping fire 1 |
+| Guardian | 21 of 37 | 93 | 31 % | floor 10: 18 of 28; floor 20: 3 of 9 |
 
-- **Against the aim** ("a middling hero's autopilot reaches about floor 8 to 14, no kind a wall or free"): this week the middle of
-  the twenty climbs is floor 16, a little high; in the two other weeks it is 10 to 12. The difference is the guardian of floor 10:
-  this week's (Marin, a caster) let 18 of 29 tries through, the other weeks' fewer. With full health and eight boons each of four
-  weeks' guardians fell to 4 or 5 of 6 heroes within three lives.
-- **Walls for the autopilot:** the guardian of floor 20 (0 of 10), and a horde from floor 16 on (8 of 20, 5 of 14). The autopilot
-  stands in the middle of a horde; a person would not.
-- **Nearly free:** the first Break it (floor 2: 6 % lost). Its clock is the pressure, and a slow hero meets the strike.
-- **How it was tuned,** in four passes: the keepers a guardian calls now ward it (the autopilot ignored them: 35 of its
-  39 falls there were to a keeper); nothing is called while a gold circle shows (a stone on it pulled the autopilot out: "stand here" cost 1.8 hits a
-  floor); a keeper's blow down from 4.5 % to 2.4 % and at most four at once below floor 12; duels' blows up by a third; a step in
-  every number at floors 11 and 21.
+In the two other weeks, cleared of those tried: Gauntlet 25 of 34 and 20 of 20, Break it 25 of 29 and 23 of 30, Hold out 28 of 30
+and 22 of 29, Horde 28 of 38 and 19 of 34, Duel 15 of 15 and 13 of 17, the guardian of floor 10: 8 of 15 and 6 of 7.
+
+- **Against the aim** ("a middling hero's autopilot reaches about floor 8 to 14, no kind a wall or free"): the middle of the climbs
+  is floor 14.5 this week and 12.5 and 11.5 in the next two; the ten heroes spread from 5 to 23. The first ten floors are
+  cleared by almost every climb with 5 % to 28 % of health lost a floor; a guardian is the gate (floor 10's fell to 18 of 28
+  tries this week, 8 of 15 and 6 of 7 in the next two).
+- **Hardest for the autopilot:** the Horde (58 % of tries cleared; 4 of 14 on floor 18, 2 of 10 on floor 12 of another week).
+  It stands in the middle of a horde; a person would not. And a gauntlet on floor 17 with a sentry in it (1 of 7).
+- **Nearly free:** the first Break it (floor 2: 5 % lost). Its clock is the pressure, and a slow hero meets the strike.
+- **How it was tuned,** in six passes of the tool: the keepers a guardian calls now ward it (the autopilot ignored them: 35 of its
+  39 falls there were to a keeper); nothing is called while a gold circle shows (a stone on it pulled the autopilot out: "stand
+  here" cost 1.8 hits a floor); a keeper's blow down from 4.5 % to 2.4 %, three keepers at once below floor 10 and four to floor
+  20 (a wave of five on a floor 2 ended three of ten climbs there); a giant's cleave shorter and shown longer (at 7 m it could not
+  be walked out of); starfall down by a quarter; a step in every number at floors 11 and 21.
 
 ### What differs from the design, and why
 
@@ -118,9 +125,15 @@ heroes once in each of the two weeks after). No errors, and no floor that could 
 ### What is not done or not checked
 
 - Not played by a person, on a desktop or a phone. The pictures at 390x844 are a desktop browser at that size with touch on.
+- Checked in the page in real time, by script: a floor, a boon, the stairs, a fall and the floor again, a win that comes in the
+  moment after a fall (it does not clear the floor), the last life and the card, Climb again, Leave, a guardian's save and
+  "Climb from floor 11", Sunlit's shield in a room with no foe, and a raid started after a climb.
 - Friends, a shared board, accounts: not in this version, as agreed.
-- The six `TOWER-HOOK` places (docs/architecture/tower.md, "Hooks the engine should get"): done from the Tower's side until the
+- The seven `TOWER-HOOK` places (docs/architecture/tower.md, "Hooks the engine should get"): done from the Tower's side until the
   engine's one writer adds the small methods.
 - A floor's foe vanishes when the altars rise; the crystal has nothing to walk into; a hit near the stairs in a horde's room can
   say IMMUNE.
-- Floors above 20 were reached once by one hero in an earlier pass (floor 27) and ran with no errors; they are not tuned.
+- Floors above 20 were reached by a few climbs (the highest ended on floor 27, in an earlier pass) and ran with no errors; they
+  are not tuned.
+- The Phoenix Feather's save says the Raid's words on the screen ("PHOENIX HEART"): the duel writes them.
+- The logged-in bar now has seven tabs on a phone: they fit 390 px (55 px each, no label cut), measured, not seen by a person.

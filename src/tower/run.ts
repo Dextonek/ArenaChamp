@@ -4,7 +4,7 @@ import { fadeTo } from '../raid/hall';
 import type { GameApi } from '../runtime';
 import { HEAL, HIDE, TowerBoons, boonsFor, type Boon } from './boons';
 import { buildFloor, type Floor } from './floors';
-import { setHealth, setMolten } from './hooks';
+import { setHealth, setMolten, setSunlit } from './hooks';
 import { TowerHud } from './hud';
 import { buildLanding } from './landing';
 import { KIND_NAME, floorOf, isoWeek, type FloorKind } from './week';
@@ -210,9 +210,10 @@ export class TowerRun {
     this.fight({ def: floor.def, link: floor.link, seed: plan.seed, tier: floor.tier });
     this.hpAtStart = this.hp;
     if (plan.twist === 'molten') setMolten(api);
+    setSunlit(api, this.boons);
     floor.begin();
     if (!play) return;
-    this.hud?.floor(plan, this.lives);
+    this.hud?.floor(plan, this.lives, !floor.def.hall);
     this.leave.style.display = '';
     await this.ready(api.duel.whenReady(), { mine: this.kit, title: `The Tower · floor ${plan.n}`, line: `${heightName(plan.n)}: ${KIND_NAME[plan.kind]}` });
     if (run !== this.run) return;
@@ -251,6 +252,8 @@ export class TowerRun {
   private finished(result: 'win' | 'lose') {
     if (result !== 'win' || !this.now || this.landed) return;
     const d = this.api.duel, plan = this.now.plan;
+    // A floor is cleared by a hero on its feet.
+    if (d.heroHp <= 0) return;
     this.report(true);
     // Second Wind gives a little back after every floor.
     this.hp = Math.min(d.heroMax, d.heroHp + this.boons.regen * d.heroMax);
@@ -327,6 +330,9 @@ export class TowerRun {
       floor.link.lose();
       return;
     }
+    // The floor is over for this try: nothing that still lands in the moment before it starts again (the last keeper falling
+    // to a spell in the air, a time to hold out running down) may clear it under a fallen hero.
+    floor.link.over = true;
     this.hp = Math.round(this.api.duel.heroMax * BACK_WITH);
     this.hud?.say('A life lost', `${this.lives} left. The floor begins again.`, FELL_PAUSE / 1000);
     this.later(FELL_PAUSE, () => void this.enter());

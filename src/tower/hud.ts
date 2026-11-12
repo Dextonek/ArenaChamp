@@ -47,16 +47,20 @@ export class TowerHud {
     this.root.append(this.floorEl, row, this.goalEl);
     this.banner.className = 'tower-banner';
     this.banner.style.cssText =
-      `position:fixed;left:50%;top:${small ? 21 : 17}%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:none;text-align:center;max-width:92vw;` +
+      `position:fixed;left:50%;top:${small ? 31 : 17}%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:none;text-align:center;max-width:92vw;` +
       'text-shadow:0 3px 14px #000;transition:opacity 0.5s;';
     this.dark.className = 'tower-night';
     this.dark.style.cssText = 'position:fixed;inset:0;z-index:1;pointer-events:none;display:none;' +
-      'background:radial-gradient(circle at 50% 55%, transparent 0, transparent 18vmin, rgba(2,2,8,0.6) 36vmin, rgba(2,2,8,0.88) 62vmin);';
+      'background:radial-gradient(circle at 50% 55%, transparent 0, transparent 22vmin, rgba(2,2,8,0.55) 42vmin, rgba(2,2,8,0.85) 70vmin);';
     document.body.append(this.dark, this.root, this.banner);
   }
 
-  /** A floor begins: its number and kind, and what is odd about it. */
-  floor(plan: FloorPlan, lives: number) {
+  /**
+   * A floor begins: its number and kind, and what is odd about it. `foe`: the room has something to fight, so on a phone the
+   * hero's own panel (its portrait and passive) holds the top left corner, and this box goes under it.
+   */
+  floor(plan: FloorPlan, lives: number, foe: boolean) {
+    if (TOUCH || innerWidth < 760) this.root.style.top = `calc(${foe ? 158 : 68}px + env(safe-area-inset-top, 0px))`;
     this.floorEl.textContent = `Floor ${plan.n} · ${KIND_NAME[plan.kind]}`;
     this.setLives(lives);
     this.setGoal('');

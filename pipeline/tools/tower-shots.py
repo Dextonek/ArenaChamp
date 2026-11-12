@@ -1,6 +1,6 @@
 """
 Pictures of the Tower from the game page, HUD and all (docs/tower/*.jpg): its menu screen, one floor of each kind, and the
-boon pick on a landing, at 1280x800, and three at 390x844 (a phone held upright). A headless Chrome as page-shots.py launches
+boon pick on a landing, at 1280x800, and four at 390x844 (a phone held upright). A headless Chrome as page-shots.py launches
 it; a climb is started on /game on the floor wanted, the hero is played by the autopilot for a few seconds with time stepped
 by hand, and the browser's own screenshot is taken (page-shots.py saves only what a script returns, which leaves the HUD out).
 
@@ -24,7 +24,9 @@ ROOT = Path(__file__).resolve().parents[2]
 SETUP = """
 async ([hero, week, kind]) => {
   const { towerFor } = await import('/src/tower/week.ts');
-  const plan = towerFor(week, 40).find((p) => p.kind === kind);
+  // "duel>10": the first duel above floor 10 that has a twist.
+  const [want, above] = kind.split('>');
+  const plan = towerFor(week, 40).find((p) => p.kind === want && (!above || (p.n > Number(above) && p.twist)));
   const st = document.createElement('style');
   st.textContent = '*{animation:none!important}';
   document.head.append(st);
@@ -39,13 +41,13 @@ async ([hero, week, kind]) => {
   let simMs = performance.now();
   performance.now = () => simMs;
   window.T = {
-    /** `seconds` of the floor, the hero played by the autopilot when `pilot`. */
-    step(seconds, pilot = true) {
+    /** `seconds` of the floor, the hero played by the autopilot when `pilot`. `keep`: the floor's name stays up. */
+    step(seconds, pilot = true, keep = false) {
       d.autopilot = pilot;
       for (let i = 0; i < Math.round(seconds * 60); i++) { simMs += 1000 / 60; api.step(1 / 60); }
       d.autopilot = false;
       // The floor's name has long faded by now (its clock is the page's, which this stepping does not run).
-      game.tower.hud.update(10);
+      if (!keep) game.tower.hud.update(10);
       api.render();
     },
     heal() { d.setPlayerHp(d.heroMax); },
@@ -85,6 +87,8 @@ SCENES = {
     "phone-menu": ((390, 844), None, None),
     "phone-hold": ((390, 844), "hold", "() => { T.step(9.2); T.heal(); T.step(0.4); }"),
     "phone-boons": ((390, 844), "break", LANDING),
+    # A floor with a foe, above floor 10: the boss's bar, the hero's own, the spells, and the floor's name with its mix and twist.
+    "phone-duel": ((390, 844), "duel>10", "() => { T.step(1.6, true, true); T.heal(); T.step(0.2, true, true); }"),
 }
 
 
