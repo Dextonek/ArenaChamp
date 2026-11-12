@@ -80,6 +80,9 @@ export const bloodBonds = new WeakMap<object, BloodBond>();
 export const BOND_WINDOW = 3.8;
 export const BOND_RIPEN = 1.5;
 
+/** Is she silenced now (a stun is not a silence)? */
+const silenced = (t: TraitView) => !!t.status(t.self())?.has('silence');
+
 /** The mist attacks she has left now (0 after the deadline). */
 function mist(t: { time: number; mem: Record<string, number> }) {
   return t.time < (t.mem.mistUntil ?? 0) ? t.mem.mistLeft ?? 0 : 0;
@@ -93,11 +96,24 @@ export const priceOf = (t: { res: number }, slot: number) => Math.round(t.res) *
  * at half 28, at a quarter 19; it keeps `AI_KEEP` HP back, and after a burst it waits until the Price is within
  * `AI_RESUME` of rest.
  */
-const aiBudget = (t: TraitView) => (hungry(t) ? AI_HUNGRY_BUDGET : 10 + 35 * (t.hp() / Math.max(1, t.maxHp())));
-/** Hungry, her spells drink back half their damage: the CPU pays up to this, whatever its HP. */
+const aiBudget = (t: TraitView, slot: number) => (hungry(t) ? (slot === 0 ? AI_HUNGRY_NEEDLE : AI_HUNGRY_BUDGET) : 10 + 35 * (t.hp() / Math.max(1, t.maxHp())));
+/** Hungry, her spells drink back most of their damage: the CPU pays up to this, whatever its HP. */
 const AI_HUNGRY_BUDGET = 40;
+/**
+ * Hungry, a needle all but pays for itself (65% of its 30 drunk back, half its price back with the Rip): the CPU throws it
+ * up to this Price and does not wait for the Price to come all the way down first.
+ */
+const AI_HUNGRY_NEEDLE = 60;
+/** The HP the CPU keeps back after paying: for the waltz and the curse; for the needle (it drinks at once); for the Feast. */
 const AI_KEEP = 50;
+const AI_KEEP_NEEDLE = 12;
+const AI_KEEP_FEAST = 25;
 const AI_RESUME = 5;
+/**
+ * Someone who has silenced her this round can end the Feast: the CPU then starts it only within this many seconds after a
+ * silence began (Oblivion's Null Zone: 3 s of it, the next one 12 s after the last).
+ */
+const AI_FEAST_AFTER_HUSH = 9.5;
 /** Lancet's range (the kit's): inside it the CPU throws the needle before anything else. */
 const AI_LANCET_REACH = 7;
 /** The CPU starts the Feast (8 m; 9 m of distance ends it) only this close, so that it can finish it. */
@@ -142,14 +158,18 @@ export const bloodTrait: Trait = {
   aiHold(t, slot, dist) {
     // The CPU only starts the Feast close enough to finish it.
     if (slot === 3 && dist > AI_FEAST_REACH) return true;
+    // Not into a silence that is due: once silenced, the Feast waits for the moment after the next one.
+    if (slot === 3 && t.mem.hushed && (silenced(t) || t.time - (t.mem.hushAt ?? 0) > AI_FEAST_AFTER_HUSH)) return true;
     if (slot === 2 && t.stacks('curse') > 0) return true;
     // A needle that is in is ripped out, whatever the Price: the Rip is free and gives blood back.
     if (slot === 0 && t.stacks('needle') > 0) return false;
     const price = priceOf(t, slot);
     // A burst, then a rest: once the Price has passed what it will pay, it waits until the Price is nearly back down.
-    if (t.res > aiBudget(t)) t.mem.aiRest = 1;
+    if (t.res > aiBudget(t, 2)) t.mem.aiRest = 1;
     else if (t.res <= PRICE_BASE + AI_RESUME) t.mem.aiRest = 0;
-    const rests = !!t.mem.aiRest || t.hp() - price < AI_KEEP;
+    // Hungry, the needle does not rest: it goes whenever the Price is under what a Hungry needle is worth.
+    const resting = !!t.mem.aiRest;
+    const rests = resting || t.hp() - price < (slot === 0 ? AI_KEEP_NEEDLE : slot === 3 ? AI_KEEP_FEAST : AI_KEEP);
     // The needle before the waltz: the CPU tries R, E, W before Q, and a brawler in her face had it waltz away again and
     // again (out of Lancet's reach each time) and never throw a needle. The waltz waits while a needle is in (the Rip comes
     // next, and needs them within 8 m) and while it would throw one now.
@@ -266,6 +286,8 @@ export const bloodTrait: Trait = {
     if (hungry(t)) t.heal(CURSE_HEAL);
   },
   tick(t, dt) {
+    // For the CPU: when she was last silenced (`aiHold` times the Feast by it).
+    if (silenced(t)) { t.mem.hushed = 1; if (!t.mem.hushOn) t.mem.hushAt = t.time; t.mem.hushOn = 1; } else t.mem.hushOn = 0;
     const on = hungry(t);
     bloodHungry.set(t.self(), on);
     t.show('hungry', on ? 1 : 0);
