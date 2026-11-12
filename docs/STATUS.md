@@ -1,6 +1,15 @@
 # Status
 
-_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off). Proposed, waiting on the user: quick cast as in League (Normal / Quick / Quick + indicator). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
+_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
+
+## Quick cast, as in League (2026-11-12, night)
+
+- The user, after a look at League's three cast modes: "yes build quickcast", with A attacking at the cursor at once in the
+  quick modes, then push and deploy. Three modes, switched with "Casting" under the hero's name on the spell bar, kept in the
+  browser: **Quick + indicator** (hold the key to aim, let go to cast; the start for everyone), **Quick** (casts on the press)
+  and **Normal** (the old way). Only `src/heroMode.ts` (`CastMode`); no server change, same `PROTOCOL`. How it works:
+  [architecture/hero-mode.md](architecture/hero-mode.md), *Cast modes*. Checked in Chrome by real key and mouse input: 17 of 17.
+  The switch is on the spell bar's name plate, which a window under 860 px wide hides; phones are not affected.
 
 ## Watch a duel, and walking with a mouse side button held (2026-11-12, evening): pushed and LIVE (version 5cf1d450)
 

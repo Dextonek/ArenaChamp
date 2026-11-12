@@ -39,6 +39,18 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-12',
+    title: 'Quick cast',
+    live: true,
+    items: [
+      {
+        tag: 'Controls',
+        title: 'Quick cast, as in League',
+        text: 'Spells can now go off straight from the key. Hold Q, W, E or R to see the aim and let go to cast (Quick + indicator, the new start), or cast at the cursor the moment you press (Quick), or keep the old way: press to aim, click to cast (Normal). In both quick modes A attacks toward the cursor at once. Switch with "Casting" under your hero\'s name on the spell bar; the game remembers your choice.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-12',
     title: 'Watch a duel',
     live: true,
     items: [

@@ -13,6 +13,24 @@ import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch
 import { bankPath, contains, stopsAtCover, type Obstacle } from './obstacles';
 import { isOwnWall } from './traits/mime';
 
+/**
+ * How Q W E R cast, League's three (user, 2026-11-12): 'normal' shows the aim and a click fires it; 'quick' fires at the
+ * cursor on the key; 'indicator' shows the aim while the key is held and fires when it is let go. In both quick modes
+ * A attack-moves to the cursor at once. Kept in the browser; new players start on 'indicator'.
+ */
+export type CastMode = 'normal' | 'quick' | 'indicator';
+const CAST_STORE = 'aok.castMode';
+const CAST_NAMES: Record<CastMode, string> = { normal: 'Normal', quick: 'Quick', indicator: 'Quick + indicator' };
+const CAST_KEYS = ['KeyQ', 'KeyW', 'KeyE', 'KeyR'];
+
+function loadCastMode(): CastMode {
+  try {
+    const v = localStorage.getItem(CAST_STORE);
+    if (v === 'normal' || v === 'quick' || v === 'indicator') return v;
+  } catch { /* storage blocked: the default */ }
+  return 'indicator';
+}
+
 /** What hero mode needs from main.ts. */
 export interface HeroModeHost {
   arena: Arena;
@@ -77,7 +95,7 @@ function attackCursor() {
 /**
  * A MOBA-style test mode for a hero kit: click the ground to walk there, Q/W/E/R to aim a spell (a range ring at
  * the hero, a line for single-target spells, the area circle for ground spells), click to cast, right-click or Esc
- * to cancel. Self-cast spells go off at once. Out-of-range targets: the hero walks into range, then casts. A fixed
+ * to cancel (that is the 'normal' `CastMode`; the quick modes fire on the key, or on its release). Self-cast spells go off at once. Out-of-range targets: the hero walks into range, then casts. A fixed
  * top-down camera follows the hero (wheel zooms). Enemies keep their HP between casts and respawn.
  */
 export class HeroMode implements TouchTarget {
@@ -312,7 +330,19 @@ export class HeroMode implements TouchTarget {
       // The side buttons (back, forward) must not leave the game page in the middle of a fight.
       if ((e.button === 3 || e.button === 4) && this.enabled) e.preventDefault();
     });
-    window.addEventListener('blur', () => { this.heldOrder = false; });
+    window.addEventListener('blur', () => {
+      this.heldOrder = false;
+      // A spell key held when the window lost focus never sends its keyup: drop that aim rather than fire it.
+      if (this.keyHeld >= 0 && this.aiming === this.keyHeld) this.cancelAim();
+      this.keyHeld = -1;
+    });
+    window.addEventListener('keyup', (e) => {
+      const i = CAST_KEYS.indexOf(e.code);
+      if (i < 0 || i !== this.keyHeld) return;
+      this.keyHeld = -1;
+      // Quick cast with indicator: letting go of the key fires the aim it showed (unless a right click or Esc dropped it).
+      if (this.enabled && this.aiming === i) this.fireAim();
+    });
     dom.addEventListener('contextmenu', (e) => { if (this.enabled) e.preventDefault(); });
     dom.addEventListener('wheel', (e) => {
       if (!this.enabled) return;
@@ -320,12 +350,14 @@ export class HeroMode implements TouchTarget {
     }, { passive: true });
     window.addEventListener('keydown', (e) => {
       if (!this.enabled || e.repeat || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
-      const i = ['KeyQ', 'KeyW', 'KeyE', 'KeyR'].indexOf(e.code);
-      if (i >= 0) { e.preventDefault(); this.disarm(); this.beginAim(i); }
+      const i = CAST_KEYS.indexOf(e.code);
+      if (i >= 0) { e.preventDefault(); this.disarm(); this.keyCast(i); }
       if (e.code === 'KeyA' && this.attacksEnabled && !this.locked && !this.spectate) {
         this.cancelAim();
         this.attackArmed = true;
         this.host.dom.style.cursor = 'crosshair';
+        // Quick modes: A is the click too (League's "attack move on cursor").
+        if (this.castMode !== 'normal') { this.updateCursor(); this.attackClick(); }
       }
       if (e.code === 'KeyS') this.stop();
       if (e.code === 'Escape') { this.cancelAim(); this.disarm(); }
@@ -811,6 +843,37 @@ export class HeroMode implements TouchTarget {
     this.moveMarkerT = 0;
   }
 
+  /** How Q W E R cast (see `CastMode`). */
+  castMode: CastMode = loadCastMode();
+  /** The spell key held down in 'indicator' mode (or for a hold slot in 'quick'), whose keyup fires the aim; -1 none. */
+  private keyHeld = -1;
+
+  setCastMode(mode: CastMode) {
+    this.castMode = mode;
+    try { localStorage.setItem(CAST_STORE, mode); } catch { /* kept for this visit only */ }
+    this.keyHeld = -1;
+    this.writeHint();
+  }
+
+  /** A spell key pressed: aim (normal), fire at the cursor (quick), or aim until the key is let go (indicator). */
+  private keyCast(i: number) {
+    if (this.castMode === 'normal') { this.beginAim(i); return; }
+    this.updateCursor();
+    this.aiming = -1; // a quick key starts a fresh aim, never toggles one off
+    this.beginAim(i);
+    if (this.aiming !== i) return; // cast at once (a self spell, an acting recast) or refused (cooldown, silence...)
+    // A hold slot charges while aimed: in quick mode too it charges while its key is held, and fires on the release.
+    const hold = !!this.traits?.holdOf(i) && !this.traits?.canRecast(i);
+    if (this.castMode === 'indicator' || hold) { this.keyHeld = i; return; }
+    this.fireAim();
+  }
+
+  /** Fire the aim now; an aim that could not fire (no enemy near the cursor) is dropped, not left up. */
+  private fireAim() {
+    this.confirm();
+    if (this.aiming >= 0) this.cancelAim();
+  }
+
   private beginAim(i: number) {
     if (this.locked || this.spectate || this.walkOnly) return;
     const spell = this.kit.spells[i];
@@ -1289,6 +1352,21 @@ export class HeroMode implements TouchTarget {
   // --- HUD ----------------------------------------------------------------------------------------------
 
   private hudPlate: HTMLElement | null = null;
+  private hintEl: HTMLElement | null = null;
+
+  /** The control lines under the hero's name, for the cast mode; the last line switches the mode. */
+  private writeHint() {
+    if (!this.hintEl) return;
+    const m = this.castMode;
+    const walk = m === 'normal' ? 'right-click: walk / attack · A+click: attack-move' : 'right-click: walk / attack · A: attack-move to the cursor';
+    const cast = m === 'normal' ? 'Q W E R: aim · click: cast · right-click / Esc: cancel'
+      : m === 'quick' ? 'Q W E R: cast at the cursor'
+      : 'hold Q W E R: aim · let go: cast · right-click: cancel';
+    this.hintEl.innerHTML = `<div style="opacity:0.55">${walk}<br>${cast}</div>` +
+      `<div data-cast title="Normal: aim, then click. Quick: cast on the key. Quick + indicator: hold to aim, let go to cast." ` +
+      `style="cursor:pointer;opacity:0.85;margin-top:2px;text-decoration:underline dotted;text-underline-offset:2px">` +
+      `Casting: ${CAST_NAMES[m]} ▸</div>`;
+  }
 
   private fitHud() {
     if (this.hudPlate) this.hudPlate.style.display = window.innerWidth < 860 ? 'none' : 'flex';
@@ -1313,8 +1391,19 @@ export class HeroMode implements TouchTarget {
     portrait.style.cssText = `width:64px;height:64px;border-radius:50%;border:2px solid ${hudInk(kit)};box-shadow:0 0 0 2px ${tint(18)};`;
     const names = document.createElement('div');
     names.innerHTML = `<div style="font:700 16px ui-serif,Georgia,serif;letter-spacing:0.5px">${kit.name}</div>` +
-      `<div style="font:500 11px ui-sans-serif,system-ui;opacity:0.7">${kit.title}</div>` +
-      `<div style="margin-top:6px;font:500 10px ui-sans-serif,system-ui;opacity:0.55;line-height:1.4">right-click: walk / attack · A+click: attack-move<br>Q W E R: aim · click: cast · right-click / Esc: cancel</div>`;
+      `<div style="font:500 11px ui-sans-serif,system-ui;opacity:0.7">${kit.title}</div>`;
+    // The controls, as the cast mode has them, and the switch between the three modes.
+    const hint = document.createElement('div');
+    hint.style.cssText = 'margin-top:6px;font:500 10px ui-sans-serif,system-ui;line-height:1.4;';
+    hint.addEventListener('click', (e) => {
+      if (!(e.target as HTMLElement).closest('[data-cast]')) return;
+      const order: CastMode[] = ['indicator', 'quick', 'normal'];
+      this.setCastMode(order[(order.indexOf(this.castMode) + 1) % order.length]);
+      this.say(`Casting: ${CAST_NAMES[this.castMode]}`);
+    });
+    names.append(hint);
+    this.hintEl = hint;
+    this.writeHint();
     if (this.host.nextKit) {
       portrait.style.cursor = 'pointer';
       portrait.title = 'next hero';
