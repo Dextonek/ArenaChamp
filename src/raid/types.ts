@@ -100,6 +100,12 @@ export interface Threat {
    * what those over the number would have taken (`share` each) is shared by all in it. Nobody in it costs nothing.
    */
   most?: number;
+  /**
+   * A `stand` zone that is only counted (Branded's burst, the Four Hours' anchors and wedge): once the hub has said how many heroes
+   * stood in it, the move decides what that means, instead of the usual rule (nobody in it: everyone pays). What it returns is what
+   * the whole party pays for it, as a share of max HP (nothing: nobody pays). It is no gold zone to an upgrade (Sun Eater).
+   */
+  tally?(count: number): number | void;
   /** This screen's hero stood in this zone when it landed. */
   inside?: boolean;
   /** The hub has said how many stood in it. */
@@ -233,6 +239,8 @@ export interface PlayContext {
   shake(amount: number): void;
   /** The room's cover `index` (in its `obstacles`) breaks, falling along yaw `dir`: it stops nothing from now on. */
   breakCover(index: number, dir: number): void;
+  /** The words on the cast bar while it fills change (The Four Hours: which arms still stand open). */
+  label(text: string): void;
 }
 
 /** A boss's add as a cast asks for it. Its HP is per screen: each screen's hits come off on both, and the first to see it die says so. */
@@ -274,6 +282,11 @@ export interface AimContext {
   rayStop(ax: number, az: number, bx: number, bz: number): number;
   /** The cover standing now. */
   cover(): readonly Obstacle[];
+  /**
+   * The heroes standing, for a move that asks something of the whole party (who is Branded, how many shards fall). `aim` runs on the
+   * brain's screen only, so this is the brain reading the heroes: what it finds goes into the cast.
+   */
+  heroes: { side: RaidSide; x: number; z: number }[];
 }
 
 export interface BossMove {
@@ -337,8 +350,11 @@ export interface BossMove {
   /** What only the screen that runs the brain may do: move the boss. Returns seconds it stands still after. */
   act?(world: BossWorld, c: BossCast): number | void;
   pose: CastStyle;
-  /** Where a step is aimed. Runs on the brain's screen only. */
-  aim(c: AimContext): { x: number; z: number; dir: number; flag?: boolean };
+  /**
+   * Where a step is aimed. Runs on the brain's screen only. `target`: the hero this step is for, when it is not the one the move
+   * began at (Branded: each step marks another hero); it goes into the cast as its `target`.
+   */
+  aim(c: AimContext): { x: number; z: number; dir: number; flag?: boolean; target?: RaidSide };
   /** What a cast does. Runs on every screen: it may read the cast and the cover, and never a hero. */
   play(c: BossCast, p: PlayContext): PlayedMove;
 }
@@ -446,6 +462,12 @@ export interface BossDef {
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */
   late?(): { shift: ArenaShift; offset: number; startsAt?: number };
+  /**
+   * Whom it goes for next, of the heroes standing, or nothing for the brain's own rule (the one it aimed at least recently). Runs on
+   * the brain's screen only. `when`: the brain's time when it last aimed at that side. The Sun Warden hunts one quarter of a party
+   * at a time in his last phase, and aims at whoever carries a sun shard.
+   */
+  choose?(c: { heroes: { side: RaidSide; x: number; z: number }[]; boss: { x: number; z: number }; time: number; when(side: RaidSide): number }): RaidSide | undefined;
 }
 
 /**

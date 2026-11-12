@@ -25,7 +25,11 @@ export const RAID_BOSSES = {
  * never pay it twice.
  */
 export const RAID_REWARDS = {
-  sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true } },
+  // `carry`: Carry the Sun, every shard home. `foura` to `fourd`: one arm of The Four Hours done, a quarter of the gauge each.
+  sun: {
+    noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true }, carry: { hp: 0.05, kneel: true },
+    foura: { stagger: 25 }, fourb: { stagger: 25 }, fourc: { stagger: 25 }, fourd: { stagger: 25 },
+  },
   ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 }, eruptw: { kneel: true }, erupte: { kneel: true } },
   heart: { lock: { stagger: 40 } },
 };

@@ -366,6 +366,12 @@ export class BossBrain {
     const up = this.world.heroes().filter((h) => !h.down).map((h) => h.side);
     if (!up.length) return this.link.side;
     const when = (side: number) => this.aimedAt[side] ?? -Infinity;
+    // A boss with a rule of its own (the Sun Warden hunts a party quarter by quarter): it names one of those standing, or leaves it to the rule below.
+    if (this.def.choose) {
+      const boss = this.world.boss();
+      const side = this.def.choose({ heroes: this.world.heroes().filter((h) => !h.down), boss: { x: boss.x, z: boss.z }, time: this.time, when });
+      if (side !== undefined && up.includes(side)) return side;
+    }
     const least = Math.min(...up.map(when));
     const level = up.filter((side) => when(side) === least).sort((a, b) => a - b);
     return level.length === 1 ? level[0] : level[Math.floor(this.rng() * level.length)];
@@ -378,6 +384,7 @@ export class BossBrain {
       boss: { x: boss.x, z: boss.z }, ring: { x: ring.x, z: ring.z }, target: { x: hero.x, z: hero.z }, step, seed, prev: step > 0 ? this.aimed.get(m.id) : undefined,
       rayStop: (ax, az, bx, bz) => this.world.rayStop(ax, az, bx, bz),
       cover: () => this.world.cover(),
+      heroes: this.world.heroes().filter((h) => !h.down).map((h) => ({ side: h.side, x: h.x, z: h.z })),
     });
     this.aimed.set(m.id, aim);
     if (!m.alongside && !rim) this.world.face(aim.dir);
@@ -385,7 +392,7 @@ export class BossBrain {
     if (m.tracks && step === (m.steps?.length ?? 1) - 1) this.tracking = null;
     const cast: BossCast = {
       id: ++this.seq, move: m.id, step, x: +aim.x.toFixed(3), z: +aim.z.toFixed(3), fx: +boss.x.toFixed(3), fz: +boss.z.toFixed(3),
-      dir: +aim.dir.toFixed(4), seed, target: side, alone, rim: rim || undefined, flag: aim.flag,
+      dir: +aim.dir.toFixed(4), seed, target: aim.target ?? side, alone, rim: rim || undefined, flag: aim.flag,
     };
     this.link.cast(cast);
     const still = m.act?.(this.world, cast);

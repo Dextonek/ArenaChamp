@@ -220,6 +220,11 @@ export class BossHud {
     this.castBox.style.display = '';
   }
 
+  /** The words on the cast bar change while it fills (The Four Hours: which arms still stand open). Its clock goes on. */
+  relabel(text: string) {
+    if (this.castLeft > 0) this.castText.textContent = text;
+  }
+
   /** A word beside its name for a while: EXPOSED, KNEELING. */
   setState(text: string, seconds: number) {
     this.state.textContent = text;

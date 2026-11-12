@@ -199,6 +199,12 @@ Everything else follows from these, and they are why two screens work without re
 3. **Each screen decides hits on its own hero only.** Walking out of a zone is a real dodge, as in a duel.
 4. **Everything both screens must agree on goes through the `RaidLink`:** boss HP, phase, stagger, kneeling, who is down, how it ended.
 
+For a party, rule 1 needs more than one hero's spot. `AimContext.heroes` gives a move's `aim` the heroes standing (it runs on the
+brain's screen only), and `aim` may name a `target` of its own for the cast. The hub passes a cast on field by field, so what the
+brain found rides in the fields there are (a hero in `target`, a count in `x`, yes or no in `flag`): see the Sun Warden's party
+mechanics. And for rule 4, a `stand` zone with `Threat.tally` is only counted: the hub says how many stood in it, and its move says
+what that means for everyone. `BossDef.choose` lets a boss name whom its brain goes for next.
+
 ## The pieces (`src/raid/`)
 
 | File | Role |
@@ -208,6 +214,7 @@ Everything else follows from these, and they are why two screens work without re
 | `brain.ts` | `BossBrain`: who it aims at, which move comes next, where it walks. Runs on one screen. Its rolls are seeded |
 | `script.ts` | `BossScript`: plays casts, draws their zones, lands them, decides the hits on this screen's hero. Several run at once, in both colours |
 | `sunWarden.ts`, `ashEmber.ts`, `heart.ts` | The bosses: numbers, phases, moves. `ashEmber.ts` makes Ash's and Ember's moves for a room (`movesFor`): the pit for two, and a party's pit for Twin Flames (`twinFlames`) |
+| `wardenHall.ts` | The Sun Warden's fight for a party beyond his own moves: the hall breaking open, the sunfire of his last phase, Branded, Carry the Sun, The Four Hours, the turns his great mechanics take, and whom he hunts |
 | `twin.ts` | Twin Flames: the ghost world and link that let one screen play the other boss's script as a look, the furious numbers, and `TwinLocalLink`, the two HP pools on one screen for the check tool |
 | `stage.ts` | `stageMove`: a boss's stage, its adds and their shots, from a few numbers. Both bosses have one |
 | `fxShow.ts` | The big moments' effects: `ShowFx`, one per fight (`PlayContext.show`), plays pooled one-shot pieces on its own clock: a shockwave over the floor, a rising column, shards, a meteor, a lava arc, rays along the floor, a charge-up, a beam's flash, and `triumph` for a mechanic done right. `Shell` (a stage's barrier, lit at its rim) and `RageAura` (the red heat round an enraged boss) |
@@ -272,14 +279,16 @@ all behind `party` in `src/raid/sunWarden.ts`, so the fight for two reads none o
 
 | What | In the hall |
 |---|---|
-| The Hour Strikes | Only here, in every phase (`HALL_PHASES`). Below |
+| The Hour Strikes | Only here, in every phase (`hallPhases`). Below |
+| The hall itself | Breaks open as The Long Hour begins; sunfire spreads from the Sun Well in Last Light. Below: "The hall transforms" |
+| Branded, Carry the Sun, The Four Hours | Only in a fight tuned for 10, 20 and 40 (`BossMove.minBand`). Below |
 | Enrage | 3:15 instead of 2:30: the party walks 40 m up the nave to him first, and each hour takes the fight away from him for a while |
 | What he aims (Pillar Fall, Fists, the ray) | Kept 1.8 m inside the hall's walls (`intoHall`), so no stone lands in the stone. At a hero in the gate's passage: down its middle |
 | Sun Order | Its wedges reach 19 m from the Sun Well (the crossing and its corners), not the whole floor: deep in an arm no edge of a wedge is near enough to step over |
 | Eclipse | Its far ring ends 20 m from him instead of at the rim |
 | Gathering Noon, the Long Hour's blow, Walking Sun, the late sunfire | The whole hall, as in the court. The stone round the hall hides what is drawn past its walls |
 | The hall's own walls | Cover like any other: round a corner Noon, the ray and the dial's blow do not reach. They never fall (`Obstacle.fixed`): a wall that saved a hero is only reported when it is a screen |
-| Sun shards | Whoever picks one up brings it in (one way in for each of the 40 seats). Still two shards, whatever the party's size |
+| Sun shards | Whoever picks one up brings it in (one way in for each of the 40 seats). Gathering Noon still has two shards, for a party under 16; for 16 and more Carry the Sun stands in its place, with a shard for every five |
 | Starts | Rows of eight just inside the south gate (`starts`, `partyStart` in `src/duel.ts`). Seat 39 of 40 stands on a fallen halo piece and is pushed off it |
 | Gates | The way in stands in the gate's passage; the way out before the throne, 4 m from the choir's end (`BossDef.gates.exitR`) |
 
@@ -305,6 +314,153 @@ bell."). Pictures: `docs/raid/hour-called.jpg`, `hour-called-far.jpg`, `hour-lat
 
 In forty fights of ten heroes alone on the autopilot in the hall, about three hours were called a fight, and the bell hit five times
 in all.
+
+### The hall transforms, and what comes only for a big party (2026-11-12)
+
+User, 2026-11-12: "when there will be second stage the arena will transform, and also at the final stage", and "mechanics that only
+is cast when there is at least 10 players, and for 20 and 40". All of it is in `src/raid/wardenHall.ts`; none of it is named by a
+phase of the court for two. Pictures (`pipeline/tools/warden-shots.js`): `docs/raid/warden-cracking.jpg`, `warden-falling.jpg`,
+`warden-open-far.jpg`, `warden-open.jpg`, `warden-hour-open-far.jpg`, `warden-sunfire-far.jpg`, `warden-sunfire.jpg`, `warden-branded.jpg`,
+`warden-branded-burst.jpg`, `warden-carry-far.jpg`, `warden-carry.jpg`, `warden-four-far.jpg`, `warden-four.jpg`,
+`warden-phone-open.jpg`, `warden-phone-sunfire.jpg`.
+
+| | When | For |
+|---|---|---|
+| The hall breaks open (`breach`) | As The Long Hour begins (50 % HP), beside his stage | Any party |
+| The sun comes down (`sunfall`) | As Last Light begins (35 % HP) | Any party |
+| Branded (`brand`) | From High Noon on, about every 28 s, by its own clock | A fight tuned for 10 or more |
+| Carry the Sun (`carry`) | It opens High Noon where Gathering Noon did, and then takes turns with the hour | 20 or more |
+| The Four Hours (`four`) | From High Noon on, in the turns below | 40 |
+
+**What the hub lets through decides how they are built.** The hub passes a cast on field by field (`boss_cast` in `server/hub.mjs`:
+id, move, step, x, z, fx, fz, dir, seed, target, alone, rim, form, flag, which), so a new field on `BossCast` would not arrive. What
+the brain reads of the heroes therefore rides in the fields there are: **who** in `target` (one cast for each hero: `BossMove.aim` may
+return a `target` of its own), **how many** in `x` of a move with no body, **yes or no** in `flag`. `AimContext.heroes` gives `aim` the
+heroes standing: `aim` runs on the brain's screen only, so rule 1 holds. What the whole party must agree on comes back from the hub:
+who took a shard or broke a stone (`done`), and how many stood in a zone (`stood`). A zone that is only counted has `Threat.tally`:
+the move says what the count means, and what it returns the whole party pays.
+
+**The hall breaks open.** The four corner blocks of the stone crack for 6 s (`BREACH.warn`; 3 s when it has to come with the sunfire):
+a pale orange band 4 m wide runs along each wall that goes, the blocks tremble, chips and dust come off them, and the camera jolts
+three times. Then they fall in clouds of dust, the low south ones first and each from the hall's corner outward (32 pieces, `falls` in
+`src/arenas/real/sunhall.json`, cut in `blender/arenas/real/sunhall.py`). What changes in the game at that moment, on every screen
+from the same cast:
+
+| | |
+|---|---|
+| The walls between the arms | The eight stretches listed as `opens` leave the game (`PlayContext.breakCover`): walk, sight, bolts and his ray go through |
+| The floor | The cross and the round court between its arms, 36.4 m from the Sun Well to its wall (`HALL_COURT`: a circle through the transepts' far corners). The ends of the nave (to 44 m) and of the choir (to 40 m) stay beyond it. `inHall`, `intoHall` and so his aim answer for the new shape |
+| An arm | Its quarter of the court: the quarter turn round the arm's line, from 13 m off the Sun Well outward (`inArm`). The Hour Strikes burns three quarters and the crossing, drawn as three wedges and a quarter disc; the gold line across the safe arm's mouth is a bow 13 m from the well |
+| Rubble | 24 pieces, six in each corner: low slabs and blocks in the south (1.1 m, under the 1.3 m of stone that hid them), tall ones in the north (2.6 m). Cover like any other; the twelve slabs are walls and can be broken |
+| The court's own wall | 24 stretches of fixed wall on its circle |
+| Who is hit | Whoever stands within 4 m of a wall that goes, as it goes: 30 % of max HP (`BREACH.share`). Nobody is pushed |
+| The walk planner | Charts the floor anew by itself: its chart is keyed by the room's fixed walls (`Navigator.chart`) |
+
+**How the rubble and the court's wall are "added".** They are not: they are in the room's obstacle list from the start, standing
+inside the stone, where no walk, look or ray reaches them until the walls in front of them go. So nothing has to be added at the
+same moment on every screen, a stone raised by `addStone` (which is timed, round, and breaks under his ray for a reward) is not
+misused for it, and nobody can stand where rubble lands, so nobody has to be pushed out of it. It is why the hall's file has 138
+obstacles, not 86.
+
+**The cast.** `breach` comes by the phase's clock (`BossPhase.timed`, at once), not as the phase's opener: that is the stage, whose
+cast is cut short when its stones are broken early, and the fall must not be. One hit can take him through two phases at once; then
+The Long Hour's clock never runs, and `sunfall` breaks the hall itself. The room's state (`hallBreak` in `src/arenas/sunhall.ts`,
+`hallFight`) is set only from a cast and reset by `resize` before each fight.
+
+**The sun comes down.** Sunfire wells up at the Sun Well for 5 s, then burns and spreads: 6 m from the well at first, 0.12 m a
+second, 24 m at last, after two and a half minutes (`SUNFIRE`, `fireRadius`). It costs 6 % of max HP a second (twice that once he
+has enraged). That leaves a ring 12 m wide inside the court's wall, and the ends of the nave and the choir. Its edge is drawn in the
+zones' "leave" colour. One `Threat.hits` that stays to the fight's end, so each screen works out its own hero from the cast's time.
+
+| What | In the sunfire |
+|---|---|
+| He | Leaves the middle: 3 m/s instead of 2, and he comes within 2.2 m of his target instead of 4.5, so a hero who fights hand to hand need not stand in the fire for it (`SUN_WARDEN.speed`, `keepAt`) |
+| Whom he goes for | One quarter of the court at a time, 14 s each, then the next with someone in it (`BossDef.choose`, `wardenChoice`). Alone and for two the brain's own rule, as it was |
+| The Hour Strikes | Three of the four quarters and the crossing, as before; the lit road's goal lies past the fire. Branded may come during it |
+| Gathering Noon | Its shards fall 7 m past the fire, and are home 3.5 m outside its edge |
+| Carry the Sun, The Four Hours | A shard is home 1.6 m outside the fire's edge, and that edge moves; the arms' tasks lie past it |
+| Anchors | Its circles lie either side of him, 7.6 m off, where the group he is with can reach them; never nearer the fire than 4 m |
+| What closes in past 5 minutes (`late`) | In the hall it comes from the walls inward to 26 m ("The hall burns"), so the two leave nothing to stand on. The court for two keeps "The sun comes down", from 7 m outward |
+
+**His great mechanics take turns.** The Hour Strikes, Carry the Sun and The Four Hours each hold the floor for about half a minute
+(`BossMove.holds`) and come as soon as they are ready. Left alone they followed one another without a gap (measured: Carry the Sun,
+the hour, Carry the Sun, the hour, back to back). Now only the one whose turn it is stands in his list, and none for 16 s after one
+ends (`REST`, `nextGreat`, on the brain's screen): the hour for any party; the hour and Carry the Sun in turn for 20 or more; the
+hour, Carry the Sun, the hour, The Four Hours for 40. In his last phase Branded may come during any of them: two mechanics at once.
+
+**Branded** (10 or more).
+
+| | |
+|---|---|
+| Who | One standing hero in eight, five at most, drawn by the cast's seed from those the brain sees standing (`BRAND.per`, `most`). Ten standing: one; twenty: three; forty: five |
+| What shows | A sun over each branded hero's head that grows, and an orange ring 5 m round it that follows it. Only a look (`heroAt`): to an AI the ring of another is a zone to walk out of that never lands |
+| The burst | 5 s later, where the brain sees each of them stand then: a cast of its own for each (the move's last five steps), landing 0.4 s after it comes |
+| What it costs | Whoever else stands in it 30 %, the branded hero 8 % |
+| The whole party | The hub counts who stood in each burst. Two or more beside the branded hero: everyone pays 6 % for each of them, 24 % at most ("the brand burns the crowd") |
+| A kneel or a new phase | Drops the bursts still to come, as it drops any move's later steps: the brands go out |
+
+**Carry the Sun** (20 or more). The party's Gathering Noon, in its place.
+
+| | |
+|---|---|
+| Shards | One for every five standing, eight at most (`CARRY.per`, `most`), counted by the brain. In the hall whole: in turn at three quarters of each arm's length (33 m down the nave, 30 m up the choir, 25.5 m out each transept), from the fifth on two an arm. In the round court: evenly round it, 30 m from the well. Each on open floor (`freeSpot`, from the hall as it was built, so every screen finds the same spot) |
+| Carrying | Whoever walks over one carries it, 15 % slower, and brings it to the Sun Well; one shard a hero. The hub says who took which |
+| His ray | Comes for a carrier (`wardenChoice`), and throws back 5 m whoever it hits. It breaks on cover and on a fallen stone as always, and on a hero: the brain finds the first hero standing in its way and flags the cast with that hero's spot; the ray ends there, and that hero takes it for the carrier |
+| Meanwhile | He stands 3 s for the call, then does only Sun Ray and Pillar Fall (whose stones break the ray) |
+| Noon | 36 s after the call (never under 32 s at a higher tier). Everyone pays 12 % and 56 % shared out over the shards not home: none home 68 %, one of four missing 26 %. No cover saves from it. All home: no Noon, 5 % of his HP, and he kneels (`RAID_REWARDS.sun.carry`) |
+
+**The Four Hours** (40). Each arm gets a task at the same time; the seed turns the tasks round the arms. A word stands over each arm
+(CARRY, HOLD, BREAK, STAND), and his cast bar names the arms still open ("The Four Hours · NAVE EAST CHOIR WEST").
+
+| Arm | What it asks, of forty standing | Done when |
+|---|---|---|
+| Carry | Two shards near its far end, to the Sun Well | Both are home |
+| Hold | Three gold circles | Each has a hero in it as the tasks end |
+| Break | Three of his hour stones (1,392 HP each at band 40) | All three are broken |
+| Stand | Three lanes down the arm: two burn (25 %), one is gold | Five heroes stand in the gold lane as the tasks end |
+
+The tasks end 34 s after the call, 4 s before the hall burns, so the hub's counts are back by then. Each arm done pays a quarter of
+his stagger gauge (`RAID_REWARDS.sun.foura` to `fourd`): all four, and he kneels. Each arm not done burns the whole hall for 18 % of
+max HP: all four, 72 %. With fewer standing each arm asks less (twenty: one shard, two circles, three in the lane, stones of half
+the HP).
+
+**Measured** (2026-11-12). One autopilot hero, the boss's HP for one, the same ten heroes as before (Lyra, Kaia, Sefu, Isolde,
+Vesper, Brannoc, Nyx, Bram, Zephyr, Sirix), two fights each at every size (`_raid(names, 2, { band })`). No errors, and no fight that never ended.
+Twenty fights swing by more than the rows differ, so read them as: nothing is broken, and one hero alone is not what these are for.
+
+| Tuned for | Clears | Seconds a fight | Damage a second | Fights that enraged | Hits by the new things, in 20 fights | What killed most |
+|---|---|---|---|---|---|---|
+| 5 | 6 of 20 | 131 to 210 | 13 to 24 | 6 | the sunfire 3 | Fists 6, Noon 2, the sunfire 2, Anchors 1 |
+| 10 | 4 of 20 | 134 to 199 | 12 to 24 | 6 | the falling walls 1, the sunfire 10, Branded 29 | Fists 5, Stone Sweep 4, the dial 2, Sun Order 1 |
+| 20 | 2 of 20 | 96 to 237 | 14 to 23 | 6 | Branded 38, Carry the Sun's Noon 1 | Branded 8, Fists 5, Pillar Fall 2, Carry the Sun's Noon 1 |
+| 40 | 0 of 20 | 146 to 227 | 13 to 21 | 11 | the sunfire 9, Branded 34, The Four Hours 5 | The Four Hours 4, Fists 3, Stone Sweep 3, Anchors 2 |
+
+One hero stands for the whole party here. So it is always the branded one: the light hit about every 28 s, which nothing avoids
+(29 to 38 of them in twenty fights; at 20 it was the last blow eight times). It carries the one shard itself: Noon landed on it
+once in twenty fights. It cannot do four arms at once: The Four Hours hit it five times in twenty fights, and four of those were
+the last blow. The falling walls caught it once in the 80 fights, and the sunfire burnt it 22 times in them.
+
+**A real party through the real hub** (`python pipeline/tools/party-raid.py <out> --players 6 --seconds 240 --boost 30 --hall`: six
+headless pages, six throwaway accounts, a fight tuned for ten, every bot also taking 30 HP a second off him so the fight ends).
+Run twice. The second: the hall broke open on all six screens within 0.36 s of each other (the cast goes through the hub, and each
+screen counts its 6 s from when it came); the sunfire had come 12.1 m on every screen when he fell; every screen had the same cover
+at the end (130 pieces) and the same boss HP all the way, within one message; the screens' cover differed on 3 of 165 seconds, by one fallen stone that
+one screen had a moment longer; nobody fell, no errors, won after 2:38 of fight (the hall broke at 1:10, the sunfire began at
+1:41). The first run: won after 3:02 with three of six standing and no errors; its bots were burnt by the sunfire 7 to 13 times
+each, the second run's 0 to 7. Pictures with the game's own HUD:
+`docs/raid/warden-online-breaking.jpg`, `warden-online-open.jpg`, `warden-online-sunfire.jpg`.
+
+**Sixteen bots, a fight tuned for twenty,** once (`--players 16 --boost 60 --hall`; this computer runs sixteen pages, slowly). Carry
+the Sun was cast (it is in the lists of the two screens that were read; the other fourteen's were cut off the output) and the
+host's bot carried a shard, so the hub had said who took it (`hall-carry.png` of that run). The hall broke, the sunfire came,
+nobody fell, no errors on any of the sixteen. Its end was not seen: the boost had him at 51 % HP nine seconds into it, and his stage
+begins at 50 % and calls it off. The screens' hall broke within 5 s of each other in that run, against 0.36 s with six pages: most
+likely sixteen pages on one computer running slowly, but that was not looked into.
+
+**What the room costs to draw** (one frame at 390 x 844 with eleven partners, counted by the renderer): 684 draw calls and 458,000
+triangles with the hall whole, 615 and 450,000 once it is open, 665 with the sunfire. The 32 falling pieces are about 70 of the
+calls while they stand; the rubble is not drawn until they fall. Not measured on a real phone, and not against the hall as it was:
+its file had 70 objects in 236 drawn parts, and has 126 in 438 now.
 
 ## Ash and Ember
 
@@ -553,6 +709,14 @@ Two things a room that is not round needed in the walk planner (`src/nav.ts`):
   squares, by the part each can be reached in (`Navigator.parts`); only an order into another part, or into one of the room's own
   walls, is moved. A room without such walls has no chart and nothing changes.
 
+**It breaks open** (2026-11-12). The four corner blocks are cut in the Blender file into what stays (past the round court's wall,
+36.4 m from the Sun Well) and 32 pieces that fall, each an object of its own (`fall<corner>_<piece>`, listed in the json as `falls`
+beside `opens`, the walls that go, `rubble` and `court`). `hallBreak` in `src/arenas/sunhall.ts` is the room's state: `crack` makes
+the pieces tremble, `fall` drops them (each after its own delay, the tall north ones last) and makes `inHall`, `intoHall` and
+`inArm` answer for the round court; `reset` before each fight. The lights on the blocks go out with them, and the court's own
+windows are lit once they are down. The floor under the blocks is drawn from the start: bare rock in rough slabs round the well,
+cracked from the hall's corners. Rubble and the court's wall are obstacles from the start (see the Sun Warden, above).
+
 Six of its corners lie behind a brazier that stands a body's width from both walls. A hero pushed in there stood in a pocket the
 planner knows no way out of, so each is solid to the game, from the brazier to the corner (`CORNERS`), with nothing drawn for it.
 
@@ -629,8 +793,18 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   bots through the hub. What forty heroes do to The Hour Strikes (a crowd in one arm's mouth) was not seen. Its cost on a phone was
   not measured, only counted: late in the count about 45 tongues of flame and 300 embers at once, and 42 columns more for under a
   second at the bell; each tongue and column is a draw call of its own.
-- **The Warden's mechanics are not scaled to the band.** Noon still asks for two shards and Anchors for two circles, whatever the
-  party's size; only his HP and gauge grow.
+- **The Warden's older mechanics are not scaled to the band.** Gathering Noon (under 16 players) still asks for two shards and
+  Anchors for two circles; his stage has three stones whatever the party's size.
+- **The Four Hours has not crossed the real hub, and Carry the Sun only its beginning.** Six bots are a fight tuned for ten, which
+  has Branded and the hall's two changes. Sixteen bots saw Carry the Sun cast and a shard picked up, not its end; thirty-one pages
+  were not tried. Both are built from what the hub already carries (who took a spot, how many stood in a zone, a reward by its
+  key), and `_raidCheck` feeds those by hand.
+- **A shard's carrier can still cast.** The design says it cannot; that needs `src/duel.ts`.
+- **A carrier that falls keeps its shard,** and gets it home only if someone gets the hero up in time.
+- **A kneel or a new phase puts the brands out:** it drops the bursts still to come, as it drops any move's later steps.
+- **The hall has 138 obstacles** with the rubble and the court's wall. A walk's plan there costs more than it did with 86: an
+  autopilot fight of about 150 s ran in 3 to 11 s here, against about 4 s before. Not measured on a phone.
+- **A screen that takes the brain over** starts his great mechanics' turns from the first, with no breath before it.
 - **The autopilot fights worse in the hall than in the court:** 9 clears of 40 against 8 of 20 for the same ten heroes, and its
   fights are 30 to 70 s longer. It walks 40 m to him first, and during an hour it stands at the safe arm's mouth, where a melee hero
   does not reach him. A person would lead him into the arm.
@@ -713,6 +887,16 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - `_raidCheck()` also has the hall's rows: the hour never comes in the court for two; in the hall each seed's arm is safe and the
   rest is hit; the bell's time and its floor at a higher tier; what he may do meanwhile; a stage calling it off; the autopilot's run
   from the gate to the choir; the hall's walls as cover that stands; his aim and his floor-wide moves in the hall.
+- `_raidCheck()` also has the party's rows (101 of its 234): which band sees which mechanic, and his great mechanics' turns; the
+  hall's shape before and after it breaks, who is struck, the autopilot walking clear, the hour in the round court, the fall coming
+  with The Long Hour and from Last Light when one hit passed two phases; the sunfire's cost, its edge by its clock, the autopilot
+  keeping out; Branded by the brain's `aim` for 40 and 10 standing, what a burst costs whom, a burst in the crowd (the hub's count
+  fed by hand); Carry the Sun's shards on open floor in both shapes, a shard carried home, what Noon costs with some home, the kneel,
+  the ray stopped by a hero's body; The Four Hours' tasks, each arm done by what the hub would say, and the cast bar naming the
+  arms; whom he goes for (a carrier, then quarter by quarter in the sunfire), asked by hand. One row checks that every cast he
+  sends has only the fields the hub passes on.
+- `pipeline/tools/warden-shots.js`: the pictures of the party fight from the game's camera, with eleven partners who stand where
+  they are put. `pipeline/tools/party-raid.py --hall`: when the hall broke open on each screen, and whether their cover agrees.
 - `pipeline/tools/hour-walk.js`: the autopilot's seconds from the far end of each arm to each other arm, for the hour's time.
   `pipeline/tools/hour-shots.js`: the pictures of The Hour Strikes from the game's camera. Both run headless with
   `pipeline/tools/page-shots.py`.

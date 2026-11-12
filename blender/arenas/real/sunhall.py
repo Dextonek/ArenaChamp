@@ -274,17 +274,114 @@ for sx in (-1, 1):
         stone_pillar("brazier", sx * 31.6, s_, 0.7, 1.2, ("lamp", 1.3))
 
 # the hall's own walls, round the cross (they never break). The gate's passage in the south stays open; the ring ends it.
+# `goes`: a wall between two arms. It is taken out of the game when the hall breaks open (the Warden's second phase): `opens` in
+# the json lists them.
 GATE = 3.2
+CUT = EAST                                          # where the round court's wall meets the nave's and the choir's (R_OPEN: see below)
+OPENS = []
+
+
+def gone(x0, s0, x1, s1, height):
+    fixed(x0, s0, x1, s1, height)
+    OPENS.append(len(A.obstacles) - 1)
+
+
 for sx in (-1, 1):
-    fixed(sx * W, SOUTH, sx * W, W, 1.3)            # the nave's side
-    fixed(sx * W, W, sx * EAST, W, 1.3)             # the transept's south side
+    fixed(sx * W, SOUTH, sx * W, CUT, 1.3)          # the nave's side, past the round court
+    gone(sx * W, W, sx * EAST, W, 1.3)              # the transept's south side
     fixed(sx * EAST, W, sx * EAST, -W, 9.0)         # its end
-    fixed(sx * EAST, -W, sx * W, -W, 9.0)           # its north side
-    fixed(sx * W, -W, sx * W, -NORTH, 9.0)          # the choir's side
+    gone(sx * EAST, -W, sx * W, -W, 9.0)            # its north side
+    fixed(sx * W, -CUT, sx * W, -NORTH, 9.0)        # the choir's side, past the round court
     fixed(sx * W, SOUTH, sx * GATE, SOUTH, 1.3)     # the south end, beside the gate
     fixed(sx * GATE, SOUTH, sx * GATE, SOUTH + 5.0, 1.3)
     fixed(sx * W, -NORTH, sx * 6.0, -NORTH, 11.0)   # the north end, beside the throne's alcove
 fixed(-6.0, -NORTH, 6.0, -NORTH, 2.0)               # the throne's steps
+for sx in (-1, 1):
+    gone(sx * W, CUT, sx * W, W, 1.3)               # the nave's side, in the round court
+    gone(sx * W, -W, sx * W, -CUT, 9.0)             # the choir's side, in the round court
+
+# ---- the round court the hall breaks open into (the Warden's second phase) ---------------------------------------------
+# The four corner blocks of the stone fall, as far out as a circle through the transepts' far corners: the cross becomes one
+# round court, 36.4 m to its wall, with the ends of the nave and the choir left beyond it. The court's wall and the rubble the
+# blocks leave are obstacles from the start: they stand inside the stone, where nothing reaches them until it falls.
+R_OPEN = math.hypot(EAST, W)
+QUADS = ((-1, 1), (1, 1), (-1, -1), (1, -1))            # (west or east, north or south): south-west, south-east, north-west, north-east
+ARC0, ARC1 = math.atan2(W, EAST), math.atan2(EAST, W)   # the wall's ends, as angles from the south
+CELL = (EAST - W) / 3                                   # the falling blocks are cut into pieces this wide
+
+
+def arc(n, r=R_OPEN):
+    """The court's wall in the south-east corner, from the nave's side round to the transept's: n + 1 points (x, s)."""
+    return [(r * math.sin(ARC0 + (ARC1 - ARC0) * k / n), r * math.cos(ARC0 + (ARC1 - ARC0) * k / n)) for k in range(n + 1)]
+
+
+for sx, ss in QUADS:
+    for (x0, s0), (x1, s1) in zip(arc(6), arc(6)[1:]):
+        fixed(sx * x0, ss * s0, sx * x1, ss * s1, 1.3 if ss > 0 else 9.0)
+
+rr = random.Random(77)
+
+
+def piece(f, c, size, yaw=0.0, lean=(0.0, 0.0), band=True):
+    """A broken piece of the wall: a block of dark stone lying as it fell, its corners knocked off, a strip of its gold line and
+    its dark cap still on it. What is under z = 0 is in the floor."""
+    m = Matrix.Translation(V(c)) @ Matrix.Rotation(yaw, 4, "Z") @ Matrix.Rotation(lean[0], 4, "X") @ Matrix.Rotation(lean[1], 4, "Y")
+    w, d, h = size
+    solid(f, "stone", [m @ V((sx * w / 2 * rr.uniform(0.86, 1.0), sy * d / 2 * rr.uniform(0.86, 1.0), sz * h / 2 * rr.uniform(0.9, 1.0)))
+                       for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)])
+    if band:
+        solid(f, "gold", [m @ V((sx * w / 2 * 0.99, sy * d / 2 * 0.99, h * 0.24 + k)) for sx in (-1, 1) for sy in (-1, 1) for k in (0.0, 0.12)])
+        solid(f, "lacquer", [m @ V((sx * w / 2 * 0.9, sy * d / 2 * 0.9, h / 2 * 0.9 + k)) for sx in (-1, 1) for sy in (-1, 1) for k in (0.0, 0.07)])
+
+
+def rubble(key, kind, tall):
+    """Rubble of a fallen block, as cover: `kind` a (one great block on its corner), b (a slab of wall lying along +y) or c (a
+    heap). `tall`: of the north blocks (9 m of wall fell); else of the low south ones, kept under their 1.3 m."""
+    f = A.fig()
+    k = 2.3 if tall else 1.0
+    if kind == "a":
+        piece(f, (0, 0, 0.42 * k), (1.7, 1.5, 1.1 * k), yaw=0.5, lean=(0.3, 0.22))
+        piece(f, (0.75, -0.7, 0.16), (0.8, 0.7, 0.5), yaw=1.9, lean=(0.5, 0.1), band=False)
+    elif kind == "b":
+        piece(f, (0, 0, 0.36 * k), (0.95, 3.5, 0.95 * k), lean=(0.0, 0.3))
+        piece(f, (0.35, 1.25, 0.2), (0.9, 0.8, 0.55), yaw=0.7, lean=(0.3, 0.4), band=False)
+        if tall:
+            # a window's gold frame, torn out with the wall
+            f.box("gold", (-0.62, -0.4, 1.0), (0.14, 2.0, 0.16), rot=Matrix.Rotation(0.3, 4, "Y"))
+            f.box("lacquer", (-0.66, 0.2, 0.7), (0.1, 0.1, 1.5), rot=Matrix.Rotation(0.3, 4, "Y"))
+    else:
+        piece(f, (0.1, 0.25, 0.3 * k), (1.2, 1.1, 0.8 * k), yaw=0.2, lean=(0.25, -0.2))
+        piece(f, (-0.55, -0.45, 0.24), (0.9, 0.8, 0.6), yaw=1.2, lean=(-0.3, 0.3), band=False)
+        piece(f, (0.6, -0.55, 0.17), (0.7, 0.6, 0.45), yaw=2.3, lean=(0.4, 0.2), band=False)
+        if tall:
+            f.turned("cream", (-0.9, 0.5, 0.42), (0.75, 0.95, 0.5), [(0, 0.42), (1, 0.4)], seg=12)   # a pilaster's drum
+    A.built(key, f, bevel=0.012)
+
+
+for tall in (0, 1):
+    for kind in "abc":
+        rubble(f"rub{kind}{tall}", kind, tall)
+for k, (w, h) in enumerate(((0.5, 0.28), (0.36, 0.2), (0.62, 0.34))):
+    f = A.fig()
+    piece(f, (0, 0, h * 0.3), (w, w * 0.8, h), yaw=0.4, lean=(0.3, 0.2), band=False)
+    A.built(f"peb{k}", f)
+
+# the rubble, in each corner: (u, v) is metres past the corner along the transept and along the nave or the choir
+RUBBLE = []
+for q, (sx, ss) in enumerate(QUADS):
+    tall = int(ss < 0)
+    h = 2.6 if tall else 1.1
+    for kind, u, v, u1, v1 in (("a", 5.0, 5.0, None, None), ("b", 7.5, 3.2, 10.0, 4.2), ("b", 3.2, 7.5, 4.2, 10.0), ("c", 10.0, 10.0, None, None),
+                               ("a", 13.5, 5.0, None, None), ("c", 5.0, 13.5, None, None)):
+        gx, gz = P(sx * (W + u), ss * (W + v))
+        if u1 is None:
+            A.cover(pillar(gx, gz, 1.05, h))
+            A.put(f"rub{kind}{tall}", gx, gz, yaw=rr.uniform(0, TAU), scale=1.0)
+        else:
+            hx, hz = P(sx * (W + u1), ss * (W + v1))
+            A.cover(wall(gx, gz, hx, hz, 0.55, h))
+            A.put(f"rub{kind}{tall}", (gx + hx) / 2, (gz + hz) / 2, yaw=math.atan2(hx - gx, hz - gz), scale=1.0)
+        RUBBLE.append(len(A.obstacles) - 1)
 
 # ---- the stone the hall is cut from, and what is on its walls ---------------------------------------------------------
 A.back()
@@ -307,9 +404,113 @@ def span(sx, near, far):
 
 
 LOW, HIGH, END = 1.3, 9.0, 11.0
+
+
+def prism(f, key, poly, z0, h):
+    """A prism on the polygon `poly` [(x, s)], from `z0` up `h`. The polygon may bend inward (the court's wall)."""
+    bm = f.bm(key)
+    lo = [bm.verts.new((x, -s_, z0)) for x, s_ in poly]
+    hi = [bm.verts.new((x, -s_, z0 + h)) for x, s_ in poly]
+    caps = [bm.faces.new(hi), bm.faces.new(lo[::-1])]
+    for i in range(len(poly)):
+        bm.faces.new((lo[i], lo[(i + 1) % len(poly)], hi[(i + 1) % len(poly)], hi[i]))
+    bmesh.ops.triangulate(bm, faces=caps)
+
+
+def clip(poly, a, b):
+    """The part of the convex polygon `poly` on the Sun Well's side of the line through a and b."""
+    def side(p):
+        return (b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])
+    sign = 1 if side((0.0, 0.0)) > 0 else -1
+    out = []
+    for i, p in enumerate(poly):
+        q = poly[(i + 1) % len(poly)]
+        sp, sq = side(p) * sign, side(q) * sign
+        if sp >= 0:
+            out.append(p)
+        if (sp > 0 > sq) or (sp < 0 < sq):
+            t = sp / (sp - sq)
+            out.append((p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t))
+    return out
+
+
+def edge(f, x0, s0, x1, s1, h):
+    """What a block's face on the hall has: the gold line under its dark cap, burnt copper at its foot. From (x0, s0) to (x1, s1),
+    out of the face toward the hall (the face is on x = +-W or s = +-W)."""
+    along_s = abs(x0 - x1) < 1e-6
+    cx, cs = (x0 + x1) / 2, (s0 + s1) / 2
+    ox, os_ = (-math.copysign(1, cx), 0.0) if along_s else (0.0, -math.copysign(1, cs))
+    ln = abs(s1 - s0) if along_s else abs(x1 - x0)
+    for key, t, z0, hh in (("gold", 0.12, h - 0.34, 0.14), ("lacquer", 0.05, h - 0.2, 0.2), ("copper", 0.08, 0.0, 0.3)):
+        size = (t + 0.1, ln, hh) if along_s else (ln, t + 0.1, hh)
+        f.box(key, (cx + ox * (t - 0.1) / 2, -(cs + os_ * (t - 0.1) / 2), z0 + hh / 2), size)
+
+
+ARCF = arc(24)
+FALLS = []
+for q, (sx, ss) in enumerate(QUADS):
+    h = LOW if ss > 0 else HIGH
+    # what stays: the block past the court's wall, with the gold line and the copper foot along that wall
+    f = A.fig()
+    body = [(sx * x, ss * s_) for x, s_ in [*ARCF, (OUT, W), (OUT, OUT), (W, OUT)]]
+    prism(f, "stone", body, 0.0, h - 0.2)
+    prism(f, "lacquer", body, h - 0.2, 0.2)
+    for key, t, z0, hh in (("gold", 0.12, h - 0.34, 0.14), ("copper", 0.08, 0.0, 0.3)):
+        prism(f, key, [(sx * x, ss * s_) for x, s_ in [*ARCF, *reversed(arc(24, R_OPEN - t))]], z0, hh)
+    edge(f, sx * W, ss * CUT, sx * W, ss * OUT, h)
+    A.built(f"rest{q}", f)
+    A.put(f"rest{q}", *P(0, 0), scale=1.0)
+    # what falls: the block inside the court's wall, in pieces
+    for i in range(3):
+        for j in range(3):
+            x0, s0 = W + i * CELL, W + j * CELL
+            poly = [(x0, s0), (x0 + CELL, s0), (x0 + CELL, s0 + CELL), (x0, s0 + CELL)]
+            for a, b in zip(ARCF, ARCF[1:]):
+                poly = clip(poly, a, b) if len(poly) >= 3 else poly
+            if len(poly) < 3:
+                continue
+            cx, cs = sum(p[0] for p in poly) / len(poly), sum(p[1] for p in poly) / len(poly)
+            name = f"fall{q}_{i}{j}"
+            f = A.fig()
+            world = [(sx * x, ss * s_) for x, s_ in poly]
+            prism(f, "stone", world, 0.0, h - 0.2)
+            prism(f, "lacquer", world, h - 0.2, 0.2)
+            if i == 0:
+                edge(f, sx * W, ss * s0, sx * W, ss * (s0 + CELL), h)
+            if j == 0:
+                edge(f, sx * x0, ss * W, sx * (x0 + CELL), ss * W, h)
+            # The template's name must not be the object's in the file: Blender would rename one of them.
+            A.built(f"piece_{name}", f)
+            A.back(name)
+            A.put(f"piece_{name}", *P(0, 0), scale=1.0)
+            A.back()
+            gx, gz = P(sx * cx, ss * cs)
+            FALLS.append({"name": name, "q": q, "x": round(gx, 3), "z": round(gz, 3), "h": h, "far": round(math.hypot(cx - W, cs - W), 2)})
+FALL_NAMES = {f["name"] for f in FALLS}
+
+
+def on_fall(x, s_):
+    """The falling piece whose wall or top (x, s) is on, or None."""
+    ax, as_ = abs(x), abs(s_)
+    if ax < W - 0.35 or as_ < W - 0.35 or math.hypot(ax, as_) > R_OPEN - 0.3:
+        return None
+    i, j = min(2, max(0, int((ax - W) // CELL))), min(2, max(0, int((as_ - W) // CELL)))
+    name = f"fall{QUADS.index((1 if x > 0 else -1, 1 if s_ > 0 else -1))}_{i}{j}"
+    return name if name in FALL_NAMES else None
+
+
+def hung(key, x, s_, yaw=0.0, lamp=None, lift=0.0):
+    """A prop on the stone's walls or on its top. On a piece that falls it falls with it, and its light (`lamp`: the mark's (x, s,
+    height)) goes out with it: the mark is a `flamp`."""
+    name = on_fall(x, s_)
+    A.back(name or "back")
+    ob = prop(key, x, s_, yaw=yaw)
+    if lift:
+        ob.data.transform(Matrix.Translation((0, 0, lift)))
+    A.back()
+    if lamp:
+        A.mark("flamp" if name else "lamp", *P(lamp[0], lamp[1]), lamp[2])
 for i, sx in enumerate((-1, 1)):
-    mass(f"sw{i}", *span(sx, W, OUT), W, OUT, LOW)                        # south-west and south-east: low, the camera looks over
-    mass(f"nw{i}", *span(sx, W, OUT), -OUT, -W, HIGH)                     # north-west and north-east
     mass(f"end{i}", *span(sx, EAST, OUT), -W, W, HIGH)                    # past the transept's end
     mass(f"gate{i}", *span(sx, GATE, W), SOUTH, OUT, LOW)                 # beside the gate's passage
     mass(f"north{i}", *span(sx, 6.0, W), -OUT, -NORTH, END)               # beside the throne's alcove
@@ -321,12 +522,10 @@ A.mark("beacon", *P(0, -NORTH - 6.8), 8.2)
 # lit windows and pilasters on the walls the camera sees: the transepts' north sides, the choir's sides, the ends
 for sx in (-1, 1):
     for x in (15.5, 20.5, 25.5, 30.5):                                    # the transept's north wall looks south
-        prop("window", sx * x, -W - 0.05, yaw=PI)
-        A.mark("lamp", *P(sx * x, -W + 0.4), 4.2)
-        prop("pilaster", sx * (x + 2.5), -W + 0.2, yaw=PI)
+        hung("window", sx * x, -W - 0.05, yaw=PI, lamp=(sx * x, -W + 0.4, 4.2))
+        hung("pilaster", sx * (x + 2.5), -W + 0.2, yaw=PI)
     for s_ in (-17.0, -23.5, -30.0, -36.5):                               # the choir's walls look east and west
-        prop("window", sx * (W + 0.05), s_, yaw=-sx * PI / 2)
-        A.mark("lamp", *P(sx * (W - 0.4), s_), 4.2)
+        hung("window", sx * (W + 0.05), s_, yaw=-sx * PI / 2, lamp=(sx * (W - 0.4), s_, 4.2))
     for s_ in (-8.0, 0.0, 8.0):                                           # the transept's end
         prop("window", sx * (EAST + 0.05), s_, yaw=-sx * PI / 2)
         A.mark("lamp", *P(sx * (EAST - 0.4), s_), 4.2)
@@ -334,9 +533,34 @@ for sx in (-1, 1):
         prop("pilaster", sx * x, -NORTH + 0.2, yaw=PI)
     # braziers on the low stone along the nave, and at the gate
     for s_ in (17.0, 24.0, 31.0, 38.0, 45.0):
-        ob = prop("brazier", sx * (W + 2.2), s_)
+        hung("brazier", sx * (W + 2.2), s_, lamp=(sx * (W + 2.2), s_, LOW + 1.3), lift=LOW)
+    # the round court's own wall, seen once the blocks have fallen: lit windows in the north (`alamp`: their light shows only
+    # then), braziers on the low stone in the south
+    for deg in (31.0, 45.0, 59.0):
+        a = math.radians(deg)
+        x, s_ = sx * math.sin(a), math.cos(a)
+        prop("window", x * (R_OPEN - 0.05), -s_ * (R_OPEN - 0.05), yaw=math.atan2(-x, -s_))
+        A.mark("alamp", *P(x * (R_OPEN - 0.5), -s_ * (R_OPEN - 0.5)), 4.2)
+        ob = prop("brazier", x * (R_OPEN + 2.2), s_ * (R_OPEN + 2.2))
         ob.data.transform(Matrix.Translation((0, 0, LOW)))
-        A.mark("lamp", *P(sx * (W + 2.2), s_), LOW + 1.3)
+        A.mark("lamp", *P(x * (R_OPEN + 2.2), s_ * (R_OPEN + 2.2)), LOW + 1.3)
+    for deg in (38.0, 52.0):
+        a = math.radians(deg)
+        x, s_ = sx * math.sin(a), math.cos(a)
+        prop("pilaster", x * (R_OPEN - 0.2), -s_ * (R_OPEN - 0.2), yaw=math.atan2(-x, -s_))
+
+# small stones on the court's floor where the blocks stood: no cover, only what a fallen wall leaves
+for sx, ss in QUADS:
+    for _ in range(16):
+        u, v = rr.uniform(1.0, 20.0), rr.uniform(1.0, 20.0)
+        if math.hypot(W + u, W + v) > R_OPEN - 1.2:
+            continue
+        gx, gz = P(sx * (W + u), ss * (W + v))
+        if any(math.hypot(gx - (o["ax"] + o["bx"]) / 2, gz - (o["az"] + o["bz"]) / 2) < 2.6 for o in (A.obstacles[k] for k in RUBBLE)):
+            continue
+        A.put(rr.choice(("peb0", "peb1", "peb2")), gx, gz, yaw=rr.uniform(0, TAU), scale=rr.uniform(0.7, 1.2))
+
+A.extra = {"court": round(R_OPEN, 3), "opens": OPENS, "rubble": RUBBLE, "falls": FALLS}
 
 A.finish()
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []

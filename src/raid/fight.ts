@@ -108,7 +108,7 @@ export class BossFight {
 
   constructor(def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null, setup: TwinSetup | null = null) {
     this.def = def;
-    const extra = { flash: (color: string, strength: number) => hud.flash(color, strength), guard: (s: number) => this.guard(s) };
+    const extra = { flash: (color: string, strength: number) => hud.flash(color, strength), guard: (s: number) => this.guard(s), label: (text: string) => hud.relabel(text) };
     if (def.twin && setup) {
       // Twin Flames: a script for each of the two. The one for the boss across the wall is a ghost here (src/raid/twin.ts).
       const defs = def.twin.pair(), mine = def.twin.which;

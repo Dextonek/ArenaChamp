@@ -102,6 +102,7 @@ class Arena:
         self.templates = {}
         self.obstacles = []
         self.marks = []
+        self.extra = {}       # more for the json, beside the obstacles and the marks (a room that changes: what falls, what goes)
         self.groups = {}      # group name -> [objects]
         self.group = None
         self.store = bpy.data.collections.new("library")   # templates and sources: not exported
@@ -341,7 +342,7 @@ class Arena:
                                   export_draco_mesh_compression_enable=False, export_meshopt_compression_enable=True, export_vertex_color="NONE")
         os.makedirs(os.path.join(REPO, "src", "arenas", "real"), exist_ok=True)
         with open(os.path.join(REPO, "src", "arenas", "real", f"{self.name}.json"), "w", newline="\n") as f:
-            json.dump({"obstacles": self.obstacles, "marks": self.marks}, f, indent=1)
+            json.dump({"obstacles": self.obstacles, "marks": self.marks, **self.extra}, f, indent=1)
             f.write("\n")
         tris = sum(len(p.vertices) - 2 for o in out for p in o.data.polygons)
         mats = {m.name for o in out for m in o.data.materials}

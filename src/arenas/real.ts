@@ -24,6 +24,8 @@ export interface RealProps {
   /** One object per obstacle, in the obstacle list's order (null where the file has none). */
   cover: (THREE.Object3D | null)[];
   back: THREE.Object3D | null;
+  /** The file's other objects that were asked for by name (a room that changes: the pieces that fall), null where the file has none. */
+  named: Record<string, THREE.Object3D | null>;
 }
 
 /** How a file's materials are fitted to the arena's light (the scans are photographed in daylight). */
@@ -72,10 +74,10 @@ function loadFile(id: string, tune: RealTune) {
 }
 
 /** The arena's props, a fresh copy of the objects (see the note on sharing above). */
-export function realProps(id: string, covers: number, tune: RealTune = {}): Promise<RealProps> {
+export function realProps(id: string, covers: number, tune: RealTune = {}, names: readonly string[] = []): Promise<RealProps> {
   return loadFile(id, tune).then((scene) => {
     const copy = (name: string) => scene.getObjectByName(name)?.clone(true) ?? null;
-    return { cover: Array.from({ length: covers }, (_, i) => copy(`cover${i}`)), back: copy('back') };
+    return { cover: Array.from({ length: covers }, (_, i) => copy(`cover${i}`)), back: copy('back'), named: Object.fromEntries(names.map((n) => [n, copy(n)])) };
   });
 }
 

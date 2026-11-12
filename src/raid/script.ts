@@ -81,7 +81,7 @@ export class BossScript {
   readonly show: ShowFx;
   private ctx: PlayContext;
 
-  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash' | 'guard'>, tier = 1) {
+  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash' | 'guard'> & Partial<Pick<PlayContext, 'label'>>, tier = 1) {
     this.show = new ShowFx(world.camera);
     this.group.add(this.sparks.points, this.glows.group, this.show.group);
     const pace = raidTierFactor(tier);
@@ -127,6 +127,7 @@ export class BossScript {
       show: this.show,
       shake: (amount) => world.shake(amount),
       breakCover: (index, dir) => world.breakCover(index, dir),
+      label: extra.label ?? (() => {}),
     };
   }
 
@@ -300,7 +301,7 @@ export class BossScript {
     const inside = !this.world.down() && this.inThreat(th, t, me.x, me.z);
     if (th.kind === 'stand') {
       th.inside = inside;
-      if (inside) this.ateSun?.();
+      if (inside && !th.tally) this.ateSun?.();
       // A fallen hero's screen has nothing to report: the hub counts the heroes standing.
       if (!this.world.down()) this.link.stood(a.cast.id, th.part ?? 0, inside);
       return;
@@ -368,6 +369,12 @@ export class BossScript {
         this.world.say('CROWDED', '#ffb050', this.world.me().x, this.world.me().z);
         hit((th.share * (count - th.most)) / count);
       }
+      return;
+    }
+    // A zone that is only counted: its move says what the count means, and what the whole party pays for it.
+    if (th.tally) {
+      const cost = th.tally(count);
+      if (cost) hit(cost);
       return;
     }
     if (count <= 0) {

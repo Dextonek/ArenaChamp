@@ -1070,6 +1070,382 @@
         check('the hall: and still hits inside that', take(() => cast('eclipse', { step: 1 }), 1.8), 0.15);
       }
 
+      // The party's fight in the hall (src/raid/wardenHall.ts): the hall breaks open, the sun comes down, and what comes only for a
+      // big party: Branded (10), Carry the Sun (20), The Four Hours (40). One hero on a local link stands for the party: what the hub
+      // would say of the others (how many stood in a zone) is fed in by hand, and what the brain reads of them is given to `aim`.
+      {
+        const { HOUR } = await import('/src/raid/sunWarden.ts');
+        const { BREACH, SUNFIRE, BRAND, CARRY, FOUR, HUNT_S, fireRadius, hallFight } = await import('/src/raid/wardenHall.ts');
+        const H = await import('/src/arenas/sunhall.ts');
+        const hall = (band = 5, mode = 'play') => {
+          d.startBoss({ def, link: new LocalLink(def, 1), seed: 'party', mode, band });
+          d.boss.brain.pause = 1e9;
+          a.placeFoe(d.foe, new THREE_V(0, 0, 3));
+          step(0.05);
+        };
+        const watch = () => {
+          const seen = [], on = d.boss.link.on;
+          d.boss.link.on = { ...on, cast: (c) => { seen.push(c); on.cast(c); } };
+          return seen;
+        };
+        /** A cast as the brain would send it, from where he stands unless it says. */
+        const send = (c) => d.boss.link.cast({ id: ++seq, fx: 0, fz: 3, dir: 0, seed: 55, alone: false, target: 0, step: 0, x: 0, z: 0, ...c });
+        const open = (band = 5, mode = 'play') => { hall(band, mode); send({ move: 'breach' }); step(BREACH.warn + 0.4); };
+        const active = (move) => d.boss.script.active.filter((x) => x.cast.move === move);
+        const lists = (band) => {
+          hall(band);
+          return [0, 1, 2, 3].map((ph) => { d.boss.brain.phase = ph; return d.boss.brain.listOf(true); });
+        };
+        const has = (ls, id) => ls.some((l) => l.includes(id));
+        const sees = (x1, z1, x2, z2) => a.lineOfSight(new THREE_V(x1, 0, z1), new THREE_V(x2, 0, z2));
+        const fromWell = (p) => Math.hypot(p.x, p.z - 7);
+        const freeOf = (s, room) => a.obstacles.every((o) => {
+          const dx = o.bx - o.ax, dz = o.bz - o.az, l = dx * dx + dz * dz, t = l ? Math.min(1, Math.max(0, ((s.x - o.ax) * dx + (s.z - o.az) * dz) / l)) : 0;
+          return Math.hypot(s.x - o.ax - dx * t, s.z - o.az - dz * t) - o.r >= room;
+        });
+        /** What the brain gives `aim`: he at (0, 3), `heroes` standing, the first of them his target. */
+        const ctx = (heroes, stepN, seed) => ({ boss: { x: 0, z: 3 }, ring: { x: 0, z: 3 }, target: heroes[0], step: stepN, seed, heroes });
+        const crowd = (n) => Array.from({ length: n }, (_, i) => ({ side: i, x: (i % 8) * 2 - 7, z: 12 + Math.floor(i / 8) * 2 }));
+        /** The fight's clock runs on to `t` seconds after cast `c`. */
+        const until = (c, t) => { while (d.boss.script.clock - c.began < t) step(0.1); };
+
+        // Which party sees what.
+        const GREAT = ['strikes', 'carry', 'four'];
+        let ls = lists(5);
+        yes('band 5: none of Branded, Carry the Sun, The Four Hours in his lists', !has(ls, 'brand') && !has(ls, 'carry') && !has(ls, 'four') && has(ls, 'noon'));
+        yes('band 5: High Noon opens with Gathering Noon', def.phases[1].opener === 'noon');
+        ls = lists(10);
+        yes('band 10: Branded from High Noon on, and neither of the others', !ls[0].includes('brand') && ls[1].includes('brand') && ls[3].includes('brand') && !has(ls, 'carry') && !has(ls, 'four'));
+        ls = lists(20);
+        yes('band 20: Carry the Sun stands where Gathering Noon did, and opens High Noon', has(ls, 'brand') && !has(ls, 'noon') && !has(ls, 'four') && def.phases[1].opener === 'carry');
+        yes('band 40: Carry the Sun opens High Noon', lists(40) && def.phases[1].opener === 'carry');
+        // His great mechanics take turns, with a breath after each: which of them is in his list as each begins and ends.
+        const turns = (band, n) => {
+          hall(band);
+          const next = () => { d.boss.brain.phase = 1; return d.boss.brain.listOf(true).filter((id) => GREAT.includes(id)).join('+'); };
+          const out = [next()];
+          for (let i = 0; i < n; i++) {
+            const id = out[out.length - 1];
+            def.moves[id].aim(ctx(crowd(band), 0, 1));
+            step(def.moves[id].charge + 8);
+            if (i === 0) out.push(`(${next()})`);
+            step(9);
+            out.push(next());
+          }
+          return out.join(' ');
+        };
+        yes('band 5: the hour is his one great mechanic, with a breath after it', turns(5, 2) === 'strikes () strikes strikes');
+        yes('band 20: the hour and Carry the Sun take turns', turns(20, 3) === 'strikes () carry strikes carry');
+        yes('band 40: the hour, Carry the Sun, the hour, The Four Hours', turns(40, 4) === 'strikes () carry strikes four strikes');
+        fresh(0, 1);
+        yes('the court for two: none of the party\'s moves in a phase, no clock, his walk as it was',
+          def.phases.every((ph) => !ph.timed && !['brand', 'carry', 'four', 'breach', 'sunfall'].some((id) => ph.moves.includes(id))) && def.speed === 2 && def.keepAt === 4.5);
+        yes('every move\'s name passes the hub', Object.keys(def.moves).every((id) => /^[a-z]{1,16}$/.test(id)));
+        hall(5);
+        {
+          const seen = watch();
+          d.boss.link.on.phase(1);
+          d.boss.brain.pause = 0;
+          for (let i = 0; i < 45; i++) { d.playerHp = d.playerMax; step(1); }
+          yes('band 5: 45 s of High Noon, and none of the three', seen.length > 5 && !seen.some((c) => ['brand', 'carry', 'four'].includes(c.move)));
+        }
+        hall(40);
+        {
+          const seen = watch();
+          d.boss.link.on.phase(1);
+          d.boss.brain.pause = 0;
+          for (let i = 0; i < 150 && !['brand', 'carry', 'four'].every((id) => seen.some((c) => c.move === id)); i++) { d.playerHp = d.playerMax; step(1); }
+          yes('band 40: he opens High Noon with Carry the Sun, brands, and calls The Four Hours', seen.find((c) => c.step === 0 && !['brand'].includes(c.move))?.move === 'carry' && seen.some((c) => c.move === 'brand') && seen.some((c) => c.move === 'four'));
+          // The hub passes a cast on field by field (server/hub.mjs, `boss_cast`): anything else would not arrive.
+          const HUB = ['id', 'move', 'step', 'x', 'z', 'fx', 'fz', 'dir', 'seed', 'target', 'alone', 'rim', 'form', 'flag', 'which'];
+          yes('every cast he sent has only what the hub passes on', seen.every((c) => Object.keys(c).every((k) => HUB.includes(k)) && [c.id, c.step, c.x, c.z, c.fx, c.fz, c.dir, c.seed, c.target].every(Number.isFinite)));
+          const brandCast = seen.find((c) => c.move === 'brand' && c.step === 0), me = a.caster.group.position;
+          yes('Branded: alone, the brain brands the one hero standing, where it stands', brandCast.target === 0 && !brandCast.flag && Math.hypot(brandCast.x - me.x, brandCast.z - me.z) < 12);
+        }
+
+        // The hall breaks open.
+        hall(5);
+        const n0 = a.obstacles.length;
+        yes('the hall whole: the stone between the nave and a transept is no floor, and hides', !H.inHall(20, 27) && !sees(12, 27, 20, 19) && !H.hallBreak.open);
+        place(12, 27);
+        check('the hall breaks: a hero by a wall that goes is struck', take(() => send({ move: 'breach' }), BREACH.warn + 0.4), BREACH.share);
+        yes('the hall breaks: it is the round court', H.hallBreak.open && H.inHall(20, 27) && !H.inHall(27, 34));
+        check('the hall breaks: the walls between the arms are out of the game', n0 - a.obstacles.length, H.HALL_OPENS.length, 0);
+        yes('the hall breaks: a look goes from the nave into the transept', sees(12, 27, 20, 19));
+        yes('the hall breaks: its rubble stands as cover', H.HALL_RUBBLE.length === 24 && H.HALL_RUBBLE.every((i) => a.obstacles.includes(def.place.obstacles[i])));
+        yes('the hall breaks: the court has a wall of its own', !sees(15, 37, 20, 47));
+        yes('the round court: an arm is its quarter', H.inArm(0, 20, 32) && !H.inArm(1, 20, 32) && H.inArm(1, 32, 20) && !H.inArm(0, 5, 15));
+        check('the round court: a spot in the stone is pulled in to its wall', fromWell(H.intoHall(37, 44, 1)), H.HALL_COURT - 1, 0.01);
+        check('the round court: his aim stays inside its wall', fromWell(def.moves.pillars.aim({ boss: { x: 0, z: 3 }, ring: { x: 0, z: 3 }, target: { x: 30, z: 37 }, step: 0, seed: 1 })), H.HALL_COURT - 1.8, 0.01);
+        hall(5);
+        place(0, 27);
+        check('the hall breaks: in the middle of the nave nothing lands', take(() => send({ move: 'breach' }), BREACH.warn + 0.4), 0);
+        hall(5, 'run');
+        place(12, 27);
+        d.playerHp = d.playerMax;
+        send({ move: 'breach' });
+        step(BREACH.warn + 0.4);
+        yes('the hall breaks: the autopilot walked away from the wall', lost(d.playerMax) === 0 && a.caster.group.position.x < 13 - BREACH.reach);
+        for (const [name, x, z, want] of [['in the safe quarter, where the stone stood', 20, 32, 0], ['in another quarter', 32, 20, HOUR.share], ['in the crossing', 3, 14, HOUR.share]]) {
+          open();
+          place(x, z);
+          check(`hour in the round court: ${name}`, take(() => send({ move: 'strikes', seed: 0 }), HOUR.seconds + 0.4), want);
+        }
+        hall(5);
+        {
+          const seen = watch();
+          d.boss.link.on.phase(2);
+          d.boss.brain.pause = 0;
+          step(0.2);
+          yes('The Long Hour: the hall begins to break at once', seen.some((c) => c.move === 'breach'));
+          for (let i = 0; i < 8; i++) { d.playerHp = d.playerMax; step(1); }
+          yes('The Long Hour: it breaks open while his stage runs', H.hallBreak.open && seen.some((c) => c.move === 'hour'));
+        }
+        hall(5);
+        {
+          const seen = watch();
+          d.boss.link.on.phase(2);
+          d.boss.link.on.phase(3);
+          d.boss.brain.pause = 0;
+          for (let i = 0; i < 6; i++) { d.playerHp = d.playerMax; step(1); }
+          yes('one hit through two phases: Last Light breaks the hall itself', H.hallBreak.open && seen.some((c) => c.move === 'sunfall') && !seen.some((c) => c.move === 'breach') && hallFight.fire > 0);
+        }
+        hall(5);
+        yes('a new fight: the hall is whole again, and nothing burns', !H.hallBreak.open && hallFight.fire === 0 && a.obstacles.length === n0);
+
+        // The sun comes down.
+        open();
+        place(3, 10);
+        check('sunfire: it burns where it wells up', take(() => send({ move: 'sunfall' }), SUNFIRE.warn + 0.5), SUNFIRE.share);
+        check('sunfire: and each second after', take(() => {}, 3), SUNFIRE.share * 3);
+        place(10, 7);
+        check('sunfire: 4 m past its edge, nothing yet', take(() => {}, 5), 0);
+        check('sunfire: its edge is where its clock says', hallFight.fire, fireRadius(SUNFIRE.warn + 8.5), 0.03);
+        for (let i = 0; i < 40; i++) { d.playerHp = d.playerMax; step(1); }
+        yes('sunfire: 40 s on it has grown past that spot', take(() => {}, 2) >= SUNFIRE.share - 0.001);
+        yes('sunfire: it grows for two and a half minutes, and stops 12 m short of the court\'s wall', fireRadius(SUNFIRE.warn + 150) === SUNFIRE.to && fireRadius(1e5) === SUNFIRE.to && H.HALL_COURT - SUNFIRE.to > 12);
+        yes('sunfire: he comes out of it to the party, faster and closer', def.speed === 3 && def.keepAt === 2.2);
+        cast('noon');
+        step(0.1);
+        {
+          const o = active('noon')[0].played.objectives, r = hallFight.fire;
+          yes('sunfire: Gathering Noon\'s shard falls past it, and is brought to its edge', fromWell(o[0]) >= r + 5 && H.inHall(o[0].x, o[0].z, 1) && o[1].radius > r + 2);
+        }
+        a.placeFoe(d.foe, new THREE_V(4, 0, 7 + hallFight.fire + 6));
+        send({ move: 'anchors', fx: 4, fz: 7 + hallFight.fire + 6, seed: 3 });
+        step(0.1);
+        {
+          const s = active('anchors')[0].played.threats[0].shape, r = hallFight.fire;
+          yes('sunfire: the circle of Anchors lies by him, clear of the fire and of cover', fromWell(s) >= r + 3.9 && Math.hypot(s.x - 4, s.z - (7 + r + 6)) < 12 && H.inHall(s.x, s.z, 2) && freeOf(s, 2));
+        }
+        open(5, 'run');
+        place(2, 15);
+        send({ move: 'sunfall' });
+        d.boss.brain.pause = 0;
+        for (let i = 0; i < 60; i++) { d.playerHp = d.playerMax; step(1); }
+        yes('sunfire: the autopilot keeps out of it as it grows', fromWell(a.caster.group.position) > hallFight.fire && (d.boss.stats.hits.sunfall ?? 0) <= 8);
+
+        // Branded.
+        hall(10);
+        {
+          const hs = crowd(40), marks = [0, 1, 2, 3, 4].map((k) => def.moves.brand.aim(ctx(hs, k, 99)));
+          yes('Branded: 40 standing, five of them, each once', marks.every((m) => !m.flag && m.target !== undefined) && new Set(marks.map((m) => m.target)).size === 5);
+          yes('Branded: the sun is over the hero the brain named', marks.every((m) => m.x === hs[m.target].x && m.z === hs[m.target].z));
+          const moved = hs.map((h) => ({ ...h, x: h.x + 20 })), bursts = [5, 6, 7, 8, 9].map((k) => def.moves.brand.aim(ctx(moved, k, 99)));
+          yes('Branded: it bursts where each of them stands five seconds on', bursts.every((b, k) => b.target === marks[k].target && b.x === moved[b.target].x));
+          const few = crowd(10), m10 = [0, 1, 2].map((k) => def.moves.brand.aim(ctx(few, k, 7)));
+          yes('Branded: 10 standing, one of them', !m10[0].flag && m10[1].flag === true && m10[2].flag === true);
+          yes('Branded: a branded hero that fell bursts nowhere', def.moves.brand.aim(ctx(few.filter((h) => h.side !== m10[0].target), 5, 7)).flag === true);
+        }
+        place(0, 20);
+        send({ move: 'brand', step: 0, x: 0, z: 20, target: 0 });
+        step(0.2);
+        yes('Branded: the branded hero\'s own ring is no zone to it', active('brand')[0].played.threats.length === 0);
+        check('Branded: its own burst costs it the light hit', take(() => send({ move: 'brand', step: 5, x: 0, z: 20, target: 0 }), 1), BRAND.light);
+        check('Branded: another\'s burst costs the heavy one', take(() => send({ move: 'brand', step: 5, x: 2, z: 20, target: 7 }), 1), BRAND.heavy);
+        place(0, 20 + BRAND.radius + 1.5);
+        check('Branded: out of its circle, nothing', take(() => send({ move: 'brand', step: 6, x: 0, z: 20, target: 7 }), 1), 0);
+        send({ move: 'brand', step: 1, x: 0, z: 20, target: 7 });
+        step(0.2);
+        yes('Branded: another\'s ring is a zone an AI walks out of', d.boss.script.danger(0, 20, 0.4) && !d.boss.script.danger(0, 20 + BRAND.radius + 1.5, 0.4));
+        check('Branded: but the ring itself never lands', take(() => { place(0, 20); }, BRAND.seconds + 2), 0);
+        {
+          // What the hub says of the others: the hero stands clear, and is told how many stood in the burst.
+          d.boss.link.stood = () => {};
+          place(0, 40);
+          d.playerHp = d.playerMax;
+          send({ move: 'brand', step: 5, x: 0, z: 20, target: 7 });
+          step(0.6);
+          d.boss.link.on.stood(seq, 0, 4);
+          check('Branded: a burst that caught three others costs everyone', lost(d.playerMax), Math.min(BRAND.crowdMost, BRAND.crowd * 3));
+          d.playerHp = d.playerMax;
+          send({ move: 'brand', step: 5, x: 0, z: 20, target: 7 });
+          step(0.6);
+          d.boss.link.on.stood(seq, 0, 2);
+          check('Branded: one other caught is that hero\'s own to bear', lost(d.playerMax), 0);
+        }
+
+        // Carry the Sun.
+        hall(20);
+        {
+          const shards = (n) => def.moves.carry.aim(ctx(crowd(n), 0, 1)).x;
+          yes('Carry the Sun: a shard for every five standing, eight at most', shards(40) === 8 && shards(20) === 4 && shards(12) === 2 && shards(3) === 1);
+        }
+        const carryCast = (x, seed = 31) => { send({ move: 'carry', x, seed }); step(0.1); return active('carry')[0]; };
+        for (const [name, opened] of [['the hall whole', false], ['the round court', true]]) {
+          if (opened) open(20); else hall(20);
+          const o = carryCast(8).played.objectives, spots = o.slice(0, 8);
+          yes(`Carry the Sun, ${name}: eight shards on open floor, far out`, o.length === 48 && spots.every((s) => H.inHall(s.x, s.z, 1.5) && freeOf(s, 1.2) && fromWell(s) > 22));
+          yes(`Carry the Sun, ${name}: no two shards on one spot`, spots.every((s, i) => spots.every((t, j) => i === j || Math.hypot(s.x - t.x, s.z - t.z) > 5)));
+        }
+        hall(20);
+        place(0, 12);
+        {
+          const c4 = carryCast(4), o = c4.played.objectives, noon = c4.played.threats[0];
+          check('Carry the Sun: no shard home, Noon costs everyone this', noon.share, CARRY.base + CARRY.miss, 0.001);
+          check('Carry the Sun: Noon lands when his bar is full', noon.at, CARRY.seconds, 0.001);
+          check('Carry the Sun: his cast bar is its clock', d.boss.hud.castLen, CARRY.seconds, 0.001);
+          place(o[0].x, o[0].z);
+          step(0.1);
+          yes('Carry the Sun: walking over a shard, the hero carries it', hallFight.carriers.has(0) && o[0].done === true && hallFight.carrying === 1);
+          place(0, 9);
+          step(0.1);
+          yes('Carry the Sun: at the Sun Well it is home, and the cast bar says so', !hallFight.carriers.has(0) && d.boss.hud.castText.textContent.includes('1 of 4'));
+          check('Carry the Sun: one of four home, Noon costs less', noon.share, CARRY.base + CARRY.miss * 0.75, 0.001);
+          d.playerHp = d.playerMax;
+          until(c4, CARRY.seconds + 0.5);
+          check('Carry the Sun: and that is what it took', lost(d.playerMax), CARRY.base + CARRY.miss * 0.75);
+          yes('Carry the Sun: (the hero stood, and nobody carries after)', d.playerHp > 0 && hallFight.carrying === 0 && hallFight.carriers.size === 0);
+        }
+        hall(20);
+        place(0, 12);
+        {
+          const c1 = carryCast(1), o = c1.played.objectives;
+          place(o[0].x, o[0].z);
+          step(0.1);
+          place(0, 9);
+          step(0.2);
+          yes('Carry the Sun: every shard home, he kneels', d.boss.stats.kneels === 1 && [...d.boss.link.paid].some((k) => k.endsWith(':carry')));
+          d.playerHp = d.playerMax;
+          step(CARRY.seconds + 1);
+          check('Carry the Sun: and there is no Noon', lost(d.playerMax), 0);
+        }
+        open(20);
+        send({ move: 'sunfall' });
+        place(0, 40);
+        step(SUNFIRE.warn + 1);
+        {
+          const o = carryCast(1).played.objectives;
+          place(o[0].x, o[0].z);
+          step(0.1);
+          place(0, 7 + hallFight.fire + 1);
+          step(0.2);
+          yes('Carry the Sun in the sunfire: a shard is home at the fire\'s edge', d.boss.stats.kneels === 1 && fromWell(o[0]) > hallFight.fire + 10);
+        }
+        hall(20);
+        {
+          hallFight.carriers.add(1);
+          const hs = [{ side: 1, x: 0, z: 33 }, { side: 2, x: 0.5, z: 20 }, { side: 3, x: 6, z: 25 }];
+          const r = def.moves.ray.aim(ctx(hs, 0, 1));
+          yes('Carry the Sun: a hero in the ray\'s way takes it for the carrier (the brain flags the cast)', r.flag === true && r.x === 0.5 && r.z === 20);
+          const none = def.moves.ray.aim(ctx(hs.filter((h) => h.side !== 2), 0, 1));
+          yes('Carry the Sun: nobody in its way, it goes for the carrier', !none.flag && none.z === 33);
+          hallFight.carriers.clear();
+          yes('nobody carries: his ray is as it was', !def.moves.ray.aim(ctx(hs, 0, 1)).flag);
+        }
+        a.placeFoe(d.foe, new THREE_V(0, 0, 10));
+        place(0, 33);
+        check('Carry the Sun: behind the hero who shields, the carrier is not hit', take(() => send({ move: 'ray', fz: 10, x: 0.5, z: 20, target: 1, flag: true }), 2.8), 0);
+        place(0.3, 19.5);
+        check('Carry the Sun: the hero who shields takes the ray', take(() => send({ move: 'ray', fz: 10, x: 0.5, z: 20, target: 1, flag: true }), 2.8), 0.22);
+
+        // Whom he goes for (`BossDef.choose`). The brain asks it only with more than one screen, so it is asked here by hand: four
+        // heroes, two in the nave, one in each transept, nobody in the choir; `when` says he aimed at the lower seats longer ago.
+        hall(20);
+        {
+          const hs = [{ side: 0, x: 0, z: 30 }, { side: 1, x: 2, z: 31 }, { side: 2, x: 25, z: 7 }, { side: 3, x: -24, z: 8 }];
+          const ask = (time) => def.choose({ heroes: hs, boss: { x: 0, z: 3 }, time, when: (side) => side });
+          const quarter = (side) => H.quarterOf(hs[side].x, hs[side].z);
+          yes('whom he goes for: no fire and nobody carrying, it is the brain to say', ask(0) === undefined);
+          hallFight.carriers.add(3);
+          yes('whom he goes for: whoever carries a shard', ask(0) === 3);
+          hallFight.carriers.add(2);
+          yes('whom he goes for: of two carriers, the one he aimed at longer ago', ask(0) === 2);
+          hallFight.carriers.clear();
+          hallFight.fire = 12;
+          const first = ask(100);
+          yes('in the sunfire he hunts one quarter of the court', first === 2 && quarter(first) === 1);
+          yes('in the sunfire: and stays with it', [101, 105, 100 + HUNT_S - 1].every((t) => ask(t) === first));
+          const next = ask(100 + HUNT_S + 0.5);
+          yes('in the sunfire: then on to the next quarter with someone in it, past the empty one', next === 3 && quarter(next) === 3);
+          yes('in the sunfire: and round to the nave, to the one he aimed at longer ago', ask(100 + 2 * HUNT_S + 1) === 0);
+          hallFight.fire = 0;
+        }
+        fresh(0, 1);
+        yes('the court for two: whom he goes for is the brain\'s to say, whatever burns', def.choose({ heroes: [{ side: 0, x: 0, z: 10 }, { side: 1, x: 3, z: 10 }], boss: { x: 0, z: 3 }, time: 0, when: () => 0 }) === undefined);
+
+        // The Four Hours.
+        hall(40);
+        yes('The Four Hours: the brain counts those standing', def.moves.four.aim(ctx(crowd(37), 0, 1)).x === 37);
+        const fourCast = (x = 40, seed = 8) => { send({ move: 'four', x, seed }); step(0.1); return active('four')[0]; };
+        const open4 = () => (d.boss.hud.castText.textContent.split('·')[1] ?? '').trim().split(' ').filter((w) => ['NAVE', 'EAST', 'CHOIR', 'WEST'].includes(w));
+        const circles = (f) => f.played.threats.filter((t) => t.kind === 'stand' && t.shape.kind === 'circle');
+        place(0, 12);
+        {
+          const f = fourCast(), th = f.played.threats;
+          yes('The Four Hours: three gold circles, two burning lanes, a gold lane, three stones, two shards',
+            circles(f).length === 3 && th.filter((t) => t.kind !== 'stand' && t.shape.kind === 'line').length === 2 && th.filter((t) => t.kind === 'stand' && t.shape.kind === 'line').length === 1
+            && a.summons.alive('opponent').length === 3 && f.played.objectives.filter((o) => o.part < 10).length === 2);
+          yes('The Four Hours: everything it asks lies on open floor', [...circles(f).map((t) => t.shape), ...f.played.objectives.filter((o) => o.part < 40)].every((s) => H.inHall(s.x, s.z, 1.5) && freeOf(s, 1.2)));
+          yes('The Four Hours: his cast bar names the four arms', open4().length === 4);
+          check('The Four Hours: nothing done, the hall burns for all four', take(() => {}, FOUR.seconds + 0.5), FOUR.fail * 4);
+          yes('The Four Hours: his stones are gone after', a.summons.alive('opponent').length === 0);
+        }
+        hall(40);
+        place(0, 12);
+        {
+          const L = d.boss.link;
+          L.stood = () => {};
+          const f = fourCast(), id = f.cast.id;
+          until(f, FOUR.seconds - FOUR.settle + 0.3);
+          for (const t of circles(f)) L.on.stood(id, t.part, 1);
+          yes('The Four Hours: every gold circle held, that arm is done', open4().length === 3 && [...L.paid].includes(`${id}:fourb`));
+          check('The Four Hours: an arm done pays a quarter of his gauge', L.gauge, 25, 0.001);
+          L.on.stood(id, 30, 4);
+          yes('The Four Hours: four in the gold lane where five must stand, and it is not done', open4().length === 3);
+          d.playerHp = d.playerMax;
+          until(f, FOUR.seconds + 0.5);
+          check('The Four Hours: one arm done, the hall burns for three', lost(d.playerMax), FOUR.fail * 3);
+        }
+        hall(40);
+        place(0, 12);
+        {
+          const L = d.boss.link;
+          L.stood = () => {};
+          // Twenty standing: five an arm, so one shard, two circles, three in the lane.
+          const f = fourCast(20), id = f.cast.id, o = f.played.objectives, rings = circles(f);
+          yes('The Four Hours: twenty standing, it asks less of each arm', rings.length === 2 && o.filter((x) => x.part < 10).length === 1);
+          for (const u of a.summons.alive('opponent')) a.hit(u.figure, { damage: 1e6, knock: 0 });
+          step(0.2);
+          yes('The Four Hours: his three stones broken, that arm is done', [...L.paid].includes(`${id}:fourc`));
+          const shard = o.find((x) => x.part < 10);
+          place(shard.x, shard.z);
+          step(0.1);
+          place(0, 9);
+          step(0.2);
+          yes('The Four Hours: its shard home, that arm is done', [...L.paid].includes(`${id}:foura`) && open4().length === 2);
+          place(0, 12);
+          until(f, FOUR.seconds - FOUR.settle + 0.3);
+          for (const t of rings) L.on.stood(id, t.part, 1);
+          L.on.stood(id, 30, 3);
+          yes('The Four Hours: all four done, and he kneels', d.boss.stats.kneels === 1 && d.boss.hud.castText.textContent.includes('all done') && [...L.paid].filter((k) => k.startsWith(`${id}:four`)).length === 4);
+          d.playerHp = d.playerMax;
+          step(FOUR.settle + 1);
+          check('The Four Hours: and the hall does not burn', lost(d.playerMax), 0);
+          yes('The Four Hours: (nobody carries after)', hallFight.carrying === 0 && hallFight.carriers.size === 0);
+        }
+      }
+
       // Phases: HP thresholds; the end of the fight.
       fresh(0, 2);
       // Small hits down to a share: one big hit (with the hero's own power on it) could pass two marks at once.
