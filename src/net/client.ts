@@ -37,8 +37,39 @@ export interface Profile {
   favourite: string | null;
   heroes: Record<string, HeroStats>;
   history: MatchRecord[];
-  /** Runs apart from the duel record: how many, how many cleared, and the best: most bosses beaten, its tier and time (s). */
-  raids?: { played: number; cleared: number; bosses?: number; tier?: number; best: number };
+  /**
+   * Runs apart from the duel record: how many, how many cleared, and the best: most bosses beaten, its tier and time (s).
+   * `others`: the most bosses beaten in one run with others, which the raid rank comes from.
+   */
+  raids?: { played: number; cleared: number; bosses?: number; tier?: number; best: number; others?: number };
+  // The hero shop (pipeline/designs/hero-shop.md), since PROTOCOL 11.
+  /** The shop's currency, earned by playing online. */
+  obols?: number;
+  /** The heroes the account owns for good: the starters, what it bought, a founder's first roster. Every hero while the shop is off. */
+  owned?: string[];
+  /** An account from before the shop: it owns the heroes there were then. */
+  founder?: boolean;
+  /** The raid rank's id (`RAID_RANKS`), or null for none. */
+  rank?: string | null;
+  /** The highest floor of a week's Tower this account's page reported (not verified by the server). */
+  tower?: { week: string; floor: number; hero: string } | null;
+}
+
+/** One run on the week's raid board: bosses beaten with others, the run's time then (s), its tier, the party. */
+export interface RaidRow {
+  bosses: number;
+  tier: number;
+  seconds: number;
+  names: string[];
+  at: string;
+}
+
+/** One player on the week's Tower board: the highest floor their own page reported. Not verified by the server. */
+export interface TowerRow {
+  name: string;
+  floor: number;
+  hero: string;
+  at: string;
 }
 
 /** What a round's loser chose: a hero swap or the next arena. */
@@ -52,7 +83,8 @@ export interface LobbyState {
   code: string;
   /** A raid room: the boss's id. */
   raid?: string | null;
-  seats: { name: string; hero: string | null; ready: boolean }[];
+  /** `rank`: in a raid room, the player's raid rank (an id of `RAID_RANKS`) or null. */
+  seats: { name: string; hero: string | null; ready: boolean; rank?: string | null }[];
   /** A raid room listed for everyone (`lobby_create { raid, open: true }`). Since PROTOCOL 8, as the next three. */
   open?: boolean;
   /** How many seats the room has: 2 for a duel, `RAID_PARTY_MAX` for a raid. */
@@ -72,6 +104,8 @@ export interface RaidRoom {
   max: number;
   /** The boss's id. */
   raid: string;
+  /** The host's raid rank, or null. */
+  rank?: string | null;
 }
 
 /** One player of a raid's party: `side` is the seat it started in, and names it in every message to the end of the run. */
@@ -94,6 +128,14 @@ export type ServerMsg =
   | { t: 'update_required'; error: string }
   | { t: 'logged_out'; reason: string }
   | { t: 'profile'; profile: Profile }
+  // The hero shop. To every connection as it opens, and again with a session and a profile: whether heroes are locked, the
+  // week's name, when the next begins (ms) and the week's free heroes.
+  | { t: 'shop'; on: boolean; week: string; next: number; free: string[] }
+  | { t: 'shop_bought'; hero: string; price: number; profile: Profile }
+  // Obols were earned: how many, the account's new total, and what for.
+  | { t: 'obols'; earned: number; total: number; why: { what: string; n: number }[] }
+  // The week's boards: the best raid runs with others, and the highest Tower floors as the players' pages reported them.
+  | { t: 'boards'; week: string; raid: RaidRow[]; tower: TowerRow[] }
   | { t: 'error'; error: string }
   | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[]; raids?: RaidRoom[] }
   | { t: 'lobby'; lobby: LobbyState | null; you?: number }
@@ -124,6 +166,8 @@ export type ServerMsg =
   | {
     t: 'match_end'; id: string; result: 'win' | 'loss'; winner: string; reason: string; seconds: number; score?: number[]; hp: number[];
     stats: { casts: number; hits: number; dodges: number }; profile: Profile | null;
+    /** The obols this duel paid the player (0: too short, or the player left it). */
+    earned?: number;
   }
   // `partner` only in a raid for two. `party`: everyone, this player too, by seat. `band`: what the party's size is tuned for.
   | { t: 'raid_start'; id: string; side: number; you: { name: string; hero: string }; partner?: { name: string; hero: string }; party: PartyMember[]; band: number }

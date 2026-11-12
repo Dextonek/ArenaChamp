@@ -8,7 +8,8 @@ import './game.css';
 import { createRuntime, type GameApi } from '../runtime';
 import { targetedModules } from '../spells/targeted';
 import type { HeroKit } from '../heroes';
-import { NetClient, type LobbyState, type Profile } from '../net/client';
+import { NetClient, type LobbyState, type Profile, type RaidRow, type TowerRow } from '../net/client';
+import { HERO_KINDS, HERO_SHOP, RAID_RANKS, SHOP, STARTERS, heroPrice, isoWeek as shopWeek, shopRotation } from '../../server/protocol.mjs';
 import { HeroPreview } from './heroPreview';
 import { LoadingScreen } from './loading';
 import { traitFor } from '../traits';
@@ -25,7 +26,7 @@ import { KIND_NAME, TWISTS, isoWeek, towerFor, untilNext, weekBefore } from '../
 import { heightName } from '../arenas/tower';
 import { CHANGELOG, type NewsItem, type Release } from './changelog';
 
-type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news';
+type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news' | 'shop';
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
@@ -39,7 +40,18 @@ const state = {
   profile: null as Profile | null,
   lobbies: [] as { code: string; host: string; hostHero: string | null }[],
   /** Open raids anyone can join (pipeline/designs/raid-party.md). */
-  raids: [] as { code: string; host: string; count: number; raid: string }[],
+  raids: [] as { code: string; host: string; count: number; raid: string; rank?: string | null }[],
+  /**
+   * The hero shop as the server has it (pipeline/designs/hero-shop.md): whether heroes are locked, the week and its six free
+   * heroes. Until the server says, the game's own answer: on, and this week's rotation by this clock.
+   */
+  shop: { on: true, week: shopWeek().id, next: shopWeek().next, free: shopRotation() },
+  /** The week's boards, once asked for: the best raid runs with others, the highest Tower floors as reported. */
+  boards: null as { week: string; raid: RaidRow[]; tower: TowerRow[] } | null,
+  /** The Shop screen: the kind its cards are filtered by ('' all), the hero whose page is open ('' none), and the one whose Buy waits for a yes. */
+  shopKind: '',
+  shopView: '',
+  shopAsk: '',
   lobby: null as LobbyState | null,
   lobbySeat: 0,
   queue: { on: false, since: 0, size: 0 },
@@ -89,6 +101,41 @@ const portrait = (kit: HeroKit, cls = 'portrait') => {
   return c;
 };
 
+// --- the hero shop: who may play what ----------------------------------------------------------------------
+// The server decides (server/hub.mjs refuses a locked hero at a lobby, the queue and a raid room); the page only draws the
+// locks and prices from the same table (server/protocol.mjs), and keeps a locked hero out of the fights it starts itself.
+
+// A hero without a row in the shop's table could not be played online: say so loudly while building one.
+for (const k of kits) if (!Object.hasOwn(HERO_SHOP, k.name)) console.error(`${k.name} has no row in HERO_SHOP (server/protocol.mjs): it cannot be played online while the shop is on`);
+
+/** The account owns this hero for good (the starters are everyone's). With the shop off, every hero. */
+const ownsHero = (name: string) => !state.shop.on || STARTERS.includes(name) || !!state.profile?.owned?.includes(name);
+/** Not owned, but one of the week's six free heroes. */
+const freeNow = (name: string) => !ownsHero(name) && state.shop.free.includes(name);
+/** The hero may be taken into a fight with others, a raid or the Tower. A locked one can still be tried against the CPU. */
+const playable = (name: string) => ownsHero(name) || state.shop.free.includes(name);
+/** The first hero this player may play: what a choice falls back to. */
+const firstPlayable = (except: (string | null | undefined)[] = []) => kits.find((k) => playable(k.name) && !except.includes(k.name)) ?? kits[0];
+/** What a locked hero is refused with, where a tap cannot take it. */
+const lockedText = (name: string) => `${name} is locked: buy it in the Shop, or try it against the CPU`;
+
+/** An amount of obols with its coin. */
+function obols(n: number, cls = '') {
+  return el('span', { class: `obols${cls ? ` ${cls}` : ''}` }, el('i', { class: 'coin', 'aria-hidden': 'true' }), el('span', {}, n.toLocaleString('en-US')), el('span', { class: 'sr' }, ' obols'));
+}
+
+/** A raid rank's badge (Ember, Ash, Noon, Eclipse), or nothing for no rank. */
+function rankBadge(id: string | null | undefined, cls = '') {
+  const r = RAID_RANKS.find((x) => x.id === id);
+  return r ? el('span', { class: `rank r-${r.id}${cls ? ` ${cls}` : ''}`, title: `Raid rank ${r.name}: ${r.from} or more bosses beaten in one run with others` }, r.name) : null;
+}
+
+/** Days and hours until the week's free heroes change. */
+function untilWeek() {
+  const hours = Math.max(1, Math.ceil((state.shop.next - Date.now()) / 3600000));
+  return hours >= 48 ? `${Math.floor(hours / 24)} days` : hours >= 24 ? '1 day' : `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+}
+
 // --- line icons ----------------------------------------------------------------------------------------------
 
 /** Small line icons (24 x 24, drawn in the text colour) for the tabs, the login's two doors and the empty states. */
@@ -102,6 +149,9 @@ const ICONS = {
   profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
   login: '<path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 8l4 4-4 4M14 12H4"/>',
   news: '<path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v5h5M8.5 12h7M8.5 16h7"/>',
+  // an obol: a coin with a ring and a small mark
+  shop: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><path d="M12 9.6v4.8M10.2 12h3.6"/>',
+  lock: '<rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.2v2.2"/>',
 } as const;
 function icon(name: keyof typeof ICONS) {
   const s = el('span', { class: 'ic', 'aria-hidden': 'true' });
@@ -113,9 +163,10 @@ function icon(name: keyof typeof ICONS) {
 
 /** The picker's choice that stands for "any hero": it becomes a real hero when the match or fight starts. */
 const RANDOM = 'random';
+/** A random hero among those this player may play (a locked one is never drawn). */
 const randomKit = (except: (string | null | undefined)[] = []) => {
-  const open = kits.filter((k) => !except.includes(k.name));
-  return open[Math.floor(Math.random() * open.length)] ?? kits[0];
+  const open = kits.filter((k) => !except.includes(k.name) && playable(k.name));
+  return open[Math.floor(Math.random() * open.length)] ?? firstPlayable(except);
 };
 
 /** The Random tile's icon: a gold question mark inside a ring of one dot per hero, in each hero's colour. */
@@ -157,9 +208,10 @@ function heroChoice() {
   if (!state.profile) return RANDOM;
   return safeGet(`duel.hero.${state.profile.name}`) === RANDOM ? RANDOM : preferredHero().name;
 }
+/** The hero last chosen (it may be a locked one, picked to try against the CPU), else the favourite, else the first that can be played. */
 function preferredHero(): HeroKit {
   const name = state.profile ? safeGet(`duel.hero.${state.profile.name}`) : null;
-  return kitOf(name) ?? kitOf(state.profile?.favourite) ?? kits[0];
+  return kitOf(name) ?? kitOf(state.profile?.favourite) ?? firstPlayable();
 }
 function setPreferredHero(name: string) {
   if (state.profile) safeSet(`duel.hero.${state.profile.name}`, name);
@@ -185,7 +237,12 @@ function toast(text: string) {
 function go(screen: Screen) {
   state.screen = screen;
   if (screen === 'lobbies') net.send({ t: 'lobbies' });
-  if (screen === 'profile') net.send({ t: 'profile' });
+  // The Shop too: the obols and the week's free heroes as they are now.
+  if ((screen === 'profile' || screen === 'shop') && state.profile) net.send({ t: 'profile' });
+  // The week's boards are on the Raid and Tower screens, with or without an account.
+  if (screen === 'raid' || screen === 'tower') net.send({ t: 'boards' });
+  if (screen === 'tower') reportTower();
+  if (screen !== 'shop') state.shopAsk = '';
   render();
 }
 
@@ -214,9 +271,9 @@ function render() {
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
   if (!state.profile) {
-    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'tower' && state.screen !== 'news') { root.append(loginScreen()); return; }
-    root.append(header(), state.screen === 'news'
-      ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, newsScreen())
+    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'tower' && state.screen !== 'news' && state.screen !== 'shop') { root.append(loginScreen()); return; }
+    root.append(header(), state.screen === 'news' || state.screen === 'shop'
+      ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, state.screen === 'news' ? newsScreen() : shopScreen())
       : el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : state.screen === 'tower' ? towerScreen() : raidScreen()));
     keepScroll();
     return;
@@ -232,7 +289,8 @@ function render() {
             : s === 'raid' ? raidScreen()
               : s === 'tower' ? towerScreen()
                 : s === 'news' ? newsScreen()
-                  : menuScreen(),
+                  : s === 'shop' ? shopScreen()
+                    : menuScreen(),
   );
   root.append(body);
   // The Play screen (also shown for a lobby that has closed) is wider, and shows the search in its own bar.
@@ -260,15 +318,17 @@ function header() {
   if (!p) {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('News', 'news', 'news')),
+      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Shop', 'shop', 'shop'), nav('News', 'news', 'news')),
       el('div', { class: 'who' }, el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
   }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
+    el('nav', { class: 'many' }, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Shop', 'shop', 'shop'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
+      // The account's obols: a tap opens the Shop.
+      el('button', { class: 'purse', title: 'Your obols: open the Shop', onclick: () => go('shop') }, obols(p.obols ?? 0)),
       el('span', { class: 'muted' }, `${p.wins} W · ${p.losses} L`),
       el('button', { class: 'btn ghost small', onclick: () => net.send({ t: 'logout' }) }, 'Log out'),
     ),
@@ -364,7 +424,8 @@ let shownSlot = 0;
 
 /** The Play screen's chosen hero: the turning model (the big portrait when there is none), then the kit. */
 function heroShowcase(hero: HeroKit | undefined) {
-  const card = el('section', { class: 'card hs-show' });
+  // A locked hero's card carries one more line (its price, Try, Buy): the stage gives it the room.
+  const card = el('section', { class: `card hs-show${hero && !playable(hero.name) ? ' has-lock' : ''}` });
   card.style.setProperty('--accent', hero?.accent ?? '#c9a24a');
   const stage = el('div', { class: 'hs-stage' },
     hero?.model ? preview.canvas : hero ? portrait(hero, 'portrait hs-big') : randomPortrait('portrait hs-big'));
@@ -406,20 +467,56 @@ function heroShowcase(hero: HeroKit | undefined) {
     el('div', { class: 'hs-info' },
       el('div', { class: 'hs-name' }, hero.name),
       el('div', { class: 'hs-title' }, hero.title),
-      el('div', { class: 'hs-chips' }, el('span', { class: 'chip' }, `${hero.maxHp ?? 600} HP`), el('span', { class: 'chip' }, reach))),
+      el('div', { class: 'hs-chips' }, el('span', { class: 'chip' }, `${hero.maxHp ?? 600} HP`), el('span', { class: 'chip' }, reach),
+        freeNow(hero.name) ? el('span', { class: 'chip free' }, 'Free this week') : null),
+      // The shop: a hero that is neither owned nor free this week can be tried against the CPU, or bought.
+      playable(hero.name) ? null : lockStrip(hero)),
     el('div', { class: 'hs-abilities' }, ...buttons),
     detail,
     el('button', { class: 'hs-more', onclick: () => { state.heroView = hero.name; scrollToHero = true; go('heroes'); } }, `${hero.name}'s full kit →`));
   return card;
 }
 
+/** A small line glyph inside a tag (not a `span`: the picker styles those as names). */
+function glyph(name: keyof typeof ICONS) {
+  const g = el('i', { class: 'gl', 'aria-hidden': 'true' });
+  g.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]}</svg>`;
+  return g;
+}
+
+/** A locked hero is tried: the Play screen's CPU duel, with it chosen. */
+function tryHero(name: string) {
+  setCpuHero(name);
+  playMode = 'cpu';
+  safeSet('play.mode', 'cpu');
+  go(state.profile ? 'menu' : 'cpu');
+}
+
+/** The Shop, open on this hero's page. */
+function openShop(name: string) {
+  state.shopView = name;
+  state.shopAsk = '';
+  go('shop');
+}
+
+/** Under a locked hero's name: what it costs, and the two ways on: try it against the CPU, or buy it. */
+function lockStrip(hero: HeroKit) {
+  return el('div', { class: 'lock-strip' },
+    el('span', { class: 'lock-what', title: `Locked: ${heroPrice(hero.name)} obols in the Shop` }, glyph('lock'), el('span', { class: 'sr' }, 'Locked'), obols(heroPrice(hero.name))),
+    el('button', { class: 'btn small', onclick: () => tryHero(hero.name) }, 'Try against the CPU'),
+    el('button', { class: 'btn small primary', onclick: () => openShop(hero.name) }, state.profile ? 'Buy' : 'See in the Shop'));
+}
+
 /** Along the bottom of the Play screen in its online mode: Lobbies and Find match, or the search while queued. */
 function playBar(hero: HeroKit | undefined) {
   const queued = state.queue.on;
+  // A locked hero cannot go online: the button tries it against the CPU.
+  const locked = !!hero && !playable(hero.name);
   const find = queued
     ? el('div', { class: 'hs-search' },
       el('span', { class: 'spinner' }), el('span', { class: 'qtext' }, ''),
       el('button', { class: 'btn small', onclick: () => net.send({ t: 'queue_leave' }) }, 'Cancel'))
+    : locked ? el('button', { class: 'btn primary big hs-find', onclick: () => tryHero(hero.name) }, `Try ${hero.name} against the CPU`)
     : el('button', {
       class: 'btn primary big hs-find', disabled: !!state.lobby,
       onclick: () => {
@@ -432,8 +529,10 @@ function playBar(hero: HeroKit | undefined) {
   const bar = el('div', { class: 'hs-bar' },
     el('div', { class: 'hs-note muted small' }, state.lobby
       ? 'You are in a lobby: go back to it, or leave it to search.'
-      : 'Find match pairs you with the next player in the queue who picked a different hero. Or open a lobby and share its code.'),
+      : locked ? `${hero.name} is locked, so it cannot go online yet. Try it against the CPU, or buy it in the Shop for ${heroPrice(hero.name)} obols.`
+        : 'Find match pairs you with the next player in the queue who picked a different hero. Or open a lobby and share its code.'),
     el('button', { class: 'btn', disabled: queued, onclick: () => go(state.lobby ? 'lobby' : 'lobbies') }, state.lobby ? 'Back to lobby' : 'Lobbies'),
+    locked && !queued ? el('button', { class: 'btn', onclick: () => openShop(hero.name) }, 'Buy · ', obols(heroPrice(hero.name))) : null,
     find);
   if (queued) updateQueueText(bar);
   return bar;
@@ -465,18 +564,25 @@ function howToFight() {
   return d;
 }
 
-/** The hero grid. Random comes first; `pick` gets `RANDOM` for it. */
-function heroPicker(selected: string, taken: string[], pick: (name: string) => void) {
+/**
+ * The hero grid. Random comes first; `pick` gets `RANDOM` for it (a locked hero is never drawn). A hero the player may not
+ * play carries a lock and its price, and one of the week's six a "Free" mark. `locks`: 'show' lets a locked one be chosen
+ * (the Play, Raid and Tower screens: their showcase then says how to try or buy it); 'block' refuses it with a word (a
+ * lobby, a raid room, a lost round's pick: the server would refuse it too).
+ */
+function heroPicker(selected: string, taken: string[], pick: (name: string) => void, locks: 'show' | 'block' = 'show') {
   const random = el('button', {
     class: `pick${selected === RANDOM ? ' on' : ''}`, title: 'A random hero', onclick: () => pick(RANDOM),
   }, randomPortrait('portrait sm'), el('span', {}, 'Random'));
   random.style.setProperty('--accent', '#c9a24a');
   return el('div', { class: 'picker' }, random, ...kits.map((k, i) => {
-    const off = taken.includes(k.name);
+    const off = taken.includes(k.name), locked = !playable(k.name), price = heroPrice(k.name);
     const b = el('button', {
-      class: `pick${k.name === selected ? ' on' : ''}`, disabled: off, title: off ? `${k.name} is taken` : `${k.name}, ${k.title}`,
-      onclick: () => pick(k.name),
-    }, portrait(k, 'portrait sm'), el('span', {}, k.name));
+      class: `pick${k.name === selected ? ' on' : ''}${locked ? ' locked' : ''}`, disabled: off,
+      title: off ? `${k.name} is taken` : locked ? `${k.name}, ${k.title} · locked: ${price} obols, or try it against the CPU` : `${k.name}, ${k.title}${freeNow(k.name) ? ' · free this week' : ''}`,
+      onclick: () => (locked && locks === 'block' ? toast(lockedText(k.name)) : pick(k.name)),
+    }, portrait(k, 'portrait sm'), el('span', {}, k.name),
+    locked ? el('i', { class: 'pick-tag lock' }, glyph('lock'), String(price)) : freeNow(k.name) ? el('i', { class: 'pick-tag free' }, 'Free') : null);
     b.style.setProperty('--accent', k.accent);
     // its place in the deal when the screen opens (game.css, tile-in)
     b.style.setProperty('--i', String(i + 1));
@@ -513,7 +619,7 @@ function showPick(o: PickOffer) {
       heroPicker(o.myHero, [o.foeHero], (n) => {
         if (n === o.myHero) return choose({});
         choose({ hero: n === RANDOM ? randomKit([o.myHero, o.foeHero]).name : n });
-      }),
+      }, 'block'),
     ));
   document.body.append(pickPanel);
 }
@@ -548,7 +654,8 @@ const cpuWon = () => new Set((safeGet(cpuWonKey()) ?? '').split('').map(Number).
 function cpuChoice() {
   if (state.profile) return heroChoice();
   const saved = safeGet('cpu.hero');
-  return saved === RANDOM ? RANDOM : (kitOf(saved) ?? kits[0]).name;
+  // A first visit begins on a hero that can be played everywhere (a starter), not on a locked one.
+  return saved === RANDOM ? RANDOM : (kitOf(saved) ?? firstPlayable()).name;
 }
 function setCpuHero(name: string) {
   if (state.profile) setPreferredHero(name);
@@ -589,7 +696,7 @@ function cpuBar(hero: HeroKit | undefined, choice: string) {
   const level = cpuLevel(cpuPick.level);
   const foeKit = cpuFoe(choice);
   return el('div', { class: 'hs-bar' },
-    el('div', { class: 'hs-note small muted' }, `${hero ? hero.name : 'A random hero'} against ${foeKit ? foeKit.name : 'a random hero'} on ${level.name}.`),
+    el('div', { class: 'hs-note small muted' }, `${hero ? hero.name : 'A random hero'} against ${foeKit ? foeKit.name : 'a random hero'} on ${level.name}.${hero && !playable(hero.name) ? ' A locked hero is free to try against the CPU.' : ''}`),
     state.profile ? null : el('button', { class: 'btn', onclick: () => go('login') }, icon('login'), 'Log in'),
     el('button', {
       class: 'btn primary big hs-find',
@@ -606,10 +713,35 @@ function raidLine(p: Profile) {
   return `Raids with a friend: ${r.played} played, ${r.cleared} cleared.${r.bosses ? ` Best: ${scoreText({ tier: r.tier ?? 1, bosses: r.bosses, seconds: r.best })}` : ''}`;
 }
 
+/** A run's time as minutes and seconds. */
+const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+
+/** The names of a party, the first few and how many more. */
+const partyNames = (names: string[]) => (names.length > 4 ? `${names.slice(0, 4).join(', ')} and ${names.length - 4} more` : names.join(', '));
+
+/**
+ * This week's best raid runs with others, as the server keeps them (the top 20): bosses beaten, then the time. The same
+ * week as the Tower's, Monday to Monday in UTC.
+ */
+function raidBoard() {
+  const rows = state.boards?.raid ?? [], me = state.profile?.name;
+  return el('div', { class: 'board' },
+    el('h3', { class: 'gap' }, 'This week'),
+    rows.length
+      ? el('ol', { class: 'board-list' }, ...rows.map((r, i) => el('li', { class: `board-row${me && r.names.includes(me) ? ' mine' : ''}` },
+        el('span', { class: 'board-n' }, String(i + 1)),
+        el('span', { class: 'board-who', title: r.names.join(', ') }, el('span', { class: 'board-name' }, partyNames(r.names))),
+        el('span', { class: 'board-score' }, el('b', {}, `${r.bosses} ${r.bosses === 1 ? 'boss' : 'bosses'}`), el('span', { class: 'muted' }, ` · tier ${r.tier} · ${clock(r.seconds)}`)))))
+      : el('p', { class: 'muted small' }, state.boards ? 'No raid with others has beaten a boss yet this week. The first one stands here.' : 'The week\'s best runs appear here once the game server answers.'),
+    el('p', { class: 'muted small' }, `The best runs with others this week: most bosses beaten, then the fastest. A new week in ${untilWeek()}.`));
+}
+
 function raidScreen() {
   if (state.profile && !raidListAsked) { raidListAsked = true; net.send({ t: 'lobbies' }); }
   const choice = cpuChoice(), hero = kitOf(choice);
   const busy = state.queue.on || !!state.lobby;
+  // A locked hero stays out of the raid, alone too: it can be tried against the CPU on the Play screen.
+  const locked = !!hero && !playable(hero.name);
   const boss = SUN_WARDEN;
   const code = el('input', { placeholder: 'CODE', maxlength: 4, class: 'code-in' }) as HTMLInputElement;
   preview.show(hero?.model, hero);
@@ -623,6 +755,9 @@ function raidScreen() {
       el('h3', { class: 'gap' }, 'With others: up to 40'),
       state.profile
         ? el('div', {},
+          el('div', { class: 'rank-line' },
+            state.profile.rank ? rankBadge(state.profile.rank, 'big') : el('span', { class: 'rank none big' }, 'No rank yet'),
+            el('span', { class: 'muted small' }, rankLine(state.profile))),
           el('p', { class: 'muted' }, 'Open a raid for anyone to join, or a private one for friends with its code. The boss is set for how many you are: 2, 5, 10, 15, 20, 30 or 40. A fallen hero lies where it fell until another stands by it. If all are down, the raid is over.'),
           el('div', { class: 'row' },
             el('button', { class: 'btn', disabled: busy, onclick: () => net.send({ t: 'lobby_create', raid: boss.id, open: true }) }, icon('lobbies'), 'Open a public raid'),
@@ -633,19 +768,28 @@ function raidScreen() {
           state.raids.length
             ? el('div', { class: 'lobby-list' }, ...state.raids.map((r) => el('div', { class: 'raid-row' },
               el('div', { class: 'code' }, r.code),
-              el('div', {}, el('div', { class: 'kit-name' }, `${r.host}'s raid`), el('div', { class: 'muted small' }, `${r.count} of 40 · set for ${bandOf(r.count)}`)),
+              el('div', {}, el('div', { class: 'kit-name' }, `${r.host}'s raid`, rankBadge(r.rank)), el('div', { class: 'muted small' }, `${r.count} of 40 · set for ${bandOf(r.count)}`)),
               el('button', { class: 'btn', disabled: busy || r.count >= 40, onclick: () => net.send({ t: 'lobby_join', code: r.code }) }, 'Join'))))
             : el('p', { class: 'muted small' }, 'No open raids right now. Open one, and others can join it from here.'),
           state.profile.raids?.played ? el('p', { class: 'muted small' }, raidLine(state.profile)) : null)
-        : el('p', { class: 'muted' }, 'Log in to raid with others.'),
+        : el('p', { class: 'muted' }, 'Log in to raid with others: each boss beaten together pays obols, and the most bosses in one run is your raid rank.'),
+      raidBoard(),
     ),
     el('div', { class: 'hs-bar' },
-      el('div', { class: `hs-note small ${busy ? 'error' : 'muted'}` }, busy
+      el('div', { class: `hs-note small ${busy || locked ? 'error' : 'muted'}` }, busy
         ? 'Leave the matchmaking queue or your lobby to start a raid.'
-        : `${hero ? hero.name : 'A random hero'} against the bosses, one after another.`),
+        : locked ? `${hero.name} is locked: pick a hero you own or one that is free this week, or try ${hero.name} against the CPU.`
+          : `${hero ? hero.name : 'A random hero'} against the bosses, one after another.`),
       el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back'),
-      el('button', { class: 'btn primary big hs-find', disabled: busy, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name }) }, icon('raid'), 'Start alone')),
+      el('button', { class: 'btn primary big hs-find', disabled: busy || locked, onclick: () => void raid.start({ hero: hero?.name ?? randomKit().name }) }, icon('raid'), locked ? `${hero.name} is locked` : 'Start alone')),
   );
+}
+
+/** What the raid rank is, and what the next one takes. */
+function rankLine(p: Profile) {
+  const most = p.raids?.others ?? 0, next = RAID_RANKS.find((r) => r.from > most);
+  const have = most ? `Your best with others: ${most} ${most === 1 ? 'boss' : 'bosses'} in one run.` : 'Beat a boss in a raid with others for your first rank.';
+  return next ? `${have} ${next.name} takes ${next.from}.` : `${have} The highest rank.`;
 }
 
 // --- tower ---------------------------------------------------------------------------------------------------
@@ -667,7 +811,15 @@ function towerScreen() {
     return el('div', { class: `tf k-${f.kind}${f.n <= best ? ' done' : ''}${f.n === from && from > 1 ? ' from' : ''}`, title: `Floor ${f.n}: ${what}` },
       el('b', {}, String(f.n)), el('span', {}, KIND_NAME[f.kind]), f.twist || f.mix ? el('i', { 'aria-hidden': 'true' }, '✦') : null);
   };
-  const start = (resume: boolean) => void tower.start({ hero: hero?.name ?? randomKit().name, resume });
+  const start = (resume: boolean) => {
+    const name = hero?.name ?? randomKit().name;
+    // For the week's board: if this climb goes higher than the best so far, its hero goes with the floor (`tower`'s onExit).
+    towerClimb = { week, hero: name, best };
+    void tower.start({ hero: name, resume });
+  };
+  // A locked hero stays out of the Tower: it can be tried against the CPU on the Play screen.
+  const locked = !!hero && !playable(hero.name);
+  const rows = state.boards?.tower ?? [], me = state.profile?.name;
   return el('div', { class: 'hs' },
     heroShowcase(hero),
     el('section', { class: 'card hs-roster', 'data-keep-scroll': 'tower' },
@@ -683,15 +835,59 @@ function towerScreen() {
       el('p', { class: 'muted small' }, 'The same Tower for everyone this week. ✦ marks a floor with a twist: point at it to see what.'),
       el('h3', { class: 'gap' }, 'Your hero'),
       heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
+      // The week's board. The Tower is climbed in the page, with no server: each floor here is a player's own page's word.
+      el('div', { class: 'board' },
+        el('h3', { class: 'gap' }, 'This week\'s highest floors'),
+        rows.length
+          ? el('ol', { class: 'board-list' }, ...rows.map((r, i) => {
+            const k = kitOf(r.hero);
+            return el('li', { class: `board-row${r.name === me ? ' mine' : ''}` },
+              el('span', { class: 'board-n' }, String(i + 1)),
+              el('span', { class: 'board-who' }, k ? portrait(k, 'portrait xs') : null, el('span', { class: 'board-name' }, r.name)),
+              el('span', { class: 'board-score' }, el('b', {}, `floor ${r.floor}`), el('span', { class: 'muted' }, k ? ` · ${k.name}` : '')));
+          }))
+          : el('p', { class: 'muted small' }, state.boards ? 'Nobody has reported a floor yet this week.' : 'The week\'s board appears here once the game server answers.'),
+        el('p', { class: 'muted small' }, state.profile
+          ? 'Your highest floor is sent to this board when a climb ends. Floors are as each player\'s own game reported them; the Tower is climbed offline, so they earn no obols.'
+          : 'Log in and your highest floor goes on this board. Floors are as each player\'s own game reported them.')),
     ),
     el('div', { class: 'hs-bar' },
-      el('div', { class: `hs-note small ${busy ? 'error' : 'muted'}` }, busy
+      el('div', { class: `hs-note small ${busy || locked ? 'error' : 'muted'}` }, busy
         ? 'Leave the matchmaking queue or your lobby to climb.'
-        : `${hero ? hero.name : 'A random hero'} climbs alone. Your best floor is kept in this browser.`),
+        : locked ? `${hero.name} is locked: pick a hero you own or one that is free this week, or try ${hero.name} against the CPU.`
+          : `${hero ? hero.name : 'A random hero'} climbs alone. Your best floor is kept in this browser.`),
       el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back'),
-      from > 1 ? el('button', { class: 'btn', disabled: busy, onclick: () => start(false) }, 'From floor 1') : null,
-      el('button', { class: 'btn primary big hs-find', disabled: busy, onclick: () => start(from > 1) }, icon('tower'), from > 1 ? `Climb from floor ${from}` : 'Start the climb')),
+      from > 1 ? el('button', { class: 'btn', disabled: busy || locked, onclick: () => start(false) }, 'From floor 1') : null,
+      el('button', { class: 'btn primary big hs-find', disabled: busy || locked, onclick: () => start(from > 1) }, icon('tower'), locked ? `${hero.name} is locked` : from > 1 ? `Climb from floor ${from}` : 'Start the climb')),
   );
+}
+
+/** The hero whose climb reached this browser's highest floor of a week: it goes on the week's board with the floor. */
+const TOWER_HERO_KEY = 'tower.hero';
+/** The climb that is on: its week, its hero and the best floor before it began. */
+let towerClimb: { week: string; hero: string; best: number } | null = null;
+
+/** A climb ended: if it went higher than the best before it, its hero is kept with the floor; then the board hears of it. */
+function towerEnded() {
+  if (towerClimb && towerBest(towerClimb.week) > towerClimb.best) safeSet(TOWER_HERO_KEY, JSON.stringify({ week: towerClimb.week, hero: towerClimb.hero }));
+  towerClimb = null;
+  reportTower();
+}
+
+/**
+ * This browser's highest floor of the week's Tower goes to the server's board, for a logged-in player: when a climb ends,
+ * when the Tower screen opens and at sign-in. The server cannot check it (the Tower runs here, offline): the board says so,
+ * and no obols come of it. Not sent without a climb's hero, or for a hero the account may not play.
+ */
+function reportTower() {
+  if (!state.profile) return;
+  const week = isoWeek().id, floor = towerBest(week);
+  let climb: { week?: string; hero?: string } | null = null;
+  try { climb = JSON.parse(safeGet(TOWER_HERO_KEY) ?? 'null'); } catch { /* no climb kept */ }
+  if (!floor || !climb || climb.week !== week || !climb.hero || !playable(climb.hero)) return;
+  // Only what the server does not have yet.
+  if (state.profile.tower?.week === week && state.profile.tower.floor >= floor) return;
+  net.send({ t: 'tower_report', floor, hero: climb.hero, week });
 }
 
 // --- heroes --------------------------------------------------------------------------------------------------
@@ -707,7 +903,9 @@ function heroesScreen() {
     const on = k.name === open?.name;
     const row = el('tr', { class: `hero-row${on ? ' on' : ''}`, onclick: () => { state.heroView = on ? '' : k.name; render(); } },
       el('td', {}, portrait(k, 'portrait sm')),
-      el('td', {}, el('div', { class: 'kit-name' }, k.name), el('div', { class: 'muted small' }, k.title)),
+      el('td', {}, el('div', { class: 'kit-name' }, k.name,
+        playable(k.name) ? (freeNow(k.name) ? el('i', { class: 'row-tag free' }, 'Free this week') : null) : el('i', { class: 'row-tag lock' }, glyph('lock'), String(heroPrice(k.name)))),
+      el('div', { class: 'muted small' }, k.title)),
       el('td', { class: 'opt' }, String(k.maxHp ?? 600)),
       el('td', { class: 'opt' }, traitFor(k.name)?.passive.name ?? ''),
       ...k.spells.map((s) => el('td', { class: 'icon-col', title: `${s.name}: ${s.blurb}` }, canvasOf(64, s.icon, 'icon sm'))));
@@ -717,9 +915,9 @@ function heroesScreen() {
   return el('section', { class: 'card hero-table-card' }, el('table', { class: 'hero-table' }, head, ...rows));
 }
 
-/** The open row of the heroes table. */
-function heroDetail(kit: HeroKit) {
-  const spells = el('div', { class: 'spells' },
+/** A hero's passive and four spells in full: the open row of the heroes table, and a hero's page in the Shop. */
+function heroSpells(kit: HeroKit) {
+  return el('div', { class: 'spells' },
     el('div', { class: 'spell passive' },
       el('div', { class: 'icon-wrap' }, portrait(kit, 'icon')),
       el('div', {}, el('div', { class: 'spell-name' }, traitFor(kit.name)?.passive.name ?? ''), el('div', { class: 'blurb' }, traitFor(kit.name)?.passive.blurb ?? ''))),
@@ -732,13 +930,20 @@ function heroDetail(kit: HeroKit) {
           el('div', { class: 'muted small' }, `${s.range > 0 ? `range ${s.range}` : 'self'} · cooldown ${s.cooldown} s`),
         ),
       )));
+}
+
+/** The open row of the heroes table. */
+function heroDetail(kit: HeroKit) {
   const mine = heroChoice() === kit.name;
   const cell = el('td', { colSpan: 8 },
     el('div', { class: 'hero-body' },
       el('div', { class: 'hero-side' },
         el('div', { class: 'stage' }, preview.canvas),
-        el('button', { class: `btn${mine ? '' : ' primary'}`, disabled: mine, onclick: () => { setPreferredHero(kit.name); toast(`${kit.name} is your hero`); render(); } }, mine ? 'Your hero' : 'Pick this hero')),
-      spells));
+        // A locked hero: try it or buy it. Any other: make it the hero the fights start with.
+        playable(kit.name)
+          ? el('button', { class: `btn${mine ? '' : ' primary'}`, disabled: mine, onclick: () => { setPreferredHero(kit.name); toast(`${kit.name} is your hero`); render(); } }, mine ? 'Your hero' : 'Pick this hero')
+          : lockStrip(kit)),
+      heroSpells(kit)));
   const row = el('tr', { class: 'hero-open' }, cell);
   row.style.setProperty('--accent', kit.accent);
   return row;
@@ -756,6 +961,10 @@ function statTiles(p: Profile) {
     tile('losses', String(p.losses)),
     tile('win rate', p.matches ? `${rate}%` : '–'),
     tile('favourite hero', fav ? el('span', { class: 'fav' }, portrait(fav, 'portrait xs'), fav.name) : '–'),
+    // The shop and the Raid's rewards: obols, how much of the roster is the account's, and its raid rank.
+    tile('obols', obols(p.obols ?? 0)),
+    tile('heroes owned', `${kits.filter((k) => ownsHero(k.name)).length} of ${kits.length}`),
+    tile('raid rank', rankBadge(p.rank, 'big') ?? '–'),
   );
 }
 
@@ -764,9 +973,12 @@ function profileScreen(p: Profile) {
   const date = (iso: string) => new Date(iso).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
   return el('div', { class: 'profile' },
     el('section', { class: 'card' },
-      el('h2', {}, p.name), el('div', { class: 'muted' }, `Playing since ${new Date(p.created).toLocaleDateString()}`),
+      el('h2', {}, p.name, p.founder ? el('span', { class: 'founder', title: 'An account from before the shop: it owns the first 40 heroes for good' }, 'Founder') : null),
+      el('div', { class: 'muted' }, `Playing since ${new Date(p.created).toLocaleDateString()}`),
       statTiles(p),
-      p.raids?.played ? el('p', { class: 'muted small' }, raidLine(p)) : null),
+      el('p', { class: 'muted small' }, rankLine(p)),
+      p.raids?.played ? el('p', { class: 'muted small' }, raidLine(p)) : null,
+      el('div', { class: 'row' }, el('button', { class: 'btn', onclick: () => go('shop') }, icon('shop'), 'Open the Shop'))),
     el('div', { class: 'cols' },
       el('section', { class: 'card' }, el('h3', {}, 'Heroes played'),
         rows.length ? el('table', { class: 'tbl' },
@@ -785,6 +997,122 @@ function profileScreen(p: Profile) {
             el('td', {}, `${h.seconds} s${h.reason !== 'ko' ? ` · ${h.reason}` : ''}`), el('td', { class: 'muted' }, date(h.at))))) : el('p', { class: 'muted' }, 'No matches yet.')),
     ),
   );
+}
+
+// --- shop ----------------------------------------------------------------------------------------------------
+
+/** The heroes in the shop's order: by kind, the starters first, then by price. A kit without a row in the table is left out. */
+const shopKits = () => Object.keys(HERO_SHOP).map((name) => kits.find((k) => k.name === name)).filter((k): k is HeroKit => !!k);
+
+/**
+ * The Shop (pipeline/designs/hero-shop.md; user, 2026-11-12: "herous some lock in shop behind like ingame currency"): the
+ * account's obols and how they are earned, the week's six free heroes, then every hero as a card with a filter by kind. A
+ * card opens the hero's page: the turning model, the kit in full, and Buy (asked once, and it cannot be undone) or "Try
+ * against the CPU". The server sells (`shop_buy`); this screen only shows. Open without an account too, to look.
+ */
+function shopScreen() {
+  const p = state.profile, on = state.shop.on, e = SHOP.earn;
+  const view = kitOf(state.shopView), hasPage = !!view && Object.hasOwn(HERO_SHOP, view.name);
+  preview.show(view?.model, view);
+  const earn = (label: string, n: number, plus = false) => el('span', { class: 'earn-chip' }, label, el('b', {}, plus ? '+' : '', obols(n)));
+  const head = el('section', { class: 'card shop-head' },
+    el('div', { class: 'shop-top' },
+      el('div', {},
+        el('h2', {}, 'Shop'),
+        el('p', { class: 'muted' }, on
+          ? 'Heroes are bought with obols, and obols are earned by playing online. No real money, anywhere.'
+          : 'The shop is closed for now: every hero is free to play. Obols are still earned, and kept.')),
+      p ? el('div', { class: 'purse-big' }, obols(p.obols ?? 0, 'big'), el('div', { class: 'tile-l' }, 'your obols'))
+        : el('button', { class: 'btn primary', onclick: () => go('login') }, icon('login'), 'Log in to earn obols')),
+    // On a hero's page the head is only the purse: the page itself needs the room.
+    hasPage ? null : el('div', { class: 'earn' },
+      earn('An online duel', e.duel), earn('A win', e.win, true), earn('First win of the day', e.firstWin, true),
+      earn('A raid boss, with others', e.boss), earn('A tier cleared', e.tier, true)),
+    p?.founder && on && !hasPage ? el('p', { class: 'founder-note' }, el('span', { class: 'founder' }, 'Founder'), ' You were here before the shop: the first 40 heroes are yours for good.') : null,
+    !p && on && !hasPage ? el('p', { class: 'muted small' }, `Without an account you play the ${STARTERS.length} starters and the week's free heroes. A new account starts with ${SHOP.start} obols: one hero of its own choice at once.`) : null);
+  if (view && hasPage) return el('div', { class: 'shop' }, head, shopPage(view));
+
+  const open = (name: string) => { state.shopView = name; state.shopAsk = ''; render(); root.scrollTop = 0; };
+  const all = shopKits(), shown = state.shopKind ? all.filter((k) => HERO_SHOP[k.name].kind === state.shopKind) : all;
+  const kind = (id: string, label: string, title: string) => el('button', {
+    class: `kind${state.shopKind === id ? ' on' : ''}`, title, onclick: () => { state.shopKind = id; render(); },
+  }, label);
+  const card = (k: HeroKit, i: number) => {
+    const row = HERO_SHOP[k.name], owned = ownsHero(k.name), free = freeNow(k.name), price = heroPrice(k.name);
+    const fresh = SHOP.newest.hero === k.name && price === SHOP.newest.price;
+    const b = el('button', { class: `shop-card${owned ? ' owned' : free ? ' free' : ' locked'}`, title: `${k.name}, ${k.title}`, onclick: () => open(k.name) },
+      el('div', { class: 'shop-face' }, portrait(k, 'portrait'), owned || free ? null : el('i', { class: 'shop-lock' }, glyph('lock'))),
+      el('div', { class: 'shop-name' }, k.name),
+      el('div', { class: 'shop-title muted small' }, k.title),
+      el('div', { class: 'shop-kind' }, HERO_KINDS[row.kind]?.name ?? ''),
+      el('div', { class: 'shop-state' }, !on ? 'Free to play' : owned ? (row.shelf ? 'Owned' : 'Starter') : free ? el('span', {}, 'Free this week · ', obols(price)) : obols(price)),
+      fresh && !owned ? el('i', { class: 'shop-new' }, 'New') : null);
+    b.style.setProperty('--accent', k.accent);
+    b.style.setProperty('--i', String(i + 1));
+    return b;
+  };
+  const freeKits = state.shop.free.map((n) => kitOf(n)).filter((k): k is HeroKit => !!k);
+  return el('div', { class: 'shop' },
+    head,
+    on && freeKits.length ? el('section', { class: 'card' },
+      el('h3', {}, `Free this week · others in ${untilWeek()}`),
+      el('p', { class: 'muted small' }, 'Six heroes are free for everyone each week, online too. They change on Monday (UTC).'),
+      el('div', { class: 'shop-free' }, ...freeKits.map((k) => {
+        const b = el('button', { class: 'free-tile', title: `${k.name}, ${k.title}`, onclick: () => open(k.name) },
+          portrait(k, 'portrait'), el('b', {}, k.name), el('small', { class: 'muted' }, ownsHero(k.name) ? 'Owned' : HERO_KINDS[HERO_SHOP[k.name]?.kind]?.name ?? ''));
+        b.style.setProperty('--accent', k.accent);
+        return b;
+      }))) : null,
+    el('section', { class: 'card' },
+      el('div', { class: 'shop-grid-head' },
+        el('h3', {}, state.shopKind ? `${HERO_KINDS[state.shopKind].name}: ${HERO_KINDS[state.shopKind].blurb.toLowerCase()}` : `All ${all.length} heroes`),
+        el('div', { class: 'kinds' }, kind('', 'All', 'Every hero'), ...Object.entries(HERO_KINDS).map(([id, k]) => kind(id, k.name, k.blurb)))),
+      el('div', { class: 'shop-grid' }, ...shown.map(card)),
+      on ? el('p', { class: 'muted small' }, `Prices follow how hard a hero is to play well: ${SHOP.shelves.join(', ')} obols. The newest hero costs ${SHOP.newest.price} for its first weeks. Any locked hero can be tried against the CPU for free.`) : null));
+}
+
+/** One hero's page in the Shop: its turning model, what it costs or that it is owned, the kit in full. */
+function shopPage(kit: HeroKit) {
+  const p = state.profile, on = state.shop.on, row = HERO_SHOP[kit.name];
+  const price = heroPrice(kit.name), owned = ownsHero(kit.name), free = freeNow(kit.name);
+  const short = price - (p?.obols ?? 0), asking = state.shopAsk === kit.name, mine = heroChoice() === kit.name;
+  const back = () => { state.shopView = ''; state.shopAsk = ''; render(); };
+  const reach = kit.alt && !!kit.alt.melee !== !!kit.melee ? 'Melee and ranged' : kit.melee ? 'Melee' : 'Ranged';
+  // What can be done with it: it is owned; or it is bought (asked once: it cannot be undone); or, without an account, a way in.
+  const deal = owned
+    ? el('div', { class: 'shop-owned' }, !on ? 'Free to play' : row.shelf ? 'You own this hero' : 'A starter: everyone owns this hero')
+    : !p ? el('button', { class: 'btn primary big', onclick: () => go('login') }, icon('login'), 'Log in to buy')
+      : asking ? el('div', { class: 'shop-ask' },
+        el('b', {}, `Buy ${kit.name} for ${price.toLocaleString('en-US')} obols?`),
+        el('span', { class: 'muted small' }, `You have ${(p.obols ?? 0).toLocaleString('en-US')}. It cannot be undone.`),
+        el('div', { class: 'row' },
+          el('button', { class: 'btn primary', onclick: () => net.send({ t: 'shop_buy', hero: kit.name }) }, 'Buy'),
+          el('button', { class: 'btn', onclick: () => { state.shopAsk = ''; render(); } }, 'Cancel')))
+        : el('button', {
+          class: 'btn primary big', disabled: short > 0,
+          // The question takes the button's place: brought into sight if it opened under the fold.
+          onclick: () => { state.shopAsk = kit.name; render(); root.querySelector('.shop-ask')?.scrollIntoView({ block: 'nearest' }); },
+        }, 'Buy · ', obols(price));
+  const page = el('section', { class: 'card shop-page' },
+    el('button', { class: 'hs-more', onclick: back }, '← All heroes'),
+    el('div', { class: 'hero-body' },
+      el('div', { class: 'hero-side' },
+        el('div', { class: 'stage' }, kit.model ? preview.canvas : portrait(kit, 'portrait hs-big')),
+        el('div', {},
+          el('div', { class: 'hs-name' }, kit.name),
+          el('div', { class: 'hs-title' }, kit.title),
+          el('div', { class: 'hs-chips' },
+            el('span', { class: 'chip' }, HERO_KINDS[row.kind]?.name ?? ''), el('span', { class: 'chip' }, `${kit.maxHp ?? 600} HP`), el('span', { class: 'chip' }, reach),
+            free ? el('span', { class: 'chip free' }, 'Free this week') : null)),
+        deal,
+        !owned && p && short > 0 ? el('p', { class: 'muted small' }, `You need ${short.toLocaleString('en-US')} more obols. A duel pays ${SHOP.earn.duel}, a win ${SHOP.earn.win} more, the first win of the day ${SHOP.earn.firstWin}.`) : null,
+        free ? el('p', { class: 'muted small' }, `Free for everyone this week, online too: ${untilWeek()} left.`) : null,
+        playable(kit.name)
+          ? el('button', { class: 'btn', disabled: mine, onclick: () => { setCpuHero(kit.name); toast(`${kit.name} is your hero`); render(); } }, mine ? 'Your hero' : 'Pick this hero')
+          : el('button', { class: 'btn', onclick: () => tryHero(kit.name) }, 'Try against the CPU')),
+      heroSpells(kit)));
+  page.style.setProperty('--accent', kit.accent);
+  return page;
 }
 
 // --- news ----------------------------------------------------------------------------------------------------
@@ -881,7 +1209,7 @@ function raidLobbyScreen(l: LobbyState) {
         const k = kitOf(s.hero);
         const row = el('div', { class: `party-seat${i === state.lobbySeat ? ' mine' : ''}` },
           k ? portrait(k, 'portrait sm') : el('div', { class: 'portrait sm empty' }, '?'),
-          el('div', {}, el('div', { class: 'kit-name' }, `${s.name}${i === 0 ? ' · host' : ''}`), el('div', { class: 'muted small' }, k ? k.name : 'picking a hero')));
+          el('div', {}, el('div', { class: 'kit-name' }, `${s.name}${i === 0 ? ' · host' : ''}`), el('div', { class: 'muted small' }, rankBadge(s.rank), k ? k.name : 'picking a hero')));
         if (k) row.style.setProperty('--accent', k.accent);
         return row;
       })),
@@ -892,7 +1220,7 @@ function raidLobbyScreen(l: LobbyState) {
         if (n === RANDOM) toast(`Random pick: ${name}`);
         else setPreferredHero(name);
         net.send({ t: 'lobby_pick', hero: name });
-      }),
+      }, 'block'),
       el('div', { class: 'row' },
         host
           ? el('button', { class: 'btn primary big', disabled: picked < l.seats.length, onclick: () => net.send({ t: 'raid_go' }) }, icon('raid'), 'Start the raid')
@@ -930,7 +1258,7 @@ function lobbyScreen(l: LobbyState) {
         if (n === RANDOM) toast(`Random pick: ${name}`);
         else setPreferredHero(name);
         net.send({ t: 'lobby_pick', hero: name });
-      }),
+      }, 'block'),
       el('div', { class: 'row' },
         el('button', {
           class: `btn ${me?.ready ? '' : 'primary'} big`, disabled: !me?.hero,
@@ -963,11 +1291,13 @@ const raid = new RaidRun(gameApi, loading, {
 });
 const tower = new TowerRun(gameApi, loading, {
   onEnter: () => render(),
-  onExit: () => { state.screen = 'tower'; render(); },
+  // The climb's floor goes to the week's board from here: nothing in src/tower knows of the server.
+  onExit: () => { state.screen = 'tower'; towerEnded(); net.send({ t: 'boards' }); render(); },
 });
 const coop = new RaidController(net, gameApi, loading, {
   onEnter: () => render(),
-  onExit: () => { state.screen = 'raid'; render(); net.send({ t: 'profile' }); },
+  // Back on the Raid screen: the profile (its obols, its rank) and the week's board as the run left them.
+  onExit: () => { state.screen = 'raid'; render(); net.send({ t: 'profile' }); net.send({ t: 'boards' }); },
   onProfile: (p) => { state.profile = p; },
   toast,
 });
@@ -982,7 +1312,30 @@ net.on('socket', (m) => {
 net.on('session', (m) => {
   state.profile = m.profile;
   if (state.screen === 'login') state.screen = 'menu';
+  // A climb made before logging in goes on the week's board now.
+  reportTower();
   render();
+});
+// The hero shop: whether heroes are locked and the week's free ones, from the server (at connect, with a session and a profile).
+net.on('shop', (m) => {
+  const was = state.shop;
+  state.shop = { on: m.on, week: m.week, next: m.next, free: m.free };
+  if ((was.on !== m.on || was.week !== m.week || was.free.join() !== m.free.join()) && !match.active) render();
+});
+net.on('shop_bought', (m) => {
+  state.profile = m.profile;
+  state.shopAsk = '';
+  toast(`${m.hero} is yours`);
+  if (!match.active) render();
+});
+// Obols earned, said as they come: after a duel, and in a raid as each boss falls.
+net.on('obols', (m) => {
+  if (state.profile) state.profile.obols = m.total;
+  toast(`+${m.earned} obols: ${m.why.map((w) => `${w.what} ${w.n}`).join(' · ')}`);
+});
+net.on('boards', (m) => {
+  state.boards = { week: m.week, raid: m.raid, tower: m.tower };
+  if ((state.screen === 'raid' || state.screen === 'tower') && !match.active && !coop.active && !raid.active && !tower.active) render();
 });
 net.on('auth_error', (m) => {
   state.profile = null;
@@ -1023,8 +1376,10 @@ net.on('lobby', (m) => {
     // Start with the hero this player last used.
     if (!m.lobby.seats[state.lobbySeat]?.hero) {
       const other = m.lobby.seats[1 - state.lobbySeat]?.hero;
+      // Never a locked one (the last choice may be a hero that was being tried against the CPU).
+      const mine = preferredHero().name;
       const hero = heroChoice() === RANDOM ? randomKit([other]).name
-        : preferredHero().name !== other ? preferredHero().name : kits.find((k) => k.name !== other)!.name;
+        : mine !== other && playable(mine) ? mine : firstPlayable([other]).name;
       net.send({ t: 'lobby_pick', hero });
     }
   }

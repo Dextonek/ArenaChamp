@@ -50,6 +50,25 @@ export const CHANGELOG: Release[] = [
         alt: 'The guardian of floor 10, a giant echo of Marin, throws a fan of five beams of light across the Tower\'s round room at Kaia, who stands behind a pillar.',
       },
       {
+        tag: 'Menus',
+        title: 'The Shop: heroes for obols',
+        text: 'A new Shop screen. Twelve heroes are free for everyone, six more are free each week, and the rest are bought with obols: 600, 900 or 1,200, by how hard a hero is to play well (Anka, the newest, 1,500 for her first weeks). A new account starts with 900, enough for one hero at once. Any locked hero can be tried against the CPU first. Accounts that were here before the shop keep all 40 heroes.',
+        image: '/news/shop.jpg',
+        alt: 'The Shop: 1,430 obols at the top, what a duel and a raid boss pay, the six heroes that are free this week, and the first heroes as cards with a lock and a price or the word Starter.',
+      },
+      {
+        tag: 'Online',
+        title: 'Obols are earned by playing',
+        text: 'An online duel pays 40 obols, a win 40 more, and the first win of each day 120 on top. A raid boss beaten with others pays everyone 60, and a cleared tier 150 more. There is no real money anywhere: obols only come from playing.',
+      },
+      {
+        tag: 'Raid',
+        title: 'Raid ranks and the week\'s best runs',
+        text: 'The most bosses you beat in one raid with others is your raid rank: Ember from one, Ash from three, Noon from six, Eclipse from nine. It stands on your profile and beside your name in a raid room. The Raid screen now lists this week\'s best runs, and the Tower screen the highest floors players reached.',
+        image: '/news/raid-board.jpg',
+        alt: 'The Raid screen: the rank Ash beside the line about raids with others, and under it this week\'s three best runs with their bosses and times.',
+      },
+      {
         tag: 'Raid',
         title: 'The Sunburst',
         text: 'Three or more players fight the Heart of Noon in a room of its own: the crater where the sun fell, a round well with eight long rays cut into the stone. Its flare leaves four lanes, its rings are locked by holding a row of gold spots out in a ray, and a plate of its crust falls for every five of you. Each shelters five.',
