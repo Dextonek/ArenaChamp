@@ -1,13 +1,27 @@
 # Status
 
-_Last updated: 2026-11-12 (Twin Flames in the Twin Forge finished and committed, not pushed, not live; before that, 2026-11-11: hero 40, Anka the Firebird: all six gates done by the computer, waiting on the user to play her once, not pushed, not live; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
+_Last updated: 2026-11-12, afternoon: everything below that says "NOT pushed, NOT live" for 2026-11-11 and 2026-11-12 is now pushed and deployed (the Tower, the Raid for 40 with its three transforming rooms and the mechanics for 10, 20 and 40, Twin Flames in the Twin Forge, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**). Next: the Raid rework (docs/QUEUE.md, job 15)._
 
-## THE NIGHT'S QUEUE (2026-11-12): read `docs/QUEUE.md` first
+## Pushed and deployed (2026-11-12, afternoon), on the user's word
 
-The user went to sleep with: "dont ask just do it run the loop until everything is done ... i want to see it tomorow morning done".
-The jobs, their order, what is running and what is done are in [QUEUE.md](QUEUE.md): the Raid's rooms that transform and mechanics
-for 10, 20 and 40 players, the Tower (a new mode), the hero shop with obols, twenty new hero ideas, the heroes reworked. Nothing is
-pushed or deployed; neither may happen without the user's word.
+The user: "can you like slowly push it and deploy it when finish", and chose: after the two half-done jobs (the Twin Forge, the
+heroes' tuning), and **the shop off for now** (`wrangler.jsonc`: `"SHOP": "off"`; every hero free; obols earned and kept; the News
+says the Shop is closed). `PROTOCOL` 13. Checked on the merged whole before the push: type check, build, `npm run test:server`
+(235), `_raidCheck()` 234, `_raidAsh()` 77, `_raidHeart()` 246, `_raidUpgrades()` 40, `_raidTwin()` 143, six bots through the real
+hub against the Sun Warden and the Heart of Noon. The night's queue and what came after: [QUEUE.md](QUEUE.md).
+
+**Waiting on the user:**
+1. Play Anka once (the last gate of the new-hero rules).
+2. Look at the boss rooms (`docs/raid/hall-*.jpg`, `heart-*.jpg`, `twin-*.jpg`) and say if a look is wrong.
+3. The Heart's paler face, and the hall's enrage at 3:15: both first values, to be judged by playing.
+4. The shop: switch it on (`"SHOP": "on"` in `wrangler.jsonc`, then a deploy) when wanted; it was never tried with the live store's accounts.
+5. A stash in git, "friend brackets: server half": half-built work, kept, not in this deploy.
+
+**Not checked by anyone:** people playing any of the new raid fights; a real phone; Seal the Vents (20+) and The Changing of the
+Flames (40) with that many players online; the shop on the live store.
+
+**Next:** the Raid rework (`pipeline/designs/raid-rework.html`; the user chose: the one who slips pays, all three tiers, after this
+deploy), then heroes reworked wave 1b (Zephyr, Sir Whiskers, Big Yoko) when the user says.
 
 ## Twin Flames in the Twin Forge (2026-11-12): finished, committed on `t3/twin-flames-party-raid-1`; NOT pushed, NOT live
 

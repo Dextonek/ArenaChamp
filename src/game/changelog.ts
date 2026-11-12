@@ -38,9 +38,9 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
-    date: '2026-11-11',
+    date: '2026-11-12',
     title: 'The Tower, a Raid for forty, and hero 40',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Tower',
