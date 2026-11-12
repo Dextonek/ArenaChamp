@@ -240,7 +240,7 @@ export const bardKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'resounding chord', name: 'Resounding Chord', range: 5, cooldown: 0.5,
-      blurb: 'No cooldown. A chord in a 5 m cone: 25, and 12% more for each step of Crescendo. On the beat it adds a step; cast at 5 it hits for 40, silences 0.5 s and the Crescendo starts again. Off the beat: 6 damage and the Crescendo is gone.',
+      blurb: 'No cooldown. A chord in a 5 m cone: 22, and 9% more for each step of Crescendo. On the beat it adds a step; cast at 5 it hits for 32, silences 0.5 s and the Crescendo starts again. Off the beat: 6 damage and the Crescendo is gone.',
       icon(g, s) {
         iconGround(g, s);
         // Three staves fan out of the lower left into a cone, notes riding them, sound rings across the cone and a gold spark.
@@ -261,7 +261,7 @@ export const bardKit: HeroKit = {
     },
     {
       key: 'W', label: 'siren song', name: 'Siren Song', range: 8, cooldown: 0.5, cc: true,
-      blurb: 'No cooldown. Spends the Crescendo: a note flies at the enemy (8 m, 10 m/s) and charms them 0.25 s for each step (1.25 s at 5): they walk toward him and cannot act. Off the beat it charms nobody. Cover breaks the note: step behind a pillar as it flies.',
+      blurb: 'No cooldown. Spends the Crescendo: a note flies at the enemy (8 m, 10 m/s) and charms them 0.25 s for each step (1.25 s at 5): they walk toward him and cannot act. Off the beat it charms nobody. Cover breaks the note: step behind a pillar as it flies. An enemy that cannot be charmed (a raid boss) is struck instead: 36 for each step.',
       icon(g, s) {
         iconGround(g, s);
         // A stave streams from the left into a big eighth note; a swirl of rose rings on the far side marks the charmed one.

@@ -22,6 +22,16 @@ export const CHORUS_HASTE = { amount: 0.25, seconds: 1.5 };
 export const CHORUS_SECONDS = 3;
 /** Duet: the silence a clean spell adds to a hit inside the ring. */
 export const DUET_SILENCE = 0.5;
+/**
+ * A charm or a silence of his that cannot take hold strikes instead: this much for each step of Crescendo behind it (the
+ * Siren Song's steps; 5 for the Chord's release; 1 for a silence inside Duet's ring). A raid boss can be neither charmed nor
+ * silenced, so against one the Crescendo ends in a blow; in a duel a silence always holds, and a charm fails only on a hero
+ * just out of a stun or a charm (the half second in which no second one lands). `STRIKE_AFTER`: how long after the hit the
+ * trait looks whether the charm or silence is there. Measured 2026-11-12 against the Sun Warden: 20 damage a second with
+ * 16 a step on the song and the release alone, see docs/balance/rework-1a-tuning.html for what it is now.
+ */
+export const STRIKE_PER = 36;
+const STRIKE_AFTER = 0.12;
 
 const GOLD = '#ffd24a';
 const SOUR = '#8a8494';
@@ -94,20 +104,25 @@ function setNote(t: TraitView, clean: boolean, crescendo: number) {
  * have no cooldown (the kit's 0.5 s is the gap the game server asks between two casts of a slot; Duet's 11 s is its one
  * ultimate in 10 s), but he may cast one spell a beat (`canCast`), and the beat decides what it is. A pulse runs under him
  * every 1.2 s of round time (`beatPhase`, `inTune`, the ring).
- * On the beat (within 0.25 s of a pulse) a spell lands: +12% power for each step of Crescendo (`castMods`, so it travels with
+ * On the beat (within 0.25 s of a pulse) a spell lands: +9% power for each step of Crescendo (`castMods`, so it travels with
  * the cast), and the Crescendo, his bar (`resource`, 0 to 5), goes up one. Off the beat it goes sour: a quarter of its power,
  * no silence, charm or shield, and the Crescendo is gone. The Crescendo holds three beats without a clean spell and then
  * falls a step a beat (`tick`): a stun or a silence costs him beats, nothing more.
- * Q Resounding Chord and R Duet build it; the Chord cast at 5 is the release: +60% and a 0.5 s silence, and the Crescendo
+ * Q Resounding Chord and R Duet build it; the Chord cast at 5 is the release: +45% and a 0.5 s silence, and the Crescendo
  * starts again at 0 (measured 2026-11-12: while it stayed at 5, a Cantor who never spent it won 74%). W Siren Song and
  * E Rising Chorus spend all of it (and need at least 1): 0.25 s of charm a step, a 15 shield a step for 3 s with +25% speed
  * for 1.5 s.
  * `cantorNotes` tells his effects what the cast was, on both screens (`show('note')`). Duet (R) cannot be cast while the
  * enemy is charmed (`canCast`); inside its ring `dealt` adds a 0.5 s silence to a clean spell hit.
- * The CPU (`aiHold`) casts only inside the window, sings the Siren Song from 4 Crescendo, and spends on the Chorus's shield
- * when it is under 65% HP with no shield and 3 Crescendo; it walks in to where the Chord reaches (`aiGoal`).
- * Measured 2026-11-12 (docs/balance/rework-cantor-after.html): 50% against the benchmark heroes on both sides, 36% as the
- * player's hero alone; a CPU that never spends the Crescendo: 40%.
+ * A charm or silence of his that finds no hold strikes instead (`STRIKE_PER`, `dealt` and `victimTick`): a raid boss can be
+ * neither charmed nor silenced, so against one his Crescendo ends in a blow.
+ * The CPU (`aiHold`) casts only inside the window, sings the Siren Song from 4 Crescendo (from 3 at an enemy who stays past
+ * the chord's reach), and spends on the Chorus's shield when it is under 65% HP with no shield and 3 Crescendo. It walks in
+ * to where the Chord reaches (`aiGoal`); once a brawler's swing has hit him (`taken`) it keeps the far end of the chord
+ * instead, 4.3 m off, and steps back when they close in. Before that it stood at 2.6 m from everyone, inside every slam.
+ * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the chord 25 -> 22, the step 12% -> 9%, 740 -> 720 HP): 58% against
+ * the benchmark heroes on both sides, 54% as the player's hero alone, no pairing past 78 to 22; a CPU that never spends the
+ * Crescendo: 38%.
  */
 export const bardTrait: Trait = {
   aiHold(t, slot, dist) {
@@ -144,7 +159,7 @@ export const bardTrait: Trait = {
   },
   passive: {
     name: 'Only on the Beat',
-    blurb: 'No cooldowns: one spell a beat (every 1.2 s). On the pulse it lands and the Crescendo climbs a step (5 at most, +12% power a step). Off the pulse it goes sour: a quarter of the power, nothing else, and the Crescendo is gone. The Chord at 5 silences and starts it again; Siren Song and Rising Chorus spend it. It holds three beats of rest, then falls.',
+    blurb: 'No cooldowns: one spell a beat (every 1.2 s). On the pulse it lands and the Crescendo climbs a step (5 at most, +9% power a step). Off the pulse it goes sour: a quarter of the power, nothing else, and the Crescendo is gone. The Chord at 5 silences and starts it again; Siren Song and Rising Chorus spend it. It holds three beats of rest, then falls.',
   },
   resource: { name: 'Crescendo', max: CRESCENDO_MAX, color: GOLD },
   ownChanged(t, name, n) {
@@ -185,10 +200,34 @@ export const bardTrait: Trait = {
     return { power: 1 + CRESCENDO_POWER * c };
   },
   dealt(t, hit) {
-    // Inside Duet's ring, a clean spell also silences (not the ring's own pulses, not a hit with a status of its own).
-    if (hit.kind !== 'spell' || hit.slot === 3 || !hit.victimIsHero || hit.opts.status) return;
-    if (!cantorNotes.get(t.self())?.clean || !cantorDuets.get(t.self())?.live) return;
-    hit.opts.status = { kind: 'silence', seconds: DUET_SILENCE };
+    if (hit.kind !== 'spell' || !hit.victimIsHero) return;
+    const note = cantorNotes.get(t.self());
+    const own = hit.opts.status?.kind;
+    // How much Crescendo stands behind this hit's charm or silence (0: it carries none).
+    let steps = 0;
+    if (hit.slot === 1 && own === 'charm') steps = note?.crescendo ?? 0;
+    else if (hit.slot === 0 && own === 'silence') steps = CRESCENDO_MAX;
+    else if (hit.slot !== 3 && !hit.opts.status && note?.clean && cantorDuets.get(t.self())?.live) {
+      // Inside Duet's ring, a clean spell also silences (not the ring's own pulses, not a hit with a status of its own).
+      hit.opts.status = { kind: 'silence', seconds: DUET_SILENCE };
+      steps = 1;
+    }
+    // `victimTick` looks in a moment whether it took hold.
+    if (steps > 0) {
+      t.mem.strikeAt = t.time + STRIKE_AFTER;
+      t.mem.strikeSteps = steps;
+      t.mem.strikeCharm = own === 'charm' ? 1 : 0;
+    }
+  },
+  victimTick(t) {
+    // A charm or silence that found no hold (a raid boss; a hero in the half second after a stun) strikes instead.
+    if (!t.mem.strikeAt || t.time < t.mem.strikeAt) return;
+    t.mem.strikeAt = 0;
+    const e = t.enemy();
+    const st = e && t.status(e);
+    if (!e || !st || st.has(t.mem.strikeCharm ? 'charm' : 'silence')) return;
+    t.hitEnemy({ damage: STRIKE_PER * (t.mem.strikeSteps ?? 0), knock: 0, color: '#ffe58a' });
+    t.say('STRIKE', '#ffe58a');
   },
   tick(t) {
     // Three beats of rest are free; after that the Crescendo falls a step a beat.

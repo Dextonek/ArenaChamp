@@ -74,7 +74,7 @@ export const bloodKit: HeroKit = {
   spells: [
     {
       key: 'Q', label: 'lancet', name: 'Lancet', range: 7, cooldown: 0.5,
-      blurb: 'Costs the Price. A blood needle (7 m): 33 damage, and it stays in for 3 s. From 0.6 s on, cast again to rip it out: 24 more, half the needle\'s price back, and Lancet is ready again at once. The Rip costs nothing but raises the Price. Only while she sees them within 8 m; a needle left in is lost.',
+      blurb: 'Costs the Price. A blood needle (7 m): 30 damage, and it stays in for 3 s. From 0.6 s on, cast again to rip it out: 22 more, half the needle\'s price back, and Lancet is ready again at once. The Rip costs nothing but raises the Price. Only while she sees them within 8 m; a needle left in is lost.',
       icon(g, s) {
         iconGround(g, s);
         // A long bone needle driven into a drop, a thread running back from its eye.
@@ -120,7 +120,7 @@ export const bloodKit: HeroKit = {
     },
     {
       key: 'E', label: 'hemocurse', name: 'Hemocurse', range: 7, cooldown: 0.5,
-      blurb: 'Costs the Price, no cooldown. A curse (7 m): 25 damage, for 3 s. Each spell the enemy casts costs them 20 HP, and if she is Hungry she heals 15. It breaks at 8 m or without sight.',
+      blurb: 'Costs the Price, no cooldown. A curse (7 m): 25 damage, for 3 s. Each spell the enemy casts costs them 15 HP, and if she is Hungry she heals 20. It breaks at 8 m or without sight.',
       icon(g, s) {
         iconGround(g, s);
         // A bone ring with a drop inside, thorned like a sigil, a broken link at the bottom.
@@ -143,7 +143,7 @@ export const bloodKit: HeroKit = {
     },
     {
       key: 'R', label: 'sanguine feast', name: 'Sanguine Feast', range: 8, cooldown: 11,
-      blurb: 'Costs twice the Price, once in 11 s. She roots herself and drinks (8 m) for 1.6 s: pulses of 35, 35, then 40 plus 20% of their missing HP, and 60 HP back. A stun or silence, cover, or 9 m of distance ends it.',
+      blurb: 'Costs twice the Price, once in 11 s. She roots herself and drinks (8 m) for 1.6 s: pulses of 18, 18, then 24 plus 20% of their missing HP, and 45 HP back. A stun or silence, cover, or 9 m of distance ends it.',
       icon(g, s) {
         iconGround(g, s);
         // Two fangs over a falling drop, a bone ring round the whole.

@@ -11,13 +11,13 @@ import type { Effect, EffectModule } from '../../effects/types';
  * 7 m (the engine checks sight at the cast). Cast: a crystal needle forms at her hand and flies to the enemy in 0.4 s while a
  * red circle shows on them (the warning). At 0.4 s the spell checks itself: with `stillSees` false or the enemy past
  * `REACH` (8 m) the needle shatters short of them and nothing hits (a fizzle). Otherwise it sinks into the chest and stays:
- * 33 damage (`projectile: true`, judged on the live position, so it cannot be walked out of; the red circle is the warning)
+ * 30 damage (`projectile: true`, judged on the live position, so it cannot be walked out of; the red circle is the warning)
  * and a bone sigil under them. The needle stays in for 3 s as a blood pip on the enemy (the trait's `dealt`), and the first
  * cast costs her the Price (`castMods`; since the rework of 2026-11-12 Lancet has no cooldown: a needle left in locks it
  * 3.4 s, the Rip frees it at once).
  * Recast (the Rip, free, opens 0.6 s after the cast and stays open to 3.3 s; the trait's `recast`): a thread of
  * blood runs from the needle to her hand; at 0.3 s, if the first cast struck, `stillSees` and the enemy is within 8 m, the
- * needle is torn out and flies home: 24 damage, the pip goes, and she gets half the needle's price back when the hit lands
+ * needle is torn out and flies home: 22 damage, the pip goes, and she gets half the needle's price back when the hit lands
  * (the trait's `landed`). Otherwise the thread snaps and the rip fizzles. The effect tells the two casts apart itself: a cast of the same
  * figure within 3.3 s of an unripped first cast is the rip (a clock per figure, so the other screen of a network duel, which
  * replays both casts, agrees; the `mode` setting forces one). Clean by 1.4 s (the rip 1.0 s).

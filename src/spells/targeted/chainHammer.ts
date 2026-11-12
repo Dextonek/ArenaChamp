@@ -13,7 +13,7 @@ import type { Effect, EffectModule } from '../../effects/types';
  * Chain Hammer (forge kit v5, Q: a hooking skillshot). A 0.3 s wind-up: he whirls the hammer on its chain round himself
  * (a ring of links at his waist spinning up and heating, sparks) so the throw can be read. At 0.3 s the hammer leaves
  * (`ctx.projectile`, 18 m/s, 9 m, radius 0.45: it reaches 6 m at 0.63 s) tumbling down the aim, and a straight run of
- * chain links stays joined from his hand to it, drawn back to him every frame. The first enemy it touches takes 40 and is
+ * chain links stays joined from his hand to it, drawn back to him every frame. The first enemy it touches takes 34 (at full power; the Heat scales it) and is
  * dragged 4 m toward him (`pull: 4`, `knock: 0`) and slowed 1 s; the chain stays taut on the enemy for 0.45 s while they
  * come, then it whips back to his hand with a puff of steam. A miss reels the chain in the same way. Tempered (his trait,
  * on a 3-Heat enemy): stunned 0.75 s instead of the slow. The hit's status is the trait's to change; this file only asks

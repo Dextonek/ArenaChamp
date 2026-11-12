@@ -11,10 +11,10 @@ import { FEAST_SECONDS, bloodDrawn } from '../../traits/blood';
  * Sanguine Feast (blood kit v5, R: a 1.6 s channel). Click an enemy within 8 m (the engine checks sight at the cast). She
  * is rooted for `FEAST_SECONDS` (1.6 s: the trait's `afterCast` calls `t.hold`, and the red circle on the enemy lasts as
  * long) and a bone sigil spreads under her; a ring at her feet empties as it runs (`ChannelBar`) and a thread of blood runs
- * from her hand to the enemy. Pulses at 0.4, 1.0 and 1.6 s (`PULSE_AT`): 35, 35 and then 40 plus 20% of the enemy's missing
+ * from her hand to the enemy. Pulses at 0.4, 1.0 and 1.6 s (`PULSE_AT`): 18, 18 and then 24 plus 20% of the enemy's missing
  * HP, every hit `projectile: true` (judged on the live position: the channel is the catch) and `knock: 0`, no drag. The
  * engine gives a spell no target HP, so the missing HP is what she has dealt the enemy this round (`bloodDrawn`, written by
- * the trait's `dealt`), capped at `MISSING_CAP`. The blood runs back to her on every pulse and the third heals her 60
+ * the trait's `dealt`), capped at `MISSING_CAP`. The blood runs back to her on every pulse and the third heals her 45
  * (`ctx.healSelf`; it is not gated on the hit, as the engine tells her screen nothing of the victim's `taken`): the Feast is
  * how she gets her blood back, Hungry or not (the rework of 2026-11-12). The channel ends at once, `ctx.releaseCaster` frees her and the thread snaps
  * if a stun, silence or knock-up hits her (`channelBroken`), if the enemy is past 9 m (`BREAK`) or if she no longer sees

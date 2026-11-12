@@ -103,12 +103,15 @@ const AI_NO_SWING = 2.4;
  * in the cast's mods), and the hammer is cold again. Its 11 s cooldown is the game server's: one ultimate in 10 s.
  * W Forge Roar (kit buff: +30% armour 3 s) arms a slam (`mem.slamUntil`, shown as 'slam'): his next basic attack is
  * +30 with a 0.5 s knock-up.
- * The CPU (`aiHold`): a breath between spells so he swings, no Chain Hammer on an enemy already in reach, no second roar
- * on an armed slam, a roar between two rivets in reach, no spell that would turn the hammer white while the Quench is far
- * from ready; white-hot it pays for spells only above half HP, rides the heat 3.5 s, then Quenches with the enemy inside
- * the ring (anywhere under 25% HP).
- * Measured 2026-11-12 (docs/balance/rework-brannoc-after.html): 53% against the benchmark heroes on both sides and 34% as
- * the player's hero alone; a second run of the same code gave 59% and 43%. Without the CPU's breath between spells: 44%.
+ * The CPU (`aiHold`): a breath between spells so he swings, and in reach of his hammer a spell only as a swing lands (a
+ * cast drops a wind-up: the player's side lost a third of its swings to that, which was all of the gap between his two
+ * sides); no Chain Hammer on an enemy already in reach, no second roar on an armed slam, a roar between two rivets in
+ * reach, no spell that would turn the hammer white while the Quench is far from ready. White-hot it pays for spells only
+ * above half HP, rides the heat 3.5 s, then Quenches with the enemy inside the ring (anywhere under 25% HP). An enemy who
+ * keeps out of the ring (the CPU steps back from white heat) is dragged back with the chain, and after 5 s he Quenches
+ * anyway: before, he stood there and burned.
+ * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the Chain Hammer 40 -> 34): 51% against the benchmark heroes on
+ * both sides, 54% as the player's hero alone. Without the CPU's pauses: 25%.
  */
 export const forgeTrait: Trait = {
   aiHold(t, slot, dist) {

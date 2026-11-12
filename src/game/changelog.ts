@@ -71,6 +71,11 @@ export const CHANGELOG: Release[] = [
         alt: 'Vesper in a duel after a burst of spells, the Price bar under her portrait run up and the cost of each spell floating over her head.',
       },
       {
+        tag: 'Balance',
+        title: 'Brannoc, Cantor and Vesper, evened out',
+        text: 'Each of the three now wins about half its duels against the computer. Cantor\'s chord hits for 22 and grows 9% a step; Brannoc\'s Chain Hammer hits a sixth softer; Vesper\'s needle and Feast hit softer, and she drinks less while she is ahead and more while she is Hungry. The computer plays them better too: it keeps Cantor and Vesper out of a brawler\'s reach, and lets Brannoc\'s hammer land before his next spell. Against a raid boss, which cannot be charmed or silenced, Cantor\'s song and his full Crescendo now strike it instead.',
+      },
+      {
         tag: 'CPU',
         title: 'The computer\'s Cantor aims his chord',
         text: 'Played by the computer, Cantor struck his chord the same way every time, wherever you stood, and missed most of them. Now he strikes it at you.',

@@ -12,8 +12,8 @@ import { CHORD_SILENCE, CRESCENDO_MAX, cantorNotes } from '../../traits/bard';
  * Resounding Chord (bard kit v5, Q: a quick cone, no aim). Cantor turns toward the nearest enemy (the engine has turned
  * him by the cast: `ctx.aim`) and strikes a chord: three staves fan out of his hands through a 90 degree cone, 5 m long,
  * with notes riding them outward, and a sound ring leaves his feet. At 0.4 s everyone inside the cone (judged on the live
- * position) takes 25 (the cone is the cast's telegraph, so the duel's zone filter holds). His trait decides the rest at the
- * cast (`cantorNotes`, src/traits/bard.ts): on the beat the chord is gold and hits 12% harder for each step of Crescendo (the
+ * position) takes 22 (the cone is the cast's telegraph, so the duel's zone filter holds). His trait decides the rest at the
+ * cast (`cantorNotes`, src/traits/bard.ts): on the beat the chord is gold and hits 9% harder for each step of Crescendo (the
  * trait's power), and cast at the top of the Crescendo it also silences 0.5 s (and the trait starts the Crescendo again);
  * off the beat it is a sour, rose chord at a quarter
  * of the power. No cooldown: one spell a beat. Clean by 1.3 s.

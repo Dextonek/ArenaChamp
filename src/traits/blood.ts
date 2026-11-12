@@ -117,23 +117,26 @@ const AI_KITE_STAND = 4.8;
  * falling 11 a second once she has cast nothing for 1 s (`tick`). The Price is her bar (`resource`) and the badge shows
  * the next cost. She cannot cast what she cannot pay (`canCast`): a Vesper who has spent herself low stands there with
  * nothing to cast, and `payHp` could not take her last HP anyway.
- * The drain gives it back: every spell hit of Q, W, E heals her a quarter of its damage, half while she is Hungry (below
+ * The drain gives it back: every spell hit of Q, W, E heals her 15% of its damage, 65% while she is Hungry (below
  * 45% HP: `tick` shows it, a crimson ring at her feet); `landed`. Lancet (Q) can be cast again from 0.6 s to 3.3 s as the
  * Rip (`recast`): free, it gives back half of what the needle really cost her when it lands (`landed`; the Rip does not
  * drink as well) and makes Lancet ready again at once (`recastAct` sets the cooldown); a needle she leaves in locks Lancet
- * 3.4 s (`cooldown`). The needle is a pip on the enemy (`dealt`). The Feast (R) gives back 60 on its third pulse (the effect).
+ * 3.4 s (`cooldown`). The needle is a pip on the enemy (`dealt`). The Feast (R) gives back 45 on its third pulse (the effect).
  * Why the Rip raises the Price and does not drink: measured 2026-11-12, a Vesper who cast nothing but needle and Rip, as
  * fast as they came, won 90% while the Rip stood outside the climb. Greed has to lose (pipeline/designs/heroes-rework.md).
  * Mist Waltz (W) arms two attacks for 3 s: +18 damage and 1.5 m more reach each (`attackMods`, `attackReach`). For the CPU
  * it is a getaway (`escape` in the kit): it flows away from an enemy within 3.5 m and shoots.
- * Hemocurse (E): the effect owns `hemocurses`; while it is live each spell the enemy casts costs them 20 HP (`enemyCast`
- * calls `hitEnemy`, decided where the hit is real) and heals her 15 if she is Hungry. It was 30 before the rework: more
- * and more heroes cast without cooldowns, and 30 a spell was a quarter of her damage. Sanguine Feast (R) holds her 1.6 s.
- * The CPU (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half), then holds off until
- * the Price is nearly back at rest; it keeps 50 HP back, always takes the Rip, does not curse a cursed enemy and starts the
- * Feast only within 4 m.
- * Measured 2026-11-12 (docs/balance/rework-vesper-after.html): 57% against the benchmark heroes, on both sides and as the
- * player's hero alone; with Lancet never held back (the greedy line) 14%.
+ * Hemocurse (E): the effect owns `hemocurses`; while it is live each spell the enemy casts costs them 15 HP (`enemyCast`
+ * calls `hitEnemy`, decided where the hit is real) and heals her 20 if she is Hungry. It was 30 before the rework and 20 after it: more
+ * and more heroes cast without cooldowns (against Cantor, a spell every beat, 20 was a fifth of her damage). Sanguine Feast (R) holds her 1.6 s.
+ * The CPU (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half; 40 while Hungry, when
+ * her spells drink most of it back), then holds off until the Price is nearly back at rest; it keeps 50 HP back, always
+ * takes the Rip, does not curse a cursed enemy, throws the needle before it waltzes away, and starts the Feast within
+ * 5.5 m (within 4 m it never used it on an archer). Once a brawler's swing has hit her (`taken`) it steps back from them
+ * between shots (`aiGoal`).
+ * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the needle 33 -> 30, the Rip 24 -> 22, the Feast 35/35/40 -> 18/18/24
+ * and 60 -> 45 back, the drink 25% -> 15% and 50% -> 65% Hungry, the curse 20 -> 15 a spell, 660 -> 640 HP): 47 to 50% against the
+ * benchmark heroes, on both sides and as the player's hero alone; with nothing but needle and Rip (the greedy line) 0%.
  */
 export const bloodTrait: Trait = {
   aiHold(t, slot, dist) {
@@ -172,7 +175,7 @@ export const bloodTrait: Trait = {
   },
   passive: {
     name: 'Blood Price',
-    blurb: 'No cooldowns: she pays in blood. Each spell costs her the Price in HP: 10 at rest, 10 more after every spell (the free Rip too), up to 100, falling again when she holds back for a second. Her spell hits drink back a quarter of their damage, half below 45% HP (Hungry). She cannot cast what she cannot pay.',
+    blurb: 'No cooldowns: she pays in blood. Each spell costs her the Price in HP: 10 at rest, 10 more after every spell (the free Rip too), up to 100, falling again when she holds back for a second. Her spell hits drink back 15% of their damage, 65% below 45% HP (Hungry). She cannot cast what she cannot pay.',
   },
   resource: { name: 'Price', max: PRICE_MAX, color: BLOOD, start: PRICE_BASE },
   ownLook: {
