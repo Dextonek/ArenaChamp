@@ -2,7 +2,7 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
 
-## Quick cast, as in League (2026-11-12, night)
+## Quick cast, as in League (2026-11-12, night): pushed and LIVE (version ca9551e2)
 
 - The user, after a look at League's three cast modes: "yes build quickcast", with A attacking at the cursor at once in the
   quick modes, then push and deploy. Three modes, switched with "Casting" under the hero's name on the spell bar, kept in the
