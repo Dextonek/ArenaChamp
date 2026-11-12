@@ -44,6 +44,13 @@ export const CHANGELOG: Release[] = [
     items: [
       {
         tag: 'Raid',
+        title: 'Twin Flames',
+        text: 'A party of three or more now fights Ash and Ember both at once, in a wider pit split down the middle by a wall of fire: half the party with Ash among his pillars, half with Ember over her vents. Bring them down together. Both health bars show on every screen, and if one gets more than 12 points ahead, the other grows furious until you are level again. When one falls the wall goes out, and the last one is everyone\'s. For one or two players they are the tag team they were.',
+        image: 'news/twin-flames.jpg',
+        alt: 'Half of a party fighting Ember among her glowing vents, a wall of fire on the left, and across it Ash\'s pillars; two health bars at the top with the gap between them.',
+      },
+      {
+        tag: 'Raid',
         title: 'The Heart of Noon',
         text: 'A third boss waits under the hall, through a new gate in the north: the fallen sun itself, a gold face in a molten heart, with two sun blades for hands. Walk through the gaps of its Solar Flare, hold the gold spots on the rim to stop its turning rings, and raise fallen plates of its crust as cover when its heart beats. A tier is now the Warden, Ash and Ember, then the Heart.',
         image: 'news/heart-of-noon.jpg',

@@ -420,7 +420,9 @@ export class BossFight {
       this.stats.phases = t.phase[live];
       this.timedSeen = 0;
       this.stageDue = null;
+      // The bar's words were the fallen one's.
       this.hud.stopCast();
+      this.hud.setState('', 0);
       this.hud.setGauge(t.gauge[live] / (this.link.staggerMax ?? this.def.staggerMax));
       this.openLeft = 0;
     }

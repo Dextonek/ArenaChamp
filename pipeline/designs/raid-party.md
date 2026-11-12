@@ -1,7 +1,7 @@
 ---
 title: The Raid for up to 40 players
 tags: [raid, online, design]
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # The Raid for up to 40 players
@@ -146,9 +146,46 @@ Nine ideas were shown (`pipeline/designs/raid-mechanics.html`); the user picked 
   road on the floor lights in the one safe arm, and the whole party runs there before the bell. A party's mechanic (the hall).
 - **Ash and Ember: Twin Flames.** For a party both fight at once, one on each side of a wall of fire that splits the room and the
   party; their health must fall together, or the one behind grows furious. Each screen still has one enemy (its side's boss) and the
-  other is only drawn, so the engine's rule holds; the hub keeps two HP pools. The biggest of the three; built after the other two.
+  other is only drawn, so the engine's rule holds; the hub keeps two HP pools. The biggest of the three. **Built 2026-11-12** (below).
 - **The Heart of Noon: Hold Still.** The heart beats in a rhythm shown on the floor; on the beat anyone moving is burnt; between
   beats, run. The rhythm quickens as it dies.
+
+## Twin Flames is built (2026-11-12)
+
+How it works now: `docs/architecture/raid.md`, "Twin Flames". Pictures: `docs/bosses/twin-west.jpg`, `twin-east.jpg`,
+`twin-furious.jpg`, `twin-furious-west.jpg`, `twin-together.jpg`, `twin-wall-out.jpg`, `twin-wall-out-west.jpg`, `twin-last-one.jpg`,
+`twin-phone.jpg`.
+
+**What was decided, where the brief left it open.**
+
+- **Sides: the hub deals them.** The wall stands from the start, and the players present are dealt west, east, west... by seat as the
+  fight loads. The simplest that can't leave a half empty; walking in and choosing in a few seconds could. So nobody picks a team yet:
+  the order of the seats in the lobby does. A choice in the lobby would be the next step.
+- **HP: the band's, split in two.** `raid_stage.hp` is still the band's HP for Ash and Ember (35,500 at band 10), and each of the two
+  has half of it and half the gauge. A half of the party against a boss of half the size.
+- **The stage: one each.** Each has its own Eruption at 50 % of its own HP, in its own half, with its own Coal Hearts. When they fall
+  together both stages run at once, and each half has its own to do.
+- **The vent: one each, the lava for all.** Each has its own vent in Together. The lava rises for the whole room once either is in
+  Together, and sealing either vent holds it back for everyone, so one half can help the other.
+- **Whole-floor moves stop at the wall,** on the floor and in the rules: the table in raid.md. Zones are drawn cut off at the wall.
+- **When one falls,** the other is furious to its end, at the furious numbers (1.5 times, 0.6), not the enrage's. Killed together, that
+  is a few seconds; killed far apart, it is a long fight against a furious one that was already furious for being behind.
+- **Pillars:** four round Ash and one more for every three heroes of his half (band / 2): 5, 6, 7, 8, 9 and 11 for the bands 5 to 40.
+
+**Numbers.** 12 points apart on, 6 off (`RAID_TWIN`). Furious: hits 1.5 times, the quiet between moves 0.6 (`FURY_HIT`, `FURY_GAP`).
+The room 30 m. Drag Under's ring 4.5 to 14 m. Lava Wave 6.5 m/s over 33 m. Falling Star 45 % shared. Coal Hearts 6.5 m round each
+one's place, each 3.5 % of one boss's HP (621 at band 10). The lava at 24, 20, 16 m.
+
+**Measured** (six bots through the real hub, band 10, 17,750 HP each, no help): the two stayed within 6 points for three minutes
+without anyone trying, so the rule only bites when the halves differ; half HP after 2:10 of fighting; Ash down at 3:34, past the 2:50
+enrage, Ember at 16 % and most of the party down soon after. About 27 HP a second from each bot, 80 from a half. All screens agreed
+on both bars; no bot crossed the wall; no errors. Steered by the tool (one half helped ahead): Ember furious at 13 points, calm again
+at 3, Ash down, the wall out, everyone on Ember, won.
+
+**Not done or not checked.** Played by people. More than six screens. A player leaving in a twin fight was checked on the hub only
+(the brain goes to the same half; an empty half has none), not in the browser. A higher tier (its extras go to whose they are: Ash
+gets Cinder Rock). The room is a first pass in code: a Blender room is to come, with `TWIN_LAYOUT` as its plan. Choosing a side.
+The party's list does not say who is in which half. `docs/architecture/multiplayer.md` does not have the new messages (raid.md does).
 
 ## State (2026-11-11)
 

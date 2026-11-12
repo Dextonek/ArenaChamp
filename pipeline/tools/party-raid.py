@@ -49,8 +49,9 @@ async def shot(pg, path):
 class TwinPlan:
     """
     Steers the bots' boost through Twin Flames, from what screen 0 sees of both HP bars, and takes the pictures.
-    Stages: wait, lead (the west half gets ahead until Ember is furious), level (the east catches up until she calms),
-    both (both halves, until Ash is low), ash (the west only, until he falls), ember (everyone on her), done.
+    Stages: wait (the fight as the bots play it, 14 s), lead (the west half gets ahead until Ember is furious), level
+    (the east catches up until she calms), both (both halves, until they are under a third), ash (the west only, until
+    he falls and the wall goes out), ember (everyone on her), done.
     """
 
     def __init__(self, pages, out, boost):
@@ -58,6 +59,8 @@ class TwinPlan:
         self.stage = "wait"
         self.seen = set()
         self.notes = []
+        self.live = None
+        self.since = 0.0
 
     async def set(self, west, east, halves):
         for pg, half in zip(self.pages, halves):
@@ -80,18 +83,25 @@ class TwinPlan:
         east = next((pg for pg, h in zip(self.pages, halves) if h == 1), self.pages[-1])
         b = self.boost
         was = self.stage
-        if self.stage == "wait" and t > 22:
-            await self.once("west", west)
-            await self.once("east", east)
-            if len(self.pages) > 2:
-                await self.once("phone", self.pages[-1])
-            self.stage = "lead"
+        # The fight is on from the first hit on either of them.
+        if self.live is None and min(share) < 1:
+            self.live = t
+        if self.stage == "wait":
+            if self.live is not None and t - self.live > 12:
+                await self.once("west", west)
+                await self.once("east", east)
+                if len(self.pages) > 2:
+                    await self.once("phone", self.pages[-1])
+                self.stage = "lead"
         elif self.stage == "lead":
             await self.set(b * 3, 0, halves)
             if tw["furious"] == 1:
                 await asyncio.sleep(0.6)
                 await self.once("furious-east", east)
                 await self.once("furious-seen-from-west", west)
+                # A second look: a hero's own spell can fill the first.
+                await asyncio.sleep(2.5)
+                await self.once("furious-east-2", east)
                 self.stage = "level"
         elif self.stage == "level":
             await self.set(0, b * 3, halves)
@@ -100,24 +110,28 @@ class TwinPlan:
         elif self.stage == "both":
             # Level again and falling together: more on whichever is behind.
             await self.set(b * (2 if gap > 0 else 1), b * (2 if gap < 0 else 1), halves)
-            if min(share) < 0.3:
+            if min(share) < 0.33:
                 await self.once("together", west)
-            if share[0] < 0.1:
                 self.stage = "ash"
         elif self.stage == "ash":
-            await self.set(b * 3, 0, halves)
+            await self.set(b * 4, 0, halves)
             if tw["dead"][0]:
+                await self.set(0, 0, halves)
                 await self.once("wall-out-east", east)
                 await self.once("wall-out-west", west)
-                await asyncio.sleep(1.5)
+                await asyncio.sleep(2.5)
                 await self.once("wall-gone", west)
                 self.stage = "ember"
+                self.since = t
         elif self.stage == "ember":
-            await self.set(b * 3, b * 3, halves)
+            # A while with no boost, so the west half walks over to her; then everyone ends it.
+            if t - self.since > 14:
+                await self.once("last-one", west)
+                await self.set(b * 3, b * 3, halves)
             if tw["dead"][1] or now[0].get("over"):
-                await asyncio.sleep(1.2)
                 await self.once("won", west)
                 self.stage = "done"
+                self.since = t
         if self.stage != was:
             self.notes.append((round(t), self.stage, round(share[0] * 100), round(share[1] * 100)))
             print(f"      twin: {was} -> {self.stage} at {t:.0f} s, Ash {share[0] * 100:.0f} %, Ember {share[1] * 100:.0f} %")
@@ -163,12 +177,15 @@ async def run(args):
             last = 0.0
             spread = 0.0
             crossed = 0
+            twin_seen = False
             while time.time() - t0 < args.seconds:
-                await asyncio.sleep(1 if plan else 5)
+                await asyncio.sleep(1 if args.boss == "ash" else 5)
                 t = time.time() - t0
                 now = [await pg.evaluate("() => _botRaid()") for pg in pages]
-                if plan and all(s.get("twin") for s in now) and not all(s.get("over") for s in now):
-                    await plan.step(t, now)
+                if all(s.get("twin") for s in now):
+                    twin_seen = True
+                    if plan:
+                        await plan.step(t, now)
                     # Every screen's two HP bars against screen 0's, as a share of a bar; and nobody across the wall while it stands.
                     for s in now[1:]:
                         for i in (0, 1):
@@ -176,6 +193,9 @@ async def run(args):
                     for s in now:
                         if s["twin"]["wall"] and s.get("me") and (s["me"][0] < 0) != (s["twin"]["half"] == 0):
                             crossed += 1
+                    # The planned fight is over: no need to play on into the next boss.
+                    if plan and plan.stage == "done" and t - plan.since > 3:
+                        break
                 if t - last >= 5:
                     last = t
                     if now[0].get("twin"):
@@ -183,7 +203,7 @@ async def run(args):
                     else:
                         line = " | ".join(f"{s.get('boss', '-')}/{s.get('hp', '-')}{'D' if s.get('down') else ''}" for s in now)
                     print(f"{t:5.0f}s  {line}")
-                if not taken and not plan and all(s.get("boss") for s in now) and t > 40:
+                if not taken and not plan and all(s.get("boss") for s in now) and t > (60 if twin_seen else 40):
                     taken = True
                     await pages[0].screenshot(path=str(out / "party-first.png"))
                     await pages[-1].screenshot(path=str(out / "party-last.png"))
@@ -201,9 +221,10 @@ async def run(args):
                 twin = f", half {tw['half']}, enemy {tw['name']}, bars {tw['hp']}, furious {tw['furious']}, dead {tw['dead']}" if tw else ""
                 print(f"screen {i}: samples {len(s)}, room {last_s.get('room')}, gauge {last_s.get('gauge')}, party {last_s.get('party')}, boss {last_s.get('boss')}, phase {last_s.get('phase')}, "
                       f"hp {last_s.get('hp')}, far {far:.0f}, over {last_s.get('over')}{twin}, errors {len(l['log']['errors'])} {l['log']['errors'][:2]}")
-            if plan:
+            if twin_seen:
                 events = logs[0]["raid"].get("events", [])
-                print(f"twin: stages {plan.notes}")
+                if plan:
+                    print(f"twin: stages {plan.notes}")
                 print(f"twin: screens apart by at most {spread * 100:.2f} % of a bar; samples with a bot across the standing wall: {crossed}; "
                       f"screen 0 saw {[(e['t'], e['furious'], e['dead'], e['over']) for e in events]}")
             await browser.close()

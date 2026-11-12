@@ -287,14 +287,14 @@ class FireWall {
     this.group.add(strip, flames);
   }
 
-  /** Lit, or out: it fades over a second and a half. `now`: at once (a new fight). */
+  /** Lit, or out: it fades over two and a half seconds. `now`: at once (a new fight). */
   set(on: boolean, now = false) {
     this.to = on ? 1 : 0;
     if (now) this.on = this.to;
   }
 
   update(dt: number, time: number) {
-    this.on += Math.sign(this.to - this.on) * Math.min(Math.abs(this.to - this.on), dt / 1.5);
+    this.on += Math.sign(this.to - this.on) * Math.min(Math.abs(this.to - this.on), dt / 2.5);
     this.flames.uniforms.uTime.value = this.strip.uniforms.uTime.value = time;
     this.flames.uniforms.uOn.value = this.strip.uniforms.uOn.value = this.on;
   }
