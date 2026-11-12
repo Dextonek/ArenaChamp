@@ -2500,7 +2500,7 @@
       // A sealed vent holds it back, whoever's vent it is.
       const sv = cast('seale', 1, { x: TWIN_LAYOUT.hold[1].x, z: TWIN_LAYOUT.hold[1].z });
       step(0.3);
-      yes('flood: her vent is this hero\'s to seal too, now the wall is out', d.boss.objectiveGoal(me().x, me().z) !== null && d.boss.script.objectiveGoal(me().x, me().z) === null);
+      yes('flood: her vent is this hero\'s to seal too, now the wall is out; an AI leaves it to her team', scriptOf(1).objectiveGoal(me().x, me().z) !== null && d.boss.objectiveGoal(me().x, me().z) === null);
       const in0 = floodInset();
       link.on.done(sv.id, 0, 3);
       check('her half seals it: the flood is held back 20 s on this screen too', forge.held, 20, 0.01);
@@ -2546,6 +2546,7 @@
       const timed10 = d.boss.def.phases[3].timed.move;
       fresh(0, 20);
       yes('band 10: one vent to seal in Together; band 20: Seal the Vents in its place', timed10 === 'sealw' && d.boss.def.phases[3].timed.move === 'ventsw' && d.boss.def.band === 20);
+      yes('Together: Ash charges no more, in a fight for a party', !d.boss.def.phases[3].moves.includes('charge') && d.boss.def.phases[2].moves.includes('charge'));
 
       // Lantern Chain (10 or more): a pair of one half, named in the cast's target and mate.
       freshPair(0, 10, 0);

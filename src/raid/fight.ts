@@ -228,8 +228,10 @@ export class BossFight {
 
   /**
    * The scripts this screen's hero must mind: its own boss's, and in Twin Flames the other's too once the wall of fire is out
-   * (the pit floods). What an AI asks of a fight (`danger`, `mustHide`...) it asks of all of them.
-   */
+   * (the pit floods). An AI keeps out of the zones of all of them (`danger`, `wary`, `stillIn`). What it goes and does, it does for
+   * its own boss only (`objectiveGoal`, `standGoal`, `mustHide`): the other twin's vents and gold zones are its own team's, and
+   * bots that crossed the room for them left their own fight and stood in one spot for the next thing to land. A person may still
+   * take them.
   private get minds(): BossScript[] {
     const t = this.twin;
     return t && t.open && !t.dead[1 - t.mine] ? [this.script, t.scripts[1 - t.mine]] : [this.script];
@@ -240,14 +242,14 @@ export class BossFight {
     return this.minds.some((s) => s.danger(x, z, within));
   }
 
-  /** A warning of a killing hit shows. */
+  /** A warning of a killing hit shows, from this screen's own boss. */
   get mustHide() {
-    return this.minds.some((s) => s.mustHide);
+    return this.script.mustHide;
   }
 
   /** Whether (x, z) is out of reach of every killing hit a warning shows now. */
   hidden(x: number, z: number) {
-    return this.minds.every((s) => s.hidden(x, z));
+    return this.script.hidden(x, z);
   }
 
   /** A move is coming after whoever it aims at. */
@@ -267,18 +269,12 @@ export class BossFight {
 
   /** The nearest spot an AI should go and take, if one shows. */
   objectiveGoal(x: number, z: number) {
-    return this.nearest(this.minds.map((s) => s.objectiveGoal(x, z)), x, z);
+    return this.script.objectiveGoal(x, z);
   }
 
   /** The gold zone an AI should go and stand in, if one shows. */
   standGoal(x: number, z: number) {
-    return this.nearest(this.minds.map((s) => s.standGoal(x, z)), x, z);
-  }
-
-  private nearest<T extends { x: number; z: number }>(list: (T | null)[], x: number, z: number) {
-    let best: T | null = null;
-    for (const o of list) if (o && (!best || Math.hypot(o.x - x, o.z - z) < Math.hypot(best.x - x, best.z - z))) best = o;
-    return best;
+    return this.script.standGoal(x, z);
   }
 
   /** Every script of this fight: one, or Twin Flames' two. */

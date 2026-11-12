@@ -875,6 +875,8 @@ const TWIN_KIT = [
  *   what the band is too small for (`BossMove.minBand`). The Changing of the Flames is Ash's to call, and not in Together: the
  *   wall is out by then.
  * - Together's vent comes by the phase's clock, which never asks the band: for 20 or more it is Seal the Vents.
+ * - No Charge in Together: the flood takes his pillars one by one, and both teams end on one island with two of them left. A
+ *   Charge every 22 s there killed its hero each time (six bots, 2026-11-12).
  */
 function twinPhases(which: number, band: number): BossPhase[] {
   const k = TWIN_KIT[which], all = [...k.first, ...k.then], seal = band >= 20 ? k.vents : k.seal;
@@ -882,7 +884,7 @@ function twinPhases(which: number, band: number): BossPhase[] {
     { name: 'Twin Flames', at: 1, moves: [...k.first, ...k.party], gap: [2.4, 3.4] },
     { name: 'The floor cracks', at: NUMBERS.phases[0], moves: ['crack', ...all, ...k.party], gap: [2.2, 3.2] },
     { name: 'Eruption', at: NUMBERS.phases[1], moves: ['crack', ...all, ...k.party], opener: k.stage, gap: [2.2, 3.2] },
-    { name: 'Together', at: NUMBERS.phases[2], moves: ['flood', ...all, 'chain'], gap: [2, 3], timed: { move: seal, first: 6, every: 25, most: band >= 20 ? 3 : 2 } },
+    { name: 'Together', at: NUMBERS.phases[2], moves: ['flood', ...all.filter((id) => id !== 'charge'), 'chain'], gap: [2, 3], timed: { move: seal, first: 6, every: 25, most: band >= 20 ? 3 : 2 } },
   ];
 }
 let twinPhaseList: [BossPhase[], BossPhase[]] = [twinPhases(0, 10), twinPhases(1, 10)];
