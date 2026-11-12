@@ -20,9 +20,12 @@ import { TOUCH } from '../touch';
 import { RaidController } from '../raid/coop';
 import { RaidRun, scoreText } from '../raid/run';
 import { SUN_WARDEN } from '../raid/sunWarden';
+import { LIVES, TowerRun, towerBest, towerSaved } from '../tower/run';
+import { KIND_NAME, TWISTS, isoWeek, towerFor, untilNext, weekBefore } from '../tower/week';
+import { heightName } from '../arenas/tower';
 import { CHANGELOG, type NewsItem, type Release } from './changelog';
 
-type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'news';
+type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news';
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
@@ -93,6 +96,7 @@ const ICONS = {
   play: '<path d="M8 16L20 4M20 4v4M20 4h-4M6 14l4 4M8 16l-4 4M16 16L4 4M4 4v4M4 4h4M18 14l-4 4M16 16l4 4"/>',
   cpu: '<rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/>',
   raid: '<path d="M12 3c.5 3.5 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2 .8-3.2 2-4.5.2 2 1 3 2 3 .3-3-1-5.5 1-9z"/>',
+  tower: '<path d="M7 21V9l-1.5-2V3.5h2.6V5h2.3V3.5h2.6V5h2.3V3.5H17V7l-1.5 2v12M4.5 21h15M10.2 21v-4a1.8 1.8 0 0 1 3.6 0v4M10.5 11.5h3"/>',
   lobbies: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.1c2.6.4 4.5 2.8 4.5 5.9"/>',
   heroes: '<path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6z"/><path d="M12 8v8M9 11h6"/>',
   profile: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
@@ -205,15 +209,15 @@ function render() {
     shownScreen = state.screen;
     root.scrollTop = 0;
   }
-  if (match.active || cpu.active || raid.active || coop.active) { root.style.display = 'none'; shownScreen = null; return; }
+  if (match.active || cpu.active || raid.active || coop.active || tower.active) { root.style.display = 'none'; shownScreen = null; return; }
   root.style.display = '';
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
-  // Without an account: the login screen, or the CPU or Raid screen (an offline fight needs no account).
+  // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
   if (!state.profile) {
-    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'news') { root.append(loginScreen()); return; }
+    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'tower' && state.screen !== 'news') { root.append(loginScreen()); return; }
     root.append(header(), state.screen === 'news'
       ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, newsScreen())
-      : el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : raidScreen()));
+      : el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : state.screen === 'tower' ? towerScreen() : raidScreen()));
     keepScroll();
     return;
   }
@@ -226,8 +230,9 @@ function render() {
         : s === 'lobbies' ? lobbiesScreen()
           : s === 'lobby' && state.lobby ? lobbyScreen(state.lobby)
             : s === 'raid' ? raidScreen()
-              : s === 'news' ? newsScreen()
-                : menuScreen(),
+              : s === 'tower' ? towerScreen()
+                : s === 'news' ? newsScreen()
+                  : menuScreen(),
   );
   root.append(body);
   // The Play screen (also shown for a lobby that has closed) is wider, and shows the search in its own bar.
@@ -255,12 +260,12 @@ function header() {
   if (!p) {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('News', 'news', 'news')),
+      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('News', 'news', 'news')),
       el('div', { class: 'who' }, el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
   }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', {}, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
+    el('nav', {}, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
     el('div', { class: 'who' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -284,10 +289,11 @@ function loginScreen() {
     el('button', { type: 'button', class: `tab${state.authMode === mode ? ' on' : ''}`, onclick: () => { state.authMode = mode; state.authError = ''; render(); } }, label);
   const form = el('form', { class: 'card login', onsubmit: submit },
     el('div', { class: 'title' }, el('span', { class: 'sigil big' }, '⚔'), el('h1', {}, 'Arena of Kits'), el('p', { class: 'muted' }, TOUCH ? '1v1 hero duels · stick to move · drag a spell to aim' : '1v1 hero duels · click to move · Q W E R to cast')),
-    // The quickest way in comes first: two fights that need no account.
-    el('div', { class: 'guest' },
+    // The quickest way in comes first: three ways to play that need no account.
+    el('div', { class: 'guest three' },
       el('button', { class: 'door', type: 'button', onclick: () => go('cpu') }, icon('play'), el('b', {}, 'Duel the CPU'), el('span', { class: 'muted' }, 'Play now · no account')),
-      el('button', { class: 'door', type: 'button', onclick: () => go('raid') }, icon('raid'), el('b', {}, 'Raid the bosses'), el('span', { class: 'muted' }, 'Play now · no account'))),
+      el('button', { class: 'door', type: 'button', onclick: () => go('raid') }, icon('raid'), el('b', {}, 'Raid the bosses'), el('span', { class: 'muted' }, 'Play now · no account')),
+      el('button', { class: 'door', type: 'button', onclick: () => go('tower') }, icon('tower'), el('b', {}, 'Climb the Tower'), el('span', { class: 'muted' }, 'Play now · no account'))),
     el('div', { class: 'or' }, 'or play online'),
     el('div', { class: 'tabs' }, tab('login', 'Log in'), tab('register', 'Create account')),
     name, pass,
@@ -642,6 +648,52 @@ function raidScreen() {
   );
 }
 
+// --- tower ---------------------------------------------------------------------------------------------------
+
+/**
+ * The Tower (pipeline/designs/tower.md): the hero, this week's Tower floor by floor, the best floor reached, and Start. One
+ * player, offline, no account, as the Raid alone is.
+ */
+function towerScreen() {
+  const choice = cpuChoice(), hero = kitOf(choice);
+  const busy = state.queue.on || !!state.lobby;
+  const week = isoWeek().id, best = towerBest(week), last = towerBest(weekBefore(week)), from = towerSaved(week);
+  // The floors in sight: the first thirty, and on past the best one reached.
+  const floors = towerFor(week, Math.max(30, Math.ceil((best + 5) / 10) * 10));
+  preview.show(hero?.model, hero);
+  const tile = (f: (typeof floors)[number]) => {
+    const twist = f.twist ? TWISTS[f.twist] : null;
+    const what = [KIND_NAME[f.kind], f.foe ? (f.kind === 'guardian' ? `the echo of ${f.foe}` : `an echo of ${f.foe}`) : '', f.mix ? `mixed with ${KIND_NAME[f.mix]}` : '', twist ? `${twist.name}: ${twist.blurb}` : ''].filter(Boolean).join(' · ');
+    return el('div', { class: `tf k-${f.kind}${f.n <= best ? ' done' : ''}${f.n === from && from > 1 ? ' from' : ''}`, title: `Floor ${f.n}: ${what}` },
+      el('b', {}, String(f.n)), el('span', {}, KIND_NAME[f.kind]), f.twist || f.mix ? el('i', { 'aria-hidden': 'true' }, '✦') : null);
+  };
+  const start = (resume: boolean) => void tower.start({ hero: hero?.name ?? randomKit().name, resume });
+  return el('div', { class: 'hs' },
+    heroShowcase(hero),
+    el('section', { class: 'card hs-roster', 'data-keep-scroll': 'tower' },
+      el('div', { class: 'hs-roster-head' }, el('h2', {}, 'The Tower'),
+        el('span', { class: 'muted small' }, `This week's Tower · a new one in ${untilNext()}`)),
+      el('div', { class: 'tower-best' },
+        el('div', { class: 'tile' }, el('div', { class: 'tile-v' }, best ? String(best) : '–'), el('div', { class: 'tile-l' }, 'your highest floor this week')),
+        el('div', { class: 'tile' }, el('div', { class: 'tile-v' }, last ? String(last) : '–'), el('div', { class: 'tile-l' }, 'last week')),
+        el('div', { class: 'tile' }, el('div', { class: 'tile-v hearts' }, '♥'.repeat(LIVES)), el('div', { class: 'tile-l' }, 'lives a climb'))),
+      el('p', { class: 'muted' }, 'Climb floor by floor. Each floor is one short room: clear it, take one of three boons, and walk up the stairs. Your health carries over from floor to floor. A fall costs a life and starts the floor again. Every tenth floor is a guardian, and beating it saves your climb. Pale orange means leave, gold means stand here.'),
+      el('h3', { class: 'gap' }, `The floors, ${heightName(1)} to ${heightName(floors.length)}`),
+      el('div', { class: 'tower-floors' }, ...floors.map(tile)),
+      el('p', { class: 'muted small' }, 'The same Tower for everyone this week. ✦ marks a floor with a twist: point at it to see what.'),
+      el('h3', { class: 'gap' }, 'Your hero'),
+      heroPicker(choice, [], (n) => { setCpuHero(n); render(); }),
+    ),
+    el('div', { class: 'hs-bar' },
+      el('div', { class: `hs-note small ${busy ? 'error' : 'muted'}` }, busy
+        ? 'Leave the matchmaking queue or your lobby to climb.'
+        : `${hero ? hero.name : 'A random hero'} climbs alone. Your best floor is kept in this browser.`),
+      el('button', { class: 'btn', onclick: () => go(state.profile ? 'menu' : 'login') }, 'Back'),
+      from > 1 ? el('button', { class: 'btn', disabled: busy, onclick: () => start(false) }, 'From floor 1') : null,
+      el('button', { class: 'btn primary big hs-find', disabled: busy, onclick: () => start(from > 1) }, icon('tower'), from > 1 ? `Climb from floor ${from}` : 'Start the climb')),
+  );
+}
+
 // --- heroes --------------------------------------------------------------------------------------------------
 
 /** Every hero in one table, one row each. A click opens a row under itself (the turning model, every spell in full, the pick button) and closes it again. */
@@ -909,6 +961,10 @@ const raid = new RaidRun(gameApi, loading, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'raid'; render(); },
 });
+const tower = new TowerRun(gameApi, loading, {
+  onEnter: () => render(),
+  onExit: () => { state.screen = 'tower'; render(); },
+});
 const coop = new RaidController(net, gameApi, loading, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'raid'; render(); net.send({ t: 'profile' }); },
@@ -916,7 +972,7 @@ const coop = new RaidController(net, gameApi, loading, {
   toast,
 });
 // The duel card's "Leave duel" / "Back to menu": ends whichever fight is on.
-gameApi.duel.onLeave = () => (raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : match.exit());
+gameApi.duel.onLeave = () => (tower.active ? tower.exit() : raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : match.exit());
 
 net.on('socket', (m) => {
   state.connected = m.open;
@@ -983,5 +1039,5 @@ net.on('queue', (m) => {
 net.connect();
 render();
 
-// Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`.
-(window as unknown as { game: unknown }).game = { state, net, match, cpu, raid, coop, api: gameApi, go, render };
+// Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`, `game.tower`.
+(window as unknown as { game: unknown }).game = { state, net, match, cpu, raid, coop, tower, api: gameApi, go, render };

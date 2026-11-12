@@ -41,6 +41,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | [Duel arenas](architecture/arenas.md) | The five arenas (layouts, looks, stages), how a duel picks one (random, or from the match id online), and the rules for a new arena |
 | [Combat mechanics](architecture/mechanics.md) | Statuses, shield / heal / dash, skillshots, summons, melee kits, the duel AI rules, the test kits and the tournament tool |
 | [Models](architecture/models.md) | The Blender pipelines for weapons and hero figures, and how the game loads and poses them |
+| [The Tower](architecture/tower.md) | The third mode: a climb of the week's Tower, floor by floor. The run, the six kinds of floor, the boons, the week's seed, the room, and the hooks the engine should get. Pictures: [tower/tower.html](tower/tower.html) |
 | [Multiplayer duel game](architecture/multiplayer.md) | `/game.html`: the game server (accounts, lobbies, queue, referee), the protocol, network matches, the ring's pillars and walls, line of sight |
 | [Research: MOBA design](research/moba-design.md) | What defines a MOBA, what short formats (HotS, LoL Arena, Battlerite) kept and cut, and seven recommendations for our 1v1 duel |
 | [Research: game networking](research/game-networking.md) | Lockstep, authoritative server + prediction, rollback, lag compensation; real tick rates; a three-stage path for our netcode |

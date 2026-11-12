@@ -8,6 +8,22 @@ The user went to sleep with: "dont ask just do it run the loop until everything 
 The jobs, their order, what is running and what is done are in [QUEUE.md](QUEUE.md): the Raid's rooms that transform and mechanics
 for 10, 20 and 40 players, the Tower (a new mode), the hero shop with obols, twenty new hero ideas, the heroes reworked. Nothing is
 pushed or deployed; neither may happen without the user's word.
+## The Tower, a new game mode (2026-11-12): first version built and committed in its own worktree; not merged, not pushed, NOT live
+
+User: "i want to make like tower idea", "new gamemode tower, left raid untouched"; agreed the design (`pipeline/designs/tower.html`):
+alone first, the same Tower each week. Built by a helper in its own worktree (branch `t3/7223ef81`).
+- **Done:** the mode (menu entry and screen, a climb, six kinds of floor, 17 boons, the week's seed, the best floor per week, a
+  saved climb past each guardian), the stair-well room, the tool and the pictures. How it works: `docs/architecture/tower.md`;
+  what was built, measured and what differs from the design: `pipeline/designs/tower.md`; pictures: `docs/tower/tower.html`.
+- **Checked:** type check, build, `npm run test:server`; the Raid's `_raidCheck` (133), `_raidAsh` (77), `_raidHeart` (71),
+  `_raidUpgrades` (40) all pass; the autopilot's climbs with no errors (ten heroes: the middle climb ends on floor 14.5 this
+  week, 12.5 and 11.5 in the next two; from 5 to 23); a climb played in the page in real time by script (floors, a boon, the
+  stairs, falls, the card, the saved climb). Command: `python pipeline/tools/page-shots.py pipeline/tools/tower-climbs.js <out> --page /game --timeout 590 --port 5199 --json tower-climbs.json`.
+- **Not checked:** nobody has played it; not on a real phone.
+- **Waiting on the main agent:** merge it, and add the seven `TOWER-HOOK` methods to the engine once its one writer is done
+  (`docs/architecture/tower.md`, "Hooks the engine should get"; five in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`).
+- **Waiting on the user:** play a climb and say what feels wrong; direct the room's look (first pass, drawn in code).
+- **Next:** friends and a shared board, with the accounts work.
 
 ## The Raid grows (2026-11-11): omens, rarer upgrades, side doors committed; the third boss and 40 players in progress; NOT live
 

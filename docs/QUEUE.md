@@ -15,13 +15,13 @@ next job whose files are free. One writer at a time on `src/duel.ts`, `src/heroM
 |---|---|---|---|---|
 | 1 | Twin Flames: Ash and Ember for a party | | `ashEmber.ts`, `duel.ts`, `hub.mjs` | **done, merged** (PROTOCOL 9; all checks pass) |
 | 2 | The Heart's party boss room | | `heart.ts`, a new arena | **done, merged**: the Sunburst (PROTOCOL 10; all checks pass) |
-| 3 | The Tower, first version (alone, the week's Tower) | | `src/tower/`, `src/game/main.ts` | running |
+| 3 | The Tower, first version (alone, the week's Tower) | | `src/tower/`, `src/game/main.ts` | **done, merged** (pictures: `docs/tower/tower.html`; the autopilot's middle climb is floor 12 to 14; nobody has played it) |
 | 4 | Sun Warden: the hall transforms (second and last phase) + his mechanics for 10, 20, 40 (Branded, Carry the Sun, The Four Hours) | | `sunWarden.ts`, `sunhall.ts`, `sunhall.py` | running (port 5200) |
 | 5 | Twenty new hero ideas (a page; ideas only, no hero is built) | | `pipeline/designs/` | **done**: `pipeline/designs/heroes-new-20.html` |
 | 6 | The heroes we have, reworked: the plan (each hero's own rule that breaks the Q W E R mould) | | `pipeline/designs/` | **done**: `pipeline/designs/heroes-rework.md` (all forty, in waves) |
 | 7 | Heart of Noon: the room transforms + its mechanics for 10, 20, 40 (Shade together, Take the Blade, The Ring of Hands) | 2 | `heart.ts`, its party room | queued |
 | 8 | Ash and Ember: the pit transforms + their mechanics for 10, 20, 40 (Lantern Chain, Seal the Vents, The Changing of the Flames); a boss room built in Blender | 1 | `ashEmber.ts`, its party room | queued |
-| 9 | The hero shop and the rewards: obols, owned heroes, the Shop screen, raid ranks, the week's boards | 1, 3 | `accounts.mjs`, `hub.mjs`, `protocol.mjs`, `src/game/main.ts` | queued |
+| 9 | The hero shop and the rewards: obols, owned heroes, the Shop screen, raid ranks, the week's boards | 1, 3 | `accounts.mjs`, `hub.mjs`, `protocol.mjs`, `src/game/main.ts` | running (ports 5206, 5207) |
 | 10 | Heroes reworked, wave 1a: Vesper, Brannoc, Cantor (ports 5202, 5203) | 6 | their kits, traits, spells | running |
 | 10b | Heroes reworked, wave 1b: Zephyr, Sir Whiskers, Big Yoko (ports 5204, 5205) | 6 | their kits, traits, spells | queued |
 | 11 | Heroes reworked, wave 2 and on, as the night allows | 10 | their kits, traits, spells | queued |

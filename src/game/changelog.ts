@@ -9,7 +9,7 @@
  */
 
 /** What an item is about: its chip on the page. */
-export type NewsTag = 'Heroes' | 'Motion' | 'Raid' | 'Arenas' | 'Controls' | 'Menus' | 'Online' | 'CPU' | 'Balance';
+export type NewsTag = 'Heroes' | 'Motion' | 'Raid' | 'Tower' | 'Arenas' | 'Controls' | 'Menus' | 'Online' | 'CPU' | 'Balance';
 
 export interface NewsItem {
   tag: NewsTag;
@@ -39,9 +39,16 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-11',
-    title: 'The Raid grows',
+    title: 'The Tower, a Raid for forty, and hero 40',
     live: false,
     items: [
+      {
+        tag: 'Tower',
+        title: 'The Tower: a new way to play',
+        text: 'Climb floor by floor, alone, with no account. Each floor is one short room: cross a gauntlet of fire, clear a horde of stair keepers, duel the echo of a hero, break a crystal before its time is out, or simply hold out. Your health carries over, a fall costs one of three lives, and after every floor you take one of three boons: a heal, a power or a relic. Every tenth floor is a guardian. The Tower is the same for everyone and new every Monday: how high can you climb this week?',
+        image: '/news/tower.jpg',
+        alt: 'The guardian of floor 10, a giant echo of Marin, throws a fan of five beams of light across the Tower\'s round room at Kaia, who stands behind a pillar.',
+      },
       {
         tag: 'Raid',
         title: 'The Sunburst',

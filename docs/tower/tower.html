@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tower: first version</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #0d0b10; color: #e9dcc6; font: 16px/1.5 ui-sans-serif, system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 16px 60px; }
+  h1 { font: 700 34px ui-serif, Georgia, serif; color: #ffd27a; letter-spacing: 1px; margin: 0 0 6px; }
+  h2 { font: 700 22px ui-serif, Georgia, serif; color: #ffd27a; margin: 36px 0 10px; border-bottom: 1px solid #3a3242; padding-bottom: 6px; }
+  p { margin: 8px 0; }
+  .lead { color: #cdbfa6; max-width: 820px; }
+  figure { margin: 18px 0 26px; }
+  figure img { display: block; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #3a3242; }
+  figcaption { margin-top: 8px; color: #cdbfa6; }
+  figcaption b { color: #f2e6c8; }
+  .phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; align-items: start; }
+  .phones img { width: 100%; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 15px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #2c2633; }
+  th { color: #ffd27a; font-weight: 700; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .note { color: #a89c88; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The Tower: first version</h1>
+  <p class="lead">A third mode beside duels and the Raid. Climb floors, one short room each; health carries over; three lives a climb; a boon after
+  every floor; the same Tower for everyone each week. One player, offline, no account. Built on the Raid's engine, and the Raid itself is not changed.
+  These pictures are from the game's own camera, with the game's HUD, taken by the computer: nobody has played it yet.</p>
+
+  <h2>The menu</h2>
+  <figure>
+    <img src="menu.jpg" alt="The Tower's screen in the menu: the hero on the left, this week's thirty floors as tiles, the best floor, Start the climb.">
+    <figcaption><b>Tower, beside Raid.</b> Your hero, this week's Tower floor by floor (a guardian on every tenth, a mark on a floor with a twist), your highest floor this week and last, and Start.</figcaption>
+  </figure>
+
+  <h2>The six kinds of floor</h2>
+  <figure>
+    <img src="gauntlet.jpg" alt="A gauntlet: two long baffles across the round room, the hero between them with a stone's zone under her, the stairs lit gold at the far end.">
+    <figcaption><b>Gauntlet.</b> Nobody to fight. Two baffles make the way to the stairs a long S; fire sweeps the stretch you are in and stones fall where you stand. Only walking.</figcaption>
+  </figure>
+  <figure>
+    <img src="horde.jpg" alt="A horde: the hero calls lightning in the middle of the room, a keeper comes in by a door at the top, the bar says 6 of 9 keepers left.">
+    <figcaption><b>Horde.</b> Stair keepers come in by the four doors in waves. The bar on top counts them down.</figcaption>
+  </figure>
+  <figure>
+    <img src="duel.jpg" alt="A duel: the giant echo of Marin in the middle of a shockwave's two rings, the hero just outside the inner one.">
+    <figcaption><b>Duel.</b> The echo of a hero of the roster guards the stairs, with one twist: here a giant. Its shockwave burns near it, then far.</figcaption>
+  </figure>
+  <figure>
+    <img src="break.jpg" alt="Break it: a dark crystal with two gold rings before the stairs, two sentries on posts shooting crossing beams at the hero, a clock at 0:37.">
+    <figcaption><b>Break it.</b> A crystal seals the stairs and its clock runs. Two sentries shoot through where you stood. When the time is out it strikes the whole room: only a pillar between you and it saves you.</figcaption>
+  </figure>
+  <figure>
+    <img src="hold.jpg" alt="Hold out: half of the room lit pale orange, a gold circle to stand in beside the hero, a gold ring round the middle that shows the time left, 0:34.">
+    <figcaption><b>Hold out.</b> Nobody to fight: stay alive until the time is out. Here the half of the room she stands in is about to burn, and a gold circle asks her to stand in it. Only walking.</figcaption>
+  </figure>
+  <figure>
+    <img src="guardian.jpg" alt="The guardian of floor 10: a giant Marin throwing a fan of five beams of light past a pillar at the hero.">
+    <figcaption><b>Guardian, every tenth floor.</b> A giant echo with three phases; at two thirds of its health it calls keepers and cannot be hurt until they fall. Beating it saves the climb.</figcaption>
+  </figure>
+
+  <h2>The boon pick</h2>
+  <figure>
+    <img src="boons.jpg" alt="The landing after floor 4: three altars lit green, gold and blue before the stairs, and three cards along the bottom: a heal, a power, a relic.">
+    <figcaption><b>After every floor: a heal, a power or a relic.</b> Three altars rise before the stairs. Walk onto one, or tap its card. Then the stairs light up.</figcaption>
+  </figure>
+
+  <h2>On a phone, held upright</h2>
+  <div class="phones">
+    <figure><img src="phone-menu.jpg" alt="The Tower's menu screen on a phone."><figcaption><b>The menu.</b></figcaption></figure>
+    <figure><img src="phone-hold.jpg" alt="Hold out on a phone: the floor, hearts and clock at the top left, the stick at the bottom."><figcaption><b>Hold out.</b> Floor, lives, health and the goal at the top left.</figcaption></figure>
+    <figure><img src="phone-boons.jpg" alt="The boon pick on a phone: three cards in a row over the stick."><figcaption><b>The boon pick.</b> The cards sit over the stick.</figcaption></figure>
+    <figure><img src="phone-duel.jpg" alt="Floor 13 on a phone, a duel with a twist: the echo's bar on top, the hero's panel and the Tower's box at the left, the floor's name and its twist across the dark room."><figcaption><b>Floor 13, a duel with a twist.</b> From floor 11 a floor borrows from a second kind and may be twisted: here a sentry, and the dark.</figcaption></figure>
+  </div>
+
+  <h2>What the computer measured</h2>
+  <p class="lead">The autopilot climbed this week's Tower (2026-W46) twice with each of ten heroes, and the next two weeks' Towers once with each. No errors, and no floor it could not finish. The number is the floor a climb ended on.</p>
+  <table>
+    <tr><th>Hero</th><th>This week, two climbs</th><th>Next week</th><th>The week after</th></tr>
+    <tr><td>Mortis</td><td>22, 20</td><td>17</td><td>23</td></tr>
+    <tr><td>Lyra</td><td>22, 18</td><td>17</td><td>18</td></tr>
+    <tr><td>Auriel</td><td>22, 12</td><td>13</td><td>11</td></tr>
+    <tr><td>Bram</td><td>18, 18</td><td>20</td><td>12</td></tr>
+    <tr><td>Sefu</td><td>16, 16</td><td>16</td><td>12</td></tr>
+    <tr><td>Kaia</td><td>16, 13</td><td>12</td><td>12</td></tr>
+    <tr><td>Nyx</td><td>11, 12</td><td>12</td><td>7</td></tr>
+    <tr><td>Vesper</td><td>11, 11</td><td>12</td><td>7</td></tr>
+    <tr><td>Isolde</td><td>11, 11</td><td>10</td><td>5</td></tr>
+    <tr><td>Brannoc</td><td>10, 10</td><td>10</td><td>7</td></tr>
+    <tr><th>The middle</th><th>14.5</th><th>12.5</th><th>11.5</th></tr>
+  </table>
+  <p class="note">The aim was a middling hero ending on about floor 8 to 14.</p>
+  <table>
+    <tr><th>Kind (this week)</th><th>Cleared, of those tried</th><th>Seconds</th><th>Health lost on a cleared floor</th></tr>
+    <tr><td>Gauntlet</td><td class="n">53 of 53</td><td class="n">31</td><td class="n">25 %</td></tr>
+    <tr><td>Break it</td><td class="n">55 of 60</td><td class="n">42</td><td class="n">14 %</td></tr>
+    <tr><td>Hold out</td><td class="n">57 of 57</td><td class="n">48</td><td class="n">28 %</td></tr>
+    <tr><td>Horde</td><td class="n">44 of 76</td><td class="n">41</td><td class="n">27 %</td></tr>
+    <tr><td>Duel</td><td class="n">50 of 58</td><td class="n">47</td><td class="n">14 %</td></tr>
+    <tr><td>Guardian</td><td class="n">21 of 37</td><td class="n">93</td><td class="n">31 %</td></tr>
+  </table>
+  <p class="note">The Horde is the kind the autopilot is worst at: it stands in the middle of it.</p>
+  <p class="note">It cannot tell whether a floor is fun. That needs a hand.</p>
+</main>
+</body>
+</html>
