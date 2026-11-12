@@ -5,7 +5,7 @@ import { BLOOD, BLOOD_CSS, BloodDrops, BloodSigil, BloodTendril, ShockRefraction
 import { ChannelBar, channelBroken, stillSees } from '../../effects/channel';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { FEAST_SECONDS, bloodDrawn, bloodHungry } from '../../traits/blood';
+import { FEAST_SECONDS, bloodDrawn } from '../../traits/blood';
 
 /**
  * Sanguine Feast (blood kit v5, R: a 1.6 s channel). Click an enemy within 8 m (the engine checks sight at the cast). She
@@ -14,12 +14,12 @@ import { FEAST_SECONDS, bloodDrawn, bloodHungry } from '../../traits/blood';
  * from her hand to the enemy. Pulses at 0.4, 1.0 and 1.6 s (`PULSE_AT`): 35, 35 and then 40 plus 20% of the enemy's missing
  * HP, every hit `projectile: true` (judged on the live position: the channel is the catch) and `knock: 0`, no drag. The
  * engine gives a spell no target HP, so the missing HP is what she has dealt the enemy this round (`bloodDrawn`, written by
- * the trait's `dealt`), capped at `MISSING_CAP`. If she is Hungry (`bloodHungry`) the blood runs back to her and the third
- * pulse heals her 45 (`ctx.healSelf`; it is not gated on the hit, as the engine tells her screen nothing of the victim's
- * `taken`); otherwise it splashes at the enemy. The channel ends at once, `ctx.releaseCaster` frees her and the thread snaps
+ * the trait's `dealt`), capped at `MISSING_CAP`. The blood runs back to her on every pulse and the third heals her 60
+ * (`ctx.healSelf`; it is not gated on the hit, as the engine tells her screen nothing of the victim's `taken`): the Feast is
+ * how she gets her blood back, Hungry or not (the rework of 2026-11-12). The channel ends at once, `ctx.releaseCaster` frees her and the thread snaps
  * if a stun, silence or knock-up hits her (`channelBroken`), if the enemy is past 9 m (`BREAK`) or if she no longer sees
  * them (`stillSees`): the pulses not yet due do not happen. The third pulse has one impact frame, a ring and a kick. Costs
- * her 40 HP (the trait). Clean by 2.4 s.
+ * her twice the Price (the trait). Clean by 2.4 s.
  * Network duels: both screens replay the cast and run the same checks on live positions; only the victim's screen's hits
  * count and only her screen heals her (`ctx.healSelf` is not set on the other one).
  */
@@ -28,12 +28,12 @@ export interface SanguineFeastSettings {
   pulse: number;
   finisher: number;
   missing: number;
-  /** HP she gets from the third pulse while Hungry. */
+  /** HP she gets from the third pulse. */
   heal: number;
   loop: boolean;
 }
 
-export const defaultSanguineFeast = (): SanguineFeastSettings => ({ pulse: 35, finisher: 40, missing: 0.2, heal: 45, loop: false });
+export const defaultSanguineFeast = (): SanguineFeastSettings => ({ pulse: 35, finisher: 40, missing: 0.2, heal: 60, loop: false });
 
 // Timeline (seconds).
 const PULSE_AT = [0.4, 1.0, FEAST_SECONDS];
@@ -185,19 +185,16 @@ export class SanguineFeast implements Effect {
     this.shake = 0.12;
   }
 
-  /** Pulse `k`: a hit on the live position, the blood runs home (Hungry) or splashes, and the third heals. */
+  /** Pulse `k`: a hit on the live position, the blood runs home, and the third heals. */
   private pulse(k: number) {
     const ctx = this.ctx;
     const last = k === PULSE_AT.length - 1;
-    const hungry = !!ctx && !!bloodHungry.get(ctx.caster);
     this.beat = this.time;
     this.popAt = this.time;
     this.popBig = last;
     this.shake = last ? 0.4 : 0.14;
     this.v1.copy(this.foe).setY(CHEST);
-    if (hungry) {
-      this.drops.drain(this.v1, (out) => out.copy(this.hand), last ? 12 : 6, { duration: 0.5, stagger: 0.03, radius: last ? 0.09 : 0.07 });
-    }
+    this.drops.drain(this.v1, (out) => out.copy(this.hand), last ? 12 : 6, { duration: 0.5, stagger: 0.03, radius: last ? 0.09 : 0.07 });
     this.drops.spray(this.v1, UP, last ? 12 : 5, last ? 6 : 4, 0.8);
     if (!ctx || !this.target) return;
     let damage = this.settings.pulse;
@@ -206,7 +203,7 @@ export class SanguineFeast implements Effect {
       damage = this.settings.finisher + this.settings.missing * missing;
     }
     ctx.hit(this.target, { damage, knock: 0, from: this.hand.clone(), color: BLOOD_CSS.body, projectile: true });
-    if (last && hungry) ctx.healSelf?.(this.settings.heal);
+    if (last) ctx.healSelf?.(this.settings.heal);
   }
 
   private layout(dt: number) {
