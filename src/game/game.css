@@ -629,3 +629,32 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
 .party-seat.mine { border-color: var(--line-gold); }
 .party-seat .kit-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
 @media (max-width: 560px) { .party-seats { grid-template-columns: repeat(2, minmax(0, 1fr)); max-height: 240px; } }
+
+/* The Tower (src/game/main.ts, towerScreen): three doors on the login, this week's best, and the Tower's floors as small tiles,
+   ten to a row as the Tower has ten to a guardian (five on a phone). */
+.guest.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.guest.three .door b { font-size: 13.5px; }
+.tower-best { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 10px 0 12px; }
+.tower-best .tile { padding: 10px 8px; }
+.tower-best .tile-v.hearts { color: #ff6a6a; font-size: 22px; letter-spacing: 2px; }
+.tower-floors { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; margin-bottom: 8px; }
+.tf { position: relative; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 2px 5px; border-radius: 8px; border: 1px solid var(--line); background: rgba(8, 6, 10, 0.5); min-width: 0; }
+.tf b { font: 700 15px var(--display); color: var(--text); }
+.tf span { max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.tf i { position: absolute; top: 2px; right: 4px; font-style: normal; font-size: 9px; color: var(--gold-hi); }
+.tf.k-guardian { border-color: var(--line-gold); background: linear-gradient(180deg, rgba(201, 162, 74, 0.2), rgba(201, 162, 74, 0.04)); }
+.tf.k-guardian b { color: var(--gold-hi); }
+.tf.done { border-color: rgba(120, 210, 140, 0.5); }
+.tf.done b { color: #9df0b4; }
+.tf.from { box-shadow: 0 0 0 2px var(--gold-hi); }
+.news-tag.t-tower { color: #ffe08a; border-color: rgba(255, 215, 120, 0.5); }
+@media (max-width: 600px) {
+  .tower-floors { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .guest.three { gap: 6px; }
+  .guest.three .door { padding: 10px 3px 9px; }
+  .guest.three .door b { font-size: 11.5px; letter-spacing: 0.02em; }
+  .guest.three .door .muted { font-size: 9.5px; }
+  .tower-best { gap: 6px; }
+  .tower-best .tile-v { font-size: 20px; min-height: 26px; }
+  .tower-best .tile-l { font-size: 9px; letter-spacing: 0.06em; }
+}

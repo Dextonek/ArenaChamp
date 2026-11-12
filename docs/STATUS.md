@@ -2,6 +2,22 @@
 
 _Last updated: 2026-11-11 (hero 40, Anka the Firebird: all six gates done by the computer, waiting on the user to play her once, not pushed, not live; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
+## The Tower, a new game mode (2026-11-12): first version built and committed in its own worktree; not merged, not pushed, NOT live
+
+User: "i want to make like tower idea", "new gamemode tower, left raid untouched"; agreed the design (`pipeline/designs/tower.html`):
+alone first, the same Tower each week. Built by a helper in its own worktree (branch `t3/7223ef81`).
+- **Done:** the mode (menu entry and screen, a climb, six kinds of floor, 17 boons, the week's seed, the best floor per week, a
+  saved climb past each guardian), the stair-well room, the tool and the pictures. How it works: `docs/architecture/tower.md`;
+  what was built, measured and what differs from the design: `pipeline/designs/tower.md`; pictures: `docs/tower/tower.html`.
+- **Checked:** type check, build, `npm run test:server`; the Raid's `_raidCheck` (133), `_raidAsh` (77), `_raidHeart` (71),
+  `_raidUpgrades` (40) all pass; the autopilot's climbs with no errors (ten heroes twice: floors 10 to 20, the middle 16; two other
+  weeks: 7 to 13). Command: `python pipeline/tools/page-shots.py pipeline/tools/tower-climbs.js <out> --page /game --timeout 590 --port 5199 --json tower-climbs.json`.
+- **Not checked:** nobody has played it; not on a real phone.
+- **Waiting on the main agent:** merge it, and add the six `TOWER-HOOK` methods to the engine once its one writer is done
+  (`docs/architecture/tower.md`, "Hooks the engine should get"; four in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`).
+- **Waiting on the user:** play a climb and say what feels wrong; direct the room's look (first pass, drawn in code).
+- **Next:** friends and a shared board, with the accounts work.
+
 ## The Raid grows (2026-11-11): omens, rarer upgrades, side doors committed; the third boss and 40 players in progress; NOT live
 
 User: "lets enchance the raid more lets evolve it more"; chose all five options of `pipeline/designs/raid-next.html`, then asked for
