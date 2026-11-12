@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The hero shop, raid ranks and the week's boards</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #0d0b10; color: #e9dcc6; font: 16px/1.5 ui-sans-serif, system-ui, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 16px 60px; }
+  h1 { font: 700 34px ui-serif, Georgia, serif; color: #ffd27a; letter-spacing: 1px; margin: 0 0 6px; }
+  h2 { font: 700 22px ui-serif, Georgia, serif; color: #ffd27a; margin: 36px 0 10px; border-bottom: 1px solid #3a3242; padding-bottom: 6px; }
+  p { margin: 8px 0; }
+  .lead { color: #cdbfa6; max-width: 860px; }
+  figure { margin: 18px 0 26px; }
+  figure img { display: block; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid #3a3242; }
+  figcaption { margin-top: 8px; color: #cdbfa6; }
+  figcaption b { color: #f2e6c8; }
+  .phones { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; align-items: start; }
+  .phones figure { margin: 0; }
+  .phones img { width: 100%; }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 15px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid #2c2633; vertical-align: top; }
+  th { color: #ffd27a; font-weight: 700; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .note { color: #a89c88; font-size: 14px; }
+  .box { border: 1px solid #6a5a2a; border-radius: 10px; padding: 12px 16px; background: #16120c; margin: 16px 0; }
+  .box b { color: #ffd27a; }
+  ol, ul { padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: #1b1620; border-radius: 4px; padding: 1px 5px; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>The hero shop, raid ranks and the week's boards</h1>
+  <p class="lead">Heroes can now be locked behind a currency that is only earned by playing: obols. Twelve heroes are free for
+  everyone, six more are free each week, the rest are bought. With it came the Raid's rewards that were waiting: raid ranks and
+  the week's boards. Everything here is built and committed; <b>nothing is pushed or live</b>. The pictures are of the real game
+  page against the real game server, taken by the computer: seven bots played a duel and three raids first, so the obols, the
+  rank and the boards in them were truly earned. Nobody has played with it yet.</p>
+
+  <div class="box">
+    <p><b>The shop is ON in the code. Accounts that exist when it arrives keep every hero.</b> Whether it goes live is your call at
+    the deploy. To deploy with it off, set <code>"vars": { "SHOP": "off" }</code> in <code>wrangler.jsonc</code>: every hero is
+    then free as today, and obols are still earned and kept for the day it is switched on.</p>
+  </div>
+
+  <h2>The Shop</h2>
+  <figure>
+    <img src="shop.jpg" alt="The Shop for a logged-in player: 1,430 obols at the top right, five chips saying what a duel, a win, the first win of the day, a raid boss and a cleared tier pay, the six heroes free this week, and the first row of hero cards with a lock and a price or the word Starter.">
+    <figcaption><b>A new entry in the menu.</b> Your obols, what each thing pays, the six heroes that are free this week, then
+    every hero as a card. This account earned its 1,430 by playing: 900 to start with, 200 for a won duel (the first win of the day),
+    330 for a cleared tier of the Raid with a friend.</figcaption>
+  </figure>
+  <figure>
+    <img src="shop-heroes.jpg" alt="The Shop's cards further down: starters in green, locked heroes greyed with a small lock and their price, two heroes marked Free this week, and Anka with a New tag.">
+    <figcaption><b>Every hero as a card.</b> A starter says so; a locked hero is greyed, with a lock and its price; one of the week's
+    six says "Free this week" beside what it would cost; Anka, the newest, carries "New". The chips at the top right filter by kind
+    of play.</figcaption>
+  </figure>
+  <figure>
+    <img src="shop-guest.jpg" alt="The Shop without an account: a Log in to earn obols button in place of the purse, and a line saying what a player without an account can play.">
+    <figcaption><b>Without an account</b> the Shop is open to look at. It says what you play without one (the 12 starters and the
+    week's six) and what a new account starts with.</figcaption>
+  </figure>
+
+  <h2>Buying a hero</h2>
+  <figure>
+    <img src="shop-hero.jpg" alt="Big Yoko's page in the Shop: the turning model on the left with his name, kind, HP and a gold Buy button with the price, his passive and four spells in full on the right.">
+    <figcaption><b>A card opens the hero's page:</b> the turning model, the kit in full, and Buy. A locked hero can also be tried
+    against the CPU from here, for free.</figcaption>
+  </figure>
+  <figure>
+    <img src="shop-ask.jpg" alt="The same page after pressing Buy: a gold box asks Buy Big Yoko for 600 obols, says how many obols the player has and that it cannot be undone, with Buy and Cancel.">
+    <figcaption><b>Buying asks once</b>, says what you have, and that it cannot be undone.</figcaption>
+  </figure>
+  <figure>
+    <img src="shop-bought.jpg" alt="The page after buying: the purse shows 830 obols, a green box says You own this hero, and the button under it says Pick this hero.">
+    <figcaption><b>Bought.</b> 1,430 became 830; the hero is the account's for good, and can be picked at once.</figcaption>
+  </figure>
+
+  <h2>A locked hero in a picker</h2>
+  <figure>
+    <img src="play-locked.jpg" alt="The Play screen with Vesper chosen in the Online match mode: her card shows a lock with 900, Try against the CPU and Buy; every locked tile in the grid is greyed with a lock and a price, the week's free ones carry a green Free tag; the bar at the bottom says Try Vesper against the CPU.">
+    <figcaption><b>Play, online.</b> Locked heroes are greyed, with their price; the week's free ones say "Free". A locked hero can
+    be looked at, but not taken online: the big button becomes "Try Vesper against the CPU", with Buy beside it.</figcaption>
+  </figure>
+  <figure>
+    <img src="play-try.jpg" alt="The Play screen in its CPU duel mode with Vesper chosen: the five difficulty levels, the opponent, and a gold button to fight.">
+    <figcaption><b>Try against the CPU.</b> One press and she is in a CPU duel's hero select, at any of the five levels. This is
+    open for every hero, with or without an account.</figcaption>
+  </figure>
+  <figure>
+    <img src="raid-room.jpg" alt="A raid room of five: each name has a rank badge, Ash or Ember, beside the hero it picked; under it the hero grid with locks; a message at the top says Vesper is locked: buy it in the Shop, or try it against the CPU.">
+    <figcaption><b>In a lobby and a raid room</b> a locked hero is refused with a word (the server refuses it too). And beside each
+    name in a raid room: its raid rank.</figcaption>
+  </figure>
+
+  <h2>The profile: obols and raid rank</h2>
+  <figure>
+    <img src="profile.jpg" alt="The profile: tiles for matches, wins, losses, win rate, favourite hero, then 830 obols, 13 of 40 heroes owned, and the raid rank Ash; under them a line saying the best with others is 3 bosses in one run and that Noon takes 6.">
+    <figcaption><b>Three new tiles:</b> obols, how many heroes are yours, and your raid rank, with what the next rank takes. An
+    account from before the shop also wears "Founder" beside its name.</figcaption>
+  </figure>
+
+  <h2>The Raid screen: your rank, and this week's best runs</h2>
+  <figure>
+    <img src="raid-board.jpg" alt="The Raid screen scrolled to With others: the rank Ash and the line about the best run, the buttons to open a raid, and under This week three rows: Mira and Tobin 3 bosses, Ilya and Quill 2 bosses, Ashka, Dorn and Selwyn 1 boss, each with tier and time.">
+    <figcaption><b>"This week".</b> The best raid runs with others of this week: most bosses beaten, then the fastest, with the
+    party's names. The server keeps the top 20, and it starts empty each Monday. Your own row is marked in gold.</figcaption>
+  </figure>
+
+  <h2>The Tower screen: this week's highest floors</h2>
+  <figure>
+    <img src="tower-board.jpg" alt="The Tower screen scrolled to This week's highest floors: seven rows with a portrait, a name, a floor and the hero, the logged-in player's row in gold, and a note that floors are as each player's own game reported them.">
+    <figcaption><b>The highest floors</b> of logged-in players this week. The Tower is climbed offline, in the page, so the server
+    cannot check a floor: the board says so, and a floor earns no obols.</figcaption>
+  </figure>
+
+  <h2>On a phone (390 x 844)</h2>
+  <div class="phones">
+    <figure><img src="phone-shop.jpg" alt="The Shop on a phone: the purse, the chips, the six free heroes in two rows of three, and eight tabs along the bottom with Shop among them."><figcaption><b>The Shop.</b> Eight tabs fit along the bottom.</figcaption></figure>
+    <figure><img src="phone-shop-heroes.jpg" alt="The Shop's cards on a phone, two in a row, under the kind filter."><figcaption><b>The cards</b>, two in a row.</figcaption></figure>
+    <figure><img src="phone-shop-hero.jpg" alt="A locked hero's page on a phone: the model, the name, and a Buy button that is greyed because 830 obols are not enough for 900."><figcaption><b>A hero's page.</b> Buy is greyed: 830 is not enough for 900.</figcaption></figure>
+    <figure><img src="phone-play-locked.jpg" alt="The Play screen on a phone with a locked hero: the lock, Try against the CPU and Buy under her name, and the bar at the bottom."><figcaption><b>Play</b> with a locked hero.</figcaption></figure>
+    <figure><img src="phone-picker.jpg" alt="The hero grid on a phone, five in a row: locked tiles greyed with a lock and a price, the week's free ones with a green tag."><figcaption><b>The picker.</b> Locks, prices and "Free".</figcaption></figure>
+  </div>
+
+  <h2>What was decided</h2>
+  <div class="wrap">
+  <table>
+    <tr><th>Kind of play</th><th>Starters (free, for good)</th><th>600</th><th>900</th><th>1,200</th></tr>
+    <tr><td>Vanguard</td><td>Brannoc, Oblivion</td><td>Big Yoko</td><td>Vesper</td><td></td></tr>
+    <tr><td>Fighter</td><td>Sirix, Bram</td><td>Hank</td><td></td><td>Pim and Pom</td></tr>
+    <tr><td>Assassin</td><td>Nyx, Zephyr</td><td>Pip, Mabel</td><td>Sir Whiskers</td><td>The Great Zambini</td></tr>
+    <tr><td>Caster</td><td>Kaia, Lyra</td><td>Professor Puff, Barry Cloudsley</td><td>Vitriol, Tempo, Opaline</td><td>Silvane, Anka (1,500 until 10 December)</td></tr>
+    <tr><td>Controller</td><td>Isolde, Sefu</td><td>Gus</td><td>Marin, Mr. Ledger, Referee Whistler</td><td>Mum, Wick</td></tr>
+    <tr><td>Support</td><td>Cantor, Auriel</td><td>Fenna, Madame Cleaver, Grandma Ironknit</td><td>Mortis, Bo</td><td>Shiori, Ada</td></tr>
+  </table>
+  </div>
+  <p class="note">Two starters of each kind, the six benchmark heroes of the balance work among them. The shelves are by how hard a
+  hero is to play well. All of this is one table in the code, easy to change.</p>
+  <div class="wrap">
+  <table>
+    <tr><th>What pays</th><th>Obols</th><th>When it counts</th></tr>
+    <tr><td>An online duel</td><td class="n">40</td><td>It lasted half a minute or more, and you did not leave it</td></tr>
+    <tr><td>A win</td><td class="n">+40</td><td>The same</td></tr>
+    <tr><td>The first win of the day</td><td class="n">+120</td><td>Once a day (the server's day, UTC)</td></tr>
+    <tr><td>A raid boss beaten with others</td><td class="n">60 each</td><td>Two or more were still in the raid, and the fight lasted 20 seconds or more</td></tr>
+    <tr><td>A tier cleared with others</td><td class="n">+150</td><td>All three bosses of the tier counted</td></tr>
+    <tr><td>A new account</td><td class="n">900</td><td>One hero of its own choice at once</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li><b>The week's free heroes:</b> six, never a starter, the same for everyone, new each Monday (UTC). Every hero is free three
+    weeks in fourteen, and no two weeks in a row share a hero. This week: Mum, Marin, Mortis, Pim and Pom, The Great Zambini, Ada.</li>
+    <li><b>Founders:</b> the first time the server starts with the shop on, it writes down the moment. Every account made before it
+    owns all 40 heroes, and has 900 obols too. Heroes added later are for the shop.</li>
+    <li><b>The server decides</b> who may take which hero into a duel or a raid room. The page only draws the locks.</li>
+    <li><b>Raid ranks:</b> Ember from 1 boss beaten in one run with others, Ash from 3, Noon from 6, Eclipse from 9.</li>
+    <li><b>Against farming:</b> a duel under 30 seconds pays nobody, whoever leaves a duel gets nothing, and a boss that falls in
+    under 20 seconds pays nothing and counts for no rank or board.</li>
+  </ul>
+
+  <h2>Checked, and not</h2>
+  <ul>
+    <li>The server's own test: all its older checks pass unchanged, and 42 new ones for the shop, the ranks and the boards.</li>
+    <li>Type check and build pass. The page logged no errors while these pictures were taken.</li>
+    <li>The Cloudflare store, on this computer only: a purchase, the obols and a board row are still there after the worker is
+    stopped and started; an account made before the shop is a founder once it is switched on.</li>
+    <li><b>Not checked:</b> the live server (it has not had this build); a person playing with it; a real phone. The prices and the
+    pace of earning are a first guess: about one 900 hero for an evening.</li>
+    <li><b>Not built:</b> obols for the Tower (it waits for a Tower the server can see), and anything with real money: there is none.</li>
+  </ul>
+  <p class="note">The design, every decision and the messages: <code>pipeline/designs/hero-shop.md</code>. How it works:
+  <code>docs/architecture/multiplayer.md</code>. These pictures again: <code>python pipeline/tools/shop-shots.py</code>.</p>
+</main>
+</body>
+</html>

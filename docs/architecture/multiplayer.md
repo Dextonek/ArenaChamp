@@ -1,7 +1,7 @@
 ---
 title: Multiplayer duel game
 tags: [architecture, multiplayer, server, websocket, accounts, lobby, matchmaking, duel, line-of-sight]
-updated: 2026-10-30
+updated: 2026-11-12
 ---
 
 # Multiplayer duel game
@@ -67,6 +67,11 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | `src/game/heroPreview.ts` | the heroes page turntable (its own small renderer, renders only while shown) |
 | `src/game/game.css` | menu styles (duel HUD palette; hero accent through `--accent`) |
 | `src/obstacles.ts` | the ring's pillars and walls: collision, sliding, line of sight, meshes (see below) |
+
+Since PROTOCOL 11 (the hero shop): `createHub` also takes `shop` and `now` (the clock for the shop's days and weeks, for tests);
+`Accounts` also keeps obols, owned heroes, the founders, the raid ranks and the week's boards, and its `store` may have
+`getMeta(key)` / `putMeta(key, value)` for a few small records beside the accounts; `attachGameServer` takes `shop` and `now` and
+passes them on. `pipeline/tools/shop-shots.py` plays bots through the hub and takes the Shop's pictures.
 
 ## Match flow
 
@@ -150,9 +155,12 @@ Client → server:
 | `resume` | `token`, `v` | after a reload in the same tab |
 | `logout`, `profile`, `lobbies` | | |
 | `lobby_create`, `lobby_join`, `lobby_leave` | `code` (join) | 4 letters, case-insensitive |
-| `lobby_pick` | `hero` | resets that seat's ready |
+| `lobby_pick` | `hero` | resets that seat's ready; with the shop on, `error` for a hero that is neither owned nor free this week (see *The hero shop*) |
 | `lobby_ready` | `ready` | refused without a hero or with the other seat's hero; both ready → match |
-| `queue_join`, `queue_leave` | `hero` (join) | |
+| `queue_join`, `queue_leave` | `hero` (join) | a locked hero is refused with `error`, as at `lobby_pick` |
+| `shop_buy` (since PROTOCOL 11) | `hero` | → `shop_bought { hero, price, profile }`, or `error`: no such hero, already owned, not enough obols, the shop is closed |
+| `boards` (11) | | → `boards`; answered without an account too |
+| `tower_report` (11) | `floor`, `hero`, `week` | the floor this player's own page reached in the week's Tower, for the week's board. Not verified, pays nothing; only this week, 1-500, a hero the account may play, only upward → `boards` when it counted |
 | `match_loaded` | `maxHp` | the hero's max HP for this match (200-2000; default 600); sent every round |
 | `match_leave` | | |
 | `round_pick` | `hero` or `arena`, or neither to keep things as they are | ignored while Loser picks is off; on, only from the round's loser during the break; see *Loser picks* |
@@ -177,7 +185,33 @@ Server → client: `session { token, profile }`, `auth_error { error }` (empty e
 { on, since, size }`, `match_start { id, side, hp, you, foe }`, `match_fight { countdown, round }`, `round_end { …, pick }`, `round_start { round, score, you, foe, picked }`, `peer_move`,
 `peer_cast` (+ `yaw`), `peer_hit { id, damage, soaked, hp, color, blocked }`, `peer_dodged`, `peer_attack { id }`, `peer_heal { amount, hp }`,
 `peer_status { kind, seconds, color }`, `peer_shield { amount, seconds, color }`, `peer_buff`, `peer_stacks`, `peer_spend { amount, hp }`, `hp { hp }`, `match_end { result, winner, reason,
-seconds, score, hp, stats, profile }`.
+seconds, score, hp, stats, profile, earned }`. Since PROTOCOL 11: `shop { on, week, next, free }` (to every connection as it opens,
+and again with a session and a profile), `shop_bought { hero, price, profile }`, `obols { earned, total, why }`, `boards { week,
+raid, tower }`.
+
+## The hero shop, raid ranks and the week's boards
+
+Design, decisions and what was checked: [`pipeline/designs/hero-shop.md`](../../pipeline/designs/hero-shop.md). Pictures:
+[`docs/shop/shop.html`](../shop/shop.html). The table of heroes, prices and the numbers is in `server/protocol.mjs` (`HERO_SHOP`,
+`SHOP`, `shopRotation`, `RAID_RANKS`), read by the hub and the page.
+
+- **One switch:** `createHub({ shop })`, on unless told otherwise. The hosts pass it on: `SHOP` in `wrangler.jsonc` (Cloudflare),
+  the `SHOP` environment variable for `server/standalone.mjs` and the dev server (`SHOP=off`). Off, every hero is free, nothing is
+  sold, and obols are still earned.
+- **Who may play what** is the hub's to say: a hero must be owned (a starter, bought, or a founder's) or one of the week's six.
+  `lobby_pick`, `queue_join` and `round_pick` answer `error` otherwise. The page draws locks from the same table and keeps a
+  locked hero out of the fights it starts itself (the Raid alone, the Tower); the CPU duel is open with every hero.
+- **Founders:** the first time a store is opened with the shop on, the hub writes the moment and the heroes there were into a
+  small record beside the accounts. An account created before it owns all of those.
+- **Obols** are paid only by the hub: at a duel's end (40, a win 40 more, the first win of the server's UTC day 120 more; nothing
+  for a duel under 30 s or for whoever left it) and as a raid boss falls to two or more after 20 s or more (60 each, 150 more for
+  a tier whose three bosses all counted). The player hears at once (`obols`).
+- **Raid ranks** come from `raids.others`, the most such bosses in one run: Ember 1, Ash 3, Noon 6, Eclipse 9. The profile carries
+  `rank`; so does each seat of a raid room and each row of the open raids.
+- **The week's boards** (the ISO week in UTC, as the Tower's): the best raid runs with others (bosses, then time, the party's names),
+  written when a run ends, and the highest Tower floors as each player's own page reported them (`tower_report`, **not verified**).
+  The top 20 of each, kept with the accounts, empty again each Monday.
+- **The profile** carries `obols`, `owned` (every hero while the shop is off), `founder`, `rank`, `tower` and `raids.others`.
 
 ## Rules version
 
@@ -233,7 +267,8 @@ daily limits, check Cloudflare's pricing page):
 |---|---|
 | Worker `arena-of-kits` (`worker/index.mjs`) | `/` redirects to `/game.html` (the game is the front page; the editor stays at `/index.html`); `/ws` goes to the hub; every other path is a file from `dist/` (`assets.run_worker_first: ["/ws", "/"]`) |
 | Durable Object `GameHub` | one instance (`idFromName('main')`) so every player meets in one place; runs `createHub` from `server/hub.mjs`; WebSockets with `accept()` (no hibernation: the object stays in memory while players are connected) |
-| Storage | table `accounts (key, json)` in the object's SQLite storage; loaded once when the object starts, one row written per change |
+| Storage | table `accounts (key, json)` in the object's SQLite storage; loaded once when the object starts, one row written per change. Table `meta (key, json)` (made on first start if it is not there): the day the hero shop arrived and the week's boards. The Node server keeps the same two under `users` and `meta` in its JSON file |
+| `SHOP` (`vars` in `wrangler.jsonc`) | "on": heroes are locked behind the shop. "off": every hero is free |
 | Lost on eviction | sessions (players log in again), open lobbies and the queue; a running match keeps the object alive |
 
 Deploy (once per machine: a free Cloudflare account and `npx wrangler login` in a browser):
@@ -249,6 +284,11 @@ It builds (`tsc` + Vite), uploads `dist/` and the Worker, and prints the address
 Verified locally (2026-10-29, wrangler 4.150.0): the smoke test's 20 checks against `ws://localhost:8788/ws`; a two-tab
 queue match (Isolde vs Brannoc, 24.6 s) with stats on both sides; accounts and stats still there after a restart.
 Not yet deployed.
+
+Verified locally again for the hero shop (2026-11-12, `wrangler dev` on its own port and store): a purchase, the obols and a
+board row still there after the worker was stopped and started; an account made with `SHOP` "off" is a founder once the same
+store is opened with it on. Against a running worker the smoke test plays everything but the shop's cases, and needs `SHOP`
+"off" (`npx wrangler dev --var SHOP:off`), since its accounts are new and play any hero. The live worker has not had this build.
 
 ## Smooth movement
 

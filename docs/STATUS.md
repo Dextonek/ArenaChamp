@@ -8,6 +8,38 @@ The user went to sleep with: "dont ask just do it run the loop until everything 
 The jobs, their order, what is running and what is done are in [QUEUE.md](QUEUE.md): the Raid's rooms that transform and mechanics
 for 10, 20 and 40 players, the Tower (a new mode), the hero shop with obols, twenty new hero ideas, the heroes reworked. Nothing is
 pushed or deployed; neither may happen without the user's word.
+
+## The hero shop, raid ranks and the week's boards (2026-11-12): built and committed; NOT pushed, NOT live
+
+User: "i want you to think how could we implement herous some lock in shop behind like ingame currency que this idea also and make it
+dont ask just do it". Design and every decision: `pipeline/designs/hero-shop.md`. Pictures: `docs/shop/shop.html`.
+
+- **The shop is ON in the code.** With the next deploy, heroes are locked behind obols for new accounts: 12 starters are free, 6
+  more each week, the other 28 are bought (600, 900 or 1,200; Anka 1,500 until 2026-12-10). Obols are only earned by playing
+  online (a duel 40, a win 40 more, the first win of the day 120; a raid boss with others 60, a cleared tier 150). No real money.
+- **Accounts that exist when it arrives keep every hero** (all 40), and get the 900 obols a new account starts with. The server
+  writes down the moment the shop first starts; every account from before it is a founder.
+- **Whether it goes live is the user's call at the deploy.** To deploy with it off: `"vars": { "SHOP": "off" }` in
+  `wrangler.jsonc` (the hub's `shop` option; `SHOP=off` in the environment for the Node servers). Off, every hero is free as today,
+  and obols are still earned. Switching it on later is safe: founders are counted from the first time it is on.
+- **Also built:** raid ranks (Ember, Ash, Noon, Eclipse: the most bosses in one run with others) on the profile, in a raid room
+  and on the Raid screen; the week's boards: the best raid runs with others on the Raid screen, the highest Tower floors on the
+  Tower screen (floors are each page's own word: the Tower is offline, so that board is not verified and pays nothing).
+- **Checked:** `npm run test:server` (the older checks unchanged, run with the shop off as they were written; 42 new ones with it
+  on), `npx tsc --noEmit -p .`, `npm run build`; the page headless against the real hub with seven bots, no console errors
+  (`python pipeline/tools/shop-shots.py`); the Cloudflare store on a local `wrangler dev`: a purchase, obols and a board row
+  survive a restart, and an account made with the shop off is a founder once it is on.
+- **Not checked:** the live worker and its real accounts; a person playing; a real phone. The prices and the pace of earning are a
+  first guess. Against a local worker the old smoke test stops at Twin Flames' revive: it seats six bots at once and expects
+  them in order, which a worker does not always do (2 rooms of 10); the revive code is not part of this change.
+- **Tools that make new accounts** (`party-raid.py`, `hero-gate5/`) now start their own dev server with the shop off, since a new
+  account may only take the starters and the week's six online. `online-bot.js` in tabs of a running dev server: start that
+  server with `$env:SHOP = 'off'; npm run dev` to queue any hero. The fight simulator and the raid and Tower tools are not affected.
+- **`PROTOCOL` is 11:** open tabs are told to reload at the deploy.
+- **Waiting on the user:** look at `docs/shop/shop.html`; say whether the shop goes live with the next deploy or stays off; the
+  starters, the prices and what things pay are one table (`HERO_SHOP` and `SHOP` in `server/protocol.mjs`).
+- **Next:** obols for the Tower once the server can see a climb; friends.
+
 ## The Tower, a new game mode (2026-11-12): first version built and committed in its own worktree; not merged, not pushed, NOT live
 
 User: "i want to make like tower idea", "new gamemode tower, left raid untouched"; agreed the design (`pipeline/designs/tower.html`):

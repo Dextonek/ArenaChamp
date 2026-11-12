@@ -7,6 +7,10 @@
 //   _botQueue('Mr. Ledger');      // joins the queue with this hero; the other tab joins with its own
 //   _botLog()                     // what this screen saw: rounds, both HP bars, casts, errors
 //   _botStop()
+//
+// The hero shop (pipeline/designs/hero-shop.md): a throwaway account is new, so with the shop on it may only take the 12
+// starters and the week's six free heroes online; the hub answers "... is locked" for any other, and the bot never
+// starts. To test any hero, run the dev server with the shop off: in PowerShell `$env:SHOP = 'off'; npm run dev`.
 (() => {
   const log = { errors: [], casts: [0, 0, 0, 0], attacks: 0, rounds: [], samples: [], hero: '', foe: '', ended: null };
   window._botErrors = log.errors;

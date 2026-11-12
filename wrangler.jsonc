@@ -14,6 +14,8 @@
     // path is a file from dist/.
     "run_worker_first": ["/ws", "/", "/news/*"]
   },
+  // The hero shop: "on" locks heroes behind obols (accounts from before it keep every hero); "off" leaves every hero free.
+  "vars": { "SHOP": "on" },
   "durable_objects": {
     "bindings": [{ "name": "HUB", "class_name": "GameHub" }]
   },
