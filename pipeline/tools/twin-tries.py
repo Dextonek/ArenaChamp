@@ -11,6 +11,7 @@ the screens agreed on both HP bars, the cracked halves, the bridges and the floo
 The bots' accounts are local (server/data/, git-ignored): delete them after (names start with v5bot).
 """
 import argparse
+import bisect
 import json
 import subprocess
 import sys
@@ -70,13 +71,23 @@ def read(folder):
             if seen:
                 offs[half].append((min(seen), max(seen)))
     drift = max((max(hi for _, hi in o) - min(lo for lo, _ in o) for o in offs if o), default=0)
+    # The bars are compared at the same moment by the computer's clock (`forge.wall`, within 0.15 s): the screens' fight clocks
+    # start a second or two apart. `barsOff`: samples over 2 % of a bar apart (a hit or a reward on its way shows as one sample).
+    ref_wall = [s["forge"]["wall"] for s in first if s.get("forge")]
+    ref_by_wall = [s for s in first if s.get("forge")]
+    bars_off = 0
     for sc in screens[1:]:
         for s in sc:
+            if s.get("forge") and ref_wall:
+                i = bisect.bisect_left(ref_wall, s["forge"]["wall"])
+                near = [ref_by_wall[j] for j in (i - 1, i) if 0 <= j < len(ref_wall) and abs(ref_wall[j] - s["forge"]["wall"]) < 150]
+                for r in near[:1]:
+                    gap = max(abs(s["twin"]["hp"][k] - r["twin"]["hp"][k]) / s["twin"]["max"][k] for k in (0, 1))
+                    bars = max(bars, gap)
+                    bars_off += gap > 0.02
             ref = by_t.get(round(s["t"]))
             if not ref or not ref.get("forge") or not s.get("forge"):
                 continue
-            for i in (0, 1):
-                bars = max(bars, abs(s["twin"]["hp"][i] - ref["twin"]["hp"][i]) / s["twin"]["max"][i])
             cracked += s["forge"]["cracked"] != ref["forge"]["cracked"]
             bridges += s["forge"]["bridges"] != ref["forge"]["bridges"]
             inset = max(inset, abs(s["forge"]["inset"] - ref["forge"]["inset"]))
@@ -84,7 +95,7 @@ def read(folder):
         for s in sc:
             if s["twin"]["wall"] and s.get("me") and (s["me"][0] < 0) != (s["twin"]["half"] == 0):
                 across += 1
-    out["apart"] = {"bars": round(bars * 100, 2), "roomClock": round(drift, 2), "inset": round(inset, 1), "across": across}
+    out["apart"] = {"bars": round(bars * 100, 2), "barsOff": bars_off, "roomClock": round(drift, 2), "inset": round(inset, 1), "across": across}
     out["lavaHits"] = sum((s[-1].get("hits") or {}).get("forge", 0) for s in screens)
     out["lava"] = sum(1 for sc in screens for s in sc if s.get("forge", {}).get("lava"))
     out["errors"] = sum(s[-1].get("errors", 0) for s in screens)

@@ -7,10 +7,12 @@ export declare const RAID_REWARDS: Record<string, Record<string, { hp?: number; 
  * cast ids start. `flood`: the move that puts the wall of fire out for good. `change`: The Changing of the Flames' numbers.
  */
 export declare const RAID_TWIN: {
-  boss: string; gapOn: number; gapOff: number; ids: number; flood: string;
+  boss: string; gapOn: number; gapOff: number; ids: number; flood: string; share: number;
   change: { warn: number; open: number; mark: number; cross: number; late: number; rest: number };
 };
 export declare const raidTwin: (id: string, band: number) => boolean;
+/** Each of Twin Flames' two HP pools: `RAID_TWIN.share` of the band's HP. */
+export declare const raidTwinHp: (band: number, tier: number) => number;
 export declare const RAID_HALL_RING: number;
 export declare const RAID_SHRINE_S: number;
 export declare const RAID_RUN: string[];

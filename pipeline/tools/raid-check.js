@@ -2468,7 +2468,7 @@
     const { CHAIN, VENTS, CHANGE } = await import('/src/raid/twinForge.ts');
     const { FLOOD_HIT, OTHER_HIT } = await import('/src/raid/twin.ts');
     const { HERO_KITS } = await import('/src/heroes.ts');
-    const { RAID_TWIN, raidHp, raidStaggerMax } = await import('/server/protocol.mjs');
+    const { RAID_TWIN, raidHp, raidStaggerMax, raidTwinHp } = await import('/server/protocol.mjs');
     const V = a.caster.group.position.constructor;
     const rows = [], failed = [];
     let simMs = performance.now();
@@ -2510,7 +2510,7 @@
     const lost = () => (d.playerMax - d.playerHp) / d.playerMax;
     const take = (fn, s) => { d.playerHp = d.playerMax; fn(); step(s); return lost(); };
     const scriptOf = (which) => d.boss.twin.scripts[which];
-    const POOL = Math.round(raidHp('ash', 10, 1) / 2);
+    const POOL = raidTwinHp(10, 1);
     try {
       // The room and who stands where.
       fresh(0);
@@ -2982,7 +2982,7 @@
 
       // The Changing of the Flames (40): the hub marks, a marked hero crosses by a gate, its enemy changes.
       fresh(0, 40);
-      const POOL40 = Math.round(raidHp('ash', 40, 1) / 2);
+      const POOL40 = raidTwinHp(40, 1);
       link.hurt(1, POOL40 * 0.2);
       const cg = cast('change', 0);
       step(0.3);

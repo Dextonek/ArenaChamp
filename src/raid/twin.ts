@@ -1,4 +1,4 @@
-import { RAID_BOSSES, RAID_REWARDS, RAID_TWIN, raidHp, raidScale, raidStaggerMax } from '../../server/protocol.mjs';
+import { RAID_BOSSES, RAID_REWARDS, RAID_TWIN, raidScale, raidTwinHp, raidStaggerMax } from '../../server/protocol.mjs';
 
 /** The Changing of the Flames on one screen (`TwinLocalLink`): the call in the air. */
 interface LocalChange { id: number; until: number; crossed: boolean }
@@ -109,7 +109,7 @@ export class TwinLocalLink implements RaidLink {
   private change: LocalChange | null = null;
 
   constructor(private def: BossDef, readonly band = 10, half = 0, tier = 1) {
-    this.maxHp = Math.round(raidHp(def.id, band, tier) / 2);
+    this.maxHp = raidTwinHp(band, tier);
     this.staggerMax = raidStaggerMax(def.id, band) / 2;
     this.which = half;
     const pool = (): Pool => ({ hp: this.maxHp, max: this.maxHp, phase: 0, gauge: 0, kneeling: 0, dead: false });

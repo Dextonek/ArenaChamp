@@ -21,7 +21,7 @@ import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
 import {
   HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RAID_TWIN, RELOAD_TEXT, SHOP, STARTERS, heroPrice, isoWeek, raidBand, raidHp,
-  raidStaggerMax, shopRotation,
+  raidStaggerMax, raidTwinHp, shopRotation,
 } from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
@@ -1278,7 +1278,7 @@ if (!onlyShop) try {
   // Two HP pools, hits routed by `which`, a brain per boss on a screen of its own half, the furious rule on and off by the gap,
   // one falls and the other is everyone's, the win when both are dead. For two they stay the tag team, with nothing new on the wire.
   {
-    const N = 6, POOL = (ASH * 5) / 2, GAUGE = raidStaggerMax('ash', 10) / 2;
+    const N = 6, POOL = raidTwinHp(10, 1), GAUGE = raidStaggerMax('ash', 10) / 2;
     const p = await players(N, 'tw');
     p[0].send({ t: 'lobby_create', raid: 'ash' });
     const room = (await p[0].next('lobby')).lobby;
@@ -1437,7 +1437,7 @@ if (!onlyShop) try {
     // The Twin Forge's own (PROTOCOL 12; src/raid/twinForge.ts): a chain's pair, the vents' count, the halves dealt again for The
     // Changing of the Flames, and the wall of fire out with the flood though both still stand. Eight players: four in each half.
     {
-      const N = 8, C = RAID_TWIN.change, POOL = (ASH * 5) / 2;
+      const N = 8, C = RAID_TWIN.change, POOL = raidTwinHp(10, 1);
       const p = await players(N, 'tf');
       p[0].send({ t: 'lobby_create', raid: 'ash' });
       const room = (await p[0].next('lobby')).lobby;

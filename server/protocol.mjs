@@ -52,7 +52,7 @@ export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? R
 
 /**
  * Twin Flames (pipeline/designs/raid-party.md): a party fights Ash and Ember both at once, one on each side of a wall of fire.
- * The hub keeps two HP pools, each half the band's HP, and half the gauge each. Their health must fall together: when their HP
+ * The hub keeps two HP pools, each `share` of the band's HP (`raidTwinHp`), and half the gauge each. Their health must fall together: when their HP
  * shares are more than `gapOn` apart, the one with more grows furious, until they are within `gapOff` again. Boss 0 is Ash
  * (the west half), boss 1 Ember (the east). The second boss's cast ids start at `ids`, so a cast's id says whose it is.
  *
@@ -67,9 +67,12 @@ export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? R
  * `late`: each of those screens takes `late` of its hero's max HP. `rest`: no new call for this long after one (s).
  */
 export const RAID_TWIN = {
-  boss: 'ash', gapOn: 0.12, gapOff: 0.06, ids: 1000000, flood: 'flood',
+  boss: 'ash', gapOn: 0.12, gapOff: 0.06, ids: 1000000, flood: 'flood', share: 0.44,
   change: { warn: 4, open: 8, mark: 100, cross: 200, late: 0.4, rest: 20 },
 };
+
+/** Each of Twin Flames' two HP pools: `RAID_TWIN.share` of the band's HP. @param {number} band @param {number} tier */
+export const raidTwinHp = (band, tier) => Math.round(raidHp(RAID_TWIN.boss, band, tier) * RAID_TWIN.share);
 
 /** Whether this boss at this band is fought as two at once. @param {string} id @param {number} band */
 export const raidTwin = (id, band) => id === RAID_TWIN.boss && band > 2;

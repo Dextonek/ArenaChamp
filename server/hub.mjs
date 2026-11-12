@@ -11,7 +11,7 @@
 import { hex } from './accounts.mjs';
 import {
   HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX,
-  isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, shopRotation,
+  isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
 } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
@@ -1169,7 +1169,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (half && raidTwin(id, band)) {
       /** @param {number} which @returns {RaidPool} */
       const pool = (which) => ({
-        hp: Math.round(hp / 2), max: Math.round(hp / 2), staggerMax: staggerMax / 2, phase: 0, gauge: 0, kneelUntil: 0, brain: half.indexOf(which), brainAt: 0,
+        hp: raidTwinHp(band, tier), max: raidTwinHp(band, tier), staggerMax: staggerMax / 2, phase: 0, gauge: 0, kneelUntil: 0, brain: half.indexOf(which), brainAt: 0,
         hpTimer: null, hpAt: 0, dead: false,
       });
       boss.twin = { pools: [pool(0), pool(1)], half, fury: -1 };
