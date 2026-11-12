@@ -67,7 +67,7 @@ export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? R
  * `late`: each of those screens takes `late` of its hero's max HP. `rest`: no new call for this long after one (s).
  */
 export const RAID_TWIN = {
-  boss: 'ash', gapOn: 0.12, gapOff: 0.06, ids: 1000000, flood: 'flood', share: 0.44,
+  boss: 'ash', gapOn: 0.12, gapOff: 0.06, ids: 1000000, flood: 'flood', share: 0.47,
   change: { warn: 4, open: 8, mark: 100, cross: 200, late: 0.4, rest: 20 },
 };
 
