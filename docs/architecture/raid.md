@@ -388,7 +388,7 @@ keep the Sunken Heart, and nothing of the fight changes for them. Pictures: `doc
 | Blade Sweep, Blade Fall | As they are: one is close to it, the other falls where its hero stands, anywhere in the room |
 | Solar Flare | Its rings run to the end of every ray (6.1 s). Four gaps, each lying over a spur (every other spur: the seed says which four), 42° wide, the same for all three rings: four lanes, 4.4 m wide at 6 m from the Heart. A lane reaches over the near half of the ray on either side, so in every ray one half stays open and the other burns. It aims at nobody |
 | The Rings Turn | A beam runs to the walls. Each ring has a row of gold spots down one ray, the first 23.5 m out and 3 m apart: one spot for bands 5 and 10, two for 15 and 20, three for 30, four for 40. The ring locks when all of its row are held (a spot stays held; one hero may take them one after another); the gauge is paid once, when the last is. The three rings' rays are the seed's |
-| Heartbeat | It burns the whole room. One plate for every five heroes the fight is tuned for (1, 2, 3, 4, 6, 8 for bands 5 to 40), each falling 13.5 m out in front of a spur's nose: the first at the spur nearest the hero it looks at (the brain's aim), the rest spread round. Only a raised plate shelters, and only in its pocket: from the plate out to the stone, as wide as its shade (about 15 m²). A pocket shelters five: with more in it, what those over five would have taken is shared by all in it |
+| Heartbeat | It burns the whole room. One plate for every five heroes the fight is tuned for (1, 2, 3, 4, 6, 8 for bands 5 to 40), each falling 13.5 m out in front of a spur's nose: the first at the spur nearest the hero it looks at (the brain's aim), the rest spread round. Only a raised plate shelters, and only in its pocket: from the plate out to the stone, as wide as its shade (about 15 m²). A pocket shelters five: with more in it, what those over five would have taken is shared by all in it. While the beat's floor shows, a pocket with more than five in it says how many over its plate ("7/5") |
 | Crown of Rays | Down four rays (every other one, the one nearest its aim among them), then the four between. 4 m wide in a ray 11.6 m wide |
 | Hold Still | The beat reaches the whole room; the light runs in along seven joints of the bigger floor (`BURST_JOINTS`) |
 | Past 5 minutes | The molten floor rises from the walls in to 6 m from the Heart, as in the room for two |
@@ -412,8 +412,11 @@ fights: it took 1.4 hits a flare against 0.9 in the room for two; with 0.7 m, 0.
 
 **Not there yet.** What the mechanics ask is set by the band, not by how many heroes still stand when a move is cast: the hub's relay of
 `boss_cast` passes only the fields it knows, so a count would not reach the other screens (`server/hub.mjs`, `case 'boss_cast'`: one more
-field). Heroes do not push each other, so a pocket's five is kept by the count, not by its size. A new room is a rule both screens must
-agree on: `PROTOCOL` needs a new number when this goes out.
+field; `BossBrain.send` would set it). Heroes do not push each other, so a pocket's five is kept by the count, not by its size. A new
+room is a rule both screens must agree on: `PROTOCOL` needs a new number when this goes out. The hub grants at most 400 spots and
+rewards a fight (`TAKEN_MAX`): a band of 40 uses 15 for each turn of the rings (twelve spots and three locks) and 8 for each Heartbeat,
+about 180 in six minutes at tier 1 and about 340 from tier 4, where both come from the first phase. Past 400 the hub would grant no
+more plates or spots, and say nothing.
 
 ## The lairs
 
@@ -538,7 +541,7 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   boss's own rules, his stage (adds, the relay, the kneel, the fail and its cover) and the enrage. `_raidAsh()` does the same for Ash and Ember,
   with the tag, the lava, Eruption and Falling Star. `_raidHeart()` for the Heart: each move, both ways through Solar Flare's gaps, a beam,
   a lock by this hero and by the partner (paid once), plates raised by both, cover against the beat, and the plates all going at one moment;
-  Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase and by the brain's live clock, and standing through a flare and behind a plate (71 rows); then the same fight for a party in the Sunburst at bands 5, 10 and 40: the room and its walls, the flare's four lanes and its shade behind cover, a beam's reach and where it stops, a row of spots locked by this hero and a partner, the plates by band, a pocket and its count of five, the crown down the rays, the beat at a ray's end, and the room for two again after it (126 rows in all). `_raidUpgrades()` checks each upgrade's number and
+  Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase and by the brain's live clock, and standing through a flare and behind a plate (71 rows); then the same fight for a party in the Sunburst at bands 5, 10 and 40: the room and its walls, the flare's four lanes and its shade behind cover, a beam's reach and where it stops, a row of spots locked by this hero and a partner, the plates by band, a pocket and its count of five, the beat's look coming once, the crown down the rays, the beat at a ray's end, and the room for two again after it (128 rows in all). `_raidUpgrades()` checks each upgrade's number and
   each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
 - `pipeline/tools/boss-anim.js`: `_strip(title, setup, plan)` plays a move in a stepped fight and lays frames of it side by side round its
   landing, cropped on the boss and the hero.

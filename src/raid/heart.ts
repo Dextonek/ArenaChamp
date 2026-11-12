@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RAID_BOSSES, raidRing } from '../../server/protocol.mjs';
+import { RAID_BOSSES, RAID_PARTY_MAX, raidRing } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
@@ -508,6 +508,8 @@ const partyPlates = () => Math.min(BURST.rays, Math.max(1, Math.ceil(band / 5)))
 const PARTY_PLATE_OUT = 13.5;
 const POCKET_END = BURST.well - 0.1;
 const POCKET_HOLDS = 5;
+/** A pocket with more in it than it shelters says how many, this often (s), while the beat's floor shows: a look, from where the heroes are drawn. */
+const POCKET_SAYS = 0.9;
 
 const plateGeo = new THREE.BoxGeometry(2.3, 0.32, 2.6);
 const plateTrimGeo = new THREE.BoxGeometry(2.36, 0.1, 0.14);
@@ -568,6 +570,7 @@ const heartbeat: BossMove = {
       }
       : { shape: burnt, at, show: at - BEAT_LOOK, share: BEAT_SHARE, source, look: BEAT_LOOK };
     const threats = [th];
+    let said = 0;
     // A zone with its own rule is not drawn for it: the beat's orange floor, as the room for two shows it.
     const zone = party ? new TelegraphLayer() : null;
     if (zone) {
@@ -610,6 +613,18 @@ const heartbeat: BossMove = {
           const s = Math.min(1, Math.max(0, (t - (at - BEAT_LOOK)) / BEAT_LOOK));
           shade.update(t, t < at ? 0.15 + 0.4 * s : Math.max(0, 0.55 * (1 - (t - at) * 2)));
           if (t >= PLATE_FALL - 0.05 && t < PLATE_FALL + 0.05) for (const s2 of plates) p.sparks.emit(s2.x, 0.3, s2.z, 4, 3, 2, 0.5, CRUST);
+          // A crowded pocket, in the Sunburst: how many stand in it, over the plate, while there is still time to leave it.
+          if (party && t >= at - BEAT_LOOK && t < at && t - said >= POCKET_SAYS) {
+            said = t;
+            const inside = plates.map(() => 0);
+            for (let side = 0; side < RAID_PARTY_MAX; side++) {
+              const h = p.heroAt(side);
+              if (!h) continue;
+              const k = plates.findIndex((_, i) => inPocket(i, h.x, h.z));
+              if (k >= 0) inside[k]++;
+            }
+            plates.forEach((s2, k) => { if (inside[k] > POCKET_HOLDS) p.say(`${inside[k]}/${POCKET_HOLDS}`, '#ffb050', s2.cx, s2.cz); });
+          }
         },
         done(o) {
           const s = plates[o.part];
@@ -629,7 +644,9 @@ const heartbeat: BossMove = {
           p.sparks.emit(s.cx, 0.6, s.cz, 30, 4, 4, 0.8, STAND_COLOR);
           p.show.ring(s.cx, s.cz, { radius: 2.4, life: 0.5, color: 0xffd890, width: 0.4 });
         },
-        land() {
+        land(landed) {
+          // The beat itself, once: a raised plate's pocket lands with it, and is no second beat.
+          if (landed !== th) return;
           struck = true;
           p.flash('rgba(255,214,140,0.85)', 0.6);
           p.show.ring(c.fx, c.fz, { radius: R + 2, life: 1.1, color: 0xffd090, width: 1.2 });

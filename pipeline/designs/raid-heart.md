@@ -144,7 +144,7 @@ the Sunken Heart and the fight above, unchanged (`_raidHeart()`'s first 71 rows)
 | The room in the game: floor, lanterns, far wall, its measures | `src/arenas/sunburst.ts` (`BURST`, `burstAt`, `rayAngle`, `spurAngle`) |
 | Which room, and what a party must do | `HEART_OF_NOON.resize(band)`, `party` and `band` in `src/raid/heart.ts`; `partyRing: 35` in `server/protocol.mjs` |
 | A shelter that holds five; an AI's margin in a lane | `Threat.most`, `Threat.margin` (`src/raid/types.ts`, `src/raid/script.ts`) |
-| Its check | `_raidHeart()`: 55 more rows, 126 in all |
+| Its check | `_raidHeart()`: 57 more rows, 128 in all |
 | Its pictures | `python pipeline/tools/heart-room-shots.py docs/raid` -> `docs/raid/heartroom-*.jpg` |
 
 **Decided while building:**
@@ -153,7 +153,9 @@ the Sunken Heart and the fight above, unchanged (`_raidHeart()`'s first 71 rows)
 - **The plates fall at the spurs' noses, and shelter by count.** One plate for five heroes means nothing if forty can stand behind one:
   heroes do not push each other. So a raised plate's pocket (from the plate out to the stone, about 15 m²) is a gold zone the hub
   counts, as it counts Shared Burden: five are sheltered, and with more in it each pays its share of what the rest would have taken
-  (8 in one pocket: 15 % each instead of 40 %). The first plate falls at the spur nearest the hero the Heart looks at.
+  (8 in one pocket: 15 % each instead of 40 %). While the beat's orange floor shows, a pocket with more than five in it says how many
+  over its plate ("7/5"), from where the heroes are drawn on that screen. The first plate falls at the spur nearest the hero the Heart
+  looks at.
 - **A ring's spots stand in a row down one ray, all to be held.** The party rule is that what must be held grows with the band. Spread
   over many rays, a party that has lost heroes could never lock a ring; in one row, one hero can still take them one after another
   (four spots: about 11 s of the 14 the spots show).
@@ -175,11 +177,18 @@ from the gate is 7 s of it). Inside the noise of 40 fights, so no number of the 
 the Heartbeat then killed 10: a pocket under the flare's fire); 14 of 40 once cover stopped the flare. What hits it most in the Sunburst:
 the beams (151 in 40 fights), the flare (57), Blade Fall (38); what kills it: the beams (10), the Heartbeat (8). No errors in any run.
 From the end of a ray the autopilot finds its way to a spot in another ray (7 of 8 starts locked a ring within 14 s; the eighth was
-still walking). `_raidHeart()` 126 rows pass; type check, build and `npm run test:server` pass.
+still walking). `_raidHeart()` 128 rows pass, and after the two small additions to the script the other bosses' checks as before
+(`_raidCheck()` 95, `_raidAsh()` 77, `_raidUpgrades()` 40); type check, build and `npm run test:server` pass.
+
+**What the 14 of 40 is, and is not.** One hero, with one hero's HP, against the mechanics of band 10, one run of 40 fights, with a
+margin added for the autopilot in the flare's lanes. It says the room and its moves can be read and walked by the autopilot about as
+well as the room for two. It says nothing of a party: a pocket's count, a row held by several heroes and the hub's part in both were
+run on one screen only, with the other players' reports fed in by hand.
 
 **Not done:** a party of real screens through the hub in this room (the partner's side of every row is a report fed in by hand); a
 person playing it; a real phone; tiers above 1; the molten floor past five minutes was not looked at in this room; the numbers of the
 fight (HP, shares, the enrage) are the room for two's times the band, untouched; no sound; `PROTOCOL` needs a new number when it goes
-out; it is not on the News page (the party raid and the Hall of Noon are not there yet either). The room is first pass for the artist
-to direct.
+out; it is not on the News page (the party raid and the Hall of Noon are not there yet either). The hub's limit of 400 spots and
+rewards a fight (`TAKEN_MAX`) is near for a band of 40 at tier 4 and up: about 340 in six minutes (`docs/architecture/raid.md`). The
+room is first pass for the artist to direct.
 

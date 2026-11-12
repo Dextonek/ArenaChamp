@@ -147,7 +147,7 @@ west rays) it has a low shelf 5 m wide along that ray. Cover: one piece of the f
 one ray, all to be held. Plates: 1, 2, 3, 4, 6, 8, each sheltering five. Cover stops a beam and the flare's rings, not the beat.
 
 Pictures: `docs/raid/heartroom-overview.jpg` (from far above), `-play`, `-gate`, `-ray`, `-flare`, `-flare-play`, `-beams`, `-lock`,
-`-plates`, `-plates-far`, `-crown`, `-phone` and `-phone-lock` (390 x 844); retaken by `python pipeline/tools/heart-room-shots.py
+`-plates`, `-plates-far`, `-beat`, `-crown`, `-phone` and `-phone-lock` (390 x 844); retaken by `python pipeline/tools/heart-room-shots.py
 docs/raid`. **To show the user, waiting for the nod.** Not done or not checked: a party of real screens through the hub in it (only one
 screen, with a partner's reports fed in by hand); a person playing it; the count of heroes standing instead of the band (needs one more
 field in the hub's relay of `boss_cast`); `PROTOCOL` needs a new number when it goes out; the Cinder Pit's party room.

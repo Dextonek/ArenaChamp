@@ -205,6 +205,18 @@ SCENES = {
       T.step(at - 1.3 - T.since(id));
       return { plates: pl.length };
     }"""),
+    # The beat itself, a moment after it lands, five plates up: one flash, one ring, the plates still standing.
+    "beat": ((1280, 800), 40, """() => {
+      T.phase(2);
+      const id = T.cast('heartbeat', { dir: 0.2 }); T.step(1.2);
+      const pl = T.live(id).played.objectives, at = T.live(id).played.threats[0].at;
+      const behind = (o, n) => { const a = Math.atan2(o.x - T.H.x, o.z - T.H.z), out = []; for (let i = 0; i < n; i++) { const r = 13.6 + (i % 3) * 1.25, s = ((i % 2) - 0.5) * (0.9 + i * 0.12); out.push([T.H.x + Math.sin(a) * r + Math.cos(a) * s, T.H.z + Math.cos(a) * r - Math.sin(a) * s]); } return out; };
+      T.party([...behind(pl[0], 4), ...behind(pl[1], 5), ...behind(pl[7], 7), ...behind(pl[2], 5), ...behind(pl[6], 5), ...T.group(4, 9, 0, 6, 2.5), ...T.group(3, 20, 0, 3), ...T.group(5, 21, 0, 4)]);
+      for (const k of [0, 1, 7, 2, 6]) T.done(id, k, 1);
+      T.place(pl[0].x + 0.4, pl[0].z + 0.9, 1.7);
+      T.step(at + 0.14 - T.since(id));
+      return { plates: pl.length, hp: T.hp() };
+    }"""),
     # The same from far above: where the eight plates fall, in front of the eight spurs.
     "plates-far": ((1280, 800), 40, """() => {
       T.phase(2);
