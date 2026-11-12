@@ -79,6 +79,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 | [Retargeting arms](knowledge/retargeting-arms.md) | How the animator's clips are fitted to our heroes: rest poses, foot and hand goals, keeping arms out of robes and bellies, with the sources |
 | [Glossary](knowledge/glossary.md) | The project's words: impact frame, telegraph, foil, dead beat, kit, lingering, ... |
 | [League kit design](knowledge/league-kit-design.md) | Why League's kits work: 14 principles, what its reworks fixed, how our 20 kits compare, a kit checklist and what to do first |
+| [WoW raid mechanics](knowledge/wow-raid-mechanics.md) | World of Warcraft's raid bosses, Classic to Midnight (2026): about 25 kinds of mechanic with the bosses that use them, how they scale with raid size, the newest raids boss by boss, what players love and hate (with the few numbers that exist), and what it means for our three bosses. The researchers' notes per era: `knowledge/wow-raid-research/` |
 | [League champion kits](knowledge/league-champion-kits.md) | All 173 League champions read as a designer would, with counts across the roster |
 
 ### Project state
