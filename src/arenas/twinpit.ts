@@ -346,14 +346,18 @@ export function forgeSafe(x: number, z: number, pad = 0.45) {
   return true;
 }
 
-/** Ash goes no further from his place than this (m): his first four pillars stand 10 m from it, and a Charge wants one near. */
+/**
+ * Neither goes further from its place than this (m). Ash: his first four pillars stand 10 m from it, and a Charge wants one near.
+ * Ember: she backs away from whoever comes near, and a half that has to chase her over the bridges falls behind the other.
+ */
 export const ASH_LEASH = 9;
+export const EMBER_LEASH = 10;
 
 /**
  * Where one of the two may walk to: (x, z) pulled back into its own hall, 2.6 m inside its walls and the channel, and never into the
- * gate's passage; Ash no further than `ASH_LEASH` from his place, among his pillars. Once the pit floods each still keeps to its
- * own side of the channel, on the floor that is dry, and Ash to his place as far as the lava has left it: the flood brings both to
- * the last island, side by side.
+ * gate's passage; neither further from its place than its leash (`ASH_LEASH`, `EMBER_LEASH`). Once the pit floods each still keeps
+ * to its own side of the channel, on the floor that is dry, and to its place as far as the lava has left it: the flood brings
+ * both to the last island, side by side.
  */
 export function forgeRoam(half: number, x: number, z: number) {
   const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v)), pad = 2.6, s = half ? 1 : -1;
@@ -362,10 +366,9 @@ export function forgeRoam(half: number, x: number, z: number) {
   const x0 = C.x + s * (F.chan + pad), x1 = C.x + s * Math.max(F.chan + pad, F.hx - inset - pad);
   const zn = C.z - F.hn + inset + pad, zs = C.z + (forge.open ? F.hn - inset : F.hs) - pad;
   const into = (p: { x: number; z: number }) => ({ x: clamp(p.x, Math.min(x0, x1), Math.max(x0, x1)), z: clamp(p.z, zn, zs) });
-  const at = into({ x, z });
-  if (half) return at;
-  const home = into(F.hold[0]), far = Math.hypot(at.x - home.x, at.z - home.z);
-  return far <= ASH_LEASH ? at : into({ x: home.x + ((at.x - home.x) / far) * ASH_LEASH, z: home.z + ((at.z - home.z) / far) * ASH_LEASH });
+  const at = into({ x, z }), leash = half ? EMBER_LEASH : ASH_LEASH;
+  const home = into(F.hold[half]), far = Math.hypot(at.x - home.x, at.z - home.z);
+  return far <= leash ? at : into({ x: home.x + ((at.x - home.x) / far) * leash, z: home.z + ((at.z - home.z) / far) * leash });
 }
 
 /** Whether the flood has come over (x, z): what stands there is under the lava. */

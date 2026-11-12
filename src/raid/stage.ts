@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { seeded } from '../arenas/common';
 import type { MinionLook } from '../effects/parts/minion';
+import type { TelegraphShape } from '../effects/telegraph';
 import type { CastStyle } from '../heroFigure';
 import { ShadowFloor } from './fx';
 import { Shell } from './fxShow';
@@ -49,6 +50,8 @@ export interface StageSpec {
   fail: { share: number; cover: boolean; radius: number; text: string; blast: 'flare' | 'geyser' };
   /** Only the lava a geyser throws that lands in here is drawn (one half of a room split by a wall of fire). */
   inside?(x: number, z: number): boolean;
+  /** What the blow covers, when it is not the whole floor round `center` (one hall of the Twin Forge: its own half and no more). */
+  blow?: TelegraphShape;
   win: string;
   hint: string;
   /** How long it lasts at tier 1 (s; default `STAGE_S`), and an add's HP as a share of the boss's max (default 3.5 %; asked as the stage begins). */
@@ -114,7 +117,7 @@ function open(s: StageSpec, c: BossCast, p: PlayContext): PlayedMove {
   }
   p.shake(0.07);
   const source = s.fail.cover ? { x: s.hold.x, z: s.hold.z } : undefined;
-  const fail: Threat = { shape: { kind: 'circle', x: s.center.x, z: s.center.z, radius: s.fail.radius }, at: end, show: warn, share: s.fail.share, source, look: 2.6 };
+  const fail: Threat = { shape: s.blow ?? { kind: 'circle', x: s.center.x, z: s.center.z, radius: s.fail.radius }, at: end, show: warn, share: s.fail.share, source, look: 2.6 };
   const shadows = source ? new ShadowFloor(source, () => p.cover(), STAND_COLOR, s.fail.radius - 1) : null;
   // The shell: lit at its rim, so the boss shows through it, with bands of light running over it.
   const shell = new Shell(s.shell.color);

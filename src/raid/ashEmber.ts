@@ -62,6 +62,8 @@ interface Room {
   stage?: { seconds: number; add(who: number): number };
   /** How often the Charge comes, when not the pit's for two (s). */
   chargeEvery?: number;
+  /** What a failed stage of `who` covers, when not the whole floor (the Twin Forge: that twin's own hall, wall of fire or no wall). */
+  blow?(who: number): TelegraphShape;
 }
 
 const atTarget = (c: AimContext) => ({ x: c.target.x, z: c.target.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) });
@@ -696,7 +698,7 @@ function movesFor(room: Room): Record<string, BossMove> {
     center: room.home[who], ring: room.addRing, turns: [[0, 120, 240], [60, 180, 300]],
     look: coalHeartLook, color: '#5a3424', shot: 'lob', shotColor: LAVA,
     fail: { share: 0.45, cover: false, radius: room.reach + 1, text: 'THE VENT ERUPTS', blast: 'geyser' },
-    seconds: room.stage?.seconds, add: room.stage ? () => room.stage!.add(who) : undefined,
+    seconds: room.stage?.seconds, add: room.stage ? () => room.stage!.add(who) : undefined, blow: room.blow?.(who),
     // The lava it throws lands on its own side of the wall of fire.
     inside: room.wall ? (x) => (x < room.wall!.ax) === (who === ASH) : undefined,
     win: 'THE FIRE GOES OUT', hint: 'Put out the three Coal Hearts before the bar fills',
@@ -847,6 +849,11 @@ const PARTY: Room = {
   hold: (seconds) => forge.hold(seconds),
   stage: TWIN_STAGE,
   chargeEvery: TWIN_CHARGE,
+  // A failed Eruption covers that twin's own hall and the gate's passage on its side: a strip from the back wall to the gate.
+  blow: (who) => {
+    const L = TWIN_LAYOUT, s = who === ASH ? -1 : 1, mid = C.x + (s * (L.wallHalf + L.hx)) / 2;
+    return { kind: 'line', x1: mid, z1: C.z - L.hn, x2: mid, z2: C.z + L.gs, width: L.hx - L.wallHalf };
+  },
 };
 // Ids in letters only: the hub takes no others.
 const TWIN_MOVES: Record<string, BossMove> = { ...movesFor(PARTY), crack, flood, chain, change, ventsw: vents('ventsw', ASH), ventse: vents('ventse', EMBER) };

@@ -2103,7 +2103,7 @@
     const { TwinLocalLink, FURY_HIT, FURY_GAP } = await import('/src/raid/twin.ts');
     const { TWIN_WALL, TWIN_WALLS, TWIN_PILLARS, TWIN_LAYOUT, TWIN_R, TWIN_BRIDGES, TWIN_CHANNELS, FORGE, forge, twinPillarCount, inForge, forgeReach, lavaAt, bridgeUp, bridgeGlow, floodInset } = await import('/src/arenas/twinpit.ts');
     const { CHAIN, VENTS, CHANGE } = await import('/src/raid/twinForge.ts');
-    const { FLOOD_HIT } = await import('/src/raid/twin.ts');
+    const { FLOOD_HIT, OTHER_HIT } = await import('/src/raid/twin.ts');
     const { HERO_KITS } = await import('/src/heroes.ts');
     const { RAID_TWIN, raidHp, raidStaggerMax } = await import('/server/protocol.mjs');
     const V = a.caster.group.position.constructor;
@@ -2480,7 +2480,13 @@
       yes('flood: this screen\'s enemy is still Ash, and Ember is still only drawn', d.boss.which === 0 && d.boss.def.name === 'Ash' && d.opponentKit.name === 'Ash' && d.twin.fallT < 0);
       check('flood: both of them are angrier: his hits cost a quarter more', d.boss.script.rage, FLOOD_HIT, 0);
       place(-8, 20);
-      check('flood: her moves hurt this hero too now', take(() => cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 }), 1.9), 0.12 * FLOOD_HIT, 0.02);
+      check('flood: her moves hurt this hero too now, for 0.6 of what they cost her own team', take(() => cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 }), 1.9), 0.12 * FLOOD_HIT * OTHER_HIT, 0.012);
+      // Her failed Eruption covers her own hall only, wall of fire or no wall.
+      const ee = cast('erupte', 1, { x: TWIN_LAYOUT.hold[1].x, z: TWIN_LAYOUT.hold[1].z });
+      const blow = scriptCast(1, ee.id).played.threats[0].shape;
+      yes('flood: her failed Eruption still covers her own hall and no more', blow.kind === 'line' && blow.x1 > 12 && blow.x1 - blow.width / 2 > 0.8 && blow.x1 + blow.width / 2 < 26.1 && !d.boss.danger(-8, 20, 40));
+      for (const u of a.summons.alive('opponent')) a.hit(u.figure, { damage: 99999, knock: 0 });
+      step(0.3);
       cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 });
       step(0.4);
       yes('flood: and an AI minds them', d.boss.danger(-8, 20, 3) && !d.boss.script.danger(-8, 20, 3));

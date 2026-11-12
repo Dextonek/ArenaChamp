@@ -22,6 +22,11 @@ export const FURY_GAP = 0.6;
 /** Once the pit floods (the wall of fire out, both still standing) each of the two hits this much harder, and this much of the quiet between its moves is left. */
 export const FLOOD_HIT = 1.15;
 export const FLOOD_GAP = 0.85;
+/**
+ * Once the pit floods the other twin's moves hit this screen's hero too, for this much of what they cost its own team: it is not
+ * that twin's prey, and a party caught between two sets of zones at full cost does not last.
+ */
+export const OTHER_HIT = 0.6;
 
 /**
  * Whether a script is a ghost now. One object per script, switched by the fight. `open`: the wall of fire is out though both

@@ -9,7 +9,7 @@ import { Track } from './partner';
 import { RAID_TWIN, raidHp, raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
 import { FUSE, QUICK_GAP } from './omens';
-import { FLOOD_GAP, FLOOD_HIT, FURY_GAP, FURY_HIT, type Ghost, ghostLink, ghostWorld, twinClip } from './twin';
+import { FLOOD_GAP, FLOOD_HIT, FURY_GAP, FURY_HIT, OTHER_HIT, type Ghost, ghostLink, ghostWorld, twinClip } from './twin';
 import { BULWARK, CLOSE_CALL, SUN_EATER, type RunUpgrades } from './upgrades';
 import { moveTime, type BossCast, type BossDebuff, type BossDef, type BossWorld, type RaidLink, type TwinSetup } from './types';
 
@@ -456,8 +456,8 @@ export class BossFight {
   private rageNow() {
     const t = this.twin, fury = !!t && t.furious === t.mine, flood = !!t && t.open && !t.dead[0] && !t.dead[1];
     this.script.rage = Math.max(this.enraged ? RAGE_HIT : 1, fury ? FURY_HIT : 1, flood ? FLOOD_HIT : 1);
-    // The other's moves hurt this hero too once the wall is out: as angry as it is on its own screens.
-    if (t && flood) t.scripts[1 - t.mine].rage = Math.max(this.enraged ? RAGE_HIT : 1, t.furious === 1 - t.mine ? FURY_HIT : 1, FLOOD_HIT);
+    // The other's moves hurt this hero too once the wall is out: as angry as it is on its own screens, at `OTHER_HIT` of that.
+    if (t && flood) t.scripts[1 - t.mine].rage = OTHER_HIT * Math.max(this.enraged ? RAGE_HIT : 1, t.furious === 1 - t.mine ? FURY_HIT : 1, FLOOD_HIT);
     const gap = Math.min(this.enraged ? RAGE_GAP : 1, fury ? FURY_GAP : 1, flood ? FLOOD_GAP : 1);
     if (gap < 1) this.brain?.enrage(gap);
     else this.brain?.calm();
