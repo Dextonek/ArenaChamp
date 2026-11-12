@@ -1155,7 +1155,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /**
    * What the hub keeps of one fight: HP and the gauge's size come from the band.
    * Twin Flames (`raidTwin`: a party against Ash and Ember) is two bosses at once: `half` deals the players into the two halves of
-   * the room, and each boss has half the HP and half the gauge, and its brain on the first screen of its own half.
+   * the room, and each boss has `RAID_TWIN.share` of the HP (`raidTwinHp`) and half the gauge, and its brain on the first screen of its own half.
    * @param {string} id @param {number} band @param {number} tier @param {number} brain @param {number} seats
    * @param {number[] | null} half by side: 0 west, 1 east, -1 not here @returns {RaidBoss}
    */

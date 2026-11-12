@@ -1434,7 +1434,7 @@ if (!onlyShop) try {
     clearInterval(chat);
     for (const x of p) x.close();
 
-    // The Twin Forge's own (PROTOCOL 12; src/raid/twinForge.ts): a chain's pair, the vents' count, the halves dealt again for The
+    // The Twin Forge's own (PROTOCOL 13; src/raid/twinForge.ts): a chain's pair, the vents' count, the halves dealt again for The
     // Changing of the Flames, and the wall of fire out with the flood though both still stand. Eight players: four in each half.
     {
       const N = 8, C = RAID_TWIN.change, POOL = raidTwinHp(10, 1);

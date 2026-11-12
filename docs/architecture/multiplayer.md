@@ -145,18 +145,19 @@ A raid room is a lobby with `raid: <boss id>`: `lobby_create { raid }`, joined b
 ready the hub sends `raid_start` instead of `match_start`, then leads the run with `raid_offer`, `raid_stage` and `raid_won`; `match_loaded` and `match_fight` work as in a match. The relays of
 `move`, `cast` and `attack` are the same; the rest has its own messages and rules: [raid.md](raid.md). Alone is always offline.
 
-**Twin Flames' messages** (a party against Ash and Ember, both at once; the table with every field is in raid.md, "Twin Flames"):
+**Twin Flames' messages** (a party against Ash and Ember, both at once, in the Twin Forge; the table with every field is in raid.md, "Twin Flames"). The rows marked 13 came with the forge (built as 12 on a branch that was never deployed; the Heart of Noon's merge stayed at 11, so the deploy that brings them is 13):
 
 | Message | Since | What |
 |---|---|---|
-| `raid_stage.twin { half, hp, brain, staggerMax }` | 9 | Which half each seat is in (0 west with Ash, 1 east with Ember, -1 gone), each boss's HP and brain's screen, one boss's gauge |
+| `raid_stage.twin { half, hp, brain, staggerMax }` | 9 | Which half each seat is in (0 west with Ash, 1 east with Ember, -1 gone), each boss's HP and brain's screen, one boss's gauge. Since 13 each boss has `RAID_TWIN.share` (0.44) of the band's HP, not half (`raidTwinHp`) |
 | `which` on `boss_cast`, `boss_move`, `boss_damage`, `boss_stagger`, `boss_debuff`, `boss_reward`, `boss_hp`, `boss_phase`, `boss_gauge`, `boss_kneel`, `peer_debuff`, `boss_brain`, `brain_moved` | 9 | Which of the two it is about (0 Ash, 1 Ember) |
 | `boss_rage { which, on }`, `boss_fell { which }` | 9 | One grows furious or calms; one fell |
-| `boss_cast.mate` | 12 | A second hero the step is for, beside `target` (Lantern Chain's pair); passed on only if it is a seat |
-| `boss_cast` with `move: 'flood'` | 12 | No new field: from its relay on, the hub takes the wall of fire as out though both stand (revives and gold zones are the whole party's; hits stay each half's own boss's) |
-| `boss_reward { key: 'change' }` (client → server, from a brain's screen) | 12 | A request, not a reward: the hub marks every second standing hero of each half for The Changing of the Flames, and says who with `boss_done { id, part: 100 + seat, side: seat }` |
-| `boss_obj { id, part: 200 + own seat }` (client → server) | 12 | A marked hero stepped through a gate: the hub deals that seat into the other half. Taken only from that hero, once, within 12 s of the call |
-| `twin_halves { half, brain, late }` (server → client) | 12 | The halves as dealt now, whose screen runs each brain, and the seats the gates shut on (those burn). `boss_brain` and `brain_moved` follow for a brain whose screen crossed |
+| `boss_cast.mate` | 13 | A second hero the step is for, beside `target` (Lantern Chain's pair); passed on only if it is a seat |
+| `boss_cast` with `move: 'flood'` | 13 | No new field: from its relay on, the hub takes the wall of fire as out though both stand (revives and gold zones are the whole party's; hits stay each half's own boss's) |
+| `boss_reward { key: 'change' }` (client → server, from a brain's screen) | 13 | A request, not a reward: the hub marks every second standing hero of each half for The Changing of the Flames, and says who with `boss_done { id, part: 100 + seat, side: seat }` |
+| `boss_obj { id, part: 200 + own seat }` (client → server) | 13 | A marked hero stepped through a gate: the hub deals that seat into the other half. Taken only from that hero, once, within 12 s of the call |
+| `boss_reward { key: 'vents' }` (from a brain's screen) | 13 | Every vent of one cast of Seal the Vents sealed: that twin staggers (40, scaled as its gauge is, halved as each twin's gauge is). Each vent itself is an objective (`boss_obj`, `boss_done`) as any spot |
+| `twin_halves { half, brain, late }` (server → client) | 13 | The halves as dealt now, whose screen runs each brain, and the seats the gates shut on (those burn). `boss_brain` and `brain_moved` follow for a brain whose screen crossed |
 
 ## Messages
 
