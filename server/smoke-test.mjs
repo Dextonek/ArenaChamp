@@ -1238,7 +1238,7 @@ if (!onlyShop) try {
     brain = p.indexOf(here[0]);
     chat = setInterval(() => p[brain].send({ t: 'ping' }), 1000);
     const stage2 = await intoFight(here);
-    check(stage2.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === ASH * 5 && m.staggerMax === raidStaggerMax('ash', 10) && m.brain === 0)
+    check(stage2.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === raidTwinHp(10, 1) * 2 && m.staggerMax === raidStaggerMax('ash', 10) && m.brain === 0)
       && raidBand(here.length) === 10, `the next boss loads for the ten who are left: ${stage2[0].hp} HP`);
 
     // Lost only when everyone still here is down at once.
@@ -1249,7 +1249,7 @@ if (!onlyShop) try {
     check(!here[9].got.raid_end && !here[0].got.raid_end, 'nine of ten down: the run goes on');
     here[9].send({ t: 'hero_down' });
     const ends = await Promise.all(here.map((x) => x.next('raid_end', 12000)));
-    check(ends.every((m) => m.result === 'lost' && m.bosses === 1 && m.tier === 1 && m.bossMax === ASH * 5) && ends[0].profile.raids.played === 1,
+    check(ends.every((m) => m.result === 'lost' && m.bosses === 1 && m.tier === 1 && m.bossMax === raidTwinHp(10, 1) * 2) && ends[0].profile.raids.played === 1,
       'the tenth falls: the run is lost for all ten, with its score');
     clearInterval(chat);
     if (!target) check(hubLog.filter((l) => l.includes('the brain moves')).length === 1, 'the brain moved once in all, when its screen went quiet');
@@ -1294,8 +1294,8 @@ if (!onlyShop) try {
     const brains = [0, 1];
     let chat = setInterval(() => { for (const b of brains) p[b].send({ t: 'ping' }); }, 1000);
     const stage = await intoFight(p);
-    check(stage.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === ASH * 5 && m.brain === 0 && m.staggerMax === raidStaggerMax('ash', 10)),
-      'six against Ash and Ember: the fight loads for 10, with the pair\'s HP and gauge where they always were');
+    check(stage.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === POOL * 2 && m.brain === 0 && m.staggerMax === raidStaggerMax('ash', 10)),
+      "six against Ash and Ember: the fight loads for 10, the pair's gauge where it always was, their HP the sum of the two");
     check(stage.every((m) => m.twin && m.twin.half.join() === '0,1,0,1,0,1' && m.twin.hp.join() === `${POOL},${POOL}` && m.twin.brain.join() === '0,1' && m.twin.staggerMax === GAUGE),
       `Twin Flames: the party is dealt west, east, west..., each boss has ${POOL} HP and its brain on the first screen of its own half`);
 
