@@ -11,7 +11,7 @@ pushed or deployed; neither may happen without the user's word.
 
 ## The Sun Warden's hall transforms, and his mechanics for 10, 20 and 40 (2026-11-12): built and committed in a worktree, NOT merged, NOT live
 
-Branch `t3/ed97e38e` (worktree `C:\Users\erich\.t3\worktrees\ArenaChamp\t3-ed97e38e-8c88ddb4d58c99cd`), on top of `ba6d97e`. How it
+Branch `t3/sun-warden-party-mechanics` (worktree `C:\Users\erich\.t3\worktrees\ArenaChamp\t3-ed97e38e-8c88ddb4d58c99cd`), on top of `ba6d97e`. How it
 works: `docs/architecture/raid.md`, "The hall transforms, and what comes only for a big party"; what was decided and why:
 `pipeline/designs/raid-party.md`, the section of 2026-11-12. Code: `src/raid/wardenHall.ts` (new), `src/raid/sunWarden.ts`,
 `src/arenas/sunhall.ts`, `blender/arenas/real/sunhall.py`.
