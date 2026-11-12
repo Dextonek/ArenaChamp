@@ -91,8 +91,8 @@ export const forgeKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'chain hammer', name: 'Chain Hammer', range: 9, cooldown: 9, cc: true, aim: 'line',
-      blurb: 'Hurls a hammer on a chain 9 m down the aim: 40 damage, drags the first enemy it touches 4 m to him and slows them 1 s. Tempered: stunned 0.75 s.',
+      key: 'Q', label: 'chain hammer', name: 'Chain Hammer', range: 9, cooldown: 0.5, cc: true, aim: 'line',
+      blurb: 'No cooldown, +40 Heat. Hurls a hammer on a chain 9 m down the aim: 22 damage cold, 46 white-hot, drags the first enemy it touches 4 m to him and slows them 1 s.',
       icon(g, s) {
         ground(g, s);
         // A chain of links running from the bottom left to a hammer head at the top right, with a pull arrow over it.
@@ -127,9 +127,9 @@ export const forgeKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'forge roar', name: 'Forge Roar', range: 0, cooldown: 11,
+      key: 'W', label: 'forge roar', name: 'Forge Roar', range: 0, cooldown: 0.5,
       buff: { kind: 'armor', amount: 0.3, seconds: 3 },
-      blurb: 'For 3 s: +30% armour. His next basic attack is a slam: +35 damage, a 0.5 s knock-up and 2 Heat. Tempered: a 0.8 s knock-up. No speed.',
+      blurb: 'No cooldown, +30 Heat. For 3 s: +30% armour, and his next basic attack is a slam: +30 damage and a 0.5 s knock-up.',
       icon(g, s) {
         ground(g, s);
         // A hot anvil with three roar arcs rolling off its horn and an iron plate edge under it.
@@ -150,8 +150,8 @@ export const forgeKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'red-hot rivet', name: 'Red-Hot Rivet', range: 6, cooldown: 4,
-      blurb: 'Flicks a white-hot rivet at an enemy in sight (6 m): 25, then 12 burn over 2 s, and 2 Heat. Tempered: the enemy takes 20% more from him for 3 s.',
+      key: 'E', label: 'red-hot rivet', name: 'Red-Hot Rivet', range: 6, cooldown: 0.5,
+      blurb: 'No cooldown, +30 Heat. Flicks a rivet at an enemy in sight (6 m), which burns on for 2 s: 20 damage in all cold, 43 white-hot.',
       icon(g, s) {
         ground(g, s);
         // A big rivet on the diagonal, domed head bottom left, hot tip top right, heat shimmer and sparks around it.
@@ -186,8 +186,8 @@ export const forgeKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'molten core', name: 'Molten Core', range: 6, cooldown: 24,
-      blurb: 'For 6 s his chest cracks open: immune to slows, roots and knock-ups, and every basic attack sprays a 3 m cone: +25 damage, +1 Heat. Recast to Quench: he plants himself, a 3 m ring shows for 0.6 s, then it bursts for 30 plus 10 per second left. Tempered: also stunned 0.75 s.',
+      key: 'R', label: 'molten core', name: 'Quench', range: 6, cooldown: 11, anytime: true,
+      blurb: 'Spends all his Heat. He plants himself, a 3 m ring shows for 0.6 s, then it bursts for 30 plus 0.5 per point of Heat (80 at white heat) and throws them back. From white heat it also stuns 0.75 s. The only way out of white heat. Once in 11 s.',
       icon(g, s) {
         ground(g, s);
         // A broad iron chest plate split by jagged molten cracks around a white-hot heart, sparks flying off the cracks.

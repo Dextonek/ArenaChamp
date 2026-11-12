@@ -1,23 +1,25 @@
 ---
 title: Brannoc, the Ashen Smith (forge kit)
 tags: [catalog, heroes, forge, tank, melee]
-updated: 2026-11-04
+updated: 2026-11-12
 ---
 
 # Brannoc, the Ashen Smith
 
-The forge hero kit (v5): Brannoc's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette row and the rigged hero model. A huge smith in a scorched leather apron with a glowing forge in his chest. He hooks the enemy in with a chain hammer, puts Heat on them with every hit, and spends three Heat to Temper his next spell. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee tank with extra HP, a pull, a slow, stuns and a stance that nothing can slow or root.
+The forge hero kit: Brannoc's four spells (Q, W, E and the R ultimate), his passive, the shared parts file, the palette row and the rigged hero model. A huge smith in a scorched leather apron with a glowing forge in his chest. Since the rework of 2026-11-12 ([heroes-rework.md](../../../pipeline/designs/heroes-rework.md)) he is played by one rule, **Heat**: his spells have no cooldown, each one heats his hammer, a hot spell hits harder, and at white heat he burns until he Quenches. He is built on the [combat mechanics](../../architecture/mechanics.md): a melee tank with extra HP, a pull, a slow, a knock-up and a stun.
+
+![Brannoc at white heat in a CPU duel: the Heat bar full under his portrait, the white ring at his feet](../../heroes/rework-brannoc.jpg)
 
 ## Role
 
 | | |
 |---|---|
 | Role | Tank (melee) |
-| Signature | Hot Iron |
+| Signature | Heat |
 | HP | 780 |
-| Kit shapes | Q HOOK (skillshot line, pull, cc) · W SELF buff + armed slam · E TGT burn · R SELF stance + Quench recast |
+| Kit shapes | Q HOOK (skillshot line, pull) · W SELF armour + armed slam · E TGT burn · R SELF Quench (spends the Heat) |
 
-He wins a 1v1 by hooking the enemy into reach, building 3 Heat, and then landing a Tempered spell for a stun or a damage debuff. His weakness is reach and speed: he walks at 3.6 m/s, so a kiter who dodges the hammer (9 m, a straight line) is hard to catch.
+He wins a 1v1 by heating up on the way in: the third spell in a row turns the hammer white, and then he is at his strongest and on a clock, because white heat burns him. The Quench ends it with a burst and a stun, and leaves him cold and weak. His weakness is reach and speed: he walks at 3.6 m/s, so a kiter who dodges the hammer (9 m, a straight line) lets him burn for nothing. Measured 2026-11-12 in the fight simulator: 53% and 59% in two runs against the benchmark heroes on both sides; 34% and 43% as the player's hero alone, which is under the 40 to 60 band ([before](../../balance/rework-brannoc-before.html) 67.5%, [after](../../balance/rework-brannoc-after.html)). A computer that leaves no breath between his spells wins 44%: the Heat itself is the limit.
 
 ## At a glance
 
@@ -53,12 +55,14 @@ Molten slag that cools: liquid metal glows white-orange, a black crust grows ove
 
 | | |
 |---|---|
-| Passive | Hot Iron: his hits put Heat on the enemy (3 at most, each batch lasts 5 s, shown as pips over them). |
-| Twist | Tempered: his next spell that lands on a 3-Heat enemy clears the Heat and gets its bonus: Q stuns 0.75 s instead of the slow, E makes the enemy take 20% more damage for 3 s, R's Quench stuns 0.75 s. A Tempered spell adds no Heat of its own, and only the first hit of a cast counts, so a burn tick never Tempers. |
-| Resource or meter | none (the Heat is stacks on the enemy) |
+| Passive | **Heat.** No cooldowns. Each spell heats his hammer (Q +40, W +30, E +30, of 100) and is cast at the power of the Heat it found: 55% cold, 115% white-hot, straight in between. Heat cools 10 a second once he has cast nothing for 2.5 s. |
+| Twist | **White heat** (the bar full): it does not cool, it stays until he Quenches. He burns 14 HP each second and every Q, W, E costs him 35 HP in place of Heat; slows, roots and knock-ups do nothing to him and his basic attacks deal +15. The burn cannot take his last HP. |
+| Resource or meter | **Heat**, 0 to 100, an orange bar under his HP on both screens and in the HUD. The passive slot shows the power of the next spell ("85%") or WHITE. A ring at his feet: dull red from 34 Heat, orange from 67, white at white heat (with a white pip over him). |
 | Speed | 3.6 m/s |
 | Basic attack | melee, 2.6 m, 18 damage every 1.6 s, wind-up 0.4 s, smash look |
-| Other rules | Heat sources: E adds 2; the W slam adds 2; each basic attack while the core burns adds 1; Q adds none. During Molten Core slows, roots and knock-ups are swallowed (`taken`). The CPU against him walks away from the core when within 5 m. |
+| Other rules | The W slam is a gold pip over him until it is spent. The CPU against him steps back from white heat when within 4 m. The CPU playing him (`aiHold`) leaves a breath between spells so he swings, does not hook an enemy already in reach, roars between two rivets, does not turn the hammer white while the Quench is more than 2 s from ready, pays for white-hot spells only above half HP, rides white heat 3.5 s and then Quenches with the enemy inside 2.5 m (anywhere under 25% HP). |
+
+The 0.5 s "cooldown" of Q, W and E in the kit data is the gap the game server asks between two casts of one slot, and the Quench's 11 s is the server's one ultimate in 10 s (`server/hub.mjs`): neither is a design choice.
 
 ## Mechanics
 
@@ -67,27 +71,30 @@ Brannoc uses these pieces of [the combat mechanics](../../architecture/mechanics
 | Mechanic | Where |
 |---|---|
 | Melee kit | `melee: true` and `maxHp: 780` in the kit data. The duel AI walks up to melee range |
+| Own resource | `resource` Heat; `castMods` adds it and sets the cast's power, `tick` cools it and burns him |
+| HP cost | White heat: 14 HP a second and 35 HP a spell, through `payHp` |
 | Pull and slow | Q: `pull: 4` toward him, `knock: 0`, slow 1 s. Q is flagged `cc` (the AI casts it first when the enemy is in range) and `aim: 'line'` |
-| Stun | Tempered Q and Tempered Quench: 0.75 s |
-| Knock-up | The W slam: 0.5 s (0.8 s on a 3-Heat enemy) |
+| Stun | The Quench from white heat: 0.75 s (a status in the cast's mods) |
+| Knock-up | The W slam: 0.5 s |
 | Armour buff | W: +30% armour for 3 s (kit `buff`), no speed |
-| Damage over time | E: two burn ticks of 6 |
-| Debuff | Tempered E: `vulnerable` +20% for 3 s |
-| Stance and recast | R: 6 s of immunity to slow, root and knock-up, +25 damage and +0.4 m reach per basic attack, +1 Heat per hit; Quench (recast) ends it with a ring burst |
+| Damage over time | E: two burn ticks |
+| Immunity | White heat: slows, roots and knock-ups are swallowed in `taken` |
 | Hold | Quench holds him still for 0.6 s |
 | Skillshot | Q: a projectile at 18 m/s, 9 m, radius 0.45 |
 | Summon, dash, heal | none |
 
 ## Spells
 
-All four play under the normal gameplay camera. Range and cooldown come from the kit data (`src/kits/forge.ts`), hit time and length from the spell files in `src/spells/targeted/`; the numbers are the spell files' defaults. "Hit" is the telegraph impact time and the first damage.
+All four play under the normal gameplay camera. Range comes from the kit data (`src/kits/forge.ts`), hit time and length from the spell files in `src/spells/targeted/`; damage is the spell file's default times the Heat's power (55% to 115%). "Hit" is the telegraph impact time and the first damage.
 
-| Key | Label | Targeting | Range | Cooldown | Hit time | Length | What happens |
+| Key | Label | Targeting | Range | Cost | Hit time | Length | What happens |
 |---|---|---|---|---|---|---|---|
-| Q | [chain hammer](../../../src/spells/targeted/chainHammer.ts) | line skillshot (ground aim) | 9 | 9 s | released at 0.3 s, reaches 6 m at 0.63 s | 1.7 s | He whirls the hammer on its chain (0.3 s wind-up), then throws it down the aim. The first enemy it touches takes 40, is dragged 4 m toward him and is slowed 1 s; the chain stays taut 0.45 s, then whips back. A miss reels in. Tempered: stunned 0.75 s instead of the slow. |
-| W | [forge roar](../../../src/spells/targeted/forgeRoar.ts) | self | 0 (self) | 11 s | none (no damage) | 3.6 s | Heat rolls off him in a ring (2.4 m) and a loop of chain turns round his waist for 3 s of +30% armour. His next basic attack in those 3 s is a slam: +35 damage, a 0.5 s knock-up and 2 Heat (a 0.8 s knock-up that clears the Heat on a 3-Heat enemy). The hammer glows on his shoulder until the slam is spent. |
-| E | [red-hot rivet](../../../src/spells/targeted/redHotRivet.ts) | enemy (needs sight) | 6 | 4 s | 0.55 s | 3.2 s | He pulls a white-hot rivet from his chest, flicks it, and it punches into the enemy: 25 damage. It stays in and burns two ticks of 6 (at 1.55 s and 2.55 s). Adds 2 Heat. Tempered: the enemy takes 20% more for 3 s. |
-| R | [molten core](../../../src/spells/targeted/moltenCore.ts) | self (stance, then recast) | 6 (the AI's reach) | 24 s | stance 0.4 s; Quench ring 0.6 s | 6.4 s (the Quench 2.4 s) | His chest cracks open for 6 s: immune to slows, roots and knock-ups, and each basic attack sprays a 3 m slag cone (+25 damage, +1 Heat). Recast to Quench: he plants himself and a 3 m ring shows for 0.6 s, then it bursts for 30 plus 10 per second the core had left. Tempered: also stunned 0.75 s. |
+| Q | [chain hammer](../../../src/spells/targeted/chainHammer.ts) | line skillshot (ground aim) | 9 | +40 Heat | released at 0.3 s, reaches 6 m at 0.63 s | 1.7 s | He whirls the hammer on its chain (0.3 s wind-up), then throws it down the aim. The first enemy it touches takes 22 cold to 46 white-hot (40 at full power), is dragged 4 m toward him and is slowed 1 s; the chain stays taut 0.45 s, then whips back. A miss reels in. |
+| W | [forge roar](../../../src/spells/targeted/forgeRoar.ts) | self | 0 (self) | +30 Heat | none (no damage) | 3.6 s | Heat rolls off him in a ring (2.4 m) and a loop of chain turns round his waist for 3 s of +30% armour. His next basic attack in those 3 s is a slam: +30 damage and a 0.5 s knock-up. The hammer glows on his shoulder until the slam is spent. |
+| E | [red-hot rivet](../../../src/spells/targeted/redHotRivet.ts) | enemy (needs sight) | 6 | +30 Heat | 0.55 s | 3.2 s | He pulls a white-hot rivet from his chest, flicks it, and it punches into the enemy: 25, then two burn ticks of 6 (at 1.55 s and 2.55 s), all times the Heat's power: 20 in all cold, 43 white-hot. |
+| R | [molten core](../../../src/spells/targeted/moltenCore.ts) (named Quench in the game) | self | 6 (the ring is 3 m) | all his Heat; once in 11 s | ring 0.6 s | 2.4 s | He plants himself and a 3 m ring shows for 0.6 s, then it bursts for 30 plus 0.5 per point of Heat (80 at white heat) and throws them back. From white heat it also stuns 0.75 s. The hammer is cold again: it is the only way out of white heat. The spell file's 6 s stance (the old Molten Core) is no longer played by the game; the VFX tool still shows it. |
+
+At white heat a Q, W or E adds no Heat and costs 35 HP.
 
 Spell sources: [`chainHammer.ts`](../../../src/spells/targeted/chainHammer.ts), [`forgeRoar.ts`](../../../src/spells/targeted/forgeRoar.ts), [`redHotRivet.ts`](../../../src/spells/targeted/redHotRivet.ts), [`moltenCore.ts`](../../../src/spells/targeted/moltenCore.ts). Their catalog rows are in the [effect catalog](../effects.md#hero-forge).
 

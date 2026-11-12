@@ -26,6 +26,9 @@ import { CORE_SECONDS, fxOf } from '../../traits/forge';
  * screens of a network duel agree); the `mode` setting forces one. The seconds left come from `forgeFx.quenchLeft` (written
  * by the trait, mirrored on the other screen), else from the clock. Clean by 2.4 s after the Quench.
  * See pipeline/designs/kit-forge.md.
+ * Since the Heat rework (2026-11-12, `src/traits/forge.ts`) the game plays only the Quench: R is the Quench at any Heat, the
+ * trait writes `forgeFx.quenchAt` at the cast and this effect takes a fresh one as "this cast is the Quench", with
+ * `quenchLeft` carrying the Heat (0.06 s a point: 30 + 0.6 a point of Heat). The stance is still here for the VFX tool.
  */
 export interface MoltenCoreSettings {
   /** Quench: base damage, and damage per second the core had left. */
@@ -167,7 +170,9 @@ export class MoltenCore implements Effect {
     const prev = lastCast.get(ctx.caster);
     const auto = !!prev && !prev.quench && now - prev.at < RECAST_CLOCK;
     const m = this.settings.mode;
-    this.quench = m === 'quench' || (m === 'auto' && auto);
+    // In a duel his trait says so (the Heat rule: every R is the Quench): it wrote `quenchAt` just before this cast.
+    const told = now - fxOf(ctx.caster).quenchAt < 1500;
+    this.quench = m === 'quench' || (m === 'auto' && (auto || told));
     lastCast.set(ctx.caster, { at: now, quench: this.quench });
     this.center.copy(ctx.from).setY(0);
     this.ring = { kind: 'circle', x: ctx.from.x, z: ctx.from.z, radius: RING_R };

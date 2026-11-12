@@ -50,6 +50,32 @@ export const CHANGELOG: Release[] = [
         alt: 'The guardian of floor 10, a giant echo of Marin, throws a fan of five beams of light across the Tower\'s round room at Kaia, who stands behind a pillar.',
       },
       {
+        tag: 'Heroes',
+        title: 'Brannoc: Heat in place of cooldowns',
+        text: 'His spells have no cooldowns now. Each one heats his hammer, and a hot spell hits harder. With the bar full the hammer is white-hot: nothing slows him and he hits hardest, but he burns until he Quenches with R, a burst that is bigger the hotter he was.',
+        image: '/news/rework-brannoc.jpg',
+        alt: 'Brannoc in a duel with his Heat bar full: a white ring at his feet and the numbers of his own burn over his head.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'Cantor: only on the beat',
+        text: 'His spells have no cooldowns now: he may cast one on every pulse of the ring under him. On the pulse it lands and his Crescendo climbs; off the pulse it goes sour and the Crescendo is gone. A chord at the top of the Crescendo silences, and the Crescendo starts again. Siren Song and Rising Chorus spend it: the more of it, the longer the charm and the bigger the shield.',
+        image: '/news/rework-cantor.jpg',
+        alt: 'Cantor in a duel striking a gold chord on the pulse, the gold ring of the beat swollen under him and his Crescendo bar part full.',
+      },
+      {
+        tag: 'Heroes',
+        title: 'Vesper: no cooldowns, she pays in blood',
+        text: 'Every spell of hers can be cast again at once and costs her health: 10 at first and 10 more with each spell, falling again when she holds back. Her hits drink some of it back, and so do ripping her needle out and her Feast. Spend without a pause and the price outruns her: she cannot cast what she cannot pay.',
+        image: '/news/rework-vesper.jpg',
+        alt: 'Vesper in a duel after a burst of spells, the Price bar under her portrait run up and the cost of each spell floating over her head.',
+      },
+      {
+        tag: 'CPU',
+        title: 'The computer\'s Cantor aims his chord',
+        text: 'Played by the computer, Cantor struck his chord the same way every time, wherever you stood, and missed most of them. Now he strikes it at you.',
+      },
+      {
         tag: 'Raid',
         title: 'The Sunburst',
         text: 'Three or more players fight the Heart of Noon in a room of its own: the crater where the sun fell, a round well with eight long rays cut into the stone. Its flare leaves four lanes, its rings are locked by holding a row of gold spots out in a ray, and a plate of its crust falls for every five of you. Each shelters five.',

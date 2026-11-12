@@ -239,8 +239,8 @@ export const bardKit: HeroKit = {
   },
   spells: [
     {
-      key: 'Q', label: 'resounding chord', name: 'Resounding Chord', range: 5, cooldown: 3,
-      blurb: 'A chord in a 5 m cone: 60. In tune with his beat: also silenced 0.5 s. Move on his pulse: that is when the good one comes.',
+      key: 'Q', label: 'resounding chord', name: 'Resounding Chord', range: 5, cooldown: 0.5,
+      blurb: 'No cooldown. A chord in a 5 m cone: 25, and 12% more for each step of Crescendo. On the beat it adds a step; cast at 5 it hits for 40, silences 0.5 s and the Crescendo starts again. Off the beat: 6 damage and the Crescendo is gone.',
       icon(g, s) {
         iconGround(g, s);
         // Three staves fan out of the lower left into a cone, notes riding them, sound rings across the cone and a gold spark.
@@ -260,8 +260,8 @@ export const bardKit: HeroKit = {
       },
     },
     {
-      key: 'W', label: 'siren song', name: 'Siren Song', range: 8, cooldown: 12, cc: true,
-      blurb: 'A note flies at the enemy (8 m, 10 m/s) and charms them: they walk toward him and cannot act, 0.8 s (1.1 s in tune). Cover breaks the note: step behind a pillar as it flies.',
+      key: 'W', label: 'siren song', name: 'Siren Song', range: 8, cooldown: 0.5, cc: true,
+      blurb: 'No cooldown. Spends the Crescendo: a note flies at the enemy (8 m, 10 m/s) and charms them 0.25 s for each step (1.25 s at 5): they walk toward him and cannot act. Off the beat it charms nobody. Cover breaks the note: step behind a pillar as it flies.',
       icon(g, s) {
         iconGround(g, s);
         // A stave streams from the left into a big eighth note; a swirl of rose rings on the far side marks the charmed one.
@@ -293,8 +293,8 @@ export const bardKit: HeroKit = {
       },
     },
     {
-      key: 'E', label: 'rising chorus', name: 'Rising Chorus', range: 0, cooldown: 11,
-      blurb: 'For 3 s every in-tune spell gives him +25% speed for 1.5 s and a 30 shield. Hit him hard now: 50 damage breaks the beat.',
+      key: 'E', label: 'rising chorus', name: 'Rising Chorus', range: 0, cooldown: 0.5,
+      blurb: 'No cooldown. Spends the Crescendo: a shield of 15 for each step (75 at 5) for 3 s, and +25% speed for 1.5 s. Off the beat it gives nothing.',
       icon(g, s) {
         iconGround(g, s);
         // A golden lyre in the middle, two staves winding round it, gold notes climbing and a ring racing out on the floor.
@@ -321,8 +321,8 @@ export const bardKit: HeroKit = {
       },
     },
     {
-      key: 'R', label: 'duet', name: 'Duet', range: 0, cooldown: 24,
-      blurb: 'A ring (6 m) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat it pulses for 18, and in-tune spells inside it also silence 0.5 s. Cannot be cast while the enemy is charmed.',
+      key: 'R', label: 'duet', name: 'Duet', range: 0, cooldown: 11,
+      blurb: 'A ring (6 m) closes round him in 0.8 s and holds 3.4 s: neither of you can leave it. Each beat it pulses for 18 (more with the Crescendo), and his clean spells inside it also silence 0.5 s. On the beat it adds a step. Cannot be cast while the enemy is charmed. Once in 11 s.',
       icon(g, s) {
         iconGround(g, s);
         // A closed ring of staves seen on the floor, two small figures inside it and notes climbing the wall.
