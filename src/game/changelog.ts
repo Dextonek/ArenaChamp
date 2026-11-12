@@ -228,7 +228,7 @@ export const CHANGELOG: Release[] = [
         title: 'The Changing of the Flames: for a full raid',
         text: 'With more than thirty in the raid, Ash calls the changing: half of each team is marked, and gates open in the wall of fire for eight seconds. The marked must step through and fight the other twin. Whoever stays is dragged through the fire when the gates shut, and anyone else who steps into a gate burns.',
         image: 'news/twin-changing.jpg',
-        alt: 'Gates of light stand open in the wall of fire between Ash\'s hall and Ember\'s; marked heroes walk toward them from both sides.',
+        alt: 'Two gates of pale light stand open in the wall of fire between Ash\'s hall and Ember\'s; Kaia steps through the middle one, with Vesper and Brannoc beside it.',
       },
       {
         tag: 'Raid',

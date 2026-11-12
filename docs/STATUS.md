@@ -22,11 +22,18 @@ Pictures: `docs/raid/twin-*.jpg`. Five News items in the top release of `src/gam
 - **A duo is unchanged:** two bots through the hub played the tag team in the small pit (7,100 HP), screens agreed, won, no errors.
 - **Checked:** type check, build, `npm run test:server` (235), `_raidTwin()` 143, `_raidAsh()` 77, `_raidCheck()` 234,
   `_raidHeart()` 246, `_raidUpgrades()` 40.
-- **A glitch, not chased:** right as a half cracks, some screens show two of its bridges up for a second or two that the others
-  never show (5 of 21 tries).
+- **A glitch, cause not found:** in 6 of 21 tries some screens showed a bridge or two up for a second or two that screen 0 never
+  showed (two cases looked at; none in the twelve-screen run). Each screen judges its own hero; no errors came of it.
+- **The share applies to every party size:** a pair's `raid_stage.hp` and `raid_end.bossMax` are now 0.97 of the band's HP (the
+  server test changed with it).
+- **The helped runs:** the twelve-bot run had `--boost 12` (band 15); the duo run `--boost 25`, once.
 - **Not checked:** people playing; Seal the Vents and The Changing of the Flames through the hub with 16 or 31+ bots (the server
   test and `_raidTwin()` cover them); a real phone; a higher tier.
 - **`PROTOCOL` is 13.**
+- **Not live.** For the user:
+  1. Look at `docs/raid/twin-*.jpg` (start with `twin-room`, `twin-islands`, `twin-island-far`, `twin-chain-pair`, `twin-change`).
+  2. Push: `git push origin feat/particle-editor:main` (once this branch is merged into `feat/particle-editor`).
+  3. Deploy (`npm run cf:deploy`), on its own request: `PROTOCOL` 13 tells open tabs to reload.
 
 ## The hero shop, raid ranks and the week's boards (2026-11-12): built and committed; NOT pushed, NOT live
 

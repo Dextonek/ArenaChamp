@@ -556,8 +556,9 @@ halves, each bridge but for the glitch below, and the flood; nobody across the s
 
 **Not done or not checked.** Played by people. Seal the Vents and The Changing of the Flames through the hub with 16 or 31+ bots
 (the server test plays both with eight; `_raidTwin()` plays them on one screen; the pictures cast them by hand). A real phone. A
-higher tier. A glitch, not chased: right as a half cracks, some screens show two of its bridges up for one or two seconds that the
-others never show (5 of 21 tries; raid.md, "Measured in the forge").
+higher tier. A glitch, cause not found: in 6 of 21 tries some screens showed a bridge or two up for a second or two that screen 0 never
+showed; two cases looked at (one as Ember's half cracked, one 10 s after Ash's); none in the twelve-screen run (raid.md, "Measured in
+the forge").
 
 ## State (2026-11-11)
 

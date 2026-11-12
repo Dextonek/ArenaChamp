@@ -529,7 +529,7 @@ the target and not from the vent. Ash's Charge only comes from the ring, so he h
 
 User, 2026-11-11 (card A1 of `pipeline/designs/raid-mechanics.html`): "For a party they both fight at once, one on each side of a wall
 of fire that splits the room and the party. Their health must fall together: if one is far ahead, the other grows furious." Built
-2026-11-12; pictures `docs/bosses/twin-*.jpg`. It is for a party (band over 2: `raidTwin` in `server/protocol.mjs`). For one or two
+2026-11-12; the first pass's pictures, in a round pit, are `docs/bosses/twin-*.jpg`; the forge's are `docs/raid/twin-*.jpg` (below). It is for a party (band over 2: `raidTwin` in `server/protocol.mjs`). For one or two
 they stay the tag team above, and nothing new goes over the wire.
 
 | What | How |
@@ -712,11 +712,12 @@ through the real hub, band 10, nobody helping, every screen's autopilot; times o
 | 0.5 of the band's (17,750) | 2 of 6 | Won at 4:00 and 3:40. Lost: wiped at 3:26 with both near 27 %; wiped at 3:58 with Ash at 1 %, Ember 20 %; past the 4:30 enrage with Ember at 8 % (Ash fell at 3:50) and with both at 11 and 19 % |
 | 0.44 (15,620) | 3 of 3 | Won at 3:15, 3:37 and 3:43, at most two of six down at the end. Stopped at three: it overshoots |
 | 0.47 (16,685) | 5 of 6 | Won at 3:12, 3:36, 3:38, 3:41 and 3:45; lost one, wiped at 2:57 with Ash at 19 %, Ember 35 % |
-| **0.485 (17,218)** | **4 of 6** | Won at 3:23, 3:30, 3:39 and 3:58. Lost two, both wipes: at 3:05 with Ash at 11 %, Ember 21 %; at 3:20 with Ash at 14 %, Ember 30 % (five of the six to Falling Star, on the last island) |
+| **0.485 (17,218)** | **4 of 6** | Won at 3:23, 3:30, 3:39 and 3:58. Lost two, both wipes: at 3:05 with Ash at 11 %, Ember 21 %; at 3:20 with Ash at 14 %, Ember 30 % (five of the six to Falling Star, the flood a minute old) |
 
-What kills the bots: Ember's half far more than Ash's. Her Lava Wave (10 to 20 hits a fight), Marked (4 to 17) and Falling Star (5 to
-12), and Lantern Chain (4 to 15: a bot walks back to its mate but often too late, and the snap burns both for 30 %). Ash's Charge hits
-once or twice a fight. Each Eruption took 13 to 30 s of its 30. The flood began 1:57 to 2:56 in. (Hits named `lava` in the tool's
+What kills the bots: Ember's half far more than Ash's. Her Lava Wave (7 to 22 hits a fight), Marked (3 to 17) and Falling Star (5 to
+16), and Lantern Chain (4 to 15: a bot walks back to its mate but often too late, and the snap burns both for 30 %). Ash's Charge hits
+one to four times a fight. Every loss at 0.485 and below was a wipe before the enrage or soon after it, mostly in Ember's half: if
+the fight must be easier, her damage is the lever, not less HP. Each Eruption took 13 to 30 s of its 30. The flood began 1:57 to 2:56 in. (Hits named `lava` in the tool's
 counts are the run's Molten Ground omen, pools left by circles, not the forge: the forge's own floor is `forge`, 1 to 4 hits a fight.)
 
 How far the screens agree, over all 21 tries, compared at the same moment by the computer's clock (`forge.wall`; the tool's `apart`):
@@ -724,8 +725,10 @@ both bars within 1.7 % of a bar, but for one or two samples of 4 % in three trie
 way (`barsOff`); the same halves cracked, but for one sample at the crack in three tries; the flood's edge within 0.1 m, but for one
 sample of 0.7 m and one of 2.9 m, as a vent's seal (which draws the lava back 2.9 m at once) reached one screen before another; no
 bot across the standing wall in any sample; no errors. Every bridge that rose or sank on one screen did so on screen 0 within the
-samples' own spacing (`bridgeLag`), **but for one glitch, not chased:** right as a half cracks, some screens show two of its bridges
-up for one or two seconds that the others never show (`bridgeLone`; in 5 of 21 tries, 2 to 14 such changes). (Compared by each
+samples' own spacing (`bridgeLag`), **but for a glitch, cause not found:** in 6 of 21 tries some screens showed a bridge or two up for
+one or two seconds that screen 0 never showed (`bridgeLone`, 2 to 14 such changes a try). Of the two cases looked at, one came as
+Ember's half cracked, on most screens; the other was one of Ash's bridges on one east screen about 10 s after his crack. It may also
+be a state shorter than the once-a-second samples that screen 0 missed. None in the twelve-screen run. (Compared by each
 screen's own fight clock, which starts a second or two apart, the tool first showed 5 to 6 % between bars: that was the clock, not
 the screens.)
 
