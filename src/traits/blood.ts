@@ -83,6 +83,9 @@ export const BOND_RIPEN = 1.5;
 /** Is she silenced now (a stun is not a silence)? */
 const silenced = (t: TraitView) => !!t.status(t.self())?.has('silence');
 
+/** For the CPU: has she been silenced this round, the last time begun under `AI_HUSH_LAPSE` s ago? */
+const hushRisk = (t: TraitView) => !!t.mem.hushed && t.time - (t.mem.hushAt ?? 0) < AI_HUSH_LAPSE;
+
 /** The mist attacks she has left now (0 after the deadline). */
 function mist(t: { time: number; mem: Record<string, number> }) {
   return t.time < (t.mem.mistUntil ?? 0) ? t.mem.mistLeft ?? 0 : 0;
@@ -118,6 +121,8 @@ const AI_FEAST_PRICE = 45;
  */
 const AI_FEAST_FREE = 0.35;
 const AI_FEAST_AFTER_HUSH = 9.5;
+/** With no new silence this long after the last began, the CPU plays the Feast as against anyone (some heroes silence once a round). */
+const AI_HUSH_LAPSE = 15;
 /**
  * A silence that begins with the enemy within `AI_ZONE_NEAR` m is taken for a zone round them: for `AI_ZONE_SECONDS` s the
  * CPU walks to `AI_ZONE_OUT` m from where they stood then (the Null Zone is 3 m wide and lasts 3 s).
@@ -177,7 +182,8 @@ export const bloodTrait: Trait = {
     if (slot === 3 && dist > AI_FEAST_REACH) return true;
     // Not into a silence: against Oblivion the Feast began as his Null Zone landed and was cut off after one pulse, every
     // fight. Once silenced this round, it waits while the silence is on and when the next one is due.
-    if (slot === 3 && t.mem.hushed && (t.time - (t.mem.hushLast ?? 0) < AI_FEAST_FREE || t.time - (t.mem.hushAt ?? 0) > AI_FEAST_AFTER_HUSH)) return true;
+    const hush = hushRisk(t);
+    if (slot === 3 && hush && (t.time - (t.mem.hushLast ?? 0) < AI_FEAST_FREE || t.time - (t.mem.hushAt ?? 0) > AI_FEAST_AFTER_HUSH)) return true;
     if (slot === 2 && t.stacks('curse') > 0) return true;
     // A needle that is in is ripped out, whatever the Price: the Rip is free and gives blood back.
     if (slot === 0 && t.stacks('needle') > 0) return false;
@@ -187,8 +193,8 @@ export const bloodTrait: Trait = {
     else if (t.res <= PRICE_BASE + AI_RESUME) t.mem.aiRest = 0;
     // The Feast does not wait for the rest to end: it gives back more than a spell, so it goes at any Price up to `AI_FEAST_PRICE`.
     // Against someone who silences, only a cheap one, at the start of a burst: an early Feast is a whole one there.
-    const resting = slot === 3 && !t.mem.hushed ? t.res > AI_FEAST_PRICE : !!t.mem.aiRest;
-    const rests = resting || t.hp() - price < (slot === 0 ? AI_KEEP_NEEDLE : slot === 3 ? (t.mem.hushed ? AI_KEEP_FEAST_HUSH : AI_KEEP_FEAST) : AI_KEEP);
+    const resting = slot === 3 && !hush ? t.res > AI_FEAST_PRICE : !!t.mem.aiRest;
+    const rests = resting || t.hp() - price < (slot === 0 ? AI_KEEP_NEEDLE : slot === 3 ? (hush ? AI_KEEP_FEAST_HUSH : AI_KEEP_FEAST) : AI_KEEP);
     // The needle before the waltz: the CPU tries R, E, W before Q, and a brawler in her face had it waltz away again and
     // again (out of Lancet's reach each time) and never throw a needle. The waltz waits while a needle is in (the Rip comes
     // next, and needs them within 8 m) and while it would throw one now.

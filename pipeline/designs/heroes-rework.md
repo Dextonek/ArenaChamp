@@ -259,7 +259,9 @@ Sirix Cantor Oblivion Auriel Lyra --keep --port 5218` (64 fights a pairing after
   someone who has silenced her this round, the Feast does not start while the silence is on nor more than 9.5 s after it began,
   and it is a cheap one (at the start of a burst, 25 HP kept back): variants that paid 60 to 90 for it there got her killed in
   the channel (6 to 16%). Between shots she walks out of the zone (3.6 m from where he stood): the silence lasts about half a
-  second instead of three. 9% -> 16 to 31% over five runs; still lost, by 15% of her health.
+  second instead of three. 9% -> 16 to 31% over five runs; still lost, by 15% of her health. Nine heroes can silence, some
+  only once a round: with no new silence 15 s after the last began, she plays the Feast as against anyone again (added after
+  the run of 64; a check of 32 fights after it: Oblivion 19%, Cantor 81%, Kaia 38%).
 - **A losing Vesper stood there for her last five seconds and cast nothing**: the computer kept 50 HP back, though a needle at
   rest costs 10 and gives back more. It keeps 12 back for a needle now. With the Feast's rule above: Kaia 9 -> 44%.
 - **The Feast waited for the rest between bursts**, so against a hero who hurts her fast it came late or not at all. It goes at
