@@ -417,9 +417,14 @@ blades). Pictures: `docs/raid/heart-*.jpg` (thirteen; `python pipeline/tools/hea
 - **Shade the Heart together: a plate left lying costs everyone 8 %,** sheltered or not, 32 % at most. That is the "failure costs
   the whole party" for a mechanic whose other cost falls only on whoever stood in the open. The plates are one for every five
   heroes standing, so a raid that has lost ten heroes has two plates fewer to raise.
-- **Take the Blade: the blades are out of its hands, so it does nothing that needs them.** No Blade Sweep, no Blade Fall and no
-  Heartbeat for 30 s. In their place it throws a lance of light at a carrier every 3.5 s, and that is what the party shields:
-  the first hero in the lance's line takes it, for 15 % instead of the carrier's 35 %.
+- **Take the Blade: the blades are out of its hands, so it does nothing that needs them.** No Blade Sweep and no Blade Fall for
+  30 s. In their place it throws a lance of light at a carrier every 3.5 s, and that is what the party shields: the first hero in
+  the lance's line takes it, for 15 % instead of the carrier's 35 %. In the last phase the Heartbeat goes on through it: the two
+  overlap, as the rules for these mechanics allow there, and a plate raised for the beat stops a lance.
+- **The room's changes are not their phase's opener.** The first build opened Noon Falls with the crust. An opener waits for a
+  move that holds the floor, and the blade holds it 30 s of every 44, just when its doubled damage turns the phase: at band 20
+  the crust began in 12 of 19 fights that reached the last phase, and a brain that took the fight over would never have cast it.
+  Now it comes by its own clock, as the floor's turning does, and through the blade: 16 of 16.
 - **A lance that reaches a carrier knocks the blade loose.** Without that, standing in the lance would only save a friend some HP.
   The blade lies where the lance was aimed (a spot every screen has from the cast), so nobody sees it somewhere else.
 - **A blade burns 12 s in all,** shared by whoever carries it, and changes hands four times at most.
@@ -442,13 +447,14 @@ left lying 8 %; a blade doubles hits for 12 s, a lance every 3.5 s for 35 % or 1
   |---|---|---|---|---|---|---|---|
 | 5 | 4 of 20 | 112 | 15 of 20 | 20 of 20 | 21 | 0.3 | 0 |
   | 10 | 6 of 20 | 121 | 15 of 20 | 20 of 20 | 18.2 | 0.5 | 0.06 |
-  | 20 | 10 of 20 | 115 | 19 of 20 | 20 of 20 | 17.4 | 0.1 | 0 |
-  | 40 | 6 of 20 | 112 | 18 of 20 | 20 of 20 | 16.8 | 0.2 | 0 |
+  | 20 | 6 of 20 | 112 | 16 of 20 | 20 of 20 | 17.9 | 0.3 | 0.04 |
+  | 40 | 9 of 20 | 109 | 17 of 20 | 20 of 20 | 14.6 | 0.3 | 0 |
 
-  At 20 the lone hero wins more because it takes a blade and hits twice as hard for 12 s of every 44. At 40 its ring is one spot
-  of one: a second run of the same 20 fights cleared 9. The first build of the ring cleared 6 and broke 7 rings of 9, because the
-  autopilot stops walking 0.7 to 0.8 m from where it is going and a spot was 0.7 m wide: a hero now holds a spot from 0.95 m of
-  its middle (a tap ends short of its mark as well), and the ring broke 1 time in 8 and 3 in 9.
+  The rows for 20 and 40 are the last build's (the crust by its own clock, the Heartbeat through the blade). Before that, with
+  the crust often never starting, band 20 cleared 10 of 20: a lone hero with a blade hits twice as hard and met no falling floor.
+  At 40 its ring is one spot of one. The first build of the ring broke 7 rings of 9, because the autopilot stops walking 0.7 to
+  0.8 m from where it is going and a spot was 0.7 m wide: a hero now holds a spot from 0.95 m of its middle (a tap ends short of
+  its mark as well), and in the last run no ring of 7 broke. Runs of 20 swing: band 40 gave 6, 9, 6 and 9 clears.
 - **Band 10, 40 fights** (the same ten x 4, to set against the Sunburst before: 14 of 40, 119 s): 9 of 40, 119 s. The beams hit it
   165 times (151 before), the flare 40 (57); the Heartbeat killed 11 (8 before), the beams 10 (10). 31 of 40 reached the last phase.
   It leaves a sector that glows: 0 s over the sun. So the floor's changes cost the autopilot about a third of its wins, as far as
@@ -462,7 +468,7 @@ left lying 8 %; a blade doubles hits for 12 s, a lance every 3.5 s for 35 % or 1
 - **The floors' clocks.** In the first run the six floors were 2.1 s apart (3.5 m on the outer ring): the game's own time, which a
   cast's clock counts in, falls behind on a screen that draws slowly, and six pages on one computer draw slowly. The floor now
   counts by the computer's clock from the moment its cast came. Second run: 0.2 s apart at the median, 0.4 s at most.
-- `_raidHeart()`: 242 rows (the 128 as they were but three, below; 114 new). `_raidCheck()` 234, `_raidAsh()` 77, `_raidTwin()` 72,
+- `_raidHeart()`: 246 rows (the 128 as they were but three, below; 118 new). `_raidCheck()` 234, `_raidAsh()` 77, `_raidTwin()` 72,
   `_raidUpgrades()` 40. Type check, build, `npm run test:server`.
 - **Two things seen in the tools, neither from this work.** `_raidCheck()` run in the same page after `_raidHeart()` fails one row
   ("sunfire: the autopilot keeps out of it as it grows"); alone, or after `_raidAsh()`, it passes. It does the same on the commit
@@ -475,8 +481,8 @@ left lying 8 %; a blade doubles hits for 12 s, a lance every 3.5 s for 35 % or 1
 - **"Its plates with it".** A plate's place never falls (above).
 - **"Walks slowly".** A carrier walks at 85 %, and at full speed with Sure Feet: the only slow the raid's files can lay on this
   screen's hero is a sun shard's (`BossWorld.heavy`). Needs `src/duel.ts` (below).
-- **"Raise plates" against the lance.** A raised plate stops a lance, but there is none while the blades are out: the Heartbeat
-  waits. The fallen armillary's pieces stop it too.
+- **"Raise plates" against the lance** is so only in the last phase, where a Heartbeat comes while the blades are out. In the
+  second phase there are no plates; the fallen armillary's pieces stop a lance in both.
 - **Three of the 128 old rows were changed,** not only added to: at 10 or more a plate left lying now costs everyone, so the row
   that stands behind one raised plate of two has the second raised by a partner, and the two rows that stand in the open with both
   left lying expect 56 % instead of 40 %.
@@ -497,6 +503,7 @@ left lying 8 %; a blade doubles hits for 12 s, a lance every 3.5 s for 35 % or 1
   are checked on one screen, with the hub's answers fed in by hand.
 - A person playing any of it. A real phone (two pictures at 390 x 844 only).
 - More than six screens. A player leaving while carrying a blade (the blade goes back when its 30 s end).
+- A hero that falls on a sector which then drops lies over the sun: getting it up costs whoever does it 25 % a second.
 - Tiers above 1. At tier 4 and up the Heartbeat comes in the second phase, on the turning floor, with its plates on the inner
   ring: built and checked by a row, not played.
 - The numbers are first values.

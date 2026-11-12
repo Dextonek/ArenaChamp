@@ -40,9 +40,9 @@ Code: `src/raid/heart.ts`, `src/arenas/sunburst.ts`, `src/raid/bodies/heart.ts`;
 - **A bug found and fixed on the way.** Online, Hold Still's beats in the Heart's second and last phase reached only the screen
   that ran the boss: every other player could walk through them. (The hub drops a cast whose move's name is not letters; they
   were `still2` and `still3`.) It was so in the room for two as well. The Heart is not live yet, so no player met it.
-- **Checked.** Type check, build, `npm run test:server`. `_raidHeart()` 242 rows (114 new; 3 of the old 128 changed, said in
+- **Checked.** Type check, build, `npm run test:server`. `_raidHeart()` 246 rows (118 new; 3 of the old 128 changed, said in
   raid-party.md), `_raidCheck()` 234, `_raidAsh()` 77, `_raidTwin()` 72, `_raidUpgrades()` 40. The autopilot at the four sizes, 80
-  fights, no errors and none that never ends (4, 6, 10 and 6 clears of 20); at band 10 over 40 fights 9 clears against 14 before.
+  fights, no errors and none that never ends (4, 6, 6 and 9 clears of 20); at band 10 over 40 fights 9 clears against 14 before.
   Six bots through the real hub, twice: the floor turned the same way on all six screens, the rings rested at the same angles,
   six sectors fell on six of six screens within 0.34 s, every screen saw the same casts, no errors.
 - **Not checked.** A person playing. Take the Blade and The Ring of Hands through the real hub (six bots are a fight tuned for

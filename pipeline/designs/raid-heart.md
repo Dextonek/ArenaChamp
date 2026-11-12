@@ -209,7 +209,7 @@ big party").
 | The blades away from its hands | `HEART_LIVE.blades` in `src/raid/bodies/heart.ts` |
 | A party's phases | `PARTY_PHASES`; `HEART_OF_NOON.band`, `choose` |
 | What the script gained | `PlayContext.carry`, `down`, `might`, `banner`; `RunUpgrades.might`; `RAID_REWARDS.heart.hands` |
-| Its check | `_raidHeart()`: 114 more rows, 242 in all |
+| Its check | `_raidHeart()`: 118 more rows, 246 in all |
 | Its pictures | `python pipeline/tools/heart-phase-shots.py docs/raid` -> `docs/raid/heart-*.jpg` |
 | Its measurements | `pipeline/tools/heart-party-run.js` (the autopilot by band), `pipeline/tools/party-raid.py --boss heart --burst` (six screens through the hub) |
 

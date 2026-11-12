@@ -1168,10 +1168,12 @@ const floorTurns: BossMove = {
  * good (`heartbeat`, which carries the brain's pick). Its lock spots and its piece of cover go with it. What is gone burns whoever
  * steps on it, each second. The inner ring, a spoke of crust to each spur's nose (where the plates fall) and the north ray with the
  * way out never fall, and six sectors at most: a long fight ends on a floor too small. This cast only says that it has begun, stops
- * the rings (when, on the floor's own clock, is in its `x`) and keeps the fire over what has fallen; it opens the phase.
+ * the rings (when, on the floor's own clock, is in its `x`) and keeps the fire over what has fallen. It comes once, as soon as the
+ * phase lets it (`due`), as the floor's turning does: not as the phase's opener, which waits for a move that holds the floor
+ * (Take the Blade) and which a brain that takes the fight over never casts.
  */
 const crustFalls: BossMove = {
-  id: 'crust', name: 'The Crust Falls', charge: 4, lock: 0, cooldown: 99999, alongside: true, big: true, pose: 'raise',
+  id: 'crust', name: 'The Crust Falls', charge: 4, lock: 0, cooldown: 99999, due: 0, alongside: true, big: true, pose: 'raise',
   aim(c) {
     const a = atHeart(c);
     return { x: heartFight.turning && heartFight.stopAt === Infinity ? heartFight.clock + TURN.lead : 0, z: 0, dir: a.dir };
@@ -1225,8 +1227,11 @@ export const BLADE = {
   land: 1.6, out: 5.2, radius: 1.3, lies: 20, lasts: 30, burn: 12, might: 2, gens: 4, again: 3, stands: 1.5, over: 1.6,
   lances: [5, 8.5, 12, 15.5, 19, 22.5, 26], warn: 1.3, width: 2.4, hit: 0.35, block: 0.15, knock: 3, body: 1, past: 1.2,
 };
-/** While its blades are out of its hands it does what needs none. */
-const BLADE_ONLY = ['flare', 'corona', 'rings'];
+/**
+ * While its blades are out of its hands it does what needs none: the flare, the crown, the rings, and in the last phase the
+ * Heartbeat, whose raised plates stop a lance. The room's own changes come through it too.
+ */
+const BLADE_ONLY = ['flare', 'corona', 'rings', 'heartbeat', 'turn', 'crust'];
 const TAKE = 0, DROP = 100, SPENT = 200;
 
 /** One of its blades, away from its hand. */
@@ -1447,7 +1452,7 @@ function sunLance(c: BossCast, p: PlayContext): PlayedMove {
 /**
  * Take the Blade (user, 2026-11-12, for a party of 20 or more): the Heart throws its two sun blades down into the floor beside it.
  * A hero who walks onto one carries it over its head: its hits on the Heart count twice, it walks slower, and the Heart's aim goes
- * to the carriers (`heartChoice`). While the blades are out of its hands it does only what needs none, and it throws a lance of
+ * to the carriers (`heartChoice`). While the blades are out of its hands it does only what needs none (`BLADE_ONLY`), and it throws a lance of
  * light at a carrier every few seconds: the lance ends on the first hero standing in its line (who pays little) or on cover, a
  * raised plate too; a carrier it reaches pays much and the blade is knocked from its hands. A blade whose carrier is hit or falls
  * lies where that hero stood, for another. Hold Still goes on through all of it: on a beat a carrier can't step aside.
@@ -1534,7 +1539,10 @@ const ringOfHands: BossMove = {
     });
     let mine = -1, got = 0, won = -1, named = false, time = 0;
     const fail: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: roomR() + 1 }, at, show: Math.max(0, at - 3), share: HANDS.fail, look: 2 };
-    const objectives: Objective[] = spots.map((s, i) => ({ part: i, x: s.x, z: s.z, radius: HANDS.reach, hold: HANDS.hold, until: close, can: () => mine < 0 && s.by < 0 && won < 0 }));
+    // One spot to a hero. Two neighbours' reach overlaps, and the hub's answer takes a moment: while this screen has asked for a spot
+    // and not heard, it asks for no other.
+    const asked = () => objectives.some((o) => o.reported && !o.done);
+    const objectives: Objective[] = spots.map((s, i) => ({ part: i, x: s.x, z: s.z, radius: HANDS.reach, hold: HANDS.hold, until: close, can: () => mine < 0 && s.by < 0 && won < 0 && !asked() }));
     const label = () => p.label(`The Ring of Hands · ${got} of ${need}`);
     p.hint('The Ring of Hands: everyone to a gold spot round the Heart, one each. Hold it a moment');
     p.banner('The Ring of Hands', 2.6);
@@ -1637,9 +1645,9 @@ const PHASES: BossPhase[] = [
 ];
 /**
  * A party's, in the Sunburst. The Rings Turn still opens with the rings, and the floor begins to turn right after (`turn` comes as
- * soon as it may). Noon Falls opens with the crust falling, which stops the rings; the Heartbeat waits until they rest (so its
- * plates fall before the spurs, on a floor that stands) and then comes by its own clock: its first beat already takes a sector. Its
- * great mechanics (Take the Blade, The Ring of Hands) are in its lists only when their turn has come
+ * soon as it may). Noon Falls begins with the crust falling (`crust`, the same way: first in its list, by its clock), which
+ * stops the rings; the Heartbeat waits until they rest (so its plates fall before the spurs, on a floor that stands) and then comes
+ * by its own clock: its first beat already takes a sector. Its great mechanics (Take the Blade, The Ring of Hands) are in its lists only when their turn has come
  * (`nextGreat`); the brain leaves out what the band is too small for (`BossMove.minBand`).
  */
 const great = (list: string[]) => {
@@ -1649,7 +1657,7 @@ const great = (list: string[]) => {
 const PARTY_PHASES: BossPhase[] = [
   PHASES[0],
   { ...PHASES[1], get moves() { return great(['sweep', 'fall', 'flare', 'rings', 'turn']); } },
-  { ...PHASES[2], opener: 'crust', get moves() { return great(floorMoves() ? ['sweep', 'fall', 'flare', 'rings', 'corona'] : ['sweep', 'fall', 'flare', 'rings', 'corona', 'heartbeat']); } },
+  { ...PHASES[2], opener: undefined, get moves() { return great(floorMoves() ? ['crust', 'sweep', 'fall', 'flare', 'rings', 'corona'] : ['crust', 'sweep', 'fall', 'flare', 'rings', 'corona', 'heartbeat']); } },
 ];
 
 export const HEART_OF_NOON: BossDef = {
