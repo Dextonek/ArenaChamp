@@ -108,7 +108,11 @@ export class BossFight {
 
   constructor(def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null, setup: TwinSetup | null = null) {
     this.def = def;
-    const extra = { flash: (color: string, strength: number) => hud.flash(color, strength), guard: (s: number) => this.guard(s), label: (text: string) => hud.relabel(text) };
+    const extra = {
+      flash: (color: string, strength: number) => hud.flash(color, strength), guard: (s: number) => this.guard(s), label: (text: string) => hud.relabel(text),
+      // What a mechanic lends this hero's hits (the Heart's blade) goes on the run's upgrades, where its hits are counted.
+      might: (times: number) => { if (upgrades) upgrades.might = times; },
+    };
     if (def.twin && setup) {
       // Twin Flames: a script for each of the two. The one for the boss across the wall is a ghost here (src/raid/twin.ts).
       const defs = def.twin.pair(), mine = def.twin.which;

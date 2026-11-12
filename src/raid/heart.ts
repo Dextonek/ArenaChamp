@@ -4,15 +4,15 @@ import { RING, seeded } from '../arenas/common';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
-import { BURST, BURST_JOINTS, BURST_R, burstAt, rayAngle, spurAngle, sunburstArena } from '../arenas/sunburst';
+import { BURST, BURST_JOINTS, BURST_R, BURST_RINGS, burstAt, burstFloor, inSector, rayAngle, ringOf, spurAngle, sunburstArena, turned } from '../arenas/sunburst';
 import { HEART_JOINTS, HEART_R, sunkenHeartArena } from '../arenas/sunkenHeart';
 import { TelegraphLayer } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
 import type { Obstacle } from '../obstacles';
 import { HEART_LIVE, heartLook, resetHeartLive } from './bodies/heart';
-import { HoldRing, LightPillar, ShadowFloor } from './fx';
+import { HoldRing, LightPillar, ShadowFloor, SunOrb } from './fx';
 import { LEAVE_ALPHA, LEAVE_COLOR, STAND_COLOR, STILL_COLOR, STILL_WINDOW } from './script';
-import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } from './types';
+import type { AimContext, BossCast, BossDef, BossMove, BossPhase, Objective, PlayContext, PlayedMove, RaidSide, Threat } from './types';
 
 /**
  * The Heart of Noon, the Raid's third boss (pipeline/designs/raid-heart.md): the fallen sun itself, under the hall. It never walks: it
@@ -22,6 +22,17 @@ import type { AimContext, BossDef, BossMove, Objective, PlayContext, Threat } fr
  * Its own mechanic, in every phase, for any number of heroes (user, 2026-11-11):
  * - Hold Still: its heart beats in a rhythm the floor shows, white light running in along the floor's rings. On each beat whoever is
  *   walking is burnt; whoever stands still takes nothing. Between beats, run. The rhythm quickens with each phase.
+ *
+ * For a party, in its own room (the Sunburst), the room changes with its phases and three mechanics come only for a big party
+ * (user, 2026-11-12; pipeline/designs/raid-party.md):
+ * - The floor turns (`turn`, as The Rings Turn begins): the well is three rings, the inner one stands, the two outer ones turn
+ *   against each other and carry whoever stands on them.
+ * - The crust falls (`crust`, as Noon Falls begins): after each Heartbeat one ray with its slice of the well glows and drops into
+ *   the sun for good.
+ * - Shade the Heart together (a fight tuned for 10 or more): a plate for every five heroes standing, each sheltering five; a plate
+ *   left lying burns everyone.
+ * - Take the Blade (`blade`, 20 or more): it throws its two blades down; who takes one hits twice as hard and is hunted.
+ * - The Ring of Hands (`hands`, 40): the whole raid stands in a ring of gold spots round it.
  *
  * Two more, each for one hero or two:
  * - Lock a ring: while the rings turn, three gold spots stand on the rim, one for each. Hold one 2 s and its ring stops for 8 s (its
@@ -48,6 +59,60 @@ const NUMBERS = RAID_BOSSES.heart;
  */
 let party = false;
 let band = 2;
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+/**
+ * The party's fight as this screen has it. Only a cast changes it, at a time counted from that cast, so every screen has the same
+ * room at the same moment; `resize` clears it before each fight.
+ */
+export const heartFight = {
+  /** The floor turns: the cast's own clock on this screen (s), which way the middle ring goes, and when the rings begin to spin. */
+  turning: false,
+  clock: 0,
+  sense: 1,
+  warm: 0,
+  /** When the rings begin to stop, on that clock, and when the last of them rests (Infinity: they turn on). */
+  stopAt: Infinity,
+  restAt: Infinity,
+  /** The crust falls: a Heartbeat takes a sector with it. `falling`: the sectors that glow now and are about to go. */
+  crust: false,
+  falling: new Set<number>(),
+  /** Who carries one of its blades: its aim goes to them. */
+  carriers: new Set<RaidSide>(),
+};
+
+/**
+ * Its great mechanics for a big party take turns, with a breath between (the Sun Warden's way, src/raid/wardenHall.ts): Take the
+ * Blade (20 or more) and, for 40, The Ring of Hands. On the brain's screen each says when it began (`holdFor`, from its `aim`); for
+ * `REST` seconds after it ends neither is in its lists, and then only the one whose turn it is (`nextGreat`). The first waits
+ * `GREAT_FIRST` seconds after the floor begins to turn.
+ */
+export const REST = 14;
+const GREAT_FIRST = 9;
+const pace = { free: -Infinity, turn: 0 };
+let order: string[] = [];
+const now = () => performance.now() / 1000;
+function holdFor(id: string, seconds: number) {
+  pace.free = now() + seconds;
+  const i = order.indexOf(id, pace.turn) >= 0 ? order.indexOf(id, pace.turn) : order.indexOf(id);
+  if (i >= 0) pace.turn = (i + 1) % order.length;
+}
+const nextGreat = () => (!order.length || now() < pace.free + REST ? null : order[pace.turn]);
+
+/** The floor turns still: it has begun to, and its rings have not come to rest. */
+const floorMoves = () => heartFight.turning && heartFight.clock < heartFight.restAt;
+
+/** A new fight, tuned for `b`: the floor whole and still, nobody carries, the great mechanics start their turns over. */
+function resetHeartFight(b: number) {
+  order = b >= 40 ? ['blade', 'hands'] : b >= 20 ? ['blade'] : [];
+  pace.turn = 0;
+  pace.free = -Infinity;
+  Object.assign(heartFight, { turning: false, clock: 0, sense: 1, warm: 0, stopAt: Infinity, restAt: Infinity, crust: false });
+  heartFight.falling.clear();
+  heartFight.carriers.clear();
+  bladeRuns.clear();
+  burstFloor.reset();
+}
 /** How far its room reaches from it (m). */
 const roomR = () => (party ? BURST_R : HEART_R);
 const TAU = Math.PI * 2;
@@ -378,6 +443,18 @@ const LOCK_ALONG = 23.5;
 const LOCK_APART = 3;
 
 /**
+ * The ray ring `i`'s row of spots stands in, counted on from ray `first`, and how far across it (m). With the floor whole, the
+ * three rows' rays as they always were. Once sectors have fallen (or glow, about to), the rows go to rays that still stand, spread
+ * over them; with only two rays left the third row stands beside the first.
+ */
+function lockRow(first: number, i: number) {
+  const up = Array.from({ length: BURST.rays }, (_, k) => (first + k) % BURST.rays).filter((k) => !burstFloor.gone(k) && !heartFight.falling.has(k));
+  if (up.length === BURST.rays || !up.length) return { ray: (first + LOCK_RAYS[i]) % BURST.rays, lat: 0 };
+  const at = Math.round((i * up.length) / 3);
+  return { ray: up[at % up.length], lat: at >= up.length ? 3 : up.length < 3 && i === 0 ? -3 : 0 };
+}
+
+/**
  * The Rings Turn: the three rings come down round its foot and each throws a beam over the floor that turns, each at its own speed.
  * Each ring is its own step and cast, so each has its own gold spot on the rim, and each lock is paid once. A beam's angle depends only
  * on the time since its cast; locking puts it out for 8 s, and it warns before it burns again, so two screens hearing the lock a moment
@@ -388,7 +465,9 @@ const ringsTurn: BossMove = {
   aim: atHeart,
   play(c, p) {
     const i = c.step % 3, rng = seeded(c.seed);
-    const base = rng() * Math.PI * 2, sense = rng() < 0.5 ? -1 : 1, R = roomR();
+    const base = rng() * Math.PI * 2, roll = rng() < 0.5 ? -1 : 1, R = roomR();
+    // On a floor that turns the beams turn against it: the first and the third against the middle ring, the second against the outer.
+    const sense = party && heartFight.turning ? -heartFight.sense : roll;
     const warm = p.shown(2.5), end = warm + RINGS_RUN;
     /** How far the beam gets at yaw `a`: to the wall, or in the Sunburst to the cover in its way. */
     const reach = (a: number) => (party ? beamStop(p.cover(), c.fx, c.fz, a, R + 0.5) : R + 0.5);
@@ -407,14 +486,16 @@ const ringsTurn: BossMove = {
     };
     const th: Threat = { shape: { kind: 'circle', x: c.fx, z: c.fz, radius: R }, at: warm, to: end, every: 1, share: 0.1, hits, look: 1.2 };
     // Its spot on the rim, between where its beam and the next one start. In the Sunburst: its row of spots down its ray.
-    const sa = start + Math.PI / 3, lockRay = (Math.floor((base / TAU) * BURST.rays) + LOCK_RAYS[i]) % BURST.rays;
+    const sa = start + Math.PI / 3, row = party ? lockRow(Math.floor((base / TAU) * BURST.rays), i) : { ray: 0, lat: 0 }, lockRay = row.ray;
+    /** Its row is lost with its ray, when that falls into the sun. */
+    const lost = () => party && burstFloor.gone(lockRay);
     const spots = Array.from({ length: lockSpots() }, (_, j) => {
-      const at = party ? burstAt(lockRay, LOCK_ALONG + j * LOCK_APART) : { x: C.x + Math.sin(sa) * LOCK_OUT, z: C.z + Math.cos(sa) * LOCK_OUT };
+      const at = party ? burstAt(lockRay, LOCK_ALONG + j * LOCK_APART, row.lat) : { x: C.x + Math.sin(sa) * LOCK_OUT, z: C.z + Math.cos(sa) * LOCK_OUT };
       const light = new LightPillar(at.x, at.z, LOCK_R, 6, STAND_COLOR), held = new HoldRing(at.x, at.z, LOCK_R, STAND_COLOR);
       p.group.add(light.mesh, held.mesh);
       return { ...at, light, held, taken: false };
     });
-    const objectives: Objective[] = spots.map((s, j) => ({ part: j, x: s.x, z: s.z, radius: LOCK_R, hold: LOCK_HOLD, until: end - 1, can: () => lockedAt < 0 && time >= warm }));
+    const objectives: Objective[] = spots.map((s, j) => ({ part: j, x: s.x, z: s.z, radius: LOCK_R, hold: LOCK_HOLD, until: end - 1, can: () => lockedAt < 0 && time >= warm && !lost() }));
     const ray = beam(p, CORE, GLOW, 1.4), floor = beam(p, 0xc06a20, 0x7a3208, RING_W * 1.4);
     if (i === 0) p.hint(party && spots.length > 1 ? 'Hold every gold spot of a row to lock its ring' : party ? 'Hold a gold spot out in a ray to lock its ring' : 'Hold a gold spot on the rim to lock its ring');
     const a3 = new THREE.Vector3(), b3 = new THREE.Vector3();
@@ -445,7 +526,7 @@ const ringsTurn: BossMove = {
           a3.y = b3.y = 0.05;
           floor.set(a3, b3, p.camera, beamTime, on * 0.5, RING_W * 1.4, true);
           // A spot: lit while it can be taken, and it stays lit, held, until the last of its row is.
-          const open = lockedAt < 0 && t >= warm && t < end - 1;
+          const open = lockedAt < 0 && t >= warm && t < end - 1 && !lost();
           spots.forEach((s, j) => {
             s.light.opacity = !open ? 0 : s.taken ? 0.25 : 0.45 + 0.15 * Math.sin(t * 4 + i + j);
             s.held.set(!open ? 0 : s.taken ? 1 : objectives[j].held ?? 0);
@@ -510,6 +591,48 @@ const POCKET_END = BURST.well - 0.1;
 const POCKET_HOLDS = 5;
 /** A pocket with more in it than it shelters says how many, this often (s), while the beat's floor shows: a look, from where the heroes are drawn. */
 const POCKET_SAYS = 0.9;
+/**
+ * Shade the Heart together (user, 2026-11-12: for a fight tuned for 10 or more).
+ * - `per`: a plate for every this many heroes standing (the brain's count, in the cast's `x`), `least` at least, one a spur at most.
+ * - `leak`: every plate left lying when the beat lands lets it through, and everyone pays this for each, sheltered or not, `most` at most.
+ * - `innerOut`: while the floor still turns the plates fall this far out, on the inner ring, which stands (the cast's `flag`).
+ */
+export const SHADE = { band: 10, per: 5, least: 1, leak: 0.08, most: 0.32, part: 90, innerOut: 4.9 };
+/**
+ * The crust falls.
+ * - `warn`: how long a sector glows after the beat before it goes (s, tier 1), never under `least`: from the far end of a ray it
+ *   is 21 m to floor that stays, 6 s at a walk and more through Hold Still's beats.
+ * - `share`: what it costs to stand on it as it goes, on top of the first burn; `burn`: each second over the sun, from then on.
+ * - `most`: how many of the eight fall at most; `keep`: the ray that never does (the north one, with the way out).
+ */
+export const SECTORS = { warn: 9, least: 8, share: 0.15, burn: 0.25, most: 6, keep: 4, lasts: 1800 };
+
+/** The sector the next Heartbeat takes, or -1: the brain's pick from the cast's seed, of those that still stand. */
+function nextSector(seed: number) {
+  if (!heartFight.crust) return -1;
+  const up = Array.from({ length: BURST.rays }, (_, k) => k).filter((k) => k !== SECTORS.keep && !burstFloor.gone(k) && !heartFight.falling.has(k));
+  if (BURST.rays - 1 - up.length >= SECTORS.most) return -1;
+  return up[Math.floor(seeded(seed + 77)() * up.length)] ?? -1;
+}
+
+/** Sector `k` goes: the room loses it, the piece of cover in its ray with it, and the whole room feels it. */
+function dropSector(p: PlayContext, k: number) {
+  heartFight.falling.delete(k);
+  burstFloor.fall(k);
+  // The fallen armillary's piece in that ray: out of the game with its floor.
+  p.breakCover(k, rayAngle(k));
+  const mid = burstAt(k, 20);
+  p.shake(0.2);
+  p.flash('rgba(255,170,80,0.8)', 0.4);
+  p.say('THE CRUST FALLS', '#ffb050', mid.x, mid.z);
+  for (let along = 8; along <= BURST.len - 1; along += 3.2) {
+    const s = burstAt(k, along, (Math.random() - 0.5) * Math.min(9, along * 0.5)), delay = (along - 8) * 0.035;
+    if (Math.random() < 0.5) p.show.column(s.x, s.z, { radius: 0.2 + Math.random() * 0.3, height: 3 + Math.random() * 4, life: 0.9, color: 0xe8662a, peak: 0.5, delay: delay + 0.3 });
+    p.show.burst(s.x, 0.3, s.z, 12, 4.5, 5, 1.3, SPARK, 2);
+    p.sparks.emit(s.x, 0.4, s.z, 10, 5, 4, 1, CRUST, 6);
+  }
+  p.show.ring(C.x, C.z, { radius: BURST.len, life: 1.2, color: 0xffb060, width: 0.9, peak: 0.5 });
+}
 
 const plateGeo = new THREE.BoxGeometry(2.3, 0.32, 2.6);
 const plateTrimGeo = new THREE.BoxGeometry(2.36, 0.1, 0.14);
@@ -521,10 +644,25 @@ const plateTrimGeo = new THREE.BoxGeometry(2.36, 0.1, 0.14);
  */
 const heartbeat: BossMove = {
   id: 'heartbeat', name: 'Heartbeat', charge: BEAT_GATHER, lock: 2.5, cooldown: 20, due: 20, big: true, pose: 'channel',
-  aim: atHeart,
+  // For a party the brain says what the room can't: how many heroes stand (`x`), which sector goes with this beat (`z`: minus
+  // its number, one more), and whether the floor still turns (`flag`).
+  aim(c) {
+    const a = atHeart(c);
+    if (!party) return a;
+    return { x: c.heroes?.length ?? 0, z: -(nextSector(c.seed) + 1), dir: a.dir, flag: floorMoves() || undefined };
+  },
   play(c, p) {
     const at = p.shown(BEAT_GATHER), rng = seeded(c.seed), base = rng() * Math.PI * 2, source = { x: c.fx, z: c.fz };
-    const R = roomR(), count = party ? partyPlates() : PLATES, out = party ? PARTY_PLATE_OUT : PLATE_OUT;
+    // Ten or more shade the Heart together: a plate for every five heroes standing. A smaller party's plates are simply cover.
+    const together = party && band >= SHADE.band, standing = party && c.x >= 1 ? Math.round(c.x) : band;
+    // On a floor that still turns the plates fall on the inner ring, and a pocket ends at its seam.
+    const inner = party && !!c.flag;
+    const R = roomR(), count = !party ? PLATES : together ? clamp(Math.ceil(standing / SHADE.per), SHADE.least, BURST.rays) : partyPlates();
+    const out = !party ? PLATE_OUT : inner ? SHADE.innerOut : PARTY_PLATE_OUT, pocketEnd = inner ? BURST_RINGS.inner - 0.1 : POCKET_END;
+    // The sector that goes after this beat, once the crust falls (-1: none).
+    const sector = party && c.z < 0 ? Math.round(-c.z) - 1 : -1;
+    const fallAt = sector >= 0 ? at + Math.max(SECTORS.least, p.shown(SECTORS.warn)) : Infinity;
+    let fell = false, named = false;
     // In the Sunburst the first plate falls at the spur nearest the hero it looks at (the brain's aim), the rest spread round from it.
     const spur = Math.floor(((((c.dir % TAU) + TAU) % TAU) / TAU) * BURST.rays);
     const raised: (Obstacle | null)[] = Array.from({ length: count }, () => null);
@@ -549,16 +687,17 @@ const heartbeat: BossMove = {
     const objectives: Objective[] = plates.map((s, k) => ({
       part: k, x: s.x, z: s.z, radius: 1.3, hold: PLATE_HOLD, until: at - 0.3, can: () => !raised[k] && time >= PLATE_FALL,
     }));
-    const shade = new ShadowFloor(source, () => raised.filter((o): o is Obstacle => !!o), STAND_COLOR, party ? POCKET_END : HEART_R);
+    const shade = new ShadowFloor(source, () => raised.filter((o): o is Obstacle => !!o), STAND_COLOR, party ? pocketEnd : HEART_R);
     p.group.add(shade.mesh);
-    p.hint(party ? `Heartbeat: raise the fallen plates. Each shelters ${POCKET_HOLDS}, in the pocket behind it` : 'Heartbeat: hold a fallen plate to raise it, then stand behind it');
+    p.hint(together ? `Shade the Heart together: raise every plate, ${POCKET_HOLDS} to a pocket. A plate left lying burns everyone`
+      : party ? `Heartbeat: raise the fallen plates. Each shelters ${POCKET_HOLDS}, in the pocket behind it` : 'Heartbeat: hold a fallen plate to raise it, then stand behind it');
     const burnt = { kind: 'ring', x: c.fx, z: c.fz, inner: BODY_R + 0.2, outer: R + 1 } as const;
     // In the Sunburst only a raised plate shelters, and only in its pocket: from the plate out to the stone, as wide as its shade.
     const half = Math.atan(PLATE_R / (out - PLATE_IN));
     const inPocket = (k: number, x: number, z: number) => {
       if (!raised[k]) return false;
       const dx = x - C.x, dz = z - C.z, r = Math.hypot(dx, dz);
-      return r >= out - PLATE_IN - 0.3 && r <= POCKET_END && Math.abs(wrap(Math.atan2(dx, dz) - plates[k].a)) <= half;
+      return r >= out - PLATE_IN - 0.3 && r <= pocketEnd && Math.abs(wrap(Math.atan2(dx, dz) - plates[k].a)) <= half;
     };
     const th: Threat = party
       ? {
@@ -570,6 +709,25 @@ const heartbeat: BossMove = {
       }
       : { shape: burnt, at, show: at - BEAT_LOOK, share: BEAT_SHARE, source, look: BEAT_LOOK };
     const threats = [th];
+    // Shade the Heart together: every plate left lying lets the beat through, and everyone pays for it, sheltered or not. A zone
+    // that is only counted: the hub's answer comes to every screen alike, and by then the same plates stand on all of them.
+    if (together) {
+      threats.push({
+        shape: burnt, kind: 'stand', hidden: true, show: at, at, share: 0, part: SHADE.part,
+        tally() {
+          const lying = raised.filter((o) => !o).length;
+          if (!lying) return;
+          p.say(`${lying} PLATE${lying > 1 ? 'S' : ''} LEFT LYING`, '#ffb050', c.fx, c.fz + BODY_R + 2.5);
+          return Math.min(SHADE.most, SHADE.leak * lying);
+        },
+      });
+    }
+    // The crust falls: the sector glows from the beat on and then goes. Whoever still stands on it is burnt.
+    if (sector >= 0) {
+      heartFight.falling.add(sector);
+      threats.push({ shape: burnt, hits: (x, z) => inSector(sector, x, z), at: fallAt, share: SECTORS.share, look: fallAt - at });
+      p.hint('The crust falls: after each Heartbeat a ray glows along its cracks and drops into the sun. Get off it');
+    }
     let said = 0;
     // A zone with its own rule is not drawn for it: the beat's orange floor, as the room for two shows it.
     const zone = party ? new TelegraphLayer() : null;
@@ -579,11 +737,23 @@ const heartbeat: BossMove = {
     }
     return {
       // A pocket's count comes back from the hub after the beat: the cast stays to hear it.
-      threats, objectives, duration: at + (party ? 3 : PLATE_AFTER + 0.8),
+      threats, objectives, duration: sector >= 0 ? fallAt + 1.5 : at + (party ? 3 : PLATE_AFTER + 0.8),
       look: {
         update(t) {
           time = t;
           zone?.update(t);
+          // The cast bar gets the move's name as the cast comes in: what a big party is to do goes on it after that.
+          if (together && !named) {
+            named = true;
+            p.label('Heartbeat · Shade the Heart together');
+          }
+          if (sector >= 0 && t >= at && !fell) {
+            if (t < fallAt) burstFloor.crack(sector, (t - at) / (fallAt - at));
+            else {
+              fell = true;
+              dropSector(p, sector);
+            }
+          }
           HEART_LIVE.beat = t < at ? Math.min(1, t / at) : 0;
           HEART_LIVE.struck = t < at ? 99 : t - at;
           crust.emissiveIntensity = t < at ? 0.04 + 0.06 * (t / at) ** 2 : Math.max(0, 0.1 - (t - at) * 0.2);
@@ -634,7 +804,7 @@ const heartbeat: BossMove = {
           raised[o.part] = p.addStone(s.cx, s.cz, PLATE_R, Math.max(0.3, at + PLATE_AFTER - time));
           // Its pocket, in the Sunburst: a gold zone that counts who stands in it as the beat lands.
           if (party && time < at) {
-            const mid = (out - PLATE_IN + POCKET_END) / 2, k = o.part;
+            const mid = (out - PLATE_IN + pocketEnd) / 2, k = o.part;
             threats.push({
               kind: 'stand', shape: { kind: 'circle', x: C.x + Math.sin(s.a) * mid, z: C.z + Math.cos(s.a) * mid, radius: 1.4 }, at, show: time, share: BEAT_SHARE,
               part: k, most: POCKET_HOLDS, hits: (x, z) => inPocket(k, x, z),
@@ -656,6 +826,11 @@ const heartbeat: BossMove = {
         },
         dispose() {
           void struck;
+          // A fight that ends while a sector glows: it stays.
+          if (sector >= 0 && !fell) {
+            heartFight.falling.delete(sector);
+            burstFloor.crack(sector, 0);
+          }
           HEART_LIVE.beat = 0;
           HEART_LIVE.struck = 99;
           shade.dispose();
@@ -724,6 +899,11 @@ const STILL_SHARE = 0.12;
 const STILL_CUE = STILL_WINDOW + 0.2;
 /** The ring round this screen's hero: where it closes to on the beat, and where it starts from (m). */
 const STILL_FEET = [0.95, 2.6];
+/**
+ * Each phase's move. Letters only: the hub passes on a cast only if its move's name is (`MOVE_RE` in server/hub.mjs). They were
+ * `still2` and `still3` until 2026-11-12, and online the second screen never heard a beat of the second and the last phase.
+ */
+const STILL_IDS = ['still', 'stillb', 'stillc'];
 
 const stillVertex = /* glsl */ `
   varying vec2 vP;
@@ -828,7 +1008,7 @@ class BeatFloor {
  * its beats can't drift between screens, and it aims at nobody.
  */
 const holdStill = (phase: number): BossMove => ({
-  id: phase ? `still${phase + 1}` : 'still', name: 'Hold Still', charge: 0, lock: 0, cooldown: 0, alongside: true, quiet: true, pose: 'channel',
+  id: STILL_IDS[phase], name: 'Hold Still', charge: 0, lock: 0, cooldown: 0, alongside: true, quiet: true, pose: 'channel',
   aim: atHeart,
   play(c, p) {
     const { beats, apart } = STILL_RHYTHM[phase];
@@ -871,6 +1051,548 @@ const holdStill = (phase: number): BossMove => ({
   },
 });
 
+// --- a party's room: the floor turns (the second phase) --------------------------------------------------------------------------
+
+/**
+ * The floor turns.
+ * - `warn`: the seams light and the arrowheads show for this long before anything moves (s, tier 1). `spin`: how long the rings
+ *   take to come up to speed (s).
+ * - `mid`, `out`: how fast the middle and the outer ring turn (degrees a second): 1.5 m/s at the middle of each, under half a
+ *   hero's walk, so a hero can always walk against its ring.
+ * - `lead`: the rings begin to stop this long after the brain says so (s), so every screen hears it first. `brake`, `rest`: a ring
+ *   takes at least and at most this long to stop (s); it rests on the next eighth of a turn, so its drawing lines up with the rays
+ *   again. With far to go in `rest` seconds it lurches on a little faster first, and locks.
+ * - `hitch`: a screen that drew nothing for longer than this (s) does not carry its hero over the gap.
+ */
+export const TURN = { warn: 5, spin: 3, mid: 9, out: 6, lead: 1.5, brake: 3, rest: 8, hitch: 0.5, lasts: 1800 };
+const EIGHTH = Math.PI / 4;
+
+/** A ring that turns `speed` rad/s once it runs: where and how fast it is as it begins to stop, how far it still goes and for how long. */
+function ringStop(speed: number, warm: number, stopAt: number) {
+  const s = Math.max(0, stopAt - warm), ran = s < TURN.spin ? (s * s) / (2 * TURN.spin) : s - TURN.spin / 2;
+  const a0 = speed * ran, v0 = speed * Math.min(1, s / TURN.spin);
+  if (!v0) return { a0, v0, more: 0, time: 0 };
+  // On to the next eighth of a turn that leaves it time to brake.
+  const dir = Math.sign(v0), least = (Math.abs(v0) * TURN.brake) / 2;
+  const rest = dir * Math.ceil((Math.abs(a0) + least) / EIGHTH - 1e-9) * EIGHTH;
+  return { a0, v0, more: rest - a0, time: Math.min(TURN.rest, (2 * (rest - a0)) / v0) };
+}
+
+/**
+ * How far a ring has turned `t` seconds after the floor's cast (radians): still until `warm`, up to `speed` over `TURN.spin`, and
+ * from `stopAt` braking to rest on an eighth of a turn (evenly, when that takes no longer than `TURN.rest`). A pure rule of the
+ * time since the cast (by the computer's clock, not the game's), so two screens agree on every angle at every moment, as nearly
+ * as the cast reached them together, whatever each hears after and however slowly one of them draws.
+ */
+export function ringAngle(speed: number, t: number, warm: number, stopAt = Infinity) {
+  if (t <= stopAt) {
+    const s = Math.max(0, t - warm);
+    return speed * (s < TURN.spin ? (s * s) / (2 * TURN.spin) : s - TURN.spin / 2);
+  }
+  const { a0, v0, more, time } = ringStop(speed, warm, stopAt);
+  if (!time) return a0;
+  // From its speed now to rest, `more` further on, in `time` seconds: the one cubic that does it (a plain even brake when time allows).
+  const u = Math.min(1, (t - stopAt) / time), w = v0 * time;
+  return a0 + w * u + (3 * more - 2 * w) * u * u + (w - 2 * more) * u * u * u;
+}
+const rad = THREE.MathUtils.degToRad;
+
+/**
+ * The floor turns (user, 2026-11-12): as its second phase begins the well becomes three rings round the Heart. The inner one
+ * stands; the middle one turns one way and the outer one the other (the seed says which), each carrying whoever stands on it. To
+ * be carried is no walk, so Hold Still stays fair: stand still on a ring and the beat finds you standing. The beams of The Rings
+ * Turn turn against the floor. What stands on a ring rides with it; the lock spots and the fallen armillary's pieces are out in
+ * the rays, which stand. It comes once, as soon as the phase lets it (`due`), and goes on until the crust falls. A brain that
+ * takes the fight over casts it again: it does nothing then.
+ */
+const floorTurns: BossMove = {
+  id: 'turn', name: 'The Floor Turns', charge: TURN.warn, lock: 0, cooldown: 99999, due: 0, alongside: true, big: true, pose: 'channel',
+  aim(c) {
+    // Its great mechanics wait a breath after the floor begins to move.
+    pace.free = Math.max(pace.free, now() - REST + GREAT_FIRST);
+    return atHeart(c);
+  },
+  play(c, p) {
+    if (!party || heartFight.turning || heartFight.crust) return { threats: [], duration: 0.05 };
+    const warm = p.shown(TURN.warn), sense = seeded(c.seed)() < 0.5 ? -1 : 1;
+    Object.assign(heartFight, { turning: true, clock: 0, sense, warm, stopAt: Infinity, restAt: Infinity });
+    const mid = sense * rad(TURN.mid), out = -sense * rad(TURN.out);
+    p.hint('The floor turns: the two outer rings carry you, each its own way. To be carried is no walk');
+    p.banner('The floor turns', 2.4);
+    p.show.ring(C.x, C.z, { radius: BURST.well, life: 1.4, color: 0xffd890, width: 0.7, peak: 0.5 });
+    // The floor's clock is this computer's, from the moment the cast came: the game's own time falls behind on a screen that
+    // draws slowly (a frame counts for a tenth of a second at most), and over minutes two floors would drift apart.
+    const cast = now();
+    let was = { mid: 0, out: 0 }, lit = 0, jolted = false, last = 0;
+    return {
+      threats: [], duration: TURN.lasts,
+      look: {
+        update(_t, dt) {
+          const t = now() - cast, gap = t - last;
+          last = t;
+          heartFight.clock = t;
+          const at = { mid: ringAngle(mid, t, warm, heartFight.stopAt), out: ringAngle(out, t, warm, heartFight.stopAt) };
+          const dm = at.mid - was.mid, dout = at.out - was.out;
+          was = at;
+          // The seams and the arrowheads: they pulse while the floor is about to move, burn while it turns, and go out once it rests.
+          const want = t < warm ? 0.55 + 0.45 * Math.sin(t * 7) : dm || dout ? 1 : 0;
+          lit += (want - lit) * Math.min(1, dt * (t < warm ? 12 : 1.6));
+          burstFloor.turn(at.mid, at.out, Math.max(0, lit), sense);
+          // Each screen carries its own hero: by what its ring turned this frame, round the Heart.
+          // Not over a gap in the drawing (a tab that was hidden): a hero is not thrown round the room when it comes back.
+          if ((dm || dout) && gap <= TURN.hitch) p.carry((x, z) => { const ring = ringOf(x, z); return ring ? turned(x, z, ring === 1 ? dm : dout) : null; });
+          if (!jolted && t >= warm) {
+            jolted = true;
+            p.shake(0.07);
+            for (const r of [BURST_RINGS.inner, BURST_RINGS.mid, BURST_RINGS.outer]) p.show.ring(C.x, C.z, { radius: r, life: 0.7, color: 0xffd890, width: 0.3, peak: 0.6 });
+          }
+          // Gold dust off the seams as the rings grind past each other.
+          if ((dm || dout) && Math.random() < dt * 22) {
+            const a = Math.random() * TAU, r = Math.random() < 0.5 ? BURST_RINGS.inner : BURST_RINGS.mid;
+            p.sparks.emit(C.x + Math.sin(a) * r, 0.15, C.z + Math.cos(a) * r, 3, 1.6, 1.2, 0.6, STAND_COLOR);
+          }
+        },
+        dispose() {
+          burstFloor.turn(burstFloor.mid, burstFloor.out, 0, sense);
+        },
+      },
+    };
+  },
+};
+
+// --- a party's room: the crust falls (the last phase) --------------------------------------------------------------------------------
+
+/**
+ * The crust falls (user, 2026-11-12): as its last phase begins the rings grind to a stop, and from then on each Heartbeat takes one
+ * sector of the floor with it: a ray with its slice of the well glows along its cracks from the beat on and drops into the sun for
+ * good (`heartbeat`, which carries the brain's pick). Its lock spots and its piece of cover go with it. What is gone burns whoever
+ * steps on it, each second. The inner ring, a spoke of crust to each spur's nose (where the plates fall) and the north ray with the
+ * way out never fall, and six sectors at most: a long fight ends on a floor too small. This cast only says that it has begun, stops
+ * the rings (when, on the floor's own clock, is in its `x`) and keeps the fire over what has fallen; it opens the phase.
+ */
+const crustFalls: BossMove = {
+  id: 'crust', name: 'The Crust Falls', charge: 4, lock: 0, cooldown: 99999, alongside: true, big: true, pose: 'raise',
+  aim(c) {
+    const a = atHeart(c);
+    return { x: heartFight.turning && heartFight.stopAt === Infinity ? heartFight.clock + TURN.lead : 0, z: 0, dir: a.dir };
+  },
+  play(c, p) {
+    if (!party || heartFight.crust) return { threats: [], duration: 0.05 };
+    heartFight.crust = true;
+    if (heartFight.turning && c.x > 0 && heartFight.stopAt === Infinity) {
+      heartFight.stopAt = c.x;
+      const w = heartFight.warm, s = heartFight.sense;
+      heartFight.restAt = c.x + Math.max(ringStop(s * rad(TURN.mid), w, c.x).time, ringStop(-s * rad(TURN.out), w, c.x).time);
+    }
+    p.hint('The crust falls: after each Heartbeat a ray glows along its cracks and drops into the sun. Get off it');
+    p.banner('The crust falls', 2.4);
+    // What has fallen burns whoever is over it. One zone for the whole fight: the sectors come into it as they go.
+    const burn: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: BURST_R }, hits: (x, z) => burstFloor.lost(x, z), at: 0.1, to: SECTORS.lasts, every: 1, share: SECTORS.burn, look: 0.6 };
+    return {
+      threats: [burn], duration: SECTORS.lasts,
+      look: {
+        update(_t, dt) {
+          // Embers and tongues of flame out of the sun, over what has fallen.
+          if (!burstFloor.fallen || Math.random() > dt * 30) return;
+          const a = Math.random() * TAU, r = BURST_RINGS.inner + Math.random() * (BURST.len - BURST_RINGS.inner), x = C.x + Math.sin(a) * r, z = C.z + Math.cos(a) * r;
+          if (!burstFloor.lost(x, z)) return;
+          p.show.burst(x, -1, z, 3, 0.8, 5, 1.3, SPARK, 0.4);
+          if (Math.random() < 0.3) p.show.column(x, z, { radius: 0.2 + Math.random() * 0.4, height: 2 + Math.random() * 4, life: 0.9, color: 0xff9a3a, peak: 0.5 });
+        },
+        // The fight is over: what fell crusts over, so the way out can be walked.
+        dispose: () => burstFloor.cool(),
+      },
+    };
+  },
+};
+
+// --- Take the Blade (a party of 20 or more) --------------------------------------------------------------------------------------
+
+/**
+ * Take the Blade.
+ * - `land`: its two blades stand in the floor this long after the cast (s), `out` m from it, on the inner ring, across from each
+ *   other. `lies`: a blade nobody took goes back after this long. `lasts`: the whole of it (s): the cast bar is its clock.
+ * - `stands`, `over`: how big a blade is drawn standing in the floor and held aloft by its carrier, point up (times its size in
+ *   the Heart's hand, 2.75 m): it must be read from across the room.
+ * - `burn`: how long a blade can be carried in all (s), by one hero or by several one after another. `might`: a carrier's hits on
+ *   the Heart count this many times. `gens`: how many times a blade can change hands; who dropped one
+ *   can't take it again for `again` s.
+ * - `lances`: when it throws a lance of light at a carrier, after the cast (s). A lance: `warn` s from its line to its hit, `width`
+ *   m wide. It costs a carrier `hit` and knocks the blade out of its hands; it ends on the first hero in its line, who pays `block`,
+ *   or on cover. `body`: how near its line a hero must stand to be in its way (m). `past`: how far it goes on behind whom it ends on.
+ */
+export const BLADE = {
+  land: 1.6, out: 5.2, radius: 1.3, lies: 20, lasts: 30, burn: 12, might: 2, gens: 4, again: 3, stands: 1.5, over: 1.6,
+  lances: [5, 8.5, 12, 15.5, 19, 22.5, 26], warn: 1.3, width: 2.4, hit: 0.35, block: 0.15, knock: 3, body: 1, past: 1.2,
+};
+/** While its blades are out of its hands it does what needs none. */
+const BLADE_ONLY = ['flare', 'corona', 'rings'];
+const TAKE = 0, DROP = 100, SPENT = 200;
+
+/** One of its blades, away from its hand. */
+interface FallenBlade {
+  x: number;
+  z: number;
+  /** Flying out, standing in the floor, over a hero, or on its way back. */
+  state: 'air' | 'lies' | 'held' | 'back';
+  by: RaidSide;
+  /** How many times it has changed hands, and how much longer it can be carried (s). */
+  gen: number;
+  left: number;
+  /** When it last changed state, on the cast's clock. */
+  since: number;
+  /** It lies where its carrier fell (not where a lance knocked it loose). */
+  fell?: boolean;
+}
+/** A run of Take the Blade, by its seed: its later steps (the lances) find it, and say when one of them hit this screen's hero. */
+interface BladeRun {
+  id: number;
+  blades: FallenBlade[];
+  struck: boolean;
+  /** Where its last lance was aimed and at whom, and when it landed on this screen (s): a blade it knocks loose lies there, the same spot on every screen. */
+  lance: { x: number; z: number; at: number; side: RaidSide } | null;
+}
+/** How long after a lance lands a blade that is dropped counts as knocked loose by it (s): longer than its report takes through the hub. */
+const LANCE_DROP = 1.2;
+const bladeRuns = new Map<number, BladeRun>();
+
+/** Its two blades fall, to be taken. Everything they do afterwards hangs on who the hub says took, dropped or spent each. */
+function bladeThrow(c: BossCast, p: PlayContext): PlayedMove {
+  const rng = seeded(c.seed), base = rng() * TAU, land = BLADE.land, me = p.side;
+  const blades: FallenBlade[] = [0, 1].map((b) => {
+    const a = base + b * Math.PI;
+    return { x: C.x + Math.sin(a) * BLADE.out, z: C.z + Math.cos(a) * BLADE.out, state: 'air', by: -1, gen: 0, left: BLADE.burn, since: 0 };
+  });
+  const run: BladeRun = { id: c.id, blades, struck: false, lance: null };
+  bladeRuns.set(c.seed, run);
+  const lights = blades.map((s) => {
+    const light = new LightPillar(s.x, s.z, BLADE.radius, 2.6, STAND_COLOR);
+    p.group.add(light.mesh);
+    return light;
+  });
+  // A sun over each blade a hero carries: who it is reads from across the room.
+  const suns = blades.map(() => {
+    const orb = new SunOrb(C.x, 5, C.z);
+    p.group.add(orb.sprite);
+    return orb;
+  });
+  /** How high a blade's middle is when its point is `tip` m over the floor, drawn `size` times its own. */
+  const mid = (size: number, tip: number) => 2.2 * size + tip;
+  let time = 0, named = false;
+  const told = new Set<number>();
+  const report = (part: number) => {
+    if (told.has(part)) return;
+    told.add(part);
+    p.report(c.id, part);
+  };
+  // A blade is taken by walking onto it, once for each time it lies there; who drops it or spends it says so itself.
+  const takes: Objective[] = [], says: Objective[] = [];
+  blades.forEach((s, b) => {
+    for (let g = 0; g < BLADE.gens; g++) {
+      takes.push({ part: TAKE + b * 10 + g, x: s.x, z: s.z, radius: BLADE.radius, until: BLADE.lasts - 1, can: () => s.state === 'lies' && s.gen === g && !heartFight.carriers.has(me) && !(g > 0 && s.by === me && time - s.since < BLADE.again) });
+      says.push({ part: DROP + b * 10 + g, x: s.x, z: s.z, radius: 0, kill: true });
+    }
+    says.push({ part: SPENT + b, x: s.x, z: s.z, radius: 0, kill: true });
+  });
+  const free = (s: FallenBlade, state: FallenBlade['state']) => {
+    if (s.state === 'held') {
+      heartFight.carriers.delete(s.by);
+      if (s.by === me) {
+        p.might(1);
+        p.heavy(false);
+      }
+    }
+    s.state = state;
+    s.since = time;
+  };
+  const carried = () => blades.filter((s) => s.state === 'held').length;
+  const label = () => p.label(carried() ? `Take the Blade · ${carried()} carried` : blades.some((s) => s.state === 'lies' || s.state === 'air') ? 'Take the Blade' : 'Take the Blade · spent');
+  p.hint('Take the Blade: who takes one hits twice as hard, and it hunts them. Stand in its lance for the carrier');
+  p.banner('Take the Blade', 2.4);
+  return {
+    threats: [], objectives: [...takes, ...says], duration: BLADE.lasts + 1.2,
+    look: {
+      update(t, dt) {
+        time = t;
+        if (!named) {
+          named = true;
+          label();
+        }
+        blades.forEach((s, b) => {
+          const live = HEART_LIVE.blades[b], light = lights[b];
+          if (s.state === 'air') {
+            // Thrown: up out of its hand and down point-first into the floor.
+            const u = Math.min(1, t / land);
+            Object.assign(live, { out: u, x: s.x, y: mid(BLADE.stands, -0.5) + Math.sin(u * Math.PI) * 4, z: s.z, size: BLADE.stands, up: 0 });
+            if (u >= 1) {
+              s.state = 'lies';
+              s.since = t;
+              p.shake(0.05);
+              p.show.ring(s.x, s.z, { radius: 3, life: 0.5, color: 0xffd8a0, width: 0.4 });
+              p.sparks.emit(s.x, 0.3, s.z, 24, 4, 4, 0.7, SPARK);
+            }
+          } else if (s.state === 'lies') {
+            Object.assign(live, { out: 1, x: s.x, y: mid(BLADE.stands, -0.5), z: s.z, size: BLADE.stands, up: Math.max(0, live.up - dt * 4) });
+            // Where its carrier fell: that hero's place on this screen settles a moment after the hub says so.
+            const fallen = s.gen > 0 && s.fell && t - s.since < 0.8 ? p.heroAt(s.by) : null;
+            if (fallen) {
+              s.x = fallen.x;
+              s.z = fallen.z;
+              for (const o of takes) if (Math.floor((o.part - TAKE) / 10) === b) Object.assign(o, { x: s.x, z: s.z });
+              light.mesh.position.set(s.x, light.mesh.position.y, s.z);
+            }
+            // Nobody took it, or the whole of it is nearly over: it goes back.
+            if ((s.gen === 0 && t >= BLADE.lies) || t >= BLADE.lasts - 1) free(s, 'back');
+          } else if (s.state === 'held') {
+            const h = p.heroAt(s.by);
+            // Held aloft, point up, its hilt at the hero's hand: the sun at its point.
+            const y = 1.5 + 1.6 * BLADE.over + 0.12 * Math.sin(t * 3);
+            if (h) Object.assign(live, { out: 1, x: h.x, y, z: h.z, size: BLADE.over, up: Math.min(1, live.up + dt * 4) });
+            if (h) suns[b].sprite.position.set(h.x, y + 2.2 * BLADE.over, h.z);
+            s.left -= dt;
+            // Its carrier's own screen says when it is dropped (the hero fell, or a lance hit it) and when it is spent.
+            if (s.by === me) {
+              if (p.down() || run.struck) report(DROP + b * 10 + s.gen);
+              else if (s.left <= 0 || t >= BLADE.lasts - 1) report(SPENT + b);
+            } else if (t >= BLADE.lasts) free(s, 'back');
+          } else {
+            // Back to its hand.
+            live.out = Math.max(0, 1 - (t - s.since) / 0.8);
+            live.size = 1;
+            live.up = 0;
+          }
+          light.opacity = s.state === 'lies' ? 0.28 + 0.1 * Math.sin(t * 5 + b) : 0;
+          suns[b].set(2.6 + 0.3 * Math.sin(t * 4 + b), s.state === 'held' ? 0.6 : 0);
+        });
+        run.struck = false;
+      },
+      done(o, side) {
+        const b = o.part >= SPENT ? o.part - SPENT : Math.floor((o.part % 100) / 10), s = blades[b];
+        if (!s) return;
+        if (o.part >= SPENT) {
+          if (s.state !== 'held') return;
+          free(s, 'back');
+          p.say('THE BLADE IS SPENT', '#ffe27a', s.x, s.z);
+        } else if (o.part >= DROP) {
+          if (s.state !== 'held') return;
+          // Knocked loose by a lance, it lies where the lance was aimed; else where its carrier fell.
+          const lance = run.lance && run.lance.side === side && now() - run.lance.at < LANCE_DROP ? run.lance : null, at = lance ?? p.heroAt(side);
+          free(s, 'lies');
+          s.fell = !lance;
+          if (at) Object.assign(s, { x: at.x, z: at.z });
+          s.gen++;
+          for (const t of takes) if (Math.floor((t.part - TAKE) / 10) === b) Object.assign(t, { x: s.x, z: s.z });
+          lights[b].mesh.position.set(s.x, lights[b].mesh.position.y, s.z);
+          // It has changed hands too often: it goes back.
+          if (s.gen >= BLADE.gens) free(s, 'back');
+          else p.say('THE BLADE FALLS', '#ffb050', s.x, s.z);
+        } else {
+          if (s.state !== 'lies') return;
+          s.state = 'held';
+          s.by = side;
+          s.since = time;
+          heartFight.carriers.add(side);
+          if (side === me) {
+            p.might(BLADE.might);
+            p.heavy(true);
+            p.flash('rgba(255,226,140,0.7)', 0.3);
+            p.hint('You carry a sun blade: you hit twice as hard, and it hunts you. Stay behind your friends');
+          }
+          p.say('THE BLADE IS TAKEN', '#ffe27a', s.x, s.z);
+          p.show.triumph(s.x, s.z, 0xffe0a0, 0.8);
+        }
+        label();
+      },
+      dispose() {
+        for (const s of blades) free(s, 'back');
+        for (const live of HEART_LIVE.blades) live.out = 0;
+        for (const l of lights) l.dispose();
+        for (const o of suns) o.dispose();
+        if (bladeRuns.get(c.seed) === run) bladeRuns.delete(c.seed);
+      },
+    },
+  };
+}
+
+/** A lance of light at a carrier: it ends on the first hero in its line or on cover, and knocks the blade from a carrier it hits. */
+function sunLance(c: BossCast, p: PlayContext): PlayedMove {
+  if (c.flag) return { threats: [], duration: 0.05 };
+  const at = BLADE.warn, run = bladeRuns.get(c.seed), dx = Math.sin(c.dir), dz = Math.cos(c.dir);
+  const reach = Math.max(BODY_R + 1.5, (c.x - c.fx) * dx + (c.z - c.fz) * dz + BLADE.past), len = beamStop(p.cover(), c.fx, c.fz, c.dir, reach);
+  const from = { x: c.fx + dx * BODY_R * 0.8, z: c.fz + dz * BODY_R * 0.8 }, to = { x: c.fx + dx * len, z: c.fz + dz * len };
+  // Each screen for its own hero: a carrier pays for the blade it holds, anyone else for standing in the way.
+  const mine = heartFight.carriers.has(p.side);
+  const th: Threat = { shape: { kind: 'line', x1: from.x, z1: from.z, x2: to.x, z2: to.z, width: BLADE.width }, at, share: mine ? BLADE.hit : BLADE.block, knock: mine ? BLADE.knock : 0 };
+  let told = false;
+  return {
+    threats: [th], duration: at + 0.6,
+    look: {
+      update() {
+        // It hit this screen's hero: if that hero carries a blade, its run hears of it.
+        if (told || th.lastHit === undefined) return;
+        told = true;
+        if (run) run.struck = true;
+      },
+      land() {
+        if (run) run.lance = { x: c.x, z: c.z, at: now(), side: c.target };
+        p.show.beam(new THREE.Vector3(c.fx, 3.6, c.fz), new THREE.Vector3(to.x, 0.9, to.z), { life: 0.5, core: 0xfff4d8, glow: 0xe08a30, width: 1.9 });
+        p.glows.flash(to.x, to.z, 2.4, GLOW, 0.5, 0.4);
+        p.sparks.emit(to.x, 0.8, to.z, 16, 5, 3, 0.6, SPARK);
+        p.shake(0.04);
+      },
+    },
+  };
+}
+
+/**
+ * Take the Blade (user, 2026-11-12, for a party of 20 or more): the Heart throws its two sun blades down into the floor beside it.
+ * A hero who walks onto one carries it over its head: its hits on the Heart count twice, it walks slower, and the Heart's aim goes
+ * to the carriers (`heartChoice`). While the blades are out of its hands it does only what needs none, and it throws a lance of
+ * light at a carrier every few seconds: the lance ends on the first hero standing in its line (who pays little) or on cover, a
+ * raised plate too; a carrier it reaches pays much and the blade is knocked from its hands. A blade whose carrier is hit or falls
+ * lies where that hero stood, for another. Hold Still goes on through all of it: on a beat a carrier can't step aside.
+ *
+ * Its first step throws the blades; each later step is a lance, its own cast, aimed by the brain at a carrier that stands (none:
+ * a flagged step that plays nothing). Who took, dropped or spent a blade every screen hears from the hub, as objectives.
+ */
+const takeBlade: BossMove = {
+  id: 'blade', name: 'Take the Blade', minBand: 20, charge: BLADE.lasts, least: BLADE.lasts, lock: 2.5, cooldown: 44, due: 0, big: true, pose: 'raise',
+  steps: [0, ...BLADE.lances], holds: { only: BLADE_ONLY },
+  aim(c) {
+    const a = atHeart(c);
+    if (c.step === 0) {
+      holdFor('blade', BLADE.lasts);
+      return a;
+    }
+    const up = c.heroes ?? [], held = up.filter((h) => heartFight.carriers.has(h.side)).sort((x, y) => x.side - y.side);
+    if (!held.length) return { x: c.boss.x, z: c.boss.z, dir: 0, flag: true };
+    const h = held[c.step % held.length], dx = h.x - c.boss.x, dz = h.z - c.boss.z, far = Math.hypot(dx, dz) || 1, ux = dx / far, uz = dz / far;
+    // The first hero in its line, short of the carrier: the lance ends there.
+    let end = h, near = far;
+    for (const o of up) {
+      if (heartFight.carriers.has(o.side)) continue;
+      const ox = o.x - c.boss.x, oz = o.z - c.boss.z, along = ox * ux + oz * uz;
+      if (along < BODY_R || along >= near - 0.3 || Math.abs(ox * uz - oz * ux) > BLADE.body) continue;
+      end = o;
+      near = along;
+    }
+    return { x: end.x, z: end.z, dir: Math.atan2(dx, dz), target: end.side };
+  },
+  play: (c, p) => (c.step === 0 ? bladeThrow(c, p) : sunLance(c, p)),
+};
+
+/** Whom it goes for next (`BossDef.choose`): whoever carries one of its blades, the one it aimed at least recently. Otherwise the brain's own rule. */
+function heartChoice(c: { heroes: { side: RaidSide }[]; when(side: RaidSide): number }): RaidSide | undefined {
+  const held = c.heroes.filter((h) => heartFight.carriers.has(h.side));
+  return held.length ? held.reduce((a, b) => (c.when(b.side) < c.when(a.side) ? b : a)).side : undefined;
+}
+
+// --- The Ring of Hands (a party of 40) ---------------------------------------------------------------------------------------------
+
+/**
+ * The Ring of Hands.
+ * - `seconds`: from its call to the end (tier 1), never under `least`. `close`: the spots close this long before the end, so
+ *   every screen has the same count when it is judged.
+ * - A gold spot for every hero standing (the brain's count), `radius` wide, held `hold` s, one to a hero. `share`: this much of
+ *   them must be held. `fail`: what a broken ring costs everyone.
+ * - `rings`: how far from the Heart the spots stand (m), on the inner ring of the floor, which stands and never falls: one ring
+ *   of up to `outer` spots, and a second inside it for a bigger raid.
+ */
+export const HANDS = { seconds: 16, least: 14, close: 1.2, share: 0.8, fail: 0.45, hold: 1, radius: 0.7, rings: [6, 4.2], outer: 22 };
+
+/** Where `n` spots stand: round the Heart, two rings deep for more than `HANDS.outer`. */
+function handSpots(n: number, seed: number) {
+  const base = seeded(seed)() * TAU, outer = n <= HANDS.outer ? n : Math.ceil(n * 0.58), out: { x: number; z: number }[] = [];
+  for (let i = 0; i < n; i++) {
+    const ring = i < outer ? 0 : 1, of = ring ? n - outer : outer, a = base + ((ring ? i - outer + 0.5 : i) / of) * TAU;
+    out.push({ x: C.x + Math.sin(a) * HANDS.rings[ring], z: C.z + Math.cos(a) * HANDS.rings[ring] });
+  }
+  return out;
+}
+
+/**
+ * The Ring of Hands (user, 2026-11-12, for a party of 40): the whole raid forms a ring round the Heart. A gold spot for every hero
+ * standing appears round it on the inner ring of the floor; a hero holds one for a second and it is that hero's (one each: the hub
+ * says who). The Heart does nothing else meanwhile, but Hold Still's beats go on, so the raid walks in between beats. Four spots in
+ * five held before the ring closes, and the Heart is stunned: it kneels. A broken ring burns everyone. The count is on the cast bar.
+ */
+const ringOfHands: BossMove = {
+  id: 'hands', name: 'The Ring of Hands', minBand: 40, charge: HANDS.seconds, least: HANDS.least, lock: 3, cooldown: 60, due: 0, big: true, pose: 'channel',
+  holds: { only: [] },
+  aim(c) {
+    holdFor('hands', HANDS.seconds);
+    return { x: Math.max(1, c.heroes?.length ?? 1), z: 0, dir: atHeart(c).dir };
+  },
+  play(c, p) {
+    const n = clamp(Math.round(c.x), 1, RAID_PARTY_MAX), need = Math.max(1, Math.ceil(n * HANDS.share));
+    const at = Math.max(HANDS.least, p.shown(HANDS.seconds)), close = at - HANDS.close, me = p.side;
+    const spots = handSpots(n, c.seed).map((s) => {
+      const light = new LightPillar(s.x, s.z, HANDS.radius, 1.1, STAND_COLOR), held = new HoldRing(s.x, s.z, HANDS.radius, STAND_COLOR);
+      p.group.add(light.mesh, held.mesh);
+      return { ...s, light, held, by: -1 as RaidSide };
+    });
+    let mine = -1, got = 0, won = -1, named = false, time = 0;
+    const fail: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: roomR() + 1 }, at, show: Math.max(0, at - 3), share: HANDS.fail, look: 2 };
+    const objectives: Objective[] = spots.map((s, i) => ({ part: i, x: s.x, z: s.z, radius: HANDS.radius, hold: HANDS.hold, until: close, can: () => mine < 0 && s.by < 0 && won < 0 }));
+    const label = () => p.label(`The Ring of Hands · ${got} of ${need}`);
+    p.hint('The Ring of Hands: everyone to a gold spot round the Heart, one each. Hold it a moment');
+    p.banner('The Ring of Hands', 2.6);
+    p.show.ring(C.x, C.z, { radius: HANDS.rings[0] + 1.5, life: 1.2, color: 0xffe0b0, width: 0.6, peak: 0.6 });
+    return {
+      threats: [fail], objectives, duration: at + 1.2,
+      look: {
+        update(t) {
+          time = t;
+          if (!named) {
+            named = true;
+            label();
+          }
+          const open = won < 0 && t < close;
+          spots.forEach((s, i) => {
+            const taken = s.by >= 0;
+            s.light.opacity = won >= 0 ? Math.max(0, 0.6 - (t - won)) * (taken ? 1 : 0) : !open ? 0 : taken ? 0.16 : 0.34 + 0.12 * Math.sin(t * 4 + i);
+            s.held.set(taken ? (won >= 0 || open ? 1 : 0) : open ? objectives[i].held ?? 0 : 0);
+          });
+        },
+        done(o, side) {
+          const s = spots[o.part];
+          if (!s || s.by >= 0 || won >= 0) return;
+          s.by = side;
+          got++;
+          if (side === me) mine = o.part;
+          p.sparks.emit(s.x, 0.4, s.z, 12, 3, 3, 0.6, STAND_COLOR);
+          label();
+          if (got < need) return;
+          // The ring is full enough: it holds, and the Heart is stunned.
+          won = time;
+          p.cancel(c.id);
+          p.reward('hands', c.id);
+          p.flash('rgba(255,226,140,0.75)', 0.5);
+          p.shake(0.1);
+          p.banner('The ring holds', 2);
+          p.say('THE RING HOLDS', '#ffe27a', C.x, C.z + BODY_R + 1.5);
+          p.show.triumph(C.x, C.z, 0xffe0a0, 1.6);
+          for (const x of spots) if (x.by >= 0) p.show.beam(new THREE.Vector3(x.x, 0.9, x.z), new THREE.Vector3(C.x, 3.4, C.z), { life: 0.7, core: 0xfff0c8, glow: 0xffb050, width: 0.35 });
+        },
+        land() {
+          p.flash('rgba(255,206,130,0.85)', 0.6);
+          p.shake(0.14);
+          p.banner('The ring breaks', 2);
+          p.say(`THE RING BREAKS: ${got} OF ${need}`, '#ffb050', C.x, C.z + BODY_R + 1.5);
+          p.show.ring(C.x, C.z, { radius: roomR() + 2, life: 1.3, color: 0xffd090, width: 1.6 });
+          p.show.column(C.x, C.z, { radius: BODY_R * 1.4, height: 16, life: 1, color: 0xffe0b0, peak: 0.7 });
+        },
+        dispose() {
+          for (const s of spots) {
+            s.light.dispose();
+            s.held.dispose();
+          }
+        },
+      },
+    };
+  },
+};
+
 // --- the boss -------------------------------------------------------------------------------------------------------------
 
 /** Its portrait: a gold face in a molten sun, a ring across it. */
@@ -900,6 +1622,35 @@ const noIcon = () => {};
 const noSpell = (key: HeroKey): HeroSpell => ({ key, label: '', name: '', range: 0, cooldown: 0, blurb: '', icon: noIcon });
 const MODEL = 'models/bosses/heart.glb';
 
+/**
+ * Its phases. Hold Still comes by the clock in each, quicker each time. A new phase's first run waits until the last phase's has
+ * ended; in Noon Falls a run falls between two Heartbeats (the first gathers from 2.5 s to 12.5 s into the phase, then every 20 s).
+ */
+const PHASES: BossPhase[] = [
+  { name: 'Embers Wake', at: 1, moves: ['sweep', 'fall', 'flare'], gap: [2, 3], timed: { move: STILL_IDS[0], first: 9, every: 21, most: 99 } },
+  { name: 'The Rings Turn', at: NUMBERS.phases[0], moves: ['sweep', 'fall', 'flare', 'rings'], opener: 'rings', gap: [2, 3], timed: { move: STILL_IDS[1], first: 11, every: 20, most: 99 } },
+  {
+    name: 'Noon Falls', at: NUMBERS.phases[1], moves: ['sweep', 'fall', 'flare', 'rings', 'corona', 'heartbeat'], opener: 'heartbeat', gap: [1.8, 2.8],
+    timed: { move: STILL_IDS[2], first: 13, every: 20, most: 99 },
+  },
+];
+/**
+ * A party's, in the Sunburst. The Rings Turn still opens with the rings, and the floor begins to turn right after (`turn` comes as
+ * soon as it may). Noon Falls opens with the crust falling, which stops the rings; the Heartbeat waits until they rest (so its
+ * plates fall before the spurs, on a floor that stands) and then comes by its own clock: its first beat already takes a sector. Its
+ * great mechanics (Take the Blade, The Ring of Hands) are in its lists only when their turn has come
+ * (`nextGreat`); the brain leaves out what the band is too small for (`BossMove.minBand`).
+ */
+const great = (list: string[]) => {
+  const g = nextGreat();
+  return g ? [...list, g] : list;
+};
+const PARTY_PHASES: BossPhase[] = [
+  PHASES[0],
+  { ...PHASES[1], get moves() { return great(['sweep', 'fall', 'flare', 'rings', 'turn']); } },
+  { ...PHASES[2], opener: 'crust', get moves() { return great(floorMoves() ? ['sweep', 'fall', 'flare', 'rings', 'corona'] : ['sweep', 'fall', 'flare', 'rings', 'corona', 'heartbeat']); } },
+];
+
 export const HEART_OF_NOON: BossDef = {
   id: 'heart',
   name: 'The Heart of Noon',
@@ -908,7 +1659,10 @@ export const HEART_OF_NOON: BossDef = {
   resize: (b) => {
     band = b;
     party = raidRing('heart', b) > HEART_R;
+    resetHeartFight(b);
   },
+  /** How many the fight is tuned for now: what its mechanics for 10, 20 and 40 ask (`BossMove.minBand`). */
+  get band() { return band; },
   get place() { return party ? sunburstArena : sunkenHeartArena; },
   /**
    * For two, out in the lake past the lip: at the floor's edge the way in would stand over the bottom of the screen in so small a
@@ -937,19 +1691,15 @@ export const HEART_OF_NOON: BossDef = {
   staggerMax: NUMBERS.staggerMax,
   kneel: NUMBERS.kneel,
   phasePause: 2.5,
-  phases: [
-    // Hold Still comes by the clock in each phase, quicker each time. A new phase's first run waits until the last phase's has ended;
-    // in Noon Falls a run falls between two Heartbeats (the first gathers from 2.5 s to 12.5 s into the phase, then every 20 s).
-    { name: 'Embers Wake', at: 1, moves: ['sweep', 'fall', 'flare'], gap: [2, 3], timed: { move: 'still', first: 9, every: 21, most: 99 } },
-    { name: 'The Rings Turn', at: NUMBERS.phases[0], moves: ['sweep', 'fall', 'flare', 'rings'], opener: 'rings', gap: [2, 3], timed: { move: 'still2', first: 11, every: 20, most: 99 } },
-    {
-      name: 'Noon Falls', at: NUMBERS.phases[1], moves: ['sweep', 'fall', 'flare', 'rings', 'corona', 'heartbeat'], opener: 'heartbeat', gap: [1.8, 2.8],
-      timed: { move: 'still3', first: 13, every: 20, most: 99 },
-    },
-  ],
+  get phases() { return party ? PARTY_PHASES : PHASES; },
+  choose: (c) => (party ? heartChoice(c) : undefined),
   /** A higher tier brings these in from the first phase on, one a tier: the Crown of Rays, then the rings, then the Heartbeat. */
   extra: ['corona', 'rings', 'heartbeat'],
-  moves: { sweep: bladeSweep, fall: bladeFall, flare: solarFlare, rings: ringsTurn, heartbeat, corona: crownOfRays, still: holdStill(0), still2: holdStill(1), still3: holdStill(2) },
+  moves: {
+    sweep: bladeSweep, fall: bladeFall, flare: solarFlare, rings: ringsTurn, heartbeat, corona: crownOfRays,
+    [STILL_IDS[0]]: holdStill(0), [STILL_IDS[1]]: holdStill(1), [STILL_IDS[2]]: holdStill(2),
+    turn: floorTurns, crust: crustFalls, blade: takeBlade, hands: ringOfHands,
+  },
   /** It enrages 2:45 in: between the Warden's 2:30 and Ash and Ember's 2:50. */
   enrage: 165,
   /** Past 5 minutes the molten floor rises from the rim, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */

@@ -3,7 +3,7 @@ A raid for a party, played by bots through the real hub: N headless pages of the
 one public raid room, the host starts, every screen's autopilot plays. To find what only breaks with many screens.
 
     python pipeline/tools/party-raid.py <out folder> [--players 6] [--seconds 150] [--port 5196] [--boss sun]
-                                        [--boost 0] [--twin] [--phone] [--hall]
+                                        [--boost 0] [--twin] [--phone] [--hall] [--burst]
 
 --boss   the boss the run starts at (sun, ash, heart): the lobby's `raid`. A party at `ash` fights Twin Flames.
 --boost  every bot also takes this much HP a second off the boss it fights, through the hub (under its caps), so a fight
@@ -18,6 +18,13 @@ one public raid room, the host starts, every screen's autopilot plays. To find w
          (the fight's own clock), whether the screens agree on cover each second, and which of his moves each screen saw;
          pictures as the hall breaks and of the sunfire. With more than ten players the boost stops when High Noon begins,
          so Carry the Sun is played unhelped (sixteen players are a fight tuned for twenty).
+
+--burst  the Heart's room (with --boss heart and three or more players): every second each screen says how far its two rings
+         have turned and when its floor's cast began (by this computer's clock), where its own hero stands and where it
+         sees the others, which sectors have fallen and when. Prints how far apart the screens' floors are (as time, and as
+         metres on the outer ring), how far a hero stands on the others' screens from where its own has it, when each sector
+         fell on each screen, and which of its moves each screen saw; pictures as the floor turns and as the crust falls.
+         The boost stops when The Rings Turn begins, so the turning floor and the falling crust are played unhelped.
 
 It starts its own dev server (the game's hub lives in it) on the port and stops it by its PID; one already there is used
 and left alone. Its own server runs with the hero shop off (SHOP=off; pipeline/designs/hero-shop.md): the bots' accounts
@@ -63,6 +70,24 @@ HALL_JS = """async () => {
   for (const x of d.boss.script.active) window._hallSeen[x.cast.move] = (window._hallSeen[x.cast.move] ?? new Set()).add(x.cast.id);
   return { t: +d.time.toFixed(1), open: H.hallBreak.open, at: window._hallOpenAt ?? 0, fire: +W.hallFight.fire.toFixed(1), cover: window.game.api.arena.obstacles?.length ?? 0,
     phase: d.boss.stats.phases, seen: Object.fromEntries(Object.entries(window._hallSeen).map(([k, v]) => [k, v.size])) };
+}"""
+
+
+BURST_JS = """async () => {
+  const A = await import('/src/arenas/sunburst.ts'), F = await import('/src/raid/heart.ts'), d = window.game.api.duel;
+  if (!d.boss) return null;
+  const hf = F.heartFight, bf = A.burstFloor;
+  // When each sector fell on this screen, by the computer's clock (every screen is on this computer), looked for 50 times a second.
+  window._burstFell ??= {};
+  window._burstWatch ??= setInterval(() => { for (let k = 0; k < 8; k++) if (bf.gone(k) && !window._burstFell[k]) window._burstFell[k] = Date.now(); }, 20);
+  window._burstSeen ??= {};
+  for (const x of d.boss.script.active) window._burstSeen[x.cast.move] = (window._burstSeen[x.cast.move] ?? new Set()).add(x.cast.id);
+  const me = window.game.api.arena.caster.group.position, now = Date.now();
+  return { t: +d.time.toFixed(1), now, phase: d.boss.stats.phases, turning: hf.turning, began: hf.turning ? now - hf.clock * 1000 : 0, sense: hf.sense,
+    mid: bf.mid, out: bf.out, rests: hf.clock >= hf.restAt, crust: hf.crust, fell: { ...window._burstFell }, fallen: bf.fallen,
+    side: d.boss.link.side, me: [me.x, me.z], down: d.playerHp <= 0, ring: A.ringOf(me.x, me.z), over: bf.lost(me.x, me.z),
+    party: [...d.party].map(([side, p]) => [side, p.pos.x, p.pos.z]), cover: window.game.api.arena.obstacles?.length ?? 0,
+    seen: Object.fromEntries(Object.entries(window._burstSeen).map(([k, v]) => [k, v.size])) };
 }"""
 
 
@@ -201,8 +226,10 @@ async def run(args):
             # The Warden's hall: when each screen's broke open (the fight's clock), seconds on which the screens' cover differed.
             broke, fire_most, hall_last, cover_apart, hall_shots = {}, {}, [], [], set()
             boost_off = False
+            # The Heart's room: each second's reports, how far apart the floors' clocks were, how far a hero stood from where the others saw it.
+            burst_last, clock_apart, seen_apart, burst_shots, rode, over_sun = [], [], {"still": [], "turning": []}, set(), 0, 0
             while time.time() - t0 < args.seconds:
-                await asyncio.sleep(1 if args.boss == "ash" or args.hall else 5)
+                await asyncio.sleep(1 if args.boss == "ash" or args.hall or args.burst else 5)
                 t = time.time() - t0
                 now = [await pg.evaluate("() => _botRaid()") for pg in pages]
                 if args.hall:
@@ -230,6 +257,33 @@ async def run(args):
                                            ("hall-open", all(h["open"] for h in hall)), ("hall-sunfire", min(h["fire"] for h in hall) > 9)):
                             if when and name not in hall_shots:
                                 hall_shots.add(name)
+                                await shot(pages[0], out / f"{name}.png")
+                                await shot(pages[-1], out / f"{name}-last.png")
+                if args.burst:
+                    if args.boost and not boost_off and all(s.get("phase", 0) >= 1 for s in now):
+                        boost_off = True
+                        for pg in pages:
+                            await pg.evaluate("() => { window._botBoost = 0; }")
+                        print(f"      boost off at {t:.0f} s: The Rings Turn has begun")
+                    burst = [await pg.evaluate(BURST_JS) for pg in pages]
+                    if all(burst):
+                        burst_last = burst
+                        moving = all(b["turning"] for b in burst) and not all(b["rests"] for b in burst)
+                        if all(b["turning"] for b in burst):
+                            began = [b["began"] for b in burst]
+                            clock_apart.append(max(began) - min(began))
+                        # Each hero where its own screen has it, against where every other screen draws it, at the same moment.
+                        own = {b["side"]: b["me"] for b in burst if not b["down"]}
+                        for b in burst:
+                            for side, x, z in b["party"]:
+                                if side in own:
+                                    seen_apart["turning" if moving else "still"].append(((x - own[side][0]) ** 2 + (z - own[side][1]) ** 2) ** 0.5)
+                        rode += sum(1 for b in burst if moving and b["ring"] and not b["down"])
+                        over_sun += sum(1 for b in burst if b["over"] and not b["down"])
+                        for name, when in (("heart-party-turning", moving and max(abs(b["mid"]) for b in burst) > 0.8),
+                                           ("heart-party-crust", all(b["crust"] for b in burst) and any(b["fallen"] for b in burst))):
+                            if when and name not in burst_shots:
+                                burst_shots.add(name)
                                 await shot(pages[0], out / f"{name}.png")
                                 await shot(pages[-1], out / f"{name}-last.png")
                 if all(s.get("twin") for s in now):
@@ -278,6 +332,22 @@ async def run(args):
                 print(f"hall: kneels {[s.get('kneels') for s in now]}; hits by Carry the Sun's Noon {[s.get('hits', {}).get('carry', 0) for s in now]}; down {[bool(s.get('down')) for s in now]}")
                 for i, h in enumerate(hall_last):
                     print(f"hall: screen {i} saw {h['seen']}")
+            if args.burst and burst_last:
+                med = lambda v: sorted(v)[len(v) // 2] if v else 0
+                print(f"burst: the floor turned on {sum(1 for b in burst_last if b['turning'])} of {len(pages)} screens, the same way on all: {len({b['sense'] for b in burst_last}) == 1}; "
+                      f"their floors' clocks apart by {med(clock_apart)} ms (median), {max(clock_apart, default=0)} ms at most: "
+                      f"{max(clock_apart, default=0) / 1000 * 6 * 3.14159 / 180 * 15:.2f} m on the outer ring")
+                print(f"burst: rings at the end, by screen: middle {[round(b['mid'], 3) for b in burst_last]}, outer {[round(b['out'], 3) for b in burst_last]}, at rest {[b['rests'] for b in burst_last]}")
+                for key in ("still", "turning"):
+                    v = seen_apart[key]
+                    print(f"burst: a hero on another screen against its own, floor {key}: median {med(v):.2f} m, nine in ten under {sorted(v)[int(len(v) * 0.9)] if v else 0:.2f} m, most {max(v, default=0):.2f} m ({len(v)} looks)")
+                fell = sorted({k for b in burst_last for k in b["fell"]})
+                for k in fell:
+                    when = [b["fell"].get(k, 0) for b in burst_last]
+                    print(f"burst: sector {k} fell on {sum(1 for w in when if w)} of {len(pages)} screens, {max(when) - min(w for w in when if w)} ms apart")
+                print(f"burst: seconds a hero rode a turning ring {rode}; seconds a hero stood over the sun {over_sun}; cover at the end {[b['cover'] for b in burst_last]}")
+                for i, b in enumerate(burst_last):
+                    print(f"burst: screen {i} saw {b['seen']}")
             if twin_seen:
                 events = logs[0]["raid"].get("events", [])
                 if plan:
@@ -301,6 +371,7 @@ if __name__ == "__main__":
     ap.add_argument("--twin", action="store_true")
     ap.add_argument("--phone", action="store_true")
     ap.add_argument("--hall", action="store_true")
+    ap.add_argument("--burst", action="store_true")
     ap.add_argument("--width", type=int, default=900)
     ap.add_argument("--height", type=int, default=600)
     a = ap.parse_args()

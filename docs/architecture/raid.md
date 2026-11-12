@@ -607,7 +607,7 @@ only thing in the game that asks you not to move.
 
 - **By the clock, on top of the rest** (`BossPhase.timed`, `alongside`, `quiet`): it takes no cast bar, no pose and no turn of the Heart,
   and its other moves go on through it. That is the point of it: easy to understand, hard to do while dodging. A move can't see the
-  phase, so each phase has its own move from one recipe (`still`, `still2`, `still3`), which is how the rhythm quickens. A whole run is
+  phase, so each phase has its own move from one recipe (`still`, `stillb`, `stillc`: letters only, or the hub drops the cast), which is how the rhythm quickens. A whole run is
   one cast that aims at nobody, so its beats can't drift between screens; each screen judges its own hero, so it is the same for one
   hero or forty.
 - **What you see.** Fine white lines run in along the floor from each joint between its rings of plates to the next, and land on the
@@ -649,7 +649,7 @@ keep the Sunken Heart, and nothing of the fight changes for them. Pictures: `doc
 | Blade Sweep, Blade Fall | As they are: one is close to it, the other falls where its hero stands, anywhere in the room |
 | Solar Flare | Its rings run to the end of every ray (6.1 s). Four gaps, each lying over a spur (every other spur: the seed says which four), 42° wide, the same for all three rings: four lanes, 4.4 m wide at 6 m from the Heart. A lane reaches over the near half of the ray on either side, so in every ray one half stays open and the other burns. It aims at nobody |
 | The Rings Turn | A beam runs to the walls. Each ring has a row of gold spots down one ray, the first 23.5 m out and 3 m apart: one spot for bands 5 and 10, two for 15 and 20, three for 30, four for 40. The ring locks when all of its row are held (a spot stays held; one hero may take them one after another); the gauge is paid once, when the last is. The three rings' rays are the seed's |
-| Heartbeat | It burns the whole room. One plate for every five heroes the fight is tuned for (1, 2, 3, 4, 6, 8 for bands 5 to 40), each falling 13.5 m out in front of a spur's nose: the first at the spur nearest the hero it looks at (the brain's aim), the rest spread round. Only a raised plate shelters, and only in its pocket: from the plate out to the stone, as wide as its shade (about 15 m²). A pocket shelters five: with more in it, what those over five would have taken is shared by all in it. While the beat's floor shows, a pocket with more than five in it says how many over its plate ("7/5") |
+| Heartbeat | It burns the whole room. One plate for every five heroes standing when it is cast, 1 to 8 (a party of three to five: one), each falling 13.5 m out in front of a spur's nose: the first at the spur nearest the hero it looks at (the brain's aim), the rest spread round. Only a raised plate shelters, and only in its pocket: from the plate out to the stone, as wide as its shade (about 15 m²). A pocket shelters five: with more in it, what those over five would have taken is shared by all in it. While the beat's floor shows, a pocket with more than five in it says how many over its plate ("7/5") |
 | Crown of Rays | Down four rays (every other one, the one nearest its aim among them), then the four between. 4 m wide in a ray 11.6 m wide |
 | Hold Still | The beat reaches the whole room; the light runs in along seven joints of the bigger floor (`BURST_JOINTS`) |
 | Past 5 minutes | The molten floor rises from the walls in to 6 m from the Heart, as in the room for two |
@@ -671,13 +671,143 @@ A pocket being a gold zone, Sun Eater's shield comes to a hero standing in one a
 open. All three rings of a party's flare have the same lanes, and an AI stops on a lane's very edge and steps over it and back as it
 fights: it took 1.4 hits a flare against 0.9 in the room for two; with 0.7 m, 0.3.
 
-**Not there yet.** What the mechanics ask is set by the band, not by how many heroes still stand when a move is cast: the hub's relay of
-`boss_cast` passes only the fields it knows, so a count would not reach the other screens (`server/hub.mjs`, `case 'boss_cast'`: one more
-field; `BossBrain.send` would set it). Heroes do not push each other, so a pocket's five is kept by the count, not by its size. A new
-room is a rule both screens must agree on: `PROTOCOL` needs a new number when this goes out. The hub grants at most 400 spots and
-rewards a fight (`TAKEN_MAX`): a band of 40 uses 15 for each turn of the rings (twelve spots and three locks) and 8 for each Heartbeat,
-about 180 in six minutes at tier 1 and about 340 from tier 4, where both come from the first phase. Past 400 the hub would grant no
-more plates or spots, and say nothing.
+**Not there yet.** A ring's row of spots is still set by the band, not by how many heroes stand; the plates, the blades' lances and
+the ring of hands go by the heroes standing, which the brain counts and puts in its cast's `x` (the hub's relay of `boss_cast` passes
+only the fields it knows, so a count has to ride in one of them). Heroes do not push each other, so a pocket's five is kept by the
+count, not by its size. A new room is a rule both screens must agree on: `PROTOCOL` needs a new number when this goes out. The hub
+grants at most 2,000 spots and rewards a fight (`TAKEN_MAX`): a band of 40 uses 15 for each turn of the rings (twelve spots and three
+locks), 8 for each Heartbeat, up to 12 for Take the Blade and up to 41 for The Ring of Hands: under 500 in six minutes. Past 2,000
+the hub would grant no more plates or spots, and say nothing.
+
+### The Sunburst transforms, and what comes only for a big party (2026-11-12)
+
+User, 2026-11-12: "when there will be second stage the arena will transform, and also at final stage"; "make mechanics that only is
+cast when there is at least 10 players, and for 20 and 40". Built in `src/raid/heart.ts`, with the room's state and its drawing in
+`src/arenas/sunburst.ts` (`burstFloor`). What was decided and measured: `pipeline/designs/raid-party.md`, the section of 2026-11-12.
+Pictures: `docs/raid/heart-*.jpg` (thirteen; `python pipeline/tools/heart-phase-shots.py docs/raid`). The room for two, the Sunken
+Heart, has none of it.
+
+| When | What | How it comes |
+|---|---|---|
+| The Rings Turn begins (66 %) | **The floor turns.** The well is three rings | `turn`, once, as soon as the phase lets it (`due: 0`), right after the rings' own cast |
+| Noon Falls begins (33 %) | **The crust falls.** The rings stop; from then on each Heartbeat takes a sector of the floor | `crust`, the phase's opener; the Heartbeat follows by its own clock once the rings rest |
+| A fight tuned for 10 or more | **Shade the Heart together** | The Heartbeat itself, for such a party |
+| 20 or more | **Take the Blade** | `blade`, in the second and the last phase, when its turn comes |
+| 40 | **The Ring of Hands** | `hands`, the same, taking turns with the blade |
+
+**The gate by band.** `HEART_OF_NOON.band` is the band `resize` last heard; `blade` has `minBand: 20`, `hands` 40, and the brain
+leaves them out of its lists otherwise (`bandFits`). Shade the Heart together is no move of its own: the Heartbeat reads the band.
+The two great ones take turns with 14 s between (`REST`, `nextGreat`: the Sun Warden's way): for 20 and 30 the blade again and again,
+for 40 the blade, then the ring. The first waits 9 s after the floor begins to turn. A party's phases are their own list
+(`PARTY_PHASES`; `phases` is a getter, as `place` is).
+
+#### The floor turns
+
+| | |
+|---|---|
+| The rings | The inner one, to 6.9 m from the Heart, stands. The middle one (6.9 to 12 m) turns one way, the outer one (12 m to the well's rim, 18 m) the other; the seed says which way |
+| How fast | 9° a second the middle one, 6° the outer: 1.5 m/s at the middle of each, under half a hero's walk |
+| Warning | 5 s: the three seams light gold and gold arrowheads on the two rings point the way each will go. Then 3 s to come up to speed |
+| What it does | Each ring carries whoever stands on it. The floor's drawing is cut into the same rings and turns with them |
+| The beams | The Rings Turn's beams turn against the floor: the first and the third against the middle ring, the second against the outer |
+| What rides | Nothing has to: the lock rows and the fallen armillary's pieces are out in the rays, which stand; Take the Blade and The Ring of Hands are on the inner ring; a plate that falls while the floor turns falls on the inner ring too |
+
+- **To be carried is no walk.** The carry is the world's (`BossWorld.carryMe`, through `PlayContext.carry`), and what it moves a hero
+  is taken out of the hero's own walk (`shove` in `src/duel.ts`). So Hold Still stays fair: a hero that stands still on a ring is
+  carried through the beat and pays nothing; one that walks against its ring to stay in place is walking, and burns.
+- **Two screens agree on every angle.** A ring's angle is a pure rule of the time since the floor's cast (`ringAngle`). That time is
+  the computer's clock from the moment the cast came, not the game's own time, which falls behind on a screen that draws slowly (a
+  frame counts for a tenth of a second at most): six bots on one computer were 2 s apart by the game's time, and are as far apart as
+  the cast took to reach them by the computer's. Each screen carries its own hero by what its ring turned that frame; nobody is
+  carried over a gap of more than half a second (a tab that was hidden).
+- **It comes once.** A brain that takes the fight over starts with all its moves ready and casts `turn` again: the cast does nothing
+  when the floor already turns. The same for `crust`.
+- **Stopping.** When the crust falls the rings stop. The brain names when, on the floor's own clock, 1.5 s ahead (the cast's `x`),
+  so every screen begins to brake at the same angle whenever it hears. Each ring rests on the next eighth of a turn, so its drawing
+  lines up with the rays again, in 3 to 8 s.
+
+#### The crust falls
+
+| | |
+|---|---|
+| A sector | One of eight: a ray's whole bay and its slice of the well, a wedge 15.5° to each side of the ray's line from the inner ring (6.9 m) out |
+| When | After each Heartbeat. From the beat on it glows along its cracks for 9 s (never under 8 s at a higher tier), brighter and faster, then drops |
+| What it costs | 40 % for standing on it as it goes (15 % and the first burn), then 25 % each second over the sun. Nobody is pushed |
+| What goes with it | The fallen armillary's piece in that ray (out of the game: `breakCover`), and a ring's row of gold spots standing there. New rows go to rays that still stand |
+| What never falls | The inner ring; a spoke of crust from it to each spur's nose, which is what two sectors leave between them (where the plates fall, so the Heartbeat can always be sheltered from); the north ray, with the way out |
+| How many | Six at most. A long fight ends on the inner ring, eight spokes and two rays |
+
+- **Which one** is the brain's pick from the Heartbeat's seed, of those that stand, and goes in the cast (`z`: minus its number, one
+  more), with how many heroes stand (`x`) and whether the floor still turns (`flag`). So a screen needs no memory of what fell to
+  lose the same sector, and a brain that takes over picks from what it sees gone.
+- **A move can't see the phase**, and a higher tier brings the Heartbeat into the first phase: so a Heartbeat takes a sector only
+  once `crust` has been cast (`heartFight.crust`), not because it is a Heartbeat.
+- **The Heartbeat waits for the rings to rest** (it is out of the brain's list until then), so its plates fall before the spurs on a
+  floor that stands. Its first beat comes 17 to 22 s into the phase (12.5 s on a floor that never turned), and the first sector
+  goes 9 s after that.
+- **Burning ground that stays** is one zone of the `crust` cast for the whole fight (`hits`: over a fallen sector), as the Warden's
+  sunfire is. When the fight ends what fell crusts over, dark, and can be walked on: the way out is the north ray, which stands.
+- **How it is drawn.** The floor's material discards what has fallen (a rule of the spot in the world, the same as `inSector`), so
+  the pieces that turn need no holes of their own. Under it the sun: deep red and orange, never gold. The broken edge all round a
+  pit; sixteen slabs that tip and drop as it goes. The game's own ground is hidden in this room (`hideGround`).
+
+#### Shade the Heart together (10 or more)
+
+A plate for every five heroes standing when the Heartbeat is cast (the brain's count; 1 to 8, one before each spur), each sheltering
+five as before. New: **every plate left lying when the beat lands costs everyone 8 %, sheltered or not, 32 % at most.** A zone that
+is only counted (`Threat.tally`): every screen asks the hub, and by its answer the same plates stand on all of them. The cast bar
+says "Heartbeat · Shade the Heart together". A party of three to five has its one plate, simply cover, as before.
+
+#### Take the Blade (20 or more)
+
+| | |
+|---|---|
+| The call | The Heart throws its two blades down: they stand in the floor 5.2 m from it, across from each other, after 1.6 s. The cast bar stays up for all of it, 30 s: "Take the Blade · 2 carried" |
+| Taking one | Walk onto it. It is held aloft over the carrier, a sun at its point |
+| A carrier | Its hits on the Heart count twice; it walks at 85 %; the Heart's aim goes to the carriers (`heartChoice`, `BossDef.choose`) |
+| Meanwhile | The Heart does only what needs no blade: the flare, the crown, the rings. No Heartbeat |
+| The lance | Every 3.5 s from 5 s on (seven in all) it throws a lance of light at a carrier: 1.3 s of warning, 2.4 m wide. A carrier it reaches pays 35 %, is thrown back 3 m, and the blade is knocked from its hands |
+| Shielding | The lance ends on the first hero standing in its line (within 1 m of it, the brain's look), who pays 15 %; or on cover, a raised plate too |
+| A blade dropped | Lies where the lance was aimed, or where its carrier fell, for another. Who dropped it can't take it again for 3 s |
+| How long | A blade can be carried 12 s in all, by one hero or several; nobody took it for 20 s, and it goes back. Four changes of hands at most |
+
+- **Through Hold Still.** Its beats go on by the clock: on a beat a carrier can't step out of a lance without burning.
+- **Who says what.** The throw is the move's first step; each lance is a later step, its own cast, aimed by the brain at a carrier
+  that stands (none: a flagged step that plays nothing). Who took a blade is the hub's first report, as any spot. That a blade is
+  dropped or spent is said by its carrier's own screen (its hero fell, a lance hit it, its 12 s ran out) as a report on the same
+  cast (`PlayContext.report`), so every screen hears it at once, whoever runs the brain.
+- **"Hits harder" without the duel.** `RunUpgrades.dealtMul`, which every hit of this hero on the boss already goes through, has one
+  more factor (`might`), set by the fight (`PlayContext.might`). A fight with no upgrades object (a tool that starts one bare) has
+  no such factor. The hub takes at most 600 HP in one message of a screen's hits (ten a second) and 1,400 a second: a hit of over
+  300 before the doubling loses what is over.
+
+#### The Ring of Hands (40)
+
+| | |
+|---|---|
+| The spots | One gold spot for every hero standing (the brain's count), 0.7 m wide, on the inner ring: up to 22 in a ring 6 m from the Heart, a bigger raid two rings deep (6 m and 4.2 m) |
+| Taking one | Hold it 1 s. One to a hero: the hub says who has which |
+| The count | On the cast bar: "The Ring of Hands · 31 of 32" (held, of those needed: four in five) |
+| How long | 16 s (never under 14); the spots close 1.2 s before the end, so every screen has the same count |
+| Full | The moment enough are held: the Heart is stunned, it kneels (`RAID_REWARDS.heart.hands`), nothing burns |
+| Broken | 45 % for everyone |
+
+The Heart does nothing else meanwhile (`holds: { only: [] }`), but Hold Still's runs go on by the clock, and one always falls into
+these 16 s: the raid walks in between beats.
+
+#### What the script gained
+
+`PlayContext.carry` (this screen's hero is carried to where a rule says, from where it stands), `down` (this screen's hero has
+fallen), `might` and `banner`. `RunUpgrades.might`. One reward (`hands`). Nothing in the hub.
+
+**Found on the way.** Hold Still's second and third phase were moves named `still2` and `still3`. The hub passes on a cast only if its
+move's name is letters (`MOVE_RE` in `server/hub.mjs`), so online only the brain's own screen ever had those beats: every other
+player was never burnt for walking in the Heart's second and last phase. They are `stillb` and `stillc` now, and six screens all
+saw them.
+
+**Not there.** A carrier is not slowed much: the one slow the raid's files have is a shard's (85 %, and nothing with Sure Feet). A
+dropped blade's place is exact when a lance knocked it loose, and as near as a fallen hero's place is on each screen otherwise. A
+hero that falls on a ring is not carried while it lies there. `PROTOCOL` must be raised before a deploy: the room's rules changed.
 
 ## The lairs
 
@@ -902,7 +1032,17 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   `pipeline/tools/page-shots.py`.
 - `pipeline/tools/heart-holdstill-shots.py`: the Hold Still pictures, from the game page with its HUD, by the browser's own screenshot.
 - `pipeline/tools/heart-room-shots.py`: the Sunburst's pictures the same way, with 39 partners placed about the room by hand
-  (`docs/raid/heartroom-*.jpg`).
+  (`docs/raid/heartroom-*.jpg`). `pipeline/tools/heart-phase-shots.py`: the turning floor, the falling crust, Take the Blade and The
+  Ring of Hands, on the same page set-up (`docs/raid/heart-*.jpg`).
+- `_raidHeart()` also has the party's new rows (114 of its 242): which band sees which mechanic and their turns; the rings' angles
+  by the rule, the carry on each ring and off them, Hold Still on a turning ring, the beams against the floor, the cast doing
+  nothing a second time; the rings stopping on an eighth of a turn when the brain says; a sector named by the brain, glowing,
+  gone, what it costs, what stays, the lock rows; the plates by the heroes standing and what a plate left lying costs; the blades
+  taken, the lance aimed, blocked and reaching, a blade knocked loose, dropped by a partner, spent; the ring's spots, its count on
+  the cast bar, full and broken; and the real brain through all three phases.
+- `pipeline/tools/heart-party-run.js`: the autopilot against the Heart in the Sunburst, by band, with what the plain raid tool
+  does not count: seconds carried by a ring, sectors fallen, seconds stood over the sun, which moves came.
+  `pipeline/tools/party-raid.py --boss heart --burst`: every screen's ring angles, heroes' places and fallen sectors each second.
 - `pipeline/tools/online-bot.js`: `_botRoom(hero)` and `_botJoin(hero, code)` play a raid for two in two tabs with bots.
 - `pipeline/tools/party-raid.py`: a party of bots through the real hub in hidden pages. `--boss ash` starts the run at Ash and Ember
   (Twin Flames for a party); `--twin --boost 60` steers that fight through all its moments and takes its pictures; `--phone` makes the

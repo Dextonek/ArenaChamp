@@ -98,7 +98,7 @@ SCENES = {
       T.place(-2.5, 13.5); T.step(0.5);
       for (let i = 0; i < 3; i++) T.cast('rings', { step: i });
       T.step(4);
-      const id = T.cast('still2'); T.until(id, 1, 0.7); T.heal(); T.step(0.1);
+      const id = T.cast('stillb'); T.until(id, 1, 0.7); T.heal(); T.step(0.1);
       return { hp: T.hp(), spots: T.spots() };
     }"""),
     # A phone held upright, the beat coming, a gold spot in view: white against gold.
@@ -107,7 +107,7 @@ SCENES = {
       T.place(-1.5, 13.5); T.step(0.5);
       for (let i = 0; i < 3; i++) T.cast('rings', { step: i });
       T.step(4);
-      const id = T.cast('still2'); T.until(id, 1, 0.7); T.heal(); T.step(0.1);
+      const id = T.cast('stillb'); T.until(id, 1, 0.7); T.heal(); T.step(0.1);
       return { hp: T.hp(), spots: T.spots() };
     }"""),
     "phone-strike": ((390, 844), """() => {

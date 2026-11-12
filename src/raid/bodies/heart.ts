@@ -59,6 +59,12 @@ export const HEART_LIVE = {
   /** Hold Still: how full it is before its next beat, 0..1, and seconds since the last one (large when none). */
   fill: 0,
   clench: 99,
+  /**
+   * Take the Blade: each of its two blades away from its hand. `out`: how far it has left (0 in its hand, 1 away); where it is in
+   * the world then (`y` its middle: its point is 2.2 m under that, times `size`); `size`: how big it is drawn; `up`: turned point
+   * up, 0..1 (a hero holds it aloft: from the game's steep camera a blade that points down shows only its hilt).
+   */
+  blades: [0, 1].map(() => ({ out: 0, x: 0, y: 0, z: 0, size: 1, up: 0 })),
 };
 
 /** Clears what the moves left: a new fight starts with the rings up. */
@@ -68,6 +74,7 @@ export function resetHeartLive() {
   HEART_LIVE.struck = 99;
   HEART_LIVE.fill = 0;
   HEART_LIVE.clench = 99;
+  for (const bl of HEART_LIVE.blades) Object.assign(bl, { out: 0, x: 0, y: 0, z: 0, size: 1, up: 0 });
 }
 
 interface Mem { phase: number; kneel: number; spin: number[]; crown: number; beat: number; eyes: THREE.MeshStandardMaterial[] }
@@ -256,6 +263,15 @@ export const heartLook: BodyLook = (s, p) => {
     p.turn(name, 0, 0, (name === 'bladeL' ? 1 : -1) * 0.15 * (1 - st) * k);
   }
 
+  // Take the Blade: a blade it threw out stands point-down in the floor, or hangs over the hero who took it.
+  (['bladeL', 'bladeR'] as const).forEach((name, i) => {
+    const bl = HEART_LIVE.blades[i];
+    if (bl.out <= 0.001 || fall > 0) return;
+    p.toward(name, bl.x, bl.y, bl.z, ease(bl.out));
+    p.size(name, lerp(1, bl.size, ease(bl.out)));
+    if (bl.up > 0) p.turn(name, Math.PI * ease(bl.up) * ease(bl.out), 0, 0);
+  });
+
   // The shards drift round its foot, wider and higher as it burns.
   p.move('shards', 0, shardsY + bob * 0.4, 0);
   p.turn('shards', 0, t * 0.22, 0);
@@ -267,8 +283,9 @@ export const heartLook: BodyLook = (s, p) => {
   for (const e of m.eyes) e.emissiveIntensity = GLOW_EYES * Math.min(2, maskGlow) * alive;
   p.glow('crown', (0.5 + noon * 0.4 + strike) * alive);
   RINGS.forEach((name, i) => p.glow(name, GLOW_RING * ringGlow * (0.25 + 0.75 * HEART_LIVE.rings[i].lit) * (1 + HEART_LIVE.rings[i].down * 0.6) * alive));
-  p.glow('bladeL', GLOW_BLADE * alive);
-  p.glow('bladeR', GLOW_BLADE * alive);
+  // A blade out of its hand burns brighter: it is there to be taken.
+  p.glow('bladeL', GLOW_BLADE * (1 + 1.6 * HEART_LIVE.blades[0].out) * alive);
+  p.glow('bladeR', GLOW_BLADE * (1 + 1.6 * HEART_LIVE.blades[1].out) * alive);
 
   // Falling: the blades drop first and topple, the rings fall and lie on the floor, the crown sinks, the heart goes dark into the floor.
   if (fall > 0) {
