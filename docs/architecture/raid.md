@@ -376,11 +376,13 @@ and get what they always did.
 | `boss_stood`, `revive` | No `which`: a gold zone waits only for the half of whoever reported first, and nobody gets a hero up through the wall |
 
 Measured through the real hub (`python pipeline/tools/party-raid.py <out> --players 6 --seconds 280 --port 5197 --boss ash`): six
-bots, band 10, 17,750 HP each. Left alone they kept the two within 6 points for three minutes (nobody furious until the end), had both
-at half after 2:10 of fighting, and brought Ash down at 3:34, 44 s past the enrage, with Ember at 16 %; most of the party was down
-soon after. So six at the HP for ten is slow here too, as it is against the Warden. All six screens agreed on both bars within 1.7 %
-of a bar (a hit on its way), nobody was across the standing wall in any sample, no errors. With `--twin --boost 60` the tool steers
-the fight through every moment (one far ahead, level again, one falls, the last one falls) and takes the pictures.
+bots, band 10, 17,750 HP each, times on the fight's own clock. Left alone they kept the two within 7 points for three minutes (nobody
+furious until 3:14), had both at half after 1:30, and then each half took close to the full 30 s over its Eruption (three heroes for
+three Coal Hearts of 621 HP). Ash fell at 3:17, 27 s past the enrage, with Ember at 16 %; five of the six were down three seconds
+later, and at 4:02, when the run was stopped, Ember still had 10 %. A half took 78 to 92 HP a second off its boss, 26 to 31 a bot. So
+six at the HP for ten is slow here too, as it is against the Warden. All six screens agreed on both bars within 1.7 % of a bar (a hit
+on its way), nobody was across the standing wall in any sample, no errors. With `--twin --boost 60` the tool steers the fight through
+every moment (one far ahead, level again, one falls, the last one falls) and takes the pictures.
 
 ## The Heart of Noon
 
@@ -508,8 +510,14 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **Twin Flames, when one falls:** what the other already has on the floor counts for everyone from that moment, still drawn to where
   the wall stood. A stage of the other's goes on to its end. After it Ash's Charge reaches Ember's half, which has no pillar.
 - **Twin Flames, the other boss on a screen:** it does not flinch or flash when hit (its hits are another screen's), and a partner's
-  spell replayed at it aims at a stand-in with no body. Its Coal Hearts are real units here: a spell that needs no sight could hit them,
-  which changes nothing on their own side.
+  spell replayed at it aims at a stand-in with no body (every hero's spells were replayed at it: no errors). Its Coal Hearts are real
+  units here: a spell that needs no sight could hit them, which changes nothing on their own side. The red heat round this screen's
+  enemy keeps the size of the boss it started with after the other takes its place.
+- **Twin Flames, not checked:** a player leaving, in the browser (on the hub it is: the brain goes to a screen of the same half); more
+  than six screens; what two scripts and the other half's adds cost a phone; tier 2 and up; a gold zone still open at the moment the
+  wall goes out (the hub settles it after its 1.5 s wait).
+- **Zones can be cut off along a line** (`TelegraphLayer.clip` in `src/effects/telegraph.ts`, which spells use too): the fill's shader
+  carries the cut for every zone, set to cut nothing unless a boss's script asks. Spells never set it.
 - **Twin Flames, a half with nobody standing:** its boss has nobody to aim at and waits. A half everyone left can't be hurt until the
   other falls; it is then furious, at full health.
 - **The first big moment in a session builds its shaders,** as the first fade does: a short pause the first time a stage starts. Not measured on a phone.
@@ -562,7 +570,8 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   `_raidTwin()` for Twin Flames, with the two HP pools kept on the page (`TwinLocalLink`): the room and the wall (walk, sight, bolt, blow,
   carry, dash), each boss's moves in its half and the other's as a look only, the Charge at the wall and at a pillar, the furious rule
   on, off and with the enrage, a fall on either side of the wall, each half's stage and vent, Falling Star, the two brains' ids, and the
-  autopilot staying in its half (72 rows).
+  autopilot staying in its half (72 rows). `_raidTwinPartners()` replays every hero's spells and attack as a partner in the other half,
+  aimed at the other boss's stand-in: no errors, and nothing touches this screen's hero or its boss (200 replays).
 - `pipeline/tools/boss-anim.js`: `_strip(title, setup, plan)` plays a move in a stepped fight and lays frames of it side by side round its
   landing, cropped on the boss and the hero.
 - `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level, boss })` runs the autopilot and reports clears, time, damage per second,

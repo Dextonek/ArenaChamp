@@ -1634,4 +1634,64 @@
     d.stop();
     return { ok: !failed.length, failed, rows };
   };
+
+  // Twin Flames: every hero's four spells and basic attack replayed as a partner in the OTHER half, where they aim at the other
+  // boss's stand-in (a figure with no body, `Duel.foeFor`). Nothing in them may throw, or touch this screen's hero or its boss.
+  //   await _raidTwinPartners()            // every hero; { ok, n, rows, errors }
+  //   await _raidTwinPartners(['Vesper'])
+  window._raidTwinPartners = async (names) => {
+    const d = vfx.duel, a = vfx.arena;
+    const { twinFlames } = await import('/src/raid/ashEmber.ts');
+    const { TwinLocalLink } = await import('/src/raid/twin.ts');
+    const { HERO_KITS } = await import('/src/heroes.ts');
+    const out = { ok: false, n: 0, rows: [], errors: [] };
+    let simMs = performance.now();
+    performance.now = () => simMs;
+    const step = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { simMs += 1000 / 60; vfx.step(1 / 60); } };
+    const logError = console.error;
+    let now = '';
+    console.error = (...x) => { if (out.errors.length < 30) out.errors.push(`${now}: ${x.map((v) => String(v?.stack ?? v)).join(' ').slice(0, 300)}`); logError(...x); };
+    const onError = (e) => { if (out.errors.length < 30) out.errors.push(`${now}: ERR ${e.message}`); };
+    window.addEventListener('error', onError);
+    vfx.view.paused = true;
+    if (!d.on) vfx.setDuel(true, 'play');
+    d.holdStart = false;
+    try {
+      for (const kit of HERO_KITS.filter((k) => !names || names.includes(k.name))) {
+        // A screen never replays a spell its own hero has: another hero for this screen.
+        vfx.heroPickCtrl.setValue(kit.name === 'Lyra' ? 'Bram' : 'Lyra');
+        for (let slot = 0; slot < 5; slot++) {
+          now = `${kit.name} slot ${slot}`;
+          const def = twinFlames(0), link = new TwinLocalLink(def, 10, 0);
+          d.startBoss({ def, link, seed: 'twin-partners', mode: 'play', name: 'me', party: [{ side: 1, kit, name: 'partner' }], band: 10, twin: { ...link.setup, halves: [0, 1] } });
+          d.boss.brain.pause = 1e9;
+          const me = a.caster.group.position, ember = d.twin.enemy.group.position;
+          me.set(-8, 0, 12);
+          d.partnerMove(1, ember.x - 5, ember.z + 4, 0, undefined);
+          step(0.3);
+          const p = d.party.get(1), before = { hp: d.playerHp, boss: a.hpOf(d.foe), x: me.x, z: me.z };
+          if (slot < 4) {
+            const spell = kit.spells[slot];
+            d.partnerCast(1, { id: 1, slot, x: ember.x, z: ember.z, fx: p.pos.x, fz: p.pos.z, enemy: true, yaw: Math.atan2(ember.x - p.pos.x, ember.z - p.pos.z), bend: spell.aim === 'arc' ? 0.6 : undefined });
+          } else d.partnerAttack(1);
+          step(3.5);
+          const st = a.statusOf(a.caster);
+          const row = {
+            hp: d.playerHp - before.hp, boss: a.hpOf(d.foe) - before.boss, moved: Math.hypot(me.x - before.x, me.z - before.z),
+            status: !!st && (st.stunned || st.cannotMove || st.cannotCast || st.speedMul !== 1), buffs: st?.activeBuffs().length ?? 0,
+          };
+          out.n++;
+          if (row.hp || row.boss || row.moved > 0.001 || row.status || row.buffs) out.rows.push({ name: kit.name, slot, ...row });
+        }
+      }
+    } catch (e) {
+      out.errors.push(`${now}: ${String(e?.stack ?? e)}`);
+    }
+    delete performance.now;
+    console.error = logError;
+    window.removeEventListener('error', onError);
+    d.stop();
+    out.ok = !out.rows.length && !out.errors.length;
+    return out;
+  };
 })();

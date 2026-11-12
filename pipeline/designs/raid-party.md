@@ -176,11 +176,12 @@ How it works now: `docs/architecture/raid.md`, "Twin Flames". Pictures: `docs/bo
 The room 30 m. Drag Under's ring 4.5 to 14 m. Lava Wave 6.5 m/s over 33 m. Falling Star 45 % shared. Coal Hearts 6.5 m round each
 one's place, each 3.5 % of one boss's HP (621 at band 10). The lava at 24, 20, 16 m.
 
-**Measured** (six bots through the real hub, band 10, 17,750 HP each, no help): the two stayed within 6 points for three minutes
-without anyone trying, so the rule only bites when the halves differ; half HP after 2:10 of fighting; Ash down at 3:34, past the 2:50
-enrage, Ember at 16 % and most of the party down soon after. About 27 HP a second from each bot, 80 from a half. All screens agreed
-on both bars; no bot crossed the wall; no errors. Steered by the tool (one half helped ahead): Ember furious at 13 points, calm again
-at 3, Ash down, the wall out, everyone on Ember, won.
+**Measured** (six bots through the real hub, band 10, 17,750 HP each, no help; times on the fight's own clock): the two stayed
+within 7 points for three minutes without anyone trying, so the rule only bites when the halves differ. Both at half HP after 1:30;
+then each half needed close to the full 30 s for its Eruption (three heroes, three Coal Hearts of 621 HP). Ash down at 3:17, 27 s past
+the 2:50 enrage, Ember at 16 %; five of six down three seconds later; the run was stopped at 4:02 with Ember at 10 %, not won. A half
+takes 78 to 92 HP a second off its boss, 26 to 31 a bot. All screens agreed on both bars; no bot crossed the wall; no errors. Steered
+by the tool (one half helped ahead): Ember furious at 13 points, calm again at 3, Ash down, the wall out, everyone on Ember, won.
 
 **Not done or not checked.** Played by people. More than six screens. A player leaving in a twin fight was checked on the hub only
 (the brain goes to the same half; an empty half has none), not in the browser. A higher tier (its extras go to whose they are: Ash
