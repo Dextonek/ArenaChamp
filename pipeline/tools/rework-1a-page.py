@@ -68,7 +68,7 @@ WHY = {
         "Sirix": "The computer walked him to 2.6 m from everyone, into every swing. Against a brawler it now keeps the far end of the chord, 4.3 m off.",
         "Oblivion": "At 2.6 m he stood inside every Gravity Slam (7 hits of 7 casts) and the Null Zone, and could not cast a quarter of the fight. The same stand-off cured it.",
         "Auriel": "The same edge as against Kaia. Still his best pairing.",
-        "Lyra": "She out-ranges his whole kit (her arrow 14 m, his chord 5 m) and backs away at his speed: half his chords miss. The computer now sings the Siren Song at her from 3 Crescendo to walk her in. Still her fight: a hard counter.",
+        "Lyra": "She out-ranges his whole kit (her arrow 14 m, his chord 5 m) and backs away at his speed: half his chords miss. The computer now sings the Siren Song at her from 3 Crescendo to walk her in. Still her fight, a hard counter: 31% here, 12% in a second run of 32 fights.",
         "Vesper": "Her curse charged him for a spell every beat: a fifth of her damage on him. It costs 15 a spell now, not 20; she still out-trades him.",
     },
     "Brannoc": {
@@ -113,7 +113,7 @@ CHANGED = {
     ],
 }
 
-GREEDY = {"Cantor": ("never spends the Crescendo", "40%", "38%"), "Brannoc": ("no pause between spells", "44%", "25%"),
+GREEDY = {"Cantor": ("never spends the Crescendo", "40%", "38%"), "Brannoc": ("no pause between spells", "44%", "31%"),
           "Vesper": ("needle and Rip only, at any Price", "14%", "0%")}
 
 # The six bystanders against the six benchmark heroes, both sides (t18-roster), beside the last whole-roster run.
@@ -214,8 +214,8 @@ ul {{ margin:4px 0 10px 20px; padding:0; }} li {{ margin:3px 0; }} .box {{ backg
 simulator (the computer playing both heroes, on the game's own code). Before: 32 fights a pairing (64 where both are of the three). After: 64 a pairing.
 A bar is how often the hero wins that pairing; the lighter strip is 20 to 80%, the aim. <span class="dim">* not one of the six benchmark heroes.</span></p>
 
-<div class="box"><b>In short.</b> All three now sit inside the band, both sides together and as the player's hero alone. Cantor has no pairing past 78 to 22
-(he had five). Brannoc has one, Kaia, which is older than his rework. Vesper is even overall but her pairings are still far apart: five of eight
+<div class="box"><b>In short.</b> All three now sit inside the band, both sides together and as the player's hero alone. Cantor has no pairing past 78 to 22 in the run shown
+(he had five); against Lyra he read 31% in it and 12% in a second, shorter run. Brannoc has one, Kaia, which is older than his rework. Vesper is even overall but her pairings are still far apart: five of eight
 are one-sided, some of them the other way round than before. Three faults were in how the computer played them, not in their numbers, and one is in
 the engine and is not fixed here (the two computer players do not treat a basic attack alike).</div>
 
@@ -225,7 +225,7 @@ the engine and is not fixed here (the two computer players do not treat a basic 
 <p>A duel between two computers is close to a race with no chance in it: the same casts, the same hits, fight after fight. A hero who is 12% ahead at the end
 wins every time, so a small edge reads as 100%. The older heroes miss with skillshots, which puts chance back in; these three hit with almost everything
 (a cone, a targeted needle, a hammer in melee). That is why a few points of damage turned Cantor against Kaia from 32 of 32 to even, and why some of Vesper's
-pairings flip with every small change. The same shows among the older heroes: Kaia beats Isolde 57 of 64 and loses to Lyra's side 4 of 32 with nothing of theirs changed.</p>
+pairings flip with every small change. The same shows among the older heroes: Kaia beats Isolde 57 of 64 and Lyra 28 of 32, and Isolde loses to Auriel 28 of 32, with nothing of theirs changed.</p>
 
 <div class="scroll">{hero_block('Cantor')}</div>
 <div class="scroll">{hero_block('Brannoc')}</div>
@@ -238,7 +238,7 @@ pairings flip with every small change. The same shows among the older heroes: Ka
 
 <h2>The Raid (against the Sun Warden, the autopilot)</h2>
 <div class="scroll"><table><tr><th>Hero</th><th>Before the rework</th><th>After the rework</th><th>After the tuning</th><th></th></tr>
-<tr><td class="foe">Cantor</td><td class="num">3 of 3, 27 a second</td><td class="num">1 of 3, 19 to 20</td><td class="num"><b class="ok">3 of 4, 28 a second</b></td><td class="why">A boss cannot be charmed or silenced, so his song and his release did nothing but stagger it. Now such a charm or silence strikes instead: 36 for each step of Crescendo. With 16 a step: 1 of 3 and 20; with 24: 3 of 4 and 21.</td></tr>
+<tr><td class="foe">Cantor</td><td class="num">3 of 3, 27 a second</td><td class="num">1 of 3, 19 to 20</td><td class="num"><b class="ok">3 of 4, 28 a second</b></td><td class="why">A boss cannot be charmed or silenced, so his song and his release did nothing but stagger it. Now such a charm or silence strikes instead: 36 for each step of Crescendo. With 16 a step: 1 of 3 and 20; with 24: 3 of 4 and 21. Not measured with no strike at all at these numbers.</td></tr>
 <tr><td class="foe">Vesper</td><td class="num">2 of 3, 25</td><td class="num">3 of 6, 22</td><td class="num">2 of 3, 24</td><td class="why">Where she was.</td></tr>
 <tr><td class="foe">Brannoc</td><td class="num">0 of 3, 21</td><td class="num">0 of 3, 22</td><td class="num">0 of 3, 21</td><td class="why">Where he was: he does not clear, before or after. Not looked into.</td></tr>
 </table></div>
@@ -248,6 +248,8 @@ pairings flip with every small change. The same shows among the older heroes: Ka
 <ul>
 <li><b>Vesper's pairings.</b> Oblivion (5%), Kaia (9%), Sirix (97%), Auriel (92%), Lyra (86%). Oblivion and Sirix went the same way before her rework. She is the one of the three whose fights swing most on a single number.</li>
 <li><b>Brannoc against Kaia</b> (91%) and <b>Cantor against Lyra</b> (31% in one run of 64, 12% in another of 32): both older than the rework, both a matter of reach.</li>
+<li><b>Cantor as the player's hero</b> read 54% in the run shown and 45% in a second one (32 fights a pairing): inside the band both times, nine points apart.</li>
+<li><b>Vesper against Kaia</b> turned over when the curse went from 20 to 15 a spell (27% before that step, 9% after). The next thing to try for her is the curse at 17 or 18.</li>
 <li><b>The engine, not fixed here</b> (it is not this job's to edit): on the player's side a cast drops a basic attack in its wind-up, on the computer's opponent's side the swing lands anyway. Any hero who casts often is weaker as the player's hero for it. The computers of these three now play round it; the next reworked heroes will meet it again.</li>
 <li><b>Oblivion's Black Hole</b> lands on the opponent's Brannoc every fight and on the player's one in five. It is most of what is left of Brannoc's gap in that pairing.</li>
 <li>No person has played the three since the tuning, and no network duel was played. The raid was run once with the last numbers (Cantor twice more while the strike was sized).</li>

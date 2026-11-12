@@ -186,8 +186,8 @@ how far ahead the winner ended) and `pipeline/tools/duel-trace.js` (one duel wri
 
 | Hero | Both sides | As the player's hero | Pairings past 80 to 20 (of 8: the six, Vesper, Auriel, Lyra) | The greedy line |
 |---|---:|---:|---|---:|
-| Cantor | 58% (it was 54%) | 54% (38%) | none (five: Kaia 100, Auriel 100, Isolde 91, Oblivion 9, Lyra 19) | 38% |
-| Brannoc | 51% (56%) | 54% (31%) | Kaia 91 (two: Kaia 100, Vesper 94) | 25% |
+| Cantor | 58% (it was 54%); 56% in a second run | 54% (38%); 45% in a second run | none in the run of 64 (five: Kaia 100, Auriel 100, Isolde 91, Oblivion 9, Lyra 19); Lyra 31% there and 12% in a second run of 32 | 38% |
+| Brannoc | 51% (56%) | 54% (31%) | Kaia 91 (two: Kaia 100, Vesper 94) | 31% |
 | Vesper | 47 to 50% (53%) | 46 to 50% (55%) | five: Oblivion 5, Kaia 9, Sirix 97, Auriel 92, Lyra 86 (seven) | 0% |
 
 **The numbers changed:** Cantor: Resounding Chord 25 -> 22, a step of Crescendo +12% -> +9%, HP 740 -> 720. Brannoc: Chain Hammer
@@ -227,8 +227,10 @@ run), Auriel 57% (33%: the engine's aim fix), Lyra 58% (58%), Isolde 43% (40%), 
 and Oblivion (up 11) moved only because the benchmark changed: listed, not retuned.
 
 **The raid** (`_raid(['Vesper', 'Brannoc', 'Cantor'], 3)`, the Sun Warden): Vesper 2 of 3 and 24 a second, Brannoc 0 of 3 and 21,
-Cantor 1 of 3 and 20, then, with the strike (a charm or silence that cannot take hold strikes for 36 a step of Crescendo: a boss
-can be neither charmed nor silenced) 3 of 4 and 28. Before the rework he was 3 of 3 and 27.
+Cantor 1 of 3 and 20 with the strike at 16 a step (a charm or silence that cannot take hold strikes instead: a boss can be neither
+charmed nor silenced), 3 of 4 and 21 at 24 a step, 3 of 4 and 28 at 36, as it is now. Not measured with no strike at these numbers.
+Before the rework he was 3 of 3 and 27. In a party's raid the strike is an ordinary hit of his (`startBoss` runs with no `net`); in
+a network duel the victim's screen applies the silence or charm and decides the strike, as offline.
 
 ### Not checked
 

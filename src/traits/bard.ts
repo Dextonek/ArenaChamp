@@ -121,8 +121,8 @@ function setNote(t: TraitView, clean: boolean, crescendo: number) {
  * to where the Chord reaches (`aiGoal`); once a brawler's swing has hit him (`taken`) it keeps the far end of the chord
  * instead, 4.3 m off, and steps back when they close in. Before that it stood at 2.6 m from everyone, inside every slam.
  * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the chord 25 -> 22, the step 12% -> 9%, 740 -> 720 HP): 58% against
- * the benchmark heroes on both sides, 54% as the player's hero alone, no pairing past 78 to 22; a CPU that never spends the
- * Crescendo: 38%.
+ * the benchmark heroes on both sides, 54% as the player's hero alone (45% in a second run), no pairing past 78 to 22 but Lyra
+ * (12 to 31% by run: she out-ranges his whole kit); a CPU that never spends the Crescendo: 38%.
  */
 export const bardTrait: Trait = {
   aiHold(t, slot, dist) {

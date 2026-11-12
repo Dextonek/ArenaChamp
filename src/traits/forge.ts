@@ -111,7 +111,7 @@ const AI_NO_SWING = 2.4;
  * keeps out of the ring (the CPU steps back from white heat) is dragged back with the chain, and after 5 s he Quenches
  * anyway: before, he stood there and burned.
  * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the Chain Hammer 40 -> 34): 51% against the benchmark heroes on
- * both sides, 54% as the player's hero alone. Without the CPU's pauses: 25%.
+ * both sides, 54% as the player's hero alone. Without the CPU's pauses: 31%.
  */
 export const forgeTrait: Trait = {
   aiHold(t, slot, dist) {
