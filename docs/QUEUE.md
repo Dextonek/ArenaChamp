@@ -19,15 +19,32 @@ next job whose files are free. One writer at a time on `src/duel.ts`, `src/heroM
 | 4 | Sun Warden: the hall transforms (second and last phase) + his mechanics for 10, 20, 40 (Branded, Carry the Sun, The Four Hours) | | `sunWarden.ts`, `sunhall.ts`, `sunhall.py` | **done, merged** (`_raidCheck` 234 rows; six bots through the hub won twice; pictures `docs/raid/warden-*.jpg`). Left: a shard's carrier can still cast (needs `duel.ts`); The Four Hours not seen through the hub |
 | 5 | Twenty new hero ideas (a page; ideas only, no hero is built) | | `pipeline/designs/` | **done**: `pipeline/designs/heroes-new-20.html` |
 | 6 | The heroes we have, reworked: the plan (each hero's own rule that breaks the Q W E R mould) | | `pipeline/designs/` | **done**: `pipeline/designs/heroes-rework.md` (all forty, in waves) |
-| 7 | Heart of Noon: the room transforms + its mechanics for 10, 20, 40 (Shade together, Take the Blade, The Ring of Hands) | 2 | `heart.ts`, `sunburst.ts`, `sunburst.py` | running (ports 5208, 5209) |
-| 8 | Ash and Ember: the pit transforms + their mechanics for 10, 20, 40 (Lantern Chain, Seal the Vents, The Changing of the Flames); a boss room built in Blender | 1 | `ashEmber.ts`, `twin.ts`, `twinpit.ts`, `hub.mjs`, `duel.ts` | running (ports 5212, 5213) |
+| 7 | Heart of Noon: the room transforms + its mechanics for 10, 20, 40 (Shade together, Take the Blade, The Ring of Hands) | 2 | `heart.ts`, `sunburst.ts`, `sunburst.py` | **done, merged** in the morning (`386becb`; type check, build, the server test's 217 checks; pictures `docs/raid/heart-*.jpg`) |
+| 8 | Ash and Ember: the pit transforms + their mechanics for 10, 20, 40 (Lantern Chain, Seal the Vents, The Changing of the Flames); a boss room built in Blender (the Twin Forge) | 1 | `ashEmber.ts`, `twin.ts`, `twinForge.ts`, `twinpit.ts`, `hub.mjs`, `duel.ts` | half built at night (`d736eed`: the room, the islands, the flood, the moves; no hub half, no checks); **running again since 09:30** from that commit (ports 5216, 5217) |
 | 9 | The hero shop and the rewards: obols, owned heroes, the Shop screen, raid ranks, the week's boards | 1, 3 | `accounts.mjs`, `hub.mjs`, `protocol.mjs`, `src/game/main.ts` | **done, merged** (PROTOCOL 11; the server test's 217 checks pass; pictures `docs/shop/shop.html`). The shop is ON in the code; bot tools need `SHOP=off`. Not checked on the live store |
 | 10 | Heroes reworked, wave 1a: Vesper, Brannoc, Cantor | 6 | their kits, traits, spells | **built, merged; NOT yet fair**: after the rework and the CPU's aim fix (`b05bf09`) Cantor beats Kaia and Auriel 32 of 32 and loses to Oblivion 31 of 32; Brannoc beats Kaia 32 of 32 |
-| 10t | Wave 1a tuning: no matchup of theirs past 80 to 20; each 40 to 60 % on the player's side (port 5210, 5211) | 10 | the three heroes' files | running |
-| 10b | Heroes reworked, wave 1b: Zephyr, Sir Whiskers, Big Yoko (ports 5204, 5205) | 10t (the benchmark heroes must be right first) | their kits, traits, spells | queued |
-| 11 | Heroes reworked, wave 2 and on, as the night allows | 10 | their kits, traits, spells | queued |
-| 12 | Engine hooks the helpers asked for: the Tower's (`TOWER-HOOK`), `partyStart` taking the boss's spots, `removeCover` refusing a fixed wall, the autopilot staying near an objective it cannot take | 1, 3 | `duel.ts` | queued |
-| 13 | A party of bots through all three bosses (10 or more), every new mechanic seen; docs (`raid.md`, `multiplayer.md`), `STATUS.md`, a morning page of everything with pictures | all | docs | queued |
+| 10t | Wave 1a tuning: no matchup of theirs past 80 to 20; each 40 to 60 % on the player's side | 10 | the three heroes' files | part done at night (`44ba9fb`, no numbers written); **running again since 09:30** from that commit (ports 5214, 5215) |
+| 10b | Heroes reworked, wave 1b: Zephyr, Sir Whiskers, Big Yoko | 10t (the benchmark heroes must be right first) | their kits, traits, spells | **not started; after the deploy, on the user's word** |
+| 11 | Heroes reworked, wave 2 and on | 10 | their kits, traits, spells | **not started; after the deploy, on the user's word** |
+| 12 | Engine hooks the helpers asked for: the Tower's (`TOWER-HOOK`), a carrier that cannot cast | 1, 3 | `duel.ts` | inside job 8 (`215d937`) |
+| 13 | Before the deploy: all checks on the merged whole, a party of bots through all three bosses, docs, `STATUS.md`, a page of everything with pictures | 8, 10t | docs | queued |
+
+## The morning (2026-11-12, 09:00): where the night stopped, and what the user decided
+
+The night's loop stood still from about 04:00 to 08:57: the three helpers committed nothing in between, and their threads
+were gone in the morning (most likely the computer slept). Their work was committed as it stood (`8086f28` the Heart, whole;
+`d736eed` the Twin Forge, half; `44ba9fb` the tuning, part). Ports 5208, 5210 and 5213 still hold their old servers: new
+helpers use 5214 to 5217.
+
+The user, awake, asked "can you like slowly push it and deploy it when finish", and chose:
+
+1. **When:** after the two half-done jobs (8 and 10t). No new jobs are started before the deploy.
+2. **The shop: off for now.** `wrangler.jsonc` says `"SHOP": "off"`: every hero stays free; obols are earned and kept. The
+   News item about the Shop must say so before the deploy (it describes prices and locks today).
+
+So the order is: jobs 8 and 10t report -> merge each (type check, build, server test, raid checks) -> job 13 -> the News
+item for the closed shop, the release's `live: true` and its date -> `git push origin feat/particle-editor:main` ->
+`npm run cf:deploy` -> look at the live page. **This word covers this one push and this one deploy only.**
 
 ## The designs
 
