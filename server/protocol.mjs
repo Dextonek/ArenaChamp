@@ -31,7 +31,8 @@ export const RAID_REWARDS = {
     foura: { stagger: 25 }, fourb: { stagger: 25 }, fourc: { stagger: 25 }, fourd: { stagger: 25 },
   },
   ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 }, eruptw: { kneel: true }, erupte: { kneel: true } },
-  heart: { lock: { stagger: 40 } },
+  // `hands`: The Ring of Hands, the ring full enough when it closes.
+  heart: { lock: { stagger: 40 }, hands: { kneel: true } },
 };
 
 /** What the Shrine, a side door of the hall, costs on the run's time (s; src/raid/paths.ts). */

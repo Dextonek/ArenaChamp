@@ -130,6 +130,8 @@ export class RunUpgrades {
   private rose = false;
   /** This tier's omens (./omens.ts): they change a few of the numbers below for both of its fights. */
   omens: readonly Omen[] = [];
+  /** What a fight's own mechanic lends this hero's hits on the boss, while it lasts (the Heart's blade: `PlayContext.might`). */
+  might = 1;
 
   /** An omen of this tier is on. */
   omen(id: OmenId) {
@@ -153,6 +155,7 @@ export class RunUpgrades {
   newFight() {
     this.saved = false;
     this.rose = false;
+    this.might = 1;
   }
 
   cooldownMul(slot: number) {
@@ -170,7 +173,7 @@ export class RunUpgrades {
 
   /** What this hero's hits on the boss are multiplied by. `open`: it stands open or kneels. */
   dealtMul(open: boolean) {
-    return (this.has('glass') ? 1.25 : 1) * (open && this.has('opportunist') ? 1.6 : 1) * 1.08 ** this.count('whetstone') * (this.has('reckless') ? 1.35 : 1);
+    return (this.has('glass') ? 1.25 : 1) * (open && this.has('opportunist') ? 1.6 : 1) * 1.08 ** this.count('whetstone') * (this.has('reckless') ? 1.35 : 1) * this.might;
   }
 
   get staggerMul() {

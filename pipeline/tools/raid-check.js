@@ -1532,7 +1532,7 @@
     const polar = (deg, r) => ({ x: H.x + Math.sin((deg * Math.PI) / 180) * r, z: H.z + Math.cos((deg * Math.PI) / 180) * r });
     const cast = (move, o = {}) => {
       const me = a.caster.group.position, x = o.x ?? me.x, z = o.z ?? me.z;
-      const c = { id: ++seq, move, step: o.step ?? 0, x, z, fx: H.x, fz: H.z, dir: o.dir ?? Math.atan2(x - H.x, z - H.z), seed: o.seed ?? 4242, target: 0, alone: o.alone };
+      const c = { id: ++seq, move, step: o.step ?? 0, x, z, fx: H.x, fz: H.z, dir: o.dir ?? Math.atan2(x - H.x, z - H.z), seed: o.seed ?? 4242, target: 0, alone: o.alone, flag: o.flag };
       d.boss.link.cast(c);
       return c;
     };
@@ -1775,14 +1775,14 @@
       world.dropStone(under);
       // The rhythm, phase by phase.
       fresh();
-      const b2 = (sc = cast('still2', { x: H.x, z: H.z }), step(0.05), beatsOf(sc.id));
+      const b2 = (sc = cast('stillb', { x: H.x, z: H.z }), step(0.05), beatsOf(sc.id));
       check('still: four beats in The Rings Turn', b2.length, 4, 0);
       check('still: 2.1 s apart', b2[1] - b2[0], 2.1, 0.001);
       fresh();
-      const b3 = (sc = cast('still3', { x: H.x, z: H.z }), step(0.05), beatsOf(sc.id));
+      const b3 = (sc = cast('stillc', { x: H.x, z: H.z }), step(0.05), beatsOf(sc.id));
       check('still: five beats in Noon Falls', b3.length, 5, 0);
       check('still: 1.6 s apart', b3[1] - b3[0], 1.6, 0.001);
-      yes('still: each phase has its own, by the clock', def.phases.map((x) => x.timed?.move).join() === 'still,still2,still3');
+      yes('still: each phase has its own, by the clock', def.phases.map((x) => x.timed?.move).join() === 'still,stillb,stillc');
       yes('still: a new phase\'s first run comes after the last phase\'s has ended', def.phases.slice(1).every((x) => x.timed.first >= 3 + 4 * 1.6 + 0.9));
       // By the brain's own clock: the first run waits 9 s into the fight, the next comes 21 s after it.
       fresh();
@@ -1807,7 +1807,7 @@
       p0 = polar(mid, 6);
       place(p0.x, p0.z);
       d.playerHp = d.playerMax;
-      sc = cast('still3', { x: H.x, z: H.z });
+      sc = cast('stillc', { x: H.x, z: H.z });
       step(10);
       check('still: with Solar Flare, standing where its gaps overlap costs nothing', lost(), 0);
       // With the Heartbeat: holding a plate is standing still, so the plate rises and the beats cost nothing behind it.
@@ -1817,7 +1817,7 @@
       const pl = live(hc.id).played.objectives[0];
       place(pl.x, pl.z);
       d.playerHp = d.playerMax;
-      cast('still3', { x: H.x, z: H.z });
+      cast('stillc', { x: H.x, z: H.z });
       step(10.6);
       yes('still: with the Heartbeat, a plate is raised through the beats', pl.done === true);
       check('still: and neither the beats nor the Heartbeat cost anything behind it', lost(), 0);
@@ -1830,8 +1830,8 @@
       // A party (a band over 2) fights in the Sunburst: a well and eight rays, 35 m to the far corners. Every move reaches the walls,
       // and what the mechanics ask grows with the band (src/raid/heart.ts, `party`).
       const { burstAt } = await import('/src/arenas/sunburst.ts');
-      const party = (band) => {
-        d.startBoss({ def, link: new LocalLink(def), seed: 'heart', mode: 'play', band });
+      const party = (band, more = {}) => {
+        d.startBoss({ def, link: new LocalLink(def), seed: 'heart', mode: 'play', band, ...more });
         d.boss.brain.pause = 1e9;
         d.boss.brain.timedDone = 1e9;
         a.placeFoe(d.foe, new V(H.x, 0, H.z));
@@ -1949,6 +1949,8 @@
       place(php.played.objectives[0].x, php.played.objectives[0].z);
       step(3.3);
       yes('party heartbeat: holding a plate 3 s raises it', php.played.objectives[0].done === true && a.obstacles.length - pn0 === 1);
+      // The other plate, by a partner: at 10 or more a plate left lying costs everyone (Shade the Heart together, below).
+      d.boss.script.done(pbc.id, 1, 1);
       yes('party heartbeat: its pocket shows as a gold zone to stand in', d.boss.script.goldSpots().length >= 1 && !!d.boss.script.standGoal(0, 7));
       d.playerHp = d.playerMax;
       q0 = polar(112.5, 15.5);
@@ -2034,11 +2036,12 @@
       party(10);
       q0 = burstAt(2, 27, 3.4);
       place(q0.x, q0.z);
-      check('party heartbeat: the fallen armillary\'s piece is no shelter from it', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0.4, 0.002);
+      // The beat, and 8 % for each of the two plates left lying.
+      check('party heartbeat: the fallen armillary\'s piece is no shelter from it', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0.4 + 0.16, 0.002);
       party(10);
       q0 = burstAt(5, 33, -4);
       place(q0.x, q0.z);
-      check('party heartbeat: it reaches the far corner of a ray', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0.4, 0.002);
+      check('party heartbeat: it reaches the far corner of a ray', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0.4 + 0.16, 0.002);
       party(40);
       pbc = cast('heartbeat', { x: H.x, z: H.z });
       step(0.05);
@@ -2077,6 +2080,351 @@
       toBeat(sc.id, 1, 0.5);
       step(1);
       check('party still: standing still there costs nothing', lost(), 0);
+
+      // ---- A party's room changes with its phases, and three mechanics come only for a big party (2026-11-12) -------------------
+      {
+      const { heartFight, ringAngle, TURN, SECTORS, SHADE, BLADE, HANDS } = await import('/src/raid/heart.ts');
+      const { burstFloor, BURST_RINGS } = await import('/src/arenas/sunburst.ts');
+      const { bandFits } = await import('/src/raid/types.ts');
+      const { RunUpgrades } = await import('/src/raid/upgrades.ts');
+      const radOf = (x, z) => Math.hypot(x - H.x, z - H.z);
+      const angOf = (x, z) => Math.atan2(x - H.x, z - H.z);
+      const turnOf = (from, to) => Math.atan2(Math.sin(to - from), Math.cos(to - from));
+      const me = () => a.caster.group.position;
+      const heal = () => { d.playerHp = d.playerMax; };
+      const RAD = Math.PI / 180;
+      /** What the brain sees when it aims: `n` heroes standing. */
+      const aimCtx = (seed, n = 7, step = 0) => ({ boss: H, ring: H, target: { x: 0, z: 13 }, step, seed, heroes: Array.from({ length: n }, (_, i) => ({ side: i, x: 0, z: 13 })), rayStop: () => 1, cover: () => [] });
+
+      // The gate by band: what a smaller party never sees.
+      party(5);
+      check('band: the Heart knows the band it is tuned for', def.band, 5, 0);
+      yes('band: Take the Blade is for 20 or more, The Ring of Hands for 40', !bandFits(def, def.moves.blade) && !bandFits(def, def.moves.hands));
+      party(10);
+      d.boss.brain.phase = 2;
+      yes('band: at 10 the brain leaves both out of its lists', !d.boss.brain.listOf(true).includes('blade') && !d.boss.brain.listOf(true).includes('hands'));
+      party(20);
+      yes('band: at 20 Take the Blade fits, The Ring of Hands does not', def.band === 20 && bandFits(def, def.moves.blade) && !bandFits(def, def.moves.hands));
+      d.boss.brain.phase = 1;
+      yes('band: and the brain has the blade in its list', d.boss.brain.listOf(true).includes('blade') && !d.boss.brain.listOf(true).includes('hands'));
+      party(40);
+      yes('band: at 40 both fit', bandFits(def, def.moves.blade) && bandFits(def, def.moves.hands));
+      d.boss.brain.phase = 2;
+      yes('band: its great mechanics take turns: the blade first', d.boss.brain.listOf(true).includes('blade') && !d.boss.brain.listOf(true).includes('hands'));
+      // The blade begins (the brain's aim says so): neither is in its lists until it is over and a breath has passed; then the ring.
+      def.moves.blade.aim(aimCtx(1));
+      step(BLADE.lasts + 5);
+      yes('band: while one is in the air, and for a breath after, neither comes', !d.boss.brain.listOf(true).includes('blade') && !d.boss.brain.listOf(true).includes('hands'));
+      step(12);
+      yes('band: then The Ring of Hands has its turn', d.boss.brain.listOf(true).includes('hands') && !d.boss.brain.listOf(true).includes('blade'));
+      yes('party phases: The Rings Turn opens with the rings, and the floor turns as soon as it may', def.phases[1].opener === 'rings' && def.phases[1].moves.includes('turn') && def.moves.turn.due === 0);
+      yes('party phases: Noon Falls opens with the crust falling, the Heartbeat next', def.phases[2].opener === 'crust' && def.phases[2].moves.includes('heartbeat'));
+      yes('party phases: every move\'s name passes the hub (letters only)', Object.keys(def.moves).every((id) => /^[a-z]{1,16}$/.test(id)));
+
+      // The floor turns: three rings, the inner one stands, the middle and the outer one turn against each other and carry.
+      party(10);
+      place(0, 16.5);
+      const tc = cast('turn', { x: H.x, z: H.z });
+      step(0.05);
+      const warmT = heartFight.warm, sense = heartFight.sense;
+      yes('turn: the floor turns from its cast on', heartFight.turning === true && Math.abs(sense) === 1);
+      check('turn: it warns 5 s first', warmT, TURN.warn, 0.001);
+      step(warmT - 0.3);
+      yes('turn: nothing moves while it warns', burstFloor.mid === 0 && burstFloor.out === 0 && Math.abs(me().x) < 1e-6 && Math.abs(me().z - 16.5) < 1e-6);
+      step(0.3 + TURN.spin + 4);
+      check('turn: the middle ring stands where the rule of the time since the cast says', burstFloor.mid, ringAngle(sense * TURN.mid * RAD, since(tc.id), warmT), 1e-9);
+      check('turn: the outer ring too', burstFloor.out, ringAngle(-sense * TURN.out * RAD, since(tc.id), warmT), 1e-9);
+      yes('turn: the outer ring turns against the middle one', Math.sign(burstFloor.mid) === sense && Math.sign(burstFloor.out) === -sense);
+      check('turn: at speed the middle ring makes 9 degrees a second', (ringAngle(TURN.mid * RAD, 20, 5) - ringAngle(TURN.mid * RAD, 19, 5)) / RAD, 9, 1e-9);
+      check('turn: and the outer one 6', (ringAngle(TURN.out * RAD, 20, 5) - ringAngle(TURN.out * RAD, 19, 5)) / RAD, 6, 1e-9);
+      check('turn: a hero on the middle ring is carried round with it', turnOf(0, angOf(me().x, me().z)), burstFloor.mid, 0.002);
+      check('turn: and stays as far from the Heart', radOf(me().x, me().z), 9.5, 0.01);
+      let q1 = polar(40, 15);
+      const o0 = burstFloor.out;
+      place(q1.x, q1.z);
+      step(3);
+      check('turn: a hero on the outer ring goes the other way', turnOf(40 * RAD, angOf(me().x, me().z)), burstFloor.out - o0, 0.002);
+      place(0, 11);
+      step(2);
+      yes('turn: the inner ring stands', Math.abs(me().x) < 1e-6 && Math.abs(me().z - 11) < 1e-6);
+      q1 = burstAt(1, 25);
+      place(q1.x, q1.z);
+      step(2);
+      yes('turn: and so do the rays, with the lock spots and the fallen armillary', Math.abs(me().x - q1.x) < 1e-6 && Math.abs(me().z - q1.z) < 1e-6);
+      // To be carried is no walk: Hold Still finds a hero on a turning ring standing.
+      place(0, 16.5);
+      heal();
+      sc = cast('stillb', { x: H.x, z: H.z });
+      step(0.05);
+      const from0 = { x: me().x, z: me().z };
+      toBeat(sc.id, 0, -0.3);
+      yes('turn: a hero standing on a ring is carried through a beat', Math.hypot(me().x - from0.x, me().z - from0.z) > 3);
+      check('turn: to be carried is no walk: the beat costs it nothing', lost(), 0);
+      heal();
+      toBeat(sc.id, 1, 0.5);
+      walkFor(1);
+      check('turn: walking on a ring through a beat still burns', lost(), 0.12);
+      // The beams of The Rings Turn turn against the floor.
+      const rb = [0, 1].map((i) => cast('rings', { step: i, x: H.x, z: H.z }));
+      step(0.05);
+      const rbT = rb.map((x) => live(x.id).played.threats[0]);
+      const wayOf = (th) => Math.sign(turnOf(beamAt(th, th.at + 1) * RAD, beamAt(th, th.at + 2) * RAD));
+      yes('turn: the beams turn against the floor: the first against the middle ring, the second against the outer', wayOf(rbT[0]) === -sense && wayOf(rbT[1]) === sense);
+      const again = cast('turn', { x: H.x, z: H.z, seed: 99 });
+      step(0.5);
+      yes('turn: cast again (a brain that took the fight over), it does nothing', !live(again.id) && heartFight.sense === sense && Math.abs(burstFloor.mid - ringAngle(sense * TURN.mid * RAD, since(tc.id), warmT)) < 1e-9);
+
+      // The crust falls: the rings stop when the brain says, each on an eighth of a turn.
+      const stopAim = def.moves.crust.aim(aimCtx(5));
+      check('crust: the brain names when the rings begin to stop, 1.5 s ahead on the floor\'s own clock', stopAim.x - heartFight.clock, TURN.lead, 0.02);
+      const stopX = +stopAim.x.toFixed(3);
+      cast('crust', { x: stopX, z: 0 });
+      step(0.05);
+      yes('crust: from its cast on a Heartbeat takes a sector', heartFight.crust === true && heartFight.stopAt === stopX);
+      yes('crust: the rings rest within 8 s, and take at least 3 s over it', heartFight.restAt - stopX <= TURN.rest + 1e-9 && heartFight.restAt - stopX >= TURN.brake - 1e-9);
+      d.boss.brain.phase = 2;
+      yes('crust: the Heartbeat waits until they rest', !d.boss.brain.listOf(true).includes('heartbeat'));
+      yes('crust: until they rest the brain says the floor still turns', def.moves.heartbeat.aim(aimCtx(3)).flag === true);
+      step(heartFight.restAt - heartFight.clock + 0.2);
+      const eighths = (v) => Math.abs(v / (Math.PI / 4) - Math.round(v / (Math.PI / 4)));
+      yes('crust: each ring rests on an eighth of a turn', eighths(burstFloor.mid) < 1e-6 && eighths(burstFloor.out) < 1e-6);
+      yes('crust: then the Heartbeat is in its list again', d.boss.brain.listOf(true).includes('heartbeat'));
+      place(0, 16.5);
+      step(2);
+      yes('crust: and carries nobody any more', Math.abs(me().x) < 1e-6 && Math.abs(me().z - 16.5) < 1e-6);
+
+      // After each Heartbeat a sector glows and falls: the brain's pick, from the cast's seed.
+      const picks = Array.from({ length: 200 }, (_, k) => -def.moves.heartbeat.aim(aimCtx(k + 1)).z - 1);
+      yes('crust: the brain names a sector in the Heartbeat\'s cast, and how many heroes stand', def.moves.heartbeat.aim(aimCtx(3)).x === 7 && picks.every((k) => k >= 0 && k <= 7));
+      yes('crust: any ray but the north one, with the way out', !picks.includes(4) && new Set(picks).size === 7);
+      yes('crust: the same seed, the same sector', def.moves.heartbeat.aim(aimCtx(3)).z === def.moves.heartbeat.aim(aimCtx(3)).z);
+      yes('crust: the floor rests, so the plates fall before the spurs', def.moves.heartbeat.aim(aimCtx(3)).flag === undefined);
+      q0 = burstAt(2, 28);
+      place(q0.x, q0.z);
+      pbc = cast('heartbeat', { x: 7, z: -3, dir: 0 });
+      step(0.05);
+      php = live(pbc.id);
+      pat = php.played.threats[0].at;
+      const fallT = php.played.threats.find((th) => th.hits && th.at > pat);
+      check('crust: the sector goes 9 s after the beat', fallT.at - pat, SECTORS.warn, 0.001);
+      step(pat - since(pbc.id) - 0.2);
+      yes('crust: it does not glow before the beat', burstFloor.cracked(2) === 0);
+      step(0.2 + 4.5);
+      check('crust: it glows along its cracks from the beat on, more as it nears', burstFloor.cracked(2), 0.5, 0.02);
+      yes('crust: an AI sees that ray as danger, and no other', d.boss.script.danger(q0.x, q0.z, 1) && !d.boss.script.danger(burstAt(3, 28).x, burstAt(3, 28).z, 1));
+      const arc2 = def.place.obstacles[2];
+      yes('crust: its piece of cover still stands', a.obstacles.includes(arc2));
+      heal();
+      step(fallT.at - since(pbc.id) + 0.1);
+      yes('crust: the sector is gone', burstFloor.gone(2) && burstFloor.fallen === 1 && burstFloor.lost(q0.x, q0.z));
+      check('crust: standing on it as it goes costs 40 %', lost(), SECTORS.share + SECTORS.burn, 0.002);
+      yes('crust: its piece of cover went with it', !a.obstacles.includes(arc2));
+      heal();
+      step(2.05);
+      check('crust: what is gone burns each second', lost(), 2 * SECTORS.burn, 0.002);
+      heal();
+      q0 = polar(112.5, 15);
+      place(q0.x, q0.z);
+      step(1.2);
+      check('crust: a spoke of crust to each spur\'s nose stays', lost(), 0);
+      const lostAt = (q) => burstFloor.lost(q.x, q.z);
+      yes('crust: the inner ring and the other rays stay', !burstFloor.lost(0, 12) && !lostAt(burstAt(1, 25)) && !lostAt(burstAt(3, 25)) && !lostAt(burstAt(2, 6)));
+      yes('crust: a sector is its ray and its slice of the well', lostAt(burstAt(2, 10)) && lostAt(burstAt(2, 33, 5)) && lostAt(burstAt(2, 14, -3)) && !lostAt(burstAt(2, 12, 4)));
+      // The rings' rows of spots: only in rays that stand, and lost with their ray.
+      const rr = [0, 1, 2].map((i) => cast('rings', { step: i, x: H.x, z: H.z }));
+      step(0.05);
+      const rayOfSpot = (o) => Math.round(deg(o.x, o.z) / 45) % 8;
+      const rowRays = rr.map((x) => rayOfSpot(live(x.id).played.objectives[0]));
+      yes('crust: the rings\' rows stand in three rays that still stand', !rowRays.includes(2) && new Set(rowRays).size === 3);
+      const row0 = live(rr[0].id).played.objectives[0];
+      step(live(rr[0].id).played.threats[0].at + 0.2);
+      yes('crust: such a row can be held', row0.can() === true);
+      burstFloor.fall(rowRays[0], true);
+      yes('crust: and is lost when its ray falls', row0.can() === false);
+      for (const k of [0, 1, 3, 5, 6, 7]) burstFloor.fall(k, true);
+      yes('crust: six sectors at most: then the Heartbeat takes none', burstFloor.fallen >= SECTORS.most && def.moves.heartbeat.aim(aimCtx(9)).z === 0);
+      d.boss.script.clear();
+      yes('crust: when the fight ends what fell crusts over, to be walked on', burstFloor.fallen === 0 && !lostAt(burstAt(2, 28)));
+      party(10);
+      yes('crust: a new fight has the floor whole and still, and its cover back', burstFloor.mid === 0 && burstFloor.out === 0 && !heartFight.turning && !heartFight.crust && a.obstacles.includes(arc2));
+      cast('crust', { x: 0, z: 0 });
+      step(0.05);
+      yes('crust: on a floor that never turned (one hit past the second phase) it simply begins', heartFight.crust && !heartFight.turning && heartFight.stopAt === Infinity);
+
+      // Shade the Heart together (10 or more): a plate for every five heroes standing, and a plate left lying costs everyone.
+      const platesFor = (b, x) => { party(b); const hb = cast('heartbeat', { x, z: 0 }); step(0.05); return live(hb.id).played; };
+      check('shade: a plate for every five heroes standing: 7 stand, 2 plates', platesFor(10, 7).objectives.length, 2, 0);
+      check('shade: 23 stand, 5 plates', platesFor(30, 23).objectives.length, 5, 0);
+      check('shade: 40 stand, 8 plates, one before each spur', platesFor(40, 40).objectives.length, 8, 0);
+      check('shade: 3 stand, one plate', platesFor(10, 3).objectives.length, 1, 0);
+      const five = platesFor(5, 4);
+      yes('shade: a party of five has its one plate, simply cover: a plate left lying costs nothing more', five.objectives.length === 1 && !five.threats.some((th) => th.tally));
+      party(10);
+      pbc = cast('heartbeat', { x: 10, z: 0, dir: 100 * RAD });
+      step(1.05);
+      d.boss.script.done(pbc.id, 0, 1);
+      heal();
+      q0 = polar(112.5, 15.5);
+      place(q0.x, q0.z);
+      step(live(pbc.id).played.threats[0].at - since(pbc.id) + 0.3);
+      check('shade: one plate of two left lying costs everyone 8 %, sheltered or not', lost(), SHADE.leak, 0.002);
+      party(40);
+      pbc = cast('heartbeat', { x: 40, z: 0 });
+      step(1.05);
+      heal();
+      place(0, 27);
+      step(live(pbc.id).played.threats[0].at - since(pbc.id) + 0.3);
+      check('shade: all eight left lying: the beat, and 32 % more at most', lost(), 0.4 + SHADE.most, 0.002);
+      // On a floor that still turns the plates fall on the inner ring, which stands.
+      party(10);
+      cast('turn', { x: H.x, z: H.z });
+      step(8);
+      yes('shade: the brain says when the floor turns', def.moves.heartbeat.aim(aimCtx(3)).flag === true && def.moves.heartbeat.aim(aimCtx(3)).z === 0);
+      pbc = cast('heartbeat', { x: 10, z: 0, dir: 100 * RAD, flag: true });
+      step(1.05);
+      php = live(pbc.id);
+      check('shade: then a plate falls 4.9 m out, on the ring that stands', radOf(php.played.objectives[0].x, php.played.objectives[0].z), SHADE.innerOut, 0.001);
+      d.boss.script.done(pbc.id, 0, 1);
+      d.boss.script.done(pbc.id, 1, 1);
+      heal();
+      q0 = polar(112.5, 5.6);
+      place(q0.x, q0.z);
+      step(php.played.threats[0].at - since(pbc.id) + 0.3);
+      check('shade: and its pocket is on that ring too', lost(), 0);
+
+      // Take the Blade (20 or more).
+      party(20, { upgrades: new RunUpgrades() });
+      place(0, 20);
+      const bc = cast('blade', { x: H.x, z: H.z });
+      step(0.05);
+      const bl = live(bc.id).played;
+      step(BLADE.land + 0.1);
+      const blades = [0, 1].map((k) => bl.objectives.find((o) => o.part === k * 10));
+      yes('blade: its two blades stand in the floor 5.2 m from it, across from each other', blades.every((o) => Math.abs(radOf(o.x, o.z) - BLADE.out) < 0.01)
+        && Math.abs(Math.abs(turnOf(angOf(blades[0].x, blades[0].z), angOf(blades[1].x, blades[1].z))) - Math.PI) < 0.01);
+      yes('blade: the body shows them out of its hands, standing in the floor', HEART_LIVE.blades.every((k) => k.out === 1 && Math.abs(k.y - (2.2 * BLADE.stands - 0.5)) < 1e-9));
+      yes('blade: both can be taken', blades.every((o) => o.can()) && d.boss.script.goldSpots().length >= 2);
+      const walk0 = vfx.heroMode.speedBonus;
+      place(blades[0].x, blades[0].z);
+      step(0.1);
+      yes('blade: walking onto one takes it', blades[0].done === true && heartFight.carriers.has(0));
+      check('blade: its carrier\'s hits on the Heart count twice', d.boss.upgrades.dealtMul(false), BLADE.might, 0);
+      yes('blade: and it walks slower', vfx.heroMode.speedBonus < walk0);
+      yes('blade: one hero, one blade', blades[1].can() === false);
+      check('blade: the Heart\'s aim goes to a carrier', def.choose({ heroes: [{ side: 3, x: 0, z: 9 }, { side: 0, x: 0, z: 20 }], boss: H, time: 0, when: () => 0 }), 0, 0);
+      // A lance of light at the carrier: the brain aims it, and it ends on the first hero in its line.
+      const lanceAim = (heroes) => def.moves.blade.aim({ ...aimCtx(4242, 0, 1), heroes });
+      let la = lanceAim([{ side: 0, x: 0, z: 20 }, { side: 1, x: 6, z: 12 }]);
+      yes('blade: with nobody in its line the lance ends on the carrier', la.target === 0 && la.x === 0 && la.z === 20 && !la.flag);
+      la = lanceAim([{ side: 0, x: 0, z: 20 }, { side: 1, x: 0.4, z: 14 }, { side: 2, x: -0.5, z: 17 }]);
+      yes('blade: a hero standing in its line stops it: the one nearest the Heart', la.target === 1 && la.x === 0.4 && la.z === 14);
+      place(0, 20);
+      heal();
+      cast('blade', { step: 1, x: 0.4, z: 14, dir: 0 });
+      step(BLADE.warn + 0.3);
+      check('blade: behind a friend who stands in the lance, the carrier takes nothing', lost(), 0);
+      yes('blade: and keeps the blade', heartFight.carriers.has(0));
+      heal();
+      cast('blade', { step: 1, x: 0, z: 20, dir: 0 });
+      step(BLADE.warn + 0.3);
+      check('blade: a lance that reaches the carrier costs it 35 %', lost(), BLADE.hit, 0.002);
+      yes('blade: and knocks the blade from its hands', !heartFight.carriers.has(0) && d.boss.upgrades.dealtMul(false) === 1 && vfx.heroMode.speedBonus === walk0);
+      const second = bl.objectives.find((o) => o.part === 1);
+      yes('blade: it lies where the lance was aimed, for another', Math.abs(second.x) < 0.01 && Math.abs(second.z - 20) < 0.01 && Math.abs(HEART_LIVE.blades[0].y - (2.2 * BLADE.stands - 0.5)) < 1e-9 && Math.abs(HEART_LIVE.blades[0].z - 20) < 0.01);
+      place(0, 20);
+      step(0.2);
+      yes('blade: who dropped it can not take it again at once', !heartFight.carriers.has(0));
+      // A partner takes the other and falls: its own screen says so, and the blade lies there for another.
+      d.boss.script.done(bc.id, 10, 1);
+      yes('blade: a partner takes the other', heartFight.carriers.has(1) && blades[1].done === true);
+      d.boss.script.done(bc.id, 110, 1);
+      step(0.1);
+      yes('blade: its carrier fell: it lies there again', !heartFight.carriers.has(1) && bl.objectives.find((o) => o.part === 11).can() === true);
+      step(BLADE.again);
+      place(0, 20);
+      step(0.1);
+      yes('blade: after 3 s the first can take one again', heartFight.carriers.has(0));
+      step(BLADE.burn);
+      yes('blade: a blade is spent after 12 s in heroes\' hands', !heartFight.carriers.has(0) && d.boss.upgrades.dealtMul(false) === 1);
+      yes('blade: with no carrier standing the lance does not come', lanceAim([{ side: 0, x: 0, z: 20 }]).flag === true);
+      step(BLADE.lasts - since(bc.id) + 2);
+      yes('blade: at the end the blades are back in its hands', HEART_LIVE.blades.every((k) => k.out === 0) && !live(bc.id));
+      yes('blade: while they are out it does only what needs no blade', ['sweep', 'fall', 'heartbeat'].every((m) => !def.moves.blade.holds.only.includes(m)));
+      // The lance stops at cover, and costs who stands in its way less.
+      party(20);
+      q0 = burstAt(2, 27, 3.4);
+      place(q0.x, q0.z);
+      check('blade: behind the fallen armillary\'s piece the lance does not reach', take(() => cast('blade', { step: 1, x: q0.x, z: q0.z }), BLADE.warn + 0.3), 0);
+      q0 = burstAt(2, 20, 3.4);
+      place(q0.x, q0.z);
+      check('blade: a hero who is no carrier pays 15 % for standing in it', take(() => cast('blade', { step: 1, x: q0.x, z: q0.z }), BLADE.warn + 0.3), BLADE.block, 0.002);
+
+      // The Ring of Hands (40).
+      party(40);
+      place(0, 25);
+      let hc = cast('hands', { x: 32, z: 0 });
+      step(0.05);
+      let hp = live(hc.id).played;
+      check('hands: a gold spot for every hero standing', hp.objectives.length, 32, 0);
+      yes('hands: all on the inner ring of the floor, which neither turns nor falls', hp.objectives.every((o) => radOf(o.x, o.z) + HANDS.radius < BURST_RINGS.inner));
+      const nearest = (list) => { let m = Infinity; for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) m = Math.min(m, Math.hypot(list[i].x - list[j].x, list[i].z - list[j].z)); return m; };
+      yes('hands: no two spots overlap', nearest(hp.objectives) >= 2 * HANDS.radius);
+      const labels = [], relabel0 = d.boss.hud.relabel;
+      d.boss.hud.relabel = (text) => { labels.push(text); return relabel0.call(d.boss.hud, text); };
+      place(hp.objectives[0].x, hp.objectives[0].z);
+      step(HANDS.hold + 0.2);
+      yes('hands: holding a spot a second makes it this hero\'s', hp.objectives[0].done === true);
+      yes('hands: one hero, one spot', hp.objectives[1].can() === false);
+      for (let i = 1; i < 25; i++) d.boss.script.done(hc.id, i, i);
+      yes('hands: the count is on the cast bar', labels.at(-1) === 'The Ring of Hands · 25 of 26');
+      const kn0 = d.boss.stats.kneels;
+      heal();
+      d.boss.script.done(hc.id, 25, 25);
+      step(0.2);
+      yes('hands: four in five held: the Heart is stunned, it kneels', d.boss.stats.kneels === kn0 + 1);
+      step(HANDS.seconds);
+      check('hands: and nobody is burnt', lost(), 0);
+      d.boss.hud.relabel = relabel0;
+      party(40);
+      place(0, 25);
+      hc = cast('hands', { x: 32, z: 0 });
+      step(0.05);
+      for (let i = 0; i < 25; i++) d.boss.script.done(hc.id, i, i + 1);
+      const kn1 = d.boss.stats.kneels;
+      heal();
+      step(HANDS.seconds + 0.5);
+      check('hands: one short when it closes: a broken ring burns everyone', lost(), HANDS.fail, 0.002);
+      yes('hands: and the Heart does not kneel', d.boss.stats.kneels === kn1);
+      party(40);
+      hc = cast('hands', { x: 40, z: 0 });
+      step(0.05);
+      hp = live(hc.id).played;
+      yes('hands: forty spots for forty, two rings deep, none overlapping', hp.objectives.length === 40 && nearest(hp.objectives) >= 2 * HANDS.radius && hp.objectives.every((o) => radOf(o.x, o.z) + HANDS.radius < BURST_RINGS.inner));
+      yes('hands: it does nothing else meanwhile', def.moves.hands.holds.only.length === 0);
+
+      // The brain itself, through the phases: the floor turns, the crust falls, a Heartbeat takes a sector.
+      d.startBoss({ def, link: new LocalLink(def), seed: 'heart-flow', mode: 'play', band: 10 });
+      a.placeFoe(d.foe, new V(H.x, 0, H.z));
+      const alive = (secs) => { for (let i = 0; i < secs * 4; i++) { heal(); step(0.25); } };
+      alive(1);
+      d.boss.link.damage(d.boss.link.maxHp * 0.36);
+      alive(9);
+      yes('flow: as The Rings Turn begins the brain turns the floor', heartFight.turning === true && d.boss.stats.phases === 1);
+      alive(10);
+      yes('flow: and it moves', Math.abs(burstFloor.mid) > 0.5 && Math.abs(burstFloor.out) > 0.3);
+      d.boss.link.damage(d.boss.link.maxHp * 0.33);
+      alive(5);
+      yes('flow: as Noon Falls begins the crust falls, and the rings begin to stop', d.boss.stats.phases === 2 && heartFight.crust === true && heartFight.stopAt < Infinity);
+      alive(31);
+      yes('flow: the first Heartbeat of Noon Falls takes a sector with it', burstFloor.fallen === 1);
+
+      // The room for two has none of it.
+      fresh();
+      const st2 = cast('turn', { x: H.x, z: H.z }), sk2 = cast('crust', { x: 0, z: 0 });
+      step(0.2);
+      yes('for two: the floor neither turns nor falls', !heartFight.turning && !heartFight.crust && !live(st2.id) && !live(sk2.id) && def.band === 2);
+      yes('for two: its phases are as they were', def.phases[1].opener === 'rings' && def.phases[2].opener === 'heartbeat' && !def.phases[1].moves.includes('turn'));
+      }
 
       // Back to the room for two: nothing of the party's stays.
       fresh();

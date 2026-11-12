@@ -241,6 +241,18 @@ export interface PlayContext {
   breakCover(index: number, dir: number): void;
   /** The words on the cast bar while it fills change (The Four Hours: which arms still stand open). */
   label(text: string): void;
+  /**
+   * This screen's hero is carried to where `to` says, from where it stands (the Heart's floor that turns): the world's carry, so
+   * it is no walk of its own (`BossWorld.walked`). `to` is a rule for any spot, the same on every screen; nothing, and it stays.
+   * A fallen hero is left where it lies.
+   */
+  carry(to: (x: number, z: number) => { x: number; z: number } | null): void;
+  /** This screen's hero has fallen: for what it carried, which lies there for another (the Heart's blade). */
+  down(): boolean;
+  /** This screen's hero's hits on the boss count this many times (1: as they are): what it carries makes it hit harder. */
+  might(times: number): void;
+  /** Words across the screen for `seconds`: a mechanic the whole raid must hear of. */
+  banner(text: string, seconds: number): void;
 }
 
 /** A boss's add as a cast asks for it. Its HP is per screen: each screen's hits come off on both, and the first to see it die says so. */

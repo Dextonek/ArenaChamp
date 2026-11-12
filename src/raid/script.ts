@@ -81,7 +81,7 @@ export class BossScript {
   readonly show: ShowFx;
   private ctx: PlayContext;
 
-  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash' | 'guard'> & Partial<Pick<PlayContext, 'label'>>, tier = 1) {
+  constructor(private def: BossDef, private world: BossWorld, private link: RaidLink, extra: Pick<PlayContext, 'flash' | 'guard'> & Partial<Pick<PlayContext, 'label' | 'might'>>, tier = 1) {
     this.show = new ShowFx(world.camera);
     this.group.add(this.sparks.points, this.glows.group, this.show.group);
     const pace = raidTierFactor(tier);
@@ -128,6 +128,14 @@ export class BossScript {
       shake: (amount) => world.shake(amount),
       breakCover: (index, dir) => world.breakCover(index, dir),
       label: extra.label ?? (() => {}),
+      carry: (to) => {
+        if (world.down()) return;
+        const me = world.me(), at = to(me.x, me.z);
+        if (at && (at.x !== me.x || at.z !== me.z)) world.carryMe(at.x - me.x, at.z - me.z);
+      },
+      down: () => world.down(),
+      might: extra.might ?? (() => {}),
+      banner: (text, seconds) => world.banner(text, seconds),
     };
   }
 
