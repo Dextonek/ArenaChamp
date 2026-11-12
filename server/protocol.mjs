@@ -2,7 +2,7 @@
 // seed with no server field, so a tab left open from an older build would see different cover and events from its
 // opponent. Raise this by hand whenever a deploy changes those rules or the messages: the hub then tells older tabs to
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
-export const PROTOCOL = 8;
+export const PROTOCOL = 9;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -14,7 +14,7 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
  */
 export const RAID_BOSSES = {
   sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16, partyRing: 46 },
-  ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
+  ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16, partyRing: 30 },
   heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12 },
 };
 
@@ -26,7 +26,7 @@ export const RAID_BOSSES = {
  */
 export const RAID_REWARDS = {
   sun: { noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true } },
-  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 } },
+  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 }, eruptw: { kneel: true }, erupte: { kneel: true } },
   heart: { lock: { stagger: 40 } },
 };
 
@@ -39,6 +39,17 @@ export const RAID_SHRINE_S = 15;
  * @param {string} id @param {number} band
  */
 export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? RAID_BOSSES[id].ring : RAID_BOSSES[id].ring);
+
+/**
+ * Twin Flames (pipeline/designs/raid-party.md): a party fights Ash and Ember both at once, one on each side of a wall of fire.
+ * The hub keeps two HP pools, each half the band's HP, and half the gauge each. Their health must fall together: when their HP
+ * shares are more than `gapOn` apart, the one with more grows furious, until they are within `gapOff` again. Boss 0 is Ash
+ * (the west half), boss 1 Ember (the east). The second boss's cast ids start at `ids`, so a cast's id says whose it is.
+ */
+export const RAID_TWIN = { boss: 'ash', gapOn: 0.12, gapOff: 0.06, ids: 1000000 };
+
+/** Whether this boss at this band is fought as two at once. @param {string} id @param {number} band */
+export const raidTwin = (id, band) => id === RAID_TWIN.boss && band > 2;
 
 /** How far Noonfall's hall reaches, where a run waits between its fights (m). */
 export const RAID_HALL_RING = 13;

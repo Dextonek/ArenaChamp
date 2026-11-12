@@ -1,3 +1,4 @@
+import { RAID_TWIN } from '../../server/protocol.mjs';
 import { TOUCH } from '../touch';
 import type { BossDef } from './types';
 
@@ -7,6 +8,11 @@ import type { BossDef } from './types';
  */
 const BAR = 'linear-gradient(180deg,#f2b84a,#b5651d)';
 const RAGE_BAR = 'linear-gradient(180deg,#ff7a4a,#a8301c)';
+/** Twin Flames: how far apart the two HP shares may be before one grows furious, and where it calms again (points, as the hub has them). */
+const GAP_ON = RAID_TWIN.gapOn * 100, GAP_OFF = RAID_TWIN.gapOff * 100;
+
+/** One of Twin Flames' two bars. */
+interface TwinBar { box: HTMLDivElement; fill: HTMLDivElement; text: HTMLDivElement; key: string }
 
 export class BossHud {
   private root = document.createElement('div');
@@ -33,6 +39,13 @@ export class BossHud {
   private stateLeft = 0;
   private flashV = 0;
   private arrows: HTMLDivElement[] = [];
+  /** Twin Flames: a bar for each of the two, Ash's on the left as he is in the room, and between them how far apart they are. */
+  private twinRow = document.createElement('div');
+  private twinBars: TwinBar[] = [];
+  private twinGap = document.createElement('div');
+  private twinNames: [string, string] = ['', ''];
+  private twinOn = false;
+  private gapKey = '';
 
   constructor() {
     const small = TOUCH || innerWidth < 760;
@@ -62,7 +75,20 @@ export class BossHud {
     this.castFill.style.cssText = 'position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#8a4a18,#e8863a);';
     this.castText.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 ${small ? 11 : 12}px ui-sans-serif,system-ui;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;`;
     this.castBox.append(this.castFill, this.castText);
-    this.root.append(this.name, this.bar, this.gauge, this.castBox);
+    this.twinRow.style.cssText = 'display:none;align-items:stretch;gap:4px;';
+    for (let i = 0; i < 2; i++) {
+      const box = document.createElement('div'), fill = document.createElement('div'), ticks = document.createElement('div'), text = document.createElement('div');
+      box.style.cssText = `position:relative;flex:1 1 0;min-width:0;height:${small ? 14 : 18}px;border-radius:5px;background:#21131a;border:1px solid #6a5a3a;overflow:hidden;box-shadow:0 2px 10px #000a;`;
+      // Each drains toward the wall between them: Ash's from the left, Ember's from the right.
+      fill.style.cssText = `position:absolute;top:0;bottom:0;${i === 0 ? 'right' : 'left'}:0;width:100%;background:${BAR};transition:width 0.12s;`;
+      ticks.style.cssText = 'position:absolute;inset:0;pointer-events:none;';
+      text.style.cssText = `position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 ${small ? 9 : 10}px ui-sans-serif,system-ui;letter-spacing:0.5px;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;`;
+      box.append(fill, ticks, text);
+      this.twinBars.push({ box, fill, text, key: '' });
+    }
+    this.twinGap.style.cssText = `flex:none;display:flex;align-items:center;justify-content:center;min-width:${small ? 46 : 78}px;padding:0 4px;border-radius:5px;background:rgba(8,6,10,0.85);border:1px solid #6a5a3a;font:800 ${small ? 9 : 11}px ui-sans-serif,system-ui;letter-spacing:0.5px;white-space:nowrap;`;
+    this.twinRow.append(this.twinBars[0].box, this.twinGap, this.twinBars[1].box);
+    this.root.append(this.name, this.bar, this.twinRow, this.gauge, this.castBox);
     this.flashEl.style.cssText = 'position:fixed;inset:0;z-index:7;pointer-events:none;opacity:0;';
     document.body.append(this.root, this.flashEl);
   }
@@ -84,7 +110,66 @@ export class BossHud {
     this.pillarsShown = -1;
     this.pillars.style.display = 'none';
     this.fill.style.background = BAR;
+    this.twinOn = false;
+    this.twinRow.style.display = 'none';
+    this.bar.style.display = '';
     this.root.style.display = 'flex';
+  }
+
+  /**
+   * Twin Flames: two bars in place of the one, with each one's phases marked (`marks`: the HP shares where they begin), and
+   * between them how far apart their health is. Call after `show`.
+   */
+  showTwin(names: [string, string], marks: number[]) {
+    this.twinOn = true;
+    this.twinNames = names;
+    (this.name.firstChild as HTMLElement).textContent = `Twin Flames · ${names[0]} and ${names[1]}`;
+    this.bar.style.display = 'none';
+    this.twinRow.style.display = 'flex';
+    this.gapKey = '';
+    this.twinBars.forEach((b, i) => {
+      b.key = '';
+      (b.box.children[1] as HTMLElement).replaceChildren(...marks.map((at) => {
+        const t = document.createElement('div');
+        t.style.cssText = `position:absolute;top:0;bottom:0;${i === 0 ? 'right' : 'left'}:${at * 100}%;width:2px;background:#0009;box-shadow:0 0 0 1px #ffd27a55;`;
+        return t;
+      }));
+    });
+  }
+
+  /**
+   * Twin Flames, each frame: both bars and the gap. `mine`: which of them is this screen's enemy (its bar has the bright edge).
+   * The gap turns amber past where a fury ends and red past where one begins; the arrow points at the one with more health, the
+   * one that grows furious if it is left behind.
+   */
+  setTwin(o: { mine: number; hp: [number, number]; max: [number, number]; furious: number; dead: [boolean, boolean] }) {
+    if (!this.twinOn) return;
+    const share = o.hp.map((hp, i) => (o.dead[i] ? 0 : Math.max(0, hp / (o.max[i] || 1))));
+    this.twinBars.forEach((b, i) => {
+      const pct = Math.ceil(share[i] * 100), fury = o.furious === i && !o.dead[i];
+      const key = `${pct}|${fury}|${o.dead[i]}|${o.mine === i}`;
+      if (key === b.key) return;
+      b.key = key;
+      b.fill.style.width = `${share[i] * 100}%`;
+      b.fill.style.background = fury ? RAGE_BAR : BAR;
+      b.box.style.borderColor = o.dead[i] ? '#3a3440' : o.mine === i ? '#ffd27a' : '#6a5a3a';
+      b.box.style.opacity = o.dead[i] ? '0.55' : '1';
+      b.text.textContent = o.dead[i] ? `${this.twinNames[i]} has fallen` : `${this.twinNames[i].toUpperCase()}${fury ? ' · FURIOUS' : ''} ${pct}%`;
+    });
+    const one = o.dead[0] || o.dead[1];
+    const gap = Math.round(Math.abs(share[0] - share[1]) * 100), ahead = share[0] > share[1] ? 0 : 1;
+    const key = one ? 'one' : `${gap}|${ahead}`;
+    if (key === this.gapKey) return;
+    this.gapKey = key;
+    if (one) {
+      this.twinGap.textContent = 'WALL OUT';
+      this.twinGap.style.color = '#ff9a6a';
+      return;
+    }
+    const small = TOUCH || innerWidth < 760;
+    this.twinGap.textContent = gap === 0 ? 'LEVEL' : `${ahead === 0 ? '◀ ' : ''}${gap}${small ? '' : ' APART'}${ahead === 1 ? ' ▶' : ''}`;
+    this.twinGap.style.color = gap > GAP_ON ? '#ff6a4a' : gap > GAP_OFF ? '#ffb060' : '#cdbfa6';
+    this.twinGap.title = `Their health is ${gap} points apart. Over ${GAP_ON} and the one with more grows furious, until they are within ${GAP_OFF} again.`;
   }
 
   /** How many of the room's pillars still stand, of `total`: pale blue pips, red once one is left. */

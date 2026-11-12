@@ -4,6 +4,8 @@
 //   eval(await (await fetch('/pipeline/tools/raid-check.js')).text());
 //   await _raidCheck()    // { ok, failed: [...], rows: [...] }
 //   await _raidHeart()    // the same for the Heart of Noon: its moves, Hold Still, Lock a ring and Shade the heart, alone and with a partner
+//   await _raidTwin()     // Twin Flames, a party's Ash and Ember both at once: what one screen can check of it
+//   await _raidTwin()     // Twin Flames, a party's Ash and Ember both at once: what one screen can check of it
 (() => {
   // Every hero's four spells and basic attack replayed as a partner: nothing in them may touch this screen's hero or the boss.
   //   _raidPartners(['Lyra', 'Bram'])  in the background; _raidPartners.result() when done
@@ -1453,5 +1455,372 @@
     }
     delete performance.now;
     return { ok: !failed.length, failed, rows };
+  };
+
+  // Twin Flames (a party's Ash and Ember, both at once, a wall of fire between them): what one screen can check, with the local
+  // link deciding what the hub decides (src/raid/twin.ts). The room and the wall, each boss's moves in its own half, the other
+  // boss's as a look only, the furious rule, a fall on either side of the wall, each half's stage and vent, the autopilot.
+  //   await _raidTwin()   // { ok, failed, rows }
+  window._raidTwin = async (hero = 'Lyra') => {
+    const d = vfx.duel, a = vfx.arena;
+    const { twinFlames } = await import('/src/raid/ashEmber.ts');
+    const { TwinLocalLink, FURY_HIT, FURY_GAP } = await import('/src/raid/twin.ts');
+    const { TWIN_WALL, TWIN_PILLARS, TWIN_LAYOUT, TWIN_R, twinPillarCount } = await import('/src/arenas/twinpit.ts');
+    const { RAID_TWIN, raidHp, raidStaggerMax } = await import('/server/protocol.mjs');
+    const V = a.caster.group.position.constructor;
+    const rows = [], failed = [];
+    let simMs = performance.now();
+    performance.now = () => simMs;
+    const step = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { simMs += 1000 / 60; vfx.step(1 / 60); } };
+    const check = (name, got, want, tol = 0.012) => {
+      const pass = Math.abs(got - want) <= tol;
+      rows.push(`${pass ? 'ok  ' : 'FAIL'} ${name}: ${+got.toFixed(3)} (want ${want})`);
+      if (!pass) failed.push(name);
+    };
+    const yes = (name, v) => check(name, v ? 1 : 0, 1, 0);
+    let seq = 500, link;
+    /** A new fight on this screen: its hero in `half` (0 west with Ash, 1 east with Ember), both brains quiet. */
+    const fresh = (half = 0, band = 10) => {
+      vfx.view.paused = true;
+      if (!d.on) vfx.setDuel(true, 'play');
+      vfx.heroPickCtrl.setValue(hero);
+      d.holdStart = false;
+      d.autopilot = false;
+      const def = twinFlames(half);
+      link = new TwinLocalLink(def, band, half);
+      d.startBoss({ def, link, seed: 'twin', mode: 'play', band, twin: link.setup });
+      d.boss.brain.pause = 1e9;
+      a.obstacles = a.obstacles.slice();
+      step(0.05);
+      return link;
+    };
+    const me = () => a.caster.group.position;
+    const place = (x, z) => a.caster.group.position.set(x, 0, z);
+    const boss = (x, z) => a.placeFoe(d.foe, new V(x, 0, z));
+    /** A cast as a brain would send it: `which` 0 Ash, 1 Ember; from where that boss stands unless said. */
+    const cast = (move, which, o = {}) => {
+      const mine = d.boss.which === which, b = mine ? d.foe.group.position : d.twin.enemy.group.position;
+      const x = o.x ?? me().x, z = o.z ?? me().z;
+      const c = { id: ++seq + which * RAID_TWIN.ids, move, step: o.step ?? 0, x, z, fx: o.fx ?? b.x, fz: o.fz ?? b.z, dir: o.dir ?? Math.atan2(x - b.x, z - b.z), seed: o.seed ?? 777, target: 0, flag: o.flag, alone: o.alone, which };
+      link.on.cast(c);
+      return c;
+    };
+    const lost = () => (d.playerMax - d.playerHp) / d.playerMax;
+    const take = (fn, s) => { d.playerHp = d.playerMax; fn(); step(s); return lost(); };
+    const scriptOf = (which) => d.boss.twin.scripts[which];
+    const POOL = Math.round(raidHp('ash', 10, 1) / 2);
+    try {
+      // The room and who stands where.
+      fresh(0);
+      check('room: the floor reaches 30 m', a.bounds.r, TWIN_R, 0);
+      yes('room: the wall of fire is cover that never breaks', a.obstacles.includes(TWIN_WALL) && TWIN_WALL.fixed === true && d.wallHp === null);
+      check('room: a party tuned for 10 has six pillars', TWIN_PILLARS.length, 6, 0);
+      yes('room: 5 for 5, 8 for 20, 11 for 40', twinPillarCount(5) === 5 && twinPillarCount(20) === 8 && twinPillarCount(40) === 11);
+      yes('room: every pillar is in Ash\'s half, and on the floor', TWIN_LAYOUT.pillars.every(([x, z]) => x < -2.5 && Math.hypot(x, z - 7) < TWIN_R - 2));
+      yes('west: this hero comes in west of the wall, by the south gate', me().x < -1.5 && me().z > 7 + TWIN_R - 8);
+      yes('west: its enemy is Ash, at his place in the west', d.boss.def.name === 'Ash' && d.foe.group.position.x < -5 && d.boss.which === 0);
+      yes('west: Ember is across the wall, drawn only', d.twin.enemy.group.position.x > 5 && a.liveFoes().length === 1);
+      check('each has half the HP of the band', link.maxHp, POOL, 0);
+      check('and half its gauge', link.staggerMax, raidStaggerMax('ash', 10) / 2, 0);
+      fresh(1);
+      yes('east: this hero comes in east of the wall', me().x > 1.5);
+      yes('east: its enemy is Ember, over her vent', d.boss.def.name === 'Ember' && d.foe.group.position.x > 5 && d.boss.which === 1 && d.twin.enemy.group.position.x < -5);
+
+      // The wall: no walking, no sight, no bolt through it; a blow, a carry and a dash end at it.
+      fresh(0);
+      place(-3, 12);
+      for (let i = 0; i < 180; i++) { a.walk(new V(4 / 60, 0, 0)); step(1 / 60); }
+      yes('wall: a hero walking at it stays on its side', me().x < -TWIN_LAYOUT.wallHalf && me().x > -2.2);
+      yes('wall: nobody sees through it', !a.lineOfSight(new V(-3, 0, 12), new V(3, 0, 12)) && a.lineOfSight(new V(-3, 0, 12), new V(-3, 0, 4)));
+      check('wall: a bolt stops at its near face', a.coverStop({ x: -5, z: 12 }, { x: 5, z: 12 }), (5 - TWIN_LAYOUT.wallHalf) / 10, 0.03);
+      place(-1.6, 12);
+      d.boss.script.world.hitMe({ share: 0.01, knock: 6, from: { x: -6, z: 12 }, move: 'test' });
+      step(1.2);
+      yes('wall: a blow that throws a hero 6 m at it leaves it on its side', me().x < -TWIN_LAYOUT.wallHalf);
+      place(-1.6, 12);
+      for (let i = 0; i < 20; i++) { a.carryFigure(a.caster, new V(0.25, 0, 0)); step(1 / 60); }
+      yes('wall: so does a carry', me().x < -TWIN_LAYOUT.wallHalf);
+      place(-2.5, 12);
+      a.moveFigure(a.caster, new V(4, 0, 12), 0.25);
+      step(0.6);
+      yes('wall: and a dash aimed across it ends at the wall', me().x < -TWIN_LAYOUT.wallHalf && me().x > -2);
+      place(-2.5, 12);
+      a.caster.group.position.set(6, 0, 12);
+      step(0.05);
+      yes('wall: whatever puts a hero across it, it is back in its half the next moment', me().x < -TWIN_LAYOUT.wallHalf);
+
+      // Ash's moves in his half hit this hero; Ember's across the wall are a look only.
+      fresh(0);
+      boss(-10, 12);
+      place(-8, 12);
+      check('Ash: his slam costs what it does for two', take(() => cast('slam', 0), 1.7), 0.18);
+      place(-8, 12);
+      check('Ember: her bombs across the wall cost this hero nothing, wherever they are aimed', take(() => cast('bombs', 1), 1.9), 0);
+      d.playerHp = d.playerMax;
+      cast('bombs', 1, { x: -8, z: 12 });
+      step(0.5);
+      yes('Ember: and are no danger to an AI here', !d.boss.script.danger(-8 + 2.7, 12, 3) && scriptOf(1).active.length === 1);
+      yes('Ember: her zones are cut off at the wall, on her side', scriptOf(1).clip().nx === 1 && scriptOf(0).clip().nx === -1);
+      step(2);
+      // A zone of Ash's that reaches across the wall: drawn to the wall, and the ring is the party's (4.5 to 14 m).
+      boss(-3, 12);
+      place(-3, 22.2);
+      check('Ash: Drag Under burns from 4.5 to 14 m from him', take(() => cast('drag', 0), 2.3), 0.16);
+      step(1);
+      place(-3, 31.5);
+      check('Ash: and nothing past 14 m (it has dragged this hero 3 m nearer by then)', take(() => cast('drag', 0), 2.3), 0);
+      // Her stage is hers: this screen's boss stays open to hits, and her adds are out of this hero's reach.
+      const es = cast('erupte', 1, { x: TWIN_LAYOUT.hold[1].x, z: TWIN_LAYOUT.hold[1].z });
+      step(0.5);
+      const adds = a.summons.alive('opponent');
+      yes('Ember\'s Eruption: Ash can still be hurt here', d.bossGuard === false);
+      yes('Ember\'s Eruption: her three Coal Hearts stand in her half, and the autopilot leaves them', adds.length === 3 && adds.every((u) => u.pos.x > 1) && adds.every((u) => !d.reachable(u.pos)));
+      yes('Ember\'s Eruption: nothing of it is this hero\'s to do', d.boss.script.objectiveGoal(me().x, me().z) === null && d.boss.script.goldSpots().length === 0);
+      const hp0 = a.hpOf(d.foe);
+      a.hit(d.foe, { damage: 200, knock: 0 });
+      yes('Ember\'s Eruption: a hit on Ash lands', hp0 - a.hpOf(d.foe) >= 200);
+      void es;
+
+      // Ash's Charge: it ends at the wall of fire, and at a pillar as in the pit for two.
+      fresh(0);
+      const charging = (tx, tz) => {
+        const m = d.boss.def.moves.charge, world = d.boss.script.world, b = d.foe.group.position;
+        place(tx, tz);
+        const send = (n) => {
+          const aim = m.aim({ boss: { x: b.x, z: b.z }, ring: { x: b.x, z: b.z }, target: { x: me().x, z: me().z }, step: n, seed: 1, rayStop: (ax, az, bx, bz) => world.rayStop(ax, az, bx, bz), cover: () => world.cover() });
+          const c = { id: ++seq, move: 'charge', step: n, x: aim.x, z: aim.z, fx: b.x, fz: b.z, dir: aim.dir, seed: 1, target: 0, flag: aim.flag, which: 0 };
+          link.on.cast(c);
+          m.act(world, c);
+          return c;
+        };
+        send(0);
+        return { go: () => send(1) };
+      };
+      boss(-9, 20);
+      d.playerHp = d.playerMax;
+      let ch = charging(-4, 20);
+      step(2.9);
+      yes('charge: in the open, an AI must hide', d.boss.script.mustHide && !d.boss.script.hidden(-4, 20));
+      let run = ch.go();
+      step(1);
+      check('charge: in his way, it kills', lost(), 1);
+      yes('charge: he stops at the wall of fire, and breaks nothing', !run.flag && run.x < -TWIN_LAYOUT.wallHalf - 1 && d.foe.group.position.x < -TWIN_LAYOUT.wallHalf && a.obstacles.length === TWIN_PILLARS.length + 1);
+      fresh(0);
+      const P0 = TWIN_PILLARS[4], from = { x: -9, z: 17 };
+      boss(from.x, from.z);
+      const toP = Math.hypot(P0.ax - from.x, P0.az - from.z), ux = (P0.ax - from.x) / toP, uz = (P0.az - from.z) / toP;
+      d.playerHp = d.playerMax;
+      ch = charging(P0.ax + ux * 2.5, P0.az + uz * 2.5);
+      step(2.9);
+      yes('charge: behind a pillar, an AI may stay', d.boss.script.hidden(me().x, me().z));
+      run = ch.go();
+      step(1);
+      check('charge: behind a pillar, it costs nothing', lost(), 0);
+      yes('charge: he crashes into it, it breaks, and he kneels', run.flag === true && a.obstacles.length === TWIN_PILLARS.length && !!a.statusOf(d.foe).stunned);
+
+      // Their health must fall together.
+      fresh(0);
+      link.hurt(0, POOL * 0.13);
+      yes('13 points ahead of Ember: she grows furious, not Ash', d.boss.twins.furious === 1 && d.boss.script.rage === 1);
+      link.hurt(1, POOL * 0.26);
+      yes('Ember 13 points ahead: now Ash is furious', d.boss.twins.furious === 0);
+      check('furious: his hits cost half as much again', d.boss.script.rage, FURY_HIT, 0);
+      check('furious: his moves come faster', d.boss.brain.rage, FURY_GAP, 0);
+      boss(-10, 12);
+      place(-8, 12);
+      check('furious: his slam costs 27 %', take(() => cast('slam', 0), 1.7), 0.18 * FURY_HIT);
+      link.hurt(0, POOL * 0.08);
+      yes('within 6 points again: he calms', d.boss.twins.furious === -1 && d.boss.script.rage === 1 && d.boss.brain.rage === 1);
+      link.hurt(0, POOL * 0.05);
+      yes('between 6 and 12 points nobody is furious', d.boss.twins.furious === -1);
+      // The clock's enrage is the stronger one, and the two never multiply.
+      d.boss.fought = 1e6;
+      d.countdown = -1;
+      step(0.1);
+      link.hurt(1, POOL * 0.3);
+      yes('past the enrage time and furious: the stronger counts, not both', d.boss.twins.furious === 0 && d.boss.script.rage === 2 && d.boss.brain.rage === 0.5);
+
+      // The other falls first: the wall goes out, this screen's boss is furious to its end, and the fight goes on.
+      fresh(0);
+      link.hurt(1, POOL);
+      step(0.2);
+      yes('Ember falls: the wall of fire goes out', !a.obstacles.includes(TWIN_WALL) && a.lineOfSight(new V(-3, 0, 12), new V(3, 0, 12)));
+      yes('Ember falls: Ash is furious, and the fight goes on', d.boss.twins.dead[1] && d.boss.twins.furious === 0 && d.boss.script.rage === FURY_HIT && d.boss.which === 0 && !d.over);
+      yes('Ember falls: her zones are gone, and no zone is cut off now', scriptOf(1).active.length === 0 && scriptOf(0).clip() === null);
+      place(-3, 12);
+      for (let i = 0; i < 180; i++) { a.walk(new V(4 / 60, 0, 0)); step(1 / 60); }
+      yes('the wall out: a hero walks across', me().x > 2);
+      link.hurt(0, POOL);
+      step(0.2);
+      yes('both dead: the fight is won', d.over === 'win');
+
+      // This screen's boss falls first: the other becomes its enemy.
+      fresh(0);
+      const ember = d.twin.enemy.group.position.clone();
+      link.hurt(1, POOL * 0.2);
+      link.hurt(0, POOL);
+      step(0.2);
+      yes('Ash falls: Ember is this screen\'s enemy now', d.boss.def.name === 'Ember' && d.boss.which === 1 && link.which === 1 && d.opponentKit.name === 'Ember' && !d.over);
+      yes('Ash falls: she stands where she stood, with the HP she had', Math.hypot(d.foe.group.position.x - ember.x, d.foe.group.position.z - ember.z) < 0.5 && Math.abs(a.hpOf(d.foe) - POOL * 0.8) < 2);
+      yes('Ash falls: he lies where he fell, drawn only', d.twin.fallT >= 0 && d.twin.enemy.group.position.x < -5 && a.liveFoes().length === 1);
+      const before = link.pools[1].hp;
+      a.hit(d.foe, { damage: 150, knock: 0 });
+      step(0.2);
+      yes('Ash falls: this hero\'s hits come off Ember', before - link.pools[1].hp >= 150 && link.pools[0].hp === 0);
+      place(8, 20);
+      check('Ash falls: her moves hit this hero now, and she is furious', take(() => cast('bombs', 1, { x: 8, z: 17.3, dir: Math.PI / 2 }), 1.9), 0.12 * FURY_HIT);
+      yes('Ash falls: no brain is left on this screen', d.boss.brain === null && link.brain === false);
+      d.boss.takeBrain(1);
+      yes('the hub hands this screen her brain: its casts go on in her own range of ids', d.boss.brain !== null && d.boss.brain.seq >= RAID_TWIN.ids + 1000 && d.boss.brain.def.name === 'Ember');
+      d.boss.brain.pause = 1e9;
+      link.hurt(1, POOL);
+      step(0.2);
+      yes('then she falls: won', d.over === 'win');
+
+      // Each has its own Eruption, in its own half.
+      fresh(0);
+      link.hurt(0, POOL * 0.51);
+      yes('Ash at half his own HP: his Eruption is due, and he can\'t be hurt', d.boss.stats.phases === 2 && d.bossGuard === true && d.boss.twins.phase[1] === 0);
+      const er = cast('eruptw', 0, { x: TWIN_LAYOUT.hold[0].x, z: TWIN_LAYOUT.hold[0].z });
+      step(0.5);
+      const mine = a.summons.alive('opponent');
+      yes('his three Coal Hearts stand in his half, round his place', mine.length === 3 && mine.every((u) => u.pos.x < -1 && Math.abs(Math.hypot(u.pos.x - TWIN_LAYOUT.hold[0].x, u.pos.z - TWIN_LAYOUT.hold[0].z) - 6.5) < 0.2));
+      for (const u of a.summons.alive('opponent')) a.hit(u.figure, { damage: 99999, knock: 0 });
+      step(0.2);
+      yes('put out: he kneels, and can be hurt again', d.boss.stats.kneels === 1 && d.bossGuard === false);
+      void er;
+
+      // Together: the lava rises for the whole room once either is at a third, and either vent holds it back for all.
+      fresh(0);
+      link.hurt(1, POOL * 0.68);
+      check('Ember at a third of her HP: the lava starts on this screen too', d.shiftOffset + d.hazardClock, 45, 0.3);
+      const before0 = d.shiftOffset;
+      const sv = cast('seale', 1, { x: TWIN_LAYOUT.hold[1].x, z: TWIN_LAYOUT.hold[1].z });
+      step(0.3);
+      yes('her vent is not this hero\'s to seal', d.boss.script.objectiveGoal(me().x, me().z) === null);
+      link.on.done(sv.id, 0, 3);
+      check('her half seals it: the lava waits 20 s longer here too', before0 - d.shiftOffset, 20, 0.01);
+      const sw = cast('sealw', 0, { x: TWIN_LAYOUT.hold[0].x, z: TWIN_LAYOUT.hold[0].z });
+      boss(-22, 20);
+      place(TWIN_LAYOUT.hold[0].x, TWIN_LAYOUT.hold[0].z);
+      const g0 = link.pools[0].gauge;
+      step(4.3);
+      check('this hero seals Ash\'s: 20 s more', before0 - d.shiftOffset, 40, 0.01);
+      check('and a mechanic fills half of what it fills for one boss', link.pools[0].gauge - g0, 40 * 5 / 2, 0.01);
+      void sw;
+
+      // Falling Star for a party: 45 % shared by whoever of her half stands under it.
+      fresh(1);
+      boss(14, 7);
+      place(8, 20);
+      link.stood = (id, part, inside) => link.on.stood(id, part, inside ? 3 : 0);
+      check('Falling Star: three under it pay 15 % each', take(() => cast('star', 1), 3.6), 0.15);
+      step(3);
+      place(8, 20);
+      d.playerHp = d.playerMax;
+      cast('star', 1);
+      place(20, 20);
+      step(3.6);
+      check('Falling Star: nobody under it costs her half 45 %', lost(), 0.45);
+      // Her wave grows from her great vent over her own half, and stops at the wall.
+      step(3);
+      place(4, 7);
+      d.playerHp = d.playerMax;
+      const wv = cast('wave', 1, { x: TWIN_LAYOUT.hold[1].x, z: TWIN_LAYOUT.hold[1].z, seed: 5 });
+      const th = scriptOf(1).active.find((x) => x.cast.id === wv.id).played.threats[0];
+      yes('Lava Wave: from her vent, far enough to reach the corners of her half', th.shape.x === TWIN_LAYOUT.hold[1].x && th.shape.radius >= Math.hypot(14, TWIN_R));
+
+      // The two brains never share an id, and each sees only its own half.
+      fresh(1);
+      const sent = [], on = link.on.cast;
+      link.on.cast = (c) => { sent.push(c); on(c); };
+      d.boss.brain.pause = 0;
+      d.countdown = -1;
+      for (let i = 0; i < 12; i++) { step(1); d.playerHp = d.playerMax; }
+      yes('Ember\'s brain numbers its casts from a million, and says they are hers', sent.length > 1 && sent.every((c) => c.id > RAID_TWIN.ids && c.which === 1) && scriptOf(0).active.length === 0);
+      yes('and only her own moves', sent.every((c) => ['fan', 'bombs', 'lanterns', 'marked'].includes(c.move)));
+
+      // The autopilot fights on its own side and never tries to cross.
+      fresh(0);
+      d.boss.brain.pause = 0;
+      d.autopilot = true;
+      d.countdown = -1;
+      let east = -Infinity, stuck = 0, last = me().clone();
+      for (let i = 0; i < 40 && !d.over; i++) {
+        step(1);
+        east = Math.max(east, me().x);
+        if (me().distanceTo(last) < 0.05 && me().x > -TWIN_LAYOUT.wallHalf - 0.8) stuck++;
+        last = me().clone();
+        d.playerHp = d.playerMax;
+      }
+      yes('autopilot: 40 s of fighting, never across the wall', east < -TWIN_LAYOUT.wallHalf);
+      yes('autopilot: and never standing pressed against it', stuck < 3);
+      yes('autopilot: it hurt Ash, and only Ash', link.pools[0].hp < POOL && link.pools[1].hp === POOL);
+    } catch (e) {
+      failed.push(String(e?.stack ?? e));
+    }
+    delete performance.now;
+    d.stop();
+    return { ok: !failed.length, failed, rows };
+  };
+
+  // Twin Flames: every hero's four spells and basic attack replayed as a partner in the OTHER half, where they aim at the other
+  // boss's stand-in (a figure with no body, `Duel.foeFor`). Nothing in them may throw, or touch this screen's hero or its boss.
+  //   await _raidTwinPartners()            // every hero; { ok, n, rows, errors }
+  //   await _raidTwinPartners(['Vesper'])
+  window._raidTwinPartners = async (names) => {
+    const d = vfx.duel, a = vfx.arena;
+    const { twinFlames } = await import('/src/raid/ashEmber.ts');
+    const { TwinLocalLink } = await import('/src/raid/twin.ts');
+    const { HERO_KITS } = await import('/src/heroes.ts');
+    const out = { ok: false, n: 0, rows: [], errors: [] };
+    let simMs = performance.now();
+    performance.now = () => simMs;
+    const step = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { simMs += 1000 / 60; vfx.step(1 / 60); } };
+    const logError = console.error;
+    let now = '';
+    console.error = (...x) => { if (out.errors.length < 30) out.errors.push(`${now}: ${x.map((v) => String(v?.stack ?? v)).join(' ').slice(0, 300)}`); logError(...x); };
+    const onError = (e) => { if (out.errors.length < 30) out.errors.push(`${now}: ERR ${e.message}`); };
+    window.addEventListener('error', onError);
+    vfx.view.paused = true;
+    if (!d.on) vfx.setDuel(true, 'play');
+    d.holdStart = false;
+    try {
+      for (const kit of HERO_KITS.filter((k) => !names || names.includes(k.name))) {
+        // A screen never replays a spell its own hero has: another hero for this screen.
+        vfx.heroPickCtrl.setValue(kit.name === 'Lyra' ? 'Bram' : 'Lyra');
+        for (let slot = 0; slot < 5; slot++) {
+          now = `${kit.name} slot ${slot}`;
+          const def = twinFlames(0), link = new TwinLocalLink(def, 10, 0);
+          d.startBoss({ def, link, seed: 'twin-partners', mode: 'play', name: 'me', party: [{ side: 1, kit, name: 'partner' }], band: 10, twin: { ...link.setup, halves: [0, 1] } });
+          d.boss.brain.pause = 1e9;
+          const me = a.caster.group.position, ember = d.twin.enemy.group.position;
+          me.set(-8, 0, 12);
+          d.partnerMove(1, ember.x - 5, ember.z + 4, 0, undefined);
+          step(0.3);
+          const p = d.party.get(1), before = { hp: d.playerHp, boss: a.hpOf(d.foe), x: me.x, z: me.z };
+          if (slot < 4) {
+            const spell = kit.spells[slot];
+            d.partnerCast(1, { id: 1, slot, x: ember.x, z: ember.z, fx: p.pos.x, fz: p.pos.z, enemy: true, yaw: Math.atan2(ember.x - p.pos.x, ember.z - p.pos.z), bend: spell.aim === 'arc' ? 0.6 : undefined });
+          } else d.partnerAttack(1);
+          step(3.5);
+          const st = a.statusOf(a.caster);
+          const row = {
+            hp: d.playerHp - before.hp, boss: a.hpOf(d.foe) - before.boss, moved: Math.hypot(me.x - before.x, me.z - before.z),
+            status: !!st && (st.stunned || st.cannotMove || st.cannotCast || st.speedMul !== 1), buffs: st?.activeBuffs().length ?? 0,
+          };
+          out.n++;
+          if (row.hp || row.boss || row.moved > 0.001 || row.status || row.buffs) out.rows.push({ name: kit.name, slot, ...row });
+        }
+      }
+    } catch (e) {
+      out.errors.push(`${now}: ${String(e?.stack ?? e)}`);
+    }
+    delete performance.now;
+    console.error = logError;
+    window.removeEventListener('error', onError);
+    d.stop();
+    out.ok = !out.rows.length && !out.errors.length;
+    return out;
   };
 })();

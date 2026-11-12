@@ -88,6 +88,7 @@ by the hub online and by `LocalLink` alone. Only the screen that runs the brain 
 | Ash, in the ring | Hide behind a pillar | His Charge comes every 14 s he is in the ring and kills whoever it reaches. Get one of the four pillars between you and him | He crashes into it and it breaks; he kneels 5 s (a stun: the gauge keeps what it had) |
 | Ember, any | Burn your own | Carry Marked onto whichever of them is in the ring. The brain says in the landing cast whether the boss stood under it | 4 % of max HP and +40 on the gauge |
 | Together | Seal the vent | The vent opens at 6 s, then again 25 s later. Stand on it for 4 s, hits or not, casting stops it | The lava waits 20 s longer, and +40 on the gauge |
+| Ash and Ember, a party | Twin Flames | Both fight at once, one each side of a wall of fire that splits the room and the party. Bring their health down together: both bars and the gap show on every screen | Nothing: more than 12 points apart and the one with more health grows furious until they are within 6 again (below) |
 | Heart, every phase | Hold Still | Its heart beats in runs: white light runs in along the floor's rings and lands on them on each beat, and a white ring closes round your own hero. Stop walking before each beat (let go of the stick, or S); casting is fine. Between beats, run | Nothing: a beat burns only who is walking, 12 % |
 | Heart, The Rings Turn on | Lock a ring | Each ring's beam has a gold spot on the rim. Hold it 2 s, hits or not, casting stops it | That ring's beam goes out for 8 s, then warns 0.8 s and burns again; +40 on the gauge, once per ring |
 | Heart, Noon Falls | Shade the heart | Each Heartbeat throws three crust plates out as gold spots 6.8 m from it. Hold one 3 s and it stands up on the heart's side of its spot (cover, `addStone`), for both screens. Only cover between you and the heart saves you from the beat | No 40 % from the beat |
@@ -206,7 +207,8 @@ Everything else follows from these, and they are why two screens work without re
 | `fight.ts` | `BossFight`: ties the rest together. `Duel.startBoss` builds it, and `update` calls it where a duel calls its AI |
 | `brain.ts` | `BossBrain`: who it aims at, which move comes next, where it walks. Runs on one screen. Its rolls are seeded |
 | `script.ts` | `BossScript`: plays casts, draws their zones, lands them, decides the hits on this screen's hero. Several run at once, in both colours |
-| `sunWarden.ts`, `ashEmber.ts`, `heart.ts` | The bosses: numbers, phases, moves |
+| `sunWarden.ts`, `ashEmber.ts`, `heart.ts` | The bosses: numbers, phases, moves. `ashEmber.ts` makes Ash's and Ember's moves for a room (`movesFor`): the pit for two, and a party's pit for Twin Flames (`twinFlames`) |
+| `twin.ts` | Twin Flames: the ghost world and link that let one screen play the other boss's script as a look, the furious numbers, and `TwinLocalLink`, the two HP pools on one screen for the check tool |
 | `stage.ts` | `stageMove`: a boss's stage, its adds and their shots, from a few numbers. Both bosses have one |
 | `fxShow.ts` | The big moments' effects: `ShowFx`, one per fight (`PlayContext.show`), plays pooled one-shot pieces on its own clock: a shockwave over the floor, a rising column, shards, a meteor, a lava arc, rays along the floor, a charge-up, a beam's flash, and `triumph` for a mechanic done right. `Shell` (a stage's barrier, lit at its rim) and `RageAura` (the red heat round an enraged boss) |
 | `bodies/` | Each boss's look: the parts of its own model, posed by code. `adds.ts`: the adds' looks |
@@ -367,6 +369,65 @@ pillars are down"; 2026-11-09, after six outlasted most fights: "fewer pillars (
 **From the design:** Drag Under's second half, "walk out in time", has no zone of its own: it's whatever move comes next. Vent Bombs fall round
 the target and not from the vent. Ash's Charge only comes from the ring, so he has Cinder Rock for the rim.
 
+### Twin Flames: a party fights both at once
+
+User, 2026-11-11 (card A1 of `pipeline/designs/raid-mechanics.html`): "For a party they both fight at once, one on each side of a wall
+of fire that splits the room and the party. Their health must fall together: if one is far ahead, the other grows furious." Built
+2026-11-12; pictures `docs/bosses/twin-*.jpg`. It is for a party (band over 2: `raidTwin` in `server/protocol.mjs`). For one or two
+they stay the tag team above, and nothing new goes over the wire.
+
+| What | How |
+|---|---|
+| The room | `src/arenas/twinpit.ts`, drawn in code like the pit for two; every layout number is in `TWIN_LAYOUT`. 30 m to the rim (`RAID_BOSSES.ash.partyRing`), split from the south gate to the far side by a wall of fire 1.8 m thick: an obstacle that never breaks (`Obstacle.fixed`), so it stops walking, sight and bolts. West: Ash, with four pillars round him and one more for every three heroes of his half (5 at band 5, 6 at 10, 8 at 20, 11 at 40). East: Ember over her great vent, six small vents round it, no cover |
+| Sides | The wall stands from the start. The hub deals the players present west, east, west... in the order of their seats as the fight loads (`dealHalves`), so neither half can be empty; the host is in the west. Each half comes in at the south gate on its own side, in rows of four. Nobody chooses a side yet |
+| One enemy a screen | The boss in this hero's half is `Duel.foe`. The other is a body the duel only draws (`rimFigure`, `Duel.twin`), walked from its brain's `boss_move`, with its own bar |
+| Two of everything | Each has its own def (`twinFlames(which)`: 0 Ash, 1 Ember), half the band's HP, its phases at 66, 50 and 33 % of its own HP, half the band's gauge, its own kneel, brain and watchdog. A brain runs on a screen of its own half. A half everyone has left has no brain until the wall is out |
+| Two scripts a screen | `src/raid/twin.ts`. Each boss's casts play in its own `BossScript`. The other boss's script is a **ghost**: it draws everything, cut off at the wall (`TelegraphLayer.clip`), but this hero stands in none of it, takes no spot of it, reports nothing, and none of its side effects (a stage's guard, a drag, a hint, a flash) reach this screen's own fight. So the engine's rule holds: one hero, one enemy, and bodies it only draws |
+| Health falls together | The hub: when their HP shares are more than 12 points apart the one with **more** health is furious (`boss_rage`), until they are within 6 (`RAID_TWIN`). Furious: its hits cost 1.5 times as much and the quiet between its moves is 0.6 of what it was (`FURY_HIT`, `FURY_GAP`); red heat round it, a red bar, a banner on every screen. The clock's enrage (2:50: 2 times, 0.5) is the stronger, and the two never multiply |
+| The bars | Two bars in place of the one, Ash's on the left as he is in the room, each draining toward the middle; this screen's enemy has the bright edge. Between them the gap in points, amber past 6, red past 12, with an arrow at the one with more health (`BossHud.setTwin`) |
+| One falls | `boss_fell`: its moves stop, the wall of fire goes out (the obstacle is gone, the flames fade over 2.5 s), and the other is furious to its end and is everyone's. On the screens of the fallen one the other becomes the enemy (`Duel.twinFell`: its model, spot and HP, as a tag swaps a model); their hits and control go to it, its script stops being a ghost, and the fallen one lies where it stood. The raid is won when both are dead |
+| Their moves | No tag, no rim: both have their own moves all the time. Ash: Ground Slam, Charge, Knuckle Quake, and from 66 % Drag Under. Ember: Fan, Vent Bombs, Lantern Toss, Marked, and from 66 % Lava Wave and Falling Star |
+| The stage | Each has its own Eruption at half of its own HP, at its own place, with its own three Coal Hearts 6.5 m round it, and its own half to erupt over if they still burn. Each half puts out its own; the other boss stays open to hits meanwhile |
+| The vent | In Together each has a vent at its own place, twice, as for two. The lava rises from the rim for the whole room as soon as **either** is in Together, and sealing either vent holds it back 20 s for everyone |
+| A hero stays in its half | A walk and a blow stop at the wall as at any cover. A dash, a blink or a leap would pass cover, so a hero found across the wall or in it is put back at its face (`Duel.holdHalf`). A fallen hero can be got up only from its own half, until the wall is out. The autopilot plans only inside its half (`Duel.reachable`) |
+
+What reaches the whole floor for two, and what it does in a party's pit:
+
+| Move | For two | For a party |
+|---|---|---|
+| Charge | To the rim | To the rim or the wall of fire, whichever comes first (no reward for the wall) |
+| Knuckle Quake, Fan | Lines to the rim, or the first cover | The same; the wall is cover |
+| Drag Under | A ring from 4.5 m to the far rim | From 4.5 to 14 m from him, cut off at the wall |
+| Lava Wave | From the vent over the pit | From Ember's great vent over her half (33 m, at 6.5 m/s instead of 5), cut off at the wall |
+| Falling Star | 30 % shared by who stands under it; 45 % each if nobody does | 45 % shared (three under it: 15 % each); 45 % each if nobody. Counted among her half only |
+| Eruption, failed | 45 % over the whole pit | 45 % over that boss's half |
+| Marked | Carry it onto the one in the ring | Carry it onto Ember |
+| The lava | From the rim in to 12, 10, 8 m | From the rim in to 24, 20, 16 m, both halves alike |
+
+**The messages** (PROTOCOL 9). `which` (0 Ash, 1 Ember) is on a message only in a twin fight; a raid for two and the other bosses send
+and get what they always did.
+
+| Message | With `which` |
+|---|---|
+| `raid_stage` | gains `twin: { half, hp, brain, staggerMax }`: each side's half (0 west, 1 east, -1 gone), each boss's HP and brain, one boss's gauge. `hp`, `brain` and `staggerMax` stay the pair's |
+| `boss_cast`, `boss_move` | From a brain: taken only from the screen that runs **that** boss's brain. Ember's cast ids start at 1,000,000 (`RAID_TWIN.ids`), so the two brains never share one |
+| `boss_damage`, `boss_stagger`, `boss_debuff` | Which boss this hero hit. While the wall stands only its own half's counts; a hit named for one that has fallen is dropped |
+| `boss_reward` | From that boss's brain. A mechanic fills half of what it fills for one boss |
+| `boss_hp`, `boss_phase`, `boss_gauge`, `boss_kneel`, `peer_debuff` | Which boss it is about |
+| `boss_brain`, `brain_moved` | Whose brain moved. The watchdog and a leaver's hand-over pick a screen of the same half |
+| `boss_rage { which, on }` | New: that boss grows furious, or calms |
+| `boss_fell { which }` | New: that boss fell (its last `boss_hp` of 0 comes just before) |
+| `boss_stood`, `revive` | No `which`: a gold zone waits only for the half of whoever reported first, and nobody gets a hero up through the wall |
+
+Measured through the real hub (`python pipeline/tools/party-raid.py <out> --players 6 --seconds 280 --port 5197 --boss ash`): six
+bots, band 10, 17,750 HP each, times on the fight's own clock. Left alone they kept the two within 7 points for three minutes (nobody
+furious until 3:14), had both at half after 1:30, and then each half took close to the full 30 s over its Eruption (three heroes for
+three Coal Hearts of 621 HP). Ash fell at 3:17, 27 s past the enrage, with Ember at 16 %; five of the six were down three seconds
+later, and at 4:02, when the run was stopped, Ember still had 10 %. A half took 78 to 92 HP a second off its boss, 26 to 31 a bot. So
+six at the HP for ten is slow here too, as it is against the Warden. All six screens agreed on both bars within 1.7 % of a bar (a hit
+on its way), nobody was across the standing wall in any sample, no errors. With `--twin --boost 60` the tool steers the fight through
+every moment (one far ahead, level again, one falls, the last one falls) and takes the pictures.
+
 ## The Heart of Noon
 
 `src/raid/heart.ts`. The fallen sun itself. It never walks (`speed` 0): it floats over the middle of its room and turns to whom it looks at.
@@ -457,6 +518,11 @@ coming up through thin seams, brightest in the middle, and Ash's claw marks acro
 stand (their tops at 0.7 m). Out in the lava the fallen sun's shard, the ribs of something that burned, lantern posts on the far side, rocks;
 embers rising.
 
+**The Cinder Pit for a party** (`src/arenas/twinpit.ts`, 2026-11-12). Twin Flames' room: the same black glass floor 30 m to the rim, a
+wall of fire down the middle from the south gate to the far side (a row of flames over a strip of molten floor, a burnt line once it is
+out), Ash's pillars in the west half, Ember's vents with dark stone collars in the east, the pit's props pushed out into a wider lake.
+First-pass, drawn in code; a room built in Blender is to come, and every number of its layout is in `TWIN_LAYOUT`.
+
 **The Sunken Heart, the Heart's own room** (`src/arenas/sunkenHeart.ts`, 2026-11-11). Radius 12, round, no cover of its own: the only cover
 is what the fight raises. A floor of cooled gold crust gone dark bronze, broken into rings of plates round the heart, molten light only in the
 cracks; a basalt lip with gold edges; a molten lake beyond. The keepers' lanterns stand on the lip (basalt posts, gold caps, a caged sun: the
@@ -514,6 +580,21 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - **A screen that takes the brain over during an hour** keeps to its small moves (`BossFight.takeBrain`), but an opener the old
   brain was holding back is lost with it.
 - **A reward rides on the brain's screen.** If that player leaves between a mechanic and its reward, the reward is lost.
+- **Twin Flames was played by bots only,** six of them through the real hub (above). Whether 12 and 6 points, and a furious one at 1.5
+  times, feel right is for a party of people to say. Nobody chooses a side: the hub deals them by seat.
+- **Twin Flames, when one falls:** what the other already has on the floor counts for everyone from that moment, still drawn to where
+  the wall stood. A stage of the other's goes on to its end. After it Ash's Charge reaches Ember's half, which has no pillar.
+- **Twin Flames, the other boss on a screen:** it does not flinch or flash when hit (its hits are another screen's), and a partner's
+  spell replayed at it aims at a stand-in with no body (every hero's spells were replayed at it: no errors). Its Coal Hearts are real
+  units here: a spell that needs no sight could hit them, which changes nothing on their own side. The red heat round this screen's
+  enemy keeps the size of the boss it started with after the other takes its place.
+- **Twin Flames, not checked:** a player leaving, in the browser (on the hub it is: the brain goes to a screen of the same half); more
+  than six screens; what two scripts and the other half's adds cost a phone; tier 2 and up; a gold zone still open at the moment the
+  wall goes out (the hub settles it after its 1.5 s wait).
+- **Zones can be cut off along a line** (`TelegraphLayer.clip` in `src/effects/telegraph.ts`, which spells use too): the fill's shader
+  carries the cut for every zone, set to cut nothing unless a boss's script asks. Spells never set it.
+- **Twin Flames, a half with nobody standing:** its boss has nobody to aim at and waits. A half everyone left can't be hurt until the
+  other falls; it is then furious, at full health.
 - **The first big moment in a session builds its shaders,** as the first fade does: a short pause the first time a stage starts. Not measured on a phone.
 - **The effects' cost was measured on a desktop only:** about 10 ms a frame (simulation and drawing) in a quiet moment, 11 to 14 ms in a stage's call, the flare and the geyser.
 - **An add's HP can differ a little between screens,** by a hit whose message is still on its way. Its death can't: that is an objective.
@@ -561,6 +642,11 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   a lock by this hero and by the partner (paid once), plates raised by both, cover against the beat, and the plates all going at one moment;
   Hold Still: walking and a dash are burnt, standing, a knock, a carry and a stone raised under the hero are not, the rhythm by phase and by the brain's live clock, and standing through a flare and behind a plate (71 rows). `_raidUpgrades()` checks each upgrade's number and
   each tier's. `_raidPartners(names)` replays each hero's spells and attack as a partner and checks nothing touches this screen's hero or the boss.
+  `_raidTwin()` for Twin Flames, with the two HP pools kept on the page (`TwinLocalLink`): the room and the wall (walk, sight, bolt, blow,
+  carry, dash), each boss's moves in its half and the other's as a look only, the Charge at the wall and at a pillar, the furious rule
+  on, off and with the enrage, a fall on either side of the wall, each half's stage and vent, Falling Star, the two brains' ids, and the
+  autopilot staying in its half (72 rows). `_raidTwinPartners()` replays every hero's spells and attack as a partner in the other half,
+  aimed at the other boss's stand-in: no errors, and nothing touches this screen's hero or its boss (200 replays).
 - `pipeline/tools/boss-anim.js`: `_strip(title, setup, plan)` plays a move in a stepped fight and lays frames of it side by side round its
   landing, cropped on the boss and the hero.
 - `pipeline/tools/raid-tool.js`: `_raid(heroes, reps, { level, boss })` runs the autopilot and reports clears, time, damage per second,
@@ -575,3 +661,6 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
   `pipeline/tools/page-shots.py`.
 - `pipeline/tools/heart-holdstill-shots.py`: the Hold Still pictures, from the game page with its HUD, by the browser's own screenshot.
 - `pipeline/tools/online-bot.js`: `_botRoom(hero)` and `_botJoin(hero, code)` play a raid for two in two tabs with bots.
+- `pipeline/tools/party-raid.py`: a party of bots through the real hub in hidden pages. `--boss ash` starts the run at Ash and Ember
+  (Twin Flames for a party); `--twin --boost 60` steers that fight through all its moments and takes its pictures; `--phone` makes the
+  last screen a phone.

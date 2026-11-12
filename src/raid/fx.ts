@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RING } from '../arenas/common';
 import { softDotTexture } from '../effects/common';
+import type { TelegraphClip } from '../effects/telegraph';
 import type { Obstacle } from '../obstacles';
 
 /**
@@ -235,6 +236,9 @@ export class FollowMark {
   }
 }
 
+/** A cut along a line, for a shader: (nx, nz, d), or one that cuts nothing. */
+const clipVector = (clip: TelegraphClip | null) => (clip ? new THREE.Vector3(clip.nx, clip.nz, clip.d) : new THREE.Vector3(0, 0, 1));
+
 const waveVertex = /* glsl */ `
   varying vec2 vP;
   void main() {
@@ -244,8 +248,11 @@ const waveVertex = /* glsl */ `
 `;
 const waveFragment = /* glsl */ `
   uniform float uRadius, uHalf, uGap, uGapHalf, uOpacity;
+  uniform vec2 uAt;
+  uniform vec3 uClip;
   varying vec2 vP;
   void main() {
+    if (dot(vP + uAt, uClip.xy) + uClip.z < 0.0) discard;
     float d = length(vP);
     float band = 1.0 - smoothstep(uHalf * 0.6, uHalf, abs(d - uRadius));
     if (band <= 0.0) discard;
@@ -263,10 +270,14 @@ const waveFragment = /* glsl */ `
 export class WaveRing {
   readonly mesh: THREE.Mesh;
   private mat: THREE.ShaderMaterial;
-  constructor(x: number, z: number, reach: number, gapHalf: number) {
+  /** `clip`: it is drawn only on one side of a line (a wall of fire it stops at). */
+  constructor(x: number, z: number, reach: number, gapHalf: number, clip: TelegraphClip | null = null) {
     this.mat = new THREE.ShaderMaterial({
       vertexShader: waveVertex, fragmentShader: waveFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
-      uniforms: { uRadius: { value: 0 }, uHalf: { value: 0.6 }, uGap: { value: 0 }, uGapHalf: { value: gapHalf }, uOpacity: { value: 0 } },
+      uniforms: {
+        uRadius: { value: 0 }, uHalf: { value: 0.6 }, uGap: { value: 0 }, uGapHalf: { value: gapHalf }, uOpacity: { value: 0 },
+        uAt: { value: new THREE.Vector2(x, z) }, uClip: { value: clipVector(clip) },
+      },
     });
     // The shader reads the mesh's own position, so the ring's middle is its origin.
     this.mesh = new THREE.Mesh(new THREE.CircleGeometry(reach, 96).rotateX(-Math.PI / 2), this.mat);
@@ -361,9 +372,10 @@ const shadowFragment = /* glsl */ `
   uniform float uOpacity, uTime;
   uniform vec2 uCenter;
   uniform float uRadius;
+  uniform vec3 uClip;
   varying vec2 vP;
   void main() {
-    if (distance(vP, uCenter) > uRadius) discard;
+    if (distance(vP, uCenter) > uRadius || dot(vP, uClip.xy) + uClip.z < 0.0) discard;
     float stripes = 0.75 + 0.25 * sin((vP.x + vP.y) * 4.0 + uTime * 3.0);
     gl_FragColor = vec4(uColor, uOpacity * stripes);
   }
@@ -378,12 +390,12 @@ export class ShadowFloor {
   private mat: THREE.ShaderMaterial;
   private geo = new THREE.BufferGeometry();
   private built = -1;
-  constructor(private source: { x: number; z: number }, private cover: () => readonly Obstacle[], color: THREE.ColorRepresentation, radius: number) {
+  constructor(private source: { x: number; z: number }, private cover: () => readonly Obstacle[], color: THREE.ColorRepresentation, radius: number, clip: TelegraphClip | null = null) {
     this.mat = new THREE.ShaderMaterial({
       vertexShader: shadowVertex, fragmentShader: shadowFragment, transparent: true, depthWrite: false, side: THREE.DoubleSide,
       uniforms: {
         uColor: { value: new THREE.Color(color) }, uOpacity: { value: 0 }, uTime: { value: 0 },
-        uCenter: { value: new THREE.Vector2(RING.x, RING.z) }, uRadius: { value: radius },
+        uCenter: { value: new THREE.Vector2(RING.x, RING.z) }, uRadius: { value: radius }, uClip: { value: clipVector(clip) },
       },
     });
     this.mesh = new THREE.Mesh(this.geo, this.mat);

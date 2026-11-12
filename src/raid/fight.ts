@@ -6,11 +6,12 @@ import { BossBrain } from './brain';
 import { RageAura } from './fxShow';
 import { BossHud } from './hud';
 import { Track } from './partner';
-import { raidHp, raidTierFactor } from '../../server/protocol.mjs';
+import { RAID_TWIN, raidHp, raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
 import { FUSE, QUICK_GAP } from './omens';
+import { FURY_GAP, FURY_HIT, type Ghost, ghostLink, ghostWorld, twinClip } from './twin';
 import { BULWARK, CLOSE_CALL, SUN_EATER, type RunUpgrades } from './upgrades';
-import { moveTime, type BossCast, type BossDebuff, type BossDef, type BossWorld, type RaidLink } from './types';
+import { moveTime, type BossCast, type BossDebuff, type BossDef, type BossWorld, type RaidLink, type TwinSetup } from './types';
 
 /** What each hard control is worth to the stagger gauge, per second of it. Blind counts for little. */
 const STAGGER_PER_SECOND: Partial<Record<StatusKind, number>> = { stun: 22, knockup: 26, root: 14, charm: 22, sealed: 22, silence: 12, blind: 8 };
@@ -20,6 +21,8 @@ const SLOW_SHARE = 0.5;
 const SHARED_DEBUFFS: readonly BuffKind[] = ['weaken', 'vulnerable'];
 /** Enraged, every hit on a hero costs this much more: past it, a fight is meant to be nearly lost. */
 const RAGE_HIT = 2;
+/** Enraged, the quiet between moves is this much of what it was (the brain's own default). */
+const RAGE_GAP = 0.5;
 /**
  * A phase that opens with a stage: the boss can't be hurt from the phase's start until the stage's cast comes and says how long. At most
  * this long (s): its pause, a kneel that landed with the phase (the brain waits it out), a message on its way.
@@ -28,12 +31,39 @@ const STAGE_WAIT = 12;
 const spot = new THREE.Vector3();
 
 /**
+ * Twin Flames on this screen (src/raid/twin.ts): both bosses' defs and scripts, which of them is this screen's enemy now, and
+ * what the hub says of each. `stageUntil`: when the other's stage ends on this fight's clock, in case it becomes this screen's.
+ */
+interface Twin {
+  half: number;
+  halves: number[];
+  mine: number;
+  defs: [BossDef, BossDef];
+  scripts: [BossScript, BossScript];
+  ghosts: [Ghost, Ghost];
+  hp: [number, number];
+  max: [number, number];
+  phase: [number, number];
+  gauge: [number, number];
+  dead: [boolean, boolean];
+  furious: number;
+  lastId: [number, number];
+  stageUntil: [number, number];
+  /** The other boss's walk from reports, and the red heat round it when it is furious. */
+  track: Track;
+  aura: RageAura;
+}
+
+/**
  * One boss fight on this screen: it ties the brain (if this screen runs it), the script, the HUD and the link together.
  * `Duel.startBoss` builds it and calls `update` where a duel calls its AI.
  */
 export class BossFight {
   readonly group = new THREE.Group();
-  readonly script: BossScript;
+  /** The script this screen's hero is judged by. Twin Flames: the script of the boss that is this screen's enemy now. */
+  script: BossScript;
+  /** The boss this screen fights. Twin Flames: it becomes the other one's when this one falls. */
+  def: BossDef;
   private brain: BossBrain | null;
   /** The boss's walk from reports, when another screen runs its brain. */
   private track: Track | null;
@@ -71,20 +101,44 @@ export class BossFight {
   private throb = 0;
   /** Long Night: the dark round this hero, over the 3D and under the HUD. */
   private night: HTMLDivElement | null = null;
+  /** Twin Flames: the two of them on this screen. */
+  private twin: Twin | null = null;
+  /** How many times this screen has taken a brain over: each new brain rolls on its own. */
+  private takes = 0;
 
-  constructor(readonly def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null) {
-    this.script = new BossScript(def, world, link, { flash: (color, strength) => hud.flash(color, strength), guard: (s) => this.guard(s) }, tier);
-    this.group.add(this.script.group);
-    this.brain = link.brain ? new BossBrain(def, world, link, seed, tier) : null;
-    // This tier's omens (./omens.ts). Both screens roll the same ones.
-    const omen = (id: Parameters<RunUpgrades['omen']>[0]) => !def.hall && !!upgrades?.omen(id);
-    if (this.brain && omen('quick')) this.brain.quick = QUICK_GAP;
-    this.script.harm = upgrades?.harmMul ?? 1;
-    this.script.molten = omen('molten');
-    // The gold upgrades that act through the zones.
-    if (!def.hall && upgrades?.has('closecall')) this.script.closeCall = () => world.nearMiss(CLOSE_CALL.seconds);
-    if (!def.hall && upgrades?.has('suneater')) this.script.ateSun = () => world.shieldMe(SUN_EATER, 8, '#ffcf4a');
-    if (omen('night')) {
+  constructor(def: BossDef, readonly link: RaidLink, private world: BossWorld, private seed: string, readonly hud: BossHud, private tier = 1, readonly upgrades: RunUpgrades | null = null, setup: TwinSetup | null = null) {
+    this.def = def;
+    const extra = { flash: (color: string, strength: number) => hud.flash(color, strength), guard: (s: number) => this.guard(s) };
+    if (def.twin && setup) {
+      // Twin Flames: a script for each of the two. The one for the boss across the wall is a ghost here (src/raid/twin.ts).
+      const defs = def.twin.pair(), mine = def.twin.which;
+      const ghosts: [Ghost, Ghost] = [{ on: mine !== 0 }, { on: mine !== 1 }];
+      const scripts = defs.map((d, w) => {
+        const ghost = ghosts[w];
+        const s = new BossScript(d, ghostWorld(world, ghost), ghostLink(link, ghost), {
+          flash: (color, strength) => { if (!ghost.on) hud.flash(color, strength); },
+          guard: (seconds) => { if (!ghost.on) this.guard(seconds); },
+        }, tier);
+        // Its zones stop at the wall of fire while it stands.
+        s.clip = () => (world.twin?.wallUp() ? twinClip(d, w) : null);
+        return s;
+      }) as [BossScript, BossScript];
+      const other = defs[1 - mine];
+      this.twin = {
+        half: setup.half, halves: setup.halves, mine, defs, scripts, ghosts,
+        hp: [setup.hp[0], setup.hp[1]], max: [setup.hp[0], setup.hp[1]], phase: [0, 0], gauge: [0, 0], dead: [false, false], furious: -1,
+        lastId: [0, RAID_TWIN.ids], stageUntil: [0, 0], track: new Track(), aura: new RageAura(other.body.radius, other.body.height),
+      };
+      link.which = mine;
+      this.script = scripts[mine];
+      this.group.add(scripts[0].group, scripts[1].group, this.twin.aura.group);
+    } else {
+      this.script = new BossScript(def, world, link, extra, tier);
+      this.group.add(this.script.group);
+    }
+    this.brain = link.brain ? this.newBrain(this.twin ? `${seed}-${this.twin.mine}` : seed, this.twin ? this.twin.mine * RAID_TWIN.ids : 0) : null;
+    this.arm(this.script);
+    if (this.omen('night')) {
       this.night = document.createElement('div');
       this.night.className = 'raid-night';
       this.night.style.cssText = 'position:fixed;inset:0;z-index:1;pointer-events:none;' +
@@ -93,26 +147,29 @@ export class BossFight {
     }
     this.track = link.brain ? null : new Track();
     if (def.enrage) {
-      this.enrageAt = def.enrage * (raidHp(def.id, false, tier) / raidHp(def.id, false, 1)) * (omen('fuse') ? FUSE : 1);
+      this.enrageAt = def.enrage * (raidHp(def.id, false, tier) / raidHp(def.id, false, 1)) * (this.omen('fuse') ? FUSE : 1);
       this.aura = new RageAura(def.body.radius, def.body.height);
       this.group.add(this.aura.group);
     }
     link.on = {
       cast: (c) => this.onCast(c),
-      hp: (hp) => world.setBossHp(hp),
-      phase: (i) => this.onPhase(i),
-      stagger: (v) => hud.setGauge(v / (link.staggerMax ?? def.staggerMax)),
-      kneel: (s) => this.onKneel(s),
-      stood: (id, part, count) => this.script.stood(id, part, count),
-      done: (id, part, side) => this.script.done(id, part, side),
-      addHit: (id, part, amount) => this.script.addHit(id, part, amount),
+      hp: (hp, which) => this.onHp(hp, which),
+      phase: (i, which) => this.onPhase(i, which),
+      stagger: (v, which) => this.onGauge(v, which),
+      kneel: (s, which) => this.onKneel(s, which),
+      stood: (id, part, count) => this.each((s) => s.stood(id, part, count)),
+      done: (id, part, side) => this.each((s) => s.done(id, part, side)),
+      addHit: (id, part, amount) => this.each((s) => s.addHit(id, part, amount)),
       // Never one of the room's own walls, whoever says so.
       wall: (i) => { if (!def.place.obstacles[i]?.fixed) world.breakWall(i); },
       end: (r) => this.end(r),
+      rage: (which, on) => this.onRage(which, on),
+      fell: (which) => this.onFell(which),
     };
     if (!def.hall) {
       hud.show(def);
       hud.setHp(link.maxHp, link.maxHp);
+      if (this.twin) hud.showTwin(this.twin.defs.map((d) => d.name) as [string, string], def.phases.slice(1).map((p) => p.at));
     }
     if (def.gates) {
       const out = def.gates.r ?? (def.place.ring ?? 12) + 1.7, tone = def.id === 'ash' || def.id === 'heart' ? def.id : 'sun';
@@ -127,9 +184,48 @@ export class BossFight {
     }
   }
 
+  /** One of this tier's omens holds (./omens.ts). Both screens roll the same ones. */
+  private omen(id: Parameters<RunUpgrades['omen']>[0]) {
+    return !this.def.hall && !!this.upgrades?.omen(id);
+  }
+
+  /** What acts on this screen's hero through the zones: this tier's omens and the gold upgrades. On the script it is judged by. */
+  private arm(script: BossScript) {
+    const { def, upgrades, world } = this;
+    script.harm = upgrades?.harmMul ?? 1;
+    script.molten = this.omen('molten');
+    if (!def.hall && upgrades?.has('closecall')) script.closeCall = () => world.nearMiss(CLOSE_CALL.seconds);
+    if (!def.hall && upgrades?.has('suneater')) script.ateSun = () => world.shieldMe(SUN_EATER, 8, '#ffcf4a');
+  }
+
+  /**
+   * A brain for this screen's boss. Twin Flames: it sees only the heroes on its own side of the wall of fire, while it stands;
+   * a hero the hub has no half for (it joined no half) counts as there.
+   */
+  private newBrain(seed: string, firstId: number) {
+    const t = this.twin, world = this.world;
+    const mine: BossWorld = t ? { ...world, heroes: () => world.heroes().filter((h) => !world.twin?.wallUp() || (t.halves[h.side] ?? t.mine) === t.mine) } : world;
+    const brain = new BossBrain(this.def, mine, this.link, seed, this.tier, firstId);
+    if (this.omen('quick')) brain.quick = QUICK_GAP;
+    return brain;
+  }
+
+  /** Every script of this fight: one, or Twin Flames' two. */
+  private each(fn: (s: BossScript) => void) {
+    if (this.twin) this.twin.scripts.forEach(fn);
+    else fn(this.script);
+  }
+
   private onCast(c: BossCast) {
-    const move = this.def.moves[c.move];
+    const t = this.twin, w = t ? (c.which === 0 || c.which === 1 ? c.which : t.mine) : 0;
+    const def = t ? t.defs[w] : this.def, move = def.moves[c.move];
     if (!move) return;
+    if (t) {
+      // A cast of one that has fallen was still on its way.
+      if (t.dead[w]) return;
+      t.lastId[w] = Math.max(t.lastId[w], c.id);
+      if (w !== t.mine) return this.otherCast(t, w, c);
+    }
     // A tag team: who is in the ring and who is where, in case this screen has to take the brain over.
     if (c.form !== undefined) {
       this.ringForm = c.form;
@@ -156,7 +252,48 @@ export class BossFight {
     else if (!move.alongside && !move.holds) this.world.pose(move.pose, charge, !!move.big);
   }
 
-  private onPhase(i: number) {
+  /** Twin Flames: a cast of the boss across the wall. Its script plays it as a look, and its body acts it out where it stands. */
+  private otherCast(t: Twin, w: number, c: BossCast) {
+    const move = t.defs[w].moves[c.move], pace = raidTierFactor(this.tier);
+    t.scripts[w].play(c);
+    if (move.body) this.world.actRim(move.body.name, c.step, c.x, c.z, move.body.seconds * pace);
+    if (c.step !== 0 || move.quiet) return;
+    // Its stage: until when it can't be hurt, should it become this screen's enemy meanwhile.
+    if (move.stage) t.stageUntil[w] = this.clock + move.charge * pace + 0.5;
+    if (!move.alongside) this.world.poseRim(move.pose, move.charge * pace, !!move.big);
+  }
+
+  /** The boss's HP from whoever keeps it. Twin Flames: of one of the two. */
+  private onHp(hp: number, which?: number) {
+    const t = this.twin;
+    if (t && (which === 0 || which === 1)) {
+      t.hp[which] = hp;
+      if (which !== t.mine) return;
+    }
+    this.world.setBossHp(hp);
+  }
+
+  private onGauge(value: number, which?: number) {
+    const t = this.twin;
+    if (t && (which === 0 || which === 1)) {
+      t.gauge[which] = value;
+      if (which !== t.mine) return;
+    }
+    this.hud.setGauge(value / (this.link.staggerMax ?? this.def.staggerMax));
+  }
+
+  private onPhase(i: number, which?: number) {
+    const t = this.twin;
+    if (t && (which === 0 || which === 1)) {
+      t.phase[which] = i;
+      // Either of the two in its last phase: the lava rises for the whole room.
+      if (this.def.lateAt === i) this.world.lateNow();
+      if (which !== t.mine) {
+        this.world.twin?.phase(i);
+        if (t.defs[which].moves[t.defs[which].phases[i]?.opener ?? '']?.stage) t.stageUntil[which] = this.clock + STAGE_WAIT;
+        return;
+      }
+    }
     this.stats.phases = i;
     this.brain?.setPhase(i);
     this.world.banner(this.def.phases[i].name, 2.2);
@@ -174,7 +311,14 @@ export class BossFight {
     if (this.def.lateAt === i) this.world.lateNow();
   }
 
-  private onKneel(seconds: number) {
+  private onKneel(seconds: number, which?: number) {
+    const t = this.twin;
+    if (t && (which === 0 || which === 1) && which !== t.mine) {
+      // The one across the wall kneels: its stage, if one was on, is over.
+      t.stageUntil[which] = 0;
+      this.world.twin?.kneel(seconds);
+      return;
+    }
     this.stats.kneels++;
     this.brain?.kneel(seconds);
     this.world.kneel(seconds);
@@ -202,18 +346,112 @@ export class BossFight {
   /** The fight ran past its enrage time: every hit costs more, and the moves come faster. */
   private enrage() {
     this.enraged = true;
-    this.script.rage = RAGE_HIT;
-    this.brain?.enrage();
+    this.rageNow();
     this.hud.setRage(0);
     this.world.banner('ENRAGED', 2.2);
-    this.world.bodyRage(true);
     // It goes up: a red blast off it, over the whole floor.
-    const b = this.world.boss(), show = this.script.show;
-    show.ring(b.x, b.z, { radius: 18, life: 1.3, color: 0xff3018, width: 1.2 });
-    show.column(b.x, b.z, { radius: this.def.body.radius * 1.6, height: this.def.body.height * 2.6, life: 1.4, color: 0xff3a1e });
-    show.burst(b.x, this.def.body.height * 0.6, b.z, 60, 7, 3, 1, 0xff5a2a);
+    this.rageBlast(this.world.boss(), this.def, 1);
     this.hud.flash('rgba(255,40,16,0.9)', 0.45);
     this.world.shake(0.16);
+  }
+
+  /** A red blast off a boss that has just enraged or grown furious. */
+  private rageBlast(b: { x: number; z: number }, def: BossDef, size: number) {
+    const show = this.script.show;
+    show.ring(b.x, b.z, { radius: 18 * size, life: 1.3, color: 0xff3018, width: 1.2 });
+    show.column(b.x, b.z, { radius: def.body.radius * 1.6, height: def.body.height * 2.6 * size, life: 1.4, color: 0xff3a1e });
+    show.burst(b.x, def.body.height * 0.6, b.z, 60, 7, 3, 1, 0xff5a2a);
+  }
+
+  /**
+   * How angry this screen's boss is now, on the script, the brain and its body. Enraged by the clock: the fight's own rule. Twin
+   * Flames: furious, when the hub says so (the other is too far ahead, or it is the last one): milder, and it can pass. The
+   * stronger of the two counts, never both together.
+   */
+  private rageNow() {
+    const t = this.twin, fury = !!t && t.furious === t.mine;
+    this.script.rage = Math.max(this.enraged ? RAGE_HIT : 1, fury ? FURY_HIT : 1);
+    const gap = Math.min(this.enraged ? RAGE_GAP : 1, fury ? FURY_GAP : 1);
+    if (gap < 1) this.brain?.enrage(gap);
+    else this.brain?.calm();
+    this.world.bodyRage(this.enraged || fury);
+    if (t) this.world.twin?.rage(!t.dead[1 - t.mine] && (this.enraged || t.furious === 1 - t.mine));
+  }
+
+  /** Twin Flames: boss `which` grows furious, or calms. */
+  private onRage(which: number, on: boolean) {
+    const t = this.twin;
+    if (!t || (which !== 0 && which !== 1)) return;
+    const was = t.furious;
+    t.furious = on ? which : t.furious === which ? -1 : t.furious;
+    this.rageNow();
+    if (!on || was === which || this.over) return;
+    // Every screen is told: the half that is ahead has to wait for the other.
+    const mine = which === t.mine, other = t.defs[1 - which].name;
+    this.world.banner(t.dead[1 - which] ? `${t.defs[which].name} is furious` : `${t.defs[which].name} grows furious: ${other} is too far ahead`, 2.6, '22px');
+    this.rageBlast(mine ? this.world.boss() : this.world.twin?.at() ?? this.world.boss(), t.defs[which], 0.6);
+    if (mine) {
+      this.hud.flash('rgba(255,40,16,0.9)', 0.3);
+      this.world.shake(0.1);
+    }
+  }
+
+  /**
+   * Twin Flames: boss `which` fell. Its moves stop, the wall of fire goes out, and the other is furious to its end. If the fallen
+   * one was this screen's enemy, the other takes its place: its script is a ghost no longer, and this screen's hits go to it.
+   */
+  private onFell(which: number) {
+    const t = this.twin;
+    if (!t || (which !== 0 && which !== 1) || t.dead[which]) return;
+    const live = 1 - which;
+    t.dead[which] = true;
+    t.hp[which] = 0;
+    t.scripts[which].clear();
+    if (t.furious === which) t.furious = -1;
+    // Both down: the end comes by itself.
+    if (t.dead[live]) return;
+    const switched = which === t.mine;
+    if (switched) {
+      // A brain of the fallen one has nothing left to run. The other's walk, heard so far for its drawn body, is this boss's now.
+      this.brain = null;
+      this.link.brain = false;
+      this.track = t.track;
+      t.track = new Track();
+      t.mine = live;
+      this.link.which = live;
+      this.def = t.defs[live];
+      t.ghosts[live].on = false;
+      this.script = t.scripts[live];
+      this.arm(this.script);
+      this.stats.phases = t.phase[live];
+      this.timedSeen = 0;
+      this.stageDue = null;
+      // The bar's words were the fallen one's.
+      this.hud.stopCast();
+      this.hud.setState('', 0);
+      this.hud.setGauge(t.gauge[live] / (this.link.staggerMax ?? this.def.staggerMax));
+      this.openLeft = 0;
+    }
+    this.world.twin?.fell(which, t.hp[live]);
+    if (switched) {
+      this.world.bodyPhase(t.phase[live]);
+      // In its stage, it still can't be hurt: the stage goes on to its end.
+      this.guard(Math.max(0, t.stageUntil[live] - this.clock));
+    }
+    this.rageNow();
+    this.world.banner(`${t.defs[which].name} has fallen: the wall of fire goes out`, 2.8, '24px');
+    this.hud.flash('rgba(255,170,90,0.8)', 0.3);
+  }
+
+  /** Twin Flames, for the tools: which boss is this screen's enemy, and what is known of both. */
+  get twins() {
+    const t = this.twin;
+    return t ? { half: t.half, mine: t.mine, hp: [...t.hp], max: [...t.max], phase: [...t.phase], furious: t.furious, dead: [...t.dead] } : null;
+  }
+
+  /** Twin Flames: which of the two is this screen's enemy now, or undefined. */
+  get which() {
+    return this.twin?.mine;
   }
 
   /** It stands open or kneels. */
@@ -221,15 +459,20 @@ export class BossFight {
     return this.openLeft > 0;
   }
 
-  /** The other screen ran the brain and left: this one takes over, at the next move. What is in the air goes on. */
-  takeBrain() {
-    if (this.brain) return;
+  /**
+   * The other screen ran the brain and left: this one takes over, at the next move. What is in the air goes on. Twin Flames:
+   * `which` names the boss, and only its own side's screens can run it.
+   */
+  takeBrain(which?: number) {
+    const t = this.twin;
+    if (this.brain || (t && which !== undefined && which !== t.mine)) return;
     this.link.brain = true;
     this.track = null;
-    this.brain = new BossBrain(this.def, this.world, this.link, `${this.seed}-next`, this.tier, 100000);
-    if (!this.def.hall && this.upgrades?.omen('quick')) this.brain.quick = QUICK_GAP;
+    this.takes++;
+    // Twin Flames: ids go on from the last one heard of this boss, inside its own range.
+    this.brain = this.newBrain(t ? `${this.seed}-${t.mine}-next${this.takes}` : `${this.seed}-next`, t ? t.lastId[t.mine] + 1000 : 100000);
     this.brain.resume(this.stats.phases, this.ringForm, this.rimSpot, this.timedSeen);
-    if (this.enraged) this.brain.enrage();
+    this.rageNow();
     if (this.stageDue) this.brain.open(this.stageDue);
     // A move that holds the floor is in the air: the new brain keeps to it too.
     const held = this.script.held;
@@ -237,16 +480,19 @@ export class BossFight {
   }
 
   /** The hub gave the brain to another screen (this one went quiet): this one follows reports again. What is in the air goes on. */
-  dropBrain() {
-    if (!this.brain) return;
+  dropBrain(which?: number) {
+    const t = this.twin;
+    if (!this.brain || (t && which !== undefined && which !== t.mine)) return;
     this.brain = null;
     this.link.brain = false;
     this.track = new Track();
   }
 
-  /** The boss's walk, reported by the screen that runs its brain. */
-  bossMove(x: number, z: number, yaw: number, ts?: number) {
-    this.track?.push(x, z, yaw, ts);
+  /** The boss's walk, reported by the screen that runs its brain. Twin Flames: `which` of the two. */
+  bossMove(x: number, z: number, yaw: number, ts?: number, which?: number) {
+    const t = this.twin;
+    if (t && which !== undefined && which !== t.mine) t.track.push(x, z, yaw, ts);
+    else this.track?.push(x, z, yaw, ts);
   }
 
   /** A tag: the old walk means nothing now. */
@@ -293,16 +539,22 @@ export class BossFight {
   private end(result: 'win' | 'lose') {
     if (this.over) return;
     this.over = true;
-    this.script.clear();
+    this.each((s) => s.clear());
     this.guard(0);
     this.world.bodyRage(false);
+    this.world.twin?.rage(false);
     this.gates?.exit.setOpen(result === 'win');
     this.hud.settle(result === 'win', this.link.maxHp);
+    if (this.twin && result === 'win') {
+      this.twin.hp = [0, 0];
+      this.hud.setTwin({ ...this.twin, hp: [0, 0], dead: [true, true], furious: -1 });
+    }
     this.world.finish(result);
   }
 
   /** One frame. `live`: the fight is on. */
   update(dt: number, live: boolean, hp: number) {
+    const t = this.twin;
     this.hud.update(dt);
     this.clock += dt;
     if (this.gates) {
@@ -316,14 +568,20 @@ export class BossFight {
       this.guardLeft -= dt;
       if (this.guardLeft <= 0) this.guard(0);
     }
-    this.hud.setHp(hp, this.link.maxHp);
+    if (t && !this.over) {
+      // This screen's own boss as its hits have left it; the other as the hub says.
+      t.hp[t.mine] = hp;
+      this.hud.setTwin(t);
+    } else if (!t) this.hud.setHp(hp, this.link.maxHp);
     if (this.def.pillars) {
       const cover = this.world.cover();
       this.hud.setPillars(this.def.pillars.filter((o) => cover.includes(o)).length, this.def.pillars.length);
-    }
+    } else this.hud.setPillars(0, 0);
     this.link.tick(dt);
     const s = this.track?.sample();
     if (s) this.world.place(s.x, s.z, s.yaw);
+    const s2 = t && !t.dead[1 - t.mine] ? t.track.sample() : null;
+    if (s2) this.world.twin?.place(s2.x, s2.z, s2.yaw);
     // The first phase begins with the fight.
     if (live && !this.begun) {
       this.begun = true;
@@ -338,16 +596,21 @@ export class BossFight {
       }
       this.brain?.update(dt);
     }
+    const hot = this.enraged || (!!t && t.furious === t.mine);
     if (this.aura) {
       const b = this.world.boss();
-      this.aura.update(dt, b.x, b.z, this.enraged && !this.over);
+      this.aura.update(dt, b.x, b.z, hot && !this.over);
+    }
+    if (t) {
+      const b = this.world.twin?.at() ?? this.world.boss(), o = 1 - t.mine;
+      t.aura.update(dt, b.x, b.z, !t.dead[o] && (this.enraged || t.furious === o) && !this.over);
     }
     // Enraged, the screen throbs a little red, slowly.
-    if (this.enraged && !this.over && (this.throb -= dt) <= 0) {
+    if (hot && !this.over && (this.throb -= dt) <= 0) {
       this.throb = 2.4;
-      this.hud.flash('rgba(255,24,8,0.8)', 0.1);
+      this.hud.flash('rgba(255,24,8,0.8)', this.enraged ? 0.1 : 0.06);
     }
-    this.script.update(dt, live && !this.over);
+    this.each((sc) => sc.update(dt, live && !this.over));
     this.pointers(live && !this.over && !this.meDown);
   }
 
@@ -371,11 +634,13 @@ export class BossFight {
   dispose() {
     // A fight left before its end (the Leave button): the next boss on this figure doesn't start red.
     this.world.bodyRage(false);
+    this.world.twin?.rage(false);
     this.night?.remove();
     this.aura?.dispose();
+    this.twin?.aura.dispose();
     this.gates?.enter.dispose();
     this.gates?.exit.dispose();
-    this.script.dispose();
+    this.each((s) => s.dispose());
     this.group.removeFromParent();
     this.hud.hide();
   }

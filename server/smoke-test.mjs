@@ -3,8 +3,9 @@
 // matches are played to a result (best of three rounds won by reported hits, a forfeit). Also checks that hits from
 // casts the server never saw and too-fast casts are dropped. Loser picks is off, so those matches offer no pick; on a
 // second server with it switched on, its rules are played through as well. Then a raid for a party of twelve (an open
-// room, the band, batched walks, the brain's watchdog, leavers) and a load check with forty. Takes about 150 s
-// (countdowns, breaks and a pick nobody answers are real).
+// room, the band, batched walks, the brain's watchdog, leavers), Twin Flames for a party of six (two HP pools, a brain
+// per boss, the furious rule, one falls, both fall) and a load check with forty. Takes about 190 s (countdowns, breaks
+// and a pick nobody answers are real).
 //   node server/smoke-test.mjs                         (its own Node server on a temporary data file)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server, e.g. `npm run cf:dev`; unique names per run)
 import { createServer } from 'node:http';
@@ -13,7 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
-import { PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RELOAD_TEXT, raidBand, raidHp, raidStaggerMax } from './protocol.mjs';
+import { PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RAID_TWIN, RELOAD_TEXT, raidBand, raidHp, raidStaggerMax } from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
 const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_BOSSES.heart.hp.duo;
@@ -939,6 +940,193 @@ try {
     check(start.party.length === 1 && start.band === 2 && start.partner === undefined && st.band === 2 && st.hp === SUN && st.staggerMax === RAID_BOSSES.sun.staggerMax,
       'the host may start alone: the boss is the one for two');
     solo.close();
+  }
+
+  // Twin Flames (pipeline/designs/raid-party.md): a party fights Ash and Ember both at once, one on each side of a wall of fire.
+  // Two HP pools, hits routed by `which`, a brain per boss on a screen of its own half, the furious rule on and off by the gap,
+  // one falls and the other is everyone's, the win when both are dead. For two they stay the tag team, with nothing new on the wire.
+  {
+    const N = 6, POOL = (ASH * 5) / 2, GAUGE = raidStaggerMax('ash', 10) / 2;
+    const p = await players(N, 'tw');
+    p[0].send({ t: 'lobby_create', raid: 'ash' });
+    const room = (await p[0].next('lobby')).lobby;
+    for (const x of p.slice(1)) x.send({ t: 'lobby_join', code: room.code });
+    p.forEach((x, i) => x.send({ t: 'lobby_pick', hero: ['Lyra', 'Bram', 'Kaia', 'Vesper', 'Brannoc', 'Isolde'][i] }));
+    await seen(p[0], 'lobby', (m) => m.lobby?.seats.length === N && m.lobby.seats.every((/** @type {any} */ s) => s.hero), 20000);
+    p[0].send({ t: 'raid_go' });
+    await Promise.all(p.map((x) => x.next('raid_start')));
+    const offers = await Promise.all(p.map((x) => x.next('raid_offer')));
+    check(offers[0].boss === 'ash' && offers[0].stage === 1, 'a room opened for Ash and Ember starts the run at them');
+    // Each brain's screen says something every second, as a real one does.
+    /** Who runs Ash's brain and Ember's. */
+    const brains = [0, 1];
+    let chat = setInterval(() => { for (const b of brains) p[b].send({ t: 'ping' }); }, 1000);
+    const stage = await intoFight(p);
+    check(stage.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === ASH * 5 && m.brain === 0 && m.staggerMax === raidStaggerMax('ash', 10)),
+      'six against Ash and Ember: the fight loads for 10, with the pair\'s HP and gauge where they always were');
+    check(stage.every((m) => m.twin && m.twin.half.join() === '0,1,0,1,0,1' && m.twin.hp.join() === `${POOL},${POOL}` && m.twin.brain.join() === '0,1' && m.twin.staggerMax === GAUGE),
+      `Twin Flames: the party is dealt west, east, west..., each boss has ${POOL} HP and its brain on the first screen of its own half`);
+
+    // A brain speaks for its own boss only, and every screen hears whose cast and walk it is.
+    const cast = { t: 'boss_cast', id: 3, move: 'slam', step: 0, x: -5, z: 9, fx: -8, fz: 7, dir: 0.5, seed: 9, target: 2 };
+    p[1].send({ ...cast, id: 1, which: 0 });
+    p[0].send({ ...cast, id: 2 });
+    p[0].send({ ...cast, id: 3, which: 0 });
+    p[1].send({ ...cast, id: RAID_TWIN.ids + 4, move: 'fan', which: 1, target: 3 });
+    const heard = [await p[5].next('boss_cast'), await p[5].next('boss_cast')].sort((a, b) => a.id - b.id);
+    await wait(100);
+    check(heard[0].id === 3 && heard[0].which === 0 && heard[1].id === RAID_TWIN.ids + 4 && heard[1].which === 1 && p[5].got.boss_cast === 2,
+      'each brain\'s casts reach everyone with `which`; a cast for the other boss, or with none, is dropped');
+    p[1].send({ t: 'boss_move', x: 9, z: 7, yaw: 1, which: 1 });
+    p[1].send({ t: 'boss_move', x: -9, z: 7, yaw: 1, which: 0 });
+    const walk = await p[0].next('boss_move');
+    await wait(100);
+    check(walk.which === 1 && walk.x === 9 && p[0].got.boss_move === 1, 'so do their walks');
+
+    // Two HP pools: a hit comes off the boss on the hitter's side of the wall, and no hit goes through it.
+    p[0].send({ t: 'boss_damage', amount: 300, which: 0 });
+    check((await seen(p[5], 'boss_hp', (m) => m.which === 0)).hp === POOL - 300, 'a hit from the west half comes off Ash, and everyone hears which');
+    p[1].send({ t: 'boss_damage', amount: 200, which: 1 });
+    check((await seen(p[4], 'boss_hp', (m) => m.which === 1)).hp === POOL - 200, 'a hit from the east half comes off Ember');
+    await wait(150);
+    p[0].send({ t: 'boss_damage', amount: 500, which: 1 });
+    p[3].send({ t: 'boss_damage', amount: 100 });
+    check((await seen(p[4], 'boss_hp', (m) => m.which === 1)).hp === POOL - 300, 'a hit through the wall is dropped; one that names no boss goes to its own side\'s');
+
+    // The gauge, a kneel and a mechanic's reward are each boss's own; the gauge is half the band's.
+    p[2].send({ t: 'boss_stagger', points: 60 });
+    const g0 = await p[1].next('boss_gauge');
+    p[3].send({ t: 'boss_stagger', points: 50, which: 1 });
+    const g1 = await seen(p[0], 'boss_gauge', (m) => m.which === 1);
+    check(g0.which === 0 && g0.value === 60 && g1.value === 50, 'control fills the gauge of the boss on that side');
+    p[0].send({ t: 'boss_reward', key: 'seal', id: RAID_TWIN.ids + 8, which: 1 });
+    p[1].send({ t: 'boss_reward', key: 'seal', id: RAID_TWIN.ids + 9, which: 1 });
+    const sealed = await seen(p[2], 'boss_gauge', (m) => m.which === 1 && m.value > 50);
+    await wait(100);
+    check(sealed.value === 50 + RAID_REWARDS.ash.seal.stagger * 2.5 && p[2].got.boss_gauge === 3,
+      'a reward comes from that boss\'s own brain, and fills half of what it fills for one boss');
+    p[0].send({ t: 'boss_reward', key: 'charge', id: 7, which: 0 });
+    const stun = await p[3].next('boss_kneel');
+    check(stun.which === 0 && stun.seconds === RAID_REWARDS.ash.charge.stun && !p[3].got.boss_fell, 'Ash\'s Charge into a pillar stuns Ash, not Ember');
+
+    // Nobody reaches through the wall: a revive only within a half. A gold zone is its half's own, and waits for that half only.
+    p[3].send({ t: 'hero_down' });
+    await seen(p[0], 'peer_down', (m) => m.side === 3);
+    p[0].send({ t: 'revive', side: 3 });
+    await wait(200);
+    check(!p[1].got.revived, 'a hero in the other half can\'t get a fallen one up');
+    p[5].send({ t: 'revive', side: 3 });
+    check((await p[0].next('revived')).by === 5, 'one in its own half can');
+    const asked = Date.now();
+    p[1].send({ t: 'boss_stood', id: RAID_TWIN.ids + 20, part: 0, inside: true });
+    p[0].send({ t: 'boss_stood', id: RAID_TWIN.ids + 20, part: 0, inside: true });
+    p[3].send({ t: 'boss_stood', id: RAID_TWIN.ids + 20, part: 0, inside: false });
+    p[5].send({ t: 'boss_stood', id: RAID_TWIN.ids + 20, part: 0, inside: true });
+    const stood = await p[2].next('boss_stood');
+    check(stood.count === 2 && Date.now() - asked < 1000, 'a gold zone in Ember\'s half counts the two of her half standing in it, without waiting for Ash\'s');
+
+    // Their health must fall together: more than 12 points apart and the one with more grows furious, until within 6 again.
+    /** Each of these players takes 1,200 off its own side's boss (under one screen's cap for a second). @param {number[]} who */
+    const strike = (who) => { for (const i of who) for (let k = 0; k < 2; k++) p[i].send({ t: 'boss_damage', amount: 600 }); };
+    await wait(1100);
+    strike([0, 2, 4]);
+    const fury = await Promise.all(p.map((x) => x.next('boss_rage')));
+    check(fury.every((m) => m.which === 1 && m.on === true), 'Ash is 20 points ahead: Ember, with more health, grows furious, and all six hear it');
+    strike([1, 3]);
+    await wait(300);
+    check(!p[0].got.boss_rage || p[0].got.boss_rage === 1, 'at 7 points apart she still is');
+    strike([5]);
+    const calm = await p[0].next('boss_rage');
+    check(calm.which === 1 && calm.on === false, 'level again (within 6 points): her fury ends');
+    await wait(1100);
+    strike([1, 3, 5]);
+    const turn = await p[0].next('boss_rage');
+    const ph = await p[0].next('boss_phase');
+    check(turn.which === 0 && turn.on === true && ph.which === 1 && ph.phase === 1, 'Ember 20 points ahead: now Ash is furious; and each boss has its own phases');
+    await wait(1100);
+    strike([0, 2, 4]);
+    await seen(p[5], 'boss_rage', (m) => m.which === 0 && m.on === false);
+
+    // The watchdog is per brain: Ember's screen goes quiet, and her brain goes to the next screen of her own half.
+    brains[1] = 0;
+    const quiet = Date.now();
+    const took = await p[3].next('boss_brain', 8000), after = Date.now() - quiet;
+    brains[1] = 3;
+    check(took.side === 3 && took.which === 1 && after > 3000 && after < 6500 && !p[2].got.boss_brain,
+      `nothing from Ember's brain for 4 s: it moves (after ${(after / 1000).toFixed(1)} s) to a screen of her own half, never across the wall`);
+    const moved = await p[0].next('brain_moved');
+    check(moved.side === 3 && moved.which === 1, 'and the others hear whose it is, and which boss\'s');
+    p[4].forget('boss_cast');
+    p[1].send({ ...cast, id: RAID_TWIN.ids + 30, move: 'fan', which: 1 });
+    p[3].send({ ...cast, id: RAID_TWIN.ids + 31, move: 'fan', which: 1 });
+    check((await p[4].next('boss_cast')).id === RAID_TWIN.ids + 31, 'the new brain\'s casts count, the old one\'s no longer');
+    // A leaver's brain goes to the next screen of the same half too.
+    p[0].send({ t: 'match_leave' });
+    const heir = await p[2].next('boss_brain');
+    brains[0] = 2;
+    check(heir.side === 2 && heir.which === 0, 'Ash\'s brain leaves: the next screen of the west half takes it');
+
+    // One falls: the wall goes out, the other is furious to its end and is everyone's. Won when both are dead.
+    for (const x of p) { x.forget('boss_rage'); x.forget('boss_hp'); }
+    let fell = false;
+    const fellAll = Promise.all(p.slice(1).map((x) => x.next('boss_fell', 20000))).then((w) => { fell = true; return w; });
+    for (let i = 0; i < 12 && !fell; i++) {
+      await wait(1100);
+      // Named for Ash: what is still on its way when he falls is dropped, not passed on to Ember.
+      for (const i of [2, 4]) for (let k = 0; k < 2; k++) p[i].send({ t: 'boss_damage', amount: 600, which: 0 });
+    }
+    const down = await fellAll;
+    const last = await seen(p[5], 'boss_rage', (m) => m.on === true);
+    await wait(300);
+    check(down.every((m) => m.which === 0) && last.which === 1 && !p[5].got.raid_won, 'Ash falls: everyone hears it, Ember is furious, and the fight goes on');
+    for (const x of p) for (const t of ['boss_hp', 'boss_gauge', 'revived']) x.forget(t);
+    await wait(1100);
+    p[2].send({ t: 'boss_damage', amount: 500, which: 0 });
+    p[2].send({ t: 'boss_damage', amount: 400 });
+    const mine = await seen(p[5], 'boss_hp', (m) => m.which === 1);
+    p[4].send({ t: 'boss_stagger', points: 20 });
+    const gauge = await seen(p[5], 'boss_gauge', (m) => m.which === 1);
+    check(mine.hp === POOL - 300 - 7200 - 400 && gauge.value === sealed.value + 20, 'the wall is out: the west half\'s hits and control land on Ember; a hit for the fallen one is dropped');
+    p[1].send({ t: 'hero_down' });
+    await seen(p[2], 'peer_down', (m) => m.side === 1);
+    p[2].send({ t: 'revive', side: 1 });
+    check((await p[1].next('revived')).by === 2, 'and anyone can get anyone up');
+    let won = false;
+    const wonAll = Promise.all(p.slice(1).map((x) => x.next('raid_won', 30000))).then((w) => { won = true; return w; });
+    for (let i = 0; i < 12 && !won; i++) {
+      await wait(1100);
+      strike([1, 2, 3, 4, 5]);
+    }
+    const wins = await wonAll;
+    check(wins.every((m) => m.bosses === 1 && m.last === false) && p[5].got.boss_fell === 2, 'Ember falls too: the fight is won when both are dead');
+    clearInterval(chat);
+    for (const x of p) x.close();
+
+    // For two they are the tag team they were: one pool, and no `which` or `twin` in any message.
+    const [d0, d1] = await players(2, 'td');
+    d0.send({ t: 'lobby_create', raid: 'ash' });
+    const duo = (await d0.next('lobby')).lobby;
+    d1.send({ t: 'lobby_join', code: duo.code });
+    d0.send({ t: 'lobby_pick', hero: 'Lyra' });
+    d1.send({ t: 'lobby_pick', hero: 'Bram' });
+    await seen(d0, 'lobby', (m) => m.lobby?.seats.length === 2 && m.lobby.seats.every((/** @type {any} */ s) => s.hero));
+    d0.send({ t: 'raid_go' });
+    await Promise.all([d0.next('raid_start'), d1.next('raid_start')]);
+    await Promise.all([d0.next('raid_offer'), d1.next('raid_offer')]);
+    chat = setInterval(() => d0.send({ t: 'ping' }), 1000);
+    const st = await intoFight([d0, d1]);
+    d0.send({ t: 'boss_cast', id: 40, move: 'tag', step: 0, x: 1, z: 2, fx: 0, fz: -9, dir: 0, seed: 9, target: 0, form: 1, which: 1 });
+    const tag2 = await d1.next('boss_cast');
+    d1.send({ t: 'boss_damage', amount: 300, which: 1 });
+    const hp2 = await d0.next('boss_hp');
+    d0.send({ t: 'boss_stagger', points: 30, which: 1 });
+    const ga2 = await d1.next('boss_gauge');
+    check(st.every((m) => m.boss === 'ash' && m.hp === ASH && m.band === 2 && !('twin' in m)) && tag2.form === 1 && !('which' in tag2)
+      && hp2.hp === ASH - 300 && !('which' in hp2) && ga2.value === 30 && !('which' in ga2),
+    'two against Ash and Ember: one boss, one HP bar, the tag team, and nothing new on the wire');
+    clearInterval(chat);
+    d0.close();
+    d1.close();
   }
 
   // The load of a full raid: forty players in one fight, each sending its walk ten times a second for five seconds.

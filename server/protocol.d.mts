@@ -2,6 +2,9 @@ export declare const PROTOCOL: number;
 export declare const RELOAD_TEXT: string;
 export declare const RAID_BOSSES: Record<string, { hp: { solo: number; duo: number }; phases: number[]; staggerMax: number; kneel: number; ring: number; partyRing?: number }>;
 export declare const RAID_REWARDS: Record<string, Record<string, { hp?: number; stagger?: number; kneel?: boolean; stun?: number }>>;
+/** Twin Flames: the boss fought as two at once by a party, the HP gaps where one grows furious and calms, and where the second boss's cast ids start. */
+export declare const RAID_TWIN: { boss: string; gapOn: number; gapOff: number; ids: number };
+export declare const raidTwin: (id: string, band: number) => boolean;
 export declare const RAID_HALL_RING: number;
 export declare const RAID_SHRINE_S: number;
 export declare const RAID_RUN: string[];

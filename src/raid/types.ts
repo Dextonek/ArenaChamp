@@ -49,6 +49,8 @@ export interface BossCast {
   flag?: boolean;
   /** Only one hero was up when the move began: a move made for two plays its alone version. */
   alone?: boolean;
+  /** Twin Flames: which of the two bosses casts it (0 Ash, 1 Ember). */
+  which?: number;
 }
 
 /** What a hero's hit lays on the boss that the other screen needs too: the brain walks it, and each screen takes its hits and deals its own. */
@@ -418,9 +420,56 @@ export interface BossDef {
   enrage?: number;
   /** The room's cover that counts, standing (Ash's four pillars): the bar shows how many are left. */
   pillars?: readonly Obstacle[];
+  /** As a tag team's form has them (`BossForm`): it backs away from a hero closer than this, and leaves this move behind as it walks. */
+  backAt?: number;
+  trail?: string;
+  /** Twin Flames: this is one of two bosses fought at once (`TwinDef`). */
+  twin?: TwinDef;
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */
   late?(): { shift: ArenaShift; offset: number; startsAt?: number };
+}
+
+/**
+ * Twin Flames (pipeline/designs/raid-party.md): a party fights two bosses at once, one on each side of a wall of fire. Each screen
+ * still has one enemy, the boss on its hero's side; the other is only drawn. Each of the two has its own def, HP, phases, gauge and
+ * brain, and its own script on every screen: the other boss's script plays as a look only while the wall stands (src/raid/twin.ts).
+ */
+export interface TwinDef {
+  /** Which of the two this def is: 0 Ash, in the west half, 1 Ember, in the east. */
+  which: 0 | 1;
+  /** Both of them, by `which`. */
+  pair(): [BossDef, BossDef];
+  /** The wall of fire, one of the room's obstacles: it stands while both live. */
+  wall: Obstacle;
+  /** Where hero number `n` of a half comes in. */
+  heroStart(half: number, n: number): { x: number; z: number };
+}
+
+/** What a twin fight is told when it starts: this screen's half, everyone's (by side), and each boss's max HP. */
+export interface TwinSetup {
+  half: number;
+  halves: number[];
+  hp: [number, number];
+}
+
+/** The other boss of Twin Flames on this screen: a body the duel only draws, and what happens to the room when one falls. */
+export interface TwinWorld {
+  /** Where it stands. */
+  at(): { x: number; z: number };
+  /** Its walk, from its brain's reports. */
+  place(x: number, z: number, yaw: number): void;
+  /** Its body's look: a phase, furious, kneeling. */
+  phase(i: number): void;
+  rage(on: boolean): void;
+  kneel(seconds: number): void;
+  /**
+   * Boss `dead` fell: the wall of fire goes out. If it was this screen's enemy, the other takes its place here, with `hp` left,
+   * and the fallen one lies where it stood.
+   */
+  fell(dead: number, hp: number): void;
+  /** The wall of fire still stands. */
+  wallUp(): boolean;
 }
 
 /** A hit on this screen's hero. */
@@ -437,11 +486,15 @@ export interface BossHit {
 /** What the link tells a screen. */
 export interface RaidEvents {
   cast(c: BossCast): void;
-  /** The boss's HP from whoever keeps it (a local link needs none). */
-  hp?(hp: number): void;
-  phase(i: number): void;
-  stagger(value: number): void;
-  kneel(seconds: number): void;
+  /** The boss's HP from whoever keeps it (a local link needs none). `which`, here and below: Twin Flames, which of the two it is about. */
+  hp?(hp: number, which?: number): void;
+  phase(i: number, which?: number): void;
+  stagger(value: number, which?: number): void;
+  kneel(seconds: number, which?: number): void;
+  /** Twin Flames: boss `which` grows furious (the other is too far ahead), or calms. */
+  rage?(which: number, on: boolean): void;
+  /** Twin Flames: boss `which` fell. The fight goes on until both have. */
+  fell?(which: number): void;
   /** How many heroes stood in a `stand` zone of cast `id` when it landed. */
   stood(id: number, part: number, count: number): void;
   /** A hero took an objective of cast `id`. */
@@ -499,6 +552,8 @@ export interface RaidLink {
   readonly maxHp: number;
   /** The stagger gauge's size in this fight, when it is not the boss's own (a party's is bigger: `raidStaggerMax`). */
   readonly staggerMax?: number;
+  /** Twin Flames: the boss this screen's hits, control and brain are for now (it changes when that one falls). */
+  which?: number;
 }
 
 /** The duel, as a boss fight sees it (`Duel.startBoss`). */
@@ -558,6 +613,8 @@ export interface BossWorld {
   place(x: number, z: number, yaw: number): void;
   /** The boss's HP from whoever keeps it. */
   setBossHp(hp: number): void;
+  /** Twin Flames: the other boss on this screen. */
+  twin?: TwinWorld;
   /** A phase begins: Fresh Start's shield. */
   phaseShield(): void;
   /** This screen's hero. */
