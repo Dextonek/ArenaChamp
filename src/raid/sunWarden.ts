@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RAID_BOSSES } from '../../server/protocol.mjs';
 import { RING, seeded } from '../arenas/common';
 import { COURT_R, setCourtRadius, sunCourtArena } from '../arenas/suncourt';
-import { HALL_ARMS, HALL_HALF, armSpot, inArm, intoHall, sunHallArena } from '../arenas/sunhall';
+import { HALL_ARMS, HALL_COURT, HALL_HALF, armSpot, hallBreak, inArm, intoHall, sunHallArena } from '../arenas/sunhall';
 import { RAID_PARTY_MAX, raidRing } from '../../server/protocol.mjs';
 import { GlowBeam } from '../arenas/hazards/fx';
 import { ArenaShift } from '../arenas/shifts/base';
@@ -15,6 +15,7 @@ import { AimLane, FallingStone, LightPillar, NumberMark, ShadowFloor, SunOrb } f
 import { LEAVE_ALPHA, LEAVE_COLOR, STAND_COLOR } from './script';
 import { stageMove } from './stage';
 import type { AimContext, BossDef, BossMove, BossPhase, Objective, PlayContext, RaidSide, Threat } from './types';
+import { CARRY, SUNFIRE as SUNFALL, brand, breach, carry, four, freeSpot, hallFight, holdFor, nextGreat, resetHallFight, sunfall, wardenChoice } from './wardenHall';
 
 const CORE = 0xffc060;
 const GLOW = 0xd86a18;
@@ -82,6 +83,8 @@ const stoneSweep: BossMove = {
   },
 };
 
+/** A hero this near the middle of his ray stands in its way (m): Carry the Sun. */
+const RAY_BODY = 1.1;
 /** How long a fallen stone stands as cover (s), and how wide it is (m). */
 const STONE_STAYS = 8;
 const STONE_R = 1.05;
@@ -117,16 +120,35 @@ const pillarFall: BossMove = {
 /** A line across the ring through the target's spot, stopped by cover. It cracks the wall it hits. */
 const sunRay: BossMove = {
   id: 'ray', name: 'Sun Ray', charge: 2.5, lock: 3, cooldown: 8, pose: 'thrust',
-  aim: atTarget,
+  /**
+   * While sun shards are carried (a party's Carry the Sun) it comes for a carrier, and a hero standing in its way takes it for the
+   * carrier: the brain finds the first such hero and flags the cast, with the spot where that hero stands. The ray ends there.
+   */
+  aim(c) {
+    const a = atTarget(c);
+    if (!party || !hallFight.carriers.size) return a;
+    const dx = Math.sin(a.dir), dz = Math.cos(a.dir), reach = Math.hypot(c.target.x - c.boss.x, c.target.z - c.boss.z);
+    let block: { x: number; z: number } | null = null, near = reach - 1;
+    for (const h of c.heroes ?? []) {
+      const along = (h.x - c.boss.x) * dx + (h.z - c.boss.z) * dz, off = Math.abs((h.x - c.boss.x) * dz - (h.z - c.boss.z) * dx);
+      if (hallFight.carriers.has(h.side) || along < 1.5 || along >= near || off > RAY_BODY) continue;
+      near = along;
+      block = h;
+    }
+    return block ? { x: block.x, z: block.z, dir: a.dir, flag: true } : a;
+  },
   play(c, p) {
     const at = p.shown(2.5), width = 2, y = 2.6;
     const full = toRim(c.fx, c.fz, c.dir);
     const ex = c.fx + Math.sin(c.dir) * full, ez = c.fz + Math.cos(c.dir) * full;
-    const k = p.rayStop(c.fx, c.fz, ex, ez);
+    // A hero's body in its way (see `aim`): it ends just behind that hero.
+    const body = c.flag ? Math.min(1, (Math.hypot(c.x - c.fx, c.z - c.fz) + 1.2) / full) : 1;
+    const k = Math.min(body, p.rayStop(c.fx, c.fz, ex, ez));
     const x2 = c.fx + (ex - c.fx) * k, z2 = c.fz + (ez - c.fz) * k;
     // What it stops at: a fallen stone breaks, and that hurts him.
-    const stoneHit = p.firstStone(c.fx, c.fz, ex, ez);
-    const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2, z2, width }, at, share: 0.22 };
+    const stoneHit = k < body || !c.flag ? p.firstStone(c.fx, c.fz, ex, ez) : null;
+    // While the sun is carried it throws back whoever it hits.
+    const th: Threat = { shape: { kind: 'line', x1: c.fx, z1: c.fz, x2, z2, width }, at, share: 0.22, knock: party && hallFight.carrying > 0 ? CARRY.knock : undefined };
     const ray = beam(p, CORE, GLOW, 1.6);
     const a = new THREE.Vector3(c.fx, y, c.fz), b = new THREE.Vector3(x2, 0.9, z2);
     let time = 0;
@@ -148,7 +170,8 @@ const sunRay: BossMove = {
             p.show.triumph(x2, z2, 0xffd890);
             p.say('THE RAY BREAKS', '#ffe27a', x2, z2);
             p.sparks.emit(x2, 1, z2, 40, 6, 5, 0.8, 0xb8a080);
-          } else p.crackFirst(c.fx, c.fz, ex, ez);
+          } else if (c.flag && k >= body) p.say('SHIELDED', '#ffe27a', x2, z2);
+          else p.crackFirst(c.fx, c.fz, ex, ez);
         },
         dispose: () => dropBeam(ray),
       },
@@ -198,18 +221,21 @@ const noon: BossMove = {
     const carrying = new Set<RaidSide>(), delivered = new Set<RaidSide>();
     // Each hero's delivery is its own objective, and every screen has both: the partner's must be heard here too.
     const me = p.side, DELIVER = 10;
+    // In a party's last phase the sunfire lies over the Sun Well: the shards fall past it, and are brought to its edge.
+    const fire = party ? hallFight.fire : 0, out = fire ? Math.max(SHARD_OUT, fire + 7) : SHARD_OUT, home = fire ? fire + 3.5 : 2.4;
     const shards = Array.from({ length: need }, (_, i) => {
-      const x = C.x + Math.sin(base + i * Math.PI) * SHARD_OUT, z = C.z + Math.cos(base + i * Math.PI) * SHARD_OUT;
+      const far = { x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out };
+      const { x, z } = fire ? freeSpot(far.x, far.z) : far;
       const light = new LightPillar(x, z, 1.3, 6, STAND_COLOR), orb = new SunOrb(x, 1.1, z);
       p.group.add(light.mesh, orb.sprite);
       return { part: i, x, z, light, orb };
     });
-    const altar = new LightPillar(C.x, C.z, 2.4, 7, STAND_COLOR);
+    const altar = new LightPillar(C.x, C.z, home, 7, STAND_COLOR);
     p.group.add(altar.mesh);
     const objectives: Objective[] = [
       ...shards.map((s): Objective => ({ part: s.part, x: s.x, z: s.z, radius: 1.3, until: at, can: () => !carrying.has(me) && !delivered.has(me) })),
       // In a party whoever picked a shard up brings it in: one way in for each seat.
-      ...Array.from({ length: party ? RAID_PARTY_MAX : 2 }, (_, side): Objective => ({ part: DELIVER + side, x: C.x, z: C.z, radius: 2.4, until: at, beats: true, can: () => side === me && carrying.has(side) })),
+      ...Array.from({ length: party ? RAID_PARTY_MAX : 2 }, (_, side): Objective => ({ part: DELIVER + side, x: C.x, z: C.z, radius: home, until: at, beats: true, can: () => side === me && carrying.has(side) })),
     ];
     const held = new Map<RaidSide, SunOrb>();
     let turned = -1, time = 0;
@@ -403,7 +429,8 @@ const anchors: BossMove = {
   aim: (c) => ({ x: c.boss.x, z: c.boss.z, dir: Math.atan2(C.x - c.boss.x, C.z - c.boss.z) }),
   play(c, p) {
     const rng = seeded(c.seed);
-    const base = rng() * Math.PI * 2, radius = 2.3, out = 7.6, at = p.shown(3);
+    // A party's last phase: past the sunfire.
+    const base = rng() * Math.PI * 2, radius = 2.3, out = party && hallFight.fire ? Math.max(7.6, hallFight.fire + 5) : 7.6, at = p.shown(3);
     const spot = (i: number) => ({ x: C.x + Math.sin(base + i * Math.PI) * out, z: C.z + Math.cos(base + i * Math.PI) * out });
     // With one hero up each step is one circle. With two the first step is both, and the second does nothing.
     const parts = c.alone ?? p.solo ? [c.step] : c.step === 0 ? [0, 1] : [];
@@ -514,11 +541,13 @@ const SUNFIRE = 0xff9a3a;
  */
 const strikes: BossMove = {
   id: 'strikes', name: 'The Hour Strikes', charge: HOUR.seconds, least: HOUR.least, lock: HOUR.call, cooldown: HOUR.every, due: HOUR.first, big: true, pose: 'raise',
-  holds: { only: HOUR_ONLY },
+  // In his last phase a party's Branded may come during it.
+  holds: { get only() { return party && hallFight.fire ? [...HOUR_ONLY, 'brand'] : HOUR_ONLY; } },
   body: { name: 'strikes', seconds: HOUR.call },
   // He turns to the arm he calls, and his fists point down it.
   aim: (c) => {
     const spot = armSpot(c.seed % 4, HALL_HALF + 8);
+    if (c.step === 0) holdFor('strikes', HOUR.seconds);
     return { x: spot.x, z: spot.z, dir: Math.atan2(spot.x - c.boss.x, spot.z - c.boss.z) };
   },
   play(c, p) {
@@ -528,7 +557,8 @@ const strikes: BossMove = {
     const th: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: COURT_R }, hits: (x, z) => !inArm(arm, x, z), at, share: HOUR.share, look: 3 };
     // Where to run: each screen has one spot of its own, open while its hero is not in the safe arm yet. Nobody takes it: it is the
     // arrow at the screen's edge, and where an AI walks.
-    const goal = armSpot(arm, HALL_HALF + 8);
+    // Past the sunfire of his last phase, which lies over the crossing and grows.
+    const goal = armSpot(arm, Math.min(hall.reach - 3, Math.max(HALL_HALF + 8, hallFight.fire + 6)));
     const objectives: Objective[] = [{
       part: p.side, x: goal.x, z: goal.z, radius: 1, hold: Infinity, until: at,
       can: () => {
@@ -540,21 +570,35 @@ const strikes: BossMove = {
     const fire = new TelegraphLayer(), W = HALL_HALF;
     const burning = HALL_ARMS.map((a, i) => ({ a, i })).filter((x) => x.i !== arm);
     const rect = (x1: number, z1: number, x2: number, z2: number) => ({ shape: { kind: 'line' as const, x1, z1, x2, z2, width: W * 2 }, start: 0, impact: at });
-    fire.set([
+    // Once the hall has broken open the arms are the quarters of its round court: three of them burn, and the crossing.
+    const open = hallBreak.open;
+    const wedge = (dir: number, radius: number) => ({ shape: { kind: 'cone' as const, x: C.x, z: C.z, radius, angle: 90, dir }, start: 0, impact: at });
+    fire.set(open ? [wedge(hall.dir, W), ...burning.map(({ a }) => wedge(a.dir, HALL_COURT + 10))] : [
       rect(C.x - Math.sin(hall.dir) * W, C.z - Math.cos(hall.dir) * W, C.x + Math.sin(hall.dir) * W, C.z + Math.cos(hall.dir) * W),
       ...burning.map(({ a, i }) => { const from = armSpot(i, W), to = armSpot(i, a.reach); return rect(from.x, from.z, to.x, to.z); }),
     ], LEAVE_COLOR, LEAVE_ALPHA);
-    // The sun road in the safe arm, lit from the crossing outward, and a gold line across the arm's mouth: past it is safe.
+    // The sun road in the safe arm, lit from the crossing outward, and a gold line across the arm's mouth: past it is safe. In the
+    // round court that line is the quarter's inner edge, a bow `W` m from the Sun Well.
     const road = new AimLane(STAND_COLOR), mouth = armSpot(arm, W);
-    const sill = beam(p, 0xfff0b0, STAND_COLOR, 1.1);
-    const sa = new THREE.Vector3(mouth.x - Math.cos(hall.dir) * W, 0.08, mouth.z + Math.sin(hall.dir) * W);
-    const sb = new THREE.Vector3(mouth.x + Math.cos(hall.dir) * W, 0.08, mouth.z - Math.sin(hall.dir) * W);
+    const at3 = (turn: number) => new THREE.Vector3(C.x + Math.sin(hall.dir + turn) * W, 0.08, C.z + Math.cos(hall.dir + turn) * W);
+    const sills = (open ? [-1, -1 / 3, 1 / 3].map((k) => [at3((k * Math.PI) / 4), at3(((k + 2 / 3) * Math.PI) / 4)]) : [[
+      new THREE.Vector3(mouth.x - Math.cos(hall.dir) * W, 0.08, mouth.z + Math.sin(hall.dir) * W),
+      new THREE.Vector3(mouth.x + Math.cos(hall.dir) * W, 0.08, mouth.z - Math.sin(hall.dir) * W),
+    ]]).map(([a, b]) => ({ a, b, beam: beam(p, 0xfff0b0, STAND_COLOR, 1.1) }));
     p.group.add(fire.group, road.mesh);
     p.hint('The hour is called: run to the arm with the lit road');
     p.say('THE HOUR IS CALLED', '#ffe27a', mouth.x, mouth.z);
     p.show.ring(C.x, C.z, { radius: 30, life: 1.4, color: 0xffe0b0, width: 0.9, peak: 0.6 });
     /** A spot in the fire: somewhere in the crossing or a burning arm. */
     const inFire = () => {
+      if (open) {
+        // Anywhere in the round court but the safe quarter.
+        for (let n = 0; n < 6; n++) {
+          const turn = Math.random() * Math.PI * 2, r = HALL_COURT * Math.sqrt(Math.random()), x = C.x + Math.sin(turn) * r, z = C.z + Math.cos(turn) * r;
+          if (!inArm(arm, x, z)) return { x, z };
+        }
+        return { x: C.x, z: C.z };
+      }
       const k = Math.floor(Math.random() * (burning.length + 1)), across = (Math.random() * 2 - 1) * (W - 1);
       const b = burning[k], dir = b ? b.a.dir : hall.dir, along = b ? W + Math.random() * (b.a.reach - W - 1) : (Math.random() * 2 - 1) * (W - 1);
       return { x: C.x + Math.sin(dir) * along + Math.cos(dir) * across, z: C.z + Math.cos(dir) * along - Math.sin(dir) * across };
@@ -574,7 +618,7 @@ const strikes: BossMove = {
           // The road runs out from the crossing in the first seconds and stays; brighter as the bell nears, gone a moment after it.
           const lit = Math.min(1, t / 2.5), fade = Math.max(0, 1 - after / 0.8) * on;
           road.set(mouth.x, mouth.z, hall.dir, (hall.reach - W - 1) * (1 - (1 - lit) ** 2), 5, (0.5 + 0.35 * k) * fade, time);
-          sill.set(sa, sb, p.camera, time, (0.55 + 0.25 * Math.sin(time * 5)) * fade, 1.1, true);
+          for (const s of sills) s.beam.set(s.a, s.b, p.camera, time, (0.55 + 0.25 * Math.sin(time * 5)) * fade, 1.1, true);
           if (off >= 0 || t >= at) return;
           // Sunfire: embers rising all over what burns, more and higher as the bell nears, and tongues of flame from a third of the way
           // on. Kept to what a phone can draw: at most about 300 embers and 45 tongues at once (a tongue is a draw call of its own).
@@ -614,9 +658,10 @@ const strikes: BossMove = {
           for (const across of [-8, 0, 8]) {
             for (const along of [-8, 0, 8]) flame(C.x + Math.sin(hall.dir) * along + Math.cos(hall.dir) * across, C.z + Math.cos(hall.dir) * along - Math.sin(hall.dir) * across, 0.04);
             for (const { a, i } of burning) {
-              for (let along = W + 3; along < a.reach - 1; along += 7) {
-                const s = armSpot(i, along);
-                flame(s.x + Math.cos(a.dir) * across, s.z - Math.sin(a.dir) * across, 0.08 + (along - W) * 0.014);
+              for (let along = W + 3; along < (open ? HALL_COURT : a.reach) - 1; along += 7) {
+                // In the round court the fire fans out with the quarter.
+                const s = armSpot(i, along), wide = open ? (across / 8) * along * 0.6 : across;
+                flame(s.x + Math.cos(a.dir) * wide, s.z - Math.sin(a.dir) * wide, 0.08 + (along - W) * 0.014);
               }
             }
           }
@@ -626,7 +671,7 @@ const strikes: BossMove = {
           fire.set([]);
           fire.group.removeFromParent();
           road.dispose();
-          dropBeam(sill);
+          for (const s of sills) dropBeam(s.beam);
         },
       },
     };
@@ -674,8 +719,34 @@ const PHASES: BossPhase[] = [
   { name: 'The Long Hour', at: NUMBERS.phases[1], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden'], opener: 'hour', gap: [2, 3] },
   { name: 'Last Light', at: NUMBERS.phases[2], moves: ['sweep', 'pillars', 'ray', 'fists', 'noon', 'order', 'burden', 'eclipse', 'anchors', 'walking'], opener: 'walking', gap: [1.6, 2.6] },
 ];
-/** In the hall he also calls the hour, in every phase: it comes by its own clock (`BossMove.due`). */
-const HALL_PHASES: BossPhase[] = PHASES.map((ph) => ({ ...ph, moves: [...ph.moves, 'strikes'] }));
+/**
+ * His phases in the hall, for a fight tuned for `band`.
+ * - He calls the hour in every phase: it comes by its own clock (`BossMove.due`).
+ * - From High Noon on: Branded (10 or more) and The Four Hours (40). The brain leaves out what the band is too small for
+ *   (`BossMove.minBand`); an opener and a move by the clock it does not ask about, so they are chosen here.
+ * - For 20 or more, Carry the Sun stands where Gathering Noon does.
+ * - The hall breaks open as The Long Hour begins, and the sun comes down as Last Light does: each by the phase's clock, at once. The
+ *   clock counts a fight's timed moves together, so Last Light's may be the second.
+ * - The three that hold the floor for half a minute (`GREAT`) take turns, with a breath between: only the one whose turn it is
+ *   is in his lists, and none while one is in the air or has just ended (`nextGreat`).
+ */
+const GREAT = ['strikes', 'carry', 'four'];
+function hallPhases(band: number): BossPhase[] {
+  const noonFor = (id: string) => (id === 'noon' && band >= 20 ? 'carry' : id);
+  return PHASES.map((ph, i) => {
+    const all = [...ph.moves.map(noonFor), 'strikes', ...(i >= 1 ? ['brand', 'four'] : [])], small = all.filter((id) => !GREAT.includes(id));
+    return {
+      ...ph,
+      get moves() {
+        const great = nextGreat();
+        return great && all.includes(great) ? [...small, great] : small;
+      },
+      opener: ph.opener && noonFor(ph.opener),
+      timed: i === 2 ? { move: 'breach', first: 0, every: 99999, most: 1 } : i === 3 ? { move: 'sunfall', first: 0, every: 99999, most: 2 } : undefined,
+    };
+  });
+}
+let HALL_PHASES = hallPhases(5);
 
 export const SUN_WARDEN: BossDef = {
   id: 'sun',
@@ -696,6 +767,9 @@ export const SUN_WARDEN: BossDef = {
     party = band > 2;
     size = band;
     setCourtRadius(raidRing('sun', band));
+    // The hall is whole again, and nothing of the last fight is left in it.
+    resetHallFight(band);
+    HALL_PHASES = hallPhases(band);
   },
   get band() { return size; },
   kit: (hp) => ({
@@ -705,28 +779,42 @@ export const SUN_WARDEN: BossDef = {
   hp: NUMBERS.hp,
   scale: 1,
   body: { radius: 1.2, height: 5.4 },
-  speed: 2,
-  keepAt: 4.5,
+  // A party's last phase: the sunfire lies between the groups, and he comes out to them, faster and closer (a hero who fights
+  // him hand to hand need not stand in the fire for it).
+  get speed() { return party && hallFight.fire ? 3 : 2; },
+  get keepAt() { return party && hallFight.fire ? 2.2 : 4.5; },
+  choose: (c) => (party ? wardenChoice(c) : undefined),
   staggerMax: NUMBERS.staggerMax,
   kneel: NUMBERS.kneel,
   phasePause: 2.5,
   get phases() { return party ? HALL_PHASES : PHASES; },
   /** A higher tier brings these in from the first phase on, one a tier. */
   extra: ['order', 'walking', 'eclipse'],
-  moves: { sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, hour: longHour, eclipse, anchors, walking: walkingSun, strikes },
+  moves: {
+    sweep: stoneSweep, pillars: pillarFall, ray: sunRay, fists, noon, order: sunOrder, burden: sharedBurden, hour: longHour, eclipse, anchors, walking: walkingSun, strikes,
+    // The party's own (./wardenHall.ts): no phase of the court for two names them.
+    breach, sunfall, brand, carry, four,
+  },
   /**
    * 2:30 in he enrages: about where the slowest third of the autopilot's wins at a person's pace end (pipeline/designs/raid-noonfall.md).
    * In the hall 3:15: the party walks 40 m up the nave to him first, and each hour takes the fight away from him for a while (the
    * same ten heroes' wins took 35 to 75 s longer there: pipeline/designs/raid-party.md).
    */
   get enrage() { return party ? 195 : 150; },
-  /** Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. */
-  late: () => ({
-    offset: -255,
-    shift: new ArenaShift('The sun comes down', 0xd08a20, '#ffb050', [
-      { at: 45, zones: [{ shape: { kind: 'ring', x: C.x, z: C.z, inner: 7, outer: COURT_R }, share: 0.03 }] },
-    ], new ZoneFloor('sun', [{ edge: 7 }], undefined, undefined, COURT_R), COURT_R),
-  }),
+  /**
+   * Past 5 minutes the temple's sunfire closes in, and at 6 Last stand ends it. The shift's own clock has Last stand at 105 s. In
+   * the hall the sun has come down long before (`sunfall`, from the Sun Well outward): what closes in there comes from the walls,
+   * as far as that fire's last edge and a step, so the two leave nothing to stand on.
+   */
+  late: () => {
+    const edge = party ? SUNFALL.to + 2 : 7;
+    return {
+      offset: -255,
+      shift: new ArenaShift(party ? 'The hall burns' : 'The sun comes down', 0xd08a20, '#ffb050', [
+        { at: 45, zones: [{ shape: { kind: 'ring', x: C.x, z: C.z, inner: edge, outer: COURT_R }, share: 0.03 }] },
+      ], new ZoneFloor('sun', [{ edge }], undefined, undefined, COURT_R), COURT_R),
+    };
+  },
 };
 
 
