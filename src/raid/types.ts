@@ -389,6 +389,11 @@ export interface BossDef {
    * band is the same on every screen, so a boss may also keep it for what its moves ask of a party (the Heart's plates and spots).
    */
   resize?(band: number): void;
+  /**
+   * Where the hero of seat `side` comes in, in a party of more than two: a room whose way in is narrow or has cover in it lays its own
+   * rows. Without it the duel lays rows of eight from `starts.heroes[0]` toward the boss.
+   */
+  partySpot?(side: number): { x: number; z: number };
   /** How many this fight is tuned for (the band: 2, 5, 10, 15, 20, 30 or 40), as `resize` last heard it. 2 when a boss does not say. */
   band?: number;
   id: string;

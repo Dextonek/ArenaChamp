@@ -599,7 +599,7 @@ export class Duel {
       const half = tw!.halves[side] === 1 || (tw!.halves[side] === undefined && tw!.half === 1) ? 1 : 0;
       return tw!.def.heroStart(half, tw!.halves.slice(0, side).filter((h) => h === half).length);
     };
-    const start = tw ? twinStart(o.link.side) : big ? partyStart(heroes[0], o.link.side) : heroes[o.link.solo ? 0 : o.link.side + 1];
+    const start = tw ? twinStart(o.link.side) : big ? o.def.partySpot?.(o.link.side) ?? partyStart(heroes[0], o.link.side) : heroes[o.link.solo ? 0 : o.link.side + 1];
     this.setup(new THREE.Vector3(start.x, 0, start.z), new THREE.Vector3(from.x, 0, from.z), o.def.place);
     const foe = this.foe;
     if (!foe) throw new Error('A boss fight with no boss');
@@ -670,7 +670,7 @@ export class Duel {
     if (!run && TOUCH && hm.portrait && this.zoomBefore === null) this.zoomBefore = hm.setZoom(1.7);
     this.names = [o.name ?? '', others.length === 1 ? others[0].name : ''];
     for (const m of others) {
-      const at = tw ? twinStart(m.side) : big ? partyStart(heroes[0], m.side) : heroes[o.link.side === 0 ? 2 : 1];
+      const at = tw ? twinStart(m.side) : big ? o.def.partySpot?.(m.side) ?? partyStart(heroes[0], m.side) : heroes[o.link.side === 0 ? 2 : 1];
       const p = new Partner(m.kit, m.name, new THREE.Vector3(at.x, 0, at.z), arena, () => this.foeFor(m.side));
       this.party.set(m.side, p);
       this.group.add(p.group);
