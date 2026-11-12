@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raid rework</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; font-family: var(--font-sans, system-ui, sans-serif); color: var(--foreground, #e9e6df); background: var(--background, #15171b); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 2px 24px; }
+  h1 { font-size: 20px; margin: 4px 0 4px; }
+  h2 { font-size: 17px; margin: 26px 0 6px; }
+  h3 { font-size: 15px; margin: 18px 0 4px; }
+  p { margin: 6px 0; line-height: 1.5; font-size: 14px; }
+  .sub { color: var(--muted-foreground, #a9a59c); font-size: 13.5px; }
+  .box { border: 1px solid var(--border, #33363d); border-radius: var(--radius, 10px); padding: 12px 14px; margin: 10px 0; background: var(--card, #1c1f24); }
+  .note { border-left: 3px solid var(--warning, #d9a441); }
+  .pick { border-left: 3px solid var(--success, #4caf7a); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 6px; border-bottom: 1px solid var(--border, #33363d); line-height: 1.4; }
+  th { color: var(--muted-foreground, #a9a59c); font-weight: 600; font-size: 12px; }
+  td b { font-weight: 600; }
+  .tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--secondary, #2a2d33); color: var(--secondary-foreground, #ddd); margin-right: 4px; white-space: nowrap; }
+  .gold { color: #e8c15a; } .red { color: #e0675a; } .white { color: #f2f2f2; }
+  ul { margin: 6px 0 6px 18px; padding: 0; font-size: 14px; line-height: 1.5; }
+  li { margin: 3px 0; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 560px) { .two { grid-template-columns: 1fr; } table { font-size: 12.5px; } th, td { padding: 6px 4px; } }
+  .why { color: var(--muted-foreground, #a9a59c); font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>The Raid, reworked from the WoW research</h1>
+<p class="sub">A proposal, not built yet. Every row was checked against how the three bosses are built today (the code, 12 November), and against the raid's own rules (each screen decides hits on its own hero; shared state goes through the server; the autopilot must be able to play it). Fights for one and two players are not touched: they are measured, and WoW has no evidence under ten players.</p>
+
+<div class="box note">
+<p><b>A correction first.</b> I told you the Ring of Hands needs a fixed 32 spots and leaves a party of 31 to 35 no margin. That was wrong: as built it puts a gold spot for every hero standing and holds when four in five are held. The research document is corrected.</p>
+</div>
+
+<h2>What already works: keep it</h2>
+<ul>
+  <li><b>The rooms that transform</b> (the hall breaks open, the floor cracks into islands, the rings turn, the crust falls). This is the most-praised family of WoW fights: Blackhand's floors, Krosus' bridge, Ragnaros.</li>
+  <li><b>Hold Still</b> burns only the one who moves: the kind of dance players love.</li>
+  <li><b>Take the Blade</b> hands a player a powerful toy: the "personal job" players love most (Kael'thas' weapons).</li>
+  <li><b>Lantern Chain</b>: only the pair pays. Pairs work at every party size.</li>
+  <li><b>The Hour Strikes</b> costs only whoever is in a burning arm.</li>
+  <li><b>Counts per five heroes standing</b>: the same rule WoW settled on (one more target per five players).</li>
+</ul>
+
+<h2>The big choice: who pays for a mistake</h2>
+<p>You asked for a raid that is hard and challenging. The research says players love hard fights but hate one player's mistake costing everyone. Six of our mechanics charge the whole party today (capped, never a wipe from full health):</p>
+<table>
+  <tr><th>Mechanic</th><th>Today</th><th>Choice A: the one who slips pays</th></tr>
+  <tr><td><b>Branded</b> <span class="tag">Warden 10+</span></td><td>30 % to everyone caught, and 6 % to the whole party per hero caught (24 % at most)</td><td>Branded hero 30 %, those caught 15 %; the burst leaves a burning patch where it went off. No party cost</td></tr>
+  <tr><td><b>Carry the Sun</b> <span class="tag">Warden 20+</span></td><td>12 % to everyone per shard not home (56 % at most)</td><td>Whoever last held a shard that is not home 40 %; the party 6 % per shard (24 % at most)</td></tr>
+  <tr><td><b>The Four Hours</b> <span class="tag">Warden 40</span></td><td>18 % to everyone per failed arm</td><td>The failed arm's squad 35 %, everyone else 6 %</td></tr>
+  <tr><td><b>Shade the Heart</b> <span class="tag">Heart 10+</span></td><td>8 % to everyone per plate left lying (32 % at most)</td><td>A beam comes through the empty plate's place and hits whoever is nearest it, 25 %</td></tr>
+  <tr><td><b>The Ring of Hands</b> <span class="tag">Heart 40</span></td><td>Broken: 45 % to everyone</td><td>Broken: 50 % to those not on a spot, 10 % to those who held theirs</td></tr>
+  <tr><td><b>Twin Flames</b> <span class="tag">Ash and Ember</span></td><td>The twin that is behind grows furious, step by step</td><td>Keep: it builds over time, it is visible, and better play undoes it</td></tr>
+</table>
+<p><b>A is not easier.</b> The difficulty moves from punishment to what is asked: shorter warnings in the second phase, two mechanics overlapping there, the enrage where it is. <b>B</b> keeps everything as it is now.</p>
+
+<h2>Tier A: rules for the whole raid</h2>
+<table>
+  <tr><th>Rule</th><th>What it means in play</th><th>Why</th></tr>
+  <tr><td><b>Clean play makes it kneel</b></td><td>Every mechanic done cleanly gives a short kneel: the boss stops and takes more damage. Six give nothing today: The Hour Strikes, Branded, Shade the Heart, Hold Still, Lantern Chain, Take the Blade. A clean party ends the fight sooner</td><td class="why">"Fights you can't speed up" is the most repeated complaint (Spine of Deathwing)</td></tr>
+  <tr><td><b>One colour language</b></td><td><span class="gold">Gold</span> on the floor = go here. <span class="red">Red</span> = get out. A <span class="white">white line</span> from the boss = aimed at you. A sun over a head = you have the job. First a sheet of every mark in the raid as it is, to see what breaks the rule</td><td class="why">Blizzard's designers: "very clear telegraphing"; players hate fights that need an add-on to read</td></tr>
+  <tr><td><b>Your job beside your name</b></td><td>A small icon in the party list and over the hero: Bearer, Chain, Vent, Spot, a squad's colour. Everyone sees who does what</td><td class="why">"A job for each player" is the most loved mechanic</td></tr>
+  <tr><td><b>Carriers keep their spells</b></td><td>A shard's carrier walks slower but can still fight. Its light makes allies near it hit 25 % harder, so the party wants to walk with it</td><td class="why">"Takes away your character" is on the hated list (Malygos' drakes)</td></tr>
+</table>
+
+<h2>Tier A: the mechanics, one by one</h2>
+<table>
+  <tr><th>Mechanic</th><th>Change</th><th>WoW precedent</th></tr>
+  <tr><td><b>The Hour Strikes</b></td><td>Everyone in the safe arm at the bell: he kneels 6 s ("the hour passes in silence")</td><td class="why">Heigan's dance; Lei Shen's quadrants</td></tr>
+  <tr><td><b>Branded</b></td><td>Brands come in two colours, dawn and dusk. A dawn and a dusk who touch before the burst cancel both, and leave a pool of light that heals. A brand nobody cancels bursts as in choice A</td><td class="why">Thaddius' polarity; pairs are the smallest team at any size</td></tr>
+  <tr><td><b>Carry the Sun</b></td><td>A dropped shard can be picked up by anyone. Standing in the ray for a carrier stays (it is built)</td><td class="why">Vashj's cores; Archimonde's soaks</td></tr>
+  <tr><td><b>The Four Hours</b></td><td>Four squad colours dealt by the server, four progress bars on screen; all four clean: a long kneel of 10 s, the big moment of the fight</td><td class="why">Magtheridon's cubes; Spoils of Pandaria</td></tr>
+  <tr><td><b>Lantern Chain</b> <span class="tag">wait</span></td><td>A pair that keeps its chain whole the whole time gets "Kindred": 15 % more damage for 10 s</td><td class="why">Sludgefist's chains</td></tr>
+  <tr><td><b>Seal the Vents</b> <span class="tag">wait</span></td><td>A vent's holder starts to scorch after 8 s and must be relieved by another: the swap is the skill</td><td class="why">Netherspite's beams, Magtheridon's cubes (both rotated)</td></tr>
+  <tr><td><b>The Changing of the Flames</b> <span class="tag">wait</span></td><td>A countdown on each gate; only those on the wrong side burn</td><td class="why">The Twin Emperors' swap</td></tr>
+  <tr><td><b>Shade the Heart</b></td><td>A crowded plate shares its cover: the heat is split among those under it, so too many is a little worse, not all or nothing</td><td class="why">Sapphiron's ice blocks; "split among those hit" scales itself</td></tr>
+  <tr><td><b>Hold Still</b></td><td>A hero who stays perfectly still through four beats is "Steady": its next hit counts double toward the kneel</td><td class="why">Rewards the rule, not only punishes it</td></tr>
+  <tr><td><b>Take the Blade</b></td><td>The carrier can throw the blade to a friend before its 12 s run out (it is aimed like a spell): a relay of power</td><td class="why">Kael'thas' weapons</td></tr>
+</table>
+<p class="sub"><span class="tag">wait</span> Ash and Ember's rows wait for the helper finishing the Twin Forge: their built state may still change.</p>
+
+<h2>Tier B: one moment per boss that players will remember</h2>
+<div class="box">
+<h3>Sun Warden: Twelve Strikes</h3>
+<p>At 10 % he stops fighting and strikes the hour twelve times. Each strike sets one arm on fire, in clock order, shown on the dial on his back. The party runs round the hall just ahead of the fire. Survive the twelfth strike and he falls to his knees for the last blow.</p>
+<p class="why">A race against a clock everyone can read. Lessons used: the room as a clock; a miss burns only the one who missed.</p>
+</div>
+<div class="box">
+<h3>Ash and Ember: the Twin Kneel</h3>
+<p>Bring both twins to two thirds, and later to one third, within 5 s of each other: both kneel together for 8 s, and the room changes gently (the bridges stand longer, the flood rises slower). Miss it and the room changes hard. At the end they must fall within 10 s of each other, or the one left raises the other at a quarter of its health.</p>
+<p class="why">The two halves of the party have to talk across the wall of fire. Lessons used: Halion's balance, the Twin Emperors.</p>
+</div>
+<div class="box">
+<h3>Heart of Noon: The Last Beat</h3>
+<p>At 15 % the rule turns over. Moving is free now, but damage only counts on the beat: on the beat it hits harder, off it barely scratches. The beat is heard and seen on the floor, and quickens to the end, like a song's last chorus.</p>
+<p class="why">The finale flips the rule the players have learned all fight. Lessons used: change the rule each phase; make the last boss feel huge.</p>
+</div>
+
+<h2>Tier C: a hard mode the party chooses</h2>
+<p>Chosen before the fight starts, at a brazier at the door. A gold border on the week's board, and more obols.</p>
+<table>
+  <tr><th>Boss</th><th>Hard mode</th><th>What changes</th></tr>
+  <tr><td>Sun Warden</td><td><b>The Long Noon</b></td><td>The safe arm is not lit for The Hour Strikes. The party reads the hour from the dial on his back: 12, 3, 6 or 9 o'clock is the safe arm</td></tr>
+  <tr><td>Ash and Ember</td><td><b>Twin Oath</b></td><td>The twins must stay within 5 points of each other, not 12, and the wall of fire never goes out</td></tr>
+  <tr><td>Heart of Noon</td><td><b>Heart of Night</b></td><td>No beat marks on the floor. The party reads the Heart's glow and listens</td></tr>
+</table>
+<p class="why">Players love choosing difficulty themselves: Yogg-Saron's keepers, Mimiron's red button.</p>
+
+<h2>Order</h2>
+<div class="box pick">
+<p>The push and deploy you asked for comes first, after the Twin Forge. Then Tier A for the Sun Warden and the Heart, while Ash and Ember's helper is still out. Then Ash and Ember. Then Tiers B and C.</p>
+<p>Each step is measured with the bots before it is merged.</p>
+<p>Nothing here is built yet.</p>
+</div>
+
+</div>
+</body>
+</html>
