@@ -4,6 +4,7 @@
 //   eval(await (await fetch('/pipeline/tools/raid-check.js')).text());
 //   await _raidCheck()    // { ok, failed: [...], rows: [...] }
 //   await _raidHeart()    // the same for the Heart of Noon: its moves, Hold Still, Lock a ring and Shade the heart, alone and with a partner
+//                         // and for a party in the Sunburst, its own room (bands 5, 10 and 40)
 (() => {
   // Every hero's four spells and basic attack replayed as a partner: nothing in them may touch this screen's hero or the boss.
   //   _raidPartners(['Lyra', 'Bram'])  in the background; _raidPartners.result() when done
@@ -1319,9 +1320,240 @@
       check('phases: three', def.phases.length, 3, 0);
       yes('phases: The Rings Turn opens with the rings', def.phases[1].opener === 'rings');
       yes('phases: Noon Falls opens with the Heartbeat', def.phases[2].opener === 'heartbeat');
+
+      // A party (a band over 2) fights in the Sunburst: a well and eight rays, 35 m to the far corners. Every move reaches the walls,
+      // and what the mechanics ask grows with the band (src/raid/heart.ts, `party`).
+      const { burstAt } = await import('/src/arenas/sunburst.ts');
+      const party = (band) => {
+        d.startBoss({ def, link: new LocalLink(def), seed: 'heart', mode: 'play', band });
+        d.boss.brain.pause = 1e9;
+        d.boss.brain.timedDone = 1e9;
+        a.placeFoe(d.foe, new V(H.x, 0, H.z));
+        step(0.05);
+      };
+      const deg = (x, z) => ((Math.atan2(x - H.x, z - H.z) * 180) / Math.PI + 360) % 360;
+      const sees = (p, q) => a.lineOfSight(new V(p.x, 0, p.z), new V(q.x, 0, q.z));
+      const rays = [0, 1, 2, 3, 4, 5, 6, 7];
+      party(10);
+      yes('party: the room is the Sunburst', d.currentArena?.id === 'sunburst' && def.place.id === 'sunburst');
+      check('party: its floor reaches 35 m', d.currentArena?.ring ?? 0, 35, 0);
+      check('party: the party starts at the far end of the south ray', def.starts.heroes[0].z - H.z, 30, 0.01);
+      yes('party: the Heart sees the far end of every ray', rays.every((k) => sees(H, burstAt(k, 32.5))));
+      yes('party: two rays do not see each other', !sees(burstAt(0, 28), burstAt(1, 28)) && !sees(burstAt(3, 28), burstAt(5, 28)));
+      let q0 = burstAt(1, 32.5);
+      place(q0.x, q0.z);
+      for (let i = 0; i < 180; i++) { a.walk(new V(0.07, 0, 0.07)); step(1 / 60); }
+      yes('party: a hero can not walk out through the end of a ray', Math.hypot(a.caster.group.position.x - H.x, a.caster.group.position.z - H.z) < 34.5);
+
+      // Solar Flare: four gaps, each over a spur and the near half of the ray on either side, the same for all three rings.
+      c = cast('flare', { x: 0, z: 13 });
+      step(0.05);
+      const pf = live(c.id).played.threats;
+      const openAt = (th, r, a0) => { const q = polar(a0, r); return !th.hits(q.x, q.z, th.at + (r - 2) / 5.5); };
+      const gapsOf = (th, r) => { let n = 0; for (let k = 0; k < 720; k++) if (openAt(th, r, k / 2) && !openAt(th, r, (k - 1) / 2)) n++; return n; };
+      check('party flare: three rings', pf.length, 3, 0);
+      check('party flare: four gaps in a ring', gapsOf(pf[0], 6), 4, 0);
+      const odd = openAt(pf[0], 10, 22.5) ? 0 : 1;
+      yes('party flare: each gap lies over a spur, every other one', rays.every((k) => openAt(pf[0], 10, k * 45 + 22.5) === (k % 2 === odd)));
+      // 3 degrees to each side of a ray's middle: inside its two halves, and clear of the shade of the piece of cover that lies in one.
+      yes('party flare: so in every ray one half is open and one burns, out to its end', rays.every((k) => [20, 28, 33].every((r) => openAt(pf[0], r, k * 45 + 3) !== openAt(pf[0], r, k * 45 - 3))));
+      yes('party flare: the open half is at least 3.5 m of floor 20 m out', rays.every((k) => { let n = 0; for (let x = -13.5; x <= 13.5; x += 0.25) if (openAt(pf[0], 20, k * 45 + x)) n++; return n * 0.25 * (Math.PI / 180) * 20 >= 3.5; }));
+      yes('party flare: all three rings open the same lanes', [0, 1, 2].every((i) => rays.every((k) => openAt(pf[i], 12, k * 45 + 22.5) === openAt(pf[0], 12, k * 45 + 22.5) && openAt(pf[i], 28, k * 45 + 3) === openAt(pf[0], 28, k * 45 + 3))));
+      check('party flare: a lane is 42 degrees wide: 4.4 m at 6 m from the Heart', (() => { let n = 0; for (let x = 0; x < 90; x += 0.25) if (openAt(pf[0], 6, x)) n++; return n * 0.25; })(), 42, 0.5);
+      check('party flare: a ring runs to the end of a ray', pf[0].to - pf[0].at, (35.6 - 2) / 5.5, 0.01);
+      party(10);
+      q0 = polar(22.5 + 45 * (1 - odd), 10);
+      place(q0.x, q0.z);
+      check('party flare: standing between two lanes, every ring hits', take(() => cast('flare', { x: 0, z: 13 }), 12), 0.36, 0.02);
+      // The east ray: which of its halves this cast opens (its half toward ray 3 is where its piece of cover lies).
+      const plus = openAt(pf[0], 20, 93);
+      party(10);
+      q0 = burstAt(2, 30, plus ? 3 : -3);
+      place(q0.x, q0.z);
+      check('party flare: standing in the open half at the far end of a ray costs nothing', take(() => cast('flare', { x: 0, z: 13 }), 14), 0);
+      party(10);
+      q0 = burstAt(2, 30, plus ? -3 : 1.3);
+      place(q0.x, q0.z);
+      check('party flare: and in the other half every ring hits', take(() => cast('flare', { x: 0, z: 13 }), 14), 0.36, 0.02);
+
+      // The flare's rings stop at cover. A cast whose lanes lie over the other four spurs: then the half of the east ray where its piece
+      // of the fallen armillary lies burns.
+      let burnSeed = -1;
+      for (const seed of [21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]) {
+        party(10);
+        const fc = cast('flare', { x: 0, z: 13, seed });
+        step(0.05);
+        if (!openAt(live(fc.id).played.threats[0], 20, 93)) { burnSeed = seed; break; }
+      }
+      yes('party flare: the seed says which four spurs the lanes lie over', burnSeed >= 0);
+      party(10);
+      q0 = burstAt(2, 27, 3.4);
+      place(q0.x, q0.z);
+      check('party flare: behind the fallen armillary\'s piece, in the half that burns, no ring reaches', take(() => cast('flare', { x: 0, z: 13, seed: burnSeed }), 14), 0);
+      party(10);
+      q0 = burstAt(2, 20, 3.4);
+      place(q0.x, q0.z);
+      check('party flare: in front of the piece every ring hits', take(() => cast('flare', { x: 0, z: 13, seed: burnSeed }), 14), 0.36, 0.02);
+
+      // The Rings Turn: a beam runs to the walls and stops at the fallen armillary's piece; a ring's spots stand in a row down a ray.
+      party(10);
+      place(0, 16);
+      let prc = [0, 1, 2].map((i) => cast('rings', { step: i, x: H.x, z: H.z }));
+      step(0.05);
+      let pbeams = prc.map((x) => live(x.id).played.threats[0]);
+      const everHit = (pt) => { for (let t = pbeams[0].at; t < pbeams[0].to; t += 0.02) if (pbeams.some((th) => th.hits(pt.x, pt.z, t))) return true; return false; };
+      yes('party rings: a beam reaches the far end of a ray', everHit(burstAt(1, 33, 3)));
+      // Ray 2's piece lies across its half toward ray 3: behind it no beam ever comes; beside it, and in front of it, one does.
+      yes('party rings: behind the fallen armillary\'s piece no beam reaches', !everHit(burstAt(2, 26, 3.4)) && !everHit(burstAt(2, 31, 4.2)));
+      yes('party rings: beside it and in front of it one does', everHit(burstAt(2, 26, -3.4)) && everHit(burstAt(2, 20, 3.4)));
+      check('party rings: one spot a ring at band 10', live(prc[0].id).played.objectives.length, 1, 0);
+      const s10 = prc.map((x) => live(x.id).played.objectives[0]);
+      yes('party rings: the spots stand out in three different rays, 23.5 m from the Heart', s10.every((o) => Math.abs(Math.hypot(o.x - H.x, o.z - H.z) - 23.5) < 0.01 && Math.abs(deg(o.x, o.z) / 45 - Math.round(deg(o.x, o.z) / 45)) < 0.001)
+        && new Set(s10.map((o) => Math.round(deg(o.x, o.z) / 45) % 8)).size === 3);
+      party(40);
+      place(0, 16);
+      prc = [0, 1, 2].map((i) => cast('rings', { step: i, x: H.x, z: H.z }));
+      step(0.05);
+      pbeams = prc.map((x) => live(x.id).played.threats[0]);
+      const row = live(prc[1].id).played.objectives;
+      check('party rings: four spots a ring at band 40', row.length, 4, 0);
+      yes('party rings: in a row down one ray, 3 m apart', row.every((o, j) => Math.abs(Math.hypot(o.x - H.x, o.z - H.z) - (23.5 + 3 * j)) < 0.01) && new Set(row.map((o) => Math.round(deg(o.x, o.z)))).size === 1);
+      step(pbeams[0].at + 0.5);
+      const pg0 = gauge();
+      for (let j = 0; j < 3; j++) { place(row[j].x, row[j].z); step(2.2); }
+      yes('party rings: three of four held, the ring still turns', row.slice(0, 3).every((o) => o.done) && beamAt(pbeams[1], since(prc[1].id) + 0.5) !== null);
+      check('party rings: and nothing is paid yet', gauge() - pg0, 0, 0);
+      // The last of the row, by a partner on its own screen.
+      d.boss.script.done(prc[1].id, 3, 1);
+      step(0.1);
+      yes('party rings: the last one locks it', beamAt(pbeams[1], since(prc[1].id) + 1) === null && HEART_LIVE.rings[1].lit === 0);
+      check('party rings: a lock is paid once', gauge() - pg0, 40, 0);
+
+      // Heartbeat: a plate for every five heroes, each in front of a spur's nose; only a raised plate's pocket shelters, and only five.
+      party(10);
+      let pbc = cast('heartbeat', { x: H.x, z: H.z, dir: (100 * Math.PI) / 180 });
+      step(0.05);
+      let php = live(pbc.id), pat = php.played.threats[0].at;
+      check('party heartbeat: two plates at band 10', php.played.objectives.length, 2, 0);
+      check('party heartbeat: the first falls at the spur nearest its aim', deg(php.played.objectives[0].x, php.played.objectives[0].z), 112.5, 0.01);
+      check('party heartbeat: the second across the well from it', deg(php.played.objectives[1].x, php.played.objectives[1].z), 292.5, 0.01);
+      check('party heartbeat: 13.5 m out, in front of the spur\'s nose', Math.hypot(php.played.objectives[0].x - H.x, php.played.objectives[0].z - H.z), 13.5, 0.01);
+      step(1);
+      const pn0 = a.obstacles.length;
+      place(php.played.objectives[0].x, php.played.objectives[0].z);
+      step(3.3);
+      yes('party heartbeat: holding a plate 3 s raises it', php.played.objectives[0].done === true && a.obstacles.length - pn0 === 1);
+      yes('party heartbeat: its pocket shows as a gold zone to stand in', d.boss.script.goldSpots().length >= 1 && !!d.boss.script.standGoal(0, 7));
+      d.playerHp = d.playerMax;
+      q0 = polar(112.5, 15.5);
+      place(q0.x, q0.z);
+      step(pat - since(pbc.id) + 0.3);
+      check('party heartbeat: in the pocket behind a raised plate, safe', lost(), 0);
+      // The hub's count for a pocket, in place of the local link's (which counts this one hero): five are sheltered, and what a sixth
+      // to an eighth would have taken is shared by all eight.
+      const crowd = (count) => {
+        party(10);
+        pbc = cast('heartbeat', { x: H.x, z: H.z, dir: (100 * Math.PI) / 180 });
+        step(1.05);
+        php = live(pbc.id);
+        pat = php.played.threats[0].at;
+        d.boss.script.done(pbc.id, 0, 1);
+        d.playerHp = d.playerMax;
+        q0 = polar(112.5, 15.5);
+        place(q0.x, q0.z);
+        let said = null;
+        d.boss.link.stood = (id, part, inside) => { said = { id, part, inside }; };
+        step(pat - since(pbc.id) + 0.3);
+        if (said) d.boss.script.stood(said.id, said.part, count);
+        return said;
+      };
+      let said = crowd(8);
+      yes('party heartbeat: a hero in a partner\'s pocket says so as the beat lands', !!said && said.part === 0 && said.inside === true);
+      check('party heartbeat: eight in a pocket for five share what three would take', lost(), (0.4 * 3) / 8, 0.002);
+      said = crowd(5);
+      check('party heartbeat: five in a pocket pay nothing', lost(), 0);
+      // A raised plate's pocket is shelter from the flare too, whether the flare's lane lies over its spur or not.
+      const pocketFlare = (seed) => {
+        party(10);
+        pbc = cast('heartbeat', { x: H.x, z: H.z, dir: (100 * Math.PI) / 180 });
+        step(1.05);
+        d.boss.script.done(pbc.id, 0, 1);
+        step(0.1);
+        d.playerHp = d.playerMax;
+        q0 = polar(112.5, 15.5);
+        place(q0.x, q0.z);
+        const fc = cast('flare', { x: 0, z: 13, seed });
+        step(0.05);
+        const inLane = openAt(live(fc.id).played.threats[0], 10, 112.5);
+        step(8.5);
+        return { inLane, lost: lost() };
+      };
+      const seen = {};
+      for (const seed of [11, 12, 13, 14, 15, 16, 17, 18]) {
+        const r = pocketFlare(seed);
+        seen[r.inLane ? 'lane' : 'burns'] = r.lost;
+        if (seen.lane !== undefined && seen.burns !== undefined) break;
+      }
+      check('party heartbeat: behind a raised plate under a lane, the flare costs nothing', seen.lane ?? -1, 0);
+      check('party heartbeat: behind a raised plate where the flare burns, it does not reach either', seen.burns ?? -1, 0);
+      party(10);
+      q0 = burstAt(2, 27, 3.4);
+      place(q0.x, q0.z);
+      check('party heartbeat: the fallen armillary\'s piece is no shelter from it', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0.4, 0.002);
+      party(10);
+      q0 = burstAt(5, 33, -4);
+      place(q0.x, q0.z);
+      check('party heartbeat: it reaches the far corner of a ray', take(() => cast('heartbeat', { x: H.x, z: H.z }), 10.5), 0.4, 0.002);
+      party(40);
+      pbc = cast('heartbeat', { x: H.x, z: H.z });
+      step(0.05);
+      const p40 = live(pbc.id).played.objectives.map((o) => (deg(o.x, o.z) - 22.5) / 45);
+      check('party heartbeat: eight plates at band 40', p40.length, 8, 0);
+      yes('party heartbeat: one in front of each spur', new Set(p40.map((v) => Math.round(v))).size === 8 && p40.every((v) => Math.abs(v - Math.round(v)) < 0.001));
+      party(5);
+      pbc = cast('heartbeat', { x: H.x, z: H.z });
+      step(0.05);
+      check('party heartbeat: one plate at band 5', live(pbc.id).played.objectives.length, 1, 0);
+
+      // The Crown of Rays: down four rays, the one nearest its aim among them, then the four between.
+      party(10);
+      const aim80 = { dir: (80 * Math.PI) / 180 };
+      q0 = burstAt(2, 30);
+      place(q0.x, q0.z);
+      check('party corona: far down a first ray', take(() => cast('corona', aim80), 3.5), 0.15);
+      q0 = burstAt(3, 30, 1.5);
+      place(q0.x, q0.z);
+      check('party corona: far down a second ray', take(() => cast('corona', aim80), 3.5), 0.15);
+      q0 = burstAt(3, 30, 3.6);
+      place(q0.x, q0.z);
+      check('party corona: beside the ray, by the wall', take(() => cast('corona', aim80), 3.5), 0);
+
+      // Hold Still: the beat reaches the far end of a ray.
+      party(10);
+      q0 = burstAt(6, 30);
+      place(q0.x, q0.z);
+      d.playerHp = d.playerMax;
+      sc = cast('still', { x: H.x, z: H.z });
+      step(0.05);
+      toBeat(sc.id, 0, 0.5);
+      walkFor(1);
+      check('party still: walking through a beat at the far end of a ray burns', lost(), 0.12);
+      d.playerHp = d.playerMax;
+      toBeat(sc.id, 1, 0.5);
+      step(1);
+      check('party still: standing still there costs nothing', lost(), 0);
+
+      // Back to the room for two: nothing of the party's stays.
+      fresh();
+      yes('party: the next fight for two is in the Sunken Heart again', d.currentArena?.id === 'sunkenheart' && def.place.id === 'sunkenheart' && def.starts.heroes[0].z === 16.5);
+      c = cast('heartbeat', { x: H.x, z: H.z });
+      step(0.05);
+      check('party: and its Heartbeat throws three plates again', live(c.id).played.objectives.length, 3, 0);
     } catch (e) {
       failed.push(String(e?.stack ?? e));
     }
+    // The room for two, for whatever runs next in this page.
+    def.resize?.(2);
     delete performance.now;
     return { ok: !failed.length, failed, rows };
   };

@@ -1,7 +1,7 @@
 ---
 title: The Raid for up to 40 players
 tags: [raid, online, design]
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 
 # The Raid for up to 40 players
@@ -120,6 +120,37 @@ only sets the boss's HP and gauge. Pictures: `docs/raid/hall-overview.jpg`, `hal
 waiting for the nod.** Not done or not checked: a fight in it (the boss's and the autopilot's way round the hall's corners; his
 floor-wide moves; cover from Noon behind the hall's own walls); the north gate is inside the stone; the Cinder Pit's and the Heart's
 party rooms; his mechanics scaled to the band.
+
+## The Heart's room for a party: the Sunburst (2026-11-12)
+
+The same two sentences of the user's, for the third boss. **The Sunken Heart stays the room for two, 12 m, as it was.** A party (band
+over 2) fights the Heart in **the Sunburst**: the crater under the hall where the sun fell, in the shape of the sun itself.
+`blender/arenas/real/sunburst.py` -> `public/models/arenas/sunburst.glb` (596 KB) and `src/arenas/real/sunburst.json`;
+`src/arenas/sunburst.ts` draws its floor, lanterns and far wall. A round well, 18 m to its rim, the Heart over its middle; eight rays,
+bays 11.6 m wide, cut straight out to 34 m, one every 45 degrees; the party's way in is the gate at the end of the south ray (five rows
+of eight, `partyStart`), the way out an alcove at the end of the north one under the keepers' sun sign.
+
+**Why this shape, and not a ring or the hall's cross.** The Heart never walks, and everything it does runs outward from the middle:
+rings of fire, turning beams, rays, the beat. In a sun every bay is a straight lane from the Heart to an end wall, so each of those runs
+the whole length of every bay, and no wall ever stands between the Heart and a hero: the Heart sees every spot of its floor, and the
+only shelter from its beat is a plate the party raises. The stone between two rays (a spur) splits a party of forty into eight bays
+that don't see each other, with the well as the one place they all meet. And its fight falls on the shape: the Crown of Rays fires
+down four rays and then the four between, the flare's four lanes lie over four spurs, a plate falls in front of each spur's nose.
+
+How a room that is not round works is the hall's way: the game's floor stays a ring (35 m, `RAID_BOSSES.heart.partyRing`, `raidRing`;
+the hub clamps walks to it), the shape is 39 stretches of the room's own wall (`Obstacle.fixed`). The stone is 1.3 m high on the
+camera's side and 6.5 to 13 m to the north; where a tall spur would hide the floor of the ray north of it (the two beside the east and
+west rays) it has a low shelf 5 m wide along that ray. Cover: one piece of the fallen armillary across half of each ray, 22.5 m out.
+
+**The fight scales with the band** (how: `docs/architecture/raid.md`, "A party: the Sunburst"; decided and measured:
+`pipeline/designs/raid-heart.md`). Every move reaches the walls. A ring's gold spots: 1, 1, 2, 2, 3, 4 for bands 5 to 40, in a row down
+one ray, all to be held. Plates: 1, 2, 3, 4, 6, 8, each sheltering five. Cover stops a beam and the flare's rings, not the beat.
+
+Pictures: `docs/raid/heartroom-overview.jpg` (from far above), `-play`, `-gate`, `-ray`, `-flare`, `-flare-play`, `-beams`, `-lock`,
+`-plates`, `-plates-far`, `-crown`, `-phone` and `-phone-lock` (390 x 844); retaken by `python pipeline/tools/heart-room-shots.py
+docs/raid`. **To show the user, waiting for the nod.** Not done or not checked: a party of real screens through the hub in it (only one
+screen, with a partner's reports fed in by hand); a person playing it; the count of heroes standing instead of the band (needs one more
+field in the hub's relay of `boss_cast`); `PROTOCOL` needs a new number when it goes out; the Cinder Pit's party room.
 
 ## The server half is merged (2026-11-11)
 

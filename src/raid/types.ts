@@ -82,12 +82,22 @@ export interface Threat {
   shapeAt?(t: number): TelegraphShape;
   /** A zone no shape can say (the Lava Wave's gap): whether (x, z) is in it at time `t`. The move's look draws it. */
   hits?(x: number, z: number, t: number): boolean;
+  /**
+   * An AI keeps this far (m) inside what `hits` leaves open (default 0: on its very edge, where the next step of its own fight takes
+   * it back in). For lanes that stay put while several hits pass, as the Heart's flare in its room for a party.
+   */
+  margin?: number;
   /** Parts of one move that report apart (Anchors). */
   part?: number;
   /** A `stand` zone whose cost is shared by the heroes in it; those outside pay nothing, unless nobody is in it. */
   split?: boolean;
   /** A zone that splits: what it costs in all, shared by the heroes in it (default `share`, which is then also what nobody in it costs). */
   soak?: number;
+  /**
+   * A `stand` zone that shelters only this many (the pocket behind a raised plate in the Heart's room for a party): with more in it,
+   * what those over the number would have taken (`share` each) is shared by all in it. Nobody in it costs nothing.
+   */
+  most?: number;
   /** This screen's hero stood in this zone when it landed. */
   inside?: boolean;
   /** The hub has said how many stood in it. */
@@ -347,7 +357,10 @@ export interface BossPhase {
 }
 
 export interface BossDef {
-  /** Makes the room fit a party tuned for `band` players (`raidRing`), before the fight is built. A boss without it has one room. */
+  /**
+   * Makes the room fit a party tuned for `band` players (`raidRing`), before the fight is built. A boss without it has one room. The
+   * band is the same on every screen, so a boss may also keep it for what its moves ask of a party (the Heart's plates and spots).
+   */
   resize?(band: number): void;
   id: string;
   /** Not a boss: Noonfall's hall, on the same path, with no bars, no spells and nothing to fight (src/raid/hall.ts). */

@@ -15,7 +15,7 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
 export const RAID_BOSSES = {
   sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16, partyRing: 46 },
   ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16 },
-  heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12 },
+  heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12, partyRing: 35 },
 };
 
 /**
@@ -35,7 +35,7 @@ export const RAID_SHRINE_S = 15;
 
 /**
  * How far a boss's room reaches (m). For two it is the room as it was; a party of more fights in the boss's own party room where it
- * has one (`partyRing`: the Sun Warden's Hall of Noon), whatever the band. Both screens and the hub work it out from the band.
+ * has one (`partyRing`: the Sun Warden's Hall of Noon, the Heart's Sunburst), whatever the band. Both screens and the hub work it out from the band.
  * @param {string} id @param {number} band
  */
 export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? RAID_BOSSES[id].ring : RAID_BOSSES[id].ring);
