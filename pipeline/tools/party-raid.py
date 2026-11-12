@@ -16,7 +16,8 @@ one public raid room, the host starts, every screen's autopilot plays. To find w
 --hall   the Sun Warden's hall (with --boss sun and three or more players): every second each screen says whether its hall
          has broken open, how far its sunfire has come, and how much cover stands. Prints when the hall broke on each screen
          (the fight's own clock), whether the screens agree on cover each second, and which of his moves each screen saw;
-         pictures as the hall breaks and of the sunfire.
+         pictures as the hall breaks and of the sunfire. With more than ten players the boost stops when High Noon begins,
+         so Carry the Sun is played unhelped (sixteen players are a fight tuned for twenty).
 
 It starts its own dev server (the game's hub lives in it) on the port and stops it by its PID; one already there is used
 and left alone. The bots' accounts are local (server/data/, git-ignored): delete them after (names start with v5bot). It
@@ -196,11 +197,18 @@ async def run(args):
             twin_seen = False
             # The Warden's hall: when each screen's broke open (the fight's clock), seconds on which the screens' cover differed.
             broke, fire_most, hall_last, cover_apart, hall_shots = {}, {}, [], [], set()
+            boost_off = False
             while time.time() - t0 < args.seconds:
                 await asyncio.sleep(1 if args.boss == "ash" or args.hall else 5)
                 t = time.time() - t0
                 now = [await pg.evaluate("() => _botRaid()") for pg in pages]
                 if args.hall:
+                    # More than ten players (Carry the Sun, The Four Hours): the boost only brings High Noon on, then the bots play unhelped.
+                    if args.boost and args.players > 10 and not boost_off and all(s.get("phase", 0) >= 1 for s in now):
+                        boost_off = True
+                        for pg in pages:
+                            await pg.evaluate("() => { window._botBoost = 0; }")
+                        print(f"      boost off at {t:.0f} s: High Noon has begun")
                     hall = [await pg.evaluate(HALL_JS) for pg in pages]
                     if all(hall):
                         hall_last = hall
@@ -210,6 +218,11 @@ async def run(args):
                             fire_most[i] = max(fire_most.get(i, 0), h["fire"])
                         if len({h["cover"] for h in hall}) > 1:
                             cover_apart.append((round(t), [h["cover"] for h in hall]))
+                        if any("carry" in h["seen"] for h in hall) and "hall-carry" not in hall_shots:
+                            hall_shots.add("hall-carry")
+                            await asyncio.sleep(9)
+                            await shot(pages[0], out / "hall-carry.png")
+                            await shot(pages[-1], out / "hall-carry-last.png")
                         for name, when in (("hall-breaking", any("breach" in h["seen"] for h in hall) and not any(h["open"] for h in hall)),
                                            ("hall-open", all(h["open"] for h in hall)), ("hall-sunfire", min(h["fire"] for h in hall) > 9)):
                             if when and name not in hall_shots:
@@ -259,6 +272,7 @@ async def run(args):
                 apart = f"{max(broke.values()) - min(broke.values())} ms apart" if len(broke) == len(pages) else f"only on {len(broke)} of {len(pages)} screens"
                 print(f"hall: broke open on every screen within {apart}; the sunfire came as far as {[fire_most.get(i, 0) for i in range(len(pages))]} m; "
                       f"cover at the end {[h['cover'] for h in hall_last]}; seconds with cover apart: {len(cover_apart)} {cover_apart[:6]}")
+                print(f"hall: kneels {[s.get('kneels') for s in now]}; hits by Carry the Sun's Noon {[s.get('hits', {}).get('carry', 0) for s in now]}; down {[bool(s.get('down')) for s in now]}")
                 for i, h in enumerate(hall_last):
                     print(f"hall: screen {i} saw {h['seen']}")
             if twin_seen:

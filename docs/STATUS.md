@@ -20,11 +20,13 @@ works: `docs/architecture/raid.md`, "The hall transforms, and what comes only fo
   the cross becomes a round court with rubble as cover); sunfire spreads from the Sun Well for the whole last phase and he hunts the
   party group by group; Branded for a raid of 6 or more, Carry the Sun for 16 or more, The Four Hours for 31 or more. The raid for
   one and two is untouched.
-- **Checked.** Type check, build, `npm run test:server`. `_raidCheck()` 226 rows (the 133 as they were, 93 new), `_raidAsh()` 77,
+- **Checked.** Type check, build, `npm run test:server`. `_raidCheck()` 234 rows (the 133 as they were, 101 new), `_raidAsh()` 77,
   `_raidHeart()` 71, `_raidUpgrades()` 40, `_raidTwin()` 72. The autopilot at the four sizes, 80 fights, no errors and none that never
-  ends. Six bots through the real hub, twice: the hall broke on all six screens within 0.36 s, same cover and boss HP, no errors.
-- **Not checked.** A person playing. Carry the Sun and The Four Hours through the real hub (six bots are a fight tuned for ten;
-  they are checked on one screen with the hub's answers fed by hand). More than six screens. A real phone.
+  ends (6, 4, 2 and 0 clears of 20: one hero cannot do a party's mechanics). Six bots through the real hub, twice: the hall broke on
+  all six screens within 0.36 s, same cover and boss HP, no errors, won. Sixteen bots once: Carry the Sun cast and a shard picked
+  up on sixteen screens, no errors.
+- **Not checked.** A person playing. The Four Hours through the real hub, and Carry the Sun to its end (both are checked on one
+  screen with the hub's answers fed by hand). A real phone: one frame at phone size is 684 draw calls with the hall whole.
 - **Not built as asked.** A shard's carrier can still cast: stopping its spells needs `src/duel.ts`, which was another helper's.
 - **Before a deploy.** `PROTOCOL` in `server/protocol.mjs` must be raised: the hall's shape and five new rewards are rules two
   screens and the hub must agree on. Rebuild after a change to the hall:

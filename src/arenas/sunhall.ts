@@ -356,6 +356,11 @@ export const sunHallArena: ArenaDef = {
       }
       before.group.visible = since < 0.4;
       after.group.visible = since > 1.6;
+      // The rubble stands inside the blocks until they fall: not drawn till then (a phone has draw calls to spare for nothing unseen).
+      for (const i of LAYOUT.rubble) {
+        const o = cover[i];
+        if (o) o.visible = since >= 0;
+      }
     };
     const me: HallShow = {
       reset() { since = -1; shake = 0; place(); },

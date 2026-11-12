@@ -1075,7 +1075,7 @@
       // would say of the others (how many stood in a zone) is fed in by hand, and what the brain reads of them is given to `aim`.
       {
         const { HOUR } = await import('/src/raid/sunWarden.ts');
-        const { BREACH, SUNFIRE, BRAND, CARRY, FOUR, fireRadius, hallFight } = await import('/src/raid/wardenHall.ts');
+        const { BREACH, SUNFIRE, BRAND, CARRY, FOUR, HUNT_S, fireRadius, hallFight } = await import('/src/raid/wardenHall.ts');
         const H = await import('/src/arenas/sunhall.ts');
         const hall = (band = 5, mode = 'play') => {
           d.startBoss({ def, link: new LocalLink(def, 1), seed: 'party', mode, band });
@@ -1358,6 +1358,31 @@
         check('Carry the Sun: behind the hero who shields, the carrier is not hit', take(() => send({ move: 'ray', fz: 10, x: 0.5, z: 20, target: 1, flag: true }), 2.8), 0);
         place(0.3, 19.5);
         check('Carry the Sun: the hero who shields takes the ray', take(() => send({ move: 'ray', fz: 10, x: 0.5, z: 20, target: 1, flag: true }), 2.8), 0.22);
+
+        // Whom he goes for (`BossDef.choose`). The brain asks it only with more than one screen, so it is asked here by hand: four
+        // heroes, two in the nave, one in each transept, nobody in the choir; `when` says he aimed at the lower seats longer ago.
+        hall(20);
+        {
+          const hs = [{ side: 0, x: 0, z: 30 }, { side: 1, x: 2, z: 31 }, { side: 2, x: 25, z: 7 }, { side: 3, x: -24, z: 8 }];
+          const ask = (time) => def.choose({ heroes: hs, boss: { x: 0, z: 3 }, time, when: (side) => side });
+          const quarter = (side) => H.quarterOf(hs[side].x, hs[side].z);
+          yes('whom he goes for: no fire and nobody carrying, it is the brain to say', ask(0) === undefined);
+          hallFight.carriers.add(3);
+          yes('whom he goes for: whoever carries a shard', ask(0) === 3);
+          hallFight.carriers.add(2);
+          yes('whom he goes for: of two carriers, the one he aimed at longer ago', ask(0) === 2);
+          hallFight.carriers.clear();
+          hallFight.fire = 12;
+          const first = ask(100);
+          yes('in the sunfire he hunts one quarter of the court', first === 2 && quarter(first) === 1);
+          yes('in the sunfire: and stays with it', [101, 105, 100 + HUNT_S - 1].every((t) => ask(t) === first));
+          const next = ask(100 + HUNT_S + 0.5);
+          yes('in the sunfire: then on to the next quarter with someone in it, past the empty one', next === 3 && quarter(next) === 3);
+          yes('in the sunfire: and round to the nave, to the one he aimed at longer ago', ask(100 + 2 * HUNT_S + 1) === 0);
+          hallFight.fire = 0;
+        }
+        fresh(0, 1);
+        yes('the court for two: whom he goes for is the brain\'s to say, whatever burns', def.choose({ heroes: [{ side: 0, x: 0, z: 10 }, { side: 1, x: 3, z: 10 }], boss: { x: 0, z: 3 }, time: 0, when: () => 0 }) === undefined);
 
         // The Four Hours.
         hall(40);

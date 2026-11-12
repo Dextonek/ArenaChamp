@@ -150,8 +150,21 @@ if (!phone) {
   me(3, 11);
   stand([[-7, 13], [7, 16], [-5, 22], [4, 26], [16, 9], [-17, 5], [9, -4], [-8, -9], [2, -14], [-11.6, 20], [11.5, -6]]);
   zoomTo(1.7);
+  // What the room costs to draw on a phone's screen, whole and broken open: draw calls and triangles of one frame.
+  // (Counted over the whole frame: the game draws in several passes, and the counter starts over with each.)
+  const cost = () => {
+    const info = api.renderer.info;
+    info.autoReset = false;
+    info.reset();
+    api.render();
+    const seen = { calls: info.render.calls, triangles: info.render.triangles };
+    info.autoReset = true;
+    return seen;
+  };
+  out.whole = cost();
   send({ move: 'breach' });
   step(BREACH.warn + 6);
+  out.open = cost();
   me(15, -5);
   boss(10, -11);
   step(0.6);
@@ -164,6 +177,7 @@ if (!phone) {
   me(2, 7 + hallFight.fire + 2);
   step(0.6);
   out['warden-phone-sunfire'] = shot();
+  out.sunfire = cost();
 }
 out.arena = d.currentArena?.id;
 return out;
