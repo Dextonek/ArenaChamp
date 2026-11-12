@@ -40,7 +40,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-12',
     title: 'Watch a duel',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Online',

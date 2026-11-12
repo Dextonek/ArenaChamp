@@ -1,8 +1,8 @@
 # Status
 
-_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are committed, not pushed (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
+_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off). Proposed, waiting on the user: quick cast as in League (Normal / Quick / Quick + indicator). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
 
-## Watch a duel, and walking with a mouse side button held (2026-11-12, evening): committed; NOT pushed, NOT live
+## Watch a duel, and walking with a mouse side button held (2026-11-12, evening): pushed and LIVE (version 5cf1d450)
 
 - **Watching duels** (the user: "make so that i can watch ongoing lobbys"; chose duels only for now, and the players see a count
   of watchers, no names). The Lobbies screen lists the duels being fought under **Live now**; Watch shows one from above until it
