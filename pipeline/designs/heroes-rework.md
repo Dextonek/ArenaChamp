@@ -188,7 +188,7 @@ how far ahead the winner ended) and `pipeline/tools/duel-trace.js` (one duel wri
 |---|---:|---:|---|---:|
 | Cantor | 58% (it was 54%); 56% in a second run | 54% (38%); 45% in a second run | none in the run of 64 (five: Kaia 100, Auriel 100, Isolde 91, Oblivion 9, Lyra 19); Lyra 31% there and 12% in a second run of 32 | 38% |
 | Brannoc | 51% (56%) | 54% (31%) | Kaia 91 (two: Kaia 100, Vesper 94) | 31% |
-| Vesper | 47 to 50% (53%) | 46 to 50% (55%) | five: Oblivion 5, Kaia 9, Sirix 97, Auriel 92, Lyra 86 (seven) | 0% |
+| Vesper | 47 to 50% (53%); after her second pass, below: 55% | 46 to 50% (55%); second pass: 49.5% | five: Oblivion 5, Kaia 9, Sirix 97, Auriel 92, Lyra 86 (seven); second pass: three (Sirix 91, Oblivion 19, Auriel 20) | 0% |
 
 **The numbers changed:** Cantor: Resounding Chord 25 -> 22, a step of Crescendo +12% -> +9%, HP 740 -> 720. Brannoc: Chain Hammer
 40 -> 34. Vesper: Lancet 33 -> 30, the Rip 24 -> 22, the Feast 35, 35, 40 -> 18, 18, 24 and 60 -> 45 back, the drink 25% -> 15% and
@@ -231,6 +231,61 @@ Cantor 1 of 3 and 20 with the strike at 16 a step (a charm or silence that canno
 charmed nor silenced), 3 of 4 and 21 at 24 a step, 3 of 4 and 28 at 36, as it is now. Not measured with no strike at these numbers.
 Before the rework he was 3 of 3 and 27. In a party's raid the strike is an ordinary hit of his (`startBoss` runs with no `net`); in
 a network duel the victim's screen applies the silence or charm and decides the strike, as offline.
+
+### Vesper, a second pass (2026-11-12, 90 minutes)
+
+For her five one-sided pairings. Runs: `python pipeline/sim/sim.py hero Vesper --sides both --fights 32 --foes Brannoc Kaia Isolde
+Sirix Cantor Oblivion Auriel Lyra --keep --port 5218` (64 fights a pairing after, 32 before), read with `sim-cells.py`; causes from
+`duel-trace.js`. No page was made for it.
+
+| Against | Before (32 fights) | After (64 fights) | She ends ahead by (player's side, opponent's), after |
+|---|---:|---:|---|
+| Brannoc | 47% | 38% | -9%, +5% |
+| Kaia | 9% | 53% | -1%, -3% |
+| Isolde | 62% | 52% | +4%, -8% |
+| Sirix | 100% | 91% | +14%, +14% |
+| Cantor | 84% | 78% | +10%, +5% |
+| Oblivion | 9% | 19% | -19%, -11% |
+| Auriel | 78% | 20% | -4%, -6% |
+| Lyra | 81% | 55% | +3%, -1% |
+| The six, both sides | 52% | 55% | |
+| The six, as the player's hero | 53% | 49.5% | |
+| The greedy line (needle and Rip only, 96 fights) | 0% | 0% | |
+
+**Causes found, and what was changed** (all in `src/traits/blood.ts` but the Feast's numbers):
+
+- **Against Oblivion the Feast was cut off after one pulse, every fight.** The computer may start an ultimate once the enemy is at
+  55% health; against his 780 HP that is 15 s in, the moment his second Null Zone lands (12 s after the first). Now, against
+  someone who has silenced her this round, the Feast does not start while the silence is on nor more than 9.5 s after it began,
+  and it is a cheap one (at the start of a burst, 25 HP kept back): variants that paid 60 to 90 for it there got her killed in
+  the channel (6 to 16%). Between shots she walks out of the zone (3.6 m from where he stood): the silence lasts about half a
+  second instead of three. 9% -> 16 to 31% over five runs; still lost, by 15% of her health. Nine heroes can silence, some
+  only once a round: with no new silence 15 s after the last began, she plays the Feast as against anyone again (added after
+  the run of 64; a check of 32 fights after it: Oblivion 19%, Cantor 81%, Kaia 38%).
+- **A losing Vesper stood there for her last five seconds and cast nothing**: the computer kept 50 HP back, though a needle at
+  rest costs 10 and gives back more. It keeps 12 back for a needle now. With the Feast's rule above: Kaia 9 -> 44%.
+- **The Feast waited for the rest between bursts**, so against a hero who hurts her fast it came late or not at all. It goes at
+  any Price up to 45 now, with 40 HP left over (Kaia 44 -> 72%, and Lyra, Auriel and Isolde came down: a dear Feast costs her).
+- **Sirix could not reach her**: she stepped back from his claws (13 a swing) as from Brannoc's hammer, and he swung 0.45 times a
+  second. The step back is for a swing of 14 or more now (Brannoc, Oblivion); he swings 0.6 times a second. Not enough: 100 -> 91 to 100%.
+- **With all that she was too strong** (63% on both sides) and the Feast landed whole exactly against the heroes she beats (Cantor,
+  Sirix, Auriel, Lyra) and broken against Oblivion and Brannoc. **Sanguine Feast: pulses 18, 18, 24 -> 15, 15, 20, and 20% -> 15%
+  of the missing HP** (45 back as before). 63% -> 55%.
+
+**Tried and taken out:** needles without rest while Hungry (23% overall: they crowded out the Feast and the curse, which are
+worth more); the curse at 12 a spell (Cantor and Sirix did not move, Oblivion 3%; it is 15 as before, so the brief's 17 or 18 was
+not tried: the curse's damage is highest where she already wins, 150 a fight against Cantor and 55 against Kaia); a Feast that
+waits a full second after a silence (Oblivion 16%).
+
+**Still off:** Sirix 91% (his own computer casts Hive Shell 0 to 0.6 times a fight, and nothing of his stops her Feast or her
+curse; she ends 14% ahead on both sides, more than her numbers can give up without losing Brannoc and Oblivion). Oblivion 19%
+and Auriel 20%: inside 15 to 85, not inside 20 to 80. Auriel turned over with the softer Feast (73% before it, on the player's
+side 12 of 32 and as the opponent 1 of 32 after): a Feast between the two would sit her nearer the middle and take Cantor and
+Sirix up again. Cantor 78% is a little over the 75% asked for him. Brannoc reads 4 of 32 on the player's side and 20 of 32 as the
+opponent. The pairings are still steps: Kaia read 44, 72, 56, 41, 64, 56 and 53% over the pass.
+
+**Not updated:** the page `docs/balance/rework-1a-tuning.html` (it shows the first pass), `pipeline/designs/kit-blood.md` and
+`docs/catalog/effects.md` if they quote the Feast's old pulses; the Rust model and the raid were not run.
 
 ### Not checked
 

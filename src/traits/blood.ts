@@ -62,7 +62,7 @@ export const hemocurses = new WeakMap<object, Hemocurse>();
 
 /**
  * What she has dealt to the enemy hero this round (every hit `dealt` sees), keyed by her figure. The engine does not give a
- * spell the target's HP, so Sanguine Feast's "20% of their missing HP" reads this as the missing HP.
+ * spell the target's HP, so Sanguine Feast's "15% of their missing HP" reads this as the missing HP.
  */
 export const bloodDrawn = new WeakMap<object, { total: number }>();
 
@@ -80,6 +80,12 @@ export const bloodBonds = new WeakMap<object, BloodBond>();
 export const BOND_WINDOW = 3.8;
 export const BOND_RIPEN = 1.5;
 
+/** Is she silenced now (a stun is not a silence)? */
+const silenced = (t: TraitView) => !!t.status(t.self())?.has('silence');
+
+/** For the CPU: has she been silenced this round, the last time begun under `AI_HUSH_LAPSE` s ago? */
+const hushRisk = (t: TraitView) => !!t.mem.hushed && t.time - (t.mem.hushAt ?? 0) < AI_HUSH_LAPSE;
+
 /** The mist attacks she has left now (0 after the deadline). */
 function mist(t: { time: number; mem: Record<string, number> }) {
   return t.time < (t.mem.mistUntil ?? 0) ? t.mem.mistLeft ?? 0 : 0;
@@ -94,10 +100,38 @@ export const priceOf = (t: { res: number }, slot: number) => Math.round(t.res) *
  * `AI_RESUME` of rest.
  */
 const aiBudget = (t: TraitView) => (hungry(t) ? AI_HUNGRY_BUDGET : 10 + 35 * (t.hp() / Math.max(1, t.maxHp())));
-/** Hungry, her spells drink back half their damage: the CPU pays up to this, whatever its HP. */
+/** Hungry, her spells drink back most of their damage: the CPU pays up to this, whatever its HP. */
 const AI_HUNGRY_BUDGET = 40;
+/**
+ * The HP the CPU keeps back after paying: for the waltz and the curse; for the needle (at rest it costs 10 and drinks at
+ * once: with 50 kept back a losing Vesper stood there for the last five seconds and cast nothing); for the Feast; for a
+ * Feast against someone who silences (a cheap one, see `aiHold`).
+ */
 const AI_KEEP = 50;
+const AI_KEEP_NEEDLE = 12;
+const AI_KEEP_FEAST = 40;
+const AI_KEEP_FEAST_HUSH = 25;
 const AI_RESUME = 5;
+/** The CPU starts the Feast (twice the Price) up to this Price. */
+const AI_FEAST_PRICE = 45;
+/**
+ * Someone who has silenced her this round can end the Feast: the CPU then starts it only once she has been free of the
+ * silence for `AI_FEAST_FREE` s (a zone silences in ticks, and a drag can pull her back in), and within
+ * `AI_FEAST_AFTER_HUSH` s of when it began (Oblivion's Null Zone: 3 s of it, the next one 12 s after the last).
+ */
+const AI_FEAST_FREE = 0.35;
+const AI_FEAST_AFTER_HUSH = 9.5;
+/** With no new silence this long after the last began, the CPU plays the Feast as against anyone (some heroes silence once a round). */
+const AI_HUSH_LAPSE = 15;
+/**
+ * A silence that begins with the enemy within `AI_ZONE_NEAR` m is taken for a zone round them: for `AI_ZONE_SECONDS` s the
+ * CPU walks to `AI_ZONE_OUT` m from where they stood then (the Null Zone is 3 m wide and lasts 3 s).
+ */
+const AI_ZONE_NEAR = 3.5;
+const AI_ZONE_SECONDS = 3;
+const AI_ZONE_OUT = 3.6;
+/** A swing of at least this much makes its owner a brawler to keep away from (Sirix's claws, 13, do not). */
+const AI_BRAWLER_SWING = 14;
 /** Lancet's range (the kit's): inside it the CPU throws the needle before anything else. */
 const AI_LANCET_REACH = 7;
 /** The CPU starts the Feast (8 m; 9 m of distance ends it) only this close, so that it can finish it. */
@@ -130,18 +164,26 @@ const AI_KITE_STAND = 4.8;
  * calls `hitEnemy`, decided where the hit is real) and heals her 20 if she is Hungry. It was 30 before the rework and 20 after it: more
  * and more heroes cast without cooldowns (against Cantor, a spell every beat, 20 was a fifth of her damage). Sanguine Feast (R) holds her 1.6 s.
  * The CPU (`aiHold`) casts in bursts: it pays up to what its HP can bear (45 at full HP, 28 at half; 40 while Hungry, when
- * her spells drink most of it back), then holds off until the Price is nearly back at rest; it keeps 50 HP back, always
- * takes the Rip, does not curse a cursed enemy, throws the needle before it waltzes away, and starts the Feast within
- * 5.5 m (within 4 m it never used it on an archer). Once a brawler's swing has hit her (`taken`) it steps back from them
- * between shots (`aiGoal`).
+ * her spells drink most of it back), then holds off until the Price is nearly back at rest; it keeps 50 HP back (12 for a
+ * needle), always takes the Rip, does not curse a cursed enemy, throws the needle before it waltzes away, and starts the
+ * Feast within 5.5 m (within 4 m it never used it on an archer) at any Price up to 45. Against someone who has silenced
+ * her this round the Feast is a cheap one and keeps clear of the silence, and between shots she walks out of the zone that
+ * silenced her (`tick` notes it, `aiGoal`). Once a brawler's swing of 14 or more has hit her (`taken`: not Sirix's claws,
+ * which left him helpless) it steps back from them between shots (`aiGoal`).
  * Tuned 2026-11-12 (docs/balance/rework-1a-tuning.html; the needle 33 -> 30, the Rip 24 -> 22, the Feast 35/35/40 -> 18/18/24
- * and 60 -> 45 back, the drink 25% -> 15% and 50% -> 65% Hungry, the curse 20 -> 15 a spell, 660 -> 640 HP): 47 to 50% against the
- * benchmark heroes, on both sides and as the player's hero alone; with nothing but needle and Rip (the greedy line) 0%.
+ * and 60 -> 45 back, the drink 25% -> 15% and 50% -> 65% Hungry, the curse 20 -> 15 a spell, 660 -> 640 HP), and once more the
+ * same day for her one-sided pairings (the Feast 18/18/24 -> 15/15/20 and 20% -> 15% of the missing HP, and the CPU's Feast,
+ * needle, zone and brawler rules above; pipeline/designs/heroes-rework.md): 55% against the benchmark heroes on both sides,
+ * 50% as the player's hero alone; with nothing but needle and Rip (the greedy line) 0%.
  */
 export const bloodTrait: Trait = {
   aiHold(t, slot, dist) {
     // The CPU only starts the Feast close enough to finish it.
     if (slot === 3 && dist > AI_FEAST_REACH) return true;
+    // Not into a silence: against Oblivion the Feast began as his Null Zone landed and was cut off after one pulse, every
+    // fight. Once silenced this round, it waits while the silence is on and when the next one is due.
+    const hush = hushRisk(t);
+    if (slot === 3 && hush && (t.time - (t.mem.hushLast ?? 0) < AI_FEAST_FREE || t.time - (t.mem.hushAt ?? 0) > AI_FEAST_AFTER_HUSH)) return true;
     if (slot === 2 && t.stacks('curse') > 0) return true;
     // A needle that is in is ripped out, whatever the Price: the Rip is free and gives blood back.
     if (slot === 0 && t.stacks('needle') > 0) return false;
@@ -149,7 +191,10 @@ export const bloodTrait: Trait = {
     // A burst, then a rest: once the Price has passed what it will pay, it waits until the Price is nearly back down.
     if (t.res > aiBudget(t)) t.mem.aiRest = 1;
     else if (t.res <= PRICE_BASE + AI_RESUME) t.mem.aiRest = 0;
-    const rests = !!t.mem.aiRest || t.hp() - price < AI_KEEP;
+    // The Feast does not wait for the rest to end: it gives back more than a spell, so it goes at any Price up to `AI_FEAST_PRICE`.
+    // Against someone who silences, only a cheap one, at the start of a burst: an early Feast is a whole one there.
+    const resting = slot === 3 && !hush ? t.res > AI_FEAST_PRICE : !!t.mem.aiRest;
+    const rests = resting || t.hp() - price < (slot === 0 ? AI_KEEP_NEEDLE : slot === 3 ? (hush ? AI_KEEP_FEAST_HUSH : AI_KEEP_FEAST) : AI_KEEP);
     // The needle before the waltz: the CPU tries R, E, W before Q, and a brawler in her face had it waltz away again and
     // again (out of Lancet's reach each time) and never throw a needle. The waltz waits while a needle is in (the Rip comes
     // next, and needs them within 8 m) and while it would throw one now.
@@ -158,20 +203,33 @@ export const bloodTrait: Trait = {
   },
   aiGoal(t) {
     const e = t.enemy();
-    if (!e || !t.mem.brawler) return null;
+    if (!e) return null;
+    const me = t.self().group.position, p = e.group.position;
+    const edge = t.arenaRing() - 1;
+    // Out of a zone that silences her (it stays where it was cast): straight away from its middle, between shots.
+    if (t.time < (t.mem.zoneUntil ?? 0)) {
+      const dx = me.x - t.mem.zoneX, dz = me.z - t.mem.zoneZ, d = Math.hypot(dx, dz);
+      if (d < AI_ZONE_OUT) {
+        const k = (AI_ZONE_OUT + 0.8) / Math.max(d, 0.1);
+        let x = t.mem.zoneX + dx * k, z = t.mem.zoneZ + dz * k;
+        const r = Math.hypot(x, z);
+        if (r > edge) { x *= edge / r; z *= edge / r; }
+        return { x, z };
+      }
+    }
+    if (!t.mem.brawler) return null;
     const d = t.enemyDistance();
     if (d >= AI_KITE_NEAR) return null;
     // Straight away from them, and along the ring's edge where the floor ends.
-    const me = t.self().group.position, p = e.group.position;
     const k = (d - AI_KITE_STAND) / Math.max(d, 0.1);
     let x = me.x + (p.x - me.x) * k, z = me.z + (p.z - me.z) * k;
-    const edge = t.arenaRing() - 1, r = Math.hypot(x, z);
+    const r = Math.hypot(x, z);
     if (r > edge) { x *= edge / r; z *= edge / r; }
     return { x, z };
   },
   taken(t, hit) {
     // A swing, not a bolt (a melee attack shoves harder): the CPU playing her keeps its distance from now on (`aiGoal`).
-    if (hit.kind === 'attack' && (hit.opts.knock ?? 0) > 0.5) t.mem.brawler = 1;
+    if (hit.kind === 'attack' && (hit.opts.knock ?? 0) > 0.5 && hit.damage >= AI_BRAWLER_SWING) t.mem.brawler = 1;
   },
   passive: {
     name: 'Blood Price',
@@ -266,6 +324,22 @@ export const bloodTrait: Trait = {
     if (hungry(t)) t.heal(CURSE_HEAL);
   },
   tick(t, dt) {
+    // For the CPU: when she was last silenced (`aiHold` times the Feast by it).
+    if (silenced(t)) {
+      // One silence, however it flickers: a new one begins only after 4 s without.
+      if (!t.mem.hushed || t.time - (t.mem.hushLast ?? 0) > 4) {
+        t.mem.hushAt = t.time;
+        // A silence that begins with them this close is taken for a zone round where they stand (Oblivion's Null Zone).
+        const e = t.enemy();
+        if (e && t.enemyDistance() <= AI_ZONE_NEAR) {
+          t.mem.zoneX = e.group.position.x;
+          t.mem.zoneZ = e.group.position.z;
+          t.mem.zoneUntil = t.time + AI_ZONE_SECONDS;
+        }
+      }
+      t.mem.hushed = 1;
+      t.mem.hushLast = t.time;
+    }
     const on = hungry(t);
     bloodHungry.set(t.self(), on);
     t.show('hungry', on ? 1 : 0);
