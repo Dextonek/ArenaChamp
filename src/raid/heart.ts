@@ -1493,12 +1493,13 @@ function heartChoice(c: { heroes: { side: RaidSide }[]; when(side: RaidSide): nu
  * The Ring of Hands.
  * - `seconds`: from its call to the end (tier 1), never under `least`. `close`: the spots close this long before the end, so
  *   every screen has the same count when it is judged.
- * - A gold spot for every hero standing (the brain's count), `radius` wide, held `hold` s, one to a hero. `share`: this much of
- *   them must be held. `fail`: what a broken ring costs everyone.
+ * - A gold spot for every hero standing (the brain's count), drawn `radius` wide, held `hold` s, one to a hero. A hero within
+ *   `reach` of its middle holds it: a little past its edge, where a tap or an AI's walk ends. `share`: this much of them must be
+ *   held. `fail`: what a broken ring costs everyone.
  * - `rings`: how far from the Heart the spots stand (m), on the inner ring of the floor, which stands and never falls: one ring
  *   of up to `outer` spots, and a second inside it for a bigger raid.
  */
-export const HANDS = { seconds: 16, least: 14, close: 1.2, share: 0.8, fail: 0.45, hold: 1, radius: 0.7, rings: [6, 4.2], outer: 22 };
+export const HANDS = { seconds: 16, least: 14, close: 1.2, share: 0.8, fail: 0.45, hold: 1, radius: 0.7, reach: 0.95, rings: [6, 4.2], outer: 22 };
 
 /** Where `n` spots stand: round the Heart, two rings deep for more than `HANDS.outer`. */
 function handSpots(n: number, seed: number) {
@@ -1533,7 +1534,7 @@ const ringOfHands: BossMove = {
     });
     let mine = -1, got = 0, won = -1, named = false, time = 0;
     const fail: Threat = { shape: { kind: 'circle', x: C.x, z: C.z, radius: roomR() + 1 }, at, show: Math.max(0, at - 3), share: HANDS.fail, look: 2 };
-    const objectives: Objective[] = spots.map((s, i) => ({ part: i, x: s.x, z: s.z, radius: HANDS.radius, hold: HANDS.hold, until: close, can: () => mine < 0 && s.by < 0 && won < 0 }));
+    const objectives: Objective[] = spots.map((s, i) => ({ part: i, x: s.x, z: s.z, radius: HANDS.reach, hold: HANDS.hold, until: close, can: () => mine < 0 && s.by < 0 && won < 0 }));
     const label = () => p.label(`The Ring of Hands · ${got} of ${need}`);
     p.hint('The Ring of Hands: everyone to a gold spot round the Heart, one each. Hold it a moment');
     p.banner('The Ring of Hands', 2.6);

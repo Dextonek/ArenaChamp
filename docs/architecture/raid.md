@@ -786,7 +786,7 @@ says "Heartbeat · Shade the Heart together". A party of three to five has its o
 | | |
 |---|---|
 | The spots | One gold spot for every hero standing (the brain's count), 0.7 m wide, on the inner ring: up to 22 in a ring 6 m from the Heart, a bigger raid two rings deep (6 m and 4.2 m) |
-| Taking one | Hold it 1 s. One to a hero: the hub says who has which |
+| Taking one | Hold it 1 s, from within 0.95 m of its middle (a little past its edge, where a tap or an AI's walk ends). One to a hero: the hub says who has which |
 | The count | On the cast bar: "The Ring of Hands · 31 of 32" (held, of those needed: four in five) |
 | How long | 16 s (never under 14); the spots close 1.2 s before the end, so every screen has the same count |
 | Full | The moment enough are held: the Heart is stunned, it kneels (`RAID_REWARDS.heart.hands`), nothing burns |
