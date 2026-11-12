@@ -99,15 +99,15 @@ To add a hero: write the four effects (label, `category: 'hero: <name>'`, `targe
 "Casting" line under the hero's name on the spell bar (`setCastMode`, kept in `localStorage` as `aok.castMode`; new players
 start on `indicator`):
 
-| Mode | Q W E R | A |
-|---|---|---|
-| `normal` (Normal) | aim; a left click fires; the same key again cancels | arms attack-move; a left click orders it |
-| `indicator` (Quick + indicator) | the aim shows while the key is held; letting go fires it at the cursor; a right click or `Esc` while held cancels | attack-moves to the cursor at once |
-| `quick` (Quick) | fires at the cursor on the press. A hold spell (Lyra Q) still charges while its key is held and fires on the release | attack-moves to the cursor at once |
+| Mode | Q W E R |
+|---|---|
+| `normal` (Normal) | aim; a left click fires; the same key again cancels |
+| `indicator` (Quick + indicator) | the aim shows while the key is held; letting go fires it at the cursor; a right click or `Esc` while held cancels |
+| `quick` (Quick) | fires at the cursor on the press. A hold spell (Lyra Q) still charges while its key is held and fires on the release |
 
 Quick firing goes through the same `confirm()` as the click (range, sight, walking into range); an aim that cannot fire (no
 enemy near the cursor for an `enemy` spell) is dropped, not left up. A key held when the window loses focus drops its aim.
-Phones are not touched (their spell buttons drag to aim). Checked in Chrome by real key and mouse input (17 checks, every
+A then a left click attack-moves in every mode (A alone attacking at the cursor was tried and turned down by the user). Phones are not touched (their spell buttons drag to aim). Checked in Chrome by real key and mouse input (17 checks, every
 mode, the cancel, Lyra's charging Q, the switch, the A key).
 
 `enemy` / `enemies` spells need a living enemy within 2.2 units of the cursor (`HOVER_PICK`), else the toast "No enemy there". `ground` spells aim at the cursor point clamped to the spell's range.

@@ -15,8 +15,8 @@ import { isOwnWall } from './traits/mime';
 
 /**
  * How Q W E R cast, League's three (user, 2026-11-12): 'normal' shows the aim and a click fires it; 'quick' fires at the
- * cursor on the key; 'indicator' shows the aim while the key is held and fires when it is let go. In both quick modes
- * A attack-moves to the cursor at once. Kept in the browser; new players start on 'indicator'.
+ * cursor on the key; 'indicator' shows the aim while the key is held and fires when it is let go. A then a click
+ * attack-moves in every mode. Kept in the browser; new players start on 'indicator'.
  */
 export type CastMode = 'normal' | 'quick' | 'indicator';
 const CAST_STORE = 'aok.castMode';
@@ -356,8 +356,7 @@ export class HeroMode implements TouchTarget {
         this.cancelAim();
         this.attackArmed = true;
         this.host.dom.style.cursor = 'crosshair';
-        // Quick modes: A is the click too (League's "attack move on cursor").
-        if (this.castMode !== 'normal') { this.updateCursor(); this.attackClick(); }
+        // A then a click in every cast mode: A alone attacking at the cursor was tried and turned down (user, 2026-11-12).
       }
       if (e.code === 'KeyS') this.stop();
       if (e.code === 'Escape') { this.cancelAim(); this.disarm(); }
@@ -1358,7 +1357,7 @@ export class HeroMode implements TouchTarget {
   private writeHint() {
     if (!this.hintEl) return;
     const m = this.castMode;
-    const walk = m === 'normal' ? 'right-click: walk / attack · A+click: attack-move' : 'right-click: walk / attack · A: attack-move to the cursor';
+    const walk = 'right-click: walk / attack · A+click: attack-move';
     const cast = m === 'normal' ? 'Q W E R: aim · click: cast · right-click / Esc: cancel'
       : m === 'quick' ? 'Q W E R: cast at the cursor'
       : 'hold Q W E R: aim · let go: cast · right-click: cancel';
