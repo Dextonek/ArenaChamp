@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fight simulator</title>
+<style>
+  /* The page of one simulator run (pipeline/sim/sim.py fills in the data). It takes its colours from the host's theme
+     variables when it is shown inside T3 Code, and brings its own dark ones when opened as a file. */
+  :root {
+    --ink: var(--foreground, #f0efec);
+    --ink-2: var(--muted-foreground, #c3c2b7);
+    --line: var(--border, #3a3a37);
+    --panel: var(--card, #1a1a19);
+    --s1: var(--chart-1, #3987e5); --s2: var(--chart-2, #d95926); --s3: var(--chart-3, #199e70);
+    --s4: var(--chart-4, #c98500); --s5: var(--chart-5, #d55181); --s6: var(--chart-6, #9085e9);
+    --win: #3987e5; --lose: #e66767; --mid: #383835;
+    --good: #0ca30c; --warn: #fab219;
+    --r: var(--radius, 8px);
+  }
+  html.standalone { background: #0d0d0d; color: #f0efec; font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  html.standalone body { max-width: 980px; margin: 0 auto; padding: 16px; }
+  body { margin: 0; color: var(--ink); font-size: 14px; line-height: 1.45; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 26px 0 4px; }
+  p.sub { margin: 0 0 10px; color: var(--ink-2); font-size: 13px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin: 12px 0 4px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; }
+  .tile b { display: block; font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .tile span { color: var(--ink-2); font-size: 12px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; overflow-x: auto; }
+  /* win-rate bars */
+  .bars { display: grid; grid-template-columns: max-content 1fr max-content; column-gap: 10px; row-gap: 5px; align-items: center; min-width: 300px; }
+  .bars .name { font-size: 13px; white-space: nowrap; }
+  .track { position: relative; height: 16px; }
+  .track .band { position: absolute; left: 40%; width: 20%; top: -3px; bottom: -3px; background: color-mix(in oklab, var(--ink) 9%, transparent); border-left: 1px dashed var(--line); border-right: 1px dashed var(--line); }
+  .track .bar { position: absolute; left: 0; top: 2px; height: 12px; background: var(--win); border-radius: 0 4px 4px 0; }
+  .track .ci { position: absolute; top: 7px; height: 2px; background: var(--ink); opacity: 0.75; }
+  .track .half { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--ink-2); opacity: 0.5; }
+  .val { font-variant-numeric: tabular-nums; font-size: 13px; white-space: nowrap; }
+  .tag { display: inline-block; font-size: 11px; padding: 0 6px; border-radius: 9px; border: 1px solid var(--line); margin-left: 6px; color: var(--ink-2); }
+  .axis { grid-column: 2; position: relative; height: 16px; font-size: 11px; color: var(--ink-2); }
+  .axis span { position: absolute; transform: translateX(-50%); }
+  /* matchup grid */
+  table.grid { border-collapse: separate; border-spacing: 2px; font-variant-numeric: tabular-nums; }
+  table.grid th { font-weight: 500; font-size: 11px; color: var(--ink-2); padding: 2px 4px; white-space: nowrap; }
+  table.grid th.col { height: 84px; vertical-align: bottom; }
+  table.grid th.col div { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; }
+  table.grid th.row { text-align: right; }
+  table.grid td { min-width: 30px; height: 24px; text-align: center; font-size: 11px; border-radius: 3px; color: #f0efec; cursor: default; }
+  table.grid td.self { background: transparent; color: var(--ink-2); }
+  /* a whole roster: smaller cells, so 40 columns stay near one screen */
+  table.grid.dense { border-spacing: 1px; }
+  table.grid.dense td { min-width: 19px; height: 19px; font-size: 9px; border-radius: 2px; }
+  table.grid.dense th { font-size: 10px; padding: 0 3px; }
+  table.grid.dense th.col { height: 96px; }
+  /* stacked damage */
+  .stack { display: flex; height: 14px; gap: 2px; min-width: 120px; }
+  .stack i { display: block; height: 100%; border-radius: 2px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-2); margin: 0 0 10px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  table.data { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  table.data th { text-align: left; font-weight: 500; font-size: 12px; color: var(--ink-2); padding: 4px 10px 6px 0; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.data td { padding: 5px 10px 5px 0; border-bottom: 1px solid color-mix(in oklab, var(--line) 55%, transparent); font-size: 13px; white-space: nowrap; }
+  table.data td.num, table.data th.num { text-align: right; }
+  pre { white-space: pre-wrap; word-break: break-word; font-size: 12px; margin: 0; color: var(--ink-2); font-family: var(--font-mono, ui-monospace, Consolas, monospace); }
+  #tip { position: fixed; pointer-events: none; background: var(--popover, #26262a); color: var(--popover-foreground, #f0efec); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font-size: 12px; line-height: 1.4; max-width: 260px; display: none; z-index: 5; box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
+  code { font-family: var(--font-mono, ui-monospace, Consolas, monospace); font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="tip"></div>
+<script>
+const DATA = {"meta": {"mode": "hero", "what": "Brannoc against Brannoc, Kaia, Isolde, Sirix, Cantor, Oblivion", "date": "2026-11-12 01:53", "fights": 160, "crashed": 0, "simSeconds": 3544, "wallSeconds": 43.1, "workers": 8, "arena": "random", "events": false, "sides": "both", "perCell": 16, "command": "python pipeline/sim/sim.py hero Brannoc --sides both --keep --port 5202 --out rw-brannoc-3"}, "rows": [{"name": "Brannoc", "n": 160, "w": 85, "pct": 53.1, "ci": 7.7, "avgSecs": 22.1, "none": 0, "dps": {"Q": 5.78, "W": 0.0, "E": 6.28, "R": 5.23, "attack": 11.16, "unit": 0.0, "trait": 0.0}, "takenDps": 24.5, "by": {"Kaia": [32, 32], "Sirix": [6, 32], "Cantor": [24, 32], "Oblivion": [8, 32], "Isolde": [15, 32]}}], "foes": ["Brannoc", "Kaia", "Isolde", "Sirix", "Cantor", "Oblivion"], "arenas": {"harbour": 16, "cavern": 21, "canyon": 20, "battlefield": 19, "skyruins": 21, "temple": 15, "frost": 17, "glade": 16, "caldera": 15}, "errors": [], "errorCount": 0, "standing": []};
+(() => {
+  // opened as a file: no host theme, so bring our own surface
+  if (!getComputedStyle(document.documentElement).getPropertyValue('--background').trim()) document.documentElement.classList.add('standalone');
+  const app = document.getElementById('app'), tip = document.getElementById('tip');
+  const el = (tag, attrs = {}, ...kids) => {
+    const e = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'style') e.style.cssText = v; else if (k === 'tip') e.dataset.tip = v; else if (k === 'html') e.innerHTML = v; else e.setAttribute(k, v);
+    }
+    for (const k of kids) e.append(k);
+    return e;
+  };
+  document.addEventListener('pointermove', (ev) => {
+    const t = ev.target.closest?.('[data-tip]');
+    if (!t) { tip.style.display = 'none'; return; }
+    tip.innerHTML = t.dataset.tip;
+    tip.style.display = 'block';
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.max(4, Math.min(innerWidth - w - 4, ev.clientX + 12)) + 'px';
+    tip.style.top = Math.max(4, ev.clientY - h - 10) + 'px';
+  });
+  if (!DATA) { app.append(el('p', {}, 'No data: this is the template. Run python pipeline/sim/sim.py.')); return; }
+  const m = DATA.meta, rows = [...DATA.rows].sort((a, b) => b.pct - a.pct);
+  const SRC = [['Q', 'Q'], ['W', 'W'], ['E', 'E'], ['R', 'R'], ['attack', 'Basic attack'], ['other', 'Passive and units']];
+  const srcOf = (r) => ({ Q: r.dps.Q || 0, W: r.dps.W || 0, E: r.dps.E || 0, R: r.dps.R || 0, attack: r.dps.attack || 0, other: (r.dps.unit || 0) + (r.dps.trait || 0) });
+
+  app.append(el('h1', {}, 'Fight simulator'), el('p', { class: 'sub' }, `${m.what}. ${m.date}. Arena: ${m.arena}; events ${m.events ? 'on' : 'off'}.`));
+  const inBand = rows.filter((r) => r.pct >= 40 && r.pct <= 60).length;
+  const tiles = el('div', { class: 'tiles' });
+  const tile = (v, t) => tiles.append(el('div', { class: 'tile' }, el('b', {}, String(v)), el('span', {}, t)));
+  tile(m.fights.toLocaleString(), 'fights played');
+  tile(m.wallSeconds >= 90 ? (m.wallSeconds / 60).toFixed(1) + ' min' : Math.round(m.wallSeconds) + ' s', `real time, ${m.workers} at once`);
+  tile(`${inBand} of ${rows.length}`, 'heroes inside 40-60%');
+  tile(DATA.errorCount, DATA.errorCount === 1 ? 'error in the fights' : 'errors in the fights');
+  app.append(tiles);
+
+  // 1. win rates
+  app.append(el('h2', {}, 'Win rate'), el('p', { class: 'sub' }, 'Share of fights won. The shaded band is the target, 40 to 60%. The thin line on each bar is how far chance alone can move it with this many fights.'));
+  const bars = el('div', { class: 'bars' });
+  for (const r of rows) {
+    const off = r.pct > 60 ? 'strong' : r.pct < 40 ? 'weak' : '';
+    const track = el('div', { class: 'track', tip: `<b>${r.name}</b><br>${r.w} of ${r.n} fights won: ${r.pct}%<br>chance: plus or minus ${r.ci} points<br>average fight ${r.avgSecs} s` },
+      el('div', { class: 'band' }), el('div', { class: 'half' }), el('div', { class: 'bar', style: `width:${r.pct}%` }),
+      el('div', { class: 'ci', style: `left:${Math.max(0, r.pct - r.ci)}%;width:${Math.min(100, r.pct + r.ci) - Math.max(0, r.pct - r.ci)}%` }));
+    const val = el('div', { class: 'val' }, `${r.pct.toFixed(0)}%`);
+    if (off) val.append(el('span', { class: 'tag' }, off === 'strong' ? '▲ strong' : '▼ weak'));
+    bars.append(el('div', { class: 'name' }, r.name), track, val);
+  }
+  const axis = el('div', { class: 'axis' });
+  for (const v of [0, 50, 100]) axis.append(el('span', { style: `left:${v}%` }, v + '%'));
+  bars.append(el('div'), axis, el('div'));
+  app.append(el('div', { class: 'box' }, bars));
+
+  // 2. who beats whom
+  // the columns in the rows' own order where the same heroes are on both sides, else as they were given
+  const given = DATA.foes.filter((f) => rows.some((r) => r.by[f]));
+  const foes = given.every((f) => rows.some((r) => r.name === f)) ? rows.map((r) => r.name).filter((n) => given.includes(n)) : given;
+  if (foes.length > 1) {
+    app.append(el('h2', {}, 'Who beats whom'), el('p', { class: 'sub' }, 'Each cell: how often the hero on the left beats the hero on top. Blue: wins more than half. Red: loses more than half. Grey: even.'));
+    const tb = el('table', { class: foes.length > 14 ? 'grid dense' : 'grid' });
+    const head = el('tr', {}, el('th', {}));
+    for (const f of foes) head.append(el('th', { class: 'col' }, el('div', {}, f)));
+    tb.append(head);
+    for (const r of rows) {
+      const tr = el('tr', {}, el('th', { class: 'row' }, r.name));
+      for (const f of foes) {
+        const c = r.by[f];
+        if (!c || f === r.name) { tr.append(el('td', { class: 'self' }, f === r.name ? '·' : '')); continue; }
+        const p = c[0] / c[1], k = Math.round(Math.min(1, Math.abs(p - 0.5) * 2) * 100);
+        tr.append(el('td', { style: `background:color-mix(in oklab, ${p >= 0.5 ? 'var(--win)' : 'var(--lose)'} ${k}%, var(--mid))`, tip: `<b>${r.name}</b> against <b>${f}</b><br>${c[0]} of ${c[1]} won: ${Math.round(p * 100)}%` }, String(Math.round(p * 100))));
+      }
+      tb.append(tr);
+    }
+    app.append(el('div', { class: 'box' }, tb));
+  }
+
+  // 3. where the damage comes from, and the table
+  app.append(el('h2', {}, 'Where the damage comes from'), el('p', { class: 'sub' }, 'Damage a second on the enemy hero, by what dealt it. The bar\'s length compares heroes; its parts compare the spells.'));
+  const legend = el('div', { class: 'legend' });
+  SRC.forEach(([, label], i) => legend.append(el('span', {}, el('i', { style: `background:var(--s${i + 1})` }), label)));
+  const top = Math.max(1, ...rows.map((r) => Object.values(srcOf(r)).reduce((a, b) => a + b, 0)));
+  const dmg = el('div', { class: 'bars' });
+  const dt = el('table', { class: 'data' });
+  dt.append(el('tr', {}, ...['Hero', 'Win %', 'Fights', 'Avg fight', 'No winner', 'Deals / s', 'Takes / s'].map((h, i) => el('th', { class: i > 0 ? 'num' : '' }, h))));
+  for (const r of rows) {
+    const s = srcOf(r), total = Object.values(s).reduce((a, b) => a + b, 0);
+    const stack = el('div', { class: 'stack', style: `width:${Math.max(4, (total / top) * 100)}%` });
+    SRC.forEach(([k, label], i) => { if (s[k] > 0.05) stack.append(el('i', { style: `flex:${s[k]} 1 0;background:var(--s${i + 1})`, tip: `<b>${r.name}</b>: ${label}<br>${s[k].toFixed(1)} damage a second (${Math.round((100 * s[k]) / total)}%)` })); });
+    dmg.append(el('div', { class: 'name' }, r.name), stack, el('div', { class: 'val' }, total.toFixed(1)));
+    dt.append(el('tr', {}, el('td', {}, r.name), el('td', { class: 'num' }, `${r.pct.toFixed(0)} ± ${r.ci.toFixed(0)}`), el('td', { class: 'num' }, String(r.n)), el('td', { class: 'num' }, r.avgSecs.toFixed(1) + ' s'),
+      el('td', { class: 'num' }, String(r.none)), el('td', { class: 'num' }, total.toFixed(1)), el('td', { class: 'num' }, r.takenDps.toFixed(1))));
+  }
+  app.append(el('div', { class: 'box' }, legend, dmg));
+  // the table view: open for a few heroes, folded for a roster
+  const fold = el('details', rows.length <= 12 ? { open: '' } : {}, el('summary', { style: 'cursor:pointer;font-weight:600;font-size:15px;margin:26px 0 6px' }, 'The numbers, as a table'), el('p', { class: 'sub' }, 'Win % is given with how far chance alone can move it.'), el('div', { class: 'box' }, dt));
+  app.append(fold);
+
+  // 4. what went wrong
+  if (DATA.standing.length) {
+    app.append(el('h2', {}, 'Fights nobody won'), el('p', { class: 'sub' }, 'Not over after 120 seconds. A stall is a bug in a kit or in the CPU, not a draw.'));
+    const st = el('table', { class: 'data' });
+    st.append(el('tr', {}, ...['Hero', 'Foe', 'Arena', 'HP left', 'Apart', 'In sight'].map((h) => el('th', {}, h))));
+    for (const s of DATA.standing) st.append(el('tr', {}, el('td', {}, s.hero), el('td', {}, s.foe), el('td', {}, s.arena ?? ''), el('td', {}, (s.hp || []).join(' : ')), el('td', {}, s.dist != null ? s.dist + ' m' : ''), el('td', {}, s.sees == null ? '' : s.sees ? 'yes' : 'no')));
+    app.append(el('div', { class: 'box' }, st));
+  }
+  if (DATA.errorCount) {
+    app.append(el('h2', {}, 'Errors'), el('p', { class: 'sub' }, `${DATA.errorCount} in all; the first ${DATA.errors.length}. These are bugs to fix: a fight with an error is not a fair fight.`));
+    app.append(el('div', { class: 'box' }, el('pre', {}, DATA.errors.join('\n\n'))));
+  }
+  app.append(el('p', { class: 'sub', style: 'margin-top:18px' }, `Every fight is a real duel of the game's own code, both heroes played by the CPU at its balance level. ${m.crashed ? m.crashed + ' fights did not finish and are left out. ' : ''}`), el('p', { class: 'sub' }, el('code', {}, m.command)));
+})();
+</script>
+</body>
+</html>
