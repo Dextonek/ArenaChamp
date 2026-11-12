@@ -9,7 +9,7 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
   browser: **Quick + indicator** (hold the key to aim, let go to cast; the start for everyone), **Quick** (casts on the press)
   and **Normal** (the old way). Only `src/heroMode.ts` (`CastMode`); no server change, same `PROTOCOL`. How it works:
   [architecture/hero-mode.md](architecture/hero-mode.md), *Cast modes*. Checked in Chrome by real key and mouse input: 17 of 17.
-  A attacking at the cursor at once in the quick modes went live with it and was turned down ("that auto attack is not good, go back to A plus click"): A then a click in every mode again, committed. The switch is on the spell bar's name plate, which a window under 860 px wide hides; phones are not affected.
+  A attacking at the cursor at once in the quick modes went live with it and was turned down ("that auto attack is not good, go back to A plus click"): A then a click in every mode again, pushed and live (version feaba8b2). The switch is on the spell bar's name plate, which a window under 860 px wide hides; phones are not affected.
 
 ## Watch a duel, and walking with a mouse side button held (2026-11-12, evening): pushed and LIVE (version 5cf1d450)
 
