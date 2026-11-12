@@ -2101,7 +2101,10 @@
     const d = vfx.duel, a = vfx.arena;
     const { twinFlames } = await import('/src/raid/ashEmber.ts');
     const { TwinLocalLink, FURY_HIT, FURY_GAP } = await import('/src/raid/twin.ts');
-    const { TWIN_WALL, TWIN_PILLARS, TWIN_LAYOUT, TWIN_R, twinPillarCount } = await import('/src/arenas/twinpit.ts');
+    const { TWIN_WALL, TWIN_WALLS, TWIN_PILLARS, TWIN_LAYOUT, TWIN_R, TWIN_BRIDGES, TWIN_CHANNELS, FORGE, forge, twinPillarCount, inForge, forgeReach, lavaAt, bridgeUp, bridgeGlow, floodInset } = await import('/src/arenas/twinpit.ts');
+    const { CHAIN, VENTS, CHANGE } = await import('/src/raid/twinForge.ts');
+    const { FLOOD_HIT } = await import('/src/raid/twin.ts');
+    const { HERO_KITS } = await import('/src/heroes.ts');
     const { RAID_TWIN, raidHp, raidStaggerMax } = await import('/server/protocol.mjs');
     const V = a.caster.group.position.constructor;
     const rows = [], failed = [];
@@ -2137,7 +2140,7 @@
     const cast = (move, which, o = {}) => {
       const mine = d.boss.which === which, b = mine ? d.foe.group.position : d.twin.enemy.group.position;
       const x = o.x ?? me().x, z = o.z ?? me().z;
-      const c = { id: ++seq + which * RAID_TWIN.ids, move, step: o.step ?? 0, x, z, fx: o.fx ?? b.x, fz: o.fz ?? b.z, dir: o.dir ?? Math.atan2(x - b.x, z - b.z), seed: o.seed ?? 777, target: 0, flag: o.flag, alone: o.alone, which };
+      const c = { id: ++seq + which * RAID_TWIN.ids, move, step: o.step ?? 0, x, z, fx: o.fx ?? b.x, fz: o.fz ?? b.z, dir: o.dir ?? Math.atan2(x - b.x, z - b.z), seed: o.seed ?? 777, target: o.target ?? 0, mate: o.mate, flag: o.flag, alone: o.alone, which };
       link.on.cast(c);
       return c;
     };
@@ -2148,7 +2151,7 @@
     try {
       // The room and who stands where.
       fresh(0);
-      check('room: the floor reaches 30 m', a.bounds.r, TWIN_R, 0);
+      yes('room: the game\'s floor is a ring of 38 m, as the hub clamps it', a.bounds.r === TWIN_R && TWIN_R === 38);
       yes('room: the wall of fire is cover that never breaks', a.obstacles.includes(TWIN_WALL) && TWIN_WALL.fixed === true && d.wallHp === null);
       check('room: a party tuned for 10 has six pillars', TWIN_PILLARS.length, 6, 0);
       yes('room: 5 for 5, 8 for 20, 11 for 40', twinPillarCount(5) === 5 && twinPillarCount(20) === 8 && twinPillarCount(40) === 11);
@@ -2240,7 +2243,7 @@
       let run = ch.go();
       step(1);
       check('charge: in his way, it kills', lost(), 1);
-      yes('charge: he stops at the wall of fire, and breaks nothing', !run.flag && run.x < -TWIN_LAYOUT.wallHalf - 1 && d.foe.group.position.x < -TWIN_LAYOUT.wallHalf && a.obstacles.length === TWIN_PILLARS.length + 1);
+      yes('charge: he stops at the wall of fire, and breaks nothing', !run.flag && run.x < -TWIN_LAYOUT.wallHalf - 1 && d.foe.group.position.x < -TWIN_LAYOUT.wallHalf && TWIN_PILLARS.every((o) => a.obstacles.includes(o)) && a.obstacles.includes(TWIN_WALL));
       fresh(0);
       const P0 = TWIN_PILLARS[4], from = { x: -9, z: 17 };
       boss(from.x, from.z);
@@ -2252,7 +2255,7 @@
       run = ch.go();
       step(1);
       check('charge: behind a pillar, it costs nothing', lost(), 0);
-      yes('charge: he crashes into it, it breaks, and he kneels', run.flag === true && a.obstacles.length === TWIN_PILLARS.length && !!a.statusOf(d.foe).stunned);
+      yes('charge: he crashes into it, it breaks, and he kneels', run.flag === true && TWIN_PILLARS.filter((o) => a.obstacles.includes(o)).length === TWIN_PILLARS.length - 1 && !a.obstacles.includes(P0) && !!a.statusOf(d.foe).stunned);
 
       // Their health must fall together.
       fresh(0);
@@ -2326,24 +2329,8 @@
       yes('put out: he kneels, and can be hurt again', d.boss.stats.kneels === 1 && d.bossGuard === false);
       void er;
 
-      // Together: the lava rises for the whole room once either is at a third, and either vent holds it back for all.
-      fresh(0);
-      link.hurt(1, POOL * 0.68);
-      check('Ember at a third of her HP: the lava starts on this screen too', d.shiftOffset + d.hazardClock, 45, 0.3);
-      const before0 = d.shiftOffset;
-      const sv = cast('seale', 1, { x: TWIN_LAYOUT.hold[1].x, z: TWIN_LAYOUT.hold[1].z });
-      step(0.3);
-      yes('her vent is not this hero\'s to seal', d.boss.script.objectiveGoal(me().x, me().z) === null);
-      link.on.done(sv.id, 0, 3);
-      check('her half seals it: the lava waits 20 s longer here too', before0 - d.shiftOffset, 20, 0.01);
-      const sw = cast('sealw', 0, { x: TWIN_LAYOUT.hold[0].x, z: TWIN_LAYOUT.hold[0].z });
-      boss(-22, 20);
-      place(TWIN_LAYOUT.hold[0].x, TWIN_LAYOUT.hold[0].z);
-      const g0 = link.pools[0].gauge;
-      step(4.3);
-      check('this hero seals Ash\'s: 20 s more', before0 - d.shiftOffset, 40, 0.01);
-      check('and a mechanic fills half of what it fills for one boss', link.pools[0].gauge - g0, 40 * 5 / 2, 0.01);
-      void sw;
+      // Together: the pit floods for the whole room once either is at a third, and either vent holds the lava back for all: with
+      // the forge's own rows, below (The pit floods).
 
       // Falling Star for a party: 45 % shared by whoever of her half stands under it.
       fresh(1);
@@ -2392,6 +2379,267 @@
       yes('autopilot: 40 s of fighting, never across the wall', east < -TWIN_LAYOUT.wallHalf);
       yes('autopilot: and never standing pressed against it', stuck < 3);
       yes('autopilot: it hurt Ash, and only Ash', link.pools[0].hp < POOL && link.pools[1].hp === POOL);
+
+      // --- The Twin Forge, its floor that cracks and floods, and what comes only for big parties (src/raid/twinForge.ts) ---
+      const scriptCast = (which, id) => scriptOf(which).active.find((x) => x.cast.id === id);
+      /** A fight with one partner, seat 1, in `mateHalf`. */
+      const freshPair = (half, band, mateHalf) => {
+        vfx.view.paused = true;
+        if (!d.on) vfx.setDuel(true, 'play');
+        vfx.heroPickCtrl.setValue(hero);
+        d.holdStart = false;
+        d.autopilot = false;
+        const def = twinFlames(half);
+        link = new TwinLocalLink(def, band, half);
+        d.startBoss({ def, link, seed: 'twin', mode: 'play', band, name: 'me', party: [{ side: 1, kit: HERO_KITS.find((k) => k.name === 'Bram'), name: 'mate' }], twin: { ...link.setup, halves: [half, mateHalf] } });
+        d.boss.brain.pause = 1e9;
+        a.obstacles = a.obstacles.slice();
+        step(0.05);
+      };
+      /** The partner stands at (x, z): its walk is heard, and a moment passes. */
+      const mate = (x, z) => { for (let i = 0; i < 12; i++) { d.partnerMove(1, x, z, 0, undefined); step(0.05); } };
+
+      // The room: a rectangle, not a ring; the gate's passage; walls that never break.
+      fresh(0);
+      yes('forge: two halls side by side, 52 m by 54 m, and the gate\'s passage south of them', inForge(25.5, 7) && inForge(-25.5, -19.5) && inForge(25.5, 33.5) && !inForge(26.5, 7) && !inForge(0, -20.5) && inForge(5, 43) && !inForge(12, 40) && !inForge(5, 44.5));
+      check('forge: its own twelve walls and two great pieces of cover, none of which breaks', TWIN_WALLS.filter((o) => o.fixed && a.obstacles.includes(o)).length, 14, 0);
+      place(-24, 7);
+      for (let i = 0; i < 180; i++) { a.walk(new V(-4 / 60, 0, 0)); step(1 / 60); }
+      yes('forge: a hero walking at the west wall stays in the hall', me().x > -26 && me().x < -24.5);
+      check('forge: from (-9, 20) the floor goes 17 m west, to the wall and not to the ring', forgeReach(-9, 20, -Math.PI / 2), 17, 0.3);
+      yes('forge: nothing burns and no bridge stands while the floor is whole', lavaAt(-16.8, -5.2) === 0 && d.bossDef.floor() === null && TWIN_BRIDGES.every((b) => !bridgeUp(b.i)));
+
+      // The floor cracks into islands: each half at its own twin's second phase.
+      fresh(0);
+      link.hurt(0, POOL * 0.35);
+      // A new phase lets a brain act again after its pause: these rows cast by hand.
+      d.boss.brain.pause = 1e9;
+      yes('Ash at 66 % of his own HP: his second phase, and the crack is the first thing due', d.boss.stats.phases === 1 && d.boss.brain.listOf(true)[0] === 'crack');
+      const cr = cast('crack', 0, { seed: 5 });
+      step(0.5);
+      const CH = TWIN_CHANNELS[0], onLava = { x: CH.ax + CH.ux * 16, z: CH.az + CH.uz * 16 };
+      yes('crack: the floor warns for 5 s, and nothing burns yet', forge.cracked[0] > forge.clock && lavaAt(onLava.x, onLava.z) === 0 && !d.boss.danger(onLava.x, onLava.z, 1.6));
+      step(2.2);
+      yes('crack: an AI is warned off the cracks before they open', d.boss.danger(onLava.x, onLava.z, 1.6) && !d.boss.danger(-14, 7, 1.6));
+      step(2.6);
+      place(onLava.x, onLava.z);
+      d.playerHp = d.playerMax;
+      step(0.5);
+      check('crack: the lava is open, and a second in a channel costs 7 %', lost(), FORGE.burn);
+      yes('crack: it is the room\'s floor now, for the duel to ask', d.bossDef.floor() !== null && d.roomFloor.burn(onLava.x, onLava.z) === FORGE.burn && !d.roomFloor.safe(onLava.x, onLava.z) && d.roomFloor.safe(-14, 7));
+      const upB = TWIN_BRIDGES.find((b) => b.half === 0 && bridgeUp(b.i) && bridgeUp(b.i, forge.clock + 2.5));
+      place(upB.x, upB.z);
+      step(1.2);
+      d.playerHp = d.playerMax;
+      step(1.2);
+      check('crack: a bridge standing over a channel is dry', lost(), 0);
+      yes('crack: Ember\'s half is still whole', forge.cracked[1] < 0 && lavaAt(-onLava.x, onLava.z) === 0);
+      const openAt = forge.cracked[0];
+      let always = true, glows = 0, sinks = 0;
+      for (let t = openAt; t < openAt + 80; t += 0.5) {
+        for (let adj = 0; adj < 6; adj++) {
+          const pair = TWIN_BRIDGES.filter((b) => b.adj === adj && !b.alone);
+          if (pair.length && !pair.some((b) => bridgeUp(b.i, t))) always = false;
+        }
+        for (const b of TWIN_BRIDGES.filter((x) => x.half === 0)) {
+          if (bridgeUp(b.i, t) && !bridgeUp(b.i, t + 0.5)) { sinks++; if (bridgeGlow(b.i, t - 1.5) > 0.3 && bridgeGlow(b.i, t - 6) === 0) glows++; }
+        }
+      }
+      yes('bridges: two islands that touch always have a bridge between them, for 80 s', always);
+      yes('bridges: each glows for its last four seconds before it sinks', sinks >= 10 && glows === sinks);
+      cast('crack', 0, { seed: 9 });
+      yes('crack: a second cast of it (a brain that took over) changes nothing', forge.cracked[0] === openAt && forge.seeds[0] === 5);
+      void cr;
+      // Ash's Charge shatters a bridge it crosses, on every screen from the same cast.
+      const sh = TWIN_BRIDGES.find((b) => b.half === 0 && b.channel === 0 && bridgeUp(b.i) && bridgeUp(b.i, forge.clock + 3));
+      place(-14, 7);
+      d.playerHp = d.playerMax;
+      cast('charge', 0, { step: 1, fx: sh.x, fz: sh.z + 6, x: sh.x, z: sh.z - 6, dir: Math.PI });
+      step(0.7);
+      yes('charge: a bridge he runs over is shattered, and stays down until its next turn', !bridgeUp(sh.i) && lavaAt(sh.x, sh.z) === FORGE.burn && lost() === 0);
+      // The autopilot comes in at the gate and must cross a channel to reach him.
+      fresh(0);
+      forge.crack(0, 11, 0);
+      step(0.2);
+      d.autopilot = true;
+      d.countdown = -1;
+      for (let i = 0; i < 30 && !d.over; i++) { step(1); d.playerHp = d.playerMax; }
+      yes('autopilot: it crosses by a bridge to reach Ash, and hurts him', link.pools[0].hp < POOL && me().z < 7 + 12);
+      check('autopilot: and never stands in the lava on its way', d.boss.stats.hits.lava ?? 0, 0, 0);
+      d.autopilot = false;
+
+      // The pit floods: when the first of the two reaches its last phase.
+      fresh(0);
+      link.hurt(0, POOL * 0.6);
+      link.hurt(1, POOL * 0.68);
+      d.boss.brain.pause = 1e9;
+      yes('Ember at a third of her HP: her last phase; nothing floods before her cast', d.boss.twins.phase[1] === 3 && forge.floodAt < 0 && a.obstacles.includes(TWIN_WALL));
+      const fl = cast('flood', 1);
+      step(0.3);
+      yes('flood: the wall of fire goes out for good, though both stand', !a.obstacles.includes(TWIN_WALL) && d.boss.twins.open && !d.boss.twins.dead[0] && !d.boss.twins.dead[1]);
+      yes('flood: this screen\'s enemy is still Ash, and Ember is still only drawn', d.boss.which === 0 && d.boss.def.name === 'Ash' && d.opponentKit.name === 'Ash' && d.twin.fallT < 0);
+      check('flood: both of them are angrier: his hits cost a quarter more', d.boss.script.rage, FLOOD_HIT, 0);
+      place(-8, 20);
+      check('flood: her moves hurt this hero too now', take(() => cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 }), 1.9), 0.12 * FLOOD_HIT);
+      cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 });
+      step(0.4);
+      yes('flood: and an AI minds them', d.boss.danger(-8, 20, 3) && !d.boss.script.danger(-8, 20, 3));
+      step(2);
+      yes('flood: nothing burns while it shows along the walls', lavaAt(-25.6, 7) === 0);
+      step(FORGE.floodWarn + 6);
+      yes('flood: then the lava comes in from the walls, and the middle is dry', floodInset() > 0.5 && lavaAt(-25.6, 7) === FORGE.floodBurn && lavaAt(-14, 7) === 0);
+      const f0 = forge.floodAt;
+      cast('flood', 0);
+      yes('flood: the other twin\'s own cast of it changes nothing', forge.floodAt === f0);
+      // A sealed vent holds it back, whoever's vent it is.
+      const sv = cast('seale', 1, { x: TWIN_LAYOUT.hold[1].x, z: TWIN_LAYOUT.hold[1].z });
+      step(0.3);
+      yes('flood: her vent is this hero\'s to seal too, now the wall is out', d.boss.objectiveGoal(me().x, me().z) !== null && d.boss.script.objectiveGoal(me().x, me().z) === null);
+      const in0 = floodInset();
+      link.on.done(sv.id, 0, 3);
+      check('her half seals it: the flood is held back 20 s on this screen too', forge.held, 20, 0.01);
+      yes('and the lava draws back', floodInset() < in0);
+      const sw = cast('sealw', 0, { x: TWIN_LAYOUT.hold[0].x, z: TWIN_LAYOUT.hold[0].z });
+      boss(-22, 20);
+      place(TWIN_LAYOUT.hold[0].x, TWIN_LAYOUT.hold[0].z);
+      const g0 = link.pools[0].gauge;
+      step(4.3);
+      check('this hero seals Ash\'s: 20 s more', forge.held, 40, 0.01);
+      check('and a mechanic fills half of what it fills for one boss', link.pools[0].gauge - g0, 40 * 5 / 2, 0.01);
+      void sw; void fl;
+      place(-3, 7);
+      for (let i = 0; i < 170; i++) { step(1); d.playerHp = d.playerMax; }
+      check('flood: after three minutes it has come 16 m, and stays there', floodInset(), 16, 0.01);
+      yes('flood: one island is left in the middle, 20 m by 22 m', lavaAt(-9, 7) === 0 && lavaAt(9, 7) === 0 && lavaAt(0, 17) === 0 && lavaAt(-11, 7) > 0 && lavaAt(0, 19.5) > 0 && lavaAt(5, 40) > 0);
+      yes('flood: an AI and a boss backing away keep to it', d.roomFloor.bounds > 8 && d.roomFloor.bounds < 10 && !d.roomFloor.safe(-9.8, 7) && d.roomFloor.safe(-4, 7));
+      // One falls after the flood: the other is everyone's, as before.
+      link.hurt(0, POOL);
+      step(0.2);
+      yes('flood, then Ash falls: Ember is this screen\'s enemy', d.boss.which === 1 && !d.over);
+
+      // What comes only for big parties: the brain leaves out what the band is too small for.
+      const has = (band, half, id) => { fresh(half, band); return [0, 1, 2, 3].some((ph) => { d.boss.brain.phase = ph; return d.boss.brain.listOf(true).includes(id); }); };
+      yes('band 5: no Lantern Chain; band 10: both of them have it', !has(5, 0, 'chain') && has(10, 0, 'chain') && has(10, 1, 'chain'));
+      yes('band 20: no Changing of the Flames; band 40: Ash calls it, Ember never', !has(20, 0, 'change') && has(40, 0, 'change') && !has(40, 1, 'change'));
+      fresh(0, 10);
+      const timed10 = d.boss.def.phases[3].timed.move;
+      fresh(0, 20);
+      yes('band 10: one vent to seal in Together; band 20: Seal the Vents in its place', timed10 === 'sealw' && d.boss.def.phases[3].timed.move === 'ventsw' && d.boss.def.band === 20);
+
+      // Lantern Chain (10 or more): a pair of one half, named in the cast's target and mate.
+      freshPair(0, 10, 0);
+      place(-10, 14);
+      mate(-7, 14);
+      const chainMove = d.boss.def.moves.chain, world = d.boss.script.world;
+      const aimChain = (n, seed, heroes) => chainMove.aim({ boss: { x: -14, z: 7 }, ring: { x: -14, z: 7 }, target: { x: -10, z: 14 }, step: n, seed, heroes, rayStop: () => 1, cover: () => world.cover() });
+      const two = [{ side: 0, x: -10, z: 14 }, { side: 1, x: -7, z: 14 }];
+      const ac = aimChain(0, 3, two);
+      yes('chain: the brain chains the two, and names them in target and mate', [ac.target, ac.mate].sort().join() === '0,1' && Math.abs(ac.x + 8.5) < 0.01 && !ac.flag);
+      yes('chain: a half with one hero standing has no pair, and the step plays nothing', aimChain(0, 4, two.slice(0, 1)).flag === true);
+      yes('chain: its rocks come where the pair stands then, along the line through the two', Math.abs(aimChain(CHAIN.most, 3, [{ side: 0, x: -10, z: 20 }, { side: 1, x: -10, z: 24 }]).z - 22) < 0.01);
+      const cm = cast('chain', 0, { x: ac.x, z: ac.z, mate: 1, seed: 3 });
+      step(1);
+      yes('chain: 3 m apart, an AI is not called to its mate', d.boss.objectiveGoal(me().x, me().z) === null);
+      mate(2, 14);
+      d.playerHp = d.playerMax;
+      step(1);
+      const lead = d.boss.objectiveGoal(me().x, me().z);
+      yes('chain: pulled long, an AI is led back to its mate', !!lead && Math.abs(lead.x - 2) < 0.6);
+      check('chain: within its first 3 s it does not snap, however far apart', lost(), 0);
+      step(1.2);
+      check('chain: over 8 m apart it snaps and burns both for 30 %', lost(), CHAIN.burn);
+      yes('chain: it snaps once', scriptCast(0, cm.id).played.objectives[0].done === true);
+      d.playerHp = d.playerMax;
+      step(2);
+      check('chain: and burns no more', lost(), 0);
+      place(-10, 14);
+      check('chain: a rock between the two costs 14 %', take(() => cast('chain', 0, { step: CHAIN.most, x: -10, z: 14, dir: 0, mate: 1 }), 2), CHAIN.rock);
+      place(-10 + 3.2, 14);
+      check('chain: a step off the line, and they miss', take(() => cast('chain', 0, { step: CHAIN.most, x: -10, z: 14, dir: 0, mate: 1 }), 2), 0);
+      place(-10, 14 + 4.6);
+      check('chain: one falls past each of the two as well', take(() => cast('chain', 0, { step: CHAIN.most, x: -10, z: 14, dir: 0, mate: 1 }), 2), CHAIN.rock);
+      // A chain on two others is only a look here.
+      freshPair(0, 10, 0);
+      place(-10, 14);
+      mate(-7, 14);
+      const other = cast('chain', 0, { x: -8, z: 14, target: 1, mate: 1 });
+      mate(8, 14);
+      step(4);
+      yes('chain: one that does not hold this hero never snaps by its screen', lost() === 0 && !scriptCast(0, other.id).played.objectives[0].done);
+
+      // Seal the Vents (20 or more): a vent for every five, each sealed by one hero; open ones bring the lava on.
+      fresh(0, 20);
+      const ventsMove = d.boss.def.moves.ventsw;
+      const five = (n) => Array.from({ length: n }, (_, i) => ({ side: i, x: -10, z: 10 + i }));
+      const aimV = (n) => ventsMove.aim({ boss: { x: -14, z: 7 }, ring: { x: -14, z: 7 }, target: { x: -10, z: 14 }, step: 0, seed: 1, heroes: five(n), rayStop: () => 1, cover: () => [] }).x;
+      yes('vents: one for every five heroes of a half, four at most', aimV(4) === 1 && aimV(10) === 2 && aimV(15) === 3 && aimV(20) === 4);
+      forge.flood(0);
+      step(0.1);
+      yes('vents: once the wall is out a twin sees the whole party, and asks for its own half of it', aimV(20) === 2 && aimV(40) === 4);
+      const vc = cast('ventsw', 0, { x: 3, seed: 2 });
+      step(0.3);
+      const vo = scriptCast(0, vc.id).played.objectives;
+      check('vents: three to seal', vo.length, 3, 0);
+      yes('vents: all in Ash\'s half, on dry floor', vo.every((o) => o.x < -1 && lavaAt(o.x, o.z) === 0));
+      place(vo[0].x, vo[0].z);
+      step(VENTS.hold + 0.3);
+      check('vents: this hero seals one: the flood is held back 12 s', forge.held, VENTS.sealed, 0.01);
+      yes('vents: the others are still to seal', vo[0].done && !vo[1].done && !!d.boss.objectiveGoal(me().x, me().z));
+      d.playerHp = d.playerMax;
+      step(VENTS.open - VENTS.hold);
+      check('vents: two left open when they close: each brings the lava on 10 s', forge.held, VENTS.sealed - 2 * VENTS.left, 0.01);
+      const g1 = link.pools[0].gauge;
+      const vc2 = cast('ventsw', 0, { x: 1, seed: 2 });
+      step(0.3);
+      const v2 = scriptCast(0, vc2.id).played.objectives[0];
+      place(v2.x, v2.z);
+      step(VENTS.hold + 0.3);
+      check('vents: every one of a cast sealed, and that twin staggers', link.pools[0].gauge - g1, 40 * 10 / 2, 0.01);
+
+      // The Changing of the Flames (40): the hub marks, a marked hero crosses by a gate, its enemy changes.
+      fresh(0, 40);
+      const POOL40 = Math.round(raidHp('ash', 40, 1) / 2);
+      link.hurt(1, POOL40 * 0.2);
+      const cg = cast('change', 0);
+      step(0.3);
+      yes('change: the call holds his cast bar for its 12 s', d.boss.stageLeft > 11);
+      yes('change: the hub marks this hero; the gates are still shut', scriptCast(0, cg.id).played.objectives.some((o) => o.part === RAID_TWIN.change.mark && o.done) && d.boss.objectiveGoal(me().x, me().z) === null);
+      step(CHANGE.warn);
+      const gate = d.boss.objectiveGoal(me().x, me().z);
+      yes('change: the gates open: a marked hero\'s way is the nearest gate, at the wall', !!gate && gate.beats === true && gate.x < 0 && gate.x > -2.5 && TWIN_LAYOUT.gates.includes(gate.z));
+      place(gate.x, gate.z);
+      d.playerHp = d.playerMax;
+      step(0.3);
+      yes('change: it steps through, and Ember is its enemy now', d.boss.which === 1 && d.boss.def.name === 'Ember' && link.which === 1 && d.opponentKit.name === 'Ember' && !d.over);
+      yes('change: it stands east of the wall of fire, which still stands', me().x > TWIN_LAYOUT.wallHalf && a.obstacles.includes(TWIN_WALL));
+      yes('change: she has the HP she had, and Ash is the one only drawn', Math.abs(a.hpOf(d.foe) - POOL40 * 0.8) < 2 && d.twin.enemy.group.position.x < -5 && a.liveFoes().length === 1);
+      check('change: crossing in time costs nothing', lost(), 0);
+      const e0 = link.pools[1].hp;
+      a.hit(d.foe, { damage: 150, knock: 0 });
+      step(0.2);
+      yes('change: its hits come off Ember, and Ash\'s moves are a look only now', e0 - link.pools[1].hp >= 150 && link.pools[0].hp === POOL40);
+      place(8, 12);
+      check('change: Ash\'s slam across the wall costs it nothing', take(() => cast('slam', 0, { x: 8, z: 12 }), 1.7), 0);
+      // The gates shut on a marked hero that did not cross.
+      fresh(0, 40);
+      place(-20, 20);
+      cast('change', 0);
+      d.playerHp = d.playerMax;
+      step(CHANGE.warn + CHANGE.open + 0.6);
+      check('change: the gates shut on it: dragged through the fire for 40 %', lost(), RAID_TWIN.change.late);
+      yes('change: and it is in the east all the same, with Ember', d.boss.which === 1 && me().x > TWIN_LAYOUT.wallHalf);
+      // The call is the whole room's: a hero of Ember's half hears Ash's.
+      fresh(1, 40);
+      const ce = cast('change', 0);
+      step(CHANGE.warn + 0.3);
+      const eg = d.boss.objectiveGoal(me().x, me().z);
+      yes('change: Ash\'s call reaches Ember\'s half too: its hero is marked, and its way is a gate on its own side', !!scriptCast(1, ce.id) && !!eg && eg.x > 0 && eg.x < 2.5);
+      // Never once the wall is out.
+      fresh(0, 40);
+      forge.flood(0);
+      const cn = cast('change', 0);
+      step(0.2);
+      yes('change: nothing once the pit has flooded', !scriptCast(0, cn.id));
     } catch (e) {
       failed.push(String(e?.stack ?? e));
     }

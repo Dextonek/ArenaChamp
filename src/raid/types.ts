@@ -542,6 +542,11 @@ export interface TwinWorld {
   fell(dead: number, hp: number): void;
   /** The wall of fire still stands. */
   wallUp(): boolean;
+  /**
+   * The Changing of the Flames: this screen's hero is dealt into the other half while both stand. The other boss takes this one's
+   * place as the enemy here, with `hp` left, and this one becomes the body that is only drawn; the hero is held in its new half.
+   */
+  swap(hp: number): void;
 }
 
 /** A hit on this screen's hero. */
@@ -567,6 +572,11 @@ export interface RaidEvents {
   rage?(which: number, on: boolean): void;
   /** Twin Flames: boss `which` fell. The fight goes on until both have. */
   fell?(which: number): void;
+  /**
+   * Twin Flames, The Changing of the Flames: the hub has dealt the halves again (by side). A screen whose own half changed fights
+   * the other boss from now on; `late`: the sides the gates shut on, who are dragged through the fire and burn.
+   */
+  halves?(half: number[], late: number[]): void;
   /** How many heroes stood in a `stand` zone of cast `id` when it landed. */
   stood(id: number, part: number, count: number): void;
   /** A hero took an objective of cast `id`. */

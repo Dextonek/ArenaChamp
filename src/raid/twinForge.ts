@@ -364,7 +364,6 @@ export const vents = (id: string, who: number): BossMove => ({
     p.hint('Seal the vents: one hero on each, or the lava comes faster');
     p.say('THE VENTS OPEN', '#ffe27a', TWIN_LAYOUT.hold[who].x, TWIN_LAYOUT.hold[who].z);
     let closed = false, sealed = 0;
-    const label = () => p.label(`Seal the Vents · ${sealed} of ${spots.length}`);
     return {
       threats: [], objectives, duration: until + 1,
       look: {
@@ -388,9 +387,8 @@ export const vents = (id: string, who: number): BossMove => ({
           sealed++;
           forge.hold(VENTS.sealed);
           p.show.triumph(o.x, o.z, 0xffd890, 1.1);
-          p.say('SEALED', '#ffe27a', o.x, o.z);
+          p.say(`SEALED · ${sealed} OF ${spots.length}`, '#ffe27a', o.x, o.z);
           p.sparks.emit(o.x, 0.4, o.z, 40, 5, 5, 0.9, STAND_COLOR);
-          label();
           if (sealed < spots.length) return;
           p.reward('vents', c.id);
           p.cancel(c.id);
@@ -443,8 +441,6 @@ export const change: BossMove = {
     if (forge.open || forge.clock < changing) return { threats: [], duration: 0.05 };
     changing = forge.clock + end;
     const state = { marked: new Set<RaidSide>(), crossed: new Set<RaidSide>() };
-    // The hub marks who must cross, once, for the cast its own brain's screen asks for.
-    p.reward('change', c.id);
     const lights = L.gates.map((z) => {
       const light = new LightPillar(C.x, z, L.gateHalf, 6, STAND_COLOR);
       p.group.add(light.mesh);
@@ -467,13 +463,18 @@ export const change: BossMove = {
     }));
     const told: Objective[] = Array.from({ length: RAID_PARTY_MAX }, (_, side): Objective => ({ part: MARK + side, x: C.x, z: C.z, radius: 0, kill: true, until: end }));
     p.say('THE CHANGING OF THE FLAMES', '#ffe27a', C.x, C.z);
-    let opened = false, shut = false;
+    let opened = false, shut = false, asked = false;
     const label = () => p.label(`The Changing of the Flames · ${state.crossed.size} of ${state.marked.size} across`);
     return {
       threats: [wrong], objectives: [...way, ...told], duration: end + 1.5,
       look: {
         update(t) {
           time = t;
+          // The hub marks who must cross, once, for the cast a brain's screen asks for (asked once the cast is in the air here: its answer names it).
+          if (!asked) {
+            asked = true;
+            p.reward('change', c.id);
+          }
           const m = mouth();
           way[me].x = m.x;
           way[me].z = m.z;

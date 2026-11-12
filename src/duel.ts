@@ -992,7 +992,40 @@ export class Duel {
       kneel: (seconds) => this.twin?.status.hold(seconds),
       wallUp: () => this.twinWall(),
       fell: (dead, hp) => this.twinFell(dead, hp),
+      swap: (hp) => this.twinSwap(hp),
     };
+  }
+
+  /**
+   * The Changing of the Flames: this screen's hero is dealt into the other half while both of the two stand. The other boss becomes
+   * the enemy here (its model, its spot, its HP), and the one it fought becomes the body that is only drawn. The hero is held in
+   * its new half from the next frame on (`holdHalf` puts it through the wall of fire if it has not walked through a gate).
+   */
+  private twinSwap(hp: number) {
+    const t = this.twin, foe = this.foe, arena = this.host.arena;
+    if (!t || !foe || t.fallT >= 0) return;
+    const next = t.defs[1 - t.mine], last = t.defs[t.mine];
+    const from = foe.group.position.clone(), to = t.enemy.group.position.clone(), yaw = foe.group.rotation.y;
+    t.mine = t.half = 1 - t.mine;
+    this.bossDef = next;
+    const kit = next.kit(t.maxHp);
+    this.opponentKit = kit;
+    this.oppAttackSpec = attackFor(kit);
+    this.figure.setModel(kit.model, to, kit);
+    this.figure.setScale(next.scale);
+    foe.body = { ...next.body };
+    arena.clearStatuses(foe);
+    arena.placeFoe(foe, to);
+    foe.group.rotation.y = t.yaw;
+    arena.setHp(foe, Math.max(1, hp));
+    this.foeHeld = 0;
+    t.enemy.group.position.copy(from);
+    t.yaw = yaw;
+    const other = last.kit(t.maxHp);
+    this.rimFigure?.setModel(other.model, from, other);
+    this.rimFigure?.setScale(last.scale);
+    this.rimFigure?.stand();
+    t.status = new StatusSet();
   }
 
   /**

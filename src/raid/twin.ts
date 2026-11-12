@@ -1,4 +1,7 @@
 import { RAID_BOSSES, RAID_REWARDS, RAID_TWIN, raidHp, raidScale, raidStaggerMax } from '../../server/protocol.mjs';
+
+/** The Changing of the Flames on one screen (`TwinLocalLink`): the call in the air. */
+interface LocalChange { id: number; until: number; crossed: boolean }
 import type { TelegraphClip } from '../effects/telegraph';
 import type { BossCast, BossDef, BossWorld, RaidEvents, RaidLink } from './types';
 
@@ -96,6 +99,9 @@ export class TwinLocalLink implements RaidLink {
   fury = -1;
   private over = false;
   private paid = new Set<string>();
+  private clock = 0;
+  /** The Changing of the Flames in the air: this screen's hero is the one marked. */
+  private change: LocalChange | null = null;
 
   constructor(private def: BossDef, readonly band = 10, half = 0, tier = 1) {
     this.maxHp = Math.round(raidHp(def.id, band, tier) / 2);
@@ -174,14 +180,34 @@ export class TwinLocalLink implements RaidLink {
   }
 
   objective(id: number, part: number) {
+    const ch = this.change, C = RAID_TWIN.change;
+    // The Changing of the Flames: who is marked is the hub's to say, and this hero crosses once, while the gates are open.
+    if (ch && id === ch.id && part >= C.mark && (part !== C.cross + this.side || ch.crossed || this.clock > ch.until)) return;
     this.on.done(id, part, 0);
+    if (ch && id === ch.id && part === C.cross + this.side) this.deal(false);
+  }
+
+  /** This screen's hero is dealt into the other half, as the hub deals a seat. `late`: the gates shut on it. */
+  private deal(late: boolean) {
+    const ch = this.change;
+    if (!ch || ch.crossed || this.over || this.pools[0].dead || this.pools[1].dead) return;
+    ch.crossed = true;
+    this.on.halves?.([1 - this.which], late ? [this.side] : []);
   }
 
   reward(key: string, id: number) {
-    const table = RAID_REWARDS[this.def.id as keyof typeof RAID_REWARDS] as Record<string, { hp?: number; stagger?: number; kneel?: boolean; stun?: number }>;
+    const table = RAID_REWARDS[this.def.id as keyof typeof RAID_REWARDS] as Record<string, { hp?: number; stagger?: number; kneel?: boolean; stun?: number; swap?: boolean }>;
     const r = table?.[key], once = `${id}:${key}`, which = this.which, p = this.pools[which];
     if (!r || this.paid.has(once) || this.over) return;
     this.paid.add(once);
+    if (r.swap) {
+      // The hub marks every second hero of a half: of one screen's one hero, that one.
+      const C = RAID_TWIN.change;
+      if (this.change && this.clock < this.change.until + C.rest) return;
+      this.change = { id, until: this.clock + C.warn + C.open, crossed: false };
+      this.on.done(id, C.mark + this.side, this.side);
+      return;
+    }
     if (r.hp) this.hurt(which, p.max * r.hp);
     if (this.over || p.dead) return;
     if (r.kneel) {
@@ -215,6 +241,9 @@ export class TwinLocalLink implements RaidLink {
   }
 
   tick(dt: number) {
+    this.clock += dt;
     for (const p of this.pools) p.kneeling = Math.max(0, p.kneeling - dt);
+    // The gates shut on a marked hero that did not cross.
+    if (this.change && !this.change.crossed && this.clock > this.change.until + 0.3) this.deal(true);
   }
 }
