@@ -6,15 +6,16 @@ import { BARD, BARD_CSS, GLYPH, Notes, SoundRings, Stave } from '../../effects/p
 import { insideTelegraph, type TelegraphShape } from '../../effects/telegraph';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { cantorTuned } from '../../traits/bard';
+import { CHORD_SILENCE, CRESCENDO_MAX, cantorNotes } from '../../traits/bard';
 
 /**
  * Resounding Chord (bard kit v5, Q: a quick cone, no aim). Cantor turns toward the nearest enemy (the engine has turned
  * him by the cast: `ctx.aim`) and strikes a chord: three staves fan out of his hands through a 90 degree cone, 5 m long,
  * with notes riding them outward, and a sound ring leaves his feet. At 0.4 s everyone inside the cone (judged on the live
- * position) takes 45 (the cone is the cast's telegraph, so the duel's zone filter holds). In tune (`cantorTuned`, written by
- * his trait at the cast) the chord is gold, hits 30% harder (the trait's power) and also silences 0.5 s. Cooldown 3 s (2 s
- * in tune). Clean by 1.3 s.
+ * position) takes 25 (the cone is the cast's telegraph, so the duel's zone filter holds). His trait decides the rest at the
+ * cast (`cantorNotes`, src/traits/bard.ts): on the beat the chord is gold and hits 12% harder for each step of Crescendo (the
+ * trait's power), and at the top of the Crescendo it also silences 0.5 s; off the beat it is a sour, rose chord at a quarter
+ * of the power. No cooldown: one spell a beat. Clean by 1.3 s.
  * Network duels: both screens replay the cast; only the victim's screen's hit counts.
  */
 export interface ResoundingChordSettings {
@@ -22,14 +23,13 @@ export interface ResoundingChordSettings {
   loop: boolean;
 }
 
-export const defaultResoundingChord = (): ResoundingChordSettings => ({ damage: 60, loop: false });
+export const defaultResoundingChord = (): ResoundingChordSettings => ({ damage: 25, loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.4;
 const DURATION = 1.3;
 const CONE_R = 5;
 const CONE_ANGLE = 90;
-const SILENCE_S = 0.5;
 const FAN = [-0.6, 0, 0.6]; // radians off the aim
 const HAND = 1.25;
 
@@ -46,6 +46,7 @@ export class ResoundingChord implements Effect {
   cone: TelegraphShape = { kind: 'cone', x: 0, z: 0, radius: CONE_R, angle: CONE_ANGLE, dir: 0 };
   private time = 0;
   private tuned = false;
+  private silences = false;
   private flags = { sung: false, hit: false };
   private from = new THREE.Vector3();
   private fwd = new THREE.Vector3(0, 0, 1);
@@ -77,10 +78,16 @@ export class ResoundingChord implements Effect {
 
   cast(ctx: CastContext) {
     this.ctx = ctx;
-    this.tuned = !!cantorTuned.get(ctx.caster);
+    const note = cantorNotes.get(ctx.caster);
+    this.tuned = !!note?.clean;
+    this.silences = !!note?.clean && note.crescendo >= CRESCENDO_MAX;
     this.from.copy(ctx.from).setY(0);
-    this.fwd.set(Math.sin(ctx.aim), 0, Math.cos(ctx.aim));
-    this.cone = { kind: 'cone', x: ctx.from.x, z: ctx.from.z, radius: CONE_R, angle: CONE_ANGLE, dir: ctx.aim };
+    // A computer opponent's self cast brings no aim (its point is its own feet, so the engine's aim comes out as 0, due
+    // north, wherever the enemy is). The duel has turned him to face his target, so the chord goes where he faces.
+    const atFeet = Math.hypot(ctx.point.x - ctx.from.x, ctx.point.z - ctx.from.z) < 0.05;
+    const aim = atFeet && ctx.aim === 0 ? ctx.caster.group.rotation.y : ctx.aim;
+    this.fwd.set(Math.sin(aim), 0, Math.cos(aim));
+    this.cone = { kind: 'cone', x: ctx.from.x, z: ctx.from.z, radius: CONE_R, angle: CONE_ANGLE, dir: aim };
   }
 
   play() {
@@ -155,7 +162,7 @@ export class ResoundingChord implements Effect {
       if (!insideTelegraph(this.cone, p.x, p.z)) continue;
       ctx.hit(e, {
         damage: this.settings.damage, knock: 0, from: ctx.from, color: BARD_CSS.body,
-        ...(this.tuned ? { status: { kind: 'silence' as const, seconds: SILENCE_S } } : {}),
+        ...(this.silences ? { status: { kind: 'silence' as const, seconds: CHORD_SILENCE } } : {}),
       });
       this.notes.emit(this.v2.set(p.x, 1.3, p.z), this.v1.set(0, 2, 0), 4, 0.7, { size: 0.5, gold: this.tuned, spread: 1.6 });
     }

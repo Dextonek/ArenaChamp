@@ -6,16 +6,18 @@ import { BARD, BARD_CSS, GLYPH, Notes, SoundRings, Stave } from '../../effects/p
 import { stillSees } from '../../effects/channel';
 import { frameCast, type CastContext } from '../../effects/targeting';
 import type { Effect, EffectModule } from '../../effects/types';
-import { cantorTuned } from '../../traits/bard';
+import { CHARM_PER, cantorNotes } from '../../traits/bard';
 
 /**
  * Siren Song (bard kit v5, W: a charming note). Click an enemy within 8 m (the engine checks sight at the cast). A big note
  * leaves his hands and flies at 10 m/s (`SPEED`) at the enemy's LIVE position, drawn here and not a `ctx.projectile`, so it
  * cannot be sidestepped: a stave streams behind it and small notes drop off it. Each frame it asks `stillSees` (him to the
  * enemy): if cover comes between, the note breaks on it (a fizz: it scatters, a ring, nothing hits). It also gives up after
- * 2 s. On arrival the enemy takes a hit of 0 damage with `projectile: true` and a charm (`CHARM_S` 0.8 s, `CHARM_TUNED_S` 1.1 s
- * when his last cast was in tune: `cantorTuned`). The engine's `charm` walks them to him and stops them acting; a gold clef
- * floats over their head for as long as it lasts. Cooldown 12 s, `cc`. The effect draws no telegraph: the note is the warning.
+ * 2 s. On arrival the enemy takes a hit of 0 damage with `projectile: true` and a charm. How long is his trait's to say
+ * (`cantorNotes`, src/traits/bard.ts): the song spends his Crescendo, 0.25 s of charm for each step (1.25 s at 5); a note
+ * cast off the beat is sour and breaks on them with no charm at all. Without a trait (the VFX tool) it is `CHARM_S` 0.8 s.
+ * The engine's `charm` walks them to him and stops them acting; a gold clef floats over their head for as long as it lasts.
+ * No cooldown: one spell a beat, and it needs Crescendo. `cc`. The effect draws no telegraph: the note is the warning.
  * Network duels: both screens fly the note and check cover on the live positions; only the victim's screen's hit counts.
  */
 export interface SirenSongSettings {
@@ -31,7 +33,6 @@ const DURATION = 3.8;
 const GIVE_UP = 2; // a note that has not arrived by now fizzles
 const ARRIVE = 0.45; // close enough to land
 const CHARM_S = 0.8;
-const CHARM_TUNED_S = 1.1;
 const CHEST = 1.2;
 const TRAIL = 6;
 const TRAIL_LEN = 2.2;
@@ -48,6 +49,8 @@ export class SirenSong implements Effect {
   private target: Enemy | null = null;
   private time = 0;
   private tuned = false;
+  /** Seconds of charm this cast carries (0: a sour note). */
+  private charm = CHARM_S;
   /** 0 = flying, 1 = landed, 2 = broken on cover or given up. */
   private state = 0;
   private endAt = -1;
@@ -87,7 +90,9 @@ export class SirenSong implements Effect {
   cast(ctx: CastContext) {
     this.ctx = ctx;
     this.target = ctx.targets[0] ?? null;
-    this.tuned = !!cantorTuned.get(ctx.caster);
+    const note = cantorNotes.get(ctx.caster);
+    this.tuned = !!note?.clean;
+    this.charm = note ? (note.clean ? CHARM_PER * note.crescendo : 0) : CHARM_S;
     this.liveFoe();
   }
 
@@ -163,7 +168,9 @@ export class SirenSong implements Effect {
     }
     const d = this.note.distanceTo(this.v1);
     if (d <= ARRIVE) {
-      this.land(ctx);
+      // A sour note has nothing in it: it breaks on them.
+      if (this.charm > 0) this.land(ctx);
+      else this.fizzle();
       return;
     }
     this.dir.subVectors(this.v1, this.note).normalize();
@@ -180,7 +187,7 @@ export class SirenSong implements Effect {
   private land(ctx: CastContext) {
     this.state = 1;
     this.endAt = this.time;
-    const secs = this.tuned ? CHARM_TUNED_S : CHARM_S;
+    const secs = this.charm;
     this.charmUntil = this.time + secs;
     this.notes.kill(this.noteId);
     this.noteId = -1;

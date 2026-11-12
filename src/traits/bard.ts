@@ -1,22 +1,30 @@
-import type { Trait } from './types';
+import type { Trait, TraitView } from './types';
 
-/** The beat: a pulse every `BEAT` seconds of round time. A spell cast within `TUNE` seconds of a pulse is in tune. */
+/** The beat: a pulse every `BEAT` seconds of round time. A spell cast within `TUNE` seconds of a pulse is on the beat. */
 export const BEAT = 1.2;
-export const TUNE = 0.2;
-/** In tune: the spell's power, the seconds off its cooldown. */
-export const TUNE_POWER = 1.3;
-export const TUNE_CD = 1;
-/** A stun, a silence or a hit of this much breaks the beat for `BROKEN_SECONDS`. */
-export const BREAK_DAMAGE = 50;
-export const BROKEN_SECONDS = 2;
-/** Rising Chorus: how long it runs, and what each in-tune cast gives while it does. */
-export const CHORUS_SECONDS = 3;
+export const TUNE = 0.25;
+/** The Crescendo: its top, and what each step adds to a clean spell's power. */
+export const CRESCENDO_MAX = 5;
+export const CRESCENDO_POWER = 0.12;
+/** A spell cast off the beat goes sour: this much of its power, no silence, no charm, no shield. */
+export const SOUR_POWER = 0.25;
+/** The Crescendo holds this many beats without a clean spell, then falls one step a beat. */
+export const REST_BEATS = 3;
+/** Resounding Chord at the top of the Crescendo also silences. */
+export const CHORD_SILENCE = 0.5;
+/** Siren Song spends the Crescendo: seconds of charm for each step. */
+export const CHARM_PER = 0.25;
+/** Rising Chorus spends the Crescendo: shield for each step and how long it lasts, and the speed it gives. */
+export const CHORUS_SHIELD_PER = 15;
+export const CHORUS_SHIELD_SECONDS = 3;
 export const CHORUS_HASTE = { amount: 0.25, seconds: 1.5 };
-export const CHORUS_SHIELD = { amount: 30, seconds: 3 };
-/** Duet: the silence an in-tune spell adds to a hit inside the ring. */
+/** How long Rising Chorus's gold rings play (the effect reads it). */
+export const CHORUS_SECONDS = 3;
+/** Duet: the silence a clean spell adds to a hit inside the ring. */
 export const DUET_SILENCE = 0.5;
 
 const GOLD = '#ffd24a';
+const SOUR = '#8a8494';
 
 /**
  * Signed seconds from `time` to the nearest pulse (-0.6 .. 0.6): negative before a pulse, positive after. A pure function
@@ -27,16 +35,21 @@ export function beatPhase(time: number): number {
   return (k - Math.round(k)) * BEAT;
 }
 
-/** Is `time` within 0.2 s of a pulse? (A broken beat is the trait's business: see `Trait.castMods`.) */
+/** Is `time` on the beat (within `TUNE` of a pulse)? */
 export function inTune(time: number): boolean {
   return Math.abs(beatPhase(time)) <= TUNE;
 }
 
+/** Which pulse `time` belongs to. */
+const beatOf = (time: number) => Math.round(time / BEAT);
+
 /**
- * Whether Cantor's last cast was in tune, keyed by his figure. `afterCast` writes it on his own screen, `ownChanged` on the
- * other one, so his effects read the same value at the cast (silence on Q, a longer charm on W) on both.
+ * Cantor's last cast, keyed by his figure, for his effects on both screens: was it on the beat, and at what Crescendo
+ * (the charm of Siren Song, the silence of the Chord, gold or rose). `castMods` writes it on his own screen just before the
+ * effect plays, `ownChanged` on the other one. Missing in the VFX tool, where the effects fall back to their own numbers.
  */
-export const cantorTuned = new WeakMap<object, boolean>();
+export interface CantorNote { clean: boolean; crescendo: number }
+export const cantorNotes = new WeakMap<object, CantorNote>();
 
 /**
  * The round time of Cantor's side, keyed by his figure. `ring` writes it every frame on both screens (it is the one hook
@@ -46,103 +59,121 @@ export const cantorClock = new WeakMap<object, number>();
 
 /**
  * Duet's state, keyed by his figure. The effect owns `live` (true while the ring holds: from its close to its end, on both
- * screens) and sets `collapsed` when the enemy was outside at the close; the trait's `tick` turns that into the cooldown
- * refund once and clears it.
+ * screens) and sets `collapsed` when the enemy was outside at the close; the trait's `tick` only clears that now (the
+ * ultimate's cooldown is the least the game server allows, so nothing can be given back).
  */
 export interface DuetState { live: boolean; collapsed: boolean }
 export const cantorDuets = new WeakMap<object, DuetState>();
 
-const broken = (t: { time: number; mem: Record<string, number> }) => t.time < (t.mem.brokenUntil ?? 0);
+/** How the CPU plays him: it walks in until the enemy is this close, to stand about this far off. */
+const AI_CHORD_REACH = 3.2;
+const AI_CHORD_STAND = 2.6;
+
+/** The spells that spend the Crescendo. */
+const spends = (slot: number) => slot === 1 || slot === 2;
+
+function setNote(t: TraitView, clean: boolean, crescendo: number) {
+  cantorNotes.set(t.self(), { clean, crescendo });
+  // 0 first, so the same note twice still reaches the other screen. 1: sour; 2 and up: clean, at Crescendo n - 2.
+  t.show('note', 0);
+  t.show('note', clean ? 2 + crescendo : 1);
+}
 
 /**
- * Cantor (support), kits v5. Passive On the Beat: a beat pulses under him every 1.2 s of round time (`beatPhase`, `inTune`).
- * A spell cast within 0.2 s of a pulse is in tune: +30% power (`castMods`) and 1 s off its cooldown (`cooldown`); `afterCast`
- * records it for the effects (`cantorTuned`, `show('tuned')`). A stun, a silence or a hit of 50 or more breaks the beat for
- * 2 s (`taken`, on his own client; `tick` shows `beatoff`): nothing is in tune then and the ring under him is a flat grey.
- * Rising Chorus (E) opens `chorusUntil` for 3 s: each in-tune cast in it gives +25% speed for 1.5 s and a 30 shield (the engine
- * keeps the larger, nothing stacks). Duet (R) cannot be cast while the enemy is charmed (`canCast`); if its ring closed on
- * nobody, `tick` gives back half its cooldown (the effect sets `cantorDuets.collapsed`); inside the ring `dealt` adds a 0.5 s
- * silence to an in-tune spell hit.
+ * Cantor (support), reworked round one rule (2026-11-12, pipeline/designs/heroes-rework.md): only on the beat. His spells
+ * have no cooldown (the kit's 0.5 s is the gap the game server asks between two casts of a slot; Duet's 11 s is its one
+ * ultimate in 10 s), but he may cast one spell a beat (`canCast`), and the beat decides what it is. A pulse runs under him
+ * every 1.2 s of round time (`beatPhase`, `inTune`, the ring).
+ * On the beat (within 0.25 s of a pulse) a spell lands: +12% power for each step of Crescendo (`castMods`, so it travels with
+ * the cast), and the Crescendo, his bar (`resource`, 0 to 5), goes up one. Off the beat it goes sour: a quarter of its power,
+ * no silence, charm or shield, and the Crescendo is gone. The Crescendo holds three beats without a clean spell and then
+ * falls a step a beat (`tick`): a stun or a silence costs him beats, nothing more.
+ * Q Resounding Chord and R Duet build it; at 5 the Chord also silences 0.5 s. W Siren Song and E Rising Chorus spend all of
+ * it (and need at least 1): 0.25 s of charm a step, a 15 shield a step for 3 s with +25% speed for 1.5 s.
+ * `cantorNotes` tells his effects what the cast was, on both screens (`show('note')`). Duet (R) cannot be cast while the
+ * enemy is charmed (`canCast`); inside its ring `dealt` adds a 0.5 s silence to a clean spell hit.
+ * The CPU (`aiHold`) casts only inside the window, sings the Siren Song from 4 Crescendo, and spends on the Chorus's shield
+ * when it is under 65% HP with no shield and 3 Crescendo; it walks in to where the Chord reaches (`aiGoal`).
  */
 export const bardTrait: Trait = {
-  // The CPU waits for the beat about 70% of the time: which beats is fixed by the round clock, so it does not flicker.
-  aiHold(t, _slot) {
-    if (broken(t) || inTune(t.time)) return false;
-    return Math.floor(t.time / 1.2) % 10 < 7;
+  aiHold(t, slot, dist) {
+    if (!inTune(t.time)) return true;
+    const hurt = t.hp() < t.maxHp() * 0.65 && t.shieldAmount() <= 0 && t.res >= 3;
+    if (slot === 1) return t.res < 4 || hurt;
+    if (slot === 2) return !hurt;
+    if (slot === 3) return dist > 4.5;
+    return false;
   },
-  passive: { name: 'On the Beat', blurb: 'A beat pulses under him every 1.2 s. A spell cast within 0.2 s of a pulse is in tune: +30% effect and 1 s off its cooldown. A stun, a silence or a hit of 50 or more breaks the beat for 2 s.' },
-  ownLook: {
-    chorus: { color: GOLD, shape: 'gem' },
+  // The CPU playing him stands where his Chord reaches (a 5 m cone), not out at the end of his basic attack.
+  aiGoal(t) {
+    const e = t.enemy();
+    if (!e || t.enemyDistance() <= AI_CHORD_REACH) return null;
+    const me = t.self().group.position, p = e.group.position, d = t.enemyDistance();
+    const k = (d - AI_CHORD_STAND) / d;
+    return { x: me.x + (p.x - me.x) * k, z: me.z + (p.z - me.z) * k };
   },
+  passive: {
+    name: 'Only on the Beat',
+    blurb: 'No cooldowns: one spell a beat (every 1.2 s). On the pulse it lands and the Crescendo climbs a step (5 at most, +12% power a step). Off the pulse it goes sour: a quarter of the power, nothing else, and the Crescendo is gone. Siren Song and Rising Chorus spend the Crescendo. It holds three beats of rest, then falls.',
+  },
+  resource: { name: 'Crescendo', max: CRESCENDO_MAX, color: GOLD },
   ownChanged(t, name, n) {
-    if (name === 'tuned') cantorTuned.set(t.self(), n > 0);
+    if (name === 'note' && n > 0) cantorNotes.set(t.self(), { clean: n >= 2, crescendo: Math.max(0, n - 2) });
   },
   speed: 4.0,
   attack: { kind: 'ranged', range: 6, damage: 10, interval: 1.0, windup: 0.25, speed: 18, look: 'note' },
   canCast(t, slot) {
+    if (t.mem.beatCast === beatOf(t.time) + 1) return 'One spell a beat';
+    if (spends(slot) && t.res < 1) return 'No Crescendo to spend';
     if (slot !== 3) return null;
     const foe = t.enemy();
     return foe && t.status(foe)?.charmed ? 'The enemy is charmed' : null;
   },
-  castMods(t) {
-    if (broken(t) || !inTune(t.time)) {
-      t.mem.tuned = 0;
-      return {};
+  castMods(t, slot) {
+    const c = Math.round(t.res);
+    t.mem.beatCast = beatOf(t.time) + 1;
+    if (!inTune(t.time)) {
+      // Off the beat: a sour note. The cast still goes out, at a quarter of its power, and the run is over.
+      t.addRes(-CRESCENDO_MAX);
+      setNote(t, false, 0);
+      t.say('SOUR', SOUR);
+      return { power: SOUR_POWER };
     }
-    t.mem.tuned = 1;
-    t.say('IN TUNE', '#ffe58a');
-    return { power: TUNE_POWER };
-  },
-  cooldown: (t, slot, base) => (t.mem.tuned ? base - TUNE_CD : base),
-  afterCast(t, slot) {
-    const tuned = !!t.mem.tuned;
-    t.mem.tuned = 0;
-    cantorTuned.set(t.self(), tuned);
-    // 0 first, so a repeated 1 still reaches the other screen.
-    t.show('tuned', 0);
-    if (tuned) t.show('tuned', 1);
-    if (tuned && t.time < (t.mem.chorusUntil ?? 0)) {
-      t.buff('haste', CHORUS_HASTE.amount, CHORUS_HASTE.seconds);
-      t.shield(CHORUS_SHIELD.amount, CHORUS_SHIELD.seconds);
+    setNote(t, true, c);
+    t.mem.cleanAt = t.time;
+    if (spends(slot)) {
+      t.addRes(-CRESCENDO_MAX);
+      if (slot === 2) {
+        t.shield(CHORUS_SHIELD_PER * c, CHORUS_SHIELD_SECONDS);
+        t.buff('haste', CHORUS_HASTE.amount, CHORUS_HASTE.seconds);
+      }
+    } else {
+      t.addRes(1);
+      if (c + 1 === CRESCENDO_MAX) t.say('CRESCENDO', '#ffe58a');
     }
-    if (slot === 2) {
-      t.mem.chorusUntil = t.time + CHORUS_SECONDS;
-      t.show('chorus', 0);
-      t.show('chorus', 1);
-    }
-  },
-  taken(t, hit) {
-    if (hit.blocked) return;
-    const kinds = [hit.opts.status?.kind, hit.mods.status?.kind];
-    const breaks = kinds.includes('stun') || kinds.includes('silence') || kinds.includes('knockup') || hit.damage >= BREAK_DAMAGE;
-    if (breaks) t.mem.brokenUntil = t.time + BROKEN_SECONDS;
+    return { power: 1 + CRESCENDO_POWER * c };
   },
   dealt(t, hit) {
-    // Inside Duet's ring, an in-tune spell also silences (not the ring's own pulses, not a hit with a status of its own).
+    // Inside Duet's ring, a clean spell also silences (not the ring's own pulses, not a hit with a status of its own).
     if (hit.kind !== 'spell' || hit.slot === 3 || !hit.victimIsHero || hit.opts.status) return;
-    if (!cantorTuned.get(t.self()) || !cantorDuets.get(t.self())?.live) return;
+    if (!cantorNotes.get(t.self())?.clean || !cantorDuets.get(t.self())?.live) return;
     hit.opts.status = { kind: 'silence', seconds: DUET_SILENCE };
   },
   tick(t) {
-    t.show('beatoff', broken(t) ? 1 : 0);
-    if (t.mem.chorusUntil && t.time >= t.mem.chorusUntil) {
-      t.mem.chorusUntil = 0;
-      t.show('chorus', 0);
+    // Three beats of rest are free; after that the Crescendo falls a step a beat.
+    if (t.res > 0 && t.time - (t.mem.cleanAt ?? 0) > REST_BEATS * BEAT + TUNE) {
+      t.addRes(-1);
+      t.mem.cleanAt = (t.mem.cleanAt ?? 0) + BEAT;
     }
     const d = cantorDuets.get(t.self());
-    if (d?.collapsed) {
-      // The ring closed on nobody: half of Duet's cooldown comes back, once.
-      d.collapsed = false;
-      t.setCooldown(3, t.cooldownLeft(3) / 2);
-    }
+    if (d?.collapsed) d.collapsed = false;
   },
   ring(t) {
     cantorClock.set(t.self(), t.time);
-    if (t.own('beatoff') > 0) return { radius: 1.2, color: '#8a8494', opacity: 0.45 };
-    // The window: the ring swells from 1.0 to 1.6 over the 0.2 s before a pulse and falls back over the 0.2 s after it.
+    // The window: the ring swells from 1.0 to 1.6 over the 0.25 s before a pulse and falls back over the 0.25 s after it.
     const k = Math.max(0, 1 - Math.abs(beatPhase(t.time)) / TUNE);
     if (k <= 0) return { radius: 1.0, color: '#b0508f', opacity: 0.3 };
     return { radius: 1.0 + 0.6 * k, color: GOLD, opacity: 0.5 + 0.5 * k };
   },
-  badge: (t) => (t.own('beatoff') > 0 ? 'OFF' : inTune(t.time) ? 'TUNE' : ''),
+  badge: (t) => (inTune(t.time) ? 'NOW' : ''),
 };

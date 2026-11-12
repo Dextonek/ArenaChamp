@@ -13,12 +13,13 @@ import { BEAT, cantorClock, cantorDuets, type DuetState } from '../../traits/bar
  * dark notes sliding along it, and a stave on the floor at its foot. The cast's telegraph is the 6 m circle (impact 0.8 s).
  * At 0.8 s the effect judges the enemy on its LIVE position: if it is inside 6 m, `ctx.confine(x, z, 6, 3.4)` closes the ring
  * (neither hero can leave it until 4.2 s) and the trait's record `cantorDuets.live` is set (the trait's `dealt` then adds a
- * 0.5 s silence to an in-tune spell hit). If nobody is inside the ring collapses (the wall shatters into notes, no confine) and
- * `cantorDuets.collapsed` is set: his trait's `tick` gives back half of R's cooldown, once. While the ring holds, on every beat
+ * 0.5 s silence to a clean spell hit). If nobody is inside the ring collapses (the wall shatters into notes, no confine) and
+ * `cantorDuets.collapsed` is set (the trait only clears it: nothing is given back). While the ring holds, on every beat
  * (the trait's `cantorClock`, so it matches the ring under him; every 1.2 s where there is no trait) a pulse of 12
  * (`PULSE_DAMAGE`, `projectile: true`) hits each enemy inside the ring on its live position (6 m plus 0.1 m, since the
  * confine presses a hero against the wall), with a gold ring racing out from the centre. Everything is gone by 4.2 s
- * (`DURATION`), the record with it. He cannot cast it while the enemy is charmed (the trait's `canCast`). Cooldown 24 s.
+ * (`DURATION`), the record with it. He cannot cast it while the enemy is charmed (the trait's `canCast`). Cooldown 11 s (the
+ * game server's one ultimate in 10 s). Cast on the beat its pulses carry the Crescendo's power; off it, a quarter.
  * Network duels: each screen applies the confine to its own hero (`ctx.confine`), judges the enemy on its own screen's live
  * positions and draws the ring; only the victim's screen's pulse hits count.
  */

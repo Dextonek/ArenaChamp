@@ -9,11 +9,11 @@ import { BEAT, CHORUS_SECONDS, cantorClock } from '../../traits/bard';
 
 /**
  * Rising Chorus (bard kit v5, E: a self buff with a look). A golden lyre rises behind him and two staves wind round his body
- * with notes riding them; for the 3 s the chorus runs (`CHORUS_SECONDS`, the trait's `afterCast` opens it and shows a gold pip)
+ * with notes riding them; for the 3 s the chorus runs (`CHORUS_SECONDS`)
  * a gold sound ring leaves his feet on every beat (the trait's `cantorClock`, so it pulses with the ring under him; every
- * 0.75 s where there is no trait) and the lyre strums. It deals no damage and has no hit. What it gives is the trait's:
- * while it runs each in-tune cast gives him +25% speed for 1.5 s and a 30 shield (the engine keeps the larger of each, nothing
- * stacks). The look follows him on his live position and fades at 3 s. Cooldown 11 s. Clean by 3.5 s.
+ * 0.75 s where there is no trait) and the lyre strums. It deals no damage and has no hit. What it gives is the trait's
+ * (src/traits/bard.ts): cast on the beat it spends his Crescendo for a shield of 15 a step (3 s) and +25% speed for 1.5 s;
+ * off the beat it gives nothing. The look follows him on his live position and fades at 3 s. No cooldown. Clean by 3.5 s.
  * Network duels: both screens play the look; it changes no state.
  */
 export interface RisingChorusSettings {
