@@ -93,18 +93,22 @@ const MOVES_MS = 100;
  */
 const BRAIN_QUIET_MS = 4000;
 const BRAIN_CHECK_MS = 500;
+/** How many may watch one duel at once (`watch`). Each costs the hub every message of the match, twice. */
+const WATCHERS_MAX = 20;
 /** Stands in for the client of a player who left: nothing is sent there. */
 const GONE = /** @type {any} */ ({ closed: true, send() {} });
 
 /**
  * @typedef {{ send: (text: string) => void, name: string | null, lobby: Lobby | null, queued: { hero: string, since: number } | null,
- *   match: Match | null, side: number, chain: Promise<void>, closed: boolean, seenAt: number }} Client
+ *   match: Match | null, side: number, chain: Promise<void>, closed: boolean, seenAt: number, watching?: Match | null }} Client
+ *   `watching`: a duel this client watches without playing in it (it has no `match`, so nothing it sends can act in one).
  * @typedef {{ code: string, seats: { client: Client, hero: string | null, ready: boolean }[], raid: string | null, open: boolean, max: number }} Lobby
  * @typedef {{ client: Client, name: string, hero: string, first: string, max: number, hp: number, loaded: boolean, casts: number, hits: number,
  *   dodges: number, recent: Map<number, number>, lastSlot: number[], attacks: Set<number>, lastAttack: number,
  *   heals: { at: number, amount: number }[], rRecast?: boolean, hazardAt?: number, down?: boolean, left?: boolean, dmgAt?: number, dmgSum?: number,
- *   move?: (number | null)[] | null, beaten?: number }} Player
+ *   move?: (number | null)[] | null, beaten?: number, at?: { x: number, z: number, yaw: number, r?: number } }} Player
  *   `move`: in a party of more than two, this hero's newest walk that the others have not been sent yet.
+ *   `at`: in a duel, where this hero last said it stood (a watcher who comes in sees it there; a hero standing still sends nothing).
  *   `beaten`: in a raid, the bosses this player has beaten with others in this run (its rank and the week's board come from it).
  * @typedef {{ id: string, band: number, hp: number, max: number, staggerMax: number, phase: number, gauge: number, kneelUntil: number, brain: number,
  *   brainAt: number, revives: number[], stood: Map<string, { id: number, part: number, count: number, from: Set<number>, timer: any, half: number }>,
@@ -122,10 +126,11 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  * @typedef {{ id: string, players: Player[], state: 'offer' | 'gate' | 'loading' | 'fight' | 'break' | 'cleared' | 'over', created: number, startedAt: number,
  *   fightAt: number, round: number, score: number[], timer: any,
  *   pick: { side: number, at: number, next: () => void } | null,
- *   picked: { by: string, hero?: string, arena?: string } | null, boss?: RaidBoss, ticker?: any, watch?: any,
+ *   picked: { by: string, hero?: string, arena?: string } | null, boss?: RaidBoss, ticker?: any, watch?: any, watchers?: Set<Client>,
  *   run?: { stage: number, tier: number, beaten: number, seconds: number, picks: Set<number>, enters: Set<number>, goes: Set<number>,
  *     sides?: Map<number, string>, sided?: boolean, together?: number, togetherS?: number, togetherTier?: number, inTier?: number } }} Match
  *   `ticker`: a party's walks, batched. `watch`: the look at whether the brain's screen is still there.
+ *   `watchers`: a duel's onlookers (`watch`): they get both heroes' messages, each wrapped in `watch_msg` with the hero's side.
  *   `run.together`: the bosses of this run that count for rewards (beaten by two or more, in a fight long enough to be one), the
  *   run's time and tier when the last of them fell, and how many of them were in the tier that is being fought now.
  */
@@ -151,6 +156,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   const lobbies = new Map();
   /** @type {Client[]} */
   const queue = [];
+  /** The duels being fought now, by id: the Lobbies screen lists them and anyone signed in may watch one. Raids are not here. */
+  /** @type {Map<string, Match>} */
+  const duels = new Map();
 
   /**
    * A new connection. `send` writes one text frame. Returns the handlers the host calls for each incoming frame and
@@ -209,9 +217,65 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
    * @param {Client} c @param {Match} match @param {any} msg
    */
   function relay(c, match, msg) {
-    if (!match.boss) return send(match.players[1 - c.side].client, msg);
+    if (!match.boss) {
+      send(match.players[1 - c.side].client, msg);
+      return toWatchers(match, c.side, msg);
+    }
     msg.side = c.side;
     tell(match, msg, c.side);
+  }
+
+  /**
+   * A duel's message about one hero, to whoever watches it: `side` is whose hero it is about (who cast, who walked, who was
+   * hit). Wrapped, so a watcher's screen never takes it for a message to a player.
+   * @param {Match} match @param {number} side @param {any} msg
+   */
+  function toWatchers(match, side, msg) {
+    if (!match.watchers?.size) return;
+    const text = JSON.stringify({ t: 'watch_msg', side, msg });
+    for (const w of match.watchers) sendText(w, text);
+  }
+
+  /** A duel's own news to its watchers, as it is (the score and the winner by side, not "you"). @param {Match} match @param {any} msg */
+  function tellWatchers(match, msg) {
+    if (!match.watchers?.size) return;
+    const text = JSON.stringify(msg);
+    for (const w of match.watchers) sendText(w, text);
+  }
+
+  /** The players and the watchers of a duel are told how many watch it now. @param {Match} match */
+  function watcherCount(match) {
+    const msg = { t: 'watchers', n: match.watchers?.size ?? 0 };
+    for (const p of match.players) send(p.client, msg);
+    tellWatchers(match, msg);
+  }
+
+  /**
+   * Everything a watcher needs to draw a duel from where it stands now: the heroes, their HP and spots, the round and the
+   * score, and how far into the round the fight is (the arena's events run on that clock).
+   * @param {Match} match
+   */
+  function watchState(match) {
+    const t = Date.now();
+    return {
+      t: 'watch_start', id: match.id, round: match.round, score: match.score.slice(), state: match.state,
+      players: match.players.map((p) => ({ name: p.name, hero: p.hero, hp: p.hp, max: p.max, at: p.at ?? null })),
+      // In the fight: seconds of the countdown still to go, or how long the round has run.
+      countdown: match.state === 'fight' && t < match.fightAt ? (match.fightAt - t) / 1000 : 0,
+      elapsed: match.state === 'fight' && t >= match.fightAt ? (t - match.fightAt) / 1000 : 0,
+      picked: match.state === 'loading' ? match.picked : null,
+      watchers: match.watchers?.size ?? 0,
+    };
+  }
+
+  /** Stops watching, if this client was. @param {Client} c */
+  function unwatch(c) {
+    const match = c.watching;
+    if (!match) return;
+    c.watching = null;
+    match.watchers?.delete(c);
+    if (match.state !== 'over') watcherCount(match);
+    broadcastLobbies();
   }
 
   /** @param {Client} c @param {string} error */
@@ -306,6 +370,26 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         return sendProfile(c);
       case 'lobbies':
         return send(c, lobbyList());
+      case 'watch': {
+        // A duel to watch, by its id from the list. A player in a fight, a lobby or the queue cannot; another duel watched is left.
+        if (c.match && c.match.state !== 'over') return fail(c, 'You are in a match');
+        if (c.lobby) return fail(c, 'Leave your lobby first');
+        if (c.queued) return fail(c, 'Leave the queue first');
+        const match = duels.get(String(m.id ?? ''));
+        if (!match || match.state === 'over') return fail(c, 'That duel is over');
+        if (match.players.some((p) => p.client === c)) return fail(c, 'You are in that duel');
+        if (c.watching === match) return send(c, watchState(match));
+        unwatch(c);
+        match.watchers ??= new Set();
+        if (match.watchers.size >= WATCHERS_MAX) return fail(c, 'That duel has as many watching as it can take');
+        match.watchers.add(c);
+        c.watching = match;
+        send(c, watchState(match));
+        watcherCount(match);
+        return broadcastLobbies();
+      }
+      case 'watch_leave':
+        return unwatch(c);
       case 'lobby_create': {
         if (busy(c)) return;
         let code;
@@ -402,6 +486,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
           match.players[c.side].move = walk;
           return;
         }
+        match.players[c.side].at = { x: mm(p.x), z: mm(p.z), yaw: mm(yaw), r };
         return relay(c, match, { t: 'peer_move', x: p.x, z: p.z, yaw, ts, r });
       }
       case 'cast': {
@@ -501,7 +586,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         me.hazardAt = now;
         const damage = Math.min(HAZARD_MAX, Math.round(m.damage));
         me.hp = Math.max(0, me.hp - damage);
-        send(match.players[1 - c.side].client, { t: 'peer_hit', id: 0, damage, soaked: 0, hp: me.hp, color: color(m.color) });
+        const hit = { t: 'peer_hit', id: 0, damage, soaked: 0, hp: me.hp, color: color(m.color) };
+        send(match.players[1 - c.side].client, hit);
+        toWatchers(match, c.side, hit);
         send(c, { t: 'hp', hp: me.hp });
         if (me.hp <= 0) endRound(match, 1 - c.side, 'ko');
         return;
@@ -521,7 +608,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const blocked = m.blocked === true;
         if (!blocked) me.hp = Math.max(0, me.hp - damage);
         foe.hits++;
-        send(foe.client, { t: 'peer_hit', id: m.id, damage: blocked ? 0 : damage, soaked, hp: me.hp, color: color(m.color), blocked });
+        const hit = { t: 'peer_hit', id: m.id, damage: blocked ? 0 : damage, soaked, hp: me.hp, color: color(m.color), blocked };
+        send(foe.client, hit);
+        // To a watcher the hit is news about the hero that took it.
+        toWatchers(match, c.side, hit);
         send(c, { t: 'hp', hp: me.hp });
         if (me.hp <= 0) endRound(match, 1 - c.side, 'ko');
         return;
@@ -880,11 +970,14 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (c.match && c.match.state !== 'over') { fail(c, 'You are in a match'); return true; }
     if (c.lobby) { fail(c, 'Leave your lobby first'); return true; }
     if (c.queued) { fail(c, 'Leave the queue first'); return true; }
+    // Watching holds nobody back: going to play a fight of one's own stops it.
+    unwatch(c);
     return false;
   }
 
   /** Leaves whatever the client is in (lobby, queue, a running match counts as a loss). @param {Client} c @param {string} reason */
   function drop(c, reason) {
+    unwatch(c);
     leaveLobby(c);
     leaveQueue(c);
     const match = c.match;
@@ -904,12 +997,17 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     const raids = all.filter((l) => l.raid && l.open && l.seats.length < l.max).map((l) => ({
       code: l.code, host: l.seats[0].client.name, count: l.seats.length, max: l.max, raid: l.raid, rank: rankOf(l.seats[0].client.name),
     }));
-    return { t: 'lobbies', list, raids };
+    // The duels being fought now, to watch: who against whom, the round and the score, how many watch.
+    const live = [...duels.values()].filter((d) => d.state !== 'over').map((d) => ({
+      id: d.id, names: d.players.map((p) => p.name), heroes: d.players.map((p) => p.hero), round: d.round, score: d.score.slice(),
+      watchers: d.watchers?.size ?? 0, since: d.startedAt || d.created,
+    }));
+    return { t: 'lobbies', list, raids, live };
   }
 
   function broadcastLobbies() {
     const text = JSON.stringify(lobbyList());
-    for (const c of clients) if (c.name && !c.match) sendText(c, text);
+    for (const c of clients) if (c.name && !c.match && !c.watching) sendText(c, text);
   }
 
   /** Everyone is seated and set: the room closes and the duel or the raid starts. @param {Lobby} lobby */
@@ -998,7 +1096,9 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         attacks: new Set(), lastAttack: -Infinity, heals: [],
       })),
       state: 'loading', created: Date.now(), startedAt: 0, fightAt: 0, round: 1, score: [0, 0], timer: null, pick: null, picked: null,
+      watchers: new Set(),
     };
+    duels.set(match.id, match);
     match.players.forEach((p, side) => {
       p.client.match = match;
       p.client.side = side;
@@ -1017,6 +1117,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     match.fightAt = Date.now() + COUNTDOWN * 1000;
     if (!match.startedAt) match.startedAt = match.fightAt;
     for (const p of match.players) send(p.client, { t: 'match_fight', countdown: COUNTDOWN, round: match.round });
+    // A watcher's bars need each hero's max HP, which the players' screens said when they loaded.
+    tellWatchers(match, { t: 'watch_fight', countdown: COUNTDOWN, round: match.round, hp: match.players.map((p) => p.hp), max: match.players.map((p) => p.max) });
   }
 
   /**
@@ -1039,6 +1141,11 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       hp: match.players.map((x) => x.hp), next: wait / 1000,
       pick: pickSide >= 0 ? { you: side === pickSide, seconds: PICK_MS / 1000 } : null,
     }));
+    tellWatchers(match, {
+      t: 'watch_round_end', round: match.round, winner: winnerSide, reason, score: match.score.slice(), hp: match.players.map((x) => x.hp),
+      next: wait / 1000, picking: pickSide,
+    });
+    broadcastLobbies();
     log(`match ${match.id} round ${match.round}: ${winnerSide < 0 ? 'tie' : match.players[winnerSide].name} (${reason}), ${match.score.join('-')}`);
     const next = () => nextRound(match, winnerSide);
     match.pick = pickSide >= 0 ? { side: pickSide, at: Date.now(), next } : null;
@@ -1067,6 +1174,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         you: p.hero, foe: match.players[1 - side].hero, picked,
       });
     });
+    for (const p of match.players) p.at = undefined;
+    tellWatchers(match, { t: 'watch_round_start', round: match.round, score: match.score.slice(), heroes: match.players.map((p) => p.hero), picked });
     match.timer = setTimeout(() => { if (match.state === 'loading') fight(match); }, LOAD_TIMEOUT);
   }
 
@@ -1111,6 +1220,11 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       });
       p.client.match = null;
     });
+    tellWatchers(match, { t: 'watch_end', winner: winnerSide, reason, seconds, score: match.score.slice(), hp: match.players.map((x) => x.hp) });
+    for (const w of match.watchers ?? []) w.watching = null;
+    match.watchers?.clear();
+    duels.delete(match.id);
+    broadcastLobbies();
     log(`match ${match.id} over: ${winner.name} wins ${match.score.join('-')} (${reason}, ${seconds} s)`);
   }
 

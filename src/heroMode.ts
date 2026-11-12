@@ -274,8 +274,14 @@ export class HeroMode implements TouchTarget {
     dom.addEventListener('pointermove', (e) => this.setMouse(e));
     if (TOUCH) this.fingers = pinchZoom(dom, this);
     dom.addEventListener('pointerdown', (e) => {
-      if (!this.enabled) return;
-      if (TOUCH) { if (this.fingers() <= 1) this.tapAt(e.clientX, e.clientY); return; }
+      if (!this.enabled || !TOUCH) return;
+      if (this.fingers() <= 1) this.tapAt(e.clientX, e.clientY);
+    });
+    // The mouse: `mousedown`, not `pointerdown`. While one button is held (a side button for push-to-talk in Discord), the
+    // browser sends no `pointerdown` for a second one, only a `pointermove`: clicks to walk did nothing (user, 2026-11-12).
+    // `mousedown` and `mouseup` come for every button.
+    dom.addEventListener('mousedown', (e) => {
+      if (!this.enabled || TOUCH) return;
       // The click itself says where the cursor is (a click can come without a move before it).
       this.setMouse(e);
       this.updateCursor();
@@ -300,6 +306,12 @@ export class HeroMode implements TouchTarget {
       }
     });
     window.addEventListener('pointerup', () => { this.heldOrder = false; });
+    // A walk button let go while a side button is still held: no `pointerup` comes then, only this.
+    window.addEventListener('mouseup', (e) => {
+      if (e.button === 0 || e.button === 2) this.heldOrder = false;
+      // The side buttons (back, forward) must not leave the game page in the middle of a fight.
+      if ((e.button === 3 || e.button === 4) && this.enabled) e.preventDefault();
+    });
     window.addEventListener('blur', () => { this.heldOrder = false; });
     dom.addEventListener('contextmenu', (e) => { if (this.enabled) e.preventDefault(); });
     dom.addEventListener('wheel', (e) => {
@@ -679,7 +691,7 @@ export class HeroMode implements TouchTarget {
   }
 
 
-  private setMouse(e: PointerEvent) {
+  private setMouse(e: MouseEvent) {
     const r = this.host.dom.getBoundingClientRect();
     this.mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
     this.arcFlip = e.shiftKey;
@@ -770,6 +782,8 @@ export class HeroMode implements TouchTarget {
    * strikes. Set by the duel for a boss's script (`BossWorld.mute`).
    */
   castLock = false;
+  /** A watched player's cast is being replayed (`replayCast`): no check may stop it, and its bend is the one it was sent with. */
+  private replaying: { bend: number } | null = null;
 
   /**
    * Click on the ground (not aiming): walk there, and forget a pending cast. Mid-dash (or mid-knockback) the order is
@@ -972,11 +986,11 @@ export class HeroMode implements TouchTarget {
 
   private castNow(i: number, target: Target) {
     const spell = this.kit.spells[i];
-    if (this.status.cannotCast || this.castLock || !this.ready(i)) return;
+    if (!this.replaying && (this.status.cannotCast || this.castLock || !this.ready(i))) return;
     const arena = this.host.arena;
     const rt = this.traits;
     // A targeted spell (one enemy, or a chain from it) needs sight of its target, whoever casts it.
-    if ('enemy' in target) {
+    if ('enemy' in target && !this.replaying) {
       const mode = this.host.targeting(spell.label)?.mode;
       const at = this.targetPos(target);
       if ((mode === 'enemy' || mode === 'enemies') && at && !arena.lineOfSight(arena.caster.group.position, at)) { this.say('No line of sight'); return; }
@@ -997,12 +1011,12 @@ export class HeroMode implements TouchTarget {
     this.moveTo = null;
     this.attacker.cancel();
     // Blind: the cast point is rolled now and the effect (its danger zones too) is played at the offset spot.
-    arena.aimOffset = this.status.blind ? arena.blindOffset() : null;
+    arena.aimOffset = this.status.blind && !this.replaying ? arena.blindOffset() : null;
     // A hold slot charges while it is aimed (each slot on its own); a recast and the autopilot cast at full charge.
     const charge = rt && !this.spectate && !rt.canRecast(i) ? rt.charge(i, (performance.now() - this.aimStart) / 1000) : 1;
     // An arc aim bends toward a side the player sees in the strip; the cast carries it (CastContext.bend).
-    let bend = 0;
-    if (spell.aim === 'arc' && 'point' in target) {
+    let bend = this.replaying?.bend ?? 0;
+    if (spell.aim === 'arc' && 'point' in target && !this.replaying) {
       bend = this.arcBend(arena.caster.group.position, target.point);
       this.arcRest = -this.arcRest;
     }
@@ -1046,6 +1060,21 @@ export class HeroMode implements TouchTarget {
     const before = this.host.arena.castSeq;
     this.castNow(i, target);
     return this.host.arena.castSeq !== before;
+  }
+
+  /**
+   * Watching a duel (src/game/watch.ts): plays a cast the watched player made on their own screen, as it was made. Nothing on
+   * this screen may stop it (a cooldown, a status, sight): that player's screen already let it go.
+   */
+  replayCast(i: number, target: Target, bend = 0) {
+    this.replaying = { bend };
+    this.cooldowns[i] = 0;
+    try { this.castNow(i, target); } finally { this.replaying = null; }
+  }
+
+  /** Watching a duel: the watched player's basic attack at `enemy`, released now (their screen wound it up and sent it). */
+  replayAttack(enemy: Enemy) {
+    this.attacker.releaseNow(enemy);
   }
 
   /** The live enemy nearest the cursor, if one is within reach of it. */

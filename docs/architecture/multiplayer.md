@@ -167,7 +167,8 @@ Client → server:
 |---|---|---|
 | `register`, `login` | `name`, `password`, `v` | → `session` or `auth_error`, or `update_required` (see *Rules version*) |
 | `resume` | `token`, `v` | after a reload in the same tab |
-| `logout`, `profile`, `lobbies` | | |
+| `logout`, `profile`, `lobbies` | | `lobbies` answers with `live` too (14): the duels being fought now |
+| `watch`, `watch_leave` (14) | `id` (watch) | see *Watching a duel*; `error` for a duel that is over, a player in a match, a lobby or the queue |
 | `lobby_create`, `lobby_join`, `lobby_leave` | `code` (join) | 4 letters, case-insensitive |
 | `lobby_pick` | `hero` | resets that seat's ready; with the shop on, `error` for a hero that is neither owned nor free this week (see *The hero shop*) |
 | `lobby_ready` | `ready` | refused without a hero or with the other seat's hero; both ready → match |
@@ -202,6 +203,28 @@ Server → client: `session { token, profile }`, `auth_error { error }` (empty e
 seconds, score, hp, stats, profile, earned }`. Since PROTOCOL 11: `shop { on, week, next, free }` (to every connection as it opens,
 and again with a session and a profile), `shop_bought { hero, price, profile }`, `obols { earned, total, why }`, `boards { week,
 raid, tower }`.
+
+## Watching a duel (since PROTOCOL 14)
+
+Anyone signed in may watch a duel being fought (the user, 2026-11-12: "make so that i can watch ongoing lobbys"; duels only for
+now, raids later; the players see how many watch, not who). The Lobbies screen lists them under **Live now**
+(`lobbies.live`); Watch sends `watch { id }`.
+
+- **A watcher has no seat.** It gets no `match` on the hub (`Client.watching` instead), so nothing it sends can act in the
+  duel, and its leaving ends nothing. At most 20 watch one duel. Joining the queue or a lobby, or logging out, stops watching.
+- **What it gets:** `watch_start` (the duel as it stands: both names, heroes, HP and max, where each hero last stood, the round,
+  the score, the state, the seconds of countdown left or how long the round has run), then every message of both players
+  wrapped as `watch_msg { side, msg }` (`side`: the hero it is about; for `peer_hit`, the one hit), and its own `watch_fight`,
+  `watch_round_end { winner, score, picking }`, `watch_round_start { heroes }`, `watch_end { winner, reason, seconds, score }`,
+  with sides instead of "you". `watchers { n }` goes to the players and the watchers when the count changes.
+- **The screen** (`src/game/watch.ts`, `Duel.startWatch`): side 0 is drawn as this screen's hero, side 1 as the opponent, the
+  camera on the whole ring. Side 1 goes through the same `peer*` methods as a player's foe. Side 0 walks a track of its own
+  reports and its casts and attacks are replayed (`HeroMode.replayCast`, `replayAttack`) with no check that could stop them.
+  Nothing is decided on a watcher's screen: no hit, heal, payment or hazard counts there; all HP is the server's. A watcher
+  who comes in mid-round sets the arena's event clock to the round's time, so its events match the players'.
+- Checked: `npm run test:server` (list, join, counts, a watcher's messages change nothing, the sides, the end); two bot pages
+  fighting and a third watching in Chrome: both heroes within 0.4 m of where their own screens had them, the same HP on all
+  three, no errors.
 
 ## The hero shop, raid ranks and the week's boards
 

@@ -8,12 +8,13 @@ import './game.css';
 import { createRuntime, type GameApi } from '../runtime';
 import { targetedModules } from '../spells/targeted';
 import type { HeroKit } from '../heroes';
-import { NetClient, type LobbyState, type Profile, type RaidRow, type TowerRow } from '../net/client';
+import { NetClient, type LiveDuel, type LobbyState, type Profile, type RaidRow, type TowerRow } from '../net/client';
 import { HERO_KINDS, HERO_SHOP, RAID_RANKS, SHOP, STARTERS, heroPrice, isoWeek as shopWeek, shopRotation } from '../../server/protocol.mjs';
 import { HeroPreview } from './heroPreview';
 import { LoadingScreen } from './loading';
 import { traitFor } from '../traits';
 import { MatchController, type PickOffer } from './match';
+import { WatchController } from './watch';
 import { ARENAS } from '../arenas';
 import { CpuMatch } from './cpu';
 import { CPU_LEVELS, cpuLevel } from '../cpuLevels';
@@ -39,6 +40,8 @@ const state = {
   connected: false,
   profile: null as Profile | null,
   lobbies: [] as { code: string; host: string; hostHero: string | null }[],
+  /** The duels being fought now, to watch (since PROTOCOL 14). */
+  live: [] as LiveDuel[],
   /** Open raids anyone can join (pipeline/designs/raid-party.md). */
   raids: [] as { code: string; host: string; count: number; raid: string; rank?: string | null }[],
   /**
@@ -266,7 +269,7 @@ function render() {
     shownScreen = state.screen;
     root.scrollTop = 0;
   }
-  if (match.active || cpu.active || raid.active || coop.active || tower.active) { root.style.display = 'none'; shownScreen = null; return; }
+  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active) { root.style.display = 'none'; shownScreen = null; return; }
   root.style.display = '';
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
@@ -1181,6 +1184,28 @@ function lobbiesScreen() {
         : el('div', { class: 'empty-state' }, icon('lobbies'), el('b', {}, 'No open lobbies yet'),
           el('span', {}, 'Create one and send its code to a friend, or find a match from the Play screen.')),
     ),
+    liveDuels(busy || !!state.lobby),
+  );
+}
+
+/** The duels being fought now, each with Watch (src/game/watch.ts). `busy`: in the queue or a lobby, which watching would leave. */
+function liveDuels(busy: boolean) {
+  return el('section', { class: 'card' },
+    el('h3', {}, `Live now (${state.live.length})`),
+    state.live.length
+      ? el('div', { class: 'lobby-list' }, ...state.live.map((d) => {
+        const [a, b] = [kitOf(d.heroes[0]), kitOf(d.heroes[1])];
+        const face = (k: HeroKit | undefined) => (k ? portrait(k, 'portrait xs') : el('span', { class: 'portrait xs empty' }));
+        return el('div', { class: 'lobby-row live-row' },
+          el('span', { class: 'live-score' }, `${d.score[0]}–${d.score[1]}`),
+          el('span', { class: 'live-faces' }, face(a), face(b)),
+          el('span', {}, el('b', {}, d.names[0]), ` · ${a?.name ?? d.heroes[0]}`, el('span', { class: 'muted' }, ' vs '), el('b', {}, d.names[1]), ` · ${b?.name ?? d.heroes[1]}`,
+            el('span', { class: 'muted' }, ` · round ${d.round}${d.watchers ? ` · ${d.watchers} watching` : ''}`)),
+          el('button', { class: 'btn small', disabled: busy, onclick: () => watch.watch(d.id) }, 'Watch'));
+      }))
+      : el('div', { class: 'empty-state' }, icon('lobbies'), el('b', {}, 'No duels being fought right now'),
+        el('span', {}, 'When two players fight, their duel shows here and you can watch it.')),
+    busy ? el('p', { class: 'muted' }, 'Leave the queue or your lobby to watch a duel.') : null,
   );
 }
 
@@ -1280,6 +1305,12 @@ const match = new MatchController(net, gameApi, loading, {
   pick: showPick,
   hidePick,
 });
+const watch = new WatchController(net, gameApi, loading, {
+  onEnter: () => render(),
+  // Back on the Lobbies screen, with the list of duels as it is now.
+  onExit: () => { state.screen = 'lobbies'; render(); net.send({ t: 'lobbies' }); },
+  toast,
+});
 const cpu = new CpuMatch(gameApi, loading, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'cpu'; render(); },
@@ -1302,7 +1333,7 @@ const coop = new RaidController(net, gameApi, loading, {
   toast,
 });
 // The duel card's "Leave duel" / "Back to menu": ends whichever fight is on.
-gameApi.duel.onLeave = () => (tower.active ? tower.exit() : raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : match.exit());
+gameApi.duel.onLeave = () => (tower.active ? tower.exit() : raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : watch.active ? watch.exit() : match.exit());
 
 net.on('socket', (m) => {
   state.connected = m.open;
@@ -1365,7 +1396,8 @@ net.on('error', (m) => toast(m.error));
 net.on('lobbies', (m) => {
   state.lobbies = m.list;
   state.raids = m.raids ?? [];
-  if ((state.screen === 'lobbies' || state.screen === 'raid') && !match.active && !coop.active && !raid.active) render();
+  state.live = m.live ?? [];
+  if ((state.screen === 'lobbies' || state.screen === 'raid') && !match.active && !watch.active && !coop.active && !raid.active) render();
 });
 net.on('lobby', (m) => {
   const had = !!state.lobby, wasRaid = !!state.lobby?.raid;
@@ -1395,4 +1427,4 @@ net.connect();
 render();
 
 // Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`, `game.tower`.
-(window as unknown as { game: unknown }).game = { state, net, match, cpu, raid, coop, tower, api: gameApi, go, render };
+(window as unknown as { game: unknown }).game = { state, net, match, watch, cpu, raid, coop, tower, api: gameApi, go, render };

@@ -137,7 +137,7 @@ export type ServerMsg =
   // The week's boards: the best raid runs with others, and the highest Tower floors as the players' pages reported them.
   | { t: 'boards'; week: string; raid: RaidRow[]; tower: TowerRow[] }
   | { t: 'error'; error: string }
-  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[]; raids?: RaidRoom[] }
+  | { t: 'lobbies'; list: { code: string; host: string; hostHero: string | null }[]; raids?: RaidRoom[]; live?: LiveDuel[] }
   | { t: 'lobby'; lobby: LobbyState | null; you?: number }
   | { t: 'queue'; on: boolean; since: number; size: number }
   | { t: 'match_start'; id: string; side: 0 | 1; hp: number; you: { name: string; hero: string }; foe: { name: string; hero: string } }
@@ -208,7 +208,45 @@ export type ServerMsg =
   // To every other screen, the one that ran it too: the brain is `side`'s now.
   | { t: 'brain_moved'; side: number; which?: number }
   | { t: 'raid_end'; result: 'cleared' | 'lost'; tier: number; bosses: number; seconds: number; bossHp: number; bossMax: number; profile: Profile | null }
+  // Watching a duel (since PROTOCOL 14). `watch_start`: the duel as it stands when the watcher comes in, and again on asking twice.
+  | {
+    t: 'watch_start'; id: string; round: number; score: number[]; state: string; players: WatchedPlayer[];
+    countdown: number; elapsed: number; picked: RoundPick | null; watchers: number;
+  }
+  // A message about hero `side` of the watched duel, as the other player got it (`peer_hit`: that hero was hit).
+  | { t: 'watch_msg'; side: number; msg: WatchPeerMsg }
+  | { t: 'watch_fight'; countdown: number; round: number; hp: number[]; max: number[] }
+  // `winner`: the side that took the round, -1 a tie. `picking`: the side choosing what comes next, -1 nobody.
+  | { t: 'watch_round_end'; round: number; winner: number; reason: string; score: number[]; hp: number[]; next: number; picking: number }
+  | { t: 'watch_round_start'; round: number; score: number[]; heroes: string[]; picked: RoundPick | null }
+  | { t: 'watch_end'; winner: number; reason: string; seconds: number; score: number[]; hp: number[] }
+  // How many watch the duel this screen is in, as a player or a watcher.
+  | { t: 'watchers'; n: number }
   | { t: 'socket'; open: boolean };
+
+/** A duel being fought now, on the Lobbies screen's list (`lobbies.live`). */
+export interface LiveDuel {
+  id: string;
+  names: string[];
+  heroes: string[];
+  round: number;
+  score: number[];
+  watchers: number;
+  /** When its first round's fight began (ms, the server's clock), or when it was made. */
+  since: number;
+}
+
+/** One hero of a watched duel: `at` where it last stood (null: at its start). */
+export interface WatchedPlayer {
+  name: string;
+  hero: string;
+  hp: number;
+  max: number;
+  at: { x: number; z: number; yaw: number; r?: number } | null;
+}
+
+/** The player messages a watcher gets, wrapped in `watch_msg`. */
+export type WatchPeerMsg = Extract<ServerMsg, { t: `peer_${string}` }>;
 
 type Handler<T extends ServerMsg['t']> = (msg: Extract<ServerMsg, { t: T }>) => void;
 

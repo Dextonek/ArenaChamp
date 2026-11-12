@@ -74,6 +74,14 @@ export interface DuelNet {
   shield(amount: number, seconds: number, color?: string): void;
 }
 
+/** The link of a screen that only watches (`Duel.startWatch`): nothing it sees is told to anyone. */
+const WATCH_NET: DuelNet = {
+  cast() {}, tookHit() {}, dodged() {}, attack() {}, buff() {}, stacks() {}, heal() {}, spend() {}, hazard() {}, status() {}, shield() {},
+};
+
+/** A message about the hero a watcher's screen draws as its own (side 0 of the watched duel), as the hub forwards it. */
+export type WatchedMsg = { t: string } & Record<string, any>;
+
 /** A cast of the remote hero, as the server relays it. */
 export interface PeerCast {
   id: number;
@@ -337,6 +345,13 @@ export class Duel {
   private peerTrack: { at: number; x: number; z: number; yaw: number }[] = [];
   /** This side's clock minus the sender's, from the quickest message so far (null: no sender clock yet). */
   private peerClock: number | null = null;
+  /**
+   * Watching someone else's duel (`startWatch`): this screen's hero is the watched duel's side 0, walked by its own reports
+   * (`mineTrack`, drawn like the remote hero), and nothing that lands here counts.
+   */
+  watching = false;
+  private mineTrack: { at: number; x: number; z: number; yaw: number }[] = [];
+  private mineClock: number | null = null;
   private hitBypass = false;
   private castSeq = 0;
   /** The id of the other player's last basic attack (its hit report names it). */
@@ -527,6 +542,9 @@ export class Duel {
    */
   startNet(o: { opponent: HeroKit; side: 0 | 1; names: [string, string]; net: DuelNet; arena?: string; arenaId?: string }) {
     this.endBoss();
+    this.watching = false;
+    this.mineTrack = [];
+    this.mineClock = null;
     const arena = this.host.arena, hm = this.host.heroMode;
     this.mode = 'play';
     this.autopilot = false;
@@ -1603,7 +1621,7 @@ export class Duel {
       burst: (at, big, stack) => this.traitFx.burst(at, (stack && stackColor(stack)) || me.accent, big),
       payHp: (amount) => {
         const paid = Math.min(amount, this.playerHp - 1);
-        if (paid <= 0) return;
+        if (paid <= 0 || this.watching) return;
         this.playerHp -= paid;
         arena.say(`-${Math.round(paid)}`, '#c0304a', arena.caster.group.position, 0.9);
         this.net?.spend(Math.round(paid));
@@ -1838,6 +1856,10 @@ export class Duel {
   stop() {
     if (!this.on) return;
     const arena = this.host.arena;
+    if (this.watching) {
+      this.watching = false;
+      this.host.heroMode.focus = null;
+    }
     this.endBoss();
     this.on = false;
     this.round++;
@@ -1929,23 +1951,136 @@ export class Duel {
    * sample is placed at the moment it was true, so uneven delivery does not make the hero stutter.
    */
   peerMove(x: number, z: number, yaw: number, ts?: number) {
-    const now = performance.now();
-    let at = now;
-    if (ts !== undefined) {
-      this.peerClock = this.peerClock === null ? now - ts : Math.min(this.peerClock, now - ts);
-      at = ts + this.peerClock;
+    this.peerClock = addSample(this.peerTrack, this.peerClock, x, z, yaw, ts);
+  }
+
+  /**
+   * Watching a duel (src/game/watch.ts): the two players' heroes as their own screens drive them, side 0 as this screen's hero
+   * (its kit is set first) and side 1 as the opponent, seen from side 0's end of the ring. Nothing is decided here: no hit,
+   * heal, payment or hazard counts on this screen; every HP is the server's (`watchHp`, and each message's `hp`).
+   */
+  startWatch(o: { opponent: HeroKit; names: [string, string]; arena?: string; arenaId?: string }) {
+    this.startNet({ opponent: o.opponent, side: 0, names: o.names, net: WATCH_NET, arena: o.arena, arenaId: o.arenaId });
+    const hm = this.host.heroMode;
+    this.watching = true;
+    hm.spectate = true;
+    hm.focus = new THREE.Vector3(RING.x, 0, RING.z);
+    // Its casts only break walls here, as the other screen's do (`peerCast`); they are told to nobody.
+    hm.onCast = (_label, slot, target) => this.playerBlast(slot, target);
+  }
+
+  /** Watching: a hero stands at once where the server last knew it (side 0 this screen's, 1 the opponent). */
+  watchPlace(side: number, x: number, z: number, yaw: number) {
+    if (!this.watching) return;
+    const arena = this.host.arena;
+    if (side === 0) {
+      const g = arena.caster.group;
+      g.position.x = x;
+      g.position.z = z;
+      g.rotation.y = yaw;
+      this.mineTrack.length = 0;
+    } else if (this.foe) {
+      const p = this.foe.group.position;
+      arena.moveFoe(this.foe, new THREE.Vector3(x - p.x, 0, z - p.z));
+      this.foe.group.rotation.y = yaw;
+      this.peerTrack.length = 0;
     }
-    const track = this.peerTrack, last = track[track.length - 1];
-    // A jump of more than PEER_JUMP in one report (a blink, a rewind, a charge's end) is not a walk: drop the old track
-    // so the hero snaps to the new spot instead of gliding across the ring.
-    if (last && Math.hypot(x - last.x, z - last.z) > PEER_JUMP) track.length = 0;
-    else if (last) {
-      at = Math.max(at, last.at + 1);
-      // It stood still (nothing is sent then): hold the old spot until just before this sample instead of gliding.
-      if (at - last.at > PEER_GAP) track.push({ ...last, at: at - PEER_STEP });
+  }
+
+  /** Watching: a round already under way when the watcher came in, `elapsed` seconds ago. Its arena events catch up. */
+  watchLive(elapsed: number) {
+    if (!this.watching) return;
+    this.countdown = -1;
+    this.waiting = false;
+    this.host.heroMode.locked = false;
+    this.hazardClock = Math.max(0, elapsed);
+    this.banner.style.display = 'none';
+  }
+
+  /** Watching: both heroes' HP as the server counts them. */
+  watchHp(hp: number[]) {
+    if (!this.watching || !this.on) return;
+    this.playerHp = hp[0];
+    if (this.foe) this.host.arena.setHp(this.foe, hp[1]);
+  }
+
+  /** Watching: a message about this screen's hero (the watched duel's side 0). The other hero's go to the `peer*` methods. */
+  watchMine(m: WatchedMsg) {
+    if (!this.on || !this.watching) return;
+    const arena = this.host.arena, hm = this.host.heroMode, me = arena.caster, at = me.group.position;
+    switch (m.t) {
+      case 'peer_move':
+        this.mineClock = addSample(this.mineTrack, this.mineClock, m.x, m.z, m.yaw, m.ts);
+        if (typeof m.r === 'number' && this.heroRt) this.heroRt.res = m.r;
+        return;
+      case 'peer_cast': {
+        if (this.over) return;
+        // From where its own screen says it cast; far from where it is drawn (a lost update), it snaps there first.
+        const told = new THREE.Vector3(m.fx, 0, m.fz);
+        if (flat(at, told) > PEER_SNAP) {
+          at.x = told.x;
+          at.z = told.z;
+          this.mineTrack.length = 0;
+        }
+        if (typeof m.yaw === 'number') me.group.rotation.y = m.yaw;
+        const target: Target = m.enemy && this.foe ? { enemy: this.foe } : { point: new THREE.Vector3(m.x, 0, m.z) };
+        hm.replayCast(m.slot, target, typeof m.bend === 'number' ? m.bend : 0);
+        return;
+      }
+      case 'peer_attack':
+        if (this.foe && !this.over) hm.replayAttack(this.foe);
+        return;
+      case 'peer_hit':
+        if (m.blocked) arena.say('BLOCKED', '#bfeaff', at, 1.1);
+        else {
+          if (m.soaked > 0) arena.absorb(me, m.soaked);
+          if (m.damage > 0) {
+            arena.clearShield(me);
+            hm.figureHit(m.damage, m.color, this.foe?.group.position);
+            arena.say(String(m.damage), m.color ?? '#ff6a6a', at, m.damage >= 40 ? 1.5 : 1);
+          }
+        }
+        this.playerHp = m.hp;
+        return;
+      case 'peer_heal':
+        arena.say(`+${m.amount}`, '#7dffb0', at, 1);
+        this.playerHp = m.hp;
+        return;
+      case 'peer_spend':
+        arena.say(`-${m.amount}`, '#c0304a', at, 0.9);
+        this.playerHp = m.hp;
+        return;
+      case 'peer_status':
+        hm.applyStatus(m.kind, m.seconds, m.color);
+        return;
+      case 'peer_buff':
+        arena.applyBuff(me, m.kind, m.amount, m.seconds);
+        return;
+      case 'peer_shield':
+        if (m.amount <= 0) arena.clearShield(me);
+        else arena.shieldFigure(me, m.amount, m.seconds, m.color);
+        return;
+      case 'peer_stacks': {
+        // `@name`: this hero's own shown state. A bare name: stacks this hero keeps on the other. `!name` is for the other's own screen.
+        const name = String(m.name);
+        if (name[0] === '@') this.heroRt?.setOwn(name.slice(1), m.n);
+        else if (name[0] !== '!') this.oppRt?.setStacks(name, m.n);
+        return;
+      }
+      case 'peer_dodged':
+        arena.say('DODGED', '#7dffb0', at, 1.2);
+        return;
     }
-    track.push({ at, x, z, yaw });
-    while (track.length > 2 && track[1].at < now - 1000) track.shift();
+  }
+
+  /** Watching: this screen's hero walks where its own screen said it was, `PEER_DELAY` ms behind, as the remote hero does. */
+  private mineFollow() {
+    const arena = this.host.arena, track = this.mineTrack;
+    if (!track.length || arena.isDashing(arena.caster)) return;
+    const p = trackAt(track, performance.now() - PEER_DELAY), g = arena.caster.group;
+    g.position.x = p.x;
+    g.position.z = p.z;
+    g.rotation.y = p.yaw;
   }
 
   /** The remote hero cast a spell: play it here at this side's hero, with this side's dodge check. */
@@ -2061,12 +2196,17 @@ export class Duel {
   }
 
   /** The server ended the match: the victory or defeat card with `text`. */
-  netEnd(result: 'win' | 'loss', text: string) {
+  netEnd(result: 'win' | 'loss', text: string, title?: { text: string; color: string }) {
     if (!this.on) return;
     this.countdown = -1;
     this.banner.style.display = 'none';
     if (!this.over) this.finish(result === 'win' ? 'win' : 'lose');
     this.cardText.textContent = text;
+    // A watcher's card names the winner instead of a victory or a defeat of its own.
+    if (title) {
+      this.cardTitle.textContent = title.text;
+      this.cardTitle.style.color = title.color;
+    }
   }
 
   /** The server ended a round but not the match: the hero stops and `text` says who took it; `startNet` runs the next. */
@@ -2232,6 +2372,7 @@ export class Duel {
     // Network duel: the server declares the winner (`netEnd`); the opponent is the other player.
     if (this.net) {
       if (foe) this.netFollow(dt, foe, foePos);
+      if (this.watching) this.mineFollow();
       this.renderHud();
       return;
     }
@@ -2966,7 +3107,8 @@ export class Duel {
    * opponent's basic attack (it homes in: no dodge). `castId` tells the server which cast it was (network duel).
    */
   private damagePlayer(opts: HitOptions, castId?: number) {
-    if (this.over || !this.on) return;
+    // A watcher's screen draws the hits the server confirms (`watchMine`), never its own.
+    if (this.over || !this.on || this.watching) return;
     const arena = this.host.arena;
     const me = arena.caster.group.position;
     if (opts.blocked !== undefined) {
@@ -3095,6 +3237,7 @@ export class Duel {
 
   /** A heal on the player hero (`arena.casterHeal`): HP up to the cap; returns what was added. */
   private healPlayer(amount: number) {
+    if (this.watching) return 0;
     // Blood Pact: nothing heals this hero in the raid.
     if (this.boss && !(this.boss.upgrades?.healable ?? true)) return 0;
     const healed = Math.max(0, Math.min(amount, this.playerMax - this.playerHp));
@@ -3513,6 +3656,41 @@ function pathDist(a: THREE.Vector3, b: THREE.Vector3, o: ArenaDef['obstacles'][n
     best = Math.min(best, capsuleDist(a.x + (b.x - a.x) * t, a.z + (b.z - a.z) * t, o));
   }
   return best;
+}
+
+/**
+ * A reported position on a track drawn behind time (the remote hero's, a watched hero's): placed at the moment it was true
+ * on the sender's clock (`ts`), so uneven delivery does not make the hero stutter. Returns the clock offset to keep.
+ */
+function addSample(track: { at: number; x: number; z: number; yaw: number }[], clock: number | null, x: number, z: number, yaw: number, ts?: number) {
+  const now = performance.now();
+  let at = now;
+  if (ts !== undefined) {
+    clock = clock === null ? now - ts : Math.min(clock, now - ts);
+    at = ts + clock;
+  }
+  const last = track[track.length - 1];
+  // A jump of more than PEER_JUMP in one report (a blink, a rewind, a charge's end) is not a walk: drop the old track
+  // so the hero snaps to the new spot instead of gliding across the ring.
+  if (last && Math.hypot(x - last.x, z - last.z) > PEER_JUMP) track.length = 0;
+  else if (last) {
+    at = Math.max(at, last.at + 1);
+    // It stood still (nothing is sent then): hold the old spot until just before this sample instead of gliding.
+    if (at - last.at > PEER_GAP) track.push({ ...last, at: at - PEER_STEP });
+  }
+  track.push({ at, x, z, yaw });
+  while (track.length > 2 && track[1].at < now - 1000) track.shift();
+  return clock;
+}
+
+/** Where a track says its hero was at time `t`: between the two reports around it, or the newest if `t` is past it. */
+function trackAt(track: { at: number; x: number; z: number; yaw: number }[], t: number) {
+  let i = 0;
+  while (i < track.length - 1 && track[i + 1].at <= t) i++;
+  const a = track[i], b = track[Math.min(i + 1, track.length - 1)];
+  const k = b.at > a.at ? THREE.MathUtils.clamp((t - a.at) / (b.at - a.at), 0, 1) : 1;
+  const turn = Math.atan2(Math.sin(b.yaw - a.yaw), Math.cos(b.yaw - a.yaw));
+  return { x: a.x + (b.x - a.x) * k, z: a.z + (b.z - a.z) * k, yaw: a.yaw + turn * k };
 }
 
 function flat(a: THREE.Vector3, b: THREE.Vector3) {

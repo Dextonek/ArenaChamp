@@ -48,7 +48,7 @@ if (!target) {
 }
 // Against a server with saved accounts the names must be new each run.
 const tag = target ? `_${Math.random().toString(36).slice(2, 6)}` : '';
-const [ALICE, BOB, CAROL, DAVE] = ['alice', 'bob', 'carol', 'dave'].map((n) => n + tag);
+const [ALICE, BOB, CAROL, DAVE, WENDY, WADE] = ['alice', 'bob', 'carol', 'dave', 'wendy', 'wade'].map((n) => n + tag);
 let failed = false;
 
 /** @param {boolean} ok @param {string} what */
@@ -607,14 +607,63 @@ if (!onlyShop) try {
   d.send({ t: 'queue_join', hero: 'Vitriol' });
   const qc = await c.next('match_start'), qd = await d.next('match_start');
   check(qc.foe.name === DAVE && qd.foe.hero === 'Lyra', 'queue pairs two different heroes');
+
+  // Watching (src/game/watch.ts): anyone signed in finds the duel on the list and may watch it. Nothing a watcher sends acts in it.
+  const w = await client(), w2 = await client();
+  w.send({ t: 'register', name: WENDY, password: 'pw1234' });
+  w2.send({ t: 'register', name: WADE, password: 'pw1234' });
+  await w.next('session'); await w2.next('session');
+  c.send({ t: 'move', x: 2, z: 3, yaw: 0.5 });
+  await d.next('peer_move');
+  w.forget('lobbies');
+  w.send({ t: 'lobbies' });
+  const live = (await w.next('lobbies')).live?.find((/** @type {any} */ x) => x.names.includes(CAROL));
+  check(!!live && live.names.join() === `${CAROL},${DAVE}` && live.heroes.join() === 'Lyra,Vitriol' && live.watchers === 0, 'watch: the duel is listed as live');
+  w.send({ t: 'watch', id: live.id });
+  const ws0 = await w.next('watch_start');
+  check(ws0.id === live.id && ws0.players[0].at?.x === 2 && ws0.players[1].at === null && ws0.state === 'loading' && ws0.watchers === 1,
+    'watch: a watcher gets the duel as it stands (where carol last stood)');
+  check((await c.next('watchers')).n === 1 && (await d.next('watchers')).n === 1, 'watch: both players are told one watches');
+  w2.send({ t: 'watch', id: live.id });
+  await w2.next('watch_start');
+  check((await c.next('watchers')).n === 2, 'watch: a second watcher is counted');
+  w2.close();
+  check((await c.next('watchers')).n === 1, 'watch: a watcher who goes is no longer counted');
+  // A watcher has no seat: its casts, hits, loads and leaving touch nothing.
+  w.send({ t: 'match_loaded' });
+  w.send({ t: 'cast', id: 1, slot: 0, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+  w.send({ t: 'took_hit', id: 1, damage: 300 });
+  w.send({ t: 'match_leave' });
+  w.send({ t: 'watch', id: 'nope' });
+  check((await w.next('error')).error.includes('over'), 'watch: a duel that is not there cannot be watched');
+  c.send({ t: 'watch', id: live.id });
+  check((await c.next('error')).error.includes('in a match'), 'watch: a player cannot watch');
   const [, qr] = await knockOut(c, d, 1);
   check(qr.pick === null, 'no pick in a queue match either');
+  const wf = await w.next('watch_fight');
+  check(wf.round === 1 && wf.countdown === 3 && wf.max.join() === '600,600', "watch: the countdown, with both heroes' max HP");
+  const wc = await w.next('watch_msg');
+  check(wc.side === 0 && wc.msg.t === 'peer_cast' && wc.msg.slot === 3, "watch: carol's cast comes as side 0");
+  const wh = [await w.next('watch_msg'), await w.next('watch_msg'), await w.next('watch_msg')];
+  check(wh.every((x) => x.side === 1 && x.msg.t === 'peer_hit') && wh[2].msg.hp === 0, "watch: the hits on dave come as side 1, with the server's HP");
+  const wr = await w.next('watch_round_end');
+  check(wr.winner === 0 && wr.score.join() === '1,0' && wr.picking === -1, 'watch: the round goes to side 0, 1-0, and no side is choosing');
   const qs = await d.next('round_start');
   await c.next('round_start');
   check(qs.you === 'Vitriol' && qs.picked === null, 'the next round follows after the break');
+  const wrs = await w.next('watch_round_start');
+  check(wrs.round === 2 && wrs.heroes.join() === 'Lyra,Vitriol', 'watch: round 2 comes with both heroes');
   d.send({ t: 'match_leave' });
   const fc = await c.next('match_end');
   check(fc.result === 'win' && fc.reason === 'forfeit', 'forfeit ends the match');
+  const we = await w.next('watch_end');
+  check(we.winner === 0 && we.reason === 'forfeit', 'watch: the watcher sees how it ended');
+  // (Signing in sent a list as well, and the end of the duel another: only the answer to this question counts.)
+  await new Promise((r) => setTimeout(r, 200));
+  w.forget('lobbies');
+  w.send({ t: 'lobbies' });
+  check(!(await w.next('lobbies')).live?.some((/** @type {any} */ x) => x.id === live.id), 'watch: an ended duel is off the list');
+  w.close();
 
   // Loser picks switched on: the code stays working while it is off for players.
   if (!target) {

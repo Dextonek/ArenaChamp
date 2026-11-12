@@ -1,8 +1,21 @@
 # Status
 
-_Last updated: 2026-11-12, afternoon: everything below that says "NOT pushed, NOT live" for 2026-11-11 and 2026-11-12 is now pushed and deployed (the Tower, the Raid for 40 with its three transforming rooms and the mechanics for 10, 20 and 40, Twin Flames in the Twin Forge, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**). Next: the Raid rework (docs/QUEUE.md, job 15)._
+_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are committed, not pushed (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
 
-## Pushed and deployed (2026-11-12, afternoon), on the user's word
+## Watch a duel, and walking with a mouse side button held (2026-11-12, evening): committed; NOT pushed, NOT live
+
+- **Watching duels** (the user: "make so that i can watch ongoing lobbys"; chose duels only for now, and the players see a count
+  of watchers, no names). The Lobbies screen lists the duels being fought under **Live now**; Watch shows one from above until it
+  ends. How it works and what was checked: [architecture/multiplayer.md](architecture/multiplayer.md), *Watching a duel*.
+  `PROTOCOL` 14 (open tabs reload after the deploy). `npm run test:server` 249 passed; two bot pages and a watcher in Chrome
+  agreed on both heroes' HP and spots (within 0.4 m), no errors. Not tried: a person watching, a phone, a watcher in round 2+
+  with a hero swap (Loser picks is off, so none happens), raids (not built).
+- **A mouse side button held** (Discord push-to-talk) stopped click-walking: a browser sends no `pointerdown` for a second button
+  while one is held. The game now listens to `mousedown` / `mouseup` (`src/heroMode.ts`), and the back / forward side buttons
+  no longer leave the page mid-fight. Checked in Chrome with the back button held: right and left clicks walked 6 m.
+
+**Waiting on the user:** say "push and deploy" when wanted; both are in the News as one release, "Watch a duel".
+
 
 The user: "can you like slowly push it and deploy it when finish", and chose: after the two half-done jobs (the Twin Forge, the
 heroes' tuning), and **the shop off for now** (`wrangler.jsonc`: `"SHOP": "off"`; every hero free; obols earned and kept; the News

@@ -39,6 +39,23 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-12',
+    title: 'Watch a duel',
+    live: false,
+    items: [
+      {
+        tag: 'Online',
+        title: 'Watch the duels being fought',
+        text: 'The Lobbies screen now lists every duel being fought under Live now, with its score and round. Press Watch to see it from above, both heroes as their players move them, until the end; Stop watching takes you back. The two players see an eye and how many are watching, but not who.',
+      },
+      {
+        tag: 'Controls',
+        title: 'Walk while holding a mouse side button',
+        text: 'Holding a side button on the mouse (push-to-talk in Discord, for example) no longer stops clicks from walking your hero, and it no longer sends the page back.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-12',
     title: 'The Tower, a Raid for forty, and hero 40',
     live: true,
     items: [

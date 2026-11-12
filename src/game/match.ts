@@ -3,6 +3,7 @@ import type { HeroKit } from '../heroes';
 import type { NetClient, Profile, RoundPick, ServerMsg } from '../net/client';
 import { arenaById, pickArena, type ArenaDef } from '../arenas';
 import { nextPaint, sleep, type LoadingScreen } from './loading';
+import { hideWatchers, showWatchers } from './watch';
 
 type Api = GameApi;
 const MOVE_HZ = 20;
@@ -97,6 +98,8 @@ export class MatchController {
       void this.beginRound(m.round, m.picked);
     });
     net.on('match_end', (m) => this.end(m));
+    // Others watching this duel (src/game/watch.ts): a small eye and their number in the corner.
+    net.on('watchers', (m) => this.active && showWatchers(m.n));
     net.on('socket', (m) => {
       if (!m.open && this.active) {
         this.ui.toast('Connection lost: the match is over');
@@ -126,6 +129,7 @@ export class MatchController {
     this.hero = mine.name;
     api.setHeroMode(true);
     this.forfeit.style.display = '';
+    hideWatchers();
     clearInterval(this.moveTimer);
     this.moveTimer = window.setInterval(() => this.sendMove(), 1000 / MOVE_HZ);
     void this.beginRound(1);
@@ -235,6 +239,7 @@ export class MatchController {
     this.ui.hidePick();
     clearInterval(this.moveTimer);
     this.forfeit.style.display = 'none';
+    hideWatchers();
     const [me, foe] = this.names;
     const why = m.reason === 'ko' ? '' : m.reason === 'forfeit' ? ' (forfeit)' : m.reason === 'disconnect' ? ' (disconnected)' : ` (${m.reason})`;
     const score = m.score ? `, ${m.score[0]}-${m.score[1]} in rounds` : '';
@@ -254,6 +259,7 @@ export class MatchController {
     this.current = null;
     clearInterval(this.moveTimer);
     this.forfeit.style.display = 'none';
+    hideWatchers();
     if (was) this.net.send({ t: 'match_leave' });
     this.api.duel.stop();
     this.api.setHeroMode(false);

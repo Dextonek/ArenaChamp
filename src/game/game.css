@@ -375,6 +375,10 @@
 .lobby-row { display: grid; grid-template-columns: 80px 28px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(8, 6, 10, 0.5); border: 1px solid var(--line); border-radius: 10px; transition: border-color 0.15s; }
 .lobby-row:hover { border-color: var(--line-gold); }
 .code { font: 800 18px ui-monospace, monospace; letter-spacing: 3px; color: var(--gold-hi); }
+/* Live now: the duels being fought, to watch (src/game/watch.ts). */
+.live-row { grid-template-columns: 52px 64px 1fr auto; }
+.live-score { font: 800 18px ui-monospace, monospace; letter-spacing: 2px; color: var(--gold-hi); }
+.live-faces { display: flex; gap: 4px; }
 .code.big { font-size: 36px; text-shadow: 0 0 22px rgba(255, 210, 122, 0.4); }
 .lobby-head { display: flex; justify-content: space-between; align-items: center; }
 .seats { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; margin: 18px 0; }
@@ -460,6 +464,8 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
 }
 .forfeit { position: fixed; right: 16px; top: 16px; z-index: 10; padding: 6px 14px; border-radius: 8px; border: 1px solid #3a3242; background: rgba(8, 6, 10, 0.8); color: #e9dcc6; font: 600 12px ui-sans-serif, system-ui; cursor: pointer; }
+/* How many watch this duel: an eye and a number under the Forfeit / Stop watching button (src/game/watch.ts). */
+.watchers { position: fixed; right: 16px; top: 52px; z-index: 10; display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 8px; border: 1px solid #3a3242; background: rgba(8, 6, 10, 0.7); color: #e9dcc6; font: 600 12px ui-sans-serif, system-ui; pointer-events: none; }
 
 @media (max-width: 1100px) {
   .hs-note { display: none; }
@@ -491,6 +497,8 @@
   /* Under the duel's bar. A raid's bar is thinner and the hero's own sits lower, so its Leave stays between them. */
   .forfeit { top: calc(100px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); padding: 5px 10px; font-size: 11px; }
   .forfeit.raid-leave { top: calc(62px + env(safe-area-inset-top, 0px)); }
+  .watchers { top: calc(132px + env(safe-area-inset-top, 0px)); right: calc(8px + env(safe-area-inset-right, 0px)); padding: 3px 8px; font-size: 11px; }
+  .live-row { grid-template-columns: 40px 56px 1fr auto; gap: 8px; }
   .toast { top: calc(110px + env(safe-area-inset-top, 0px)); }
 }
 /* A phone held upright: the screens' tabs move to a bar along the bottom, under the thumb; a tighter menu, a smaller
