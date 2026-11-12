@@ -192,3 +192,28 @@ out; it is not on the News page (the party raid and the Hall of Noon are not the
 rewards a fight (`TAKEN_MAX`) is near for a band of 40 at tier 4 and up: about 340 in six minutes (`docs/architecture/raid.md`). The
 room is first pass for the artist to direct.
 
+## The room transforms, and three mechanics for a big party (2026-11-12)
+
+User: "when there will be second stage the arena will transform, and also at final stage"; "make mechanics that only is cast when
+there is at least 10 players, and for 20 and 40". Built for the Sunburst only; the Sunken Heart and its fight for one or two are as
+they were. What was decided, measured and left open is in `pipeline/designs/raid-party.md` ("The Sunburst transforms, and the Heart's
+three party mechanics are built"); how it works in `docs/architecture/raid.md` ("The Sunburst transforms, and what comes only for a
+big party").
+
+| Piece | Where |
+|---|---|
+| The floor turns, the crust falls, Take the Blade, The Ring of Hands | `floorTurns`, `crustFalls`, `takeBlade`, `ringOfHands` in `src/raid/heart.ts`; their numbers `TURN`, `SECTORS`, `BLADE`, `HANDS` |
+| Shade the Heart together | In `heartbeat` itself; `SHADE` |
+| The party's fight as a screen has it | `heartFight` (the floor's clock, the crust, who carries a blade) |
+| The room's state and how it is drawn: three rings, seams, arrowheads, sectors, the sun under them | `burstFloor`, `BURST_RINGS`, `BURST_SECTOR`, `inSector` in `src/arenas/sunburst.ts` |
+| The blades away from its hands | `HEART_LIVE.blades` in `src/raid/bodies/heart.ts` |
+| A party's phases | `PARTY_PHASES`; `HEART_OF_NOON.band`, `choose` |
+| What the script gained | `PlayContext.carry`, `down`, `might`, `banner`; `RunUpgrades.might`; `RAID_REWARDS.heart.hands` |
+| Its check | `_raidHeart()`: 118 more rows, 246 in all |
+| Its pictures | `python pipeline/tools/heart-phase-shots.py docs/raid` -> `docs/raid/heart-*.jpg` |
+| Its measurements | `pipeline/tools/heart-party-run.js` (the autopilot by band), `pipeline/tools/party-raid.py --boss heart --burst` (six screens through the hub) |
+
+The room did not need Blender for this: what turns and what falls is the floor, which the game draws itself, and the one prop that
+falls (a ray's piece of the armillary) is an object of its own in the room's file already.
+
+**Its move names are letters only.** `still2` and `still3` never passed the hub (`MOVE_RE`): they are `stillb` and `stillc`.

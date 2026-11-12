@@ -57,6 +57,36 @@ alone first, the same Tower each week. Built by a helper in its own worktree (br
 - **Waiting on the user:** play a climb and say what feels wrong; direct the room's look (first pass, drawn in code).
 - **Next:** friends and a shared board, with the accounts work.
 
+## The Heart's room transforms, and its mechanics for 10, 20 and 40 (2026-11-12): built and committed in a worktree, NOT merged, NOT live
+
+Branch `t3/heart-noon-party-mechanics` (worktree `C:/Users/erich/.t3/worktrees/ArenaChamp/t3-c8c60bc4-b55167368df1759c`), on top of
+`4e60c65`. How it works: `docs/architecture/raid.md`, "The Sunburst transforms, and what comes only for a big party"; what was
+decided and measured: `pipeline/designs/raid-party.md`, "The Sunburst transforms, and the Heart's three party mechanics are built".
+Code: `src/raid/heart.ts`, `src/arenas/sunburst.ts`, `src/raid/bodies/heart.ts`; small additions to `src/raid/types.ts`,
+`script.ts`, `fight.ts`, `upgrades.ts`, `server/protocol.mjs` (one reward).
+
+- **Done.** A party's fight with the Heart of Noon in the Sunburst: the floor of the well turns as three rings in its second phase
+  and carries whoever stands on it; in its last phase the rings stop and after each Heartbeat one ray with its slice of the well
+  glows and drops into the sun for good. Shade the Heart together for a raid of 6 or more, Take the Blade for 16 or more, The Ring
+  of Hands for 31 or more. The raid for one and two is untouched. Five News items in the release that is not live yet.
+- **A bug found and fixed on the way.** Online, Hold Still's beats in the Heart's second and last phase reached only the screen
+  that ran the boss: every other player could walk through them. (The hub drops a cast whose move's name is not letters; they
+  were `still2` and `still3`.) It was so in the room for two as well. The Heart is not live yet, so no player met it.
+- **Checked.** Type check, build, `npm run test:server`. `_raidHeart()` 246 rows (118 new; 3 of the old 128 changed, said in
+  raid-party.md), `_raidCheck()` 234, `_raidAsh()` 77, `_raidTwin()` 72, `_raidUpgrades()` 40. The autopilot at the four sizes, 80
+  fights, no errors and none that never ends (4, 6, 6 and 9 clears of 20); at band 10 over 40 fights 9 clears against 14 before.
+  Six bots through the real hub, twice: the floor turned the same way on all six screens, the rings rested at the same angles,
+  six sectors fell on six of six screens within 0.34 s, every screen saw the same casts, no errors.
+- **Not checked.** A person playing. Take the Blade and The Ring of Hands through the real hub (six bots are a fight tuned for
+  ten: both are checked on one screen with the hub's answers fed by hand). A real phone. Tiers above 1.
+- **Not built as asked.** A blade's carrier walks at 85 %, not "slowly": the raid's files have no other slow (`src/duel.ts`). A
+  plate's place never falls with a sector: the plates fall on the spokes of crust that stay, so the Heartbeat can always be
+  sheltered from.
+- **Before a deploy.** `PROTOCOL` in `server/protocol.mjs` must be raised: the room's rules and one new reward changed.
+- **Pictures:** `docs/raid/heart-*.jpg` (thirteen; retaken by `python pipeline/tools/heart-phase-shots.py docs/raid`).
+- **Waiting on the user:** to look at the pictures and play it with a party. The numbers (9 and 6 degrees a second, 9 s of glow,
+  25 % a second over the sun, 8 % for a plate left lying, twice the damage for 12 s, 45 % for a broken ring) are first values.
+
 ## The Sun Warden's hall transforms, and his mechanics for 10, 20 and 40 (2026-11-12): built and committed in a worktree, NOT merged, NOT live
 
 Branch `t3/sun-warden-party-mechanics` (worktree `C:\Users\erich\.t3\worktrees\ArenaChamp\t3-ed97e38e-8c88ddb4d58c99cd`), on top of `ba6d97e`. How it

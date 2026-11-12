@@ -690,7 +690,7 @@ Heart, has none of it.
 | When | What | How it comes |
 |---|---|---|
 | The Rings Turn begins (66 %) | **The floor turns.** The well is three rings | `turn`, once, as soon as the phase lets it (`due: 0`), right after the rings' own cast |
-| Noon Falls begins (33 %) | **The crust falls.** The rings stop; from then on each Heartbeat takes a sector of the floor | `crust`, the phase's opener; the Heartbeat follows by its own clock once the rings rest |
+| Noon Falls begins (33 %) | **The crust falls.** The rings stop; from then on each Heartbeat takes a sector of the floor | `crust`, once, as soon as the phase lets it (`due: 0`, first in its list); the Heartbeat follows by its own clock once the rings rest |
 | A fight tuned for 10 or more | **Shade the Heart together** | The Heartbeat itself, for such a party |
 | 20 or more | **Take the Blade** | `blade`, in the second and the last phase, when its turn comes |
 | 40 | **The Ring of Hands** | `hands`, the same, taking turns with the blade |
@@ -721,7 +721,10 @@ for 40 the blade, then the ring. The first waits 9 s after the floor begins to t
   the cast took to reach them by the computer's. Each screen carries its own hero by what its ring turned that frame; nobody is
   carried over a gap of more than half a second (a tab that was hidden).
 - **It comes once.** A brain that takes the fight over starts with all its moves ready and casts `turn` again: the cast does nothing
-  when the floor already turns. The same for `crust`.
+  when the floor already turns. The same for `crust`. Neither is its phase's opener: an opener waits for a move that holds the
+  floor (Take the Blade holds it 30 s of every 44, and its doubled damage is just when a phase turns), and a brain that takes
+  over never casts one. Both are among the moves the blade lets through (`BLADE_ONLY`). With `crust` as the opener, a lone hero at
+  band 20 saw the crust begin in 12 of 19 fights that reached the last phase; now in 16 of 16.
 - **Stopping.** When the crust falls the rings stop. The brain names when, on the floor's own clock, 1.5 s ahead (the cast's `x`),
   so every screen begins to brake at the same angle whenever it hears. Each ring rests on the next eighth of a turn, so its drawing
   lines up with the rays again, in 3 to 8 s.
@@ -765,9 +768,9 @@ says "Heartbeat · Shade the Heart together". A party of three to five has its o
 | The call | The Heart throws its two blades down: they stand in the floor 5.2 m from it, across from each other, after 1.6 s. The cast bar stays up for all of it, 30 s: "Take the Blade · 2 carried" |
 | Taking one | Walk onto it. It is held aloft over the carrier, a sun at its point |
 | A carrier | Its hits on the Heart count twice; it walks at 85 %; the Heart's aim goes to the carriers (`heartChoice`, `BossDef.choose`) |
-| Meanwhile | The Heart does only what needs no blade: the flare, the crown, the rings. No Heartbeat |
+| Meanwhile | The Heart does only what needs no blade: the flare, the crown, the rings, and in the last phase the Heartbeat. No Blade Sweep, no Blade Fall |
 | The lance | Every 3.5 s from 5 s on (seven in all) it throws a lance of light at a carrier: 1.3 s of warning, 2.4 m wide. A carrier it reaches pays 35 %, is thrown back 3 m, and the blade is knocked from its hands |
-| Shielding | The lance ends on the first hero standing in its line (within 1 m of it, the brain's look), who pays 15 %; or on cover, a raised plate too |
+| Shielding | The lance ends on the first hero standing in its line (within 1 m of it, the brain's look), who pays 15 %; or on cover: a piece of the fallen armillary, or a plate raised for a Heartbeat that came meanwhile |
 | A blade dropped | Lies where the lance was aimed, or where its carrier fell, for another. Who dropped it can't take it again for 3 s |
 | How long | A blade can be carried 12 s in all, by one hero or several; nobody took it for 20 s, and it goes back. Four changes of hands at most |
 
@@ -786,7 +789,7 @@ says "Heartbeat · Shade the Heart together". A party of three to five has its o
 | | |
 |---|---|
 | The spots | One gold spot for every hero standing (the brain's count), 0.7 m wide, on the inner ring: up to 22 in a ring 6 m from the Heart, a bigger raid two rings deep (6 m and 4.2 m) |
-| Taking one | Hold it 1 s. One to a hero: the hub says who has which |
+| Taking one | Hold it 1 s, from within 0.95 m of its middle (a little past its edge, where a tap or an AI's walk ends). One to a hero: the hub says who has which, and a screen that has asked for a spot asks for no other until it hears (two neighbours' reach overlaps) |
 | The count | On the cast bar: "The Ring of Hands · 31 of 32" (held, of those needed: four in five) |
 | How long | 16 s (never under 14); the spots close 1.2 s before the end, so every screen has the same count |
 | Full | The moment enough are held: the Heart is stunned, it kneels (`RAID_REWARDS.heart.hands`), nothing burns |
@@ -805,7 +808,7 @@ move's name is letters (`MOVE_RE` in `server/hub.mjs`), so online only the brain
 player was never burnt for walking in the Heart's second and last phase. They are `stillb` and `stillc` now, and six screens all
 saw them.
 
-**Not there.** A carrier is not slowed much: the one slow the raid's files have is a shard's (85 %, and nothing with Sure Feet). A
+**Not there.** A hero that falls on a sector which then drops lies over the sun: whoever gets it up stands in the fire to do it. A carrier is not slowed much: the one slow the raid's files have is a shard's (85 %, and nothing with Sure Feet). A
 dropped blade's place is exact when a lance knocked it loose, and as near as a fallen hero's place is on each screen otherwise. A
 hero that falls on a ring is not carried while it lies there. `PROTOCOL` must be raised before a deploy: the room's rules changed.
 
@@ -1034,7 +1037,7 @@ it, casting does), and it gets up with half its HP. Twice a fight per hero. Both
 - `pipeline/tools/heart-room-shots.py`: the Sunburst's pictures the same way, with 39 partners placed about the room by hand
   (`docs/raid/heartroom-*.jpg`). `pipeline/tools/heart-phase-shots.py`: the turning floor, the falling crust, Take the Blade and The
   Ring of Hands, on the same page set-up (`docs/raid/heart-*.jpg`).
-- `_raidHeart()` also has the party's new rows (114 of its 242): which band sees which mechanic and their turns; the rings' angles
+- `_raidHeart()` also has the party's new rows (118 of its 246): which band sees which mechanic and their turns; the rings' angles
   by the rule, the carry on each ring and off them, Hold Still on a turning ring, the beams against the floor, the cast doing
   nothing a second time; the rings stopping on an eighth of a turn when the brain says; a sector named by the brain, glowing,
   gone, what it costs, what stays, the lock rows; the plates by the heroes standing and what a plate left lying costs; the blades

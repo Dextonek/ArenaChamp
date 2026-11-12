@@ -2118,7 +2118,7 @@
       step(12);
       yes('band: then The Ring of Hands has its turn', d.boss.brain.listOf(true).includes('hands') && !d.boss.brain.listOf(true).includes('blade'));
       yes('party phases: The Rings Turn opens with the rings, and the floor turns as soon as it may', def.phases[1].opener === 'rings' && def.phases[1].moves.includes('turn') && def.moves.turn.due === 0);
-      yes('party phases: Noon Falls opens with the crust falling, the Heartbeat next', def.phases[2].opener === 'crust' && def.phases[2].moves.includes('heartbeat'));
+      yes('party phases: Noon Falls begins with the crust falling, by its own clock, the Heartbeat next', !def.phases[2].opener && def.phases[2].moves[0] === 'crust' && def.moves.crust.due === 0 && def.phases[2].moves.includes('heartbeat'));
       yes('party phases: every move\'s name passes the hub (letters only)', Object.keys(def.moves).every((id) => /^[a-z]{1,16}$/.test(id)));
 
       // The floor turns: three rings, the inner one stands, the middle and the outer one turn against each other and carry.
@@ -2349,7 +2349,8 @@
       yes('blade: with no carrier standing the lance does not come', lanceAim([{ side: 0, x: 0, z: 20 }]).flag === true);
       step(BLADE.lasts - since(bc.id) + 2);
       yes('blade: at the end the blades are back in its hands', HEART_LIVE.blades.every((k) => k.out === 0) && !live(bc.id));
-      yes('blade: while they are out it does only what needs no blade', ['sweep', 'fall', 'heartbeat'].every((m) => !def.moves.blade.holds.only.includes(m)));
+      yes('blade: while they are out it does only what needs no blade', ['sweep', 'fall'].every((m) => !def.moves.blade.holds.only.includes(m)));
+      yes('blade: the crust still falls and the heart still beats meanwhile', ['crust', 'turn', 'heartbeat'].every((m) => def.moves.blade.holds.only.includes(m)));
       // The lance stops at cover, and costs who stands in its way less.
       party(20);
       q0 = burstAt(2, 27, 3.4);
@@ -2399,6 +2400,20 @@
       hc = cast('hands', { x: 40, z: 0 });
       step(0.05);
       hp = live(hc.id).played;
+      {
+        // Through the hub the answer takes a moment. A hero midway between two neighbours, in reach of both, asks for one only.
+        const asks = [], objective0 = d.boss.link.objective;
+        d.boss.link.objective = (id, part) => { asks.push(part); };
+        const pair = hp.objectives.slice(0, 2);
+        yes('hands: the reach of two neighbours overlaps', Math.hypot(pair[0].x - pair[1].x, pair[0].z - pair[1].z) < 2 * HANDS.reach);
+        place((pair[0].x + pair[1].x) / 2, (pair[0].z + pair[1].z) / 2);
+        step(HANDS.hold + 0.4);
+        d.boss.link.objective = objective0;
+        check('hands: a hero in reach of two spots asks the hub for one, while its answer is on the way', asks.length, 1, 0);
+        d.boss.script.done(hc.id, asks[0], 0);
+        step(0.3);
+        yes('hands: and none once it has one', asks.length === 1 && hp.objectives.every((o) => !o.can()));
+      }
       yes('hands: forty spots for forty, two rings deep, none overlapping', hp.objectives.length === 40 && nearest(hp.objectives) >= 2 * HANDS.radius && hp.objectives.every((o) => radOf(o.x, o.z) + HANDS.radius < BURST_RINGS.inner));
       yes('hands: it does nothing else meanwhile', def.moves.hands.holds.only.length === 0);
 
