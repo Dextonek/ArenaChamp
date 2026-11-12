@@ -15,13 +15,16 @@ one public raid room, the host starts, every screen's autopilot plays. To find w
 --phone  the last player's screen is a phone held upright (390 x 844).
 
 It starts its own dev server (the game's hub lives in it) on the port and stops it by its PID; one already there is used
-and left alone. The bots' accounts are local (server/data/, git-ignored): delete them after (names start with v5bot). It
+and left alone. Its own server runs with the hero shop off (SHOP=off; pipeline/designs/hero-shop.md): the bots' accounts
+are new, and with the shop on a new account may only take the starters and the week's free heroes into a raid room. On
+a server that is already there with the shop on, a bot whose hero is locked gets none, and the raid does not start. The bots' accounts are local (server/data/, git-ignored): delete them after (names start with v5bot). It
 writes party.json (what each screen saw each second) and pictures, and prints a summary: whether the screens agree on
 the boss's HP, how far out heroes walked, errors.
 """
 import argparse
 import asyncio
 import json
+import os
 import subprocess
 import sys
 import time
@@ -142,7 +145,7 @@ async def run(args):
     proc = None
     if not up(args.port):
         proc = subprocess.Popen(["node", str(ROOT / "node_modules" / "vite" / "bin" / "vite.js"), "--port", str(args.port), "--strictPort"], cwd=ROOT,
-                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                env={**os.environ, "SHOP": "off"}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(60):
             if up(args.port):
                 break

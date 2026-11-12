@@ -32,6 +32,9 @@ dont ask just do it". Design and every decision: `pipeline/designs/hero-shop.md`
 - **Not checked:** the live worker and its real accounts; a person playing; a real phone. The prices and the pace of earning are a
   first guess. Against a local worker the old smoke test stops at Twin Flames' revive: it seats six bots at once and expects
   them in order, which a worker does not always do (2 rooms of 10); the revive code is not part of this change.
+- **Tools that make new accounts** (`party-raid.py`, `hero-gate5/`) now start their own dev server with the shop off, since a new
+  account may only take the starters and the week's six online. `online-bot.js` in tabs of a running dev server: start that
+  server with `$env:SHOP = 'off'; npm run dev` to queue any hero. The fight simulator and the raid and Tower tools are not affected.
 - **`PROTOCOL` is 11:** open tabs are told to reload at the deploy.
 - **Waiting on the user:** look at `docs/shop/shop.html`; say whether the shop goes live with the next deploy or stays off; the
   starters, the prices and what things pay are one table (`HERO_SHOP` and `SHOP` in `server/protocol.mjs`).

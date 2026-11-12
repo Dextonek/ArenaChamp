@@ -280,13 +280,20 @@ async def pictures(port, out, mira, others):
         await pg.evaluate(into, ".rank-line")
         await shot(pg, "raid-board", 2.0)
 
-        # The Tower's board. First the page's own report: as if a climb in this browser had just reached floor 16 with Kaia
-        # (the Tower keeps its best floor in localStorage), opening the Tower screen sends it, and the board answers.
-        await pg.evaluate("""async () => { const w = (await import('/src/tower/week.ts')).isoWeek().id;
-          localStorage.setItem('tower.best', JSON.stringify({ [w]: 16 })); localStorage.setItem('tower.hero', JSON.stringify({ week: w, hero: 'Kaia' })); }""")
+        # The Tower's board. First the page's own report, at the end of a real climb: Start is pressed, the climb begins,
+        # the browser's best floor of the week is raised to 16 while it is on (the Tower keeps it in localStorage, and a
+        # climb that clears a floor writes it there), and the climb is left. The page must then send the floor with the
+        # climb's hero, and the board must answer with the row.
         await pg.evaluate(go, "tower")
-        await pg.wait_for_function("(n) => (game.state.boards?.tower ?? []).some((r) => r.name === n && r.floor === 16)", arg=mira.name, timeout=10000)
-        print("  the page reported its floor 16 to the week's Tower board")
+        await asyncio.sleep(0.6)
+        await pg.click(".hs-bar .hs-find")
+        await pg.wait_for_function("game.tower.active", timeout=60000)
+        await asyncio.sleep(2.0)
+        await pg.evaluate("""async () => { const w = (await import('/src/tower/week.ts')).isoWeek().id;
+          localStorage.setItem('tower.best', JSON.stringify({ [w]: 16 })); game.tower.exit(); }""")
+        await pg.wait_for_function("(n) => (game.state.boards?.tower ?? []).some((r) => r.name === n && r.floor === 16 && r.hero === 'Kaia')", arg=mira.name, timeout=15000)
+        print("  a climb ended on floor 16: the page sent it, and the week's Tower board has the row")
+        await pg.wait_for_function("!game.tower.active && game.state.screen === 'tower'", timeout=15000)
         await asyncio.sleep(0.5)
         await pg.evaluate(into, ".board")
         await shot(pg, "tower-board", 2.0)

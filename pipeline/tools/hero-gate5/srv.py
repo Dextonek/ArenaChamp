@@ -1,5 +1,8 @@
 """This repo's own dev server on 5193 (the game page with its WebSocket server): started here, stopped here by its PID.
-It refuses to run when something already answers on the port. `OUT` is where these tools write: git-ignored."""
+It refuses to run when something already answers on the port. `OUT` is where these tools write: git-ignored.
+The server runs with the hero shop off (SHOP=off; pipeline/designs/hero-shop.md): the bots' accounts are new, and with
+the shop on a new account could not take a hero it has not bought online."""
+import os
 import subprocess
 import time
 import urllib.request
@@ -27,7 +30,7 @@ class Server:
         if up():
             raise SystemExit(f"something already answers on {PORT}: not mine, stopping")
         self.proc = subprocess.Popen(["node", str(ROOT / "node_modules" / "vite" / "bin" / "vite.js"), "--port", str(PORT), "--strictPort"],
-                                     cwd=str(ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                     cwd=str(ROOT), env={**os.environ, "SHOP": "off"}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(120):
             if up():
                 break

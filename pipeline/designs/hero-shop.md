@@ -178,7 +178,8 @@ made while the shop was switched off are founders too, when it is first switched
 - `npx tsc --noEmit -p .` and `npm run build`.
 - The page, headless, against its own dev server and the real hub (`python pipeline/tools/shop-shots.py`): seven socket bots play
   a duel, three raids and report Tower floors; a browser then buys a hero and takes the pictures at 1280 x 800 and 390 x 844. No
-  errors in the page's console.
+  errors in the page's console. In it a real climb is started from the Tower screen and left with a higher best floor: the page
+  sends the floor with the climb's hero, and the board has the row.
 - **The Cloudflare store**, on a local `wrangler dev` (not on the live worker): a new account, a refused hero, a purchase and a
   board row are still there after the worker is stopped and started; an account made with `SHOP` "off" is a founder once the
   same store is opened with it on, and a new one is not.
@@ -191,6 +192,15 @@ made while the shop was switched off are founders too, when it is first switched
 - The Shop on a real phone (only a headless 390 x 844 page).
 - A raid for a party of bots in real browsers was not played again with the shop on (the hub's side of it is in the test).
 - Not built: obols for the Tower, friends, gifts, a refund, anything bought with real money.
+
+## The tools that play with new accounts
+
+A throwaway account is a new account: with the shop on it may only take the starters and the week's six online. So the tools that
+make such accounts start their own dev server with the shop off (`SHOP=off`): `pipeline/tools/party-raid.py` (its tenth seat
+plays Hank) and `pipeline/tools/hero-gate5/` (`srv.py`). `pipeline/tools/online-bot.js` is pasted into tabs of a server that is
+already running: to queue any hero with it, start that server with the shop off (PowerShell: `$env:SHOP = 'off'; npm run dev`).
+`pipeline/tools/shop-shots.py` is the one that wants it on. The fight simulator, the raid tool and the Tower's tools use no
+accounts and are not touched by the shop. The server test's older part runs with the shop off for the same reason.
 
 ## Switching it off
 
