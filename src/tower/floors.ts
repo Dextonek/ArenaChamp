@@ -10,7 +10,7 @@ import type { BossCast, BossDef, BossMove, PlayContext, PlayedMove, RaidAdd, Thr
 import type { GameApi } from '../runtime';
 import { traitFor } from '../traits';
 import type { TowerBoons } from './boons';
-import { bite, biteMoves, leechFrom, type Bite } from './hooks';
+import { bite, leechFrom, type Bite } from './hooks';
 import { TowerLink, type FloorReward } from './link';
 import { keeperLook, sentryLook } from './looks';
 import { call, cleave, fan, halves, lunge, ofRoom, spokes, stand, stones, sweep, tide, volley } from './moves';
@@ -152,7 +152,7 @@ export function buildFloor(plan: FloorPlan, env: FloorEnv): Floor {
       seconds: 900, damage: 30, attackEvery: u.every, speed: Math.min(3.9, u.speed + 0.02 * n), range: 9, color: '#e0a050', look: keeperLook,
     }, (target, opts) => {
       // A keeper's blow grows slower with the height than a zone does: there are more of them up there, and they come at once.
-      if (target === arena.caster) bite(link, who, u.share * (1 + (num.hit - 1) * 0.6), opts?.from ?? at, arena.caster.group.position);
+      if (target === arena.caster) bite(env.api, who, u.share * (1 + (num.hit - 1) * 0.6), opts?.from ?? at);
       else arena.hit(target, opts);
     });
     if (!handle.units.length) return null;
@@ -477,7 +477,6 @@ export function buildFloor(plan: FloorPlan, env: FloorEnv): Floor {
       },
     };
   }
-  def.moves = { ...biteMoves(), ...def.moves };
   link = new TowerLink(def, hp, rewards);
   floor.def = def;
   floor.link = link;

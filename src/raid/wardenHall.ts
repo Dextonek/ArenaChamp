@@ -484,7 +484,9 @@ function shardRun(c: BossCast, p: PlayContext, spots: { x: number; z: number }[]
     hallFight.carriers.delete(side);
     held.get(side)?.dispose();
     held.delete(side);
-    if (side === me) p.heavy(false);
+    if (side !== me) return;
+    p.heavy(false);
+    p.mute(false);
   };
   let over = false;
   return {
@@ -499,8 +501,10 @@ function shardRun(c: BossCast, p: PlayContext, spots: { x: number; z: number }[]
         p.group.add(orb.sprite);
         held.set(side, orb);
         if (side === me) {
+          // A carrier is slow and has its hands full: it casts nothing until the shard is home.
           p.heavy(true);
-          p.hint('Bring the shard to the Sun Well');
+          p.mute(true);
+          p.hint('Bring the shard to the Sun Well: you cast nothing while you carry it');
         }
         return true;
       }

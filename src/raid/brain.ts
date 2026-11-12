@@ -206,8 +206,11 @@ export class BossBrain {
     const keep = form?.keepAt ?? this.def.keepAt, speed = form?.speed ?? this.def.speed;
     // A boss that is one of a tag team's forms all the time (Twin Flames) has them on itself.
     const trail = form ? form.trail : this.def.trail, backAt = form ? form.backAt : this.def.backAt;
-    if (dist > keep) {
-      this.world.walk(dt, target.x, target.z, speed);
+    // A boss that keeps to its own part of the room goes as near its target as that lets it.
+    const to = this.def.roam?.(target.x, target.z) ?? target;
+    if (dist > keep && Math.hypot(to.x - boss.x, to.z - boss.z) <= 0.3) this.world.face(Math.atan2(target.x - boss.x, target.z - boss.z));
+    else if (dist > keep) {
+      this.world.walk(dt, to.x, to.z, speed);
       // What it leaves behind as it walks.
       this.trailed += speed * dt;
       if (trail && this.trailed >= TRAIL_STEP) {
@@ -229,6 +232,12 @@ export class BossBrain {
       if (far > reach) {
         x = floor.x + (dx / far) * reach;
         z = floor.z + (dz / far) * reach;
+      }
+      // Not out of its own part of the room.
+      const own = this.def.roam?.(x, z);
+      if (own) {
+        x = own.x;
+        z = own.z;
       }
       if (Math.hypot(x - boss.x, z - boss.z) <= BACK_STILL || !this.world.canWalk(boss.x, boss.z, x, z)) continue;
       this.world.walk(dt, x, z, speed * BACK_PACE);
@@ -392,7 +401,7 @@ export class BossBrain {
     if (m.tracks && step === (m.steps?.length ?? 1) - 1) this.tracking = null;
     const cast: BossCast = {
       id: ++this.seq, move: m.id, step, x: +aim.x.toFixed(3), z: +aim.z.toFixed(3), fx: +boss.x.toFixed(3), fz: +boss.z.toFixed(3),
-      dir: +aim.dir.toFixed(4), seed, target: aim.target ?? side, alone, rim: rim || undefined, flag: aim.flag,
+      dir: +aim.dir.toFixed(4), seed, target: aim.target ?? side, alone, rim: rim || undefined, flag: aim.flag, mate: aim.mate,
     };
     this.link.cast(cast);
     const still = m.act?.(this.world, cast);

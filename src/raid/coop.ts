@@ -120,6 +120,8 @@ export class RaidController {
     net.on('boss_kneel', (m) => { if (this.active) this.link?.on.kneel(m.seconds, m.which); });
     net.on('boss_rage', (m) => { if (this.active) this.link?.on.rage?.(m.which, m.on); });
     net.on('boss_fell', (m) => { if (this.active) this.link?.on.fell?.(m.which); });
+    // The Changing of the Flames: the halves dealt again. A new brain for a boss comes as `boss_brain`, after this.
+    net.on('twin_halves', (m) => { if (this.active) this.link?.on.halves?.(m.half, m.late); });
     net.on('boss_stood', (m) => { if (this.active) this.link?.on.stood(m.id, m.part, m.count); });
     net.on('boss_done', (m) => { if (this.active) this.link?.on.done(m.id, m.part, m.side); });
     net.on('peer_add', (m) => { if (this.active) this.link?.on.addHit?.(m.id, m.part, m.amount); });

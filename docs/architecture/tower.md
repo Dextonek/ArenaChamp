@@ -134,12 +134,12 @@ mark on a floor with a twist), the best floor this week and last, and Start; bes
 
 ## Hooks the engine should get
 
-Each is done from the Tower's side for now and marked `TOWER-HOOK`: five in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`.
+Each is done from the Tower's side for now and marked `TOWER-HOOK`: three in `src/tower/hooks.ts`, one in `boons.ts`, one in `floors.ts`. The first two rows the duel has since got (2026-11-12) and the Tower uses them.
 
 | What the Tower needs | What it does now | What the engine should get |
 |---|---|---|
-| A unit's blow on the hero (a keeper's strike, a lampbearer's bolt) | A cast of a move with one unseen zone on the hero that lands at once (`bite`): the one public way a boss's hit has. It keeps shields, a parry, Warding and the Phoenix Feather | `Duel.hurtHero(opts)`: `hitPlayer` is private, and a boss's adds never attack |
-| Health at a fight's start | `Duel.setPlayerHp` right after `startBoss` (it exists for a network duel) | `startBoss({ hp })` |
+| A unit's blow on the hero (a keeper's strike, a lampbearer's bolt) | **Done:** `bite` calls `Duel.hurtHero({ share, from, move })`, a boss's hit for a share of max health. It keeps shields, a parry, Warding and the Phoenix Feather, and names the unit as what killed | (was: a cast of a move with one unseen zone on the hero) |
+| Health at a fight's start | **Done:** `Duel.startBoss({ hp })`, capped at the hero's max in that fight. Between floors (a boon that heals) the screen is still set with `Duel.setPlayerHp` (`setHealth`) | (was: `setPlayerHp` right after `startBoss`) |
 | Molten Steps | Sets `script.molten` on the fight after `startBoss` | `startBoss` taking the floor's twists; the fight turns it on only for a raid's omen, never in a room with no boss |
 | Sunlit in a room with no foe | Sets `script.ateSun` after `startBoss` where the fight left it empty | The fight wiring it whatever the room (it does only when `!def.hall`, and Hold out's gold circles are in such a room) |
 | Boons against units | Units get less health by what the boons add to damage; the Thirsting Blade heals through `arena.casterHeal` | `RunUpgrades.dealtMul` and `leech` applied to the boss's side's units too (`Duel.resolve` checks `victim === this.foe`) |

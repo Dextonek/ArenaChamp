@@ -114,6 +114,7 @@ export class BossScript {
       reward: (key, id) => { if (link.brain) link.reward(key, id); },
       cancel: (id) => this.cancel(id),
       heavy: (on) => world.heavy(on),
+      mute: (on) => world.mute(on),
       addStone: (x, z, radius, seconds) => world.addStone(x, z, radius, seconds),
       firstStone: (ax, az, bx, bz) => world.firstStone(ax, az, bx, bz),
       dropStone: (o) => world.dropStone(o),

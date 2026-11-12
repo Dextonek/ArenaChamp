@@ -2,7 +2,7 @@
 // seed with no server field, so a tab left open from an older build would see different cover and events from its
 // opponent. Raise this by hand whenever a deploy changes those rules or the messages: the hub then tells older tabs to
 // reload (hub.mjs, `register`, `login` and `resume` carry `v`). Read by the hub and by src/net/client.ts.
-export const PROTOCOL = 11;
+export const PROTOCOL = 13;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -14,7 +14,7 @@ export const RELOAD_TEXT = 'A new version is out: reload the page';
  */
 export const RAID_BOSSES = {
   sun: { hp: { solo: 4300, duo: 8700 }, phases: [0.7, 0.5, 0.35], staggerMax: 100, kneel: 6, ring: 16, partyRing: 46 },
-  ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16, partyRing: 30 },
+  ash: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.5, 0.33], staggerMax: 110, kneel: 6, ring: 16, partyRing: 38 },
   heart: { hp: { solo: 3300, duo: 7100 }, phases: [0.66, 0.33], staggerMax: 100, kneel: 6, ring: 12, partyRing: 35 },
 };
 
@@ -30,7 +30,12 @@ export const RAID_REWARDS = {
     noon: { hp: 0.05, kneel: true }, ray: { stagger: 40 }, hour: { kneel: true }, carry: { hp: 0.05, kneel: true },
     foura: { stagger: 25 }, fourb: { stagger: 25 }, fourc: { stagger: 25 }, fourd: { stagger: 25 },
   },
-  ash: { marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 }, eruptw: { kneel: true }, erupte: { kneel: true } },
+  // `vents`: every vent of one cast of Seal the Vents sealed. `change`: no reward, a request: the hub marks who must cross for
+  // The Changing of the Flames (`swap`), once for the cast.
+  ash: {
+    marked: { hp: 0.04, stagger: 40 }, seal: { stagger: 40 }, eruption: { kneel: true }, charge: { stun: 5 }, eruptw: { kneel: true }, erupte: { kneel: true },
+    vents: { stagger: 40 }, change: { swap: true },
+  },
   // `hands`: The Ring of Hands, the ring full enough when it closes.
   heart: { lock: { stagger: 40 }, hands: { kneel: true } },
 };
@@ -50,8 +55,21 @@ export const raidRing = (id, band) => (band > 2 ? RAID_BOSSES[id].partyRing ?? R
  * The hub keeps two HP pools, each half the band's HP, and half the gauge each. Their health must fall together: when their HP
  * shares are more than `gapOn` apart, the one with more grows furious, until they are within `gapOff` again. Boss 0 is Ash
  * (the west half), boss 1 Ember (the east). The second boss's cast ids start at `ids`, so a cast's id says whose it is.
+ *
+ * `flood`: the move that puts the wall of fire out for good (the pit floods: src/raid/twinForge.ts). From the hub's relay of its
+ * cast on, the wall no longer holds anyone: a hero gets one of the other half up, and a gold zone counts everyone. Hits stay each
+ * half's own boss's until one of the two falls.
+ *
+ * `change`: The Changing of the Flames. The brain of Ash asks for it (the reward `change`, once a cast); the hub marks every second
+ * standing hero of each half and says who as objectives taken (`boss_done`, part `mark` + the seat). `warn` s later the gates open
+ * for `open` s: a marked hero's screen reports the objective `cross` + its seat as it steps through, and the hub deals that seat
+ * into the other half (`twin_halves`). When the gates shut the hub deals the rest of the marked across too, and names them as
+ * `late`: each of those screens takes `late` of its hero's max HP. `rest`: no new call for this long after one (s).
  */
-export const RAID_TWIN = { boss: 'ash', gapOn: 0.12, gapOff: 0.06, ids: 1000000 };
+export const RAID_TWIN = {
+  boss: 'ash', gapOn: 0.12, gapOff: 0.06, ids: 1000000, flood: 'flood',
+  change: { warn: 4, open: 8, mark: 100, cross: 200, late: 0.4, rest: 20 },
+};
 
 /** Whether this boss at this band is fought as two at once. @param {string} id @param {number} band */
 export const raidTwin = (id, band) => id === RAID_TWIN.boss && band > 2;

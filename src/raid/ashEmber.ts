@@ -5,7 +5,7 @@ import { ArenaShift } from '../arenas/shifts/base';
 import { ZoneFloor } from '../arenas/shifts/floor';
 import { PILLARS, PIT_R, RIM_SPOTS, cinderPitArena } from '../arenas/cinderpit';
 import { PILLAR_GLASS } from '../arenas/cinderPillars';
-import { TWIN_LAYOUT, TWIN_PILLARS, TWIN_R, TWIN_WALL, twinHeroStart, twinPitArena } from '../arenas/twinpit';
+import { TWIN_LAYOUT, TWIN_PILLARS, TWIN_R, TWIN_WALL, forge, forgeReach, twinHeroStart, twinPitArena } from '../arenas/twinpit';
 import type { ArenaDef } from '../arenas/types';
 import type { TelegraphClip, TelegraphShape } from '../effects/telegraph';
 import type { HeroKit, HeroKey, HeroSpell } from '../heroes';
@@ -17,6 +17,7 @@ import type { BodyLook } from './bodies/look';
 import { AimLane, FallingStone, FollowMark, HoldRing, LavaPool, LightPillar, ShadowFloor, SunOrb, WaveRing } from './fx';
 import { STAND_COLOR } from './script';
 import { stageMove } from './stage';
+import { chain, change, crack, flood, forgeFloor, forgeRoam, resetForge, shatterBridges, vents } from './twinForge';
 import type { AimContext, BossCast, BossDef, BossMove, BossPhase, Objective, PlayContext, PlayedMove, Threat } from './types';
 
 const LAVA = 0xe0601a;
@@ -50,9 +51,19 @@ interface Room {
   dragOuter?: number;
   /** How fast Ember's wave grows (m/s). */
   waveSpeed: number;
-  /** How far from its home a stage's adds stand, and where the lava rises to, step by step (m from the middle). */
+  /** How far from its home a stage's adds stand, and where the lava rises to, step by step (m from the middle; the pit for two). */
   addRing: number;
-  lava: number[];
+  lava?: number[];
+  /** A room that is not round (the Twin Forge): how far its floor goes from (x, z) along yaw `dir` (m). */
+  shape?(x: number, z: number, dir: number): number;
+  /** A room whose lava is its own (the Twin Forge's flood): a sealed vent holds it back this way, not by the late clock. */
+  hold?(seconds: number): void;
+  /** How long a stage's adds have to be put out (s), and each one's HP as a share of the boss's max, when not the usual. `who`: whose stage. */
+  stage?: { seconds: number; add(who: number): number };
+  /** How often the Charge comes, when not the pit's for two (s). */
+  chargeEvery?: number;
+  /** What a failed stage of `who` covers, when not the whole floor (the Twin Forge: that twin's own hall, wall of fire or no wall). */
+  blow?(who: number): TelegraphShape;
 }
 
 const atTarget = (c: AimContext) => ({ x: c.target.x, z: c.target.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) });
@@ -71,7 +82,7 @@ function clipOf(room: Room, cover: readonly Obstacle[], which: number): Telegrap
 function toRim(room: Room, cover: readonly Obstacle[], x: number, z: number, dir: number) {
   const dx = Math.sin(dir), dz = Math.cos(dir), px = x - room.c.x, pz = z - room.c.z;
   const b = px * dx + pz * dz, k = px * px + pz * pz - room.r * room.r;
-  let far = -b + Math.sqrt(Math.max(0, b * b - k));
+  let far = room.shape ? room.shape(x, z, dir) : -b + Math.sqrt(Math.max(0, b * b - k));
   const w = room.wall;
   if (w && wallUp(room, cover) && Math.abs(dx) > 1e-6) {
     // Its near face, from whichever side this starts on.
@@ -212,6 +223,8 @@ function chargeRun(room: Room, c: BossCast, p: PlayContext, standing: () => read
         }
         if (ended || t < CHARGE_RUN) return;
         ended = true;
+        // In the forge, cracked into islands: every bridge he ran over is shattered.
+        if (room.wall) shatterBridges(p, c.fx, c.fz, c.x, c.z, CHARGE_W);
         if (pillar >= 0) crash(room, c, p, room.pillars[pillar], standing);
         else {
           // The rim: he skids up against the lip.
@@ -293,7 +306,7 @@ function movesFor(room: Room): Record<string, BossMove> {
    * at where the hero is then, and says whether he hit a pillar, so both screens break the same one.
    */
   const charge: BossMove = {
-    id: 'charge', name: 'Charge', charge: CHARGE_WIND, lock: CHARGE_WIND + 1, cooldown: CHARGE_EVERY, due: CHARGE_FIRST,
+    id: 'charge', name: 'Charge', charge: CHARGE_WIND, lock: CHARGE_WIND + 1, cooldown: room.chargeEvery ?? CHARGE_EVERY, due: CHARGE_FIRST,
     steps: [0, CHARGE_WIND], chases: true, tracks: true, form: ASH, pose: 'lunge',
     aim(c) {
       const dir = Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z);
@@ -588,7 +601,8 @@ function movesFor(room: Room): Record<string, BossMove> {
           },
           done() {
             sealed = true;
-            p.delayLate(SEAL_DELAY);
+            if (room.hold) room.hold(SEAL_DELAY);
+            else p.delayLate(SEAL_DELAY);
             p.reward('seal', c.id);
             p.show.triumph(V.x, V.z, 0xffd890, 1.2);
             p.say('SEALED', '#ffe27a', V.x, V.z);
@@ -684,6 +698,7 @@ function movesFor(room: Room): Record<string, BossMove> {
     center: room.home[who], ring: room.addRing, turns: [[0, 120, 240], [60, 180, 300]],
     look: coalHeartLook, color: '#5a3424', shot: 'lob', shotColor: LAVA,
     fail: { share: 0.45, cover: false, radius: room.reach + 1, text: 'THE VENT ERUPTS', blast: 'geyser' },
+    seconds: room.stage?.seconds, add: room.stage ? () => room.stage!.add(who) : undefined, blow: room.blow?.(who),
     // The lava it throws lands on its own side of the wall of fire.
     inside: room.wall ? (x) => (x < room.wall!.ax) === (who === ASH) : undefined,
     win: 'THE FIRE GOES OUT', hint: 'Put out the three Coal Hearts before the bar fills',
@@ -698,7 +713,7 @@ function movesFor(room: Room): Record<string, BossMove> {
 /** Past 5 minutes, or as soon as Together begins, the lava rises from the rim, three steps. Last stand on the shift's own clock at 105 s. */
 const lavaRises = (room: Room) => () => {
   const ring = (inner: number) => ({ shape: { kind: 'ring' as const, x: room.c.x, z: room.c.z, inner, outer: room.r }, share: 0.03 });
-  const [a, b, c] = room.lava;
+  const [a, b, c] = room.lava ?? [room.r - 4, room.r - 6, room.r - 8];
   return {
     offset: -255,
     startsAt: 45,
@@ -797,35 +812,82 @@ export const ASH_AND_EMBER: BossDef = {
  *
  * Each of the two is a boss of its own here: its own def, HP, phases, gauge and brain, in its own half of a party's pit
  * (src/arenas/twinpit.ts). No tag and no rim: Ash has his moves among his pillars, Ember hers over her vents, all the time. Each
- * has its own Eruption at half of its own HP and its own vent to seal in Together; the lava rises for the whole room once either
- * is in Together, and sealing either vent holds it back for all. The hub keeps the two HP pools and says who is furious
+ * has its own Eruption at half of its own HP and its own vent to seal in Together; the pit floods for the whole room once either
+ * is in Together, and sealing either vent holds the lava back for all. The hub keeps the two HP pools and says who is furious
  * (server/hub.mjs); src/raid/twin.ts makes one screen play both.
+ *
+ * Their room is the Twin Forge (src/arenas/twinpit.ts), and it changes with their phases (src/raid/twinForge.ts): each half's floor
+ * cracks into islands as its own twin's second phase begins (`crack`), and the pit floods when the first of the two reaches its
+ * last (`flood`: the wall of fire goes out for good, though both still stand). Three mechanics come only for big parties
+ * (`BossMove.minBand`): Lantern Chain from 10, Seal the Vents from 20 (in the one vent's place), The Changing of the Flames at 40.
  */
 const HOME = TWIN_LAYOUT.hold as [{ x: number; z: number }, { x: number; z: number }];
+/**
+ * A party's numbers, where they are not the pit's for two (measured with six bots through the hub: pipeline/designs/raid-party.md).
+ * - `TWIN_ENRAGE`: when the two enrage (s). A half of a party is slower at its boss than two heroes at one of theirs: it walks a
+ *   long hall, crosses bridges, and stands out its own Eruption.
+ * - `TWIN_STAGE`: how long a half has to put out its three Coal Hearts (s), and each one's HP as a share of its twin's max.
+ * - A Coal Heart's HP goes by the heroes that half really has: a fight tuned for ten has five to a half, six players have three.
+ *   Never under `least` of the full one.
+ * - `TWIN_CHARGE`: how often Ash's Charge comes (s). A party's fight is longer than a duo's, and a pillar breaks each time he is stopped.
+ */
+const TWIN_ENRAGE = 270;
+const TWIN_CHARGE = 22;
+/** How many heroes each half has in this fight (`TwinDef.sized`). */
+let halfHeads: [number, number] = [5, 5];
+const TWIN_STAGE = {
+  seconds: 30, share: 0.035, least: 0.4,
+  add: (who: number) => TWIN_STAGE.share * Math.max(TWIN_STAGE.least, Math.min(1, halfHeads[who] / (twinBand / 2))),
+};
 /** From a home to the far corner of its own half, where the wall meets the rim (m). */
 const HALF_REACH = Math.hypot(HOME[0].x - C.x, TWIN_R) + 0.5;
 const PARTY: Room = {
   c: C, r: TWIN_R, pillars: TWIN_PILLARS, obstacles: twinPitArena(10).obstacles, home: HOME, reach: HALF_REACH, wall: TWIN_WALL, heads: 5,
-  dragOuter: 14, waveSpeed: 6.5, addRing: 6.5, lava: [TWIN_R - 6, TWIN_R - 10, TWIN_R - 14],
+  dragOuter: 14, waveSpeed: 6.5, addRing: 6.5,
+  // The forge is no ring: its own walls end a run or a ray.
+  shape: (x, z, dir) => forgeReach(x, z, dir),
+  hold: (seconds) => forge.hold(seconds),
+  stage: TWIN_STAGE,
+  chargeEvery: TWIN_CHARGE,
+  // A failed Eruption covers that twin's own hall and the gate's passage on its side: a strip from the back wall to the gate.
+  blow: (who) => {
+    const L = TWIN_LAYOUT, s = who === ASH ? -1 : 1, mid = C.x + (s * (L.wallHalf + L.hx)) / 2;
+    return { kind: 'line', x1: mid, z1: C.z - L.hn, x2: mid, z2: C.z + L.gs, width: L.hx - L.wallHalf };
+  },
 };
-const TWIN_MOVES = movesFor(PARTY);
+// Ids in letters only: the hub takes no others.
+const TWIN_MOVES: Record<string, BossMove> = { ...movesFor(PARTY), crack, flood, chain, change, ventsw: vents('ventsw', ASH), ventse: vents('ventse', EMBER) };
 let twinPlace: ArenaDef = twinPitArena(10);
+/** How many the twins' fight is tuned for now (`resize`): what their mechanics for 10, 20 and 40 ask (`BossMove.minBand`). */
+let twinBand = 10;
 
 /** What each of them does from the start, and what the second phase adds. A higher tier's extras go to whose they are. */
 const TWIN_KIT = [
-  { first: ['slam', 'charge', 'quake'], then: ['drag'], stage: 'eruptw', seal: 'sealw' },
-  { first: ['fan', 'bombs', 'lanterns', 'marked'], then: ['wave', 'star'], stage: 'erupte', seal: 'seale' },
+  { first: ['slam', 'charge', 'quake'], then: ['drag'], stage: 'eruptw', seal: 'sealw', vents: 'ventsw', party: ['chain', 'change'] },
+  { first: ['fan', 'bombs', 'lanterns', 'marked'], then: ['wave', 'star'], stage: 'erupte', seal: 'seale', vents: 'ventse', party: ['chain'] },
 ];
 
-function twinPhases(which: number): BossPhase[] {
-  const k = TWIN_KIT[which], all = [...k.first, ...k.then];
+/**
+ * Their phases in the forge, for a fight tuned for `band`.
+ * - The room's two changes come first in their phase's list and are due at once: the floor cracks as the second phase begins, the
+ *   pit floods as the last one does. Each does nothing a second time (the other twin's cast, a brain that took over).
+ * - Lantern Chain (10 or more) and The Changing of the Flames (40) come by their own clocks from the start; the brain leaves out
+ *   what the band is too small for (`BossMove.minBand`). The Changing of the Flames is Ash's to call, and not in Together: the
+ *   wall is out by then.
+ * - Together's vent comes by the phase's clock, which never asks the band: for 20 or more it is Seal the Vents.
+ * - No Charge in Together: the flood takes his pillars one by one, and both teams end on one island with two of them left. A
+ *   Charge every 22 s there killed its hero each time (six bots, 2026-11-12).
+ */
+function twinPhases(which: number, band: number): BossPhase[] {
+  const k = TWIN_KIT[which], all = [...k.first, ...k.then], seal = band >= 20 ? k.vents : k.seal;
   return [
-    { name: 'Twin Flames', at: 1, moves: k.first, gap: [2.4, 3.4] },
-    { name: 'The fire rises', at: NUMBERS.phases[0], moves: all, gap: [2.2, 3.2] },
-    { name: 'Eruption', at: NUMBERS.phases[1], moves: all, opener: k.stage, gap: [2.2, 3.2] },
-    { name: 'Together', at: NUMBERS.phases[2], moves: all, gap: [2, 3], timed: { move: k.seal, first: 6, every: 25, most: 2 } },
+    { name: 'Twin Flames', at: 1, moves: [...k.first, ...k.party], gap: [2.4, 3.4] },
+    { name: 'The floor cracks', at: NUMBERS.phases[0], moves: ['crack', ...all, ...k.party], gap: [2.2, 3.2] },
+    { name: 'Eruption', at: NUMBERS.phases[1], moves: ['crack', ...all, ...k.party], opener: k.stage, gap: [2.2, 3.2] },
+    { name: 'Together', at: NUMBERS.phases[2], moves: ['flood', ...all.filter((id) => id !== 'charge'), 'chain'], gap: [2, 3], timed: { move: seal, first: 6, every: 25, most: band >= 20 ? 3 : 2 } },
   ];
 }
+let twinPhaseList: [BossPhase[], BossPhase[]] = [twinPhases(0, 10), twinPhases(1, 10)];
 
 function twinDef(which: 0 | 1): BossDef {
   const form = FORMS[which];
@@ -834,12 +896,17 @@ function twinDef(which: 0 | 1): BossDef {
     name: form.name,
     title: 'Keepers of the Cinder Pit',
     get place() { return twinPlace; },
-    /** The room for this party: more pillars for more heroes. Set before the fight is built. */
+    /** The room for this party: more pillars for more heroes, the forge whole and dry. Set before the fight is built. */
     resize: (band) => {
       twinPlace = twinPitArena(band);
       PARTY.heads = Math.max(2, band / 2);
+      twinBand = band;
+      twinPhaseList = [twinPhases(0, band), twinPhases(1, band)];
+      resetForge();
     },
-    gates: { enter: 0, exit: 180 },
+    get band() { return twinBand; },
+    /** The way in stands at the end of the gate's passage, the way out at the head of the channel, before the back wall. */
+    gates: { enter: 0, exit: 180, r: TWIN_LAYOUT.gs + 0.6, exitR: TWIN_LAYOUT.hn - 1.4 },
     starts: { boss: HOME[which], heroes: [twinHeroStart(which, 0), twinHeroStart(which, 0), twinHeroStart(which, 1)] },
     kit: form.kit,
     hp: NUMBERS.hp,
@@ -853,13 +920,15 @@ function twinDef(which: 0 | 1): BossDef {
     kneel: NUMBERS.kneel,
     phasePause: 2.5,
     pillars: which === ASH ? TWIN_PILLARS : undefined,
-    lateAt: 3,
-    phases: twinPhases(which),
+    get phases() { return twinPhaseList[which]; },
     extra: ASH_AND_EMBER.extra!.filter((id) => TWIN_MOVES[id]?.form === which && !TWIN_KIT[which].first.includes(id)),
     moves: TWIN_MOVES,
-    enrage: ASH_AND_EMBER.enrage,
-    late: lavaRises(PARTY),
-    twin: { which, pair: () => TWINS, wall: TWIN_WALL, heroStart: twinHeroStart },
+    enrage: TWIN_ENRAGE,
+    // The forge's own lava: its channels and its flood (src/raid/twinForge.ts). Nothing else closes in.
+    floor: forgeFloor,
+    // Each keeps to its own hall, and out of the gate's passage: the heroes come to it.
+    roam: (x, z) => forgeRoam(which, x, z),
+    twin: { which, pair: () => TWINS, wall: TWIN_WALL, heroStart: twinHeroStart, open: () => forge.open, sized: (heads) => { halfHeads = heads; } },
   };
 }
 const TWINS: [BossDef, BossDef] = [twinDef(0), twinDef(1)];

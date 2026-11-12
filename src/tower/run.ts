@@ -186,11 +186,9 @@ export class TowerRun {
     api.setKit(this.hero);
     api.setHeroMode(true);
     api.duel.holdStart = false;
-    api.duel.startBoss({ def: o.def, link: o.link, seed: o.seed, mode: this.mode, tier: o.tier, upgrades: this.boons, card: (result) => this.card(result) });
-    // Health carries over: what the hero left the last floor with, never more than its max now.
-    if (this.hp < 0) this.hp = api.duel.heroMax;
-    this.hp = Math.min(this.hp, api.duel.heroMax);
-    setHealth(api, this.hp);
+    // Health carries over: what the hero left the last floor with (a new climb: full), never more than its max now.
+    api.duel.startBoss({ def: o.def, link: o.link, seed: o.seed, mode: this.mode, tier: o.tier, upgrades: this.boons, card: (result) => this.card(result), hp: this.hp < 0 ? undefined : this.hp });
+    this.hp = api.duel.heroHp;
   }
 
   /** The floor the hero is on begins (again, after a fall). */

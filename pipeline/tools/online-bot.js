@@ -159,9 +159,22 @@
       room: a.bounds?.r, gauge: d.boss.link.staggerMax,
       // Twin Flames: this hero's half, which boss is its enemy, both HP bars as this screen has them, who is furious, who has fallen.
       twin: d.boss.twins ? { ...d.boss.twins, hp: d.boss.twins.hp.map((x) => Math.round(x)), wall: d.twinWall(), name: d.boss.def.name } : undefined,
+      // The Twin Forge as this screen has it: which halves have cracked, which bridges stand, how far the flood has come and how long
+      // vents have held it, and what burns under this hero now.
+      forge: d.boss.twins && forgeNow(me),
+      killedBy: d.boss.killedBy, guard: d.bossGuard,
       hits: d.boss.stats.hits, kneels: d.boss.stats.kneels, over: d.over, won: d.result?.winner ?? null, errors: log.errors.length,
     };
   };
+  // The room's own file, loaded once: `_botRaid` reads the forge's state from it.
+  let pit = null;
+  import('/src/arenas/twinpit.ts').then((m) => { pit = m; });
+  const forgeNow = (me) => (pit ? {
+    cracked: pit.forge.cracked.map((at) => at >= 0 && pit.forge.clock >= at), bridges: pit.TWIN_BRIDGES.map((b) => (pit.bridgeUp(b.i) ? 1 : 0)).join(''),
+    flood: pit.forge.floodAt >= 0, inset: +pit.floodInset().toFixed(1), held: pit.forge.held, lava: pit.lavaAt(me.x, me.z),
+    // How long ago each half cracked on this screen's room clock, and the computer's clock: two screens' rooms are apart by the difference.
+    age: pit.forge.cracked.map((at) => (at >= 0 ? +(pit.forge.clock - at).toFixed(2) : null)), wall: Date.now(),
+  } : undefined);
   window._botRaidLog = () => raidLog;
   window._botRaidLeave = () => { clearInterval(raidTimer); window.game.coop.exit(); return 'left'; };
 

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { seeded } from '../arenas/common';
 import type { MinionLook } from '../effects/parts/minion';
+import type { TelegraphShape } from '../effects/telegraph';
 import type { CastStyle } from '../heroFigure';
 import { ShadowFloor } from './fx';
 import { Shell } from './fxShow';
@@ -49,8 +50,13 @@ export interface StageSpec {
   fail: { share: number; cover: boolean; radius: number; text: string; blast: 'flare' | 'geyser' };
   /** Only the lava a geyser throws that lands in here is drawn (one half of a room split by a wall of fire). */
   inside?(x: number, z: number): boolean;
+  /** What the blow covers, when it is not the whole floor round `center` (one hall of the Twin Forge: its own half and no more). */
+  blow?: TelegraphShape;
   win: string;
   hint: string;
+  /** How long it lasts at tier 1 (s; default `STAGE_S`), and an add's HP as a share of the boss's max (default 3.5 %; asked as the stage begins). */
+  seconds?: number;
+  add?: number | (() => number);
 }
 
 /** The adds of each stage on this screen, by the cast's seed: its later steps shoot from those still standing. */
@@ -62,9 +68,11 @@ const V0 = new THREE.Vector3();
 const V1 = new THREE.Vector3();
 
 export function stageMove(s: StageSpec): BossMove {
+  const seconds = s.seconds ?? STAGE_S;
   return {
-    id: s.id, name: s.name, charge: STAGE_S, lock: STAGE_S, cooldown: 999, stage: true, spread: true, big: true, pose: s.pose,
-    steps: [0, ...SHOTS],
+    id: s.id, name: s.name, charge: seconds, lock: seconds, cooldown: 999, stage: true, spread: true, big: true, pose: s.pose,
+    // The same volleys, as far as the stage lasts.
+    steps: [0, ...SHOTS.filter((at) => at < seconds), ...(seconds > STAGE_S ? [32.5, 36, 39.5, 43].filter((at) => at < seconds) : [])],
     aim: (c) => (c.step === 0
       ? { x: s.hold.x, z: s.hold.z, dir: Math.atan2(s.center.x - s.hold.x, s.center.z - s.hold.z) }
       : { x: c.target.x, z: c.target.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) }),
@@ -75,10 +83,10 @@ export function stageMove(s: StageSpec): BossMove {
 
 /** The stage begins: the adds, the light that keeps the boss safe, and the blow waiting at its end. */
 function open(s: StageSpec, c: BossCast, p: PlayContext): PlayedMove {
-  const end = p.shown(STAGE_S), warn = Math.max(0, end - 4);
+  const end = p.shown(s.seconds ?? STAGE_S), warn = Math.max(0, end - 4);
   const rng = seeded(c.seed);
   const turns = s.turns[Math.floor(rng() * s.turns.length)];
-  const hp = Math.max(40, Math.round(p.bossMax * ADD_SHARE));
+  const hp = Math.max(40, Math.round(p.bossMax * (typeof s.add === 'function' ? s.add() : s.add ?? ADD_SHARE)));
   const objectives: Objective[] = [], adds: RaidAdd[] = [];
   turns.forEach((deg, part) => {
     const a = THREE.MathUtils.degToRad(deg), x = s.center.x + Math.sin(a) * s.ring, z = s.center.z + Math.cos(a) * s.ring;
@@ -109,7 +117,7 @@ function open(s: StageSpec, c: BossCast, p: PlayContext): PlayedMove {
   }
   p.shake(0.07);
   const source = s.fail.cover ? { x: s.hold.x, z: s.hold.z } : undefined;
-  const fail: Threat = { shape: { kind: 'circle', x: s.center.x, z: s.center.z, radius: s.fail.radius }, at: end, show: warn, share: s.fail.share, source, look: 2.6 };
+  const fail: Threat = { shape: s.blow ?? { kind: 'circle', x: s.center.x, z: s.center.z, radius: s.fail.radius }, at: end, show: warn, share: s.fail.share, source, look: 2.6 };
   const shadows = source ? new ShadowFloor(source, () => p.cover(), STAND_COLOR, s.fail.radius - 1) : null;
   // The shell: lit at its rim, so the boss shows through it, with bands of light running over it.
   const shell = new Shell(s.shell.color);
