@@ -33,7 +33,7 @@ export interface SanguineFeastSettings {
   loop: boolean;
 }
 
-export const defaultSanguineFeast = (): SanguineFeastSettings => ({ pulse: 35, finisher: 40, missing: 0.2, heal: 60, loop: false });
+export const defaultSanguineFeast = (): SanguineFeastSettings => ({ pulse: 18, finisher: 24, missing: 0.2, heal: 45, loop: false });
 
 // Timeline (seconds).
 const PULSE_AT = [0.4, 1.0, FEAST_SECONDS];

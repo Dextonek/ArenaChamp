@@ -13,8 +13,8 @@ export const PRICE_REST = 1;
 export const PRICE_COOL = 11;
 export const PRICE_R = 2;
 /** Her spell hits (Q, W, E; not the Rip, which has its refund) drink back this share of their damage; this share while Hungry. */
-export const DRINK = 0.25;
-export const DRINK_HUNGRY = 0.5;
+export const DRINK = 0.15;
+export const DRINK_HUNGRY = 0.65;
 /** She is Hungry below this share of her max HP. */
 export const HUNGRY_BELOW = 0.45;
 /**
@@ -35,8 +35,8 @@ export const MIST_SECONDS = 3;
 export const MIST_DAMAGE = 18;
 export const MIST_REACH = 1.5;
 /** Hemocurse: the damage and the Hungry heal of each spell the cursed enemy casts. */
-export const CURSE_COST = 20;
-export const CURSE_HEAL = 15;
+export const CURSE_COST = 15;
+export const CURSE_HEAL = 20;
 /** Sanguine Feast: the channel, which sets how long she is held. */
 export const FEAST_SECONDS = 1.6;
 
@@ -93,7 +93,9 @@ export const priceOf = (t: { res: number }, slot: number) => Math.round(t.res) *
  * at half 28, at a quarter 19; it keeps `AI_KEEP` HP back, and after a burst it waits until the Price is within
  * `AI_RESUME` of rest.
  */
-const aiBudget = (t: TraitView) => 10 + 35 * (t.hp() / Math.max(1, t.maxHp()));
+const aiBudget = (t: TraitView) => (hungry(t) ? AI_HUNGRY_BUDGET : 10 + 35 * (t.hp() / Math.max(1, t.maxHp())));
+/** Hungry, her spells drink back half their damage: the CPU pays up to this, whatever its HP. */
+const AI_HUNGRY_BUDGET = 40;
 const AI_KEEP = 50;
 const AI_RESUME = 5;
 /** Lancet's range (the kit's): inside it the CPU throws the needle before anything else. */

@@ -55,7 +55,7 @@ function drop(g: CanvasRenderingContext2D, x: number, y: number, r: number) {
 export const bloodKit: HeroKit = {
   name: 'Vesper',
   title: 'the Crimson Countess',
-  maxHp: 660,
+  maxHp: 640,
   accent: B.hot,
   foil: B.bone,
   portrait(g, s) {

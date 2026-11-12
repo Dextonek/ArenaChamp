@@ -28,7 +28,7 @@ export interface ChainHammerSettings {
   loop: boolean;
 }
 
-export const defaultChainHammer = (): ChainHammerSettings => ({ damage: 40, pull: 4, slowSeconds: 1, loop: false });
+export const defaultChainHammer = (): ChainHammerSettings => ({ damage: 34, pull: 4, slowSeconds: 1, loop: false });
 
 // Timeline (seconds).
 const RELEASE_T = 0.3;

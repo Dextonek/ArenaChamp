@@ -24,7 +24,7 @@ export interface ResoundingChordSettings {
   loop: boolean;
 }
 
-export const defaultResoundingChord = (): ResoundingChordSettings => ({ damage: 25, loop: false });
+export const defaultResoundingChord = (): ResoundingChordSettings => ({ damage: 21, loop: false });
 
 // Timeline (seconds).
 const HIT_T = 0.4;

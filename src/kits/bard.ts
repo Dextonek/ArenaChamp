@@ -147,7 +147,7 @@ export const bardKit: HeroKit = {
   title: 'the Last Verse',
   accent: S.body,
   foil: S.foil,
-  maxHp: 740,
+  maxHp: 720,
   portrait(g, s) {
     iconGround(g, s);
     // Staves drift behind him with a few notes riding them.

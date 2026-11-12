@@ -79,6 +79,8 @@ const swallowed = (k: string) => k === 'slow' || k === 'root' || k === 'knockup'
 const AI_REST = 1.1;
 const AI_RIDE = 3.5;
 const AI_QUENCH_REACH = 2.5;
+/** White-hot with the enemy out of the Quench's ring: this long past `AI_RIDE` he Quenches anyway, to stop the burn. */
+const AI_BURN_WAIT = 1.5;
 /**
  * In reach of his hammer the CPU casts as a swing lands and not while the next one is on its way up: a cast drops a
  * wind-up (the player's hero's does, and so a person's; the computer's opponent's swing lands anyway, `src/duel.ts`).
@@ -114,10 +116,14 @@ export const forgeTrait: Trait = {
     if (slot === 3) {
       if (!white(t)) return true;
       if (hp < 0.25) return false;
-      if (dist > AI_QUENCH_REACH) return true;
-      return t.time - (t.mem.whiteAt ?? 0) < AI_RIDE && hp > 0.45;
+      const rode = t.time - (t.mem.whiteAt ?? 0);
+      // An enemy who keeps out of the ring (the CPU steps back from white heat): he does not stand and burn for them.
+      if (dist > AI_QUENCH_REACH) return rode < AI_RIDE + AI_BURN_WAIT;
+      return rode < AI_RIDE && hp > 0.45;
     }
     if (t.time < (t.mem.aiRest ?? 0)) return true;
+    // White-hot with the enemy out of the hammer's reach: the chain drags them back in, whatever his HP.
+    if (white(t) && slot === 0 && dist > AI_SWING_REACH) return hp < 0.15;
     if (dist <= AI_SWING_REACH) {
       const since = t.time - (t.mem.swungAt ?? -9);
       if (since > AI_AFTER_SWING && since < AI_NO_SWING) return true;

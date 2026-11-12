@@ -5,7 +5,7 @@ export const BEAT = 1.2;
 export const TUNE = 0.25;
 /** The Crescendo: its top, and what each step adds to a clean spell's power. */
 export const CRESCENDO_MAX = 5;
-export const CRESCENDO_POWER = 0.12;
+export const CRESCENDO_POWER = 0.1;
 /** A spell cast off the beat goes sour: this much of its power, no silence, no charm, no shield. */
 export const SOUR_POWER = 0.25;
 /** The Crescendo holds this many beats without a clean spell, then falls one step a beat. */
@@ -73,8 +73,8 @@ const AI_CHORD_STAND = 2.6;
  * they come within `AI_KITE_NEAR` m and walks in past `AI_KITE_FAR`, to stand `AI_KITE_STAND` m off, out of a swing's reach
  * and inside the 5 m cone. It only walks while it has nothing to cast or shoot.
  */
-/** An enemy this far off (and no brawler) is out of the chord's sure reach: the Siren Song goes first. */
-const AI_SING_FROM = 4.6;
+/** An enemy this far off (and no brawler) is past the chord's reach: the Siren Song goes first. */
+const AI_SING_FROM = 5.6;
 const AI_KITE_NEAR = 3.7;
 const AI_KITE_FAR = 4.7;
 const AI_KITE_STAND = 4.3;
@@ -113,7 +113,7 @@ export const bardTrait: Trait = {
   aiHold(t, slot, dist) {
     if (!inTune(t.time)) return true;
     const hurt = t.hp() < t.maxHp() * 0.65 && t.shieldAmount() <= 0 && t.res >= 3;
-    // An enemy who keeps out of the chord (an archer backing off) is sung to from 3 Crescendo: the charm walks them in.
+    // An enemy who stays out of the chord altogether (an archer backing off) is sung to from 3 Crescendo: the charm walks them in.
     const far = !t.mem.brawler && dist > AI_SING_FROM;
     if (slot === 1) return far ? t.res < 3 : t.res < 4 || hurt;
     if (slot === 2) return !hurt || far;
