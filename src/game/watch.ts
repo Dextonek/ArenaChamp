@@ -51,6 +51,10 @@ export class WatchController {
   private loadingRound = false;
   /** The countdown the hub started while this screen was still loading, and when it was told. */
   private early: { countdown: number; at: number; hp: number[] } | null = null;
+  /** What came about each hero while a round was loading: its newest HP and spot (`undefined`: nothing came). */
+  private held: { hp: (number | undefined)[]; at: ({ x: number; z: number; yaw: number } | undefined)[] } = { hp: [], at: [] };
+  /** When `watch_start` came (this screen's clock): loading the arena takes seconds, and the round goes on meanwhile. */
+  private startAt = 0;
   private leave: HTMLButtonElement;
 
   constructor(
@@ -67,7 +71,14 @@ export class WatchController {
     document.body.appendChild(this.leave);
 
     net.on('watch_start', (m) => this.start(m));
-    net.on('watch_msg', (m) => this.active && !this.loadingRound && this.peer(m.side, m.msg));
+    net.on('watch_msg', (m) => {
+      if (!this.active) return;
+      if (!this.loadingRound) return this.peer(m.side, m.msg);
+      // Loading: what passes would land in no arena. The newest HP and spot of each hero are kept for when it is up.
+      const msg = m.msg as { t: string; hp?: number; x?: number; z?: number; yaw?: number };
+      if (typeof msg.hp === 'number') this.held.hp[m.side] = msg.hp;
+      if (msg.t === 'peer_move' && typeof msg.x === 'number') this.held.at[m.side] = { x: msg.x, z: msg.z ?? 0, yaw: msg.yaw ?? 0 };
+    });
     net.on('watch_fight', (m) => {
       if (!this.active) return;
       if (this.loadingRound) { this.early = { countdown: m.countdown, at: performance.now(), hp: m.hp }; return; }
@@ -113,6 +124,7 @@ export class WatchController {
       return;
     }
     const { api } = this;
+    this.startAt = performance.now();
     this.active = true;
     this.current = m;
     this.names = [m.players[0].name, m.players[1].name];
@@ -148,6 +160,7 @@ export class WatchController {
     const run = ++this.run;
     this.loadingRound = true;
     this.early = null;
+    this.held = { hp: [], at: [] };
     this.loading.show({ mine, theirs, names: this.names, title: `Watching · round ${round}`, line: 'Loading the arena' });
     await nextPaint();
     if (run !== this.run || !this.active) return;
@@ -165,8 +178,11 @@ export class WatchController {
     if (snap) {
       snap.players.forEach((p, side) => { if (p.at) api.duel.watchPlace(side, p.at.x, p.at.z, p.at.yaw); });
       api.duel.watchHp(snap.players.map((p) => p.hp));
-      if (snap.state === 'fight' && snap.countdown > 0) api.duel.countdownFrom(snap.countdown);
-      else if (snap.state === 'fight') api.duel.watchLive(snap.elapsed);
+      // The seconds this screen spent loading have passed on the players' screens too.
+      const waited = (performance.now() - this.startAt) / 1000;
+      const left = snap.countdown - waited;
+      if (snap.state === 'fight' && snap.countdown > 0 && left > 0) api.duel.countdownFrom(left);
+      else if (snap.state === 'fight') api.duel.watchLive(snap.countdown > 0 ? -left : snap.elapsed + waited);
       else if (snap.state === 'break') api.duel.netRoundEnd(`Round ${round} is over · ${snap.score[0]}-${snap.score[1]}`);
     }
     // (Set by `watch_fight` during the awaits above; TypeScript cannot see that.)
@@ -179,6 +195,11 @@ export class WatchController {
       if (left > 0) api.duel.countdownFrom(left);
       else api.duel.watchLive(-left);
     }
+    // Hits, heals and walks that came while loading: the newest of each, after the snapshot (they are newer than it).
+    const held = this.held;
+    this.held = { hp: [], at: [] };
+    held.at.forEach((p, side) => { if (p) api.duel.watchPlace(side, p.x, p.z, p.yaw); });
+    api.duel.watchHp(held.hp);
   }
 
   /** A message about hero `side`: side 0 is this screen's hero, side 1 the opponent, as a player's screen draws its foe. */
@@ -205,6 +226,14 @@ export class WatchController {
 
   private end(m: Extract<ServerMsg, { t: 'watch_end' }>) {
     if (!this.active) return;
+    if (this.loadingRound) {
+      // It ended while this screen was still loading a round (a forfeit at its start): no arena to put a card on.
+      const who = this.names[m.winner];
+      this.current = null;
+      this.exit();
+      this.ui.toast(who ? `${who} wins the duel` : 'The duel is over');
+      return;
+    }
     this.run++;
     this.loadingRound = false;
     this.loading.hide();

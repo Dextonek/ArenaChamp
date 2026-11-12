@@ -222,9 +222,11 @@ now, raids later; the players see how many watch, not who). The Lobbies screen l
   reports and its casts and attacks are replayed (`HeroMode.replayCast`, `replayAttack`) with no check that could stop them.
   Nothing is decided on a watcher's screen: no hit, heal, payment or hazard counts there; all HP is the server's. A watcher
   who comes in mid-round sets the arena's event clock to the round's time, so its events match the players'.
+  Messages that come while a round loads are not played; the newest HP and spot of each hero among them are, once it is up.
+  Walls broken before a watcher came in still stand on its screen until the next round (the hub does not know them).
 - Checked: `npm run test:server` (list, join, counts, a watcher's messages change nothing, the sides, the end); two bot pages
-  fighting and a third watching in Chrome: both heroes within 0.4 m of where their own screens had them, the same HP on all
-  three, no errors.
+  fighting and a third coming in 4 s into a live round in Chrome: for a minute the same HP on all three, the arena's clock
+  within 0.2 s, the same cover, both heroes within 0.3 m of where their own screens had them, no errors.
 
 ## The hero shop, raid ranks and the week's boards
 

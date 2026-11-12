@@ -1997,11 +1997,11 @@ export class Duel {
     this.banner.style.display = 'none';
   }
 
-  /** Watching: both heroes' HP as the server counts them. */
-  watchHp(hp: number[]) {
+  /** Watching: the heroes' HP as the server counts them (by side; one not given stays as it is). */
+  watchHp(hp: (number | undefined)[]) {
     if (!this.watching || !this.on) return;
-    this.playerHp = hp[0];
-    if (this.foe) this.host.arena.setHp(this.foe, hp[1]);
+    if (hp[0] !== undefined) this.playerHp = hp[0];
+    if (this.foe && hp[1] !== undefined) this.host.arena.setHp(this.foe, hp[1]);
   }
 
   /** Watching: a message about this screen's hero (the watched duel's side 0). The other hero's go to the `peer*` methods. */
@@ -3086,7 +3086,8 @@ export class Duel {
   }
 
   private hitPlayer(c: EnemyCast, opts: HitOptions = {}) {
-    if (this.over || c.round !== this.round || !this.on) return;
+    // A watcher's screen neither hits nor dodges: the server's `peer_hit` and `peer_dodged` say which it was (`watchMine`).
+    if (this.over || c.round !== this.round || !this.on || this.watching) return;
     const arena = this.host.arena;
     const me = arena.caster.group.position;
     // A skillshot already touched the hero: that was the dodge check, so the zones do not decide.

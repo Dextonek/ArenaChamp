@@ -7,12 +7,16 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
 - **Watching duels** (the user: "make so that i can watch ongoing lobbys"; chose duels only for now, and the players see a count
   of watchers, no names). The Lobbies screen lists the duels being fought under **Live now**; Watch shows one from above until it
   ends. How it works and what was checked: [architecture/multiplayer.md](architecture/multiplayer.md), *Watching a duel*.
-  `PROTOCOL` 14 (open tabs reload after the deploy). `npm run test:server` 249 passed; two bot pages and a watcher in Chrome
-  agreed on both heroes' HP and spots (within 0.4 m), no errors. Not tried: a person watching, a phone, a watcher in round 2+
-  with a hero swap (Loser picks is off, so none happens), raids (not built).
+  `PROTOCOL` 14 (open tabs reload after the deploy). `npm run test:server` 249 passed. In Chrome, two bot pages fought and a
+  third came in 4 s into a live round: for a minute all three showed the same HP, the arena's clock within 0.2 s, the same
+  cover, both heroes within 0.3 m; no errors. Known: walls broken before a watcher came in stand on its screen until the next
+  round (the hub does not know them). Not tried: a person watching, a phone, raids (not built).
+- **Seen while testing, not looked into:** in all three bot duels Brannoc stood at 1 HP for a minute while Lyra fought on (all
+  screens agreed, so it is the server's count). Worth a look: Brannoc's kit online, or the Lyra bot.
 - **A mouse side button held** (Discord push-to-talk) stopped click-walking: a browser sends no `pointerdown` for a second button
   while one is held. The game now listens to `mousedown` / `mouseup` (`src/heroMode.ts`), and the back / forward side buttons
-  no longer leave the page mid-fight. Checked in Chrome with the back button held: right and left clicks walked 6 m.
+  no longer leave the page mid-fight. Checked in Chrome with a side button held: a right click walked 0 m with the old code and
+  6.4 m with the new; the back button no longer leaves the page.
 
 **Waiting on the user:** say "push and deploy" when wanted; both are in the News as one release, "Watch a duel".
 
