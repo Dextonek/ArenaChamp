@@ -22,8 +22,9 @@ next job whose files are free. One writer at a time on `src/duel.ts`, `src/heroM
 | 7 | Heart of Noon: the room transforms + its mechanics for 10, 20, 40 (Shade together, Take the Blade, The Ring of Hands) | 2 | `heart.ts`, `sunburst.ts`, `sunburst.py` | running (ports 5208, 5209) |
 | 8 | Ash and Ember: the pit transforms + their mechanics for 10, 20, 40 (Lantern Chain, Seal the Vents, The Changing of the Flames); a boss room built in Blender | 1 | `ashEmber.ts`, its party room | queued |
 | 9 | The hero shop and the rewards: obols, owned heroes, the Shop screen, raid ranks, the week's boards | 1, 3 | `accounts.mjs`, `hub.mjs`, `protocol.mjs`, `src/game/main.ts` | running (ports 5206, 5207) |
-| 10 | Heroes reworked, wave 1a: Vesper, Brannoc, Cantor (ports 5202, 5203) | 6 | their kits, traits, spells | running |
-| 10b | Heroes reworked, wave 1b: Zephyr, Sir Whiskers, Big Yoko (ports 5204, 5205) | 6 | their kits, traits, spells | queued |
+| 10 | Heroes reworked, wave 1a: Vesper, Brannoc, Cantor | 6 | their kits, traits, spells | **built, merged; NOT yet fair**: after the rework and the CPU's aim fix (`b05bf09`) Cantor beats Kaia and Auriel 32 of 32 and loses to Oblivion 31 of 32; Brannoc beats Kaia 32 of 32 |
+| 10t | Wave 1a tuning: no matchup of theirs past 80 to 20; each 40 to 60 % on the player's side (port 5210, 5211) | 10 | the three heroes' files | running |
+| 10b | Heroes reworked, wave 1b: Zephyr, Sir Whiskers, Big Yoko (ports 5204, 5205) | 10t (the benchmark heroes must be right first) | their kits, traits, spells | queued |
 | 11 | Heroes reworked, wave 2 and on, as the night allows | 10 | their kits, traits, spells | queued |
 | 12 | Engine hooks the helpers asked for: the Tower's (`TOWER-HOOK`), `partyStart` taking the boss's spots, `removeCover` refusing a fixed wall, the autopilot staying near an objective it cannot take | 1, 3 | `duel.ts` | queued |
 | 13 | A party of bots through all three bosses (10 or more), every new mechanic seen; docs (`raid.md`, `multiplayer.md`), `STATUS.md`, a morning page of everything with pictures | all | docs | queued |
