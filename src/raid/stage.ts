@@ -51,9 +51,9 @@ export interface StageSpec {
   inside?(x: number, z: number): boolean;
   win: string;
   hint: string;
-  /** How long it lasts at tier 1 (s; default `STAGE_S`), and an add's HP as a share of the boss's max (default 3.5 %). */
+  /** How long it lasts at tier 1 (s; default `STAGE_S`), and an add's HP as a share of the boss's max (default 3.5 %; asked as the stage begins). */
   seconds?: number;
-  add?: number;
+  add?: number | (() => number);
 }
 
 /** The adds of each stage on this screen, by the cast's seed: its later steps shoot from those still standing. */
@@ -83,7 +83,7 @@ function open(s: StageSpec, c: BossCast, p: PlayContext): PlayedMove {
   const end = p.shown(s.seconds ?? STAGE_S), warn = Math.max(0, end - 4);
   const rng = seeded(c.seed);
   const turns = s.turns[Math.floor(rng() * s.turns.length)];
-  const hp = Math.max(40, Math.round(p.bossMax * (s.add ?? ADD_SHARE)));
+  const hp = Math.max(40, Math.round(p.bossMax * (typeof s.add === 'function' ? s.add() : s.add ?? ADD_SHARE)));
   const objectives: Objective[] = [], adds: RaidAdd[] = [];
   turns.forEach((deg, part) => {
     const a = THREE.MathUtils.degToRad(deg), x = s.center.x + Math.sin(a) * s.ring, z = s.center.z + Math.cos(a) * s.ring;

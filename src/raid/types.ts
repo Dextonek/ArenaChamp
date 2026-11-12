@@ -521,6 +521,8 @@ export interface TwinDef {
   wall: Obstacle;
   /** Where hero number `n` of a half comes in. */
   heroStart(half: number, n: number): { x: number; z: number };
+  /** How many heroes each half has as the fight starts, as the hub dealt them: what a half is asked to do goes by it (its Coal Hearts' HP). */
+  sized?(heads: [number, number]): void;
   /**
    * The wall of fire is out for good though both still stand (the pit floods): from then on the other twin's moves hurt this
    * screen's hero too, and both are angrier (`FLOOD_HIT`, `FLOOD_GAP` in src/raid/twin.ts). Each screen's enemy stays its own.

@@ -346,9 +346,13 @@ export function forgeSafe(x: number, z: number, pad = 0.45) {
   return true;
 }
 
+/** Ash goes no further from his place than this (m): his first four pillars stand 10 m from it, and a Charge wants one near. */
+export const ASH_LEASH = 9;
+
 /**
  * Where one of the two may walk to: (x, z) pulled back into its own hall, 2.6 m inside its walls and the channel, and never into the
- * gate's passage; once the pit floods, into the floor that is still dry, either hall.
+ * gate's passage; Ash no further than `ASH_LEASH` from his place, among his pillars. Once the pit floods: into the floor that is
+ * still dry, either hall.
  */
 export function forgeRoam(half: number, x: number, z: number) {
   const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v)), pad = 2.6;
@@ -357,8 +361,14 @@ export function forgeRoam(half: number, x: number, z: number) {
     return { x: clamp(x, C.x - F.hx + inset, C.x + F.hx - inset), z: clamp(z, C.z - F.hn + inset, C.z + F.hn - inset) };
   }
   const s = half ? 1 : -1, x0 = C.x + s * (F.chan + pad), x1 = C.x + s * (F.hx - pad);
-  return { x: clamp(x, Math.min(x0, x1), Math.max(x0, x1)), z: clamp(z, C.z - F.hn + pad, C.z + F.hs - pad) };
+  const at = { x: clamp(x, Math.min(x0, x1), Math.max(x0, x1)), z: clamp(z, C.z - F.hn + pad, C.z + F.hs - pad) };
+  if (half) return at;
+  const home = F.hold[0], far = Math.hypot(at.x - home.x, at.z - home.z);
+  return far <= ASH_LEASH ? at : { x: home.x + ((at.x - home.x) / far) * ASH_LEASH, z: home.z + ((at.z - home.z) / far) * ASH_LEASH };
 }
+
+/** Whether the flood has come over (x, z): what stands there is under the lava. */
+export const flooded = (x: number, z: number) => forge.floodAt >= 0 && forge.clock >= forge.floodAt && dryDepth(x, z, floodInset()) < 0;
 
 /** How far out from the middle an AI and a boss backing away may go once the pit floods (m), or 0 while it is dry. */
 export function forgeBounds() {
@@ -755,7 +765,8 @@ function floodMesh() {
         float lava = smoothstep(0.0, 0.3, d);
         // Its edge: the colour of a zone to leave, so it reads as one.
         float edge = (1.0 - smoothstep(0.0, 0.5, abs(d - 0.1))) * (0.75 + 0.25 * sin(uTime * 3.0 + p.x * 0.6 + p.y * 0.6));
-        vec3 col = mix(lavaColor(vWorld.xz, uTime), vec3(0.91, 0.52, 0.23), edge);
+        // A little darker than a channel's: it covers most of the screen, and the game's bloom lifts it.
+        vec3 col = mix(lavaColor(vWorld.xz, uTime) * 0.8, vec3(0.91, 0.52, 0.23), edge);
         gl_FragColor = vec4(col, max(lava * 0.95, edge) * uOn * max(room, gate));
       }
     `,
@@ -884,8 +895,8 @@ function build(): ReturnType<ArenaDef['build']> {
       for (const b of BRIDGES) {
         const v = bridges[b.i];
         if (!v) continue;
-        // It rises in a second and sinks in less; under the lava it is not drawn.
-        const up = bridgeUp(b.i, now), glow = bridgeGlow(b.i, now);
+        // It rises in a second and sinks in less; under the lava (a channel's, the flood's) it is not drawn.
+        const up = bridgeUp(b.i, now) && !flooded(b.x, b.z), glow = bridgeGlow(b.i, now);
         v.lift += Math.sign((up ? 1 : 0) - v.lift) * Math.min(Math.abs((up ? 1 : 0) - v.lift), dt * (up ? 1.2 : 2));
         v.o.visible = v.lift > 0.01;
         v.o.position.y = -(1 - v.lift) * 0.75;

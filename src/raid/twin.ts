@@ -20,8 +20,8 @@ export const FURY_HIT = 1.5;
 export const FURY_GAP = 0.6;
 
 /** Once the pit floods (the wall of fire out, both still standing) each of the two hits this much harder, and this much of the quiet between its moves is left. */
-export const FLOOD_HIT = 1.25;
-export const FLOOD_GAP = 0.8;
+export const FLOOD_HIT = 1.15;
+export const FLOOD_GAP = 0.85;
 
 /**
  * Whether a script is a ghost now. One object per script, switched by the fight. `open`: the wall of fire is out though both

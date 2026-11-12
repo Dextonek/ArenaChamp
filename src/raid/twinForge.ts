@@ -169,7 +169,7 @@ export const flood: BossMove = {
  * - `rocks`: when Ash's rocks fall on a pair (s after the chain): one between the two and one past each of them, `rockR` wide,
  *   `rock` of max HP each. They cover the line through the pair: both must step off it to the same side.
  */
-export const CHAIN = { per: 5, most: 4, first: 24, every: 36, seconds: 12, grace: 3, reach: 8, burn: 0.3, rocks: [3.5, 7, 10.5], rockR: 2.2, rock: 0.14, rockOut: 4.6 };
+export const CHAIN = { per: 5, most: 4, first: 24, every: 36, seconds: 12, grace: 3, reach: 8, burn: 0.3, rocks: [3.5, 7, 10.5], rockR: 2.2, rock: 0.1, rockOut: 4.6 };
 /** Its objectives: the chain snapped; and, on the two screens it holds, a way back to the other hero for an AI. */
 const SNAP = 0, LEASH = 1;
 
@@ -292,8 +292,8 @@ function chainRocks(c: BossCast, p: PlayContext): PlayedMove {
  * Lantern Chain (user, 2026-11-12, for a party of 10 or more): Ember's lanterns chain heroes in pairs, a pair for every five
  * standing. Over 8 m apart a chain snaps and burns both; Ash's rocks then fall between and past the two, so they must move as one.
  *
- * Each twin casts it on its own half (a brain sees only its own side of the wall of fire, so no pair is ever across it), and on
- * whoever stands once the wall is out. Its first steps chain a pair each: the brain draws a hero by the cast's seed and takes the
+ * Each twin casts it on its own half (a brain sees only the heroes of its own half while both twins stand, so no pair is ever
+ * across the wall of fire, or of two teams). Its first steps chain a pair each: the brain draws a hero by the cast's seed and takes the
  * nearest other, and names the two in the cast's `target` and `mate`. Its later steps drop the rocks where the pair stands then. A
  * step with no pair is flagged, and plays nothing.
  */
@@ -355,8 +355,8 @@ function ventSpots(who: number, n: number, seed: number) {
  */
 export const vents = (id: string, who: number): BossMove => ({
   id, name: 'Seal the Vents', minBand: 20, charge: VENTS.open, lock: 0, cooldown: 0, alongside: true, pose: 'channel',
-  // Once the wall is out a twin sees the whole party: half of it is its own to ask.
-  aim: (c) => ({ x: clamp(Math.round((c.heroes?.length ?? 1) / (forge.open ? 2 : 1) / VENTS.per), 1, VENTS.most), z: 0, dir: 0 }),
+  // A twin sees its own half while both stand: a vent for every five of it.
+  aim: (c) => ({ x: clamp(Math.round((c.heroes?.length ?? 1) / VENTS.per), 1, VENTS.most), z: 0, dir: 0 }),
   play(c, p) {
     const until = VENTS.open, spots = ventSpots(who, clamp(Math.round(c.x), 1, VENTS.most), c.seed);
     const marks = spots.map((s) => {

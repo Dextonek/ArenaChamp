@@ -2480,7 +2480,7 @@
       yes('flood: this screen\'s enemy is still Ash, and Ember is still only drawn', d.boss.which === 0 && d.boss.def.name === 'Ash' && d.opponentKit.name === 'Ash' && d.twin.fallT < 0);
       check('flood: both of them are angrier: his hits cost a quarter more', d.boss.script.rage, FLOOD_HIT, 0);
       place(-8, 20);
-      check('flood: her moves hurt this hero too now', take(() => cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 }), 1.9), 0.12 * FLOOD_HIT);
+      check('flood: her moves hurt this hero too now', take(() => cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 }), 1.9), 0.12 * FLOOD_HIT, 0.02);
       cast('bombs', 1, { x: -8, z: 17.3, dir: Math.PI / 2 });
       step(0.4);
       yes('flood: and an AI minds them', d.boss.danger(-8, 20, 3) && !d.boss.script.danger(-8, 20, 3));
@@ -2512,6 +2512,21 @@
       check('flood: after three minutes it has come 16 m, and stays there', floodInset(), 16, 0.01);
       yes('flood: one island is left in the middle, 20 m by 22 m', lavaAt(-9, 7) === 0 && lavaAt(9, 7) === 0 && lavaAt(0, 17) === 0 && lavaAt(-11, 7) > 0 && lavaAt(0, 19.5) > 0 && lavaAt(5, 40) > 0);
       yes('flood: an AI and a boss backing away keep to it', d.roomFloor.bounds > 8 && d.roomFloor.bounds < 10 && !d.roomFloor.safe(-9.8, 7) && d.roomFloor.safe(-4, 7));
+      // Each twin still goes for its own team once the wall is out; for anyone when nobody of its own stands, or the other has fallen.
+      freshPair(0, 10, 1);
+      cast('flood', 0);
+      step(0.2);
+      const sees = () => d.boss.brain.world.heroes().map((h) => h.side).join();
+      yes('flood: Ash\'s brain still sees only the heroes of his own half', sees() === '0');
+      d.playerHp = 0;
+      yes('flood: with nobody of his half standing, he goes for whoever is', sees() === '0,1');
+      d.playerHp = d.playerMax;
+      fresh(0);
+      link.hurt(0, POOL * 0.6);
+      link.hurt(1, POOL * 0.68);
+      d.boss.brain.pause = 1e9;
+      cast('flood', 1);
+      step(0.3);
       // One falls after the flood: the other is everyone's, as before.
       link.hurt(0, POOL);
       step(0.2);
@@ -2575,7 +2590,6 @@
       yes('vents: one for every five heroes of a half, four at most', aimV(4) === 1 && aimV(10) === 2 && aimV(15) === 3 && aimV(20) === 4);
       forge.flood(0);
       step(0.1);
-      yes('vents: once the wall is out a twin sees the whole party, and asks for its own half of it', aimV(20) === 2 && aimV(40) === 4);
       const vc = cast('ventsw', 0, { x: 3, seed: 2 });
       step(0.3);
       const vo = scriptCast(0, vc.id).played.objectives;

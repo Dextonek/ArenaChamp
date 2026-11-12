@@ -102,8 +102,17 @@ def main():
     for i in range(a.tries):
         folder = out / f"try{i + 1}"
         if not a.only_read:
-            subprocess.run([sys.executable, str(ROOT / "pipeline" / "tools" / "party-raid.py"), str(folder), "--players", str(a.players), "--seconds", str(a.seconds),
-                            "--port", str(a.port), "--boss", "ash"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=a.seconds + 240)
+            run = subprocess.Popen([sys.executable, str(ROOT / "pipeline" / "tools" / "party-raid.py"), str(folder), "--players", str(a.players), "--seconds", str(a.seconds),
+                                    "--port", str(a.port), "--boss", "ash"], cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            try:
+                run.wait(timeout=a.seconds + 150)
+            except subprocess.TimeoutExpired:
+                # A run that hangs (a page that never loads): it and what it started (its server, its browser) are stopped by its own id.
+                print(f"try {i + 1}: the run did not end; stopped", flush=True)
+                if sys.platform == "win32":
+                    subprocess.run(["taskkill", "/PID", str(run.pid), "/T", "/F"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                else:
+                    run.kill()
         r = read(folder)
         rows.append(r)
         if not r:

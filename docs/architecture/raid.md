@@ -534,34 +534,35 @@ they stay the tag team above, and nothing new goes over the wire.
 
 | What | How |
 |---|---|
-| The room | `src/arenas/twinpit.ts`, drawn in code like the pit for two; every layout number is in `TWIN_LAYOUT`. 30 m to the rim (`RAID_BOSSES.ash.partyRing`), split from the south gate to the far side by a wall of fire 1.8 m thick: an obstacle that never breaks (`Obstacle.fixed`), so it stops walking, sight and bolts. West: Ash, with four pillars round him and one more for every three heroes of his half (5 at band 5, 6 at 10, 8 at 20, 11 at 40). East: Ember over her great vent, six small vents round it, no cover |
-| Sides | The wall stands from the start. The hub deals the players present west, east, west... in the order of their seats as the fight loads (`dealHalves`), so neither half can be empty; the host is in the west. Each half comes in at the south gate on its own side, in rows of four. Nobody chooses a side yet |
+| The room | The Twin Forge (`src/arenas/twinpit.ts`, built in Blender: below): two halls side by side, 52 m by 54 m in all, split from the back wall to the gate by a wall of fire 1.8 m thick: an obstacle that never breaks (`Obstacle.fixed`), so it stops walking, sight and bolts. The game's floor is a ring of 38 m (`RAID_BOSSES.ash.partyRing`); the forge's own walls are its shape. West: Ash, with four pillars round him and one more for every three heroes of his half (5 at band 5, 6 at 10, 8 at 20, 11 at 40), and a great anvil. East: Ember over her great vent, six small vents round it, a great brazier |
+| Sides | The wall stands from the start. The hub deals the players present west, east, west... in the order of their seats as the fight loads (`dealHalves`), so neither half can be empty; the host is in the west. Each half comes in through the gate's passage on its own side, in rows of four. Nobody chooses a side; for 40 the hub deals some of them again in the fight (The Changing of the Flames, below) |
+| Each keeps to its hall | A twin walks no further toward a hero than its own hall reaches, 2.6 m inside its walls and never into the gate's passage (`BossDef.roam`, `forgeRoam`): Ember backs away from whoever comes near, and in the first fight in the forge she backed into the passage's dead end and her half fought there. Their moves reach wherever they reach |
 | One enemy a screen | The boss in this hero's half is `Duel.foe`. The other is a body the duel only draws (`rimFigure`, `Duel.twin`), walked from its brain's `boss_move`, with its own bar |
 | Two of everything | Each has its own def (`twinFlames(which)`: 0 Ash, 1 Ember), half the band's HP, its phases at 66, 50 and 33 % of its own HP, half the band's gauge, its own kneel, brain and watchdog. A brain runs on a screen of its own half. A half everyone has left has no brain until the wall is out |
 | Two scripts a screen | `src/raid/twin.ts`. Each boss's casts play in its own `BossScript`. The other boss's script is a **ghost**: it draws everything, cut off at the wall (`TelegraphLayer.clip`), but this hero stands in none of it, takes no spot of it, reports nothing, and none of its side effects (a stage's guard, a drag, a hint, a flash) reach this screen's own fight. So the engine's rule holds: one hero, one enemy, and bodies it only draws |
 | Health falls together | The hub: when their HP shares are more than 12 points apart the one with **more** health is furious (`boss_rage`), until they are within 6 (`RAID_TWIN`). Furious: its hits cost 1.5 times as much and the quiet between its moves is 0.6 of what it was (`FURY_HIT`, `FURY_GAP`); red heat round it, a red bar, a banner on every screen. The clock's enrage (2:50: 2 times, 0.5) is the stronger, and the two never multiply |
 | The bars | Two bars in place of the one, Ash's on the left as he is in the room, each draining toward the middle; this screen's enemy has the bright edge. Between them the gap in points, amber past 6, red past 12, with an arrow at the one with more health (`BossHud.setTwin`) |
-| One falls | `boss_fell`: its moves stop, the wall of fire goes out (the obstacle is gone, the flames fade over 2.5 s), and the other is furious to its end and is everyone's. On the screens of the fallen one the other becomes the enemy (`Duel.twinFell`: its model, spot and HP, as a tag swaps a model); their hits and control go to it, its script stops being a ghost, and the fallen one lies where it stood. The raid is won when both are dead |
+| One falls | `boss_fell`: its moves stop, the wall of fire goes out if it still stands (the obstacle is gone, the flames fade over 2.5 s; the flood puts it out earlier, below), and the other is furious to its end and is everyone's. On the screens of the fallen one the other becomes the enemy (`Duel.twinFell`: its model, spot and HP, as a tag swaps a model); their hits and control go to it, its script stops being a ghost, and the fallen one lies where it stood. The raid is won when both are dead |
 | Their moves | No tag, no rim: both have their own moves all the time. Ash: Ground Slam, Charge, Knuckle Quake, and from 66 % Drag Under. Ember: Fan, Vent Bombs, Lantern Toss, Marked, and from 66 % Lava Wave and Falling Star |
 | The stage | Each has its own Eruption at half of its own HP, at its own place, with its own three Coal Hearts 6.5 m round it, and its own half to erupt over if they still burn. Each half puts out its own; the other boss stays open to hits meanwhile |
-| The vent | In Together each has a vent at its own place, twice, as for two. The lava rises from the rim for the whole room as soon as **either** is in Together, and sealing either vent holds it back 20 s for everyone |
-| A hero stays in its half | A walk and a blow stop at the wall as at any cover. A dash, a blink or a leap would pass cover, so a hero found across the wall or in it is put back at its face (`Duel.holdHalf`). A fallen hero can be got up only from its own half, until the wall is out. The autopilot plans only inside its half (`Duel.reachable`) |
+| The vent | In Together each has a vent at its own place, twice, as for two (for 20 or more: Seal the Vents, below). The pit floods for the whole room as soon as **either** is in Together, and sealing either vent holds the lava back 20 s for everyone |
+| A hero stays in its half | A walk and a blow stop at the wall as at any cover. A dash, a blink or a leap would pass cover, so a hero found across the wall or in it is put back at its face (`Duel.holdHalf`). A fallen hero can be got up only from its own half, until the wall is out (the pit floods, or one of the two falls). The autopilot plans only inside its half (`Duel.reachable`) |
 
 What reaches the whole floor for two, and what it does in a party's pit:
 
 | Move | For two | For a party |
 |---|---|---|
-| Charge | To the rim | To the rim or the wall of fire, whichever comes first (no reward for the wall) |
+| Charge | To the rim | To the forge's wall or the wall of fire, whichever comes first (no reward for either); it shatters every bridge it runs over |
 | Knuckle Quake, Fan | Lines to the rim, or the first cover | The same; the wall is cover |
 | Drag Under | A ring from 4.5 m to the far rim | From 4.5 to 14 m from him, cut off at the wall |
-| Lava Wave | From the vent over the pit | From Ember's great vent over her half (33 m, at 6.5 m/s instead of 5), cut off at the wall |
+| Lava Wave | From the vent over the pit | From Ember's great vent over her half and the gate's passage (41 m, at 6.5 m/s instead of 5), cut off at the wall |
 | Falling Star | 30 % shared by who stands under it; 45 % each if nobody does | 45 % shared (three under it: 15 % each); 45 % each if nobody. Counted among her half only |
 | Eruption, failed | 45 % over the whole pit | 45 % over that boss's half |
 | Marked | Carry it onto the one in the ring | Carry it onto Ember |
-| The lava | From the rim in to 12, 10, 8 m | From the rim in to 24, 20, 16 m, both halves alike |
+| The lava | From the rim in to 12, 10, 8 m | The forge's own: channels across each half from 66 %, and the flood from the walls to one island from 33 % (below) |
 
-**The messages** (PROTOCOL 9). `which` (0 Ash, 1 Ember) is on a message only in a twin fight; a raid for two and the other bosses send
-and get what they always did.
+**The messages** (PROTOCOL 9; the last four rows since PROTOCOL 12). `which` (0 Ash, 1 Ember) is on a message only in a twin fight; a
+raid for two and the other bosses send and get what they always did.
 
 | Message | With `which` |
 |---|---|
@@ -573,7 +574,11 @@ and get what they always did.
 | `boss_brain`, `brain_moved` | Whose brain moved. The watchdog and a leaver's hand-over pick a screen of the same half |
 | `boss_rage { which, on }` | New: that boss grows furious, or calms |
 | `boss_fell { which }` | New: that boss fell (its last `boss_hp` of 0 comes just before) |
-| `boss_stood`, `revive` | No `which`: a gold zone waits only for the half of whoever reported first, and nobody gets a hero up through the wall |
+| `boss_stood`, `revive` | No `which`: a gold zone waits only for the half of whoever reported first, and nobody gets a hero up through the wall, while it stands |
+| `boss_cast` | gains `mate`: a second hero the step is for, beside `target` (Lantern Chain's pair). Passed on only if it is a seat. A cast of the move `flood` (`RAID_TWIN.flood`) also tells the hub that the wall of fire is out though both stand: from then on anyone gets anyone up and a gold zone waits for everyone; hits stay each half's own boss's |
+| `boss_reward` with the key `change` | Not a reward but a request (`swap` in `RAID_REWARDS`), from a brain's screen, once a cast: the hub marks every second standing hero of each half (half of them, rounded down; turning from call to call) and says who with `boss_done { id, part: 100 + seat, side: seat }`. Nothing while the wall is out, or within 20 s of the last call's end (`RAID_TWIN.change`) |
+| `boss_obj` with part 200 + the sender's seat, for that cast | A marked hero steps through a gate, while they stand open (12 s from the call: 4 s of warning, 8 s open). The hub takes it only from that hero itself, once; it answers with `boss_done` as for any objective, deals the seat into the other half, and sends `twin_halves`. A client can't mark anyone (parts 100 and up of that cast are the hub's) |
+| `twin_halves { half, brain, late }` | New: the halves as dealt now (by seat, as `raid_stage.twin.half`), whose screen runs each brain, and the seats the gates shut on (dealt across all the same when the 12 s are up: each of those screens takes 40 % of its hero's max HP). A brain whose screen crossed goes to the next screen of the half it left: `boss_brain` and `brain_moved` follow |
 
 Measured through the real hub (`python pipeline/tools/party-raid.py <out> --players 6 --seconds 280 --port 5197 --boss ash`): six
 bots, band 10, 17,750 HP each, times on the fight's own clock. Left alone they kept the two within 7 points for three minutes (nobody
@@ -582,7 +587,109 @@ three Coal Hearts of 621 HP). Ash fell at 3:17, 27 s past the enrage, with Ember
 later, and at 4:02, when the run was stopped, Ember still had 10 %. A half took 78 to 92 HP a second off its boss, 26 to 31 a bot. So
 six at the HP for ten is slow here too, as it is against the Warden. All six screens agreed on both bars within 1.7 % of a bar (a hit
 on its way), nobody was across the standing wall in any sample, no errors. With `--twin --boost 60` the tool steers the fight through
-every moment (one far ahead, level again, one falls, the last one falls) and takes the pictures.
+every moment (one far ahead, level again, one falls, the last one falls) and takes the pictures. (That was the first pass of the room,
+a round pit drawn in code. The forge's own measurements are below.)
+
+### The Twin Forge transforms, and what comes only for a big party (2026-11-12)
+
+User, 2026-11-12: boss rooms built in Blender that need not be round; rooms that transform at the second and at the last phase ("they
+could be engaging and hard and challenging to complete"); mechanics that come only for 10, 20 and 40 players. The room is
+`src/arenas/twinpit.ts` (its plan and its state), the moves are `src/raid/twinForge.ts`, wired into the twins in `src/raid/ashEmber.ts`.
+Pictures: `docs/raid/twin-*.jpg` (`pipeline/tools/twin-shots.js`).
+
+**The room: the Twin Forge.** `blender/arenas/real/twinforge.py` -> `public/models/arenas/twinforge.glb` and
+`src/arenas/real/twinforge.json`, built with `kit.py` as the Hall of Noon and the Sunburst are. Two halls side by side under one
+roofless forge, cut into dark stone: a rectangle 52 m wide and 54 m long, split down its length by a channel in which the wall of fire
+burns. West, Ash's hall: basalt, his pillars, a square hearth in the back wall under an anvil in gold, a great anvil before it. East,
+Ember's: slate, her vents, a hearth with a lantern's pointed head and three hanging lanterns, a great brazier before it. A stack
+stands over each hearth. The party's way in is one gate's passage in the south wall, 19 m wide and 10 m deep, with the channel
+running out through its middle, so each half comes in on its own side of it. The stone is 1.3 m high on the camera's side and steps
+up along the flanks to 5 and 9.5 m, 13 m behind the hearths.
+
+How a room that is not round works is the hall's way: the game's floor stays a ring (38 m, `RAID_BOSSES.ash.partyRing`; the hub
+clamps walks to it), and the shape is fourteen obstacles that never break (`Obstacle.fixed`): twelve stretches of wall, the anvil and
+the brazier. `inForge` and `forgeReach` answer for the shape: a Charge, a Fan and a Quake end at the forge's wall, not at the ring.
+The plan (`forge` in the json: the halls, the gate, the lava channels, the bridges, the thresholds, the last island, and where the two
+of them, the pillars and the vents are) is written by the Blender file and read by `TWIN_LAYOUT`, so there is one place for every
+number of the layout.
+
+**The room's state is the room's, not a script's.** `forge` in `twinpit.ts` (as `hallBreak` is the hall's): which half has cracked
+and when, the seed its bridges turn by, which bridge was shattered when, when the flood began and how long vents have held it. Only a
+cast changes it, at a time counted from the cast, on the room's own clock (`forge.tick`, with the scene); a second cast of the same
+thing does nothing (the other twin's, a brain that took over). What the lava does to a hero is not a zone of a cast: a boss's script is
+cleared when that boss falls, and the lava must go on. The duel asks the room each frame (`BossDef.floor` -> `RoomFloor`, `Duel.roomStep`):
+
+| `RoomFloor` | What the duel does with it |
+|---|---|
+| `burn(x, z)` | Once a second, this screen's hero standing in it takes that share of its max HP (`Duel.hurtHero`, move `lava`); a summoned unit takes 60 |
+| `cover` | Added to what an AI plans its walk round (`Arena.aiCover`): the lava channels as capsules, with a gap at each bridge that stands. A person may walk into them |
+| `safe(x, z)` | Where an AI may stand: it steps out of what is not safe before anything else, never steps into it, and takes no spot in it |
+| `bounds` | Once the pit floods: how far from the middle an AI's walk and a boss backing away may go |
+
+**The floor cracks into islands** (`crack`). As a twin's second phase begins (66 % of its **own** HP), its **own** half cracks: each
+twin is a boss of its own with its own phases, and its brain sees only its own half, so that is the cast that exists. Their health must
+fall together, so the two halves crack within moments of each other. A line glows along four channels for 5 s (zones to leave, 14 % for
+whoever stands on one as it opens), then the crust gives: lava 2.6 m wide, 7 % a second. The half is five islands: the home island
+round the twin's place (25 m by 20 m, with its first pillars or vents), two to the north and two to the south.
+
+- **Bridges of cooled crust** (ten a half: objects of the room's file, `bridge0`...) stand in turn. Two islands that touch have two
+  bridges: each stands 16 s, glows for its last 4 s, and sinks; the other rose 3 s before, so there is always a way, but not where
+  it was. The narrow outer islands have one bridge to the home island, away 10 s in every 26. Which stands when comes from the
+  cast's seed (`standing`), the same on every screen.
+- **Ash's Charge shatters every bridge it runs over** (`shatterBridges`, from the run's cast): gone until its next turn.
+- The twins themselves walk through the lava: they are its keepers. A hero thrown into a channel burns until it walks out.
+- **The autopilot** plans its walk over the bridges (the lava is cover to its planner) and steps out of a channel at once.
+
+**The pit floods** (`flood`). When the **first** of the two reaches its last phase (33 % of its own HP) the wall of fire goes out for
+good, and lava rises from the walls inward: it shows along the walls for 6 s, then comes in 0.145 m a second, 16 m in just under two
+minutes, 8 % a second. What is left is one island in the middle, 20 m by 22 m with round corners, on the seal drawn in the floor; the
+gate's passage floods first. The twins follow the heroes onto it, and Ember, who backs away, stays on it (`RoomFloor.bounds`).
+
+- **How it fits with "the wall goes out when one falls".** Both stand: the wall goes out when the pit floods, or when one of the two
+  falls, whichever comes first. If one falls before either reached its last phase, the wall goes out then, as before, and the pit
+  floods later, when the survivor gets there.
+- **One enemy a screen still holds.** The flood changes nobody's enemy: each screen fights its own half's twin until that one falls,
+  and then the other, exactly as before. What changes is the other twin's script: it stops being a ghost that this hero is "across the
+  wall" from (`Ghost.open`). Its zones hit this hero, its Coal Hearts and vents are this hero's to take, its gold zones count this
+  hero, and its brain may aim at this hero. It still is not this screen's enemy: this hero's hits and control never land on it, it
+  runs no brain here, and nothing of it acts on this screen's boss. An AI minds both scripts (`BossFight.danger`, `mustHide`...).
+- **Furious, side by side.** In the flood each hits 1.25 times as hard and waits 0.8 of the quiet between its moves (`FLOOD_HIT`,
+  `FLOOD_GAP`); being behind (1.5, 0.6) and the clock's enrage (2, 0.5) are stronger, and none of them multiply.
+- **The hub** takes the wall as out from its relay of the `flood` cast (`RAID_TWIN.flood`): a hero gets one of the other half up, a
+  gold zone waits for everyone. Hits stay each half's own boss's until one falls.
+- **The vent** (Together, as before): sealing either twin's vent holds the flood back 20 s for everyone (`forge.hold`: the lava
+  draws back that much). It was the late lava's clock before; the forge has no other lava now.
+
+**What comes only for a big party** (`BossMove.minBand` against `BossDef.band`, which `resize` sets):
+
+| For | Mechanic | How it goes |
+|---|---|---|
+| 10 or more | **Lantern Chain** (`chain`) | Ember's lanterns chain heroes in pairs: a pair for every five heroes a twin sees standing (one to four). First 24 s into the fight, then every 36 s; a chain lasts 12 s. The two have 3 s to come together; after that, over 8 m apart it snaps and burns both for 30 %. Then Ash's rocks fall three times (3.5, 7 and 10.5 s in): one between the two and one 4.6 m past each of them, along the line through the pair, 14 % each: both must step off that line, and to the same side |
+| 20 or more | **Seal the Vents** (`ventsw`, `ventse`) | In Together, in place of the one vent: each twin opens a vent for every five heroes of its half (one to four), up to three times. Each is sealed by one hero standing on it 4 s; they close after 16 s. Each one sealed draws the lava back 12 s; each one left open brings it on 10 s, for both halves. All of a cast's sealed: that twin staggers (40, scaled as its gauge is) |
+| 40 | **The Changing of the Flames** (`change`) | Ash calls it, first 40 s into the fight and then every 60 s, while the wall of fire stands. The hub marks every second standing hero of each half, turning from call to call. After 4 s three gates open in the wall for 8 s (the thresholds across the channel). A marked hero that steps into a gate is carried through, and its enemy changes to the other twin. When the gates shut, the marked who did not cross are dragged through the fire all the same, for 40 %. A hero that is not marked burns in a gate (15 % a second) and does not pass |
+
+How each stays within the rules:
+
+- **A pair is never across the wall.** Each twin casts the chain on its own half, because a brain sees only its own side of the wall
+  while it stands (`BossFight.newBrain`). Ember's lanterns and Ash's rocks are how it looks in both halves. Once the wall is out a twin
+  sees everyone, and a pair may be of both teams.
+- **The pair goes in the cast**: `target` and the new `BossCast.mate`, which the hub passes on if it is a seat.
+- **The snap is one event for every screen.** Each of the two screens watches its own hero's distance to the other (a look read,
+  `PlayContext.heroAt`); the first to see it past 8 m reports an objective (`boss_obj`, part 0), the hub tells everyone once
+  (`boss_done`), and each of the two screens burns its own hero.
+- **An AI keeps to its mate**: on the two screens the chain holds, the other hero is a spot to walk toward while they are more than
+  5.4 m apart (an objective that is never taken).
+- **The vents' count** is the brain's (`x` in the cast): the heroes it sees, or half of them once the wall is out and it sees both
+  teams. Each vent is an objective, so the hub gives each to one hero and every screen hears which are sealed.
+- **The Changing of the Flames is the hub's to deal.** Ash's brain's screen asks (`boss_reward` with the key `change`: a request, not
+  a reward); the hub marks and says who as objectives taken (part 100 + the seat); a crossing is an objective too (part 200 + the
+  seat), which the hub takes only from that marked hero itself, and answers by dealing it into the other half (`twin_halves`). A
+  screen whose own half changed swaps its enemy (`BossFight.swapTo`, `Duel.twinSwap`: the other twin's model, spot and HP come to
+  `Duel.foe`, as when one falls) and is held in its new half from the next frame (`Duel.holdHalf` puts it through the wall). A brain
+  whose screen crossed goes to the next screen of the half it left (`boss_brain`).
+- **Its call is the whole room's** (`BossMove.room`): it plays in every screen's own script, whichever twin's it is, so a hero of
+  Ember's half can be marked, burnt in a gate, and take its way through; every screen gets its name on the cast bar, a banner, and
+  the count on the bar ("6 of 10 across").
 
 ## The Heart of Noon
 

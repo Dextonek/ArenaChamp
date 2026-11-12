@@ -48,7 +48,9 @@ const stand = (spots) => { spots.forEach(([x, z], i) => d.partnerMove(i + 1, x, 
 const zoomTo = (z) => { hm.zoom = z; step(0.6); };
 /** A new fight in the forge, whole, this screen's hero in `half`. */
 const fresh = async (half = 0, band = 40) => {
-  performance.now = realNow;
+  // The page's clock never goes back: a fight stepped for two minutes is ahead of the computer's.
+  simMs = Math.max(simMs, realNow());
+  performance.now = () => simMs;
   d.holdStart = false;
   const def = twinFlames(half);
   link = new TwinLocalLink(def, band, half);
@@ -57,8 +59,6 @@ const fresh = async (half = 0, band = 40) => {
   d.startBoss({ def, link, seed: 'shots', mode: 'play', band, name: 'Kaia', party: partners, twin: { ...link.setup, halves: dealt } });
   await wait(2500);
   api.view.paused = true;
-  simMs = performance.now();
-  performance.now = () => simMs;
   d.boss.brain.pause = 1e9;
   step(3.6);
   return dealt;

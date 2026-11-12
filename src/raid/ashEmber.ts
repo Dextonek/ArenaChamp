@@ -58,8 +58,10 @@ interface Room {
   shape?(x: number, z: number, dir: number): number;
   /** A room whose lava is its own (the Twin Forge's flood): a sealed vent holds it back this way, not by the late clock. */
   hold?(seconds: number): void;
-  /** How long a stage's adds have to be put out (s), and each one's HP as a share of the boss's max, when not the usual. */
-  stage?: { seconds: number; add: number };
+  /** How long a stage's adds have to be put out (s), and each one's HP as a share of the boss's max, when not the usual. `who`: whose stage. */
+  stage?: { seconds: number; add(who: number): number };
+  /** How often the Charge comes, when not the pit's for two (s). */
+  chargeEvery?: number;
 }
 
 const atTarget = (c: AimContext) => ({ x: c.target.x, z: c.target.z, dir: Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z) });
@@ -302,7 +304,7 @@ function movesFor(room: Room): Record<string, BossMove> {
    * at where the hero is then, and says whether he hit a pillar, so both screens break the same one.
    */
   const charge: BossMove = {
-    id: 'charge', name: 'Charge', charge: CHARGE_WIND, lock: CHARGE_WIND + 1, cooldown: CHARGE_EVERY, due: CHARGE_FIRST,
+    id: 'charge', name: 'Charge', charge: CHARGE_WIND, lock: CHARGE_WIND + 1, cooldown: room.chargeEvery ?? CHARGE_EVERY, due: CHARGE_FIRST,
     steps: [0, CHARGE_WIND], chases: true, tracks: true, form: ASH, pose: 'lunge',
     aim(c) {
       const dir = Math.atan2(c.target.x - c.boss.x, c.target.z - c.boss.z);
@@ -694,7 +696,7 @@ function movesFor(room: Room): Record<string, BossMove> {
     center: room.home[who], ring: room.addRing, turns: [[0, 120, 240], [60, 180, 300]],
     look: coalHeartLook, color: '#5a3424', shot: 'lob', shotColor: LAVA,
     fail: { share: 0.45, cover: false, radius: room.reach + 1, text: 'THE VENT ERUPTS', blast: 'geyser' },
-    seconds: room.stage?.seconds, add: room.stage?.add,
+    seconds: room.stage?.seconds, add: room.stage ? () => room.stage!.add(who) : undefined,
     // The lava it throws lands on its own side of the wall of fire.
     inside: room.wall ? (x) => (x < room.wall!.ax) === (who === ASH) : undefined,
     win: 'THE FIRE GOES OUT', hint: 'Put out the three Coal Hearts before the bar fills',
@@ -823,9 +825,18 @@ const HOME = TWIN_LAYOUT.hold as [{ x: number; z: number }, { x: number; z: numb
  * - `TWIN_ENRAGE`: when the two enrage (s). A half of a party is slower at its boss than two heroes at one of theirs: it walks a
  *   long hall, crosses bridges, and stands out its own Eruption.
  * - `TWIN_STAGE`: how long a half has to put out its three Coal Hearts (s), and each one's HP as a share of its twin's max.
+ * - A Coal Heart's HP goes by the heroes that half really has: a fight tuned for ten has five to a half, six players have three.
+ *   Never under `least` of the full one.
+ * - `TWIN_CHARGE`: how often Ash's Charge comes (s). A party's fight is longer than a duo's, and a pillar breaks each time he is stopped.
  */
-const TWIN_ENRAGE = 240;
-const TWIN_STAGE = { seconds: 30, add: 0.035 };
+const TWIN_ENRAGE = 270;
+const TWIN_CHARGE = 22;
+/** How many heroes each half has in this fight (`TwinDef.sized`). */
+let halfHeads: [number, number] = [5, 5];
+const TWIN_STAGE = {
+  seconds: 30, share: 0.035, least: 0.4,
+  add: (who: number) => TWIN_STAGE.share * Math.max(TWIN_STAGE.least, Math.min(1, halfHeads[who] / (twinBand / 2))),
+};
 /** From a home to the far corner of its own half, where the wall meets the rim (m). */
 const HALF_REACH = Math.hypot(HOME[0].x - C.x, TWIN_R) + 0.5;
 const PARTY: Room = {
@@ -835,6 +846,7 @@ const PARTY: Room = {
   shape: (x, z, dir) => forgeReach(x, z, dir),
   hold: (seconds) => forge.hold(seconds),
   stage: TWIN_STAGE,
+  chargeEvery: TWIN_CHARGE,
 };
 // Ids in letters only: the hub takes no others.
 const TWIN_MOVES: Record<string, BossMove> = { ...movesFor(PARTY), crack, flood, chain, change, ventsw: vents('ventsw', ASH), ventse: vents('ventse', EMBER) };
@@ -907,7 +919,7 @@ function twinDef(which: 0 | 1): BossDef {
     floor: forgeFloor,
     // Each keeps to its own hall, and out of the gate's passage: the heroes come to it.
     roam: (x, z) => forgeRoam(which, x, z),
-    twin: { which, pair: () => TWINS, wall: TWIN_WALL, heroStart: twinHeroStart, open: () => forge.open },
+    twin: { which, pair: () => TWINS, wall: TWIN_WALL, heroStart: twinHeroStart, open: () => forge.open, sized: (heads) => { halfHeads = heads; } },
   };
 }
 const TWINS: [BossDef, BossDef] = [twinDef(0), twinDef(1)];

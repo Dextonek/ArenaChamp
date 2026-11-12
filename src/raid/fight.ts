@@ -136,6 +136,7 @@ export class BossFight {
         lastId: [0, RAID_TWIN.ids], stageUntil: [0, 0], track: new Track(), aura: new RageAura(other.body.radius, other.body.height), open: false, roomBar: -1,
       };
       link.which = mine;
+      def.twin.sized?.([0, 1].map((h) => setup.halves.filter((x) => x === h).length) as [number, number]);
       this.script = scripts[mine];
       this.group.add(scripts[0].group, scripts[1].group, this.twin.aura.group);
     } else {
@@ -206,12 +207,20 @@ export class BossFight {
   }
 
   /**
-   * A brain for this screen's boss. Twin Flames: it sees only the heroes on its own side of the wall of fire, while it stands;
-   * a hero the hub has no half for (it joined no half) counts as there.
+   * A brain for this screen's boss. Twin Flames: while both stand it sees only the heroes of its own half (a hero the hub has no
+   * half for counts as of it): across the wall of fire nobody is in reach, and once the pit floods each twin still goes for its
+   * own team, so Ash's Charge fixes on a hero who has his pillars near. With the wall out and nobody of its half standing, it
+   * goes for whoever is. Once one of the two has fallen the other sees everyone.
    */
   private newBrain(seed: string, firstId: number) {
     const t = this.twin, world = this.world;
-    const mine: BossWorld = t ? { ...world, heroes: () => world.heroes().filter((h) => !world.twin?.wallUp() || (t.halves[h.side] ?? t.mine) === t.mine) } : world;
+    const own = () => {
+      const all = world.heroes();
+      if (!t || t.dead[0] || t.dead[1]) return all;
+      const half = all.filter((h) => (t.halves[h.side] ?? t.mine) === t.mine);
+      return world.twin?.wallUp() || half.some((h) => !h.down) ? half : all;
+    };
+    const mine: BossWorld = t ? { ...world, heroes: own } : world;
     const brain = new BossBrain(this.def, mine, this.link, seed, this.tier, firstId);
     if (this.omen('quick')) brain.quick = QUICK_GAP;
     return brain;
