@@ -32,7 +32,7 @@ Player-aimed mechanics and puzzles are far more common than in Classic. Vehicles
 
 **Difficulty.** Race to World First pull counts measure difficulty, not fun. They run from 100 pulls (Gallywix) to 725 or 731 (Uu'nat, sources differ). The walls are the fights that chain the most individual duties.
 
-**For the designer's raid.** The Sun Warden, Ash and Ember, and the Heart of Noon already follow most of the evidence: one signature rule each, rooms that transform, and counts that scale per five players. The open question is the plan's rule that **"a failure costs the whole party"**. The evidence argues instead for failures that fall mostly on whoever failed, and that unfold over seconds rather than wiping at once.
+**For the designer's raid.** The Sun Warden, Ash and Ember, and the Heart of Noon already follow most of the evidence: one signature rule each, rooms that transform, and counts that scale per five players. The open question is the plan's rule that **"a failure costs the whole party"**. As built (checked against the code on 12 November), most failures already fall on whoever failed, and the party-wide costs are capped shares of health, not wipes (see section 7). The evidence argues for pushing that further: the one who failed pays most, and what the party pays unfolds over seconds.
 ## 2. The catalogue by mechanic type: about twenty-five verbs carry every fight since 2004
 
 Across about 450 encounters from Molten Core to Ula'tek, the same small set of verbs carries almost every fight:
@@ -1615,7 +1615,7 @@ The raid's plan in `pipeline/designs/raid-party.md`:
 | **Heart of Noon: Hold Still** (on the beat, moving burns; between beats, run; the rhythm quickens as it dies) | Hodir (the inverse: standing still freezes); Blood Princes' Heroic Shadow Prison (every step costs); Velhari's Oppression; N'Zoth (Sanity restored by standing still) | A rule that punishes only the mover is the loved kind. A quickening rhythm is a soft enrage players see and can shorten by doing damage | Strong as designed. Aran's Flame Wreath shows the danger: a mover must not burn the party. The doc's version burns only the mover, which is right |
 | **Shade the Heart together** (10+: a plate per five players, each sheltering only a few) | Sapphiron's ice blocks; Sindragosa's tombs; Shriekwing's pillars; Echo's one-player portals | Line of sight from hidden cover is a long-loved staple | Scales by share. Let an overcrowded plate fail gradually (partial shade) rather than all-or-nothing |
 | **Take the Blade** (20+: two blades; carriers hit harder for 12 s, walk slowly, draw attacks; the party shields them) | Kael'thas' legendary weapons; Alysrazor's wings; Gurtogg's Fel Rage (a random player becomes the tank) | Handing a player a powerful toy is the "personal job" players love | This is the rare carry mechanic that *adds* power. Keep it as is |
-| **The Ring of Hands** (40: forty gold spots, at least 32 held; a full ring stuns, a broken one costs everyone) | C'Thun's fixed 40-player grid; Huhuran's 15 soakers; the Jailer's 17+ soakers | A fixed count tuned for a full raid weighs most on a group below full size | Take the count from the doc's own rule, players standing: about 80% of those alive, not a fixed 32. A full 40 can lose eight players and still hold 32, but a party of 31-35 in the 40 band starts with little or no margin |
+| **The Ring of Hands** (40: as built, a gold spot for every hero standing; it holds when four in five are held; a full ring makes it kneel, a broken one costs everyone 45 %) | C'Thun's fixed 40-player grid; Huhuran's 15 soakers; the Jailer's 17+ soakers | A fixed count tuned for a full raid weighs most on a group below full size | Already right on the count: it takes four in five of those standing, not a fixed number. (An earlier version of this table said "a fixed 32"; that was the plan's wording, not the built rule.) Open: the 45 % falls on everyone, also on those who held their spot |
 
 ### The transforming rooms
 
@@ -1632,7 +1632,7 @@ The raid's plan in `pipeline/designs/raid-party.md`:
 
 ### Two tensions to decide on
 
-**1. Who pays for a miss.** The doc's rule that "a failure costs the whole party" is in tension with the strongest pattern in the opinion evidence. Mechanics land on the hated side when one player's error kills the others, and on the loved side when a miss kills only the one who missed. The designers' answer is the middle path: a raid-wide failure that "falls apart over a few seconds" instead of wiping at once. This rests on opinion and designer statements, not on measurement.
+**1. Who pays for a miss.** The doc's rule that "a failure costs the whole party" is in tension with the strongest pattern in the opinion evidence. As built it is milder than the rule's wording: The Hour Strikes, the falling crust, Hold Still and Take the Blade's lances cost only whoever stood wrong; the party-wide costs are capped shares (Branded 6 % per hero caught, at most 24 %; Carry the Sun 12 % per shard missing, at most 56 %; a plate left lying 8 %, at most 32 %; The Four Hours 18 % an arm; a broken Ring of Hands 45 %). None wipes a healthy party at once. Mechanics land on the hated side when one player's error kills the others, and on the loved side when a miss kills only the one who missed. The designers' answer is the middle path: a raid-wide failure that "falls apart over a few seconds" instead of wiping at once. This rests on opinion and designer statements, not on measurement.
 
 **2. A wall before the finale.** In the measured funnels the wall is often the boss just before the end:
 
@@ -1656,6 +1656,6 @@ For a raid of 2 to 40, the most reusable tools WoW found are:
 - personal bars and pairs, which need no scaling at all;
 - rooms that transform as a visible clock.
 
-The Sun Warden, Ash and Ember, and the Heart of Noon already use all three. Their main open risk is not their ideas. It is the plan's rule that every failure costs the whole party, the one pattern players have most consistently resented.
+The Sun Warden, Ash and Ember, and the Heart of Noon already use all three. Their main open risk is not their ideas. It is how much of a failure the whole party pays, the one pattern players have most consistently resented; as built, those party-wide costs are capped shares, so the change is one of degree.
 
 No source covers parties below 10, or modern design at 40. At those bands, the game's own simulator and playtests will be the only evidence.
