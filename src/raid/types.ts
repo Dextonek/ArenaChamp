@@ -214,6 +214,8 @@ export interface PlayContext {
   cancel(id: number): void;
   /** This screen's hero carries something heavy, and walks slower. */
   heavy(on: boolean): void;
+  /** This screen's hero has its hands full: it casts nothing until this is taken back (it still walks and strikes). */
+  mute(on: boolean): void;
   /** A fallen stone stays as cover. */
   addStone(x: number, z: number, radius: number, seconds: number): Obstacle;
   /** The fallen stone that cover stops a ray from a to b at, if that is what stops it. */
@@ -636,6 +638,8 @@ export interface BossWorld {
   busy(): boolean;
   /** This screen's hero carries something heavy, and walks slower. */
   heavy(on: boolean): void;
+  /** This screen's hero casts nothing while this is on (`PlayContext.mute`). */
+  mute(on: boolean): void;
   addStone(x: number, z: number, radius: number, seconds: number): Obstacle;
   firstStone(ax: number, az: number, bx: number, bz: number): Obstacle | null;
   dropStone(o: Obstacle): void;

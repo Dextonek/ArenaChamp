@@ -22,7 +22,7 @@ import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
 import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
-import type { AddSpec, BossDebuff, BossDef, BossWorld, RaidAdd, RaidLink, TwinSetup, TwinWorld } from './raid/types';
+import type { AddSpec, BossDebuff, BossDef, BossHit, BossWorld, RaidAdd, RaidLink, TwinSetup, TwinWorld } from './raid/types';
 import type { RunUpgrades } from './raid/upgrades';
 
 /** What the duel needs from main.ts. */
@@ -575,6 +575,8 @@ export class Duel {
     twin?: TwinSetup;
     /** What the result card says, or null for no card: the run goes on by itself. */
     card?: (result: 'win' | 'lose', seconds: number) => { title: string; text: string; again?: string } | null;
+    /** The health the hero starts with (the Tower: what it left the last floor with), never more than its max in this fight. Full when not given. */
+    hp?: number;
   }) {
     this.endBoss();
     o.def.resize?.(o.band ?? 2);
@@ -705,6 +707,7 @@ export class Duel {
       this.playerBlast(slot, target);
       this.raidCast(slot, target);
     };
+    if (o.hp !== undefined) this.playerHp = Math.max(1, Math.min(this.playerMax, Math.round(o.hp)));
     this.renderHud();
     if (o.def.hall) this.hud.style.display = 'none';
   }
@@ -1173,6 +1176,7 @@ export class Duel {
       },
       busy: () => this.host.heroMode.isRooted,
       heavy: (on) => { this.host.heroMode.speedBonus = (this.boss?.upgrades?.speedMul ?? 1) * (on && (this.boss?.upgrades?.shardSlows ?? true) ? SHARD_WALK : 1); },
+      mute: (on) => { this.host.heroMode.castLock = on; },
       shieldMe: (share, seconds, color) => {
         if (this.playerHp > 0) arena.shieldFigure(arena.caster, share * this.hitBase, seconds, color);
       },
@@ -1227,23 +1231,7 @@ export class Duel {
         for (const [s, p] of this.party) if (!p.left) list.push({ side: s, x: p.pos.x, z: p.pos.z, down: p.down });
         return list;
       },
-      hitMe: (h) => {
-        if (this.playerHp <= 0) return;
-        this.boss?.countHit(h.move);
-        if (h.lethal) {
-          // No shield or toughness holds it: only what nothing can touch (Sealed) is spared, and Stubborn's one save.
-          if (arena.statusOf(arena.caster)?.sealed) return;
-          const shield = arena.shieldOf(arena.caster)?.amount ?? 0;
-          this.damagePlayer({ damage: this.playerHp + shield + 1, knock: h.knock ?? 0, color: '#ff5a3a', from: new THREE.Vector3(h.from.x, 0, h.from.z) });
-          if (this.playerHp <= 0) arena.say('CRUSHED', '#ff7a4a', arena.caster.group.position, 1.6);
-          return;
-        }
-        // A weakened boss deals less, as a weakened hero does.
-        const dealt = arena.statusOf(foe)?.dealtMul ?? 1;
-        const mods = dealt !== 1 ? { ...NO_MODS, power: dealt } : NO_MODS;
-        const opts: HitOptions = { damage: h.share * this.hitBase, knock: (h.knock ?? 0) * (this.boss?.upgrades?.knockMul ?? 1), color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
-        this.damagePlayer(this.resolve('opponent', arena.caster, opts, mods, 'spell', h.big ? 3 : 0, ++this.oppCastSeq));
-      },
+      hitMe: (h) => this.hurtHero(h),
       fallenPartner: () => {
         const p = this.fallenNear();
         return p ? { x: p.pos.x, z: p.pos.z } : null;
@@ -1287,6 +1275,30 @@ export class Duel {
       say: (text, color, x, z) => arena.say(text, color, new THREE.Vector3(x, 1.5, z), 1.1),
       finish: (result) => this.finish(result === 'win' ? 'win' : 'lose'),
     };
+  }
+
+  /**
+   * A hit of the boss's side on this screen's hero, for a share of its max health: what a boss's zone does when it lands, for
+   * whatever else of a fight strikes the hero (the Tower's units). It keeps what a boss's hit keeps: shields, a parry, Warding, the
+   * run's upgrades; `move` is what the result names as the killer.
+   */
+  hurtHero(h: BossHit) {
+    const arena = this.host.arena, foe = this.foe;
+    if (this.playerHp <= 0 || !this.boss || !foe) return;
+    this.boss.countHit(h.move);
+    if (h.lethal) {
+      // No shield or toughness holds it: only what nothing can touch (Sealed) is spared, and Stubborn's one save.
+      if (arena.statusOf(arena.caster)?.sealed) return;
+      const shield = arena.shieldOf(arena.caster)?.amount ?? 0;
+      this.damagePlayer({ damage: this.playerHp + shield + 1, knock: h.knock ?? 0, color: '#ff5a3a', from: new THREE.Vector3(h.from.x, 0, h.from.z) });
+      if (this.playerHp <= 0) arena.say('CRUSHED', '#ff7a4a', arena.caster.group.position, 1.6);
+      return;
+    }
+    // A weakened boss deals less, as a weakened hero does.
+    const dealt = arena.statusOf(foe)?.dealtMul ?? 1;
+    const mods = dealt !== 1 ? { ...NO_MODS, power: dealt } : NO_MODS;
+    const opts: HitOptions = { damage: h.share * this.hitBase, knock: (h.knock ?? 0) * (this.boss.upgrades?.knockMul ?? 1), color: '#ffb050', from: new THREE.Vector3(h.from.x, 0, h.from.z) };
+    this.damagePlayer(this.resolve('opponent', arena.caster, opts, mods, 'spell', h.big ? 3 : 0, ++this.oppCastSeq));
   }
 
   /** The words a boss fight has already said once. */
@@ -1365,6 +1377,7 @@ export class Duel {
     this.shiftOffset = 0;
     this.host.heroMode.speedBonus = 1;
     this.host.heroMode.cooldownRate = 1;
+    this.host.heroMode.castLock = false;
     this.host.heroMode.setWalkOnly(false);
     if (this.zoomBefore !== null) {
       this.host.heroMode.setZoom(this.zoomBefore);

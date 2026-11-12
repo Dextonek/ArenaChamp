@@ -35,6 +35,7 @@ export function ghostWorld(world: BossWorld, ghost: Ghost): BossWorld {
     carryMe: (dx, dz) => { if (!ghost.on) world.carryMe(dx, dz); },
     hint: (text) => { if (!ghost.on) world.hint(text); },
     heavy: (on) => { if (!ghost.on) world.heavy(on); },
+    mute: (on) => { if (!ghost.on) world.mute(on); },
     shake: (amount) => { if (!ghost.on) world.shake(amount); },
     exposed: (seconds) => { if (!ghost.on) world.exposed(seconds); },
   };
