@@ -1,6 +1,6 @@
 # Status
 
-_Last updated: 2026-11-11 (hero 40, Anka the Firebird: all six gates done by the computer, waiting on the user to play her once, not pushed, not live; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
+_Last updated: 2026-11-12 (Twin Flames in the Twin Forge finished and committed, not pushed, not live; before that, 2026-11-11: hero 40, Anka the Firebird: all six gates done by the computer, waiting on the user to play her once, not pushed, not live; new rules for creating a hero agreed; pushed and LIVE: all 39 heroes in the fourth style, the four new arenas, the new login picture and News pictures and clips; friend brackets half built)_
 
 ## THE NIGHT'S QUEUE (2026-11-12): read `docs/QUEUE.md` first
 
@@ -8,6 +8,32 @@ The user went to sleep with: "dont ask just do it run the loop until everything 
 The jobs, their order, what is running and what is done are in [QUEUE.md](QUEUE.md): the Raid's rooms that transform and mechanics
 for 10, 20 and 40 players, the Tower (a new mode), the hero shop with obols, twenty new hero ideas, the heroes reworked. Nothing is
 pushed or deployed; neither may happen without the user's word.
+
+## Twin Flames in the Twin Forge (2026-11-12): finished, committed on `t3/twin-flames-party-raid-1`; NOT pushed, NOT live
+
+A party (3+) fights Ash and Ember at once in their own room, built in Blender: two halls under one roofless forge, a wall of fire
+between. Each twin's half cracks into islands joined by bridges that come and go at its 66 %; at the first one's 33 % the pit floods
+to one last island for both teams. Lantern Chain from 10, Seal the Vents from 20, The Changing of the Flames at 40. How it works:
+`docs/architecture/raid.md`, "The Twin Forge transforms"; decisions and numbers: `pipeline/designs/raid-party.md`, "The Twin Forge".
+Pictures: `docs/raid/twin-*.jpg`. Five News items in the top release of `src/game/changelog.ts`.
+
+- **Winnable:** each twin now has 0.485 of the band's HP (`RAID_TWIN.share`; half before). Six bots, unhelped, band 10, six tries
+  each: half won 2 of 6, 0.44 won 3 of 3, 0.47 won 5 of 6, 0.485 won 4 of 6. A big party: twelve bots in one fight (band 15, so Lantern Chain comes; each bot helped by 12 HP a second so the fight ends in the time, `party-raid.py --players 12 --boss ash --boost 12`): won at 2:12, nobody down at the end; all twelve screens agreed on both bars within 1.3 % at every moment compared, on which halves had cracked, on every bridge (within 0.5 s) and on the flood's edge (within 0.1 m); nobody across the standing wall; no errors.
+- **A duo is unchanged:** two bots through the hub played the tag team in the small pit (7,100 HP), screens agreed, won, no errors.
+- **Checked:** type check, build, `npm run test:server` (235), `_raidTwin()` 143, `_raidAsh()` 77, `_raidCheck()` 234,
+  `_raidHeart()` 246, `_raidUpgrades()` 40.
+- **A glitch, cause not found:** in 6 of 21 tries some screens showed a bridge or two up for a second or two that screen 0 never
+  showed (two cases looked at; none in the twelve-screen run). Each screen judges its own hero; no errors came of it.
+- **The share applies to every party size:** a pair's `raid_stage.hp` and `raid_end.bossMax` are now 0.97 of the band's HP (the
+  server test changed with it).
+- **The helped runs:** the twelve-bot run had `--boost 12` (band 15); the duo run `--boost 25`, once.
+- **Not checked:** people playing; Seal the Vents and The Changing of the Flames through the hub with 16 or 31+ bots (the server
+  test and `_raidTwin()` cover them); a real phone; a higher tier.
+- **`PROTOCOL` is 13.**
+- **Not live.** For the user:
+  1. Look at `docs/raid/twin-*.jpg` (start with `twin-room`, `twin-islands`, `twin-island-far`, `twin-chain-pair`, `twin-change`).
+  2. Push: `git push origin feat/particle-editor:main` (once this branch is merged into `feat/particle-editor`).
+  3. Deploy (`npm run cf:deploy`), on its own request: `PROTOCOL` 13 tells open tabs to reload.
 
 ## The hero shop, raid ranks and the week's boards (2026-11-12): built and committed; NOT pushed, NOT live
 
@@ -35,7 +61,7 @@ dont ask just do it". Design and every decision: `pipeline/designs/hero-shop.md`
 - **Tools that make new accounts** (`party-raid.py`, `hero-gate5/`) now start their own dev server with the shop off, since a new
   account may only take the starters and the week's six online. `online-bot.js` in tabs of a running dev server: start that
   server with `$env:SHOP = 'off'; npm run dev` to queue any hero. The fight simulator and the raid and Tower tools are not affected.
-- **`PROTOCOL` is 11:** open tabs are told to reload at the deploy.
+- **`PROTOCOL` is 13** (11 for the shop; 13 with the Twin Forge, below): open tabs are told to reload at the deploy.
 - **Waiting on the user:** look at `docs/shop/shop.html`; say whether the shop goes live with the next deploy or stays off; the
   starters, the prices and what things pay are one table (`HERO_SHOP` and `SHOP` in `server/protocol.mjs`).
 - **Next:** obols for the Tower once the server can see a climb; friends.

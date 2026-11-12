@@ -268,8 +268,8 @@ Warden's and the Heart's `band` are wired, Ash and Ember's when their files are 
 | Heart of Noon | Hold Still | **Shade the Heart together:** a plate per five players, each sheltering only a few; the party splits up behind them | **Take the Blade:** two fallen sun blades; each carrier hits far harder for 12 s, walks slowly and draws its attacks; the party shields them, also through Hold Still | **The Ring of Hands:** the whole raid forms a ring round the Heart on forty gold spots (at least 32 held) while it beats; a full ring stuns it, a broken one costs everyone |
 
 Rules: a failure costs the whole party; the numbers come from the players standing, not the band alone; in the last phase two of
-them may overlap; each is announced by a name on the cast bar and a first-time hint. **The Sun Warden's three and the Heart of
-Noon's three are built** (2026-11-12, both below); Ash and Ember's three are not. The three "any party" ones are all built.
+them may overlap; each is announced by a name on the cast bar and a first-time hint. **All nine are built** (2026-11-12): the Sun Warden's
+and the Heart of Noon's below, Ash and Ember's in "The Twin Forge" below. The three "any party" ones are all built.
 
 ## The room changes with the boss's phases (user, 2026-11-12)
 
@@ -289,8 +289,11 @@ play. The rooms for one and two players stay as they are (those fights are measu
 How: a room's pieces that fall are their own objects in its Blender file; walls that go are obstacles removed; ground that burns or
 is gone is a zone that stays (as the late sunfire is); a ring that turns carries heroes with the world's carry. Each screen works its
 own hero out from the phase's cast, so two screens agree. Built per boss with its mechanics for 10, 20 and 40, once its files are
-free. **The Sun Warden's two and the Heart's two are built** (2026-11-12, both below); Ash and Ember's are not.
+free. **All three rooms transform** (2026-11-12): the Sun Warden's and the Heart's below, Ash and Ember's in "The Twin Forge" below.
 ## Twin Flames is built (2026-11-12)
+
+(The first pass, in a round pit drawn in code. The room is now the Twin Forge and each twin's HP is no longer half the band's:
+"The Twin Forge" below.)
 
 How it works now: `docs/architecture/raid.md`, "Twin Flames". Pictures: `docs/bosses/twin-west.jpg`, `twin-east.jpg`,
 `twin-furious.jpg`, `twin-furious-west.jpg`, `twin-together.jpg`, `twin-wall-out.jpg`, `twin-wall-out-west.jpg`, `twin-last-one.jpg`,
@@ -507,6 +510,55 @@ left lying 8 %; a blade doubles hits for 12 s, a lance every 3.5 s for 35 % or 1
 - Tiers above 1. At tier 4 and up the Heartbeat comes in the second phase, on the turning floor, with its plates on the inner
   ring: built and checked by a row, not played.
 - The numbers are first values.
+
+## The Twin Forge: Ash and Ember's room transforms, and their three party mechanics are built (2026-11-12)
+
+How it works now: `docs/architecture/raid.md`, "The Twin Forge transforms, and what comes only for a big party". The room is
+`src/arenas/twinpit.ts` (its plan, read from the Blender file, and its state), its pieces `blender/arenas/real/twinforge.py` ->
+`public/models/arenas/twinforge.glb`; the moves are `src/raid/twinForge.ts`, wired into the twins in `src/raid/ashEmber.ts`.
+Pictures: `docs/raid/twin-*.jpg` (`pipeline/tools/twin-shots.js`): `twin-room` (the forge whole, far), `twin-west` and `twin-east`
+(each half in play), `twin-crack`, `twin-islands-far`, `twin-islands`, `twin-flood-far`, `twin-island-far`, `twin-island`,
+`twin-chain-pair` and `twin-chain`, `twin-vents-far` and `twin-vents`, `twin-change-far` and `twin-change`, and at phone size
+`twin-phone-islands`, `twin-phone-flood`.
+
+**What was built, against the ask.**
+
+| Asked | Built |
+|---|---|
+| A boss room built in Blender, not round | The Twin Forge: two halls (basalt for Ash, slate for Ember) under one roofless forge, 52 m by 54 m, a channel of fire down the middle where the wall burns, one gate's passage in the south. The game's floor stays a ring (38 m); the shape is fourteen fixed obstacles |
+| It transforms at the second phase | Each twin's own half cracks into five islands as its own 66 % begins; bridges of cooled crust stand in turn (16 s, glowing their last 4), so there is always a way but not where it was; Ash's Charge shatters every bridge it runs over |
+| And at the last | The first of the two to reach 33 % floods the pit: the wall of fire goes out for good, lava rises from the walls in (16 m in just under two minutes) to one island in the middle, 20 m by 22 m. The twins follow; each still goes for its own team, and its moves reach the others at 0.6 |
+| Lantern Chain, 10+ | Ember's lanterns chain pairs (a pair per five heroes standing); 3 s to come together, then over 8 m apart the chain snaps for 30 % each; Ash's rocks fall three times on the line through the pair |
+| Seal the Vents, 20+ | In Together, in the one vent's place: a vent per five heroes of a half, up to three times; 4 s on one seals it; each sealed draws the lava back 12 s, each left open brings it 10 s on, for both halves; all sealed staggers that twin |
+| The Changing of the Flames, 40 | Ash calls it every 60 s while the wall stands; the hub marks every second hero of each half; three gates open in the wall for 8 s after 4 s; the marked step through and their enemy changes; the marked who stay are dragged through for 40 %; an unmarked hero burns in a gate |
+| A fight a party can win | Six bots unhelped at band 10: 2 of 6 with each twin at half the band's HP, 5 of 6 at 0.47, 4 of 6 at 0.485, which it is now (below) |
+
+**Numbers that differ from the duo's, and why** (`TWIN_ENRAGE`, `TWIN_CHARGE`, `TWIN_STAGE` in `src/raid/ashEmber.ts`,
+`RAID_TWIN.share` in `server/protocol.mjs`):
+
+- **Each twin's HP: 0.485 of the band's** (17,218 at band 10; the pair 0.97 of the band's). Measured: six bots won 2 of 6 at half,
+  3 of 3 at 0.44 (stopped there: it overshoots), 5 of 6 at 0.47, 4 of 6 at 0.485. Six tries are about ±20 points each, so the
+  steps between these are partly noise. The other bosses keep the band's whole HP. Why here: the forge asks
+  more walking than any other room (a long hall, bridges that move, a flood), and each half fights with three of the five a band
+  of ten expects. A full party of ten has five to a half and will find it easier than six do; that is the band's rule for every boss.
+- **Enrage 4:30** (2:50 for two): a half walks a long hall, crosses bridges and stands out its own Eruption.
+- **Ash's Charge every 22 s and not in Together** (14 s for two): a pillar breaks each time he is stopped, and on the last island
+  every Charge killed its hero.
+- **A Coal Heart's HP goes by the heroes the half really has** (3.5 % of its twin times heroes / (band / 2), never under 0.4): six
+  players are three to a half, not five. Each Eruption now takes 13 to 30 s of its 30.
+- **PROTOCOL 13.** The forge's messages were built as 12 on a branch that was never deployed; the Heart of Noon's merge stayed at
+  11, so the deploy that brings them is 13 (`docs/architecture/multiplayer.md`).
+
+**Checked.** Type check, build, `npm run test:server` (235), `_raidTwin()` 143, `_raidAsh()` 77, `_raidCheck()` 234, `_raidHeart()`
+246, `_raidUpgrades()` 40, all passing. Through the real hub: the six-bot tries above (all screens agreeing on both bars, the cracked
+halves, each bridge but for the glitch below, and the flood; nobody across the standing wall; no errors); twelve bots in one fight (band 15, so Lantern Chain comes; each bot helped by 12 HP a second so the fight ends in the time, `party-raid.py --players 12 --boss ash --boost 12`): won at 2:12, nobody down at the end; all twelve screens agreed on both bars within 1.3 % at every moment compared, on which halves had cracked, on every bridge (within 0.5 s) and on the flood's edge (within 0.1 m); nobody across the standing wall; no errors; a duo through the hub with two bots
+(the tag team in the small pit, 7,100 HP, both screens agreeing, won, no `twin` on any message).
+
+**Not done or not checked.** Played by people. Seal the Vents and The Changing of the Flames through the hub with 16 or 31+ bots
+(the server test plays both with eight; `_raidTwin()` plays them on one screen; the pictures cast them by hand). A real phone. A
+higher tier. A glitch, cause not found: in 6 of 21 tries some screens showed a bridge or two up for a second or two that screen 0 never
+showed; two cases looked at (one as Ember's half cracked, one 10 s after Ash's); none in the twelve-screen run (raid.md, "Measured in
+the forge").
 
 ## State (2026-11-11)
 

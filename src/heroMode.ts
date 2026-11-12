@@ -765,6 +765,11 @@ export class HeroMode implements TouchTarget {
     this.hud.style.visibility = on ? 'hidden' : '';
   }
   private walkOnly = false;
+  /**
+   * The hero's hands are full (it carries a boss's sun shard): no spell begins, its own or the autopilot's. It still walks and
+   * strikes. Set by the duel for a boss's script (`BossWorld.mute`).
+   */
+  castLock = false;
 
   /**
    * Click on the ground (not aiming): walk there, and forget a pending cast. Mid-dash (or mid-knockback) the order is
@@ -796,6 +801,7 @@ export class HeroMode implements TouchTarget {
     if (this.locked || this.spectate || this.walkOnly) return;
     const spell = this.kit.spells[i];
     if (this.status.cannotCast) { this.say(this.status.stunned ? 'Stunned' : 'Silenced'); return; }
+    if (this.castLock) { this.say('Your hands are full'); return; }
     const recast = !!this.traits?.canRecast(i);
     if (this.cooldowns[i] > 0 && !recast) { this.say(`${spell.name} is on cooldown`); return; }
     const why = recast ? null : this.traits?.blocked(i);
@@ -966,7 +972,7 @@ export class HeroMode implements TouchTarget {
 
   private castNow(i: number, target: Target) {
     const spell = this.kit.spells[i];
-    if (this.status.cannotCast || !this.ready(i)) return;
+    if (this.status.cannotCast || this.castLock || !this.ready(i)) return;
     const arena = this.host.arena;
     const rt = this.traits;
     // A targeted spell (one enemy, or a chain from it) needs sight of its target, whoever casts it.
@@ -1036,7 +1042,7 @@ export class HeroMode implements TouchTarget {
 
   /** Autopilot: casts slot `i` at an enemy or a ground point if it is off cooldown (no range check). */
   autoCast(i: number, target: { enemy: Enemy } | { point: THREE.Vector3 }) {
-    if (this.locked || this.status.cannotCast || !this.ready(i)) return false;
+    if (this.locked || this.status.cannotCast || this.castLock || !this.ready(i)) return false;
     const before = this.host.arena.castSeq;
     this.castNow(i, target);
     return this.host.arena.castSeq !== before;
@@ -1523,7 +1529,7 @@ export class HeroMode implements TouchTarget {
     this.toast.style.opacity = String(Math.min(1, this.toastT * 3));
     // Silence and stun grey out the QWER bar; blind darkens the screen edges.
     if (this.attackBtn) this.attackBtn.style.display = this.attacksEnabled ? 'flex' : 'none';
-    const grey = this.status.cannotCast;
+    const grey = this.status.cannotCast || this.castLock;
     for (const { box } of this.slotEls) box.style.filter = grey ? GREY_SLOT : '';
     this.vignetteA += ((this.status.blind ? 1 : 0) - this.vignetteA) * (1 - Math.exp(-dt * 8));
     this.vignette.style.display = this.vignetteA > 0.01 ? '' : 'none';

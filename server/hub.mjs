@@ -11,7 +11,7 @@
 import { hex } from './accounts.mjs';
 import {
   HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX,
-  isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, shopRotation,
+  isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
 } from './protocol.mjs';
 
 const HP = 600; // when a client does not say its hero's max HP
@@ -113,9 +113,12 @@ const GONE = /** @type {any} */ ({ closed: true, send() {} });
  * @typedef {{ hp: number, max: number, staggerMax: number, phase: number, gauge: number, kneelUntil: number, brain: number, brainAt: number,
  *   hpTimer: any, hpAt: number, dead?: boolean }} RaidPool
  *   What is kept per boss. A boss fought alone is its own pool; Twin Flames has two (`RaidTwin.pools`).
- * @typedef {{ pools: [RaidPool, RaidPool], half: number[], fury: number }} RaidTwin
+ * @typedef {{ pools: [RaidPool, RaidPool], half: number[], fury: number, open?: boolean, turn?: number,
+ *   change?: { id: number, marked: Set<number>, crossed: Set<number>, timer: any, until: number } | null }} RaidTwin
  *   Twin Flames: Ash's pool and Ember's, which half of the room each player is in (by side: 0 west with Ash, 1 east with Ember, -1
  *   gone before the fight), and which of the two is furious now (-1: neither). The boss's own `hp` and `max` are the two together.
+ *   `open`: the wall of fire is out though both stand (the pit floods). `change`: The Changing of the Flames in the air or just
+ *   over: who is marked to cross, who has, until when the gates stand open; `turn`: how many there have been.
  * @typedef {{ id: string, players: Player[], state: 'offer' | 'gate' | 'loading' | 'fight' | 'break' | 'cleared' | 'over', created: number, startedAt: number,
  *   fightAt: number, round: number, score: number[], timer: any,
  *   pick: { side: number, at: number, next: () => void } | null,
@@ -567,10 +570,18 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const boss = raidOf(c), match = c.match, pool = boss && brainPool(boss, c.side, m.which);
         if (!boss || !match || !pool || typeof m.move !== 'string' || !MOVE_RE.test(m.move)) return;
         if (![m.id, m.step, m.x, m.z, m.fx, m.fz, m.dir, m.seed].every(num) || !isSide(match, m.target)) return;
+        // The pit floods: from this cast on the wall of fire holds nobody (`RAID_TWIN.flood`), and a change of halves in the air is off.
+        if (boss.twin && m.move === RAID_TWIN.flood && !boss.twin.open) {
+          boss.twin.open = true;
+          twinChangeOff(boss);
+          stoodSettle(match);
+        }
         return tell(match, {
           t: 'boss_cast', id: m.id, move: m.move, step: m.step, x: m.x, z: m.z, fx: m.fx, fz: m.fz, dir: m.dir, seed: m.seed, target: m.target, alone: m.alone === true,
           rim: m.rim === true ? true : undefined, form: m.form === 0 || m.form === 1 ? m.form : undefined, flag: m.flag === true ? true : undefined,
           which: whichOf(boss, pool),
+          // A second hero the step is for (Lantern Chain's pair): a seat, as `target` is.
+          mate: isSide(match, m.mate) ? m.mate : undefined,
         }, c.side);
       }
       case 'boss_move': {
@@ -609,6 +620,16 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         if (!boss || !match || !num(m.id) || !num(m.part)) return;
         const key = `${m.id}:${m.part}`;
         if (boss.taken.has(key) || boss.taken.size >= TAKEN_MAX) return;
+        // The Changing of the Flames: who is marked is the hub's to say, and a hero crosses for itself only, if it is marked.
+        const change = boss.twin?.change, C = RAID_TWIN.change;
+        if (change && m.id === change.id && m.part >= C.mark) {
+          if (m.part !== C.cross + c.side || !change.marked.has(c.side) || change.crossed.has(c.side) || Date.now() > change.until) return;
+          boss.taken.add(key);
+          tell(match, { t: 'boss_done', id: m.id, part: m.part, side: c.side });
+          change.crossed.add(c.side);
+          twinDeal(match, [c.side], []);
+          return;
+        }
         boss.taken.add(key);
         tell(match, { t: 'boss_done', id: m.id, part: m.part, side: c.side });
         return;
@@ -620,6 +641,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const table = RAID_REWARDS[boss.id], r = Object.hasOwn(table, m.key) ? table[m.key] : null, key = `reward:${m.id}:${m.key}`;
         if (!r || boss.taken.has(key) || boss.taken.size >= TAKEN_MAX) return;
         boss.taken.add(key);
+        // Not a reward but a request: The Changing of the Flames, for the cast its brain's screen names.
+        if (r.swap) return twinChange(match, m.id);
         const which = whichOf(boss, pool) ?? 0;
         if (r.hp) raidDamage(match, pool.max * r.hp, which);
         if (match.state !== 'fight' || pool.dead) return;
@@ -640,10 +663,10 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
           // Far more zones than any fight has: a client making them up gets no timers.
           if (boss.stood.size + boss.settled.size >= STOOD_MAX) return;
           // Twin Flames, while the wall stands: a zone is its half's own, and only that half is waited for.
-          s = { id: m.id, part: m.part, count: 0, from: new Set(), timer: setTimeout(() => stoodDone(match, m.id, m.part), STOOD_WAIT_MS), half: halfOf(boss, c.side) };
+          s = { id: m.id, part: m.part, count: 0, from: new Set(), timer: setTimeout(() => stoodDone(match, m.id, m.part), STOOD_WAIT_MS), half: heldBy(boss, c.side) };
           boss.stood.set(key, s);
         }
-        if (s.from.has(c.side) || (s.half >= 0 && halfOf(boss, c.side) !== s.half)) return;
+        if (s.from.has(c.side) || (s.half >= 0 && heldBy(boss, c.side) !== s.half)) return;
         s.from.add(c.side);
         if (m.inside === true) s.count++;
         stoodSettle(match);
@@ -743,7 +766,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         const target = match.players[side];
         if (!target.down || target.left || match.players[c.side].down || boss.revives[side] >= REVIVES) return;
         // Nobody reaches through the wall of fire.
-        if (halfOf(boss, side) !== halfOf(boss, c.side)) return;
+        if (heldBy(boss, side) !== heldBy(boss, c.side)) return;
         boss.revives[side]++;
         target.down = false;
         target.hp = Math.ceil(target.max / 2);
@@ -777,11 +800,20 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /** Which of two a pool is, for a message; undefined for a boss fought alone, whose messages stay as they were. @param {RaidBoss} boss @param {RaidPool} pool */
   const whichOf = (boss, pool) => (boss.twin ? boss.twin.pools.indexOf(/** @type {any} */ (pool)) : undefined);
 
-  /** Twin Flames: the wall of fire stands while both are alive. @param {RaidBoss} boss */
+  /** Twin Flames: both of the two are alive, so each player has its own of them. @param {RaidBoss} boss */
   const wallUp = (boss) => !!boss.twin && !boss.twin.pools[0].dead && !boss.twin.pools[1].dead;
 
-  /** The half of the room a player is held in by the wall, or -1 when there is no wall. @param {RaidBoss} boss @param {number} side */
+  /** Twin Flames: the wall of fire stands: both are alive, and the pit has not flooded. @param {RaidBoss} boss */
+  const wallStands = (boss) => wallUp(boss) && !(/** @type {RaidTwin} */ (boss.twin).open);
+
+  /**
+   * The half a player fights in while both of the two live (whose boss its hits land on, whose brain its screen can run), or -1
+   * when one has fallen or the fight is not Twin Flames. @param {RaidBoss} boss @param {number} side
+   */
   const halfOf = (boss, side) => (wallUp(boss) ? /** @type {RaidTwin} */ (boss.twin).half[side] : -1);
+
+  /** The half of the room a player is held in by the wall of fire, or -1 when no wall stands. @param {RaidBoss} boss @param {number} side */
+  const heldBy = (boss, side) => (wallStands(boss) ? /** @type {RaidTwin} */ (boss.twin).half[side] : -1);
 
   /**
    * The pool whose brain `side` runs, as its message names it (`which`, for Twin Flames), or null: not this screen's to speak for.
@@ -1123,7 +1155,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /**
    * What the hub keeps of one fight: HP and the gauge's size come from the band.
    * Twin Flames (`raidTwin`: a party against Ash and Ember) is two bosses at once: `half` deals the players into the two halves of
-   * the room, and each boss has half the HP and half the gauge, and its brain on the first screen of its own half.
+   * the room, and each boss has `RAID_TWIN.share` of the HP (`raidTwinHp`) and half the gauge, and its brain on the first screen of its own half.
    * @param {string} id @param {number} band @param {number} tier @param {number} brain @param {number} seats
    * @param {number[] | null} half by side: 0 west, 1 east, -1 not here @returns {RaidBoss}
    */
@@ -1137,7 +1169,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (half && raidTwin(id, band)) {
       /** @param {number} which @returns {RaidPool} */
       const pool = (which) => ({
-        hp: Math.round(hp / 2), max: Math.round(hp / 2), staggerMax: staggerMax / 2, phase: 0, gauge: 0, kneelUntil: 0, brain: half.indexOf(which), brainAt: 0,
+        hp: raidTwinHp(band, tier), max: raidTwinHp(band, tier), staggerMax: staggerMax / 2, phase: 0, gauge: 0, kneelUntil: 0, brain: half.indexOf(which), brainAt: 0,
         hpTimer: null, hpAt: 0, dead: false,
       });
       boss.twin = { pools: [pool(0), pool(1)], half, fury: -1 };
@@ -1155,6 +1187,72 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   function dealHalves(match) {
     let n = 0;
     return match.players.map((p) => (p.left ? -1 : n++ % 2));
+  }
+
+  /**
+   * The Changing of the Flames (`RAID_TWIN.change`), asked for by Ash's brain for cast `id`: every second standing hero of each half
+   * is marked to cross, turning from call to call, and every screen hears who (an objective taken: part `mark` + the seat). When
+   * the gates shut, whoever of them has not crossed is dealt across all the same, and named as late. Nothing while the wall of fire
+   * is out, or a call is in the air or just over.
+   * @param {Match} match @param {number} id
+   */
+  function twinChange(match, id) {
+    const boss = match.boss, twin = boss?.twin, C = RAID_TWIN.change, now = Date.now();
+    if (!boss || !twin || !wallStands(boss) || (twin.change && now < twin.change.until + C.rest * 1000)) return;
+    const turn = twin.turn = (twin.turn ?? 0) + 1;
+    /** @type {Set<number>} */
+    const marked = new Set();
+    for (const half of [0, 1]) {
+      const here = match.players.map((p, side) => ({ p, side })).filter((x) => !x.p.left && !x.p.down && twin.half[x.side] === half);
+      // Half of them, rounded down: a half of one sends nobody, and neither half is ever left empty.
+      const picks = here.filter((_, i) => (i + turn) % 2 === 0).slice(0, Math.floor(here.length / 2));
+      for (const x of picks) marked.add(x.side);
+    }
+    const until = now + (C.warn + C.open) * 1000;
+    twin.change = { id, marked, crossed: new Set(), until, timer: setTimeout(() => twinChangeEnd(match, id), until - now + 300) };
+    for (const side of marked) {
+      boss.taken.add(`${id}:${C.mark + side}`);
+      tell(match, { t: 'boss_done', id, part: C.mark + side, side });
+    }
+  }
+
+  /** The gates shut: the marked who did not cross are dealt across, late. @param {Match} match @param {number} id */
+  function twinChangeEnd(match, id) {
+    const boss = match.boss, change = boss?.twin?.change;
+    if (!boss || !change || change.id !== id || match.state !== 'fight' || !wallStands(boss)) return;
+    const late = [...change.marked].filter((side) => !change.crossed.has(side) && !match.players[side].left);
+    for (const side of late) change.crossed.add(side);
+    if (late.length) twinDeal(match, late, late);
+  }
+
+  /** A change of halves in the air is off: the wall of fire went out. What was dealt stays. @param {RaidBoss} boss */
+  function twinChangeOff(boss) {
+    const change = boss.twin?.change;
+    if (!change) return;
+    clearTimeout(change.timer);
+    change.until = 0;
+    change.marked.clear();
+  }
+
+  /**
+   * Twin Flames: `sides` change halves. Every screen hears the halves as they are now and whose screen runs each brain; a brain
+   * whose screen went to the other half moves to the next screen of its own (`late`: the gates shut on these).
+   * @param {Match} match @param {number[]} sides @param {number[]} late
+   */
+  function twinDeal(match, sides, late) {
+    const boss = /** @type {NonNullable<Match['boss']>} */ (match.boss), twin = /** @type {RaidTwin} */ (boss.twin), now = Date.now();
+    for (const side of sides) twin.half[side] = 1 - twin.half[side];
+    /** @type {number[]} */
+    const moved = [];
+    for (const which of [0, 1]) {
+      const pool = twin.pools[which], p = match.players[pool.brain];
+      if (pool.dead || (p && !p.left && twin.half[pool.brain] === which)) continue;
+      pool.brain = nextBrain(match, pool.brain, now, which);
+      if (pool.brain >= 0) moved.push(which);
+    }
+    tell(match, { t: 'twin_halves', half: twin.half, brain: twin.pools.map((x) => x.brain), late });
+    for (const which of moved) giveBrain(match, twin.pools[which].brain, which);
+    stoodSettle(match);
   }
 
   /**
@@ -1326,6 +1424,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     }
     for (const s of boss.stood.values()) clearTimeout(s.timer);
     boss.stood.clear();
+    twinChangeOff(boss);
     match.state = 'break';
     // A hero still down when the boss falls gets up with the next fight: between fights nobody is down.
     for (const p of match.players) p.down = false;
@@ -1421,6 +1520,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     clearTimeout(pool.hpTimer);
     pool.hpTimer = null;
     pool.dead = true;
+    twinChangeOff(boss);
     tell(match, { t: 'boss_hp', hp: 0, which });
     tell(match, { t: 'boss_fell', which });
     const other = twin.pools[1 - which];
@@ -1506,7 +1606,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     if (!boss) return;
     for (const s of [...boss.stood.values()]) {
       // A zone of one half of Twin Flames waits for that half only; once the wall is out, for everyone who has not said.
-      const others = (/** @type {number} */ side) => s.half >= 0 && wallUp(boss) && /** @type {RaidTwin} */ (boss.twin).half[side] !== s.half;
+      const others = (/** @type {number} */ side) => s.half >= 0 && wallStands(boss) && /** @type {RaidTwin} */ (boss.twin).half[side] !== s.half;
       if (match.players.every((p, side) => p.down || p.left || others(side) || s.from.has(side))) stoodDone(match, s.id, s.part);
     }
   }
@@ -1568,6 +1668,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     clearTimeout(match.timer);
     clearTimeout(boss.hpTimer);
     for (const pool of boss.twin?.pools ?? []) clearTimeout(pool.hpTimer);
+    twinChangeOff(boss);
     stopTimers(match);
     for (const s of boss.stood.values()) clearTimeout(s.timer);
     boss.stood.clear();

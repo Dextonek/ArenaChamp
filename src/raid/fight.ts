@@ -9,7 +9,7 @@ import { Track } from './partner';
 import { RAID_TWIN, raidHp, raidTierFactor } from '../../server/protocol.mjs';
 import { BossScript } from './script';
 import { FUSE, QUICK_GAP } from './omens';
-import { FURY_GAP, FURY_HIT, type Ghost, ghostLink, ghostWorld, twinClip } from './twin';
+import { FLOOD_GAP, FLOOD_HIT, FURY_GAP, FURY_HIT, OTHER_HIT, type Ghost, ghostLink, ghostWorld, twinClip } from './twin';
 import { BULWARK, CLOSE_CALL, SUN_EATER, type RunUpgrades } from './upgrades';
 import { moveTime, type BossCast, type BossDebuff, type BossDef, type BossWorld, type RaidLink, type TwinSetup } from './types';
 
@@ -52,6 +52,10 @@ interface Twin {
   /** The other boss's walk from reports, and the red heat round it when it is furious. */
   track: Track;
   aura: RageAura;
+  /** The wall of fire is out though both stand (the pit floods): the other's moves hurt this hero too. */
+  open: boolean;
+  /** Which of the two called the room's move whose bar is up (The Changing of the Flames), or -1: its look may put words on the bar. */
+  roomBar: number;
 }
 
 /**
@@ -122,6 +126,8 @@ export class BossFight {
         const s = new BossScript(d, ghostWorld(world, ghost), ghostLink(link, ghost), {
           flash: (color, strength) => { if (!ghost.on) hud.flash(color, strength); },
           guard: (seconds) => { if (!ghost.on) this.guard(seconds); },
+          // The bar's words: this screen's own boss's, or the room's move whose bar is up, whoever called it.
+          label: (text) => { if (!ghost.on || this.twin?.roomBar === w) hud.relabel(text); },
         }, tier);
         // Its zones stop at the wall of fire while it stands.
         s.clip = () => (world.twin?.wallUp() ? twinClip(d, w) : null);
@@ -131,9 +137,10 @@ export class BossFight {
       this.twin = {
         half: setup.half, halves: setup.halves, mine, defs, scripts, ghosts,
         hp: [setup.hp[0], setup.hp[1]], max: [setup.hp[0], setup.hp[1]], phase: [0, 0], gauge: [0, 0], dead: [false, false], furious: -1,
-        lastId: [0, RAID_TWIN.ids], stageUntil: [0, 0], track: new Track(), aura: new RageAura(other.body.radius, other.body.height),
+        lastId: [0, RAID_TWIN.ids], stageUntil: [0, 0], track: new Track(), aura: new RageAura(other.body.radius, other.body.height), open: false, roomBar: -1,
       };
       link.which = mine;
+      def.twin.sized?.([0, 1].map((h) => setup.halves.filter((x) => x === h).length) as [number, number]);
       this.script = scripts[mine];
       this.group.add(scripts[0].group, scripts[1].group, this.twin.aura.group);
     } else {
@@ -169,6 +176,7 @@ export class BossFight {
       end: (r) => this.end(r),
       rage: (which, on) => this.onRage(which, on),
       fell: (which) => this.onFell(which),
+      halves: (half, late) => this.onHalves(half, late),
     };
     if (!def.hall) {
       hud.show(def);
@@ -203,15 +211,75 @@ export class BossFight {
   }
 
   /**
-   * A brain for this screen's boss. Twin Flames: it sees only the heroes on its own side of the wall of fire, while it stands;
-   * a hero the hub has no half for (it joined no half) counts as there.
+   * A brain for this screen's boss. Twin Flames: while both stand it sees only the heroes of its own half (a hero the hub has no
+   * half for counts as of it): across the wall of fire nobody is in reach, and once the pit floods each twin still goes for its
+   * own team, so Ash's Charge fixes on a hero who has his pillars near. With the wall out and nobody of its half standing, it
+   * goes for whoever is. Once one of the two has fallen the other sees everyone.
    */
   private newBrain(seed: string, firstId: number) {
     const t = this.twin, world = this.world;
-    const mine: BossWorld = t ? { ...world, heroes: () => world.heroes().filter((h) => !world.twin?.wallUp() || (t.halves[h.side] ?? t.mine) === t.mine) } : world;
+    const own = () => {
+      const all = world.heroes();
+      if (!t || t.dead[0] || t.dead[1]) return all;
+      const half = all.filter((h) => (t.halves[h.side] ?? t.mine) === t.mine);
+      return world.twin?.wallUp() || half.some((h) => !h.down) ? half : all;
+    };
+    const mine: BossWorld = t ? { ...world, heroes: own } : world;
     const brain = new BossBrain(this.def, mine, this.link, seed, this.tier, firstId);
     if (this.omen('quick')) brain.quick = QUICK_GAP;
     return brain;
+  }
+
+  /**
+   * The scripts this screen's hero must mind: its own boss's, and in Twin Flames the other's too once the wall of fire is out
+   * (the pit floods). An AI keeps out of the zones of all of them (`danger`, `wary`, `stillIn`). What it goes and does, it does for
+   * its own boss only (`objectiveGoal`, `standGoal`, `mustHide`): the other twin's vents and gold zones are its own team's, and
+   * bots that crossed the room for them left their own fight and stood in one spot for the next thing to land. A person may still
+   * take them.
+   */
+  private get minds(): BossScript[] {
+    const t = this.twin;
+    return t && t.open && !t.dead[1 - t.mine] ? [this.script, t.scripts[1 - t.mine]] : [this.script];
+  }
+
+  /** Whether (x, z) is hit, or will be within `within` seconds, by anything this hero must mind. */
+  danger(x: number, z: number, within: number) {
+    return this.minds.some((s) => s.danger(x, z, within));
+  }
+
+  /** A warning of a killing hit shows, from this screen's own boss. */
+  get mustHide() {
+    return this.script.mustHide;
+  }
+
+  /** Whether (x, z) is out of reach of every killing hit a warning shows now. */
+  hidden(x: number, z: number) {
+    return this.script.hidden(x, z);
+  }
+
+  /** A move is coming after whoever it aims at. */
+  get wary() {
+    return this.minds.some((s) => s.wary);
+  }
+
+  /** Counts the casts so far: an AI rolls its reaction once per cast. */
+  get eventId() {
+    return this.minds.reduce((n, s) => n + s.eventId, 0);
+  }
+
+  /** Seconds until the next beat that burns whoever walks, or Infinity. */
+  get stillIn() {
+    return Math.min(...this.minds.map((s) => s.stillIn));
+  }
+
+  /** The nearest spot an AI should go and take, if one shows. */
+  objectiveGoal(x: number, z: number) {
+    return this.script.objectiveGoal(x, z);
+  }
+
+  /** The gold zone an AI should go and stand in, if one shows. */
+  standGoal(x: number, z: number) {
+    return this.script.standGoal(x, z);
   }
 
   /** Every script of this fight: one, or Twin Flames' two. */
@@ -250,6 +318,11 @@ export class BossFight {
     // A stage keeps the cast bar, and so does a move that holds the floor: the bar is its clock.
     if (move.stage || move.holds) this.stageLeft = charge;
     if (move.stage || move.holds || this.stageLeft <= 0) this.hud.cast(move.name, charge);
+    // A move of the whole room: its name as a banner too.
+    if (move.room) {
+      if (t) t.roomBar = w;
+      this.world.banner(move.name, 2.6, '26px');
+    }
     this.world.enemyCast(!!move.big);
     if (c.rim) this.world.poseRim(move.pose, charge, !!move.big);
     // A move that holds the floor acts itself out, at its call and as it lands: he does other moves in between.
@@ -259,9 +332,18 @@ export class BossFight {
   /** Twin Flames: a cast of the boss across the wall. Its script plays it as a look, and its body acts it out where it stands. */
   private otherCast(t: Twin, w: number, c: BossCast) {
     const move = t.defs[w].moves[c.move], pace = raidTierFactor(this.tier);
-    t.scripts[w].play(c);
+    // A move of the whole room is this hero's too, whichever of the two calls it: it plays in this screen's own script.
+    (move.room ? this.script : t.scripts[w]).play(c);
     if (move.body) this.world.actRim(move.body.name, c.step, c.x, c.z, move.body.seconds * pace);
     if (c.step !== 0 || move.quiet) return;
+    // A move of the whole room is every screen's to see: its name on the cast bar and as a banner, and the bar stays its own.
+    if (move.room && this.stageLeft <= 0) {
+      const charge = moveTime(move, pace);
+      t.roomBar = w;
+      this.stageLeft = charge;
+      this.hud.cast(move.name, charge);
+      this.world.banner(move.name, 2.6, '26px');
+    }
     // Its stage: until when it can't be hurt, should it become this screen's enemy meanwhile.
     if (move.stage) t.stageUntil[w] = this.clock + move.charge * pace + 0.5;
     if (!move.alongside) this.world.poseRim(move.pose, move.charge * pace, !!move.big);
@@ -373,9 +455,11 @@ export class BossFight {
    * stronger of the two counts, never both together.
    */
   private rageNow() {
-    const t = this.twin, fury = !!t && t.furious === t.mine;
-    this.script.rage = Math.max(this.enraged ? RAGE_HIT : 1, fury ? FURY_HIT : 1);
-    const gap = Math.min(this.enraged ? RAGE_GAP : 1, fury ? FURY_GAP : 1);
+    const t = this.twin, fury = !!t && t.furious === t.mine, flood = !!t && t.open && !t.dead[0] && !t.dead[1];
+    this.script.rage = Math.max(this.enraged ? RAGE_HIT : 1, fury ? FURY_HIT : 1, flood ? FLOOD_HIT : 1);
+    // The other's moves hurt this hero too once the wall is out: as angry as it is on its own screens, at `OTHER_HIT` of that.
+    if (t && flood) t.scripts[1 - t.mine].rage = OTHER_HIT * Math.max(this.enraged ? RAGE_HIT : 1, t.furious === 1 - t.mine ? FURY_HIT : 1, FLOOD_HIT);
+    const gap = Math.min(this.enraged ? RAGE_GAP : 1, fury ? FURY_GAP : 1, flood ? FLOOD_GAP : 1);
     if (gap < 1) this.brain?.enrage(gap);
     else this.brain?.calm();
     this.world.bodyRage(this.enraged || fury);
@@ -447,10 +531,64 @@ export class BossFight {
     this.hud.flash('rgba(255,170,90,0.8)', 0.3);
   }
 
+  /**
+   * Twin Flames, The Changing of the Flames: the hub dealt the halves again. A screen whose own half changed fights the other boss
+   * from now on; one the gates shut on is dragged through the fire, and burns.
+   */
+  private onHalves(half: number[], late: number[]) {
+    const t = this.twin, side = this.link.side;
+    if (!t) return;
+    // In place: the duel reads the same list.
+    for (let i = 0; i < half.length; i++) t.halves[i] = half[i];
+    const mine = half[side];
+    if ((mine !== 0 && mine !== 1) || t.dead[0] || t.dead[1]) return;
+    if (mine !== t.mine) this.swapTo(mine);
+    if (!late.includes(side) || this.meDown) return;
+    const wall = this.def.twin?.wall, me = this.world.me();
+    this.world.banner('The gates shut on you: dragged through the fire', 2.4, '22px');
+    this.hud.flash('rgba(255,90,30,0.85)', 0.4);
+    this.world.hitMe({ share: RAID_TWIN.change.late, from: { x: wall?.ax ?? me.x, z: me.z }, move: 'change', big: true });
+  }
+
+  /** This screen's enemy becomes boss `live` while both stand: its script is the real one here now, and the other's a ghost. */
+  private swapTo(live: number) {
+    const t = this.twin!, old = t.mine;
+    // A stage of the one left behind goes on without this screen; one of the new enemy's holds here now.
+    if (this.guardLeft > 0) t.stageUntil[old] = this.clock + this.guardLeft;
+    // A brain of the one left behind is another screen's now (the hub says whose); the walks heard of each change places.
+    this.brain = null;
+    this.link.brain = false;
+    const heard = t.track;
+    t.track = new Track();
+    this.track = heard;
+    t.mine = t.half = live;
+    this.link.which = live;
+    this.def = t.defs[live];
+    t.ghosts[live].on = false;
+    t.ghosts[old].on = true;
+    this.script = t.scripts[live];
+    this.arm(this.script);
+    this.stats.phases = t.phase[live];
+    this.timedSeen = 0;
+    this.stageDue = null;
+    this.hud.setState('', 0);
+    this.hud.setGauge(t.gauge[live] / (this.link.staggerMax ?? this.def.staggerMax));
+    this.openLeft = 0;
+    this.world.twin?.swap(t.hp[live]);
+    this.world.bodyPhase(t.phase[live]);
+    this.world.twin?.phase(t.phase[old]);
+    this.guardLeft = 0;
+    this.world.guard(false);
+    const left = t.stageUntil[live] - this.clock;
+    if (left > 0) this.guard(left);
+    this.rageNow();
+    this.world.banner(`You cross to ${this.def.name}`, 2.2, '24px');
+  }
+
   /** Twin Flames, for the tools: which boss is this screen's enemy, and what is known of both. */
   get twins() {
     const t = this.twin;
-    return t ? { half: t.half, mine: t.mine, hp: [...t.hp], max: [...t.max], phase: [...t.phase], furious: t.furious, dead: [...t.dead] } : null;
+    return t ? { half: t.half, mine: t.mine, hp: [...t.hp], max: [...t.max], phase: [...t.phase], furious: t.furious, dead: [...t.dead], open: t.open, halves: [...t.halves] } : null;
   }
 
   /** Twin Flames: which of the two is this screen's enemy now, or undefined. */
@@ -576,6 +714,14 @@ export class BossFight {
       // This screen's own boss as its hits have left it; the other as the hub says.
       t.hp[t.mine] = hp;
       this.hud.setTwin(t);
+      // The pit floods: the wall of fire is out for good, and from now on both of them hurt this hero.
+      if (!t.open && this.def.twin?.open?.()) {
+        t.open = true;
+        for (const g of t.ghosts) g.open = true;
+        this.rageNow();
+        if (!t.dead[0] && !t.dead[1]) this.world.banner('The wall of fire goes out: the pit floods', 2.8, '24px');
+        this.hud.flash('rgba(255,170,90,0.8)', 0.3);
+      }
     } else if (!t) this.hud.setHp(hp, this.link.maxHp);
     if (this.def.pillars) {
       const cover = this.world.cover();
@@ -626,7 +772,7 @@ export class BossFight {
         spot.set(at.x, 0, at.z).project(this.world.camera);
         list.push({ x: spot.x, y: spot.y, color });
       };
-      for (const at of this.script.goldSpots()) add(at, '#ffe27a');
+      for (const s of this.minds) for (const at of s.goldSpots()) add(at, '#ffe27a');
       // In a party's wide room the boss itself can be out of sight.
       if ((this.def.place.ring ?? 0) > 18) add(this.world.boss(), '#ff8a4a');
       const fallen = this.world.fallenPartner();

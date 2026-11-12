@@ -1,4 +1,7 @@
-import { RAID_BOSSES, RAID_REWARDS, RAID_TWIN, raidHp, raidScale, raidStaggerMax } from '../../server/protocol.mjs';
+import { RAID_BOSSES, RAID_REWARDS, RAID_TWIN, raidScale, raidTwinHp, raidStaggerMax } from '../../server/protocol.mjs';
+
+/** The Changing of the Flames on one screen (`TwinLocalLink`): the call in the air. */
+interface LocalChange { id: number; until: number; crossed: boolean }
 import type { TelegraphClip } from '../effects/telegraph';
 import type { BossCast, BossDef, BossWorld, RaidEvents, RaidLink } from './types';
 
@@ -16,8 +19,21 @@ import type { BossCast, BossDef, BossWorld, RaidEvents, RaidLink } from './types
 export const FURY_HIT = 1.5;
 export const FURY_GAP = 0.6;
 
-/** Whether a script is a ghost now. One object per script, switched by the fight. */
-export interface Ghost { on: boolean }
+/** Once the pit floods (the wall of fire out, both still standing) each of the two hits this much harder, and this much of the quiet between its moves is left. */
+export const FLOOD_HIT = 1.15;
+export const FLOOD_GAP = 0.85;
+/**
+ * Once the pit floods the other twin's moves hit this screen's hero too, for this much of what they cost its own team: it is not
+ * that twin's prey, and a party caught between two sets of zones at full cost does not last.
+ */
+export const OTHER_HIT = 0.6;
+
+/**
+ * Whether a script is a ghost now. One object per script, switched by the fight. `open`: the wall of fire is out though both
+ * stand (the pit floods): a ghost's zones then hit this hero, its adds and spots are this hero's to take, and its gold zones
+ * count it. It is still not this screen's enemy: it runs no brain here, pays no reward, and nothing of it acts on this screen's boss.
+ */
+export interface Ghost { on: boolean; open?: boolean }
 
 /** The line boss `which`'s zones are cut off at while the wall of fire stands: its own side of it. */
 export function twinClip(def: BossDef, which: number): TelegraphClip {
@@ -27,15 +43,19 @@ export function twinClip(def: BossDef, which: number): TelegraphClip {
 
 /** The world as the other boss's script sees it: this hero is not there, and nothing of theirs acts on this screen. */
 export function ghostWorld(world: BossWorld, ghost: Ghost): BossWorld {
+  /** Across the wall of fire: this hero is not there. */
+  const away = () => ghost.on && !ghost.open;
   return {
     ...world,
-    down: () => ghost.on || world.down(),
-    hitMe: (h) => { if (!ghost.on) world.hitMe(h); },
-    units: () => (ghost.on ? [] : world.units()),
-    carryMe: (dx, dz) => { if (!ghost.on) world.carryMe(dx, dz); },
-    hint: (text) => { if (!ghost.on) world.hint(text); },
-    heavy: (on) => { if (!ghost.on) world.heavy(on); },
-    shake: (amount) => { if (!ghost.on) world.shake(amount); },
+    down: () => away() || world.down(),
+    hitMe: (h) => { if (!away()) world.hitMe(h); },
+    units: () => (away() ? [] : world.units()),
+    carryMe: (dx, dz) => { if (!away()) world.carryMe(dx, dz); },
+    hint: (text) => { if (!away()) world.hint(text); },
+    heavy: (on) => { if (!away()) world.heavy(on); },
+    mute: (on) => { if (!away()) world.mute(on); },
+    shake: (amount) => { if (!away()) world.shake(amount); },
+    // What a move does to its own boss never reaches this screen's.
     exposed: (seconds) => { if (!ghost.on) world.exposed(seconds); },
   };
 }
@@ -43,6 +63,7 @@ export function ghostWorld(world: BossWorld, ghost: Ghost): BossWorld {
 /** The link as the other boss's script sees it: it says nothing to anyone, and runs no brain. */
 export function ghostLink(link: RaidLink, ghost: Ghost): RaidLink {
   const quiet = () => {};
+  const away = () => ghost.on && !ghost.open;
   return {
     solo: link.solo,
     side: link.side,
@@ -51,11 +72,11 @@ export function ghostLink(link: RaidLink, ghost: Ghost): RaidLink {
     set brain(_v: boolean) { /* the fight sets it on the real link */ },
     on: link.on,
     cast: quiet, damage: quiet, stagger: quiet, heroDown: quiet, heroHp: quiet, revive: quiet, bossDebuff: quiet, heroAlt: quiet, heroCast: quiet, heroAttack: quiet, tick: quiet,
-    stood: (id, part, inside) => { if (!ghost.on) link.stood(id, part, inside); },
-    objective: (id, part) => { if (!ghost.on) link.objective(id, part); },
+    stood: (id, part, inside) => { if (!away()) link.stood(id, part, inside); },
+    objective: (id, part) => { if (!away()) link.objective(id, part); },
     reward: (key, id) => { if (!ghost.on) link.reward(key, id); },
-    addHit: (id, part, amount) => { if (!ghost.on) link.addHit(id, part, amount); },
-    wallSaved: (index) => { if (!ghost.on) link.wallSaved(index); },
+    addHit: (id, part, amount) => { if (!away()) link.addHit(id, part, amount); },
+    wallSaved: (index) => { if (!away()) link.wallSaved(index); },
   };
 }
 
@@ -83,9 +104,12 @@ export class TwinLocalLink implements RaidLink {
   fury = -1;
   private over = false;
   private paid = new Set<string>();
+  private clock = 0;
+  /** The Changing of the Flames in the air: this screen's hero is the one marked. */
+  private change: LocalChange | null = null;
 
   constructor(private def: BossDef, readonly band = 10, half = 0, tier = 1) {
-    this.maxHp = Math.round(raidHp(def.id, band, tier) / 2);
+    this.maxHp = raidTwinHp(band, tier);
     this.staggerMax = raidStaggerMax(def.id, band) / 2;
     this.which = half;
     const pool = (): Pool => ({ hp: this.maxHp, max: this.maxHp, phase: 0, gauge: 0, kneeling: 0, dead: false });
@@ -161,14 +185,34 @@ export class TwinLocalLink implements RaidLink {
   }
 
   objective(id: number, part: number) {
+    const ch = this.change, C = RAID_TWIN.change;
+    // The Changing of the Flames: who is marked is the hub's to say, and this hero crosses once, while the gates are open.
+    if (ch && id === ch.id && part >= C.mark && (part !== C.cross + this.side || ch.crossed || this.clock > ch.until)) return;
     this.on.done(id, part, 0);
+    if (ch && id === ch.id && part === C.cross + this.side) this.deal(false);
+  }
+
+  /** This screen's hero is dealt into the other half, as the hub deals a seat. `late`: the gates shut on it. */
+  private deal(late: boolean) {
+    const ch = this.change;
+    if (!ch || ch.crossed || this.over || this.pools[0].dead || this.pools[1].dead) return;
+    ch.crossed = true;
+    this.on.halves?.([1 - this.which], late ? [this.side] : []);
   }
 
   reward(key: string, id: number) {
-    const table = RAID_REWARDS[this.def.id as keyof typeof RAID_REWARDS] as Record<string, { hp?: number; stagger?: number; kneel?: boolean; stun?: number }>;
+    const table = RAID_REWARDS[this.def.id as keyof typeof RAID_REWARDS] as Record<string, { hp?: number; stagger?: number; kneel?: boolean; stun?: number; swap?: boolean }>;
     const r = table?.[key], once = `${id}:${key}`, which = this.which, p = this.pools[which];
     if (!r || this.paid.has(once) || this.over) return;
     this.paid.add(once);
+    if (r.swap) {
+      // The hub marks every second hero of a half: of one screen's one hero, that one.
+      const C = RAID_TWIN.change;
+      if (this.change && this.clock < this.change.until + C.rest) return;
+      this.change = { id, until: this.clock + C.warn + C.open, crossed: false };
+      this.on.done(id, C.mark + this.side, this.side);
+      return;
+    }
     if (r.hp) this.hurt(which, p.max * r.hp);
     if (this.over || p.dead) return;
     if (r.kneel) {
@@ -202,6 +246,9 @@ export class TwinLocalLink implements RaidLink {
   }
 
   tick(dt: number) {
+    this.clock += dt;
     for (const p of this.pools) p.kneeling = Math.max(0, p.kneeling - dt);
+    // The gates shut on a marked hero that did not cross.
+    if (this.change && !this.change.crossed && this.clock > this.change.until + 0.3) this.deal(true);
   }
 }

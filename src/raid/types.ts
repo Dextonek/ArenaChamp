@@ -51,6 +51,8 @@ export interface BossCast {
   alone?: boolean;
   /** Twin Flames: which of the two bosses casts it (0 Ash, 1 Ember). */
   which?: number;
+  /** A second hero the step is for, beside `target` (Lantern Chain: the two it chains). The hub passes it on, checked as a seat. */
+  mate?: RaidSide;
 }
 
 /** What a hero's hit lays on the boss that the other screen needs too: the brain walks it, and each screen takes its hits and deals its own. */
@@ -214,6 +216,8 @@ export interface PlayContext {
   cancel(id: number): void;
   /** This screen's hero carries something heavy, and walks slower. */
   heavy(on: boolean): void;
+  /** This screen's hero has its hands full: it casts nothing until this is taken back (it still walks and strikes). */
+  mute(on: boolean): void;
   /** A fallen stone stays as cover. */
   addStone(x: number, z: number, radius: number, seconds: number): Obstacle;
   /** The fallen stone that cover stops a ray from a to b at, if that is what stops it. */
@@ -357,6 +361,11 @@ export interface BossMove {
    * cast bar stays up. A stage doesn't wait: its cast calls this move off on every screen.
    */
   holds?: { only: string[] };
+  /**
+   * A move of the whole room, whichever of Twin Flames' two casts it (The Changing of the Flames): every screen shows its name on the
+   * cast bar and as a banner, and hears what its look puts on the bar.
+   */
+  room?: boolean;
   /** What the boss's own body does for each step (its look knows the name): fists flying out, lanterns thrown. `seconds` until it lands, at tier 1. */
   body?: { name: string; seconds: number };
   /** What only the screen that runs the brain may do: move the boss. Returns seconds it stands still after. */
@@ -366,7 +375,7 @@ export interface BossMove {
    * Where a step is aimed. Runs on the brain's screen only. `target`: the hero this step is for, when it is not the one the move
    * began at (Branded: each step marks another hero); it goes into the cast as its `target`.
    */
-  aim(c: AimContext): { x: number; z: number; dir: number; flag?: boolean; target?: RaidSide };
+  aim(c: AimContext): { x: number; z: number; dir: number; flag?: boolean; target?: RaidSide; mate?: RaidSide };
   /** What a cast does. Runs on every screen: it may read the cast and the cover, and never a hero. */
   play(c: BossCast, p: PlayContext): PlayedMove;
 }
@@ -466,11 +475,23 @@ export interface BossDef {
   enrage?: number;
   /** The room's cover that counts, standing (Ash's four pillars): the bar shows how many are left. */
   pillars?: readonly Obstacle[];
+  /**
+   * Where it may walk to, when that is less than the room: a spot it is asked to go to, pulled back into its own part of the room (each
+   * of Twin Flames' two keeps to its own hall of the forge, and out of the gate's passage: a boss that backs away must not end in a
+   * dead end). Its moves reach wherever they reach.
+   */
+  roam?(x: number, z: number): { x: number; z: number };
   /** As a tag team's form has them (`BossForm`): it backs away from a hero closer than this, and leaves this move behind as it walks. */
   backAt?: number;
   trail?: string;
   /** Twin Flames: this is one of two bosses fought at once (`TwinDef`). */
   twin?: TwinDef;
+  /**
+   * The room's own floor that hurts for good now (the Twin Forge's lava channels and its flood), or null while it is whole. Asked
+   * each frame by the duel, which burns this screen's hero by it and has its autopilot plan round it: it is the room's, not a
+   * script's, so it goes on when the boss that caused it has fallen.
+   */
+  floor?(): RoomFloor | null;
   moves: Record<string, BossMove>;
   /** What closes in when the fight runs too long; the offset goes on the clock the shift reads. */
   late?(): { shift: ArenaShift; offset: number; startsAt?: number };
@@ -480,6 +501,22 @@ export interface BossDef {
    * at a time in his last phase, and aims at whoever carries a sun shard.
    */
   choose?(c: { heroes: { side: RaidSide; x: number; z: number }[]; boss: { x: number; z: number }; time: number; when(side: RaidSide): number }): RaidSide | undefined;
+}
+
+/** A room's own floor that hurts (`BossDef.floor`). */
+export interface RoomFloor {
+  /** The floor that hurts, as cover an AI plans its walk round. The same objects from call to call while nothing changed. */
+  cover: readonly Obstacle[];
+  /** How far from the room's middle an AI, and a boss backing away, may go (m), when that is less than the room. */
+  bounds?: number;
+  /** Whether an AI may stand at (x, z). */
+  safe(x: number, z: number): boolean;
+  /** What a second standing at (x, z) costs, as a share of max HP (0: nothing). */
+  burn(x: number, z: number): number;
+  /** Where an AI caught far inside it heads for, when no dry spot is near (the last island's middle). */
+  refuge?: { x: number; z: number };
+  /** What its hits are counted as (a fight's result names what hit a hero). */
+  name: string;
 }
 
 /**
@@ -496,6 +533,13 @@ export interface TwinDef {
   wall: Obstacle;
   /** Where hero number `n` of a half comes in. */
   heroStart(half: number, n: number): { x: number; z: number };
+  /** How many heroes each half has as the fight starts, as the hub dealt them: what a half is asked to do goes by it (its Coal Hearts' HP). */
+  sized?(heads: [number, number]): void;
+  /**
+   * The wall of fire is out for good though both still stand (the pit floods): from then on the other twin's moves hurt this
+   * screen's hero too, and both are angrier (`FLOOD_HIT`, `FLOOD_GAP` in src/raid/twin.ts). Each screen's enemy stays its own.
+   */
+  open?(): boolean;
 }
 
 /** What a twin fight is told when it starts: this screen's half, everyone's (by side), and each boss's max HP. */
@@ -522,6 +566,11 @@ export interface TwinWorld {
   fell(dead: number, hp: number): void;
   /** The wall of fire still stands. */
   wallUp(): boolean;
+  /**
+   * The Changing of the Flames: this screen's hero is dealt into the other half while both stand. The other boss takes this one's
+   * place as the enemy here, with `hp` left, and this one becomes the body that is only drawn; the hero is held in its new half.
+   */
+  swap(hp: number): void;
 }
 
 /** A hit on this screen's hero. */
@@ -547,6 +596,11 @@ export interface RaidEvents {
   rage?(which: number, on: boolean): void;
   /** Twin Flames: boss `which` fell. The fight goes on until both have. */
   fell?(which: number): void;
+  /**
+   * Twin Flames, The Changing of the Flames: the hub has dealt the halves again (by side). A screen whose own half changed fights
+   * the other boss from now on; `late`: the sides the gates shut on, who are dragged through the fire and burn.
+   */
+  halves?(half: number[], late: number[]): void;
   /** How many heroes stood in a `stand` zone of cast `id` when it landed. */
   stood(id: number, part: number, count: number): void;
   /** A hero took an objective of cast `id`. */
@@ -648,6 +702,8 @@ export interface BossWorld {
   busy(): boolean;
   /** This screen's hero carries something heavy, and walks slower. */
   heavy(on: boolean): void;
+  /** This screen's hero casts nothing while this is on (`PlayContext.mute`). */
+  mute(on: boolean): void;
   addStone(x: number, z: number, radius: number, seconds: number): Obstacle;
   firstStone(ax: number, az: number, bx: number, bz: number): Obstacle | null;
   dropStone(o: Obstacle): void;

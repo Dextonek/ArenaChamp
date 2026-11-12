@@ -21,7 +21,7 @@ import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
 import {
   HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RAID_TWIN, RELOAD_TEXT, SHOP, STARTERS, heroPrice, isoWeek, raidBand, raidHp,
-  raidStaggerMax, shopRotation,
+  raidStaggerMax, raidTwinHp, shopRotation,
 } from './protocol.mjs';
 
 /** The bosses' HP for two, as the hub keeps it. */
@@ -1238,7 +1238,7 @@ if (!onlyShop) try {
     brain = p.indexOf(here[0]);
     chat = setInterval(() => p[brain].send({ t: 'ping' }), 1000);
     const stage2 = await intoFight(here);
-    check(stage2.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === ASH * 5 && m.staggerMax === raidStaggerMax('ash', 10) && m.brain === 0)
+    check(stage2.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === raidTwinHp(10, 1) * 2 && m.staggerMax === raidStaggerMax('ash', 10) && m.brain === 0)
       && raidBand(here.length) === 10, `the next boss loads for the ten who are left: ${stage2[0].hp} HP`);
 
     // Lost only when everyone still here is down at once.
@@ -1249,7 +1249,7 @@ if (!onlyShop) try {
     check(!here[9].got.raid_end && !here[0].got.raid_end, 'nine of ten down: the run goes on');
     here[9].send({ t: 'hero_down' });
     const ends = await Promise.all(here.map((x) => x.next('raid_end', 12000)));
-    check(ends.every((m) => m.result === 'lost' && m.bosses === 1 && m.tier === 1 && m.bossMax === ASH * 5) && ends[0].profile.raids.played === 1,
+    check(ends.every((m) => m.result === 'lost' && m.bosses === 1 && m.tier === 1 && m.bossMax === raidTwinHp(10, 1) * 2) && ends[0].profile.raids.played === 1,
       'the tenth falls: the run is lost for all ten, with its score');
     clearInterval(chat);
     if (!target) check(hubLog.filter((l) => l.includes('the brain moves')).length === 1, 'the brain moved once in all, when its screen went quiet');
@@ -1278,7 +1278,7 @@ if (!onlyShop) try {
   // Two HP pools, hits routed by `which`, a brain per boss on a screen of its own half, the furious rule on and off by the gap,
   // one falls and the other is everyone's, the win when both are dead. For two they stay the tag team, with nothing new on the wire.
   {
-    const N = 6, POOL = (ASH * 5) / 2, GAUGE = raidStaggerMax('ash', 10) / 2;
+    const N = 6, POOL = raidTwinHp(10, 1), GAUGE = raidStaggerMax('ash', 10) / 2;
     const p = await players(N, 'tw');
     p[0].send({ t: 'lobby_create', raid: 'ash' });
     const room = (await p[0].next('lobby')).lobby;
@@ -1294,8 +1294,8 @@ if (!onlyShop) try {
     const brains = [0, 1];
     let chat = setInterval(() => { for (const b of brains) p[b].send({ t: 'ping' }); }, 1000);
     const stage = await intoFight(p);
-    check(stage.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === ASH * 5 && m.brain === 0 && m.staggerMax === raidStaggerMax('ash', 10)),
-      'six against Ash and Ember: the fight loads for 10, with the pair\'s HP and gauge where they always were');
+    check(stage.every((m) => m.boss === 'ash' && m.band === 10 && m.hp === POOL * 2 && m.brain === 0 && m.staggerMax === raidStaggerMax('ash', 10)),
+      "six against Ash and Ember: the fight loads for 10, the pair's gauge where it always was, their HP the sum of the two");
     check(stage.every((m) => m.twin && m.twin.half.join() === '0,1,0,1,0,1' && m.twin.hp.join() === `${POOL},${POOL}` && m.twin.brain.join() === '0,1' && m.twin.staggerMax === GAUGE),
       `Twin Flames: the party is dealt west, east, west..., each boss has ${POOL} HP and its brain on the first screen of its own half`);
 
@@ -1433,6 +1433,118 @@ if (!onlyShop) try {
     check(wins.every((m) => m.bosses === 1 && m.last === false) && p[5].got.boss_fell === 2, 'Ember falls too: the fight is won when both are dead');
     clearInterval(chat);
     for (const x of p) x.close();
+
+    // The Twin Forge's own (PROTOCOL 13; src/raid/twinForge.ts): a chain's pair, the vents' count, the halves dealt again for The
+    // Changing of the Flames, and the wall of fire out with the flood though both still stand. Eight players: four in each half.
+    {
+      const N = 8, C = RAID_TWIN.change, POOL = raidTwinHp(10, 1);
+      const p = await players(N, 'tf');
+      p[0].send({ t: 'lobby_create', raid: 'ash' });
+      const room = (await p[0].next('lobby')).lobby;
+      for (const x of p.slice(1)) x.send({ t: 'lobby_join', code: room.code });
+      p.forEach((x, i) => x.send({ t: 'lobby_pick', hero: ['Lyra', 'Bram', 'Kaia', 'Vesper', 'Brannoc', 'Isolde', 'Sefu', 'Nyx'][i] }));
+      await seen(p[0], 'lobby', (m) => m.lobby?.seats.length === N && m.lobby.seats.every((/** @type {any} */ s) => s.hero), 20000);
+      p[0].send({ t: 'raid_go' });
+      await Promise.all(p.map((x) => x.next('raid_start')));
+      await Promise.all(p.map((x) => x.next('raid_offer')));
+      /** Who runs Ash's brain and Ember's: each says something every second, as a real screen does. */
+      const brains = [0, 1];
+      const chat = setInterval(() => { for (const b of brains) p[b].send({ t: 'ping' }); }, 1000);
+      const stage = await intoFight(p);
+      check(stage.every((m) => m.twin && m.twin.half.join() === '0,1,0,1,0,1,0,1' && m.band === 10), 'eight against Ash and Ember: four in each half, tuned for 10');
+      const cast = { t: 'boss_cast', id: 40, move: 'chain', step: 0, x: -5, z: 9, fx: -8, fz: 7, dir: 0.5, seed: 9, target: 2, which: 0 };
+
+      // Lantern Chain: the cast names its pair in `target` and `mate`; the chain snaps for whichever of the two screens says so first.
+      p[0].send({ ...cast, mate: 4 });
+      const chained = await p[5].next('boss_cast');
+      p[0].send({ ...cast, id: 41, mate: 99 });
+      const lone = await p[5].next('boss_cast');
+      check(chained.target === 2 && chained.mate === 4 && lone.id === 41 && !('mate' in lone), 'a chain\'s pair reaches everyone as `target` and `mate`; a mate that is no seat is dropped');
+      p[2].send({ t: 'boss_obj', id: 40, part: 0 });
+      p[4].send({ t: 'boss_obj', id: 40, part: 0 });
+      const snap = await p[7].next('boss_done');
+      await wait(150);
+      check(snap.id === 40 && snap.side === 2 && p[7].got.boss_done === 1, 'the chain snaps once: the first of the two screens to say so, and everyone hears it');
+
+      // Seal the Vents: each vent is one hero's; the count every screen keeps is the vents taken; all of a cast's sealed pays that twin.
+      p[0].send({ t: 'boss_obj', id: 50, part: 0 });
+      p[2].send({ t: 'boss_obj', id: 50, part: 1 });
+      p[4].send({ t: 'boss_obj', id: 50, part: 1 });
+      await seen(p[7], 'boss_done', (m) => m.id === 50 && m.part === 1);
+      await wait(150);
+      check(p[7].got.boss_done === 3, 'three vents, two heroes on them: two are sealed for every screen, and a second hero on a sealed one counts for nothing');
+      p[0].send({ t: 'boss_reward', key: 'vents', id: 50, which: 0 });
+      check((await seen(p[3], 'boss_gauge', (m) => m.which === 0)).value === RAID_REWARDS.ash.vents.stagger * 2.5, 'every vent of a cast sealed: that twin staggers, for half of what one boss would');
+
+      // The Changing of the Flames: asked for by a brain's screen; the hub marks every second hero of each half.
+      for (const x of p) x.forget('boss_done');
+      p[2].send({ t: 'boss_reward', key: 'change', id: 60, which: 0 });
+      await wait(200);
+      check(p[7].got.boss_done === 3, 'a screen that runs no brain can\'t call The Changing of the Flames');
+      p[0].send({ t: 'boss_reward', key: 'change', id: 60, which: 0 });
+      const marks = [];
+      for (let i = 0; i < 4; i++) marks.push(await p[7].next('boss_done'));
+      await wait(150);
+      check(marks.every((m) => m.id === 60 && m.part === C.mark + m.side) && marks.map((m) => m.side).sort().join() === '2,3,6,7' && p[7].got.boss_done === 7,
+        'Ash\'s brain calls it: the hub marks two of the four in each half, and every screen hears who');
+      // Only a marked hero crosses, and only for itself; nobody marks anyone.
+      p[0].send({ t: 'boss_obj', id: 60, part: C.cross + 0 });
+      p[2].send({ t: 'boss_obj', id: 60, part: C.cross + 6 });
+      p[4].send({ t: 'boss_obj', id: 60, part: C.mark + 4 });
+      await wait(250);
+      check(!p[5].got.twin_halves && p[7].got.boss_done === 7, 'a hero that is not marked can\'t cross, nobody crosses for another, and nobody marks itself');
+      p[2].send({ t: 'boss_obj', id: 60, part: C.cross + 2 });
+      const dealt = await p[5].next('twin_halves');
+      check(dealt.half.join() === '0,1,1,1,0,1,0,1' && dealt.late.length === 0 && dealt.brain.join() === '0,1', 'a marked hero steps through a gate: the hub deals it into the other half, and every screen hears the halves');
+      p[2].send({ t: 'boss_damage', amount: 300 });
+      check((await seen(p[4], 'boss_hp', (m) => m.which === 1)).hp === POOL - 300, 'its hits come off Ember now');
+      p[2].send({ t: 'boss_obj', id: 60, part: C.cross + 2 });
+      // The gates shut: the marked who did not cross are dealt across all the same, and named.
+      const shut = await p[5].next('twin_halves', (C.warn + C.open + 4) * 1000);
+      check(shut.half.join() === '0,1,1,0,0,1,1,0' && [...shut.late].sort().join() === '3,6,7' && p[5].got.twin_halves === 2, 'the gates shut: the three marked who stayed are dealt across too, and named as late');
+      p[3].send({ t: 'boss_obj', id: 60, part: C.cross + 3 });
+      p[0].send({ t: 'boss_reward', key: 'change', id: 61, which: 0 });
+      await wait(300);
+      check(p[5].got.twin_halves === 2 && p[7].got.boss_done === 8, 'nobody crosses once they are shut, and no new call comes right after one');
+      // A brain's own screen is marked and crosses: its brain goes to the next screen of the half it left.
+      await wait(C.rest * 1000 + 300);
+      for (const x of p) x.forget('boss_done');
+      p[3].send({ t: 'ping' });
+      p[0].send({ t: 'boss_reward', key: 'change', id: 62, which: 0 });
+      const again = [];
+      for (let i = 0; i < 4; i++) again.push(await p[7].next('boss_done'));
+      check(again.map((m) => m.side).sort().join() === '0,1,4,5', 'the next call marks the others of each half: both brains\' screens among them');
+      p[0].send({ t: 'boss_obj', id: 62, part: C.cross + 0 });
+      const left = await p[5].next('twin_halves');
+      const heir = await p[3].next('boss_brain');
+      brains[0] = 3;
+      check(left.half[0] === 1 && left.brain[0] === 3 && heir.side === 3 && heir.which === 0, 'Ash\'s brain\'s screen crosses to Ember: his brain goes to the next screen of the west half');
+      p[4].forget('boss_cast');
+      p[0].send({ ...cast, id: 70 });
+      p[3].send({ ...cast, id: 71 });
+      check((await p[4].next('boss_cast')).id === 71, 'and only that screen speaks for him now');
+
+      // The pit floods: from the flood's cast on the wall of fire holds nobody, though both stand; hits stay each half's own boss's.
+      p[1].send({ ...cast, id: RAID_TWIN.ids + 80, move: RAID_TWIN.flood, which: 1, mate: undefined });
+      await p[4].next('boss_cast');
+      for (const x of p) x.forget('boss_hp');
+      p[7].send({ t: 'hero_down' });
+      await seen(p[0], 'peer_down', (m) => m.side === 7);
+      // Seat 7 is in the west now, seat 1 in the east.
+      p[1].send({ t: 'revive', side: 7 });
+      check((await p[7].next('revived')).by === 1, 'the pit floods: a hero gets one of the other half up, though both still stand');
+      p[1].send({ t: 'boss_damage', amount: 250, which: 0 });
+      p[1].send({ t: 'boss_damage', amount: 150 });
+      const hit = await seen(p[6], 'boss_hp', () => true);
+      check(hit.which === 1 && hit.hp === POOL - 300 - 150, 'hits stay each half\'s own boss\'s until one of the two falls');
+      const told = p[6].got.boss_done;
+      p[3].send({ t: 'boss_reward', key: 'change', id: 90, which: 0 });
+      // The call that was in the air when the wall went out: its gates would have shut by now.
+      await wait((C.warn + C.open) * 1000 + 500);
+      check(p[6].got.boss_done === told && p[5].got.twin_halves === 3, 'no Changing of the Flames once the wall is out, and the one in the air is off: nobody is dealt across late');
+      clearInterval(chat);
+      for (const x of p) x.close();
+    }
 
     // For two they are the tag team they were: one pool, and no `which` or `twin` in any message.
     const [d0, d1] = await players(2, 'td');

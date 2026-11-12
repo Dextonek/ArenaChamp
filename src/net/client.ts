@@ -180,7 +180,10 @@ export type ServerMsg =
   | { t: 'raid_stage'; stage: number; tier: number; boss: string; hp: number; brain: number; band: number; staggerMax: number; twin?: { half: number[]; hp: [number, number]; brain: [number, number]; staggerMax: number } }
   | { t: 'raid_won'; stage: number; tier: number; bosses: number; seconds: number; last: boolean; wait: number }
   // `which`, on these and below: only in Twin Flames, which of the two bosses it is about (0 Ash, 1 Ember).
-  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: number; alone?: boolean; rim?: boolean; form?: number; flag?: boolean; which?: number }
+  | { t: 'boss_cast'; id: number; move: string; step: number; x: number; z: number; fx: number; fz: number; dir: number; seed: number; target: number; alone?: boolean; rim?: boolean; form?: number; flag?: boolean; which?: number; mate?: number }
+  // Twin Flames, The Changing of the Flames: the halves as the hub has dealt them again (by side, as in `raid_stage.twin.half`), whose
+  // screen runs each boss's brain now, and who the gates shut on (`late`: each of those is dragged through, and burns).
+  | { t: 'twin_halves'; half: number[]; brain: [number, number]; late: number[] }
   | { t: 'boss_move'; x: number; z: number; yaw: number; ts?: number; which?: number }
   | { t: 'boss_hp'; hp: number; which?: number }
   | { t: 'boss_phase'; phase: number; which?: number }
