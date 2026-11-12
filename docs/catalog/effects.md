@@ -247,7 +247,7 @@ Every effect registered in the Three.js VFX editor: **287 effects in 48 categori
 | chain hammer | A hammer on a chain is whirled and thrown down the aim; the first enemy it touches is dragged to the smith and slowed. | ground (line) | 1.7 s · hero kit Q | [source](../../src/spells/targeted/chainHammer.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
 | forge roar | Heat rolls off him in a ring, a loop of chain turns at his waist and his next basic attack is armed as a slam. | self (r 4) | 3.6 s · hero kit W | [source](../../src/spells/targeted/forgeRoar.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
 | red-hot rivet | He flicks a white-hot rivet at an enemy in sight; it punches in and burns in two ticks. | enemy | 3.2 s · hero kit E | [source](../../src/spells/targeted/redHotRivet.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
-| molten core | His chest cracks open for 6 s and his swings spray slag cones; a recast Quenches it in a ring burst. | self (r 6) | 6.4 s (Quench 2.4 s) · hero kit R | [source](../../src/spells/targeted/moltenCore.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
+| molten core | In the game it is the Quench alone: he plants himself and a 3 m ring bursts, harder the more Heat he had. The 6 s stance (chest cracked open, slag cones on his swings) plays only in the tool. | self (r 6) | 2.4 s (the tool's stance 6.4 s) · hero kit R | [source](../../src/spells/targeted/moltenCore.ts), [kit sheet](../../pipeline/designs/kit-forge.md) |
 
 ## hero: frost
 
@@ -398,9 +398,9 @@ Every effect registered in the Three.js VFX editor: **287 effects in 48 categori
 
 | Label | Description | Targeting | Length / tier | Links |
 |---|---|---|---|---|
-| resounding chord | A chord from the lyre fans out in a 5 m cone; silences when cast on the beat. | self (cone 5 m) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/resoundingChord.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
-| siren song | A note flies at the enemy and charms it into walking toward him. | enemy | 3.8 s · hero kit W | [source](../../src/spells/targeted/sirenSong.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
-| rising chorus | Notes orbit him; in-tune casts give speed and a shield. | self (r 7) | 3.5 s · hero kit E | [source](../../src/spells/targeted/risingChorus.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
+| resounding chord | A chord from the lyre fans out in a 5 m cone; gold on the beat, rose and weak off it; silences at the top of his Crescendo. | self (cone 5 m) | 1.3 s · hero kit Q | [source](../../src/spells/targeted/resoundingChord.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
+| siren song | A note flies at the enemy and charms it into walking toward him, longer the more Crescendo it spends; a note off the beat breaks on them. | enemy | 3.8 s · hero kit W | [source](../../src/spells/targeted/sirenSong.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
+| rising chorus | Notes orbit him; on the beat it spends his Crescendo for a shield and speed. | self (r 7) | 3.5 s · hero kit E | [source](../../src/spells/targeted/risingChorus.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
 | duet | A ring of music staves closes round both heroes and pulses on every beat. | self (r 9, ring r 6) | 4.2 s · hero kit R | [source](../../src/spells/targeted/duet.ts), [kit sheet](../../pipeline/designs/kit-bard.md) |
 
 ## hero: hive

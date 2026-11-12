@@ -16,8 +16,8 @@ export const POWER_WHITE = 1.15;
  * White heat (the bar full): it stays until he Quenches. He burns `BURN` HP each second and each Q, W, E costs `WHITE_COST`
  * HP; slows, roots and knock-ups do nothing to him and each basic attack deals `WHITE_ATTACK` more.
  */
-export const BURN = 16;
-export const WHITE_COST = 40;
+export const BURN = 14;
+export const WHITE_COST = 35;
 export const WHITE_ATTACK = 15;
 /** Quench (R): the burst is 30 + 10 per `quenchLeft` second in the effect; this many of those seconds per point of Heat. */
 export const QUENCH_PER_HEAT = 0.05;
@@ -85,8 +85,8 @@ const AI_QUENCH_REACH = 2.5;
  * server asks between two casts of a slot). Each adds Heat to his own bar (`resource`) and is cast at the power of the
  * Heat it found: x0.55 cold, x1.15 white-hot (`castMods`, so the power travels with the cast). Q adds 40, W and E 30, so
  * the third spell in a row turns the hammer white. Heat cools 10 a second once he has cast nothing for 2.5 s (`tick`).
- * White heat: the bar full. It does not cool; it stays until he Quenches. He burns 16 HP each second (`payHp`, in whole
- * seconds, which cannot take his last HP) and each Q, W, E costs him 40 HP in place of Heat; slows, roots and knock-ups do
+ * White heat: the bar full. It does not cool; it stays until he Quenches. He burns 14 HP each second (`payHp`, in whole
+ * seconds, which cannot take his last HP) and each Q, W, E costs him 35 HP in place of Heat; slows, roots and knock-ups do
  * nothing to him (`taken`) and every basic attack deals 15 more (`attackMods`). Shown as 'core' (a pip and a white ring).
  * R is the Quench at any Heat (the drawn Quench of `moltenCore.ts`, told by a fresh `forgeFx.quenchAt`): he plants himself
  * 0.6 s, the 3 m ring bursts for 30 + 0.5 per point of Heat (80 at white heat), stuns 0.75 s if he was white-hot (a status
@@ -97,7 +97,8 @@ const AI_QUENCH_REACH = 2.5;
  * on an armed slam, a roar between two rivets in reach, no spell that would turn the hammer white while the Quench is far
  * from ready; white-hot it pays for spells only above half HP, rides the heat 3.5 s, then Quenches with the enemy inside
  * the ring (anywhere under 25% HP).
- * Measured 2026-11-12 (docs/balance/rework-brannoc-after.html): 53% against the benchmark heroes, both sides.
+ * Measured 2026-11-12 (docs/balance/rework-brannoc-after.html): 59% against the benchmark heroes on both sides, 43% as
+ * the player's hero alone.
  */
 export const forgeTrait: Trait = {
   aiHold(t, slot, dist) {
@@ -125,7 +126,7 @@ export const forgeTrait: Trait = {
   },
   passive: {
     name: 'Heat',
-    blurb: 'No cooldowns. Each spell heats his hammer, and a hot spell hits harder: 55% cold, 115% white-hot. At white heat he burns 16 HP a second and pays 40 HP a spell, nothing slows or roots him and his attacks deal +15, until he Quenches. Heat cools when he rests 2.5 s.',
+    blurb: 'No cooldowns. Each spell heats his hammer, and a hot spell hits harder: 55% cold, 115% white-hot. At white heat he burns 14 HP a second and pays 35 HP a spell, nothing slows or roots him and his attacks deal +15, until he Quenches. Heat cools when he rests 2.5 s.',
   },
   resource: { name: 'Heat', max: HEAT_MAX, color: '#ff5a12' },
   ownLook: {

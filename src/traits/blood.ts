@@ -17,12 +17,13 @@ export const DRINK_HUNGRY = 0.5;
 /** She is Hungry below this share of her max HP. */
 export const HUNGRY_BELOW = 0.45;
 /**
- * Lancet: the Rip opens `RIP_ARM` s after the needle and stays open to `RIP_WINDOW`; it gives back this share of what the
+ * Lancet: the Rip opens `RIP_ARM` s after the needle and stays open to `RIP_WINDOW` (the effect's own clock for "a second
+ * Lancet is the Rip", so the two agree whatever shortens the lock); it gives back this share of what the
  * needle cost and makes Lancet ready again. A needle left in locks Lancet for `NEEDLE_LOCK` s (longer than the effect's own
  * 3.3 s clock, so the two always agree on which cast is the Rip).
  */
 export const RIP_ARM = 0.6;
-export const RIP_WINDOW = 3;
+export const RIP_WINDOW = 3.3;
 export const RIP_REFUND = 0.5;
 export const NEEDLE_LOCK = 3.4;
 /** The gap the game server asks between two casts of a slot (the kit's cooldown of Q, W, E). */
@@ -182,7 +183,7 @@ export const bloodTrait: Trait = {
     if (hit.slot === 0) {
       // The first cast leaves the needle in (a pip for 3 s); the rip, which finds it there, takes it out.
       if (t.stacks('needle') > 0) t.clearStacks('needle');
-      else t.addStacks('needle', 1, RIP_WINDOW, 1);
+      else t.addStacks('needle', 1, 3, 1);
     }
     if (hit.slot === 2) t.addStacks('curse', 1, 3, 1);
   },
