@@ -5,7 +5,7 @@ export const BEAT = 1.2;
 export const TUNE = 0.25;
 /** The Crescendo: its top, and what each step adds to a clean spell's power. */
 export const CRESCENDO_MAX = 5;
-export const CRESCENDO_POWER = 0.1;
+export const CRESCENDO_POWER = 0.09;
 /** A spell cast off the beat goes sour: this much of its power, no silence, no charm, no shield. */
 export const SOUR_POWER = 0.25;
 /** The Crescendo holds this many beats without a clean spell, then falls one step a beat. */
