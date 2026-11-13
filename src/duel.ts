@@ -16,7 +16,7 @@ import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
-import { pillar, stopsAtCover, sweepHit } from './obstacles';
+import { hyp, pillar, stopsAtCover, sweepHit } from './obstacles';
 import { TOUCH } from './touch';
 import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
@@ -39,8 +39,11 @@ export interface DuelHost {
   setStage?(stage: ArenaStage | null): void;
   /** Ends every spell still on screen (main.ts `clearEffects`): a new round or a left duel starts clean. */
   clearEffects?(): void;
-  /** Compiles what is in the scene now, so the first frames of a fight do not stutter. */
-  warmUp?(): Promise<unknown>;
+  /**
+   * Builds the effects of these spells (hidden) and compiles everything in the scene, so neither the first frames of a
+   * fight nor the first cast of each spell stutter.
+   */
+  warmUp?(labels?: string[]): Promise<unknown>;
   /** The outline: round this object, or off (null). */
   outline?(object: THREE.Object3D | null): void;
 }
@@ -1935,7 +1938,11 @@ export class Duel {
       while (performance.now() < end && !(this.host.heroMode.figureLoaded && this.figure.loaded && [...this.party.values()].every((p) => p.lite || p.figure.loaded) && (this.rimFigure?.loaded ?? true))) await new Promise((ok) => setTimeout(ok, 60));
     };
     await figures();
-    await Promise.race([this.host.warmUp?.() ?? Promise.resolve(), new Promise((ok) => setTimeout(ok, Math.max(0, end - performance.now())))]);
+    // Every spell that can be cast in this fight: this hero's (both halves of a two-kit hero), the opponent's, the partners'.
+    const kits = [this.host.heroMode.currentKit, this.opponentKit, ...[...this.party.values()].filter((p) => !p.lite).map((p) => p.kit)];
+    const labels = new Set<string>();
+    for (const kit of kits) for (const k of [kit, kit.base, kit.alt, kit.base?.alt]) for (const s of k?.spells ?? []) labels.add(s.label);
+    await Promise.race([this.host.warmUp?.([...labels]) ?? Promise.resolve(), new Promise((ok) => setTimeout(ok, Math.max(0, end - performance.now())))]);
   }
 
   /** The countdown before the fight: the hero is locked (and an AI waits) until it runs out. */
@@ -3646,7 +3653,7 @@ function grownShape(s: TelegraphShape, pad: number): TelegraphShape {
 function capsuleDist(x: number, z: number, o: ArenaDef['obstacles'][number]) {
   const dx = o.bx - o.ax, dz = o.bz - o.az, len2 = dx * dx + dz * dz;
   const t = len2 > 0 ? Math.min(1, Math.max(0, ((x - o.ax) * dx + (z - o.az) * dz) / len2)) : 0;
-  return Math.hypot(x - (o.ax + dx * t), z - (o.az + dz * t));
+  return hyp(x - (o.ax + dx * t), z - (o.az + dz * t));
 }
 
 /** Closest ground-plane distance between the path from `a` to `b` and an obstacle's segment (sampled along the path). */

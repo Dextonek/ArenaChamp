@@ -140,7 +140,8 @@ export function createGround(radius = 60): THREE.Mesh {
   map.repeat.set(radius / 4, radius / 4); // ~8 m texture tile → slabs of ~2-2.7 m
   const ground = new THREE.Mesh(
     geo,
-    new THREE.MeshStandardMaterial({ map, vertexColors: true, roughness: 0.92, metalness: 0 }),
+    // Drawn after the floors that lie on it (src/runtime.ts, `opaqueOrder`): where the depths tie, far off, the floor above keeps the pixel.
+    new THREE.MeshStandardMaterial({ map, vertexColors: true, roughness: 0.92, metalness: 0, depthFunc: THREE.LessDepth }),
   );
   ground.receiveShadow = true;
   ground.rotation.x = -Math.PI / 2;

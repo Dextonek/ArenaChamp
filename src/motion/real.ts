@@ -104,6 +104,11 @@ function loadLibrary(): Promise<Library> {
   return library;
 }
 
+/** Starts loading the clips now (the game does, a moment after its menu is up), so the first fight does not wait for them. */
+export function preloadClips() {
+  void loadLibrary().catch(() => undefined);
+}
+
 /**
  * A clip's length and the moment its blow lands (seconds; 1 s and its middle until the clips have loaded), and the
  * share of the legs it may take (`LEGS`).

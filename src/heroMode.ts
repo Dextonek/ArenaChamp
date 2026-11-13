@@ -10,7 +10,7 @@ import { traitFor, type TraitRuntime } from './traits';
 import { BUFF_COLOR, BUFF_GLYPH, DEBUFFS } from './effects/status';
 import { arcBendFor, arcPoints } from './effects/projectile';
 import { TOUCH, Joystick, aimButton, pinchZoom, type TouchTarget } from './touch';
-import { bankPath, contains, stopsAtCover, type Obstacle } from './obstacles';
+import { bankPath, contains, segDist, stopsAtCover, type Obstacle } from './obstacles';
 import { isOwnWall } from './traits/mime';
 
 /**
@@ -766,6 +766,9 @@ export class HeroMode implements TouchTarget {
     const cx = this.cursor.x, cz = this.cursor.z;
     let top = 0, hit: Obstacle | null = null;
     for (const o of cover) {
+      // Every spot tried below lies on the floor between the cursor and where the ray passes this cover's top: cover that
+      // line never comes within reach of is skipped in one test (most of it, in a boss's hall, on every frame).
+      if (segDist(cx, cz, cx + o.height * sx, cz + o.height * sz, o.ax, o.az, o.bx, o.bz) > o.r + 1e-6) continue;
       // The first cover the ray meets is the one it meets highest up.
       for (let y = o.height; y > top; y -= COVER_STEP) {
         if (contains(o, cx + y * sx, cz + y * sz)) { top = y; hit = o; break; }

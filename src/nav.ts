@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { segDist, type Obstacle } from './obstacles';
+import { hyp, segDist, type Obstacle } from './obstacles';
 
 /**
  * Pathfinding round the duel's cover. The obstacles are capsules, so the shortest way between two points runs along
@@ -42,7 +42,7 @@ interface Pt {
   z: number;
 }
 
-const flat = (a: Pt, b: Pt) => Math.hypot(a.x - b.x, a.z - b.z);
+const flat = (a: Pt, b: Pt) => hyp(a.x - b.x, a.z - b.z);
 
 function nearestOn(x: number, z: number, o: Obstacle): Pt {
   const sx = o.bx - o.ax, sz = o.bz - o.az, len2 = sx * sx + sz * sz;
@@ -50,9 +50,11 @@ function nearestOn(x: number, z: number, o: Obstacle): Pt {
   return { x: o.ax + sx * k, z: o.az + sz * k };
 }
 
+/** The distance to the obstacle's segment: `nearestOn`'s sums without its object (this runs for every cell of a route's chart). */
 function pointDist(x: number, z: number, o: Obstacle) {
-  const c = nearestOn(x, z, o);
-  return Math.hypot(x - c.x, z - c.z);
+  const sx = o.bx - o.ax, sz = o.bz - o.az, len2 = sx * sx + sz * sz;
+  const k = len2 > 0 ? Math.min(1, Math.max(0, ((x - o.ax) * sx + (z - o.az) * sz) / len2)) : 0;
+  return hyp(x - (o.ax + sx * k), z - (o.az + sz * k));
 }
 
 export class Navigator {
@@ -221,7 +223,8 @@ export class Navigator {
   /** Free for a body: not in touching distance of cover, inside the ring. */
   private free(x: number, z: number, pad = 0) {
     if (this.bounds && Math.hypot(x - this.bounds.x, z - this.bounds.z) > this.bounds.r - RING_MARGIN) return false;
-    return this.obstacles.every((o) => pointDist(x, z, o) >= o.r + BODY + pad);
+    for (const o of this.obstacles) if (!(pointDist(x, z, o) >= o.r + BODY + pad)) return false;
+    return true;
   }
 
   /** Out of the margin round cover, on the spot's own side; null if the spot is inside cover or no body fits there either. */

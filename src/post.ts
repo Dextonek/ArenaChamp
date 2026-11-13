@@ -3,9 +3,10 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import type { ScreenFx } from './effects/parts/screen';
 
 /**
- * Final screen pass after tone mapping: vignette, fine grain, and impact feedback driven by camera shake —
- * chromatic aberration that grows with the shake, plus a short exposure flash whenever the shake jumps. Every
- * effect gets this for free through its `shake` value.
+ * Final screen pass: tone mapping and the screen's colour space (what three's OutputPass does, taken in here so the
+ * frame is not copied once more in full: docs/pipeline/performance.md), then vignette, fine grain, and impact feedback
+ * driven by camera shake — chromatic aberration that grows with the shake, plus a short exposure flash whenever the
+ * shake jumps. Every effect gets this for free through its `shake` value.
  *
  * Effects with a `screen` (ScreenFx) also drive: world darkening + grade, radial focus lines, and anime impact
  * frames (fully opaque frames with flat silhouettes from a mask that main.ts renders into `tMask`).
@@ -37,6 +38,8 @@ const FinishShader = {
     uCrack: { value: 0 },
     uShatter: { value: 0 },
     uTexel: { value: new THREE.Vector2(1 / 1024, 1 / 768) },
+    // Read by three's tone-mapping code (below); the renderer's own value is copied in each frame.
+    toneMappingExposure: { value: 1 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -50,6 +53,12 @@ const FinishShader = {
     uniform vec2 uFocus, uTexel;
     varying vec2 vUv;
     float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+
+    // The rendered frame as the screen shows it: three's own ACES tone mapping and sRGB curve, as its OutputPass applies them.
+    ${THREE.ShaderChunk.tonemapping_pars_fragment}
+    vec3 screenAt(vec2 uv) {
+      return sRGBTransferOETF(vec4(ACESFilmicToneMapping(texture2D(tDiffuse, uv).rgb), 1.0)).rgb;
+    }
 
     // Anime focus lines: thin wedges converging on uFocus, re-rolled ~16 times a second, clear in the middle.
     float focusLines(vec2 uv) {
@@ -106,12 +115,13 @@ const FinishShader = {
         gap = 1.0 - smoothstep(0.0, 0.02 + 0.12 * uShatter, s.x);
         shardShade = 1.0 - uShatter * 0.6 * rnd.y;
       }
-      vec2 off = d * (uAberration + uChroma * 0.03);
-      vec3 col = vec3(
-        texture2D(tDiffuse, uv + off).r,
-        texture2D(tDiffuse, uv).g,
-        texture2D(tDiffuse, uv - off).b
-      );
+      float split = uAberration + uChroma * 0.03;
+      vec3 col = screenAt(uv);
+      // The colour split reads the frame twice more: only while something shakes the screen.
+      if (split > 0.0) {
+        vec2 off = d * split;
+        col = vec3(screenAt(uv + off).r, col.g, screenAt(uv - off).b);
+      }
       col *= shardShade;
       col = mix(col, vec3(0.0), gap * step(0.001, uShatter));
       if (uDesat > 0.001) col = hueKeep(col);
@@ -180,11 +190,17 @@ const FinishShader = {
 export class FinishPass {
   readonly pass = new ShaderPass(FinishShader);
   private lastShake = 0;
+
+  constructor() {
+    // The shader tone-maps by itself: three must not add its own tone mapping (and its copy of the same code) on top.
+    this.pass.material.toneMapped = false;
+  }
+
   private flash = 0;
   private lastTime = performance.now();
 
-  /** Call once per rendered frame with the active effect's shake (world units). */
-  update(shake: number) {
+  /** Call once per rendered frame with the active effect's shake (world units) and the renderer's exposure. */
+  update(shake: number, exposure = 1) {
     const now = performance.now();
     const dt = Math.min((now - this.lastTime) / 1000, 0.1);
     this.lastTime = now;
@@ -197,6 +213,7 @@ export class FinishPass {
     u.uAberration.value = Math.min(shake, 1.2) * 0.012;
     u.uFlash.value = this.flash;
     u.uTime.value = (now / 1000) % 100;
+    u.toneMappingExposure.value = exposure;
   }
 
   /** Applies the active effect's ScreenFx (or neutral when none). `focusUv` is the focus point in screen uv. */

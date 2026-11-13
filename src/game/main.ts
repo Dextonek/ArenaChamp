@@ -27,6 +27,8 @@ import { WorldClimb, climbPanel } from '../tower/world/menu';
 import { KIND_NAME, TWISTS, isoWeek, towerFor, untilNext, weekBefore } from '../tower/week';
 import { heightName } from '../arenas/tower';
 import { CHANGELOG, type NewsItem, type Release } from './changelog';
+import { QUALITY_NAMES, QUALITY_ORDER } from '../quality';
+import { preloadClips } from '../motion/real';
 
 type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news' | 'shop';
 
@@ -228,7 +230,13 @@ function safeSet(k: string, v: string) { try { localStorage.setItem(k, v); } cat
 const root = el('div', { class: 'ui' });
 const toastEl = el('div', { class: 'toast' });
 document.body.append(root, toastEl);
-const preview = new HeroPreview();
+// The turning hero's own renderer is made the first time a screen shows it: it costs a third of a second of start-up
+// (a second WebGL context, its reflections and their shaders), and the login screen has no hero.
+let previewNow: HeroPreview | null = null;
+const preview = {
+  get canvas() { return (previewNow ??= new HeroPreview()).canvas; },
+  show(url: string | undefined, kit?: HeroKit) { (previewNow ??= new HeroPreview()).show(url, kit); },
+};
 let toastTimer = 0;
 
 function toast(text: string) {
@@ -270,8 +278,10 @@ function render() {
     shownScreen = state.screen;
     root.scrollTop = 0;
   }
-  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active || world.active) { root.style.display = 'none'; shownScreen = null; return; }
+  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active || world.active) { root.style.display = 'none'; shownScreen = null; gameApi.view.covered = false; return; }
   root.style.display = '';
+  // The menus lie over the whole canvas and nothing shows through: the 3D scene is not drawn while they are up.
+  gameApi.view.covered = true;
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
   if (!state.profile) {
@@ -315,6 +325,20 @@ function render() {
 let scrollToHero = false;
 
 /** The bar along the top (on a phone its tabs sit along the bottom). Without an account: the two offline screens and a way to log in. */
+/** The picture's quality (src/quality.ts): a tap goes to the next level, kept in this browser. */
+function qualityButton() {
+  const q = gameApi.quality;
+  return el('button', {
+    class: 'btn ghost small gfx',
+    title: 'How sharp the fight is drawn. Auto fits it to this device so it runs smoothly; High is the sharpest; Medium and Low draw fewer pixels.',
+    onclick: () => {
+      q.set(QUALITY_ORDER[(QUALITY_ORDER.indexOf(q.level) + 1) % QUALITY_ORDER.length]);
+      toast(`Graphics: ${QUALITY_NAMES[q.level]}`);
+      render();
+    },
+  }, `Graphics: ${QUALITY_NAMES[q.level]}`);
+}
+
 function header() {
   const p = state.profile;
   const nav = (label: string, screen: Screen, ic: keyof typeof ICONS) =>
@@ -323,7 +347,7 @@ function header() {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
       el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Shop', 'shop', 'shop'), nav('News', 'news', 'news')),
-      el('div', { class: 'who' }, el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
+      el('div', { class: 'who' }, qualityButton(), el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
   }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
@@ -334,6 +358,7 @@ function header() {
       // The account's obols: a tap opens the Shop.
       el('button', { class: 'purse', title: 'Your obols: open the Shop', onclick: () => go('shop') }, obols(p.obols ?? 0)),
       el('span', { class: 'muted' }, `${p.wins} W · ${p.losses} L`),
+      qualityButton(),
       el('button', { class: 'btn ghost small', onclick: () => net.send({ t: 'logout' }) }, 'Log out'),
     ),
   );
@@ -1319,7 +1344,12 @@ function lobbyScreen(l: LobbyState) {
 
 // --- network events ----------------------------------------------------------------------------------------
 
+// Every fight needs the heroes' clips (1.3 MB): fetched once the menu is up and idle, not when the first fight is waited for.
+setTimeout(preloadClips, 1500);
+
 const loading = new LoadingScreen();
+// The loading page covers the scene: nothing is drawn behind it until the fight's warm-up has compiled its shaders.
+loading.onToggle = (up) => { gameApi.view.loading = up; };
 const match = new MatchController(net, gameApi, loading, {
   onEnter: () => render(),
   onExit: () => { state.screen = 'menu'; render(); net.send({ t: 'profile' }); },

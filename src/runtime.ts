@@ -4,7 +4,6 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -22,6 +21,7 @@ import { CASTER_POS } from './effects/common';
 import type { CastContext, Effect, EffectModule } from './effects/types';
 import { DISTORT_LAYER } from './effects/parts/distortion';
 import type { ScreenFx } from './effects/parts/screen';
+import { AUTO_MIN_PIXELS, AUTO_MIN_SHARE, AUTO_REST_MS, FramePacer, QUALITY_SPEC, loadQuality, loadShare, saveQuality, saveShare, type QualityLevel } from './quality';
 
 /**
  * The 3D runtime that the VFX tool (index.html, src/tool/) and the duel game (game.html, src/game/) are both built
@@ -82,31 +82,144 @@ export const HERO_BLOOM: BloomSettings = { enabled: true, strength: 0.45, radius
 
 export type Runtime = ReturnType<typeof createRuntime>;
 /** What the duel game (src/game/) drives: hero mode, the duel and the hero choice. */
-export type GameApi = Pick<Runtime, 'arena' | 'heroMode' | 'duel' | 'kits' | 'setHeroMode' | 'setKit'>;
+export type GameApi = Pick<Runtime, 'arena' | 'heroMode' | 'duel' | 'kits' | 'setHeroMode' | 'setKit' | 'view' | 'quality'>;
+
+/**
+ * The order solid things are drawn in. Three's own order is by material (the oldest first), which drew the ground first and
+ * every floor laid over it after: each pixel of floor was shaded two or three times, and a lit, textured floor that fills
+ * the screen is the dearest thing in the picture (docs/pipeline/performance.md). Here the big surfaces (ground, floors,
+ * anything wider than 24 m) come after everything else that writes depth, the highest first, so a floor under another is
+ * skipped by the depth test before it is shaded. Solid things that do not write depth (flat glows on the floor) come last,
+ * as they did in effect: over what they lie on. Within each kind the order is three's own. The picture is the same.
+ */
+const BIG_SURFACE = 12;
+const _big = new WeakMap<THREE.BufferGeometry, boolean>();
+interface DrawItem { object: THREE.Object3D; geometry: THREE.BufferGeometry | null; material: THREE.Material & { id: number }; groupOrder: number; renderOrder: number; z: number; id: number }
+function drawKind(it: DrawItem) {
+  if (!it.material.depthWrite) return 2;
+  const g = it.geometry;
+  if (!g) return 0;
+  let big = _big.get(g);
+  if (big === undefined) {
+    if (!g.boundingSphere) g.computeBoundingSphere();
+    big = (g.boundingSphere?.radius ?? 0) >= BIG_SURFACE && !(it.object as THREE.SkinnedMesh).isSkinnedMesh;
+    _big.set(g, big);
+  }
+  return big ? 1 : 0;
+}
+/** How high a big surface lies: the world height of the middle of its geometry. */
+function heightOf(it: DrawItem) {
+  const c = it.geometry!.boundingSphere!.center, e = it.object.matrixWorld.elements;
+  return e[1] * c.x + e[5] * c.y + e[9] * c.z + e[13];
+}
+function opaqueOrder(a: DrawItem, b: DrawItem) {
+  if (a.groupOrder !== b.groupOrder) return a.groupOrder - b.groupOrder;
+  if (a.renderOrder !== b.renderOrder) return a.renderOrder - b.renderOrder;
+  const ka = drawKind(a), kb = drawKind(b);
+  if (ka !== kb) return ka - kb;
+  if (ka === 1) {
+    const ha = heightOf(a), hb = heightOf(b);
+    if (Math.abs(ha - hb) > 1e-4) return hb - ha;
+  }
+  if (a.material.id !== b.material.id) return a.material.id - b.material.id;
+  if (a.z !== b.z) return a.z - b.z;
+  return a.id - b.id;
+}
+
+/**
+ * A see-through, two-sided material is drawn by three in two goes, back faces then front, and marked as changed before
+ * each: two draw calls and two look-ups of its shader on every frame, for each of the hundreds of glows, rings and veils
+ * the spells are made of. Where the two goes give the same picture as one, one is asked for (`forceSinglePass`):
+ *  - a flat shape (its back and its front are never seen at once), unless a shader of its own may bend it;
+ *  - anything that only adds its light and writes no depth (adding does not care about the order).
+ * A closed shape that covers what is behind it (a shield's dome, a veil) keeps its two goes: there the order shows.
+ * Looked at once for each material and geometry, here, where every see-through thing passes before it is drawn.
+ */
+const _flat = new WeakMap<THREE.BufferGeometry, boolean>();
+const _oneGo = new WeakSet<THREE.Material>();
+function flatShape(g: THREE.BufferGeometry | null) {
+  if (!g) return false;
+  let flat = _flat.get(g);
+  if (flat === undefined) {
+    if (!g.boundingBox) g.computeBoundingBox();
+    const b = g.boundingBox;
+    const dx = b ? b.max.x - b.min.x : 1, dy = b ? b.max.y - b.min.y : 1, dz = b ? b.max.z - b.min.z : 1;
+    flat = !!b && Number.isFinite(dx + dy + dz) && Math.min(dx, dy, dz) <= 1e-5 * Math.max(dx, dy, dz, 1e-3) && !g.morphAttributes.position;
+    _flat.set(g, flat);
+  }
+  return flat;
+}
+function oneGo(it: DrawItem) {
+  const m = it.material as THREE.Material & { displacementMap?: unknown; isShaderMaterial?: boolean };
+  if (_oneGo.has(m)) return;
+  _oneGo.add(m);
+  if (!m.transparent || m.side !== THREE.DoubleSide || m.forceSinglePass) return;
+  const adds = m.blending === THREE.AdditiveBlending && !m.depthWrite;
+  const o = it.object as THREE.Mesh & { isSkinnedMesh?: boolean };
+  const flat = !m.isShaderMaterial && !m.displacementMap && !o.isSkinnedMesh && flatShape(it.geometry);
+  if (adds || flat) m.forceSinglePass = true;
+}
+/** Three's own order for see-through things (far to near), with `oneGo` looked at on the way. */
+function transparentOrder(a: DrawItem, b: DrawItem) {
+  oneGo(a);
+  oneGo(b);
+  if (a.groupOrder !== b.groupOrder) return a.groupOrder - b.groupOrder;
+  if (a.renderOrder !== b.renderOrder) return a.renderOrder - b.renderOrder;
+  if (a.z !== b.z) return b.z - a.z;
+  return a.id - b.id;
+}
+
+/**
+ * Every light is on every layer. The distortion pass and the impact frames' mask draw the scene through a camera that sees
+ * one layer only, and three leaves out the lights that layer does not have. To three that is another set of lights: it
+ * then looked up the shader of every lit material again, on that frame and on the next one, building a record of some
+ * forty settings for each (a fifth of all the garbage in a raid, and a millisecond and more of every such frame). With the
+ * lights always counted, the set never changes. Nothing in those two draws is lit, so they look the same. `Object3D`'s
+ * constructor assigns `layers`: the setter takes that and drops it.
+ */
+const EVERY_LAYER = new THREE.Layers();
+EVERY_LAYER.enableAll();
+Object.defineProperty(THREE.Light.prototype, 'layers', { configurable: true, get: () => EVERY_LAYER, set: () => {} });
 
 /** Builds the scene into `#app` and starts the frame loop. Call once per page. */
 export function createRuntime(opts: RuntimeOptions) {
   const hooks: RuntimeHooks = {};
   const container = document.getElementById('app')!;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  // No multisampling on the canvas: the scene is drawn into the composer's own targets, and the last pass (FXAA) covers
+  // the whole canvas with one quad, which multisampling does nothing for but still stores and resolves four times over.
+  const renderer = new THREE.WebGLRenderer({ antialias: false });
+  // How many pixels are drawn is the quality setting's (`quality`, below); `resize` sets it.
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   // Applied by OutputPass; keeps overlapping additive particles from clipping to flat white.
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   // Soft contact shadows under the figures and big objects (only meshes that opt in with castShadow).
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // The type three really draws with: it has no soft type any more and turned `PCFSoftShadowMap` into this one at the first
+  // shadow it drew. Asked for by name, nothing changes on screen, but the shadow type is part of every shader's identity:
+  // set late, it made every shader compiled before the first frame (the fight's warm-up) the wrong one, and all of them
+  // were compiled again, one after the other with the page frozen, when the scene was first drawn.
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   container.appendChild(renderer.domElement);
+  renderer.setOpaqueSort(opaqueOrder);
+  renderer.setTransparentSort(transparentOrder);
 
   const scene = new THREE.Scene();
   // Background via scene.background, not setClearColor: the composer's render target clear skips the
   // sRGB→linear conversion, which washed the backdrop out to grey.
   scene.background = new THREE.Color(0x1a1f2b);
   // Reflections for the metal swords (particles use their own shader and ignore lighting).
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  // Made when the scene is first drawn or compiled (`reflections`): building it takes a moment, which the game's menu,
+  // where nothing of the scene shows, should not wait for. Its shaders are compiled in the background from the start
+  // (`compileAhead`, below), so that moment is short when it comes.
   scene.environmentIntensity = 0.6;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const room = new RoomEnvironment();
+  function reflections() {
+    if (scene.environment) return;
+    scene.environment = pmrem.fromScene(room, 0.04).texture;
+  }
   const hemi = new THREE.HemisphereLight(0x9fb4ff, 0x20160f, 0.6);
   scene.add(hemi);
   const sun = new THREE.DirectionalLight(0xfff0d8, 1.5);
@@ -237,12 +350,62 @@ export function createRuntime(opts: RuntimeOptions) {
   };
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 0.5, 0.2);
   composer.addPass(bloomPass);
-  composer.addPass(new OutputPass());
+  // Tone mapping and the screen's colour space are the finish pass's first step (src/post.ts): no OutputPass.
   const finish = new FinishPass();
   composer.addPass(finish.pass);
   // Antialiasing last: the composer renders into targets without MSAA, so hard drawn edges were jagged.
   const fxaa = new ShaderPass(FXAAShader);
   composer.addPass(fxaa);
+
+  /**
+   * The shaders of the post chain and of the reflections, compiled in the background from the moment the page opens.
+   * None of them is part of the scene, so the fight's warm-up never saw them: each was compiled when first used, with the
+   * page frozen until it was done (2.4 s in all behind the first loading page on an integrated card). `compile` only starts
+   * a shader's compile; the browser finishes it on its own threads. Each is compiled for where it draws: into a target
+   * (linear colour) or, the last pass, onto the canvas.
+   */
+  function compileAhead() {
+    const flat = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    // On the mesh that will draw it: which attributes a mesh has (a position, normals) is part of a shader's identity too.
+    const start = (mesh: THREE.Mesh | null | undefined, material: THREE.Material | null | undefined, toCanvas = false) => {
+      if (!mesh || !material) return;
+      const own = mesh.material;
+      mesh.material = material;
+      renderer.setRenderTarget(toCanvas ? null : composer.readBuffer);
+      renderer.compile(mesh, flat);
+      mesh.material = own;
+    };
+    const quadOf = (pass: unknown) => (pass as { _fsQuad?: { _mesh?: THREE.Mesh } })._fsQuad?._mesh;
+    const before = renderer.getRenderTarget(), tone = renderer.toneMapping;
+    try {
+      const b = bloomPass as unknown as { materialHighPassFilter?: THREE.Material; separableBlurMaterials?: THREE.Material[]; compositeMaterial?: THREE.Material; blendMaterial?: THREE.Material };
+      for (const m of [b.materialHighPassFilter, ...(b.separableBlurMaterials ?? []), b.compositeMaterial, b.blendMaterial]) start(quadOf(bloomPass), m);
+      start(quadOf(distortPass), distortPass.material);
+      start(quadOf(finish.pass), finish.pass.material);
+      const o = outlinePass as unknown as Record<string, THREE.Material | undefined>;
+      for (const key of ['prepareMaskMaterial', 'edgeDetectionMaterial', 'separableBlurMaterial1', 'separableBlurMaterial2', 'overlayMaterial']) start(quadOf(outlinePass), o[key]);
+      start(quadOf(fxaa), fxaa.material, true);
+      // The reflections: the generator's two filters (its own, made by `_allocateTargets`) and the little room it films.
+      // Three draws these with tone mapping off.
+      renderer.toneMapping = THREE.NoToneMapping;
+      const p = pmrem as unknown as { _setSize?(n: number): void; _allocateTargets?(): THREE.WebGLRenderTarget; _blurMaterial?: THREE.Material; _ggxMaterial?: THREE.Material; _lodMeshes?: THREE.Mesh[] };
+      if (p._setSize && p._allocateTargets) {
+        p._setSize(256);
+        const target = p._allocateTargets();
+        start(p._lodMeshes?.[0], p._blurMaterial);
+        start(p._lodMeshes?.[0], p._ggxMaterial);
+        renderer.setRenderTarget(target);
+        renderer.compile(room, new THREE.PerspectiveCamera(90, 1, 0.1, 100));
+        renderer.setRenderTarget(null);
+        target.dispose();
+      }
+    } catch (e) {
+      console.warn('Compiling the post chain ahead stopped early (it will compile when first used):', e);
+    }
+    renderer.toneMapping = tone;
+    renderer.setRenderTarget(before);
+  }
+  compileAhead();
 
   const bloom: BloomSettings = { ...HERO_BLOOM };
   function applyBloom() {
@@ -258,8 +421,13 @@ export function createRuntime(opts: RuntimeOptions) {
    * `idleBloom`: the bloom with no effect active outside play mode (the tool sets its particle preset's).
    */
   const state = { playMode: false, idleBloom: { ...HERO_BLOOM } as BloomSettings };
-  /** Time control: paused, and a multiplier on the frame time. */
-  const view = { paused: false, timeScale: 1 };
+  /**
+   * Time control: paused, and a multiplier on the frame time. `covered`: the canvas cannot be seen (the game's menus lie
+   * over it, opaque), so nothing is drawn; the simulation still steps. `loading`: the game's loading page is up; nothing is
+   * drawn either, until the warm-up has compiled the scene's shaders in the background and draws it once itself (`warmUp`):
+   * drawn before that, every shader was compiled on the spot, with the page frozen.
+   */
+  const view = { paused: false, timeScale: 1, covered: false, loading: false };
 
   // --- Effects (created lazily so one broken effect can't take down the app) ---
   const slots = new Map<string, EffectSlot>(opts.modules.map((m) => [m.label, { module: m }]));
@@ -321,8 +489,98 @@ export function createRuntime(opts: RuntimeOptions) {
     e.setPixelScale(window.innerHeight * renderer.getPixelRatio(), camera.fov);
   }
 
+  // --- Quality: how many pixels are drawn, and the shadows (src/quality.ts) ---------------------------------------
+  const pacer = new FramePacer();
+  const quality = {
+    level: loadQuality() as QualityLevel,
+    /** `auto`: the share of the screen's own pixels drawn now (1: all). */
+    share: loadShare(),
+    /** `auto` found the processor, not the card, to be the limit, and took the shadows away (each is a second draw call). */
+    lean: false,
+    /** For the tools: draw at exactly this pixel ratio, whatever the level (null: the level decides). */
+    fixed: null as number | null,
+    /** The pixel ratio for a window of `w` by `h` points. */
+    pixelRatio(w: number, h: number) {
+      const own = Math.min(window.devicePixelRatio, 2), ownPixels = w * h * own * own;
+      if (this.fixed) return this.fixed;
+      const most = this.level === 'auto' ? Math.max(this.share * ownPixels, Math.min(ownPixels, AUTO_MIN_PIXELS), AUTO_MIN_SHARE * ownPixels) : QUALITY_SPEC[this.level].maxPixels;
+      return most >= ownPixels ? own : own * Math.sqrt(most / ownPixels);
+    },
+    /** The player's choice: kept in the browser, applied at once. */
+    set(level: QualityLevel) {
+      this.level = level;
+      this.lean = false;
+      saveQuality(level);
+      pacer.reset();
+      this.apply();
+    },
+    /** Puts the level's pixels and shadows in place. */
+    apply() {
+      const size = this.level === 'auto' ? (this.lean ? 0 : 2048) : QUALITY_SPEC[this.level].shadow;
+      if (sun.castShadow !== size > 0) sun.castShadow = size > 0;
+      if (size > 0 && sun.shadow.mapSize.x !== size) {
+        sun.shadow.mapSize.set(size, size);
+        sun.shadow.map?.dispose();
+        sun.shadow.map = null;
+      }
+      resize();
+    },
+    /** `auto`: the share of pixels times `factor`, within its bounds. True if that changed what is drawn. */
+    scale(factor: number) {
+      const w = window.innerWidth, h = window.innerHeight, own = Math.min(window.devicePixelRatio, 2);
+      const least = Math.max(AUTO_MIN_SHARE, Math.min(1, AUTO_MIN_PIXELS / (w * h * own * own)));
+      const next = Math.max(least, Math.min(1, this.share * factor));
+      if (Math.abs(next - this.share) < 0.02) return false;
+      this.share = next;
+      saveShare(next);
+      resize();
+      return true;
+    },
+    /**
+     * `auto`, before a fight (the loading page is up): the scene as it stands is drawn a few times and timed, the wait
+     * for the graphics card included (one pixel read back makes the browser wait for it), and the share of pixels is set so
+     * a frame at rest takes `AUTO_REST_MS`. Twice, since a frame's time is not all pixels. If the processor's own part is
+     * most of a slow frame, fewer pixels will not help: the shadows go instead.
+     */
+    calibrate() {
+      if (this.level !== 'auto' || this.fixed || document.hidden || view.covered) return;
+      const gl = renderer.getContext(), px = new Uint8Array(4);
+      const time = () => {
+        const all: number[] = [], own: number[] = [];
+        for (let i = 0; i < 5; i++) {
+          const t0 = performance.now();
+          render();
+          const t1 = performance.now();
+          gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+          all.push(performance.now() - t0);
+          own.push(t1 - t0);
+        }
+        all.sort((a, b) => a - b);
+        own.sort((a, b) => a - b);
+        return { ms: all[2], own: own[2] };
+      };
+      try {
+        let t = time();
+        for (let round = 0; round < 2; round++) {
+          if (t.own > 9 && t.ms > AUTO_REST_MS * 1.3 && !this.lean) {
+            this.lean = true;
+            this.apply();
+          } else if (!this.scale(Math.max(0.35, Math.min(2.5, AUTO_REST_MS / Math.max(1, t.ms))))) break;
+          t = time();
+        }
+        this.restMs = t.ms;
+      } catch (e) {
+        console.warn('The quality check stopped early:', e);
+      }
+      pacer.reset();
+    },
+    /** What the last `calibrate` measured for a frame at rest (ms), for the tools. */
+    restMs: 0,
+  };
+
   function resize() {
     const w = window.innerWidth, h = window.innerHeight;
+    renderer.setPixelRatio(quality.pixelRatio(w, h));
     renderer.setSize(w, h);
     composer.setPixelRatio(renderer.getPixelRatio());
     composer.setSize(w, h);
@@ -335,7 +593,7 @@ export function createRuntime(opts: RuntimeOptions) {
     hooks.resized?.();
   }
   window.addEventListener('resize', resize);
-  resize();
+  quality.apply();
 
   /** Builds an effect and its scene objects on first use (the app adds its own panel through `effectBuilt`). */
   function ensureEffect(slot: EffectSlot): Effect | undefined {
@@ -469,6 +727,69 @@ export function createRuntime(opts: RuntimeOptions) {
   );
   scene.add(heroMode.group);
 
+  /**
+   * Before a fight (the loading page is up): builds the effects of the spells that can be cast in it, hidden, and compiles
+   * every material in the scene, so the first cast of a spell does not stop the game to build its shaders.
+   *
+   * The shaders are compiled as the composer will use them: with its float target bound. Three keys a shader by where it
+   * draws (a target: linear colour, no tone mapping; the canvas: sRGB and tone mapped), so a compile with no target bound
+   * prepared shaders the game never used, and each was built again, in the middle of a frame, when first drawn.
+   *
+   * A spell that brings its own lights changes the shader of everything lit while it plays: those variants are compiled
+   * too, one pass for each distinct set of lights.
+   */
+  function warmUp(labels: string[] = []): Promise<unknown> {
+    reflections();
+    const built: Effect[] = [];
+    for (const label of labels) {
+      const slot = slots.get(label);
+      const effect = slot && ensureEffect(slot);
+      if (effect) built.push(effect);
+    }
+    // In the scene for the compile (the frame loop takes the hidden ones out again: `shelveHidden`).
+    for (const effect of built) if (effect.group.parent !== scene) scene.add(effect.group);
+    const before = renderer.getRenderTarget();
+    renderer.setRenderTarget(composer.readBuffer);
+    const waits: Promise<unknown>[] = [];
+    try {
+      waits.push(renderer.compileAsync(scene, camera));
+      const seen = new Set<string>();
+      for (const effect of built) {
+        let points = 0, spots = 0, dirs = 0;
+        effect.group.traverse((o) => {
+          const l = o as THREE.Light & { isPointLight?: boolean; isSpotLight?: boolean; isDirectionalLight?: boolean };
+          if (l.isPointLight) points++;
+          else if (l.isSpotLight) spots++;
+          else if (l.isDirectionalLight) dirs++;
+        });
+        const key = `${points}/${spots}/${dirs}`;
+        if (key === '0/0/0' || seen.has(key) || effect.group.visible) continue;
+        seen.add(key);
+        // Shown for the length of this call only (nothing is drawn in between): its lights count as the scene's.
+        const hidden: THREE.Object3D[] = [];
+        effect.group.traverse((o) => { if ((o as THREE.Light).isLight && !o.visible) { o.visible = true; hidden.push(o); } });
+        effect.group.visible = true;
+        waits.push(renderer.compileAsync(scene, camera));
+        effect.group.visible = false;
+        for (const o of hidden) o.visible = false;
+      }
+    } catch (e) {
+      console.warn('The shader warm-up stopped early:', e);
+    }
+    renderer.setRenderTarget(before);
+    // With everything compiled: the scene is drawn once behind the loading page, which sends its models and pictures to
+    // the graphics card, and `auto` times it and settles how many pixels this fight is drawn with.
+    return Promise.all(waits.map((w) => w.catch(() => undefined))).then(() => {
+      if (view.covered || document.hidden) return;
+      try {
+        render();
+      } catch (e) {
+        console.warn('The first draw of the scene failed:', e);
+      }
+      quality.calibrate();
+    });
+  }
+
   // --- Duel: the hero against an AI hero of another kit in a small ring (on top of hero mode) -----------------
   const duel = new Duel({
     outline,
@@ -480,7 +801,7 @@ export function createRuntime(opts: RuntimeOptions) {
     targeting: (label) => slots.get(label)?.module.targeting,
     setStage,
     clearEffects,
-    warmUp: () => renderer.compileAsync(scene, camera).catch(() => undefined),
+    warmUp,
   });
   scene.add(duel.group);
   duel.onLeave = () => setDuel(false);
@@ -633,6 +954,8 @@ export function createRuntime(opts: RuntimeOptions) {
     let any = false;
     for (const e of liveEffects()) e.group.traverseVisible((o) => { if (!any && o.layers.mask === 1 << DISTORT_LAYER) any = true; });
     distortPass.uniforms.uOn.value = any ? 1 : 0;
+    // With nothing bending the frame the pass would only copy it: skipped.
+    distortPass.enabled = any;
     if (!any && !distortActive) return;
     distortActive = any;
     const bg = scene.background, fogRef = scene.fog, layers = camera.layers.mask;
@@ -644,7 +967,10 @@ export function createRuntime(opts: RuntimeOptions) {
     renderer.setRenderTarget(distortTarget);
     renderer.setClearColor(0x000000, 0);
     renderer.clear();
+    // The shadow map is the main draw's: nothing here casts or takes a shadow.
+    renderer.shadowMap.autoUpdate = false;
     if (any) renderer.render(scene, camera);
+    renderer.shadowMap.autoUpdate = true;
     renderer.setRenderTarget(null);
     renderer.setClearColor(_clear, prevAlpha);
     camera.layers.mask = layers;
@@ -662,16 +988,46 @@ export function createRuntime(opts: RuntimeOptions) {
     camera.layers.set(SILHOUETTE_LAYER);
     renderer.setRenderTarget(maskTarget);
     renderer.clear();
+    renderer.shadowMap.autoUpdate = false;
     renderer.render(scene, camera);
+    renderer.shadowMap.autoUpdate = true;
     renderer.setRenderTarget(null);
     scene.background = bg;
     scene.overrideMaterial = override;
     camera.layers.mask = layers;
   }
 
+  /**
+   * A shader, once built, stays for the session. Three deletes one when the last material that uses it is disposed: a
+   * damage number's, a bolt's or a danger zone's shader was then built again, a stutter each time, the next time one
+   * appeared. Counting each as used once more keeps it (they are small; a session meets a few hundred).
+   */
+  const kept = new WeakSet<object>();
+  let keptCount = 0;
+  function keepShaders() {
+    const programs = renderer.info.programs as { usedTimes: number }[] | null;
+    if (!programs || programs.length === keptCount) return;
+    for (const p of programs) if (!kept.has(p)) { kept.add(p); p.usedTimes++; }
+    keptCount = programs.length;
+  }
+
+  /**
+   * A spell's effect that is not on screen is taken out of the scene, and put back when it shows. Hidden, it drew nothing,
+   * but three still walked all of it every frame to work out its matrices, and a session keeps every effect it has ever
+   * built: after a few fights with different heroes that was thousands of parts walked for nothing, more each fight.
+   */
+  function shelveHidden() {
+    for (const slot of slots.values()) {
+      const g = slot.effect?.group;
+      if (!g) continue;
+      if (g.visible) { if (g.parent !== scene) scene.add(g); } else if (g.parent === scene) scene.remove(g);
+    }
+  }
+
   const _camSave = { pos: new THREE.Vector3(), quat: new THREE.Quaternion(), fov: 50 };
 
   function render() {
+    reflections();
     // Cutscene camera: render this frame through the effect's scripted camera, then restore the orbit camera.
     const cine = active?.effect?.group.visible ? active.effect.cinematic : undefined;
     const cineOn = !!cine?.active;
@@ -692,17 +1048,24 @@ export function createRuntime(opts: RuntimeOptions) {
     const shake = live.reduce((m, e) => Math.max(m, e.shake), heroMode.enabled ? heroMode.hitShake : 0);
     shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
     camera.position.add(shakeOffset);
-    finish.update(shake);
+    finish.update(shake, renderer.toneMappingExposure);
     const fx = pickScreen(live);
     if (fx) {
       _focus.copy(fx.focus).project(camera);
       focusUv.set(_focus.x * 0.5 + 0.5, _focus.y * 0.5 + 0.5);
     } else focusUv.set(0.5, 0.5);
+    shelveHidden();
+    // The scene's matrices once for the frame: three would work them all out again for each of the frame's draws (the
+    // distortion, the mask, the outline's four, the main one), every bone included.
+    scene.updateMatrixWorld();
+    scene.matrixWorldAutoUpdate = false;
     renderDistortion();
     const impact = !!fx && fx.impact > 0;
     if (impact) renderSilhouetteMask(fx.silhouettes);
     finish.setScreen(fx, focusUv, impact ? maskTarget.texture : null, camera.aspect);
     composer.render();
+    scene.matrixWorldAutoUpdate = true;
+    keepShaders();
     camera.position.sub(shakeOffset);
     if (cineOn) {
       drawLetterbox(cine.letterbox);
@@ -736,12 +1099,18 @@ export function createRuntime(opts: RuntimeOptions) {
 
   let lastFrameAt = performance.now();
   renderer.setAnimationLoop(() => {
+    // `auto` follows the frame rate while a fight is on screen.
+    const frameMs = performance.now() - lastFrameAt;
+    if (quality.level === 'auto' && !quality.fixed && heroMode.enabled && !view.covered && !view.loading && !view.paused) {
+      const by = pacer.feed(frameMs);
+      if (by) quality.scale(by);
+    }
     lastFrameAt = performance.now();
     // Clamp so a backgrounded tab doesn't dump one huge step on return.
     const rawDt = Math.min(clock.getDelta(), 0.1);
     if (!view.paused) step(rawDt * view.timeScale);
     if (!heroMode.enabled) controls.update();
-    render();
+    if (!view.covered && !view.loading) render();
     hooks.frame?.(rawDt);
   });
 
@@ -769,6 +1138,7 @@ export function createRuntime(opts: RuntimeOptions) {
   return {
     hooks,
     renderer,
+    composer,
     scene,
     camera,
     controls,
@@ -781,6 +1151,7 @@ export function createRuntime(opts: RuntimeOptions) {
     bloom,
     state,
     view,
+    quality,
     /** The active effect slot, the danger zones of its last play, and the seconds since it played. */
     get active() { return active; },
     get zones() { return zones; },
