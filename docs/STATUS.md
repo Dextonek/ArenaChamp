@@ -16,6 +16,8 @@ stable, then check the new work, release it and mark that too. A stable version 
   to 5 with nothing unreachable; quick cast and the controls 18 of 18; the four Graphics levels each running a CPU duel; Tower >
   Climb > Start floor 1 through the menus (camp, walking, a quest giver); an online duel through the hub with a watcher (all
   three screens the same HP, clock and spots for the whole fight); no page errors anywhere.
+  Deployed from commit fbbe5de (the tag points there). The phone recorder (`2a80629`) reached GitHub while it deployed: merged
+  after, pushed, NOT in this stable version and not live.
 ## The game runs smoother (2026-11-13): done, pushed and LIVE (2026-11-13, marked stable: tag stable-2026-11-13)
 
 The user: "lets make new seison where we will optimalize this game so taht it can run smoothly", then "i just want you to make
@@ -59,11 +61,11 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
 - **Waiting on the user:**
   1. Look at the Graphics levels on the page and say whether **Auto** should be the default (one word in `src/quality.ts`,
      `QUALITY_DEFAULT`, and the News item's text).
-  2. Deploy, on its own request (everything here is pushed, GitHub `main` is at `2a80629` plus this note): `npm run cf:deploy` (it drops every live connection). The News release "A smoother game" is
-     `live: false` until then.
+  2. Done for the work up to `48f7f60`: deployed on 2026-11-13 as `stable-2026-11-13` (News "A smoother game" live). The phone
+     recorder (`2a80629`) came after that deploy: it goes live with the next one, on its own request (`npm run cf:deploy`).
   3. After a deploy, on the phone: open `https://arena-of-kits.arenachamp.workers.dev/game?perf=1`, play a fight, and on the
      card that comes up in the menu press Copy and paste it into the chat.
-- **A follow-up after the push (2026-11-13, evening): pushed, NOT live.** A second look found four things, now done:
+- **A follow-up after the push (2026-11-13, evening): pushed and LIVE (in `stable-2026-11-13`).** A second look found four things, now done:
   the one-go drawing of see-through glows judges a material by every shape it is used on, not the first (and never an
   instanced one that does not just add light); Auto takes a cut in pixels back when it bought nothing (a raid on a phone, a
   phone held to 30 a second) and aims at 60, not 52; on a phone with an account the Graphics button pushed the bar past the
