@@ -18,7 +18,8 @@ export { PIECES, piecesOf } from './floors';
  * steps the simulation yields. `cancel()` ends the piece with no outcome.
  */
 export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: (out: PieceOut) => void): PieceHandle {
-  const floor = Math.max(1, Math.min(5, Math.round(input.floor)));
+  // A floor without set pieces of its own (none past the last one built) plays the last floor's.
+  const asked = Math.max(1, Math.round(input.floor)), floor = piecesOf(asked) ? asked : Math.min(5, asked);
   const def = piecesOf(floor);
   const titles: Record<PieceKind, string> = { ruler: def.ruler.name, gate: `The gate of floor ${floor}`, trial: `Trial of floor ${floor}`, rival: def.rival ? `Rival: ${def.rival.hero}` : 'Rival' };
   const run = new PieceRun(api, { ...input, floor }, titles[kind], done);

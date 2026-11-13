@@ -28,6 +28,10 @@ export interface LandSpec {
   places: { id: string; x: number; z: number; r: number }[];
   /** The tide's low ground (world coordinates): drawn as tidal flats. */
   flats: { x: number; z: number; rx: number; rz: number; rot?: number }[];
+  /** The sea's side: 1 east (floor 1), -1 west (the land mirrored: the town is then east). */
+  mirror?: 1 | -1;
+  /** 0 is floor 1's land; another number makes other hills, woods and houses (the generator's floors). */
+  seed?: number;
 }
 
 const smooth = (a: number, b: number, x: number) => {
@@ -60,8 +64,9 @@ const DIRT: RGB = [118, 92, 64], DIRT_EDGE: RGB = [90, 72, 52], DIRT_MID: RGB = 
 export const WATER = -0.45;
 
 /** The world's shape, from offsets (dx, dz) from the middle. */
-export function geography(R: number) {
-  const fbm = noiseOf(4242), fbm2 = noiseOf(77);
+export function geography(R: number, o: { mirror?: 1 | -1; seed?: number } = {}) {
+  const m = o.mirror ?? 1, seed = o.seed ?? 0;
+  const fbm = noiseOf(4242 + seed), fbm2 = noiseOf(77 + seed);
   /**
    * Where the sea begins east of the middle, along dz: just past the rim along the east (a walk ends at the water, not on open sand),
    * then turning out to sea north and south of it, so there is a headland each side (the lighthouse's in the north-east).
@@ -73,7 +78,7 @@ export function geography(R: number) {
     return rim + (Math.max(rim, 36 + (a - 30) * 1.4) - rim) * smooth(28, 40, a);
   };
   /** 0 on land, 1 in the sea. */
-  const sea = (dx: number, dz: number) => smooth(-2.5, 2.5, dx - coast(dz));
+  const sea = (dx: number, dz: number) => smooth(-2.5, 2.5, m * dx - coast(dz));
   /** The cliff along the north (screen top), 0..1; not where the sea is. */
   const cliff = (dx: number, dz: number, r: number) => smooth(0.35, 0.72, -dz / Math.max(r, 1)) * (1 - sea(dx, dz));
   const height = (dx: number, dz: number) => {
@@ -88,7 +93,7 @@ export function geography(R: number) {
     return land * (1 - s) + water * s;
   };
   /** How much of a beach (dx, dz) is: near the coast on land. */
-  const beach = (dx: number, dz: number) => smooth(coast(dz) - 11, coast(dz) - 3.5, dx);
+  const beach = (dx: number, dz: number) => smooth(coast(dz) - 11, coast(dz) - 3.5, m * dx);
   /** How steep the ground is at (dx, dz): rise over run. */
   const steepness = (dx: number, dz: number) => {
     const e = 0.6;
@@ -108,14 +113,14 @@ export function geography(R: number) {
     c = mix(c, mix(ROCK, ROCK_DARK, fbm2(dx * 0.15, dz * 0.15)), smooth(0.55, 1.1, steep));
     return c;
   };
-  return { coast, sea, cliff, height, beach, color, fbm, fbm2, steepness };
+  return { coast, sea, cliff, height, beach, color, fbm, fbm2, steepness, m };
 }
 type Geo = ReturnType<typeof geography>;
 
 /** The painted middle: the ground's colour, then the tidal flats, the paths and the plazas on top. `L` metres across. */
 function paint(spec: LandSpec, geo: Geo, L: number) {
   return canvasTexture(2048, (g, size) => {
-    const ppm = size / L, c = size / 2, rnd = seeded(31);
+    const ppm = size / L, c = size / 2, rnd = seeded(31 + (spec.seed ?? 0));
     const X = (dx: number) => c + dx * ppm, Z = (dz: number) => c + dz * ppm;
     // The ground's colour, worked out at half a metre and drawn up smoothly: soft edges, like paint.
     const n = Math.round(L * 2), low = document.createElement('canvas');
@@ -312,7 +317,7 @@ function house(dress: Dress, x: number, y: number, z: number, yaw: number, w: nu
 
 /** Builds the land, the sea and what stands beyond the rim. Its meshes go into `into`; its geometry for merging into `kit`. */
 export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { dispose(): void }[]) {
-  const R = spec.r, geo = geography(R), rnd = seeded(2024);
+  const R = spec.r, seed = spec.seed ?? 0, geo = geography(R, { mirror: spec.mirror, seed }), m = geo.m, rnd = seeded(2024 + seed);
   const mat = (hex: string, rough = 0.8, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => {
     const m = new THREE.MeshStandardMaterial({ color: new THREE.Color(hex), roughness: rough, ...o });
     own.push(m);
@@ -371,7 +376,9 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     [-48.5, -28.5, 5], [-64.5, -13, 5.2], [-57, -30, 4.6], [-68, 6, 5], [-70, -4, 4.6], [-66, 32, 5],
   ];
   const roofs: Key[] = ['wine', 'slate', 'teal', 'wine', 'slate'];
-  lots.forEach(([dx, dz, w], i) => {
+  lots.forEach(([u, dz, w], i) => {
+    if (seed && rnd() < 0.3) return; // another floor's town: fewer houses, not the same ones
+    const dx = m * u;
     const d = w * (0.75 + rnd() * 0.2), h = 3.2 + rnd() * 1.8, y = geo.height(dx, dz), p = W(dx, dz);
     house(dress, p.x, y, p.z, Math.atan2(-dx, -dz), w, d, h, roofs[i % roofs.length], rnd);
     free.push({ x: dx, z: dz, r: w * 0.85 });
@@ -384,7 +391,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     const wallR = R + 1.3 + 0.9 * Math.sin(a * 5 + 1) + 0.5 * Math.sin(a * 13), dx = Math.cos(a) * wallR, dz = Math.sin(a) * wallR;
     // (sand that reaches the rim gets dune bushes, so no stretch of open ground ends at nothing)
     if (geo.sea(dx, dz) > 0.2 || geo.cliff(dx, dz, wallR) > 0.25) continue;
-    if (dx < -20) {
+    if (m * dx < -20) {
       if (rnd() < 0.15) continue; // a gap where it has fallen
       const p = W(dx, dz), y = geo.height(dx, dz), yaw = -a + Math.PI / 2 + (rnd() - 0.5) * 0.15;
       dress.add('stone', new THREE.BoxGeometry(2.8, 0.7, 0.55).translate(0, 0.35, 0), p.x, y - 0.05, p.z, yaw);
@@ -397,16 +404,16 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     // from the beach just past the rim (never on the walkable ground) out into the sea
     const x0 = Math.max(geo.coast(jz) - 1, Math.sqrt((R + 1.5) ** 2 - jz * jz));
     for (let s = 0; s <= len; s += 2.6) for (const side of [-1.1, 1.1]) {
-      const p = W(x0 + s, jz + side);
+      const p = W(m * (x0 + s), jz + side);
       dress.add('wood', new THREE.CylinderGeometry(0.16, 0.18, 2.6, 8).translate(0, 0.3, 0), p.x, WATER - 1, p.z);
     }
-    const mid = W(x0 + len / 2, jz);
+    const mid = W(m * (x0 + len / 2), jz);
     dress.add('plank', new THREE.BoxGeometry(len + 1, 0.22, 2.6), mid.x, 0.35, mid.z, 0);
     dress.add('gold', new THREE.BoxGeometry(len + 1, 0.08, 0.1), mid.x, 0.5, mid.z + 1.3).add('gold', new THREE.BoxGeometry(len + 1, 0.08, 0.1), mid.x, 0.5, mid.z - 1.3);
-    for (let s = 0; s < len; s += 3.5) free.push({ x: x0 + s, z: jz, r: 2 });
+    for (let s = 0; s < len; s += 3.5) free.push({ x: m * (x0 + s), z: jz, r: 2 });
   }
-  const boat = (dx: number, dz: number, yaw: number, mast: boolean, paint: Key) => {
-    const p = W(dx, dz);
+  const boat = (u: number, dz: number, yaw0: number, mast: boolean, paint: Key) => {
+    const p = W(m * u, dz), yaw = m * yaw0;
     const hull = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1.3, 0.8, 3.6);
     dress.add(paint, hull, p.x, WATER + 0.5, p.z, yaw).add('wood', new THREE.BoxGeometry(2.3, 0.12, 6.2), p.x, WATER + 0.48, p.z, yaw);
     dress.add('gold', new THREE.TorusGeometry(1, 0.06, 6, 24).scale(1.3, 3.6, 1).rotateX(Math.PI / 2), p.x, WATER + 0.52, p.z, yaw);
@@ -421,7 +428,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   boat(78, 9, 1.1, true, 'wine');
   // Stacks of rock out at sea, far off.
   for (let k = 0; k < 9; k++) {
-    const dz = -70 + rnd() * 140, dx = geo.coast(dz) + 25 + rnd() * 70, s = 2 + rnd() * 4, p = W(dx, dz);
+    const dz = -70 + rnd() * 140, dx = m * (geo.coast(dz) + 25 + rnd() * 70), s = 2 + rnd() * 4, p = W(dx, dz);
     dress.add('rock', new THREE.ConeGeometry(s, 7 + rnd() * 10, 7).translate(0, 3.5, 0), p.x, WATER - 1, p.z, rnd() * 3);
   }
   // Fallen rock at the cliff's foot: the floor's own rocks (faceted, dark), sat into the ground.

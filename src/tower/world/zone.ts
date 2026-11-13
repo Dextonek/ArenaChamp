@@ -56,8 +56,8 @@ const PATHS: [number, number][][] = [
   [[25, -20], [28, -8], [27, 5]],
 ];
 
-type Look = 'crate' | 'barrel' | 'rock' | 'stall' | 'tent' | 'hull' | 'house' | 'fire' | 'lighthouse' | 'post';
-interface Piece { o: Obstacle; look: Look }
+export type Look = 'crate' | 'barrel' | 'rock' | 'stall' | 'tent' | 'hull' | 'house' | 'fire' | 'lighthouse' | 'post';
+export interface Piece { o: Obstacle; look: Look }
 
 const piece = (look: Look, o: Obstacle, height?: number): Piece => ({ look, o: height ? { ...o, height } : o });
 const P = (look: Look, dx: number, dz: number, r: number, h: number) => piece(look, { ...pillar(RING.x + dx, RING.z + dz, r), height: h });
@@ -183,8 +183,30 @@ const PROPS: { i: number; dx: number; dz: number; yaw: number }[] = [
   { i: 7, dx: -12, dz: 30, yaw: 0.3 }, { i: 8, dx: 17, dz: 31, yaw: -0.4 }, { i: 7, dx: 40, dz: -20, yaw: 0.9 }, { i: 8, dx: -40, dz: -6, yaw: 0.2 },
 ];
 
-/** Builds the zone's meshes. The harbour's own props load from its file and join the dressing when they arrive. */
-export function buildZone(): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
+/**
+ * What a sea zone is drawn from (floor 1's is below; the generator's floors of the sea chapter carry their own, floors/gen/): its
+ * places (world), paths (offsets), cover with its looks, the tide's flats (world), the sea's side, the land's seed, the caves' middle
+ * (offset; a dark back wall and crystals) and copies of the harbour file's props (offsets).
+ */
+export interface SeaLook {
+  places: { id: string; x: number; z: number; r: number }[];
+  paths: [number, number][][];
+  pieces: Piece[];
+  flats: { x: number; z: number; rx: number; rz: number; rot?: number }[];
+  mirror: 1 | -1;
+  seed: number;
+  caves?: { dx: number; dz: number };
+  props?: { i: number; dx: number; dz: number; yaw: number }[];
+}
+const FLOOR1_LOOK: SeaLook = { places: Object.values(PLACES), paths: PATHS, pieces: PIECES, flats: TIDE_LOW, mirror: 1, seed: 0, caves: { dx: -17, dz: -32 }, props: PROPS };
+
+/** Floor 1's zone. */
+export function buildZone() {
+  return buildSeaZone(FLOOR1_LOOK);
+}
+
+/** Builds a sea zone's meshes. The harbour's own props load from its file and join the dressing when they arrive. */
+export function buildSeaZone(L: SeaLook): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
   const g = new THREE.Group();
   const own: { dispose(): void }[] = [];
   const mat = (color: number, rough = 0.85, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => {
@@ -200,13 +222,13 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
 
   const kit = new Kit();
   // The world past the rim: land, a beach, the sea, the town, woods (land.ts). The cover below stands on its ground.
-  const land = buildLand({ r: ZONE_R, paths: PATHS, places: Object.values(PLACES), flats: TIDE_LOW }, kit, g, own);
+  const land = buildLand({ r: ZONE_R, paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed }, kit, g, own);
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rnd = seeded(913);
   const glowSpots: { x: number; y: number; z: number; size?: number }[] = [];
 
-  for (const { look, o } of PIECES) {
+  for (const { look, o } of L.pieces) {
     const yaw = Math.atan2(o.bx - o.ax, o.bz - o.az), len = Math.hypot(o.bx - o.ax, o.bz - o.az), mx = (o.ax + o.bx) / 2, mz = (o.az + o.bz) / 2, r = o.r, h = o.height;
     switch (look) {
       case 'crate':
@@ -269,11 +291,14 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   // The caves: a dark back wall inside the horseshoe and crystals that glow in it.
   const dark = new THREE.MeshBasicMaterial({ color: 0x03050a, side: THREE.DoubleSide });
   own.push(dark);
+  if (L.caves) {
+  const cv = L.caves;
   const back = new THREE.Mesh(new THREE.CylinderGeometry(5.6, 5.6, 5.4, 24, 1, true, Math.PI * 0.62, Math.PI * 0.76).translate(0, 2.7, 0), dark);
-  back.position.set(-17 + RING.x, 0, -32 + RING.z);
+  back.position.set(cv.dx + RING.x, 0, cv.dz + RING.z);
   g.add(back);
   own.push(back.geometry);
-  for (const [dx, dz, s] of [[-20, -35, 1], [-15, -36.5, 1.4], [-12.5, -34, 0.8], [-22, -32.4, 0.7]] as const) {
+  for (const [ox, oz, s] of [[-3, -3, 1], [2, -4.5, 1.4], [4.5, -2, 0.8], [-5, -0.4, 0.7]] as const) {
+    const dx = cv.dx + ox, dz = cv.dz + oz;
     const m = new THREE.Mesh(new THREE.OctahedronGeometry(0.5 * s).scale(0.6, 1.8, 0.6).translate(0, 0.6 * s, 0), crystal);
     m.position.set(RING.x + dx, 0, RING.z + dz);
     m.rotation.z = (rnd() - 0.5) * 0.5;
@@ -281,8 +306,9 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
     own.push(m.geometry);
     glowSpots.push({ x: RING.x + dx, y: 1.0 * s, z: RING.z + dz, size: 3.2 * s });
   }
+  }
   // The paths' edges are lit at the places: a lantern post at each plaza's rim, towards the middle.
-  for (const pl of Object.values(PLACES)) {
+  for (const pl of L.places) {
     const a = Math.atan2(RING.x - pl.x, RING.z - pl.z), x = pl.x + Math.sin(a) * (pl.r - 1), z = pl.z + Math.cos(a) * (pl.r - 1);
     kit.add(darkWood, cyl(0.12, 0.16, 2.6, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.6, z);
     glowSpots.push({ x, y: 2.85, z, size: 1.6 });
@@ -303,7 +329,7 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   }).then((loaded) => {
     if (disposed) return;
     const extra = new Kit();
-    for (const p of PROPS) {
+    for (const p of L.props ?? []) {
       const src = loaded.cover[p.i], from = ORIGINAL[p.i];
       if (!src) continue;
       const wrap = new THREE.Group(), inner = src.clone(true);
@@ -330,6 +356,11 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
       props.traverse((o) => { if ((o as THREE.Mesh).isMesh) (o as THREE.Mesh).geometry.dispose(); });
     },
   };
+}
+
+/** A sea floor made by the generator, as an arena: its own layout, the same stage. */
+export function seaArena(id: string, name: string, look: SeaLook): ArenaDef {
+  return { id, name, ring: ZONE_R, obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSeaZone(look) };
 }
 
 /** The zone as an arena for `Duel.startBoss`: its ring is `ZONE_R`, its cover `ZONE_COVER`, its look a coast by day (land.ts). */

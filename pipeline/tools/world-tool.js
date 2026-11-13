@@ -95,6 +95,27 @@
   window._world.go = (x, z) => { const h = api.arena.caster.group.position; h.set(x, 0, z); api.heroMode.halt(); api.heroMode.snapCameraNow(); };
   window._world.step = (seconds) => { for (let i = 0; i < Math.round(seconds * 60); i++) frame(); };
   window._world.place = (name) => game.floor.places[name];
+  /**
+   * A made floor (pipeline/designs/tower-50.md, baked in src/tower/world/floors/gen/) put in the Climb's list at its number for this
+   * page only, with its set pieces: then `_world({ floor: n })`, `_worldCheck({ floor: n })`, `_worldRoute({ floor: n })` play it.
+   * `_worldGen.reset()` puts back what was there.
+   */
+  const genWas = new Map();
+  window._worldGen = async (n) => {
+    await setup();
+    const gen = await import('/src/tower/world/floors/gen/index.ts'), pcs = await import('/src/tower/world/pieces/floors.ts');
+    const g = gen.GEN_FLOORS[n];
+    if (!g) return { ok: false, error: `no baked floor ${n}`, baked: Object.keys(gen.GEN_FLOORS) };
+    if (!genWas.has(n)) genWas.set(n, { floor: mod.floors.FLOORS[n], pieces: pcs.PIECES[n - 1] });
+    mod.floors.FLOORS[n] = g.floor;
+    pcs.PIECES[n - 1] = g.pieces;
+    return { ok: true, n, id: g.floor.id, name: g.floor.name, ruler: g.pieces.ruler.name, gate: g.pieces.gate.hero };
+  };
+  window._worldGen.reset = async () => {
+    const pcs = await import('/src/tower/world/pieces/floors.ts');
+    for (const [n, w] of genWas) { if (w.floor) mod.floors.FLOORS[n] = w.floor; else delete mod.floors.FLOORS[n]; pcs.PIECES[n - 1] = w.pieces; }
+    genWas.clear();
+  };
   window._world.game = () => game;
   window._world.at = (name) => (name === 'camp' ? game.floor.start : game.floor.places[name]?.stand);
 
@@ -265,7 +286,7 @@
         ok: game.finished && out.every((c) => c.status === 'done'), floorCleared: game.finished, seconds: r2(run().clock), hp: r2(run().hp), lives: run().lives, shards: run().shards, falls: run().falls, restarts: game.restarts,
         kills: run().kills, stars: run().result?.stars ?? game.stars().map((s) => (s.got ? 1 : 0)), checkpoints: out, notDone: out.filter((c) => c.status !== 'done').map((c) => c.step), errors,
         gateTries: game.log.filter((l) => /^piece gate/.test(l)).length, rulerTries: game.log.filter((l) => /^piece ruler/.test(l)).length, pieceFalls: game.pieceFalls,
-        frames, whyLog: whyLog.slice(-70), gameLog: game.log, last: window._world.status(), wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
+        frames, whyLog: whyLog.slice(-70), whyAll: whyLog, gameLog: game.log, last: window._world.status(), wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
       };
     } finally {
       if (pinned) mod.floors.FLOORS[pinned.n] = pinned.was;
