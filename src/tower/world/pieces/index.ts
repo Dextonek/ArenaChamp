@@ -29,7 +29,7 @@ export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: 
   switch (kind) {
     case 'ruler': {
       if (def.crown) {
-        crownFight(run, def.crown, `world-crown-${floor}`);
+        crownFight(run, def.crown, `world-crown-${floor}`, def.crownTier ?? 1);
         run.hud?.say(def.ruler.name, def.ruler.line, 3);
         break;
       }

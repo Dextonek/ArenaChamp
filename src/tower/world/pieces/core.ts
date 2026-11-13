@@ -112,15 +112,15 @@ export class PieceRun implements PieceHandle {
  * A crown floor's boss (every tenth floor, pipeline/designs/tower-50.md): a Raid boss, alone, on its own ground, at the first tier, as
  * the solo Raid plays it (`raid/run.ts`: a `LocalLink`), with the climber's health and boons. A fall ends the piece.
  */
-export function crownFight(run: PieceRun, id: string, seed: string) {
+export function crownFight(run: PieceRun, id: string, seed: string, tier = 1) {
   const { api, input } = run, def = BOSSES[id];
   if (!def) throw new Error(`no raid boss ${id}`);
-  const link = new LocalLink(def, 1);
+  const link = new LocalLink(def, tier);
   if (api.duel.on) api.duel.stop();
   api.setKit(input.hero);
   api.setHeroMode(true);
   api.duel.holdStart = false;
-  api.duel.startBoss({ def, link, seed, mode: input.mode, tier: 1, upgrades: input.boons, card: () => null });
+  api.duel.startBoss({ def, link, seed, mode: input.mode, tier, upgrades: input.boons, card: () => null });
   setHealth(api, input.hp * api.duel.heroMax);
   run.watch((result) => {
     const d = api.duel;

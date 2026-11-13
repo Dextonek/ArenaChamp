@@ -166,4 +166,6 @@ export interface PiecesDef {
    * at the first tier, instead of the ruler (whose name and line still say who it is).
    */
   crown?: 'sun' | 'ash' | 'heart';
+  /** The crown's tier (the Raid's: shorter windows, more health; default 1), for the later chapters' crowns. */
+  crownTier?: number;
 }

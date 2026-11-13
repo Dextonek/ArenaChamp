@@ -260,7 +260,10 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   }
 
   // --- enemies (floor 1's, a little stronger a floor), packs -----------------------------------------------------------------------
-  const hpK = 1 + 0.015 * (n - 1), shK = 1 + 0.01 * (n - 1), shard = (x: number) => Math.round(x * (1 + 0.05 * (n - 1)));
+  // The roaming enemies' growth is the game's own by the floor's tuned number (`tunedAs` below, `floorNumbers` in src/tower/floors.ts):
+  // from 1 (floor 1) to 2 (floor 10), so the Wood (floor 11, tuned as 2) follows on with no step. (An own +1.5 % a floor on top of the
+  // floor's real number made floor 9's packs nearly twice floor 1's: the bot took 50 minutes over it.)
+  const hpK = 1, shK = 1, shard = (x: number) => Math.round(x * (1 + 0.05 * (n - 1)));
   const named1 = NAMED[(2 * (n - 2)) % NAMED.length], named2 = NAMED[(2 * (n - 2) + 1) % NAMED.length];
   const enemies: Record<string, EnemySpec> = {
     docker: { id: 'docker', name: 'Drowned docker', blurb: 'Strikes up close.', look: 'docker', melee: true, hp: Math.round(70 * hpK), share: r4(0.024 * shK), every: 1.8, speed: 3.2, scale: 1.3, shards: shard(4), color: '#7fd0c0' },
@@ -394,7 +397,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   const placeDefs: Record<string, PlaceDef> = {};
   for (const p of [camp, ...places]) placeDefs[p.id] = { id: p.id, name: p.name, ...X(p.c), r: p.r, stand: X(p.stand) };
   const nn = String(n).padStart(2, '0');
-  const look: SeaLook = {
+  const look = {
     rim: m === 1 ? rim : mirrorRim(rim),
     places: [camp, ...places].map((p) => ({ id: p.id, kind: p.id === 'camp' ? 'camp' : p.kind, ...X(p.c), r: p.r })),
     paths: roads.map((r) => r.map(W.off)),
@@ -404,12 +407,12 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     caves: { dx: r2(m * B.c.x), dz: r2(B.c.z) },
     props: props.map((p) => ({ i: p.i, dx: r2(m * p.dx), dz: p.dz, yaw: r2(m * p.yaw) })),
     ...(hasRuin ? { ruin: { dx: r2(m * ruin.x), dz: r2(ruin.z) } } : {}),
-  };
+  } satisfies SeaLook;
   return {
     n, chapter: 'sea', seed, look, pieces,
     floor: {
       n, id: `sea-${nn}`, name: crown ? 'The Crown of the Sea' : FLOOR_NAMES[(n - 2) % FLOOR_NAMES.length], blurb: crown ? 'Where the sea ends, a court of the sun keeps the way up.' : BLURBS[(n - 2) % BLURBS.length],
-      ring: Math.ceil(Math.max(...rim) + 1.5), start: X(C(0, 5.5)), camp: X(C(0, 2)), places: placeDefs, par: Math.round((780 + 20 * (n - 1)) * 2.2),
+      tunedAs: r2(1 + (n - 1) / 9), ring: Math.ceil(Math.max(...rim) + 1.5), start: X(C(0, 5.5)), camp: X(C(0, 2)), places: placeDefs, par: Math.round((780 + 20 * (n - 1)) * 2.2),
       shop: { heal: 30 + 2 * (n - 1), boon: 55 + 3 * (n - 1), life: 80 + 4 * (n - 1), hint: 15 },
       law: {
         kind: 'tide', name: 'The tide', blurb: `Every ${80 - (n - 1)} seconds the sea comes in for ${15 + Math.round(k * 2)}: the tidal flats flood, slow and hurt. The higher ground stays dry.`,
