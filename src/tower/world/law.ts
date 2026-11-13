@@ -4,6 +4,7 @@ import type { Obstacle } from '../../obstacles';
 import type { RoomFloor } from '../../raid/types';
 import type { ZoneCtx } from './ctx';
 import type { LawDef, Region } from './def';
+import { buildLaw45 } from './f45/laws';
 
 /**
  * A floor's law, one rule of the zone's cast (pipeline/designs/tower-worlds-build.md, "Law pieces"). The state is read from the
@@ -311,6 +312,9 @@ function sides(z: ZoneCtx, d: Extract<LawDef, { kind: 'sides' }>): Law {
 }
 
 export function buildLaw(z: ZoneCtx, d: LawDef): Law {
+  // Floors 4 and 5's `dark` and `sides` are the full pieces (f45/laws.ts); the scratch ones below are what the tool's `_worldVerbs` still plays.
+  const full = buildLaw45(z, d);
+  if (full) return full;
   switch (d.kind) {
     case 'tide': return tide(z, d);
     case 'storm': return storm(z, d);

@@ -7,6 +7,7 @@ import type { QuestLine } from './hud';
 import { personLook } from './looks';
 import type { ZoneCtx } from './ctx';
 import type { SummonUnit } from '../../effects/summon';
+import { carryMesh } from './f45/carry';
 
 /**
  * The quest verbs of the closed vocabulary (pipeline/designs/tower-worlds-build.md): `reach`, `fell`, `fell-named`, `light`, `hold`,
@@ -219,7 +220,7 @@ export class Quests {
     for (const b of this.lights.values()) b.orb.scale.setScalar(2.2 + Math.sin(this.t * 3) * 0.25);
     // A carried key floats over the hero's head, so a screen shows who has it.
     if (z.run.carry?.held) {
-      this.carried ??= this.keyMesh();
+      this.carried ??= this.keyMesh(z.run.carry.item);
       if (!this.carried.parent) z.p.group.add(this.carried);
       this.carried.position.set(hero.x, 3.7 + Math.sin(this.t * 3) * 0.08, hero.z);
       this.carried.scale.setScalar(1.8);
@@ -293,10 +294,10 @@ export class Quests {
       case 'carry': {
         const c = z.run.carry;
         if (!c) {
-          this.keyAt(step.from);
+          this.keyAt(step.from, step.item);
           if (dist(step.from) < PICK && this.dropWait <= 0) this.pickUp(step);
         } else if (!c.held) {
-          this.keyAt(c.at);
+          this.keyAt(c.at, step.item);
           if (dist(c.at) < PICK && this.dropWait <= 0) this.pickUp(step);
         } else {
           this.keyAt(null);
@@ -340,13 +341,13 @@ export class Quests {
     z.banner('They come', '', 1.4);
   }
 
-  private keyAt(at: Spot | null) {
+  private keyAt(at: Spot | null, item = 'key') {
     if (!at) {
       if (this.key) { this.key.pillar.dispose(); this.key.group.removeFromParent(); this.key = null; }
       return;
     }
     if (!this.key) {
-      const group = this.keyMesh();
+      const group = this.keyMesh(item);
       const pillar = new LightPillar(at.x, at.z, 0.9, 5, KEY);
       pillar.opacity = 0.5;
       this.z.p.group.add(group, pillar.mesh);
@@ -359,7 +360,10 @@ export class Quests {
   }
 
   /** The carried thing, drawn as a key: a gold bow, a shaft and two teeth. */
-  private keyMesh() {
+  private keyMesh(item = 'key') {
+    // TOWER-HOOK (carry look): the carried thing is drawn by its item's name; floors 4 and 5 add theirs (f45/carry.ts), anything else is the key.
+    const own = carryMesh(item);
+    if (own) return own;
     const group = new THREE.Group();
     const gold = new THREE.MeshStandardMaterial({ color: 0xffd27a, metalness: 0.8, roughness: 0.3, emissive: 0xffb050, emissiveIntensity: 0.7 });
     const bow = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 8, 16), gold);

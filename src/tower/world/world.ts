@@ -269,7 +269,7 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
           if (++spent % 3 === 0) {
             hud.setHealth(api.duel.heroHp, api.duel.heroMax);
             hud.setLives(run.lives);
-            hud.stats(run.shards, run.clock, run.carry?.held ? 'key' : '');
+            hud.stats(run.shards, run.clock, run.carry?.held ? run.carry.item : '');
             hud.setQuests(quests.lines());
             const st = law!.status();
             hud.law(st.text, st.active, st.warn);

@@ -171,6 +171,8 @@
     const door = (piece) => def.doors.find((d) => d.piece === piece);
     if (byRole('trader') && hp < 0.6 && run.shards >= def.shop.heal) return toPerson(byRole('trader').id, 'heal');
     if (!run.has('trial') && door('trial')) return { goal: door('trial').at, why: 'door: trial' };
+    // A rival's duel at a door (floor 5): before the ruler, whose fight the winner joins as an ally. Lost, it is tried once more.
+    if (!run.has('rival') && run.rival !== 'lost' && door('rival')) return { goal: door('rival').at, why: 'door: rival' };
     if (!run.has('ruler') && door('ruler') && (!door('ruler').wall || run.opened.includes(door('ruler').id))) return { goal: door('ruler').at, why: 'door: ruler' };
     if (run.has('ruler') && !run.has('gate')) return { goal: door('gate').at, why: 'door: gate' };
     return { goal: null, why: 'nothing left' };
