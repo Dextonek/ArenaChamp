@@ -37,7 +37,7 @@ export const corridor = (pts: [number, number][], w: number): Open[] =>
  * The masses that fill all but the open ground: a hex lattice (jittered) over the ring and a little beyond, each as big as it can be
  * without touching the open ground. `rMax` caps a mass, `rMin` drops the ones that would be too small to be worth a piece.
  */
-export function masses(opens: Open[], o: { ring: number; spacing: number; rMax: number; rMin: number; margin: number; jitter: number; seed: number; reach?: number; rFill?: number }): Mass[] {
+export function masses(opens: Open[], o: { ring: number; spacing: number; rMax: number; rMin: number; margin: number; jitter: number; seed: number; reach?: number; rFill?: number; rPlug?: number; deep?: number }): Mass[] {
   const rnd = seeded(o.seed), out: Mass[] = [], reach = o.ring + (o.reach ?? 1.5);
   const rowH = o.spacing * 0.866;
   for (let row = -Math.ceil(reach / rowH); row <= Math.ceil(reach / rowH); row++) {
@@ -62,6 +62,17 @@ export function masses(opens: Open[], o: { ring: number; spacing: number; rMax: 
     if (!left.has(f)) continue;
     out.push({ x: f.x, z: f.z, r: f.r });
     for (const g of left) if (Math.hypot(g.x - f.x, g.z - f.z) < f.r) left.delete(g);
+  }
+  // Two masses that do not quite touch leave a channel a walker can squeeze through (the navigator lets a body of 0.5 m graze cover): plug
+  // every spot a walker could stand on deep in the forest (more than `deep` m from the open ground) with a small mass, so the forest has no
+  // way through it. The strips along the open ground's edge are left: they are dead ends no deeper than `deep`.
+  const body = 0.47, plugR = o.rPlug ?? 2, deep = o.deep ?? 3.4;
+  for (let x = -reach; x <= reach; x += 0.6) for (let z = -reach; z <= reach; z += 0.6) {
+    if (Math.hypot(x, z) > reach) continue;
+    const away = outside(opens, x, z);
+    if (away < deep) continue;
+    if (out.some((m) => Math.hypot(m.x - x, m.z - z) < m.r + body)) continue;
+    out.push({ x, z, r: Math.min(plugR, away - o.margin) });
   }
   return out;
 }

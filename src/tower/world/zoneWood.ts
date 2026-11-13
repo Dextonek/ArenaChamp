@@ -167,7 +167,7 @@ export function buildWood(): { group: THREE.Group; update(dt: number, time: numb
     const cx = RING.x + m.x, cz = RING.z + m.z, n = Math.max(2, Math.min(7, Math.round(m.r * 1.1)));
     for (let i = 0; i < n; i++) {
       const a = rnd() * 6.28, d = i === 0 ? 0 : Math.sqrt(rnd()) * m.r * 0.72, x = cx + Math.cos(a) * d, z = cz + Math.sin(a) * d;
-      const tr = 0.32 + rnd() * 0.28, th = 2.6 + rnd() * 1.6, cr = 1.5 + rnd() * 1.0 + m.r * 0.12;
+      const tr = 0.3 + rnd() * 0.25, th = 1.9 + rnd() * 1.1, cr = 1.15 + rnd() * 0.7 + m.r * 0.08;
       kit.add(i % 3 === 0 ? barkLight : bark, cyl(tr * 0.8, tr * 1.15, th), x, 0, z, rnd() * 3);
       kit.add(leaves[Math.floor(rnd() * 3)], ico, x, th + cr * 0.45, z, rnd() * 6, cr, cr * 0.85, cr);
       if (rnd() < 0.7) kit.add(leaves[Math.floor(rnd() * 3)], ico, x + (rnd() - 0.5) * 1.2, th + cr * 1.05, z + (rnd() - 0.5) * 1.2, rnd() * 6, cr * 0.62, cr * 0.55, cr * 0.62);

@@ -30,7 +30,7 @@ export const wood: FloorDef = {
   },
   enemies: {
     hound: { id: 'hound', name: 'Bark hound', blurb: 'Fast, and hunts in a pack.', look: 'hound', melee: true, hp: 55, share: 0.02, every: 1.2, speed: 4.6, scale: 1.2, shards: 4, color: '#e0a060' },
-    sprite: { id: 'sprite', name: 'Thorn sprite', blurb: 'Floats back and throws thorns.', look: 'sprite', melee: false, hp: 40, share: 0.022, every: 2.2, speed: 2.6, range: 10, scale: 1.2, shards: 5, color: '#ff7aa8' },
+    sprite: { id: 'sprite', name: 'Thorn sprite', blurb: 'Floats back and throws thorns.', look: 'sprite', melee: false, hp: 40, share: 0.022, every: 2.2, speed: 2.6, range: 10, scale: 1.55, shards: 5, color: '#ff7aa8' },
     giant: { id: 'giant', name: 'Moss giant', blurb: 'Slow, heavy, hits hard.', look: 'giant', melee: true, hp: 230, share: 0.045, every: 2.6, speed: 1.7, scale: 1.7, shards: 8, color: '#9acd6a' },
     stag: { id: 'stag', name: 'The Stag-Crowned', blurb: 'Guards the glade.', look: 'stag', melee: true, hp: 420, share: 0.055, every: 1.5, speed: 3.4, scale: 1.9, shards: 30, color: '#ffe08a' },
     oak: { id: 'oak', name: 'The Hollow Oak', blurb: 'Walks the old road and strikes hard.', look: 'oak', melee: true, hp: 620, share: 0.065, every: 2.2, speed: 2.0, scale: 2.4, shards: 40, color: '#e0c080' },
@@ -95,7 +95,7 @@ export const wood: FloorDef = {
   waystones: [
     { id: 'w1', name: 'The den road stone', at: at(-12.5, 25.5) },
     { id: 'w2', name: 'The bramble road stone', at: at(12.5, 25.5) },
-    { id: 'w3', name: 'The thicket stone', at: at(-32, -27) },
+    { id: 'w3', name: 'The thicket stone', at: at(-25, -30.5) },
   ],
   lore: { id: 'lore', name: 'The root stone', at: at(-6, -35), text: ['The wood was a field once. It walked away from the plough and has been walking since.', 'What you take for paths are roots, and what you take for roots are paths.'] },
   doors: [

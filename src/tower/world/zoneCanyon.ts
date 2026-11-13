@@ -68,7 +68,7 @@ const PROPS: { kind: Kind; o: Obstacle }[] = [
   // the raiders' gate: a long wall across the north with a doorway in the middle (the door itself is the floor's)
   { kind: 'column', o: WL(-26, -41, -3.4, -41, 0.6, 3.8) }, { kind: 'column', o: WL(3.4, -41, 26, -41, 0.6, 3.8) },
 ];
-export const ZONE_COVER: Obstacle[] = [...MASSES.map((m) => massCover(m, 6 + m.r)), ...PROPS.map((p) => p.o)];
+export const ZONE_COVER: Obstacle[] = [...MASSES.map((m) => massCover(m, 2.8 + m.r * 0.5)), ...PROPS.map((p) => p.o)];
 
 // --- the look ---------------------------------------------------------------------------------------------------
 
@@ -159,7 +159,7 @@ export function buildCanyon(): { group: THREE.Group; update(dt: number, time: nu
     }
   };
   for (const m of MASSES) {
-    const cx = RING.x + m.x, cz = RING.z + m.z, h = 5 + m.r * 1.3;
+    const cx = RING.x + m.x, cz = RING.z + m.z, h = 2.8 + m.r * 0.5;
     // a bastion: one great stack, and smaller ones round its foot so that its edge is ragged
     stack(cx, cz, m.r * 0.92, h);
     const n = Math.round(m.r / 2);

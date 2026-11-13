@@ -266,7 +266,7 @@
    */
   window._worldCheck = async (o = {}) => {
     await setup();
-    const def = mod.floors.FLOORS[o.floor ?? 1], R = def.ring, C = { x: 0, z: 7 }, step = 0.75, n = Math.ceil((2 * R) / step), agent = 0.5;
+    const def = mod.floors.FLOORS[o.floor ?? 1], R = def.ring, C = { x: 0, z: 7 }, step = 0.4, n = Math.ceil((2 * R) / step), agent = 0.47;
     const states = def.law.kind === 'paths' ? [0, 1] : [null];
     const out = { floor: def.n, states: [] };
     const spots = [];
@@ -318,7 +318,7 @@
       const cut = [];
       for (const s of spots) {
         let ok = false;
-        for (let a = -2; a <= 2 && !ok; a++) for (let b = -2; b <= 2 && !ok; b++) { const i = ix(s.x) + a, j = iz(s.z) + b; if (i >= 0 && j >= 0 && i < n && j < n && seen[j * n + i] && Math.hypot(a * step, b * step) <= 1.6) ok = true; }
+        for (let a = -4; a <= 4 && !ok; a++) for (let b = -4; b <= 4 && !ok; b++) { const i = ix(s.x) + a, j = iz(s.z) + b; if (i >= 0 && j >= 0 && i < n && j < n && seen[j * n + i] && Math.hypot(a * step, b * step) <= 1.6) ok = true; }
         if (!ok) cut.push(s.name);
       }
       // A barrier that is up must cut its corridor: the way from one side of it to the other (4.5 m each side) must be long, not a squeeze round its end.
@@ -344,7 +344,7 @@
         bypass.push({ way: w.name, viaM: found < 0 ? 'none' : Math.round(found * step), straightM: 9 });
       }
       const rows = [];
-      if (o.map) for (let j = 0; j < n; j += 2) { let row = ''; for (let i = 0; i < n; i += 2) row += seen[j * n + i] ? '.' : Math.hypot(at(i, j).x - C.x, at(i, j).z - C.z) > R ? ' ' : '#'; rows.push(row); }
+      if (o.map) for (let j = 0; j < n; j += 4) { let row = ''; for (let i = 0; i < n; i += 4) row += seen[j * n + i] ? '.' : Math.hypot(at(i, j).x - C.x, at(i, j).z - C.z) > R ? ' ' : '#'; rows.push(row); }
       out.states.push({ paths: st, reachableM2: Math.round(open * step * step), ringM2: Math.round(Math.PI * R * R), unreachable: cut, spots: spots.length, barriers: bypass, map: rows.length ? rows : undefined });
     }
     let worst = { n: 0, at: null };

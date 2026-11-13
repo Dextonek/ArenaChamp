@@ -330,13 +330,13 @@ function wrapped(p: MinionPalette, o: Wrap): MinionRig {
   };
 }
 
-/** A dust wraith: a tall swirl of sand, no legs, two dark slits for eyes. Pale against the canyon floor, drifting. */
+/** A dust wraith: a tall swirl of dark sand with pale rings, no legs, two pale slits for eyes. It has to read inside the storm's sand-coloured haze, so it is darker than the haze. */
 const wraith: MinionLook = (_k, p) => {
-  tint(p, 0xe0c08a, 0xf5e6c0);
+  tint(p, 0x6e4e36, 0xf2dcb0);
   p.body.transparent = true;
-  p.body.opacity = 0.72;
+  p.body.opacity = 0.85;
   const b = builder(p);
-  const dark = b.own(new THREE.MeshBasicMaterial({ color: 0x20150a }));
+  const dark = b.own(new THREE.MeshBasicMaterial({ color: 0xfff2c8 }));
   const swirl = new THREE.Group();
   b.root.add(swirl);
   b.add(swirl, cone(0.5, 1.7, 8), p.body, 0, 0.9, 0, { rx: pi, outline: false });
@@ -415,7 +415,7 @@ const wisp: MinionLook = (_k, p) => {
 
 /** The caravan: a covered cart on two wheels, a lantern on the pole. It rolls when it walks. */
 const cart: MinionLook = (_k, p) => {
-  tint(p, 0xe8d8b0, 0x30b0b0);
+  tint(p, 0xa8946a, 0x30b0b0);
   const b = builder(p);
   const wood = b.own(new THREE.MeshStandardMaterial({ color: 0x5a3a24, roughness: 0.9, flatShading: true }));
   b.add(b.root, box(1.0, 0.3, 1.5), wood, 0, 0.62, 0, { shadow: true });
