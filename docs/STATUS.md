@@ -16,8 +16,10 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
 - **Checked:** type check; `_worldCheck` floor 1 the same (6349 m2 reachable, 38 spots, none unreachable); the perf tool's
   `world-1` plays the same fight (print `de2e692e`): desktop 8.2 -> 8.4 ms a frame, the phone profile 20.5 and 21.4 -> 22.5 and
   22.1 ms (about +1.3 ms; draw calls 268 -> 280; triangles 236k -> 413k); Low, Medium, Auto and two phone sizes draw it, no errors.
-  Pictures (before and after at the same spots, an overview, a low view to the horizon): in the session's scratchpad, shown to
-  the user.
+  Pictures: `docs/tower/worlds/land-before-*.jpg` and `land-after-*.jpg` (overview, a low view north, the camp, the east, the shore,
+  the tide in). Started from the real menus (Tower, Climb, Start floor 1) with no error; the tide in daylight reads (the flat floods
+  blue). The east shore runs 0 to 3 m past the rim, so a walk ends at the water, not on open sand; sand at the rim has dune bushes.
+  The floor's words no longer say quay (its blurb, the law's, Old Barnacle's, the tide's banner).
 - **Not done:** floors 2 to 5 (the Walking Wood, the Storm Canyon, the Lightless Deep, the Field of Banners); the zone is still
   round and the same size (a different shape needs the engine's walk limit to change); the route bot not run again on floor 1 (the
   ground it walks is the same).
