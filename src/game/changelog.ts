@@ -72,6 +72,28 @@ export const CHANGELOG: Release[] = [
     ],
   },
   {
+    date: '2026-11-13',
+    title: 'A smoother game',
+    live: false,
+    items: [
+      {
+        tag: 'Menus',
+        title: 'Fights run smoother',
+        text: 'Every fight now takes about a third less work to draw, and it looks the same: duels, the Raid and the Tower all gain. The first spells of a fight no longer make the game stutter, and a big raid asks much less of your processor.',
+      },
+      {
+        tag: 'Menus',
+        title: 'A Graphics setting',
+        text: 'A new Graphics button at the top of the menu: High (the look as it was), Medium, Low, and Auto. Auto measures your device before each fight and draws just as sharply as it can while staying smooth. The game remembers your choice.',
+      },
+      {
+        tag: 'Menus',
+        title: 'A quicker start',
+        text: 'The menu comes up in less than half the time it took, and the first fight starts sooner and without the freeze behind its loading page.',
+      },
+    ],
+  },
+  {
     date: '2026-11-12',
     title: 'Quick cast',
     live: true,
