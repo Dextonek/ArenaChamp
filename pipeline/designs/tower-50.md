@@ -74,3 +74,30 @@ Nothing is pushed or live until the user says so.
   Lyra 9 of 9, Bram (melee) 9 of 9 (floor 8's gatekeeper Mabel took him 7 tries); the crown lost at 5 % health comes back a loss
   in 13 s (a life, not a hang), won at full health in 120 s (the Sun Warden's enrage is at 132 s); floor 1's perf print is still
   `de2e692e` (8.2 ms).
+
+## The new scope (2026-11-14): all 50 floors, five times the ground, new models, agents
+
+The user, shown chapter 1: "yes continue make it till floor 50 and if you need to create like new model for some npc and stuff make
+new ones also for enemies just make new dont just reuse heroes that we have and continue till 50 and lets make those maps 5 x larger
+than now; make more agents to work together". Asked what "5x larger" means: **five times the ground** (the walkable radius 48 m
+becomes about 107 m; a floor of 20 to 30 minutes), and **the five handmade floors grow too**. Then: "and also it doesnt need to
+have circular shape it can be whatever": **a floor's walkable ground is any shape** (a coast, a valley, a canyon), about five times
+today's area, not a circle.
+
+- **Size and shape first.** Every floor is rebuilt at the new size, so nothing more is built at 48 m. The engine's walk is clamped to
+  +-55 m and kept inside a circle (`Arena.walk`, `keepInside`, src/arena.ts, a shared engine file: one writer): a zone gets a walkable
+  outline of its own (a polygon) that the walk, the navigator, the summons, the camera and the checks follow; duels and the Raid keep their rings. Other size assumptions to
+  find and fix: the navigator's cost (it grows with the pieces of cover), the painted ground (2048 px over 112 m), the land mesh
+  (420 m), the fog and the sun's shadow box, `_worldCheck`'s grid, the route bot's limits. One sea floor at the new size is measured
+  (perf on desktop and the phone profile, the bot's time) before the rest. Duels and the Raid must not change (`test:server`, the
+  duel scenes' perf prints, the raid checks).
+- **New models, not heroes, for the people, the enemies and the rulers.** Made like the heroes (blender/heroes/real, the style
+  rules in docs/ART_BIBLE.md and blender/arenas/real/STYLE.md), and **shown first as a sheet beside Sefu and Kaia for the user's yes**
+  (the house rule for a new look). One agent at a time in Blender (`C:/Program Files/Blender Foundation/Blender 5.2/blender.exe` on
+  this computer; the scripts' default is `D:/blender/blender.exe`). `PersonDef.hero` and `RulerDef.stand` name roster heroes today:
+  they get a way to name a model of their own. **Gatekeepers and rivals stay heroes:** they are duels against a hero by design.
+- **Agents:** at most three at once (CLAUDE.md), each in its own worktree and dev-server port. First wave: the size work, the model
+  sheet, the renumbering (menu and saves). Second wave, once the size is settled: the generator's shared core pulled out of
+  `gen/sea.ts`, then one chapter each (the Wood, the Sands, the Deep, the War), each to the same bar: `_worldCheck` clean, the route
+  bot with a ranged and a melee hero, pictures.
+- **Not in this:** the story, secrets and watchers (the user has not chosen); nothing is pushed or live until the user says so.

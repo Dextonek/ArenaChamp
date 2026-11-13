@@ -12,7 +12,9 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
   game's list of floors yet.
 - **Not done:** the renumbering (today's floors 2 to 5 become 11, 21, 31, 41; saves, the menu, the curve); chapters 2 to 5; the story,
   secrets and the Stewards (the user has not chosen yet); a melee hero's bot runs.
-- **Waiting on the user:** a look at chapter 1's ten floors; whether the made floors are varied enough.
+- **New scope (2026-11-14):** all 50 floors, five times the ground in any shape (not a circle), the five handmade floors grown too,
+  new models for people, enemies and rulers (a sheet for the user's yes first), agents working together. The plan:
+  [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *The new scope*.
 
 ## Floor 1 as a real place (2026-11-13, night): first look built and committed; NOT pushed, NOT live; waiting on the user's look
 
