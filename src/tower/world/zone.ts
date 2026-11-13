@@ -82,6 +82,8 @@ function cover(): Piece[] {
   list.push(piece('hull', { ...wall(RING.x + 28.5, RING.z + 6.5, RING.x + 36, RING.z + 17), r: 1.7, height: 3 }), P('post', 38, 19, 0.5, 5), P('rock', 27, 16, 1.3, 1.6), P('rock', 36.5, 5, 1.5, 2));
   // The ruined customs house in the middle: three walls, open to the south.
   list.push(W('house', -6, -8, 6, -8, 0.45, 3.4), W('house', -6, -8, -6, -1.5, 0.45, 3.4), W('house', 6, -8, 6, -1.5, 0.45, 3.4));
+  // The Drowned Captain's lair: a long wall across the north with a doorway in the middle (the door itself is the floor's: floors/harbour.ts).
+  list.push(W('house', -26, -41, -3.4, -41, 0.5, 3.6), W('house', 3.4, -41, 26, -41, 0.5, 3.6));
   // Rocks and crates in the open, some on the paths so the way bends round them.
   list.push(
     P('rock', -12, 18, 1.3, 1.8), P('rock', 14, 25, 1.2, 1.5), P('rock', -24, -6, 1.4, 2.2), P('rock', -3, -32, 1.5, 2.2), P('rock', 14.5, -29, 1.3, 1.8), P('rock', 27, -3, 1.4, 1.8),
