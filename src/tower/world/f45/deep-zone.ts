@@ -244,7 +244,7 @@ export function buildDeepZone(): { group: THREE.Group; update(dt: number, time: 
         glowCool.push({ x: o.ax, y: 1.1, z: o.az, size: 3.2 });
         break;
       case 'cart':
-        kit.add(iron, box(r * 1.5, 0.75, r * 1.0), o.ax, 0.25, o.az, 0.4).add(gold, box(r * 1.58, 0.07, r * 1.08), o.ax, 0.98, o.az, 0.4);
+        kit.add(iron, box(r * 1.5, 0.75, r * 1.0), o.ax, 0.25, o.az, 0.4).add(darkWood, box(r * 1.58, 0.07, r * 1.08), o.ax, 0.98, o.az, 0.4);
         for (const [dx, dz] of [[-0.55, -0.4], [0.55, -0.4], [-0.55, 0.4], [0.55, 0.4]]) kit.add(darkWood, cyl(0.26, 0.26, 0.14, 8), o.ax + dx, 0.05, o.az + dz, 0.4, 1, 1, 1, 0, Math.PI / 2);
         for (const [dx, dz, s] of [[-0.3, 0, 0.7], [0.25, 0.1, 0.9], [0, -0.3, 0.6]] as const) prism(amethyst, o.ax + dx, o.az + dz, s, 0.9 * s + 0.7, rnd() * 3);
         glowCool.push({ x: o.ax, y: 1.4, z: o.az, size: 2.6 });

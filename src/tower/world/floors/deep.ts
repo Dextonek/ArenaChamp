@@ -33,10 +33,10 @@ export const deep: FloorDef = {
   },
   enemies: {
     mite: { id: 'mite', name: 'Shard mite', blurb: 'Comes in a swarm. Small and quick.', look: look('mite'), melee: true, hp: 34, share: 0.013, every: 1.2, speed: 4.0, scale: 1.1, shards: 3, color: '#9af0ff' },
-    lurker: { id: 'lurker', name: 'Lurker', blurb: 'Waits in the dark and leaps.', look: look('lurker'), melee: true, hp: 75, share: 0.036, every: 3.2, speed: 5.4, scale: 1.2, shards: 7, color: '#d8e8ff' },
+    lurker: { id: 'lurker', name: 'Lurker', blurb: 'Waits in the dark and leaps.', look: look('lurker'), melee: true, hp: 65, share: 0.03, every: 3.2, speed: 5.4, scale: 1.2, shards: 7, color: '#d8e8ff' },
     golem: { id: 'golem', name: 'Crystal golem', blurb: 'Slow. Throws a bolt back.', look: look('golem'), melee: false, hp: 240, share: 0.04, every: 3.2, speed: 1.7, range: 9, scale: 1.4, shards: 9, color: '#7ad8ff' },
     thief: { id: 'thief', name: 'The Lantern Thief', blurb: 'Carries the only lamp in the Deep that is not a crystal.', look: look('thief'), melee: true, hp: 430, share: 0.045, every: 1.7, speed: 3.4, scale: 1.5, shards: 30, color: '#ffb84a' },
-    pale: { id: 'pale', name: 'The Pale One', blurb: 'Walks the Deep and strikes hard.', look: look('pale'), melee: true, hp: 650, share: 0.06, every: 2.2, speed: 2.6, scale: 1.4, shards: 45, color: '#e6f4ff' },
+    pale: { id: 'pale', name: 'The Pale One', blurb: 'Walks the Deep and strikes hard.', look: look('pale'), melee: true, hp: 560, share: 0.055, every: 2.2, speed: 2.6, scale: 1.4, shards: 45, color: '#e6f4ff' },
   },
   packs: [
     { id: 'h1', at: P.hall1, mix: [{ kind: 'mite', n: 3 }, { kind: 'golem', n: 1 }] },
@@ -88,7 +88,7 @@ export const deep: FloorDef = {
     {
       id: 'lamp', name: 'The Survey Lamp', giver: 'isolde',
       intro: ['The old survey lamp stands in the east of the yard. Hold it while the swarm comes, and the Deep is mapped.'],
-      steps: [{ verb: 'hold', text: 'Hold the survey lamp while the swarm comes', at: SPOTS.lamp, r: 3.6, seconds: 18, waves: { kinds: ['mite', 'mite', 'mite'], every: 8 } }],
+      steps: [{ verb: 'hold', text: 'Hold the survey lamp while the swarm comes', at: SPOTS.lamp, r: 3.6, seconds: 18, waves: { kinds: ['mite', 'mite'], every: 8 } }],
       outro: ['The lamp burned through. I have it on the map. Take your share.'],
       reward: { shards: 35, boon: true },
     },

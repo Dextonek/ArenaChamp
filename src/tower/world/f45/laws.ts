@@ -69,7 +69,7 @@ function dark(z: ZoneCtx, d: Extract<LawDef, { kind: 'dark' }>): Law {
   const own: { dispose(): void }[] = [];
   const discGeo = new THREE.CircleGeometry(1, 40);
   own.push(discGeo);
-  const discMat = new THREE.MeshBasicMaterial({ color: 0x6a8cff, transparent: true, opacity: 0.16, depthWrite: false, blending: THREE.AdditiveBlending });
+  const discMat = new THREE.MeshBasicMaterial({ color: 0x6a8cff, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending });
   const glowMat = new THREE.SpriteMaterial({ map: softDotTexture(), color: 0x8fe8ff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.95 });
   own.push(discMat, glowMat);
   const halls = new Map<string, { disc: THREE.Mesh; glow: THREE.Sprite }>();
