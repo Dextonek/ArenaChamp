@@ -13,7 +13,8 @@
 // tool, one batch a frame, so every renderer on the page (the game's, the Play screen's hero) draws exactly once per frame and
 // nothing depends on the window being visible. After the draw, one pixel is read back from each canvas: that makes the
 // browser wait until the graphics card has really finished, so the time is the frame's whole cost, not only the time to
-// queue it. Time (`performance.now`) follows the fight's own clock and the dice (`Math.random`) are seeded, so a scene is the
+// queue it. (With `sync: false` the wait is left out and only the processor's part is timed: the driver asks for that when it
+// slows the processor, see perf.py.) Time (`performance.now`) follows the fight's own clock and the dice (`Math.random`) are seeded, so a scene is the
 // same fight every run: its `print` (health and places each second) must match between two runs when no rule changed.
 (() => {
   const realNow = performance.now.bind(performance);
@@ -106,6 +107,52 @@
     });
     for (const p of want) out.push(`not in the scene any more (${p.name || 'shader'})`);
     return out;
+  };
+
+  /**
+   * Materials that make three look their shader up again on every frame (`flips: true`): one material drawn by objects of
+   * two kinds (a rigged mesh and a plain one, an instanced one and a single one ...), which switches it back and forth within
+   * a frame, and materials marked as changed (`needsUpdate`) frame after frame. Each look-up builds a record of some forty
+   * settings: time and garbage.
+   */
+  const flipWatch = () => {
+    const a = api();
+    const versions = new Map(), bumps = new Map(), kinds = new Map(), where = new Map();
+    const labelOf = new Map();
+    let frames = 0;
+    const nameOf = (o, m) => {
+      const chain = [];
+      let label = '', top = o;
+      for (let q = o; q && q !== a.scene; q = q.parent) { top = q; if (labelOf.has(q)) label = labelOf.get(q); if (q.name) chain.unshift(q.name); }
+      const root = label ? `spell "${label}"` : top === a.arena.group ? 'arena' : top === a.duel.group ? 'duel' : top === a.heroMode.group ? 'hero mode' : `scene child ${top.name || top.type}`;
+      return `${root} > ${chain.slice(-3).join('/') || o.type} (${m.name || m.type})`;
+    };
+    return {
+      frame() {
+        frames++;
+        if (frames % 30 === 1) { labelOf.clear(); for (const [label, slot] of a.slots) if (slot.effect) labelOf.set(slot.effect.group, label); }
+        a.scene.traverseVisible((o) => {
+          if (!o.material || !(o.isMesh || o.isPoints || o.isLine || o.isSprite)) return;
+          for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+            const g = o.geometry;
+            const kind = `${o.isSkinnedMesh ? 'rigged' : 'plain'}${o.isInstancedMesh ? ` instanced${o.instanceColor ? '+colour' : ''}` : ''}${g?.attributes?.color?.itemSize === 4 && m.vertexColors ? ' alpha-colours' : ''}${g?.morphAttributes?.position ? ' morph' : ''}`;
+            let set = kinds.get(m);
+            if (!set) kinds.set(m, (set = new Set()));
+            if (!set.has(kind)) { set.add(kind); if (!where.has(m)) where.set(m, nameOf(o, m)); }
+            const v = versions.get(m);
+            if (v !== undefined && v !== m.version) bumps.set(m, (bumps.get(m) ?? 0) + 1);
+            versions.set(m, m.version);
+          }
+        });
+      },
+      result() {
+        const shared = [], marked = [];
+        for (const [m, set] of kinds) if (set.size > 1) shared.push({ material: where.get(m), kinds: [...set] });
+        for (const [m, n] of bumps) if (n > frames / 20) marked.push({ material: where.get(m) ?? (m.name || m.type), timesAFrame: +(n / frames).toFixed(2) });
+        marked.sort((x, y) => y.timesAFrame - x.timesAFrame);
+        return { shared, marked: marked.slice(0, 40), markedAFrame: +[...bumps.values()].reduce((x, y) => x + y, 0).toFixed(0) / frames };
+      },
+    };
   };
 
   const sceneCount = () => {
@@ -338,6 +385,7 @@
         Math.random = mulberry(o.seed ?? 7);
         const objects0 = objects(), memory0 = { geometries: info.memory.geometries, textures: info.memory.textures };
         const timer = o.passes ? passTimer() : null;
+        const flips = o.flips ? flipWatch() : null;
         if (o.profile) await window._perfBegin?.();
         const total = new Float32Array(frames), stepT = new Float32Array(frames), drawT = new Float32Array(frames), gpuT = new Float32Array(frames);
         const calls = [], tris = [], glDraws = [], parts = [], heap = [], print = [];
@@ -350,6 +398,7 @@
         for (let i = 0; i < frames; i++) {
           const wait = scene.frame(i);
           if (wait) await wait;
+          if (o.set?.lightsAllLayers) a.scene.traverse((q) => { if (q.isLight) q.layers.enableAll(); });
           simMs += 1000 / 60;
           info.reset();
           draws = 0;
@@ -358,7 +407,7 @@
           const t1 = realNow();
           flush(simMs);
           const t2 = realNow();
-          sync();
+          if (o.sync !== false) sync();
           const t3 = realNow();
           stepT[i] = t1 - t0; drawT[i] = t2 - t1; gpuT[i] = t3 - t2; total[i] = t3 - t0;
           if ((info.programs?.length ?? 0) !== known.size) {
@@ -376,6 +425,7 @@
           if (i % 60 === 59) print.push(scene.print());
           // The page must breathe: model loads, timers and the tool's own time limit all need the event loop.
           timer?.next();
+          flips?.frame();
           if (i % 20 === 19) { await tick(); timer?.collect(); }
         }
         const wall = realNow() - began;
@@ -388,7 +438,7 @@
         let hash = 2166136261;
         for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
         out = {
-          scene: o.scene, opts: o, frames, wallSeconds: +(wall / 1000).toFixed(1),
+          scene: o.scene, opts: o, frames, wallSeconds: +(wall / 1000).toFixed(1), cpuOnly: o.sync === false,
           frame: stats(total), step: stats(stepT), draw: stats(drawT), gpu: stats(gpuT),
           // Without the first five seconds: the scene once everything it uses has been seen once.
           warm: stats(total.subarray(Math.min(300, frames >> 1))),
@@ -403,7 +453,7 @@
           canvas: [r.domElement.width, r.domElement.height],
           // Every frame's time in tenths of a millisecond: the line on the page.
           line: Array.from(total, (v) => Math.round(v * 10)),
-          passes: timer?.result() ?? null, compiles,
+          passes: timer?.result() ?? null, compiles, flips: flips?.result() ?? null,
           compiledShaders: compiles.reduce((n, c) => n + c.n, 0), compileMs: +compiles.reduce((n, c) => n + c.ms, 0).toFixed(0),
           print, printHash: (hash >>> 0).toString(16), errors,
         };

@@ -125,6 +125,61 @@ function opaqueOrder(a: DrawItem, b: DrawItem) {
   return a.id - b.id;
 }
 
+/**
+ * A see-through, two-sided material is drawn by three in two goes, back faces then front, and marked as changed before
+ * each: two draw calls and two look-ups of its shader on every frame, for each of the hundreds of glows, rings and veils
+ * the spells are made of. Where the two goes give the same picture as one, one is asked for (`forceSinglePass`):
+ *  - a flat shape (its back and its front are never seen at once), unless a shader of its own may bend it;
+ *  - anything that only adds its light and writes no depth (adding does not care about the order).
+ * A closed shape that covers what is behind it (a shield's dome, a veil) keeps its two goes: there the order shows.
+ * Looked at once for each material and geometry, here, where every see-through thing passes before it is drawn.
+ */
+const _flat = new WeakMap<THREE.BufferGeometry, boolean>();
+const _oneGo = new WeakSet<THREE.Material>();
+function flatShape(g: THREE.BufferGeometry | null) {
+  if (!g) return false;
+  let flat = _flat.get(g);
+  if (flat === undefined) {
+    if (!g.boundingBox) g.computeBoundingBox();
+    const b = g.boundingBox;
+    const dx = b ? b.max.x - b.min.x : 1, dy = b ? b.max.y - b.min.y : 1, dz = b ? b.max.z - b.min.z : 1;
+    flat = !!b && Number.isFinite(dx + dy + dz) && Math.min(dx, dy, dz) <= 1e-5 * Math.max(dx, dy, dz, 1e-3) && !g.morphAttributes.position;
+    _flat.set(g, flat);
+  }
+  return flat;
+}
+function oneGo(it: DrawItem) {
+  const m = it.material as THREE.Material & { displacementMap?: unknown; isShaderMaterial?: boolean };
+  if (_oneGo.has(m)) return;
+  _oneGo.add(m);
+  if (!m.transparent || m.side !== THREE.DoubleSide || m.forceSinglePass) return;
+  const adds = m.blending === THREE.AdditiveBlending && !m.depthWrite;
+  const o = it.object as THREE.Mesh & { isSkinnedMesh?: boolean };
+  const flat = !m.isShaderMaterial && !m.displacementMap && !o.isSkinnedMesh && flatShape(it.geometry);
+  if (adds || flat) m.forceSinglePass = true;
+}
+/** Three's own order for see-through things (far to near), with `oneGo` looked at on the way. */
+function transparentOrder(a: DrawItem, b: DrawItem) {
+  oneGo(a);
+  oneGo(b);
+  if (a.groupOrder !== b.groupOrder) return a.groupOrder - b.groupOrder;
+  if (a.renderOrder !== b.renderOrder) return a.renderOrder - b.renderOrder;
+  if (a.z !== b.z) return b.z - a.z;
+  return a.id - b.id;
+}
+
+/**
+ * Every light is on every layer. The distortion pass and the impact frames' mask draw the scene through a camera that sees
+ * one layer only, and three leaves out the lights that layer does not have. To three that is another set of lights: it
+ * then looked up the shader of every lit material again, on that frame and on the next one, building a record of some
+ * forty settings for each (a fifth of all the garbage in a raid, and a millisecond and more of every such frame). With the
+ * lights always counted, the set never changes. Nothing in those two draws is lit, so they look the same. `Object3D`'s
+ * constructor assigns `layers`: the setter takes that and drops it.
+ */
+const EVERY_LAYER = new THREE.Layers();
+EVERY_LAYER.enableAll();
+Object.defineProperty(THREE.Light.prototype, 'layers', { configurable: true, get: () => EVERY_LAYER, set: () => {} });
+
 /** Builds the scene into `#app` and starts the frame loop. Call once per page. */
 export function createRuntime(opts: RuntimeOptions) {
   const hooks: RuntimeHooks = {};
@@ -142,6 +197,7 @@ export function createRuntime(opts: RuntimeOptions) {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
   renderer.setOpaqueSort(opaqueOrder);
+  renderer.setTransparentSort(transparentOrder);
 
   const scene = new THREE.Scene();
   // Background via scene.background, not setClearColor: the composer's render target clear skips the
@@ -743,7 +799,10 @@ export function createRuntime(opts: RuntimeOptions) {
     renderer.setRenderTarget(distortTarget);
     renderer.setClearColor(0x000000, 0);
     renderer.clear();
+    // The shadow map is the main draw's: nothing here casts or takes a shadow.
+    renderer.shadowMap.autoUpdate = false;
     if (any) renderer.render(scene, camera);
+    renderer.shadowMap.autoUpdate = true;
     renderer.setRenderTarget(null);
     renderer.setClearColor(_clear, prevAlpha);
     camera.layers.mask = layers;
@@ -761,11 +820,27 @@ export function createRuntime(opts: RuntimeOptions) {
     camera.layers.set(SILHOUETTE_LAYER);
     renderer.setRenderTarget(maskTarget);
     renderer.clear();
+    renderer.shadowMap.autoUpdate = false;
     renderer.render(scene, camera);
+    renderer.shadowMap.autoUpdate = true;
     renderer.setRenderTarget(null);
     scene.background = bg;
     scene.overrideMaterial = override;
     camera.layers.mask = layers;
+  }
+
+  /**
+   * A shader, once built, stays for the session. Three deletes one when the last material that uses it is disposed: a
+   * damage number's, a bolt's or a danger zone's shader was then built again, a stutter each time, the next time one
+   * appeared. Counting each as used once more keeps it (they are small; a session meets a few hundred).
+   */
+  const kept = new WeakSet<object>();
+  let keptCount = 0;
+  function keepShaders() {
+    const programs = renderer.info.programs as { usedTimes: number }[] | null;
+    if (!programs || programs.length === keptCount) return;
+    for (const p of programs) if (!kept.has(p)) { kept.add(p); p.usedTimes++; }
+    keptCount = programs.length;
   }
 
   const _camSave = { pos: new THREE.Vector3(), quat: new THREE.Quaternion(), fov: 50 };
@@ -797,11 +872,17 @@ export function createRuntime(opts: RuntimeOptions) {
       _focus.copy(fx.focus).project(camera);
       focusUv.set(_focus.x * 0.5 + 0.5, _focus.y * 0.5 + 0.5);
     } else focusUv.set(0.5, 0.5);
+    // The scene's matrices once for the frame: three would work them all out again for each of the frame's draws (the
+    // distortion, the mask, the outline's four, the main one), bones and hidden effects included.
+    scene.updateMatrixWorld();
+    scene.matrixWorldAutoUpdate = false;
     renderDistortion();
     const impact = !!fx && fx.impact > 0;
     if (impact) renderSilhouetteMask(fx.silhouettes);
     finish.setScreen(fx, focusUv, impact ? maskTarget.texture : null, camera.aspect);
     composer.render();
+    scene.matrixWorldAutoUpdate = true;
+    keepShaders();
     camera.position.sub(shakeOffset);
     if (cineOn) {
       drawLetterbox(cine.letterbox);

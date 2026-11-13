@@ -8,6 +8,7 @@ measures what the game downloads before it can be played. How to read it: docs/p
     python pipeline/tools/perf.py profile --scene raid-party --profile phone-4x   # where the processor's time goes
     python pipeline/tools/perf.py passes --scene duel-temple                 # what each step of drawing a frame costs the graphics card
     python pipeline/tools/perf.py parts --scene duel-temple                  # what each part of the picture costs it (hidden one at a time)
+    python pipeline/tools/perf.py flips --scene raid-party                   # materials that make three look their shader up every frame
     python pipeline/tools/perf.py load --label baseline                      # the built game: bytes, requests, the first fight
     python pipeline/tools/perf.py files                                      # the sizes of the built chunks and the models
 
@@ -17,8 +18,14 @@ docs/perf/data/<label>-load.json. The page that shows them: python pipeline/tool
 
 A scene is one fresh browser: its first seconds are the cold start a player meets (shaders compile on first use). The
 profiles: `desktop` (1920 x 1080), `phone` (844 x 390 at three pixels to a point, touch), each at the processor's own
-speed and slowed 4 and 6 times (Chrome's CPU throttling; it does not slow the graphics card). The graphics card is this
-computer's own: the result names it, and says so if the browser fell back to software drawing.
+speed and slowed 4 and 6 times (Chrome's CPU throttling). The graphics card is this computer's own: the result names
+it, and says so if the browser fell back to software drawing.
+
+A slowed profile times only the processor's part of a frame (the step and the draw calls), not the wait for the graphics
+card: Chrome's throttle holds the page's thread for three quarters of ALL time, waiting included, so a frame that waits
+for the card came out far too slow (68 ms where 4 x the processor's 3 ms plus the card's 22 ms is 34). The card is not
+slowed by the throttle at all, so its time is taken from the same scene on the unslowed profile of the same screen;
+perf-show.py and the report add the two.
 
 --root <folder> measures another checkout of the game (a git worktree of an earlier commit) with this checkout's tool: how
 "before" is measured again beside "after", on the same day and the same computer. Give it its own --port.
@@ -136,6 +143,8 @@ async def run_scenes(args):
                 prof = PROFILES[pname]
                 for sname in args.scenes.split(","):
                     opts = {**SCENES[sname], "frames": args.frames, "seed": args.seed}
+                    if prof["cpu"] > 1:
+                        opts["sync"] = False
                     if extra:
                         opts["set"] = extra
                     t0 = time.time()
@@ -223,12 +232,17 @@ async def run_profile(args):
         # The profiler starts when the measured frames do (the page calls back), so loading is not in it.
         async def begin():
             await cdp.send("Profiler.start")
+            # Every allocation counts, also what the garbage collector has already taken back: that is the garbage.
+            await cdp.send("HeapProfiler.startSampling", {"samplingInterval": 8192, "includeObjectsCollectedByMajorGC": True, "includeObjectsCollectedByMinorGC": True})
+        await cdp.send("HeapProfiler.enable")
         await page.expose_function("_perfBegin", begin)
 
     async def after(cdp):
-        return (await cdp.send("Profiler.stop"))["profile"]
+        cpu = (await cdp.send("Profiler.stop"))["profile"]
+        heap = (await cdp.send("HeapProfiler.stopSampling"))["profile"]
+        return cpu, heap
 
-    res, cpu = await one_scene(args, opts, before, after)
+    res, (cpu, heap) = await one_scene(args, opts, before, after)
     nodes = {n["id"]: n for n in cpu["nodes"]}
     own, by_file = {}, {}
     for node_id, dt in zip(cpu["samples"], cpu.get("timeDeltas", [])):
@@ -246,9 +260,32 @@ async def run_profile(args):
     print("\nBy file, ms a frame:")
     for url, ms in sorted(by_file.items(), key=lambda kv: -kv[1])[:24]:
         print(f"  {ms / frames:6.3f}  {url}")
+    # Memory asked for, by the function that asked and by the nearest function of the game's own up the stack.
+    made, made_by = {}, {}
+
+    def walk(node, owner):
+        f = node["callFrame"]
+        key = (f["functionName"] or "(anonymous)", short(f["url"]), f["lineNumber"] + 1)
+        if "/src/" in f["url"]:
+            owner = key
+        if node["selfSize"]:
+            made[key] = made.get(key, 0) + node["selfSize"]
+            made_by[owner] = made_by.get(owner, 0) + node["selfSize"]
+        for c in node.get("children", []):
+            walk(c, owner)
+    walk(heap["head"], ("(not the game's code)", "", 0))
+    seconds = frames / 60
+    print(f"\nMemory asked for, MB a second, by the function that asked ({sum(made.values()) / 1048576 / seconds:.1f} MB a second sampled in all):")
+    for (name, url, line), size in sorted(made.items(), key=lambda kv: -kv[1])[:args.top // 2]:
+        print(f"  {size / 1048576 / seconds:6.2f}  {name[:44]:44} {url}:{line}")
+    print("\nThe same by the nearest function of the game's own code up the stack:")
+    for (name, url, line), size in sorted(made_by.items(), key=lambda kv: -kv[1])[:args.top // 2]:
+        print(f"  {size / 1048576 / seconds:6.2f}  {name[:44]:44} {url}:{line}")
     out = OUT / "data" / f"profile-{args.scene}-{args.profile}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"scene": args.scene, "profile": args.profile, "result": {k: v for k, v in res.items() if k != "line"},
+                               "garbage": [[n, u, ln, round(sz / 1048576 / seconds, 3)] for (n, u, ln), sz in sorted(made.items(), key=lambda kv: -kv[1])[:100]],
+                               "garbageBy": [[n, u, ln, round(sz / 1048576 / seconds, 3)] for (n, u, ln), sz in sorted(made_by.items(), key=lambda kv: -kv[1])[:100]],
                                "functions": [[n, u, ln, round(ms / frames, 4)] for (n, u, ln), ms in sorted(own.items(), key=lambda kv: -kv[1])[:200]],
                                "files": [[u, round(ms / frames, 4)] for u, ms in sorted(by_file.items(), key=lambda kv: -kv[1])[:60]]}), encoding="utf-8")
     print(f"saved {out}")
@@ -268,6 +305,18 @@ async def run_passes(args):
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({k: v for k, v in res.items() if k != "line"}), encoding="utf-8")
     print(f"saved {out}")
+
+
+async def run_flips(args):
+    """Materials that make three look their shader up again every frame, for one scene (see `flipWatch` in perf-page.js)."""
+    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "flips": True}
+    res, _ = await one_scene(args, opts)
+    f = res["flips"]
+    print(f"{args.scene}: {len(f['shared'])} materials drawn by objects of two kinds; {f['markedAFrame']:.1f} materials a frame marked as changed")
+    for row in f["shared"]:
+        print(f"  shared by {' and '.join(row['kinds'])}: {row['material']}")
+    for row in f["marked"]:
+        print(f"  marked {row['timesAFrame']} times a frame: {row['material']}")
 
 
 async def run_parts(args):
@@ -441,7 +490,7 @@ def main():
     s.add_argument("--timeout", type=float, default=540, help="seconds one scene may take")
     s.add_argument("--no-pictures", action="store_true")
     sub.add_parser("files")
-    for name in ("profile", "passes", "parts"):
+    for name in ("profile", "passes", "parts", "flips"):
         p = sub.add_parser(name)
         p.add_argument("--scene", default="duel-temple")
         p.add_argument("--profile", default="desktop")
@@ -463,6 +512,8 @@ def main():
         asyncio.run(run_passes(args))
     elif args.cmd == "parts":
         asyncio.run(run_parts(args))
+    elif args.cmd == "flips":
+        asyncio.run(run_flips(args))
     elif args.cmd == "load":
         asyncio.run(run_load(args))
     else:

@@ -22,17 +22,55 @@ export interface Obstacle {
 export const pillar = (x: number, z: number, r = 0.85): Obstacle => ({ ax: x, az: z, bx: x, bz: z, r, height: 4.2, kind: 'pillar' });
 export const wall = (ax: number, az: number, bx: number, bz: number): Obstacle => ({ ax, az, bx, bz, r: 0.35, height: 2.3, kind: 'wall' });
 
+/**
+ * `Math.hypot` of two numbers, to the last bit as Chrome and the game server compute it (the same sums in the same order;
+ * checked on 20 million pairs), without the array the built-in one makes for every call: these checks run thousands of
+ * times a frame in a room with much cover, and were the game's largest source of garbage (docs/pipeline/performance.md).
+ * A plain `Math.sqrt(x * x + z * z)` is NOT the same number in a third of all cases, and would let two builds of the game
+ * walk a hero a hair apart.
+ */
+export function hyp(x: number, z: number) {
+  x = Math.abs(x);
+  z = Math.abs(z);
+  const max = x > z ? x : z;
+  if (max === 0) return 0;
+  if (max === Infinity) return Infinity;
+  // Kahan's sum of the two squares, each scaled by the larger.
+  let n = x / max, summand = n * n, sum = summand;
+  const lost = (sum - 0) - summand;
+  n = z / max;
+  summand = n * n - lost;
+  sum += summand;
+  return Math.sqrt(sum) * max;
+}
+
+/**
+ * The closest point to (px, pz) on the segment a-b, left in `_c` (x, z): no object is made. Read it before the next call.
+ * (A typed array, not two variables: a number kept in a module's variable is boxed anew on every write.)
+ */
+const _c = new Float64Array(2);
+function closestOn(ax: number, az: number, bx: number, bz: number, px: number, pz: number) {
+  const dx = bx - ax, dz = bz - az, len2 = dx * dx + dz * dz;
+  const t = len2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / len2)) : 0;
+  _c[0] = ax + dx * t;
+  _c[1] = az + dz * t;
+}
+
 /** Closest point to (px, pz) on the obstacle's segment. */
 function closest(o: Obstacle, px: number, pz: number) {
-  const dx = o.bx - o.ax, dz = o.bz - o.az, len2 = dx * dx + dz * dz;
-  const t = len2 > 0 ? THREE.MathUtils.clamp(((px - o.ax) * dx + (pz - o.az) * dz) / len2, 0, 1) : 0;
-  return { x: o.ax + dx * t, z: o.az + dz * t };
+  closestOn(o.ax, o.az, o.bx, o.bz, px, pz);
+  return { x: _c[0], z: _c[1] };
+}
+
+/** Distance from (px, pz) to the obstacle's segment. */
+function distTo(o: Obstacle, px: number, pz: number) {
+  closestOn(o.ax, o.az, o.bx, o.bz, px, pz);
+  return hyp(px - _c[0], pz - _c[1]);
 }
 
 /** True when a point on the floor is inside this obstacle. */
 export function contains(o: Obstacle, x: number, z: number) {
-  const c = closest(o, x, z);
-  return Math.hypot(x - c.x, z - c.z) <= o.r;
+  return distTo(o, x, z) <= o.r;
 }
 
 /**
@@ -45,8 +83,8 @@ export function firstSurface(a: { x: number; z: number }, b: { x: number; z: num
   for (let i = 0; i <= steps; i++) {
     const t = i / steps, x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t;
     for (const o of obstacles) {
-      const c = closest(o, x, z);
-      const dx = x - c.x, dz = z - c.z, d = Math.hypot(dx, dz);
+      closestOn(o.ax, o.az, o.bx, o.bz, x, z);
+      const dx = x - _c[0], dz = z - _c[1], d = hyp(dx, dz);
       if (d > o.r) continue;
       if (d < 1e-5) return { t, nx: -(b.x - a.x) / (len || 1), nz: -(b.z - a.z) / (len || 1) };
       return { t, nx: dx / d, nz: dz / d };
@@ -89,13 +127,14 @@ export function bankPath(from: { x: number; z: number }, dir: { x: number; z: nu
 export function pushOut(p: THREE.Vector3, obstacles: readonly Obstacle[], body = 0.5) {
   for (let pass = 0; pass < 2; pass++) {
     for (const o of obstacles) {
-      const c = closest(o, p.x, p.z);
-      let dx = p.x - c.x, dz = p.z - c.z;
-      const d = Math.hypot(dx, dz), min = o.r + body;
+      closestOn(o.ax, o.az, o.bx, o.bz, p.x, p.z);
+      const cx = _c[0], cz = _c[1];
+      let dx = p.x - cx, dz = p.z - cz;
+      const d = hyp(dx, dz), min = o.r + body;
       if (d >= min) continue;
       if (d < 1e-5) { dx = 0; dz = 1; } else { dx /= d; dz /= d; }
-      p.x = c.x + dx * min;
-      p.z = c.z + dz * min;
+      p.x = cx + dx * min;
+      p.z = cz + dz * min;
     }
   }
   return p;
@@ -123,8 +162,8 @@ export function steer(p: THREE.Vector3, dir: THREE.Vector3, obstacles: readonly 
   const look = Math.min(SLIDE_LOOK, reach), ex = p.x + dir.x * look, ez = p.z + dir.z * look;
   let hit: Obstacle | null = null, hitD = Infinity;
   for (const o of obstacles) {
-    const c = closest(o, p.x, p.z);
-    const nx = c.x - p.x, nz = c.z - p.z, d = Math.hypot(nx, nz);
+    closestOn(o.ax, o.az, o.bx, o.bz, p.x, p.z);
+    const nx = _c[0] - p.x, nz = _c[1] - p.z, d = hyp(nx, nz);
     if (d > o.r + body + look || d < 1e-5 || d >= hitD) continue;
     if ((nx * dir.x + nz * dir.z) / d <= 0.05) continue;
     if (segDist(p.x, p.z, ex, ez, o.ax, o.az, o.bx, o.bz) >= o.r + body - 0.01) continue;
@@ -156,17 +195,19 @@ export function steer(p: THREE.Vector3, dir: THREE.Vector3, obstacles: readonly 
   return new THREE.Vector3(tx * mem.side * 0.7, 0, tz * mem.side * 0.7);
 }
 
+const cross = (ox: number, oz: number, px: number, pz: number, qx: number, qz: number) => (px - ox) * (qz - oz) - (pz - oz) * (qx - ox);
+/** Distance from the point p to the segment s-e. */
+function pointSeg(px: number, pz: number, sx: number, sz: number, ex: number, ez: number) {
+  closestOn(sx, sz, ex, ez, px, pz);
+  return hyp(px - _c[0], pz - _c[1]);
+}
+
 /** Distance between the segments a-b and c-d on the ground plane. */
 export function segDist(ax: number, az: number, bx: number, bz: number, cx: number, cz: number, dx: number, dz: number) {
-  const cross = (ox: number, oz: number, px: number, pz: number, qx: number, qz: number) => (px - ox) * (qz - oz) - (pz - oz) * (qx - ox);
   const d1 = cross(cx, cz, dx, dz, ax, az), d2 = cross(cx, cz, dx, dz, bx, bz);
   const d3 = cross(ax, az, bx, bz, cx, cz), d4 = cross(ax, az, bx, bz, dx, dz);
   if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) return 0;
-  const pt = (px: number, pz: number, sx: number, sz: number, ex: number, ez: number) => {
-    const c = closest({ ax: sx, az: sz, bx: ex, bz: ez, r: 0, height: 0, kind: 'wall' }, px, pz);
-    return Math.hypot(px - c.x, pz - c.z);
-  };
-  return Math.min(pt(ax, az, cx, cz, dx, dz), pt(bx, bz, cx, cz, dx, dz), pt(cx, cz, ax, az, bx, bz), pt(dx, dz, ax, az, bx, bz));
+  return Math.min(pointSeg(ax, az, cx, cz, dx, dz), pointSeg(bx, bz, cx, cz, dx, dz), pointSeg(cx, cz, ax, az, bx, bz), pointSeg(dx, dz, ax, az, bx, bz));
 }
 
 /** Where a moving body first touches an obstacle (`sweepHit`). */
@@ -194,10 +235,7 @@ export function sweepHit(from: THREE.Vector3, to: THREE.Vector3, radius: number,
   for (const o of obstacles) {
     const reach = o.r + radius;
     // Distance from the body to the obstacle's segment as the body moves is convex in t: find the lowest point, then the first crossing.
-    const dist = (t: number) => {
-      const px = from.x + dx * t, pz = from.z + dz * t, c = closest(o, px, pz);
-      return Math.hypot(px - c.x, pz - c.z);
-    };
+    const dist = (t: number) => distTo(o, from.x + dx * t, from.z + dz * t);
     let hitT: number;
     if (dist(0) <= reach) hitT = 0;
     else {

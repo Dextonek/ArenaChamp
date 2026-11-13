@@ -16,7 +16,7 @@ import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
-import { pillar, stopsAtCover, sweepHit } from './obstacles';
+import { hyp, pillar, stopsAtCover, sweepHit } from './obstacles';
 import { TOUCH } from './touch';
 import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
@@ -3653,7 +3653,7 @@ function grownShape(s: TelegraphShape, pad: number): TelegraphShape {
 function capsuleDist(x: number, z: number, o: ArenaDef['obstacles'][number]) {
   const dx = o.bx - o.ax, dz = o.bz - o.az, len2 = dx * dx + dz * dz;
   const t = len2 > 0 ? Math.min(1, Math.max(0, ((x - o.ax) * dx + (z - o.az) * dz) / len2)) : 0;
-  return Math.hypot(x - (o.ax + dx * t), z - (o.az + dz * t));
+  return hyp(x - (o.ax + dx * t), z - (o.az + dz * t));
 }
 
 /** Closest ground-plane distance between the path from `a` to `b` and an obstacle's segment (sampled along the path). */
