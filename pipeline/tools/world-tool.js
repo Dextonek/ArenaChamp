@@ -18,7 +18,7 @@
 (() => {
   const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
   let api = null, mod = null, game = null;
-  const gl = document.querySelector('#app canvas')?.getContext('webgl2');
+  const gl = (document.querySelector('#app canvas') ?? document.querySelector('canvas'))?.getContext('webgl2');
   const r2 = (x) => +x.toFixed(2);
 
   // GL counters (stage 0's bench): draw calls and triangles, summed over every pass of a frame.
@@ -47,7 +47,8 @@
         doors: await import('/src/tower/world/doors.ts'), state: await import('/src/tower/world/state.ts'), heroes: await import('/src/heroes.ts'),
       };
     }
-    api = { arena: vfx.arena, heroMode: vfx.heroMode, duel: vfx.duel, kits: mod.heroes.HERO_KITS, setHeroMode: vfx.setHeroMode, setKit: (n) => vfx.heroPickCtrl.setValue(n), step: vfx.step, view: vfx.view };
+    // The game page's own runtime (`game.api`), or the tool page's.
+    api = window.game?.api ?? { arena: vfx.arena, heroMode: vfx.heroMode, duel: vfx.duel, kits: mod.heroes.HERO_KITS, setHeroMode: vfx.setHeroMode, setKit: (n) => vfx.heroPickCtrl.setValue(n), step: vfx.step, view: vfx.view };
   }
   const spot = (p) => {
     if (typeof p === 'string') return { ...(game?.floor.places ?? mod.zone.PLACES)[p].stand };
@@ -67,6 +68,8 @@
     game = new mod.game.WorldGame(api, { hero: o.hero ?? 'Lyra', mode: o.mode ?? 'play', floor: o.floor ?? 1, persist: o.persist ?? !!person });
     game.manual = !person;
     mod.doors.stubWaits.length = 0;
+    // On the game page the menu is hidden while a climb is on (as `game.world` does for a person's).
+    if (window.game?.world && !window.game.world.active) { window.game.world.active = true; window.game.render(); window.__worldHid = true; }
     game.start({ resume: !!o.resume });
     if (!person) for (let i = 0; i < 10; i++) frame();
     window._worldGame = game;
@@ -81,6 +84,11 @@
       opened: run.opened, boons: run.boons.list(), over: !!api.duel.over, finished: game.finished, piece: game.piece, law: z?.law?.status?.(),
       packs: z ? [...z.packs.values()].map((p) => ({ id: p.id, state: p.state, left: p.left, total: p.total })) : [], liveUnits: api.arena.summons.alive('opponent').length, log: z?.log.slice(-20), gameLog: game.log,
     };
+  };
+  /** Stops the floor and, on the game page, brings the menu back. */
+  window._world.end = () => {
+    game?.stop(); game = null;
+    if (window.__worldHid && window.game?.world) { window.game.world.active = false; window.game.render(); window.__worldHid = false; }
   };
   window._world.packs = (on) => zoneOf()?.setPacks(on);
   window._world.wakeAll = () => zoneOf()?.wakeAll();
@@ -98,6 +106,7 @@
    * One decision of the bot: where to go (or null to stay), and what to do when there. Reads the run and the floor's data only; the
    * autopilot walks (`zone.bot.goal`) and fights what is awake near it. Returns { goal, why, act? }.
    */
+  let botOpts = {};
   function decide() {
     const z = game.zone, run = game.run, def = game.floor, ctx = z.ctx, hero = ctx.hero, q = z.quests;
     const person = (id) => def.people.find((p) => p.id === id);
@@ -119,6 +128,11 @@
         if (best) return { goal: best, why: 'tide: to dry ground' };
       } else if (law.warn || law.active) return { goal: null, why: 'tide: waiting on dry ground' };
     }
+    // A race that is running comes before everything else (a person who stops to hand in a quest loses it). The autopilot's own walk
+    // through the zone takes 22 to 33 s to the lighthouse where a person who goes straight needs 9 to 12, so the bot sprints (x3) during a race:
+    // that is the stand-in for a person's straight walk. `_worldRoute({ noSprint: true })` leaves it off (the bot then loses the race).
+    z.ctx.speed('bot-race', run.rival === 'running' && !botOpts.noSprint ? 3 : 1);
+    if (run.rival === 'running') return { goal: def.rival.to, why: 'race: run' };
     // Hand in what is done, take what is offered.
     for (const qd of def.quests) {
       const st = run.q(qd.id);
@@ -191,6 +205,7 @@
     const onErr = (e) => { if (errors.length < 10) errors.push(String(e.error?.stack ?? e.message).slice(0, 300)); };
     window.addEventListener('error', onErr);
     const t0 = performance.now();
+    botOpts = o;
     try {
       await window._world({ floor: o.floor ?? 1, hero: o.hero ?? 'Lyra', mode: 'run', persist: o.persist ?? !!o.resume, resume: !!o.resume, manual: true });
       const run = () => game.run, def = game.floor, cps = checkpoints(def), got = new Map();
@@ -226,6 +241,7 @@
       return {
         ok: game.finished && out.every((c) => c.status === 'done'), floorCleared: game.finished, seconds: r2(run().clock), hp: r2(run().hp), lives: run().lives, shards: run().shards, falls: run().falls, restarts: game.restarts,
         kills: run().kills, stars: run().result?.stars ?? game.stars().map((s) => (s.got ? 1 : 0)), checkpoints: out, notDone: out.filter((c) => c.status !== 'done').map((c) => c.step), errors,
+        gateTries: game.log.filter((l) => /^piece gate/.test(l)).length, rulerTries: game.log.filter((l) => /^piece ruler/.test(l)).length, pieceFalls: game.pieceFalls,
         frames, whyLog: whyLog.slice(-70), gameLog: game.log, last: window._world.status(), wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
       };
     } finally {
@@ -233,6 +249,30 @@
       window.removeEventListener('error', onErr);
     }
   };
+
+  /**
+   * The route bot for several heroes, each `reps` times, one after the other, in the background (a browser call stops after about 45 s):
+   *   _worldSix(['Lyra','Bram'], 2)  ...  _worldSix.result()  -> { done, rows: [{ hero, run, seconds, falls, fellAt, stars, gateFirst, ... }] }
+   */
+  const six = { done: true, rows: [], err: null, now: '' };
+  window._worldSix = (heroes, reps = 2, o = {}) => {
+    if (!six.done) return 'already running';
+    six.done = false; six.rows = []; six.err = null;
+    (async () => {
+      try {
+        for (let r = 0; r < reps; r++) for (const hero of heroes) {
+          six.now = `${hero} #${r + 1}`;
+          const out = await window._worldRoute({ floor: o.floor ?? 1, hero, maxSeconds: o.maxSeconds ?? 1800 });
+          const fell = (out.gameLog ?? []).filter((l) => /^fall|lost/.test(l));
+          six.rows.push({ hero, run: r + 1, ok: out.ok, seconds: out.seconds, falls: out.falls, restarts: out.restarts, fellAt: fell, stars: (out.stars ?? []).join(''), gateFirst: out.gateTries === 1 && (out.gameLog ?? []).some((l) => /^piece gate won/.test(l)), gateTries: out.gateTries, rulerTries: out.rulerTries, rival: out.last?.rival, hp: out.hp, shards: out.shards, kills: out.kills, notDone: out.notDone, errors: out.errors, wall: out.wallSeconds });
+        }
+      } catch (e) { six.err = String(e?.stack ?? e).slice(0, 400); }
+      window._world.end();
+      six.done = true;
+    })();
+    return 'started';
+  };
+  window._worldSix.result = () => ({ done: six.done, now: six.now, err: six.err, rows: six.rows });
 
   // --- every verb and every law, once ---------------------------------------------------------------------------------------
 

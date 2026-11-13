@@ -41,7 +41,7 @@ stage's builder fills in what it found and what it built, so the next one starts
 | # | Stage | State |
 |---|---|---|
 | 0 | **Spike:** one walking-only zone of about 50 m radius with packs that appear near the hero. Measure frame time, path finding and the edge of the ring at that size. Answer the open questions below. Close the vocabulary | **done 2026-11-13** |
-| 1 | **The world system and floor 1,** the whole loop, with the route bot, pictures and a clip | **1A done 2026-11-13** (the zone's loop, floors as data, the route bot, pictures; checkout `tower-worlds`). **1B** (the set pieces behind the doors: ruler, gatekeeper, trial, rival's duel) is built in another checkout against `src/tower/world/doors.ts`. Not done in stage 1: 1B's merge, the menu entry in `src/game/main.ts`, the clip |
+| 1 | **The world system and floor 1,** the whole loop, with the route bot, pictures and a clip | **done 2026-11-13.** 1A: the zone's loop, floors as data, the route bot. 1B: the set pieces behind the doors. **1C: joined, played on the game page, a menu, the clip** (checkout `tower-worlds`; see "Stage 1C" below) |
 | 2 | **Floors 2 to 5** as data | not started |
 | 3 | **All five checked,** docs (`docs/architecture/tower-worlds.md`), News, merge into `feat/particle-editor` | not started |
 
@@ -294,3 +294,71 @@ sigil, `tower.world.floor` set to the next floor). A piece reports `hp` as a sha
 - A pack's wounds are not kept in the run (a pack that is rebuilt is whole); only "cleared" is.
 - Looks: the cache is a half barrel with a glow, the key over the hero's head is small, the people stand in a T-pose for the first second until their models load, the enemy crops are of the market's units rather than one pack a kind.
 - On a phone the zone's HUD sits under the hero's own panel (top 158 px), which is right only while that panel is shown.
+
+### Stage 1C: joined, played on the game page, a menu, the clip (2026-11-13), done
+
+The two halves (1A's zone, 1B's pieces) were merged but not joined: the zone's doors called a stub. 1C joins them and shows the result. How it works
+now: [docs/architecture/tower-worlds.md](../../docs/architecture/tower-worlds.md). Pictures `docs/tower/worlds/g1-*.jpg`, the clip `floor1.mp4` (poster `floor1.jpg`).
+
+**What was joined** (all under `src/tower/world/` except one engine-side file):
+
+| Part | What changed |
+|---|---|
+| `doors.ts` | One set of types (those of `pieces/types.ts`, re-exported); `PieceStarter` may return the piece's `PieceHandle`; the default starter is the real `startPiece` (the stub is kept for the tools: `setPieceStarter(stubStarter)`) |
+| `game.ts` | Keeps the handle and `pump`s it in `tick` (the route bot's way), cancels it when the zone is left. Rules: a ruler or gate lost costs a life and the hero wakes at the last waystone with half its health; a trial lost costs nothing and its door stays open for one more try (`run.trialLost`, the door closes at two); health comes back as the piece reports it. After the gate: the clock stops (`world.ts`), packs sleep, the result card opens |
+| `hud.ts` | The result card: four stars, time, shards, falls, the sigil choice (the first boon is picked; a tap changes it; "None"), then **Climb to floor N+1** (only if `FLOORS[N+1]` exists, else a disabled line "The way up is still being built") and **Back to the Tower**. Phone layout: the floor panel moved to 182 px from the top (under the passive's badge, clear of the hero's panel), banners to 46 % of the height (clear of the panel), the quest list is the step in hand plus "+N more quests" |
+| `pieces/core.ts` | The duel's own result card (a CPU duel's Rematch and Leave buttons) and its "<boss> falls" banner are hidden the frame after they show; the piece says "Won" or "Beaten" itself. Checked on the game page: the card's `display` is `none` 0.4 s after the gate's end, and the player never sees a rematch button |
+| `menu.ts` (new) | `climbPanel` (the Climb tab: a tile per floor with its name, law, stars and best time, locked tiles for floors not reached or not built, the sigils kept, Start / Continue / Begin again) and `WorldClimb` (the controller: runs a `WorldGame` on the page's loop, a Leave button that saves, the way back) |
+| `state.ts`, `scenery.ts` | `tower.world.times` (best times), `run.trialLost`, the trial door's rule |
+| `people.ts`, `scenery.ts` | People are hidden until their model has loaded and posed three frames (no T-pose); the cache has an arched lid, two gold straps, a lock plate and a blinking glint (it reads as a chest) |
+| `floors/harbour.ts` | The rival's pace |
+
+**The rival's pace: 0.84** of the hero's 4 m/s = 3.36 m/s, 15 s on the 50.4 m route. A hero that walks straight from the card (a play-mode `walkTo`, measured on Lyra, Bram and Kaia: all 9.4 s to within 3 m of the
+lighthouse) is there 5.6 s early; a thumb on a phone with cover in the way takes about 12, so it wins by about 3 s; one that stops to fight or goes round by a cache loses. It was 0.5 (25 s) in 1A, where nobody could lose.
+The autopilot walks the same way in 22 s (Lyra) to 33 s (Bram), so unassisted it loses the race at this pace on 5 of 6 heroes (Nyx, a fast one, wins in 10.5 s): the route bot **sprints x3 during a race** as the stand-in for a
+person's straight walk (`noSprint: true` turns it off), and puts a running race before every other task (a person who stops to hand in a quest loses it).
+
+**The menu** (`src/game/main.ts`, the only engine-side file): the Tower screen has two big tabs as the Play screen has, **Climb** (default; `menu.ts`) and **Trials** (the weekly Tower exactly as it was, headed "Trials"; its saves and board are
+untouched: `tower.save` and `tower.best` were not written in any run). The tab is kept in `tower.tab`. Checked on the game page at 1280 x 720 and 375 x 812 with touch: a click on Start made the floor, Leave saved it, a reload offered "Continue floor 1" (with the hero) and "Begin floor 1
+again", Continue came back with the quest taken, the shards and the clock as they were. `_tower(['Lyra'], 1, { upTo: 2 })` still clears floors 1 and 2 with no error, and the Trials tab's Start button starts a climb.
+
+**The route bot through the real pieces** (`_worldSix`, tool page; Lyra and Vesper ranged, Bram and Nyx melee, Sefu and Kaia staff; two runs each; the player's hero is the autopilot at the balance level, the stand-in for a person; the race is won by the sprint):
+
+| Hero | Run | Game time | Falls | Where it fell | Stars | Gate first try |
+|---|---|---|---|---|---|---|
+| Lyra | 1 / 2 | 13:30 / 11:31 | 0 / 0 | | 3 (over the par) / 4 | yes / yes |
+| Vesper | 1 / 2 | 10:21 (after 4 restarts) / 14:20 | 3 then restarts / 3 | the zone at 119, 251 and 351 s (the market and the wreck), then the gate: 9 tries; run 2: the zone at 100 and 206 s, then the gate once | 3 / 2 | no / no |
+| Bram | 1 / 2 | 10:21 / 10:21 | 0 / 0 | | 4 / 4 | yes / yes |
+| Nyx | 1 / 2 | 10:13 / 9:09 | 0 / 0 | | 4 / 4 | yes / yes |
+| Sefu | 1 / 2 | 16:10 / 11:31 | 0 / 0 | | 3 (over the par) / 4 | yes / yes |
+| Kaia | 1 / 2 | 10:07 / 11:36 | 1 / 0 | the zone at 95 s | 3 / 4 | yes / yes |
+
+Nine of twelve runs cleared with no fall, one with one fall (Kaia), and the two of Vesper with three. No hero lost a ruler or a gate except Vesper (ruler 3 tries in run 1, gate 9). Vesper is the kit the autopilot plays badly (1B: rule 8 of `docs/pipeline/new-hero.md`): it
+falls to the pack fights too. **Nothing was tuned** on the floor but the rival's pace: the aim "most heroes with zero to two falls" is met (5 of 6 heroes), and the one that is not is the autopilot's weak hero. (A first batch, with the rival at 0.5, was
+about the same except that Lyra lost the gate on the first try both times and Bram twice in his second run: the gate is a coin the CPU level 3 flips about one time in three. It was left alone: floor 1's gate was 58 to 69 % in 1B.) A run takes 15 to 60 s of wall time on the tool page.
+
+**Frame cost** (the tool page at 1280 x 720 in the headless pane, `_worldBench`: CPU time of `vfx.step` plus `vfx.render` a frame, median of three runs of 180 frames; draw calls and triangles a frame):
+
+| | step | render | whole | draw calls | triangles |
+|---|---|---|---|---|---|
+| Floor 1's zone: people (4 figures and marks), the market pack awake (4 units), the tide in, hero at the market | 0.8 ms | 9.5 ms | **10.4 ms** | 289 | 245,900 |
+| A plain duel on the harbour (Lyra against Bram), median of six runs | 0.7 ms | 7.0 ms | **7.7 ms** (6.6 to 9.6) | 250 | 253,000 |
+
+The zone costs about 2.7 ms a frame more than a duel on the same arena, nearly all of it in the render. Not measured on a phone.
+
+**The clip** `floor1.mp4`: 31 s, 640 x 360, 30 frames a second, H.264 main, no sound, 2.1 MB, six cuts of 5 to 6 s from one run of Lyra (the autopilot, real pieces): the camp and Gus's talk card; a pack waking and the fight (a waystone banner); the tide
+coming in with the hero on the quay; carrying the captain's key; the Drowned Captain's fight; the gatekeeper's duel. Made by `pipeline/tools/world-film.js` (six moments of the run, two steps of 1/60 s a frame, each frame sent as a JPEG to the frame sink; the page's own HUD is painted over the 3D view by a small painter of
+fixed-position elements, since a canvas does not hold HTML). Each cut was looked at in a contact sheet. The two fights are filmed from a camera nearer than the duel's own.
+
+**TOWER-HOOKs, 1C:** the one row that changed is *A card on a duel*: the piece now hides the duel's card and banner the frame after they show (`pieces/core.ts`; the engine should get `Duel.start({ card: null })`, as `startBoss` has). The *Menu entry* row of 1A is done (`main.ts`: a tab bar, `WorldClimb`, three lines of wiring: the render check, `onLeave`, `window.game.world`).
+
+**Not done, not verified, or poor:**
+
+- **Nobody has played it by hand.** The person's play on the game page was driven with calls (the hero put in front of a door, `walkTo`, the gate foe's health set to 0, the ruler's end forced through `pieceDone`); a ruler fought and won by a person was not done, nor a whole floor. The real "Climb to floor 2" was not run (there is no floor 2 in the registry): the button was checked with the getter faked.
+- **The clip is the autopilot's** and its HUD is a painted copy: the text is the page's own words but not its fonts; the gatekeeper's duel and the Captain are small and the Captain barely shows; two frames are bright flashes of Lyra's ultimate; the pack fight is at a waystone, not the market.
+- **Vesper cannot clear the floor** with the autopilot (see above); a person may. The race was won by the sprint in all twelve, so every ruler fight had Zephyr beside the hero (1B: the ally moves the ruler from about 56 % to about 80 %); without the ally the ruler is harder and was not run through the zone.
+- **A reload inside a set piece** continues in the zone at the last waystone with the run as it was when the door was entered (the piece's fight is not saved).
+- **The phone** is the game page in a 375 x 812 pane with touch, not a phone; the Leave button overlaps the hero's panel by about 5 px at that size (it is the weekly Tower's own button and place).
+- The Climb tab is the default for everyone, including players who knew the weekly Tower: the Trials tab is one tap away and is remembered.
+- Floors 2 to 5 do not exist in the registry on this branch: their tiles say "Still being built".
+- `docs/STATUS.md` was not updated by this stage.

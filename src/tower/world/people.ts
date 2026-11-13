@@ -17,11 +17,11 @@ import { BOONS, boonsFor, type Boon } from '../boons';
 const TALK = 3.4, LEAVE = 7;
 
 export class People {
-  private figs = new Map<string, { fig: HeroFigure; pos: THREE.Vector3; yaw: number }>();
+  private figs = new Map<string, { fig: HeroFigure; pos: THREE.Vector3; yaw: number; posed: number }>();
   private opened = new Set<string>();
   private walking: string | null = null;
   private race: { t: number; route: Spot[]; len: number; speed: number } | null = null;
-  private raceFig: { fig: HeroFigure; pos: THREE.Vector3; yaw: number } | null = null;
+  private raceFig: { fig: HeroFigure; pos: THREE.Vector3; yaw: number; posed: number } | null = null;
   private t = 0;
   /** The cards the hero closed by walking away: nothing to do, they just go. */
   onShop: (what: 'heal' | 'boon' | 'life' | 'hint') => void = () => {};
@@ -36,7 +36,9 @@ export class People {
         fig.setModel(kit.model, pos, kit);
         fig.stand();
       }
-      this.figs.set(p.id, { fig, pos, yaw: p.face });
+      // Out of sight until its model has loaded and been posed a few frames (a model that is still loading stands in a T-pose).
+      fig.group.visible = false;
+      this.figs.set(p.id, { fig, pos, yaw: p.face, posed: 0 });
       // A tap on the figure's own mark walks the hero there; the card opens on arrival.
     }
   }
@@ -227,6 +229,7 @@ export class People {
         f.yaw += d * Math.min(1, dt * 3);
       }
       f.fig.follow(dt, f.pos, f.yaw);
+      if (f.posed < 3 && f.fig.loaded && ++f.posed >= 3) f.fig.group.visible = true;
       const g = this.glyph(p), head = z.project(f.pos.x, 3.0, f.pos.z);
       marks.push({ id: p.id, glyph: g.glyph, label: p.name, tone: g.tone, x: head.x, y: head.y, show: !head.behind && near < 60, click: () => this.goTo(p.id) });
       // Walking up opens the card (a person climbing, not the autopilot).

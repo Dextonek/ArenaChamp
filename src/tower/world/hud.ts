@@ -44,9 +44,9 @@ export class WorldHud {
     const s = small();
     this.root.className = 'world-hud';
     this.root.style.cssText =
-      `position:fixed;left:${s ? 6 : 12}px;top:calc(${s ? 158 : 150}px + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
+      `position:fixed;left:${s ? 6 : 12}px;top:calc(${s ? 182 : 150}px + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
       `padding:${s ? '4px 8px 5px' : '5px 11px 6px'};border-radius:10px;background:rgba(8,6,10,0.82);border:1px solid #6a5a3a;box-shadow:0 2px 10px #000a;` +
-      `max-width:${s ? '58vw' : '270px'};box-sizing:border-box;pointer-events:none;user-select:none;font:600 12px ui-sans-serif,system-ui;color:#e9dcc6;`;
+      `max-width:${s ? '62vw' : '270px'};box-sizing:border-box;pointer-events:none;user-select:none;font:600 12px ui-sans-serif,system-ui;color:#e9dcc6;`;
     this.titleEl.style.cssText = `font:700 ${s ? 13 : 15}px ui-serif,Georgia,serif;letter-spacing:1px;color:#ffd27a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
     this.lawEl.style.cssText = `font:600 ${s ? 11 : 12}px ui-sans-serif,system-ui;color:#8cc4ff;`;
     const row = document.createElement('div');
@@ -61,7 +61,7 @@ export class WorldHud {
     this.quests.style.cssText = `display:flex;flex-direction:column;gap:3px;margin-top:2px;border-top:1px solid #3a3242;padding-top:3px;font:600 ${s ? 11 : 12}px/1.25 ui-sans-serif,system-ui;`;
     this.root.append(this.titleEl, this.lawEl, row, this.statEl, this.quests);
 
-    this.banner.style.cssText = `position:fixed;left:50%;top:${s ? 31 : 17}%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:none;text-align:center;max-width:92vw;text-shadow:0 3px 14px #000;transition:opacity 0.5s;`;
+    this.banner.style.cssText = `position:fixed;left:50%;top:${s ? 46 : 17}%;transform:translate(-50%,-50%);z-index:9;pointer-events:none;display:none;text-align:center;max-width:92vw;text-shadow:0 3px 14px #000;transition:opacity 0.5s;`;
     this.arrow.style.cssText = 'position:fixed;left:0;top:0;z-index:5;pointer-events:none;display:none;width:34px;height:34px;margin:-17px 0 0 -17px;';
     this.flood.style.cssText = 'position:fixed;inset:0;z-index:2;pointer-events:none;display:none;box-shadow:inset 0 0 90px 24px rgba(40,120,170,0.55);background:rgba(30,90,130,0.12);';
     this.card.style.cssText = `position:fixed;left:50%;bottom:${TOUCH ? 150 : 40}px;transform:translateX(-50%);z-index:10;display:none;width:min(440px,calc(100vw - 20px));box-sizing:border-box;padding:12px 14px;border-radius:12px;background:rgba(14,11,12,0.95);border:2px solid #8a7a52;box-shadow:0 6px 24px #000c;color:#f2e6c8;font:500 14px/1.4 ui-sans-serif,system-ui;`;
@@ -121,7 +121,11 @@ export class WorldHud {
   }
 
   setQuests(lines: QuestLine[]) {
-    const key = JSON.stringify(lines);
+    // On a phone: the step in hand and a count of the rest (the full list is for a screen with room).
+    const all = lines;
+    const more = small() ? Math.max(0, all.filter((l) => !l.done).length - 1) : 0;
+    if (small()) lines = [all.find((l) => l.tracked && !l.done) ?? all.find((l) => !l.done) ?? all[0]].filter(Boolean);
+    const key = JSON.stringify(lines) + more;
     if (key === this.questKey) return;
     this.questKey = key;
     this.quests.replaceChildren(...lines.map((l) => {
@@ -136,7 +140,12 @@ export class WorldHud {
       step.textContent = l.done ? 'Return to the one who asked' : `${l.text}${l.n > 1 ? ` (${l.k}/${l.n})` : ''}`;
       row.append(name, step);
       return row;
-    }));
+    }), ...(more ? [(() => {
+      const m = document.createElement('div');
+      m.style.cssText = 'color:#a89870;font-weight:600;';
+      m.textContent = `+${more} more ${more === 1 ? 'quest' : 'quests'}`;
+      return m;
+    })()] : []));
   }
 
   /** Two lines across the screen for a moment. */
@@ -168,7 +177,7 @@ export class WorldHud {
    */
   pointTo(p: { x: number; y: number; behind: boolean } | null, label = '') {
     if (!p) { this.arrow.style.display = 'none'; return; }
-    const w = innerWidth, h = innerHeight, m = 34, topM = small() ? 150 : 60, botM = small() ? 190 : 80;
+    const w = innerWidth, h = innerHeight, m = 34, topM = small() ? 230 : 60, botM = small() ? 190 : 80;
     const cx = w / 2, cy = h / 2;
     let x = p.x, y = p.y;
     const inside = !p.behind && x > m && x < w - m && y > topM && y < h - botM;
@@ -311,15 +320,19 @@ export class WorldHud {
     return this.cards.style.display !== 'none';
   }
 
-  /** The floor's result: its four stars and what it took. */
-  showResult(o: { name: string; stars: { label: string; got: boolean }[]; lines: string[]; buttons: CardButton[] }) {
+  /**
+   * The floor's result: its four stars and what it took, the sigil to keep (one of the boons carried; a tap picks, the first is picked
+   * to begin with), and two buttons: one floor up (or a line that the way up is still being built) and back to the Tower.
+   */
+  showResult(o: { name: string; stars: { label: string; got: boolean }[]; lines: string[]; sigils: { label: string; sub: string }[]; picked: number; pick(i: number): void; climb: CardButton; back: CardButton }) {
     const box = document.createElement('div');
-    box.style.cssText = 'width:min(420px,calc(100vw - 24px));box-sizing:border-box;padding:18px 18px 16px;border-radius:14px;background:rgba(14,11,12,0.97);border:2px solid #8a7a52;box-shadow:0 8px 40px #000;color:#f2e6c8;font:500 14px/1.4 ui-sans-serif,system-ui;text-align:center;';
+    box.dataset.result = '1';
+    box.style.cssText = 'width:min(420px,calc(100vw - 24px));max-height:calc(100vh - 16px);overflow:auto;box-sizing:border-box;padding:16px 16px 14px;border-radius:14px;background:rgba(14,11,12,0.97);border:2px solid #8a7a52;box-shadow:0 8px 40px #000;color:#f2e6c8;font:500 14px/1.4 ui-sans-serif,system-ui;text-align:center;';
     const head = document.createElement('div');
-    head.style.cssText = 'font:800 26px ui-serif,Georgia,serif;letter-spacing:3px;color:#ffd27a;';
+    head.style.cssText = 'font:800 24px ui-serif,Georgia,serif;letter-spacing:3px;color:#ffd27a;';
     head.textContent = `${o.name} cleared`;
     const stars = document.createElement('div');
-    stars.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin:12px 0;align-items:stretch;text-align:left;';
+    stars.style.cssText = 'display:flex;flex-direction:column;gap:2px;margin:10px 0;align-items:stretch;text-align:left;';
     stars.dataset.stars = o.stars.map((s) => (s.got ? 1 : 0)).join('');
     for (const s of o.stars) {
       const r = document.createElement('div');
@@ -328,19 +341,43 @@ export class WorldHud {
       stars.append(r);
     }
     const info = document.createElement('div');
-    info.style.cssText = 'font-size:12px;color:#c8bca0;margin-bottom:12px;';
+    info.style.cssText = 'font-size:12px;color:#c8bca0;margin-bottom:10px;';
     info.textContent = o.lines.join(' · ');
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
-    for (const b of o.buttons) {
+    box.append(head, stars, info);
+    if (o.sigils.length) {
+      const t = document.createElement('div');
+      t.style.cssText = 'font:700 11px ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;color:#a89870;margin-bottom:4px;';
+      t.textContent = 'Keep one boon as a sigil for every later climb';
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:6px;margin-bottom:12px;';
+      const btns: HTMLButtonElement[] = [];
+      const paint = (k: number) => btns.forEach((b, i) => { b.style.borderColor = i === k ? '#ffd27a' : '#4a4032'; b.style.background = i === k ? 'rgba(60,46,20,0.95)' : 'rgba(30,24,20,0.95)'; b.setAttribute('aria-pressed', String(i === k)); });
+      for (const [i, g] of [...o.sigils, { label: 'None', sub: 'Keep nothing' }].entries()) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.dataset.sigil = String(i);
+        b.style.cssText = 'flex:1;min-width:0;min-height:44px;padding:5px 6px;border-radius:9px;border:2px solid #4a4032;color:#f2e6c8;cursor:pointer;text-align:left;font:700 12px/1.2 ui-sans-serif,system-ui;touch-action:manipulation;';
+        b.innerHTML = `<div style="color:#ffd27a">${g.label}</div><div style="font:500 10px/1.2 ui-sans-serif,system-ui;opacity:.85">${g.sub}</div>`;
+        b.addEventListener('click', () => { const k = i < o.sigils.length ? i : -1; o.pick(k); paint(i); });
+        btns.push(b);
+        row.append(b);
+      }
+      paint(o.picked < 0 ? btns.length - 1 : o.picked);
+      box.append(t, row);
+    }
+    const col = document.createElement('div');
+    col.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+    for (const [k, b] of [['climb', o.climb], ['back', o.back]] as const) {
       const el = document.createElement('button');
       el.type = 'button';
+      el.dataset.act = k;
+      el.disabled = !!b.off;
       el.textContent = b.label;
-      el.style.cssText = 'min-height:44px;border-radius:9px;border:2px solid #ffd27a;background:rgba(30,24,20,0.95);color:#ffd27a;font:700 14px ui-sans-serif,system-ui;cursor:pointer;touch-action:manipulation;';
-      el.addEventListener('click', b.click);
-      row.append(el);
+      el.style.cssText = `min-height:44px;border-radius:9px;border:2px solid ${b.off ? '#4a4032' : '#ffd27a'};background:rgba(30,24,20,0.95);color:${b.off ? '#7a7060' : '#ffd27a'};font:700 14px ui-sans-serif,system-ui;cursor:${b.off ? 'default' : 'pointer'};touch-action:manipulation;`;
+      el.addEventListener('click', () => { if (!b.off) b.click(); });
+      col.append(el);
     }
-    box.append(head, stars, info, row);
+    box.append(col);
     this.result.replaceChildren(box);
     this.result.style.display = 'flex';
   }

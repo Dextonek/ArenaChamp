@@ -23,6 +23,7 @@ import { RaidController } from '../raid/coop';
 import { RaidRun, scoreText } from '../raid/run';
 import { SUN_WARDEN } from '../raid/sunWarden';
 import { LIVES, TowerRun, towerBest, towerSaved } from '../tower/run';
+import { WorldClimb, climbPanel } from '../tower/world/menu';
 import { KIND_NAME, TWISTS, isoWeek, towerFor, untilNext, weekBefore } from '../tower/week';
 import { heightName } from '../arenas/tower';
 import { CHANGELOG, type NewsItem, type Release } from './changelog';
@@ -269,7 +270,7 @@ function render() {
     shownScreen = state.screen;
     root.scrollTop = 0;
   }
-  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active) { root.style.display = 'none'; shownScreen = null; return; }
+  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active || world.active) { root.style.display = 'none'; shownScreen = null; return; }
   root.style.display = '';
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
@@ -801,9 +802,30 @@ function rankLine(p: Profile) {
  * The Tower (pipeline/designs/tower.md): the hero, this week's Tower floor by floor, the best floor reached, and Start. One
  * player, offline, no account, as the Raid alone is.
  */
+/** The Tower screen's two tabs: the Climb (floors as worlds, src/tower/world/menu.ts) and the Trials (the weekly Tower). */
+let towerTab: 'climb' | 'trials' = safeGet('tower.tab') === 'trials' ? 'trials' : 'climb';
+function towerTabs() {
+  const tab = (t: typeof towerTab, ic: keyof typeof ICONS, title: string, sub: string) => el('button', {
+    class: `mode${towerTab === t ? ' on' : ''}`, 'data-tab': t,
+    onclick: () => { if (t === towerTab) return; towerTab = t; safeSet('tower.tab', t); render(); },
+  }, icon(ic), el('span', {}, el('b', {}, title), el('small', {}, sub)));
+  return el('div', { class: 'modes' }, tab('climb', 'tower', 'Climb', 'Floors as places to walk through'), tab('trials', 'tower', 'Trials', 'The weekly Tower, floor by floor'));
+}
+
 function towerScreen() {
   const choice = cpuChoice(), hero = kitOf(choice);
   const busy = state.queue.on || !!state.lobby;
+  if (towerTab === 'climb') {
+    preview.show(hero?.model, hero);
+    const locked = !!hero && !playable(hero.name);
+    const { section, bar } = climbPanel({
+      el: el as never, tabs: towerTabs(), picker: heroPicker(choice, [], (n) => { setCpuHero(n); render(); }), hero: (hero ?? randomKit()).name,
+      back: () => go(state.profile ? 'menu' : 'login'), icon: icon('tower'), redraw: render,
+      blocked: busy ? 'Leave the matchmaking queue or your lobby to climb.' : locked ? `${hero.name} is locked: pick a hero you own or one that is free this week.` : '',
+      start: (o) => { void world.start(o); },
+    });
+    return el('div', { class: 'hs' }, heroShowcase(hero), section, bar);
+  }
   const week = isoWeek().id, best = towerBest(week), last = towerBest(weekBefore(week)), from = towerSaved(week);
   // The floors in sight: the first thirty, and on past the best one reached.
   const floors = towerFor(week, Math.max(30, Math.ceil((best + 5) / 10) * 10));
@@ -826,7 +848,8 @@ function towerScreen() {
   return el('div', { class: 'hs' },
     heroShowcase(hero),
     el('section', { class: 'card hs-roster', 'data-keep-scroll': 'tower' },
-      el('div', { class: 'hs-roster-head' }, el('h2', {}, 'The Tower'),
+      towerTabs(),
+      el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Trials'),
         el('span', { class: 'muted small' }, `This week's Tower · a new one in ${untilNext()}`)),
       el('div', { class: 'tower-best' },
         el('div', { class: 'tile' }, el('div', { class: 'tile-v' }, best ? String(best) : '–'), el('div', { class: 'tile-l' }, 'your highest floor this week')),
@@ -1325,6 +1348,10 @@ const tower = new TowerRun(gameApi, loading, {
   // The climb's floor goes to the week's board from here: nothing in src/tower knows of the server.
   onExit: () => { state.screen = 'tower'; towerEnded(); net.send({ t: 'boards' }); render(); },
 });
+const world = new WorldClimb(gameApi, {
+  onEnter: () => render(),
+  onExit: () => { state.screen = 'tower'; render(); },
+});
 const coop = new RaidController(net, gameApi, loading, {
   onEnter: () => render(),
   // Back on the Raid screen: the profile (its obols, its rank) and the week's board as the run left them.
@@ -1333,7 +1360,7 @@ const coop = new RaidController(net, gameApi, loading, {
   toast,
 });
 // The duel card's "Leave duel" / "Back to menu": ends whichever fight is on.
-gameApi.duel.onLeave = () => (tower.active ? tower.exit() : raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : watch.active ? watch.exit() : match.exit());
+gameApi.duel.onLeave = () => (world.active ? world.exit() : tower.active ? tower.exit() : raid.active ? raid.exit() : coop.active ? coop.exit() : cpu.active ? cpu.exit() : watch.active ? watch.exit() : match.exit());
 
 let socketWasOpen = false, newBuildShown = false;
 net.on('socket', (m) => {
@@ -1442,4 +1469,4 @@ net.connect();
 render();
 
 // Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`, `game.tower`.
-(window as unknown as { game: unknown }).game = { state, net, match, watch, cpu, raid, coop, tower, api: gameApi, go, render };
+(window as unknown as { game: unknown }).game = { state, net, match, watch, cpu, raid, coop, tower, world, api: gameApi, go, render };

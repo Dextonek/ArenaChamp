@@ -103,8 +103,11 @@ export const harbour: FloorDef = {
     { id: 'trial', piece: 'trial', name: 'The Flooded Vault', at: at(-36, 24), r: 2, locked: '' },
     { id: 'gate', piece: 'gate', name: 'The gate up', at: at(-15, 40), r: 2.2, needs: { won: 'ruler' }, locked: 'The gate is sealed. Its warden answers only once the Drowned Captain has fallen.' },
   ],
+  // The runner's pace: the route is 50.4 m, so 0.84 of the hero's 4 m/s (3.36 m/s) is 15 s. A hero that goes straight from the card is at the
+  // lighthouse (within 3 m) in 9.4 s, and a thumb on a phone with the cover in the way in about 12: it wins by 3 s or so. One that stops to
+  // fight, or goes round by a cache, is later than 15 s and loses. (It was 0.5 at first: 25 s, and nobody could lose.)
   rival: {
-    hero: 'Zephyr', goal: 'the lighthouse', mode: 'race', at: at(4, 24), to: at(24, -19), r: 3, pace: 0.5, boon: true,
+    hero: 'Zephyr', goal: 'the lighthouse', mode: 'race', at: at(4, 24), to: at(24, -19), r: 3, pace: 0.84, boon: true,
     route: [at(4, 24), at(10, 16), at(10, 2), at(12, -6), at(17, -14), at(23.5, -17.8), at(24, -19)],
     lines: ['Another climber? I am Zephyr, and I am faster. To the lighthouse and back: whoever touches the foot first. Care to try?'],
   },

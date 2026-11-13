@@ -22,6 +22,7 @@ export class Scenery {
   private chests = new Map<string, { g: THREE.Group; glow: THREE.Sprite; hint: LightPillar }>();
   private doors = new Map<string, { g: THREE.Group; lift: THREE.Object3D | null; glow: THREE.Sprite | null; lifted: number; sealed: THREE.Mesh | null }>();
   private lore: { glow: THREE.Sprite } | null = null;
+  private glints = new Map<string, THREE.Sprite>();
   private t = 0;
   private lockedAt = new Map<string, number>();
   private loreAt = -99;
@@ -74,23 +75,35 @@ export class Scenery {
       this.stones.set(w.id, { glow, pillar, ring, ringMat });
     }
 
-    // Caches: a small chest with a gold band, half buried; it only glows a little.
+    // Caches: a small chest with an arched lid, two gold straps, a lock plate and a glint, half buried.
     for (const c of z.def.caches) {
       const g = new THREE.Group();
-      const body = new THREE.Mesh(geo(new THREE.BoxGeometry(0.9, 0.55, 0.6)), wood);
-      body.position.y = 0.28;
-      const lid = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.3, 0.3, 0.9, 8, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).rotateY(Math.PI / 2)), wood);
-      lid.position.set(0, 0.55, 0);
-      lid.rotation.y = Math.PI / 2;
-      const band = new THREE.Mesh(geo(new THREE.BoxGeometry(0.95, 0.12, 0.08)), gold);
-      band.position.set(0, 0.35, 0.3);
-      g.add(body, lid, band);
+      const body = new THREE.Mesh(geo(new THREE.BoxGeometry(0.9, 0.5, 0.6)), wood);
+      body.position.y = 0.25;
+      // The lid is a log lying across the top: its upper half is the arch, its lower half is inside the body.
+      const lid = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.3, 0.3, 0.92, 12).rotateZ(Math.PI / 2)), wood);
+      lid.position.y = 0.5;
+      g.add(body, lid);
+      for (const x of [-0.28, 0.28]) {
+        const strap = new THREE.Mesh(geo(new THREE.BoxGeometry(0.09, 0.78, 0.66)), gold);
+        strap.position.set(x, 0.39, 0);
+        const arch = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.315, 0.315, 0.09, 12).rotateZ(Math.PI / 2)), gold);
+        arch.position.set(x, 0.5, 0);
+        g.add(strap, arch);
+      }
+      const plate = new THREE.Mesh(geo(new THREE.BoxGeometry(0.16, 0.2, 0.05)), gold);
+      plate.position.set(0, 0.52, 0.32);
+      g.add(plate);
       g.position.set(c.at.x, 0, c.at.z);
       g.rotation.y = (c.at.x * 7.3) % 3;
       g.scale.setScalar(1.6);
       this.group.add(g);
       const glow = sprite(WARM, 3.2, c.at, 0.9);
       glow.material.opacity = 0.7;
+      // A small bright star on the lid that blinks: it reads as a chest from the camera's height.
+      const glint = sprite(0xffffff, 0.7, { x: c.at.x + 0.2, z: c.at.z + 0.35 }, 1.35);
+      glint.material.opacity = 0.9;
+      this.glints.set(c.id, glint);
       const hint = new LightPillar(c.at.x, c.at.z, 0.9, 8, WARM);
       hint.opacity = 0;
       this.group.add(hint.mesh);
@@ -217,6 +230,8 @@ export class Scenery {
       ch.g.visible = !found;
       ch.glow.visible = !found && dist(hero, c.at) < 16;
       ch.glow.scale.setScalar(2.8 + 0.4 * Math.sin(this.t * 3));
+      const gl = this.glints.get(c.id);
+      if (gl) { gl.visible = !found; gl.scale.setScalar(0.45 + 0.35 * Math.max(0, Math.sin(this.t * 2.4 + c.at.x))); }
       ch.hint.opacity = !found && z.run.hintShown.includes(c.id) ? 0.4 + 0.15 * Math.sin(this.t * 3) : 0;
       if (!found && dist(hero, c.at) < 1.7) {
         z.run.caches.push(c.id);
@@ -263,7 +278,7 @@ export class Scenery {
     const z = this.z;
     if (d.wall && !z.run.opened.includes(d.id)) return false;
     if (d.needs?.won && !z.run.has(d.needs.won)) return false;
-    if (d.piece === 'trial' && z.run.has('trial')) return false;
+    if (d.piece === 'trial' && (z.run.has('trial') || z.run.trialLost >= 2)) return false;
     if (d.piece === 'ruler' && z.run.has('ruler')) return false;
     if (d.piece === 'gate' && z.run.has('gate')) return false;
     return true;

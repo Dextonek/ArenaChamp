@@ -3,7 +3,7 @@ import type { PieceKind } from './doors';
 import type { Spot } from './def';
 
 /** The saved keys: all begin `tower.world.`, never the weekly Tower's `tower.save` / `tower.best`. */
-export const KEYS = { run: 'tower.world.run', floor: 'tower.world.floor', sigils: 'tower.world.sigils', stars: 'tower.world.stars' } as const;
+export const KEYS = { run: 'tower.world.run', floor: 'tower.world.floor', sigils: 'tower.world.sigils', stars: 'tower.world.stars', times: 'tower.world.times' } as const;
 export const LIVES = 3;
 
 export interface QuestState {
@@ -58,6 +58,8 @@ export class WorldRun {
   hintShown: string[] = [];
   /** Lives lost on this floor (for the third star). */
   falls = 0;
+  /** Trials lost on this floor: the door stays open for one more try. */
+  trialLost = 0;
   /** What the trader sold already (once per floor each). */
   bought: string[] = [];
   /** A floor's result, once its gate is won. */

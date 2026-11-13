@@ -4,7 +4,7 @@ import { HEAL, HIDE, boonById, type Boon } from '../boons';
 import { setHealth, setSunlit } from '../hooks';
 import { autoBoon } from '../run';
 import type { FloorDef, Spot, DoorDef } from './def';
-import { pieceStarter, stubWaits, type PieceKind, type PieceOut } from './doors';
+import { pieceStarter, stubWaits, type PieceHandle, type PieceKind, type PieceOut } from './doors';
 import { FLOORS } from './floors';
 import { WorldHud } from './hud';
 import { KEYS, LIVES, WorldRun, nextFloor, read, sigils, wipe, write } from './state';
@@ -36,6 +36,10 @@ export class WorldGame {
   persist: boolean;
   /** A piece is being played: the zone is gone. */
   piece: PieceKind | null = null;
+  /** The piece's handle: the route bot's `tick` pumps it between two steps. */
+  private handle: PieceHandle | null = null;
+  /** What a person's result card leads to (the game page's menu): the next floor, or back to the Tower screen. */
+  ui: { next?(floor: number): void; back?(): void } = {};
   /** The floor's result once the gate is won. */
   finished = false;
   log: string[] = [];
@@ -64,7 +68,7 @@ export class WorldGame {
       this.run = saved;
       this.floor = FLOORS[saved.floor];
     } else {
-      const arrived = this.floor.n > 1 ? { boons: sigils().map((id) => [id, 1] as [string, number]), shards: 0 } : { boons: sigils().map((id) => [id, 1] as [string, number]), shards: 0 };
+      const arrived = { boons: sigils().map((id) => [id, 1] as [string, number]), shards: 0 };
       this.run = WorldRun.begin(this.hero, this.floor.n, arrived);
     }
     this.finished = false;
@@ -120,6 +124,8 @@ export class WorldGame {
 
   private leave() {
     this.door = null;
+    this.handle?.cancel();
+    this.handle = null;
     if (this.api.duel.on) this.api.duel.stop();
     this.zone = null;
   }
@@ -139,6 +145,7 @@ export class WorldGame {
       this.door = null;
       this.startPiece(d);
     }
+    this.handle?.pump();
     for (const w of stubWaits.splice(0)) {
       w.left -= dt;
       if (w.left > 0) stubWaits.push(w);
@@ -155,6 +162,7 @@ export class WorldGame {
     this.alive = false;
     cancelAnimationFrame(this.raf);
     this.leave();
+    this.piece = null;
     this.hud.dispose();
   }
 
@@ -251,10 +259,15 @@ export class WorldGame {
     this.save();
     this.leave();
     this.hud.show(false);
-    pieceStarter()(this.api, d.piece, input, (out) => this.pieceDone(d, out));
+    const piece = d.piece;
+    this.handle = pieceStarter()(this.api, piece, input, (out) => { this.handle = null; this.pieceDone(d, out); }) ?? null;
   }
 
-  /** A piece ended: its outcome is applied to the run and the zone is built again from it. */
+  /**
+   * A piece ended: its outcome is applied to the run and the zone is built again from it. The rules: a ruler or a gate lost costs a
+   * life and the hero wakes at the last waystone with half its health; a trial lost costs nothing and its door stays open for one more
+   * try (`run.trialLost`); the health a piece reports is the health the hero has.
+   */
   private pieceDone(d: DoorDef, out: PieceOut) {
     if (this.piece !== d.piece) return;
     const { run } = this;
@@ -262,36 +275,48 @@ export class WorldGame {
     run.clock += out.seconds;
     run.hp = Math.max(0.05, Math.min(1, out.hp));
     let after: (() => void) | null = null;
-    this.log.push(`piece ${d.piece} ${out.won ? 'won' : 'lost'} hp ${out.hp.toFixed(2)}`);
+    this.log.push(`piece ${d.piece} ${out.won ? 'won' : 'lost'} hp ${out.hp.toFixed(2)} ${out.seconds.toFixed(0)}s`);
     if (out.won) {
       if (!run.won.includes(d.piece)) run.won.push(d.piece);
       run.shards += d.piece === 'ruler' ? 40 : d.piece === 'trial' ? 20 : 0;
       after = d.piece === 'trial' ? () => this.relic() : d.piece === 'ruler' ? () => this.hud.say(`${d.name}: its ruler falls`, 'The gate up is unsealed', 3.2) : null;
       if (d.piece === 'rival') { run.rival = 'won'; run.ally = this.floor.rival.hero; after = () => this.offer(`${this.floor.rival.hero}'s boon`); }
     } else if (d.piece === 'ruler' || d.piece === 'gate') {
-      // A lost ruler or gate costs a life, as a fall in the zone does; the piece may be tried again.
+      // A lost ruler or gate costs a life, as a fall in the zone does, and the hero wakes at the last waystone; it may be tried again.
       run.lives--;
       run.falls++;
       run.hp = 0.5;
+      this.pieceFalls.push(`${d.piece}@${run.clock.toFixed(0)}s`);
       if (run.lives <= 0) {
-        this.hud.show(true);
-        this.hud.say('No lives left', 'The floor begins again from its camp', RESTART_AFTER);
         this.restartIn = RESTART_AFTER;
+        this.enter();
+        this.hud.say('No lives left', 'The floor begins again from its camp', RESTART_AFTER);
         return;
       }
       after = () => this.hud.say('Beaten', `A life lost: ${run.lives} left`, 2.6);
+    } else if (d.piece === 'trial') {
+      run.trialLost++;
+      after = () => this.hud.say('The vault holds', run.trialLost < 2 ? 'Nothing lost: the door stays open for one more try' : 'Nothing lost: the door closes', 3);
     } else if (d.piece === 'rival') run.rival = 'lost';
-    // Back in front of the door.
-    const away = Math.atan2(RING.x - d.at.x, RING.z - d.at.z), back = { x: d.at.x + Math.sin(away) * 5, z: d.at.z + Math.cos(away) * 5 };
     this.save();
     if (d.piece === 'gate' && out.won) {
-      this.enter(back);
+      this.enter(this.inFront(d));
       this.floorCleared();
       return;
     }
-    this.enter(back);
+    // Back in front of the door when it was won (or a trial was lost); at the last waystone when a life was lost.
+    this.enter(d.piece === 'ruler' || d.piece === 'gate' ? undefined : this.inFront(d));
     after?.();
   }
+
+  /** The hero's place in front of a door, on the ring's side. */
+  private inFront(d: DoorDef): Spot {
+    const away = Math.atan2(RING.x - d.at.x, RING.z - d.at.z);
+    return { x: d.at.x + Math.sin(away) * 5, z: d.at.z + Math.cos(away) * 5 };
+  }
+
+  /** Falls that happened inside a piece (the zone does not see them), for the tool's report. */
+  pieceFalls: string[] = [];
 
   // --- the floor's end ---------------------------------------------------------------------------------------------------
 
@@ -306,35 +331,54 @@ export class WorldGame {
     ];
   }
 
+  /** The floor above, when the registry has one. */
+  get above() {
+    return FLOORS[this.floor.n + 1] ?? null;
+  }
+
   private floorCleared() {
     const { run, floor } = this;
     this.finished = true;
     const stars = this.stars();
+    // The clock stops here (the zone under the card does not count it), and what is awake goes to sleep.
     run.result = { stars: stars.map((s) => (s.got ? 1 : 0)), seconds: +run.clock.toFixed(1) };
+    this.zone?.setPacks(false);
+    const before = sigils();
     if (this.persist) {
       write(KEYS.floor, floor.n + 1);
       const all = read<Record<string, number[]>>(KEYS.stars) ?? {};
       const best = all[floor.n] ?? [0, 0, 0, 0];
       all[floor.n] = best.map((b, i) => Math.max(b, run.result!.stars[i]));
       write(KEYS.stars, all);
+      const times = read<Record<string, number>>(KEYS.times) ?? {};
+      if (!times[floor.n] || run.result.seconds < times[floor.n]) times[floor.n] = run.result.seconds;
+      write(KEYS.times, times);
     }
     this.save();
     // One boon of those carried is kept as a sigil for every later climb. The autopilot keeps the first.
     const carried = run.boons.list().map(([id]) => boonById(id)!).filter(Boolean).slice(0, 3);
-    const keep = (b: Boon | null) => {
-      if (b && this.persist) write(KEYS.sigils, [...new Set([...sigils(), b.id])]);
-      this.hud.hideResult();
-      if (this.persist) wipe(KEYS.run);
+    let chosen = carried.length ? 0 : -1;
+    const keep = (i: number) => {
+      chosen = i;
+      if (this.persist) write(KEYS.sigils, [...new Set([...before, ...(carried[i] ? [carried[i].id] : [])])]);
     };
-    if (this.mode === 'run') { keep(carried[0] ?? null); return; }
+    keep(chosen);
+    if (this.mode === 'run') { this.hud.hideResult(); if (this.persist) wipe(KEYS.run); return; }
+    const leave = (then?: () => void) => () => {
+      this.hud.hideResult();
+      wipe(KEYS.run);
+      then?.();
+    };
+    const above = this.above;
     this.hud.show(false);
     this.hud.showResult({
       name: floor.name, stars,
-      lines: [`${Math.floor(run.clock / 60)}:${String(Math.floor(run.clock % 60)).padStart(2, '0')}`, `${run.shards} shards`, `${run.falls} falls`],
-      buttons: [
-        ...carried.map((b) => ({ label: `Keep ${b.name} as a sigil`, click: () => keep(b) } as { label: string; click(): void })),
-        { label: carried.length ? 'Keep nothing' : 'Done', click: () => keep(null) },
-      ],
+      lines: [`${Math.floor(run.clock / 60)}:${String(Math.floor(run.clock % 60)).padStart(2, '0')}`, `${run.shards} shards`, run.falls ? `${run.falls} ${run.falls === 1 ? 'fall' : 'falls'}` : 'no falls'],
+      sigils: carried.map((b) => ({ label: b.name, sub: b.blurb })),
+      picked: chosen,
+      pick: (i) => keep(i),
+      climb: above ? { label: `Climb to floor ${above.n}`, click: leave(() => this.ui.next?.(above.n)) } : { label: 'The way up is still being built', click: () => {}, off: true },
+      back: { label: 'Back to the Tower', click: leave(() => this.ui.back?.()) },
     });
   }
 }

@@ -230,7 +230,8 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
       threats: [], duration: Infinity, objectives,
       look: {
         update(_t, dt) {
-          run.clock += dt;
+          // The floor's clock stops with its result (the zone under the card does not count).
+          if (!run.result) run.clock += dt;
           const down = api.duel.heroHp <= 0;
           for (const k of packs.values()) k.update(dt, hero);
           law!.update(dt);

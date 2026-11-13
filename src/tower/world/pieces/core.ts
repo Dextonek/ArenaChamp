@@ -23,7 +23,7 @@ export class PieceRun implements PieceHandle {
   private stats: PieceReport = { hits: {}, phase: 0, kneels: 0, note: this.notes };
   private timer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(readonly api: GameApi, readonly input: PieceIn, title: string, private done: (out: PieceOut) => void) {
+  constructor(readonly api: GameApi, readonly input: PieceIn, readonly title: string, private done: (out: PieceOut) => void) {
     this.hud = input.mode === 'play' ? new PieceHud(title) : null;
     this.undo.push(() => this.hud?.dispose());
   }
@@ -57,7 +57,19 @@ export class PieceRun implements PieceHandle {
     const d = this.api.duel;
     this.stats = { by: d.boss?.killedBy || undefined, hits: { ...(d.boss?.stats.hits ?? {}) }, phase: d.boss?.stats.phases ?? 0, kneels: d.boss?.stats.kneels ?? 0, note: this.notes };
     this.ready = out;
-    if (this.input.mode === 'play') this.timer = setTimeout(() => this.deliver(), END_PAUSE);
+    if (this.input.mode === 'play') {
+      this.timer = setTimeout(() => this.deliver(), END_PAUSE);
+      // TOWER-HOOK (card): a CPU duel puts up its own result card (a Rematch and a Leave button) after `onFinish` returns, and a boss fight
+      // says "<boss> falls" even when the hero fell. The piece is only a step of a floor: once the duel is done with the frame its card and
+      // banner are hidden and the piece says its own words. (`Duel.start({ card: null })` is what the engine should get, as `startBoss` has.)
+      queueMicrotask(() => {
+        if (this.over) return;
+        const d = this.api.duel as unknown as { card?: HTMLElement; banner?: HTMLElement };
+        if (d.card) d.card.style.display = 'none';
+        if (d.banner) d.banner.style.display = 'none';
+        this.hud?.say(out.won ? 'Won' : 'Beaten', this.title, 2);
+      });
+    }
     // The autopilot's run has no timers. `pump` delivers at the next step; a caller that never pumps (the contract does not ask it to) is
     // told as soon as the code that stepped the simulation lets go of the thread. Never inside `Duel.update`: a microtask cannot fire there.
     else queueMicrotask(() => this.deliver());
