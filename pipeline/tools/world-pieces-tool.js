@@ -13,8 +13,7 @@
 //   _pieceRun.done(); _pieceRun.show(); _pieceRun.errors()
 //
 // `_pieceRun` options: floor (1-5), heroes, reps, level (the autopilot's CPU level, 3 Normal stands in for a person), hp (a share, default
-// 0.7), boons (ids, default three ordinary ones), ally, maxSeconds (default 240), both (also a second lap where the piece must be lost:
-// not used here). It reports per heroes and in all: won of tried, seconds, health left on a win, what felled the hero, which moves hit.
+// 0.7), boons (ids, default three ordinary ones), ally, maxSeconds (default 240). It reports per heroes and in all: won of tried, seconds, health left on a win, what felled the hero, which moves hit (a ruler, a trial or a rival only: a CPU duel, the gate, has no boss to count them).
 (() => {
   const tick = () => new Promise((ok) => { const c = new MessageChannel(); c.port1.onmessage = () => ok(); c.port2.postMessage(0); });
   let mod = null, api = null;

@@ -46,22 +46,19 @@ function standKit(real: HeroKit, name: string, title: string, hp: number): HeroK
   return { ...real, name, title, maxHp: hp, alt: undefined, base: undefined, attack: real.attack ?? traitFor(real.name)?.attack };
 }
 
-/** A figure's colours laid over by `tint`, so the five rulers do not look alike. */
+/**
+ * A figure's colours laid over by `tint`, so the five rulers do not look alike. Returns what puts the colours back: the boss's figure keeps
+ * its model between fights (a later duel against the same hero would come out in the ruler's colour), so the piece restores them when it ends.
+ */
 export function tintFigure(api: GameApi, tint: string, amount = 0.5) {
   // TOWER-HOOK: `Duel` keeps the boss's figure private and `RealHero` its materials; the kit should carry a tint the figure applies.
-  const fig = (api.duel as unknown as { figure?: { real?: { mats?: { color: THREE.Color; emissive: THREE.Color }[] }; group?: THREE.Object3D } }).figure;
+  const fig = (api.duel as unknown as { figure?: { real?: { mats?: { color: THREE.Color; emissive: THREE.Color }[] } } }).figure;
   const want = new THREE.Color(tint);
   const mats = fig?.real?.mats;
-  if (mats?.length) {
-    for (const m of mats) {
-      const mark = m as unknown as { tinted?: boolean };
-      if (mark.tinted) continue;
-      mark.tinted = true;
-      m.color.lerp(want, amount);
-    }
-    return mats.length;
-  }
-  return 0;
+  if (!mats?.length) return null;
+  const was = mats.map((m) => m.color.clone());
+  mats.forEach((m) => m.color.lerp(want, amount));
+  return () => mats.forEach((m, i) => m.color.copy(was[i]));
 }
 
 /** What the room keeps between the moves (they say what they want; the floor's cast does it). */
@@ -98,6 +95,7 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
   const still = d.speed === 0;
   const state: State = { t: 0, surge: null, raise: false };
   let link!: TowerLink;
+  let tinted: (() => void) | null = null;
   const rewards: Record<string, FloorReward> = {};
   if (d.sentries?.fall) rewards.sentry = { stagger: d.sentries.fall.stagger, kneel: d.sentries.fall.kneel };
 
@@ -245,6 +243,8 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
         const parts: ((t: number, dt: number) => void)[] = [];
         const ends: (() => void)[] = [];
         const spec = d.sentries;
+        // The figure's materials may not be there at the first frame: try again for a few seconds.
+        parts.push((t) => { if (!tinted && t < 12) ready(); });
 
         // The sentries: cannons, roots, crystals, a standard.
         const timers: number[] = [];
@@ -415,11 +415,13 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
     return rig;
   };
 
+  const ready = () => {
+    if (tinted) return;
+    tinted = tintFigure(api, d.tint);
+    if (tinted) run.onEnd(tinted);
+  };
   return {
-    def, link, phase,
-    ready() {
-      if (!tintFigure(api, d.tint)) run.note('tint: no materials yet');
-    },
+    def, link, phase, ready,
     begin() {
       link.on.cast({ id: FLOOR_CAST, move: 'floor', step: 0, x: RING.x, z: RING.z, fx: RING.x, fz: RING.z, dir: 0, seed: 1, target: 0 });
       if (ctx.ally) {

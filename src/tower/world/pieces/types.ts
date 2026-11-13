@@ -28,7 +28,10 @@ export interface PieceOut {
 
 /** What `startPiece` hands back. The contract says `void`; a caller may ignore this. */
 export interface PieceHandle {
-  /** `mode: 'run'`: call between two steps of the simulation, as `TowerRun.pump`: a fight that ended reports its outcome from here. */
+  /**
+   * `mode: 'run'`: call between two steps of the simulation, as `TowerRun.pump`: a fight that ended reports its outcome from here. Optional:
+   * with no pump the outcome is reported by a microtask, as soon as the code that steps the simulation yields.
+   */
   pump(): void;
   /** Ends the piece with no outcome (the player left). */
   cancel(): void;
@@ -101,7 +104,7 @@ export interface RulerDef {
   tint: string;
   /** How many times a hero's size. */
   scale: number;
-  /** Its health at floor 1's numbers (it grows with the floor's `hard`). */
+  /** Its health. */
   hp: number;
   speed: number;
   keepAt?: number;
@@ -116,7 +119,7 @@ export interface RulerDef {
   surge?: { safe: SafeSpec; burn: number; slow?: number; name: string; look: 'sea' | 'storm' };
   /** The room goes dark round the hero in the last phase (a page layer). */
   dark?: { from: number };
-  /** The ally's strength (hit points), as it fights beside the hero. */
+  /** What the player should do, in a line for the screen. */
   line: string;
 }
 
@@ -144,7 +147,7 @@ export interface RivalDef {
 
 export interface PiecesDef {
   floor: number;
-  /** What the zone reads: how much harder than floor 1 a piece here is (health and what a hit costs). */
+  /** How much more a hit costs here than on floor 1 (the ruler's moves, the called guard), and how strong an ally is. A ruler's health is its own number. */
   hard: number;
   ruler: RulerDef;
   gate: GateDef;

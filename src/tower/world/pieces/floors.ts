@@ -3,7 +3,7 @@ import type { PiecesDef } from './types';
 /**
  * The five floors' set pieces as data (pipeline/designs/tower-worlds-pieces.md): for each, its ruler, its gatekeeper's duel, its trial
  * room and its rival. A ruler is only the moves of the plan's "Ruler moves" list (`ruler.ts` builds each `use` from the Tower's
- * moves), on a hero's model for now. `hard` multiplies the health and what a hit costs, floor by floor.
+ * moves), on a hero's model for now. `hard` multiplies what a hit costs, floor by floor; a ruler's health is its own number.
  */
 
 /** The decks of the harbour's ruler room: the middle, and two small ones at the stern and the bow (the ring is 12 m round (0, 7)). */
@@ -28,7 +28,7 @@ export const PIECES: PiecesDef[] = [
         { name: 'The wreck opens fire', at: 0.66, opener: 'raise', moves: ['anchor', 'cannons', 'cleave', 'lunge'], gap: [1.3, 2.1] },
         { name: 'He calls the tide', at: 0.5, opener: 'tide', moves: ['anchor', 'cannons', 'cleave', 'lunge'], timed: { move: 'tide', first: 24, every: 26, most: 99 }, gap: [1.1, 1.8] },
       ],
-      sentries: { look: 'cannon', spots: [[68, 9.6], [292, 9.6]], hp: 150, again: 22, fall: { stagger: 45 }, from: 1 },
+      sentries: { look: 'cannon', spots: [[68, 9.6], [292, 9.6]], hp: 150, again: 22, fall: { stagger: 55 }, from: 1 },
       surge: { safe: { decks: DECKS }, burn: 0.06, slow: 0.35, name: 'The tide', look: 'sea' },
       line: 'Stand on the deck when the tide comes in',
     },

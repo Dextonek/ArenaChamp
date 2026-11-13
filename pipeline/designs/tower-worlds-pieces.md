@@ -24,12 +24,13 @@ startPiece(api, kind: 'ruler' | 'gate' | 'trial' | 'rival', input: PieceIn, done
 ```
 
 The types are declared in `src/tower/world/pieces/types.ts` and exported from `index.ts`; the zone declares the same in `doors.ts`
-(to be unified at the merge). **Two things the contract does not say.** `startPiece` returns a handle (`pump`, `cancel`, `over`, `report`):
-the contract's `void` is still satisfied by a caller that ignores it. In `mode: 'run'` there are no timers (as in the weekly Tower's
-autopilot climb), so a finished fight reports its outcome from the first `handle.pump()` after it ended; the zone's route bot must call it
-between two steps of the simulation, as `TowerRun.pump` is called. In a person's play the outcome is handed back 2 s after the end (so the
-end can be seen). Before `done` the piece puts back what it changed (the duel's flags, `onFinish`, the page's elements) and stops the duel;
-`done` is called once (checked: 0 wrong counts in every run below).
+(to be unified at the merge). **Two things the contract does not say.** `startPiece` returns a handle (`pump`, `cancel`, `over`, `report`); the contract's `void` is
+satisfied by a caller that ignores it. In `mode: 'run'` there are no timers (as in the weekly Tower's autopilot climb), so a finished fight's
+outcome is reported from the first `handle.pump()` after it ended, as `TowerRun.pump` is called between two steps; a caller that never pumps
+is told by a microtask, as soon as the code that stepped the simulation yields (checked: `done` came 0 times before the yield and once
+after). In a person's play the outcome is handed back 2 s after the end, so the end can be seen. Before `done` the piece puts back what it
+changed (the duel's flags, `onFinish`, the boss figure's colours, the page's elements) and stops the duel; `done` is called once (0 wrong counts
+in every run below).
 
 | File | Role |
 |---|---|
@@ -95,7 +96,7 @@ side room for a relic): see the table.
 
 ### 4. The rival's duel (floors 2, 3 and 5)
 
-The weekly Tower's Duel kind (`buildFloor`, kind `duel`: an echo of the rival's hero with a boss's moves, where boons act), with one twist
+The weekly Tower's Duel kind at the weekly floor 2n (`buildFloor`, kind `duel`: an echo of the rival's hero with a boss's moves, where boons act), with one twist
 each: Nyx (floor 2, "in the thicket") swift (quicker, less health), Vesper (floor 3, "on the bridge") a giant (bigger, more health, slower),
 Brannoc (floor 5, "between the lines") warded (two wards to break first). Floors 1 and 4 have no rival piece: the zone runs the race itself,
 and `startPiece(..., 'rival', ...)` on those throws. Vesper is not one of the weekly Tower's `ECHOES` (heroes with no held staff): the echo's
@@ -149,6 +150,9 @@ about 80 %. (e) The rival duels and trials are not tuned at all (the weekly Towe
 autopilot except floor 5's. (f) Every number is the autopilot's, never a person's.
 
 
+**A lost gate has no cause in the report:** a CPU duel has no boss to count hits, so `_pieceRun('gate')` says won of tried and seconds, not what
+felled the hero or which moves hit (the other three pieces say).
+
 ## Quirks found and fixed (worth knowing)
 
 - **A move's key in `BossDef.moves` must be its `id`.** The brain casts `move: m.id` and the fight looks it up by that key, so a record
@@ -163,7 +167,7 @@ autopilot except floor 5's. (f) Every number is the autopilot's, never a person'
 
 | Hook | Where | Needed | Done instead | The engine should get |
 |---|---|---|---|---|
-| Tint | `ruler.ts` `tintFigure` | A boss drawn in a colour of its own | After the figure loads, the boss figure's materials are reached through `Duel`'s private `figure` and `RealHero`'s private `mats` and lerped to the tint (the base colours the flash is drawn from) | `HeroKit.tint` |
+| Tint | `ruler.ts` `tintFigure` | A boss drawn in a colour of its own | After the figure loads, the boss figure's materials are reached through `Duel`'s private `figure` and `RealHero`'s private `mats` and lerped to the tint (the base colours the flash is drawn from); the piece puts the colours back when it ends, because the figure keeps its model between fights (checked: a later duel against Bram came out in his own colours) | `HeroKit.tint` |
 | Style of | `ruler.ts` `standKit` | A kit that is another hero's body under its own name | As the weekly Tower's `echoKit` (the name decides the motion style) | `HeroKit.styleOf` |
 | Twist at start | `duels.ts` `startGate` | A duel that begins with its arena's twist started | `Duel.shiftOffset` (public, made for tests) after `start`; hazards by `hazardsOn` and their first event at 8 s | `Duel.start({ twist })` |
 | Boons in a duel | `duels.ts` | `Duel.start` with the climb's boons | None: the gate's rule says they are set aside | `Duel.start({ upgrades })` (stage 0's row) |
@@ -189,8 +193,8 @@ autopilot except floor 5's. (f) Every number is the autopilot's, never a person'
   Root's walls of roots (they are the Tower's stones, no root look), the Colossus's storm (dust and a gold ring round the shell, no picture),
   the Prism Mother's dark layer, the Marshal's guard of both banners (the guard is the Tower's keeper look in red or blue: the keeper look
   sets its own stone colour, so the banners are only in the unit's bar colour), the Marshal's kneel by the standard.
-- **A sentry's fall paying the stagger gauge was never seen to fire** (cannons: 45 points; the Marshal's standard: a kneel). The kneel itself works:
-  control filled the gauge in the runs (about 0.9 kneels a try on floor 1) and `link.stagger(100)` showed it in a picture. The autopilot rarely fells a cannon.
+- **A sentry's fall paying the stagger gauge:** proved for floor 1 by slaying both cannons through the summon system (55 points each: one kneel, 0 to 1);
+  the autopilot itself rarely fells a cannon (control filled the gauge in the runs, about 0.9 kneels a try). The Marshal's standard (`kneel` at once) was not tried.
 - **Gates 3 and 5 use the arena's hazard,** which fires its first event at 8 s by itself; the plan's "a storm crosses once" is
   "a storm crosses every 9 to 13 s" here. Floor 4's twist is the roof slabs, not "half the ring is dark".
 - **Rivals 2, 3 and 5 are not looked at in a picture,** nor is a trial of floors 2 to 5.

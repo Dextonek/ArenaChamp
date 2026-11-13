@@ -58,6 +58,9 @@ export class PieceRun implements PieceHandle {
     this.stats = { by: d.boss?.killedBy || undefined, hits: { ...(d.boss?.stats.hits ?? {}) }, phase: d.boss?.stats.phases ?? 0, kneels: d.boss?.stats.kneels ?? 0, note: this.notes };
     this.ready = out;
     if (this.input.mode === 'play') this.timer = setTimeout(() => this.deliver(), END_PAUSE);
+    // The autopilot's run has no timers. `pump` delivers at the next step; a caller that never pumps (the contract does not ask it to) is
+    // told as soon as the code that stepped the simulation lets go of the thread. Never inside `Duel.update`: a microtask cannot fire there.
+    else queueMicrotask(() => this.deliver());
   }
 
   pump() {

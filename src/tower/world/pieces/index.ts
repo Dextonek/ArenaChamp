@@ -13,8 +13,9 @@ export { PIECES, piecesOf } from './floors';
  * is called once with the outcome. The piece sets the hero, its boons and its health, and puts back what it changed before `done`;
  * it stops the duel, so the zone starts its own fight again.
  *
- * Returns a handle the contract does not ask for: in the autopilot's run (`mode: 'run'`) call `pump()` between two steps of the
- * simulation (a finished fight reports from there, as the weekly Tower's landing does); `cancel()` ends the piece with no outcome.
+ * Returns a handle the contract does not ask for: in the autopilot's run (`mode: 'run'`) `pump()` between two steps of the simulation
+ * reports a finished fight at once (as the weekly Tower's landing is pumped); without it the outcome comes as a microtask, when the code that
+ * steps the simulation yields. `cancel()` ends the piece with no outcome.
  */
 export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: (out: PieceOut) => void): PieceHandle {
   const floor = Math.max(1, Math.min(5, Math.round(input.floor)));
