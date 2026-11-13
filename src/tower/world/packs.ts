@@ -82,6 +82,7 @@ export class Pack {
       return { spec, spot: new THREE.Vector3(def.at.x + Math.cos(a) * r, 0, def.at.z + Math.sin(a) * r), hp, max: hp, alive: !cleared };
     });
     if (cleared) this.state = 'cleared';
+    if (def.leash) this.leashAt = def.leash;
     if (def.named) {
       const pts = def.named.patrol, cum = [0];
       for (let i = 0; i < pts.length; i++) {

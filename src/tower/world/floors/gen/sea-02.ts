@@ -859,14 +859,14 @@ export const SEA_02: GenFloor = {
  },
  "pieces": {
   "floor": 2,
-  "hard": 1.06,
+  "hard": 1.01,
   "ruler": {
    "name": "The Drowned Admiral",
    "title": "Fleet, cannon and tide",
    "stand": "Mortis",
    "tint": "#2f8a96",
    "scale": 2.42,
-   "hp": 3000,
+   "hp": 2850,
    "speed": 2,
    "stagger": {
     "max": 100,
@@ -1023,12 +1023,13 @@ export const SEA_02: GenFloor = {
   },
   "trial": {
    "kind": "hold",
-   "height": 3
+   "height": 2
   },
   "rival": {
    "hero": "Pip",
    "twist": "warded",
-   "line": "Pip waits by the arch"
+   "line": "Pip waits by the arch",
+   "height": 2
   }
  },
  "floor": {
@@ -1112,11 +1113,11 @@ export const SEA_02: GenFloor = {
   "law": {
    "kind": "tide",
    "name": "The tide",
-   "blurb": "Every 78 seconds the sea comes in for 15: the tidal flats flood, slow and hurt. The higher ground stays dry.",
-   "every": 78,
+   "blurb": "Every 79 seconds the sea comes in for 15: the tidal flats flood, slow and hurt. The higher ground stays dry.",
+   "every": 79,
    "lasts": 15,
    "warn": 7,
-   "burn": 0.021,
+   "burn": 0.0204,
    "slow": 0.6,
    "low": [
     {
@@ -1177,8 +1178,8 @@ export const SEA_02: GenFloor = {
     "blurb": "Strikes up close.",
     "look": "docker",
     "melee": true,
-    "hp": 75,
-    "share": 0.025,
+    "hp": 71,
+    "share": 0.0242,
     "every": 1.8,
     "speed": 3.2,
     "scale": 1.3,
@@ -1191,8 +1192,8 @@ export const SEA_02: GenFloor = {
     "blurb": "Throws a net: you are rooted a moment.",
     "look": "netter",
     "melee": false,
-    "hp": 54,
-    "share": 0.0208,
+    "hp": 51,
+    "share": 0.0202,
     "every": 2.8,
     "speed": 2.8,
     "range": 9,
@@ -1210,8 +1211,8 @@ export const SEA_02: GenFloor = {
     "blurb": "Slow and armoured.",
     "look": "crab",
     "melee": true,
-    "hp": 182,
-    "share": 0.0364,
+    "hp": 173,
+    "share": 0.0354,
     "every": 2.4,
     "speed": 1.9,
     "scale": 1.4,
@@ -1224,8 +1225,8 @@ export const SEA_02: GenFloor = {
     "blurb": "Guards the wreck.",
     "look": "mate",
     "melee": true,
-    "hp": 385,
-    "share": 0.052,
+    "hp": 365,
+    "share": 0.0505,
     "every": 1.6,
     "speed": 3,
     "scale": 1.9,
@@ -1238,8 +1239,8 @@ export const SEA_02: GenFloor = {
     "blurb": "Walks the middle and strikes hard.",
     "look": "barnacle",
     "melee": true,
-    "hp": 556,
-    "share": 0.0624,
+    "hp": 528,
+    "share": 0.0606,
     "every": 2,
     "speed": 2.6,
     "scale": 2.3,
@@ -1254,6 +1255,7 @@ export const SEA_02: GenFloor = {
      "x": 27.21,
      "z": 16.9
     },
+    "leash": 24,
     "mix": [
      {
       "kind": "docker",
@@ -1275,6 +1277,7 @@ export const SEA_02: GenFloor = {
      "x": -26.88,
      "z": 18.45
     },
+    "leash": 24,
     "mix": [
      {
       "kind": "docker",
@@ -1289,6 +1292,7 @@ export const SEA_02: GenFloor = {
      "x": 14.43,
      "z": -21.98
     },
+    "leash": 24,
     "mix": [
      {
       "kind": "docker",
@@ -1417,7 +1421,7 @@ export const SEA_02: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Three things. Clear the old fort, where they gather. Then light the lighthouse so the boats know the harbour lives. Last, the key lies in the wreck: bring it to the winch by the camp."
+     "Three things. Clear the old fort, where they gather. Then light the lighthouse so the boats know the harbour lives. Last, the key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
     ],
     "steps": [
      {
@@ -1440,6 +1444,13 @@ export const SEA_02: GenFloor = {
        }
       ],
       "seconds": 2
+     },
+     {
+      "verb": "fell",
+      "text": "Clear the wreck",
+      "packs": [
+       "d"
+      ]
      },
      {
       "verb": "carry",

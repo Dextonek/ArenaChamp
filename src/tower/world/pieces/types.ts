@@ -143,6 +143,8 @@ export interface RivalDef {
   hero: string;
   twist: 'giant' | 'swift' | 'warded';
   line: string;
+  /** The weekly Tower's height the duel is built at (default twice the floor's number: a made floor's own, so a number past 10 is not a rival of the 20s). */
+  height?: number;
 }
 
 export interface PiecesDef {

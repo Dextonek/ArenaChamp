@@ -86,5 +86,5 @@ export function startTrial(run: PieceRun, t: TrialDef, floor: number) {
 
 /** The rival's duel: the echo of the rival's hero with its twist, where boons act. */
 export function startRival(run: PieceRun, r: RivalDef, floor: number) {
-  weekly(run, planOf(2 * floor, 'duel', `world-rival-${floor}`, { foe: r.hero, duel: r.twist }), r.line);
+  weekly(run, planOf(r.height ?? 2 * floor, 'duel', `world-rival-${floor}`, { foe: r.hero, duel: r.twist }), r.line);
 }

@@ -43,6 +43,12 @@ export interface PackDef {
   named?: { name: string; patrol: Spot[]; speed: number; bounty: { shards: number; relic: boolean } };
   /** An elite among them: the pack's first unit is this kind and is bigger. */
   elite?: string;
+  /**
+   * How far the hero may be from the pack's home before it gives up, walks home and heals (m; default `PACK.leash`, 16). The made
+   * floors give 24: a fight drifting 16 m from home reset the pack while its units stood next to the hero, and a ranged hero who steps
+   * back as it shoots woke it, lost it and woke it again (floor 8's wreck: the route bot never cleared it).
+   */
+  leash?: number;
 }
 
 /** A thing a quest step asks, one verb with its place and number (closed list: pipeline/designs/tower-worlds-build.md). */

@@ -96,8 +96,14 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     const back = kind === 'lighthouse' ? 7 : kind === 'beacon' ? 4.5 : kind === 'caves' ? 2 : kind === 'wreck' || kind === 'shipyard' ? 4 : 0;
     return { id, kind, name: pick(PLACE_NAMES[kind]), c, r, stand: add(c, toMid, back) };
   };
-  const A = mk('a', kindA, range(-112, -88), range(28, 32));
-  const B = mk('b', kindB, kindB === 'caves' ? range(-40, -20) : range(-48, -24), range(31, 35));
+  // A's and B's packs at least 37 m apart: a pack wakes within 18 m, so closer than that one spot can have both on it (the cap is six).
+  let A = mk('a', kindA, range(-112, -88), range(28, 32));
+  let B = mk('b', kindB, kindB === 'caves' ? range(-40, -20) : range(-40, -22), range(31, 35));
+  for (let i = 0; i < 300 && dist(A.c, B.c) < 37; i++) {
+    A = mk('a', kindA, range(-120, -92), range(27, 32));
+    B = mk('b', kindB, range(-40, -20), range(31, 36));
+  }
+  if (dist(A.c, B.c) < 37) throw new Error(`floor ${n}: no room for A and B apart`);
   const C = mk('c', kindC, range(32, 52), range(31, 35));
   const D = mk('d', kindD, range(100, 120), range(27, 30.5));
   const places = [A, B, C, D];
@@ -257,7 +263,9 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   }
 
   // --- enemies (floor 1's, stronger), packs ---------------------------------------------------------------------------------------
-  const hpK = 1 + 0.07 * (n - 1), shK = 1 + 0.04 * (n - 1), shard = (x: number) => Math.round(x * (1 + 0.05 * (n - 1)));
+  // Gentle: the handmade floors keep their roaming enemies about level (the Wood's and the Canyon's are floor 1's, give or take) and grow
+  // harder in their set pieces. At first these were +7 % health and +4 % a hit a floor: by floor 9 the bot fell at every pack.
+  const hpK = 1 + 0.015 * (n - 1), shK = 1 + 0.01 * (n - 1), shard = (x: number) => Math.round(x * (1 + 0.05 * (n - 1)));
   const named = NAMED[(n - 2 + NAMED.length) % NAMED.length];
   const enemies = {
     docker: { id: 'docker', name: 'Drowned docker', blurb: 'Strikes up close.', look: 'docker', melee: true, hp: Math.round(70 * hpK), share: r4(0.024 * shK), every: 1.8, speed: 3.2, scale: 1.3, shards: shard(4), color: '#7fd0c0' },
@@ -267,9 +275,10 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     named: { id: 'named', name: named, blurb: 'Walks the middle and strikes hard.', look: 'barnacle', melee: true, hp: Math.round(520 * hpK), share: r4(0.06 * shK), every: 2.0, speed: 2.6, scale: 2.3, shards: shard(40), color: '#c8e0a0' },
   };
   const packs: PackDef[] = [
-    { id: 'a', at: A.c, mix: [{ kind: 'docker', n: n >= 5 ? 3 : 2 }, { kind: 'netter', n: 1 }, { kind: 'crab', n: 1 }] },
-    { id: 'd', at: D.c, mix: [{ kind: 'docker', n: 2 }, ...(n >= 6 ? [{ kind: 'crab', n: 1 }] : [])], elite: 'mate' },
-    { id: 'b', at: { x: B.c.x, z: B.c.z + 0.5 }, mix: [{ kind: 'docker', n: 2 }, { kind: 'netter', n: n >= 7 ? 3 : 2 }, { kind: 'crab', n: 1 }] },
+    { id: 'a', at: A.c, leash: 24, mix: [{ kind: 'docker', n: 2 }, { kind: 'netter', n: 1 }, { kind: 'crab', n: 1 }] },
+    { id: 'd', at: D.c, leash: 24, mix: [{ kind: 'docker', n: 2 }], elite: 'mate' },
+    // five, always: with the named enemy's patrol passing, six here made seven on one spot (the cap is six); later floors trade a docker for a net caster
+    { id: 'b', at: { x: B.c.x, z: B.c.z + 0.5 }, leash: 24, mix: [{ kind: 'docker', n: n >= 7 ? 1 : 2 }, { kind: 'netter', n: n >= 7 ? 3 : 2 }, { kind: 'crab', n: 1 }] },
     { id: 'named', at: patrol[0], mix: [{ kind: 'named', n: 1 }], named: { name: named, speed: 1.6, patrol, bounty: { shards: shard(40), relic: true } } },
   ];
 
@@ -281,7 +290,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     ['fan', { use: 'fan', share: 0.05 }],
   ] as [string, MoveSpec][]);
   const ruler: RulerDef = {
-    name: rulerName, title: rulerTitle, stand: rulerBody, tint: TINTS[(n - 2) % TINTS.length], scale: r2(range(2.1, 2.5)), hp: Math.round((2800 * (1 + 0.08 * (n - 1))) / 50) * 50, speed: 2.0, stagger: { max: 100, kneel: 5 },
+    name: rulerName, title: rulerTitle, stand: rulerBody, tint: TINTS[(n - 2) % TINTS.length], scale: r2(range(2.1, 2.5)), hp: Math.round((2800 * (1 + 0.02 * (n - 1))) / 50) * 50, speed: 2.0, stagger: { max: 100, kneel: 5 },
     room: 'harbour',
     moves: {
       anchor: { use: 'sweep', name: pick(['Anchor Sweep', 'Chain Sweep', 'Mast Sweep']), share: 0.045, cooldown: 9 },
@@ -303,11 +312,11 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   };
   const twists = ['swift', 'giant', 'warded'] as const;
   const pieces: PiecesDef = {
-    floor: n, hard: r2(1 + 0.055 * (n - 1)),
+    floor: n, hard: r2(1 + 0.012 * (n - 1)), // floor 1 is 1, the Wood (floor 11) 1.12
     ruler,
-    gate: { hero: gateHero, arena: 'harbour', level: n >= 7 ? 4 : 3, twist: { kind: 'shift', name: 'The tide comes in', early: 29 } },
-    trial: { kind: (['gauntlet', 'break', 'hold', 'horde'] as const)[n % 4], height: n + 1 },
-    rival: { hero: rivalHero, twist: twists[n % 3], line: `${rivalHero} waits by the arch` },
+    gate: { hero: gateHero, arena: 'harbour', level: 3, twist: { kind: 'shift', name: 'The tide comes in', early: 29 } },
+    trial: { kind: (['gauntlet', 'break', 'hold', 'horde'] as const)[n % 4], height: n < 6 ? 2 : 3 },
+    rival: { hero: rivalHero, twist: twists[n % 3], line: `${rivalHero} waits by the arch`, height: 2 + Math.floor((n - 1) / 4) },
   };
 
   // --- people, quests, doors, secrets (offsets still; the world's coordinates come at the end) ----------------------------------
@@ -328,10 +337,13 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   const quests: QuestDef[] = [
     {
       id: 'main', name: pick(['The Harbour Key', 'The Captain’s Key', 'The Sea Gate Key']), giver: 'keeper', main: true,
-      intro: [`Three things. Clear ${lower(A.name)}, where they gather. Then light ${lightName} so the boats know the harbour lives. Last, the key lies in ${lower(D.name)}: bring it to the winch by the camp.`],
+      intro: [`Three things. Clear ${lower(A.name)}, where they gather. Then light ${lightName} so the boats know the harbour lives. Last, the key lies in ${lower(D.name)}, and the Mate guards it: clear them, then bring the key to the winch by the camp.`],
       steps: [
         { verb: 'fell', text: `Clear ${lower(A.name)}`, packs: ['a'] },
         { verb: 'light', text: `Light ${lightName}`, things: [{ id: 'light', at: C.stand }], seconds: 2 },
+        // The key's guard first: a pack that loses the hero walks home and heals, so carrying the key past an awake Mate (a hit drops it)
+        // was a loop of fetching it again (the route bot's falls on floors 2 and 9 were all at the wreck).
+        { verb: 'fell', text: `Clear ${lower(D.name)}`, packs: ['d'] },
         { verb: 'carry', text: `Bring the key from ${lower(D.name)} to the winch`, item: 'key', itemName: 'The key', toName: 'the winch', from: D.stand, to: winch, r: 2.2, opens: 'lair' },
       ] as Step[],
       outro: [`The chain falls. ${rulerName}’s door stands open, far in the north. Take your time, then go in.`],
@@ -399,8 +411,8 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
       start: X({ x: 0, z: 39.5 }), camp: X({ x: 0, z: 36 }), places: placeDefs, par: 780 + 20 * (n - 1),
       shop: { heal: 30 + 2 * (n - 1), boon: 55 + 3 * (n - 1), life: 80 + 4 * (n - 1), hint: 15 },
       law: {
-        kind: 'tide', name: 'The tide', blurb: `Every ${Math.max(64, 80 - 2 * (n - 1))} seconds the sea comes in for ${15 + Math.round(k * 4)}: the tidal flats flood, slow and hurt. The higher ground stays dry.`,
-        every: Math.max(64, 80 - 2 * (n - 1)), lasts: 15 + Math.round(k * 4), warn: 7, burn: r4(0.02 * (1 + 0.05 * (n - 1))), slow: 0.6, low: look.flats,
+        kind: 'tide', name: 'The tide', blurb: `Every ${80 - (n - 1)} seconds the sea comes in for ${15 + Math.round(k * 2)}: the tidal flats flood, slow and hurt. The higher ground stays dry.`,
+        every: 80 - (n - 1), lasts: 15 + Math.round(k * 2), warn: 7, burn: r4(0.02 * (1 + 0.02 * (n - 1))), slow: 0.6, low: look.flats,
       },
       enemies, packs: packs.map((p) => ({ ...p, at: X(p.at), ...(p.named ? { named: { ...p.named, patrol: p.named.patrol.map(X) } } : {}) })),
       people: people.map((p) => ({ ...p, at: X(p.at), face: face(p.face) })),
