@@ -1,14 +1,22 @@
 # Status
 
-_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15)._
+_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything._
 
-## Open tabs are told about every new build (2026-11-12, night)
+## Open tabs are told about every new build (2026-11-12, night): pushed and LIVE (version 98909059)
 
 - After the A-key fix went live the user still had the instant A: the tab had reconnected on the old code, since nothing told a
   tab to reload unless `PROTOCOL` changed. Now each build has an id (`/build.json`); after a reconnect a page on another build
   shows "A new version of the game is out." with Reload ([architecture/multiplayer.md](architecture/multiplayer.md), *Rules
   version*). `PROTOCOL` 15, raised once with no rule change, so the tabs from before this check reload too. Checked on the built
   game under `vite preview`: no bar for the same build; the bar after `/build.json` changed and the socket came back.
+- **Live, recorded 2026-11-13 from the first computer:** this section said nothing of a deploy, but one went out a minute
+  after the commit (`5871833`): `npx wrangler deployments list` has version `98909059-ef48-4f8e-a479-2ccf10bf3230`,
+  created 2026-11-12 22:21 UTC, as the newest. Checked on the live site, no account used: `/build.json` answers
+  `20261112T222104` and the page's bundle holds the bar's text. GitHub `main` is at `5871833` too, so nothing waits
+  to be pushed or deployed. Not checked: the bar itself appearing in a live tab across a deploy.
+- **The first computer is level again (2026-11-13):** it pulled the 200 commits of 2026-11-10 to 12 (a fast-forward,
+  nothing local was lost), then `npm ci`, type check, build and the server test passed there. It has the helper folder
+  the hero builds need (`C:\projectG\xianxia\blender`) and the git name and e-mail set.
 
 ## Quick cast, as in League (2026-11-12, night): pushed and LIVE (version ca9551e2)
 
