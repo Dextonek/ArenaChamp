@@ -911,7 +911,7 @@ export const SEA_05: GenFloor = {
   "ruler": {
    "name": "The Tide Judge",
    "title": "Every tide a sentence",
-   "stand": "Oblivion",
+   "stand": "Sirix",
    "tint": "#4a8a8a",
    "scale": 2.41,
    "hp": 3000,
@@ -1072,9 +1072,9 @@ export const SEA_05: GenFloor = {
    "height": 2
   },
   "rival": {
-   "hero": "Fenna",
+   "hero": "Bo",
    "twist": "warded",
-   "line": "Fenna waits by the arch",
+   "line": "Bo waits by the arch",
    "height": 3
   }
  },
@@ -1397,8 +1397,8 @@ export const SEA_05: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Nyx",
-    "name": "Nyx",
+    "hero": "Gus",
+    "name": "Gus",
     "role": "keeper",
     "at": {
      "x": -2.6,
@@ -1406,7 +1406,7 @@ export const SEA_05: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Another climber. The oyster market is overrun, and The Tide Judge sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The oyster market is overrun, and the Tide Judge sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1415,8 +1415,8 @@ export const SEA_05: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Gus",
-    "name": "Gus",
+    "hero": "Auriel",
+    "name": "Auriel",
     "role": "giver",
     "at": {
      "x": 5.5,
@@ -1433,8 +1433,8 @@ export const SEA_05: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Fenna",
-    "name": "Fenna",
+    "hero": "Bo",
+    "name": "Bo",
     "role": "rival",
     "at": {
      "x": -32.83,
@@ -1446,8 +1446,8 @@ export const SEA_05: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Bo",
-    "name": "Bo",
+    "hero": "Cantor",
+    "name": "Cantor",
     "role": "trader",
     "at": {
      "x": -5.5,
@@ -1592,7 +1592,7 @@ export const SEA_05: GenFloor = {
    },
    {
     "id": "g2",
-    "name": "Wren of caves",
+    "name": "Bring Wren Home",
     "giver": "giver",
     "intro": [
      "Wren hides in the caves and will not come out alone. Walk them back to the camp; stand close and they follow the road."
@@ -1734,7 +1734,7 @@ export const SEA_05: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Nyx has a quest about a key."
+    "locked": "A chain holds the lair shut. Gus has a quest about a key."
    },
    {
     "id": "trial",
@@ -1759,12 +1759,12 @@ export const SEA_05: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Tide Judge has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Tide Judge has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Fenna’s arch",
+    "name": "Bo’s arch",
     "at": {
      "x": -38.4,
      "z": -6.98
@@ -1774,7 +1774,7 @@ export const SEA_05: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Fenna",
+   "hero": "Bo",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1783,7 +1783,7 @@ export const SEA_05: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Fenna. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Bo. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

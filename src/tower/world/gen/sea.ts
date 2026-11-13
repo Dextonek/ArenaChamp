@@ -82,11 +82,16 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   const k = (n - 1) / 9; // 0 at floor 1, 1 at floor 10
 
   // --- who is where: the chapter's heroes in an order fixed for the chapter, so floors do not repeat each other's people ------------
-  const order = shuffle(ROSTER, mulberry(1001));
-  const at = (i: number) => order[(n * 5 + i) % order.length];
-  const keeperHero = at(0), giverHero = at(1), traderHero = at(2), rivalHero = at(3), gateHero = at(4);
-  const bodies = RULER_BODIES.filter((b) => ![keeperHero, giverHero, traderHero, rivalHero, gateHero].includes(b));
-  const rulerBody = bodies[n % bodies.length];
+  // Gatekeepers: nine different heroes for floors 2 to 10, none of the handmade floors' (Marin, Fenna, Sefu, Opaline, Oblivion). The four
+  // people of a floor come from the rest, four at a time round the list, so no two floors have the same four. (At first all five came
+  // from one list stepped five a floor: it wrapped after six floors, and floors 2 and 8 had the same people and the same gatekeeper.)
+  const order = shuffle(ROSTER.filter((h) => !['Marin', 'Fenna', 'Sefu', 'Opaline', 'Oblivion'].includes(h)), mulberry(1001));
+  const gates = order.slice(0, 9), folk = [...order.slice(9), 'Marin', 'Fenna', 'Sefu', 'Opaline', 'Oblivion'];
+  const at = (i: number) => folk[((n - 2) * 4 + i) % folk.length];
+  const keeperHero = at(0), giverHero = at(1), traderHero = at(2), rivalHero = at(3), gateHero = gates[(n - 2) % gates.length];
+  // A ruler's body: round the list a floor at a time, skipping the floor's own people (so two floors running are not the same giant).
+  const turn = (n - 2) % RULER_BODIES.length, round = [...RULER_BODIES.slice(turn), ...RULER_BODIES.slice(0, turn)];
+  const rulerBody = round.find((b) => ![keeperHero, giverHero, traderHero, rivalHero, gateHero].includes(b)) ?? 'Bram';
 
   // --- the places: four round the middle, in slots (the camp is in the south) ---------------------------------------------------
   const kindA = pick(['market', 'saltworks', 'fort'] as const), kindB: Kind = kindA === 'fort' ? 'caves' : pick(['caves', 'caves', 'fort'] as const);
@@ -324,16 +329,20 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
 
   // --- people, quests, doors, secrets (offsets still; the world's coordinates come at the end) ----------------------------------
   const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
-  const lightName = C.kind === 'lighthouse' ? 'the lighthouse' : 'the beacon';
+  /** A name in the middle of a sentence: "the Bell Below", not "The Bell Below". */
+  const mid = (s: string) => s.replace(/^The /, 'the ');
+  /** Its possessive: "Mother of Wrecks’", "Gus’s". */
+  const poss = (s: string) => (s.endsWith('s') ? `${s}’` : `${s}’s`);
+  const lightName = lower(C.name); // the lighthouse, the north light, the beacon, the signal fire
   const people: (Omit<PersonDef, 'at'> & { at: V })[] = [
-    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: { x: -2.6, z: 36 }, face: 0.4, greet: [`Another climber. ${A.name} is overrun, and ${rulerName} sits in the lair to the north, behind a chain only a key will lift.`], quests: ['main', 'bounty'] },
+    { id: 'keeper', hero: keeperHero, name: keeperHero, role: 'keeper', at: { x: -2.6, z: 36 }, face: 0.4, greet: [`Another climber. ${A.name} is overrun, and ${mid(rulerName)} sits in the lair to the north, behind a chain only a key will lift.`], quests: ['main', 'bounty'] },
     { id: 'giver', hero: giverHero, name: giverHero, role: 'giver', at: { x: 5.5, z: 33.3 }, face: -0.5, greet: [pick(['The sea keeps what it takes. Perhaps you can take some of it back.', 'I have work, if you have legs. The tide does not wait.', 'Everything I own is somewhere on this shore. Help me find it.'])], quests: ['g1', 'g2'] },
     { id: 'rival', hero: rivalHero, name: rivalHero, role: 'rival', at: rivalAt, face: Math.atan2(-rivalAt.x, -rivalAt.z), greet: [], quests: [] },
     { id: 'trader', hero: traderHero, name: traderHero, role: 'trader', at: { x: -5.5, z: 39.5 }, face: 0.6, greet: ['Shards for what you need. Prices are fixed; the sea does not haggle either.'], quests: [] },
   ];
   const reward = (s: number, more: { boon?: boolean; relic?: boolean } = {}) => ({ shards: shard(s), ...more });
   const g2: QuestDef = q2Lead
-    ? { id: 'g2', name: `${leadNpc} of ${B.name.replace(/^The /, '')}`, giver: 'giver', intro: [`${leadNpc} hides in ${lower(B.name)} and will not come out alone. Walk them back to the camp; stand close and they follow the road.`],
+    ? { id: 'g2', name: `Bring ${leadNpc} Home`, giver: 'giver', intro: [`${leadNpc} hides in ${lower(B.name)} and will not come out alone. Walk them back to the camp; stand close and they follow the road.`],
         steps: [{ verb: 'lead', text: `Lead ${leadNpc} from ${lower(B.name)} to the camp`, name: leadNpc, from: leadFrom, r: 2.5, path: leadPath } as Step], outro: [`${leadNpc} is home, and pays in what they have.`], reward: reward(45) }
     : { id: 'g2', name: 'A Jar of Oil', giver: 'giver', intro: [`A jar of good lamp oil was left at ${lower(A.name)}. Bring it to me before the tide finds it.`],
         steps: [{ verb: 'carry', text: `Bring the jar from ${lower(A.name)} to the camp`, item: 'jar', itemName: 'A jar of oil', toName: 'the camp', from: jarFrom!, to: jarTo!, r: 2.2, look: 'jar' } as Step], outro: ['Good oil, and dry. Take this.'], reward: reward(40) };
@@ -349,10 +358,10 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
         { verb: 'fell', text: `Clear ${lower(D.name)}`, packs: ['d'] },
         { verb: 'carry', text: `Bring the key from ${lower(D.name)} to the winch`, item: 'key', itemName: 'The key', toName: 'the winch', from: D.stand, to: winch, r: 2.2, opens: 'lair' },
       ] as Step[],
-      outro: [`The chain falls. ${rulerName}’s door stands open, far in the north. Take your time, then go in.`],
+      outro: [`The chain falls. ${poss(rulerName)} door stands open, far in the north. Take your time, then go in.`],
       reward: reward(60, { boon: true }),
     },
-    { id: 'bounty', name: named, giver: 'keeper', intro: [`${named} walks the middle of the harbour. Fell it and the sea quietens a little.`], steps: [{ verb: 'fell-named', text: `Fell ${named}`, pack: 'named' }], outro: ['A relic from the deep. Keep it.'], reward: reward(40, { relic: true }) },
+    { id: 'bounty', name: named, giver: 'keeper', intro: [`${named} walks the middle of the harbour. Fell it and the sea quietens a little.`], steps: [{ verb: 'fell-named', text: `Fell ${mid(named)}`, pack: 'named' }], outro: ['A relic from the deep. Keep it.'], reward: reward(40, { relic: true }) },
     {
       id: 'g1', name: 'The Net Lines', giver: 'giver', intro: ['My boat lies on the shore. My lines are hauled from a spot in the north: hold the place while I do.'],
       steps: [
@@ -364,10 +373,10 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     g2,
   ];
   const doors: (Omit<DoorDef, 'at'> & { at: V })[] = [
-    { id: 'lair', piece: 'ruler', name: crown ? 'The Sun Court' : `${rulerName}’s lair`, at: lairDoor, r: 2.2, wall: { ax: -3.4, az: -41, bx: 3.4, bz: -41, r: 0.5, height: 3.6 }, locked: `A chain holds the lair shut. ${keeperHero} has a quest about a key.` },
+    { id: 'lair', piece: 'ruler', name: crown ? 'The Sun Court' : `${poss(rulerName)} lair`, at: lairDoor, r: 2.2, wall: { ax: -3.4, az: -41, bx: 3.4, bz: -41, r: 0.5, height: 3.6 }, locked: `A chain holds the lair shut. ${keeperHero} has a quest about a key.` },
     { id: 'trial', piece: 'trial', name: pick(['The Flooded Vault', 'The Salt Cellar', 'The Drowned Chapel']), at: trial, r: 2, locked: '' },
-    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${rulerName} has fallen.` },
-    { id: 'rival', piece: 'rival', name: `${rivalHero}’s arch`, at: rivalDoor, r: 2, locked: '' },
+    { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${mid(rulerName)} has fallen.` },
+    { id: 'rival', piece: 'rival', name: `${poss(rivalHero)} arch`, at: rivalDoor, r: 2, locked: '' },
   ];
   const cacheDefs = caches.map((c, i) => ({ id: `c${i + 1}`, at: c, shards: shard([25, 30, 20][i]), ...(i === 2 ? { boon: true } : {}) }));
   const stoneDefs = stones.map((s, i) => ({ id: `w${i + 1}`, name: `The ${[A, D, C][i].name.replace(/^The /, '').toLowerCase()} stone`, at: s }));

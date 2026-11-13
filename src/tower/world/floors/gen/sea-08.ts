@@ -887,7 +887,7 @@ export const SEA_08: GenFloor = {
   "ruler": {
    "name": "The Lantern Leviathan",
    "title": "A light that eats ships",
-   "stand": "Sirix",
+   "stand": "Oblivion",
    "tint": "#2a7f7a",
    "scale": 2.23,
    "hp": 3200,
@@ -1034,7 +1034,7 @@ export const SEA_08: GenFloor = {
    "line": "Stand on the deck when the tide comes in"
   },
   "gate": {
-   "hero": "Isolde",
+   "hero": "Mabel",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1048,9 +1048,9 @@ export const SEA_08: GenFloor = {
    "height": 3
   },
   "rival": {
-   "hero": "Pip",
+   "hero": "Brannoc",
    "twist": "warded",
-   "line": "Pip waits by the arch",
+   "line": "Brannoc waits by the arch",
    "height": 3
   }
  },
@@ -1373,8 +1373,8 @@ export const SEA_08: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Sefu",
-    "name": "Sefu",
+    "hero": "Hank",
+    "name": "Hank",
     "role": "keeper",
     "at": {
      "x": 2.6,
@@ -1382,7 +1382,7 @@ export const SEA_08: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Another climber. The old fort is overrun, and The Lantern Leviathan sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The old fort is overrun, and the Lantern Leviathan sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1391,8 +1391,8 @@ export const SEA_08: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Hank",
-    "name": "Hank",
+    "hero": "Anka",
+    "name": "Anka",
     "role": "giver",
     "at": {
      "x": -5.5,
@@ -1409,8 +1409,8 @@ export const SEA_08: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Pip",
-    "name": "Pip",
+    "hero": "Brannoc",
+    "name": "Brannoc",
     "role": "rival",
     "at": {
      "x": 31.91,
@@ -1422,8 +1422,8 @@ export const SEA_08: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Brannoc",
-    "name": "Brannoc",
+    "hero": "Vitriol",
+    "name": "Vitriol",
     "role": "trader",
     "at": {
      "x": 5.5,
@@ -1443,7 +1443,7 @@ export const SEA_08: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Three things. Clear the old fort, where they gather. Then light the beacon so the boats know the harbour lives. Last, the key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
+     "Three things. Clear the old fort, where they gather. Then light the signal fire so the boats know the harbour lives. Last, the key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
     ],
     "steps": [
      {
@@ -1455,7 +1455,7 @@ export const SEA_08: GenFloor = {
      },
      {
       "verb": "light",
-      "text": "Light the beacon",
+      "text": "Light the signal fire",
       "things": [
        {
         "id": "light",
@@ -1510,7 +1510,7 @@ export const SEA_08: GenFloor = {
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell The Tidecaller",
+      "text": "Fell the Tidecaller",
       "pack": "named"
      }
     ],
@@ -1683,7 +1683,7 @@ export const SEA_08: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Sefu has a quest about a key."
+    "locked": "A chain holds the lair shut. Hank has a quest about a key."
    },
    {
     "id": "trial",
@@ -1708,12 +1708,12 @@ export const SEA_08: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Lantern Leviathan has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Lantern Leviathan has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Pip’s arch",
+    "name": "Brannoc’s arch",
     "at": {
      "x": 36.77,
      "z": -11.17
@@ -1723,7 +1723,7 @@ export const SEA_08: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Pip",
+   "hero": "Brannoc",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1732,7 +1732,7 @@ export const SEA_08: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Pip. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Brannoc. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

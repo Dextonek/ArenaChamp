@@ -935,7 +935,7 @@ export const SEA_06: GenFloor = {
   "ruler": {
    "name": "The Pearl Tyrant",
    "title": "Hoarder of the shallows",
-   "stand": "Isolde",
+   "stand": "Mortis",
    "tint": "#2f6f8f",
    "scale": 2.22,
    "hp": 3100,
@@ -1085,7 +1085,7 @@ export const SEA_06: GenFloor = {
    "line": "Stand on the deck when the tide comes in"
   },
   "gate": {
-   "hero": "Ada",
+   "hero": "Mum",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1099,9 +1099,9 @@ export const SEA_06: GenFloor = {
    "height": 3
   },
   "rival": {
-   "hero": "Oblivion",
+   "hero": "Opaline",
    "twist": "swift",
-   "line": "Oblivion waits by the arch",
+   "line": "Opaline waits by the arch",
    "height": 3
   }
  },
@@ -1424,8 +1424,8 @@ export const SEA_06: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Cantor",
-    "name": "Cantor",
+    "hero": "Marin",
+    "name": "Marin",
     "role": "keeper",
     "at": {
      "x": 2.6,
@@ -1433,7 +1433,7 @@ export const SEA_06: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Another climber. The old fort is overrun, and The Pearl Tyrant sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The old fort is overrun, and the Pearl Tyrant sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1442,8 +1442,8 @@ export const SEA_06: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Mum",
-    "name": "Mum",
+    "hero": "Fenna",
+    "name": "Fenna",
     "role": "giver",
     "at": {
      "x": -5.5,
@@ -1460,8 +1460,8 @@ export const SEA_06: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Oblivion",
-    "name": "Oblivion",
+    "hero": "Opaline",
+    "name": "Opaline",
     "role": "rival",
     "at": {
      "x": 33.53,
@@ -1473,8 +1473,8 @@ export const SEA_06: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Mortis",
-    "name": "Mortis",
+    "hero": "Sefu",
+    "name": "Sefu",
     "role": "trader",
     "at": {
      "x": 5.5,
@@ -1734,7 +1734,7 @@ export const SEA_06: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Cantor has a quest about a key."
+    "locked": "A chain holds the lair shut. Marin has a quest about a key."
    },
    {
     "id": "trial",
@@ -1759,12 +1759,12 @@ export const SEA_06: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Pearl Tyrant has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Pearl Tyrant has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Oblivion’s arch",
+    "name": "Opaline’s arch",
     "at": {
      "x": 38.65,
      "z": -5.75
@@ -1774,7 +1774,7 @@ export const SEA_06: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Oblivion",
+   "hero": "Opaline",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1783,7 +1783,7 @@ export const SEA_06: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Oblivion. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Opaline. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

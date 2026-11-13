@@ -887,7 +887,7 @@ export const SEA_07: GenFloor = {
   "ruler": {
    "name": "The Bell Below",
    "title": "It rings the sea in",
-   "stand": "Vesper",
+   "stand": "Marin",
    "tint": "#3f8f8a",
    "scale": 2.32,
    "hp": 3150,
@@ -1034,7 +1034,7 @@ export const SEA_07: GenFloor = {
    "line": "Stand on the deck when the tide comes in"
   },
   "gate": {
-   "hero": "Lyra",
+   "hero": "Kaia",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1048,9 +1048,9 @@ export const SEA_07: GenFloor = {
    "height": 3
   },
   "rival": {
-   "hero": "Tempo",
+   "hero": "Wick",
    "twist": "giant",
-   "line": "Tempo waits by the arch",
+   "line": "Wick waits by the arch",
    "height": 3
   }
  },
@@ -1373,8 +1373,8 @@ export const SEA_07: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Shiori",
-    "name": "Shiori",
+    "hero": "Oblivion",
+    "name": "Oblivion",
     "role": "keeper",
     "at": {
      "x": -2.6,
@@ -1382,7 +1382,7 @@ export const SEA_07: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Another climber. The old fort is overrun, and The Bell Below sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The old fort is overrun, and the Bell Below sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1391,8 +1391,8 @@ export const SEA_07: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Zephyr",
-    "name": "Zephyr",
+    "hero": "Pip",
+    "name": "Pip",
     "role": "giver",
     "at": {
      "x": 5.5,
@@ -1409,8 +1409,8 @@ export const SEA_07: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Tempo",
-    "name": "Tempo",
+    "hero": "Wick",
+    "name": "Wick",
     "role": "rival",
     "at": {
      "x": -33.29,
@@ -1422,8 +1422,8 @@ export const SEA_07: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Auriel",
-    "name": "Auriel",
+    "hero": "Isolde",
+    "name": "Isolde",
     "role": "trader",
     "at": {
      "x": -5.5,
@@ -1568,7 +1568,7 @@ export const SEA_07: GenFloor = {
    },
    {
     "id": "g2",
-    "name": "Cobb of sea caves",
+    "name": "Bring Cobb Home",
     "giver": "giver",
     "intro": [
      "Cobb hides in the sea caves and will not come out alone. Walk them back to the camp; stand close and they follow the road."
@@ -1710,7 +1710,7 @@ export const SEA_07: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Shiori has a quest about a key."
+    "locked": "A chain holds the lair shut. Oblivion has a quest about a key."
    },
    {
     "id": "trial",
@@ -1735,12 +1735,12 @@ export const SEA_07: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Bell Below has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Bell Below has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Tempo’s arch",
+    "name": "Wick’s arch",
     "at": {
      "x": -38.02,
      "z": -7.04
@@ -1750,7 +1750,7 @@ export const SEA_07: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Tempo",
+   "hero": "Wick",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1759,7 +1759,7 @@ export const SEA_07: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Tempo. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Wick. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

@@ -971,7 +971,7 @@ export const SEA_09: GenFloor = {
   "ruler": {
    "name": "The Gull Queen",
    "title": "Wings and anchors",
-   "stand": "Bram",
+   "stand": "Vesper",
    "tint": "#4a7a9a",
    "scale": 2.13,
    "hp": 3250,
@@ -1118,7 +1118,7 @@ export const SEA_09: GenFloor = {
    "line": "Stand on the deck when the tide comes in"
   },
   "gate": {
-   "hero": "Vitriol",
+   "hero": "Zephyr",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1132,9 +1132,9 @@ export const SEA_09: GenFloor = {
    "height": 3
   },
   "rival": {
-   "hero": "Anka",
+   "hero": "Sirix",
    "twist": "swift",
-   "line": "Anka waits by the arch",
+   "line": "Sirix waits by the arch",
    "height": 4
   }
  },
@@ -1457,8 +1457,8 @@ export const SEA_09: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Mabel",
-    "name": "Mabel",
+    "hero": "Silvane",
+    "name": "Silvane",
     "role": "keeper",
     "at": {
      "x": -2.6,
@@ -1466,7 +1466,7 @@ export const SEA_09: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Another climber. The fish market is overrun, and The Gull Queen sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The fish market is overrun, and the Gull Queen sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1475,8 +1475,8 @@ export const SEA_09: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Vesper",
-    "name": "Vesper",
+    "hero": "Nyx",
+    "name": "Nyx",
     "role": "giver",
     "at": {
      "x": 5.5,
@@ -1493,8 +1493,8 @@ export const SEA_09: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Anka",
-    "name": "Anka",
+    "hero": "Sirix",
+    "name": "Sirix",
     "role": "rival",
     "at": {
      "x": -31.32,
@@ -1506,8 +1506,8 @@ export const SEA_09: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Kaia",
-    "name": "Kaia",
+    "hero": "Lyra",
+    "name": "Lyra",
     "role": "trader",
     "at": {
      "x": -5.5,
@@ -1527,7 +1527,7 @@ export const SEA_09: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Three things. Clear the fish market, where they gather. Then light the beacon so the boats know the harbour lives. Last, the key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
+     "Three things. Clear the fish market, where they gather. Then light the signal fire so the boats know the harbour lives. Last, the key lies in the wreck, and the Mate guards it: clear them, then bring the key to the winch by the camp."
     ],
     "steps": [
      {
@@ -1539,7 +1539,7 @@ export const SEA_09: GenFloor = {
      },
      {
       "verb": "light",
-      "text": "Light the beacon",
+      "text": "Light the signal fire",
       "things": [
        {
         "id": "light",
@@ -1652,7 +1652,7 @@ export const SEA_09: GenFloor = {
    },
    {
     "id": "g2",
-    "name": "Nell of sea caves",
+    "name": "Bring Nell Home",
     "giver": "giver",
     "intro": [
      "Nell hides in the sea caves and will not come out alone. Walk them back to the camp; stand close and they follow the road."
@@ -1794,7 +1794,7 @@ export const SEA_09: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Mabel has a quest about a key."
+    "locked": "A chain holds the lair shut. Silvane has a quest about a key."
    },
    {
     "id": "trial",
@@ -1819,12 +1819,12 @@ export const SEA_09: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Gull Queen has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Gull Queen has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Anka’s arch",
+    "name": "Sirix’s arch",
     "at": {
      "x": -37.05,
      "z": -10.43
@@ -1834,7 +1834,7 @@ export const SEA_09: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Anka",
+   "hero": "Sirix",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1843,7 +1843,7 @@ export const SEA_09: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Anka. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Sirix. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

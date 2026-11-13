@@ -935,7 +935,7 @@ export const SEA_10: GenFloor = {
   "ruler": {
    "name": "The Sun Warden",
    "title": "Keeper of the Sun Court",
-   "stand": "Brannoc",
+   "stand": "Isolde",
    "tint": "#2f8a96",
    "scale": 2.24,
    "hp": 3300,
@@ -1085,7 +1085,7 @@ export const SEA_10: GenFloor = {
    "line": "A Raid boss, alone: read its sun and keep moving"
   },
   "gate": {
-   "hero": "Sirix",
+   "hero": "Shiori",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1100,9 +1100,9 @@ export const SEA_10: GenFloor = {
   },
   "crown": "sun",
   "rival": {
-   "hero": "Marin",
+   "hero": "Cantor",
    "twist": "giant",
-   "line": "Marin waits by the arch",
+   "line": "Cantor waits by the arch",
    "height": 4
   }
  },
@@ -1425,8 +1425,8 @@ export const SEA_10: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Wick",
-    "name": "Wick",
+    "hero": "Mortis",
+    "name": "Mortis",
     "role": "keeper",
     "at": {
      "x": 2.6,
@@ -1434,7 +1434,7 @@ export const SEA_10: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Another climber. The salt pans is overrun, and The Sun Warden sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The salt pans is overrun, and the Sun Warden sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1443,8 +1443,8 @@ export const SEA_10: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Silvane",
-    "name": "Silvane",
+    "hero": "Gus",
+    "name": "Gus",
     "role": "giver",
     "at": {
      "x": -5.5,
@@ -1461,8 +1461,8 @@ export const SEA_10: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Marin",
-    "name": "Marin",
+    "hero": "Cantor",
+    "name": "Cantor",
     "role": "rival",
     "at": {
      "x": 32.63,
@@ -1474,8 +1474,8 @@ export const SEA_10: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Opaline",
-    "name": "Opaline",
+    "hero": "Auriel",
+    "name": "Auriel",
     "role": "trader",
     "at": {
      "x": 5.5,
@@ -1620,7 +1620,7 @@ export const SEA_10: GenFloor = {
    },
    {
     "id": "g2",
-    "name": "Wren of sea caves",
+    "name": "Bring Wren Home",
     "giver": "giver",
     "intro": [
      "Wren hides in the sea caves and will not come out alone. Walk them back to the camp; stand close and they follow the road."
@@ -1762,7 +1762,7 @@ export const SEA_10: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Wick has a quest about a key."
+    "locked": "A chain holds the lair shut. Mortis has a quest about a key."
    },
    {
     "id": "trial",
@@ -1787,12 +1787,12 @@ export const SEA_10: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Sun Warden has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Sun Warden has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Marin’s arch",
+    "name": "Cantor’s arch",
     "at": {
      "x": 37.21,
      "z": -11.68
@@ -1802,7 +1802,7 @@ export const SEA_10: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Marin",
+   "hero": "Cantor",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1811,7 +1811,7 @@ export const SEA_10: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Marin. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Cantor. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

@@ -863,7 +863,7 @@ export const SEA_02: GenFloor = {
   "ruler": {
    "name": "The Drowned Admiral",
    "title": "Fleet, cannon and tide",
-   "stand": "Mortis",
+   "stand": "Bram",
    "tint": "#2f8a96",
    "scale": 2.42,
    "hp": 2850,
@@ -1012,7 +1012,7 @@ export const SEA_02: GenFloor = {
    "line": "Stand on the deck when the tide comes in"
   },
   "gate": {
-   "hero": "Isolde",
+   "hero": "Vesper",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1026,9 +1026,9 @@ export const SEA_02: GenFloor = {
    "height": 2
   },
   "rival": {
-   "hero": "Pip",
+   "hero": "Hank",
    "twist": "warded",
-   "line": "Pip waits by the arch",
+   "line": "Hank waits by the arch",
    "height": 2
   }
  },
@@ -1351,8 +1351,8 @@ export const SEA_02: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Sefu",
-    "name": "Sefu",
+    "hero": "Pip",
+    "name": "Pip",
     "role": "keeper",
     "at": {
      "x": 2.6,
@@ -1360,7 +1360,7 @@ export const SEA_02: GenFloor = {
     },
     "face": -0.4,
     "greet": [
-     "Another climber. The old fort is overrun, and The Drowned Admiral sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The old fort is overrun, and the Drowned Admiral sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1369,8 +1369,8 @@ export const SEA_02: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Hank",
-    "name": "Hank",
+    "hero": "Isolde",
+    "name": "Isolde",
     "role": "giver",
     "at": {
      "x": -5.5,
@@ -1387,8 +1387,8 @@ export const SEA_02: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Pip",
-    "name": "Pip",
+    "hero": "Hank",
+    "name": "Hank",
     "role": "rival",
     "at": {
      "x": 33.93,
@@ -1400,8 +1400,8 @@ export const SEA_02: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Brannoc",
-    "name": "Brannoc",
+    "hero": "Wick",
+    "name": "Wick",
     "role": "trader",
     "at": {
      "x": 5.5,
@@ -1488,7 +1488,7 @@ export const SEA_02: GenFloor = {
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell The Brine Widow",
+      "text": "Fell the Brine Widow",
       "pack": "named"
      }
     ],
@@ -1546,7 +1546,7 @@ export const SEA_02: GenFloor = {
    },
    {
     "id": "g2",
-    "name": "Wren of sea caves",
+    "name": "Bring Wren Home",
     "giver": "giver",
     "intro": [
      "Wren hides in the sea caves and will not come out alone. Walk them back to the camp; stand close and they follow the road."
@@ -1688,7 +1688,7 @@ export const SEA_02: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Sefu has a quest about a key."
+    "locked": "A chain holds the lair shut. Pip has a quest about a key."
    },
    {
     "id": "trial",
@@ -1713,12 +1713,12 @@ export const SEA_02: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Drowned Admiral has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Drowned Admiral has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Pip’s arch",
+    "name": "Hank’s arch",
     "at": {
      "x": 38.47,
      "z": -6.71
@@ -1728,7 +1728,7 @@ export const SEA_02: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Pip",
+   "hero": "Hank",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1737,7 +1737,7 @@ export const SEA_02: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Pip. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Hank. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

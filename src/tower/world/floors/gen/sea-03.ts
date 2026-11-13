@@ -875,7 +875,7 @@ export const SEA_03: GenFloor = {
   "ruler": {
    "name": "The Salt King",
    "title": "Crowned in brine",
-   "stand": "Sirix",
+   "stand": "Hank",
    "tint": "#3a7a9a",
    "scale": 2.36,
    "hp": 2900,
@@ -1024,7 +1024,7 @@ export const SEA_03: GenFloor = {
    "line": "Stand on the deck when the tide comes in"
   },
   "gate": {
-   "hero": "Vitriol",
+   "hero": "Tempo",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1038,9 +1038,9 @@ export const SEA_03: GenFloor = {
    "height": 2
   },
   "rival": {
-   "hero": "Anka",
+   "hero": "Silvane",
    "twist": "swift",
-   "line": "Anka waits by the arch",
+   "line": "Silvane waits by the arch",
    "height": 2
   }
  },
@@ -1363,8 +1363,8 @@ export const SEA_03: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Mabel",
-    "name": "Mabel",
+    "hero": "Anka",
+    "name": "Anka",
     "role": "keeper",
     "at": {
      "x": -2.6,
@@ -1372,7 +1372,7 @@ export const SEA_03: GenFloor = {
     },
     "face": 0.4,
     "greet": [
-     "Another climber. The watch fort is overrun, and The Salt King sits in the lair to the north, behind a chain only a key will lift."
+     "Another climber. The watch fort is overrun, and the Salt King sits in the lair to the north, behind a chain only a key will lift."
     ],
     "quests": [
      "main",
@@ -1381,8 +1381,8 @@ export const SEA_03: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Vesper",
-    "name": "Vesper",
+    "hero": "Vitriol",
+    "name": "Vitriol",
     "role": "giver",
     "at": {
      "x": 5.5,
@@ -1399,8 +1399,8 @@ export const SEA_03: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Anka",
-    "name": "Anka",
+    "hero": "Silvane",
+    "name": "Silvane",
     "role": "rival",
     "at": {
      "x": -35.13,
@@ -1412,8 +1412,8 @@ export const SEA_03: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Kaia",
-    "name": "Kaia",
+    "hero": "Brannoc",
+    "name": "Brannoc",
     "role": "trader",
     "at": {
      "x": -5.5,
@@ -1673,7 +1673,7 @@ export const SEA_03: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Mabel has a quest about a key."
+    "locked": "A chain holds the lair shut. Anka has a quest about a key."
    },
    {
     "id": "trial",
@@ -1698,12 +1698,12 @@ export const SEA_03: GenFloor = {
     "needs": {
      "won": "ruler"
     },
-    "locked": "The gate is sealed. Its warden answers only once The Salt King has fallen."
+    "locked": "The gate is sealed. Its warden answers only once the Salt King has fallen."
    },
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Anka’s arch",
+    "name": "Silvane’s arch",
     "at": {
      "x": -39.99,
      "z": -3.44
@@ -1713,7 +1713,7 @@ export const SEA_03: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Anka",
+   "hero": "Silvane",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1722,7 +1722,7 @@ export const SEA_03: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Anka. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Silvane. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

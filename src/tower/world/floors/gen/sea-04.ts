@@ -895,7 +895,7 @@ export const SEA_04: GenFloor = {
   "ruler": {
    "name": "Mother of Wrecks",
    "title": "She keeps what sinks",
-   "stand": "Oblivion",
+   "stand": "Brannoc",
    "tint": "#2a6a7a",
    "scale": 2.39,
    "hp": 2950,
@@ -1042,7 +1042,7 @@ export const SEA_04: GenFloor = {
    "line": "Stand on the deck when the tide comes in"
   },
   "gate": {
-   "hero": "Sirix",
+   "hero": "Ada",
    "arena": "harbour",
    "level": 3,
    "twist": {
@@ -1056,9 +1056,9 @@ export const SEA_04: GenFloor = {
    "height": 2
   },
   "rival": {
-   "hero": "Marin",
+   "hero": "Mortis",
    "twist": "giant",
-   "line": "Marin waits by the arch",
+   "line": "Mortis waits by the arch",
    "height": 2
   }
  },
@@ -1381,8 +1381,8 @@ export const SEA_04: GenFloor = {
   "people": [
    {
     "id": "keeper",
-    "hero": "Wick",
-    "name": "Wick",
+    "hero": "Nyx",
+    "name": "Nyx",
     "role": "keeper",
     "at": {
      "x": 2.6,
@@ -1399,8 +1399,8 @@ export const SEA_04: GenFloor = {
    },
    {
     "id": "giver",
-    "hero": "Silvane",
-    "name": "Silvane",
+    "hero": "Lyra",
+    "name": "Lyra",
     "role": "giver",
     "at": {
      "x": -5.5,
@@ -1417,8 +1417,8 @@ export const SEA_04: GenFloor = {
    },
    {
     "id": "rival",
-    "hero": "Marin",
-    "name": "Marin",
+    "hero": "Mortis",
+    "name": "Mortis",
     "role": "rival",
     "at": {
      "x": 34.19,
@@ -1430,8 +1430,8 @@ export const SEA_04: GenFloor = {
    },
    {
     "id": "trader",
-    "hero": "Opaline",
-    "name": "Opaline",
+    "hero": "Sirix",
+    "name": "Sirix",
     "role": "trader",
     "at": {
      "x": 5.5,
@@ -1451,7 +1451,7 @@ export const SEA_04: GenFloor = {
     "giver": "keeper",
     "main": true,
     "intro": [
-     "Three things. Clear the oyster market, where they gather. Then light the beacon so the boats know the harbour lives. Last, the key lies in the broken galley, and the Mate guards it: clear them, then bring the key to the winch by the camp."
+     "Three things. Clear the oyster market, where they gather. Then light the signal fire so the boats know the harbour lives. Last, the key lies in the broken galley, and the Mate guards it: clear them, then bring the key to the winch by the camp."
     ],
     "steps": [
      {
@@ -1463,7 +1463,7 @@ export const SEA_04: GenFloor = {
      },
      {
       "verb": "light",
-      "text": "Light the beacon",
+      "text": "Light the signal fire",
       "things": [
        {
         "id": "light",
@@ -1501,7 +1501,7 @@ export const SEA_04: GenFloor = {
      }
     ],
     "outro": [
-     "The chain falls. Mother of Wrecks’s door stands open, far in the north. Take your time, then go in."
+     "The chain falls. Mother of Wrecks’ door stands open, far in the north. Take your time, then go in."
     ],
     "reward": {
      "shards": 69,
@@ -1518,7 +1518,7 @@ export const SEA_04: GenFloor = {
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell The Pale Diver",
+      "text": "Fell the Pale Diver",
       "pack": "named"
      }
     ],
@@ -1677,7 +1677,7 @@ export const SEA_04: GenFloor = {
    {
     "id": "lair",
     "piece": "ruler",
-    "name": "Mother of Wrecks’s lair",
+    "name": "Mother of Wrecks’ lair",
     "at": {
      "x": 0,
      "z": -37.5
@@ -1691,7 +1691,7 @@ export const SEA_04: GenFloor = {
      "r": 0.5,
      "height": 3.6
     },
-    "locked": "A chain holds the lair shut. Wick has a quest about a key."
+    "locked": "A chain holds the lair shut. Nyx has a quest about a key."
    },
    {
     "id": "trial",
@@ -1721,7 +1721,7 @@ export const SEA_04: GenFloor = {
    {
     "id": "rival",
     "piece": "rival",
-    "name": "Marin’s arch",
+    "name": "Mortis’ arch",
     "at": {
      "x": 39.02,
      "z": -5.27
@@ -1731,7 +1731,7 @@ export const SEA_04: GenFloor = {
    }
   ],
   "rival": {
-   "hero": "Marin",
+   "hero": "Mortis",
    "goal": "the arch",
    "mode": "duel",
    "at": {
@@ -1740,7 +1740,7 @@ export const SEA_04: GenFloor = {
    },
    "boon": true,
    "lines": [
-    "Another climber. I am Marin. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
+    "Another climber. I am Mortis. Walk through the arch behind me and we see who is better. Win, and I fight beside you."
    ]
   }
  }

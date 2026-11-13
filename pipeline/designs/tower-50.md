@@ -64,7 +64,13 @@ Nothing is pushed or live until the user says so.
   (cleared both, the Sun Warden beaten in 92 and 99 s); floor 1 five of five. Pictures of all ten (shown to the user).
 - **Known:** the made floors share floor 1's skeleton (camp south, lair wall north, the town on the land side), so they differ by
   which places they have, where, and which side the sea is on; more variety (time of day, weather, other kinds of place) is open.
-  Only Lyra was run; a melee hero's runs are still to do.
+  People: nine different gatekeepers for floors 2 to 10 (none of the handmade floors'), no two floors with the same four people, a
 - **To try one:** on the tool page, `await _worldGen(n)` then `_world({ floor: n })` or `_worldRoute({ floor: n })` (world-tool.js).
 - **Next:** the renumbering (stage 3 above, all of it before any release), then chapters 2 to 5's generators (the Wood, the Sands,
   the Deep, the War) the same way, each with its crown (Ash and Ember, the Heart of Noon...).
+- **After the review (the same night):** gatekeepers and people no longer repeat (the hero list had wrapped after six floors:
+  floors 2 and 8 had the same people and gatekeeper); rulers' bodies rotate; the words read right ("Mother of Wrecks' door",
+  "the Bell Below" mid-sentence, the light named as the place is). Checked again with the route bot, one run each on floors 2 to 10:
+  Lyra 9 of 9, Bram (melee) 9 of 9 (floor 8's gatekeeper Mabel took him 7 tries); the crown lost at 5 % health comes back a loss
+  in 13 s (a life, not a hang), won at full health in 120 s (the Sun Warden's enrage is at 132 s); floor 1's perf print is still
+  `de2e692e` (8.2 ms).
