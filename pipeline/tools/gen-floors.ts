@@ -29,7 +29,7 @@ if (!wanted.length) {
 }
 
 for (const { n, attempt } of wanted) {
-  if (n < 2 || n > 9) throw new Error(`floor ${n}: the generator makes the sea's floors 2 to 9 for now`);
+  if (n < 2 || n > 10) throw new Error(`floor ${n}: the generator makes the sea's floors 2 to 10 for now (10 is the crown)`);
   const g = makeSeaFloor({ n, attempt });
   const nn = String(n).padStart(2, '0');
   const body = `// Made by pipeline/tools/gen-floors.ts: floor ${n} of the sea, seed ${g.seed}. Made again by that tool; a hand fix is kept only

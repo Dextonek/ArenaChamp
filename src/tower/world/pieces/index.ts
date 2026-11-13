@@ -1,5 +1,5 @@
 import type { GameApi } from '../../../runtime';
-import { PieceRun, bossFight } from './core';
+import { PieceRun, bossFight, crownFight } from './core';
 import { startGate, startRival, startTrial } from './duels';
 import { piecesOf } from './floors';
 import { buildRuler } from './ruler';
@@ -25,6 +25,11 @@ export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: 
   const run = new PieceRun(api, { ...input, floor }, titles[kind], done);
   switch (kind) {
     case 'ruler': {
+      if (def.crown) {
+        crownFight(run, def.crown, `world-crown-${floor}`);
+        run.hud?.say(def.ruler.name, def.ruler.line, 3);
+        break;
+      }
       const ruler = buildRuler(api, def.ruler, { hard: def.hard, boons: input.boons, ally: input.ally, run });
       bossFight(run, { def: ruler.def, link: ruler.link, seed: `world-ruler-${floor}`, tier: 1, boons: input.boons });
       ruler.begin();

@@ -33,8 +33,8 @@ Story, secrets and the Stewards (the watchers) are a separate decision the user 
 
 ## Order
 
-1. Floor 2 alone, end to end (generator, zone drawing from a layout, pieces), checked and pictured. **(now)**
-2. Floors 3 to 9, then floor 10 (the crown: a Raid boss played alone if `bossFight` takes one, else a great ruler; a party fight
+1. Floor 2 alone, end to end (generator, zone drawing from a layout, pieces), checked and pictured. **(done)**
+2. Floors 3 to 9, then floor 10 **(done, see below)** (the crown: a Raid boss played alone if `bossFight` takes one, else a great ruler; a party fight
    needs the server and the user's word).
 3. The renumbering, all at once and only before a release: today's floors 2 to 5 become 11, 21, 31, 41 by a fixed id (their pieces,
    their ruler's seed `world-ruler-<n>`, their tuning follow the id, not the number); the difficulty curve so floor 11 is not easier
@@ -43,3 +43,28 @@ Story, secrets and the Stewards (the watchers) are a separate decision the user 
 4. Chapters 2 to 5's made floors, one chapter at a time.
 
 Nothing is pushed or live until the user says so.
+
+## Where it stands (2026-11-13, night): chapter 1 made and checked, on the branch `tower-50`; NOT in the game's list, NOT live
+
+- **The generator** (`src/tower/world/gen/sea.ts`, run by `node pipeline/tools/gen-floors.ts 2-10`) makes floors 2 to 10 of the sea
+  from floor 1's parts; baked in `src/tower/world/floors/gen/sea-NN.ts`, turned into floors by `floors/gen/index.ts`. The sea zone is
+  drawn from a layout (`zone.ts` `SeaLook`, `buildSeaZone`; `land.ts` takes the sea's side and a seed); floor 1 is unchanged
+  (`_worldCheck` 6349 m2, 38 spots).
+- **Floor 10 is the crown:** the lair's door leads to the Sun Warden, a Raid boss played alone at tier 1 (`pieces/core.ts`
+  `crownFight`, `PiecesDef.crown`).
+- **What the checks found and the generator now does:** waystones at least 13 m from any pack (a fall wakes the hero at the last
+  one: one 10 m from an awake elite was a loop of falls); the two land-side packs at least 37 m apart (the cap of six on a spot);
+  the cave pack kept at five; roaming enemies only +1.5 % health and +1 % a hit a floor and the set pieces' `hard` 1 to 1.11 (the
+  first curve, +7 % and +4 %, had the bot falling at every pack by floor 9; the handmade floors keep their roaming enemies level and
+  grow in the set pieces); the main quest clears the wreck's guard before its key is carried; the made floors' packs leash at 24 m
+  (`PackDef.leash`: at 16 m a fight that drifted reset the pack while its units stood by the hero, and a ranged hero stepping back as
+  it shot woke it, lost it and woke it again); a rival's duel has its own height (`RivalDef.height`, not twice the floor's number).
+- **Checked:** type check; `_worldCheck` on every made floor (nothing unreachable, at most six units on a spot); the route bot (Lyra)
+  three runs on each of floors 2 to 9 (24 of 24 cleared, 0 to 2 falls, a restart now and then from floor 6) and two on floor 10
+  (cleared both, the Sun Warden beaten in 92 and 99 s); floor 1 five of five. Pictures of all ten (shown to the user).
+- **Known:** the made floors share floor 1's skeleton (camp south, lair wall north, the town on the land side), so they differ by
+  which places they have, where, and which side the sea is on; more variety (time of day, weather, other kinds of place) is open.
+  Only Lyra was run; a melee hero's runs are still to do.
+- **To try one:** on the tool page, `await _worldGen(n)` then `_world({ floor: n })` or `_worldRoute({ floor: n })` (world-tool.js).
+- **Next:** the renumbering (stage 3 above, all of it before any release), then chapters 2 to 5's generators (the Wood, the Sands,
+  the Deep, the War) the same way, each with its crown (Ash and Ember, the Heart of Noon...).

@@ -283,7 +283,9 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   ];
 
   // --- the set pieces: the ruler (the Drowned Captain's moves, another body and name), the gate, the trial, the rival ------------------
-  const [rulerName, rulerTitle] = RULERS[(n - 2) % RULERS.length];
+  // Floor 10 is the chapter's crown: behind the lair is a Raid boss, alone (pieces/core.ts `crownFight`); the first is the Sun Warden.
+  const crown = n === 10 ? ('sun' as const) : undefined;
+  const [rulerName, rulerTitle] = crown ? ['The Sun Warden', 'Keeper of the Sun Court'] : RULERS[(n - 2) % RULERS.length];
   const extra: [string, MoveSpec] = pick([
     ['spray', { use: 'stones', name: 'Falling Spray', share: 0.08, count: 3, cooldown: 6 }],
     ['whirl', { use: 'spokes', name: 'The Whirlpool', share: 0.09, cooldown: 14 }],
@@ -308,7 +310,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     ],
     sentries: { look: 'cannon', spots: [[68, 9.6], [292, 9.6]], hp: 150, again: 22, fall: { stagger: 55 }, from: 1 },
     surge: { safe: { decks: [{ x: 0, z: 7, r: 3.7 }, { x: 0, z: 14.6, r: 2.3 }, { x: 0, z: -0.6, r: 2.3 }] }, burn: 0.06, slow: 0.35, name: 'The tide', look: 'sea' },
-    line: 'Stand on the deck when the tide comes in',
+    line: crown ? 'A Raid boss, alone: read its sun and keep moving' : 'Stand on the deck when the tide comes in',
   };
   const twists = ['swift', 'giant', 'warded'] as const;
   const pieces: PiecesDef = {
@@ -316,6 +318,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     ruler,
     gate: { hero: gateHero, arena: 'harbour', level: 3, twist: { kind: 'shift', name: 'The tide comes in', early: 29 } },
     trial: { kind: (['gauntlet', 'break', 'hold', 'horde'] as const)[n % 4], height: n < 6 ? 2 : 3 },
+    ...(crown ? { crown } : {}),
     rival: { hero: rivalHero, twist: twists[n % 3], line: `${rivalHero} waits by the arch`, height: 2 + Math.floor((n - 1) / 4) },
   };
 
@@ -361,7 +364,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
     g2,
   ];
   const doors: (Omit<DoorDef, 'at'> & { at: V })[] = [
-    { id: 'lair', piece: 'ruler', name: `${rulerName}’s lair`, at: lairDoor, r: 2.2, wall: { ax: -3.4, az: -41, bx: 3.4, bz: -41, r: 0.5, height: 3.6 }, locked: `A chain holds the lair shut. ${keeperHero} has a quest about a key.` },
+    { id: 'lair', piece: 'ruler', name: crown ? 'The Sun Court' : `${rulerName}’s lair`, at: lairDoor, r: 2.2, wall: { ax: -3.4, az: -41, bx: 3.4, bz: -41, r: 0.5, height: 3.6 }, locked: `A chain holds the lair shut. ${keeperHero} has a quest about a key.` },
     { id: 'trial', piece: 'trial', name: pick(['The Flooded Vault', 'The Salt Cellar', 'The Drowned Chapel']), at: trial, r: 2, locked: '' },
     { id: 'gate', piece: 'gate', name: 'The gate up', at: gate, r: 2.2, needs: { won: 'ruler' }, locked: `The gate is sealed. Its warden answers only once ${rulerName} has fallen.` },
     { id: 'rival', piece: 'rival', name: `${rivalHero}’s arch`, at: rivalDoor, r: 2, locked: '' },
@@ -407,7 +410,7 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
   return {
     n, chapter: 'sea', seed, look, pieces,
     floor: {
-      n, id: `sea-${nn}`, name: FLOOR_NAMES[(n - 2) % FLOOR_NAMES.length], blurb: BLURBS[(n - 2) % BLURBS.length], ring: R,
+      n, id: `sea-${nn}`, name: crown ? 'The Crown of the Sea' : FLOOR_NAMES[(n - 2) % FLOOR_NAMES.length], blurb: crown ? 'Where the sea ends, a court of the sun keeps the way up.' : BLURBS[(n - 2) % BLURBS.length], ring: R,
       start: X({ x: 0, z: 39.5 }), camp: X({ x: 0, z: 36 }), places: placeDefs, par: 780 + 20 * (n - 1),
       shop: { heal: 30 + 2 * (n - 1), boon: 55 + 3 * (n - 1), life: 80 + 4 * (n - 1), hint: 15 },
       law: {

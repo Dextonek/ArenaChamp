@@ -1,3 +1,5 @@
+import { BOSSES } from '../../../raid/bosses';
+import { LocalLink } from '../../../raid/link';
 import type { RunUpgrades } from '../../../raid/upgrades';
 import type { BossDef } from '../../../raid/types';
 import type { GameApi } from '../../../runtime';
@@ -104,6 +106,27 @@ export class PieceRun implements PieceHandle {
   report(): PieceReport {
     return this.stats;
   }
+}
+
+/**
+ * A crown floor's boss (every tenth floor, pipeline/designs/tower-50.md): a Raid boss, alone, on its own ground, at the first tier, as
+ * the solo Raid plays it (`raid/run.ts`: a `LocalLink`), with the climber's health and boons. A fall ends the piece.
+ */
+export function crownFight(run: PieceRun, id: string, seed: string) {
+  const { api, input } = run, def = BOSSES[id];
+  if (!def) throw new Error(`no raid boss ${id}`);
+  const link = new LocalLink(def, 1);
+  if (api.duel.on) api.duel.stop();
+  api.setKit(input.hero);
+  api.setHeroMode(true);
+  api.duel.holdStart = false;
+  api.duel.startBoss({ def, link, seed, mode: input.mode, tier: 1, upgrades: input.boons, card: () => null });
+  setHealth(api, input.hp * api.duel.heroMax);
+  run.watch((result) => {
+    const d = api.duel;
+    const won = result === 'win' && d.heroHp > 0;
+    return { won, hp: won ? d.heroHp / Math.max(1, d.heroMax) : 0, seconds: d.result?.seconds ?? 0 };
+  });
 }
 
 /** A fight on the duel's boss path with this hero, its boons and its health: what `TowerRun.fight` does, with no climb round it. */

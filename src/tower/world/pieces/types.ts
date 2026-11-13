@@ -156,4 +156,9 @@ export interface PiecesDef {
   trial: TrialDef;
   /** Floors 1 and 4 are races the zone runs itself. */
   rival?: RivalDef;
+  /**
+   * A crown floor (every tenth, pipeline/designs/tower-50.md): behind the lair's door is this Raid boss (`raid/bosses.ts`), played alone
+   * at the first tier, instead of the ruler (whose name and line still say who it is).
+   */
+  crown?: 'sun' | 'ash' | 'heart';
 }
