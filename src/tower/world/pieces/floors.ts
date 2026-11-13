@@ -38,7 +38,7 @@ export const PIECES: PiecesDef[] = [
   {
     floor: 2, hard: 1.12,
     ruler: {
-      name: 'The Elder Root', title: 'The heart of the wood', stand: 'Hank', tint: '#4f8a3a', scale: 2.7, hp: 3200, speed: 0, stagger: { max: 100, kneel: 5 },
+      name: 'The Elder Root', title: 'The heart of the wood', stand: 'Hank', tint: '#4f8a3a', scale: 2.7, hp: 4000, speed: 0, stagger: { max: 100, kneel: 5 },
       room: 'glade',
       moves: {
         thorns: { use: 'volley', name: 'Thorn Volley', share: 0.085, cooldown: 4.5 },
