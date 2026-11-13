@@ -2,16 +2,26 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds are **live** and marked as the stable version `stable-2026-11-13` (first section: *Stable versions*)._
 
-## The Climb to 50 floors (2026-11-13, night): chapter 1 (floors 1 to 10) made and checked on the branch `tower-50`; NOT merged, NOT live
+## The Climb to 50 floors (2026-11-14): chapter 1 (floors 1 to 10) made and checked, and the renumbering done; on branches, NOT merged, NOT live
 
 - The user: "we want to make 100 floors", then "okay lets make it up to 50 floors": five chapters of ten (Sea, Wood, Sands, Deep,
   War); today's five floors are the chapters' handmade floors; eight floors a chapter made by a generator; every tenth a crown (a
   Raid boss, alone). The plan and where it stands: [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md).
 - **Done:** the sea's generator and floors 2 to 10 baked and checked (route bot 24 of 24 on floors 2 to 9, floor 10's Sun Warden
-  beaten twice). Work is on the local branch `tower-50` (from `feat/particle-editor` at the floor 1 look); nothing of it is in the
-  game's list of floors yet.
-- **Not done:** the renumbering (today's floors 2 to 5 become 11, 21, 31, 41; saves, the menu, the curve); chapters 2 to 5; the story,
-  secrets and the Stewards (the user has not chosen yet); a melee hero's bot runs.
+  beaten twice). Work is on the local branch `tower-50` (from `feat/particle-editor` at the floor 1 look); the renumbering (below,
+  on `t3/climb-50-renumbering`, from `tower-50`) puts them in the game's list of floors.
+- **The renumbering (stage 3), done 2026-11-14 on the branch `t3/climb-50-renumbering` (from `tower-50`); NOT merged, NOT live:**
+  the sea's floors 2 to 10 are in the Climb's list; the Wood, Canyon, Deep and Banners are floors 11, 21, 31 and 41 and play the same
+  fights (they keep their old number as `tunedAs` for their seeds and roaming enemies; the perf tool's `world-1` to `world-5` print
+  the same before and after); "next floor" is the next one that exists (after 11 comes 21 until 12 is made); the Climb screen shows 50
+  floors in five chapters (built, locked, "soon", a crown on every tenth); a browser's saves move once (version key
+  `tower.world.version`: old 2 to 5 -> 11, 21, 31, 41 for stars, times, a run in progress and the floor reached; old 6 -> 42); a News
+  item (`live: false`). Checked: type check, build, `npm run test:server`, the save test in a real browser
+  (`pipeline/tools/climb-saves/`, four runs, all ok), floors begun and continued from the menu, the route bot cleared floor 11.
+  Pictures: `docs/tower/climb50/`. Details: [tower-50.md](../pipeline/designs/tower-50.md), *The renumbering*.
+- **Not done:** chapters 2 to 5; the story, secrets and the Stewards (the user has not chosen yet). Known: floor 10's roaming packs are
+  about 1.95 times floor 1's health, the Wood's (11) 1.08 (the sea's made floors get the engine's growth by number on top of their own);
+  left as it was.
 - **New scope (2026-11-14):** all 50 floors, five times the ground in any shape (not a circle), the five handmade floors grown too,
   new models for people, enemies and rulers (a sheet for the user's yes first), agents working together. The plan:
   [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *The new scope*.

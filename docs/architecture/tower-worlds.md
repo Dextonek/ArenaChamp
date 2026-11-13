@@ -49,6 +49,14 @@ the board:
 | `tower.world.sigils` | The boons kept as sigils: every later climb begins with them |
 | `tower.world.stars` | Per floor, the best of each of the four stars |
 | `tower.world.times` | Per floor, the best time (s) |
+| `tower.world.version` | The saves' numbering: 2 since the Climb has 50 floors. A browser without it had the five-floor Climb: its saves are moved once (below) |
+
+**The renumbering (2026-11-14).** The Climb had five floors, 1 to 5; it has 50 in five chapters of ten, and the handmade floors 2 to 5
+are 11, 21, 31 and 41. `migrateSaves` (`state.ts`) runs before the first read or write of a `tower.world.` key, once (the version key):
+the stars and best times of old floors 2 to 5 go to 11, 21, 31, 41; a floor in progress there continues on the new number; the floor
+a climb may begin on moves likewise (old 3 is 21, and every floor below it that exists is open); who had cleared all five (the floor
+reached was 6) may begin 42, as clearing 41 now writes. Tested in a real browser with the five-floor saves and two reloads:
+`pipeline/tools/climb-saves/` (its README).
 
 A fall in the zone takes a life and stands the hero up at the last waystone (else the camp) with half its health. With none left the
 floor begins again from its camp with what the hero arrived with.
@@ -58,20 +66,32 @@ floor begins again from its camp with what the hero arrived with.
 A floor is a `FloorDef` (see `def.ts`): its arena and cover, start and camp, places, law, enemy kinds, packs, people, quests, caches,
 waystones, the lore stone, doors, the rival, the par time and the trader's wares.
 
-| Floor | File | Law | Main quest's verbs | Rival | Ruler, gatekeeper |
+The Climb is 50 floors in five chapters of ten (pipeline/designs/tower-50.md): The Sea 1 to 10, The Wood 11 to 20, The Sands 21 to
+30, The Deep 31 to 40, The War 41 to 50. A chapter's first floor is handmade (below), floors 2 to 9 of it are made by a generator and
+baked (`floors/gen/`, `GEN_FLOORS`), the tenth is a crown (a Raid boss, alone). Made so far: the sea's 2 to 10. `FLOORS`
+(`floors/index.ts`) lists the floors that exist; `floorAbove(n)` is the next one that does (after 10 comes 11, after 11 comes 21 until
+12 is made), and a floor that is not made is shown as coming and cannot be begun.
+
+| Floor (was) | File | Law | Main quest's verbs | Rival | Ruler, gatekeeper |
 |---|---|---|---|---|---|
 | 1 The Drowned Harbour | `floors/harbour.ts` | `tide` | `fell`, `light`, `carry` (the key), `open` | Zephyr, a race | The Drowned Captain, Marin |
-| 2 The Walking Wood | `floors/wood.ts` | `paths` | `lead` x3 (wisps), `fell` (three roots), `open` | Nyx, a duel | The Elder Root, Fenna |
-| 3 The Storm Canyon | `floors/canyon.ts` | `storm` | `carry` x3 (water), `lead` (the caravan), `fell`, `open` | Vesper, a duel | The Scarab Colossus, Sefu |
-| 4 The Lightless Deep | `floors/deep.ts` | `dark` | `carry` and `light` x3 (great shards, crystals), `open` | Tempo, a race | The Prism Mother, Opaline |
-| 5 The Field of Banners | `floors/banners.ts` | `sides` | `reach` x3 (standards), `hold` (the hill), `fell`, `open` | Brannoc, a duel | The Last Marshal, Oblivion |
+| 11 (2) The Walking Wood | `floors/wood.ts` | `paths` | `lead` x3 (wisps), `fell` (three roots), `open` | Nyx, a duel | The Elder Root, Fenna |
+| 21 (3) The Storm Canyon | `floors/canyon.ts` | `storm` | `carry` x3 (water), `lead` (the caravan), `fell`, `open` | Vesper, a duel | The Scarab Colossus, Sefu |
+| 31 (4) The Lightless Deep | `floors/deep.ts` | `dark` | `carry` and `light` x3 (great shards, crystals), `open` | Tempo, a race | The Prism Mother, Opaline |
+| 41 (5) The Field of Banners | `floors/banners.ts` | `sides` | `reach` x3 (standards), `hold` (the hill), `fell`, `open` | Brannoc, a duel | The Last Marshal, Oblivion |
+
+The four that moved keep the number they were tuned at as `tunedAs` (on the `FloorDef` and on its `PiecesDef`): their roaming
+enemies' numbers (`floorNumbers`), the ruler's, trial's and rival's seeds (`world-ruler-2`...) and the rivals' heights (4, 6, 10)
+follow it, so their fights are the ones they were (the perf tool's `world-1` to `world-5` print the same before and after).
 
 To add a floor:
 
-1. Write `floors/<name>.ts` as a `FloorDef` (copy the harbour's shape) and add it to `FLOORS` in `floors/index.ts`. The menu's tile, the
-   "Climb to floor N" button and the stars and times follow from the registry.
-2. The set pieces for floor N are data in `pieces/floors.ts` (`PIECES`): the ruler, the gate's gatekeeper and arena, the trial's kind,
-   the rival's duel (floors 2, 3 and 5; floors 1 and 4 have a race the zone runs).
+1. Write `floors/<name>.ts` as a `FloorDef` (copy the harbour's shape) and add it to `FLOORS` in `floors/index.ts` at its number (a made
+   floor: bake it with `pipeline/tools/gen-floors.ts`; `gen/list.ts` puts it in `GEN_FLOORS`, and `FLOORS` takes it from there). The
+   menu's tile, the "Climb to floor N" button and the stars and times follow from the registry.
+2. The set pieces for floor N are data in `pieces/floors.ts` (`PIECES`, found by `piecesOf(n)` by their `floor`; a made floor's are
+   baked with it): the ruler, the gate's gatekeeper and arena, the trial's kind, the rival's duel (floors 11, 21 and 41; floors 1 and
+   31 have a race the zone runs).
 3. Run `_worldRoute({ floor: N, hero })` (below) and look at the checkpoints that are `stuck`.
 
 No code of the loop names a floor.
@@ -98,10 +118,10 @@ Each floor plays one. The numbers and what was measured are in the floors' notes
 | Law | Floor | What it does |
 |---|---|---|
 | `tide` | 1 | The low ground floods on a clock: 2 % of max health a second and a 0.6 walk; warned 7 s before |
-| `paths` | 2 | Every 120 s three of six root barriers sink and three rise, warned 8 s before. Whoever stands where one rises is set down beside it; in both states every spot of the floor's data is reachable (`_worldCheck`) |
-| `storm` | 3 | Every 90 s a band of sand 20 m deep crosses north to south for 40 s, warned 8 s before: a few steps of sight and 4 % of max health a second, unless a piece of cover stands within 7 m to the north (the lee). Dust wraiths come only out of the band |
-| `dark` | 4 | A page layer (a quarter-size canvas under the HUD) dark all over, with holes at the hero (8 m; 10.8 m carrying a shard), the camp's lamps, touched waystones and woken crystals (a hall, for good). Lurkers wake from 15 m when the hero stands outside every light |
-| `sides` | 5 | A card at the start: take a banner. That army's packs are gone and four of its soldiers walk with the hero (hero-side units, replaced 18 s after one falls); the other army's packs hunt. The choice is in the run |
+| `paths` | 11 | Every 120 s three of six root barriers sink and three rise, warned 8 s before. Whoever stands where one rises is set down beside it; in both states every spot of the floor's data is reachable (`_worldCheck`) |
+| `storm` | 21 | Every 90 s a band of sand 20 m deep crosses north to south for 40 s, warned 8 s before: a few steps of sight and 4 % of max health a second, unless a piece of cover stands within 7 m to the north (the lee). Dust wraiths come only out of the band |
+| `dark` | 31 | A page layer (a quarter-size canvas under the HUD) dark all over, with holes at the hero (8 m; 10.8 m carrying a shard), the camp's lamps, touched waystones and woken crystals (a hall, for good). Lurkers wake from 15 m when the hero stands outside every light |
+| `sides` | 41 | A card at the start: take a banner. That army's packs are gone and four of its soldiers walk with the hero (hero-side units, replaced 18 s after one falls); the other army's packs hunt. The choice is in the run |
 
 `lawOf` (a WeakMap by zone) lets other parts ask the law (the caravan waits out a storm in a lee).
 
@@ -132,14 +152,18 @@ words ("Won", "Beaten") and never a rematch (`pieces/core.ts`, marked `TOWER-HOO
 
 Gate won: the clock stops, the packs sleep, and the result card opens over the zone: four stars (cleared; every quest done; no life lost;
 under the par), the time, shards and falls, one boon to keep as a sigil (the first is picked; a tap changes it, "None" keeps nothing), and
-two buttons: **Climb to floor N+1** (only when `FLOORS[N+1]` exists; otherwise the line "The way up is still being built" and no button)
-and **Back to the Tower**.
+two buttons: **Climb to floor N** (the next floor that exists, `floorAbove`; after 11 that is 21 until 12 is made; past the last one the
+line "The way up is still being built" and no button) and **Back to the Tower**. The floor a later climb may begin on is set to the
+same next floor.
 
 ## The menu
 
-The Tower screen has two big tabs, as the Play screen has. **Climb** is `menu.ts`'s `climbPanel`: a tile per floor (name, law, stars, best
-time; locked until reached; floors not built say so), the sigils kept, the hero picker, and the bar: Start floor N, or Continue floor N
-(with the saved hero) and Begin floor N again. **Trials** is the weekly Tower exactly as it was, headed "Trials". The tab is kept in
+The Tower screen has two big tabs, as the Play screen has. **Climb** is `menu.ts`'s `climbPanel`: the picked floor's chapter, name, law,
+stars, best time and blurb; then the five chapters, each ten small number tiles (ten to a row, five on a phone, as the Trials tab's
+floors): open when reached (stars under the number once cleared, "new" before), a padlock until reached, dashed and "soon" while not
+made, a small crown on every tenth. Every floor that exists at or below the floor reached is open. Then the sigils kept, the hero
+picker, and the bar: Start floor N, or Continue floor N (with the saved hero) and Begin floor N again. Pictures:
+`docs/tower/climb50/` (`climb-fresh-*`, `climb-migrated-*`). **Trials** is the weekly Tower exactly as it was, headed "Trials". The tab is kept in
 `tower.tab`. Works without an account, at desktop and at 375 px. `WorldClimb` runs a climb on the game page (`game.world`): the page's own
 loop steps it, a Leave button saves the floor and goes back to the Tower screen.
 
@@ -149,7 +173,8 @@ All in `pipeline/tools/world-tool.js`, pasted into the tool page or the game pag
 
 | Call | What |
 |---|---|
-| `_world({ floor, hero, person })` | Starts a floor; manual (you step time) or `person: true` (the page's own loop) |
+| `_world({ floor, hero, person })` | Starts a floor (any that exists: 1 to 10, 11, 21, 31, 41); manual (you step time) or `person: true` (the page's own loop) |
+| `_worldGen(n)` | Says what floor `n` is (its id, name, ruler, gatekeeper). It used to put a made floor in the list by hand; they are in it now |
 | `_worldRoute({ floor, hero })` | The bot plays a floor camp to result card through the real pieces; returns time, falls, stars, checkpoints |
 | `_worldSix(heroes, reps)` | The route for several heroes in the background; `_worldSix.result()` |
 | `_worldVerbs()` | Every verb and every law once in a scratch zone |
@@ -164,6 +189,8 @@ On the game page the tool uses `game.api` and hides the menu while it runs. The 
 takes two to three times a person's): `noSprint: true` turns that off.
 
 ## Limits
+
+Below, written before the renumbering, the handmade floors keep their old numbers: floor 2 is now 11, 3 is 21, 4 is 31, 5 is 41.
 
 - **No person has played any of it.** Every number comes from the route bot (the game's autopilot with a route) and from `_pieceRun`.
   The autopilot plays some kits badly (Vesper does not clear floor 5, and floor 4 only after restarts).

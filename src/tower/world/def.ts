@@ -139,7 +139,14 @@ export interface RivalDef {
 }
 
 export interface FloorDef {
+  /** Its number in the Climb (1 to 50; pipeline/designs/tower-50.md). */
   n: number;
+  /**
+   * The number it was tuned at, when it differs from `n`: the four handmade floors that moved when the Climb became 50 floors (the
+   * Wood was floor 2 and is 11, the Canyon 3 and 21, the Deep 4 and 31, the Banners 5 and 41). Its roaming enemies' numbers
+   * (`floorNumbers`) follow it, so its fights play as they did; its set pieces' seeds follow `PiecesDef.tunedAs` the same way.
+   */
+  tunedAs?: number;
   id: string;
   name: string;
   blurb: string;

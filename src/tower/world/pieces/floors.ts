@@ -1,8 +1,11 @@
+import { GEN_FLOORS } from '../floors/gen';
 import type { PiecesDef } from './types';
 
 /**
- * The five floors' set pieces as data (pipeline/designs/tower-worlds-pieces.md): for each, its ruler, its gatekeeper's duel, its trial
- * room and its rival. A ruler is only the moves of the plan's "Ruler moves" list (`ruler.ts` builds each `use` from the Tower's
+ * The five handmade floors' set pieces as data (pipeline/designs/tower-worlds-pieces.md): for each, its ruler, its gatekeeper's duel,
+ * its trial room and its rival. They were floors 1 to 5 and are 1, 11, 21, 31 and 41 since the Climb became 50 floors: `tunedAs` keeps
+ * the old number for their fights' seeds, and the rivals' `height` is the one they had (twice the old number). The made floors' pieces
+ * are baked with them (`floors/gen/`). A ruler is only the moves of the plan's "Ruler moves" list (`ruler.ts` builds each `use` from the Tower's
  * moves), on a hero's model for now. `hard` multiplies what a hit costs, floor by floor; a ruler's health is its own number.
  */
 
@@ -36,7 +39,7 @@ export const PIECES: PiecesDef[] = [
     trial: { kind: 'gauntlet', height: 2 },
   },
   {
-    floor: 2, hard: 1.12,
+    floor: 11, tunedAs: 2, hard: 1.12,
     ruler: {
       name: 'The Elder Root', title: 'The heart of the wood', stand: 'Hank', tint: '#4f8a3a', scale: 2.7, hp: 4000, speed: 0, stagger: { max: 100, kneel: 5 },
       room: 'glade',
@@ -56,10 +59,10 @@ export const PIECES: PiecesDef[] = [
     },
     gate: { hero: 'Fenna', arena: 'glade', level: 4, twist: { kind: 'shift', name: 'Roots rise as cover', early: 29 } },
     trial: { kind: 'break', height: 4 },
-    rival: { hero: 'Nyx', twist: 'swift', line: 'Nyx waits in the thicket' },
+    rival: { hero: 'Nyx', twist: 'swift', line: 'Nyx waits in the thicket', height: 4 },
   },
   {
-    floor: 3, hard: 1.25,
+    floor: 21, tunedAs: 3, hard: 1.25,
     ruler: {
       name: 'The Scarab Colossus', title: 'Under the sand', stand: 'Sirix', tint: '#c0904a', scale: 2.5, hp: 3400, speed: 2.1, stagger: { max: 100, kneel: 5 },
       room: 'canyon',
@@ -80,10 +83,10 @@ export const PIECES: PiecesDef[] = [
     },
     gate: { hero: 'Sefu', arena: 'canyon', level: 3, twist: { kind: 'hazard', name: 'A storm crosses' } },
     trial: { kind: 'hold', height: 6 },
-    rival: { hero: 'Vesper', twist: 'giant', line: 'Vesper holds the bridge' },
+    rival: { hero: 'Vesper', twist: 'giant', line: 'Vesper holds the bridge', height: 6 },
   },
   {
-    floor: 4, hard: 1.4,
+    floor: 31, tunedAs: 4, hard: 1.4,
     ruler: {
       name: 'The Prism Mother', title: 'Beams in the dark', stand: 'Auriel', tint: '#7a62c8', scale: 2.6, hp: 3600, speed: 0, stagger: { max: 100, kneel: 5 },
       room: 'cavern',
@@ -106,7 +109,7 @@ export const PIECES: PiecesDef[] = [
     trial: { kind: 'gauntlet', height: 8, twist: 'dark' },
   },
   {
-    floor: 5, hard: 1.55,
+    floor: 41, tunedAs: 5, hard: 1.55,
     ruler: {
       name: 'The Last Marshal', title: 'The guard of both banners', stand: 'Zephyr', tint: '#8a8a96', scale: 2.4, hp: 3800, speed: 2.3, stagger: { max: 100, kneel: 5 },
       room: 'battlefield',
@@ -126,9 +129,9 @@ export const PIECES: PiecesDef[] = [
     },
     gate: { hero: 'Oblivion', arena: 'battlefield', level: 4, twist: { kind: 'hazard', name: 'Arrows fall on a line' } },
     trial: { kind: 'horde', height: 10 },
-    rival: { hero: 'Brannoc', twist: 'warded', line: 'Brannoc stands between the lines' },
+    rival: { hero: 'Brannoc', twist: 'warded', line: 'Brannoc stands between the lines', height: 10 },
   },
 ];
 
-/** The set pieces of floor `n` (1..5). */
-export const piecesOf = (n: number) => PIECES[n - 1];
+/** The set pieces of floor `n`: a handmade floor's, else a made floor's (undefined for a floor that does not exist). */
+export const piecesOf = (n: number): PiecesDef | undefined => PIECES.find((p) => p.floor === n) ?? GEN_FLOORS[n]?.pieces;

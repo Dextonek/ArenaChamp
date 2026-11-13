@@ -3,7 +3,7 @@ import type { FloorDef, Spot } from '../def';
 import { PLACES, ZONE_COVER, ZONE_R, ZONE_START, canyonZoneArena } from '../zoneCanyon';
 
 /**
- * Floor 3, The Storm Canyon, as data (pipeline/designs/tower-worlds.md, "The five floors"). The zone's drawing and cover are
+ * Floor 21 (floor 3 until the Climb became 50 floors), The Storm Canyon, as data (pipeline/designs/tower-worlds.md, "The five floors"). The zone's drawing and cover are
  * `../zoneCanyon.ts`; this file says who lives in it, what is asked, and how the storm crosses. Offsets (dx, dz) are from the middle of the ring.
  */
 const at = (dx: number, dz: number): Spot => ({ x: RING.x + dx, z: RING.z + dz });
@@ -12,7 +12,8 @@ const spring = at(7, 36.4);
 const water = (n: string, to: Spot, name: string) => ({ verb: 'carry' as const, text: `Carry water from the camp spring to the ${name}`, item: 'water', itemName: 'A jar of water', toName: `the ${name}`, look: 'jar' as const, plain: true, from: spring, to, r: 2.6 });
 
 export const canyon: FloorDef = {
-  n: 3,
+  n: 21,
+  tunedAs: 3,
   id: 'canyon',
   name: 'The Storm Canyon',
   blurb: 'A dry road between red walls, and a wind that crosses it.',

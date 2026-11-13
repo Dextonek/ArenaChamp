@@ -3,7 +3,7 @@ import type { EnemySpec, FloorDef, PackDef, Spot } from '../def';
 import { BANNERS_COVER, BANNERS_R, BANNER_PLACES, SPOTS, bannersArena } from '../f45/banners-zone';
 
 /**
- * Floor 5, The Field of Banners, as data (pipeline/designs/tower-worlds.md, "The five floors"; the mapping on the closed vocabulary is in
+ * Floor 41 (floor 5 until the Climb became 50 floors), The Field of Banners, as data (pipeline/designs/tower-worlds.md, "The five floors"; the mapping on the closed vocabulary is in
  * tower-worlds-build.md). The zone's drawing and cover are `../f45/banners-zone.ts`; the law (`sides`) is `../f45/laws.ts`. Two ghost armies,
  * crimson (`r`) and azure (`b`): each site has a pack of each, and the banner the hero takes in the camp decides which of the two is gone and
  * which hunts. The siege line's guards, the Banner Bearer and the Deserter Knight belong to neither army, so a quest can ask for them whichever
@@ -28,7 +28,8 @@ const site = (id: string, spot: Spot, mix: Record<string, number>): PackDef[] =>
   (['r', 'b'] as const).map((a) => ({ id: `${id}-${a}`, at: spot, mix: Object.entries(mix).map(([k, n]) => ({ kind: `${k}-${a}`, n })) }));
 
 export const banners: FloorDef = {
-  n: 5,
+  n: 41,
+  tunedAs: 5,
   id: 'banners',
   name: 'The Field of Banners',
   blurb: 'Two ghost armies still fight here. Take a side.',

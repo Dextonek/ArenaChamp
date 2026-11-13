@@ -39,12 +39,13 @@ Story, secrets and the Stewards (the watchers) are a separate decision the user 
 3. The renumbering, all at once and only before a release: today's floors 2 to 5 become 11, 21, 31, 41 by a fixed id (their pieces,
    their ruler's seed `world-ruler-<n>`, their tuning follow the id, not the number); the difficulty curve so floor 11 is not easier
    than floor 10; the saved floor reached, stars, times and a mid-floor run migrated (tested with old storage); "next floor" is the
-   next one that exists; the menu shows the chapters; the perf scenes and the words "Five floors" follow.
+   next one that exists; the menu shows the chapters; the perf scenes and the words "Five floors" follow. **(done 2026-11-14, see
+   *The renumbering* below; the curve was left as it was: the Wood's set pieces are 1.12 against floor 10's 1.11)**
 4. Chapters 2 to 5's made floors, one chapter at a time.
 
 Nothing is pushed or live until the user says so.
 
-## Where it stands (2026-11-13, night): chapter 1 made and checked, on the branch `tower-50`; NOT in the game's list, NOT live
+## Where it stands (2026-11-13, night): chapter 1 made and checked, on the branch `tower-50`; NOT live (in the game's list since the renumbering, below)
 
 - **The generator** (`src/tower/world/gen/sea.ts`, run by `node pipeline/tools/gen-floors.ts 2-10`) makes floors 2 to 10 of the sea
   from floor 1's parts; baked in `src/tower/world/floors/gen/sea-NN.ts`, turned into floors by `floors/gen/index.ts`. The sea zone is
@@ -65,8 +66,9 @@ Nothing is pushed or live until the user says so.
 - **Known:** the made floors share floor 1's skeleton (camp south, lair wall north, the town on the land side), so they differ by
   which places they have, where, and which side the sea is on; more variety (time of day, weather, other kinds of place) is open.
   People: nine different gatekeepers for floors 2 to 10 (none of the handmade floors'), no two floors with the same four people.
-- **To try one:** on the tool page, `await _worldGen(n)` then `_world({ floor: n })` or `_worldRoute({ floor: n })` (world-tool.js).
-- **Next:** the renumbering (stage 3 above, all of it before any release), then chapters 2 to 5's generators (the Wood, the Sands,
+- **To try one:** on the tool page, `_world({ floor: n })` or `_worldRoute({ floor: n })` (world-tool.js): since the renumbering every
+  made floor is in the Climb's list, so `_worldGen(n)` only says what floor `n` is.
+- **Next:** the renumbering (stage 3 above; done 2026-11-14, *The renumbering* below), then chapters 2 to 5's generators (the Wood, the Sands,
   the Deep, the War) the same way, each with its crown (Ash and Ember, the Heart of Noon...).
 - **After the review (the same night):** gatekeepers and people no longer repeat (the hero list had wrapped after six floors:
   floors 2 and 8 had the same people and gatekeeper); rulers' bodies rotate; the words read right ("Mother of Wrecks' door",
@@ -101,3 +103,27 @@ today's area, not a circle.
   `gen/sea.ts`, then one chapter each (the Wood, the Sands, the Deep, the War), each to the same bar: `_worldCheck` clean, the route
   bot with a ranged and a melee hero, pictures.
 - **Not in this:** the story, secrets and watchers (the user has not chosen); nothing is pushed or live until the user says so.
+
+## The renumbering (stage 3, 2026-11-14): done on the branch `t3/climb-50-renumbering`; NOT merged, NOT live
+
+- **The list:** `FLOORS` (`src/tower/world/floors/index.ts`) has 1 (the harbour), 2 to 10 (the sea's made floors, from `GEN_FLOORS`),
+  11 the Wood, 21 the Canyon, 31 the Deep, 41 the Banners; with `CHAPTERS`, `isCrown`, `floorAbove` (the next floor that exists: after
+  10 comes 11, after 11 comes 21 until 12 is made) and `floorAtOrBelow`. `piecesOf(n)` finds a handmade floor's pieces by their
+  `floor` and a made floor's from `GEN_FLOORS`. The result card's "Climb to floor N" and the floor a later climb may begin on both
+  follow `floorAbove`; a floor asked for that does not exist gives the highest one below it.
+- **The same fights:** the four that moved carry `tunedAs` (2 to 5) on their `FloorDef` and `PiecesDef`: their roaming enemies'
+  numbers (`floorNumbers`, which grow with the floor's number: at 11 the Wood's packs would have had 1.98 times their health, not 1.08),
+  the ruler's, trial's and rival's seeds (`world-ruler-2`, `world-trial-2`, `world-rival-2`...) follow it, and the rivals have their old
+  heights written out (4, 6, 10). The perf tool's `world-1` to `world-5` (now floors 1, 11, 21, 31, 41) print the same fights before and
+  after (desktop, 900 frames: b75a6f15, b498f398, a824a7c4, e3ab55a9, fe442cf5).
+- **Saves:** `migrateSaves` (`state.ts`), once, by the version key `tower.world.version` (2): old floors 2 to 5 -> 11, 21, 31, 41 for the
+  stars, the best times and a run in progress; the floor reached likewise (old 6, all five cleared, -> 42). Tested in a real browser,
+  four runs on one kept profile: `pipeline/tools/climb-saves/` (its README).
+- **The menu:** the picked floor's line, then five chapters of ten small number tiles (ten to a row, five on a phone), open / padlock /
+  dashed "soon" / a crown on every tenth. Pictures: `docs/tower/climb50/`.
+- **Checked:** type check, build, `npm run test:server`; the four save runs all ok, no page errors; floor 1 begun from a fresh menu,
+  the Storm Canyon continued from a migrated save (its quest step, shards, lives and clock), floor 2 begun from the menu; the route bot
+  (Lyra) cleared floor 11 (578 game seconds, the gate lost once, 3 stars of 4).
+- **Known:** the made sea floors' roaming enemies get `floorNumbers(n)` on top of the generator's own +1.5 % a floor, so floor 10's
+  packs have about 1.95 times floor 1's health and the Wood's (floor 11, tuned as 2) 1.08: a step down after the crown. Left as it is
+  (the task said to leave the curve); worth a look when the Wood's made floors are tuned.

@@ -69,10 +69,11 @@ MORE = {
     "raid-ash": {"scene": "raid", "hero": "Kaia", "boss": "ash"},
     "raid-heart": {"scene": "raid", "hero": "Kaia", "boss": "heart"},
     "raid-heart-party": {"scene": "raid", "hero": "Kaia", "boss": "heart", "party": 9, "band": 10},
-    # The Tower's floors as worlds: the wide zone of each floor, the hero set down beside one pack after another.
-    **{f"world-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (1, 2, 3, 4, 5)},
-    # The Climb's made floors (pipeline/designs/tower-50.md), baked in src/tower/world/floors/gen/: installed by the world tool first.
-    **{f"gen-{n}": {"scene": "world", "floor": n, "gen": True, "hero": "Kaia"} for n in range(2, 11)},
+    # The Tower's floors as worlds: the wide zone of each floor, the hero set down beside one pack after another. The names
+    # are the five handmade floors' first numbers; since the Climb became 50 floors they are floors 1, 11, 21, 31 and 41.
+    **{f"world-{i}": {"scene": "world", "floor": n, "hero": "Kaia"} for i, n in ((1, 1), (2, 11), (3, 21), (4, 31), (5, 41))},
+    # The Climb's made floors (pipeline/designs/tower-50.md), baked in src/tower/world/floors/gen/, by their own numbers.
+    **{f"gen-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in range(2, 11)},
 }
 ALL = {**SCENES, **MORE}
 

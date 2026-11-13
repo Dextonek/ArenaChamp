@@ -5,7 +5,7 @@ import { setHealth, setSunlit } from '../hooks';
 import { autoBoon } from '../run';
 import type { FloorDef, Spot, DoorDef } from './def';
 import { pieceStarter, stubWaits, type PieceHandle, type PieceKind, type PieceOut } from './doors';
-import { FLOORS } from './floors';
+import { FLOORS, floorAbove, floorAtOrBelow } from './floors';
 import { WorldHud } from './hud';
 import { KEYS, LIVES, WorldRun, nextFloor, read, sigils, wipe, write } from './state';
 import { buildZone, offersFor, relicFor, type Zone } from './world';
@@ -58,7 +58,8 @@ export class WorldGame {
     this.hero = o.hero;
     this.mode = o.mode ?? 'play';
     this.persist = o.persist ?? true;
-    this.floor = FLOORS[o.floor ?? nextFloor()] ?? FLOORS[1];
+    // A floor asked for that does not exist (not made yet) gives the highest one below it that does.
+    this.floor = FLOORS[floorAtOrBelow(o.floor ?? nextFloor())];
   }
 
   /** Begins the floor: from the saved run when `resume` and it is this hero's, else from the camp. */
@@ -331,9 +332,10 @@ export class WorldGame {
     ];
   }
 
-  /** The floor above, when the registry has one. */
+  /** The next floor up that exists (after 11 comes 21 until 12 is made), or null past the last. */
   get above() {
-    return FLOORS[this.floor.n + 1] ?? null;
+    const n = floorAbove(this.floor.n);
+    return n ? FLOORS[n] : null;
   }
 
   private floorCleared() {
@@ -345,7 +347,8 @@ export class WorldGame {
     this.zone?.setPacks(false);
     const before = sigils();
     if (this.persist) {
-      write(KEYS.floor, Math.max(nextFloor(), floor.n + 1));
+      // The next floor that exists (or the one above the last, when none does: it opens as soon as it is made).
+      write(KEYS.floor, Math.max(nextFloor(), floorAbove(floor.n) ?? floor.n + 1));
       const all = read<Record<string, number[]>>(KEYS.stars) ?? {};
       const best = all[floor.n] ?? [0, 0, 0, 0];
       all[floor.n] = best.map((b, i) => Math.max(b, run.result!.stars[i]));

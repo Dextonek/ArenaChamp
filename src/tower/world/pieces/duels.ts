@@ -79,12 +79,12 @@ function weekly(run: PieceRun, plan: FloorPlan, title: string) {
   run.note(`${KIND_NAME[plan.kind]} at the weekly Tower's floor ${plan.n}`);
 }
 
-/** The trial room: one room of the weekly Tower by kind. */
-export function startTrial(run: PieceRun, t: TrialDef, floor: number) {
-  weekly(run, planOf(t.height, t.kind, `world-trial-${floor}`, t.twist ? { twist: t.twist } : {}), `Trial of floor ${floor}`);
+/** The trial room: one room of the weekly Tower by kind. `seedN` is the number its seed is made from (`PiecesDef.tunedAs`, else the floor). */
+export function startTrial(run: PieceRun, t: TrialDef, floor: number, seedN = floor) {
+  weekly(run, planOf(t.height, t.kind, `world-trial-${seedN}`, t.twist ? { twist: t.twist } : {}), `Trial of floor ${floor}`);
 }
 
-/** The rival's duel: the echo of the rival's hero with its twist, where boons act. */
-export function startRival(run: PieceRun, r: RivalDef, floor: number) {
-  weekly(run, planOf(r.height ?? 2 * floor, 'duel', `world-rival-${floor}`, { foe: r.hero, duel: r.twist }), r.line);
+/** The rival's duel: the echo of the rival's hero with its twist, where boons act. `seedN` as for the trial. */
+export function startRival(run: PieceRun, r: RivalDef, floor: number, seedN = floor) {
+  weekly(run, planOf(r.height ?? 2 * seedN, 'duel', `world-rival-${seedN}`, { foe: r.hero, duel: r.twist }), r.line);
 }

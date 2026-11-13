@@ -43,7 +43,8 @@ the player's camera and bars; the Sun Warden alone; the Sun Warden with nine scr
 in the Hall of Noon; a horde floor of the Tower of week 2026-W46, begun again when cleared. 1,500 frames of a 60th of a
 second each (25 s). More scenes by name only (`MORE` in perf.py): `arena-<id>` (a duel in each arena), `raid-ash`,
 `raid-heart`, `raid-heart-party`, and `world-1` to `world-5` (a floor of the Tower's worlds: the wide zone, the hero set
-down beside one pack after another). To add a scene: a function in `scenes` that sets the game up and returns `{ stepped, frame(i), print() }`,
+down beside one pack after another; the five handmade floors, which since the Climb became 50 floors are floors 1, 11, 21, 31 and 41:
+the names stayed, and so did the fights' prints). To add a scene: a function in `scenes` that sets the game up and returns `{ stepped, frame(i), print() }`,
 and a row in `SCENES`.
 
 Five profiles: `desktop` (1920 x 1080), `phone` (844 x 390 points at 3 pixels a point, touch: drawn at 1688 x 780), and

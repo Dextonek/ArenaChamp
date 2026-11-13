@@ -3,14 +3,15 @@ import type { FloorDef, Spot } from '../def';
 import { BARRIERS, PLACES, ZONE_R, ZONE_START, ZONE_COVER, woodArena } from '../zoneWood';
 
 /**
- * Floor 2, The Walking Wood, as data (pipeline/designs/tower-worlds.md, "The five floors"). The zone's drawing and cover are
+ * Floor 11 (floor 2 until the Climb became 50 floors), The Walking Wood, as data (pipeline/designs/tower-worlds.md, "The five floors"). The zone's drawing and cover are
  * `../zoneWood.ts`; this file says who lives in it, what is asked, and how the wood moves. Offsets (dx, dz) are from the middle of the ring.
  */
 const at = (dx: number, dz: number): Spot => ({ x: RING.x + dx, z: RING.z + dz });
 const heartPath = [at(0, -13), at(0, -26)];
 
 export const wood: FloorDef = {
-  n: 2,
+  n: 11,
+  tunedAs: 2,
   id: 'wood',
   name: 'The Walking Wood',
   blurb: 'A forest that does not stay where you left it.',
