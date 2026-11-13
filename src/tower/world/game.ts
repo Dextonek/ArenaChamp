@@ -42,6 +42,8 @@ export class WorldGame {
   /** How many times a floor began again (no life left). */
   restarts = 0;
   private restartIn = -1;
+  /** A door walked into, to be started by the next `tick`. */
+  private door: DoorDef | null = null;
   private hero: string;
   private raf = 0;
   private last = 0;
@@ -117,6 +119,7 @@ export class WorldGame {
   }
 
   private leave() {
+    this.door = null;
     if (this.api.duel.on) this.api.duel.stop();
     this.zone = null;
   }
@@ -131,6 +134,11 @@ export class WorldGame {
   /** Once a frame while a person plays; the tool calls it between steps. The zone's own work runs inside the duel's frame. */
   tick(dt: number) {
     this.hud.update(dt);
+    if (this.door) {
+      const d = this.door;
+      this.door = null;
+      this.startPiece(d);
+    }
     for (const w of stubWaits.splice(0)) {
       w.left -= dt;
       if (w.left > 0) stubWaits.push(w);
@@ -224,8 +232,17 @@ export class WorldGame {
 
   // --- doors and set pieces ----------------------------------------------------------------------------------------------
 
-  /** The hero walked into a door that is ready: the zone is put away and the piece starts. */
+  /**
+   * The hero walked into a door that is ready. It is asked from inside the duel's frame (the zone's own update), so it is only noted
+   * here and done by `tick`, outside the frame: a piece that starts its own fight must not do it in the middle of this one
+   * (as `TowerRun.later` keeps what waits for the next pump).
+   */
   enterDoor(d: DoorDef) {
+    if (this.piece || this.door || !this.zone) return;
+    this.door = d;
+  }
+
+  private startPiece(d: DoorDef) {
     if (this.piece || !this.zone) return;
     const { run, floor } = this;
     this.piece = d.piece;
@@ -249,7 +266,7 @@ export class WorldGame {
     if (out.won) {
       if (!run.won.includes(d.piece)) run.won.push(d.piece);
       run.shards += d.piece === 'ruler' ? 40 : d.piece === 'trial' ? 20 : 0;
-      after = d.piece === 'trial' ? () => this.relic() : d.piece === 'ruler' ? () => this.hud.say('The Drowned Captain falls', 'The gate up is unsealed', 3.2) : null;
+      after = d.piece === 'trial' ? () => this.relic() : d.piece === 'ruler' ? () => this.hud.say(`${d.name}: its ruler falls`, 'The gate up is unsealed', 3.2) : null;
       if (d.piece === 'rival') { run.rival = 'won'; run.ally = this.floor.rival.hero; after = () => this.offer(`${this.floor.rival.hero}'s boon`); }
     } else if (d.piece === 'ruler' || d.piece === 'gate') {
       // A lost ruler or gate costs a life, as a fall in the zone does; the piece may be tried again.

@@ -51,7 +51,7 @@ export type Step =
   | { verb: 'fell-named'; text: string; pack: string }
   | { verb: 'light'; text: string; things: { id: string; at: Spot }[]; seconds: number }
   | { verb: 'hold'; text: string; at: Spot; r: number; seconds: number; waves: { kinds: string[]; every: number } }
-  | { verb: 'carry'; text: string; item: string; from: Spot; to: Spot; r: number; /** a door that opens when it is delivered (it is an `open` that the delivery does) */ opens?: string }
+  | { verb: 'carry'; text: string; item: string; /** What it is called on the screen, and where it goes. */ itemName: string; toName: string; from: Spot; to: Spot; r: number; /** a door that opens when it is delivered (it is an `open` that the delivery does) */ opens?: string }
   | { verb: 'open'; text: string; door: string }
   | { verb: 'lead'; text: string; name: string; from: Spot; path: Spot[]; r: number };
 export type Verb = Step['verb'];
@@ -108,10 +108,12 @@ export type LawDef =
   | { kind: 'storm'; name: string; blurb: string; every: number; lasts: number; warn: number; /** where the band starts crossing and which way (z falls) */ burn: number; width: number }
   | { kind: 'dark'; name: string; blurb: string; radius: number; lit: number; lights: Spot[] }
   | { kind: 'paths'; name: string; blurb: string; every: number; walls: { a: Spot; b: Spot; r: number; height: number; set: 0 | 1 }[] }
-  | { kind: 'sides'; name: string; blurb: string; banners: { id: string; name: string; at: Spot; packs: string[] }[] };
+  | { kind: 'sides'; name: string; blurb: string; banners: { id: string; name: string; color?: number; at: Spot; packs: string[] }[] };
 
 export interface RivalDef {
   hero: string;
+  /** What the race runs to, in words ("the lighthouse"). */
+  goal: string;
   /** `race`: reach `to` before the runner, in the zone. `duel`: a door to a set piece. */
   mode: 'race' | 'duel';
   /** Where Zephyr stands and talks. */

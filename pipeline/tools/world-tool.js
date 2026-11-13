@@ -101,6 +101,7 @@
   function decide() {
     const z = game.zone, run = game.run, def = game.floor, ctx = z.ctx, hero = ctx.hero, q = z.quests;
     const person = (id) => def.people.find((p) => p.id === id);
+    const byRole = (role) => def.people.find((p) => p.role === role);
     const near = (p) => dist(hero, p.at) < 2.8;
     const toPerson = (id, why) => { const p = person(id); const at = { x: p.at.x + Math.sin(p.face) * 1.5, z: p.at.z + Math.cos(p.face) * 1.5 }; return { goal: at, why, act: near(p) ? () => z.people.auto(id) : null }; };
     const hp = run.hp;
@@ -124,12 +125,12 @@
       if (st.done && !st.handedIn) return toPerson(qd.giver, `hand in ${qd.id}`);
     }
     // Heal at the trader when hurt and able.
-    if (hp < 0.5 && run.shards >= def.shop.heal && ![...z.packs.values()].some((p) => p.state === 'awake')) return toPerson('pip', 'heal');
+    if (byRole('trader') && hp < 0.5 && run.shards >= def.shop.heal && ![...z.packs.values()].some((p) => p.state === 'awake')) return toPerson(byRole('trader').id, 'heal');
     const untaken = def.quests.find((qd) => !run.q(qd.id).taken);
     if (untaken) return toPerson(untaken.giver, `take ${untaken.id}`);
     // The race, once: its start is at the rival.
-    const rv = person('zephyr');
-    if (run.rival === 'none' && rv) return toPerson('zephyr', 'race: start');
+    const rv = byRole('rival');
+    if (run.rival === 'none' && rv) return toPerson(rv.id, 'race: start');
     if (run.rival === 'running') return { goal: def.rival.to, why: 'race: run' };
     // A waystone or a cache a short way off is touched on the way.
     for (const w of def.waystones) if (!run.waystones.includes(w.id) && dist(hero, w.at) < 16) return { goal: w.at, why: `waystone ${w.id}` };
@@ -153,10 +154,10 @@
     for (const w of def.waystones) if (!run.waystones.includes(w.id)) return { goal: w.at, why: `waystone ${w.id}` };
     for (const c of def.caches) if (!run.caches.includes(c.id)) return { goal: c.at, why: `cache ${c.id}` };
     if (!run.lore.includes(def.lore.id)) return { goal: def.lore.at, why: 'lore stone' };
-    const door = (id) => def.doors.find((d) => d.id === id);
-    if (hp < 0.6 && run.shards >= def.shop.heal) return toPerson('pip', 'heal');
+    const door = (piece) => def.doors.find((d) => d.piece === piece);
+    if (byRole('trader') && hp < 0.6 && run.shards >= def.shop.heal) return toPerson(byRole('trader').id, 'heal');
     if (!run.has('trial') && door('trial')) return { goal: door('trial').at, why: 'door: trial' };
-    if (!run.has('ruler') && run.opened.includes('lair')) return { goal: door('lair').at, why: 'door: ruler' };
+    if (!run.has('ruler') && door('ruler') && (!door('ruler').wall || run.opened.includes(door('ruler').id))) return { goal: door('ruler').at, why: 'door: ruler' };
     if (run.has('ruler') && !run.has('gate')) return { goal: door('gate').at, why: 'door: gate' };
     return { goal: null, why: 'nothing left' };
   }
@@ -256,7 +257,7 @@
           { verb: 'fell-named', text: 'fell the named', pack: 'barnacle' },
           { verb: 'light', text: 'light', things: [{ id: 't1', at: { x: 10, z: Z + 14 } }, { id: 't2', at: { x: 14, z: Z + 14 } }], seconds: 2 },
           { verb: 'hold', text: 'hold', at: { x: 0, z: Z + 20 }, r: 3, seconds: 8, waves: { kinds: ['docker', 'docker'], every: 4 } },
-          { verb: 'carry', text: 'carry', item: 'key', from: { x: -6, z: Z + 26 }, to: { x: 4, z: Z + 26 }, r: 2, opens: 'lair' },
+          { verb: 'carry', text: 'carry', item: 'key', itemName: 'The key', toName: 'the post', from: { x: -6, z: Z + 26 }, to: { x: 4, z: Z + 26 }, r: 2, opens: 'lair' },
           { verb: 'open', text: 'open the test door', door: 'test-door' },
           { verb: 'lead', text: 'lead', name: 'Tam', from: { x: -4, z: Z + 20 }, r: 2.5, path: [{ x: 0, z: Z + 24 }, { x: 4, z: Z + 28 }] },
         ],
@@ -274,7 +275,7 @@
       storm: { kind: 'storm', name: 'The storm', blurb: 'test', every: 30, lasts: 20, warn: 4, burn: 0.03, width: 10 },
       dark: { kind: 'dark', name: 'The dark', blurb: 'test', radius: 22, lit: 40, lights: [{ x: 24, z: Z - 19 }] },
       paths: { kind: 'paths', name: 'The wood moves', blurb: 'test', every: 10, walls: [{ a: { x: -8, z: Z + 20 }, b: { x: 8, z: Z + 20 }, r: 0.5, height: 3, set: 0 }, { a: { x: -8, z: Z + 10 }, b: { x: 8, z: Z + 10 }, r: 0.5, height: 3, set: 1 }] },
-      sides: { kind: 'sides', name: 'The war', blurb: 'test', banners: [{ id: 'red', name: 'red banner', at: { x: -3, z: Z + 36 }, packs: ['market'] }, { id: 'blue', name: 'blue banner', at: { x: 3, z: Z + 36 }, packs: ['caves'] }] },
+      sides: { kind: 'sides', name: 'The war', blurb: 'test', banners: [{ id: 'red', name: 'red banner', color: 0xb03030, at: { x: -3, z: Z + 36 }, packs: ['market'] }, { id: 'blue', name: 'blue banner', color: 0x3060b0, at: { x: 3, z: Z + 36 }, packs: ['caves'] }] },
     };
     for (const [kind, law] of Object.entries(lawDefs)) {
       try {

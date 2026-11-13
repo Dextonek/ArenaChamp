@@ -120,7 +120,7 @@ export class People {
       buy('hint', s.hint, () => z.def.caches.some((c) => !run.caches.includes(c.id) && !run.hintShown.includes(c.id)), 'A hint', 'Shows where a cache lies', 'blue');
     } else if (p.role === 'rival') {
       lines = [...(z.def.rival.lines)];
-      if (run.rival === 'none') buttons.push({ label: 'Race', sub: 'To the lighthouse. First to touch its foot wins a boon', tone: 'red', click: () => { hud.closeCard(); this.startRace(); } });
+      if (run.rival === 'none') buttons.push({ label: 'Race', sub: `To ${z.def.rival.goal}. First there wins a boon`, tone: 'red', click: () => { hud.closeCard(); this.startRace(); } });
       else lines = [run.rival === 'won' ? 'You beat me. Fair enough. Take my luck with you.' : run.rival === 'lost' ? 'Too slow. Try again on the next floor.' : 'On your marks.'];
     } else {
       const qs = this.available(p);
@@ -168,7 +168,7 @@ export class People {
     this.raceFig = fig;
     this.race = { t: 0, route: r.route, len, speed: 4 * (r.pace ?? 0.92) };
     z.run.rival = 'running';
-    z.banner('Race!', 'To the lighthouse: first to its foot', 2.6);
+    z.banner('Race!', `To ${r.goal}: first there wins`, 2.6);
     z.save();
   }
 
@@ -199,6 +199,8 @@ export class People {
     this.race = null;
     z.run.rival = result;
     if (result === 'won') {
+      // The one beaten fights beside the hero against the ruler.
+      z.run.ally = r.hero;
       z.banner('You win the race', `${r.hero} is beaten: a boon`, 3);
       if (r.boon) z.offerBoon(`${r.hero}'s boon`);
       z.pay(15);

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { RING } from '../../arenas/common';
 import type { Obstacle } from '../../obstacles';
 import type { RoomFloor } from '../../raid/types';
 import type { ZoneCtx } from './ctx';
@@ -134,7 +135,7 @@ function tide(z: ZoneCtx, d: Extract<LawDef, { kind: 'tide' }>): Law {
 
 /** A band of dust that crosses the zone from north to south: it burns whoever stands in it unless something stands between them and the wind. */
 function storm(z: ZoneCtx, d: Extract<LawDef, { kind: 'storm' }>): Law {
-  const R = z.def.ring, mid = { x: z.def.start.x, z: z.def.start.z - 34 };
+  const R = z.def.ring, mid = { x: RING.x, z: RING.z + 5.5 };
   const mat = new THREE.MeshBasicMaterial({ color: 0xd8b070, transparent: true, opacity: 0, depthWrite: false, blending: THREE.NormalBlending, side: THREE.DoubleSide });
   const geo = new THREE.BoxGeometry(R * 2.2, 6, d.width);
   const band = new THREE.Mesh(geo, mat);
@@ -277,7 +278,7 @@ function sides(z: ZoneCtx, d: Extract<LawDef, { kind: 'sides' }>): Law {
   let taken: string | null = (z.run as unknown as { banner?: string }).banner ?? null;
   const flags = d.banners.map((b) => {
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 3.2, 5), new THREE.MeshStandardMaterial({ color: 0x4a3626 }));
-    const cloth = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.9), new THREE.MeshBasicMaterial({ color: b.id === 'red' ? 0xb03030 : 0x3060b0, side: THREE.DoubleSide }));
+    const cloth = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.9), new THREE.MeshBasicMaterial({ color: b.color ?? 0xb03030, side: THREE.DoubleSide }));
     pole.position.set(b.at.x, 1.6, b.at.z);
     cloth.position.set(b.at.x + 0.7, 2.7, b.at.z);
     z.p.group.add(pole, cloth);

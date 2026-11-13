@@ -221,7 +221,8 @@ export class Quests {
     if (z.run.carry?.held) {
       this.carried ??= this.keyMesh();
       if (!this.carried.parent) z.p.group.add(this.carried);
-      this.carried.position.set(hero.x, 3.0 + Math.sin(this.t * 3) * 0.08, hero.z);
+      this.carried.position.set(hero.x, 3.7 + Math.sin(this.t * 3) * 0.08, hero.z);
+      this.carried.scale.setScalar(1.8);
       this.carried.rotation.y += dt * 2;
     } else if (this.carried?.parent) this.carried.removeFromParent();
   }
@@ -357,7 +358,7 @@ export class Quests {
     this.key.pillar.mesh.position.set(at.x, 0.04, at.z);
   }
 
-  /** The captain's key, drawn: a gold bow, a shaft and two teeth. */
+  /** The carried thing, drawn as a key: a gold bow, a shaft and two teeth. */
   private keyMesh() {
     const group = new THREE.Group();
     const gold = new THREE.MeshStandardMaterial({ color: 0xffd27a, metalness: 0.8, roughness: 0.3, emissive: 0xffb050, emissiveIntensity: 0.7 });
@@ -381,8 +382,8 @@ export class Quests {
     z.run.carry = { item: step.item, held: true, at: { x: z.hero.x, z: z.hero.z } };
     z.mute(true);
     z.speed('carry', CARRY_SLOW);
-    z.say('The captain’s key', '#ffd27a', z.hero);
-    z.banner('You have the key', 'Carry it to the winch. A hit makes you drop it.', 2.6);
+    z.say(step.itemName, '#ffd27a', z.hero);
+    z.banner(`You have ${step.itemName}`, `Carry it to ${step.toName}. A hit makes you drop it.`, 2.6);
     z.save();
   }
 

@@ -196,7 +196,7 @@ export class WorldHud {
         el = document.createElement('button');
         el.type = 'button';
         el.dataset.mark = m.id;
-        el.style.cssText = 'position:fixed;left:0;top:0;z-index:4;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid #8a7a52;background:rgba(14,11,12,0.82);font:800 22px/1 ui-serif,Georgia,serif;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;padding:0;touch-action:manipulation;position:fixed;';
+        el.style.cssText = 'position:fixed;left:0;top:0;z-index:7;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:2px solid #8a7a52;background:rgba(14,11,12,0.82);font:800 22px/1 ui-serif,Georgia,serif;cursor:pointer;display:flex;align-items:center;justify-content:center;pointer-events:auto;padding:0;touch-action:manipulation;position:fixed;';
         el.addEventListener('click', (e) => { e.stopPropagation(); this.marks.get(m.id) && (el as HTMLButtonElement & { act?: () => void }).act?.(); });
         document.body.append(el);
         this.marks.set(m.id, el);

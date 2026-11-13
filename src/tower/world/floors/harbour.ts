@@ -57,7 +57,7 @@ export const harbour: FloorDef = {
       steps: [
         { verb: 'fell', text: 'Clear the fish market', packs: ['market'] },
         { verb: 'light', text: 'Light the lighthouse', things: [{ id: 'lighthouse', at: at(24, -19) }], seconds: 2 },
-        { verb: 'carry', text: 'Bring the captain’s key from the wreck to the winch', item: 'key', from: at(26, 8.5), to: at(13.5, 38.5), r: 2.2, opens: 'lair' },
+        { verb: 'carry', text: 'Bring the captain’s key from the wreck to the winch', item: 'key', itemName: 'The captain’s key', toName: 'the winch', from: at(26, 8.5), to: at(13.5, 38.5), r: 2.2, opens: 'lair' },
       ],
       outro: ['The chain falls. The Drowned Captain’s door stands open, far in the north. Take your time, then go in.'],
       reward: { shards: 60, boon: true },
@@ -104,7 +104,7 @@ export const harbour: FloorDef = {
     { id: 'gate', piece: 'gate', name: 'The gate up', at: at(-15, 40), r: 2.2, needs: { won: 'ruler' }, locked: 'The gate is sealed. Its warden answers only once the Drowned Captain has fallen.' },
   ],
   rival: {
-    hero: 'Zephyr', mode: 'race', at: at(4, 24), to: at(24, -19), r: 3, pace: 0.92, boon: true,
+    hero: 'Zephyr', goal: 'the lighthouse', mode: 'race', at: at(4, 24), to: at(24, -19), r: 3, pace: 0.5, boon: true,
     route: [at(4, 24), at(10, 16), at(10, 2), at(12, -6), at(17, -14), at(23.5, -17.8), at(24, -19)],
     lines: ['Another climber? I am Zephyr, and I am faster. To the lighthouse and back: whoever touches the foot first. Care to try?'],
   },
