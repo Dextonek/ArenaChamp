@@ -74,9 +74,9 @@ export const banners: FloorDef = {
       id: 'main', name: 'Break the Siege', giver: 'cantor', main: true,
       intro: ['Three standards stand bare on the ridges and the north works. Touch each and it flies your colours. Then hold the hill for a minute while the dead come, and break the siege line in the north.'],
       steps: [
-        { verb: 'reach', text: 'Take the west standard', at: SPOTS.standardW, r: 3 },
-        { verb: 'reach', text: 'Take the east standard', at: SPOTS.standardE, r: 3 },
-        { verb: 'reach', text: 'Take the north standard', at: SPOTS.standardN, r: 3 },
+        { verb: 'reach', text: 'Take the west standard', at: SPOTS.standardW, r: 3.8 },
+        { verb: 'reach', text: 'Take the east standard', at: SPOTS.standardE, r: 3.8 },
+        { verb: 'reach', text: 'Take the north standard', at: SPOTS.standardN, r: 3.8 },
         { verb: 'hold', text: 'Hold the hill for a minute while the dead come', at: SPOTS.hill, r: 4.6, seconds: 60, waves: { kinds: ['ashen', 'ashen', 'ashen'], every: 15 } },
         { verb: 'fell', text: 'Fell the guard of the siege line', packs: ['siege'] },
         { verb: 'open', text: 'Break the siege line: go through the gate in the north', door: 'lair' },

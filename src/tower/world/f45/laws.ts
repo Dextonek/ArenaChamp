@@ -252,7 +252,7 @@ function sides(z: ZoneCtx, d: Extract<LawDef, { kind: 'sides' }>): Law {
 
   // The squad: hero-side units of the army taken.
   const squad: (SummonUnit | null)[] = Array.from({ length: WAR.squad }, () => null);
-  let refill = 0, t = 0, fought = 0, maxHero = 0, maxFoes = 0, made = 0, fell = 0, dismissed = false, wasOpen = false, wasNear = false;
+  let refill = 0, t = 0, fought = 0, maxHero = 0, maxFoes = 0, made = 0, fell = 0, dismissed = false, wasOpen = false, wasNear = false, mustered = false;
   const lookFor = (kind: string) => EXTRA_LOOKS[`${kind}-${taken}`];
   const make = (i: number, at: Spot) => {
     if (!taken || arena.summons.alive('hero').length >= WAR.squad + 1) return;
@@ -285,6 +285,7 @@ function sides(z: ZoneCtx, d: Extract<LawDef, { kind: 'sides' }>): Law {
     apply();
     z.hud.closeCard();
     z.banner(`You take the ${army(id)?.name}`, `Its soldiers fight beside you; the ${army(d.banners.find((b) => b.id !== id)?.id ?? null)?.name} hunts you`, 3.4);
+    mustered = true;
     muster();
     z.save();
     void why;
@@ -322,6 +323,8 @@ function sides(z: ZoneCtx, d: Extract<LawDef, { kind: 'sides' }>): Law {
         return;
       }
       paint();
+      // A zone built again (a door, a reload) with a banner already taken: the host musters at the hero.
+      if (!mustered) { mustered = true; muster(); }
       // The squad: each unit follows the hero (it stands off the hero's side, spread out) unless foes are awake near; a fallen one is replaced.
       const awake = awakeNear();
       if (awake) fought += dt;

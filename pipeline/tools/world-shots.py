@@ -27,8 +27,14 @@ async def run(a):
     out.mkdir(parents=True, exist_ok=True)
     errors = []
     async with async_playwright() as pw:
-        browser = await pw.chromium.launch(channel=a.browser, headless=True, args=['--mute-audio', '--ignore-gpu-blocklist', '--enable-unsafe-swiftshader'])
-        ctx = await browser.new_context(viewport={'width': w, 'height': h}, has_touch=a.touch, is_mobile=a.touch, device_scale_factor=1)
+        args = ['--mute-audio', '--ignore-gpu-blocklist', '--enable-unsafe-swiftshader']
+        if a.profile:
+            # A profile folder keeps localStorage between two runs: the reload test (a climb saved by one run, continued by the next).
+            ctx = await pw.chromium.launch_persistent_context(a.profile, channel=a.browser, headless=True, args=args, viewport={'width': w, 'height': h}, has_touch=a.touch, is_mobile=a.touch, device_scale_factor=1)
+            browser = ctx
+        else:
+            browser = await pw.chromium.launch(channel=a.browser, headless=True, args=args)
+            ctx = await browser.new_context(viewport={'width': w, 'height': h}, has_touch=a.touch, is_mobile=a.touch, device_scale_factor=1)
         page = await ctx.new_page()
 
         def on_console(m):
@@ -70,6 +76,7 @@ def main():
     ap.add_argument('--out', default='docs/tower/worlds')
     ap.add_argument('--browser', default='msedge')
     ap.add_argument('--touch', action='store_true')
+    ap.add_argument('--profile', default='', help='a folder that keeps the browser profile (localStorage) between runs')
     ap.add_argument('--timeout', type=float, default=900)
     asyncio.run(run(ap.parse_args()))
 

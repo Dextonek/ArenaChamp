@@ -58,7 +58,7 @@ function pieces(): Piece[] {
   // The hill: a drum in the middle, shields fallen round it, two standards with no cloth.
   L.push(P('drum', 0, -8, 1.1, 1.2), P('shieldpile', 4.5, -10.5, 0.9, 0.9), P('shieldpile', -4.2, -5.5, 0.9, 0.9), P('standard', -7, -9.5, 0.7, 4.4), P('standard', 7, -6.5, 0.7, 4.4));
   // The north works: two catapults with the arm down, a wagon, a standard in the middle.
-  L.push(P('standard', 22, -26, 0.9, 5), P('catapult', 15, -29.5, 1.5, 1.8), P('catapult', 28.5, -29, 1.5, 1.8), W('wagon', 26, -21, 29.5, -19.5, 0.9, 1.4), P('rock', 17.5, -22, 1.2, 1.4));
+  L.push(P('standard', 22, -26, 0.9, 5), P('catapult', 15, -29.5, 1.5, 1.8), P('catapult', 28.5, -29, 1.5, 1.8), W('wagon', 26, -21, 29.5, -19.5, 0.9, 1.4));
   // The burned wagons: three wagons on their sides, a tent, planted spears.
   L.push(W('wagon', -27, -22, -23.5, -23.5, 0.9, 1.5), W('wagon', -19.5, -25.5, -16.5, -24, 0.9, 1.5), W('wagon', -26, -15.5, -24.5, -18.5, 0.9, 1.5), P('tent', -17, -15.5, 1.5, 2.4));
   // The siege line: a long palisade across the north with a gate in the middle (the door is the floor's), a siege tower fallen along the left.
