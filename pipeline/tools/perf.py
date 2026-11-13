@@ -9,6 +9,7 @@ measures what the game downloads before it can be played. How to read it: docs/p
     python pipeline/tools/perf.py passes --scene duel-temple                 # what each step of drawing a frame costs the graphics card
     python pipeline/tools/perf.py parts --scene duel-temple                  # what each part of the picture costs it (hidden one at a time)
     python pipeline/tools/perf.py flips --scene raid-party                   # materials that make three look their shader up every frame
+    python pipeline/tools/perf.py census --scene raid-party --profile phone  # who the draw calls belong to
     python pipeline/tools/perf.py load --label baseline                      # the built game: bytes, requests, the first fight
     python pipeline/tools/perf.py files                                      # the sizes of the built chunks and the models
 
@@ -21,11 +22,11 @@ profiles: `desktop` (1920 x 1080), `phone` (844 x 390 at three pixels to a point
 speed and slowed 4 and 6 times (Chrome's CPU throttling). The graphics card is this computer's own: the result names
 it, and says so if the browser fell back to software drawing.
 
-A slowed profile times only the processor's part of a frame (the step and the draw calls), not the wait for the graphics
-card: Chrome's throttle holds the page's thread for three quarters of ALL time, waiting included, so a frame that waits
-for the card came out far too slow (68 ms where 4 x the processor's 3 ms plus the card's 22 ms is 34). The card is not
-slowed by the throttle at all, so its time is taken from the same scene on the unslowed profile of the same screen;
-perf-show.py and the report add the two.
+A slowed profile does not force the wait for the graphics card after each frame: Chrome's throttle holds the page's
+thread for three quarters of ALL time, a forced wait included, so such a frame came out far too slow (68 ms where 4 x
+the processor's 3 ms plus the card's 22 ms is 34). Left alone, the wait comes by itself inside the draw calls (the
+browser holds them back when the card is behind), and the frame's time is the slowed processor's work plus the card's
+(40 ms for that frame). So on a slowed profile "draw" contains the card's time and there is no separate "card".
 
 --root <folder> measures another checkout of the game (a git worktree of an earlier commit) with this checkout's tool: how
 "before" is measured again beside "after", on the same day and the same computer. Give it its own --port.
@@ -319,6 +320,17 @@ async def run_flips(args):
         print(f"  marked {row['timesAFrame']} times a frame: {row['material']}")
 
 
+async def run_census(args):
+    """Who the draw calls of one scene belong to (see `census` in perf-page.js), as it stands after the frames played."""
+    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "census": True}
+    res, _ = await one_scene(args, opts)
+    rows = res["census"]
+    print(f"{args.scene} on {args.profile} after {args.frames} frames: {res['drawCalls']['median']} draw calls a frame (median), {sum(r['drawn'] for r in rows)} things drawn at the end, {sum(r['shadows'] for r in rows)} of them casting a shadow")
+    print(f"  {'drawn':>5} {'+shadow':>7} {'rigged':>6} {'triangles':>9}  part")
+    for r in rows[:args.top]:
+        print(f"  {r['drawn']:5d} {r['shadows']:7d} {r['rigged']:6d} {r['triangles']:9d}  {r['part']}")
+
+
 async def run_parts(args):
     """What each part of one scene's picture costs the graphics card: the frame drawn again with one part hidden at a time."""
     opts = {**SCENES[args.scene], "seed": args.seed, "at": args.frames}
@@ -347,7 +359,7 @@ TEXT = (".js", ".css", ".html", ".json", ".svg", ".txt")
 class Dist(SimpleHTTPRequestHandler):
     """dist/ as the live site sends it: text compressed, models and pictures as they are, everything revalidated."""
     cache = {}
-    headers_file = {}
+    root = ROOT
 
     def log_message(self, *a):
         pass
@@ -356,8 +368,8 @@ class Dist(SimpleHTTPRequestHandler):
         path = self.path.split("?")[0]
         if path in ("/game", "/"):
             path = "/game.html"
-        file = (ROOT / "dist" / path.lstrip("/")).resolve()
-        if not str(file).startswith(str((ROOT / "dist").resolve())) or not file.is_file():
+        file = (Dist.root / "dist" / path.lstrip("/")).resolve()
+        if not str(file).startswith(str((Dist.root / "dist").resolve())) or not file.is_file():
             self.send_error(404)
             return
         body = file.read_bytes()
@@ -368,14 +380,16 @@ class Dist(SimpleHTTPRequestHandler):
             key = (str(file), file.stat().st_mtime)
             body = Dist.cache.setdefault(key, gzip.compress(body, 6))
             self.send_header("Content-Encoding", "gzip")
-        self.send_header("Cache-Control", "public, max-age=0, must-revalidate")
+        # The site's own rule for the file, if dist/_headers has one (the built chunks: kept for good), else as the live site: asked again every time.
+        self.send_header("Cache-Control", "public, max-age=31536000, immutable" if path.startswith("/assets/") and (Dist.root / "dist" / "_headers").exists() else "public, max-age=0, must-revalidate")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
 
 
 async def run_load(args):
-    if not (ROOT / "dist" / "game.html").exists():
+    Dist.root = Path(args.root) if args.root else ROOT
+    if not (Dist.root / "dist" / "game.html").exists():
         sys.exit("no dist/: run `npm run build` first")
     server = ThreadingHTTPServer(("127.0.0.1", args.port + 1), Dist)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -404,7 +418,7 @@ async def run_load(args):
                     new PerformanceObserver((l) => { for (const e of l.getEntries()) window._long.push([Math.round(e.startTime), Math.round(e.duration)]); }).observe({ entryTypes: ['longtask'] });
                 """)
                 t0 = time.time()
-                await page.goto(f"{base}/game", wait_until="load", timeout=180000)
+                await page.goto(f"{base}/game{('?' + args.query) if args.query else ''}", wait_until="load", timeout=180000)
                 await page.wait_for_function("typeof game !== 'undefined' && !!game.api", timeout=180000)
                 # The first frame after the game's own scripts ran: the menu is up and can be clicked.
                 first = await page.evaluate("new Promise((ok) => requestAnimationFrame(() => requestAnimationFrame(() => ok(performance.now()))))")
@@ -419,6 +433,8 @@ async def run_load(args):
                 await page.wait_for_function("document.querySelector('.loading') && document.querySelector('.loading').style.display === 'none'", timeout=180000)
                 t2 = await page.evaluate("performance.now()")
                 # The first 20 s of the fight in real time, as a player has it: how long the frames take while the first spells are cast.
+                await cdp.send("Performance.enable")
+                m0 = {m["name"]: m["value"] for m in (await cdp.send("Performance.getMetrics"))["metrics"]}
                 frames = await page.evaluate("""
                     new Promise((ok) => {
                       game.api.duel.autopilot = true;
@@ -427,47 +443,53 @@ async def run_load(args):
                       requestAnimationFrame(step);
                     })
                 """)
+                m1 = {m["name"]: m["value"] for m in (await cdp.send("Performance.getMetrics"))["metrics"]}
+                # The page's own work in those 20 s, by kind, as ms a frame: the script, and what the bars and numbers on the page cost.
+                work = {k: round((m1[k] - m0[k]) * 1000 / max(1, len(frames)), 2) for k in ("ScriptDuration", "LayoutDuration", "RecalcStyleDuration", "TaskDuration")}
                 fight_long = await page.evaluate("window._long.splice(0)")
+                state = await page.evaluate("(() => { const a = game.api, q = a.quality, c = a.renderer?.domElement ?? document.querySelector('#app canvas'); return { canvas: [c.width, c.height], quality: q ? { level: q.level, share: +q.share.toFixed(3), lean: q.lean, restMs: +q.restMs.toFixed(1) } : null }; })()")
                 fight = taken(seen)
                 frames = sorted(frames[2:])
                 row = {
-                    "profile": pname, "firstFrameMs": round(first), "domContentLoadedMs": round(nav["dcl"]), "loadMs": round(nav["load"]),
+                    "profile": pname, "query": args.query, **state, "firstFrameMs": round(first), "domContentLoadedMs": round(nav["dcl"]), "loadMs": round(nav["load"]),
                     "menu": {"requests": len(menu), "bytes": sum(r["bytes"] for r in menu), "list": sorted(menu, key=lambda r: -r["bytes"]),
                              "longTasks": menu_long, "blockedMs": sum(d for _, d in menu_long)},
                     "fight": {"requests": len(fight), "bytes": sum(r["bytes"] for r in fight), "list": sorted(fight, key=lambda r: -r["bytes"]),
                               "toCountdownMs": round(t2 - t1), "longTasks": fight_long, "blockedMs": sum(d for _, d in fight_long),
                               "frames": len(frames), "medianMs": round(frames[len(frames) // 2], 1), "p99Ms": round(frames[int(len(frames) * 0.99)], 1),
-                              "longestMs": round(frames[-1], 1), "over50": sum(1 for f in frames if f > 50), "over100": sum(1 for f in frames if f > 100)},
+                              "longestMs": round(frames[-1], 1), "over50": sum(1 for f in frames if f > 50), "over100": sum(1 for f in frames if f > 100),
+                              "workMsAFrame": work},
                 }
                 out["runs"].append(row)
                 await browser.close()
                 m, f = row["menu"], row["fight"]
                 print(f"{pname:11} menu: {m['requests']} requests, {m['bytes'] / 1e6:.2f} MB, first frame {row['firstFrameMs']} ms, blocked {m['blockedMs']} ms | "
                       f"first fight: +{f['requests']} requests, +{f['bytes'] / 1e6:.2f} MB, {f['toCountdownMs']} ms to the countdown, blocked {f['blockedMs']} ms, "
-                      f"frames over 50 ms: {f['over50']}, longest {f['longestMs']} ms ({time.time() - t0:.0f} s)", flush=True)
+                      f"frames over 50 ms: {f['over50']}, longest {f['longestMs']} ms, median {f['medianMs']} ms; a frame's work: script {work['ScriptDuration']} ms, "
+                      f"layout {work['LayoutDuration']} ms, styles {work['RecalcStyleDuration']} ms ({time.time() - t0:.0f} s)", flush=True)
     finally:
         server.shutdown()
-    out["files"] = files()
+    out["files"] = files(Dist.root)
     path = OUT / "data" / f"{args.label}-load.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out, indent=1), encoding="utf-8")
     print(f"saved {path}")
 
 
-def files():
+def files(root=ROOT):
     """The built chunks (as they are and compressed) and the models, by folder."""
     chunks = []
-    for f in sorted((ROOT / "dist" / "assets").glob("*")):
+    for f in sorted((root / "dist" / "assets").glob("*")):
         raw = f.read_bytes()
         chunks.append({"file": f.name, "bytes": len(raw), "gzip": len(gzip.compress(raw, 9))})
     models = {}
     for folder in ("heroes", "arenas", "bosses", "anim", "weapons", "figures"):
-        all_files = sorted((ROOT / "public" / "models" / folder).glob("*.glb"))
+        all_files = sorted((root / "public" / "models" / folder).glob("*.glb"))
         used = [f for f in all_files if folder != "heroes" or f.stem.endswith("_v4")]
         models[folder] = {"files": len(all_files), "bytes": sum(f.stat().st_size for f in all_files),
                           "used": len(used), "usedBytes": sum(f.stat().st_size for f in used),
                           "largest": [[f.name, f.stat().st_size] for f in sorted(used, key=lambda f: -f.stat().st_size)[:5]]}
-    dist = sum(f.stat().st_size for f in (ROOT / "dist").rglob("*") if f.is_file()) if (ROOT / "dist").exists() else 0
+    dist = sum(f.stat().st_size for f in (root / "dist").rglob("*") if f.is_file()) if (root / "dist").exists() else 0
     return {"chunks": chunks, "models": models, "distBytes": dist}
 
 
@@ -482,6 +504,7 @@ def main():
         p.add_argument("--headed", action="store_true", help="show the browser's window")
         p.add_argument("--port", type=int, default=5183)
         p.add_argument("--root", default="", help="another checkout of the game to measure (its own --port)")
+    sub.choices["load"].add_argument("--query", default="", help="added to the game's address, for example quality=auto")
     s = sub.choices["scenes"]
     s.add_argument("--scenes", default=",".join(SCENES))
     s.add_argument("--frames", type=int, default=1500, help="frames of 1/60 s a scene is played for")
@@ -490,7 +513,7 @@ def main():
     s.add_argument("--timeout", type=float, default=540, help="seconds one scene may take")
     s.add_argument("--no-pictures", action="store_true")
     sub.add_parser("files")
-    for name in ("profile", "passes", "parts", "flips"):
+    for name in ("profile", "passes", "parts", "flips", "census"):
         p = sub.add_parser(name)
         p.add_argument("--scene", default="duel-temple")
         p.add_argument("--profile", default="desktop")
@@ -514,6 +537,8 @@ def main():
         asyncio.run(run_parts(args))
     elif args.cmd == "flips":
         asyncio.run(run_flips(args))
+    elif args.cmd == "census":
+        asyncio.run(run_census(args))
     elif args.cmd == "load":
         asyncio.run(run_load(args))
     else:

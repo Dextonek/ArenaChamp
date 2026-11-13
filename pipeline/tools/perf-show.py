@@ -1,7 +1,8 @@
 """Prints one of the performance tool's result files as a table: python pipeline/tools/perf-show.py baseline [other-label]
 With two labels: the second beside the first, and whether each scene was the same fight (its print).
-A slowed profile (phone-4x ...) timed only the processor's part: its "card" and its "frame" take the card's time from the
-same scene on the unslowed profile (phone-4x from phone), so frame = slowed processor + card."""
+A slowed profile (phone-4x ...) has no "card" column: there the wait for the graphics card is not forced after each
+frame, it comes by itself inside "draw" (the browser holds the draw calls back when the card is behind), so "draw" is
+the slowed processor's draw calls plus the card's time, and the frame's whole time is still the frame's."""
 import json
 import sys
 from pathlib import Path
@@ -12,12 +13,8 @@ DATA = Path(__file__).resolve().parents[2] / "docs" / "perf" / "data"
 def load(label):
     rows = {(r["profile"], r["id"]): r for r in json.loads((DATA / f"{label}.json").read_text(encoding="utf-8"))["runs"] if not r.get("crashed")}
     for (profile, scene), r in rows.items():
-        r["card"] = r["gpu"]["median"]
+        r["card"] = float("nan") if r.get("cpuOnly") else r["gpu"]["median"]
         r["whole"] = r["frame"]["median"]
-        if r.get("cpuOnly"):
-            full = rows.get((profile.split("-")[0], scene))
-            r["card"] = full["gpu"]["median"] if full else float("nan")
-            r["whole"] = r["frame"]["median"] + r["card"]
     return rows
 
 

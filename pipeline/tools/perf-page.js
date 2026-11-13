@@ -155,6 +155,37 @@
     };
   };
 
+  /**
+   * Who the draw calls belong to, as the scene stands: every drawn thing counted under the part of the scene it hangs in
+   * (the arena, each figure or group of the duel, each spell), with how many of them also cast a shadow (a second draw call
+   * each) and their triangles. The parts with the most first.
+   */
+  const census = () => {
+    const a = api(), rows = new Map();
+    const labelOf = new Map();
+    for (const [label, slot] of a.slots) if (slot.effect) labelOf.set(slot.effect.group, label);
+    a.scene.traverseVisible((o) => {
+      if (!(o.isMesh || o.isPoints || o.isLine || o.isSprite)) return;
+      const chain = [];
+      for (let q = o; q && q !== a.scene; q = q.parent) chain.unshift(q);
+      const top = chain[0];
+      let key = labelOf.has(top) ? `spell "${labelOf.get(top)}"` : top === a.arena.group ? 'arena' : top === a.duel.group ? 'duel' : top === a.heroMode.group ? 'hero mode' : top === a.telegraphs.group ? 'danger zones' : `scene: ${top.name || top.type}`;
+      // One level down inside the arena and the duel, by the first name on the way to the thing.
+      if (top === a.arena.group || top === a.duel.group) {
+        const second = chain[1], named = chain.slice(1).find((q) => q.name);
+        key += ` > ${second?.userData?.perfName || named?.name || second?.type || '?'}`;
+      }
+      const row = rows.get(key) ?? { part: key, drawn: 0, shadows: 0, rigged: 0, triangles: 0 };
+      row.drawn++;
+      if (o.castShadow && o.isMesh) row.shadows++;
+      if (o.isSkinnedMesh) row.rigged++;
+      const g = o.geometry;
+      row.triangles += Math.round(((g?.index ? g.index.count : g?.attributes?.position?.count ?? 0) / 3) * (o.isInstancedMesh ? o.count : 1));
+      rows.set(key, row);
+    });
+    return [...rows.values()].sort((x, y) => y.drawn + y.shadows - (x.drawn + x.shadows));
+  };
+
   const sceneCount = () => {
     let meshes = 0, lights = 0, skinned = 0, shadowCasters = 0;
     api().scene.traverseVisible((o) => {
@@ -170,12 +201,11 @@
   const apply = (set) => {
     const a = api(), r = a.renderer;
     if (!set) return;
-    if (set.pixelRatio) { r.setPixelRatio(set.pixelRatio); window.dispatchEvent(new Event('resize')); }
+    if (set.pixelRatio) { if (a.quality) a.quality.fixed = set.pixelRatio; else r.setPixelRatio(set.pixelRatio); window.dispatchEvent(new Event('resize')); }
     if (set.shadows === false) a.scene.traverse((o) => { if (o.isDirectionalLight) o.castShadow = false; });
     // The spells' effects built at the first cast, as before the warm-up built them: the dice then fall as they did.
     if (set.noPrebuild) { const warm = a.duel.host.warmUp; a.duel.host.warmUp = () => warm([]); }
     if (set.quality && a.quality) a.quality.set(set.quality);
-    if (set.q && a.quality) a.quality.patch(set.q);
   };
 
   const quant = (v) => Math.round(v * 10) / 10;
@@ -451,9 +481,10 @@
           allocMBs: +(allocated / 1048576 / (frames / 60)).toFixed(2), gcs,
           ...counts,
           canvas: [r.domElement.width, r.domElement.height],
+          quality: a.quality ? { level: a.quality.level, share: +a.quality.share.toFixed(3), lean: a.quality.lean, restMs: +a.quality.restMs.toFixed(1) } : null,
           // Every frame's time in tenths of a millisecond: the line on the page.
           line: Array.from(total, (v) => Math.round(v * 10)),
-          passes: timer?.result() ?? null, compiles, flips: flips?.result() ?? null,
+          passes: timer?.result() ?? null, compiles, flips: flips?.result() ?? null, census: o.census ? census() : null,
           compiledShaders: compiles.reduce((n, c) => n + c.n, 0), compileMs: +compiles.reduce((n, c) => n + c.ms, 0).toFixed(0),
           print, printHash: (hash >>> 0).toString(16), errors,
         };
@@ -542,9 +573,11 @@
       a.scene.environment = env;
       time(4);
       const pr = r.getPixelRatio();
-      r.setPixelRatio(pr * 0.7071); window.dispatchEvent(new Event('resize'));
+      const ratio = (v) => { if (a.quality) a.quality.fixed = v; else r.setPixelRatio(v); window.dispatchEvent(new Event('resize')); };
+      ratio(pr * 0.7071);
       time(4); sw['half the pixels'] = +(base - time()).toFixed(2);
-      r.setPixelRatio(pr); window.dispatchEvent(new Event('resize'));
+      ratio(pr);
+      if (a.quality) a.quality.fixed = null;
       time(4);
       const again = time(24);
       rows.sort((x, y) => y.saves - x.saves);

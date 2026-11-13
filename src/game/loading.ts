@@ -11,6 +11,8 @@ export class LoadingScreen {
   private line = document.createElement('div');
   private note = document.createElement('div');
   private duel = document.createElement('div');
+  /** Told when the page goes up and when it goes (the game stops drawing the scene behind it: src/game/main.ts). */
+  onToggle?: (up: boolean) => void;
 
   constructor() {
     this.root.className = 'loading';
@@ -37,6 +39,7 @@ export class LoadingScreen {
     this.note.textContent = o.note ?? '';
     this.note.style.display = o.note ? '' : 'none';
     this.root.style.display = '';
+    this.onToggle?.(true);
   }
 
   /** The arena's name, once it is picked. */
@@ -51,6 +54,7 @@ export class LoadingScreen {
 
   hide() {
     this.root.style.display = 'none';
+    this.onToggle?.(false);
   }
 
   private versus() {
