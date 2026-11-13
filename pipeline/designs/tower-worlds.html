@@ -40,15 +40,24 @@
   li { margin: 4px 0; }
   li b { color: var(--ink); }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .floors { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .floor { position: relative; background: var(--panel); border: 1px solid var(--line); border-top: 3px solid var(--c); border-radius: 10px; padding: 12px 13px; }
+  .floor h3 { margin: 0 0 6px; font: 700 17px/1.2 Georgia, serif; color: var(--c); padding-right: 34px; }
+  .floor .fn { position: absolute; right: 12px; top: 8px; font: 700 26px Georgia, serif; color: var(--c); opacity: .55; }
+  .floor .law { font-size: 14px; margin: 0 0 8px; padding: 7px 9px; border-radius: 7px; background: var(--panel2); }
+  .floor dl { margin: 0; font-size: 13.5px; }
+  .floor dt { font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); margin-top: 7px; }
+  .floor dd { margin: 1px 0 0; color: var(--ink2); }
+  .floor dd b { color: var(--ink); }
   .maphint { display: none; margin: 6px 0 0; font-size: 12.5px; }
   @media (max-width: 640px) { .two { grid-template-columns: 1fr; } h1 { font-size: 22px; } svg { min-width: 700px; } .maphint { display: block; } }
 </style>
 </head>
 <body>
 
-<span class="tag">Proposal · nothing built yet</span>
+<span class="tag">Agreed 13 November · floors 1 to 5 being built</span>
 <h1>The Tower: floors as worlds</h1>
-<p class="sub">Your idea of 13 November, worked out: each floor a small world with people, quests, roaming enemies, a boss, and a gatekeeper at the gate up.</p>
+<p class="sub">Your idea of 13 November, worked out, with the content you asked to add: each floor a small world with its own law, people, quests, roaming enemies, a rival climber, a ruler, and a gatekeeper at the gate up.</p>
 
 <p class="lead">Climb a tower where every floor is a small world. Arrive at a camp, take quests, fight what roams, beat the floor's boss, then win a duel against the gatekeeper to go up. What you reached is kept, and you grow as you climb.</p>
 
@@ -137,6 +146,11 @@
   <div class="card"><div class="k">Fight</div><h3>What roams</h3><p>Three kinds of small enemy a floor, in packs of three to five, plus one elite. They guard their places. Cleared stays cleared.</p><p class="from new">Partly new: the Tower's keepers walk and strike already; packs that wait, wake and call are new.</p></div>
   <div class="card"><div class="k">Follow</div><h3>Quests</h3><p>A main quest in three steps that leads you across the zone to the boss's door, and two side quests that pay boons.</p><p class="from new">New: a small quest system and a quest list on the screen.</p></div>
   <div class="card"><div class="k">Dare</div><h3>A trial door</h3><p>One a floor: a door into a single short room (cross the fire, hold out, break the crystal) for a relic.</p><p class="from">We have it: these are the Tower's rooms of today.</p></div>
+  <div class="card"><div class="k">Obey</div><h3>The floor's law</h3><p>One rule a floor that changes how you move through it: the tide comes in, the wood moves its paths, a storm crosses, the dark hides hunters, a war picks sides.</p><p class="from">Partly there: the arenas' own events (the harbour's wave, the roots, the dark).</p></div>
+  <div class="card"><div class="k">Hunt</div><h3>A named enemy</h3><p>One a floor walks the zone on its own road. It is strong, it is optional, and its bounty is a relic.</p><p class="from new">New.</p></div>
+  <div class="card"><div class="k">Meet</div><h3>The rival</h3><p>Another climber, a hero you know. A word on the road, then a race or a short duel. Beat them and they pay a boon and stand beside you against the ruler.</p><p class="from">Mostly there: the duel against the CPU, and allies that fight for you.</p></div>
+  <div class="card"><div class="k">Find</div><h3>Secrets and waystones</h3><p>Three hidden caches off the paths and a lore stone with the floor's story. Waystones you touch let you step back from the camp, and you wake there after a fall.</p><p class="from new">New, and small.</p></div>
+  <div class="card"><div class="k">Trade</div><h3>Shards and the trader</h3><p>Enemies, caches and quests drop shards, the floor's coin. The trader in the camp sells a heal, a boon, a life back, or a hint to a cache.</p><p class="from new">New, and small.</p></div>
   <div class="card"><div class="k">Win</div><h3>The floor's boss</h3><p>In its lair at the far end, with phases. Every tenth floor a Raid boss for a party: the Sun Warden, Ash and Ember, the Heart of Noon.</p><p class="from">We have it to start: the Tower's guardian. Bosses of each floor's own come later.</p></div>
   <div class="card"><div class="k">Ascend</div><h3>The gatekeeper</h3><p>A duel, one against one, against a hero of the roster with its real spells, played by the computer. It gets better floor by floor. Win and the floor above is yours.</p><p class="from">We have it: the duel against the CPU, all 40 heroes.</p></div>
 </div>
@@ -145,6 +159,95 @@
 <div class="two">
   <div class="box"><div class="k">On a floor</div><p style="margin:4px 0 0">Quests and the trial pay <b>boons</b>: a heal, a power, or a relic that changes a spell. They last for this climb. The Tower's 17 boons are ready.</p></div>
   <div class="box"><div class="k">For good</div><p style="margin:4px 0 0">Each gatekeeper you beat opens the next floor on your account, and lets you keep <b>one</b> boon for ever as a <b>sigil</b>. Ten floors, ten sigils. They count in the Tower only, never in a duel against a player.</p></div>
+</div>
+
+<h2>Falling, and mastering a floor</h2>
+<div class="two">
+  <div class="box"><div class="k">Three lives a floor</div><p style="margin:4px 0 0">A fall takes one and puts you at the last waystone with half health. What you cleared stays cleared, quests keep their progress. With none left you begin the floor again from its camp.</p></div>
+  <div class="box"><div class="k">Four stars a floor</div><p style="margin:4px 0 0">Cleared · every quest done · no life lost · under the floor's time. Stars show on the floor's tile, and your best time goes on the week's board.</p></div>
+</div>
+
+<h2>The five floors</h2>
+<p class="sub">Each with its own law, people, enemies, quest, rival, ruler and gatekeeper.</p>
+<div class="floors">
+
+<div class="floor" style="--c:#6fc3d8">
+  <div class="fn">1</div><h3>The Drowned Harbour</h3>
+  <p class="law"><b>The tide.</b> Every 80 seconds the sea comes in for 15: low ground floods, slows and hurts. Quays and decks stay dry.</p>
+  <dl>
+    <dt>People</dt><dd>Gus keeps the harbour (main quest). Anka, washed ashore (side quests).</dd>
+    <dt>Roams</dt><dd>Drowned dockers that strike, net casters that shoot and root, slow armoured brine crabs. Elite: the Harbourmaster's Mate. Named: Old Barnacle.</dd>
+    <dt>Quest</dt><dd>Clear the fish market · light the lighthouse · bring the captain's key from the wreck.</dd>
+    <dt>Rival</dt><dd>Zephyr: a race to the lighthouse.</dd>
+    <dt>Ruler</dt><dd><b>The Drowned Captain.</b> Anchor sweeps and a cannon volley from the wreck. At half he calls the tide early and fights in the water, where only the deck is safe.</dd>
+    <dt>Gatekeeper</dt><dd><b>Marin, the tide.</b> The sea comes in once during the duel.</dd>
+  </dl>
+</div>
+
+<div class="floor" style="--c:#8fd69a">
+  <div class="fn">2</div><h3>The Walking Wood</h3>
+  <p class="law"><b>The wood walks.</b> Every two minutes roots close one path and open another. The map changes under you.</p>
+  <dl>
+    <dt>People</dt><dd>Bo the shepherd (main quest). Mortis, digging for something (side quests).</dd>
+    <dt>Roams</dt><dd>Bark hounds in fast packs, thorn sprites that shoot, slow heavy moss giants. Elite: the Stag-Crowned. Named: the Hollow Oak.</dd>
+    <dt>Quest</dt><dd>Free three bound wisps · follow them to the heart · cut the three roots that feed it.</dd>
+    <dt>Rival</dt><dd>Nyx: a duel in the thicket.</dd>
+    <dt>Ruler</dt><dd><b>The Elder Root.</b> A heart tree that does not move. Cut its feeding roots, which grow back, while it throws thorns and raises walls of roots.</dd>
+    <dt>Gatekeeper</dt><dd><b>Fenna, the grove.</b> Roots rise as cover in the middle of the duel.</dd>
+  </dl>
+</div>
+
+<div class="floor" style="--c:#e0b06a">
+  <div class="fn">3</div><h3>The Storm Canyon</h3>
+  <p class="law"><b>The storm.</b> A wall of sand crosses the canyon every 90 seconds. Inside it you see a few steps and take harm, unless you stand behind a rock.</p>
+  <dl>
+    <dt>People</dt><dd>Pip the courier (main quest). Kaia, watching the storm (side quests).</dd>
+    <dt>Roams</dt><dd>Raiders that strike, slingers that shoot, dust wraiths that only come in the storm. Elite: the Raider Chief. Named: Dune Mother.</dd>
+    <dt>Quest</dt><dd>Carry water to three wells · shelter the caravan through a storm · break the raiders' gate.</dd>
+    <dt>Rival</dt><dd>Vesper: a duel on the bridge.</dd>
+    <dt>Ruler</dt><dd><b>The Scarab Colossus.</b> Burrows and bursts up under you. In its last phase it calls the storm, and only its own shell gives shelter.</dd>
+    <dt>Gatekeeper</dt><dd><b>Sefu, the sand.</b> A storm crosses the ring once.</dd>
+  </dl>
+</div>
+
+<div class="floor" style="--c:#b9a2ff">
+  <div class="fn">4</div><h3>The Lightless Deep</h3>
+  <p class="law"><b>The dark.</b> Only crystals give light. Beyond it you see nothing, and the lurkers hunt. A shard you carry lights a few steps.</p>
+  <dl>
+    <dt>People</dt><dd>Mabel the delver (main quest). Isolde, who lost her lantern (side quests).</dd>
+    <dt>Roams</dt><dd>Shard mites in swarms, lurkers that wait in the dark and leap, slow crystal golems that throw a bolt back. Elite: the Lantern Thief. Named: the Pale One.</dd>
+    <dt>Quest</dt><dd>Carry a great shard to three dark crystals and wake them. Each one lights a hall.</dd>
+    <dt>Rival</dt><dd>Tempo: a race against the dark.</dd>
+    <dt>Ruler</dt><dd><b>The Prism Mother.</b> Beams turn between her crystals. Break a crystal to make a dark gap to stand in. In the last phase the light goes out.</dd>
+    <dt>Gatekeeper</dt><dd><b>Opaline, the prism.</b> Half the ring is dark.</dd>
+  </dl>
+</div>
+
+<div class="floor" style="--c:#f0907a">
+  <div class="fn">5</div><h3>The Field of Banners</h3>
+  <p class="law"><b>The war.</b> Two ghost armies fight for ever. Take a banner in the camp: its soldiers leave you be, the others hunt you.</p>
+  <dl>
+    <dt>People</dt><dd>Cantor the war singer (main quest). Sir Whiskers, a deserter (side quests).</dd>
+    <dt>Roams</dt><dd>Footmen that strike, bowmen that shoot, knights that charge, all of the other banner. Elite: the Banner Bearer. Named: the Deserter Knight.</dd>
+    <dt>Quest</dt><dd>Take three standards · hold the hill for a minute · break the siege line.</dd>
+    <dt>Rival</dt><dd>Brannoc: a duel between the lines.</dd>
+    <dt>Ruler</dt><dd><b>The Last Marshal.</b> He fights with his guard, waves of both banners. Fell his standard and the guard kneels. In the last phase he is alone, on a horse of smoke.</dd>
+    <dt>Gatekeeper</dt><dd><b>Oblivion, the void.</b> Arrows fall on a line now and then.</dd>
+  </dl>
+</div>
+
+</div>
+<p class="sub" style="margin-top:10px">Beyond floor 5 the gate opens on a landing that says the climb goes on. Floors 6 to 10 are the next work, the tenth with the Sun Warden for a group.</p>
+
+<h2>What the first version will and will not be</h2>
+<div class="box">
+  <ul>
+    <li><b>You play alone,</b> with no account needed, as the Tower's first version was. Friends on a floor come later.</li>
+    <li><b>The zones are drawn in code</b> from the arenas' own pieces and colours: a first pass for you to direct, not finished art.</li>
+    <li><b>A ruler is a giant with its own attacks and phases,</b> wearing a hero's body for now. Bodies of their own come with you.</li>
+    <li><b>The small enemies are simple figures drawn in code,</b> like the Tower's keepers today.</li>
+    <li><b>Your climb is kept in this browser,</b> not yet on your account.</li>
+  </ul>
 </div>
 
 <h2>How the game fits together</h2>
@@ -174,21 +277,22 @@
 <div class="scroll box" style="padding:4px 6px">
 <table>
   <tr><th>Step</th><th>What</th><th>Done when</th></tr>
-  <tr><td class="n">1</td><td><b>Floor 1, alone, the whole loop.</b> The harbour as a zone, the camp, three enemy kinds and an elite, the main quest, one trial door, the boss, the gatekeeper's duel.</td><td>You play it from camp to gate in about 20 minutes and say whether it is fun.</td></tr>
-  <tr><td class="n">2</td><td><b>What playing it showed,</b> then sigils, and floor 2 in another look (Verdant Glade).</td><td>A second floor costs days, not weeks.</td></tr>
-  <tr><td class="n">3</td><td><b>Friends:</b> up to three on a floor, the climb kept on your account, the board.</td><td>Two people climb floor 1 together.</td></tr>
-  <tr><td class="n">4</td><td><b>Floors 3 to 10,</b> the tenth with the Sun Warden for a party.</td><td>A whole season's Tower.</td></tr>
+  <tr><td class="n">1</td><td><b>The world system and floor 1, alone, the whole loop.</b></td><td>The computer plays it from camp to gate, there are pictures of every part, then you play it.</td></tr>
+  <tr><td class="n">2</td><td><b>Floors 2 to 5,</b> each with its law, enemies, quests, rival, ruler and gatekeeper.</td><td>The computer climbs all five, with pictures of each.</td></tr>
+  <tr><td class="n">3</td><td><b>What playing it showed.</b> Then real bodies for the rulers and zones built in Blender, with you.</td><td>Your word.</td></tr>
+  <tr><td class="n">4</td><td><b>Friends:</b> up to three on a floor, the climb kept on your account, the board.</td><td>Two people climb floor 1 together.</td></tr>
+  <tr><td class="n">5</td><td><b>Floors 6 to 10,</b> the tenth with the Sun Warden for a group.</td><td>A whole season's Tower.</td></tr>
 </table>
 </div>
 
-<h2>Five things for you to decide</h2>
+<h2>The five decisions, as you agreed them</h2>
 <div class="scroll box" style="padding:4px 6px">
 <table>
-  <tr><th>#</th><th>Question</th><th>What I propose</th></tr>
+  <tr><th>#</th><th>Question</th><th>Decided</th></tr>
   <tr><td class="n">1</td><td>Does the power you gain stay for good?</td><td class="pick">Yes, as sigils: one a floor, in the Tower only.</td></tr>
   <tr><td class="n">2</td><td>What happens to the Tower of today?</td><td class="pick">It stays, renamed Trials.</td></tr>
   <tr><td class="n">3</td><td>In a party, who fights the gatekeeper?</td><td class="pick">Each climber alone; the others watch.</td></tr>
-  <tr><td class="n">4</td><td>Where do we start?</td><td class="pick">Floor 1, alone, the whole loop, before anything else.</td></tr>
+  <tr><td class="n">4</td><td>Where do we start?</td><td class="pick">Floor 1, alone, the whole loop. Then floors 2 to 5.</td></tr>
   <tr><td class="n">5</td><td>Which look for floor 1?</td><td class="pick">The Drowned Harbour.</td></tr>
 </table>
 </div>
