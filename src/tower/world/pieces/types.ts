@@ -149,6 +149,11 @@ export interface RivalDef {
 
 export interface PiecesDef {
   floor: number;
+  /**
+   * The number the pieces were tuned at, when it differs from `floor` (the four handmade floors that moved up when the Climb became 50
+   * floors): the ruler's, the trial's and the rival's seeds are made from it, so their fights play as they did.
+   */
+  tunedAs?: number;
   /** How much more a hit costs here than on floor 1 (the ruler's moves, the called guard), and how strong an ally is. A ruler's health is its own number. */
   hard: number;
   ruler: RulerDef;

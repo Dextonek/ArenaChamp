@@ -3,6 +3,7 @@
 // a law (the tide) and doors to the set pieces. The route bot plays a floor from its data with no person.
 //
 //   eval(await (await fetch('/pipeline/tools/world-tool.js')).text());
+//   (floors: 1 to 10 the sea, then 11, 21, 31, 41 the handmade Wood, Canyon, Deep and Banners: src/tower/world/floors/index.ts)
 //   await _world({ floor: 1, hero: 'Lyra' })            // manual: you step time (_world.step(s)); { person: true }: the page's own loop runs it
 //   await _worldRoute({ floor: 1, hero: 'Lyra' })       // the bot plays the whole floor, camp to gate; returns the report (see below)
 //   await _worldRoute({ hero: 'Lyra', resume: true })   // continues the saved run (after a page reload)
@@ -96,26 +97,18 @@
   window._world.step = (seconds) => { for (let i = 0; i < Math.round(seconds * 60); i++) frame(); };
   window._world.place = (name) => game.floor.places[name];
   /**
-   * A made floor (pipeline/designs/tower-50.md, baked in src/tower/world/floors/gen/) put in the Climb's list at its number for this
-   * page only, with its set pieces: then `_world({ floor: n })`, `_worldCheck({ floor: n })`, `_worldRoute({ floor: n })` play it.
-   * `_worldGen.reset()` puts back what was there.
+   * Was: put a made floor (src/tower/world/floors/gen/) in the Climb's list for this page. Since the renumbering the made floors are in
+   * the list at their numbers (and the handmade ones at 1, 11, 21, 31, 41), so this only says what floor `n` is; `_world({ floor: n })`,
+   * `_worldCheck({ floor: n })` and `_worldRoute({ floor: n })` play any floor that exists. `_worldGen.reset()` does nothing.
    */
-  const genWas = new Map();
   window._worldGen = async (n) => {
     await setup();
-    const gen = await import('/src/tower/world/floors/gen/index.ts'), pcs = await import('/src/tower/world/pieces/floors.ts');
-    const g = gen.GEN_FLOORS[n];
-    if (!g) return { ok: false, error: `no baked floor ${n}`, baked: Object.keys(gen.GEN_FLOORS) };
-    if (!genWas.has(n)) genWas.set(n, { floor: mod.floors.FLOORS[n], pieces: pcs.PIECES[n - 1] });
-    mod.floors.FLOORS[n] = g.floor;
-    pcs.PIECES[n - 1] = g.pieces;
-    return { ok: true, n, id: g.floor.id, name: g.floor.name, ruler: g.pieces.ruler.name, gate: g.pieces.gate.hero };
+    const def = mod.floors.FLOORS[n];
+    if (!def) return { ok: false, error: `no floor ${n}`, floors: mod.floors.builtFloors() };
+    const pcs = await import('/src/tower/world/pieces/floors.ts'), p = pcs.piecesOf(n);
+    return { ok: true, n, id: def.id, name: def.name, ruler: p?.ruler.name, gate: p?.gate.hero };
   };
-  window._worldGen.reset = async () => {
-    const pcs = await import('/src/tower/world/pieces/floors.ts');
-    for (const [n, w] of genWas) { if (w.floor) mod.floors.FLOORS[n] = w.floor; else delete mod.floors.FLOORS[n]; pcs.PIECES[n - 1] = w.pieces; }
-    genWas.clear();
-  };
+  window._worldGen.reset = async () => {};
   window._world.game = () => game;
   window._world.at = (name) => (name === 'camp' ? game.floor.start : game.floor.places[name]?.stand);
 

@@ -76,7 +76,8 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
   const log: Zone['log'] = [];
   const kit = api.kits.find((k) => k.name === run.hero);
   if (!kit) throw new Error(`no hero named ${run.hero}`);
-  const num = floorNumbers(floor.n);
+  // A handmade floor that moved up keeps the numbers it was tuned at (`tunedAs`).
+  const num = floorNumbers(floor.tunedAs ?? floor.n);
   const say = (text: string) => log.push({ t: +run.clock.toFixed(2), text });
   const packs = new Map<string, Pack>();
   let ctx: ZoneCtx | null = null;

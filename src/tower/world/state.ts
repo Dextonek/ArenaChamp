@@ -3,7 +3,7 @@ import type { PieceKind } from './doors';
 import type { Spot } from './def';
 
 /** The saved keys: all begin `tower.world.`, never the weekly Tower's `tower.save` / `tower.best`. */
-export const KEYS = { run: 'tower.world.run', floor: 'tower.world.floor', sigils: 'tower.world.sigils', stars: 'tower.world.stars', times: 'tower.world.times' } as const;
+export const KEYS = { run: 'tower.world.run', floor: 'tower.world.floor', sigils: 'tower.world.sigils', stars: 'tower.world.stars', times: 'tower.world.times', version: 'tower.world.version' } as const;
 export const LIVES = 3;
 
 export interface QuestState {
@@ -107,7 +107,55 @@ export class WorldRun {
   }
 }
 
+/**
+ * The saves' version (`tower.world.version`). 1 (or none): the Climb had five floors, 1 to 5. 2: the Climb has 50 floors in five
+ * chapters of ten, and the five handmade floors are 1, 11, 21, 31 and 41 (pipeline/designs/tower-50.md, "the renumbering").
+ */
+export const SAVE_VERSION = 2;
+
+/** Old floor `n` (1 to 5) is new floor `10 * (n - 1) + 1`. */
+export const movedFloor = (n: number) => (n >= 2 && n <= 5 ? 10 * (n - 1) + 1 : n);
+
+/**
+ * Moves the saves of a browser that played the five-floor Climb to the 50 floors, once (the version key says it is done): the stars
+ * and best times of floors 2 to 5 go to 11, 21, 31 and 41; a floor in progress on 2 to 5 continues there; the floor a climb may begin
+ * on moves likewise (who could begin old floor 3 can begin 21, and every floor below it that exists). Who had cleared all five (the
+ * floor reached was 6) can begin 42: what clearing floor 41 now writes. Runs before the first read or write of a `tower.world.` key.
+ */
+export function migrateSaves(store: Storage | null = storage()) {
+  if (!store) return;
+  try {
+    const v = Number(store.getItem(KEYS.version) ?? '1');
+    if (v >= SAVE_VERSION) return;
+    const get = (k: string) => { try { return JSON.parse(store.getItem(k) ?? 'null'); } catch { return null; } };
+    const reached = get(KEYS.floor);
+    if (typeof reached === 'number' && reached >= 2) store.setItem(KEYS.floor, JSON.stringify(reached >= 6 ? 42 : movedFloor(reached)));
+    for (const k of [KEYS.stars, KEYS.times]) {
+      const all = get(k);
+      if (!all || typeof all !== 'object') continue;
+      const moved: Record<string, unknown> = {};
+      for (const [n, val] of Object.entries(all)) moved[String(movedFloor(Number(n)))] = val;
+      store.setItem(k, JSON.stringify(moved));
+    }
+    const run = get(KEYS.run);
+    if (run && typeof run === 'object' && typeof run.floor === 'number') store.setItem(KEYS.run, JSON.stringify({ ...run, floor: movedFloor(run.floor) }));
+    store.setItem(KEYS.version, String(SAVE_VERSION));
+  } catch { /* storage that cannot be written keeps nothing anyway */ }
+}
+
+function storage(): Storage | null {
+  try { return typeof localStorage === 'undefined' ? null : localStorage; } catch { return null; }
+}
+
+let migrated = false;
+const ensureMigrated = () => {
+  if (migrated) return;
+  migrated = true;
+  migrateSaves();
+};
+
 export function read<T>(key: string): T | null {
+  ensureMigrated();
   try {
     return JSON.parse(localStorage.getItem(key) ?? 'null');
   } catch {
@@ -115,9 +163,11 @@ export function read<T>(key: string): T | null {
   }
 }
 export function write(key: string, value: unknown) {
+  ensureMigrated();
   try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* it just isn't kept */ }
 }
 export function wipe(key: string) {
+  ensureMigrated();
   try { localStorage.removeItem(key); } catch { /* ignore */ }
 }
 

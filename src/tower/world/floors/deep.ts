@@ -3,7 +3,7 @@ import type { EnemySpec, FloorDef, Spot } from '../def';
 import { DEEP_COVER, DEEP_PLACES, DEEP_R, SPOTS, deepArena } from '../f45/deep-zone';
 
 /**
- * Floor 4, The Lightless Deep, as data (pipeline/designs/tower-worlds.md, "The five floors"; the mapping on the closed vocabulary is in
+ * Floor 31 (floor 4 until the Climb became 50 floors), The Lightless Deep, as data (pipeline/designs/tower-worlds.md, "The five floors"; the mapping on the closed vocabulary is in
  * tower-worlds-build.md). The zone's drawing and cover are `../f45/deep-zone.ts`; the law (`dark`) is `../f45/laws.ts`. Offsets (dx, dz) are
  * from the middle of the ring.
  */
@@ -12,7 +12,8 @@ const look = (s: string) => s as EnemySpec['look'];
 const P = DEEP_PLACES;
 
 export const deep: FloorDef = {
-  n: 4,
+  n: 31,
+  tunedAs: 4,
   id: 'deep',
   name: 'The Lightless Deep',
   blurb: 'A mine whose crystals went dark. Only what shines can be seen.',

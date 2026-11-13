@@ -38,6 +38,30 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    date: '2026-11-14',
+    title: 'The Climb grows to fifty floors',
+    live: false,
+    items: [
+      {
+        tag: 'Tower',
+        title: 'Five chapters of ten floors',
+        text: 'The Climb is now fifty floors in five chapters: the Sea, the Wood, the Sands, the Deep and the War. Every tenth floor is a crown, a great boss you face alone. The Climb screen shows all fifty: the floors you can play, the ones still locked, and the ones still being made.',
+        image: '/news/climb-chapters.jpg',
+        alt: 'The Climb screen: the picked floor, The Storm Canyon, at the top, then five chapters of ten numbered tiles. Floors 1 and 11 show stars, floor 21 is picked, floors 31 and 41 are locked, the floors still being made are dashed and say soon, and every tenth tile has a small crown.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Nine new floors of the Sea',
+        text: 'After the Drowned Harbour come floors 2 to 9: new stretches of the same coast, each with its own places, people, quests and ruler, and a little harder each time. Floor 10, the Sea\'s crown, is the Sun Warden.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The other floors moved up',
+        text: 'The Walking Wood is now floor 11, the Storm Canyon 21, the Lightless Deep 31 and the Field of Banners 41, each the first floor of its chapter. They play as before, and your stars, best times and a floor in progress moved with them. Until a chapter\'s other floors are made, the way up goes from its first floor straight to the next chapter.',
+      },
+    ],
+  },
+  {
     date: '2026-11-13',
     title: 'The Drowned Harbour by day',
     live: false,
