@@ -345,7 +345,7 @@ export class WorldGame {
     this.zone?.setPacks(false);
     const before = sigils();
     if (this.persist) {
-      write(KEYS.floor, floor.n + 1);
+      write(KEYS.floor, Math.max(nextFloor(), floor.n + 1));
       const all = read<Record<string, number[]>>(KEYS.stars) ?? {};
       const best = all[floor.n] ?? [0, 0, 0, 0];
       all[floor.n] = best.map((b, i) => Math.max(b, run.result!.stars[i]));
