@@ -5,6 +5,9 @@ measures what the game downloads before it can be played. How to read it: docs/p
     python pipeline/tools/perf.py scenes --label baseline                    # every scene on every profile (about 25 min)
     python pipeline/tools/perf.py scenes --label try --profiles phone-4x --scenes duel-temple,raid-party
     python pipeline/tools/perf.py scenes --label whatif --scenes duel-temple --set "{\"pixelRatio\": 1}"
+    python pipeline/tools/perf.py profile --scene raid-party --profile phone-4x   # where the processor's time goes
+    python pipeline/tools/perf.py passes --scene duel-temple                 # what each step of drawing a frame costs the graphics card
+    python pipeline/tools/perf.py parts --scene duel-temple                  # what each part of the picture costs it (hidden one at a time)
     python pipeline/tools/perf.py load --label baseline                      # the built game: bytes, requests, the first fight
     python pipeline/tools/perf.py files                                      # the sizes of the built chunks and the models
 
@@ -16,6 +19,9 @@ A scene is one fresh browser: its first seconds are the cold start a player meet
 profiles: `desktop` (1920 x 1080), `phone` (844 x 390 at three pixels to a point, touch), each at the processor's own
 speed and slowed 4 and 6 times (Chrome's CPU throttling; it does not slow the graphics card). The graphics card is this
 computer's own: the result names it, and says so if the browser fell back to software drawing.
+
+--root <folder> measures another checkout of the game (a git worktree of an earlier commit) with this checkout's tool: how
+"before" is measured again beside "after", on the same day and the same computer. Give it its own --port.
 
 `scenes` uses the simulator's dev server config (no hot reload) on its own port; `load` builds nothing: run `npm run build`
 first, it serves dist/ itself with the live site's compression (text compressed, models and pictures as they are).
@@ -77,13 +83,17 @@ def up(port, path="/"):
         return False
 
 
-def dev_server(port):
-    """The no-hot-reload dev server on `port`: one that is there is used and left alone, else one is started (and returned, to stop)."""
+def dev_server(port, root=""):
+    """
+    The no-hot-reload dev server on `port`: one that is there is used and left alone, else one is started (and returned, to
+    stop). `root`: another checkout of the game to serve (a git worktree of an earlier commit, to measure "before" again).
+    """
     if up(port):
         return None
-    proc = subprocess.Popen(["node", str(ROOT / "node_modules" / "vite" / "bin" / "vite.js"), "--config",
-                             str(ROOT / "pipeline" / "sim" / "vite.sim.config.ts"), "--port", str(port)],
-                            cwd=str(ROOT), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    root = Path(root) if root else ROOT
+    proc = subprocess.Popen(["node", str(root / "node_modules" / "vite" / "bin" / "vite.js"), "--config",
+                             str(root / "pipeline" / "sim" / "vite.sim.config.ts"), "--port", str(port)],
+                            cwd=str(root), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     for _ in range(120):
         if up(port):
             return proc
@@ -118,7 +128,7 @@ async def run_scenes(args):
     data.update({"when": time.strftime("%Y-%m-%d %H:%M"), "commit": git_head(), "frames": args.frames})
     script = (ROOT / "pipeline" / "tools" / "perf-page.js").read_text(encoding="utf-8")
     extra = json.loads(args.set) if args.set else None
-    proc = dev_server(args.port)
+    proc = dev_server(args.port, args.root)
     try:
         from playwright.async_api import async_playwright
         async with async_playwright() as pw:
@@ -165,6 +175,119 @@ async def run_scenes(args):
         if proc:
             proc.terminate()
     print(f"saved {data_file}")
+
+
+# --- where the time goes ---------------------------------------------------------------------------------------------
+
+def short(url):
+    return url.split("/src/")[-1].split("?")[0] if "/src/" in url else url.split("/")[-1].split("?")[0]
+
+
+async def one_scene(args, opts, before=None, after=None, call="run"):
+    """Plays one scene in a fresh browser; `before(cdp, page)` and `after(cdp)` wrap the run. Returns (result, what `after` gave)."""
+    script = (ROOT / "pipeline" / "tools" / "perf-page.js").read_text(encoding="utf-8")
+    proc = dev_server(args.port, args.root)
+    prof = PROFILES[args.profile]
+    try:
+        from playwright.async_api import async_playwright
+        async with async_playwright() as pw:
+            browser, page, cdp = await open_page(pw, args, prof, "")
+            await page.goto(f"http://localhost:{args.port}/game.html", wait_until="load", timeout=120000)
+            await page.wait_for_function("typeof game !== 'undefined' && !!game.api", timeout=120000)
+            await page.evaluate(script)
+            if prof["cpu"] > 1:
+                await cdp.send("Emulation.setCPUThrottlingRate", {"rate": prof["cpu"]})
+            if before:
+                await before(cdp, page)
+            res = await asyncio.wait_for(page.evaluate(f"(o) => _perf.{call}(o)", opts), timeout=args.timeout)
+            extra = await after(cdp) if after else None
+            await browser.close()
+    finally:
+        if proc:
+            proc.terminate()
+    if res.get("crashed"):
+        sys.exit("the scene crashed: " + res["crashed"])
+    return res, extra
+
+
+async def run_profile(args):
+    """One scene under Chrome's own profiler: the functions the processor spends its time in."""
+    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "profile": True}
+    if args.set:
+        opts["set"] = json.loads(args.set)
+
+    async def before(cdp, page):
+        await cdp.send("Profiler.enable")
+        await cdp.send("Profiler.setSamplingInterval", {"interval": 200})
+
+        # The profiler starts when the measured frames do (the page calls back), so loading is not in it.
+        async def begin():
+            await cdp.send("Profiler.start")
+        await page.expose_function("_perfBegin", begin)
+
+    async def after(cdp):
+        return (await cdp.send("Profiler.stop"))["profile"]
+
+    res, cpu = await one_scene(args, opts, before, after)
+    nodes = {n["id"]: n for n in cpu["nodes"]}
+    own, by_file = {}, {}
+    for node_id, dt in zip(cpu["samples"], cpu.get("timeDeltas", [])):
+        f = nodes[node_id]["callFrame"]
+        key = (f["functionName"] or "(anonymous)", short(f["url"]), f["lineNumber"] + 1)
+        own[key] = own.get(key, 0) + dt / 1000
+    for (name, url, line), ms in own.items():
+        by_file[url or name] = by_file.get(url or name, 0) + ms
+    frames = res["frames"]
+    print(f"{args.scene} on {args.profile}: frame median {res['frame']['median']} ms (step {res['step']['median']}, draw {res['draw']['median']}, "
+          f"wait for the card {res['gpu']['median']}), garbage {res['allocMBs']} MB a second")
+    print(f"\nProcessor time by function, ms a frame (its own time, without what it calls; {sum(own.values()) / frames:.2f} ms a frame in all):")
+    for (name, url, line), ms in sorted(own.items(), key=lambda kv: -kv[1])[:args.top]:
+        print(f"  {ms / frames:6.3f}  {name[:44]:44} {url}:{line}")
+    print("\nBy file, ms a frame:")
+    for url, ms in sorted(by_file.items(), key=lambda kv: -kv[1])[:24]:
+        print(f"  {ms / frames:6.3f}  {url}")
+    out = OUT / "data" / f"profile-{args.scene}-{args.profile}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"scene": args.scene, "profile": args.profile, "result": {k: v for k, v in res.items() if k != "line"},
+                               "functions": [[n, u, ln, round(ms / frames, 4)] for (n, u, ln), ms in sorted(own.items(), key=lambda kv: -kv[1])[:200]],
+                               "files": [[u, round(ms / frames, 4)] for u, ms in sorted(by_file.items(), key=lambda kv: -kv[1])[:60]]}), encoding="utf-8")
+    print(f"saved {out}")
+
+
+async def run_passes(args):
+    """What each step of drawing a frame costs the graphics card (by its own timer), for one scene."""
+    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "passes": True}
+    if args.set:
+        opts["set"] = json.loads(args.set)
+    res, _ = await one_scene(args, opts)
+    print(f"{args.scene} on {args.profile}, canvas {res['canvas'][0]} x {res['canvas'][1]}: frame median {res['frame']['median']} ms, wait for the card {res['gpu']['median']} ms")
+    print("The graphics card's own time for each step, ms a frame (median over the run):")
+    for name, ms in (res.get("passes") or {}).items():
+        print(f"  {ms:6.2f}  {name}")
+    out = OUT / "data" / f"passes-{args.scene}-{args.profile}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({k: v for k, v in res.items() if k != "line"}), encoding="utf-8")
+    print(f"saved {out}")
+
+
+async def run_parts(args):
+    """What each part of one scene's picture costs the graphics card: the frame drawn again with one part hidden at a time."""
+    opts = {**SCENES[args.scene], "seed": args.seed, "at": args.frames}
+    if args.set:
+        opts["set"] = json.loads(args.set)
+    res, _ = await one_scene(args, opts, call="parts")
+    print(f"{args.scene} on {args.profile}, canvas {res['canvas'][0]} x {res['canvas'][1]}, held at frame {args.frames}: one frame {res['frameMs']} ms (measured again at the end: {res['frameMsAgain']})")
+    print("Faster by this many ms without it (parts under 0.3 ms left out):")
+    for row in res["parts"]:
+        if row["saves"] >= 0.3:
+            print(f"  {row['saves']:6.2f}  {row['part']}  ({row['draws']} things drawn)")
+    print("Switches:")
+    for name, ms in res["switches"].items():
+        print(f"  {ms:6.2f}  {name}")
+    out = OUT / "data" / f"parts-{args.scene}-{args.profile}.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(res, indent=1), encoding="utf-8")
+    print(f"saved {out}")
 
 
 # --- loading -------------------------------------------------------------------------------------------------------
@@ -309,6 +432,7 @@ def main():
         p.add_argument("--browser", default=default_browser())
         p.add_argument("--headed", action="store_true", help="show the browser's window")
         p.add_argument("--port", type=int, default=5183)
+        p.add_argument("--root", default="", help="another checkout of the game to measure (its own --port)")
     s = sub.choices["scenes"]
     s.add_argument("--scenes", default=",".join(SCENES))
     s.add_argument("--frames", type=int, default=1500, help="frames of 1/60 s a scene is played for")
@@ -317,9 +441,28 @@ def main():
     s.add_argument("--timeout", type=float, default=540, help="seconds one scene may take")
     s.add_argument("--no-pictures", action="store_true")
     sub.add_parser("files")
+    for name in ("profile", "passes", "parts"):
+        p = sub.add_parser(name)
+        p.add_argument("--scene", default="duel-temple")
+        p.add_argument("--profile", default="desktop")
+        p.add_argument("--frames", type=int, default=900)
+        p.add_argument("--seed", type=int, default=7)
+        p.add_argument("--set", default="")
+        p.add_argument("--top", type=int, default=40)
+        p.add_argument("--timeout", type=float, default=540)
+        p.add_argument("--browser", default=default_browser())
+        p.add_argument("--headed", action="store_true")
+        p.add_argument("--port", type=int, default=5183)
+        p.add_argument("--root", default="", help="another checkout of the game to measure (its own --port)")
     args = ap.parse_args()
     if args.cmd == "scenes":
         asyncio.run(run_scenes(args))
+    elif args.cmd == "profile":
+        asyncio.run(run_profile(args))
+    elif args.cmd == "passes":
+        asyncio.run(run_passes(args))
+    elif args.cmd == "parts":
+        asyncio.run(run_parts(args))
     elif args.cmd == "load":
         asyncio.run(run_load(args))
     else:
