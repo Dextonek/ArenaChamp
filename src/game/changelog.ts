@@ -40,7 +40,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-13',
     title: 'The Tower: five floors that are worlds',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Tower',
@@ -74,7 +74,7 @@ export const CHANGELOG: Release[] = [
   {
     date: '2026-11-13',
     title: 'A smoother game',
-    live: false,
+    live: true,
     items: [
       {
         tag: 'Menus',
