@@ -290,7 +290,7 @@ def main():
 <li><b>The menu no longer draws the fight's scene.</b> The menus cover the whole canvas, but the 3D scene behind them was drawn through the whole post chain every frame. <i>Play screen {ms(b, 'desktop', 'menu')} → {ms(a, 'desktop', 'menu')} ms.</i></li>
 <li><b>Three full-screen passes fewer</b>: no multisampled canvas (the last pass is one quad), no copy pass when nothing bends the picture, tone mapping folded into the finish pass. <i>About 2 ms a frame at full HD.</i></li>
 </ul><h3>Stutters</h3><ul>
-<li><b>The shader warm-up really warms up.</b> It compiled shaders for drawing straight to the canvas, but the game draws into the post chain's own target, which is a different shader: each was built again the first time it was drawn. And the engine quietly swapped its shadow type at the first shadow, which changed the identity of every shader once more. Both are fixed; the warm-up also builds both heroes' spell effects before the fight. <i>Waiting for shaders behind the first loading page: 2.5 → 0.35 s. In the fight's first 20 seconds: frames over 50 ms {l0['fight']['over50'] if l0 else '?'} → {l1['fight']['over50'] if l1 else '?'}, the longest {l0['fight']['longestMs'] if l0 else 0:.0f} → {l1['fight']['longestMs'] if l1 else 0:.0f} ms.</i></li>
+<li><b>The shader warm-up really warms up.</b> It compiled shaders for drawing straight to the canvas, but the game draws into the post chain's own target, which is a different shader: each was built again the first time it was drawn. And the engine quietly swapped its shadow type at the first shadow, which changed the identity of every shader once more. Both are fixed; the warm-up also builds both heroes' spell effects before the fight. <i>The page stood still waiting for shaders for 1.3 s before the menu and 1.6 s behind the first loading page; now not at all before the menu and 0.35 s behind the loading page. In the fight's first 20 seconds: frames over 50 ms {l0['fight']['over50'] if l0 else '?'} → {l1['fight']['over50'] if l1 else '?'}, the longest {l0['fight']['longestMs'] if l0 else 0:.0f} → {l1['fight']['longestMs'] if l1 else 0:.0f} ms.</i></li>
 <li><b>The post chain's and the reflections' shaders compile in the background</b> from the moment the page opens, and nothing is drawn behind the loading page until they are done.</li>
 <li><b>A built shader is kept.</b> The engine deleted a shader when the last thing using it went (a damage number, a bolt) and built it again the next time.</li>
 </ul><h3>The processor</h3><ul>
@@ -301,7 +301,7 @@ def main():
 <li><b>The reflections and the Play screen's hero renderer are made when first needed</b>, not before the menu. <i>Menu on screen: {l0['firstFrameMs'] / 1000 if l0 else 0:.1f} → {l1['firstFrameMs'] / 1000 if l1 else 0:.1f} s on the desktop.</i></li>
 <li><b>The heroes' clips are fetched while the menu is idle.</b></li>
 </ul><h3>New: the Graphics setting</h3><ul>
-<li><b>High</b> (the look as it was), <b>Medium</b>, <b>Low</b> and <b>Auto</b>, on a button at the top of the menu, kept in the browser. Only sharpness and the shadows under the figures change; spells, lights and glow are the same at every level.</li>
+<li><b>High</b> (the look as it was), <b>Medium</b>, <b>Low</b> and <b>Auto</b>, on a button at the top of the menu (on a phone with an account: on the Profile screen), kept in the browser. Only sharpness and the shadows under the figures change; spells, lights and glow are the same at every level.</li>
 </ul>""")
 
     # --- quality ---
@@ -327,7 +327,8 @@ def main():
     w("</table></div>")
     w("<ul><li><b>Medium</b> draws at most 1.2 million pixels (full HD has 2.1) and softer shadows. <b>Low</b> draws at most 0.6 million and no shadows under the figures.</li>"
       "<li><b>Auto</b> times the real scene behind each loading page and draws as many pixels as fit in a 60th of a second, never fewer than Low; during the fight it follows the frame rate. "
-      "Where the processor, not the card, is the limit (a big raid on a phone), fewer pixels do not help: there it leaves out the shadows, which are a second draw call for everything that casts one.</li></ul>")
+      "Where the processor, not the card, is the limit (a big raid on a phone), fewer pixels do not help: there it leaves out the shadows, which are a second draw call for everything that casts one, "
+      "and during the fight a cut in pixels that buys nothing is taken back, so the picture is not made soft for no gain.</li></ul>")
 
     # --- same picture ---
     same = [(n, IMG / f"cmp-base-desktop-{n}.jpg", IMG / f"cmp-new-desktop-{n}.jpg") for n in ("duel-temple", "tower-horde", "raid-solo")]
@@ -336,7 +337,7 @@ def main():
         w("<h2>The picture is the same, and so are the fights</h2>")
         w("<p>Each scene's fight is written down as it is played (health and places every second). With the spells built at the first cast as before, the changed game plays the very same fights as the live one, "
           "to the last number. The same frame before and after, pixel by pixel, differs only by the film grain (about 1 of 255 on average; no pixel far apart). "
-          "The Raid's own rule checks pass unchanged (234, 77, 246, 40 and 143 rows), and the server's test.</p><div class='pair'>")
+          "The Raid's own rule checks pass unchanged (234, 77, 246, 40 and 143 rows), and the server's test. On the final code all 40 heroes were played once as the player and once as the opponent with no error, and the game's own ways into a fight were run as their buttons start them (a CPU duel, the Raid's hall, a Tower climb, and a raid of three through the real server).</p><div class='pair'>")
         for n, x, y in same[:2]:
             w(f"<figure><img src='img/{x.name}' alt='Before' loading='lazy'><figcaption>Before: {e(n)}</figcaption></figure><figure><img src='img/{y.name}' alt='After' loading='lazy'><figcaption>After: the same frame</figcaption></figure>")
         w("</div>")
@@ -355,7 +356,7 @@ def main():
 <li><b>A real phone</b>, and Safari on an iPhone: the phone rows are this computer with a phone-sized screen and a slowed processor. A phone's graphics card may be faster or slower than this one.</li>
 <li><b>Online play</b>: a network duel or a raid through the server. The scenes are offline; the raid of ten has nine scripted partners on one screen.</li>
 <li><b>A long session</b>: the scenes are 25 seconds. Memory that only grows over an hour would not show.</li>
-<li><b>The Auto level's following of the frame rate during a fight</b> on real slow hardware: the choice before the fight is measured, the adjusting during it was only seen to work in a visible browser on this computer.</li>
+<li><b>The Auto level's following of the frame rate during a fight</b> on real slow hardware: the choice before the fight is measured; the adjusting during it was tried on made-up devices (a slow card, a slow processor, a phone held to 30 a second, a heavy spell) and seen to work in a visible browser on this computer, no more.</li>
 <li>Whether it <b>feels</b> smooth: that is for a person playing.</li>
 </ul>""")
     w("""<h2>Running it again</h2><p>All of it is one tool, documented in <code>docs/pipeline/performance.md</code>:</p>

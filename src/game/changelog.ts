@@ -84,7 +84,7 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Menus',
         title: 'A Graphics setting',
-        text: 'A new Graphics button at the top of the menu: High (the look as it was), Medium, Low, and Auto. Auto measures your device before each fight and draws just as sharply as it can while staying smooth. The game remembers your choice.',
+        text: 'A new Graphics button at the top of the menu (on a phone with an account: on the Profile screen): High (the look as it was), Medium, Low, and Auto. Auto measures your device before each fight and draws just as sharply as it can while staying smooth. The game remembers your choice.',
       },
       {
         tag: 'Menus',

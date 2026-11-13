@@ -196,7 +196,7 @@ async def run(args):
     out.mkdir(parents=True, exist_ok=True)
     try:
         async with async_playwright() as pw:
-            browser = await pw.chromium.launch(channel="chrome", headless=True, args=["--mute-audio", "--ignore-gpu-blocklist"])
+            browser = await pw.chromium.launch(channel=args.browser, headless=True, args=["--mute-audio", "--ignore-gpu-blocklist"])
             pages = []
             for i in range(args.players):
                 phone = args.phone and i == args.players - 1
@@ -372,6 +372,7 @@ if __name__ == "__main__":
     ap.add_argument("--phone", action="store_true")
     ap.add_argument("--hall", action="store_true")
     ap.add_argument("--burst", action="store_true")
+    ap.add_argument("--browser", default="chrome", help="chrome or msedge")
     ap.add_argument("--width", type=int, default=900)
     ap.add_argument("--height", type=int, default=600)
     a = ap.parse_args()

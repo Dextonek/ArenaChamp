@@ -63,23 +63,34 @@ export function saveShare(share: number) {
 /**
  * Follows the frame rate during a fight and says when `auto` should draw fewer pixels or may draw more. Fed every
  * frame's length; it judges windows of 40 frames by their mean without the three longest (a stutter is not a slow card).
- * Down as soon as a window is slow, by as much as the window was too long. Up only after four fast windows in a row, a
- * little, and if that makes the next window slow it goes back and waits longer each time before trying again.
+ *
+ *  - A slow window (over 17.8 ms: more than one frame in fifteen misses a 60 Hz screen): fewer pixels at once, by as much
+ *    as the window was too long.
+ *  - Four fast windows in a row (under 17.2 ms): a few more pixels, more of them when there is much room. If the next
+ *    window is then no longer fast, exactly those are taken back and the next try waits twice as long.
+ *  - Fewer pixels only help where the graphics card is the limit. A cut that leaves the next window as slow as the one
+ *    before it (a big raid on a phone: the processor is the limit; a phone that holds itself to 30 frames a second) is
+ *    taken back, and no cut is tried for a while, longer each time: the picture is not made soft for nothing.
  */
 export class FramePacer {
   private frames: number[] = [];
   private fast = 0;
-  private triedUp = false;
-  /** Windows to wait before the next try to go up (grows when a try fails). */
+  /** The last step up, until the next window has shown whether the device can take it (0: none). */
+  private up = 0;
+  /** Fast windows to wait before the next step up (grows when one fails). */
   private wait = 4;
-  private hold = 0;
+  /** The last cut, until the next window has shown whether it helped: its factor, and the window's mean before it. */
+  private cut: { by: number; before: number } | null = null;
+  /** Windows in which no cut is tried (a cut did not help), and how long the next such stretch is. */
+  private noCut = 0;
+  private noCutNext = 30;
 
   /** Forgets what it has seen (a new fight, a level set by hand, the tab was hidden). */
   reset() {
     this.frames.length = 0;
     this.fast = 0;
-    this.triedUp = false;
-    this.hold = 0;
+    this.up = 0;
+    this.cut = null;
   }
 
   /** One frame took `ms`. Returns the factor to change the share of pixels by (below 1: fewer), or 0 for no change. */
@@ -93,21 +104,33 @@ export class FramePacer {
     for (let i = 0; i < sorted.length - 3; i++) sum += sorted[i];
     const mean = sum / (sorted.length - 3);
     this.frames.length = 0;
-    if (mean > 19.5) {
-      // Too slow. If this follows a try to go up, the try failed: back down, and wait longer next time.
+    const up = this.up, cut = this.cut;
+    this.up = 0;
+    this.cut = null;
+    if (up && mean > 17.2) {
+      // The step up was too much: exactly back, and the next one waits longer.
       this.fast = 0;
-      if (this.triedUp) this.wait = Math.min(this.wait * 2, 64);
-      this.triedUp = false;
-      return Math.max(0.6, Math.min(0.92, 16.7 / mean));
+      this.wait = Math.min(this.wait * 2, 64);
+      return 1 / up;
     }
-    this.triedUp = false;
-    if (mean < 17.4) {
-      if (this.hold > 0) { this.hold--; return 0; }
+    if (mean > 17.8) {
+      this.fast = 0;
+      if (cut && mean > cut.before * 0.95) {
+        // The last cut bought nothing: the card is not what is slow. Give the pixels back, and leave them be for a while.
+        this.noCut = this.noCutNext;
+        this.noCutNext = Math.min(this.noCutNext * 2, 480);
+        return 1 / cut.by;
+      }
+      if (this.noCut > 0) { this.noCut--; return 0; }
+      const by = Math.max(0.6, Math.min(0.92, 15.8 / mean));
+      this.cut = { by, before: mean };
+      return by;
+    }
+    if (mean < 17.2) {
       if (++this.fast >= this.wait) {
         this.fast = 0;
-        this.triedUp = true;
-        this.hold = 1;
-        return 1.1;
+        this.up = mean < 13 ? 1.25 : 1.1;
+        return this.up;
       }
     } else this.fast = 0;
     return 0;

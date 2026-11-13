@@ -325,7 +325,10 @@ function render() {
 let scrollToHero = false;
 
 /** The bar along the top (on a phone its tabs sit along the bottom). Without an account: the two offline screens and a way to log in. */
-/** The picture's quality (src/quality.ts): a tap goes to the next level, kept in this browser. */
+/**
+ * The picture's quality (src/quality.ts): a tap goes to the next level, kept in this browser. In the bar at the top, and on
+ * the Profile screen: on a phone the bar of a logged-in player has no room for it (game.css, `.who.full .gfx`).
+ */
 function qualityButton() {
   const q = gameApi.quality;
   return el('button', {
@@ -352,7 +355,7 @@ function header() {
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
     el('nav', { class: 'many' }, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Shop', 'shop', 'shop'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
-    el('div', { class: 'who' },
+    el('div', { class: 'who full' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
       // The account's obols: a tap opens the Shop.
@@ -1029,7 +1032,7 @@ function profileScreen(p: Profile) {
       statTiles(p),
       el('p', { class: 'muted small' }, rankLine(p)),
       p.raids?.played ? el('p', { class: 'muted small' }, raidLine(p)) : null,
-      el('div', { class: 'row' }, el('button', { class: 'btn', onclick: () => go('shop') }, icon('shop'), 'Open the Shop'))),
+      el('div', { class: 'row' }, el('button', { class: 'btn', onclick: () => go('shop') }, icon('shop'), 'Open the Shop'), qualityButton())),
     el('div', { class: 'cols' },
       el('section', { class: 'card' }, el('h3', {}, 'Heroes played'),
         rows.length ? el('table', { class: 'tbl' },

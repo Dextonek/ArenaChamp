@@ -20,7 +20,7 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
   raid of ten 39 -> 29, Tower horde floor 33 -> 18, Play screen 17 -> 7. Mid-range phone (the phone screen, processor slowed
   4 times): duels 36 to 40 -> 21 to 22, raid of ten 106 -> 53, Tower 34 -> 22. In a visible browser: menu up after 2.4 -> 1.2 s;
   a fight's first 20 s: 20 -> 30 frames a second, frames over 50 ms 154 -> 47, the longest 884 -> 100 ms.
-- **New: a Graphics setting** (a button at the top of the menu, kept in the browser): High (the look as it was, **the default**),
+- **New: a Graphics setting** (a button at the top of the menu, on a phone with an account on the Profile screen; kept in the browser): High (the look as it was, **the default**),
   Medium, Low, Auto. Auto times the real scene behind each loading page and draws as many pixels as fit in a 60th of a second;
   where the processor is the limit it leaves out the shadows. With Auto the desktop duel is 14.7 ms (60 a second, drawn at
   1275 x 717), the mid-range phone's 17.5; a fight's first 20 s have 3 frames over 50 ms.
@@ -45,9 +45,21 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
 - **Waiting on the user:**
   1. Look at the Graphics levels on the page and say whether **Auto** should be the default (one word in `src/quality.ts`,
      `QUALITY_DEFAULT`, and the News item's text).
-  2. Push: `git push origin feat/particle-editor:main`.
+  2. Push the follow-up below: `git push origin feat/particle-editor:main` (the work up to `ff001e5` is pushed).
   3. Deploy, on its own request: `npm run cf:deploy` (it drops every live connection). The News release "A smoother game" is
      `live: false` until then.
+- **A follow-up after the push (2026-11-13, evening): committed, NOT pushed.** A second look found four things, now done:
+  the one-go drawing of see-through glows judges a material by every shape it is used on, not the first (and never an
+  instanced one that does not just add light); Auto takes a cut in pixels back when it bought nothing (a raid on a phone, a
+  phone held to 30 a second) and aims at 60, not 52; on a phone with an account the Graphics button pushed the bar past the
+  screen's edge, so it is on the Profile screen there; the page said shaders froze the first loading page for 2.5 s, which was
+  a build of mine: the live game's is 1.3 s before the menu and 1.6 s behind the loading page (now 0 and 0.35 s). Checked on
+  the merged code (the Tower's worlds in): type check, build, `npm run test:server`; the three scenes' fights are still the
+  live game's; all 40 heroes played once as the player and once as the opponent, 20 s each, drawn, no error; a CPU duel, the
+  Raid's hall, a Tower climb as a player and three bots through the real hub (`party-raid.py --players 3 --browser msedge`):
+  the scene on screen, the flags right, no error. `party-raid.py` takes `--browser` (this computer has Edge, not Chrome).
+- **Seen on the way, not changed:** on a phone the logged-in bar's "Log out" is cut by the screen's edge with a name of
+  eight letters (it was so before this work).
 - **Next, if wanted:** the Hall of Noon's blocks drawn as batches and a hero's pieces joined (the raid on a phone); models
   compressed and the built files kept by the browser (loading on a slow line); a real phone under the tool.
 

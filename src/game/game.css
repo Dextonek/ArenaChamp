@@ -824,6 +824,8 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
   .top nav.many .nav .ic svg { width: 20px; height: 20px; }
   .who { gap: 7px; }
   .who .btn.small { padding-left: 10px; padding-right: 10px; }
+  /* A logged-in player's bar is full on a phone (name, obols, Log out): the Graphics button is on the Profile screen there. */
+  .who.full .gfx { display: none; }
   .obols.big { font-size: 26px; }
   .purse-big { padding: 6px 14px 8px; }
   .shop { gap: 10px; }

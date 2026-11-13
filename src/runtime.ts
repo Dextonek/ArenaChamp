@@ -132,11 +132,14 @@ function opaqueOrder(a: DrawItem, b: DrawItem) {
  * the spells are made of. Where the two goes give the same picture as one, one is asked for (`forceSinglePass`):
  *  - a flat shape (its back and its front are never seen at once), unless a shader of its own may bend it;
  *  - anything that only adds its light and writes no depth (adding does not care about the order).
- * A closed shape that covers what is behind it (a shield's dome, a veil) keeps its two goes: there the order shows.
- * Looked at once for each material and geometry, here, where every see-through thing passes before it is drawn.
+ * A closed shape that covers what is behind it (a shield's dome, a veil) keeps its two goes: there the order shows. So do
+ * instanced flat shapes that do not just add light (their copies lie in different planes and overlap each other).
+ * A material is judged by everything that draws with it: each new shape it turns up on is looked at, here, where every
+ * see-through thing passes before it is drawn, and one shape that needs the two goes takes the one go away for good.
  */
 const _flat = new WeakMap<THREE.BufferGeometry, boolean>();
-const _oneGo = new WeakSet<THREE.Material>();
+/** For each two-sided see-through material met: the shapes it was seen on, and whether it has lost its one go. */
+const _oneGo = new WeakMap<THREE.Material, { seen: WeakSet<object>; never: boolean }>();
 function flatShape(g: THREE.BufferGeometry | null) {
   if (!g) return false;
   let flat = _flat.get(g);
@@ -151,13 +154,26 @@ function flatShape(g: THREE.BufferGeometry | null) {
 }
 function oneGo(it: DrawItem) {
   const m = it.material as THREE.Material & { displacementMap?: unknown; isShaderMaterial?: boolean };
-  if (_oneGo.has(m)) return;
-  _oneGo.add(m);
-  if (!m.transparent || m.side !== THREE.DoubleSide || m.forceSinglePass) return;
+  if (!m.transparent || m.side !== THREE.DoubleSide) return;
+  let state = _oneGo.get(m);
+  if (!state) {
+    // One the game's own code asked for is the game's: left alone.
+    if (m.forceSinglePass) return;
+    _oneGo.set(m, (state = { seen: new WeakSet(), never: false }));
+  }
+  if (state.never) return;
+  const shape = it.geometry ?? it.object;
+  if (state.seen.has(shape)) return;
+  state.seen.add(shape);
+  const o = it.object as THREE.Mesh & { isSkinnedMesh?: boolean; isInstancedMesh?: boolean };
+  // Judged anew for each shape, as the material is now: a glow that only adds light is safe on any shape.
   const adds = m.blending === THREE.AdditiveBlending && !m.depthWrite;
-  const o = it.object as THREE.Mesh & { isSkinnedMesh?: boolean };
-  const flat = !m.isShaderMaterial && !m.displacementMap && !o.isSkinnedMesh && flatShape(it.geometry);
+  const flat = !m.isShaderMaterial && !m.displacementMap && !o.isSkinnedMesh && !o.isInstancedMesh && flatShape(it.geometry);
   if (adds || flat) m.forceSinglePass = true;
+  else {
+    state.never = true;
+    m.forceSinglePass = false;
+  }
 }
 /** Three's own order for see-through things (far to near), with `oneGo` looked at on the way. */
 function transparentOrder(a: DrawItem, b: DrawItem) {
@@ -360,7 +376,8 @@ export function createRuntime(opts: RuntimeOptions) {
   /**
    * The shaders of the post chain and of the reflections, compiled in the background from the moment the page opens.
    * None of them is part of the scene, so the fight's warm-up never saw them: each was compiled when first used, with the
-   * page frozen until it was done (2.4 s in all behind the first loading page on an integrated card). `compile` only starts
+   * page frozen until it was done (with the scene's own, 1.3 s before the menu and 1.6 s behind the first loading page on an
+   * integrated card). `compile` only starts
    * a shader's compile; the browser finishes it on its own threads. Each is compiled for where it draws: into a target
    * (linear colour) or, the last pass, onto the canvas.
    */

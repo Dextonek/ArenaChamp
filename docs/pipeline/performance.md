@@ -133,8 +133,11 @@ Measured on an Intel UHD 630. The numbers are on the page; the causes, for the n
 ## The quality setting
 
 `src/quality.ts` and `quality` in `src/runtime.ts`. High (the look as it was; the default), Medium (at most 1.2 million
-pixels, a 1024 shadow map), Low (at most 0.6 million, no shadows), Auto. Auto, before each fight and behind the loading
+pixels, a 1024 shadow map), Low (at most 0.6 million, no shadows), Auto. The button is in the menu's top bar; on a phone
+with an account that bar is full, and it is on the Profile screen. Auto, before each fight and behind the loading
 page, draws the scene five times with the wait for the card and sets the share of pixels so a frame at rest takes 12.5 ms;
 if the processor's part is most of a slow frame it drops the shadows instead. During the fight `FramePacer` follows the
-frame rate: down at once when 40 frames average over 19.5 ms, up after four fast windows, backing off when an up fails.
+frame rate: down at once when 40 frames average over 17.8 ms, up after four fast windows, back when an up fails; a cut
+that does not make the next window faster (the processor is the limit, or the phone holds itself to 30 a second) is taken
+back and none is tried for a while.
 `?quality=low` in the address tries a level without keeping it. `game.api.quality` in the console shows what it chose.
