@@ -1,0 +1,45 @@
+import type { GameApi } from '../../../runtime';
+import { PieceRun, bossFight } from './core';
+import { startGate, startRival, startTrial } from './duels';
+import { piecesOf } from './floors';
+import { buildRuler } from './ruler';
+import type { PieceHandle, PieceIn, PieceKind, PieceOut } from './types';
+
+export type { PieceHandle, PieceIn, PieceKind, PieceOut, PieceReport, PiecesDef, RulerDef } from './types';
+export { PIECES, piecesOf } from './floors';
+
+/**
+ * Starts one of a floor's four set pieces (pipeline/designs/tower-worlds-pieces.md): the fight the zone enters through a door. `done`
+ * is called once with the outcome. The piece sets the hero, its boons and its health, and puts back what it changed before `done`;
+ * it stops the duel, so the zone starts its own fight again.
+ *
+ * Returns a handle the contract does not ask for: in the autopilot's run (`mode: 'run'`) call `pump()` between two steps of the
+ * simulation (a finished fight reports from there, as the weekly Tower's landing does); `cancel()` ends the piece with no outcome.
+ */
+export function startPiece(api: GameApi, kind: PieceKind, input: PieceIn, done: (out: PieceOut) => void): PieceHandle {
+  const floor = Math.max(1, Math.min(5, Math.round(input.floor)));
+  const def = piecesOf(floor);
+  const titles: Record<PieceKind, string> = { ruler: def.ruler.name, gate: `The gate of floor ${floor}`, trial: `Trial of floor ${floor}`, rival: def.rival ? `Rival: ${def.rival.hero}` : 'Rival' };
+  const run = new PieceRun(api, { ...input, floor }, titles[kind], done);
+  switch (kind) {
+    case 'ruler': {
+      const ruler = buildRuler(api, def.ruler, { hard: def.hard, boons: input.boons, ally: input.ally, run });
+      bossFight(run, { def: ruler.def, link: ruler.link, seed: `world-ruler-${floor}`, tier: 1, boons: input.boons });
+      ruler.begin();
+      run.hud?.say(def.ruler.name, def.ruler.line, 3);
+      void api.duel.whenReady().then(() => { if (!run.over) ruler.ready(); });
+      break;
+    }
+    case 'gate':
+      startGate(run, def.gate, floor);
+      break;
+    case 'trial':
+      startTrial(run, def.trial, floor);
+      break;
+    case 'rival':
+      if (!def.rival) throw new Error(`floor ${floor} has no rival duel: the zone runs its race`);
+      startRival(run, def.rival, floor);
+      break;
+  }
+  return run;
+}
