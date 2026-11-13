@@ -45,7 +45,7 @@ Story, secrets and the Stewards (the watchers) are a separate decision the user 
 
 Nothing is pushed or live until the user says so.
 
-## Where it stands (2026-11-13, night): chapter 1 made and checked, on the branch `tower-50`; NOT in the game's list, NOT live
+## Where it stands (2026-11-13, night): chapter 1 made and checked, on the branch `tower-50`; NOT live (in the game's list since the renumbering, below)
 
 - **The generator** (`src/tower/world/gen/sea.ts`, run by `node pipeline/tools/gen-floors.ts 2-10`) makes floors 2 to 10 of the sea
   from floor 1's parts; baked in `src/tower/world/floors/gen/sea-NN.ts`, turned into floors by `floors/gen/index.ts`. The sea zone is
@@ -68,7 +68,7 @@ Nothing is pushed or live until the user says so.
   People: nine different gatekeepers for floors 2 to 10 (none of the handmade floors'), no two floors with the same four people.
 - **To try one:** on the tool page, `_world({ floor: n })` or `_worldRoute({ floor: n })` (world-tool.js): since the renumbering every
   made floor is in the Climb's list, so `_worldGen(n)` only says what floor `n` is.
-- **Next:** the renumbering (stage 3 above, all of it before any release), then chapters 2 to 5's generators (the Wood, the Sands,
+- **Next:** the renumbering (stage 3 above; done 2026-11-14, *The renumbering* below), then chapters 2 to 5's generators (the Wood, the Sands,
   the Deep, the War) the same way, each with its crown (Ash and Ember, the Heart of Noon...).
 - **After the review (the same night):** gatekeepers and people no longer repeat (the hero list had wrapped after six floors:
   floors 2 and 8 had the same people and gatekeeper); rulers' bodies rotate; the words read right ("Mother of Wrecks' door",

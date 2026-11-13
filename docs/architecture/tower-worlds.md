@@ -118,10 +118,10 @@ Each floor plays one. The numbers and what was measured are in the floors' notes
 | Law | Floor | What it does |
 |---|---|---|
 | `tide` | 1 | The low ground floods on a clock: 2 % of max health a second and a 0.6 walk; warned 7 s before |
-| `paths` | 2 | Every 120 s three of six root barriers sink and three rise, warned 8 s before. Whoever stands where one rises is set down beside it; in both states every spot of the floor's data is reachable (`_worldCheck`) |
-| `storm` | 3 | Every 90 s a band of sand 20 m deep crosses north to south for 40 s, warned 8 s before: a few steps of sight and 4 % of max health a second, unless a piece of cover stands within 7 m to the north (the lee). Dust wraiths come only out of the band |
-| `dark` | 4 | A page layer (a quarter-size canvas under the HUD) dark all over, with holes at the hero (8 m; 10.8 m carrying a shard), the camp's lamps, touched waystones and woken crystals (a hall, for good). Lurkers wake from 15 m when the hero stands outside every light |
-| `sides` | 5 | A card at the start: take a banner. That army's packs are gone and four of its soldiers walk with the hero (hero-side units, replaced 18 s after one falls); the other army's packs hunt. The choice is in the run |
+| `paths` | 11 | Every 120 s three of six root barriers sink and three rise, warned 8 s before. Whoever stands where one rises is set down beside it; in both states every spot of the floor's data is reachable (`_worldCheck`) |
+| `storm` | 21 | Every 90 s a band of sand 20 m deep crosses north to south for 40 s, warned 8 s before: a few steps of sight and 4 % of max health a second, unless a piece of cover stands within 7 m to the north (the lee). Dust wraiths come only out of the band |
+| `dark` | 31 | A page layer (a quarter-size canvas under the HUD) dark all over, with holes at the hero (8 m; 10.8 m carrying a shard), the camp's lamps, touched waystones and woken crystals (a hall, for good). Lurkers wake from 15 m when the hero stands outside every light |
+| `sides` | 41 | A card at the start: take a banner. That army's packs are gone and four of its soldiers walk with the hero (hero-side units, replaced 18 s after one falls); the other army's packs hunt. The choice is in the run |
 
 `lawOf` (a WeakMap by zone) lets other parts ask the law (the caravan waits out a storm in a lee).
 
@@ -189,6 +189,8 @@ On the game page the tool uses `game.api` and hides the menu while it runs. The 
 takes two to three times a person's): `noSprint: true` turns that off.
 
 ## Limits
+
+Below, written before the renumbering, the handmade floors keep their old numbers: floor 2 is now 11, 3 is 21, 4 is 31, 5 is 41.
 
 - **No person has played any of it.** Every number comes from the route bot (the game's autopilot with a route) and from `_pieceRun`.
   The autopilot plays some kits badly (Vesper does not clear floor 5, and floor 4 only after restarts).
