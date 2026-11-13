@@ -22,7 +22,7 @@ engine lacks something, the Climb does it from its own side and marks it `TOWER-
 | The zone | `world.ts`, `zone.ts` | `buildZone`: one walking fight on the duel's boss path for the whole floor; the only way a zone begins |
 | Packs | `packs.ts` | Enemies that sleep until the hero is near; at most six awake at once (the summon system's cap) |
 | Laws | `law.ts`, `f45/laws.ts` | The place's rule: `tide`, `storm`, `paths` (`law.ts`), `dark`, `sides` (`f45/laws.ts`, asked first) |
-| Zones | `zone.ts`, `zoneWood.ts`, `zoneCanyon.ts`, `zoneGen.ts`, `f45/deep-zone.ts`, `f45/banners-zone.ts`, `f45/zonekit.ts` | Each floor's ground, props and cover, drawn in code |
+| Zones | `zone.ts` (with `land.ts`: floor 1's world past the rim), `zoneWood.ts`, `zoneCanyon.ts`, `zoneGen.ts`, `f45/deep-zone.ts`, `f45/banners-zone.ts`, `f45/zonekit.ts` | Each floor's ground, props and cover, drawn in code |
 | Enemy looks | `looks.ts`, `looksWild.ts`, `f45/looks.ts` | Looks of the summon system's units, by the spec's `look` string |
 | Quests | `quests.ts`, `f45/carry.ts` | Eight verbs; what a carried thing looks like |
 | People, scenery | `people.ts`, `scenery.ts` | Keeper, giver, trader, rival; waystones, caches, the lore stone, the doors |
@@ -170,6 +170,13 @@ takes two to three times a person's): `noSprint: true` turns that off.
 - **Fairness is rough.** Win rates over 8 to 12 fights: floor 2's gate (Fenna, CPU level 4) 2 of 8 alone but 3 of 4 first tries inside
   route runs, and 12 of 12 at level 3, so there is no middle step; floor 5's gate and ruler 4 of 8 each. Floor 3 takes the bot 16 to
   18 minutes against a par of 15.
+- **Floor 1 is a place in the world (2026-11-13, waiting on the user's look):** `land.ts` draws one ground 420 m across: flat
+  inside the rim (walks, cover and routes as before), then a bank, hills and a cliff along the north; a beach running into the
+  drawn sea on the east, with jetties and boats; the town's houses and a dry-stone wall to the west; woods; daylight (`STAGE`
+  in `zone.ts`). The ground's colour is a painted map in the middle (grass, dirt roads on `PATHS`, the market's cobbles, the tide's
+  low ground as tidal flats, `TIDE_LOW`) and vertex colours beyond, mixed by the vertex's alpha (a small `onBeforeCompile`). The
+  dressing past the rim carries its colours in its vertices (`Dress`: one mesh per 24 m square) and the trees are instanced, so
+  it costs few draws. Floors 2 to 5 still have their first-pass looks.
 - **Looks are first pass:** zones, props and enemies are drawn in code from plain forms; the five rulers are a hero's model drawn big
   and tinted. A lurker's leap, a golem's bolt and a knight's charge are speed and pose, not mechanics of their own.
 - **Alone, in the browser.** No friends on a floor, nothing on the account or the board.

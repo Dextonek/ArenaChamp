@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { RING, canvasTexture, flatRing, floorDisc, seeded } from '../../arenas/common';
-import { HARBOUR_OBSTACLES, harbourArena } from '../../arenas/harbour';
-import { Glows, Sea, realProps } from '../../arenas/real';
+import { RING, seeded } from '../../arenas/common';
+import { HARBOUR_OBSTACLES } from '../../arenas/harbour';
+import { Glows, realProps } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
 import { pillar, wall, type Obstacle } from '../../obstacles';
+import { buildLand } from './land';
 
 /**
  * Stage 0 of the Tower's floors as worlds (pipeline/designs/tower-worlds-build.md): one walking zone in the Drowned Harbour's
@@ -26,9 +27,13 @@ import { pillar, wall, type Obstacle } from '../../obstacles';
  * flat (z 55) and the others reach 49.3. `ArenaDef` should carry its middle and the clamp should follow `arena.bounds`.
  */
 export const ZONE_R = 48;
-const KERB = 0.8;
-const SEA = -1.7;
 const at = (dx: number, dz: number) => ({ x: RING.x + dx, z: RING.z + dz });
+
+/** The tide's low ground (floor 1's law, floors/harbour.ts): kept here because the ground is drawn from it (tidal flats, land.ts). */
+export const TIDE_LOW = [
+  { ...at(-16, 19), rx: 8, rz: 5, rot: 0.3 }, { ...at(12, 11), rx: 5, rz: 4 }, { ...at(-9, -22), rx: 8, rz: 5 }, { ...at(35, -12), rx: 6, rz: 5 },
+  { ...at(-33, -17), rx: 6, rz: 4 }, { ...at(20, 31), rx: 7, rz: 4 }, { ...at(4, -33), rx: 7, rz: 3 },
+];
 
 export interface Place { id: string; name: string; x: number; z: number; r: number; /** Open ground to walk to: the middle of a place can be cover. */ stand: { x: number; z: number } }
 /** The five places: where each stands, and how wide its plaza is. */
@@ -104,105 +109,16 @@ export const PACK_HOMES = [
 
 // --- the look ---------------------------------------------------------------------------------------------------
 
-const STAGE: ArenaStage = { ...harbourArena.stage, fogNear: 48, fogFar: 150 };
-const px = (x: number, c: number, ppm: number) => c + (x - RING.x) * ppm;
-const pz = (z: number, c: number, ppm: number) => c + (z - RING.z) * ppm;
-
-/** The ground, drawn as a map: dark slabs, lighter cobbles in each plaza, flagged paths, puddles, a brass ring near the rim. */
-function groundTexture() {
-  return canvasTexture(2048, (g, size) => {
-    const rnd = seeded(77), c = size / 2, ppm = size / (2 * ZONE_R);
-    g.fillStyle = '#16171c';
-    g.fillRect(0, 0, size, size);
-    const slab = (x0: number, z0: number, w: number, h: number, base: number[], spread: number) => {
-      const t = 1 - spread + 2 * spread * rnd(), warm = (rnd() - 0.5) * 6;
-      g.fillStyle = `rgb(${Math.round(base[0] * t + warm)},${Math.round(base[1] * t)},${Math.round(base[2] * t - warm)})`;
-      g.fillRect(px(x0, c, ppm) + 1, pz(z0, c, ppm) + 1, w * ppm - 2, h * ppm - 2);
-    };
-    // the quay's dark slabs everywhere
-    for (let z = RING.z - ZONE_R; z < RING.z + ZONE_R; z += 2.4) for (let x = RING.x - ZONE_R; x < RING.x + ZONE_R; x += 2.4) slab(x + (((z / 2.4) | 0) % 2) * 1.2, z, 2.4, 2.4, [41, 44, 52], 0.14);
-    // the plazas: smaller, lighter cobbles inside a circle
-    for (const pl of Object.values(PLACES)) {
-      g.save();
-      g.beginPath();
-      g.arc(px(pl.x, c, ppm), pz(pl.z, c, ppm), pl.r * ppm, 0, Math.PI * 2);
-      g.clip();
-      g.fillStyle = '#101116';
-      g.fillRect(px(pl.x - pl.r, c, ppm), pz(pl.z - pl.r, c, ppm), pl.r * 2 * ppm, pl.r * 2 * ppm);
-      for (let z = pl.z - pl.r; z < pl.z + pl.r; z += 1.1) for (let x = pl.x - pl.r; x < pl.x + pl.r; x += 1.1) slab(x + (((z / 1.1) | 0) % 2) * 0.55, z, 1.1, 1.1, [66, 68, 78], 0.16);
-      g.restore();
-      g.strokeStyle = '#7a6030';
-      g.lineWidth = 0.1 * ppm;
-      g.beginPath();
-      g.arc(px(pl.x, c, ppm), pz(pl.z, c, ppm), (pl.r - 0.3) * ppm, 0, Math.PI * 2);
-      g.stroke();
-    }
-    // the paths: a wide flagged band with a dark edge
-    g.lineCap = g.lineJoin = 'round';
-    for (const path of PATHS) {
-      const trace = () => {
-        g.beginPath();
-        path.forEach(([dx, dz], i) => (i ? g.lineTo(px(RING.x + dx, c, ppm), pz(RING.z + dz, c, ppm)) : g.moveTo(px(RING.x + dx, c, ppm), pz(RING.z + dz, c, ppm))));
-      };
-      g.strokeStyle = '#0f1015';
-      g.lineWidth = 3.9 * ppm;
-      trace();
-      g.stroke();
-      g.strokeStyle = '#3a3d48';
-      g.lineWidth = 3.3 * ppm;
-      trace();
-      g.stroke();
-      g.strokeStyle = '#242730';
-      g.lineWidth = 3.3 * ppm;
-      g.setLineDash([0.12 * ppm, 1.6 * ppm]);
-      trace();
-      g.stroke();
-      g.setLineDash([]);
-    }
-    // puddles of sea water, where the quay is low
-    g.fillStyle = 'rgba(40,86,112,0.35)';
-    for (const [dx, dz, rx, rz] of [[-18, 20, 3, 1.6], [12, 12, 2.4, 1.3], [-6, -22, 3.2, 1.7], [35, -12, 2.6, 1.5], [-33, -18, 2.2, 1.2], [20, 32, 2.4, 1.3]]) {
-      g.beginPath();
-      g.ellipse(px(RING.x + dx, c, ppm), pz(RING.z + dz, c, ppm), rx * ppm, rz * ppm, 0.3, 0, Math.PI * 2);
-      g.fill();
-    }
-    // a brass ring near the rim and a brass star in the middle, as the harbour's quay has
-    g.strokeStyle = '#7a6030';
-    g.lineWidth = 0.14 * ppm;
-    for (const r of [ZONE_R - 0.9, 5.5]) {
-      g.beginPath();
-      g.arc(c, pz(RING.z, c, ppm), r * ppm, 0, Math.PI * 2);
-      g.stroke();
-    }
-  });
-}
-
-function blockTexture() {
-  return canvasTexture(512, (g, size) => {
-    const rnd = seeded(5), rows = 4, h = size / rows;
-    g.fillStyle = '#17181d';
-    g.fillRect(0, 0, size, size);
-    for (let r = 0; r < rows; r++) {
-      const n = 3, w = size / n, off = (r % 2) * (w / 2);
-      for (let k = -1; k < n; k++) {
-        const t = 0.8 + 0.3 * rnd();
-        g.fillStyle = `rgb(${Math.round(41 * t)},${Math.round(44 * t)},${Math.round(52 * t)})`;
-        g.fillRect(off + k * w + 3, r * h + 3, w - 6, h - 6);
-      }
-    }
-  });
-}
-
-/** The kerb and the quay's wall, as the harbour's, at the zone's radius. */
-function quayGeometry() {
-  const r = ZONE_R;
-  const profile = [[r + KERB + 0.12, SEA - 2.5], [r + KERB + 0.03, -0.5], [r + KERB, 0.08], [r + KERB - 0.1, 0.17], [r + 0.02, 0.17], [r - 0.05, 0.0]].map(([x, y]) => new THREE.Vector2(x, y));
-  const geo = new THREE.LatheGeometry(profile, 256);
-  const uv = geo.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 60, uv.getY(i) * 1.6);
-  geo.translate(RING.x, 0, RING.z);
-  return geo;
-}
+/**
+ * Daylight, late in the afternoon (the user, 2026-11-13: the floors should look like the real world). A shade muted, as the house
+ * style asks (the world stays behind the heroes); the fog is the far haze over land and sea.
+ */
+const STAGE: ArenaStage = {
+  background: 0x9db4c6, zenith: 0x5a83b0, horizon: 0xc6d2d6, glow: 0xf0d2a2, stars: 0,
+  fog: 0xa9b8c0, fogNear: 70, fogFar: 240,
+  hemiSky: 0xd2e0ec, hemiGround: 0x4c4636, hemiIntensity: 0.85,
+  sun: 0xffe8c8, sunIntensity: 1.6, rim: 0xa4bedf, rimIntensity: 0.35,
+};
 
 /**
  * The dressing, collected as geometry and merged per material and per square of ground `CELL` m across: a few draw calls for the
@@ -276,26 +192,15 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
     own.push(m);
     return m;
   };
-  const stone = mat(0x4a4e5a), rock = mat(0x383c46, 0.95), wood = mat(0x4a3626), darkWood = mat(0x2a1f1a), cream = mat(0xcfc8b4, 0.7), wine = mat(0x6a2535), teal = mat(0x2b5560), sail = mat(0x6f6652, 0.95, { side: THREE.DoubleSide });
+  const stone = mat(0x4a4e5a), rock = mat(0x383c46, 0.95), wood = mat(0x4a3626), darkWood = mat(0x2a1f1a), cream = mat(0xb6ae9a, 0.7), wine = mat(0x6a2535), teal = mat(0x2b5560), sail = mat(0x6f6652, 0.95, { side: THREE.DoubleSide });
   const gold = mat(0xc9a24a, 0.4, { metalness: 0.8, emissive: 0xffb050, emissiveIntensity: 0.22 });
   const iron = mat(0x23252c, 0.55, { metalness: 0.5 });
   const crystal = new THREE.MeshBasicMaterial({ color: 0x7ad8ff });
   own.push(crystal);
 
-  const paving = new THREE.MeshStandardMaterial({ map: groundTexture(), roughness: 0.5, envMapIntensity: 0.3 });
-  const floor = floorDisc(ZONE_R, paving, 0.012, 192);
-  const quayMat = new THREE.MeshStandardMaterial({ map: blockTexture(), color: 0xf0f2ff, roughness: 0.7, envMapIntensity: 0.2 });
-  const quay = new THREE.Mesh(quayGeometry(), quayMat);
-  quay.receiveShadow = true;
-  const line = flatRing(ZONE_R + 0.3, ZONE_R + 0.4, 0x9a7a38, 1, 0.176, 192);
-  g.add(floor, quay, line);
-  own.push(floor.geometry, paving.map!, paving, quay.geometry, quayMat.map!, quayMat, line.geometry, line.material as THREE.Material);
-
-  const sea = new Sea({ y: SEA, inner: ZONE_R + KERB + 0.1, deep: 0x0b2a3c, sky: 0x7c7490, band: 0x2c5f7c, glint: 0xffc890, sun: new THREE.Vector3(0.85, 0.2, 0.25), foam: 0x9fb0c0 });
-  g.add(sea.mesh);
-  own.push(sea);
-
   const kit = new Kit();
+  // The world past the rim: land, a beach, the sea, the town, woods (land.ts). The cover below stands on its ground.
+  const land = buildLand({ r: ZONE_R, paths: PATHS, places: Object.values(PLACES), flats: TIDE_LOW }, kit, g, own);
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rnd = seeded(913);
@@ -376,17 +281,6 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
     own.push(m.geometry);
     glowSpots.push({ x: RING.x + dx, y: 1.0 * s, z: RING.z + dz, size: 3.2 * s });
   }
-  // Basalt stacks out in the sea, and posts with lanterns along the rim.
-  for (let k = 0; k < 14; k++) {
-    const a = rnd() * Math.PI * 2, d = 58 + rnd() * 40, s = 2 + rnd() * 3.5;
-    kit.add(rock, new THREE.ConeGeometry(s, 8 + rnd() * 10, 6).translate(0, 4, 0), RING.x + Math.sin(a) * d, SEA - 1, RING.z + Math.cos(a) * d, rnd() * 3);
-  }
-  for (let k = 0; k < 24; k++) {
-    const a = (k / 24) * Math.PI * 2 + 0.07;
-    const x = RING.x + Math.sin(a) * (ZONE_R - 0.9), z = RING.z + Math.cos(a) * (ZONE_R - 0.9);
-    kit.add(darkWood, cyl(0.13, 0.17, 2.2, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.2, z);
-    glowSpots.push({ x, y: 2.45, z, size: 1.2 });
-  }
   // The paths' edges are lit at the places: a lantern post at each plaza's rim, towards the middle.
   for (const pl of Object.values(PLACES)) {
     const a = Math.atan2(RING.x - pl.x, RING.z - pl.z), x = pl.x + Math.sin(a) * (pl.r - 1), z = pl.z + Math.cos(a) * (pl.r - 1);
@@ -426,7 +320,7 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   return {
     group: g,
     update(_dt, time) {
-      sea.update(time);
+      land.update(time);
       glows.update(time);
     },
     dispose() {
@@ -438,7 +332,7 @@ export function buildZone(): { group: THREE.Group; update(dt: number, time: numb
   };
 }
 
-/** The zone as an arena for `Duel.startBoss`: its ring is `ZONE_R`, its cover `ZONE_COVER`, its look the harbour's. */
+/** The zone as an arena for `Duel.startBoss`: its ring is `ZONE_R`, its cover `ZONE_COVER`, its look a coast by day (land.ts). */
 export const zoneArena: ArenaDef = {
   id: 'tower-zone-harbour',
   name: 'The Drowned Harbour, a zone',

@@ -2,6 +2,28 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds are **live** and marked as the stable version `stable-2026-11-13` (first section: *Stable versions*)._
 
+## Floor 1 as a real place (2026-11-13, night): first look built and committed; NOT pushed, NOT live; waiting on the user's look
+
+- The user, of the Climb's floors: "make it more like real maps, not just like something inside somewhere; make those floors be
+  like real world". Every floor was a round paved disc (floor 1 a stone platform in a dark sea, its quay wall all round). Done for
+  **floor 1 only**, to be judged before floors 2 to 5 (the house rule: show one look first).
+- **What changed (look only):** `src/tower/world/land.ts` (new) and a few lines of `zone.ts` (`STAGE` is daylight; the land
+  replaces the paving, the quay wall, the brass ring and the rim's lantern posts; `TIDE_LOW` moved there from `floors/harbour.ts`,
+  the same seven). A coast: grass, dirt roads on the old paths, cobbles in the market, flagstones at the lighthouse, the tide's low
+  ground as tidal flats; past the rim a cliff along the north (grass on top, rock on its face), the town's houses and a dry-stone
+  wall west, woods north and south, a beach into the sea east with two jetties and four boats. Cover, places, paths, packs, the
+  door and the law are untouched. How it works: [architecture/tower-worlds.md](architecture/tower-worlds.md), *Limits*.
+- **Checked:** type check; `_worldCheck` floor 1 the same (6349 m2 reachable, 38 spots, none unreachable); the perf tool's
+  `world-1` plays the same fight (print `de2e692e`): desktop 8.2 -> 8.4 ms a frame, the phone profile 20.5 and 21.4 -> 22.5 and
+  22.1 ms (about +1.3 ms; draw calls 268 -> 280; triangles 236k -> 413k); Low, Medium, Auto and two phone sizes draw it, no errors.
+  Pictures (before and after at the same spots, an overview, a low view to the horizon): in the session's scratchpad, shown to
+  the user.
+- **Not done:** floors 2 to 5 (the Walking Wood, the Storm Canyon, the Lightless Deep, the Field of Banners); the zone is still
+  round and the same size (a different shape needs the engine's walk limit to change); the route bot not run again on floor 1 (the
+  ground it walks is the same).
+- **Waiting on the user:** yes or changes to floor 1's look; then floors 2 to 5 the same way (the Lightless Deep is underground by
+  design: what "real world" means there is the user's call).
+
 ## Stable versions (2026-11-13)
 
 The user: "pull from github and push and lets make stable version", then chose "both": mark the version that was live as

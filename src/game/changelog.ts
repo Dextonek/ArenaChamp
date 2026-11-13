@@ -39,6 +39,18 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-13',
+    title: 'The Drowned Harbour by day',
+    live: false,
+    items: [
+      {
+        tag: 'Tower',
+        title: 'Floor 1 is a place, not a platform',
+        text: 'The Drowned Harbour is now a town on a real coast in daylight: grass and dirt roads, the market\'s cobbles, tidal flats where the tide comes in, a cliff along the north, houses and woods beyond the edge, and a beach running down into the sea with jetties and boats. Where you walk and fight is the same.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-13',
     title: 'The Tower: five floors that are worlds',
     live: true,
     items: [

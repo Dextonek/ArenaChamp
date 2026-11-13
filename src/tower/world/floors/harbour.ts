@@ -1,6 +1,6 @@
 import { RING } from '../../../arenas/common';
 import type { FloorDef, Spot } from '../def';
-import { PLACES, ZONE_COVER, ZONE_R, ZONE_START, zoneArena } from '../zone';
+import { PLACES, TIDE_LOW, ZONE_COVER, ZONE_R, ZONE_START, zoneArena } from '../zone';
 
 /**
  * Floor 1, The Drowned Harbour, as data (pipeline/designs/tower-worlds.md). The zone's drawing and cover are `../zone.ts`; this file
@@ -26,10 +26,7 @@ export const harbour: FloorDef = {
     name: 'The tide',
     blurb: 'Every 80 seconds the sea comes in for 15: the low ground floods, slows and hurts. Quays and decks stay dry.',
     every: 80, lasts: 15, warn: 7, burn: 0.02, slow: 0.6,
-    low: [
-      { ...at(-16, 19), rx: 8, rz: 5, rot: 0.3 }, { ...at(12, 11), rx: 5, rz: 4 }, { ...at(-9, -22), rx: 8, rz: 5 }, { ...at(35, -12), rx: 6, rz: 5 },
-      { ...at(-33, -17), rx: 6, rz: 4 }, { ...at(20, 31), rx: 7, rz: 4 }, { ...at(4, -33), rx: 7, rz: 3 },
-    ],
+    low: TIDE_LOW, // the same seven as before; the zone's ground draws them as tidal flats
   },
   enemies: {
     docker: { id: 'docker', name: 'Drowned docker', blurb: 'Strikes up close.', look: 'docker', melee: true, hp: 70, share: 0.024, every: 1.8, speed: 3.2, scale: 1.3, shards: 4, color: '#7fd0c0' },
