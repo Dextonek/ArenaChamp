@@ -4,8 +4,8 @@
 //
 //   python pipeline/tools/page-shots.py pipeline/tools/tower-models-sheet.js docs/tower/models --port 5186
 //
-// It returns lineup_game (the game's high three-quarter camera), lineup_front, and per figure <id> (front, back, the
-// game camera, the face). The figures are read from docs/tower/models/glb/<id>_v4.glb (build them first:
+// It returns <chapter>-lineup-game (the game's high three-quarter camera), <chapter>-lineup-front, <chapter>-sheet
+// (every figure alone) and per figure <chapter>-<name> (front, back, the game camera, the face). The figures are read from docs/tower/models/glb/<id>_v4.glb (build them first:
 // blender/tower/build.py). `stand` is the hero whose way of holding and striking the figure borrows (src/motion/real.ts
 // REAL_STYLE: Sefu holds a staff upright in the left hand, Brannoc strikes with the right).
 const FIGS = window._towerFigs ?? [
@@ -20,6 +20,8 @@ const FIGS = window._towerFigs ?? [
 const { HeroPreview } = await import('/src/game/heroPreview.ts');
 const { HeroFigure } = await import('/src/heroFigure.ts');
 const { HERO_KITS } = await import('/src/heroes.ts');
+// the pictures are named after the chapter of the first figure: <chapter>-lineup-game, <chapter>-sheet, <chapter>-<name>
+const CH = FIGS[0].id.split('_')[0];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const kitOf = (n) => HERO_KITS.find((k) => k.name === n);
 const pv = new HeroPreview();
@@ -92,12 +94,12 @@ const out = {};
 pose(0.25);
 const dir = new V3(0, 6, 5).normalize();
 camera.fov = 30;
-camera.position.copy(new V3(0, 1.4, 0).addScaledVector(dir, 19));
+camera.position.copy(new V3(0, 1.4, 0).addScaledVector(dir, 13.8));
 camera.lookAt(0, 1.4, 0);
-out.lineup_game = shoot(1800, 760, names).toDataURL('image/jpeg', 0.9);
-camera.position.set(0, 2.3, 16.5);
-camera.lookAt(0, 2.1, 0);
-out.lineup_front = shoot(1800, 760, names).toDataURL('image/jpeg', 0.9);
+out[`${CH}-lineup-game`] = shoot(1800, 620, names).toDataURL('image/jpeg', 0.9);
+camera.position.set(0, 2.3, 12.6);
+camera.lookAt(0, 2.15, 0);
+out[`${CH}-lineup-front`] = shoot(1800, 680, names).toDataURL('image/jpeg', 0.9);
 
 // each alone: front, back, the game camera, the face
 const W = 300, H = 420;
@@ -145,9 +147,9 @@ for (let i = 0; i < FIGS.length; i++) {
   one.width = W * 4;
   one.height = H;
   tiles.forEach((t, k) => one.getContext('2d').drawImage(t, k * W, 0));
-  out[FIGS[i].id] = one.toDataURL('image/jpeg', 0.9);
+  out[FIGS[i].id.replace(/_/g, '-')] = one.toDataURL('image/jpeg', 0.9);
 }
 for (const r of row) r.fig.group.visible = true;
-out.each = sheet.toDataURL('image/jpeg', 0.88);
+out[`${CH}-sheet`] = sheet.toDataURL('image/jpeg', 0.88);
 out.missing = missing;
 return out;

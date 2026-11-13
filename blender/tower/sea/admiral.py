@@ -2,7 +2,7 @@
 fleet and still holds the harbour. Built as a giant, not a hero made big: broad and deep, a smaller head on a thick
 neck, big hands. Grey-green drowned skin and a dark beard. A long deep-teal admiral's coat to the calves, open in front
 over a wine waistcoat, its skirts lined in wine, broad gold braid down the fronts and at the hem, gold cuffs; heavy gold
-epaulettes with a fringe; a wine sash from the right shoulder; cream breeches and tall black lacquer boots; a black
+epaulettes with a fringe; a cream neck-stock; a wine sash from the right shoulder; cream breeches and tall black lacquer boots; a black
 bicorne edged in gold, a sea-glass gem in its cockade: his one light. Coral has grown on his left shoulder in clean
 branches, barnacles crust his right forearm and boot. In the RIGHT hand a great iron anchor with gold bands, held by
 its shank (his move: the Anchor Sweep). Signature shape: the anchor and the bicorne."""
@@ -60,7 +60,7 @@ def build():
     R.band("lacquer", z["waist"] - 0.02, height=0.06, grow=1.14, how=R.hang_w(z["waist"], hem))
     cw, rxw, ryw = R.ring(z["waist"] - 0.02)
     R.piece("pelvis").ellipsoid("gold", Vector((0, cw.y - ryw * 1.2, z["waist"] - 0.02)), (0.04, 0.014, 0.032), seg=(12, 8))
-    fc, foot, _ = P.collar(R, "gold", height=0.06, grow=1.08, flare=0.0, arc=(0.5, 2 * PI - 0.5))
+    fc, foot, _ = P.collar(R, "cream", height=0.07, grow=0.97, flare=0.0, arc=None)
     # the wine sash from the right shoulder to the left hip
     sf, pt = PA.strap(R, "wine", width=0.09, lift=0.2, grow=1.14, high_side=-1, out=0.03)
 
@@ -130,7 +130,7 @@ def build():
     hp.ellipsoid("glow", ck + Vector((0, -0.006, 0)), (0.015, 0.01, 0.015), seg=(10, 6))
 
     # the anchor in the right hand, held by the shank: the ring and the stock behind the fist, the crown and flukes ahead
-    # (it hangs crown-down by his boots at rest). Pale iron and gold, thick enough to read from the game camera.
+    # (at rest he carries it crown-up across his chest). Pale iron and gold, thick enough to read from the game camera.
     s = P.along(R)
     f, o, d, upv = R.held("r")
     side = upv.cross(d).normalized()

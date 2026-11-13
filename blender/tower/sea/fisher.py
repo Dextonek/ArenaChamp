@@ -1,6 +1,6 @@
 """The Net-Father (the Sea's quest giver): the old fisher who mends the nets that hold the sea back from the town. A
-broad man, weathered, a grey-brown beard and a close knit cap of the harbour's wine with a gold cuff. A deep sea-green
-tunic with the sleeves to the elbow, a rolled cream collar, bare forearms with rope-wound bracers, black lacquer
+broad man, weathered, grey hair and a grey beard, bare-headed. A deep sea-green tunic with the sleeves to the elbow, a
+snug cream roll neck, a wine belt, bare forearms with rope-wound bracers, black lacquer
 trousers and knee boots with gold cuffs, a short black lacquer apron with a gold hem. His great net coiled over the
 left shoulder and across the chest to the right hip like a bandolier, strung with gold floats, and in it one float of
 sea glass that glows: his one light. In the LEFT hand a long steering oar, its blade up, gold at the neck and the tip
@@ -25,7 +25,7 @@ def build():
     R.mat("wood", "#6b4226", rough=0.7)
     R.mat("gold", "#c9a24a", rough=0.32, metal=0.85, double=True)
     R.mat("glow", "#d8f6ff", rough=0.25, emit="#7fdcf5", strength=1.0)
-    P.hair(R, "Hair_Buzzed", "#5f564e", beard="Hair_Beard")
+    P.hair(R, "Hair_SimpleParted", "#8a8580", beard="Hair_Beard")
 
     # the tunic to the elbows, cream collar, bare forearms with rope bracers
     el = R.bone("lowerarm_l").x
@@ -36,7 +36,7 @@ def build():
     wr = R.bone("hand_l").x
     R.fitted("Bracers", ["lowerarm"], "rope", offset=0.008, where=lambda p: el + (wr - el) * 0.55 < abs(p.x) < el + (wr - el) * 0.93)
     R.cuffs("gold", at=(0.55, 0.93), offset=0.011, thick=0.006)
-    P.collar(R, "cream", height=0.05, grow=1.12, flare=0.25)
+    P.collar(R, "cream", height=0.06, grow=0.98, flare=0.05)
     R.fitted("Trousers", ["thigh", "calf", "pelvis"], "lacquer", offset=0.004)
     R.boots("lacquer", top=z["knee"] - 0.04, cuff="gold")
     P.toes(R, "lacquer")
@@ -47,16 +47,6 @@ def build():
     cw, rxw, ryw = R.ring(z["waist"])
     R.piece("pelvis").ellipsoid("gold", Vector((0, cw.y - ryw * 1.2, z["waist"])), (0.034, 0.012, 0.03), seg=(12, 8))
     P.skirt(R, "lacquer", z["knee"] - 0.02, flare=1.32, depth=1.1, arc=(-1.05, 1.05), folds=5, amp=0.012, trim="gold", trim_h=0.022, grow=1.06, seg=24)
-
-    # the knit cap: a close round cap of wine, a turned-up gold-edged cuff
-    h = P.head(R)
-    hp = R.piece("Head")
-    P.shell(hp, "wine", h.c + Vector((0, 0.008, 0.006)), (h.rx * 1.16, h.ry * 1.16, h.rz * 1.16), lambda a: 0.1, seg=32, rows=8)
-    cz = h.c.z + 0.006 + h.rz * 1.16 * 0.1
-    hp.loft("wine", [(Vector((0, h.c.y + 0.008, cz - 0.012)), h.rx * 1.17, h.ry * 1.18), (Vector((0, h.c.y + 0.008, cz + 0.01)), h.rx * 1.22, h.ry * 1.23),
-                     (Vector((0, h.c.y + 0.008, cz + 0.032)), h.rx * 1.18, h.ry * 1.19)], seg=32)
-    pts = [Vector((h.rx * 1.23 * math.sin(2 * PI * i / 32), h.c.y + 0.008 - h.ry * 1.24 * math.cos(2 * PI * i / 32), cz + 0.01)) for i in range(33)]
-    hp.tube("gold", pts, 0.005, seg=6, caps=False)
 
     # the coiled net over the left shoulder to the right hip, gold floats along it, one float of sea glass
     sf, point = PA.strap(R, "rope", width=0.075, lift=0.2, grow=1.12, high_side=1, out=0.03)
