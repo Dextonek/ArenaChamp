@@ -102,3 +102,7 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
 - Clips: `pipeline/tools/clip-film.js` with `node pipeline/tools/frame-sink.mjs <folder>` and `ffmpeg`.
 - Long Python edit scripts: write the script to a file, then run it (shell here-docs with many quotes break).
 - Balance: `python pipeline/sim/sim.py hero <Name> [--open]`; it starts and stops its own server (port 5181).
+- Speed: `python pipeline/tools/perf.py` (docs/pipeline/performance.md) times fixed scenes with the real graphics card and
+  says where a frame goes (`parts`, `passes`, `profile`, `census`, `flips`). After an engine change the scenes' fights must
+  still be the same ones (`perf-show.py baseline try`). Loading and stutters are measured with `--headed`: a windowless
+  browser hides what compiling shaders ahead buys.

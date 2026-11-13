@@ -540,9 +540,10 @@ export function createRuntime(opts: RuntimeOptions) {
      * `auto`, before a fight (the loading page is up): the scene as it stands is drawn a few times and timed, the wait
      * for the graphics card included (one pixel read back makes the browser wait for it), and the share of pixels is set so
      * a frame at rest takes `AUTO_REST_MS`. Twice, since a frame's time is not all pixels. If the processor's own part is
-     * most of a slow frame, fewer pixels will not help: the shadows go instead.
+     * most of a slow frame, fewer pixels will not help: the shadows go instead (and the scene's shaders, which are other
+     * ones without shadows, are compiled again before the fight is let go).
      */
-    calibrate() {
+    async calibrate() {
       if (this.level !== 'auto' || this.fixed || document.hidden || view.covered) return;
       const gl = renderer.getContext(), px = new Uint8Array(4);
       const time = () => {
@@ -565,6 +566,7 @@ export function createRuntime(opts: RuntimeOptions) {
           if (t.own > 9 && t.ms > AUTO_REST_MS * 1.3 && !this.lean) {
             this.lean = true;
             this.apply();
+            await compileScene();
           } else if (!this.scale(Math.max(0.35, Math.min(2.5, AUTO_REST_MS / Math.max(1, t.ms))))) break;
           t = time();
         }
@@ -748,11 +750,10 @@ export function createRuntime(opts: RuntimeOptions) {
     }
     // In the scene for the compile (the frame loop takes the hidden ones out again: `shelveHidden`).
     for (const effect of built) if (effect.group.parent !== scene) scene.add(effect.group);
+    const waits: Promise<unknown>[] = [compileScene()];
     const before = renderer.getRenderTarget();
     renderer.setRenderTarget(composer.readBuffer);
-    const waits: Promise<unknown>[] = [];
     try {
-      waits.push(renderer.compileAsync(scene, camera));
       const seen = new Set<string>();
       for (const effect of built) {
         let points = 0, spots = 0, dirs = 0;
@@ -786,8 +787,23 @@ export function createRuntime(opts: RuntimeOptions) {
       } catch (e) {
         console.warn('The first draw of the scene failed:', e);
       }
-      quality.calibrate();
+      return quality.calibrate();
     });
+  }
+
+  /** Compiles every material in the scene as the composer draws it (into its float target); resolves when they are ready. */
+  function compileScene(): Promise<unknown> {
+    const before = renderer.getRenderTarget();
+    renderer.setRenderTarget(composer.readBuffer);
+    let done: Promise<unknown>;
+    try {
+      done = renderer.compileAsync(scene, camera);
+    } catch (e) {
+      console.warn('Compiling the scene stopped early:', e);
+      done = Promise.resolve();
+    }
+    renderer.setRenderTarget(before);
+    return done.catch(() => undefined);
   }
 
   // --- Duel: the hero against an AI hero of another kit in a small ring (on top of hero mode) -----------------
