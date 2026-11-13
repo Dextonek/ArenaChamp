@@ -38,6 +38,40 @@ export interface Release {
 
 export const CHANGELOG: Release[] = [
   {
+    date: '2026-11-13',
+    title: 'The Tower: five floors that are worlds',
+    live: false,
+    items: [
+      {
+        tag: 'Tower',
+        title: 'The Climb: every floor a place to walk through',
+        text: 'The Tower screen has a new tab, Climb. A floor is no longer one room but a whole place: you arrive at a camp, its keeper gives you work, enemies roam in packs, and somewhere a ruler waits behind a door. Beat the ruler, then win a duel against the gatekeeper, and the floor above is yours. Alone, with no account; your floor is saved if you leave.',
+        image: '/news/tower-worlds.jpg',
+        alt: 'The camps of the five floors, each with its keeper and trader: a drowned harbour, a dark green wood, a sandstone canyon, a cavern where only a circle around the hero is lit, and a battlefield where four soldiers stand beside the hero. Last, the Tower screen with a tile for each floor.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Five floors, each with its own law',
+        text: 'The Drowned Harbour, where the tide floods the low ground. The Walking Wood, where roots close one path and open another every two minutes. The Storm Canyon, where a wall of sand crosses and only the lee of a rock is safe. The Lightless Deep, where you see a few steps and wake crystals to light the halls. The Field of Banners, where you take a side and its soldiers fight beside you.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Quests, secrets, a trader and a rival',
+        text: 'Each floor has a main quest in steps, two side quests, a named enemy with a bounty, three hidden caches, a lore stone and waystones you wake at after a fall. Enemies drop shards to spend at the camp\'s trader. Another climber waits on every floor for a race or a duel: beat them and they fight beside you against the ruler.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Three lives, four stars, and a sigil to keep',
+        text: 'A fall costs one of three lives a floor. A cleared floor earns up to four stars: cleared, every quest done, no life lost, under the floor\'s time. And you keep one of the boons you carried as a sigil for every later climb. Sigils count in the Tower only.',
+      },
+      {
+        tag: 'Tower',
+        title: 'The weekly Tower is now called Trials',
+        text: 'The Tower of short rooms is still there, unchanged, on the Trials tab, with its weekly board. One of its rooms also stands behind a trial door on every floor of the Climb.',
+      },
+    ],
+  },
+  {
     date: '2026-11-12',
     title: 'Quick cast',
     live: true,

@@ -2,8 +2,12 @@
 
 A second way to climb beside the weekly Tower: each floor is a whole place to walk through, not one room. What it is and why:
 [tower-worlds.md](../../pipeline/designs/tower-worlds.md) (the design the user agreed). How it was built, stage by stage, with the
-numbers: [tower-worlds-build.md](../../pipeline/designs/tower-worlds-build.md) and [tower-worlds-pieces.md](../../pipeline/designs/tower-worlds-pieces.md).
-This file says how it works now. Pictures: `docs/tower/worlds/`.
+numbers: [tower-worlds-build.md](../../pipeline/designs/tower-worlds-build.md) (the plan, the spike, floor 1),
+[tower-worlds-pieces.md](../../pipeline/designs/tower-worlds-pieces.md) (the rulers, trials, rivals and gates),
+[tower-worlds-floors23.md](../../pipeline/designs/tower-worlds-floors23.md), [tower-worlds-floors45.md](../../pipeline/designs/tower-worlds-floors45.md)
+and [tower-worlds-join.md](../../pipeline/designs/tower-worlds-join.md) (the five floors joined and climbed).
+This file says how it works now. Pictures and a clip: `docs/tower/worlds/` (`f1-` to `f5-` a floor each, `p1-` and `g1-`, `g2-` the pieces
+and the game page, `j-` the joined climb).
 
 **The weekly Tower is untouched.** The Climb imports the Tower's engine (`src/tower/`: boons, hooks, link, floors) and changes none of it.
 The one engine-side file it edits is `src/game/main.ts` (a tab bar on the Tower screen, one controller, three lines of wiring). Where the
@@ -17,8 +21,10 @@ engine lacks something, the Climb does it from its own side and marks it `TOWER-
 | A floor | `def.ts`, `floors/` | `FloorDef`: data only. `FLOORS[n]` in `floors/index.ts` is the registry |
 | The zone | `world.ts`, `zone.ts` | `buildZone`: one walking fight on the duel's boss path for the whole floor; the only way a zone begins |
 | Packs | `packs.ts` | Enemies that sleep until the hero is near; at most six awake at once (the summon system's cap) |
-| Laws | `law.ts` | The place's rule: `tide`, `storm`, `dark`, `paths`, `sides` |
-| Quests | `quests.ts` | Eight verbs |
+| Laws | `law.ts`, `f45/laws.ts` | The place's rule: `tide`, `storm`, `paths` (`law.ts`), `dark`, `sides` (`f45/laws.ts`, asked first) |
+| Zones | `zone.ts`, `zoneWood.ts`, `zoneCanyon.ts`, `zoneGen.ts`, `f45/deep-zone.ts`, `f45/banners-zone.ts`, `f45/zonekit.ts` | Each floor's ground, props and cover, drawn in code |
+| Enemy looks | `looks.ts`, `looksWild.ts`, `f45/looks.ts` | Looks of the summon system's units, by the spec's `look` string |
+| Quests | `quests.ts`, `f45/carry.ts` | Eight verbs; what a carried thing looks like |
 | People, scenery | `people.ts`, `scenery.ts` | Keeper, giver, trader, rival; waystones, caches, the lore stone, the doors |
 | The screen | `hud.ts` | The floor panel, quest list, banners, cards, the result card |
 | The run's owner | `game.ts` | `WorldGame`: the run, the zone, the doors to the pieces, falls, boons, the floor's end |
@@ -50,7 +56,15 @@ floor begins again from its camp with what the hero arrived with.
 ## Floors as data, and adding one
 
 A floor is a `FloorDef` (see `def.ts`): its arena and cover, start and camp, places, law, enemy kinds, packs, people, quests, caches,
-waystones, the lore stone, doors, the rival, the par time and the trader's wares. `floors/harbour.ts` is floor 1.
+waystones, the lore stone, doors, the rival, the par time and the trader's wares.
+
+| Floor | File | Law | Main quest's verbs | Rival | Ruler, gatekeeper |
+|---|---|---|---|---|---|
+| 1 The Drowned Harbour | `floors/harbour.ts` | `tide` | `fell`, `light`, `carry` (the key), `open` | Zephyr, a race | The Drowned Captain, Marin |
+| 2 The Walking Wood | `floors/wood.ts` | `paths` | `lead` x3 (wisps), `fell` (three roots), `open` | Nyx, a duel | The Elder Root, Fenna |
+| 3 The Storm Canyon | `floors/canyon.ts` | `storm` | `carry` x3 (water), `lead` (the caravan), `fell`, `open` | Vesper, a duel | The Scarab Colossus, Sefu |
+| 4 The Lightless Deep | `floors/deep.ts` | `dark` | `carry` and `light` x3 (great shards, crystals), `open` | Tempo, a race | The Prism Mother, Opaline |
+| 5 The Field of Banners | `floors/banners.ts` | `sides` | `reach` x3 (standards), `hold` (the hill), `fell`, `open` | Brannoc, a duel | The Last Marshal, Oblivion |
 
 To add a floor:
 
@@ -73,15 +87,23 @@ A step is one verb with its place and number, done when its condition holds. The
 | `fell-named` | Fell a named enemy (it may patrol the quay) |
 | `light` | Stand in each of N things for 2 s |
 | `hold` | Stay in a ring for T s while waves come |
-| `carry` | Take a thing from A to B; a hit that lands drops it, and it can be picked up again |
+| `carry` | Take a thing from A to B; a hit that lands drops it, and it can be picked up again. Drawn by its `item` (`f45/carry.ts`: a great shard, a cloth), else by the step's `look` (`jar`, `bundle`), else as the key; `plain` draws no winch at B |
 | `open` | A door's wall goes when the step is done |
-| `lead` | Walk an escort along waypoints; it fails if it dies |
+| `lead` | Walk an escort along waypoints; it fails if it dies. `look`: a person, a wisp, a cart |
 
 ## The laws
 
-`tide` (the low ground floods on a clock: 2 % of max health a second and a 0.6 walk; warned 7 s before), `storm` (a band crosses),
-`dark` (a page layer with a clear circle round the hero, larger near a lit thing), `paths` (walls swap on the clock), `sides` (two banners,
-take one and its pack is off while the other's is leashed). All five are built; only the tide is played on a floor so far.
+Each floor plays one. The numbers and what was measured are in the floors' notes.
+
+| Law | Floor | What it does |
+|---|---|---|
+| `tide` | 1 | The low ground floods on a clock: 2 % of max health a second and a 0.6 walk; warned 7 s before |
+| `paths` | 2 | Every 120 s three of six root barriers sink and three rise, warned 8 s before. Whoever stands where one rises is set down beside it; in both states every spot of the floor's data is reachable (`_worldCheck`) |
+| `storm` | 3 | Every 90 s a band of sand 20 m deep crosses north to south for 40 s, warned 8 s before: a few steps of sight and 4 % of max health a second, unless a piece of cover stands within 7 m to the north (the lee). Dust wraiths come only out of the band |
+| `dark` | 4 | A page layer (a quarter-size canvas under the HUD) dark all over, with holes at the hero (8 m; 10.8 m carrying a shard), the camp's lamps, touched waystones and woken crystals (a hall, for good). Lurkers wake from 15 m when the hero stands outside every light |
+| `sides` | 5 | A card at the start: take a banner. That army's packs are gone and four of its soldiers walk with the hero (hero-side units, replaced 18 s after one falls); the other army's packs hunt. The choice is in the run |
+
+`lawOf` (a WeakMap by zone) lets other parts ask the law (the caravan waits out a storm in a lee).
 
 ## Packs and the cap of six
 
@@ -131,16 +153,29 @@ All in `pipeline/tools/world-tool.js`, pasted into the tool page or the game pag
 | `_worldRoute({ floor, hero })` | The bot plays a floor camp to result card through the real pieces; returns time, falls, stars, checkpoints |
 | `_worldSix(heroes, reps)` | The route for several heroes in the background; `_worldSix.result()` |
 | `_worldVerbs()` | Every verb and every law once in a scratch zone |
+| `_worldCheck({ floor, map })` | No game: a flood fill of the zone from the camp for each state of the paths; lists every spot of the floor's data that cannot be reached, and the most units one point has near it (the cap is six) |
 | `_worldBench(label, frames)`, `_worldBench.duel()` | CPU time of `vfx.step` plus `vfx.render`, draw calls, triangles |
 | `_world.end()` | Stops the floor; on the game page brings the menu back |
+
+`pipeline/tools/world-shots.py` is a headless browser that saves pictures of the whole page (HUD and the dark layer included; `--profile`
+keeps the save between two runs for a reload test); `world-film.js` films a clip from the canvas (the dark layer is not in it).
 
 On the game page the tool uses `game.api` and hides the menu while it runs. The bot sprints (x3) during the race (the autopilot's own walk
 takes two to three times a person's): `noSprint: true` turns that off.
 
 ## Limits
 
-- Only floor 1 exists in the registry on this branch; floors 2 to 5 are data for their pieces and the other build adds their zones.
-- The ruler, trial and gate are tuned with the autopilot, never with a person. The autopilot plays some kits badly (Vesper): see the plan.
+- **No person has played any of it.** Every number comes from the route bot (the game's autopilot with a route) and from `_pieceRun`.
+  The autopilot plays some kits badly (Vesper does not clear floor 5, and floor 4 only after restarts).
+- **Fairness is rough.** Win rates over 8 to 12 fights: floor 2's gate (Fenna, CPU level 4) 2 of 8 alone but 3 of 4 first tries inside
+  route runs, and 12 of 12 at level 3, so there is no middle step; floor 5's gate and ruler 4 of 8 each. Floor 3 takes the bot 16 to
+  18 minutes against a par of 15.
+- **Looks are first pass:** zones, props and enemies are drawn in code from plain forms; the five rulers are a hero's model drawn big
+  and tinted. A lurker's leap, a golem's bolt and a knight's charge are speed and pose, not mechanics of their own.
+- **Alone, in the browser.** No friends on a floor, nothing on the account or the board.
+- **Not measured on a phone.** On the build machine a zone costs 10 to 14 ms a frame (a duel 7.7 ms). The 375 px pictures are a
+  narrow window with touch, not a phone.
 - A reload inside a set piece continues in the zone at the last waystone with the run as it was when the door was entered.
-- The five rulers are stand-ins (a hero's model, tinted). The gate's rule is that boons are set aside.
-- `storm`, `dark`, `paths` and `sides` are built and tried once each, not played in a floor.
+- `_worldVerbs`'s `dark` and `sides` cases still play the scratch laws in `law.ts`, not floors 4 and 5's (`f45/laws.ts`).
+- The dark is a page layer: a clip filmed from the 3D canvas alone does not show it.
+- The HUD names a carried thing by its short id ("water", "spade", "shard").

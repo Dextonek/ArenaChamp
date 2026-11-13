@@ -2,29 +2,42 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything._
 
-## Where the game is going: boss fights first, and the Tower's floors as worlds (2026-11-13): agreed, IN PROGRESS in its own worktree
+## The Tower's floors as worlds: five floors built (2026-11-13): merged into `feat/particle-editor`; NOT pushed, NOT live
 
 - **The direction, decided by the user.** Asked what the game should be (four ways were put: boss fights first, competitive
   duels, a solo run game, a showcase), the user: "players and fun, lets go with boss fights first". Duels stay as a side
   mode; breadth (more heroes, more modes) is not the next work.
-- **The Tower's floors as worlds, the user's idea:** "like those tower manhwas where on each floor there is like whole world
-  and there is some quest npc, open world mobs and boss, and then the gates to upper floor that is guarded by gatekeeper".
-  Worked out as a proposal: [tower-worlds.md](../pipeline/designs/tower-worlds.md), the page for the user
-  [tower-worlds.html](../pipeline/designs/tower-worlds.html) (a map sketch of floor 1: `docs/tower/worlds-map.jpg`). One zone
-  a floor (about four arenas across, 20 minutes, alone first, later up to three): a camp with people, three kinds of roaming
-  enemy and an elite, a main quest in three steps, a trial door (the Tower's rooms of today, which stay as "Trials"), the
-  floor's boss (a Raid boss every tenth floor), and a duel against a CPU hero as the gatekeeper. Boons on a floor; one kept
-  for good a floor as a sigil, in the Tower only. Build order: floor 1 alone as the whole loop, then play it.
-- **Agreed and being built (the user, shown the page: "add there more content and yes after that lets build it and lets
-  build at least 5 floors").** The design gained a law per floor, a named enemy, a rival climber, secrets, waystones, shards
-  and a trader, lives and mastery stars, and floors 1 to 5 written out. **In progress:** in the worktree `C:\VFXTool-worlds`,
-  branch `tower-worlds` (dev server there: `npx vite --port 5194 --strictPort`), by the plan
-  `pipeline/designs/tower-worlds-build.md` on that branch: stage 0 a spike of one 50 m zone, stage 1 the world system and
-  floor 1, stage 2 floors 2 to 5, stage 3 checks, docs and the merge. New files under `src/tower/world/` only; the weekly
-  Tower stays as it is (it becomes "Trials"). Nothing of it is in this checkout until the merge.
-- **A performance session was started the same day** at the user's word ("lets make new seison where we will optimalize this
-  game so taht it can run smoothly"): it measures first and reports on `docs/perf/performance.html`. It is the one writer on
-  the engine files while it runs. A wide map's frame rate is the first risk of the floors above, so its findings come first.
+- **The idea, the user's:** "like those tower manhwas where on each floor there is like whole world and there is some quest
+  npc, open world mobs and boss, and then the gates to upper floor that is guarded by gatekeeper". Shown the design page:
+  "add there more content and yes after that lets build it and lets build at least 5 floors". The design:
+  [tower-worlds.md](../pipeline/designs/tower-worlds.md), its page [tower-worlds.html](../pipeline/designs/tower-worlds.html).
+- **Built:** the Tower screen has two tabs, **Climb** (new) and **Trials** (the weekly Tower, unchanged). Five floors, each one
+  48 m zone with a camp (keeper, quest giver, trader), three enemy kinds in packs, an elite, a named enemy with a bounty, a
+  main quest and two side quests, three caches, a lore stone, waystones, a rival (a race or a duel), a trial door, the ruler
+  behind a door and the gatekeeper's duel: 1 the Drowned Harbour (the tide), 2 the Walking Wood (paths that change), 3 the
+  Storm Canyon (a wall of sand, shelter in a lee), 4 the Lightless Deep (the dark), 5 the Field of Banners (take a side, four
+  soldiers beside you). Three lives a floor, four stars, one boon kept as a sigil, the floor saved in the browser
+  (`tower.world.*`), floor N+1 opens when floor N's gate is won. How it works:
+  [docs/architecture/tower-worlds.md](architecture/tower-worlds.md). Code: `src/tower/world/` and one small edit in
+  `src/game/main.ts`. News: the release "The Tower: five floors that are worlds" (`live: false`).
+- **Checked, by the computer only:** the route bot (the autopilot with a route) clears every floor from camp to result card
+  through the real ruler, trial, rival and gate: floor 1 in 9 to 16 min, 2 in 9 to 11, 3 in 16 to 18, 4 in 9 to 16, 5 in 9 to 13,
+  with 0 to 2 falls, mostly at the gate. Every spot of every floor is reachable (`_worldCheck`); the chain "Climb to floor
+  N+1" works from 1 to 5; a reload mid-floor continues; type check, build, `npm run test:server` and the weekly Tower pass.
+  Numbers: `pipeline/designs/tower-worlds-build.md`, `-pieces.md`, `-floors23.md`, `-floors45.md`, `-join.md`. Pictures and a
+  27 s clip of all five: `docs/tower/worlds/` (`five-floors.mp4`, `j-five-camps.jpg`).
+- **Not done, honestly:** nobody has played any floor by hand; fairness is rough (floor 2's gate is 25 % for the autopilot at
+  CPU level 4 and 100 % at level 3; Vesper does not clear floor 5 with the autopilot); looks are first pass (zones, props and
+  enemies drawn in code, rulers are a hero's model drawn big); no friends on a floor; nothing on the account; never measured
+  on a phone (10 to 14 ms a frame for a zone on the build machine, a duel 7.7 ms).
+- **Waiting on the user:** play floor 1 (Tower, Climb, Start floor 1) and say what is wrong; then the looks with the artist.
+  Push and deploy each need their own word.
+- **Next (the design's step 3 to 5):** what playing shows; bodies of their own for the rulers and zones built in Blender;
+  friends on a floor and the climb on the account; floors 6 to 10.
+- **The performance session** (started the same day at the user's word, "lets make new seison where we will optimalize this
+  game so taht it can run smoothly") works in the main checkout and reports on `docs/perf/performance.html`; it is the one
+  writer on the engine files while it runs. A zone is started as a scene with `_world({ floor, hero })`
+  (`pipeline/tools/world-tool.js`).
 
 ## Open tabs are told about every new build (2026-11-12, night): pushed and LIVE (version 98909059)
 
