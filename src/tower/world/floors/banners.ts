@@ -118,7 +118,7 @@ export const banners: FloorDef = {
   ],
   lore: { id: 'lore', name: 'The soldiers’ stone', at: SPOTS.lore, text: ['Two armies swore to fight until the other fell. Neither has.', 'They fight on, and nobody has told them why.'] },
   doors: [
-    { id: 'lair', piece: 'ruler', name: 'The Last Marshal’s gate', at: at(0, -44.5), r: 2.2, wall: { ax: RING.x - 3.4, az: RING.z - 41, bx: RING.x + 3.4, bz: RING.z - 41, r: 0.5, height: 3.8 }, locked: 'The siege line holds. Cantor has a quest about it.' },
+    { id: 'lair', piece: 'ruler', name: 'The Last Marshal’s gate', at: at(0, -38.4), r: 2.2, wall: { ax: RING.x - 3.4, az: RING.z - 41, bx: RING.x + 3.4, bz: RING.z - 41, r: 0.5, height: 3.8 }, locked: 'The siege line holds. Cantor has a quest about it.' },
     { id: 'trial', piece: 'trial', name: 'The Trench', at: SPOTS.trial, r: 2, locked: '' },
     { id: 'rival', piece: 'rival', name: 'Brannoc’s ground', at: SPOTS.rival, r: 2.2, locked: '' },
     { id: 'gate', piece: 'gate', name: 'The gate up', at: SPOTS.gate, r: 2.2, needs: { won: 'ruler' }, locked: 'The gate is sealed. Its warden answers only once the Last Marshal has fallen.' },

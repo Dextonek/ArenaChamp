@@ -32,19 +32,19 @@ export const deep: FloorDef = {
     lights: [at(0, 34), at(-6, 37), at(6, 31)],
   },
   enemies: {
-    mite: { id: 'mite', name: 'Shard mite', blurb: 'Comes in a swarm. Small and quick.', look: look('mite'), melee: true, hp: 34, share: 0.017, every: 1.1, speed: 4.0, scale: 1.1, shards: 3, color: '#9af0ff' },
-    lurker: { id: 'lurker', name: 'Lurker', blurb: 'Waits in the dark and leaps.', look: look('lurker'), melee: true, hp: 80, share: 0.045, every: 3.2, speed: 5.4, scale: 1.2, shards: 7, color: '#d8e8ff' },
-    golem: { id: 'golem', name: 'Crystal golem', blurb: 'Slow. Throws a bolt back.', look: look('golem'), melee: false, hp: 240, share: 0.05, every: 3.0, speed: 1.7, range: 9, scale: 1.4, shards: 9, color: '#7ad8ff' },
-    thief: { id: 'thief', name: 'The Lantern Thief', blurb: 'Carries the only lamp in the Deep that is not a crystal.', look: look('thief'), melee: true, hp: 430, share: 0.055, every: 1.7, speed: 3.4, scale: 1.5, shards: 30, color: '#ffb84a' },
-    pale: { id: 'pale', name: 'The Pale One', blurb: 'Walks the Deep and strikes hard.', look: look('pale'), melee: true, hp: 650, share: 0.07, every: 2.2, speed: 2.6, scale: 1.4, shards: 45, color: '#e6f4ff' },
+    mite: { id: 'mite', name: 'Shard mite', blurb: 'Comes in a swarm. Small and quick.', look: look('mite'), melee: true, hp: 34, share: 0.013, every: 1.2, speed: 4.0, scale: 1.1, shards: 3, color: '#9af0ff' },
+    lurker: { id: 'lurker', name: 'Lurker', blurb: 'Waits in the dark and leaps.', look: look('lurker'), melee: true, hp: 75, share: 0.036, every: 3.2, speed: 5.4, scale: 1.2, shards: 7, color: '#d8e8ff' },
+    golem: { id: 'golem', name: 'Crystal golem', blurb: 'Slow. Throws a bolt back.', look: look('golem'), melee: false, hp: 240, share: 0.04, every: 3.2, speed: 1.7, range: 9, scale: 1.4, shards: 9, color: '#7ad8ff' },
+    thief: { id: 'thief', name: 'The Lantern Thief', blurb: 'Carries the only lamp in the Deep that is not a crystal.', look: look('thief'), melee: true, hp: 430, share: 0.045, every: 1.7, speed: 3.4, scale: 1.5, shards: 30, color: '#ffb84a' },
+    pale: { id: 'pale', name: 'The Pale One', blurb: 'Walks the Deep and strikes hard.', look: look('pale'), melee: true, hp: 650, share: 0.06, every: 2.2, speed: 2.6, scale: 1.4, shards: 45, color: '#e6f4ff' },
   },
   packs: [
     { id: 'h1', at: P.hall1, mix: [{ kind: 'mite', n: 3 }, { kind: 'golem', n: 1 }] },
-    { id: 'yard', at: at(2, -1), mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
+    { id: 'yard', at: at(-2, 1), mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
     { id: 'h2', at: P.hall2, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
     { id: 'h3', at: P.hall3, mix: [{ kind: 'lurker', n: 2 }, { kind: 'golem', n: 1 }] },
     { id: 'pools', at: P.pools, mix: [{ kind: 'mite', n: 2 }], elite: 'thief' },
-    { id: 'pale', at: at(-12, -6), mix: [{ kind: 'pale', n: 1 }], named: { name: 'The Pale One', speed: 1.5, patrol: [at(-12, -6), at(-6, -13), at(9, -14), at(12, -3), at(-3, 4)], bounty: { shards: 45, relic: true } } },
+    { id: 'pale', at: at(-12, -6), mix: [{ kind: 'pale', n: 1 }], named: { name: 'The Pale One', speed: 1.5, patrol: [at(-12, -6), at(-6, -13), at(9, -14), at(5, -6), at(-3, 4)], bounty: { shards: 45, relic: true } } },
   ],
   people: [
     { id: 'mabel', hero: 'Mabel', name: 'Mabel', role: 'keeper', at: at(-2.6, 36), face: 0.4, greet: ['Mind the dark, climber. Three great crystals in these halls went out, and with them the way. Carry a great shard to each and they wake. The Prism Mother sits behind the rock fall in the north.'], quests: ['main', 'bounty'] },
@@ -105,14 +105,14 @@ export const deep: FloorDef = {
   ],
   lore: { id: 'lore', name: 'The miners’ stone', at: SPOTS.lore, text: ['The miners lit the crystals to find their way home.', 'When the crystals went out, the miners stayed, and learned to wait in the dark.'] },
   doors: [
-    { id: 'lair', piece: 'ruler', name: 'The Prism Mother’s door', at: at(0, -44.5), r: 2.2, wall: { ax: RING.x - 3.4, az: RING.z - 41, bx: RING.x + 3.4, bz: RING.z - 41, r: 0.5, height: 4.4 }, locked: 'Fallen rock blocks the way. Mabel has a quest about the crystals.' },
+    { id: 'lair', piece: 'ruler', name: 'The Prism Mother’s door', at: at(0, -38.4), r: 2.2, wall: { ax: RING.x - 3.4, az: RING.z - 41, bx: RING.x + 3.4, bz: RING.z - 41, r: 0.5, height: 4.4 }, locked: 'Fallen rock blocks the way. Mabel has a quest about the crystals.' },
     { id: 'trial', piece: 'trial', name: 'The Dark Vault', at: SPOTS.trial, r: 2, locked: '' },
     { id: 'gate', piece: 'gate', name: 'The gate up', at: SPOTS.gate, r: 2.2, needs: { won: 'ruler' }, locked: 'The gate is sealed. Its warden answers only once the Prism Mother has fallen.' },
   ],
-  // Tempo's race: the route is about 48 m, so 0.84 of the hero's 4 m/s (3.36 m/s) is 14 s, as floor 1's.
+  // Tempo's race: the route is 26 m and keeps 15 m from the lurkers' packs (the dark wakes them from that far), so 0.45 of the hero's 4 m/s (1.8 m/s) is 14.5 s. A hero that walks straight from the card needs about 11 s.
   rival: {
-    hero: 'Tempo', goal: 'the echo well', mode: 'race', at: at(4, 24), to: SPOTS.echo, r: 3, pace: 0.84, boon: true,
-    route: [at(4, 24), at(6, 12), at(8, 1), at(10, -8), at(11, -16), SPOTS.echo],
-    lines: ['Tempo. I run the Deep in the dark and I never trip. To the echo well in the north: first to stand on it wins. Care to try?'],
+    hero: 'Tempo', goal: 'the echo well', mode: 'race', at: at(4, 24), to: SPOTS.echo, r: 3, pace: 0.45, boon: true,
+    route: [at(4, 24), at(8, 16), at(11, 8), SPOTS.echo],
+    lines: ['Tempo. I run the Deep in the dark and I never trip. To the echo well in the middle of the Deep: first to stand on it wins. Care to try?'],
   },
 };

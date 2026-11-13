@@ -29,7 +29,7 @@ export const DEEP_PLACES: Record<'camp' | 'hall1' | 'hall2' | 'hall3' | 'pools' 
 export const SPOTS = {
   crystal1: at(-34, 8), crystal2: at(-14, -30.5), crystal3: at(30, -17),
   shard1: at(6.5, 30.5), shard2: at(-23, 13.5), shard3: at(-10, -20),
-  lamp: at(14, 6), echo: at(12, -22), shaft: at(-3, -17),
+  lamp: at(19, 4), echo: at(14, 0), shaft: at(-3, -17),
   start: at(0, 39.5),
   way1: at(-18, 8), way2: at(8, -10), way3: at(18, 16),
   cache1: at(-43, -8), cache2: at(41, 2), cache3: at(8, -37), lore: at(-33, -28),
@@ -66,7 +66,7 @@ function pieces(): Piece[] {
   // The glow pools: rocks round two pools; the pools themselves are the floor's own drawing.
   L.push(P('rock', 22, 14, 1.3, 1.8), P('rock', 34, 15, 1.4, 2.2), P('rock', 30, 24, 1.2, 1.6), P('crystal', 33, 20, 0.9, 2.4), P('crystal', 21, 25, 0.8, 2.0));
   // The shaft where Isolde's satchel lies, and the echo well.
-  L.push(P('timber', -5, -15, 1.0, 1.6), P('timber', -1.2, -18.4, 1.0, 1.6), P('column', 14, -20, 0.8, 4.2), P('column', 10, -24, 0.8, 4.2));
+  L.push(P('timber', -5, -15, 1.0, 1.6), P('timber', -1.2, -18.4, 1.0, 1.6), P('column', 17.5, -1, 0.8, 4.2), P('column', 11.5, -3.2, 0.8, 4.2));
   // The lair: a long wall of fallen rock across the north with a gap in the middle (the door is the floor's: floors/deep.ts).
   L.push(W('wall', -26, -41, -3.4, -41, 0.5, 4.4), W('wall', 3.4, -41, 26, -41, 0.5, 4.4));
   // Filler: stalagmites, prisms and rocks off the track, so that a way across has to bend.

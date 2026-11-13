@@ -34,7 +34,7 @@ export const SPOTS = {
   cloth: at(-22, -16), tent: at(-6, 33), brazier1: at(14, 12), brazier2: at(-12, 21),
   rival: at(-26, -30),
   way1: at(-17, 14), way2: at(14, -12), way3: at(24, 18),
-  cache1: at(-44, -2), cache2: at(42, -4), cache3: at(-8, -42),
+  cache1: at(-44, -2), cache2: at(42, -4), cache3: at(8, -38.5),
   lore: at(36, 28), trial: at(-38, 26), gate: at(16, 38),
 };
 
