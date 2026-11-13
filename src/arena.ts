@@ -724,8 +724,10 @@ export class Arena {
       move = steer(this.caster.group.position, move.clone().divideScalar(len), this.obstacles, 0.5, reach).multiplyScalar(len);
     }
     const p = this.caster.group.position.add(move);
-    p.x = THREE.MathUtils.clamp(p.x, -55, 55);
-    p.z = THREE.MathUtils.clamp(p.z, -55, 55);
+    // Within the play area's box (a Tower zone can be far wider than a duel's ring); the open floor of the tool page keeps +-55.
+    const b = this.bounds, lim = b ? null : 55;
+    p.x = lim ? THREE.MathUtils.clamp(p.x, -lim, lim) : THREE.MathUtils.clamp(p.x, b!.x - b!.r, b!.x + b!.r);
+    p.z = lim ? THREE.MathUtils.clamp(p.z, -lim, lim) : THREE.MathUtils.clamp(p.z, b!.z - b!.r, b!.z + b!.r);
     this.keepInside(p);
     this.caster.group.rotation.y = Math.atan2(move.x, move.z);
   }

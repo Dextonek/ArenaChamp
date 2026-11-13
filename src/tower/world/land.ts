@@ -5,33 +5,36 @@ import { Sea } from '../../arenas/real';
 import type { Kit } from './zone';
 
 /**
- * The Drowned Harbour as a place in the world, not a platform in the sea (the user, 2026-11-13: "make it more like real maps,
- * not just like something inside somewhere; make those floors be like real world"). A coast: the walkable ground (a disc of radius
- * `r`, flat at y = 0, as before) is the edge of a town by the sea. Past it the land goes on: a bank, then hills, a cliff along the
- * north, the town's houses to the west, woods to the south and north; to the east a beach runs down into the sea, with a jetty and
- * boats. What stops a walk at the rim is something there: water, the cliff, the houses and their walls, a hedge.
+ * A sea floor as a place in the world, not a platform in the sea (the user, 2026-11-13: "make it more like real maps, not just like
+ * something inside somewhere; make those floors be like real world"), of any outline and size (2026-11-14: "lets make those maps 5 x
+ * larger", "it doesnt need to have circular shape it can be whatever"). The walkable ground (flat at y = 0) is the edge of a town by
+ * the sea; past its outline the land goes on: a bank, then hills, a cliff along the north, the town's houses on the land side, woods;
+ * on the sea side a beach runs down into the sea, with jetties and boats. What stops a walk at the edge is something there: water,
+ * the cliff, houses and their walls, a hedge (and, for the walk itself, the zone's invisible edge walls).
+ *
+ * The outline is `rim`: the walkable radius in each direction round the middle (`RING`), N samples evenly round from +x (the east)
+ * towards +z (the south), as `Math.atan2(dz, dx)` counts. A circle is one radius everywhere. Everything here is placed by how far
+ * past that outline a point is (`beyond`), so any outline works.
  *
  * Drawn in the heroes' style (blender/arenas/real/STYLE.md): clean forms in the palette's flat colours, a drawn ground (no
- * photographed textures), the drawn sea of the duel harbour. Only the look: the cover, the places, the paths and the packs are the
- * zone's (zone.ts) and are not changed.
- *
- * The ground is one mesh: a grid 420 m across whose height is `height()`. Its colour is a painted map for the middle (the paths,
- * the plazas, the tidal flats; `paint()`) and vertex colours beyond, blended by the vertex's alpha.
+ * photographed textures), the drawn sea of the duel harbour. Only the look: cover, places, paths and packs are the zone's.
  */
 
 export interface LandSpec {
-  /** The walkable radius (the zone's `ZONE_R`). */
-  r: number;
+  /** The walkable outline: radii round the middle (see above). */
+  rim: number[];
   /** The paths, as lines of offsets from the middle (`RING`). */
   paths: [number, number][][];
-  /** The places, in world coordinates. */
-  places: { id: string; x: number; z: number; r: number }[];
+  /** The places, in world coordinates; `kind` says how its ground is drawn (cobbles for a market, flagstones at a lighthouse...). */
+  places: { id: string; kind?: string; x: number; z: number; r: number }[];
   /** The tide's low ground (world coordinates): drawn as tidal flats. */
   flats: { x: number; z: number; rx: number; rz: number; rot?: number }[];
-  /** The sea's side: 1 east (floor 1), -1 west (the land mirrored: the town is then east). */
+  /** The sea's side: 1 east, -1 west (the land mirrored: the town is then east). */
   mirror?: 1 | -1;
-  /** 0 is floor 1's land; another number makes other hills, woods and houses (the generator's floors). */
+  /** 0 is floor 1's land; another number makes other hills, woods and houses. */
   seed?: number;
+  /** A ruin's old floor (offset from the middle), drawn as flagstones. */
+  ruin?: { dx: number; dz: number };
 }
 
 const smooth = (a: number, b: number, x: number) => {
@@ -60,40 +63,49 @@ const GRASS_A: RGB = [70, 92, 54], GRASS_B: RGB = [86, 106, 60], DRY: RGB = [116
 const SAND: RGB = [184, 166, 126], WET: RGB = [132, 120, 92], UNDER: RGB = [70, 76, 66], FOAM: RGB = [206, 210, 200];
 const ROCK: RGB = [94, 90, 88], ROCK_DARK: RGB = [70, 68, 70];
 const DIRT: RGB = [118, 92, 64], DIRT_EDGE: RGB = [90, 72, 52], DIRT_MID: RGB = [136, 108, 76];
-/** The sea's level (m): the beach runs under it east of the rim. */
+/** The sea's level (m): the beach runs under it past the rim on the sea's side. */
 export const WATER = -0.45;
 
+/** The outline's radius in direction `a` (radians, `atan2(dz, dx)`), smoothly between its samples. */
+export function rimAt(rim: number[], a: number) {
+  const n = rim.length, t = ((((a / (Math.PI * 2)) % 1) + 1) % 1) * n, i = Math.floor(t) % n, f = t - Math.floor(t);
+  const s = f * f * (3 - 2 * f);
+  return rim[i] + (rim[(i + 1) % n] - rim[i]) * s;
+}
+
 /** The world's shape, from offsets (dx, dz) from the middle. */
-export function geography(R: number, o: { mirror?: 1 | -1; seed?: number } = {}) {
+export function geography(rim: number[], o: { mirror?: 1 | -1; seed?: number } = {}) {
   const m = o.mirror ?? 1, seed = o.seed ?? 0;
   const fbm = noiseOf(4242 + seed), fbm2 = noiseOf(77 + seed);
-  /**
-   * Where the sea begins east of the middle, along dz: just past the rim along the east (a walk ends at the water, not on open sand),
-   * then turning out to sea north and south of it, so there is a headland each side (the lighthouse's in the north-east).
-   */
-  const coast = (dz: number) => {
-    // the shore wanders 0 to about 3 m out from the rim, so from above it is a shore and not the rim's circle
-    const wander = Math.max(0, 0.7 + 1.3 * Math.sin(dz * 0.12 + 0.7) + 0.9 * Math.sin(dz * 0.29 + 2.1));
-    const a = Math.abs(dz), rim = Math.sqrt(Math.max(1, (R + 0.9) ** 2 - dz * dz)) + wander;
-    return rim + (Math.max(rim, 36 + (a - 30) * 1.4) - rim) * smooth(28, 40, a);
+  /** How far past the outline (dx, dz) is (negative inside). */
+  const beyond = (dx: number, dz: number) => Math.hypot(dx, dz) - rimAt(rim, Math.atan2(dz, dx));
+  /** The sea's side: 1 on it (the east, before the mirror), 0 off it; the edges of the sector are the headlands. */
+  const seaSide = (dx: number, dz: number) => {
+    const r = Math.hypot(dx, dz) || 1;
+    return smooth(0.18, 0.5, (m * dx) / r);
+  };
+  /** The shore wanders 0 to about 3 m past the rim, so from above it is a shore and not the outline. */
+  const wander = (dx: number, dz: number) => {
+    const a = Math.atan2(dz, m * dx) * 8;
+    return Math.max(0, 0.7 + 1.3 * Math.sin(a * 1.4 + 0.7) + 0.9 * Math.sin(a * 3.3 + 2.1));
   };
   /** 0 on land, 1 in the sea. */
-  const sea = (dx: number, dz: number) => smooth(-2.5, 2.5, m * dx - coast(dz));
+  const sea = (dx: number, dz: number) => seaSide(dx, dz) * smooth(-2.5, 2.5, beyond(dx, dz) - wander(dx, dz) - 0.9);
   /** The cliff along the north (screen top), 0..1; not where the sea is. */
-  const cliff = (dx: number, dz: number, r: number) => smooth(0.35, 0.72, -dz / Math.max(r, 1)) * (1 - sea(dx, dz));
+  const cliff = (dx: number, dz: number) => smooth(0.35, 0.72, -dz / (Math.hypot(dx, dz) || 1)) * (1 - sea(dx, dz));
   const height = (dx: number, dz: number) => {
-    const r = Math.hypot(dx, dz);
-    if (r <= R + 0.5) return 0;
+    const b = beyond(dx, dz);
+    if (b <= 0.5) return 0;
     const s = sea(dx, dz);
-    const bank = smooth(R + 0.5, R + 4, r);
-    const hills = (0.5 + 7 * fbm(dx * 0.022 + 3, dz * 0.022 + 7)) * smooth(R + 4, R + 34, r);
-    const c = cliff(dx, dz, r) * smooth(R + 0.8, R + 5.5, r) * (7 + 6 * fbm2(dx * 0.07, dz * 0.07));
+    const bank = smooth(0.5, 4, b);
+    const hills = (0.5 + 7 * fbm(dx * 0.022 + 3, dz * 0.022 + 7)) * smooth(4, 34, b);
+    const c = cliff(dx, dz) * smooth(0.8, 5.5, b) * (7 + 6 * fbm2(dx * 0.07, dz * 0.07));
     const land = 0.4 * bank + Math.max(hills, c);
-    const water = -1.2 * smooth(R + 0.3, R + 3, r) - 2.2 * smooth(R + 3, R + 24, r);
+    const water = -1.2 * smooth(0.3, 3, b) - 2.2 * smooth(3, 24, b);
     return land * (1 - s) + water * s;
   };
-  /** How much of a beach (dx, dz) is: near the coast on land. */
-  const beach = (dx: number, dz: number) => smooth(coast(dz) - 11, coast(dz) - 3.5, m * dx);
+  /** How much of a beach (dx, dz) is: on the sea's side, near the shore, on land. */
+  const beach = (dx: number, dz: number) => seaSide(dx, dz) * smooth(-11, -3.5, beyond(dx, dz) - wander(dx, dz) - 0.9);
   /** How steep the ground is at (dx, dz): rise over run. */
   const steepness = (dx: number, dz: number) => {
     const e = 0.6;
@@ -101,10 +113,10 @@ export function geography(R: number, o: { mirror?: 1 | -1; seed?: number } = {})
   };
   /** The ground's own colour (no paths or plazas): grass (on the cliff's top too), a beach, wet sand at the water, rock where it is steep. */
   const color = (dx: number, dz: number, h: number): RGB => {
-    const r = Math.hypot(dx, dz), steep = steepness(dx, dz);
+    const b = beyond(dx, dz), steep = steepness(dx, dz);
     let c = mix(GRASS_A, GRASS_B, fbm(dx * 0.05 + 1, dz * 0.05 + 2));
     c = mix(c, DRY, 0.55 * smooth(0.58, 0.78, fbm2(dx * 0.018 + 11, dz * 0.018 + 4)) + 0.35 * smooth(3, 8, h));
-    c = mix(c, SAND, beach(dx, dz) * (1 - smooth(R + 6, R + 20, r) * (1 - sea(dx, dz))));
+    c = mix(c, SAND, beach(dx, dz) * (1 - smooth(6, 20, b) * (1 - sea(dx, dz))));
     if (h < 0) {
       c = mix(c, WET, smooth(-0.05, -0.3, h));
       c = mix(c, FOAM, 0.75 * (smooth(WATER - 0.02, WATER + 0.06, h) * (1 - smooth(WATER + 0.12, WATER + 0.22, h))));
@@ -113,17 +125,19 @@ export function geography(R: number, o: { mirror?: 1 | -1; seed?: number } = {})
     c = mix(c, mix(ROCK, ROCK_DARK, fbm2(dx * 0.15, dz * 0.15)), smooth(0.55, 1.1, steep));
     return c;
   };
-  return { coast, sea, cliff, height, beach, color, fbm, fbm2, steepness, m };
+  return { beyond, seaSide, sea, cliff, height, beach, color, fbm, fbm2, steepness, m };
 }
 type Geo = ReturnType<typeof geography>;
 
 /** The painted middle: the ground's colour, then the tidal flats, the paths and the plazas on top. `L` metres across. */
 function paint(spec: LandSpec, geo: Geo, L: number) {
-  return canvasTexture(2048, (g, size) => {
+  // About 15 to 18 pixels a metre whatever the size (floor 1's was 18): a bigger zone takes the bigger canvas.
+  const size = L > 140 ? 4096 : 2048;
+  return canvasTexture(size, (g) => {
     const ppm = size / L, c = size / 2, rnd = seeded(31 + (spec.seed ?? 0));
     const X = (dx: number) => c + dx * ppm, Z = (dz: number) => c + dz * ppm;
-    // The ground's colour, worked out at half a metre and drawn up smoothly: soft edges, like paint.
-    const n = Math.round(L * 2), low = document.createElement('canvas');
+    // The ground's colour, worked out on a coarse grid and drawn up smoothly: soft edges, like paint.
+    const n = Math.round(L > 140 ? L : L * 2), low = document.createElement('canvas');
     low.width = low.height = n;
     const lg = low.getContext('2d')!, img = lg.createImageData(n, n);
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
@@ -136,9 +150,10 @@ function paint(spec: LandSpec, geo: Geo, L: number) {
     g.imageSmoothingQuality = 'high';
     g.drawImage(low, 0, 0, size, size);
     // Grass in patches: soft dabs a little lighter or darker, only where it is grass.
-    for (let k = 0; k < 1400; k++) {
+    const dabs = Math.round(1400 * (L / 112) ** 2);
+    for (let k = 0; k < dabs; k++) {
       const dx = (rnd() - 0.5) * L, dz = (rnd() - 0.5) * L;
-      if (geo.beach(dx, dz) > 0.35 || geo.height(dx, dz) < -0.05 || geo.cliff(dx, dz, Math.hypot(dx, dz)) > 0.3) continue;
+      if (geo.beach(dx, dz) > 0.35 || geo.height(dx, dz) < -0.05 || geo.cliff(dx, dz) > 0.3 && geo.beyond(dx, dz) > 0) continue;
       const rad = (1.2 + rnd() * 3.5) * ppm, light = rnd() < 0.5, grad = g.createRadialGradient(X(dx), Z(dz), 0, X(dx), Z(dz), rad);
       grad.addColorStop(0, light ? 'rgba(120,140,80,0.16)' : 'rgba(40,58,36,0.16)');
       grad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -218,16 +233,16 @@ function paint(spec: LandSpec, geo: Geo, L: number) {
     };
     for (const p of spec.places) {
       const dx = p.x - RING.x, dz = p.z - RING.z;
-      switch (p.id) {
+      switch (p.kind ?? p.id) {
         case 'camp': disc(dx, dz, p.r - 0.5, rgba(DIRT, 0.9), 2); break; // packed earth round the fire
-        case 'market': stones(dx, dz, p.r, 0.7, [132, 124, 110], '#4e4840'); break; // the town square's cobbles
-        case 'lighthouse': stones(dx, dz, p.r - 1.5, 1.4, [126, 122, 114], '#55524e'); break; // flagstones at its foot
+        case 'market': case 'village': stones(dx, dz, p.r, 0.7, [132, 124, 110], '#4e4840'); break; // a town square's cobbles
+        case 'lighthouse': case 'beacon': stones(dx, dz, p.r - 1.5, 1.4, [126, 122, 114], '#55524e'); break; // flagstones at its foot
+        case 'fort': case 'chapel': stones(dx, dz, p.r - 1, 1.2, [118, 114, 106], '#4c4944'); break;
         case 'caves': disc(dx, dz, p.r, 'rgba(96,90,84,0.9)', 2.5); break; // gravel
-        case 'wreck': disc(dx, dz, p.r, 'rgba(150,136,104,0.55)', 3); break; // trodden sand
+        case 'wreck': case 'shipyard': case 'saltworks': disc(dx, dz, p.r, 'rgba(150,136,104,0.55)', 3); break; // trodden sand
       }
     }
-    // The ruined customs house in the middle stands on its old floor.
-    stones(0, -4.5, 6.5, 1.2, [118, 114, 106], '#4c4944');
+    if (spec.ruin) stones(spec.ruin.dx, spec.ruin.dz + 0.5, 6.5, 1.2, [118, 114, 106], '#4c4944');
   });
 }
 
@@ -317,16 +332,21 @@ function house(dress: Dress, x: number, y: number, z: number, yaw: number, w: nu
 
 /** Builds the land, the sea and what stands beyond the rim. Its meshes go into `into`; its geometry for merging into `kit`. */
 export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { dispose(): void }[]) {
-  const R = spec.r, seed = spec.seed ?? 0, geo = geography(R, { mirror: spec.mirror, seed }), m = geo.m, rnd = seeded(2024 + seed);
+  const seed = spec.seed ?? 0, geo = geography(spec.rim, { mirror: spec.mirror, seed }), m = geo.m, rnd = seeded(2024 + seed);
+  const rmax = Math.max(...spec.rim), rmean = spec.rim.reduce((s, r) => s + r, 0) / spec.rim.length;
   const mat = (hex: string, rough = 0.8, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => {
-    const m = new THREE.MeshStandardMaterial({ color: new THREE.Color(hex), roughness: rough, ...o });
-    own.push(m);
-    return m;
+    const mm = new THREE.MeshStandardMaterial({ color: new THREE.Color(hex), roughness: rough, ...o });
+    own.push(mm);
+    return mm;
   };
   const dress = new Dress(kit, mat('#c9a24a', 0.32, { metalness: 0.85 }));
+  /** A point `b` m past the outline in direction `a` (radians), as an offset. */
+  const out = (a: number, b: number) => { const r = rimAt(spec.rim, a) + b; return { dx: Math.cos(a) * r, dz: Math.sin(a) * r }; };
+  /** The direction `a` (radians) of a canonical bearing: `t` turns from the sea's side (0) round through the north (-0.25). */
+  const dir = (t: number) => (m === 1 ? t * Math.PI * 2 : Math.PI - t * Math.PI * 2);
 
   // --- the ground ---------------------------------------------------------------------------------------------------
-  const SIZE = 420, SEG = 200, L = 2 * (R + 8);
+  const SIZE = Math.max(420, 2 * (rmax + 160)), SEG = Math.round(SIZE / 2.1), L = 2 * (rmax + 8);
   const plane = new THREE.PlaneGeometry(SIZE, SIZE, SEG, SEG).rotateX(-Math.PI / 2);
   const pos = plane.attributes.position, n = pos.count;
   for (let i = 0; i < n; i++) pos.setY(i, geo.height(pos.getX(i), pos.getZ(i)));
@@ -336,9 +356,10 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     const dx = pos.getX(i), dz = pos.getZ(i), h = pos.getY(i);
     const c = geo.color(dx, dz, h);
     tmp.setRGB(c[0] / 255, c[1] / 255, c[2] / 255, THREE.SRGBColorSpace);
-    const r = Math.hypot(dx, dz);
     colors[i * 4] = tmp.r; colors[i * 4 + 1] = tmp.g; colors[i * 4 + 2] = tmp.b;
-    colors[i * 4 + 3] = 1 - smooth(R + 4.5, R + 7.5, r); // the painted map inside, the vertex colour outside
+    // the painted map inside (and a little past the outline), the vertex colour outside; never past the canvas's edge
+    const inside = 1 - smooth(4.5, 7.5, geo.beyond(dx, dz)), onCanvas = Math.abs(dx) < L / 2 - 1 && Math.abs(dz) < L / 2 - 1 ? 1 : 0;
+    colors[i * 4 + 3] = inside * onCanvas;
     uv.setXY(i, dx / L + 0.5, dz / L + 0.5); // the canvas's first row is the north (flipY off)
   }
   plane.setAttribute('color', new THREE.BufferAttribute(colors, 4));
@@ -367,53 +388,56 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   own.push(sea);
 
   const W = (dx: number, dz: number) => ({ x: RING.x + dx, z: RING.z + dz });
-  const free: { x: number; z: number; r: number }[] = []; // ground taken by houses and the jetty: no trees there
+  const free: { x: number; z: number; r: number }[] = []; // ground taken by houses and the jetties: no trees there
   const taken = (dx: number, dz: number, pad: number) => free.some((f) => Math.hypot(f.x - dx, f.z - dz) < f.r + pad);
 
-  // --- the town: houses along the west, beyond the market ---------------------------------------------------------------
-  const lots: [number, number, number][] = [
-    [-53.5, -5, 5.4], [-52.5, 6.5, 5], [-51.5, 18.5, 5.6], [-50, -17.5, 4.8], [-59.5, 12, 5], [-61, -0.5, 5.6], [-56.5, 27, 5.2], [-63.5, 22, 4.8],
-    [-48.5, -28.5, 5], [-64.5, -13, 5.2], [-57, -30, 4.6], [-68, 6, 5], [-70, -4, 4.6], [-66, 32, 5],
-  ];
+  // --- the town: houses along the land's side, past the outline -------------------------------------------------------------
   const roofs: Key[] = ['wine', 'slate', 'teal', 'wine', 'slate'];
-  lots.forEach(([u, dz, w], i) => {
-    if (seed && rnd() < 0.3) return; // another floor's town: fewer houses, not the same ones
-    const dx = m * u;
-    const d = w * (0.75 + rnd() * 0.2), h = 3.2 + rnd() * 1.8, y = geo.height(dx, dz), p = W(dx, dz);
-    house(dress, p.x, y, p.z, Math.atan2(-dx, -dz), w, d, h, roofs[i % roofs.length], rnd);
-    free.push({ x: dx, z: dz, r: w * 0.85 });
-  });
+  const houses = Math.round(14 * (rmean / 48));
+  for (let k = 0, made = 0; k < houses * 6 && made < houses; k++) {
+    // the land's side: from the south-west round to the north-west (before the mirror), not the cliff, not the sea
+    const a = dir(0.5 + (rnd() - 0.5) * 0.36), o = out(a, 3.5 + rnd() * 18);
+    if (geo.sea(o.dx, o.dz) > 0.05 || geo.cliff(o.dx, o.dz) > 0.3 || geo.beach(o.dx, o.dz) > 0.3 || taken(o.dx, o.dz, 4)) continue;
+    const w = 4.6 + rnd() * 1.2, d = w * (0.75 + rnd() * 0.2), h = 3.2 + rnd() * 1.8, y = geo.height(o.dx, o.dz), p = W(o.dx, o.dz);
+    house(dress, p.x, y, p.z, Math.atan2(-o.dx, -o.dz), w, d, h, roofs[made % roofs.length], rnd);
+    free.push({ x: o.dx, z: o.dz, r: w * 0.85 });
+    made++;
+  }
 
-  // --- the rim on land: a dry-stone wall where the town is, a hedge in the south; the cliff and the water need nothing -------
+  // --- the rim on land: a dry-stone wall where the town is, hedges elsewhere; the cliff and the water need nothing ----------------
   const hedge: { x: number; z: number; s: number }[] = [];
-  for (let a = 0; a < Math.PI * 2; a += 3.0 / (R + 1.5)) {
-    // not a drawn circle: the line wanders a little in and out
-    const wallR = R + 1.3 + 0.9 * Math.sin(a * 5 + 1) + 0.5 * Math.sin(a * 13), dx = Math.cos(a) * wallR, dz = Math.sin(a) * wallR;
-    // (sand that reaches the rim gets dune bushes, so no stretch of open ground ends at nothing)
-    if (geo.sea(dx, dz) > 0.2 || geo.cliff(dx, dz, wallR) > 0.25) continue;
-    if (m * dx < -20) {
+  const around = 2 * Math.PI * rmean;
+  for (let k = 0; k < around / 3; k++) {
+    const a = (k / (around / 3)) * Math.PI * 2, o = out(a, 1.3 + 0.9 * Math.sin(a * 5 + 1) + 0.5 * Math.sin(a * 13));
+    if (geo.sea(o.dx, o.dz) > 0.2 || geo.cliff(o.dx, o.dz) > 0.25) continue;
+    const town = Math.cos(a) * m < -0.42; // the land's side, where the houses are
+    if (town) {
       if (rnd() < 0.15) continue; // a gap where it has fallen
-      const p = W(dx, dz), y = geo.height(dx, dz), yaw = -a + Math.PI / 2 + (rnd() - 0.5) * 0.15;
+      const p = W(o.dx, o.dz), y = geo.height(o.dx, o.dz), r0 = rimAt(spec.rim, a), r1 = rimAt(spec.rim, a + 0.02);
+      // along the outline: its tangent from two samples of it
+      const tx = Math.cos(a + 0.02) * r1 - Math.cos(a) * r0, tz = Math.sin(a + 0.02) * r1 - Math.sin(a) * r0;
+      const yaw = Math.atan2(tx, tz) + Math.PI / 2 + (rnd() - 0.5) * 0.15;
       dress.add('stone', new THREE.BoxGeometry(2.8, 0.7, 0.55).translate(0, 0.35, 0), p.x, y - 0.05, p.z, yaw);
       dress.add('capstone', new THREE.BoxGeometry(2.85, 0.12, 0.62).translate(0, 0.06, 0), p.x, y + 0.62, p.z, yaw);
-    } else for (let k = 0; k < 2; k++) hedge.push({ x: dx + (rnd() - 0.5) * 1.2, z: dz + (rnd() - 0.5) * 1.2, s: 0.9 + rnd() * 0.6 });
+    } else for (let j = 0; j < 2; j++) hedge.push({ x: o.dx + (rnd() - 0.5) * 1.2, z: o.dz + (rnd() - 0.5) * 1.2, s: 0.9 + rnd() * 0.6 });
   }
 
-  // --- the jetty and the boats, east, in the sea -------------------------------------------------------------------------
-  for (const [jz, len] of [[-7, 18], [24, 13]] as const) {
-    // from the beach just past the rim (never on the walkable ground) out into the sea
-    const x0 = Math.max(geo.coast(jz) - 1, Math.sqrt((R + 1.5) ** 2 - jz * jz));
+  // --- jetties and boats, on the sea's side ------------------------------------------------------------------------------
+  const jetties = Math.max(2, Math.round(2 * (rmean / 48)));
+  for (let j = 0; j < jetties; j++) {
+    // straight out from the shore, square to the outline's direction
+    const a = dir(((j + 0.5) / jetties - 0.5) * 0.26), len = 13 + rnd() * 7, ux = Math.cos(a), uz = Math.sin(a), r0 = rimAt(spec.rim, a) + 1.5;
     for (let s = 0; s <= len; s += 2.6) for (const side of [-1.1, 1.1]) {
-      const p = W(m * (x0 + s), jz + side);
+      const p = W(ux * (r0 + s) - uz * side, uz * (r0 + s) + ux * side);
       dress.add('wood', new THREE.CylinderGeometry(0.16, 0.18, 2.6, 8).translate(0, 0.3, 0), p.x, WATER - 1, p.z);
     }
-    const mid = W(m * (x0 + len / 2), jz);
-    dress.add('plank', new THREE.BoxGeometry(len + 1, 0.22, 2.6), mid.x, 0.35, mid.z, 0);
-    dress.add('gold', new THREE.BoxGeometry(len + 1, 0.08, 0.1), mid.x, 0.5, mid.z + 1.3).add('gold', new THREE.BoxGeometry(len + 1, 0.08, 0.1), mid.x, 0.5, mid.z - 1.3);
-    for (let s = 0; s < len; s += 3.5) free.push({ x: m * (x0 + s), z: jz, r: 2 });
+    const mid = W(ux * (r0 + len / 2), uz * (r0 + len / 2)), yaw = Math.atan2(ux, uz);
+    dress.add('plank', new THREE.BoxGeometry(2.6, 0.22, len + 1), mid.x, 0.35, mid.z, yaw);
+    for (const side of [-1.3, 1.3]) dress.add('gold', new THREE.BoxGeometry(0.1, 0.08, len + 1), mid.x - uz * side, 0.5, mid.z + ux * side, yaw);
+    for (let s = 0; s < len; s += 3.5) free.push({ x: ux * (r0 + s), z: uz * (r0 + s), r: 2 });
   }
-  const boat = (u: number, dz: number, yaw0: number, mast: boolean, paint: Key) => {
-    const p = W(m * u, dz), yaw = m * yaw0;
+  const boat = (a: number, b: number, yaw: number, mast: boolean, paint: Key) => {
+    const o = out(a, b), p = W(o.dx, o.dz);
     const hull = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1.3, 0.8, 3.6);
     dress.add(paint, hull, p.x, WATER + 0.5, p.z, yaw).add('wood', new THREE.BoxGeometry(2.3, 0.12, 6.2), p.x, WATER + 0.48, p.z, yaw);
     dress.add('gold', new THREE.TorusGeometry(1, 0.06, 6, 24).scale(1.3, 3.6, 1).rotateX(Math.PI / 2), p.x, WATER + 0.52, p.z, yaw);
@@ -422,28 +446,30 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
       dress.add('sail', new THREE.PlaneGeometry(2.6, 4.4).translate(0, 3.9, 0.9), p.x, WATER + 0.5, p.z, yaw + 0.25);
     }
   };
-  boat(66, -11, 0.2, true, 'wine');
-  boat(64, -2.5, -0.1, false, 'teal');
-  boat(62, 28.5, 0.5, true, 'lacquer');
-  boat(78, 9, 1.1, true, 'wine');
+  const boats = Math.max(4, Math.round(4 * (rmean / 48)));
+  const paints: Key[] = ['wine', 'teal', 'lacquer'];
+  for (let k = 0; k < boats; k++) boat(dir((rnd() - 0.5) * 0.3), 13 + rnd() * 20, rnd() * 6.28, rnd() < 0.7, paints[k % paints.length]);
   // Stacks of rock out at sea, far off.
   for (let k = 0; k < 9; k++) {
-    const dz = -70 + rnd() * 140, dx = m * (geo.coast(dz) + 25 + rnd() * 70), s = 2 + rnd() * 4, p = W(dx, dz);
+    const o = out(dir((rnd() - 0.5) * 0.36), 35 + rnd() * 70), s = 2 + rnd() * 4, p = W(o.dx, o.dz);
+    if (geo.sea(o.dx, o.dz) < 0.8) continue;
     dress.add('rock', new THREE.ConeGeometry(s, 7 + rnd() * 10, 7).translate(0, 3.5, 0), p.x, WATER - 1, p.z, rnd() * 3);
   }
   // Fallen rock at the cliff's foot: the floor's own rocks (faceted, dark), sat into the ground.
-  for (let k = 0; k < 26; k++) {
-    const a = -Math.PI / 2 + (rnd() - 0.5) * 2.2, r = R + 1.3 + rnd() * 1.6, dx = Math.cos(a) * r, dz = Math.sin(a) * r;
-    if (geo.sea(dx, dz) > 0.1 || geo.cliff(dx, dz, r) < 0.25) continue;
-    const s = 0.5 + rnd() * 1.1, p = W(dx, dz);
-    dress.add('boulder', new THREE.IcosahedronGeometry(1, 0), p.x, geo.height(dx, dz) + s * 0.15, p.z, rnd() * 6, s * 1.3, s * 0.8, s * 1.1, (rnd() - 0.5) * 0.4);
+  const boulders = Math.round(26 * (rmean / 48));
+  for (let k = 0; k < boulders; k++) {
+    const o = out(-Math.PI / 2 + (rnd() - 0.5) * 2.2, 1.3 + rnd() * 1.6);
+    if (geo.sea(o.dx, o.dz) > 0.1 || geo.cliff(o.dx, o.dz) < 0.25) continue;
+    const s = 0.5 + rnd() * 1.1, p = W(o.dx, o.dz);
+    dress.add('boulder', new THREE.IcosahedronGeometry(1, 0), p.x, geo.height(o.dx, o.dz) + s * 0.15, p.z, rnd() * 6, s * 1.3, s * 0.8, s * 1.1, (rnd() - 0.5) * 0.4);
   }
 
   // --- trees and bushes: instanced, the woods north and south and on the hills ----------------------------------------
   const conifer: THREE.Matrix4[] = [], broad: THREE.Matrix4[] = [], bush: THREE.Matrix4[] = [];
   const q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), mtx = (x: number, y: number, z: number, s: number, sy = s) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), q.setFromAxisAngle(up, rnd() * 6.28).clone(), new THREE.Vector3(s, sy, s));
-  for (let k = 0; k < 2600 && conifer.length + broad.length < 520; k++) {
-    const a = rnd() * Math.PI * 2, r = R + 3 + Math.pow(rnd(), 1.3) * 120, dx = Math.cos(a) * r, dz = Math.sin(a) * r;
+  const treeMax = Math.round(520 * Math.min(2, rmean / 48));
+  for (let k = 0; k < treeMax * 5 && conifer.length + broad.length < treeMax; k++) {
+    const o = out(rnd() * Math.PI * 2, 3 + Math.pow(rnd(), 1.3) * 120), dx = o.dx, dz = o.dz;
     if (geo.sea(dx, dz) > 0.05 || geo.beach(dx, dz) > 0.4 || taken(dx, dz, 2.5)) continue;
     const h = geo.height(dx, dz);
     if (h < 0.1) continue;
@@ -452,7 +478,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     if (rnd() > smooth(0.38, 0.62, wood) + 0.08) continue;
     const p = W(dx, dz), north = dz < -10, s = 0.75 + rnd() * 0.6;
     // nothing tall on the near side of the camera: the south rim gets low, round trees
-    const near = dz > R * 0.6 && r < R + 14;
+    const near = dz > 0 && Math.abs(dx) < Math.abs(dz) && geo.beyond(dx, dz) < 14;
     if (north || (rnd() < 0.35 && !near)) conifer.push(mtx(p.x, h - 0.2, p.z, s * (near ? 0.6 : 1)));
     else broad.push(mtx(p.x, h - 0.2, p.z, s * (near ? 0.7 : 1)));
   }
@@ -460,15 +486,16 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     const p = W(b.x, b.z);
     bush.push(mtx(p.x, geo.height(b.x, b.z) - 0.1, p.z, b.s, b.s * 0.75));
   }
-  for (let k = 0; k < 160; k++) {
-    const a = rnd() * Math.PI * 2, r = R + 1.5 + rnd() * 10, dx = Math.cos(a) * r, dz = Math.sin(a) * r;
-    if (geo.sea(dx, dz) > 0.05 || geo.cliff(dx, dz, r) > 0.3 || taken(dx, dz, 1)) continue;
-    const p = W(dx, dz), s = 0.6 + rnd() * 0.7;
-    bush.push(mtx(p.x, geo.height(dx, dz) - 0.1, p.z, s, s * 0.7));
+  const bushes = Math.round(160 * (rmean / 48));
+  for (let k = 0; k < bushes; k++) {
+    const o = out(rnd() * Math.PI * 2, 1.5 + rnd() * 10);
+    if (geo.sea(o.dx, o.dz) > 0.05 || geo.cliff(o.dx, o.dz) > 0.3 || taken(o.dx, o.dz, 1)) continue;
+    const p = W(o.dx, o.dz), s = 0.6 + rnd() * 0.7;
+    bush.push(mtx(p.x, geo.height(o.dx, o.dz) - 0.1, p.z, s, s * 0.7));
   }
   // Only what stands near the walkable ground casts a shadow (the sun's shadow box follows the hero; the far woods would cost the
   // shadow pass their triangles for nothing).
-  const nearRim = (mm: THREE.Matrix4) => Math.hypot(mm.elements[12] - RING.x, mm.elements[14] - RING.z) < R + 26;
+  const nearRim = (mm: THREE.Matrix4) => geo.beyond(mm.elements[12] - RING.x, mm.elements[14] - RING.z) < 26;
   const inst = (geom: THREE.BufferGeometry, material: THREE.Material, list: THREE.Matrix4[], shadow = true) => {
     for (const part of shadow ? [list.filter(nearRim), list.filter((mm) => !nearRim(mm))] : [list]) {
       if (!part.length) continue;

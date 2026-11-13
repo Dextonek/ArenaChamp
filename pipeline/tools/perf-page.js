@@ -378,6 +378,7 @@
   scenes.world = async (o) => {
     const a = api(), d = a.duel;
     (0, eval)(await (await fetch('/pipeline/tools/world-tool.js')).text());
+    if (o.gen) await window._worldGen(o.floor);
     await window._world({ floor: o.floor ?? 1, hero: o.hero ?? 'Kaia', mode: 'run' });
     const game = window._worldGame;
     const packs = [...game.zone.packs.values()].filter((p) => !p.def.named);

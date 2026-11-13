@@ -71,6 +71,8 @@ MORE = {
     "raid-heart-party": {"scene": "raid", "hero": "Kaia", "boss": "heart", "party": 9, "band": 10},
     # The Tower's floors as worlds: the wide zone of each floor, the hero set down beside one pack after another.
     **{f"world-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (1, 2, 3, 4, 5)},
+    # The Climb's made floors (pipeline/designs/tower-50.md), baked in src/tower/world/floors/gen/: installed by the world tool first.
+    **{f"gen-{n}": {"scene": "world", "floor": n, "gen": True, "hero": "Kaia"} for n in range(2, 11)},
 }
 ALL = {**SCENES, **MORE}
 

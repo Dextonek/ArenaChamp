@@ -1065,6 +1065,9 @@ export function createRuntime(opts: RuntimeOptions) {
     const cine = active?.effect?.group.visible ? active.effect.cinematic : undefined;
     const cineOn = !!cine?.active;
     skyDome.visible = !cineOn;
+    // The sky stands round the camera, not round the world's middle: a Tower floor reaches 120 m out, where a dome round the middle
+    // showed its far side cut off by the camera's far plane (a pale dome on the horizon) and its gradient tilted.
+    skyDome.position.set(camera.position.x, 0, camera.position.z);
     scene.fog = cineOn ? null : fog;
     if (cineOn) {
       _camSave.pos.copy(camera.position);

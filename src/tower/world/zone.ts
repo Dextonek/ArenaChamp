@@ -56,7 +56,8 @@ const PATHS: [number, number][][] = [
   [[25, -20], [28, -8], [27, 5]],
 ];
 
-export type Look = 'crate' | 'barrel' | 'rock' | 'stall' | 'tent' | 'hull' | 'house' | 'fire' | 'lighthouse' | 'post';
+/** `edge`: a piece of the zone's outline (an invisible wall that keeps a walk inside; the land draws what stands there). */
+export type Look = 'crate' | 'barrel' | 'rock' | 'stall' | 'tent' | 'hull' | 'house' | 'fire' | 'lighthouse' | 'post' | 'edge';
 export interface Piece { o: Obstacle; look: Look }
 
 const piece = (look: Look, o: Obstacle, height?: number): Piece => ({ look, o: height ? { ...o, height } : o });
@@ -189,7 +190,9 @@ const PROPS: { i: number; dx: number; dz: number; yaw: number }[] = [
  * (offset; a dark back wall and crystals) and copies of the harbour file's props (offsets).
  */
 export interface SeaLook {
-  places: { id: string; x: number; z: number; r: number }[];
+  /** The walkable outline: radii round the middle (land.ts `LandSpec.rim`); none is floor 1's circle. */
+  rim?: number[];
+  places: { id: string; kind?: string; x: number; z: number; r: number }[];
   paths: [number, number][][];
   pieces: Piece[];
   flats: { x: number; z: number; rx: number; rz: number; rot?: number }[];
@@ -197,8 +200,12 @@ export interface SeaLook {
   seed: number;
   caves?: { dx: number; dz: number };
   props?: { i: number; dx: number; dz: number; yaw: number }[];
+  /** The ruined customs house's floor (offset), when there is one. */
+  ruin?: { dx: number; dz: number };
 }
-const FLOOR1_LOOK: SeaLook = { places: Object.values(PLACES), paths: PATHS, pieces: PIECES, flats: TIDE_LOW, mirror: 1, seed: 0, caves: { dx: -17, dz: -32 }, props: PROPS };
+const FLOOR1_LOOK: SeaLook = { places: Object.values(PLACES), paths: PATHS, pieces: PIECES, flats: TIDE_LOW, mirror: 1, seed: 0, caves: { dx: -17, dz: -32 }, props: PROPS, ruin: { dx: 0, dz: -5 } };
+/** The outline of a look: its own, or floor 1's circle. */
+const rimOf = (look: SeaLook) => look.rim ?? new Array(48).fill(ZONE_R);
 
 /** Floor 1's zone. */
 export function buildZone() {
@@ -222,7 +229,7 @@ export function buildSeaZone(L: SeaLook): { group: THREE.Group; update(dt: numbe
 
   const kit = new Kit();
   // The world past the rim: land, a beach, the sea, the town, woods (land.ts). The cover below stands on its ground.
-  const land = buildLand({ r: ZONE_R, paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed }, kit, g, own);
+  const land = buildLand({ rim: rimOf(L), paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed, ruin: L.ruin }, kit, g, own);
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rnd = seeded(913);
@@ -360,7 +367,8 @@ export function buildSeaZone(L: SeaLook): { group: THREE.Group; update(dt: numbe
 
 /** A sea floor made by the generator, as an arena: its own layout, the same stage. */
 export function seaArena(id: string, name: string, look: SeaLook): ArenaDef {
-  return { id, name, ring: ZONE_R, obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSeaZone(look) };
+  // The ring is the circle round the whole outline: the walk's box and the checks' grid; the outline's own walls keep a walk inside it.
+  return { id, name, ring: Math.ceil(Math.max(...rimOf(look)) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSeaZone(look) };
 }
 
 /** The zone as an arena for `Duel.startBoss`: its ring is `ZONE_R`, its cover `ZONE_COVER`, its look a coast by day (land.ts). */
