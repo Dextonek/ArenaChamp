@@ -16,7 +16,8 @@ export interface EnemySpec {
   id: string;
   name: string;
   blurb: string;
-  look: 'docker' | 'netter' | 'crab' | 'mate' | 'barnacle';
+  /** A look drawn in code: `looks.ts` (floor 1's) or `looksWild.ts` (floors 2 and 3's). */
+  look: string;
   melee: boolean;
   hp: number;
   /** A hit's cost as a share of the hero's max health. */
@@ -51,9 +52,10 @@ export type Step =
   | { verb: 'fell-named'; text: string; pack: string }
   | { verb: 'light'; text: string; things: { id: string; at: Spot }[]; seconds: number }
   | { verb: 'hold'; text: string; at: Spot; r: number; seconds: number; waves: { kinds: string[]; every: number } }
-  | { verb: 'carry'; text: string; item: string; /** What it is called on the screen, and where it goes. */ itemName: string; toName: string; from: Spot; to: Spot; r: number; /** a door that opens when it is delivered (it is an `open` that the delivery does) */ opens?: string }
+  | { verb: 'carry'; text: string; item: string; /** What it is called on the screen, and where it goes. */ itemName: string; toName: string; from: Spot; to: Spot; r: number; /** a door that opens when it is delivered (it is an `open` that the delivery does) */ opens?: string;
+      /** How the thing looks, held and lying (default a key); `plain`: nothing is drawn at `to` (the floor's own zone draws what it goes into, a well). */ look?: 'key' | 'jar' | 'bundle'; plain?: boolean }
   | { verb: 'open'; text: string; door: string }
-  | { verb: 'lead'; text: string; name: string; from: Spot; path: Spot[]; r: number };
+  | { verb: 'lead'; text: string; name: string; from: Spot; path: Spot[]; r: number; /** Its look (`personLook` by default: `wisp`, `cart`) and its walking speed (m/s, default 2.5). */ look?: 'person' | 'wisp' | 'cart'; speed?: number };
 export type Verb = Step['verb'];
 
 export interface QuestDef {
@@ -105,9 +107,12 @@ export interface Region { x: number; z: number; rx: number; rz: number; rot?: nu
 /** One rule of the zone's cast. All five are built (`law.ts`); `tide` is the full one. */
 export type LawDef =
   | { kind: 'tide'; name: string; blurb: string; every: number; lasts: number; warn: number; low: Region[]; /** share of max health a second in the flood costs */ burn: number; slow: number }
-  | { kind: 'storm'; name: string; blurb: string; every: number; lasts: number; warn: number; /** where the band starts crossing and which way (z falls) */ burn: number; width: number }
+  | { kind: 'storm'; name: string; blurb: string; every: number; lasts: number; warn: number; /** share of max health a second in the open band */ burn: number; width: number;
+      /** How far a rock must be upwind (north) for the hero to be in its lee (m, default 7); how many steps the hero sees inside the band (m, default 5). */ shelter?: number; sight?: number;
+      /** Dust wraiths: while the band is over the hero, `n` of `kind` come out of it every `every` s (at most `most` alive); they dissolve when it has passed. */ wraiths?: { kind: string; n: number; every: number; most: number } }
   | { kind: 'dark'; name: string; blurb: string; radius: number; lit: number; lights: Spot[] }
-  | { kind: 'paths'; name: string; blurb: string; every: number; walls: { a: Spot; b: Spot; r: number; height: number; set: 0 | 1 }[] }
+  | { kind: 'paths'; name: string; blurb: string; every: number; /** Seconds of warning before a change (default 0: none). */ warn?: number;
+      walls: { a: Spot; b: Spot; r: number; height: number; set: 0 | 1; /** What the way is called in the warning. */ name?: string }[]; /** Which set is up at the start (default 0). */ first?: 0 | 1 }
   | { kind: 'sides'; name: string; blurb: string; banners: { id: string; name: string; color?: number; at: Spot; packs: string[] }[] };
 
 export interface RivalDef {

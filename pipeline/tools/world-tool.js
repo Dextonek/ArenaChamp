@@ -133,6 +133,22 @@
     // that is the stand-in for a person's straight walk. `_worldRoute({ noSprint: true })` leaves it off (the bot then loses the race).
     z.ctx.speed('bot-race', run.rival === 'running' && !botOpts.noSprint ? 3 : 1);
     if (run.rival === 'running') return { goal: def.rival.to, why: 'race: run' };
+    // The storm: from its warning until the band has passed the hero, stand in the lee of a rock (the nearest spot the law itself calls safe).
+    if (def.law.kind === 'storm' && (law.warn || law.active)) {
+      const f = z.law.facts(), past = f.active && hero.z < f.zb - def.law.width / 2 - 1;
+      if (!past) {
+        if (z.law.safe(hero.x, hero.z, 0) && (f.active || z.law.safe(hero.x, hero.z, 8))) return { goal: null, why: 'storm: waiting in the lee' };
+        let best = null, bd = 1e9;
+        for (const o of def.cover) {
+          const mx = (o.ax + o.bx) / 2, mz = Math.max(o.az, o.bz);
+          for (const s of [{ x: mx, z: mz + o.r + 1.6 }, { x: o.ax, z: mz + o.r + 1.6 }, { x: o.bx, z: mz + o.r + 1.6 }]) {
+            if (Math.hypot(s.x - 0, s.z - 7) > def.ring - 2 || dist(s, hero) > 60 || dist(s, hero) >= bd) continue;
+            if (z.law.safe(s.x, s.z, 0) && (f.active || z.law.safe(s.x, s.z, 8))) { bd = dist(s, hero); best = s; }
+          }
+        }
+        if (best) return { goal: best, why: 'storm: to a lee' };
+      }
+    }
     // Hand in what is done, take what is offered.
     for (const qd of def.quests) {
       const st = run.q(qd.id);
@@ -144,8 +160,10 @@
     if (untaken) return toPerson(untaken.giver, `take ${untaken.id}`);
     // The race, once: its start is at the rival.
     const rv = byRole('rival');
-    if (run.rival === 'none' && rv) return toPerson(rv.id, 'race: start');
-    if (run.rival === 'running') return { goal: def.rival.to, why: 'race: run' };
+    if (def.rival.mode === 'race') {
+      if (run.rival === 'none' && rv) return toPerson(rv.id, 'race: start');
+      if (run.rival === 'running') return { goal: def.rival.to, why: 'race: run' };
+    }
     // A waystone or a cache a short way off is touched on the way.
     for (const w of def.waystones) if (!run.waystones.includes(w.id) && dist(hero, w.at) < 16) return { goal: w.at, why: `waystone ${w.id}` };
     for (const c of def.caches) if (!run.caches.includes(c.id) && dist(hero, c.at) < 14) return { goal: c.at, why: `cache ${c.id}` };
@@ -169,10 +187,10 @@
     for (const c of def.caches) if (!run.caches.includes(c.id)) return { goal: c.at, why: `cache ${c.id}` };
     if (!run.lore.includes(def.lore.id)) return { goal: def.lore.at, why: 'lore stone' };
     const door = (piece) => def.doors.find((d) => d.piece === piece);
+    // A rival's duel, once, before the ruler (the one beaten fights beside the hero there).
+    if (run.rival === 'none' && door('rival')) return { goal: door('rival').at, why: 'door: rival' };
     if (byRole('trader') && hp < 0.6 && run.shards >= def.shop.heal) return toPerson(byRole('trader').id, 'heal');
     if (!run.has('trial') && run.trialLost < 2 && door('trial')) return { goal: door('trial').at, why: 'door: trial' };
-    // A rival's duel at a door (floor 5): before the ruler, whose fight the winner joins as an ally. Lost, it is tried once more.
-    if (!run.has('rival') && run.rival !== 'lost' && door('rival')) return { goal: door('rival').at, why: 'door: rival' };
     if (!run.has('ruler') && door('ruler') && (!door('ruler').wall || run.opened.includes(door('ruler').id))) return { goal: door('ruler').at, why: 'door: ruler' };
     if (run.has('ruler') && !run.has('gate')) return { goal: door('gate').at, why: 'door: gate' };
     return { goal: null, why: 'nothing left' };
@@ -187,7 +205,7 @@
       q.steps.forEach((s, i) => list.push([`${q.id}.${i + 1}: ${s.verb}`, () => run().q(q.id).step > i || run().q(q.id).done]));
       list.push([`${q.id}: handed in`, () => run().q(q.id).handedIn]);
     }
-    if (def.people.some((p) => p.role === 'rival')) list.push(['race with the rival', () => run().rival === 'won' || run().rival === 'lost']);
+    if (def.people.some((p) => p.role === 'rival')) list.push([def.rival.mode === 'duel' ? 'duel with the rival' : 'race with the rival', () => run().rival === 'won' || run().rival === 'lost']);
     for (const w of def.waystones) list.push([`waystone ${w.id}`, () => run().waystones.includes(w.id)]);
     for (const c of def.caches) list.push([`cache ${c.id}`, () => run().caches.includes(c.id)]);
     list.push(['lore stone read', () => run().lore.includes(def.lore.id)]);
@@ -208,7 +226,10 @@
     window.addEventListener('error', onErr);
     const t0 = performance.now();
     botOpts = o;
+    const pinned = o.pin === 0 || o.pin === 1 ? { n: o.floor ?? 1, was: mod.floors.FLOORS[o.floor ?? 1] } : null;
     try {
+      // `pin`: the paths stay in one state for the whole run (a clock that never reaches the change).
+      if (pinned) mod.floors.FLOORS[pinned.n] = { ...pinned.was, law: { ...pinned.was.law, every: 1e9, first: o.pin } };
       await window._world({ floor: o.floor ?? 1, hero: o.hero ?? 'Lyra', mode: 'run', persist: o.persist ?? !!o.resume, resume: !!o.resume, manual: true });
       const run = () => game.run, def = game.floor, cps = checkpoints(def), got = new Map();
       const maxSec = o.maxSeconds ?? 2400;
@@ -247,6 +268,7 @@
         frames, whyLog: whyLog.slice(-70), gameLog: game.log, last: window._world.status(), wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
       };
     } finally {
+      if (pinned) mod.floors.FLOORS[pinned.n] = pinned.was;
       console.error = logError;
       window.removeEventListener('error', onErr);
     }
@@ -275,6 +297,105 @@
     return 'started';
   };
   window._worldSix.result = () => ({ done: six.done, now: six.now, err: six.err, rows: six.rows });
+
+  /**
+   * Static checks of a floor's data, no game: for each state of the paths (or none), a flood fill of the zone on a 0.75 m grid from the camp, an
+   * agent 0.5 m out from the cover. Reports the reachable area, every spot of the floor's data (people, packs, patrol points, quest places, lead
+   * roads, caches, stones, doors) that is not reachable, and the most live units that one point has within a pack's show radius (18 m) of it (the cap is 6).
+   * `map: true` adds a character map (`.` reachable, `#` not, one per 1.5 m). The doors' walls are left out (the way in is what is asked).
+   */
+  window._worldCheck = async (o = {}) => {
+    await setup();
+    const def = mod.floors.FLOORS[o.floor ?? 1], R = def.ring, C = { x: 0, z: 7 }, step = 0.4, n = Math.ceil((2 * R) / step), agent = 0.47;
+    const states = def.law.kind === 'paths' ? [0, 1] : [null];
+    const out = { floor: def.n, states: [] };
+    const spots = [];
+    const add = (name, p) => { if (p) spots.push({ name, x: p.x, z: p.z }); };
+    add('start', def.start); add('camp', def.camp);
+    for (const p of def.people) add(`person ${p.id}`, p.at);
+    for (const p of def.packs) add(`pack ${p.id}`, p.named ? p.named.patrol[0] : p.at);
+    for (const p of def.packs) if (p.named) p.named.patrol.forEach((q, i) => add(`patrol ${p.id}.${i}`, q));
+    for (const w of def.waystones) add(`waystone ${w.id}`, w.at);
+    for (const c of def.caches) add(`cache ${c.id}`, c.at);
+    add('lore', def.lore.at);
+    for (const d of def.doors) if (!d.wall) add(`door ${d.id}`, d.at);
+    for (const q of def.quests) q.steps.forEach((s, i) => {
+      const t = `${q.id}.${i + 1}`;
+      if (s.at) add(`${t} at`, s.at);
+      if (s.from) add(`${t} from`, s.from);
+      if (s.to) add(`${t} to`, s.to);
+      if (s.things) s.things.forEach((x) => add(`${t} thing ${x.id}`, x.at));
+      if (s.path) s.path.forEach((x, k) => add(`${t} road ${k}`, x));
+    });
+    if (def.rival.to) add('rival goal', def.rival.to);
+    for (const st of states) {
+      const walls = st === null ? [] : def.law.walls.filter((w) => w.set === st).map((w) => ({ ax: w.a.x, az: w.a.z, bx: w.b.x, bz: w.b.z, r: w.r }));
+      const obs = [...def.cover.map((c) => ({ ax: c.ax, az: c.az, bx: c.bx, bz: c.bz, r: c.r })), ...walls];
+      const blocked = (x, z) => {
+        for (const c of obs) {
+          const ex = c.bx - c.ax, ez = c.bz - c.az, l2 = ex * ex + ez * ez, t = l2 > 0 ? Math.max(0, Math.min(1, ((x - c.ax) * ex + (z - c.az) * ez) / l2)) : 0;
+          if (Math.hypot(x - (c.ax + ex * t), z - (c.az + ez * t)) < c.r + agent) return true;
+        }
+        return false;
+      };
+      const ix = (x) => Math.round((x - (C.x - R)) / step), iz = (z) => Math.round((z - (C.z - R)) / step);
+      const at = (i, j) => ({ x: C.x - R + i * step, z: C.z - R + j * step });
+      const seen = new Uint8Array(n * n), q = [];
+      const si = ix(def.start.x), sj = iz(def.start.z);
+      seen[sj * n + si] = 1; q.push([si, sj]);
+      let open = 0;
+      while (q.length) {
+        const [i, j] = q.pop();
+        open++;
+        for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const a = i + di, b = j + dj;
+          if (a < 0 || b < 0 || a >= n || b >= n || seen[b * n + a]) continue;
+          const p = at(a, b);
+          if (Math.hypot(p.x - C.x, p.z - C.z) > R - 0.7 || blocked(p.x, p.z)) continue;
+          seen[b * n + a] = 1; q.push([a, b]);
+        }
+      }
+      const cut = [];
+      for (const s of spots) {
+        let ok = false;
+        for (let a = -4; a <= 4 && !ok; a++) for (let b = -4; b <= 4 && !ok; b++) { const i = ix(s.x) + a, j = iz(s.z) + b; if (i >= 0 && j >= 0 && i < n && j < n && seen[j * n + i] && Math.hypot(a * step, b * step) <= 1.6) ok = true; }
+        if (!ok) cut.push(s.name);
+      }
+      // A barrier that is up must cut its corridor: the way from one side of it to the other (4.5 m each side) must be long, not a squeeze round its end.
+      const bypass = [];
+      for (const w of walls.map((v, k) => ({ ...v, name: def.law.walls.filter((x) => x.set === st)[k].name }))) {
+        const cx = (w.ax + w.bx) / 2, cz = (w.az + w.bz) / 2, len = Math.hypot(w.bx - w.ax, w.bz - w.az), nx = -(w.bz - w.az) / len, nz = (w.bx - w.ax) / len;
+        const from = { x: cx + nx * 4.5, z: cz + nz * 4.5 }, to = { x: cx - nx * 4.5, z: cz - nz * 4.5 };
+        const dist = new Int32Array(n * n).fill(-1), qq = [[ix(from.x), iz(from.z)]];
+        dist[qq[0][1] * n + qq[0][0]] = 0;
+        let head = 0, found = -1;
+        const ti = ix(to.x), tj = iz(to.z);
+        while (head < qq.length && found < 0) {
+          const [i, j] = qq[head++];
+          if (Math.abs(i - ti) <= 1 && Math.abs(j - tj) <= 1) { found = dist[j * n + i]; break; }
+          for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const a = i + di, b = j + dj;
+            if (a < 0 || b < 0 || a >= n || b >= n || dist[b * n + a] >= 0) continue;
+            const p = at(a, b);
+            if (Math.hypot(p.x - C.x, p.z - C.z) > R - 0.7 || blocked(p.x, p.z)) continue;
+            dist[b * n + a] = dist[j * n + i] + 1; qq.push([a, b]);
+          }
+        }
+        bypass.push({ way: w.name, viaM: found < 0 ? 'none' : Math.round(found * step), straightM: 9 });
+      }
+      const rows = [];
+      if (o.map) for (let j = 0; j < n; j += 4) { let row = ''; for (let i = 0; i < n; i += 4) row += seen[j * n + i] ? '.' : Math.hypot(at(i, j).x - C.x, at(i, j).z - C.z) > R ? ' ' : '#'; rows.push(row); }
+      out.states.push({ paths: st, reachableM2: Math.round(open * step * step), ringM2: Math.round(Math.PI * R * R), unreachable: cut, spots: spots.length, barriers: bypass, map: rows.length ? rows : undefined });
+    }
+    let worst = { n: 0, at: null };
+    for (let x = C.x - R; x <= C.x + R; x += 3) for (let z = C.z - R; z <= C.z + R; z += 3) {
+      let sum = 0;
+      for (const p of def.packs) { const h = p.named ? p.named.patrol[0] : p.at; if (Math.hypot(h.x - x, h.z - z) < 18) sum += p.mix.reduce((a, m) => a + m.n, 0) + (p.elite ? 1 : 0); }
+      if (sum > worst.n) worst = { n: sum, at: [x, z] };
+    }
+    out.mostUnitsNear = worst;
+    return out;
+  };
 
   // --- every verb and every law, once ---------------------------------------------------------------------------------------
 
@@ -339,7 +460,8 @@
           res.notes.push(`on dry ground during the flood: ${Math.round(hp1 - api.duel.heroHp)} hp lost, speed ${r2(api.heroMode.speedBonus)}`);
         } else if (kind === 'storm') {
           game.run.clock = law.every + 2;
-          const mid = base.start.z - 34, zb = mid - 38 + (2 / law.lasts) * 76;
+          stepSeconds(0.1);
+          const zb = z.law.facts().zb;
           hero.set(-8, 0, zb);
           const hp0 = api.duel.heroHp;
           stepSeconds(1.6);
