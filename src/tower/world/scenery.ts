@@ -87,9 +87,10 @@ export class Scenery {
       g.add(body, lid, band);
       g.position.set(c.at.x, 0, c.at.z);
       g.rotation.y = (c.at.x * 7.3) % 3;
+      g.scale.setScalar(1.6);
       this.group.add(g);
-      const glow = sprite(WARM, 1.8, c.at, 0.8);
-      glow.material.opacity = 0.5;
+      const glow = sprite(WARM, 3.2, c.at, 0.9);
+      glow.material.opacity = 0.7;
       const hint = new LightPillar(c.at.x, c.at.z, 0.9, 8, WARM);
       hint.opacity = 0;
       this.group.add(hint.mesh);
@@ -215,7 +216,7 @@ export class Scenery {
       const ch = this.chests.get(c.id)!, found = z.run.caches.includes(c.id);
       ch.g.visible = !found;
       ch.glow.visible = !found && dist(hero, c.at) < 16;
-      ch.glow.scale.setScalar(1.6 + 0.2 * Math.sin(this.t * 3));
+      ch.glow.scale.setScalar(2.8 + 0.4 * Math.sin(this.t * 3));
       ch.hint.opacity = !found && z.run.hintShown.includes(c.id) ? 0.4 + 0.15 * Math.sin(this.t * 3) : 0;
       if (!found && dist(hero, c.at) < 1.7) {
         z.run.caches.push(c.id);

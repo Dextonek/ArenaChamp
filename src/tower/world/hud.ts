@@ -44,7 +44,7 @@ export class WorldHud {
     const s = small();
     this.root.className = 'world-hud';
     this.root.style.cssText =
-      `position:fixed;left:${s ? 6 : 12}px;top:calc(${s ? 68 : 12}px + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
+      `position:fixed;left:${s ? 6 : 12}px;top:calc(${s ? 158 : 150}px + env(safe-area-inset-top, 0px));z-index:6;display:none;flex-direction:column;gap:3px;` +
       `padding:${s ? '4px 8px 5px' : '5px 11px 6px'};border-radius:10px;background:rgba(8,6,10,0.82);border:1px solid #6a5a3a;box-shadow:0 2px 10px #000a;` +
       `max-width:${s ? '58vw' : '270px'};box-sizing:border-box;pointer-events:none;user-select:none;font:600 12px ui-sans-serif,system-ui;color:#e9dcc6;`;
     this.titleEl.style.cssText = `font:700 ${s ? 13 : 15}px ui-serif,Georgia,serif;letter-spacing:1px;color:#ffd27a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
@@ -70,7 +70,7 @@ export class WorldHud {
     document.body.append(this.flood, this.root, this.banner, this.arrow, this.card, this.cards, this.result);
     // The duel's boss bar would say "13 / 13" for the whole floor (the zone's unseen boss has no health to speak of): hidden while a zone is on.
     this.hideBar.id = 'world-hide-bosshud';
-    this.hideBar.textContent = 'body > div[style*="z-index:6"][style*="left:50%"][style*="width:min("][style*="flex-direction:column"]{display:none !important}';
+    this.hideBar.textContent = 'body > div[style*="z-index: 6"][style*="left: 50%"][style*="width: min("][style*="flex-direction: column"]{display:none !important}';
     document.head.append(this.hideBar);
   }
   private hideBar = document.createElement('style');

@@ -39,6 +39,7 @@ export class Quests {
   private leadFor = '';
   private t = 0;
   private marks = new Set<LightPillar>();
+  private carried: THREE.Group | null = null;
   /** For the tool: the verbs done at least once in this zone. */
   readonly doneVerbs = new Set<string>();
 
@@ -216,6 +217,13 @@ export class Quests {
       this.key.group.rotation.y += dt * 1.6;
     }
     for (const b of this.lights.values()) b.orb.scale.setScalar(2.2 + Math.sin(this.t * 3) * 0.25);
+    // A carried key floats over the hero's head, so a screen shows who has it.
+    if (z.run.carry?.held) {
+      this.carried ??= this.keyMesh();
+      if (!this.carried.parent) z.p.group.add(this.carried);
+      this.carried.position.set(hero.x, 3.0 + Math.sin(this.t * 3) * 0.08, hero.z);
+      this.carried.rotation.y += dt * 2;
+    } else if (this.carried?.parent) this.carried.removeFromParent();
   }
 
   private stepUpdate(q: QuestDef, step: Step, st: { progress: number; step: number }, dt: number) {
@@ -337,19 +345,7 @@ export class Quests {
       return;
     }
     if (!this.key) {
-      const group = new THREE.Group();
-      const gold = new THREE.MeshStandardMaterial({ color: 0xffd27a, metalness: 0.8, roughness: 0.3, emissive: 0xffb050, emissiveIntensity: 0.7 });
-      const bow = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 8, 16), gold);
-      const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8, 0.1), gold);
-      shaft.position.y = -0.6;
-      for (const y of [-0.8, -0.62]) {
-        const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.1), gold);
-        tooth.position.set(0.18, y, 0);
-        group.add(tooth);
-      }
-      bow.position.y = 0.05;
-      group.add(bow, shaft);
-      group.scale.setScalar(1.3);
+      const group = this.keyMesh();
       const pillar = new LightPillar(at.x, at.z, 0.9, 5, KEY);
       pillar.opacity = 0.5;
       this.z.p.group.add(group, pillar.mesh);
@@ -359,6 +355,25 @@ export class Quests {
     this.key.group.position.x = at.x;
     this.key.group.position.z = at.z;
     this.key.pillar.mesh.position.set(at.x, 0.04, at.z);
+  }
+
+  /** The captain's key, drawn: a gold bow, a shaft and two teeth. */
+  private keyMesh() {
+    const group = new THREE.Group();
+    const gold = new THREE.MeshStandardMaterial({ color: 0xffd27a, metalness: 0.8, roughness: 0.3, emissive: 0xffb050, emissiveIntensity: 0.7 });
+    const bow = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 8, 16), gold);
+    const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8, 0.1), gold);
+    shaft.position.y = -0.6;
+    for (const y of [-0.8, -0.62]) {
+      const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.1, 0.1), gold);
+      tooth.position.set(0.18, y, 0);
+      group.add(tooth);
+    }
+    bow.position.y = 0.05;
+    group.add(bow, shaft);
+    group.scale.setScalar(1.3);
+    group.userData.own = gold;
+    return group;
   }
 
   private pickUp(step: Extract<Step, { verb: 'carry' }>) {
@@ -450,6 +465,8 @@ export class Quests {
     this.lights.clear();
     this.key?.group.removeFromParent();
     this.key = null;
+    this.carried?.removeFromParent();
+    this.carried = null;
     if (this.lead?.unit?.alive) this.z.api.arena.summons.dismiss(this.lead.unit);
     this.lead = null;
   }

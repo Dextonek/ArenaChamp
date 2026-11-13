@@ -133,7 +133,7 @@ function drowned(kind: string, p: MinionPalette, o: { body: number; trim: number
 
 /** A brine crab: a wide armoured shell low to the ground, two big claws, eight legs. Slow, and it reads as a crab from above. */
 const crabLook: MinionLook = (_kind, p) => {
-  tint(p, 0x7a3a2e, 0xe0b080);
+  tint(p, 0xb4472f, 0xf0c890);
   const root = new THREE.Group();
   const geos: THREE.BufferGeometry[] = [];
   const g = <T extends THREE.BufferGeometry>(geo: T) => { geos.push(geo); return geo; };
@@ -191,11 +191,11 @@ const crabLook: MinionLook = (_kind, p) => {
 };
 
 const LOOKS: Record<EnemySpec['look'], MinionLook> = {
-  docker: (k, p) => drowned(k, p, { body: 0x2a4a44, trim: 0xb09a58, weed: true }),
-  netter: (k, p) => drowned(k, p, { body: 0x30453a, trim: 0x9fc8a8, weed: true, net: true }),
+  docker: (k, p) => drowned(k, p, { body: 0x3d7a68, trim: 0xe0cf8a, weed: true }),
+  netter: (k, p) => drowned(k, p, { body: 0x5a8a4e, trim: 0xc8f0d0, weed: true, net: true }),
   crab: crabLook,
-  mate: (k, p) => drowned(k, p, { body: 0x24304a, trim: 0xe0b84a, big: true, coat: true }),
-  barnacle: (k, p) => drowned(k, p, { body: 0x3d4a30, trim: 0xc9c2a2, big: true, weed: true, barnacles: true }),
+  mate: (k, p) => drowned(k, p, { body: 0x2c3f7a, trim: 0xffd060, big: true, coat: true }),
+  barnacle: (k, p) => drowned(k, p, { body: 0x5a6a3a, trim: 0xf0ead0, big: true, weed: true, barnacles: true }),
 };
 export const lookOf = (spec: EnemySpec): MinionLook => LOOKS[spec.look];
 

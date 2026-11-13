@@ -197,7 +197,7 @@
       let frames = 0, lastWhy = '', lastPos = null, stillSince = 0, lastTask = '';
       const whyLog = [];
       const note = () => { for (const [name, ok] of cps) if (!got.has(name) && ok()) got.set(name, { t: r2(run().clock), hp: r2(run().hp), lives: run().lives, shards: run().shards }); };
-      while (!game.finished && run().clock < maxSec) {
+      while (!game.finished && run().clock < maxSec && frames < maxSec * 60 * 2) {
         frame();
         frames++;
         if (frames % 30 === 0) {
@@ -225,7 +225,7 @@
       return {
         ok: game.finished && out.every((c) => c.status === 'done'), floorCleared: game.finished, seconds: r2(run().clock), hp: r2(run().hp), lives: run().lives, shards: run().shards, falls: run().falls, restarts: game.restarts,
         kills: run().kills, stars: run().result?.stars ?? game.stars().map((s) => (s.got ? 1 : 0)), checkpoints: out, notDone: out.filter((c) => c.status !== 'done').map((c) => c.step), errors,
-        whyLog: whyLog.slice(-70), gameLog: game.log, wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
+        frames, whyLog: whyLog.slice(-70), gameLog: game.log, last: window._world.status(), wallSeconds: r2((performance.now() - t0) / 1000), boons: run().boons.list(),
       };
     } finally {
       console.error = logError;

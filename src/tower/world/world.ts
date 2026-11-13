@@ -92,6 +92,8 @@ export function buildZone(api: GameApi, floor: FloorDef, run: WorldRun, hud: Wor
     api, boons: run.boons, enemies: floor.enemies, hp: num.hp, now: () => run.clock,
     fell: (pack, spec, at) => {
       run.kills++;
+      // The last of a pack is down: it stays cleared in the run (a wave of a hold is not a place and is not kept).
+      if (pack.left === 0 && !pack.hunter && !run.packsCleared.includes(pack.id)) run.packsCleared.push(pack.id);
       ctx?.pay(spec.shards, at);
       if (pack.def.named && pack.state === 'cleared') ctx?.say(`${pack.def.named.name} falls`, '#ffd27a', at);
       hooks.save();

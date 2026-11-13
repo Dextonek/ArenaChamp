@@ -32,11 +32,11 @@ export const harbour: FloorDef = {
     ],
   },
   enemies: {
-    docker: { id: 'docker', name: 'Drowned docker', blurb: 'Strikes up close.', look: 'docker', melee: true, hp: 70, share: 0.024, every: 1.8, speed: 3.2, shards: 4, color: '#7fd0c0' },
-    netter: { id: 'netter', name: 'Net caster', blurb: 'Throws a net: you are rooted a moment.', look: 'netter', melee: false, hp: 50, share: 0.02, every: 2.8, speed: 2.8, range: 9, net: { kind: 'root', seconds: 0.8 }, shards: 5, color: '#9fe0a0' },
-    crab: { id: 'crab', name: 'Brine crab', blurb: 'Slow and armoured.', look: 'crab', melee: true, hp: 170, share: 0.035, every: 2.4, speed: 1.9, shards: 7, color: '#e08a70' },
-    mate: { id: 'mate', name: 'The Harbourmaster’s Mate', blurb: 'Guards the wreck.', look: 'mate', melee: true, hp: 360, share: 0.05, every: 1.6, speed: 3.0, scale: 1.4, shards: 30, color: '#ffd27a' },
-    barnacle: { id: 'barnacle', name: 'Old Barnacle', blurb: 'Walks the quay and strikes hard.', look: 'barnacle', melee: true, hp: 520, share: 0.06, every: 2.0, speed: 2.6, scale: 1.7, shards: 40, color: '#c8e0a0' },
+    docker: { id: 'docker', name: 'Drowned docker', blurb: 'Strikes up close.', look: 'docker', melee: true, hp: 70, share: 0.024, every: 1.8, speed: 3.2, scale: 1.3, shards: 4, color: '#7fd0c0' },
+    netter: { id: 'netter', name: 'Net caster', blurb: 'Throws a net: you are rooted a moment.', look: 'netter', melee: false, hp: 50, share: 0.02, every: 2.8, speed: 2.8, range: 9, scale: 1.3, net: { kind: 'root', seconds: 0.8 }, shards: 5, color: '#9fe0a0' },
+    crab: { id: 'crab', name: 'Brine crab', blurb: 'Slow and armoured.', look: 'crab', melee: true, hp: 170, share: 0.035, every: 2.4, speed: 1.9, scale: 1.4, shards: 7, color: '#e08a70' },
+    mate: { id: 'mate', name: 'The Harbourmaster’s Mate', blurb: 'Guards the wreck.', look: 'mate', melee: true, hp: 360, share: 0.05, every: 1.6, speed: 3.0, scale: 1.9, shards: 30, color: '#ffd27a' },
+    barnacle: { id: 'barnacle', name: 'Old Barnacle', blurb: 'Walks the quay and strikes hard.', look: 'barnacle', melee: true, hp: 520, share: 0.06, every: 2.0, speed: 2.6, scale: 2.3, shards: 40, color: '#c8e0a0' },
   },
   packs: [
     { id: 'market', at: PLACES.market, mix: [{ kind: 'docker', n: 2 }, { kind: 'netter', n: 1 }, { kind: 'crab', n: 1 }] },

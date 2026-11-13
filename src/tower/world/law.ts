@@ -39,7 +39,7 @@ function tide(z: ZoneCtx, d: Extract<LawDef, { kind: 'tide' }>): Law {
   const group = new THREE.Group();
   z.p.group.add(group);
   const water = new THREE.MeshBasicMaterial({ color: 0x2c7fae, transparent: true, opacity: 0.1, depthWrite: false });
-  const edge = new THREE.LineBasicMaterial({ color: 0x6ec8ff, transparent: true, opacity: 0.5 });
+  const edge = new THREE.MeshBasicMaterial({ color: 0x6ec8ff, transparent: true, opacity: 0.45, depthWrite: false, side: THREE.DoubleSide });
   const foam = new THREE.MeshBasicMaterial({ color: 0xcfefff, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide });
   const geos: THREE.BufferGeometry[] = [];
   const meshes = d.low.map((r) => {
@@ -51,15 +51,14 @@ function tide(z: ZoneCtx, d: Extract<LawDef, { kind: 'tide' }>): Law {
     m.scale.set(r.rx, r.rz, 1);
     m.position.set(r.x, 0.05, r.z);
     m.renderOrder = 1;
-    // the edge: a loop on the ground that stays visible, so which ground is low is always readable
-    const pts: THREE.Vector3[] = [];
-    for (let i = 0; i < 48; i++) {
-      const a = (i / 48) * Math.PI * 2, c = Math.cos(r.rot ?? 0), s = Math.sin(r.rot ?? 0), u = Math.cos(a) * r.rx, v = Math.sin(a) * r.rz;
-      pts.push(new THREE.Vector3(r.x + u * c - v * s, 0.09, r.z + u * s + v * c));
-    }
-    const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
-    geos.push(lineGeo);
-    const loop = new THREE.LineLoop(lineGeo, edge);
+    // the edge: a band on the ground that stays visible, so which ground is low is always readable (amber as the tide turns)
+    const edgeGeo = new THREE.RingGeometry(0.93, 1, 48);
+    geos.push(edgeGeo);
+    const loop = new THREE.Mesh(edgeGeo, edge);
+    loop.rotation.x = -Math.PI / 2;
+    loop.rotation.z = -(r.rot ?? 0);
+    loop.scale.set(r.rx, r.rz, 1);
+    loop.position.set(r.x, 0.09, r.z);
     loop.renderOrder = 2;
     // foam: a ring that breathes while it floods
     const ringGeo = new THREE.RingGeometry(0.86, 1, 40);
@@ -92,7 +91,7 @@ function tide(z: ZoneCtx, d: Extract<LawDef, { kind: 'tide' }>): Law {
       const lvl = ph.active ? 0.5 : ph.warn ? 0.22 + 0.1 * Math.sin(time * 6) : 0.1;
       water.opacity += (lvl - water.opacity) * Math.min(1, dt * 4);
       edge.color.setHex(ph.warn ? 0xffd27a : ph.active ? 0xcfefff : 0x6ec8ff);
-      edge.opacity = ph.warn ? 0.6 + 0.4 * Math.sin(time * 8) ** 2 : 0.5;
+      edge.opacity = ph.warn ? 0.55 + 0.4 * Math.sin(time * 8) ** 2 : 0.45;
       foam.opacity = ph.active ? 0.35 + 0.25 * Math.sin(time * 3) : 0;
       meshes.forEach(({ m, ring }, i) => {
         m.position.y = 0.05 + (ph.active ? 0.05 + 0.02 * Math.sin(time * 2 + i) : 0);

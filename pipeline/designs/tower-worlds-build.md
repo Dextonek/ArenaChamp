@@ -41,7 +41,7 @@ stage's builder fills in what it found and what it built, so the next one starts
 | # | Stage | State |
 |---|---|---|
 | 0 | **Spike:** one walking-only zone of about 50 m radius with packs that appear near the hero. Measure frame time, path finding and the edge of the ring at that size. Answer the open questions below. Close the vocabulary | **done 2026-11-13** |
-| 1 | **The world system and floor 1,** the whole loop, with the route bot, pictures and a clip | not started |
+| 1 | **The world system and floor 1,** the whole loop, with the route bot, pictures and a clip | **1A done 2026-11-13** (the zone's loop, floors as data, the route bot, pictures; checkout `tower-worlds`). **1B** (the set pieces behind the doors: ruler, gatekeeper, trial, rival's duel) is built in another checkout against `src/tower/world/doors.ts`. Not done in stage 1: 1B's merge, the menu entry in `src/game/main.ts`, the clip |
 | 2 | **Floors 2 to 5** as data | not started |
 | 3 | **All five checked,** docs (`docs/architecture/tower-worlds.md`), News, merge into `feat/particle-editor` | not started |
 
@@ -215,3 +215,78 @@ law).
 in the game page not measured (the tool page was). The ruler, the gate and the rival are not built. The place's look is a first pass
 (boxes with gold edges, the crates' gold band reads like eyes, the paths are flat). Frame numbers are noisy (shared machine, a hidden
 pane).
+
+### Stage 1A: the zone's whole loop, floor 1 as data (2026-11-13), done
+
+**Built** (new files under `src/tower/world/`, and stage 0's `zone.ts`, `packs.ts`, `world.ts` changed; no engine file edited and no entry in `src/game/main.ts`):
+
+| File | What it is |
+|---|---|
+| `def.ts` | `FloorDef` and what it holds: places, cover, enemy kinds, packs (one named with a patrol, one with an elite), people, quests made of the closed verbs, caches, waystones, the lore stone, doors, the law (a union of the five), the rival, the par time, the shop |
+| `floors/harbour.ts`, `floors/index.ts` | Floor 1 as data; `FLOORS[n]`. A second floor is a data file here and a zone drawing (`arena`, `cover`); no code of the loop names a floor |
+| `state.ts` | `WorldRun`: floor, hero, lives, shards, boons, quest steps, packs cleared, caches, lore, waystones, the rival's result and ally, the floor's clock, pieces won, doors opened, lights lit, the carried thing. Saved under `tower.world.run` (and `tower.world.floor`, `.sigils`, `.stars`); never `tower.save` or `tower.best` |
+| `world.ts` | `buildZone`: the only way a zone begins (first entry, after a piece, after a reload, after a floor begins again). One walking fight on the duel's boss path as in stage 0. Frame order: packs, law, quests, scenery, people, the screen. A fall: a life goes, the hero lies 1.7 s, stands at the last waystone (else the camp) with half its health, the fight goes on |
+| `game.ts` | `WorldGame`: owns the run and the HUD, builds the zone from the run, takes a fall (no life left: the floor begins again with the boons and shards the hero arrived with), offers boons, takes the hero through a door and back, ends the floor with its four stars and the sigil choice |
+| `doors.ts` | The contract with stage 1B exactly as agreed (`PieceKind`, `PieceIn`, `PieceOut`, `PieceStarter`, `setPieceStarter`) and a default stub that reports a win with the same health after one simulated second (counted by `WorldGame.tick`, as `TowerRun.pump` counts what waits) |
+| `quests.ts` | The eight verbs: `reach`, `fell`, `fell-named`, `light`, `hold`, `carry`, `open`, `lead`. The state is the run's; this class holds the drawing and what is alive (a wave, the escorted one) |
+| `law.ts` | The five law pieces behind one interface (`update`, `floor`, `status`, `safe`, `facts`) |
+| `packs.ts` | Stage 0's pack, generalised: enemy kinds from the floor's data (a net that roots, armour as health, scale), a patrol read from the clock, an elite, hunters (a hold's waves); a cleared pack stays cleared in the run |
+| `looks.ts` | Five enemy looks and one person look drawn in code: sea-green, red and navy with brass and pale trim (the keepers are black and gold) |
+| `people.ts`, `hud.ts` | The keeper (Gus), the giver (Anka), the trader (Pip) and the rival (Zephyr) as the roster's own models; marks over their heads (44 px buttons: a tap walks the hero there); a card with lines and buttons; the trader; the race. The HUD: floor and law line, lives, health, shards, clock, quest list, banners, the edge arrow, boon cards, the floor's result |
+| `scenery.ts` | Waystones, caches, the lore stone, the winch, the doors (a chained gate that lifts, a trial arch, the sealed gate up) |
+| `pipeline/tools/world-tool.js` | `_world`, `_worldRoute` (the bot), `_worldVerbs`, and stage 0's `_worldWalk`, `_worldBench`, `_worldPath` |
+
+**Floor 1 in numbers:** a zone of 48 m with four packs (market 4, wreck 3 with the elite, caves 5, and Old Barnacle alone on a patrol of about 90 m at 1.6 m/s), three caches, three waystones,
+one lore stone, three doors (the lair behind a chain, the trial vault, the gate up) and Zephyr's race. Quests: the main one in three steps (`fell` the market, `light` the lighthouse, `carry` the key
+to the winch, which `open`s the lair), the bounty (`fell-named`), and Anka's two (`reach` then `hold` 18 s against waves of three; `lead` Tam 77 m). Shards: 4 to 7 a small enemy, 30 the elite, 40 the
+named, 20 to 60 a quest, 25, 30 and 20 the caches. The tide: first at 80 s, 15 s long, then every 80 s, warned 7 s before; low ground costs 2 % of max health a second and the hero walks at 0.6.
+
+**Checks that were run** (headless Edge on the tool page; game time stepped by the tool, 60 steps a second):
+
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit -p .` and `npm run build` | Both pass |
+| The weekly Tower still starts: `_tower(['Lyra'], 1, { upTo: 2 })` | Floors 1 and 2 cleared, no error |
+| `_worldRoute`, **Lyra** (ranged) | Cleared camp to gate in 768 s of game time (12.8 min), 0 falls, 79 % health left, 29 kills, 407 shards, four stars; 59 s of wall time |
+| `_worldRoute`, **Bram** (melee) | Cleared in 463 s, 0 falls, 60 % health, four stars |
+| `_worldRoute`, **Isolde** (staff) | Cleared in 1180 s with **2 falls and one restart**: she lost all three lives once, the floor began again from its camp, then she cleared it; two stars (cleared, every quest) |
+| Can a hero lose all three lives? | Yes (Isolde, above) |
+| How long a floor takes | 8 to 13 minutes of game time for a hero that does not die; the par for the fourth star is 13 |
+| Reload mid-floor | The route was stopped at 330 s and the page reloaded; `_worldRoute({ resume: true })` continued from the save (the last one, at about 300 s): quests, caches, waystones, shards, lives, the opened lair and the cleared packs came back and the floor was cleared. Only `tower.world.*` keys were written. (The first try showed the cleared packs were not kept; fixed, and the second try kept all four) |
+| Every verb once, `_worldVerbs` | A scratch quest with all eight verbs, played by the bot: all done in 111 s, no fall, no error |
+| Every law once, `_worldVerbs` | `tide`: warned 7 s before; a hero in the flood lost 90 hp in 9 s and walked at 0.6; on dry ground it lost nothing. `storm`: a hero in the open band lost 32 hp in 1.6 s. `dark`: the layer is there and its clear circle grew from 22 to 62 near a lit thing. `paths`: the walls swapped on the clock; the list swap and one route took 1.6 ms. `sides`: a banner taken, its pack off, the other pack leashed at 40 m |
+| Console | No `console.error` and no page error from the page's own code in any run. The one error line is the browser asking for `/favicon.ico` (404), which the tool page has always had |
+
+**Pictures** (the game's own camera and the page's own HUD, headless, `docs/tower/worlds/f1-*.jpg`, each looked at): `f1-camp` (the people, Zephyr and their marks), `f1-talk` and `f1-trader`
+(the cards), `f1-quests` and `f1-quests-hud` (the list), `f1-pack-market`, `f1-enemy-docker` / `-netter` / `-crab` (crops of the market pack), `f1-pack-wreck`, `f1-elite-mate`,
+`f1-named-barnacle`, `f1-named-patrol`, `f1-tide-warn` (amber rings round the low ground), `f1-tide-in` and `f1-tide-hurt` (flooded ground; the hero on dry ground and in the flood),
+`f1-cache`, `f1-cache-opened`, `f1-waystone-before`, `f1-waystone`, `f1-lighthouse-lighting`, `-lighting2`, `-lit`, `f1-key-at-wreck`, `f1-carry-key`, `f1-result` (four stars and the sigil
+choice), and at 375 x 812 with touch controls `f1-375-hud`, `f1-375-card`, `f1-375-trader`.
+
+**TOWER-HOOKs found in 1A:**
+
+| Hook | Needed | Done instead | The engine should get |
+|---|---|---|---|
+| Patrol (`packs.ts`, in code) | A named unit that walks a route while it is not hunting; `SummonOptions.goal` is melee only and stops 1 m short | `unit.pos` is set each frame from the route and the clock, so the unit is where it should be after any rebuild | A unit option `route` |
+| Escort (`quests.ts`) | `summonFor('hero', { goal })` walks a unit only toward a victim: with no enemy alive it does not move at all (`summon.ts` `step`, the `else if (tgt)` branch) | The escorted one is walked from here (`arena.route`, `keepInside`); its `goal` keeps it where it stands | `goal` that works with no victim |
+| Boss bar (`hud.ts`) | A fight with an unseen boss and no bar (the duel's `BossHud` said "13 / 13" all floor) | A style rule hides the bar's root by its attributes while the zone's HUD exists | `Duel.startBoss({ bar: false })` |
+| Speed (`world.ts`) | One field, `heroMode.speedBonus`, that the flood, the carry, a net's slow and Long Stride all want, and `PlayContext.heavy` overwrites | The zone multiplies every source in one place each frame and never calls `heavy` | A list of factors on the hero mode |
+| The bot's goal (`world.ts`) | The autopilot walks only to an `Objective`, and an objective is taken once | One open objective of radius 0 (never taken), shut while anything awake is within 12 m so the autopilot fights; moved by closing it and opening another | An autopilot that takes a goal point |
+| Menu entry | A "Worlds" entry and a screen in `src/game/main.ts` | Not done (not in this stage's brief): `WorldGame` is started by `_world` on the tool page | One entry: `new WorldGame(api, { hero }).start({ resume })` |
+| Boons on units | `dealtMul` and `leech` act on the boss only (stage 0's hook) | Units have less health by the boons' damage (`Pack` divides by `dealtMul(false)`) and `leechFrom` on hurt, as `floors.ts` does | As stage 0 said |
+
+**The rule for a lost piece** (the brief left it open; 1B should know it): a ruler or a gate that is lost costs one life (the zone applies it, so a piece must not take one), and the hero is back
+in front of the door with half its health, free to try again; with no life left the floor begins again from its camp. A trial or a rival's duel that is lost costs nothing and pays nothing. A piece won:
+the ruler pays 40 shards and unseals the gate; the trial pays a relic; the rival's duel pays a boon and sets `ally` for the ruler; the gate ends the floor (four stars, one carried boon kept as a
+sigil, `tower.world.floor` set to the next floor). A piece reports `hp` as a share and the zone sets the hero's health from it. The rival of floor 1 is not a piece: it is the race in the zone.
+
+**Not done, not verified, or poor:**
+
+- No menu entry, no clip, no phone run. The 375 px pictures are the page in a narrow headless window with touch on, not a phone. The frame cost of the whole zone with its quests, people and law was not measured again (stage 0 measured the bare zone).
+- The set pieces are the stub: `setPieceStarter` is not tried against a real piece. The zone is gone (the duel is stopped) before a starter is called, and is built again from the run when it answers.
+- Floor 1 is easy for the autopilot: two of three heroes never fell, and the bot waits out every tide on dry ground, which a person may not. The numbers are not tuned; the par of 13 minutes is a guess that Lyra just meets.
+- The race is won by walking straight (the rival runs at 0.92 of 4 m/s). The bot lost it in the two routes where the result was read (Isolde's and the reload test's); Lyra's and Bram's were not read, and the route report does not name the result.
+- `storm`, `dark`, `paths` and `sides` are built and tried once each in the scratch zone, and not played in a floor and not drawn well: the storm band is a flat tinted box (shelter was not tried, only the open band), `dark` is a page layer with no lights drawn, `paths` has plain boxes for walls, `sides` has two poles for flags. Stage 2 owes each its floor's data, its look and a bot try. `hold`'s waves and `lead`'s road were tried on floor 1 only.
+- A pack's wounds are not kept in the run (a pack that is rebuilt is whole); only "cleared" is.
+- Looks: the cache is a half barrel with a glow, the key over the hero's head is small, the people stand in a T-pose for the first second until their models load, the enemy crops are of the market's units rather than one pack a kind.
+- On a phone the zone's HUD sits under the hero's own panel (top 158 px), which is right only while that panel is shown.
