@@ -105,7 +105,7 @@ function tide(z: ZoneCtx, d: Extract<LawDef, { kind: 'tide' }>): Law {
       const cycle = Math.floor(t / d.every);
       if (ph.warn && said !== cycle) {
         said = cycle;
-        z.banner('The tide is turning', 'Get onto dry ground: the quays and decks', 2.6);
+        z.banner('The tide is turning', 'Get onto dry ground, off the flats', 2.6);
       }
       if (ph.active && !was) z.banner('The sea comes in', 'The low ground is flooded', 2);
       was = ph.active;

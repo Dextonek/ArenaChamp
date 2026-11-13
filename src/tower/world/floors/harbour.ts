@@ -12,7 +12,7 @@ export const harbour: FloorDef = {
   n: 1,
   id: 'harbour',
   name: 'The Drowned Harbour',
-  blurb: 'A quay the sea took back, and keeps taking.',
+  blurb: 'A harbour town the sea keeps taking back, tide by tide.',
   arena: zoneArena,
   cover: ZONE_COVER,
   ring: ZONE_R,
@@ -24,7 +24,7 @@ export const harbour: FloorDef = {
   law: {
     kind: 'tide',
     name: 'The tide',
-    blurb: 'Every 80 seconds the sea comes in for 15: the low ground floods, slows and hurts. Quays and decks stay dry.',
+    blurb: 'Every 80 seconds the sea comes in for 15: the tidal flats flood, slow and hurt. The higher ground stays dry.',
     every: 80, lasts: 15, warn: 7, burn: 0.02, slow: 0.6,
     low: TIDE_LOW, // the same seven as before; the zone's ground draws them as tidal flats
   },
@@ -33,7 +33,7 @@ export const harbour: FloorDef = {
     netter: { id: 'netter', name: 'Net caster', blurb: 'Throws a net: you are rooted a moment.', look: 'netter', melee: false, hp: 50, share: 0.02, every: 2.8, speed: 2.8, range: 9, scale: 1.3, net: { kind: 'root', seconds: 0.8 }, shards: 5, color: '#9fe0a0' },
     crab: { id: 'crab', name: 'Brine crab', blurb: 'Slow and armoured.', look: 'crab', melee: true, hp: 170, share: 0.035, every: 2.4, speed: 1.9, scale: 1.4, shards: 7, color: '#e08a70' },
     mate: { id: 'mate', name: 'The Harbourmaster’s Mate', blurb: 'Guards the wreck.', look: 'mate', melee: true, hp: 360, share: 0.05, every: 1.6, speed: 3.0, scale: 1.9, shards: 30, color: '#ffd27a' },
-    barnacle: { id: 'barnacle', name: 'Old Barnacle', blurb: 'Walks the quay and strikes hard.', look: 'barnacle', melee: true, hp: 520, share: 0.06, every: 2.0, speed: 2.6, scale: 2.3, shards: 40, color: '#c8e0a0' },
+    barnacle: { id: 'barnacle', name: 'Old Barnacle', blurb: 'Walks the harbour and strikes hard.', look: 'barnacle', melee: true, hp: 520, share: 0.06, every: 2.0, speed: 2.6, scale: 2.3, shards: 40, color: '#c8e0a0' },
   },
   packs: [
     { id: 'market', at: PLACES.market, mix: [{ kind: 'docker', n: 2 }, { kind: 'netter', n: 1 }, { kind: 'crab', n: 1 }] },
@@ -61,7 +61,7 @@ export const harbour: FloorDef = {
     },
     {
       id: 'bounty', name: 'Old Barnacle', giver: 'gus',
-      intro: ['Old Barnacle walks the quay in the middle of the harbour. A hundred tides on him. Fell him and the sea quietens a little.'],
+      intro: ['Old Barnacle walks the middle of the harbour. A hundred tides on him. Fell him and the sea quietens a little.'],
       steps: [{ verb: 'fell-named', text: 'Fell Old Barnacle', pack: 'barnacle' }],
       outro: ['A relic from a barnacle. Keep it.'],
       reward: { shards: 40, relic: true },

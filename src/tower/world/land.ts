@@ -62,8 +62,16 @@ export const WATER = -0.45;
 /** The world's shape, from offsets (dx, dz) from the middle. */
 export function geography(R: number) {
   const fbm = noiseOf(4242), fbm2 = noiseOf(77);
-  /** Where the sea begins east of the middle, along dz. */
-  const coast = (dz: number) => R + 0.6 + 0.0045 * dz * dz + 1.4 * Math.sin(dz * 0.11 + 0.6);
+  /**
+   * Where the sea begins east of the middle, along dz: just past the rim along the east (a walk ends at the water, not on open sand),
+   * then turning out to sea north and south of it, so there is a headland each side (the lighthouse's in the north-east).
+   */
+  const coast = (dz: number) => {
+    // the shore wanders 0 to about 3 m out from the rim, so from above it is a shore and not the rim's circle
+    const wander = Math.max(0, 0.7 + 1.3 * Math.sin(dz * 0.12 + 0.7) + 0.9 * Math.sin(dz * 0.29 + 2.1));
+    const a = Math.abs(dz), rim = Math.sqrt(Math.max(1, (R + 0.9) ** 2 - dz * dz)) + wander;
+    return rim + (Math.max(rim, 36 + (a - 30) * 1.4) - rim) * smooth(28, 40, a);
+  };
   /** 0 on land, 1 in the sea. */
   const sea = (dx: number, dz: number) => smooth(-2.5, 2.5, dx - coast(dz));
   /** The cliff along the north (screen top), 0..1; not where the sea is. */
@@ -76,7 +84,7 @@ export function geography(R: number) {
     const hills = (0.5 + 7 * fbm(dx * 0.022 + 3, dz * 0.022 + 7)) * smooth(R + 4, R + 34, r);
     const c = cliff(dx, dz, r) * smooth(R + 0.8, R + 5.5, r) * (7 + 6 * fbm2(dx * 0.07, dz * 0.07));
     const land = 0.4 * bank + Math.max(hills, c);
-    const water = -0.9 * smooth(R + 0.4, R + 5, r) - 2.4 * smooth(R + 5, R + 26, r);
+    const water = -1.2 * smooth(R + 0.3, R + 3, r) - 2.2 * smooth(R + 3, R + 24, r);
     return land * (1 - s) + water * s;
   };
   /** How much of a beach (dx, dz) is: near the coast on land. */
@@ -374,7 +382,8 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   for (let a = 0; a < Math.PI * 2; a += 3.0 / (R + 1.5)) {
     // not a drawn circle: the line wanders a little in and out
     const wallR = R + 1.3 + 0.9 * Math.sin(a * 5 + 1) + 0.5 * Math.sin(a * 13), dx = Math.cos(a) * wallR, dz = Math.sin(a) * wallR;
-    if (geo.sea(dx, dz) > 0.2 || geo.beach(dx, dz) > 0.5 || geo.cliff(dx, dz, wallR) > 0.25) continue;
+    // (sand that reaches the rim gets dune bushes, so no stretch of open ground ends at nothing)
+    if (geo.sea(dx, dz) > 0.2 || geo.cliff(dx, dz, wallR) > 0.25) continue;
     if (dx < -20) {
       if (rnd() < 0.15) continue; // a gap where it has fallen
       const p = W(dx, dz), y = geo.height(dx, dz), yaw = -a + Math.PI / 2 + (rnd() - 0.5) * 0.15;
