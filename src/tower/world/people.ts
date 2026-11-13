@@ -61,7 +61,7 @@ export class People {
       buy('boon', s.boon, !run.bought.includes('boon') && run.shards >= s.boon + 20);
       z.save();
     } else if (p.role === 'rival') {
-      if (run.rival === 'none') { this.startRace(); did.push('race'); }
+      if (run.rival === 'none' && z.def.rival.mode === 'race') { this.startRace(); did.push('race'); }
     } else {
       for (const { q, st } of this.available(p)) {
         if (st.done && !st.handedIn) { this.q.handIn(q.id); did.push(`hand-in:${q.id}`); }
@@ -97,7 +97,7 @@ export class People {
   private glyph(p: PersonDef): { glyph: string; tone: string } {
     const z = this.z;
     if (p.role === 'trader') return { glyph: '◆', tone: '#8cc4ff' };
-    if (p.role === 'rival') return z.run.rival === 'none' ? { glyph: '»', tone: '#ff9a8a' } : { glyph: '·', tone: '#a89870' };
+    if (p.role === 'rival') return z.run.rival === 'none' ? { glyph: z.def.rival.mode === 'duel' ? '⚔' : '»', tone: '#ff9a8a' } : { glyph: '·', tone: '#a89870' };
     const qs = this.available(p);
     if (qs.some(({ st }) => st.done && !st.handedIn)) return { glyph: '?', tone: '#9df0b4' };
     if (qs.some(({ st }) => !st.taken)) return { glyph: '!', tone: '#ffd27a' };
@@ -120,8 +120,8 @@ export class People {
       buy('hint', s.hint, () => z.def.caches.some((c) => !run.caches.includes(c.id) && !run.hintShown.includes(c.id)), 'A hint', 'Shows where a cache lies', 'blue');
     } else if (p.role === 'rival') {
       lines = [...(z.def.rival.lines)];
-      if (run.rival === 'none') buttons.push({ label: 'Race', sub: `To ${z.def.rival.goal}. First there wins a boon`, tone: 'red', click: () => { hud.closeCard(); this.startRace(); } });
-      else lines = [run.rival === 'won' ? 'You beat me. Fair enough. Take my luck with you.' : run.rival === 'lost' ? 'Too slow. Try again on the next floor.' : 'On your marks.'];
+      if (run.rival === 'none' && z.def.rival.mode === 'race') buttons.push({ label: 'Race', sub: `To ${z.def.rival.goal}. First there wins a boon`, tone: 'red', click: () => { hud.closeCard(); this.startRace(); } });
+      else if (run.rival !== 'none') lines = [run.rival === 'won' ? 'You beat me. Fair enough. Take my luck with you.' : run.rival === 'lost' ? (z.def.rival.mode === 'duel' ? 'You lost, and so you will not see me again. Try again on the next floor.' : 'Too slow. Try again on the next floor.') : 'On your marks.'];
     } else {
       const qs = this.available(p);
       const mine = qs.filter(({ st }) => st.taken && !st.handedIn);
@@ -227,6 +227,8 @@ export class People {
         f.yaw += d * Math.min(1, dt * 3);
       }
       f.fig.follow(dt, f.pos, f.yaw);
+      // Nobody stands in a T-pose while the model loads: they appear when it is there.
+      f.fig.group.visible = f.fig.loaded;
       const g = this.glyph(p), head = z.project(f.pos.x, 3.0, f.pos.z);
       marks.push({ id: p.id, glyph: g.glyph, label: p.name, tone: g.tone, x: head.x, y: head.y, show: !head.behind && near < 60, click: () => this.goTo(p.id) });
       // Walking up opens the card (a person climbing, not the autopilot).

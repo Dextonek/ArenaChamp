@@ -115,7 +115,7 @@ export class Scenery {
     }
 
     // The winch (or whatever a carried thing is brought to).
-    for (const q of z.def.quests) for (const s of q.steps) if (s.verb === 'carry') {
+    for (const q of z.def.quests) for (const s of q.steps) if (s.verb === 'carry' && !s.plain) {
       const g = new THREE.Group();
       for (const x of [-0.7, 0.7]) {
         const post = new THREE.Mesh(geo(new THREE.CylinderGeometry(0.1, 0.12, 2.2, 6)), wood);
@@ -266,6 +266,8 @@ export class Scenery {
     if (d.piece === 'trial' && z.run.has('trial')) return false;
     if (d.piece === 'ruler' && z.run.has('ruler')) return false;
     if (d.piece === 'gate' && z.run.has('gate')) return false;
+    // A rival's duel is fought once: after it (won or lost) the arch is quiet.
+    if (d.piece === 'rival' && z.run.rival !== 'none') return false;
     return true;
   }
 

@@ -211,7 +211,7 @@ function quayGeometry() {
  * triangles.)
  */
 const CELL = 24;
-class Kit {
+export class Kit {
   private cells = new Map<string, Map<THREE.Material, THREE.BufferGeometry[]>>();
   private m = new THREE.Matrix4();
   private put(mat: THREE.Material, g: THREE.BufferGeometry) {

@@ -5,6 +5,7 @@ import { STAND_COLOR } from '../../raid/script';
 import type { QuestDef, Spot, Step } from './def';
 import type { QuestLine } from './hud';
 import { personLook } from './looks';
+import { escortLook } from './looksWild';
 import type { ZoneCtx } from './ctx';
 import type { SummonUnit } from '../../effects/summon';
 
@@ -219,12 +220,15 @@ export class Quests {
     for (const b of this.lights.values()) b.orb.scale.setScalar(2.2 + Math.sin(this.t * 3) * 0.25);
     // A carried key floats over the hero's head, so a screen shows who has it.
     if (z.run.carry?.held) {
-      this.carried ??= this.keyMesh();
+      this.carried ??= this.keyMesh(this.carriedLook());
       if (!this.carried.parent) z.p.group.add(this.carried);
       this.carried.position.set(hero.x, 3.7 + Math.sin(this.t * 3) * 0.08, hero.z);
       this.carried.scale.setScalar(1.8);
       this.carried.rotation.y += dt * 2;
-    } else if (this.carried?.parent) this.carried.removeFromParent();
+    } else if (this.carried) {
+      this.carried.removeFromParent();
+      this.carried = null;
+    }
   }
 
   private stepUpdate(q: QuestDef, step: Step, st: { progress: number; step: number }, dt: number) {
@@ -293,10 +297,10 @@ export class Quests {
       case 'carry': {
         const c = z.run.carry;
         if (!c) {
-          this.keyAt(step.from);
+          this.keyAt(step.from, step.look);
           if (dist(step.from) < PICK && this.dropWait <= 0) this.pickUp(step);
         } else if (!c.held) {
-          this.keyAt(c.at);
+          this.keyAt(c.at, step.look);
           if (dist(c.at) < PICK && this.dropWait <= 0) this.pickUp(step);
         } else {
           this.keyAt(null);
@@ -340,13 +344,13 @@ export class Quests {
     z.banner('They come', '', 1.4);
   }
 
-  private keyAt(at: Spot | null) {
+  private keyAt(at: Spot | null, look?: 'key' | 'jar' | 'bundle') {
     if (!at) {
       if (this.key) { this.key.pillar.dispose(); this.key.group.removeFromParent(); this.key = null; }
       return;
     }
     if (!this.key) {
-      const group = this.keyMesh();
+      const group = this.keyMesh(look);
       const pillar = new LightPillar(at.x, at.z, 0.9, 5, KEY);
       pillar.opacity = 0.5;
       this.z.p.group.add(group, pillar.mesh);
@@ -358,9 +362,44 @@ export class Quests {
     this.key.pillar.mesh.position.set(at.x, 0.04, at.z);
   }
 
-  /** The carried thing, drawn as a key: a gold bow, a shaft and two teeth. */
-  private keyMesh() {
+  /** How the carried thing looks: the active step that carries it says. */
+  private carriedLook(): 'key' | 'jar' | 'bundle' {
+    for (const q of this.active()) { const st = this.stepOf(q); if (st?.verb === 'carry' && st.item === this.z.run.carry?.item) return st.look ?? 'key'; }
+    return 'key';
+  }
+
+  /** A carried jar of water (blue glaze, gold neck) or a bundle (a cloth sack tied with gold). */
+  private thingMesh(look: 'jar' | 'bundle') {
     const group = new THREE.Group();
+    const gold = new THREE.MeshStandardMaterial({ color: 0xffd27a, metalness: 0.8, roughness: 0.3, emissive: 0xffb050, emissiveIntensity: 0.5 });
+    if (look === 'jar') {
+      const glaze = new THREE.MeshStandardMaterial({ color: 0x2f9ab0, roughness: 0.35, emissive: 0x206a80, emissiveIntensity: 0.6 });
+      const belly = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8), glaze);
+      belly.scale.y = 1.15;
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.26, 8), glaze);
+      neck.position.y = 0.42;
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.04, 5, 10), gold);
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = 0.56;
+      group.add(belly, neck, rim);
+    } else {
+      const cloth = new THREE.MeshStandardMaterial({ color: 0x9a7a4a, roughness: 0.9, emissive: 0x4a3a1a, emissiveIntensity: 0.5 });
+      const sack = new THREE.Mesh(new THREE.SphereGeometry(0.34, 8, 6), cloth);
+      sack.scale.y = 0.9;
+      const tie = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.045, 5, 10), gold);
+      tie.rotation.x = Math.PI / 2;
+      tie.position.y = 0.28;
+      group.add(sack, tie);
+    }
+    group.position.y = 0.4;
+    group.scale.setScalar(1.3);
+    return group;
+  }
+
+  /** The carried thing, drawn as a key: a gold bow, a shaft and two teeth. */
+  private keyMesh(look: 'key' | 'jar' | 'bundle' = 'key') {
+    const group = new THREE.Group();
+    if (look !== 'key') return this.thingMesh(look);
     const gold = new THREE.MeshStandardMaterial({ color: 0xffd27a, metalness: 0.8, roughness: 0.3, emissive: 0xffb050, emissiveIntensity: 0.7 });
     const bow = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.07, 8, 16), gold);
     const shaft = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8, 0.1), gold);
@@ -404,7 +443,7 @@ export class Quests {
       }
       const at = st.progress > 0 ? step.path[Math.min(step.path.length - 1, st.progress - 1)] : step.from;
       const handle = arena.summonFor('hero', {
-        kind: 'melee', at: new THREE.Vector3(at.x, 0, at.z), hp: 260, seconds: 3600, damage: 0.001, attackEvery: 999, speed: 2.5, color: '#e8d8a8', look: personLook(),
+        kind: 'melee', at: new THREE.Vector3(at.x, 0, at.z), hp: 260, seconds: 3600, damage: 0.001, attackEvery: 999, speed: step.speed ?? 2.5, color: '#e8d8a8', look: step.look && step.look !== 'person' ? escortLook(step.look) : personLook(),
         // The summon system walks a unit only toward a victim (there is none while nothing is awake), so the escort is walked from
         // here; its `goal` keeps it from running at whatever stirs.
         goal: (pos) => pos.clone(),
@@ -423,8 +462,8 @@ export class Quests {
     const wp = step.path[Math.min(L.at, step.path.length - 1)];
     if (L.started && far <= 11 && L.at < step.path.length) {
       const to = new THREE.Vector3(wp.x, 0, wp.z), way = arena.route(u, u.pos, to).point, dx = way.x - u.pos.x, dz = way.z - u.pos.z, len = Math.hypot(dx, dz) || 1;
-      u.pos.x += (dx / len) * Math.min(len, 2.5 * dt);
-      u.pos.z += (dz / len) * Math.min(len, 2.5 * dt);
+      u.pos.x += (dx / len) * Math.min(len, (step.speed ?? 2.5) * dt);
+      u.pos.z += (dz / len) * Math.min(len, (step.speed ?? 2.5) * dt);
       arena.keepInside(u.pos, 0.5);
       u.figure.group.rotation.y = Math.atan2(dx, dz);
     }
