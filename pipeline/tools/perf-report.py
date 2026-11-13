@@ -258,6 +258,22 @@ def main():
             w(f"<tr><td>{names.get(k, k)}</td><td class='num'>{v['used']}</td><td class='num'>{v['usedBytes'] / 1e6:.1f} MB</td><td>{e(big)}</td></tr>")
         w("</table></div><p class='muted small'>A fight downloads two heroes (about 0.5 MB each), its arena (0.5 to 1.3 MB) and, once, the clips. Nothing here was changed: see what is still slow.</p>")
 
+    # --- numbers the text below quotes ---
+    def ms(table, prof, scene):
+        r = table.get((prof, scene))
+        return f"{r['frame']['median']:.0f}" if r else "?"
+
+    def field(table, prof, scene, fn):
+        r = table.get((prof, scene))
+        return fn(r) if r else "?"
+    script = lambda r: f"{r['step']['median'] + r['draw']['median']:.1f}"
+    garbage = lambda r: f"{r['allocMBs']:.0f}"
+    fights = [sid for sid, _, _ in SCENES if sid != "menu"]
+    now_ms = sorted(a[("desktop", sid)]["frame"]["median"] for sid in fights if ("desktop", sid) in a)
+    was_ms = sorted(b[("desktop", sid)]["frame"]["median"] for sid in fights if ("desktop", sid) in b)
+    auto_px = o.get(("desktop", "duel-temple"), {}).get("canvas", [0, 0])
+    l0, l1 = (lb["runs"][0], la["runs"][0]) if lb and la else (None, None)
+
     # --- what was changed ---
     w("<h2>What was changed, and what each change bought</h2>")
     steps = [(name, rows(load(name))) for name in ("step-a", "step-b")]
@@ -269,20 +285,20 @@ def main():
                 continue
             w(f"<tr><td>{e(title)}</td>" + "".join(f"<td class='num'>{v['frame']['median']:.1f}</td>" for v in vals) + "</tr>")
         w("</table></div>")
-    w("""<h3>Drawing (the graphics card)</h3><ul>
-<li><b>Floors are no longer shaded two or three times.</b> The engine drew solid things in the order their materials were made: the ground first, then every floor laid over it. Each pixel of floor was shaded for each layer, and a lit, textured floor that fills the screen is the dearest thing in the picture. Now the big surfaces are drawn last, the highest first, and what lies under another is skipped. <i>Night Temple duel 36 → 24 ms, Tower floor 32 → 19 ms, Sun Warden 37 → 25 ms on the desktop; the picture is the same.</i></li>
-<li><b>The menu no longer draws the fight's scene.</b> The menus cover the whole canvas, but the 3D scene behind them was drawn through the whole post chain every frame. <i>Play screen 16.5 → 8 ms.</i></li>
+    w(f"""<h3>Drawing (the graphics card)</h3><ul>
+<li><b>Floors are no longer shaded two or three times.</b> The engine drew solid things in the order their materials were made: the ground first, then every floor laid over it. Each pixel of floor was shaded for each layer, and a lit, textured floor that fills the screen is the dearest thing in the picture. Now the big surfaces are drawn last, the highest first, and what lies under another is skipped. <i>Night Temple duel {ms(b, 'desktop', 'duel-temple')} → {ms(a, 'desktop', 'duel-temple')} ms, Tower floor {ms(b, 'desktop', 'tower-horde')} → {ms(a, 'desktop', 'tower-horde')} ms, Sun Warden {ms(b, 'desktop', 'raid-solo')} → {ms(a, 'desktop', 'raid-solo')} ms on the desktop, nearly all of it from this; the picture is the same.</i></li>
+<li><b>The menu no longer draws the fight's scene.</b> The menus cover the whole canvas, but the 3D scene behind them was drawn through the whole post chain every frame. <i>Play screen {ms(b, 'desktop', 'menu')} → {ms(a, 'desktop', 'menu')} ms.</i></li>
 <li><b>Three full-screen passes fewer</b>: no multisampled canvas (the last pass is one quad), no copy pass when nothing bends the picture, tone mapping folded into the finish pass. <i>About 2 ms a frame at full HD.</i></li>
 </ul><h3>Stutters</h3><ul>
-<li><b>The shader warm-up really warms up.</b> It compiled shaders for drawing straight to the canvas, but the game draws into the post chain's own target, which is a different shader: each was built again the first time it was drawn. And the engine quietly swapped its shadow type at the first shadow, which changed the identity of every shader once more. Both are fixed; the warm-up also builds both heroes' spell effects before the fight. <i>Page frozen behind the first loading page: 2.5 → 0.35 s. Longest frame of a fight's start: 245 → about 150 ms (duel), 558 → about 140 ms (Tower).</i></li>
+<li><b>The shader warm-up really warms up.</b> It compiled shaders for drawing straight to the canvas, but the game draws into the post chain's own target, which is a different shader: each was built again the first time it was drawn. And the engine quietly swapped its shadow type at the first shadow, which changed the identity of every shader once more. Both are fixed; the warm-up also builds both heroes' spell effects before the fight. <i>Waiting for shaders behind the first loading page: 2.5 → 0.35 s. In the fight's first 20 seconds: frames over 50 ms {l0['fight']['over50'] if l0 else '?'} → {l1['fight']['over50'] if l1 else '?'}, the longest {l0['fight']['longestMs'] if l0 else 0:.0f} → {l1['fight']['longestMs'] if l1 else 0:.0f} ms.</i></li>
 <li><b>The post chain's and the reflections' shaders compile in the background</b> from the moment the page opens, and nothing is drawn behind the loading page until they are done.</li>
 <li><b>A built shader is kept.</b> The engine deleted a shader when the last thing using it went (a damage number, a bolt) and built it again the next time.</li>
 </ul><h3>The processor</h3><ul>
-<li><b>No garbage from the cover and path checks.</b> The helpers that ask "how far is this point from that wall" made a small object and an array on every call, thousands of times a frame in a hall with much cover. Now none, with results the same to the last bit, so no hero walks a hair differently. <i>Raid of ten: garbage 83 → 31 MB a second.</i></li>
-<li><b>No shader looked up for nothing.</b> The distortion pass changed the set of lights the engine counted, which made it look every lit material's shader up again, twice a frame; a see-through two-sided glow was drawn in two goes and looked up twice as well. <i>Raid of ten: script 11 → 8 ms a frame.</i></li>
+<li><b>No garbage from the cover and path checks.</b> The helpers that ask "how far is this point from that wall" made a small object and an array on every call, thousands of times a frame in a hall with much cover. Now none, with results the same to the last bit, so no hero walks a hair differently. <i>Raid of ten: garbage {field(b, 'desktop', 'raid-party', garbage)} → {field(a, 'desktop', 'raid-party', garbage)} MB a second; a duel {field(b, 'desktop', 'duel-temple', garbage)} → {field(a, 'desktop', 'duel-temple', garbage)}.</i></li>
+<li><b>No shader looked up for nothing.</b> The distortion pass changed the set of lights the engine counted, which made it look every lit material's shader up again, twice a frame; a see-through two-sided glow was drawn in two goes and looked up twice as well. <i>Raid of ten: script {field(b, 'desktop', 'raid-party', script)} → {field(a, 'desktop', 'raid-party', script)} ms a frame on the desktop, which is four to six times that on a phone.</i></li>
 <li><b>The scene's matrices once a frame</b>, not once for each of its draws; <b>hidden spell effects out of the scene</b> (a session kept every effect it ever built, and the engine walked all of them every frame).</li>
 </ul><h3>Loading</h3><ul>
-<li><b>The reflections and the Play screen's hero renderer are made when first needed</b>, not before the menu. <i>Menu on screen: 2.4 → 1.0 s on the desktop.</i></li>
+<li><b>The reflections and the Play screen's hero renderer are made when first needed</b>, not before the menu. <i>Menu on screen: {l0['firstFrameMs'] / 1000 if l0 else 0:.1f} → {l1['firstFrameMs'] / 1000 if l1 else 0:.1f} s on the desktop.</i></li>
 <li><b>The heroes' clips are fetched while the menu is idle.</b></li>
 </ul><h3>New: the Graphics setting</h3><ul>
 <li><b>High</b> (the look as it was), <b>Medium</b>, <b>Low</b> and <b>Auto</b>, on a button at the top of the menu, kept in the browser. Only sharpness and the shadows under the figures change; spells, lights and glow are the same at every level.</li>
@@ -326,14 +342,14 @@ def main():
         w("</div>")
 
     # --- still slow ---
-    w("""<h2>What is still slow, and why</h2><ul>
-<li><b>A big raid on a phone.</b> Ten heroes in the Hall of Noon are about 760 draw calls a frame, and a phone's processor needs most of a frame just to issue them (mid-range phone: 106 → 68 ms a frame at High, 45 ms at Auto). Half of them are the shadow pass drawing the hall's many small blocks a second time; Auto and Low leave those out. The rest are the heroes themselves (about ten separate pieces each) and the hall (about 120 pieces). To go further the hall's blocks would have to be drawn as a few batches instead of one by one, and a hero's pieces joined in Blender: a change to how arenas and heroes are built, not done here.</li>
+    w(f"""<h2>What is still slow, and why</h2><ul>
+<li><b>A big raid on a phone.</b> Ten heroes in the Hall of Noon are about 760 draw calls a frame, and a phone's processor needs most of a frame just to issue them (mid-range phone: {ms(b, 'phone-4x', 'raid-party')} → {ms(a, 'phone-4x', 'raid-party')} ms a frame at High, {ms(o, 'phone-4x', 'raid-party')} ms at Auto; that is still only about {fps(o[('phone-4x', 'raid-party')]['frame']['median']) if ('phone-4x', 'raid-party') in o else 0:.0f} frames a second). Half of them are the shadow pass drawing the hall's many small blocks a second time; Auto and Low leave those out. The rest are the heroes themselves (about ten separate pieces each) and the hall (about 120 pieces). To go further the hall's blocks would have to be drawn as a few batches instead of one by one, and a hero's pieces joined in Blender: a change to how arenas and heroes are built, not done here.</li>
 <li><b>Lit surfaces are dear on an integrated card.</b> A floor that fills the screen costs about 7 ms at full HD, most of it the soft reflections every lit material takes from the sky. One layer of floor is the least there can be; the Night Temple still has two (a see-through ring floor over its apron). Fewer pixels (Medium, Low, Auto) is what helps here.</li>
-<li><b>At High on integrated graphics a full-HD fight is 40 to 50 frames a second</b>, not 60 (19 to 25 ms a frame). The fixes took it from 26 to 30. Auto gets 60 by drawing about 1300 x 730 and letting the browser stretch it.</li>
+<li><b>At High on integrated graphics a full-HD fight is {fps(now_ms[-1]):.0f} to {fps(now_ms[0]):.0f} frames a second</b>, not 60 ({now_ms[0]:.0f} to {now_ms[-1]:.0f} ms a frame; it was {fps(was_ms[-1]):.0f} to {fps(was_ms[0]):.0f}). Auto gets 60 there by drawing {auto_px[0]} x {auto_px[1]} instead of 1920 x 1080 and letting the browser stretch it.</li>
 <li><b>The first cast of some spells still costs one long frame</b> (60 to 100 ms): what a spell makes at the moment it is cast (a bolt, a danger zone's shape) is not known before, so its shader is built then, once a session.</li>
 <li><b>The Play screen's turning hero</b> has its own small renderer, and costs about 8 ms a frame on this card. Fine at 60, but it is the menu's whole cost.</li>
 <li><b>Downloads were not made smaller.</b> The game's script is 5 MB (1.4 MB as sent) because every spell of every hero is in it; splitting it by hero would shorten the download on a slow line but not the start, which was measured to be shaders, not script. Models are sent uncompressed (a hero 0.5 MB, the clips 1.3 MB), and every file is asked for again on each visit (the server answers "unchanged" for each). Both are settings of the build and the deploy, left for a decision.</li>
-<li><b>Garbage.</b> A duel still makes 10 to 13 MB a second (from 20), a raid of ten 31 (from 83): the rest is spread over many spells and the engine's own drawing.</li>
+<li><b>Garbage.</b> A duel still makes {field(a, 'desktop', 'duel-temple', garbage)} MB a second (from {field(b, 'desktop', 'duel-temple', garbage)}), a raid of ten {field(a, 'desktop', 'raid-party', garbage)} (from {field(b, 'desktop', 'raid-party', garbage)}): the rest is spread over many spells and the engine's own drawing.</li>
 </ul>""")
     w("""<h2>What was not measured</h2><ul>
 <li><b>A real phone</b>, and Safari on an iPhone: the phone rows are this computer with a phone-sized screen and a slowed processor. A phone's graphics card may be faster or slower than this one.</li>

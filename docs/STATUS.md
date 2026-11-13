@@ -1,6 +1,55 @@
 # Status
 
-_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything._
+_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it; committed, not pushed, not live._
+
+## The game runs smoother (2026-11-13): done and committed; NOT pushed, NOT live
+
+The user: "lets make new seison where we will optimalize this game so taht it can run smoothly", then "i just want you to make
+the tolls to cathc ever bottleneck or everything taht could make lag log it all and lets fix all". The page with every number and
+picture: [perf/performance.html](perf/performance.html). The tool and what was found: [pipeline/performance.md](pipeline/performance.md).
+
+- **The tool:** `python pipeline/tools/perf.py` plays six fixed scenes of the real game in a browser with the real graphics card
+  (an Intel UHD 630 here) and times every frame; `load` measures loading; `parts`, `passes`, `profile`, `census` and `flips` say
+  where a scene's time goes. Each scene is the same fight every run, so a change that must not touch the rules is checked by
+  its fights being the same ones.
+- **What it found:** drawing held the game back, not its rules. Floors were shaded two or three times each pixel (the engine drew
+  solid things by the age of their materials); the menu drew the 3D scene behind itself; every shader was compiled twice, the
+  second time with the game frozen (the warm-up compiled for the canvas, the game draws into the post chain's target, and the
+  engine swapped its shadow type at the first shadow); the cover and path checks made 50 MB of garbage a second in a raid.
+- **Before -> now, a frame in ms (same picture, High):** desktop, full HD: Night Temple duel 38 -> 24.5, Sun Warden 38 -> 24,
+  raid of ten 39 -> 29, Tower horde floor 33 -> 18, Play screen 17 -> 7. Mid-range phone (the phone screen, processor slowed
+  4 times): duels 36 to 40 -> 21 to 22, raid of ten 106 -> 53, Tower 34 -> 22. In a visible browser: menu up after 2.4 -> 1.2 s;
+  a fight's first 20 s: 20 -> 30 frames a second, frames over 50 ms 154 -> 47, the longest 884 -> 100 ms.
+- **New: a Graphics setting** (a button at the top of the menu, kept in the browser): High (the look as it was, **the default**),
+  Medium, Low, Auto. Auto times the real scene behind each loading page and draws as many pixels as fit in a 60th of a second;
+  where the processor is the limit it leaves out the shadows. With Auto the desktop duel is 14.7 ms (60 a second, drawn at
+  1275 x 717), the mid-range phone's 17.5; a fight's first 20 s have 3 frames over 50 ms.
+- **The rules are untouched.** With the spells built at the first cast as before, the changed game plays the live game's very
+  fights (the scenes' prints match), in the six scenes, a duel in each of the nine arenas, Ash and Ember and the Heart of Noon; the
+  same frames are the same pictures (apart by the film grain). `npx tsc --noEmit -p .`, `npm run build`, `npm run test:server`
+  pass; `_raidCheck()` 234, `_raidAsh()` 77, `_raidHeart()` 246, `_raidUpgrades()` 40, `_raidTwin()` 143 pass;
+  `python pipeline/sim/sim.py hero Lyra` ran 96 fights with no error. `PROTOCOL` is unchanged (15): nothing two screens or the
+  hub must agree on changed.
+- **The Rust port's guard** (`python pipeline/rustfull/guard.py`) lists `src/duel.ts`, `heroMode.ts`, `runtime.ts`,
+  `obstacles.ts` and `nav.ts` as changed (beside the kit files it listed before). No rule in them changed (`hyp` in
+  `src/obstacles.ts` gives `Math.hypot`'s number to the last bit); the port is paused and was not stamped.
+- **Still slow, and why** (the page has the numbers): a raid of ten on a phone (760 draw calls a frame; 23 frames a second even
+  with Auto: the Hall of Noon is some 120 small pieces, each drawn again for its shadow, and a hero is about ten pieces); High on
+  integrated graphics is 34 to 54 frames a second at full HD, not 60; downloads were not made smaller (the 5 MB script, models
+  sent uncompressed, every file asked for again on each visit).
+- **Not measured:** a real phone (the phone rows are this computer with a phone's screen and a slowed processor), Safari, online
+  play, a session longer than 25 s, how it feels.
+- **A frozen copy of the code before the work** is at `C:\VFXTool-perf-base` (a git worktree at `ce334c4`; its `node_modules` is a
+  junction to this checkout's): for measuring "before" again. To remove it: `cmd /c rmdir C:\VFXTool-perf-base\node_modules`
+  (the junction first, or git empties the real folder), then `git worktree remove C:/VFXTool-perf-base`.
+- **Waiting on the user:**
+  1. Look at the Graphics levels on the page and say whether **Auto** should be the default (one word in `src/quality.ts`,
+     `QUALITY_DEFAULT`, and the News item's text).
+  2. Push: `git push origin feat/particle-editor:main`.
+  3. Deploy, on its own request: `npm run cf:deploy` (it drops every live connection). The News release "A smoother game" is
+     `live: false` until then.
+- **Next, if wanted:** the Hall of Noon's blocks drawn as batches and a hero's pieces joined (the raid on a phone); models
+  compressed and the built files kept by the browser (loading on a slow line); a real phone under the tool.
 
 ## Where the game is going: boss fights first, and the Tower's floors as worlds (2026-11-13): agreed, IN PROGRESS in its own worktree
 
