@@ -61,6 +61,17 @@ SCENES = {
     "tower-horde": {"scene": "tower", "hero": "Kaia"},
 }
 
+# More scenes, by name only (not part of a run of "every scene"): a duel in each arena and the other two bosses, for
+# looking at one room (`parts`, `census`) and for the picture compare across every room.
+MORE = {
+    **{f"arena-{a}": {"scene": "duel", "hero": "Lyra", "foe": "Oblivion", "arena": a} for a in
+       ("temple", "frost", "caldera", "glade", "skyruins", "harbour", "canyon", "cavern", "battlefield")},
+    "raid-ash": {"scene": "raid", "hero": "Kaia", "boss": "ash"},
+    "raid-heart": {"scene": "raid", "hero": "Kaia", "boss": "heart"},
+    "raid-heart-party": {"scene": "raid", "hero": "Kaia", "boss": "heart", "party": 9, "band": 10},
+}
+ALL = {**SCENES, **MORE}
+
 PROFILES = {
     "desktop": {"size": (1920, 1080), "dsf": 1, "mobile": False, "cpu": 1},
     "desktop-4x": {"size": (1920, 1080), "dsf": 1, "mobile": False, "cpu": 4},
@@ -110,9 +121,10 @@ def dev_server(port, root=""):
     sys.exit("the dev server did not answer within 60 s")
 
 
-def git_head():
+def git_head(root=""):
+    """The commit of the checkout that is measured (`root`, or this one)."""
     try:
-        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=str(ROOT), capture_output=True, text=True).stdout.strip()
+        return subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=str(root or ROOT), capture_output=True, text=True).stdout.strip()
     except Exception:
         return ""
 
@@ -133,7 +145,7 @@ async def run_scenes(args):
     img.mkdir(parents=True, exist_ok=True)
     data_file.parent.mkdir(parents=True, exist_ok=True)
     data = json.loads(data_file.read_text(encoding="utf-8")) if data_file.exists() else {"label": args.label, "runs": []}
-    data.update({"when": time.strftime("%Y-%m-%d %H:%M"), "commit": git_head(), "frames": args.frames})
+    data.update({"when": time.strftime("%Y-%m-%d %H:%M"), "commit": git_head(args.root), "frames": args.frames})
     script = (ROOT / "pipeline" / "tools" / "perf-page.js").read_text(encoding="utf-8")
     extra = json.loads(args.set) if args.set else None
     proc = dev_server(args.port, args.root)
@@ -143,7 +155,7 @@ async def run_scenes(args):
             for pname in args.profiles.split(","):
                 prof = PROFILES[pname]
                 for sname in args.scenes.split(","):
-                    opts = {**SCENES[sname], "frames": args.frames, "seed": args.seed}
+                    opts = {**ALL[sname], "frames": args.frames, "seed": args.seed}
                     if prof["cpu"] > 1:
                         opts["sync"] = False
                     if extra:
@@ -222,7 +234,7 @@ async def one_scene(args, opts, before=None, after=None, call="run"):
 
 async def run_profile(args):
     """One scene under Chrome's own profiler: the functions the processor spends its time in."""
-    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "profile": True}
+    opts = {**ALL[args.scene], "frames": args.frames, "seed": args.seed, "profile": True}
     if args.set:
         opts["set"] = json.loads(args.set)
 
@@ -294,7 +306,7 @@ async def run_profile(args):
 
 async def run_passes(args):
     """What each step of drawing a frame costs the graphics card (by its own timer), for one scene."""
-    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "passes": True}
+    opts = {**ALL[args.scene], "frames": args.frames, "seed": args.seed, "passes": True}
     if args.set:
         opts["set"] = json.loads(args.set)
     res, _ = await one_scene(args, opts)
@@ -310,7 +322,7 @@ async def run_passes(args):
 
 async def run_flips(args):
     """Materials that make three look their shader up again every frame, for one scene (see `flipWatch` in perf-page.js)."""
-    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "flips": True}
+    opts = {**ALL[args.scene], "frames": args.frames, "seed": args.seed, "flips": True}
     res, _ = await one_scene(args, opts)
     f = res["flips"]
     print(f"{args.scene}: {len(f['shared'])} materials drawn by objects of two kinds; {f['markedAFrame']:.1f} materials a frame marked as changed")
@@ -322,7 +334,7 @@ async def run_flips(args):
 
 async def run_census(args):
     """Who the draw calls of one scene belong to (see `census` in perf-page.js), as it stands after the frames played."""
-    opts = {**SCENES[args.scene], "frames": args.frames, "seed": args.seed, "census": True}
+    opts = {**ALL[args.scene], "frames": args.frames, "seed": args.seed, "census": True}
     res, _ = await one_scene(args, opts)
     rows = res["census"]
     print(f"{args.scene} on {args.profile} after {args.frames} frames: {res['drawCalls']['median']} draw calls a frame (median), {sum(r['drawn'] for r in rows)} things drawn at the end, {sum(r['shadows'] for r in rows)} of them casting a shadow")
@@ -333,7 +345,7 @@ async def run_census(args):
 
 async def run_parts(args):
     """What each part of one scene's picture costs the graphics card: the frame drawn again with one part hidden at a time."""
-    opts = {**SCENES[args.scene], "seed": args.seed, "at": args.frames}
+    opts = {**ALL[args.scene], "seed": args.seed, "at": args.frames}
     if args.set:
         opts["set"] = json.loads(args.set)
     res, _ = await one_scene(args, opts, call="parts")
@@ -394,7 +406,7 @@ async def run_load(args):
     server = ThreadingHTTPServer(("127.0.0.1", args.port + 1), Dist)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{args.port + 1}"
-    out = {"label": args.label, "when": time.strftime("%Y-%m-%d %H:%M"), "commit": git_head(), "runs": []}
+    out = {"label": args.label, "when": time.strftime("%Y-%m-%d %H:%M"), "commit": git_head(args.root), "runs": []}
     from playwright.async_api import async_playwright
     try:
         async with async_playwright() as pw:

@@ -58,11 +58,16 @@ def bar(ms, worst, cls):
     return f'<div class="bar {cls}" style="width:{w:.1f}%"></div>'
 
 
+def rate(ms):
+    """Frames a second as words: nothing draws faster than a screen shows."""
+    return "over 120 a second" if fps(ms) > 120 else f"{fps(ms):.0f} a second"
+
+
 def cell(r, worst, cls):
     if not r:
         return '<td class="num muted">not run</td>'
     ms = r["frame"]["median"]
-    return (f'<td class="num"><b>{ms:.1f} ms</b> <span class="fps">{fps(ms):.0f} a second</span>{bar(ms, worst, cls)}'
+    return (f'<td class="num"><b>{ms:.1f} ms</b> <span class="fps">{rate(ms)}</span>{bar(ms, worst, cls)}'
             f'<span class="sub">worst 1%: {r["frame"]["p99"]:.0f} ms · longest: {r["frame"]["max"]:.0f} ms</span></td>')
 
 
@@ -146,8 +151,8 @@ def main():
     w(f"<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'>"
       f"<title>Arena of Kits: how smoothly it runs</title><style>{CSS}</style></head><body><main>")
     w("<h1>Arena of Kits: how smoothly it runs</h1>")
-    w(f"<p class='muted'>Measured {e((after or {}).get('when', ''))} on the code at commit {e((after or {}).get('commit', ''))}, against the game as it was at {e((base or {}).get('commit', ''))} (what is live). "
-      f"Graphics card: {e(gpu)}.</p>")
+    w(f"<p class='muted'>Measured {e((after or {}).get('when', ''))[:10]} on the code at commit {e((after or {}).get('commit', ''))}, against the game as it is live "
+      f"(a frozen copy at {e((base or {}).get('commit', ''))}). Graphics card: {e(gpu)}.</p>")
 
     # --- the short answer ---
     def pick(table, prof, scene):
@@ -173,10 +178,13 @@ def main():
     w("<h2>How this was measured</h2>")
     w("<p>A tool (<code>pipeline/tools/perf.py</code>) plays six fixed scenes of the real game in a browser, with the real graphics card, and times every frame of 25 seconds of each: "
       "the game's own step, the drawing, and the wait until the card has really finished the frame. Each scene is the same fight every time (the clock and the dice are the tool's), "
-      "so before and after can be laid side by side. A frame must take under 16.7 ms for 60 frames a second, under 33 ms for 30.</p>")
+      "so before and after can be laid side by side. A frame must take under 16.7 ms for 60 frames a second, under 33 ms for 30. "
+      "On a real screen a frame that misses one refresh waits for the next: a game at 24 ms a frame shows as 30 a second half the time, so the step from 24 to under 16.7 is the one that is felt.</p>")
     w("<ul><li><b>Before</b> is the game as it is live, measured again today from a frozen copy of that code, on the same computer.</li>"
       "<li><b>Desktop</b>: 1920 x 1080. <b>Phone screen</b>: 844 x 390 points at 3 pixels a point, with touch. The slowed rows use Chrome's own processor throttle (4 and 6 times).</li>"
-      "<li>The graphics card is this computer's Intel UHD 630, an ordinary laptop's. It stands in for a phone's card too: <b>no real phone was measured.</b></li></ul>")
+      "<li>The graphics card is this computer's Intel UHD 630, an ordinary laptop's. It stands in for a phone's card too: <b>no real phone was measured.</b></li>"
+      "<li>The scene tables come from a browser without a window, which is fair for frame times but compiles shaders late: for stutters read the Loading section, taken in a visible browser.</li>"
+      "<li>On the slowed rows the browser overlaps the processor's work with the card's, as a real one does; on the unslowed rows the two are added. So compare before with after along a row, not one row with another.</li></ul>")
     w("<p class='key small'>In the tables: <i class='before'></i>before <i class='after'></i>now, at High (the same picture) <i class='auto'></i>now, at Auto</p>")
 
     # --- scenes ---
@@ -201,7 +209,7 @@ def main():
             w(line_svg(series, cap=min(120, max(60, x["frame"]["p99"] * 1.4))))
             w("<div class='scroll'><table><tr><th>On the desktop</th><th>Before</th><th>Now</th></tr>")
             for label, fn in (
-                ("Draw calls a frame", lambda r: f"{r['drawCalls']['median']}"),
+                ("Draw calls a frame (every canvas, every pass)", lambda r: f"{r['glDraws']['median']}"),
                 ("Triangles a frame", lambda r: f"{r['triangles']['median']:,}"),
                 ("Particles at the most", lambda r: f"{r['particles']['max']:,}"),
                 ("Garbage made, MB a second", lambda r: f"{r['allocMBs']:.1f}"),
