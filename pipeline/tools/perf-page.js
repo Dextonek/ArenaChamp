@@ -370,6 +370,30 @@
     };
   };
 
+  /**
+   * A floor of the Tower's worlds (src/tower/world/, started as pipeline/tools/world-tool.js starts one): the wide walking
+   * zone with its people, its law and its packs. The hero is set down beside a pack, the autopilot fights it, and every ten
+   * seconds the hero is set down beside the next one, so the scene has the zone's own cost and a pack awake in it.
+   */
+  scenes.world = async (o) => {
+    const a = api(), d = a.duel;
+    (0, eval)(await (await fetch('/pipeline/tools/world-tool.js')).text());
+    await window._world({ floor: o.floor ?? 1, hero: o.hero ?? 'Kaia', mode: 'run' });
+    const game = window._worldGame;
+    const packs = [...game.zone.packs.values()].filter((p) => !p.def.named);
+    let k = 0;
+    const visit = () => { const p = packs[k++ % packs.length]; if (p) window._world.go(p.def.at.x + 2.5, p.def.at.z + 2.5); };
+    visit();
+    await d.whenReady();
+    return {
+      stepped: true,
+      // The run's own tick comes after the duel's step, as the game's loop has it; it is part of the step's time.
+      tick() { game.tick(1 / 60); },
+      frame(i) { if (i % 600 === 599) visit(); },
+      print: () => [Math.round(d.heroHp ?? 0), quant(a.arena.caster.group.position.x), quant(a.arena.caster.group.position.z), game.run.kills ?? 0, a.arena.summons.alive('opponent').length],
+    };
+  };
+
   const pct = (sorted, p) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * p))];
   const stats = (list) => {
     const s = Float64Array.from(list).sort();
@@ -434,6 +458,7 @@
           draws = 0;
           const t0 = realNow();
           if (scene.stepped) a.step(1 / 60);
+          scene.tick?.();
           const t1 = realNow();
           flush(simMs);
           const t2 = realNow();
@@ -520,6 +545,7 @@
         if (wait) await wait;
         simMs += 1000 / 60;
         if (scene.stepped) a.step(1 / 60);
+        scene.tick?.();
         if (i % 4 === 0) { flush(simMs); sync(); }
         if (i % 20 === 19) await tick();
       }

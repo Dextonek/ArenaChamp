@@ -69,6 +69,8 @@ MORE = {
     "raid-ash": {"scene": "raid", "hero": "Kaia", "boss": "ash"},
     "raid-heart": {"scene": "raid", "hero": "Kaia", "boss": "heart"},
     "raid-heart-party": {"scene": "raid", "hero": "Kaia", "boss": "heart", "party": 9, "band": 10},
+    # The Tower's floors as worlds: the wide zone of each floor, the hero set down beside one pack after another.
+    **{f"world-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (1, 2, 3, 4, 5)},
 }
 ALL = {**SCENES, **MORE}
 

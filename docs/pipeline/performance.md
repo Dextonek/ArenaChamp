@@ -40,7 +40,9 @@ Six scenes (`SCENES` in perf.py; the page side is `scenes` in perf-page.js): the
 in the Night Temple (Lyra against Oblivion) and one in the Harbour (Anka against Isolde), the autopilot at the keys, with
 the player's camera and bars; the Sun Warden alone; the Sun Warden with nine scripted partners that walk, attack and cast,
 in the Hall of Noon; a horde floor of the Tower of week 2026-W46, begun again when cleared. 1,500 frames of a 60th of a
-second each (25 s). To add a scene: a function in `scenes` that sets the game up and returns `{ stepped, frame(i), print() }`,
+second each (25 s). More scenes by name only (`MORE` in perf.py): `arena-<id>` (a duel in each arena), `raid-ash`,
+`raid-heart`, `raid-heart-party`, and `world-1` to `world-5` (a floor of the Tower's worlds: the wide zone, the hero set
+down beside one pack after another). To add a scene: a function in `scenes` that sets the game up and returns `{ stepped, frame(i), print() }`,
 and a row in `SCENES`.
 
 Five profiles: `desktop` (1920 x 1080), `phone` (844 x 390 points at 3 pixels a point, touch: drawn at 1688 x 780), and
