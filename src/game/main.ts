@@ -269,8 +269,10 @@ function render() {
     shownScreen = state.screen;
     root.scrollTop = 0;
   }
-  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active) { root.style.display = 'none'; shownScreen = null; return; }
+  if (match.active || watch.active || cpu.active || raid.active || coop.active || tower.active) { root.style.display = 'none'; shownScreen = null; gameApi.view.covered = false; return; }
   root.style.display = '';
+  // The menus lie over the whole canvas and nothing shows through: the 3D scene is not drawn while they are up.
+  gameApi.view.covered = true;
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
   if (!state.profile) {

@@ -4,7 +4,6 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -82,14 +81,58 @@ export const HERO_BLOOM: BloomSettings = { enabled: true, strength: 0.45, radius
 
 export type Runtime = ReturnType<typeof createRuntime>;
 /** What the duel game (src/game/) drives: hero mode, the duel and the hero choice. */
-export type GameApi = Pick<Runtime, 'arena' | 'heroMode' | 'duel' | 'kits' | 'setHeroMode' | 'setKit'>;
+export type GameApi = Pick<Runtime, 'arena' | 'heroMode' | 'duel' | 'kits' | 'setHeroMode' | 'setKit' | 'view'>;
+
+/**
+ * The order solid things are drawn in. Three's own order is by material (the oldest first), which drew the ground first and
+ * every floor laid over it after: each pixel of floor was shaded two or three times, and a lit, textured floor that fills
+ * the screen is the dearest thing in the picture (docs/pipeline/performance.md). Here the big surfaces (ground, floors,
+ * anything wider than 24 m) come after everything else that writes depth, the highest first, so a floor under another is
+ * skipped by the depth test before it is shaded. Solid things that do not write depth (flat glows on the floor) come last,
+ * as they did in effect: over what they lie on. Within each kind the order is three's own. The picture is the same.
+ */
+const BIG_SURFACE = 12;
+const _big = new WeakMap<THREE.BufferGeometry, boolean>();
+interface DrawItem { object: THREE.Object3D; geometry: THREE.BufferGeometry | null; material: THREE.Material & { id: number }; groupOrder: number; renderOrder: number; z: number; id: number }
+function drawKind(it: DrawItem) {
+  if (!it.material.depthWrite) return 2;
+  const g = it.geometry;
+  if (!g) return 0;
+  let big = _big.get(g);
+  if (big === undefined) {
+    if (!g.boundingSphere) g.computeBoundingSphere();
+    big = (g.boundingSphere?.radius ?? 0) >= BIG_SURFACE && !(it.object as THREE.SkinnedMesh).isSkinnedMesh;
+    _big.set(g, big);
+  }
+  return big ? 1 : 0;
+}
+/** How high a big surface lies: the world height of the middle of its geometry. */
+function heightOf(it: DrawItem) {
+  const c = it.geometry!.boundingSphere!.center, e = it.object.matrixWorld.elements;
+  return e[1] * c.x + e[5] * c.y + e[9] * c.z + e[13];
+}
+function opaqueOrder(a: DrawItem, b: DrawItem) {
+  if (a.groupOrder !== b.groupOrder) return a.groupOrder - b.groupOrder;
+  if (a.renderOrder !== b.renderOrder) return a.renderOrder - b.renderOrder;
+  const ka = drawKind(a), kb = drawKind(b);
+  if (ka !== kb) return ka - kb;
+  if (ka === 1) {
+    const ha = heightOf(a), hb = heightOf(b);
+    if (Math.abs(ha - hb) > 1e-4) return hb - ha;
+  }
+  if (a.material.id !== b.material.id) return a.material.id - b.material.id;
+  if (a.z !== b.z) return a.z - b.z;
+  return a.id - b.id;
+}
 
 /** Builds the scene into `#app` and starts the frame loop. Call once per page. */
 export function createRuntime(opts: RuntimeOptions) {
   const hooks: RuntimeHooks = {};
   const container = document.getElementById('app')!;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  // No multisampling on the canvas: the scene is drawn into the composer's own targets, and the last pass (FXAA) covers
+  // the whole canvas with one quad, which multisampling does nothing for but still stores and resolves four times over.
+  const renderer = new THREE.WebGLRenderer({ antialias: false });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   // Applied by OutputPass; keeps overlapping additive particles from clipping to flat white.
@@ -98,6 +141,7 @@ export function createRuntime(opts: RuntimeOptions) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
+  renderer.setOpaqueSort(opaqueOrder);
 
   const scene = new THREE.Scene();
   // Background via scene.background, not setClearColor: the composer's render target clear skips the
@@ -237,7 +281,7 @@ export function createRuntime(opts: RuntimeOptions) {
   };
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 0.5, 0.2);
   composer.addPass(bloomPass);
-  composer.addPass(new OutputPass());
+  // Tone mapping and the screen's colour space are the finish pass's first step (src/post.ts): no OutputPass.
   const finish = new FinishPass();
   composer.addPass(finish.pass);
   // Antialiasing last: the composer renders into targets without MSAA, so hard drawn edges were jagged.
@@ -258,8 +302,11 @@ export function createRuntime(opts: RuntimeOptions) {
    * `idleBloom`: the bloom with no effect active outside play mode (the tool sets its particle preset's).
    */
   const state = { playMode: false, idleBloom: { ...HERO_BLOOM } as BloomSettings };
-  /** Time control: paused, and a multiplier on the frame time. */
-  const view = { paused: false, timeScale: 1 };
+  /**
+   * Time control: paused, and a multiplier on the frame time. `covered`: the canvas cannot be seen (the game's menus lie
+   * over it, opaque), so nothing is drawn; the simulation still steps.
+   */
+  const view = { paused: false, timeScale: 1, covered: false };
 
   // --- Effects (created lazily so one broken effect can't take down the app) ---
   const slots = new Map<string, EffectSlot>(opts.modules.map((m) => [m.label, { module: m }]));
@@ -469,6 +516,56 @@ export function createRuntime(opts: RuntimeOptions) {
   );
   scene.add(heroMode.group);
 
+  /**
+   * Before a fight (the loading page is up): builds the effects of the spells that can be cast in it, hidden, and compiles
+   * every material in the scene, so the first cast of a spell does not stop the game to build its shaders.
+   *
+   * The shaders are compiled as the composer will use them: with its float target bound. Three keys a shader by where it
+   * draws (a target: linear colour, no tone mapping; the canvas: sRGB and tone mapped), so a compile with no target bound
+   * prepared shaders the game never used, and each was built again, in the middle of a frame, when first drawn.
+   *
+   * A spell that brings its own lights changes the shader of everything lit while it plays: those variants are compiled
+   * too, one pass for each distinct set of lights.
+   */
+  function warmUp(labels: string[] = []): Promise<unknown> {
+    const built: Effect[] = [];
+    for (const label of labels) {
+      const slot = slots.get(label);
+      const effect = slot && ensureEffect(slot);
+      if (effect) built.push(effect);
+    }
+    const before = renderer.getRenderTarget();
+    renderer.setRenderTarget(composer.readBuffer);
+    const waits: Promise<unknown>[] = [];
+    try {
+      waits.push(renderer.compileAsync(scene, camera));
+      const seen = new Set<string>();
+      for (const effect of built) {
+        let points = 0, spots = 0, dirs = 0;
+        effect.group.traverse((o) => {
+          const l = o as THREE.Light & { isPointLight?: boolean; isSpotLight?: boolean; isDirectionalLight?: boolean };
+          if (l.isPointLight) points++;
+          else if (l.isSpotLight) spots++;
+          else if (l.isDirectionalLight) dirs++;
+        });
+        const key = `${points}/${spots}/${dirs}`;
+        if (key === '0/0/0' || seen.has(key) || effect.group.visible) continue;
+        seen.add(key);
+        // Shown for the length of this call only (nothing is drawn in between): its lights count as the scene's.
+        const hidden: THREE.Object3D[] = [];
+        effect.group.traverse((o) => { if ((o as THREE.Light).isLight && !o.visible) { o.visible = true; hidden.push(o); } });
+        effect.group.visible = true;
+        waits.push(renderer.compileAsync(scene, camera));
+        effect.group.visible = false;
+        for (const o of hidden) o.visible = false;
+      }
+    } catch (e) {
+      console.warn('The shader warm-up stopped early:', e);
+    }
+    renderer.setRenderTarget(before);
+    return Promise.all(waits.map((w) => w.catch(() => undefined)));
+  }
+
   // --- Duel: the hero against an AI hero of another kit in a small ring (on top of hero mode) -----------------
   const duel = new Duel({
     outline,
@@ -480,7 +577,7 @@ export function createRuntime(opts: RuntimeOptions) {
     targeting: (label) => slots.get(label)?.module.targeting,
     setStage,
     clearEffects,
-    warmUp: () => renderer.compileAsync(scene, camera).catch(() => undefined),
+    warmUp,
   });
   scene.add(duel.group);
   duel.onLeave = () => setDuel(false);
@@ -633,6 +730,8 @@ export function createRuntime(opts: RuntimeOptions) {
     let any = false;
     for (const e of liveEffects()) e.group.traverseVisible((o) => { if (!any && o.layers.mask === 1 << DISTORT_LAYER) any = true; });
     distortPass.uniforms.uOn.value = any ? 1 : 0;
+    // With nothing bending the frame the pass would only copy it: skipped.
+    distortPass.enabled = any;
     if (!any && !distortActive) return;
     distortActive = any;
     const bg = scene.background, fogRef = scene.fog, layers = camera.layers.mask;
@@ -692,7 +791,7 @@ export function createRuntime(opts: RuntimeOptions) {
     const shake = live.reduce((m, e) => Math.max(m, e.shake), heroMode.enabled ? heroMode.hitShake : 0);
     shakeOffset.set(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).multiplyScalar(shake * 2);
     camera.position.add(shakeOffset);
-    finish.update(shake);
+    finish.update(shake, renderer.toneMappingExposure);
     const fx = pickScreen(live);
     if (fx) {
       _focus.copy(fx.focus).project(camera);
@@ -741,7 +840,7 @@ export function createRuntime(opts: RuntimeOptions) {
     const rawDt = Math.min(clock.getDelta(), 0.1);
     if (!view.paused) step(rawDt * view.timeScale);
     if (!heroMode.enabled) controls.update();
-    render();
+    if (!view.covered) render();
     hooks.frame?.(rawDt);
   });
 
@@ -769,6 +868,7 @@ export function createRuntime(opts: RuntimeOptions) {
   return {
     hooks,
     renderer,
+    composer,
     scene,
     camera,
     controls,
