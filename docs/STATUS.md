@@ -1,8 +1,8 @@
 # Status
 
-_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it; committed, not pushed, not live._
+_Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds (second section) are **pushed to GitHub, not live**._
 
-## The game runs smoother (2026-11-13): done and committed; NOT pushed, NOT live
+## The game runs smoother (2026-11-13): done, committed and pushed; NOT live
 
 The user: "lets make new seison where we will optimalize this game so taht it can run smoothly", then "i just want you to make
 the tolls to cathc ever bottleneck or everything taht could make lag log it all and lets fix all". The page with every number and
@@ -51,7 +51,7 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
 - **Next, if wanted:** the Hall of Noon's blocks drawn as batches and a hero's pieces joined (the raid on a phone); models
   compressed and the built files kept by the browser (loading on a slow line); a real phone under the tool.
 
-## The Tower's floors as worlds: five floors built (2026-11-13): merged into `feat/particle-editor`; NOT pushed, NOT live
+## The Tower's floors as worlds: five floors built (2026-11-13): merged into `feat/particle-editor` and pushed; NOT live
 
 - **The direction, decided by the user.** Asked what the game should be (four ways were put: boss fights first, competitive
   duels, a solo run game, a showcase), the user: "players and fun, lets go with boss fights first". Duels stay as a side
@@ -80,7 +80,7 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
   enemies drawn in code, rulers are a hero's model drawn big); no friends on a floor; nothing on the account; never measured
   on a phone (10 to 14 ms a frame for a zone on the build machine, a duel 7.7 ms).
 - **Waiting on the user:** play floor 1 (Tower, Climb, Start floor 1) and say what is wrong; then the looks with the artist.
-  Push and deploy each need their own word.
+  The deploy needs its own word (it drops every live connection).
 - **Next (the design's step 3 to 5):** what playing shows; bodies of their own for the rulers and zones built in Blender;
   friends on a floor and the climb on the account; floors 6 to 10.
 - **The performance session** (started the same day at the user's word, "lets make new seison where we will optimalize this
