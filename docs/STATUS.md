@@ -2,6 +2,25 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything._
 
+## Where the game is going: boss fights first, and the Tower's floors as worlds (2026-11-13): a proposal, nothing built
+
+- **The direction, decided by the user.** Asked what the game should be (four ways were put: boss fights first, competitive
+  duels, a solo run game, a showcase), the user: "players and fun, lets go with boss fights first". Duels stay as a side
+  mode; breadth (more heroes, more modes) is not the next work.
+- **The Tower's floors as worlds, the user's idea:** "like those tower manhwas where on each floor there is like whole world
+  and there is some quest npc, open world mobs and boss, and then the gates to upper floor that is guarded by gatekeeper".
+  Worked out as a proposal: [tower-worlds.md](../pipeline/designs/tower-worlds.md), the page for the user
+  [tower-worlds.html](../pipeline/designs/tower-worlds.html) (a map sketch of floor 1: `docs/tower/worlds-map.jpg`). One zone
+  a floor (about four arenas across, 20 minutes, alone first, later up to three): a camp with people, three kinds of roaming
+  enemy and an elite, a main quest in three steps, a trial door (the Tower's rooms of today, which stay as "Trials"), the
+  floor's boss (a Raid boss every tenth floor), and a duel against a CPU hero as the gatekeeper. Boons on a floor; one kept
+  for good a floor as a sigil, in the Tower only. Build order: floor 1 alone as the whole loop, then play it.
+- **Waiting on the user:** the five decisions at the end of the page (does power stay; the Tower of today as Trials; who
+  duels the gatekeeper in a party; start with floor 1 alone; the Drowned Harbour as its look). No code until they answer.
+- **A performance session was started the same day** at the user's word ("lets make new seison where we will optimalize this
+  game so taht it can run smoothly"): it measures first and reports on `docs/perf/performance.html`. It is the one writer on
+  the engine files while it runs. A wide map's frame rate is the first risk of the floors above, so its findings come first.
+
 ## Open tabs are told about every new build (2026-11-12, night): pushed and LIVE (version 98909059)
 
 - After the A-key fix went live the user still had the instant A: the tab had reconnected on the old code, since nothing told a

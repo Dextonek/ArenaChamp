@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tower: floors as worlds</title>
+<style>
+  :root { --bg: #0e0c11; --panel: #1a161f; --panel2: #221c29; --line: #3a3242; --ink: #efe4cf; --ink2: #b3a895; --gold: #e0a83a; --gold2: #ffd27a; --green: #8fd69a; --blue: #8fc7ee; --red: #f0907a; --violet: #c9b6ff; }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { margin: 0 auto; max-width: 940px; padding: 18px 16px 40px; color: var(--ink); font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  h1 { font: 700 26px/1.15 Georgia, 'Palatino Linotype', serif; letter-spacing: .03em; color: var(--gold2); margin: 0 0 6px; }
+  h2 { font: 700 18px/1.2 Georgia, serif; letter-spacing: .03em; color: var(--gold2); margin: 30px 0 8px; }
+  p { margin: 0 0 10px; }
+  .sub { color: var(--ink2); }
+  .tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: #1a1206; background: linear-gradient(180deg, #ffe7a8, #c9902e); padding: 2px 9px; border-radius: 20px; margin-bottom: 8px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .lead { font-size: 17px; line-height: 1.45; border-left: 3px solid var(--gold); padding: 4px 0 4px 14px; margin: 12px 0 4px; }
+  .flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0 2px; }
+  .flow span { border: 1px solid var(--line); background: var(--panel2); border-radius: 999px; padding: 5px 12px; font-size: 13.5px; white-space: nowrap; }
+  .flow i { color: var(--ink2); font-style: normal; }
+  .flow .g { border-color: var(--gold); color: var(--gold2); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 13px; }
+  .card h3 { margin: 0 0 4px; font-size: 15.5px; }
+  .card p { margin: 0 0 6px; color: var(--ink2); font-size: 14px; }
+  .card .from { font-size: 12.5px; color: var(--green); margin: 0; }
+  .card .from.new { color: var(--red); }
+  .k { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); border-top: none; }
+  td.n { color: var(--gold2); font-weight: 700; white-space: nowrap; }
+  .scroll { overflow-x: auto; }
+  .pick { color: var(--green); font-weight: 600; }
+  svg { display: block; width: 100%; height: auto; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink2); margin-top: 8px; }
+  .legend b { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  ul { margin: 0; padding-left: 20px; color: var(--ink2); }
+  li { margin: 4px 0; }
+  li b { color: var(--ink); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .maphint { display: none; margin: 6px 0 0; font-size: 12.5px; }
+  @media (max-width: 640px) { .two { grid-template-columns: 1fr; } h1 { font-size: 22px; } svg { min-width: 700px; } .maphint { display: block; } }
+</style>
+</head>
+<body>
+
+<span class="tag">Proposal · nothing built yet</span>
+<h1>The Tower: floors as worlds</h1>
+<p class="sub">Your idea of 13 November, worked out: each floor a small world with people, quests, roaming enemies, a boss, and a gatekeeper at the gate up.</p>
+
+<p class="lead">Climb a tower where every floor is a small world. Arrive at a camp, take quests, fight what roams, beat the floor's boss, then win a duel against the gatekeeper to go up. What you reached is kept, and you grow as you climb.</p>
+
+<h2>One floor, start to finish</h2>
+<div class="flow">
+  <span>Arrive at the camp</span><i>→</i>
+  <span>Take the quest</span><i>→</i>
+  <span>Cross the zone, fight packs</span><i>→</i>
+  <span>A trial door, if you dare</span><i>→</i>
+  <span class="g">The floor's boss</span><i>→</i>
+  <span class="g">Duel the gatekeeper</span><i>→</i>
+  <span>The floor above</span>
+</div>
+<p class="sub" style="margin-top:8px">About 20 minutes. Alone, or later with two friends.</p>
+
+<h2>What floor 1 could look like</h2>
+<p class="sub">The Drowned Harbour, grown from an arena into a zone about four times as wide. A sketch of the layout, not the art.</p>
+<div class="box">
+<div class="scroll">
+<svg viewBox="0 0 900 560" role="img" aria-label="Map sketch of floor 1: a camp in the south, a market and a wreck in the middle, a lighthouse with a trial door in the west, the boss's tide caves in the north-east and the gate at the north.">
+  <defs>
+    <radialGradient id="sea" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#16303a"/><stop offset="1" stop-color="#0b171d"/></radialGradient>
+    <pattern id="planks" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#3b3128"/><path d="M0 7h14" stroke="#2c241d" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="900" height="560" rx="10" fill="url(#sea)"/>
+  <!-- land -->
+  <path d="M120 500 Q90 420 150 360 Q110 280 170 210 Q210 120 330 110 Q420 60 520 80 Q640 60 720 130 Q810 190 780 290 Q820 380 740 440 Q680 510 560 500 Q450 540 330 510 Q210 530 120 500Z" fill="#2a2520" stroke="#4a4036" stroke-width="2"/>
+  <!-- paths -->
+  <g fill="none" stroke="#6b5a45" stroke-width="9" stroke-linecap="round" stroke-dasharray="2 13" opacity=".9">
+    <path d="M450 470 Q440 400 430 330"/>
+    <path d="M430 330 Q330 300 235 250"/>
+    <path d="M430 330 Q540 300 610 250"/>
+    <path d="M610 250 Q660 200 690 185"/>
+    <path d="M430 330 Q450 220 455 140"/>
+  </g>
+  <!-- camp -->
+  <circle cx="450" cy="470" r="46" fill="url(#planks)" stroke="#8fd69a" stroke-width="2.5"/>
+  <circle cx="436" cy="462" r="6" fill="#8fd69a"/><circle cx="466" cy="476" r="6" fill="#8fd69a"/>
+  <text x="450" y="536" text-anchor="middle" fill="#8fd69a" font-size="15" font-weight="700">1 · The camp</text>
+  <text x="450" y="553" text-anchor="middle" fill="#b3a895" font-size="12.5">safe · two people with quests</text>
+  <!-- market -->
+  <circle cx="430" cy="330" r="50" fill="#332b24" stroke="#f0907a" stroke-width="2" stroke-dasharray="6 5"/>
+  <g fill="#f0907a"><circle cx="410" cy="318" r="5"/><circle cx="428" cy="342" r="5"/><circle cx="450" cy="320" r="5"/><circle cx="440" cy="304" r="5"/><circle cx="415" cy="348" r="5"/></g>
+  <text x="490" y="356" fill="#f0907a" font-size="14" font-weight="700">2 · The fish market</text>
+  <text x="490" y="372" fill="#b3a895" font-size="12">packs of drowned dockers</text>
+  <!-- lighthouse -->
+  <circle cx="235" cy="250" r="40" fill="#332b24" stroke="#8fc7ee" stroke-width="2.5"/>
+  <rect x="226" y="228" width="18" height="40" rx="3" fill="#8fc7ee"/>
+  <text x="235" y="310" text-anchor="middle" fill="#8fc7ee" font-size="14" font-weight="700">3 · The lighthouse</text>
+  <text x="235" y="326" text-anchor="middle" fill="#b3a895" font-size="12">a trial door: one short room, a relic</text>
+  <!-- wreck -->
+  <circle cx="610" cy="250" r="44" fill="#332b24" stroke="#f0907a" stroke-width="2" stroke-dasharray="6 5"/>
+  <path d="M584 262 Q610 232 640 244 L630 268 Q606 276 584 262Z" fill="#5a4636"/>
+  <circle cx="612" cy="250" r="8" fill="#f0907a" stroke="#ffd27a" stroke-width="2"/>
+  <text x="676" y="290" fill="#f0907a" font-size="14" font-weight="700">4 · The wreck</text>
+  <text x="676" y="306" fill="#b3a895" font-size="12">an elite guards the key</text>
+  <!-- caves -->
+  <circle cx="700" cy="170" r="42" fill="#1c1820" stroke="#e0a83a" stroke-width="3"/>
+  <path d="M686 180 L700 150 L714 180Z" fill="#e0a83a"/>
+  <text x="700" y="118" text-anchor="middle" fill="#ffd27a" font-size="15" font-weight="700">5 · The tide caves</text>
+  <text x="700" y="100" text-anchor="middle" fill="#b3a895" font-size="12">the floor's boss</text>
+  <!-- gate -->
+  <rect x="425" y="92" width="60" height="50" rx="6" fill="#1c1820" stroke="#e0a83a" stroke-width="3"/>
+  <path d="M437 142 V116 a18 18 0 0 1 36 0 V142" fill="none" stroke="#ffd27a" stroke-width="3"/>
+  <circle cx="455" cy="160" r="7" fill="#c9b6ff" stroke="#fff" stroke-width="1.5"/>
+  <text x="455" y="62" text-anchor="middle" fill="#ffd27a" font-size="15" font-weight="700">6 · The gate up</text>
+  <text x="455" y="80" text-anchor="middle" fill="#b3a895" font-size="12">sealed until the boss falls · the gatekeeper waits</text>
+  <!-- scale -->
+  <g transform="translate(40 40)"><circle cx="34" cy="34" r="28" fill="none" stroke="#b3a895" stroke-dasharray="3 4"/><text x="72" y="30" fill="#b3a895" font-size="12">an arena of today,</text><text x="72" y="46" fill="#b3a895" font-size="12">to the same scale</text></g>
+</svg>
+</div>
+<p class="sub maphint">Swipe the map sideways to see all of it.</p>
+<div class="legend">
+  <span><b style="background:#8fd69a"></b>people and safety</span>
+  <span><b style="background:#f0907a"></b>roaming enemies</span>
+  <span><b style="background:#8fc7ee"></b>a trial door</span>
+  <span><b style="background:#e0a83a"></b>boss and gate</span>
+  <span><b style="background:#c9b6ff"></b>the gatekeeper</span>
+</div>
+</div>
+
+<h2>The parts of a floor</h2>
+<div class="cards">
+  <div class="card"><div class="k">Arrive</div><h3>The camp</h3><p>Safe ground. The floor's keeper gives the main quest, a second figure gives side quests. The gate up is in sight, sealed.</p><p class="from">We have it: heroes of the roster stand in as the people.</p></div>
+  <div class="card"><div class="k">Explore</div><h3>The zone</h3><p>One map, four or five places joined by paths, in one look: harbour, glade, canyon, cavern, battlefield, frost, caldera, sky ruins, temple.</p><p class="from new">New: a map this wide. The looks and the camera exist.</p></div>
+  <div class="card"><div class="k">Fight</div><h3>What roams</h3><p>Three kinds of small enemy a floor, in packs of three to five, plus one elite. They guard their places. Cleared stays cleared.</p><p class="from new">Partly new: the Tower's keepers walk and strike already; packs that wait, wake and call are new.</p></div>
+  <div class="card"><div class="k">Follow</div><h3>Quests</h3><p>A main quest in three steps that leads you across the zone to the boss's door, and two side quests that pay boons.</p><p class="from new">New: a small quest system and a quest list on the screen.</p></div>
+  <div class="card"><div class="k">Dare</div><h3>A trial door</h3><p>One a floor: a door into a single short room (cross the fire, hold out, break the crystal) for a relic.</p><p class="from">We have it: these are the Tower's rooms of today.</p></div>
+  <div class="card"><div class="k">Win</div><h3>The floor's boss</h3><p>In its lair at the far end, with phases. Every tenth floor a Raid boss for a party: the Sun Warden, Ash and Ember, the Heart of Noon.</p><p class="from">We have it to start: the Tower's guardian. Bosses of each floor's own come later.</p></div>
+  <div class="card"><div class="k">Ascend</div><h3>The gatekeeper</h3><p>A duel, one against one, against a hero of the roster with its real spells, played by the computer. It gets better floor by floor. Win and the floor above is yours.</p><p class="from">We have it: the duel against the CPU, all 40 heroes.</p></div>
+</div>
+
+<h2>Growing as you climb</h2>
+<div class="two">
+  <div class="box"><div class="k">On a floor</div><p style="margin:4px 0 0">Quests and the trial pay <b>boons</b>: a heal, a power, or a relic that changes a spell. They last for this climb. The Tower's 17 boons are ready.</p></div>
+  <div class="box"><div class="k">For good</div><p style="margin:4px 0 0">Each gatekeeper you beat opens the next floor on your account, and lets you keep <b>one</b> boon for ever as a <b>sigil</b>. Ten floors, ten sigils. They count in the Tower only, never in a duel against a player.</p></div>
+</div>
+
+<h2>How the game fits together</h2>
+<div class="box">
+  <ul>
+    <li><b>The Tower is the road.</b> It is what you do when you open the game.</li>
+    <li><b>Duels are how a gate is won.</b> The same duel you can also play against people.</li>
+    <li><b>The Raid's bosses rule every tenth floor,</b> where you need a party.</li>
+    <li><b>The Tower of today stays as Trials:</b> the quick weekly mode, and the rooms behind the trial doors. Nothing built is thrown away.</li>
+  </ul>
+</div>
+
+<h2>What is new work</h2>
+<div class="scroll box" style="padding:4px 6px">
+<table>
+  <tr><th>Piece</th><th>What we have</th><th>The risk</th></tr>
+  <tr><td class="n">A wide map</td><td>The looks, a camera that follows, heroes that find their way round cover</td><td>Untried at four times the width: frame rate above all. The performance session started today matters here.</td></tr>
+  <tr><td class="n">Roaming enemies</td><td>Small enemies that walk at you, strike and shoot</td><td>A pack that waits, wakes, calls its friends and goes home is new, and must feel fair.</td></tr>
+  <tr><td class="n">Quests and talk</td><td>Nothing</td><td>New screens, and they must work on a phone.</td></tr>
+  <tr><td class="n">Keeping the climb</td><td>The best floor is kept in the browser; accounts hold a Tower floor and a weekly board</td><td>Small.</td></tr>
+  <tr><td class="n">Friends on a floor</td><td>Parties of up to 40 against one boss</td><td>Many enemies on several screens is more than one boss. So: alone first.</td></tr>
+  <tr><td class="n">Making floors</td><td>Nine arena looks, 40 heroes to stand in as people</td><td>The lasting cost: each floor is a map, three enemy looks, a boss and its quests. Floor 1 is built as a template so the next ones are cheap.</td></tr>
+</table>
+</div>
+
+<h2>The order to build it</h2>
+<div class="scroll box" style="padding:4px 6px">
+<table>
+  <tr><th>Step</th><th>What</th><th>Done when</th></tr>
+  <tr><td class="n">1</td><td><b>Floor 1, alone, the whole loop.</b> The harbour as a zone, the camp, three enemy kinds and an elite, the main quest, one trial door, the boss, the gatekeeper's duel.</td><td>You play it from camp to gate in about 20 minutes and say whether it is fun.</td></tr>
+  <tr><td class="n">2</td><td><b>What playing it showed,</b> then sigils, and floor 2 in another look (Verdant Glade).</td><td>A second floor costs days, not weeks.</td></tr>
+  <tr><td class="n">3</td><td><b>Friends:</b> up to three on a floor, the climb kept on your account, the board.</td><td>Two people climb floor 1 together.</td></tr>
+  <tr><td class="n">4</td><td><b>Floors 3 to 10,</b> the tenth with the Sun Warden for a party.</td><td>A whole season's Tower.</td></tr>
+</table>
+</div>
+
+<h2>Five things for you to decide</h2>
+<div class="scroll box" style="padding:4px 6px">
+<table>
+  <tr><th>#</th><th>Question</th><th>What I propose</th></tr>
+  <tr><td class="n">1</td><td>Does the power you gain stay for good?</td><td class="pick">Yes, as sigils: one a floor, in the Tower only.</td></tr>
+  <tr><td class="n">2</td><td>What happens to the Tower of today?</td><td class="pick">It stays, renamed Trials.</td></tr>
+  <tr><td class="n">3</td><td>In a party, who fights the gatekeeper?</td><td class="pick">Each climber alone; the others watch.</td></tr>
+  <tr><td class="n">4</td><td>Where do we start?</td><td class="pick">Floor 1, alone, the whole loop, before anything else.</td></tr>
+  <tr><td class="n">5</td><td>Which look for floor 1?</td><td class="pick">The Drowned Harbour.</td></tr>
+</table>
+</div>
+
+</body>
+</html>
