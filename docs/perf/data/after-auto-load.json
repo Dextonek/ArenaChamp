@@ -1,0 +1,544 @@
+{
+ "label": "after-auto",
+ "when": "2026-11-13 19:26",
+ "commit": "111d641",
+ "runs": [
+  {
+   "profile": "desktop",
+   "query": "arena=temple&quality=auto",
+   "canvas": [
+    1170,
+    658
+   ],
+   "quality": {
+    "level": "auto",
+    "share": 0.372,
+    "lean": false,
+    "restMs": 12.6
+   },
+   "firstFrameMs": 1128,
+   "domContentLoadedMs": 679,
+   "loadMs": 714,
+   "menu": {
+    "requests": 7,
+    "bytes": 3048033,
+    "list": [
+     {
+      "url": "/assets/runtime-DFaUtC31.js",
+      "bytes": 1416417,
+      "type": "text/javascript"
+     },
+     {
+      "url": "/models/anim/ual.glb",
+      "bytes": 1261108,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/login-bg.jpg",
+      "bytes": 221429,
+      "type": "image/jpeg"
+     },
+     {
+      "url": "/assets/game-Bc5Z_lu6.js",
+      "bytes": 137078,
+      "type": "text/javascript"
+     },
+     {
+      "url": "/assets/game-BeJfQshn.css",
+      "bytes": 10601,
+      "type": "text/css"
+     },
+     {
+      "url": "/game?arena=temple&quality=auto",
+      "bytes": 708,
+      "type": "text/html"
+     },
+     {
+      "url": "/favicon.svg",
+      "bytes": 692,
+      "type": "image/svg+xml"
+     }
+    ],
+    "longTasks": [
+     [
+      489,
+      217
+     ]
+    ],
+    "blockedMs": 217
+   },
+   "fight": {
+    "requests": 6,
+    "bytes": 1998036,
+    "list": [
+     {
+      "url": "/models/arenas/temple_props.glb",
+      "bytes": 578811,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/models/heroes/astral_v4.glb",
+      "bytes": 522499,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/models/heroes/void_v4.glb",
+      "bytes": 520555,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/models/arenas/temple_backdrop.glb",
+      "bytes": 376171,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "blob:/4a2d6e3c-0df8-46df-9b66-7b769a1a33ca",
+      "bytes": 0,
+      "type": "image/jpeg"
+     },
+     {
+      "url": "blob:/32b6ce15-d175-446a-afea-8852271d4158",
+      "bytes": 0,
+      "type": "image/jpeg"
+     }
+    ],
+    "toCountdownMs": 1532,
+    "longTasks": [
+     [
+      2880,
+      110
+     ],
+     [
+      3322,
+      850
+     ],
+     [
+      8406,
+      51
+     ],
+     [
+      8812,
+      68
+     ],
+     [
+      13581,
+      68
+     ],
+     [
+      14433,
+      54
+     ],
+     [
+      15195,
+      51
+     ],
+     [
+      16186,
+      50
+     ],
+     [
+      22799,
+      51
+     ]
+    ],
+    "blockedMs": 1353,
+    "frames": 1133,
+    "medianMs": 16.7,
+    "p99Ms": 33.5,
+    "longestMs": 66.8,
+    "over50": 3,
+    "over100": 0,
+    "workMsAFrame": {
+     "ScriptDuration": 4.08,
+     "LayoutDuration": 0.22,
+     "RecalcStyleDuration": 0.12,
+     "TaskDuration": 5.31
+    }
+   }
+  },
+  {
+   "profile": "phone-4x",
+   "query": "arena=temple&quality=auto",
+   "canvas": [
+    998,
+    461
+   ],
+   "quality": {
+    "level": "auto",
+    "share": 0.35,
+    "lean": true,
+    "restMs": 30.6
+   },
+   "firstFrameMs": 1920,
+   "domContentLoadedMs": 1440,
+   "loadMs": 1642,
+   "menu": {
+    "requests": 7,
+    "bytes": 3048033,
+    "list": [
+     {
+      "url": "/assets/runtime-DFaUtC31.js",
+      "bytes": 1416417,
+      "type": "text/javascript"
+     },
+     {
+      "url": "/models/anim/ual.glb",
+      "bytes": 1261108,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/login-bg.jpg",
+      "bytes": 221429,
+      "type": "image/jpeg"
+     },
+     {
+      "url": "/assets/game-Bc5Z_lu6.js",
+      "bytes": 137078,
+      "type": "text/javascript"
+     },
+     {
+      "url": "/assets/game-BeJfQshn.css",
+      "bytes": 10601,
+      "type": "text/css"
+     },
+     {
+      "url": "/game?arena=temple&quality=auto",
+      "bytes": 708,
+      "type": "text/html"
+     },
+     {
+      "url": "/favicon.svg",
+      "bytes": 692,
+      "type": "image/svg+xml"
+     }
+    ],
+    "longTasks": [
+     [
+      436,
+      1176
+     ],
+     [
+      1647,
+      66
+     ],
+     [
+      2724,
+      156
+     ]
+    ],
+    "blockedMs": 1398
+   },
+   "fight": {
+    "requests": 6,
+    "bytes": 1998036,
+    "list": [
+     {
+      "url": "/models/arenas/temple_props.glb",
+      "bytes": 578811,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/models/heroes/astral_v4.glb",
+      "bytes": 522499,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/models/heroes/void_v4.glb",
+      "bytes": 520555,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "/models/arenas/temple_backdrop.glb",
+      "bytes": 376171,
+      "type": "model/gltf-binary"
+     },
+     {
+      "url": "blob:/c1cb3135-1df7-4578-8a29-b807b44a05bb",
+      "bytes": 0,
+      "type": "image/jpeg"
+     },
+     {
+      "url": "blob:/010f9af3-3103-4535-82e2-38e91361a3fc",
+      "bytes": 0,
+      "type": "image/jpeg"
+     }
+    ],
+    "toCountdownMs": 4127,
+    "longTasks": [
+     [
+      3470,
+      66
+     ],
+     [
+      3536,
+      246
+     ],
+     [
+      3788,
+      129
+     ],
+     [
+      4075,
+      71
+     ],
+     [
+      4174,
+      306
+     ],
+     [
+      4665,
+      429
+     ],
+     [
+      5293,
+      1398
+     ],
+     [
+      6911,
+      592
+     ],
+     [
+      11782,
+      141
+     ],
+     [
+      11992,
+      59
+     ],
+     [
+      12215,
+      73
+     ],
+     [
+      12490,
+      75
+     ],
+     [
+      12565,
+      82
+     ],
+     [
+      12649,
+      85
+     ],
+     [
+      12735,
+      74
+     ],
+     [
+      12967,
+      56
+     ],
+     [
+      16771,
+      70
+     ],
+     [
+      16842,
+      67
+     ],
+     [
+      16982,
+      54
+     ],
+     [
+      17037,
+      65
+     ],
+     [
+      17455,
+      62
+     ],
+     [
+      18386,
+      55
+     ],
+     [
+      19571,
+      53
+     ],
+     [
+      22481,
+      60
+     ],
+     [
+      22542,
+      57
+     ]
+    ],
+    "blockedMs": 4425,
+    "frames": 759,
+    "medianMs": 33.2,
+    "p99Ms": 66.7,
+    "longestMs": 133.5,
+    "over50": 27,
+    "over100": 1,
+    "workMsAFrame": {
+     "ScriptDuration": 20.62,
+     "LayoutDuration": 1.59,
+     "RecalcStyleDuration": 0.75,
+     "TaskDuration": 26.24
+    }
+   }
+  }
+ ],
+ "files": {
+  "chunks": [
+   {
+    "file": "game-Bc5Z_lu6.js",
+    "bytes": 394760,
+    "gzip": 136654
+   },
+   {
+    "file": "game-BeJfQshn.css",
+    "bytes": 46730,
+    "gzip": 10302
+   },
+   {
+    "file": "runtime-DFaUtC31.js",
+    "bytes": 5005859,
+    "gzip": 1406090
+   },
+   {
+    "file": "tool-BO_eNxCo.js",
+    "bytes": 509107,
+    "gzip": 132747
+   }
+  ],
+  "models": {
+   "heroes": {
+    "files": 109,
+    "bytes": 48802496,
+    "used": 41,
+    "usedBytes": 20548128,
+    "largest": [
+     [
+      "phoenix_v4.glb",
+      600004
+     ],
+     [
+      "sheep_v4.glb",
+      594852
+     ],
+     [
+      "timber_v4.glb",
+      588084
+     ],
+     [
+      "grove_v4.glb",
+      586552
+     ],
+     [
+      "chef_v4.glb",
+      565756
+     ]
+    ]
+   },
+   "arenas": {
+    "files": 19,
+    "bytes": 10951356,
+    "used": 19,
+    "usedBytes": 10951356,
+    "largest": [
+     [
+      "sunhall.glb",
+      1347976
+     ],
+     [
+      "glade_props.glb",
+      945104
+     ],
+     [
+      "skyruins_props.glb",
+      863392
+     ],
+     [
+      "harbour.glb",
+      847704
+     ],
+     [
+      "battlefield.glb",
+      817412
+     ]
+    ]
+   },
+   "bosses": {
+    "files": 4,
+    "bytes": 1033824,
+    "used": 4,
+    "usedBytes": 1033824,
+    "largest": [
+     [
+      "heart.glb",
+      346168
+     ],
+     [
+      "ash.glb",
+      329800
+     ],
+     [
+      "warden.glb",
+      240532
+     ],
+     [
+      "ember.glb",
+      117324
+     ]
+    ]
+   },
+   "anim": {
+    "files": 1,
+    "bytes": 1260904,
+    "used": 1,
+    "usedBytes": 1260904,
+    "largest": [
+     [
+      "ual.glb",
+      1260904
+     ]
+    ]
+   },
+   "weapons": {
+    "files": 5,
+    "bytes": 3177484,
+    "used": 5,
+    "usedBytes": 3177484,
+    "largest": [
+     [
+      "wp-fan-fire.glb",
+      1057908
+     ],
+     [
+      "wp-hammer-thunder.glb",
+      783912
+     ],
+     [
+      "wp-sword-dragon.glb",
+      524212
+     ],
+     [
+      "wp-glaive-guandao.glb",
+      422384
+     ],
+     [
+      "wp-sword-ice.glb",
+      389068
+     ]
+    ]
+   },
+   "figures": {
+    "files": 1,
+    "bytes": 210636,
+    "used": 1,
+    "usedBytes": 210636,
+    "largest": [
+     [
+      "hero.glb",
+      210636
+     ]
+    ]
+   }
+  },
+  "distBytes": 77706389
+ }
+}
