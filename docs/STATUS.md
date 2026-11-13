@@ -45,12 +45,11 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
 - **Waiting on the user:**
   1. Look at the Graphics levels on the page and say whether **Auto** should be the default (one word in `src/quality.ts`,
      `QUALITY_DEFAULT`, and the News item's text).
-  2. Push the follow-ups below: `git push origin feat/particle-editor:main` (the work up to `ff001e5` is pushed).
-  3. Deploy, on its own request: `npm run cf:deploy` (it drops every live connection). The News release "A smoother game" is
+  2. Deploy, on its own request (everything here is pushed, GitHub `main` is at `2a80629` plus this note): `npm run cf:deploy` (it drops every live connection). The News release "A smoother game" is
      `live: false` until then.
-  4. After a deploy, on the phone: open `https://arena-of-kits.arenachamp.workers.dev/game?perf=1`, play a fight, and on the
+  3. After a deploy, on the phone: open `https://arena-of-kits.arenachamp.workers.dev/game?perf=1`, play a fight, and on the
      card that comes up in the menu press Copy and paste it into the chat.
-- **A follow-up after the push (2026-11-13, evening): committed, NOT pushed.** A second look found four things, now done:
+- **A follow-up after the push (2026-11-13, evening): pushed, NOT live.** A second look found four things, now done:
   the one-go drawing of see-through glows judges a material by every shape it is used on, not the first (and never an
   instanced one that does not just add light); Auto takes a cut in pixels back when it bought nothing (a raid on a phone, a
   phone held to 30 a second) and aims at 60, not 52; on a phone with an account the Graphics button pushed the bar past the
@@ -60,7 +59,7 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
   live game's; all 40 heroes played once as the player and once as the opponent, 20 s each, drawn, no error; a CPU duel, the
   Raid's hall, a Tower climb as a player and three bots through the real hub (`party-raid.py --players 3 --browser msedge`):
   the scene on screen, the flags right, no error. `party-raid.py` takes `--browser` (this computer has Edge, not Chrome).
-- **A recorder for a real phone (2026-11-13, evening; the user: "do this task here"): committed, NOT pushed, NOT live.**
+- **A recorder for a real phone (2026-11-13, evening; the user: "do this task here", then "push it"): pushed (`2a80629`), NOT live.**
   The game opened with `?perf=1` at the end of its address records every fight on the device itself
   (`src/game/perfRecorder.ts`, its own 8 KB file, fetched only then): a small line during the fight (frames a second, the
   pixels drawn, the Graphics level), a card back in the menu with the numbers in plain words and Copy / Save for the whole
