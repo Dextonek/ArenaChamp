@@ -1503,3 +1503,13 @@ render();
 
 // Console / automated checks: `game.state`, `game.net`, `game.match`, `game.cpu`, `game.tower`.
 (window as unknown as { game: unknown }).game = { state, net, match, watch, cpu, raid, coop, tower, world, api: gameApi, go, render };
+
+// `?perf=1` in the address: the recorder for measuring a real device, a phone above all (src/game/perfRecorder.ts,
+// docs/pipeline/performance.md). Without it the file is not even fetched.
+if (new URLSearchParams(location.search).has('perf')) {
+  void import('./perfRecorder').then((m) => {
+    const playing = () => (match.active ? 'Online duel' : watch.active ? 'Watching a duel' : cpu.active ? 'CPU duel' : coop.active ? 'Raid with others' : raid.active ? 'Raid' : world.active ? 'Tower climb' : tower.active ? 'Tower trials' : '');
+    const recorder = m.startPerfRecorder(gameApi, (gameApi as unknown as { renderer: Parameters<typeof m.startPerfRecorder>[1] }).renderer, playing);
+    (window as unknown as { game: { perf?: unknown } }).game.perf = recorder;
+  });
+}

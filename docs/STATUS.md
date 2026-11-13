@@ -45,9 +45,11 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
 - **Waiting on the user:**
   1. Look at the Graphics levels on the page and say whether **Auto** should be the default (one word in `src/quality.ts`,
      `QUALITY_DEFAULT`, and the News item's text).
-  2. Push the follow-up below: `git push origin feat/particle-editor:main` (the work up to `ff001e5` is pushed).
+  2. Push the follow-ups below: `git push origin feat/particle-editor:main` (the work up to `ff001e5` is pushed).
   3. Deploy, on its own request: `npm run cf:deploy` (it drops every live connection). The News release "A smoother game" is
      `live: false` until then.
+  4. After a deploy, on the phone: open `https://arena-of-kits.arenachamp.workers.dev/game?perf=1`, play a fight, and on the
+     card that comes up in the menu press Copy and paste it into the chat.
 - **A follow-up after the push (2026-11-13, evening): committed, NOT pushed.** A second look found four things, now done:
   the one-go drawing of see-through glows judges a material by every shape it is used on, not the first (and never an
   instanced one that does not just add light); Auto takes a cut in pixels back when it bought nothing (a raid on a phone, a
@@ -58,6 +60,19 @@ picture: [perf/performance.html](perf/performance.html). The tool and what was f
   live game's; all 40 heroes played once as the player and once as the opponent, 20 s each, drawn, no error; a CPU duel, the
   Raid's hall, a Tower climb as a player and three bots through the real hub (`party-raid.py --players 3 --browser msedge`):
   the scene on screen, the flags right, no error. `party-raid.py` takes `--browser` (this computer has Edge, not Chrome).
+- **A recorder for a real phone (2026-11-13, evening; the user: "do this task here"): committed, NOT pushed, NOT live.**
+  The game opened with `?perf=1` at the end of its address records every fight on the device itself
+  (`src/game/perfRecorder.ts`, its own 8 KB file, fetched only then): a small line during the fight (frames a second, the
+  pixels drawn, the Graphics level), a card back in the menu with the numbers in plain words and Copy / Save for the whole
+  record, the last six kept in the browser; nothing is sent anywhere. `python pipeline/tools/perf-phone.py record.json`
+  prints a record as a table. How to use it: [pipeline/performance.md](pipeline/performance.md), "Measuring a real phone".
+  Checked at a phone's size upright and sideways (pictures there): the line is clear of the bars and the stick and lets
+  touches through, the card shows, Copy and the kept record work; without `?perf=1` no line, no card, nothing kept; the test
+  fight is still the live game's; type check and build pass. Not tried: a real phone (it needs a deploy to reach one), the
+  Raid's and the Tower's own bars beside the line.
+- **The world floors are scenes of the tool** (`world-1` to `world-5`, commit `48f7f60`): desktop 22 to 25 ms a frame at High
+  on all five (a Night Temple duel 24.5), mid-range phone profile 36 to 38 ms (a duel 22): a zone's step is about twice a
+  duel's (routes and cover checks) and it makes 20 to 37 MB of garbage a second (a duel 10). Sent to the Tower's session.
 - **Seen on the way, not changed:** on a phone the logged-in bar's "Log out" is cut by the screen's edge with a name of
   eight letters (it was so before this work).
 - **Next, if wanted:** the Hall of Noon's blocks drawn as batches and a hero's pieces joined (the raid on a phone); models

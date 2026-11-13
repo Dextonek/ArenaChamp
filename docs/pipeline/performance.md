@@ -29,6 +29,7 @@ Needs: `pip install playwright pillow`, Chrome or Edge (`--browser chrome|msedge
 | `perf-show.py baseline after` | Two result files as a table, with whether each scene was the same fight | at once |
 | `perf-diff.py cmp-base cmp-new` | The pictures of two runs compared pixel by pixel | at once |
 | `perf-report.py` | The page | at once |
+| `perf-phone.py record.json` | A record from the in-game recorder (a real phone) as a table | at once |
 
 Options that matter: `--set "{\"quality\": \"auto\"}"` (a quality level), `--set "{\"noPrebuild\": true}"` (see "The same
 fight"), `--root <folder> --port <n>` (another checkout of the game, see "Before and after"), `--headed` (a visible
@@ -90,6 +91,34 @@ of 2026-11-12 did: with it the game of today plays that game's very fights. Use 
 
 So "before" is measured on the same day and the same computer as "after", again whenever a number looks off. While a
 run uses the main checkout's dev server, do not edit `src/`: every scene loads the page afresh and would take the edit.
+
+## Measuring a real phone
+
+The tool measures this computer with a phone-sized screen. For a real phone the game has a recorder of its own
+(`src/game/perfRecorder.ts`), loaded only when the address ends in `?perf=1`:
+
+1. On the phone, open the game with `?perf=1` at the end of the address (`.../game?perf=1`). A small "Recorder on" mark
+   shows in the menu's top corner.
+2. Play a fight: a duel, the Raid, the Tower. A small line at the screen's left edge (in the top corner on a phone held
+   sideways) shows frames a second, the pixels being drawn and the Graphics level. Touches go through it.
+3. Back in the menu a card says how it ran: frames a second, how many frames missed 60 and 30 a second, the longest
+   frame, what was drawn, the device. **Copy** puts the whole record on the clipboard, to paste into a chat; **Save**
+   downloads it as a file. The mark in the menu opens the last card again; the last six records are kept in the
+   browser (`aok.perf.records`).
+
+![The recorder on a phone-sized screen: the line during a fight, the card after it](../perf/img/recorder-phone.jpg)
+
+![Held sideways: the line sits in the top corner, clear of the hero's panel and the stick](../perf/img/recorder-landscape.jpg)
+
+Nothing is sent to any server. Without `?perf=1` the recorder's file is not even fetched: no line, no card, nothing kept.
+A record covers one stay in a fight, from the first frame on screen to the return to the menu; loading pages and a
+hidden tab are left out. A record is not the same fight as the tool's scenes (a person plays it, the arena is drawn by
+lot), so compare its frames a second with the tool's, not its fights.
+
+    python pipeline/tools/perf-phone.py record.json            # one row a fight, beside each other
+    python pipeline/tools/perf-phone.py record.json --seconds  # and every second of it: where it was slow, what Auto did
+
+To try a Graphics level on the phone: the Graphics button, or `?perf=1&quality=auto` (tried, not kept).
 
 ## What a windowless browser hides
 
