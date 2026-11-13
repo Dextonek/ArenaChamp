@@ -30,7 +30,12 @@ if (!wanted.length) {
 
 for (const { n, attempt } of wanted) {
   if (n < 2 || n > 10) throw new Error(`floor ${n}: the generator makes the sea's floors 2 to 10 for now (10 is the crown)`);
-  const g = makeSeaFloor({ n, attempt });
+  // A layout that cannot be made (no room for a place, no free spot) is made again from the next seed.
+  let g: ReturnType<typeof makeSeaFloor> | null = null;
+  for (let a = attempt; !g && a < attempt + 30; a++) {
+    try { g = makeSeaFloor({ n, attempt: a }); } catch (e) { console.log(`  floor ${n} seed ${n * 1000 + a}: ${(e as Error).message}; the next seed`); }
+  }
+  if (!g) throw new Error(`floor ${n}: thirty seeds and no layout`);
   const nn = String(n).padStart(2, '0');
   const body = `// Made by pipeline/tools/gen-floors.ts: floor ${n} of the sea, seed ${g.seed}. Made again by that tool; a hand fix is kept only
 // until then (pipeline/designs/tower-50.md).
