@@ -64,7 +64,7 @@ Nothing is pushed or live until the user says so.
   (cleared both, the Sun Warden beaten in 92 and 99 s); floor 1 five of five. Pictures of all ten (shown to the user).
 - **Known:** the made floors share floor 1's skeleton (camp south, lair wall north, the town on the land side), so they differ by
   which places they have, where, and which side the sea is on; more variety (time of day, weather, other kinds of place) is open.
-  People: nine different gatekeepers for floors 2 to 10 (none of the handmade floors'), no two floors with the same four people, a
+  People: nine different gatekeepers for floors 2 to 10 (none of the handmade floors'), no two floors with the same four people.
 - **To try one:** on the tool page, `await _worldGen(n)` then `_world({ floor: n })` or `_worldRoute({ floor: n })` (world-tool.js).
 - **Next:** the renumbering (stage 3 above, all of it before any release), then chapters 2 to 5's generators (the Wood, the Sands,
   the Deep, the War) the same way, each with its crown (Ash and Ember, the Heart of Noon...).
