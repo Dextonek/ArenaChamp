@@ -1084,7 +1084,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -76.78,
      "bz": -13.98,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1096,7 +1096,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -77.38,
      "bz": -19.78,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1108,7 +1108,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -73.32,
      "bz": -23.97,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1120,7 +1120,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -67.51,
      "bz": -23.55,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1144,7 +1144,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -55.6,
      "bz": -64.56,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1156,7 +1156,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -52.64,
      "bz": -69.59,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1168,7 +1168,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -46.89,
      "bz": -70.55,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1180,7 +1180,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -42.45,
      "bz": -66.76,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1204,7 +1204,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 69.64,
      "bz": -50.04,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1216,7 +1216,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 74.74,
      "bz": -47.21,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1228,7 +1228,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 75.84,
      "bz": -41.49,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1240,7 +1240,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 72.17,
      "bz": -36.96,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1588,7 +1588,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 55.4,
      "bz": 10.74,
      "r": 1.34,
-     "height": 2.71,
+     "height": 1.34,
      "kind": "wall"
     }
    },
@@ -1600,7 +1600,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 100.32,
      "bz": -34.03,
      "r": 1.64,
-     "height": 4.4,
+     "height": 1.83,
      "kind": "wall"
     }
    },
@@ -1612,7 +1612,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 22.85,
      "bz": -5.21,
      "r": 1.74,
-     "height": 4.19,
+     "height": 1.75,
      "kind": "wall"
     }
    },
@@ -1624,7 +1624,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 19.92,
      "bz": -85.06,
      "r": 1.63,
-     "height": 3.82,
+     "height": 1.61,
      "kind": "wall"
     }
    },
@@ -1636,7 +1636,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -28.66,
      "bz": 0.54,
      "r": 2.14,
-     "height": 4.04,
+     "height": 1.69,
      "kind": "wall"
     }
    },
@@ -1648,7 +1648,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -52.77,
      "bz": 28.18,
      "r": 2.17,
-     "height": 3.47,
+     "height": 1.63,
      "kind": "wall"
     }
    },
@@ -1660,7 +1660,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -69.56,
      "bz": 36.37,
      "r": 2.08,
-     "height": 3.69,
+     "height": 1.71,
      "kind": "wall"
     }
    },
@@ -1672,7 +1672,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -63.06,
      "bz": -69.22,
      "r": 1.49,
-     "height": 4.59,
+     "height": 1.9,
      "kind": "wall"
     }
    },
@@ -1684,7 +1684,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -72.1,
      "bz": -54.45,
      "r": 1.95,
-     "height": 4.46,
+     "height": 1.85,
      "kind": "wall"
     }
    },
@@ -1696,7 +1696,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 41.98,
      "bz": -71.48,
      "r": 1.65,
-     "height": 4.39,
+     "height": 1.82,
      "kind": "wall"
     }
    },
@@ -1708,7 +1708,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 89.02,
      "bz": -20.98,
      "r": 1.32,
-     "height": 4.41,
+     "height": 1.83,
      "kind": "wall"
     }
    },
@@ -1720,7 +1720,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 66.65,
      "bz": 3.16,
      "r": 2.05,
-     "height": 3.98,
+     "height": 1.67,
      "kind": "wall"
     }
    },
@@ -1732,7 +1732,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 112.06,
      "bz": -2.83,
      "r": 1.62,
-     "height": 4.77,
+     "height": 1.96,
      "kind": "wall"
     }
    },
@@ -1744,7 +1744,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 29.38,
      "bz": -30.71,
      "r": 2.05,
-     "height": 4.28,
+     "height": 1.78,
      "kind": "wall"
     }
    },
@@ -1756,7 +1756,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 26.61,
      "bz": 6.37,
      "r": 1.45,
-     "height": 4.19,
+     "height": 1.75,
      "kind": "wall"
     }
    },
@@ -1768,7 +1768,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -25.4,
      "bz": -86.4,
      "r": 1.54,
-     "height": 5.35,
+     "height": 2.18,
      "kind": "wall"
     }
    },
@@ -1780,7 +1780,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -14.08,
      "bz": -68.46,
      "r": 1.38,
-     "height": 4.65,
+     "height": 1.92,
      "kind": "wall"
     }
    },
@@ -1792,7 +1792,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 54.24,
      "bz": -54.74,
      "r": 2.09,
-     "height": 3.84,
+     "height": 1.62,
      "kind": "wall"
     }
    },
@@ -1804,7 +1804,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": -61.74,
      "bz": 63.94,
      "r": 1.32,
-     "height": 3.08,
+     "height": 1.48,
      "kind": "wall"
     }
    },
@@ -1816,7 +1816,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "bx": 29.63,
      "bz": -17.27,
      "r": 1.92,
-     "height": 5.12,
+     "height": 2.1,
      "kind": "wall"
     }
    },

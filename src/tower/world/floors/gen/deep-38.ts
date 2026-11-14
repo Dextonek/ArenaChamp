@@ -1075,7 +1075,7 @@ export const DEEP_38: GenFloor = {
      "bx": 64.63,
      "bz": 39.33,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1087,7 +1087,7 @@ export const DEEP_38: GenFloor = {
      "bx": 68.92,
      "bz": 35.38,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1099,7 +1099,7 @@ export const DEEP_38: GenFloor = {
      "bx": 68.65,
      "bz": 29.55,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1111,7 +1111,7 @@ export const DEEP_38: GenFloor = {
      "bx": 64.02,
      "bz": 26.01,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1231,7 +1231,7 @@ export const DEEP_38: GenFloor = {
      "bx": 38.73,
      "bz": -60.78,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1243,7 +1243,7 @@ export const DEEP_38: GenFloor = {
      "bx": 35.05,
      "bz": -65.3,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1255,7 +1255,7 @@ export const DEEP_38: GenFloor = {
      "bx": 29.22,
      "bz": -65.39,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1267,7 +1267,7 @@ export const DEEP_38: GenFloor = {
      "bx": 25.4,
      "bz": -60.98,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1351,7 +1351,7 @@ export const DEEP_38: GenFloor = {
      "bx": -51.95,
      "bz": -81.92,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1363,7 +1363,7 @@ export const DEEP_38: GenFloor = {
      "bx": -57.72,
      "bz": -81.08,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1375,7 +1375,7 @@ export const DEEP_38: GenFloor = {
      "bx": -60.79,
      "bz": -76.12,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1387,7 +1387,7 @@ export const DEEP_38: GenFloor = {
      "bx": -58.97,
      "bz": -70.58,
      "r": 1,
-     "height": 3.4,
+     "height": 2.4,
      "kind": "wall"
     }
    },
@@ -1603,7 +1603,7 @@ export const DEEP_38: GenFloor = {
      "bx": 31.64,
      "bz": -0.54,
      "r": 1.34,
-     "height": 4.41,
+     "height": 1.83,
      "kind": "wall"
     }
    },
@@ -1615,7 +1615,7 @@ export const DEEP_38: GenFloor = {
      "bx": 91.69,
      "bz": -26.99,
      "r": 1.56,
-     "height": 4.55,
+     "height": 1.88,
      "kind": "wall"
     }
    },
@@ -1627,7 +1627,7 @@ export const DEEP_38: GenFloor = {
      "bx": -54.19,
      "bz": -31.85,
      "r": 2.03,
-     "height": 5.35,
+     "height": 2.18,
      "kind": "wall"
     }
    },
@@ -1639,7 +1639,7 @@ export const DEEP_38: GenFloor = {
      "bx": -116.06,
      "bz": -27.19,
      "r": 1.37,
-     "height": 4.39,
+     "height": 1.82,
      "kind": "wall"
     }
    },
@@ -1651,7 +1651,7 @@ export const DEEP_38: GenFloor = {
      "bx": -43.47,
      "bz": -16.79,
      "r": 1.4,
-     "height": 5.17,
+     "height": 2.11,
      "kind": "wall"
     }
    },
@@ -1663,7 +1663,7 @@ export const DEEP_38: GenFloor = {
      "bx": 61.2,
      "bz": -29.78,
      "r": 1.39,
-     "height": 4.73,
+     "height": 1.95,
      "kind": "wall"
     }
    },
@@ -1675,7 +1675,7 @@ export const DEEP_38: GenFloor = {
      "bx": -46.62,
      "bz": -7.16,
      "r": 1.92,
-     "height": 4.13,
+     "height": 1.72,
      "kind": "wall"
     }
    },
@@ -1687,7 +1687,7 @@ export const DEEP_38: GenFloor = {
      "bx": -63.79,
      "bz": 17.07,
      "r": 1.76,
-     "height": 4.03,
+     "height": 1.84,
      "kind": "wall"
     }
    },
@@ -1699,7 +1699,7 @@ export const DEEP_38: GenFloor = {
      "bx": 23.42,
      "bz": -12.39,
      "r": 2.15,
-     "height": 5.06,
+     "height": 2.07,
      "kind": "wall"
     }
    },
@@ -1711,7 +1711,7 @@ export const DEEP_38: GenFloor = {
      "bx": 67.54,
      "bz": -48.96,
      "r": 1.91,
-     "height": 4.37,
+     "height": 1.81,
      "kind": "wall"
     }
    },
@@ -1723,7 +1723,7 @@ export const DEEP_38: GenFloor = {
      "bx": -42.91,
      "bz": -28.67,
      "r": 1.81,
-     "height": 3.84,
+     "height": 1.61,
      "kind": "wall"
     }
    },
@@ -1735,7 +1735,7 @@ export const DEEP_38: GenFloor = {
      "bx": -8.44,
      "bz": 52.99,
      "r": 1.6,
-     "height": 3.49,
+     "height": 1.63,
      "kind": "wall"
     }
    },
@@ -1747,7 +1747,7 @@ export const DEEP_38: GenFloor = {
      "bx": -85.09,
      "bz": -77.86,
      "r": 1.99,
-     "height": 4.43,
+     "height": 1.84,
      "kind": "wall"
     }
    },
@@ -1759,7 +1759,7 @@ export const DEEP_38: GenFloor = {
      "bx": -83.4,
      "bz": 47.64,
      "r": 2.16,
-     "height": 3.91,
+     "height": 1.79,
      "kind": "wall"
     }
    },
@@ -1771,7 +1771,7 @@ export const DEEP_38: GenFloor = {
      "bx": -17.6,
      "bz": 10.75,
      "r": 1.95,
-     "height": 4.66,
+     "height": 1.92,
      "kind": "wall"
     }
    },
@@ -1783,7 +1783,7 @@ export const DEEP_38: GenFloor = {
      "bx": 67.54,
      "bz": -63.1,
      "r": 1.42,
-     "height": 4.44,
+     "height": 1.84,
      "kind": "wall"
     }
    },
@@ -1795,7 +1795,7 @@ export const DEEP_38: GenFloor = {
      "bx": -118.76,
      "bz": -13.49,
      "r": 1.71,
-     "height": 5.23,
+     "height": 2.14,
      "kind": "wall"
     }
    },
@@ -1807,7 +1807,7 @@ export const DEEP_38: GenFloor = {
      "bx": -61.19,
      "bz": -24.76,
      "r": 1.65,
-     "height": 4.55,
+     "height": 1.88,
      "kind": "wall"
     }
    },
@@ -1819,7 +1819,7 @@ export const DEEP_38: GenFloor = {
      "bx": -88.1,
      "bz": -39.32,
      "r": 1.32,
-     "height": 4.1,
+     "height": 1.71,
      "kind": "wall"
     }
    },
@@ -1831,7 +1831,7 @@ export const DEEP_38: GenFloor = {
      "bx": -101.18,
      "bz": 30.53,
      "r": 1.59,
-     "height": 3.16,
+     "height": 1.51,
      "kind": "wall"
     }
    },
@@ -1843,7 +1843,7 @@ export const DEEP_38: GenFloor = {
      "bx": -64.77,
      "bz": 4.34,
      "r": 1.47,
-     "height": 4.23,
+     "height": 1.76,
      "kind": "wall"
     }
    },
@@ -1855,7 +1855,7 @@ export const DEEP_38: GenFloor = {
      "bx": -104.42,
      "bz": -62.62,
      "r": 2.13,
-     "height": 3.84,
+     "height": 1.61,
      "kind": "wall"
     }
    },
@@ -1867,7 +1867,7 @@ export const DEEP_38: GenFloor = {
      "bx": 6.1,
      "bz": -15,
      "r": 1.99,
-     "height": 4.92,
+     "height": 2.02,
      "kind": "wall"
     }
    },
@@ -1879,7 +1879,7 @@ export const DEEP_38: GenFloor = {
      "bx": -75.16,
      "bz": -61.05,
      "r": 1.8,
-     "height": 4.8,
+     "height": 1.98,
      "kind": "wall"
     }
    },
@@ -1891,7 +1891,7 @@ export const DEEP_38: GenFloor = {
      "bx": -68.69,
      "bz": 64.39,
      "r": 2.07,
-     "height": 2.72,
+     "height": 1.35,
      "kind": "wall"
     }
    },

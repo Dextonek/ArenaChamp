@@ -169,7 +169,7 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
         // not a row of posts: the route bot wedged itself in a 0.9 m gap between two posts (floor 33's first bake) and pressed for good
         // against a row of touching ones (floor 37's third).
         const arc = [-100, -50, 0, 50, 100].map((d) => { const a = (d * Math.PI) / 180; return add(add(p.c, out, Math.cos(a) * 6.9), tan, Math.sin(a) * 6.9); });
-        for (let i = 1; i < arc.length; i++) wall('stalwall', arc[i - 1], arc[i], 1.0, 3.4);
+        for (let i = 1; i < arc.length; i++) wall('stalwall', arc[i - 1], arc[i], 1.0, 2.4);
         const cr = Q(5.6, 0), front = Q(3.5, 0);
         // Where the shard goes and where the hero stands to wake it: open ground just in front of the crystal, not the crystal itself (a
         // goal inside cover ends at its edge on the walker's side: coming at the hall from behind, the route bot stopped outside its wall).
@@ -292,8 +292,8 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     const pts = Array.from({ length: Math.ceil(len / 1.5) + 1 }, (_, j) => { const t = j / Math.ceil(len / 1.5); return { x: p0.x + (p1.x - p0.x) * t, z: p0.z + (p1.z - p0.z) * t }; });
     if (pts.some((q) => inside(rim, q) < r + 4 || L.inKeep(q, r + 2.2) || L.hitsCover(q, r + 3.2) || open.some((o) => dist(o, q) < 16 + r))) continue;
     if (c.z > cz - 18 && Math.abs(c.x) < 30) continue; // keep the camp's own chamber open
-    // tall ones away from the south (the camera looks north: a tall rock south of the hero hides it)
-    wall('ridge', p0, p1, r, r2(range(2.6, 4.2) + (c.z < 0 ? 1.2 : 0)));
+    // low: the camera looks north from above, and a ridge 3 to 5 m tall hid a hero standing just north of it (heights are looks only)
+    wall('ridge', p0, p1, r, r2(range(1.3, 1.9) + (c.z < 0 ? 0.3 : 0)));
     made++;
   }
 
