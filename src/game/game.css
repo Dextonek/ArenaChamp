@@ -961,3 +961,25 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
 @media (max-width: 760px) and (min-width: 601px) {
   .top nav.many .nav { font-size: 10px; letter-spacing: 0; padding-left: 4px; padding-right: 4px; }
 }
+
+/* --- lore (src/game/lore.ts): a hero's faction, home, age, legend and ties --- */
+.fchip { display: inline-flex; align-items: center; gap: 5px; padding: 1px 8px 1px 6px; border-radius: 20px; border: 1px solid var(--fc, #c9a24a);
+  color: var(--text); font: 700 11px ui-sans-serif, system-ui; letter-spacing: 0.04em; background: color-mix(in srgb, var(--fc, #c9a24a) 16%, transparent); white-space: nowrap; }
+.fchip::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--fc, #c9a24a); }
+.lore-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 2px; }
+.lore { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line, #3a3242); display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.lore-head { display: flex; align-items: center; gap: 10px; }
+.lore-head h3 { margin: 0; }
+.lore-facts { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 13px; }
+.lore-fact { display: contents; }
+.lore-k { color: var(--muted, #a89870); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; padding-top: 2px; }
+.lore-quote { margin: 2px 0; padding: 4px 12px; border-left: 3px solid var(--accent, #c9a24a); font: italic 15px ui-serif, Georgia, serif; color: var(--text); }
+.lore-legend { margin: 0; line-height: 1.5; font-size: 14px; max-width: 72ch; }
+.lore-ties { display: flex; flex-wrap: wrap; gap: 6px; }
+.lore-tie { display: inline-flex; align-items: center; gap: 7px; padding: 4px 10px 4px 4px; border-radius: 22px; border: 1px solid var(--line, #3a3242);
+  background: rgba(20, 16, 18, 0.7); color: var(--text); cursor: pointer; text-align: left; min-height: 36px; }
+.lore-tie span { display: flex; flex-direction: column; line-height: 1.15; }
+.lore-tie.strong { border-color: #ffd27a; }
+.lore-tie:hover { border-color: #8a7a52; }
+.loading-tie { margin: 10px auto 0; max-width: 520px; padding: 6px 12px; border-radius: 10px; border: 1px solid rgba(255, 210, 122, 0.45);
+  background: rgba(30, 22, 12, 0.7); color: #ffd27a; font: 600 14px/1.35 ui-serif, Georgia, serif; text-align: center; }

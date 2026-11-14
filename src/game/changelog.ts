@@ -39,9 +39,14 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-14',
-    title: 'Clans, leaderboards, the Climb’s own people and a map of the floor',
+    title: 'Hero lore, clans, leaderboards, the Climb’s own people and a map of the floor',
     live: false,
     items: [
+      {
+        tag: 'Heroes',
+        title: 'Every hero has a story',
+        text: 'The heroes now have their lore: open a hero on the Heroes screen to read where they come from, how old they are, their faction on the Dial and their legend, with their friends, rivals and sworn enemies one tap away. When two heroes with a history meet in a duel, the loading screen tells you what lies between them.',
+      },
       {
         tag: 'Tower',
         title: 'The Climb’s people are their own',

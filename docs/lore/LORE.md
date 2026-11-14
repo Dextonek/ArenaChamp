@@ -220,6 +220,8 @@ driven out of the Sands and is welcome nowhere else.
 ## Heroes
 
 ### Referee Whistler | the Arbiter | referee | truce | he | roster
+- home: tower | The Ring, in the Arbiter's box over the sand
+- age: Looks 34. He was 14, sweeping the Ring's sand, when the sun fell (Noon-touched).
 > "That is a dash. I saw it. Everyone saw it."
 
 Whistler was a mason's boy who swept the Ring's sand the year the Truce was sworn. He watched the first champions cheat, all of
@@ -229,6 +231,8 @@ sigil tablets carry the Truce's rules: when he holds one up, that rule binds who
 fights because a rule nobody enforces is only a rumour, and he has a long list of rumours to put down.
 
 ### Mr. Ledger | the Tithe-Keeper | ledger | truce | he | roster
+- home: tower | The Tally-house under the Ring's stands
+- age: Nobody knows. He looks about 70, and has looked it for a hundred years.
 > "No, no. Don't pay now. I insist."
 
 Every duel in the Ring settles a debt, and somebody has to write it down. Mr. Ledger has kept the Tally since the day the Truce was
@@ -238,6 +242,8 @@ waits. His spells work the same way: nothing hurts now, everything comes due. He
 other way, and he has never once lost the paperwork.
 
 ### Wick | the Doorwarden | door | truce | he | roster
+- home: tower | The Hundred Doors under the Ring
+- age: Looks 70. He was 50 and already keeping doors when the sun fell (Noon-touched).
 > "This way, please. No, the other this way."
 
 Champions come to the Ring from every realm of the Dial, and every one of them comes through a door that Wick keeps. He is the keeper
@@ -247,6 +253,8 @@ is why he hates the Tear above the Tower, a hole with no frame and no other side
 opens his doors in pairs and shows his enemies out, politely, through the one they did not expect.
 
 ### Pip | the Wingfoot | courier | truce | he | roster
+- home: tower | The couriers' loft above the Ring
+- age: 19. Born 81 years after the Fall, the youngest of the Truce's officers.
 > "Sign here. And here. And there, where it's on fire."
 
 A challenge to the Ring is not real until it is delivered by hand, and Pip delivers them: sealed scrolls from countess to king, from
@@ -256,6 +264,8 @@ has never opened a letter, never lost one, and never been paid on time. He fight
 deliver a challenge to a champion who would not take it any other way.
 
 ### Madame Cleaver | the Feastmistress | chef | truce | she | roster
+- home: banners | The old camps of the Banners; now the Truce Table at the Ring
+- age: Looks 45. She was 25, cooking for both armies, in the year of the Fall (Noon-touched).
 > "Sit. Eat. Then you can hit each other."
 
 The Truce has one law older than the Ring: nobody who has eaten at the Truce Table may strike in anger outside it. Madame Cleaver
@@ -265,6 +275,8 @@ at her table, winner and loser side by side, and she fights to get them there. H
 nobody, and her temper from the fact that champions never say thank you.
 
 ### Big Yoko | the Mountain | sumo | truce | he | roster
+- home: aubade | The shrine cliffs below Aubade
+- age: Looks 38. He was 18 and already a giant when the sun fell (Noon-touched).
 > "The ring is small. The world outside it is large. Choose."
 
 Before the Ring had walls it had a circle of straw rope, and Yoko stood in it. He is the Truce's first champion and its living
@@ -292,6 +304,8 @@ forgiven the sea, the tide or herself. She comes up into the Ring when an oath-b
 way or the other. She never lets go of a prisoner, and she is very hard to let go of.
 
 ### Auriel | the Dawn Paladin | dawn | noonsworn | she | roster
+- home: aubade | The White Barracks of Aubade
+- age: Looks 20. Born on the first morning after the Fall, a hundred years ago (Noon-touched).
 > "Every night ends. I am how."
 
 Auriel was born in Aubade on the first morning after the Fall, the morning the sun rose thin and late, and the Noonsworn took it for a
@@ -301,6 +315,8 @@ that it must be carried up by someone who has earned the climb in the Ring. Her 
 does. She fights the Court of Dusk on sight, and Vesper first.
 
 ### Anka | the Firebird | phoenix | noonsworn | she | roster
+- home: coast | The surf off the Drowned Coast, where she first rose
+- age: A hundred years since she first walked out of the sea; each fire makes her about 20 again.
 > "Put me out. Go on. I'll wait."
 
 When the sun broke, a spark of it fell into the sea off the Drowned Coast and did not go out. The next morning Anka walked out of the
@@ -310,6 +326,8 @@ embers on the ground for it. Mortis has buried her three times. She has never st
 from, and to give it back to the sky.
 
 ### Cantor | the Last Verse | bard | noonsworn | he | roster
+- home: aubade | The choir loft of Aubade; once the Tower's top
+- age: Looks 50. He was 30 and singing the Hymn of Noon when the sun fell (Noon-touched).
 > "On the beat. Always on the beat."
 
 The sun was held up, the old songs say, by the Hymn of Noon, sung every midday from the Tower's top by a choir of a hundred. On the day
@@ -319,6 +337,8 @@ has walked the Field of Banners singing the dead armies their marching songs. He
 the Hymn once more where it was meant to be sung.
 
 ### Opaline | the Lightbreaker | prism | noonsworn | she | roster
+- home: deep | A glass-cutter's house at the top of the Prism Stair
+- age: Looks 28. She was 8 when the sun fell (Noon-touched); her sister Silvane was 12.
 > "White is only every colour, waiting."
 
 When the sun fell, its light did not all go out. Much of it ran down into the Deep and hid in the crystals there, which is why the
@@ -346,6 +366,8 @@ the Noonsworn's hope: the seed of a new sun, to be carried to the top of the Tow
 wants it out. Orren lets anyone try to take it. Nobody has carried it far.
 
 ### Vesper | the Crimson Countess | blood | dusk | she | roster
+- home: gloaming | Her castle on the Gloaming heights
+- age: She was 35 when the light left her lands, and blood has kept her there for a hundred years.
 > "Come closer. I'm already paying."
 
 Vesper was a countess of Gloaming when the sun still rose there, and a pale one even then. On the day of the Fall the light left her
@@ -355,6 +377,8 @@ Court of Dusk, which owes its age to the dark, and she will not let the Noonswor
 Court's long nights are bought on credit, and Mr. Ledger holds the note.
 
 ### Silvane | the Mirror Duchess | mirror | dusk | she | roster
+- home: gloaming | The Mirror Hall of Gloaming
+- age: Looks 32. She was 12 when she caught the sun's last light in a hand mirror (Noon-touched).
 > "Look at yourself. Now look again."
 
 Silvane keeps the Court of Dusk's mirrors, and through them its secrets. She is a duchess of Gloaming, tall and calm, in violet and
@@ -364,6 +388,8 @@ it. She fights with real mirrors, throwing them off walls and walking to catch t
 first mirror, which is the only thing on the Dial that can turn Lithea's gaze.
 
 ### Mortis | the Ossuary Lord | bone | dusk | he | roster
+- home: gloaming | The ossuaries under Gloaming
+- age: His bones are some three hundred years old. He stopped counting the rest.
 > "Rest is for those who have somewhere to be."
 
 Under Gloaming lie the ossuaries, halls of bone older than the Court, and Mortis is their lord. Every dead thing that falls near him
@@ -373,6 +399,8 @@ it as theft, and Morwen lays her salt so that his skeletons cannot reach the Rin
 body that would not stay. He fights in the Ring for more ground, and to bury her a fourth time.
 
 ### Nyx | the Umbral Stalker | shadow | dusk | she | roster
+- home: gloaming | The walls of the Night Temple, where her shadow first fell
+- age: A hundred years old, every one of them as a shadow; she looks 25.
 > "You looked away. That's all it takes."
 
 Nyx is the Court's knife. In Gloaming they say she was a shadow before she was a woman: a shape thrown long across a wall by the sun's
@@ -382,6 +410,8 @@ Vesper and hunts whoever the Court names, mostly in the thickets of the Walking 
 out of, and Arden has tracked her for ten years without finding a footprint.
 
 ### Mum | the Silent One | mime | dusk | she | roster
+- home: gloaming | The harlequins' hall of the Court of Dusk
+- age: Looks 46. She was 26 and singing beside Cantor when the sun fell (Noon-touched).
 > "(Nothing. A pale glove rises, palm out. The wall is already there.)"
 
 Mum sang in the Hymn of Noon on the day of the Fall, beside Cantor, and when the sun fell anyway she stopped making sound of any kind.
@@ -409,6 +439,8 @@ pillars, drops on his prey, and climbs back up. He cannot forgive Lithea and can
 toward stone, which is why he hates Auriel's dawn more than any blade.
 
 ### Fenna | the Grove Warden | grove | greenwood | she | roster
+- home: wood | The Moot under the Antler Glades
+- age: Looks 35. She was 15 when the Wood began to walk (Noon-touched).
 > "Stand still. Let something grow."
 
 The Walking Wood began walking on the day of the Fall, as if it had felt the sun go and set off to find it, and Fenna has kept it from
@@ -418,6 +450,8 @@ from standing among them. She holds the gate of the Wood. She argues with Hank a
 argument, or lost it. Vitriol's fumes killed a whole garden of hers, and she has not forgotten.
 
 ### Hank | the Moss Hewer | timber | greenwood | he | roster
+- home: wood | A woodcutter's hut at the Walking Wood's edge
+- age: Looks 42. He was 22 and already felling trees when the sun fell (Noon-touched).
 > "Timber. Mind your heads."
 
 When the Walking Wood walks into a village, someone has to ask it to leave, and Hank asks with an axe. He is the Moot's woodcutter:
@@ -427,6 +461,8 @@ right, and they have shared a fire every winter for twenty years. He hunts with 
 the villages at the Wood's edge, which have no champion of their own.
 
 ### Bo | the Ramherd | sheep | greenwood | he | roster
+- home: wood | The high pastures above the Walking Wood
+- age: Looks 60. He was 40, with a beard just going silver, when the sun fell (Noon-touched).
 > "Easy now. They're only sheep. Mostly."
 
 Bo herds the great flocks of the high pastures where the Walking Wood meets the hills, and has done for longer than his beard has been
@@ -436,6 +472,8 @@ Moot because somebody has to speak for the hills, and he speaks slowly. He trust
 them. He fights in the Ring when a quarrel reaches his pastures, and sends the flock in first.
 
 ### Pim and Pom | the Changeling Twins | twins | greenwood | they | roster
+- home: wood | Grandma Ironknit's cottage, since the winter after the Fall
+- age: They look 10 and have for ninety-nine years: fae children age as they please.
 > "Pim: Tag! Pom: You're it."
 
 Pim and Pom were left in a woven satchel on Grandma Ironknit's doorstep the winter after the Fall: two fae children with pointed ears
@@ -445,6 +483,8 @@ the blue leaf hood with the slingshot, who stays back and laughs. They share one
 if it were a game, because for them it is. The Moot keeps them because nobody else can.
 
 ### Sirix | the Swarm Warden | hive | greenwood | he | roster
+- home: wood | The hive-trees of the Walking Wood
+- age: Looks 40. He was 20 when the hives woke after the Fall (Noon-touched).
 > "Hold still. They only sting what moves."
 
 The hive-trees of the Walking Wood are hollow oaks the size of towers, full of amber wax and wasps, and Sirix is their warden. He wears
@@ -472,6 +512,8 @@ eats with Bo, and has followed Nyx through the thickets for ten years without fi
 fights in the Ring because the Hunt's quarrels are settled there, and because his quarry sometimes shows up.
 
 ### Marin | the Tide Dancer | tide | windward | she | roster
+- home: coast | The sea temple of the Drowned Harbour
+- age: Looks 32. She was a girl of 12 dancing in the temple when the sea came in (Noon-touched).
 > "The sea comes in. The sea goes out. You don't."
 
 When the sun fell, its heat lifted the sea, and the sea came in over the Drowned Harbour and stayed. Marin was a dancer of the
@@ -481,6 +523,8 @@ Sea, keeps the harbour lights with the Windward, and lets Gus keep her temple fl
 Kessa blames her for every flood.
 
 ### Kaia | the Tempest Caller | storm | windward | she | roster
+- home: coast | A storm-callers' tower on the Spires
+- age: 28. Born 72 years after the Fall, to a sky that had no master.
 > "Stand by the rod. It's safer. For me."
 
 Since the Fall the weather of the Dial has had no master, and Kaia means to be one. She is a storm caller of the Spires, in rain-blue,
@@ -490,6 +534,8 @@ prove him wrong, and they have argued in public for twelve years. Saga's norther
 politely. She fights in the Ring because a storm needs somewhere to land.
 
 ### Zephyr | the Wind Blade | sky | windward | he | roster
+- home: coast | The Spires, the sky towers standing in the sea
+- age: 24. Born on the Spires 76 years after the Fall.
 > "Catch up. I'll wait. No, I won't."
 
 Zephyr was born on the Spires, the broken sky towers that stand in the sea, and learned to walk on the wind before he walked on stone.
@@ -499,6 +545,8 @@ has won. He races Ramet's lion across the Glass Flats too, and loses less. He ra
 practice. He fights in the Ring because standing still bores him.
 
 ### Barry Cloudsley | the Sky Augur | weather | windward | he | roster
+- home: coast | The weather post on the highest Spire
+- age: Looks 50. He was 30 and already reading the sky when the sun fell (Noon-touched).
 > "And now, the weather. You won't like it."
 
 Barry is the Windward's augur: he reads the sky. Since the Fall that has been the hardest job on the Dial, because the sky no longer
@@ -508,6 +556,8 @@ weather more often than anyone alive and still mostly wrong, which he blames, lo
 flies with him. In the Ring his weather hits both heroes, and he is the only one who knows what is coming.
 
 ### Professor Puff | the Aeronaut | balloon | windward | he | roster
+- home: coast | His basket, moored to the Spires between flights
+- age: Looks 60. He was 40 and mapping the sky when the sun fell (Noon-touched).
 > "Hold your breath. No, really. It helps."
 
 Professor Puff mapped the sky of the Dial before the Fall, from a basket under glass spheres of glowing rose gas, and now that the sky
@@ -526,6 +576,8 @@ it on Zephyr's winds, which he never lets her forget. In the Ring the kite is a 
 quite know which of the two to watch.
 
 ### Gus | the Temple Keeper | janitor | windward | he | roster
+- home: coast | The sea temple of the Drowned Harbour
+- age: 65. Born 35 years after the Fall; he has swept the temple for forty years.
 > "Mind the floor. I did warn you."
 
 Gus keeps the sea temple of the Drowned Harbour, the one Marin danced dry after the Fall, and he has kept it clean for forty years
@@ -535,6 +587,8 @@ that a clean floor is a wet one, and he has put up signs. People slide. That, he
 Ring when Big Yoko has thrown his salt about again.
 
 ### Brannoc | the Ashen Smith | forge | underforge | he | roster
+- home: deep | The great forge in the Ember Caldera
+- age: Looks 50. He was 30 and already a master smith when the sun fell (Noon-touched).
 > "Hotter. Again. Hotter."
 
 Brannoc keeps the great forge of the Underforge, sunk in the Ember Caldera, where the fire of the fallen sun still rises through the
@@ -544,6 +598,8 @@ froze his forge solid to send him home; it took him a year to light it again, an
 Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.
 
 ### Ada | the Artificer | clockwork | underforge | she | roster
+- home: deep | A workshop above the Underforge's great lift
+- age: 26. Born 74 years after the Fall; Brannoc's apprentice until her hammer swung itself.
 > "Give me ten seconds and something to bolt it to."
 
 Ada was Brannoc's apprentice until she built a hammer that swung itself. She is a slim inventor in a copper coat, with a backpack of
@@ -553,6 +609,8 @@ would like to run the Deep on it. She argues engines with Professor Puff at ever
 did not involve flying.
 
 ### Bram | the Stonewright | mason | underforge | he | roster
+- home: deep | The masons' halls of the Underforge
+- age: Looks 38. He was 18 when the sun fell (Noon-touched). Gerald is older than the Deep.
 > "Gerald says hello. Gerald says goodbye."
 
 Bram builds the halls of the Underforge stone by stone, and he has one friend: Gerald, a limestone pillar with a carved face, who goes
@@ -562,6 +620,8 @@ opening he pushes the same stone against Big Yoko, and neither has won. Hesk's g
 because it is not stone, the second because it is not building.
 
 ### Mabel | the Deepdelver | mole | underforge | she | roster
+- home: deep | The deepest seams under the southern hills
+- age: Looks 40 in mole-folk years. She was 20 when she saw the light run into the crystals (Noon-touched).
 > "Mind the hole. Well. Mind the next one."
 
 Mabel is a mole-folk miner of the deepest seams, stout and dark-furred, with a bronze helm topped by a glowing amber crystal lantern
@@ -598,6 +658,8 @@ from the crystal powder of the Deep. She digs with Mabel, takes her powder from 
 she knocks down. Mum's unseen walls are the only walls she has never broken.
 
 ### Sefu | the Dune Sovereign | sand | dune | he | roster
+- home: sands | Tamerit, on the Dune Throne
+- age: Looks 44. He was 24 when the sun fell, and took the throne the year after (Noon-touched).
 > "Kneel, or be judged standing."
 
 The kings of the Sands always called the sun their father, and when it fell, the Sands said it fell there, into the dunes, which are
@@ -607,6 +669,8 @@ sandstone crook. His crook and his sarcophagus Judge his enemies, and a Judged e
 and sends his champions to the Ring to win the climb. Auriel calls it heresy. Asenet calls it theft.
 
 ### Vitriol | the Plague Alchemist | alchemy | dune | he | roster
+- home: sands | The embalmers' house of Tamerit
+- age: Nobody knows: nobody has seen his face. His hands are old.
 > "Breathe in. Now let's see what you're made of."
 
 Vitriol is the embalmer of the Dune Throne, the alchemist who keeps its dead kings whole. He wears a dark hood, a pale glass beak mask
@@ -652,6 +716,8 @@ why. Every year he races Zephyr across the Glass Flats, and the lion has never l
 on foot, and he is still a captain.
 
 ### Tempo | the Unwound Hour | chrono | hourkeepers | he | roster
+- home: frostfall | The Hourkeepers' observatory at Frostfall
+- age: He looks 40. He has lived a hundred years since the Fall, every moment twice.
 > "Again. And again."
 
 When the sun fell, the Tower's shadow stopped telling the hour, and time on the Dial began to slip: an hour here runs long, a morning
@@ -661,6 +727,8 @@ spell he casts plays again. He keeps the great clock at Frostfall, and races the
 wind the Dial up again before Oblivion unmakes the hours altogether.
 
 ### Shiori | the Last Brush | ink | hourkeepers | she | roster
+- home: frostfall | The frozen library at Frostfall
+- age: 30. Born 70 years after the Fall, the last of the great calligraphers.
 > "Hold still. You are being written."
 
 The Hourkeepers write the Dial down before it changes, and Shiori is the last of their great calligraphers, the one whose writing comes
@@ -670,6 +738,8 @@ paper, and Hesk to write the word on a golem's brow. She thinks Mr. Ledger's boo
 thinks hers has too many pictures.
 
 ### Lyra | the Star Archer | astral | hourkeepers | she | roster
+- home: frostfall | The observatory at Frostfall, under the pole star
+- age: 22. Born 78 years after the Fall, under a sky that still kept time.
 > "Run. The sky is very big, and I can see all of it."
 
 The stars still keep time, even with the sun gone wrong, and Lyra reads them. She is the Hourkeepers' archer, a night hunter in a
@@ -679,6 +749,8 @@ are the one light Nyx cannot step out of, and the two have duelled in the dark m
 Sands calls himself the better archer, and she lets him.
 
 ### Grandma Ironknit | the Weaver | yarn | hourkeepers | she | roster
+- home: wood | A cottage at the Walking Wood's edge, on the Frostfall road
+- age: Looks 70. She was 50 and already spinning when the sun fell (Noon-touched).
 > "Sit down, dear. You're coming unravelled."
 
 The Hourkeepers say every life on the Dial is a thread, and Grandma Ironknit holds the spindle. She is a tiny old fate-spinner in a
@@ -688,6 +760,8 @@ fifty years ago turned down Mr. Ledger, who wanted to write her into his book; s
 under the collar. In the Ring she ties her lines across the floor and sends the cat.
 
 ### Isolde | the Winter Warden | frost | hourkeepers | she | roster
+- home: frostfall | Frostfall Lake, at the top of the Dial
+- age: Looks 48. She was 28 when the sun fell (Noon-touched).
 > "Slower. Slower. There."
 
 At the top of the Dial, where the stars turn round the pole, the cold keeps time still, and Isolde guards it. She is the Winter Warden,
@@ -715,6 +789,8 @@ finger and a silver needle as long as her arm. Wick keeps the doors and she keep
 every stitch she has put in the Tear. She keeps sewing.
 
 ### Oblivion | the Unmaker | void | loners | he | roster
+- home: tower | The Tear in the sky above the Tower
+- age: Not born. It came through the Tear on the day of the Fall, a hundred years ago.
 > "There was something here. Was there?"
 
 When the sun fell it tore the sky above the Tower, and something came through the Tear that the Dial has no word for. The Hourkeepers
@@ -724,6 +800,8 @@ always come back. It wants no throne: it wants the Dial unmade, hour by hour, do
 Banners cannot stop fighting because nothing it touches can end. Wick, Tempo and Thessa have sworn to send it back.
 
 ### Sir Whiskers | the Lynx Duelist | cat | loners | he | roster
+- home: banners | The lynx knights' old keep by the Field of Banners
+- age: 31 in this life; he is on his fourth of nine.
 > "En garde. And do try. It's so much nicer when they try."
 
 Sir Whiskers counts his life in nines, as the lynx knights of old did, and spends lives like coin: on a wager, a lady, a point of
@@ -733,6 +811,8 @@ whoever is most interesting, and lands on his feet. He once spent a life for Sil
 catch Kohaku for longer than either will admit, and she has been letting him.
 
 ### The Great Zambini | the Illusionist | magic | loners | he | roster
+- home:  | Everywhere. He says Aubade, Tamerit and Gloaming, on alternate days
+- age: He says 39. He has said 39 for sixty years.
 > "Pick a hat. Any hat. Wrong."
 
 Nobody knows where The Great Zambini comes from, which is how he likes it. He has played every court on the Dial under a violet

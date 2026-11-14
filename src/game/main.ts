@@ -521,6 +521,7 @@ function heroShowcase(hero: HeroKit | undefined) {
     el('div', { class: 'hs-info' },
       el('div', { class: 'hs-name' }, hero.name),
       el('div', { class: 'hs-title' }, hero.title),
+      loreLine(hero),
       el('div', { class: 'hs-chips' }, el('span', { class: 'chip' }, `${hero.maxHp ?? 600} HP`), el('span', { class: 'chip' }, reach),
         freeNow(hero.name) ? el('span', { class: 'chip free' }, 'Free this week') : null),
       // The shop: a hero that is neither owned nor free this week can be tried against the CPU, or bought.
@@ -1027,6 +1028,60 @@ function heroesScreen() {
   return el('section', { class: 'card hero-table-card' }, el('table', { class: 'hero-table' }, head, ...rows));
 }
 
+// --- lore (docs/lore/LORE.md -> src/game/lore.ts by pipeline/tools/lore-game.py) ---------------------------------------
+// Loaded on first need (a dynamic import): the start of the page does not carry the legends.
+let loreMod: typeof import('./lore') | null = null;
+let loreAsked = false;
+function loreData() {
+  if (!loreMod && !loreAsked) {
+    loreAsked = true;
+    void import('./lore').then((m) => { loreMod = m; if (!match.active) render(); }).catch(() => { loreAsked = false; });
+  }
+  return loreMod;
+}
+/** A faction's colour for a chip: the most saturated of its colours. */
+function factionColour(colours: string[]) {
+  let best = colours[0] ?? '#c9a24a', score = -1;
+  for (const c of colours) {
+    const n = parseInt(c.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+    const s = Math.max(r, g, b) - Math.min(r, g, b) + Math.max(r, g, b) * 0.15;
+    if (s > score) { score = s; best = c; }
+  }
+  return best;
+}
+function factionChip(fid: string) {
+  const f = loreData()?.FACTIONS[fid];
+  if (!f) return null;
+  const chip = el('span', { class: 'fchip', title: f.wants }, f.name);
+  chip.style.setProperty('--fc', factionColour(f.colours));
+  return chip;
+}
+/** One line under a hero's name: the faction and where the hero is from. */
+function loreLine(kit: HeroKit) {
+  const lore = loreData(), h = lore?.LORE[kit.name];
+  if (!lore || !h) return null;
+  return el('div', { class: 'lore-line' }, factionChip(h.faction), el('span', { class: 'muted small' }, `from ${lore.PLACES[h.place] ?? h.from}`));
+}
+/** The hero's lore in full: faction, home, age, the line, the legend and the ties (a tap opens the other hero). */
+function lorePanel(kit: HeroKit) {
+  const h = loreData()?.LORE[kit.name];
+  if (!h) return el('div', { class: 'lore muted small' }, loreAsked && !loreMod ? 'Loading the lore…' : '');
+  const fact = (k: string, v: string) => el('div', { class: 'lore-fact' }, el('span', { class: 'lore-k' }, k), el('span', {}, v));
+  return el('div', { class: 'lore' },
+    el('div', { class: 'lore-head' }, el('h3', {}, 'Lore'), factionChip(h.faction)),
+    el('div', { class: 'lore-facts' }, fact('From', h.from), fact('Age', h.age)),
+    el('blockquote', { class: 'lore-quote' }, h.line),
+    el('p', { class: 'lore-legend' }, h.legend),
+    h.ties.length ? el('div', { class: 'lore-ties' },
+      ...h.ties.map((t) => {
+        const other = kitOf(t.other);
+        return el('button', {
+          class: `lore-tie${t.strong ? ' strong' : ''}`, title: t.what,
+          onclick: (e: Event) => { e.stopPropagation(); state.heroView = t.other; scrollToHero = true; render(); },
+        }, other ? portrait(other, 'portrait xs') : null, el('span', {}, el('span', { class: 'muted small' }, `${t.strong ? '★ ' : ''}${t.kind}`), el('b', {}, t.other)));
+      })) : null);
+}
+
 /** A hero's passive and four spells in full: the open row of the heroes table, and a hero's page in the Shop. */
 function heroSpells(kit: HeroKit) {
   return el('div', { class: 'spells' },
@@ -1055,7 +1110,8 @@ function heroDetail(kit: HeroKit) {
         playable(kit.name)
           ? el('button', { class: `btn${mine ? '' : ' primary'}`, disabled: mine, onclick: () => { setPreferredHero(kit.name); toast(`${kit.name} is your hero`); render(); } }, mine ? 'Your hero' : 'Pick this hero')
           : lockStrip(kit)),
-      heroSpells(kit)));
+      heroSpells(kit)),
+    lorePanel(kit));
   const row = el('tr', { class: 'hero-open' }, cell);
   row.style.setProperty('--accent', kit.accent);
   return row;

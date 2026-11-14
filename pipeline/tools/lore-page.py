@@ -118,13 +118,19 @@ def read(path):
         name, title, theme, fac, pron, status = head
         line = ''
         rest = []
+        home, spot, age = '', '', ''
         for ln in body:
             if ln.startswith('> '):
                 line = ln[2:].strip()
+            elif ln.startswith('- home: '):
+                home, spot = [x.strip() for x in ln[8:].split('|', 1)]
+            elif ln.startswith('- age: '):
+                age = ln[7:].strip()
             else:
                 rest.append(ln)
         lore['heroes'].append({'name': name, 'title': title, 'theme': theme, 'faction': fac, 'pronoun': pron,
-                               'status': status, 'line': line, 'legend': ' '.join(paragraphs(rest))})
+                               'status': status, 'line': line, 'legend': ' '.join(paragraphs(rest)),
+                               'home': home, 'spot': spot, 'age': age})
     for ln in sec['Ties']:
         if not ln.startswith('- '):
             continue
@@ -525,7 +531,8 @@ def build(lore):
                 badge = '<a class="badge" href="../heroes/next20/index.html" style="text-decoration:none">new · card</a>'
             P.append(f'<article class="card hero" id="{slug(m)}" style="--acc:{acc}"><h3>{html.escape(m)}{badge}</h3>'
                      f'<div class="title">{html.escape(h["title"])}</div>'
-                     f'<blockquote>{inline(h["line"])}</blockquote><p>{inline(h["legend"])}</p><ul class="ties">')
+                     + (f'<div class="title" style="font-style:normal;color:var(--muted)">From: {html.escape(h["spot"])} · Age: {html.escape(h["age"])}</div>' if h.get('spot') else '')
+                     + f'<blockquote>{inline(h["line"])}</blockquote><p>{inline(h["legend"])}</p><ul class="ties">')
             for word, other, t in ties_of[m]:
                 star = '<span class="s">★ </span>' if t['strong'] else ''
                 ofac = fac_of[other]['name'].replace('The ', '')
