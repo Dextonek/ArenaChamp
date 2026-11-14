@@ -848,7 +848,7 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
 /* --- Leaderboards and Clan (src/game/social.ts) ------------------------------------------------------------------ */
 /* The count of clan messages not seen yet, on the Clan tab. */
 .nav-unread {
-  position: absolute; top: 4px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; display: inline-flex;
+  position: static; margin-left: -2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; display: inline-flex;
   align-items: center; justify-content: center; background: var(--red); color: #fff; font: 800 10px var(--sans); letter-spacing: 0;
   box-shadow: 0 0 8px rgba(255, 106, 106, 0.6);
 }
@@ -920,6 +920,8 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
   .clan-chat { order: -1; }
 }
 @media (max-width: 600px) {
+  /* On a phone the count sits on the tab's icon. */
+  .nav-unread { position: absolute; top: 2px; right: calc(50% - 20px); margin: 0; }
   /* Ten tabs along the bottom of a phone: smaller still. */
   .top nav.many .nav { font-size: 7.5px; }
   .top nav.many .nav .ic svg { width: 19px; height: 19px; }
@@ -933,3 +935,29 @@ video.news-media { aspect-ratio: 16 / 9; object-fit: cover; }
 /* A row with a second line under the name (the clans' board): the name keeps its whole width on a phone. */
 .board-two { display: flex; flex-direction: column; min-width: 0; }
 .board-two small { font-size: 11.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Ten tabs for a signed-in player (Boards and Clan joined them): the bar gives way in steps so Log out never leaves the screen.
+   First the record and the Graphics button go (Graphics is on the Profile screen, as on a phone), then the tab icons, then the
+   letters tighten. Under 860 px the bar wraps (above), and under 600 px the tabs move to the bottom. */
+.top nav.many .nav { white-space: nowrap; }
+@media (max-width: 1640px) and (min-width: 601px) {
+  .top nav.many .nav { padding-left: 8px; padding-right: 8px; letter-spacing: 0.06em; gap: 6px; }
+  .who.full > .muted, .who.full .gfx { display: none; }
+}
+@media (max-width: 1440px) and (min-width: 601px) {
+  .top nav.many .nav .ic { display: none; }
+  .top:has(nav.many) { gap: 14px; }
+}
+@media (max-width: 1180px) and (min-width: 601px) {
+  .top:has(nav.many) { padding-left: 14px; padding-right: 14px; gap: 10px; }
+  .top:has(nav.many) .brand { font-size: 17px; }
+  .top nav.many .nav { font-size: 11px; letter-spacing: 0.03em; padding-left: 6px; padding-right: 6px; }
+}
+@media (max-width: 1000px) and (min-width: 601px) {
+  /* The tabs on a row of their own, under the name and Log out. */
+  .top:has(nav.many) { flex-wrap: wrap; row-gap: 0; }
+  .top nav.many { order: 3; flex: 1 1 100%; justify-content: space-between; }
+  .top:has(nav.many) .who { margin-left: auto; }
+}
+@media (max-width: 760px) and (min-width: 601px) {
+  .top nav.many .nav { font-size: 10px; letter-spacing: 0; padding-left: 4px; padding-right: 4px; }
+}

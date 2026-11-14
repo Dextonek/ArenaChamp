@@ -1994,7 +1994,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   // Built from kept lists (accounts.mjs: the rated accounts in order, the week's wins, the Climb; the week's raid and Tower boards),
   // never from a pass over every account. The part everyone sees is built once and kept until something on it changes.
 
-  /** @type {{ week: string, duels: any[], weekly: any[], climb: any[], clans: any[] } | null} */
+  /** @type {{ week: string, duels: any[], weekly: any[], climb: any[], clans: any[], allClans: any[] } | null} */
   let boardsCache = null;
   /** A duel counted, a Climb report or a clan's members changed: the shared boards are built again on the next request. */
   const boardsChanged = () => { boardsCache = null; };
@@ -2019,12 +2019,13 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   function sharedBoards() {
     const week = isoWeek(now()).id;
     if (boardsCache?.week === week) return boardsCache;
+    const allClans = clanRows(week);
     boardsCache = {
-      week,
+      week, allClans,
       duels: accounts.rated().slice(0, LEADER_SIZE).map((a) => ({ name: a.name, rating: accounts.rating(a), wins: a.wins, losses: a.losses, hero: accounts.favourite(a) })),
       weekly: accounts.weekBoard(week).rows.map((r) => ({ name: r.name, wins: r.wins, losses: r.losses })),
       climb: accounts.climbBoard().map((r) => ({ name: r.name, floor: r.floor, stars: r.stars })),
-      clans: clanRows(week).slice(0, LEADER_SIZE),
+      clans: allClans.slice(0, LEADER_SIZE),
     };
     return boardsCache;
   }
@@ -2054,7 +2055,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         clan: clans.of(a.name)?.id ?? null,
       };
     }
-    return { t: 'leaderboards', week: w.id, next: w.next, ...shared, raid: b.raid, tower: b.tower, tags, you };
+    const { allClans: _all, ...lists } = shared;
+    return { t: 'leaderboards', week: w.id, next: w.next, ...lists, raid: b.raid, tower: b.tower, tags, you };
   }
 
   // --- clans and the clan chat ----------------------------------------------------------------------------------------------
@@ -2139,7 +2141,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   /** The clans with room, for a player in none: the most wins this week first. @param {Client} c */
   function clanList(c) {
     const low = (c.name ?? '').toLowerCase();
-    const list = clanRows(isoWeek(now()).id).filter((r) => r.members < CLAN.max).slice(0, LEADER_SIZE)
+    const list = sharedBoards().allClans.filter((r) => r.members < CLAN.max).slice(0, LEADER_SIZE)
       .map((r) => ({ ...r, asked: !!clans.get(r.id)?.asks.some((x) => x.toLowerCase() === low) }));
     send(c, { t: 'clan_list', clans: list });
   }
