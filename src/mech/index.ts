@@ -8,6 +8,7 @@ import type { HeroKit, HeroSpell } from '../heroes';
 import type { Obstacle } from '../obstacles';
 import { crosses, crossesCircle, faces, type P } from './geom';
 import { decDigit, decPos, decTime, encDigit, encPos, encTime, msgN, msgName, PREFIX } from './net';
+import { MechFx } from './fx';
 
 export * from './geom';
 export { PREFIX as MECH_PREFIX } from './net';
@@ -39,7 +40,10 @@ export interface MechHost {
   status(side: MechSide): StatusSet | undefined;
   say(text: string, color: string, at: THREE.Vector3, scale?: number): void;
   kit(side: MechSide): HeroKit | null;
+  /** Moves a hero this screen moves by a step now, kept inside the ring and out of cover. */
+  carry(side: MechSide, dx: number, dz: number): void;
   /** Slides a hero this screen moves to `p` over `seconds`, as a dash does. */
+  dashing(side: MechSide): boolean;
   dash(side: MechSide, p: THREE.Vector3, seconds: number): void;
   /** Takes the arena's own cover `i` away for the round, falling away from `dir` (x, z). */
   breakCover(i: number, dx: number, dz: number): void;
@@ -81,6 +85,8 @@ export interface Leash {
 
 interface LeashRec extends Leash {
   at: () => P;
+  /** The anchor is this side's figure (drawn and told as such). */
+  anchorSide?: MechSide;
   breakOnDash: boolean;
   slow: number;
   onBreak?: (why: 'dash' | 'time' | 'end') => void;
@@ -194,6 +200,10 @@ export class Mech {
   private casts = new Map<MechSide, CastNote>();
   /** Spell hits each hero took lately (fight clock), for a token's replay: a pass from the other screen may come late. */
   private hits = new Map<MechSide, { time: number; kind: string }[]>();
+  /** Leashes the other screen keeps on its own hero, told here only to be drawn. */
+  private shownLeashes: { side: MechSide; anchorSide: MechSide | null; x: number; z: number; r: number; until: number }[] = [];
+  /** The plain look of the pieces (both screens); the duel adds its group to the scene. */
+  readonly fx = new MechFx();
   /** Anything to do in `update`: false until a piece is used this round. */
   private busy = false;
   readonly views: Record<MechSide, MechView>;
@@ -215,7 +225,10 @@ export class Mech {
     this.coverHp.clear();
     this.casts.clear();
     this.hits.clear();
+    this.shownLeashes.length = 0;
     this.busy = false;
+    this.fx.begin();
+    this.fx.end();
     for (const s of SIDES) {
       const f = this.host.figure(s);
       if (f) views.set(f, this.views[s]);
@@ -354,15 +367,18 @@ export class Mech {
    * screen's own hero (call it from `dealt` or `victimTick` for the enemy, from the own client for oneself). Returns the leash,
    * or null when it is not this screen's to keep.
    */
-  leash(side: MechSide, anchor: P | (() => P), r: number, seconds: number, o: { breakOnDash?: boolean; slow?: number; onBreak?: (why: 'dash' | 'time' | 'end') => void } = {}): Leash | null {
+  leash(side: MechSide, anchor: P | (() => P), r: number, seconds: number, o: { breakOnDash?: boolean; slow?: number; onBreak?: (why: 'dash' | 'time' | 'end') => void; anchorSide?: MechSide } = {}): Leash | null {
     if (!this.host.owns(side)) return null;
     const at = typeof anchor === 'function' ? anchor : () => anchor;
     const rec: LeashRec = {
       side, r, until: this.now() + seconds, alive: true, at, anchor: () => at(), breakOnDash: !!o.breakOnDash, slow: o.slow ?? 0, onBreak: o.onBreak,
-      end: () => this.endLeash(rec, 'end'),
+      anchorSide: o.anchorSide, end: () => this.endLeash(rec, 'end'),
     };
     this.leashes.push(rec);
     this.busy = true;
+    // The other screen draws it: whose it is, its anchor (the other hero, or a point), its length.
+    const c = at();
+    this.host.send(msgName('l', this.rel(side) + (o.anchorSide ? this.rel(o.anchorSide) : 'P') + encPos(c.x) + encPos(c.z) + encPos(r - 64)), msgN(seconds * 10));
     return rec;
   }
 
@@ -374,8 +390,8 @@ export class Mech {
     if (!l.alive) return;
     l.alive = false;
     this.leashes = this.leashes.filter((x) => x !== l);
-    // The other screen draws the chain from the trait's own stacks; a break it cannot see (a dash) is told.
-    if (why === 'dash') this.host.send(msgName('l', this.rel(l.side)), 0);
+    // The other screen stops drawing it.
+    this.host.send(msgName('l', this.rel(l.side)), 0);
     l.onBreak?.(why);
   }
 
@@ -612,16 +628,47 @@ export class Mech {
       const f = this.host.figure(l.side);
       if (!f) continue;
       const p = f.group.position, c = l.at(), d = Math.hypot(p.x - c.x, p.z - c.z);
-      if (d > l.r + 0.05) {
+      if (d > l.r + 0.05 && !this.host.dashing(l.side)) {
         const back = Math.min(d - l.r, 6 * dt);
-        p.x -= ((p.x - c.x) / d) * back;
-        p.z -= ((p.z - c.z) / d) * back;
+        this.host.carry(l.side, -((p.x - c.x) / d) * back, -((p.z - c.z) / d) * back);
       }
     }
     if (this.barriers.length) this.barriers = this.barriers.filter((b) => (b.alive &&= now < b.until));
     if (this.attractors.length) {
       this.attractors = this.attractors.filter((a) => (a.alive &&= now < a.until));
       this.bendBolts(dt);
+    }
+  }
+
+  /** @internal `drawMech`. */
+  drawInto(fx: MechFx, time: number) {
+    if (!this.busy) return;
+    const now = this.now();
+    for (const w of this.wards) {
+      if (!w.alive) continue;
+      if (w.kind === 'circle') fx.circle('ward', w.a.x, w.a.z, w.r, 0.95);
+      else fx.strip('ward', w.a, w.b, 0.3, 0.9);
+    }
+    for (const b of this.barriers) if (b.alive) fx.chasm({ x: b.o.ax, z: b.o.az }, { x: b.o.bx, z: b.o.bz }, b.o.r * 2);
+    for (const a of this.attractors) if (a.alive) fx.circle('pull', a.x, a.z, a.r, 0.5);
+    const pos = (s: MechSide) => this.host.figure(s)?.group.position ?? null;
+    for (const l of this.leashes) {
+      const p = pos(l.side);
+      if (l.alive && p) fx.chain(l.anchorSide ? pos(l.anchorSide) ?? l.at() : l.at(), p);
+    }
+    this.shownLeashes = this.shownLeashes.filter((l) => now < l.until);
+    for (const l of this.shownLeashes) {
+      const p = pos(l.side), a = l.anchorSide ? pos(l.anchorSide) : l;
+      if (p && a) fx.chain(a, p);
+    }
+    for (const side of SIDES) {
+      const p = pos(side);
+      if (p && this.asleep(side)) fx.circle('sleep', p.x, p.z, 0.75 + 0.08 * Math.sin(time * 4), 0.85);
+    }
+    for (const t of this.tokens.values()) {
+      const h = t.holder ? pos(t.holder) : null;
+      if (h) fx.token(h.x, 2.9, h.z, time);
+      else fx.token(t.state.x, 0.35, t.state.z, time);
     }
   }
 
@@ -655,7 +702,14 @@ export class Mech {
         return;
       }
       case 'l': {
-        // The other screen's leash on its own hero broke by a dash: nothing is kept here but the trait's stacks, which it clears.
+        // A leash the other screen keeps on its own hero: drawn here, not held (that screen moves it).
+        const s = side(data[0]);
+        this.shownLeashes = this.shownLeashes.filter((l) => l.side !== s);
+        if (n > 0 && data.length >= 8) {
+          const as = data[1] === 'P' ? null : side(data[1]);
+          this.shownLeashes.push({ side: s, anchorSide: as, x: decPos(data.slice(2, 4)), z: decPos(data.slice(4, 6)), r: decPos(data.slice(6, 8)) + 64, until: this.now() + n / 10 });
+          this.busy = true;
+        }
         return;
       }
       case 'k': {
@@ -679,6 +733,14 @@ export class Mech {
 
 const NONE: readonly Obstacle[] = [];
 
+/** The look of what stands now, on both screens (the duel calls it every frame). */
+export function drawMech(m: Mech, time: number) {
+  const fx = m.fx;
+  fx.begin();
+  m.drawInto(fx, time);
+  fx.end();
+}
+
 /** The engine pieces as one side's trait and spells reach them (`t.mech`, `mechFor(ctx.caster)`). */
 export class MechView {
   constructor(readonly m: Mech, readonly side: MechSide) {}
@@ -699,7 +761,7 @@ export class MechView {
   leashEnemy(r: number, seconds: number, o: { anchor?: P | (() => P); breakOnDash?: boolean; slow?: number; onBreak?: (why: 'dash' | 'time' | 'end') => void } = {}) {
     const me = this.m.host.figure(this.side);
     const anchor = o.anchor ?? (() => (me ? { x: me.group.position.x, z: me.group.position.z } : { x: 0, z: 0 }));
-    return this.m.leash(this.enemySide, anchor, r, seconds, o);
+    return this.m.leash(this.enemySide, anchor, r, seconds, { ...o, anchorSide: o.anchor ? undefined : this.side });
   }
   leashSelf(anchor: P | (() => P), r: number, seconds: number, o?: { breakOnDash?: boolean; slow?: number; onBreak?: (why: 'dash' | 'time' | 'end') => void }) {
     return this.m.leash(this.side, anchor, r, seconds, o);

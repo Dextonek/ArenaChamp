@@ -24,7 +24,7 @@ import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
 import type { AddSpec, BossDebuff, BossDef, BossHit, BossWorld, RaidAdd, RaidLink, RoomFloor, TwinSetup, TwinWorld } from './raid/types';
 import type { RunUpgrades } from './raid/upgrades';
-import { Mech, MECH_PREFIX, type MechSide } from './mech';
+import { Mech, MECH_PREFIX, drawMech, type MechSide } from './mech';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -460,6 +460,15 @@ export class Duel {
       status: (side) => (side === 'hero' ? arena.statusOf(arena.caster) : this.foe ? arena.statusOf(this.foe) : undefined),
       say: (text, color, at, scale) => arena.say(text, color, at, scale ?? 1),
       kit: (side) => (side === 'hero' ? this.host.heroMode.currentKit : this.opponentKit ?? null),
+      carry: (side, dx, dz) => {
+        if (side === 'hero') {
+          const p = arena.caster.group.position;
+          p.x += dx;
+          p.z += dz;
+          arena.keepInside(p);
+        } else if (this.foe && !this.net) arena.moveFoe(this.foe, new THREE.Vector3(dx, 0, dz));
+      },
+      dashing: (side) => { const f = side === 'hero' ? arena.caster : this.foe; return !!f && arena.isDashing(f); },
       dash: (side, p, seconds) => {
         const f = side === 'hero' ? arena.caster : this.foe;
         if (f && (side === 'hero' || !this.net)) arena.moveFigure(f, p, seconds);
@@ -476,6 +485,7 @@ export class Duel {
       bolts: () => arena.projectiles.live,
       boltSide: (p) => (p.world.tag.startsWith('hero') ? 'hero' : 'opponent'),
     });
+    this.group.add(this.mech.fx.group);
     this.group.visible = false;
     this.hud = this.buildHud();
     this.card = document.createElement('div');
@@ -2418,6 +2428,7 @@ export class Duel {
     this.traitFx.marks('hero', this.heroRt?.marksNow() ?? [], this.heroRt?.trait?.markLook);
     this.zoneClock += dt;
     this.zones.update(this.zoneClock);
+    drawMech(this.mech, this.time);
     this.flash.style.opacity = String(Math.max(0, Number(this.flash.style.opacity || 0) - dt * 2.5));
     this.updateBanner(dt);
     this.host.outline?.(this.hoverFoe && !this.over ? this.figure.shown : null);
