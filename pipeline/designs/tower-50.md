@@ -185,3 +185,16 @@ today's area, not a circle.
   the floor's spots to keep clear of (keep.ts). Before-and-after sheets are in docs/tower/climb50/{wood,sands}/depth/. Speed: on the
   phone profile both are within the noise. On the desktop, Wood floor 11 is 0.2 to 0.5 ms a frame slower, and memory churn rises by
   about 1 MB a second on some scenes, not yet explained.
+- **The War (floors 41 to 50), merged (2026-11-14): all fifty floors are built.** A broad field under a siege line, two ghost armies, a
+  banner to take and a squad beside you (gen/war.ts, warZone.ts, and warDepth.ts, which does the War's own depth). Floor 41 is grown and
+  keeps its ids (`pipeline/tools/gen-banners.ts`), and floor 50 is the crown, Ash and Ember at tier 2. The route bot cleared all ten floors
+  with Lyra and Bram and never had to begin a floor again, and the four save runs pass with all fifty floors.
+  **Open:**
+  - The bot takes only 16 to 22 min a floor, so the par star comes free. Pars, the hold and the sites' mix can be tuned in the data.
+  - Floors 48 to 50 have two elites with the same name.
+  - Taking a banner froze the game for 2.35 s. A CPU profile shows 1.9 s of that is the navigator's first long plan on the large field
+    (its links are found lazily, testing every point against every piece of cover; the same cause as the Wood's first-walk freeze).
+    About 0.4 s is shaders compiled the first time a soldier is drawn, which happens on any floor at the session's first minion.
+  - The squad now walks straight in the open and moves its order on only after 2.5 m (laws.ts).
+- **The navigator's speed on large floors** has gone to an agent: same routes to the last point, proved by an old-against-new test.
+  Still running: depth for the Deep.
