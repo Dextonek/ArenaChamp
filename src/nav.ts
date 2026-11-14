@@ -61,6 +61,21 @@ const GRID_CELL = 2.5; // the side of a square of the cover's index (m)
 const FREE_PAD = 0.05; // the largest margin `free` is asked for: the index finds cover this far past a body's reach
 const INDEX_MIN = 12; // fewer pieces of cover than this: asked one by one, as cheap as the index
 const SLACK = 0.01; // the index is drawn this much (m) wider than any answer it serves needs: rounding never hides a piece of cover
+const ROW_REST = 64; // a point's whole list of links is made once no more than this many of its pairs are still to be asked (`plan`)
+const SHADE_MIN = 24; // a point's shadow is made when this many of its links are to be asked at once (it costs about as much as 20 asked)
+const FILL_PAIRS = 256; // pairs asked a frame, at most, to finish the lists of links of the points plans went through (`fill`)
+const FILL_EVERY = 8; // ms of the clock between two such slices: one a frame
+const SHADE_BINS = 1024; // the directions round a point a shadow (`shade`) tells apart
+const SHADE_FAR = 120; // cover farther than this from the point casts no shadow (its shadow is narrow, and the plain check is cheap)
+
+/**
+ * Where (x, y) points, as a number from 0 to 4 that grows with the angle (anticlockwise from +x), without a trigonometric function:
+ * 0 to 1 the first quarter, 1 to 2 the second and so on. NaN at (0, 0).
+ */
+function turn(x: number, y: number) {
+  if (y >= 0) return x >= 0 ? y / (x + y) : 1 - x / (-x + y);
+  return x < 0 ? 2 - y / (-x - y) : 3 + x / (x - y);
+}
 
 /**
  * Which cover lies near which square of the floor, so that a question about a walk or a spot looks only at the cover near it. The index
@@ -133,14 +148,117 @@ class CoverIndex {
   }
 }
 
+/**
+ * The plan's open points, the lowest first: by the length so far plus the guess, and between equal ones the lower number first, which
+ * is the point the plan used to find by looking through all of them. A point's entry is added again each time its way gets shorter;
+ * the old ones are passed over when they come up (`plan`).
+ */
+class OpenHeap {
+  private key = new Float64Array(256);
+  private id = new Int32Array(256);
+  size = 0;
+
+  private before(a: number, b: number) {
+    return this.key[a] < this.key[b] || (this.key[a] === this.key[b] && this.id[a] < this.id[b]);
+  }
+
+  private swap(a: number, b: number) {
+    const k = this.key[a], i = this.id[a];
+    this.key[a] = this.key[b];
+    this.id[a] = this.id[b];
+    this.key[b] = k;
+    this.id[b] = i;
+  }
+
+  push(key: number, id: number) {
+    if (this.size === this.key.length) {
+      const key2 = new Float64Array(this.size * 2), id2 = new Int32Array(this.size * 2);
+      key2.set(this.key);
+      id2.set(this.id);
+      this.key = key2;
+      this.id = id2;
+    }
+    let c = this.size++;
+    this.key[c] = key;
+    this.id[c] = id;
+    while (c > 0) {
+      const p = (c - 1) >> 1;
+      if (!this.before(c, p)) break;
+      this.swap(c, p);
+      c = p;
+    }
+  }
+
+  /** Takes the first entry off; its key is left in `topKey`. */
+  pop() {
+    const id = this.id[0];
+    this.topKey = this.key[0];
+    const last = --this.size;
+    if (last > 0) {
+      this.key[0] = this.key[last];
+      this.id[0] = this.id[last];
+      let c = 0;
+      for (;;) {
+        const l = c * 2 + 1, r = l + 1;
+        let m = c;
+        if (l < last && this.before(l, m)) m = l;
+        if (r < last && this.before(r, m)) m = r;
+        if (m === c) break;
+        this.swap(c, m);
+        c = m;
+      }
+    }
+    return id;
+  }
+
+  topKey = 0;
+}
+
 export class Navigator {
   private obstacles: readonly Obstacle[] = [];
   private bounds: NavBounds | null = null;
   private signature = NaN;
   private version = 0;
   private nodes: Pt[] = [];
-  /** Each point's ways on to the others: found when a plan first comes to that point (`linksOf`), and kept until the map changes. */
+  /**
+   * Each point's ways on to the others: found when a plan first comes to that point (`linksOf`), and kept until the map changes. On a
+   * map without an index (`index`); with one they are kept in `rowTo` and `rowCost` (`row`).
+   */
   private links: ({ to: number; cost: number }[] | null)[] = [];
+  /** With an index: each point's links, the points they lead to (in order) and what they cost; null until a plan comes to the point. */
+  private rowTo: (Int32Array | null)[] = [];
+  private rowCost: (Float64Array | null)[] = [];
+  /**
+   * Whether a body walks straight between two points, for each pair a plan has asked about since the map changed: two bits a pair (0 not
+   * asked, 1 clear, 2 blocked), the pair (i, j) with i < j at j (j - 1) / 2 + i.
+   */
+  private pairs = new Uint8Array(0);
+  /** The points a plan has gone on from since the map changed (each would have its list of links, `links`, made by the old way). */
+  private reached = new Uint8Array(0);
+  /** How many of each point's pairs have been asked about (`sees`): all of them, and its list of links is made (`row`). */
+  private pairsKnown = new Int32Array(0);
+  private xs = new Float64Array(0);
+  private zs = new Float64Array(0);
+  private open = new OpenHeap();
+  /** The plan's scratch: the links of one point that would make a way shorter, and their costs. */
+  private cand = new Int32Array(0);
+  private candCost = new Float64Array(0);
+  /**
+   * The points plans went through whose lists of links are not finished, in the order they came: `fill` finishes them a slice at a
+   * time, so that a plan that comes back to them walks a list. Only a store of answers made ahead: no answer changes.
+   */
+  private toFill: number[] = [];
+  private fillAt = 0;
+  private fillPoint = -1;
+  private fillNext = 0;
+  private lastFill = -Infinity;
+  /**
+   * The shadow of the cover round one point (`shade`): for each of `SHADE_BINS` directions, the squared distance beyond which a walk from
+   * that point in that direction certainly runs into cover (Infinity: not known).
+   */
+  private far = new Float64Array(SHADE_BINS);
+  private shadeX = NaN;
+  private shadeZ = NaN;
   private routes = new WeakMap<object, Route>();
   /**
    * A room with walls of its own (`Obstacle.fixed`: the Hall of Noon) has floor inside its ring that nobody can reach, the stone it is cut
@@ -226,6 +344,53 @@ export class Navigator {
     return true;
   }
 
+  /**
+   * The shadow round (x, z), for walks that start or end there, between it and a spot that is free (`free` with a margin; every point
+   * of the graph is). A piece of cover is taken as discs along its segment, each `SLACK` smaller than its reach: a walk from (x, z)
+   * whose direction passes a disc within less than its radius, and that is longer than the disc is far, passes within the radius of
+   * the disc's middle, so `clear` finds that piece of cover nearer than its reach (`blocks`). If the walk's start is (x, z) itself,
+   * the piece must not already touch it (`start`): `node` says (x, z) is a point of the graph, else the cover touching it is left out.
+   * Rounding: the discs are a micrometre narrower again and the distances a micrometre longer, far more than any rounding.
+   */
+  private shade(x: number, z: number, node: boolean) {
+    const far = this.far, list = this.obstacles, m = this.boxes;
+    far.fill(Infinity);
+    this.shadeX = x;
+    this.shadeZ = z;
+    for (let k = 0; k < list.length; k++) {
+      const o = list[k], at = k * 5, reach = m[at + 4];
+      // Far off (the box grown by its reach does not come within `SHADE_FAR`), or not finite.
+      if (!(x > m[at] - SHADE_FAR && x < m[at + 1] + SHADE_FAR && z > m[at + 2] - SHADE_FAR && z < m[at + 3] + SHADE_FAR)) continue;
+      const rho = reach - SLACK;
+      if (!(rho > 0) || (!node && !(pointDist(x, z, o) >= reach))) continue;
+      const sx = o.bx - o.ax, sz = o.bz - o.az, len = Math.sqrt(sx * sx + sz * sz), parts = len > 0 ? Math.ceil(len / rho) : 0;
+      const r = rho - 1e-6;
+      for (let p = 0; p <= parts; p++) {
+        const t = parts ? p / parts : 0, dx = o.ax + sx * t - x, dz = o.az + sz * t - z, d2 = dx * dx + dz * dz;
+        if (!(d2 > (rho + 1e-3) * (rho + 1e-3)) || d2 > SHADE_FAR * SHADE_FAR) continue;
+        // The directions within the disc's half angle: the direction to its middle turned both ways by it.
+        const c = Math.sqrt(d2 - r * r);
+        const lo = turn(dx * c + dz * r, dz * c - dx * r) * (SHADE_BINS / 4), hi = turn(dx * c - dz * r, dz * c + dx * r) * (SHADE_BINS / 4);
+        const need = Math.sqrt(d2) + 1e-6, need2 = need * need;
+        // Only the directions wholly inside.
+        if (lo <= hi) {
+          for (let b = Math.ceil(lo), e = Math.floor(hi); b < e; b++) if (need2 < far[b]) far[b] = need2;
+        } else {
+          for (let b = Math.ceil(lo); b < SHADE_BINS; b++) if (need2 < far[b]) far[b] = need2;
+          for (let b = 0, e = Math.floor(hi); b < e; b++) if (need2 < far[b]) far[b] = need2;
+        }
+      }
+    }
+  }
+
+  /** Whether the walk between the shadow's point (`shade`) and (x, z) certainly runs into cover. */
+  private shaded(x: number, z: number) {
+    const dx = x - this.shadeX, dz = z - this.shadeZ, q = turn(dx, dz) * (SHADE_BINS / 4);
+    if (!(q >= 0)) return false;
+    const b = q >= SHADE_BINS ? SHADE_BINS - 1 : Math.floor(q);
+    return dx * dx + dz * dz >= this.far[b];
+  }
+
   /** `clear`'s question to one piece of cover (number `k` of the list): whether it stops the walk from `a` to `b`. */
   private blocks(k: number, a: Pt, b: Pt, x0: number, x1: number, z0: number, z1: number) {
     const m = this.boxes, at = k * 5;
@@ -244,6 +409,7 @@ export class Navigator {
    */
   step(key: object, from: THREE.Vector3, to: THREE.Vector3, obstacles: readonly Obstacle[], bounds: NavBounds | null): NavStep {
     this.sync(obstacles, bounds);
+    this.fill();
     to = this.within(key, from, to);
     let route = this.routes.get(key);
     const open = this.free(to.x, to.z, -TOUCH);
@@ -285,7 +451,7 @@ export class Navigator {
     for (const o of obstacles) sig = (sig * 31 + o.ax * 7 + o.az * 11 + o.bx * 13 + o.bz * 17 + o.r * 19) % 1000003;
     if (sig === this.signature) {
       // An edit the signature missed: the index no longer shows the list, so every question goes through the list itself.
-      if (this.index && !this.unchanged()) this.index = null;
+      if (this.index && !this.unchanged()) this.dropIndex();
       return;
     }
     this.signature = sig;
@@ -293,6 +459,27 @@ export class Navigator {
     this.obstacles = obstacles;
     this.bounds = bounds;
     this.build();
+  }
+
+  /**
+   * The list was edited and the signature did not change: the old way kept every list of links it had made, from the cover as it was, and
+   * asks the edited cover for the rest. The same here: the lists of the points a plan went on from are made from the numbers the cover
+   * had (`seen`), and from now on everything is asked of the list itself.
+   */
+  private dropIndex() {
+    const seen = this.seen, was: Obstacle[] = [];
+    for (let at = 0; at < seen.length; at += 5) was.push({ ax: seen[at], az: seen[at + 1], bx: seen[at + 2], bz: seen[at + 3], r: seen[at + 4], height: 0, kind: 'wall' });
+    for (let i = 0; i < this.nodes.length; i++) {
+      if (!this.reached[i]) continue;
+      const a = this.nodes[i], list: { to: number; cost: number }[] = [];
+      for (let j = 0; j < this.nodes.length; j++) {
+        if (j === i) continue;
+        const b = this.nodes[j];
+        if (i < j ? this.clear(a, b, was) : this.clear(b, a, was)) list.push({ to: j, cost: flat(a, b) });
+      }
+      this.links[i] = list;
+    }
+    this.index = null;
   }
 
   /** Whether the cover holds the numbers it had when the index was made. */
@@ -494,6 +681,19 @@ export class Navigator {
       }
     }
     this.links = this.nodes.map(() => null);
+    this.rowTo = this.nodes.map(() => null);
+    this.rowCost = this.nodes.map(() => null);
+    const n = this.nodes.length;
+    this.pairs = new Uint8Array(Math.ceil((n * (n - 1)) / 8));
+    this.reached = new Uint8Array(n);
+    this.pairsKnown = new Int32Array(n);
+    this.cand = new Int32Array(n);
+    this.candCost = new Float64Array(n);
+    this.toFill = [];
+    this.fillAt = 0;
+    this.fillPoint = -1;
+    this.xs = Float64Array.from(this.nodes, (p) => p.x);
+    this.zs = Float64Array.from(this.nodes, (p) => p.z);
     this.parts = this.chart();
   }
 
@@ -502,6 +702,11 @@ export class Navigator {
    * cover that took two seconds every time a stone fell, and a plan only ever comes to a few of the points.
    */
   private linksOf(i: number) {
+    this.reached[i] = 1;
+    if (this.index) {
+      const to = this.row(i), cost = this.rowCost[i]!;
+      return Array.from(to, (j, k) => ({ to: j, cost: cost[k] }));
+    }
     let list = this.links[i];
     if (list) return list;
     list = this.links[i] = [];
@@ -515,28 +720,187 @@ export class Navigator {
     return list;
   }
 
-  /** The shortest way from `from` to `goal` through the graph; straight at the goal if there is none. */
-  private plan(from: THREE.Vector3, goal: THREE.Vector3) {
-    const n = this.nodes.length, END = n;
-    const best = new Float64Array(n + 1).fill(Infinity), prev = new Int32Array(n + 1).fill(-1), done = new Uint8Array(n + 1);
-    const guess = (i: number) => (i === END ? 0 : flat(this.nodes[i], goal));
-    for (let i = 0; i < n; i++) {
-      if (this.through(from, this.nodes[i])) best[i] = flat(from, this.nodes[i]);
+  /**
+   * A slice of the lists of links not yet finished (`toFill`): at most `FILL_PAIRS` pairs asked, once every `FILL_EVERY` ms of the clock.
+   * The answers are the ones a plan would get by asking (`sees`); kept, they spare a plan the asking.
+   */
+  private fill() {
+    if (!this.index || this.fillAt >= this.toFill.length) return;
+    const now = performance.now();
+    if (now - this.lastFill < FILL_EVERY) return;
+    this.lastFill = now;
+    const n = this.nodes.length;
+    let budget = FILL_PAIRS;
+    while (budget > 0 && this.fillAt < this.toFill.length) {
+      const u = this.toFill[this.fillAt];
+      if (this.rowTo[u]) {
+        this.fillAt++;
+        continue;
+      }
+      if (this.fillPoint !== u) {
+        this.fillPoint = u;
+        this.fillNext = 0;
+      }
+      // The shadow round the point, when many of its pairs are still to be asked (it is made again after a plan made another).
+      const shadow = n - 1 - this.pairsKnown[u] >= SHADE_MIN;
+      if (shadow) this.shade(this.xs[u], this.zs[u], true);
+      let j = this.fillNext;
+      for (; j < n && budget > 0; j++) {
+        if (j === u || this.known(u, j)) continue;
+        this.sees(u, j, shadow);
+        budget--;
+      }
+      this.fillNext = j;
+      if (j >= n) {
+        this.row(u);
+        this.fillAt++;
+      }
     }
-    const intoGoal = new Float64Array(n).fill(-1);
-    for (let i = 0; i < n; i++) if (this.through(this.nodes[i], goal)) intoGoal[i] = flat(this.nodes[i], goal);
+  }
+
+  /**
+   * `linksOf` with an index: the same links in the same order, each pair asked once a map (`sees`, so the far end's own list need not
+   * ask again), most of them answered by the shadow round the point (`shade`).
+   */
+  private row(i: number) {
+    const known = this.rowTo[i];
+    if (known) return known;
+    const n = this.nodes.length, a = this.nodes[i], to: number[] = [], cost: number[] = [];
+    let shadow = false;
+    for (let j = 0; j < n; j++) {
+      if (j === i) continue;
+      if (!shadow && !this.known(i, j)) {
+        this.shade(a.x, a.z, true);
+        shadow = true;
+      }
+      if (this.sees(i, j, shadow)) {
+        to.push(j);
+        cost.push(flat(a, this.nodes[j]));
+      }
+    }
+    this.rowCost[i] = Float64Array.from(cost);
+    return (this.rowTo[i] = Int32Array.from(to));
+  }
+
+  /**
+   * Whether a body walks straight between points `i` and `j` (from the lower to the higher, as `linksOf` asks), asked once a map.
+   * `shadow`: the shadow round point `i` is made (`shade`), and a walk in it needs no more asking.
+   */
+  private sees(i: number, j: number, shadow = false) {
+    const lo = i < j ? i : j, hi = i < j ? j : i, at = (hi * (hi - 1)) / 2 + lo, byte = at >> 2, shift = (at & 3) * 2;
+    let v = (this.pairs[byte] >> shift) & 3;
+    if (!v) {
+      v = (shadow && this.shaded(this.xs[j], this.zs[j])) || !this.through(this.nodes[lo], this.nodes[hi]) ? 2 : 1;
+      this.pairs[byte] |= v << shift;
+      this.pairsKnown[lo]++;
+      this.pairsKnown[hi]++;
+    }
+    return v === 1;
+  }
+
+  /** Whether the pair (i, j) has been asked about (`sees`). */
+  private known(i: number, j: number) {
+    const lo = i < j ? i : j, hi = i < j ? j : i, at = (hi * (hi - 1)) / 2 + lo;
+    return ((this.pairs[at >> 2] >> ((at & 3) * 2)) & 3) !== 0;
+  }
+
+  /**
+   * The shortest way from `from` to `goal` through the graph (A*); straight at the goal if there is none. The open points are kept in a
+   * heap (`OpenHeap`), which gives the point the old look through all of them gave, ties and all.
+   */
+  private plan(from: THREE.Vector3, goal: THREE.Vector3) {
+    const n = this.nodes.length, END = n, nodes = this.nodes, xs = this.xs, zs = this.zs, open = this.open;
+    const best = new Float64Array(n + 1).fill(Infinity), prev = new Int32Array(n + 1).fill(-1), done = new Uint8Array(n + 1);
+    // The guess, as the old `flat(nodes[i], goal)`; 0 at the goal.
+    const guess = new Float64Array(n + 1);
+    for (let i = 0; i < n; i++) guess[i] = flat(nodes[i], goal);
+    open.size = 0;
+    // The walker's own shadow: most of the points lie behind cover from it.
+    const lit = !!this.index && n > 32 && Number.isFinite(from.x + from.z);
+    if (lit) this.shade(from.x, from.z, false);
+    for (let i = 0; i < n; i++) {
+      if (!(lit && this.shaded(xs[i], zs[i])) && this.through(from, nodes[i])) best[i] = flat(from, nodes[i]);
+      const f = best[i] + guess[i];
+      if (f < Infinity) open.push(f, i);
+    }
     for (;;) {
-      let u = -1, low = Infinity;
-      for (let i = 0; i <= n; i++) {
-        if (!done[i] && best[i] + guess(i) < low) { low = best[i] + guess(i); u = i; }
+      let u = -1;
+      while (open.size) {
+        const i = open.pop();
+        // An entry from before the way to its point got shorter, or a point already gone on from.
+        if (done[i] || open.topKey !== best[i] + guess[i]) continue;
+        u = i;
+        break;
       }
       if (u < 0) return [goal];
       if (u === END) break;
       done[u] = 1;
-      for (const l of this.linksOf(u)) {
-        if (best[u] + l.cost < best[l.to]) { best[l.to] = best[u] + l.cost; prev[l.to] = u; }
+      // A point a plan has gone on from before, and whose pairs are nearly all known (most from the far ends' side), gets its whole
+      // list of links: the few left are asked now, and the plans after this one walk the list.
+      const again = this.reached[u] === 1;
+      this.reached[u] = 1;
+      if (!again && this.index) this.toFill.push(u);
+      const bu = best[u];
+      if (this.index && (this.rowTo[u] || (again && n - 1 - this.pairsKnown[u] <= ROW_REST))) {
+        // Its list of links: the old way's loop.
+        const to = this.row(u), cost = this.rowCost[u]!;
+        for (let k = 0; k < to.length; k++) {
+          const j = to[k];
+          if (bu + cost[k] < best[j]) {
+            best[j] = bu + cost[k];
+            prev[j] = u;
+            const f = best[j] + guess[j];
+            if (!done[j] && f < Infinity) open.push(f, j);
+          }
+        }
+      } else if (this.index) {
+        // Not all its links known yet: only those that would make the way to their far end shorter are asked about. Whether the
+        // others are there changes nothing (the old loop left a point alone unless the way through `u` was shorter).
+        const ux = xs[u], uz = zs[u], cand = this.cand, costs = this.candCost;
+        // The links that would make a way shorter, in order; then those not yet known are asked (with the shadow round the point when
+        // there are many); then the ways are made shorter. Each far end's update depends on its own way alone, so the order holds.
+        let count = 0, unknown = 0;
+        for (let j = 0; j < n; j++) {
+          if (j === u) continue;
+          const bj = best[j];
+          // A link costs at least the longer of its two sides (`hyp`): no shorter that way, and it need not be asked about.
+          if (bj !== Infinity) {
+            const dx = ux - xs[j], dz = uz - zs[j], ax = dx < 0 ? -dx : dx, az = dz < 0 ? -dz : dz;
+            if (!(bu + (ax > az ? ax : az) < bj)) continue;
+          }
+          const cost = hyp(ux - xs[j], uz - zs[j]);
+          if (!(bu + cost < bj)) continue;
+          cand[count] = j;
+          costs[count++] = cost;
+          if (!this.known(u, j)) unknown++;
+        }
+        const shadow = unknown >= SHADE_MIN;
+        if (shadow) this.shade(ux, uz, true);
+        for (let k = 0; k < count; k++) {
+          const j = cand[k];
+          if (this.sees(u, j, shadow)) {
+            best[j] = bu + costs[k];
+            prev[j] = u;
+            const f = best[j] + guess[j];
+            if (!done[j] && f < Infinity) open.push(f, j);
+          }
+        }
+      } else {
+        for (const l of this.linksOf(u)) {
+          if (bu + l.cost < best[l.to]) {
+            best[l.to] = bu + l.cost;
+            prev[l.to] = u;
+            const f = best[l.to] + guess[l.to];
+            if (!done[l.to] && f < Infinity) open.push(f, l.to);
+          }
+        }
       }
-      if (intoGoal[u] >= 0 && best[u] + intoGoal[u] < best[END]) { best[END] = best[u] + intoGoal[u]; prev[END] = u; }
+      // Into the goal: asked only when it would be the shortest way so far.
+      if (bu + guess[u] < best[END] && this.through(nodes[u], goal)) {
+        best[END] = bu + guess[u];
+        prev[END] = u;
+        open.push(best[END], END);
+      }
     }
     const path = [goal];
     for (let i = prev[END]; i >= 0; i = prev[i]) path.unshift(new THREE.Vector3(this.nodes[i].x, 0, this.nodes[i].z));

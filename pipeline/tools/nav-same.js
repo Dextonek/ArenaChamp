@@ -293,7 +293,8 @@
           // A walk that needs no plan: only the graph is made.
           res.buildMs = r2(ms(() => nav.step(key, pick[0][0], pick[0][0], lists[0], map.bounds)));
           res.firstPlanMs = r2(ms(() => nav.step({}, pick[0][0], pick[0][1], lists[0], map.bounds)));
-          const linked = () => nav.links.filter(Boolean);
+          // The lists of links made (the new navigator keeps them as `rowTo` on a map with an index).
+          const linked = () => (nav.rowTo?.some(Boolean) ? nav.rowTo : nav.links).filter(Boolean);
           res.pointsLinkedByFirst = linked().length;
           const cold = pick.map(([a, c]) => ms(() => nav.step({}, a, c, lists[0], map.bounds)));
           res.morePlansMs = r2(cold.reduce((x, y) => x + y, 0));
@@ -327,10 +328,11 @@
    */
   window._navFrames = async (o = {}) => {
     await setup();
-    const P = mods.nav.Navigator.prototype, orig = { step: P.step, plan: P.plan, linksOf: P.linksOf };
+    // The new navigator makes a point's links in `row` (with an index); the old one in `linksOf`.
+    const P = mods.nav.Navigator.prototype, links = P.row ? 'row' : 'linksOf', orig = { step: P.step, plan: P.plan, linksOf: P[links] };
     const cur = { step: 0, plan: 0, linksOf: 0, found: 0 };
     const wrap = (name) => function (...a) {
-      if (name === 'linksOf' && this.links[a[0]]) return orig.linksOf.apply(this, a);
+      if (name === 'linksOf' && (this.rowTo?.[a[0]] ?? this.links[a[0]])) return orig.linksOf.apply(this, a);
       const t = performance.now();
       try { return orig[name].apply(this, a); } finally {
         const d = performance.now() - t;
@@ -339,7 +341,7 @@
       }
     };
     // Nested calls (plan inside step, linksOf inside plan) add into their own buckets: the share of each, not exclusive.
-    P.step = wrap('step'); P.plan = wrap('plan'); P.linksOf = wrap('linksOf');
+    P.step = wrap('step'); P.plan = wrap('plan'); P[links] = wrap('linksOf');
     // A frame: the game's step and the run's tick (not the bot's pauses for the page, which wait for whatever else the page does).
     const frames = [];
     const st = vfx.step, G = mods.game.WorldGame.prototype, tick = G.tick;
@@ -363,7 +365,7 @@
       report = await window._worldRoute({ floor: o.floor ?? 46, hero: o.hero ?? 'Lyra', maxSeconds: o.seconds ?? 90 });
     } catch (e) { err = String(e?.stack ?? e).slice(0, 300); } finally {
       close();
-      vfx.step = st; G.tick = tick; P.step = orig.step; P.plan = orig.plan; P.linksOf = orig.linksOf;
+      vfx.step = st; G.tick = tick; P.step = orig.step; P.plan = orig.plan; P[links] = orig.linksOf;
       window._world.end?.();
     }
     const top = frames.slice().sort((p, q) => q.ms - p.ms).slice(0, o.top ?? 8);
