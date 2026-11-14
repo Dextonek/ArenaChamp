@@ -169,8 +169,10 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
         // against a row of touching ones (floor 37's third).
         const arc = [-100, -50, 0, 50, 100].map((d) => { const a = (d * Math.PI) / 180; return add(add(p.c, out, Math.cos(a) * 6.9), tan, Math.sin(a) * 6.9); });
         for (let i = 1; i < arc.length; i++) wall('stalwall', arc[i - 1], arc[i], 1.0, 3.4);
-        const cr = Q(5.6, 0);
-        crystals.push({ x: r2(cr.x), z: r2(cr.z) });
+        const cr = Q(5.6, 0), front = Q(3.5, 0);
+        // Where the shard goes and where the hero stands to wake it: open ground just in front of the crystal, not the crystal itself (a
+        // goal inside cover ends at its edge on the walker's side: coming at the hall from behind, the route bot stopped outside its wall).
+        crystals.push({ x: r2(front.x), z: r2(front.z) });
         pill('great', cr, 1.0, 5.2);
         break;
       }

@@ -3207,8 +3207,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        "z": 58.5
       },
       "to": {
-       "x": -76.15,
-       "z": -19.35
+       "x": -74.17,
+       "z": -18.66
       },
       "r": 2.2
      },
@@ -3219,8 +3219,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        {
         "id": "crystal1",
         "at": {
-         "x": -76.15,
-         "z": -19.35
+         "x": -74.17,
+         "z": -18.66
         }
        }
       ],
@@ -3237,8 +3237,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        "z": -15.72
       },
       "to": {
-       "x": -51.9,
-       "z": -68.52
+       "x": -50.71,
+       "z": -66.78
       },
       "r": 2.2
      },
@@ -3249,8 +3249,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        {
         "id": "crystal2",
         "at": {
-         "x": -51.9,
-         "z": -68.52
+         "x": -50.71,
+         "z": -66.78
         }
        }
       ],
@@ -3267,8 +3267,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        "z": -59.37
       },
       "to": {
-       "x": 73.68,
-       "z": -46.45
+       "x": 71.98,
+       "z": -45.22
       },
       "r": 2.2
      },
@@ -3279,8 +3279,8 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
        {
         "id": "crystal3",
         "at": {
-         "x": 73.68,
-         "z": -46.45
+         "x": 71.98,
+         "z": -45.22
         }
        }
       ],
