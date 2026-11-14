@@ -66,6 +66,11 @@ export const CHANGELOG: Release[] = [
       },
       {
         tag: 'Tower',
+        title: 'Enemies fight together',
+        text: 'A pack now picks one target together and comes at it from different sides, and only three strike at once while the rest wait a step back. Each kind has its own way: hounds and mites bite, fall back and lunge; lurkers leap from the dark; crabs and giants slam; knights charge; slingers, sprites and bowmen loose a fan of three; the guards and the named slam and charge in turn, and grow faster when hurt. Every one of these shows its red zone on the ground first: step out of it.',
+      },
+      {
+        tag: 'Tower',
         title: 'Each chapter has its own way',
         text: 'In the Wood, walls of roots close some passes by turns. In the Sands, a wall of sand crosses the valley: wait it out behind a rock, and keep the caravan in a rock\'s lee. In the Deep, only crystals, lamps and touched waystones give light. In the War, take a banner and its soldiers fight beside you.',
       },

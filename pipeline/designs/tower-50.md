@@ -225,3 +225,15 @@ today's area, not a circle.
   draw calls +0 to 4, triangles +5k to 11k. The desktop GPU time jumps between about 2 and 5 ms from run to run whatever the scenes; in
   the alternating six, gen-14's frame median is 9.9 / 7.2 / 9.6 ms off against 9.1 / 9.8 / 9.6 ms on. Phone-4x: 30.9 / 33.9 off, 33.3 / 32.0
   on. No cost above the noise.
+- **How the packs fight (2026-11-14).** The user: "lets look at those mobs, they should also have a pattern of attack and focusing logic".
+  `src/tower/world/tactics.ts` (`PackMind`, one a pack): a shared focus held 2.5 s (the hero, or a hero-side unit in the pack's face),
+  melee slots round it and at most three striking at once, and a pattern per kind by its look (line, hunter, pouncer, brute, charger,
+  caster, warden; kinds not in the table fight as before). Specials show a telegraph first (slam 1.0 s, charge 0.85, lunge 0.6, pounce
+  0.8), never start on a rooted, stunned or slowed target, one a pack at a time, and replace a blow (the hit's size goes as `damage` / 30
+  through the pack's own delivery). It plugs into the summon system by an opt-in `SummonOptions.brain` (unset: the old code path, so duels
+  and the raid are untouched: duel-temple, duel-harbour, raid-party, tower-horde play the same fights as before the change).
+  `globalThis.__noTactics = true` turns it off. Probes: `pipeline/tools/tactics-probe.py` (each pack fought standing still, on and off:
+  floor 2 2.36 against 2.60 of the hero's health, 14 3.47 / 3.73, 46 4.23 / 5.69; no zone left behind), `tactics-shots.py` (pictures:
+  `docs/tower/tactics/`). Route bot, on / off: floor 2 Lyra 1574 / 1723 s, Bram 1810-2051 / 1650-1815 s (2 of 4 runs with tactics took
+  3-4 ruler tries or 2 falls; the bot steps out of no red zone), floor 46 Bram 1089 / 1091, Lyra 944 / 1009; all cleared. The Climb's
+  perf scenes (world-N, gen-N) play other fights now, by design.

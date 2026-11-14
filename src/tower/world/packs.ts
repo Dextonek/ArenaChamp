@@ -5,6 +5,7 @@ import type { TowerBoons } from '../boons';
 import { leechFrom } from '../hooks';
 import type { EnemySpec, PackDef, Spot } from './def';
 import { lookOf } from './looks';
+import { BLOW, PackMind, roleOf } from './tactics';
 
 /**
  * A pack of a floor's enemies that waits where it stands (stage 0 of the Tower's floors as worlds, built out in stage 1A). The units are
@@ -74,6 +75,8 @@ export class Pack {
    * heals: the Sands' probe counted 28 such resets in one try); `paused` is the time it has stood still so far. */
   private paused = 0;
   private stoppedAt: number | null = null;
+  /** How it fights together (tactics.ts): one focus, slots round it, turns, each kind's own pattern. */
+  readonly mind: PackMind;
 
   constructor(readonly def: PackDef, private env: PackEnv, cleared = false) {
     const kinds: EnemySpec[] = [];
@@ -87,6 +90,7 @@ export class Pack {
     });
     if (cleared) this.state = 'cleared';
     if (def.leash) this.leashAt = def.leash;
+    this.mind = new PackMind(env.api, () => this.state === 'awake');
     if (def.named) {
       const pts = def.named.patrol, cum = [0];
       for (let i = 0; i < pts.length; i++) {
@@ -149,25 +153,30 @@ export class Pack {
     const live = this.slots.filter((s) => s.alive).slice(0, partial ? Math.max(0, room) : undefined);
     if (live.length > room || !live.length) return false;
     const at = this.patrol ? this.patrolAt(this.clock()) : null;
-    for (const s of live) {
+    for (const [i, s] of live.entries()) {
       const sp = s.spec;
       const look = lookOf(sp);
       if (at) s.spot.set(at.x, 0, at.z);
       const handle = arena.summonFor('opponent', {
-        kind: sp.melee ? 'melee' : 'ranged', at: s.spot.clone(), hp: s.hp, seconds: 3600, damage: 30, attackEvery: sp.every, speed: sp.speed, range: sp.range ?? 9, color: sp.color,
+        kind: sp.melee ? 'melee' : 'ranged', at: s.spot.clone(), hp: s.hp, seconds: 3600, damage: BLOW, attackEvery: sp.every, speed: sp.speed, range: sp.range ?? 9, color: sp.color,
         look: sp.scale && sp.scale !== 1 ? (kind, p) => { const l = look(kind, p); l.root.scale.multiplyScalar(sp.scale!); l.barY = (l.barY ?? 1.8) * sp.scale!; return l; } : look,
         // A melee unit asleep or on its way home walks to its own spot (where it stands, it does not walk); awake, the system's chase.
         goal: () => (this.state === 'awake' ? null : s.spot),
+        // `globalThis.__noTactics = true` before a pack appears: it fights as before (for the A/B).
+        brain: roleOf(sp) && !(globalThis as { __noTactics?: boolean }).__noTactics ? this.mind.brain : undefined,
       }, (target, opts) => {
         if (target === arena.caster) {
           const script = api.duel.boss?.script;
-          api.duel.hurtHero({ share: sp.share * (script?.rage ?? 1) * (script?.harm ?? 1), from: opts?.from ?? s.spot, move: sp.name as never });
+          // A special's blow is bigger than the kind's own (tactics.ts): its `damage` against the plain blow's.
+          const size = (opts?.damage ?? BLOW) / BLOW;
+          api.duel.hurtHero({ share: sp.share * size * (script?.rage ?? 1) * (script?.harm ?? 1), from: opts?.from ?? s.spot, move: sp.name as never });
           if (sp.net && api.duel.heroHp > 0) arena.applyStatus(arena.caster, sp.net.kind, sp.net.seconds, sp.color);
         } else arena.hit(target, opts);
       });
       const unit = handle.units[0];
       if (!unit) continue;
       s.unit = unit;
+      this.mind.add(unit, sp, i);
       unit.rate = 0;
       unit.opts.speed = 0;
       handle.onHurt((_, damage) => {
@@ -175,6 +184,7 @@ export class Pack {
         this.wake('hit');
       });
       handle.onDeath((dead) => {
+        this.mind.forget(dead);
         // A unit that went away (a pack hidden again) is no death.
         if (!dead.slain) return;
         s.alive = false;
@@ -196,6 +206,7 @@ export class Pack {
   }
 
   private hide() {
+    this.mind.calm();
     for (const s of this.slots) {
       if (!s.unit) continue;
       s.hp = s.unit.alive ? s.unit.hp : s.hp;
@@ -220,6 +231,7 @@ export class Pack {
 
   /** Gone with the zone's fight: nothing of it is left standing. */
   dispose() {
+    this.mind.calm();
     for (const s of this.slots) {
       if (s.unit?.alive) this.env.api.arena.summons.dismiss(s.unit);
       s.unit = undefined;
@@ -252,9 +264,11 @@ export class Pack {
       return;
     }
     if (this.state === 'awake') {
+      this.mind.tick(dt);
       if (d > this.leashAt && !this.hunter) {
         this.state = 'leashed';
         this.seen.leashed++;
+        this.mind.calm();
         for (const u of this.units) {
           u.rate = 0;
           u.opts.speed = 0;

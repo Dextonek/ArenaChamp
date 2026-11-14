@@ -53,6 +53,33 @@ export interface SummonOptions {
   goal?: (pos: THREE.Vector3) => THREE.Vector3 | null;
   /** Hits don't push it: a boss's add stands where its cast put it, on every screen. */
   still?: boolean;
+  /** A mind of its own (the Climb's packs: src/tower/world/tactics.ts). Unset: the nearest victim and the usual chase, unchanged. */
+  brain?: SummonBrain;
+}
+
+/** What a brain asks of a unit this frame: walk (toward `to` round the cover, or along `dir`), face a spot, show a wind-up. */
+export interface BrainMove {
+  to?: THREE.Vector3;
+  dir?: THREE.Vector3;
+  face?: THREE.Vector3;
+  /** The wind-up drawn as a swing's first part (0..1); the system strikes nothing for it. */
+  pose?: number;
+}
+
+/** What a brain may use: a bolt from the unit at a spot (`damage` for this bolt only; the unit's attack wait starts again). */
+export interface BrainTools {
+  shoot(at: THREE.Vector3, damage?: number): void;
+  sees(a: THREE.Vector3, b: THREE.Vector3): boolean;
+}
+
+/**
+ * A unit's own mind, asked every frame it lives: `pick` chooses whom it goes for (null: no one), `act` may take the frame over
+ * (a move, a wind-up, a special of its own) or return null for the system's usual chase, strike and shot at the picked victim.
+ * Never asked mid-swing.
+ */
+export interface SummonBrain {
+  pick?(u: SummonUnit, victims: { figure: Enemy; pos: THREE.Vector3 }[]): { figure: Enemy; pos: THREE.Vector3 } | null;
+  act?(u: SummonUnit, tgt: { figure: Enemy; pos: THREE.Vector3 } | null, dist: number, dt: number, tools: BrainTools): BrainMove | null;
 }
 
 /** One summoned unit. `figure` is an `Enemy`, so it is a valid `ctx.hit` target. */
@@ -86,7 +113,7 @@ export class SummonUnit {
     readonly summon: Summon,
     readonly kind: SummonKind,
     readonly side: SummonSide,
-    readonly opts: Required<Pick<SummonOptions, 'damage' | 'attackEvery' | 'range' | 'speed' | 'color'>> & Pick<SummonOptions, 'goal' | 'still'>,
+    readonly opts: Required<Pick<SummonOptions, 'damage' | 'attackEvery' | 'range' | 'speed' | 'color'>> & Pick<SummonOptions, 'goal' | 'still' | 'brain'>,
     hp: number,
     seconds: number,
   ) {
@@ -231,7 +258,7 @@ export class SummonSystem {
     const room = Math.max(0, MAX_UNITS - this.alive(world.side).length);
     const n = Math.min(Math.max(1, Math.round(o.count ?? 1)), room);
     const color = o.color ?? '#b8c4d8';
-    const opts = { damage: o.damage, attackEvery: o.attackEvery, color, range: o.range ?? (o.kind === 'turret' ? 8 : 9), speed: o.speed ?? (o.kind === 'melee' ? 3.6 : 3), goal: o.goal, still: o.still };
+    const opts = { damage: o.damage, attackEvery: o.attackEvery, color, range: o.range ?? (o.kind === 'turret' ? 8 : 9), speed: o.speed ?? (o.kind === 'melee' ? 3.6 : 3), goal: o.goal, still: o.still, brain: o.brain };
     const near = world.victims()[0];
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + Math.PI / 2;
@@ -356,11 +383,38 @@ export class SummonSystem {
 
     const w = u.summon.world;
     let tgt: { figure: Enemy; pos: THREE.Vector3 } | null = null, td = Infinity;
-    for (const v of w.victims()) {
-      const d = Math.hypot(v.pos.x - pos.x, v.pos.z - pos.z);
-      if (d < td) { td = d; tgt = v; }
+    const brain = u.opts.brain;
+    if (brain?.pick) {
+      tgt = brain.pick(u, w.victims());
+      if (tgt) td = Math.hypot(tgt.pos.x - pos.x, tgt.pos.z - pos.z);
+    } else {
+      for (const v of w.victims()) {
+        const d = Math.hypot(v.pos.x - pos.x, v.pos.z - pos.z);
+        if (d < td) { td = d; tgt = v; }
+      }
     }
     let walk = 0;
+    const took = brain?.act && u.swing < 0 ? brain.act(u, tgt, td, dt, {
+      shoot: (at, damage) => { const was = u.opts.damage; if (damage !== undefined) u.opts.damage = damage; this.shoot(u, w, at); u.opts.damage = was; },
+      sees: (a, b) => this.env.sees(a, b),
+    }) : null;
+    if (took) {
+      // The brain has the frame: its walk, its facing, its wind-up.
+      if (took.face) this.turn(fx, Math.atan2(took.face.x - pos.x, took.face.z - pos.z), dt);
+      if (took.to || took.dir) {
+        const dir = took.dir ? took.dir.clone() : new THREE.Vector3(took.to!.x - pos.x, 0, took.to!.z - pos.z);
+        if (dir.lengthSq() > 1e-6) {
+          dir.normalize();
+          if (!took.face) this.turn(fx, Math.atan2(dir.x, dir.z), dt);
+          walk = this.walk(u, dir, 1, dt, took.dir ? undefined : took.to);
+        }
+      }
+      pose.walk = walk;
+      pose.swing = took.pose !== undefined ? Math.min(0.45, took.pose * 0.45) : -1;
+      pose.shot = u.shot;
+      fx.update(dt, pose, u.hp / u.max, this.env.camera);
+      return;
+    }
     if (u.swing >= 0) {
       // Mid-swing: stand and strike when it lands, if the target is still close.
       u.swing += dt / SWING_TIME;
