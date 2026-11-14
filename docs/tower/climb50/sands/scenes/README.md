@@ -21,8 +21,8 @@ stream, and the depth's own props are the same with the scenes on or off (checke
 | grave | a long mound ringed with stones, a helmet on it, a sword across it, a small cairn at its head | road, open, by the raiders and forts |
 | jackal | a jackal's head in black stone, fallen from its statue and lying on its cheek half buried in a drift, gold in its eye and ear, a turquoise collar at the broken neck; a paw further off | against a rock, or out on the dunes |
 | wagon | a wagon sunk to its axles in a drift, its tongue in the sand (raised, out on the dunes) | against a rock, or out on the dunes |
-| pots | pots stacked at a tomb's door, one smashed and its grain spilled, one rolled away | against a rock by the tombs |
-| ribs | the bleached ribs of a great beast arching from the sand, its spine and horned skull | out past the edge only |
+| pots | pots stacked at a tomb's door, one smashed and its grain spilled, one rolled away (smaller than the cover's jars, so no one takes them for cover) | against a rock by the tombs |
+| ribs | the bleached ribs of a great beast arching from the sand, its spine and horned skull (drawn 1.4 times, to be seen from far) | out past the edge only |
 
 The first lion's head read as a teddy bear from the game's camera (a round mane round a round face) and was too cute for the art
 bible; a second, a stone lion's head lying in profile, read as a spiked disc. The jackal in black lacquered stone with gold reads
@@ -32,10 +32,10 @@ plainly from above, so the kind became a jackal.
 
 Each floor's mix comes from its own seed: every kind may appear 2 or 3 times, two kinds are left out, one has two more, the ribs
 appear on four floors in five, and no floor has more than 24 scenes. In order: shrines at the forks; a scene by each place that
-suits it (pots at the tombs, a fight by the raiders and forts, a rest or caravan by the serai and oasis, a dig by the dig); up to five
-of the tall ones right south of a rock (the camera looks north, so a rock is behind them and they hide nobody); four in the open sand
-between the places; one every 45 to 60 m of road, on the verge; and up to three past the edge, on the dunes or the cliff tops, never in
-the south (the camera's side).
+suits it (pots at the tombs, a fight by the raiders and forts, a rest or caravan by the serai and oasis, a dig by the dig); one every
+45 to 60 m of road, on the verge; up to five of the tall ones right south of a rock (the camera looks north, so a rock is behind them
+and they hide nobody); a few in the open sand between the places; and up to three past the edge, on the dunes or the cliff tops, never
+in the south (the camera's side).
 
 Every part of a scene has a footprint (a circle and a height), and a scene is placed only if every part keeps:
 - 3 m from its edge to the floor's spots (keep.ts `floorKeep`: start, camp, lore, people, packs and patrols, waystones, caches, doors,
@@ -52,13 +52,15 @@ of its own, except where a background scene lands in a 96 m square that had noth
 | Floor | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 |
 |---|---|---|---|---|---|---|---|---|---|---|
 | Scenes | 24 | 20 | 21 | 20 | 23 | 20 | 21 | 23 | 22 | 20 |
-| Build (ms, desktop) | 35 (the first floor also makes the shapes) | 13 | 16 | 13 | 17 | 14 | 18 | 17 | 12 | 14 |
+| By the road / a place / a rock / open / a fork / past the edge | 8/5/5/1/2/3 | 5/9/4/0/1/1 | 7/7/5/0/1/1 | 8/8/3/0/1/0 | 9/8/4/0/1/1 | 8/7/3/0/1/1 | 10/8/2/0/1/0 | 8/8/5/0/1/1 | 10/8/2/0/1/1 | 9/6/4/0/1/0 |
+| Build (ms, desktop) | 48 (the first floor also makes the shapes) | 16 | 38 | 23 | 23 | 20 | 19 | 35 | 22 | 15 |
 
 ## The pictures
 
 From the game's own camera on floors 21 (the Storm Canyon), 26 and 29: `fNN-<kind>-mid-before.jpg` and `-after.jpg` (zoom 1.25, as
-played), `-close-` (zoom 0.7); `fNN-sheet.jpg` has every pair side by side, before left. The `wide` shots: `f26-wide-ribs-*` (a free camera
-over the western dunes, where the ribs lie past the edge) and `f26-wide-west-*` (the floor's west half from high up). Seen whole, the
+played), `-close-` (zoom 0.7), `fNN-wide-wide-*` (the game's farthest zoom, 30 m in from the floor's background scene);
+`fNN-sheet.jpg` has every pair side by side, before left. The wide shots from a free camera: `f26-wide-edge-*` (over the eastern edge,
+where the ribs lie on the cliff top) and `f26-wide-west-*` (the floor's west half from high up). Seen whole, the
 scenes are small: they are made to be found while walking, at the game's camera.
 
 ## The checks (2026-11-14)
@@ -66,7 +68,9 @@ scenes are small: they are made to be found while walking, at the game's camera.
 - **Overlap probe** (`pipeline/tools/scenes-probe-sd.js`, run with world-shots.py): it builds each floor and checks every part against
   the floor's own data (not the planner's): 0 hits on all ten floors.
 - **`_worldCheck`, floors 21 to 30:** nothing unreachable; reachable 33,938 to 34,305 m²; most units near any point 5 (floor 21: 3).
-  The same as the chapter's notes: the scenes draw no cover.
+  `_worldCheck` reads only the floor's data, which the scenes do not touch, so it is unchanged by construction; these are the chapter's
+  numbers.
 - **Nothing moved:** with the scenes on and off (floors 23 and 26), the depth's own props are the same list.
 - **Speed:** both chapters were measured in one A/B run; the table is in `docs/tower/climb50/deep/scenes/README.md`. In short: the
-  same draw calls (one more on gen-26), the same fights, frame times and the phone profile's floor build times inside the noise.
+  same draw calls (one more on gen-26), the same fights, frame times inside the noise. On the phone profile the scenes' own build takes
+  75 to 132 ms (floors 21, 26, 29) of a floor build of 4.3 to 7.2 s: about 2%, smaller than the build's own swing, but not nothing.

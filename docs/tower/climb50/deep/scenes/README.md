@@ -24,20 +24,20 @@ and there are only a few of them.
 | survey | a survey left behind: a map on the ground weighted with stones, a spyglass and compass, a pack; the tripod fallen, or against a rock standing over a board with the map pinned | by the shore and the pools, open floor, against a rock |
 | winch | a winch with its chain snapped, the hook, the skip overturned and its ore out | against a rock only |
 | shrine | stacked stones with a candle, stubs at the foot, coins and a shard left | where a track ends on another, by the pools and the well |
-| wreck | a rowing boat half sunk in the black lake, bow up, its lantern still lit, an oar and a crate afloat | out on the lake, past the edge, never in the south |
+| wreck | a rowing boat half sunk in the black lake, bow up, its lantern still lit, an oar and a crate afloat (half again the landing boat's size, to be seen across the water) | out on the lake, past the edge, never in the south |
 
 A rope bridge's broken end over the south drop was made first and dropped: the south edge is under the game's HUD, and a player
 never sees it there.
 
 ## How they are placed
 
-Each floor's mix comes from its own seed (every kind 2 or 3 times, one of the five common kinds only once, another two more; the
-wreck on four floors in five; at most 22). In order: shrines where tracks meet; a scene by each place that suits it; up to five tall ones
-right south of a piece of cover; up to four on the open cave floor; one every 40 to 55 m of track; the wreck out on the lake. Every part
+Each floor's mix comes from its own seed (every kind 3 or 4 times, one of the five common kinds only once, another two more; the
+wreck on four floors in five; at most 24). In order: shrines where tracks meet; a scene by each place that suits it; one every 40 to
+55 m of track (at most seven, to leave room for the rest); up to five tall ones right south of a piece of cover; a few on the open cave
+floor; the wreck out on the lake. Every part
 keeps 3 m from its edge to the floor's spots (keep.ts), 2.4 m off a track's middle, 2.6 m off a place, 7 m off the turntable, off the
 cover, the pools and the depth's own props, inside the outline and off the water; parts taller than the knee (0.56 m) only with cover
-right north of them. The tracks' verges were already full of the depth's frames, sacks and ore, so most scenes stand by the places, in
-the open and against the rocks.
+right north of them. No shrine has found room where tracks meet: the forks are at the turntable, which every scene keeps 7 m from.
 
 Everything is built once for the page and copied by a matrix into the depth's own batch (one mesh per quarter of the floor on one
 material): no new draw calls, no new lights.
@@ -46,26 +46,29 @@ material): no new draw calls, no new lights.
 
 | Floor | 31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Scenes | 16 | 16 | 16 | 18 | 18 | 16 | 15 | 17 | 18 | 16 |
-| Build (ms, desktop) | 16 (the first floor also makes the shapes) | 7 | 5 | 3 | 6 | 6 | 3 | 6 | 7 | 8 |
+| Scenes | 20 | 20 | 21 | 22 | 23 | 20 | 19 | 21 | 22 | 20 |
+| By a place / the track / a rock / open / the lake | 11/7/1/0/1 | 8/7/4/0/1 | 10/7/3/0/1 | 11/7/2/1/1 | 8/7/5/2/1 | 9/7/4/0/0 | 10/7/2/0/0 | 10/7/4/0/0 | 10/7/3/1/1 | 9/7/2/1/1 |
+| Build (ms, desktop) | 29 (the first floor also makes the shapes) | 8 | 10 | 11 | 10 | 11 | 12 | 12 | 11 | 10 |
 
 ## The pictures
 
 From the game's own camera on floors 31 (the Lightless Deep), 35 and 38, the dark law's layer hidden so the props can be judged:
-`fNN-<kind>-mid-before.jpg` / `-after.jpg` (zoom 1.25), `-close-` (zoom 0.7); `fNN-sheet.jpg` has every pair side by side. The wide
-shots: `f35-wide-lake-*` (a free camera over the black lake and the wreck) and `f35-wide-west-*` (the floor's west half from high
-up). In play the dark law's circle shows a scene only near the hero or a light.
+`fNN-<kind>-mid-before.jpg` / `-after.jpg` (zoom 1.25), `-close-` (zoom 0.7), `fNN-wide-wide-*` (the game's farthest zoom);
+`fNN-sheet.jpg` has every pair side by side. The wide shots from a free camera: `f35-wide-lake-*` (over the black lake and the wreck)
+and `f35-wide-west-*` (the floor's west half from high up). In play the dark law's circle shows a scene only near the hero or a light.
 
 ## The checks (2026-11-14)
 
 - **Overlap probe** (`pipeline/tools/scenes-probe-sd.js`): 0 hits on all ten floors.
-- **`_worldCheck`, floors 31 to 40:** nothing unreachable; reachable 33,301 to 33,964 m²; most units near any point 4 or 5, at the same
-  places as the depth's notes.
+- **`_worldCheck`, floors 31 to 40:** nothing unreachable; reachable 33,301 to 33,964 m²; most units near any point 4 or 5.
+  `_worldCheck` reads only the floor's data, which the scenes do not touch, so it is unchanged by construction; these match the
+  depth's notes.
 - **Nothing moved:** the depth's own props are the same list with the scenes on and off; the floors' mesh counts are the same (175 and
   186 on floors 31 and 35).
 
 ## Speed (both chapters)
 
+Measured on the first layout (the same kinds, two to four fewer scenes a Deep floor; the roadside pass was moved earlier afterwards).
 `perf.py scenes --profiles desktop,phone-4x --scenes world-3,gen-26,world-4,gen-35,gen-32`, 1500 frames each: A with the scenes off
 (`VITE_NO_SCENES=1` at perf.py's own server), B with them on, back to back twice (A1, B1, A2, B2), other agents running at the same time.
 Median / p99 frame (ms):
@@ -89,10 +92,9 @@ Median / p99 frame (ms):
 - **Frame times:** inside the noise. The A runs alone differ by up to 4 ms on desktop world-3 and 2 to 5 ms on the phone. B is level or
   faster on most pairs. Two B numbers are higher than both A runs: phone world-3 in pair 2 (51.4 ms against 43.3 and 43.4; B1 was 40.9)
   and desktop gen-35 (7.5 and 7.6 against 6.6 and 7.2). Neither repeats in the other B run, so neither is a cost I can show.
-- **Floor build time on the phone profile** (`arena.build()` with the processor slowed 4x as phone-4x does, scenes off and on in turns,
-  4 builds each, ms): floor 21 off 4761 to 5441, on 4384 to 4829; floor 26 off 4878 to 6578, on 4479 to 5021; floor 31 off 8674 to 9848,
-  on 8360 to 8960; floor 35 off 8646 to 9589, on 8305 to 9123. On is no slower. The scenes' own build is 3 to 35 ms on desktop (the
-  table above under "Scenes per floor"), lost in the build's own swing. These totals are higher than the 3.5 s the Deep's notes give
-  for floor 35: this times a build in a windowless page with no warm caches beyond one first build, so compare off and on, not with
-  those notes.
+- **Floor build time on the phone profile** (`arena.build()` with the processor slowed 4x as phone-4x does). The whole build swings by
+  about a second from one build to the next (floor 21: 4.4 to 5.4 s; floor 26: 4.5 to 6.6 s; floor 31: 8.4 to 9.8 s; floor 35: 8.3 to
+  9.7 s; floor 38: 10.1 to 10.5 s), so scenes off against on cannot show a cost of this size. The scenes' own part, timed inside the
+  build: 75 to 132 ms on floors 21, 26 and 29, 52 to 131 ms on floors 31, 35 and 38: 1 to 2% of the build. Small, but it is added. Why
+  these builds take longer than the 3.5 s the Deep's depth notes give for floor 35 is not explained here.
 - The perf result files were deleted afterwards.

@@ -278,9 +278,10 @@ const KINDS: Record<string, Make> = {
   },
   // A rowing boat half sunk in the black lake (past the edge only), its bow up and its lantern still lit; an oar and a crate afloat.
   wreck: (rc, K, r) => {
-    rc.s(K.hull, 0, -0.55, 0, 0, 1, 1, 1, -0.32, (r() - 0.5) * 0.4).item(0, 0, 2.4, 1.0);
-    rc.s(K.oar, 2.0, 0.0, 1.2, r() * 6).item(2.0, 1.2, 1.2, 0.1);
-    rc.s(K.crateFloat, -1.8, -0.3, -1.4, r() * 6, 1, 1, 1, 0.2, 0.25).item(-1.8, -1.4, 0.5, 0.3);
+    // drawn half again as large as the landing's boat: it is seen from far across the water
+    rc.s(K.hull, 0, -0.8, 0, 0, 1.5, 1.5, 1.5, -0.32, (r() - 0.5) * 0.4).item(0, 0, 3.6, 1.5);
+    rc.s(K.oar, 3.0, 0.0, 1.8, r() * 6, 1.5).item(3.0, 1.8, 1.8, 0.1);
+    rc.s(K.crateFloat, -2.7, -0.45, -2.1, r() * 6, 1.5, 1.5, 1.5, 0.2, 0.25).item(-2.7, -2.1, 0.75, 0.4);
   },
 };
 
@@ -336,7 +337,7 @@ export function deepScenes(o: DeepScenesIn) {
   const placed: SceneRec[] = [];
   const used = new Map<string, number>();
   const cap: Record<string, number> = {};
-  for (const k of Object.keys(KINDS)) cap[k] = 2 + Math.floor(rnd() * 2);
+  for (const k of Object.keys(KINDS)) cap[k] = 3 + Math.floor(rnd() * 2);
   cap.wreck = rnd() < 0.8 ? 1 : 0; cap.shrine = 2; cap.winch = 1 + (rnd() < 0.5 ? 1 : 0);
   const off = ['camp', 'cart', 'collapse', 'harvest', 'survey'];
   cap[off[Math.floor(rnd() * off.length)]] = 1; // one kind this floor has little of
@@ -377,7 +378,7 @@ export function deepScenes(o: DeepScenesIn) {
     }
   };
   const tryAt = (kind: string, where: string, x: number, z: number, yaw0: number, o2: { backed?: boolean; far?: boolean; spread?: number } = {}) => {
-    if (left(kind) <= 0 || placed.length >= 22) return false;
+    if (left(kind) <= 0 || placed.length >= 24) return false;
     const far = !!o2.far, backed = !!o2.backed;
     for (const sc of placed) if (Math.hypot(sc.x - x, sc.z - z) < (sc.kind === kind ? 30 : 12)) return false;
     for (let t = 0; t < 3; t++) {
@@ -423,7 +424,26 @@ export function deepScenes(o: DeepScenesIn) {
       }
     }
   }
-  // 3. Against the rock: the tall stories stand right south of a piece of cover.
+  // 3. Along the tracks, on the verge: one every 40 to 55 m of track.
+  let since = 15 + rnd() * 20, onTracks = 0;
+  for (const s of shuffle(tracks.slice())) {
+    const len = Math.hypot(s.bx - s.ax, s.bz - s.az), ux = (s.bx - s.ax) / (len || 1), uz = (s.bz - s.az) / (len || 1);
+    for (let d = 3; d < len - 3; d += 3) {
+      since += 3;
+      if (since < 40 + rnd() * 15 || onTracks >= 7) continue; // leave room for the tall ones against the rock
+      const side = rnd() < 0.5 ? 1 : -1, cx = s.ax + ux * d, cz = s.az + uz * d;
+      for (const kind of pick(['camp', 'cart', 'collapse', 'harvest', 'survey', 'shrine'])) {
+        let ok = false;
+        for (const extra of [0.6, 1.8]) {
+          const rc = new Recipe(); KINDS[kind](rc, K, rnd, { backed: false, far: false });
+          const offd = 2.4 + rc.reach + extra, x = cx - uz * side * offd, z = cz + ux * side * offd;
+          if (tryAt(kind, 'track', x, z, Math.atan2(ux, uz) + (rnd() - 0.5) * 0.6)) { ok = true; onTracks++; break; }
+        }
+        if (ok) { since = 0; break; }
+      }
+    }
+  }
+  // 4. Against the rock: the tall stories stand right south of a piece of cover.
   const rocks = shuffle(cover.filter((c) => c.r >= 0.7 && beyond(c.ax, c.az) < -3));
   let backedN = 0;
   for (const c of rocks) {
@@ -434,31 +454,12 @@ export function deepScenes(o: DeepScenesIn) {
       if (tryAt(kind, 'backed', cx, cz + c.r + back, (rnd() - 0.5) * 0.3, { backed: true, spread: 0.3 })) { backedN++; break; }
     }
   }
-  // 4. The open cave floor between the places (a few).
+  // 5. The open cave floor between the places (a few).
   const rmax = Math.max(...rim);
   for (let k = 0, open = 0; k < 900 && open < 4; k++) {
     const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
     if (beyond(x, z) > -6 || trackClear(x, z) < 7 || placeClear(x, z) < 6) continue;
     for (const kind of pick(['camp', 'cart', 'collapse', 'harvest', 'survey', 'shrine'])) if (tryAt(kind, 'open', x, z, rnd() * 6)) { open++; break; }
-  }
-  // 5. Along the tracks, on the verge: one every 40 to 55 m of track.
-  let since = 15 + rnd() * 20;
-  for (const s of shuffle(tracks.slice())) {
-    const len = Math.hypot(s.bx - s.ax, s.bz - s.az), ux = (s.bx - s.ax) / (len || 1), uz = (s.bz - s.az) / (len || 1);
-    for (let d = 3; d < len - 3; d += 3) {
-      since += 3;
-      if (since < 40 + rnd() * 15) continue;
-      const side = rnd() < 0.5 ? 1 : -1, cx = s.ax + ux * d, cz = s.az + uz * d;
-      for (const kind of pick(['camp', 'cart', 'collapse', 'harvest', 'survey', 'shrine'])) {
-        let ok = false;
-        for (const extra of [0.6, 1.8]) {
-          const rc = new Recipe(); KINDS[kind](rc, K, rnd, { backed: false, far: false });
-          const offd = 2.4 + rc.reach + extra, x = cx - uz * side * offd, z = cz + ux * side * offd;
-          if (tryAt(kind, 'track', x, z, Math.atan2(ux, uz) + (rnd() - 0.5) * 0.6)) { ok = true; break; }
-        }
-        if (ok) { since = 0; break; }
-      }
-    }
   }
   // 6. Past the edge on the water's side (never the south): a boat half sunk in the black lake.
   for (let k = 0; k < 120 && left('wreck') > 0; k++) {

@@ -401,16 +401,18 @@ const KINDS: Record<string, Make> = {
   // Pots stacked at a tomb's door, one smashed, its grain spilled.
   pots: (rc, P, r) => {
     const kinds = [P.potClay, P.potCream, P.potTurq];
-    const at: [number, number, number][] = [[-0.7, 0, -0.1], [0, 0, -0.2], [0.7, 0, -0.1], [-0.35, 0.74, -0.15], [0.35, 0.74, -0.15]];
-    if (r() < 0.6) at.push([0, 1.48, -0.15]);
-    at.forEach(([x, y, z], k) => rc.s(kinds[(k + Math.floor(r() * 3)) % 3], x, y, z, r() * 6, 0.95 + r() * 0.1));
-    rc.item(0, -0.1, 1.15, at.length > 5 ? 2.4 : 1.7);
-    rc.s(P.potBroken, 1.3, 0, 0.6, r() * 6).item(1.4, 0.7, 0.75, 0.28);
-    rc.s(kinds[Math.floor(r() * 3)], -1.4, 0.29, 0.5, r() * 6, 0.85, 0.85, 0.85, Math.PI / 2).item(-1.4, 0.5, 0.6, 0.55);
+    // smaller than the cover's jars, so no one takes them for cover
+    const at: [number, number, number][] = [[-0.5, 0, -0.1], [0, 0, -0.15], [0.5, 0, -0.1], [-0.25, 0.53, -0.12], [0.25, 0.53, -0.12]];
+    if (r() < 0.6) at.push([0, 1.06, -0.12]);
+    at.forEach(([x, y, z], k) => rc.s(kinds[(k + Math.floor(r() * 3)) % 3], x, y, z, r() * 6, 0.68 + r() * 0.06));
+    rc.item(0, -0.1, 0.9, at.length > 5 ? 1.75 : 1.25);
+    rc.s(P.potBroken, 1.1, 0, 0.6, r() * 6, 0.8).item(1.15, 0.65, 0.65, 0.24);
+    rc.s(kinds[Math.floor(r() * 3)], -1.15, 0.22, 0.5, r() * 6, 0.68, 0.68, 0.68, Math.PI / 2).item(-1.15, 0.5, 0.5, 0.45);
   },
   // The bleached ribs of a great beast arching from the sand, its spine and its horned skull (past the edge only).
   ribs: (rc, P, r) => {
-    const n = 7, len = 7.5;
+    const n = 7, len = 7.5, g = 1.4; // a great beast, seen from far: everything 1.4 times
+    const s0 = rc.ops.length;
     for (let k = 0; k < n + 2; k++) rc.s(P.vertebra, -len / 2 + (k * len) / (n + 1), -0.05, Math.sin(k * 0.5) * 0.25, 0, 1.2 - Math.abs(k - n / 2) * 0.05);
     for (let k = 0; k < n; k++) {
       const x = -len / 2 + ((k + 1) * len) / (n + 1), R = 2.3 - Math.abs(k - (n - 1) / 2) * 0.22, broken = k === 1 + Math.floor(r() * (n - 2));
@@ -419,7 +421,8 @@ const KINDS: Record<string, Make> = {
     }
     rc.s(P.skull, len / 2 + 1.2, -0.1, 0.3, -0.3 + r() * 0.3, 1.3);
     rc.s(P.drift, -1, -0.2, 0.8, r(), 4.2, 0.45, 2.2);
-    rc.item(0, 0, 5.5, 2.6);
+    for (let k = s0; k < rc.ops.length; k++) { const op = rc.ops[k]; op.x *= g; op.y *= g; op.z *= g; op.sx *= g; op.sy *= g; op.sz *= g; }
+    rc.item(0, 0, 5.5 * g, 2.6 * g);
   },
 };
 
@@ -560,30 +563,12 @@ export function sandsScenes(o: SandsScenesIn) {
           const c = cover.find((q) => q.r > 0.8 && segDist(x, z, q.ax, q.az, q.bx, q.bz) < q.r + 3);
           if (!c) continue;
           const t = rnd(), cx = c.ax + (c.bx - c.ax) * t, cz = c.az + (c.bz - c.az) * t;
-          done = tryAt(kind, 'place', cx, cz + c.r + 1.45, (rnd() - 0.5) * 0.4, { backed: true, spread: 0.3 });
+          done = tryAt(kind, 'place', cx, cz + c.r + 1.15, (rnd() - 0.5) * 0.4, { backed: true, spread: 0.3 });
         } else done = tryAt(kind, 'place', x, z, rnd() * 6);
       }
     }
   }
-  // 3. Against the rocks: the tall stories stand right south of a rock (a jackal's head, a wagon in its drift, a cart, a lean-to).
-  const rocks = shuffle(cover.filter((c) => c.r >= 0.9 && beyond(c.ax, c.az) < -4));
-  let backedN = 0;
-  for (const c of rocks) {
-    if (backedN >= 5) break;
-    const t = 0.2 + rnd() * 0.6, cx = c.ax + (c.bx - c.ax) * t, cz = c.az + (c.bz - c.az) * t;
-    for (const kind of pick(['jackal', 'wagon', 'caravan', 'rest'])) {
-      const back = kind === 'jackal' ? 2.0 : kind === 'wagon' ? 1.9 : kind === 'caravan' ? 1.6 : 0.8;
-      if (tryAt(kind, 'backed', cx, cz + c.r + back, (rnd() - 0.5) * 0.4, { backed: true, spread: 0.3 })) { backedN++; break; }
-    }
-  }
-  // 4. The open sand between the places (a few).
-  const rmax = Math.max(...rim);
-  for (let k = 0, open = 0; k < 900 && open < 4; k++) {
-    const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
-    if (beyond(x, z) > -8 || roadClear(x, z) < 7 || placeClear(x, z) < 6) continue;
-    for (const kind of pick(['sundial', 'well', 'dig', 'grave', 'fight', 'caravan', 'rest'])) if (tryAt(kind, 'open', x, z, rnd() * 6)) { open++; break; }
-  }
-  // 5. Along the roads, on the verge: one every 45 to 60 m of road.
+  // 3. Along the roads, on the verge: one every 45 to 60 m of road.
   const ROADSIDE = ['caravan', 'fight', 'sundial', 'well', 'rest', 'grave', 'dig'];
   let since = 20 + rnd() * 20;
   for (const s of shuffle(roads.slice())) {
@@ -602,6 +587,24 @@ export function sandsScenes(o: SandsScenesIn) {
         if (ok) { since = 0; break; }
       }
     }
+  }
+  // 4. Against the rocks: the tall stories stand right south of a rock (a jackal's head, a wagon in its drift, a cart, a lean-to).
+  const rocks = shuffle(cover.filter((c) => c.r >= 0.9 && beyond(c.ax, c.az) < -4));
+  let backedN = 0;
+  for (const c of rocks) {
+    if (backedN >= 5) break;
+    const t = 0.2 + rnd() * 0.6, cx = c.ax + (c.bx - c.ax) * t, cz = c.az + (c.bz - c.az) * t;
+    for (const kind of pick(['jackal', 'wagon', 'caravan', 'rest'])) {
+      const back = kind === 'jackal' ? 2.0 : kind === 'wagon' ? 1.9 : kind === 'caravan' ? 1.6 : 0.8;
+      if (tryAt(kind, 'backed', cx, cz + c.r + back, (rnd() - 0.5) * 0.4, { backed: true, spread: 0.3 })) { backedN++; break; }
+    }
+  }
+  // 5. The open sand between the places (a few).
+  const rmax = Math.max(...rim);
+  for (let k = 0, open = 0; k < 900 && open < 4; k++) {
+    const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
+    if (beyond(x, z) > -8 || roadClear(x, z) < 7 || placeClear(x, z) < 6) continue;
+    for (const kind of pick(['sundial', 'well', 'dig', 'grave', 'fight', 'caravan', 'rest'])) if (tryAt(kind, 'open', x, z, rnd() * 6)) { open++; break; }
   }
   // 6. Past the edge, stories in the background: a great beast's ribs, a jackal's head, a wagon in the dunes (never in the south).
   for (let k = 0, far = 0; k < 160 && far < 3; k++) {
