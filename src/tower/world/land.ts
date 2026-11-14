@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Sea } from '../../arenas/real';
+import { buildDepth } from './depth';
 import type { Kit } from './zone';
 
 /**
@@ -35,6 +36,8 @@ export interface LandSpec {
   seed?: number;
   /** A ruin's old floor (offset from the middle), drawn as flagstones. */
   ruin?: { dx: number; dz: number };
+  /** The zone's cover (world coordinates): the depth's looks keep off it (depth.ts). */
+  cover?: { ax: number; az: number; bx: number; bz: number; r: number }[];
 }
 
 const smooth = (a: number, b: number, x: number) => {
@@ -127,7 +130,7 @@ export function geography(rim: number[], o: { mirror?: 1 | -1; seed?: number } =
   };
   return { beyond, seaSide, sea, cliff, height, beach, color, fbm, fbm2, steepness, m };
 }
-type Geo = ReturnType<typeof geography>;
+export type Geo = ReturnType<typeof geography>;
 
 /** The painted middle: the ground's colour, then the tidal flats, the paths and the plazas on top. `L` metres across. */
 function paint(spec: LandSpec, geo: Geo, L: number) {
@@ -250,8 +253,9 @@ function paint(spec: LandSpec, geo: Geo, L: number) {
 const PALETTE = {
   wall: '#b4ab94', stone: '#4e4c4c', capstone: '#64605a', boulder: '#383c46', wood: '#4a3220', plank: '#6b4226', lacquer: '#1d1b21',
   wine: '#5e1a28', slate: '#3a3f4c', teal: '#2b5560', cream: '#d8cfb4', rock: '#615d5a', sail: '#d8cfb4', gold: '#c9a24a',
+  rope: '#b89a5a', salt: '#e2dccc', leaf: '#4a6638', cloth: '#b9b2a0',
 } as const;
-type Key = keyof typeof PALETTE;
+export type Key = keyof typeof PALETTE;
 
 /**
  * The dressing past the rim, merged: every matte part carries its colour in its vertices, so a square of ground `CELL` m across is
@@ -259,7 +263,7 @@ type Key = keyof typeof PALETTE;
  * (A material per colour per square drew 46 more things a frame: 2.7 ms more on the phone profile.)
  */
 const CELL = 24;
-class Dress {
+export class Dress {
   private cells = new Map<string, THREE.BufferGeometry[]>();
   private m = new THREE.Matrix4();
   private colors = new Map<Key, THREE.Color>();
@@ -527,11 +531,16 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   inst(broadGeo, leaves, broad);
   inst(bushGeo, leaves, bush);
 
+  // The depth: roads, meadows, places dressed as what they are, the far sea (depth.ts).
+  const depth = buildDepth({ spec, geo, dress, into, own, rnd, cover: spec.cover ?? [] });
   dress.build(into, own);
 
   return {
+    /** The lights of the depth (lanterns, torches, the island's light), for the zone's glows. */
+    glows: depth.glows,
     update(time: number) {
       sea.update(time);
+      depth.update(time);
     },
   };
 }
