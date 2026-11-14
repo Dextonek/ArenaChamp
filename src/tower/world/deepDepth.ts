@@ -22,8 +22,10 @@ import { rimAt } from './land';
  * - The dark law is the look: about a dozen new glows a floor (lamps on the tracks and at the rest, the jetty's lamp, a few fungi, the far
  *   cavern), so the crystals, the lamps and the waystones stay what a player steers by.
  *
- * Speed: every prop shape is built once; each placement is copied straight into one merged mesh per material and per 40 m square of ground
- * (a few draw calls in view, a square out of the camera's view not drawn). Nothing is allocated per frame.
+ * Speed: every prop shape is built once; each placement is copied straight into one merged mesh per material and per quarter of the floor,
+ * near or far (the camera sees one or two quarters), and none of it casts a shadow: a handful of draw calls in view. Nothing is allocated
+ * per frame. (Meshes per 24 or 40 m square, or folded into the zone's own dressing squares, cost the phone profile 2 to 2.6 ms a frame on
+ * floor 31: the scree reaches every square, and each square drew twice, for the picture and the shadows, some 25 draw calls more.)
  */
 
 /** The cave's shape, as deepZone.ts's `caveOf` gives it (offsets from the middle). */
@@ -47,7 +49,7 @@ const COL = {
   rock: '#3a3a4c', rockLight: '#4c4a60', rockDark: '#2c2c3a', pale: '#b8b2cc', paleDark: '#8e88a6', wood: '#4a3626', plank: '#5a3c26',
   darkWood: '#2a1f1a', cloth: '#4a3a6a', cream: '#a89e86', sack: '#6e604a', rope: '#9a8250', iron: '#2a2c34', rail: '#55586a', gold: '#c9a24a',
   ore: '#262632', reed: '#77748a', capPale: '#5e5872', scree: '#625e78', glass: '#ffcf80', ember: '#ff9a40', violet: '#7a52c8', fungus: '#5fc8d0', black: '#020205',
-  stalactite: '#262634', puddle: '#141c30', foam: '#8a96b4', net: '#6e5c3a',
+  stalactite: '#262634', puddle: '#20263a', foam: '#8a96b4', net: '#6e5c3a',
 } as const;
 type Hex = (typeof COL)[keyof typeof COL];
 
@@ -75,69 +77,70 @@ function proto(parts: [THREE.BufferGeometry, Hex][]): Proto {
   return { pos, nor, col };
 }
 
-/** The materials a placement goes into. `tall` casts shadows; `glow` is unlit (reads as lit in the dark, adds no light). */
+/**
+ * How a placement is lit. All go into one material: `low` and `tall` matte, `metal` the gold (its faint warmth), `glow` unlit (lamp glass,
+ * fungi, crystal chips: reads as lit, adds no light), `wet` the puddles. The difference rides on each vertex (`glow`, 0 to 1).
+ */
 type Bucket = 'low' | 'tall' | 'metal' | 'glow' | 'wet';
-const BUCKETS: Bucket[] = ['low', 'tall', 'metal', 'glow', 'wet'];
-const CELL = 40;
+const GLOW: Record<Bucket, number> = { low: 0, tall: 0, metal: 0.2, glow: 1, wet: 0 };
 
-/** Placements merged per bucket and per square of ground, copied in one pass at the end. */
+/** Placements merged into one mesh per quarter of the floor, near or far, copied in one pass at the end. */
 class Batch {
-  private cells = new Map<number, Map<Bucket, { p: Proto[]; e: number[] }>>();
+  private cells = new Map<number, { p: Proto[]; e: number[]; g: number[] }>();
   private M = new THREE.Matrix4();
   private Q = new THREE.Quaternion();
   private E = new THREE.Euler();
   private V = new THREE.Vector3();
   private S = new THREE.Vector3();
+  /** `far`: past this far from the middle a placement is 'far' (the slopes, the ceiling, the lake). */
+  constructor(private far: number) {}
   put(b: Bucket, p: Proto, x: number, y: number, z: number, yaw = 0, sx = 1, sy = sx, sz = sx, tilt = 0, roll = 0) {
-    const key = (Math.floor(x / CELL) + 512) * 1024 + Math.floor(z / CELL) + 512;
-    let cell = this.cells.get(key);
-    if (!cell) this.cells.set(key, (cell = new Map()));
-    let bin = cell.get(b);
-    if (!bin) cell.set(b, (bin = { p: [], e: [] }));
+    // the camera sees one or two quarters
+    const dx = x - RING.x, dz = z - RING.z, key = (dx < 0 ? 0 : 1) + (dz < 0 ? 0 : 2) + (dx * dx + dz * dz > this.far * this.far ? 4 : 0);
+    let bin = this.cells.get(key);
+    if (!bin) this.cells.set(key, (bin = { p: [], e: [], g: [] }));
     this.M.compose(this.V.set(x, y, z), this.Q.setFromEuler(this.E.set(tilt, yaw, roll, 'YXZ')), this.S.set(sx, sy, sz));
     bin.p.push(p);
+    bin.g.push(GLOW[b]);
     for (let i = 0; i < 16; i++) bin.e.push(this.M.elements[i]);
   }
-  build(into: THREE.Group, own: { dispose(): void }[], mats: Record<Bucket, THREE.Material>) {
+  build(into: THREE.Group, own: { dispose(): void }[], material: THREE.Material) {
     let draws = 0, verts = 0;
-    for (const cell of this.cells.values()) {
-      for (const b of BUCKETS) {
-        const bin = cell.get(b);
-        if (!bin) continue;
-        let n = 0;
-        for (const p of bin.p) n += p.pos.length;
-        const pos = new Float32Array(n), nor = new Float32Array(n), col = new Float32Array(n);
-        let o = 0;
-        bin.p.forEach((p, k) => {
-          const e = bin.e, j = k * 16;
-          const a0 = e[j], a1 = e[j + 1], a2 = e[j + 2], a4 = e[j + 4], a5 = e[j + 5], a6 = e[j + 6], a8 = e[j + 8], a9 = e[j + 9], a10 = e[j + 10];
-          const tx = e[j + 12], ty = e[j + 13], tz = e[j + 14];
-          const P = p.pos, N = p.nor;
-          for (let i = 0; i < P.length; i += 3) {
-            const x = P[i], y = P[i + 1], z = P[i + 2];
-            pos[o + i] = a0 * x + a4 * y + a8 * z + tx;
-            pos[o + i + 1] = a1 * x + a5 * y + a9 * z + ty;
-            pos[o + i + 2] = a2 * x + a6 * y + a10 * z + tz;
-            const nx = N[i], ny = N[i + 1], nz = N[i + 2];
-            const X = a0 * nx + a4 * ny + a8 * nz, Y = a1 * nx + a5 * ny + a9 * nz, Z = a2 * nx + a6 * ny + a10 * nz, l = Math.sqrt(X * X + Y * Y + Z * Z) || 1;
-            nor[o + i] = X / l; nor[o + i + 1] = Y / l; nor[o + i + 2] = Z / l;
-          }
-          col.set(p.col, o);
-          o += P.length;
-        });
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
-        geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-        geo.computeBoundingSphere();
-        const mesh = new THREE.Mesh(geo, mats[b]);
-        mesh.castShadow = b === 'tall';
-        mesh.receiveShadow = b !== 'glow';
-        into.add(mesh);
-        own.push(geo);
-        draws++;
-        verts += n / 3;
-      }
+    for (const bin of this.cells.values()) {
+      let n = 0;
+      for (const p of bin.p) n += p.pos.length;
+      const pos = new Float32Array(n), nor = new Float32Array(n), col = new Float32Array(n), glow = new Float32Array(n / 3);
+      let o = 0;
+      bin.p.forEach((p, k) => {
+        const e = bin.e, j = k * 16;
+        const a0 = e[j], a1 = e[j + 1], a2 = e[j + 2], a4 = e[j + 4], a5 = e[j + 5], a6 = e[j + 6], a8 = e[j + 8], a9 = e[j + 9], a10 = e[j + 10];
+        const tx = e[j + 12], ty = e[j + 13], tz = e[j + 14];
+        const P = p.pos, N = p.nor;
+        for (let i = 0; i < P.length; i += 3) {
+          const x = P[i], y = P[i + 1], z = P[i + 2];
+          pos[o + i] = a0 * x + a4 * y + a8 * z + tx;
+          pos[o + i + 1] = a1 * x + a5 * y + a9 * z + ty;
+          pos[o + i + 2] = a2 * x + a6 * y + a10 * z + tz;
+          const nx = N[i], ny = N[i + 1], nz = N[i + 2];
+          const X = a0 * nx + a4 * ny + a8 * nz, Y = a1 * nx + a5 * ny + a9 * nz, Z = a2 * nx + a6 * ny + a10 * nz, l = Math.sqrt(X * X + Y * Y + Z * Z) || 1;
+          nor[o + i] = X / l; nor[o + i + 1] = Y / l; nor[o + i + 2] = Z / l;
+        }
+        col.set(p.col, o);
+        glow.fill(bin.g[k], o / 3, (o + P.length) / 3);
+        o += P.length;
+      });
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      geo.setAttribute('glow', new THREE.BufferAttribute(glow, 1));
+      verts += n / 3;
+      geo.computeBoundingSphere();
+      const mesh = new THREE.Mesh(geo, material);
+      mesh.receiveShadow = true;
+      into.add(mesh);
+      own.push(geo);
+      draws++;
     }
     this.cells.clear();
     return { draws, verts };
@@ -195,7 +198,7 @@ export function buildDeepDepth(o: DeepDepthIn) {
   const group = new THREE.Group();
   group.name = 'deep-depth';
   o.into.add(group);
-  const batch = new Batch();
+  const batch = new Batch(rmax + 4);
   const warm: { x: number; y: number; z: number; size?: number }[] = [];
   const cool: { x: number; y: number; z: number; size?: number }[] = [];
   const fungi: { x: number; y: number; z: number; size?: number }[] = [];
@@ -838,9 +841,10 @@ export function buildDeepDepth(o: DeepDepthIn) {
   const batMat = new THREE.MeshBasicMaterial({ color: 0x16141c, side: THREE.DoubleSide });
   o.own.push(batGeo, batMat);
   const BATS = 9, bats = new THREE.InstancedMesh(batGeo, batMat, BATS);
-  bats.frustumCulled = false;
   group.add(bats);
   const roost = out(-Math.PI / 2 + (rnd() - 0.5) * 0.8, -10);
+  // culled as a whole: a sphere round the roost holds every loop
+  bats.boundingSphere = new THREE.Sphere(new THREE.Vector3(roost.x, 10, roost.z), 18);
   const flyers = Array.from({ length: BATS }, () => ({ r: 4 + rnd() * 9, h: 7 + rnd() * 6, sp: (0.7 + rnd() * 0.6) * (rnd() < 0.5 ? 1 : -1), ph: rnd() * 6.28, f: 9 + rnd() * 5 }));
   const bm = new THREE.Matrix4(), bq = new THREE.Quaternion(), be = new THREE.Euler(), bp = new THREE.Vector3(), bs = new THREE.Vector3(1, 1, 1);
   const fly = (time: number) => {
@@ -858,15 +862,15 @@ export function buildDeepDepth(o: DeepDepthIn) {
   // --- into meshes ---------------------------------------------------------------------------------------------------------------
   const own = o.own;
   const mk = <T extends THREE.Material>(mm: T) => { own.push(mm); return mm; };
-  const mats: Record<Bucket, THREE.Material> = {
-    low: mk(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true })),
-    tall: null as unknown as THREE.Material,
-    metal: mk(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35, metalness: 0.8, flatShading: true, emissive: 0x2a1c08 })),
-    glow: mk(new THREE.MeshBasicMaterial({ vertexColors: true })),
-    wet: mk(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.15, metalness: 0, transparent: true, opacity: 0.5, depthWrite: false })),
+  // One material for all: matte, flat shaded; a vertex's `glow` lights it by its own colour (unlit lamp glass, fungi; the gold's warmth).
+  const material = mk(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85, flatShading: true }));
+  material.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float glow;\nvarying float vGlow;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvGlow = glow;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vGlow;')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * vGlow;\ndiffuseColor.rgb *= 1.0 - 0.85 * step(0.5, vGlow);');
   };
-  mats.tall = mats.low;
-  const stats = batch.build(group, own, mats);
+  material.customProgramCacheKey = () => 'tower-deep-depth';
+  const stats = batch.build(group, own, material);
   const warmG = new Glows(warm, 0xffa040, 1.5), coolG = new Glows(cool, 0x6a48d0, 1.5), fungiG = new Glows(fungi, 0x58c8d8, 1.5);
   group.add(warmG.group, coolG.group, fungiG.group);
   own.push(warmG, coolG, fungiG);
