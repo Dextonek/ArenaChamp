@@ -61,7 +61,8 @@ const mix = (a: RGB, b: RGB, t: number): RGB => [a[0] + (b[0] - a[0]) * t, a[1] 
 function noiseOf(seed: number) {
   const rnd = seeded(seed), N = 64, v = new Float32Array(N * N);
   for (let i = 0; i < v.length; i++) v[i] = rnd();
-  const at = (i: number, j: number) => v[(((i % N) + N) % N) + (((j % N) + N) % N) * N];
+  // `& 63` is the same wrap as ((i % N) + N) % N for every whole i (N = 64), without two float modulos (deepZone.ts: most of a build).
+  const at = (i: number, j: number) => v[(i & 63) + (j & 63) * N];
   const fade = (t: number) => t * t * (3 - 2 * t);
   const noise = (x: number, z: number) => {
     const xi = Math.floor(x), zi = Math.floor(z), fx = fade(x - xi), fz = fade(z - zi);
