@@ -129,12 +129,12 @@ export const DEEP_35: GenFloor = {
      100.52
     ],
     [
-     -32.8,
-     69.93
+     -32.17,
+     65.97
     ],
     [
-     -64.97,
-     41.3
+     -63.84,
+     33.25
     ]
    ],
    [
@@ -153,16 +153,16 @@ export const DEEP_35: GenFloor = {
    ],
    [
     [
-     -68.18,
-     29.73
+     -63.84,
+     33.25
     ],
     [
-     -63.03,
-     16.89
+     -60.1,
+     19.06
     ],
     [
-     -58.65,
-     3.84
+     -57.15,
+     4.75
     ],
     [
      -57.18,
@@ -175,48 +175,48 @@ export const DEEP_35: GenFloor = {
      -24.64
     ],
     [
-     -48.73,
-     -35.6
+     -46.1,
+     -36.04
     ],
     [
-     -38.06,
-     -41.66
+     -33.74,
+     -41.22
     ],
     [
-     -34.96,
-     -52.14
+     -28.1,
+     -52.02
     ]
    ],
    [
     [
-     -24.46,
-     -58.81
+     -28.1,
+     -52.02
     ],
     [
-     -2.08,
-     -61.12
+     -3.6,
+     -54.94
     ],
     [
-     20.03,
-     -66.42
+     20.58,
+     -60.86
     ],
     [
-     42.76,
-     -64.85
+     45.5,
+     -59.91
     ]
    ],
    [
     [
-     52.92,
-     -59.25
+     45.5,
+     -59.91
     ],
     [
-     63.15,
-     -41.8
+     58.14,
+     -42.34
     ],
     [
-     75.4,
-     -25.39
+     72.7,
+     -25.99
     ],
     [
      80.57,
@@ -243,12 +243,12 @@ export const DEEP_35: GenFloor = {
    ],
    [
     [
-     -25.12,
-     -55.15
+     -28.1,
+     -52.02
     ],
     [
-     -11.92,
-     -47.98
+     -13.32,
+     -46.38
     ],
     [
      1.93,
@@ -1718,12 +1718,12 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 93.67,
-     "az": 19.35,
-     "bx": 87.74,
-     "bz": 30.57,
-     "r": 1.58,
-     "height": 1.32,
+     "ax": 74.39,
+     "az": -53.22,
+     "bx": 69.24,
+     "bz": -36.85,
+     "r": 1.92,
+     "height": 1.77,
      "kind": "wall"
     }
    },
@@ -1766,12 +1766,12 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 30.35,
-     "az": 59.78,
-     "bx": 40.13,
-     "bz": 69.15,
-     "r": 1.7,
-     "height": 1.36,
+     "ax": -49.44,
+     "az": 68.64,
+     "bx": -65.42,
+     "bz": 70.78,
+     "r": 1.43,
+     "height": 1.57,
      "kind": "wall"
     }
    },
@@ -1802,12 +1802,12 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 79.05,
-     "az": 54.6,
-     "bx": 81.1,
-     "bz": 69.09,
-     "r": 1.77,
-     "height": 1.42,
+     "ax": 34.05,
+     "az": 69.68,
+     "bx": 31.12,
+     "bz": 78.03,
+     "r": 1.46,
+     "height": 1.43,
      "kind": "wall"
     }
    },
@@ -1862,132 +1862,312 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 30.63,
-     "az": -70.5,
-     "bx": 14.31,
-     "bz": -65.29,
-     "r": 1.47,
-     "height": 1.65,
+     "ax": 94.01,
+     "az": 24.57,
+     "bx": 86.9,
+     "bz": 28.7,
+     "r": 1.76,
+     "height": 1.69,
      "kind": "wall"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -0.88,
-     "az": -46.95,
-     "bx": -0.88,
-     "bz": -46.95,
-     "r": 0.95,
-     "height": 2.01,
+     "ax": 50.09,
+     "az": -11.34,
+     "bx": 50.09,
+     "bz": -11.34,
+     "r": 1.42,
+     "height": 1.6,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -49.7,
-     "az": 53.69,
-     "bx": -49.7,
-     "bz": 53.69,
-     "r": 1.19,
-     "height": 4.3,
+     "ax": -76.32,
+     "az": 91.17,
+     "bx": -76.32,
+     "bz": 91.17,
+     "r": 0.82,
+     "height": 3.97,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 4.17,
-     "az": 92.18,
-     "bx": 4.17,
-     "bz": 92.18,
-     "r": 0.96,
-     "height": 2.21,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -37.67,
-     "az": -18.81,
-     "bx": -37.67,
-     "bz": -18.81,
-     "r": 0.94,
-     "height": 2.33,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 45.86,
-     "az": 45.98,
-     "bx": 45.86,
-     "bz": 45.98,
-     "r": 0.85,
-     "height": 1.94,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -17.64,
-     "az": 112.22,
-     "bx": -17.64,
-     "bz": 112.22,
-     "r": 1.18,
-     "height": 1.57,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 9.32,
-     "az": -85.13,
-     "bx": 9.32,
-     "bz": -85.13,
-     "r": 1.78,
-     "height": 2.09,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -17.95,
-     "az": -12,
-     "bx": -17.95,
-     "bz": -12,
-     "r": 0.83,
-     "height": 3.22,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 67.89,
-     "az": -46.05,
-     "bx": 67.89,
-     "bz": -46.05,
+     "ax": -67.28,
+     "az": 56.67,
+     "bx": -67.28,
+     "bz": 56.67,
      "r": 0.86,
-     "height": 1.92,
+     "height": 3.17,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 30.77,
-     "az": 81.63,
-     "bx": 30.77,
-     "bz": 81.63,
-     "r": 1.61,
-     "height": 2.02,
+     "ax": -26.77,
+     "az": -13.08,
+     "bx": -26.77,
+     "bz": -13.08,
+     "r": 1.09,
+     "height": 3.93,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 25.97,
+     "az": -66.61,
+     "bx": 25.97,
+     "bz": -66.61,
+     "r": 1.58,
+     "height": 1.76,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 3.22,
+     "az": 58.68,
+     "bx": 3.22,
+     "bz": 58.68,
+     "r": 0.94,
+     "height": 2.66,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -26.43,
+     "az": 67.05,
+     "bx": -26.43,
+     "bz": 67.05,
+     "r": 1.01,
+     "height": 3.14,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -81.21,
+     "az": 32.41,
+     "bx": -81.21,
+     "bz": 32.41,
+     "r": 1.18,
+     "height": 1.85,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 53.68,
+     "az": 93.18,
+     "bx": 53.68,
+     "bz": 93.18,
+     "r": 0.98,
+     "height": 4.13,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 82.14,
+     "az": -8.35,
+     "bx": 82.14,
+     "bz": -8.35,
+     "r": 0.84,
+     "height": 3.17,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 66.34,
+     "az": -17.78,
+     "bx": 66.34,
+     "bz": -17.78,
+     "r": 0.84,
+     "height": 3.21,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 30.12,
+     "az": 113.19,
+     "bx": 30.12,
+     "bz": 113.19,
+     "r": 1.13,
+     "height": 3.82,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 34.9,
+     "az": 56.12,
+     "bx": 34.9,
+     "bz": 56.12,
+     "r": 1.26,
+     "height": 3.05,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -23.7,
+     "az": -71.39,
+     "bx": -23.7,
+     "bz": -71.39,
+     "r": 0.84,
+     "height": 2.69,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 20.84,
+     "az": -19.86,
+     "bx": 20.84,
+     "bz": -19.86,
+     "r": 0.9,
+     "height": 4.08,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -3.4,
+     "az": 21.93,
+     "bx": -3.4,
+     "bz": 21.93,
+     "r": 1.25,
+     "height": 3,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 24.26,
+     "az": -13.58,
+     "bx": 24.26,
+     "bz": -13.58,
+     "r": 1.4,
+     "height": 1.96,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 44.66,
+     "az": 111.87,
+     "bx": 44.66,
+     "bz": 111.87,
+     "r": 0.99,
+     "height": 2.58,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -9.74,
+     "az": 39.89,
+     "bx": -9.74,
+     "bz": 39.89,
+     "r": 1.22,
+     "height": 1.56,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -39.92,
+     "az": 36.7,
+     "bx": -39.92,
+     "bz": 36.7,
+     "r": 0.9,
+     "height": 3.71,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -45.29,
+     "az": -51.88,
+     "bx": -45.29,
+     "bz": -51.88,
+     "r": 0.89,
+     "height": 3.68,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 61.89,
+     "az": 28.99,
+     "bx": 61.89,
+     "bz": 28.99,
+     "r": 1.12,
+     "height": 1.5,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -24.27,
+     "az": -33.5,
+     "bx": -24.27,
+     "bz": -33.5,
+     "r": 1.46,
+     "height": 1.87,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -17.56,
+     "az": 83.59,
+     "bx": -17.56,
+     "bz": 83.59,
+     "r": 1.05,
+     "height": 4.34,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -45.89,
+     "az": 77.2,
+     "bx": -45.89,
+     "bz": 77.2,
+     "r": 1.08,
+     "height": 4.27,
      "kind": "pillar"
     }
    },
@@ -2054,96 +2234,144 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": -70.32,
-     "az": -4.43,
-     "bx": -70.32,
-     "bz": -4.43,
-     "r": 1.06,
-     "height": 3.53,
+     "ax": -7.69,
+     "az": -42.31,
+     "bx": -7.69,
+     "bz": -42.31,
+     "r": 1.19,
+     "height": 4.38,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -25.5,
-     "az": -23.46,
-     "bx": -25.5,
-     "bz": -23.46,
-     "r": 1.34,
-     "height": 1.67,
+     "ax": 95.77,
+     "az": -13.49,
+     "bx": 95.77,
+     "bz": -13.49,
+     "r": 1.11,
+     "height": 2.88,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 19.79,
-     "az": 46.48,
-     "bx": 19.79,
-     "bz": 46.48,
-     "r": 1.12,
-     "height": 2.61,
+     "ax": 33.61,
+     "az": 107.94,
+     "bx": 33.61,
+     "bz": 107.94,
+     "r": 0.91,
+     "height": 2.98,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -13.56,
-     "az": -7.12,
-     "bx": -13.56,
-     "bz": -7.12,
-     "r": 1.06,
-     "height": 3.09,
+     "ax": 7.57,
+     "az": -73.46,
+     "bx": 7.57,
+     "bz": -73.46,
+     "r": 1.1,
+     "height": 2.59,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -84.86,
-     "az": 53.51,
-     "bx": -84.86,
-     "bz": 53.51,
-     "r": 1.6,
-     "height": 2.16,
+     "ax": -62.67,
+     "az": 16.02,
+     "bx": -62.67,
+     "bz": 16.02,
+     "r": 0.84,
+     "height": 2.82,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -6.65,
-     "az": 63.52,
-     "bx": -6.65,
-     "bz": 63.52,
-     "r": 1.38,
-     "height": 2.67,
+     "ax": 101.54,
+     "az": 33.87,
+     "bx": 101.54,
+     "bz": 33.87,
+     "r": 0.83,
+     "height": 2.63,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -31.8,
-     "az": 29.01,
-     "bx": -31.8,
-     "bz": 29.01,
-     "r": 0.85,
-     "height": 2.92,
+     "ax": 38.11,
+     "az": -68.83,
+     "bx": 38.11,
+     "bz": -68.83,
+     "r": 1.23,
+     "height": 3.68,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -44.09,
-     "az": 95.66,
-     "bx": -44.09,
-     "bz": 95.66,
-     "r": 1.29,
-     "height": 4.01,
+     "ax": -57.24,
+     "az": 113.41,
+     "bx": -57.24,
+     "bz": 113.41,
+     "r": 1.28,
+     "height": 3.38,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 46.2,
+     "az": -21.06,
+     "bx": 46.2,
+     "bz": -21.06,
+     "r": 0.95,
+     "height": 3.62,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": -72.46,
+     "az": -2.88,
+     "bx": -72.46,
+     "bz": -2.88,
+     "r": 1.14,
+     "height": 2.09,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 37.08,
+     "az": 2.15,
+     "bx": 37.08,
+     "bz": 2.15,
+     "r": 1.16,
+     "height": 1.66,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "rock",
+    "o": {
+     "ax": 99.65,
+     "az": 41.4,
+     "bx": 99.65,
+     "bz": 41.4,
+     "r": 1.07,
+     "height": 2.57,
      "kind": "pillar"
     }
    },
@@ -2174,12 +2402,12 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": -18.32,
-     "az": 84.58,
-     "bx": -18.32,
-     "bz": 84.58,
+     "ax": 34.78,
+     "az": 25.49,
+     "bx": 34.78,
+     "bz": 25.49,
      "r": 1.38,
-     "height": 1.98,
+     "height": 4.39,
      "kind": "pillar"
     }
    },
@@ -2198,12 +2426,12 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 57.82,
-     "az": 90.18,
-     "bx": 57.82,
-     "bz": 90.18,
-     "r": 1.13,
-     "height": 1.9,
+     "ax": -42.61,
+     "az": 93.57,
+     "bx": -42.61,
+     "bz": 93.57,
+     "r": 1.24,
+     "height": 2.63,
      "kind": "pillar"
     }
    },
@@ -2234,12 +2462,12 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": -40.26,
-     "az": 61.85,
-     "bx": -40.26,
-     "bz": 61.85,
-     "r": 1.13,
-     "height": 1.53,
+     "ax": 26.7,
+     "az": 63.51,
+     "bx": 26.7,
+     "bz": 63.51,
+     "r": 1.12,
+     "height": 3.32,
      "kind": "pillar"
     }
    },
@@ -2294,60 +2522,60 @@ export const DEEP_35: GenFloor = {
    {
     "look": "rock",
     "o": {
-     "ax": 34.04,
-     "az": 74.58,
-     "bx": 34.04,
-     "bz": 74.58,
-     "r": 0.89,
-     "height": 2.56,
+     "ax": 44.85,
+     "az": 1.59,
+     "bx": 44.85,
+     "bz": 1.59,
+     "r": 1.13,
+     "height": 1.65,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -82.62,
-     "az": 83.64,
-     "bx": -82.62,
-     "bz": 83.64,
-     "r": 1.24,
-     "height": 2.61,
+     "ax": -74.61,
+     "az": 98.22,
+     "bx": -74.61,
+     "bz": 98.22,
+     "r": 1.18,
+     "height": 4.29,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": 19.78,
-     "az": -14.55,
-     "bx": 19.78,
-     "bz": -14.55,
-     "r": 1.06,
-     "height": 2.58,
+     "ax": -8.89,
+     "az": 51.28,
+     "bx": -8.89,
+     "bz": 51.28,
+     "r": 1.23,
+     "height": 4.18,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -26.26,
-     "az": 114.16,
-     "bx": -26.26,
-     "bz": 114.16,
-     "r": 0.93,
-     "height": 2.55,
+     "ax": 56.2,
+     "az": 101.07,
+     "bx": 56.2,
+     "bz": 101.07,
+     "r": 1.01,
+     "height": 2.9,
      "kind": "pillar"
     }
    },
    {
     "look": "rock",
     "o": {
-     "ax": -68.92,
-     "az": 19.8,
-     "bx": -68.92,
-     "bz": 19.8,
-     "r": 0.86,
-     "height": 2.88,
+     "ax": 90.21,
+     "az": 41.4,
+     "bx": 90.21,
+     "bz": 41.4,
+     "r": 1.19,
+     "height": 1.74,
      "kind": "pillar"
     }
    },
@@ -2360,234 +2588,6 @@ export const DEEP_35: GenFloor = {
      "bz": 100.4,
      "r": 1.37,
      "height": 1.57,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 44,
-     "az": 109.43,
-     "bx": 44,
-     "bz": 109.43,
-     "r": 1.36,
-     "height": 2.01,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -34.81,
-     "az": 97.35,
-     "bx": -34.81,
-     "bz": 97.35,
-     "r": 0.99,
-     "height": 2.98,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -83.74,
-     "az": 34.26,
-     "bx": -83.74,
-     "bz": 34.26,
-     "r": 0.81,
-     "height": 2.69,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 6.12,
-     "az": 100.48,
-     "bx": 6.12,
-     "bz": 100.48,
-     "r": 1.2,
-     "height": 2.91,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 101.89,
-     "az": 58.12,
-     "bx": 101.89,
-     "bz": 58.12,
-     "r": 1.32,
-     "height": 4.25,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -69.35,
-     "az": 107.67,
-     "bx": -69.35,
-     "bz": 107.67,
-     "r": 1.63,
-     "height": 2.2,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -16.13,
-     "az": -28.4,
-     "bx": -16.13,
-     "bz": -28.4,
-     "r": 1.56,
-     "height": 1.88,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -22.52,
-     "az": -35.67,
-     "bx": -22.52,
-     "bz": -35.67,
-     "r": 1.09,
-     "height": 3.02,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 33.43,
-     "az": 4.39,
-     "bx": 33.43,
-     "bz": 4.39,
-     "r": 1.25,
-     "height": 2.45,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -8.29,
-     "az": -30.57,
-     "bx": -8.29,
-     "bz": -30.57,
-     "r": 1.42,
-     "height": 1.89,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -23.5,
-     "az": 121.04,
-     "bx": -23.5,
-     "bz": 121.04,
-     "r": 1.14,
-     "height": 3.2,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -68.97,
-     "az": 64.01,
-     "bx": -68.97,
-     "bz": 64.01,
-     "r": 1.06,
-     "height": 2.98,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -40.57,
-     "az": 119.39,
-     "bx": -40.57,
-     "bz": 119.39,
-     "r": 1.61,
-     "height": 1.89,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 51.23,
-     "az": 38.95,
-     "bx": 51.23,
-     "bz": 38.95,
-     "r": 1.65,
-     "height": 2.43,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -78.76,
-     "az": 65.09,
-     "bx": -78.76,
-     "bz": 65.09,
-     "r": 1.7,
-     "height": 2.08,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 62.14,
-     "az": -20.12,
-     "bx": 62.14,
-     "bz": -20.12,
-     "r": 1.64,
-     "height": 2.27,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 59.73,
-     "az": 23.92,
-     "bx": 59.73,
-     "bz": 23.92,
-     "r": 1.26,
-     "height": 3.24,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -47.8,
-     "az": 104.38,
-     "bx": -47.8,
-     "bz": 104.38,
-     "r": 0.92,
-     "height": 2.51,
-     "kind": "pillar"
-    }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": 67.17,
-     "az": 96.36,
-     "bx": 67.17,
-     "bz": 96.36,
-     "r": 0.88,
-     "height": 1.85,
      "kind": "pillar"
     }
    }
@@ -2717,40 +2717,28 @@ export const DEEP_35: GenFloor = {
    "ridge",
    "ridge",
    "ridge",
-   "crystal",
-   "stal",
-   "crystal",
-   "crystal",
-   "crystal",
-   "rock",
    "rock",
    "stal",
-   "crystal",
-   "rock",
-   "crystal",
-   "crystal",
-   "stal",
-   "rock",
    "crystal",
    "stal",
    "rock",
    "crystal",
    "crystal",
-   "rock",
+   "crystal",
+   "stal",
+   "crystal",
+   "stal",
+   "stal",
    "stal",
    "crystal",
    "stal",
    "stal",
    "rock",
-   "rock",
-   "rock",
-   "crystal",
-   "crystal",
    "stal",
    "rock",
-   "crystal",
-   "crystal",
-   "crystal",
+   "stal",
+   "stal",
+   "rock",
    "rock",
    "stal",
    "stal",
@@ -2758,25 +2746,37 @@ export const DEEP_35: GenFloor = {
    "crystal",
    "stal",
    "rock",
-   "rock",
-   "stal",
-   "stal",
-   "stal",
-   "stal",
-   "rock",
-   "rock",
    "crystal",
    "stal",
+   "crystal",
+   "crystal",
+   "stal",
+   "crystal",
+   "stal",
+   "stal",
+   "stal",
+   "stal",
+   "crystal",
    "rock",
    "stal",
    "stal",
    "rock",
-   "rock",
-   "rock",
+   "stal",
    "rock",
    "stal",
    "crystal",
-   "crystal"
+   "stal",
+   "stal",
+   "crystal",
+   "crystal",
+   "crystal",
+   "rock",
+   "rock",
+   "stal",
+   "stal",
+   "crystal",
+   "rock",
+   "rock"
   ],
   "pools": [
    {
@@ -2794,60 +2794,60 @@ export const DEEP_35: GenFloor = {
     "rot": 0.3
    },
    {
-    "x": -19.9,
-    "z": 56.64,
-    "rx": 1.86,
-    "rz": 1.4,
-    "rot": -1.39
+    "x": 50.01,
+    "z": 37.69,
+    "rx": 2.75,
+    "rz": 1.5,
+    "rot": -1.38
    },
    {
-    "x": 21.1,
-    "z": -10.89,
-    "rx": 2.73,
-    "rz": 1.72,
-    "rot": 0.75
+    "x": -10.06,
+    "z": -31.03,
+    "rx": 2.57,
+    "rz": 1.49,
+    "rot": 0.18
    },
    {
-    "x": 38.84,
-    "z": 98.19,
-    "rx": 1.65,
-    "rz": 0.98,
-    "rot": -1.24
-   },
-   {
-    "x": 43.16,
-    "z": -72.77,
-    "rx": 3.15,
-    "rz": 2.26,
-    "rot": 0.21
-   },
-   {
-    "x": 72.13,
-    "z": -3.82,
-    "rx": 3.15,
-    "rz": 1.94,
-    "rot": 0.5
-   },
-   {
-    "x": -46.02,
-    "z": 34.89,
-    "rx": 1.79,
-    "rz": 1.33,
-    "rot": -0.31
-   },
-   {
-    "x": -38.44,
-    "z": 88.64,
+    "x": -87.77,
+    "z": 54.8,
     "rx": 2.28,
-    "rz": 1.68,
-    "rot": 0.53
+    "rz": 1.48,
+    "rot": 0.59
    },
    {
-    "x": 73.37,
-    "z": -48.51,
-    "rx": 2.32,
-    "rz": 1.26,
-    "rot": -0.36
+    "x": 32.98,
+    "z": 58.71,
+    "rx": 2.35,
+    "rz": 1.75,
+    "rot": -0.62
+   },
+   {
+    "x": -47.64,
+    "z": 112.37,
+    "rx": 3.14,
+    "rz": 1.92,
+    "rot": -0.23
+   },
+   {
+    "x": 41.94,
+    "z": -43.47,
+    "rx": 2.1,
+    "rz": 1.41,
+    "rot": -1.3
+   },
+   {
+    "x": 63.92,
+    "z": 44.44,
+    "rx": 2.5,
+    "rz": 1.63,
+    "rot": -0.09
+   },
+   {
+    "x": 41.05,
+    "z": -85.91,
+    "rx": 1.85,
+    "rz": 1.44,
+    "rot": 0.39
    }
   ],
   "middle": {
@@ -2865,7 +2865,7 @@ export const DEEP_35: GenFloor = {
    "title": "She answers every step",
    "stand": "Mortis",
    "tint": "#5a6ac8",
-   "scale": 2.56,
+   "scale": 2.66,
    "hp": 3900,
    "speed": 0,
    "stagger": {
@@ -2876,7 +2876,7 @@ export const DEEP_35: GenFloor = {
    "moves": {
     "beams": {
      "use": "volley",
-     "name": "Cold Beams",
+     "name": "Glass Beams",
      "share": 0.06,
      "cooldown": 4
     },
@@ -2886,7 +2886,7 @@ export const DEEP_35: GenFloor = {
     },
     "stars": {
      "use": "stones",
-     "name": "Starfall",
+     "name": "Falling Glass",
      "share": 0.06,
      "light": true,
      "count": 3,
@@ -2898,12 +2898,11 @@ export const DEEP_35: GenFloor = {
      "share": 0.1,
      "cooldown": 14
     },
-    "rain": {
-     "use": "stones",
-     "name": "Crystal Rain",
-     "share": 0.06,
-     "count": 4,
-     "cooldown": 7
+    "shards": {
+     "use": "volley",
+     "name": "Shard Volley",
+     "share": 0.05,
+     "cooldown": 6
     }
    },
    "phases": [
@@ -2926,7 +2925,7 @@ export const DEEP_35: GenFloor = {
       "beams",
       "fan",
       "stars",
-      "rain"
+      "shards"
      ],
      "gap": [
       1.4,
@@ -2941,7 +2940,7 @@ export const DEEP_35: GenFloor = {
       "fan",
       "stars",
       "rake",
-      "rain"
+      "shards"
      ],
      "gap": [
       1.2,
@@ -3443,8 +3442,8 @@ export const DEEP_35: GenFloor = {
     "name": "Sirix",
     "role": "giver",
     "at": {
-     "x": -47.5,
-     "z": -1.6
+     "x": -47.47,
+     "z": -1.56
     },
     "face": 1.39,
     "greet": [
@@ -3460,8 +3459,8 @@ export const DEEP_35: GenFloor = {
     "name": "Nyx",
     "role": "rival",
     "at": {
-     "x": -42.82,
-     "z": -36.74
+     "x": -42.23,
+     "z": -36.37
     },
     "face": 0.77,
     "greet": [],
@@ -3486,7 +3485,7 @@ export const DEEP_35: GenFloor = {
   "quests": [
    {
     "id": "main",
-    "name": "Light the Deep",
+    "name": "The Three Crystals",
     "giver": "keeper",
     "main": true,
     "intro": [
@@ -3907,7 +3906,7 @@ export const DEEP_35: GenFloor = {
    {
     "id": "trial",
     "piece": "trial",
-    "name": "The Sealed Gallery",
+    "name": "The Dark Vault",
     "at": {
      "x": -71.87,
      "z": 87.1
@@ -3946,8 +3945,8 @@ export const DEEP_35: GenFloor = {
    "goal": "the gallery",
    "mode": "duel",
    "at": {
-    "x": -42.82,
-    "z": -36.74
+    "x": -42.23,
+    "z": -36.37
    },
    "boon": true,
    "lines": [

@@ -207,7 +207,9 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   }
 
   // --- roads (the mine's tracks): the camp to the first and last outer place; a ring through the outer places; spokes to the inner --
-  const edge = (p: Place, to: V) => { const e = add(p.c, unit({ x: to.x - p.c.x, z: to.z - p.c.z }), p.r - 1); return { x: r2(e.x), z: r2(e.z) }; };
+  // A road leaves a place on its side toward where it goes; a hall, walled at the back, only by its mouth (toward the middle): from its
+  // side a track ran under the wall (the Sands' lesson, docs/tower/climb50/sands/README.md).
+  const edge = (p: Place, to: V) => { const e = add(p.c, p.kind === 'hall' ? toMid(p.c) : unit({ x: to.x - p.c.x, z: to.z - p.c.z }), p.r - 1); return { x: r2(e.x), z: r2(e.z) }; };
   const campW: V = C(-2.5, -6), campE: V = C(3, -6);
   const byBearing = (p: Place) => { const b = (Math.atan2(p.c.x, -p.c.z) * 180) / Math.PI; return b < -150 ? b + 360 : b; };
   const outer = places.filter((p) => p.kind !== 'yard' && p.kind !== 'shaft' && p.kind !== 'well').sort((a, b) => byBearing(a) - byBearing(b));
@@ -518,6 +520,12 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     most = Math.max(most, sum);
   }
   if (most > 6) throw new Error(`floor ${n}: ${most} units near one spot`);
+  // No track drawn under a hall's wall.
+  const hallWalls = L.cover.filter((p) => (p.look as unknown as DeepLookKind) === 'stalwall').map((p) => p.o);
+  for (const road of roads) for (let i = 1; i < road.length; i++) for (let s = 0; s <= 20; s++) {
+    const q = add(road[i - 1], { x: road[i].x - road[i - 1].x, z: road[i].z - road[i - 1].z }, s / 20);
+    if (hallWalls.some((o) => segDist(q, { x: o.ax, z: o.az }, { x: o.bx, z: o.bz }) < o.r + 0.6)) throw new Error(`floor ${n}: a track runs under a hall's wall`);
+  }
   // No gap between two pieces of cover that a walker could half enter and wedge in (the path finder's walker is 0.5 m round).
   for (let i = 0; i < L.cover.length; i++) for (let j = i + 1; j < L.cover.length; j++) {
     const a = L.cover[i].o, b = L.cover[j].o, A0 = { x: a.ax, z: a.az }, A1 = { x: a.bx, z: a.bz }, B0 = { x: b.ax, z: b.az }, B1 = { x: b.bx, z: b.bz };
