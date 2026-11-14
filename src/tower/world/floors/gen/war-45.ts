@@ -3156,7 +3156,7 @@ export const WAR_45: GenFloor = {
     }
    }
   },
-  "par": 2376,
+  "par": 1092,
   "shop": {
    "heal": 48,
    "boon": 77,

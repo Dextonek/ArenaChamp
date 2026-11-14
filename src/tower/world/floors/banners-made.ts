@@ -2893,7 +2893,7 @@ export const BANNERS_41: Omit<GenFloor, 'pieces'> = {
     }
    }
   },
-  "par": 2200,
+  "par": 1260,
   "shop": {
    "heal": 40,
    "boon": 65,

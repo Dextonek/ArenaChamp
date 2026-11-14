@@ -3250,7 +3250,7 @@ export const WAR_49: GenFloor = {
     }
    }
   },
-  "par": 2552,
+  "par": 1134,
   "shop": {
    "heal": 56,
    "boon": 89,
@@ -3422,6 +3422,20 @@ export const WAR_49: GenFloor = {
     "scale": 1.4,
     "shards": 63,
     "color": "#b8d0a0"
+   },
+   "castellan": {
+    "id": "castellan",
+    "name": "The Banner Bearer",
+    "blurb": "Holds the keep for neither army.",
+    "look": "bearer",
+    "melee": true,
+    "hp": 480,
+    "share": 0.06,
+    "every": 1.8,
+    "speed": 3,
+    "scale": 1.5,
+    "shards": 42,
+    "color": "#ffd060"
    },
    "champion": {
     "id": "champion",
@@ -3627,7 +3641,7 @@ export const WAR_49: GenFloor = {
       "n": 2
      }
     ],
-    "elite": "bearer"
+    "elite": "castellan"
    },
    {
     "id": "named1",

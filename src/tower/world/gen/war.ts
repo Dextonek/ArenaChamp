@@ -95,14 +95,24 @@ function armies(shard: (x: number) => number): Record<string, EnemySpec> {
   }
   return e;
 }
+/**
+ * The par (s): the time under which the floor's fourth star is earned. The banner's soldiers make the War quick: the route bot clears a
+ * floor in about 1000 to 1400 s, so the old par (twice that) came free. Now about as hard to earn as in the other chapters taken together
+ * (the bot earns it in 18 of 20 runs in the Wood, 19 of 20 in the Deep, 4 of 20 in the Sands): 1061 to 1145 s on the made floors, where
+ * the bot earned it in 12 of 20 runs; floor 41, the longest, 1260 s.
+ */
+export const warPar = (n: number) => Math.round((n === 41 ? 1200 : 1000 + 10 * (n - 41)) * 1.05);
+
 /** The soldiers of neither army, and the two named enemies. */
-function neutrals(o: { shard: (x: number) => number; chief?: string; named1?: string; named2?: string }): Record<string, EnemySpec> {
+function neutrals(o: { shard: (x: number) => number; chief?: string; castellan?: string; named1?: string; named2?: string }): Record<string, EnemySpec> {
   const s = o.shard, look = (x: string) => x as EnemySpec['look'];
   const e: Record<string, EnemySpec> = {
     ashen: { id: 'ashen', name: 'Ashen soldier', blurb: 'Belongs to neither army.', look: look('ashen'), melee: true, hp: 80, share: 0.026, every: 1.7, speed: 3.0, scale: 1.2, shards: s(3), color: '#c0c8d8' },
     bearer: { id: 'bearer', name: o.chief ?? 'The Banner Bearer', blurb: 'Carries the dead flag of both.', look: look('bearer'), melee: true, hp: 480, share: 0.06, every: 1.8, speed: 3.0, scale: 1.5, shards: s(30), color: '#ffd060' },
     deserter: { id: 'deserter', name: o.named1 ?? 'The Deserter Knight', blurb: 'Walks the field and strikes hard.', look: look('deserter'), melee: true, hp: 700, share: 0.075, every: 2.2, speed: 2.8, scale: 1.4, shards: s(45), color: '#b8d0a0' },
   };
+  // The keep's elite (floors 48 to 50): the bearer's equal under a name of its own (two elites of one name read as one enemy twice).
+  if (o.castellan) e.castellan = { ...e.bearer, id: 'castellan', name: o.castellan, blurb: 'Holds the keep for neither army.' };
   if (o.named2) e.champion = { id: 'champion', name: o.named2, blurb: 'Walks the hospital’s side and strikes hard.', look: look('bearer'), melee: true, hp: 600, share: 0.068, every: 2.0, speed: 2.9, scale: 1.65, shards: s(40), color: '#e0c890' };
   return e;
 }
@@ -475,7 +485,9 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
   const shard = (x: number) => Math.round(x * (1 + 0.05 * (n - 41)));
   const named1 = NAMED[(2 * fi) % NAMED.length], named2 = NAMED[(2 * fi + 1) % NAMED.length];
   const chief = pick(CHIEFS);
-  const enemies = { ...armies(shard), ...neutrals({ shard, chief, named1, named2 }) };
+  // The keep's elite takes another chief's name, chosen without the random stream (nothing else on the floor moves).
+  const castellan = keepElite ? CHIEFS[(CHIEFS.indexOf(chief) + 1 + (n % (CHIEFS.length - 1))) % CHIEFS.length] : undefined;
+  const enemies = { ...armies(shard), ...neutrals({ shard, chief, castellan, named1, named2 }) };
   // Each site: three of each army. Bowmen early; a knight in more of them as the chapter climbs.
   const mixes: Record<string, number>[] = [{ footman: 2, bowman: 1 }, { footman: 1, bowman: 1, knight: 1 }, { footman: 2, knight: 1 }, { footman: 1, bowman: 2 }];
   const knights = Math.min(4, Math.round(1 + 3 * k)); // sites with a knight: 1 (42) to 4 (50)
@@ -484,7 +496,7 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
   const packs: PackDef[] = [
     ...siteIds.flatMap((id, i) => site(id, siteSpots[i], siteMix(i))),
     { id: 'siege', at: siegeAt, leash: 24, mix: [{ kind: 'ashen', n: 3 }], elite: 'bearer' },
-    ...(keepPack ? [{ id: 'keep', at: B.c, leash: 24, mix: [{ kind: 'ashen', n: keepElite ? 2 : 3 }], ...(keepElite ? { elite: 'bearer' } : {}) } as PackDef] : []),
+    ...(keepPack ? [{ id: 'keep', at: B.c, leash: 24, mix: [{ kind: 'ashen', n: keepElite ? 2 : 3 }], ...(keepElite ? { elite: 'castellan' } : {}) } as PackDef] : []),
     { id: 'named1', at: patrol1[0], leash: 24, mix: [{ kind: 'deserter', n: 1 }], named: { name: named1, speed: 1.6, patrol: patrol1, bounty: { shards: shard(45), relic: true } } },
     { id: 'named2', at: patrol2Loop[0], leash: 24, mix: [{ kind: 'champion', n: 1 }], named: { name: named2, speed: 1.7, patrol: patrol2Loop, bounty: { shards: shard(40), relic: false } } },
   ];
@@ -600,7 +612,7 @@ export function makeWarFloor(o: WarGenOptions): GenFloor {
     n, chapter: 'war', seed, look, pieces,
     floor: {
       n, id: `war-${nn}`, name: crown ? 'The Crown of the War' : FLOOR_NAMES[fi % FLOOR_NAMES.length], blurb: crown ? 'The last field of the Climb, where the war burned down to its embers.' : BLURBS[fi % BLURBS.length],
-      tunedAs: r2(5 + (n - 41) / 9), ring, start: X(C(0, 5.5)), camp: X(C(0, 2)), places: placeDefs, par: Math.round((1000 + 20 * (n - 41)) * 2.2),
+      tunedAs: r2(5 + (n - 41) / 9), ring, start: X(C(0, 5.5)), camp: X(C(0, 2)), places: placeDefs, par: warPar(n),
       shop: { heal: 40 + 2 * (n - 41), boon: 65 + 3 * (n - 41), life: 90 + 4 * (n - 41), hint: 15 },
       law,
       enemies, packs: packs.map((p) => ({ ...p, at: X(p.at), ...(p.named ? { named: { ...p.named, patrol: p.named.patrol.map(X) } } : {}) })),
@@ -730,7 +742,7 @@ export function makeBannersFloor(attempt = 0): Omit<GenFloor, 'pieces'> {
   const ring = Math.ceil(Math.max(...rim) + 1.5);
   const floor: Omit<FloorDef, 'arena' | 'cover'> = {
     n: 41, tunedAs: 5, id: 'banners', name: 'The Field of Banners', blurb: 'Two ghost armies still fight here. Take a side.',
-    ring, start: X(C(0, 5.5)), camp: X(C(0, 2)), places: placeDefs, par: Math.round(1000 * 2.2),
+    ring, start: X(C(0, 5.5)), camp: X(C(0, 2)), places: placeDefs, par: warPar(41),
     shop: { heal: 40, boon: 65, life: 90, hint: 15 },
     law: {
       kind: 'sides', name: 'The war',
