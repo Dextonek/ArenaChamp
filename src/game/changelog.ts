@@ -39,7 +39,7 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-14',
-    title: 'The Climb’s own people, a map of the floor, and who waits to duel',
+    title: 'Clans, leaderboards, the Climb’s own people and a map of the floor',
     live: false,
     items: [
       {
@@ -58,6 +58,16 @@ export const CHANGELOG: Release[] = [
         tag: 'Online',
         title: 'See who waits to duel',
         text: 'The Online match button now says how many players are waiting in the queue, before you press Find match.',
+      },
+      {
+        tag: 'Online',
+        title: 'Leaderboards',
+        text: 'A new Boards screen ranks players by a duel rating (everyone starts at 1000; an online duel of 30 seconds or more moves it), by duel wins this week, by the highest Climb floor and its stars, and clans by their members’ wins. The Raid’s and the Tower’s weekly boards are there too. Your rating is also on your profile.',
+      },
+      {
+        tag: 'Online',
+        title: 'Clans and clan chat',
+        text: 'Found a clan of up to 30 with a tag of your own, or join one with its invite code or by asking its leader. Members see who is online and talk in their own clan chat; the Clan tab counts the messages you have not read. You can mute anyone for yourself and report a message, and your tag stands before your name on the boards and over your hero on the Climb.',
       },
       {
         tag: 'Tower',

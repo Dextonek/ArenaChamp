@@ -411,6 +411,7 @@ export class WorldGame {
       const times = read<Record<string, number>>(KEYS.times) ?? {};
       if (!times[floor.n] || run.result.seconds < times[floor.n]) times[floor.n] = run.result.seconds;
       write(KEYS.times, times);
+      globalThis.dispatchEvent?.(new Event('climb-cleared')); // the game page reports it to the Climb's board (src/game/main.ts)
     }
     this.save();
     // One boon of those carried is kept as a sigil for every later climb. The autopilot keeps the first.

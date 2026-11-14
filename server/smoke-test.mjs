@@ -9,10 +9,12 @@
 // All of that runs with the hero shop switched off, as it was written: its accounts are new and play any hero. The shop
 // itself (pipeline/designs/hero-shop.md), the raid ranks and the week's boards are played on servers of their own, with the
 // shop on, at the same time as the rest (`shopCases`): their lines are printed at the end. So is the Climb's open world (`worldCases`:
-// shards of a floor, walks and casts relayed, leaving).
+// shards of a floor, walks and casts relayed, leaving), and the leaderboards and clans (`socialCases`: the duel rating, the boards,
+// clans, the clan chat and its limits, a restart on the same store).
 //   node server/smoke-test.mjs                         (its own Node servers on temporary data files)
 //   node server/smoke-test.mjs --shop                  (only the shop, the ranks and the boards: about 130 s)
 //   node server/smoke-test.mjs --world                 (only the Climb's open world: a few seconds)
+//   node server/smoke-test.mjs --social                (only the leaderboards and clans: about 45 s)
 //   node server/smoke-test.mjs ws://localhost:8787/ws  (a running server with the shop off, e.g. `npm run cf:dev` with
 //                                                       SHOP "off"; unique names per run; the shop's cases are left out)
 import { createServer } from 'node:http';
@@ -21,6 +23,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { WebSocket } from 'ws';
 import { attachGameServer } from './game-server.mjs';
+import { WORDS } from './filter.mjs';
 import {
   HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_PARTY_MAX, RAID_REWARDS, RAID_TWIN, RELOAD_TEXT, SHOP, STARTERS, heroPrice, isoWeek, raidBand, raidHp,
   raidStaggerMax, raidTwinHp, shopRotation,
@@ -31,6 +34,7 @@ const SUN = RAID_BOSSES.sun.hp.duo, ASH = RAID_BOSSES.ash.hp.duo, HEART = RAID_B
 
 const onlyShop = process.argv.includes('--shop');
 const onlyWorld = process.argv.includes('--world');
+const onlySocial = process.argv.includes('--social');
 const target = process.argv.slice(2).find((x) => !x.startsWith('--'));
 const dir = mkdtempSync(join(tmpdir(), 'duel-smoke-'));
 const http = createServer();
@@ -540,11 +544,278 @@ async function worldCases() {
   return lines;
 }
 
-// The shop's cases and the world's run beside the rest, on their own servers.
-const shopRun = target || onlyWorld ? null : shopCases();
-const worldRun = target || onlyShop ? null : worldCases();
+/**
+ * The leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans"), on servers of their own beside the rest:
+ * a duel that counts moves both ratings and one too short moves none, the boards list, the Climb's report, clans (create, join by
+ * code, a wrong code, a player in another clan, asking and the leader's yes), the chat (members only, the rate limit, the filter, a
+ * player's own mute, the leader's mute, a report), the dots, the tag in the open world, the room still there after the hub starts
+ * again on the same store, and leaving, removing, handing the lead on and an empty clan gone. Its lines are printed at the end.
+ * @returns {Promise<string[]>}
+ */
+async function socialCases() {
+  /** @type {string[]} */
+  const lines = [];
+  /** @param {boolean} cond @param {string} what */
+  const ok = (cond, what) => {
+    lines.push(`${cond ? 'ok  ' : 'FAIL'} social: ${what}`);
+    if (!cond) failed = true;
+  };
+  const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+  /** @type {string[]} */
+  const said = [];
+  /** @type {import('node:http').Server[]} */
+  const servers = [];
+  const file = join(dir, 'accounts-social.json');
+  const serve = async () => {
+    const server = createServer();
+    servers.push(server);
+    attachGameServer(server, { dataFile: file, log: (m) => { said.push(m); }, shop: false });
+    await new Promise((r) => server.listen(0, () => r(undefined)));
+    return { to: `ws://localhost:${/** @type {import('node:net').AddressInfo} */ (server.address()).port}/ws`, server };
+  };
+  /** A connection, registered or logged in. @param {string} to @param {string} name @param {'register' | 'login'} [how] */
+  const enter = async (to, name, how = 'register') => {
+    const x = await client(to);
+    x.send({ t: how, name, password: 'pw1234' });
+    const s = await x.next('session');
+    return Object.assign(x, { profile: s.profile, name });
+  };
+  /** The next `clan` message, after dropping any older ones waiting. @param {any} x */
+  const clanNow = async (x) => { x.forget('clan'); x.send({ t: 'clan_get' }); const m = await x.next('clan'); x.forget('clan_history'); return m; };
+  /** The leaderboards as `x` sees them. @param {any} x */
+  const boards = async (x) => { x.forget('leaderboards'); x.send({ t: 'leaderboards' }); return x.next('leaderboards'); };
+  /** A duel between `x` and `y` to the first round's fight; `x` knocks `y` out in each round after holding `hold` ms. */
+  const duelTo = async (/** @type {any} */ x, /** @type {any} */ y, /** @type {number} */ hold) => {
+    x.send({ t: 'lobby_create' });
+    const code = (await x.next('lobby')).lobby.code;
+    y.send({ t: 'lobby_join', code });
+    x.send({ t: 'lobby_pick', hero: 'Kaia' }); x.send({ t: 'lobby_ready', ready: true });
+    await pause(150);
+    y.send({ t: 'lobby_pick', hero: 'Bram' }); y.send({ t: 'lobby_ready', ready: true });
+    await x.next('match_start'); await y.next('match_start');
+    for (let r = 1; r <= 2; r++) {
+      x.send({ t: 'match_loaded' }); y.send({ t: 'match_loaded' });
+      await x.next('match_fight'); await y.next('match_fight');
+      await pause(3200 + (r === 1 ? hold : 0));
+      x.send({ t: 'cast', id: r, slot: 3, x: 0, z: 1, fx: 0, fz: 13, enemy: true });
+      await y.next('peer_cast');
+      for (let i = 0; i < 3; i++) y.send({ t: 'took_hit', id: r, damage: 250 });
+      if (r === 1) { await x.next('round_start'); await y.next('round_start'); }
+    }
+    const ends = [await x.next('match_end'), await y.next('match_end')];
+    for (const t of ['lobby', 'round_end', 'round_start', 'match_fight', 'peer_cast']) { x.forget(t); y.forget(t); }
+    return ends;
+  };
 
-if (!onlyShop && !onlyWorld) try {
+  try {
+    let { to, server } = await serve();
+    const guest = await client(to);
+
+    // --- the duel rating and the boards (runs beside the clans: it waits out a real 30 s) ---------------------------------
+    const duels = (async () => {
+      const r1 = await enter(to, 'rhys'), r2 = await enter(to, 'rory');
+      ok(r1.profile.rating === 1000 && r1.profile.rated === 0, 'a new account starts at a rating of 1000');
+      const [qw, ql] = await duelTo(r1, r2, 0);
+      ok(qw.rating?.change === 0 && ql.rating?.change === 0 && qw.profile.rating === 1000 && ql.profile.rating === 1000,
+        `a duel shorter than ${SHOP.minDuelS} s moves no rating (${qw.seconds} s)`);
+      const [w, l] = await duelTo(r1, r2, SHOP.minDuelS * 1000 + 500);
+      ok(w.rating.change === 16 && l.rating.change === -16 && w.profile.rating === 1016 && l.profile.rating === 984 && w.profile.rated === 1,
+        `a duel that counts moves both ratings: 1016 and 984 (${w.seconds} s)`);
+      const b = await boards(r1);
+      ok(b.duels[0]?.name === 'rhys' && b.duels[0].rating === 1016 && b.duels[0].hero === 'Kaia' && b.duels[1]?.name === 'rory' && b.duels[1].rating === 984,
+        'the rating board: rhys 1016 (favourite Kaia), then rory 984');
+      ok(b.weekly.length === 1 && b.weekly[0].name === 'rhys' && b.weekly[0].wins === 1, 'the week\'s board counts the duel that counted: rhys 1 win');
+      ok(b.you?.rank === 1 && b.you.rating === 1016 && b.you.week.rank === 1, 'the player\'s own row: first, 1016, first this week');
+      const g = await boards(guest);
+      ok(g.you === null && g.duels.length === 2 && Array.isArray(g.raid) && Array.isArray(g.tower) && Array.isArray(g.climb) && Array.isArray(g.clans),
+        'a page not signed in reads the boards too, with no row of its own');
+      // The Climb: the page's own word, only upward, only what can be.
+      r2.send({ t: 'climb_report', floor: 7, stars: 20 });
+      r2.send({ t: 'climb_report', floor: 51, stars: 3 });
+      r2.send({ t: 'climb_report', floor: 9, stars: 37 });
+      r2.send({ t: 'climb_report', floor: 5, stars: 10 });
+      const c = await boards(r2);
+      ok(c.climb.length === 1 && c.climb[0].name === 'rory' && c.climb[0].floor === 7 && c.climb[0].stars === 20 && c.you.climb.rank === 1,
+        'the Climb\'s board: floor 7 with 20 stars; floor 51, 37 stars on floor 9 and a lower report are not taken');
+      r1.close(); r2.close();
+    })();
+
+    // --- clans ---------------------------------------------------------------------------------------------------------
+    const ana = await enter(to, 'ana'), ben = await enter(to, 'ben'), cy = await enter(to, 'cyd'), dee = await enter(to, 'dee');
+    const eve = await enter(to, 'eve'), fay = await enter(to, 'fay');
+    ana.send({ t: 'clan_create', name: 'x', tag: 'OWL' });
+    ok((await ana.next('clan_error')).error.startsWith('Clan name'), 'a clan name of one letter is refused');
+    ana.send({ t: 'clan_create', name: 'Night Owls', tag: 'OWLS5' });
+    ok((await ana.next('clan_error')).error.startsWith('Tag'), 'a tag of five is refused');
+    ana.send({ t: 'clan_create', name: '  Night   Owls ', tag: 'owl' });
+    const made = (await ana.next('clan')).clan;
+    ok(made.name === 'Night Owls' && made.tag === 'OWL' && made.leader === 'ana' && /^[A-Z2-9]{6}$/.test(made.code) && made.members.length === 1 && made.members[0].online,
+      `ana founds Night Owls [OWL], its invite code ${made.code}`);
+    dee.send({ t: 'clan_create', name: 'NIGHT OWLS', tag: 'DD' });
+    ok((await dee.next('clan_error')).error.includes('taken'), 'the same name in other letters is taken');
+    dee.send({ t: 'clan_create', name: 'Deep Ones', tag: 'DEEP' });
+    await dee.next('clan');
+    ana.forget('clan_chat');
+    ben.send({ t: 'clan_join', code: made.code.toLowerCase() });
+    const benClan = (await ben.next('clan')).clan;
+    const anaSees = await ana.next('clan_chat');
+    ok(benClan.id === made.id && benClan.members.length === 2 && benClan.code === undefined && anaSees.line.kind === 'join' && anaSees.line.name === 'ben',
+      'ben joins by the code (any case); ana\'s room says so; only the leader sees the code');
+    cy.send({ t: 'clan_join', code: 'ZZZZZZ' });
+    ok((await cy.next('clan_error')).error === 'No clan has that code', 'a wrong code is refused');
+    dee.send({ t: 'clan_join', code: made.code });
+    ok((await dee.next('clan_error')).error.includes('in a clan already'), 'a player in another clan is refused');
+
+    // Asking from the clan's page: the leader lets fay in.
+    fay.send({ t: 'clan_list' });
+    const listed = (await fay.next('clan_list')).clans;
+    ok(listed.some((/** @type {any} */ k) => k.tag === 'OWL' && k.members === 2) && listed.some((/** @type {any} */ k) => k.tag === 'DEEP'), 'a player in no clan sees the clans with room, with tag and size');
+    fay.send({ t: 'clan_view', id: made.id });
+    const view = (await fay.next('clan_view')).clan;
+    ok(view.name === 'Night Owls' && view.list.length === 2 && view.code === undefined, 'a clan\'s page shows its members, never its code');
+    ana.forget('clan');
+    fay.send({ t: 'clan_ask', id: made.id });
+    await fay.next('clan_notice');
+    ok((await ana.next('clan')).clan.asks.includes('fay'), 'fay asks to join: the leader sees the ask');
+    ana.send({ t: 'clan_answer', name: 'fay', yes: true });
+    ok((await fay.next('clan')).clan?.id === made.id, 'the leader says yes: fay is in');
+    eve.send({ t: 'clan_join', code: made.code });
+    await eve.next('clan');
+    await pause(200);
+
+    // The chat: members only.
+    for (const x of [ana, ben, cy, dee, eve, fay]) x.forget('clan_chat');
+    const outside = (cy.got.clan_chat ?? 0) + (dee.got.clan_chat ?? 0);
+    ana.send({ t: 'clan_say', text: 'hello owls' });
+    const benGot = await ben.next('clan_chat'), anaGot = await ana.next('clan_chat');
+    await pause(200);
+    ok(benGot.line.text === 'hello owls' && benGot.line.name === 'ana' && anaGot.line.n === benGot.line.n, 'a message reaches both members (the sender too)');
+    ok((cy.got.clan_chat ?? 0) + (dee.got.clan_chat ?? 0) === outside, 'a player in no clan and one in another clan hear nothing of it');
+    // The filter.
+    await pause(1100);
+    ana.send({ t: 'clan_say', text: `you ${WORDS[0]}!` });
+    ok((await ben.next('clan_chat')).line.text === 'you ***!', 'a listed word is starred');
+    // A player's own mute: ben mutes ana; ana's next line reaches the others, not ben.
+    ben.forget('clan');
+    ben.send({ t: 'clan_mute', name: 'ana', on: true });
+    ok((await ben.next('clan')).mutes.includes('ana'), 'ben mutes ana, kept on ben\'s account');
+    await pause(1100);
+    for (const x of [ana, ben, fay]) x.forget('clan_chat');
+    const benBefore = ben.got.clan_chat ?? 0;
+    ana.send({ t: 'clan_say', text: 'can you hear me' });
+    await fay.next('clan_chat');
+    await pause(200);
+    ok((ben.got.clan_chat ?? 0) === benBefore, 'a muted member\'s line does not reach the one who muted it');
+    ben.send({ t: 'clan_mute', name: 'ana', on: false });
+    await ben.next('clan');
+    // The rate limit: one a second, ten in 20 s.
+    eve.forget('clan_error');
+    eve.send({ t: 'clan_say', text: 'one' });
+    eve.send({ t: 'clan_say', text: 'two' });
+    ok((await eve.next('clan_error')).error.startsWith('Slow down: one message a second'), 'two messages in the same second: the second is refused, with a word');
+    const errorsBefore = eve.got.clan_error ?? 0;
+    for (let i = 0; i < 10; i++) {
+      await pause(1050);
+      eve.send({ t: 'clan_say', text: `line ${i}` });
+    }
+    await pause(300);
+    const refused = (eve.got.clan_error ?? 0) === errorsBefore + 1 ? (await eve.next('clan_error')).error : '';
+    ok(refused.includes('at most 10 messages in 20 seconds'), 'a steady flood, one a second: the eleventh in 20 s is refused, and only it');
+    // The leader mutes ben in the room for 24 h.
+    ana.send({ t: 'clan_silence', name: 'ben', on: true });
+    await ana.next('clan');
+    ben.forget('clan_error');
+    ben.send({ t: 'clan_say', text: 'let me talk' });
+    ok((await ben.next('clan_error')).error.startsWith('The leader muted you'), 'the leader mutes ben in the room: ben is refused');
+    // A report goes to the hub's log, with the clan, names and time.
+    ben.send({ t: 'clan_report', n: benGot.line.n });
+    await ben.next('clan_notice');
+    const report = said.find((m) => m.startsWith('REPORT'));
+    ok(!!report && report.includes('Night Owls') && report.includes('[OWL]') && report.includes('ben reports ana') && report.includes(benGot.line.at), 'a report is written to the hub\'s log');
+    // The dot: fay goes and comes back.
+    ana.forget('clan');
+    fay.close();
+    const gone = (await ana.next('clan')).clan.members.find((/** @type {any} */ m) => m.name === 'fay');
+    const fay2 = await enter(to, 'fay', 'login');
+    const back = (await ana.next('clan')).clan.members.find((/** @type {any} */ m) => m.name === 'fay');
+    ok(gone?.online === false && back?.online === true, 'the online dot goes out and on again as a member leaves and comes back');
+    // The tag over a hero in the Climb's open world.
+    ana.send({ t: 'world_join', floor: 4, hero: 'Kaia' });
+    await ana.next('world_roster');
+    cy.send({ t: 'world_join', floor: 4, hero: 'Lyra' });
+    const roster = await cy.next('world_roster');
+    ok(roster.players[0]?.name === 'ana' && roster.players[0].tag === 'OWL', 'the open world says a player\'s clan tag beside its name');
+    ana.send({ t: 'world_leave' }); cy.send({ t: 'world_leave' });
+
+    await duels;
+    // The clans' board: by the members' wins this week, then the rating's average.
+    const lb = await boards(ana);
+    ok(lb.clans.length === 2 && lb.clans.some((/** @type {any} */ k) => k.tag === 'OWL' && k.members === 4) && lb.tags.ana === 'OWL', 'the clans\' board lists both clans; names carry their tags');
+
+    // --- a restart: the hub starts again on the same store (a deploy) --------------------------------------------------------
+    for (const x of [guest, ana, ben, cy, dee, eve, fay2]) x.close();
+    server.close();
+    await pause(50);
+    ({ to, server } = await serve());
+    const ana2 = await enter(to, 'ana', 'login');
+    ana2.send({ t: 'clan_get' });
+    const again = (await ana2.next('clan')).clan, hist = (await ana2.next('clan_history')).lines;
+    ok(again?.name === 'Night Owls' && again.members.length === 4 && hist.some((/** @type {any} */ l) => l.text === 'hello owls') && hist.some((/** @type {any} */ l) => l.text === 'you ***!'),
+      `after the hub starts again on the same store, the clan and its room are there (${hist.length} lines)`);
+    const ben2 = await enter(to, 'ben', 'login'), eve2 = await enter(to, 'eve', 'login'), fay3 = await enter(to, 'fay', 'login');
+    ben2.send({ t: 'clan_say', text: 'still muted?' });
+    ok((await ben2.next('clan_error')).error.startsWith('The leader muted you'), 'the leader\'s mute is kept too');
+
+    // Leaving, removing, the lead handed on, an empty clan gone.
+    await pause(150);
+    for (const x of [ana2, ben2, eve2, fay3]) { x.forget('clan_chat'); x.forget('clan'); }
+    ben2.send({ t: 'clan_leave' });
+    const benOut = await ben2.next('clan'), left = await ana2.next('clan_chat');
+    ok(benOut.clan === null && left.line.kind === 'leave' && left.line.name === 'ben', 'ben leaves: no clan for ben, a line in the room');
+    fay3.forget('clan');
+    ana2.send({ t: 'clan_remove', name: 'fay' });
+    const fayOut = await fay3.next('clan'), removed = await ana2.next('clan_chat');
+    ok(fayOut.clan === null && (await fay3.next('clan_notice')).text.includes('removed') && removed.line.kind === 'remove' && removed.line.by === 'ana', 'the leader removes fay: fay is told, a line in the room');
+    ben2.send({ t: 'clan_remove', name: 'eve' });
+    ok((await ben2.next('clan_error')).error.startsWith('Only the leader'), 'only the leader can remove');
+    await pause(150);
+    eve2.forget('clan'); eve2.forget('clan_chat');
+    ana2.send({ t: 'clan_lead', name: 'eve' });
+    const lead = (await eve2.next('clan')).clan;
+    ok(lead.leader === 'eve' && typeof lead.code === 'string' && (await eve2.next('clan_chat')).line.kind === 'lead', 'ana hands the lead to eve: eve sees the code now');
+    eve2.send({ t: 'clan_code' });
+    const recoded = (await eve2.next('clan')).clan.code;
+    ben2.send({ t: 'clan_join', code: made.code });
+    ok(recoded !== made.code && (await ben2.next('clan_error')).error === 'No clan has that code', 'a new code: the old one stops working');
+    ana2.send({ t: 'clan_leave' });
+    await ana2.next('clan');
+    await pause(150);
+    eve2.forget('clan');
+    eve2.send({ t: 'clan_leave' });
+    await eve2.next('clan');
+    await pause(150);
+    ben2.send({ t: 'clan_list' });
+    const after = (await ben2.next('clan_list')).clans;
+    const lb2 = await boards(ben2);
+    ok(!after.some((/** @type {any} */ k) => k.tag === 'OWL') && !lb2.clans.some((/** @type {any} */ k) => k.tag === 'OWL'), 'the last one out: the clan is gone from the list and the board');
+    ben2.send({ t: 'clan_create', name: 'night owls', tag: 'OWL' });
+    ok((await ben2.next('clan')).clan?.tag === 'OWL', 'its name and tag are free again');
+    for (const x of [ana2, ben2, eve2, fay3]) x.close();
+  } catch (e) {
+    ok(false, String(e instanceof Error ? e.stack : e));
+    for (const m of said) if (m.startsWith('error')) lines.push(`     hub: ${m}`);
+  }
+  for (const s of servers) s.close();
+  return lines;
+}
+
+// The shop's cases, the world's and the social ones run beside the rest, on their own servers.
+const only = onlyShop || onlyWorld || onlySocial;
+const shopRun = target || (only && !onlyShop) ? null : shopCases();
+const worldRun = target || (only && !onlyWorld) ? null : worldCases();
+const socialRun = target || (only && !onlySocial) ? null : socialCases();
+
+if (!only) try {
   // The rules version: an older tab is told to reload, before any name or password is looked at.
   const old = await client();
   old.send({ t: 'login', name: 'nobody', password: 'nothing', v: PROTOCOL - 1 });
@@ -1823,6 +2094,8 @@ if (shopRun) for (const line of await shopRun) console.log(line);
 else console.log('     the shop, the ranks and the boards were not played: they need servers of their own');
 if (worldRun) for (const line of await worldRun) console.log(line);
 else console.log('     the Climb\'s open world was not played: it needs a server of its own');
+if (socialRun) for (const line of await socialRun) console.log(line);
+else console.log('     the leaderboards and clans were not played: they need servers of their own');
 http.close();
 httpPicks.close();
 rmSync(dir, { recursive: true, force: true });

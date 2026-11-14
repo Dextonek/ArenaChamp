@@ -5,7 +5,8 @@
 // 15 (2026-11-12): no rule change; raised once so the tabs from before `/build.json` (vite.config.ts) reload. Since then any
 // deploy shows open tabs a Reload bar on their own; raise this only for a rule or message change.
 // 16 (2026-11-14): the Climb's open world, stage 1 (`world_join`, `world_move`, `world_cast`, `world_leave`).
-export const PROTOCOL = 16;
+// 17 (2026-11-14): leaderboards (`leaderboards`, `climb_report`, the duel rating) and clans with a clan chat (`clan_*`).
+export const PROTOCOL = 17;
 
 /** What an older tab is told. */
 export const RELOAD_TEXT = 'A new version is out: reload the page';
@@ -317,3 +318,35 @@ export const TOWER_FLOOR_MAX = 500;
  * slot does). `labelMax`: the longest spell name. `sendHz`: how often a page sends its hero's place (only when it changed).
  */
 export const WORLD = { shardMax: 8, movesPerS: 12, reach: 500, casts: 8, castsMs: 2000, labelMax: 48, sendHz: 10 };
+
+// --- leaderboards and clans (docs/architecture/multiplayer.md, "Leaderboards and clans") ------------------------------
+
+/**
+ * The duel rating: Elo from online duels, `start` for an account that has none, `k` the most one duel moves it. A duel counts only
+ * where it pays (`SHOP.minDuelS`): a duel shorter than that moves nobody, and whoever left a longer one loses it.
+ */
+export const ELO = { start: 1000, k: 32 };
+
+/** How many rows each of the Leaderboards screen's lists holds. */
+export const LEADER_SIZE = 50;
+
+/** The Climb's floors: a report names the highest cleared (1-50) and the stars of all of them (four a floor at most). */
+export const CLIMB_FLOORS = 50;
+
+/**
+ * Clans. `max`: members. `name`: 3-24 letters, digits and spaces, unique without regard to case. `tag`: 2-4 letters or digits, shown
+ * as [TAG]. `asks`: the most open requests to join a clan keeps. `chat`: the longest message, the lines a room keeps, and the rate per
+ * sender (one a `gapMs`, at most `max` in `windowMs`). `silenceH`: how long the leader's mute lasts in the room (hours).
+ */
+export const CLAN = {
+  max: 30, nameMin: 3, nameMax: 24, tagMin: 2, tagMax: 4, asks: 20,
+  chat: { max: 200, keep: 100, gapMs: 1000, windowMs: 20000, inWindow: 10 },
+  silenceH: 24,
+};
+
+/** A clan's name as typed is tidied this way first: spaces at the ends gone, runs of spaces one. @param {unknown} v */
+export const clanName = (v) => (typeof v === 'string' ? v.trim().replace(/\s+/g, ' ') : '');
+
+/** Whether a clan name (tidied) and a tag are well formed; the server also checks they are free and clean. */
+export const CLAN_NAME_RE = /^[A-Za-z0-9 ]{3,24}$/;
+export const CLAN_TAG_RE = /^[A-Za-z0-9]{2,4}$/;

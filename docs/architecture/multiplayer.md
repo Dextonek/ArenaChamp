@@ -54,7 +54,8 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | File | Role |
 |---|---|
 | `server/hub.mjs` | `createHub({ accounts, log, loserPicks })`: the runtime-free core (sessions, lobbies, queue, matches, the message handlers); `connect(send)` returns `{ message, closed }`; messages of one connection run one at a time |
-| `server/accounts.mjs` | `Accounts(store)`: register, login, `record` a match, `profile` (stats, favourite hero, history of 20); `store` is `{ load(), put(key, account) }` |
+| `server/accounts.mjs` | `Accounts(store)`: register, login, `record` a match, `profile` (stats, favourite hero, history of 20), the duel rating, the week's wins and the Climb's board; `store` is `{ load(), put(key, account), getMeta?, putMeta? }` |
+| `server/clans.mjs`, `server/filter.mjs` | clans and their rooms, kept as store records; the clan chat's word filter (server only) |
 | `server/game-server.mjs` | Node host: `attachGameServer(httpServer, { path, dataFile, log })` (`ws` + `fileStore`: every write re-reads the file and replaces one account, so servers sharing the file don't clobber each other) |
 | `worker/index.mjs`, `wrangler.jsonc` | Cloudflare host: the Worker and the `GameHub` Durable Object (see [Cloudflare](#cloudflare)) |
 | `server/standalone.mjs` | http server for `dist/` plus the game server (port 8787) |
@@ -62,6 +63,7 @@ background keeps simulating (see *Background tabs*). Players on a LAN open the h
 | `game.html` | the second Vite entry (`build.rollupOptions.input` has `editor` and `game`) |
 | `src/net/client.ts` | `NetClient` (connect, auto-reconnect with backoff, resume by token, typed `on(type, fn)`), the `ServerMsg` union and the `Profile` type |
 | `src/game/main.ts` | screens: login / register, play (hero choice, find match), lobbies, lobby room, heroes, profile, play vs CPU; the queue bar; toasts. It sets `duel.onLeave` (the card's leave button ends the CPU fight or the network match) |
+| `src/game/social.ts` | the Leaderboards and Clan screens (see *Leaderboards and clans*) |
 | `src/game/cpu.ts` | `CpuMatch`: an offline fight against the duel AI at a CPU level (no server, no account): set kit, hero mode on, `duel.cpuLevel`, `duel.start('play')`; a Leave button; a won level is reported to the screen |
 | `src/game/match.ts` | `MatchController`: `match_start` → set kit, hero mode on, `duel.startNet`; streams moves at 20 Hz with the sender's clock; warns when its tab is hidden; forwards peer events; the result card; forfeit |
 | `src/game/heroPreview.ts` | the heroes page turntable (its own small renderer, renders only while shown) |
@@ -316,6 +318,80 @@ Design, decisions and what was checked: [`pipeline/designs/hero-shop.md`](../../
   The top 20 of each, kept with the accounts, empty again each Monday.
 - **The profile** carries `obols`, `owned` (every hero while the shop is off), `founder`, `rank`, `tower` and `raids.others`.
 
+## Leaderboards and clans (since PROTOCOL 17)
+
+The user, 2026-11-14: "also make like online leaderboards", and "let's make like clans, groups, so that people can chat while being
+in one clan". Pictures: [`docs/game/social/`](../game/social/README.md). The page's two screens are `src/game/social.ts` (Boards and
+Clan in the bar); the hub's side is `server/hub.mjs` (the Leaderboards and clan sections), `server/clans.mjs` (the clans' rules and
+what is kept), `server/filter.mjs` (the word filter) and `server/accounts.mjs` (the rating, the week's wins, the Climb). The numbers
+are `ELO`, `LEADER_SIZE`, `CLIMB_FLOORS` and `CLAN` in `server/protocol.mjs`.
+
+- **The duel rating:** Elo, 1000 to start, K 32, per account (`rating`, `rated`: the duels that moved it). A duel counts exactly
+  as it pays: 30 s or more (`SHOP.minDuelS`); a shorter one moves nobody, and whoever left one that counts loses it. A counted duel
+  also goes on the account's week (`duelWeek`). `match_end` carries `rating: { now, change }`; the profile carries `rating`.
+- **The boards** (`leaderboards`, answered without an account too): the rating's top 50 (with all online wins and losses and the
+  hero played most), the week's top 50 by counted wins, the Climb's all-time top 50 (the highest floor cleared, then the stars of all
+  floors), the clans by their members' wins this week then their rating's average, and the week's Raid and Tower boards as they
+  were (the Raid and Tower screens keep theirs). `tags` gives the clan tag of every name in the message; `you` the player's own
+  rows with its rank on each (0: not listed), which the page shows under a list it is not on.
+- **Cheap:** nothing scans every account on a request. The rated accounts are one list in rating order, built once when the hub
+  starts and re-sorted when a duel counts; the week's wins and the Climb are kept lists of 50 (store records `duelweek`, `climb`), which
+  stay right because each only grows (a new week starts `duelweek` empty); the clans' board adds up at most 30 members a clan. The
+  shared part of the message is built once and kept until a duel counts, a Climb report lands or a clan's members change.
+- **The Climb's board is the page's word,** as the Tower's is: `climb_report { floor, stars }` from a signed-in page (when a floor is
+  cleared, at sign-in, on opening the Boards), read from the Climb's saves (`tower.world.stars`). The hub takes floors 1-50 and at
+  most four stars a floor, each only upward; it pays nothing and the screen says so. The one line in `src/tower/world/game.ts` that
+  says a floor was cleared is a `climb-cleared` event on the window.
+- **A clan:** a name of 3-24 letters, digits and spaces, unique in any case; a tag of 2-4 letters or digits, also unique, shown as
+  [TAG]; a leader (the founder) and up to 30 members; one clan a player. In by the invite code (6 characters; the leader can make a
+  new one, and the old stops working), or by asking from the clan's page (`clan_ask`) and the leader's yes (`clan_answer`). The
+  leader can remove a member, hand on the lead, and mute a member in the room for 24 h. A leader who leaves hands the lead to the
+  member who has been in longest; the last one out ends the clan, and its name and tag are free again. Names and tags that hold a
+  listed word are refused.
+- **The clan chat:** signed-in members only, one room a clan, nothing outside a clan. A message is plain text on one line (control
+  characters become spaces), at most 200 characters; the page puts every word in with `textContent`. At most one a second and 10 in
+  20 s per sender (in the hub's memory); a refused one is answered `clan_error` with the reason and does not count. The listed words
+  (`server/filter.mjs`, server only, a short list of slurs; it catches case, plurals and digits for letters) become `***`. Joins,
+  leaves, removals, the lead and the leader's mutes are lines of the room too. The last 100 lines are kept in the store, so a reload
+  or a deploy still shows them, and sent on `clan_get`.
+- **Safety:** each player can mute anyone for itself (`clan_mute`), kept on its account (`mutes`): the hub sends it none of that
+  name's messages, now or in the history. Report (`clan_report { n }`) writes the message with the clan, both names and the time to
+  the hub's log (`REPORT clan "…"`), nothing more.
+- **Presence:** the hub knows who is signed in; a member's sign-in and its last connection closing send the clan (`clan`) to its
+  members online, with the dots. Only members are ever sent anything about a clan unasked.
+- **Unread:** the page counts the messages from others newer than the last one it showed on the Clan screen (kept per account and
+  clan in localStorage) and shows the count on the Clan tab. Messages still arrive during a fight; the count waits under the fight
+  and nothing of the chat is drawn over a duel.
+- **The open world:** `world_roster` and `world_joined` carry `tag` beside `name`; the page draws "[TAG] name" over the hero.
+- **Stored** as the store's small records, so neither host changed: `clans` (the ids), `clan:<id>` (one clan: name, tag, leader,
+  members, code, asks, the room mutes, the last line's number), `chat:<id>` (its last 100 lines); a clan that is gone has both written
+  as null. Who is in which clan is worked out in memory when the hub starts. On Cloudflare that is the `meta` table of the Durable
+  Object's SQLite storage; on Node the `meta` part of the JSON file.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `leaderboards` | client → hub | | anyone, signed in or not → `leaderboards` |
+| `leaderboards` | hub → client | `week`, `next`, `duels`, `weekly`, `climb`, `clans`, `raid`, `tower`, `tags`, `you` | every list (see above); `you` null when not signed in |
+| `climb_report` | client → hub | `floor`, `stars` | the Climb's highest floor cleared and the stars of all floors; not verified, only upward, no answer |
+| `clan_get` | client → hub | | → `clan`, and `clan_history` when in one; the page asks at sign-in and on opening the Clan screen |
+| `clan` | hub → client | `clan` (or null), `mutes` | the player's clan as members see it: `id`, `name`, `tag`, `leader`, `max`, `created`, `wins`, `members: [{ name, rating, wins, online, role, silenced? }]`, and for the leader `code` and `asks`; sent again on every change and dot |
+| `clan_history` | hub → client | `id`, `lines` | the room's kept lines, oldest first, without those of names this player muted |
+| `clan_chat` | hub → members | `id`, `line` | a new line: `{ n, at, kind, name, text?, by? }`, `kind` one of `say`, `found`, `join`, `leave`, `remove`, `lead`, `silence`, `unsilence` |
+| `clan_list` | client ↔ hub | → `clans: [{ id, name, tag, members, wins, rating, asked }]` | the clans with room, the most wins this week first (50 at most) |
+| `clan_view` | client ↔ hub | `id` → `clan: { …row, leader, max, asked, list: [{ name, rating, role }] }` | a clan's page: no dots, no code |
+| `clan_create` | client → hub | `name`, `tag` | → `clan` and `clan_history`, or `clan_error` |
+| `clan_join` | client → hub | `code` | by the invite code (any case) → `clan`, or `clan_error`: no such code, full, already in a clan |
+| `clan_ask` | client → hub | `id` | ask to join → `clan_notice`, and the leader's `clan` shows the ask |
+| `clan_answer` | client → hub | `name`, `yes` | the leader only: let the asker in (it gets its `clan` at once) or not |
+| `clan_leave` | client → hub | | → `clan` null; the members get a `leave` line (and `lead` when the leader left) |
+| `clan_remove`, `clan_lead` | client → hub | `name` | the leader only; the removed player gets `clan` null and `clan_notice` |
+| `clan_code` | client → hub | | the leader only: a new invite code |
+| `clan_silence` | client → hub | `name`, `on` | the leader only: mute (or let speak) a member in the room for 24 h |
+| `clan_say` | client → hub | `text` | → `clan_chat` to every member online (the sender too), or `clan_error` (too long, too fast, muted by the leader) |
+| `clan_mute` | client → hub | `name`, `on` | this player's own mute of a name, kept on its account → `clan` with the new `mutes` |
+| `clan_report` | client → hub | `n` | a message of the room to the hub's log → `clan_notice` |
+| `clan_error`, `clan_notice` | hub → client | `error` / `text` | a refusal, or a word to the player |
+
 ## Rules version
 
 Both screens work out arenas, hazards and parcels from the same seed with no server field, so a tab left open from an
@@ -377,7 +453,7 @@ daily limits, check Cloudflare's pricing page):
 |---|---|
 | Worker `arena-of-kits` (`worker/index.mjs`) | `/` redirects to `/game.html` (the game is the front page; the editor stays at `/index.html`); `/ws` goes to the hub; every other path is a file from `dist/` (`assets.run_worker_first: ["/ws", "/"]`) |
 | Durable Object `GameHub` | one instance (`idFromName('main')`) so every player meets in one place; runs `createHub` from `server/hub.mjs`; WebSockets with `accept()` (no hibernation: the object stays in memory while players are connected) |
-| Storage | table `accounts (key, json)` in the object's SQLite storage; loaded once when the object starts, one row written per change. Table `meta (key, json)` (made on first start if it is not there): the day the hero shop arrived and the week's boards. The Node server keeps the same two under `users` and `meta` in its JSON file |
+| Storage | table `accounts (key, json)` in the object's SQLite storage; loaded once when the object starts, one row written per change. Table `meta (key, json)` (made on first start if it is not there): the day the hero shop arrived, the week's boards, and since PROTOCOL 17 the duel and Climb boards, the clans and their rooms. The Node server keeps the same two under `users` and `meta` in its JSON file |
 | `SHOP` (`vars` in `wrangler.jsonc`) | "on": heroes are locked behind the shop. "off": every hero is free |
 | Lost on eviction | sessions (players log in again), open lobbies and the queue; a running match keeps the object alive |
 

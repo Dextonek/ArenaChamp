@@ -54,7 +54,61 @@ export interface Profile {
   rank?: string | null;
   /** The highest floor of a week's Tower this account's page reported (not verified by the server). */
   tower?: { week: string; floor: number; hero: string } | null;
+  // The leaderboards and clans (since PROTOCOL 17).
+  /** The duel rating (Elo, 1000 to start), and how many duels have moved it. */
+  rating?: number;
+  rated?: number;
+  /** The highest Climb floor cleared and the stars of all floors, as this account's page reported them (not verified). */
+  climb?: { floor: number; stars: number; at: string } | null;
+  /** The lower-case names this player muted in its clan chat. */
+  mutes?: string[];
+  clan?: { id: string; name: string; tag: string } | null;
 }
+
+/** A player on the duel rating board: rating, all duels won and lost online, the hero played most. */
+export interface RatingRow { name: string; rating: number; wins: number; losses: number; hero: string | null }
+/** A player on the week's duel board: duels that counted this week. */
+export interface WeekRow { name: string; wins: number; losses: number }
+/** A player on the Climb's board: the highest floor cleared and the stars of all floors, as their page reported them. */
+export interface ClimbRow { name: string; floor: number; stars: number }
+/** A clan on the clans' board and the list of clans with room: its members' duel wins this week, their rating's average. */
+export interface ClanRow { id: string; name: string; tag: string; members: number; wins: number; rating: number; asked?: boolean }
+
+/** Every list of the Leaderboards screen, the clan tags of the names on them, and the player's own rows (`you`; rank 0: not listed). */
+export interface Leaderboards {
+  week: string;
+  next: number;
+  duels: RatingRow[];
+  weekly: WeekRow[];
+  climb: ClimbRow[];
+  clans: ClanRow[];
+  raid: RaidRow[];
+  tower: TowerRow[];
+  tags: Record<string, string>;
+  you: {
+    name: string; rating: number; rated: number; rank: number; wins: number; losses: number; hero: string | null;
+    week: { wins: number; losses: number; rank: number };
+    climb: { floor: number; stars: number; rank: number } | null;
+    clan: string | null;
+  } | null;
+}
+
+/** One member as the clan's own members see it. `silenced`: muted in the room by the leader until then (ms). */
+export interface ClanMember { name: string; rating: number; wins: number; online: boolean; role: 'leader' | 'member'; silenced?: number }
+
+/** The player's clan: the invite code and the asks only for its leader. */
+export interface ClanState {
+  id: string; name: string; tag: string; leader: string; max: number; created: string; members: ClanMember[]; wins: number;
+  code?: string; asks?: string[];
+}
+
+/** One line of a clan's room: a message (`say`), or what happened to `name` (`by`: the leader who did it). */
+export interface ChatLine {
+  n: number; at: string; kind: 'say' | 'found' | 'join' | 'leave' | 'remove' | 'lead' | 'silence' | 'unsilence'; name: string; text?: string; by?: string;
+}
+
+/** A clan's page, for a player looking at it from the list. */
+export type ClanView = ClanRow & { leader: string; max: number; asked: boolean; list: { name: string; rating: number; role: 'leader' | 'member' }[] };
 
 /** One run on the week's raid board: bosses beaten with others, the run's time then (s), its tier, the party. */
 export interface RaidRow {
@@ -171,6 +225,8 @@ export type ServerMsg =
     stats: { casts: number; hits: number; dodges: number }; profile: Profile | null;
     /** The obols this duel paid the player (0: too short, or the player left it). */
     earned?: number;
+    /** The duel rating after it, and how far it moved (0: too short to count). Since PROTOCOL 17. */
+    rating?: { now: number; change: number };
   }
   // `partner` only in a raid for two. `party`: everyone, this player too, by seat. `band`: what the party's size is tuned for.
   | { t: 'raid_start'; id: string; side: number; you: { name: string; hero: string }; partner?: { name: string; hero: string }; party: PartyMember[]; band: number }
@@ -232,6 +288,15 @@ export type ServerMsg =
   | { t: 'world_moved'; id: number; x: number; z: number; yaw: number; walk?: boolean; hp?: number; ts?: number }
   | { t: 'world_cast'; id: number; label: string; x: number; z: number; tx: number; tz: number }
   | { t: 'world_left'; id: number }
+  // The leaderboards and clans (since PROTOCOL 17; docs/architecture/multiplayer.md, "Leaderboards and clans").
+  | ({ t: 'leaderboards' } & Leaderboards)
+  | { t: 'clan'; clan: ClanState | null; mutes: string[] }
+  | { t: 'clan_history'; id: string; lines: ChatLine[] }
+  | { t: 'clan_chat'; id: string; line: ChatLine }
+  | { t: 'clan_list'; clans: ClanRow[] }
+  | { t: 'clan_view'; clan: ClanView }
+  | { t: 'clan_error'; error: string }
+  | { t: 'clan_notice'; text: string }
   | { t: 'socket'; open: boolean };
 
 /** A duel being fought now, on the Lobbies screen's list (`lobbies.live`). */
