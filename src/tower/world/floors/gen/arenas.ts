@@ -2,6 +2,7 @@ import type { ArenaDef } from '../../../../arenas/types';
 import type { Chapter, GenFloor } from '../../gen/types';
 import { sandsArena, type SandsLook } from '../../sandsZone';
 import { deepArena, type DeepLook } from '../../deepZone';
+import { warArena, type WarLook } from '../../warZone';
 import { seaArena, type SeaLook } from '../../zone';
 import type { WoodLook } from '../../gen/wood';
 import { woodGenArena } from '../../woodZone';
@@ -16,4 +17,5 @@ export const ARENA_OF: Partial<Record<Chapter, (g: GenFloor) => ArenaDef>> = {
   wood: (g) => woodGenArena(`tower-${g.floor.id}`, g.floor.name, g.look as WoodLook, floorKeep(g.floor)),
   sands: (g) => sandsArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as SandsLook, floorKeep(g.floor)),
   deep: (g) => deepArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as DeepLook),
+  war: (g) => warArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as WarLook),
 };

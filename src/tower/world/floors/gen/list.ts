@@ -36,5 +36,14 @@ import { DEEP_37 } from './deep-37';
 import { DEEP_38 } from './deep-38';
 import { DEEP_39 } from './deep-39';
 import { DEEP_40 } from './deep-40';
+import { WAR_42 } from './war-42';
+import { WAR_43 } from './war-43';
+import { WAR_44 } from './war-44';
+import { WAR_45 } from './war-45';
+import { WAR_46 } from './war-46';
+import { WAR_47 } from './war-47';
+import { WAR_48 } from './war-48';
+import { WAR_49 } from './war-49';
+import { WAR_50 } from './war-50';
 
-export const BAKED: GenFloor[] = [SEA_02, SEA_03, SEA_04, SEA_05, SEA_06, SEA_07, SEA_08, SEA_09, SEA_10, WOOD_12, WOOD_13, WOOD_14, WOOD_15, WOOD_16, WOOD_17, WOOD_18, WOOD_19, WOOD_20, SANDS_22, SANDS_23, SANDS_24, SANDS_25, SANDS_26, SANDS_27, SANDS_28, SANDS_29, SANDS_30, DEEP_32, DEEP_33, DEEP_34, DEEP_35, DEEP_36, DEEP_37, DEEP_38, DEEP_39, DEEP_40];
+export const BAKED: GenFloor[] = [SEA_02, SEA_03, SEA_04, SEA_05, SEA_06, SEA_07, SEA_08, SEA_09, SEA_10, WOOD_12, WOOD_13, WOOD_14, WOOD_15, WOOD_16, WOOD_17, WOOD_18, WOOD_19, WOOD_20, SANDS_22, SANDS_23, SANDS_24, SANDS_25, SANDS_26, SANDS_27, SANDS_28, SANDS_29, SANDS_30, DEEP_32, DEEP_33, DEEP_34, DEEP_35, DEEP_36, DEEP_37, DEEP_38, DEEP_39, DEEP_40, WAR_42, WAR_43, WAR_44, WAR_45, WAR_46, WAR_47, WAR_48, WAR_49, WAR_50];
