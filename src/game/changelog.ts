@@ -45,19 +45,29 @@ export const CHANGELOG: Release[] = [
       {
         tag: 'Tower',
         title: 'Five chapters of ten floors',
-        text: 'The Climb is now fifty floors in five chapters: the Sea, the Wood, the Sands, the Deep and the War. Every tenth floor is a crown, a great boss you face alone. The Climb screen shows all fifty: the floors you can play, the ones still locked, and the ones still being made.',
+        text: 'The Climb is now fifty floors in five chapters: the Sea, the Wood, the Sands, the Deep and the War. Every tenth floor is a crown, a great boss you face alone. The Climb screen shows all fifty, with the floors you can play and the ones still locked.',
         image: '/news/climb-chapters.jpg',
         alt: 'The Climb screen: the picked floor, The Storm Canyon, at the top, then five chapters of ten numbered tiles. Floors 1 and 11 show stars, floor 21 is picked, floors 31 and 41 are locked, the floors still being made are dashed and say soon, and every tenth tile has a small crown.',
       },
       {
         tag: 'Tower',
-        title: 'Nine new floors of the Sea',
-        text: 'After the Drowned Harbour come floors 2 to 9: new stretches of the same coast, each with its own places, people, quests and ruler, and a little harder each time. Floor 10, the Sea\'s crown, is the Sun Warden.',
+        title: 'Forty-five new floors',
+        text: 'Each chapter\'s first floor is followed by nine new ones, each with its own places, people, quests, gatekeeper and ruler, and a little harder each time. The crowns: the Sun Warden on floor 10, Ash and Ember on 20, the Heart of Noon on 30, the Sun Warden again, stronger, on 40, and Ash and Ember, stronger, on 50.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Five times the ground',
+        text: 'Every floor is now about five times as large, with a shape of its own instead of a circle: a coast with a ring road, a forest of glades, a desert valley, a cave with a black lake, a battlefield under a siege line. Roads have lanterns, signposts and milestones, every place is dressed as what it is, and the land goes on past the edge.',
+      },
+      {
+        tag: 'Tower',
+        title: 'Each chapter has its own way',
+        text: 'In the Wood, walls of roots close some passes by turns. In the Sands, a wall of sand crosses the valley: wait it out behind a rock, and keep the caravan in a rock\'s lee. In the Deep, only crystals, lamps and touched waystones give light. In the War, take a banner and its soldiers fight beside you.',
       },
       {
         tag: 'Tower',
         title: 'The other floors moved up',
-        text: 'The Walking Wood is now floor 11, the Storm Canyon 21, the Lightless Deep 31 and the Field of Banners 41, each the first floor of its chapter. They play as before, and your stars, best times and a floor in progress moved with them. Until a chapter\'s other floors are made, the way up goes from its first floor straight to the next chapter.',
+        text: 'The Walking Wood is now floor 11, the Storm Canyon 21, the Lightless Deep 31 and the Field of Banners 41, each the first floor of its chapter. They are grown to the new size with the same people, quests and fights, and your stars, best times and a floor in progress moved with them.',
       },
     ],
   },
