@@ -1,5 +1,18 @@
 # Status
 
+## PAUSED by the user (2026-11-14, late): "lets for now stop doing this project, just pause it"
+
+Nothing is running: the three agents were stopped and no loops or servers are left. To pick up again, read this section first.
+- **Not pushed, not live:** everything merged on `feat/particle-editor` since the last deploy (next section): the lore in the game,
+  clans and clan chat, leaderboards, the Climb's 25 people, the prop fixes, the minimap and M map, the duel queue count.
+- **Stopped mid-work, saved as a "Paused mid-work" commit on each branch (unfinished, unchecked, NOT merged):**
+  - `t3/climb-shared-packs` (open world stage 2, shared packs; PROTOCOL 18), last commit 95ef7b0;
+  - `t3/climb-rulers-enemy-models` (rulers and enemies as models; the War chapter was being done), last commit 67bc85d;
+  - `t3/heroes20-engine-mechanics` (engine pieces for the 20 new kits), last commit 1281b37.
+  Resume each by a new agent in its worktree (`git worktree list`) with its brief, telling it to finish and check from that commit.
+- **Not started:** the deep lore, peoples and Codex (brief: `docs/lore/briefs/deep-lore.md`; the aim is in the user's
+  words in CLAUDE.md's lesson "Every hero matches the lore"), then the hero revamps in Blender.
+
 _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Cloudflare version e47791ff, PROTOCOL 16, shop still off): fifty floors in five chapters at five times the ground, the depth and scenes passes, the packs' tactics, the open world's stage 1 (signed-in players on a floor see each other), the harbour by day, faster floor builds. Not live yet: the tactics' second pass (knights charge again, no unit frozen just out of reach, the War's final pars), merged after the deploy. Next: the user's look at the open world, then its stage 2 (fighting the same packs together). Before that: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds are **live** and marked as the stable version `stable-2026-11-13` (first section: *Stable versions*)._
 
 ## After the deploy (2026-11-14, late): built and NOT live; three agents running
