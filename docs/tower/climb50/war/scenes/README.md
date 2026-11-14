@@ -92,7 +92,7 @@ B on; off, on, off, on, back to back while other agents ran). Median frame in ms
 - phone-4x: draw 31.0 / 30.9 / 32.4 and 39.2 / 35.4 / 36.8 off, 35.5 / 34.4 / 34.6 and 36.3 / 34.1 / 34.4 on: on average 34.3 off and
   34.9 on (+0.6 ms; the off runs alone spread 30.9 to 39.2). Medians 76.9 / 53.3 / 90.1 and 97.9 / 72.0 / 91.3 off, 84.2 / 57.0 / 88.6
   and 87.5 / 58.3 / 82.6 on. Two phone runs of the first pair printed other fights (gen-42 off, after a 63 s stall; gen-46 on); the
-  second pair and all desktop runs printed the same ones.
+  second pair, all desktop runs and a third gen-46 phone run with the scenes on (draw 28.7 ms) printed the same ones.
 
 **Build time on the phone profile** (844 x 390, 3 px a point, CPU slowed 4 times; `arena.build()` timed in the page, six builds each,
 off and on alternating). The scenes' own work (plan + build, paint included), median: floor 41 **about 90 to 190 ms**, floor 46 **about 90
