@@ -49,7 +49,7 @@ Silvane), quests, packs and ids; it gained three waystones and three caches for 
 ## Checks (2026-11-14, on the floors as committed)
 
 - `_worldCheck`, both states of the roots, all ten floors: nothing unreachable, at most 5 enemies near any point, every wall of roots cuts
-  its pass (the way round is 62 to 420 m). Every waystone stands at least 14 m from every pack and feeding root and 15 m from every leg of a
+  its pass (the way round is 56 to 420 m). Every waystone stands at least 14 m from every pack and feeding root and 15 m from every leg of a
   named enemy's walk (a fall wakes the hero at the last waystone touched).
 - Route bot, game seconds (par), all **cleared**:
 
