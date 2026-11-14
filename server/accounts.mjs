@@ -4,7 +4,7 @@
 // Also here: the hero shop's side of an account (obols, the heroes it owns, the founders; pipeline/designs/hero-shop.md)
 // and the week's boards. Both stores keep a few small records beside the accounts (`getMeta` / `putMeta`): the day the
 // shop arrived, and the boards.
-import { BOARD_SIZE, HERO_SHOP, RAID_RUN, SHOP, STARTERS, heroPrice, isoWeek, raidRank, shopRotation } from './protocol.mjs';
+import { BOARD_SIZE, CLIMB_FLOORS, ELO, HERO_SHOP, LEADER_SIZE, RAID_RUN, SHOP, STARTERS, heroPrice, isoWeek, raidRank, shopRotation } from './protocol.mjs';
 
 const NAME_RE = /^[A-Za-z0-9_-]{3,16}$/;
 const HISTORY = 20;
@@ -18,16 +18,23 @@ const ITERATIONS = 100000;
  * @typedef {{ name: string, salt: string, hash: string, algo?: 'pbkdf2' | 'scrypt', created: string, wins: number, losses: number,
  *   matches: number, heroes: Record<string, HeroStats>, history: MatchRecord[],
  *   raids?: { played: number, cleared: number, bosses?: number, tier?: number, best: number, others?: number },
- *   obols?: number, owned?: string[], firstWin?: string, tower?: { week: string, floor: number, hero: string } }} Account
+ *   obols?: number, owned?: string[], firstWin?: string, tower?: { week: string, floor: number, hero: string },
+ *   rating?: number, rated?: number, duelWeek?: { week: string, wins: number, losses: number }, climb?: { floor: number, stars: number, at: string },
+ *   mutes?: string[] }} Account
  *   `raids.others`: the most bosses beaten in one run with others (the raid rank comes from it). `obols`: the shop's currency
  *   (an account from before the shop has none stored and counts as `SHOP.start`). `owned`: heroes bought. `firstWin`: the UTC
  *   day the first win of a day was last paid. `tower`: the highest floor this account reported in a week.
+ *   Since the leaderboards (PROTOCOL 17), each read with a default, as older accounts have none: `rating` (Elo, `ELO.start`) and
+ *   `rated` (the duels that moved it); `duelWeek`: the duels that counted in one week; `climb`: the highest Climb floor cleared and the
+ *   stars of all floors, as the page reported them; `mutes`: the lower-case names whose clan-chat lines this player does not get.
  * @typedef {{ load(): Record<string, Account>, put(key: string, account: Account): void,
  *   getMeta?(key: string): any, putMeta?(key: string, value: any): void }} AccountStore
  *   `getMeta` / `putMeta`: small records beside the accounts, by name. A store without them keeps them in memory only.
  * @typedef {{ bosses: number, tier: number, seconds: number, names: string[], at: string }} RaidRow
  * @typedef {{ name: string, floor: number, hero: string, at: string }} TowerRow
  * @typedef {{ week: string, raid: RaidRow[], tower: TowerRow[] }} Boards
+ * @typedef {{ name: string, wins: number, losses: number, at: string }} WeekRow
+ * @typedef {{ name: string, floor: number, stars: number, at: string }} ClimbRow
  */
 
 export class Accounts {
@@ -40,6 +47,10 @@ export class Accounts {
     this.metas = new Map();
     /** Whether heroes are locked behind the shop (the hub's `shop` switch): off, every account plays every hero. */
     this.shop = false;
+    /** The accounts with a duel rating, highest first: built once from the accounts, then kept in order as duels end. @type {Account[] | null} */
+    this.ratedList = null;
+    /** The clan a player is in (set by clans.mjs). @type {(name: string) => { id: string, name: string, tag: string } | null} */
+    this.clanOf = (/** @type {string} */ _name) => null;
   }
 
   /**
@@ -193,6 +204,108 @@ export class Accounts {
     return true;
   }
 
+  // --- the duel rating, the week's duel wins and the Climb (the Leaderboards screen) -----------------------------
+
+  /** @param {Account} a */
+  rating(a) {
+    return a.rating ?? ELO.start;
+  }
+
+  /** The duels that counted for an account in a week. @param {Account} a @param {string} week */
+  weekOf(a, week) {
+    return a.duelWeek?.week === week ? a.duelWeek : { week, wins: 0, losses: 0 };
+  }
+
+  /** The rated accounts, highest first (the first call builds the list: one pass over the accounts, then never again). */
+  rated() {
+    if (!this.ratedList) this.ratedList = Object.values(this.users).filter((a) => (a.rated ?? 0) > 0).sort(byRating);
+    return this.ratedList;
+  }
+
+  /**
+   * A duel that counts (as it would pay: long enough) moves both ratings (Elo, K `ELO.k`) and goes on the week's wins. Both accounts
+   * are stored here. Returns the change for the winner (the loser's is the same, taken off).
+   * @param {string} winner @param {string} loser @param {string} week @param {number} [now] ms
+   */
+  rateDuel(winner, loser, week, now = Date.now()) {
+    const w = this.get(winner), l = this.get(loser);
+    if (!w || !l) return 0;
+    const expect = 1 / (1 + 10 ** ((this.rating(l) - this.rating(w)) / 400));
+    const change = Math.round(ELO.k * (1 - expect));
+    const list = this.rated();
+    for (const [a, d] of /** @type {[Account, number][]} */ ([[w, change], [l, -change]])) {
+      if (!(a.rated ?? 0)) list.push(a);
+      a.rating = this.rating(a) + d;
+      a.rated = (a.rated ?? 0) + 1;
+      const wk = this.weekOf(a, week);
+      a.duelWeek = { week, wins: wk.wins + (a === w ? 1 : 0), losses: wk.losses + (a === l ? 1 : 0) };
+      this.save(a);
+    }
+    list.sort(byRating);
+    // The week's board by wins: kept, as wins only grow in a week (a new week starts it empty).
+    const b = this.weekBoard(week), at = new Date(now).toISOString();
+    for (const a of [w, l]) {
+      const old = b.rows.find((r) => r.name === a.name), wk = this.weekOf(a, week);
+      if (old) Object.assign(old, { wins: wk.wins, losses: wk.losses, at: a === w ? at : old.at });
+      else if (a === w) b.rows.push({ name: a.name, wins: wk.wins, losses: wk.losses, at });
+    }
+    b.rows = b.rows.sort((x, y) => y.wins - x.wins || x.at.localeCompare(y.at)).slice(0, LEADER_SIZE);
+    this.setMeta('duelweek', b);
+    return change;
+  }
+
+  /** The week's duel wins board, as kept. @param {string} week @returns {{ week: string, rows: WeekRow[] }} */
+  weekBoard(week) {
+    const b = this.meta('duelweek');
+    return b && b.week === week ? b : { week, rows: [] };
+  }
+
+  /** The all-time Climb board, as kept. @returns {ClimbRow[]} */
+  climbBoard() {
+    return this.meta('climb') ?? [];
+  }
+
+  /**
+   * A signed-in page's own report of the Climb: the highest floor cleared and the stars of all floors. NOT VERIFIED (the Climb runs in
+   * the page) and it pays nothing. Each only grows. True when it changed anything.
+   * @param {string} name @param {unknown} floor @param {unknown} stars @param {number} [now] ms
+   */
+  reportClimb(name, floor, stars, now = Date.now()) {
+    const a = this.get(name);
+    if (!a || !Number.isInteger(floor) || !Number.isInteger(stars)) return false;
+    const f = /** @type {number} */ (floor), st = /** @type {number} */ (stars);
+    if (f < 1 || f > CLIMB_FLOORS || st < 0 || st > 4 * f) return false;
+    const old = a.climb ?? { floor: 0, stars: 0, at: '' };
+    if (f <= old.floor && st <= old.stars) return false;
+    a.climb = { floor: Math.max(f, old.floor), stars: Math.max(st, old.stars), at: new Date(now).toISOString() };
+    this.save(a);
+    const rows = [...this.climbBoard().filter((r) => r.name !== a.name), { name: a.name, ...a.climb }]
+      .sort((x, y) => y.floor - x.floor || y.stars - x.stars || x.at.localeCompare(y.at)).slice(0, LEADER_SIZE);
+    this.setMeta('climb', rows);
+    return true;
+  }
+
+  /** A player's own clan-chat mutes (lower-case names). @param {Account} a */
+  mutes(a) {
+    return a.mutes ?? [];
+  }
+
+  /** Mutes or unmutes a name in this player's clan chat, kept on its account. @param {Account} a @param {string} who @param {boolean} on */
+  mute(a, who, on) {
+    const low = who.toLowerCase(), rest = this.mutes(a).filter((m) => m !== low);
+    a.mutes = on ? [...rest, low] : rest;
+    this.save(a);
+  }
+
+  /** The hero an account has played most (then won most with). @param {Account} a */
+  favourite(a) {
+    let favourite = null, best = { played: 0, wins: -1 };
+    for (const [hero, s] of Object.entries(a.heroes ?? {})) {
+      if (s.played > best.played || (s.played === best.played && s.wins > best.wins)) { favourite = hero; best = s; }
+    }
+    return favourite;
+  }
+
   /** @param {Account} a */
   save(a) {
     this.store.put(a.name.toLowerCase(), a);
@@ -275,11 +388,8 @@ export class Accounts {
 
   /** What the client sees (no hash or salt). @param {Account} a */
   profile(a) {
-    let favourite = null, best = { played: 0, wins: -1 };
-    for (const [hero, s] of Object.entries(a.heroes)) {
-      if (s.played > best.played || (s.played === best.played && s.wins > best.wins)) { favourite = hero; best = s; }
-    }
-    const others = this.withOthers(a);
+    const favourite = this.favourite(a);
+    const others = this.withOthers(a), clan = this.clanOf(a.name);
     return {
       name: a.name, created: a.created, wins: a.wins, losses: a.losses, matches: a.matches,
       favourite, heroes: a.heroes, history: a.history,
@@ -287,9 +397,15 @@ export class Accounts {
       // The shop: with it off every hero in the table is the account's to play.
       obols: this.obols(a), owned: this.shop ? this.owned(a) : Object.keys(HERO_SHOP), founder: this.founder(a),
       rank: raidRank(others)?.id ?? null, tower: a.tower ?? null,
+      // The leaderboards and clans (PROTOCOL 17).
+      rating: this.rating(a), rated: a.rated ?? 0, climb: a.climb ?? null, mutes: this.mutes(a),
+      clan: clan ? { id: clan.id, name: clan.name, tag: clan.tag } : null,
     };
   }
 }
+
+/** Highest rating first, then the name. @param {Account} x @param {Account} y */
+const byRating = (x, y) => (y.rating ?? ELO.start) - (x.rating ?? ELO.start) || x.name.localeCompare(y.name);
 
 /** @param {Uint8Array} bytes */
 export function hex(bytes) {

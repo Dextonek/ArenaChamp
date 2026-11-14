@@ -9,8 +9,9 @@
 // landed, which is what makes walking out of the red a dodge). The hub only accepts hits from casts it relayed and
 // limits how fast a slot can be cast. Fine for friends; not cheat-proof.
 import { hex } from './accounts.mjs';
+import { Clans } from './clans.mjs';
 import {
-  HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX, WORLD,
+  CLAN, ELO, LEADER_SIZE, HERO_SHOP, PROTOCOL, RAID_BOSSES, RAID_HALL_RING, RAID_PARTY_MAX, RAID_REWARDS, RAID_RUN, RAID_SHRINE_S, RAID_TWIN, RELOAD_TEXT, SHOP, TOWER_FLOOR_MAX, WORLD,
   isoWeek, raidBand, raidHp, raidRank, raidScale, raidStaggerMax, raidRing, raidTwin, raidTwinHp, shopRotation,
 } from './protocol.mjs';
 
@@ -170,6 +171,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   const worlds = new Map();
   /** The last id a player got in a world shard (one per connection, kept while it is open). */
   let worldIds = 0;
+  /** Clans and their rooms (clans.mjs), kept in the accounts' store. */
+  const clans = new Clans(accounts);
 
   /**
    * A new connection. `send` writes one text frame. Returns the handlers the host calls for each incoming frame and
@@ -200,6 +203,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         c.closed = true;
         clients.delete(c);
         drop(c, 'disconnect');
+        // The clan sees this player's dot go out.
+        if (c.name) clanPresence(c.name);
       },
     };
   }
@@ -349,8 +354,17 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     }
     // The week's boards are for everyone to read: the Raid and Tower screens are open without an account.
     if (m.t === 'boards') return send(c, boardsMsg());
+    // So are the Leaderboards (with the player's own rows when signed in).
+    if (m.t === 'leaderboards') return send(c, leaderboards(c));
     if (!c.name) return send(c, { t: 'auth_error', error: 'Please log in' });
+    if (m.t.startsWith('clan_')) return clanMessage(c, m);
     switch (m.t) {
+      case 'climb_report': {
+        // The highest Climb floor this signed-in player's own page has cleared, and its stars. NOT VERIFIED: the Climb runs in the
+        // page. It pays nothing; each only grows (accounts.mjs, `reportClimb`).
+        if (accounts.reportClimb(c.name, m.floor, m.stars, now())) boardsChanged();
+        return;
+      }
       case 'shop_buy': {
         // A hero for obols, for good. The account's own obols and the price in the table decide, never the page.
         const a = accounts.get(c.name);
@@ -380,11 +394,14 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         return worldMove(c, m);
       case 'world_cast':
         return worldCast(c, m);
-      case 'logout':
+      case 'logout': {
+        const was = c.name;
         for (const [tok, n] of sessions) if (n === c.name) sessions.delete(tok);
         drop(c, 'logout');
         c.name = null;
+        clanPresence(was);
         return send(c, { t: 'logged_out', reason: '' });
+      }
       case 'profile':
         return sendProfile(c);
       case 'lobbies':
@@ -975,6 +992,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     send(c, { t: 'session', token, profile: accounts.profile(/** @type {any} */ (accounts.get(name))) });
     send(c, lobbyList());
     log(`${name} signed in`);
+    // The clan sees this player's dot light up (the page asks for its clan and the room with `clan_get`).
+    clanPresence(name);
   }
 
   /** @param {Client} c */
@@ -1141,7 +1160,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       const changed = seat.hero !== m.hero;
       seat.hero = m.hero;
       if (num(m.x) && num(m.z)) Object.assign(seat, at, { yaw });
-      if (changed) tellShard(seat.shard, { t: 'world_joined', id: seat.id, name: c.name, hero: seat.hero, ...worldSeen(seat) }, c);
+      if (changed) tellShard(seat.shard, { t: 'world_joined', id: seat.id, name: c.name, tag: tagOf(c.name), hero: seat.hero, ...worldSeen(seat) }, c);
     } else {
       const shards = worlds.get(m.floor) ?? [];
       worlds.set(m.floor, shards);
@@ -1158,14 +1177,14 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
       seat = { shard, id: ++worldIds, hero: m.hero, ...at, yaw, walk: false, hp: 1, moves: 0, movesFrom: 0, casts: [], lastLabel: '', lastLabelAt: 0 };
       c.world = seat;
       shard.members.add(c);
-      tellShard(shard, { t: 'world_joined', id: seat.id, name: c.name, hero: seat.hero, ...worldSeen(seat) }, c);
+      tellShard(shard, { t: 'world_joined', id: seat.id, name: c.name, tag: tagOf(c.name), hero: seat.hero, ...worldSeen(seat) }, c);
       log(`${c.name} walks floor ${m.floor} (shard ${shard.id}, ${shard.members.size} there)`);
     }
     const shard = seat.shard;
     const players = [];
     for (const x of shard.members) {
       if (x === c || !x.world) continue;
-      players.push({ id: x.world.id, name: x.name, hero: x.world.hero, ...worldSeen(x.world) });
+      players.push({ id: x.world.id, name: x.name, tag: tagOf(x.name), hero: x.world.hero, ...worldSeen(x.world) });
     }
     send(c, { t: 'world_roster', shard: shard.id, floor: shard.floor, you: seat.id, max: WORLD.shardMax, players });
   }
@@ -1341,7 +1360,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     clearTimeout(match.timer);
     match.state = 'over';
     const seconds = Math.max(0, Math.round((Date.now() - (match.startedAt || match.created)) / 100) / 10);
-    const at = new Date().toISOString();
+    const at = new Date().toISOString(), winner = match.players[winnerSide];
     match.players.forEach((p, side) => {
       const foe = match.players[1 - side];
       accounts.record(p.name, {
@@ -1350,11 +1369,13 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         rounds: [match.score[side], match.score[1 - side]],
       });
     });
-    const winner = match.players[winnerSide];
     // Obols (pipeline/designs/hero-shop.md): a duel played, a win on top, the first win of the server's UTC day on top of that.
     // A duel shorter than `minDuelS` pays nobody (a foe who left at once, two tabs trading quick wins), and whoever left a duel
     // gets nothing from it.
     const fought = seconds >= SHOP.minDuelS, day = isoWeek(now()).day;
+    // The duel rating and the week's wins count the same duels: long enough to pay. Whoever left a duel that counts loses it.
+    const rated = fought ? accounts.rateDuel(winner.name, match.players[1 - winnerSide].name, isoWeek(now()).id) : 0;
+    if (fought) boardsChanged();
     const lines = match.players.map((p, side) => {
       const won = side === winnerSide;
       /** @type {[string, number][]} */
@@ -1373,6 +1394,8 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         score: [match.score[side], match.score[1 - side]],
         hp: match.players.map((x) => x.hp), stats: { casts: p.casts, hits: p.hits, dodges: p.dodges },
         profile: a ? accounts.profile(a) : null, earned,
+        // The duel rating after this duel, and how far it moved (0: too short to count).
+        rating: { now: a ? accounts.rating(a) : ELO.start, change: side === winnerSide ? rated : -rated },
       });
       p.client.match = null;
     });
@@ -1967,10 +1990,263 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
     return c.match?.players[c.side];
   }
 
+  // --- the Leaderboards (docs/architecture/multiplayer.md, "Leaderboards and clans") -------------------------------------
+  // Built from kept lists (accounts.mjs: the rated accounts in order, the week's wins, the Climb; the week's raid and Tower boards),
+  // never from a pass over every account. The part everyone sees is built once and kept until something on it changes.
+
+  /** @type {{ week: string, duels: any[], weekly: any[], climb: any[], clans: any[] } | null} */
+  let boardsCache = null;
+  /** A duel counted, a Climb report or a clan's members changed: the shared boards are built again on the next request. */
+  const boardsChanged = () => { boardsCache = null; };
+
+  /** The tag of a player's clan, or ''. @param {string | null} name */
+  const tagOf = (name) => (name ? clans.of(name)?.tag ?? '' : '');
+
+  /** A clan on the boards and the clans' list: its members' duel wins this week, and their rating's average. @param {import('./clans.mjs').Clan} k @param {string} week */
+  function clanRow(k, week) {
+    let wins = 0, sum = 0;
+    for (const m of k.members) {
+      const a = accounts.get(m);
+      wins += a ? accounts.weekOf(a, week).wins : 0;
+      sum += a ? accounts.rating(a) : ELO.start;
+    }
+    return { id: k.id, name: k.name, tag: k.tag, members: k.members.length, wins, rating: Math.round(sum / Math.max(1, k.members.length)) };
+  }
+
+  /** The clans by their members' wins this week, then by their rating's average. @param {string} week */
+  const clanRows = (week) => clans.all().map((k) => clanRow(k, week)).sort((x, y) => y.wins - x.wins || y.rating - x.rating || x.name.localeCompare(y.name));
+
+  function sharedBoards() {
+    const week = isoWeek(now()).id;
+    if (boardsCache?.week === week) return boardsCache;
+    boardsCache = {
+      week,
+      duels: accounts.rated().slice(0, LEADER_SIZE).map((a) => ({ name: a.name, rating: accounts.rating(a), wins: a.wins, losses: a.losses, hero: accounts.favourite(a) })),
+      weekly: accounts.weekBoard(week).rows.map((r) => ({ name: r.name, wins: r.wins, losses: r.losses })),
+      climb: accounts.climbBoard().map((r) => ({ name: r.name, floor: r.floor, stars: r.stars })),
+      clans: clanRows(week).slice(0, LEADER_SIZE),
+    };
+    return boardsCache;
+  }
+
+  /**
+   * `leaderboards`: every list of the Leaderboards screen, the clan tags of the names on them, and the player's own rows when it is
+   * signed in (`you`; a rank of 0: not on that list).
+   * @param {Client} c
+   */
+  function leaderboards(c) {
+    const shared = sharedBoards(), w = isoWeek(now()), b = accounts.boards(w.id);
+    /** @type {Record<string, string>} */
+    const tags = {};
+    const tagged = (/** @type {string} */ n) => { const t = tagOf(n); if (t) tags[n] = t; };
+    for (const list of [shared.duels, shared.weekly, shared.climb, b.tower]) for (const r of list) tagged(r.name);
+    for (const r of b.raid) for (const n of r.names) tagged(n);
+    const a = c.name ? accounts.get(c.name) : undefined;
+    let you = null;
+    if (a) {
+      tagged(a.name);
+      const wk = accounts.weekOf(a, w.id);
+      you = {
+        name: a.name, rating: accounts.rating(a), rated: a.rated ?? 0, rank: (a.rated ?? 0) ? accounts.rated().indexOf(a) + 1 : 0,
+        wins: a.wins, losses: a.losses, hero: accounts.favourite(a),
+        week: { wins: wk.wins, losses: wk.losses, rank: shared.weekly.findIndex((r) => r.name === a.name) + 1 },
+        climb: a.climb ? { floor: a.climb.floor, stars: a.climb.stars, rank: shared.climb.findIndex((r) => r.name === a.name) + 1 } : null,
+        clan: clans.of(a.name)?.id ?? null,
+      };
+    }
+    return { t: 'leaderboards', week: w.id, next: w.next, ...shared, raid: b.raid, tower: b.tower, tags, you };
+  }
+
+  // --- clans and the clan chat ----------------------------------------------------------------------------------------------
+  // Only the members of a clan hear of it: its state (`clan`), its room's lines (`clan_chat`), the dots going on and off. Nothing about
+  // clans goes to a player who is in none, unless it asks (`clan_list`, `clan_view`).
+
+  /** Who is signed in now, by lower-case name. */
+  function onlineNames() {
+    const s = new Set();
+    for (const x of clients) if (x.name) s.add(x.name.toLowerCase());
+    return s;
+  }
+
+  /** The connections of a clan's members. @param {import('./clans.mjs').Clan} k */
+  function membersOnline(k) {
+    const low = new Set(k.members.map((m) => m.toLowerCase()));
+    return [...clients].filter((x) => x.name && low.has(x.name.toLowerCase()));
+  }
+
+  /**
+   * A clan as one member sees it: every member with its dot, rating, the week's wins and role; the invite code and the asks for the
+   * leader only.
+   * @param {import('./clans.mjs').Clan} k @param {string} viewer @param {Set<string>} online
+   */
+  function clanState(k, viewer, online) {
+    const week = isoWeek(now()).id, leads = k.leader.toLowerCase() === viewer.toLowerCase();
+    const members = k.members.map((m) => {
+      const a = accounts.get(m), until = clans.silencedUntil(k, m);
+      return {
+        name: m, rating: a ? accounts.rating(a) : ELO.start, wins: a ? accounts.weekOf(a, week).wins : 0, online: online.has(m.toLowerCase()),
+        role: m === k.leader ? 'leader' : 'member', silenced: until || undefined,
+      };
+    });
+    return {
+      id: k.id, name: k.name, tag: k.tag, leader: k.leader, max: CLAN.max, created: k.created, members,
+      wins: members.reduce((n, x) => n + x.wins, 0), code: leads ? k.code : undefined, asks: leads ? k.asks.slice() : undefined,
+    };
+  }
+
+  /** This player's clan (or none) and its own mutes. @param {Client} x */
+  function sendClan(x) {
+    if (!x.name) return;
+    const k = clans.of(x.name), a = accounts.get(x.name);
+    send(x, { t: 'clan', clan: k ? clanState(k, x.name, onlineNames()) : null, mutes: a ? accounts.mutes(a) : [] });
+  }
+
+  /** The clan and its room's lines (without the lines of those this player muted), on opening. @param {Client} x */
+  function sendClanAll(x) {
+    sendClan(x);
+    const k = x.name ? clans.of(x.name) : null, a = x.name ? accounts.get(x.name) : undefined;
+    if (!k || !a) return;
+    const muted = new Set(accounts.mutes(a));
+    send(x, { t: 'clan_history', id: k.id, lines: clans.history(k.id).filter((l) => l.kind !== 'say' || !muted.has(l.name.toLowerCase())) });
+  }
+
+  /** Every member online gets the clan as it is now. @param {import('./clans.mjs').Clan} k */
+  function clanPush(k) {
+    const online = onlineNames(), mutes = (/** @type {string} */ n) => { const a = accounts.get(n); return a ? accounts.mutes(a) : []; };
+    for (const x of membersOnline(k)) send(x, { t: 'clan', clan: clanState(k, /** @type {string} */ (x.name), online), mutes: mutes(/** @type {string} */ (x.name)) });
+  }
+
+  /** A player came or went: its clan's members see the dot change. @param {string | null} name */
+  function clanPresence(name) {
+    const k = name ? clans.of(name) : null;
+    if (k) clanPush(k);
+  }
+
+  /**
+   * New lines of a room to every member online, but a member's message not to those who muted it.
+   * @param {import('./clans.mjs').Clan} k @param {import('./clans.mjs').ChatLine[]} lines
+   */
+  function clanTell(k, lines) {
+    for (const x of membersOnline(k)) {
+      const a = accounts.get(/** @type {string} */ (x.name)), muted = new Set(a ? accounts.mutes(a) : []);
+      for (const l of lines) if (l.kind !== 'say' || !muted.has(l.name.toLowerCase())) send(x, { t: 'clan_chat', id: k.id, line: l });
+    }
+  }
+
+  /** @param {Client} c @param {string} error */
+  const clanFail = (c, error) => send(c, { t: 'clan_error', error });
+
+  /** The clans with room, for a player in none: the most wins this week first. @param {Client} c */
+  function clanList(c) {
+    const low = (c.name ?? '').toLowerCase();
+    const list = clanRows(isoWeek(now()).id).filter((r) => r.members < CLAN.max).slice(0, LEADER_SIZE)
+      .map((r) => ({ ...r, asked: !!clans.get(r.id)?.asks.some((x) => x.toLowerCase() === low) }));
+    send(c, { t: 'clan_list', clans: list });
+  }
+
+  /** @param {Client} c @param {any} m */
+  function clanMessage(c, m) {
+    const me = /** @type {string} */ (c.name);
+    /** What a change did: an error to the player, or the clan pushed to its members, with its new lines. */
+    const after = (/** @type {any} */ r, /** @type {boolean} */ members = true) => {
+      if (r.error) return clanFail(c, r.error), false;
+      if (members) boardsChanged();
+      if (r.lines?.length) clanTell(r.clan, r.lines);
+      if (!r.gone) clanPush(r.clan);
+      return true;
+    };
+    switch (m.t) {
+      case 'clan_get':
+        return sendClanAll(c);
+      case 'clan_list':
+        return clanList(c);
+      case 'clan_view': {
+        // A clan's page, for a player in none (or anyone): its members and their rating, no dots, no code.
+        const k = clans.get(m.id);
+        if (!k) return clanFail(c, 'That clan is gone');
+        const row = clanRow(k, isoWeek(now()).id);
+        return send(c, {
+          t: 'clan_view', clan: {
+            ...row, leader: k.leader, max: CLAN.max, asked: k.asks.some((x) => x.toLowerCase() === me.toLowerCase()),
+            list: k.members.map((n) => { const a = accounts.get(n); return { name: n, rating: a ? accounts.rating(a) : ELO.start, role: n === k.leader ? 'leader' : 'member' }; }),
+          },
+        });
+      }
+      case 'clan_create': {
+        const r = clans.create(me, m.name, m.tag);
+        if (!after(r)) return;
+        log(`${me} founded the clan ${r.clan.name} [${r.clan.tag}]`);
+        return sendClanAll(c);
+      }
+      case 'clan_join': {
+        const r = clans.join(me, m.code);
+        if (after(r)) sendClanAll(c);
+        return;
+      }
+      case 'clan_ask': {
+        const r = clans.ask(me, m.id);
+        if (r.error) return clanFail(c, r.error);
+        clanPush(/** @type {any} */ (r.clan));
+        send(c, { t: 'clan_notice', text: `Asked to join ${r.clan?.name}: its leader decides` });
+        return clanList(c);
+      }
+      case 'clan_answer': {
+        const r = clans.answer(me, m.name, !!m.yes);
+        if (!after(r, !!m.yes)) return;
+        // The one let in, if online, gets its clan and the room.
+        const who = typeof m.name === 'string' ? m.name.toLowerCase() : '';
+        if (m.yes) for (const x of clients) if (x.name?.toLowerCase() === who) sendClanAll(x);
+        return;
+      }
+      case 'clan_leave': {
+        const r = clans.leave(me);
+        if (!after(r)) return;
+        if ('gone' in r && r.gone) log(`the clan ${r.clan.name} [${r.clan.tag}] is gone: its last member left`);
+        return sendClan(c);
+      }
+      case 'clan_remove': {
+        const r = clans.remove(me, m.name);
+        if (!after(r)) return;
+        const who = typeof m.name === 'string' ? m.name.toLowerCase() : '';
+        for (const x of clients) {
+          if (x.name?.toLowerCase() !== who) continue;
+          sendClan(x);
+          send(x, { t: 'clan_notice', text: `You were removed from ${'clan' in r ? r.clan.name : 'the clan'}` });
+        }
+        return;
+      }
+      case 'clan_lead':
+        return void after(clans.lead(me, m.name), false);
+      case 'clan_code':
+        return void after(clans.recode(me), false);
+      case 'clan_silence':
+        return void after(clans.silence(me, m.name, !!m.on, now()), false);
+      case 'clan_say': {
+        const r = clans.say(me, m.text, Date.now());
+        if ('error' in r) return clanFail(c, r.error);
+        return clanTell(r.clan, r.lines);
+      }
+      case 'clan_mute': {
+        // A player's own mute: that name's messages no longer reach it, kept on its account. Anyone's name may be muted.
+        const a = accounts.get(me);
+        if (!a || typeof m.name !== 'string' || !/^[A-Za-z0-9_-]{3,16}$/.test(m.name) || m.name.toLowerCase() === me.toLowerCase()) return clanFail(c, 'No such player');
+        accounts.mute(a, m.name, !!m.on);
+        return sendClan(c);
+      }
+      case 'clan_report': {
+        // A message reported: written to the hub's log with the clan, the names and the time, and nothing more.
+        const k = clans.of(me), line = k ? clans.history(k.id).find((l) => l.n === m.n && l.kind === 'say') : undefined;
+        if (!k || !line) return clanFail(c, 'That message is no longer kept');
+        log(`REPORT clan "${k.name}" [${k.tag}] (${k.id}): ${me} reports ${line.name}'s message #${line.n} of ${line.at}: ${JSON.stringify(line.text)}`);
+        return send(c, { t: 'clan_notice', text: 'Reported. Thank you.' });
+      }
+    }
+  }
+
   return {
     connect,
     /** For tests and the console: what the hub holds right now. */
-    state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length, shards: [...worlds.values()].reduce((n, l) => n + l.length, 0) }),
+    state: () => ({ clients: clients.size, lobbies: lobbies.size, queue: queue.length, shards: [...worlds.values()].reduce((n, l) => n + l.length, 0), clans: clans.byId.size }),
   };
 }
 

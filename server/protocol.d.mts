@@ -47,3 +47,18 @@ export declare const BOARD_SIZE: number;
 export declare const TOWER_FLOOR_MAX: number;
 /** The Climb's open world, stage 1: shard size, rate limits, how far a place may be, how often a page sends its place. */
 export declare const WORLD: { shardMax: number; movesPerS: number; reach: number; casts: number; castsMs: number; labelMax: number; sendHz: number };
+/** The duel rating (Elo): where an account starts and the K factor. */
+export declare const ELO: { start: number; k: number };
+/** How many rows each of the Leaderboards screen's lists holds. */
+export declare const LEADER_SIZE: number;
+/** The Climb's floors (a report names the highest cleared, 1-50). */
+export declare const CLIMB_FLOORS: number;
+/** Clans: members, the name's and tag's lengths, open asks kept, the chat's limits, the leader's mute in hours. */
+export declare const CLAN: {
+  max: number; nameMin: number; nameMax: number; tagMin: number; tagMax: number; asks: number;
+  chat: { max: number; keep: number; gapMs: number; windowMs: number; inWindow: number };
+  silenceH: number;
+};
+export declare const clanName: (v: unknown) => string;
+export declare const CLAN_NAME_RE: RegExp;
+export declare const CLAN_TAG_RE: RegExp;
