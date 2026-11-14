@@ -20,8 +20,9 @@ import type { GameApi, Runtime } from '../../runtime';
  * `perf.py` scenes with `others`).
  */
 
-/** Full figures for the nearest this many; light stand-ins past them. */
-const FULL = 3;
+/** Full figures for the nearest this many, and only within `NEAR` m (a slowed phone paid 6 to 10 ms a frame for three full figures
+ * anywhere on the floor); light stand-ins past them. A full figure goes light again only past `NEAR` + 4 m, so it does not flicker. */
+const FULL = 2, NEAR = 14;
 /** How far behind the newest report a figure is drawn (ms), how long a pause counts as standing still, and a jump that snaps. */
 const DELAY = 100, GAP = 160, STEP = 50, JUMP = 6;
 /** Reports kept per player. */
@@ -357,7 +358,10 @@ export class WorldOthers implements WorldSink {
       this.sortIn = SORT_EVERY;
       for (const o of this.order) o.dist = Math.hypot(o.pos.x - hero.x, o.pos.z - hero.z);
       this.order.sort((a, b) => a.dist - b.dist);
-      for (let i = 0; i < this.order.length; i++) this.order[i].setLite(i >= FULL);
+      for (let i = 0; i < this.order.length; i++) {
+        const o = this.order[i];
+        o.setLite(i >= FULL || o.dist > (o.lite ? NEAR : NEAR + 4));
+      }
     }
     for (const o of this.order) o.update(dt);
   }
