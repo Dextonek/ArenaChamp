@@ -524,6 +524,17 @@ const hullOf = (p: Proto) => {
   for (let v = 0; v < n; v += step) pts.push(A[v * 3], A[v * 3 + 1], A[v * 3 + 2]);
   return new Float32Array(pts);
 };
+/** A tall part's points, denser (every vertex up to about 320 a shape; autoCover's for the parts that stand past the knee). */
+const denses = new WeakMap<object, Float32Array>();
+const denseOf = (p: object) => {
+  let D = denses.get(p);
+  if (!D) {
+    const pts: number[] = [];
+    for (const A of (Object.values(p) as Proto[]).map((q) => q.pos)) { const n = A.length / 3, step = Math.max(1, Math.ceil(n / 320)); for (let v = 0; v < n; v += step) pts.push(A[v * 3], A[v * 3 + 1], A[v * 3 + 2]); }
+    denses.set(p, (D = new Float32Array(pts)));
+  }
+  return D;
+};
 /**
  * The footprint made true to the parts (2026-11-14). The planner first tries a scene on its declared circles (cheap: most tries fail
  * there); once it fits, each part is measured in the scene's frame. An upright part (turned only about the vertical) reaches no further
@@ -535,7 +546,7 @@ const hullOf = (p: Proto) => {
 const stats = new WeakMap<object, number[]>();
 function autoCover(rc: Recipe) {
   const items = rc.items.slice();
-  const cells = new Map<number, number>();
+  const cells = new Map<number, number[]>(); // per 1 m cell: the box of the points found there and their top
   for (const op of rc.ops) {
     let st = stats.get(op.p);
     if (!st) {
@@ -555,18 +566,21 @@ function autoCover(rc: Recipe) {
     if (items.some((it) => Math.hypot(op.x - it.x, op.z - it.z) + r <= it.r + 0.02 && (top <= KNEE || it.h >= top - 0.02))) continue;
     if (top <= KNEE) { rc.items.push({ x: op.x, z: op.z, r: r + 0.02, h: Math.max(0, top) }); continue; }
     // a tall part: small circles where its telling points pass the scene's circles (or stand above what they say)
-    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r);
-    for (let i = 0; i < P.length; i += 3) {
-      const vx = P[i] * op.sx, vy = P[i + 1] * op.sy, vz = P[i + 2] * op.sz;
+    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r), T = denseOf(op.p);
+    for (let i = 0; i < T.length; i += 3) {
+      const vx = T[i] * op.sx, vy = T[i + 1] * op.sy, vz = T[i + 2] * op.sz;
       const x = op.x + R0 * vx + R1 * vy + R2 * vz, y = op.y + R3 * vx + R4 * vy + R5 * vz, z = op.z + R6 * vx + R7 * vy + R8 * vz;
       let ok = false;
-      for (const it of near) if (Math.hypot(x - it.x, z - it.z) <= it.r - 0.25 && (y <= KNEE - 0.02 || it.h >= y + 0.02)) { ok = true; break; }
+      for (const it of near) if (Math.hypot(x - it.x, z - it.z) <= it.r - 0.03 && (y <= KNEE - 0.02 || it.h >= y + 0.02)) { ok = true; break; }
       if (ok) continue;
       const key = Math.floor(x) * 4096 + Math.floor(z);
-      cells.set(key, Math.max(cells.get(key) ?? 0, y + 0.02));
+      const c = cells.get(key);
+      if (!c) cells.set(key, [x, z, x, z, y + 0.02]);
+      else { c[0] = Math.min(c[0], x); c[1] = Math.min(c[1], z); c[2] = Math.max(c[2], x); c[3] = Math.max(c[3], z); c[4] = Math.max(c[4], y + 0.02); }
     }
   }
-  for (const [key, y] of cells) { const gx = Math.round(key / 4096), gz = key - gx * 4096; rc.items.push({ x: gx + 0.5, z: gz + 0.5, r: 0.8, h: Math.max(0, y) }); }
+  // a circle drawn tight round the points found in each cell (a fat one would not fit against the rock the tall parts lean on)
+  for (const [x0, z0, x1, z1, y] of cells.values()) rc.items.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, r: Math.hypot(x1 - x0, z1 - z0) / 2 + 0.06, h: Math.max(0, y) });
   return rc;
 }
 

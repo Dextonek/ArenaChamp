@@ -103,15 +103,17 @@ same order, hashed the same, because growing plain arrays one number at a time w
   a wheel, arrows), every 16 to 24 m where no scene is near; arrows stuck in the sand on the way from a fight to its road; a crate or a
   sack dropped where a cart's ruts leave the road.
 - **More of them, where players walk:** one every 26 to 38 m of road (was 45 to 60), either verge; the places' surroundings take a tent,
-  a water-wheel or amphorae as well; up to 28 on the walkable sand (was 24) and up to three past the edge, placed early so they are
-  never left out (one of each kind).
+  a water-wheel or amphorae as well; up to 28 on the walkable sand (was 24), up to six against the rocks (the jackal's head, the
+  wagon, the cart on its side, the lean-to, the tent half standing, the upright water-wheel: 1 to 4 a floor) and up to three past the
+  edge, placed early so they are never left out (one of each kind). The caps were brought down from 32 scenes and 22 echoes for build time.
 - Kerbs keep the turquoise to a thin line (a full turquoise cap read loud).
 - **Made true to the shapes.** A check that measures every vertex of every part (`pipeline/tools/scenes-shape-sd.js`) found that the
   footprints the probe trusts were hand-set circles, and some parts reached up to 2.8 m past them or stood above the knee on open sand
   (a tilted wheel at 0.69 m, the sundial at 0.8 m, arrows, the well's jar; some of it from the first pass). Now each scene's footprint
   also takes its parts' measured reach and height (`autoCover`), the open-ground parts are trimmed under the knee, and cylinders laid on
   their side are centred (the tent's ridge pole had run 6.4 m to one side; the standard's pole, the spears, the staff and the well's drum
-  were half a length off). The check: 0 vertices outside the footprint, 0 above what it declares, on every kind and way, 80 draws each.
+  were half a length off). A tall part reaching past its scene's circles gets small circles drawn tight round its points there, so a
+  scene against a rock still fits; the wagon's drift against the rock is two smaller drifts (one wide one reached into the rock). The check: 0 vertices outside the footprint, 0 above what it declares, on every kind and way, 80 draws each.
 
 ### The views probe
 
@@ -123,15 +125,16 @@ the **inner 80% of the screen**; both are given. Echo props are not counted.
 
 | Floor | 21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 |
 |---|---|---|---|---|---|---|---|---|---|---|
-| Scenes before / after | 24 / 29 | 20 / 29 | 21 / 30 | 20 / 31 | 23 / 27 | 20 / 31 | 21 / 29 | 23 / 30 | 22 / 30 | 20 / 29 |
+| Scenes before / after | 24 / 31 | 20 / 30 | 21 / 33 | 20 / 33 | 23 / 30 | 20 / 33 | 21 / 31 | 23 / 32 | 22 / 33 | 20 / 32 |
+| Against a rock after | 2 | 1 | 3 | 4 | 3 | 2 | 2 | 2 | 3 | 3 |
 | Echo props after | 16 | 16 | 16 | 16 | 16 | 16 | 16 | 16 | 16 | 16 |
-| Road views, in frame (%) | 62 / 92 | 60 / 75 | 79 / 92 | 80 / 87 | 84 / 83 | 73 / 91 | 72 / 78 | 71 / 85 | 78 / 81 | 73 / 88 |
-| All views, in frame (%) | 54 / 76 | 56 / 74 | 57 / 73 | 57 / 67 | 59 / 68 | 57 / 76 | 56 / 71 | 59 / 69 | 57 / 64 | 62 / 69 |
-| Road views, inner 80% (%) | 50 / 79 | 39 / 62 | 69 / 78 | 62 / 73 | 58 / 63 | 50 / 68 | 55 / 66 | 55 / 73 | 57 / 64 | 57 / 72 |
-| All views, inner 80% (%) | 39 / 54 | 40 / 52 | 42 / 52 | 39 / 49 | 43 / 49 | 38 / 57 | 42 / 52 | 43 / 52 | 39 / 47 | 42 / 49 |
+| Road views, in frame (%) | 62 / 91 | 60 / 77 | 79 / 93 | 80 / 93 | 84 / 85 | 73 / 92 | 72 / 78 | 71 / 86 | 78 / 85 | 73 / 89 |
+| All views, in frame (%) | 54 / 77 | 56 / 76 | 57 / 80 | 57 / 73 | 59 / 70 | 57 / 78 | 56 / 75 | 59 / 73 | 57 / 69 | 62 / 74 |
+| Road views, inner 80% (%) | 50 / 78 | 39 / 66 | 69 / 80 | 62 / 76 | 58 / 66 | 50 / 71 | 55 / 66 | 55 / 73 | 57 / 67 | 57 / 73 |
+| All views, inner 80% (%) | 39 / 55 | 40 / 54 | 42 / 58 | 39 / 53 | 43 / 54 | 38 / 60 | 42 / 55 | 43 / 54 | 39 / 52 | 42 / 55 |
 
 The aim (70% of road views, 45% of all) is met in frame on every floor. In the inner 80% of the screen all views meet it on every floor,
-road views on five (21, 23, 24, 28, 30); the other five reach 62 to 68%. Floor 25's road views in frame went from 84 to 83%.
+road views on six (21, 23, 24, 26, 28, 30); the other four reach 66 to 67%.
 
 ### The checks
 
@@ -142,12 +145,12 @@ road views on five (21, 23, 24, 28, 30); the other five reach 62 to 68%. Floor 2
 - **Nothing moved:** with the scenes switched off (`window.__noScenes`), floors 21 and 26 build byte for byte the same (every vertex
   attribute, instance matrix and painted map hashed) under the tower-50 code and this one.
 - **Build time on the phone profile** (the processor slowed 4 times, as perf.py's phone-4x; each floor built once at full speed first),
-  the scenes' own time, the tower-50 code and this one alternated in one session: the machine was loaded by other agents and the same
-  build swung from 60 to 400 ms between runs, so the fairest reading is each code's fastest builds: floor 21 82 ms before, 91 ms after;
-  floor 26 57 ms before, 62 ms after. An alternation under a steadier load one step before the final code (the same planner, before the
-  last shape fixes) gave +95 ms on floor 21 and about +128 ms on floor 26 (the bar: +150). Most of the cost is copying
-  the scenes' vertices into the merged meshes and the room checks; the shapes were thinned (three-sided trims, coarser sacks, wheels and
-  amphorae), the checks read a grid of 8 m cells, and a verge with no room is left for a few metres.
+  the scenes' own time, the tower-50 code and this one alternated in one session, three builds each. The machine was loaded by other
+  agents (a whole floor build swung from 3 to 17 s), so only the pair under comparable load is read: floor 21 92 to 111 ms before, 140 to
+  181 ms after; floor 26 66 to 90 ms before, 111 to 129 ms after: +40 to +70 ms (the bar: +150). Most of it is copying the scenes'
+  vertices into the merged meshes and the room checks; the shapes were thinned (three-sided trims, coarser sacks, wheels and amphorae),
+  the checks read a grid of 8 m cells (widened by a part's own reach), a verge with no room is left for a few metres, and the depth's
+  merge takes the scenes' copies as typed blocks.
 - **Frame speed:** in the Deep's README ("Speed (both chapters' refinement)").
 - Pictures: `refine/fNN-sheet.jpg` (floors 21, 26, 29; before left, after right; mid at the game's zoom 1.25, close at 0.7) and the
   single pictures beside them; `refine/f26-wide-*` at the game's farthest zoom.

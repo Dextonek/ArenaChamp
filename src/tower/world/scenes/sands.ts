@@ -594,7 +594,8 @@ const KINDS: Record<string, Make> = {
     rc.s(P.wagon, 0, -0.22, 0, yaw, s, s, s, 0.06, 0.08).item(0, 0, 1.7 * s, 1.05 * s).at(0, 0);
     if (cover) rc.s(P.wagonCover, 0, -0.22, 0, yaw, s, s, s, 0.06, 0.08).item(0, 0, 1.7 * s, 1.75 * s);
     else { rc.s(P.sack, 1.6 * s, 0, 1.3, r() * 6).s(P.sackHide, 0.6, 0, 1.6, r() * 6).item(1.1 * s, 1.45, 0.8, 0.32); rc.s(P.heapGrain, 1.3 * s, 0, 1.9, 0, 1.2).paint('fan', 1.2, 1.4, 2.4, 0.6, Math.PI / 2, G.grain, 0.5); }
-    rc.s(P.drift, 0.4, -0.15, -0.6, 0.3, 2.4 * s, (o.far ? 0.7 : 0.6) * s, 1.3 * s);
+    if (o.far) rc.s(P.drift, 0.4, -0.15, -0.6, 0.3, 2.4 * s, 0.7 * s, 1.3 * s);
+    else rc.s(P.drift, -0.7, -0.15, -0.5, 0.3, 1.35 * s, 0.6 * s, 1.1 * s).s(P.drift, 1.0, -0.15, -0.6, 0.2, 1.35 * s, 0.6 * s, 1.1 * s); // two drifts: one wide one reached into the rock
     rc.s(P.drift, 1.6 * s, -0.1, 0.4, 0.3, 1.2 * s, 0.45 * s, 1.1 * s).item(1.6 * s, 0.4, 1.1 * s, 0.45 * s);
     if (o.far) rc.pole(P.poleWood, -1.3 * s, 0.35, 0.1, -2.8 * s, 1.2 * s, 0.4, 0.06).item(-2.2 * s, 0.3, 0.5, 1.2 * s);
     else rc.pole(P.poleWood, -1.3, 0.35, 0.1, -2.9, 0.08, 0.5, 0.06).item(-2.2, 0.3, 0.75, 0.4);
@@ -636,7 +637,7 @@ const KINDS: Record<string, Make> = {
   // corner out from under it, a brass lamp, a pot rolled away. Against a rock, the tent half standing, its back pole still up.
   tent: (rc, P, r, o) => {
     if (o.backed) {
-      rc.s(P.tentHalf, 0, 0, 0, (r() - 0.5) * 0.15).item(0, -1.3, 1.0, 1.75).item(-1.5, -0.9, 0.7, 1.2).item(1.5, -0.9, 0.7, 1.2).item(-1.3, -1.75, 0.75, 1.55).item(1.3, -1.75, 0.75, 1.55).item(-2.05, -1.9, 0.45, 1.65).item(2.05, -1.9, 0.45, 1.65).item(0, 1.9, 0.85, 0.3).item(-2.0, -0.6, 0.7, 0.95).item(2.0, -0.6, 0.7, 0.95).item(-2.0, 0.6, 0.7, 0.4).item(2.0, 0.6, 0.7, 0.4).item(-1.9, 1.7, 0.6, 0.2).item(1.9, 1.7, 0.6, 0.2).item(-2.05, -1.35, 0.5, 1.2).item(2.05, -1.35, 0.5, 1.2).item(-1.3, 1.2, 1.4, 0.4).item(1.3, 1.2, 1.4, 0.4).at(0, 0);
+      rc.s(P.tentHalf, 0, 0, 0, (r() - 0.5) * 0.15).item(0, -1.3, 1.0, 1.75).item(-1.5, -0.9, 0.7, 1.2).item(1.5, -0.9, 0.7, 1.2).item(-1.3, -1.75, 0.75, 1.55).item(1.3, -1.75, 0.75, 1.55).item(-2.05, -1.9, 0.45, 1.65).item(2.05, -1.9, 0.45, 1.65).item(0, 1.9, 0.85, 0.3).item(-2.0, -0.6, 0.7, 0.95).item(2.0, -0.6, 0.7, 0.95).item(-2.0, 0.6, 0.7, 0.4).item(2.0, 0.6, 0.7, 0.4).item(-1.9, 1.7, 0.6, 0.2).item(1.9, 1.7, 0.6, 0.2).item(-2.05, -1.35, 0.5, 1.2).item(2.05, -1.35, 0.5, 1.2).item(-0.65, -2.0, 0.55, 1.78).item(0.65, -2.0, 0.55, 1.78).item(0, -0.2, 1.05, 0.7).item(-1.2, -0.3, 0.6, 0.85).item(1.2, -0.3, 0.6, 0.85).item(-1.3, 1.2, 1.4, 0.4).item(1.3, 1.2, 1.4, 0.4).at(0, 0);
     } else {
       rc.s(P.tentFlat, 0, 0, 0, (r() - 0.5) * 0.2).item(-1.35, -1.05, 1.75, 0.5).item(1.35, -1.05, 1.75, 0.5).item(-1.35, 1.05, 1.75, 0.5).item(1.35, 1.05, 1.75, 0.5).item(3.15, 0, 0.3, 0.45).item(-3.15, 0, 0.3, 0.45).at(0, 0);
       const side = r() < 0.5 ? 1 : -1;
@@ -727,6 +728,17 @@ const hullOf = (p: Proto) => {
   for (let v = 0; v < n; v += step) pts.push(A[v * 3], A[v * 3 + 1], A[v * 3 + 2]);
   return new Float32Array(pts);
 };
+/** A tall part's points, denser (every vertex up to about 320 a shape; autoCover's for the parts that stand past the knee). */
+const denses = new WeakMap<object, Float32Array>();
+const denseOf = (p: object) => {
+  let D = denses.get(p);
+  if (!D) {
+    const pts: number[] = [];
+    for (const A of [(p as Proto).pos]) { const n = A.length / 3, step = Math.max(1, Math.ceil(n / 320)); for (let v = 0; v < n; v += step) pts.push(A[v * 3], A[v * 3 + 1], A[v * 3 + 2]); }
+    denses.set(p, (D = new Float32Array(pts)));
+  }
+  return D;
+};
 /**
  * The footprint made true to the parts (2026-11-14). The planner first tries a scene on its declared circles (cheap: most tries fail
  * there); once it fits, each part is measured in the scene's frame. An upright part (turned only about the vertical) reaches no further
@@ -738,7 +750,7 @@ const hullOf = (p: Proto) => {
 const stats = new WeakMap<object, number[]>();
 function autoCover(rc: Recipe) {
   const items = rc.items.slice();
-  const cells = new Map<number, number>();
+  const cells = new Map<number, number[]>(); // per 1 m cell: the box of the points found there and their top
   for (const op of rc.ops) {
     let st = stats.get(op.p);
     if (!st) {
@@ -758,18 +770,21 @@ function autoCover(rc: Recipe) {
     if (items.some((it) => Math.hypot(op.x - it.x, op.z - it.z) + r <= it.r + 0.02 && (top <= KNEE || it.h >= top - 0.02))) continue;
     if (top <= KNEE) { rc.items.push({ x: op.x, z: op.z, r: r + 0.02, h: Math.max(0, top) }); continue; }
     // a tall part: small circles where its telling points pass the scene's circles (or stand above what they say)
-    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r);
-    for (let i = 0; i < P.length; i += 3) {
-      const vx = P[i] * op.sx, vy = P[i + 1] * op.sy, vz = P[i + 2] * op.sz;
+    const near = items.filter((it) => Math.hypot(op.x - it.x, op.z - it.z) < it.r + r), T = denseOf(op.p);
+    for (let i = 0; i < T.length; i += 3) {
+      const vx = T[i] * op.sx, vy = T[i + 1] * op.sy, vz = T[i + 2] * op.sz;
       const x = op.x + R0 * vx + R1 * vy + R2 * vz, y = op.y + R3 * vx + R4 * vy + R5 * vz, z = op.z + R6 * vx + R7 * vy + R8 * vz;
       let ok = false;
-      for (const it of near) if (Math.hypot(x - it.x, z - it.z) <= it.r - 0.25 && (y <= KNEE - 0.02 || it.h >= y + 0.02)) { ok = true; break; }
+      for (const it of near) if (Math.hypot(x - it.x, z - it.z) <= it.r - 0.03 && (y <= KNEE - 0.02 || it.h >= y + 0.02)) { ok = true; break; }
       if (ok) continue;
       const key = Math.floor(x) * 4096 + Math.floor(z);
-      cells.set(key, Math.max(cells.get(key) ?? 0, y + 0.02));
+      const c = cells.get(key);
+      if (!c) cells.set(key, [x, z, x, z, y + 0.02]);
+      else { c[0] = Math.min(c[0], x); c[1] = Math.min(c[1], z); c[2] = Math.max(c[2], x); c[3] = Math.max(c[3], z); c[4] = Math.max(c[4], y + 0.02); }
     }
   }
-  for (const [key, y] of cells) { const gx = Math.round(key / 4096), gz = key - gx * 4096; rc.items.push({ x: gx + 0.5, z: gz + 0.5, r: 0.8, h: Math.max(0, y) }); }
+  // a circle drawn tight round the points found in each cell (a fat one would not fit against the rock the tall parts lean on)
+  for (const [x0, z0, x1, z1, y] of cells.values()) rc.items.push({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, r: Math.hypot(x1 - x0, z1 - z0) / 2 + 0.06, h: Math.max(0, y) });
   return rc;
 }
 
@@ -807,8 +822,9 @@ export function sandsScenes(o: SandsScenesIn) {
   const roads: { ax: number; az: number; bx: number; bz: number }[] = [];
   for (const p of look.paths) for (let i = 1; i < p.length; i++) roads.push({ ax: RING.x + p[i - 1][0], az: RING.z + p[i - 1][1], bx: RING.x + p[i][0], bz: RING.z + p[i][1] });
   const cover = look.pieces.map((p) => p.o);
-  // The room checks look only at the 8 m cells round their point (every margin they test is under 8 m; the places, few and wide, are
-  // all checked). A grid made once a floor: a road, a rock or a prop in every cell its box touches.
+  // The room checks look only at the 8 m cells round their point, and further by the part's own reach (every margin they test is under
+  // 8 m past a part's edge; the places, few and wide, are all checked). A grid made once a floor: a road, a rock or a prop in every
+  // cell its box touches.
   type Cell = { k: typeof keep; s: typeof solids; r: typeof roads; c: typeof cover };
   const grid = new Map<number, Cell>(), CS = 8;
   const cellAt = (gx: number, gz: number) => { const key = gx * 4096 + gz; let c = grid.get(key); if (!c) grid.set(key, (c = { k: [], s: [], r: [], c: [] })); return c; };
@@ -819,11 +835,11 @@ export function sandsScenes(o: SandsScenesIn) {
   for (const q of solids) span(q.x - q.r, q.z - q.r, q.x + q.r, q.z + q.r, (c) => c.s.push(q));
   for (const q of roads) span(q.ax, q.az, q.bx, q.bz, (c) => c.r.push(q));
   for (const q of cover) span(Math.min(q.ax, q.bx) - q.r, Math.min(q.az, q.bz) - q.r, Math.max(q.ax, q.bx) + q.r, Math.max(q.az, q.bz) + q.r, (c) => c.c.push(q));
-  const around = (x: number, z: number, f: (c: Cell) => void) => {
-    const gx = Math.floor(x / CS), gz = Math.floor(z / CS);
-    for (let a = gx - 1; a <= gx + 1; a++) for (let b = gz - 1; b <= gz + 1; b++) { const c = grid.get(a * 4096 + b); if (c) f(c); }
+  const around = (x: number, z: number, f: (c: Cell) => void, reach = 0) => {
+    const gx = Math.floor(x / CS), gz = Math.floor(z / CS), n = 1 + Math.ceil(reach / CS);
+    for (let a = gx - n; a <= gx + n; a++) for (let b = gz - n; b <= gz + n; b++) { const c = grid.get(a * 4096 + b); if (c) f(c); }
   };
-  const roadClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const s of c.r) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); }); return m; };
+  const roadClear = (x: number, z: number, reach = 0) => { let m = 1e9; around(x, z, (c) => { for (const s of c.r) m = Math.min(m, segDist(x, z, s.ax, s.az, s.bx, s.bz)); }, reach); return m; };
   /** The nearest point on a road's middle line. */
   const roadPoint = (x: number, z: number) => {
     let m = 1e9, px = x, pz = z;
@@ -834,10 +850,10 @@ export function sandsScenes(o: SandsScenesIn) {
     }
     return { x: px, z: pz, d: m };
   };
-  const coverClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const q of c.c) m = Math.min(m, segDist(x, z, q.ax, q.az, q.bx, q.bz) - q.r); }); return m; };
-  const keepClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const k of c.k) m = Math.min(m, Math.hypot(x - k.x, z - k.z)); }); return m; };
+  const coverClear = (x: number, z: number, reach = 0) => { let m = 1e9; around(x, z, (c) => { for (const q of c.c) m = Math.min(m, segDist(x, z, q.ax, q.az, q.bx, q.bz) - q.r); }, reach); return m; };
+  const keepClear = (x: number, z: number, reach = 0) => { let m = 1e9; around(x, z, (c) => { for (const k of c.k) m = Math.min(m, Math.hypot(x - k.x, z - k.z)); }, reach); return m; };
   const placeClear = (x: number, z: number) => { let m = 1e9; for (const p of look.places) m = Math.min(m, Math.hypot(x - p.x, z - p.z) - p.r); return m; };
-  const solidClear = (x: number, z: number) => { let m = 1e9; around(x, z, (c) => { for (const q of c.s) m = Math.min(m, Math.hypot(x - q.x, z - q.z) - q.r); }); return m; };
+  const solidClear = (x: number, z: number, reach = 0) => { let m = 1e9; around(x, z, (c) => { for (const q of c.s) m = Math.min(m, Math.hypot(x - q.x, z - q.z) - q.r); }, reach); return m; };
   const beyond = (x: number, z: number) => land.beyond(x - RING.x, z - RING.z);
   /** A rock (or a wall) right north of the point's edge: the camera looks north, so a tall thing there hides nobody. */
   const backedAt = (x: number, z: number, r: number) => coverClear(x, z - r - 0.6) < 0.5 && coverClear(x, z) < r + 1.2;
@@ -854,8 +870,8 @@ export function sandsScenes(o: SandsScenesIn) {
   const off = Object.keys(KINDS).filter((k) => !['ribs', 'jackal', 'shrine', 'pots'].includes(k));
   cap[off[Math.floor(rnd() * off.length)]] = 1; // a kind this floor has little of
   for (let k = 0; k < 2; k++) cap[off[Math.floor(rnd() * off.length)]] += 1; // and two it has more of
-  const MAX = 28; // on the walkable sand; up to three more past the edge
-  let farN = 0;
+  const MAX = 28; // on the walkable sand, not counting the few against the rocks (up to six) and past the edge (up to three)
+  let farN = 0, backN = 0;
   const left = (k: string) => (cap[k] ?? 0) - (used.get(k) ?? 0);
 
   const world = (rc: Recipe, x: number, z: number, yaw: number, far: boolean): SceneItem[] => {
@@ -865,8 +881,8 @@ export function sandsScenes(o: SandsScenesIn) {
   /** One part's room on the walkable sand: off the spots, the roads' middles, the cover, the courts, the depth's props, the outline. */
   const roomFor = (it: SceneItem) => {
     // the quick and the most often failing first (the same answer in any order)
-    if (keepClear(it.x, it.z) < it.r + 3.2) return false;
-    if (roadClear(it.x, it.z) < it.r + 2.2) return false;
+    if (keepClear(it.x, it.z, it.r) < it.r + 3.2) return false;
+    if (roadClear(it.x, it.z, it.r) < it.r + 2.2) return false;
     if (placeClear(it.x, it.z) < it.r + 2.6) return false;
     const b = beyond(it.x, it.z);
     if (it.far) {
@@ -875,10 +891,10 @@ export function sandsScenes(o: SandsScenesIn) {
       if (land.south(dx, dz) > 0.2 || land.steepness(dx, dz) > 0.45) return false;
     } else {
       if (b > -(it.r + 1.2)) return false;
-      if (coverClear(it.x, it.z) < it.r + 0.15) return false;
+      if (coverClear(it.x, it.z, it.r) < it.r + 0.15) return false;
       if (it.h > KNEE && !backedAt(it.x, it.z, it.r)) return false;
     }
-    if (solidClear(it.x, it.z) < it.r + 0.4) return false;
+    if (solidClear(it.x, it.z, it.r) < it.r + 0.4) return false;
     return true;
   };
   /** Does a scene fit here? Every part with room, and off the other scenes (and the echoes). */
@@ -950,7 +966,7 @@ export function sandsScenes(o: SandsScenesIn) {
   /** Tries one kind at one spot (a few turns); places it if it fits. */
   const tryAt = (kind: string, where: string, x: number, z: number, yaw0: number, o2: { backed?: boolean; far?: boolean; spread?: number; rc?: Recipe } = {}) => {
     const far = !!o2.far, backed = !!o2.backed;
-    if (left(kind) <= 0 || (!far && placed.length - farN >= MAX)) return false;
+    if (left(kind) <= 0 || (!far && !backed && placed.length - farN - backN >= MAX)) return false;
     for (const sc of placed) if (Math.hypot(sc.x - x, sc.z - z) < (sc.kind === kind ? 30 : 13)) return false;
     // quick noes before the parts are made: a scene's middle is never on a spot, a rock, a court or past the edge
     if (keepClear(x, z) < 3.2 || (!far && (coverClear(x, z) < 0.3 || placeClear(x, z) < 2 || beyond(x, z) > -2))) return false;
@@ -973,6 +989,7 @@ export function sandsScenes(o: SandsScenesIn) {
       keepRec(placed, rec(kind, where, x, z, yaw, items, main));
       used.set(kind, (used.get(kind) ?? 0) + 1);
       if (far) farN++;
+      if (backed) backN++;
       if (!far) {
         for (const p of rc.paints) paints.push({ ...p, ...toWorld(p.x, p.z, x, z, yaw), yaw });
         lead(rc, main, kind);

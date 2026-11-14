@@ -150,9 +150,9 @@ floor and track views on seven (35, 37 and 40 reach 64, 61 and 68%).
 - **`_worldCheck`, floors 31 to 40:** the same as before: nothing unreachable, reachable 33,301 to 33,964 m², most units near any point
   4 or 5.
 - **Nothing moved:** with the scenes switched off, floors 31 and 35 build byte for byte the same under the tower-50 code and this one.
-- **Build time on the phone profile** (processor slowed 4 times; old and new code alternated, the machine loaded by other agents): the
-  scenes' own time, each code's fastest builds, 37 ms before and 66 ms after on floor 31, 28 and 42 ms on floor 35; earlier runs under a
-  steadier load gave about +25 to +90 ms. Inside the +150 ms bar. (The whole floor now builds in about a third of the time: see the
+- **Build time on the phone profile** (processor slowed 4 times; old and new code alternated, three builds each; read under comparable
+  load as in the Sands' README): the scenes' own time on floor 31 45 to 97 ms before, 100 to 142 ms after; floor 35 25 to 48 ms before,
+  65 to 109 ms after: about +45 to +55 ms, inside the +150 ms bar. (The whole floor now builds in about a third of the time: see the
   depth's README.)
 - Pictures: `refine/fNN-sheet.jpg` (floors 31, 35, 38; before left, after right; mid and close from the game's camera with the dark
   law's layer hidden, as in the first pass) and the single pictures beside them; `refine/f35-wide-*` at the game's farthest zoom.
@@ -162,7 +162,8 @@ floor and track views on seven (35, 37 and 40 reach 64, 61 and 68%).
 `perf.py scenes --profiles desktop,phone-4x --scenes world-3,gen-26,world-4,gen-35`, 1500 frames each, the tower-50 code (old) and the
 refined (new) alternated, other agents running at the same time. Median / p99 frame (ms).
 
-On the final code (A1 old, B1 new, A2 old, B2 new):
+On the final code (A1 old, B1 new, A2 old, B2 new; taken before the Sands' scenes against the rocks were let back in, which adds one to
+four scenes a Sands floor, all of them on the depth's existing meshes):
 
 | Profile, scene | A1 old | B1 new | A2 old | B2 new | draws old / new | triangles old / new | fight print |
 |---|---|---|---|---|---|---|---|
