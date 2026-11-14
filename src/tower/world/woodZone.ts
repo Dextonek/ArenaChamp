@@ -27,6 +27,11 @@ const STAGE: ArenaStage = {
   sun: 0xffdcaa, sunIntensity: 1.55, rim: 0xa0b4d0, rimIntensity: 0.35,
 };
 
+const segDist = (px: number, pz: number, ax: number, az: number, bx: number, bz: number) => {
+  const ex = bx - ax, ez = bz - az, l2 = ex * ex + ez * ez;
+  const t = l2 > 0 ? Math.max(0, Math.min(1, ((px - ax) * ex + (pz - az) * ez) / l2)) : 0;
+  return Math.hypot(px - (ax + ex * t), pz - (az + ez * t));
+};
 const smooth = (a: number, b: number, x: number) => {
   const t = Math.max(0, Math.min(1, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -193,7 +198,7 @@ function paint(look: WoodLook, land: Land, L: number, extra?: (g: CanvasRenderin
  * mesh per material per 24 m square, drew 571 things a frame at this size.)
  */
 const PCELL = 48;
-class Props {
+export class Props {
   private cells = new Map<string, Map<THREE.Material, THREE.BufferGeometry[]>>();
   private m = new THREE.Matrix4();
   private shared: THREE.MeshStandardMaterial;
@@ -254,8 +259,13 @@ class Forest {
     if (!b) this.bins.set(key, (b = []));
     b.push(new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), this.q.setFromAxisAngle(this.up, yaw).clone(), new THREE.Vector3(s, sy, s)));
   }
+  /** Leaves out of the drawing the trees `out` says (only the drawing: `at`, which the scenes kept off, is as it was). */
+  drop(out: (x: number, z: number) => boolean) {
+    for (const [key, list] of this.bins) this.bins.set(key, list.filter((m) => !out(m.elements[12], m.elements[14])));
+  }
   build(geos: THREE.BufferGeometry[], material: THREE.Material, into: THREE.Group) {
     for (const [key, list] of this.bins) {
+      if (!list.length) continue;
       const [kind, , , sh] = key.split(':').map(Number);
       const im = new THREE.InstancedMesh(geos[kind], material, list.length);
       list.forEach((m, i) => im.setMatrixAt(i, m));
@@ -436,7 +446,8 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
         kit.add(bark, cyl(r * 0.8, r * 1.15, 7, 10), o.ax, 0, o.az).add(leafA, ico, o.ax, 9, o.az, 0, 6, 4, 6).add(leafC, ico, o.ax + 3, 10.5, o.az + 1, 1, 4, 3, 4);
         kit.add(sap, new THREE.CircleGeometry(1, 10).scale(0.8, 1.4, 1).translate(0, 1.4, r * 1.02), o.ax, 0, o.az, Math.atan2(RING.x - o.ax, RING.z - o.az));
         glowSpots.push({ x: o.ax, y: 1.6, z: o.az, size: 2.6 });
-        for (let i = 0; i < 6; i++) { const a = (i / 6) * 6.28; kit.add(bark, cyl(0.3, 0.6, 3, 6), o.ax + Math.cos(a) * r, 0, o.az + Math.sin(a) * r, 0, 1, 1, 1, 0.9 * (Math.cos(a) > 0 ? -1 : 1)); }
+        // roots flaring from its foot, each leaning in towards the trunk (they stuck out sideways, along the world's z, like poles)
+        for (let i = 0; i < 6; i++) { const a = (i / 6) * 6.28; kit.add(bark, cyl(0.3, 0.6, 3, 6), o.ax + Math.cos(a) * (r * 1.15 + 0.45), 0, o.az + Math.sin(a) * (r * 1.15 + 0.45), Math.atan2(-Math.cos(a), -Math.sin(a)), 1, 1, 1, 1.0); }
         break;
       case 'rock':
         kit.add(mossy, ico, o.ax, h * 0.3, o.az, rnd() * 6, r * 1.1, h * 0.7, r * 1.1).add(stone, ico, o.ax + r * 0.5, h * 0.12, o.az - r * 0.3, rnd() * 6, r * 0.6, h * 0.38, r * 0.6);
@@ -451,9 +462,12 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
       case 'stump':
         kit.add(barkLight, cyl(r * 0.85, r, h, 8), o.ax, 0, o.az).add(wood, cyl(r * 0.8, r * 0.8, 0.05, 8), o.ax, h, o.az);
         break;
-      case 'menhir':
-        kit.add(stone, new THREE.BoxGeometry(r * 1.6, h, r * 1.2).translate(0, h / 2, 0), o.ax, 0, o.az, rnd() * 3, 1, 1, 1, 0.04).add(gold, box(r * 1.7, 0.08, r * 1.3), o.ax, h * 0.62, o.az, 0);
+      case 'menhir': {
+        // its gilt band turned and leaning with the stone (it was square to the world: its corners stood out of the stone's sides)
+        const my = rnd() * 3, by = h * 0.62;
+        kit.add(stone, new THREE.BoxGeometry(r * 1.6, h, r * 1.2).translate(0, h / 2, 0), o.ax, 0, o.az, my, 1, 1, 1, 0.04).add(gold, box(r * 1.7, 0.08, r * 1.3), o.ax + Math.sin(my) * Math.sin(0.04) * by, by * Math.cos(0.04), o.az + Math.cos(my) * Math.sin(0.04) * by, my, 1, 1, 1, 0.04);
         break;
+      }
       case 'twist':
         kit.add(bark, cyl(0.3, 0.55, h, 6), o.ax, 0, o.az, 0, 1, 1, 1, 0.12).add(bark, cyl(0.2, 0.3, h * 0.6, 5), o.ax + 0.3, h * 0.7, o.az, 1, 1, 1, 1, -0.9).add(leafC, ico, o.ax, h + 0.7, o.az, 0, 1.6, 1.2, 1.6);
         break;
@@ -465,14 +479,17 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
       case 'tent':
         kit.add(sail, new THREE.ConeGeometry(r * 1.25, h * 1.4, 7).translate(0, h * 0.7, 0), o.ax, 0, o.az, rnd() * 3).add(gold, cyl(0.05, 0.05, h * 1.9, 4), o.ax, 0, o.az);
         break;
-      case 'crate':
-        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, rnd() * 3).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, 0);
+      case 'crate': {
+        const cy = rnd() * 3; // its band turned with it (its corners stood out of the crate's sides)
+        kit.add(wood, box(r * 2, h, r * 2), o.ax, 0, o.az, cy).add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, cy);
         break;
+      }
       case 'hut': {
         // a burner's hut: timber walls, a steep thatch, a gilt ridge
         kit.add(wood, box(r * 2, h * 0.6, len + r * 2), mx, 0, mz, yaw);
         const roof = new THREE.ConeGeometry(1, 1, 4).rotateY(Math.PI / 4).scale(r * 1.75, h * 0.7, (len + r * 2) * 0.72).translate(0, h * 0.6 + h * 0.35, 0);
-        kit.add(thatch, roof, mx, 0, mz, yaw).add(gold, box(0.1, 0.1, len + r * 1.6), mx, h * 1.27, mz, yaw);
+        // a gilt cap on the roof's peak (a ridge along it stood out of the hipped roof, which has a peak and no ridge)
+        kit.add(thatch, roof, mx, 0, mz, yaw).add(gold, new THREE.ConeGeometry(0.16, 0.3, 4).rotateY(Math.PI / 4).translate(0, 0.15, 0), mx, h * 1.3 - 0.12, mz, yaw);
         break;
       }
       case 'mound':
@@ -506,6 +523,10 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
   });
 
   // The spring's pool, the lanterns of the places (towards the middle) and of the passes (on the bands' ends).
+  const trails: [number, number, number, number][] = [];
+  for (const pth of look.paths) for (let i = 1; i < pth.length; i++) trails.push([RING.x + pth[i - 1][0], RING.z + pth[i - 1][1], RING.x + pth[i][0], RING.z + pth[i][1]]);
+  const clearAt = (x: number, z: number) => trails.every(([ax, az, bx, bz]) => segDist(x, z, ax, az, bx, bz) > 2.3) && keep.every((k) => Math.hypot(k.x - x, k.z - z) > 1.6)
+    && look.pieces.every((pc) => segDist(x, z, pc.o.ax, pc.o.az, pc.o.bx, pc.o.bz) > pc.o.r + 0.4);
   for (const p of look.places) {
     if (p.kind === 'spring') {
       const pool = new THREE.Mesh(new THREE.CircleGeometry(3.6, 28).rotateX(-Math.PI / 2), water);
@@ -514,7 +535,11 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
       own.push(pool.geometry);
       kit.add(gold, new THREE.TorusGeometry(3.7, 0.06, 4, 32).rotateX(Math.PI / 2), p.x, 0.05, p.z);
     }
-    const a = Math.atan2(RING.x - p.x, RING.z - p.z), x = p.x + Math.sin(a) * (p.r - 1), z = p.z + Math.cos(a) * (p.r - 1);
+    // towards the middle, turned along the rim until it stands off the trails' middles, the spots and the cover (it stood on the trail in)
+    const a0 = Math.atan2(RING.x - p.x, RING.z - p.z), rr = p.r - 1;
+    let a = a0;
+    for (let k = 1; k <= 18 && !clearAt(p.x + Math.sin(a) * rr, p.z + Math.cos(a) * rr); k++) a = a0 + Math.ceil(k / 2) * 0.3 * (k % 2 ? 1 : -1);
+    const x = p.x + Math.sin(a) * rr, z = p.z + Math.cos(a) * rr;
     kit.add(bark, cyl(0.12, 0.16, 2.6, 6), x, 0, z).add(gold, cyl(0.2, 0.2, 0.1, 6), x, 2.6, z);
     glowSpots.push({ x, y: 2.85, z, size: 1.8 });
   }
@@ -528,9 +553,14 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
   {
     const { x, z } = look.elder, y = land.height(x - RING.x, z - RING.z);
     kit.add(bark, new THREE.CylinderGeometry(4.6, 7, 20, 10).translate(0, 10, 0), x, y - 1, z).add(leafA, ico, x, y + 22, z, 0, 13, 8, 13).add(leafC, ico, x + 6, y + 25, z + 2, 1, 8, 6, 8).add(leafA, ico, x - 7, y + 24, z + 1, 2, 7, 5, 7);
-    for (let k = 0; k < 8; k++) { const a = (k / 8) * Math.PI * 2; kit.add(bark, cyl(0.7, 1.6, 10), x + Math.cos(a) * 7.4, y - 0.5, z + Math.sin(a) * 7.4, 0, 1, 1, 1, Math.cos(a) > 0 ? -1 : 1); }
-    kit.add(sap, new THREE.SphereGeometry(1.8, 10, 8).translate(0, 4.5, 4.4), x, y, z);
-    glowSpots.push({ x, y: y + 4.5, z: z + 5, size: 10 });
+    // its roots stand on their own ground and lean in to the trunk (they leaned sideways, along the world's z, like fallen poles)
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2, rx = x + Math.cos(a) * 7.4, rz = z + Math.sin(a) * 7.4;
+      kit.add(bark, cyl(0.7, 1.6, 10), rx, land.height(rx - RING.x, rz - RING.z) - 0.5, rz, Math.atan2(-Math.cos(a), -Math.sin(a)), 1, 1, 1, 1);
+    }
+    // the glowing heart half out of the trunk's face towards the wood (it was inside the trunk: only its glow showed)
+    kit.add(sap, new THREE.SphereGeometry(1.8, 10, 8).translate(0, 4.5, 6.1), x, y, z);
+    glowSpots.push({ x, y: y + 4.5, z: z + 7, size: 10 });
   }
 
   // --- the wood past the outline: dense at the edge, then patchy up the hills; pines on the ridge ----------------------------------------
@@ -557,6 +587,8 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
   // The scenes (scenes/wood.ts): little stories told in props, their own random stream; they keep off the depth's props and the trees.
   g.userData.woodScenes = buildWoodScenes({ look, land, kit, own, keep, ground: { map, L }, taken: [...deep.solids.map((s) => ({ x: s.x, z: s.z, r: s.r })), ...forest.at.filter((t) => land.beyond(t.x - RING.x, t.z - RING.z) > -3)], brooks: deep.brooks.map((b) => b.pts) });
   g.userData.depthMarks = deep.solids; // for the probe (pipeline/tools/scenes-probe.js)
+  // a tree standing in the woodcutter's cottage or the watchtower is left out of the drawing
+  forest.drop((x, z) => deep.far.some((f) => Math.hypot(f.x - x, f.z - z) < f.r + 0.8));
   forest.build(TREE_GEOS, leaves, g);
   kit.build(g, own);
 

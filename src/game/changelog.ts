@@ -39,6 +39,18 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-14',
+    title: 'The Climb, set right',
+    live: false,
+    items: [
+      {
+        tag: 'Tower',
+        title: 'Props set right on the Sea and the Wood',
+        text: 'On floors 1 to 20 every prop was looked at one by one and the wrong ones fixed: lanterns hang from their arms, nets, fish and washing hang between their posts, sails sit on their masts, roofs on their walls, houses and boulders on the hillside no longer float, and no lantern or signpost stands in a road or on a waystone any more.',
+      },
+    ],
+  },
+  {
+    date: '2026-11-14',
     title: 'The Climb grows to fifty floors',
     live: true,
     items: [

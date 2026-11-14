@@ -315,11 +315,15 @@ export class Dress {
   }
 }
 
-/** A gabled house standing at (x, z) (world), facing `yaw`, on ground at height `y`. */
-function house(dress: Dress, x: number, y: number, z: number, yaw: number, w: number, d: number, h: number, roof: Key, rnd: () => number) {
+/**
+ * A gabled house standing at (x, z) (world), facing `yaw`, on ground at height `y`; `low` is the lowest ground under its plinth (on a
+ * slope the plinth reaches down to it, so no side of the house stands in the air).
+ */
+function house(dress: Dress, x: number, y: number, z: number, yaw: number, w: number, d: number, h: number, roof: Key, rnd: () => number, low = y) {
   const box = (bw: number, bh: number, bd: number) => new THREE.BoxGeometry(bw, bh, bd).translate(0, bh / 2, 0);
   const at = (lx: number, lz: number) => ({ x: x + Math.cos(yaw) * lx + Math.sin(yaw) * lz, z: z - Math.sin(yaw) * lx + Math.cos(yaw) * lz });
-  dress.add('stone', box(w + 0.3, 0.5, d + 0.3), x, y - 0.3, z, yaw); // a plinth that also hides a slope under it
+  const foot = Math.min(y - 0.3, low - 0.12);
+  dress.add('stone', box(w + 0.3, y + 0.2 - foot, d + 0.3), x, foot, z, yaw); // a plinth that also hides a slope under it
   dress.add('wall', box(w, h, d), x, y, z, yaw);
   // the gables: a prism the wall's colour, then two roof slabs over it
   const rh = w * 0.42, gable = new THREE.Shape([new THREE.Vector2(-w / 2, 0), new THREE.Vector2(w / 2, 0), new THREE.Vector2(0, rh)]);
@@ -410,13 +414,23 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
 
   // --- the town: houses along the land's side, past the outline -------------------------------------------------------------
   const roofs: Key[] = ['wine', 'slate', 'teal', 'wine', 'slate'];
+  /** The houses as drawn (world), for the dry-stone wall to stop short of them. */
+  const homes: { x: number; z: number; r: number }[] = [];
   const houses = Math.round(14 * (rmean / 48));
   for (let k = 0, made = 0; k < houses * 6 && made < houses; k++) {
     // the land's side: from the south-west round to the north-west (before the mirror), not the cliff, not the sea
     const a = dir(0.5 + (rnd() - 0.5) * 0.36), o = out(a, 3.5 + rnd() * 18);
     if (geo.sea(o.dx, o.dz) > 0.05 || geo.cliff(o.dx, o.dz) > 0.3 || geo.beach(o.dx, o.dz) > 0.3 || taken(o.dx, o.dz, 4)) continue;
     const w = 4.6 + rnd() * 1.2, d = w * (0.75 + rnd() * 0.2), h = 3.2 + rnd() * 1.8, y = geo.height(o.dx, o.dz), p = W(o.dx, o.dz);
-    house(dress, p.x, y, p.z, Math.atan2(-o.dx, -o.dz), w, d, h, roofs[made % roofs.length], rnd);
+    // the lowest ground under the plinth: its corners and the middles of its sides
+    const hy = Math.atan2(-o.dx, -o.dz), cy = Math.cos(hy), sy = Math.sin(hy);
+    let low = y;
+    for (const [lx, lz] of [[-1, -1], [1, -1], [-1, 1], [1, 1], [0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const ax = lx * (w + 0.3) / 2, az = lz * (d + 0.3) / 2;
+      low = Math.min(low, geo.height(o.dx + cy * ax + sy * az, o.dz - sy * ax + cy * az));
+    }
+    house(dress, p.x, y, p.z, hy, w, d, h, roofs[made % roofs.length], rnd, low);
+    homes.push({ x: p.x, z: p.z, r: Math.hypot(w, d) / 2 + 0.3 });
     free.push({ x: o.dx, z: o.dz, r: w * 0.85 });
     made++;
   }
@@ -434,6 +448,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
       // along the outline: its tangent from two samples of it
       const tx = Math.cos(a + 0.02) * r1 - Math.cos(a) * r0, tz = Math.sin(a + 0.02) * r1 - Math.sin(a) * r0;
       const yaw = Math.atan2(tx, tz) + Math.PI / 2 + (rnd() - 0.5) * 0.15;
+      if (homes.some((hm) => Math.hypot(hm.x - p.x, hm.z - p.z) < hm.r + 1.3)) continue; // not through a house
       dress.add('stone', new THREE.BoxGeometry(2.8, 0.7, 0.55).translate(0, 0.35, 0), p.x, y - 0.05, p.z, yaw);
       dress.add('capstone', new THREE.BoxGeometry(2.85, 0.12, 0.62).translate(0, 0.06, 0), p.x, y + 0.62, p.z, yaw);
     } else for (let j = 0; j < 2; j++) hedge.push({ x: o.dx + (rnd() - 0.5) * 1.2, z: o.dz + (rnd() - 0.5) * 1.2, s: 0.9 + rnd() * 0.6 });
@@ -446,7 +461,8 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     const a = dir(((j + 0.5) / jetties - 0.5) * 0.26), len = 13 + rnd() * 7, ux = Math.cos(a), uz = Math.sin(a), r0 = rimAt(spec.rim, a) + 1.5;
     for (let s = 0; s <= len; s += 2.6) for (const side of [-1.1, 1.1]) {
       const p = W(ux * (r0 + s) - uz * side, uz * (r0 + s) + ux * side);
-      dress.add('wood', new THREE.CylinderGeometry(0.16, 0.18, 2.6, 8).translate(0, 0.3, 0), p.x, WATER - 1, p.z);
+      // a pile from the sea bed up to the deck's underside (0.24 m)
+      dress.add('wood', new THREE.CylinderGeometry(0.16, 0.18, 1.94, 8).translate(0, 0.97, 0), p.x, WATER - 1.23, p.z);
     }
     const mid = W(ux * (r0 + len / 2), uz * (r0 + len / 2)), yaw = Math.atan2(ux, uz);
     dress.add('plank', new THREE.BoxGeometry(2.6, 0.22, len + 1), mid.x, 0.35, mid.z, yaw);
@@ -454,15 +470,19 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     for (let s = 0; s < len; s += 3.5) free.push({ x: ux * (r0 + s), z: uz * (r0 + s), r: 2 });
   }
   const boatsAt: { x: number; z: number; r: number }[] = []; // for the scenes to keep off (scenes/sea.ts)
+  const drawn: { x: number; z: number }[] = [];
   const boat = (a: number, b: number, yaw: number, mast: boolean, paint: Key) => {
     const o = out(a, b), p = W(o.dx, o.dz);
     boatsAt.push({ x: p.x, z: p.z, r: 4 });
+    // a boat that would lie in another (they are 7.2 m long) or across a jetty is not drawn; the scenes still keep off its water
+    if (drawn.some((q) => Math.hypot(q.x - p.x, q.z - p.z) < 7.6) || free.some((f) => f.r === 2 && Math.hypot(f.x - o.dx, f.z - o.dz) < 4.6)) return;
+    drawn.push(p);
     const hull = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).scale(1.3, 0.8, 3.6);
     dress.add(paint, hull, p.x, WATER + 0.5, p.z, yaw).add('wood', new THREE.BoxGeometry(2.3, 0.12, 6.2), p.x, WATER + 0.48, p.z, yaw);
     dress.add('gold', new THREE.TorusGeometry(1, 0.06, 6, 24).scale(1.3, 3.6, 1).rotateX(Math.PI / 2), p.x, WATER + 0.52, p.z, yaw);
     if (mast) {
       dress.add('wood', new THREE.CylinderGeometry(0.1, 0.13, 7, 8).translate(0, 3.5, 0), p.x, WATER + 0.5, p.z);
-      dress.add('sail', new THREE.PlaneGeometry(2.6, 4.4).translate(0, 3.9, 0.9), p.x, WATER + 0.5, p.z, yaw + 0.25);
+      dress.add('sail', new THREE.PlaneGeometry(2.6, 4.4).translate(1.4, 3.9, 0), p.x, WATER + 0.5, p.z, yaw + 0.25); // its edge on the mast
     }
   };
   const boats = Math.max(4, Math.round(4 * (rmean / 48)));
@@ -476,11 +496,18 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   }
   // Fallen rock at the cliff's foot: the floor's own rocks (faceted, dark), sat into the ground.
   const boulders = Math.round(26 * (rmean / 48));
+  const rocks: { x: number; z: number; r: number }[] = []; // the fallen rock as drawn: no tree grows through one
   for (let k = 0; k < boulders; k++) {
     const o = out(-Math.PI / 2 + (rnd() - 0.5) * 2.2, 1.3 + rnd() * 1.6);
     if (geo.sea(o.dx, o.dz) > 0.1 || geo.cliff(o.dx, o.dz) < 0.25) continue;
     const s = 0.5 + rnd() * 1.1, p = W(o.dx, o.dz);
-    dress.add('boulder', new THREE.IcosahedronGeometry(1, 0), p.x, geo.height(o.dx, o.dz) + s * 0.15, p.z, rnd() * 6, s * 1.3, s * 0.8, s * 1.1, (rnd() - 0.5) * 0.4);
+    // seated lower on steep ground so its low side comes down to the ground (at the cliff's foot, set by its middle, its low side hung
+    // in the air), by 0.4 of its size at most so it still shows; on gentle ground it sits as it did
+    const mid = geo.height(o.dx, o.dz);
+    let low = mid;
+    for (let k2 = 0; k2 < 6; k2++) low = Math.min(low, geo.height(o.dx + Math.cos(k2 * 1.05) * s * 1.1, o.dz + Math.sin(k2 * 1.05) * s * 1.1));
+    dress.add('boulder', new THREE.IcosahedronGeometry(1, 0), p.x, Math.max(mid - s * 0.25, Math.min(mid + s * 0.15, low + s * 0.4)), p.z, rnd() * 6, s * 1.3, s * 0.8, s * 1.1, (rnd() - 0.5) * 0.4);
+    rocks.push({ x: p.x, z: p.z, r: s * 1.3 });
   }
 
   // --- trees and bushes: instanced, the woods north and south and on the hills ----------------------------------------
@@ -542,8 +569,10 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
     tint(new THREE.IcosahedronGeometry(1.6, 1).translate(1.2, 3.4, 0.6), '#56703e')])!;
   const bushGeo = tint(new THREE.IcosahedronGeometry(1, 1).translate(0, 0.6, 0), '#40593a');
   const leaves = mat('#ffffff', 0.85, { vertexColors: true });
-  inst(pineGeo, leaves, conifer);
-  inst(broadGeo, leaves, broad);
+  // (a tree standing in a boulder is left out of the drawing only: the depth and the scenes keep off the same trees as before)
+  const clear = (mm: THREE.Matrix4) => !rocks.some((r) => Math.hypot(r.x - mm.elements[12], r.z - mm.elements[14]) < r.r + 0.6);
+  inst(pineGeo, leaves, conifer.filter(clear));
+  inst(broadGeo, leaves, broad.filter(clear));
   inst(bushGeo, leaves, bush);
 
   // The depth: roads, meadows, places dressed as what they are, the far sea (depth.ts).

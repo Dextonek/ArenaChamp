@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { scenesOff } from './off';
 import { RING, seeded } from '../../../arenas/common';
 import type { WoodLook } from '../gen/wood';
+import { slopeFrame, type PartProbe } from './sea';
 import { rimAt } from '../land';
 
 /**
@@ -614,9 +615,12 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
     }
     return out;
   };
+  /** A scene past the outline as one piece on its slope (scenes/sea.ts `slopeFrame`), while it is committed; null on the flat ground. */
+  let frame: { m: THREE.Matrix4; x: number; z: number } | null = null;
   const corners = (L: Laid) => {
     const p = L.p, bb = p.g.boundingBox!;
-    m4.compose(v.set(L.wx, L.ground + p.y * L.k, L.wz), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
+    if (frame) m4.compose(v.set(L.wx - frame.x, L.ground - L.floor + p.y * L.k, L.wz - frame.z), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k)).premultiply(frame.m);
+    else m4.compose(v.set(L.wx, L.ground + p.y * L.k, L.wz), q.setFromEuler(e.set(p.tilt, L.wyaw, 0, 'YXZ')), sc.set(p.s[0] * L.k, L.sy, p.s[2] * L.k));
     const pts: [number, number][] = [];
     let top = -1e9;
     for (let i = 0; i < 8; i++) {
@@ -685,6 +689,8 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
   /** Writes laid parts into the merged props (one geometry a colour) and records them. */
   const commit = (name: string, laid: Laid[], px: number, pz: number, beyond: boolean, echo: boolean) => {
     const pts: [number, number][] = [];
+    // past the outline, the scene as one piece on its slope (the checks above saw it as before: nothing else moves)
+    frame = beyond ? { m: slopeFrame(laid.map((L) => ({ wx: L.wx, wz: L.wz, ground: L.floor, standing: Math.abs(L.ground - L.floor + L.p.y * L.k) < 0.02 })), px, pz, heightOf), x: px, z: pz } : null;
     let top = 0, main = laid[0];
     const byKey = new Map<Col, { g: THREE.BufferGeometry; m: THREE.Matrix4 }[]>();
     for (const L of laid) {
@@ -692,10 +698,12 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
       let list = byKey.get(L.p.key);
       if (!list) byKey.set(L.p.key, (list = []));
       list.push({ g: L.p.g, m: m4.clone() });
+      (globalThis as { __propPart?: PartProbe }).__propPart?.(`scene:${name}`, L.p.key, L.p.g, m4); // the props probe (pipeline/tools/props-probe.js)
       pts.push(...cn.pts, [L.cx, L.cz]);
       top = Math.max(top, cn.top);
       if (L.area > main.area) main = L;
     }
+    frame = null;
     for (const [key, list] of byKey) { const g = bake(list); kit.add(M(key), g, 0, 0, 0); g.dispose(); }
     let r = 0;
     for (const [qx, qz] of pts) r = Math.max(r, Math.hypot(qx - px, qz - pz));

@@ -204,8 +204,9 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
     };
     const stand = (x: number, z: number) => { // a hunter's stand: four posts, a floor, a rail, a ladder; its back to the trees
       for (const [px, pz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) put(C.bark, cyl(0.07, 0.09, 3.1, 6), x + px, 0, z + pz);
-      put(C.plank, box(1.7, 0.1, 1.7), x, 2.2, z).put(C.plank, box(1.7, 0.08, 0.06), x, 2.85, z - 0.82).put(C.plank, box(0.06, 0.08, 1.7), x - 0.82, 2.85, z).put(C.plank, box(0.06, 0.08, 1.7), x + 0.82, 2.85, z);
-      kit.add(gold, box(1.74, 0.05, 0.08), x, 2.93, z - 0.82);
+      // the rails on the posts' outer faces (they hung 5 cm off them)
+      put(C.plank, box(1.7, 0.1, 1.7), x, 2.2, z).put(C.plank, box(1.7, 0.08, 0.06), x, 2.85, z - 0.76).put(C.plank, box(0.06, 0.08, 1.7), x - 0.76, 2.85, z).put(C.plank, box(0.06, 0.08, 1.7), x + 0.76, 2.85, z);
+      kit.add(gold, box(1.74, 0.05, 0.08), x, 2.93, z - 0.76);
       for (const s of [-0.22, 0.22]) put(C.barkLight, box(0.05, 2.5, 0.05), x + s, 0, z + 1.15, 0, 1, 1, 1, -0.28);
       for (let r = 0.4; r < 2.2; r += 0.4) put(C.barkLight, box(0.5, 0.04, 0.05), x, r, z + 1.15 - r * 0.29);
       solid(x, z, 1.2, 'stand');
@@ -299,8 +300,11 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
         case 'camp':
           ring(p, 1, r + 0.5, r + 4, (x, z, a) => woodpile(x, z, a + Math.PI / 2), 1);
           ring(p, 1, r + 0.5, r + 4, (x, z) => { // a cooking tripod with a pot
-            for (let i = 0; i < 3; i++) put(C.bark, cyl(0.04, 0.05, 1.9, 5), x + Math.cos(i * 2.1) * 0.5, 0, z + Math.sin(i * 2.1) * 0.5, -i * 2.1, 1, 1, 1, 0.26);
+            // each leg leans in towards the middle, so the three meet over the pot (they leaned sideways and never met), and the pot hangs
+            // from where they meet on a chain
+            for (let i = 0; i < 3; i++) put(C.bark, cyl(0.04, 0.05, 1.9, 5), x + Math.cos(i * 2.1) * 0.5, 0, z + Math.sin(i * 2.1) * 0.5, Math.atan2(-Math.cos(i * 2.1), -Math.sin(i * 2.1)), 1, 1, 1, 0.26);
             put(C.lacquer, T(new THREE.SphereGeometry(0.26, 10, 6)), x, 0.75, z).add(gold, T(new THREE.TorusGeometry(0.22, 0.02, 4, 12).rotateX(Math.PI / 2)), x, 0.95, z);
+            put(C.stoneDark, cyl(0.012, 0.012, 0.85, 4), x, 0.98, z);
             solid(x, z, 0.7, 'tripod');
           }, 1);
           ring(p, 3, r + 0.5, r + 5, (x, z, a) => { put(C.wine, box(0.75, 0.14, 1.9), x, 0, z, a).put(C.cream, cyl(0.16, 0.16, 0.75, 8).rotateZ(Math.PI / 2), x + Math.sin(a) * 0.8, 0.15, z + Math.cos(a) * 0.8, a + Math.PI / 2); solid(x, z, 0.9); }, 0.6);
@@ -361,8 +365,18 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
           break;
         case 'bramble':
           ring(p, 7, r, r + 4, (x, z) => { // berried shoots
-            for (let i = 0; i < 4; i++) put('#5a2f3e', T(new THREE.ConeGeometry(0.05, 0.9 + rnd() * 0.5, 4).translate(0, 0.45, 0)), x + (rnd() - 0.5) * 0.6, 0, z + (rnd() - 0.5) * 0.6, 0, 1, 1, 1, (rnd() - 0.5) * 0.9);
-            for (let i = 0; i < 4; i++) put(C.berry, T(new THREE.SphereGeometry(0.06, 5, 4)), x + (rnd() - 0.5) * 0.6, 0.4 + rnd() * 0.4, z + (rnd() - 0.5) * 0.6);
+            const shoots: { x: number; z: number; h: number; t: number }[] = [];
+            for (let i = 0; i < 4; i++) {
+              const h = 0.9 + rnd() * 0.5, sx = x + (rnd() - 0.5) * 0.6, sz = z + (rnd() - 0.5) * 0.6, t = (rnd() - 0.5) * 0.9;
+              put('#5a2f3e', T(new THREE.ConeGeometry(0.05, h, 4).translate(0, 0.45, 0)), sx, 0, sz, 0, 1, 1, 1, t);
+              shoots.push({ x: sx, z: sz, h, t });
+            }
+            // each berry on its shoot (they hung in the air beside them), as high up it as it was over the ground
+            for (let i = 0; i < 4; i++) {
+              rnd(); const up = 0.4 + rnd() * 0.4; rnd(); // the same draws as before, so the next things stay where they were
+              const sh = shoots[i], d = Math.min(up, 0.35 + sh.h / 2); // `d` along the shoot from its root (its tip is at 0.45 + h / 2)
+              put(C.berry, T(new THREE.SphereGeometry(0.06, 5, 4)), sh.x, d * Math.cos(sh.t), sh.z + d * Math.sin(sh.t));
+            }
             solid(x, z, 0.5);
           }, 0.5);
           break;
@@ -403,6 +417,8 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
 
     // --- the far wood: a woodcutter's cottage with smoke from its chimney, a watchtower on the ridge ------------------------------------
     const smokeFrom: { x: number; y: number; z: number; big: number }[] = [];
+    /** The cottage and the watchtower (no tree grows through them: woodZone.ts leaves such trees out). */
+    const far: { x: number; z: number; r: number }[] = [];
     for (const p of look.places) if (p.kind === 'burners') { const m = look.pieces.find((q, i) => look.kinds[i] === 'mound' && Math.hypot(q.o.ax - p.x, q.o.az - p.z) < p.r + 4); if (m) smokeFrom.push({ x: m.o.ax, y: m.o.height, z: m.o.az, big: 1 }); }
     {
       // the cottage: east or west (the side away from the mirror's elder is as good as any), 26 to 40 m past the outline, on the hills
@@ -410,7 +426,11 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
         const a = (look.mirror === 1 ? Math.PI : 0) + (rnd() - 0.5) * 0.9, b = 26 + rnd() * 14, rr = rimAt(look.rim, a) + b, dx = Math.cos(a) * rr, dz = Math.sin(a) * rr;
         if (dz > 10) continue;
         const x = RING.x + dx, z = RING.z + dz, y = land.height(dx, dz) - 0.2, yaw = Math.atan2(-dx, -dz);
-        put(C.stoneDark, box(5.6, 0.6, 4.4), x, y - 0.3, z, yaw).put('#b4ab94', box(5, 2.8, 3.8), x, y, z, yaw);
+        // its plinth reaches down to the lowest ground under it (on the hills one side stood in the air)
+        let low = y - 0.3;
+        for (const [lx, lz] of [[-2.8, -2.2], [2.8, -2.2], [-2.8, 2.2], [2.8, 2.2], [0, -2.2], [0, 2.2], [-2.8, 0], [2.8, 0]]) low = Math.min(low, land.height(dx + Math.cos(yaw) * lx + Math.sin(yaw) * lz, dz - Math.sin(yaw) * lx + Math.cos(yaw) * lz) - 0.12);
+        put(C.stoneDark, box(5.6, y + 0.3 - low, 4.4), x, low, z, yaw).put('#b4ab94', box(5, 2.8, 3.8), x, y, z, yaw);
+        far.push({ x, z, r: 3.6 });
         put(C.straw, T(new THREE.ConeGeometry(1, 1, 4).rotateY(Math.PI / 4).scale(4.4, 2.4, 3.6)), x, y + 2.8 + 1.2, z, yaw);
         const cx2 = x + Math.cos(yaw) * 1.6, cz2 = z - Math.sin(yaw) * 1.6;
         put(C.stone, box(0.7, 2.6, 0.7), cx2, y + 2.6, cz2, yaw);
@@ -424,6 +444,7 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
         const a = -Math.PI / 2 + (rnd() - 0.5) * 1.2, b = 30 + rnd() * 16, rr = rimAt(look.rim, a) + b, dx = Math.cos(a) * rr, dz = Math.sin(a) * rr;
         if (land.ridge(dx, dz) < 0.6 || Math.hypot(RING.x + dx - look.elder.x, RING.z + dz - look.elder.z) < 40) continue;
         const x = RING.x + dx, z = RING.z + dz, y = land.height(dx, dz) - 0.5;
+        far.push({ x, z, r: 2.2 });
         put(C.stone, cyl(1.6, 2.0, 10, 10), x, y, z).put(C.stoneDark, cyl(2.1, 1.7, 1.2, 10), x, y + 10, z).put(C.wine, T(new THREE.ConeGeometry(2.2, 2.6, 10).translate(0, 1.3, 0)), x, y + 11.2, z);
         kit.add(gold, cyl(2.15, 2.15, 0.14, 10), x, y + 11.1, z);
         glows.push({ x, y: y + 10.6, z: z + 1.9, size: 3 });
@@ -681,7 +702,7 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
     };
     update(0);
     for (const g of temp) g.dispose();
-    return { update, solids, brooks: brooks.map((b) => ({ ...b.cross, bridge: b.bridge, pts: b.pts })) };
+    return { update, solids, far, brooks: brooks.map((b) => ({ ...b.cross, bridge: b.bridge, pts: b.pts })) };
   };
 
   return { paint, build };
