@@ -28,6 +28,8 @@ export interface DepthIn {
   rnd: () => number;
   /** The zone's cover in world coordinates. */
   cover: Seg[];
+  /** The land's painted middle (a canvas `L` m across), where the scenes paint their trodden ground (scenes/sea.ts). */
+  ground?: { map: THREE.Texture; L: number };
   /** The land's houses and jetties (offsets from the middle) and boats (world), for the scenes to keep off. */
   taken?: { x: number; z: number; r: number; tree?: boolean }[];
 }
@@ -280,7 +282,7 @@ export function buildDepth(o: DepthIn) {
   fly(0);
 
   // --- scenes: little stories told in props (scenes/sea.ts), their own random stream ---------------------------------------------------
-  const scenes = buildSeaScenes({ spec, geo, dress: o.dress, cover: spec.sceneCover ?? o.cover, marks, taken: o.taken ?? [] });
+  const scenes = buildSeaScenes({ spec, geo, dress: o.dress, cover: spec.sceneCover ?? o.cover, marks, taken: o.taken ?? [], ground: o.ground });
   o.into.userData.seaScenes = scenes;
   o.into.userData.depthMarks = marks; // for the probe (pipeline/tools/scenes-probe.js)
 

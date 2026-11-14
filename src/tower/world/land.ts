@@ -260,6 +260,10 @@ const PALETTE = {
   wall: '#b4ab94', stone: '#4e4c4c', capstone: '#64605a', boulder: '#383c46', wood: '#4a3220', plank: '#6b4226', lacquer: '#1d1b21',
   wine: '#5e1a28', slate: '#3a3f4c', teal: '#2b5560', cream: '#d8cfb4', rock: '#615d5a', sail: '#d8cfb4', gold: '#c9a24a',
   rope: '#b89a5a', salt: '#e2dccc', leaf: '#4a6638', cloth: '#b9b2a0',
+  /** Iron drawn matte (the scenes' anchors, chains, a spade): a shade lighter than the heroes' iron, to read on grass. */
+  iron: '#4d525e',
+  /** Sailcloth for the scenes' big flat cloths (a tent down, a sail torn off, a catch laid out): duller than cream so it never glares. */
+  canvas: '#a39a82',
   /** Gold drawn matte, in the merged dressing (the scenes' trims: no cells of the polished gold of their own). */
   brass: '#b8923e',
 } as const;
@@ -542,7 +546,7 @@ export function buildLand(spec: LandSpec, kit: Kit, into: THREE.Group, own: { di
   inst(bushGeo, leaves, bush);
 
   // The depth: roads, meadows, places dressed as what they are, the far sea (depth.ts).
-  const depth = buildDepth({ spec, geo, dress, into, own, rnd, cover: spec.cover ?? [], taken: [...free.map((f) => ({ x: RING.x + f.x, z: RING.z + f.z, r: f.r })), ...boatsAt,
+  const depth = buildDepth({ spec, geo, dress, into, own, rnd, ground: { map, L }, cover: spec.cover ?? [], taken: [...free.map((f) => ({ x: RING.x + f.x, z: RING.z + f.z, r: f.r })), ...boatsAt,
     ...[...conifer, ...broad].map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 2.6, tree: true })), ...(spec.sceneTaken ?? []), ...bush.map((mm) => ({ x: mm.elements[12], z: mm.elements[14], r: 0.7 }))] });
   dress.build(into, own);
 
