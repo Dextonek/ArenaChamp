@@ -74,6 +74,9 @@
       { name: 'made: mirrored walls', list: mirrored, bounds: ring, variants: [mirrored.slice(0, 12)] },
       { name: 'made: a room parted by its own walls', list: room, bounds: ring, variants: [] },
       { name: 'made: a room sealed in two', list: sealed, bounds: ring, variants: [] },
+      // Cover with numbers that are not numbers: a piece at NaN, a wall without end (every question asks them, `CoverIndex.always`).
+      { name: 'made: lattice with a piece at NaN', list: [...lattice.slice(0, 14), P(NaN, 3)], bounds: ring, variants: [] },
+      { name: 'made: lattice with a wall without end', list: [...lattice.slice(0, 14), Wl(-6, 30, Infinity, 30)], bounds: ring, variants: [] },
       { name: 'made: 240 pieces on a spiral', list: big, bounds: { x: 0, z: 7, r: 95 }, variants: [big.filter((_, k) => k % 9)] },
     ];
   }
@@ -173,7 +176,10 @@
     })();
     const anywhere = () => { const a = rand() * Math.PI * 2, d = Math.sqrt(rand()) * b.r * 1.05; return new V(b.x + Math.sin(a) * d, 0, b.z + Math.cos(a) * d); };
     // Spots that matter: on cover's edge, at touching distance, inside it.
-    const nearCover = (list) => {
+    // (Walkers stand only near cover with numbers: at infinity, the old navigator's own search for a free spot never ends.)
+    const nearCover = (all) => {
+      const list = all.filter((q) => Number.isFinite(q.ax + q.az + q.bx + q.bz + q.r));
+      if (!list.length) return anywhere();
       const q = list[Math.floor(rand() * list.length)];
       const t = rand(), cx = q.ax + (q.bx - q.ax) * t, cz = q.az + (q.bz - q.az) * t, a = rand() * Math.PI * 2;
       const pick = rand(), d = pick < 0.25 ? q.r + 0.47 : pick < 0.5 ? q.r + 0.5 : pick < 0.6 ? q.r * rand() : q.r + 0.5 + rand() * 2;
@@ -213,6 +219,7 @@
         const pb = r < 0.2 && nodes.length ? nodes[Math.floor(rand() * nodes.length)]
           : r2 < 0.05 ? pa : r2 < 0.1 ? new V(pa.x, 0, pa.z + (rand() - 0.5) * 40) : r2 < 0.15 ? new V(pa.x + (rand() - 0.5) * 40, 0, pa.z)
           : r2 < 0.18 ? new V(pa.x + (rand() < 0.5 ? -1 : 1) * (300 + rand() * 300), 0, pa.z + (rand() - 0.5) * 600) : r2 < 0.25 ? round()
+          : r2 < 0.27 ? new V(rand() < 0.5 ? NaN : pa.x, 0, rand() < 0.5 ? Infinity : -Infinity)
           : r2 < 0.45 ? new V(pa.x + (rand() - 0.5) * 6, 0, pa.z + (rand() - 0.5) * 6) : spot();
         // Like with like: on the list each navigator holds (the new one through its index), and on the list given (the public `clear`,
         // as the arena asks it). The two lists differ when the cover changed since the last step.
@@ -224,6 +231,8 @@
     const comparePlans = (k) => {
       for (let n = 0; n < k; n++) {
         const from = spot(), goal = spot();
+        // Now and then a goal that is not a number, or infinitely far.
+        if (rand() < 0.03) goal.set(rand() < 0.5 ? NaN : goal.x, 0, rand() < 0.5 ? Infinity : goal.z);
         const pa = oldNav.plan(from, goal), pb = newNav.plan(from, goal);
         out.plans++;
         if (!samePath(pa, pb)) diff(`plan (${from.x}, ${from.z}) -> (${goal.x}, ${goal.z}): ${pa.length} vs ${pb.length} points`);

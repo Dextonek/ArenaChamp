@@ -75,6 +75,7 @@ const FILL_ASKS = 128; // walks a frame, at most, asked of the cover itself to f
 const FILL_POINTS = 4; // and points begun a frame (each costs a shadow)
 const FILL_EVERY = 8; // ms of the clock between two such slices: one a frame
 const SHADE_BINS = 1024; // the directions round a point a shadow (`shade`) tells apart
+const SHADE_PARTS = 4096; // a piece of cover longer than this many discs casts no shadow
 const SHADE_FAR = 120; // cover farther than this from the point casts no shadow (its shadow is narrow, and the plain check is cheap)
 
 /**
@@ -376,6 +377,8 @@ export class Navigator {
       const rho = reach - SLACK;
       if (!(rho > 0) || (!node && !(pointDist(x, z, o) >= reach))) continue;
       const sx = o.bx - o.ax, sz = o.bz - o.az, len = Math.sqrt(sx * sx + sz * sz), parts = len > 0 ? Math.ceil(len / rho) : 0;
+      // A piece without end, or not a number, or absurdly long: no shadow (a shadow is only a short cut; without one, the walk is asked).
+      if (!Number.isFinite(o.ax + o.az + o.bx + o.bz) || !(parts <= SHADE_PARTS)) continue;
       const r = rho - 1e-6;
       for (let p = 0; p <= parts; p++) {
         const t = parts ? p / parts : 0, dx = o.ax + sx * t - x, dz = o.az + sz * t - z, d2 = dx * dx + dz * dz;
