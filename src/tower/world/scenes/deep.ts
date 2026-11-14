@@ -111,7 +111,8 @@ function makeKits() {
     pickLeaning: K(pickParts().map(([g, c]) => [g.rotateX(-1.1).translate(0, 0.0, 0), c] as Part)),
     // --- a cart off its rails, on its side against the rock (its open top to the rock, -z), and its ore
     cartSide: K([
-      [box(1.5, 1.0, 0.08, 0, 0.5, 0.36), C.iron], [box(1.5, 0.08, 0.72, 0, 0.04), C.iron], [box(1.5, 0.08, 0.72, 0, 0.96), C.iron], [box(0.08, 1.0, 0.72, 0.75, 0.5), C.iron], [box(0.08, 1.0, 0.72, -0.75, 0.5), C.iron],
+      [box(1.5, 1.0, 0.08, 0, 0.5, 0.36), C.rail], [box(1.5, 0.08, 0.72, 0, 0.04), C.rail], [box(1.5, 0.08, 0.72, 0, 0.96), C.rail], [box(0.08, 1.0, 0.72, 0.75, 0.5), C.rail], [box(0.08, 1.0, 0.72, -0.75, 0.5), C.rail],
+      [box(1.52, 0.12, 0.1, 0, 0.3, 0.38), C.plank], [box(1.52, 0.12, 0.1, 0, 0.7, 0.38), C.plank],
       [box(1.58, 0.06, 0.06, 0, 1.0, -0.36), GOLD],
       ...[0.55, -0.55].flatMap((x) => [[cyl(0.26, 0.26, 0.09, 12).rotateX(Math.PI / 2).translate(x, 0.07, 0.5), C.darkWood], [cyl(0.26, 0.26, 0.09, 12).rotateX(Math.PI / 2).translate(x, 0.93, 0.5), C.darkWood]] as Part[]),
     ]),
