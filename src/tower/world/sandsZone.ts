@@ -4,6 +4,7 @@ import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
 import { rimAt } from './land';
+import { sandsDepth } from './sandsDepth';
 import { Kit, type Piece } from './zone';
 
 /**
@@ -121,7 +122,7 @@ function desert(rim: number[], dunes: 1 | -1 | 0, seed: number) {
 type Desert = ReturnType<typeof desert>;
 
 /** The painted middle: the ground's colour, the wind's ripples, the roads' flagstones and the courts. `L` metres across. */
-function paint(look: SandsLook, geo: Desert, L: number) {
+function paint(look: SandsLook, geo: Desert, L: number, extra?: (g: CanvasRenderingContext2D, X: (dx: number) => number, Z: (dz: number) => number, ppm: number) => void) {
   const size = L > 140 ? 4096 : 2048;
   return canvasTexture(size, (g) => {
     const ppm = size / L, c = size / 2, rnd = seeded(77 + look.seed);
@@ -175,15 +176,17 @@ function paint(look: SandsLook, geo: Desert, L: number) {
         g.restore();
       }
     }
+    // the depth's own (sandsDepth.ts): drifts in the rocks' lee, pebbles, the oasis pools, the dig's grid
+    extra?.(g, X, Z, ppm);
     // The courts: square flags, a ring of turquoise tiles and two thin brass rings round the rim; the camp is packed earth.
     for (const p of look.places) {
       const dx = p.x - RING.x, dz = p.z - RING.z, cx = X(dx), cz = Z(dz), r = p.r;
       if (p.kind === 'camp') {
-        // trodden earth round the fire, soft-edged and light
-        const rr = r * 0.75, grad = g.createRadialGradient(cx, cz, 0, cx, cz, (rr + 2) * ppm);
-        grad.addColorStop(0, 'rgba(150,114,82,0.7)'); grad.addColorStop(rr / (rr + 2), 'rgba(150,114,82,0.45)'); grad.addColorStop(1, 'rgba(150,114,82,0)');
+        // trodden earth round the fire, soft-edged and light (2026-11-14: smaller and a shade nearer the sand; it read as a dark disc)
+        const rr = r * 0.45, grad = g.createRadialGradient(cx, cz, 0, cx, cz, (rr + 2.5) * ppm);
+        grad.addColorStop(0, 'rgba(160,124,90,0.55)'); grad.addColorStop(rr / (rr + 2.5), 'rgba(160,124,90,0.3)'); grad.addColorStop(1, 'rgba(160,124,90,0)');
         g.fillStyle = grad;
-        g.beginPath(); g.arc(cx, cz, (rr + 2) * ppm, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.arc(cx, cz, (rr + 2.5) * ppm, 0, Math.PI * 2); g.fill();
         continue;
       }
       g.save(); g.beginPath(); g.arc(cx, cz, r * ppm, 0, Math.PI * 2); g.clip();
@@ -222,7 +225,7 @@ const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).
 const cyl = (r0: number, r1: number, h: number, n = 10) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
 
 /** Builds a Sands zone's meshes. */
-export function buildSandsZone(look: SandsLook): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
+export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[] = []): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
   const g = new THREE.Group();
   const own: { dispose(): void }[] = [];
   const M = materials(own);
@@ -250,7 +253,9 @@ export function buildSandsZone(look: SandsLook): { group: THREE.Group; update(dt
     uv.setXY(i, dx / L + 0.5, dz / L + 0.5);
   }
   plane.setAttribute('color', new THREE.BufferAttribute(colors, 4));
-  const map = paint(look, geo, L);
+  // The depth (sandsDepth.ts): looks only; it paints into the ground and adds its props below.
+  const depth = sandsDepth(look, geo, keep);
+  const map = paint(look, geo, L, depth.paint);
   map.wrapS = map.wrapT = THREE.ClampToEdgeWrapping;
   map.flipY = false;
   map.anisotropy = 4;
@@ -437,6 +442,8 @@ export function buildSandsZone(look: SandsLook): { group: THREE.Group; update(dt
     for (let t = 0; t < tiers; t++) far.add(rocks[(k + t) % 3], new THREE.CylinderGeometry(r * (1 - t * 0.22) * 0.9, r * (1 - t * 0.22), h / tiers, 9).translate(0, h / tiers / 2, 0), p.x, y + (t * h) / tiers, p.z, rnd() * 3);
     far.add(M.sandstone, new THREE.CylinderGeometry(r * (1 - tiers * 0.22) * 0.95, r * (1 - tiers * 0.22) * 0.95, 0.6, 9), p.x, y + h, p.z);
   }
+  const deep = depth.build({ kit, gold: M.gold, into: g, own });
+  g.userData.depth = { solids: deep.solids, pools: deep.pools, far: deep.far, places: look.places }; // for the checks and the pictures (pipeline/tools)
   kit.build(g, own);
   const farGroup = new THREE.Group();
   far.build(farGroup, own);
@@ -470,7 +477,7 @@ export function buildSandsZone(look: SandsLook): { group: THREE.Group; update(dt
 
   return {
     group: g,
-    update(_dt, time) { glows.update(time); },
+    update(_dt, time) { glows.update(time); deep.update(time); },
     dispose() {
       g.removeFromParent();
       for (const o of own) o.dispose();
@@ -478,8 +485,8 @@ export function buildSandsZone(look: SandsLook): { group: THREE.Group; update(dt
   };
 }
 
-/** A Sands floor as an arena: its own layout and outline, the desert's stage. */
-export function sandsArena(id: string, name: string, look: SandsLook): ArenaDef {
+/** A Sands floor as an arena: its own layout and outline, the desert's stage. `keep`: the floor's spots (keep.ts `floorKeep`), which the depth's props keep clear of. */
+export function sandsArena(id: string, name: string, look: SandsLook, keep: { x: number; z: number }[] = []): ArenaDef {
   // The ring is the circle round the whole outline: the walk's box and the checks' grid; the outline's own walls keep a walk inside it.
-  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSandsZone(look) };
+  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSandsZone(look, keep) };
 }

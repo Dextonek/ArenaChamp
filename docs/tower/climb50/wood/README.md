@@ -6,6 +6,9 @@ floors grow too). Not live; on the branch only.
 - `fNN-game.jpg`: floor NN in the game's own camera, the hero walking up to the first pack's glade.
 - `fNN-low.jpg`: floor NN from the camp's edge, a low view north to the horizon (the heart's glade, the Elder tree in the haze).
 - `maps.jpg`: all ten from above (north up, the camp at the bottom, the lair's wall of roots and the Elder tree at the top).
+- `depth/`: the depth pass (2026-11-14; `src/tower/world/woodDepth.ts`): the trails, glades, places and far wood dressed, before and after
+  side by side (`depth/fNN-sheet.jpg`); what is in it and its checks in `depth/README.md`. The `fNN-game.jpg` / `fNN-low.jpg` above are
+  from before it.
 
 ## What the Wood is at this size
 

@@ -9,6 +9,9 @@ in the north, dunes rolling away on the other side (east or west by floor), low 
 
 ## Pictures
 
+- `depth/`: the depth pass (2026-11-14; `src/tower/world/sandsDepth.ts`): roads, open sand, places and the far canyon dressed, before
+  and after side by side (`depth/fNN-sheet.jpg`); what is in it and its checks in `depth/README.md`. The pictures below are from before it.
+
 For every floor: `fNN-camp.jpg` (the game's camera at the camp), `fNN-place.jpg` (the game's camera at a place: the tombs on the made
 floors, the old fort with its raiders on floor 21), `fNN-low.jpg` (a low view north towards the horizon). `f26-storm-front.jpg` and `f26-storm-inside.jpg`: the storm at the new size (the
 page's own sand layer, which hides all but a circle round the hero, is not in the second). Also `f21-map.jpg`,

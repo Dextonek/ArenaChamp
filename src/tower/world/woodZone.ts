@@ -5,6 +5,7 @@ import { Glows } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
 import type { WoodKind, WoodLook } from './gen/wood';
 import { rimAt } from './land';
+import { woodDepth } from './woodDepth';
 
 /**
  * A Wood floor at the new size (the Climb's chapter 2, floors 11 to 20; pipeline/designs/tower-50.md), drawn from its baked look
@@ -87,7 +88,7 @@ function landOf(rim: number[], seed: number) {
 type Land = ReturnType<typeof landOf>;
 
 /** The painted middle (`L` m across): the forest floor, the shade under the bands, the trails, the places' ground. */
-function paint(look: WoodLook, land: Land, L: number) {
+function paint(look: WoodLook, land: Land, L: number, extra?: (g: CanvasRenderingContext2D, X: (dx: number) => number, Z: (dz: number) => number, ppm: number) => void) {
   const size = L > 140 ? 4096 : 2048;
   return canvasTexture(size, (g) => {
     const ppm = size / L, c = size / 2, rnd = seeded(77 + look.seed);
@@ -144,6 +145,8 @@ function paint(look: WoodLook, land: Land, L: number) {
         }
       }
     }
+    // the depth's own (woodDepth.ts): fallen leaves, flower specks, the brooks
+    extra?.(g, X, Z, ppm);
     // each place's ground
     const disc = (dx: number, dz: number, r: number, inner: string, edge = 1.5) => {
       const gr = g.createRadialGradient(X(dx), Z(dz), 0, X(dx), Z(dz), (r + edge) * ppm);
@@ -298,7 +301,7 @@ function seeThrough(m: THREE.MeshStandardMaterial) {
 }
 
 /** Builds a wood zone's meshes from its look. */
-export function buildWoodZone(look: WoodLook): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
+export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] = []): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
   const g = new THREE.Group();
   const own: { dispose(): void }[] = [];
   const rnd = seeded(4400 + look.seed);
@@ -327,7 +330,9 @@ export function buildWoodZone(look: WoodLook): { group: THREE.Group; update(dt: 
     uv.setXY(i, dx / L + 0.5, dz / L + 0.5);
   }
   plane.setAttribute('color', new THREE.BufferAttribute(colors, 4));
-  const map = paint(look, land, L);
+  // The depth (woodDepth.ts): looks only; it paints into the ground and adds its props below, before they are merged.
+  const depth = woodDepth(look, land, keep);
+  const map = paint(look, land, L, depth.paint);
   map.wrapS = map.wrapT = THREE.ClampToEdgeWrapping;
   map.flipY = false;
   map.anisotropy = 4;
@@ -542,6 +547,8 @@ export function buildWoodZone(look: WoodLook): { group: THREE.Group; update(dt: 
     forest.add(kind, p.x, h - 0.2, p.z, sc, sc, rnd() * 6.28, near(p.x, p.z));
     made++;
   }
+  const deep = depth.build({ kit, into: g, own, gold, glows: glowSpots });
+  g.userData.depth = { solids: deep.solids, brooks: deep.brooks, places: look.places }; // for the checks and the pictures (pipeline/tools)
   forest.build(TREE_GEOS, leaves, g);
   kit.build(g, own);
 
@@ -574,6 +581,7 @@ export function buildWoodZone(look: WoodLook): { group: THREE.Group; update(dt: 
     group: g,
     update(_dt, time) {
       glows.update(time);
+      deep.update(time);
       for (let i = 0; i < FLIES; i++) {
         const s = ph[i * 3 + 2];
         fpos[i * 3] = base[i * 3] + Math.sin(time * s + ph[i * 3]) * 1.6;
@@ -591,7 +599,11 @@ export function buildWoodZone(look: WoodLook): { group: THREE.Group; update(dt: 
   };
 }
 
-/** A Wood floor as an arena: its own layout, the wood's stage. The ring is the circle round the whole outline (the walk's box, the checks' grid). */
-export function woodGenArena(id: string, name: string, look: WoodLook): ArenaDef {
-  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildWoodZone(look) };
+/**
+ * A Wood floor as an arena: its own layout, the wood's stage. The ring is the circle round the whole outline (the walk's box, the checks' grid).
+ * `keep`: the floor's spots (keep.ts `floorKeep`), which the depth's props keep clear of.
+ */
+export function woodGenArena(id: string, name: string, look: WoodLook, keep: { x: number; z: number }[] = []): ArenaDef {
+  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildWoodZone(look, keep) };
 }
+
