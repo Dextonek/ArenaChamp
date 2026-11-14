@@ -166,3 +166,10 @@ today's area, not a circle.
   gave up and healed (packs.ts; it now stands still while it fights).
 - **The War (41 to 50)** is now with an agent, its brief including a depth pass of its own. The Wood and the Deep are still being
   made. The Sands get their depth pass when an agent slot frees.
+- **The Wood (floors 11 to 20), merged (2026-11-14):** glades parted by bands of trees, each band with a pass that walls of
+  roots close by turns (gen/wood.ts, woodZone.ts). Floor 11 is grown and keeps its ids (`pipeline/tools/gen-wood11.ts`), and floor 20
+  is the crown, Ash and Ember. The route bot cleared all ten floors with Lyra and Bram (30 of 30, roots both free and held still), and
+  the four save runs pass on the merged branch. Notes and pictures are in docs/tower/climb50/wood/. **To look at later:** after the
+  roots change, the first long walk ordered costs the navigator 46 to 464 ms on the desktop, and the phone profile's slowest frames are
+  worse than floor 1's.
+- **Depth for the Wood and the Sands** has gone to an agent (woodDepth.ts, sandsDepth.ts). The Deep and the War are still being made.
