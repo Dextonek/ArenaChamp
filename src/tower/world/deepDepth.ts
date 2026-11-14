@@ -22,8 +22,9 @@ import { rimAt } from './land';
  * - The dark law is the look: about a dozen new glows a floor (lamps on the tracks and at the rest, the jetty's lamp, a few fungi, the far
  *   cavern), so the crystals, the lamps and the waystones stay what a player steers by.
  *
- * Speed: every prop shape is built once; each placement is copied straight into one merged mesh per material and per quarter of the floor,
- * near or far (the camera sees one or two quarters), and none of it casts a shadow: a handful of draw calls in view. Nothing is allocated
+ * Speed: every prop shape is built once; each placement is copied straight into one merged mesh, all on one material (the unlit parts and
+ * the gold's warmth ride on each vertex), per quarter of the floor, near or far (the camera sees one or two quarters). None of it casts a
+ * shadow: a handful of draw calls in view. The trade: the gold is matte with a faint warmth, not polished metal. Nothing is allocated
  * per frame. (Meshes per 24 or 40 m square, or folded into the zone's own dressing squares, cost the phone profile 2 to 2.6 ms a frame on
  * floor 31: the scree reaches every square, and each square drew twice, for the picture and the shadows, some 25 draw calls more.)
  */
@@ -49,7 +50,7 @@ const COL = {
   rock: '#3a3a4c', rockLight: '#4c4a60', rockDark: '#2c2c3a', pale: '#b8b2cc', paleDark: '#8e88a6', wood: '#4a3626', plank: '#5a3c26',
   darkWood: '#2a1f1a', cloth: '#4a3a6a', cream: '#a89e86', sack: '#6e604a', rope: '#9a8250', iron: '#2a2c34', rail: '#55586a', gold: '#c9a24a',
   ore: '#262632', reed: '#77748a', capPale: '#5e5872', scree: '#625e78', glass: '#ffcf80', ember: '#ff9a40', violet: '#7a52c8', fungus: '#5fc8d0', black: '#020205',
-  stalactite: '#262634', puddle: '#20263a', foam: '#8a96b4', net: '#6e5c3a',
+  stalactite: '#262634', puddle: '#323a54', foam: '#8a96b4', net: '#6e5c3a',
 } as const;
 type Hex = (typeof COL)[keyof typeof COL];
 
@@ -79,10 +80,10 @@ function proto(parts: [THREE.BufferGeometry, Hex][]): Proto {
 
 /**
  * How a placement is lit. All go into one material: `low` and `tall` matte, `metal` the gold (its faint warmth), `glow` unlit (lamp glass,
- * fungi, crystal chips: reads as lit, adds no light), `wet` the puddles. The difference rides on each vertex (`glow`, 0 to 1).
+ * fungi, crystal chips: reads as lit, adds no light), `wet` the puddles (a faint sheen of their own). The difference rides on each vertex (`glow`, 0 to 1).
  */
 type Bucket = 'low' | 'tall' | 'metal' | 'glow' | 'wet';
-const GLOW: Record<Bucket, number> = { low: 0, tall: 0, metal: 0.2, glow: 1, wet: 0 };
+const GLOW: Record<Bucket, number> = { low: 0, tall: 0, metal: 0.2, glow: 1, wet: 0.3 };
 
 /** Placements merged into one mesh per quarter of the floor, near or far, copied in one pass at the end. */
 class Batch {

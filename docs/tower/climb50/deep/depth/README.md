@@ -43,7 +43,7 @@ law's layer is on. The rest use a free camera, with no HUD and no dark.
 | `water` | Towards the black lake: the waterfall and the far shore |
 | `far` | A low view from the camp to the north |
 
-The pictures were taken with `pipeline/tools/world-shots.py` on `/game`; the script lives in the agent's scratchpad.
+The pictures were taken with `pipeline/tools/world-shots.py` on `/game`, with the camera placed by a short script.
 
 ## The checks
 
@@ -63,9 +63,13 @@ The pictures were taken with `pipeline/tools/world-shots.py` on `/game`; the scr
   | Phone-4x, longest frame (zone build), floor 31 | 942 / 919 ms | 977 / 974 ms |
   | Phone-4x, longest frame (zone build), floor 35 | 3384 / 3466 ms | 3484 / 3513 ms |
 
-  This is 6 or 7 more draw calls. The depth's own build takes 20 to 35 ms on desktop. The longest frame is within the run-to-run spread,
-  though it leans about 50 ms higher on the phone.
+  This is 6 or 7 more draw calls. The depth's own build takes 20 to 35 ms on desktop. On the phone, every pair's longest frame was 35 to
+  100 ms higher after. That is still inside the baseline's own spread over the session (919 to 1005 ms on floor 31, 3384 to 3580 ms on
+  floor 35).
+- **No bats or stalactites block the view:** in the game camera at the rock fall's door (zoom 1.25 and 1.7) and at the landing's outer
+  edge, on desktop and on an upright phone (390 x 844), nothing of the depth comes between the camera and the hero.
 - **What it took:** the first two versions failed this bar by 2 to 2.6 ms a frame on the phone on floor 31, with about 25 more draw
   calls. The scree reaches every square of ground, and each square drew twice, once for the picture and once for the shadows. Now every
   prop shape is built once. Each placement is copied into one mesh per quarter of the floor, near or far, all on one material. The
-  unlit parts and the gold's warmth ride on each vertex, and none of it casts a shadow.
+  unlit parts and the gold's warmth ride on each vertex, and none of it casts a shadow. Two trades were made for that speed: the depth's
+  gold is matte with a faint warmth rather than polished metal (STYLE.md rule 4), and its props cast no shadows.
