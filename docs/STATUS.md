@@ -26,6 +26,11 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
   each hero's open row on the Heroes screen shows faction, home, age, line, legend and ties; the Play card shows faction and home;
   the loading screen names the tie when two linked heroes meet. Source `docs/lore/LORE.md` (every roster hero now has `- home:` and
   `- age:`), game data by `python pipeline/tools/lore-game.py` -> `src/game/lore.ts` (loaded on first need).
+- **Next agent when a place frees: the deep lore** (the user, 2026-11-14: "revamps of some heroes, they seem all the same, like human;
+  make the lore 10x deeper; match heroes to lore; from now on match all heroes to our lore"). The peoples of the Dial (not only
+  humans), about ten times the lore in a codex (`docs/lore/codex/`), a Codex screen in the game, each hero's people, and a revamp
+  plan (no / touch / revamp for all 40, the twenty new heroes' looks from their people) for the user's yes. The rule is in CLAUDE.md
+  and `docs/pipeline/new-hero.md` (rule 0). The twenty new heroes' looks wait for the peoples.
 - **Queued for the next Blender turn (after the rulers and enemies): the faction look check.** The user: "if we need to remake some
   heroes to match their region, do it". First line-ups of each faction's members side by side, and a proposal of what to change
   (a faction colour or sigil on a hero, or a remake) for the user's yes; then the changes.
