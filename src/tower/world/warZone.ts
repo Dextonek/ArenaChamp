@@ -364,7 +364,7 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
   // bank each stake stands on its own ground (`at`: the ground's height there; the bank's slope lifted the outer ones off it).
   const stakes = (x: number, z: number, h: number, yaw: number, y = 0, at?: (x: number, z: number) => number) => {
     const lean = 0.38, fx = Math.sin(yaw), fz = Math.cos(yaw);
-    const ys = [-1, 0, 1].map((k) => (at ? Math.min(at(x + Math.cos(yaw) * k * 0.3, z - Math.sin(yaw) * k * 0.3), at(x + Math.cos(yaw) * k * 0.3 - fx * 0.1, z - Math.sin(yaw) * k * 0.3 - fz * 0.1)) - 0.12 : y));
+    const ys = [-1, 0, 1].map((k) => (at ? Math.min(at(x + Math.cos(yaw) * k * 0.3, z - Math.sin(yaw) * k * 0.3), at(x + Math.cos(yaw) * k * 0.3 - fx * 0.1, z - Math.sin(yaw) * k * 0.3 - fz * 0.1)) - 0.2 : y));
     for (let k = 0; k < 3; k++) kit.add(M.wood, new THREE.ConeGeometry(0.1, h, 5).translate(0, h / 2, 0), x + Math.cos(yaw) * (k - 1) * 0.3, ys[k], z - Math.sin(yaw) * (k - 1) * 0.3, yaw, 1, 1, 1, lean);
     const up = h * 0.35, yb = (ys[0] + ys[1] + ys[2]) / 3 + up, d = up * Math.tan(lean);
     kit.add(M.darkWood, new THREE.CylinderGeometry(0.06, 0.06, 1.0, 5).rotateZ(Math.PI / 2), x + fx * d, yb, z + fz * d, yaw);
@@ -390,7 +390,8 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
       }
       case 'crate':
         if (kind === 'shieldpile') {
-          for (let k = 0; k < 4; k++) kit.add(k % 2 ? sideCloth(o.ax) : M.steel, new THREE.CylinderGeometry(0.5, 0.5, 0.07, 9).translate(0, 0.1 + k * 0.1, 0), o.ax + (rnd() - 0.5) * 0.4, 0, o.az + (rnd() - 0.5) * 0.4, rnd() * 3, 1, 1, 1, (rnd() - 0.5) * 0.3);
+          for (let k = 0; k < 4; k++) kit.add(k % 2 ? sideCloth(o.ax) : M.steel, new THREE.CylinderGeometry(0.5, 0.5, 0.07, 9).translate(0, 0.06 + k * 0.075, 0), o.ax + (rnd() - 0.5) * 0.4, 0, o.az + (rnd() - 0.5) * 0.4, rnd() * 3, 1, 1, 1, (rnd() - 0.5) * 0.3);
+          // (the shields on the ground and on each other: the pile hung 6 to 10 cm up)
           kit.add(M.wood, cyl(0.04, 0.04, 1.7, 4), o.ax + 0.3, 0.2, o.az, 0.4, 1, 1, 1, 1.2);
         } else if (kind === 'sacks') {
           for (let k = 0; k < 3; k++) kit.add(M.sack, new THREE.SphereGeometry(0.42, 9, 6).scale(1, 0.75, 0.8).translate(0, 0.3, 0), o.ax + (k - 1) * 0.5, k === 1 ? 0.45 : 0, o.az + (rnd() - 0.5) * 0.3, rnd() * 3);

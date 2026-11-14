@@ -409,7 +409,7 @@ export function buildWarScenes(o: {
   /** One part: a shape, its colour, its place in the current frame (y up from the ground), its turn, scale, tilt (about x) and roll. */
   const add = (shape: { p: Float32Array; n: Float32Array }, colour: Colour, lx: number, ly: number, lz: number, yaw = 0, sx = 1, sy = sx, sz = sx, tilt = 0, roll = 0) => {
     const { x: wx, z: wz } = toW(lx, lz);
-    const ground = cur.beyond ? (ly <= 0.15 ? lowUnder(shape, wx, wz, Math.max(sx, sz)) : H(wx, wz)) : 0;
+    const ground = cur.beyond ? H(wx, wz) : 0;
     e.set(tilt, cur.yaw + cur.m * (fyaw + yaw), cur.m * roll, 'YXZ');
     m4.compose(v.set(wx, ground + fy + ly, wz), q.setFromEuler(e), sc.set(sx, sy, sz));
     nm.getNormalMatrix(m4);
@@ -429,17 +429,6 @@ export function buildWarScenes(o: {
       all.c[at] = col.r; all.c[at + 1] = col.g; all.c[at + 2] = col.b;
       measure(X, Y, Z, ground);
     }
-  };
-  /** Past the edge (2026-11-14, the props pass): the lowest ground under a part that rests on the ground, its middle and six points
-   * round it at its reach, so its downhill side meets the slope (the parts it holds up keep their middle's height). */
-  const reachOf = new WeakMap<object, number>();
-  const lowUnder = (shape: { p: Float32Array }, wx: number, wz: number, s: number) => {
-    let R = reachOf.get(shape);
-    if (R === undefined) { R = 0; for (let i = 0; i < shape.p.length; i += 3) R = Math.max(R, Math.hypot(shape.p[i], shape.p[i + 2])); reachOf.set(shape, R); }
-    const rr = R * s * 0.85;
-    let g = H(wx, wz);
-    if (rr > 0.2) for (let i = 0; i < 6; i++) g = Math.min(g, H(wx + Math.cos(i * 1.047) * rr, wz + Math.sin(i * 1.047) * rr));
-    return g;
   };
   /** The footprint and height, measured from what is built. */
   const measure = (X: number, Y: number, Z: number, ground: number) => {

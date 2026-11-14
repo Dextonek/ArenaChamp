@@ -403,7 +403,7 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
       case 'timber':
         // four logs, two by two, on the ground and on each other, over the cover's own round (2026-11-14, the props pass: they ran from its
         // middle out to one side, the two of a layer inside each other, the lower ones 4 cm up and the upper 3 cm above them)
-        for (let k = 0; k < 4; k++) dress.add(k % 2 ? 'wood' : 'darkWood', cyl(0.16, 0.16, r * 2.2, 6), o.ax + r * 1.1, 0.16 + Math.floor(k / 2) * 0.3, o.az + (k % 2 ? 0.17 : -0.17), 0, 1, 1, 1, 0, Math.PI / 2);
+        for (let k = 0; k < 4; k++) dress.add(k % 2 ? 'wood' : 'darkWood', cyl(0.16, 0.16, r * 2.2, 6), o.ax + r * 1.1, 0.16 + Math.floor(k / 2) * 0.28, o.az + (k % 2 ? 0.155 : -0.155), 0, 1, 1, 1, 0, Math.PI / 2);
         dress.add('darkWood', box(r * 2.2, h * 0.5, 0.15), o.ax, 0, o.az - 0.6, 0.4);
         break;
       case 'hut':
