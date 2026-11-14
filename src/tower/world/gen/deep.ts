@@ -99,12 +99,12 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   pill('cradle', cradle, 0.7, 0.9);
   L.reserve(camp.c, 11);
   const lights = [C(0, 0), C(-6, 3), C(6, -3)];
-  // The lair: a rock fall across the north, its gap facing the middle, walled at the sides.
+  // The lair: a rock fall across the north, its gap facing the middle.
   // The door stands in front of the fall, as floor 31's did (behind it, in a yard shut on every side, nothing could walk to it).
   const lairZ = r2(-northR + 9), lairDoor: V = { x: 0, z: r2(lairZ + 2.6) };
   wall('wall', { x: -24, z: lairZ }, { x: -3.4, z: lairZ }, 0.5, 4.4); wall('wall', { x: 3.4, z: lairZ }, { x: 24, z: lairZ }, 0.5, 4.4);
-  // its sides run on past the outline, so no sliver of a gap is left between them and the cave's wall
-  for (const s of [-1, 1]) wall('wall', { x: s * 24, z: lairZ }, { x: s * 24, z: lairZ - 30 }, 0.5, 4.4);
+  // Free-standing: the ground behind it can be walked round to. (Walled in at the sides, it shut in the spot the zone's unseen boss
+  // stands on, at the ring's far north, and an autopilot with no other goal planned a way to it every frame and found none.)
   L.reserve({ x: 0, z: lairZ + 2 }, 6);
 
   // --- eight places on two rings round the middle -------------------------------------------------------------------------------
@@ -139,7 +139,7 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
       const p = at(range(...s.deg), range(...s.f));
       if (places.some((q) => dist(q.c, p) < (packIds.includes(q.id) && packIds.includes(s.id) ? 44 : 28))) continue;
       if (dist(p, camp.c) < 32 || dist(p, { x: 0, z: lairZ }) < 26 || inside(rim, p) < 14) continue;
-      if (segDist(p, { x: -24, z: lairZ }, { x: 24, z: lairZ }) < 16 || segDist(p, { x: -24, z: lairZ }, { x: -24, z: lairZ - 30 }) < 16 || segDist(p, { x: 24, z: lairZ }, { x: 24, z: lairZ - 30 }) < 16) continue;
+      if (segDist(p, { x: -24, z: lairZ }, { x: 24, z: lairZ }) < 16) continue;
       c = p;
       break;
     }
@@ -238,7 +238,7 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   // Caches and the lore stone off the packs' ground (floor 32's first bake: Bram fell three times fetching caches by the halls).
   // Also off a hall's back and the rock fall: the route bot picks up a cache within 14 m of it on the way, and one behind a wall, near in
   // a straight line and far on foot, had it turning between the cache and its quest for good (floor 31's second bake).
-  const lairSegs: [V, V][] = [[{ x: -24, z: lairZ }, { x: 24, z: lairZ }], [{ x: -24, z: lairZ }, { x: -24, z: lairZ - 30 }], [{ x: 24, z: lairZ }, { x: 24, z: lairZ - 30 }]];
+  const lairSegs: [V, V][] = [[{ x: -24, z: lairZ }, { x: 24, z: lairZ }]];
   const clear = (q: V) => farFromLurkers(q, LURK + 2) && farFromPacks(q, 16) && halls.every((h) => dist(h.c, q) >= 20) && q.z > lairZ + 4 && lairSegs.every(([a, b]) => segDist(q, a, b) >= 12);
   const lore = L.reserve(L.spot(at(range(150, 165), 0.82), 4, 1.5, clear), 2.5);
   const caches = [at(range(-170, -155), 0.86), at(range(-95, -85), 0.9), at(range(-32, -14), 0.58), at(range(14, 32), 0.58), at(range(70, 80), 0.6), at(range(140, 150), 0.88)]

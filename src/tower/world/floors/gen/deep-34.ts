@@ -1068,30 +1068,6 @@ export const DEEP_34: GenFloor = {
     }
    },
    {
-    "look": "house",
-    "o": {
-     "ax": 24,
-     "az": -103.33,
-     "bx": 24,
-     "bz": -133.33,
-     "r": 0.5,
-     "height": 4.4,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "house",
-    "o": {
-     "ax": -24,
-     "az": -103.33,
-     "bx": -24,
-     "bz": -133.33,
-     "r": 0.5,
-     "height": 4.4,
-     "kind": "wall"
-    }
-   },
-   {
     "look": "rock",
     "o": {
      "ax": 59.87,
@@ -2648,8 +2624,6 @@ export const DEEP_34: GenFloor = {
    "crate",
    "timber",
    "cradle",
-   "wall",
-   "wall",
    "wall",
    "wall",
    "stalwall",

@@ -1077,30 +1077,6 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
     }
    },
    {
-    "look": "house",
-    "o": {
-     "ax": -24,
-     "az": -104.08,
-     "bx": -24,
-     "bz": -134.08,
-     "r": 0.5,
-     "height": 4.4,
-     "kind": "wall"
-    }
-   },
-   {
-    "look": "house",
-    "o": {
-     "ax": 24,
-     "az": -104.08,
-     "bx": 24,
-     "bz": -134.08,
-     "r": 0.5,
-     "height": 4.4,
-     "kind": "wall"
-    }
-   },
-   {
     "look": "rock",
     "o": {
      "ax": -71.95,
@@ -2573,8 +2549,6 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
    "crate",
    "timber",
    "cradle",
-   "wall",
-   "wall",
    "wall",
    "wall",
    "stalwall",
