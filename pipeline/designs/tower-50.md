@@ -220,3 +220,8 @@ today's area, not a circle.
   `war-scenes-probe.js`): 0 hits on every floor; `_worldCheck` unchanged on all fifty. Cost: a floor's build 0.05 to 0.28 s longer on the
   phone profile; frames inside the noise (the War's and the Deep's in the depth's own batch, matte and shadowless). One switch for all:
   `?scenes=off`, `VITE_NO_SCENES=1` or `globalThis.__noScenes` (`scenes/off.ts`). Pictures and numbers: `docs/tower/climb50/<chapter>/scenes/`.
+  Speed on a quiet machine (no other agents), `perf.py scenes`, scenes on and off by `{"globals":{"__noScenes":true}}`: world-1 and
+  gen-14 on desktop and phone-4x in the order off, on, on, off, then gen-14 desktop six times alternating. Same fights (print hashes),
+  draw calls +0 to 4, triangles +5k to 11k. The desktop GPU time jumps between about 2 and 5 ms from run to run whatever the scenes; in
+  the alternating six, gen-14's frame median is 9.9 / 7.2 / 9.6 ms off against 9.1 / 9.8 / 9.6 ms on. Phone-4x: 30.9 / 33.9 off, 33.3 / 32.0
+  on. No cost above the noise.
