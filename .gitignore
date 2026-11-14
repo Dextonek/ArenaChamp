@@ -22,3 +22,6 @@ pipeline/rustfull/data/grade-*.html
 
 # helper agents' own copies of the repo
 .claude/worktrees/
+
+# the Tower's own figures: rebuilt by blender/tower/build.py (docs/tower/models/README.md)
+docs/tower/models/glb/
