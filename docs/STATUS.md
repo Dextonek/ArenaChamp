@@ -15,7 +15,11 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
   `docs/tower/props/wood/`); taste calls left for the user there (white catch baskets, block benches, the root mound).
 - **Merged, not live:** the Sands, the Deep and the War's props set right: 41 faults on floors 21-50 (`docs/tower/props/sands`, `deep`, `war`).
   Left: grass tufts on cliff slopes (shared land code), War scenes past the edge sit off the hills on their downhill side.
-- **Running (worktree agents, each reports back):** online leaderboards and clans with a clan chat.
+- **Merged, not live:** online leaderboards (duel rating, weekly duel wins, Raid, Tower, Climb, clans) and clans with a clan chat
+  (create, join by code or by asking, 30 members, word filter, personal mute, leader's 24 h mute, Report to the log, online dots,
+  unread count). **PROTOCOL 17:** open tabs reload at the next deploy. Docs: `docs/architecture/multiplayer.md`, *Leaderboards and
+  clans*; pictures `docs/game/social/`; checks `node server/smoke-test.mjs --social`.
+- **Running:** no agents.
 - **Merged (words only):** the heroes' lore: the world (the Dial), eight factions, a legend
   and ties for all forty, ten more new heroes, full kit sheets for all twenty new ones (`docs/lore/`, `docs/heroes/next20/`,
   `docs/heroes/kits20/`).
