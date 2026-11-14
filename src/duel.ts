@@ -16,7 +16,7 @@ import { AttackFx, Attacker, attackFor, type AttackSpec } from './attacks';
 import type { HeroMode, Target } from './heroMode';
 import { NO_MODS, TraitRuntime, traitFor, type CastMods, type Side, type TraitHit } from './traits';
 import { TraitFx, stackColor } from './traits/fx';
-import { hyp, pillar, stopsAtCover, sweepHit } from './obstacles';
+import { blocksSight, hyp, pillar, stopsAtCover, sweepHit } from './obstacles';
 import { TOUCH } from './touch';
 import { CPU_BALANCE, type CpuLevel } from './cpuLevels';
 import { BossFight } from './raid/fight';
@@ -24,6 +24,7 @@ import { BossHud } from './raid/hud';
 import { Partner, REVIVE_REACH, REVIVE_TIME } from './raid/partner';
 import type { AddSpec, BossDebuff, BossDef, BossHit, BossWorld, RaidAdd, RaidLink, RoomFloor, TwinSetup, TwinWorld } from './raid/types';
 import type { RunUpgrades } from './raid/upgrades';
+import { Mech, MECH_PREFIX, type MechSide } from './mech';
 
 /** What the duel needs from main.ts. */
 export interface DuelHost {
@@ -366,6 +367,8 @@ export class Duel {
   /** Healing not yet sent to the server (network duel), and the clock that sends it. */
   private pendingHeal = 0;
   private healClock = 0;
+  /** The engine pieces of the twenty new heroes (src/mech): sleep, wards, leashes, seals, tokens, one-sided ground. Cleared every round. */
+  readonly mech: Mech;
   /** The identity layer of each side (src/traits); rebuilt every round. */
   heroRt: TraitRuntime | null = null;
   oppRt: TraitRuntime | null = null;
@@ -446,6 +449,33 @@ export class Duel {
       add: (cover) => this.addCover(cover),
       ring: (r) => { this.ringTo = r; },
     };
+    this.mech = new Mech({
+      time: () => this.time,
+      figure: (side) => (side === 'hero' ? arena.caster : this.foe),
+      // Online this screen decides only its own hero; offline both.
+      owns: (side) => side === 'hero' || !this.net,
+      online: () => !!this.net,
+      seat: () => (this.host.heroMode.flipCamera ? 1 : 0),
+      send: (name, n) => { if (this.net && !this.watching) this.net.stacks(name, n); },
+      status: (side) => (side === 'hero' ? arena.statusOf(arena.caster) : this.foe ? arena.statusOf(this.foe) : undefined),
+      say: (text, color, at, scale) => arena.say(text, color, at, scale ?? 1),
+      kit: (side) => (side === 'hero' ? this.host.heroMode.currentKit : this.opponentKit ?? null),
+      dash: (side, p, seconds) => {
+        const f = side === 'hero' ? arena.caster : this.foe;
+        if (f && (side === 'hero' || !this.net)) arena.moveFigure(f, p, seconds);
+      },
+      breakCover: (i, dx, dz) => {
+        const o = this.currentArena?.obstacles[i];
+        if (!o || !arena.obstacles?.includes(o)) return;
+        this.arenaScene?.coverFall?.(i, Math.atan2(dx, dz), COVER_FALL);
+        this.removeCover(i);
+      },
+      arenaCover: () => this.currentArena?.obstacles ?? [],
+      stands: (i) => { const o = this.currentArena?.obstacles[i]; return !!o && !!arena.obstacles?.includes(o); },
+      boltWall: (side, a, b, halfWidth, seconds) => arena.projectiles.wall(side, { a: new THREE.Vector3(a.x, 0, a.z), b: new THREE.Vector3(b.x, 0, b.z), halfWidth, seconds }),
+      bolts: () => arena.projectiles.live,
+      boltSide: (p) => (p.world.tag.startsWith('hero') ? 'hero' : 'opponent'),
+    });
     this.group.visible = false;
     this.hud = this.buildHud();
     this.card = document.createElement('div');
@@ -1617,6 +1647,9 @@ export class Duel {
       arenaRing: () => this.ringTo,
       hp: () => this.playerHp,
       maxHp: () => this.playerMax,
+      enemyHp: () => (this.foe ? arena.hpOf(this.foe) : 0),
+      enemyMaxHp: () => (this.foe ? this.foeMax : 0),
+      mech: () => this.mech.views.hero,
       time: () => this.time,
       say: (text, color, at) => arena.say(text, color, at, 1),
       heal: (amount) => { arena.healFigure(arena.caster, amount); },
@@ -1681,6 +1714,9 @@ export class Duel {
       arenaRing: () => this.ringTo,
       hp: () => (this.foe ? arena.hpOf(this.foe) : 0),
       maxHp: () => this.foeMax,
+      enemyHp: () => this.playerHp,
+      enemyMaxHp: () => this.playerMax,
+      mech: () => this.mech.views.opponent,
       time: () => this.time,
       say: (text, color, at) => arena.say(text, color, at, 1),
       // Online the other player's own client heals and buffs its hero; here only offline.
@@ -1762,6 +1798,9 @@ export class Duel {
     hm.traits = this.heroRt;
     hm.castRules = (slot, base, charge) => {
       const spell = hm.currentKit.spells[slot];
+      // Where the cast stood and aimed, as this screen has it (Kessa's swap, Kohaku's steal read it).
+      const tg = hm.castTarget;
+      if (tg) this.mech.noteCast('hero', slot, arena.caster.group.position, 'enemy' in tg ? tg.enemy.group.position : tg.point);
       const r = this.heroRt!.cast(slot, base, charge, hm.status.dealtMul, spell.debuff);
       if (this.oppRt) this.oppRt.trait?.enemyCast?.(this.oppRt, slot);
       if (spell.buff) arena.applyBuff(arena.caster, spell.buff.kind, spell.buff.amount, spell.buff.seconds);
@@ -1801,6 +1840,44 @@ export class Duel {
     // Shields a hero makes are scaled by its trait (Auriel's Aegis).
     arena.shieldScale = (target) => (target === arena.caster ? this.heroRt?.trait?.shieldMul : target === this.foe ? this.oppRt?.trait?.shieldMul : undefined) ?? 1;
     this.pendingHeal = 0;
+    // The engine pieces (src/mech): a new round clears them; the arena and hero mode ask them through these hooks.
+    this.mech.reset();
+    const mech = this.mech;
+    arena.walkHold = (who, p, prev) => mech.holdWalk(who, p, prev);
+    arena.dashHold = (who, to) => mech.holdDash(who, to);
+    arena.walkBlocks = (who) => mech.walkBlocks(who);
+    hm.keySealed = (slot) => mech.sealedLeft('hero', slot);
+    hm.warded = (a, b) => mech.wardBlocks(a, b);
+    const heroRt = this.heroRt;
+    hm.castOrigin = heroRt.trait?.castOrigin ? (slot) => heroRt.trait!.castOrigin!(heroRt, slot) : null;
+  }
+
+  /** What the CPU walking against `enemyRt`'s hero plans round, and its one-sided ground (src/mech); the same empty list when none. */
+  private aiAvoid(enemyRt: TraitRuntime | null, who: Enemy): readonly Obstacle[] {
+    const own = this.mech.walkBlocks(who);
+    const avoid = enemyRt?.trait?.enemyAvoid?.(enemyRt);
+    if (!avoid?.length) return own;
+    return [...own, ...avoid.map((a) => a.o)];
+  }
+
+  /** Whether the CPU at `a` believes it sees and can shoot `b`: cover, and the wards and mirages it takes for cover (src/mech). */
+  private aiSees(a: THREE.Vector3, b: THREE.Vector3, enemyRt: TraitRuntime | null) {
+    if (!this.host.arena.lineOfSight(a, b)) return false;
+    if (this.mech.wardBlocks(a, b)) return false;
+    const avoid = enemyRt?.trait?.enemyAvoid?.(enemyRt);
+    if (!avoid?.length) return true;
+    const seen = avoid.filter((x) => x.sight).map((x) => x.o);
+    return !seen.length || !blocksSight(a, b, seen);
+  }
+
+  /** How far slot `i` of `rt`'s hero reaches to `target` from: its trait's cast origin (Lian's kite), else the hero. Undefined: no origin rule. */
+  private reachFrom(rt: TraitRuntime | null, target: THREE.Vector3): ((i: number) => number) | undefined {
+    const origin = rt?.trait?.castOrigin;
+    if (!origin || !rt) return undefined;
+    return (i) => {
+      const o = origin(rt, i);
+      return o ? Math.hypot(target.x - o.x, target.z - o.z) : flat(rt.self().group.position, target);
+    };
   }
 
   /**
@@ -1838,6 +1915,12 @@ export class Duel {
       o.blocked = swallowed;
       this.resolved.add(o);
       return o;
+    }
+    // A sleeper's waking hit lands harder, and wakes it (src/mech; only where this hero's hits are decided).
+    if (victimIsHero && hit.damage >= 0.5) {
+      const side: MechSide = victim === arena.caster ? 'hero' : 'opponent';
+      hit.damage += this.mech.wakingHit(side, hit.damage);
+      if (kind === 'spell') this.mech.noteHit(side, kind);
     }
     if (victimIsHero && mods.status && !o.status) o.status = mods.status;
     if (mods.debuff && !o.debuff) o.debuff = mods.debuff;
@@ -1877,6 +1960,11 @@ export class Duel {
     this.shift = null;
     arena.aiCover = [];
     arena.aiBounds = null;
+    // The engine pieces end with the duel (src/mech).
+    this.mech.reset();
+    arena.walkHold = arena.dashHold = arena.walkBlocks = null;
+    arena.aiExtra = [];
+    this.host.heroMode.keySealed = this.host.heroMode.warded = this.host.heroMode.castOrigin = null;
     arena.projectiles.clear();
     arena.hitFilter = null;
     arena.untargetable = null;
@@ -2073,7 +2161,8 @@ export class Duel {
       case 'peer_stacks': {
         // `@name`: this hero's own shown state. A bare name: stacks this hero keeps on the other. `!name` is for the other's own screen.
         const name = String(m.name);
-        if (name[0] === '@') this.heroRt?.setOwn(name.slice(1), m.n);
+        if (name[0] === MECH_PREFIX) this.mech.receive(name, m.n, false);
+        else if (name[0] === '@') this.heroRt?.setOwn(name.slice(1), m.n);
         else if (name[0] !== '!') this.oppRt?.setStacks(name, m.n);
         return;
       }
@@ -2112,7 +2201,7 @@ export class Duel {
     }
     const me = arena.caster.group.position;
     const point = spec.mode === 'self' ? from.clone() : m.enemy ? me.clone() : new THREE.Vector3(m.x, 0, m.z);
-    this.castSpell(m.slot, foe, from, me, spec, point, m.id, undefined, m.yaw, m.mods ?? NO_MODS, { bend: m.bend, sentFrom: told });
+    this.castSpell(m.slot, foe, from, me, spec, point, m.id, undefined, m.yaw, m.mods ?? NO_MODS, { bend: m.bend, sentFrom: told, sentPoint: new THREE.Vector3(m.x, 0, m.z) });
     // Walls: from where the other side says it cast (the same numbers it used), so both screens break the same walls.
     // (the aim point the sender used too: its view of this hero, not where this hero really is)
     this.blastWalls(told, spec.mode === 'self' ? told.clone() : new THREE.Vector3(m.x, 0, m.z), spec, spell, m.slot);
@@ -2178,7 +2267,9 @@ export class Duel {
    * (`TraitView.noteOwner`). The prefixes need no change on the server, which relays any short name.
    */
   peerStacks(name: string, n: number) {
-    if (name[0] === '@') this.oppRt?.setOwn(name.slice(1), n);
+    // `#`: the engine's own message (src/mech/net.ts).
+    if (name[0] === MECH_PREFIX) this.mech.receive(name, n, true);
+    else if (name[0] === '@') this.oppRt?.setOwn(name.slice(1), n);
     else if (name[0] === '!') { if (this.heroRt) this.heroRt.trait?.peerNote?.(this.heroRt, name.slice(1), n); }
     else this.heroRt?.setStacks(name, n);
   }
@@ -2378,6 +2469,7 @@ export class Duel {
       // A hero's rule that acts on the enemy runs where that enemy is decided (`Trait.victimTick`).
       if (this.oppRt) this.oppRt.trait?.victimTick?.(this.oppRt, dt);
       if (!this.net && this.heroRt) this.heroRt.trait?.victimTick?.(this.heroRt, dt);
+      this.mech.update(dt);
     }
     // Network duel: the server declares the winner (`netEnd`); the opponent is the other player.
     if (this.net) {
@@ -2451,6 +2543,8 @@ export class Duel {
       this.face(foe, me);
       return;
     }
+    // What the hero's things ask this CPU to walk round, and the ground it may not cross (src/mech).
+    this.host.arena.aiExtra = this.aiAvoid(this.heroRt, foe);
     // A hit on its way: a ready parry or bolt wall answers it (cast below, before anything else); otherwise step off a
     // skillshot's line before casting or walking on (if the roll says so).
     const hm = this.host.heroMode;
@@ -2476,7 +2570,7 @@ export class Duel {
       this.face(foe, me);
       return;
     }
-    const sees = this.host.arena.lineOfSight(at, me);
+    const sees = this.aiSees(at, me, this.heroRt);
     // A lower level waits a moment after each cast (`castGap`); it still walks and attacks meanwhile.
     if (!st?.cannotCast && this.castWait <= 0) {
       const mine = this.host.heroMode.status;
@@ -2486,10 +2580,10 @@ export class Duel {
       const ward = this.ward(this.heroRt);
       const opens = (i: number) => !!this.oppRt?.canRecast(i) && !this.oppRt.recastOf(i)?.aiWait;
       const aiHolds = (i: number) => !!this.oppRt?.trait?.aiHold?.(this.oppRt, i, flat(at, me));
-      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || aiHolds(i) || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
+      const cooling = (i: number) => (ward > 0 && (ward > 1 || i !== 0)) || aiHolds(i) || this.mech.sealedLeft('opponent', i) > 0 || (!opens(i) && (this.cooldowns[i] > 0 || !!this.oppRt?.blocked(i)));
       const held = mine.stunned || mine.has('root');
       // The hero first; a unit only when nothing can be cast at the hero (out of range or sight) and a unit is within 2.5 m.
-      let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv);
+      let pick = this.pickSpell(this.opponentKit, cooling, flat(at, me), this.playerHp / this.playerMax, sees, held, flat(at, me), full, this.host.arena.hpOf(foe) / this.foeMax, guard, lv, this.reachFrom(this.oppRt, me));
       let unit: ReturnType<Duel['blocker']> = null;
       if (!pick && (unit = this.blocker('hero', at, me))) {
         pick = this.pickSpell(this.opponentKit, cooling, flat(at, unit.pos), this.playerHp / this.playerMax,
@@ -2502,7 +2596,8 @@ export class Duel {
       }
     }
     // Basic attack: nothing to cast, the hero in reach. Stands still through the wind-up.
-    if (this.oppAttack.winding || (this.rooted <= 0 && this.oppAttack.inRange(at, me) && this.oppAttack.start(this.host.arena.caster))) {
+    const holdAttack = !!this.oppRt?.trait?.aiHoldAttack?.(this.oppRt);
+    if (this.oppAttack.winding || (!holdAttack && this.rooted <= 0 && this.oppAttack.inRange(at, me) && this.oppAttack.start(this.host.arena.caster))) {
       return;
     }
     if (st?.cannotMove) {
@@ -2532,7 +2627,7 @@ export class Duel {
    * summon spell goes by (ready and the hero within `SUMMON_REACH`, unless `full`: the side has the most units).
    * A parry or a bolt wall (`HeroSpell.parry` / `barrier`) goes only when `guard` says a hit is on its way, and then first.
    */
-  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean, otherHeld = false, dHero = d, full = false, ownHp = 1, guard = NO_GUARD, lv = CPU_BALANCE) {
+  private pickSpell(kit: HeroKit, cooling: (i: number) => boolean, d: number, otherHp: number, sees: boolean, otherHeld = false, dHero = d, full = false, ownHp = 1, guard = NO_GUARD, lv = CPU_BALANCE, dist?: (i: number) => number) {
     const ready = (i: number) => {
       if (cooling(i)) return null;
       const spell = kit.spells[i];
@@ -2550,7 +2645,9 @@ export class Duel {
         if (!spell.dash) return null;
       }
       const reach = spec.mode === 'self' ? (spec.radius ?? 5) - 0.6 : spell.range;
-      if (d > reach || (spec.mode !== 'self' && !sees)) return null;
+      // A slot cast from somewhere else (`Trait.castOrigin`) reaches from there.
+      const far = dist && spec.mode !== 'self' ? dist(i) : d;
+      if (far > reach || (spec.mode !== 'self' && !sees)) return null;
       // A gap closer only when the target is out of Q's range (it would waste the dash otherwise). An ultimate that leaps
       // in (Dawn Descent lands with a stun) goes in its own range like any spell.
       if (spell.dash && i !== 3 && d <= kit.spells[0].range + 0.5) return null;
@@ -2724,7 +2821,8 @@ export class Duel {
       return;
     }
     if (this.inHall) return;
-    const sees = this.host.arena.lineOfSight(me, at);
+    this.host.arena.aiExtra = this.aiAvoid(this.oppRt, this.host.arena.caster);
+    const sees = this.aiSees(me, at, this.oppRt);
     const theirs = this.host.arena.statusOf(foe);
     if (!st.cannotCast && !this.boss?.wary) {
       const full = this.host.arena.summons.alive('hero').length >= MAX_UNITS;
@@ -2735,7 +2833,7 @@ export class Duel {
       const foeHeld = !!theirs && (theirs.stunned || theirs.has('root'));
       const foeHp = this.host.arena.hpOf(foe) / this.foeMax;
       // The hero first; a unit only when nothing can be cast at the hero and a unit is within 2.5 m.
-      let pick = this.pickSpell(kit, cooling, flat(me, at), foeHp, sees, foeHeld, flat(me, at), full, this.playerHp / this.playerMax, guard);
+      let pick = this.pickSpell(kit, cooling, flat(me, at), foeHp, sees, foeHeld, flat(me, at), full, this.playerHp / this.playerMax, guard, CPU_BALANCE, this.reachFrom(this.heroRt, at));
       let unit: ReturnType<Duel['blocker']> = null;
       if (!pick && (unit = this.blocker('opponent', me, at))) {
         pick = this.pickSpell(kit, cooling, flat(me, unit.pos), foeHp, this.host.arena.lineOfSight(me, unit.pos), foeHeld, flat(me, at), full, this.playerHp / this.playerMax, guard);
@@ -2752,7 +2850,7 @@ export class Duel {
       }
     }
     // Basic attack: nothing to cast, the opponent in reach. Stands still through the wind-up.
-    if (hm.attackWinding || hm.autoAttack(foe)) return;
+    if (hm.attackWinding || (!this.heroRt?.trait?.aiHoldAttack?.(this.heroRt) && hm.autoAttack(foe))) return;
     if (held) return;
     const goal = this.reachableGoal(this.playerAi, me, (this.heroRt && this.heroRt.trait?.aiGoal?.(this.heroRt)) ?? this.oppRt?.trait?.enemyGoal?.(this.oppRt), dt);
     const move = this.offZones(me, goal ? this.goalStep(this.playerAi, me, goal) : this.steer(this.playerAi, kit, me, at, dt, !sees, 'opponent', hm.attackRange));
@@ -2982,7 +3080,7 @@ export class Duel {
    * player's feet). `unit`: a unit of the hero's it shoots at instead (one in the way). The hero's units inside an area
    * (or next in a chain) are targets too; the zones decide at impact who is hit.
    */
-  private castSpell(i: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3, spec: TargetingSpec, aim?: THREE.Vector3, id = 0, unit?: Enemy, yaw?: number, netMods?: CastMods, netCast?: { bend?: number; sentFrom?: THREE.Vector3 }) {
+  private castSpell(i: number, foe: Enemy, at: THREE.Vector3, me: THREE.Vector3, spec: TargetingSpec, aim?: THREE.Vector3, id = 0, unit?: Enemy, yaw?: number, netMods?: CastMods, netCast?: { bend?: number; sentFrom?: THREE.Vector3; sentPoint?: THREE.Vector3 }) {
     const arena = this.host.arena;
     const spell = this.opponentKit.spells[i];
     // A recast that only acts (`recast.replay: false`): the trait's rules run (its `recastAct` moves the hero), nothing plays.
@@ -3022,6 +3120,8 @@ export class Duel {
     }
     // The AI's cast breaks walls here; a network cast does it in `peerCast` with the sender's own numbers.
     if (!this.net) this.blastWalls(at, point, spec, spell, i);
+    // Where it stood and aimed as its own screen had them (src/mech: a swap of places, a stolen spell).
+    this.mech.noteCast('opponent', i, netCast?.sentFrom ?? at, netCast?.sentPoint ?? point);
     this.face(foe, focus);
     // A network cast faces where the other player's hero faced (spells fired straight ahead go that way).
     if (yaw !== undefined && spec.mode === 'self') foe.group.rotation.y = yaw;
@@ -3110,6 +3210,15 @@ export class Duel {
       }
       return;
     }
+    // A ward between the zone and the hero (src/mech): the area does not reach past it.
+    if (!opts.projectile && !opts.attack && !this.mech.zoneReaches(c.zones, c.aimed, me, insideTelegraph)) {
+      if (!c.dodgedShown) {
+        c.dodgedShown = true;
+        arena.say('WARDED', '#f2ead8', me, 1.1);
+        this.net?.dodged(c.id);
+      }
+      return;
+    }
     this.damagePlayer(this.resolve('opponent', arena.caster, opts, c.mods ?? NO_MODS, 'spell', c.slot, c.seq), c.id);
   }
 
@@ -3179,7 +3288,7 @@ export class Duel {
   private hitUnit(c: EnemyCast, target: Enemy, opts: HitOptions = {}) {
     if (this.over || c.round !== this.round || !this.on) return;
     const p = target.group.position;
-    if (opts.projectile || this.inCastReach(c, p)) {
+    if (opts.projectile || (this.inCastReach(c, p) && this.mech.zoneReaches(c.zones, c.aimed, p, insideTelegraph))) {
       this.host.arena.hit(target, this.resolve('opponent', target, opts, c.mods ?? NO_MODS, 'spell', c.slot, c.seq));
     }
   }
@@ -3209,6 +3318,8 @@ export class Duel {
     }
     const opts: HitOptions = { damage, knock: 0, color: hit.color, from: hit.from };
     if (hit.slow) opts.status = { kind: 'slow', seconds: hit.slow };
+    // Any damage wakes a sleeper (no waking bonus from the arena's own).
+    if (isHero || target.key === this.foe) this.mech.wakingHit(isHero ? 'hero' : 'opponent', damage);
     if (isHero) {
       // Online the hub would drop a second hazard this soon, and the two screens would count different HP.
       if (this.net && this.time - this.hazardSentAt < HAZARD_SEND_GAP) return;
@@ -3381,7 +3492,7 @@ export class Duel {
     const c = this.playerCastsRecent.find((r) => r.id === cast && this.time - r.t < 4.5);
     if (!c) return true;
     // A boss is wide: a zone that touches any of it counts.
-    const lands = this.inCastReach(c, p, this.boss && target === this.foe ? target.body?.radius ?? 0 : 0);
+    const lands = this.inCastReach(c, p, this.boss && target === this.foe ? target.body?.radius ?? 0 : 0) && this.mech.zoneReaches(c.zones, c.aimed, p, insideTelegraph);
     if (!lands && target === this.foe) {
       if (!c.dodgedShown) {
         c.dodgedShown = true;
@@ -3400,6 +3511,7 @@ export class Duel {
       hp, max, mine,
       shield: this.host.arena.shieldOf(who)?.amount ?? 0,
       chunks: kit.hpChunks ?? 0,
+      cuts: rt?.trait?.barCuts?.(rt) ?? null,
       meter: m ? { name: m.name, value: m.value, max: m.max, color: m.color ?? kit.accent } : null,
     };
   }
@@ -3563,6 +3675,18 @@ export class Duel {
         b.chunks.style.background = n > 1 ? `repeating-linear-gradient(90deg, transparent 0 calc(${100 / n}% - 2px), rgba(0,0,0,0.75) calc(${100 / n}% - 2px) ${100 / n}%)` : 'none';
       }
       b.fill.style.width = `${Math.max(0, (hp / max) * 100)}%`;
+      // A bar cut at given HP (`Trait.barCuts`: Ramet's lion in front of his own part), redrawn only when the cuts change.
+      const crt = partner ? null : i === 0 ? this.heroRt : i === 1 ? this.oppRt : null;
+      const cuts = crt?.trait?.barCuts?.(crt);
+      if (cuts !== undefined) {
+        const key = cuts?.map((v) => Math.round(v)).join(',') ?? '';
+        if (b.chunks.dataset.cuts !== key) {
+          b.chunks.dataset.cuts = key;
+          // The other hero's bar runs right to left.
+          const at = (cuts ?? []).map((v) => (i === 1 ? 100 - (v / max) * 100 : (v / max) * 100));
+          b.chunks.style.background = at.length ? `linear-gradient(90deg, ${at.sort((x, y) => x - y).map((pc) => `transparent calc(${pc}% - 2px), rgba(0,0,0,0.8) calc(${pc}% - 2px), rgba(0,0,0,0.8) calc(${pc}% + 2px), transparent calc(${pc}% + 2px)`).join(', ')})` : 'none';
+        }
+      }
       // A shield is a pale segment after the HP (a strong one is pushed back inside the bar).
       const sh = shield ? Math.min(1, shield.amount / max) : 0;
       b.shield.style.display = sh > 0 ? '' : 'none';

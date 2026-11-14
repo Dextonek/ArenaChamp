@@ -4,6 +4,7 @@ import type { Enemy } from '../effects/common';
 import type { HitOptions } from '../effects/targeting';
 import type { BuffKind, StatusSet } from '../effects/status';
 import type { Obstacle } from '../obstacles';
+import type { MechView } from '../mech';
 import { NO_MODS, type CastMods, type HoldSpec, type LandedHit, type RecastSpec, type Side, type Trait, type TraitHit, type TraitView } from './types';
 
 /** How far back `past` can look (s); the history keeps a little more. */
@@ -19,6 +20,11 @@ export interface TraitHost {
   arenaRing(): number;
   hp(): number;
   maxHp(): number;
+  /** The enemy hero's HP and max (0 when there is none). */
+  enemyHp?(): number;
+  enemyMaxHp?(): number;
+  /** This side's view of the engine pieces (src/mech). */
+  mech?(): MechView | null;
   time(): number;
   say(text: string, color: string, at: THREE.Vector3): void;
   heal(amount: number): void;
@@ -115,6 +121,9 @@ export class TraitRuntime implements TraitView {
   arenaRing() { return this.host.arenaRing(); }
   hp() { return this.host.hp(); }
   maxHp() { return this.host.maxHp(); }
+  enemyHp() { return this.host.enemyHp?.() ?? 0; }
+  enemyMaxHp() { return this.host.enemyMaxHp?.() ?? 0; }
+  get mech() { return this.host.mech?.() ?? null; }
 
   addRes(n: number) {
     const max = this.trait?.resource?.max ?? 0;
