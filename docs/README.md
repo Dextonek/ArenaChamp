@@ -73,6 +73,7 @@ the art direction and pipeline sections if you want to make new effects the way 
 |---|---|
 | [Effects](catalog/effects.md) | Every registered effect by category, with links to source, design note and contact sheet |
 | [Heroes](catalog/heroes/README.md) | The 40 heroes and their kits. The original twenty: Vesper (blood), Brannoc (forge), Isolde (frost), Lyra (astral), Vitriol (alchemy), Kaia (storm), Sefu (sand), Nyx (shadow), Fenna (grove), Auriel (dawn), Marin (tide), Zephyr (sky), Mortis (bone), Ada (clockwork), Opaline (prism), Sirix (hive), Cantor (bard), Oblivion (void), Shiori (ink), Tempo (chrono); and 19 newer ones from Silvane (mirror) to Wick (door) and Pim and Pom (twins); and hero 40, Anka (phoenix), the first made by the rules for creating a hero |
+| [Lore](lore/index.html) | The world of the game, the Dial: the Tower and the Noonfall, why heroes fight in the Ring, eight factions and five loners, a map, and a legend, a line and ties for all 40 heroes and the 20 new ones (source to edit: [LORE.md](lore/LORE.md), page made by `python pipeline/tools/lore-page.py`). The 20 new heroes: cards [1-10](heroes/next10/index.html) and [11-20](heroes/next20/index.html), their kits on paper [as tables](heroes/kits20/index.html) with the build order, one sheet each in `pipeline/designs/kit-<theme>.md` (made and checked by `python pipeline/tools/kits20.py`) |
 
 ### Knowledge (what we learned)
 | Page | What it answers |
