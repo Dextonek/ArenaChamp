@@ -148,7 +148,7 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
   const build = (o: { kit: PropSink; into: THREE.Group; own: { dispose(): void }[]; gold: THREE.Material; glows: Spot[] }) => {
     const { kit, into, own, gold, glows } = o;
     /** Solid props' footprints, for the check that they keep off the floor's spots. */
-    const solids: { x: number; z: number; r: number }[] = [];
+    const solids: { x: number; z: number; r: number; k?: string }[] = [];
     const mats = new Map<string, THREE.MeshStandardMaterial>();
     const M = (hex: string) => {
       let m = mats.get(hex);
@@ -170,7 +170,7 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
       add: (mat, geo, x, y, z, yaw = 0, sx = 1, sy = sx, sz = sx, tilt = 0) => (kit.add(mat, geo, x, y, z, yaw, sx, sy, sz, tilt), chain),
     };
     const put = chain.put;
-    const solid = (x: number, z: number, r: number) => solids.push({ x, z, r });
+    const solid = (x: number, z: number, r: number, k?: string) => solids.push({ x, z, r, k });
 
     // a few shapes used again and again
     const lantern = (x: number, z: number, yaw: number) => { // a crooked post with a lantern hung from its arm
@@ -178,28 +178,29 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
       const lx = x + Math.sin(yaw) * 0.68, lz = z + Math.cos(yaw) * 0.68;
       put(C.lacquer, box(0.24, 0.32, 0.24), lx, 1.95, lz).add(gold, box(0.28, 0.05, 0.28), lx, 2.27, lz);
       glows.push({ x: lx, y: 2.1, z: lz, size: 1.1 });
-      solid(x, z, 0.4);
+      solid(x, z, 0.4, 'lantern');
     };
     const signpost = (x: number, z: number, a: number, b: number) => { // two arms, one each way
       put(C.bark, cyl(0.08, 0.1, 2.2, 6), x, 0, z).put(C.plank, box(0.95, 0.22, 0.06).translate(0.38, 0, 0), x, 1.8, z, a).put(C.plank, box(0.8, 0.2, 0.06).translate(0.32, 0, 0), x, 1.5, z, b);
       kit.add(gold, box(0.16, 0.05, 0.16), x, 2.2, z);
-      solid(x, z, 0.4);
+      solid(x, z, 0.4, 'signpost');
     };
     const stump = (x: number, z: number, s: number) => {
-      put(C.barkLight, cyl(0.38 * s, 0.48 * s, 0.55 * s, 9), x, 0, z).put(C.plank, cyl(0.36 * s, 0.36 * s, 0.03, 9), x, 0.55 * s, z);
-      for (let i = 0; i < 3; i++) put(C.bark, cyl(0.06, 0.12, 0.7 * s, 5), x, 0, z, rnd() * 6, 1, 1, 1, 1.1); // roots splaying
-      solid(x, z, 0.6 * s);
+      // low and mossy, so it does not pass for the cover's taller, flat-cut stumps
+      put(C.bark, cyl(0.3 * s, 0.4 * s, 0.28 * s, 9), x, 0, z).put(C.moss, cyl(0.29 * s, 0.31 * s, 0.05, 9), x, 0.28 * s, z);
+      for (let i = 0; i < 3; i++) put(C.bark, cyl(0.05, 0.1, 0.6 * s, 5), x, 0, z, rnd() * 6, 1, 1, 1, 1.2); // roots splaying
+      solid(x, z, 0.5 * s, 'stump');
     };
     const woodpile = (x: number, z: number, yaw: number) => { // billets stacked between two stakes
       for (let row = 0; row < 3; row++) for (let i = 0; i < 4 - row; i++) put(i % 2 ? C.barkLight : C.bark, T(new THREE.CylinderGeometry(0.13, 0.13, 1.1, 7).rotateX(Math.PI / 2)), x + Math.cos(yaw) * (i - (3 - row) / 2) * 0.27, 0.13 + row * 0.23, z - Math.sin(yaw) * (i - (3 - row) / 2) * 0.27, yaw);
       for (const s of [-1, 1]) put(C.bark, box(0.07, 0.95, 0.07), x + Math.cos(yaw) * s * 0.62, 0, z - Math.sin(yaw) * s * 0.62, yaw);
-      solid(x, z, 0.8);
+      solid(x, z, 0.8, 'woodpile');
     };
     const beehive = (x: number, z: number) => { // a straw skep on a stand, its bands gilt
       put(C.bark, box(0.7, 0.5, 0.7), x, 0, z).put(C.straw, T(new THREE.SphereGeometry(0.42, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 1.25, 1)), x, 0.5, z);
       kit.add(gold, T(new THREE.TorusGeometry(0.4, 0.025, 4, 16).rotateX(Math.PI / 2)), x, 0.62, z);
       put(C.lacquer, box(0.12, 0.08, 0.04), x, 0.52, z + 0.4);
-      solid(x, z, 0.5);
+      solid(x, z, 0.5, 'beehive');
     };
     const stand = (x: number, z: number) => { // a hunter's stand: four posts, a floor, a rail, a ladder; its back to the trees
       for (const [px, pz] of [[-0.7, -0.7], [0.7, -0.7], [-0.7, 0.7], [0.7, 0.7]]) put(C.bark, cyl(0.07, 0.09, 3.1, 6), x + px, 0, z + pz);
@@ -207,7 +208,7 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
       kit.add(gold, box(1.74, 0.05, 0.08), x, 2.93, z - 0.82);
       for (const s of [-0.22, 0.22]) put(C.barkLight, box(0.05, 2.5, 0.05), x + s, 0, z + 1.15, 0, 1, 1, 1, -0.28);
       for (let r = 0.4; r < 2.2; r += 0.4) put(C.barkLight, box(0.5, 0.04, 0.05), x, r, z + 1.15 - r * 0.29);
-      solid(x, z, 1.2);
+      solid(x, z, 1.2, 'stand');
     };
 
     // --- the trails: verges, roots, signposts, lanterns --------------------------------------------------------------------------------
@@ -300,7 +301,7 @@ export function woodDepth(look: WoodLook, land: WoodLand, keep: { x: number; z: 
           ring(p, 1, r + 0.5, r + 4, (x, z) => { // a cooking tripod with a pot
             for (let i = 0; i < 3; i++) put(C.bark, cyl(0.04, 0.05, 1.9, 5), x + Math.cos(i * 2.1) * 0.5, 0, z + Math.sin(i * 2.1) * 0.5, -i * 2.1, 1, 1, 1, 0.26);
             put(C.lacquer, T(new THREE.SphereGeometry(0.26, 10, 6)), x, 0.75, z).add(gold, T(new THREE.TorusGeometry(0.22, 0.02, 4, 12).rotateX(Math.PI / 2)), x, 0.95, z);
-            solid(x, z, 0.7);
+            solid(x, z, 0.7, 'tripod');
           }, 1);
           ring(p, 3, r + 0.5, r + 5, (x, z, a) => { put(C.wine, box(0.75, 0.14, 1.9), x, 0, z, a).put(C.cream, cyl(0.16, 0.16, 0.75, 8).rotateZ(Math.PI / 2), x + Math.sin(a) * 0.8, 0.15, z + Math.cos(a) * 0.8, a + Math.PI / 2); solid(x, z, 0.9); }, 0.6);
           break;

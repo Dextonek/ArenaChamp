@@ -89,7 +89,7 @@ class Merge {
     return this;
   }
   build(into: THREE.Group, own: { dispose(): void }[]) {
-    const solid = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 });
+    const solid = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide }); // the cloths are single planes
     const flat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, flatShading: true, side: THREE.DoubleSide });
     own.push(solid, flat);
     for (const [key, b] of this.bins) {
@@ -176,8 +176,8 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
   const build = (o: { kit: GoldSink; gold: THREE.Material; into: THREE.Group; own: { dispose(): void }[] }) => {
     const { kit, gold, into, own } = o;
     const mg = new Merge(96);
-    const solids: { x: number; z: number; r: number }[] = [];
-    const solid = (x: number, z: number, r: number) => solids.push({ x, z, r });
+    const solids: { x: number; z: number; r: number; k?: string }[] = [];
+    const solid = (x: number, z: number, r: number, k?: string) => solids.push({ x, z, r, k });
     // shapes, made once
     const G = {
       box: new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0),
@@ -208,18 +208,18 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
 
     // the props
     const jar = (x: number, z: number, s: number, hex: string) => { put(hex, G.jar, x, 0, z, rnd() * 6, s); put(hex, G.neck, x, 0, z, 0, s); };
-    const jars = (x: number, z: number) => { for (let k = 0; k < 3; k++) { const a = k * 2.1 + rnd(); jar(x + Math.cos(a) * 0.5, z + Math.sin(a) * 0.5, 0.75 + rnd() * 0.3, k === 1 ? C.turquoise : C.clay); } solid(x, z, 0.9); };
+    const jars = (x: number, z: number) => { for (let k = 0; k < 2; k++) { const a = k * 2.6 + rnd(); jar(x + Math.cos(a) * 0.3, z + Math.sin(a) * 0.3, 0.5 + rnd() * 0.15, k === 1 ? C.turquoise : C.clay); } solid(x, z, 0.6, 'jars'); }; // smaller than the cover's jars
     const sack = (x: number, z: number) => { put(rnd() < 0.5 ? C.cream : C.hide, G.sack, x, 0, z, rnd() * 6, 0.9 + rnd() * 0.3); };
-    const sacks = (x: number, z: number) => { for (let k = 0; k < 3; k++) sack(x + (rnd() - 0.5) * 1.1, z + (rnd() - 0.5) * 1.1); solid(x, z, 1); };
+    const sacks = (x: number, z: number) => { for (let k = 0; k < 3; k++) sack(x + (rnd() - 0.5) * 1.1, z + (rnd() - 0.5) * 1.1); solid(x, z, 1, 'sacks'); };
     const rug = (x: number, z: number, yaw: number, a: string, b: string) => { low(b, G.flatBox, x, 0.015, z, yaw, 1.9, 0.02, 2.8); low(a, G.flatBox, x, 0.03, z, yaw, 1.6, 0.02, 2.5); low(b, G.flatBox, x, 0.045, z, yaw, 0.5, 0.02, 1.2); };
-    const cairn = (x: number, z: number) => { let y = 0; for (let k = 0; k < 4; k++) { const r = 0.55 - k * 0.1, h = 0.22 + rnd() * 0.06; put([C.rockA, C.rockB, C.sandstone][k % 3], G.cairnStone, x + (rnd() - 0.5) * 0.08, y, z + (rnd() - 0.5) * 0.08, rnd() * 3, r, h, r * 0.85); y += h; } solid(x, z, 0.6); };
-    const milestone = (x: number, z: number, yaw: number) => { put(C.sandstone, G.box, x, 0, z, yaw, 0.5, 1.2, 0.36); put(C.turquoise, G.box, x, 0.8, z, yaw, 0.53, 0.14, 0.39); put(C.sandstone, G.cone4, x, 1.2, z, yaw + Math.PI / 4, 0.3, 0.2, 0.3); solid(x, z, 0.4); };
-    const waymark = (x: number, z: number, yaw: number) => { put(C.wood, G.cyl6, x, 0, z, 0, 0.06, 2.0, 0.06); put(rnd() < 0.5 ? C.turquoise : C.wine, G.cloth, x + Math.sin(yaw) * 0.25, 1.6, z + Math.cos(yaw) * 0.25, yaw + Math.PI / 2, 0.5, 0.32, 1, 0.1); solid(x, z, 0.3); };
+    const cairn = (x: number, z: number) => { let y = 0; for (let k = 0; k < 4; k++) { const r = 0.55 - k * 0.1, h = 0.22 + rnd() * 0.06; put([C.rockA, C.rockB, C.sandstone][k % 3], G.cairnStone, x + (rnd() - 0.5) * 0.08, y, z + (rnd() - 0.5) * 0.08, rnd() * 3, r, h, r * 0.85); y += h; } solid(x, z, 0.6, 'cairn'); };
+    const milestone = (x: number, z: number, yaw: number) => { put(C.sandstone, G.box, x, 0, z, yaw, 0.5, 1.2, 0.36); put(C.turquoise, G.box, x, 0.8, z, yaw, 0.53, 0.14, 0.39); put(C.sandstone, G.cone4, x, 1.2, z, yaw + Math.PI / 4, 0.3, 0.2, 0.3); solid(x, z, 0.4, 'milestone'); };
+    const waymark = (x: number, z: number, yaw: number) => { put(C.wood, G.cyl6, x, 0, z, 0, 0.06, 2.0, 0.06); put(rnd() < 0.5 ? C.turquoise : C.wine, G.cloth, x + Math.sin(yaw) * 0.25, 1.6, z + Math.cos(yaw) * 0.25, yaw + Math.PI / 2, 0.55, 0.36, 1, 1.0); solid(x, z, 0.3, 'waymark'); }; // the cloth lifted by the wind: a hanging cloth is a line from above
     const bones = (x: number, z: number, yaw: number) => { // a beast's ribs half buried, its skull
       for (let k = 0; k < 4; k++) put(C.bone, G.rib, x + Math.sin(yaw) * (k - 1.5) * 0.3, -0.12, z + Math.cos(yaw) * (k - 1.5) * 0.3, yaw + Math.PI / 2, 1 - Math.abs(k - 1.5) * 0.12);
       put(C.bone, G.skull, x + Math.sin(yaw) * 1.1, 0.1, z + Math.cos(yaw) * 1.1, yaw);
       put(C.bone, G.log, x - Math.sin(yaw) * 0.9, 0.05, z - Math.cos(yaw) * 0.9, yaw + 0.4, 0.5, 0.05, 0.05);
-      solid(x, z, 1);
+      solid(x, z, 1, 'bones');
     };
     const cart = (x: number, z: number, yaw: number) => { // a broken cart: its bed tipped, one wheel on, one lying, a spilled sack
       put(C.plank, G.box, x, 0.35, z, yaw, 1.5, 0.18, 2.6, 0.14);
@@ -229,7 +229,7 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
       goldAt(G.cyl, x + Math.cos(yaw) * 0.9, 0.8, z - Math.sin(yaw) * 0.9, yaw, 0.12, 0.08, 0.12);
       put(C.wood, G.box, x + Math.sin(yaw) * 1.9, 0.1, z + Math.cos(yaw) * 1.9, yaw + 0.3, 0.1, 0.1, 1.8, 0.1);
       sack(x - Math.sin(yaw) * 1.7, z - Math.cos(yaw) * 1.7);
-      solid(x, z, 2);
+      solid(x, z, 2, 'cart');
     };
     const roadWell = (x: number, z: number) => { // a low round well, a turquoise band, a beam, a bucket
       put(C.sandstone, G.cyl, x, 0, z, 0, 0.9, 0.8, 0.9); put(C.lacquer, G.cyl, x, 0.79, z, 0, 0.7, 0.02, 0.7); put(C.turquoise, G.cyl, x, 0.32, z, 0, 0.93, 0.14, 0.93);
@@ -237,7 +237,7 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
       put(C.wood, G.box, x, 2.15, z, 0, 2.1, 0.1, 0.1); put(C.clay, G.cyl, x + 0.3, 1.3, z, 0, 0.16, 0.24, 0.16);
       goldAt(new THREE.TorusGeometry(0.9, 0.05, 5, 18).rotateX(Math.PI / 2), x, 0.81, z);
       jars(x + 1.8, z + 0.6);
-      solid(x, z, 1.4);
+      solid(x, z, 1.4, 'well');
     };
 
     // --- the roads ----------------------------------------------------------------------------------------------------------------
@@ -279,39 +279,39 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
       for (const [px, pz] of [[-1.3, -1], [1.3, -1], [-1.3, 1], [1.3, 1]]) put(C.wood, G.cyl6, x + Math.cos(yaw) * px + Math.sin(yaw) * pz, 0, z - Math.sin(yaw) * px + Math.cos(yaw) * pz, 0, 0.06, pz < 0 ? 2.5 : 2.1, 0.06);
       put(hex, G.flatBox, x, 2.3, z, yaw, 2.9, 0.05, 2.3, 0.18);
       goldAt(G.box, x + Math.sin(yaw) * 1.17, 2.12, z + Math.cos(yaw) * 1.17, yaw, 2.9, 0.05, 0.06);
-      solid(x, z, 1.8);
+      solid(x, z, 1.8, 'awning');
     };
-    const urn = (x: number, z: number) => { const s = 0.9 + rnd() * 0.4; put(C.cream, G.jar, x, 0, z, 0, s * 0.9, s * 1.1, s * 0.9); put(C.sandstone, G.cyl, x, 1.05 * s, z, 0, 0.22 * s, 0.1, 0.22 * s); goldAt(G.cyl, x, 1.15 * s, z, 0, 0.08, 0.08, 0.08); solid(x, z, 0.5); };
+    const urn = (x: number, z: number) => { const s = 0.9 + rnd() * 0.4; put(C.cream, G.jar, x, 0, z, 0, s * 0.9, s * 1.1, s * 0.9); put(C.sandstone, G.cyl, x, 1.05 * s, z, 0, 0.22 * s, 0.1, 0.22 * s); goldAt(G.cyl, x, 1.15 * s, z, 0, 0.08, 0.08, 0.08); solid(x, z, 0.5, 'urn'); };
     const statue = (x: number, z: number, a: number) => { // a broken statue: a plinth with its feet, the torso fallen by it, the head further off
       put(C.sandstone, G.box, x, 0, z, a, 1.2, 0.7, 1.2); put(C.turquoise, G.box, x, 0.6, z, a, 1.24, 0.12, 1.24); put(C.cream, G.box, x, 0.7, z, a, 0.8, 0.5, 0.5);
       put(C.cream, G.cone4, x + Math.cos(a) * 1.4, 0.35, z - Math.sin(a) * 1.4, a, 0.45, 1.6, 0.35, Math.PI / 2);
       put(C.cream, G.ico1, x + Math.cos(a) * 2.6, 0.25, z - Math.sin(a) * 2.6, rnd() * 6, 0.3);
-      solid(x, z, 1.4);
+      solid(x, z, 1.4, 'statue');
     };
-    const ladder = (x: number, z: number, yaw: number) => { for (const s of [-0.22, 0.22]) put(C.wood, G.box, x + Math.cos(yaw) * s, 0.05, z - Math.sin(yaw) * s, yaw, 0.06, 0.06, 2.6); for (let k = -1.1; k <= 1.11; k += 0.37) put(C.plank, G.box, x + Math.sin(yaw) * k, 0.05, z + Math.cos(yaw) * k, yaw, 0.5, 0.04, 0.05); solid(x, z, 1.3); };
-    const rope = (x: number, z: number) => { for (let k = 0; k < 3; k++) put(C.rope, new THREE.TorusGeometry(0.3 - k * 0.04, 0.05, 5, 12).rotateX(Math.PI / 2), x, 0.05 + k * 0.09, z); solid(x, z, 0.4); };
-    const basket = (x: number, z: number) => { put(C.rope, G.cyl, x, 0, z, 0, 0.3, 0.4, 0.3); put(C.sandstone, G.cyl, x, 0.38, z, 0, 0.26, 0.04, 0.26); solid(x, z, 0.4); };
-    const sieve = (x: number, z: number, yaw: number) => { put(C.wood, G.box, x, 0.5, z, yaw, 1.2, 0.08, 0.9, 0.3); for (const s of [-1, 1]) put(C.wood, G.box, x + Math.cos(yaw) * s * 0.55, 0, z - Math.sin(yaw) * s * 0.55, yaw, 0.06, 0.8, 0.06); solid(x, z, 0.8); };
-    const spears = (x: number, z: number) => { for (let k = 0; k < 3; k++) { put(C.wood, G.cyl6, x + (rnd() - 0.5) * 0.7, 0, z + (rnd() - 0.5) * 0.7, 0, 0.03, 2.2, 0.03, (rnd() - 0.5) * 0.3); } solid(x, z, 0.5); };
-    const hideRack = (x: number, z: number, yaw: number) => { for (const s of [-1, 1]) put(C.wood, G.cyl6, x + Math.cos(yaw) * s, 0, z - Math.sin(yaw) * s, 0, 0.05, 1.6, 0.05); put(C.wood, G.box, x, 1.55, z, yaw, 2.1, 0.06, 0.06); put(C.hide, G.cloth, x, 1.05, z, yaw, 1.4, 1.0, 1); solid(x, z, 1.2); };
-    const rubble = (x: number, z: number) => { for (let k = 0; k < 4; k++) put(rnd() < 0.5 ? C.sandstone : C.cream, G.box, x + (rnd() - 0.5) * 1.4, 0, z + (rnd() - 0.5) * 1.4, rnd() * 3, 0.4 + rnd() * 0.4, 0.25 + rnd() * 0.25, 0.3 + rnd() * 0.3, (rnd() - 0.5) * 0.3); solid(x, z, 0.9); };
-    const drum = (x: number, z: number, a: number) => { put(C.cream, G.cyl, x, 0.55, z, a, 0.55, 0.7, 0.55, Math.PI / 2); solid(x, z, 0.7); };
-    const firewood = (x: number, z: number, a: number) => { for (let k = 0; k < 5; k++) put(k % 2 ? C.plank : C.wood, G.log, x + Math.sin(a) * (k % 3 - 1) * 0.24, 0.12 + Math.floor(k / 3) * 0.22, z + Math.cos(a) * (k % 3 - 1) * 0.24, a, 0.6, 0.11, 0.11); solid(x, z, 0.7); };
-    const rack = (x: number, z: number, yaw: number) => { put(C.wood, G.box, x, 0.9, z, yaw, 1.6, 0.08, 0.08); for (const s of [-1, 1]) put(C.wood, G.box, x + Math.cos(yaw) * s * 0.75, 0, z - Math.sin(yaw) * s * 0.75, yaw, 0.08, 1.0, 0.08); for (let k = -0.5; k <= 0.51; k += 0.33) put(C.wood, G.cyl6, x + Math.cos(yaw) * k, 0, z - Math.sin(yaw) * k, 0, 0.025, 1.8, 0.025, 0.12); solid(x, z, 1); };
+    const ladder = (x: number, z: number, yaw: number) => { for (const s of [-0.22, 0.22]) put(C.wood, G.box, x + Math.cos(yaw) * s, 0.05, z - Math.sin(yaw) * s, yaw, 0.06, 0.06, 2.6); for (let k = -1.1; k <= 1.11; k += 0.37) put(C.plank, G.box, x + Math.sin(yaw) * k, 0.05, z + Math.cos(yaw) * k, yaw, 0.5, 0.04, 0.05); solid(x, z, 1.3, 'ladder'); };
+    const rope = (x: number, z: number) => { for (let k = 0; k < 3; k++) put(C.rope, new THREE.TorusGeometry(0.3 - k * 0.04, 0.05, 5, 12).rotateX(Math.PI / 2), x, 0.05 + k * 0.09, z); solid(x, z, 0.4, 'rope'); };
+    const basket = (x: number, z: number) => { put(C.rope, G.cyl, x, 0, z, 0, 0.3, 0.4, 0.3); put(C.sandstone, G.cyl, x, 0.38, z, 0, 0.26, 0.04, 0.26); solid(x, z, 0.4, 'basket'); };
+    const sieve = (x: number, z: number, yaw: number) => { put(C.wood, G.box, x, 0.5, z, yaw, 1.2, 0.08, 0.9, 0.3); for (const s of [-1, 1]) put(C.wood, G.box, x + Math.cos(yaw) * s * 0.55, 0, z - Math.sin(yaw) * s * 0.55, yaw, 0.06, 0.8, 0.06); solid(x, z, 0.8, 'sieve'); };
+    const spears = (x: number, z: number) => { for (let k = 0; k < 3; k++) { put(C.wood, G.cyl6, x + (rnd() - 0.5) * 0.7, 0, z + (rnd() - 0.5) * 0.7, 0, 0.03, 2.2, 0.03, (rnd() - 0.5) * 0.3); } solid(x, z, 0.5, 'spears'); };
+    const hideRack = (x: number, z: number, yaw: number) => { for (const s of [-1, 1]) put(C.wood, G.cyl6, x + Math.cos(yaw) * s, 0, z - Math.sin(yaw) * s, 0, 0.05, 1.6, 0.05); put(C.wood, G.box, x, 1.55, z, yaw, 2.1, 0.06, 0.06); put(C.hide, G.cloth, x, 1.05, z, yaw, 1.4, 1.0, 1, 0.6); solid(x, z, 1.2, 'hides'); };
+    const rubble = (x: number, z: number) => { for (let k = 0; k < 4; k++) put(rnd() < 0.5 ? C.sandstone : C.cream, G.box, x + (rnd() - 0.5) * 1.4, 0, z + (rnd() - 0.5) * 1.4, rnd() * 3, 0.4 + rnd() * 0.4, 0.25 + rnd() * 0.25, 0.3 + rnd() * 0.3, (rnd() - 0.5) * 0.3); solid(x, z, 0.9, 'rubble'); };
+    const drum = (x: number, z: number, a: number) => { put(C.cream, G.cyl, x, 0.32, z, a, 0.32, 0.45, 0.32, Math.PI / 2); solid(x, z, 0.5, 'drum'); }; // smaller than the fallen columns that are cover
+    const firewood = (x: number, z: number, a: number) => { for (let k = 0; k < 5; k++) put(k % 2 ? C.plank : C.wood, G.log, x + Math.sin(a) * (k % 3 - 1) * 0.24, 0.12 + Math.floor(k / 3) * 0.22, z + Math.cos(a) * (k % 3 - 1) * 0.24, a, 0.6, 0.11, 0.11); solid(x, z, 0.7, 'firewood'); };
+    const rack = (x: number, z: number, yaw: number) => { put(C.wood, G.box, x, 0.9, z, yaw, 1.6, 0.08, 0.08); for (const s of [-1, 1]) put(C.wood, G.box, x + Math.cos(yaw) * s * 0.75, 0, z - Math.sin(yaw) * s * 0.75, yaw, 0.08, 1.0, 0.08); for (let k = -0.5; k <= 0.51; k += 0.33) put(C.wood, G.cyl6, x + Math.cos(yaw) * k, 0, z - Math.sin(yaw) * k, 0, 0.025, 1.8, 0.025, 0.12); solid(x, z, 1, 'rack'); };
     const bowl = (x: number, z: number) => { put(C.clay, G.cyl, x, 0, z, 0, 0.22, 0.1, 0.22); put(C.wine, G.ico, x, 0.12, z, rnd() * 6, 0.07); goldAt(G.cyl, x, 0.1, z, 0, 0.23, 0.02, 0.23); };
     const flags = (x: number, z: number, a: number) => { // prayer flags on a line between two poles
       const cx = Math.cos(a), sz = -Math.sin(a);
       for (const s of [-1.6, 1.6]) put(C.wood, G.cyl6, x + cx * s, 0, z + sz * s, 0, 0.05, 2.3, 0.05);
       put(C.rope, G.box, x, 2.2, z, a, 3.2, 0.02, 0.02);
-      for (let f = -1.3; f <= 1.31; f += 0.37) put([C.turquoise, C.wine, C.cream, C.brass][Math.floor(rnd() * 4)], G.cloth, x + cx * f, 1.95, z + sz * f, a + Math.PI / 2, 0.3, 0.42, 1);
-      solid(x, z, 1.7);
+      for (let f = -1.3; f <= 1.31; f += 0.37) put([C.turquoise, C.wine, C.cream, C.brass][Math.floor(rnd() * 4)], G.cloth, x + cx * f, 1.95, z + sz * f, a, 0.3, 0.42, 1, 0.8);
+      solid(x, z, 1.7, 'flags');
     };
     const smallPalm = (x: number, z: number) => {
       const h = 2.6 + rnd() * 1.2, lean = (rnd() - 0.5) * 0.25;
       put(C.plank, G.cyl6, x, 0, z, 0, 0.13, h, 0.13, lean);
       const tz = z + Math.sin(lean) * h, ty = Math.cos(lean) * h;
       for (let i = 0; i < 6; i++) put(C.palm, G.frond, x, ty, tz, (i / 6) * Math.PI * 2 + rnd() * 0.4);
-      solid(x, z, 0.6);
+      solid(x, z, 0.6, 'palm');
     };
     const reeds = (x: number, z: number) => { for (let k = 0; k < 5; k++) low(C.reed, G.blade, x + (rnd() - 0.5) * 0.8, 0, z + (rnd() - 0.5) * 0.8, rnd() * 6, 1, 2 + rnd() * 0.8, 1); };
     const bedroll = (x: number, z: number, a: number) => { low(C.wine, G.flatBox, x, 0.07, z, a, 0.75, 0.14, 1.8); put(C.cream, G.log, x + Math.sin(a) * 0.8, 0.15, z + Math.cos(a) * 0.8, a + Math.PI / 2, 0.38, 0.15, 0.15); };
