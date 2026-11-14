@@ -10,13 +10,13 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
 - **Merged, not live:** the Climb's own people: 25 figures, five a chapter, no hero reused (`src/tower/world/folk.ts`,
   `public/models/tower/`, page `docs/tower/models/index.html`). The perf tool's Climb floor-11 print moved (467f6a06 -> 433b3ded, the new
   models): its baseline needs taking again. Rulers and enemies are next for models (`docs/tower/models/README.md`), on the user's word.
-- **Ten new heroes designed (gate 1 cards):** `docs/heroes/next10/index.html`; waiting on the user's pick.
+- **Twenty new heroes designed:** cards `docs/heroes/next10/`, `docs/heroes/next20/`, full kits on paper `docs/heroes/kits20/` and `pipeline/designs/kit-<theme>.md`; lore `docs/lore/` (rebuild: `python pipeline/tools/lore-page.py`, `python pipeline/tools/kits20.py`). Waiting on the user's pick and the lore's open calls.
 - **Merged, not live:** the Sea and the Wood's props set right: 37 faults fixed at their cause on floors 1-20 (`docs/tower/props/sea/`,
   `docs/tower/props/wood/`); taste calls left for the user there (white catch baskets, block benches, the root mound).
 - **Merged, not live:** the Sands, the Deep and the War's props set right: 41 faults on floors 21-50 (`docs/tower/props/sands`, `deep`, `war`).
   Left: grass tufts on cliff slopes (shared land code), War scenes past the edge sit off the hills on their downhill side.
-- **Running (worktree agents, each reports back):** (1) online leaderboards and clans with a clan chat,
-  (2) the heroes' lore: the world, factions, a legend
+- **Running (worktree agents, each reports back):** online leaderboards and clans with a clan chat.
+- **Merged (words only):** the heroes' lore: the world (the Dial), eight factions, a legend
   and ties for all forty, ten more new heroes, full kit sheets for all twenty new ones (`docs/lore/`, `docs/heroes/next20/`,
   `docs/heroes/kits20/`).
 - **New project:** ArenaWorld, an original open-world RPG in Rust (`C:\Users\erich\ArenaWorld`, its own repo and session): stage 1, the
