@@ -73,7 +73,7 @@ MORE = {
     # are the five handmade floors' first numbers; since the Climb became 50 floors they are floors 1, 11, 21, 31 and 41.
     **{f"world-{i}": {"scene": "world", "floor": n, "hero": "Kaia"} for i, n in ((1, 1), (2, 11), (3, 21), (4, 31), (5, 41))},
     # The Climb's made floors (pipeline/designs/tower-50.md), baked in src/tower/world/floors/gen/, by their own numbers.
-    **{f"gen-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (*range(2, 11), *range(12, 21), *range(22, 31))},
+    **{f"gen-{n}": {"scene": "world", "floor": n, "hero": "Kaia"} for n in (*range(2, 11), *range(12, 21), *range(22, 31), *range(32, 41))},
 }
 ALL = {**SCENES, **MORE}
 

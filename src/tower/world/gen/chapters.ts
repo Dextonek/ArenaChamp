@@ -1,5 +1,6 @@
 import type { Chapter, GenFloor } from './types';
 import { makeSandsFloor } from './sands.ts';
+import { makeDeepFloor } from './deep.ts';
 import { makeSeaFloor } from './sea.ts';
 import { makeWoodFloor } from './wood.ts';
 
@@ -11,4 +12,5 @@ export const GENERATORS: Partial<Record<Chapter, (o: { n: number; attempt?: numb
   sea: makeSeaFloor,
   wood: makeWoodFloor,
   sands: makeSandsFloor,
+  deep: makeDeepFloor,
 };
