@@ -395,7 +395,7 @@ const KINDS: Kind[] = [
     make: (S, P, r) => {
       P.m('patch', 0, 0, 2.4, 2.0, 0);
       // the hand-cart on its side: its bed, a wheel up, the shafts
-      P.p('teal', S.box(1.6, 0.3, 0.9), -0.3, 0, -0.9, 0.2).p('gold', S.box(1.64, 0.035, 0.94), -0.3, 0.28, -0.9, 0.2);
+      P.p('teal', S.box(1.6, 0.3, 0.9), -0.3, 0, -0.9, 0.2).p('gold', S.box(1.64, 0.035, 0.94), -0.3, 0.2, -0.9, 0.2);
       wheelFlat(S, P, -1.4, -0.4, 0.42);
       for (const s of [-0.3, 0.3]) P.p('wood', S.log(0.03, 1.4, 5), 1.0, 0, -1.2 + s, 0.2);
       pot(S, P, -0.4, 0, 0.3, 0.4);
@@ -601,10 +601,10 @@ const KINDS: Kind[] = [
     name: 'barrow', R: 2.3, where: 'ground',
     make: (S, P, r) => {
       P.m('patch', 0, 0, 2.2, 1.8, 0).m('spill', 0.9, 0, 1.8, 1.2, 0);
-      P.p('plank', S.box(0.32, 0.4, 1.2), 0, 0, 0, 0.2).p('gold', S.box(0.34, 0.03, 1.22), 0, 0.37, 0, 0.2);
+      P.p('plank', S.box(0.32, 0.4, 1.2), 0, 0, 0, 0.2).p('gold', S.box(0.34, 0.03, 1.22), 0, 0.3, 0, 0.2);
       P.p('wood', S.ring(0.28, 0.045), -0.35, 0, 0.9, 0.2);
       for (const s of [-0.25, 0.25]) P.p('wood', S.log(0.03, 1.1, 6), 0.05, 0, -0.95 + s * 0.1, 1.77 + s);
-      P.p('salt', S.k('saltheap', () => new THREE.ConeGeometry(0.6, 0.26, 12).translate(0, 0.13, 0)), 0.9, 0, -0.05, 0, 0, 1.8, 1, 1.2);
+      P.p('canvas', S.k('saltheap', () => new THREE.ConeGeometry(0.6, 0.26, 12).translate(0, 0.13, 0)), 0.9, 0, -0.05, 0, 0, 1.8, 1, 1.2);
       P.p('wood', S.log(0.022, 2.0, 5), -0.7, 0, 1.1, 0.6).p('iron', S.box(0.05, 0.03, 0.55), -1.5, 0, 1.7, 0.6);
       if (r() < 0.6) basket(S, P, 1.4, 1.3, 0.28);
     },
@@ -621,7 +621,7 @@ const KINDS: Kind[] = [
       P.p('wood', S.log(0.04, 3.4, 6), -0.2, 0, 1.4, -0.08).p('wood', S.log(0.04, 3.4, 6), -0.3, 0, 1.9, -0.05);
       for (let k = 0; k < 5; k++) P.p('wood', S.box(0.06, 0.05, 0.75), -1.6 + k * 0.7, 0.03, 1.65, -0.07);
       for (let k = 0; k < 5; k++) P.p('slate', S.fish(), -1.4 + k * 0.6, 0.06, 1.65 + (r() - 0.5) * 0.3, 1.57 + (r() - 0.5) * 0.4);
-      P.p('cloth', S.ball(0.3, 0.6), 1.9, 0, 1.0, 0, 0, 1.2, 1, 1).p('rope', S.cyl(0.05, 0.05, 0.06, 8), 1.9, 0.34, 1.0);
+      P.p('rope', S.ball(0.3, 0.6), 1.9, 0, 1.0, 0, 0, 1.2, 1, 1).p('plank', S.cyl(0.05, 0.05, 0.06, 8), 1.9, 0.34, 1.0);
       basket(S, P, 2.1, -0.4, 0.28);
       basketDown(S, P, -2.4, 0.7, 2.0);
     },
@@ -666,7 +666,7 @@ const KINDS: Kind[] = [
     // A fish rack on the beach: two A-frames, the pole across, split fish hung along it, one end fallen and its fish in the sand.
     name: 'fishrack', R: 2.8, where: 'beach', wet: true,
     make: (S, P, r) => {
-      for (const s of [-1.5, 1.5]) for (const q of [-1, 1]) P.p('wood', S.cyl(0.05, 0.06, 1.95, 6), s, 0, q * 0.35, 0, q * 0.2);
+      for (const s of [-1.5, 1.5]) for (const q of [-1, 1]) P.p('wood', S.cyl(0.05, 0.06, 1.95, 6), s, 0, q * 0.35, 0, -q * 0.2); // the A-frames' legs lean in to meet under the pole
       P.p('wood', S.log(0.05, 3.4, 7), 0, 1.75, 0).p('gold', S.ball(0.07), 1.72, 1.8, 0).p('gold', S.ball(0.07), -1.72, 1.8, 0);
       for (let k = 0; k < 9; k++) {
         const x = -1.3 + k * 0.32;
@@ -681,7 +681,7 @@ const KINDS: Kind[] = [
     // A cart stuck at the tide line: sunk to its hubs in the wet sand, its shafts in the air, its load of weed and a barrel.
     name: 'tidecart', R: 3.0, where: 'beach', wet: true,
     make: (S, P, r) => {
-      P.p('plank', S.box(2.4, 0.5, 1.4), 0, 0.15, 0, 0, -0.12).p('gold', S.box(2.44, 0.05, 1.44), 0, 0.62, 0, 0, -0.12);
+      P.p('plank', S.box(2.4, 0.5, 1.4), 0, 0.15, 0, 0, -0.12).p('gold', S.box(2.44, 0.05, 1.44), 0, 0.5, 0, 0, -0.12);
       for (const s of [-0.8, 0.8]) P.p('wood', S.k('wheelup', () => S.ring(0.6, 0.06).clone().rotateX(Math.PI / 2)), 0.1, -0.15, s).p('gold', S.k('hubup', () => S.cyl(0.1, 0.1, 0.16, 8).clone().rotateX(Math.PI / 2)), 0.1, 0.45, s);
       for (const s of [-0.5, 0.5]) P.p('wood', S.cyl(0.045, 0.05, 2.4, 6), 1.3, 0.35, s, Math.PI / 2, 0.75);
       P.p('leaf', S.ball(0.6, 0.45), -0.3, 0.6, 0.1, 0, 0, 1.4, 1, 1).p('leaf', S.ball(0.4, 0.5), 0.5, 0.6, -0.2);
@@ -967,8 +967,16 @@ export function buildSeaScenes(o: SeaScenesIn): Placed[] {
       const ex = best.bx - best.ax, ez = best.bz - best.az, l2 = ex * ex + ez * ez, tt = Math.max(0, Math.min(1, ((x - best.ax) * ex + (z - best.az) * ez) / l2));
       const fx = best.ax + ex * tt, fz = best.az + ez * tt, ux = (x - fx) / bd, uz = (z - fz) / bd;
       // from the road's edge, bending a little, to under the cart
-      const along = (rnd() - 0.5) * 6, sx = fx + ux * 1.6 - uz * along * 0.4, sz = fz + uz * 1.6 + ux * along * 0.4;
-      for (const off of [-0.65, 0.65]) lines.push({ x1: sx - uz * off, z1: sz + ux * off, x2: x - uz * off - ux * 1.2, z2: z + ux * off - uz * 1.2, w: 0.32, t: 'rut' });
+      const along = (rnd() - 0.5) * 6;
+      let sx = fx + ux * 1.6 - uz * along * 0.4, sz = fz + uz * 1.6 + ux * along * 0.4;
+      // walked from the cart out to the road: stopped short of a place's stand, a tidal flat or another road's middle
+      const qx = x - ux * 1.2, qz = z - uz * 1.2, n = Math.ceil(Math.hypot(sx - qx, sz - qz) / 0.5);
+      for (let i = 1; i <= n; i++) {
+        const px = qx + ((sx - qx) * i) / n, pz = qz + ((sz - qz) * i) / n;
+        if ((i < n && roadDist(px, pz) < 2.2) || inFlat(px, pz, 0.5) || spec.places.some((p) => Math.hypot(p.x - px, p.z - pz) < p.r + 0.5)) { sx = qx + ((sx - qx) * (i - 1)) / n; sz = qz + ((sz - qz) * (i - 1)) / n; break; }
+      }
+      if (Math.hypot(sx - qx, sz - qz) < 2) return;
+      for (const off of [-0.65, 0.65]) lines.push({ x1: sx - uz * off, z1: sz + ux * off, x2: qx - uz * off, z2: qz + ux * off, w: 0.32, t: 'rut' });
     } else {
       // the shortest way out to the sea (or the beach), up to 22 m; the furrow runs from there to the anchor, stopping short of a road
       let best = -1, bd = 1e9;
@@ -1114,10 +1122,10 @@ function paintGround(ground: { map: THREE.Texture; L: number }, marks: WMark[], 
     if (l.t === 'furrow') {
       // the ridges of sand pushed up either side, then the furrow
       const nx = -(l.z2 - l.z1), nz = l.x2 - l.x1, n = Math.hypot(nx, nz) || 1, ox = (nx / n) * l.w * 0.75, oz = (nz / n) * l.w * 0.75;
-      g.strokeStyle = 'rgba(214,200,160,0.5)';
-      g.lineWidth = l.w * 0.45 * ppm;
+      g.strokeStyle = 'rgba(190,176,138,0.22)';
+      g.lineWidth = l.w * 0.4 * ppm;
       for (const s of [-1, 1]) { g.beginPath(); g.moveTo(X(l.x1 + ox * s), Z(l.z1 + oz * s)); g.lineTo(X(l.x2 + ox * s), Z(l.z2 + oz * s)); g.stroke(); }
-      g.strokeStyle = 'rgba(70,56,40,0.62)';
+      g.strokeStyle = 'rgba(76,62,44,0.42)';
     } else g.strokeStyle = 'rgba(84,64,42,0.7)';
     g.lineWidth = l.w * ppm;
     g.beginPath(); g.moveTo(X(l.x1), Z(l.z1)); g.lineTo(X(l.x2), Z(l.z2)); g.stroke();

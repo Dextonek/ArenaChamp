@@ -270,7 +270,7 @@ const KINDS: Kind[] = [
     name: 'logcart', R: 3.1, where: 'ground', trail: 'ruts',
     make: (S, P, r) => {
       P.m('patch', 0, 0.6, 3.2, 2.4, 0);
-      P.p('plank', S.box(2.4, 0.4, 0.3), 0, 0, 0, 0).p('gold', S.box(2.44, 0.04, 0.32), 0, 0.38, 0, 0).p('plank', S.box(2.4, 0.05, 1.3), 0, 0, 0.8, 0);
+      P.p('plank', S.box(2.4, 0.4, 0.3), 0, 0, 0, 0).p('gold', S.box(2.44, 0.04, 0.32), 0, 0.3, 0, 0).p('plank', S.box(2.4, 0.05, 1.3), 0, 0, 0.8, 0);
       wheel(S, P, -0.5, -0.85); wheel(S, P, 1.6, -1.2, 0.4);
       P.p('bark', S.log(0.04, 1.6, 6), -1.7, 0, 0.2, 0.3);
       const logs = 4 + Math.floor(r() * 3);
@@ -315,7 +315,7 @@ const KINDS: Kind[] = [
         P.p('bark', S.log(0.02, 1.4, 5), -1.4, 0, 0.6, 0.9);
       } else {
         // the hand-cart on its side, a wheel up
-        P.p('wine', S.box(1.4, 0.3, 0.8), 1.4, 0, 0.8, 1.2).p('gold', S.box(1.44, 0.035, 0.84), 1.4, 0.28, 0.8, 1.2);
+        P.p('wine', S.box(1.4, 0.3, 0.8), 1.4, 0, 0.8, 1.2).p('gold', S.box(1.44, 0.035, 0.84), 1.4, 0.2, 0.8, 1.2);
         wheel(S, P, 1.0, 1.7, 0.36);
         for (const s of [-0.25, 0.25]) P.p('bark', S.log(0.025, 1.2, 5), 1.7 + s, 0, -0.3, 1.2);
         basket(S, P, -1.5, 0.6, 0.26);
@@ -718,8 +718,15 @@ export function buildWoodScenes(o: WoodScenesIn): Placed[] {
     if (!best || bd < 4) return;
     const ex = best.bx - best.ax, ez = best.bz - best.az, l2 = ex * ex + ez * ez, tt = Math.max(0, Math.min(1, ((x - best.ax) * ex + (z - best.az) * ez) / l2));
     const fx = best.ax + ex * tt, fz = best.az + ez * tt, ux = (x - fx) / bd, uz = (z - fz) / bd, along = (rnd() - 0.5) * 6;
-    const sx = fx + ux * 1.6 - uz * along * 0.4, sz = fz + uz * 1.6 + ux * along * 0.4;
-    for (const off of [-0.65, 0.65]) lines.push({ x1: sx - uz * off, z1: sz + ux * off, x2: x - uz * off - ux * 1.2, z2: z + ux * off - uz * 1.2, w: 0.32 });
+    let sx = fx + ux * 1.6 - uz * along * 0.4, sz = fz + uz * 1.6 + ux * along * 0.4;
+    // walked from the cart out to the trail: stopped short of a place, a brook or another trail's middle
+    const qx = x - ux * 1.2, qz = z - uz * 1.2, n = Math.ceil(Math.hypot(sx - qx, sz - qz) / 0.5);
+    for (let i = 1; i <= n; i++) {
+      const px = qx + ((sx - qx) * i) / n, pz = qz + ((sz - qz) * i) / n;
+      if ((i < n && roadDist(px, pz) < 2.2) || look.places.some((p) => Math.hypot(p.x - px, p.z - pz) < p.r + 0.5) || brookPts.some((b) => Math.hypot(b.x - px, b.z - pz) < 1.6)) { sx = qx + ((sx - qx) * (i - 1)) / n; sz = qz + ((sz - qz) * (i - 1)) / n; break; }
+    }
+    if (Math.hypot(sx - qx, sz - qz) < 2) return;
+    for (const off of [-0.65, 0.65]) lines.push({ x1: sx - uz * off, z1: sz + ux * off, x2: qx - uz * off, z2: qz + ux * off, w: 0.32 });
   };
   const tryPut = (name: string, x: number, z: number, jitter: number, faceYaw?: number) => {
     const k = kinds.get(name)!;
