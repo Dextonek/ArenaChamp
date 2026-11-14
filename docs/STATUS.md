@@ -19,7 +19,12 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
   (create, join by code or by asking, 30 members, word filter, personal mute, leader's 24 h mute, Report to the log, online dots,
   unread count). **PROTOCOL 17:** open tabs reload at the next deploy. Docs: `docs/architecture/multiplayer.md`, *Leaderboards and
   clans*; pictures `docs/game/social/`; checks `node server/smoke-test.mjs --social`.
-- **Running:** no agents.
+- **Running (worktree agents):** (1) the Climb's open world stage 2: shared packs, scaling with players, respawn (PROTOCOL 18);
+  (2) the Climb's rulers and enemies get their own models (15 + 15; Blender); (3) the engine mechanics the twenty new heroes need
+  (`pipeline/designs/heroes20-engine.md`), no hero yet.
+- **The twenty new heroes: the user said "all of them, matched to the lore" (2026-11-14).** Plan: the engine mechanics now (3 above);
+  the looks (gate 2) in batches of five in Blender once the rulers' and enemies' Blender work ends, each faction's colours and its legend in
+  the figure, line-ups for the user's yes; then spells, CPU and balance per hero in the build order of `docs/heroes/kits20/`.
 - **Merged (words only):** the heroes' lore: the world (the Dial), eight factions, a legend
   and ties for all forty, ten more new heroes, full kit sheets for all twenty new ones (`docs/lore/`, `docs/heroes/next20/`,
   `docs/heroes/kits20/`).
