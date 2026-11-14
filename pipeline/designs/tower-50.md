@@ -151,3 +151,9 @@ today's area, not a circle.
   models (branch `t3/tower-sea-npc-models`: a keeper, a quest giver, a trader, a drowned docker and the Drowned Admiral, a sheet
   beside Sefu and Kaia in docs/tower/models/, waiting on the user's yes; not in the game); the Wood, the Sands and the Deep each in
   their own worktree (briefs: the same bar as the sea), the War next.
+- **Depth (the user: "make all the background look fit there, all the roads and zones"), the sea done:** src/tower/world/depth.ts,
+  looks only, nothing to walk into. Lanterns, kerb stones, fences and signposts line the roads. The meadows have grass, flowers and
+  pebbles. Each place is dressed as what it is (market, village, wreck, shipyard, beacon, chapel, fort, caves, salt pans, camp). Out
+  on the far sea there are islands with a light, and seabirds fly overhead. Village houses are drawn as cottages, each with a roof of its own colour.
+  In an A/B on floor 2 under the same load, the frames were no slower. Each other chapter gets its own depth pass, made the same way
+  in its own zone file, once its floors are built.
