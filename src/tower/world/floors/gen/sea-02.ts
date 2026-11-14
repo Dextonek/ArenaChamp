@@ -1214,10 +1214,10 @@ export const SEA_02: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": 79.19,
-     "az": -2.69,
-     "bx": 78.18,
-     "bz": -6.97,
+     "ax": 79.05,
+     "az": -3.27,
+     "bx": 78.32,
+     "bz": -6.39,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1226,10 +1226,10 @@ export const SEA_02: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": 77.7,
-     "az": -9.01,
-     "bx": 76.7,
-     "bz": -13.3,
+     "ax": 77.57,
+     "az": -9.6,
+     "bx": 76.83,
+     "bz": -12.71,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1238,10 +1238,10 @@ export const SEA_02: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": 76.22,
-     "az": -15.34,
-     "bx": 75.21,
-     "bz": -19.62,
+     "ax": 76.08,
+     "az": -15.92,
+     "bx": 75.35,
+     "bz": -19.04,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1250,10 +1250,10 @@ export const SEA_02: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": 88.93,
-     "az": -4.98,
-     "bx": 87.92,
-     "bz": -9.26,
+     "ax": 88.79,
+     "az": -5.56,
+     "bx": 88.06,
+     "bz": -8.67,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1262,10 +1262,10 @@ export const SEA_02: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": 87.44,
-     "az": -11.3,
-     "bx": 86.43,
-     "bz": -15.59,
+     "ax": 87.3,
+     "az": -11.89,
+     "bx": 86.57,
+     "bz": -15,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1274,10 +1274,10 @@ export const SEA_02: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": 85.95,
-     "az": -17.63,
-     "bx": 84.94,
-     "bz": -21.91,
+     "ax": 85.81,
+     "az": -18.21,
+     "bx": 85.08,
+     "bz": -21.33,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"

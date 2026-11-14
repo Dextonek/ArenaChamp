@@ -1214,10 +1214,10 @@ export const SEA_03: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -80.58,
-     "az": -7.11,
-     "bx": -79.37,
-     "bz": -11.34,
+     "ax": -80.42,
+     "az": -7.69,
+     "bx": -79.53,
+     "bz": -10.76,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1226,10 +1226,10 @@ export const SEA_03: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -78.79,
-     "az": -13.36,
-     "bx": -77.57,
-     "bz": -17.59,
+     "ax": -78.62,
+     "az": -13.93,
+     "bx": -77.74,
+     "bz": -17.01,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1238,10 +1238,10 @@ export const SEA_03: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -76.99,
-     "az": -19.6,
-     "bx": -75.78,
-     "bz": -23.83,
+     "ax": -76.83,
+     "az": -20.18,
+     "bx": -75.94,
+     "bz": -23.26,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1250,10 +1250,10 @@ export const SEA_03: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -90.19,
-     "az": -9.87,
-     "bx": -88.98,
-     "bz": -14.1,
+     "ax": -90.03,
+     "az": -10.45,
+     "bx": -89.14,
+     "bz": -13.53,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1262,10 +1262,10 @@ export const SEA_03: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -88.4,
-     "az": -16.12,
-     "bx": -87.18,
-     "bz": -20.35,
+     "ax": -88.23,
+     "az": -16.7,
+     "bx": -87.35,
+     "bz": -19.77,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1274,10 +1274,10 @@ export const SEA_03: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -86.6,
-     "az": -22.37,
-     "bx": -85.39,
-     "bz": -26.6,
+     "ax": -86.44,
+     "az": -22.94,
+     "bx": -85.55,
+     "bz": -26.02,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1844,6 +1844,18 @@ export const SEA_03: GenFloor = {
      "bz": -63.16,
      "r": 0.8,
      "height": 1.3,
+     "kind": "pillar"
+    }
+   },
+   {
+    "look": "barrel",
+    "o": {
+     "ax": -71.93,
+     "az": -26.78,
+     "bx": -71.93,
+     "bz": -26.78,
+     "r": 0.6,
+     "height": 1,
      "kind": "pillar"
     }
    },
@@ -2518,18 +2530,6 @@ export const SEA_03: GenFloor = {
      "height": 2.52,
      "kind": "pillar"
     }
-   },
-   {
-    "look": "rock",
-    "o": {
-     "ax": -48.16,
-     "az": 86.15,
-     "bx": -48.16,
-     "bz": 86.15,
-     "r": 1.11,
-     "height": 1.64,
-     "kind": "pillar"
-    }
    }
   ],
   "flats": [
@@ -2655,87 +2655,87 @@ export const SEA_03: GenFloor = {
   "props": [
    {
     "i": 0,
-    "dx": -90.88,
-    "dz": 41.38,
-    "yaw": 3.41
+    "dx": -96.06,
+    "dz": 24.17,
+    "yaw": 2.45
    },
    {
     "i": 1,
+    "dx": -91.16,
+    "dz": 42.24,
+    "yaw": 3.41
+   },
+   {
+    "i": 2,
     "dx": -82.11,
     "dz": 43.74,
     "yaw": 1.47
    },
    {
-    "i": 2,
-    "dx": -93.64,
-    "dz": 20.38,
-    "yaw": 2.37
-   },
-   {
     "i": 3,
-    "dx": 64.96,
-    "dz": 28.68,
-    "yaw": 2.08
+    "dx": 64.71,
+    "dz": 39.93,
+    "yaw": 1.06
    },
    {
     "i": 4,
-    "dx": 66,
-    "dz": 30.96,
-    "yaw": 1.33
+    "dx": 44.35,
+    "dz": 36.02,
+    "yaw": 2.33
    },
    {
     "i": 7,
-    "dx": 62.69,
-    "dz": 41.9,
-    "yaw": 4.14
-   },
-   {
-    "i": 5,
-    "dx": 66.35,
-    "dz": -49,
+    "dx": 44.15,
+    "dz": 31.99,
     "yaw": 0.99
    },
    {
+    "i": 5,
+    "dx": 65.53,
+    "dz": -59.36,
+    "yaw": 2.08
+   },
+   {
     "i": 6,
-    "dx": 63.61,
-    "dz": -42.83,
-    "yaw": 4.52
+    "dx": 66.8,
+    "dz": -57.2,
+    "yaw": 1.33
    },
    {
     "i": 3,
-    "dx": 85.58,
-    "dz": 8.11,
-    "yaw": 0.58
+    "dx": 79.06,
+    "dz": -3.74,
+    "yaw": 6.12
    },
    {
     "i": 8,
-    "dx": 85.24,
-    "dz": 6.47,
-    "yaw": 0.81
+    "dx": 76.77,
+    "dz": -4.94,
+    "yaw": 0.49
    },
    {
     "i": 0,
-    "dx": -50.66,
-    "dz": -59.31,
-    "yaw": 5.55
+    "dx": -65.48,
+    "dz": -73.18,
+    "yaw": 0.79
    },
    {
     "i": 8,
-    "dx": -66.5,
-    "dz": -73.43,
-    "yaw": 2.38
+    "dx": -52.13,
+    "dz": -58.95,
+    "yaw": 2.35
    },
    {
     "i": 1,
-    "dx": -86.65,
-    "dz": -36.8,
-    "yaw": 0.62
+    "dx": -90.31,
+    "dz": -35.86,
+    "yaw": 5.99
    },
    {
     "i": 2,
-    "dx": -94.33,
-    "dz": -17.1,
-    "yaw": 5.74
+    "dx": -86.06,
+    "dz": -38.59,
+    "yaw": 1.57
    }
   ],
   "ruin": {
@@ -2751,7 +2751,7 @@ export const SEA_03: GenFloor = {
    "title": "Crowned in brine",
    "stand": "Hank",
    "tint": "#3a7a9a",
-   "scale": 2.23,
+   "scale": 2.49,
    "hp": 2900,
    "speed": 2,
    "stagger": {
@@ -2768,7 +2768,7 @@ export const SEA_03: GenFloor = {
     },
     "cannons": {
      "use": "volley",
-     "name": "Cannon Volley",
+     "name": "Harpoon Volley",
      "share": 0.085,
      "cooldown": 5
     },
@@ -2791,11 +2791,9 @@ export const SEA_03: GenFloor = {
      "seconds": 11,
      "cooldown": 28
     },
-    "whirl": {
-     "use": "spokes",
-     "name": "The Whirlpool",
-     "share": 0.09,
-     "cooldown": 14
+    "fan": {
+     "use": "fan",
+     "share": 0.05
     }
    },
    "phases": [
@@ -2821,7 +2819,7 @@ export const SEA_03: GenFloor = {
       "cannons",
       "cleave",
       "lunge",
-      "whirl"
+      "fan"
      ],
      "gap": [
       1.3,
@@ -2837,7 +2835,7 @@ export const SEA_03: GenFloor = {
       "cannons",
       "cleave",
       "lunge",
-      "whirl"
+      "fan"
      ],
      "timed": {
       "move": "tide",
@@ -3452,7 +3450,7 @@ export const SEA_03: GenFloor = {
     },
     "face": -0.5,
     "greet": [
-     "Everything I own is somewhere on this shore. Help me find it."
+     "I have work, if you have legs. The tide does not wait."
     ],
     "quests": [
      "g1",
@@ -3874,7 +3872,7 @@ export const SEA_03: GenFloor = {
    {
     "id": "trial",
     "piece": "trial",
-    "name": "The Drowned Chapel",
+    "name": "The Flooded Vault",
     "at": {
      "x": -57.38,
      "z": 97.04

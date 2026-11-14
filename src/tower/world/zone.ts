@@ -261,6 +261,24 @@ export function buildSeaZone(L: SeaLook): { group: THREE.Group; update(dt: numbe
         kit.add(sail, new THREE.ConeGeometry(r * 1.25, h * 1.4, 7).translate(0, h * 0.7, 0), o.ax, 0, o.az, rnd() * 3).add(gold, cyl(0.05, 0.05, h * 1.9, 4), o.ax, 0, o.az);
         break;
       case 'house': {
+        if (r >= 1.2) {
+          // A cottage (a village's row): walls, gables and a pitched roof along its length, a chimney, a door and windows on both long
+          // sides. (Drawn as a wall with a flat gold top, a village read as two long slabs.)
+          const w = r * 2, d = len + r * 2, rh = w * 0.45, ux = Math.cos(yaw), uz = -Math.sin(yaw);
+          kit.add(cream, box(w, h, d), mx, 0, mz, yaw);
+          const gable = new THREE.Shape([new THREE.Vector2(-w / 2, 0), new THREE.Vector2(w / 2, 0), new THREE.Vector2(0, rh)]);
+          kit.add(cream, new THREE.ExtrudeGeometry(gable, { depth: d, bevelEnabled: false }).translate(0, 0, -d / 2), mx, h, mz, yaw);
+          const slope = Math.hypot(w / 2 + 0.35, rh + 0.25), ang = Math.atan2(rh + 0.25, w / 2 + 0.35), roof = [wine, teal, stone][Math.floor(rnd() * 3)];
+          for (const s of [-1, 1]) kit.add(roof, new THREE.BoxGeometry(slope, 0.18, d + 0.6).translate(0, 0.09, 0).rotateZ(-s * ang).translate(s * (w / 4 + 0.05), rh / 2 + 0.02, 0), mx, h - 0.1, mz, yaw);
+          kit.add(gold, new THREE.BoxGeometry(0.12, 0.12, d + 0.65).translate(0, rh + 0.22, 0), mx, h, mz, yaw);
+          kit.add(stone, box(0.55, rh + 1.1, 0.55), mx + ux * w * 0.22 + Math.sin(yaw) * d * 0.25, h, mz + uz * w * 0.22 + Math.cos(yaw) * d * 0.25);
+          for (const s of [-1, 1]) {
+            const fx = mx + ux * s * (w / 2 + 0.03), fz = mz + uz * s * (w / 2 + 0.03);
+            kit.add(darkWood, box(0.08, 1.9, 1.0), fx, 0, fz, yaw);
+            for (const t of [-1, 1]) kit.add(iron, box(0.07, 0.8, 0.7), fx + Math.sin(yaw) * t * d * 0.3, 1.2, fz + Math.cos(yaw) * t * d * 0.3, yaw).add(gold, box(0.09, 0.06, 0.82), fx + Math.sin(yaw) * t * d * 0.3, 1.15, fz + Math.cos(yaw) * t * d * 0.3, yaw);
+          }
+          break;
+        }
         kit.add(cream, box(r * 2, h, len + r * 2), mx, 0, mz, yaw).add(gold, box(r * 2.3, 0.1, len + r * 2.3), mx, h, mz, yaw);
         // fallen blocks at its foot
         kit.add(stone, box(0.7, 0.5, 0.9), mx + 0.9, 0, mz + 0.6, rnd() * 3).add(stone, box(0.9, 0.4, 0.6), mx - 1.1, 0, mz - 0.7, rnd() * 3);

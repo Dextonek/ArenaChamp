@@ -135,7 +135,8 @@ export function makeSeaFloor(o: SeaGenOptions): GenFloor {
         break;
       case 'village':
         // two rows of houses either side of a lane (their walls are the cover), a barrel and a crate
-        for (const s of [-1, 1]) for (const t of [-6.5, 0, 6.5]) L.wall('house', Q(s * 5 - 1.4, t - 2.2), Q(s * 5 - 1.4, t + 2.2), 1.4, 3.6);
+        // cottages 6 m long on 6.5 m: apart, with a gap too narrow to walk (overlapping, their roofs fought in stripes)
+        for (const s of [-1, 1]) for (const t of [-6.5, 0, 6.5]) L.wall('house', Q(s * 5 - 1.4, t - 1.6), Q(s * 5 - 1.4, t + 1.6), 1.4, 3.6);
         L.pill('barrel', Q(0, 9.5), 0.6, 1); L.pill('crate', Q(2, -9.5), 0.8, 1.2);
         break;
       case 'saltworks':

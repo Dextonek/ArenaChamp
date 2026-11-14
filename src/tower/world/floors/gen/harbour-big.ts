@@ -1213,10 +1213,10 @@ export const HARBOUR: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -70.14,
-     "az": 1.54,
-     "bx": -69.26,
-     "bz": -2.77,
+     "ax": -70.02,
+     "az": 0.95,
+     "bx": -69.38,
+     "bz": -2.19,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1225,10 +1225,10 @@ export const HARBOUR: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -68.84,
-     "az": -4.83,
-     "bx": -67.96,
-     "bz": -9.14,
+     "ax": -68.72,
+     "az": -5.42,
+     "bx": -68.08,
+     "bz": -8.56,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1237,10 +1237,10 @@ export const HARBOUR: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -67.54,
-     "az": -11.2,
-     "bx": -66.66,
-     "bz": -15.51,
+     "ax": -67.42,
+     "az": -11.79,
+     "bx": -66.78,
+     "bz": -14.92,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1249,10 +1249,10 @@ export const HARBOUR: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -79.94,
-     "az": -0.47,
-     "bx": -79.06,
-     "bz": -4.78,
+     "ax": -79.82,
+     "az": -1.06,
+     "bx": -79.18,
+     "bz": -4.19,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1261,10 +1261,10 @@ export const HARBOUR: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -78.64,
-     "az": -6.84,
-     "bx": -77.76,
-     "bz": -11.15,
+     "ax": -78.52,
+     "az": -7.42,
+     "bx": -77.88,
+     "bz": -10.56,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
@@ -1273,10 +1273,10 @@ export const HARBOUR: GenFloor = {
    {
     "look": "house",
     "o": {
-     "ax": -77.34,
-     "az": -13.2,
-     "bx": -76.45,
-     "bz": -17.51,
+     "ax": -77.22,
+     "az": -13.79,
+     "bx": -76.57,
+     "bz": -16.93,
      "r": 1.4,
      "height": 3.6,
      "kind": "wall"
