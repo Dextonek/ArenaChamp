@@ -39,18 +39,23 @@ dunes, and the sand is still warm. Where it had hung, the sky is torn: **the Tea
 came the Unmaker.
 
 A day still comes. Each morning a thinner light rises from the Heart through the Tower, and the realms live by it. But it is a little
-paler every year, the hours slip, and the weather keeps no appointments. Everyone on the Dial wants something done about the sun:
+paler every year, the hours slip, and the weather keeps no appointments.
+
+The slipping hours have a strange gift. Everyone who was alive on the day of the Fall, or born in the week after it, ages slowly,
+about a year for every five; the Hourkeepers call them **the Noon-touched**. That is why a dancer who was a girl on the day of the
+Fall, a boy who swept the Ring's first sand and a countess who saw the light leave her lands still walk the Dial a hundred years
+later, and why the young of the Dial listen to them about the sun. Everyone on the Dial wants something done about the sun:
 hang it again, keep it down, burn it, take it, or understand it first.
 
 ## Why heroes come to the Ring
 
 In the first years after the Fall the realms went to war over the sun's pieces. The war was fought on the Field of Banners, crimson
 against azure, until the field was mud and the king who began it was buried. It would have gone on until the Dial was ash. Instead the
-realms swore **the Concord of the Ring**: no realm makes war over the sun again; every quarrel is settled by champions, one against
+realms swore **the Truce of the Ring**: no realm makes war over the sun again; every quarrel is settled by champions, one against
 one, in **the Ring** at the Tower's foot; and the Tower's gate opens only for a champion of the Ring.
 
 That is the Arena. Each duel settles a debt, moves a border, wins a right or answers an insult, and every win is a step toward the
-right to climb. Most heroes also bring a reason of their own, and a rival they would very much like to meet in the Ring. The Concord
+right to climb. Most heroes also bring a reason of their own, and a rival they would very much like to meet in the Ring. The Truce
 holds duels in the realms too, on fields it has blessed: the Drowned Harbour, the Verdant Glade, the Sandstone Canyon, the Crystal
 Cavern, the Fallen Battlefield, Frostfall Lake, the Night Temple, the Sky Ruins and the Ember Caldera.
 
@@ -74,7 +79,7 @@ the War the gatekeeper is Oblivion, because that endless war is the one thing on
 
 ## Places
 
-- tower | The Tower | 0 | concord | The Gnomon, on the crater of Noonfall: the Ring at its foot, the Hall of Noon and the Cinder Pit beneath, the Sun Court at its top, the Tear above
+- tower | The Tower | 0 | truce | The Gnomon, on the crater of Noonfall: the Ring at its foot, the Hall of Noon and the Cinder Pit beneath, the Sun Court at its top, the Tear above
 - frostfall | Frostfall | 12 | hourkeepers | The observatory and the frozen library on Frostfall Lake, under the pole star
 - aubade | Aubade | 1.6 | noonsworn | The white city on the morning cliffs, where the light comes first
 - sands | The Sands | 3.6 | dune | Tamerit, the city of the Throne, between the Glass Flats and the Storm Canyon
@@ -86,14 +91,14 @@ the War the gatekeeper is Oblivion, because that endless war is the one thing on
 
 ## Factions
 
-### concord | The Concord of the Ring
+### truce | The Truce of the Ring
 - home: The Ring at the Tower's foot: its stands, the Hundred Doors beneath them, the Truce Table and the Tally-house
 - colours: #1a1a1a black, #f2f2f2 ivory, #6a2a2a oxblood, #d9c27a gold
 - sigil: A ring with the Tower's shadow standing across it
 - members: Referee Whistler, Mr. Ledger, Wick, Pip, Madame Cleaver, Big Yoko, Morwen, Kessa
 - wants: Every quarrel in the Ring and no army on the Dial; the Tower's gate opened only to a champion who earned it
 
-The Concord believes a quarrel settled in the Ring is a war that was not fought. It serves the rules, not a side, and it is the
+The Truce believes a quarrel settled in the Ring is a war that was not fought. It serves the rules, not a side, and it is the
 reason the Dial still has realms instead of one long battlefield. Its officers are the Ring's own people: the Arbiter who calls the
 rules, the Tithe-Keeper who writes down every debt, the Doorwarden whose doors bring champions in from every realm, the courier who
 carries challenges, the cook whose table ends every duel, the Mountain who stands in the first ring, the witch who salts its edge and
@@ -121,7 +126,7 @@ Underforge, who want the sun's fire for themselves, and to the Dune Throne, whos
 When the sun fell, its light left Gloaming first and came back last, and in that long twilight the Court of Dusk came into its own.
 The Court believes the dusk is the Dial's true age and that the night has as good a claim as the day. Its people are not monsters,
 or not all of them: they keep the night roads safe, bury the dead, and shelter whatever the daylight hunts. But a new sun would end
-them, and they will do a great deal to keep the Noon Seat empty. They keep the letter of the Concord and very little of its spirit.
+them, and they will do a great deal to keep the Noon Seat empty. They keep the letter of the Truce and very little of its spirit.
 
 ### greenwood | The Greenwood Moot
 - home: The Walking Wood in the west; the Moot meets under the antlered trees of the Antler Glades
@@ -157,7 +162,7 @@ they quarrel with the Dune Throne, whose storms come off the Sands and whose kin
 
 The Underforge believe the fallen sun is the best fire the Dial ever had, and that it fell to them: its heat rises through the Ember
 Caldera, its light lies in their crystals, and they were the first to see it come. They are smiths, inventors, masons, miners, a herald
-of black glass, a golem-maker and a sapper, and they build. They forge the Concord's iron and trade with the Dune Throne, and they
+of black glass, a golem-maker and a sapper, and they build. They forge the Truce's iron and trade with the Dune Throne, and they
 quarrel with the Noonsworn, who want every drop of that light carried up into the sky, and with the Greenwood, who want them to stop
 cutting.
 
@@ -195,11 +200,11 @@ driven out of the Sands and is welcome nowhere else.
 
 ## Faction ties
 
-- concord | hourkeepers | friends | The Hourkeepers keep the Concord's records, and the Concord keeps their observatory out of every war
-- concord | windward | friends | The Windward's ships carry the Ring's champions, and Gus's temple lends it Marin's water
-- concord | noonsworn | friends | The Noonsworn believe in oaths, and the Concord is the biggest oath on the Dial
-- concord | underforge | friends | The Underforge forged the Ring's iron and the Gaol's chains, and is still paid for both
-- concord | dusk | rivals | The Court keeps the letter of the Concord and nothing more; the Arbiter watches its champions twice
+- truce | hourkeepers | friends | The Hourkeepers keep the Truce's records, and the Truce keeps their observatory out of every war
+- truce | windward | friends | The Windward's ships carry the Ring's champions, and Gus's temple lends it Marin's water
+- truce | noonsworn | friends | The Noonsworn believe in oaths, and the Truce is the biggest oath on the Dial
+- truce | underforge | friends | The Underforge forged the Ring's iron and the Gaol's chains, and is still paid for both
+- truce | dusk | rivals | The Court keeps the letter of the Truce and nothing more; the Arbiter watches its champions twice
 - noonsworn | hourkeepers | friends | Both want the sun back over the Tower; the Hourkeepers want to know why it fell first
 - noonsworn | dusk | enemies | A new sun would burn the Court of Dusk, and the Court would rather the dawn never came
 - noonsworn | dune | rivals | Both claim the sun: the Noonsworn for the sky, the Throne for its king
@@ -214,25 +219,25 @@ driven out of the Sands and is welcome nowhere else.
 
 ## Heroes
 
-### Referee Whistler | the Arbiter | referee | concord | he | roster
+### Referee Whistler | the Arbiter | referee | truce | he | roster
 > "That is a dash. I saw it. Everyone saw it."
 
-Whistler was a mason's boy who swept the Ring's sand the year the Concord was sworn. He watched the first champions cheat, all of
+Whistler was a mason's boy who swept the Ring's sand the year the Truce was sworn. He watched the first champions cheat, all of
 them, and wrote down how. The founders laughed, then made him Arbiter, and he has not laughed since. He wears the black and ivory
 tabard so that no realm can claim his colour, and his silver horn is the one sound both armies of the Banners still stop for. His
-sigil tablets carry the Concord's rules: when he holds one up, that rule binds whoever stands under it. He does not fight to win. He
+sigil tablets carry the Truce's rules: when he holds one up, that rule binds whoever stands under it. He does not fight to win. He
 fights because a rule nobody enforces is only a rumour, and he has a long list of rumours to put down.
 
-### Mr. Ledger | the Tithe-Keeper | ledger | concord | he | roster
+### Mr. Ledger | the Tithe-Keeper | ledger | truce | he | roster
 > "No, no. Don't pay now. I insist."
 
-Every duel in the Ring settles a debt, and somebody has to write it down. Mr. Ledger has kept the Tally since the day the Concord was
+Every duel in the Ring settles a debt, and somebody has to write it down. Mr. Ledger has kept the Tally since the day the Truce was
 sworn: who owes what, to whom, and at what interest, in a great red book chained to his wrist so that nobody can borrow it. He is
 older than he looks, and he looks very old. The realms fear him more than any champion, because a debt in his book does not fade; it
 waits. His spells work the same way: nothing hurts now, everything comes due. He steps into the Ring when a debtor will not pay any
 other way, and he has never once lost the paperwork.
 
-### Wick | the Doorwarden | door | concord | he | roster
+### Wick | the Doorwarden | door | truce | he | roster
 > "This way, please. No, the other this way."
 
 Champions come to the Ring from every realm of the Dial, and every one of them comes through a door that Wick keeps. He is the keeper
@@ -241,46 +246,46 @@ stands: doors to the Sands, the Deep, the white north and back. A door, he says,
 is why he hates the Tear above the Tower, a hole with no frame and no other side, and the thing that came through it. In the Ring he
 opens his doors in pairs and shows his enemies out, politely, through the one they did not expect.
 
-### Pip | the Wingfoot | courier | concord | he | roster
+### Pip | the Wingfoot | courier | truce | he | roster
 > "Sign here. And here. And there, where it's on fire."
 
 A challenge to the Ring is not real until it is delivered by hand, and Pip delivers them: sealed scrolls from countess to king, from
-the Deep to the white north, in a courier's pack wider than he is. He is the youngest of the Concord's officers and by far the
-fastest. The gold wings on his circlet and his heels were the Concord's gift after he crossed the whole Dial in a day and a night. He
+the Deep to the white north, in a courier's pack wider than he is. He is the youngest of the Truce's officers and by far the
+fastest. The gold wings on his circlet and his heels were the Truce's gift after he crossed the whole Dial in a day and a night. He
 has never opened a letter, never lost one, and never been paid on time. He fights in the Ring to settle races, mostly, and once to
 deliver a challenge to a champion who would not take it any other way.
 
-### Madame Cleaver | the Feastmistress | chef | concord | she | roster
+### Madame Cleaver | the Feastmistress | chef | truce | she | roster
 > "Sit. Eat. Then you can hit each other."
 
-The Concord has one law older than the Ring: nobody who has eaten at the Truce Table may strike in anger outside it. Madame Cleaver
+The Truce has one law older than the Ring: nobody who has eaten at the Truce Table may strike in anger outside it. Madame Cleaver
 keeps that table. She was a cook in the camps of the Banners when the war was still a war, feeding both armies from one fire, and she
 walked away from it with her cleaver, her cauldron, and the certainty that everyone fights better fed. Now every duel in the Ring ends
 at her table, winner and loser side by side, and she fights to get them there. Her cleaver came from Brannoc's forge, her recipes from
 nobody, and her temper from the fact that champions never say thank you.
 
-### Big Yoko | the Mountain | sumo | concord | he | roster
+### Big Yoko | the Mountain | sumo | truce | he | roster
 > "The ring is small. The world outside it is large. Choose."
 
-Before the Ring had walls it had a circle of straw rope, and Yoko stood in it. He is the Concord's first champion and its living
+Before the Ring had walls it had a circle of straw rope, and Yoko stood in it. He is the Truce's first champion and its living
 boundary: the ring stamped on the floor of every duel is drawn after the one he defends. He was a shrine wrestler from the cliffs below
 Aubade, a giant even as a boy, and he came to the Ring to lose, to show that a giant can be pushed out by a quicker hand. Nobody has
-managed it in forty years. He throws salt before every bout to keep the circle clean, which Gus has asked him, many times, to stop. He
+managed it since the Ring was opened. He throws salt before every bout to keep the circle clean, which Gus has asked him, many times, to stop. He
 fights because the Ring is a promise, and a promise needs someone to stand in it.
 
-### Morwen | the Saltwarden | salt | concord | she | next10
+### Morwen | the Saltwarden | salt | truce | she | next10
 > "Step over. I'll wait. The salt will wait longer."
 
 Every dawn before the Ring opens, Morwen walks its edge with a pouch of salt and pours a line that no spell may cross, so that the
 crowd goes home with its eyebrows. She is a hedge witch of the Drowned Coast, raised in a cottage the sea took, and she learned early
-that a line of salt and a nail of cold iron keep out most of what walks at night. The Concord hired her after a stray bolt of Kaia's
+that a line of salt and a nail of cold iron keep out most of what walks at night. The Truce hired her after a stray bolt of Kaia's
 emptied the western stands. She does not much like champions. She likes boundaries, and people who keep to them, and she steps into
 the Ring herself to teach that to the ones who do not.
 
-### Kessa | the Chainwarden | chain | concord | she | next10
+### Kessa | the Chainwarden | chain | truce | she | next10
 > "You can run to the end of the chain. Then you come back."
 
-Under the Drowned Harbour, where the sea came in on the day of the Fall, lies the Gaol of Oaths: the Concord's prison for those who
+Under the Drowned Harbour, where the sea came in on the day of the Fall, lies the Gaol of Oaths: the Truce's prison for those who
 break the truce. Kessa is its warden. She wears its chains wound round her forearms and carries its great ring of keys, and in all
 her years only one prisoner has left without her leave: Asenet, the Uncrowned, who slipped her chain on a spring tide. Kessa has not
 forgiven the sea, the tide or herself. She comes up into the Ring when an oath-breaker must be brought in, and she brings them in, one
@@ -290,8 +295,8 @@ way or the other. She never lets go of a prisoner, and she is very hard to let g
 > "Every night ends. I am how."
 
 Auriel was born in Aubade on the first morning after the Fall, the morning the sun rose thin and late, and the Noonsworn took it for a
-sign. They raised her in white and gold plate, taught her the oath of the dawn, and gave her the winged circlet of the paladins who
-once guarded the sun's road across the sky. She is young and very certain. She believes the sun can be hung again over the Tower, and
+sign. They raised her in white and gold plate, taught her the oath of the dawn, and gave her the white wings of the paladins who once
+guarded the sun's road across the sky. Noon-touched, she is young still, and very certain. She believes the sun can be hung again over the Tower, and
 that it must be carried up by someone who has earned the climb in the Ring. Her shields burst outward when they break, the way a dawn
 does. She fights the Court of Dusk on sight, and Vesper first.
 
@@ -460,7 +465,7 @@ mercy, and some quarrels deserve one.
 ### Arden | the Huntmaster | hunt | greenwood | he | next20
 > "You walked here. I can see every step."
 
-Arden leads the Wild Hunt of the Moot, the riders who keep the Walking Wood's moving paths clear of what the Wood breeds in its dark.
+Arden leads the Hunt of the Moot, the riders who keep the Walking Wood's moving paths clear of what the Wood breeds in its dark.
 He is a tall, weathered hunter in olive and russet leathers, with an antler-tipped longbow and a hunting horn at his hip, and he reads
 tracks the way Shiori reads ink. Everything that walks leaves a trail, he says, and every trail ends somewhere. He hunts with Hank,
 eats with Bo, and has followed Nyx through the thickets for ten years without finding one footprint, which he takes personally. He
@@ -478,8 +483,8 @@ Kessa blames her for every flood.
 ### Kaia | the Tempest Caller | storm | windward | she | roster
 > "Stand by the rod. It's safer. For me."
 
-Since the Fall the weather of the Dial has had no master, and Kaia means to be one. She is a storm caller of the Spires, hooded in a
-rain cloak, with a hooked staff that catches lightning and plants it in the ground as rods. Storms that once came with the seasons now
+Since the Fall the weather of the Dial has had no master, and Kaia means to be one. She is a storm caller of the Spires, in rain-blue,
+her silver hair bound up, with a tall staff that catches lightning and plants it in the ground as rods. Storms that once came with the seasons now
 come when they like, and she bends them to the Windward's ships. Barry Cloudsley forecasts the weather; Kaia changes it, mostly to
 prove him wrong, and they have argued in public for twelve years. Saga's northern light and her lightning have never shared a sky
 politely. She fights in the Ring because a storm needs somewhere to land.
@@ -509,7 +514,7 @@ Professor Puff mapped the sky of the Dial before the Fall, from a basket under g
 has changed he is mapping it again. He is a small round scholar of the air in an aubergine coat with brass buttons, goggles up on his
 brow and a brass tank on his back, and he is completely serious about everything. His gas makes whatever it touches swell, which makes
 enemies larger and easier to hit, and which once floated a whole hive-tree out of the Wood. Sirix has not forgiven him. He argues
-engines with Ada at every Concord dinner, and Barry is his oldest flying companion.
+engines with Ada at every Truce dinner, and Barry is his oldest flying companion.
 
 ### Lian | the Kite Master | kite | windward | she | next10
 > "Look up. No, the other up."
@@ -544,7 +549,7 @@ Ember of Aubade for his fire, and fights Orren for it whenever the Ring allows.
 Ada was Brannoc's apprentice until she built a hammer that swung itself. She is a slim inventor in a copper coat, with a backpack of
 brass gears and goggles pushed up on her leather cap, and she builds turrets, drones and hooks faster than she can name them. Most of
 the Underforge's lifts, pumps and lamps are hers now. She thinks the Heart of Noon is the finest engine the Dial has ever had, and she
-would like to run the Deep on it. She argues engines with Professor Puff at every Concord dinner, and she has won every argument that
+would like to run the Deep on it. She argues engines with Professor Puff at every Truce dinner, and she has won every argument that
 did not involve flying.
 
 ### Bram | the Stonewright | mason | underforge | he | roster
@@ -686,7 +691,7 @@ under the collar. In the Ring she ties her lines across the floor and sends the 
 > "Slower. Slower. There."
 
 At the top of the Dial, where the stars turn round the pole, the cold keeps time still, and Isolde guards it. She is the Winter Warden,
-hooded in white-blue robes, with a fan of frost ferns behind her, and the Hourkeepers' library at Frostfall lies in ice under her
+in white and frost-blue, with a crown of ice spikes fanned behind her head and a long ice spear, and the Hourkeepers' library at Frostfall lies in ice under her
 watch, where nothing written can fade. Her hits stack the cold on her enemies until they freeze. Long ago Brannoc followed her north,
 fire to her frost, and she froze his forge solid to send him home; it was the kindest thing she knew how to do. Saga, who dances the
 northern light, is her sister. Isolde fights to keep the cold, and the past, as they are.
@@ -828,12 +833,12 @@ chain on a spring tide. She owes Vitriol for the curse and Ramet for the gate, a
 - Mabel ~ Itzel | comrades | Mabel digs the black glass out of the Caldera, and Itzel cuts it
 - Shiori > Hesk | teacher | She taught him the script; the word on every golem's brow is in her hand
 - Sefu ~ Nebet | comrades | She weighs the dead for his Throne, and once weighed the living for him
-- Vitriol > Asenet | maker | He brewed the curse she laid on the crown, and she never paid for it
+- Asenet > Vitriol | owes | He brewed the curse she laid on the crown, and she never paid him for it
 - Asenet > Ramet | owes | He opened the gate and let her go free the night her brother took the crown
 - Nebet ~ Ostrel | comrades | He brings the dead of the Sands to her scale, and she weighs them true
 - Mortis ~ Ostrel | sworn enemies | The ferryman takes the dead across to rest; the Ossuary Lord keeps them back to work
 - Sahar ~ The Great Zambini | rivals | The showman wants the mirage for his stage; the archer says real magic does not take a bow
-- Sahar ~ Lyra | rivals | Two archers who have never shot at the same target, and argue about it at every Concord dinner
+- Sahar ~ Lyra | rivals | Two archers who have never shot at the same target, and argue about it at every Truce dinner
 - Lyra ~ Saga | friends | Partners at the observatory: one charts the stars, the other the lights between them
 - Isolde ~ Saga | sisters | The warden of the cold and the dancer of its light, daughters of the same frozen lake
 - Grandma Ironknit > Thessa | teacher | She taught Thessa to sew, and to sew places once cloth was too easy

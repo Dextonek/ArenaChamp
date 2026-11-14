@@ -17,7 +17,7 @@ New hero 14 of the twenty ([the cards](../../docs/heroes/next20/index.html), [al
 |---|---|
 | **Sentence** | A knight who carries a piece of the old sun on his back, and lets anyone try to take it. |
 | **Shape** | A lantern-shrine with a small sun inside it. |
-| **Colours** | Accent noon yellow `#f6f028`, foil white gold `#fbf5e2` |
+| **Colours** | Accent noon yellow `#f6f028`, foil white gold `#fbf5e2`. Nearest colours: Barry foil (19), Gus (23) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `sunbearer` |
 | **Role** | Tank, melee |
 | **Faction** | The Noonsworn (lore: The knight who carries the Ember of Aubade, the seed of a new sun, for the climb.) |
@@ -62,7 +62,7 @@ Tank, 840 HP. Q 46, the flare 40, the ultimate 110 (150 to a thief). His heals a
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: medium.** A carried object with three states (on him, on the ground, on the enemy), told between the screens: his client decides his pick-ups, the enemy's client decides theirs, and a rule settles the moment both reach it (his 0.3 s touch beats their 1.0 s stand; a claim is ordered by its start time). Build order: 15 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: medium.** A carried object with three states (on him, on the ground, on the enemy), told between the screens: his client decides his pick-ups, the enemy's client decides theirs, and a rule settles the moment both reach it (his 0.3 s touch beats their 1.0 s stand; a claim is ordered by its start time). Build order: 15 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

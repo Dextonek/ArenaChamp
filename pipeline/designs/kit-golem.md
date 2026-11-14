@@ -17,7 +17,7 @@ New hero 17 of the twenty ([the cards](../../docs/heroes/next20/index.html), [al
 |---|---|
 | **Sentence** | A golem-maker whose golems obey whoever wrote the last word on their brow. |
 | **Shape** | A golem's head with a glowing word on its brow. |
-| **Colours** | Accent word green `#30f291`, foil fired clay `#d8b89a` |
+| **Colours** | Accent word green `#30f291`, foil fired clay `#d8b89a`. Nearest colours: Saga (28), Fenna (29) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `golem` |
 | **Role** | Summoner, ranged |
 | **Faction** | The Underforge (lore: Golem-maker of the Underforge, taught his script by Shiori; Kohaku once stole his golem's word.) |
@@ -62,7 +62,7 @@ Summoner, 600 HP. One golem in place of the usual two units (140 HP, 12 per 1.2 
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: large.** A unit that changes sides. Each screen runs its own copy of the units, so the count of enemy hits must be kept on one screen (the enemy's, where their hits on units are decided) and told to his with `noteOwner`; then both screens flip the golem's side and target. New in `src/effects/summon.ts` and the duel. Build order: 18 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: large.** A unit that changes sides. Each screen runs its own copy of the units, so the count of enemy hits must be kept on one screen (the enemy's, where their hits on units are decided) and told to his with `noteOwner`; then both screens flip the golem's side and target. New in `src/effects/summon.ts` and the duel. Build order: 18 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

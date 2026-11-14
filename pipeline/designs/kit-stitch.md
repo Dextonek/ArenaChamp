@@ -17,7 +17,7 @@ New hero 18 of the twenty ([the cards](../../docs/heroes/next20/index.html), [al
 |---|---|
 | **Sentence** | A seamstress of the sky who sews two places together, so that what lands at one lands at the other. |
 | **Shape** | A great needle drawing a gold thread between two pins. |
-| **Colours** | Accent orchid `#b86cd8`, foil silver thread `#eceef4` |
+| **Colours** | Accent orchid `#b86cd8`, foil silver thread `#eceef4`. Nearest colours: Sahar (26), Lyra (29) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `stitch` |
 | **Role** | Support, ranged |
 | **Faction** | The Hourkeepers (lore: She sews places together, and means to sew the Tear above the Tower shut.) |
@@ -62,7 +62,7 @@ Support, 620 HP. Q 50, a shield of 45, the ultimate 110 with a 1.0 s root; the s
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: large.** Two places counted as one in every hit test: a hero within 2 m of one pin is also tested as if standing at the other. Spells test hits in many ways (`eachInside`, bolts, cones), so it needs one shared hit test that every spell goes through: a change across the engine. Build order: 20 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: large.** Two places counted as one in every hit test: a hero within 2 m of one pin is also tested as if standing at the other. Spells test hits in many ways (`eachInside`, bolts, cones), so it needs one shared hit test that every spell goes through: a change across the engine. Build order: 20 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

@@ -17,7 +17,7 @@ New hero 12 of the twenty ([the cards](../../docs/heroes/next20/index.html), [al
 |---|---|
 | **Sentence** | A desert archer who shoots from shade that is not there. |
 | **Shape** | A palm and a wall drawn in a broken outline over heat lines. |
-| **Colours** | Accent heat lilac `#a674b2`, foil sun linen `#f2e8d6` |
+| **Colours** | Accent heat lilac `#a674b2`, foil sun linen `#f2e8d6`. Nearest colours: Silvane violet (25), Thessa (26) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `mirage` |
 | **Role** | Marksman, ranged |
 | **Faction** | The Dune Throne (lore: The Throne's archer from the Glass Flats, who builds walls nobody can trust.) |
@@ -62,7 +62,7 @@ Marksman, 540 HP. Q 50 every 3 s (65 through a mirage); the ultimate 90 with a b
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: none.** A mirage is a mark with the look of cover and no obstacle; walking into one is read in `victimTick`; the ultimate makes mirages real with `ctx.addObstacle`. The CPU must be told of mirages as cover (`enemyGoal`) so it is fooled as a person would be. Build order: 5 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: none.** A mirage is a mark with the look of cover and no obstacle; walking into one is read in `victimTick`; the ultimate makes mirages real with `ctx.addObstacle`. The CPU must be told of mirages as cover (`enemyGoal`) so it is fooled as a person would be. Build order: 5 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

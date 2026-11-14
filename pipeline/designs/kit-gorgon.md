@@ -17,7 +17,7 @@ New hero 1 of the twenty ([the cards](../../docs/heroes/next10/index.html), [all
 |---|---|
 | **Sentence** | A veiled gorgon priestess whose look turns whoever meets it to marble. |
 | **Shape** | The eye with a slit pupil, between two serpent coils. |
-| **Colours** | Accent verdigris `#3fbf9a`, foil marble `#efeae0` |
+| **Colours** | Accent verdigris `#3fbf9a`, foil marble `#efeae0`. Nearest colours: Mortis (10), Itzel (13) (Lab distance; under 12 reads as the same).  Colour clash: the card's accent `#3fbf9a` is 10 from Mortis's colour (under 12 reads as the same). A nearby colour that keeps apart: `#2cb28b`. Or keep it and let the figure tell them apart; to decide at the look. |
 | **Theme word** | `gorgon` |
 | **Role** | Controller, ranged |
 | **Faction** | The Dune Throne (lore: The last veiled priestess of the tombs of the Sands; a guard who looked at her too long became Corbel the gargoyle.) |
@@ -64,7 +64,7 @@ Controller, 610 HP (600-620). Q 52 every 4 s is under a mage's 60 because it see
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: small.** A facing test in `dealt` (the victim's own screen knows where its hero faces) and a marble look for the stun. Everything else is built the way existing kits are. Build order: 6 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: small.** A facing test in `dealt` (the victim's own screen knows where its hero faces) and a marble look for the stun. Everything else is built the way existing kits are. Build order: 6 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

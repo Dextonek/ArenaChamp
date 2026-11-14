@@ -17,7 +17,7 @@ New hero 4 of the twenty ([the cards](../../docs/heroes/next10/index.html), [all
 |---|---|
 | **Sentence** | A kite master whose paper dragon flies where she points and strikes from the sky. |
 | **Shape** | A diamond kite with its string and two paper tails. |
-| **Colours** | Accent saffron `#ffb21e`, foil pale indigo `#c9d2f0` |
+| **Colours** | Accent saffron `#ffb21e`, foil pale indigo `#c9d2f0`. Nearest colours: Sirix (6), Auriel (12) (Lab distance; under 12 reads as the same).  Colour clash: the card's accent `#ffb21e` is 6 from Sirix's colour (under 12 reads as the same). A nearby colour that keeps apart: `#ffa119`. Or keep it and let the figure tell them apart; to decide at the look. |
 | **Theme word** | `kite` |
 | **Role** | Marksman, ranged |
 | **Faction** | The Windward (lore: The best kite flier of the Spires; Shiori taught her to fold paper.) |
@@ -50,7 +50,7 @@ A hero walks 4 m/s and reacts in 0.25 s; a circle warns at least 0.25 + radius /
 - **Q Paper Dart.** Sidestep: it reaches 6 m at 0.3 + 6/20 = 0.6 s. Watch the kite: the dart starts there. *(bolt: 0.3 + 6/20 = 0.60 s to 6 m (at least 0.5) OK; first hit 0.35 s after the cast)*
 - **W Let Fly / Reel In.** When the string glows, step off it: 0.25 + 0.5/4 = 0.38 s against 0.5 s. Better: never stand between her and the kite. *(lane 1 m wide: 0.25 + 0.5/4 = 0.38 s needed, warned 0.5 s OK; first hit 0.5 s after the cast)*
 - **E Firecracker.** Leave the circle: 0.25 + 2.5/4 = 0.88 s against 1.0 s. *(circle 2.5 m: 0.25 + 2.5/4 = 0.88 s needed, warned 1 s OK; first hit 1 s after the cast)*
-- **R Dragon Dance.** The path is on the floor before it flies: step off it, 0.25 + 0.75/4 = 0.44 s against 1.0 s, and stay off the S while it loops. *(lane 1.5 m wide: 0.25 + 0.75/4 = 0.44 s needed, warned 1 s OK; first hit 1 s after the cast)*
+- **R Dragon Dance.** The path is on the floor before it flies: step off it, 0.25 + 0.75/4 = 0.44 s against 1.0 s, and stay off the S while it loops. *(lane 1.5 m wide: 0.25 + 0.75/4 = 0.44 s needed, warned 1 s OK; first hit 1 s after the cast, last 4 s)*
 
 ### The question, the weakness, the second decision
 
@@ -64,7 +64,7 @@ Marksman, 540 HP. Q 50 every 3 s from the kite; the ultimate is 120 spread over 
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: small.** A bolt that starts somewhere other than the caster (the kite), and the kite as a placed thing that is placed again when she flies it. Build order: 8 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: small.** A bolt that starts somewhere other than the caster (the kite), and the kite as a placed thing that is placed again when she flies it. Build order: 8 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

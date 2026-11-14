@@ -17,7 +17,7 @@ New hero 9 of the twenty ([the cards](../../docs/heroes/next10/index.html), [all
 |---|---|
 | **Sentence** | A temple bell-founder whose bronze bells ring each other into a chorus. |
 | **Shape** | A bronze bell with its clapper and two sound arcs. |
-| **Colours** | Accent bronze `#d29a4a`, foil pale patina `#cfe8dc` |
+| **Colours** | Accent bronze `#d29a4a`, foil pale patina `#cfe8dc`. Nearest colours: Sefu (4), Kessa (9) (Lab distance; under 12 reads as the same).  Colour clash: the card's accent `#d29a4a` is 4 from Sefu's colour (under 12 reads as the same). A nearby colour that keeps apart: `#b2962c`. Or keep it and let the figure tell them apart; to decide at the look. |
 | **Theme word** | `bell` |
 | **Role** | Tank, melee |
 | **Faction** | The Noonsworn (lore: She cast every bell of Aubade, the bells that ring the thin sun up each morning.) |
@@ -50,7 +50,7 @@ A hero walks 4 m/s and reacts in 0.25 s; a circle warns at least 0.25 + radius /
 - **Q Clapper.** Beyond 3 m of her. Near a bell, 3 m from it: the edge reaches you 0.79 s after the cast; stepping in to 1.5 m takes 0.25 + 1.5/4 = 0.63 s, out to 5 m 0.25 + 2/4 = 0.75 s. *(spacing: stand outside its reach (no reaction can beat a blow up close); reaction: 0.25 + 0.5 = 0.75 s needed, given 0.79 s OK; first hit 0.4 s after the cast)*
 - **W Cast a Bell.** Leave the shadow: 0.25 + 1.2/4 = 0.55 s against 0.7 s; then the landing ring, as the passive. *(circle 1.2 m: 0.25 + 1.2/4 = 0.55 s needed, warned 0.7 s OK; first hit 0.7 s after the cast (a lasting mark after that))*
 - **E Toll.** Do not stand on the line between her and a bell; then the ring.
-- **R The Great Bell.** Leave the shadow: 0.25 + 2/4 = 0.75 s against 1.0 s. *(circle 2 m: 0.25 + 2/4 = 0.75 s needed, warned 1 s OK; first hit 1 s after the cast)*
+- **R The Great Bell.** Leave the shadow: 0.25 + 2/4 = 0.75 s against 1.0 s. *(circle 2 m: 0.25 + 2/4 = 0.75 s needed, warned 1 s OK; first hit 1 s after the cast, last 2.95 s)*
 
 ### The question, the weakness, the second decision
 
@@ -64,7 +64,7 @@ Tank, 840 HP, 3.7 m/s. Q 42, a ring's edge 30 with a 0.4 s stun; the Great Bell 
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: none.** Rings are marks that grow with time, the same on both screens; their edges are read in `victimTick`. Bells are placed things; the Great Bell is a root and a silence. Build order: 2 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: none.** Rings are marks that grow with time, the same on both screens; their edges are read in `victimTick`. Bells are placed things; the Great Bell is a root and a silence. Build order: 2 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

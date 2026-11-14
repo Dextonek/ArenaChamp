@@ -17,7 +17,7 @@ New hero 2 of the twenty ([the cards](../../docs/heroes/next10/index.html), [all
 |---|---|
 | **Sentence** | A luna-moth priestess whose wing dust carries sleep. |
 | **Shape** | The luna moth: two pale wings with long tails and two eye spots. |
-| **Colours** | Accent luna green `#bfe8a0`, foil powder ivory `#efe6d8` |
+| **Colours** | Accent luna green `#bfe8a0`, foil powder ivory `#efe6d8`. Nearest colours: Mr. Ledger (27), Ostrel (28) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `moth` |
 | **Role** | Support, ranged |
 | **Faction** | The Greenwood Moot (lore: The moth priestess who lays the Walking Wood to sleep each dusk and hangs paper lanterns so travellers sleep safe.) |
@@ -64,7 +64,7 @@ Support, 600 HP. Her damage is low (Q 30, R 40) because sleep is control; her he
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: medium.** Two new pieces: a sleep status (a stun that any damage ends, and that marks the waking hit +25%), and bolts that bend into a point (her lanterns). Build order: 13 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: medium.** Two new pieces: a sleep status (a stun that any damage ends, and that marks the waking hit +25%), and bolts that bend into a point (her lanterns). Build order: 13 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

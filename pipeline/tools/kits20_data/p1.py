@@ -96,7 +96,7 @@ dict(
  ]),
 # -------------------------------------------------------------------------------------------------------------------------
 dict(
- n=3, theme='salt', name='Morwen', title='the Saltwarden', pron='she', faction='The Concord of the Ring', role='controller', range='ranged',
+ n=3, theme='salt', name='Morwen', title='the Saltwarden', pron='she', faction='The Truce of the Ring', role='controller', range='ranged',
  hp=620, speed='4.0 m/s', attack='10 per 1.0 s at 6.5 m (a flicked iron nail)',
  accent=('#7d9bb0', 'cold iron'), foil=('#f4f1ea', 'salt white'),
  sentence='A hedge witch who draws circles of salt that no spell can cross.',
@@ -128,7 +128,7 @@ dict(
        eng='The new spell-stopping line (see above), kept as her marks.', scr='Bolts: the screen of the hero they fly at. A failed targeted cast: the caster\'s own client, from the marks both screens keep.', cpu='See above.'),
   dict(k='E', name='Hex Bundle', shape='TGT', cd=11, rng='8 m', size='-', dmg='25',
        rule='A bundle of herbs hangs over the enemy for 4 s (0.3 s to cast, needs sight): their next dash fizzles: they stay where they are and the dash\'s cooldown is spent.',
-       ans='Do not dash for 4 s, or spend it on your smallest dash. Break sight before the 0.3 s cast ends.', chk=dict(k='none'), land=0.3,
+       ans='It needs sight at the cast: fight round cover and she cannot hex you. Hexed, do not dash for 4 s, or spend it on your smallest dash.', chk=dict(k='none'), land=0.3,
        fx='A bundle of grey-green herbs tied with dark crimson thread smoulders over their head; a grey puff when it takes the dash.', eng='The `grounded` debuff the engine has, removed after one dash.', scr='The victim\'s own client (it refuses its own dash).', cpu='Enemy within 8 m with a dash ready.'),
   dict(k='R', name='The Boundary', shape='WALL', cd=22, rng='10 m', size='12 m line, 1.2 m wide', dmg='60, pushed 1.5 m out',
        rule='A wall of blowing salt and iron filings rises across the aim after 1.0 s: for 2 s nothing crosses it, feet or spells; then it settles into a salt line that stops spells for 6 s more. Whoever stands on the line as it rises takes 60 and is pushed to the near side.',
@@ -173,12 +173,12 @@ dict(
        chk=dict(k='circle', warn=1.0, r=2.5), land=1.0, fx='Red-gold paper crackers on a string popping in a chain of small flashes and grey smoke.', eng='A zone at the kite\'s point.', scr='The victim\'s screen.', cpu='Enemy under the kite.'),
   dict(k='R', name='Dragon Dance', shape='LINE', cd=22, rng='12 m', size='path 1.5 m wide', dmg='40 a pass, 3 at most (120)',
        rule='The kite becomes a long paper dragon. Its path shows on the floor for 1.0 s: an S from the kite to the aimed point and back. Then it flies the path in 3.0 s; whoever it passes through takes 40, once each 0.8 s.',
-       ans='The path is on the floor before it flies: step off it, 0.25 + 0.75/4 = 0.44 s against 1.0 s, and stay off the S while it loops.', chk=dict(k='lane', warn=1.0, half=0.75), land=1.0,
+       ans='The path is on the floor before it flies: step off it, 0.25 + 0.75/4 = 0.44 s against 1.0 s, and stay off the S while it loops.', chk=dict(k='lane', warn=1.0, half=0.75), land=1.0, last=4.0,
        fx='A long paper dragon, saffron head, indigo scales, ribbons streaming; its path a dotted saffron S on the floor.', eng='A path worked out alike on both screens from the cast\'s two points.', scr='The victim\'s screen.', cpu='Enemy within 10 m, no cover near.'),
  ]),
 # -------------------------------------------------------------------------------------------------------------------------
 dict(
- n=5, theme='chain', name='Kessa', title='the Chainwarden', pron='she', faction='The Concord of the Ring', role='juggernaut', range='melee',
+ n=5, theme='chain', name='Kessa', title='the Chainwarden', pron='she', faction='The Truce of the Ring', role='juggernaut', range='melee',
  hp=760, speed='3.8 m/s', attack='14 per 1.2 s at 2.6 m (a shackle swung on its chain)',
  accent=('#c08a4a', 'tarnished copper'), foil=('#d8dde2', 'pale steel'),
  sentence='The warden of a drowned prison, who never lets a prisoner go.',
@@ -190,7 +190,7 @@ dict(
  look='A broad warden in dark plate with copper rivets, a long sea-worn coat, a great ring of keys, chains wound round both forearms; a heavy shackle in the right hand.',
  nearest='Brannoc (forge), Ada (hook), Wick (keys, the same faction)',
  legend='Warden of the Gaol of Oaths under the Drowned Harbour; Asenet is the one prisoner who slipped her chain.',
- changes='Exchange is named for what it is, a swap of places, which moves the enemy farther than the engine\'s 4 m pull cap; it reaches only as far as the chain (7 m). The chain\'s reach is 7 m (the card said 8).',
+ changes='The ultimate is renamed The Iron Post: a published game is called The Iron Oath. Exchange is named for what it is, a swap of places, which moves the enemy farther than the engine\'s 4 m pull cap; it reaches only as far as the chain (7 m). The chain\'s reach is 7 m (the card said 8).',
  icon='<rect x="-26" y="-9" width="24" height="18" rx="9" fill="none" stroke="#c08a4a" stroke-width="6"/><rect x="2" y="-9" width="24" height="18" rx="9" fill="none" stroke="#d8dde2" stroke-width="6"/><path d="M-4 -16 L4 -16 M-4 16 L4 16" stroke="#c08a4a" stroke-width="3"/>',
  budget='Juggernaut, 760 HP (620-780). Her damage sits under the budget (Q 45, W 50, R 70) because the chain, the swap and the leash are control.',
  engine_size='medium', engine='A leash round a moving hero (`ctx.confine` keeps a fixed ring today) and a swap of places that both screens make from the cast\'s recorded positions.',
@@ -212,9 +212,9 @@ dict(
        rule='Only while a chain holds: both figures blur into links for 0.35 s and land in each other\'s place.',
        ans='Break the chain with a dash first, or stand where her place is no worse than yours (not by her post, a wall or a hazard). The blur shows 0.35 s.', chk=dict(k='none'), land=0.35, swap=True,
        fx='Both figures dissolve into links and form again in each other\'s place.', eng='New: a swap of places. Her client moves her (`moveCaster`); the victim\'s screen moves its hero to her position at the cast (`carryEnemy`). Both use the cast\'s recorded positions, so they agree.', scr='Her client for her; the victim\'s screen for the enemy.', cpu='See above.'),
-  dict(k='R', name='The Iron Oath', shape='ZONE', cd=22, rng='8 m', size='post 1.5 m, leash 6 m', dmg='70 under the post; +20% from her on the leashed',
+  dict(k='R', name='The Iron Post', shape='ZONE', cd=22, rng='8 m', size='post 1.5 m, leash 6 m', dmg='70 under the post; +20% from her on the leashed',
        rule='An iron post\'s shadow marks a point for 1.2 s; the post hammers down (70 within 1.5 m), and every hero within 6 m of it, her too, is chained to it for 3 s: nobody goes farther than 4 m from the post. Dashes do not break this chain.',
-       ans='Step out of the shadow (0.25 + 1.5/4 = 0.63 s), and be past 6 m when it lands: from 4 m that is 2 m, 0.25 + 2/4 = 0.75 s, against 1.2 s.', chk=dict(k='circle', warn=1.2, r=1.5), land=1.2,
+       ans='Step out of the shadow (0.25 + 1.5/4 = 0.63 s), and be past 6 m when it lands: from 4 m that is 2 m, 0.25 + 2/4 = 0.75 s, against 1.2 s.', chk=dict(k='circle', warn=1.2, r=1.5), land=1.2, last=1.2,
        fx='An iron post with a copper cap hammered into the floor, a ring of dust, two chains drawing tight to it, the 4 m leash ring etched in pale steel.', eng='`ctx.confine` round the post for both heroes.', scr='The victim\'s screen for the enemy; her client for her.', cpu='Enemy within 6 m.'),
  ]),
 ]

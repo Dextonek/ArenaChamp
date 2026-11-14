@@ -203,7 +203,7 @@ def check(lore):
 
 
 SIGILS = {
-    'concord': '<circle r="20" fill="none" stroke="#f2f2f2" stroke-width="5"/><circle r="20" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>'
+    'truce': '<circle r="20" fill="none" stroke="#f2f2f2" stroke-width="5"/><circle r="20" fill="none" stroke="#1a1a1a" stroke-width="1.5"/>'
                '<rect x="-3.5" y="-27" width="7" height="54" rx="2" fill="#6a2a2a" stroke="#d9c27a" stroke-width="1.5"/><circle r="4" fill="#d9c27a"/>',
     'noonsworn': '<g stroke="#f2b83c" stroke-width="3.5" stroke-linecap="round">' + ''.join(
         f'<line x1="{19 * math.cos(a):.1f}" y1="{19 * math.sin(a):.1f}" x2="{26 * math.cos(a):.1f}" y2="{26 * math.sin(a):.1f}"/>'
@@ -241,7 +241,7 @@ def main_colour(f):
 
 def accent_of(f):
     # the faction's most readable colour on the dark page
-    pick = {'concord': '#d9c27a', 'noonsworn': '#f2b83c', 'dusk': '#c88cff', 'greenwood': '#7ccf6a', 'windward': '#4aa8ff',
+    pick = {'truce': '#d9c27a', 'noonsworn': '#f2b83c', 'dusk': '#c88cff', 'greenwood': '#7ccf6a', 'windward': '#4aa8ff',
             'underforge': '#ff8a3a', 'dune': '#3fd4c8', 'hourkeepers': '#d4ff5a', 'loners': '#c8bca0'}
     return pick.get(f['id'], '#c8bca0')
 
@@ -289,7 +289,7 @@ def map_svg(lore):
     # the Tower's stopped shadow, the crater, the Tower, the Tear
     sa = math.radians(4.2 * 30 - 90)
     out.append(f'<path d="M{cx} {cy} L{cx + 128 * math.cos(sa - 0.05):.1f} {cy + 128 * math.sin(sa - 0.05):.1f} '
-               f'L{cx + 128 * math.cos(sa + 0.05):.1f} {cy + 128 * math.sin(sa + 0.05):.1f} Z" fill="#000" opacity="0.35"/>')
+               f'L{cx + 128 * math.cos(sa + 0.05):.1f} {cy + 128 * math.sin(sa + 0.05):.1f} Z" fill="#000" opacity="0.7" stroke="#cdb06a" stroke-width="0.8" stroke-dasharray="3 2"/>')
     out.append(f'<circle cx="{cx}" cy="{cy}" r="40" fill="#120e0a" stroke="#e8a040" stroke-width="1.5" stroke-dasharray="3 3"/>')
     out.append(f'<circle cx="{cx}" cy="{cy}" r="22" fill="none" stroke="#f2f2f2" stroke-width="2.5"/>')
     out.append(f'<path d="M{cx - 6} {cy + 8} L{cx - 3} {cy - 30} L{cx} {cy - 38} L{cx + 3} {cy - 30} L{cx + 6} {cy + 8} Z" fill="#cdb06a" stroke="#2a1a06" stroke-width="1"/>')
@@ -299,7 +299,7 @@ def map_svg(lore):
                f'L{cx + 13} {cy - 53} L{cx + 22} {cy - 49}" fill="none" stroke="#ff3fa0" stroke-width="1.6"/>')
     out.append(f'<text x="{cx + 26}" y="{cy - 50}" class="fl" fill="#ff8ac8" style="text-anchor:start">the Tear</text>')
     out.append(f'<text x="{cx}" y="{cy + 33}" class="pl">the Ring</text>')
-    out.append(f'<text x="{cx}" y="{cy + 18}" class="fl" fill="#ffb84a">Heart of Noon</text>')
+    out.append(f'<text x="{cx}" y="{cy + 50}" class="fl" fill="#ffb84a">Heart of Noon below</text>')
     out.append(f'<text x="{cx}" y="{cy - 60}" class="pl" fill="#cdb06a">the Tower</text>')
     out.append('<text x="14" y="372" class="fl" fill="#5a7a98" style="text-anchor:start">the Outer Sea</text>')
     out.append('<text x="346" y="372" class="fl" fill="#5a7a98" style="text-anchor:end">shadow: the hour it stopped</text>')
@@ -535,10 +535,14 @@ def build(lore):
         P.append('</div></section>')
 
     P.append('</main><footer><h3>What is yours to decide</h3>'
-             '<p>Every name here is a first pick: the world (the Dial), the factions, the cities (Aubade, Tamerit, Gloaming, Frostfall, the Spires), '
-             'the Noonfall and why the sun fell, whether the Tower "collects worlds" (a proposal; the Climb\'s story is still open), and who is a villain '
-             '(here only Oblivion is, and the Court of Dusk is an enemy with its reasons). Change any of it in <code>docs/lore/LORE.md</code> and '
-             'run <code>python pipeline/tools/lore-page.py</code>.</p></footer></body></html>')
+             '<p>Every name here is a first pick: the world (the Dial), the factions, the cities (Aubade, Tamerit, Gloaming, the Spires; Frostfall '
+             'is the arena\'s own name), the Noonfall and why the sun fell (left open on purpose), the Noon-touched (why people who saw the Fall a '
+             'hundred years ago are still young), whether the Tower "collects worlds" (a proposal; the Climb\'s story is still open), and who is a '
+             'villain (here only Oblivion is; the Court of Dusk is an enemy with its reasons). Change any of it in <code>docs/lore/LORE.md</code> '
+             'and run <code>python pipeline/tools/lore-page.py</code>.</p>'
+             '<p>Names that meet names the game already has: Itzel is "the Obsidian Herald" and the War\'s keeper is "the Herald"; Ostrel is '
+             '"the Ferryman" and the Deep\'s quest giver is "the Ferryman" (here they are two people who do not speak). Either title may '
+             'change. The Ring\'s keepers are called the Truce, not the Concord, because a hero game is named Concord.</p></footer></body></html>')
     return '\n'.join(P)
 
 

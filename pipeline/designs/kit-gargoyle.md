@@ -17,13 +17,13 @@ New hero 16 of the twenty ([the cards](../../docs/heroes/next20/index.html), [al
 |---|---|
 | **Sentence** | A temple guard turned to stone, who wakes at dusk with wings and watches from the eaves. |
 | **Shape** | A winged figure crouched on a ledge, wings folded. |
-| **Colours** | Accent petrol `#1c8c8c`, foil limestone `#d8d6cc` |
+| **Colours** | Accent petrol `#1c8c8c`, foil limestone `#d8d6cc`. Nearest colours: Morwen (26), Itzel (27) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `gargoyle` |
 | **Role** | Assassin, melee |
 | **Faction** | The Court of Dusk (lore: A Night Temple guard who met Lithea's eyes, turned to stone, and woke at dusk with wings.) |
 | **The new thing** | Standing on top of cover. He perches on the arena's pillars and walls and on anything placed (Gerald, trees, doors, statues, bells, mirrors): up there no blade and no basic attack reaches him, and he sees over the cover he sits on. |
 | **The question** | "Where is he going to land?" |
-| **The weakness** | Perched he cannot walk, and every bolt and spell still finds him; on open ground with no cover he is a short-lived assassin. |
+| **The weakness** | Perched he cannot walk, and every bolt and spell still finds him; a perch lasts 6 s, so a melee hero waits beneath, outside the drop's 2 m, and meets him when he comes down; on open ground with no cover he is a short-lived assassin. |
 | **The second decision** | Stay on the perch (safe from blades, open to bolts) or drop on the enemy (the big hit, and back on the ground). |
 | **How it looks** | A lean, noble figure of weathered grey limestone with petrol-dark veins, in the remains of a temple guard's armour and a faded wine sash, great stone wings folded like a cloak, a calm carved face with glowing petrol eyes; a guard's short glaive turned to stone in the right hand. |
 | **Nearest heroes** | Bram (limestone; his friend), Lithea (who made him), Nyx (the Court's other blade) |
@@ -48,12 +48,12 @@ A hero walks 4 m/s and reacts in 0.25 s; a circle warns at least 0.25 + radius /
 - **Q Talon Rake.** Beyond 2.8 m of him on the ground. The spit reaches 6 m at 0.3 + 6/18 = 0.63 s: sidestep. *(spacing: stand outside its reach (no reaction can beat a blow up close); bolt: 0.3 + 6/18 = 0.63 s to 6 m (at least 0.5) OK; first hit 0.25 s after the cast)*
 - **W Take Perch.** Watch which cover he can reach; hit him once he lands.
 - **E Drop.** Leave the circle: 0.25 + 2/4 = 0.75 s against 0.75 s. *(circle 2 m: 0.25 + 2/4 = 0.75 s needed, warned 0.75 s OK; first hit 0.75 s after the cast)*
-- **R Stone Wings.** Off the path: 0.25 + 1/4 = 0.5 s against 1.2 s. Off the landing: 0.25 + 2.5/4 = 0.88 s against 1.7 s. *(lane 2 m wide: 0.25 + 1/4 = 0.50 s needed, warned 1.2 s OK; circle 2.5 m: 0.25 + 2.5/4 = 0.88 s needed, warned 1.7 s OK; first hit 1.2 s after the cast)*
+- **R Stone Wings.** Off the path: 0.25 + 1/4 = 0.5 s against 1.2 s. Off the landing: 0.25 + 2.5/4 = 0.88 s against 1.7 s. *(lane 2 m wide: 0.25 + 1/4 = 0.50 s needed, warned 1.2 s OK; circle 2.5 m: 0.25 + 2.5/4 = 0.88 s needed, warned 1.7 s OK; first hit 1.2 s after the cast, last 1.7 s)*
 
 ### The question, the weakness, the second decision
 
 - **Question:** "Where is he going to land?"
-- **Weakness:** Perched he cannot walk, and every bolt and spell still finds him; on open ground with no cover he is a short-lived assassin.
+- **Weakness:** Perched he cannot walk, and every bolt and spell still finds him; a perch lasts 6 s, so a melee hero waits beneath, outside the drop's 2 m, and meets him when he comes down; on open ground with no cover he is a short-lived assassin.
 - **Second decision:** Stay on the perch (safe from blades, open to bolts) or drop on the enemy (the big hit, and back on the ground).
 
 ### Budget
@@ -62,7 +62,7 @@ Assassin, 640 HP, 4.3 m/s. Q 46 (a 40 bolt from a perch); the drop 60 with a 0.4
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: large.** Perching is new from end to end: a hero standing on top of an obstacle (walking forbids it today), a state in which melee and basic-attack checks skip him, his movement held on the perch, and a CPU taught to use it and answer it. His client decides where he stands and tells the other; the victim's screen skips melee hits on a perched hero. Build order: 17 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: large.** Perching is new from end to end: a hero standing on top of an obstacle (walking forbids it today), a state in which melee and basic-attack checks skip him, his movement held on the perch, and a CPU taught to use it and answer it. His client decides where he stands and tells the other; the victim's screen skips melee hits on a perched hero. Build order: 17 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

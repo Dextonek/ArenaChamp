@@ -17,7 +17,7 @@ New hero 20 of the twenty ([the cards](../../docs/heroes/next20/index.html), [al
 |---|---|
 | **Sentence** | An exiled queen whose curse never stays on one head. |
 | **Shape** | A thin circlet, tilted and cracked, with a dark spark. |
-| **Colours** | Accent wine `#8c3167`, foil tarnished gold `#e2cf96` |
+| **Colours** | Accent wine `#8c3167`, foil tarnished gold `#e2cf96`. Nearest colours: Sahar (28), Cantor (31) (Lab distance; under 12 reads as the same). The accent wine is dark on the game's dark floor: its energy needs a lighter shade of it and the pale tarnished gold beside it (rule 6); settle it at the look.  |
 | **Theme word** | `curse` |
 | **Role** | Juggernaut, melee |
 | **Faction** | a loner (lore: Exiled queen of the Sands, who cursed the crown her brother took.) |
@@ -48,7 +48,7 @@ A hero walks 4 m/s and reacts in 0.25 s; a circle warns at least 0.25 + radius /
 - **Q Exile's Blade.** Step aside: 0.25 + 0.5/4 = 0.38 s against 0.4 s, or stand beyond 4 m. *(lane 1 m wide: 0.25 + 0.5/4 = 0.38 s needed, warned 0.4 s OK; first hit 0.4 s after the cast)*
 - **W Royal Decree.** Pass it back before the seal lands, or keep out of 7 m. *(first hit 0.4 s after the cast)*
 - **E Usurp.** Do not stand in her line.
-- **R The Crown Falls.** Pass it to her before it falls: 2.7 s from her raised hand, and any spell of yours that hits her does it. *(reaction: 0.25 + 0.5 = 0.75 s needed, given 2.7 s OK; first hit 2.7 s after the cast)*
+- **R The Crown Falls.** Pass it to her before it falls: 2.7 s from her raised hand, and any spell of yours that hits her does it. *(reaction: 0.25 + 0.5 = 0.75 s needed, given 2.7 s OK; first hit 2.7 s after the cast, last 2.7 s)*
 
 ### The question, the weakness, the second decision
 
@@ -62,7 +62,7 @@ Juggernaut, 720 HP. Q 46, W 40, E 30; the fall 90 (150 under her ultimate) lands
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: medium.** A token held by one hero that moves with hits. A hit is decided on the victim's screen, so a pass is decided there and told to the other; if the two heroes hit each other within a moment, passes are ordered by their casts' start times (the lesson of hero 40), so both screens settle on the same holder. The countdown is a time both screens know. Build order: 10 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: medium.** A token held by one hero that moves with hits. A hit is decided on the victim's screen, so a pass is decided there and told to the other; if the two heroes hit each other within a moment, passes are ordered by their casts' start times (the lesson of hero 40), so both screens settle on the same holder. The countdown is a time both screens know. Build order: 10 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

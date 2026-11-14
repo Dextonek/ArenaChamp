@@ -25,12 +25,95 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from kits20_data import HEROES  # noqa: E402
 
 DATE = '2026-11-14'
-ROLE_HP = {'assassin': (600, 720), 'tank': (780, 860), 'juggernaut': (620, 780), 'bruiser': (700, 800), 'mage': (460, 600),
+ROLE_HP = {'assassin': (600, 720), 'tank': (780, 840), 'juggernaut': (620, 780), 'bruiser': (700, 800), 'mage': (460, 600),
            'marksman': (520, 620), 'support': (600, 680), 'controller': (600, 650), 'summoner': (580, 640), 'engineer': (550, 600),
            'skirmisher': (600, 640)}
 SIZES = ['none', 'small', 'medium', 'large']
 BUILD = ['Nebet', 'Campana', 'Ostrel', 'Saga', 'Sahar', 'Lithea', 'Arden', 'Lian', 'Ramet', 'Asenet', 'Kessa', 'Kohaku', 'Vela',
          'Itzel', 'Orren', 'Morwen', 'Corbel', 'Hesk', 'Tova', 'Thessa']
+# Accents and bodies of the forty (from src/effects/parts/*.ts and docs/ART_BIBLE.md), to keep the new accents apart.
+REF_COLOURS = {
+    'Vesper': '#ff3b4e', 'Vesper body': '#8c0f22', 'Brannoc': '#ff5a12', 'Isolde': '#4fb4e8', 'Lyra': '#5a3fc0', 'Vitriol': '#4fbf2a',
+    'Kaia': '#4aa8ff', 'Sefu': '#c8913f', 'Sefu accent': '#3fd4c8', 'Nyx': '#6a2ec0', 'Fenna': '#4caf50', 'Fenna accent': '#ff7ab8',
+    'Auriel': '#f2b83c', 'Marin': '#1f9fd6', 'Marin accent': '#ff9a6a', 'Zephyr': '#7fe6c8', 'Zephyr accent': '#ff8fb0',
+    'Mortis': '#3fd8b8', 'Ada': '#d9773a', 'Ada accent': '#6affea', 'Opaline': '#b8b0ff', 'Sirix': '#f0b020', 'Sirix accent': '#7aff5a',
+    'Cantor': '#e04aa8', 'Oblivion': '#ff2a55', 'Oblivion accent': '#7affff', 'Shiori': '#3a5ae8', 'Shiori accent': '#ff4a2a',
+    'Tempo': '#d4ff5a', 'Silvane': '#cfe6ff', 'Silvane violet': '#d9b8ff', 'Bram': '#c9b48a', 'Hank': '#b5763a', 'Hank pine': '#3f6b3a',
+    'Professor Puff': '#ff8fb8', 'Mr. Ledger': '#d9c27a', 'Big Yoko': '#e63a3a', 'Referee Whistler': '#f2f2f2', 'Madame Cleaver': '#d84a3a',
+    'Pip': '#ffd24a', 'Pip foil': '#3a6ac8', 'Gus': '#ffd23a', 'Gus foil': '#3a6a8a', 'Grandma Ironknit': '#ff9cc4', 'Barry Cloudsley': '#6ac8ff',
+    'Barry foil': '#f4e65a', 'Bo': '#f0ead6', 'The Great Zambini': '#b05aff', 'Wick': '#b08a4a', 'Wick red': '#6a2a2a', 'Pim': '#ffb04a',
+    'Pom': '#6ac8ff', 'Anka': '#ff7b3a', 'Mabel': '#8a6a4a', 'Sir Whiskers': '#e8a13a', 'Mum': '#f7f7f2', 'Mum dark': '#20202a',
+}
+NEAR = 12  # a Lab distance under this reads as the same colour
+
+
+def lab(hexc):
+    h = hexc.lstrip('#')
+    rgb = [int(h[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    lin = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+    r, g, b = lin
+    x = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047
+    y = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883
+    f = [v ** (1 / 3) if v > 0.008856 else 7.787 * v + 16 / 116 for v in (x, y, z)]
+    return 116 * f[1] - 16, 500 * (f[0] - f[1]), 200 * (f[1] - f[2])
+
+
+def dist(a, b):
+    return sum((p - q) ** 2 for p, q in zip(lab(a), lab(b))) ** 0.5
+
+
+def luminance(hexc):
+    h = hexc.lstrip('#')
+    lin = [(c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4) for c in (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))]
+    return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+def nearest_colours(h, heroes):
+    others = dict(REF_COLOURS)
+    for o in heroes:
+        if o['name'] != h['name']:
+            others[o['name']] = o['accent'][0]
+    return sorted((dist(h['accent'][0], c), n) for n, c in others.items())[:2]
+
+
+def colour_proposal(h, heroes):
+    """A colour near the accent that keeps NEAR + 2 from every other, for a card whose accent sits on another hero's."""
+    import colorsys
+    base = h['accent'][0]
+    pool = dict(REF_COLOURS)
+    pool.update({o['name']: o['accent'][0] for o in heroes if o['name'] != h['name']})
+    h0, _, _ = colorsys.rgb_to_hsv(*[int(base[i:i + 2], 16) / 255 for i in (1, 3, 5)])
+    best = None
+    for dh in range(-40, 41, 4):
+        for s in (0.45, 0.6, 0.75, 0.9):
+            for v in (0.55, 0.7, 0.85, 1.0):
+                r, g, b = colorsys.hsv_to_rgb(((h0 * 360 + dh) % 360) / 360, s, v)
+                c = '#%02x%02x%02x' % (int(r * 255), int(g * 255), int(b * 255))
+                if min(dist(c, w) for w in pool.values()) >= NEAR + 2:
+                    key = dist(c, base)
+                    if best is None or key < best[0]:
+                        best = (key, c)
+    return best[1] if best else None
+
+
+def clash_note(h, heroes):
+    d, n = nearest_colours(h, heroes)[0]
+    if d >= NEAR:
+        return ''
+    prop = colour_proposal(h, heroes)
+    return (f"Colour clash: the card's accent `{h['accent'][0]}` is {d:.0f} from {n}'s colour (under {NEAR} reads as the same). "
+            + (f"A nearby colour that keeps apart: `{prop}`. " if prop else '')
+            + 'Or keep it and let the figure tell them apart; to decide at the look.')
+
+
+def dark_note(h):
+    if luminance(h['accent'][0]) < 0.12:
+        return (f"The accent {h['accent'][1]} is dark on the game's dark floor: its energy needs a lighter shade of it and the pale "
+                f"{h['foil'][1]} beside it (rule 6); settle it at the look.")
+    return ''
+
+
 NORM = {'SHOT': 'LINE', 'BOLT': 'LINE', 'TARGET': 'TGT', 'TARGETED': 'TGT', 'GROUND': 'ZONE', 'QUICK': 'CONE', 'FAN': 'CONE',
         'LEAP': 'DASH', 'BLINK': 'DASH', 'ESCAPE': 'DASH', 'AURA': 'SELF', 'NOVA': 'SELF', 'BUFF': 'SELF', 'CHANNEL': 'SELF',
         'GLOBAL': 'ZONE', 'WALL': 'TERRAIN', 'BOX': 'TERRAIN', 'DOOR': 'TERRAIN', 'TRAP': 'ZONE', 'FUSE': 'ZONE', 'LOB': 'ZONE',
@@ -108,6 +191,33 @@ def camel(name):
     return words[0].lower() + ''.join(w.capitalize() for w in words[1:])
 
 
+def lore_module():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('lore_page', Path(__file__).resolve().parent / 'lore-page.py')
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def read_lore():
+    return lore_module().read(ROOT / 'docs' / 'lore' / 'LORE.md')
+
+
+def ties_for(name, lore):
+    mod = lore_module()
+    out = []
+    for t in lore['ties']:
+        if name not in (t['a'], t['b']):
+            continue
+        other = t['b'] if t['a'] == name else t['a']
+        if t['sym']:
+            word = mod.SYM[t['kind']]
+        else:
+            word = mod.ASYM[t['kind']][0 if t['a'] == name else 1]
+        out.append((word, other, t['what'], t['strong']))
+    return out
+
+
 def kit_tuple(h):
     by = {s['k']: s for s in h['spells']}
     return tuple(norm(by[k]['shape']) for k in ('Q', 'W', 'E', 'R'))
@@ -154,8 +264,9 @@ def check(heroes):
             land = s.get('land')
             if s['k'] == 'R' and (land is None or land < 1.0):
                 errs.append(f'{tag}: the ultimate lands at {land} s (at least 1.0)')
-            if land is not None and land > 4.2 and not s.get('lasting'):
-                errs.append(f'{tag}: lands at {land} s, past 4.2 s, and is not a lasting mark')
+            last = s.get('last', land)
+            if last is not None and last > 4.2 and not s.get('lasting'):
+                errs.append(f'{tag}: its last hit lands at {last} s, past 4.2 s, and it is not a lasting mark')
             ku = s.get('knockup', 0)
             if ku > (0.4 if s['k'] == 'W' else 0.5):
                 errs.append(f'{tag}: knock-up {ku} s')
@@ -168,6 +279,25 @@ def check(heroes):
                 errs.append(f'{tag}: lock {s["lock"]} s')
             if s.get('units', 0) > 6:
                 errs.append(f'{tag}: {s["units"]} units')
+    for h in heroes:
+        d, n = nearest_colours(h, heroes)[0]
+        if d < NEAR and h['n'] > 10:
+            errs.append(f"{h['name']}: accent {h['accent'][0]} is {d:.0f} from {n} (under {NEAR})")
+        elif d < NEAR:
+            print(f"  note: {h['name']}'s card accent {h['accent'][0]} is {d:.0f} from {n}: marked on the sheet with a proposal")
+        if dist(h['accent'][0], h['foil'][0]) < 20:
+            errs.append(f"{h['name']}: accent and foil are too close")
+    lore = read_lore()
+    lf = {x['name']: x['faction'] for x in lore['heroes']}
+    names_of = {fid: f['name'] for fid, f in lore['factions'].items()}
+    for h in heroes:
+        fid = lf.get(h['name'])
+        if fid is None:
+            errs.append(f"{h['name']}: not in docs/lore/LORE.md")
+            continue
+        want = 'a loner' if fid == 'loners' else names_of[fid]
+        if want != h['faction']:
+            errs.append(f"{h['name']}: faction {h['faction']} here, {want} in the lore")
     order = [next(h for h in heroes if h['name'] == n) for n in BUILD]
     if sorted(BUILD) != sorted(h['name'] for h in heroes):
         errs.append('the build order does not list the twenty')
@@ -210,7 +340,9 @@ def sheet(h):
     L.append('| | |')
     L.append('|---|---|')
     rows = [('Sentence', h['sentence']), ('Shape', h['shape']),
-            ('Colours', f"Accent {h['accent'][1]} `{h['accent'][0]}`, foil {h['foil'][1]} `{h['foil'][0]}`"),
+            ('Colours', f"Accent {h['accent'][1]} `{h['accent'][0]}`, foil {h['foil'][1]} `{h['foil'][0]}`. Nearest colours: "
+                        + ', '.join(f'{n} ({d:.0f})' for d, n in nearest_colours(h, HEROES)) + ' (Lab distance; under 12 reads as the same). '
+                        + dark_note(h) + ' ' + clash_note(h, HEROES)),
             ('Theme word', f"`{h['theme']}`"), ('Role', f"{h['role'].capitalize()}, {h['range']}"),
             ('Faction', f"{h['faction']} (lore: {h['legend']})"),
             ('The new thing', h['new']), ('The question', h['question']), ('The weakness', h['weakness']),
@@ -245,7 +377,8 @@ def sheet(h):
                 if txt:
                     nums.append(txt + (' OK' if ok and s[ck]['k'] != 'reach' else ''))
         if s.get('land') is not None:
-            nums.append(f"first hit {s['land']:g} s after the cast" + (' (a lasting mark after that)' if s.get('lasting') else ''))
+            nums.append(f"first hit {s['land']:g} s after the cast" + (f", last {s['last']:g} s" if s.get('last') else '')
+                        + (' (a lasting mark after that)' if s.get('lasting') else ''))
         tail = f" *({'; '.join(nums)})*" if nums else ''
         L.append(f"- **{s['k']} {s['name']}.** {s['ans']}{tail}")
     L.append('')
@@ -261,7 +394,12 @@ def sheet(h):
     L.append('')
     L.append('### What the engine needs, and on which screen it is decided')
     L.append('')
-    L.append(f"**Engine work: {h['engine_size']}.** {h['engine']} Build order: {rank} of 20 ([the kits page](../../docs/heroes/kits20/index.html)).")
+    L.append(f"**Engine work: {h['engine_size']}.** {h['engine']} Build order: {rank} of 20 ([the kits page](../../docs/heroes/kits20/index.html)); "
+             'the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not '
+             '`src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.')
+    if h.get('risk'):
+        L.append('')
+        L.append(f"**Risk:** {h['risk']}")
     L.append('')
     L.append('| Key | Needs | Decided on |')
     L.append('|---|---|---|')
@@ -400,6 +538,13 @@ def cards_page(heroes):
         P.append(f'<div class="chips"><span class="chip"><i style="background:{acc}"></i>{esc(h["accent"][1])}</span>'
                  f'<span class="chip"><i style="background:{h["foil"][0]}"></i>{esc(h["foil"][1])}</span><span>· nearest: {esc(h["nearest"])}</span></div>')
         P.append(f'<div class="look"><b>Look:</b> {esc(h["look"])}</div>')
+        if dark_note(h):
+            P.append(f'<div class="look"><b>Colour:</b> {esc(dark_note(h))}</div>')
+        ties = ties_for(h['name'], LORE)
+        if ties:
+            P.append('<div class="lore"><b>Ties:</b> ' + '; '.join(
+                f'{"★ " if s else ""}<b style="color:var(--acct)">{esc(w)}</b> <a href="../../lore/index.html#{slug(o)}">{esc(o)}</a>: {esc(x)}'
+                for w, o, x, s in ties) + '</div>')
         P.append(f'<div class="lore"><b>Faction:</b> {esc(h["faction"])}. <b>Legend:</b> {esc(h["legend"])} '
                  f'<a href="../../lore/index.html#{slug(h["name"])}">Lore</a> · <a href="../../../pipeline/designs/kit-{h["theme"]}.md">Kit sheet</a></div>')
         P.append('</section>')
@@ -453,13 +598,15 @@ def kits_page(heroes):
              '<p><b>Written before the look.</b> The rules put the look (gate 2) first; the user asked for the full design now, so every number '
              'here may move once a hero\'s look is agreed.</p></header><main>')
     P.append('<h3 class="s">The build order</h3><p class="note">Heroes that need no new engine work first, then small, medium and large. '
-             'One hero at a time goes through gates 2 to 5.</p><div class="wrap stack"><table class="order"><tr><th>#</th><th>Hero</th><th>Role</th>'
+             'One hero at a time goes through gates 2 to 5. The sizes come from reading the docs, not the trait code, so the order is to be '
+             'confirmed by whoever reads <code>src/traits/types.ts</code> first.</p><div class="wrap stack"><table class="order"><tr><th>#</th><th>Hero</th><th>Role</th>'
              '<th>Faction</th><th>Engine</th><th>What is new for the engine</th></tr>')
     for i, n in enumerate(BUILD, 1):
         h = byname[n]
         P.append(f'<tr><td class="nm">{i}.</td><td class="nm"><a href="#{slug(n)}" style="color:var(--text)"><b>{esc(n)}</b></a><br><span class="note">{esc(h["title"])}</span></td>'
                  f'<td data-l="Role">{esc(h["role"])}</td><td data-l="Faction">{esc(h["faction"])}</td><td data-l="Engine"><span class="size {h["engine_size"]}">{h["engine_size"]}</span></td>'
-                 f'<td class="note" data-l="New for the engine">{esc(h["engine"])}</td></tr>')
+                 f'<td class="note" data-l="New for the engine">{esc(h["engine"])}'
+                 + (f'<br><b style="color:#e8b84a">Risk:</b> {esc(h["risk"])}' if h.get('risk') else '') + '</td></tr>')
     P.append('</table></div>')
     for n in BUILD:
         h = byname[n]
@@ -494,7 +641,12 @@ def kits_page(heroes):
     return '\n'.join(P)
 
 
+LORE = None
+
+
 def main():
+    global LORE
+    LORE = read_lore()
     heroes = sorted(HEROES, key=lambda h: h['n'])
     errs = check(heroes)
     if errs:

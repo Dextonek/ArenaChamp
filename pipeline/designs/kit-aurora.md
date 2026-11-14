@@ -17,7 +17,7 @@ New hero 6 of the twenty ([the cards](../../docs/heroes/next10/index.html), [all
 |---|---|
 | **Sentence** | A sky dancer of the far north who hangs the aurora's curtains across the battle. |
 | **Shape** | Three curtains of light standing side by side over a horizon. |
-| **Colours** | Accent aurora green `#6af2c0`, foil snow `#eef6ff` |
+| **Colours** | Accent aurora green `#6af2c0`, foil snow `#eef6ff`. Nearest colours: Mortis (13), Zephyr (14) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `aurora` |
 | **Role** | Mage, ranged |
 | **Faction** | The Hourkeepers (lore: She dances the aurora that tells the hour at Frostfall: Isolde's sister, Lyra's partner, Kaia's rival for the sky.) |
@@ -50,7 +50,7 @@ A hero walks 4 m/s and reacts in 0.25 s; a circle warns at least 0.25 + radius /
 - **Q Shimmer.** Sidestep: it reaches 6 m at 0.25 + 6/22 = 0.52 s. *(bolt: 0.25 + 6/22 = 0.52 s to 6 m (at least 0.5) OK; first hit 0.3 s after the cast (a lasting mark after that))*
 - **W Curtain.** Step off its line: 0.25 + 0.5/4 = 0.38 s against 0.6 s. Then go round its ends, or take its colour. *(lane 1 m wide: 0.25 + 0.5/4 = 0.38 s needed, warned 0.6 s OK; first hit 0.6 s after the cast (a lasting mark after that))*
 - **E Skate.** -
-- **R The Sky Opens.** The fans show 1.0 s ahead: leave them. Or stand near a curtain's middle, where it moves slowest: the tip of a 10 m curtain moves 5 x 1.57 / 2.5 = 3.1 m/s, slower than walking. The new curtain: 0.25 + 0.5/4 = 0.38 s against 1.0 s. *(lane 1 m wide: 0.25 + 0.5/4 = 0.38 s needed, warned 1 s OK; first hit 1 s after the cast)*
+- **R The Sky Opens.** The fans show 1.0 s ahead: leave them. Or stand near a curtain's middle, where it moves slowest: the tip of a 10 m curtain moves 5 x 1.57 / 2.5 = 3.1 m/s, slower than walking. The new curtain: 0.25 + 0.5/4 = 0.38 s against 1.0 s. *(lane 1 m wide: 0.25 + 0.5/4 = 0.38 s needed, warned 1 s OK; first hit 1 s after the cast, last 3.5 s)*
 
 ### The question, the weakness, the second decision
 
@@ -64,7 +64,7 @@ Mage, 560 HP. Q 52, W 40, R up to 135 when all three curtains sweep you, about 9
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: none.** Curtains are her marks; crossing one is read in `victimTick` from the hero's last and present position; slow, silence and "exposed" exist. Build order: 4 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: none.** Curtains are her marks; crossing one is read in `victimTick` from the hero's last and present position; slow, silence and "exposed" exist. Build order: 4 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

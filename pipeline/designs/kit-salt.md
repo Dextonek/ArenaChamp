@@ -17,10 +17,10 @@ New hero 3 of the twenty ([the cards](../../docs/heroes/next10/index.html), [all
 |---|---|
 | **Sentence** | A hedge witch who draws circles of salt that no spell can cross. |
 | **Shape** | A dashed circle of salt with an iron nail inside it. |
-| **Colours** | Accent cold iron `#7d9bb0`, foil salt white `#f4f1ea` |
+| **Colours** | Accent cold iron `#7d9bb0`, foil salt white `#f4f1ea`. Nearest colours: Gus foil (21), Isolde (23) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `salt` |
 | **Role** | Controller, ranged |
-| **Faction** | The Concord of the Ring (lore: The hedge witch who salts the Ring's edge every dawn so that no spell reaches the crowd.) |
+| **Faction** | The Truce of the Ring (lore: The hedge witch who salts the Ring's edge every dawn so that no spell reaches the crowd.) |
 | **The new thing** | Lines that stop spells but not feet. Walls stop everything. Her salt lines let anyone walk across but no spell, from either side. To trade spells with her you have to come in. |
 | **The question** | "Will you step inside my circle?" |
 | **The weakness** | Up close she is soft, and her circle shelters the enemy from her own spells too. |
@@ -49,7 +49,7 @@ A hero walks 4 m/s and reacts in 0.25 s; a circle warns at least 0.25 + radius /
 - **P Hearthward.** Walk in after her, or make her leave it.
 - **Q Iron Nail.** Sidestep: it reaches 6 m at 0.25 + 6/20 = 0.55 s. *(bolt: 0.25 + 6/20 = 0.55 s to 6 m (at least 0.5) OK; first hit 0.3 s after the cast)*
 - **W Salt Circle.** Walk in or out: 4 m is a second. Or wait 5 s. It shelters you from her spells as much as hers from yours.
-- **E Hex Bundle.** Do not dash for 4 s, or spend it on your smallest dash. Break sight before the 0.3 s cast ends. *(first hit 0.3 s after the cast)*
+- **E Hex Bundle.** It needs sight at the cast: fight round cover and she cannot hex you. Hexed, do not dash for 4 s, or spend it on your smallest dash. *(first hit 0.3 s after the cast)*
 - **R The Boundary.** Step off the line: half its width is 0.6 m, 0.25 + 0.6/4 = 0.4 s against 1.0 s. Then go round its ends. *(lane 1.2 m wide: 0.25 + 0.6/4 = 0.40 s needed, warned 1 s OK; first hit 1 s after the cast (a lasting mark after that))*
 
 ### The question, the weakness, the second decision
@@ -64,7 +64,7 @@ Controller, 620 HP. Q 52 with a slow is her rhythm; her strength is denying spel
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: medium.** Lines that stop spells: bolts stop on them as on cover, a targeted spell aimed across one fails, an area spell does not reach past one. New in `projectile.ts` and in the cast checks. Build order: 16 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: medium.** Lines that stop spells: bolts stop on them as on cover, a targeted spell aimed across one fails, an area spell does not reach past one. New in `projectile.ts` and in the cast checks. Build order: 16 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|

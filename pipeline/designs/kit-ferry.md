@@ -17,7 +17,7 @@ New hero 10 of the twenty ([the cards](../../docs/heroes/next10/index.html), [al
 |---|---|
 | **Sentence** | The ferryman of the dead, who lays rivers of pale light and rides them. |
 | **Shape** | A ferry boat on two lines of water, with a lantern on a pole. |
-| **Colours** | Accent lantern green-gold `#d8e86a`, foil fog grey `#cfc6b8` |
+| **Colours** | Accent lantern green-gold `#d8e86a`, foil fog grey `#cfc6b8`. Nearest colours: Barry foil (14), Tempo (20) (Lab distance; under 12 reads as the same).   |
 | **Theme word** | `ferry` |
 | **Role** | Skirmisher, ranged |
 | **Faction** | a loner (lore: Ferryman of the dead, who serves no faction because every faction's dead ride with him.) |
@@ -50,7 +50,7 @@ A hero walks 4 m/s and reacts in 0.25 s; a circle warns at least 0.25 + radius /
 - **Q Pole Sweep.** Stand beyond 4 m. *(spacing: stand outside its reach (no reaction can beat a blow up close); first hit 0.35 s after the cast)*
 - **W River of Souls.** Step off: half of 2.5 m, 0.25 + 1.25/4 = 0.56 s. Cross it rather than walk along it.
 - **E Toll Mark.** Step off the river: a second on it costs 18 at most. *(first hit 0.3 s after the cast (a lasting mark after that))*
-- **R The Last Crossing.** Leave before it curls: 1.8 s to be out of 5 m, and from the middle that takes 0.25 + 5/4 = 1.5 s. Inside the whirl you still walk out at 1.5 m/s. *(circle 5 m: 0.25 + 5/4 = 1.50 s needed, warned 1.8 s OK; first hit 1.8 s after the cast)*
+- **R The Last Crossing.** Leave before it curls: 1.8 s to be out of 5 m, and from the middle that takes 0.25 + 5/4 = 1.5 s. Inside the whirl you still walk out at 1.5 m/s. *(circle 5 m: 0.25 + 5/4 = 1.50 s needed, warned 1.8 s OK; first hit 1.8 s after the cast, last 4 s)*
 
 ### The question, the weakness, the second decision
 
@@ -64,7 +64,7 @@ Skirmisher, 620 HP. Q 48 with a push; his damage is the toll (up to 60) and the 
 
 ### What the engine needs, and on which screen it is decided
 
-**Engine work: none.** Rivers are marks; carrying the enemy is `t.carryEnemy` in `victimTick` and himself `t.carrySelf`, both there today; faster cooldowns on his river in the `cooldown` hook. Build order: 3 of 20 ([the kits page](../../docs/heroes/kits20/index.html)).
+**Engine work: none.** Rivers are marks; carrying the enemy is `t.carryEnemy` in `victimTick` and himself `t.carrySelf`, both there today; faster cooldowns on his river in the `cooldown` hook. Build order: 3 of 20 ([the kits page](../../docs/heroes/kits20/index.html)); the engine sizes come from reading the docs (`docs/architecture/mechanics.md`, `pipeline/designs/kit-build-brief.md`), not `src/traits/types.ts`, so the order is to be confirmed by whoever reads the code first.
 
 | Key | Needs | Decided on |
 |---|---|---|
