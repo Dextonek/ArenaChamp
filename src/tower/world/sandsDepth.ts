@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { RING, seeded } from '../../arenas/common';
 import type { SandsLook } from './sandsZone';
 import { rimAt } from './land';
-import { sandsScenes, type Proto } from './scenes/sands';
+import { sandsScenes, type GroundCanvas, type Proto } from './scenes/sands';
 
 /**
  * The world's depth on a Sands floor (floors 21 to 30; the user, 2026-11-14: "add depth into the worlds, make all the background fit there,
@@ -56,7 +56,8 @@ const C = {
 
 /** Merges matte parts by squares, a mesh a square and a kind (`s`: casts shadows; `f`: flat scatter, no shadows). */
 class Merge {
-  private bins = new Map<string, { pos: number[]; nor: number[]; col: number[] }>();
+  /** Per square and kind: the props' vertices as they come, then the scenes' as ready blocks (`ext`, scenes/sands.ts, added last). */
+  private bins = new Map<string, { pos: number[]; nor: number[]; col: number[]; ext?: Float32Array[] }>();
   private m = new THREE.Matrix4();
   private nm = new THREE.Matrix3();
   private v = new THREE.Vector3();
@@ -94,14 +95,17 @@ class Merge {
     const e = m.elements, key = `${kind}:${Math.floor(e[12] / this.cell)}:${Math.floor(e[14] / this.cell)}`;
     let b = this.bins.get(key);
     if (!b) this.bins.set(key, (b = { pos: [], nor: [], col: [] }));
-    const n = this.nm.getNormalMatrix(m).elements, P = p.pos, N = p.nor, K = p.col;
+    const n = this.nm.getNormalMatrix(m).elements, P = p.pos, N = p.nor;
+    // written straight into blocks of the final type (the same numbers as pushing them one by one: a third of the scenes' build time
+    // on the phone profile went to growing these arrays)
+    const pos = new Float32Array(P.length), nor = new Float32Array(P.length);
     for (let i = 0; i < P.length; i += 3) {
       const x = P[i], y = P[i + 1], z = P[i + 2], a = N[i], c = N[i + 1], d = N[i + 2];
-      b.pos.push(e[0] * x + e[4] * y + e[8] * z + e[12], e[1] * x + e[5] * y + e[9] * z + e[13], e[2] * x + e[6] * y + e[10] * z + e[14]);
+      pos[i] = e[0] * x + e[4] * y + e[8] * z + e[12]; pos[i + 1] = e[1] * x + e[5] * y + e[9] * z + e[13]; pos[i + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
       const X = n[0] * a + n[3] * c + n[6] * d, Y = n[1] * a + n[4] * c + n[7] * d, Z = n[2] * a + n[5] * c + n[8] * d, l = Math.hypot(X, Y, Z) || 1;
-      b.nor.push(X / l, Y / l, Z / l);
-      b.col.push(K[i], K[i + 1], K[i + 2]);
+      nor[i] = X / l; nor[i + 1] = Y / l; nor[i + 2] = Z / l;
     }
+    (b.ext ??= []).push(pos, nor, p.col);
   }
   build(into: THREE.Group, own: { dispose(): void }[]) {
     const solid = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide }); // the cloths are single planes
@@ -109,9 +113,15 @@ class Merge {
     own.push(solid, flat);
     for (const [key, b] of this.bins) {
       const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b.pos), 3));
-      geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(b.nor), 3));
-      geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(b.col), 3));
+      const ext = b.ext ?? [];
+      let n = b.pos.length;
+      for (let k = 0; k < ext.length; k += 3) n += ext[k].length;
+      const pos = new Float32Array(n), nor = new Float32Array(n), col = new Float32Array(n);
+      pos.set(b.pos); nor.set(b.nor); col.set(b.col);
+      for (let k = 0, o = b.pos.length; k < ext.length; k += 3) { pos.set(ext[k], o); nor.set(ext[k + 1], o); col.set(ext[k + 2], o); o += ext[k].length; }
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
       geo.computeBoundingSphere();
       const isS = key[0] === 's', mesh = new THREE.Mesh(geo, isS ? solid : flat);
       mesh.castShadow = isS;
@@ -158,8 +168,11 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
   }).filter((v): v is { x: number; z: number; r: number; a: number } => !!v);
   const inPool = (x: number, z: number, pad: number) => oasis.some((o) => Math.hypot(x - o.x, z - o.z) < o.r + pad);
 
+  /** The ground's canvas, kept from `paint` for the scenes (scenes/sands.ts paints their ground into it in `build`, before it is drawn). */
+  let ground: GroundCanvas | null = null;
   /** Draws into the ground's canvas (sandsZone.ts `paint`): `X`, `Z` from offsets to pixels, `ppm` pixels a metre. */
   const paint = (g: CanvasRenderingContext2D, X: (dx: number) => number, Z: (dz: number) => number, ppm: number) => {
+    ground = { g, X, Z, ppm };
     const prnd = seeded(931 + look.seed);
     // darker drifts in the lee (south) of the rocks, and pebbles: free, and from far the sand reads as ground, not a cloth
     for (const c of cover) {
@@ -498,7 +511,8 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
     };
     update(0);
     // The scenes (scenes/sands.ts): little stories in props, into the same merged meshes; their own random stream, so nothing above moves.
-    const sc = sandsScenes({ look, land, keep, solids, sink: mg });
+    const sc = sandsScenes({ look, land, keep, solids, sink: mg, ground });
+    ground = null;
     mg.build(into, own);
     for (const g of Object.values(G)) g.dispose();
     const caravan = { x: (route[0].x + route[1].x) / 2, z: (route[0].z + route[1].z) / 2, y: (route[0].y + route[1].y) / 2 };
