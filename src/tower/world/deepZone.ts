@@ -423,10 +423,10 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
         break;
       case 'cart':
         dress.add('iron', box(r * 1.5, 0.75, r * 1.0), o.ax, 0.25, o.az, 0.4).add('darkWood', box(r * 1.58, 0.07, r * 1.08), o.ax, 0.98, o.az, 0.4);
-        // its wheels under it, turned with it, on their axles across it, standing on the ground (2026-11-14, the props pass: they lay on
-        // their sides along the cart, half in the ground, and kept to the world's axes while the cart was turned)
-        for (const [dx, dz] of [[-0.55, -0.4], [0.55, -0.4], [-0.55, 0.4], [0.55, 0.4]]) {
-          const lz = dz - 0.07, c = Math.cos(0.4), s = Math.sin(0.4);
+        // its wheels on its long sides, turned with it, on their axles across it, standing on the ground (2026-11-14, the props pass: they
+        // lay on their sides along the cart, half in the ground, and kept to the world's axes while the cart was turned)
+        for (const [dx, dz] of [[-0.55, -1], [0.55, -1], [-0.55, 1], [0.55, 1]]) {
+          const lz = dz > 0 ? r * 0.5 : -r * 0.5 - 0.14, c = Math.cos(0.4), s = Math.sin(0.4);
           dress.add('darkWood', cyl(0.26, 0.26, 0.14, 8), o.ax + dx * c + lz * s, 0.25, o.az - dx * s + lz * c, 0.4, 1, 1, 1, Math.PI / 2);
         }
         for (const [dx, dz, s] of [[-0.3, 0, 0.7], [0.25, 0.1, 0.9], [0, -0.3, 0.6]] as const) prism(amethyst, o.ax + dx, 0.9, o.az + dz, s, 0.9 * s + 0.4, rnd() * 3);
