@@ -70,6 +70,10 @@ export class Pack {
   hunter = false;
   /** The route of a patrol, for the named. */
   private patrol: { len: number; cum: number[]; pts: Spot[]; speed: number } | null = null;
+  /** The patrol's own clock stops while it fights and walks home (else its home walks on mid-fight, and past the leash it gives up and
+   * heals: the Sands' probe counted 28 such resets in one try); `paused` is the time it has stood still so far. */
+  private paused = 0;
+  private stoppedAt: number | null = null;
 
   constructor(readonly def: PackDef, private env: PackEnv, cleared = false) {
     const kinds: EnemySpec[] = [];
@@ -108,7 +112,16 @@ export class Pack {
   }
   /** Where it stands (a patrol: where it walks now). */
   get home(): Spot {
-    return this.patrol ? this.patrolAt(this.env.now()) : this.def.at;
+    return this.patrol ? this.patrolAt(this.clock()) : this.def.at;
+  }
+  /** The patrol's clock: the game's, less the time it stood still fighting. */
+  private clock() {
+    return (this.stoppedAt ?? this.env.now()) - this.paused;
+  }
+  private walkOn() {
+    if (this.stoppedAt === null) return;
+    this.paused += this.env.now() - this.stoppedAt;
+    this.stoppedAt = null;
   }
   get patrols() {
     return !!this.patrol;
@@ -135,7 +148,7 @@ export class Pack {
     const { api, boons } = this.env, arena = api.arena, room = MAX_UNITS - arena.summons.alive('opponent').length;
     const live = this.slots.filter((s) => s.alive).slice(0, partial ? Math.max(0, room) : undefined);
     if (live.length > room || !live.length) return false;
-    const at = this.patrol ? this.patrolAt(this.env.now()) : null;
+    const at = this.patrol ? this.patrolAt(this.clock()) : null;
     for (const s of live) {
       const sp = s.spec;
       const look = lookOf(sp);
@@ -197,6 +210,7 @@ export class Pack {
     if (this.state !== 'asleep' && this.state !== 'leashed') return;
     this.state = 'awake';
     this.seen.woke++;
+    if (this.patrol && this.stoppedAt === null) this.stoppedAt = this.env.now();
     for (const u of this.units) {
       u.rate = 1;
       u.opts.speed = this.specOf(u)!.speed;
@@ -224,8 +238,8 @@ export class Pack {
     if (this.state === 'asleep') {
       if (d > PACK.hide && !this.hunter) { this.hide(); return; }
       if (this.patrol) {
-        // It walks its route: placed from the clock, so it is where it should be after any rebuild.
-        const at = this.patrolAt(this.env.now());
+        // It walks its route: placed from its clock, so it is where it should be after any rebuild.
+        const at = this.patrolAt(this.clock());
         for (const s of this.slots) {
           const u = s.unit;
           if (!u?.alive) continue;
@@ -270,6 +284,7 @@ export class Pack {
     for (const s of this.slots) if (s.unit?.alive) s.unit.hp = Math.min(s.unit.max, s.unit.hp + s.unit.max * 0.25 * dt);
     if (nHome === this.units.length) {
       this.state = 'asleep';
+      this.walkOn();
       this.env.log(`${this.id}: home`);
     } else if (d < PACK.wake) this.wake('hero came back');
   }
