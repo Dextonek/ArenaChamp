@@ -15,7 +15,7 @@ import type { FoeModel } from './foeModels';
  * shares the Raider Chief's figure, the War's knights, banner bearers and the deserter share the knight's.
  */
 /** The model files built so far (public/models/tower/<id>_v4.glb): a kind or a ruler whose file is not yet built stays as it was. */
-export const BUILT = new Set<string>(['sea_docker', 'sea_admiral', 'wood_giant', 'wood_sprite', 'wood_oak', 'wood_elder', 'wood_briar', 'wood_antler']);
+export const BUILT = new Set<string>(['sea_docker', 'sea_admiral', 'wood_giant', 'wood_sprite', 'wood_oak', 'wood_elder', 'wood_briar', 'wood_antler', 'sea_netter', 'sea_mate', 'sea_queen', 'sea_judge']);
 
 export const FOE_MODELS: Record<string, FoeModel> = {
   // the Sea
