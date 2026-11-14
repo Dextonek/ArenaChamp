@@ -1,4 +1,5 @@
 import type { FloorDef } from '../def';
+import { withFolk } from '../folk';
 import { banners } from './banners';
 import { deep } from './deep';
 import { canyon } from './canyon';
@@ -30,7 +31,7 @@ export const isCrown = (n: number) => n % 10 === 0;
  * The floors that exist, by number. Floors not yet made are missing: the menu shows them as coming, and "the next floor" skips them
  * (`floorAbove`). The handmade floors were 1 to 5 before the Climb grew to 50 (saves are moved by `state.ts`).
  */
-export const FLOORS: Record<number, FloorDef> = {
+const MADE: Record<number, FloorDef> = {
   1: harbour,
   ...Object.fromEntries(Object.entries(GEN_FLOORS).map(([n, g]) => [Number(n), g.floor])),
   11: wood,
@@ -38,6 +39,8 @@ export const FLOORS: Record<number, FloorDef> = {
   31: deep,
   41: banners,
 };
+/** Every floor's people are the Climb's own, each floor's picked by its number (`withFolk`, ../folk.ts), not the heroes they were made as. */
+export const FLOORS: Record<number, FloorDef> = Object.fromEntries(Object.entries(MADE).map(([n, d]) => [Number(n), withFolk(Number(n), d)]));
 export const floorDef = (n: number) => FLOORS[n];
 
 /** The numbers of the floors that exist, lowest first. */

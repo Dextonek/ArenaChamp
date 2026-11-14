@@ -39,9 +39,16 @@ export interface Release {
 export const CHANGELOG: Release[] = [
   {
     date: '2026-11-14',
-    title: 'A map of the floor, and who waits to duel',
+    title: 'The Climb’s own people, a map of the floor, and who waits to duel',
     live: false,
     items: [
+      {
+        tag: 'Tower',
+        title: 'The Climb’s people are their own',
+        text: 'The keepers, quest givers and traders on the Climb are no longer heroes standing in: each chapter has five people of its own, from the Bell-Warden of the Sea to the Herald of the War, and the traders take turns floor by floor. Rivals and gatekeepers are still heroes.',
+        image: '/news/climb-people.jpg',
+        alt: 'The Wood’s five people between the heroes Sefu and Kaia: the Moss-Abbess in a pointed green hood with a curled horn, the Path-Lighter in a wide hat with a lamp on a tall pole, the Kiln-Mother with a basket of charcoal and a fire-rake, the Amber-Seller with a tray of amber, and the Charm-Pedlar with a frame of charms over his head.',
+      },
       {
         tag: 'Tower',
         title: 'A map of the floor',
