@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Deep's Depth</title>
+<style>
+  :root { --bg: #0e0d14; --card: #17151f; --ink: #e8e4f2; --dim: #a19cb4; --gold: #c9a24a; --line: #2a2736; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 1320px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { margin: 0 0 4px; font-size: 24px; color: var(--gold); font-weight: 600; }
+  h2 { margin: 34px 0 6px; font-size: 19px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  p, li { color: var(--dim); max-width: 900px; }
+  nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+  nav button { background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  nav button.on { border-color: var(--gold); color: var(--gold); }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 22px; }
+  .pair figure { margin: 0; background: var(--card); border-radius: 6px; overflow: hidden; }
+  .pair img { width: 100%; display: block; }
+  .pair figcaption { padding: 4px 10px; font-size: 13px; color: var(--dim); }
+  .view { font-weight: 600; color: var(--ink); margin-top: 18px; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+<h1>The Deep (floors 31 to 40): depth</h1>
+<p>The cave dressed as a mine people worked in, plus the far cave around it. It changes only how things look: none of it blocks a walk or a shot. Left: before. Right: after. Game-camera views show the floor the way a player sees it. The "dark" views have the dark law's layer on, so you can check that the new lights stay few and the dark still matters. The far, water, north and jetty views use a free camera, with no HUD and no dark.</p>
+<nav id="floors"></nav>
+<div id="views"></div>
+</main>
+<script>
+const FLOORS = [31, 35, 36, 38];
+const VIEWS = [
+  ['rest-close', 'The miners’ rest, close (floor 31: the cart yard)'],
+  ['yard-mid', 'The cart yard and its tracks, mid view'],
+  ['landing-close', 'The landing on the black water, close'],
+  ['jetty', 'The landing’s jetty and boat (free camera)'],
+  ['shaft-mid', 'The old shaft’s head-frame, mid view'],
+  ['shaft-dark', 'The same, with the dark on'],
+  ['between-mid', 'The cave floor between two halls, mid view'],
+  ['between-dark', 'The same at the game’s zoom, with the dark on'],
+  ['pools-close', 'The glow pools, close'],
+  ['north', 'The north wall from mid-floor: the arch onto a second cavern, stalactites, bats (free camera)'],
+  ['water', 'Towards the black lake: the waterfall, the far shore (free camera)'],
+  ['far', 'A low view from the camp to the north (free camera)'],
+];
+const nav = document.getElementById('floors'), box = document.getElementById('views');
+let floor = FLOORS[0];
+try { const f = +localStorage.getItem('deep-depth-floor'); if (FLOORS.includes(f)) floor = f; } catch (e) {}
+function show() {
+  nav.querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.f === floor));
+  box.innerHTML = VIEWS.map(([v, t]) => `<div class="view">Floor ${floor}: ${t}</div><div class="pair">` +
+    ['before', 'after'].map((w) => `<figure><img loading="lazy" src="f${floor}-${v}-${w}.jpg" alt="Floor ${floor}, ${t}, ${w}"><figcaption>${w}</figcaption></figure>`).join('') + '</div>').join('');
+}
+for (const f of FLOORS) {
+  const b = document.createElement('button');
+  b.textContent = `Floor ${f}`; b.dataset.f = f;
+  b.onclick = () => { floor = f; try { localStorage.setItem('deep-depth-floor', f); } catch (e) {} show(); };
+  nav.append(b);
+}
+show();
+</script>
+</body>
+</html>
