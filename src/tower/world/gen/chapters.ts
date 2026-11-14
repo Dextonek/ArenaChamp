@@ -1,5 +1,6 @@
 import type { Chapter, GenFloor } from './types';
 import { makeSeaFloor } from './sea.ts';
+import { makeWoodFloor } from './wood.ts';
 
 /**
  * Each chapter's generator (pipeline/designs/tower-50.md), for `pipeline/tools/gen-floors.ts`: floor `n` of the chapter, from a seed
@@ -7,4 +8,5 @@ import { makeSeaFloor } from './sea.ts';
  */
 export const GENERATORS: Partial<Record<Chapter, (o: { n: number; attempt?: number }) => GenFloor>> = {
   sea: makeSeaFloor,
+  wood: makeWoodFloor,
 };
