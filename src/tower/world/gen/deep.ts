@@ -235,9 +235,12 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   const villagerAt = Vl ? L.reserve(L.spot(Vl.stand, 2, 1.2), 2) : null;
   const hold = L.reserve(L.spot(home ? add(Wl!.c, toMid(Wl!.c), -11) : Sr.stand, 4, 4, (q) => farFromLurkers(q, LURK + 4) && farFromPacks(q, 22)), 5);
   // Caches and the lore stone off the packs' ground (floor 32's first bake: Bram fell three times fetching caches by the halls).
-  const clear = (q: V) => farFromLurkers(q, LURK + 2) && farFromPacks(q, 16);
+  // Also off a hall's back and the rock fall: the route bot picks up a cache within 14 m of it on the way, and one behind a wall, near in
+  // a straight line and far on foot, had it turning between the cache and its quest for good (floor 31's second bake).
+  const lairSegs: [V, V][] = [[{ x: -24, z: lairZ }, { x: 24, z: lairZ }], [{ x: -24, z: lairZ }, { x: -24, z: lairZ - 30 }], [{ x: 24, z: lairZ }, { x: 24, z: lairZ - 30 }]];
+  const clear = (q: V) => farFromLurkers(q, LURK + 2) && farFromPacks(q, 16) && halls.every((h) => dist(h.c, q) >= 20) && q.z > lairZ + 4 && lairSegs.every(([a, b]) => segDist(q, a, b) >= 12);
   const lore = L.reserve(L.spot(at(range(150, 165), 0.82), 4, 1.5, clear), 2.5);
-  const caches = [at(range(-170, -155), 0.86), at(range(-95, -85), 0.9), at(range(-20, -5), 0.9), at(range(15, 25), 0.88), at(range(70, 80), 0.6), at(range(140, 150), 0.88)]
+  const caches = [at(range(-170, -155), 0.86), at(range(-95, -85), 0.9), at(range(-32, -14), 0.58), at(range(14, 32), 0.58), at(range(70, 80), 0.6), at(range(140, 150), 0.88)]
     .map((p) => L.reserve(L.spot(p, 4, 1.5, clear), 2.5));
 
   // Two named enemies (floor 31: the Pale One alone): one walks a loop round the middle, one the west side. Their ways are kept clear.
@@ -255,6 +258,9 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     const lurk = lurkers.includes(p) ? 23 : 16;
     return L.reserve(L.spot(add(p.c, toMid(p.c), lurk), 3, 1.5, (q) => farFromPacks(q, 15) && farFromLurkers(q) && patrolPts.every((s) => dist(s, q) >= 10)), 2.5);
   });
+
+  /** Ground kept open round the things the bot picks up on its way: no ridge within 16 m of them. */
+  const open = [...caches, ...stones, lore];
 
   // The lead: someone walks from the shaft to the camp along the roads (floor 31 has none).
   const leadFrom = add(Sh.stand, toMid(Sh.c), 4);
@@ -279,7 +285,7 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
     const c = polar(range(-180, 180), Math.sqrt(rnd()) * 128), len = range(8, 18), a = rnd() * Math.PI, r = range(1.3, 2.2);
     const d = { x: Math.cos(a) * len * 0.5, z: Math.sin(a) * len * 0.5 }, p0 = add(c, d, -1), p1 = add(c, d);
     const pts = Array.from({ length: Math.ceil(len / 1.5) + 1 }, (_, j) => { const t = j / Math.ceil(len / 1.5); return { x: p0.x + (p1.x - p0.x) * t, z: p0.z + (p1.z - p0.z) * t }; });
-    if (pts.some((q) => inside(rim, q) < r + 4 || L.inKeep(q, r + 2.2) || L.hitsCover(q, r + 3.2))) continue;
+    if (pts.some((q) => inside(rim, q) < r + 4 || L.inKeep(q, r + 2.2) || L.hitsCover(q, r + 3.2) || open.some((o) => dist(o, q) < 16 + r))) continue;
     if (c.z > cz - 18 && Math.abs(c.x) < 30) continue; // keep the camp's own chamber open
     // tall ones away from the south (the camera looks north: a tall rock south of the hero hides it)
     wall('ridge', p0, p1, r, r2(range(2.6, 4.2) + (c.z < 0 ? 1.2 : 0)));
@@ -495,6 +501,9 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   });
   if (echo) spots.push({ name: 'rival goal', p: echo });
   const cut = unreachable(L.cover, ring, C(0, 5.5), spots);
+  for (const [name, p] of [...caches.map((c, i) => [`cache c${i + 1}`, c] as const), ...stones.map((w, i) => [`waystone w${i + 1}`, w] as const), ['lore', lore] as const]) {
+    if (detour(L.cover, p, 16, (q) => inside(rim, q) > 1.5)) cut.push(`${name} (a long way round to it)`);
+  }
   if (cut.length) throw new Error(`floor ${n}: cannot reach ${cut.slice(0, 4).join(', ')}`);
   let most = 0;
   for (let x = -ring; x <= ring; x += 3) for (let z = -ring; z <= ring; z += 3) {
@@ -565,6 +574,49 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
       rival,
     },
   };
+}
+
+/**
+ * Whether ground within `R` m of `p` in a straight line is much further on foot (behind a wall): a walk out from `p` on a 0.5 m grid,
+ * a walker 0.5 m round; true when open ground within `R` (inside the outline: `onGround`) is not reached within 1.4 times its straight
+ * distance and 6 m.
+ */
+function detour(cover: Piece[], p: V, R: number, onGround: (q: V) => boolean): boolean {
+  const step = 0.5, W = R + 8, n = Math.round((2 * W) / step) + 1, body = 0.5;
+  const near = cover.filter(({ o }) => segDist(p, { x: o.ax, z: o.az }, { x: o.bx, z: o.bz }) < W * 1.5 + o.r);
+  const blocked = (x: number, z: number) => near.some(({ o }) => segDist({ x, z }, { x: o.ax, z: o.az }, { x: o.bx, z: o.bz }) < o.r + body);
+  const at = (i: number) => -W + i * step, c = Math.round(W / step);
+  const d = new Float32Array(n * n).fill(Infinity), done = new Uint8Array(n * n), bl = new Int8Array(n * n).fill(-1);
+  const isBlocked = (i: number, j: number) => { const k = j * n + i; if (bl[k] < 0) bl[k] = blocked(p.x + at(i), p.z + at(j)) ? 1 : 0; return bl[k] === 1; };
+  d[c * n + c] = 0;
+  // Dijkstra on 8 neighbours with a bucketed queue (steps of 0.5 and 0.71 m)
+  const queue: number[][] = [];
+  const push = (k: number, v: number) => { const b = Math.floor(v * 4); (queue[b] ??= []).push(k); };
+  push(c * n + c, 0);
+  for (let b = 0; b < queue.length; b++) {
+    const list = queue[b];
+    if (!list) continue;
+    for (let li = 0; li < list.length; li++) {
+      const k = list[li];
+      if (done[k]) continue;
+      done[k] = 1;
+      const i = k % n, j = (k - i) / n;
+      for (const [di, dj, w] of [[1, 0, 1], [-1, 0, 1], [0, 1, 1], [0, -1, 1], [1, 1, 1.414], [1, -1, 1.414], [-1, 1, 1.414], [-1, -1, 1.414]]) {
+        const a = i + di, bb = j + dj;
+        if (a < 0 || bb < 0 || a >= n || bb >= n) continue;
+        const kk = bb * n + a;
+        if (done[kk] || isBlocked(a, bb)) continue;
+        const v = d[k] + w * step;
+        if (v < d[kk] && v < 3 * W) { d[kk] = v; push(kk, v); }
+      }
+    }
+  }
+  for (let j = 0; j < n; j += 2) for (let i = 0; i < n; i += 2) {
+    const x = at(i), z = at(j), s = Math.hypot(x, z);
+    if (s > R || s < 2 || isBlocked(i, j)) continue;
+    if (onGround({ x: p.x + x, z: p.z + z }) && d[j * n + i] > s * 1.4 + 6) return true;
+  }
+  return false;
 }
 
 /**
