@@ -21,8 +21,8 @@ import type { Battlefield, WarLook } from '../warZone';
  *
  * Placed by its own random stream (`seeded(8803 + look.seed)`), never the zone's, the depth's or `Math.random`: nothing that was there
  * moves. A scene keeps 3 m off the floor's spots (keep.ts), off the cover, the roads' middles, the places' rounds and the depth's own
- * props (`taken`). Built from shared primitives into two meshes (matte and metal) for the open ground and two past the edge: four draw
- * calls (and the shadow pass) for every scene on the floor. `globalThis.__warScenes = false` before a zone is built leaves them out
+ * props (`taken`). Built from shared primitives into one mesh of one matte material (the metals matte, as the depth's), casting no
+ * shadow: one draw call for every scene on the floor. `globalThis.__warScenes = false` before a zone is built leaves them out
  * (for an A/B). `pipeline/tools/war-scenes-probe.js` lists every scene's footprint, measured from its vertices, and what it touches.
  */
 
@@ -45,10 +45,10 @@ export interface WarScene {
   r?: number; h?: number;
   /** For a leaning scene: how far past the host's own radius any part higher than knee height reaches. */
   tallReach?: number;
-  /** Measured: the least gap between any built vertex and a cover piece's own body (its radius round its line), the host aside. */
+  /** For a leaning scene, measured: the least gap between any built vertex and another cover piece's body (its radius round its line). */
   gap?: number;
 }
-export interface WarScenesLog { seed: number; floor?: number; scenes: WarScene[]; taken: Taken[]; ms: number; tris: number }
+export interface WarScenesLog { seed: number; floor?: number; scenes: WarScene[]; taken: Taken[]; planMs: number; ms: number; tris: number }
 /** The last build of each floor's scenes, by look.seed: what the probe reads (on `globalThis`, so a page tool's own import of this file
  * sees the game's, whichever copy of the module the dev server handed each). */
 const G = globalThis as unknown as { __warScenesLog?: Map<number, WarScenesLog> };
@@ -77,6 +77,7 @@ export interface WarScenesPlanIn { look: WarLook; geo: Battlefield; keep: Pt[]; 
 
 /** Where this floor's scenes go: pure numbers (no THREE object: the zone's ids and the depth's stream stay as they were). */
 export function planWarScenes(o: WarScenesPlanIn): WarScene[] {
+  const t0 = performance.now();
   const { look, geo, keep, taken } = o;
   const rnd = seeded(8803 + look.seed);
   const n = o.floor ?? 41, scarred = n >= 48;
@@ -206,8 +207,10 @@ export function planWarScenes(o: WarScenesPlanIn): WarScene[] {
     const x = RING.x + (rnd() - 0.5) * 2 * rmax, z = RING.z + (rnd() - 0.5) * 2 * rmax;
     attempt(fieldKind(x), 1, () => ({ x, z }));
   }
+  lastPlanMs = performance.now() - t0;
   return placed;
 }
+let lastPlanMs = 0;
 function rimAtLook(rim: number[], a: number) {
   const n = rim.length, t = ((((a / (Math.PI * 2)) % 1) + 1) % 1) * n, i = Math.floor(t) % n, f = t - Math.floor(t), s = f * f * (3 - 2 * f);
   return rim[i] + (rim[(i + 1) % n] - rim[i]) * s;
@@ -219,10 +222,9 @@ const COLOUR = {
   wood: '#4a3220', dark: '#2c211a', plank: '#6b4a2e', charred: '#3a3430', ash: '#4c4844', stone: '#7a766e', rubble: '#6c6860',
   earth: '#4a3c30', shot: '#56524e', soot: '#4a4440', mud: '#3e342c', leather: '#5a3a24', cream: '#c8bea4', paper: '#d0c8b0', linen: '#a49e90', canvas: '#9e9480',
   straw: '#b89a5a', sack: '#9a8a66', rope: '#b89a5a', leaf: '#3e5a30', wine: '#5e1a28', crimson: '#9a2c2c', azure: '#2c4c9a',
-  steel: '#8a8e98', iron: '#2a2c32', gold: '#c9a24a', tin: '#9a9ca2',
+  steel: '#9a9ea8', iron: '#34363c', gold: '#c9a24a', tin: '#a2a4aa', // matte, as the depth's: one material for every scene
 } as const;
 type Colour = keyof typeof COLOUR;
-const METAL: ReadonlySet<Colour> = new Set<Colour>(['steel', 'iron', 'gold', 'tin']);
 
 /** Every scene on a floor, into four meshes. Called by warDepth.ts as its last step, inside its seeded `Math.random`. */
 export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE.Group; own: { dispose(): void }[]; scenes: WarScene[]; taken: Taken[]; floor?: number }) {
@@ -244,27 +246,33 @@ export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE
     }
     return pr;
   };
+  /** Sizes to two significant figures: a beam 3.84 m long and one 3.8 m long share one shape (most of the build's time was new shapes). */
+  const q2 = (v: number) => +v.toPrecision(2);
   const S = {
-    box: (w: number, h: number, d: number) => prim(`b${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0)),
-    cyl: (r0: number, r1: number, h: number, n = 10) => prim(`c${r0},${r1},${h},${n}`, () => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0)),
+    box: (w: number, h: number, d: number) => { w = q2(w); h = q2(h); d = q2(d); return prim(`b${w},${h},${d}`, () => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0)); },
+    cyl: (r0: number, r1: number, h: number, n = 10) => { r0 = q2(r0); r1 = q2(r1); h = q2(h); return prim(`c${r0},${r1},${h},${n}`, () => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0)); },
     /** A cylinder lying along local x, resting on the ground. */
-    log: (r: number, len: number, n = 8) => prim(`l${r},${len},${n}`, () => new THREE.CylinderGeometry(r, r, len, n).rotateZ(Math.PI / 2).translate(0, r, 0)),
-    cone: (r: number, h: number, n = 8) => prim(`k${r},${h},${n}`, () => new THREE.ConeGeometry(r, h, n).translate(0, h / 2, 0)),
-    dome: (r: number, n = 10) => prim(`d${r},${n}`, () => new THREE.SphereGeometry(r, n, Math.max(3, n >> 1), 0, Math.PI * 2, 0, Math.PI / 2)),
-    ball: (r: number, n = 8) => prim(`s${r},${n}`, () => new THREE.SphereGeometry(r, n, Math.max(3, n >> 1)).translate(0, r, 0)),
+    log: (r: number, len: number, n = 8) => { r = q2(r); len = q2(len); return prim(`l${r},${len},${n}`, () => new THREE.CylinderGeometry(r, r, len, n).rotateZ(Math.PI / 2).translate(0, r, 0)); },
+    cone: (r: number, h: number, n = 8) => { r = q2(r); h = q2(h); return prim(`k${r},${h},${n}`, () => new THREE.ConeGeometry(r, h, n).translate(0, h / 2, 0)); },
+    dome: (r: number, n = 10) => { r = q2(r); return prim(`d${r},${n}`, () => new THREE.SphereGeometry(r, n, Math.max(3, n >> 1), 0, Math.PI * 2, 0, Math.PI / 2)); },
+    ball: (r: number, n = 8) => { r = q2(r); return prim(`s${r},${n}`, () => new THREE.SphereGeometry(r, n, Math.max(3, n >> 1)).translate(0, r, 0)); },
     /** A ring lying flat on the ground. */
-    ring: (R: number, t: number, n = 14) => prim(`t${R},${t},${n}`, () => new THREE.TorusGeometry(R, t, 5, n).rotateX(Math.PI / 2).translate(0, t, 0)),
-    stone: (r: number) => prim(`i${r}`, () => new THREE.IcosahedronGeometry(r, 0).scale(1, 0.7, 1).translate(0, r * 0.6, 0)),
+    ring: (R: number, t: number, n = 14) => { R = q2(R); t = q2(t); return prim(`t${R},${t},${n}`, () => new THREE.TorusGeometry(R, t, 5, n).rotateX(Math.PI / 2).translate(0, t, 0)); },
+    stone: (r: number) => { r = q2(r); return prim(`i${r}`, () => new THREE.IcosahedronGeometry(r, 0).scale(1, 0.7, 1).translate(0, r * 0.6, 0)); },
     /** A flat sheet lying on the ground, facing up (cloth, paper, ash). */
-    sheet: (w: number, d: number) => prim(`p${w},${d}`, () => new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2)),
+    sheet: (w: number, d: number) => { w = q2(w); d = q2(d); return prim(`p${w},${d}`, () => new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2)); },
     /** A sheet standing up (a hanging cloth), its top edge at y = 0. */
-    cloth: (w: number, h: number) => prim(`h${w},${h}`, () => new THREE.PlaneGeometry(w, h).translate(0, -h / 2, 0)),
+    cloth: (w: number, h: number) => { w = q2(w); h = q2(h); return prim(`h${w},${h}`, () => new THREE.PlaneGeometry(w, h).translate(0, -h / 2, 0)); },
   };
 
-  // Two sinks a place (open ground, past the edge), each matte and metal: plain arrays, merged into four meshes at the end.
-  type Sink = { p: number[]; n: number[]; c: number[] };
-  const sink = (): Sink => ({ p: [], n: [], c: [] });
-  const sinks = { in: [sink(), sink()], out: [sink(), sink()] };
+  // One sink for every scene on the floor (plain arrays, one mesh at the end: one draw call, no shadow pass; measured on the phone
+  // profile, four meshes and their shadows cost more than the noise).
+  const all = { p: new Float32Array(1 << 19), n: new Float32Array(1 << 19), c: new Float32Array(1 << 19), len: 0 };
+  const room = (k: number) => {
+    if (all.len + k <= all.p.length) return;
+    const grow = (a: Float32Array) => { const b = new Float32Array(Math.max(a.length * 2, all.len + k)); b.set(a); return b; };
+    all.p = grow(all.p); all.n = grow(all.n); all.c = grow(all.c);
+  };
   const cols = new Map<Colour, THREE.Color>();
   const m4 = new THREE.Matrix4(), nm = new THREE.Matrix3(), q = new THREE.Quaternion(), e = new THREE.Euler(), v = new THREE.Vector3(), sc = new THREE.Vector3();
 
@@ -288,18 +296,20 @@ export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE
     nm.getNormalMatrix(m4);
     let col = cols.get(colour);
     if (!col) cols.set(colour, (col = new THREE.Color(COLOUR[colour])));
-    const out = (cur.beyond ? sinks.out : sinks.in)[METAL.has(colour) ? 1 : 0], P = shape.p, N = shape.n, me = m4.elements, ne = nm.elements;
+    room(shape.p.length);
+    const P = shape.p, N = shape.n, me = m4.elements, ne = nm.elements;
     for (let i = 0; i < P.length; i += 3) {
       const x = P[i], y = P[i + 1], z = P[i + 2];
       const X = me[0] * x + me[4] * y + me[8] * z + me[12], Y = me[1] * x + me[5] * y + me[9] * z + me[13], Z = me[2] * x + me[6] * y + me[10] * z + me[14];
-      out.p.push(X, Y, Z);
+      const at = all.len; all.len += 3;
+      all.p[at] = X; all.p[at + 1] = Y; all.p[at + 2] = Z;
       const a = N[i], b = N[i + 1], d = N[i + 2];
       let nx = ne[0] * a + ne[3] * b + ne[6] * d, ny = ne[1] * a + ne[4] * b + ne[7] * d, nz = ne[2] * a + ne[5] * b + ne[8] * d;
-      const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
-      out.n.push(nx, ny, nz);
-      out.c.push(col.r, col.g, col.b);
+      const l = Math.sqrt(nx * nx + ny * ny + nz * nz) || 1; nx /= l; ny /= l; nz /= l;
+      all.n[at] = nx; all.n[at + 1] = ny; all.n[at + 2] = nz;
+      all.c[at] = col.r; all.c[at + 1] = col.g; all.c[at + 2] = col.b;
       // the footprint and height, measured from what is built
-      const dx = X - cur.x, dz = Z - cur.z, rr = dx * dx + dz * dz, hy = Y - (cur.beyond ? H(X, Z) : 0);
+      const dx = X - cur.x, dz = Z - cur.z, rr = dx * dx + dz * dz, hy = Y - ground; // the ground under the part (past the edge the ground rolls a little under a part: close enough for a height)
       if (rr > r2max) r2max = rr;
       if (hy > hmax) hmax = hy;
       if (hostSeg && hy > KNEE) reach = Math.max(reach, segDist(X, Z, hostSeg[0], hostSeg[1], hostSeg[2], hostSeg[3]) - hostSeg[4]);
@@ -317,8 +327,8 @@ export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE
     const y = 0.035 + Math.sin(Math.abs(tilt)) * 0.4;
     add(S.cyl(0.42, 0.42, 0.06, 14), up ? colour : 'plank', 0, y - 0.03, 0, 0, 1, 1, 1, tilt);
     if (up) {
-      add(S.ring(0.42, 0.025, 14), 'gold', 0, y - 0.005, 0, 0, 1, 1, 1, tilt);
-      add(S.dome(0.09, 8), 'gold', 0, y + 0.03, 0, 0, 1, 1, 1, tilt);
+      add(S.cyl(0.45, 0.45, 0.05, 14), 'gold', 0, y - 0.035, 0, 0, 1, 1, 1, tilt); // the rim: a gold disc a little wider, under the face
+      add(S.cone(0.1, 0.08, 6), 'gold', 0, y + 0.03, 0, 0, 1, 1, 1, tilt);
     } else add(S.box(0.06, 0.02, 0.8), 'iron', 0, y + 0.03, 0, 0, 1, 1, 1, tilt);
   });
   /** A sword lying flat. */
@@ -668,32 +678,26 @@ export function buildWarScenes(o: { look: WarLook; geo: Battlefield; into: THREE
     r2max = 0; hmax = 0; reach = -1e9; gap = 1e9;
     const hp = s.host !== undefined ? look.pieces[s.host]?.o : undefined;
     hostSeg = hp ? [hp.ax, hp.az, hp.bx, hp.bz, hp.r] : null;
-    nearCover = look.pieces.filter((p, i) => i !== s.host && segDist(s.x, s.z, p.o.ax, p.o.az, p.o.bx, p.o.bz) < p.o.r + s.R + 6).map((p) => [p.o.ax, p.o.az, p.o.bx, p.o.bz, p.o.r]);
+    nearCover = s.host === undefined ? [] : look.pieces.filter((p, i) => i !== s.host && segDist(s.x, s.z, p.o.ax, p.o.az, p.o.bx, p.o.bz) < p.o.r + s.R + 6).map((p) => [p.o.ax, p.o.az, p.o.bx, p.o.bz, p.o.r]);
     KINDS[s.kind]();
-    s.r = +Math.sqrt(r2max).toFixed(2); s.h = +hmax.toFixed(2); s.gap = +gap.toFixed(2);
-    if (hostSeg) s.tallReach = +reach.toFixed(2);
+    s.r = +Math.sqrt(r2max).toFixed(2); s.h = +hmax.toFixed(2);
+    if (hostSeg) { s.tallReach = +reach.toFixed(2); s.gap = +gap.toFixed(2); }
   }
 
   let tris = 0;
-  const mats = [
-    new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide }),
-    new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.4, metalness: 0.55, side: THREE.DoubleSide }),
-  ];
-  o.own.push(...mats);
-  for (const [k, pair] of [['in', sinks.in], ['out', sinks.out]] as const) pair.forEach((sk, i) => {
-    if (!sk.p.length) return;
+  if (all.len) {
+    const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.75, side: THREE.DoubleSide });
     const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(sk.p), 3));
-    g.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(sk.n), 3));
-    g.setAttribute('color', new THREE.BufferAttribute(new Float32Array(sk.c), 3));
+    g.setAttribute('position', new THREE.BufferAttribute(all.p.slice(0, all.len), 3));
+    g.setAttribute('normal', new THREE.BufferAttribute(all.n.slice(0, all.len), 3));
+    g.setAttribute('color', new THREE.BufferAttribute(all.c.slice(0, all.len), 3));
     g.computeBoundingSphere();
-    tris += sk.p.length / 9;
-    const mesh = new THREE.Mesh(g, mats[i]);
-    mesh.name = `war-scenes-${k}-${i ? 'metal' : 'matte'}`;
-    mesh.castShadow = k === 'in';
+    tris = all.len / 9;
+    const mesh = new THREE.Mesh(g, mat);
+    mesh.name = 'war-scenes';
     mesh.receiveShadow = true;
     o.into.add(mesh);
-    o.own.push(g);
-  });
-  warScenesLog.set(look.seed, { seed: look.seed, floor: o.floor, scenes, taken: o.taken, ms: +(performance.now() - t0).toFixed(1), tris: Math.round(tris) });
+    o.own.push(g, mat);
+  }
+  warScenesLog.set(look.seed, { seed: look.seed, floor: o.floor, scenes, taken: o.taken, planMs: +lastPlanMs.toFixed(1), ms: +(performance.now() - t0).toFixed(1), tris: Math.round(tris) });
 }

@@ -206,6 +206,8 @@
     // The spells' effects built at the first cast, as before the warm-up built them: the dice then fall as they did.
     if (set.noPrebuild) { const warm = a.duel.host.warmUp; a.duel.host.warmUp = () => warm([]); }
     if (set.quality && a.quality) a.quality.set(set.quality);
+    // Switches a build reads from `globalThis`, for an A/B of one part of a zone (e.g. {"globals": {"__warScenes": false}}).
+    if (set.globals) Object.assign(globalThis, set.globals);
   };
 
   const quant = (v) => Math.round(v * 10) / 10;
