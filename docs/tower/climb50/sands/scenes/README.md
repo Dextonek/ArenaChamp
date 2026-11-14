@@ -143,3 +143,5 @@ The aim (70% of road views, 45% of all) is met in frame on every floor and in th
   verge has no room. The whole floor build swings by more than a second from one build to the next, so it cannot show this.
 - Pictures: `refine/fNN-sheet.jpg` (floors 21, 26, 29; before left, after right; mid at the game's zoom 1.25, close at 0.7) and the
   single pictures beside them; `refine/f26-wide-*` at the game's farthest zoom.
+
+- **Frame speed:** both chapters were measured in one A/B (four alternating pairs on the phone profile); the table is in `docs/tower/climb50/deep/scenes/README.md` ("Speed (both chapters' refinement)"): the same draw calls on desktop (one more on the phone profile), the same fights, frame times inside the noise.

@@ -148,3 +148,32 @@ floor and track views on five (31, 32, 33, 35 and 39 stay at 56 to 68%; floor 39
   scenes into its meshes) 191 to 275 ms before, 200 to 330 ms after. Both well inside the +150 ms bar and the build's own swing.
 - Pictures: `refine/fNN-sheet.jpg` (floors 31, 35, 38; before left, after right; mid and close from the game's camera with the dark
   law's layer hidden, as in the first pass) and the single pictures beside them; `refine/f35-wide-*` at the game's farthest zoom.
+
+### Speed (both chapters' refinement)
+
+`perf.py scenes --profiles desktop,phone-4x --scenes world-3,gen-26,world-4,gen-35`, 1500 frames each, the tower-50 code (old) and the
+refined (new) alternated (A1 old, B1 new, A2 old, B2 new), then two more pairs on phone-4x for world-3, gen-26 and world-4, other agents
+running at the same time. Median / p99 frame (ms):
+
+| Profile, scene | A1 old | B1 new | A2 old | B2 new | A3 old | B3 new | A4 old | B4 new | draws old / new | triangles old / new | fight print |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| desktop world-3 | 12.4 / 33.2 | 14.6 / 33.8 | 13.1 / 29.6 | 14.1 / 47.6 | | | | | 187 / 187 | 395k / 421k | d69d7802 |
+| desktop gen-26 | 10.3 / 31.2 | 10.7 / 38 | 9.8 / 30.6 | 9.3 / 33.6 | | | | | 250 / 250 | 402k / 433k | 361c2602 |
+| desktop world-4 | 8.4 / 18.8 | 8.6 / 28.2 | 6.5 / 18.5 | 8 / 19.5 | | | | | 154 / 154 | 325k / 337k | a9a39789 |
+| desktop gen-35 | 8 / 22.4 | 10.4 / 24.6 | 8.4 / 18.5 | 8.5 / 18.6 | | | | | 171 / 171 | 348k / 356k | 5f524a6f |
+| phone-4x world-3 | 50.7 / 163.9 | 58.5 / 167.6 | 54.5 / 173.5 | 62 / 159 | 50.5 / 123.3 | 44.2 / 116.1 | 46.7 / 114.3 | 45.7 / 115.1 | 194 / 195 | 396k / 427k | d69d7802 |
+| phone-4x gen-26 | 43.3 / 151.9 | 45.1 / 213.5 | 41.5 / 154.6 | 46.2 / 222.3 | 34.9 / 153.8 | 36.5 / 140.3 | 39.2 / 165.3 | 34.8 / 137.8 | 254 / 255 | 404k / 433k | 361c2602 |
+| phone-4x world-4 | 34.2 / 90.2 | 40.8 / 90.5 | 35.9 / 90.6 | 37.1 / 104.4 | 32.4 / 73 | 29.8 / 61 | 30.7 / 62.6 | 31.7 / 86.8 | 157 / 157 | 326k / 337k | a9a39789 |
+| phone-4x gen-35 | 40.4 / 231.2 | 40.7 / 101.9 | 37.8 / 105.5 | 34.4 / 70.9 | | | | | 174 / 174 | 348k / 356k | 5f524a6f |
+
+- **The same fights** in every run (the prints match each other and the first pass's).
+- **Draw calls: the same** on desktop; one more on the phone profile on world-3 and gen-26 (a scene lands in a 96 m square of the
+  Sands' depth that had nothing in it). Triangles: about 26k to 31k more on a Sands floor, 8k to 12k on a Deep floor.
+- **Frame times: inside the noise, but read with care.** In the first two pairs the new Sands floors were slower on the phone profile
+  (world-3: 58.5 and 62 ms against 50.7 and 54.5; gen-26 45.1 and 46.2 against 43.3 and 41.5) and desktop world-3 by 1 to 2 ms. The next
+  two pairs went the other way (world-3: 44.2 and 45.7 against 50.5 and 46.7; gen-26 36.5 and 34.8 against 34.9 and 39.2). Over the four
+  pairs the old and new means are 50.6 and 52.6 ms (world-3), 39.7 and 40.7 ms (gen-26), 33.3 and 34.9 ms (world-4). The A runs alone
+  differ by up to 8 ms. No cost shows above that, but a cost of 1 to 2 ms could hide in it.
+- The perf result files were deleted afterwards.
+
+Why the whole Deep floor takes seconds to build, and the fix (2026-11-14): `docs/tower/climb50/deep/depth/README.md`, "The floor build's time".

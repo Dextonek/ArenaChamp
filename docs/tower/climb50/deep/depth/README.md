@@ -73,3 +73,34 @@ The pictures were taken with `pipeline/tools/world-shots.py` on `/game`, with th
   prop shape is built once. Each placement is copied into one mesh per quarter of the floor, near or far, all on one material. The
   unlit parts and the gold's warmth ride on each vertex, and none of it casts a shadow. Two trades were made for that speed: the depth's
   gold is matte with a faint warmth rather than polished metal (STYLE.md rule 4), and its props cast no shadows.
+
+## The floor build's time (2026-11-14, the scenes' refinement)
+
+The scenes' first pass timed a whole Deep floor's build at 8 to 10 s on the phone profile, while the notes above give about 3.5 s for
+floor 35 and 1 s for floor 31. **Why the numbers differ:** the 1 s and 3.5 s are perf.py's longest *frame* in the world scene, not the
+build. `arena.build()` itself, timed with the processor slowed 4 times (each floor built once at full speed first), took 8.2 to 9.3 s
+on floors 31 and 35 alike, with a real graphics card or in software alike.
+
+**What costs what** (a processor profile of floor 35's build, slowed 4 times; 7.8 s in all):
+
+| Part | Time |
+|---|---|
+| The cave's ground colour (`color` in deepZone.ts), for the ground plane's ~62,000 vertices and the painted map's ~56,000 pixels: it samples `steepness`, so `height` four times, so three octaves of value noise | 5.6 s |
+| of which the noise lattice's lookup (`at`): some 20 million calls, each wrapping its index with two float modulos | 5.2 s |
+| The painted map (`paint`, the canvas: the colours above plus the dabs, flagstones and tracks) | 2.8 s (with its share of the colour) |
+| The depth (`buildDeepDepth`: props, scenes, its meshes) | 0.25 to 0.33 s |
+| The scenes alone | 0.05 to 0.1 s |
+
+**The fix** (deepZone.ts, one line): the lookup wraps with `i & 63` instead of `((i % 64) + 64) % 64`, the same number for every whole
+index. Nothing seen or played changes: every vertex attribute, instance matrix and painted map of all ten Deep floors hashes the same
+before and after (FNV-1a over the raw bytes). The build:
+
+| | Before | After |
+|---|---|---|
+| Desktop, floors 31 to 40 | 1.75 to 2.28 s | 0.51 to 0.89 s |
+| Phone profile (4x), floors 31 and 35 | 8.2 to 9.3 s | 3.05 to 3.35 s |
+
+What is left on the phone profile is mostly the same colour sampling (about 1.9 s; `steepness` asks for four heights at every point of
+the ground plane and the map, which could be shared between neighbours) and the browser's own work. **Not changed, for the lead:** the same
+slow wrap is in `land.ts` (the sea), `woodZone.ts`, `sandsZone.ts` and `warZone.ts`; the same one-line change there would be expected to
+cut those floors' builds the same way, and should be checked the same way (hash every attribute and map before and after).
