@@ -6,7 +6,7 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
 
 - Branch `tower-50`. All fifty floors (the sea, the Wood, the Sands, the Deep, the War) are made at the new size and checked; every
   chapter has its depth pass and its scenes (little stories in props, about 20 a floor, on all fifty floors: `src/tower/world/scenes/`,
-  pictures in `docs/tower/climb50/<chapter>/scenes/`, `?scenes=off` leaves them out); the navigator is fast on large floors (same routes, tested), so the 2 s freeze is gone; the new models wait on the user's yes. Everything, with numbers:
+  pictures in `docs/tower/climb50/<chapter>/scenes/`, `?scenes=off` leaves them out); the packs fight together with a pattern per kind, every special telegraphed (`src/tower/world/tactics.ts`, pictures `docs/tower/tactics/`); a second, refining pass of the scenes is in three agents' hands; the navigator is fast on large floors (same routes, tested), so the 2 s freeze is gone; the new models wait on the user's yes. Everything, with numbers:
   [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *Progress on the new scope*.
 - **Waiting on the user:** yes or changes to the sea's new models (docs/tower/models/sea-lineup-front.jpg on the branch
   `t3/tower-sea-npc-models`).
