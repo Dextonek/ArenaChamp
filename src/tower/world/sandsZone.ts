@@ -443,7 +443,7 @@ export function buildSandsZone(look: SandsLook, keep: { x: number; z: number }[]
     far.add(M.sandstone, new THREE.CylinderGeometry(r * (1 - tiers * 0.22) * 0.95, r * (1 - tiers * 0.22) * 0.95, 0.6, 9), p.x, y + h, p.z);
   }
   const deep = depth.build({ kit, gold: M.gold, into: g, own });
-  g.userData.depth = { solids: deep.solids, pools: deep.pools, far: deep.far, places: look.places }; // for the checks and the pictures (pipeline/tools)
+  g.userData.depth = { solids: deep.solids, pools: deep.pools, far: deep.far, places: look.places, scenes: deep.scenes, scenesMs: deep.scenesMs, look }; // for the checks and the pictures (pipeline/tools)
   kit.build(g, own);
   const farGroup = new THREE.Group();
   far.build(farGroup, own);

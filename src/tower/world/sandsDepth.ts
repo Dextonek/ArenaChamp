@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RING, seeded } from '../../arenas/common';
 import type { SandsLook } from './sandsZone';
 import { rimAt } from './land';
+import { sandsScenes, type Proto } from './scenes/sands';
 
 /**
  * The world's depth on a Sands floor (floors 21 to 30; the user, 2026-11-14: "add depth into the worlds, make all the background fit there,
@@ -87,6 +88,20 @@ class Merge {
       b.col.push(col.r, col.g, col.b);
     }
     return this;
+  }
+  /** A ready shape (scenes/sands.ts) by a full matrix, into the square its origin is in. */
+  proto(kind: 's' | 'f', p: Proto, m: THREE.Matrix4) {
+    const e = m.elements, key = `${kind}:${Math.floor(e[12] / this.cell)}:${Math.floor(e[14] / this.cell)}`;
+    let b = this.bins.get(key);
+    if (!b) this.bins.set(key, (b = { pos: [], nor: [], col: [] }));
+    const n = this.nm.getNormalMatrix(m).elements, P = p.pos, N = p.nor, K = p.col;
+    for (let i = 0; i < P.length; i += 3) {
+      const x = P[i], y = P[i + 1], z = P[i + 2], a = N[i], c = N[i + 1], d = N[i + 2];
+      b.pos.push(e[0] * x + e[4] * y + e[8] * z + e[12], e[1] * x + e[5] * y + e[9] * z + e[13], e[2] * x + e[6] * y + e[10] * z + e[14]);
+      const X = n[0] * a + n[3] * c + n[6] * d, Y = n[1] * a + n[4] * c + n[7] * d, Z = n[2] * a + n[5] * c + n[8] * d, l = Math.hypot(X, Y, Z) || 1;
+      b.nor.push(X / l, Y / l, Z / l);
+      b.col.push(K[i], K[i + 1], K[i + 2]);
+    }
   }
   build(into: THREE.Group, own: { dispose(): void }[]) {
     const solid = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide }); // the cloths are single planes
@@ -482,10 +497,12 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
       vults.instanceMatrix.needsUpdate = true;
     };
     update(0);
+    // The scenes (scenes/sands.ts): little stories in props, into the same merged meshes; their own random stream, so nothing above moves.
+    const sc = sandsScenes({ look, land, keep, solids, sink: mg });
     mg.build(into, own);
     for (const g of Object.values(G)) g.dispose();
     const caravan = { x: (route[0].x + route[1].x) / 2, z: (route[0].z + route[1].z) / 2, y: (route[0].y + route[1].y) / 2 };
-    return { update, solids, pools: oasis.map((p) => ({ x: p.x, z: p.z })), far: { caravan, arches } };
+    return { update, solids, pools: oasis.map((p) => ({ x: p.x, z: p.z })), far: { caravan, arches }, scenes: sc.scenes, scenesMs: sc.ms };
   };
 
   return { paint, build };
