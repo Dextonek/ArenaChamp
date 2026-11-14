@@ -3295,7 +3295,7 @@ export const DEEP_39: GenFloor = {
    },
    "named1": {
     "id": "named1",
-    "name": "Mother Seam",
+    "name": "The Night Shift",
     "blurb": "Walks the middle of the Deep and strikes hard.",
     "look": "pale",
     "melee": true,
@@ -3309,7 +3309,7 @@ export const DEEP_39: GenFloor = {
    },
    "named2": {
     "id": "named2",
-    "name": "The Lampless",
+    "name": "Widow Cobble",
     "blurb": "Walks the west of the Deep, slow and heavy.",
     "look": "golem",
     "melee": true,
@@ -3427,7 +3427,7 @@ export const DEEP_39: GenFloor = {
      }
     ],
     "named": {
-     "name": "Mother Seam",
+     "name": "The Night Shift",
      "speed": 1,
      "patrol": [
       {
@@ -3466,7 +3466,7 @@ export const DEEP_39: GenFloor = {
      }
     ],
     "named": {
-     "name": "The Lampless",
+     "name": "Widow Cobble",
      "speed": 1,
      "patrol": [
       {
@@ -3714,15 +3714,15 @@ export const DEEP_39: GenFloor = {
    },
    {
     "id": "bounty1",
-    "name": "Mother Seam",
+    "name": "The Night Shift",
     "giver": "keeper",
     "intro": [
-     "Mother Seam walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
+     "The Night Shift walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
     ],
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell Mother Seam",
+      "text": "Fell the Night Shift",
       "pack": "named1"
      }
     ],
@@ -3736,15 +3736,15 @@ export const DEEP_39: GenFloor = {
    },
    {
     "id": "bounty2",
-    "name": "The Lampless",
+    "name": "Widow Cobble",
     "giver": "keeper",
     "intro": [
-     "The Lampless walks the west of the Deep. Nobody goes to the miners’ rest while it does."
+     "Widow Cobble walks the west of the Deep. Nobody goes to the miners’ rest while it does."
     ],
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell the Lampless",
+      "text": "Fell Widow Cobble",
       "pack": "named2"
      }
     ],

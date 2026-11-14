@@ -29,7 +29,8 @@ const FLOOR_NAMES = ['The Amethyst Seam', 'The Echo Galleries', 'The Black Water
 const BLURBS = ['A seam of violet crystal that went out one night.', 'Galleries that answer every step twice.', 'A cave beside water that has never seen the sun.', 'A road of lamps the miners kept lit, until they could not.', 'Halls where the crystals once sang.', 'Roots of glass grown down through the rock.', 'A market the miners held below, for light and bread.', 'A stair of prisms down to the deepest halls.'];
 const RULERS: [string, string][] = [['The Hollow Queen', 'Shade beneath the stone'], ['The Lamp Warden', 'Keeper of the last light'], ['The Glass Abbot', 'Prayers in prism'], ['Mother of Echoes', 'She answers every step'], ['The Seam King', 'Crowned in ore'], ['The Blind Cantor', 'He sings the dark awake'], ['The Gem Tyrant', 'Hoarder of the halls'], ['The Drowned Lantern', 'A light under the black water']];
 const TINTS = ['#7a62c8', '#6a5ab8', '#8a6ad8', '#5a6ac8', '#7a52b8', '#6a72d0', '#8a5ac0', '#5a5aa8'];
-const NAMED = ['The Hollow Foreman', 'Old Pick', 'The Glass Widow', 'Mother Seam', 'The Lampless', 'Grey Tallow', 'The Stone Choir', 'Cinder Jack', 'The Long Dark', 'Quartz Annie', 'The Last Shift'];
+/** Two a floor, eighteen in all, none twice in the chapter. */
+const NAMED = ['The Hollow Foreman', 'Old Pick', 'The Glass Widow', 'Mother Seam', 'The Lampless', 'Grey Tallow', 'The Stone Choir', 'Cinder Jack', 'The Long Dark', 'Quartz Annie', 'The Last Shift', 'Brother Flint', 'The Ore Bride', 'Slate-Eyes', 'The Night Shift', 'Widow Cobble', 'The Deep Bell', 'Captain Candle'];
 const NPCS = ['Dunn', 'Hesk', 'Moll', 'Tobin', 'Greet', 'Abel', 'Sorrel', 'Kit'];
 const LORE: [string, string][] = [
   ['The miners lit the crystals to find their way home.', 'When the crystals went out, the miners stayed, and learned to wait in the dark.'],

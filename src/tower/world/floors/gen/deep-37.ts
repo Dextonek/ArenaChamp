@@ -3270,7 +3270,7 @@ export const DEEP_37: GenFloor = {
    },
    "named2": {
     "id": "named2",
-    "name": "The Hollow Foreman",
+    "name": "Brother Flint",
     "blurb": "Walks the west of the Deep, slow and heavy.",
     "look": "golem",
     "melee": true,
@@ -3427,7 +3427,7 @@ export const DEEP_37: GenFloor = {
      }
     ],
     "named": {
-     "name": "The Hollow Foreman",
+     "name": "Brother Flint",
      "speed": 1,
      "patrol": [
       {
@@ -3697,15 +3697,15 @@ export const DEEP_37: GenFloor = {
    },
    {
     "id": "bounty2",
-    "name": "The Hollow Foreman",
+    "name": "Brother Flint",
     "giver": "keeper",
     "intro": [
-     "The Hollow Foreman walks the west of the Deep. Nobody goes to the lamp huts while it does."
+     "Brother Flint walks the west of the Deep. Nobody goes to the lamp huts while it does."
     ],
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell the Hollow Foreman",
+      "text": "Fell Brother Flint",
       "pack": "named2"
      }
     ],

@@ -3282,7 +3282,7 @@ export const DEEP_38: GenFloor = {
    },
    "named1": {
     "id": "named1",
-    "name": "Old Pick",
+    "name": "The Ore Bride",
     "blurb": "Walks the middle of the Deep and strikes hard.",
     "look": "pale",
     "melee": true,
@@ -3296,7 +3296,7 @@ export const DEEP_38: GenFloor = {
    },
    "named2": {
     "id": "named2",
-    "name": "The Glass Widow",
+    "name": "Slate-Eyes",
     "blurb": "Walks the west of the Deep, slow and heavy.",
     "look": "golem",
     "melee": true,
@@ -3414,7 +3414,7 @@ export const DEEP_38: GenFloor = {
      }
     ],
     "named": {
-     "name": "Old Pick",
+     "name": "The Ore Bride",
      "speed": 1,
      "patrol": [
       {
@@ -3453,7 +3453,7 @@ export const DEEP_38: GenFloor = {
      }
     ],
     "named": {
-     "name": "The Glass Widow",
+     "name": "Slate-Eyes",
      "speed": 1,
      "patrol": [
       {
@@ -3701,15 +3701,15 @@ export const DEEP_38: GenFloor = {
    },
    {
     "id": "bounty1",
-    "name": "Old Pick",
+    "name": "The Ore Bride",
     "giver": "keeper",
     "intro": [
-     "Old Pick walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
+     "The Ore Bride walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
     ],
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell Old Pick",
+      "text": "Fell the Ore Bride",
       "pack": "named1"
      }
     ],
@@ -3723,15 +3723,15 @@ export const DEEP_38: GenFloor = {
    },
    {
     "id": "bounty2",
-    "name": "The Glass Widow",
+    "name": "Slate-Eyes",
     "giver": "keeper",
     "intro": [
-     "The Glass Widow walks the west of the Deep. Nobody goes to the lamp huts while it does."
+     "Slate-Eyes walks the west of the Deep. Nobody goes to the lamp huts while it does."
     ],
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell the Glass Widow",
+      "text": "Fell Slate-Eyes",
       "pack": "named2"
      }
     ],

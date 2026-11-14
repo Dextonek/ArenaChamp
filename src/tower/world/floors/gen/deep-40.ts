@@ -3323,7 +3323,7 @@ export const DEEP_40: GenFloor = {
    },
    "named1": {
     "id": "named1",
-    "name": "Grey Tallow",
+    "name": "The Deep Bell",
     "blurb": "Walks the middle of the Deep and strikes hard.",
     "look": "pale",
     "melee": true,
@@ -3337,7 +3337,7 @@ export const DEEP_40: GenFloor = {
    },
    "named2": {
     "id": "named2",
-    "name": "The Stone Choir",
+    "name": "Captain Candle",
     "blurb": "Walks the west of the Deep, slow and heavy.",
     "look": "golem",
     "melee": true,
@@ -3455,7 +3455,7 @@ export const DEEP_40: GenFloor = {
      }
     ],
     "named": {
-     "name": "Grey Tallow",
+     "name": "The Deep Bell",
      "speed": 1,
      "patrol": [
       {
@@ -3494,7 +3494,7 @@ export const DEEP_40: GenFloor = {
      }
     ],
     "named": {
-     "name": "The Stone Choir",
+     "name": "Captain Candle",
      "speed": 1,
      "patrol": [
       {
@@ -3742,15 +3742,15 @@ export const DEEP_40: GenFloor = {
    },
    {
     "id": "bounty1",
-    "name": "Grey Tallow",
+    "name": "The Deep Bell",
     "giver": "keeper",
     "intro": [
-     "Grey Tallow walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
+     "The Deep Bell walks the middle of the Deep. It does not need light. Fell it and the dark is a little less."
     ],
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell Grey Tallow",
+      "text": "Fell the Deep Bell",
       "pack": "named1"
      }
     ],
@@ -3764,15 +3764,15 @@ export const DEEP_40: GenFloor = {
    },
    {
     "id": "bounty2",
-    "name": "The Stone Choir",
+    "name": "Captain Candle",
     "giver": "keeper",
     "intro": [
-     "The Stone Choir walks the west of the Deep. Nobody goes to the miners’ rest while it does."
+     "Captain Candle walks the west of the Deep. Nobody goes to the miners’ rest while it does."
     ],
     "steps": [
      {
       "verb": "fell-named",
-      "text": "Fell the Stone Choir",
+      "text": "Fell Captain Candle",
       "pack": "named2"
      }
     ],
