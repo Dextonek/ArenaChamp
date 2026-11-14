@@ -40,10 +40,11 @@ const rim = (deg: number, r: number) => {
 };
 
 /** The hero's own kit under another name: so its passive does not run on the boss's side (as `echoKit` in `src/tower/floors.ts`). */
-function standKit(real: HeroKit, name: string, title: string, hp: number): HeroKit {
+function standKit(real: HeroKit, name: string, title: string, hp: number, model?: string): HeroKit {
   // TOWER-HOOK: `HeroKit` should carry `styleOf?: string` and `tint?: string` (see the notes file): a kit that is another body's under its
   // own name, and coloured. Until then the name decides the hero's motion style (`REAL_STYLE[kit.name]`) and the model keeps its colours.
-  return { ...real, name, title, maxHp: hp, alt: undefined, base: undefined, attack: real.attack ?? traitFor(real.name)?.attack };
+  // A ruler of its own (pieces/rulerModels.ts) is drawn from its model; everything else is the stand-in's.
+  return { ...real, name, title, maxHp: hp, alt: undefined, base: undefined, attack: real.attack ?? traitFor(real.name)?.attack, model: model ?? real.model };
 }
 
 /**
@@ -91,7 +92,7 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
     if (!a) throw new Error(`no arena ${d.room}`);
     return { ...a, id: `ruler-${a.id}`, name: d.name };
   })();
-  const body = HERO_BODIES[real.name] ?? { radius: 0.45, height: 2.4 };
+  const body = d.body ?? HERO_BODIES[real.name] ?? { radius: 0.45, height: 2.4 };
   const still = d.speed === 0;
   const state: State = { t: 0, surge: null, raise: false };
   let link!: TowerLink;
@@ -219,7 +220,7 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
   const bossAt = still ? { x: RING.x, z: RING.z } : { x: RING.x, z: RING.z - 4.5 };
   const def: BossDef = {
     id: `ruler-${place.id}`, name: d.name, title: d.title, place, starts: { boss: bossAt, heroes: [{ x: RING.x, z: RING.z + 6 }, { x: RING.x, z: RING.z + 6 }, { x: RING.x, z: RING.z + 6 }] },
-    kit: (max) => standKit(real, d.name, d.title, max), hp: { solo: hp, duo: hp }, scale: k, body: { radius: body.radius * k, height: body.height * k },
+    kit: (max) => standKit(real, d.name, d.title, max, d.model), hp: { solo: hp, duo: hp }, scale: k, body: { radius: body.radius * k, height: body.height * k },
     speed: d.speed, keepAt: still ? 999 : d.keepAt ?? (real.melee ? 1.6 + 1.1 * k : 7.5), staggerMax: d.stagger.max, kneel: d.stagger.kneel, phasePause: 1.6,
     phases: d.phases.map((ph) => ({ name: ph.name, at: ph.at, moves: ph.moves, opener: ph.opener, timed: ph.timed, gap: ph.gap })),
     moves: { ...moves, floor: floorMove() },
@@ -417,7 +418,9 @@ export function buildRuler(api: GameApi, d: RulerDef, ctx: { hard: number; boons
 
   const ready = () => {
     if (tinted) return;
-    tinted = tintFigure(api, d.tint);
+    // A ruler in its model's own colours (a chapter's first floor) has nothing to lay over it.
+    if (!d.tint) { tinted = () => undefined; return; }
+    tinted = tintFigure(api, d.tint, d.tintAmount ?? 0.5);
     if (tinted) run.onEnd(tinted);
   };
   return {
