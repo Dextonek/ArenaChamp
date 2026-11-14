@@ -11,14 +11,14 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
   `public/models/tower/`, page `docs/tower/models/index.html`). The perf tool's Climb floor-11 print moved (467f6a06 -> 433b3ded, the new
   models): its baseline needs taking again. Rulers and enemies are next for models (`docs/tower/models/README.md`), on the user's word.
 - **Ten new heroes designed (gate 1 cards):** `docs/heroes/next10/index.html`; waiting on the user's pick.
-- **Running (worktree agents, each reports back):** (1) every prop of the Sea and the Wood looked at one by one and the wrong ones fixed,
-  (2) the same for the Sands, the Deep and the War (`docs/tower/props/<chapter>/`), (3) the heroes' lore: the world, factions, a legend
+- **Merged, not live:** the Sea and the Wood's props set right: 37 faults fixed at their cause on floors 1-20 (`docs/tower/props/sea/`,
+  `docs/tower/props/wood/`); taste calls left for the user there (white catch baskets, block benches, the root mound).
+- **Running (worktree agents, each reports back):** (1) online leaderboards and clans with a clan chat,
+  (2) every prop of the Sands, the Deep and the War looked at one by one (`docs/tower/props/<chapter>/`), (3) the heroes' lore: the world, factions, a legend
   and ties for all forty, ten more new heroes, full kit sheets for all twenty new ones (`docs/lore/`, `docs/heroes/next20/`,
   `docs/heroes/kits20/`).
 - **New project:** ArenaWorld, an original open-world RPG in Rust (`C:\Users\erich\ArenaWorld`, its own repo and session): stage 1, the
   world generator, in progress there.
-- **Next, when an agent's place frees (three at most):** online leaderboards (duel rating, raid, Tower, Climb, clans) and clans with a
-  clan chat (create, join by code, 30 members, filter, mute, report).
 
 ## The Climb to 50 floors, the new scope (2026-11-14): all fifty floors done at five times the ground; scenes on every floor; **pushed and live 2026-11-14** (version e47791ff)
 
