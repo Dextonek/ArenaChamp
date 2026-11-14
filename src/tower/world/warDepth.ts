@@ -40,7 +40,7 @@ const segDist = (px: number, pz: number, s: Seg) => {
 /** The depth's colours (the heroes' palette, STYLE.md, and the armies' two): each part one flat colour, carried in its vertices. */
 const PALETTE = {
   wood: '#4a3220', dark: '#2c211a', plank: '#6b4a2e', stone: '#7a766e', mile: '#8a8478', rubble: '#6c6860', charred: '#3a3430',
-  steel: '#8a8e98', iron: '#2a2c32', cream: '#d8cfb4', white: '#e8e2d2', straw: '#b89a5a', sack: '#9a8a66', rope: '#b89a5a',
+  steel: '#8a8e98', iron: '#2a2c32', cream: '#d8cfb4', white: '#b8b2a4', straw: '#b89a5a', sack: '#9a8a66', rope: '#b89a5a',
   crimson: '#9a2c2c', azure: '#2c4c9a', leaf: '#3e4a30', bark: '#3a3028', canvas: '#c8bea4', hill: '#56604a',
 } as const;
 type Key = keyof typeof PALETTE;

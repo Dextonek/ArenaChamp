@@ -236,9 +236,9 @@ function materials(own: { dispose(): void }[]) {
   return {
     rockA: mat(0x5e5a58, 0.92, { flatShading: true }), rockB: mat(0x6c6660, 0.92, { flatShading: true }), rockC: mat(0x4c4a4c, 0.92, { flatShading: true }),
     stone: mat(0x7a766e, 0.85), charred: mat(0x3a3430, 0.9), wood: mat(0x4a3220, 0.72), darkWood: mat(0x2c211a, 0.8), plank: mat(0x6b4a2e, 0.75),
-    lacquer: mat(0x1d1b21, 0.45), cream: mat(0xd8cfb4, 0.85, { side: THREE.DoubleSide }), white: mat(0xe8e2d2, 0.85, { side: THREE.DoubleSide }),
+    lacquer: mat(0x1d1b21, 0.45), cream: mat(0xd8cfb4, 0.85, { side: THREE.DoubleSide }), white: mat(0xb8b2a4, 0.9, { side: THREE.DoubleSide }),
     // the tents' canvas a shade down from the cream: lit by the low sun, cream and white tents bloomed to a white glare
-    canvas: mat(0x9e9480, 0.95, { side: THREE.DoubleSide }), linen: mat(0xb4ae9e, 0.95, { side: THREE.DoubleSide }),
+    canvas: mat(0x9e9480, 0.95, { side: THREE.DoubleSide }), linen: mat(0xa49e90, 0.95, { side: THREE.DoubleSide }),
     crimson: mat(0x9a2c2c, 0.8, { side: THREE.DoubleSide }), azure: mat(0x2c4c9a, 0.8, { side: THREE.DoubleSide }),
     steel: mat(0x8a8e98, 0.42, { metalness: 0.55 }), iron: mat(0x2a2c32, 0.55, { metalness: 0.5 }), straw: mat(0xb89a5a, 0.9), sack: mat(0x9a8a66, 0.9),
     gold: mat(0xc9a24a, 0.32, { metalness: 0.85, emissive: 0xffb050, emissiveIntensity: 0.18 }),
@@ -474,8 +474,8 @@ export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: nu
             kit.add(mat, box(r * 2, hh, len / k + 0.02), x, h * 0.55, z, yaw);
           }
           if (kind === 'farmwall') {
-            // the roof burned away: charred rafters still leaning from the wall's top, and a chimney stack on the long wall
-            for (const t of [0.2, 0.55, 0.85]) kit.add(M.darkWood, box(0.18, 0.18, 4.2).translate(0, 0, 2.1), o.ax + (o.bx - o.ax) * t, h * 0.62, o.az + (o.bz - o.az) * t, yaw + Math.PI / 2 + (rnd() - 0.5) * 0.3, 1, 1, 1, 0.42 + rnd() * 0.25);
+            // the roof burned away: the charred stubs of its uprights on the wall's top, and a chimney stack on the long wall
+            for (const t of [0.15, 0.5, 0.85]) kit.add(M.darkWood, box(0.2, 1.1 + rnd() * 0.9, 0.2), o.ax + (o.bx - o.ax) * t, h * 0.6, o.az + (o.bz - o.az) * t, yaw, 1, 1, 1, (rnd() - 0.5) * 0.25);
             if (len > 7) kit.add(M.stone, box(0.9, h + 1.6, 0.9), mx, 0, mz, yaw).add(M.charred, box(1.0, 0.25, 1.0), mx, h + 1.6, mz, yaw);
           }
         } else {

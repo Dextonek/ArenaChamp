@@ -12,9 +12,18 @@ on the other, with watch fires on the hilltops, columns of smoke and crows over 
 
 ## Pictures
 
-For every floor: `fNN-camp.jpg` (the game's camera at the camp), `fNN-place.jpg` (the game's camera at the works or battery: a
-paved round, a standard, catapults), `fNN-low.jpg` (a low view north from the camp towards the horizon). From above, the fog
-pushed away: `f41-map.jpg`, `f46-map.jpg`, `f50-map.jpg` (the outline, the siege line, the roads, the places, a far camp).
+For every floor there are three pictures:
+- `fNN-camp.jpg`: the game's camera at the camp.
+- `fNN-place.jpg`: the game's camera at one place, a different kind on each floor: the hill (41), the field hospital (42, 50), the
+  ruined keep (43, 49), the burned farm (44, 48), the wagons (45), the burned mill (46), the siege line's gate (47).
+- `fNN-low.jpg`: a low view north from the camp towards the horizon.
+
+Also:
+- `f42-fight.jpg`, `f48-fight.jpg`: the war itself. The crimson banner taken, four crimson soldiers fight beside the hero against the
+  azure pack at the works.
+- `f47-edge.jpg`: where a walk stops (the earth bank and its hedge of stakes, the grassland beyond).
+- `f41-map.jpg`, `f46-map.jpg`, `f50-map.jpg`: from above with the fog pushed away. They show the outline, the siege line, the roads,
+  the places and an army's camp on the hills.
 
 ## The floors
 
@@ -76,7 +85,7 @@ drawing (`f45/banners-zone.ts`) is no longer used.
 
 | Floor | par / limit (s) | Lyra | Bram |
 |---|---|---|---|
-| 41 | 2200 / 3300 | cleared, 1073 s, 0 falls | cleared, 1225 s, 1 fall (gate 2 tries) |
+| 41 | 2200 / 3300 | cleared, 1092 s, 0 falls | cleared, 1298 s, 2 falls (gate 3 tries) |
 | 42 | 2244 / 3366 | cleared, 1009 s, 0 falls | cleared, 1058 s, 0 falls |
 | 43 | 2288 / 3432 | cleared, 1034 s, 0 falls | cleared, 1128 s, 0 falls |
 | 44 | 2332 / 3498 | cleared, 995 s, 0 falls | cleared, 1061 s, 0 falls |
@@ -87,8 +96,10 @@ drawing (`f45/banners-zone.ts`) is no longer used.
 | 49 | 2552 / 3828 | cleared, 1093 s, 2 falls (gate 3 tries) | cleared, 1055 s, 0 falls |
 | 50 | 2596 / 3894 | cleared, 1028 s, 0 falls; Ash and Ember beaten first try | cleared, 1240 s, 0 falls; Ash and Ember beaten first try |
 
-  No restarts in any of the 20 runs. Every fall was a lost gate duel. The floors take the bot 16 to 21 minutes of game time against
-  the sea's 30 to 41: the four soldiers the banner gives fight beside the hero, so the field's packs go fast.
+  No restarts in any of the 20 runs. Every fall was a lost gate duel. No page errors in any run. The floors take the bot 16 to 22
+  minutes of game time against the sea's 30 to 41 (and the plan's 20 to 30): the four soldiers the banner gives fight beside the
+  hero, so the field's packs go fast. So the par (about twice the bot's time) gives its star away. The levers are data only (pars,
+  the hold's seconds, the sites' mixes, a fifth site) and are left to the lead.
 - Ash and Ember alone at tier 2 (`_pieceRun`, full health): Lyra 2 of 2 (121 s, 127 s), Bram 1 of 2. Entered at 5 % health, it
   comes back a loss in 3 s (a life, not a hang).
 - The other banner (`window.__worldBanner = 1`, azure): floor 44 with Lyra cleared, 956 s, 0 falls, 4 stars.
@@ -105,7 +116,9 @@ drawing (`f45/banners-zone.ts`) is no longer used.
 | phone-4x | gen-46 | 30.5 to 41.0 ms | 120 to 160 | 9.8 to 11.9 | 17.2 to 20.6 | 331 | 424k |
 
   **Floor 46 is slower than floor 1**, by 1.5 to 3 ms on desktop and 5 to 15 ms on the phone profile, and its p99 is higher. What
-  makes it slower is not the drawing: it is the law's own squad (f45/laws.ts). The scene sets the hero down at a new pack every ten
+  makes it slower is not the drawing: it is the law's own squad (f45/laws.ts). Timed in the page at the same four packs, the step
+  is 7 to 14 ms on floor 46 with the squad walking after the hero, 0.1 to 0.2 ms on floor 46 with no banner taken (no squad, and
+  every pack asleep: not a full control), and 0.4 to 0.8 ms on floor 1. The scene sets the hero down at a new pack every ten
   seconds, and the four soldiers of the banner then plan a route across the field through the navigator every frame until they catch
   up (timed in the page: 9 to 17 ms a step while they walk, 1 to 4 ms once they stand by the hero; `nav.ts` `clear` and `plan` are the
   top of the profile, and most of the memory the scene asks for). The same holds on floor 41 (`world-5`: step 11.9 ms on desktop,
@@ -113,12 +126,22 @@ drawing (`f45/banners-zone.ts`) is no longer used.
   the long routes come after a fall (the hero wakes at a waystone) or a door. A fix belongs to the law or the navigator (a squad unit
   far behind could re-plan only every half second, or be set down beside the hero past some distance): not done here (f45/laws.ts is
   the handmade floor's and shared).
-- **The depth's cost, A/B** (gen-46, the same load and the same fight: the depth is built on its own random stream, so the fight's dice
-  do not change when it is switched off), off then on, twice: desktop median 9.8 / 10.1 and 11.2 / 10.2 ms; phone-4x 29.1 / 30.5
-  and 36.0 / 37.2 ms. Within the noise (two runs of the same code differ by up to 7 ms on the phone profile). It costs 16 draw calls
-  and about 70k triangles. What made it slower at first, and was cut: a glow sprite for every far fire (a sprite is a draw call of its
-  own: now the flames are emissive and the bloom lights them), grass blades with a base (now 3 triangles a blade), pebbles, tents as
-  instanced meshes (now merged into the far scenery), a matrix made each frame for each crow.
+- **The longest frame.** Floor 46 has one frame of 1.9 to 2.9 s on desktop (10 to 15 s on the phone profile), floor 1 one of 0.15 s.
+  Read from the tool's `longest`: it is 1.02 s into the scene, 2169 ms of it the simulation's step and 116 ms the drawing. That is the
+  moment the banner is taken and the squad musters (`sides` in f45/laws.ts takes it after 1.2 s of the floor's own clock), and it
+  shows with the depth off too. Most likely it is the squad's first plan across the large zone (the navigator is at the top of the
+  profile), but this was not separated further. A player would feel it as one hitch when taking a banner. Not fixed here (the law and
+  the navigator are shared).
+- **The depth's cost, A/B** (gen-46). The runs played the same load and the same fight: the depth is built on its own random stream,
+  so the fight's dice do not change when it is switched off. Off, then on, twice:
+  - Desktop median 9.8 / 10.1 and 11.2 / 10.2 ms: no consistent difference.
+  - Phone-4x 29.1 / 30.5 and 36.0 / 37.2 ms: the depth about 1.3 ms slower both times, the same sign. Two runs of the same code
+    differ by up to 7 ms there. Whether 1 ms on the phone profile passes the bar is the lead's call.
+  - It costs 16 draw calls and about 70k triangles.
+  - Earlier A/Bs played two different fights (three.js draws on `Math.random` for every object's id), so they said nothing.
+  - What changed the numbers: running the same fight, and grass blades with no base (3 triangles a blade: 484k to 427k triangles in
+    the frame). Taking out the far glow sprites, the pebbles and the far tents as instanced meshes left the draw calls where they
+    were (326 on, 310 off): those were not in the measured frame.
 
 ## What the route runs taught (and the generator now does)
 
@@ -135,6 +158,11 @@ drawing (`f45/banners-zone.ts`) is no longer used.
 - The people, rulers and enemies are the handmade floor's: heroes for people and rulers (as on every made floor), floor 41's
   code-drawn soldiers. New models are the separate model agents' work.
 - The armies' camps, the keep and the hills past the edge are first-pass clean forms in code; the smoke is a stack of soft puffs.
+- The depth's objects get the same three.js ids each time a floor is built (its own random stream, `warZone.ts`). Harmless as far as
+  seen; worth knowing.
+- On floors 48 to 50 the siege line's guard and the keep's ashen pack are led by the same kind (`bearer`), so two elites share a
+  name on the floor.
+- Not done, left for the lead: the War rows in `docs/architecture/tower-worlds.md`, a line in `src/game/changelog.ts`.
 - `pipeline/tools/climb-saves/1-fresh.js` now lists floors 42 to 50 as existing and floor 41's next floor as 42.
 - `src/tower/world/floors/gen/list.ts` is rewritten by the bake tool: it will conflict with the other chapters' at the merge (it
   lists every baked file in the folder; bake again after the merge).
