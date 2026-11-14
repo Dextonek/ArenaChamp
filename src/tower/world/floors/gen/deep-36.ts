@@ -3268,7 +3268,7 @@ export const DEEP_36: GenFloor = {
     "mix": [
      {
       "kind": "mite",
-      "n": 4
+      "n": 3
      },
      {
       "kind": "golem",
@@ -3290,7 +3290,7 @@ export const DEEP_36: GenFloor = {
      },
      {
       "kind": "mite",
-      "n": 3
+      "n": 2
      }
     ]
    },
@@ -3308,10 +3308,6 @@ export const DEEP_36: GenFloor = {
      },
      {
       "kind": "golem",
-      "n": 1
-     },
-     {
-      "kind": "mite",
       "n": 1
      }
     ]
@@ -3340,7 +3336,7 @@ export const DEEP_36: GenFloor = {
      "x": -47.75,
      "z": 42.07
     },
-    "leash": 24,
+    "leash": 34,
     "mix": [
      {
       "kind": "mite",

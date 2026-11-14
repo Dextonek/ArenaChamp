@@ -3258,7 +3258,7 @@ export const DEEP_33: GenFloor = {
      "x": 42.68,
      "z": 33.88
     },
-    "leash": 24,
+    "leash": 34,
     "mix": [
      {
       "kind": "mite",

@@ -338,23 +338,23 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
         named2: { id: 'named2', name: named2, blurb: 'Walks the west of the Deep, slow and heavy.', look: look('golem'), melee: true, hp: 520, share: 0.055, every: 2.4, speed: 2.2, scale: 2.0, shards: shard(40), color: '#b8a8ff' },
       }),
   };
-  const moreMites = n >= 36 ? 1 : 0;
   const packs: PackDef[] = home
     ? [
       { id: 'h1', at: H1.c, leash: 24, mix: [{ kind: 'mite', n: 3 }, { kind: 'golem', n: 1 }] },
       { id: 'yard', at: Y.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
       { id: 'h2', at: H2.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
       { id: 'h3', at: H3.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'golem', n: 1 }] },
-      { id: 'pools', at: Po.c, leash: 24, mix: [{ kind: 'mite', n: 2 }], elite: 'thief' },
+      { id: 'pools', at: Po.c, leash: 34, mix: [{ kind: 'mite', n: 2 }], elite: 'thief' },
       { id: 'pale', at: patrol1[0], mix: [{ kind: 'pale', n: 1 }], named: { name: 'The Pale One', speed: 1.0, patrol: patrol1, bounty: { shards: 45, relic: true } } },
     ]
     : [
-      { id: 'a', at: H1.c, leash: 24, mix: [{ kind: 'mite', n: 3 + moreMites }, { kind: 'golem', n: 1 }] },
-      { id: 'b', at: H2.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 + moreMites }] },
-      { id: 'c', at: H3.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'golem', n: 1 }, { kind: 'mite', n: moreMites }].filter((x) => x.n > 0) },
+      { id: 'a', at: H1.c, leash: 24, mix: [{ kind: 'mite', n: 3 }, { kind: 'golem', n: 1 }] },
+      { id: 'b', at: H2.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
+      { id: 'c', at: H3.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'golem', n: 1 }] },
       { id: 'y', at: Y.c, leash: 24, mix: [{ kind: 'lurker', n: 2 }, { kind: 'mite', n: 2 }] },
-      // the elite's pack keeps two mites (with a third from floor 36 Lyra lost to it, healed at the camp and lost again: floor 36)
-      { id: 'd', at: Po.c, leash: 24, mix: [{ kind: 'mite', n: 2 }], elite: 'thief' },
+      // The elite's pack is leashed longer: a ranged hero steps back as it shoots, and at 24 m the Thief gave up, healed on its way home,
+      // woke again and won (floor 36, Lyra, three falls).
+      { id: 'd', at: Po.c, leash: 34, mix: [{ kind: 'mite', n: 2 }], elite: 'thief' },
       { id: 'named1', at: patrol1[0], mix: [{ kind: 'named1', n: 1 }], named: { name: named1, speed: 1.0, patrol: patrol1, bounty: { shards: shard(45), relic: true } } },
       { id: 'named2', at: patrol2Loop[0], mix: [{ kind: 'named2', n: 1 }], named: { name: named2, speed: 1.0, patrol: patrol2Loop, bounty: { shards: shard(40), relic: false } } },
     ];

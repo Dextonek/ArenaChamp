@@ -3045,7 +3045,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
      "x": 88.75,
      "z": 42.13
     },
-    "leash": 24,
+    "leash": 34,
     "mix": [
      {
       "kind": "mite",
