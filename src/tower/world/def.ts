@@ -77,8 +77,13 @@ export interface QuestDef {
 
 export interface PersonDef {
   id: string;
-  /** The roster hero whose model stands there. */
+  /** The roster hero whose model stands there (a rival's; the others are drawn as `figure` when it is set). */
   hero: string;
+  /**
+   * The Climb's own person drawn there instead of the hero (`models/tower/<figure>_v4.glb`, folk.ts): set for every person but the
+   * rival by `withFolk` when the floors are listed (floors/index.ts), from the floor's number.
+   */
+  figure?: string;
   name: string;
   role: 'keeper' | 'giver' | 'trader' | 'rival';
   at: Spot;

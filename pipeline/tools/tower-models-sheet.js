@@ -1,20 +1,21 @@
-// Pictures of the Tower's own figures (blender/tower, docs/tower/models/README.md) drawn by the game's own figure code
-// (HeroFigure: the pack's idle clip, held things held as in a fight), beside the heroes Sefu and Kaia at their true
-// sizes. Run headless through page-shots (its own dev server; pass a port no one else uses):
+// Pictures of the Climb's own people (blender/tower, docs/tower/models/README.md) drawn by the game's own figure code
+// (HeroFigure: the pack's idle clip, held things held as in the camp), beside the heroes Sefu and Kaia at their true
+// sizes. One chapter at a time: `window._towerChapter` ('sea', 'wood', 'sands', 'deep', 'war'; default 'sea'), set
+// before the script runs (page-shots runs the file's body: prepend `window._towerChapter = 'wood';`), or a list of your
+// own in `window._towerFigs`. Run headless through page-shots on a dev server that is up (or its own):
 //
-//   python pipeline/tools/page-shots.py pipeline/tools/tower-models-sheet.js docs/tower/models --port 5186
+//   python pipeline/tools/page-shots.py pipeline/tools/tower-models-sheet.js docs/tower/models --port 5254
 //
 // It returns <chapter>-lineup-game (the game's high three-quarter camera), <chapter>-lineup-front, <chapter>-sheet
-// (every figure alone) and per figure <chapter>-<name> (front, back, the game camera, the face). The figures are read from docs/tower/models/glb/<id>_v4.glb (build them first:
-// blender/tower/build.py). `stand` is the hero whose way of holding and striking the figure borrows (src/motion/real.ts
-// REAL_STYLE: Sefu holds a staff upright in the left hand, Brannoc strikes with the right).
-const FIGS = window._towerFigs ?? [
-  { id: 'sea_keeper', name: 'The Bell-Warden', role: 'keeper', stand: 'Sefu' },
-  { id: 'sea_fisher', name: 'The Net-Father', role: 'quest giver', stand: 'Sefu' },
-  { id: 'sea_trader', name: 'The Tide-Broker', role: 'trader', stand: 'Sefu' },
-  { id: 'sea_docker', name: 'Drowned docker', role: 'enemy', stand: 'Brannoc' },
-  { id: 'sea_admiral', name: 'The Drowned Admiral', role: 'ruler, 2.2x', stand: 'Brannoc', scale: 2.2 },
-];
+// (every figure alone) and per figure <chapter>-<name> (front, back, the game camera, the face). The people are read
+// from public/models/tower/<id>_v4.glb (blender/tower/build.py --out public/models/tower); a figure with `url` from there.
+// `stand` is the hero whose way of holding the figure borrows (src/motion/real.ts REAL_STYLE: Sefu holds a staff
+// upright in the left hand, Auriel a shield on the left arm, Brannoc strikes with the right); the game's people use the
+// same (src/tower/world/people.ts). The Sea's docker and Admiral (an enemy and a ruler) are not in the game: their
+// models are in docs/tower/models/glb when built, and are drawn with `window._towerFigs`.
+const { TOWER_FOLK } = await import('/src/tower/world/folk.ts');
+const CH0 = window._towerChapter ?? 'sea';
+const FIGS = window._towerFigs ?? TOWER_FOLK.filter((f) => f.chapter === CH0).map((f) => ({ id: f.id, name: f.name, role: f.title.split(':')[0], stand: f.stand }));
 // The hero stand's own renderer, scene and light (src/game/heroPreview.ts), so the page's one copy of three.js is used;
 // its plinth and its own figure are hidden.
 const { HeroPreview } = await import('/src/game/heroPreview.ts');
@@ -35,7 +36,7 @@ camera.far = 200;
 
 // Everyone in one scene, so sizes compare truly: Sefu, the new five, Kaia.
 const row = [{ id: 'sefu', name: 'Sefu (hero)', url: 'models/heroes/sand_v4.glb', stand: 'Sefu' },
-  ...FIGS.map((f) => ({ ...f, url: `docs/tower/models/glb/${f.id}_v4.glb` })),
+  ...FIGS.map((f) => ({ ...f, url: f.url ?? `models/tower/${f.id}_v4.glb` })),
   { id: 'kaia', name: 'Kaia (hero)', url: 'models/heroes/storm_v4.glb', stand: 'Kaia' }];
 let x = 0;
 for (const r of row) {
