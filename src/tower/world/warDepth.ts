@@ -190,7 +190,11 @@ export function buildWarDepth(o: WarDepthIn) {
       made++;
     }
   };
-  const spear = (x: number, z: number, a: number) => near.add('wood', cyl(0.035, 0.04, 2.6, 5), x, 0, z, a, 1, 1, 1, (rnd() - 0.5) * 0.3, (rnd() - 0.5) * 0.3).add('steel', new THREE.ConeGeometry(0.06, 0.32, 4).translate(0, 2.75, 0), x, 0, z, a, 1, 1, 1, 0, 0);
+  // the head leans with its shaft (it stood straight up over the shaft's foot, a hand's breadth off the shaft's top; 2026-11-14)
+  const spear = (x: number, z: number, a: number) => {
+    const tilt = (rnd() - 0.5) * 0.3, roll = (rnd() - 0.5) * 0.3;
+    near.add('wood', cyl(0.035, 0.04, 2.6, 5), x, 0, z, a, 1, 1, 1, tilt, roll).add('steel', new THREE.ConeGeometry(0.06, 0.32, 4).translate(0, 2.75, 0), x, 0, z, a, 1, 1, 1, tilt, roll);
+  };
   for (const p of look.places) {
     const r = p.r;
     switch (p.kind) {
@@ -208,11 +212,12 @@ export function buildWarDepth(o: WarDepthIn) {
         ring(p, 6, r - 1, r + 6, (x, z) => near.add(rnd() < 0.5 ? 'plank' : 'charred', box(0.3, 0.06, 1.4 + rnd()), x, 0.02, z, rnd() * 6, 1, 1, 1, (rnd() - 0.5) * 0.15), 0.4);
         break;
       case 'hill':
-        ring(p, 3, r - 2, r + 2, (x, z) => near.add('plank', cyl(0.5, 0.45, 0.7, 12).rotateZ(Math.PI / 2 - 0.2).translate(0, 0.45, 0), x, 0, z, rnd() * 6).add(side(x), cyl(0.51, 0.51, 0.3, 12).rotateZ(Math.PI / 2 - 0.2).translate(0, 0.45, 0), x, 0, z, rnd() * 6), 0.8);
+        // a drum on its side and its band in the side's colour, turned together (the band had a turn of its own and crossed the drum)
+        ring(p, 3, r - 2, r + 2, (x, z) => { const yaw = rnd() * 6; rnd(); near.add('plank', cyl(0.5, 0.45, 0.7, 12).rotateZ(Math.PI / 2 - 0.2).translate(0, 0.45, 0), x, 0, z, yaw).add(side(x), cyl(0.51, 0.51, 0.3, 12).rotateZ(Math.PI / 2 - 0.2).translate(0, 0.45, 0), x, 0, z, yaw); }, 0.8);
         ring(p, 2, r, r + 4, (x, z, a) => near.add('wood', cyl(0.06, 0.08, 4, 6).rotateZ(Math.PI / 2).translate(0, 0.08, 0), x, 0, z, a), 1);
         break;
       case 'siege':
-        ring(p, 6, r - 1, r + 6, (x, z, a) => { for (let k = 0; k < 7; k++) near.add('straw', cyl(0.07, 0.07, 2.4, 4).rotateZ(Math.PI / 2).translate(0, 0.25 + (k % 2) * 0.12, (k - 3) * 0.08), x, 0, z, a); }, 1); // fascines
+        ring(p, 6, r - 1, r + 6, (x, z, a) => { for (let k = 0; k < 7; k++) near.add('straw', cyl(0.07, 0.07, 2.4, 4).rotateZ(Math.PI / 2).translate(0, 0.06 + (k % 2) * 0.12, (k - 3) * 0.08), x, 0, z, a); }, 1); // fascines (their lower row on the ground: it hovered 18 cm up)
         ring(p, 2, r, r + 5, (x, z, a) => { for (const s of [-0.3, 0.3]) near.add('wood', box(0.07, 0.07, 4.2), x + Math.cos(a) * s, 0.05, z - Math.sin(a) * s, a); for (let k = -3; k <= 3; k++) near.add('wood', box(0.6, 0.05, 0.05), x + Math.sin(a) * k * 0.55, 0.06, z + Math.cos(a) * k * 0.55, a); }, 1.4); // ladders
         break;
       case 'farm': case 'mill':
@@ -224,7 +229,7 @@ export function buildWarDepth(o: WarDepthIn) {
         ring(p, 3, r - 1, r + 4, (x, z, a) => near.add('wood', box(1.9, 0.45, 0.8), x, 0, z, a).add('white', box(1.8, 0.08, 0.75), x, 0.45, z, a), 0.8);
         ring(p, 2, r, r + 5, (x, z, a) => { // washing on a line: bandages and sheets
           for (const s of [-1, 1]) near.add('wood', box(0.08, 2, 0.08), x + Math.cos(a) * 2 * s, 0, z - Math.sin(a) * 2 * s);
-          near.add('rope', box(4, 0.02, 0.02), x, 1.9, z, a + Math.PI / 2);
+          near.add('rope', box(4, 0.02, 0.02), x, 1.9, z, a); // along its posts, under the sheets (it ran across them, the sheets in the air)
           for (const f of [-1.3, -0.4, 0.5, 1.3]) near.add('white', box(0.6, 0.75, 0.02).translate(0, -0.38, 0), x + Math.cos(a) * f, 1.9, z - Math.sin(a) * f, a);
         }, 1);
         ring(p, 3, r - 1, r + 3, (x, z) => near.add('sack', cyl(0.3, 0.24, 0.4, 9), x, 0, z), 0.4); // baskets
@@ -236,7 +241,7 @@ export function buildWarDepth(o: WarDepthIn) {
         ring(p, 3, 3.5, r, (x, z, a) => near.add('wood', cyl(0.22, 0.22, 1.6, 8).rotateZ(Math.PI / 2).translate(0, 0.22, 0), x, 0, z, a), 0.5); // logs to sit on
         ring(p, 2, 3, r - 1, (x, z, a) => near.add(side(x), box(0.7, 0.14, 1.8), x, 0, z, a), 0.5); // bedrolls
         ring(p, 1, 4, r + 2, (x, z, a) => { near.add('wood', box(2, 0.08, 0.08), x, 1.3, z, a).add('wood', box(0.08, 1.4, 0.08), x + Math.cos(a), 0, z - Math.sin(a)).add('wood', box(0.08, 1.4, 0.08), x - Math.cos(a), 0, z + Math.sin(a)); for (let k = -2; k <= 2; k++) spear(x + Math.cos(a) * k * 0.4, z - Math.sin(a) * k * 0.4, a); }, 1.2); // a rack of spears
-        ring(p, 1, 3, r, (x, z) => { for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2; near.add('dark', cyl(0.04, 0.04, 1.6, 4), x + Math.cos(a) * 0.4, 0, z + Math.sin(a) * 0.4, 0, 1, 1, 1, Math.cos(a) * 0.25, Math.sin(a) * 0.25); } near.add('iron', new THREE.SphereGeometry(0.32, 10, 6, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).translate(0, 0.9, 0), x, 0, z); }, 0.8); // a pot on a tripod
+        ring(p, 1, 3, r, (x, z) => { for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2; near.add('dark', cyl(0.04, 0.04, 1.6, 4), x + Math.cos(a) * 0.4, 0, z + Math.sin(a) * 0.4, 0, 1, 1, 1, -Math.sin(a) * 0.25, Math.cos(a) * 0.25); } near.add('iron', new THREE.SphereGeometry(0.32, 10, 6, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).translate(0, 0.9, 0), x, 0, z); }, 0.8); // a pot on a tripod (its legs lean in to meet over the pot: they leaned sideways, past it)
         break;
     }
   }

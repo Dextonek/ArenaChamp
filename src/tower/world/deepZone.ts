@@ -401,7 +401,9 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
         kit.add(gold, box(r * 2.06, 0.08, r * 2.06), o.ax, h * 0.5, o.az, 0);
         break;
       case 'timber':
-        for (let k = 0; k < 4; k++) dress.add(k % 2 ? 'wood' : 'darkWood', cyl(0.16, 0.16, r * 2.2, 6), o.ax + (k % 2 ? 0.2 : -0.2), 0.2 + Math.floor(k / 2) * 0.35, o.az, 0, 1, 1, 1, 0, Math.PI / 2);
+        // four logs, two by two, on the ground and on each other, over the cover's own round (2026-11-14, the props pass: they ran from its
+        // middle out to one side, the two of a layer inside each other, the lower ones 4 cm up and the upper 3 cm above them)
+        for (let k = 0; k < 4; k++) dress.add(k % 2 ? 'wood' : 'darkWood', cyl(0.16, 0.16, r * 2.2, 6), o.ax + r * 1.1, 0.16 + Math.floor(k / 2) * 0.28, o.az + (k % 2 ? 0.155 : -0.155), 0, 1, 1, 1, 0, Math.PI / 2);
         dress.add('darkWood', box(r * 2.2, h * 0.5, 0.15), o.ax, 0, o.az - 0.6, 0.4);
         break;
       case 'hut':
@@ -421,7 +423,12 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
         break;
       case 'cart':
         dress.add('iron', box(r * 1.5, 0.75, r * 1.0), o.ax, 0.25, o.az, 0.4).add('darkWood', box(r * 1.58, 0.07, r * 1.08), o.ax, 0.98, o.az, 0.4);
-        for (const [dx, dz] of [[-0.55, -0.4], [0.55, -0.4], [-0.55, 0.4], [0.55, 0.4]]) dress.add('darkWood', cyl(0.26, 0.26, 0.14, 8), o.ax + dx, 0.05, o.az + dz, 0.4, 1, 1, 1, 0, Math.PI / 2);
+        // its wheels on its long sides, turned with it, on their axles across it, standing on the ground (2026-11-14, the props pass: they
+        // lay on their sides along the cart, half in the ground, and kept to the world's axes while the cart was turned)
+        for (const [dx, dz] of [[-0.55, -1], [0.55, -1], [-0.55, 1], [0.55, 1]]) {
+          const lz = dz > 0 ? r * 0.5 : -r * 0.5 - 0.14, c = Math.cos(0.4), s = Math.sin(0.4);
+          dress.add('darkWood', cyl(0.26, 0.26, 0.14, 8), o.ax + dx * c + lz * s, 0.25, o.az - dx * s + lz * c, 0.4, 1, 1, 1, Math.PI / 2);
+        }
         for (const [dx, dz, s] of [[-0.3, 0, 0.7], [0.25, 0.1, 0.9], [0, -0.3, 0.6]] as const) prism(amethyst, o.ax + dx, 0.9, o.az + dz, s, 0.9 * s + 0.4, rnd() * 3);
         cool.push({ x: o.ax, y: 1.4, z: o.az, size: 2.6 });
         break;
@@ -495,19 +502,23 @@ export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] =
   const pale: THREE.Matrix4[] = [], dark: THREE.Matrix4[] = [];
   const q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0);
   const mtx = (x: number, y: number, z: number, s: number, sy = s) => new THREE.Matrix4().compose(new THREE.Vector3(x, y, z), q.setFromAxisAngle(up, rnd() * 6.28).clone(), new THREE.Vector3(s, sy, s));
-  // Stalagmites crowd the wall's foot (low ones in the south, none in the water), dark spires further up.
+  // Stalagmites crowd the wall's foot (low ones in the south, none in the water), dark spires further up. Each stands on the lowest
+  // ground under its base (2026-11-14, the props pass: set at the height of its middle, its downhill side stood off the slope).
+  /** The ground's lowest height under a base of radius `r` round (dx, dz): its middle and eight points on its rim. */
+  const lowest = (dx: number, dz: number, r: number) => { let y = cave.height(dx, dz); for (let i = 0; i < 8; i++) y = Math.min(y, cave.height(dx + Math.cos(i * 0.785) * r, dz + Math.sin(i * 0.785) * r)); return y; };
   for (let k = 0; k < around / 1.6; k++) {
     const a = rnd() * Math.PI * 2, b = 0.9 + Math.pow(rnd(), 1.6) * 7, o = out(a, b), dx = o.dx, dz = o.dz;
     if (cave.water(dx, dz) > 0.1) continue;
     const y = cave.height(dx, dz), s = cave.south(dx, dz), p = W(dx, dz);
     if (y < -1) continue;
-    pale.push(mtx(p.x, y - 0.15, p.z, 0.5 + rnd() * 0.7, (1.2 + rnd() * 2.6) * (1 - 0.7 * s)));
+    const r = 0.5 + rnd() * 0.7;
+    pale.push(mtx(p.x, lowest(dx, dz, r * 1.3) - 0.15, p.z, r, (1.2 + rnd() * 2.6) * (1 - 0.7 * s)));
   }
   for (let k = 0; k < around / 4; k++) {
     const a = rnd() * Math.PI * 2, o = out(a, 6 + rnd() * 40), dx = o.dx, dz = o.dz;
     if (cave.water(dx, dz) > 0.1 || cave.south(dx, dz) > 0.3) continue;
-    const y = cave.height(dx, dz), p = W(dx, dz);
-    dark.push(mtx(p.x, y - 0.5, p.z, 1.4 + rnd() * 2.2, 3 + rnd() * 7));
+    const p = W(dx, dz), r = 1.4 + rnd() * 2.2;
+    dark.push(mtx(p.x, lowest(dx, dz, r) - 0.5, p.z, r, 3 + rnd() * 7));
   }
   // Out in the water: spires and islets of crystal, the far wall's foot.
   for (let k = 0; k < 26; k++) {

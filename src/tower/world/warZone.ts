@@ -360,9 +360,14 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
     kit.add(rocks[(base + 1) % 3], ico0, x + Math.cos(a) * r * 0.75, y + h * 0.1, z + Math.sin(a) * r * 0.75, rnd() * 6, r * 0.5, h * 0.24, r * 0.45);
   };
   /** Three sharpened stakes leaning one way, lashed: the hedge where a walk stops and the field's filler. */
-  const stakes = (x: number, z: number, h: number, yaw: number, y = 0) => {
-    for (let k = 0; k < 3; k++) kit.add(M.wood, new THREE.ConeGeometry(0.1, h, 5).translate(0, h / 2, 0), x + Math.cos(yaw) * (k - 1) * 0.3, y, z - Math.sin(yaw) * (k - 1) * 0.3, yaw, 1, 1, 1, 0.38);
-    kit.add(M.darkWood, new THREE.CylinderGeometry(0.06, 0.06, 1.0, 5).rotateZ(Math.PI / 2), x, y + h * 0.35, z, yaw);
+  // (2026-11-14, the props pass) The lashing sits on the stakes where they lean (it hung 0.2 m in front of them, in the air), and on the
+  // bank each stake stands on its own ground (`at`: the ground's height there; the bank's slope lifted the outer ones off it).
+  const stakes = (x: number, z: number, h: number, yaw: number, y = 0, at?: (x: number, z: number) => number) => {
+    const lean = 0.38, fx = Math.sin(yaw), fz = Math.cos(yaw);
+    const ys = [-1, 0, 1].map((k) => (at ? Math.min(at(x + Math.cos(yaw) * k * 0.3, z - Math.sin(yaw) * k * 0.3), at(x + Math.cos(yaw) * k * 0.3 - fx * 0.1, z - Math.sin(yaw) * k * 0.3 - fz * 0.1)) - 0.2 : y));
+    for (let k = 0; k < 3; k++) kit.add(M.wood, new THREE.ConeGeometry(0.1, h, 5).translate(0, h / 2, 0), x + Math.cos(yaw) * (k - 1) * 0.3, ys[k], z - Math.sin(yaw) * (k - 1) * 0.3, yaw, 1, 1, 1, lean);
+    const up = h * 0.35, yb = (ys[0] + ys[1] + ys[2]) / 3 + up, d = up * Math.tan(lean);
+    kit.add(M.darkWood, new THREE.CylinderGeometry(0.06, 0.06, 1.0, 5).rotateZ(Math.PI / 2), x + fx * d, yb, z + fz * d, yaw);
   };
   /** A banner on a pole: a pole, a crossbar, a cloth of an army's colour hanging, a gold finial. */
   const banner = (x: number, z: number, h: number, cloth: THREE.Material, yaw = 0, y = 0, torn = false) => {
@@ -385,7 +390,8 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
       }
       case 'crate':
         if (kind === 'shieldpile') {
-          for (let k = 0; k < 4; k++) kit.add(k % 2 ? sideCloth(o.ax) : M.steel, new THREE.CylinderGeometry(0.5, 0.5, 0.07, 9).translate(0, 0.1 + k * 0.1, 0), o.ax + (rnd() - 0.5) * 0.4, 0, o.az + (rnd() - 0.5) * 0.4, rnd() * 3, 1, 1, 1, (rnd() - 0.5) * 0.3);
+          for (let k = 0; k < 4; k++) kit.add(k % 2 ? sideCloth(o.ax) : M.steel, new THREE.CylinderGeometry(0.5, 0.5, 0.07, 9).translate(0, 0.06 + k * 0.075, 0), o.ax + (rnd() - 0.5) * 0.4, 0, o.az + (rnd() - 0.5) * 0.4, rnd() * 3, 1, 1, 1, (rnd() - 0.5) * 0.3);
+          // (the shields on the ground and on each other: the pile hung 6 to 10 cm up)
           kit.add(M.wood, cyl(0.04, 0.04, 1.7, 4), o.ax + 0.3, 0.2, o.az, 0.4, 1, 1, 1, 1.2);
         } else if (kind === 'sacks') {
           for (let k = 0; k < 3; k++) kit.add(M.sack, new THREE.SphereGeometry(0.42, 9, 6).scale(1, 0.75, 0.8).translate(0, 0.3, 0), o.ax + (k - 1) * 0.5, k === 1 ? 0.45 : 0, o.az + (rnd() - 0.5) * 0.3, rnd() * 3);
@@ -447,8 +453,10 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
           const k = Math.max(2, Math.round(len / 1.5));
           for (let i = 0; i < k; i++) {
             const t = i / (k - 1), x = o.ax + (o.bx - o.ax) * t, z = o.az + (o.bz - o.az) * t;
-            kit.add(i % 2 ? sideCloth(x) : M.steel, new THREE.CylinderGeometry(0.78, 0.78, 0.1, 10).rotateX(Math.PI / 2).translate(0, 0.85, 0), x, 0.3, z, yaw + Math.PI / 2, 1, 1, 1, (rnd() - 0.5) * 0.18);
-            kit.add(M.gold, new THREE.SphereGeometry(0.16, 6, 4).translate(0, 0.85, 0.07), x, 0.3, z, yaw + Math.PI / 2);
+            // standing on the sill (they stood 5 cm above it), the boss leaning with its shield
+            const tilt = (rnd() - 0.5) * 0.18;
+            kit.add(i % 2 ? sideCloth(x) : M.steel, new THREE.CylinderGeometry(0.78, 0.78, 0.1, 10).rotateX(Math.PI / 2).translate(0, 0.85, 0), x, 0.25, z, yaw + Math.PI / 2, 1, 1, 1, tilt);
+            kit.add(M.gold, new THREE.SphereGeometry(0.16, 6, 4).translate(0, 0.85, 0.07), x, 0.25, z, yaw + Math.PI / 2, 1, 1, 1, tilt);
           }
         } else if (kind === 'fence') {
           const k = Math.max(2, Math.round(len / 1.6));
@@ -527,7 +535,7 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
     if (p.z < look.line.z - 1 && p.x > look.line.w - 2 && p.x < look.line.e + 2) continue;
     const so = geo.south(o.dx, o.dz), outward = Math.atan2(Math.cos(a), Math.sin(a));
     if (k % 5 === 0 && rnd() < 0.5) boulder(p.x, p.z, 0.6 + rnd() * 0.5, 0.9, k, y - 0.15);
-    else stakes(p.x, p.z, so > 0.5 ? 1.2 : 1.6 + rnd() * 0.4, outward + Math.PI / 2, y - 0.1);
+    else stakes(p.x, p.z, so > 0.5 ? 1.2 : 1.6 + rnd() * 0.4, outward + Math.PI / 2, y - 0.1, (wx, wz) => geo.height(wx - RING.x, wz - RING.z));
   }
   // The siege line goes on past the outline's ends a little, into the bank (its pieces end 4 m past the outline).
   kit.build(g, own);

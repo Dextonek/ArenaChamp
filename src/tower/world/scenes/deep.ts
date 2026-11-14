@@ -95,6 +95,8 @@ function kit(parts: Part[]): Kit {
 }
 
 let KITS: ReturnType<typeof makeKits> | null = null;
+/** Every part's shape by name, for the shapes check (pipeline/tools/climb-shapes-probe.js: parts that do not meet). */
+export const deepSceneShapes = () => (KITS ??= makeKits());
 function makeKits() {
   const K = kit;
   const pickParts = (): Part[] => [[rod(0.03, 0.03, 0.95, 6).rotateX(Math.PI / 2).translate(0, 0.035, 0), C.wood], [box(0.62, 0.06, 0.07, 0, 0.045, 0.46), C.rail], [box(0.09, 0.09, 0.09, 0, 0.045, 0.4), GOLD]];
@@ -123,17 +125,17 @@ function makeKits() {
       [box(1.5, 1.0, 0.08, 0, 0.5, 0.36), C.rail], [box(1.5, 0.08, 0.72, 0, 0.04), C.rail], [box(1.5, 0.08, 0.72, 0, 0.96), C.rail], [box(0.08, 1.0, 0.72, 0.75, 0.5), C.rail], [box(0.08, 1.0, 0.72, -0.75, 0.5), C.rail],
       [box(1.52, 0.12, 0.1, 0, 0.3, 0.38), C.plank], [box(1.52, 0.12, 0.1, 0, 0.7, 0.38), C.plank],
       [box(1.58, 0.06, 0.06, 0, 1.0, -0.36), GOLD],
-      ...[0.55, -0.55].flatMap((x) => [[cyl(0.26, 0.26, 0.09, 12).rotateX(Math.PI / 2).translate(x, 0.07, 0.5), C.darkWood], [cyl(0.26, 0.26, 0.09, 12).rotateX(Math.PI / 2).translate(x, 0.93, 0.5), C.darkWood]] as Part[]),
+      ...[0.55, -0.55].flatMap((x) => [[cyl(0.26, 0.26, 0.09, 12).rotateX(Math.PI / 2).translate(x, 0.07, 0.4), C.darkWood], [cyl(0.26, 0.26, 0.09, 12).rotateX(Math.PI / 2).translate(x, 0.93, 0.4), C.darkWood]] as Part[]), // on the cart's floor (they stood 10 cm off it)
     ]),
     ore: K([
       [ico(0.34).scale(1.3, 0.55, 1.1).translate(0, 0.1, 0), C.ore], [ico(0.22).scale(1, 0.6, 1).translate(0.4, 0.08, 0.2), C.rock], [ico(0.2).scale(1, 0.6, 1).translate(-0.36, 0.07, 0.24), C.ore],
       [ico(0.15).translate(0.15, 0.06, -0.38), C.rockDark], [ico(0.13).translate(-0.25, 0.05, -0.3), C.ore], [ico(0.16).translate(0.55, 0.06, -0.15), C.ore],
     ]),
-    chips: K([[oct(0.07, 0.24).rotateZ(0.4).translate(0.05, 0.02, 0), SHARD], [oct(0.06, 0.2).rotateX(-0.5).translate(-0.12, 0.02, 0.1), SHARD], [oct(0.05, 0.16).rotateZ(-0.6).translate(0.02, 0.02, -0.14), SHARD]]),
+    chips: K([[oct(0.07, 0.24).rotateZ(0.4).translate(0.05, -0.01, 0), SHARD], [oct(0.06, 0.2).rotateX(-0.5).translate(-0.12, -0.01, 0.1), SHARD], [oct(0.05, 0.16).rotateZ(-0.6).translate(0.02, -0.01, -0.14), SHARD]]), // their tips in the floor (2 cm above it)
     wheelset: K([[rod(0.05, 0.05, 1.3, 6).rotateZ(Math.PI / 2).translate(0, 0.3, 0), C.iron], ...wheel(0.3).map(([g, c]) => [g.translate(0.55, 0.3, 0), c] as Part), ...wheel(0.3).map(([g, c]) => [g.translate(-0.55, 0.3, 0), c] as Part)]),
     rail: K([[box(0.09, 0.12, 3.2, 0, 0.06), C.rail], [box(0.09, 0.12, 2.0, 0, 0, 0).rotateX(0.18).translate(0.62, 0.2, 0.7), C.rail], [box(0.26, 0.14, 1.4, 0, 0.07, -0.9).rotateY(1.45), C.wood], [box(0.26, 0.14, 1.4, 0, 0.07, 0.6).rotateY(1.75), C.wood]]),
     // --- a collapse: timbers fallen, rock come down; a frame leaned on the rock; a miner's helmet with its lamp out
-    timber: K([[box(0.24, 0.24, 3.0, 0, 0.12), C.wood], [box(0.26, 0.05, 0.26, 0, 0.12, 1.45).rotateX(Math.PI / 2).translate(0, 0, 0), C.darkWood]]),
+    timber: K([[box(0.24, 0.24, 3.0, 0, 0.12), C.wood], [new THREE.BoxGeometry(0.26, 0.05, 0.26).rotateX(Math.PI / 2).translate(0, 0.12, 1.5), C.darkWood]]),
     rubble: K([
       [ico(0.45).scale(1.2, 0.6, 1).translate(0, 0.2, 0), C.rock], [ico(0.32).scale(1, 0.7, 1.1).translate(0.6, 0.15, 0.3), C.rockLight], [ico(0.28).scale(1, 0.7, 1).translate(-0.55, 0.12, 0.35), C.rockDark],
       [ico(0.2).translate(0.2, 0.08, 0.7), C.rock], [ico(0.18).translate(-0.3, 0.07, -0.6), C.rockLight], [ico(0.24).scale(1, 0.6, 1).translate(0.75, 0.1, -0.45), C.rock],
@@ -167,7 +169,7 @@ function makeKits() {
     ]),
     board: K([[box(1.0, 0.7, 0.05, 0, 0, 0).rotateX(-0.25).translate(0, 0.45, 0), C.wood], [box(0.86, 0.56, 0.02, 0, 0, 0).rotateX(-0.25).translate(0, 0.46, 0.035), C.map], [box(0.5, 0.02, 0.01, 0, 0, 0).rotateX(-0.25).translate(0, 0.5, 0.05), C.ink]]),
     // --- a winch with its chain snapped (against the rock), the skip overturned and its ore out
-    winch: K([[box(0.14, 1.1, 0.9, -0.7, 0.55), C.wood], [box(0.14, 1.1, 0.9, 0.7, 0.55), C.wood], [rod(0.3, 0.3, 1.26, 10).rotateZ(Math.PI / 2).translate(0, 0.85, 0), C.rail], [box(0.06, 0.45, 0.06, 0.82, 0.68, 0.18), C.iron], [rod(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(-0.6, 0.85, 0), GOLD], [rod(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(0.6, 0.85, 0), GOLD]]),
+    winch: K([[box(0.14, 1.1, 0.9, -0.7, 0.55), C.wood], [box(0.14, 1.1, 0.9, 0.7, 0.55), C.wood], [rod(0.3, 0.3, 1.26, 10).rotateZ(Math.PI / 2).translate(0, 0.85, 0), C.rail], [box(0.06, 0.45, 0.06, 0.8, 0.68, 0.18), C.iron], [rod(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(-0.6, 0.85, 0), GOLD], [rod(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(0.6, 0.85, 0), GOLD]]),
     chain: K(Array.from({ length: 12 }, (_, k) => [ring(0.08, 0.022, 4, 8).rotateX(k % 2 ? Math.PI / 2 : 0).rotateY(k % 2 ? 0 : Math.PI / 2).translate(0, k % 2 ? 0.03 : 0.08, k * 0.13 + Math.sin(k * 0.9) * 0.05).rotateY(Math.sin(k * 0.5) * 0.2), C.rail] as Part)),
     hook: K([[ring(0.12, 0.03, 4, 10, Math.PI * 1.4).rotateX(Math.PI / 2).translate(0, 0.03, 0), C.iron], [box(0.05, 0.05, 0.2, 0.12, 0.03, -0.1), C.iron]]),
     // the skip tipped onto its side, its mouth to the ore (low: it lies on open floor before the winch)
@@ -241,10 +243,10 @@ function makeKits() {
       [ico(1).scale(2.0, 0.42, 1.45).translate(0, 0.08, 0), C.rubble], [ico(0.5).scale(1.2, 0.6, 1).translate(1.2, 0.18, 0.6), C.pale], [ico(0.45).scale(1, 0.6, 1.1).translate(-1.3, 0.16, 0.5), C.rockLight],
       [ico(0.35).translate(0.4, 0.2, -0.9), C.pale], [ico(0.3).scale(1, 0.7, 1).translate(-0.6, 0.15, -0.8), C.rubble], [ico(0.28).translate(1.9, 0.1, -0.3), C.rockLight], [ico(0.25).translate(-2.0, 0.08, -0.2), C.pale],
     ]),
-    barrow: K([[box(0.7, 0.3, 0.55, 0, 0, 0).rotateZ(1.2).translate(0, 0.3, 0), C.rail], [box(0.72, 0.03, 0.57, 0, 0, 0).rotateZ(1.2).translate(-0.16, 0.33, 0), GOLD], [cyl(0.2, 0.2, 0.08, 10).rotateX(Math.PI / 2).translate(0.5, 0.2, 0), C.darkWood], [cyl(0.025, 0.025, 1.1, 6).rotateZ(Math.PI / 2).translate(-0.2, 0.05, 0.22), C.wood], [cyl(0.025, 0.025, 1.1, 6).rotateZ(Math.PI / 2).translate(-0.2, 0.05, -0.22), C.wood]]),
+    barrow: K([[box(0.7, 0.3, 0.55, 0, 0, 0).rotateZ(1.2).translate(0, 0.3, 0), C.rail], [box(0.72, 0.03, 0.57, 0, 0, 0).rotateZ(1.2).translate(-0.16, 0.33, 0), GOLD], [cyl(0.2, 0.2, 0.08, 10).rotateX(Math.PI / 2).translate(0.44, 0.2, -0.04), C.darkWood], [cyl(0.025, 0.025, 1.1, 6).rotateZ(Math.PI / 2).translate(-0.2, 0.05, 0.22), C.wood], [cyl(0.025, 0.025, 1.1, 6).rotateZ(Math.PI / 2).translate(-0.2, 0.05, -0.22), C.wood]]),
     peg: K([[cyl(0.03, 0.04, 0.4, 5), C.wood], [cyl(0.05, 0.05, 0.04, 6).translate(0, 0.38, 0), GOLD]]),
-    shards: K([...[[0, 0, 0.3], [0.25, 0.15, -0.4], [-0.2, 0.2, 0.6], [0.1, -0.25, -0.2], [-0.3, -0.15, 0.1]].map(([x, z, t]) => [oct(0.06, 0.24).rotateZ(t).translate(x, 0.02, z), SHARD] as Part)]),
-    sack: K([[ball(1, 8, 5).scale(0.4, 0.24, 0.3).translate(0, 0.2, 0), C.sack], [ring(0.09, 0.022, 3, 8).rotateY(Math.PI / 2).translate(0.42, 0.18, 0), C.rope]]),
+    shards: K([...[[0, 0, 0.3], [0.25, 0.15, -0.4], [-0.2, 0.2, 0.6], [0.1, -0.25, -0.2], [-0.3, -0.15, 0.1]].map(([x, z, t]) => [oct(0.06, 0.24).rotateZ(t).translate(x, -0.01, z), SHARD] as Part)]), // their tips in the floor (2 cm above it)
+    sack: K([[ball(1, 8, 5).scale(0.4, 0.24, 0.3).translate(0, 0.2, 0), C.sack], [ring(0.09, 0.022, 3, 8).rotateY(Math.PI / 2).translate(0.4, 0.18, 0), C.rope]]),
     stone: K([[ico(0.14).scale(1, 0.65, 1).translate(0, 0.05, 0), C.pale]]),
   };
 }
@@ -321,7 +323,7 @@ const KINDS: Record<string, Make> = {
     rc.s(K.ore, -0.5, 0, z0 + 0.9, r() * 6, 1.4).item(-0.5, z0 + 0.9, 0.95, 0.32);
     rc.s(K.ore, 0.9, 0, z0 + 1.6, r() * 6, 1.0).item(0.9, z0 + 1.6, 0.7, 0.24);
     rc.s(K.ore, -1.4, 0, z0 + 2.2, r() * 6, 0.7).item(-1.4, z0 + 2.2, 0.55, 0.2);
-    rc.s(K.chips, -0.3, 0.05, z0 + 1.1, r() * 6).s(K.chips, 1.0, 0.04, z0 + 1.4, r() * 6, 0.8).s(K.chips, -1.2, 0.04, z0 + 2.0, r() * 6);
+    rc.s(K.chips, -0.3, 0, z0 + 1.1, r() * 6).s(K.chips, 1.0, 0, z0 + 1.4, r() * 6, 0.8).s(K.chips, -1.2, 0, z0 + 2.0, r() * 6); // on the floor (4 to 5 cm above it)
     rc.s(K.rail, -2.2, 0, z0 + 0.4, 0.3 + r() * 0.4).item(-2.2, z0 + 0.4, 1.65, 0.45);
     rc.paint('fan', 0, z0 + 0.4, 3.6, 0.7, Math.PI / 2 + (r() - 0.5) * 0.5, G.ore, 0.6).paint('stain', 0, z0 + 0.8, 3.2, 2.4, 0, G.tramp, 0.35);
     rc.trail = 'drag';
@@ -446,7 +448,7 @@ const KINDS: Record<string, Make> = {
     rc.s(K.tub, 0, 0.03, 4.6, Math.PI / 2, 1.25, 1, 1.25).item(0, 4.6, 0.95, 0.55);
     rc.s(K.tub, 1.2, 0, 2.4, 0.7 + r() * 0.3, 1.25, 1, 1.25, 0, 0.06).item(1.2, 2.4, 0.95, 0.55).at(1.2, 2.4);
     rc.s(K.tubUpside, 2.5, 0, 0.3, 1.3 + r() * 0.4, 1.25, 1, 1.25).item(2.5, 0.3, 0.95, 0.53);
-    rc.s(K.ore, 3.3, 0, -0.9, r() * 6, 1.2).item(3.3, -0.9, 0.85, 0.3).s(K.chips, 2.9, 0.04, -0.6, r() * 6);
+    rc.s(K.ore, 3.3, 0, -0.9, r() * 6, 1.2).item(3.3, -0.9, 0.85, 0.3).s(K.chips, 2.9, 0, -0.6, r() * 6);
     rc.s(K.chain, 0.2, 0, 3.0, 0.4, 0.8);
     rc.paint('band', 0, 2.2, 7.6, 1.5, Math.PI / 2, G.dust, 0.32).paint('fan', 2.4, 0.2, 3.0, 0.7, -Math.PI / 2 + 0.4, G.ore, 0.55);
   },
@@ -498,7 +500,7 @@ const KINDS: Record<string, Make> = {
 
 /** Single props dropped between the scenes along the tracks, so the stories join up (ore off a cart, a dropped lamp, a pick, a sack). */
 const ECHOES: Record<string, (rc: Recipe, K: Ks, r: () => number) => void> = {
-  ore: (rc, K, r) => { rc.s(K.ore, 0, 0, 0, r() * 6, 0.8).s(K.chips, 0.3, 0.03, 0.1, r() * 6).item(0, 0, 0.65, 0.24); rc.paint('fan', 0, 0, 1.4, 0.6, r() * 6, G.ore, 0.5); },
+  ore: (rc, K, r) => { rc.s(K.ore, 0, 0, 0, r() * 6, 0.8).s(K.chips, 0.3, 0, 0.1, r() * 6).item(0, 0, 0.65, 0.24); rc.paint('fan', 0, 0, 1.4, 0.6, r() * 6, G.ore, 0.5); },
   lamp: (rc, K, r) => { rc.s(K.lampGround, 0, 0, 0, r() * 6, 1, 1, 1, 1.3, 0.2).item(0, 0, 0.35, 0.3); },
   pick: (rc, K, r) => { rc.s(K.pickLeaning, 0, 0.03, 0, r() * 6, 1, 1, 1, 1.1).item(0, 0, 0.6, 0.12); },
   sack: (rc, K, r) => { rc.s(K.sack, 0, 0, 0, r() * 6).item(0, 0, 0.5, 0.3); },

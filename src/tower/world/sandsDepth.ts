@@ -262,11 +262,17 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
     const roadWell = (x: number, z: number) => { // a low round well, a turquoise band, a beam, a bucket
       put(C.sandstone, G.cyl, x, 0, z, 0, 0.9, 0.8, 0.9); put(C.lacquer, G.cyl, x, 0.79, z, 0, 0.7, 0.02, 0.7); put(C.turquoise, G.cyl, x, 0.32, z, 0, 0.93, 0.14, 0.93);
       for (const s of [-1, 1]) put(C.wood, G.cyl6, x + s * 0.95, 0, z, 0, 0.07, 2.2, 0.07);
-      put(C.wood, G.box, x, 2.15, z, 0, 2.1, 0.1, 0.1); put(C.clay, G.cyl, x + 0.3, 1.3, z, 0, 0.16, 0.24, 0.16);
+      put(C.wood, G.box, x, 2.15, z, 0, 2.1, 0.1, 0.1); put(C.clay, G.cyl, x + 0.3, 1.3, z, 0, 0.16, 0.24, 0.16); put(C.rope, G.flatBox, x + 0.3, 1.845, z, 0, 0.025, 0.63, 0.025); // the bucket on its rope (it hung in the air)
       goldAt(new THREE.TorusGeometry(0.9, 0.05, 5, 18).rotateX(Math.PI / 2), x, 0.81, z);
       jars(x + 1.8, z + 0.6);
       solid(x, z, 1.4, 'well');
     };
+
+    // The wells that are cover (sandsZone.ts draws them): the rope from the beam to the coil hanging under it (2026-11-14, the props pass:
+    // the coil hung in the air). Here, in a shape every Sands floor already uses, so the build makes no new object: three.js draws every
+    // new object's id from the game's `Math.random`, and the zone is built on the game's stream.
+    const coverKinds = new Map(look.kinds);
+    look.pieces.forEach((pc, i) => { if (pc.look === 'barrel' && coverKinds.get(i) === 'well') put(C.rope, G.flatBox, pc.o.ax, 2.32, pc.o.az, 0, 0.03, 0.3, 0.03); });
 
     // --- the roads ----------------------------------------------------------------------------------------------------------------
     let since = 10 + rnd() * 10, sinceMile = 30 + rnd() * 10, sinceBones = 40 + rnd() * 40, carts = 0, wells = 0;
@@ -309,19 +315,19 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
       goldAt(G.box, x + Math.sin(yaw) * 1.17, 2.12, z + Math.cos(yaw) * 1.17, yaw, 2.9, 0.05, 0.06);
       solid(x, z, 1.8, 'awning');
     };
-    const urn = (x: number, z: number) => { const s = 0.9 + rnd() * 0.4; put(C.cream, G.jar, x, 0, z, 0, s * 0.9, s * 1.1, s * 0.9); put(C.sandstone, G.cyl, x, 1.05 * s, z, 0, 0.22 * s, 0.1, 0.22 * s); goldAt(G.cyl, x, 1.15 * s, z, 0, 0.08, 0.08, 0.08); solid(x, z, 0.5, 'urn'); };
+    const urn = (x: number, z: number) => { const s = 0.9 + rnd() * 0.4; put(C.cream, G.jar, x, 0, z, 0, s * 0.9, s * 1.1, s * 0.9); put(C.sandstone, G.cyl, x, 1.05 * s, z, 0, 0.22 * s, 0.1, 0.22 * s); goldAt(G.cyl, x, 1.05 * s + 0.09, z, 0, 0.08, 0.08, 0.08); solid(x, z, 0.5, 'urn'); };
     const statue = (x: number, z: number, a: number) => { // a broken statue: a plinth with its feet, the torso fallen by it, the head further off
       put(C.sandstone, G.box, x, 0, z, a, 1.2, 0.7, 1.2); put(C.turquoise, G.box, x, 0.6, z, a, 1.24, 0.12, 1.24); put(C.cream, G.box, x, 0.7, z, a, 0.8, 0.5, 0.5);
-      put(C.cream, G.cone4, x + Math.cos(a) * 1.4, 0.35, z - Math.sin(a) * 1.4, a, 0.45, 1.6, 0.35, Math.PI / 2);
+      put(C.cream, G.cone4, x + Math.cos(a) * 1.4, 0.25, z - Math.sin(a) * 1.4, a, 0.45, 1.6, 0.35, Math.PI / 2); // on the sand (it lay 10 cm above it)
       put(C.cream, G.ico1, x + Math.cos(a) * 2.6, 0.25, z - Math.sin(a) * 2.6, rnd() * 6, 0.3);
       solid(x, z, 1.4, 'statue');
     };
-    const ladder = (x: number, z: number, yaw: number) => { for (const s of [-0.22, 0.22]) put(C.wood, G.box, x + Math.cos(yaw) * s, 0.05, z - Math.sin(yaw) * s, yaw, 0.06, 0.06, 2.6); for (let k = -1.1; k <= 1.11; k += 0.37) put(C.plank, G.box, x + Math.sin(yaw) * k, 0.05, z + Math.cos(yaw) * k, yaw, 0.5, 0.04, 0.05); solid(x, z, 1.3, 'ladder'); };
+    const ladder = (x: number, z: number, yaw: number) => { for (const s of [-0.22, 0.22]) put(C.wood, G.box, x + Math.cos(yaw) * s, 0, z - Math.sin(yaw) * s, yaw, 0.06, 0.06, 2.6); for (let k = -1.1; k <= 1.11; k += 0.37) put(C.plank, G.box, x + Math.sin(yaw) * k, 0.06, z + Math.cos(yaw) * k, yaw, 0.5, 0.04, 0.05); solid(x, z, 1.3, 'ladder'); }; // on the sand (it lay 5 cm above it)
     const rope = (x: number, z: number) => { for (let k = 0; k < 3; k++) put(C.rope, new THREE.TorusGeometry(0.3 - k * 0.04, 0.05, 5, 12).rotateX(Math.PI / 2), x, 0.05 + k * 0.09, z); solid(x, z, 0.4, 'rope'); };
     const basket = (x: number, z: number) => { put(C.rope, G.cyl, x, 0, z, 0, 0.3, 0.4, 0.3); put(C.sandstone, G.cyl, x, 0.38, z, 0, 0.26, 0.04, 0.26); solid(x, z, 0.4, 'basket'); };
     const sieve = (x: number, z: number, yaw: number) => { put(C.wood, G.box, x, 0.5, z, yaw, 1.2, 0.08, 0.9, 0.3); for (const s of [-1, 1]) put(C.wood, G.box, x + Math.cos(yaw) * s * 0.55, 0, z - Math.sin(yaw) * s * 0.55, yaw, 0.06, 0.8, 0.06); solid(x, z, 0.8, 'sieve'); };
     const spears = (x: number, z: number) => { for (let k = 0; k < 3; k++) { put(C.wood, G.cyl6, x + (rnd() - 0.5) * 0.7, 0, z + (rnd() - 0.5) * 0.7, 0, 0.03, 2.2, 0.03, (rnd() - 0.5) * 0.3); } solid(x, z, 0.5, 'spears'); };
-    const hideRack = (x: number, z: number, yaw: number) => { for (const s of [-1, 1]) put(C.wood, G.cyl6, x + Math.cos(yaw) * s, 0, z - Math.sin(yaw) * s, 0, 0.05, 1.6, 0.05); put(C.wood, G.box, x, 1.55, z, yaw, 2.1, 0.06, 0.06); put(C.hide, G.cloth, x, 1.05, z, yaw, 1.4, 1.0, 1, 0.6); solid(x, z, 1.2, 'hides'); };
+    const hideRack = (x: number, z: number, yaw: number) => { for (const s of [-1, 1]) put(C.wood, G.cyl6, x + Math.cos(yaw) * s, 0, z - Math.sin(yaw) * s, 0, 0.05, 1.6, 0.05); put(C.wood, G.box, x, 1.55, z, yaw, 2.1, 0.06, 0.06); put(C.hide, G.cloth, x - Math.sin(yaw) * Math.sin(0.6) * 0.5, 1.58 - Math.cos(0.6) * 0.5, z - Math.cos(yaw) * Math.sin(0.6) * 0.5, yaw, 1.4, 1.0, 1, 0.6); solid(x, z, 1.2, 'hides'); }; // the hide from its bar (its top edge hung under the bar and beside it)
     const rubble = (x: number, z: number) => { for (let k = 0; k < 4; k++) put(rnd() < 0.5 ? C.sandstone : C.cream, G.box, x + (rnd() - 0.5) * 1.4, 0, z + (rnd() - 0.5) * 1.4, rnd() * 3, 0.4 + rnd() * 0.4, 0.25 + rnd() * 0.25, 0.3 + rnd() * 0.3, (rnd() - 0.5) * 0.3); solid(x, z, 0.9, 'rubble'); };
     const drum = (x: number, z: number, a: number) => { put(C.cream, G.cyl, x, 0.32, z, a, 0.32, 0.45, 0.32, Math.PI / 2); solid(x, z, 0.5, 'drum'); }; // smaller than the fallen columns that are cover
     const firewood = (x: number, z: number, a: number) => { for (let k = 0; k < 5; k++) put(k % 2 ? C.plank : C.wood, G.log, x + Math.sin(a) * (k % 3 - 1) * 0.24, 0.12 + Math.floor(k / 3) * 0.22, z + Math.cos(a) * (k % 3 - 1) * 0.24, a, 0.6, 0.11, 0.11); solid(x, z, 0.7, 'firewood'); };
@@ -331,7 +337,8 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
       const cx = Math.cos(a), sz = -Math.sin(a);
       for (const s of [-1.6, 1.6]) put(C.wood, G.cyl6, x + cx * s, 0, z + sz * s, 0, 0.05, 2.3, 0.05);
       put(C.rope, G.box, x, 2.2, z, a, 3.2, 0.02, 0.02);
-      for (let f = -1.3; f <= 1.31; f += 0.37) put([C.turquoise, C.wine, C.cream, C.brass][Math.floor(rnd() * 4)], G.cloth, x + cx * f, 1.95, z + sz * f, a, 0.3, 0.42, 1, 0.8);
+      // each flag from the line (they hung 10 cm under it and beside it): its top edge on the line, the wind lifting it
+      for (let f = -1.3; f <= 1.31; f += 0.37) put([C.turquoise, C.wine, C.cream, C.brass][Math.floor(rnd() * 4)], G.cloth, x + cx * f - Math.sin(a) * Math.sin(0.8) * 0.21, 2.21 - Math.cos(0.8) * 0.21, z + sz * f - Math.cos(a) * Math.sin(0.8) * 0.21, a, 0.3, 0.42, 1, 0.8);
       solid(x, z, 1.7, 'flags');
     };
     const smallPalm = (x: number, z: number) => {
@@ -364,11 +371,15 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
           break;
         case 'dig':
           { // a pegged grid over the court, rope on the ground between the pegs (flat)
-            const sz = p.r * 0.45;
+            // (2026-11-14, the props pass) a rope a cell, and nothing on the cover: the lines ran through a column fallen across the court
+            const sz = p.r * 0.45, h = sz / 2, at = (i: number) => (i * sz) / 2;
             for (let i = -2; i <= 2; i++) {
-              low(C.rope, G.flatBox, p.x, 0.03, p.z + (i * sz) / 2, 0, sz * 2, 0.02, 0.05);
-              low(C.rope, G.flatBox, p.x + (i * sz) / 2, 0.03, p.z, 0, 0.05, 0.02, sz * 2);
-              for (let j = -2; j <= 2; j++) low(C.wood, G.box, p.x + (i * sz) / 2, 0, p.z + (j * sz) / 2, 0, 0.07, 0.25, 0.07);
+              for (let j = -2; j < 2; j++) {
+                const mz = p.z + at(j) + h / 2, mx = p.x + at(j) + h / 2;
+                if (!onCover(p.x + at(i), mz, 0.25)) low(C.rope, G.flatBox, p.x + at(i), 0.03, mz, 0, 0.05, 0.02, h + 0.05);
+                if (!onCover(mx, p.z + at(i), 0.25)) low(C.rope, G.flatBox, mx, 0.03, p.z + at(i), 0, h + 0.05, 0.02, 0.05);
+              }
+              for (let j = -2; j <= 2; j++) if (!onCover(p.x + at(i), p.z + at(j), 0.2)) low(C.wood, G.box, p.x + at(i), 0, p.z + at(j), 0, 0.07, 0.25, 0.07);
             }
           }
           ring(p, 2, r, r + 4, (x, z, a) => ladder(x, z, a), 1);
@@ -442,13 +453,18 @@ export function sandsDepth(look: SandsLook, land: SandsLand, keep: { x: number; 
       // two at the cliffs' foot (seen from the floor), one up on the cliffs
       const foot = made < 2, a = rnd() * Math.PI * 2, b = foot ? 1.4 + rnd() * 1.0 : 14 + rnd() * 18, rr = rimAt(rim, a) + b, dx = Math.cos(a) * rr, dz = Math.sin(a) * rr;
       if (land.south(dx, dz) > 0.3 || land.duneSide(dx, dz) > 0.3 || land.steepness(dx, dz) > (foot ? 2.2 : 0.35) || (foot && land.height(dx, dz) > 3)) continue;
-      const x = RING.x + dx, z = RING.z + dz, y = land.height(dx, dz) - 0.4, yaw = Math.atan2(-dx, -dz), broken = made === 1;
-      for (const s of [-1, 1]) {
-        const px = x + Math.cos(yaw) * s * 3.2, pz = z - Math.sin(yaw) * s * 3.2, h = broken && s > 0 ? 3.2 : 6;
-        put(C.flag, G.box, px, y, pz, yaw, 1.4, h, 1.4); put(C.turquoise, G.box, px, y + h * 0.7, pz, yaw, 1.46, 0.3, 1.46);
+      const x = RING.x + dx, z = RING.z + dz, yaw = Math.atan2(-dx, -dz), broken = made === 1;
+      // (2026-11-14, the props pass) each pier stands on the lowest ground under it and the lintel on the higher pier's top: set at the
+      // middle's height, on the cliff's foot one pier stood off the slope (up to 1.8 m) and the other sank into it
+      const under = (wx: number, wz: number, r: number) => { let m = 1e9; for (let i = 0; i < 9; i++) { const ox = i ? Math.cos(i * 0.785) * r : 0, oz = i ? Math.sin(i * 0.785) * r : 0; m = Math.min(m, land.height(wx - RING.x + ox, wz - RING.z + oz)); } return m - 0.4; };
+      const feet = [-1, 1].map((s) => { const px = x + Math.cos(yaw) * s * 3.2, pz = z - Math.sin(yaw) * s * 3.2; return { s, px, pz, yb: under(px, pz, 1.0) }; });
+      const y = Math.max(feet[0].yb, feet[1].yb);
+      for (const { s, px, pz, yb } of feet) {
+        const h = broken && s > 0 ? 3.2 : y + 6 - yb;
+        put(C.flag, G.box, px, yb, pz, yaw, 1.4, h, 1.4); put(C.turquoise, G.box, px, broken && s > 0 ? yb + h * 0.7 : y + 4.2, pz, yaw, 1.46, 0.3, 1.46);
       }
       if (!broken) { put(C.flag, G.box, x, y + 6, z, yaw, 7.8, 1.1, 1.5); kit.add(gold, G.box, x, y + 7.1, z, yaw, 7.9, 0.1, 1.6); }
-      else put(C.flag, G.box, x + Math.cos(yaw) * 2.6, y, z - Math.sin(yaw) * 2.6, yaw + 0.3, 3.2, 1.0, 1.4, 0.1);
+      else { const fx = x + Math.cos(yaw) * 2.6, fz = z - Math.sin(yaw) * 2.6; put(C.flag, G.box, fx, under(fx, fz, 1.6) + 0.25, fz, yaw + 0.3, 3.2, 1.0, 1.4, 0.1); }
       arches.push({ x, z, y });
       made++;
     }

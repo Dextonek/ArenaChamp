@@ -64,6 +64,11 @@ export const CHANGELOG: Release[] = [
         title: 'Props set right on the Sea and the Wood',
         text: 'On floors 1 to 20 every prop was looked at one by one and the wrong ones fixed: lanterns hang from their arms, nets, fish and washing hang between their posts, sails sit on their masts, roofs on their walls, houses and boulders on the hillside no longer float, and no lantern or signpost stands in a road or on a waystone any more.',
       },
+      {
+        tag: 'Tower',
+        title: 'Props set right in the Sands, the Deep and the War',
+        text: 'Things that hung in the air, stood off their slopes or lay in pieces now sit as they should: necks on their jars, swords in their cairns, ropes on the wells, the gateway\'s lintel on its two piers, mushroom caps on their stems, spearheads on their shafts, the hedge\'s lashings on its stakes.',
+      },
     ],
   },
   {

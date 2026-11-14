@@ -297,14 +297,16 @@ export function buildDeepDepth(o: DeepDepthIn) {
     lever: proto([[box(0.4, 0.32, 0.3), COL.iron], [boxAt(0.05, 0.95, 0.05, 0, 0, 0).rotateZ(0.35).translate(0.14, 0.72, 0), COL.iron]]),
     leverGold: proto([[new THREE.SphereGeometry(0.07, 6, 4).translate(0.31, 1.17, 0), COL.gold]]),
     rails: proto([
-      [boxAt(0.3, 0.12, 0.3, 0, 0.06, -1.5), COL.wood], [boxAt(0.3, 0.12, 0.3, 0, 0.06, 1.5), COL.wood],
-      ...[-0.36, -0.12, 0.12, 0.36].map((x) => [boxAt(0.09, 0.12, 4.2, x, 0.18, 0), COL.rail] as [THREE.BufferGeometry, Hex]),
-      ...[-0.24, 0, 0.24].map((x) => [boxAt(0.09, 0.12, 4.2, x, 0.3, 0), COL.rail] as [THREE.BufferGeometry, Hex]),
+      // (2026-11-14) the blocks as wide as the pile, each upper rail on two lower ones: the outer rails hung past the blocks and the
+      // upper ones in the gaps between the lower
+      [boxAt(0.7, 0.12, 0.3, 0, 0.06, -1.5), COL.wood], [boxAt(0.7, 0.12, 0.3, 0, 0.06, 1.5), COL.wood],
+      ...[-0.27, -0.09, 0.09, 0.27].map((x) => [boxAt(0.09, 0.12, 4.2, x, 0.18, 0), COL.rail] as [THREE.BufferGeometry, Hex]),
+      ...[-0.18, 0, 0.18].map((x) => [boxAt(0.09, 0.12, 4.2, x, 0.3, 0), COL.rail] as [THREE.BufferGeometry, Hex]),
     ]),
     wheelset: proto([[new THREE.CylinderGeometry(0.05, 0.05, 1.3, 6).rotateZ(Math.PI / 2).translate(0, 0.3, 0), COL.iron], [new THREE.CylinderGeometry(0.3, 0.3, 0.09, 10).rotateZ(Math.PI / 2).translate(-0.55, 0.3, 0), COL.darkWood], [new THREE.CylinderGeometry(0.3, 0.3, 0.09, 10).rotateZ(Math.PI / 2).translate(0.55, 0.3, 0), COL.darkWood]]),
     sleepers: proto([0, 1, 2].flatMap((k) => [-0.45, 0, 0.45].map((s) => [k % 2 ? boxAt(2.1, 0.15, 0.26, 0, 0.075 + k * 0.15, s) : boxAt(0.26, 0.15, 2.1, s, 0.075 + k * 0.15, 0), COL.wood] as [THREE.BufferGeometry, Hex]))),
     // a winch: two timber cheeks, a drum of rope, a crank
-    winch: proto([[boxAt(0.14, 1.1, 0.9, -0.7, 0.55, 0), COL.wood], [boxAt(0.14, 1.1, 0.9, 0.7, 0.55, 0), COL.wood], [new THREE.CylinderGeometry(0.3, 0.3, 1.26, 10).rotateZ(Math.PI / 2).translate(0, 0.85, 0), COL.rope], [boxAt(0.06, 0.45, 0.06, 0.82, 0.68, 0.18), COL.iron]]),
+    winch: proto([[boxAt(0.14, 1.1, 0.9, -0.7, 0.55, 0), COL.wood], [boxAt(0.14, 1.1, 0.9, 0.7, 0.55, 0), COL.wood], [new THREE.CylinderGeometry(0.3, 0.3, 1.26, 10).rotateZ(Math.PI / 2).translate(0, 0.85, 0), COL.rope], [boxAt(0.06, 0.45, 0.06, 0.8, 0.68, 0.18), COL.iron]]),
     winchGold: proto([[new THREE.CylinderGeometry(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(-0.6, 0.85, 0), COL.gold], [new THREE.CylinderGeometry(0.33, 0.33, 0.05, 10).rotateZ(Math.PI / 2).translate(0.6, 0.85, 0), COL.gold]]),
     // the rest's stove: an iron drum on legs, its pipe, a kettle; the fire's mouth
     stove: proto([[cyl(0.36, 0.36, 0.75, 10).translate(0, 0.18, 0), COL.iron], ...[0, 1, 2].map((k) => [boxAt(0.06, 0.2, 0.06, Math.cos(k * 2.1) * 0.28, 0.1, Math.sin(k * 2.1) * 0.28), COL.iron] as [THREE.BufferGeometry, Hex]), [cyl(0.07, 0.07, 2.1, 6).translate(-0.18, 0.93, -0.12), COL.iron], [cyl(0.17, 0.13, 0.2, 8).translate(0.1, 0.93, 0.08), COL.iron]]),
@@ -563,8 +565,9 @@ export function buildDeepDepth(o: DeepDepthIn) {
         for (const [o2, t] of [[-5.6, -3.6], [5.0, -7.2], [2.4, 7.4]]) {
           const q = Q(o2, t);
           if (!ok(q, 0.3) || poolFungi >= 2) continue;
-          batch.put('low', S.shroomStems, q.x, 0, q.z, rnd() * 6, 1.3);
-          batch.put('glow', S.shroomCapsGlow, q.x, 0, q.z, rnd() * 6, 1.3);
+          const yaw = rnd() * 6; rnd(); // the caps on their stems (they had a turn of their own)
+          batch.put('low', S.shroomStems, q.x, 0, q.z, yaw, 1.3);
+          batch.put('glow', S.shroomCapsGlow, q.x, 0, q.z, yaw, 1.3);
           fungi.push({ x: q.x, y: 0.5, z: q.z, size: 1.0 });
           poolFungi++;
         }
@@ -635,7 +638,7 @@ export function buildDeepDepth(o: DeepDepthIn) {
       const lx = Math.cos(a) * (f.rx + e), lz = Math.sin(a) * (f.rz + e), x = f.x + lx * Math.cos(rot) - lz * Math.sin(rot), z = f.z + lx * Math.sin(rot) + lz * Math.cos(rot);
       if (cover.clear(x, z) < 0.2 || roads.clear(x, z) < 2.0 || B(x, z) > -0.5) continue;
       if (rnd() < 0.7) batch.put('low', S.reeds, x, 0, z, rnd() * 6, 0.8 + rnd() * 0.6);
-      else { batch.put('low', S.shroomStems, x, 0, z, rnd() * 6); batch.put('low', S.shroomCapsPale, x, 0, z, rnd() * 6); }
+      else { const yaw = rnd() * 6; rnd(); batch.put('low', S.shroomStems, x, 0, z, yaw); batch.put('low', S.shroomCapsPale, x, 0, z, yaw); } // the caps on their stems: each had a turn of its own (the second draw kept, so nothing after it moves)
     }
   }
 
@@ -685,8 +688,9 @@ export function buildDeepDepth(o: DeepDepthIn) {
     const y = b > 0.4 ? H(p.x, p.z) : 0;
     for (let q = 0; q < 2; q++) {
       const x = p.x + (rnd() - 0.5) * 1.4, z = p.z + (rnd() - 0.5) * 1.4, s = 0.9 + rnd() * 0.7;
-      batch.put('low', S.shroomStems, x, y, z, rnd() * 6, s);
-      batch.put('glow', S.shroomCapsGlow, x, y, z, rnd() * 6, s);
+      const yaw = rnd() * 6; rnd(); // the caps on their stems (they had a turn of their own)
+      batch.put('low', S.shroomStems, x, y, z, yaw, s);
+      batch.put('glow', S.shroomCapsGlow, x, y, z, yaw, s);
     }
     if (wallFungi < 3 && made % 3 === 1) { fungi.push({ x: p.x, y: y + 0.5, z: p.z, size: 1.1 }); wallFungi++; }
   }
@@ -876,6 +880,7 @@ export function buildDeepDepth(o: DeepDepthIn) {
   mark('bats');
   // --- the scenes (scenes/deep.ts): little stories in props, into the same batch; their own random stream, so nothing above moves
   const sc = deepScenes({ look, cave, keep: o.keep ?? [], props, sink: { put: (b, p, mm) => batch.putMatrix(b, p, mm) }, waterLevel: o.waterLevel, ground: o.ground });
+  group.userData.shapes = S; // the depth's own shapes by name, for the shapes check (pipeline/tools/climb-shapes-probe.js)
   group.userData.scenes = sc.scenes;
   group.userData.sceneLook = look;
   group.userData.scenesMs = sc.ms;
