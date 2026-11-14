@@ -131,7 +131,7 @@ export function climbPanel(d: ClimbDeps): { section: HTMLElement; bar: HTMLEleme
   const section = el('section', { class: 'card hs-roster', 'data-keep-scroll': 'climb' },
     d.tabs,
     el('div', { class: 'hs-roster-head' }, el('h2', {}, 'Climb'), el('span', { class: 'muted small' }, 'Fifty floors in five chapters, each a place to walk through')),
-    el('p', { class: 'muted' }, 'Each floor is a whole place: people with work for you, packs to fell, secrets to find, a rule of the place (the tide, the dark), a ruler behind a door and a gate up. Every tenth floor is a crown: a great boss, alone. Clear a floor for up to four stars and keep one boon as a sigil for every later climb. A fall costs a life; three lives a floor. Your floor is saved when you leave. Floors marked soon are still being made.'),
+    el('p', { class: 'muted' }, 'Each floor is a whole place: people with work for you, packs to fell, secrets to find, a rule of the place (the tide, the dark), a ruler behind a door and a gate up. Every tenth floor is a crown: a great boss, alone. Clear a floor for up to four stars and keep one boon as a sigil for every later climb. A fall costs a life; three lives a floor. Your floor is saved when you leave. Packs fight together: watch for the red on the ground.'),
     pick,
     ...chapters,
     el('h3', { class: 'gap' }, 'Sigils kept'),
