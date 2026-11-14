@@ -7,9 +7,16 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
 - **Built, merged into `feat/particle-editor`, not pushed, not live:** the Climb's minimap (top-left, follows the hero) and the whole
   floor on M or a tap (`src/tower/world/map.ts`); Online match says how many wait in the duel queue (`queue_size`, no PROTOCOL change);
   the tactics' second pass (above). News: the release "A map of the floor, and who waits to duel" (`live: false`).
+- **Merged, not live:** the Climb's own people: 25 figures, five a chapter, no hero reused (`src/tower/world/folk.ts`,
+  `public/models/tower/`, page `docs/tower/models/index.html`). The perf tool's Climb floor-11 print moved (467f6a06 -> 433b3ded, the new
+  models): its baseline needs taking again. Rulers and enemies are next for models (`docs/tower/models/README.md`), on the user's word.
+- **Ten new heroes designed (gate 1 cards):** `docs/heroes/next10/index.html`; waiting on the user's pick.
 - **Running (worktree agents, each reports back):** (1) every prop of the Sea and the Wood looked at one by one and the wrong ones fixed,
-  (2) the same for the Sands, the Deep and the War (`docs/tower/props/<chapter>/`), (3) the Climb's people get their own models, five
-  a chapter, no hero reused (from the Sea sample on `t3/tower-sea-npc-models`; `docs/tower/models/`).
+  (2) the same for the Sands, the Deep and the War (`docs/tower/props/<chapter>/`), (3) the heroes' lore: the world, factions, a legend
+  and ties for all forty, ten more new heroes, full kit sheets for all twenty new ones (`docs/lore/`, `docs/heroes/next20/`,
+  `docs/heroes/kits20/`).
+- **New project:** ArenaWorld, an original open-world RPG in Rust (`C:\Users\erich\ArenaWorld`, its own repo and session): stage 1, the
+  world generator, in progress there.
 - **Next, when an agent's place frees (three at most):** online leaderboards (duel rating, raid, Tower, Climb, clans) and clans with a
   clan chat (create, join by code, 30 members, filter, mute, report).
 
