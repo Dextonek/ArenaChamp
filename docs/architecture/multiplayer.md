@@ -1,7 +1,7 @@
 ---
 title: Multiplayer duel game
-tags: [architecture, multiplayer, server, websocket, accounts, lobby, matchmaking, duel, line-of-sight]
-updated: 2026-11-12
+tags: [architecture, multiplayer, server, websocket, accounts, lobby, matchmaking, duel, line-of-sight, climb, open-world]
+updated: 2026-11-14
 ---
 
 # Multiplayer duel game
@@ -227,6 +227,57 @@ now, raids later; the players see how many watch, not who). The Lobbies screen l
 - Checked: `npm run test:server` (list, join, counts, a watcher's messages change nothing, the sides, the end); two bot pages
   fighting and a third coming in 4 s into a live round in Chrome: for a minute the same HP on all three, the arena's clock
   within 0.2 s, the same cover, both heroes within 0.3 m of where their own screens had them, no errors.
+
+## The Climb's open world, stage 1 (since PROTOCOL 16)
+
+The user, 2026-11-14: "let's make it like open world, can we?" ([pipeline/designs/climb-open-world.md](../../pipeline/designs/climb-open-world.md)).
+Stage 1 is presence: signed-in players who walk the same Climb floor see each other. Nothing else is shared yet: each screen keeps
+its own enemies, quests, lives and progress, and nothing one player does can touch another (stage 2 shares the packs).
+
+- **Shards.** The hub keeps each floor's shards (`worlds` in `server/hub.mjs`): at most `WORLD.shardMax` (8) players each, a new
+  player goes into the fullest shard that has room, and a full floor opens another ("2.1", "2.2"; an empty shard is dropped). A
+  player in a duel, a raid, a lobby, the queue or watching a duel is in no shard: going to any of them leaves the floor first.
+- **Relay only.** The hub keeps each player's last place (a newcomer sees everyone where they stand), clamps it (to the mm, inside
+  `WORLD.reach` = 500 m of the floor's middle, health share 0-1), drops walks past 12 a second and casts past 8 in 2 s or the same
+  spell again within 350 ms, and passes the rest on. No HP, no hits, no referee: there is nothing to referee.
+- **The page** (`src/net/world.ts` `WorldLink`, `src/tower/world/others.ts` `WorldOthers`). Each zone built joins the floor's
+  shard and each zone put away leaves it: a door to a set piece, a fall that begins the floor again, the result card, Leave. The
+  hero's place goes out 10 times a second, only when it changed; its casts go out as their spell's name and aim. The others are
+  drawn as the Raid draws its partners: full figures for the nearest 3, light stand-ins past them (looked at twice a second),
+  played back 100 ms late between two reports as in *Smooth movement* (a fixed ring of slots: nothing is allocated per frame), a
+  name over each head. A cast plays its look from their figure at the spot they aimed with no hits, knocks, walls or units, and
+  only the pose when this screen's own hero has the same spell or the figure is a stand-in. They are never hit, aimed at or in
+  anyone's way. A fallen one lies down (health share 0) and stands when it is up again. The HUD's floor panel says
+  "2 others on this floor" (hidden when not signed in).
+- **Alone as before.** Not signed in, with no connection, or in the tools (`world-tool.js`, the route bot, the perf scenes): no
+  link, and the Climb is the same as before. A connection that drops clears the others; the resume's `session` joins again.
+- **Test switch:** `game.html?others=7` (or a perf scene with `others`, `gen-2-others`) walks seven made-up others round the hero,
+  casting, through the same drawing path, with no server.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `world_join` | client → hub | `floor`, `hero`, `x`, `z`, `yaw` | into a shard of that floor (the floor it is on: stays in its shard, the roster comes again). A locked hero → `error` |
+| `world_roster` | hub → client | `shard`, `floor`, `you`, `max`, `players: [{ id, name, hero, x, z, yaw, walk, hp }]` | the answer: this player's shard and everyone else in it |
+| `world_joined` | hub → shard | `id`, `name`, `hero`, `x`, `z`, `yaw`, `walk`, `hp` | someone came in (or changed hero) |
+| `world_move` | client → hub | `x`, `z`, `yaw`, `walk`, `hp`, `ts` | this hero's place, facing, whether it walks, its health share; at most 12 a second |
+| `world_moved` | hub → shard | `id` + the same | relayed, clamped |
+| `world_cast` | client → hub | `label`, `x`, `z`, `tx`, `tz` | a spell cast: its name, the caster's spot, the aim |
+| `world_cast` | hub → shard | `id` + the same | relayed (rate-limited as above) |
+| `world_leave` | client → hub | | out of the shard |
+| `world_left` | hub → shard | `id` | left, or the connection dropped, or went to a lobby, the queue or a duel |
+
+Checked (2026-11-14): `npm run test:server` (a page not signed in is refused; two on floor 2 share shard 2.1 and see each other;
+walks relayed and clamped, a flood of 30 cut to 12; casts relayed, a repeat and a long name dropped; floor 3 hears nothing; eight
+fill 2.1 and the ninth opens 2.2; joining again keeps the shard; `world_leave`, a dropped connection and a lobby each send
+`world_left`). Three tabs on the dev server with local test accounts (floor 2, floor 2, floor 3): pictures in
+[docs/tower/openworld/stage1/](../tower/openworld/stage1/).
+
+Speed (`perf.py scenes --scenes gen-2,gen-2-others`, 1500 frames, this computer's card; `gen-2-others` has seven made-up
+others circling the hero and casting): desktop median 22.4 ms with none, 27.0 ms with seven (+61 draw calls, step 2.6 → 3.0 ms,
+draw 13.4 → 16.8 ms); phone-4x 78.0 and 67.7 ms (no worse: the scene's fight is not the same one, since the others' casts draw on
+the scene's seeded dice, and a slowed phone's frame swings by more than that). The duel and the raid play the same fights as
+before the change (`duel-temple`, `raid-party`: the same prints as the commit before, run beside it; `raid-party` itself comes out
+as one of two prints from run to run, on both).
 
 ## The hero shop, raid ranks and the week's boards
 
