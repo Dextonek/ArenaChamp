@@ -322,15 +322,15 @@ export const DEEP_39: GenFloor = {
     ],
     [
      -5.15,
-     -19.47
+     -17.42
     ],
     [
      -1.21,
-     -40.54
+     -36.41
     ],
     [
      0,
-     -61.71
+     -55.51
     ]
    ]
   ],
@@ -4253,7 +4253,7 @@ export const DEEP_39: GenFloor = {
     "name": "The Drowned Lantern’s door",
     "at": {
      "x": 0,
-     "z": -60.71
+     "z": -54.51
     },
     "r": 2.2,
     "wall": {

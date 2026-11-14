@@ -322,15 +322,15 @@ export const DEEP_35: GenFloor = {
     ],
     [
      2.66,
-     -30.07
+     -28
     ],
     [
      4.36,
-     -63.08
+     -58.96
     ],
     [
      0,
-     -95.82
+     -89.62
     ]
    ]
   ],
@@ -4158,7 +4158,7 @@ export const DEEP_35: GenFloor = {
     "name": "Mother of Echoes’ door",
     "at": {
      "x": 0,
-     "z": -94.82
+     "z": -88.62
     },
     "r": 2.2,
     "wall": {

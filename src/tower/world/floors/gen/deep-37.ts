@@ -322,15 +322,15 @@ export const DEEP_37: GenFloor = {
     ],
     [
      -1.82,
-     -28.7
+     -26.63
     ],
     [
      0.15,
-     -59.44
+     -55.3
     ],
     [
      0,
-     -90.18
+     -83.98
     ]
    ]
   ],
@@ -4215,7 +4215,7 @@ export const DEEP_37: GenFloor = {
     "name": "The Blind Cantor’s door",
     "at": {
      "x": 0,
-     "z": -89.18
+     "z": -82.98
     },
     "r": 2.2,
     "wall": {

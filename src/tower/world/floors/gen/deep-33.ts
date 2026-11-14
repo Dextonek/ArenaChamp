@@ -322,15 +322,15 @@ export const DEEP_33: GenFloor = {
     ],
     [
      -5.45,
-     -36.67
+     -34.61
     ],
     [
      -4.95,
-     -72.47
+     -68.35
     ],
     [
      0,
-     -108.1
+     -101.9
     ]
    ]
   ],
@@ -4106,7 +4106,7 @@ export const DEEP_33: GenFloor = {
     "name": "The Lamp Warden’s door",
     "at": {
      "x": 0,
-     "z": -107.1
+     "z": -100.9
     },
     "r": 2.2,
     "wall": {

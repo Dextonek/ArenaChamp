@@ -100,7 +100,8 @@ export function makeDeepFloor(o: DeepGenOptions): GenFloor {
   L.reserve(camp.c, 11);
   const lights = [C(0, 0), C(-6, 3), C(6, -3)];
   // The lair: a rock fall across the north, its gap facing the middle, walled at the sides.
-  const lairZ = r2(-northR + 9), lairDoor: V = { x: 0, z: r2(-northR + 5.4) };
+  // The door stands in front of the fall, as floor 31's did (behind it, in a yard shut on every side, nothing could walk to it).
+  const lairZ = r2(-northR + 9), lairDoor: V = { x: 0, z: r2(lairZ + 2.6) };
   wall('wall', { x: -24, z: lairZ }, { x: -3.4, z: lairZ }, 0.5, 4.4); wall('wall', { x: 3.4, z: lairZ }, { x: 24, z: lairZ }, 0.5, 4.4);
   // its sides run on past the outline, so no sliver of a gap is left between them and the cave's wall
   for (const s of [-1, 1]) wall('wall', { x: s * 24, z: lairZ }, { x: s * 24, z: lairZ - 30 }, 0.5, 4.4);

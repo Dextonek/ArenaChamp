@@ -322,15 +322,15 @@ export const DEEP_40: GenFloor = {
     ],
     [
      1.6,
-     -30.16
+     -28.09
     ],
     [
      -1.55,
-     -59.65
+     -55.52
     ],
     [
      0,
-     -89.14
+     -82.94
     ]
    ]
   ],
@@ -4282,7 +4282,7 @@ export const DEEP_40: GenFloor = {
     "name": "The Sun Court",
     "at": {
      "x": 0,
-     "z": -88.14
+     "z": -81.94
     },
     "r": 2.2,
     "wall": {

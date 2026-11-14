@@ -322,15 +322,15 @@ export const DEEP_34: GenFloor = {
     ],
     [
      -1.21,
-     -35.51
+     -33.44
     ],
     [
      2.48,
-     -71.64
+     -67.5
     ],
     [
      0,
-     -107.93
+     -101.73
     ]
    ]
   ],
@@ -4133,7 +4133,7 @@ export const DEEP_34: GenFloor = {
     "name": "The Glass Abbot’s door",
     "at": {
      "x": 0,
-     "z": -106.93
+     "z": -100.73
     },
     "r": 2.2,
     "wall": {

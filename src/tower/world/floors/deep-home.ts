@@ -331,15 +331,15 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
     ],
     [
      -2.74,
-     -36.03
+     -33.96
     ],
     [
      2.75,
-     -72.31
+     -68.18
     ],
     [
      0,
-     -108.68
+     -102.48
     ]
    ]
   ],
@@ -3745,7 +3745,7 @@ export const DEEP_HOME: { seed: number; look: DeepLook; floor: Omit<FloorDef, 'a
     "name": "The Prism Mother’s door",
     "at": {
      "x": 0,
-     "z": -107.68
+     "z": -101.48
     },
     "r": 2.2,
     "wall": {

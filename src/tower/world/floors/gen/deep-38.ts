@@ -322,15 +322,15 @@ export const DEEP_38: GenFloor = {
     ],
     [
      2.38,
-     -41.76
+     -39.69
     ],
     [
      0.79,
-     -84.46
+     -80.33
     ],
     [
      0,
-     -127.16
+     -120.96
     ]
    ]
   ],
@@ -4240,7 +4240,7 @@ export const DEEP_38: GenFloor = {
     "name": "The Gem Tyrant’s door",
     "at": {
      "x": 0,
-     "z": -126.16
+     "z": -119.96
     },
     "r": 2.2,
     "wall": {

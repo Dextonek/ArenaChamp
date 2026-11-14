@@ -322,15 +322,15 @@ export const DEEP_32: GenFloor = {
     ],
     [
      0.56,
-     -32.78
+     -30.72
     ],
     [
      -2.41,
-     -66.8
+     -62.66
     ],
     [
      0,
-     -100.71
+     -94.51
     ]
    ]
   ],
@@ -4093,7 +4093,7 @@ export const DEEP_32: GenFloor = {
     "name": "The Hollow Queen’s door",
     "at": {
      "x": 0,
-     "z": -99.71
+     "z": -93.51
     },
     "r": 2.2,
     "wall": {

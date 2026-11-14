@@ -322,15 +322,15 @@ export const DEEP_36: GenFloor = {
     ],
     [
      -0.67,
-     -33.26
+     -31.19
     ],
     [
      -2.8,
-     -63.82
+     -59.68
     ],
     [
      0,
-     -94.56
+     -88.36
     ]
    ]
   ],
@@ -4188,7 +4188,7 @@ export const DEEP_36: GenFloor = {
     "name": "The Seam King’s door",
     "at": {
      "x": 0,
-     "z": -93.56
+     "z": -87.36
     },
     "r": 2.2,
     "wall": {
