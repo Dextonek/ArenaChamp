@@ -1,0 +1,681 @@
+{
+ "one": {
+  "id": "a",
+  "state": "awake",
+  "mode": "owned",
+  "n": 1,
+  "hpMul": 1,
+  "dmgMul": 1,
+  "left": 4,
+  "total": 4,
+  "tookPart": false,
+  "units": [
+   {
+    "kind": "docker",
+    "hp": 71,
+    "max": 71,
+    "x": 78.16,
+    "z": 30.12
+   },
+   {
+    "kind": "docker",
+    "hp": 71,
+    "max": 71,
+    "x": 75.64,
+    "z": 29.81
+   },
+   {
+    "kind": "netter",
+    "hp": 50,
+    "max": 50,
+    "x": 77.65,
+    "z": 29.22
+   },
+   {
+    "kind": "crab",
+    "hp": 171,
+    "max": 171,
+    "x": 79.29,
+    "z": 28.49
+   }
+  ],
+  "zones": 0
+ },
+ "two": {
+  "id": "a",
+  "state": "awake",
+  "mode": "owned",
+  "n": 2,
+  "hpMul": 1.6,
+  "dmgMul": 1.15,
+  "left": 4,
+  "total": 4,
+  "tookPart": false,
+  "units": [
+   {
+    "kind": "docker",
+    "hp": 113,
+    "max": 113,
+    "x": 77.35,
+    "z": 30.02
+   },
+   {
+    "kind": "docker",
+    "hp": 113,
+    "max": 113,
+    "x": 75.41,
+    "z": 29.74
+   },
+   {
+    "kind": "netter",
+    "hp": 81,
+    "max": 81,
+    "x": 79.02,
+    "z": 27.35
+   },
+   {
+    "kind": "crab",
+    "hp": 274,
+    "max": 274,
+    "x": 77.83,
+    "z": 29.45
+   }
+  ],
+  "zones": 0
+ },
+ "mid": {
+  "a": {
+   "id": "a",
+   "state": "awake",
+   "mode": "owned",
+   "n": 2,
+   "hpMul": 1.6,
+   "dmgMul": 1.15,
+   "left": 4,
+   "total": 4,
+   "tookPart": false,
+   "units": [
+    {
+     "kind": "docker",
+     "hp": 113,
+     "max": 113,
+     "x": 76.77,
+     "z": 30.36
+    },
+    {
+     "kind": "docker",
+     "hp": 113,
+     "max": 113,
+     "x": 75.41,
+     "z": 29.74
+    },
+    {
+     "kind": "netter",
+     "hp": 81,
+     "max": 81,
+     "x": 79.23,
+     "z": 26.86
+    },
+    {
+     "kind": "crab",
+     "hp": 274,
+     "max": 274,
+     "x": 77.52,
+     "z": 30.38
+    }
+   ],
+   "zones": 0
+  },
+  "b": {
+   "id": "a",
+   "state": "awake",
+   "mode": "mirror",
+   "n": 2,
+   "hpMul": 1.6,
+   "dmgMul": 1.15,
+   "left": 4,
+   "total": 4,
+   "tookPart": false,
+   "units": [
+    {
+     "kind": "docker",
+     "hp": 113,
+     "max": 113,
+     "x": 76.76,
+     "z": 30.36
+    },
+    {
+     "kind": "docker",
+     "hp": 113,
+     "max": 113,
+     "x": 75.41,
+     "z": 29.74
+    },
+    {
+     "kind": "netter",
+     "hp": 81,
+     "max": 81,
+     "x": 79.23,
+     "z": 26.86
+    },
+    {
+     "kind": "crab",
+     "hp": 274,
+     "max": 274,
+     "x": 77.51,
+     "z": 30.38
+    }
+   ],
+   "zones": 0
+  }
+ },
+ "zone": {
+  "a": {
+   "id": "a",
+   "state": "awake",
+   "mode": "owned",
+   "n": 2,
+   "hpMul": 1.6,
+   "dmgMul": 1.15,
+   "left": 2,
+   "total": 4,
+   "tookPart": true,
+   "units": [
+    null,
+    null,
+    {
+     "kind": "netter",
+     "hp": 49,
+     "max": 81,
+     "x": 79.23,
+     "z": 26.86
+    },
+    {
+     "kind": "crab",
+     "hp": 99,
+     "max": 274,
+     "x": 77.51,
+     "z": 30.44
+    }
+   ],
+   "zones": 1
+  },
+  "b": {
+   "id": "a",
+   "state": "awake",
+   "mode": "mirror",
+   "n": 2,
+   "hpMul": 1.6,
+   "dmgMul": 1.15,
+   "left": 2,
+   "total": 4,
+   "tookPart": true,
+   "units": [
+    null,
+    null,
+    {
+     "kind": "netter",
+     "hp": 49,
+     "max": 81,
+     "x": 79.23,
+     "z": 26.86
+    },
+    {
+     "kind": "crab",
+     "hp": 99,
+     "max": 274,
+     "x": 77.51,
+     "z": 30.44
+    }
+   ],
+   "zones": 1
+  }
+ },
+ "drift": {
+  "raw": {
+   "n": 128,
+   "median": 0.0,
+   "p95": 0.124,
+   "max": 0.272
+  },
+  "shifted100": {
+   "n": 120,
+   "median": 0.0,
+   "p95": 0.031,
+   "max": 0.067
+  },
+  "samples": [
+   45,
+   43
+  ]
+ },
+ "after_a": {
+  "a": {
+   "hp": 510,
+   "max": 520,
+   "x": 70,
+   "z": 24.6,
+   "kills": 3,
+   "shards": 15,
+   "cleared": [
+    "a"
+   ],
+   "main": {
+    "taken": true,
+    "step": 1,
+    "progress": 0,
+    "done": false,
+    "handedIn": false
+   },
+   "lives": 3,
+   "falls": 0,
+   "stats": {
+    "reports": 61,
+    "heard": 0,
+    "hitsSent": 0,
+    "hitsHeard": 12,
+    "hurtsSent": 9,
+    "hurtsTaken": 0,
+    "shareTaken": 0
+   },
+   "log": [
+    "14.57s a: appears",
+    "14.63s a: wakes (near)",
+    "14.63s a: runs here now (woke it), set for 1",
+    "15.8s a: set for 2 players: health x1.60, blows x1.15",
+    "21.58s a: cleared (counted here)"
+   ],
+   "you": null
+  },
+  "b": {
+   "hp": 435,
+   "max": 580,
+   "x": 74.4,
+   "z": 28.6,
+   "kills": 4,
+   "shards": 20,
+   "cleared": [
+    "a"
+   ],
+   "main": {
+    "taken": true,
+    "step": 1,
+    "progress": 0,
+    "done": false,
+    "handedIn": false
+   },
+   "lives": 3,
+   "falls": 0,
+   "stats": {
+    "reports": 0,
+    "heard": 61,
+    "hitsSent": 12,
+    "hitsHeard": 0,
+    "hurtsSent": 0,
+    "hurtsTaken": 9,
+    "shareTaken": 0.2519
+   },
+   "log": [
+    "2.68s named2: appears",
+    "2.78s a: drawn here, run by 6, set for 1",
+    "3.66s a: appears",
+    "3.66s a: set for 2 players: health x1.60, blows x1.15",
+    "9.46s a: cleared (counted here)"
+   ],
+   "you": null
+  }
+ },
+ "drift_b": {
+  "raw": {
+   "n": 166,
+   "median": 0.17,
+   "p95": 0.363,
+   "max": 0.389
+  },
+  "shifted100": {
+   "n": 166,
+   "median": 0.015,
+   "p95": 0.061,
+   "max": 0.11
+  },
+  "samples": [
+   40,
+   141
+  ]
+ },
+ "handover": {
+  "before": {
+   "id": "b",
+   "state": "awake",
+   "mode": "mirror",
+   "n": 2,
+   "hpMul": 1.6,
+   "dmgMul": 1.15,
+   "left": 4,
+   "total": 5,
+   "tookPart": true,
+   "units": [
+    {
+     "kind": "docker",
+     "hp": 22,
+     "max": 113,
+     "x": 29.58,
+     "z": -43.97
+    },
+    null,
+    {
+     "kind": "netter",
+     "hp": 81,
+     "max": 81,
+     "x": 29.63,
+     "z": -49.88
+    },
+    {
+     "kind": "netter",
+     "hp": 81,
+     "max": 81,
+     "x": 28.89,
+     "z": -49.8
+    },
+    {
+     "kind": "crab",
+     "hp": 247,
+     "max": 274,
+     "x": 28.02,
+     "z": -45.41
+    }
+   ],
+   "zones": 0
+  },
+  "after": {
+   "id": "b",
+   "state": "awake",
+   "mode": "owned",
+   "n": 2,
+   "hpMul": 1.6,
+   "dmgMul": 1.15,
+   "left": 3,
+   "total": 5,
+   "tookPart": true,
+   "units": [
+    null,
+    null,
+    {
+     "kind": "netter",
+     "hp": 81,
+     "max": 81,
+     "x": 30.23,
+     "z": -47.67
+    },
+    {
+     "kind": "netter",
+     "hp": 67,
+     "max": 81,
+     "x": 29.49,
+     "z": -47.51
+    },
+    {
+     "kind": "crab",
+     "hp": 83,
+     "max": 274,
+     "x": 30.51,
+     "z": -42.63
+    }
+   ],
+   "zones": 0
+  },
+  "flip_ms_after_close": 135,
+  "max_step_across": 0.391,
+  "max_step_mirror": 0.391,
+  "max_step_owned": 0.309,
+  "status": {
+   "hp": 338,
+   "max": 580,
+   "x": 36,
+   "z": -41.9,
+   "kills": 9,
+   "shards": 45,
+   "cleared": [
+    "a",
+    "b"
+   ],
+   "main": {
+    "taken": true,
+    "step": 1,
+    "progress": 0,
+    "done": false,
+    "handedIn": false
+   },
+   "lives": 3,
+   "falls": 0,
+   "stats": {
+    "reports": 92,
+    "heard": 107,
+    "hitsSent": 16,
+    "hitsHeard": 0,
+    "hurtsSent": 0,
+    "hurtsTaken": 12,
+    "shareTaken": 0.33470000000000005
+   },
+   "log": [
+    "2.68s named2: appears",
+    "2.78s a: drawn here, run by 6, set for 1",
+    "3.66s a: appears",
+    "3.66s a: set for 2 players: health x1.60, blows x1.15",
+    "9.46s a: cleared (counted here)",
+    "10.85s b: drawn here, run by 6, set for 1",
+    "11.43s b: set for 2 players: health x1.60, blows x1.15",
+    "11.54s b: appears",
+    "16.57s b: runs here now (handed on), set for 2",
+    "26.33s b: cleared (counted here)"
+   ],
+   "you": null
+  },
+  "pack": {
+   "id": "b",
+   "state": "cleared",
+   "mode": "local",
+   "n": 2,
+   "hpMul": 1.6,
+   "dmgMul": 1.15,
+   "left": 0,
+   "total": 5,
+   "tookPart": true,
+   "units": [
+    null,
+    null,
+    null,
+    null,
+    null
+   ],
+   "zones": 0
+  }
+ },
+ "rejoin": {
+  "id": "a",
+  "state": "cleared",
+  "mode": "local",
+  "n": 1,
+  "hpMul": 1,
+  "dmgMul": 1,
+  "left": 0,
+  "total": 4,
+  "tookPart": false,
+  "units": [
+   null,
+   null,
+   null,
+   null
+  ],
+  "zones": 0
+ },
+ "respawn_s": 179.8,
+ "respawned": {
+  "a": {
+   "id": "a",
+   "state": "asleep",
+   "mode": "local",
+   "n": 1,
+   "hpMul": 1,
+   "dmgMul": 1,
+   "left": 4,
+   "total": 4,
+   "tookPart": false,
+   "units": [
+    {
+     "kind": "docker",
+     "hp": 71,
+     "max": 71,
+     "x": 81.7,
+     "z": 30.25
+    },
+    {
+     "kind": "docker",
+     "hp": 71,
+     "max": 71,
+     "x": 79.06,
+     "z": 30.75
+    },
+    {
+     "kind": "netter",
+     "hp": 50,
+     "max": 50,
+     "x": 78.56,
+     "z": 28.11
+    },
+    {
+     "kind": "crab",
+     "hp": 171,
+     "max": 171,
+     "x": 81.2,
+     "z": 27.61
+    }
+   ],
+   "zones": 0
+  },
+  "b": {
+   "id": "a",
+   "state": "asleep",
+   "mode": "local",
+   "n": 1,
+   "hpMul": 1,
+   "dmgMul": 1,
+   "left": 4,
+   "total": 4,
+   "tookPart": false,
+   "units": [
+    {
+     "kind": "docker",
+     "hp": 71,
+     "max": 71,
+     "x": 81.7,
+     "z": 30.25
+    },
+    {
+     "kind": "docker",
+     "hp": 71,
+     "max": 71,
+     "x": 79.06,
+     "z": 30.75
+    },
+    {
+     "kind": "netter",
+     "hp": 50,
+     "max": 50,
+     "x": 78.56,
+     "z": 28.11
+    },
+    {
+     "kind": "crab",
+     "hp": 171,
+     "max": 171,
+     "x": 81.2,
+     "z": 27.61
+    }
+   ],
+   "zones": 0
+  },
+  "sa": {
+   "hp": 520,
+   "max": 520,
+   "x": 66.1,
+   "z": 29.2,
+   "kills": 0,
+   "shards": 0,
+   "cleared": [],
+   "main": {
+    "taken": false,
+    "step": 0,
+    "progress": 0,
+    "done": false,
+    "handedIn": false
+   },
+   "lives": 3,
+   "falls": 0,
+   "stats": {
+    "reports": 0,
+    "heard": 0,
+    "hitsSent": 0,
+    "hitsHeard": 0,
+    "hurtsSent": 0,
+    "hurtsTaken": 0,
+    "shareTaken": 0
+   },
+   "log": [
+    "2.1s a: cleared by others",
+    "2.1s b: cleared by others",
+    "43.18s named2: appears",
+    "154.92s named2: appears",
+    "160.21s a: back",
+    "161.26s a: appears"
+   ],
+   "you": null
+  },
+  "sb": {
+   "hp": 338,
+   "max": 580,
+   "x": 66.1,
+   "z": 32.2,
+   "kills": 9,
+   "shards": 45,
+   "cleared": [
+    "a",
+    "b"
+   ],
+   "main": {
+    "taken": true,
+    "step": 1,
+    "progress": 0,
+    "done": false,
+    "handedIn": false
+   },
+   "lives": 3,
+   "falls": 0,
+   "stats": {
+    "reports": 92,
+    "heard": 107,
+    "hitsSent": 16,
+    "hitsHeard": 0,
+    "hurtsSent": 0,
+    "hurtsTaken": 12,
+    "shareTaken": 0.33470000000000005
+   },
+   "log": [
+    "3.66s a: appears",
+    "3.66s a: set for 2 players: health x1.60, blows x1.15",
+    "9.46s a: cleared (counted here)",
+    "10.85s b: drawn here, run by 6, set for 1",
+    "11.43s b: set for 2 players: health x1.60, blows x1.15",
+    "11.54s b: appears",
+    "16.57s b: runs here now (handed on), set for 2",
+    "26.33s b: cleared (counted here)",
+    "42.98s named2: appears",
+    "154.3s named2: appears",
+    "188.94s a: back",
+    "190s a: appears"
+   ],
+   "you": null
+  }
+ },
+ "drift_samples": null
+}

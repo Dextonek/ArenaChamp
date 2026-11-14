@@ -84,6 +84,8 @@ interface Slot {
   /** Where it stood at the last report (run here: whether it walks). */
   lx: number;
   lz: number;
+  /** A copy's meshes whose shadow was turned off (given back when it runs here again). */
+  shadowless?: THREE.Object3D[];
 }
 
 /** What a shared pack needs of the floor's shard (share.ts `PackShare`). */
@@ -163,6 +165,13 @@ export class Pack {
   private zones = new Map<number, { layer: TelegraphLayer; key: string; t: number }>();
   /** Run here for the shard: the other heroes in its fight now (a kept list). */
   private remote: { figure: Enemy; pos: THREE.Vector3 }[] = [];
+  /** A copy may be drawn now: the nearest copies within the share's budget are (share.ts `COPY_MAX`). */
+  drawOk = true;
+  /** How far this screen's hero is from where a copy fights (m), for the budget. */
+  get copyDist() {
+    const c = this.centre ?? this.home, h = this.env.api.arena.caster.group.position;
+    return Math.hypot(h.x - c.x, h.z - c.z);
+  }
 
   constructor(readonly def: PackDef, private env: PackEnv, cleared = false) {
     const kinds: EnemySpec[] = [];
@@ -297,6 +306,7 @@ export class Pack {
         s.alive = false;
         const where = { x: dead.pos.x, z: dead.pos.z };
         s.unit = undefined;
+        s.shadowless = undefined;
         this.dropZone(slot);
         if (this.credited(s)) {
           this.tookPart = true;
@@ -342,6 +352,7 @@ export class Pack {
       s.hp = s.unit.alive ? s.unit.hp : s.hp;
       if (s.unit.alive) this.env.api.arena.summons.dismiss(s.unit);
       s.unit = undefined;
+      s.shadowless = undefined;
     }
     this.state = 'unborn';
   }
@@ -429,7 +440,7 @@ export class Pack {
       for (const s of this.slots) {
         const u = s.unit;
         if (!u?.alive) continue;
-        u.mirror = false;
+        this.uncopy(s, u);
         if (s.rep) {
           // It goes on from the owner's last word: its health's share, its bolts' count.
           u.max = this.unitHp(s.spec);
@@ -448,7 +459,7 @@ export class Pack {
       this.mode = 'local';
       this.mind.calm();
       this.dropZones();
-      for (const s of this.slots) if (s.unit) s.unit.mirror = false;
+      for (const s of this.slots) if (s.unit) this.uncopy(s, s.unit);
       if (this.state === 'cleared') return;
       if (!this.units.length) { this.state = 'unborn'; return; }
       // Nobody runs it any more: it gives up here, walks home and heals.
@@ -474,12 +485,25 @@ export class Pack {
   /** A unit as a copy: no mind, no walk of its own, never falls here; placed from the owner's reports from where it stands now. */
   private copy(s: Slot, u: SummonUnit) {
     u.mirror = true;
+    // A copy casts no shadow (as the other players' figures do not): its figure is the same, the frame cheaper.
+    if (!s.shadowless) {
+      const off: THREE.Object3D[] = [];
+      u.figure.group.traverse((o) => { if ((o as THREE.Mesh).isMesh && o.castShadow) { o.castShadow = false; off.push(o); } });
+      s.shadowless = off;
+    }
     u.rate = 0;
     u.opts.speed = 0;
     (s.glide ??= new Glide()).reset(u.pos.x, u.pos.z, u.figure.group.rotation.y);
     s.seenShots = s.rep ? s.rep[8] : -1;
     s.swingT = -1;
     if (s.rep) { u.max = Math.max(1, s.rep[4]); u.hp = Math.max(1, Math.min(u.max, s.rep[3])); }
+  }
+
+  /** A copy that runs here again: its own unit, with its shadow. */
+  private uncopy(s: Slot, u: SummonUnit) {
+    u.mirror = false;
+    for (const o of s.shadowless ?? []) o.castShadow = true;
+    s.shadowless = undefined;
   }
 
   /** More players in its fight (the hub's word): its health and blows grow, never shrink, and the health lost keeps its share. */
@@ -758,13 +782,13 @@ export class Pack {
     const home = this.home, c = this.centre ?? home;
     const d = Math.min(Math.hypot(hero.x - c.x, hero.z - c.z), Math.hypot(hero.x - home.x, hero.z - home.z));
     const drawn = this.units.length > 0;
-    if (!drawn && this.state !== 'cleared' && this.left && d < PACK.show && this.centre) {
+    if (!drawn && this.drawOk && this.state !== 'cleared' && this.left && d < PACK.show && this.centre) {
       this.state = 'unborn';
       if (this.spawn(true)) {
         // They come where the owner has them (the reports go on from there).
         for (const s of this.slots) if (s.unit?.alive && s.rep) { s.glide!.reset(s.rep[0], s.rep[1], s.rep[2]); s.unit.pos.set(s.rep[0], 0, s.rep[1]); }
       }
-    } else if (drawn && d > MIRROR_HIDE) {
+    } else if (drawn && (d > MIRROR_HIDE || !this.drawOk)) {
       this.hide();
       this.state = 'awake';
     }

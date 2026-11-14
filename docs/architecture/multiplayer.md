@@ -294,6 +294,107 @@ casts draw on the scene's seeded dice). The duel and the raid play the same figh
 `raid-party`: the same prints as the commit before, run beside it; `raid-party` itself comes out as one of two prints from run to
 run, on both).
 
+## The Climb's open world, stage 2: shared packs (since PROTOCOL 18)
+
+The user, 2026-11-14: "do it" to stage 2 of [the design](../../pipeline/designs/climb-open-world.md), with enemies that grow stronger
+"if more enemies are attacking on mob or boss or gatekeeper", by **more players**. In a shard, the players on a floor now fight the same
+packs. Gatekeepers and rulers behind doors are still each player's own (stage 3).
+
+- **One owner screen a pack.** A pack woken on a screen is claimed (`pack_claim`). Nobody runs it: that screen does (its *owner*) and
+  the shard hears `pack_owner`. Someone does: only the claimer hears whose it is. Until the answer the pack fights on the waking screen
+  alone, as before. The owner runs it as a pack always ran (`src/tower/world/packs.ts`, `tactics.ts` and all), with the other players'
+  heroes within 30 m of it among its victims: its focus, slots and turns are over every hero (`PackMind` counts another screen's hero as
+  a hero), and its swings, bolts and specials reach them (`SummonOptions.others` in `src/effects/summon.ts`: the summon's world and each
+  bolt's are widened, and a hit on another screen's hero goes to that screen, never to the arena). It gives up only when no hero is
+  within its leash. Ten times a second, and at once when a red zone begins, the owner sends its packs in one `pack_state`: each unit's
+  place, facing, health, walk, blow, wind-up and bolts fired, and the red zones.
+- **The others draw copies** (`Pack.mode` `mirror`). The copies are the same summoned units made by the same `Pack.spawn` (`lookOf`
+  and all: a change of a figure shows on every screen), with no mind: `SummonUnit.mirror` keeps them from falling, being pushed or
+  striking here, and their brain places them from the reports, played back 100 ms late through the same ring of slots that draws the
+  other players (`Glide`, others.ts). Their swings, wind-ups and bolts are drawn from the reports (a copy's bolt strikes nothing), their
+  red zones by the same `TelegraphLayer`. They are real targets: this screen's spells and attacks hit them, the hit is shown at once
+  (the bar held down for 400 ms) and goes to the owner (`pack_hit`), who takes it off its unit; the result comes back in the next report.
+  A copy falls when the owner's report says so.
+- **Each screen owns its own hero.** A blow of the owner's pack on another player's hero goes as a share of that hero's health
+  (`pack_hurt`); that screen applies it to its own hero through the same door as its own packs' blows (shields, boons, the floor's law),
+  with a root or a slow when the kind's blow holds.
+- **Health against boons.** A unit's health on a screen is lowered by that screen's hero's damage boons (hits on units pass no boon).
+  So a hit goes to the owner times the hitter's boon (the unit's health before anyone's boons) and comes off divided by the owner's;
+  a copy shows health as a share; a pack handed on keeps its share.
+- **Credit.** A unit's fall counts (a kill, its shards) on every screen whose hero hit it in its last 10 s; on the owner's also when
+  nobody else hit it lately (its law, its hazards: as alone). A pack counts for a player's quests and run (`run.packsCleared`) when that
+  player had a counted kill of it. The quests read the run, not the pack: a pack others cleared does not finish your step, and a pack
+  that comes back does not undo it. Progress stays in each browser (localStorage).
+- **Scaling with players** (`packScale`, server/protocol.mjs). The hub counts `n`, the players in a pack's fight: its owner, whoever
+  stands within 20 m of it (its owner's last report), and whoever hit it in the last 10 s. Health x (1 + 0.6 (n - 1)), blows x
+  (1 + 0.15 (n - 1)). Set when it wakes (`pack_owner` carries `n`), raised when the fight grows (`pack_scale`), never lowered, so leaving
+  cannot make it weaker; the health already lost keeps its share. Two players: x1.6 health, x1.15 blows; three: x2.2, x1.3; eight: x5.2,
+  x2.05.
+- **Hand-over.** When the owner leaves the shard (a closed tab, a dropped connection, a door, Leave) or sends nothing for 4 s (a tab put
+  away), each of its packs goes to the oldest member within 40 m of it, one heard from in the last 4 s first, as the Raid's boss brain is
+  handed on (`pack_owner` with the new owner). That screen already draws the copies: they become its own units where they stand, with
+  their health, and fight on. With nobody near, nobody runs it (`pack_owner` with owner 0): each screen has it to itself again, and it
+  walks home and heals.
+- **Leashed home.** A pack its owner's screen sees give up and come home asleep is let go (`pack_release`): the next to wake it claims
+  it again, for the players near then.
+- **Cleared and back.** The owner says when the last unit fell (`pack_clear`); the shard hears `pack_cleared` (copies still standing
+  fall then). A newcomer is told in `world_roster.packs`. After 3 minutes (`WORLD_PACKS.respawnS`), when nobody stands within 30 m of
+  its home and two or more walk the shard, the hub brings it back (`pack_respawn`): whole, asleep at home, set for one. Alone in a shard
+  nothing comes back (the Climb plays as it always did). The hub looks at this on each walk in the shard.
+- **Alone, not signed in, the tools.** Signed in and alone in the shard, a pack is claimed and run here as before, set for one, its
+  reports sent to nobody. Not signed in, every pack is local, exactly as before. The tools (`world-tool.js`, the route bot, the perf
+  scenes) have no link and no share at all.
+- **The hub's checks.** A pack id must be the floor's (`server/climb-packs.mjs`, made from the floors by `node pipeline/tools/climb-packs.mjs`;
+  `--check` says whether it is up to date, and the page warns in the console on the dev server when the floor it plays differs from
+  it). Only a pack's owner may report it, hurt with it, clear or release it; a non-owner's hit is relayed only for a pack someone else
+  runs. Places are clamped as walks are, numbers made finite; a report holds at most 12 units and 8 zones. Rates, each a second and a
+  player: 12 reports, 40 hits (at most 600 each), 30 blows; a blow's share is 0-1, its hold at most 3 s. A pack's report goes only to
+  the members within 60 m of it.
+- **Trust.** The owner is trusted with its pack: its places, health, deaths and blows are taken as it says. A cheating owner could
+  make its pack harmless or deadly for the shard. That is acceptable for a co-op world, not for ranked play (as the Raid's boss brain).
+- **The summon cap and the copies' cost.** While other players are on the floor, a side may have 24 live units (`CROWD_CAP`,
+  share.ts), not 6, so their packs' copies can be drawn beside this screen's own; alone it is 6, as before. A copy is a whole figure
+  (about twenty draw calls), so at most 6 copies are drawn at once (`COPY_MAX`), the nearest packs first (looked at twice a second; the
+  first pack is always drawn whole), and a copy casts no shadow (as the other players' figures do not; given back when the pack runs
+  here). A pack past the budget is drawn when it comes among the nearest.
+- **Limits.** The owner judges a blow on another hero where its screen draws that hero (100 ms or more late), not where that hero
+  stands: a dodge at the last moment may still be hit. A copy's red zone fills from when its report arrives, a little after the
+  owner's (the report goes at once when a zone begins). Waves the zone makes for itself (a hold's, the Sands' dust wraiths) are not
+  shared: each screen has its own. A respawned pack pays its shards again. A named enemy's patrol is shared only while it fights.
+  With more than 6 copies near (three or more other packs in one place), the farthest are not drawn here, though their owner's screen
+  may still strike this hero with them.
+- **Test switches.** `game.html?others=7&packs=3` (or the perf scenes `gen-2-fight-3`, `gen-2-fight-7`): made-up others, each with
+  three made-up packs fighting round the hero as copies, through the same `pack_state` path a real owner's reports take, and this
+  hero's own packs fighting the made-up others too.
+
+| Message | Way | Fields | What |
+|---|---|---|---|
+| `world_roster` | hub → client | + `packs: [{ id, owner, n, cleared }]` | the shard's packs someone woke or cleared; `owner` 0 once cleared |
+| `pack_claim` | client → hub | `pack`, `x`, `z` | this screen woke the pack. → `pack_owner` (to the shard when it is this screen's now, to this screen alone when another's), `pack_cleared` (it is cleared), or `error` "No such pack on this floor" |
+| `pack_owner` | hub → client | `pack`, `owner`, `n` | whose screen runs it (a shard id; 0: nobody, each screen has it to itself) and how many players it is set for |
+| `pack_scale` | hub → shard | `pack`, `n` | the fight grew: set for `n` players |
+| `pack_state` | client → hub | `packs: [{ id, x, z, ts, u, zn }]` | the owner's packs, ten times a second: `u` each unit (0 once fallen) as `[x, z, yaw, hp, max, walk, swing, pose, shots]`, `zn` red zones as `[unit, kind, a, b, c, d, e, t, impact]` (kind 0 a circle x, z, radius; 1 a line x1, z1, x2, z2, width) |
+| `pack_state` | hub → members near | `packs: [{ id, n, x, z, ts, u, zn }]` | relayed to those within 60 m of each pack, clamped, with `n` |
+| `pack_hit` | client → hub | `pack`, `u`, `dmg` | this screen hit unit `u` of a pack another screen runs (`dmg` before anyone's boons) |
+| `pack_hit` | hub → owner | `pack`, `u`, `dmg`, `by` | for the owner to take off |
+| `pack_hurt` | owner → hub | `pack`, `to`, `share`, `x`, `z`, `kind?`, `net?: { kind, s }` | the owner's pack struck player `to`'s hero |
+| `pack_hurt` | hub → that player | `pack`, `share`, `x`, `z`, `kind`, `net`, `by` | for its screen to apply to its own hero |
+| `pack_clear` | owner → hub | `pack` | its last unit fell |
+| `pack_cleared` | hub → shard | `pack` | cleared (to everyone but the owner); also the answer to a claim of a cleared pack |
+| `pack_release` | owner → hub | `pack` | it gave up and is home asleep: nobody runs it (`pack_owner` with owner 0) |
+| `pack_respawn` | hub → shard | `pack` | back: whole, asleep at home, set for one |
+
+Checked (2026-11-14): `npm run test:server` (the first to wake a pack runs it and the shard hears; a second who wakes it is told;
+a pack id the floor does not have is refused; the fight counted when a second player comes within 20 m, and never counted down; the
+owner's report reaches the member near the pack, clamped, and not one 150 m off; a non-owner's report and blow are dropped; a hit goes
+to the owner with the hitter's id, 60 in a second cut to 40, a hit past 600 cut; the owner's blow goes to the hero it struck, its hold
+cut to 3 s; the owner leaves and the pack goes to the member near it, still set for two; an owner quiet for 4 s is replaced; cleared,
+told to a newcomer and to a claim; back after 3 minutes, not before, not while someone stands within 30 m, never alone in a shard).
+Two tabs on the dev server with local test accounts: [docs/tower/openworld/stage2/](../tower/openworld/stage2/) (the drift between the
+two screens, the numbers, the hand-over, the respawn, pictures).
+
+SPEED_TABLE
+
 ## The hero shop, raid ranks and the week's boards
 
 Design, decisions and what was checked: [`pipeline/designs/hero-shop.md`](../../pipeline/designs/hero-shop.md). Pictures:

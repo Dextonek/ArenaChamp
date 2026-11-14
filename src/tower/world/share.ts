@@ -28,6 +28,12 @@ import type { Pack, PackLink } from './packs';
 
 /** Most units drawn a side while other players are on the floor (their packs' copies with this screen's own). */
 export const CROWD_CAP = 24;
+/**
+ * Most copies drawn at once (units of packs other screens run), the nearest packs first: a copy is a whole figure of about twenty draw
+ * calls, and a slowed phone paid about 1.2 ms a frame for each (perf.py `gen-2-fight-7`). Past it, a pack's copies wait until it is
+ * among the nearest. A pack being drawn is not dropped for a nearer one until the budget is looked at again (twice a second).
+ */
+export const COPY_MAX = 6;
 const SEND_S = 1 / WORLD_PACKS.stateHz;
 
 interface FakeOwner { pack: Pack; a: number; r: number; w: number; sendIn: number; t: number; shots: number[]; max: number }
@@ -155,8 +161,23 @@ export class PackShare implements PackSink, PackLink {
 
   // --- each frame ---------------------------------------------------------------------------------------------------------
 
+  private budgetIn = 0;
+  /** The nearest copies within `COPY_MAX` may be drawn. */
+  private budget() {
+    const copies: Pack[] = [];
+    for (const p of this.packs.values()) if (p.mode === 'mirror') copies.push(p);
+    for (const f of this.fakes) copies.push(f.pack);
+    copies.sort((a, b) => a.copyDist - b.copyDist);
+    let n = 0;
+    for (const p of copies) {
+      n += p.left;
+      p.drawOk = n <= COPY_MAX || n === p.left;
+    }
+  }
+
   update(dt: number, hero: THREE.Vector3) {
     this.api.arena.summons.cap = this.others.count > 0 || this.fakes.length > 0 ? CROWD_CAP : MAX_UNITS;
+    if ((this.budgetIn -= dt) <= 0) { this.budgetIn = 0.5; this.budget(); }
     if (this.fakes.length) this.stepFakes(dt, hero);
     const live = this.on;
     if (!live && !this.fakeOwned) return;
