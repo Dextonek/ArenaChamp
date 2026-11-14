@@ -1,7 +1,7 @@
 import type { FloorDef } from './def';
 
 /**
- * A floor's spots that the depth passes' props keep clear of (woodDepth.ts, sandsDepth.ts): the start and the camp, the lore stone,
+ * A floor's spots that the depth passes' props keep clear of (depth.ts through `LandSpec.keep`, woodDepth.ts, sandsDepth.ts, deepDepth.ts, warDepth.ts): the start and the camp, the lore stone,
  * people, packs and their patrols, waystones, caches, doors and every quest step's spots. Only for the looks: the zone builders see the
  * floor's look, not its people and quests, so the arena is handed these when it is made (floors/gen/arenas.ts).
  */

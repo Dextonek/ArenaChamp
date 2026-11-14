@@ -213,7 +213,7 @@ export function buildZone() {
 }
 
 /** Builds a sea zone's meshes. The harbour's own props load from its file and join the dressing when they arrive. */
-export function buildSeaZone(L: SeaLook): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
+export function buildSeaZone(L: SeaLook, keep: { x: number; z: number }[] = []): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
   const g = new THREE.Group();
   const own: { dispose(): void }[] = [];
   const mat = (color: number, rough = 0.85, o: Partial<THREE.MeshStandardMaterialParameters> = {}) => {
@@ -229,7 +229,7 @@ export function buildSeaZone(L: SeaLook): { group: THREE.Group; update(dt: numbe
 
   const kit = new Kit();
   // The world past the rim: land, a beach, the sea, the town, woods (land.ts). The cover below stands on its ground.
-  const land = buildLand({ rim: rimOf(L), paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed, ruin: L.ruin, cover: L.pieces.map((p) => p.o) }, kit, g, own);
+  const land = buildLand({ rim: rimOf(L), paths: L.paths, places: L.places, flats: L.flats, mirror: L.mirror, seed: L.seed, ruin: L.ruin, cover: L.pieces.map((p) => p.o), keep }, kit, g, own);
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 8) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rnd = seeded(913);
@@ -385,9 +385,9 @@ export function buildSeaZone(L: SeaLook): { group: THREE.Group; update(dt: numbe
 }
 
 /** A sea floor made by the generator, as an arena: its own layout, the same stage. */
-export function seaArena(id: string, name: string, look: SeaLook): ArenaDef {
+export function seaArena(id: string, name: string, look: SeaLook, keep: { x: number; z: number }[] = []): ArenaDef {
   // The ring is the circle round the whole outline: the walk's box and the checks' grid; the outline's own walls keep a walk inside it.
-  return { id, name, ring: Math.ceil(Math.max(...rimOf(look)) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSeaZone(look) };
+  return { id, name, ring: Math.ceil(Math.max(...rimOf(look)) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildSeaZone(look, keep) };
 }
 
 /** The zone as an arena for `Duel.startBoss`: its ring is `ZONE_R`, its cover `ZONE_COVER`, its look a coast by day (land.ts). */

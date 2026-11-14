@@ -38,6 +38,8 @@ export interface LandSpec {
   ruin?: { dx: number; dz: number };
   /** The zone's cover (world coordinates): the depth's looks keep off it (depth.ts). */
   cover?: { ax: number; az: number; bx: number; bz: number; r: number }[];
+  /** The floor's spots its looks keep clear of (keep.ts: people, packs, quests, doors...), in world coordinates. */
+  keep?: { x: number; z: number }[];
 }
 
 const smooth = (a: number, b: number, x: number) => {

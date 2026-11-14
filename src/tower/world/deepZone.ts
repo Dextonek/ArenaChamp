@@ -325,7 +325,7 @@ const cone = (r: number, h: number, n = 7) => new THREE.ConeGeometry(r, h, n).tr
 const ico = new THREE.IcosahedronGeometry(1, 0);
 
 /** Builds a Deep zone's meshes. */
-export function buildDeepZone(look: DeepLook): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
+export function buildDeepZone(look: DeepLook, keep: { x: number; z: number }[] = []): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
   const g = new THREE.Group();
   const own: { dispose(): void }[] = [];
   const rim = look.rim, m = look.mirror, cave = caveOf(rim, m, look.seed), rnd = seeded(77 + look.seed);
@@ -588,7 +588,7 @@ export function buildDeepZone(look: DeepLook): { group: THREE.Group; update(dt: 
   }
 
   // The mine dressed as a place people worked in, and the far cave (deepDepth.ts; looks only, its own random stream).
-  const depth = buildDeepDepth({ look, cave, into: g, own, waterLevel: WATER });
+  const depth = buildDeepDepth({ look, cave, into: g, own, waterLevel: WATER, keep });
 
   dress.build(g, own, (x, z) => cave.beyond(x - RING.x, z - RING.z) < 14);
   kit.build(g, own);
@@ -615,6 +615,6 @@ const STAGE: ArenaStage = {
 };
 
 /** A Deep floor as an arena: its own layout. The ring is the circle round the whole outline (the walk's box, the checks' grid). */
-export function deepArena(id: string, name: string, look: DeepLook): ArenaDef {
-  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildDeepZone(look) };
+export function deepArena(id: string, name: string, look: DeepLook, keep: { x: number; z: number }[] = []): ArenaDef {
+  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildDeepZone(look, keep) };
 }

@@ -1,4 +1,5 @@
 import type { FloorDef } from '../def';
+import { floorKeep } from '../keep';
 import { warArena, type WarLook } from '../warZone';
 import { BANNERS_41 } from './banners-made';
 
@@ -13,6 +14,6 @@ import { BANNERS_41 } from './banners-made';
  */
 export const banners: FloorDef = {
   ...BANNERS_41.floor,
-  arena: warArena('tower-zone-banners', 'The Field of Banners, a zone', BANNERS_41.look as unknown as WarLook),
+  arena: warArena('tower-zone-banners', 'The Field of Banners, a zone', BANNERS_41.look as unknown as WarLook, floorKeep(BANNERS_41.floor)),
   cover: BANNERS_41.look.pieces.map((p) => p.o),
 };

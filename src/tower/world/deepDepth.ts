@@ -44,6 +44,8 @@ export interface DeepDepthIn {
   own: { dispose(): void }[];
   /** The black water's level (m). */
   waterLevel: number;
+  /** The floor's spots its looks keep clear of (keep.ts: people, packs, quests, doors...), in world coordinates. */
+  keep?: { x: number; z: number }[];
 }
 
 const COL = {

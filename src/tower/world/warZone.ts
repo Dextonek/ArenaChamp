@@ -303,7 +303,7 @@ class Rain {
 }
 
 /** Builds a War zone's meshes. */
-export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
+export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = []): { group: THREE.Group; update(dt: number, time: number): void; dispose(): void } {
   const g = new THREE.Group();
   const own: { dispose(): void }[] = [];
   const M = materials(own);
@@ -545,7 +545,7 @@ export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: nu
   if (depthOn) {
     const gameRandom = Math.random;
     Math.random = seeded(991 + look.seed);
-    try { depth = buildWarDepth({ look, geo, into: g, own, rnd: seeded(777 + look.seed), mats: M }); } finally { Math.random = gameRandom; }
+    try { depth = buildWarDepth({ look, geo, into: g, own, rnd: seeded(777 + look.seed), mats: M, keep }); } finally { Math.random = gameRandom; }
   }
 
   return {
@@ -559,7 +559,7 @@ export function buildWarZone(look: WarLook): { group: THREE.Group; update(dt: nu
 }
 
 /** A War floor as an arena: its own layout and outline, the evening's stage. */
-export function warArena(id: string, name: string, look: WarLook): ArenaDef {
+export function warArena(id: string, name: string, look: WarLook, keep: { x: number; z: number }[] = []): ArenaDef {
   // The ring is the circle round the whole outline: the walk's box and the checks' grid; the outline's own walls keep a walk inside it.
-  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildWarZone(look) };
+  return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildWarZone(look, keep) };
 }

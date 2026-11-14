@@ -1,4 +1,5 @@
 import { deepArena } from '../deepZone';
+import { floorKeep } from '../keep';
 import type { FloorDef } from '../def';
 import { DEEP_HOME } from './deep-home';
 
@@ -16,6 +17,6 @@ export const deep: FloorDef = {
   n: 31,
   tunedAs: 4,
   id: 'deep',
-  arena: deepArena('tower-zone-deep', 'The Lightless Deep, a zone', DEEP_HOME.look),
+  arena: deepArena('tower-zone-deep', 'The Lightless Deep, a zone', DEEP_HOME.look, floorKeep(DEEP_HOME.floor)),
   cover: DEEP_HOME.look.pieces.map((p) => p.o),
 };

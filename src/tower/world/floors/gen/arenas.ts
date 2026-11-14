@@ -13,9 +13,9 @@ import { floorKeep } from '../../keep';
  * that has no builder yet cannot have baked floors.
  */
 export const ARENA_OF: Partial<Record<Chapter, (g: GenFloor) => ArenaDef>> = {
-  sea: (g) => seaArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as SeaLook),
+  sea: (g) => seaArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as SeaLook, floorKeep(g.floor)),
   wood: (g) => woodGenArena(`tower-${g.floor.id}`, g.floor.name, g.look as WoodLook, floorKeep(g.floor)),
   sands: (g) => sandsArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as SandsLook, floorKeep(g.floor)),
-  deep: (g) => deepArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as DeepLook),
-  war: (g) => warArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as WarLook),
+  deep: (g) => deepArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as DeepLook, floorKeep(g.floor)),
+  war: (g) => warArena(`tower-${g.floor.id}`, g.floor.name, g.look as unknown as WarLook, floorKeep(g.floor)),
 };
