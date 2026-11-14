@@ -3,7 +3,6 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING, canvasTexture, seeded } from '../../arenas/common';
 import { Glows } from '../../arenas/real';
 import type { ArenaDef, ArenaStage } from '../../arenas/types';
-import type { FloorDef } from './def';
 import type { WoodKind, WoodLook } from './gen/wood';
 import { rimAt } from './land';
 import { woodDepth } from './woodDepth';
@@ -602,26 +601,9 @@ export function buildWoodZone(look: WoodLook, keep: { x: number; z: number }[] =
 
 /**
  * A Wood floor as an arena: its own layout, the wood's stage. The ring is the circle round the whole outline (the walk's box, the checks' grid).
- * `keep`: the floor's spots (woodKeep), which the depth's props keep clear of.
+ * `keep`: the floor's spots (keep.ts `floorKeep`), which the depth's props keep clear of.
  */
 export function woodGenArena(id: string, name: string, look: WoodLook, keep: { x: number; z: number }[] = []): ArenaDef {
   return { id, name, ring: Math.ceil(Math.max(...look.rim) + 1.5), obstacles: look.pieces.map((p) => p.o), stage: STAGE, hideGround: true, build: () => buildWoodZone(look, keep) };
 }
 
-/** A floor's spots that the depth's props keep clear of: people, packs and patrols, waystones, caches, the lore stone, doors, quest steps. */
-export function woodKeep(f: Omit<FloorDef, 'arena' | 'cover'>) {
-  const out: { x: number; z: number }[] = [];
-  const add = (p?: { x: number; z: number }) => { if (p) out.push({ x: p.x, z: p.z }); };
-  add(f.start); add(f.camp); add(f.lore.at);
-  for (const p of f.people) add(p.at);
-  for (const p of f.packs) { add(p.at); p.named?.patrol.forEach(add); }
-  for (const w of f.waystones) add(w.at);
-  for (const c of f.caches) add(c.at);
-  for (const d of f.doors) add(d.at);
-  type Pt = { x: number; z: number };
-  for (const q of f.quests) for (const st of q.steps) {
-    const s = st as { at?: Pt; from?: Pt; to?: Pt; things?: { at: Pt }[]; path?: Pt[] }; // a step's spots, whatever its verb
-    add(s.at); add(s.from); add(s.to); s.things?.forEach((t) => add(t.at)); s.path?.forEach(add);
-  }
-  return out;
-}

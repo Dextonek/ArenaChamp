@@ -1,4 +1,5 @@
 import type { FloorDef } from '../def';
+import { floorKeep } from '../keep';
 import { sandsArena, type SandsLook } from '../sandsZone';
 import { CANYON_21 } from './canyon-made';
 
@@ -11,6 +12,6 @@ import { CANYON_21 } from './canyon-made';
  */
 export const canyon: FloorDef = {
   ...CANYON_21.floor,
-  arena: sandsArena('tower-zone-canyon', 'The Storm Canyon, a zone', CANYON_21.look as unknown as SandsLook),
+  arena: sandsArena('tower-zone-canyon', 'The Storm Canyon, a zone', CANYON_21.look as unknown as SandsLook, floorKeep(CANYON_21.floor)),
   cover: CANYON_21.look.pieces.map((p) => p.o),
 };

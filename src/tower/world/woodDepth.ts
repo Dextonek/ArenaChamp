@@ -27,7 +27,7 @@ import { rimAt } from './land';
  * (a square out of view is not drawn: one instanced mesh a kind drew 16 more things a frame and added 1.5 ms on desktop); the moving
  * things are instanced, each with its own material, and updated in place each frame (no allocation). The brook is painted into the
  * ground (free). Its own random stream, so the trees and the fireflies are where they were. The floor's spots (`keep`: people, caches,
- * waystones, doors, quest steps; woodZone.ts `woodKeep`) are kept 2.5 m clear.
+ * waystones, doors, quest steps; keep.ts `floorKeep`) are kept 2.5 m clear.
  */
 
 /** The zone's merged props (woodZone.ts `Props`): a colour comes from the material's `color`, gold/sap/water keep their own. */
