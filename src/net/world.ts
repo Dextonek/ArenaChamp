@@ -13,6 +13,8 @@ import type { NetClient } from './client';
 export interface WorldPlayer {
   id: number;
   name: string;
+  /** The player's clan tag (since PROTOCOL 17): drawn as "[TAG] name" over its head. */
+  tag?: string;
   hero: string;
   x: number;
   z: number;
@@ -78,9 +80,9 @@ export class WorldLink implements WorldPresence {
     net.on('world_roster', (m) => {
       if (!this.want || m.floor !== this.want.floor) return;
       this.shard = m.shard;
-      this.sink?.roster(m.shard, m.players);
+      this.sink?.roster(m.shard, m.players.map(tagged));
     });
-    net.on('world_joined', (m) => { if (this.joined) this.sink?.joined(m); });
+    net.on('world_joined', (m) => { if (this.joined) this.sink?.joined(tagged(m)); });
     net.on('world_moved', (m) => { if (this.joined) this.sink?.moved(m.id, m.x, m.z, m.yaw, !!m.walk, m.hp ?? 1, m.ts); });
     net.on('world_cast', (m) => { if (this.joined) this.sink?.cast(m.id, m.label, m.x, m.z, m.tx, m.tz); });
     net.on('world_left', (m) => { if (this.joined) this.sink?.left(m.id); });
@@ -140,6 +142,9 @@ export class WorldLink implements WorldPresence {
     this.sink?.clear();
   }
 }
+
+/** A player's clan tag goes before its name, as the boards show it: "[OWL] ana". */
+const tagged = (p: WorldPlayer): WorldPlayer => (p.tag ? { ...p, name: `[${p.tag}] ${p.name}` } : p);
 
 /** To the millimetre, as the duels send places. */
 const mm = (v: number) => Math.round(v * 1000) / 1000;

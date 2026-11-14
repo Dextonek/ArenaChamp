@@ -30,8 +30,9 @@ import { heightName } from '../arenas/tower';
 import { CHANGELOG, type NewsItem, type Release } from './changelog';
 import { QUALITY_NAMES, QUALITY_ORDER } from '../quality';
 import { preloadClips } from '../motion/real';
+import { createSocial } from './social';
 
-type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news' | 'shop';
+type Screen = 'login' | 'menu' | 'heroes' | 'profile' | 'lobbies' | 'lobby' | 'cpu' | 'raid' | 'tower' | 'news' | 'shop' | 'boards' | 'clan';
 
 // The scene keeps stepping in a hidden tab: a network duel must go on.
 // The console hook `game.api` (at the end of this file) is this runtime.
@@ -161,6 +162,10 @@ const ICONS = {
   // an obol: a coin with a ring and a small mark
   shop: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.2"/><path d="M12 9.6v4.8M10.2 12h3.6"/>',
   lock: '<rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.2v2.2"/>',
+  // a cup on a stand: the Leaderboards
+  boards: '<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>',
+  // a banner on a pole: the Clan
+  clan: '<path d="M6 21V3M6 4h11l-2.5 4L17 12H6"/>',
 } as const;
 function icon(name: keyof typeof ICONS) {
   const s = el('span', { class: 'ic', 'aria-hidden': 'true' });
@@ -258,6 +263,8 @@ function go(screen: Screen) {
   if (screen === 'raid' || screen === 'tower') net.send({ t: 'boards' });
   if (screen === 'tower') reportTower();
   if (screen !== 'shop') state.shopAsk = '';
+  if (screen === 'boards') reportClimb();
+  if (screen === 'boards' || screen === 'clan') social.opened(screen);
   render();
 }
 
@@ -268,6 +275,8 @@ function render() {
   // A pane that scrolls inside itself (the Play screen's roster) keeps its place when the same screen is drawn again.
   const kept = new Map<string, number>();
   if (state.screen === shownScreen) root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => kept.set(e.dataset.keepScroll!, e.scrollTop));
+  // A field that had the keyboard (the clan chat's) keeps it when the same screen is drawn again.
+  const focused = state.screen === shownScreen && document.activeElement instanceof HTMLInputElement ? document.activeElement : null;
   root.replaceChildren();
   // With an account the CPU duel is a mode of the Play screen (a finished CPU fight comes back here as 'cpu').
   if (state.profile && state.screen === 'cpu') {
@@ -288,9 +297,9 @@ function render() {
   const keepScroll = () => root.querySelectorAll<HTMLElement>('[data-keep-scroll]').forEach((e) => { const top = kept.get(e.dataset.keepScroll!); if (top) e.scrollTop = top; });
   // Without an account: the login screen, or the CPU, Raid or Tower screen (an offline fight needs no account).
   if (!state.profile) {
-    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'tower' && state.screen !== 'news' && state.screen !== 'shop') { root.append(loginScreen()); return; }
-    root.append(header(), state.screen === 'news' || state.screen === 'shop'
-      ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, state.screen === 'news' ? newsScreen() : shopScreen())
+    if (state.screen !== 'cpu' && state.screen !== 'raid' && state.screen !== 'tower' && state.screen !== 'news' && state.screen !== 'shop' && state.screen !== 'boards') { root.append(loginScreen()); return; }
+    root.append(header(), state.screen === 'news' || state.screen === 'shop' || state.screen === 'boards'
+      ? el('main', { class: `screen${fresh ? ' enter' : ''}` }, state.screen === 'news' ? newsScreen() : state.screen === 'boards' ? social.boardsScreen() : shopScreen())
       : el('main', { class: `screen wide${fresh ? ' enter' : ''}` }, state.screen === 'cpu' ? menuScreen() : state.screen === 'tower' ? towerScreen() : raidScreen()));
     keepScroll();
     return;
@@ -307,9 +316,12 @@ function render() {
               : s === 'tower' ? towerScreen()
                 : s === 'news' ? newsScreen()
                   : s === 'shop' ? shopScreen()
-                    : menuScreen(),
+                    : s === 'boards' ? social.boardsScreen()
+                      : s === 'clan' ? social.clanScreen()
+                        : menuScreen(),
   );
   root.append(body);
+  if (focused?.isConnected) focused.focus({ preventScroll: true });
   // The Play screen (also shown for a lobby that has closed) is wider, and shows the search in its own bar.
   const play = !!body.querySelector(':scope > .hs');
   body.classList.toggle('wide', play);
@@ -349,15 +361,22 @@ function header() {
   const p = state.profile;
   const nav = (label: string, screen: Screen, ic: keyof typeof ICONS) =>
     el('button', { class: `nav${state.screen === screen ? ' on' : ''}`, onclick: () => go(screen) }, icon(ic), el('span', {}, label));
+  // The Clan tab carries the count of clan messages not seen yet (it waits through a fight: no chat over a duel).
+  const clanNav = () => {
+    const b = nav('Clan', 'clan', 'clan'), n = social.unread();
+    b.append(el('span', { class: 'nav-unread', hidden: !n, 'aria-label': 'unread clan messages' }, n > 99 ? '99+' : String(n)));
+    return b;
+  };
   if (!p) {
     return el('header', { class: 'top' },
       el('div', { class: 'brand', onclick: () => go('login') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Shop', 'shop', 'shop'), nav('News', 'news', 'news')),
+      el('nav', {}, nav('Play', 'cpu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Boards', 'boards', 'boards'), nav('Shop', 'shop', 'shop'), nav('News', 'news', 'news')),
       el('div', { class: 'who' }, qualityButton(), el('button', { class: 'btn small', onclick: () => go('login') }, icon('login'), 'Log in')));
   }
   return el('header', { class: 'top' },
     el('div', { class: 'brand', onclick: () => go('menu') }, el('span', { class: 'sigil' }, '⚔'), 'Arena of Kits'),
-    el('nav', { class: 'many' }, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'), nav('Heroes', 'heroes', 'heroes'), nav('Shop', 'shop', 'shop'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
+    el('nav', { class: 'many' }, nav('Play', 'menu', 'play'), nav('Raid', 'raid', 'raid'), nav('Tower', 'tower', 'tower'), nav('Lobbies', state.lobby ? 'lobby' : 'lobbies', 'lobbies'),
+      nav('Boards', 'boards', 'boards'), clanNav(), nav('Heroes', 'heroes', 'heroes'), nav('Shop', 'shop', 'shop'), nav('Profile', 'profile', 'profile'), nav('News', 'news', 'news')),
     el('div', { class: 'who full' },
       el('span', { class: `dot${state.connected ? ' on' : ''}`, title: state.connected ? 'connected' : 'offline' }),
       el('b', {}, p.name),
@@ -958,6 +977,31 @@ function reportTower() {
   net.send({ t: 'tower_report', floor, hero: climb.hero, week });
 }
 
+/**
+ * The Climb's floors go to the all-time Climb board (the Leaderboards): the highest floor cleared in this browser and the stars of all
+ * floors, read from the Climb's own saves (`tower.world.stars`: the floors cleared, each with its four stars). Sent for a signed-in
+ * player when a floor is cleared (the Climb says so with a `climb-cleared` event), at sign-in and when the Leaderboards open; only
+ * what the server does not have yet. Not verified (the Climb runs here): the board says so, and it pays nothing.
+ */
+function reportClimb() {
+  if (!state.profile) return;
+  let saved: Record<string, number[]> | null = null;
+  try { saved = JSON.parse(safeGet('tower.world.stars') ?? 'null'); } catch { /* nothing kept */ }
+  if (!saved || typeof saved !== 'object') return;
+  let floor = 0, stars = 0;
+  for (const [n, got] of Object.entries(saved)) {
+    const f = Number(n);
+    if (!Number.isInteger(f) || f < 1 || f > 50 || !Array.isArray(got)) continue;
+    floor = Math.max(floor, f);
+    stars += got.filter((g) => g).length;
+  }
+  const had = state.profile.climb;
+  if (!floor || (had && had.floor >= floor && had.stars >= stars)) return;
+  net.send({ t: 'climb_report', floor, stars: Math.min(stars, floor * 4) });
+  state.profile.climb = { floor: Math.max(floor, had?.floor ?? 0), stars: Math.max(stars, had?.stars ?? 0), at: new Date().toISOString() };
+}
+window.addEventListener('climb-cleared', () => reportClimb());
+
 // --- heroes --------------------------------------------------------------------------------------------------
 
 /** Every hero in one table, one row each. A click opens a row under itself (the turning model, every spell in full, the pick button) and closes it again. */
@@ -1033,6 +1077,9 @@ function statTiles(p: Profile) {
     tile('obols', obols(p.obols ?? 0)),
     tile('heroes owned', `${kits.filter((k) => ownsHero(k.name)).length} of ${kits.length}`),
     tile('raid rank', rankBadge(p.rank, 'big') ?? '–'),
+    // The duel rating (the Leaderboards): Elo from online duels that count.
+    tile('duel rating', el('button', { class: 'linkish', title: 'Open the Leaderboards', onclick: () => go('boards') }, String(p.rating ?? 1000)), p.rated ? null : el('div', { class: 'tile-l muted' }, 'no duel counted yet')),
+    tile('clan', el('button', { class: 'linkish', onclick: () => go('clan') }, p.clan ? `[${p.clan.tag}]` : 'none')),
   );
 }
 
@@ -1364,6 +1411,17 @@ function lobbyScreen(l: LobbyState) {
 // Every fight needs the heroes' clips (1.3 MB): fetched once the menu is up and idle, not when the first fight is waited for.
 setTimeout(preloadClips, 1500);
 
+// The Leaderboards and Clan screens (src/game/social.ts).
+const social = createSocial({
+  el, net, toast, render, untilWeek, clock,
+  me: () => state.profile?.name ?? null,
+  heroIcon: (name) => { const k = kitOf(name); return k ? portrait(k, 'portrait xs') : null; },
+  shown: () => {
+    const fighting = match.active || watch.active || cpu.active || raid.active || coop.active || tower.active || world.active;
+    return !fighting && (state.screen === 'boards' || state.screen === 'clan') ? state.screen : null;
+  },
+});
+
 const loading = new LoadingScreen();
 // The loading page covers the scene: nothing is drawn behind it until the fight's warm-up has compiled its shaders.
 loading.onToggle = (up) => { gameApi.view.loading = up; };
@@ -1399,7 +1457,7 @@ const tower = new TowerRun(gameApi, loading, {
 const worldLink = new WorldLink(net);
 const world = new WorldClimb(gameApi, {
   onEnter: () => render(),
-  onExit: () => { state.screen = 'tower'; render(); },
+  onExit: () => { state.screen = 'tower'; reportClimb(); render(); },
 }, worldLink);
 const coop = new RaidController(net, gameApi, loading, {
   onEnter: () => render(),
@@ -1434,8 +1492,9 @@ async function checkBuild() {
 net.on('session', (m) => {
   state.profile = m.profile;
   if (state.screen === 'login') state.screen = 'menu';
-  // A climb made before logging in goes on the week's board now.
+  // A climb made before logging in goes on the week's board now, and the Climb's floors on its board.
   reportTower();
+  reportClimb();
   render();
 });
 // The hero shop: whether heroes are locked and the week's free ones, from the server (at connect, with a session and a profile).
