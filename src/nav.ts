@@ -57,6 +57,82 @@ function pointDist(x: number, z: number, o: Obstacle) {
   return hyp(x - (o.ax + sx * k), z - (o.az + sz * k));
 }
 
+const GRID_CELL = 2.5; // the side of a square of the cover's index (m)
+const FREE_PAD = 0.05; // the largest margin `free` is asked for: the index finds cover this far past a body's reach
+const INDEX_MIN = 12; // fewer pieces of cover than this: asked one by one, as cheap as the index
+const SLACK = 0.01; // the index is drawn this much (m) wider than any answer it serves needs: rounding never hides a piece of cover
+
+/**
+ * Which cover lies near which square of the floor, so that a question about a walk or a spot looks only at the cover near it. The index
+ * only picks the pieces to ask: each is then asked exactly what `clear` and `free` ask it, so every answer is the one the whole list
+ * gives (they are yes-or-no over all the cover, in any order). A piece is filed under every square whose middle lies within its reach
+ * (`grow`) plus half a square's diagonal plus `SLACK` of its segment; cover whose numbers are not finite is asked by every question.
+ */
+class CoverIndex {
+  x0 = 0;
+  z0 = 0;
+  size = GRID_CELL;
+  nx = 0;
+  nz = 0;
+  /** The pieces filed under square (i, j) are `items[start[j * nx + i] .. start[j * nx + i + 1]]`. */
+  start = new Int32Array(1);
+  items = new Int32Array(0);
+  always: number[] = [];
+
+  constructor(list: readonly Obstacle[], grow: (o: Obstacle) => number) {
+    let x0 = Infinity, z0 = Infinity, x1 = -Infinity, z1 = -Infinity;
+    const reachOf = list.map((o) => grow(o) + SLACK);
+    const ok = list.map((o, k) => [o.ax, o.az, o.bx, o.bz, reachOf[k]].every(Number.isFinite));
+    list.forEach((o, k) => {
+      if (!ok[k]) return void this.always.push(k);
+      const r = reachOf[k];
+      x0 = Math.min(x0, o.ax - r, o.bx - r);
+      x1 = Math.max(x1, o.ax + r, o.bx + r);
+      z0 = Math.min(z0, o.az - r, o.bz - r);
+      z1 = Math.max(z1, o.az + r, o.bz + r);
+    });
+    if (!(x1 >= x0)) return;
+    this.size = Math.max(GRID_CELL, (x1 - x0) / 400, (z1 - z0) / 400);
+    this.x0 = x0;
+    this.z0 = z0;
+    this.nx = Math.floor((x1 - x0) / this.size) + 1;
+    this.nz = Math.floor((z1 - z0) / this.size) + 1;
+    const size = this.size, half = size * Math.SQRT1_2, cells: number[][] = [];
+    list.forEach((o, k) => {
+      if (!ok[k]) return;
+      const r = reachOf[k], far = r + half;
+      const i0 = Math.max(0, Math.floor((Math.min(o.ax, o.bx) - r - x0) / size)), i1 = Math.min(this.nx - 1, Math.floor((Math.max(o.ax, o.bx) + r - x0) / size));
+      const j0 = Math.max(0, Math.floor((Math.min(o.az, o.bz) - r - z0) / size)), j1 = Math.min(this.nz - 1, Math.floor((Math.max(o.az, o.bz) + r - z0) / size));
+      const sx = o.bx - o.ax, sz = o.bz - o.az, len2 = sx * sx + sz * sz;
+      for (let j = j0; j <= j1; j++) {
+        for (let i = i0; i <= i1; i++) {
+          const cx = x0 + (i + 0.5) * size, cz = z0 + (j + 0.5) * size;
+          const t = len2 > 0 ? Math.min(1, Math.max(0, ((cx - o.ax) * sx + (cz - o.az) * sz) / len2)) : 0;
+          const ex = cx - (o.ax + sx * t), ez = cz - (o.az + sz * t);
+          if (ex * ex + ez * ez > far * far) continue;
+          (cells[j * this.nx + i] ??= []).push(k);
+        }
+      }
+    });
+    const n = this.nx * this.nz;
+    this.start = new Int32Array(n + 1);
+    let count = 0;
+    for (let c = 0; c < n; c++) {
+      this.start[c] = count;
+      count += cells[c]?.length ?? 0;
+    }
+    this.start[n] = count;
+    this.items = new Int32Array(count);
+    for (let c = 0; c < n; c++) if (cells[c]) this.items.set(cells[c], this.start[c]);
+  }
+
+  /** The square (x, z) lies in, or -1 off the index. */
+  cell(x: number, z: number) {
+    const i = Math.floor((x - this.x0) / this.size), j = Math.floor((z - this.z0) / this.size);
+    return i < 0 || j < 0 || i >= this.nx || j >= this.nz ? -1 : j * this.nx + i;
+  }
+}
+
 export class Navigator {
   private obstacles: readonly Obstacle[] = [];
   private bounds: NavBounds | null = null;
@@ -74,6 +150,18 @@ export class Navigator {
   private parts: { x0: number; z0: number; n: number; id: Int16Array } | null = null;
   private chartSig = NaN;
   private moved = new WeakMap<object, { x: number; z: number; version: number; to: THREE.Vector3 }>();
+  /**
+   * The cover near each square of the map (`CoverIndex`), for the questions asked inside `step`; null on a map with little cover, and
+   * when the list was edited in a way its signature did not see (then every question goes through the whole list, as before).
+   */
+  private index: CoverIndex | null = null;
+  /** Each piece of cover's box grown by its reach, and its reach, as `clear` works them out: 5 numbers a piece. */
+  private boxes = new Float64Array(0);
+  /** The cover's numbers when the index was made, to see an edit the signature missed. */
+  private seen = new Float64Array(0);
+  /** Which question last asked a piece of cover (a walk crosses several squares that file the same piece). */
+  private asked = new Int32Array(0);
+  private question = 0;
 
   /** Whether a body can walk straight from `a` to `b` (leaving an obstacle it already touches is allowed). */
   clear(a: Pt, b: Pt, obstacles: readonly Obstacle[] = this.obstacles) {
@@ -92,6 +180,64 @@ export class Navigator {
   }
 
   /**
+   * `clear` over the map's own cover, asking only the pieces filed under the squares the walk crosses (`CoverIndex`), each exactly as
+   * `clear` asks it: the same answer. Only inside `step`, after `sync`: the index is of the list as it was then.
+   */
+  private through(a: Pt, b: Pt) {
+    const g = this.index;
+    if (!g || !Number.isFinite(a.x + a.z + b.x + b.z)) return this.clear(a, b);
+    const ax = a.x, az = a.z, bx = b.x, bz = b.z, dx = bx - ax, dz = bz - az;
+    const x0 = Math.min(ax, bx), x1 = Math.max(ax, bx), z0 = Math.min(az, bz), z1 = Math.max(az, bz);
+    if (++this.question > 2e9) {
+      this.question = 1;
+      this.asked.fill(0);
+    }
+    const q = this.question, asked = this.asked;
+    for (const k of g.always) if (this.blocks(k, a, b, x0, x1, z0, z1)) return false;
+    const size = g.size, nx = g.nx, start = g.start, items = g.items;
+    const i0 = Math.max(0, Math.floor((x0 - SLACK - g.x0) / size)), i1 = Math.min(nx - 1, Math.floor((x1 + SLACK - g.x0) / size));
+    // Column by column from the walk's start, square by square from its side: the nearest cover is asked first.
+    const si = dx >= 0 ? 1 : -1, sj = dz >= 0 ? 1 : -1;
+    for (let i = si > 0 ? i0 : i1; si > 0 ? i <= i1 : i >= i0; i += si) {
+      let lo = z0, hi = z1;
+      if (dx !== 0) {
+        // The part of the walk inside the column, widened by `SLACK` on both sides.
+        const xl = g.x0 + i * size - SLACK, xr = xl + size + 2 * SLACK;
+        let t1 = (xl - ax) / dx, t2 = (xr - ax) / dx;
+        if (t1 > t2) [t1, t2] = [t2, t1];
+        if (t1 < 0) t1 = 0;
+        if (t2 > 1) t2 = 1;
+        if (t1 > t2) continue;
+        const za = az + dz * t1, zb = az + dz * t2;
+        lo = za < zb ? za : zb;
+        hi = za < zb ? zb : za;
+      }
+      const j0 = Math.max(0, Math.floor((lo - SLACK - g.z0) / size)), j1 = Math.min(g.nz - 1, Math.floor((hi + SLACK - g.z0) / size));
+      for (let j = sj > 0 ? j0 : j1; sj > 0 ? j <= j1 : j >= j0; j += sj) {
+        const c = j * nx + i;
+        for (let p = start[c], e = start[c + 1]; p < e; p++) {
+          const k = items[p];
+          if (asked[k] === q) continue;
+          asked[k] = q;
+          if (this.blocks(k, a, b, x0, x1, z0, z1)) return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /** `clear`'s question to one piece of cover (number `k` of the list): whether it stops the walk from `a` to `b`. */
+  private blocks(k: number, a: Pt, b: Pt, x0: number, x1: number, z0: number, z1: number) {
+    const m = this.boxes, at = k * 5;
+    if (x1 < m[at] || x0 > m[at + 1] || z1 < m[at + 2] || z0 > m[at + 3]) return false;
+    const o = this.obstacles[k], reach = m[at + 4];
+    const d = segDist(a.x, a.z, b.x, b.z, o.ax, o.az, o.bx, o.bz);
+    if (d >= reach) return false;
+    const start = pointDist(a.x, a.z, o);
+    return start >= reach || d < start - 0.01;
+  }
+
+  /**
    * The next spot on `key`'s walk from `from` to `to`. `key` is whoever walks (a figure, a unit): its route is kept, so
    * a chase does not flip between two ways round a pillar. An order inside cover ends at its edge on the walker's side; one
    * close enough to cover that a body does not fit, on open ground, ends at the nearest spot on its own side of the cover.
@@ -104,12 +250,12 @@ export class Navigator {
     // Planned anew when the map or the goal changed, or when a dash or a shove put cover between the walker and its next point.
     // Also when the last order lay in cover: it ended on the walker's side, and a free spot close to that order can be across
     // the cover, where the old goal does not lead. The walker would stand on it as if it had arrived.
-    const stale = !route || route.version !== this.version || flat(route.order, to) > REPLAN_MOVE || !this.clear(from, route.path[0]) || (open && flat(route.goal, to) > REPLAN_MOVE);
+    const stale = !route || route.version !== this.version || flat(route.order, to) > REPLAN_MOVE || !this.through(from, route.path[0]) || (open && flat(route.goal, to) > REPLAN_MOVE);
     // Someone standing pressed against cover is at touching distance, which a rounding error can put just inside: that spot
     // is free. Snapped, it would land on the walker's side of the wall, and the walker would stop there as if it had arrived.
     // Snapped only when the order changes (or lies free): the walker's own position would keep moving the spot.
     const goal = open ? to.clone().setY(0) : stale ? this.snap(to, from) : route!.goal;
-    if (this.clear(from, goal)) {
+    if (this.through(from, goal)) {
       this.routes.set(key, { path: [goal], goal, order: to.clone(), version: this.version });
       return { point: goal, goal };
     }
@@ -124,7 +270,7 @@ export class Navigator {
     }
     const path = route!.path;
     // On to the next point once this one is reached, or the next one is in straight reach.
-    while (path.length > 1 && (flat(from, path[0]) < REACHED || this.clear(from, path[1]))) path.shift();
+    while (path.length > 1 && (flat(from, path[0]) < REACHED || this.through(from, path[1]))) path.shift();
     return { point: path[0], goal: route!.goal };
   }
 
@@ -137,12 +283,42 @@ export class Navigator {
     // The list is edited in place (walls fall, spells raise some), so it is compared by value.
     let sig = obstacles.length + (bounds?.r ?? 0);
     for (const o of obstacles) sig = (sig * 31 + o.ax * 7 + o.az * 11 + o.bx * 13 + o.bz * 17 + o.r * 19) % 1000003;
-    if (sig === this.signature) return;
+    if (sig === this.signature) {
+      // An edit the signature missed: the index no longer shows the list, so every question goes through the list itself.
+      if (this.index && !this.unchanged()) this.index = null;
+      return;
+    }
     this.signature = sig;
     this.version++;
     this.obstacles = obstacles;
     this.bounds = bounds;
     this.build();
+  }
+
+  /** Whether the cover holds the numbers it had when the index was made. */
+  private unchanged() {
+    const list = this.obstacles, seen = this.seen;
+    if (list.length * 5 !== seen.length) return false;
+    for (let k = 0; k < list.length; k++) {
+      const o = list[k], at = k * 5;
+      if (o.ax !== seen[at] || o.az !== seen[at + 1] || o.bx !== seen[at + 2] || o.bz !== seen[at + 3] || o.r !== seen[at + 4]) return false;
+    }
+    return true;
+  }
+
+  /** The index of the cover (`CoverIndex`) and `clear`'s numbers for each piece. */
+  private indexCover() {
+    const list = this.obstacles;
+    this.index = list.length >= INDEX_MIN ? new CoverIndex(list, (o) => o.r + BODY + FREE_PAD) : null;
+    this.boxes = new Float64Array(list.length * 5);
+    this.seen = new Float64Array(list.length * 5);
+    this.asked = new Int32Array(list.length);
+    this.question = 0;
+    list.forEach((o, k) => {
+      const reach = o.r + BODY - TOUCH, at = k * 5;
+      this.boxes.set([Math.min(o.ax, o.bx) - reach, Math.max(o.ax, o.bx) + reach, Math.min(o.az, o.bz) - reach, Math.max(o.az, o.bz) + reach, reach], at);
+      this.seen.set([o.ax, o.az, o.bx, o.bz, o.r], at);
+    });
   }
 
   /** Which part of the floor (x, z) lies in, or -1 (cover, or outside the map). */
@@ -195,10 +371,21 @@ export class Navigator {
     const n = Math.ceil((b.r * 2) / CELL), x0 = b.x - b.r, z0 = b.z - b.r;
     // -2: free and not numbered yet.
     const id = new Int16Array(n * n).fill(-1);
+    // Each square asks only the walls filed near it (`CoverIndex`): the same answer as asking them all.
+    const near = new CoverIndex(walls, (o) => o.r + BODY);
+    const clearOf = (o: Obstacle, x: number, z: number) => pointDist(x, z, o) >= o.r + BODY;
+    const open = (x: number, z: number) => {
+      if (!Number.isFinite(x + z)) return walls.every((o) => clearOf(o, x, z));
+      for (const k of near.always) if (!clearOf(walls[k], x, z)) return false;
+      const c = near.cell(x, z);
+      if (c < 0) return true;
+      for (let p = near.start[c], e = near.start[c + 1]; p < e; p++) if (!clearOf(walls[near.items[p]], x, z)) return false;
+      return true;
+    };
     for (let j = 0; j < n; j++) {
       for (let i = 0; i < n; i++) {
         const x = x0 + (i + 0.5) * CELL, z = z0 + (j + 0.5) * CELL;
-        if (Math.hypot(x - b.x, z - b.z) <= b.r - RING_MARGIN && walls.every((o) => pointDist(x, z, o) >= o.r + BODY)) id[j * n + i] = -2;
+        if (Math.hypot(x - b.x, z - b.z) <= b.r - RING_MARGIN && open(x, z)) id[j * n + i] = -2;
       }
     }
     let next = 0;
@@ -223,7 +410,19 @@ export class Navigator {
   /** Free for a body: not in touching distance of cover, inside the ring. */
   private free(x: number, z: number, pad = 0) {
     if (this.bounds && Math.hypot(x - this.bounds.x, z - this.bounds.z) > this.bounds.r - RING_MARGIN) return false;
-    for (const o of this.obstacles) if (!(pointDist(x, z, o) >= o.r + BODY + pad)) return false;
+    const g = this.index, list = this.obstacles;
+    if (!g || pad > FREE_PAD || !Number.isFinite(x + z)) {
+      for (const o of list) if (!(pointDist(x, z, o) >= o.r + BODY + pad)) return false;
+      return true;
+    }
+    // Only the cover filed under the spot's square can be this close (`CoverIndex`).
+    for (const k of g.always) if (!(pointDist(x, z, list[k]) >= list[k].r + BODY + pad)) return false;
+    const c = g.cell(x, z);
+    if (c < 0) return true;
+    for (let p = g.start[c], e = g.start[c + 1]; p < e; p++) {
+      const o = list[g.items[p]];
+      if (!(pointDist(x, z, o) >= o.r + BODY + pad)) return false;
+    }
     return true;
   }
 
@@ -263,13 +462,14 @@ export class Navigator {
   private walkable(from: Pt, path: readonly Pt[]) {
     let a = from;
     for (const b of path) {
-      if (!this.clear(a, b)) return false;
+      if (!this.through(a, b)) return false;
       a = b;
     }
     return true;
   }
 
   private build() {
+    this.indexCover();
     this.nodes = [];
     for (const o of this.obstacles) {
       const reach = o.r + BODY + NODE_GAP;
@@ -310,7 +510,7 @@ export class Navigator {
       if (j === i) continue;
       const b = this.nodes[j];
       // Always from the lower point to the higher, so both ends of a link agree.
-      if (i < j ? this.clear(a, b) : this.clear(b, a)) list.push({ to: j, cost: flat(a, b) });
+      if (i < j ? this.through(a, b) : this.through(b, a)) list.push({ to: j, cost: flat(a, b) });
     }
     return list;
   }
@@ -321,10 +521,10 @@ export class Navigator {
     const best = new Float64Array(n + 1).fill(Infinity), prev = new Int32Array(n + 1).fill(-1), done = new Uint8Array(n + 1);
     const guess = (i: number) => (i === END ? 0 : flat(this.nodes[i], goal));
     for (let i = 0; i < n; i++) {
-      if (this.clear(from, this.nodes[i])) best[i] = flat(from, this.nodes[i]);
+      if (this.through(from, this.nodes[i])) best[i] = flat(from, this.nodes[i]);
     }
     const intoGoal = new Float64Array(n).fill(-1);
-    for (let i = 0; i < n; i++) if (this.clear(this.nodes[i], goal)) intoGoal[i] = flat(this.nodes[i], goal);
+    for (let i = 0; i < n; i++) if (this.through(this.nodes[i], goal)) intoGoal[i] = flat(this.nodes[i], goal);
     for (;;) {
       let u = -1, low = Infinity;
       for (let i = 0; i <= n; i++) {
