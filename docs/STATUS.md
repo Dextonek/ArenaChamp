@@ -2,10 +2,10 @@
 
 _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix are pushed and **live** (first section; Cloudflare version 5cf1d450, PROTOCOL 14, shop still off), and since then **quick cast** (first section). Before that, the afternoon's deploy: the Tower, the Raid for 40, Twin Flames, the Heart of Noon, Anka, the reworked Vesper, Brannoc and Cantor, the hero shop **switched off**. Next: the Raid rework (docs/QUEUE.md, job 15). 2026-11-13: the build-id Reload bar is recorded as live (version 98909059); the first computer pulled everything. 2026-11-13: the game runs smoother (first section): drawing fixed, a Graphics setting, the tool that measures it. 2026-11-13, evening: that and the Tower's five floors as worlds are **live** and marked as the stable version `stable-2026-11-13` (first section: *Stable versions*)._
 
-## The Climb to 50 floors, the new scope (2026-11-14): the sea, the Wood and the Sands done at five times the ground; three chapters in agents' hands; NOT merged into the main branch, NOT live
+## The Climb to 50 floors, the new scope (2026-11-14): floors 1 to 40 done at five times the ground; three chapters in agents' hands; NOT merged into the main branch, NOT live
 
-- Branch `tower-50`. The sea (floors 1 to 10), the Wood (11 to 20) and the Sands (21 to 30) are made at the new size and checked;
-  the renumbering is merged; the Deep and the War are being made by two agents, and a third adds depth to the Wood and the Sands; the new models wait on the user's yes. Everything, with numbers:
+- Branch `tower-50`. Floors 1 to 40 (the sea, the Wood, the Sands, the Deep) are made at the new size and checked; the renumbering
+  is merged; the War (41 to 50) is being made by an agent, and two more add depth to the Wood and the Sands, and to the Deep; the new models wait on the user's yes. Everything, with numbers:
   [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *Progress on the new scope*.
 - **Waiting on the user:** yes or changes to the sea's new models (docs/tower/models/sea-lineup-front.jpg on the branch
   `t3/tower-sea-npc-models`).

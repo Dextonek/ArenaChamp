@@ -173,3 +173,11 @@ today's area, not a circle.
   roots change, the first long walk ordered costs the navigator 46 to 464 ms on the desktop, and the phone profile's slowest frames are
   worse than floor 1's.
 - **Depth for the Wood and the Sands** has gone to an agent (woodDepth.ts, sandsDepth.ts). The Deep and the War are still being made.
+- **The Deep (floors 31 to 40), merged (2026-11-14):** each floor is a cave with an outline of its own: low ridges make chambers,
+  mine tracks run between them, a black lake lies on one side, and halls are walled with stalagmites (gen/deep.ts, deepZone.ts). Floor 31
+  is grown and keeps its quests and fights (`pipeline/tools/gen-deep-home.ts`), and floor 40 is the crown, the Sun Warden at tier 2. The
+  route bot cleared all ten floors with Lyra and Bram; every fall was a lost gate duel. Notes and pictures are in
+  docs/tower/climb50/deep/. **To look at later:** on the phone profile a Deep floor takes up to 3.9 s to build, against floor 1's 0.6 s.
+  The Deep's pieces of cover carry the nearest drawable kind, with their real kind in a separate `kinds` list on the look; widening the
+  kinds type in zone.ts would end that. `f45/deep-zone.ts` is no longer used.
+- **Depth for the Deep** has gone to an agent (deepDepth.ts). Still running: the War, and depth for the Wood and the Sands.
