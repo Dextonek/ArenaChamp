@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RING } from '../../arenas/common';
 import type { Battlefield, WarLook, WarMats } from './warZone';
+import { buildWarScenes, planWarScenes, warScenesOn, type Taken } from './scenes/war';
 
 /**
  * The world's depth on a War floor (the user, 2026-11-14: "add depth into the worlds, make all the background look fit there, all the
@@ -31,6 +32,8 @@ export interface WarDepthIn {
   mats: WarMats;
   /** The floor's spots its looks keep clear of (keep.ts: people, packs, quests, doors...), in world coordinates. */
   keep?: { x: number; z: number }[];
+  /** The floor's number (41 to 50), for the scenes (scenes/war.ts): 48 to 50 are the most scarred. */
+  floor?: number;
 }
 
 const segDist = (px: number, pz: number, s: Seg) => {
@@ -96,6 +99,8 @@ class VDress {
 export function buildWarDepth(o: WarDepthIn) {
   const { look, geo, rnd } = o;
   const near = new VDress(), far = new VDress(120); // far off, one mesh a large square: few draws for the horizon
+  /** The depth's own big props, for the scenes to keep clear of (recorded only: no draw of `rnd` changes). */
+  const taken: Taken[] = [];
   const box = (w: number, h: number, d: number) => new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
   const cyl = (r0: number, r1: number, h: number, n = 7) => new THREE.CylinderGeometry(r0, r1, h, n).translate(0, h / 2, 0);
   const rim = look.rim, rmax = Math.max(...rim);
@@ -137,7 +142,7 @@ export function buildWarDepth(o: WarDepthIn) {
         if (sinceMile > 24 + rnd() * 8) {
           sinceMile = 0; s0 = -s0;
           const x = cx + nx * s0 * 3.1, z = cz + nz * s0 * 3.1;
-          if (free(x, z, 0.4, { road: 2.6, place: 1 })) near.add('mile', new THREE.CylinderGeometry(0.22, 0.3, 1.0, 6).translate(0, 0.5, 0), x, 0, z, yaw).add('stone', box(0.62, 0.14, 0.62), x, 0, z, yaw);
+          if (free(x, z, 0.4, { road: 2.6, place: 1 })) { near.add('mile', new THREE.CylinderGeometry(0.22, 0.3, 1.0, 6).translate(0, 0.5, 0), x, 0, z, yaw).add('stone', box(0.62, 0.14, 0.62), x, 0, z, yaw); taken.push({ x, z, r: 0.6 }); }
         }
         if (sinceBanner > 30 + rnd() * 10) {
           sinceBanner = 0;
@@ -146,17 +151,22 @@ export function buildWarDepth(o: WarDepthIn) {
             const h = 3.6 + rnd() * 1.2, k = side(x);
             near.add('wood', cyl(0.07, 0.09, h, 6), x, 0, z, 0, 1, 1, 1, (rnd() - 0.5) * 0.12).add('wood', box(1.1, 0.07, 0.07), x, h - 0.3, z, yaw);
             near.add(k, new THREE.PlaneGeometry(0.95, 1.0 + rnd() * 0.6).translate(0, -0.65, 0), x, h - 0.33, z, yaw, 1, 1, 1, 0, (rnd() - 0.5) * 0.1);
+            taken.push({ x, z, r: 0.8 });
           }
         }
         if (rnd() < 0.03) { // stakes on the verge
           const sd = rnd() < 0.5 ? 1 : -1, x = cx + nx * sd * 3.6, z = cz + nz * sd * 3.6;
-          if (free(x, z, 0.5, { road: 2.8, place: 1 })) for (let k = 0; k < 3; k++) near.add('wood', new THREE.ConeGeometry(0.09, 1.5, 5).translate(0, 0.75, 0), x + ux * (k - 1) * 0.35, 0, z + uz * (k - 1) * 0.35, yaw, 1, 1, 1, 0.4 * sd);
+          if (free(x, z, 0.5, { road: 2.8, place: 1 })) {
+            for (let k = 0; k < 3; k++) near.add('wood', new THREE.ConeGeometry(0.09, 1.5, 5).translate(0, 0.75, 0), x + ux * (k - 1) * 0.35, 0, z + uz * (k - 1) * 0.35, yaw, 1, 1, 1, 0.4 * sd);
+            taken.push({ x, z, r: 1.0 });
+          }
         }
         if (rnd() < 0.006) { // a broken cart pushed off the road
           const sd = rnd() < 0.5 ? 1 : -1, x = cx + nx * sd * 4.6, z = cz + nz * sd * 4.6;
           if (free(x, z, 1.6, { road: 3.2, place: 2 })) {
             near.add('plank', box(1.4, 0.4, 2.4), x, 0.25, z, yaw + 0.3, 1, 1, 1, 0.18).add('dark', new THREE.TorusGeometry(0.5, 0.08, 6, 14), x + 0.9, 0.5, z, yaw + 0.3 + Math.PI / 2);
             near.add('dark', new THREE.TorusGeometry(0.5, 0.08, 6, 14).rotateX(Math.PI / 2), x - 1.2, 0.08, z + 0.6).add('wood', box(0.1, 0.1, 2), x, 0.2, z - 1.6, yaw + 0.6);
+            taken.push({ x, z, r: 2.8 });
           }
         }
         if (rnd() < 0.05) { // arrows in the verge
@@ -173,6 +183,7 @@ export function buildWarDepth(o: WarDepthIn) {
       const a = rnd() * Math.PI * 2, d = from + rnd() * (to - from), x = p.x + Math.sin(a) * d, z = p.z + Math.cos(a) * d;
       if (!free(x, z, pad, { road: 2.4 })) continue;
       make(x, z, a);
+      taken.push({ x, z, r: 3.2 }); // the longest of the places' things (a ladder, a washing line, a row of posts) reaches about 3 m
       made++;
     }
   };
@@ -274,6 +285,7 @@ export function buildWarDepth(o: WarDepthIn) {
     if (geo.south(p.x - RING.x, p.z - RING.z) > 0.4 && beyond(p.x, p.z) < 40) continue;
     if (behindLine(p.x, p.z) && beyond(p.x, p.z) < 20) continue;
     tree(p.x, p.z, 0.8 + rnd() * 0.6, rnd() < 0.6, beyond(p.x, p.z) > 40 ? far : near);
+    taken.push({ x: p.x, z: p.z, r: 2.6 });
     made++;
   }
   // The two armies' camps on the hills either side: rows of tents (cream, a cap of the army's colour), their fires; a few banners.
@@ -377,8 +389,16 @@ export function buildWarDepth(o: WarDepthIn) {
   fly(0);
   o.into.add(crows);
 
+  // --- the scenes (scenes/war.ts): planned here, on their own stream, before the grass is made; the grass, arrows, helmets and spears
+  // that would stand up through a scene's cloth and crates are left out under it (nothing else of the depth changes) -------------------
+  const scenes = warScenesOn() ? planWarScenes({ look, geo, keep: o.keep ?? [], taken, floor: o.floor }) : [];
+  if (scenes.length) {
+    const under = (mm: THREE.Matrix4) => { const x = mm.elements[12], z = mm.elements[14]; return scenes.some((s) => Math.hypot(x - s.x, z - s.z) < s.R + 0.3); };
+    for (const k of ['tuft', 'arrow', 'helm', 'spear'] as const) lists[k] = lists[k].filter((mm) => !under(mm));
+  }
+
   // --- the instanced meshes ------------------------------------------------------------------------------------------------------------
-  const tint = (g: THREE.BufferGeometry, hex: string) => {
+  const tint =(g: THREE.BufferGeometry, hex: string) => {
     const nn = g.index ? g.toNonIndexed() : g, col = new THREE.Color(hex), c = new Float32Array(nn.attributes.position.count * 3);
     for (let i = 0; i < c.length; i += 3) { c[i] = col.r; c[i + 1] = col.g; c[i + 2] = col.b; }
     for (const k of Object.keys(nn.attributes)) if (k !== 'position' && k !== 'normal') nn.deleteAttribute(k);
@@ -409,6 +429,8 @@ export function buildWarDepth(o: WarDepthIn) {
 
   near.build(o.into, o.own, true);
   far.build(o.into, o.own, false);
+  // last, so every object the depth made before keeps its id (three.js draws ids from the seeded `Math.random` the zone sets)
+  if (scenes.length) buildWarScenes({ look, geo, into: o.into, own: o.own, scenes, taken, floor: o.floor });
 
   return {
     update(_dt: number, time: number) { drift(time); fly(time); },
