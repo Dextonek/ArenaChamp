@@ -307,6 +307,8 @@ export class WorldOthers implements WorldSink {
     const targets = toEnemy ? [o.aim] : [];
     const ctx = this.api.arena.contextFor({
       caster: o.caster, from, point, targets, enemy: o.aim, targetPos: targets.map((t) => t.group.position.clone()),
+      // A spell cast straight ahead (self) goes the way the figure faces: from and point are the same spot, which has no direction.
+      aim: spec.mode === 'self' ? o.caster.group.rotation.y : undefined,
       hit: () => {}, displace: () => {}, sentFrom: new THREE.Vector3(x, 0, z),
     });
     ctx.shieldSelf = ctx.healSelf = ctx.moveCaster = ctx.releaseCaster = undefined;

@@ -244,13 +244,17 @@ its own enemies, quests, lives and progress, and nothing one player does can tou
   shard and each zone put away leaves it: a door to a set piece, a fall that begins the floor again, the result card, Leave. The
   hero's place goes out 10 times a second, only when it changed; its casts go out as their spell's name and aim. The others are
   drawn as the Raid draws its partners: full figures for the nearest 3, light stand-ins past them (looked at twice a second),
-  played back 100 ms late between two reports as in *Smooth movement* (a fixed ring of slots: nothing is allocated per frame), a
+  played back 100 ms late between two reports as in *Smooth movement* (the reports go into a fixed ring of slots and are read back without allocating; the figures and the casts' looks allocate as they do in a raid), a
   name over each head. A cast plays its look from their figure at the spot they aimed with no hits, knocks, walls or units, and
   only the pose when this screen's own hero has the same spell or the figure is a stand-in. They are never hit, aimed at or in
   anyone's way. A fallen one lies down (health share 0) and stands when it is up again. The HUD's floor panel says
   "2 others on this floor" (hidden when not signed in).
 - **Alone as before.** Not signed in, with no connection, or in the tools (`world-tool.js`, the route bot, the perf scenes): no
   link, and the Climb is the same as before. A connection that drops clears the others; the resume's `session` joins again.
+- **Limits.** A tab hidden behind another sends its hero's place about once a second (the browser slows a hidden tab), so that
+  hero moves in steps on the others' screens; two windows side by side are smooth. Two others who cast the same spell share one
+  effect (the game keeps one per spell), so the second cuts the first short. A set piece behind a door is alone. A newcomer's
+  model loads when it first comes near enough to be drawn in full.
 - **Test switch:** `game.html?others=7` (or a perf scene with `others`, `gen-2-others`) walks seven made-up others round the hero,
   casting, through the same drawing path, with no server.
 
@@ -272,12 +276,21 @@ fill 2.1 and the ninth opens 2.2; joining again keeps the shard; `world_leave`, 
 `world_left`). Three tabs on the dev server with local test accounts (floor 2, floor 2, floor 3): pictures in
 [docs/tower/openworld/stage1/](../tower/openworld/stage1/).
 
-Speed (`perf.py scenes --scenes gen-2,gen-2-others`, 1500 frames, this computer's card; `gen-2-others` has seven made-up
-others circling the hero and casting): desktop median 22.4 ms with none, 27.0 ms with seven (+61 draw calls, step 2.6 → 3.0 ms,
-draw 13.4 → 16.8 ms); phone-4x 78.0 and 67.7 ms (no worse: the scene's fight is not the same one, since the others' casts draw on
-the scene's seeded dice, and a slowed phone's frame swings by more than that). The duel and the raid play the same fights as
-before the change (`duel-temple`, `raid-party`: the same prints as the commit before, run beside it; `raid-party` itself comes out
-as one of two prints from run to run, on both).
+Speed (`perf.py scenes --scenes gen-2,gen-2-others`, 1500 frames, this computer's card, two runs back to back on a quiet machine;
+`gen-2-others` has seven made-up others circling the hero, each casting every 3 to 6 s). Median / p99 / longest frame (ms):
+
+| Profile | No others | Seven others |
+|---|---|---|
+| desktop | 10.5-10.6 / 20-26 / 121-209 | 11.5-12.1 / 25-26 / 366-426 |
+| phone-4x | 28.0-28.6 / 66-68 / 376-410 | 33.9-37.9 / 75-78 / 438-580 |
+
+So seven others cost a slowed phone 6 to 10 ms a frame, on a floor that is already at 28 ms there. Where (`perf.py census`, phone):
+the others are 50 of the frame's 310 draw calls, 31 of them the three full figures' rigged meshes (79k triangles, no shadows), the
+rest the four stand-ins and seven names; the casts' looks add a few more. Memory churn goes from 19-20 to 25 MB/s (the figures'
+animation and the casts' effects; the reports themselves allocate nothing). The fight under the others is not the same one (their
+casts draw on the scene's seeded dice). The duel and the raid play the same fights as before the change (`duel-temple`,
+`raid-party`: the same prints as the commit before, run beside it; `raid-party` itself comes out as one of two prints from run to
+run, on both).
 
 ## The hero shop, raid ranks and the week's boards
 

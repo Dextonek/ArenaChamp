@@ -526,12 +526,12 @@ async function worldCases() {
     more[1].x.send({ t: 'lobby_create' });
     const lobbied = await a.next('world_left');
     ok(lobbied.id === more[1].r.you, 'a player who opens a lobby leaves the floor');
-    // The room the leavers made: the ninth's next join goes to the fuller shard, 2.1 (with room again), not its own.
+    // The room the leavers made: shard 2.1 has room again, and a newcomer goes there (2.2 was left empty when the ninth went on).
     ninth.send({ t: 'world_join', floor: 3, hero: 'Nyx' });
     await ninth.next('world_roster');
     const late = await enter('wade2');
     late.send({ t: 'world_join', floor: 2, hero: 'Kaia' });
-    ok((await late.next('world_roster')).shard === '2.1', 'an empty shard is gone, and a newcomer fills the shard with room');
+    ok((await late.next('world_roster')).shard === '2.1', 'after the ninth went to floor 3, a newcomer on floor 2 goes into 2.1, which has room again');
     for (const x of [a, b, c, ninth, late, ...more.map((m) => m.x)]) x.close();
   } catch (e) {
     ok(false, String(e instanceof Error ? e.stack : e));
