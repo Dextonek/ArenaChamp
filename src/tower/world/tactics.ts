@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { BrainMove, BrainTools, SummonBrain, SummonUnit } from '../../effects/summon';
 import { TelegraphLayer, insideTelegraph, type TelegraphShape } from '../../effects/telegraph';
+import { segDist, sweepHit } from '../../obstacles';
 import type { Enemy } from '../../effects/common';
 import type { GameApi } from '../../runtime';
 import type { EnemySpec } from './def';
@@ -21,11 +22,15 @@ import type { EnemySpec } from './def';
  * - *brute* (crabs, moss giants): every few blows a slam (a red circle round it fills, then it lands).
  * - *charger* (knights, the Stag-Crowned): from a distance, a charge along a red line; it stands winded after.
  * - *caster* (slingers, sprites, bowmen, golems, feeding roots): every third shot a fan of three, each weaker.
- * - *warden* (the guards and the named): slam and charge in turn; below 40% health it attacks a third faster.
+ * - *warden* (the guards and the named): slam and charge in turn (with its victim in reach when the charge is due, it falls back first,
+ *   as a knight does); below 40% health it attacks a third faster.
  * Kinds not in the table (a set piece's own) fight as before.
  *
  * Fair by rule: every special shows its zone first, long enough to walk out (`WIND`), never starts on a held hero (rooted, stunned,
- * slowed), one special at a time a pack, and it takes the place of a blow (the attack wait starts again after it). Its hit goes
+ * slowed), one special at a time a pack, and it takes the place of a blow (it starts only when a blow is due, and the attack wait starts
+ * again after it). A run (charge, lunge, pounce) is drawn only as far as the ground is free: its line ends where the unit's body would
+ * first touch cover, an edge of the floor or a wall of roots, and a run that cannot reach its victim so is not begun; a run that is
+ * stopped (a wall rose, it is pushed off its line) ends there. Its hit goes
  * through the pack's own delivery (shields, boons, leech and the tallies as any blow), its size as `damage` / 30 of the kind's blow.
  * No random numbers: who goes when comes from the unit's place in the pack and the clock, so the route bot and the perf scenes replay.
  */
@@ -78,6 +83,8 @@ interface Special {
   aim: Enemy;
   /** After it lands: the unit stands winded this long. */
   rest: number;
+  /** Where the unit stood last frame of its run (a run that does not move is over). */
+  last?: THREE.Vector3;
 }
 
 interface Mind {
@@ -108,6 +115,13 @@ export class PackMind {
   private thought = false;
   /** What it did, for the probes (pipeline/tools/tactics-probe.py): specials started, fans shot, blows landed by a special. */
   readonly stats: Record<string, number> = {};
+  /** The same by kind (the enemy's id): which kinds' specials fire (pipeline/tools/tactics-all.py). */
+  readonly byKind: Record<string, Record<string, number>> = {};
+  private count(spec: EnemySpec, what: string) {
+    this.stats[what] = (this.stats[what] ?? 0) + 1;
+    const k = (this.byKind[spec.id] ??= {});
+    k[what] = (k[what] ?? 0) + 1;
+  }
 
   constructor(
     private api: GameApi,
@@ -232,11 +246,14 @@ export class PackMind {
       if (m.role === 'hunter') m.fade = 1.1;
       if (m.role === 'charger' && m.blows % 2 === 0) m.fade = 2.4;
     }
+    // A warden whose charge is due with its victim in reach steps back for it (slam and charge in turn, as the table says).
+    if (m.role === 'warden' && m.i % 2 === 1 && m.fade <= 0 && m.ready <= 0 && !this.busy && dist <= 4 && !this.pinned(tgt)) m.fade = 2.4;
     m.lastCd = u.cd;
     if (m.fade > 0) {
       m.fade -= dt;
       m.striking = false;
-      const want = m.role === 'charger' ? 7.5 : 3.6;
+      // How far it falls back: a knight far, a warden just past a charge's least reach (4 m), a hound a step.
+      const want = m.role === 'charger' ? 7.5 : m.role === 'warden' ? 5 : 3.6;
       if (dist < want) {
         const away = new THREE.Vector3(u.pos.x - tgt.pos.x, 0, u.pos.z - tgt.pos.z);
         if (m.role === 'hunter') away.applyAxisAngle(UP, (m.i % 2 ? 1 : -1) * 0.7); // it circles off, not straight back
@@ -246,7 +263,8 @@ export class PackMind {
     }
 
     // A special, when it is its time and the pack has none going.
-    const start = (kind: Kind) => !this.busy && m.ready <= 0 && !this.pinned(tgt) && this.begin(u, m, kind, tgt, dist);
+    // It takes the place of a blow: only when one is due (`u.cd` run out), never on top of one just struck.
+    const start = (kind: Kind) => !this.busy && m.ready <= 0 && u.cd <= 0 && !this.pinned(tgt) && this.begin(u, m, kind, tgt, dist);
     switch (m.role) {
       case 'brute': if (dist <= REACH + 0.8 && start('slam')) return this.carry(u, m, 0); break;
       case 'charger': if (dist > 4 && dist < 12 && tools.sees(u.pos, tgt.pos) && start('charge')) return this.carry(u, m, 0); break;
@@ -268,7 +286,7 @@ export class PackMind {
           m.shots++;
           if (m.shots % 3 === 0 && m.spec.look !== 'netter') {
             for (const a of [-0.26, 0, 0.26]) tools.shoot(turned(u.pos, tgt.pos, a), BLOW * MUL.fan);
-            this.stats.fan = (this.stats.fan ?? 0) + 1;
+            this.count(m.spec, 'fan');
           } else tools.shoot(tgt.pos);
           return { face: tgt.pos };
         }
@@ -308,6 +326,9 @@ export class PackMind {
       shape = { kind: 'circle', x: u.pos.x + dir.x * 0.8, z: u.pos.z + dir.z * 0.8, radius: r };
     } else {
       len = kind === 'charge' ? Math.min(10, dist + 2.5) : kind === 'pounce' ? Math.min(8.5, dist + 1.5) : Math.min(5, dist + 1);
+      len = this.free(u.pos, dir, len);
+      // A run that cannot reach its victim (cover in the way of its body) is not begun: it walks as before.
+      if (len < dist - 0.3) return false;
       const width = kind === 'charge' ? 1.7 : 1.3;
       shape = { kind: 'line', x1: u.pos.x, z1: u.pos.z, x2: u.pos.x + dir.x * len, z2: u.pos.z + dir.z * len, width };
     }
@@ -319,9 +340,28 @@ export class PackMind {
     m.sp = { kind, t: 0, shape, layer, dir, len, went: 0, hit: new Set(), aim: tgt.figure, rest: kind === 'slam' ? 0.5 : kind === 'lunge' ? 0.5 : 1.0 };
     m.ready = EVERY[kind];
     this.busy = u;
-    this.stats[kind] = (this.stats[kind] ?? 0) + 1;
+    this.count(m.spec, kind);
     Zones.live++;
     return true;
+  }
+
+  /**
+   * How far a run from `from` along `dir` can go, up to `len`: to where the unit's body (0.45 m) first touches a piece of cover (the
+   * floor's edges and the Wood's walls of roots are cover too), and inside the arena's ring.
+   */
+  private free(from: THREE.Vector3, dir: THREE.Vector3, len: number) {
+    const arena = this.api.arena;
+    const to = new THREE.Vector3(from.x + dir.x * len, 0, from.z + dir.z * len);
+    const near = (arena.obstacles ?? []).filter((o) => segDist(o.ax, o.az, o.bx, o.bz, from.x, from.z, to.x, to.z) <= o.r + 0.5);
+    const hit = near.length ? sweepHit(new THREE.Vector3(from.x, 0, from.z), to, 0.45, near) : null;
+    if (hit) len = Math.max(0, hit.t * len - 0.1);
+    const b = arena.bounds;
+    if (b) {
+      // The ring: the run ends 0.5 m inside it (the walk's own margin).
+      const r = b.r - 0.5, fx = from.x - b.x, fz = from.z - b.z, p = fx * dir.x + fz * dir.z, q = fx * fx + fz * fz - r * r;
+      if (q < 0) len = Math.min(len, -p + Math.sqrt(p * p - q));
+    }
+    return len;
   }
 
   /** A special going on: the wind-up, then the blow (or the run), then the rest. */
@@ -333,7 +373,7 @@ export class PackMind {
     const face = sp.kind === 'slam' ? new THREE.Vector3(sp.shape.kind === 'circle' ? sp.shape.x : u.pos.x, 0, sp.shape.kind === 'circle' ? sp.shape.z : u.pos.z) : u.pos.clone().add(sp.dir!);
     if (sp.t < w) return { face, pose: sp.t / w };
     const world = u.summon.world;
-    const blow = (v: Victim, mul: number) => (this.stats.landed = (this.stats.landed ?? 0) + 1, world.hit(v.figure, { damage: BLOW * mul, knock: sp.kind === 'slam' ? 3 : 4, from: u.pos.clone(), color: m.spec.color, projectile: true }));
+    const blow = (v: Victim, mul: number) => (this.count(m.spec, 'landed'), world.hit(v.figure, { damage: BLOW * mul, knock: sp.kind === 'slam' ? 3 : 4, from: u.pos.clone(), color: m.spec.color, projectile: true }));
     if (sp.kind === 'slam') {
       if (sp.went === 0) {
         sp.went = 1;
@@ -352,8 +392,14 @@ export class PackMind {
       if (Math.hypot(v.pos.x - u.pos.x, v.pos.z - u.pos.z) < 1.1 + 0.2 * (m.spec.scale ?? 1)) { sp.hit.add(v.figure); blow(v, MUL[sp.kind]); }
     }
     const step = speed * dt;
+    // Stopped: it did not move last frame (a wall rose before it, a body in the way), or it was set off its line (a rising wall of
+    // roots sets whoever stands under it aside): the run is over where it is.
+    const moved = sp.last ? Math.hypot(u.pos.x - sp.last.x, u.pos.z - sp.last.z) : Infinity;
+    const off = sp.shape.kind === 'line' ? offLine(sp.shape, u.pos) : 0;
+    const stuck = sp.last !== undefined && dt > 0 && moved < 0.35 * step;
+    sp.last = (sp.last ?? new THREE.Vector3()).copy(u.pos);
     sp.went = (sp.went ?? 0) + step;
-    if (sp.went >= sp.len! || sp.t > w + sp.len! / speed + 0.4) {
+    if (stuck || off > 0.9 || sp.went >= sp.len! || sp.t > w + sp.len! / speed + 0.4) {
       u.opts.speed = sp.speedWas;
       u.cd = u.opts.attackEvery;
       return this.end(u, m, sp.rest);
@@ -378,6 +424,13 @@ const UP = new THREE.Vector3(0, 1, 0);
 
 /** Zones on the ground now, over every pack (the probe checks none is left behind). */
 export const Zones = { live: 0 };
+
+/** How far `p` is from a line zone's middle line (m). */
+function offLine(sh: Extract<TelegraphShape, { kind: 'line' }>, p: THREE.Vector3) {
+  const ex = sh.x2 - sh.x1, ez = sh.z2 - sh.z1, l2 = ex * ex + ez * ez || 1;
+  const t = Math.max(0, Math.min(1, ((p.x - sh.x1) * ex + (p.z - sh.z1) * ez) / l2));
+  return Math.hypot(p.x - (sh.x1 + ex * t), p.z - (sh.z1 + ez * t));
+}
 
 /** `to` turned round `from` by `a` radians (a fan's side bolts). */
 function turned(from: THREE.Vector3, to: THREE.Vector3, a: number) {

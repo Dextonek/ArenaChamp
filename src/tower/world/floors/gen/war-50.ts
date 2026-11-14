@@ -3260,7 +3260,7 @@ export const WAR_50: GenFloor = {
     }
    }
   },
-  "par": 2596,
+  "par": 1145,
   "shop": {
    "heal": 58,
    "boon": 92,
@@ -3432,6 +3432,20 @@ export const WAR_50: GenFloor = {
     "scale": 1.4,
     "shards": 65,
     "color": "#b8d0a0"
+   },
+   "castellan": {
+    "id": "castellan",
+    "name": "The Standard Bearer",
+    "blurb": "Holds the keep for neither army.",
+    "look": "bearer",
+    "melee": true,
+    "hp": 480,
+    "share": 0.06,
+    "every": 1.8,
+    "speed": 3,
+    "scale": 1.5,
+    "shards": 44,
+    "color": "#ffd060"
    },
    "champion": {
     "id": "champion",
@@ -3637,7 +3651,7 @@ export const WAR_50: GenFloor = {
       "n": 2
      }
     ],
-    "elite": "bearer"
+    "elite": "castellan"
    },
    {
     "id": "named1",
