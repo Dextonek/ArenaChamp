@@ -32,9 +32,10 @@ const probe = async (floors = [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]) => {
     const beyond = (x, z) => Math.hypot(x - C.x, z - C.z) - land.rimAt(look.rim, Math.atan2(z - C.z, x - C.x));
     const roads = [];
     for (const p of look.paths) for (let i = 1; i < p.length; i++) roads.push([C.x + p[i - 1][0], C.z + p[i - 1][1], C.x + p[i][0], C.z + p[i][1]]);
-    const hits = [], kinds = {};
+    const hits = [], kinds = {}, reach = {};
     log.scenes.forEach((s, i) => {
       kinds[s.kind] = (kinds[s.kind] ?? 0) + 1;
+      reach[s.kind] = Math.max(reach[s.kind] ?? 0, +(s.r - s.R).toFixed(2)); // how far the built footprint passed the planned one
       const name = `${i} ${s.kind}${s.beyond ? ' (beyond)' : ''} at (${s.x.toFixed(1)}, ${s.z.toFixed(1)}) r ${s.r}`;
       const hit = (what) => hits.push(`${name}: ${what}`);
       for (const k of keep) { const d = Math.hypot(s.x - k.x, s.z - k.z) - s.r; if (d < 3) hit(`keep spot (${k.x.toFixed(1)}, ${k.z.toFixed(1)}) at ${d.toFixed(2)} m`); }
@@ -64,7 +65,7 @@ const probe = async (floors = [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]) => {
       floor: n, scenes: log.scenes.length, open: log.scenes.filter((s) => !s.beyond && s.host === undefined).length,
       leaning: log.scenes.filter((s) => s.host !== undefined).length, beyond: log.scenes.filter((s) => s.beyond).length,
       tallestOpen: Math.max(...log.scenes.filter((s) => !s.beyond && s.host === undefined).map((s) => s.h)), keepSpots: keep.length,
-      buildMs: log.ms, triangles: log.tris, kinds, hits,
+      buildMs: log.ms, planMs: log.planMs, paintMs: log.paintMs, smokes: log.smokes, triangles: log.tris, kinds, reach, hits,
     });
     out.totalScenes += log.scenes.length; out.totalHits += hits.length;
   }

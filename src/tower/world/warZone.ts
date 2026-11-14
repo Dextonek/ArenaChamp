@@ -545,7 +545,7 @@ export function buildWarZone(look: WarLook, keep: { x: number; z: number }[] = [
   if (depthOn) {
     const gameRandom = Math.random;
     Math.random = seeded(991 + look.seed);
-    try { depth = buildWarDepth({ look, geo, into: g, own, rnd: seeded(777 + look.seed), mats: M, keep, floor }); } finally { Math.random = gameRandom; }
+    try { depth = buildWarDepth({ look, geo, into: g, own, rnd: seeded(777 + look.seed), mats: M, keep, floor, ground: { map, L } }); } finally { Math.random = gameRandom; }
   }
 
   return {

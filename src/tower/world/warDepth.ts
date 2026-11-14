@@ -34,6 +34,9 @@ export interface WarDepthIn {
   keep?: { x: number; z: number }[];
   /** The floor's number (41 to 50), for the scenes (scenes/war.ts): 48 to 50 are the most scarred. */
   floor?: number;
+  /** The zone's painted ground (its canvas map, `L` m across, centred on RING): the scenes paint their own ground into it (mud, scorch,
+   * ruts), so it costs no triangle and no draw call. */
+  ground?: { map: THREE.CanvasTexture; L: number };
 }
 
 const segDist = (px: number, pz: number, s: Seg) => {
@@ -430,9 +433,9 @@ export function buildWarDepth(o: WarDepthIn) {
   near.build(o.into, o.own, true);
   far.build(o.into, o.own, false);
   // last, so every object the depth made before keeps its id (three.js draws ids from the seeded `Math.random` the zone sets)
-  if (scenes.length) buildWarScenes({ look, geo, into: o.into, own: o.own, scenes, taken, floor: o.floor });
+  const sceneLife = scenes.length ? buildWarScenes({ look, geo, into: o.into, own: o.own, scenes, taken, floor: o.floor, ground: o.ground }) : null;
 
   return {
-    update(_dt: number, time: number) { drift(time); fly(time); },
+    update(_dt: number, time: number) { drift(time); fly(time); sceneLife?.update(time); },
   };
 }
