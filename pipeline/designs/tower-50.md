@@ -203,3 +203,11 @@ today's area, not a circle.
   back-to-back pairs on desktop and the phone profile. To get there its props cast no shadows and its gold is matte. Every chapter now
   has its depth pass. **To look at later:** floor 35 takes about 3.5 s to build on the phone profile against floor 31's 1 s; a profile
   of floor 35 would show why.
+- **The navigator's speed, merged (2026-11-14):** src/nav.ts now has a cover index, a heap for A*, links only where they could shorten a
+  way, and slices finished across frames. Routes are unchanged: `python pipeline/tools/nav-same.py` compares against the old copy
+  (`pipeline/tools/nav-old.ts`) over 88 maps and three seeds with zero differences. Floor 46's first long plan drops from about 2 s to
+  60 ms (about 300 ms on the phone profile), and the frame where a banner is taken from 2354 to 110 ms. The Wood's slowest plan drops from
+  464 to 41 ms. **Still open:**
+  - On floor 46 an AI goal at (0, -76) cannot be reached, so the whole field is searched every frame. That is a rule question.
+  - `pipeline/rustfull/guard.py` already failed before this change, on the engine files edited since its last stamp. Its Rust port needs
+    a look before it is trusted again.

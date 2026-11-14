@@ -5,7 +5,7 @@ _Last updated: 2026-11-12, evening: watching duels and the mouse side-button fix
 ## The Climb to 50 floors, the new scope (2026-11-14): all fifty floors done at five times the ground; three chapters in agents' hands; NOT merged into the main branch, NOT live
 
 - Branch `tower-50`. All fifty floors (the sea, the Wood, the Sands, the Deep, the War) are made at the new size and checked; every
-  chapter has its depth pass; an agent is making the navigator fast on large floors (a 2 s freeze on a first long walk); the new models wait on the user's yes. Everything, with numbers:
+  chapter has its depth pass; the navigator is fast on large floors (same routes, tested), so the 2 s freeze is gone; the new models wait on the user's yes. Everything, with numbers:
   [pipeline/designs/tower-50.md](../pipeline/designs/tower-50.md), *Progress on the new scope*.
 - **Waiting on the user:** yes or changes to the sea's new models (docs/tower/models/sea-lineup-front.jpg on the branch
   `t3/tower-sea-npc-models`).
