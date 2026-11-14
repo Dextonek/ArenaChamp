@@ -55,6 +55,24 @@ export interface SummonOptions {
   still?: boolean;
   /** A mind of its own (the Climb's packs: src/tower/world/tactics.ts). Unset: the nearest victim and the usual chase, unchanged. */
   brain?: SummonBrain;
+  /**
+   * More it may attack than the arena's own victims: the heroes of other screens beside the Climb's shared packs (the open world,
+   * pipeline/designs/climb-open-world.md, stage 2). Its swings, bolts and the brain's specials reach them too, and every hit on one
+   * goes to `others.hit`, never to the arena. Unset: the arena's victims alone, as before.
+   */
+  others?: SummonOthers;
+}
+
+/** Victims from outside the arena (`SummonOptions.others`): figures drawn here whose hits are delivered elsewhere. */
+export interface SummonOthers {
+  /** Where they stand now (alive ones only; an empty list most of the time costs nothing). */
+  victims(): { figure: Enemy; pos: THREE.Vector3 }[];
+  /** True when `figure` is one of them. */
+  has(figure: Enemy): boolean;
+  /** A hit on one of them. */
+  hit(target: Enemy, opts: HitOptions): void;
+  /** One of the summon's units fired a bolt. */
+  fired?(): void;
 }
 
 /** What a brain asks of a unit this frame: walk (toward `to` round the cover, or along `dir`), face a spot, show a wind-up. */
@@ -64,6 +82,10 @@ export interface BrainMove {
   face?: THREE.Vector3;
   /** The wind-up drawn as a swing's first part (0..1); the system strikes nothing for it. */
   pose?: number;
+  /** The walk drawn (0..1) when the brain moved the unit itself (a copy of a unit run on another screen). */
+  walk?: number;
+  /** A swing drawn (0..1), striking nothing (the same). */
+  swing?: number;
 }
 
 /** What a brain may use: a bolt from the unit at a spot (`damage` for this bolt only; the unit's attack wait starts again). */
@@ -86,7 +108,13 @@ export interface SummonBrain {
 export class SummonUnit {
   readonly pos: THREE.Vector3;
   hp: number;
-  readonly max: number;
+  /** Its full health (a shared pack's unit grows when more players fight it). */
+  max: number;
+  /**
+   * A copy of a unit another screen runs (the Climb's shared packs): a hit on it is heard (`onHurt`) and shown, but it never falls
+   * here (the screen that runs it says when, `slay`), is never pushed and its bolts strike nothing.
+   */
+  mirror = false;
   /** Seconds left to live. */
   left: number;
   /** Seconds since death (-1 = alive). */
@@ -228,6 +256,8 @@ export class SummonSystem {
   private pool: MinionPool;
   private bolts: BoltSet;
   private looks = new Map<string, BoltLook>();
+  /** Most units alive per side (`MAX_UNITS`; the Climb's shared packs raise it while other players' packs are drawn). */
+  cap = MAX_UNITS;
 
   constructor(parent: THREE.Group, private env: SummonEnv) {
     this.pool = new MinionPool(parent);
@@ -254,8 +284,8 @@ export class SummonSystem {
 
   /** Makes the units. Honors the per-side cap; the handle's `units` holds the ones really made. */
   spawn(world: SummonWorld, o: SummonOptions): Summon {
-    const handle = new Summon(world);
-    const room = Math.max(0, MAX_UNITS - this.alive(world.side).length);
+    const handle = new Summon(o.others ? widen(world, o.others) : world);
+    const room = Math.max(0, this.cap - this.alive(world.side).length);
     const n = Math.min(Math.max(1, Math.round(o.count ?? 1)), room);
     const color = o.color ?? '#b8c4d8';
     const opts = { damage: o.damage, attackEvery: o.attackEvery, color, range: o.range ?? (o.kind === 'turret' ? 8 : 9), speed: o.speed ?? (o.kind === 'melee' ? 3.6 : 3), goal: o.goal, still: o.still, brain: o.brain };
@@ -290,7 +320,9 @@ export class SummonSystem {
     u.flash = 1;
     u.flashTint.set(opts.color ?? '#ff8a4a');
     if (!passed && dmg > 0) u.summon.hurt(u, dmg);
-    const knock = u.opts.still ? 0 : Math.min(opts.knock ?? 4, 6);
+    // A copy never falls here: the screen that runs the unit says when.
+    if (u.mirror && u.hp <= 0) u.hp = Math.min(1, u.max);
+    const knock = u.opts.still || u.mirror ? 0 : Math.min(opts.knock ?? 4, 6);
     if (knock > 0 && opts.from) {
       const away = new THREE.Vector3(u.pos.x - opts.from.x, 0, u.pos.z - opts.from.z);
       if (away.lengthSq() > 1e-4) u.knock.addScaledVector(away.normalize(), knock * 0.7);
@@ -409,8 +441,8 @@ export class SummonSystem {
           walk = this.walk(u, dir, 1, dt, took.dir ? undefined : took.to);
         }
       }
-      pose.walk = walk;
-      pose.swing = took.pose !== undefined ? Math.min(0.45, took.pose * 0.45) : -1;
+      pose.walk = took.walk ?? walk;
+      pose.swing = took.swing !== undefined ? took.swing : took.pose !== undefined ? Math.min(0.45, took.pose * 0.45) : -1;
       pose.shot = u.shot;
       fx.update(dt, pose, u.hp / u.max, this.env.camera);
       return;
@@ -486,6 +518,8 @@ export class SummonSystem {
       from: u.pos.clone().addScaledVector(dir, 0.45), dir, speed: BOLT_SPEED, range: u.opts.range + 2, radius: 0.22,
       hit: { damage: u.opts.damage, knock: 0, color: u.opts.color },
     });
+    // A copy's bolt is a look: the screen that runs the unit has the real one.
+    if (u.mirror) { proj.world.victims = () => []; proj.world.hit = () => {}; }
     const stats = this.tally(u.side), damage = u.opts.damage;
     proj.onHit(() => { stats.dealt += damage; });
     this.bolts.follow(proj, this.boltLook(u.opts.color));
@@ -502,8 +536,8 @@ export class SummonSystem {
         const dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d = Math.hypot(dx, dz);
         if (d >= SEPARATION) continue;
         const nx = d > 1e-4 ? dx / d : 1, nz = d > 1e-4 ? dz / d : 0;
-        // Share the push, unless one of the two is a turret (it takes none, the other takes all).
-        const shareA = a.kind === 'turret' ? 0 : b.kind === 'turret' ? 1 : 0.5;
+        // Share the push, unless one of the two is a turret or a copy of a unit run elsewhere (it takes none, the other takes all).
+        const shareA = a.kind === 'turret' || a.mirror ? 0 : b.kind === 'turret' || b.mirror ? 1 : 0.5;
         const push = SEPARATION - d;
         a.pos.x -= nx * push * shareA; a.pos.z -= nz * push * shareA;
         b.pos.x += nx * push * (1 - shareA); b.pos.z += nz * push * (1 - shareA);
@@ -524,4 +558,27 @@ export class SummonSystem {
     }
     return look;
   }
+}
+
+/**
+ * The world a summon with `others` fights in: the arena's victims and those, each hit going its own way, and its bolts made to hit
+ * both (the arena builds a bolt's world with its own list, so the list is widened on the bolt).
+ */
+function widen(world: SummonWorld, ex: SummonOthers): SummonWorld {
+  const join = (base: () => { figure: Enemy; pos: THREE.Vector3 }[]) => () => {
+    const more = ex.victims();
+    return more.length ? [...base(), ...more] : base();
+  };
+  return {
+    side: world.side,
+    victims: join(() => world.victims()),
+    hit: (t, h) => (ex.has(t) ? ex.hit(t, h) : world.hit(t, h)),
+    fire: (po) => {
+      const p = world.fire(po), pw = p.world, own = pw.victims.bind(pw), hit = pw.hit.bind(pw);
+      pw.victims = join(own);
+      pw.hit = (t, h) => (ex.has(t) ? ex.hit(t, h) : hit(t, h));
+      ex.fired?.();
+      return p;
+    },
+  };
 }

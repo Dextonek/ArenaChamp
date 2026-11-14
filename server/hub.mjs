@@ -1410,7 +1410,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
   const packNum = (v) => (num(v) ? mm(Math.max(-1e6, Math.min(1e6, v))) : 0);
 
   /**
-   * `pack_state { packs: [{ id, x, z, u, zn }] }`: the owner's packs, ten times a second. `u`: each unit, 0 when it has fallen, else
+   * `pack_state { packs: [{ id, x, z, ts, u, zn }] }`: the owner's packs, ten times a second (`ts`: its clock). `u`: each unit, 0 when it has fallen, else
    * `[x, z, yaw, hp, max, walk, swing, pose, shots]`; `zn`: the red zones on the ground. Only the owner's own packs pass, places
    * clamped, numbers made finite; each goes to the members within `seeR` m of it, with the players it is set for (`n`).
    * @param {Client} c @param {any} m
@@ -1438,7 +1438,7 @@ export function createHub({ accounts, log = (m) => console.log(`[game] ${m}`), l
         return w;
       });
       const zn = Array.isArray(r.zn) ? r.zn.slice(0, PK.zones).filter(Array.isArray).map((/** @type {unknown[]} */ v) => v.slice(0, 10).map(packNum)) : [];
-      out.push({ p, text: JSON.stringify({ id: p.id, n: p.n, x: p.x, z: p.z, u, zn }) });
+      out.push({ p, text: JSON.stringify({ id: p.id, n: p.n, x: p.x, z: p.z, ts: num(r.ts) ? r.ts : undefined, u, zn }) });
     }
     if (!out.length) return;
     for (const x of shard.members) {

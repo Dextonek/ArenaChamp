@@ -10,8 +10,8 @@ import type { EnemySpec } from './def';
  * How the Climb's enemies fight (the user, 2026-11-14: "those mobs should also have a pattern of attack and focusing logic"). Before
  * this, every unit walked at the nearest victim and struck or shot; now a pack thinks as one, and each kind has its own way:
  *
- * **Focus (the pack):** a pack picks one victim together and holds it (at least `HOLD` s, unless it falls or runs far): the hero, or a
- * unit of the hero's side that stands in the pack's face. A melee unit goes for the focus unless something bites it from closer; a
+ * **Focus (the pack):** a pack picks one victim together and holds it (at least `HOLD` s, unless it falls or runs far): a hero (this
+ * screen's, or in the open world another player's in the fight: `isHero`), or a unit of the hero's side that stands in the pack's face. A melee unit goes for the focus unless something bites it from closer; a
  * ranged unit shoots the focus, or whoever came within `SELF` m of it.
  * **Surround and take turns:** melee units come at the focus from different sides (slots round it, spread from the pack's side), and at
  * most `TOKENS` strike at once; the others wait a step back, circling, until a place is free.
@@ -129,7 +129,21 @@ export class PackMind {
     private api: GameApi,
     /** True while the pack fights (asleep, leashed and gone: the brains do nothing). */
     private awake: () => boolean,
+    /** Another screen's hero among the victims (the open world's shared packs): it counts as a hero for the focus. */
+    private isHero?: (f: Enemy) => boolean,
   ) {}
+
+  /** The red zone of a unit's special now, for the screens that draw the pack: its shape, how long it has filled, when it lands. */
+  zoneOf(u: SummonUnit): { shape: TelegraphShape; t: number; impact: number } | null {
+    const sp = this.minds.get(u)?.sp;
+    return sp ? { shape: sp.shape, t: sp.t, impact: WIND[sp.kind] } : null;
+  }
+
+  /** How far a unit's wind-up is (0..1), or -1 when it has none. */
+  windup(u: SummonUnit) {
+    const sp = this.minds.get(u)?.sp;
+    return sp && sp.t < WIND[sp.kind] ? sp.t / WIND[sp.kind] : -1;
+  }
 
   /** Once a frame, from the pack (its own clock: no wall time, so a replay is the same). */
   tick(dt: number) {
@@ -200,7 +214,7 @@ export class PackMind {
     for (const v of victims) {
       const d = Math.hypot(v.pos.x - cx, v.pos.z - cz);
       const inFace = units.some((u) => Math.hypot(v.pos.x - u.pos.x, v.pos.z - u.pos.z) < 3);
-      let score = (v.figure === hero ? 1 : inFace ? 1.2 : 0.5) - d / 20;
+      let score = (v.figure === hero || this.isHero?.(v.figure) ? 1 : inFace ? 1.2 : 0.5) - d / 20;
       if (still && v.figure === still.figure) score += 0.25; // it keeps what it has unless another is clearly better
       if (score > bestScore) { bestScore = score; best = v; }
     }

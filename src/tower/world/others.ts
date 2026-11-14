@@ -38,8 +38,8 @@ const LITE_RING = new THREE.RingGeometry(0.45, 0.55, 24).rotateX(-Math.PI / 2).t
 const NAME_COLOR = '#a8e0b0';
 const STILL = {};
 
-/** A player's reported places on this screen's clock, in a fixed ring, played back a little late. */
-class Glide {
+/** A player's reported places on this screen's clock, in a fixed ring, played back a little late (also a shared pack's units: share.ts). */
+export class Glide {
   private at = new Float64Array(RING);
   private xs = new Float32Array(RING);
   private zs = new Float32Array(RING);
@@ -144,6 +144,7 @@ class Other {
   constructor(readonly id: number, public name: string, public kit: HeroKit, x: number, z: number, yaw: number) {
     this.caster.body = null;
     this.aim.body = null;
+    this.victim = { id, figure: this.caster, pos: this.caster.group.position };
     this.caster.group.position.set(x, 0, z);
     this.caster.group.rotation.y = yaw;
     this.glide.reset(x, z, yaw);
@@ -158,6 +159,9 @@ class Other {
   get pos() {
     return this.caster.group.position;
   }
+
+  /** Its hero as a shared pack's victim (made once). */
+  readonly victim: { id: number; figure: Enemy; pos: THREE.Vector3 };
 
   /** Another hero (the player changed): a new model and colour. */
   setKit(kit: HeroKit) {
@@ -225,6 +229,12 @@ export class WorldOthers implements WorldSink {
   /** The same players, kept for sorting by distance without a new array. */
   private order: Other[] = [];
   private sortIn = 0;
+  /**
+   * The others' heroes that are up, with where they stand on this screen: what a shared pack run here may strike (share.ts). A kept
+   * list, made again once a frame; empty while the zone is hidden.
+   */
+  readonly heroes: { id: number; figure: Enemy; pos: THREE.Vector3 }[] = [];
+  private byFigure = new Map<Enemy, number>();
   /** The shard's name, and a change of how many others there are (for the HUD's line). */
   shard = '';
   onCount: ((n: number) => void) | null = null;
@@ -240,9 +250,19 @@ export class WorldOthers implements WorldSink {
     return this.list.size;
   }
 
+  /** How many of them are made up (`fake`). */
+  get fakeCount() {
+    return this.fakes.length;
+  }
+
   /** Each other player's place now (the map's green dots). */
   forEachPlace(fn: (x: number, z: number) => void) {
     for (const o of this.list.values()) fn(o.pos.x, o.pos.z);
+  }
+
+  /** Whose hero this figure is (its id in the shard), or 0. */
+  idOf(figure: Enemy) {
+    return this.byFigure.get(figure) ?? 0;
   }
 
   private kitOf(hero: string) {
@@ -269,6 +289,7 @@ export class WorldOthers implements WorldSink {
     } else {
       o = new Other(p.id, p.name, kit, p.x, p.z, p.yaw);
       this.list.set(p.id, o);
+      this.byFigure.set(o.caster, p.id);
       this.order.push(o);
       this.group.add(o.group);
       this.sortIn = 0;
@@ -345,6 +366,7 @@ export class WorldOthers implements WorldSink {
     const o = this.list.get(id);
     if (!o) return;
     this.list.delete(id);
+    this.byFigure.delete(o.caster);
     const i = this.order.indexOf(o);
     if (i >= 0) this.order.splice(i, 1);
     this.group.remove(o.group);
@@ -357,6 +379,7 @@ export class WorldOthers implements WorldSink {
   /** `hero`: where this screen's hero stands. `shown`: a zone is on (the others are hidden in a set piece and on the result card). */
   update(dt: number, hero: THREE.Vector3, shown: boolean) {
     this.group.visible = shown && this.list.size > 0;
+    this.heroes.length = 0;
     if (!shown || !this.list.size) return;
     if (this.fakes.length) this.stepFakes(dt, hero);
     if ((this.sortIn -= dt) <= 0) {
@@ -368,7 +391,10 @@ export class WorldOthers implements WorldSink {
         o.setLite(i >= FULL || o.dist > (o.lite ? NEAR : NEAR + 4));
       }
     }
-    for (const o of this.order) o.update(dt);
+    for (const o of this.order) {
+      o.update(dt);
+      if (!o.down) this.heroes.push(o.victim);
+    }
   }
 
   dispose() {

@@ -4,6 +4,10 @@
  * fall and leave. This is the wire: it joins and leaves, sends this hero's place and casts, and hands what the hub says to whoever
  * draws the others (`WorldSink`, src/tower/world/others.ts). Not signed in, or with no connection, it does nothing and the Climb plays
  * alone as before. The messages are in docs/architecture/multiplayer.md ("The Climb's open world, stage 1").
+ *
+ * Stage 2, shared packs: a pack woken here is claimed (`claimPack`); the screen that runs a pack sends its units ten times a second
+ * (`packStates`), its blows on other heroes (`packHurt`) and its end (`packClear`, `packRelease`); a screen that draws it sends its hits
+ * (`packHit`). What the hub says of packs goes to `packs` (src/tower/world/share.ts). Section "The Climb's open world, stage 2".
  */
 
 import { WORLD } from '../../server/protocol.mjs';
@@ -21,6 +25,35 @@ export interface WorldPlayer {
   yaw: number;
   walk?: boolean;
   hp?: number;
+}
+
+/** A pack the hub knows in this shard: whose screen runs it (0: nobody), the players it is set for, cleared. */
+export interface SharedPackRec { id: string; owner: number; n: number; cleared: boolean }
+
+/**
+ * One pack as its owner reports it. `u`: each unit in the pack's order, 0 once it fell, else `[x, z, yaw, hp, max, walk, swing, pose,
+ * shots]` (`swing` -1 or how far its blow is, `pose` -1 or how far its wind-up is, `shots` how many bolts it fired so far); `zn`: the red
+ * zones, `[unit, kind (0 a circle, 1 a line), a, b, c, d, e, t, impact]` (a circle: x, z, radius; a line: x1, z1, x2, z2, width; `t`
+ * how long it has been filling, `impact` when it lands). `ts`: the owner's clock (ms).
+ */
+export interface PackReport { id: string; n?: number; x: number; z: number; ts?: number; u: (number[] | 0)[]; zn?: number[][] }
+
+/** A blow of another screen's pack on this hero: its share of the hero's health (before the hero's own shields and boons). */
+export interface PackBlow { pack: string; share: number; x: number; z: number; kind?: string; net?: { kind: 'root' | 'slow'; s: number }; by: number }
+
+/** Who keeps the shared packs: what the hub says of them. */
+export interface PackSink {
+  /** This shard's packs as the hub knows them (on joining), and this screen's id in it. */
+  roster(you: number, packs: SharedPackRec[]): void;
+  owner(pack: string, owner: number, n: number): void;
+  scale(pack: string, n: number): void;
+  state(packs: PackReport[]): void;
+  hit(pack: string, u: number, dmg: number, by: number): void;
+  hurt(b: PackBlow): void;
+  cleared(pack: string): void;
+  respawn(pack: string): void;
+  /** No shard any more: every pack is this screen's own again. */
+  clear(): void;
 }
 
 /** Who draws the others: what the hub says, as it comes. */
@@ -47,6 +80,16 @@ export interface WorldPresence {
   /** This hero's place, as often as the page likes: it goes out `WORLD.sendHz` times a second at most, and only when it changed. */
   move(x: number, z: number, yaw: number, walk: boolean, hp: number): void;
   cast(label: string, x: number, z: number, tx: number, tz: number): void;
+  /** Where the hub's news of shared packs goes, or null. */
+  packs: PackSink | null;
+  /** This screen's id in its shard (0 before the roster). */
+  readonly you: number;
+  claimPack(pack: string, x: number, z: number): void;
+  packStates(packs: PackReport[]): void;
+  packHit(pack: string, u: number, dmg: number): void;
+  packHurt(pack: string, to: number, share: number, x: number, z: number, kind?: string, net?: { kind: 'root' | 'slow'; s: number }): void;
+  packClear(pack: string): void;
+  packRelease(pack: string): void;
 }
 
 /** A place is the same to the centimetre; a facing to a hundredth of a radian; health to a hundredth. */
@@ -54,6 +97,8 @@ const SAME_M = 0.01, SAME_YAW = 0.01, SAME_HP = 0.01;
 
 export class WorldLink implements WorldPresence {
   sink: WorldSink | null = null;
+  packs: PackSink | null = null;
+  you = 0;
   private signedIn = false;
   private connected = false;
   /** The floor and hero the Climb is on, kept so a connection that comes back joins again. */
@@ -80,12 +125,21 @@ export class WorldLink implements WorldPresence {
     net.on('world_roster', (m) => {
       if (!this.want || m.floor !== this.want.floor) return;
       this.shard = m.shard;
+      this.you = m.you;
       this.sink?.roster(m.shard, m.players.map(tagged));
+      this.packs?.roster(m.you, m.packs ?? []);
     });
     net.on('world_joined', (m) => { if (this.joined) this.sink?.joined(tagged(m)); });
     net.on('world_moved', (m) => { if (this.joined) this.sink?.moved(m.id, m.x, m.z, m.yaw, !!m.walk, m.hp ?? 1, m.ts); });
     net.on('world_cast', (m) => { if (this.joined) this.sink?.cast(m.id, m.label, m.x, m.z, m.tx, m.tz); });
     net.on('world_left', (m) => { if (this.joined) this.sink?.left(m.id); });
+    net.on('pack_owner', (m) => { if (this.joined) this.packs?.owner(m.pack, m.owner, m.n); });
+    net.on('pack_scale', (m) => { if (this.joined) this.packs?.scale(m.pack, m.n); });
+    net.on('pack_state', (m) => { if (this.joined) this.packs?.state(m.packs); });
+    net.on('pack_hit', (m) => { if (this.joined) this.packs?.hit(m.pack, m.u, m.dmg, m.by); });
+    net.on('pack_hurt', (m) => { if (this.joined) this.packs?.hurt(m); });
+    net.on('pack_cleared', (m) => { if (this.joined) this.packs?.cleared(m.pack); });
+    net.on('pack_respawn', (m) => { if (this.joined) this.packs?.respawn(m.pack); });
   }
 
   get online() {
@@ -106,7 +160,9 @@ export class WorldLink implements WorldPresence {
     this.want = null;
     this.joined = false;
     this.shard = '';
+    this.you = 0;
     this.sink?.clear();
+    this.packs?.clear();
     if (was && this.online) this.net.send({ t: 'world_leave' });
   }
 
@@ -125,6 +181,35 @@ export class WorldLink implements WorldPresence {
     this.net.send({ t: 'world_cast', label, x: mm(x), z: mm(z), tx: mm(tx), tz: mm(tz) });
   }
 
+  /** True when a pack message may go: in a shard (the roster came) and connected. */
+  private get inShard() {
+    return this.joined && this.you > 0 && this.online;
+  }
+
+  claimPack(pack: string, x: number, z: number) {
+    if (this.inShard) this.net.send({ t: 'pack_claim', pack, x: mm(x), z: mm(z) });
+  }
+
+  packStates(packs: PackReport[]) {
+    if (this.inShard && packs.length) this.net.send({ t: 'pack_state', packs });
+  }
+
+  packHit(pack: string, u: number, dmg: number) {
+    if (this.inShard) this.net.send({ t: 'pack_hit', pack, u, dmg: Math.round(dmg * 10) / 10 });
+  }
+
+  packHurt(pack: string, to: number, share: number, x: number, z: number, kind?: string, net?: { kind: 'root' | 'slow'; s: number }) {
+    if (this.inShard) this.net.send({ t: 'pack_hurt', pack, to, share: Math.round(share * 1e4) / 1e4, x: mm(x), z: mm(z), kind, net });
+  }
+
+  packClear(pack: string) {
+    if (this.inShard) this.net.send({ t: 'pack_clear', pack });
+  }
+
+  packRelease(pack: string) {
+    if (this.inShard) this.net.send({ t: 'pack_release', pack });
+  }
+
   private sendJoin() {
     const w = this.want;
     if (!w || !this.online) return;
@@ -139,7 +224,9 @@ export class WorldLink implements WorldPresence {
   private lost() {
     this.joined = false;
     this.shard = '';
+    this.you = 0;
     this.sink?.clear();
+    this.packs?.clear();
   }
 }
 

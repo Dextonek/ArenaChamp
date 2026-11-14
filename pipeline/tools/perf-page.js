@@ -382,13 +382,16 @@
     (0, eval)(await (await fetch('/pipeline/tools/world-tool.js')).text());
     await window._world({ floor: o.floor ?? 1, hero: o.hero ?? 'Kaia', mode: 'run' });
     const game = window._worldGame;
+    // Stage 2's shared packs (src/tower/world/share.ts): `packs` made-up packs for each made-up other, fighting round the hero as copies
+    // of another screen's packs are drawn, and this hero's packs fighting the others too (the zone is built again with a share for it).
+    if (o.packs) { game.others.fake(o.others ?? 0, a.arena.caster.group.position); game.fakePacks(o.packs); }
     const packs = [...game.zone.packs.values()].filter((p) => !p.def.named);
     let k = 0;
     const visit = () => { const p = packs[k++ % packs.length]; if (p) window._world.go(p.def.at.x + 2.5, p.def.at.z + 2.5); };
     visit();
     await d.whenReady();
     // The open world (src/tower/world/others.ts): `others` made-up players walking about the hero and casting, drawn as real ones are.
-    if (o.others) game.others.fake(o.others, a.arena.caster.group.position);
+    if (o.others && !o.packs) game.others.fake(o.others, a.arena.caster.group.position);
     return {
       stepped: true,
       // The run's own tick comes after the duel's step, as the game's loop has it; it is part of the step's time.

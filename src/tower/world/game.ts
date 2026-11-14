@@ -95,9 +95,12 @@ export class WorldGame {
     this.piece = null;
     this.enter();
     this.save();
-    // The speed test's switch: `game.html?others=7` walks seven made-up others about the hero (no server).
-    const fakes = Math.min(16, Math.max(0, Math.floor(Number(new URLSearchParams(location.search).get('others')) || 0)));
+    // The speed test's switch: `game.html?others=7` walks seven made-up others about the hero (no server); `&packs=3` gives each of
+    // them three made-up packs fighting round the hero (share.ts `fake`), and this hero's packs fight the others too.
+    const q = new URLSearchParams(location.search);
+    const fakes = Math.min(16, Math.max(0, Math.floor(Number(q.get('others')) || 0)));
     if (fakes) this.others.fake(fakes, this.api.arena.caster.group.position);
+    if (fakes) this.fakePacks(Math.floor(Number(q.get('packs')) || 0));
     if (!this.manual) this.loop();
   }
 
@@ -126,7 +129,7 @@ export class WorldGame {
       save: () => this.save(),
       offerBoon: (label) => this.offer(label),
       giveRelic: () => this.relic(),
-    }, { mode: this.mode, start });
+    }, { mode: this.mode, start, share: this.presence || this.fakeK ? { link: this.presence, others: this.others } : undefined });
     api.setKit(run.hero);
     api.setHeroMode(true);
     api.duel.holdStart = false;
@@ -148,8 +151,21 @@ export class WorldGame {
     };
     const me = api.arena.caster.group.position;
     this.presence?.join(floor.n, run.hero, me.x, me.z, api.arena.caster.group.rotation.y);
+    if (this.fakeK) this.zone.share?.fake(this.fakeK);
     this.hud.setOthers(this.presence?.online || this.others.count > 0 ? this.others.count : null);
   }
+
+  /** Made-up packs for the made-up others (the speed test: share.ts `fake`); 0 takes them away. Kept for the zones built after. */
+  fakePacks(k: number) {
+    this.fakeK = k;
+    if (k > 0 && this.zone && !this.zone.share) {
+      // A zone built without a share (no link: the tools) is built again with one.
+      this.leave();
+      this.enter(this.api.arena.caster.group.position.clone());
+    }
+    this.zone?.share?.fake(k);
+  }
+  private fakeK = 0;
 
   private wake(): Spot {
     const w = this.floor.waystones.find((x) => x.id === this.run.lastWaystone);
