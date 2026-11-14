@@ -13,8 +13,10 @@ _Last updated: 2026-11-14, evening: **the Climb to 50 is pushed and live** (Clou
 - **Ten new heroes designed (gate 1 cards):** `docs/heroes/next10/index.html`; waiting on the user's pick.
 - **Merged, not live:** the Sea and the Wood's props set right: 37 faults fixed at their cause on floors 1-20 (`docs/tower/props/sea/`,
   `docs/tower/props/wood/`); taste calls left for the user there (white catch baskets, block benches, the root mound).
+- **Merged, not live:** the Sands, the Deep and the War's props set right: 41 faults on floors 21-50 (`docs/tower/props/sands`, `deep`, `war`).
+  Left: grass tufts on cliff slopes (shared land code), War scenes past the edge sit off the hills on their downhill side.
 - **Running (worktree agents, each reports back):** (1) online leaderboards and clans with a clan chat,
-  (2) every prop of the Sands, the Deep and the War looked at one by one (`docs/tower/props/<chapter>/`), (3) the heroes' lore: the world, factions, a legend
+  (2) the heroes' lore: the world, factions, a legend
   and ties for all forty, ten more new heroes, full kit sheets for all twenty new ones (`docs/lore/`, `docs/heroes/next20/`,
   `docs/heroes/kits20/`).
 - **New project:** ArenaWorld, an original open-world RPG in Rust (`C:\Users\erich\ArenaWorld`, its own repo and session): stage 1, the
