@@ -30,6 +30,10 @@ one model style ("real", v4); the line-up beside Sefu and Kaia; push and deploy 
 
 ## Part 1: the ten rules
 
+0. **The lore first (2026-11-14).** The user: "from now on we will match all heroes to our lore". Before the card, the hero has
+   its place on the Dial in `docs/lore/LORE.md`: its people (not every hero is human), its realm and home, its faction, its age,
+   and two to four ties to heroes already there. The sentence, shape, colours, look and spell names below must follow from it, and
+   a change to a hero changes its lore in the same commit (then `python pipeline/tools/lore-game.py`).
 1. **One sentence, one shape, two colours.** A hero is a mythic role you can say in one sentence ("a fire dancer who
    rises from her own ashes"), a signature shape you can draw as a 64-pixel icon (a feather, a door, a gear), and an
    accent with a pale foil. None of the three may be mistaken for an existing hero's: check the roster table in
@@ -86,6 +90,8 @@ spell is rewritten on the sheet first.
 `<theme>` is one lower-case word (`phoenix`); the hero's name is what players see.
 
 ### Gate 1: card
+- [ ] Its entry in `docs/lore/LORE.md` (rule 0): people, home, age, faction, legend, line, ties; `python pipeline/tools/lore-page.py`
+      passes its checks.
 - [ ] `pipeline/designs/kit-<theme>.md` started with the card (rules 1 to 3).
 - [ ] Name, title, spell names and theme word are new: search `src/kits/`, `src/spells/targeted/` (file names and
       `label`s) and the roster table.

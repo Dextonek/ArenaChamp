@@ -65,6 +65,12 @@ then `docs/README.md` (the map of the docs). Setting up a new computer: `docs/SE
   edges, lantern light as the only glow; a drawn floor, a drawn sea (`blender/arenas/real/STYLE.md`, `kit.py`,
   `src/arenas/real.ts`). When a look is in doubt, show one arena's look first and wait for the nod. The user also
   liked having three agents look at a rejected sample in parallel before deciding ("make it three").
+- **Every hero matches the lore (2026-11-14).** The user: "from now on we will match all heroes to our lore". The world is the
+  Dial (`docs/lore/LORE.md`, the page `docs/lore/index.html`). A hero, new or changed, starts from its place there: its people, its
+  realm, its faction and its ties to other heroes. Its look, colours, kit and names follow from that, and the same change updates
+  LORE.md (home, age, legend, ties) and the game's copy (`python pipeline/tools/lore-game.py` -> `src/game/lore.ts`). The user also
+  found the heroes "all the same, like human": the Dial has many peoples, and a hero's people shows in its figure (still the one
+  realistic style on the pack's skeleton, and never cartoon).
 - **A new hero is made by `docs/pipeline/new-hero.md` (2026-11-11).** The user, asked for a 40th hero: "don't follow
   the same path, let's just make new rules for hero creation". Ten rules, six gates that each end in a picture and
   the user's yes (the look is agreed before any spell is built), one checklist. The user said "continue" to them;
